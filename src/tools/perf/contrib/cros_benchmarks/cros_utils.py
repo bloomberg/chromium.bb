@@ -2,16 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import json
-import logging
 import os
 import subprocess
 import time
-
-import py_utils
-
-from telemetry.core import exceptions
-from telemetry.value import histogram_util
 
 
 def _RunCommand(dut_ip, cmd):
@@ -42,80 +35,6 @@ def _CopyToDUT(dut_ip, local_path, dut_path):
     os.system('scp -q %s root@%s:%s' % (local_path, dut_ip, dut_path))
   else:
     os.system('cp %s %s' % (local_path, dut_path))
-
-
-def _GetTabSwitchHistogram(browser):
-  """Gets MPArch.RWH_TabSwitchPaintDuration histogram.
-
-  Catches exceptions to handle devtools context lost cases.
-
-  Any tab context can be used to get the TabSwitchPaintDuration histogram.
-  browser.tabs[-1] is the last valid context. Ex: If the browser opens
-  A, B, ..., I, J tabs, E, F, G tabs have valid contexts (not discarded),
-  then browser.tab[0] is tab E, browser.tab[-1] is tab G.
-
-  In the tab switching benchmark, the tabs are opened and switched to in
-  1, 2, ..., n order. The tabs are discarded in roughly 1, 2, ..., n order
-  (LRU order). The chance of discarding the last valid context is lower
-  than discarding the first valid context.
-
-  Args:
-    browser: Gets histogram from this browser.
-
-  Returns:
-    A json serialization of a histogram or None if get histogram failed.
-  """
-  histogram_name = 'MPArch.RWH_TabSwitchPaintDuration'
-  histogram_type = histogram_util.BROWSER_HISTOGRAM
-  try:
-    return histogram_util.GetHistogram(
-        histogram_type, histogram_name, browser.tabs[-1])
-  except (exceptions.DevtoolsTargetCrashException, KeyError):
-    logging.warning('GetHistogram: Devtools context lost.')
-  except exceptions.TimeoutException:
-    logging.warning('GetHistogram: Timed out getting histogram.')
-  return None
-
-
-def GetTabSwitchHistogramRetry(browser):
-  """Retries getting histogram as it may fail when a context was discarded.
-
-  Args:
-    browser: Gets histogram from this browser.
-
-  Returns:
-    A json serialization of a histogram.
-
-  Raises:
-    py_utils.TimeoutException: There is no valid histogram in 10 seconds.
-  """
-  return py_utils.WaitFor(lambda: _GetTabSwitchHistogram(browser), 10)
-
-
-def WaitTabSwitching(browser, prev_histogram):
-  """Waits for tab switching completion.
-
-  It's done by checking browser histogram to see if
-  RWH_TabSwitchPaintDuration count increases.
-
-  Args:
-    browser: Gets histogram from this browser.
-    prev_histogram: Checks histogram change against this histogram.
-  """
-  def _IsDone():
-    cur_histogram = _GetTabSwitchHistogram(browser)
-    if not cur_histogram:
-      return False
-
-    diff_histogram = histogram_util.SubtractHistogram(
-        cur_histogram, prev_histogram)
-    diff_histogram_count = json.loads(diff_histogram).get('count', 0)
-    return diff_histogram_count > 0
-
-  try:
-    py_utils.WaitFor(_IsDone, 10)
-  except py_utils.TimeoutException:
-    logging.warning('Timed out waiting for histogram count increasing.')
 
 
 class KeyboardEmulator(object):

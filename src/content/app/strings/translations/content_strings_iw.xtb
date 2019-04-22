@@ -19,6 +19,7 @@
 <translation id="1591562245178063882">החודש</translation>
 <translation id="1637811476055996098">בחר קבצים</translation>
 <translation id="1650423536718072820">ציטוט</translation>
+<translation id="1727886345390570319">הסתרה של תפריט הכתוביות</translation>
 <translation id="1729654308190250600">הזן ערך נדרש בשדה של כתובת האימייל.</translation>
 <translation id="1758486001363313524">אחר...</translation>
 <translation id="1806710327868736751">alert_dialog</translation>
@@ -41,6 +42,7 @@
 <translation id="2291999235780842123">תיבת סימון</translation>
 <translation id="2311842470354187719">מעבר דף</translation>
 <translation id="2335594187091864976">בוחר תאריך ושעה</translation>
+<translation id="245932805758469625">מספר השניות שנותרו עד לסיום הסרטון</translation>
 <translation id="248395913932153421">יום</translation>
 <translation id="2507943997699731163">זהו שדה חובה.</translation>
 <translation id="2508569020611168319">רשימת כרטיסיות</translation>
@@ -50,7 +52,6 @@
 <translation id="2653659639078652383">שלח</translation>
 <translation id="2657045182931379222">אובייקט גרפי</translation>
 <translation id="2674318244760992338">כותרת תחתונה</translation>
-<translation id="2706474812903655270">הסרטון הזה פועל במצב 'תמונה בתוך תמונה'</translation>
 <translation id="2709516037105925701">מילוי אוטומטי</translation>
 <translation id="2723001399770238859">אודיו</translation>
 <translation id="2746543609216772311">על הערך להיות <ph name="MINIMUM_DATE_OR_TIME" /> ומעלה.</translation>
@@ -71,11 +72,10 @@
 <translation id="3450233048674729344">הערך חייב להיות קטן מ-<ph name="MAXIMUM" /> או שווה לו.</translation>
 <translation id="3486220673238053218">הגדרה</translation>
 <translation id="3557673793733683882">כותרת <ph name="HEADING_LEVEL" /></translation>
-<translation id="3639613635497528239">מספר שניות שנותרו עד לסיום הסרט</translation>
+<translation id="3685101356851116974">תמונה ללא תיאור</translation>
 <translation id="3706100364254443312">מעבר</translation>
 <translation id="3732799496749320381">mm</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
-<translation id="3785482301506746191">מסתיר משך סרט</translation>
 <translation id="3808586225841795776">מונח</translation>
 <translation id="3822383571486410024">הארך טקסט זה ל-<ph name="MIN_CHARACTERS" /> תווים או יותר (אתה משתמש כרגע ב-<ph name="CURRENT_LENGTH" /> תווים).</translation>
 <translation id="383465348367842624">חלק ולאחריו '<ph name="ATSIGN" />' לא אמור לכלול את הסמל '<ph name="INVALIDCHARACTER" />'.</translation>
@@ -94,8 +94,10 @@
 <translation id="4360991593054037559">הזן ערך חוקי. שני הערכים החוקיים הקרובים ביותר הם <ph name="VALID_VALUE_LOW" /> ו-<ph name="VALID_VALUE_HIGHER" />.</translation>
 <translation id="4384583879834880242">שאלות ותשובות</translation>
 <translation id="4413860115965805769">לחצן תפריט</translation>
+<translation id="4444765639179266822">נראה שכתובים כאן הדברים הבאים: <ph name="OCR_TEXT" /></translation>
 <translation id="4446524499724042288">הפניה למילון מונחים</translation>
 <translation id="4522570452068850558">פרטים</translation>
+<translation id="4542388879936266156">הזמן שנותר: <ph name="REMAINING_TIME" /></translation>
 <translation id="4597532268155981612">טופס</translation>
 <translation id="4661075872484491155">tree</translation>
 <translation id="4664250907885839816">חלק ולאחריו '<ph name="ATSIGN" />' לא אמור לכלול את הסמל '<ph name="INVALIDCHARACTER" />'.</translation>
@@ -111,6 +113,7 @@
 <translation id="4992066212339426712">בטל השתקה</translation>
 <translation id="49969490063480558">הזן חלק ולאחריו '<ph name="ATSIGN" />'‏. השדה '<ph name="INVALIDADDRESS" />' אינו מלא.</translation>
 <translation id="5034860022980953847">סימן ויזואלי להתקדמות</translation>
+<translation id="5090250355906949916">מחוון זמן הסרטון</translation>
 <translation id="5093189678851173835">ציטוט בראש ספר</translation>
 <translation id="5117590920725113268">הצג את החודש הבא</translation>
 <translation id="512758898067543763">כותרת שורה</translation>
@@ -118,6 +121,7 @@
 <translation id="5164977714490026579">הערך חייב להיות גדול מ-<ph name="MINIMUM" /> או שווה לו.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">הזן חלק ולאחריו '<ph name="ATSIGN" />'‏. השדה '<ph name="INVALIDADDRESS" />' אינו מלא.</translation>
+<translation id="5334352251556557839">לא ניתן להפעיל את המדיה.</translation>
 <translation id="5406322316791861025">ספרה</translation>
 <translation id="5453733299334684579">פריט בעץ</translation>
 <translation id="5466621249238537318">בחר קובץ אחד או יותר.</translation>
@@ -144,16 +148,20 @@
 <translation id="6150588977291308318">ביבליוגרפיה</translation>
 <translation id="6164829606128959761">מד</translation>
 <translation id="6166809985690652833">אחרית דבר</translation>
+<translation id="6209276755895393898">נראה כמו: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">מילון מונחים</translation>
+<translation id="628938136236500310">פועל במצב תמונה בתוך תמונה</translation>
 <translation id="6398862346408813489">הצג חלונית לבחירת חודש</translation>
 <translation id="6404546809543547843">מסתיר משך אודיו</translation>
+<translation id="6443871981718447451">הצגת תפריט כתוביות</translation>
 <translation id="6453774872122745852">תודות</translation>
 <translation id="648732519525291180">בוחר שעות</translation>
 <translation id="6550675742724504774">אפשרויות</translation>
+<translation id="6572309429103589720">דקדוק שגוי</translation>
 <translation id="658823671542763450">היכנס למסך מלא</translation>
 <translation id="663493177488814956">פיד</translation>
 <translation id="6637586476836377253">log</translation>
-<translation id="6643016212128521049">נקה</translation>
+<translation id="6643016212128521049">ניקוי</translation>
 <translation id="668171684555832681">אחר...</translation>
 <translation id="6692633176391053278">פקד חצים</translation>
 <translation id="6709570249143506788">איכות הפעלה נמוכה</translation>
@@ -162,7 +170,6 @@
 <translation id="6820355525329141109">לא ניתן היה לטעון את הפלאגין.</translation>
 <translation id="6820615603175220800">הפניה לביבליוגרפיה</translation>
 <translation id="6843725295806269523">השתקה</translation>
-<translation id="6853785296079745596">הסתר כתוביות סגורות</translation>
 <translation id="6885760532393684712">ספריה</translation>
 <translation id="689129560213475294">קולופון</translation>
 <translation id="6934078000481955284">‏רכיב blockquote</translation>
@@ -170,25 +177,29 @@
 <translation id="6981594929165378967">הוספה</translation>
 <translation id="6989848892321993519">עליך להאריך את הטקסט ל-<ph name="MIN_CHARACTERS" /> תווים או יותר (אתה משתמש כרגע בתו אחד).</translation>
 <translation id="709897737746224366">התאם את הפורמט המבוקש.</translation>
+<translation id="7118469954320184356">אין תיאור זמין.</translation>
 <translation id="7139483182332611405">הקדמה</translation>
-<translation id="7223624360433298498">זמן שחלף</translation>
 <translation id="7263440858009898357">בחר פריט מהרשימה.</translation>
 <translation id="727747134524199931">כותרת עמודה</translation>
+<translation id="7320576522385648310">אגירה</translation>
 <translation id="7353453495576941748">קרדיט</translation>
 <translation id="7364796246159120393">בחירת קובץ</translation>
 <translation id="739024184232394898">אחר...</translation>
 <translation id="7405738980073107433">הערות סיום</translation>
+<translation id="7410239719251593705">נראה שהתמונה כוללת תוכן למבוגרים בלבד. אין תיאור זמין.</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7491962110804786152">tab</translation>
-<translation id="7514365320538308">הורד</translation>
+<translation id="7514365320538308">הורדה</translation>
 <translation id="7529102961911894712">קישור לאחור</translation>
+<translation id="7533959249147584474">גרפיקה ללא תיאור</translation>
 <translation id="7647456547678091388">טיפ</translation>
 <translation id="7661956066982048809">מסמך גרפי</translation>
 <translation id="7673697353781729403">שעות</translation>
 <translation id="7681220483256441252">אינדקס</translation>
-<translation id="7720026100085573005">זמן שנותר</translation>
 <translation id="7740050170769002709">‏תוכן HTML</translation>
+<translation id="7745230546936012372">כדי לקבל תיאורים חסרים של תמונות, יש לפתוח את תפריט ההקשר.</translation>
 <translation id="7750228210027921155">תמונה בתוך תמונה</translation>
+<translation id="775297008183122718">ערך לא חוקי</translation>
 <translation id="7789962463072032349">השהה</translation>
 <translation id="7802800022689234070">משולש הצגה/הסתרה</translation>
 <translation id="7888071071722539607">כלול '<ph name="ATSIGN" />' בכתובת האימייל. ב-'<ph name="INVALIDADDRESS" />' חסר '<ph name="ATSIGN" />'.</translation>
@@ -197,10 +208,13 @@
 <translation id="8053789581856978548">שדה טקסט לחיפוש</translation>
 <translation id="8057695513531652401">הודעה</translation>
 <translation id="8105797009065549151">הפניה להערה</translation>
+<translation id="811583516810654505">התיאור עוד מעט מוכן…</translation>
 <translation id="8117451130807776954">השבוע</translation>
 <translation id="8199524924445686405">yyyy</translation>
+<translation id="8261464734335370856">איות שגוי</translation>
 <translation id="8284326494547611709">כתוביות</translation>
 <translation id="835897206747267392">ערך לא חוקי.</translation>
+<translation id="8403857369060869934">הזמן שחלף: <ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">חלק</translation>
 <translation id="8433900881053900389">סרגל כלים</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES" /> קבצים</translation>
@@ -225,7 +239,6 @@
 <translation id="8987927404178983737">חודש</translation>
 <translation id="901493112792887934">זמן נוכחי בשניות</translation>
 <translation id="9048119486235211610">ניווט</translation>
-<translation id="9050748414552849310">הצג כתוביות סגורות</translation>
 <translation id="9062295712474918030">מסמך</translation>
 <translation id="9093215626363556771">יציאה ממצב 'תמונה בתוך תמונה'</translation>
 <translation id="9108370397979208512">math</translation>

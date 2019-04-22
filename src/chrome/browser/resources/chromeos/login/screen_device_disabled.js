@@ -34,10 +34,7 @@ login.createScreen('DeviceDisabledScreen', 'device-disabled', function() {
      * Event handler that is invoked just before the screen in shown.
      */
     onBeforeShow: function() {
-      var headerBar = $('login-header-bar');
-      headerBar.allowCancel = false;
-      headerBar.showGuestButton = false;
-      headerBar.signinUIState = SIGNIN_UI_STATE.HIDDEN;
+      Oobe.getInstance().setSigninUIState(SIGNIN_UI_STATE.HIDDEN);
     },
 
     /**

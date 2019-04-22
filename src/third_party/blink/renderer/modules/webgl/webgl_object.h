@@ -26,6 +26,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_OBJECT_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_OBJECT_H_
 
+#include "base/macros.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -56,8 +57,6 @@ GLuint ObjectNonZero(const T* object) {
 }
 
 class WebGLObject : public ScriptWrappable {
-  WTF_MAKE_NONCOPYABLE(WebGLObject);
-
  public:
   // We can't call virtual functions like deleteObjectImpl in this class's
   // destructor; doing so results in a pure virtual function call. Further,
@@ -75,10 +74,10 @@ class WebGLObject : public ScriptWrappable {
   void OnAttached() { ++attachment_count_; }
   void OnDetached(gpu::gles2::GLES2Interface*);
 
-  // This indicates whether the client side issue a delete call already, not
-  // whether the OpenGL resource is deleted.
-  // object()==0 indicates the OpenGL resource is deleted.
-  bool IsDeleted() { return deleted_; }
+  // This indicates whether the client side has already issued a delete call,
+  // not whether the OpenGL resource is deleted. Object()==0, or !HasObject(),
+  // indicates that the OpenGL resource has been deleted.
+  bool MarkedForDeletion() { return marked_for_deletion_; }
 
   // True if this object belongs to the group or context.
   virtual bool Validate(const WebGLContextGroup*,
@@ -90,7 +89,7 @@ class WebGLObject : public ScriptWrappable {
   // refer back to their owning context in their destructor to delete their
   // resources if they are GC'd before the context is.
   EAGERLY_FINALIZE();
-  DECLARE_EAGER_FINALIZATION_OPERATOR_NEW();
+  DEFINE_INLINE_EAGER_FINALIZATION_OPERATOR_NEW()
 
  protected:
   explicit WebGLObject(WebGLRenderingContextBase*);
@@ -130,13 +129,17 @@ class WebGLObject : public ScriptWrappable {
 
   unsigned attachment_count_;
 
-  // Indicates whether the WebGL context's deletion function for this
-  // object (deleteBuffer, deleteTexture, etc.) has been called.
-  bool deleted_;
+  // Indicates whether the WebGL context's deletion function for this object
+  // (deleteBuffer, deleteTexture, etc.) has been called. It does *not* indicate
+  // whether the underlying OpenGL resource has been destroyed; !HasObject()
+  // indicates that.
+  bool marked_for_deletion_;
 
   // Indicates whether the destructor has been entered and we therefore
   // need to be careful in subclasses to not touch other on-heap objects.
   bool destruction_in_progress_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebGLObject);
 };
 
 }  // namespace blink

@@ -29,7 +29,7 @@
 #include "third_party/blink/public/mojom/speech/speech_recognizer.mojom-blink.h"
 #include "third_party/blink/public/platform/web_private_ptr.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
-#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/page/page_visibility_observer.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -37,7 +37,7 @@
 #include "third_party/blink/renderer/modules/speech/speech_recognition_result.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/mojo/revocable_binding.h"
-#include "third_party/blink/renderer/platform/wtf/compiler.h"
+#include "third_party/blink/renderer/platform/mojo/revocable_interface_ptr.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -108,17 +108,17 @@ class MODULES_EXPORT SpeechRecognition final
   // PageVisibilityObserver
   void PageVisibilityChanged() override;
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(audiostart, kAudiostart);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(soundstart, kSoundstart);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(speechstart, kSpeechstart);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(speechend, kSpeechend);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(soundend, kSoundend);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(audioend, kAudioend);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(result, kResult);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(nomatch, kNomatch);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(start, kStart);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(end, kEnd);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(audiostart, kAudiostart)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(soundstart, kSoundstart)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(speechstart, kSpeechstart)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(speechend, kSpeechend)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(soundend, kSoundend)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(audioend, kAudioend)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(result, kResult)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(nomatch, kNomatch)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(start, kStart)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(end, kEnd)
 
   void Trace(blink::Visitor*) override;
 
@@ -136,7 +136,7 @@ class MODULES_EXPORT SpeechRecognition final
   bool stopping_;
   HeapVector<Member<SpeechRecognitionResult>> final_results_;
   RevocableBinding<mojom::blink::SpeechRecognitionSessionClient> binding_;
-  mojom::blink::RevocableSpeechRecognitionSessionPtr session_;
+  RevocableInterfacePtr<mojom::blink::SpeechRecognitionSession> session_;
 };
 
 }  // namespace blink

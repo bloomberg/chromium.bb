@@ -4,7 +4,11 @@
 
 #include "services/device/public/cpp/bluetooth/bluetooth_utils.h"
 
+#include <string>
+
 #include "base/optional.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "device/bluetooth/string_util_icu.h"
 #include "device/bluetooth/strings/grit/bluetooth_strings.h"
@@ -14,6 +18,16 @@ namespace device {
 
 using DeviceType = mojom::BluetoothDeviceInfo::DeviceType;
 
+base::string16 GetBluetoothAddressForDisplay(
+    const std::array<uint8_t, 6>& address) {
+  static constexpr char kAddressFormat[] =
+      "%02hhX:%02hhX:%02hhX:%02hhX:%02hhX:%02hhX";
+
+  return base::UTF8ToUTF16(
+      base::StringPrintf(kAddressFormat, address[0], address[1], address[2],
+                         address[3], address[4], address[5]));
+}
+
 base::string16 GetBluetoothDeviceNameForDisplay(
     const mojom::BluetoothDeviceInfoPtr& device_info) {
   if (device_info->name) {
@@ -22,7 +36,7 @@ base::string16 GetBluetoothDeviceNameForDisplay(
       return base::UTF8ToUTF16(device_name);
   }
 
-  auto address_utf16 = base::UTF8ToUTF16(device_info->address);
+  auto address_utf16 = GetBluetoothAddressForDisplay(device_info->address);
   auto device_type = device_info->device_type;
   switch (device_type) {
     case DeviceType::kUnknown:

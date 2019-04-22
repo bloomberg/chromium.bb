@@ -55,11 +55,11 @@ class CongestionControlTest : public ::testing::Test {
       congestion_control_->UpdateRtt(rtt);
       congestion_control_->SendFrameToTransport(
           frame_id_, frame_size, testing_clock_.NowTicks());
-      task_runner_->PostDelayedTask(FROM_HERE,
-                                    base::Bind(&CongestionControlTest::AckFrame,
-                                               base::Unretained(this),
-                                               frame_id_),
-                                    ack_time);
+      task_runner_->PostDelayedTask(
+          FROM_HERE,
+          base::BindOnce(&CongestionControlTest::AckFrame,
+                         base::Unretained(this), frame_id_),
+          ack_time);
       task_runner_->Sleep(frame_delay);
     }
   }

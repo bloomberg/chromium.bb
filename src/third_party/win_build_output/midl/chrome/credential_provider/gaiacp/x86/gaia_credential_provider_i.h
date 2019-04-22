@@ -52,13 +52,6 @@ typedef interface IGaiaCredentialProvider IGaiaCredentialProvider;
 #endif 	/* __IGaiaCredentialProvider_FWD_DEFINED__ */
 
 
-#ifndef __IGaiaCredentialProviderForTesting_FWD_DEFINED__
-#define __IGaiaCredentialProviderForTesting_FWD_DEFINED__
-typedef interface IGaiaCredentialProviderForTesting IGaiaCredentialProviderForTesting;
-
-#endif 	/* __IGaiaCredentialProviderForTesting_FWD_DEFINED__ */
-
-
 #ifndef __IGaiaCredential_FWD_DEFINED__
 #define __IGaiaCredential_FWD_DEFINED__
 typedef interface IGaiaCredential IGaiaCredential;
@@ -109,13 +102,15 @@ EXTERN_C const IID IID_IGaiaCredentialProvider;
     IGaiaCredentialProvider : public IUnknown
     {
     public:
+        virtual HRESULT STDMETHODCALLTYPE GetUsageScenario( 
+            /* [out] */ DWORD *cpus) = 0;
+        
         virtual HRESULT STDMETHODCALLTYPE OnUserAuthenticated( 
             /* [in] */ IUnknown *credential,
             /* [in] */ BSTR username,
             /* [in] */ BSTR password,
-            /* [in] */ BSTR sid) = 0;
-        
-        virtual HRESULT STDMETHODCALLTYPE HasInternetConnection( void) = 0;
+            /* [in] */ BSTR sid,
+            /* [in] */ BOOL fire_credentials_changed) = 0;
         
     };
     
@@ -138,15 +133,17 @@ EXTERN_C const IID IID_IGaiaCredentialProvider;
         ULONG ( STDMETHODCALLTYPE *Release )( 
             IGaiaCredentialProvider * This);
         
+        HRESULT ( STDMETHODCALLTYPE *GetUsageScenario )( 
+            IGaiaCredentialProvider * This,
+            /* [out] */ DWORD *cpus);
+        
         HRESULT ( STDMETHODCALLTYPE *OnUserAuthenticated )( 
             IGaiaCredentialProvider * This,
             /* [in] */ IUnknown *credential,
             /* [in] */ BSTR username,
             /* [in] */ BSTR password,
-            /* [in] */ BSTR sid);
-        
-        HRESULT ( STDMETHODCALLTYPE *HasInternetConnection )( 
-            IGaiaCredentialProvider * This);
+            /* [in] */ BSTR sid,
+            /* [in] */ BOOL fire_credentials_changed);
         
         END_INTERFACE
     } IGaiaCredentialProviderVtbl;
@@ -171,11 +168,11 @@ EXTERN_C const IID IID_IGaiaCredentialProvider;
     ( (This)->lpVtbl -> Release(This) ) 
 
 
-#define IGaiaCredentialProvider_OnUserAuthenticated(This,credential,username,password,sid)	\
-    ( (This)->lpVtbl -> OnUserAuthenticated(This,credential,username,password,sid) ) 
+#define IGaiaCredentialProvider_GetUsageScenario(This,cpus)	\
+    ( (This)->lpVtbl -> GetUsageScenario(This,cpus) ) 
 
-#define IGaiaCredentialProvider_HasInternetConnection(This)	\
-    ( (This)->lpVtbl -> HasInternetConnection(This) ) 
+#define IGaiaCredentialProvider_OnUserAuthenticated(This,credential,username,password,sid,fire_credentials_changed)	\
+    ( (This)->lpVtbl -> OnUserAuthenticated(This,credential,username,password,sid,fire_credentials_changed) ) 
 
 #endif /* COBJMACROS */
 
@@ -186,112 +183,6 @@ EXTERN_C const IID IID_IGaiaCredentialProvider;
 
 
 #endif 	/* __IGaiaCredentialProvider_INTERFACE_DEFINED__ */
-
-
-/* interface __MIDL_itf_gaia_credential_provider_0000_0001 */
-/* [local] */ 
-
-typedef /* [public][public] */ 
-enum __MIDL___MIDL_itf_gaia_credential_provider_0000_0001_0001
-    {
-        kHicForceYes	= 0,
-        kHicForceNo	= ( kHicForceYes + 1 ) ,
-        kHicCheckAlways	= ( kHicForceNo + 1 ) 
-    } 	HasInternetConnectionCheckType;
-
-
-
-extern RPC_IF_HANDLE __MIDL_itf_gaia_credential_provider_0000_0001_v0_0_c_ifspec;
-extern RPC_IF_HANDLE __MIDL_itf_gaia_credential_provider_0000_0001_v0_0_s_ifspec;
-
-#ifndef __IGaiaCredentialProviderForTesting_INTERFACE_DEFINED__
-#define __IGaiaCredentialProviderForTesting_INTERFACE_DEFINED__
-
-/* interface IGaiaCredentialProviderForTesting */
-/* [unique][uuid][object] */ 
-
-
-EXTERN_C const IID IID_IGaiaCredentialProviderForTesting;
-
-#if defined(__cplusplus) && !defined(CINTERFACE)
-    
-    MIDL_INTERFACE("224CE2FB-2977-4585-BD46-1BAE8D7964DE")
-    IGaiaCredentialProviderForTesting : public IUnknown
-    {
-    public:
-        virtual HRESULT STDMETHODCALLTYPE SetReauthCheckDoneEvent( 
-            /* [in] */ INT_PTR event) = 0;
-        
-        virtual HRESULT STDMETHODCALLTYPE SetHasInternetConnection( 
-            /* [in] */ HasInternetConnectionCheckType hic) = 0;
-        
-    };
-    
-    
-#else 	/* C style interface */
-
-    typedef struct IGaiaCredentialProviderForTestingVtbl
-    {
-        BEGIN_INTERFACE
-        
-        HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
-            IGaiaCredentialProviderForTesting * This,
-            /* [in] */ REFIID riid,
-            /* [annotation][iid_is][out] */ 
-            _COM_Outptr_  void **ppvObject);
-        
-        ULONG ( STDMETHODCALLTYPE *AddRef )( 
-            IGaiaCredentialProviderForTesting * This);
-        
-        ULONG ( STDMETHODCALLTYPE *Release )( 
-            IGaiaCredentialProviderForTesting * This);
-        
-        HRESULT ( STDMETHODCALLTYPE *SetReauthCheckDoneEvent )( 
-            IGaiaCredentialProviderForTesting * This,
-            /* [in] */ INT_PTR event);
-        
-        HRESULT ( STDMETHODCALLTYPE *SetHasInternetConnection )( 
-            IGaiaCredentialProviderForTesting * This,
-            /* [in] */ HasInternetConnectionCheckType hic);
-        
-        END_INTERFACE
-    } IGaiaCredentialProviderForTestingVtbl;
-
-    interface IGaiaCredentialProviderForTesting
-    {
-        CONST_VTBL struct IGaiaCredentialProviderForTestingVtbl *lpVtbl;
-    };
-
-    
-
-#ifdef COBJMACROS
-
-
-#define IGaiaCredentialProviderForTesting_QueryInterface(This,riid,ppvObject)	\
-    ( (This)->lpVtbl -> QueryInterface(This,riid,ppvObject) ) 
-
-#define IGaiaCredentialProviderForTesting_AddRef(This)	\
-    ( (This)->lpVtbl -> AddRef(This) ) 
-
-#define IGaiaCredentialProviderForTesting_Release(This)	\
-    ( (This)->lpVtbl -> Release(This) ) 
-
-
-#define IGaiaCredentialProviderForTesting_SetReauthCheckDoneEvent(This,event)	\
-    ( (This)->lpVtbl -> SetReauthCheckDoneEvent(This,event) ) 
-
-#define IGaiaCredentialProviderForTesting_SetHasInternetConnection(This,hic)	\
-    ( (This)->lpVtbl -> SetHasInternetConnection(This,hic) ) 
-
-#endif /* COBJMACROS */
-
-
-#endif 	/* C style interface */
-
-
-
-
-#endif 	/* __IGaiaCredentialProviderForTesting_INTERFACE_DEFINED__ */
 
 
 #ifndef __IGaiaCredential_INTERFACE_DEFINED__
@@ -314,17 +205,9 @@ EXTERN_C const IID IID_IGaiaCredential;
         
         virtual HRESULT STDMETHODCALLTYPE Terminate( void) = 0;
         
-        virtual HRESULT STDMETHODCALLTYPE FinishAuthentication( 
-            /* [in] */ BSTR username,
-            /* [in] */ BSTR password,
-            /* [in] */ BSTR fullname,
-            /* [out] */ BSTR *sid,
-            /* [out] */ BSTR *error_text) = 0;
-        
         virtual HRESULT STDMETHODCALLTYPE OnUserAuthenticated( 
-            /* [in] */ BSTR username,
-            /* [in] */ BSTR password,
-            /* [in] */ BSTR sid) = 0;
+            /* [in] */ BSTR authentication_info,
+            /* [out] */ BSTR *status_text) = 0;
         
         virtual HRESULT STDMETHODCALLTYPE ReportError( 
             /* [in] */ LONG status,
@@ -359,19 +242,10 @@ EXTERN_C const IID IID_IGaiaCredential;
         HRESULT ( STDMETHODCALLTYPE *Terminate )( 
             IGaiaCredential * This);
         
-        HRESULT ( STDMETHODCALLTYPE *FinishAuthentication )( 
-            IGaiaCredential * This,
-            /* [in] */ BSTR username,
-            /* [in] */ BSTR password,
-            /* [in] */ BSTR fullname,
-            /* [out] */ BSTR *sid,
-            /* [out] */ BSTR *error_text);
-        
         HRESULT ( STDMETHODCALLTYPE *OnUserAuthenticated )( 
             IGaiaCredential * This,
-            /* [in] */ BSTR username,
-            /* [in] */ BSTR password,
-            /* [in] */ BSTR sid);
+            /* [in] */ BSTR authentication_info,
+            /* [out] */ BSTR *status_text);
         
         HRESULT ( STDMETHODCALLTYPE *ReportError )( 
             IGaiaCredential * This,
@@ -408,11 +282,8 @@ EXTERN_C const IID IID_IGaiaCredential;
 #define IGaiaCredential_Terminate(This)	\
     ( (This)->lpVtbl -> Terminate(This) ) 
 
-#define IGaiaCredential_FinishAuthentication(This,username,password,fullname,sid,error_text)	\
-    ( (This)->lpVtbl -> FinishAuthentication(This,username,password,fullname,sid,error_text) ) 
-
-#define IGaiaCredential_OnUserAuthenticated(This,username,password,sid)	\
-    ( (This)->lpVtbl -> OnUserAuthenticated(This,username,password,sid) ) 
+#define IGaiaCredential_OnUserAuthenticated(This,authentication_info,status_text)	\
+    ( (This)->lpVtbl -> OnUserAuthenticated(This,authentication_info,status_text) ) 
 
 #define IGaiaCredential_ReportError(This,status,substatus,status_text)	\
     ( (This)->lpVtbl -> ReportError(This,status,substatus,status_text) ) 
@@ -443,9 +314,13 @@ EXTERN_C const IID IID_IReauthCredential;
     IReauthCredential : public IUnknown
     {
     public:
-        virtual HRESULT STDMETHODCALLTYPE SetUserInfo( 
-            /* [in] */ BSTR sid,
+        virtual HRESULT STDMETHODCALLTYPE SetEmailForReauth( 
             /* [in] */ BSTR email) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE SetOSUserInfo( 
+            /* [in] */ BSTR sid,
+            /* [in] */ BSTR domain,
+            /* [in] */ BSTR username) = 0;
         
     };
     
@@ -468,10 +343,15 @@ EXTERN_C const IID IID_IReauthCredential;
         ULONG ( STDMETHODCALLTYPE *Release )( 
             IReauthCredential * This);
         
-        HRESULT ( STDMETHODCALLTYPE *SetUserInfo )( 
+        HRESULT ( STDMETHODCALLTYPE *SetEmailForReauth )( 
+            IReauthCredential * This,
+            /* [in] */ BSTR email);
+        
+        HRESULT ( STDMETHODCALLTYPE *SetOSUserInfo )( 
             IReauthCredential * This,
             /* [in] */ BSTR sid,
-            /* [in] */ BSTR email);
+            /* [in] */ BSTR domain,
+            /* [in] */ BSTR username);
         
         END_INTERFACE
     } IReauthCredentialVtbl;
@@ -496,8 +376,11 @@ EXTERN_C const IID IID_IReauthCredential;
     ( (This)->lpVtbl -> Release(This) ) 
 
 
-#define IReauthCredential_SetUserInfo(This,sid,email)	\
-    ( (This)->lpVtbl -> SetUserInfo(This,sid,email) ) 
+#define IReauthCredential_SetEmailForReauth(This,email)	\
+    ( (This)->lpVtbl -> SetEmailForReauth(This,email) ) 
+
+#define IReauthCredential_SetOSUserInfo(This,sid,domain,username)	\
+    ( (This)->lpVtbl -> SetOSUserInfo(This,sid,domain,username) ) 
 
 #endif /* COBJMACROS */
 
@@ -524,7 +407,7 @@ EXTERN_C const CLSID CLSID_GaiaCredentialProvider;
 
 #ifdef __cplusplus
 
-class DECLSPEC_UUID("0b5bfdf0-4594-47ac-940a-cfc69abc561c")
+class DECLSPEC_UUID("89adae71-aee5-4ee2-bffb-e8424e06f519")
 GaiaCredentialProvider;
 #endif
 #endif /* __GaiaCredentialProviderLib_LIBRARY_DEFINED__ */

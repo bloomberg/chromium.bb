@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
-#include "chromeos/dbus/shill_property_changed_observer.h"
+#include "chromeos/dbus/shill/shill_property_changed_observer.h"
 #include "chromeos/network/managed_state.h"
 #include "chromeos/network/network_handler_callbacks.h"
 
@@ -39,14 +39,14 @@ class ShillPropertyObserver;
 // (including once to set their initial state after Init() gets called).
 // It also observes Shill.Service for all services in Manager.ServiceWatchList.
 // This class must not outlive the ShillManagerClient instance.
-class CHROMEOS_EXPORT ShillPropertyHandler
+class COMPONENT_EXPORT(CHROMEOS_NETWORK) ShillPropertyHandler
     : public ShillPropertyChangedObserver,
       public base::SupportsWeakPtr<ShillPropertyHandler> {
  public:
   typedef std::map<std::string, std::unique_ptr<ShillPropertyObserver>>
       ShillPropertyObserverMap;
 
-  class CHROMEOS_EXPORT Listener {
+  class COMPONENT_EXPORT(CHROMEOS_NETWORK) Listener {
    public:
     // Called when the entries in a managed list have changed.
     virtual void UpdateManagedList(ManagedState::ManagedType type,

@@ -18,7 +18,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/threading/scoped_blocking_call.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/device_event_log/device_event_log.h"
 #include "services/device/hid/hid_service.h"
 
@@ -32,21 +32,23 @@
 
 namespace device {
 
-class HidConnectionLinux::BlockingTaskHelper {
+class HidConnectionLinux::BlockingTaskRunnerHelper {
  public:
-  BlockingTaskHelper(base::ScopedFD fd,
-                     scoped_refptr<HidDeviceInfo> device_info,
-                     base::WeakPtr<HidConnectionLinux> connection)
+  BlockingTaskRunnerHelper(base::ScopedFD fd,
+                           scoped_refptr<HidDeviceInfo> device_info,
+                           base::WeakPtr<HidConnectionLinux> connection)
       : fd_(std::move(fd)),
         connection_(connection),
-        origin_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
+        origin_task_runner_(base::SequencedTaskRunnerHandle::Get()) {
     DETACH_FROM_SEQUENCE(sequence_checker_);
     // Report buffers must always have room for the report ID.
     report_buffer_size_ = device_info->max_input_report_size() + 1;
     has_report_id_ = device_info->has_report_id();
   }
 
-  ~BlockingTaskHelper() { DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_); }
+  ~BlockingTaskRunnerHelper() {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  }
 
   // Starts the FileDescriptorWatcher that reads input events from the device.
   // Must be called on a thread that has a base::MessageLoopForIO.
@@ -54,15 +56,16 @@ class HidConnectionLinux::BlockingTaskHelper {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
     file_watcher_ = base::FileDescriptorWatcher::WatchReadable(
-        fd_.get(), base::Bind(&BlockingTaskHelper::OnFileCanReadWithoutBlocking,
-                              base::Unretained(this)));
+        fd_.get(), base::BindRepeating(
+                       &BlockingTaskRunnerHelper::OnFileCanReadWithoutBlocking,
+                       base::Unretained(this)));
   }
 
   void Write(scoped_refptr<base::RefCountedBytes> buffer,
              WriteCallback callback) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     base::ScopedBlockingCall scoped_blocking_call(
-        base::BlockingType::MAY_BLOCK);
+        FROM_HERE, base::BlockingType::MAY_BLOCK);
 
     ssize_t result =
         HANDLE_EINTR(write(fd_.get(), buffer->front(), buffer->size()));
@@ -85,7 +88,7 @@ class HidConnectionLinux::BlockingTaskHelper {
                         ReadCallback callback) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     base::ScopedBlockingCall scoped_blocking_call(
-        base::BlockingType::MAY_BLOCK);
+        FROM_HERE, base::BlockingType::MAY_BLOCK);
 
     int result = HANDLE_EINTR(
         ioctl(fd_.get(), HIDIOCGFEATURE(buffer->size()), buffer->front()));
@@ -115,7 +118,7 @@ class HidConnectionLinux::BlockingTaskHelper {
                          WriteCallback callback) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     base::ScopedBlockingCall scoped_blocking_call(
-        base::BlockingType::MAY_BLOCK);
+        FROM_HERE, base::BlockingType::MAY_BLOCK);
 
     int result = HANDLE_EINTR(
         ioctl(fd_.get(), HIDIOCSFEATURE(buffer->size()), buffer->front()));
@@ -175,7 +178,7 @@ class HidConnectionLinux::BlockingTaskHelper {
   const scoped_refptr<base::SequencedTaskRunner> origin_task_runner_;
   std::unique_ptr<base::FileDescriptorWatcher::Controller> file_watcher_;
 
-  DISALLOW_COPY_AND_ASSIGN(BlockingTaskHelper);
+  DISALLOW_COPY_AND_ASSIGN(BlockingTaskRunnerHelper);
 };
 
 HidConnectionLinux::HidConnectionLinux(
@@ -183,25 +186,24 @@ HidConnectionLinux::HidConnectionLinux(
     base::ScopedFD fd,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner)
     : HidConnection(device_info),
+      helper_(nullptr, base::OnTaskRunnerDeleter(blocking_task_runner)),
       blocking_task_runner_(std::move(blocking_task_runner)),
       weak_factory_(this) {
-  helper_ = std::make_unique<BlockingTaskHelper>(std::move(fd), device_info,
-                                                 weak_factory_.GetWeakPtr());
+  helper_.reset(new BlockingTaskRunnerHelper(std::move(fd), device_info,
+                                             weak_factory_.GetWeakPtr()));
   blocking_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&BlockingTaskHelper::Start,
+      FROM_HERE, base::BindOnce(&BlockingTaskRunnerHelper::Start,
                                 base::Unretained(helper_.get())));
 }
 
-HidConnectionLinux::~HidConnectionLinux() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-}
+HidConnectionLinux::~HidConnectionLinux() {}
 
 void HidConnectionLinux::PlatformClose() {
   // By closing the device on the blocking task runner 1) the requirement that
   // base::ScopedFD is destroyed on a thread where I/O is allowed is satisfied
   // and 2) any tasks posted to this task runner that refer to this file will
   // complete before it is closed.
-  blocking_task_runner_->DeleteSoon(FROM_HERE, helper_.release());
+  helper_.reset();
 }
 
 void HidConnectionLinux::PlatformWrite(
@@ -210,7 +212,7 @@ void HidConnectionLinux::PlatformWrite(
   // Linux expects the first byte of the buffer to always be a report ID so the
   // buffer can be used directly.
   blocking_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&BlockingTaskHelper::Write,
+      FROM_HERE, base::BindOnce(&BlockingTaskRunnerHelper::Write,
                                 base::Unretained(helper_.get()), buffer,
                                 std::move(callback)));
 }
@@ -225,7 +227,7 @@ void HidConnectionLinux::PlatformGetFeatureReport(uint8_t report_id,
   buffer->data()[0] = report_id;
 
   blocking_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&BlockingTaskHelper::GetFeatureReport,
+      FROM_HERE, base::BindOnce(&BlockingTaskRunnerHelper::GetFeatureReport,
                                 base::Unretained(helper_.get()), report_id,
                                 buffer, std::move(callback)));
 }
@@ -236,7 +238,7 @@ void HidConnectionLinux::PlatformSendFeatureReport(
   // Linux expects the first byte of the buffer to always be a report ID so the
   // buffer can be used directly.
   blocking_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&BlockingTaskHelper::SendFeatureReport,
+      FROM_HERE, base::BindOnce(&BlockingTaskRunnerHelper::SendFeatureReport,
                                 base::Unretained(helper_.get()), buffer,
                                 std::move(callback)));
 }

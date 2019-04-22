@@ -12,12 +12,11 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/upgrade_detector/upgrade_observer.h"
 #include "components/prefs/pref_change_registrar.h"
-#include "ui/base/idle/idle.h"
-#include "ui/gfx/image/image.h"
 
 class PrefRegistrySimple;
 class UpgradeObserver;
 namespace base {
+class Clock;
 class TickClock;
 }
 
@@ -59,9 +58,7 @@ class UpgradeDetector {
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
   // Returns the time at which an available upgrade was detected.
-  base::TimeTicks upgrade_detected_time() const {
-    return upgrade_detected_time_;
-  }
+  base::Time upgrade_detected_time() const { return upgrade_detected_time_; }
 
   // Whether the user should be notified about an upgrade.
   bool notify_upgrade() const { return notify_upgrade_; }
@@ -99,11 +96,6 @@ class UpgradeDetector {
   bool is_rollback() const { return is_rollback_; }
 #endif  // defined(OS_CHROMEOS)
 
-  // Retrieves the right icon based on the degree of severity (each
-  // UpgradeNotificationAnnoyanceLevel has an an accompanying icon) to display
-  // within the app menu.
-  gfx::Image GetIcon();
-
   UpgradeNotificationAnnoyanceLevel upgrade_notification_stage() const {
     return upgrade_notification_stage_;
   }
@@ -113,7 +105,7 @@ class UpgradeDetector {
 
   // Returns the tick count at which "high" annoyance level will be (or was)
   // reached, or a null tick count if an upgrade has not yet been detected.
-  virtual base::TimeTicks GetHighAnnoyanceDeadline() = 0;
+  virtual base::Time GetHighAnnoyanceDeadline() = 0;
 
   void AddObserver(UpgradeObserver* observer);
 
@@ -143,12 +135,14 @@ class UpgradeDetector {
     UPGRADE_NEEDED_OUTDATED_INSTALL_NO_AU,
   };
 
-  explicit UpgradeDetector(const base::TickClock* tick_clock);
+  UpgradeDetector(const base::Clock* clock, const base::TickClock* tick_clock);
 
   // Returns the notification period specified via the
   // RelaunchNotificationPeriod policy setting, or a zero delta if unset or out
   // of range.
   static base::TimeDelta GetRelaunchNotificationPeriod();
+
+  const base::Clock* clock() { return clock_; }
 
   const base::TickClock* tick_clock() { return tick_clock_; }
 
@@ -181,7 +175,7 @@ class UpgradeDetector {
     upgrade_available_ = available;
   }
 
-  void set_upgrade_detected_time(base::TimeTicks upgrade_detected_time) {
+  void set_upgrade_detected_time(base::Time upgrade_detected_time) {
     upgrade_detected_time_ = upgrade_detected_time;
   }
 
@@ -222,14 +216,14 @@ class UpgradeDetector {
   // notified of the change (generally speaking, if an upgrade is available).
   virtual void OnRelaunchNotificationPeriodPrefChanged() = 0;
 
-  // Initiates an Idle check. See IdleCallback below.
+  // Initiates an Idle check. Tells us whether Chrome has received any
+  // input events since the specified time.
   void CheckIdle();
 
-  // The callback for the IdleCheck. Tells us whether Chrome has received any
-  // input events since the specified time.
-  void IdleCallback(ui::IdleState state);
+  // A provider of Time to the detector.
+  const base::Clock* const clock_;
 
-  // A provider of TimeTicks to the detector and its timers.
+  // A provider of TimeTicks to the detectors' timers.
   const base::TickClock* const tick_clock_;
 
   // Observes changes to the browser.relaunch_notification_period Local State
@@ -241,7 +235,7 @@ class UpgradeDetector {
   UpgradeAvailable upgrade_available_;
 
   // The time at which an available upgrade was detected.
-  base::TimeTicks upgrade_detected_time_;
+  base::Time upgrade_detected_time_;
 
   // Whether "best effort" experiment updates are available.
   bool best_effort_experiment_updates_available_;

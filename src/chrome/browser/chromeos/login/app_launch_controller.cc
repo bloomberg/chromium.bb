@@ -30,17 +30,18 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/ash/chrome_keyboard_controller_client.h"
+#include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user_manager.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/common/features/feature_session_type.h"
-#include "net/base/network_change_notifier.h"
+#include "services/network/public/cpp/network_connection_tracker.h"
 #include "ui/base/ui_base_features.h"
 
 namespace chromeos {
@@ -356,8 +357,11 @@ void AppLaunchController::CleanUp() {
 
 void AppLaunchController::OnNetworkWaitTimedout() {
   DCHECK(waiting_for_network_);
+  auto connection_type = network::mojom::ConnectionType::CONNECTION_UNKNOWN;
+  content::GetNetworkConnectionTracker()->GetConnectionType(&connection_type,
+                                                            base::DoNothing());
   SYSLOG(WARNING) << "OnNetworkWaitTimedout... connection = "
-                  << net::NetworkChangeNotifier::GetConnectionType();
+                  << connection_type;
   network_wait_timedout_ = true;
 
   MaybeShowNetworkConfigureUI();

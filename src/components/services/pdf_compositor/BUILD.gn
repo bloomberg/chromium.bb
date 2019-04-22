@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import("//printing/buildflags/buildflags.gni")
-import("//services/service_manager/public/service_manifest.gni")
 
 static_library("pdf_compositor") {
   sources = [
@@ -31,11 +30,6 @@ static_library("pdf_compositor") {
     "//components/services/pdf_compositor/public/interfaces",
     "//services/service_manager/public/cpp",
   ]
-}
-
-service_manifest("pdf_compositor_manifest") {
-  name = "pdf_compositor"
-  source = "pdf_compositor_manifest.json"
 }
 
 if (enable_basic_printing) {

@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.payments;
 import android.content.pm.PackageInfo;
 import android.content.pm.ResolveInfo;
 import android.content.pm.Signature;
+import android.support.annotation.Nullable;
 
 import org.chromium.base.Log;
 import org.chromium.components.payments.PaymentManifestDownloader;
@@ -26,8 +27,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import javax.annotation.Nullable;
 
 /**
  * Verifies that the discovered native Android payment apps have the sufficient privileges

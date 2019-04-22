@@ -12,8 +12,9 @@ function testRootTypeFromVolumeTypeBijection() {
     // The enum is decorated with an isNative() helper. Skip it for the purposes
     // of this test, since it is not a valid enum value. (This helper breaks the
     // ability to iterate over enum values, so should probably be removed).
-    if (volumeType === VolumeManagerCommon.VolumeType.isNative)
+    if (volumeType === VolumeManagerCommon.VolumeType.isNative) {
       return;
+    }
 
     const rootType = VolumeManagerCommon.getRootTypeFromVolumeType(volumeType);
     assertTrue(
@@ -33,7 +34,9 @@ function testEveryRootTypeHasAVolumeType() {
     // TODO(tapted): Validate this against util.isFakeEntry(..) when
     // files_app_entry_types is moved to file_manager/base.
     if (rootType === VolumeManagerCommon.RootType.RECENT ||
-        rootType === VolumeManagerCommon.RootType.DRIVE_FAKE_ROOT) {
+        rootType === VolumeManagerCommon.RootType.DRIVE_FAKE_ROOT ||
+        rootType ===
+            VolumeManagerCommon.RootType.DEPRECATED_ADD_NEW_SERVICES_MENU) {
       return;
     }
 

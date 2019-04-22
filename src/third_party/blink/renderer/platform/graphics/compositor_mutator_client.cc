@@ -23,10 +23,13 @@ CompositorMutatorClient::~CompositorMutatorClient() {
                "CompositorMutatorClient::~CompositorMutatorClient");
 }
 
-void CompositorMutatorClient::Mutate(
-    std::unique_ptr<cc::MutatorInputState> input_state) {
+bool CompositorMutatorClient::Mutate(
+    std::unique_ptr<cc::MutatorInputState> input_state,
+    MutateQueuingStrategy queueing_strategy,
+    DoneCallback on_done) {
   TRACE_EVENT0("cc", "CompositorMutatorClient::Mutate");
-  mutator_->Mutate(std::move(input_state));
+  return mutator_->MutateAsynchronously(std::move(input_state),
+                                        queueing_strategy, std::move(on_done));
 }
 
 void CompositorMutatorClient::SetMutationUpdate(

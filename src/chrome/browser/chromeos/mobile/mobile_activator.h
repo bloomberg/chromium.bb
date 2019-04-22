@@ -27,33 +27,6 @@ namespace chromeos {
 class NetworkState;
 class TestMobileActivator;
 
-// Cellular plan config document.
-class CellularConfigDocument
-    : public base::RefCountedThreadSafe<CellularConfigDocument> {
- public:
-  CellularConfigDocument();
-
-  // Return error message for a given code.
-  std::string GetErrorMessage(const std::string& code);
-  void LoadCellularConfigFile();
-  const std::string& version() { return version_; }
-
- private:
-  friend class base::RefCountedThreadSafe<CellularConfigDocument>;
-  typedef std::map<std::string, std::string> ErrorMap;
-
-  virtual ~CellularConfigDocument();
-
-  void SetErrorMap(const ErrorMap& map);
-  bool LoadFromFile(const base::FilePath& config_path);
-
-  std::string version_;
-  ErrorMap error_map_;
-  base::Lock config_lock_;
-
-  DISALLOW_COPY_AND_ASSIGN(CellularConfigDocument);
-};
-
 // This class performs mobile plan activation process.
 //
 // There are two types of activation flow:
@@ -73,9 +46,7 @@ class CellularConfigDocument
 //      a. Ensure there's a network connection.
 //      a. Navigate to payment portal.
 //      b. Activate the modem via shill CompletetActivation().
-class MobileActivator
-    : public base::SupportsWeakPtr<MobileActivator>,
-      public NetworkStateHandlerObserver {
+class MobileActivator : public NetworkStateHandlerObserver {
  public:
   // Activation state.
   enum PlanActivationState {
@@ -111,14 +82,31 @@ class MobileActivator
     PLAN_ACTIVATION_ERROR                   = 0xFF,
   };
 
+  // Set of errors encountered during activation.
+  enum class ActivationError {
+    // No error.
+    kNone,
+
+    // Activation encountered an error.
+    kActivationFailed,
+
+    // Mobile data was disabled.
+    kCellularDisabled,
+
+    // Cellular device not present.
+    kNoCellularDevice,
+
+    // Cellular service not present.
+    kNoCellularService,
+  };
+
   // Activation process observer.
   class Observer {
    public:
     // Signals activation |state| change for given |network|.
-    virtual void OnActivationStateChanged(
-        const NetworkState* network,
-        PlanActivationState state,
-        const std::string& error_description) = 0;
+    virtual void OnActivationStateChanged(const NetworkState* network,
+                                          PlanActivationState state,
+                                          ActivationError error) = 0;
 
    protected:
     Observer() {}
@@ -164,12 +152,6 @@ class MobileActivator
   void DefaultNetworkChanged(const NetworkState* network) override;
   void NetworkPropertiesUpdated(const NetworkState* network) override;
 
-  // Continue activation after inital setup (config load). Makes an
-  // asynchronous call to NetworkConfigurationHandler::GetProperties.
-  void ContinueActivation();
-  void GetPropertiesAndContinueActivation(
-      const std::string& service_path,
-      const base::DictionaryValue& properties);
   void GetPropertiesFailure(const std::string& error_name,
                             std::unique_ptr<base::DictionaryValue> error_data);
   // Handles the signal that the payment portal has finished loading.
@@ -210,15 +192,11 @@ class MobileActivator
   virtual void EvaluateCellularNetwork(const NetworkState* network);
   // PickNextState selects the desired state based on the current state of the
   // modem and the activator.  It does not transition to this state however.
-  PlanActivationState PickNextState(const NetworkState* network,
-                                    std::string* error_description) const;
+  PlanActivationState PickNextState(const NetworkState* network) const;
   // One of PickNext*State are called in PickNextState based on whether the
   // modem is online or not.
   PlanActivationState PickNextOnlineState(const NetworkState* network) const;
   PlanActivationState PickNextOfflineState(const NetworkState* network) const;
-  // Check the current cellular network for error conditions.
-  bool GotActivationError(const NetworkState* network,
-                          std::string* error) const;
 
   // Callback used to handle an activation error.
   void HandleActivationFailure(
@@ -238,17 +216,9 @@ class MobileActivator
   // Changes internal state.
   virtual void ChangeState(const NetworkState* network,
                            PlanActivationState new_state,
-                           std::string error_description);
+                           ActivationError error);
   // Resets network devices after cellular activation process.
   void CompleteActivation();
-  // Disables SSL certificate revocation checking mechanism. In the case
-  // where captive portal connection is the only one present, such revocation
-  // checks could prevent payment portal page from loading.
-  void DisableCertRevocationChecking();
-  // Reenables SSL certificate revocation checking mechanism.
-  void ReEnableCertRevocationChecking();
-  // Return error message for a given code.
-  std::string GetErrorMessage(const std::string& code) const;
 
   // Starts the OTASP timeout timer.  If the timer fires, we'll force a
   // disconnect/reconnect cycle on this network.
@@ -262,7 +232,6 @@ class MobileActivator
 
   static const char* GetStateDescription(PlanActivationState state);
 
-  scoped_refptr<CellularConfigDocument> cellular_config_;
   // Internal handler state.
   PlanActivationState state_;
   // MEID of cellular device to activate.
@@ -276,9 +245,6 @@ class MobileActivator
   // can change during activation due to modem resets, the device path stays
   // the same.
   std::string device_path_;
-  // Flags that controls if cert_checks needs to be restored
-  // after the activation of cellular network.
-  bool reenable_cert_check_;
   // True if activation process has been terminated.
   bool terminated_;
   // True if an asynchronous activation request was dispatched to Shill

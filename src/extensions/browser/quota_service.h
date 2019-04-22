@@ -22,7 +22,6 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"

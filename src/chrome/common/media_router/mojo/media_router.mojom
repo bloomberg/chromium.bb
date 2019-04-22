@@ -395,7 +395,8 @@ interface MediaRouteProvider {
   // If the operation was successful, |sent| is true; otherwise it is false.
   SendRouteBinaryMessage(string media_route_id, array<uint8> data);
 
-  // Starts querying for sinks capable of displaying |media_source|.
+  // Starts querying for sinks capable of displaying |media_source|. If
+  // |media_source| is empty, queries for all available sinks.
   StartObservingMediaSinks(string media_source);
 
   // Stops querying sinks for |media_source|.

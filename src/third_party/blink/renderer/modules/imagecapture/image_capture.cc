@@ -24,7 +24,6 @@
 #include "third_party/blink/renderer/modules/mediastream/media_track_capabilities.h"
 #include "third_party/blink/renderer/modules/mediastream/media_track_constraints.h"
 #include "third_party/blink/renderer/platform/mojo/mojo_helper.h"
-#include "third_party/blink/renderer/platform/waitable_event.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
@@ -123,7 +122,7 @@ void ImageCapture::ContextDestroyed(ExecutionContext*) {
 }
 
 ScriptPromise ImageCapture::getPhotoCapabilities(ScriptState* script_state) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   if (!service_) {
@@ -149,7 +148,7 @@ ScriptPromise ImageCapture::getPhotoCapabilities(ScriptState* script_state) {
 }
 
 ScriptPromise ImageCapture::getPhotoSettings(ScriptState* script_state) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   if (!service_) {
@@ -177,7 +176,9 @@ ScriptPromise ImageCapture::getPhotoSettings(ScriptState* script_state) {
 ScriptPromise ImageCapture::setOptions(ScriptState* script_state,
                                        const PhotoSettings* photo_settings,
                                        bool trigger_take_photo /* = false */) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  TRACE_EVENT_INSTANT0(TRACE_DISABLED_BY_DEFAULT("video_and_image_capture"),
+                       "ImageCapture::setOptions", TRACE_EVENT_SCOPE_PROCESS);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   if (TrackIsInactive(*stream_track_)) {
@@ -256,7 +257,9 @@ ScriptPromise ImageCapture::setOptions(ScriptState* script_state,
 }
 
 ScriptPromise ImageCapture::takePhoto(ScriptState* script_state) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  TRACE_EVENT_INSTANT0(TRACE_DISABLED_BY_DEFAULT("video_and_image_capture"),
+                       "ImageCapture::takePhoto", TRACE_EVENT_SCOPE_PROCESS);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   if (TrackIsInactive(*stream_track_)) {
@@ -277,6 +280,8 @@ ScriptPromise ImageCapture::takePhoto(ScriptState* script_state) {
   // camera;
   // TODO(mcasas) consider sending the security origin as well:
   // scriptState->getExecutionContext()->getSecurityOrigin()->toString()
+  TRACE_EVENT_INSTANT0(TRACE_DISABLED_BY_DEFAULT("video_and_image_capture"),
+                       "ImageCapture::takePhoto", TRACE_EVENT_SCOPE_PROCESS);
   service_->TakePhoto(
       stream_track_->Component()->Source()->Id(),
       WTF::Bind(&ImageCapture::OnMojoTakePhoto, WrapPersistent(this),
@@ -286,12 +291,16 @@ ScriptPromise ImageCapture::takePhoto(ScriptState* script_state) {
 
 ScriptPromise ImageCapture::takePhoto(ScriptState* script_state,
                                       const PhotoSettings* photo_settings) {
+  TRACE_EVENT_INSTANT0(TRACE_DISABLED_BY_DEFAULT("video_and_image_capture"),
+                       "ImageCapture::takePhoto (with settings)",
+                       TRACE_EVENT_SCOPE_PROCESS);
+
   return setOptions(script_state, photo_settings,
                     true /* trigger_take_photo */);
 }
 
 ScriptPromise ImageCapture::grabFrame(ScriptState* script_state) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   if (TrackIsInactive(*stream_track_)) {
@@ -316,7 +325,9 @@ ScriptPromise ImageCapture::grabFrame(ScriptState* script_state) {
   WebMediaStreamTrack track(stream_track_->Component());
   auto resolver_callback_adapter =
       std::make_unique<CallbackPromiseAdapter<ImageBitmap, void>>(resolver);
-  frame_grabber_->GrabFrame(&track, std::move(resolver_callback_adapter));
+  frame_grabber_->GrabFrame(&track, std::move(resolver_callback_adapter),
+                            ExecutionContext::From(script_state)
+                                ->GetTaskRunner(TaskType::kDOMManipulation));
 
   return promise;
 }
@@ -689,7 +700,7 @@ void ImageCapture::OnMojoGetPhotoState(
   photo_settings_->setImageWidth(photo_state->width->current);
   // TODO(mcasas): collect the remaining two entries https://crbug.com/732521.
 
-  photo_capabilities_ = PhotoCapabilities::Create();
+  photo_capabilities_ = MakeGarbageCollected<PhotoCapabilities>();
   photo_capabilities_->SetRedEyeReduction(photo_state->red_eye_reduction);
   // TODO(mcasas): Remove the explicit MediaSettingsRange::create() when
   // mojo::StructTraits supports garbage-collected mappings,
@@ -724,6 +735,9 @@ void ImageCapture::OnMojoSetOptions(ScriptPromiseResolver* resolver,
                                     bool trigger_take_photo,
                                     bool result) {
   DCHECK(service_requests_.Contains(resolver));
+  TRACE_EVENT_INSTANT0(TRACE_DISABLED_BY_DEFAULT("video_and_image_capture"),
+                       "ImageCapture::OnMojoSetOptions",
+                       TRACE_EVENT_SCOPE_PROCESS);
 
   if (!result) {
     resolver->Reject(DOMException::Create(DOMExceptionCode::kUnknownError,
@@ -746,6 +760,9 @@ void ImageCapture::OnMojoSetOptions(ScriptPromiseResolver* resolver,
 void ImageCapture::OnMojoTakePhoto(ScriptPromiseResolver* resolver,
                                    media::mojom::blink::BlobPtr blob) {
   DCHECK(service_requests_.Contains(resolver));
+  TRACE_EVENT_INSTANT0(TRACE_DISABLED_BY_DEFAULT("video_and_image_capture"),
+                       "ImageCapture::OnMojoTakePhoto",
+                       TRACE_EVENT_SCOPE_PROCESS);
 
   // TODO(mcasas): Should be using a mojo::StructTraits.
   if (blob->data.IsEmpty()) {

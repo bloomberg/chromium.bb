@@ -27,7 +27,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""The Manager orchestrates the overall process of running layout tests.
+"""The Manager orchestrates the overall process of running web tests.
 
 This includes finding tests to run, reading the test expectations,
 starting the required helper servers, deciding the order and way to
@@ -48,9 +48,9 @@ from blinkpy.common.net.file_uploader import FileUploader
 from blinkpy.common.path_finder import PathFinder
 from blinkpy.tool import grammar
 from blinkpy.w3c.wpt_manifest import WPTManifest
-from blinkpy.web_tests.controllers.layout_test_finder import LayoutTestFinder
-from blinkpy.web_tests.controllers.layout_test_runner import LayoutTestRunner
 from blinkpy.web_tests.controllers.test_result_writer import TestResultWriter
+from blinkpy.web_tests.controllers.web_test_finder import WebTestFinder
+from blinkpy.web_tests.controllers.web_test_runner import WebTestRunner
 from blinkpy.web_tests.layout_package import json_results_generator
 from blinkpy.web_tests.models import test_expectations
 from blinkpy.web_tests.models import test_failures
@@ -63,7 +63,7 @@ TestExpectations = test_expectations.TestExpectations
 
 
 class Manager(object):
-    """A class for managing running a series of layout tests."""
+    """A class for managing running a series of web tests."""
 
     HTTP_SUBDIR = 'http'
     PERF_SUBDIR = 'perf'
@@ -89,9 +89,9 @@ class Manager(object):
         self._websockets_server_started = False
 
         self._results_directory = self._port.results_directory()
-        self._finder = LayoutTestFinder(self._port, self._options)
+        self._finder = WebTestFinder(self._port, self._options)
         self._path_finder = PathFinder(port.host.filesystem)
-        self._runner = LayoutTestRunner(self._options, self._port, self._printer, self._results_directory, self._test_is_slow)
+        self._runner = WebTestRunner(self._options, self._port, self._printer, self._results_directory, self._test_is_slow)
 
     def run(self, args):
         """Runs the tests and return a RunDetails object with the results."""
@@ -99,10 +99,17 @@ class Manager(object):
         self._printer.write_update('Collecting tests ...')
         running_all_tests = False
 
-        if not args or any('external' in path for path in args):
-            self._printer.write_update('Generating MANIFEST.json for web-platform-tests ...')
-            WPTManifest.ensure_manifest(self._port.host)
-            self._printer.write_update('Completed generating manifest.')
+        if self._options.manifest_update:
+            # TODO(robertma): Consolidate the two cases to `for wpt_path in
+            # WPT_DIRS` when external/wpt is moved to wpt.
+            if not args or any('external' in path for path in args):
+                self._printer.write_update('Generating MANIFEST.json for external/wpt...')
+                WPTManifest.ensure_manifest(self._port.host)
+                self._printer.write_update('Completed generating manifest.')
+            if not args or any('wpt_internal' in path for path in args):
+                self._printer.write_update('Generating MANIFEST.json for wpt_internal...')
+                WPTManifest.ensure_manifest(self._port.host, 'wpt_internal')
+                self._printer.write_update('Completed generating manifest.')
 
         self._printer.write_update('Collecting tests ...')
         try:
@@ -193,7 +200,6 @@ class Manager(object):
             self._upload_json_files()
 
             self._copy_results_html_file(self._results_directory, 'results.html')
-            self._copy_results_html_file(self._results_directory, 'legacy-results.html')
             if initial_results.keyboard_interrupted:
                 exit_code = exit_codes.INTERRUPTED_EXIT_STATUS
             else:
@@ -566,7 +572,7 @@ class Manager(object):
 
     def _copy_results_html_file(self, destination_dir, filename):
         """Copies a file from the template directory to the results directory."""
-        template_dir = self._path_finder.path_from_layout_tests('fast', 'harness')
+        template_dir = self._path_finder.path_from_web_tests('fast', 'harness')
         source_path = self._filesystem.join(template_dir, filename)
         destination_path = self._filesystem.join(destination_dir, filename)
         # Note that the results.html template file won't exist when

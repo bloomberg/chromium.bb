@@ -121,6 +121,10 @@ class MODULES_EXPORT AudioHandler : public ThreadSafeRefCounted<AudioHandler> {
   virtual BaseAudioContext* Context() const;
   void ClearContext() { context_ = nullptr; }
 
+  DeferredTaskHandler& GetDeferredTaskHandler() const {
+    return *deferred_task_handler_;
+  }
+
   enum ChannelCountMode { kMax, kClampedMax, kExplicit };
 
   NodeType GetNodeType() const { return node_type_; }
@@ -148,7 +152,7 @@ class MODULES_EXPORT AudioHandler : public ThreadSafeRefCounted<AudioHandler> {
   // Like process(), but only causes the automations to process; the
   // normal processing of the node is bypassed.  By default, we assume
   // no AudioParams need to be updated.
-  virtual void ProcessOnlyAudioParams(uint32_t frames_to_process){};
+  virtual void ProcessOnlyAudioParams(uint32_t frames_to_process) {}
 
   // No significant resources should be allocated until initialize() is called.
   // Processing may not occur until a node is initialized.
@@ -275,6 +279,10 @@ class MODULES_EXPORT AudioHandler : public ThreadSafeRefCounted<AudioHandler> {
   // See http://crbug.com/404527 for the detail.
   UntracedMember<BaseAudioContext> context_;
 
+  // Legal to access even when |context_| may be gone, such as during the
+  // destructor.
+  const scoped_refptr<DeferredTaskHandler> deferred_task_handler_;
+
   Vector<std::unique_ptr<AudioNodeInput>> inputs_;
   Vector<std::unique_ptr<AudioNodeOutput>> outputs_;
 
@@ -358,7 +366,13 @@ class MODULES_EXPORT AudioNode : public EventTargetWithInlineData {
   // This should be called in a constructor.
   void SetHandler(scoped_refptr<AudioHandler>);
 
+  // During construction time the handler may not be set properly. Since the
+  // garbage collector can call into HasPendingActivity() such calls need to be
+  // able to see whether a handle has been set.
+  bool ContainsHandler() const;
+
  private:
+  void WarnIfContextClosed() const;
   void Dispose();
   void DisconnectAllFromOutput(unsigned output_index);
   // Returns true if the specified AudioNodeInput was connected.

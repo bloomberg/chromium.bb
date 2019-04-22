@@ -4,9 +4,9 @@
 
 #include "ios/chrome/browser/ui/history/history_coordinator.h"
 
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/history/core/browser/browsing_history_service.h"
 #include "components/keyed_service/core/service_access_type.h"
+#include "components/sync/driver/sync_service.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #import "ios/chrome/browser/ui/context_menu/context_menu_coordinator.h"
@@ -54,7 +54,6 @@
     _historyClearBrowsingDataCoordinator;
 @synthesize historyNavigationController = _historyNavigationController;
 @synthesize historyTransitioningDelegate = _historyTransitioningDelegate;
-@synthesize loader = _loader;
 @synthesize mediator = _mediator;
 @synthesize presentationDelegate = _presentationDelegate;
 
@@ -62,7 +61,7 @@
   // Initialize and configure HistoryTableViewController.
   self.historyTableViewController = [[HistoryTableViewController alloc] init];
   self.historyTableViewController.browserState = self.browserState;
-  self.historyTableViewController.loader = self.loader;
+  self.historyTableViewController.loadStrategy = self.loadStrategy;
 
   // Initialize and set HistoryMediator
   self.mediator =
@@ -147,7 +146,7 @@
     self.historyClearBrowsingDataCoordinator.localDispatcher = self;
     self.historyClearBrowsingDataCoordinator.presentationDelegate =
         self.presentationDelegate;
-    self.historyClearBrowsingDataCoordinator.loader = self.loader;
+    self.historyClearBrowsingDataCoordinator.loadStrategy = self.loadStrategy;
     self.historyClearBrowsingDataCoordinator.dispatcher = self.dispatcher;
     [self.historyClearBrowsingDataCoordinator start];
 }

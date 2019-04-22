@@ -25,7 +25,10 @@ function delay()
     var form = document.createElement('form');
     form.setAttribute('id', 'form2');
     document.body.appendChild(form);
-    location.reload();
+    if (!sessionStorage.reloaded) {
+        location.reload();
+        sessionStorage.reloaded = true;
+    }
     if (window.testRunner)
         testRunner.notifyDone();
 }

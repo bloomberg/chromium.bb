@@ -59,6 +59,8 @@ class TestSafeBrowsingService : public SafeBrowsingService,
   const scoped_refptr<SafeBrowsingDatabaseManager>& database_manager()
       const override;
   void UseV4LocalDatabaseManager();
+  std::unique_ptr<SafeBrowsingService::StateSubscription> RegisterStateCallback(
+      const base::Callback<void(void)>& callback) override;
 
  protected:
   // SafeBrowsingService overrides

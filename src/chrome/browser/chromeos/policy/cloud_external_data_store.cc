@@ -20,9 +20,8 @@ namespace {
 std::string GetSubkey(const std::string& policy, const std::string& hash) {
   DCHECK(!policy.empty());
   DCHECK(!hash.empty());
-  return base::IntToString(policy.size()) + ":" +
-         base::IntToString(hash.size()) + ":" +
-         policy + hash;
+  return base::NumberToString(policy.size()) + ":" +
+         base::NumberToString(hash.size()) + ":" + policy + hash;
 }
 
 }  // namespace
@@ -37,7 +36,13 @@ CloudExternalDataStore::CloudExternalDataStore(
 }
 
 CloudExternalDataStore::~CloudExternalDataStore() {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  // No RunsTasksInCurrentSequence() check to avoid unit tests failures.
+  // In unit tests the browser process instance is deleted only after test ends
+  // and test task scheduler is shutted down. Therefore we need to delete some
+  // components of BrowserPolicyConnector (ResourceCache and
+  // CloudExternalDataManagerBase::Backend) manually when task runner doesn't
+  // accept new tasks (DeleteSoon in this case). This leads to the situation
+  // when this destructor is called not on |task_runner|.
 }
 
 void CloudExternalDataStore::Prune(
@@ -51,28 +56,29 @@ void CloudExternalDataStore::Prune(
   cache_->PurgeOtherSubkeys(cache_key_, subkeys_to_keep);
 }
 
-bool CloudExternalDataStore::Store(const std::string& policy,
-                                   const std::string& hash,
-                                   const std::string& data) {
+base::FilePath CloudExternalDataStore::Store(const std::string& policy,
+                                             const std::string& hash,
+                                             const std::string& data) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   return cache_->Store(cache_key_, GetSubkey(policy, hash), data);
 }
 
-bool CloudExternalDataStore::Load(const std::string& policy,
-                                  const std::string& hash,
-                                  size_t max_size,
-                                  std::string* data) {
+base::FilePath CloudExternalDataStore::Load(const std::string& policy,
+                                            const std::string& hash,
+                                            size_t max_size,
+                                            std::string* data) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   const std::string subkey = GetSubkey(policy, hash);
-  if (cache_->Load(cache_key_, subkey, data)) {
+  base::FilePath file_path = cache_->Load(cache_key_, subkey, data);
+  if (!file_path.empty()) {
     if (data->size() <= max_size && crypto::SHA256HashString(*data) == hash)
-      return true;
+      return file_path;
     // If the data is larger than allowed or does not match the expected hash,
     // delete the entry.
     cache_->Delete(cache_key_, subkey);
     data->clear();
   }
-  return false;
+  return base::FilePath();
 }
 
 }  // namespace policy

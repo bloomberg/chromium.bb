@@ -12,13 +12,13 @@
 #include "base/macros.h"
 #include "third_party/libjingle_xmpp/xmpp/xmpptask.h"
 
-namespace buzz {
+namespace jingle_xmpp {
 class XmlElement;
 }  // namespace
 
 namespace notifier {
 
-class SendPingTask : public buzz::XmppTask {
+class SendPingTask : public jingle_xmpp::XmppTask {
  public:
   class Delegate {
    public:
@@ -28,16 +28,16 @@ class SendPingTask : public buzz::XmppTask {
     virtual ~Delegate();
   };
 
-  SendPingTask(buzz::XmppTaskParentInterface* parent, Delegate* delegate);
+  SendPingTask(jingle_xmpp::XmppTaskParentInterface* parent, Delegate* delegate);
   ~SendPingTask() override;
 
-  // Overridden from buzz::XmppTask.
+  // Overridden from jingle_xmpp::XmppTask.
   int ProcessStart() override;
   int ProcessResponse() override;
-  bool HandleStanza(const buzz::XmlElement* stanza) override;
+  bool HandleStanza(const jingle_xmpp::XmlElement* stanza) override;
 
  private:
-  static buzz::XmlElement* MakePingStanza(const std::string& task_id);
+  static jingle_xmpp::XmlElement* MakePingStanza(const std::string& task_id);
 
   FRIEND_TEST_ALL_PREFIXES(SendPingTaskTest, MakePingStanza);
 

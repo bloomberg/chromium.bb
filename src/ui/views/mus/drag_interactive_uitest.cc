@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "services/ws/public/mojom/constants.mojom.h"
@@ -15,7 +18,7 @@
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/views/mus/mus_client.h"
-#include "ui/views/test/widget_test.h"
+#include "ui/views/test/views_interactive_ui_test_base.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #include "ui/views/widget/widget.h"
 
@@ -48,19 +51,19 @@ class TargetView : public views::View {
   TargetView() : dropped_(false) {}
   ~TargetView() override {}
 
-  void WaitForDropped(base::Closure quit_closure) {
+  void WaitForDropped(base::OnceClosure quit_closure) {
     if (dropped_) {
-      quit_closure.Run();
+      std::move(quit_closure).Run();
       return;
     }
 
-    quit_closure_ = quit_closure;
+    quit_closure_ = std::move(quit_closure);
   }
 
   // views::View overrides:
   bool GetDropFormats(
       int* formats,
-      std::set<ui::Clipboard::FormatType>* format_types) override {
+      std::set<ui::ClipboardFormatType>* format_types) override {
     *formats = ui::OSExchangeData::STRING;
     return true;
   }
@@ -72,7 +75,7 @@ class TargetView : public views::View {
   int OnPerformDrop(const ui::DropTargetEvent& event) override {
     dropped_ = true;
     if (quit_closure_)
-      quit_closure_.Run();
+      std::move(quit_closure_).Run();
     return ui::DragDropTypes::DRAG_MOVE;
   }
 
@@ -81,7 +84,7 @@ class TargetView : public views::View {
  private:
   bool dropped_;
 
-  base::Closure quit_closure_;
+  base::OnceClosure quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(TargetView);
 };
@@ -108,13 +111,13 @@ std::unique_ptr<ui::MouseEvent> CreateMouseUpEvent(int x, int y) {
 
 }  // namespace
 
-using DragTestInteractive = WidgetTest;
+using DragTestInteractive = ViewsInteractiveUITestBase;
 
 // Dispatch of events is asynchronous so most of DragTestInteractive.DragTest
 // consists of callback functions which will perform an action after the
 // previous action has completed.
 void DragTest_Part3(int64_t display_id,
-                    const base::Closure& quit_closure,
+                    base::RepeatingClosure quit_closure,
                     bool result) {
   EXPECT_TRUE(result);
   quit_closure.Run();
@@ -122,7 +125,7 @@ void DragTest_Part3(int64_t display_id,
 
 void DragTest_Part2(ws::mojom::EventInjector* event_injector,
                     int64_t display_id,
-                    const base::Closure& quit_closure,
+                    base::RepeatingClosure quit_closure,
                     bool result) {
   EXPECT_TRUE(result);
   if (!result)
@@ -130,12 +133,12 @@ void DragTest_Part2(ws::mojom::EventInjector* event_injector,
 
   event_injector->InjectEvent(
       display_id, CreateMouseUpEvent(30, 30),
-      base::BindOnce(&DragTest_Part3, display_id, quit_closure));
+      base::BindOnce(&DragTest_Part3, display_id, std::move(quit_closure)));
 }
 
 void DragTest_Part1(ws::mojom::EventInjector* event_injector,
                     int64_t display_id,
-                    const base::Closure& quit_closure,
+                    base::RepeatingClosure quit_closure,
                     bool result) {
   EXPECT_TRUE(result);
   if (!result)
@@ -144,30 +147,34 @@ void DragTest_Part1(ws::mojom::EventInjector* event_injector,
   event_injector->InjectEvent(
       display_id, CreateMouseMoveEvent(30, 30),
       base::BindOnce(&DragTest_Part2, base::Unretained(event_injector),
-                     display_id, quit_closure));
+                     display_id, std::move(quit_closure)));
 }
 
 TEST_F(DragTestInteractive, DragTest) {
   ws::mojom::EventInjectorPtr event_injector;
   MusClient::Get()->window_tree_client()->connector()->BindInterface(
       ws::mojom::kServiceName, &event_injector);
-  Widget* source_widget = CreateTopLevelFramelessPlatformWidget();
+
+  Widget* source_widget = new Widget;
+  source_widget->Init(CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS));
   View* source_view = new DraggableView;
   source_widget->SetContentsView(source_view);
   source_widget->Show();
 
   aura::test::ChangeCompletionWaiter source_waiter(aura::ChangeType::BOUNDS,
-                                                   false);
+                                                   true);
   source_widget->SetBounds(gfx::Rect(0, 0, 20, 20));
   ASSERT_TRUE(source_waiter.Wait());
 
-  Widget* target_widget = CreateTopLevelFramelessPlatformWidget();
+  Widget* target_widget = new Widget;
+  target_widget->Init(CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS));
+
   TargetView* target_view = new TargetView;
   target_widget->SetContentsView(target_view);
   target_widget->Show();
 
   aura::test::ChangeCompletionWaiter target_waiter(aura::ChangeType::BOUNDS,
-                                                   false);
+                                                   true);
   target_widget->SetBounds(gfx::Rect(20, 20, 20, 20));
   ASSERT_TRUE(target_waiter.Wait());
 

@@ -458,21 +458,29 @@ TEST_F(CppInterface, ForcedVersionProfileRedundantProfileStd) {
 
 TEST_F(CppInterface, GenerateDebugInfoBinary) {
   options_.SetGenerateDebugInfo();
-  // The output binary should contain the name of the vector: debug_info_sample
-  // as char array.
-  EXPECT_THAT(CompilationOutput(kMinimalDebugInfoShader,
-                                shaderc_glsl_vertex_shader, options_),
-              HasSubstr("debug_info_sample"));
+  const std::string binary_output =
+      CompilationOutput(kMinimalDebugInfoShader,
+                        shaderc_glsl_vertex_shader, options_);
+  // The binary output should contain the name of the vector (debug_info_sample)
+  // null-terminated, as well as the whole original source.
+  std::string vector_name("debug_info_sample");
+  vector_name.resize(vector_name.size() + 1);
+  EXPECT_THAT(binary_output, HasSubstr(vector_name));
+  EXPECT_THAT(binary_output, HasSubstr(kMinimalDebugInfoShader));
 }
 
 TEST_F(CppInterface, GenerateDebugInfoBinaryClonedOptions) {
   options_.SetGenerateDebugInfo();
   CompileOptions cloned_options(options_);
-  // The output binary should contain the name of the vector: debug_info_sample
-  // as char array.
-  EXPECT_THAT(CompilationOutput(kMinimalDebugInfoShader,
-                                shaderc_glsl_vertex_shader, cloned_options),
-              HasSubstr("debug_info_sample"));
+  const std::string binary_output =
+      CompilationOutput(kMinimalDebugInfoShader,
+                        shaderc_glsl_vertex_shader, cloned_options);
+  // The binary output should contain the name of the vector (debug_info_sample)
+  // null-terminated, as well as the whole original source.
+  std::string vector_name("debug_info_sample");
+  vector_name.resize(vector_name.size() + 1);
+  EXPECT_THAT(binary_output, HasSubstr(vector_name));
+  EXPECT_THAT(binary_output, HasSubstr(kMinimalDebugInfoShader));
 }
 
 TEST_F(CppInterface, GenerateDebugInfoDisassembly) {
@@ -571,7 +579,7 @@ TEST_F(CppInterface, GenerateDebugInfoOverridesOptimizationLevel) {
   options_.SetGenerateDebugInfo();
   const std::string disassembly_text =
       AssemblyOutput(kMinimalShader, shaderc_glsl_vertex_shader, options_);
-  for (const auto& substring : kMinimalShaderDisassemblySubstrings) {
+  for (const auto& substring : kMinimalShaderDebugInfoDisassemblySubstrings) {
     EXPECT_THAT(disassembly_text, HasSubstr(substring));
   }
   // Check that we still have debug instructions.
@@ -585,7 +593,7 @@ TEST_F(CppInterface, GenerateDebugInfoProhibitsOptimizationLevel) {
   options_.SetOptimizationLevel(shaderc_optimization_level_size);
   const std::string disassembly_text =
       AssemblyOutput(kMinimalShader, shaderc_glsl_vertex_shader, options_);
-  for (const auto& substring : kMinimalShaderDisassemblySubstrings) {
+  for (const auto& substring : kMinimalShaderDebugInfoDisassemblySubstrings) {
     EXPECT_THAT(disassembly_text, HasSubstr(substring));
   }
   // Check that we still have debug instructions.
@@ -698,7 +706,7 @@ TEST_P(ValidShaderKind, ValidSpvCode) {
       CompilesToValidSpv(compiler, test_case.shader_, test_case.shader_kind_));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CompileStringTest, ValidShaderKind,
     testing::ValuesIn(std::vector<ShaderKindTestCase>{
         // Valid default shader kinds.
@@ -735,7 +743,7 @@ TEST_P(InvalidShaderKind, CompilationShouldFail) {
       CompilesToValidSpv(compiler, test_case.shader_, test_case.shader_kind_));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CompileStringTest, InvalidShaderKind,
     testing::ValuesIn(std::vector<ShaderKindTestCase>{
         // Invalid default shader kind.
@@ -836,7 +844,7 @@ TEST_P(IncluderTests, SetIncluderClonedOptions) {
               HasSubstr(test_case.expected_substring()));
 }
 
-INSTANTIATE_TEST_CASE_P(CppInterface, IncluderTests,
+INSTANTIATE_TEST_SUITE_P(CppInterface, IncluderTests,
                         testing::ValuesIn(std::vector<IncluderTestCase>{
                             IncluderTestCase(
                                 // Fake file system.
@@ -1396,6 +1404,9 @@ TEST_F(CppInterface, HlslRegSetBindingForAllStagesRespected) {
 TEST_F(CppInterface, HlslFunctionality1OffByDefault) {
   CompileOptions options;
   options.SetSourceLanguage(shaderc_source_language_hlsl);
+  // The counter needs a binding, and there is no way to set it in the shader
+  // source.
+  options.SetAutoBindUniforms(true);
   const std::string disassembly_text = AssemblyOutput(
       kHlslShaderWithCounterBuffer, shaderc_glsl_fragment_shader, options);
   EXPECT_THAT(disassembly_text, Not(HasSubstr("OpDecorateStringGOOGLE")));
@@ -1404,6 +1415,9 @@ TEST_F(CppInterface, HlslFunctionality1OffByDefault) {
 TEST_F(CppInterface, HlslFunctionality1Respected) {
   CompileOptions options;
   options.SetSourceLanguage(shaderc_source_language_hlsl);
+  // The counter needs a binding, and there is no way to set it in the shader
+  // source.  https://github.com/KhronosGroup/glslang/issues/1616
+  options.SetAutoBindUniforms(true);
   options.SetHlslFunctionality1(true);
   const std::string disassembly_text = AssemblyOutput(
       kHlslShaderWithCounterBuffer, shaderc_glsl_fragment_shader, options);
@@ -1414,6 +1428,9 @@ TEST_F(CppInterface, HlslFunctionality1SurvivesCloning) {
   CompileOptions options;
   options.SetSourceLanguage(shaderc_source_language_hlsl);
   options.SetHlslFunctionality1(true);
+  // The counter needs a binding, and there is no way to set it in the shader
+  // source. https://github.com/KhronosGroup/glslang/issues/1616
+  options.SetAutoBindUniforms(true);
   CompileOptions cloned_options(options);
   const std::string disassembly_text = AssemblyOutput(
       kHlslShaderWithCounterBuffer, shaderc_glsl_fragment_shader, cloned_options);

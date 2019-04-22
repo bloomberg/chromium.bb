@@ -14,6 +14,10 @@
 #include "extensions/common/api/idle.h"
 #include "extensions/common/extension.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/dbus/power/power_policy_controller.h"
+#endif
+
 namespace keys = extensions::idle_api_constants;
 namespace idle = extensions::api::idle;
 
@@ -70,8 +74,8 @@ class DefaultIdleProvider : public IdleManager::IdleTimeProvider {
   DefaultIdleProvider();
   ~DefaultIdleProvider() override;
 
-  void CalculateIdleState(int idle_threshold, ui::IdleCallback notify) override;
-  void CalculateIdleTime(ui::IdleTimeCallback notify) override;
+  ui::IdleState CalculateIdleState(int idle_threshold) override;
+  int CalculateIdleTime() override;
   bool CheckIdleStateIsLocked() override;
 };
 
@@ -81,13 +85,12 @@ DefaultIdleProvider::DefaultIdleProvider() {
 DefaultIdleProvider::~DefaultIdleProvider() {
 }
 
-void DefaultIdleProvider::CalculateIdleState(int idle_threshold,
-                                             ui::IdleCallback notify) {
-  ui::CalculateIdleState(idle_threshold, notify);
+ui::IdleState DefaultIdleProvider::CalculateIdleState(int idle_threshold) {
+  return ui::CalculateIdleState(idle_threshold);
 }
 
-void DefaultIdleProvider::CalculateIdleTime(ui::IdleTimeCallback notify) {
-  ui::CalculateIdleTime(notify);
+int DefaultIdleProvider::CalculateIdleTime() {
+  return ui::CalculateIdleTime();
 }
 
 bool DefaultIdleProvider::CheckIdleStateIsLocked() {
@@ -122,9 +125,7 @@ IdleManager::IdleManager(content::BrowserContext* context)
       last_state_(ui::IDLE_STATE_ACTIVE),
       idle_time_provider_(new DefaultIdleProvider()),
       event_delegate_(new DefaultEventDelegate(context)),
-      extension_registry_observer_(this),
-      weak_factory_(this) {
-}
+      extension_registry_observer_(this) {}
 
 IdleManager::~IdleManager() {
 }
@@ -168,14 +169,23 @@ void IdleManager::OnListenerRemoved(const EventListenerInfo& details) {
   }
 }
 
-void IdleManager::QueryState(int threshold, const QueryStateCallback& notify) {
+ui::IdleState IdleManager::QueryState(int threshold) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  idle_time_provider_->CalculateIdleState(threshold, notify);
+  return idle_time_provider_->CalculateIdleState(threshold);
 }
 
 void IdleManager::SetThreshold(const std::string& extension_id, int threshold) {
   DCHECK(thread_checker_.CalledOnValidThread());
   GetMonitor(extension_id)->threshold = threshold;
+}
+
+base::TimeDelta IdleManager::GetAutoLockDelay() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+#if defined(OS_CHROMEOS)
+  return chromeos::PowerPolicyController::Get()
+      ->GetMaxPolicyAutoScreenLockDelay();
+#endif
+  return base::TimeDelta();
 }
 
 // static
@@ -232,12 +242,7 @@ void IdleManager::StopPolling() {
 
 void IdleManager::UpdateIdleState() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  idle_time_provider_->CalculateIdleTime(base::Bind(
-      &IdleManager::UpdateIdleStateCallback, weak_factory_.GetWeakPtr()));
-}
-
-void IdleManager::UpdateIdleStateCallback(int idle_time) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  int idle_time = idle_time_provider_->CalculateIdleTime();
   bool locked = idle_time_provider_->CheckIdleStateIsLocked();
   int listener_count = 0;
 

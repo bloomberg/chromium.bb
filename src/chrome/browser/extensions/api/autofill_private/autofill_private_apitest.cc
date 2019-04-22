@@ -66,9 +66,10 @@ IN_PROC_BROWSER_TEST_F(AutofillPrivateApiTest, AddAndUpdateAddress) {
   EXPECT_TRUE(RunAutofillSubtest("addAndUpdateAddress")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(AutofillPrivateApiTest, AddAndUpdateCreditCard) {
+// TODO(crbug.com/934631) Disabled for flakiness.
+IN_PROC_BROWSER_TEST_F(AutofillPrivateApiTest,
+                       DISABLED_AddAndUpdateCreditCard) {
   EXPECT_TRUE(RunAutofillSubtest("addAndUpdateCreditCard")) << message_;
 }
 
 }  // namespace extensions
-

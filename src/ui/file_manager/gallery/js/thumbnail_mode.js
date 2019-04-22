@@ -50,13 +50,17 @@ ThumbnailMode.prototype.__proto__ = cr.EventTarget.prototype;
  * Returns name of this mode.
  * @return {string} Mode name.
  */
-ThumbnailMode.prototype.getName = function() { return 'thumbnail'; };
+ThumbnailMode.prototype.getName = function() {
+  return 'thumbnail';
+};
 
 /**
  * Returns title of this mode.
  * @return {string} Mode title.
  */
-ThumbnailMode.prototype.getTitle = function() { return 'GALLERY_THUMBNAIL'; };
+ThumbnailMode.prototype.getTitle = function() {
+  return 'GALLERY_THUMBNAIL';
+};
 
 /**
  * Returns current sub mode.
@@ -70,12 +74,16 @@ ThumbnailMode.prototype.getSubMode = function() {
  * Executes an action. An action is executed immediately since this mode does
  * not have busy state.
  */
-ThumbnailMode.prototype.executeWhenReady = function(action) { action(); };
+ThumbnailMode.prototype.executeWhenReady = function(action) {
+  action();
+};
 
 /**
  * @return {boolean} Always true. Toolbar is always visible.
  */
-ThumbnailMode.prototype.hasActiveTool = function() { return true; };
+ThumbnailMode.prototype.hasActiveTool = function() {
+  return true;
+};
 
 /**
  * Handles key down event.
@@ -99,10 +107,11 @@ ThumbnailMode.prototype.onKeyDown = function(event) {
  * Handles splice event of data model.
  */
 ThumbnailMode.prototype.onSplice_ = function() {
-  if (this.dataModel_.length === 0)
+  if (this.dataModel_.length === 0) {
     this.errorBanner_.show('GALLERY_NO_IMAGES');
-  else
+  } else {
     this.errorBanner_.clear();
+  }
 };
 
 /**
@@ -385,18 +394,20 @@ ThumbnailView.prototype.moveSelection_ = function(direction, selectRange) {
        i += step) {
     // Skip error thumbnail.
     var thumbnail = this.getThumbnailAt_(i);
-    if (thumbnail.isError())
+    if (thumbnail.isError()) {
       continue;
+    }
 
     // Look for the horizontally nearest item if it is vertical move. Otherwise
     // it just use the current i.
     if (vertical) {
       var rect = this.getThumbnailRect(i);
       var verticalGap = Math.abs(baseRect.top - rect.top);
-      if (verticalGap === 0)
+      if (verticalGap === 0) {
         continue;
-      else if (verticalGap >= ThumbnailView.ROW_HEIGHT * 2)
+      } else if (verticalGap >= ThumbnailView.ROW_HEIGHT * 2) {
         break;
+      }
       // If centerGap - rect.width / 2 < 0, the image is located just
       // above the center point of base image since baseCenter is in the range
       // (rect.left, rect.right). In this case we use 0 as distance. Otherwise
@@ -495,8 +506,9 @@ ThumbnailView.prototype.resetTimerOfScrollbar_ = function() {
   }
 
   // If user is scrolling, do not set timeout.
-  if (this.scrolling_)
+  if (this.scrolling_) {
     return;
+  }
 
   this.scrollbarTimeoutId_ = setTimeout(function() {
     this.scrollbarTimeoutId_ = 0;
@@ -520,8 +532,9 @@ ThumbnailView.prototype.onSplice_ = function(event) {
     // Get a thumbnail before which new thumbnail is inserted.
     var insertBefore = null;
     var galleryItem = this.dataModel_.item(event.index + event.added.length);
-    if (galleryItem)
+    if (galleryItem) {
       insertBefore = this.thumbnails_[galleryItem.getEntry().toURL()];
+    }
 
     for (var i = 0; i < event.added.length; i++) {
       this.insert_(event.added[i], insertBefore);
@@ -560,24 +573,28 @@ ThumbnailView.prototype.onSelectionChange_ = function(event) {
     var change = changes[i];
 
     var galleryItem = this.dataModel_.item(change.index);
-    if (!galleryItem)
+    if (!galleryItem) {
       continue;
+    }
 
     var thumbnail = this.thumbnails_[galleryItem.getEntry().toURL()];
-    if (!thumbnail)
+    if (!thumbnail) {
       continue;
+    }
 
     thumbnail.setSelected(change.selected);
 
     // We should not focus to error thumbnail.
-    if (change.selected && !thumbnail.isError())
+    if (change.selected && !thumbnail.isError()) {
       lastSelectedThumbnail = thumbnail;
+    }
   }
 
   // If new item is selected, focus to it. If multiple thumbnails are selected,
   // focus to the last one.
-  if (lastSelectedThumbnail)
+  if (lastSelectedThumbnail) {
     lastSelectedThumbnail.getContainer().focus();
+  }
 };
 
 /**
@@ -589,10 +606,12 @@ ThumbnailView.prototype.onClick_ = function(event) {
   var target = event.target;
   if (target.matches('.selection.frame')) {
     var selectionMode = ThumbnailView.SelectionMode.SINGLE;
-    if (event.ctrlKey)
+    if (event.ctrlKey) {
       selectionMode = ThumbnailView.SelectionMode.MULTIPLE;
-    if (event.shiftKey)
+    }
+    if (event.shiftKey) {
       selectionMode = ThumbnailView.SelectionMode.RANGE;
+    }
 
     this.selectByThumbnail_(target.parentNode.getThumbnail(), selectionMode);
     return;
@@ -746,8 +765,9 @@ ThumbnailView.prototype.performEnterAnimation = function(index, rect) {
   var thumbnail = this.getThumbnailAt_(index);
 
   // If thumbnail is not loaded yet or failed to load, do not perform animation.
-  if (!thumbnail.getBackgroundImage() || thumbnail.isError())
+  if (!thumbnail.getBackgroundImage() || thumbnail.isError()) {
     return;
+  }
 
   // Hide animating thumbnail.
   thumbnail.setTransparent(true);
@@ -845,8 +865,9 @@ ThumbnailView.Thumbnail = function(galleryItem) {
       document.createElement('div'), HTMLElement);
   this.imageFrame_.classList.add('image', 'frame');
 
-  if (FileType.isVideo(galleryItem.getEntry()))
+  if (FileType.isVideo(galleryItem.getEntry())) {
     this.imageFrame_.classList.add('video');
+  }
 
   this.container_.appendChild(this.imageFrame_);
 
@@ -859,8 +880,9 @@ ThumbnailView.Thumbnail = function(galleryItem) {
   this.container_.appendChild(this.selectionFrame_);
 
   this.container_.style.height = ThumbnailView.ROW_HEIGHT + 'px';
-  this.container_.getThumbnail =
-      function(thumbnail) { return thumbnail; }.bind(null, this);
+  this.container_.getThumbnail = function(thumbnail) {
+    return thumbnail;
+  }.bind(null, this);
 
   this.update();
 };
@@ -930,8 +952,9 @@ ThumbnailView.Thumbnail.prototype.setError_ = function(error) {
  * @private
  */
 ThumbnailView.Thumbnail.prototype.setWidth_ = function(width) {
-  if (this.width_ === width)
+  if (this.width_ === width) {
     return;
+  }
 
   this.width_ = width;
   this.container_.style.width = this.width_ + 'px';
@@ -966,8 +989,9 @@ ThumbnailView.Thumbnail.prototype.update = function() {
 
   // Set thumbnail.
   var thumbnailMetadata = this.galleryItem_.getThumbnailMetadataItem();
-  if (!thumbnailMetadata)
+  if (!thumbnailMetadata) {
     return;
+  }
 
   this.loadAndSetThumbnail_(thumbnailMetadata,
       false /* do not force to generate thumbnail */).then(function(result) {
@@ -1006,29 +1030,31 @@ ThumbnailView.Thumbnail.prototype.loadAndSetThumbnail_ = function(
   this.thumbnailLoader_ = new ThumbnailLoader(this.galleryItem_.getEntry(),
       undefined /* opt_loaderType */, thumbnailMetadata,
       undefined /* opt_mediaType */, loadTargets);
-  return this.thumbnailLoader_.loadAsDataUrl(
-      ThumbnailLoader.FillMode.FIT).then(function(requestId, result) {
-    // Discard the result of old request.
-    if (requestId !== this.thumbnailLoadRequestId_)
-      return null;
+  return this.thumbnailLoader_.loadAsDataUrl(ThumbnailLoader.FillMode.FIT)
+      .then(function(requestId, result) {
+        // Discard the result of old request.
+        if (requestId !== this.thumbnailLoadRequestId_) {
+          return null;
+        }
 
-    // Update width by using the width of actual data.
-    this.setWidth_(
-        ~~(result.width * ThumbnailView.ROW_HEIGHT / result.height));
+        // Update width by using the width of actual data.
+        this.setWidth_(
+            ~~(result.width * ThumbnailView.ROW_HEIGHT / result.height));
 
-    this.imageFrame_.style.backgroundImage = 'url(' + result.data + ')';
-    this.setError_(null);
+        this.imageFrame_.style.backgroundImage = 'url(' + result.data + ')';
+        this.setError_(null);
 
-    return {
-      height: result.height,
-      loadTarget: this.thumbnailLoader_.getLoadTarget()
-    };
-    }.bind(this, this.thumbnailLoadRequestId_))
-    .catch(function(requestId, error) {
-      if (requestId !== this.thumbnailLoadRequestId_)
+        return {
+          height: result.height,
+          loadTarget: this.thumbnailLoader_.getLoadTarget()
+        };
+      }.bind(this, this.thumbnailLoadRequestId_))
+      .catch(function(requestId, error) {
+        if (requestId !== this.thumbnailLoadRequestId_) {
+          return null;
+        }
+
+        this.setError_(error);
         return null;
-
-      this.setError_(error);
-      return null;
-    }.bind(this, this.thumbnailLoadRequestId_));
+      }.bind(this, this.thumbnailLoadRequestId_));
 };

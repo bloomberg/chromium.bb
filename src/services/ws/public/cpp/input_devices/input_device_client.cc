@@ -39,6 +39,11 @@ const std::vector<ui::InputDevice>& InputDeviceClient::GetTouchpadDevices()
   return touchpad_devices_;
 }
 
+const std::vector<ui::InputDevice>& InputDeviceClient::GetUncategorizedDevices()
+    const {
+  return uncategorized_devices_;
+}
+
 bool InputDeviceClient::AreDeviceListsComplete() const {
   return device_lists_complete_;
 }
@@ -79,6 +84,12 @@ void InputDeviceClient::OnKeyboardDeviceConfigurationChanged(
   NotifyObserversKeyboardDeviceConfigurationChanged();
 }
 
+void InputDeviceClient::OnUncategorizedDeviceConfigurationChanged(
+    const std::vector<ui::InputDevice>& devices) {
+  uncategorized_devices_ = devices;
+  NotifyObserversUncategorizedDeviceConfigurationChanged();
+}
+
 void InputDeviceClient::OnTouchscreenDeviceConfigurationChanged(
     const std::vector<ui::TouchscreenDevice>& devices,
     bool touchscreen_target_display_ids_changed) {
@@ -99,15 +110,16 @@ void InputDeviceClient::OnTouchscreenDeviceConfigurationChanged(
 void InputDeviceClient::OnMouseDeviceConfigurationChanged(
     const std::vector<ui::InputDevice>& devices) {
   mouse_devices_ = devices;
-  for (auto& observer : observers_)
-    observer.OnMouseDeviceConfigurationChanged();
+  for (auto& observer : observers_) {
+    observer.OnInputDeviceConfigurationChanged(
+        ui::InputDeviceEventObserver::kMouse);
+  }
 }
 
 void InputDeviceClient::OnTouchpadDeviceConfigurationChanged(
     const std::vector<ui::InputDevice>& devices) {
   touchpad_devices_ = devices;
-  for (auto& observer : observers_)
-    observer.OnTouchpadDeviceConfigurationChanged();
+  NotifyObserversTouchpadDeviceConfigurationChanged();
 }
 
 void InputDeviceClient::OnDeviceListsComplete(
@@ -115,6 +127,7 @@ void InputDeviceClient::OnDeviceListsComplete(
     const std::vector<ui::TouchscreenDevice>& touchscreen_devices,
     const std::vector<ui::InputDevice>& mouse_devices,
     const std::vector<ui::InputDevice>& touchpad_devices,
+    const std::vector<ui::InputDevice>& uncategorized_devices,
     bool are_touchscreen_target_displays_valid) {
   are_touchscreen_target_displays_valid_ =
       are_touchscreen_target_displays_valid;
@@ -131,6 +144,9 @@ void InputDeviceClient::OnDeviceListsComplete(
     OnMouseDeviceConfigurationChanged(mouse_devices);
   if (!touchpad_devices.empty())
     OnTouchpadDeviceConfigurationChanged(touchpad_devices);
+
+  if (!uncategorized_devices.empty())
+    OnUncategorizedDeviceConfigurationChanged(uncategorized_devices);
 
   if (!device_lists_complete_) {
     device_lists_complete_ = true;
@@ -149,18 +165,32 @@ void InputDeviceClient::NotifyObserversDeviceListsComplete() {
 }
 
 void InputDeviceClient::NotifyObserversKeyboardDeviceConfigurationChanged() {
-  for (auto& observer : observers_)
-    observer.OnKeyboardDeviceConfigurationChanged();
+  for (auto& observer : observers_) {
+    observer.OnInputDeviceConfigurationChanged(
+        ui::InputDeviceEventObserver::kKeyboard);
+  }
 }
 
 void InputDeviceClient::NotifyObserversTouchscreenDeviceConfigurationChanged() {
-  for (auto& observer : observers_)
-    observer.OnTouchscreenDeviceConfigurationChanged();
+  for (auto& observer : observers_) {
+    observer.OnInputDeviceConfigurationChanged(
+        ui::InputDeviceEventObserver::kTouchscreen);
+  }
 }
 
 void InputDeviceClient::NotifyObserversTouchpadDeviceConfigurationChanged() {
-  for (auto& observer : observers_)
-    observer.OnTouchpadDeviceConfigurationChanged();
+  for (auto& observer : observers_) {
+    observer.OnInputDeviceConfigurationChanged(
+        ui::InputDeviceEventObserver::kTouchpad);
+  }
+}
+
+void InputDeviceClient::
+    NotifyObserversUncategorizedDeviceConfigurationChanged() {
+  for (auto& observer : observers_) {
+    observer.OnInputDeviceConfigurationChanged(
+        ui::InputDeviceEventObserver::kUncategorized);
+  }
 }
 
 }  // namespace ws

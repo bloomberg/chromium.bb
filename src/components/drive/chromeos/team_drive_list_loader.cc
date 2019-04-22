@@ -10,6 +10,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/cancellation_flag.h"
 #include "components/drive/chromeos/change_list_loader.h"

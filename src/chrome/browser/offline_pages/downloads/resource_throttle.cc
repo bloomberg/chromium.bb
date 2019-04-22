@@ -4,6 +4,7 @@
 
 #include "chrome/browser/offline_pages/downloads/resource_throttle.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/offline_pages/offline_page_utils.h"
@@ -48,7 +49,7 @@ void ResourceThrottle::WillProcessResponse(bool* defer) {
   request_->GetMimeType(&mime_type);
   if (offline_pages::OfflinePageUtils::CanDownloadAsOfflinePage(request_->url(),
                                                                 mime_type)) {
-    const content::ResourceRequestInfo* info =
+    content::ResourceRequestInfo* info =
         content::ResourceRequestInfo::ForRequest(request_);
     if (!info)
       return;
@@ -58,8 +59,8 @@ void ResourceThrottle::WillProcessResponse(bool* defer) {
 
     base::PostTaskWithTraits(
         FROM_HERE, {content::BrowserThread::UI},
-        base::Bind(&WillStartOfflineRequestOnUIThread, request_->url(),
-                   request_origin, info->GetWebContentsGetterForRequest()));
+        base::BindOnce(&WillStartOfflineRequestOnUIThread, request_->url(),
+                       request_origin, info->GetWebContentsGetterForRequest()));
     Cancel();
   }
 }

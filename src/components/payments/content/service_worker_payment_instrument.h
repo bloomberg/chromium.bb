@@ -55,7 +55,7 @@ class ServiceWorkerPaymentInstrument : public PaymentInstrument {
 
   // Validates whether this payment instrument can be used for this payment
   // request. It fires CanMakePaymentEvent to the payment app to do validation.
-  // The result is returned through callback.If the returned result is false,
+  // The result is returned through callback. If the returned result is false,
   // then this instrument should not be used for this payment request. This
   // interface must be called before any other interfaces in this class.
   void ValidateCanMakePayment(ValidateCanMakePaymentCallback callback);
@@ -84,7 +84,9 @@ class ServiceWorkerPaymentInstrument : public PaymentInstrument {
   mojom::PaymentRequestEventDataPtr CreatePaymentRequestEventData();
 
   mojom::CanMakePaymentEventDataPtr CreateCanMakePaymentEventData();
-  void OnCanMakePayment(ValidateCanMakePaymentCallback callback, bool result);
+  void OnCanMakePaymentEventSkipped(ValidateCanMakePaymentCallback callback);
+  void OnCanMakePaymentEventResponded(ValidateCanMakePaymentCallback callback,
+                                      bool result);
 
   content::BrowserContext* browser_context_;
   GURL top_origin_;
@@ -102,6 +104,7 @@ class ServiceWorkerPaymentInstrument : public PaymentInstrument {
 
   // PaymentAppProvider::CanMakePayment result of this payment instrument.
   bool can_make_payment_result_;
+  bool has_enrolled_instrument_result_;
 
   // Below variables are used for installable ServiceWorkerPaymentInstrument
   // specifically.

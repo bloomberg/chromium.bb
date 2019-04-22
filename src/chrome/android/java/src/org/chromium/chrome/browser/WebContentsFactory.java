@@ -7,15 +7,18 @@ package org.chromium.chrome.browser;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.content_public.browser.WebContents;
 
+import javax.inject.Inject;
+
+import dagger.Reusable;
+
 /**
  * This factory creates WebContents objects and the associated native counterpart.
  * TODO(dtrainor): Move this to the content/ layer if BrowserContext is ever supported in Java.
  */
-public abstract class WebContentsFactory {
-    // Don't instantiate me.
-    private WebContentsFactory() {
-    }
-
+@Reusable
+public class WebContentsFactory {
+    @Inject
+    public WebContentsFactory() {}
     /**
      * A factory method to build a {@link WebContents} object.
      * @param incognito       Whether or not the {@link WebContents} should be built with an
@@ -23,6 +26,7 @@ public abstract class WebContentsFactory {
      * @param initiallyHidden Whether or not the {@link WebContents} should be initially hidden.
      * @return                A newly created {@link WebContents} object.
      */
+    // TODO(pshmakov): remove static for unit-testability.
     public static WebContents createWebContents(boolean incognito, boolean initiallyHidden) {
         return nativeCreateWebContents(
                 Profile.getLastUsedProfile(), incognito, initiallyHidden, false);
@@ -38,7 +42,7 @@ public abstract class WebContentsFactory {
      * @param initiallyHidden Whether or not the {@link WebContents} should be initially hidden.
      * @return                A newly created {@link WebContents} object.
      */
-    public static WebContents createWebContentsWithWarmRenderer(
+    public WebContents createWebContentsWithWarmRenderer(
             boolean incognito, boolean initiallyHidden) {
         return nativeCreateWebContents(
                 Profile.getLastUsedProfile(), incognito, initiallyHidden, true);

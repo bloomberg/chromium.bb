@@ -10,7 +10,10 @@
 #include "build/build_config.h"
 #include "components/signin/core/browser/account_info.h"
 
-class FakeGaiaCookieManagerService;
+namespace network {
+class TestURLLoaderFactory;
+}
+
 class GoogleServiceAuthError;
 
 // Test-related utilities that don't fit in either IdentityTestEnvironment or
@@ -45,27 +48,28 @@ class IdentityManager;
 // address, generating a GAIA ID that corresponds uniquely to that email
 // address. On non-ChromeOS, results in the firing of the IdentityManager and
 // SigninManager callbacks for signin success. Blocks until the primary account
-// is set. Returns the AccountInfo of the newly-set account.
+// is set. Returns the CoreAccountInfo of the newly-set account.
 // NOTE: See disclaimer at top of file re: direct usage.
-AccountInfo SetPrimaryAccount(IdentityManager* identity_manager,
-                              const std::string& email);
+CoreAccountInfo SetPrimaryAccount(IdentityManager* identity_manager,
+                                  const std::string& email);
 
 // Sets a refresh token for the primary account (which must already be set).
-// Blocks until the refresh token is set.
+// Blocks until the refresh token is set. If |token_value| is empty a default
+// value will be used instead.
 // NOTE: See disclaimer at top of file re: direct usage.
-void SetRefreshTokenForPrimaryAccount(IdentityManager* identity_manager);
+void SetRefreshTokenForPrimaryAccount(
+    IdentityManager* identity_manager,
+    const std::string& token_value = std::string());
 
 // Sets a special invalid refresh token for the primary account (which must
 // already be set). Blocks until the refresh token is set.
 // NOTE: See disclaimer at top of file re: direct usage.
-void SetInvalidRefreshTokenForPrimaryAccount(
-    IdentityManager* identity_manager);
+void SetInvalidRefreshTokenForPrimaryAccount(IdentityManager* identity_manager);
 
 // Removes any refresh token for the primary account, if present. Blocks until
 // the refresh token is removed.
 // NOTE: See disclaimer at top of file re: direct usage.
-void RemoveRefreshTokenForPrimaryAccount(
-    IdentityManager* identity_manager);
+void RemoveRefreshTokenForPrimaryAccount(IdentityManager* identity_manager);
 
 // Makes the primary account (which must not already be set) available for the
 // given email address, generating a GAIA ID and refresh token that correspond
@@ -74,9 +78,8 @@ void RemoveRefreshTokenForPrimaryAccount(
 // the primary account is available. Returns the AccountInfo of the
 // newly-available account.
 // NOTE: See disclaimer at top of file re: direct usage.
-AccountInfo MakePrimaryAccountAvailable(
-    IdentityManager* identity_manager,
-    const std::string& email);
+AccountInfo MakePrimaryAccountAvailable(IdentityManager* identity_manager,
+                                        const std::string& email);
 
 // Clears the primary account if present, with |policy| used to determine
 // whether to keep or remove all accounts. On non-ChromeOS, results in the
@@ -96,10 +99,12 @@ AccountInfo MakeAccountAvailable(IdentityManager* identity_manager,
                                  const std::string& email);
 
 // Sets a refresh token for the given account (which must already be available).
-// Blocks until the refresh token is set.
+// Blocks until the refresh token is set. If |token_value| is empty a default
+// value will be used instead.
 // NOTE: See disclaimer at top of file re: direct usage.
 void SetRefreshTokenForAccount(IdentityManager* identity_manager,
-                               const std::string& account_id);
+                               const std::string& account_id,
+                               const std::string& token_value = std::string());
 
 // Sets a special invalid refresh token for the given account (which must
 // already be available). Blocks until the refresh token is set.
@@ -116,9 +121,12 @@ void RemoveRefreshTokenForAccount(IdentityManager* identity_manager,
 
 // Puts the given accounts into the Gaia cookie, replacing any previous
 // accounts. Blocks until the accounts have been set.
+// |test_url_loader_factory| is used to set a fake ListAccounts response
+// containing the provided |cookie_accounts|, which are then put into
+// the Gaia cookie.
 // NOTE: See disclaimer at top of file re: direct usage.
-void SetCookieAccounts(FakeGaiaCookieManagerService* cookie_manager,
-                       IdentityManager* identity_manager,
+void SetCookieAccounts(IdentityManager* identity_manager,
+                       network::TestURLLoaderFactory* test_url_loader_factory,
                        const std::vector<CookieParams>& cookie_accounts);
 
 // Updates the info for |account_info.account_id|, which must be a known
@@ -126,13 +134,42 @@ void SetCookieAccounts(FakeGaiaCookieManagerService* cookie_manager,
 void UpdateAccountInfoForAccount(IdentityManager* identity_manager,
                                  AccountInfo account_info);
 
+// Sets whether the list of accounts in Gaia cookie jar is fresh and does not
+// need to be updated.
+void SetFreshnessOfAccountsInGaiaCookie(IdentityManager* identity_manager,
+                                        bool accounts_are_fresh);
+
 std::string GetTestGaiaIdForEmail(const std::string& email);
 
-void SetAccountWithRefreshTokenInPersistentErrorState(
+// Updates the persistent auth error set on |account_id| which must be a known
+// account, i.e., an account with a refresh token.
+void UpdatePersistentErrorOfRefreshTokenForAccount(
     IdentityManager* identity_manager,
     const std::string& account_id,
     const GoogleServiceAuthError& auth_error);
 
+// Disables internal retries of failed access token fetches.
+void DisableAccessTokenFetchRetries(IdentityManager* identity_manager);
+
+#if defined(OS_ANDROID)
+// Disables interaction with system accounts, which requires special permission.
+void DisableInteractionWithSystemAccounts();
+#endif
+
+// Cancels all ongoing operations related to the accounts in the Gaia cookie.
+void CancelAllOngoingGaiaCookieOperations(IdentityManager* identity_manager);
+
+// Simulate account fetching using AccountTrackerService without sending
+// network requests.
+void SimulateSuccessfulFetchOfAccountInfo(IdentityManager* identity_manager,
+                                          const std::string& account_id,
+                                          const std::string& email,
+                                          const std::string& gaia,
+                                          const std::string& hosted_domain,
+                                          const std::string& full_name,
+                                          const std::string& given_name,
+                                          const std::string& locale,
+                                          const std::string& picture_url);
 }  // namespace identity
 
 #endif  // SERVICES_IDENTITY_PUBLIC_CPP_IDENTITY_TEST_UTILS_H_

@@ -216,8 +216,9 @@ TEST_F(ResourceMessageFilterTest, TestHandleMessage) {
   // It should be safe to use base::Unretained() because the object won't be
   // destroyed before the task is run.
   main_message_loop.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&ResourceMessageFilterTest::TestHandleMessageImpl,
-                            base::Unretained(this)));
+      FROM_HERE,
+      base::BindOnce(&ResourceMessageFilterTest::TestHandleMessageImpl,
+                     base::Unretained(this)));
 
   base::RunLoop().RunUntilIdle();
 }

@@ -4,6 +4,7 @@
 
 #include "extensions/browser/api/sockets_udp/sockets_udp_api.h"
 
+#include "base/bind.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/socket_permission_request.h"
@@ -209,7 +210,7 @@ void SocketsUdpBindFunction::AsyncWorkStart() {
     return;
   }
   socket->Bind(params_->address, params_->port,
-               base::BindRepeating(&SocketsUdpBindFunction::OnCompleted, this));
+               base::BindOnce(&SocketsUdpBindFunction::OnCompleted, this));
 }
 
 void SocketsUdpBindFunction::OnCompleted(int net_result) {
@@ -361,7 +362,7 @@ bool SocketsUdpGetSocketsFunction::Prepare() { return true; }
 
 void SocketsUdpGetSocketsFunction::Work() {
   std::vector<sockets_udp::SocketInfo> socket_infos;
-  base::hash_set<int>* resource_ids = GetSocketIds();
+  std::unordered_set<int>* resource_ids = GetSocketIds();
   if (resource_ids != NULL) {
     for (int socket_id : *resource_ids) {
       ResumableUDPSocket* socket = GetUdpSocket(socket_id);
@@ -403,7 +404,7 @@ void SocketsUdpJoinGroupFunction::AsyncWorkStart() {
 
   socket->JoinGroup(
       params_->address,
-      base::BindRepeating(&SocketsUdpJoinGroupFunction::OnCompleted, this));
+      base::BindOnce(&SocketsUdpJoinGroupFunction::OnCompleted, this));
 }
 
 void SocketsUdpJoinGroupFunction::OnCompleted(int net_result) {
@@ -442,7 +443,7 @@ void SocketsUdpLeaveGroupFunction::AsyncWorkStart() {
   }
   socket->LeaveGroup(
       params_->address,
-      base::BindRepeating(&SocketsUdpLeaveGroupFunction::OnCompleted, this));
+      base::BindOnce(&SocketsUdpLeaveGroupFunction::OnCompleted, this));
 }
 
 void SocketsUdpLeaveGroupFunction::OnCompleted(int result) {
@@ -554,7 +555,7 @@ void SocketsUdpSetBroadcastFunction::AsyncWorkStart() {
 
   socket->SetBroadcast(
       params_->enabled,
-      base::BindRepeating(&SocketsUdpSetBroadcastFunction::OnCompleted, this));
+      base::BindOnce(&SocketsUdpSetBroadcastFunction::OnCompleted, this));
 }
 
 void SocketsUdpSetBroadcastFunction::OnCompleted(int net_result) {

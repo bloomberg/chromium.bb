@@ -10,15 +10,18 @@
 
 #include <map>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "device/usb/usb_device_handle.h"
+#include "chrome/browser/devtools/device/usb/usb_device_manager_helper.h"
+#include "device/usb/public/mojom/device.mojom.h"
 
 namespace base {
+class RefCountedBytes;
 class SingleThreadTaskRunner;
 }
 
@@ -72,17 +75,12 @@ typedef base::Callback<void(const AndroidUsbDevices&)>
 
 class AndroidUsbDevice : public base::RefCountedThreadSafe<AndroidUsbDevice> {
  public:
-  static void CountDevices(const base::Callback<void(int)>& callback);
   static void Enumerate(crypto::RSAPrivateKey* rsa_key,
                         const AndroidUsbDevicesCallback& callback);
 
   AndroidUsbDevice(crypto::RSAPrivateKey* rsa_key,
-                   scoped_refptr<device::UsbDeviceHandle> device,
-                   const std::string& serial,
-                   int inbound_address,
-                   int outbound_address,
-                   int zero_mask,
-                   int interface_id);
+                   const AndroidDeviceInfo& android_device_info,
+                   device::mojom::UsbDevicePtr device_ptr);
 
   void InitOnCallerThread();
 
@@ -93,26 +91,25 @@ class AndroidUsbDevice : public base::RefCountedThreadSafe<AndroidUsbDevice> {
             uint32_t arg1,
             const std::string& body);
 
-  scoped_refptr<device::UsbDeviceHandle> usb_device() { return usb_handle_; }
+  const std::string& serial() const { return android_device_info_.serial; }
 
-  std::string serial() { return serial_; }
-
-  bool is_connected() { return is_connected_; }
+  bool is_connected() const { return is_connected_; }
 
  private:
   friend class base::RefCountedThreadSafe<AndroidUsbDevice>;
+
+  static void EnsureUsbDeviceManagerConnection();
+  static void OnDeviceManagerConnectionError();
+
   virtual ~AndroidUsbDevice();
 
   void Queue(std::unique_ptr<AdbMessage> message);
   void ProcessOutgoing();
-  void OutgoingMessageSent(device::UsbTransferStatus status,
-                           scoped_refptr<base::RefCountedBytes> buffer,
-                           size_t result);
+  void OutgoingMessageSent(device::mojom::UsbTransferStatus status);
 
   void ReadHeader();
-  void ParseHeader(device::UsbTransferStatus status,
-                   scoped_refptr<base::RefCountedBytes> buffer,
-                   size_t result);
+  void ParseHeader(device::mojom::UsbTransferStatus status,
+                   const std::vector<uint8_t>& buffer);
 
   void ReadBody(std::unique_ptr<AdbMessage> message,
                 uint32_t data_length,
@@ -120,15 +117,13 @@ class AndroidUsbDevice : public base::RefCountedThreadSafe<AndroidUsbDevice> {
   void ParseBody(std::unique_ptr<AdbMessage> message,
                  uint32_t data_length,
                  uint32_t data_check,
-                 device::UsbTransferStatus status,
-                 scoped_refptr<base::RefCountedBytes> buffer,
-                 size_t result);
+                 device::mojom::UsbTransferStatus status,
+                 const std::vector<uint8_t>& buffer);
 
   void HandleIncoming(std::unique_ptr<AdbMessage> message);
 
-  void TransferError(device::UsbTransferStatus status);
+  void TransferError(device::mojom::UsbTransferStatus status);
 
-  void TerminateIfReleased(scoped_refptr<device::UsbDeviceHandle> usb_handle);
   void Terminate();
 
   void SocketDeleted(uint32_t socket_id);
@@ -138,12 +133,8 @@ class AndroidUsbDevice : public base::RefCountedThreadSafe<AndroidUsbDevice> {
   std::unique_ptr<crypto::RSAPrivateKey> rsa_key_;
 
   // Device info
-  scoped_refptr<device::UsbDeviceHandle> usb_handle_;
-  std::string serial_;
-  int inbound_address_;
-  int outbound_address_;
-  int zero_mask_;
-  int interface_id_;
+  device::mojom::UsbDevicePtr device_ptr_;
+  AndroidDeviceInfo android_device_info_;
 
   bool is_connected_;
   bool signature_sent_;

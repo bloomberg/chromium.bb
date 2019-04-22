@@ -204,10 +204,10 @@ class Utf16CharacterStream {
 // ----------------------------------------------------------------------------
 // JavaScript Scanner.
 
-class Scanner {
+class V8_EXPORT_PRIVATE Scanner {
  public:
   // Scoped helper for a re-settable bookmark.
-  class BookmarkScope {
+  class V8_EXPORT_PRIVATE BookmarkScope {
    public:
     explicit BookmarkScope(Scanner* scanner)
         : scanner_(scanner),
@@ -217,7 +217,7 @@ class Scanner {
     }
     ~BookmarkScope() = default;
 
-    void Set();
+    void Set(size_t bookmark);
     void Apply();
     bool HasBeenSet() const;
     bool HasBeenApplied() const;
@@ -225,7 +225,6 @@ class Scanner {
    private:
     static const size_t kNoBookmark;
     static const size_t kBookmarkWasApplied;
-    static const size_t kBookmarkAtFirstPos;
 
     Scanner* scanner_;
     size_t bookmark_;
@@ -256,9 +255,9 @@ class Scanner {
     Location() : beg_pos(0), end_pos(0) { }
 
     int length() const { return end_pos - beg_pos; }
-    bool IsValid() const { return beg_pos >= 0 && end_pos >= beg_pos; }
+    bool IsValid() const { return IsInRange(beg_pos, 0, end_pos); }
 
-    static Location invalid() { return Location(-1, -1); }
+    static Location invalid() { return Location(-1, 0); }
 
     int beg_pos;
     int end_pos;
@@ -317,6 +316,10 @@ class Scanner {
     return LiteralContainsEscapes(current());
   }
 
+  bool next_literal_contains_escapes() const {
+    return LiteralContainsEscapes(next());
+  }
+
   const AstRawString* CurrentSymbol(AstValueFactory* ast_value_factory) const;
 
   const AstRawString* NextSymbol(AstValueFactory* ast_value_factory) const;
@@ -333,8 +336,8 @@ class Scanner {
   }
 
   template <size_t N>
-  bool NextLiteralEquals(const char (&s)[N]) {
-    DCHECK_EQ(Token::STRING, peek());
+  bool NextLiteralExactlyEquals(const char (&s)[N]) {
+    DCHECK(next().CanAccessLiteral());
     // The length of the token is used to make sure the literal equals without
     // taking escape sequences (e.g., "use \x73trict") or line continuations
     // (e.g., "use \(newline) strict") into account.
@@ -344,6 +347,16 @@ class Scanner {
     Vector<const uint8_t> next = next_literal_one_byte_string();
     const char* chars = reinterpret_cast<const char*>(next.start());
     return next.length() == N - 1 && strncmp(s, chars, N - 1) == 0;
+  }
+
+  template <size_t N>
+  bool CurrentLiteralEquals(const char (&s)[N]) {
+    DCHECK(current().CanAccessLiteral());
+    if (!is_literal_one_byte()) return false;
+
+    Vector<const uint8_t> current = literal_one_byte_string();
+    const char* chars = reinterpret_cast<const char*>(current.start());
+    return current.length() == N - 1 && strncmp(s, chars, N - 1) == 0;
   }
 
   // Returns the location of the last seen octal literal.
@@ -408,6 +421,9 @@ class Scanner {
 
   const Utf16CharacterStream* stream() const { return source_; }
 
+  // If the next characters in the stream are "#!", the line is skipped.
+  void SkipHashBang();
+
  private:
   // Scoped helper for saving & restoring scanner error state.
   // This is used for tagged template literals, in which normally forbidden
@@ -469,8 +485,7 @@ class Scanner {
 
    private:
     static const int kInitialCapacity = 16;
-    static const int kGrowthFactory = 4;
-    static const int kMinConversionSlack = 256;
+    static const int kGrowthFactor = 4;
     static const int kMaxGrowth = 1 * MB;
 
     inline bool IsValidAscii(char code_unit) {
@@ -516,9 +531,8 @@ class Scanner {
     bool CanAccessLiteral() const {
       return token == Token::PRIVATE_NAME || token == Token::ILLEGAL ||
              token == Token::UNINITIALIZED || token == Token::REGEXP_LITERAL ||
-             token == Token::ESCAPED_KEYWORD ||
              IsInRange(token, Token::NUMBER, Token::STRING) ||
-             (Token::IsAnyIdentifier(token) && !Token::IsKeyword(token)) ||
+             Token::IsAnyIdentifier(token) || Token::IsKeyword(token) ||
              IsInRange(token, Token::TEMPLATE_SPAN, Token::TEMPLATE_TAIL);
     }
     bool CanAccessRawLiteral() const {
@@ -529,13 +543,21 @@ class Scanner {
   };
 
   enum NumberKind {
+    IMPLICIT_OCTAL,
     BINARY,
     OCTAL,
-    IMPLICIT_OCTAL,
     HEX,
     DECIMAL,
     DECIMAL_WITH_LEADING_ZERO
   };
+
+  inline bool IsValidBigIntKind(NumberKind kind) {
+    return IsInRange(kind, BINARY, DECIMAL);
+  }
+
+  inline bool IsDecimalNumberKind(NumberKind kind) {
+    return IsInRange(kind, DECIMAL, DECIMAL_WITH_LEADING_ZERO);
+  }
 
   static const int kCharacterLookaheadBufferSize = 1;
   static const int kMaxAscii = 127;

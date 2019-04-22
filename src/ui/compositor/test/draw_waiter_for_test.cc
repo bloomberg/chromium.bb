@@ -54,8 +54,4 @@ void DrawWaiterForTest::OnCompositingEnded(Compositor* compositor) {
     wait_run_loop_->Quit();
 }
 
-void DrawWaiterForTest::OnCompositingChildResizing(Compositor* compositor) {}
-
-void DrawWaiterForTest::OnCompositingShuttingDown(Compositor* compositor) {}
-
 }  // namespace ui

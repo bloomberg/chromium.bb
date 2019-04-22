@@ -41,17 +41,7 @@ DEF_TEST(GlyphRunGlyphIDSetBasic, reporter) {
     }
 }
 
-DEF_TEST(GlyphRunBasic, reporter) {
-    SkGlyphID glyphs[] = {100, 3, 240, 3, 234, 111, 3, 4, 10, 11};
-    uint16_t count = SK_ARRAY_COUNT(glyphs);
-
-    SkPaint paint;
-    paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
-
-    SkGlyphRunBuilder builder;
-    builder.drawText(paint, glyphs, count, SkPoint::Make(0, 0));
-}
-
+#if 0   // should we revitalize this by consing up a device for drawTextBlob() ?
 DEF_TEST(GlyphRunBlob, reporter) {
     constexpr uint16_t count = 5;
     constexpr int runCount = 2;
@@ -101,3 +91,4 @@ DEF_TEST(GlyphRunBlob, reporter) {
         runIndex += 1;
     }
 }
+#endif

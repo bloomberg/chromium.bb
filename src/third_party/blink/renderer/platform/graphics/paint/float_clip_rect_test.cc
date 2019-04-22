@@ -86,20 +86,16 @@ TEST_F(FloatClipRectTest, Map) {
   EXPECT_TRUE(rect.IsInfinite());
   EXPECT_FALSE(rect.IsTight());
 
+  // FloatClipRect::Map() assumes that the transform always makes the clip rect
+  // not tight. The caller should use MoveBy() to keep tightness if the
+  // transform is known to be identity or a 2d translation.
   FloatClipRect rect2(FloatRect(1, 2, 3, 4));
   rect2.Map(identity);
   EXPECT_EQ(FloatRect(1, 2, 3, 4), rect2.Rect());
-  EXPECT_TRUE(rect2.IsTight());
+  EXPECT_FALSE(rect2.IsTight());
 
   rect2.Map(translation);
   EXPECT_EQ(FloatRect(11, 22, 3, 4), rect2.Rect());
-  EXPECT_TRUE(rect2.IsTight());
-
-  rect2.Map(rotate);
-  EXPECT_EQ(rotate.MapRect(FloatRect(11, 22, 3, 4)), rect2.Rect());
-  EXPECT_FALSE(rect2.IsTight());
-
-  rect2.Map(identity);
   EXPECT_FALSE(rect2.IsTight());
 }
 

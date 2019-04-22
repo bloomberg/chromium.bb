@@ -11,24 +11,24 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
-#include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chromeos/chromeos_switches.h"
+#include "chrome/browser/net/system_network_context_manager.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/shill_profile_client.h"
-#include "chromeos/login/login_state.h"
+#include "chromeos/dbus/shill/shill_profile_client.h"
+#include "chromeos/login/login_state/login_state.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "components/device_event_log/device_event_log.h"
 #include "content/public/browser/notification_service.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
-using base::StringPrintf;
 using captive_portal::CaptivePortalDetector;
 
 namespace chromeos {
@@ -86,17 +86,6 @@ constexpr char kSessionPortalToOnlineHistogram[] =
 
 constexpr char kDetectionResultSinceShillPortalHistogram[] =
     "CaptivePortal.DetectionResultSincePortal";
-
-// Get randomized test url by rotating through alternate hostnames on each
-// portal check, to defeat IP-based blocking.
-GURL GetRandomizedTestURL() {
-  // This range is determined by the server-side configuration. See b/63033351.
-  const int kMinRandomHost = 1;
-  const int kMaxRandomHost = 25;
-  return GURL(
-      base::StringPrintf("http://alt%d.gstatic.com/generate_204",
-                         base::RandInt(kMinRandomHost, kMaxRandomHost)));
-}
 
 const NetworkState* DefaultNetwork() {
   return NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
@@ -168,6 +157,13 @@ void RecordPortalToOnlineTransition(const base::TimeDelta& duration) {
   }
 }
 
+void SetNetworkPortalDetected(const NetworkState* network,
+                              bool portal_detected) {
+  NetworkHandler::Get()
+      ->network_state_handler()
+      ->SetNetworkChromePortalDetected(network->path(), portal_detected);
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -210,21 +206,24 @@ constexpr base::TimeDelta
     NetworkPortalDetectorImpl::kDelaySinceShillPortalForUMA;
 
 NetworkPortalDetectorImpl::NetworkPortalDetectorImpl(
-    network::mojom::URLLoaderFactory* loader_factory)
+    network::mojom::URLLoaderFactory* loader_factory_for_testing)
     : strategy_(PortalDetectorStrategy::CreateById(
           PortalDetectorStrategy::STRATEGY_ID_LOGIN_SCREEN,
           this)),
       weak_factory_(this) {
   NET_LOG(EVENT) << "NetworkPortalDetectorImpl::NetworkPortalDetectorImpl()";
+  network::mojom::URLLoaderFactory* loader_factory;
+  if (loader_factory_for_testing) {
+    loader_factory = loader_factory_for_testing;
+  } else {
+    shared_url_loader_factory_ =
+        g_browser_process->system_network_context_manager()
+            ->GetSharedURLLoaderFactory();
+    loader_factory = shared_url_loader_factory_.get();
+  }
   captive_portal_detector_.reset(new CaptivePortalDetector(loader_factory));
 
-  // Captive portal randomization can cause problems in some environemnts.
-  // Disable randomization by default by setting portal_test_url_.
-  // http://crbug.com/776409.
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableCaptivePortalRandomUrl)) {
-    portal_test_url_ = GURL(CaptivePortalDetector::kDefaultURL);
-  }
+  portal_test_url_ = GURL(CaptivePortalDetector::kDefaultURL);
 
   registrar_.Add(this, chrome::NOTIFICATION_AUTH_SUPPLIED,
                  content::NotificationService::AllSources());
@@ -294,6 +293,7 @@ void NetworkPortalDetectorImpl::Enable(bool start_detection) {
     return;
   NET_LOG(EVENT) << "Starting detection attempt:"
                  << " name=" << network->name() << " id=" << network->guid();
+  SetNetworkPortalDetected(network, false /* portal_detected */);
   portal_state_map_.erase(network->guid());
   StartDetection();
 }
@@ -339,7 +339,7 @@ void NetworkPortalDetectorImpl::DefaultNetworkChanged(
 
     CaptivePortalState state;
     state.status = CAPTIVE_PORTAL_STATUS_OFFLINE;
-    OnDetectionCompleted(nullptr, state);
+    DetectionCompleted(nullptr, state);
     return;
   }
 
@@ -458,12 +458,11 @@ void NetworkPortalDetectorImpl::StartAttempt() {
   state_ = STATE_CHECKING_FOR_PORTAL;
   attempt_start_time_ = NowTicks();
 
-  const GURL test_url =
-      !portal_test_url_.is_empty() ? portal_test_url_ : GetRandomizedTestURL();
-  DCHECK(test_url.is_valid());
-  NET_LOG(EVENT) << "Starting captive portal detection with URL: " << test_url;
+  DCHECK(portal_test_url_.is_valid());
+  NET_LOG(EVENT) << "Starting captive portal detection with URL: "
+                 << portal_test_url_;
   captive_portal_detector_->DetectCaptivePortal(
-      test_url,
+      portal_test_url_,
       base::Bind(&NetworkPortalDetectorImpl::OnAttemptCompleted,
                  weak_factory_.GetWeakPtr()),
       NO_TRAFFIC_ANNOTATION_YET);
@@ -579,10 +578,10 @@ void NetworkPortalDetectorImpl::OnAttemptCompleted(
 
   if (state.status != CAPTIVE_PORTAL_STATUS_OFFLINE ||
       same_detection_result_count_ >= kMaxOfflineResultsBeforeReport) {
-    OnDetectionCompleted(network, state);
+    DetectionCompleted(network, state);
   }
 
-  // Observers (via OnDetectionCompleted) may already schedule new attempt.
+  // Observers (via DetectionCompleted) may already schedule new attempt.
   if (is_idle())
     ScheduleAttempt(results.retry_after_delta);
 }
@@ -600,7 +599,7 @@ void NetworkPortalDetectorImpl::Observe(
   }
 }
 
-void NetworkPortalDetectorImpl::OnDetectionCompleted(
+void NetworkPortalDetectorImpl::DetectionCompleted(
     const NetworkState* network,
     const CaptivePortalState& state) {
   if (!network) {
@@ -622,6 +621,9 @@ void NetworkPortalDetectorImpl::OnDetectionCompleted(
       RecordPortalToOnlineTransition(state.time - it->second.time);
     }
 
+    SetNetworkPortalDetected(
+        network,
+        state.status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL);
     portal_state_map_[network->guid()] = state;
   }
   NotifyDetectionCompleted(network, state);

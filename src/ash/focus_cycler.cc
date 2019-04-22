@@ -107,7 +107,7 @@ void FocusCycler::RotateFocus(Direction direction) {
 bool FocusCycler::FocusWidget(views::Widget* widget) {
   // If the target is PIP window, temporarily make it activatable.
   if (wm::GetWindowState(widget->GetNativeWindow())->IsPip())
-    widget->widget_delegate()->set_can_activate(true);
+    widget->widget_delegate()->SetCanActivate(true);
 
   // Note: It is not necessary to set the focus directly to the pane since that
   // will be taken care of by the widget activation.

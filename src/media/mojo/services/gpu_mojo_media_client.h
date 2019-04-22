@@ -10,7 +10,9 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
+#include "build/build_config.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_preferences.h"
@@ -39,8 +41,8 @@ class GpuMojoMediaClient : public MojoMediaClient {
   ~GpuMojoMediaClient() final;
 
   // MojoMediaClient implementation.
-  std::vector<mojom::SupportedVideoDecoderConfigPtr>
-  GetSupportedVideoDecoderConfigs() final;
+  std::vector<SupportedVideoDecoderConfig> GetSupportedVideoDecoderConfigs()
+      final;
   void Initialize(service_manager::Connector* connector) final;
   std::unique_ptr<AudioDecoder> CreateAudioDecoder(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) final;
@@ -49,7 +51,8 @@ class GpuMojoMediaClient : public MojoMediaClient {
       MediaLog* media_log,
       mojom::CommandBufferIdPtr command_buffer_id,
       RequestOverlayInfoCB request_overlay_info_cb,
-      const gfx::ColorSpace& target_color_space) final;
+      const gfx::ColorSpace& target_color_space,
+      mojom::VideoDecoderImplementation implementation) final;
   std::unique_ptr<CdmFactory> CreateCdmFactory(
       service_manager::mojom::InterfaceProvider* interface_provider) final;
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
@@ -64,6 +67,10 @@ class GpuMojoMediaClient : public MojoMediaClient {
   base::WeakPtr<MediaGpuChannelManager> media_gpu_channel_manager_;
   AndroidOverlayMojoFactoryCB android_overlay_factory_cb_;
   CdmProxyFactoryCB cdm_proxy_factory_cb_;
+#if defined(OS_WIN)
+  base::Optional<std::vector<SupportedVideoDecoderConfig>>
+      d3d11_supported_configs_;
+#endif  // defined(OS_WIN)
 
   DISALLOW_COPY_AND_ASSIGN(GpuMojoMediaClient);
 };

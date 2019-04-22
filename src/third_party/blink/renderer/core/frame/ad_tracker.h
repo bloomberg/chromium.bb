@@ -16,11 +16,8 @@
 
 namespace blink {
 class ExecutionContext;
-class DocumentLoader;
 class ResourceRequest;
-class ResourceResponse;
 enum class ResourceType : uint8_t;
-struct FetchInitiatorInfo;
 
 namespace probe {
 class CallFunction;
@@ -40,19 +37,16 @@ class CORE_EXPORT AdTracker : public GarbageCollectedFinalized<AdTracker> {
   void Will(const probe::CallFunction&);
   void Did(const probe::CallFunction&);
 
-  // Called when a resource request is about to be sent. This will do the
-  // following:
-  // - Mark a resource request as an ad if any executing scripts contain an ad.
-  // - If the marked resource is a script, also save it to keep track of all
-  // those script resources that have been identified as ads.
+  // Called when a subresource request is about to be sent or is redirected.
+  // Returns true if:
+  // - If the resource is loaded in an ad iframe
+  // - If ad script is in the v8 stack
+  // - |known_ad| is true
   // Virtual for testing.
-  virtual void WillSendRequest(ExecutionContext*,
-                               unsigned long identifier,
-                               DocumentLoader*,
-                               ResourceRequest&,
-                               const ResourceResponse& redirect_response,
-                               const FetchInitiatorInfo&,
-                               ResourceType);
+  virtual bool CalculateIfAdSubresource(ExecutionContext* execution_context,
+                                        const ResourceRequest& request,
+                                        ResourceType resource_type,
+                                        bool known_ad);
 
   // Returns true if any script in the pseudo call stack has previously been
   // identified as an ad resource.

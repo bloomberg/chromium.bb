@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "fxjs/cfx_v8.h"
-#include "fxjs/cfxjse_value.h"
 #include "fxjs/js_resources.h"
+#include "fxjs/xfa/cfxjse_value.h"
 #include "xfa/fxfa/parser/cxfa_wsdlconnection.h"
 
 const CJX_MethodSpec CJX_WsdlConnection::MethodSpecs[] = {
@@ -23,6 +23,10 @@ CJX_WsdlConnection::CJX_WsdlConnection(CXFA_WsdlConnection* connection)
 
 CJX_WsdlConnection::~CJX_WsdlConnection() {}
 
+bool CJX_WsdlConnection::DynamicTypeIs(TypeTag eType) const {
+  return eType == static_type__ || ParentType__::DynamicTypeIs(eType);
+}
+
 CJS_Result CJX_WsdlConnection::execute(
     CFX_V8* runtime,
     const std::vector<v8::Local<v8::Value>>& params) {
@@ -30,16 +34,4 @@ CJS_Result CJX_WsdlConnection::execute(
     return CJS_Result::Failure(JSMessage::kParamError);
 
   return CJS_Result::Success(runtime->NewBoolean(false));
-}
-
-void CJX_WsdlConnection::dataDescription(CFXJSE_Value* pValue,
-                                         bool bSetting,
-                                         XFA_Attribute eAttribute) {
-  Script_Attribute_String(pValue, bSetting, eAttribute);
-}
-
-void CJX_WsdlConnection::execute(CFXJSE_Value* pValue,
-                                 bool bSetting,
-                                 XFA_Attribute eAttribute) {
-  Script_Attribute_String(pValue, bSetting, eAttribute);
 }

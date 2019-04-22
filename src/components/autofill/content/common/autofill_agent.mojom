@@ -107,9 +107,9 @@ interface PasswordGenerationAgent {
   GeneratedPasswordAccepted(mojo_base.mojom.String16 generated_password);
 
   // Tells the renderer to find a focused element, and if it is a password field
-  // eligible for generation then to trigger generation by responding to the
-  // browser with the message |ShowPasswordGenerationPopup|.
-  UserTriggeredGeneratePassword();
+  // eligible for generation then to trigger generation by returning
+  // non-empty PasswordGenerationUIData.
+  UserTriggeredGeneratePassword() => (PasswordGenerationUIData? data);
 
   // Tells the renderer that this password form is not blacklisted.  A form can
   // be blacklisted if a user chooses "never save passwords for this site".
@@ -117,5 +117,11 @@ interface PasswordGenerationAgent {
 
   // Sent when Autofill manager gets the query response from the Autofill server
   // and there are fields classified for password generation in the response.
+  // TODO(https://crbug.com/866444): Remove this when PasswordGenerationAgent
+  // refactoring is finished.
   FoundFormsEligibleForGeneration(array<PasswordFormGenerationData> forms);
+
+  // Tells the renderer that a password can be generated on the fields
+  // identified by |form|.
+  FoundFormEligibleForGeneration(NewPasswordFormGenerationData form);
 };

@@ -152,7 +152,7 @@ class OSCryptConcurrencyTest : public testing::Test {
  public:
   OSCryptConcurrencyTest() { OSCryptMocker::SetUp(); }
 
-  ~OSCryptConcurrencyTest() override { OSCryptMocker::TearDown(); };
+  ~OSCryptConcurrencyTest() override { OSCryptMocker::TearDown(); }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(OSCryptConcurrencyTest);

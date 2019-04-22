@@ -27,8 +27,8 @@ const BrowserInfo* ChromeImpl::GetBrowserInfo() const {
 }
 
 bool ChromeImpl::HasCrashedWebView() {
-  for (auto it = web_views_.begin(); it != web_views_.end(); ++it) {
-    if ((*it)->WasCrashed())
+  for (const auto& view : web_views_) {
+    if (view->WasCrashed())
       return true;
   }
   return false;
@@ -59,10 +59,8 @@ Status ChromeImpl::GetWebViewIds(std::list<std::string>* web_view_ids,
     return status;
   UpdateWebViews(views_info, w3c_compliant);
   std::list<std::string> web_view_ids_tmp;
-  for (WebViewList::const_iterator web_view_iter = web_views_.begin();
-       web_view_iter != web_views_.end(); ++web_view_iter) {
-    web_view_ids_tmp.push_back((*web_view_iter)->GetId());
-  }
+  for (const auto& view : web_views_)
+    web_view_ids_tmp.push_back(view->GetId());
   web_view_ids->swap(web_view_ids_tmp);
   return Status(kOk);
 }
@@ -87,9 +85,8 @@ void ChromeImpl::UpdateWebViews(const WebViewsInfo& views_info,
     if (devtools_http_client_->IsBrowserWindow(view) &&
         !view.IsInactiveBackgroundPage()) {
       bool found = false;
-      for (WebViewList::const_iterator web_view_iter = web_views_.begin();
-           web_view_iter != web_views_.end(); ++web_view_iter) {
-        if ((*web_view_iter)->GetId() == view.id) {
+      for (const auto& web_view : web_views_) {
+        if (web_view->GetId() == view.id) {
           found = true;
           break;
         }
@@ -101,19 +98,19 @@ void ChromeImpl::UpdateWebViews(const WebViewsInfo& views_info,
           client->AddListener(listener.get());
         // OnConnected will fire when DevToolsClient connects later.
         CHECK(!page_load_strategy_.empty());
-        web_views_.push_back(make_linked_ptr(new WebViewImpl(
+        web_views_.push_back(std::make_unique<WebViewImpl>(
             view.id, w3c_compliant, devtools_http_client_->browser_info(),
             std::move(client), devtools_http_client_->device_metrics(),
-            page_load_strategy_)));
+            page_load_strategy_));
       }
     }
   }
 }
 
 Status ChromeImpl::GetWebViewById(const std::string& id, WebView** web_view) {
-  for (auto it = web_views_.begin(); it != web_views_.end(); ++it) {
-    if ((*it)->GetId() == id) {
-      *web_view = (*it).get();
+  for (const auto& view : web_views_) {
+    if (view->GetId() == id) {
+      *web_view = view.get();
       return Status(kOk);
     }
   }

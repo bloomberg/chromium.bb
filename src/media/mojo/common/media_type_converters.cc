@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "media/base/audio_buffer.h"
-#include "media/base/cdm_key_information.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decrypt_config.h"
 #include "media/base/subsample_entry.h"
@@ -116,27 +115,6 @@ TypeConverter<scoped_refptr<media::DecoderBuffer>,
   // own DataPipe.  See http://crbug.com/432960
 
   return buffer;
-}
-
-// static
-media::mojom::CdmKeyInformationPtr TypeConverter<
-    media::mojom::CdmKeyInformationPtr,
-    media::CdmKeyInformation>::Convert(const media::CdmKeyInformation& input) {
-  media::mojom::CdmKeyInformationPtr info(
-      media::mojom::CdmKeyInformation::New());
-  info->key_id = input.key_id;
-  info->status = input.status;
-  info->system_code = input.system_code;
-  return info;
-}
-
-// static
-std::unique_ptr<media::CdmKeyInformation>
-TypeConverter<std::unique_ptr<media::CdmKeyInformation>,
-              media::mojom::CdmKeyInformationPtr>::
-    Convert(const media::mojom::CdmKeyInformationPtr& input) {
-  return std::make_unique<media::CdmKeyInformation>(
-      input->key_id, input->status, input->system_code);
 }
 
 // static

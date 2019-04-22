@@ -174,7 +174,7 @@ void HTMLImportChild::Normalize() {
   }
 }
 
-void HTMLImportChild::Trace(blink::Visitor* visitor) {
+void HTMLImportChild::Trace(Visitor* visitor) {
   visitor->Trace(custom_element_microtask_step_);
   visitor->Trace(loader_);
   visitor->Trace(client_);

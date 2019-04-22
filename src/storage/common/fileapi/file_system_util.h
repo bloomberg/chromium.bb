@@ -8,11 +8,11 @@
 #include <string>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "storage/common/fileapi/file_system_info.h"
 #include "storage/common/fileapi/file_system_types.h"
-#include "storage/common/storage_common_export.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 #include "third_party/blink/public/platform/web_file_system_type.h"
 
@@ -20,13 +20,13 @@ class GURL;
 
 namespace storage {
 
-STORAGE_COMMON_EXPORT extern const char kPersistentDir[];
-STORAGE_COMMON_EXPORT extern const char kTemporaryDir[];
-STORAGE_COMMON_EXPORT extern const char kExternalDir[];
-STORAGE_COMMON_EXPORT extern const char kIsolatedDir[];
-STORAGE_COMMON_EXPORT extern const char kTestDir[];
+COMPONENT_EXPORT(STORAGE_COMMON) extern const char kPersistentDir[];
+COMPONENT_EXPORT(STORAGE_COMMON) extern const char kTemporaryDir[];
+COMPONENT_EXPORT(STORAGE_COMMON) extern const char kExternalDir[];
+COMPONENT_EXPORT(STORAGE_COMMON) extern const char kIsolatedDir[];
+COMPONENT_EXPORT(STORAGE_COMMON) extern const char kTestDir[];
 
-class STORAGE_COMMON_EXPORT VirtualPath {
+class COMPONENT_EXPORT(STORAGE_COMMON) VirtualPath {
  public:
   static const base::FilePath::CharType kRoot[];
   static const base::FilePath::CharType kSeparator;
@@ -67,11 +67,11 @@ class STORAGE_COMMON_EXPORT VirtualPath {
 // Example: For a URL 'filesystem:http://foo.com/temporary/foo/bar',
 // |origin_url| is set to 'http://foo.com', |type| is set to
 // kFileSystemTypeTemporary, and |virtual_path| is set to 'foo/bar'.
-STORAGE_COMMON_EXPORT bool ParseFileSystemSchemeURL(
-    const GURL& url,
-    GURL* origin_url,
-    FileSystemType* type,
-    base::FilePath* virtual_path);
+COMPONENT_EXPORT(STORAGE_COMMON)
+bool ParseFileSystemSchemeURL(const GURL& url,
+                              GURL* origin_url,
+                              FileSystemType* type,
+                              base::FilePath* virtual_path);
 
 // Returns the root URI of the filesystem that can be specified by a pair of
 // |origin_url| and |type|.  The returned URI can be used as a root path
@@ -82,8 +82,8 @@ STORAGE_COMMON_EXPORT bool ParseFileSystemSchemeURL(
 // returns URL without the filesystem ID.
 //
 // |type| needs to be public type as the returned URI is given to the renderer.
-STORAGE_COMMON_EXPORT GURL GetFileSystemRootURI(const GURL& origin_url,
-                                                       FileSystemType type);
+COMPONENT_EXPORT(STORAGE_COMMON)
+GURL GetFileSystemRootURI(const GURL& origin_url, FileSystemType type);
 
 // Returns the name for the filesystem that is specified by a pair of
 // |origin_url| and |type|.
@@ -96,77 +96,79 @@ STORAGE_COMMON_EXPORT GURL GetFileSystemRootURI(const GURL& origin_url,
 // Example:
 //   The name for a TEMPORARY filesystem of "http://www.example.com:80/"
 //   should look like: "http_www.example.host_80:temporary"
-STORAGE_COMMON_EXPORT std::string
-GetFileSystemName(const GURL& origin_url, FileSystemType type);
+COMPONENT_EXPORT(STORAGE_COMMON)
+std::string GetFileSystemName(const GURL& origin_url, FileSystemType type);
 
 // Converts FileSystemType |type| to/from the StorageType |storage_type| that
 // is used for the unified quota system.
 // (Basically this naively maps TEMPORARY storage type to TEMPORARY filesystem
 // type, PERSISTENT storage type to PERSISTENT filesystem type and vice versa.)
-STORAGE_COMMON_EXPORT FileSystemType
-QuotaStorageTypeToFileSystemType(blink::mojom::StorageType storage_type);
+COMPONENT_EXPORT(STORAGE_COMMON)
+FileSystemType QuotaStorageTypeToFileSystemType(
+    blink::mojom::StorageType storage_type);
 
-STORAGE_COMMON_EXPORT blink::mojom::StorageType
-FileSystemTypeToQuotaStorageType(FileSystemType type);
+COMPONENT_EXPORT(STORAGE_COMMON)
+blink::mojom::StorageType FileSystemTypeToQuotaStorageType(FileSystemType type);
 
 // Returns the string representation of the given filesystem |type|.
 // Returns an empty string if the |type| is invalid.
-STORAGE_COMMON_EXPORT std::string
-GetFileSystemTypeString(FileSystemType type);
+COMPONENT_EXPORT(STORAGE_COMMON)
+std::string GetFileSystemTypeString(FileSystemType type);
 
 // Sets type to FileSystemType enum that corresponds to the string name.
 // Returns false if the |type_string| is invalid.
-STORAGE_COMMON_EXPORT bool GetFileSystemPublicType(
-    std::string type_string,
-    blink::WebFileSystemType* type);
+COMPONENT_EXPORT(STORAGE_COMMON)
+bool GetFileSystemPublicType(std::string type_string,
+                             blink::WebFileSystemType* type);
 
 // Encodes |file_path| to a string.
 // Following conditions should be held:
 //  - StringToFilePath(FilePathToString(path)) == path
 //  - StringToFilePath(FilePathToString(path) + "/" + "SubDirectory") ==
 //    path.AppendASCII("SubDirectory");
-STORAGE_COMMON_EXPORT std::string FilePathToString(
-    const base::FilePath& file_path);
+COMPONENT_EXPORT(STORAGE_COMMON)
+std::string FilePathToString(const base::FilePath& file_path);
 
 // Decode a file path from |file_path_string|.
-STORAGE_COMMON_EXPORT base::FilePath StringToFilePath(
-    const std::string& file_path_string);
+COMPONENT_EXPORT(STORAGE_COMMON)
+base::FilePath StringToFilePath(const std::string& file_path_string);
 
 // Generate a file system name for the given arguments. Should only be used by
 // platform apps.
-STORAGE_COMMON_EXPORT std::string GetIsolatedFileSystemName(
-    const GURL& origin_url,
-    const std::string& filesystem_id);
+COMPONENT_EXPORT(STORAGE_COMMON)
+std::string GetIsolatedFileSystemName(const GURL& origin_url,
+                                      const std::string& filesystem_id);
 
 // Find the file system id from |filesystem_name|. Should only be used by
 // platform apps. This function will return false if the file system name is
 // not of the form {origin}:Isolated_{id}, and will also check that there is an
 // origin and id present. It will not check that the origin or id are valid.
-STORAGE_COMMON_EXPORT bool CrackIsolatedFileSystemName(
-    const std::string& filesystem_name,
-    std::string* filesystem_id);
+COMPONENT_EXPORT(STORAGE_COMMON)
+bool CrackIsolatedFileSystemName(const std::string& filesystem_name,
+                                 std::string* filesystem_id);
 
 // Validates the given isolated file system id.
-STORAGE_COMMON_EXPORT bool ValidateIsolatedFileSystemId(
-    const std::string& filesystem_id);
+COMPONENT_EXPORT(STORAGE_COMMON)
+bool ValidateIsolatedFileSystemId(const std::string& filesystem_id);
 
 // Returns the root URI for an isolated filesystem for origin |origin_url|
 // and |filesystem_id|. If the |optional_root_name| is given the resulting
 // root URI will point to the subfolder within the isolated filesystem.
-STORAGE_COMMON_EXPORT std::string GetIsolatedFileSystemRootURIString(
+COMPONENT_EXPORT(STORAGE_COMMON)
+std::string GetIsolatedFileSystemRootURIString(
     const GURL& origin_url,
     const std::string& filesystem_id,
     const std::string& optional_root_name);
 
 // Returns the root URI for an external filesystem for origin |origin_url|
 // and |mount_name|.
-STORAGE_COMMON_EXPORT std::string GetExternalFileSystemRootURIString(
-    const GURL& origin_url,
-    const std::string& mount_name);
+COMPONENT_EXPORT(STORAGE_COMMON)
+std::string GetExternalFileSystemRootURIString(const GURL& origin_url,
+                                               const std::string& mount_name);
 
 // Translates the net::Error to base::File::Error.
-STORAGE_COMMON_EXPORT base::File::Error
-NetErrorToFileError(int error);
+COMPONENT_EXPORT(STORAGE_COMMON)
+base::File::Error NetErrorToFileError(int error);
 
 }  // namespace storage
 

@@ -4,6 +4,8 @@
 
 #include "media/gpu/vaapi/vaapi_utils.h"
 
+#include <type_traits>
+
 #include <va/va.h>
 
 #include "base/logging.h"
@@ -51,9 +53,10 @@ ScopedVABufferMapping::ScopedVABufferMapping(
 }
 
 ScopedVABufferMapping::~ScopedVABufferMapping() {
-  lock_->AssertAcquired();
-  if (va_buffer_data_)
+  if (va_buffer_data_) {
+    lock_->AssertAcquired();
     Unmap();
+  }
 }
 
 VAStatus ScopedVABufferMapping::Unmap() {
@@ -81,6 +84,7 @@ ScopedVAImage::ScopedVAImage(base::Lock* lock,
     LOG(ERROR) << "vaCreateImage failed: " << vaErrorStr(result);
     return;
   }
+  DCHECK_NE(image_->image_id, VA_INVALID_ID);
 
   result = vaGetImage(va_display_, va_surface_id, 0, 0, size.width(),
                       size.height(), image_->image_id);
@@ -94,11 +98,13 @@ ScopedVAImage::ScopedVAImage(base::Lock* lock,
 }
 
 ScopedVAImage::~ScopedVAImage() {
-  base::AutoLock auto_lock(*lock_);
+  if (image_->image_id != VA_INVALID_ID) {
+    base::AutoLock auto_lock(*lock_);
 
-  // |va_buffer_| has to be deleted before vaDestroyImage().
-  va_buffer_.release();
-  vaDestroyImage(va_display_, image_->image_id);
+    // |va_buffer_| has to be deleted before vaDestroyImage().
+    va_buffer_.release();
+    vaDestroyImage(va_display_, image_->image_id);
+  }
 }
 
 bool FillVP8DataStructuresAndPassToVaapiWrapper(
@@ -200,8 +206,8 @@ bool FillVP8DataStructuresAndPassToVaapiWrapper(
 
   CheckedMemcpy(pic_param.mb_segment_tree_probs, sgmnt_hdr.segment_prob);
 
-  static_assert(base::size(decltype(sgmnt_hdr.lf_update_value){}) ==
-                    base::size(decltype(pic_param.loop_filter_level){}),
+  static_assert(std::extent<decltype(sgmnt_hdr.lf_update_value)>() ==
+                    std::extent<decltype(pic_param.loop_filter_level)>(),
                 "loop filter level arrays mismatch");
   for (size_t i = 0; i < base::size(sgmnt_hdr.lf_update_value); ++i) {
     int lf_level = lf_hdr.level;
@@ -220,14 +226,14 @@ bool FillVP8DataStructuresAndPassToVaapiWrapper(
   }
 
   static_assert(
-      base::size(decltype(lf_hdr.ref_frame_delta){}) ==
-          base::size(decltype(pic_param.loop_filter_deltas_ref_frame){}),
+      std::extent<decltype(lf_hdr.ref_frame_delta)>() ==
+          std::extent<decltype(pic_param.loop_filter_deltas_ref_frame)>(),
       "loop filter deltas arrays size mismatch");
-  static_assert(base::size(decltype(lf_hdr.mb_mode_delta){}) ==
-                    base::size(decltype(pic_param.loop_filter_deltas_mode){}),
+  static_assert(std::extent<decltype(lf_hdr.mb_mode_delta)>() ==
+                    std::extent<decltype(pic_param.loop_filter_deltas_mode)>(),
                 "loop filter deltas arrays size mismatch");
-  static_assert(base::size(decltype(lf_hdr.ref_frame_delta){}) ==
-                    base::size(decltype(lf_hdr.mb_mode_delta){}),
+  static_assert(std::extent<decltype(lf_hdr.ref_frame_delta)>() ==
+                    std::extent<decltype(lf_hdr.mb_mode_delta)>(),
                 "loop filter deltas arrays size mismatch");
   for (size_t i = 0; i < base::size(lf_hdr.ref_frame_delta); ++i) {
     pic_param.loop_filter_deltas_ref_frame[i] = lf_hdr.ref_frame_delta[i];

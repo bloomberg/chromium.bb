@@ -116,18 +116,18 @@ void printDot(const ValidationState_t& _, const BasicBlock& other) {
     block_string += "end ";
   } else {
     for (auto block : *other.successors()) {
-      block_string += _.getIdOrName(block->id()) + " ";
+      block_string += _.getIdName(block->id()) + " ";
     }
   }
-  printf("%10s -> {%s\b}\n", _.getIdOrName(other.id()).c_str(),
+  printf("%10s -> {%s\b}\n", _.getIdName(other.id()).c_str(),
          block_string.c_str());
 }
 
 void PrintBlocks(ValidationState_t& _, Function func) {
   assert(func.first_block());
 
-  printf("%10s -> %s\n", _.getIdOrName(func.id()).c_str(),
-         _.getIdOrName(func.first_block()->id()).c_str());
+  printf("%10s -> %s\n", _.getIdName(func.id()).c_str(),
+         _.getIdName(func.first_block()->id()).c_str());
   for (const auto& block : func.ordered_blocks()) {
     printDot(_, *block);
   }
@@ -145,7 +145,7 @@ void PrintBlocks(ValidationState_t& _, Function func) {
 
 UNUSED(void PrintDotGraph(ValidationState_t& _, Function func)) {
   if (func.first_block()) {
-    std::string func_name(_.getIdOrName(func.id()));
+    std::string func_name(_.getIdName(func.id()));
     printf("digraph %s {\n", func_name.c_str());
     PrintBlocks(_, func);
     printf("}\n");
@@ -169,26 +169,98 @@ spv_result_t ValidateForwardDecls(ValidationState_t& _) {
          << id_str.substr(0, id_str.size() - 1);
 }
 
+std::vector<std::string> CalculateNamesForEntryPoint(ValidationState_t& _,
+                                                     const uint32_t id) {
+  auto id_descriptions = _.entry_point_descriptions(id);
+  auto id_names = std::vector<std::string>();
+  id_names.reserve((id_descriptions.size()));
+
+  for (auto description : id_descriptions) id_names.push_back(description.name);
+
+  return id_names;
+}
+
+spv_result_t ValidateEntryPointNameUnique(ValidationState_t& _,
+                                          const uint32_t id) {
+  auto id_names = CalculateNamesForEntryPoint(_, id);
+  const auto names =
+      std::unordered_set<std::string>(id_names.begin(), id_names.end());
+
+  if (id_names.size() != names.size()) {
+    std::sort(id_names.begin(), id_names.end());
+    for (size_t i = 0; i < id_names.size() - 1; i++) {
+      if (id_names[i] == id_names[i + 1]) {
+        return _.diag(SPV_ERROR_INVALID_BINARY, _.FindDef(id))
+               << "Entry point name \"" << id_names[i]
+               << "\" is not unique, which is not allow in WebGPU env.";
+      }
+    }
+  }
+
+  for (const auto other_id : _.entry_points()) {
+    if (other_id == id) continue;
+    const auto other_id_names = CalculateNamesForEntryPoint(_, other_id);
+    for (const auto other_id_name : other_id_names) {
+      if (names.find(other_id_name) != names.end()) {
+        return _.diag(SPV_ERROR_INVALID_BINARY, _.FindDef(id))
+               << "Entry point name \"" << other_id_name
+               << "\" is not unique, which is not allow in WebGPU env.";
+      }
+    }
+  }
+
+  return SPV_SUCCESS;
+}
+
+spv_result_t ValidateEntryPointNamesUnique(ValidationState_t& _) {
+  for (const auto id : _.entry_points()) {
+    auto result = ValidateEntryPointNameUnique(_, id);
+    if (result != SPV_SUCCESS) return result;
+  }
+  return SPV_SUCCESS;
+}
+
 // Entry point validation. Based on 2.16.1 (Universal Validation Rules) of the
 // SPIRV spec:
 // * There is at least one OpEntryPoint instruction, unless the Linkage
 //   capability is being used.
 // * No function can be targeted by both an OpEntryPoint instruction and an
 //   OpFunctionCall instruction.
+//
+// Additionally enforces that entry points for Vulkan and WebGPU should not have
+// recursion. And that entry names should be unique for WebGPU.
 spv_result_t ValidateEntryPoints(ValidationState_t& _) {
   _.ComputeFunctionToEntryPointMapping();
+  _.ComputeRecursiveEntryPoints();
 
   if (_.entry_points().empty() && !_.HasCapability(SpvCapabilityLinkage)) {
     return _.diag(SPV_ERROR_INVALID_BINARY, nullptr)
            << "No OpEntryPoint instruction was found. This is only allowed if "
               "the Linkage capability is being used.";
   }
+
   for (const auto& entry_point : _.entry_points()) {
     if (_.IsFunctionCallTarget(entry_point)) {
       return _.diag(SPV_ERROR_INVALID_BINARY, _.FindDef(entry_point))
              << "A function (" << entry_point
              << ") may not be targeted by both an OpEntryPoint instruction and "
                 "an OpFunctionCall instruction.";
+    }
+
+    // For Vulkan and WebGPU, the static function-call graph for an entry point
+    // must not contain cycles.
+    if (spvIsVulkanOrWebGPUEnv(_.context()->target_env)) {
+      if (_.recursive_entry_points().find(entry_point) !=
+          _.recursive_entry_points().end()) {
+        return _.diag(SPV_ERROR_INVALID_BINARY, _.FindDef(entry_point))
+               << "Entry points may not have a call graph with cycles.";
+      }
+    }
+
+    // For WebGPU all entry point names must be unique.
+    if (spvIsWebGPUEnv(_.context()->target_env)) {
+      const auto result = ValidateEntryPointNamesUnique(_);
+      if (result != SPV_SUCCESS) return result;
     }
   }
 
@@ -207,6 +279,12 @@ spv_result_t ValidateBinaryUsingContextAndValidationState(
     return DiagnosticStream(position, context.consumer, "",
                             SPV_ERROR_INVALID_BINARY)
            << "Invalid SPIR-V magic number.";
+  }
+
+  if (spvIsWebGPUEnv(context.target_env) && endian != SPV_ENDIANNESS_LITTLE) {
+    return DiagnosticStream(position, context.consumer, "",
+                            SPV_ERROR_INVALID_BINARY)
+           << "WebGPU requires SPIR-V to be little endian.";
   }
 
   spv_header_t header;
@@ -279,7 +357,15 @@ spv_result_t ValidateBinaryUsingContextAndValidationState(
                  << "A FunctionCall must happen within a function body.";
         }
 
-        vstate->AddFunctionCallTarget(inst->GetOperandAs<uint32_t>(2));
+        const auto called_id = inst->GetOperandAs<uint32_t>(2);
+        if (spvIsWebGPUEnv(context.target_env) &&
+            !vstate->IsFunctionCallDefined(called_id)) {
+          return vstate->diag(SPV_ERROR_INVALID_LAYOUT, &instruction)
+                 << "For WebGPU, functions need to be defined before being "
+                    "called.";
+        }
+
+        vstate->AddFunctionCallTarget(called_id);
       }
 
       if (vstate->in_function_body()) {
@@ -305,7 +391,6 @@ spv_result_t ValidateBinaryUsingContextAndValidationState(
       Instruction* inst = const_cast<Instruction*>(&instruction);
       vstate->RegisterInstruction(inst);
     }
-    if (auto error = UpdateIdUse(*vstate, &instruction)) return error;
   }
 
   if (!vstate->has_memory_model_specified())
@@ -318,6 +403,19 @@ spv_result_t ValidateBinaryUsingContextAndValidationState(
 
   // Catch undefined forward references before performing further checks.
   if (auto error = ValidateForwardDecls(*vstate)) return error;
+
+  // ID usage needs be handled in its own iteration of the instructions,
+  // between the two others. It depends on the first loop to have been
+  // finished, so that all instructions have been registered. And the following
+  // loop depends on all of the usage data being populated. Thus it cannot live
+  // in either of those iterations.
+  // It should also live after the forward declaration check, since it will
+  // have problems with missing forward declarations, but give less useful error
+  // messages.
+  for (size_t i = 0; i < vstate->ordered_instructions().size(); ++i) {
+    auto& instruction = vstate->ordered_instructions()[i];
+    if (auto error = UpdateIdUse(*vstate, &instruction)) return error;
+  }
 
   // Validate individual opcodes.
   for (size_t i = 0; i < vstate->ordered_instructions().size(); ++i) {

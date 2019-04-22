@@ -159,6 +159,7 @@ bool AudioDecoderAndroid::Resume() {
   TRACE_FUNCTION_ENTRY0();
   DCHECK(sink_);
   sink_->SetPaused(false);
+  last_sink_delay_ = AudioDecoderAndroid::RenderingDelay();
   return true;
 }
 
@@ -353,9 +354,9 @@ AudioDecoderAndroid::RenderingDelay AudioDecoderAndroid::GetRenderingDelay() {
     }
   }
 
-  LOG(INFO) << __func__ << ":"
-            << " delay=" << delay.delay_microseconds
-            << " ts=" << delay.timestamp_microseconds;
+  DVLOG(2) << __func__ << ":"
+           << " delay=" << delay.delay_microseconds
+           << " ts=" << delay.timestamp_microseconds;
 
   return delay;
 }

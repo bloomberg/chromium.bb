@@ -101,7 +101,7 @@ uint64_t MemoryAllocatorDump::GetSizeInternal() const {
     }
   }
   return 0;
-};
+}
 
 MemoryAllocatorDump::Entry::Entry() : entry_type(kString), value_uint64() {}
 MemoryAllocatorDump::Entry::Entry(MemoryAllocatorDump::Entry&&) noexcept =

@@ -19,6 +19,7 @@
 <translation id="1591562245178063882">本月</translation>
 <translation id="1637811476055996098">選擇檔案</translation>
 <translation id="1650423536718072820">重要引述</translation>
+<translation id="1727886345390570319">不要顯示隱藏式輔助字幕選單</translation>
 <translation id="1729654308190250600">請輸入電子郵件地址。</translation>
 <translation id="1758486001363313524">其他...</translation>
 <translation id="1806710327868736751">警示對話方塊</translation>
@@ -41,6 +42,7 @@
 <translation id="2291999235780842123">核取方塊</translation>
 <translation id="2311842470354187719">分頁符號</translation>
 <translation id="2335594187091864976">日期和時間選擇器</translation>
+<translation id="245932805758469625">影片剩餘秒數</translation>
 <translation id="248395913932153421">日</translation>
 <translation id="2507943997699731163">請填寫這個欄位。</translation>
 <translation id="2508569020611168319">分頁清單</translation>
@@ -50,7 +52,6 @@
 <translation id="2653659639078652383">提交</translation>
 <translation id="2657045182931379222">圖形物件</translation>
 <translation id="2674318244760992338">頁尾</translation>
-<translation id="2706474812903655270">目前在子母畫面模式中播放這部影片</translation>
 <translation id="2709516037105925701">自動填入</translation>
 <translation id="2723001399770238859">音訊</translation>
 <translation id="2746543609216772311">必須輸入 <ph name="MINIMUM_DATE_OR_TIME" /> 或之後的值。</translation>
@@ -71,11 +72,10 @@
 <translation id="3450233048674729344">值必須小於或等於 <ph name="MAXIMUM" />。</translation>
 <translation id="3486220673238053218">定義</translation>
 <translation id="3557673793733683882">標題 <ph name="HEADING_LEVEL" /></translation>
-<translation id="3639613635497528239">電影剩餘秒數</translation>
+<translation id="3685101356851116974">未標示的圖片</translation>
 <translation id="3706100364254443312">切換</translation>
 <translation id="3732799496749320381">月</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
-<translation id="3785482301506746191">影片時間拖曳工具</translation>
 <translation id="3808586225841795776">字詞</translation>
 <translation id="3822383571486410024">請將這段文字加長到 <ph name="MIN_CHARACTERS" /> 個字元以上 (目前使用字元數：<ph name="CURRENT_LENGTH" />)。</translation>
 <translation id="383465348367842624">「<ph name="ATSIGN" />」後面的部分不應包含「<ph name="INVALIDCHARACTER" />」符號。</translation>
@@ -94,8 +94,10 @@
 <translation id="4360991593054037559">請輸入有效值。最接近的兩個有效值分別是 <ph name="VALID_VALUE_LOW" /> 和 <ph name="VALID_VALUE_HIGHER" />。</translation>
 <translation id="4384583879834880242">問與答</translation>
 <translation id="4413860115965805769">選單按鈕</translation>
+<translation id="4444765639179266822">圖片上的文字似乎是：<ph name="OCR_TEXT" /></translation>
 <translation id="4446524499724042288">詞彙解釋參考資料</translation>
 <translation id="4522570452068850558">詳細資訊</translation>
+<translation id="4542388879936266156">剩餘時間：<ph name="REMAINING_TIME" /></translation>
 <translation id="4597532268155981612">表單</translation>
 <translation id="4661075872484491155">tree</translation>
 <translation id="4664250907885839816">「<ph name="ATSIGN" />」後面的部分不應包含「<ph name="INVALIDCHARACTER" />」符號。</translation>
@@ -111,6 +113,7 @@
 <translation id="4992066212339426712">取消靜音</translation>
 <translation id="49969490063480558">請輸入「<ph name="ATSIGN" />」後面的部分。「<ph name="INVALIDADDRESS" />」不是完整值。</translation>
 <translation id="5034860022980953847">進度指標</translation>
+<translation id="5090250355906949916">影片時間拖曳工具</translation>
 <translation id="5093189678851173835">題詞</translation>
 <translation id="5117590920725113268">顯示下一個月</translation>
 <translation id="512758898067543763">列標題</translation>
@@ -118,6 +121,7 @@
 <translation id="5164977714490026579">值必須大於或等於 <ph name="MINIMUM" />。</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">請輸入「<ph name="ATSIGN" />」後面的部分。「<ph name="INVALIDADDRESS" />」不是完整值。</translation>
+<translation id="5334352251556557839">無法播放媒體。</translation>
 <translation id="5406322316791861025">圖表</translation>
 <translation id="5453733299334684579">樹狀目錄項目</translation>
 <translation id="5466621249238537318">請選取一或多個檔案。</translation>
@@ -144,12 +148,16 @@
 <translation id="6150588977291308318">參考書目</translation>
 <translation id="6164829606128959761">計量器</translation>
 <translation id="6166809985690652833">後記</translation>
+<translation id="6209276755895393898">圖片內容似乎是：<ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">詞彙解釋</translation>
+<translation id="628938136236500310">正在以子母畫面模式播放影片</translation>
 <translation id="6398862346408813489">顯示月份選取面板</translation>
 <translation id="6404546809543547843">音訊時間點拖曳工具</translation>
+<translation id="6443871981718447451">顯示隱藏式輔助字幕選單</translation>
 <translation id="6453774872122745852">鳴謝</translation>
 <translation id="648732519525291180">時間選擇器</translation>
 <translation id="6550675742724504774">選項</translation>
+<translation id="6572309429103589720">文法錯誤</translation>
 <translation id="658823671542763450">進入全螢幕</translation>
 <translation id="663493177488814956">資訊提供</translation>
 <translation id="6637586476836377253">記錄</translation>
@@ -162,7 +170,6 @@
 <translation id="6820355525329141109">無法載入外掛程式。</translation>
 <translation id="6820615603175220800">參考書目資料</translation>
 <translation id="6843725295806269523">靜音</translation>
-<translation id="6853785296079745596">不顯示字幕</translation>
 <translation id="6885760532393684712">目錄</translation>
 <translation id="689129560213475294">版權頁標記</translation>
 <translation id="6934078000481955284">引用標記</translation>
@@ -170,25 +177,29 @@
 <translation id="6981594929165378967">插入</translation>
 <translation id="6989848892321993519">請將這段文字加長到 <ph name="MIN_CHARACTERS" /> 個字元以上 (目前已有 1 個字元)。</translation>
 <translation id="709897737746224366">請符合要求的格式。</translation>
+<translation id="7118469954320184356">目前沒有說明。</translation>
 <translation id="7139483182332611405">前言</translation>
-<translation id="7223624360433298498">已播放時間</translation>
 <translation id="7263440858009898357">請選取一個清單中的項目。</translation>
 <translation id="727747134524199931">欄標題</translation>
+<translation id="7320576522385648310">緩衝處理中</translation>
 <translation id="7353453495576941748">參與名單</translation>
 <translation id="7364796246159120393">選擇檔案</translation>
 <translation id="739024184232394898">其他...</translation>
 <translation id="7405738980073107433">章節附註</translation>
+<translation id="7410239719251593705">圖片似乎含有成人內容。目前沒有說明。</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7491962110804786152">分頁</translation>
 <translation id="7514365320538308">下載</translation>
 <translation id="7529102961911894712">反向連結</translation>
+<translation id="7533959249147584474">未標示的圖片</translation>
 <translation id="7647456547678091388">提示</translation>
 <translation id="7661956066982048809">圖形文件</translation>
 <translation id="7673697353781729403">小時</translation>
 <translation id="7681220483256441252">索引</translation>
-<translation id="7720026100085573005">剩餘時間</translation>
 <translation id="7740050170769002709">HTML 內容</translation>
+<translation id="7745230546936012372">如要為缺少說明的圖片取得說明，請開啟內容選單。</translation>
 <translation id="7750228210027921155">子母畫面</translation>
+<translation id="775297008183122718">無效的輸入值</translation>
 <translation id="7789962463072032349">暫停</translation>
 <translation id="7802800022689234070">顯示/隱藏三角標記</translation>
 <translation id="7888071071722539607">請在電子郵件地址中包含「<ph name="ATSIGN" />」。「<ph name="INVALIDADDRESS" />」未包含「<ph name="ATSIGN" />」。</translation>
@@ -197,10 +208,13 @@
 <translation id="8053789581856978548">搜尋文字欄位</translation>
 <translation id="8057695513531652401">聲明</translation>
 <translation id="8105797009065549151">附註參考資料</translation>
+<translation id="811583516810654505">正在取得說明...</translation>
 <translation id="8117451130807776954">本週</translation>
 <translation id="8199524924445686405"> 年 </translation>
+<translation id="8261464734335370856">拼字錯誤</translation>
 <translation id="8284326494547611709">字幕</translation>
 <translation id="835897206747267392">無效的值。</translation>
+<translation id="8403857369060869934">經過時間：<ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">分輯</translation>
 <translation id="8433900881053900389">工具列</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES" /> 個檔案</translation>
@@ -225,7 +239,6 @@
 <translation id="8987927404178983737">月</translation>
 <translation id="901493112792887934">目前時間 (以秒為單位)</translation>
 <translation id="9048119486235211610">導覽</translation>
-<translation id="9050748414552849310">顯示字幕</translation>
 <translation id="9062295712474918030">文件</translation>
 <translation id="9093215626363556771">離開子母畫面</translation>
 <translation id="9108370397979208512">數學</translation>

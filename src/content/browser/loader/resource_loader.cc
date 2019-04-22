@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/location.h"
@@ -21,17 +22,16 @@
 #include "content/browser/loader/resource_loader_delegate.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/service_worker/service_worker_request_handler.h"
-#include "content/browser/service_worker/service_worker_response_info.h"
 #include "content/browser/ssl/ssl_client_auth_handler.h"
 #include "content/browser/ssl/ssl_manager.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/login_delegate.h"
-#include "content/public/common/appcache_info.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/navigation_policy.h"
 #include "content/public/common/resource_type.h"
 #include "net/base/io_buffer.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/load_flags.h"
 #include "net/cert/symantec_certs.h"
 #include "net/http/http_response_headers.h"
@@ -45,6 +45,7 @@
 #include "services/network/loader_util.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/throttling/scoped_throttling_token.h"
+#include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 #include "url/url_constants.h"
 
 using base::TimeDelta;
@@ -84,7 +85,7 @@ void PopulateResourceResponse(
   response->head.alpn_negotiated_protocol =
       response_info.alpn_negotiated_protocol;
   response->head.connection_info = response_info.connection_info;
-  response->head.socket_address = response_info.socket_address;
+  response->head.remote_endpoint = response_info.remote_endpoint;
   response->head.proxy_server = request->proxy_server();
   response->head.network_accessed = response_info.network_accessed;
   response->head.async_revalidation_requested =
@@ -108,11 +109,7 @@ void PopulateResourceResponse(
     }
   }
 
-  const ServiceWorkerResponseInfo* service_worker_info =
-      ServiceWorkerResponseInfo::ForRequest(request);
-  if (service_worker_info)
-    service_worker_info->GetExtraResponseInfo(&response->head);
-  response->head.appcache_id = kAppCacheNoCacheId;
+  response->head.appcache_id = blink::mojom::kAppCacheNoCacheId;
   AppCacheInterceptor::GetExtraResponseInfo(
       request, &response->head.appcache_id,
       &response->head.appcache_manifest_url);
@@ -123,10 +120,6 @@ void PopulateResourceResponse(
     response->head.cert_status = request->ssl_info().cert_status;
     response->head.ct_policy_compliance =
         request->ssl_info().ct_policy_compliance;
-    response->head.is_legacy_symantec_cert =
-        (!net::IsCertStatusError(response->head.cert_status) ||
-         net::IsCertStatusMinorError(response->head.cert_status)) &&
-        net::IsLegacySymantecCert(request->ssl_info().public_key_hashes);
     net::SSLVersion ssl_version = net::SSLConnectionStatusToVersion(
         request->ssl_info().connection_status);
     response->head.is_legacy_tls_version =
@@ -149,7 +142,7 @@ void PopulateResourceResponse(
 class ResourceLoader::Controller : public ResourceController {
  public:
   explicit Controller(ResourceLoader* resource_loader)
-      : resource_loader_(resource_loader){};
+      : resource_loader_(resource_loader) {}
 
   ~Controller() override {}
 
@@ -157,14 +150,16 @@ class ResourceLoader::Controller : public ResourceController {
   void Resume() override {
     MarkAsUsed();
     resource_loader_->Resume(true /* called_from_resource_controller */,
-                             base::nullopt);
+                             {} /* removed_headers */,
+                             {} /* modified_headers */);
   }
 
-  void ResumeForRedirect(const base::Optional<net::HttpRequestHeaders>&
-                             modified_request_headers) override {
+  void ResumeForRedirect(
+      const std::vector<std::string>& removed_headers,
+      const net::HttpRequestHeaders& modified_headers) override {
     MarkAsUsed();
     resource_loader_->Resume(true /* called_from_resource_controller */,
-                             modified_request_headers);
+                             removed_headers, modified_headers);
   }
 
   void Cancel() override {
@@ -222,7 +217,8 @@ class ResourceLoader::ScopedDeferral {
     // anything. Go ahead and resume the request now.
     if (old_deferred_stage == DEFERRED_NONE)
       resource_loader_->Resume(false /* called_from_resource_controller */,
-                               base::nullopt);
+                               {} /* removed_headers */,
+                               {} /* modified_headers */);
   }
 
  private:
@@ -272,8 +268,7 @@ ResourceLoader::~ResourceLoader() {
     }
   }
 
-  if (login_delegate_.get())
-    login_delegate_->OnRequestCancelled();
+  login_delegate_.reset();
   ssl_client_auth_handler_.reset();
 
   // Run ResourceHandler destructor before we tear-down the rest of our state
@@ -363,12 +358,9 @@ void ResourceLoader::OnReceivedRedirect(net::URLRequest* unused,
 
   ResourceRequestInfoImpl* info = GetRequestInfo();
 
-  // With PlzNavigate for frame navigations this check is done in the
+  // For frame navigations this check is done in the
   // NavigationRequest::OnReceivedRedirect() function.
-  bool check_handled_elsewhere = IsBrowserSideNavigationEnabled() &&
-      IsResourceTypeFrame(info->GetResourceType());
-
-  if (!check_handled_elsewhere) {
+  if (!IsResourceTypeFrame(info->GetResourceType())) {
     if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanRequestURL(
             info->GetChildID(), redirect_info.new_url)) {
       DVLOG(1) << "Denied unauthorized request for "
@@ -406,7 +398,7 @@ void ResourceLoader::OnReceivedRedirect(net::URLRequest* unused,
 }
 
 void ResourceLoader::OnAuthRequired(net::URLRequest* unused,
-                                    net::AuthChallengeInfo* auth_info) {
+                                    const net::AuthChallengeInfo& auth_info) {
   DCHECK_EQ(request_.get(), unused);
 
   ResourceRequestInfoImpl* info = GetRequestInfo();
@@ -418,10 +410,10 @@ void ResourceLoader::OnAuthRequired(net::URLRequest* unused,
   // Create a login dialog on the UI thread to get authentication data, or pull
   // from cache and continue on the IO thread.
 
-  DCHECK(!login_delegate_.get())
+  DCHECK(!login_delegate_)
       << "OnAuthRequired called with login_delegate pending";
   login_delegate_ = delegate_->CreateLoginDelegate(this, auth_info);
-  if (!login_delegate_.get())
+  if (!login_delegate_)
     request_->CancelAuth();
 }
 
@@ -531,13 +523,14 @@ void ResourceLoader::CancelCertificateSelection() {
   request_->CancelWithError(net::ERR_SSL_CLIENT_AUTH_CERT_NEEDED);
 }
 
-void ResourceLoader::Resume(
-    bool called_from_resource_controller,
-    const base::Optional<net::HttpRequestHeaders>& modified_request_headers) {
+void ResourceLoader::Resume(bool called_from_resource_controller,
+                            const std::vector<std::string>& removed_headers,
+                            const net::HttpRequestHeaders& modified_headers) {
   DeferredStage stage = deferred_stage_;
   deferred_stage_ = DEFERRED_NONE;
-  DCHECK(!modified_request_headers.has_value() || stage == DEFERRED_REDIRECT)
-      << "modified_request_headers can only be used with redirects";
+  DCHECK((removed_headers.empty() && modified_headers.IsEmpty()) ||
+         stage == DEFERRED_REDIRECT)
+      << "Modifying or removing headers can only be used with redirects";
   switch (stage) {
     case DEFERRED_NONE:
       NOTREACHED();
@@ -556,7 +549,7 @@ void ResourceLoader::Resume(
       // URLRequest::Start completes asynchronously, so starting the request now
       // won't result in synchronously calling into a ResourceHandler, if this
       // was called from Resume().
-      FollowDeferredRedirectInternal(modified_request_headers);
+      FollowDeferredRedirectInternal(removed_headers, modified_headers);
       break;
     case DEFERRED_ON_WILL_READ:
       // Always post a task, as synchronous resumes don't go through this
@@ -658,10 +651,7 @@ void ResourceLoader::CancelRequestInternal(int error, bool from_renderer) {
   // IO_PENDING?
   bool was_pending = request_->is_pending();
 
-  if (login_delegate_.get()) {
-    login_delegate_->OnRequestCancelled();
-    login_delegate_ = nullptr;
-  }
+  login_delegate_.reset();
   ssl_client_auth_handler_.reset();
 
   if (!started_request_) {
@@ -683,17 +673,17 @@ void ResourceLoader::CancelRequestInternal(int error, bool from_renderer) {
 }
 
 void ResourceLoader::FollowDeferredRedirectInternal(
-    const base::Optional<net::HttpRequestHeaders>& modified_request_headers) {
+    const std::vector<std::string>& removed_headers,
+    const net::HttpRequestHeaders& modified_headers) {
   DCHECK(!deferred_redirect_url_.is_empty());
   GURL redirect_url = deferred_redirect_url_;
   deferred_redirect_url_ = GURL();
   if (delegate_->HandleExternalProtocol(this, redirect_url)) {
-    DCHECK(!modified_request_headers.has_value())
-        << "ResourceLoaderDelegate::HandleExternalProtocol() with modified "
-           "headers was not supported yet. crbug.com/845683";
+    // Chrome doesn't make use of the request's headers to handle external
+    // protocol. Modifying headers here would be useless.
     Cancel();
   } else {
-    request_->FollowDeferredRedirect(modified_request_headers);
+    request_->FollowDeferredRedirect(removed_headers, modified_headers);
   }
 }
 

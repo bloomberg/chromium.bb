@@ -21,10 +21,12 @@ class IndexedBufferBindingHostTest : public GpuServiceTest {
   IndexedBufferBindingHostTest()
       : uniform_host_(new IndexedBufferBindingHost(kMaxBindings,
                                                    GL_UNIFORM_BUFFER,
-                                                   true)),
+                                                   true,
+                                                   false)),
         tf_host_(new IndexedBufferBindingHost(kMaxBindings,
                                               GL_TRANSFORM_FEEDBACK_BUFFER,
-                                              true)),
+                                              true,
+                                              false)),
         buffer_manager_(new BufferManager(nullptr, nullptr)) {
     buffer_manager_->CreateBuffer(kBufferClientId, kBufferServiceId);
     buffer_ = buffer_manager_->GetBuffer(kBufferClientId);
@@ -140,7 +142,7 @@ TEST_F(IndexedBufferBindingHostTest, RestoreBindings) {
   uniform_host_->DoBindBufferBase(kIndex, buffer_.get());
   // Set up the second host
   scoped_refptr<IndexedBufferBindingHost> other =
-      new IndexedBufferBindingHost(kMaxBindings, kTarget, true);
+      new IndexedBufferBindingHost(kMaxBindings, kTarget, true, false);
   EXPECT_CALL(*gl_, BindBufferRange(kTarget, kOtherIndex, kBufferServiceId,
                                     kOffset, clamped_size))
       .Times(1)

@@ -5,11 +5,11 @@
 #include "chrome/browser/chrome_browser_main_mac.h"
 
 #import <Cocoa/Cocoa.h>
-#include <libproc.h>
 #include <stdlib.h>
 #include <sys/mount.h>
 #include <sys/param.h>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -29,6 +29,7 @@
 #include "chrome/browser/browser_process.h"
 #import "chrome/browser/chrome_browser_application_mac.h"
 #include "chrome/browser/first_run/first_run.h"
+#include "chrome/browser/first_run/upgrade_util_mac.h"
 #include "chrome/browser/mac/install_from_dmg.h"
 #import "chrome/browser/mac/keystone_glue.h"
 #include "chrome/browser/mac/mac_startup_profiler.h"
@@ -44,6 +45,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/resource/resource_handle.h"
+#include "ui/native_theme/native_theme_mac.h"
 
 namespace {
 
@@ -66,7 +68,7 @@ void EnsureMetadataNeverIndexFile(const base::FilePath& user_data_dir) {
       FROM_HERE,
       {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
-      base::Bind(&EnsureMetadataNeverIndexFileOnFileThread, user_data_dir));
+      base::BindOnce(&EnsureMetadataNeverIndexFileOnFileThread, user_data_dir));
 }
 
 // Used for UMA; never alter existing values.
@@ -158,68 +160,14 @@ void RecordFilesystemStats() {
   UMA_HISTOGRAM_ENUMERATION("OSX.InstallationFilesystem", filesystem_type);
 }
 
-// Get the uid and executable path for a pid. Returns true iff successful.
-// |path_buffer| must be of PROC_PIDPATHINFO_MAXSIZE length.
-bool GetUIDAndPathOfPID(pid_t pid, char* path_buffer, uid_t* out_uid) {
-  struct proc_bsdshortinfo info;
-  int error = proc_pidinfo(pid, PROC_PIDT_SHORTBSDINFO, 0, &info, sizeof(info));
-  if (error <= 0)
-    return false;
-
-  error = proc_pidpath(pid, path_buffer, PROC_PIDPATHINFO_MAXSIZE);
-  if (error <= 0)
-    return false;
-
-  *out_uid = info.pbsi_uid;
-  return true;
-}
-
 void RecordInstanceStats() {
-  // Get list of all processes.
+  upgrade_util::ThisAndOtherUserCounts counts =
+      upgrade_util::GetCountOfOtherInstancesOfThisBinary();
 
-  int pid_array_size_needed = proc_listallpids(nullptr, 0);
-  if (pid_array_size_needed <= 0)
-    return;
-  std::vector<pid_t> pid_array(pid_array_size_needed * 4);  // slack
-  int pid_count = proc_listallpids(pid_array.data(),
-                                   pid_array.size() * sizeof(pid_array[0]));
-  if (pid_count <= 0)
-    return;
-
-  pid_array.resize(pid_count);
-
-  // Get info about this process.
-
-  const pid_t this_pid = getpid();
-  uid_t this_uid;
-  char this_path[PROC_PIDPATHINFO_MAXSIZE];
-  if (!GetUIDAndPathOfPID(this_pid, this_path, &this_uid))
-    return;
-
-  // Compare all other processes to this one.
-
-  int this_user_count = 0;
-  int other_user_count = 0;
-  for (pid_t pid : pid_array) {
-    if (pid == this_pid)
-      continue;
-
-    uid_t uid;
-    char path[PROC_PIDPATHINFO_MAXSIZE];
-    if (!GetUIDAndPathOfPID(pid, path, &uid))
-      continue;
-
-    if (strcmp(path, this_path) != 0)
-      continue;
-
-    if (uid == this_uid)
-      ++this_user_count;
-    else
-      ++other_user_count;
-  }
-
-  UMA_HISTOGRAM_COUNTS_100("OSX.OtherInstances.ThisUser", this_user_count);
-  UMA_HISTOGRAM_COUNTS_100("OSX.OtherInstances.OtherUser", other_user_count);
+  UMA_HISTOGRAM_COUNTS_100("OSX.OtherInstances.ThisUser",
+                           counts.this_user_count);
+  UMA_HISTOGRAM_COUNTS_100("OSX.OtherInstances.OtherUser",
+                           counts.other_user_count);
 }
 
 // Used for UMA; never alter existing values.
@@ -294,34 +242,19 @@ enum class StagingDirectoryStep {
   kNSTemporaryDirectory,
   kTMPDIRDirectory,
   kTmpDirectory,
-  kMaxValue = kTmpDirectory,
+  kTmpDirectoryDifferentVolume,
+  kMaxValue = kTmpDirectoryDifferentVolume,
 };
 
 void LogStagingDirectoryLocation(StagingDirectoryStep step) {
-  UMA_HISTOGRAM_ENUMERATION("OSX.StagingDirectoryLocation", step);
+  UMA_HISTOGRAM_ENUMERATION("OSX.StagingDirectoryLocation2", step);
 }
 
 void RecordStagingDirectoryStats() {
   NSURL* bundle_url = [base::mac::OuterBundle() bundleURL];
   NSFileManager* file_manager = [NSFileManager defaultManager];
 
-  // 1. NSItemReplacementDirectory
-
-  NSError* error = nil;
-  NSURL* item_replacement_dir =
-      [file_manager URLForDirectory:NSItemReplacementDirectory
-                           inDomain:NSUserDomainMask
-                  appropriateForURL:bundle_url
-                             create:YES
-                              error:&error];
-  if (item_replacement_dir && !error &&
-      IsDirectoryWriteable([item_replacement_dir path])) {
-    LogStagingDirectoryLocation(
-        StagingDirectoryStep::kItemReplacementDirectory);
-    return;
-  }
-
-  // 2. A directory alongside Chromium.
+  // 1. A directory alongside Chromium.
 
   NSURL* bundle_parent_url =
       [[bundle_url URLByStandardizingPath] URLByDeletingLastPathComponent];
@@ -335,7 +268,7 @@ void RecordStagingDirectoryStats() {
                                          isDirectory:&is_directory];
 
   BOOL success = true;
-  error = nil;
+  NSError* error = nil;
   if (!path_existed) {
     success = [file_manager createDirectoryAtURL:sibling_dir
                      withIntermediateDirectories:YES
@@ -357,6 +290,22 @@ void RecordStagingDirectoryStats() {
 
   if (success) {
     LogStagingDirectoryLocation(StagingDirectoryStep::kSiblingDirectory);
+    return;
+  }
+
+  // 2. NSItemReplacementDirectory
+
+  error = nil;
+  NSURL* item_replacement_dir =
+      [file_manager URLForDirectory:NSItemReplacementDirectory
+                           inDomain:NSUserDomainMask
+                  appropriateForURL:bundle_url
+                             create:YES
+                              error:&error];
+  if (item_replacement_dir && !error &&
+      IsDirectoryWriteable([item_replacement_dir path])) {
+    LogStagingDirectoryLocation(
+        StagingDirectoryStep::kItemReplacementDirectory);
     return;
   }
 
@@ -387,7 +336,14 @@ void RecordStagingDirectoryStats() {
     return;
   }
 
-  // 6. Give up.
+  // 6. /tmp, but different volume
+
+  if (IsDirectoryWriteable(tmp)) {
+    LogStagingDirectoryLocation(StagingDirectoryStep::kTmpDirectory);
+    return;
+  }
+
+  // 7. Give up.
 
   LogStagingDirectoryLocation(StagingDirectoryStep::kFailedToFindDirectory);
 }
@@ -426,6 +382,11 @@ int ChromeBrowserMainPartsMac::PreEarlyInitialization() {
   }
 
   return ChromeBrowserMainPartsPosix::PreEarlyInitialization();
+}
+
+void ChromeBrowserMainPartsMac::PostEarlyInitialization() {
+  ui::NativeThemeMac::MaybeUpdateBrowserAppearance();
+  ChromeBrowserMainPartsPosix::PostEarlyInitialization();
 }
 
 void ChromeBrowserMainPartsMac::PreMainMessageLoopStart() {
@@ -511,8 +472,7 @@ void ChromeBrowserMainPartsMac::PostProfileInit() {
   if (glue && ![glue isRegisteredAndActive]) {
     // If profile loading has failed, we still need to handle other tasks
     // like marking of the product as active.
-    [glue updateProfileCountsWithNumProfiles:0
-                         numSignedInProfiles:0];
+    [glue setRegistrationActive];
   }
 }
 

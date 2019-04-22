@@ -30,9 +30,9 @@ struct BLINK_COMMON_EXPORT
       const blink::IndexedDBDatabaseMetadata& metadata) {
     return metadata.max_object_store_id;
   }
-  static MapValuesArrayView<int64_t, blink::IndexedDBObjectStoreMetadata>
-  object_stores(const blink::IndexedDBDatabaseMetadata& metadata) {
-    return MapValuesToArray(metadata.object_stores);
+  static std::map<int64_t, blink::IndexedDBObjectStoreMetadata> object_stores(
+      const blink::IndexedDBDatabaseMetadata& metadata) {
+    return metadata.object_stores;
   }
   static bool Read(blink::mojom::IDBDatabaseMetadataDataView data,
                    blink::IndexedDBDatabaseMetadata* out);
@@ -97,17 +97,11 @@ struct BLINK_COMMON_EXPORT
   }
   static double date(const blink::IndexedDBKey& key) { return key.date(); }
   static double number(const blink::IndexedDBKey& key) { return key.number(); }
-  static blink::mojom::IDBDatalessKeyType other(
-      const blink::IndexedDBKey& key) {
-    switch (key.type()) {
-      case blink::kWebIDBKeyTypeInvalid:
-        return blink::mojom::IDBDatalessKeyType::Invalid;
-      case blink::kWebIDBKeyTypeNull:
-        return blink::mojom::IDBDatalessKeyType::Null;
-      default:
-        NOTREACHED();
-        return blink::mojom::IDBDatalessKeyType::Invalid;
-    }
+  static bool other_invalid(const blink::IndexedDBKey& key) {
+    return key.type() == blink::mojom::IDBKeyType::Invalid;
+  }
+  static bool other_null(const blink::IndexedDBKey& key) {
+    return key.type() == blink::mojom::IDBKeyType::Null;
   }
 };
 
@@ -171,9 +165,9 @@ struct BLINK_COMMON_EXPORT
       const blink::IndexedDBObjectStoreMetadata& metadata) {
     return metadata.max_index_id;
   }
-  static MapValuesArrayView<int64_t, blink::IndexedDBIndexMetadata> indexes(
+  static std::map<int64_t, blink::IndexedDBIndexMetadata> indexes(
       const blink::IndexedDBObjectStoreMetadata& metadata) {
-    return MapValuesToArray(metadata.indexes);
+    return metadata.indexes;
   }
   static bool Read(blink::mojom::IDBObjectStoreMetadataDataView data,
                    blink::IndexedDBObjectStoreMetadata* out);

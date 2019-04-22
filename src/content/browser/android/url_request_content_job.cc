@@ -103,7 +103,7 @@ bool URLRequestContentJob::GetMimeType(std::string* mime_type) const {
 
 void URLRequestContentJob::SetExtraRequestHeaders(
     const net::HttpRequestHeaders& headers) {
-  const content::ResourceRequestInfo* resource_request_info =
+  content::ResourceRequestInfo* resource_request_info =
       content::ResourceRequestInfo::ForRequest(request());
   if (resource_request_info && resource_request_info->GetResourceType() ==
                                    content::RESOURCE_TYPE_MAIN_FRAME) {

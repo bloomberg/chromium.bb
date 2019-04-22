@@ -94,12 +94,6 @@ class NET_EXPORT_PRIVATE DnsSession
   // Record how long it took to receive a response from the server.
   void RecordRTT(unsigned server_index, base::TimeDelta rtt);
 
-  // Record suspected loss of a packet for a specific server.
-  void RecordLostPacket(unsigned server_index, int attempt);
-
-  // Record server stats before it is destroyed.
-  void RecordServerStats();
-
   // Return the timeout for the next query. |attempt| counts from 0 and is used
   // for exponential backoff.
   base::TimeDelta NextTimeout(unsigned server_index, int attempt);
@@ -124,12 +118,6 @@ class NET_EXPORT_PRIVATE DnsSession
   // Release a socket.
   void FreeSocket(unsigned server_index,
                   std::unique_ptr<DatagramClientSocket> socket);
-
-  // Return the timeout using the TCP timeout method.
-  base::TimeDelta NextTimeoutFromJacobson(unsigned server_index, int attempt);
-
-  // Compute the timeout using the histogram method.
-  base::TimeDelta NextTimeoutFromHistogram(unsigned server_index, int attempt);
 
   // NetworkChangeNotifier::ConnectionTypeObserver:
   void OnConnectionTypeChanged(

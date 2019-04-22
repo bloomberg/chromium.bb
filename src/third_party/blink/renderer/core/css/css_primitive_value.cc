@@ -21,6 +21,8 @@
 
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 
+#include <cmath>
+
 #include "build/build_config.h"
 #include "third_party/blink/renderer/core/css/css_calculation_value.h"
 #include "third_party/blink/renderer/core/css/css_markup.h"
@@ -30,6 +32,7 @@
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 
@@ -172,16 +175,16 @@ CSSPrimitiveValue::CSSPrimitiveValue(double num, UnitType type)
 CSSPrimitiveValue::CSSPrimitiveValue(const Length& length, float zoom)
     : CSSValue(kPrimitiveClass) {
   switch (length.GetType()) {
-    case kPercent:
+    case Length::kPercent:
       Init(UnitType::kPercentage);
       DCHECK(std::isfinite(length.Percent()));
       value_.num = length.Percent();
       break;
-    case kFixed:
+    case Length::kFixed:
       Init(UnitType::kPixels);
       value_.num = length.Value() / zoom;
       break;
-    case kCalculated: {
+    case Length::kCalculated: {
       const CalculationValue& calc = length.GetCalculationValue();
       if (calc.Pixels() && calc.Percent()) {
         Init(CSSCalcValue::Create(CSSCalcValue::CreateExpressionNode(
@@ -200,15 +203,15 @@ CSSPrimitiveValue::CSSPrimitiveValue(const Length& length, float zoom)
         value_.num = 0;
       break;
     }
-    case kAuto:
-    case kMinContent:
-    case kMaxContent:
-    case kFillAvailable:
-    case kFitContent:
-    case kExtendToZoom:
-    case kDeviceWidth:
-    case kDeviceHeight:
-    case kMaxSizeNone:
+    case Length::kAuto:
+    case Length::kMinContent:
+    case Length::kMaxContent:
+    case Length::kFillAvailable:
+    case Length::kFitContent:
+    case Length::kExtendToZoom:
+    case Length::kDeviceWidth:
+    case Length::kDeviceHeight:
+    case Length::kMaxSizeNone:
       NOTREACHED();
       break;
   }
@@ -282,21 +285,21 @@ unsigned CSSPrimitiveValue::ComputeLength(
 template <>
 Length CSSPrimitiveValue::ComputeLength(
     const CSSToLengthConversionData& conversion_data) const {
-  return Length(ClampToCSSLengthRange(ComputeLengthDouble(conversion_data)),
-                kFixed);
+  return Length::Fixed(
+      ClampToCSSLengthRange(ComputeLengthDouble(conversion_data)));
 }
 
 template <>
-short CSSPrimitiveValue::ComputeLength(
+int16_t CSSPrimitiveValue::ComputeLength(
     const CSSToLengthConversionData& conversion_data) const {
-  return RoundForImpreciseConversion<short>(
+  return RoundForImpreciseConversion<int16_t>(
       ComputeLengthDouble(conversion_data));
 }
 
 template <>
-unsigned short CSSPrimitiveValue::ComputeLength(
+uint16_t CSSPrimitiveValue::ComputeLength(
     const CSSToLengthConversionData& conversion_data) const {
-  return RoundForImpreciseConversion<unsigned short>(
+  return RoundForImpreciseConversion<uint16_t>(
       ComputeLengthDouble(conversion_data));
 }
 
@@ -406,7 +409,7 @@ Length CSSPrimitiveValue::ConvertToLength(
   if (IsLength())
     return ComputeLength<Length>(conversion_data);
   if (IsPercentage())
-    return Length(GetDoubleValue(), kPercent);
+    return Length::Percent(GetDoubleValue());
   DCHECK(IsCalculated());
   return Length(CssCalcValue()->ToCalcValue(conversion_data));
 }
@@ -597,7 +600,7 @@ const char* CSSPrimitiveValue::UnitTypeToString(UnitType type) {
     case UnitType::kCalcLengthWithNumber:
     case UnitType::kCalcPercentageWithLengthAndNumber:
       break;
-  };
+  }
   NOTREACHED();
   return "";
 }
@@ -609,7 +612,7 @@ String CSSPrimitiveValue::CustomCSSText() const {
       // FIXME
       break;
     case UnitType::kInteger:
-      text = String::Format("%d", GetIntValue());
+      text = String::Number(GetIntValue());
       break;
     case UnitType::kNumber:
     case UnitType::kPercentage:
@@ -641,9 +644,24 @@ String CSSPrimitiveValue::CustomCSSText() const {
     case UnitType::kViewportWidth:
     case UnitType::kViewportHeight:
     case UnitType::kViewportMin:
-    case UnitType::kViewportMax:
-      text = FormatNumber(value_.num, UnitTypeToString(GetType()));
-      break;
+    case UnitType::kViewportMax: {
+      // The following integers are minimal and maximum integers which can
+      // be represented in non-exponential format with 6 digit precision.
+      constexpr int kMinInteger = -999999;
+      constexpr int kMaxInteger = 999999;
+      // If the value_.num is small integer, go the fast path.
+      if (value_.num < kMinInteger || value_.num > kMaxInteger ||
+          std::trunc(value_.num) != value_.num) {
+        text = FormatNumber(value_.num, UnitTypeToString(GetType()));
+      } else {
+        StringBuilder builder;
+        int value = value_.num;
+        const char* unit_type = UnitTypeToString(GetType());
+        builder.AppendNumber(value);
+        builder.Append(unit_type, strlen(unit_type));
+        text = builder.ToString();
+      }
+    } break;
     case UnitType::kCalc:
       text = value_.calc->CustomCSSText();
       break;

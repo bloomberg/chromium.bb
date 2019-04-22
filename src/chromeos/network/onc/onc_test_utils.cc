@@ -13,7 +13,7 @@
 #include "base/logging.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
-#include "chromeos/chromeos_test_utils.h"
+#include "chromeos/test/chromeos_test_utils.h"
 
 namespace chromeos {
 namespace onc {

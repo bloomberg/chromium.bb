@@ -4,6 +4,8 @@
 #include "coder.hpp"
 #include "suballoc.hpp"
 
+namespace third_party_unrar {
+
 #ifdef ALLOW_MISALIGNED
 #pragma pack(1)
 #endif
@@ -118,5 +120,7 @@ class ModelPPM : RARPPM_DEF
     bool DecodeInit(Unpack *UnpackRead,int &EscChar);
     int DecodeChar();
 };
+
+}  // namespace third_party_unrar
 
 #endif

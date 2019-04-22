@@ -36,6 +36,10 @@
 #include "third_party/blink/renderer/core/script/fetch_client_settings_object_impl.h"
 #include "third_party/blink/renderer/core/testing/null_execution_context.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/loader/testing/test_loader_factory.h"
+#include "third_party/blink/renderer/platform/loader/testing/test_resource_fetcher_properties.h"
+#include "third_party/blink/renderer/platform/scheduler/test/fake_task_runner.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
@@ -43,20 +47,15 @@ namespace blink {
 class MockBaseFetchContext final : public BaseFetchContext {
  public:
   explicit MockBaseFetchContext(ExecutionContext* execution_context)
-      : BaseFetchContext(
-            execution_context->GetTaskRunner(blink::TaskType::kInternalTest)),
-        execution_context_(execution_context),
-        fetch_client_settings_object_(
-            MakeGarbageCollected<FetchClientSettingsObjectImpl>(
-                *execution_context)) {}
+      : execution_context_(execution_context) {}
   ~MockBaseFetchContext() override = default;
 
   // BaseFetchContext overrides:
-  const FetchClientSettingsObject* GetFetchClientSettingsObject()
-      const override {
-    return fetch_client_settings_object_.Get();
-  }
   KURL GetSiteForCookies() const override { return KURL(); }
+  scoped_refptr<const blink::SecurityOrigin> GetTopFrameOrigin()
+      const override {
+    return SecurityOrigin::CreateUniqueOpaque();
+  }
   bool AllowScriptFromSource(const KURL&) const override { return false; }
   SubresourceFilter* GetSubresourceFilter() const override { return nullptr; }
   PreviewsResourceLoadingHints* GetPreviewsResourceLoadingHints()
@@ -83,7 +82,6 @@ class MockBaseFetchContext final : public BaseFetchContext {
   }
   bool ShouldBlockFetchByMixedContentCheck(
       mojom::RequestContextType,
-      network::mojom::RequestContextFrameType,
       ResourceRequest::RedirectStatus,
       const KURL&,
       SecurityViolationReportingPolicy) const override {
@@ -95,15 +93,8 @@ class MockBaseFetchContext final : public BaseFetchContext {
   }
   const KURL& Url() const override { return execution_context_->Url(); }
 
-  const SecurityOrigin* GetSecurityOrigin() const override {
-    return fetch_client_settings_object_->GetSecurityOrigin();
-  }
   const SecurityOrigin* GetParentSecurityOrigin() const override {
     return nullptr;
-  }
-  base::Optional<mojom::IPAddressSpace> GetAddressSpace() const override {
-    return base::make_optional(
-        execution_context_->GetSecurityContext().AddressSpace());
   }
   const ContentSecurityPolicy* GetContentSecurityPolicy() const override {
     return execution_context_->GetContentSecurityPolicy();
@@ -116,13 +107,9 @@ class MockBaseFetchContext final : public BaseFetchContext {
     BaseFetchContext::Trace(visitor);
   }
 
-  bool IsDetached() const override { return is_detached_; }
-  void SetIsDetached(bool is_detached) { is_detached_ = is_detached; }
-
  private:
   Member<ExecutionContext> execution_context_;
-  Member<FetchClientSettingsObjectImpl> fetch_client_settings_object_;
-  bool is_detached_ = false;
+  Member<const FetchClientSettingsObjectImpl> fetch_client_settings_object_;
 };
 
 class BaseFetchContextTest : public testing::Test {
@@ -133,10 +120,27 @@ class BaseFetchContextTest : public testing::Test {
         ->SetUpSecurityContext();
     fetch_context_ =
         MakeGarbageCollected<MockBaseFetchContext>(execution_context_);
+    resource_fetcher_properties_ =
+        MakeGarbageCollected<TestResourceFetcherProperties>(
+            *MakeGarbageCollected<FetchClientSettingsObjectImpl>(
+                *execution_context_));
+    resource_fetcher_ = MakeGarbageCollected<ResourceFetcher>(
+        ResourceFetcherInit(*resource_fetcher_properties_, fetch_context_,
+                            base::MakeRefCounted<scheduler::FakeTaskRunner>(),
+                            MakeGarbageCollected<TestLoaderFactory>()));
+  }
+
+  const FetchClientSettingsObject& GetFetchClientSettingsObject() const {
+    return resource_fetcher_->GetProperties().GetFetchClientSettingsObject();
+  }
+  const SecurityOrigin* GetSecurityOrigin() const {
+    return GetFetchClientSettingsObject().GetSecurityOrigin();
   }
 
   Persistent<ExecutionContext> execution_context_;
   Persistent<MockBaseFetchContext> fetch_context_;
+  Persistent<ResourceFetcher> resource_fetcher_;
+  Persistent<TestResourceFetcherProperties> resource_fetcher_properties_;
 };
 
 TEST_F(BaseFetchContextTest, SetIsExternalRequestForPublicContext) {
@@ -160,14 +164,8 @@ TEST_F(BaseFetchContextTest, SetIsExternalRequestForPublicContext) {
     ScopedCorsRFC1918ForTest cors_rfc1918(false);
     for (const auto& test : cases) {
       SCOPED_TRACE(test.url);
-      ResourceRequest main_request(test.url);
-      fetch_context_->AddAdditionalRequestHeaders(main_request,
-                                                  kFetchMainResource);
-      EXPECT_FALSE(main_request.IsExternalRequest());
-
       ResourceRequest sub_request(test.url);
-      fetch_context_->AddAdditionalRequestHeaders(sub_request,
-                                                  kFetchSubresource);
+      fetch_context_->AddAdditionalRequestHeaders(sub_request);
       EXPECT_FALSE(sub_request.IsExternalRequest());
     }
   }
@@ -176,14 +174,8 @@ TEST_F(BaseFetchContextTest, SetIsExternalRequestForPublicContext) {
     ScopedCorsRFC1918ForTest cors_rfc1918(true);
     for (const auto& test : cases) {
       SCOPED_TRACE(test.url);
-      ResourceRequest main_request(test.url);
-      fetch_context_->AddAdditionalRequestHeaders(main_request,
-                                                  kFetchMainResource);
-      EXPECT_EQ(test.is_external_expectation, main_request.IsExternalRequest());
-
       ResourceRequest sub_request(test.url);
-      fetch_context_->AddAdditionalRequestHeaders(sub_request,
-                                                  kFetchSubresource);
+      fetch_context_->AddAdditionalRequestHeaders(sub_request);
       EXPECT_EQ(test.is_external_expectation, sub_request.IsExternalRequest());
     }
   }
@@ -212,14 +204,8 @@ TEST_F(BaseFetchContextTest, SetIsExternalRequestForPrivateContext) {
     ScopedCorsRFC1918ForTest cors_rfc1918(false);
     for (const auto& test : cases) {
       SCOPED_TRACE(test.url);
-      ResourceRequest main_request(test.url);
-      fetch_context_->AddAdditionalRequestHeaders(main_request,
-                                                  kFetchMainResource);
-      EXPECT_FALSE(main_request.IsExternalRequest());
-
       ResourceRequest sub_request(test.url);
-      fetch_context_->AddAdditionalRequestHeaders(sub_request,
-                                                  kFetchSubresource);
+      fetch_context_->AddAdditionalRequestHeaders(sub_request);
       EXPECT_FALSE(sub_request.IsExternalRequest());
     }
   }
@@ -228,14 +214,8 @@ TEST_F(BaseFetchContextTest, SetIsExternalRequestForPrivateContext) {
     ScopedCorsRFC1918ForTest cors_rfc1918(true);
     for (const auto& test : cases) {
       SCOPED_TRACE(test.url);
-      ResourceRequest main_request(test.url);
-      fetch_context_->AddAdditionalRequestHeaders(main_request,
-                                                  kFetchMainResource);
-      EXPECT_EQ(test.is_external_expectation, main_request.IsExternalRequest());
-
       ResourceRequest sub_request(test.url);
-      fetch_context_->AddAdditionalRequestHeaders(sub_request,
-                                                  kFetchSubresource);
+      fetch_context_->AddAdditionalRequestHeaders(sub_request);
       EXPECT_EQ(test.is_external_expectation, sub_request.IsExternalRequest());
     }
   }
@@ -263,14 +243,8 @@ TEST_F(BaseFetchContextTest, SetIsExternalRequestForLocalContext) {
   {
     ScopedCorsRFC1918ForTest cors_rfc1918(false);
     for (const auto& test : cases) {
-      ResourceRequest main_request(test.url);
-      fetch_context_->AddAdditionalRequestHeaders(main_request,
-                                                  kFetchMainResource);
-      EXPECT_FALSE(main_request.IsExternalRequest());
-
       ResourceRequest sub_request(test.url);
-      fetch_context_->AddAdditionalRequestHeaders(sub_request,
-                                                  kFetchSubresource);
+      fetch_context_->AddAdditionalRequestHeaders(sub_request);
       EXPECT_FALSE(sub_request.IsExternalRequest());
     }
   }
@@ -278,14 +252,8 @@ TEST_F(BaseFetchContextTest, SetIsExternalRequestForLocalContext) {
   {
     ScopedCorsRFC1918ForTest cors_rfc1918(true);
     for (const auto& test : cases) {
-      ResourceRequest main_request(test.url);
-      fetch_context_->AddAdditionalRequestHeaders(main_request,
-                                                  kFetchMainResource);
-      EXPECT_EQ(test.is_external_expectation, main_request.IsExternalRequest());
-
       ResourceRequest sub_request(test.url);
-      fetch_context_->AddAdditionalRequestHeaders(sub_request,
-                                                  kFetchSubresource);
+      fetch_context_->AddAdditionalRequestHeaders(sub_request);
       EXPECT_EQ(test.is_external_expectation, sub_request.IsExternalRequest());
     }
   }
@@ -305,9 +273,7 @@ TEST_F(BaseFetchContextTest, CanRequest) {
   KURL url(NullURL(), "http://baz.test");
   ResourceRequest resource_request(url);
   resource_request.SetRequestContext(mojom::RequestContextType::SCRIPT);
-  resource_request.SetRequestorOrigin(fetch_context_->GetSecurityOrigin());
-  resource_request.SetFetchCredentialsMode(
-      network::mojom::FetchCredentialsMode::kOmit);
+  resource_request.SetRequestorOrigin(GetSecurityOrigin());
 
   ResourceLoaderOptions options;
 
@@ -345,9 +311,9 @@ TEST_F(BaseFetchContextTest, CheckCSPForRequest) {
 TEST_F(BaseFetchContextTest, CanRequestWhenDetached) {
   KURL url(NullURL(), "http://www.example.com/");
   ResourceRequest request(url);
-  request.SetRequestorOrigin(fetch_context_->GetSecurityOrigin());
+  request.SetRequestorOrigin(GetSecurityOrigin());
   ResourceRequest keepalive_request(url);
-  keepalive_request.SetRequestorOrigin(fetch_context_->GetSecurityOrigin());
+  keepalive_request.SetRequestorOrigin(GetSecurityOrigin());
   keepalive_request.SetKeepalive(true);
 
   EXPECT_EQ(base::nullopt,
@@ -376,7 +342,7 @@ TEST_F(BaseFetchContextTest, CanRequestWhenDetached) {
           SecurityViolationReportingPolicy::kSuppressReporting,
           ResourceRequest::RedirectStatus::kFollowedRedirect));
 
-  fetch_context_->SetIsDetached(true);
+  resource_fetcher_->ClearContext();
 
   EXPECT_EQ(ResourceRequestBlockedReason::kOther,
             fetch_context_->CanRequest(
@@ -411,7 +377,7 @@ TEST_F(BaseFetchContextTest, UACSSTest) {
   KURL data_url("data:image/png;base64,test");
 
   ResourceRequest resource_request(test_url);
-  resource_request.SetRequestorOrigin(fetch_context_->GetSecurityOrigin());
+  resource_request.SetRequestorOrigin(GetSecurityOrigin());
   ResourceLoaderOptions options;
   options.initiator_info.name = fetch_initiator_type_names::kUacss;
 
@@ -445,7 +411,7 @@ TEST_F(BaseFetchContextTest, UACSSTest_BypassCSP) {
   KURL data_url("data:image/png;base64,test");
 
   ResourceRequest resource_request(data_url);
-  resource_request.SetRequestorOrigin(fetch_context_->GetSecurityOrigin());
+  resource_request.SetRequestorOrigin(GetSecurityOrigin());
   ResourceLoaderOptions options;
   options.initiator_info.name = fetch_initiator_type_names::kUacss;
 

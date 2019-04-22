@@ -4,194 +4,33 @@
 
 #include "ash/wm/non_client_frame_controller.h"
 
-#include "ash/public/cpp/ash_layout_constants.h"
-#include "ash/shell.h"
+#include <vector>
+
 #include "ash/test/ash_test_base.h"
-#include "ash/test/ash_test_helper.h"
 #include "ash/wm/top_level_window_factory.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/time/time.h"
-#include "cc/base/math_util.h"
-#include "cc/trees/layer_tree_settings.h"
-#include "components/viz/common/quads/compositor_frame.h"
-#include "components/viz/common/quads/solid_color_draw_quad.h"
-#include "services/ws/public/mojom/window_tree_constants.mojom.h"
+#include "mojo/public/cpp/bindings/map.h"
+#include "mojo/public/cpp/bindings/type_converter.h"
+#include "services/ws/public/cpp/property_type_converters.h"
+#include "services/ws/public/mojom/window_manager.mojom.h"
 #include "services/ws/test_change_tracker.h"
 #include "services/ws/test_window_tree_client.h"
+#include "services/ws/window_tree_test_helper.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/platform/aura_window_properties.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
+#include "ui/aura/test/mus/change_completion_waiter.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_delegate.h"
+#include "ui/base/hit_test.h"
 #include "ui/base/ui_base_features.h"
-#include "ui/compositor/compositor.h"
-#include "ui/compositor/test/draw_waiter_for_test.h"
-#include "ui/compositor/test/fake_context_factory.h"
+#include "ui/events/test/event_generator.h"
+#include "ui/views/mus/mus_client.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
-
-namespace {
-
-gfx::Rect GetQuadBoundsInScreen(const viz::DrawQuad* quad) {
-  return cc::MathUtil::MapEnclosingClippedRect(
-      quad->shared_quad_state->quad_to_target_transform, quad->visible_rect);
-}
-
-bool FindAnyQuad(const viz::CompositorFrame& frame,
-                 const gfx::Rect& screen_rect) {
-  DCHECK_EQ(1u, frame.render_pass_list.size());
-  const auto& quad_list = frame.render_pass_list[0]->quad_list;
-  for (const auto* quad : quad_list) {
-    if (GetQuadBoundsInScreen(quad) == screen_rect)
-      return true;
-  }
-  return false;
-}
-
-bool FindColorQuad(const viz::CompositorFrame& frame,
-                   const gfx::Rect& screen_rect,
-                   SkColor color) {
-  DCHECK_EQ(1u, frame.render_pass_list.size());
-  const auto& quad_list = frame.render_pass_list[0]->quad_list;
-  for (const auto* quad : quad_list) {
-    if (quad->material != viz::DrawQuad::Material::SOLID_COLOR)
-      continue;
-
-    auto* color_quad = viz::SolidColorDrawQuad::MaterialCast(quad);
-    if (color_quad->color != color)
-      continue;
-    if (GetQuadBoundsInScreen(quad) == screen_rect)
-      return true;
-  }
-  return false;
-}
-
-bool FindTiledContentQuad(const viz::CompositorFrame& frame,
-                          const gfx::Rect& screen_rect) {
-  DCHECK_EQ(1u, frame.render_pass_list.size());
-  const auto& quad_list = frame.render_pass_list[0]->quad_list;
-  for (const auto* quad : quad_list) {
-    if (quad->material == viz::DrawQuad::Material::TILED_CONTENT &&
-        GetQuadBoundsInScreen(quad) == screen_rect)
-      return true;
-  }
-  return false;
-}
-
-}  // namespace
-
-class NonClientFrameControllerMashTest : public AshTestBase {
- public:
-  NonClientFrameControllerMashTest() = default;
-  ~NonClientFrameControllerMashTest() override = default;
-
-  const viz::CompositorFrame& GetLastCompositorFrame() const {
-    return context_factory_.GetLastCompositorFrame();
-  }
-
-  // AshTestBase:
-  void SetUp() override {
-    aura::Env* env = aura::Env::GetInstance();
-    DCHECK(env);
-    context_factory_to_restore_ = env->context_factory();
-    env->set_context_factory(&context_factory_);
-    AshTestBase::SetUp();
-  }
-
-  void TearDown() override {
-    AshTestBase::TearDown();
-    aura::Env::GetInstance()->set_context_factory(context_factory_to_restore_);
-  }
-
- private:
-  ui::FakeContextFactory context_factory_;
-  ui::ContextFactory* context_factory_to_restore_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(NonClientFrameControllerMashTest);
-};
-
-TEST_F(NonClientFrameControllerMashTest, ContentRegionNotDrawnForClient) {
-  if (!::features::IsSingleProcessMash() && !::features::IsMultiProcessMash())
-    return;
-
-  std::map<std::string, std::vector<uint8_t>> properties;
-  std::unique_ptr<aura::Window> window(CreateAndParentTopLevelWindow(
-      ws::mojom::WindowType::WINDOW,
-      /* property_converter */ nullptr, &properties));
-  ASSERT_TRUE(window);
-
-  NonClientFrameController* controller =
-      NonClientFrameController::Get(window.get());
-  ASSERT_TRUE(controller);
-  views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window.get());
-  ASSERT_TRUE(widget);
-
-  const int caption_height =
-      GetAshLayoutSize(AshLayoutSize::kNonBrowserCaption).height();
-  const gfx::Size tile_size = cc::LayerTreeSettings().default_tile_size;
-  const int tile_width = tile_size.width();
-  const int tile_height = tile_size.height();
-  const int tile_x = tile_width;
-  const int tile_y = tile_height;
-
-  const gfx::Rect kTileBounds(gfx::Point(tile_x, tile_y), tile_size);
-  ui::Compositor* compositor = widget->GetCompositor();
-
-  // Give the ui::Compositor a LocalSurfaceId so that it does not defer commit
-  // when a draw is scheduled.
-  viz::LocalSurfaceId local_surface_id(1, base::UnguessableToken::Create());
-  compositor->SetScaleAndSize(
-      1.f, gfx::Size(100, 100),
-      viz::LocalSurfaceIdAllocation(local_surface_id, base::TimeTicks::Now()));
-
-  // Without the window visible, there should be a tile for the wallpaper at
-  // (tile_x, tile_y) of size |tile_size|.
-  compositor->ScheduleDraw();
-  ui::DrawWaiterForTest::WaitForCompositingEnded(compositor);
-  {
-    const viz::CompositorFrame& frame = GetLastCompositorFrame();
-    ASSERT_EQ(1u, frame.render_pass_list.size());
-    EXPECT_TRUE(FindColorQuad(frame, kTileBounds, SK_ColorBLACK));
-  }
-
-  // Show |widget|, and position it so that it covers that wallpaper tile.
-  const gfx::Rect widget_bound(tile_x - 10, tile_y - 10, tile_width + 20,
-                               tile_height + 20);
-  widget->SetBounds(widget_bound);
-  widget->Show();
-  compositor->ScheduleDraw();
-  ui::DrawWaiterForTest::WaitForCompositingEnded(compositor);
-  {
-    // This time, that tile for the wallpaper will not be drawn.
-    const viz::CompositorFrame& frame = GetLastCompositorFrame();
-    ASSERT_EQ(1u, frame.render_pass_list.size());
-    EXPECT_FALSE(FindColorQuad(frame, kTileBounds, SK_ColorBLACK));
-
-    // Any solid-color quads for the widget are transparent and will be
-    // optimized away.
-    const gfx::Rect top_left(widget_bound.origin(), tile_size);
-    const gfx::Rect top_right(
-        top_left.top_right(),
-        gfx::Size(widget_bound.width() - top_left.width(), top_left.height()));
-    const gfx::Rect bottom_left(
-        top_left.bottom_left(),
-        gfx::Size(top_left.width(), widget_bound.height() - top_left.height()));
-    const gfx::Rect bottom_right(
-        top_left.bottom_right(),
-        gfx::Size(top_right.width(), bottom_left.height()));
-    EXPECT_FALSE(FindAnyQuad(frame, top_left));
-    EXPECT_FALSE(FindAnyQuad(frame, top_right));
-    EXPECT_FALSE(FindAnyQuad(frame, bottom_left));
-    EXPECT_FALSE(FindAnyQuad(frame, bottom_right));
-
-    // And there will be a content quad for the window caption.
-    gfx::Rect caption_bound(widget_bound);
-    caption_bound.set_height(caption_height);
-    EXPECT_TRUE(FindTiledContentQuad(frame, caption_bound));
-  }
-}
 
 using NonClientFrameControllerTest = AshTestBase;
 
@@ -240,6 +79,121 @@ TEST_F(NonClientFrameControllerTest, ExposesChildTreeIdToAccessibility) {
   EXPECT_EQ(ax_tree_id, ax_node_data.GetStringAttribute(
                             ax::mojom::StringAttribute::kChildTreeId));
   EXPECT_EQ(ax::mojom::Role::kClient, ax_node_data.role);
+}
+
+TEST_F(NonClientFrameControllerTest, HonorsMinimumSize) {
+  const gfx::Size min_size(201, 302);
+  std::unique_ptr<aura::Window> window = CreateTestWindow();
+  // |window| takes ownership of the new size.
+  window->SetProperty(aura::client::kMinimumSize, new gfx::Size(min_size));
+  ASSERT_TRUE(window->delegate());
+  EXPECT_EQ(min_size, window->delegate()->GetMinimumSize());
+}
+
+TEST_F(NonClientFrameControllerTest, HonorsMinimumSizeWithoutFrame) {
+  // Variant of HonorsMinimumSize that removes the standard frame (the client
+  // draws the non-client area).
+  using TransportType = std::vector<uint8_t>;
+  const gfx::Size min_size(201, 302);
+  auto properties = CreatePropertiesForProxyWindow();
+  properties[ws::mojom::WindowManager::kMinimumSize_Property] =
+      mojo::ConvertTo<TransportType>(min_size);
+  properties[ws::mojom::WindowManager::kClientProvidesFrame_InitProperty] =
+      mojo::ConvertTo<TransportType>(true);
+  std::unique_ptr<aura::Window> window(
+      GetWindowTreeTestHelper()->NewTopLevelWindow(
+          mojo::MapToFlatMap(properties)));
+  ASSERT_TRUE(window->delegate());
+  EXPECT_EQ(min_size, window->delegate()->GetMinimumSize());
+}
+
+TEST_F(NonClientFrameControllerTest, NonClientAreaShouldBeDraggable) {
+  using TransportType = std::vector<uint8_t>;
+  auto properties = CreatePropertiesForProxyWindow();
+  properties[ws::mojom::WindowManager::kClientProvidesFrame_InitProperty] =
+      mojo::ConvertTo<TransportType>(true);
+  std::unique_ptr<aura::Window> window(
+      GetWindowTreeTestHelper()->NewTopLevelWindow(
+          mojo::MapToFlatMap(properties)));
+
+  const gfx::Point point(10, 10);
+  EXPECT_EQ(HTCLIENT, window->delegate()->GetNonClientComponent(point));
+  EXPECT_EQ(HTTOPLEFT,
+            window->delegate()->GetNonClientComponent(gfx::Point(-1, -1)));
+
+  std::vector<gfx::Rect> additional_areas = {
+      gfx::Rect(window->bounds().width() - 20, 0, 20, 20)};
+  GetWindowTreeTestHelper()->SetClientArea(
+      window.get(), gfx::Insets(20, 20, 20, 20), additional_areas);
+  EXPECT_EQ(HTCAPTION, window->delegate()->GetNonClientComponent(point));
+  EXPECT_EQ(HTTOPLEFT,
+            window->delegate()->GetNonClientComponent(gfx::Point(-1, -1)));
+  EXPECT_EQ(HTCLIENT,
+            window->delegate()->GetNonClientComponent(gfx::Point(30, 30)));
+  EXPECT_EQ(HTCLIENT, window->delegate()->GetNonClientComponent(
+                          gfx::Point(window->bounds().width() - 10, 10)));
+}
+
+using NonClientFrameControllerSingleProcessMashTest = SingleProcessMashTestBase;
+
+// Used to track whether in a window resize loop.
+class ResizeLoopWidgetDelegate : public views::WidgetDelegateView {
+ public:
+  ResizeLoopWidgetDelegate() = default;
+  ~ResizeLoopWidgetDelegate() override = default;
+
+  bool in_resize_loop() const { return in_resize_loop_; }
+
+  // views::WidgetDelegateView:
+  void OnWindowBeginUserBoundsChange() override {
+    EXPECT_FALSE(in_resize_loop_);
+    in_resize_loop_ = true;
+  }
+  void OnWindowEndUserBoundsChange() override {
+    EXPECT_TRUE(in_resize_loop_);
+    in_resize_loop_ = false;
+  }
+  int32_t GetResizeBehavior() const override {
+    return ws::mojom::kResizeBehaviorCanResize;
+  }
+
+ private:
+  bool in_resize_loop_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(ResizeLoopWidgetDelegate);
+};
+
+TEST_F(NonClientFrameControllerSingleProcessMashTest, ResizeLoop) {
+  // Owned by |widget|.
+  ResizeLoopWidgetDelegate* widget_delegate = new ResizeLoopWidgetDelegate;
+  // Create a widget. This widget is backed by mus.
+  views::Widget widget;
+  views::Widget::InitParams params;
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.bounds = gfx::Rect(0, 0, 200, 200);
+  params.delegate = widget_delegate;
+  params.native_widget =
+      views::MusClient::Get()->CreateNativeWidget(params, &widget);
+  widget.Init(params);
+  widget.Show();
+
+  // Should not initially be in a resize loop.
+  EXPECT_FALSE(widget_delegate->in_resize_loop());
+
+  // Flush all messages from the WindowTreeClient to ensure ash processes the
+  // widget creation.
+  aura::test::WaitForAllChangesToComplete();
+
+  // The resize loop is entered once a possible resize is detected.
+  GetEventGenerator()->MoveMouseTo(gfx::Point(5, 199));
+  GetEventGenerator()->PressLeftButton();
+  aura::test::WaitForAllChangesToComplete();
+  EXPECT_TRUE(widget_delegate->in_resize_loop());
+
+  // Releasing the button ends the loop.
+  GetEventGenerator()->ReleaseLeftButton();
+  aura::test::WaitForAllChangesToComplete();
+  EXPECT_FALSE(widget_delegate->in_resize_loop());
 }
 
 }  // namespace ash

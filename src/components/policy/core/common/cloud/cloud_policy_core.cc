@@ -35,7 +35,8 @@ CloudPolicyCore::CloudPolicyCore(
       settings_entity_id_(settings_entity_id),
       store_(store),
       task_runner_(task_runner),
-      network_connection_tracker_getter_(network_connection_tracker_getter) {}
+      network_connection_tracker_getter_(
+          std::move(network_connection_tracker_getter)) {}
 
 CloudPolicyCore::~CloudPolicyCore() {}
 
@@ -107,6 +108,15 @@ void CloudPolicyCore::AddObserver(CloudPolicyCore::Observer* observer) {
 
 void CloudPolicyCore::RemoveObserver(CloudPolicyCore::Observer* observer) {
   observers_.RemoveObserver(observer);
+}
+
+void CloudPolicyCore::ConnectForTesting(
+    std::unique_ptr<CloudPolicyService> service,
+    std::unique_ptr<CloudPolicyClient> client) {
+  service_ = std::move(service);
+  client_ = std::move(client);
+  for (auto& observer : observers_)
+    observer.OnCoreConnected(this);
 }
 
 void CloudPolicyCore::UpdateRefreshDelayFromPref() {

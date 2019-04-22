@@ -1,4 +1,5 @@
 This is a testharness.js-based test.
+Found 94 tests; 84 PASS, 10 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Partial interface Navigator: original interface defined
 PASS Partial interface Window: original interface defined
 PASS Partial interface Gamepad: original interface defined

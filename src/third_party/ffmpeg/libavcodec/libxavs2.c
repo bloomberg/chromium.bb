@@ -46,7 +46,6 @@ typedef struct XAVS2EContext {
     int min_qp;
     int preset_level;
     int log_level;
-    int hierarchical_reference;
 
     void *encoder;
     char *xavs2_opts;
@@ -78,20 +77,20 @@ static av_cold int xavs2_init(AVCodecContext *avctx)
         return AVERROR(ENOMEM);
     }
 
-    xavs2_opt_set2("width",     "%d", avctx->width);
-    xavs2_opt_set2("height",    "%d", avctx->height);
-    xavs2_opt_set2("bframes",   "%d", avctx->max_b_frames);
-    xavs2_opt_set2("bitdepth",  "%d", bit_depth);
-    xavs2_opt_set2("log",       "%d", cae->log_level);
-    xavs2_opt_set2("preset",    "%d", cae->preset_level);
+    xavs2_opt_set2("Width",     "%d", avctx->width);
+    xavs2_opt_set2("Height",    "%d", avctx->height);
+    xavs2_opt_set2("BFrames",   "%d", avctx->max_b_frames);
+    xavs2_opt_set2("BitDepth",  "%d", bit_depth);
+    xavs2_opt_set2("Log",       "%d", cae->log_level);
+    xavs2_opt_set2("Preset",    "%d", cae->preset_level);
 
-    /* not the same parameter as the IntraPeriod in xavs2 log */
-    xavs2_opt_set2("intraperiod",       "%d", avctx->gop_size);
+    xavs2_opt_set2("IntraPeriodMax",    "%d", avctx->gop_size);
+    xavs2_opt_set2("IntraPeriodMin",    "%d", avctx->gop_size);
 
-    xavs2_opt_set2("thread_frames",     "%d", avctx->thread_count);
-    xavs2_opt_set2("thread_rows",       "%d", cae->lcu_row_threads);
+    xavs2_opt_set2("ThreadFrames",      "%d", avctx->thread_count);
+    xavs2_opt_set2("ThreadRows",        "%d", cae->lcu_row_threads);
 
-    xavs2_opt_set2("OpenGOP",  "%d", 1);
+    xavs2_opt_set2("OpenGOP",  "%d", !(avctx->flags & AV_CODEC_FLAG_CLOSED_GOP));
 
     if (cae->xavs2_opts) {
         AVDictionary *dict    = NULL;
@@ -109,11 +108,11 @@ static av_cold int xavs2_init(AVCodecContext *avctx)
     if (avctx->bit_rate > 0) {
         xavs2_opt_set2("RateControl",   "%d", 1);
         xavs2_opt_set2("TargetBitRate", "%"PRId64"", avctx->bit_rate);
-        xavs2_opt_set2("initial_qp",    "%d", cae->initial_qp);
-        xavs2_opt_set2("max_qp",        "%d", cae->max_qp);
-        xavs2_opt_set2("min_qp",        "%d", cae->min_qp);
+        xavs2_opt_set2("InitialQP",     "%d", cae->initial_qp);
+        xavs2_opt_set2("MaxQP",         "%d", avctx->qmax >= 0 ? avctx->qmax : cae->max_qp);
+        xavs2_opt_set2("MinQP",         "%d", avctx->qmin >= 0 ? avctx->qmin : cae->min_qp);
     } else {
-        xavs2_opt_set2("initial_qp",    "%d", cae->qp);
+        xavs2_opt_set2("InitialQP",     "%d", cae->qp);
     }
 
 
@@ -161,7 +160,7 @@ static void xavs2_copy_frame(xavs2_picture_t *pic, const AVFrame *frame)
 }
 
 static int xavs2_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
-                      const AVFrame *frame, int *got_packet)
+                              const AVFrame *frame, int *got_packet)
 {
     XAVS2EContext *cae = avctx->priv_data;
     xavs2_picture_t pic;
@@ -175,22 +174,22 @@ static int xavs2_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
     }
     if (frame) {
         switch (frame->format) {
-            case AV_PIX_FMT_YUV420P:
-                if (pic.img.in_sample_size == pic.img.enc_sample_size) {
-                    xavs2_copy_frame(&pic, frame);
-                } else {
-                    const int shift_in = atoi(cae->api->opt_get(cae->param, "SampleShift"));
-                    xavs2_copy_frame_with_shift(&pic, frame, shift_in);
-                }
+        case AV_PIX_FMT_YUV420P:
+            if (pic.img.in_sample_size == pic.img.enc_sample_size) {
+                xavs2_copy_frame(&pic, frame);
+            } else {
+                const int shift_in = atoi(cae->api->opt_get(cae->param, "SampleShift"));
+                xavs2_copy_frame_with_shift(&pic, frame, shift_in);
+            }
             break;
-            case AV_PIX_FMT_YUV420P10:
-                if (pic.img.in_sample_size == pic.img.enc_sample_size) {
-                    xavs2_copy_frame(&pic, frame);
-                    break;
-                }
-            default:
-                av_log(avctx, AV_LOG_ERROR, "Unsupported pixel format\n");
-                return AVERROR(EINVAL);
+        case AV_PIX_FMT_YUV420P10:
+            if (pic.img.in_sample_size == pic.img.enc_sample_size) {
+                xavs2_copy_frame(&pic, frame);
+                break;
+            }
+        default:
+            av_log(avctx, AV_LOG_ERROR, "Unsupported pixel format\n");
+            return AVERROR(EINVAL);
             break;
         }
 
@@ -271,7 +270,7 @@ static const AVClass libxavs2 = {
 
 static const AVCodecDefault xavs2_defaults[] = {
     { "b",                "0" },
-    { "g",                "48" },
+    { "g",                "48"},
     { "bf",               "7" },
     { NULL },
 };
@@ -286,7 +285,8 @@ AVCodec ff_libxavs2_encoder = {
     .encode2        = xavs2_encode_frame,
     .close          = xavs2_close,
     .capabilities   = AV_CODEC_CAP_DELAY | AV_CODEC_CAP_AUTO_THREADS,
-    .pix_fmts       = (const enum AVPixelFormat[]) { AV_PIX_FMT_YUV420P, AV_PIX_FMT_YUV420P10, AV_PIX_FMT_NONE },
+    .pix_fmts       = (const enum AVPixelFormat[]) { AV_PIX_FMT_YUV420P,
+                                                     AV_PIX_FMT_NONE },
     .priv_class     = &libxavs2,
     .defaults       = xavs2_defaults,
     .wrapper_name   = "libxavs2",

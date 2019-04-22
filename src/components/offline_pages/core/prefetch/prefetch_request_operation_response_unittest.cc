@@ -56,7 +56,7 @@ class GeneratePageBundleRequestBuilder : public RequestBuilder {
     std::vector<std::string> pages = {kTestURL, kTestURL2};
     fetcher_.reset(new GeneratePageBundleRequest(
         kTestUserAgent, kTestGCMID, kTestMaxBundleSize, pages, kTestChannel,
-        url_loader_factory, std::move(callback)));
+        /*testing_header_value=*/"", url_loader_factory, std::move(callback)));
   }
 
  private:
@@ -280,7 +280,7 @@ typedef testing::Types<GeneratePageBundleRequestDoneOperationBuilder,
                        GetOperationRequestDoneOperationBuilder,
                        GetOperationRequestPendingOperationBuilder>
     MyTypes;
-TYPED_TEST_CASE(PrefetchRequestOperationResponseTest, MyTypes);
+TYPED_TEST_SUITE(PrefetchRequestOperationResponseTest, MyTypes);
 
 TYPED_TEST(PrefetchRequestOperationResponseTest, EmptyOperation) {
   EXPECT_EQ(PrefetchRequestStatus::kShouldRetryWithBackoff,

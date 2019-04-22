@@ -30,8 +30,7 @@ class AndroidSmsAppInstallingStatusObserver
     virtual std::unique_ptr<AndroidSmsAppInstallingStatusObserver>
     BuildInstance(HostStatusProvider* host_status_provider,
                   FeatureStateManager* feature_state_manager,
-                  std::unique_ptr<AndroidSmsAppHelperDelegate>
-                      android_sms_app_helper_delegate);
+                  AndroidSmsAppHelperDelegate* android_sms_app_helper_delegate);
 
    private:
     static Factory* test_factory_;
@@ -43,8 +42,7 @@ class AndroidSmsAppInstallingStatusObserver
   AndroidSmsAppInstallingStatusObserver(
       HostStatusProvider* host_status_provider,
       FeatureStateManager* feature_state_manager,
-      std::unique_ptr<AndroidSmsAppHelperDelegate>
-          android_sms_app_helper_delegate);
+      AndroidSmsAppHelperDelegate* android_sms_app_helper_delegate);
 
   // HostStatusProvider::Observer:
   void OnHostStatusChange(const HostStatusProvider::HostStatusWithDevice&
@@ -59,7 +57,7 @@ class AndroidSmsAppInstallingStatusObserver
 
   HostStatusProvider* host_status_provider_;
   FeatureStateManager* feature_state_manager_;
-  std::unique_ptr<AndroidSmsAppHelperDelegate> android_sms_app_helper_delegate_;
+  AndroidSmsAppHelperDelegate* android_sms_app_helper_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(AndroidSmsAppInstallingStatusObserver);
 };

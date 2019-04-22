@@ -21,6 +21,7 @@ source_set("cells") {
     "//ios/chrome/app/theme",
     "//ios/chrome/browser",
     "//ios/chrome/browser/ui",
+    "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/autofill:autofill_ui",
     "//ios/chrome/browser/ui/collection_view/cells",
     "//ios/chrome/browser/ui/colors",
@@ -40,7 +41,6 @@ source_set("cells") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "autofill_edit_item_unittest.mm",
     "cvc_item_unittest.mm",
     "legacy_autofill_edit_item_unittest.mm",
     "status_item_unittest.mm",

@@ -17,146 +17,99 @@
 #ifndef SRC_PROFILING_MEMORY_CLIENT_H_
 #define SRC_PROFILING_MEMORY_CLIENT_H_
 
-#include <pthread.h>
 #include <stddef.h>
 
+#include <atomic>
+#include <condition_variable>
 #include <mutex>
 #include <vector>
 
-#include "perfetto/base/scoped_file.h"
+#include "perfetto/base/unix_socket.h"
+#include "src/profiling/memory/sampler.h"
+#include "src/profiling/memory/shared_ring_buffer.h"
+#include "src/profiling/memory/unhooked_allocator.h"
 #include "src/profiling/memory/wire_protocol.h"
 
 namespace perfetto {
 namespace profiling {
 
-class BorrowedSocket;
-
-class SocketPool {
- public:
-  friend class BorrowedSocket;
-  SocketPool(std::vector<base::ScopedFile> sockets);
-
-  BorrowedSocket Borrow();
-  void Shutdown();
-
- private:
-  bool shutdown_ = false;
-
-  void Return(base::ScopedFile fd);
-  std::mutex mutex_;
-  std::condition_variable cv_;
-  std::vector<base::ScopedFile> sockets_;
-  size_t available_sockets_;
-  size_t dead_sockets_ = 0;
-};
-
-// Socket borrowed from a SocketPool. Gets returned once it goes out of scope.
-class BorrowedSocket {
- public:
-  BorrowedSocket(const BorrowedSocket&) = delete;
-  BorrowedSocket& operator=(const BorrowedSocket&) = delete;
-  BorrowedSocket(BorrowedSocket&& other) noexcept {
-    fd_ = std::move(other.fd_);
-    socket_pool_ = other.socket_pool_;
-    other.socket_pool_ = nullptr;
-  }
-
-  BorrowedSocket(base::ScopedFile fd, SocketPool* socket_pool)
-      : fd_(std::move(fd)), socket_pool_(socket_pool) {}
-
-  ~BorrowedSocket() {
-    if (socket_pool_ != nullptr)
-      socket_pool_->Return(std::move(fd_));
-  }
-
-  int operator*() { return get(); }
-
-  int get() { return *fd_; }
-
-  void Close() { fd_.reset(); }
-
-  operator bool() const { return !!fd_; }
-
- private:
-  base::ScopedFile fd_;
-  SocketPool* socket_pool_ = nullptr;
-};
-
-// Cache for frees that have been observed. It is infeasible to send every
-// free separately, so we batch and send the whole buffer once it is full.
-class FreePage {
- public:
-  // Add address to buffer. Flush if necessary using a socket borrowed from
-  // pool.
-  // Can be called from any thread. Must not hold mutex_.`
-  void Add(const uint64_t addr, uint64_t sequence_number, SocketPool* pool);
-
- private:
-  // Needs to be called holding mutex_.
-  void FlushLocked(SocketPool* pool);
-
-  FreeMetadata free_page_;
-  std::mutex mutex_;
-  size_t offset_ = 0;
-};
-
 const char* GetThreadStackBase();
 
-// RAII wrapper around pthread_key_t. This is different from a ScopedResource
-// because it needs a separate boolean indicating validity.
-class PThreadKey {
- public:
-  PThreadKey(const PThreadKey&) = delete;
-  PThreadKey& operator=(const PThreadKey&) = delete;
+constexpr uint32_t kClientSockTimeoutMs = 1000;
 
-  PThreadKey(void (*destructor)(void*)) noexcept
-      : valid_(pthread_key_create(&key_, destructor) == 0) {}
-  ~PThreadKey() noexcept {
-    if (valid_)
-      pthread_key_delete(key_);
-  }
-  bool valid() const { return valid_; }
-  pthread_key_t get() const {
-    PERFETTO_DCHECK(valid_);
-    return key_;
-  }
-
- private:
-  pthread_key_t key_;
-  bool valid_;
-};
-
-// This is created and owned by the malloc hooks.
+// Profiling client, used to sample and record the malloc/free family of calls,
+// and communicate the necessary state to a separate profiling daemon process.
+//
+// Created and owned by the malloc hooks.
+//
+// Methods of this class are thread-safe unless otherwise stated, in which case
+// the caller needs to synchronize calls behind a mutex or similar.
+//
+// Implementation warning: this class should not use any heap, as otherwise its
+// destruction would enter the possibly-hooked |free|, which can reference the
+// Client itself. If avoiding the heap is not possible, then look at using
+// UnhookedAllocator.
 class Client {
  public:
-  Client(std::vector<base::ScopedFile> sockets);
-  Client(const std::string& sock_name, size_t conns);
-  void RecordMalloc(uint64_t alloc_size,
+  // Returns a client that is ready for sampling allocations, using the given
+  // socket (which should already be connected to heapprofd).
+  //
+  // Returns a shared_ptr since that is how the client will ultimately be used,
+  // and to take advantage of std::allocate_shared putting the object & the
+  // control block in one block of memory.
+  static std::shared_ptr<Client> CreateAndHandshake(
+      base::UnixSocketRaw sock,
+      UnhookedAllocator<Client> unhooked_allocator);
+
+  static base::Optional<base::UnixSocketRaw> ConnectToHeapprofd(
+      const std::string& sock_name);
+
+  bool RecordMalloc(uint64_t alloc_size,
                     uint64_t total_size,
                     uint64_t alloc_address);
-  void RecordFree(uint64_t alloc_address);
-  void MaybeSampleAlloc(uint64_t alloc_size,
-                        uint64_t alloc_address,
-                        void* (*unhooked_malloc)(size_t),
-                        void (*unhooked_free)(void*));
-  void Shutdown();
+
+  // Add address to buffer of deallocations. Flushes the buffer if necessary.
+  bool RecordFree(uint64_t alloc_address);
+
+  // Returns the number of bytes to assign to an allocation with the given
+  // |alloc_size|, based on the current sampling rate. A return value of zero
+  // means that the allocation should not be recorded. Not idempotent, each
+  // invocation mutates the sampler state.
+  //
+  // Not thread-safe.
+  size_t GetSampleSizeLocked(size_t alloc_size) {
+    return sampler_.SampleSize(alloc_size);
+  }
+
+  // Public for std::allocate_shared. Use CreateAndHandshake() to create
+  // instances instead.
+  Client(base::UnixSocketRaw sock,
+         ClientConfiguration client_config,
+         SharedRingBuffer shmem,
+         Sampler sampler,
+         const char* main_thread_stack_base);
 
   ClientConfiguration client_config_for_testing() { return client_config_; }
-  bool inited() { return inited_; }
+  bool IsConnected();
 
  private:
-  size_t ShouldSampleAlloc(uint64_t alloc_size,
-                           void* (*unhooked_malloc)(size_t),
-                           void (*unhooked_free)(void*));
   const char* GetStackBase();
+  // Flush the contents of free_batch_. Must hold free_batch_lock_.
+  bool FlushFreesLocked();
+  bool SendControlSocketByte();
 
-  std::atomic<bool> inited_{false};
   ClientConfiguration client_config_;
-  PThreadKey pthread_key_;
-  SocketPool socket_pool_;
-  FreePage free_page_;
-  const char* main_thread_stack_base_ = nullptr;
+  // sampler_ operations are not thread-safe.
+  Sampler sampler_;
+  base::UnixSocketRaw sock_;
+
+  // Protected by free_batch_lock_.
+  FreeBatch free_batch_;
+  std::timed_mutex free_batch_lock_;
+
+  const char* main_thread_stack_base_{nullptr};
   std::atomic<uint64_t> sequence_number_{0};
+  SharedRingBuffer shmem_;
 };
 
 }  // namespace profiling

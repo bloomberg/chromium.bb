@@ -4,11 +4,13 @@
 
 #include "chrome/browser/browsing_data/site_data_size_collector.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/files/file_util.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "chrome/browser/browsing_data/mock_browsing_data_appcache_helper.h"
 #include "chrome/browser/browsing_data/mock_browsing_data_cache_storage_helper.h"
-#include "chrome/browser/browsing_data/mock_browsing_data_channel_id_helper.h"
 #include "chrome/browser/browsing_data/mock_browsing_data_cookie_helper.h"
 #include "chrome/browser/browsing_data/mock_browsing_data_database_helper.h"
 #include "chrome/browser/browsing_data/mock_browsing_data_file_system_helper.h"
@@ -25,7 +27,6 @@
 namespace {
 
 const char kCookieFileData[] = "cookie_file_data";
-const char kChannelIdFileData[] = "channel_id_file_data";
 const base::FilePath::CharType kFlashDataFilename0[] =
     FILE_PATH_LITERAL("flash_data_filename_0");
 const base::FilePath::CharType kFlashDataFilename1[] =
@@ -37,7 +38,6 @@ class SiteDataSizeCollectorTest : public testing::Test {
  public:
   ~SiteDataSizeCollectorTest() override {
     profile_.reset();
-    base::RunLoop().RunUntilIdle();
   }
 
   void SetUp() override {
@@ -54,8 +54,6 @@ class SiteDataSizeCollectorTest : public testing::Test {
         new MockBrowsingDataIndexedDBHelper(profile_.get());
     mock_browsing_data_file_system_helper_ =
         new MockBrowsingDataFileSystemHelper(profile_.get());
-    mock_browsing_data_channel_id_helper_ =
-        new MockBrowsingDataChannelIDHelper();
     mock_browsing_data_service_worker_helper_ =
         new MockBrowsingDataServiceWorkerHelper(profile_.get());
     mock_browsing_data_cache_storage_helper_ =
@@ -64,16 +62,14 @@ class SiteDataSizeCollectorTest : public testing::Test {
         new MockBrowsingDataFlashLSOHelper(profile_.get());
 
     base::WriteFile(profile_->GetPath().Append(chrome::kCookieFilename),
-                    kCookieFileData, arraysize(kCookieFileData));
-    base::WriteFile(profile_->GetPath().Append(chrome::kChannelIDFilename),
-                    kChannelIdFileData, arraysize(kChannelIdFileData));
+                    kCookieFileData, base::size(kCookieFileData));
     const base::FilePath flash_data_dir = profile_->GetPath().Append(
         content::kPepperDataDirname);
     base::CreateDirectory(flash_data_dir);
-    base::WriteFile(flash_data_dir.Append(kFlashDataFilename0),
-                    kFlashData0, arraysize(kFlashData0));
-    base::WriteFile(flash_data_dir.Append(kFlashDataFilename1),
-                    kFlashData1, arraysize(kFlashData1));
+    base::WriteFile(flash_data_dir.Append(kFlashDataFilename0), kFlashData0,
+                    base::size(kFlashData0));
+    base::WriteFile(flash_data_dir.Append(kFlashDataFilename1), kFlashData1,
+                    base::size(kFlashData1));
 
     fetched_size_ = -1;
   }
@@ -81,7 +77,6 @@ class SiteDataSizeCollectorTest : public testing::Test {
   void TearDown() override {
     mock_browsing_data_service_worker_helper_ = nullptr;
     mock_browsing_data_cache_storage_helper_ = nullptr;
-    mock_browsing_data_channel_id_helper_ = nullptr;
     mock_browsing_data_file_system_helper_ = nullptr;
     mock_browsing_data_indexed_db_helper_ = nullptr;
     mock_browsing_data_appcache_helper_ = nullptr;
@@ -89,11 +84,12 @@ class SiteDataSizeCollectorTest : public testing::Test {
     mock_browsing_data_local_storage_helper_ = nullptr;
     mock_browsing_data_database_helper_ = nullptr;
     mock_browsing_data_flash_lso_helper_ = nullptr;
-    base::RunLoop().RunUntilIdle();
   }
 
-  void FetchCallback(int64_t size) {
+  void FetchCallback(base::OnceClosure done, int64_t size) {
     fetched_size_ = size;
+    if (done)
+      std::move(done).Run();
   }
 
  protected:
@@ -114,8 +110,6 @@ class SiteDataSizeCollectorTest : public testing::Test {
       mock_browsing_data_indexed_db_helper_;
   scoped_refptr<MockBrowsingDataFileSystemHelper>
       mock_browsing_data_file_system_helper_;
-  scoped_refptr<MockBrowsingDataChannelIDHelper>
-      mock_browsing_data_channel_id_helper_;
   scoped_refptr<MockBrowsingDataServiceWorkerHelper>
       mock_browsing_data_service_worker_helper_;
   scoped_refptr<MockBrowsingDataCacheStorageHelper>
@@ -126,45 +120,42 @@ class SiteDataSizeCollectorTest : public testing::Test {
 
 TEST_F(SiteDataSizeCollectorTest, FetchCookie) {
   SiteDataSizeCollector collector(
-      profile_->GetPath(),
-      mock_browsing_data_cookie_helper_.get(),
-      nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-      nullptr);
+      profile_->GetPath(), mock_browsing_data_cookie_helper_.get(), nullptr,
+      nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr);
 
-  collector.Fetch(base::Bind(&SiteDataSizeCollectorTest::FetchCallback,
-                             base::Unretained(this)));
+  base::RunLoop run_loop;
+  collector.Fetch(base::BindOnce(&SiteDataSizeCollectorTest::FetchCallback,
+                                 base::Unretained(this),
+                                 run_loop.QuitClosure()));
   // AddCookieSample() actually doesn't write the cookie to the file, only
   // triggers the condition to take the file into account.
   mock_browsing_data_cookie_helper_->AddCookieSamples(
       GURL("http://foo1"), "A=1");
   mock_browsing_data_cookie_helper_->Notify();
   // Wait until reading files on blocking pool finishes.
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(static_cast<int64_t>(arraysize(kCookieFileData)), fetched_size_);
+  run_loop.Run();
+  EXPECT_EQ(static_cast<int64_t>(base::size(kCookieFileData)), fetched_size_);
 }
 
 TEST_F(SiteDataSizeCollectorTest, FetchCookieWithoutEntry) {
   SiteDataSizeCollector collector(
-      profile_->GetPath(),
-      mock_browsing_data_cookie_helper_.get(),
-      nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-      nullptr);
+      profile_->GetPath(), mock_browsing_data_cookie_helper_.get(), nullptr,
+      nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr);
 
   // Fetched size should be 0 if there are no cookies.
-  collector.Fetch(base::Bind(&SiteDataSizeCollectorTest::FetchCallback,
-                             base::Unretained(this)));
+  collector.Fetch(base::BindOnce(&SiteDataSizeCollectorTest::FetchCallback,
+                                 base::Unretained(this), base::OnceClosure()));
   mock_browsing_data_cookie_helper_->Notify();
   EXPECT_EQ(0, fetched_size_);
 }
 
 TEST_F(SiteDataSizeCollectorTest, FetchDatabase) {
   SiteDataSizeCollector collector(
-      profile_->GetPath(), nullptr,
-      mock_browsing_data_database_helper_.get(),
-      nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr);
+      profile_->GetPath(), nullptr, mock_browsing_data_database_helper_.get(),
+      nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr);
 
-  collector.Fetch(base::Bind(&SiteDataSizeCollectorTest::FetchCallback,
-                             base::Unretained(this)));
+  collector.Fetch(base::BindOnce(&SiteDataSizeCollectorTest::FetchCallback,
+                                 base::Unretained(this), base::OnceClosure()));
   mock_browsing_data_database_helper_->AddDatabaseSamples();
   mock_browsing_data_database_helper_->Notify();
   EXPECT_EQ(3, fetched_size_);
@@ -173,37 +164,37 @@ TEST_F(SiteDataSizeCollectorTest, FetchDatabase) {
 TEST_F(SiteDataSizeCollectorTest, FetchLocalStorage) {
   SiteDataSizeCollector collector(
       profile_->GetPath(), nullptr, nullptr,
-      mock_browsing_data_local_storage_helper_.get(),
-      nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr);
+      mock_browsing_data_local_storage_helper_.get(), nullptr, nullptr, nullptr,
+      nullptr, nullptr, nullptr);
 
-  collector.Fetch(base::Bind(&SiteDataSizeCollectorTest::FetchCallback,
-                             base::Unretained(this)));
+  collector.Fetch(base::BindOnce(&SiteDataSizeCollectorTest::FetchCallback,
+                                 base::Unretained(this), base::OnceClosure()));
   mock_browsing_data_local_storage_helper_->AddLocalStorageSamples();
   mock_browsing_data_local_storage_helper_->Notify();
   EXPECT_EQ(3, fetched_size_);
 }
 
 TEST_F(SiteDataSizeCollectorTest, FetchAppCache) {
-  SiteDataSizeCollector collector(
-      profile_->GetPath(), nullptr, nullptr, nullptr,
-      mock_browsing_data_appcache_helper_.get(),
-      nullptr, nullptr, nullptr, nullptr, nullptr, nullptr);
+  SiteDataSizeCollector collector(profile_->GetPath(), nullptr, nullptr,
+                                  nullptr,
+                                  mock_browsing_data_appcache_helper_.get(),
+                                  nullptr, nullptr, nullptr, nullptr, nullptr);
 
-  collector.Fetch(base::Bind(&SiteDataSizeCollectorTest::FetchCallback,
-                             base::Unretained(this)));
+  collector.Fetch(base::BindOnce(&SiteDataSizeCollectorTest::FetchCallback,
+                                 base::Unretained(this), base::OnceClosure()));
   mock_browsing_data_appcache_helper_->AddAppCacheSamples();
   mock_browsing_data_appcache_helper_->Notify();
   EXPECT_EQ(6, fetched_size_);
 }
 
 TEST_F(SiteDataSizeCollectorTest, FetchIndexedDB) {
-  SiteDataSizeCollector collector(
-      profile_->GetPath(), nullptr, nullptr, nullptr, nullptr,
-      mock_browsing_data_indexed_db_helper_.get(),
-      nullptr, nullptr, nullptr, nullptr, nullptr);
+  SiteDataSizeCollector collector(profile_->GetPath(), nullptr, nullptr,
+                                  nullptr, nullptr,
+                                  mock_browsing_data_indexed_db_helper_.get(),
+                                  nullptr, nullptr, nullptr, nullptr);
 
-  collector.Fetch(base::Bind(&SiteDataSizeCollectorTest::FetchCallback,
-                             base::Unretained(this)));
+  collector.Fetch(base::BindOnce(&SiteDataSizeCollectorTest::FetchCallback,
+                                 base::Unretained(this), base::OnceClosure()));
   mock_browsing_data_indexed_db_helper_->AddIndexedDBSamples();
   mock_browsing_data_indexed_db_helper_->Notify();
   EXPECT_EQ(3, fetched_size_);
@@ -212,54 +203,23 @@ TEST_F(SiteDataSizeCollectorTest, FetchIndexedDB) {
 TEST_F(SiteDataSizeCollectorTest, FetchFileSystem) {
   SiteDataSizeCollector collector(
       profile_->GetPath(), nullptr, nullptr, nullptr, nullptr, nullptr,
-      mock_browsing_data_file_system_helper_.get(),
-      nullptr, nullptr, nullptr, nullptr);
+      mock_browsing_data_file_system_helper_.get(), nullptr, nullptr, nullptr);
 
-  collector.Fetch(base::Bind(&SiteDataSizeCollectorTest::FetchCallback,
-                             base::Unretained(this)));
+  collector.Fetch(base::BindOnce(&SiteDataSizeCollectorTest::FetchCallback,
+                                 base::Unretained(this), base::OnceClosure()));
   mock_browsing_data_file_system_helper_->AddFileSystemSamples();
   mock_browsing_data_file_system_helper_->Notify();
   EXPECT_EQ(14, fetched_size_);
 }
 
-TEST_F(SiteDataSizeCollectorTest, FetchChannelId) {
-  SiteDataSizeCollector collector(
-      profile_->GetPath(), nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-      mock_browsing_data_channel_id_helper_.get(),
-      nullptr, nullptr, nullptr);
-
-  collector.Fetch(base::Bind(&SiteDataSizeCollectorTest::FetchCallback,
-                             base::Unretained(this)));
-  // AddChannelIDSample() actually doesn't write channel ID to the file, only
-  // triggers the condition to take the file into account.
-  mock_browsing_data_channel_id_helper_->AddChannelIDSample("sbc1");
-  mock_browsing_data_channel_id_helper_->Notify();
-  // Wait until reading files on blocking pool finishes.
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(static_cast<int64_t>(arraysize(kChannelIdFileData)), fetched_size_);
-}
-
-TEST_F(SiteDataSizeCollectorTest, FetchChannelIdWithoutEntry) {
-  SiteDataSizeCollector collector(
-      profile_->GetPath(), nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-      mock_browsing_data_channel_id_helper_.get(),
-      nullptr, nullptr, nullptr);
-
-  collector.Fetch(base::Bind(&SiteDataSizeCollectorTest::FetchCallback,
-                             base::Unretained(this)));
-  mock_browsing_data_channel_id_helper_->Notify();
-  EXPECT_EQ(0, fetched_size_);
-}
-
 TEST_F(SiteDataSizeCollectorTest, FetchServiceWorker) {
   SiteDataSizeCollector collector(
       profile_->GetPath(), nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-      nullptr,
       mock_browsing_data_service_worker_helper_.get(),
       nullptr, nullptr);
 
-  collector.Fetch(base::Bind(&SiteDataSizeCollectorTest::FetchCallback,
-                             base::Unretained(this)));
+  collector.Fetch(base::BindOnce(&SiteDataSizeCollectorTest::FetchCallback,
+                                 base::Unretained(this), base::OnceClosure()));
   mock_browsing_data_service_worker_helper_->AddServiceWorkerSamples();
   mock_browsing_data_service_worker_helper_->Notify();
   EXPECT_EQ(3, fetched_size_);
@@ -268,12 +228,10 @@ TEST_F(SiteDataSizeCollectorTest, FetchServiceWorker) {
 TEST_F(SiteDataSizeCollectorTest, FetchCacheStorage) {
   SiteDataSizeCollector collector(
       profile_->GetPath(), nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-      nullptr, nullptr,
-      mock_browsing_data_cache_storage_helper_.get(),
-      nullptr);
+      nullptr, mock_browsing_data_cache_storage_helper_.get(), nullptr);
 
-  collector.Fetch(base::Bind(&SiteDataSizeCollectorTest::FetchCallback,
-                             base::Unretained(this)));
+  collector.Fetch(base::BindOnce(&SiteDataSizeCollectorTest::FetchCallback,
+                                 base::Unretained(this), base::OnceClosure()));
   mock_browsing_data_cache_storage_helper_->AddCacheStorageSamples();
   mock_browsing_data_cache_storage_helper_->Notify();
   EXPECT_EQ(3, fetched_size_);
@@ -282,30 +240,31 @@ TEST_F(SiteDataSizeCollectorTest, FetchCacheStorage) {
 TEST_F(SiteDataSizeCollectorTest, FetchFlashLSO) {
   SiteDataSizeCollector collector(
       profile_->GetPath(), nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-      nullptr, nullptr, nullptr,
-      mock_browsing_data_flash_lso_helper_.get());
+      nullptr, nullptr, mock_browsing_data_flash_lso_helper_.get());
 
-  collector.Fetch(base::Bind(&SiteDataSizeCollectorTest::FetchCallback,
-                             base::Unretained(this)));
+  base::RunLoop run_loop;
+  collector.Fetch(base::BindOnce(&SiteDataSizeCollectorTest::FetchCallback,
+                                 base::Unretained(this),
+                                 run_loop.QuitClosure()));
+
   // AddFlashLSODomain() actually doesn't write flash data to the file, only
   // triggers the condition to take the file into account.
   mock_browsing_data_flash_lso_helper_->AddFlashLSODomain("example.com");
   mock_browsing_data_flash_lso_helper_->Notify();
   // Wait until reading files on blocking pool finishes.
-  base::RunLoop().RunUntilIdle();
+  run_loop.Run();
   EXPECT_EQ(
-      static_cast<int64_t>(arraysize(kFlashData0) + arraysize(kFlashData1)),
+      static_cast<int64_t>(base::size(kFlashData0) + base::size(kFlashData1)),
       fetched_size_);
 }
 
 TEST_F(SiteDataSizeCollectorTest, FetchFlashLSOWithoutEntry) {
   SiteDataSizeCollector collector(
       profile_->GetPath(), nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-      nullptr, nullptr, nullptr,
-      mock_browsing_data_flash_lso_helper_.get());
+      nullptr, nullptr, mock_browsing_data_flash_lso_helper_.get());
 
-  collector.Fetch(base::Bind(&SiteDataSizeCollectorTest::FetchCallback,
-                             base::Unretained(this)));
+  collector.Fetch(base::BindOnce(&SiteDataSizeCollectorTest::FetchCallback,
+                                 base::Unretained(this), base::OnceClosure()));
   mock_browsing_data_flash_lso_helper_->Notify();
   EXPECT_EQ(0, fetched_size_);
 }
@@ -313,11 +272,11 @@ TEST_F(SiteDataSizeCollectorTest, FetchFlashLSOWithoutEntry) {
 TEST_F(SiteDataSizeCollectorTest, FetchMultiple) {
   SiteDataSizeCollector collector(
       profile_->GetPath(), nullptr, nullptr, nullptr, nullptr,
-      mock_browsing_data_indexed_db_helper_.get(), nullptr, nullptr,
+      mock_browsing_data_indexed_db_helper_.get(), nullptr,
       mock_browsing_data_service_worker_helper_.get(), nullptr, nullptr);
 
-  collector.Fetch(base::Bind(&SiteDataSizeCollectorTest::FetchCallback,
-                             base::Unretained(this)));
+  collector.Fetch(base::BindOnce(&SiteDataSizeCollectorTest::FetchCallback,
+                                 base::Unretained(this), base::OnceClosure()));
 
   mock_browsing_data_indexed_db_helper_->AddIndexedDBSamples();
   mock_browsing_data_indexed_db_helper_->Notify();

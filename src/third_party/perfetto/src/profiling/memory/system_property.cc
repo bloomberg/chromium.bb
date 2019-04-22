@@ -33,10 +33,11 @@ SystemProperties::Handle::Handle(Handle&& other) {
 }
 
 SystemProperties::Handle& SystemProperties::Handle::operator=(Handle&& other) {
-  system_properties_ = other.system_properties_;
-  property_ = std::move(other.property_);
-  all_ = other.all_;
-  other.system_properties_ = nullptr;
+  // Construct this temporary because the RHS could be an lvalue cast to an
+  // rvalue reference whose lifetime we do not know.
+  Handle tmp(std::move(other));
+  using std::swap;
+  swap(*this, tmp);
   return *this;
 }
 
@@ -92,16 +93,22 @@ SystemProperties::Handle SystemProperties::SetAll() {
 #endif
 
 // static
-void SystemProperties::ResetProperties() {
+void SystemProperties::ResetHeapprofdProperties() {
 #if PERFETTO_BUILDFLAG(PERFETTO_OS_ANDROID)
   int r = __system_property_foreach(
       [](const prop_info* pi, void*) {
         __system_property_read_callback(
             pi,
             [](void*, const char* name, const char*, uint32_t) {
-              const char* found = strstr(name, "heapprofd");
-              if (found == name) {
-                PERFETTO_DCHECK(__system_property_set(name, "") == 0);
+              constexpr char kDebugModePropName[] = "heapprofd.userdebug.mode";
+
+              // Unset everything starting with "heapprofd.", except for the
+              // property stating which mode to use on debug builds.
+              const char* found = strstr(name, "heapprofd.");
+              if (found == name && strncmp(name, kDebugModePropName,
+                                           strlen(kDebugModePropName))) {
+                int ret = __system_property_set(name, "");
+                PERFETTO_DCHECK(ret == 0);
               }
             },
             nullptr);
@@ -109,7 +116,7 @@ void SystemProperties::ResetProperties() {
       nullptr);
   PERFETTO_DCHECK(r == 0);
 #else
-  PERFETTO_DFATAL("Cannot ResetProperties on out-of-tree builds.");
+  PERFETTO_DFATAL("Cannot ResetHeapprofdProperties on out-of-tree builds.");
 #endif
 }
 
@@ -152,6 +159,13 @@ void SystemProperties::UnsetAll() {
     else
       SetAndroidProperty("heapprofd.enable", "1");
   }
+}
+
+void swap(SystemProperties::Handle& a, SystemProperties::Handle& b) {
+  using std::swap;
+  swap(a.system_properties_, b.system_properties_);
+  swap(a.property_, b.property_);
+  swap(a.all_, b.all_);
 }
 
 }  // namespace profiling

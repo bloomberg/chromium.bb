@@ -22,8 +22,10 @@ import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.ntp.RecentTabsManager;
 import org.chromium.chrome.browser.ntp.RecentTabsPage;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.touchless.TouchlessDelegate;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.content_public.browser.LoadUrlParams;
 
 import java.lang.annotation.Retention;
@@ -41,6 +43,10 @@ public class NativePageFactory {
                 TabModelSelector tabModelSelector) {
             if (tab.isIncognito()) {
                 return new IncognitoNewTabPage(activity, new TabShim(tab));
+            }
+
+            if (FeatureUtilities.isNoTouchModeEnabled()) {
+                return TouchlessDelegate.createTouchlessNewTabPage(activity, new TabShim(tab));
             }
 
             if (ChromeFeatureList.isEnabled(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS)) {
@@ -127,20 +133,17 @@ public class NativePageFactory {
      * @param url The URL to be handled.
      * @param candidatePage A NativePage to be reused if it matches the url, or null.
      * @param tab The Tab that will show the page.
-     * @param tabModelSelector The TabModelSelector containing the tab.
      * @param activity The activity used to create the views for the page.
      * @return A NativePage showing the specified url or null.
      */
-    public static NativePage createNativePageForURL(String url, NativePage candidatePage,
-            Tab tab, TabModelSelector tabModelSelector, ChromeActivity activity) {
-        return createNativePageForURL(url, candidatePage, tab, tabModelSelector, activity,
-                tab.isIncognito());
+    public static NativePage createNativePageForURL(
+            String url, NativePage candidatePage, Tab tab, ChromeActivity activity) {
+        return createNativePageForURL(url, candidatePage, tab, activity, tab.isIncognito());
     }
 
     @VisibleForTesting
-    static NativePage createNativePageForURL(String url, NativePage candidatePage,
-            Tab tab, TabModelSelector tabModelSelector, ChromeActivity activity,
-            boolean isIncognito) {
+    static NativePage createNativePageForURL(String url, NativePage candidatePage, Tab tab,
+            ChromeActivity activity, boolean isIncognito) {
         NativePage page;
 
         switch (nativePageType(url, candidatePage, isIncognito)) {
@@ -150,7 +153,8 @@ public class NativePageFactory {
                 page = candidatePage;
                 break;
             case NativePageType.NTP:
-                page = sNativePageBuilder.buildNewTabPage(activity, tab, tabModelSelector);
+                page = sNativePageBuilder.buildNewTabPage(
+                        activity, tab, TabModelSelector.from(tab));
                 break;
             case NativePageType.BOOKMARKS:
                 page = sNativePageBuilder.buildBookmarksPage(activity, tab);
@@ -203,8 +207,8 @@ public class NativePageFactory {
         @Override
         public int loadUrl(LoadUrlParams urlParams, boolean incognito) {
             if (incognito && !mTab.isIncognito()) {
-                mTab.getTabModelSelector().openNewTab(urlParams,
-                        TabModel.TabLaunchType.FROM_LONGPRESS_FOREGROUND, mTab,
+                TabModelSelector.from(mTab).openNewTab(urlParams,
+                        TabLaunchType.FROM_LONGPRESS_FOREGROUND, mTab,
                         /* incognito = */ true);
                 return TabLoadStatus.DEFAULT_PAGE_LOAD;
             }
@@ -229,7 +233,7 @@ public class NativePageFactory {
 
         @Override
         public boolean isVisible() {
-            return mTab == mTab.getTabModelSelector().getCurrentTab();
+            return mTab == TabModelSelector.from(mTab).getCurrentTab();
         }
     }
 }

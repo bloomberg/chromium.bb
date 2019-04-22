@@ -5,7 +5,8 @@
 #ifndef CONTENT_TEST_STUB_LAYER_TREE_VIEW_DELEGATE_H_
 #define CONTENT_TEST_STUB_LAYER_TREE_VIEW_DELEGATE_H_
 
-#include "content/renderer/gpu/layer_tree_view_delegate.h"
+#include "cc/trees/element_id.h"
+#include "content/renderer/compositor/layer_tree_view_delegate.h"
 
 namespace cc {
 struct ApplyViewportChangesArgs;
@@ -19,18 +20,25 @@ class StubLayerTreeViewDelegate : public LayerTreeViewDelegate {
   void ApplyViewportChanges(const cc::ApplyViewportChangesArgs&) override {}
   void RecordWheelAndTouchScrollingCount(bool has_scrolled_by_wheel,
                                          bool has_scrolled_by_touch) override {}
+  void SendOverscrollEventFromImplSide(
+      const gfx::Vector2dF& overscroll_delta,
+      cc::ElementId scroll_latched_element_id) override {}
+  void SendScrollEndEventFromImplSide(
+      cc::ElementId scroll_latched_element_id) override {}
   void BeginMainFrame(base::TimeTicks frame_time) override {}
+  void DidBeginMainFrame() override {}
+  void RecordStartOfFrameMetrics() override {}
   void RecordEndOfFrameMetrics(base::TimeTicks) override {}
+  void BeginUpdateLayers() override {}
+  void EndUpdateLayers() override {}
   void RequestNewLayerTreeFrameSink(
       LayerTreeFrameSinkCallback callback) override;
   void DidCommitAndDrawCompositorFrame() override {}
+  void WillCommitCompositorFrame() override {}
   void DidCommitCompositorFrame() override {}
   void DidCompletePageScaleAnimation() override {}
-  void RequestScheduleAnimation() override {}
-  void UpdateVisualState(bool record_main_frame_metrics) override {}
+  void UpdateVisualState() override {}
   void WillBeginCompositorFrame() override {}
-  std::unique_ptr<cc::SwapPromise> RequestCopyOfOutputForLayoutTest(
-      std::unique_ptr<viz::CopyOutputRequest> request) override;
 };
 
 }  // namespace content

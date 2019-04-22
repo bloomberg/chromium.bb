@@ -8,10 +8,12 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
+#include "chrome/browser/chromeos/android_sms/android_sms_app_manager.h"
+#include "chrome/browser/chromeos/android_sms/android_sms_service_factory.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
-#include "components/cryptauth/remote_device_ref.h"
 #include "components/prefs/pref_change_registrar.h"
 
 class PrefService;
@@ -22,22 +24,21 @@ class DictionaryValue;
 
 namespace chromeos {
 
-namespace multidevice_setup {
-class AndroidSmsAppHelperDelegate;
-}  // namespace multidevice_setup
-
 namespace settings {
 
 // Chrome "Multidevice" (a.k.a. "Connected Devices") settings page UI handler.
 class MultideviceHandler
     : public ::settings::SettingsPageUIHandler,
-      public multidevice_setup::MultiDeviceSetupClient::Observer {
+      public multidevice_setup::MultiDeviceSetupClient::Observer,
+      public multidevice_setup::AndroidSmsPairingStateTracker::Observer,
+      public android_sms::AndroidSmsAppManager::Observer {
  public:
   MultideviceHandler(
       PrefService* prefs,
       multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client,
-      std::unique_ptr<multidevice_setup::AndroidSmsAppHelperDelegate>
-          android_sms_app_helper);
+      multidevice_setup::AndroidSmsPairingStateTracker*
+          android_sms_pairing_state_tracker,
+      android_sms::AndroidSmsAppManager* android_sms_app_manager);
   ~MultideviceHandler() override;
 
  protected:
@@ -56,6 +57,12 @@ class MultideviceHandler
   void OnFeatureStatesChanged(
       const multidevice_setup::MultiDeviceSetupClient::FeatureStatesMap&
           feature_states_map) override;
+
+  // multidevice_setup::AndroidSmsPairingStateTracker::Observer:
+  void OnPairingStateChanged() override;
+
+  // android_sms::AndroidSmsAppManager::Observer:
+  void OnInstalledAppUrlChanged() override;
 
   // Sends the most recent PageContentData dictionary to the WebUI page as an
   // update (e.g., not due to a getPageContent() request).
@@ -104,12 +111,19 @@ class MultideviceHandler
   GetFeatureStatesMap();
 
   multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client_;
-  std::unique_ptr<multidevice_setup::AndroidSmsAppHelperDelegate>
-      android_sms_app_helper_;
+  multidevice_setup::AndroidSmsPairingStateTracker*
+      android_sms_pairing_state_tracker_;
+  android_sms::AndroidSmsAppManager* android_sms_app_manager_;
 
   ScopedObserver<multidevice_setup::MultiDeviceSetupClient,
                  multidevice_setup::MultiDeviceSetupClient::Observer>
       multidevice_setup_observer_;
+  ScopedObserver<multidevice_setup::AndroidSmsPairingStateTracker,
+                 multidevice_setup::AndroidSmsPairingStateTracker::Observer>
+      android_sms_pairing_state_tracker_observer_;
+  ScopedObserver<android_sms::AndroidSmsAppManager,
+                 android_sms::AndroidSmsAppManager::Observer>
+      android_sms_app_manager_observer_;
 
   // Used to cancel callbacks when JavaScript becomes disallowed.
   base::WeakPtrFactory<MultideviceHandler> callback_weak_ptr_factory_;

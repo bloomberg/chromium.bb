@@ -113,7 +113,7 @@ void ContentSettingsStore::SetExtensionContentSetting(
     } else {
       // Do not set a timestamp for extension settings.
       map->SetValue(primary_pattern, secondary_pattern, type, identifier,
-                    base::Time(), new base::Value(setting));
+                    base::Time(), base::Value(setting));
     }
   }
 
@@ -306,7 +306,7 @@ std::unique_ptr<base::ListValue> ContentSettingsStore::GetSettingsForExtension(
           content_settings_api_constants::kResourceIdentifierKey,
           key.resource_identifier);
       ContentSetting content_setting =
-          content_settings::ValueToContentSetting(rule.value.get());
+          content_settings::ValueToContentSetting(&rule.value);
       DCHECK_NE(CONTENT_SETTING_DEFAULT, content_setting);
 
       std::string setting_string =

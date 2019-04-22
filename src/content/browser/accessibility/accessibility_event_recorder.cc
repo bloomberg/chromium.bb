@@ -24,6 +24,21 @@ std::unique_ptr<AccessibilityEventRecorder> AccessibilityEventRecorder::Create(
     const base::StringPiece& application_name_match_pattern) {
   return std::make_unique<AccessibilityEventRecorder>(manager);
 }
+
+// static
+std::vector<AccessibilityEventRecorder::TestPass>
+AccessibilityEventRecorder::GetTestPasses() {
+#if defined(OS_ANDROID)
+  // Note: Android doesn't do a "blink" pass; the blink tree is different on
+  // Android because we exclude inline text boxes, for performance.
+  return {{"android", &AccessibilityEventRecorder::Create}};
+#else   // defined(OS_ANDROID)
+  return {
+      {"blink", &AccessibilityEventRecorder::Create},
+      {"native", &AccessibilityEventRecorder::Create},
+  };
+#endif  // defined(OS_ANDROID)
+}
 #endif
 
 void AccessibilityEventRecorder::OnEvent(const std::string& event) {

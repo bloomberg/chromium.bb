@@ -4,7 +4,9 @@
 
 #include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_stream_impl.h"
 
-#include "net/third_party/quic/core/quic_error_codes.h"
+#include <utility>
+#include "net/third_party/quiche/src/quic/core/quic_error_codes.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
 
@@ -19,16 +21,28 @@ P2PQuicStreamImpl::P2PQuicStreamImpl(quic::QuicStreamId id,
   DCHECK_GT(write_buffer_size_, 0u);
 }
 
+P2PQuicStreamImpl::P2PQuicStreamImpl(quic::PendingStream pending,
+                                     quic::QuicSession* session,
+                                     uint32_t delegate_read_buffer_size,
+                                     uint32_t write_buffer_size)
+    : quic::QuicStream(std::move(pending), quic::BIDIRECTIONAL),
+      delegate_read_buffer_size_(delegate_read_buffer_size),
+      write_buffer_size_(write_buffer_size) {
+  DCHECK_GT(delegate_read_buffer_size_, 0u);
+  DCHECK_GT(write_buffer_size_, 0u);
+}
+
 P2PQuicStreamImpl::~P2PQuicStreamImpl() {}
 
 void P2PQuicStreamImpl::OnDataAvailable() {
-  DCHECK(delegate_);
   if (!sequencer()->HasBytesToRead() && sequencer()->IsClosed()) {
     // We have consumed all data from the sequencer up to the FIN bit. This can
     // only occur by receiving an empty STREAM frame with the FIN bit set.
     quic::QuicStream::OnFinRead();
-    delegate_->OnDataReceived({}, /*fin=*/true);
     consumed_fin_ = true;
+    if (delegate_) {
+      delegate_->OnDataReceived({}, /*fin=*/true);
+    }
   }
 
   uint32_t delegate_read_buffer_available =
@@ -75,17 +89,20 @@ void P2PQuicStreamImpl::OnDataAvailable() {
     quic::QuicStream::OnFinRead();
     consumed_fin_ = fin;
   }
-  delegate_->OnDataReceived(std::move(data), fin);
+  if (delegate_) {
+    delegate_->OnDataReceived(std::move(data), fin);
+  }
 }
 
 void P2PQuicStreamImpl::OnStreamDataConsumed(size_t bytes_consumed) {
-  DCHECK(delegate_);
   // We should never consume more than has been written.
   DCHECK_GE(write_buffered_amount_, bytes_consumed);
   QuicStream::OnStreamDataConsumed(bytes_consumed);
   if (bytes_consumed > 0) {
     write_buffered_amount_ -= bytes_consumed;
-    delegate_->OnWriteDataConsumed(bytes_consumed);
+    if (delegate_) {
+      delegate_->OnWriteDataConsumed(SafeCast<uint32_t>(bytes_consumed));
+    }
   }
 }
 
@@ -122,12 +139,13 @@ void P2PQuicStreamImpl::SetDelegate(P2PQuicStream::Delegate* delegate) {
 }
 
 void P2PQuicStreamImpl::OnStreamReset(const quic::QuicRstStreamFrame& frame) {
-  DCHECK(delegate_);
   // Calling this on the QuicStream will ensure that the stream is closed
   // for reading and writing and we send a RST frame to the remote side if
   // we have not already.
   quic::QuicStream::OnStreamReset(frame);
-  delegate_->OnRemoteReset();
+  if (delegate_) {
+    delegate_->OnRemoteReset();
+  }
 }
 
 void P2PQuicStreamImpl::OnClose() {

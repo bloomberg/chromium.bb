@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
@@ -228,16 +229,12 @@ void DemoModeResourcesRemover::AttemptRemoval(RemovalReason reason,
     return;
   removal_in_progress_ = true;
 
-  // Report this metric only once per resources directory removal task.
-  // Concurrent removal requests should not be reported multiple times.
-  UMA_HISTOGRAM_ENUMERATION("DemoMode.ResourcesRemoval.Reason", reason);
-
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE,
       {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(&RemoveDirectory, DemoResources::GetPreInstalledPath()),
       base::BindOnce(&DemoModeResourcesRemover::OnRemovalDone,
-                     weak_ptr_factory_.GetWeakPtr()));
+                     weak_ptr_factory_.GetWeakPtr(), reason));
 }
 
 void DemoModeResourcesRemover::OverrideTimeForTesting(
@@ -260,7 +257,7 @@ DemoModeResourcesRemover::DemoModeResourcesRemover(PrefService* local_state)
   CHECK(!g_instance);
   g_instance = this;
 
-  cryptohome_observer_.Add(DBusThreadManager::Get()->GetCryptohomeClient());
+  cryptohome_observer_.Add(CryptohomeClient::Get());
   ChromeUserManager::Get()->AddSessionStateObserver(this);
 }
 
@@ -292,7 +289,8 @@ bool DemoModeResourcesRemover::AttemptRemovalIfUsageOverThreshold() {
   return true;
 }
 
-void DemoModeResourcesRemover::OnRemovalDone(RemovalResult result) {
+void DemoModeResourcesRemover::OnRemovalDone(RemovalReason reason,
+                                             RemovalResult result) {
   DCHECK(removal_in_progress_);
   removal_in_progress_ = false;
 
@@ -308,7 +306,14 @@ void DemoModeResourcesRemover::OnRemovalDone(RemovalResult result) {
     usage_end_ = base::nullopt;
   }
 
-  UMA_HISTOGRAM_ENUMERATION("DemoMode.ResourcesRemoval.Result", result);
+  // Only report metrics when the resources were found; otherwise this is
+  // reported on almost every sign-in.
+  // Only report metrics once per resources directory removal task.
+  // Concurrent removal requests should not be reported multiple times.
+  if (result == RemovalResult::kSuccess || result == RemovalResult::kFailed) {
+    UMA_HISTOGRAM_ENUMERATION("DemoMode.ResourcesRemoval.Reason", reason);
+    UMA_HISTOGRAM_ENUMERATION("DemoMode.ResourcesRemoval.Result", result);
+  }
 
   std::vector<RemovalCallback> callbacks;
   callbacks.swap(removal_callbacks_);

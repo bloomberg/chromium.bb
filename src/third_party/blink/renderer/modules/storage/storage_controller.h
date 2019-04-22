@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/modules/storage/storage_area.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -44,6 +45,8 @@ class WebStorageArea;
 // AddLocalStorageInspectorStorageAgent,
 // RemoveLocalStorageInspectorStorageAgent, DidDispatchLocalStorageEvent
 class MODULES_EXPORT StorageController {
+  USING_FAST_MALLOC(StorageController);
+
  public:
   // Returns the one global StorageController instance.
   static StorageController* GetInstance();
@@ -57,9 +60,9 @@ class MODULES_EXPORT StorageController {
       mojom::blink::StoragePartitionServicePtr storage_partition_service,
       size_t total_cache_limit);
 
-  // Creates a new StorageNamespace for Session storage, and holds a weak
-  // reference for accounting & clearing. If there is already a StorageNamespace
-  // created for the given id, it is returned.
+  // Creates a MakeGarbageCollected<StorageNamespace> for Session storage, and
+  // holds a weak reference for accounting & clearing. If there is already a
+  // StorageNamespace created for the given id, it is returned.
   StorageNamespace* CreateSessionStorageNamespace(const String& namespace_id);
 
   // Returns the total size of all cached areas in namespaces this controller

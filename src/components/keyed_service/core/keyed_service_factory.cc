@@ -13,22 +13,16 @@
 #include "components/keyed_service/core/keyed_service.h"
 
 KeyedServiceFactory::KeyedServiceFactory(const char* name,
-                                         DependencyManager* manager)
-    : KeyedServiceBaseFactory(name, manager) {
-}
+                                         DependencyManager* manager,
+                                         Type type)
+    : KeyedServiceBaseFactory(name, manager, type) {}
 
 KeyedServiceFactory::~KeyedServiceFactory() {
   DCHECK(mapping_.empty());
 }
 
-void KeyedServiceFactory::SetTestingFactory(base::SupportsUserData* context,
+void KeyedServiceFactory::SetTestingFactory(void* context,
                                             TestingFactory testing_factory) {
-  // Destroying the context may cause us to lose data about whether |context|
-  // has our preferences registered on it (since the context object itself
-  // isn't dead). See if we need to readd it once we've gone through normal
-  // destruction.
-  bool add_context = ArePreferencesSetOn(context);
-
   // Ensure that |context| is not marked as stale (e.g., due to it aliasing an
   // instance that was destroyed in an earlier test) in order to avoid accesses
   // to |context| in |BrowserContextShutdown| from causing
@@ -41,23 +35,19 @@ void KeyedServiceFactory::SetTestingFactory(base::SupportsUserData* context,
   ContextShutdown(context);
   ContextDestroyed(context);
 
-  if (add_context)
-    MarkPreferencesSetOn(context);
-
   testing_factories_.emplace(context, std::move(testing_factory));
 }
 
 KeyedService* KeyedServiceFactory::SetTestingFactoryAndUse(
-    base::SupportsUserData* context,
+    void* context,
     TestingFactory testing_factory) {
   DCHECK(testing_factory);
   SetTestingFactory(context, std::move(testing_factory));
   return GetServiceForContext(context, true);
 }
 
-KeyedService* KeyedServiceFactory::GetServiceForContext(
-    base::SupportsUserData* context,
-    bool create) {
+KeyedService* KeyedServiceFactory::GetServiceForContext(void* context,
+                                                        bool create) {
   TRACE_EVENT1("browser,startup", "KeyedServiceFactory::GetServiceForContext",
                "service_name", name());
   context = GetContextToUse(context);
@@ -81,8 +71,6 @@ KeyedService* KeyedServiceFactory::GetServiceForContext(
   auto factory_iterator = testing_factories_.find(context);
   if (factory_iterator != testing_factories_.end()) {
     if (factory_iterator->second) {
-      if (!IsOffTheRecord(context))
-        RegisterUserPrefsOnContextForTest(context);
       service = factory_iterator->second.Run(context);
     }
   } else {
@@ -93,26 +81,26 @@ KeyedService* KeyedServiceFactory::GetServiceForContext(
 }
 
 KeyedService* KeyedServiceFactory::Associate(
-    base::SupportsUserData* context,
+    void* context,
     std::unique_ptr<KeyedService> service) {
   DCHECK(!base::ContainsKey(mapping_, context));
   auto iterator = mapping_.emplace(context, std::move(service)).first;
   return iterator->second.get();
 }
 
-void KeyedServiceFactory::Disassociate(base::SupportsUserData* context) {
+void KeyedServiceFactory::Disassociate(void* context) {
   auto iterator = mapping_.find(context);
   if (iterator != mapping_.end())
     mapping_.erase(iterator);
 }
 
-void KeyedServiceFactory::ContextShutdown(base::SupportsUserData* context) {
+void KeyedServiceFactory::ContextShutdown(void* context) {
   auto iterator = mapping_.find(context);
   if (iterator != mapping_.end() && iterator->second)
     iterator->second->Shutdown();
 }
 
-void KeyedServiceFactory::ContextDestroyed(base::SupportsUserData* context) {
+void KeyedServiceFactory::ContextDestroyed(void* context) {
   Disassociate(context);
 
   // For unit tests, we also remove the factory function both so we don't
@@ -124,15 +112,10 @@ void KeyedServiceFactory::ContextDestroyed(base::SupportsUserData* context) {
   KeyedServiceBaseFactory::ContextDestroyed(context);
 }
 
-void KeyedServiceFactory::SetEmptyTestingFactory(
-    base::SupportsUserData* context) {
+void KeyedServiceFactory::SetEmptyTestingFactory(void* context) {
   SetTestingFactory(context, TestingFactory());
 }
 
-bool KeyedServiceFactory::HasTestingFactory(base::SupportsUserData* context) {
+bool KeyedServiceFactory::HasTestingFactory(void* context) {
   return base::ContainsKey(testing_factories_, context);
-}
-
-void KeyedServiceFactory::CreateServiceNow(base::SupportsUserData* context) {
-  GetServiceForContext(context, true);
 }

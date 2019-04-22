@@ -16,17 +16,11 @@
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/gfx/image/image_skia.h"
 
-namespace {
-
-constexpr char kJsScreenPath[] = "login.ArcKioskSplashScreen";
-}
-
 namespace chromeos {
 
-ArcKioskSplashScreenHandler::ArcKioskSplashScreenHandler()
-    : BaseScreenHandler(kScreenId) {
-  set_call_js_prefix(kJsScreenPath);
-}
+ArcKioskSplashScreenHandler::ArcKioskSplashScreenHandler(
+    JSCallsContainer* js_calls_container)
+    : BaseScreenHandler(kScreenId, js_calls_container) {}
 
 ArcKioskSplashScreenHandler::~ArcKioskSplashScreenHandler() {
   if (delegate_)
@@ -94,7 +88,7 @@ void ArcKioskSplashScreenHandler::PopulateAppInfo(
 }
 
 void ArcKioskSplashScreenHandler::SetLaunchText(const std::string& text) {
-  CallJSWithPrefix("updateArcKioskMessage", text);
+  CallJS("login.ArcKioskSplashScreen.updateArcKioskMessage", text);
 }
 
 int ArcKioskSplashScreenHandler::GetProgressMessageFromState(

@@ -137,10 +137,10 @@ TEST_P(VerifyNameMatchSimpleTest, ExtraRdnDoesNotMatch) {
 
 // Runs VerifyNameMatchSimpleTest for all combinations of value_type and and
 // suffix.
-INSTANTIATE_TEST_CASE_P(InstantiationName,
-                        VerifyNameMatchSimpleTest,
-                        ::testing::Combine(::testing::ValuesIn(kValueTypes),
-                                           ::testing::ValuesIn(kMangleTypes)));
+INSTANTIATE_TEST_SUITE_P(InstantiationName,
+                         VerifyNameMatchSimpleTest,
+                         ::testing::Combine(::testing::ValuesIn(kValueTypes),
+                                            ::testing::ValuesIn(kMangleTypes)));
 
 class VerifyNameMatchNormalizationTest
     : public ::testing::TestWithParam<::testing::tuple<bool, const char*>> {
@@ -182,7 +182,7 @@ TEST_P(VerifyNameMatchNormalizationTest, CollapseWhitespace) {
 
 // Runs VerifyNameMatchNormalizationTest for each (expected_result, value_type)
 // tuple.
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     InstantiationName,
     VerifyNameMatchNormalizationTest,
     ::testing::Values(
@@ -270,10 +270,10 @@ TEST_P(VerifyNameMatchDifferingTypesTest, NormalizableTypesInSubtrees) {
 
 // Runs VerifyNameMatchDifferingTypesTest for all combinations of value types in
 // value_type1 and value_type_2.
-INSTANTIATE_TEST_CASE_P(InstantiationName,
-                        VerifyNameMatchDifferingTypesTest,
-                        ::testing::Combine(::testing::ValuesIn(kValueTypes),
-                                           ::testing::ValuesIn(kValueTypes)));
+INSTANTIATE_TEST_SUITE_P(InstantiationName,
+                         VerifyNameMatchDifferingTypesTest,
+                         ::testing::Combine(::testing::ValuesIn(kValueTypes),
+                                            ::testing::ValuesIn(kValueTypes)));
 
 class VerifyNameMatchUnicodeConversionTest
     : public ::testing::TestWithParam<
@@ -301,7 +301,7 @@ TEST_P(VerifyNameMatchUnicodeConversionTest, UnicodeConversionsAreEqual) {
 // Runs VerifyNameMatchUnicodeConversionTest with prefix="unicode_bmp" for all
 // combinations of Basic Multilingual Plane-capable value types in value_type1
 // and value_type_2.
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     BMPConversion,
     VerifyNameMatchUnicodeConversionTest,
     ::testing::Combine(
@@ -312,7 +312,7 @@ INSTANTIATE_TEST_CASE_P(
 // Runs VerifyNameMatchUnicodeConversionTest with prefix="unicode_supplementary"
 // for all combinations of Unicode Supplementary Plane-capable value types in
 // value_type1 and value_type_2.
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SMPConversion,
     VerifyNameMatchUnicodeConversionTest,
     ::testing::Combine(
@@ -329,7 +329,7 @@ TEST(VerifyNameMatchInvalidDataTest, FailOnInvalidPrintableStringChars) {
   size_t replace_location = der.find("0123456789");
   ASSERT_NE(std::string::npos, replace_location);
   for (int c = 0; c < 256; ++c) {
-    SCOPED_TRACE(base::IntToString(c));
+    SCOPED_TRACE(base::NumberToString(c));
     if (base::IsAsciiAlpha(c) || base::IsAsciiDigit(c))
       continue;
     switch (c) {
@@ -367,7 +367,7 @@ TEST(VerifyNameMatchInvalidDataTest, FailOnInvalidIA5StringChars) {
   size_t replace_location = der.find("eXaMple");
   ASSERT_NE(std::string::npos, replace_location);
   for (int c = 0; c < 256; ++c) {
-    SCOPED_TRACE(base::IntToString(c));
+    SCOPED_TRACE(base::NumberToString(c));
     der.replace(replace_location, 1, 1, c);
     bool expected_result = (c <= 127);
     EXPECT_EQ(expected_result, VerifyNameMatch(SequenceValueFromString(&der),

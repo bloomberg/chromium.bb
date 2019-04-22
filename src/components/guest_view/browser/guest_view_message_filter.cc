@@ -124,12 +124,11 @@ void GuestViewMessageFilter::OnAttachGuest(
                        params);
 }
 
-void GuestViewMessageFilter::AttachToEmbedderFrame(
+void GuestViewMessageFilter::OnAttachToEmbedderFrame(
     int embedder_local_render_frame_id,
     int element_instance_id,
     int guest_instance_id,
-    const base::DictionaryValue& params,
-    bool is_full_page_plugin) {
+    const base::DictionaryValue& params) {
   // We should have a GuestViewManager at this point. If we don't then the
   // embedder is misbehaving.
   auto* manager = GetGuestViewManagerOrKill();
@@ -147,11 +146,6 @@ void GuestViewMessageFilter::AttachToEmbedderFrame(
   DCHECK(owner_web_contents);
   auto* embedder_frame = RenderFrameHost::FromID(
       render_process_id_, embedder_local_render_frame_id);
-  // If we're creating a new guest through window.open /
-  // RenderViewImpl::CreateView, the embedder may not be the same as
-  // the original creator/owner, so update embedder_web_contents here.
-  content::WebContents* embedder_web_contents =
-      WebContents::FromRenderFrameHost(embedder_frame);
 
   // Update the guest manager about the attachment.
   // This sets up the embedder and guest pairing information inside
@@ -159,42 +153,8 @@ void GuestViewMessageFilter::AttachToEmbedderFrame(
   manager->AttachGuest(render_process_id_, element_instance_id,
                        guest_instance_id, params);
 
-  base::OnceClosure perform_attach = base::BindOnce(
-      [](content::WebContents* guest_web_contents,
-         content::WebContents* embedder_web_contents,
-         content::RenderFrameHost* embedder_frame, int element_instance_id) {
-        // Attach this inner WebContents |guest_web_contents| to the outer
-        // WebContents |embedder_web_contents|. The outer WebContents's
-        // frame |embedder_frame| hosts the inner WebContents.
-        // NOTE: this must be called after WillAttach, because it could unblock
-        // pending requests which depend on the WebViewGuest being initialized.
-        guest_web_contents->AttachToOuterWebContentsFrame(
-            base::WrapUnique<WebContents>(guest_web_contents), embedder_frame);
-
-        // We don't ACK until after AttachToOuterWebContentsFrame, so that
-        // |embedder_frame| gets swapped before the AttachIframeGuest callback
-        // is run. We also need to send the ACK before queued events are sent in
-        // DidAttach.
-        embedder_web_contents->GetMainFrame()->Send(
-            new GuestViewMsg_AttachToEmbedderFrame_ACK(element_instance_id));
-      },
-      guest_web_contents, embedder_web_contents, embedder_frame,
-      element_instance_id);
-
-  guest->WillAttach(
-      embedder_web_contents, element_instance_id, is_full_page_plugin,
-      std::move(perform_attach),
-      base::Bind(&GuestViewBase::DidAttach,
-                 guest->weak_ptr_factory_.GetWeakPtr(), MSG_ROUTING_NONE));
+  guest->AttachToOuterWebContentsFrame(embedder_frame, element_instance_id,
+                                       false /* is_full_page_plugin */);
 }
 
-void GuestViewMessageFilter::OnAttachToEmbedderFrame(
-    int embedder_local_render_frame_id,
-    int element_instance_id,
-    int guest_instance_id,
-    const base::DictionaryValue& params) {
-  AttachToEmbedderFrame(embedder_local_render_frame_id, element_instance_id,
-                        guest_instance_id, params,
-                        false /* is_full_page_plugin */);
-}
 }  // namespace guest_view

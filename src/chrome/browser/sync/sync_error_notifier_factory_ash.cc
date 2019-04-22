@@ -8,7 +8,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sync_error_notifier_ash.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 SyncErrorNotifierFactory::SyncErrorNotifierFactory()
@@ -35,11 +34,11 @@ SyncErrorNotifierFactory* SyncErrorNotifierFactory::GetInstance() {
 KeyedService* SyncErrorNotifierFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = static_cast<Profile*>(context);
-  browser_sync::ProfileSyncService* profile_sync_service =
+  syncer::SyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile);
 
-  if (!profile_sync_service)
+  if (!sync_service)
     return nullptr;
 
-  return new SyncErrorNotifier(profile_sync_service, profile);
+  return new SyncErrorNotifier(sync_service, profile);
 }

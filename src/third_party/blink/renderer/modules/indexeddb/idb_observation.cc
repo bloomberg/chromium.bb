@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/modules/indexeddb/idb_observation.h"
 
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_observation.h"
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
 #include "third_party/blink/renderer/bindings/modules/v8/to_v8_for_modules.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_binding_for_modules.h"
@@ -66,17 +65,19 @@ const String& IDBObservation::type() const {
   }
 }
 
-IDBObservation* IDBObservation::Create(WebIDBObservation observation,
-                                       v8::Isolate* isolate) {
-  return MakeGarbageCollected<IDBObservation>(std::move(observation), isolate);
+IDBObservation::IDBObservation(int64_t object_store_id,
+                               mojom::IDBOperationType type,
+                               IDBKeyRange* key_range,
+                               std::unique_ptr<IDBValue> value)
+    : object_store_id_(object_store_id),
+      operation_type_(type),
+      key_range_(key_range) {
+  value_ = IDBAny::Create(std::move(value));
 }
 
-IDBObservation::IDBObservation(WebIDBObservation observation,
-                               v8::Isolate* isolate)
-    : key_range_(observation.key_range), operation_type_(observation.type) {
-  std::unique_ptr<IDBValue> value = observation.value.ReleaseIdbValue();
-  value->SetIsolate(isolate);
-  value_ = IDBAny::Create(std::move(value));
+void IDBObservation::SetIsolate(v8::Isolate* isolate) {
+  DCHECK(value_ && value_->Value());
+  value_->Value()->SetIsolate(isolate);
 }
 
 void IDBObservation::Trace(blink::Visitor* visitor) {

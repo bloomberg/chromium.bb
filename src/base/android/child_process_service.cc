@@ -5,6 +5,7 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/library_loader/library_loader_hooks.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/file_descriptor_store.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -20,7 +21,6 @@ namespace android {
 
 void JNI_ChildProcessService_RegisterFileDescriptors(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobjectArray>& j_keys,
     const JavaParamRef<jintArray>& j_ids,
     const JavaParamRef<jintArray>& j_fds,
@@ -67,12 +67,14 @@ void JNI_ChildProcessService_RegisterFileDescriptors(
   }
 }
 
-void JNI_ChildProcessService_ExitChildProcess(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& clazz) {
+void JNI_ChildProcessService_ExitChildProcess(JNIEnv* env) {
   VLOG(0) << "ChildProcessService: Exiting child process.";
   base::android::LibraryLoaderExitHook();
   _exit(0);
+}
+
+void JNI_ChildProcessService_DumpProcessStack(JNIEnv* env) {
+  base::debug::DumpWithoutCrashing();
 }
 
 }  // namespace android

@@ -121,14 +121,41 @@ cr.define('settings_menu', function() {
     });
 
     test('pageVisibility', function() {
-      assertFalse(settingsMenu.$$('#people').hidden);
-      assertFalse(settingsMenu.$$('#appearance').hidden);
-      assertFalse(settingsMenu.$$('#onStartup').hidden);
-      assertFalse(settingsMenu.$$('#advancedButton').hidden);
-      assertFalse(settingsMenu.$$('#advancedSubmenu').hidden);
-      assertFalse(settingsMenu.$$('#reset').hidden);
-      if (!cr.isChromeOS)
-        assertFalse(settingsMenu.$$('#defaultBrowser').hidden);
+      function assertPageVisibility(expectedHidden) {
+        assertEquals(expectedHidden, settingsMenu.$$('#people').hidden);
+        assertEquals(expectedHidden, settingsMenu.$$('#appearance').hidden);
+        assertEquals(expectedHidden, settingsMenu.$$('#onStartup').hidden);
+        assertEquals(expectedHidden, settingsMenu.$$('#advancedButton').hidden);
+        assertEquals(
+            expectedHidden, settingsMenu.$$('#advancedSubmenu').hidden);
+        assertEquals(expectedHidden, settingsMenu.$$('#reset').hidden);
+
+        if (cr.isChromeOS) {
+          assertEquals(expectedHidden, settingsMenu.$$('#multidevice').hidden);
+        } else {
+          assertEquals(
+              expectedHidden, settingsMenu.$$('#defaultBrowser').hidden);
+        }
+      }
+
+      // The default pageVisibility should not cause menu items to be hidden.
+      assertPageVisibility(false);
+
+      // Set the visibility of the pages under test to "false".
+      settingsMenu.pageVisibility =
+          Object.assign(settings.pageVisibility || {}, {
+            advancedSettings: false,
+            appearance: false,
+            defaultBrowser: false,
+            multidevice: false,
+            onStartup: false,
+            people: false,
+            reset: false
+          });
+      Polymer.dom.flush();
+
+      // Now, the menu items should be hidden.
+      assertPageVisibility(true);
     });
   });
 });

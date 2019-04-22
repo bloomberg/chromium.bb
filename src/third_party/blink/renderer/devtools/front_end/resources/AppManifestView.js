@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /**
- * @implements {SDK.SDKModelObserver<!SDK.ResourceTreeModel>}
+ * @implements {SDK.TargetManager.Observer}
  * @unrestricted
  */
 Resources.AppManifestView = class extends UI.VBox {
@@ -25,13 +25,8 @@ Resources.AppManifestView = class extends UI.VBox {
     this._reportView.hideWidget();
 
     this._errorsSection = this._reportView.appendSection(Common.UIString('Errors and warnings'));
+    this._installabilitySection = this._reportView.appendSection(Common.UIString('Installability'));
     this._identitySection = this._reportView.appendSection(Common.UIString('Identity'));
-    const toolbar = this._identitySection.createToolbar();
-    toolbar.renderAsLinks();
-    const addToHomeScreen =
-        new UI.ToolbarButton(Common.UIString('Add to homescreen'), undefined, Common.UIString('Add to homescreen'));
-    addToHomeScreen.addEventListener(UI.ToolbarButton.Events.Click, this._addToHomescreen, this);
-    toolbar.appendToolbarItem(addToHomeScreen);
 
     this._presentationSection = this._reportView.appendSection(Common.UIString('Presentation'));
     this._iconsSection = this._reportView.appendSection(Common.UIString('Icons'));
@@ -52,42 +47,63 @@ Resources.AppManifestView = class extends UI.VBox {
     this._orientationField = this._presentationSection.appendField(Common.UIString('Orientation'));
     this._displayField = this._presentationSection.appendField(Common.UIString('Display'));
 
-    SDK.targetManager.observeModels(SDK.ResourceTreeModel, this);
+    this._throttler = new Common.Throttler(1000);
+    SDK.targetManager.observeTargets(this);
   }
 
   /**
    * @override
-   * @param {!SDK.ResourceTreeModel} resourceTreeModel
+   * @param {!SDK.Target} target
    */
-  modelAdded(resourceTreeModel) {
-    if (this._resourceTreeModel)
+  targetAdded(target) {
+    if (this._target)
       return;
-    this._resourceTreeModel = resourceTreeModel;
-    this._updateManifest();
-    resourceTreeModel.addEventListener(SDK.ResourceTreeModel.Events.MainFrameNavigated, this._updateManifest, this);
+    this._target = target;
+    this._resourceTreeModel = target.model(SDK.ResourceTreeModel);
+    this._serviceWorkerManager = target.model(SDK.ServiceWorkerManager);
+    if (!this._resourceTreeModel || !this._serviceWorkerManager)
+      return;
+
+    this._updateManifest(true);
+
+    this._registeredListeners = [
+      this._resourceTreeModel.addEventListener(
+          SDK.ResourceTreeModel.Events.DOMContentLoaded, this._updateManifest.bind(this, true)),
+      this._serviceWorkerManager.addEventListener(
+          SDK.ServiceWorkerManager.Events.RegistrationUpdated, this._updateManifest.bind(this, false))
+    ];
   }
 
   /**
    * @override
-   * @param {!SDK.ResourceTreeModel} resourceTreeModel
+   * @param {!SDK.Target} target
    */
-  modelRemoved(resourceTreeModel) {
-    if (!this._resourceTreeModel || this._resourceTreeModel !== resourceTreeModel)
+  targetRemoved(target) {
+    if (this._target !== target)
       return;
-    resourceTreeModel.removeEventListener(SDK.ResourceTreeModel.Events.MainFrameNavigated, this._updateManifest, this);
+    if (!this._resourceTreeModel || !this._serviceWorkerManager)
+      return;
     delete this._resourceTreeModel;
+    delete this._serviceWorkerManager;
+    Common.EventTarget.removeEventListeners(this._registeredListeners);
   }
 
-  _updateManifest() {
-    this._resourceTreeModel.fetchAppManifest(this._renderManifest.bind(this));
+  /**
+   * @param {boolean} immediately
+   */
+  async _updateManifest(immediately) {
+    const {url, data, errors} = await this._resourceTreeModel.fetchAppManifest();
+    const installabilityErrors = await this._resourceTreeModel.getInstallabilityErrors();
+    this._throttler.schedule(() => this._renderManifest(url, data, errors, installabilityErrors), immediately);
   }
 
   /**
    * @param {string} url
    * @param {?string} data
    * @param {!Array<!Protocol.Page.AppManifestError>} errors
+   * @param {!Array<string>} installabilityErrors
    */
-  _renderManifest(url, data, errors) {
+  async _renderManifest(url, data, errors, installabilityErrors) {
     if (!data && !errors.length) {
       this._emptyView.showWidget();
       this._reportView.hideWidget();
@@ -101,7 +117,7 @@ Resources.AppManifestView = class extends UI.VBox {
     this._errorsSection.element.classList.toggle('hidden', !errors.length);
     for (const error of errors) {
       this._errorsSection.appendRow().appendChild(
-          UI.createLabel(error.message, error.critical ? 'smallicon-error' : 'smallicon-warning'));
+          UI.createIconLabel(error.message, error.critical ? 'smallicon-error' : 'smallicon-warning'));
     }
 
     if (!data)
@@ -113,6 +129,7 @@ Resources.AppManifestView = class extends UI.VBox {
     const parsedManifest = JSON.parse(data);
     this._nameField.textContent = stringProperty('name');
     this._shortNameField.textContent = stringProperty('short_name');
+
     this._startURLField.removeChildren();
     const startURL = stringProperty('start_url');
     if (startURL) {
@@ -129,18 +146,24 @@ Resources.AppManifestView = class extends UI.VBox {
     this._backgroundColorSwatch.setColor(/** @type {!Common.Color} */ (backgroundColor));
 
     this._orientationField.textContent = stringProperty('orientation');
-    this._displayField.textContent = stringProperty('display');
+    const displayType = stringProperty('display');
+    this._displayField.textContent = displayType;
 
     const icons = parsedManifest['icons'] || [];
     this._iconsSection.clearContent();
+
     for (const icon of icons) {
       const title = (icon['sizes'] || '') + '\n' + (icon['type'] || '');
       const field = this._iconsSection.appendField(title);
-      const imageElement = field.createChild('img');
-      imageElement.style.maxWidth = '200px';
-      imageElement.style.maxHeight = '200px';
-      imageElement.src = Common.ParsedURL.completeURL(url, icon['src']);
+      const image = await this._loadImage(Common.ParsedURL.completeURL(url, icon['src']));
+      if (image)
+        field.appendChild(image);
     }
+
+    this._installabilitySection.clearContent();
+    this._installabilitySection.element.classList.toggle('hidden', !installabilityErrors.length);
+    for (const error of installabilityErrors)
+      this._installabilitySection.appendRow().appendChild(UI.createIconLabel(error, 'smallicon-warning'));
 
     /**
      * @param {string} name
@@ -155,13 +178,23 @@ Resources.AppManifestView = class extends UI.VBox {
   }
 
   /**
-   * @param {!Common.Event} event
+   * @param {?string} url
+   * @return {!Promise<?Image>}
    */
-  _addToHomescreen(event) {
-    const target = SDK.targetManager.mainTarget();
-    if (target && target.type() === SDK.Target.Type.Frame) {
-      target.pageAgent().requestAppBanner();
-      Common.console.show();
+  async _loadImage(url) {
+    const image = createElement('img');
+    image.style.maxWidth = '200px';
+    image.style.maxHeight = '200px';
+    const result = new Promise((f, r) => {
+      image.onload = f;
+      image.onerror = r;
+    });
+    image.src = url;
+    try {
+      await result;
+      return image;
+    } catch (e) {
     }
+    return null;
   }
 };

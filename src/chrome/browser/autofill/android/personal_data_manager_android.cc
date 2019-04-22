@@ -11,8 +11,10 @@
 
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/format_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/android/preferences/prefs.h"
@@ -473,7 +475,7 @@ PersonalDataManagerAndroid::GetBillingAddressLabelForPaymentRequest(
 
   return ConvertUTF16ToJavaString(
       env, profile.ConstructInferredLabel(
-               kLabelFields, arraysize(kLabelFields), arraysize(kLabelFields),
+               kLabelFields, base::size(kLabelFields), base::size(kLabelFields),
                g_browser_process->GetApplicationLocale()));
 }
 
@@ -571,7 +573,7 @@ void PersonalDataManagerAndroid::AddServerCreditCardForTest(
   PopulateNativeCreditCardFromJava(jcard, env, card.get());
   card->set_record_type(CreditCard::MASKED_SERVER_CARD);
   personal_data_manager_->AddServerCreditCardForTest(std::move(card));
-  personal_data_manager_->NotifyPersonalDataChangedForTest();
+  personal_data_manager_->NotifyPersonalDataObserver();
 }
 
 void PersonalDataManagerAndroid::RemoveByGUID(
@@ -634,7 +636,7 @@ void PersonalDataManagerAndroid::SetProfileUseStatsForTesting(
   profile->set_use_count(static_cast<size_t>(count));
   profile->set_use_date(base::Time::FromTimeT(date));
 
-  personal_data_manager_->NotifyPersonalDataChangedForTest();
+  personal_data_manager_->NotifyPersonalDataObserver();
 }
 
 jint PersonalDataManagerAndroid::GetProfileUseCountForTesting(
@@ -678,7 +680,7 @@ void PersonalDataManagerAndroid::SetCreditCardUseStatsForTesting(
   card->set_use_count(static_cast<size_t>(count));
   card->set_use_date(base::Time::FromTimeT(date));
 
-  personal_data_manager_->NotifyPersonalDataChangedForTest();
+  personal_data_manager_->NotifyPersonalDataObserver();
 }
 
 jint PersonalDataManagerAndroid::GetCreditCardUseCountForTesting(
@@ -855,7 +857,7 @@ PersonalDataManagerAndroid::GetShippingAddressLabelForPaymentRequest(
       ADDRESS_HOME_ZIP,     ADDRESS_HOME_SORTING_CODE,
       ADDRESS_HOME_COUNTRY,
   };
-  size_t kLabelFields_size = arraysize(kLabelFields);
+  size_t kLabelFields_size = base::size(kLabelFields);
   if (!include_country_in_label)
     --kLabelFields_size;
 
@@ -871,7 +873,6 @@ PersonalDataManagerAndroid::GetShippingAddressLabelForPaymentRequest(
 // Returns whether the specified feature is enabled.
 static jboolean JNI_PersonalDataManager_GetPref(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const jint j_pref_index) {
   return GetPrefs()->GetBoolean(
       PersonalDataManagerAndroid::GetPrefNameExposedToJava(j_pref_index));
@@ -879,7 +880,6 @@ static jboolean JNI_PersonalDataManager_GetPref(
 
 // Enables or disables the specified feature for profiles.
 static void JNI_PersonalDataManager_SetPref(JNIEnv* env,
-                                            const JavaParamRef<jclass>& clazz,
                                             const jint j_pref_index,
                                             const jboolean j_enable) {
   return GetPrefs()->SetBoolean(
@@ -888,37 +888,30 @@ static void JNI_PersonalDataManager_SetPref(JNIEnv* env,
 }
 
 // Returns whether the Autofill feature is managed.
-static jboolean JNI_PersonalDataManager_IsAutofillManaged(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& clazz) {
+static jboolean JNI_PersonalDataManager_IsAutofillManaged(JNIEnv* env) {
   return prefs::IsAutofillManaged(GetPrefs());
 }
 
 // Returns whether the Autofill feature for profiles is managed.
-static jboolean JNI_PersonalDataManager_IsAutofillProfileManaged(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& clazz) {
+static jboolean JNI_PersonalDataManager_IsAutofillProfileManaged(JNIEnv* env) {
   return prefs::IsProfileAutofillManaged(GetPrefs());
 }
 
 // Returns whether the Autofill feature for credit cards is managed.
 static jboolean JNI_PersonalDataManager_IsAutofillCreditCardManaged(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& clazz) {
+    JNIEnv* env) {
   return prefs::IsCreditCardAutofillManaged(GetPrefs());
 }
 
 // Returns whether the Payments integration feature is enabled.
 static jboolean JNI_PersonalDataManager_IsPaymentsIntegrationEnabled(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& clazz) {
+    JNIEnv* env) {
   return prefs::IsPaymentsIntegrationEnabled(GetPrefs());
 }
 
 // Enables or disables the Payments integration feature.
 static void JNI_PersonalDataManager_SetPaymentsIntegrationEnabled(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     jboolean enable) {
   prefs::SetPaymentsIntegrationEnabled(GetPrefs(), enable);
 }
@@ -927,7 +920,6 @@ static void JNI_PersonalDataManager_SetPaymentsIntegrationEnabled(
 // the application locale, or an empty string.
 static ScopedJavaLocalRef<jstring> JNI_PersonalDataManager_ToCountryCode(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& jcountry_name) {
   return ConvertUTF8ToJavaString(
       env, CountryNames::GetInstance()->GetCountryCode(

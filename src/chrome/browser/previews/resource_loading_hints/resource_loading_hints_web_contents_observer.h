@@ -51,6 +51,8 @@ class ResourceLoadingHintsWebContentsObserver
   // Set in constructor.
   Profile* profile_ = nullptr;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(ResourceLoadingHintsWebContentsObserver);
 };
 

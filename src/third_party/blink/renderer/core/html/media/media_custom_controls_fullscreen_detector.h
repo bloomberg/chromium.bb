@@ -5,54 +5,52 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_MEDIA_MEDIA_CUSTOM_CONTROLS_FULLSCREEN_DETECTOR_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_MEDIA_MEDIA_CUSTOM_CONTROLS_FULLSCREEN_DETECTOR_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/dom/events/event_listener.h"
+#include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
+#include "third_party/blink/renderer/core/intersection_observer/intersection_observer.h"
 #include "third_party/blink/renderer/platform/timer.h"
 
 namespace blink {
 
 class HTMLVideoElement;
-class IntRect;
+class IntSize;
 class TimerBase;
 
 class CORE_EXPORT MediaCustomControlsFullscreenDetector final
-    : public EventListener {
+    : public NativeEventListener {
  public:
   explicit MediaCustomControlsFullscreenDetector(HTMLVideoElement&);
-
-  // EventListener implementation.
-  bool operator==(const EventListener&) const override;
 
   void Attach();
   void Detach();
   void ContextDestroyed();
 
-  void Trace(blink::Visitor*) override;
+  // EventListener implementation.
+  void Invoke(ExecutionContext*, Event*) override;
+
+  void Trace(Visitor*) override;
 
  private:
   friend class MediaCustomControlsFullscreenDetectorTest;
   friend class HTMLMediaElementEventListenersTest;
 
-  // EventListener implementation.
-  void Invoke(ExecutionContext*, Event*) override;
-
   HTMLVideoElement& VideoElement() { return *video_element_; }
 
   void OnCheckViewportIntersectionTimerFired(TimerBase*);
+  void OnIntersectionChanged(
+      const HeapVector<Member<IntersectionObserverEntry>>&);
 
   bool IsVideoOrParentFullscreen();
 
-  static bool ComputeIsDominantVideoForTests(const IntRect& target_rect,
-                                             const IntRect& root_rect,
-                                             const IntRect& intersection_rect);
+  static bool ComputeIsDominantVideoForTests(const IntSize& target_size,
+                                             const IntSize& root_size,
+                                             const IntSize& intersection_size);
 
   // `video_element_` owns |this|.
   Member<HTMLVideoElement> video_element_;
+  Member<IntersectionObserver> viewport_intersection_observer_;
   TaskRunnerTimer<MediaCustomControlsFullscreenDetector>
       check_viewport_intersection_timer_;
-
-  DISALLOW_COPY_AND_ASSIGN(MediaCustomControlsFullscreenDetector);
 };
 
 }  // namespace blink

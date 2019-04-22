@@ -26,7 +26,8 @@ class OwnersFinder(object):
                fopen, os_path,
                email_postfix='@chromium.org',
                disable_color=False,
-               override_files=None):
+               override_files=None,
+               ignore_author=False):
     self.email_postfix = email_postfix
 
     if os.name == 'nt' or disable_color:
@@ -46,7 +47,7 @@ class OwnersFinder(object):
     filtered_files = files
 
     reviewers = list(reviewers)
-    if author:
+    if author and not ignore_author:
       reviewers.append(author)
 
     # Eliminate files that existing reviewers can review.
@@ -62,6 +63,8 @@ class OwnersFinder(object):
       self.db.load_data_needed_for(files)
 
     self.all_possible_owners = self.db.all_possible_owners(files, None)
+    if author and author in self.all_possible_owners:
+      del self.all_possible_owners[author]
 
     self.owners_to_files = {}
     self._map_owners_to_files(files)

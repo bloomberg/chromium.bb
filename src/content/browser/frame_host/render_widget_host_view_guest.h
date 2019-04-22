@@ -70,16 +70,15 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   void SetSize(const gfx::Size& size) override;
   void SetBounds(const gfx::Rect& rect) override;
   void Focus() override;
-  bool HasFocus() const override;
+  bool HasFocus() override;
   void Show() override;
   void Hide() override;
-  gfx::NativeView GetNativeView() const override;
+  gfx::NativeView GetNativeView() override;
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
-  gfx::Rect GetViewBounds() const override;
+  gfx::Rect GetViewBounds() override;
   gfx::Rect GetBoundsInRootWindow() override;
-  gfx::Size GetCompositorViewportPixelSize() const override;
+  gfx::Size GetCompositorViewportPixelSize() override;
   base::string16 GetSelectedText() override;
-  void SetNeedsBeginFrames(bool needs_begin_frames) override;
   TouchSelectionControllerClientManager*
   GetTouchSelectionControllerClientManager() override;
   gfx::PointF TransformPointToRootCoordSpaceF(
@@ -147,7 +146,7 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   bool IsRenderWidgetHostViewGuest() override;
   RenderWidgetHostViewBase* GetOwnerRenderWidgetHostView() const;
 
-  void GetScreenInfo(ScreenInfo* screen_info) const override;
+  void GetScreenInfo(ScreenInfo* screen_info) override;
 
   void EnableAutoResize(const gfx::Size& min_size,
                         const gfx::Size& max_size) override;
@@ -158,7 +157,7 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
 
   void MaybeSendSyntheticTapGestureForTest(
       const blink::WebFloatPoint& position,
-      const blink::WebFloatPoint& screen_position) const;
+      const blink::WebFloatPoint& screen_position);
 
  private:
   friend class RenderWidgetHostView;
@@ -178,8 +177,9 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   // TODO(wjmaclean): When we remove BrowserPlugin, delete this code.
   // http://crbug.com/533069
   void MaybeSendSyntheticTapGesture(
+      RenderWidgetHostViewBase* owner_view,
       const blink::WebFloatPoint& position,
-      const blink::WebFloatPoint& screen_position) const;
+      const blink::WebFloatPoint& screen_position);
 
   void OnHandleInputEvent(RenderWidgetHostImpl* embedder,
                           int browser_plugin_instance_id,

@@ -6,7 +6,7 @@
 
 #include <stdint.h>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace remoting {
@@ -48,24 +48,24 @@ TEST(AudioSilenceDetectorTest, Silence) {
   const int16_t kSamples[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
   AudioSilenceDetector target(0);
-  TestSilenceDetector(&target, kSamples, arraysize(kSamples), true);
+  TestSilenceDetector(&target, kSamples, base::size(kSamples), true);
 }
 
 TEST(AudioSilenceDetectorTest, Sound) {
   const int16_t kSamples[] = {65, 73, 83, 89, 92, -1, 5, 9, 123, 0};
 
   AudioSilenceDetector target(0);
-  TestSilenceDetector(&target, kSamples, arraysize(kSamples), false);
+  TestSilenceDetector(&target, kSamples, base::size(kSamples), false);
 }
 
 TEST(AudioSilenceDetectorTest, Threshold) {
   const int16_t kSamples[] = {0, 0, 0, 0, 1, 0, 0, -1, 0, 0};
 
   AudioSilenceDetector target1(0);
-  TestSilenceDetector(&target1, kSamples, arraysize(kSamples), false);
+  TestSilenceDetector(&target1, kSamples, base::size(kSamples), false);
 
   AudioSilenceDetector target2(1);
-  TestSilenceDetector(&target2, kSamples, arraysize(kSamples), true);
+  TestSilenceDetector(&target2, kSamples, base::size(kSamples), true);
 }
 
 }  // namespace remoting

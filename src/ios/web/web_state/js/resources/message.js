@@ -149,10 +149,6 @@ function sendQueue_(queueObject) {
  */
 var isFrameMessagingSupported_ = function() {
   // - Only secure contexts support the crypto.subtle API.
-  // - Even though iOS 10 supports window.crypto.webkitSubtle instead of
-  //   window.crypto.subtle, the AES-GCM cipher suite is not supported, so
-  //   support will only be used from the official WebCrypto API.
-  //   TODO(crbug.com/872818): Remove comment once only iOS 11+ is supported.
   return window.isSecureContext && typeof window.crypto.subtle === 'object';
 }
 
@@ -222,7 +218,7 @@ var replyWithResult_ = function(messageId, result) {
     'command': replyCommand,
     'messageId': messageId
   };
-  if (result) {
+  if (typeof result !== 'undefined') {
     response['result'] = result
   }
   __gCrWeb.message.invokeOnHost(response);
@@ -277,8 +273,7 @@ var executeMessage_ = function(payload, iv) {
   getFrameSymmetricKey_(function(frameKey) {
     window.crypto.subtle.decrypt(algorithm, frameKey, encryptedFunctionArray)
         .then(function(decrypted) {
-      var callJSON =
-          String.fromCharCode.apply(null, new Uint8Array(decrypted));
+      var callJSON = new TextDecoder().decode(new Uint8Array(decrypted));
       var callDict = JSON.parse(callJSON);
 
       // Verify that message id is valid.

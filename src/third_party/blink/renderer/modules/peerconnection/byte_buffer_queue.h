@@ -7,6 +7,7 @@
 
 #include "base/containers/span.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -16,6 +17,8 @@ namespace blink {
 // Clients can append entire byte buffers then copy data out across buffer
 // boundaries using |ReadInto|.
 class MODULES_EXPORT ByteBufferQueue final {
+  DISALLOW_NEW();
+
  public:
   // Number of bytes that can be read.
   wtf_size_t size() const { return size_; }

@@ -120,7 +120,7 @@ bool AddWord(int index, const std::string& word) {
 bool AddWords(int index, int n, const std::string& prefix) {
   bool result = true;
   for (int i = 0; i < n; ++i) {
-    result &= AddWord(index, prefix + base::IntToString(i));
+    result &= AddWord(index, prefix + base::NumberToString(i));
   }
   return result;
 }

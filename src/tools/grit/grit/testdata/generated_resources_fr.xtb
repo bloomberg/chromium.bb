@@ -6,7 +6,6 @@
 <translation id="8130276680150879341">Déconnexion du réseau privé</translation>
 <translation id="1058418043520174283"><ph name="INDEX"/> sur <ph name="COUNT"/></translation>
 <translation id="4480627574828695486">Déconnecter ce compte...</translation>
-<translation id="1437399238463685286">Le nom du fichier contient un caractère incorrect : $1</translation>
 <translation id="7040807039050164757">&amp;Vérifier l'orthographe dans ce champ</translation>
 <translation id="778579833039460630">Aucune donnée reçue.</translation>
 <translation id="1852799913675865625">Une erreur s'est produite lors de la tentative de lecture du fichier : <ph name="ERROR_TEXT"/>.</translation>
@@ -166,7 +165,6 @@
 <translation id="6242054993434749861">télécopie : #<ph name="FAX"/></translation>
 <translation id="762917759028004464">Le navigateur par défaut est actuellement <ph name="BROWSER_NAME"/>.</translation>
 <translation id="9213479837033539041"><ph name="NUMBER_MANY"/> secondes restantes</translation>
-<translation id="560442828508350263">Impossible de déplacer &quot;$1&quot; : $2</translation>
 <translation id="300544934591011246">Mot de passe précédent</translation>
 <translation id="5078796286268621944">Code PIN incorrect</translation>
 <translation id="989988560359834682">Modifier l'adresse</translation>
@@ -390,7 +388,6 @@
           puis sur
           <ph name="BEGIN_BOLD"/>Exécuter<ph name="END_BOLD"/>.
           Saisissez
-          <ph name="BEGIN_BOLD"/>%windir%\\network diagnostic\\xpnetdiag.exe<ph name="END_BOLD"/>
           et cliquez sur
           <ph name="BEGIN_BOLD"/>OK<ph name="END_BOLD"/>.</translation>
 <translation id="2934952234745269935">Nom de volume</translation>
@@ -478,7 +475,6 @@
 <translation id="4417271111203525803">Adresse ligne 2</translation>
 <translation id="7617095560120859490">Décrivez-nous le problème recontré. (Champ obligatoire)</translation>
 <translation id="5618333180342767515">Cela peut prendre quelques minutes.</translation>
-<translation id="5399884481423204214">Échec de l'envoi du commentaire : $1</translation>
 <translation id="4307992518367153382">Options de base</translation>
 <translation id="8480417584335382321">Niveau de zoom par défaut :</translation>
 <translation id="3872166400289564527">Stockage externe</translation>
@@ -656,7 +652,6 @@
 <translation id="6771079623344431310">Impossible de se connecter au serveur proxy.</translation>
 <translation id="2200129049109201305">Ignorer la synchronisation des données chiffrées ?</translation>
 <translation id="1426410128494586442">Oui</translation>
-<translation id="6468252175335241103">%b %-d, %Y</translation>
 <translation id="6725970970008349185">Nombre de suggestions par page</translation>
 <translation id="6198252989419008588">Modifier le code PIN</translation>
 <translation id="5749483996735055937">Un problème est survenu lors de la copie de l'image de récupération sur le périphérique.</translation>
@@ -982,7 +977,6 @@
 <translation id="6259308910735500867">L'accès au répertoire de l'hôte de communication à distance a été refusé. Essayez avec un autre compte.</translation>
 <translation id="3415261598051655619">Accessible aux scripts :</translation>
 <translation id="2335122562899522968">Cette page place des cookies.</translation>
-<translation id="3786100282288846904">Impossible de supprimer &quot;$1&quot; : $2</translation>
 <translation id="8461914792118322307">Proxy</translation>
 <translation id="4089521618207933045">Avec sous-menu</translation>
 <translation id="1936157145127842922">Afficher dans le dossier</translation>
@@ -1579,7 +1573,6 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="6521850982405273806">Signaler une erreur</translation>
 <translation id="736515969993332243">Recherche de réseaux en cours</translation>
 <translation id="8026334261755873520">Effacer les données de navigation</translation>
-<translation id="2717361709448355148">Impossible de renommer &quot;$1&quot; : $2</translation>
 <translation id="1769104665586091481">Ouvrir le lien dans une nouvelle &amp;fenêtre</translation>
 <translation id="8503813439785031346">Nom d'utilisateur</translation>
 <translation id="5319782540886810524">Clavier letton</translation>
@@ -1651,7 +1644,6 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="8053390638574070785">Rafraîchir cette page</translation>
 <translation id="5507756662695126555">Non-répudiation</translation>
 <translation id="3678156199662914018">Extension : <ph name="EXTENSION_NAME"/></translation>
-<translation id="7951780829309373534">Impossible de coller &quot;$1&quot; : $2</translation>
 <translation id="9194519262242876737">Active l'API Web audio.</translation>
 <translation id="3531250013160506608">Zone de saisie de mot de passe</translation>
 <translation id="8314066201485587418">Effacer les cookies et autres données de site lorsque je quitte le navigateur</translation>
@@ -1843,7 +1835,6 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="1963227389609234879">Tout supprimer</translation>
 <translation id="7779140087128114262">Seule une personne en possession de votre mot de passe multiterme peut lire vos données chiffrées. Google ne reçoit ni n'enregistre votre mot de passe multiterme. Si vous oubliez votre mot de passe multiterme, vous devrez réinitialiser la synchronisation.</translation>
 <translation id="8027581147000338959">Ouvrir dans une nouvelle fenêtre</translation>
-<translation id="6030946405726632495">Impossible de créer le dossier &quot;$1&quot;: $2</translation>
 <translation id="8019305344918958688">Dommage... Aucune extension n'est installée. :-(</translation>
 <translation id="7466861475611330213">Style de ponctuation</translation>
 <translation id="2496180316473517155">Historique de navigation</translation>
@@ -1932,7 +1923,6 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="529172024324796256">Nom d'utilisateur :</translation>
 <translation id="3308116878371095290">Le stockage des cookies n'est pas autorisé pour cette page.</translation>
 <translation id="7521387064766892559">JavaScript</translation>
-<translation id="1545786162090505744">URL avec %s à la place de la requête</translation>
 <translation id="7219179957768738017">La connexion utilise <ph name="SSL_VERSION"/>.</translation>
 <translation id="7014174261166285193">Échec de l'installation</translation>
 <translation id="1970746430676306437">Afficher les &amp;infos sur la page</translation>
@@ -2317,7 +2307,6 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="827924395145979961">Chargement des pages impossible</translation>
 <translation id="3092544800441494315">Inclure cette capture d'écran :</translation>
 <translation id="7714464543167945231">Certificat</translation>
-<translation id="5530864958284331435">$1 fichiers sélectionnés, $2</translation>
 <translation id="3616741288025931835">&amp;Effacer les données de navigation...</translation>
 <translation id="3313622045786997898">Valeur de signature du certificat</translation>
 <translation id="8535005006684281994">URL de renouvellement du certificat Netscape</translation>
@@ -2612,7 +2601,6 @@ Pour fusionner et synchroniser vos favoris dans <ph name="PRODUCT_NAME"/> sur un
 <translation id="2024621544377454980">Affichage des pages impossible</translation>
 <translation id="7136694880210472378">Utiliser par défaut</translation>
 <translation id="7681202901521675750">La carte SIM est verrouillée. Veuillez saisir votre code PIN. Nombre de tentatives restantes : <ph name="TRIES_COUNT"/></translation>
-<translation id="7420789336015002755">Le nom du dossier contient un caractère incorrect : $1</translation>
 <translation id="1731346223650886555">Point-virgule</translation>
 <translation id="158849752021629804">Réseau domestique requis</translation>
 <translation id="7339763383339757376">PKCS #7, certificat unique</translation>
@@ -2765,7 +2753,6 @@ Pour fusionner et synchroniser vos favoris dans <ph name="PRODUCT_NAME"/> sur un
 <translation id="7666868073052500132">Objets : <ph name="USAGES"/></translation>
 <translation id="6985345720668445131">Paramètres d'entrée du japonais</translation>
 <translation id="3258281577757096226">Sebeol-sik Final</translation>
-<translation id="2359174522669474766">Un fichier sélectionné, $1</translation>
 <translation id="6906268095242253962">Veuillez vous connecter à Internet pour continuer.</translation>
 <translation id="1908748899139377733">Afficher les &amp;infos sur le cadre</translation>
 <translation id="803771048473350947">Fichier</translation>

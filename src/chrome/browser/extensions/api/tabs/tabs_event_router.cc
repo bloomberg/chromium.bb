@@ -9,6 +9,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
@@ -218,6 +219,9 @@ void TabsEventRouter::OnTabStripModelChanged(
       }
       break;
     }
+    case TabStripModelChange::kGroupChanged:
+      // TODO(crbug.com/930988): Dispatch Tab Group-related events.
+      break;
     case TabStripModelChange::kSelectionOnly:
       break;
   }
@@ -291,8 +295,10 @@ void TabsEventRouter::OnFaviconUpdated(
   }
 }
 
-void TabsEventRouter::OnDiscardedStateChange(WebContents* contents,
-                                             bool is_discarded) {
+void TabsEventRouter::OnDiscardedStateChange(
+    WebContents* contents,
+    ::mojom::LifecycleUnitDiscardReason reason,
+    bool is_discarded) {
   std::set<std::string> changed_property_names;
   changed_property_names.insert(tabs_constants::kDiscardedKey);
   DispatchTabUpdatedEvent(contents, std::move(changed_property_names));
@@ -517,7 +523,7 @@ void TabsEventRouter::TabCreatedAt(WebContents* contents,
                                        std::move(args), profile);
   event->user_gesture = EventRouter::USER_GESTURE_NOT_ENABLED;
   event->will_dispatch_callback =
-      base::Bind(&WillDispatchTabCreatedEvent, contents, active);
+      base::BindRepeating(&WillDispatchTabCreatedEvent, contents, active);
   EventRouter::Get(profile)->BroadcastEvent(std::move(event));
 
   RegisterForTabNotifications(contents);
@@ -594,8 +600,8 @@ void TabsEventRouter::DispatchTabUpdatedEvent(
                                        std::move(args_base), profile);
   event->user_gesture = EventRouter::USER_GESTURE_NOT_ENABLED;
   event->will_dispatch_callback =
-      base::Bind(&WillDispatchTabUpdatedEvent, contents,
-                 std::move(changed_property_names));
+      base::BindRepeating(&WillDispatchTabUpdatedEvent, contents,
+                          std::move(changed_property_names));
   EventRouter::Get(profile)->BroadcastEvent(std::move(event));
 }
 

@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/base_export.h"
+#include "base/files/file_path.h"
 #include "base/strings/string_piece.h"
 #include "build/build_config.h"
 
@@ -21,8 +22,6 @@
 #endif  // OS_*
 
 namespace base {
-
-class FilePath;
 
 #if defined(OS_WIN)
 using NativeLibrary = HMODULE;
@@ -82,6 +81,15 @@ struct BASE_EXPORT NativeLibraryOptions {
 // If |error| is not NULL, it may be filled in on load error.
 BASE_EXPORT NativeLibrary LoadNativeLibrary(const FilePath& library_path,
                                             NativeLibraryLoadError* error);
+
+#if defined(OS_WIN)
+// Loads a native library from the system directory using the appropriate flags.
+// The function first checks to see if the library is already loaded and will
+// get a handle if so. Blocking may occur if the library is not loaded and
+// LoadLibrary must be called.
+BASE_EXPORT NativeLibrary LoadSystemLibrary(FilePath::StringPieceType name,
+                                            NativeLibraryLoadError* error);
+#endif
 
 // Loads a native library from disk.  Release it with UnloadNativeLibrary when
 // you're done.  Returns NULL on failure.

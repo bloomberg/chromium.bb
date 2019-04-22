@@ -9,7 +9,7 @@ const kIcon = [
   {
     src: '/notifications/icon.png',
     sizes: '100x100',
-    type: 'image/png'
+    type: 'image/png',
   }
 ];
 
@@ -29,6 +29,25 @@ function StartSingleFileDownload() {
 
     return swRegistration.backgroundFetch.fetch(
         kBackgroundFetchId, kBackgroundFetchResource, options);
+  }).then(bgFetchRegistration => {
+    sendResultToTest('ok');
+  }).catch(sendErrorToTest);
+}
+
+// Starts a Background Fetch with multiple files.
+function StartFetchWithMultipleFiles() {
+  navigator.serviceWorker.ready.then(swRegistration => {
+    const options = {
+      icons: kIcon,
+      title: 'multi-file Background Fetch',
+    };
+
+    const requests = Array(100)
+        .fill('/background_fetch/types_of_cheese.txt')
+        .map((req, idx) => `${req}?idx=${idx}`);
+
+    return swRegistration.backgroundFetch.fetch(
+        kBackgroundFetchId, requests, options);
   }).then(bgFetchRegistration => {
     sendResultToTest('ok');
   }).catch(sendErrorToTest);
@@ -90,6 +109,7 @@ navigator.serviceWorker.addEventListener('message', event => {
   const expectedResponses = [
     'backgroundfetchsuccess',
     'backgroundfetchfail',
+    'backgroundfetchabort',
     'permissionerror',
     'ok',
   ];
@@ -133,6 +153,16 @@ function RunFetchAnExpectAnException() {
     return swRegistration.backgroundFetch.fetch(kBackgroundFetchId, resources);
   }).then(sendErrorToTest)
     .catch(e => sendResultToTest(e.message));
+}
+
+// Starts a Background Fetch with an upload that should succeed.
+function RunFetchTillCompletionWithUpload() {
+  const request = new Request('/background_fetch/upload',
+                              {method: 'POST', body: 'upload!'});
+  navigator.serviceWorker.ready.then(swRegistration => {
+    return swRegistration.backgroundFetch.fetch(
+        kBackgroundFetchId, request);
+  }).catch(sendErrorToTest);
 }
 
 function StartFetchFromServiceWorker() {

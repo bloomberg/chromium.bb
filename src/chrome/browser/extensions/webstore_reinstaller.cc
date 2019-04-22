@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/webstore_reinstaller.h"
 
+#include <utility>
+
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -21,11 +23,11 @@ const char kTabClosed[] = "Tab was closed.";
 WebstoreReinstaller::WebstoreReinstaller(
     content::WebContents* web_contents,
     const std::string& extension_id,
-    const WebstoreStandaloneInstaller::Callback& callback)
+    WebstoreStandaloneInstaller::Callback callback)
     : WebstoreStandaloneInstaller(
           extension_id,
           Profile::FromBrowserContext(web_contents->GetBrowserContext()),
-          callback),
+          std::move(callback)),
       content::WebContentsObserver(web_contents) {
   DCHECK(
       ExtensionPrefs::Get(web_contents->GetBrowserContext())

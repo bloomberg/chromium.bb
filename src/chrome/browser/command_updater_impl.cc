@@ -37,13 +37,15 @@ bool CommandUpdaterImpl::IsCommandEnabled(int id) const {
   return command->second->enabled;
 }
 
-bool CommandUpdaterImpl::ExecuteCommand(int id) {
-  return ExecuteCommandWithDisposition(id, WindowOpenDisposition::CURRENT_TAB);
+bool CommandUpdaterImpl::ExecuteCommand(int id, base::TimeTicks time_stamp) {
+  return ExecuteCommandWithDisposition(id, WindowOpenDisposition::CURRENT_TAB,
+                                       time_stamp);
 }
 
 bool CommandUpdaterImpl::ExecuteCommandWithDisposition(
     int id,
-    WindowOpenDisposition disposition) {
+    WindowOpenDisposition disposition,
+    base::TimeTicks time_stamp) {
   if (SupportsCommand(id) && IsCommandEnabled(id)) {
     delegate_->ExecuteCommandWithDisposition(id, disposition);
     return true;

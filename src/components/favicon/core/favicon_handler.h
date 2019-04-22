@@ -246,9 +246,9 @@ class FaviconHandler {
       const std::vector<SkBitmap>& bitmaps,
       const std::vector<gfx::Size>& original_bitmap_sizes);
 
-  // Updates |best_favicon_| and returns true if it was considered a satisfying
-  // image (e.g. exact size match).
-  bool UpdateFaviconCandidate(const DownloadedFavicon& downloaded_favicon);
+  // Returns true if the next candidate in |final_candidates_| should be
+  // downloaded.
+  bool ShouldDownloadNextCandidate() const;
 
   // Sets the image data for the favicon.
   void SetFavicon(const GURL& icon_url,

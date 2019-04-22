@@ -22,6 +22,7 @@ namespace {
 
 const char* kDictionaryKeyUrl = "url";
 const char* kDictionaryKeyTitle = "title";
+const char* kDictionaryKeyIsMostVisited = "isMostVisited";
 
 }  // namespace
 
@@ -40,14 +41,20 @@ std::vector<CustomLinksManager::Link> CustomLinksStore::RetrieveLinks() {
   for (const base::Value& link : stored_links->GetList()) {
     const base::Value* url_value = link.FindKey(kDictionaryKeyUrl);
     const base::Value* title_value = link.FindKey(kDictionaryKeyTitle);
+    const base::Value* mv_value = link.FindKey(kDictionaryKeyIsMostVisited);
+
     GURL url = GURL(url_value->GetString());
     if (!url_value || !title_value || !url.is_valid()) {
       ClearLinks();
       links.clear();
       return links;
     }
+    // Assume false if this value was not stored.
+    bool is_most_visited = mv_value ? mv_value->GetBool() : false;
+
     links.emplace_back(CustomLinksManager::Link{
-        std::move(url), base::UTF8ToUTF16(title_value->GetString())});
+        std::move(url), base::UTF8ToUTF16(title_value->GetString()),
+        is_most_visited});
   }
   return links;
 }
@@ -59,6 +66,8 @@ void CustomLinksStore::StoreLinks(
     base::DictionaryValue new_link;
     new_link.SetKey(kDictionaryKeyUrl, base::Value(link.url.spec()));
     new_link.SetKey(kDictionaryKeyTitle, base::Value(link.title));
+    new_link.SetKey(kDictionaryKeyIsMostVisited,
+                    base::Value(link.is_most_visited));
     new_link_list.push_back(std::move(new_link));
   }
   prefs_->Set(prefs::kCustomLinksList, base::Value(std::move(new_link_list)));

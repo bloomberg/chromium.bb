@@ -20,11 +20,12 @@ class SpeechSynthesisErrorEvent : public SpeechSynthesisEvent {
       const AtomicString& type,
       const SpeechSynthesisErrorEventInit* init);
 
+  SpeechSynthesisErrorEvent(const AtomicString& type,
+                            const SpeechSynthesisErrorEventInit* init);
+
   const String error() const { return error_; }
 
  private:
-  SpeechSynthesisErrorEvent(const AtomicString& type,
-                            const SpeechSynthesisErrorEventInit* init);
   const String error_;
 };
 

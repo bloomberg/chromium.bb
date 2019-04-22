@@ -35,7 +35,7 @@ ToAuthenticatorMakeCredentialResponse(
   base::Optional<cbor::Value> cbor_attestation_statement = cbor::Reader::Read(
       base::span<const uint8_t>(credential_attestation.pbAttestation,
                                 credential_attestation.cbAttestation));
-  if (!cbor_attestation_statement) {
+  if (!cbor_attestation_statement || !cbor_attestation_statement->is_map()) {
     DLOG(ERROR) << "CBOR decoding attestation statement failed: "
                 << base::HexEncode(credential_attestation.pbAttestation,
                                    credential_attestation.cbAttestation);
@@ -67,7 +67,7 @@ ToAuthenticatorMakeCredentialResponse(
   }
 
   return AuthenticatorMakeCredentialResponse(
-      base::nullopt /* transport_used */,
+      transport_used,
       AttestationObject(
           std::move(*authenticator_data),
           std::make_unique<OpaqueAttestationStatement>(
@@ -216,7 +216,7 @@ CtapDeviceResponseCode WinErrorNameToCtapDeviceResponseCode(
           {L"ConstraintError",
            CtapDeviceResponseCode::kCtap2ErrUnsupportedOption},
           {L"NotSupportedError",
-           CtapDeviceResponseCode::kCtap2ErrUnsupportedAlgorithms},
+           CtapDeviceResponseCode::kCtap2ErrUnsupportedAlgorithm},
           {L"NotAllowedError",
            CtapDeviceResponseCode::kCtap2ErrOperationDenied},
           {L"UnknownError", CtapDeviceResponseCode::kCtap2ErrOther},
@@ -224,6 +224,23 @@ CtapDeviceResponseCode WinErrorNameToCtapDeviceResponseCode(
   return base::ContainsKey(kResponseCodeMap, error_name)
              ? kResponseCodeMap[error_name]
              : CtapDeviceResponseCode::kCtap2ErrOther;
+}
+
+uint32_t ToWinAttestationConveyancePreference(
+    const AttestationConveyancePreference& value) {
+  switch (value) {
+    case AttestationConveyancePreference::NONE:
+      return WEBAUTHN_ATTESTATION_CONVEYANCE_PREFERENCE_NONE;
+    case AttestationConveyancePreference::INDIRECT:
+      return WEBAUTHN_ATTESTATION_CONVEYANCE_PREFERENCE_DIRECT;
+    case AttestationConveyancePreference::DIRECT:
+      return WEBAUTHN_ATTESTATION_CONVEYANCE_PREFERENCE_DIRECT;
+    case AttestationConveyancePreference::ENTERPRISE:
+      // Windows does not support enterprise attestation.
+      return WEBAUTHN_ATTESTATION_CONVEYANCE_PREFERENCE_DIRECT;
+  }
+  NOTREACHED();
+  return WEBAUTHN_ATTESTATION_CONVEYANCE_PREFERENCE_NONE;
 }
 
 }  // namespace device

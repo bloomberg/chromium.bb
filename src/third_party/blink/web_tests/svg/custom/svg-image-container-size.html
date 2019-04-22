@@ -19,10 +19,7 @@ function insertSVGImage() {
 }
 
 function startTest() {
-  if (window.testRunner)
-    testRunner.layoutAndPaintAsyncThen(insertSVGImage);
-  else
-    requestAnimationFrame(insertSVGImage);
+  runAfterLayoutAndPaint(insertSVGImage);
 }
 </script>
 <svg width="384" height="128" style="display: block">

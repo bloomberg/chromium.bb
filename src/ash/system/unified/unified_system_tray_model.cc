@@ -7,7 +7,7 @@
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/shell.h"
 #include "ash/system/brightness_control_delegate.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
+#include "base/bind.h"
 #include "chromeos/dbus/power_manager/backlight.pb.h"
 
 namespace ash {
@@ -37,16 +37,14 @@ class UnifiedSystemTrayModel::DBusObserver
 UnifiedSystemTrayModel::DBusObserver::DBusObserver(
     UnifiedSystemTrayModel* owner)
     : owner_(owner) {
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
-      this);
+  chromeos::PowerManagerClient::Get()->AddObserver(this);
   Shell::Get()->brightness_control_delegate()->GetBrightnessPercent(
       base::BindOnce(&DBusObserver::HandleInitialBrightness,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
 UnifiedSystemTrayModel::DBusObserver::~DBusObserver() {
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
-      this);
+  chromeos::PowerManagerClient::Get()->RemoveObserver(this);
 }
 
 void UnifiedSystemTrayModel::DBusObserver::HandleInitialBrightness(
@@ -89,7 +87,7 @@ void UnifiedSystemTrayModel::RemoveObserver(Observer* observer) {
 
 bool UnifiedSystemTrayModel::IsExpandedOnOpen() const {
   return expanded_on_open_ ||
-         Shell::Get()->accessibility_controller()->IsSpokenFeedbackEnabled();
+         Shell::Get()->accessibility_controller()->spoken_feedback_enabled();
 }
 
 base::Optional<bool> UnifiedSystemTrayModel::GetNotificationExpanded(
@@ -97,6 +95,13 @@ base::Optional<bool> UnifiedSystemTrayModel::GetNotificationExpanded(
   auto it = notification_changes_.find(notification_id);
   return it == notification_changes_.end() ? base::Optional<bool>()
                                            : base::Optional<bool>(it->second);
+}
+
+void UnifiedSystemTrayModel::SetTargetNotification(
+    const std::string& notification_id) {
+  DCHECK(!notification_id.empty());
+  notification_target_id_ = notification_id;
+  notification_target_mode_ = NotificationTargetMode::NOTIFICATION_ID;
 }
 
 void UnifiedSystemTrayModel::SetNotificationExpanded(

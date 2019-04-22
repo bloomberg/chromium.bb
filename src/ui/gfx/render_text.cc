@@ -143,26 +143,26 @@ sk_sp<cc::PaintShader> CreateFadeShader(const FontList& font_list,
 
   const SkPoint points[2] = { PointToSkPoint(text_rect.origin()),
                               PointToSkPoint(text_rect.top_right()) };
-  return cc::PaintShader::MakeLinearGradient(&points[0], &colors[0],
-                                             &positions[0], colors.size(),
-                                             SkShader::kClamp_TileMode);
+  return cc::PaintShader::MakeLinearGradient(
+      &points[0], &colors[0], &positions[0], static_cast<int>(colors.size()),
+      SkTileMode::kClamp);
 }
 
 // Converts a FontRenderParams::Hinting value to the corresponding
-// cc::PaintFlags::Hinting value.
-cc::PaintFlags::Hinting FontRenderParamsHintingToPaintFlagsHinting(
+// SkFontHinting value.
+SkFontHinting FontRenderParamsHintingToSkFontHinting(
     FontRenderParams::Hinting params_hinting) {
   switch (params_hinting) {
     case FontRenderParams::HINTING_NONE:
-      return cc::PaintFlags::kNo_Hinting;
+      return SkFontHinting::kNone;
     case FontRenderParams::HINTING_SLIGHT:
-      return cc::PaintFlags::kSlight_Hinting;
+      return SkFontHinting::kSlight;
     case FontRenderParams::HINTING_MEDIUM:
-      return cc::PaintFlags::kNormal_Hinting;
+      return SkFontHinting::kNormal;
     case FontRenderParams::HINTING_FULL:
-      return cc::PaintFlags::kFull_Hinting;
+      return SkFontHinting::kFull;
   }
-  return cc::PaintFlags::kNo_Hinting;
+  return SkFontHinting::kNone;
 }
 
 // Make sure ranges don't break text graphemes.  If a range in |break_list|
@@ -191,12 +191,11 @@ namespace internal {
 SkiaTextRenderer::SkiaTextRenderer(Canvas* canvas)
     : canvas_(canvas), canvas_skia_(canvas->sk_canvas()) {
   DCHECK(canvas_skia_);
-  flags_.setTextEncoding(cc::PaintFlags::kGlyphID_TextEncoding);
   flags_.setStyle(cc::PaintFlags::kFill_Style);
-  flags_.setAntiAlias(true);
-  flags_.setSubpixelText(true);
-  flags_.setLCDRenderText(true);
-  flags_.setHinting(cc::PaintFlags::kNormal_Hinting);
+
+  font_.setEdging(SkFont::Edging::kSubpixelAntiAlias);
+  font_.setSubpixel(true);
+  font_.setHinting(SkFontHinting::kNormal);
 }
 
 SkiaTextRenderer::~SkiaTextRenderer() {
@@ -208,15 +207,15 @@ void SkiaTextRenderer::SetDrawLooper(sk_sp<SkDrawLooper> draw_looper) {
 
 void SkiaTextRenderer::SetFontRenderParams(const FontRenderParams& params,
                                            bool subpixel_rendering_suppressed) {
-  ApplyRenderParams(params, subpixel_rendering_suppressed, &flags_);
+  ApplyRenderParams(params, subpixel_rendering_suppressed, &font_);
 }
 
 void SkiaTextRenderer::SetTypeface(sk_sp<SkTypeface> typeface) {
-  flags_.setTypeface(std::move(typeface));
+  font_.setTypeface(std::move(typeface));
 }
 
 void SkiaTextRenderer::SetTextSize(SkScalar size) {
-  flags_.setTextSize(size);
+  font_.setSize(size);
 }
 
 void SkiaTextRenderer::SetForegroundColor(SkColor foreground) {
@@ -231,7 +230,7 @@ void SkiaTextRenderer::DrawPosText(const SkPoint* pos,
                                    const uint16_t* glyphs,
                                    size_t glyph_count) {
   SkTextBlobBuilder builder;
-  const auto& run_buffer = builder.allocRunPos(flags_.ToSkFont(), glyph_count);
+  const auto& run_buffer = builder.allocRunPos(font_, glyph_count);
 
   static_assert(sizeof(*glyphs) == sizeof(*run_buffer.glyphs), "");
   memcpy(run_buffer.glyphs, glyphs, glyph_count * sizeof(*glyphs));
@@ -247,7 +246,7 @@ void SkiaTextRenderer::DrawUnderline(int x,
                                      int width,
                                      SkScalar thickness_factor) {
   SkScalar x_scalar = SkIntToScalar(x);
-  const SkScalar text_size = flags_.getTextSize();
+  const SkScalar text_size = font_.getSize();
   SkRect r = SkRect::MakeLTRB(
       x_scalar, y + text_size * kUnderlineOffset, x_scalar + width,
       y + (text_size *
@@ -259,7 +258,7 @@ void SkiaTextRenderer::DrawStrike(int x,
                                   int y,
                                   int width,
                                   SkScalar thickness_factor) {
-  const SkScalar text_size = flags_.getTextSize();
+  const SkScalar text_size = font_.getSize();
   const SkScalar height = text_size * thickness_factor;
   const SkScalar top = y - text_size * kStrikeThroughOffset - height / 2;
   SkScalar x_scalar = SkIntToScalar(x);
@@ -293,7 +292,7 @@ Range StyleIterator::GetRange() const {
   range = range.Intersect(baselines_.GetRange(baseline_));
   range = range.Intersect(font_size_overrides_.GetRange(font_size_override_));
   range = range.Intersect(weights_.GetRange(weight_));
-  for (size_t i = 0; i < NUM_TEXT_STYLES; ++i)
+  for (size_t i = 0; i < TEXT_STYLE_COUNT; ++i)
     range = range.Intersect(styles_[i].GetRange(style_[i]));
   return range;
 }
@@ -303,7 +302,7 @@ void StyleIterator::UpdatePosition(size_t position) {
   baseline_ = baselines_.GetBreak(position);
   font_size_override_ = font_size_overrides_.GetBreak(position);
   weight_ = weights_.GetBreak(position);
-  for (size_t i = 0; i < NUM_TEXT_STYLES; ++i)
+  for (size_t i = 0; i < TEXT_STYLE_COUNT; ++i)
     style_[i] = styles_[i].GetBreak(position);
 }
 
@@ -319,14 +318,20 @@ Line::~Line() {}
 
 void ApplyRenderParams(const FontRenderParams& params,
                        bool subpixel_rendering_suppressed,
-                       cc::PaintFlags* flags) {
-  flags->setAntiAlias(params.antialiasing);
-  flags->setLCDRenderText(!subpixel_rendering_suppressed &&
-                          params.subpixel_rendering !=
-                              FontRenderParams::SUBPIXEL_RENDERING_NONE);
-  flags->setSubpixelText(params.subpixel_positioning);
-  flags->setAutohinted(params.autohinter);
-  flags->setHinting(FontRenderParamsHintingToPaintFlagsHinting(params.hinting));
+                       SkFont* font) {
+  if (!params.antialiasing) {
+    font->setEdging(SkFont::Edging::kAlias);
+  } else if (subpixel_rendering_suppressed ||
+             params.subpixel_rendering ==
+                 FontRenderParams::SUBPIXEL_RENDERING_NONE) {
+    font->setEdging(SkFont::Edging::kAntiAlias);
+  } else {
+    font->setEdging(SkFont::Edging::kSubpixelAntiAlias);
+  }
+
+  font->setSubpixel(params.subpixel_positioning);
+  font->setForceAutoHinting(params.autohinter);
+  font->setHinting(FontRenderParamsHintingToSkFontHinting(params.hinting));
 }
 
 }  // namespace internal
@@ -388,7 +393,7 @@ void RenderText::SetText(const base::string16& text) {
   baselines_.SetValue(baselines_.breaks().begin()->second);
   font_size_overrides_.SetValue(font_size_overrides_.breaks().begin()->second);
   weights_.SetValue(weights_.breaks().begin()->second);
-  for (size_t style = 0; style < NUM_TEXT_STYLES; ++style)
+  for (size_t style = 0; style < TEXT_STYLE_COUNT; ++style)
     styles_[style].SetValue(styles_[style].breaks().begin()->second);
   cached_bounds_and_offset_valid_ = false;
 
@@ -424,9 +429,9 @@ void RenderText::SetFontList(const FontList& font_list) {
   font_list_ = font_list;
   const int font_style = font_list.GetFontStyle();
   weights_.SetValue(font_list.GetFontWeight());
-  styles_[ITALIC].SetValue((font_style & Font::ITALIC) != 0);
-  styles_[UNDERLINE].SetValue((font_style & Font::UNDERLINE) != 0);
-  styles_[HEAVY_UNDERLINE].SetValue(false);
+  styles_[TEXT_STYLE_ITALIC].SetValue((font_style & Font::ITALIC) != 0);
+  styles_[TEXT_STYLE_UNDERLINE].SetValue((font_style & Font::UNDERLINE) != 0);
+  styles_[TEXT_STYLE_HEAVY_UNDERLINE].SetValue(false);
   baseline_ = kInvalidBaseline;
   cached_bounds_and_offset_valid_ = false;
   OnLayoutTextAttributeChanged(false);
@@ -626,8 +631,10 @@ bool RenderText::SetSelection(const SelectionModel& model) {
   return changed;
 }
 
-bool RenderText::MoveCursorToPoint(const gfx::Point& point, bool select) {
-  gfx::SelectionModel model = FindCursorPosition(point);
+bool RenderText::MoveCursorToPoint(const gfx::Point& point,
+                                   bool select,
+                                   const gfx::Point& drag_origin) {
+  gfx::SelectionModel model = FindCursorPosition(point, drag_origin);
   if (select)
     model.set_selection_start(selection().start());
   return SetSelection(model);
@@ -744,7 +751,7 @@ void RenderText::ApplyWeight(Font::Weight weight, const Range& range) {
 
 bool RenderText::GetStyle(TextStyle style) const {
   return (styles_[style].breaks().size() == 1) &&
-      styles_[style].breaks().front().second;
+         styles_[style].breaks().front().second;
 }
 
 void RenderText::SetDirectionalityMode(DirectionalityMode mode) {
@@ -1036,7 +1043,7 @@ RenderText::RenderText()
       baselines_(NORMAL_BASELINE),
       font_size_overrides_(0),
       weights_(Font::Weight::NORMAL),
-      styles_(NUM_TEXT_STYLES),
+      styles_(TEXT_STYLE_COUNT),
       composition_and_selection_styles_applied_(false),
       obscured_(false),
       obscured_reveal_index_(-1),
@@ -1059,7 +1066,7 @@ bool RenderText::IsHomogeneous() const {
       font_size_overrides().breaks().size() > 1 ||
       weights().breaks().size() > 1)
     return false;
-  for (size_t style = 0; style < NUM_TEXT_STYLES; ++style) {
+  for (size_t style = 0; style < TEXT_STYLE_COUNT; ++style) {
     if (styles()[style].breaks().size() > 1)
       return false;
   }
@@ -1198,11 +1205,11 @@ void RenderText::ApplyCompositionAndSelectionStyles() {
   // Save the underline and color breaks to undo the temporary styles later.
   DCHECK(!composition_and_selection_styles_applied_);
   saved_colors_ = colors_;
-  saved_underlines_ = styles_[HEAVY_UNDERLINE];
+  saved_underlines_ = styles_[TEXT_STYLE_HEAVY_UNDERLINE];
 
   // Apply an underline to the composition range in |underlines|.
   if (composition_range_.IsValid() && !composition_range_.is_empty())
-    styles_[HEAVY_UNDERLINE].ApplyValue(true, composition_range_);
+    styles_[TEXT_STYLE_HEAVY_UNDERLINE].ApplyValue(true, composition_range_);
 
   // Apply the selected text color to the [un-reversed] selection range.
   if (!selection().is_empty() && focused()) {
@@ -1216,7 +1223,7 @@ void RenderText::UndoCompositionAndSelectionStyles() {
   // Restore the underline and color breaks to undo the temporary styles.
   DCHECK(composition_and_selection_styles_applied_);
   colors_ = saved_colors_;
-  styles_[HEAVY_UNDERLINE] = saved_underlines_;
+  styles_[TEXT_STYLE_HEAVY_UNDERLINE] = saved_underlines_;
   composition_and_selection_styles_applied_ = false;
 }
 
@@ -1380,7 +1387,7 @@ void RenderText::UpdateStyleLengths() {
   baselines_.SetMax(text_length);
   font_size_overrides_.SetMax(text_length);
   weights_.SetMax(text_length);
-  for (size_t style = 0; style < NUM_TEXT_STYLES; ++style)
+  for (size_t style = 0; style < TEXT_STYLE_COUNT; ++style)
     styles_[style].SetMax(text_length);
 }
 
@@ -1483,18 +1490,20 @@ void RenderText::OnTextAttributeChanged() {
     icu::StringCharacterIterator iter(text.c_str());
     // Respect ELIDE_HEAD and ELIDE_MIDDLE preferences during truncation.
     if (elide_behavior_ == ELIDE_HEAD) {
-      iter.setIndex32(text.length() - truncate_length_ + 1);
+      iter.setIndex32(
+          static_cast<int32_t>(text.length() - truncate_length_ + 1));
       layout_text_.assign(kEllipsisUTF16 + text.substr(iter.getIndex()));
     } else if (elide_behavior_ == ELIDE_MIDDLE) {
-      iter.setIndex32(truncate_length_ / 2);
+      iter.setIndex32(static_cast<int32_t>(truncate_length_ / 2));
       const size_t ellipsis_start = iter.getIndex();
-      iter.setIndex32(text.length() - (truncate_length_ / 2));
+      iter.setIndex32(
+          static_cast<int32_t>(text.length() - (truncate_length_ / 2)));
       const size_t ellipsis_end = iter.getIndex();
       DCHECK_LE(ellipsis_start, ellipsis_end);
       layout_text_.assign(text.substr(0, ellipsis_start) + kEllipsisUTF16 +
                           text.substr(ellipsis_end));
     } else {
-      iter.setIndex32(truncate_length_ - 1);
+      iter.setIndex32(static_cast<int32_t>(truncate_length_ - 1));
       layout_text_.assign(text.substr(0, iter.getIndex()) + kEllipsisUTF16);
     }
   }
@@ -1596,7 +1605,7 @@ base::string16 RenderText::Elide(const base::string16& text,
 
     // Restore styles and baselines without breaking multi-character graphemes.
     render_text->styles_ = styles_;
-    for (size_t style = 0; style < NUM_TEXT_STYLES; ++style)
+    for (size_t style = 0; style < TEXT_STYLE_COUNT; ++style)
       RestoreBreakList(render_text.get(), &render_text->styles_[style]);
     RestoreBreakList(render_text.get(), &render_text->baselines_);
     RestoreBreakList(render_text.get(), &render_text->font_size_overrides_);
@@ -1727,7 +1736,7 @@ size_t RenderText::GetNearestWordStartBoundary(size_t index) const {
 
   // First search for the word start boundary in the CURSOR_BACKWARD direction,
   // then in the CURSOR_FORWARD direction.
-  for (int i = std::min(index, length - 1); i >= 0; i--)
+  for (int i = static_cast<int>(std::min(index, length - 1)); i >= 0; i--)
     if (iter.IsStartOfWord(i))
       return i;
 

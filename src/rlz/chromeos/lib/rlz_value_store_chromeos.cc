@@ -5,6 +5,7 @@
 #include "rlz/chromeos/lib/rlz_value_store_chromeos.h"
 
 #include "base/base_paths.h"
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/important_file_writer.h"
 #include "base/json/json_file_value_serializer.h"
@@ -15,6 +16,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/values.h"
@@ -135,7 +137,7 @@ bool RlzValueStoreChromeOS::HasAccess(AccessType type) {
 bool RlzValueStoreChromeOS::WritePingTime(Product product, int64_t time) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   rlz_store_->SetString(GetKeyName(kPingTimeKey, product),
-                        base::Int64ToString(time));
+                        base::NumberToString(time));
   return true;
 }
 
@@ -173,7 +175,7 @@ bool RlzValueStoreChromeOS::WriteAccessPointRlz(AccessPoint access_point,
   // contain both install and first search cohorts.  Ignoring the second
   // means the first search cohort will never be stored.
   char dummy[kMaxRlzLength + 1];
-  if (ReadAccessPointRlz(access_point, dummy, arraysize(dummy)) &&
+  if (ReadAccessPointRlz(access_point, dummy, base::size(dummy)) &&
       dummy[0] != 0) {
     return true;
   }

@@ -24,13 +24,8 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
    return {
      EXTERNAL_API: [
        'loadUsers',
-       'runAppForTesting',
-       'setApps',
-       'setShouldShowApps',
-       'showAppError',
        'updateUserImage',
        'setCapsLockState',
-       'forceLockedUserPodFocus',
        'removeUser',
        'showBannerMessage',
        'showUserPodCustomIcon',
@@ -43,7 +38,6 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
        'setPublicSessionDisplayName',
        'setPublicSessionLocales',
        'setPublicSessionKeyboardLayouts',
-       'setLockScreenAppsState',
      ],
 
      preferredWidth_: 0,
@@ -55,14 +49,9 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
      // Whether this screen is currently being shown.
      showing_: false,
 
-     // Last reported lock screen app activity state.
-     lockScreenAppsState_: LOCK_SCREEN_APPS_STATE.NONE,
-
      /** @override */
      decorate: function() {
        login.PodRow.decorate($('pod-row'));
-       this.ownerDocument.addEventListener(
-           'click', this.handleOwnerDocClick_.bind(this));
      },
 
      /** @override */
@@ -89,20 +78,6 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
        this.preferredHeight_ = height;
      },
 
-     /**
-      * When the account picker is being used to lock the screen, pressing the
-      * exit accelerator key will sign out the active user as it would when
-      * they are signed in.
-      */
-     exit: function() {
-       // Check and disable the sign out button so that we can never have two
-       // sign out requests generated in a row.
-       if ($('pod-row').lockedPod && !$('sign-out-user-button').disabled) {
-         $('sign-out-user-button').disabled = true;
-         chrome.send('signOutUser');
-       }
-     },
-
      /* Cancel user adding if ESC was pressed.
       */
      cancel: function() {
@@ -127,7 +102,6 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
        chrome.send('loginUIStateChanged', ['account-picker', true]);
        $('login-header-bar').signinUIState = SIGNIN_UI_STATE.ACCOUNT_PICKER;
        // Header bar should be always visible on Account Picker screen.
-       Oobe.getInstance().headerHidden = false;
        chrome.send('hideCaptivePortal');
        var podRow = $('pod-row');
        podRow.handleBeforeShow();
@@ -285,45 +259,6 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
      },
 
      /**
-      * Runs app with a given id from the list of loaded apps.
-      * @param {!string} app_id of an app to run.
-      * @param {boolean=} opt_diagnostic_mode Whether to run the app in
-      *     diagnostic mode.  Default is false.
-      */
-     runAppForTesting: function(app_id, opt_diagnostic_mode) {
-       $('pod-row').findAndRunAppForTesting(app_id, opt_diagnostic_mode);
-     },
-
-     /**
-      * Adds given apps to the pod row.
-      * @param {array} apps Array of apps.
-      */
-     setApps: function(apps) {
-       $('pod-row').setApps(apps);
-     },
-
-     /**
-      * Sets the flag of whether app pods should be visible.
-      * @param {boolean} shouldShowApps Whether to show app pods.
-      */
-     setShouldShowApps: function(shouldShowApps) {
-       $('pod-row').setShouldShowApps(shouldShowApps);
-     },
-
-     /**
-      * Shows the given kiosk app error message.
-      * @param {!string} message Error message to show.
-      */
-     showAppError: function(message) {
-       // TODO(nkostylev): Figure out a way to show kiosk app launch error
-       // pointing to the kiosk app pod.
-       /** @const */ var BUBBLE_PADDING = 12;
-       $('bubble').showTextForElement(
-           $('pod-row'), message, cr.ui.Bubble.Attachment.BOTTOM,
-           $('pod-row').offsetWidth / 2, BUBBLE_PADDING);
-     },
-
-     /**
       * Updates current image of a user.
       * @param {string} username User for which to update the image.
       */
@@ -337,15 +272,6 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
       */
      setCapsLockState: function(enabled) {
        $('pod-row').classList.toggle('capslock-on', enabled);
-     },
-
-     /**
-      * Enforces focus on user pod of locked user.
-      */
-     forceLockedUserPodFocus: function() {
-       var row = $('pod-row');
-       if (row.lockedPod)
-         row.focusPod(row.lockedPod, true);
      },
 
      /**
@@ -472,51 +398,6 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
       */
      setPublicSessionKeyboardLayouts: function(userID, locale, list) {
        $('pod-row').setPublicSessionKeyboardLayouts(userID, locale, list);
-     },
-
-     /**
-      * Updates UI based on the provided lock screen apps state.
-      *
-      * @param {LOCK_SCREEN_APPS_STATE} state The current lock screen apps
-      *     state.
-      */
-     setLockScreenAppsState: function(state) {
-       if (Oobe.getInstance().displayType != DISPLAY_TYPE.LOCK ||
-           state == this.lockScreenAppsState_) {
-         return;
-       }
-
-       this.lockScreenAppsState_ = state;
-       $('login-header-bar').lockScreenAppsState = state;
-       // When an lock screen app window is in background - i.e. visible behind
-       // the lock screen UI - dim the lock screen background, so it's more
-       // noticeable that the app widow in background is not actionable.
-       $('background')
-           .classList.toggle(
-               'dimmed-background', state == LOCK_SCREEN_APPS_STATE.BACKGROUND);
-
-       if (state === LOCK_SCREEN_APPS_STATE.FOREGROUND)
-         $('pod-row').clearFocusedPod();
-
-     },
-
-     /**
-      * Handles clicks on the document which displays the account picker UI.
-      * If the click event target is outer container - i.e. background portion
-      * of UI with no other UI elements, and lock screen apps are in background,
-      * a request is issued to chrome to move lock screen apps to foreground.
-      * @param {Event} event The click event.
-      */
-     handleOwnerDocClick_: function(event) {
-       if (this.lockScreenAppsState_ != LOCK_SCREEN_APPS_STATE.BACKGROUND ||
-           event.target != $('outer-container')) {
-         return;
-       }
-       chrome.send(
-           'setLockScreenAppsState', [LOCK_SCREEN_APPS_STATE.FOREGROUND]);
-
-       event.preventDefault();
-       event.stopPropagation();
      },
    };
 });

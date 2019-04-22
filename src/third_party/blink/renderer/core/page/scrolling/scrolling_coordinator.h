@@ -30,25 +30,20 @@
 
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
-#include "third_party/blink/renderer/platform/graphics/hit_test_rect.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/scroll/main_thread_scrolling_reason.h"
-#include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace cc {
+class AnimationHost;
 class Layer;
 class ScrollbarLayerInterface;
 }  // namespace cc
 
 namespace blink {
-using MainThreadScrollingReasons = uint32_t;
-
-class CompositorAnimationHost;
 class CompositorAnimationTimeline;
-class LayoutBox;
 class LocalFrame;
 class LocalFrameView;
 class GraphicsLayer;
@@ -58,6 +53,7 @@ class Region;
 class ScrollableArea;
 class WebLayerTreeView;
 
+using MainThreadScrollingReasons = uint32_t;
 using ScrollbarId = uint64_t;
 
 // ScrollingCoordinator is a page-level object that mediates interactions
@@ -80,8 +76,6 @@ class CORE_EXPORT ScrollingCoordinator final
     cc::ScrollbarLayerInterface* scrollbar_layer = nullptr;
   };
 
-  static ScrollingCoordinator* Create(Page*);
-
   explicit ScrollingCoordinator(Page*);
   ~ScrollingCoordinator();
   void Trace(blink::Visitor*);
@@ -91,7 +85,9 @@ class CORE_EXPORT ScrollingCoordinator final
   // not null, the host and timeline are attached to the specified
   // LocalFrameView. A LocalFrameView only needs to own them when it is the view
   // for an OOPIF.
-  void LayerTreeViewInitialized(WebLayerTreeView&, LocalFrameView*);
+  void LayerTreeViewInitialized(WebLayerTreeView&,
+                                cc::AnimationHost&,
+                                LocalFrameView*);
   void WillCloseLayerTreeView(WebLayerTreeView&, LocalFrameView*);
 
   void WillBeDestroyed();
@@ -102,8 +98,8 @@ class CORE_EXPORT ScrollingCoordinator final
 
   // Called when any frame has done its layout or compositing has changed.
   void NotifyGeometryChanged(LocalFrameView*);
-  // Called when any layoutBox has transform changed
-  void NotifyTransformChanged(LocalFrame*, const LayoutBox&);
+  // Called when any transform has changed.
+  void NotifyTransformChanged(LocalFrame*);
 
   // Update non-fast scrollable regions, touch event target rects, main thread
   // scrolling reasons, and whether the visual viewport is user scrollable.
@@ -133,8 +129,9 @@ class CORE_EXPORT ScrollingCoordinator final
   // and if successful, returns true. Otherwise returns false.
   bool UpdateCompositedScrollOffset(ScrollableArea* scrollable_area);
 
-  // Updates the compositor layers and returns true if the scrolling coordinator
-  // handled this change.
+  // Updates composited layers after changes to scrollable area  properties
+  // like content and container sizes, scrollbar existence, scrollability, etc.
+  // Scroll offset changes are updated by UpdateCompositedScrollOffset.
   // TODO(pdr): Factor the container bounds change out of this function. The
   // compositor tracks scroll container bounds on the scroll layer whereas
   // blink uses a separate layer. To ensure the compositor scroll layer has the
@@ -146,31 +143,41 @@ class CORE_EXPORT ScrollingCoordinator final
   void UpdateLayerPositionConstraint(PaintLayer*);
   // LocalFrame* must be a local root if non-null.
   void TouchEventTargetRectsDidChange(LocalFrame*);
-  void WillDestroyLayer(PaintLayer*);
 
   void UpdateScrollParentForGraphicsLayer(GraphicsLayer* child,
                                           const PaintLayer* parent);
   void UpdateClipParentForGraphicsLayer(GraphicsLayer* child,
                                         const PaintLayer* parent);
-  Region ComputeShouldHandleScrollGestureOnMainThreadRegion(
-      const LocalFrame*) const;
+
+  // Computes the NonFastScrollableRegions for the given local root frame. It
+  // outputs a separate region for areas that scroll with the viewport and
+  // those that are fixed to it since these regions will need to go on separate
+  // layers.
+  void ComputeShouldHandleScrollGestureOnMainThreadRegion(
+      const LocalFrame*,
+      Region* scrolling_region,
+      Region* fixed_region) const;
 
   void UpdateTouchEventTargetRectsIfNeeded(LocalFrame*);
 
   void UpdateUserInputScrollable(ScrollableArea*);
 
-  CompositorAnimationHost* GetCompositorAnimationHost() {
-    return animation_host_.get();
-  }
+  cc::AnimationHost* GetCompositorAnimationHost() { return animation_host_; }
   CompositorAnimationTimeline* GetCompositorAnimationTimeline() {
     return programmatic_scroll_animator_timeline_.get();
   }
+
+  // Traverses the frame tree to find the scrollable area using the element id.
+  // This function only checks the local frames. This function does not check
+  // the VisualViewport element id.
+  ScrollableArea* ScrollableAreaWithElementIdInAllLocalFrames(
+      const CompositorElementId&);
 
   // Callback for compositor-side layer scrolls.
   void DidScroll(const gfx::ScrollOffset&, const CompositorElementId&);
 
   // For testing purposes only. This ScrollingCoordinator is reused between
-  // layout test, and must be reset for the results to be valid.
+  // web tests, and must be reset for the results to be valid.
   void Reset(LocalFrame*);
 
  protected:
@@ -190,9 +197,7 @@ class CORE_EXPORT ScrollingCoordinator final
       MainThreadScrollingReasons);
 
   void SetShouldHandleScrollGestureOnMainThreadRegion(const Region&,
-                                                      LocalFrameView*);
-  void SetTouchEventTargetRects(LocalFrame*, const LayerHitTestRects&);
-  void ComputeTouchEventTargetRects(LocalFrame*, LayerHitTestRects&);
+                                                      GraphicsLayer*);
 
   void AddScrollbarLayerGroup(ScrollableArea*,
                               ScrollbarOrientation,
@@ -203,7 +208,7 @@ class CORE_EXPORT ScrollingCoordinator final
 
   bool FrameScrollerIsDirty(LocalFrameView*) const;
 
-  std::unique_ptr<CompositorAnimationHost> animation_host_;
+  cc::AnimationHost* animation_host_ = nullptr;
   std::unique_ptr<CompositorAnimationTimeline>
       programmatic_scroll_animator_timeline_;
 

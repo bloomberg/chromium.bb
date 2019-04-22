@@ -7,11 +7,14 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/win/win_util.h"
+#include "chrome/common/extensions/command.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/media_keys_listener_manager.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_code_conversion_win.h"
 #include "ui/gfx/win/singleton_hwnd.h"
+#include "ui/gfx/win/singleton_hwnd_hot_key_observer.h"
 
 using content::BrowserThread;
 
@@ -37,17 +40,13 @@ GlobalShortcutListenerWin::~GlobalShortcutListenerWin() {
 
 void GlobalShortcutListenerWin::StartListening() {
   DCHECK(!is_listening_);  // Don't start twice.
-  DCHECK(!hotkey_ids_.empty());  // Also don't start if no hotkey is registered.
-  singleton_hwnd_observer_.reset(new gfx::SingletonHwndObserver(
-      base::Bind(
-          &GlobalShortcutListenerWin::OnWndProc, base::Unretained(this))));
+  DCHECK(!hotkeys_.empty());  // Also don't start if no hotkey is registered.
   is_listening_ = true;
 }
 
 void GlobalShortcutListenerWin::StopListening() {
   DCHECK(is_listening_);  // No point if we are not already listening.
-  DCHECK(hotkey_ids_.empty());  // Make sure the map is clean before ending.
-  singleton_hwnd_observer_.reset(nullptr);
+  DCHECK(hotkeys_.empty());  // Make sure the map is clean before ending.
   is_listening_ = false;
 }
 
@@ -55,8 +54,8 @@ void GlobalShortcutListenerWin::OnWndProc(HWND hwnd,
                                           UINT message,
                                           WPARAM wparam,
                                           LPARAM lparam) {
-  if (message != WM_HOTKEY)
-    return;
+  // SingletonHwndHotKeyObservers should only send us hot key messages.
+  DCHECK_EQ(WM_HOTKEY, static_cast<int>(message));
 
   int key_code = HIWORD(lparam);
   int modifiers = 0;
@@ -71,40 +70,73 @@ void GlobalShortcutListenerWin::OnWndProc(HWND hwnd,
 
 bool GlobalShortcutListenerWin::RegisterAcceleratorImpl(
     const ui::Accelerator& accelerator) {
-  DCHECK(hotkey_ids_.find(accelerator) == hotkey_ids_.end());
+  DCHECK(hotkeys_.find(accelerator) == hotkeys_.end());
 
+  // TODO(https://crbug.com/950704): We should be using
+  // |media_keys_listener_manager->StartWatchingMediaKey(...)| here, but that
+  // currently breaks the GlobalCommandsApiTest.GlobalDuplicatedMediaKey test.
+  // Instead, we'll just disable the MediaKeysListenerManager handling here, and
+  // listen using the fallback RegisterHotKey method.
+  if (content::MediaKeysListenerManager::IsMediaKeysListenerManagerEnabled() &&
+      Command::IsMediaKey(accelerator)) {
+    content::MediaKeysListenerManager* media_keys_listener_manager =
+        content::MediaKeysListenerManager::GetInstance();
+    DCHECK(media_keys_listener_manager);
+
+    registered_media_keys_++;
+    media_keys_listener_manager->DisableInternalMediaKeyHandling();
+  }
+
+  // Convert Accelerator modifiers to OS modifiers.
   int modifiers = 0;
   modifiers |= accelerator.IsShiftDown() ? MOD_SHIFT : 0;
   modifiers |= accelerator.IsCtrlDown() ? MOD_CONTROL : 0;
   modifiers |= accelerator.IsAltDown() ? MOD_ALT : 0;
-  static int hotkey_id = 0;
-  bool success = !!RegisterHotKey(
-      gfx::SingletonHwnd::GetInstance()->hwnd(),
-      hotkey_id,
-      modifiers,
-      accelerator.key_code());
 
-  if (!success) {
+  // Create an observer that registers a hot key for |accelerator|.
+  std::unique_ptr<gfx::SingletonHwndHotKeyObserver> observer =
+      gfx::SingletonHwndHotKeyObserver::Create(
+          base::BindRepeating(&GlobalShortcutListenerWin::OnWndProc,
+                              base::Unretained(this)),
+          accelerator.key_code(), modifiers);
+
+  if (!observer) {
     // Most likely error: 1409 (Hotkey already registered).
     return false;
   }
 
-  hotkey_ids_[accelerator] = hotkey_id++;
+  hotkeys_[accelerator] = std::move(observer);
   return true;
 }
 
 void GlobalShortcutListenerWin::UnregisterAcceleratorImpl(
     const ui::Accelerator& accelerator) {
-  HotkeyIdMap::iterator it = hotkey_ids_.find(accelerator);
-  DCHECK(it != hotkey_ids_.end());
+  HotKeyMap::iterator it = hotkeys_.find(accelerator);
+  DCHECK(it != hotkeys_.end());
 
-  bool success = !!UnregisterHotKey(
-      gfx::SingletonHwnd::GetInstance()->hwnd(), it->second);
-  // This call should always succeed, as long as we pass in the right HWND and
-  // an id we've used to register before.
-  DCHECK(success);
+  // TODO(https://crbug.com/950704): We should be using
+  // |media_keys_listener_manager->StopWatchingMediaKey(...)| here.
+  if (content::MediaKeysListenerManager::IsMediaKeysListenerManagerEnabled() &&
+      Command::IsMediaKey(accelerator)) {
+    registered_media_keys_--;
+    DCHECK_GE(registered_media_keys_, 0);
+    if (registered_media_keys_ == 0) {
+      content::MediaKeysListenerManager* media_keys_listener_manager =
+          content::MediaKeysListenerManager::GetInstance();
+      DCHECK(media_keys_listener_manager);
 
-  hotkey_ids_.erase(it);
+      media_keys_listener_manager->EnableInternalMediaKeyHandling();
+    }
+  }
+
+  hotkeys_.erase(it);
+}
+
+void GlobalShortcutListenerWin::OnMediaKeysAccelerator(
+    const ui::Accelerator& accelerator) {
+  // We should not receive media key events that we didn't register for.
+  DCHECK(hotkeys_.find(accelerator) != hotkeys_.end());
+  NotifyKeyPressed(accelerator);
 }
 
 }  // namespace extensions

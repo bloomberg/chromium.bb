@@ -10,7 +10,8 @@
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
 #include "extensions/common/constants.h"
 
-FakeAppListModelUpdater::FakeAppListModelUpdater() = default;
+FakeAppListModelUpdater::FakeAppListModelUpdater(Profile* profile)
+    : profile_(profile) {}
 
 FakeAppListModelUpdater::~FakeAppListModelUpdater() = default;
 
@@ -58,8 +59,8 @@ void FakeAppListModelUpdater::MoveItemToFolder(const std::string& id,
     ChromeAppListItem* item = items_[index].get();
     ChromeAppListItem::TestApi test_api(item);
     test_api.SetFolderId(folder_id);
-    if (delegate_)
-      delegate_->OnAppListItemUpdated(item);
+    for (AppListModelUpdaterObserver& observer : observers_)
+      observer.OnAppListItemUpdated(item);
   }
 }
 
@@ -214,7 +215,23 @@ void FakeAppListModelUpdater::UpdateAppItemFromSyncItem(
   }
 }
 
-void FakeAppListModelUpdater::SetDelegate(
-    AppListModelUpdaterDelegate* delegate) {
-  delegate_ = delegate;
+void FakeAppListModelUpdater::OnFolderCreated(
+    ash::mojom::AppListItemMetadataPtr folder) {
+  std::unique_ptr<ChromeAppListItem> stub_folder =
+      std::make_unique<ChromeAppListItem>(profile_, folder->id, this);
+
+  for (AppListModelUpdaterObserver& observer : observers_)
+    observer.OnAppListItemAdded(stub_folder.get());
+
+  AddItem(std::move(stub_folder));
+}
+
+void FakeAppListModelUpdater::AddObserver(
+    AppListModelUpdaterObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void FakeAppListModelUpdater::RemoveObserver(
+    AppListModelUpdaterObserver* observer) {
+  observers_.RemoveObserver(observer);
 }

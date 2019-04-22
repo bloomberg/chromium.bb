@@ -13,20 +13,6 @@
 #ifndef GPU_COMMAND_BUFFER_CLIENT_RASTER_IMPLEMENTATION_UNITTEST_AUTOGEN_H_
 #define GPU_COMMAND_BUFFER_CLIENT_RASTER_IMPLEMENTATION_UNITTEST_AUTOGEN_H_
 
-TEST_F(RasterImplementationTest, DeleteTextures) {
-  GLuint ids[2] = {kTexturesStartId, kTexturesStartId + 1};
-  struct Cmds {
-    cmds::DeleteTexturesImmediate del;
-    GLuint data[2];
-  };
-  Cmds expected;
-  expected.del.Init(base::size(ids), &ids[0]);
-  expected.data[0] = kTexturesStartId;
-  expected.data[1] = kTexturesStartId + 1;
-  gl_->DeleteTextures(base::size(ids), &ids[0]);
-  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
-}
-
 TEST_F(RasterImplementationTest, Flush) {
   struct Cmds {
     cmds::Flush cmd;
@@ -79,17 +65,6 @@ TEST_F(RasterImplementationTest, LoseContextCHROMIUM) {
 
   gl_->LoseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
                            GL_GUILTY_CONTEXT_RESET_ARB);
-  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
-}
-
-TEST_F(RasterImplementationTest, CopySubTexture) {
-  struct Cmds {
-    cmds::CopySubTexture cmd;
-  };
-  Cmds expected;
-  expected.cmd.Init(1, 2, 3, 4, 5, 6, 7, 8);
-
-  gl_->CopySubTexture(1, 2, 3, 4, 5, 6, 7, 8);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 #endif  // GPU_COMMAND_BUFFER_CLIENT_RASTER_IMPLEMENTATION_UNITTEST_AUTOGEN_H_

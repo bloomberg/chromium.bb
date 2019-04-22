@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
+import android.text.format.DateUtils;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -36,7 +37,6 @@ import java.util.Map;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 public class DownloadUtilsTest {
-    private static final int MILLIS_PER_SECOND = 1000;
     private static final String OFFLINE_ITEM_TITLE = "Some Web Page Title.mhtml";
     private static final String OFFLINE_ITEM_DESCRIPTION = "Our web page";
     private static final String FILE_PATH = "/fake_sd_card/Download/Some Web Page Title.mhtml";
@@ -78,33 +78,26 @@ public class DownloadUtilsTest {
     public void testFormatRemainingTime() {
         final Context context = InstrumentationRegistry.getTargetContext();
         Assert.assertEquals("0 secs left", DownloadUtils.formatRemainingTime(context, 0));
-        Assert.assertEquals(
-                "1 sec left", DownloadUtils.formatRemainingTime(context, MILLIS_PER_SECOND));
+        Assert.assertEquals("1 sec left",
+                DownloadUtils.formatRemainingTime(context, DateUtils.SECOND_IN_MILLIS));
         Assert.assertEquals("1 min left",
-                DownloadUtils.formatRemainingTime(
-                        context, DownloadUtils.SECONDS_PER_MINUTE * MILLIS_PER_SECOND));
-        Assert.assertEquals(
-                "2 mins left", DownloadUtils.formatRemainingTime(context, 149 * MILLIS_PER_SECOND));
-        Assert.assertEquals(
-                "3 mins left", DownloadUtils.formatRemainingTime(context, 150 * MILLIS_PER_SECOND));
+                DownloadUtils.formatRemainingTime(context, 60 * DateUtils.SECOND_IN_MILLIS));
+        Assert.assertEquals("2 mins left",
+                DownloadUtils.formatRemainingTime(context, 149 * DateUtils.SECOND_IN_MILLIS));
+        Assert.assertEquals("3 mins left",
+                DownloadUtils.formatRemainingTime(context, 150 * DateUtils.SECOND_IN_MILLIS));
         Assert.assertEquals("1 hour left",
-                DownloadUtils.formatRemainingTime(
-                        context, DownloadUtils.SECONDS_PER_HOUR * MILLIS_PER_SECOND));
+                DownloadUtils.formatRemainingTime(context, 60 * DateUtils.MINUTE_IN_MILLIS));
         Assert.assertEquals("2 hours left",
-                DownloadUtils.formatRemainingTime(
-                        context, 149 * DownloadUtils.SECONDS_PER_MINUTE * MILLIS_PER_SECOND));
+                DownloadUtils.formatRemainingTime(context, 149 * DateUtils.MINUTE_IN_MILLIS));
         Assert.assertEquals("3 hours left",
-                DownloadUtils.formatRemainingTime(
-                        context, 150 * DownloadUtils.SECONDS_PER_MINUTE * MILLIS_PER_SECOND));
+                DownloadUtils.formatRemainingTime(context, 150 * DateUtils.MINUTE_IN_MILLIS));
         Assert.assertEquals("1 day left",
-                DownloadUtils.formatRemainingTime(
-                        context, DownloadUtils.SECONDS_PER_DAY * MILLIS_PER_SECOND));
+                DownloadUtils.formatRemainingTime(context, 24 * DateUtils.HOUR_IN_MILLIS));
         Assert.assertEquals("2 days left",
-                DownloadUtils.formatRemainingTime(
-                        context, 59 * DownloadUtils.SECONDS_PER_HOUR * MILLIS_PER_SECOND));
+                DownloadUtils.formatRemainingTime(context, 59 * DateUtils.HOUR_IN_MILLIS));
         Assert.assertEquals("3 days left",
-                DownloadUtils.formatRemainingTime(
-                        context, 60 * DownloadUtils.SECONDS_PER_HOUR * MILLIS_PER_SECOND));
+                DownloadUtils.formatRemainingTime(context, 60 * DateUtils.HOUR_IN_MILLIS));
     }
 
     @Test

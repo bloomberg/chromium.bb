@@ -19,6 +19,7 @@
 <translation id="1591562245178063882">Ce mois</translation>
 <translation id="1637811476055996098">Sélect. fichiers</translation>
 <translation id="1650423536718072820">témoignage</translation>
+<translation id="1727886345390570319">masquer le menu des sous-titres</translation>
 <translation id="1729654308190250600">Veuillez saisir une adresse e-mail dans le champ correspondant.</translation>
 <translation id="1758486001363313524">Autre…</translation>
 <translation id="1806710327868736751">alert_dialog</translation>
@@ -41,6 +42,7 @@
 <translation id="2291999235780842123">case à cocher</translation>
 <translation id="2311842470354187719">saut de page</translation>
 <translation id="2335594187091864976">outil de sélection de la date et de l'heure</translation>
+<translation id="245932805758469625">nombre de secondes de vidéo restantes</translation>
 <translation id="248395913932153421">Jour</translation>
 <translation id="2507943997699731163">Veuillez renseigner ce champ.</translation>
 <translation id="2508569020611168319">liste d'onglets</translation>
@@ -50,7 +52,6 @@
 <translation id="2653659639078652383">Valider</translation>
 <translation id="2657045182931379222">objet graphique</translation>
 <translation id="2674318244760992338">pied de page</translation>
-<translation id="2706474812903655270">Cette vidéo est diffusée en mode PIP</translation>
 <translation id="2709516037105925701">Saisie automatique</translation>
 <translation id="2723001399770238859">audio</translation>
 <translation id="2746543609216772311">La date ou l'heure doit être égale ou postérieure à "<ph name="MINIMUM_DATE_OR_TIME" />".</translation>
@@ -71,11 +72,10 @@
 <translation id="3450233048674729344">Cette valeur doit être inférieure ou égale à <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">définition</translation>
 <translation id="3557673793733683882">titre <ph name="HEADING_LEVEL" /></translation>
-<translation id="3639613635497528239">nombre de secondes de film restantes</translation>
+<translation id="3685101356851116974">Image sans libellé</translation>
 <translation id="3706100364254443312">interrupteur</translation>
 <translation id="3732799496749320381">mm</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> Go</translation>
-<translation id="3785482301506746191">barre de défilement de la durée du film</translation>
 <translation id="3808586225841795776">terme</translation>
 <translation id="3822383571486410024">Veuillez allonger ce texte pour qu'il comporte au moins <ph name="MIN_CHARACTERS" /> caractères. Il en compte actuellement <ph name="CURRENT_LENGTH" />.</translation>
 <translation id="383465348367842624">La partie suivie du symbole "<ph name="ATSIGN" />" ne doit pas contenir le caractère "<ph name="INVALIDCHARACTER" />".</translation>
@@ -94,8 +94,10 @@
 <translation id="4360991593054037559">Veuillez saisir une valeur valide. Les deux valeurs valides les plus proches sont "<ph name="VALID_VALUE_LOW" />" et "<ph name="VALID_VALUE_HIGHER" />".</translation>
 <translation id="4384583879834880242">Questions/Réponses</translation>
 <translation id="4413860115965805769">bouton de menu</translation>
+<translation id="4444765639179266822">Voici la mention que contient probablement l'image : <ph name="OCR_TEXT" /></translation>
 <translation id="4446524499724042288">référence de glossaire</translation>
 <translation id="4522570452068850558">Détails</translation>
+<translation id="4542388879936266156">temps restant : <ph name="REMAINING_TIME" /></translation>
 <translation id="4597532268155981612">formulaire</translation>
 <translation id="4661075872484491155">tree</translation>
 <translation id="4664250907885839816">La partie précédée du symbole "<ph name="ATSIGN" />" ne doit pas contenir le caractère "<ph name="INVALIDCHARACTER" />".</translation>
@@ -111,6 +113,7 @@
 <translation id="4992066212339426712">Réactiver le son</translation>
 <translation id="49969490063480558">Veuillez saisir la partie manquante après le symbole "<ph name="ATSIGN" />". L'adresse "<ph name="INVALIDADDRESS" />" est incomplète.</translation>
 <translation id="5034860022980953847">indicateur de progression</translation>
+<translation id="5090250355906949916">barre de défilement de la durée de la vidéo</translation>
 <translation id="5093189678851173835">épigraphe</translation>
 <translation id="5117590920725113268">Afficher le mois suivant</translation>
 <translation id="512758898067543763">en-tête de ligne</translation>
@@ -118,6 +121,7 @@
 <translation id="5164977714490026579">Cette valeur doit être supérieure ou égale à <ph name="MINIMUM" />.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> Po</translation>
 <translation id="5307600278924710095">Veuillez saisir la partie manquante avant le caractère "<ph name="ATSIGN" />". L'adresse "<ph name="INVALIDADDRESS" />" est incomplète.</translation>
+<translation id="5334352251556557839">Impossible de lire les contenus multimédias.</translation>
 <translation id="5406322316791861025">nombre</translation>
 <translation id="5453733299334684579">élément d'arborescence</translation>
 <translation id="5466621249238537318">Veuillez sélectionner un ou plusieurs fichiers.</translation>
@@ -144,12 +148,16 @@
 <translation id="6150588977291308318">bibliographie</translation>
 <translation id="6164829606128959761">outil de mesure</translation>
 <translation id="6166809985690652833">postface</translation>
+<translation id="6209276755895393898">L'image représente probablement : <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">glossaire</translation>
+<translation id="628938136236500310">Lecture en mode Picture-in-picture</translation>
 <translation id="6398862346408813489">Afficher le panneau de sélection du mois</translation>
 <translation id="6404546809543547843">curseur durée audio</translation>
+<translation id="6443871981718447451">afficher le menu des sous-titres</translation>
 <translation id="6453774872122745852">remerciements</translation>
 <translation id="648732519525291180">outil de sélection de l'heure</translation>
 <translation id="6550675742724504774">Options</translation>
+<translation id="6572309429103589720">Grammaire non valide</translation>
 <translation id="658823671542763450">activer le mode plein écran</translation>
 <translation id="663493177488814956">flux</translation>
 <translation id="6637586476836377253">journal</translation>
@@ -162,7 +170,6 @@
 <translation id="6820355525329141109">Impossible de charger le plug-in.</translation>
 <translation id="6820615603175220800">référence bibliographique</translation>
 <translation id="6843725295806269523">muet</translation>
-<translation id="6853785296079745596">masquer les sous-titres</translation>
 <translation id="6885760532393684712">annuaire</translation>
 <translation id="689129560213475294">achevé d'imprimer</translation>
 <translation id="6934078000481955284">bloc de citation</translation>
@@ -170,25 +177,29 @@
 <translation id="6981594929165378967">insertion</translation>
 <translation id="6989848892321993519">Veuillez allonger ce texte pour qu'il comporte au moins <ph name="MIN_CHARACTERS" /> caractères. Il en compte actuellement un seul.</translation>
 <translation id="709897737746224366">Veuillez respecter le format requis.</translation>
+<translation id="7118469954320184356">Aucune description disponible.</translation>
 <translation id="7139483182332611405">préface</translation>
-<translation id="7223624360433298498">temps écoulé</translation>
 <translation id="7263440858009898357">Sélectionnez un élément dans la liste.</translation>
 <translation id="727747134524199931">en-tête de colonne</translation>
+<translation id="7320576522385648310">mise en mémoire tampon</translation>
 <translation id="7353453495576941748">crédit</translation>
 <translation id="7364796246159120393">Choisir un fichier</translation>
 <translation id="739024184232394898">Autre…</translation>
 <translation id="7405738980073107433">notes de fin</translation>
+<translation id="7410239719251593705">Semble être du contenu réservé aux adultes. Aucune description disponible.</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> To</translation>
 <translation id="7491962110804786152">tabulation</translation>
 <translation id="7514365320538308">Télécharger</translation>
 <translation id="7529102961911894712">lien entrant</translation>
+<translation id="7533959249147584474">Image sans libellé</translation>
 <translation id="7647456547678091388">conseil</translation>
 <translation id="7661956066982048809">document graphique</translation>
 <translation id="7673697353781729403">Heures</translation>
 <translation id="7681220483256441252">index</translation>
-<translation id="7720026100085573005">temps restant</translation>
 <translation id="7740050170769002709">Contenu HTML</translation>
+<translation id="7745230546936012372">Pour obtenir les descriptions d'image manquantes, ouvrez le menu contextuel.</translation>
 <translation id="7750228210027921155">Mode PIP (Picture-in-Picture)</translation>
+<translation id="775297008183122718">Saisie incorrecte</translation>
 <translation id="7789962463072032349">pause</translation>
 <translation id="7802800022689234070">triangle d'expansion</translation>
 <translation id="7888071071722539607">Veuillez inclure "<ph name="ATSIGN" />" dans l'adresse e-mail. Il manque un symbole "<ph name="ATSIGN" />" dans "<ph name="INVALIDADDRESS" />".</translation>
@@ -197,10 +208,13 @@
 <translation id="8053789581856978548">champ de recherche de texte</translation>
 <translation id="8057695513531652401">notification</translation>
 <translation id="8105797009065549151">référence de note</translation>
+<translation id="811583516810654505">Récupération de la description…</translation>
 <translation id="8117451130807776954">Cette semaine</translation>
 <translation id="8199524924445686405">aaaa</translation>
+<translation id="8261464734335370856">Orthographe non valide</translation>
 <translation id="8284326494547611709">Sous-titres</translation>
 <translation id="835897206747267392">Valeur incorrecte</translation>
+<translation id="8403857369060869934">temps écoulé : <ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">partie</translation>
 <translation id="8433900881053900389">barre d'outils</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES" /> fichiers</translation>
@@ -225,7 +239,6 @@
 <translation id="8987927404178983737">Mois</translation>
 <translation id="901493112792887934">durée actuelle en secondes</translation>
 <translation id="9048119486235211610">navigation</translation>
-<translation id="9050748414552849310">afficher les sous-titres</translation>
 <translation id="9062295712474918030">document</translation>
 <translation id="9093215626363556771">quitter le mode PIP</translation>
 <translation id="9108370397979208512">math.</translation>

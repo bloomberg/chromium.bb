@@ -7,12 +7,12 @@ suite('settings-animated-pages', function() {
     document.body.innerHTML = `
       <settings-animated-pages
           section="${settings.routes.SEARCH_ENGINES.section}">
-        <neon-animatable route-path="default">
+        <div route-path="default">
           <button id="subpage-trigger"></button>
-        </neon-animatable>
-        <neon-animatable route-path="${settings.routes.SEARCH_ENGINES.path}">
+        </div>
+        <div route-path="${settings.routes.SEARCH_ENGINES.path}">
           <button id="subpage-trigger"></button>
-        </neon-animatable>
+        </div>
       </settings-animated-pages>`;
 
     const animatedPages =

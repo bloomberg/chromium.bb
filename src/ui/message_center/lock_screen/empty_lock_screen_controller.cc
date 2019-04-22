@@ -8,7 +8,8 @@ namespace message_center {
 
 void EmptyLockScreenController::DismissLockScreenThenExecute(
     base::OnceClosure pending_callback,
-    base::OnceClosure cancel_callback) {
+    base::OnceClosure cancel_callback,
+    int message_id) {
   std::move(pending_callback).Run();
 }
 

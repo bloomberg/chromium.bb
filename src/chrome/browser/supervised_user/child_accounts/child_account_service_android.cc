@@ -26,7 +26,6 @@ using base::android::ScopedJavaGlobalRef;
 
 void JNI_ChildAccountService_ListenForChildStatusReceived(
     JNIEnv* env,
-    const JavaParamRef<jclass>& jcaller,
     const JavaParamRef<jobject>& callback) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   ChildAccountService* service = ChildAccountServiceFactory::GetForProfile(
@@ -54,7 +53,6 @@ void ReauthenticateChildAccount(content::WebContents* web_contents,
 
 void JNI_ChildAccountService_OnReauthenticationResult(
     JNIEnv* env,
-    const JavaParamRef<jclass>& jcaller,
     jlong jcallbackPtr,
     jboolean result) {
   // Cast the pointer value back to a Callback and take ownership of it.

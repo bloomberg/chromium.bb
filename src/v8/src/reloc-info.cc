@@ -6,7 +6,6 @@
 
 #include "src/assembler-inl.h"
 #include "src/code-reference.h"
-#include "src/code-stubs.h"
 #include "src/deoptimize-reason.h"
 #include "src/deoptimizer.h"
 #include "src/heap/heap-write-barrier-inl.h"
@@ -159,9 +158,7 @@ void RelocInfoWriter::Write(const RelocInfo* rinfo) {
     WriteShortTaggedPC(pc_delta, kWasmStubCallTag);
   } else {
     WriteModeAndPC(pc_delta, rmode);
-    if (RelocInfo::IsComment(rmode)) {
-      WriteData(rinfo->data());
-    } else if (RelocInfo::IsDeoptReason(rmode)) {
+    if (RelocInfo::IsDeoptReason(rmode)) {
       DCHECK_LT(rinfo->data(), 1 << kBitsPerByte);
       WriteShortData(rinfo->data());
     } else if (RelocInfo::IsConstPool(rmode) ||
@@ -250,13 +247,7 @@ void RelocIterator::next() {
         AdvanceReadLongPCJump();
       } else {
         AdvanceReadPC();
-        if (RelocInfo::IsComment(rmode)) {
-          if (SetMode(rmode)) {
-            AdvanceReadData();
-            return;
-          }
-          Advance(kIntptrSize);
-        } else if (RelocInfo::IsDeoptReason(rmode)) {
+        if (RelocInfo::IsDeoptReason(rmode)) {
           Advance();
           if (SetMode(rmode)) {
             ReadShortData();
@@ -381,6 +372,23 @@ void RelocInfo::set_target_address(Address target,
   }
 }
 
+bool RelocInfo::HasTargetAddressAddress() const {
+  // TODO(jgruber): Investigate whether WASM_CALL is still appropriate on
+  // non-intel platforms now that wasm code is no longer on the heap.
+#if defined(V8_TARGET_ARCH_IA32) || defined(V8_TARGET_ARCH_X64)
+  static constexpr int kTargetAddressAddressModeMask =
+      ModeMask(CODE_TARGET) | ModeMask(EMBEDDED_OBJECT) |
+      ModeMask(EXTERNAL_REFERENCE) | ModeMask(OFF_HEAP_TARGET) |
+      ModeMask(RUNTIME_ENTRY) | ModeMask(WASM_CALL) | ModeMask(WASM_STUB_CALL);
+#else
+  static constexpr int kTargetAddressAddressModeMask =
+      ModeMask(CODE_TARGET) | ModeMask(RELATIVE_CODE_TARGET) |
+      ModeMask(EMBEDDED_OBJECT) | ModeMask(EXTERNAL_REFERENCE) |
+      ModeMask(OFF_HEAP_TARGET) | ModeMask(RUNTIME_ENTRY) | ModeMask(WASM_CALL);
+#endif
+  return (ModeMask(rmode_) & kTargetAddressAddressModeMask) != 0;
+}
+
 bool RelocInfo::RequiresRelocationAfterCodegen(const CodeDesc& desc) {
   RelocIterator it(desc, RelocInfo::PostCodegenRelocationMask());
   return !it.done();
@@ -404,8 +412,6 @@ const char* RelocInfo::RelocModeName(RelocInfo::Mode rmode) {
       return "relative code target";
     case RUNTIME_ENTRY:
       return "runtime entry";
-    case COMMENT:
-      return "comment";
     case EXTERNAL_REFERENCE:
       return "external reference";
     case INTERNAL_REFERENCE:
@@ -439,9 +445,7 @@ const char* RelocInfo::RelocModeName(RelocInfo::Mode rmode) {
 
 void RelocInfo::Print(Isolate* isolate, std::ostream& os) {  // NOLINT
   os << reinterpret_cast<const void*>(pc_) << "  " << RelocModeName(rmode_);
-  if (IsComment(rmode_)) {
-    os << "  (" << reinterpret_cast<char*>(data_) << ")";
-  } else if (rmode_ == DEOPT_SCRIPT_OFFSET || rmode_ == DEOPT_INLINING_ID) {
+  if (rmode_ == DEOPT_SCRIPT_OFFSET || rmode_ == DEOPT_INLINING_ID) {
     os << "  (" << data() << ")";
   } else if (rmode_ == DEOPT_REASON) {
     os << "  ("
@@ -464,17 +468,14 @@ void RelocInfo::Print(Isolate* isolate, std::ostream& os) {  // NOLINT
     os << " (" << Code::Kind2String(code->kind());
     if (Builtins::IsBuiltin(code)) {
       os << " " << Builtins::name(code->builtin_index());
-    } else if (code->kind() == Code::STUB) {
-      os << " " << CodeStub::MajorName(CodeStub::GetMajorKey(code));
     }
     os << ")  (" << reinterpret_cast<const void*>(target_address()) << ")";
   } else if (IsRuntimeEntry(rmode_) && isolate->deoptimizer_data() != nullptr) {
     // Deoptimization bailouts are stored as runtime entries.
     DeoptimizeKind type;
     if (Deoptimizer::IsDeoptimizationEntry(isolate, target_address(), &type)) {
-      int id = GetDeoptimizationId(isolate, type);
-      os << "  (" << Deoptimizer::MessageFor(type) << " deoptimization bailout "
-         << id << ")";
+      os << "  (" << Deoptimizer::MessageFor(type)
+         << " deoptimization bailout)";
     }
   } else if (IsConstPool(rmode_)) {
     os << " (size " << static_cast<int>(data_) << ")";
@@ -497,7 +498,7 @@ void RelocInfo::Verify(Isolate* isolate) {
       CHECK_NE(addr, kNullAddress);
       // Check that we can find the right code object.
       Code code = Code::GetCodeFromTargetAddress(addr);
-      Object* found = isolate->FindCodeObject(addr);
+      Object found = isolate->FindCodeObject(addr);
       CHECK(found->IsCode());
       CHECK(code->address() == HeapObject::cast(found)->address());
       break;
@@ -518,7 +519,6 @@ void RelocInfo::Verify(Isolate* isolate) {
       break;
     }
     case RUNTIME_ENTRY:
-    case COMMENT:
     case EXTERNAL_REFERENCE:
     case DEOPT_SCRIPT_OFFSET:
     case DEOPT_INLINING_ID:

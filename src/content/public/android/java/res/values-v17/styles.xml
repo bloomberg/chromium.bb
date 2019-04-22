@@ -16,12 +16,10 @@
     <style name="SelectActionMenuWebSearch">
         <item name="android:icon">@drawable/ic_search</item>
     </style>
-    <style name="SuggestionPrefixOrSuffix">
+    <style name="TextAppearance.SuggestionPrefixOrSuffix">
       <item name="android:textColor">?android:attr/textColorSecondary</item>
     </style>
-    <!-- TODO(https://crbug.com/856244): remove textAllCaps from button style and move it to
-         button textAppearance styles. -->
-    <style name="TextSuggestionButton">
+    <style name="TextAppearance.TextSuggestionButton">
         <item name="android:drawablePadding">8dp</item>
         <!-- v21 uses sans-serif-medium -->
         <item name="android:gravity">start|center_vertical</item>
@@ -34,7 +32,6 @@
         <item name="android:paddingTop">8dp</item>
         <item name="android:singleLine">true</item>
         <!-- v21 uses android:attr/colorAccent -->
-        <item name="android:textAppearance">@style/BlueButtonText2</item>
-        <item name="android:textAllCaps">true</item>
+        <item name="android:textAppearance">@style/TextAppearance.BlueButtonText2</item>
     </style>
 </resources>

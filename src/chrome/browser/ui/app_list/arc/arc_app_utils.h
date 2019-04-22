@@ -23,8 +23,11 @@ class BrowserContext;
 
 namespace arc {
 
+extern const char kCameraAppId[];
+extern const char kCameraMigrationAppId[];
 extern const char kGoogleDuo[];
 extern const char kInfinitePainter[];
+extern const char kLegacyCameraAppId[];
 extern const char kLightRoom[];
 extern const char kPlayStoreAppId[];
 extern const char kPlayBooksAppId[];
@@ -133,9 +136,6 @@ void CloseTask(int task_id);
 // Opens TalkBack settings window.
 void ShowTalkBackSettings();
 
-// Starts Play Auto Install flow.
-void StartPaiFlow();
-
 // Gets user selected package names.
 std::vector<std::string> GetSelectedPackagesFromPrefs(
     content::BrowserContext* context);
@@ -176,6 +176,14 @@ bool ParseIntent(const std::string& intent_as_string, Intent* intent);
 void GetLocaleAndPreferredLanguages(const Profile* profle,
                                     std::string* out_locale,
                                     std::string* out_preferred_languages);
+
+// Returns Android instance id. Result is returned in callback. |ok| is set to
+// true in case app instance is ready and Android id was successfully requested.
+// 0 is reserved for |android_id| for unregistered Android instances, however
+// this should not happen normally because app instance is active after ARC
+// provisioning is done.
+void GetAndroidId(
+    base::OnceCallback<void(bool ok, int64_t android_id)> callback);
 
 }  // namespace arc
 

@@ -4,6 +4,7 @@
 
 #include "chromeos/geolocation/geoposition.h"
 
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 
 namespace {
@@ -42,13 +43,9 @@ std::string Geoposition::ToString() const {
   return base::StringPrintf(
       "latitude=%f, longitude=%f, accuracy=%f, error_code=%u, "
       "error_message='%s', status=%u (%s)",
-      latitude,
-      longitude,
-      accuracy,
-      error_code,
-      error_message.c_str(),
+      latitude, longitude, accuracy, error_code, error_message.c_str(),
       (unsigned)status,
-      (status < arraysize(status2string) ? status2string[status] : "unknown"));
+      (status < base::size(status2string) ? status2string[status] : "unknown"));
 }
 
 }  // namespace chromeos

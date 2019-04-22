@@ -5,9 +5,11 @@
 #ifndef IOS_CHROME_TEST_EARL_GREY_CHROME_MATCHERS_H_
 #define IOS_CHROME_TEST_EARL_GREY_CHROME_MATCHERS_H_
 
+#import <Foundation/Foundation.h>
+
 #include <string>
 
-#import <EarlGrey/EarlGrey.h>
+@protocol GREYMatcher;
 
 namespace chrome_test_util {
 
@@ -36,6 +38,14 @@ id<GREYMatcher> StaticTextWithAccessibilityLabelId(int message_id);
 // Matcher for element with accessibility label corresponding to |label| and
 // accessibility trait UIAccessibilityTraitStaticText.
 id<GREYMatcher> StaticTextWithAccessibilityLabel(NSString* label);
+
+// Matcher for element with accessibility label corresponding to |message_id|
+// and accessibility trait UIAccessibilityTraitHeader.
+id<GREYMatcher> HeaderWithAccessibilityLabelId(int message_id);
+
+// Matcher for element with accessibility label corresponding to |label| and
+// accessibility trait UIAccessibilityTraitHeader.
+id<GREYMatcher> HeaderWithAccessibilityLabel(NSString* label);
 
 // Returns matcher for a cancel button.
 id<GREYMatcher> CancelButton();
@@ -68,14 +78,14 @@ id<GREYMatcher> PageSecurityInfoIndicator();
 
 // Returns matcher for omnibox containing |text|. Performs an exact match of the
 // omnibox contents.
-id<GREYMatcher> OmniboxText(std::string text);
+id<GREYMatcher> OmniboxText(const std::string& text);
 
 // Returns matcher for |text| being a substring of the text in the omnibox.
-id<GREYMatcher> OmniboxContainingText(std::string text);
+id<GREYMatcher> OmniboxContainingText(const std::string& text);
 
 // Returns matcher for |text| being a substring of the text in the location
 // view.
-id<GREYMatcher> LocationViewContainingText(std::string text);
+id<GREYMatcher> LocationViewContainingText(const std::string& text);
 
 // Matcher for Tools menu button.
 id<GREYMatcher> ToolsMenuButton();
@@ -98,19 +108,9 @@ id<GREYMatcher> SettingsSwitchCell(NSString* accessibility_identifier,
                                    BOOL is_toggled_on,
                                    BOOL is_enabled);
 
-// Matcher for LegacySettingsSwitchCell.
-// TODO(crbug.com/894800): Remove this.
-id<GREYMatcher> LegacySettingsSwitchCell(NSString* accessibility_identifier,
-                                         BOOL is_toggled_on);
-
-// Matcher for LegacySettingsSwitchCell.
-// TODO(crbug.com/894800): Remove this.
-id<GREYMatcher> LegacySettingsSwitchCell(NSString* accessibility_identifier,
-                                         BOOL is_toggled_on,
-                                         BOOL is_enabled);
-
-// Matcher for SyncSwitchCell.
-id<GREYMatcher> SyncSwitchCell(NSString* accessibilityLabel, BOOL isToggledOn);
+// Matcher for LegacySyncSwitchCell.
+id<GREYMatcher> SyncSwitchCell(NSString* accessibility_label,
+                               BOOL is_toggled_on);
 
 // Matcher for the Open in New Tab option in the context menu when long pressing
 // a link.
@@ -141,8 +141,8 @@ id<GREYMatcher> ClearBrowsingDataCell();
 // panel.
 id<GREYMatcher> ClearBrowsingDataButton();
 
-// Returns matcher for the clear browsing data collection view.
-id<GREYMatcher> ClearBrowsingDataCollectionView();
+// Returns matcher for the clear browsing data view.
+id<GREYMatcher> ClearBrowsingDataView();
 
 // Matcher for the clear browsing data action sheet item.
 id<GREYMatcher> ConfirmClearBrowsingDataButton();
@@ -262,6 +262,6 @@ id<GREYMatcher> NewTabPageOmnibox();
 // Returns a matcher for the current WebView.
 id<GREYMatcher> WebViewMatcher();
 
-}  // namespace chrome_test_util
+}
 
 #endif  // IOS_CHROME_TEST_EARL_GREY_CHROME_MATCHERS_H_

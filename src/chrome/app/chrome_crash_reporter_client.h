@@ -11,16 +11,16 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "components/crash/content/app/crash_reporter_client.h"
 
 class ChromeCrashReporterClient : public crash_reporter::CrashReporterClient {
  public:
-  ChromeCrashReporterClient();
-  ~ChromeCrashReporterClient() override;
+  static void Create();
 
   // crash_reporter::CrashReporterClient implementation.
-#if !defined(OS_MACOSX)
+#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
   void SetCrashReporterClientIdFromGUID(
       const std::string& client_guid) override;
 #endif
@@ -59,6 +59,11 @@ class ChromeCrashReporterClient : public crash_reporter::CrashReporterClient {
   bool EnableBreakpadForProcess(const std::string& process_type) override;
 
  private:
+  friend class base::NoDestructor<ChromeCrashReporterClient>;
+
+  ChromeCrashReporterClient();
+  ~ChromeCrashReporterClient() override;
+
   DISALLOW_COPY_AND_ASSIGN(ChromeCrashReporterClient);
 };
 

@@ -5,7 +5,8 @@
 #if V8_TARGET_ARCH_MIPS64
 
 #include "src/interface-descriptors.h"
-#include "src/macro-assembler.h"
+
+#include "src/frames.h"
 
 namespace v8 {
 namespace internal {
@@ -21,7 +22,46 @@ void CallInterfaceDescriptor::DefaultInitializePlatformSpecific(
                                    default_stub_registers);
 }
 
+// On MIPS it is not allowed to use odd numbered floating point registers
+// (e.g. f1, f3, etc.) for parameters. This can happen if we use
+// DefaultInitializePlatformSpecific to assign float registers for parameters.
+// E.g if fourth parameter goes to float register, f7 would be assigned for
+// parameter (a3 casted to int is 7).
+bool CallInterfaceDescriptor::IsValidFloatParameterRegister(Register reg) {
+  return reg.code() % 2 == 0;
+}
+
+void WasmI32AtomicWaitDescriptor::InitializePlatformSpecific(
+    CallInterfaceDescriptorData* data) {
+  /* Register t0 correspond to f12 FPU register. */
+  const Register default_stub_registers[] = {a0, a1, t0};
+  CHECK_EQ(static_cast<size_t>(kParameterCount),
+           arraysize(default_stub_registers));
+  data->InitializePlatformSpecific(kParameterCount, default_stub_registers);
+}
+
+void WasmI64AtomicWaitDescriptor::InitializePlatformSpecific(
+    CallInterfaceDescriptorData* data) {
+  /* Register t0 correspond to f12 FPU register. */
+  const Register default_stub_registers[] = {a0, a1, a2, t0};
+  CHECK_EQ(static_cast<size_t>(kParameterCount),
+           arraysize(default_stub_registers));
+  data->InitializePlatformSpecific(kParameterCount, default_stub_registers);
+}
+
 void RecordWriteDescriptor::InitializePlatformSpecific(
+    CallInterfaceDescriptorData* data) {
+  const Register default_stub_registers[] = {a0, a1, a2, a3, kReturnRegister0};
+
+  data->RestrictAllocatableRegisters(default_stub_registers,
+                                     arraysize(default_stub_registers));
+
+  CHECK_LE(static_cast<size_t>(kParameterCount),
+           arraysize(default_stub_registers));
+  data->InitializePlatformSpecific(kParameterCount, default_stub_registers);
+}
+
+void EphemeronKeyBarrierDescriptor::InitializePlatformSpecific(
     CallInterfaceDescriptorData* data) {
   const Register default_stub_registers[] = {a0, a1, a2, a3, kReturnRegister0};
 
@@ -71,12 +111,6 @@ void TypeofDescriptor::InitializePlatformSpecific(
   data->InitializePlatformSpecific(arraysize(registers), registers);
 }
 
-void CallFunctionDescriptor::InitializePlatformSpecific(
-    CallInterfaceDescriptorData* data) {
-  Register registers[] = {a1};
-  data->InitializePlatformSpecific(arraysize(registers), registers);
-}
-
 void CallTrampolineDescriptor::InitializePlatformSpecific(
     CallInterfaceDescriptorData* data) {
   // a1: target
@@ -101,6 +135,14 @@ void CallForwardVarargsDescriptor::InitializePlatformSpecific(
   // a0: number of arguments
   // a2: start index (to support rest parameters)
   Register registers[] = {a1, a0, a2};
+  data->InitializePlatformSpecific(arraysize(registers), registers);
+}
+
+void CallFunctionTemplateDescriptor::InitializePlatformSpecific(
+    CallInterfaceDescriptorData* data) {
+  // a1 : function template info
+  // a0 : number of arguments (on the stack, not including receiver)
+  Register registers[] = {a1, a0};
   data->InitializePlatformSpecific(arraysize(registers), registers);
 }
 
@@ -209,10 +251,10 @@ void ArgumentsAdaptorDescriptor::InitializePlatformSpecific(
 void ApiCallbackDescriptor::InitializePlatformSpecific(
     CallInterfaceDescriptorData* data) {
   Register registers[] = {
-      JavaScriptFrame::context_register(),  // callee context
-      a4,                                   // call_data
-      a2,                                   // holder
-      a1,                                   // api_function_address
+      a1,                                   // kApiFunctionAddress
+      a2,                                   // kArgc
+      a3,                                   // kCallData
+      a0,                                   // kHolder
   };
   data->InitializePlatformSpecific(arraysize(registers), registers);
 }
@@ -261,6 +303,12 @@ void FrameDropperTrampolineDescriptor::InitializePlatformSpecific(
   Register registers[] = {
       a1,  // loaded new FP
   };
+  data->InitializePlatformSpecific(arraysize(registers), registers);
+}
+
+void RunMicrotasksEntryDescriptor::InitializePlatformSpecific(
+    CallInterfaceDescriptorData* data) {
+  Register registers[] = {a0, a1};
   data->InitializePlatformSpecific(arraysize(registers), registers);
 }
 

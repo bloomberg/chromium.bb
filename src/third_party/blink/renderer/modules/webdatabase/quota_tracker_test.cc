@@ -17,11 +17,11 @@ TEST(QuotaTrackerTest, UpdateAndGetSizeAndSpaceAvailable) {
       SecurityOrigin::CreateFromString("file:///a/b/c");
 
   const String database_name = "db";
-  const unsigned long long kDatabaseSize = 1234ULL;
+  const uint64_t kDatabaseSize = 1234ULL;
   tracker.UpdateDatabaseSize(origin.get(), database_name, kDatabaseSize);
 
-  unsigned long long used = 0;
-  unsigned long long available = 0;
+  uint64_t used = 0;
+  uint64_t available = 0;
   tracker.GetDatabaseSizeAndSpaceAvailableToOrigin(origin.get(), database_name,
                                                    &used, &available);
 
@@ -35,14 +35,14 @@ TEST(QuotaTrackerTest, LocalAccessBlocked) {
       SecurityOrigin::CreateFromString("file:///a/b/c");
 
   const String database_name = "db";
-  const unsigned long long kDatabaseSize = 1234ULL;
+  const uint64_t kDatabaseSize = 1234ULL;
   tracker.UpdateDatabaseSize(origin.get(), database_name, kDatabaseSize);
 
   // QuotaTracker should not care about policy, just identity.
   origin->BlockLocalAccessFromLocalOrigin();
 
-  unsigned long long used = 0;
-  unsigned long long available = 0;
+  uint64_t used = 0;
+  uint64_t available = 0;
   tracker.GetDatabaseSizeAndSpaceAvailableToOrigin(origin.get(), database_name,
                                                    &used, &available);
 

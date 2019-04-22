@@ -14,8 +14,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "api/scoped_refptr.h"
+#include "api/task_queue/task_queue_factory.h"
 #include "modules/audio_device/include/audio_device.h"
-#include "rtc_base/scoped_ref_ptr.h"
+#include "rtc_base/deprecation.h"
 
 namespace webrtc {
 
@@ -39,15 +41,16 @@ class AudioDeviceDataObserver {
   virtual ~AudioDeviceDataObserver() = default;
 };
 
-// Creates an ADM instance with AudioDeviceDataObserver registered.
+// TODO(bugs.webrtc.org/10284): Remove when unused.
+RTC_DEPRECATED
 rtc::scoped_refptr<AudioDeviceModule> CreateAudioDeviceWithDataObserver(
     const AudioDeviceModule::AudioLayer audio_layer,
     AudioDeviceDataObserver* observer);
 
-// TODO(bugs.webrtc.org/7306): deprecated.
+// Creates an ADM instance with AudioDeviceDataObserver registered.
 rtc::scoped_refptr<AudioDeviceModule> CreateAudioDeviceWithDataObserver(
-    const int32_t id,
     const AudioDeviceModule::AudioLayer audio_layer,
+    TaskQueueFactory* task_queue_factory,
     AudioDeviceDataObserver* observer);
 
 }  // namespace webrtc

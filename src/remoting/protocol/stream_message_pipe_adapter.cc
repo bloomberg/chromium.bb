@@ -51,7 +51,7 @@ void StreamMessagePipeAdapter::Start(EventHandler* event_handler) {
 }
 
 void StreamMessagePipeAdapter::Send(google::protobuf::MessageLite* message,
-                                    const base::Closure& done) {
+                                    base::OnceClosure done) {
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("stream_message_pipe_adapter", R"(
         semantics {
@@ -78,7 +78,7 @@ void StreamMessagePipeAdapter::Send(google::protobuf::MessageLite* message,
             "approaches to manage this feature."
         })");
   if (writer_)
-    writer_->Write(SerializeAndFrameMessage(*message), done,
+    writer_->Write(SerializeAndFrameMessage(*message), std::move(done),
                    traffic_annotation);
 }
 

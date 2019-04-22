@@ -28,8 +28,27 @@
           <div id="-0"></div>
           <div id="7"></div>
           <div id="&#x438;&#x434;">&#x438;&#x434;</div>
+          <div id="#"></div>
+          <div id="#foo"></div>
+          <div id="##"></div>
+          <div id="#.#.#"></div>
+          <div id="_"></div>
+          <div id="{}"></div>
+          <div id=".fake-class"></div>
+          <div id="foo.bar"></div>
+          <div id=":hover"></div>
+          <div id=":hover:focus:active"></div>
+          <div id="[attr=value]"></div>
+          <div id="f/o/o"></div>
+          <div id="f\o\o"></div>
+          <div id="f*o*o"></div>
+          <div id="f!o!o"></div>
+          <div id="f'o'o"></div>
+          <div id="f~o~o"></div>
+          <div id="f+o+o"></div>
           <input type="text" id="input-id">
           <input type="text">
+          <input type="something-invalid-'-&quot;-and-weird">
           <p></p>
       </div>
 
@@ -49,6 +68,22 @@
           <div class="&#x43A;&#x43B;&#x430;&#x441;&#x441;">&#x43A;&#x43B;&#x430;&#x441;&#x441;</div>
           <div class="__proto__"></div>
           <div class="__proto__ foo"></div>
+          <div class="#"></div>
+          <div class="#foo"></div>
+          <div class="##"></div>
+          <div class="#.#.#"></div>
+          <div class="_"></div>
+          <div class="{}"></div>
+          <div class=":hover"></div>
+          <div class=":hover:focus:active"></div>
+          <div class="[attr=value]"></div>
+          <div class="f/o/o"></div>
+          <div class="f\o\o"></div>
+          <div class="f*o*o"></div>
+          <div class="f!o!o"></div>
+          <div class="f'o'o"></div>
+          <div class="f~o~o"></div>
+          <div class="f+o+o"></div>
           <span class="bar"></span>
           <div id="id-with-class" class="moo"></div>
           <input type="text" class="input-class-one">
@@ -84,9 +119,8 @@
       </div>
     `);
   await TestRunner.evaluateInPagePromise(`
-      function matchingElements(selector)
-      {
-          return document.querySelectorAll(selector).length;
+      function matchingElements(selector) {
+        return document.querySelectorAll(selector).length;
       }
   `);
 
@@ -107,8 +141,7 @@
     var cssPath = Elements.DOMPath.cssPath(entry.node, true);
     var result = entry.prefix + cssPath;
     TestRunner.addResult(result.replace(/\n/g, '\\n'));
-    var escapedPath = cssPath.replace(/\\/g, '\\\\');
-    TestRunner.evaluateInPage('matchingElements(\'' + escapedPath + '\')', callback);
+    TestRunner.evaluateInPage('matchingElements(' + JSON.stringify(cssPath) + ')', callback);
 
     function callback(result) {
       TestRunner.assertEquals(1, result);

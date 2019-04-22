@@ -8,7 +8,9 @@
 #include "ash/ash_export.h"
 #include "ash/system/message_center/message_center_scroll_bar.h"
 #include "ash/system/message_center/unified_message_list_view.h"
+#include "ui/views/background.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/view.h"
 
@@ -22,18 +24,31 @@ class MessageCenterScrollBar;
 class UnifiedSystemTrayModel;
 class UnifiedSystemTrayView;
 
+// The header shown above the notification list displaying the number of hidden
+// notifications. There are currently two UI implementations toggled by the
+// NotificationStackingBarRedesign feature flag.
 class StackingNotificationCounterView : public views::View {
  public:
-  StackingNotificationCounterView();
+  explicit StackingNotificationCounterView(views::ButtonListener* listener);
   ~StackingNotificationCounterView() override;
 
-  void SetCount(int stacking_count);
+  // Sets the number of total notifications and hidden notifications. Returns
+  // true if the count was updated from the previous SetCount() call.
+  bool SetCount(int total_notification_count, int stacked_notification_count);
 
   // views::View:
   void OnPaint(gfx::Canvas* canvas) override;
 
  private:
-  int stacking_count_ = 0;
+  friend class UnifiedMessageCenterViewTest;
+
+  int total_notification_count_ = 0;
+  int stacked_notification_count_ = 0;
+
+  // These UI elements are only created and shown when the
+  // NotificationStackingBarRedesign feature is enabled.
+  views::Label* count_label_ = nullptr;
+  views::Button* clear_all_button_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(StackingNotificationCounterView);
 };
@@ -50,7 +65,14 @@ class ASH_EXPORT UnifiedMessageCenterView
   ~UnifiedMessageCenterView() override;
 
   // Sets the maximum height that the view can take.
+  // TODO(tengs): The layout of this view is heavily dependant on this max
+  // height (equal to the height of the entire tray), but we should refactor and
+  // consolidate this function with SetAvailableHeight().
   void SetMaxHeight(int max_height);
+
+  // Sets the height available to the message center view. This is the remaining
+  // height after counting the system menu, which may be expanded or collapsed.
+  void SetAvailableHeight(int available_height);
 
   // Called from UnifiedMessageListView when the preferred size is changed.
   void ListPreferredSizeChanged();
@@ -80,28 +102,35 @@ class ASH_EXPORT UnifiedMessageCenterView
 
  protected:
   // Virtual for testing.
-  virtual void SetNotificationHeightBelowScroll(int height_below_scroll);
+  virtual void SetNotificationRectBelowScroll(
+      const gfx::Rect& rect_below_scroll);
 
  private:
   friend class UnifiedMessageCenterViewTest;
 
   void UpdateVisibility();
 
-  // Scroll the notification list to |position_from_bottom_|.
-  void ScrollToPositionFromBottom();
+  // Scroll the notification list to the target position.
+  void ScrollToTarget();
 
-  // Notifies height below scroll to |parent_| so that it can update
+  // Notifies rect below scroll to |parent_| so that it can update
   // TopCornerBorder.
-  void NotifyHeightBelowScroll();
+  void NotifyRectBelowScroll();
 
   UnifiedSystemTrayView* const parent_;
+  UnifiedSystemTrayModel* const model_;
   StackingNotificationCounterView* const stacking_counter_;
   MessageCenterScrollBar* const scroll_bar_;
   views::ScrollView* const scroller_;
   UnifiedMessageListView* const message_list_view_;
 
   // Position from the bottom of scroll contents in dip.
-  int position_from_bottom_;
+  int last_scroll_position_from_bottom_;
+
+  // The height available to the message center view. This is the remaining
+  // height of the system tray excluding the system menu (which can be expanded
+  // or collapsed).
+  int available_height_ = 0;
 
   views::FocusManager* focus_manager_ = nullptr;
 

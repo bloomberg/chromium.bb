@@ -13,7 +13,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
@@ -21,7 +20,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/vr/assets_loader.h"
 #include "chrome/browser/vr/metrics/metrics_helper.h"
-#include "chrome/browser/vr/vr_features.h"
+#include "chrome/browser/vr/vr_buildflags.h"
 #include "components/component_updater/component_updater_paths.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/crx_file/id_util.h"
@@ -185,7 +184,7 @@ base::FilePath VrAssetsComponentInstallerPolicy::GetRelativeInstallDir() const {
 void VrAssetsComponentInstallerPolicy::GetHash(
     std::vector<uint8_t>* hash) const {
   hash->assign(kVrAssetsPublicKeySHA256,
-               kVrAssetsPublicKeySHA256 + arraysize(kVrAssetsPublicKeySHA256));
+               kVrAssetsPublicKeySHA256 + base::size(kVrAssetsPublicKeySHA256));
 }
 
 std::string VrAssetsComponentInstallerPolicy::GetName() const {

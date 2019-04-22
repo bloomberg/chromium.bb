@@ -14,12 +14,15 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/auth.h"
 #include "net/base/io_buffer.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
+#include "net/base/static_cookie_policy.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
@@ -101,9 +104,9 @@ class WebSocket::WebSocketEventHandler final
       const net::SSLInfo& ssl_info,
       bool fatal) override;
   int OnAuthRequired(
-      scoped_refptr<net::AuthChallengeInfo> auth_info,
+      const net::AuthChallengeInfo& auth_info,
       scoped_refptr<net::HttpResponseHeaders> response_headers,
-      const net::HostPortPair& host_port_pair,
+      const net::IPEndPoint& remote_endpoint,
       base::OnceCallback<void(const net::AuthCredentials*)> callback,
       base::Optional<net::AuthCredentials>* credentials) override;
 
@@ -126,6 +129,8 @@ WebSocket::WebSocketEventHandler::~WebSocketEventHandler() {
 
 void WebSocket::WebSocketEventHandler::OnCreateURLRequest(
     net::URLRequest* url_request) {
+  url_request->SetUserData(WebSocket::kUserDataKey,
+                           std::make_unique<UnownedPointer>(impl_));
   impl_->delegate_->OnCreateURLRequest(impl_->child_id_, impl_->frame_id_,
                                        url_request);
 }
@@ -249,20 +254,22 @@ void WebSocket::WebSocketEventHandler::OnFinishOpeningHandshake(
   response_to_pass->status_code = response->headers->response_code();
   response_to_pass->status_text = response->headers->GetStatusText();
   response_to_pass->http_version = response->headers->GetHttpVersion();
-  response_to_pass->socket_address = response->socket_address;
+  response_to_pass->remote_endpoint = response->remote_endpoint;
   size_t iter = 0;
   std::string name, value;
+  std::string headers_text =
+      base::StrCat({response->headers->GetStatusLine(), "\r\n"});
   while (response->headers->EnumerateHeaderLines(&iter, &name, &value)) {
     if (can_read_raw_cookies ||
         !net::HttpResponseHeaders::IsCookieResponseHeader(name)) {
       // We drop cookie-related headers such as "set-cookie" when the
       // renderer doesn't have access.
       response_to_pass->headers.push_back(mojom::HttpHeader::New(name, value));
+      base::StrAppend(&headers_text, {name, ": ", value, "\r\n"});
     }
   }
-  response_to_pass->headers_text =
-      net::HttpUtil::ConvertHeadersBackToHTTPResponse(
-          response->headers->raw_headers());
+  headers_text.append("\r\n");
+  response_to_pass->headers_text = headers_text;
 
   impl_->client_->OnFinishOpeningHandshake(std::move(response_to_pass));
 }
@@ -281,9 +288,9 @@ void WebSocket::WebSocketEventHandler::OnSSLCertificateError(
 }
 
 int WebSocket::WebSocketEventHandler::OnAuthRequired(
-    scoped_refptr<net::AuthChallengeInfo> auth_info,
+    const net::AuthChallengeInfo& auth_info,
     scoped_refptr<net::HttpResponseHeaders> response_headers,
-    const net::HostPortPair& host_port_pair,
+    const net::IPEndPoint& remote_endpoint,
     base::OnceCallback<void(const net::AuthCredentials*)> callback,
     base::Optional<net::AuthCredentials>* credentials) {
   DVLOG(3) << "WebSocketEventHandler::OnAuthRequired"
@@ -294,7 +301,7 @@ int WebSocket::WebSocketEventHandler::OnAuthRequired(
   }
 
   impl_->auth_handler_->OnAuthRequired(
-      std::move(auth_info), std::move(response_headers), host_port_pair,
+      auth_info, std::move(response_headers), remote_endpoint,
       base::BindOnce(&WebSocket::OnAuthRequiredComplete,
                      impl_->weak_ptr_factory_.GetWeakPtr(),
                      std::move(callback)));
@@ -305,17 +312,21 @@ WebSocket::WebSocket(
     std::unique_ptr<Delegate> delegate,
     mojom::WebSocketRequest request,
     mojom::AuthenticationHandlerPtr auth_handler,
+    mojom::TrustedHeaderClientPtr header_client,
     WebSocketThrottler::PendingConnection pending_connection_tracker,
     int child_id,
     int frame_id,
     url::Origin origin,
+    uint32_t options,
     base::TimeDelta delay)
     : delegate_(std::move(delegate)),
       binding_(this, std::move(request)),
       auth_handler_(std::move(auth_handler)),
+      header_client_(std::move(header_client)),
       pending_connection_tracker_(std::move(pending_connection_tracker)),
       delay_(delay),
       pending_flow_control_quota_(0),
+      options_(options),
       child_id_(child_id),
       frame_id_(frame_id),
       origin_(std::move(origin)),
@@ -323,9 +334,19 @@ WebSocket::WebSocket(
       weak_ptr_factory_(this) {
   binding_.set_connection_error_handler(
       base::BindOnce(&WebSocket::OnConnectionError, base::Unretained(this)));
+
+  if (header_client_) {
+    // Make sure the request dies if |header_client_| has an error, otherwise
+    // requests can hang.
+    header_client_.set_connection_error_handler(
+        base::BindOnce(&WebSocket::OnConnectionError, base::Unretained(this)));
+  }
 }
 
 WebSocket::~WebSocket() {}
+
+// static
+const void* const WebSocket::kUserDataKey = &WebSocket::kUserDataKey;
 
 void WebSocket::GoAway() {
   StartClosingHandshake(static_cast<uint16_t>(net::kWebSocketErrorGoingAway),
@@ -431,6 +452,58 @@ void WebSocket::StartClosingHandshake(uint16_t code,
   ignore_result(channel_->StartClosingHandshake(code, reason));
 }
 
+bool WebSocket::AllowCookies(const GURL& url) const {
+  const GURL site_for_cookies = origin_.GetURL();
+  net::StaticCookiePolicy::Type policy =
+      net::StaticCookiePolicy::ALLOW_ALL_COOKIES;
+  if (options_ & mojom::kWebSocketOptionBlockAllCookies) {
+    policy = net::StaticCookiePolicy::BLOCK_ALL_COOKIES;
+  } else if (options_ & mojom::kWebSocketOptionBlockThirdPartyCookies) {
+    policy = net::StaticCookiePolicy::BLOCK_ALL_THIRD_PARTY_COOKIES;
+  } else {
+    return true;
+  }
+  return net::StaticCookiePolicy(policy).CanAccessCookies(
+             url, site_for_cookies) == net::OK;
+}
+
+int WebSocket::OnBeforeStartTransaction(net::CompletionOnceCallback callback,
+                                        net::HttpRequestHeaders* headers) {
+  if (header_client_) {
+    header_client_->OnBeforeSendHeaders(
+        *headers, base::BindOnce(&WebSocket::OnBeforeSendHeadersComplete,
+                                 weak_ptr_factory_.GetWeakPtr(),
+                                 std::move(callback), headers));
+    return net::ERR_IO_PENDING;
+  }
+  return net::OK;
+}
+
+int WebSocket::OnHeadersReceived(
+    net::CompletionOnceCallback callback,
+    const net::HttpResponseHeaders* original_response_headers,
+    scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
+    GURL* allowed_unsafe_redirect_url) {
+  if (header_client_) {
+    header_client_->OnHeadersReceived(
+        original_response_headers->raw_headers(),
+        base::BindOnce(&WebSocket::OnHeadersReceivedComplete,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                       override_response_headers, allowed_unsafe_redirect_url));
+    return net::ERR_IO_PENDING;
+  }
+  return net::OK;
+}
+
+// static
+WebSocket* WebSocket::ForRequest(const net::URLRequest& request) {
+  auto* pointer =
+      static_cast<UnownedPointer*>(request.GetUserData(kUserDataKey));
+  if (!pointer)
+    return nullptr;
+  return pointer->get();
+}
+
 void WebSocket::OnConnectionError() {
   DVLOG(3) << "WebSocket::OnConnectionError @" << reinterpret_cast<void*>(this);
 
@@ -486,6 +559,38 @@ void WebSocket::OnAuthRequiredComplete(
   }
 
   std::move(callback).Run(credentials ? &*credentials : nullptr);
+}
+
+void WebSocket::OnBeforeSendHeadersComplete(
+    net::CompletionOnceCallback callback,
+    net::HttpRequestHeaders* out_headers,
+    int result,
+    const base::Optional<net::HttpRequestHeaders>& headers) {
+  if (!channel_) {
+    // Something happened before the OnBeforeSendHeaders response arrives.
+    return;
+  }
+  if (headers)
+    *out_headers = headers.value();
+  std::move(callback).Run(result);
+}
+
+void WebSocket::OnHeadersReceivedComplete(
+    net::CompletionOnceCallback callback,
+    scoped_refptr<net::HttpResponseHeaders>* out_headers,
+    GURL* out_allowed_unsafe_redirect_url,
+    int result,
+    const base::Optional<std::string>& headers,
+    const GURL& allowed_unsafe_redirect_url) {
+  if (!channel_) {
+    // Something happened before the OnHeadersReceived response arrives.
+    return;
+  }
+  if (headers) {
+    *out_headers =
+        base::MakeRefCounted<net::HttpResponseHeaders>(headers.value());
+  }
+  std::move(callback).Run(result);
 }
 
 }  // namespace network

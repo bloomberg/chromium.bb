@@ -343,6 +343,13 @@ class UrlRuleFlatBufferConverter {
     if (anchor_right_ == flat::AnchorType_SUBDOMAIN)
       return false;  // Unsupported right anchor.
 
+    // We disallow patterns like "||*xyz" because it isn't clear how to match
+    // them.
+    if (anchor_left_ == flat::AnchorType_SUBDOMAIN &&
+        (!rule_.url_pattern().empty() && rule_.url_pattern().front() == '*')) {
+      return false;
+    }
+
     return true;
   }
 
@@ -760,6 +767,10 @@ UrlPatternIndexMatcher::UrlPatternIndexMatcher(
 }
 
 UrlPatternIndexMatcher::~UrlPatternIndexMatcher() = default;
+UrlPatternIndexMatcher::UrlPatternIndexMatcher(UrlPatternIndexMatcher&&) =
+    default;
+UrlPatternIndexMatcher& UrlPatternIndexMatcher::operator=(
+    UrlPatternIndexMatcher&&) = default;
 
 const flat::UrlRule* UrlPatternIndexMatcher::FindMatch(
     const GURL& url,

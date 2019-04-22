@@ -6,10 +6,9 @@
 
 #include "content/public/common/content_client.h"
 #include "content/public/renderer/render_thread.h"
-#include "content/public/test/layouttest_support.h"
-#include "content/shell/common/layout_test/layout_test_messages.h"
-#include "content/shell/common/layout_test/layout_test_switches.h"
-#include "content/shell/common/shell_messages.h"
+#include "content/public/test/web_test_support.h"
+#include "content/shell/common/web_test/web_test_messages.h"
+#include "content/shell/common/web_test/web_test_switches.h"
 #include "content/shell/test_runner/test_interfaces.h"
 #include "content/shell/test_runner/web_test_interfaces.h"
 #include "content/shell/test_runner/web_test_runner.h"
@@ -29,7 +28,7 @@ WebTestRenderThreadObserver::WebTestRenderThreadObserver() {
   CHECK(!g_instance);
   g_instance = this;
   RenderThread::Get()->AddObserver(this);
-  EnableRendererLayoutTestMode();
+  EnableRendererWebTestMode();
 
   test_interfaces_.reset(new test_runner::WebTestInterfaces);
   test_interfaces_->ResetAll();
@@ -44,18 +43,18 @@ bool WebTestRenderThreadObserver::OnControlMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(WebTestRenderThreadObserver, message)
-    IPC_MESSAGE_HANDLER(LayoutTestMsg_ReplicateLayoutTestRuntimeFlagsChanges,
-                        OnReplicateLayoutTestRuntimeFlagsChanges)
+    IPC_MESSAGE_HANDLER(WebTestMsg_ReplicateWebTestRuntimeFlagsChanges,
+                        OnReplicateWebTestRuntimeFlagsChanges)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
   return handled;
 }
 
-void WebTestRenderThreadObserver::OnReplicateLayoutTestRuntimeFlagsChanges(
-    const base::DictionaryValue& changed_layout_test_runtime_flags) {
-  test_interfaces()->TestRunner()->ReplicateLayoutTestRuntimeFlagsChanges(
-      changed_layout_test_runtime_flags);
+void WebTestRenderThreadObserver::OnReplicateWebTestRuntimeFlagsChanges(
+    const base::DictionaryValue& changed_web_test_runtime_flags) {
+  test_interfaces()->TestRunner()->ReplicateWebTestRuntimeFlagsChanges(
+      changed_web_test_runtime_flags);
 }
 
 }  // namespace content

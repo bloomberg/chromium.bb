@@ -33,22 +33,20 @@ class DebugDaemonLogSource : public SystemLogsSource {
  private:
   typedef std::map<std::string, std::string> KeyValueMap;
 
-  // Callbacks for the 5 different dbus calls to debugd.
+  // Callbacks for the dbus calls to debugd.
   void OnGetRoutes(base::Optional<std::vector<std::string>> routes);
-  void OnGetNetworkStatus(base::Optional<std::string> status);
-  void OnGetModemStatus(base::Optional<std::string> status);
-  void OnGetWiMaxStatus(base::Optional<std::string> status);
+  void OnGetOneLog(std::string key, base::Optional<std::string> status);
   void OnGetLogs(bool succeeded,
                  const KeyValueMap& logs);
+
+  // Reads the logged-in users' log files that have to be read by Chrome as
+  // debugd has no access to them. The contents of these logs are appended to
+  // |response_|. This is called at the end when all debugd logs are collected
+  // so that we can see any debugd related errors surface in feedback reports.
+  void GetLoggedInUsersLogFiles();
+
   void OnGetUserLogFiles(bool succeeded,
                          const KeyValueMap& logs);
-
-  // Read the contents of the specified user logs files and adds it to
-  // the response parameter.
-  static void ReadUserLogFiles(
-      const KeyValueMap& user_log_files,
-      const std::vector<base::FilePath>& profile_dirs,
-      SystemLogsResponse* response);
 
   // Merge the responses from ReadUserLogFiles into the main response dict and
   // invoke the callback_.Run method with the assumption that all other logs

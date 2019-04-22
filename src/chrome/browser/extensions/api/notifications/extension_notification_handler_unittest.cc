@@ -56,8 +56,7 @@ class TestExtensionNotificationHandler : public ExtensionNotificationHandler {
 
 class ExtensionNotificationHandlerTest : public testing::Test {
  public:
-  ExtensionNotificationHandlerTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::DEFAULT) {}
+  ExtensionNotificationHandlerTest() {}
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;

@@ -21,9 +21,6 @@ namespace app_list_features {
 // Enables the answer card in the app list.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableAnswerCard;
 
-// Enables app shortcuts search.
-ASH_PUBLIC_EXPORT extern const base::Feature kEnableAppShortcutSearch;
-
 // Enables background blur for the app list, lock screen, and tab switcher, also
 // enables the AppsGridView mask layer. In this mode, slower devices may have
 // choppier app list animations. crbug.com/765292.
@@ -35,22 +32,8 @@ ASH_PUBLIC_EXPORT extern const base::Feature kEnablePlayStoreAppSearch;
 // Enables in-app data search.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableAppDataSearch;
 
-// Enables using gestures to show or hide the home launcher.
-// TODO(crbug.com/872319): Remove this after the feature is launched.
-ASH_PUBLIC_EXPORT extern const base::Feature kEnableHomeLauncherGestures;
-
 // Enables the Settings shortcut search.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableSettingsShortcutSearch;
-
-// Enables the apps grid gap feature.
-ASH_PUBLIC_EXPORT extern const base::Feature kEnableAppsGridGapFeature;
-
-// Enables the new style launcher (See details at http://crbug.com/857206).
-ASH_PUBLIC_EXPORT extern const base::Feature kEnableNewStyleLauncher;
-
-// Enables the feature to allow users to seamlessly continue reading a web page
-// when they switch from phones or tablets to Chromebook.
-ASH_PUBLIC_EXPORT extern const base::Feature kEnableContinueReading;
 
 // Enables the feature to display zero state suggestions.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableZeroStateSuggestions;
@@ -58,22 +41,42 @@ ASH_PUBLIC_EXPORT extern const base::Feature kEnableZeroStateSuggestions;
 // Enables the feature to autocomplete text typed in the AppList search box.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableAppListSearchAutocomplete;
 
-// Enables the feature to rank app search result using AppSearchResultRanker.
-ASH_PUBLIC_EXPORT extern const base::Feature kEnableAppSearchResultRanker;
+// Enable an adaptive model that tweaks search result scores.
+ASH_PUBLIC_EXPORT extern const base::Feature kEnableAdaptiveResultRanker;
+
+// Enable an model that ranks query based apps search result.
+ASH_PUBLIC_EXPORT extern const base::Feature kEnableQueryBasedAppsRanker;
+
+// Enable an model that ranks zero-state apps search result.
+ASH_PUBLIC_EXPORT extern const base::Feature kEnableZeroStateAppsRanker;
+
+// Enable an model that ranks query based non-apps result.
+ASH_PUBLIC_EXPORT extern const base::Feature kEnableQueryBasedMixedTypesRanker;
+
+// Enables the feature to include a single reinstallation candidate in
+// zero-state.
+ASH_PUBLIC_EXPORT extern const base::Feature kEnableAppReinstallZeroState;
+
+// Enables the embedded Assistant UI in the app list.
+ASH_PUBLIC_EXPORT extern const base::Feature kEnableEmbeddedAssistantUI;
+
+// Enables ghosting in any AppsGridView (folder or root) when dragging an item.
+ASH_PUBLIC_EXPORT extern const base::Feature kEnableAppGridGhost;
 
 bool ASH_PUBLIC_EXPORT IsAnswerCardEnabled();
-bool ASH_PUBLIC_EXPORT IsAppShortcutSearchEnabled();
 bool ASH_PUBLIC_EXPORT IsBackgroundBlurEnabled();
 bool ASH_PUBLIC_EXPORT IsPlayStoreAppSearchEnabled();
 bool ASH_PUBLIC_EXPORT IsAppDataSearchEnabled();
-bool ASH_PUBLIC_EXPORT IsHomeLauncherGesturesEnabled();
 bool ASH_PUBLIC_EXPORT IsSettingsShortcutSearchEnabled();
-bool ASH_PUBLIC_EXPORT IsAppsGridGapFeatureEnabled();
-bool ASH_PUBLIC_EXPORT IsNewStyleLauncherEnabled();
-bool ASH_PUBLIC_EXPORT IsContinueReadingEnabled();
 bool ASH_PUBLIC_EXPORT IsZeroStateSuggestionsEnabled();
 bool ASH_PUBLIC_EXPORT IsAppListSearchAutocompleteEnabled();
-bool ASH_PUBLIC_EXPORT IsAppSearchResultRankerEnabled();
+bool ASH_PUBLIC_EXPORT IsAdaptiveResultRankerEnabled();
+bool ASH_PUBLIC_EXPORT IsQueryBasedAppsRankerEnabled();
+bool ASH_PUBLIC_EXPORT IsZeroStateAppsRankerEnabled();
+bool ASH_PUBLIC_EXPORT IsQueryBasedMixedTypesRankerEnabled();
+bool ASH_PUBLIC_EXPORT IsAppReinstallZeroStateEnabled();
+bool ASH_PUBLIC_EXPORT IsEmbeddedAssistantUIEnabled();
+bool ASH_PUBLIC_EXPORT IsAppGridGhostEnabled();
 
 std::string ASH_PUBLIC_EXPORT AnswerServerUrl();
 std::string ASH_PUBLIC_EXPORT AnswerServerQuerySuffix();

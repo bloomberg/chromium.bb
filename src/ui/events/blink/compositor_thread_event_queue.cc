@@ -19,8 +19,9 @@ void CompositorThreadEventQueue::Queue(
     base::TimeTicks timestamp_now) {
   if (queue_.empty() ||
       !IsContinuousGestureEvent(new_event->event().GetType()) ||
-      !IsCompatibleScrollorPinch(ToWebGestureEvent(new_event->event()),
-                                 ToWebGestureEvent(queue_.back()->event()))) {
+      !(queue_.back()->CanCoalesceWith(*new_event) ||
+        IsCompatibleScrollorPinch(ToWebGestureEvent(new_event->event()),
+                                  ToWebGestureEvent(queue_.back()->event())))) {
     if (new_event->first_original_event()) {
       // Trace could be nested as there might be multiple events in queue.
       // e.g. |ScrollUpdate|, |ScrollEnd|, and another scroll sequence.

@@ -25,11 +25,11 @@ VolumeInfo.prototype.fileSystem;
 VolumeInfo.prototype.displayRoot;
 
 /**
- * The display root path of Team Drives directory. It is null before finishing
+ * The display root path of Shared Drives directory. It is null before finishing
  * to resolve the entry. Valid only for Drive volume.
  * @type {DirectoryEntry}
  */
-VolumeInfo.prototype.teamDriveDisplayRoot;
+VolumeInfo.prototype.sharedDriveDisplayRoot;
 
 /**
  * The display root path of Computers directory. It is null before finishing

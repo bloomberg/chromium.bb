@@ -60,6 +60,11 @@ const base::TimeDelta kDefaultWindowEndTime = base::TimeDelta::FromHours(8);
 
 // Default value for start up delay to wait for network stack ready.
 const base::TimeDelta kDefaultNetworkStartupDelay =
+    base::TimeDelta::FromSeconds(25);
+
+// Default value for start up delay to wait for network stack ready when
+// triggered from a background task.
+const base::TimeDelta kDefaultNetworkStartupDelayBackgroundTask =
     base::TimeDelta::FromSeconds(5);
 
 // The default delay to notify the observer when network changes from
@@ -137,6 +142,12 @@ std::unique_ptr<Configuration> Configuration::CreateFromFinch() {
       base::TimeDelta::FromMilliseconds(base::saturated_cast<int>(
           GetFinchConfigUInt(kNetworkStartupDelayMsConfig,
                              kDefaultNetworkStartupDelay.InMilliseconds())));
+  config->network_startup_delay_backgroud_task =
+      base::TimeDelta::FromMilliseconds(
+          base::saturated_cast<int>(GetFinchConfigUInt(
+              kNetworkStartupDelayBackgroundTaskMsConfig,
+              kDefaultNetworkStartupDelayBackgroundTask.InMilliseconds())));
+
   config->network_change_delay =
       base::TimeDelta::FromMilliseconds(base::saturated_cast<int>(
           GetFinchConfigUInt(kNetworkChangeDelayMsConfig,

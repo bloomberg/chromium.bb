@@ -6,6 +6,7 @@
 #define CONTENT_PUBLIC_TEST_CONTENT_BROWSER_TEST_UTILS_H_
 
 #include <map>
+#include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -19,14 +20,20 @@ class FilePath;
 
 namespace mac {
 class ScopedObjCClassSwizzler;
-}
-}
+}  // namespace mac
+}  // namespace base
 
 namespace gfx {
 class Point;
 class Range;
 class Rect;
-}
+}  // namespace gfx
+
+namespace net {
+namespace test_server {
+class EmbeddedTestServer;
+}  // namespace test_server
+}  // namespace net
 
 // A collections of functions designed for use with content_shell based browser
 // tests.
@@ -69,18 +76,16 @@ GURL GetTestUrl(const char* dir, const char* file);
 // navigations should do EXPECT_TRUE(NavigateToURL()).
 bool NavigateToURL(Shell* window, const GURL& url);
 
-// Performs a renderer-initiated navigation of |window| to |url|, blocking
+// Perform a renderer-initiated navigation of |window| to |url|, blocking
 // until the navigation finishes.  The navigation is done by assigning
 // location.href in the frame |adapter|. Returns true if the page was loaded
 // successfully and the last committed URL matches |url|.
 WARN_UNUSED_RESULT bool NavigateToURLFromRenderer(
     const ToRenderFrameHost& adapter,
     const GURL& url);
-
-void LoadDataWithBaseURL(Shell* window,
-                         const GURL& url,
-                         const std::string& data,
-                         const GURL& base_url);
+WARN_UNUSED_RESULT bool NavigateToURLFromRendererWithoutUserGesture(
+    const ToRenderFrameHost& adapter,
+    const GURL& url);
 
 // Navigates |window| to |url|, blocking until the given number of navigations
 // finishes.
@@ -207,6 +212,18 @@ void GetStringFromRangeForRenderWidget(
         result_callback);
 
 #endif
+
+// Adds http://<hostname_to_isolate>/ to the list of origins that require
+// isolation (for each of the hostnames in the |hostnames_to_isolate| vector).
+//
+// To ensure that the isolation applies to subsequent navigations in
+// |web_contents|, this function forces a BrowsingInstance swap by performing
+// one or two browser-initiated navigations in |web_contents| to another,
+// random, guid-based hostname.
+void IsolateOriginsForTesting(
+    net::test_server::EmbeddedTestServer* embedded_test_server,
+    WebContents* web_contents,
+    std::vector<std::string> hostnames_to_isolate);
 
 }  // namespace content
 

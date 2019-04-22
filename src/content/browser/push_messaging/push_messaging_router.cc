@@ -123,7 +123,7 @@ void PushMessagingRouter::DeliverMessageToWorker(
       ServiceWorkerMetrics::EventType::PUSH,
       base::BindOnce(&PushMessagingRouter::DeliverMessageEnd,
                      deliver_message_callback, service_worker_registration),
-      base::TimeDelta::FromSeconds(mojom::kPushEventTimeoutSeconds),
+      base::TimeDelta::FromSeconds(blink::mojom::kPushEventTimeoutSeconds),
       ServiceWorkerVersion::KILL_ON_TIMEOUT);
 
   service_worker->endpoint()->DispatchPushEvent(

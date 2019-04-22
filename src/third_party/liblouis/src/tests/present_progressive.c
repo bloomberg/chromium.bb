@@ -1,7 +1,19 @@
+/* liblouis Braille Translation and Back-Translation Library
+
+Copyright (C) 2008 Eitan Isaacson <eitan@ascender.com>
+Copyright (C) 2009 Swiss Library for the Blind, Visually Impaired and Print Disabled
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved. This file is offered as-is,
+without any warranty. */
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include "liblouis.h"
 #include "brl_checks.h"
+#include "default_table.h"
 
 /* Note that this test used to fail worse than it does now. The
    current situation isn't hugely critical, though probably still
@@ -38,8 +50,12 @@
 int
 main (int argc, char **argv)
 {
-        const char *str2 = "greetings  ";
-        const int expected_pos2[]={0,1,2,3,4,5,6,7,8,7,8};
+  const char *str2 = "greetings  ";
+  const int expected_pos2[]={0,1,2,3,4,5,6,7,8,7,8};
 
-        return check_cursor_pos(str2, expected_pos2);      
+  int result = check_cursor_pos(TRANSLATION_TABLE, str2, expected_pos2);
+
+  lou_free();
+
+  return result;
 }

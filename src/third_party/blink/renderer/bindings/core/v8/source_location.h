@@ -8,6 +8,7 @@
 #include <v8-inspector-protocol.h>
 #include <memory>
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -17,6 +18,8 @@ class ExecutionContext;
 class TracedValue;
 
 class CORE_EXPORT SourceLocation {
+  USING_FAST_MALLOC(SourceLocation);
+
  public:
   // Zero lineNumber and columnNumber mean unknown. Captures current stack
   // trace.
@@ -37,12 +40,11 @@ class CORE_EXPORT SourceLocation {
   // Forces full stack trace.
   static std::unique_ptr<SourceLocation> CaptureWithFullStackTrace();
 
-  static std::unique_ptr<SourceLocation> Create(
-      const String& url,
-      unsigned line_number,
-      unsigned column_number,
-      std::unique_ptr<v8_inspector::V8StackTrace>,
-      int script_id = 0);
+  SourceLocation(const String& url,
+                 unsigned line_number,
+                 unsigned column_number,
+                 std::unique_ptr<v8_inspector::V8StackTrace>,
+                 int script_id = 0);
   ~SourceLocation();
 
   bool IsUnknown() const {
@@ -70,11 +72,6 @@ class CORE_EXPORT SourceLocation {
   BuildInspectorObject() const;
 
  private:
-  SourceLocation(const String& url,
-                 unsigned line_number,
-                 unsigned column_number,
-                 std::unique_ptr<v8_inspector::V8StackTrace>,
-                 int script_id);
   static std::unique_ptr<SourceLocation> CreateFromNonEmptyV8StackTrace(
       std::unique_ptr<v8_inspector::V8StackTrace>,
       int script_id);

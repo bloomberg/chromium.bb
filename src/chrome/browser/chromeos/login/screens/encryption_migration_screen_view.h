@@ -22,9 +22,6 @@ class EncryptionMigrationScreenView {
    public:
     virtual ~Delegate() {}
 
-    // Called when screen is exited.
-    virtual void OnExit() = 0;
-
     // This method is called, when view is being destroyed. Note, if Delegate is
     // destroyed earlier then it has to call SetDelegate(NULL).
     virtual void OnViewDestroyed(EncryptionMigrationScreenView* view) = 0;

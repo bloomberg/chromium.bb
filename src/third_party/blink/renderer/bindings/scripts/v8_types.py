@@ -60,7 +60,6 @@ from v8_utilities import binding_header_filename, extended_attribute_value_conta
 NON_WRAPPER_TYPES = frozenset([
     'Dictionary',
     'EventHandler',
-    'EventListener',
     'NodeFilter',
     'SerializedScriptValue',
 ])
@@ -90,7 +89,10 @@ ARRAY_BUFFER_AND_VIEW_TYPES = TYPED_ARRAY_TYPES.union(frozenset([
 # 'Constructor' as aliases to IDL interface object. This white list is used to
 # disable the hack.
 _CALLBACK_CONSTRUCTORS = frozenset((
+    'AnimatorConstructor',
+    'BlinkAudioWorkletProcessorConstructor',
     'CustomElementConstructor',
+    'NoArgumentConstructor',
 ))
 
 IdlType.is_array_buffer_or_view = property(
@@ -130,7 +132,6 @@ CPP_SPECIAL_CONVERSION_RULES = {
     'Date': 'double',
     'Dictionary': 'Dictionary',
     'EventHandler': 'EventListener*',
-    'EventListener': 'EventListener*',
     'Promise': 'ScriptPromise',
     'ScriptValue': 'ScriptValue',
     # FIXME: Eliminate custom bindings for XPathNSResolver  http://crbug.com/345529
@@ -276,7 +277,7 @@ def cpp_type(idl_type, extended_attributes=None, raw_type=False, used_as_rvalue_
             return v8_type_name
         if not used_in_cpp_sequence:
             return v8_type_name + '*'
-        return cpp_template_type('TraceWrapperMember', v8_type_name)
+        return cpp_template_type('Member', v8_type_name)
 
     if base_idl_type == 'void':
         return base_idl_type
@@ -403,8 +404,7 @@ INCLUDES_FOR_TYPE = {
                             'core/typed_arrays/array_buffer_view_helpers.h',
                             'core/typed_arrays/flexible_array_buffer_view.h']),
     'Dictionary': set(['bindings/core/v8/dictionary.h']),
-    'EventHandler': set(['bindings/core/v8/v8_event_listener_helper.h']),
-    'EventListener': set(['bindings/core/v8/v8_event_listener_helper.h']),
+    'EventHandler': set(['bindings/core/v8/js_event_handler.h']),
     'HTMLCollection': set(['bindings/core/v8/v8_html_collection.h',
                            'core/dom/class_collection.h',
                            'core/dom/tag_collection.h',
@@ -514,8 +514,7 @@ def impl_includes_for_type(idl_type, interfaces_info):
         includes_for_type.add('platform/wtf/text/wtf_string.h')
     if idl_type.is_callback_function:
         component = IdlType.callback_functions[base_idl_type]['component_dir']
-        return set(['bindings/%s/v8/%s' % (component, binding_header_filename(base_idl_type)),
-                    'platform/bindings/trace_wrapper_member.h'])
+        return set(['bindings/%s/v8/%s' % (component, binding_header_filename(base_idl_type))])
     if base_idl_type in interfaces_info:
         interface_info = interfaces_info[base_idl_type]
         includes_for_type.add(interface_info['include_path'])
@@ -1013,8 +1012,7 @@ CPP_VALUE_TO_V8_VALUE = {
                      'V8String({isolate}, {cpp_value}).As<v8::Value>())'),
     # Special cases
     'Dictionary': '{cpp_value}.V8Value()',
-    'EventHandler':
-        'JSBasedEventListener::GetListenerOrNull({isolate}, impl, {cpp_value})',
+    'EventHandler': 'JSEventHandler::AsV8Value({isolate}, impl, {cpp_value})',
     'NodeFilter': 'ToV8({cpp_value}, {creation_context}, {isolate})',
     'Record': 'ToV8({cpp_value}, {creation_context}, {isolate})',
     'ScriptValue': '{cpp_value}.V8Value()',
@@ -1053,7 +1051,7 @@ def literal_cpp_value(idl_type, idl_literal):
     """Converts an expression that is a valid C++ literal for this type."""
     # FIXME: add validation that idl_type and idl_literal are compatible
     if idl_type.base_type in ('any', 'object') and idl_literal.is_null:
-        return 'ScriptValue()'
+        return 'ScriptValue::CreateNull(script_state)'
     literal_value = str(idl_literal)
     if idl_type.base_type in ('octet', 'unsigned short', 'unsigned long'):
         return literal_value + 'u'

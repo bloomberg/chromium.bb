@@ -14,6 +14,8 @@ import android.view.View.OnClickListener;
 import android.widget.ImageButton;
 
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.compositor.Invalidator;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
@@ -21,46 +23,64 @@ import org.chromium.chrome.browser.fullscreen.BrowserStateBrowserControlsVisibil
 import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
 import org.chromium.chrome.browser.toolbar.MenuButton;
 import org.chromium.chrome.browser.toolbar.TabCountProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarTabController;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.ToolbarProgressBar;
-import org.chromium.ui.AsyncViewProvider;
 
 /**
  * A coordinator for the top toolbar component.
  */
 public class TopToolbarCoordinator implements Toolbar {
-    private final AsyncViewProvider<ToolbarLayout> mToolbarProvider;
-    private @Nullable ToolbarLayout mToolbarLayout;
+    static final int TAB_SWITCHER_MODE_NORMAL_ANIMATION_DURATION_MS = 200;
+
+    /**
+     * Observes toolbar URL expansion percentage change.
+     */
+    public interface UrlExpansionObserver {
+        /**
+         * Notified when toolbar URL expansion percentage changes.
+         * @param percentage The toolbar expansion percentage. 0 indicates that the URL bar is not
+         *                   expanded. 1 indicates that the URL bar is expanded to the maximum
+         *                   width.
+         */
+        void onUrlExpansionPercentageChanged(float percentage);
+    }
+
+    private ToolbarLayout mToolbarLayout;
+
+    /**
+     * The coordinator for the tab switcher mode toolbar (phones only). This will be lazily created
+     * after ToolbarLayout is inflated.
+     */
+    private @Nullable TabSwitcherModeTTCoordinatorPhone mTabSwitcherModeCoordinatorPhone;
 
     private HomepageManager.HomepageStateListener mHomepageStateListener =
             new HomepageManager.HomepageStateListener() {
                 @Override
                 public void onHomepageStateUpdated() {
-                    mToolbarProvider.whenLoaded(
-                            (toolbar)
-                                    -> mToolbarLayout.onHomeButtonUpdate(
-                                            HomepageManager.isHomepageEnabled()
-                                            || FeatureUtilities.isNewTabPageButtonEnabled()));
+                    mToolbarLayout.onHomeButtonUpdate(HomepageManager.isHomepageEnabled()
+                            || FeatureUtilities.isNewTabPageButtonEnabled());
                 }
             };
 
     /**
      * Creates a new {@link TopToolbarCoordinator}.
      * @param controlContainer The {@link ToolbarControlContainer} for the containing activity.
-     * @param toolbarProvider The {@link AsyncViewProvider} for the {@link ToolbarLayout}.
+     * @param toolbarLayout The {@link ToolbarLayout}.
      */
-    public TopToolbarCoordinator(ToolbarControlContainer controlContainer,
-            AsyncViewProvider<ToolbarLayout> toolbarProvider) {
-        mToolbarProvider = toolbarProvider;
-        mToolbarProvider.whenLoaded((toolbar) -> {
-            mToolbarLayout = toolbar;
-            controlContainer.setToolbar(this);
-            HomepageManager.getInstance().addListener(mHomepageStateListener);
-        });
+    public TopToolbarCoordinator(
+            ToolbarControlContainer controlContainer, ToolbarLayout toolbarLayout) {
+        mToolbarLayout = toolbarLayout;
+        if (mToolbarLayout instanceof ToolbarPhone) {
+            mTabSwitcherModeCoordinatorPhone = new TabSwitcherModeTTCoordinatorPhone(
+                    controlContainer.getRootView().findViewById(R.id.tab_switcher_toolbar_stub));
+        }
+        controlContainer.setToolbar(this);
+        HomepageManager.getInstance().addListener(mHomepageStateListener);
     }
 
     /**
@@ -72,6 +92,9 @@ public class TopToolbarCoordinator implements Toolbar {
     public void initialize(ToolbarDataProvider toolbarDataProvider,
             ToolbarTabController tabController, AppMenuButtonHelper appMenuButtonHelper) {
         mToolbarLayout.initialize(toolbarDataProvider, tabController, appMenuButtonHelper);
+        if (mTabSwitcherModeCoordinatorPhone != null) {
+            mTabSwitcherModeCoordinatorPhone.setAppMenuButtonHelper(appMenuButtonHelper);
+        }
     }
 
     /**
@@ -92,12 +115,17 @@ public class TopToolbarCoordinator implements Toolbar {
             LayoutManager layoutManager, OnClickListener tabSwitcherClickHandler,
             OnClickListener newTabClickHandler, OnClickListener bookmarkClickHandler,
             OnClickListener customTabsBackClickHandler) {
+        if (mTabSwitcherModeCoordinatorPhone != null) {
+            mTabSwitcherModeCoordinatorPhone.setOnTabSwitcherClickHandler(tabSwitcherClickHandler);
+            mTabSwitcherModeCoordinatorPhone.setOnNewTabClickHandler(newTabClickHandler);
+            mTabSwitcherModeCoordinatorPhone.setTabModelSelector(tabModelSelector);
+        }
+
         mToolbarLayout.setTabModelSelector(tabModelSelector);
         getLocationBar().updateVisualsForState();
         getLocationBar().setUrlToPageUrl();
         mToolbarLayout.setBrowserControlsVisibilityDelegate(controlsVisibilityDelegate);
         mToolbarLayout.setOnTabSwitcherClickHandler(tabSwitcherClickHandler);
-        mToolbarLayout.setOnNewTabClickHandler(newTabClickHandler);
         mToolbarLayout.setBookmarkClickHandler(bookmarkClickHandler);
         mToolbarLayout.setCustomTabCloseClickHandler(customTabsBackClickHandler);
         mToolbarLayout.setLayoutUpdateHost(layoutManager);
@@ -106,12 +134,36 @@ public class TopToolbarCoordinator implements Toolbar {
     }
 
     /**
+     * @param urlExpansionObserver The observer that observes URL expansion percentage change.
+     */
+    public void addUrlExpansionObserver(UrlExpansionObserver urlExpansionObserver) {
+        mToolbarLayout.addUrlExpansionObserver(urlExpansionObserver);
+    }
+
+    /**
+     * @param urlExpansionObserver The observer that observes URL expansion percentage change.
+     */
+    public void removeUrlExpansionObserver(UrlExpansionObserver urlExpansionObserver) {
+        mToolbarLayout.removeUrlExpansionObserver(urlExpansionObserver);
+    }
+
+    /**
+     * @see View#addOnAttachStateChangeListener(View.OnAttachStateChangeListener)
+     */
+    public void addOnAttachStateChangeListener(View.OnAttachStateChangeListener listener) {
+        mToolbarLayout.addOnAttachStateChangeListener(listener);
+    }
+
+    /**
      * Cleans up any code as necessary.
      */
     public void destroy() {
         if (mToolbarLayout != null) {
             HomepageManager.getInstance().removeListener(mHomepageStateListener);
-            mToolbarProvider.destroy((toolbar) -> mToolbarLayout.destroy());
+            mToolbarLayout.destroy();
+        }
+        if (mTabSwitcherModeCoordinatorPhone != null) {
+            mTabSwitcherModeCoordinatorPhone.destroy();
         }
     }
 
@@ -126,7 +178,7 @@ public class TopToolbarCoordinator implements Toolbar {
     }
 
     /**
-     * @return The view containing the menu button and menu button badge.
+     * @return The wrapper for the browsing mode toolbar's menu button.
      */
     public MenuButton getMenuButtonWrapper() {
         if (mToolbarLayout == null) return null;
@@ -180,7 +232,7 @@ public class TopToolbarCoordinator implements Toolbar {
      * Sets whether the urlbar should be hidden on first page load.
      */
     public void setUrlBarHidden(boolean hidden) {
-        mToolbarProvider.whenLoaded((toolbar) -> mToolbarLayout.setUrlBarHidden(hidden));
+        mToolbarLayout.setUrlBarHidden(hidden);
     }
 
     /**
@@ -240,8 +292,10 @@ public class TopToolbarCoordinator implements Toolbar {
      * @param enabled Whether or not accessibility is enabled.
      */
     public void onAccessibilityStatusChanged(boolean enabled) {
-        mToolbarProvider.whenLoaded(
-                (toolbar) -> mToolbarLayout.onAccessibilityStatusChanged(enabled));
+        mToolbarLayout.onAccessibilityStatusChanged(enabled);
+        if (mTabSwitcherModeCoordinatorPhone != null) {
+            mTabSwitcherModeCoordinatorPhone.onAccessibilityStatusChanged(enabled);
+        }
     }
 
     /**
@@ -268,8 +322,7 @@ public class TopToolbarCoordinator implements Toolbar {
      * for the current tab changing.
      */
     public void onPrimaryColorChanged(boolean shouldAnimate) {
-        mToolbarProvider.whenLoaded(
-                (toolbar) -> mToolbarLayout.onPrimaryColorChanged(shouldAnimate));
+        mToolbarLayout.onPrimaryColorChanged(shouldAnimate);
     }
 
     /**
@@ -277,7 +330,7 @@ public class TopToolbarCoordinator implements Toolbar {
      * @param showTitle Whether a title should be shown.
      */
     public void setShowTitle(boolean showTitle) {
-        mToolbarProvider.whenLoaded((toolbar) -> getLocationBar().setShowTitle(showTitle));
+        getLocationBar().setShowTitle(showTitle);
     }
 
     /**
@@ -285,8 +338,7 @@ public class TopToolbarCoordinator implements Toolbar {
      * it if {@code drawable} is {@code null}.
      */
     public void setCloseButtonImageResource(@Nullable Drawable drawable) {
-        mToolbarProvider.whenLoaded(
-                (toolbar) -> mToolbarLayout.setCloseButtonImageResource(drawable));
+        mToolbarLayout.setCloseButtonImageResource(drawable);
     }
 
     /**
@@ -297,8 +349,7 @@ public class TopToolbarCoordinator implements Toolbar {
      */
     public void addCustomActionButton(
             Drawable drawable, String description, View.OnClickListener listener) {
-        mToolbarProvider.whenLoaded(
-                (toolbar) -> mToolbarLayout.addCustomActionButton(drawable, description, listener));
+        mToolbarLayout.addCustomActionButton(drawable, description, listener);
     }
 
     /**
@@ -309,8 +360,7 @@ public class TopToolbarCoordinator implements Toolbar {
      * @param description The content description for the button.
      */
     public void updateCustomActionButton(int index, Drawable drawable, String description) {
-        mToolbarProvider.whenLoaded(
-                (toolbar) -> mToolbarLayout.updateCustomActionButton(index, drawable, description));
+        mToolbarLayout.updateCustomActionButton(index, drawable, description);
     }
 
     @Override
@@ -343,6 +393,18 @@ public class TopToolbarCoordinator implements Toolbar {
     }
 
     /**
+     * Overrides tab switcher launching behavior.
+     * @param newClickListener The new {@link OnClickListener} for tab switcher button clicks.
+     *
+     */
+    public void setTabSwitcherClickListener(OnClickListener newClickListener) {
+        if (mTabSwitcherModeCoordinatorPhone != null) {
+            mTabSwitcherModeCoordinatorPhone.setOnTabSwitcherClickHandler(newClickListener);
+        }
+        mToolbarLayout.setOnTabSwitcherClickHandler(newClickListener);
+    }
+
+    /**
      * Gives inheriting classes the chance to show or hide the TabSwitcher mode of this toolbar.
      * @param inTabSwitcherMode Whether or not TabSwitcher mode should be shown or hidden.
      * @param showToolbar    Whether or not to show the normal toolbar while animating.
@@ -353,6 +415,9 @@ public class TopToolbarCoordinator implements Toolbar {
     public void setTabSwitcherMode(
             boolean inTabSwitcherMode, boolean showToolbar, boolean delayAnimation) {
         mToolbarLayout.setTabSwitcherMode(inTabSwitcherMode, showToolbar, delayAnimation);
+        if (mTabSwitcherModeCoordinatorPhone != null) {
+            mTabSwitcherModeCoordinatorPhone.setTabSwitcherMode(inTabSwitcherMode);
+        }
     }
 
     /**
@@ -369,6 +434,29 @@ public class TopToolbarCoordinator implements Toolbar {
      */
     public void setTabCountProvider(TabCountProvider tabCountProvider) {
         mToolbarLayout.setTabCountProvider(tabCountProvider);
+        if (mTabSwitcherModeCoordinatorPhone != null) {
+            mTabSwitcherModeCoordinatorPhone.setTabCountProvider(tabCountProvider);
+        }
+    }
+
+    /**
+     * @param provider The provider used to determine incognito state.
+     */
+    public void setIncognitoStateProvider(IncognitoStateProvider provider) {
+        if (mTabSwitcherModeCoordinatorPhone != null) {
+            mTabSwitcherModeCoordinatorPhone.setIncognitoStateProvider(provider);
+        }
+    }
+
+    /**
+     * @param provider The provider used to determine theme color.
+     */
+    public void setThemeColorProvider(ThemeColorProvider provider) {
+        final MenuButton menuButtonWrapper = getMenuButtonWrapper();
+        if (menuButtonWrapper != null) {
+            menuButtonWrapper.setThemeColorProvider(provider);
+        }
+        mToolbarLayout.setThemeColorProvider(provider);
     }
 
     /**
@@ -420,8 +508,14 @@ public class TopToolbarCoordinator implements Toolbar {
      * @param enabled Whether the progress bar is enabled.
      */
     public void setProgressBarEnabled(boolean enabled) {
-        mToolbarProvider.whenLoaded(
-                (toolbar) -> getProgressBar().setVisibility(enabled ? View.VISIBLE : View.GONE));
+        getProgressBar().setVisibility(enabled ? View.VISIBLE : View.GONE);
+    }
+
+    /**
+     * @param anchor The view to use as an anchor.
+     */
+    public void setProgressBarAnchorView(@Nullable View anchor) {
+        getProgressBar().setAnchorView(anchor);
     }
 
     /**
@@ -476,7 +570,7 @@ public class TopToolbarCoordinator implements Toolbar {
 
     @Override
     public void showAppMenuUpdateBadge() {
-        mToolbarProvider.whenLoaded((toolbar) -> mToolbarLayout.showAppMenuUpdateBadge());
+        mToolbarLayout.showAppMenuUpdateBadge(true);
     }
 
     @Override
@@ -486,7 +580,7 @@ public class TopToolbarCoordinator implements Toolbar {
 
     @Override
     public void removeAppMenuUpdateBadge(boolean animate) {
-        mToolbarProvider.whenLoaded((toolbar) -> mToolbarLayout.removeAppMenuUpdateBadge(animate));
+        mToolbarLayout.removeAppMenuUpdateBadge(animate);
     }
 
     /**
@@ -498,10 +592,15 @@ public class TopToolbarCoordinator implements Toolbar {
      */
     public void enableExperimentalButton(View.OnClickListener onClickListener,
             @DrawableRes int drawableResId, @StringRes int contentDescriptionResId) {
-        mToolbarProvider.whenLoaded((toolbar) -> {
-            mToolbarLayout.enableExperimentalButton(
-                    onClickListener, drawableResId, contentDescriptionResId);
-        });
+        mToolbarLayout.enableExperimentalButton(
+                onClickListener, drawableResId, contentDescriptionResId);
+    }
+
+    /**
+     * @param isVisible Whether the bottom toolbar is visible.
+     */
+    public void onBottomToolbarVisibilityChanged(boolean isVisible) {
+        mToolbarLayout.onBottomToolbarVisibilityChanged(isVisible);
     }
 
     /**
@@ -515,7 +614,7 @@ public class TopToolbarCoordinator implements Toolbar {
      * Disable the experimental toolbar button.
      */
     public void disableExperimentalButton() {
-        mToolbarProvider.whenLoaded((toolbarLayout) -> mToolbarLayout.disableExperimentalButton());
+        mToolbarLayout.disableExperimentalButton();
     }
 
     @Override

@@ -7,8 +7,10 @@
 #include <algorithm>
 #include <map>
 #include <memory>
+#include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -24,6 +26,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_tracker.h"
+#include "chrome/browser/performance_manager/performance_manager_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/background_tab_navigation_throttle.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_unittest_utils.h"
@@ -49,6 +52,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/mock_navigation_handle.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "net/base/network_change_notifier.h"
@@ -56,7 +60,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-using content::NavigationHandle;
+using content::MockNavigationHandle;
 using content::NavigationThrottle;
 using content::WebContents;
 using content::WebContentsTester;
@@ -93,14 +97,6 @@ class NonResumingBackgroundTabNavigationThrottle
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NonResumingBackgroundTabNavigationThrottle);
-};
-
-class TabStripModelSimpleDelegate : public TestTabStripModelDelegate {
- public:
-  TabStripModelSimpleDelegate() = default;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TabStripModelSimpleDelegate);
 };
 
 enum TestIndicies {
@@ -144,6 +140,10 @@ class TabManagerTest : public testing::ChromeTestHarnessWithLocalDB {
 
   std::unique_ptr<WebContents> CreateWebContents() {
     std::unique_ptr<WebContents> web_contents = CreateTestWebContents();
+    // TODO(siggi): This is an abomination, remove this once the
+    //     PageSignalGenerator is folded into the performance manager.
+    performance_manager::PerformanceManagerTabHelper::CreateForWebContents(
+        web_contents.get());
     ResourceCoordinatorTabHelper::CreateForWebContents(web_contents.get());
     // Commit an URL to allow discarding.
     content::WebContentsTester::For(web_contents.get())
@@ -164,14 +164,23 @@ class TabManagerTest : public testing::ChromeTestHarnessWithLocalDB {
   }
 
   void ResetState() {
+    // Simulate the DidFinishNavigation notification coming from the
+    // NavigationHandles.
+    if (nav_handle1_)
+      tab_manager_->OnDidFinishNavigation(nav_handle1_.get());
+    if (nav_handle2_)
+      tab_manager_->OnDidFinishNavigation(nav_handle2_.get());
+    if (nav_handle3_)
+      tab_manager_->OnDidFinishNavigation(nav_handle3_.get());
+
     // NavigationHandles and NavigationThrottles must be deleted before the
     // associated WebContents.
-    nav_handle1_.reset();
-    nav_handle2_.reset();
-    nav_handle3_.reset();
     throttle1_.reset();
     throttle2_.reset();
     throttle3_.reset();
+    nav_handle1_.reset();
+    nav_handle2_.reset();
+    nav_handle3_.reset();
 
     // WebContents must be deleted before
     // ChromeTestHarnessWithLocalDB::TearDown() deletes the
@@ -193,12 +202,18 @@ class TabManagerTest : public testing::ChromeTestHarnessWithLocalDB {
                    const char* url2 = kTestUrl,
                    const char* url3 = kTestUrl) {
     contents1_ = CreateTestWebContents();
+    performance_manager::PerformanceManagerTabHelper::CreateForWebContents(
+        contents1_.get());
     ResourceCoordinatorTabHelper::CreateForWebContents(contents1_.get());
     nav_handle1_ = CreateTabAndNavigation(url1, contents1_.get());
     contents2_ = CreateTestWebContents();
+    performance_manager::PerformanceManagerTabHelper::CreateForWebContents(
+        contents2_.get());
     ResourceCoordinatorTabHelper::CreateForWebContents(contents2_.get());
     nav_handle2_ = CreateTabAndNavigation(url2, contents2_.get());
     contents3_ = CreateTestWebContents();
+    performance_manager::PerformanceManagerTabHelper::CreateForWebContents(
+        contents3_.get());
     ResourceCoordinatorTabHelper::CreateForWebContents(contents3_.get());
     nav_handle3_ = CreateTabAndNavigation(url3, contents3_.get());
 
@@ -283,12 +298,12 @@ class TabManagerTest : public testing::ChromeTestHarnessWithLocalDB {
   }
 
  protected:
-  std::unique_ptr<NavigationHandle> CreateTabAndNavigation(
+  std::unique_ptr<MockNavigationHandle> CreateTabAndNavigation(
       const char* url,
       content::WebContents* web_contents) {
     TabUIHelper::CreateForWebContents(web_contents);
-    return content::NavigationHandle::CreateNavigationHandleForTesting(
-        GURL(url), web_contents->GetMainFrame());
+    return std::make_unique<MockNavigationHandle>(GURL(url),
+                                                  web_contents->GetMainFrame());
   }
 
   TabManager* tab_manager_ = nullptr;
@@ -299,9 +314,9 @@ class TabManagerTest : public testing::ChromeTestHarnessWithLocalDB {
   std::unique_ptr<BackgroundTabNavigationThrottle> throttle1_;
   std::unique_ptr<BackgroundTabNavigationThrottle> throttle2_;
   std::unique_ptr<BackgroundTabNavigationThrottle> throttle3_;
-  std::unique_ptr<NavigationHandle> nav_handle1_;
-  std::unique_ptr<NavigationHandle> nav_handle2_;
-  std::unique_ptr<NavigationHandle> nav_handle3_;
+  std::unique_ptr<MockNavigationHandle> nav_handle1_;
+  std::unique_ptr<MockNavigationHandle> nav_handle2_;
+  std::unique_ptr<MockNavigationHandle> nav_handle3_;
   std::unique_ptr<WebContents> contents1_;
   std::unique_ptr<WebContents> contents2_;
   std::unique_ptr<WebContents> contents3_;
@@ -401,90 +416,6 @@ TEST_F(TabManagerTest, IsInternalPage) {
   // Prefix matches are included.
   EXPECT_TRUE(
       TabManager::IsInternalPage(GURL("chrome://settings/fakeSetting")));
-}
-
-TEST_F(TabManagerTest, DefaultTimeToPurgeInCorrectRange) {
-  base::TimeDelta time_to_purge =
-      tab_manager_->GetTimeToPurge(TabManager::kDefaultMinTimeToPurge,
-                                   TabManager::kDefaultMinTimeToPurge * 4);
-  EXPECT_GE(time_to_purge, base::TimeDelta::FromMinutes(1));
-  EXPECT_LE(time_to_purge, base::TimeDelta::FromMinutes(4));
-}
-
-TEST_F(TabManagerTest, ShouldPurgeAtDefaultTime) {
-  auto window = std::make_unique<TestBrowserWindow>();
-  Browser::CreateParams params(profile(), true);
-  params.type = Browser::TYPE_TABBED;
-  params.window = window.get();
-  auto browser = std::make_unique<Browser>(params);
-  TabStripModel* tab_strip = browser->tab_strip_model();
-
-  std::unique_ptr<WebContents> test_contents = CreateWebContents();
-  WebContents* raw_test_contents = test_contents.get();
-  tab_strip->AppendWebContents(std::move(test_contents), /*foreground=*/true);
-
-  tab_manager_->GetWebContentsData(raw_test_contents)->set_is_purged(false);
-  tab_manager_->GetWebContentsData(raw_test_contents)
-      ->SetLastInactiveTime(NowTicks());
-  tab_manager_->GetWebContentsData(raw_test_contents)
-      ->set_time_to_purge(base::TimeDelta::FromMinutes(1));
-
-  // Wait 1 minute and verify that the tab is still not to be purged.
-  task_runner_->FastForwardBy(base::TimeDelta::FromMinutes(1));
-  EXPECT_FALSE(tab_manager_->ShouldPurgeNow(raw_test_contents));
-
-  // Wait another 1 second and verify that it should be purged now .
-  task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
-  EXPECT_TRUE(tab_manager_->ShouldPurgeNow(raw_test_contents));
-
-  tab_manager_->GetWebContentsData(raw_test_contents)->set_is_purged(true);
-  tab_manager_->GetWebContentsData(raw_test_contents)
-      ->SetLastInactiveTime(NowTicks());
-
-  // Wait 1 day and verify that the tab is still be purged.
-  task_runner_->FastForwardBy(base::TimeDelta::FromHours(24));
-  EXPECT_FALSE(tab_manager_->ShouldPurgeNow(raw_test_contents));
-
-  // Tabs with a committed URL must be closed explicitly to avoid DCHECK errors.
-  tab_strip->CloseAllTabs();
-}
-
-TEST_F(TabManagerTest, ActivateTabResetPurgeState) {
-  auto window = std::make_unique<TestBrowserWindow>();
-  Browser::CreateParams params(profile(), true);
-  params.type = Browser::TYPE_TABBED;
-  params.window = window.get();
-  auto browser = std::make_unique<Browser>(params);
-  TabStripModel* tabstrip = browser->tab_strip_model();
-
-  std::unique_ptr<WebContents> tab1 = CreateWebContents();
-  std::unique_ptr<WebContents> tab2 = CreateWebContents();
-  WebContents* raw_tab2 = tab2.get();
-  tabstrip->AppendWebContents(std::move(tab1), true);
-  tabstrip->AppendWebContents(std::move(tab2), false);
-
-  tab_manager_->GetWebContentsData(raw_tab2)->SetLastInactiveTime(NowTicks());
-  static_cast<content::MockRenderProcessHost*>(
-      raw_tab2->GetMainFrame()->GetProcess())
-      ->set_is_process_backgrounded(true);
-  EXPECT_TRUE(raw_tab2->GetMainFrame()->GetProcess()->IsProcessBackgrounded());
-
-  // Initially PurgeAndSuspend state should be NOT_PURGED.
-  EXPECT_FALSE(tab_manager_->GetWebContentsData(raw_tab2)->is_purged());
-  tab_manager_->GetWebContentsData(raw_tab2)->set_time_to_purge(
-      base::TimeDelta::FromMinutes(1));
-  task_runner_->FastForwardBy(base::TimeDelta::FromMinutes(2));
-  tab_manager_->PurgeBackgroundedTabsIfNeeded();
-  // Since tab2 is kept inactive and background for more than time-to-purge,
-  // tab2 should be purged.
-  EXPECT_TRUE(tab_manager_->GetWebContentsData(raw_tab2)->is_purged());
-
-  // Activate tab2. Tab2's PurgeAndSuspend state should be NOT_PURGED.
-  tabstrip->ActivateTabAt(1, true /* user_gesture */);
-  EXPECT_FALSE(tab_manager_->GetWebContentsData(raw_tab2)->is_purged());
-
-  // Tabs with a committed URL must be closed explicitly to avoid DCHECK errors.
-  tabstrip->CloseAllTabs();
 }
 
 // Data race on Linux. http://crbug.com/787842

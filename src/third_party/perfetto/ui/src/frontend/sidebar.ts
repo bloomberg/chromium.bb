@@ -42,14 +42,25 @@ join process using(upid)
 order by cpu_sec desc limit 100;`;
 
 const CYCLES_PER_P_STATE_PER_CPU = `
-select ref as cpu, value as freq, sum(dur * value)/1e6 as mcycles
-from counters where name = 'cpufreq' group by cpu, freq
+select
+  cpu,
+  freq,
+  dur,
+  sum(dur * freq)/1e6 as mcycles
+from (
+  select
+    ref as cpu,
+    value as freq,
+    lead(ts) over (partition by ref order by ts) - ts as dur
+  from counters
+  where name = 'cpufreq'
+) group by cpu, freq
 order by mcycles desc limit 32;`;
 
 const CPU_TIME_BY_CLUSTER_BY_PROCESS = `
 select process.name as process, thread, core, cpu_sec from (
   select thread.name as thread, upid,
-    case when cpug = 0 then 'big' else 'little' end as core,
+    case when cpug = 0 then 'little' else 'big' end as core,
     cpu_sec from (select cpu/4 as cpug, utid, sum(dur)/1e9 as cpu_sec
     from sched group by utid, cpug order by cpu_sec desc
   ) inner join thread using(utid)
@@ -64,6 +75,8 @@ select query,
     round((started - first.ts)/1e6) as t_start_ms
 from sqlstats, first
 order by started desc`;
+
+const TRACE_STATS = 'select * from stats order by severity, source, name, idx';
 
 function createCannedQuery(query: string): (_: Event) => void {
   return (e: Event) => {
@@ -97,6 +110,7 @@ const SECTIONS = [
       {t: 'Record new trace', a: navigateRecord, i: 'fiber_smart_record'},
       {t: 'Show timeline', a: navigateViewer, i: 'line_style'},
       {t: 'Share current trace', a: dispatchCreatePermalink, i: 'share'},
+      {t: 'Download current trace', a: downloadTrace, i: 'file_download'},
     ],
   },
   {
@@ -139,6 +153,11 @@ const SECTIONS = [
         t: 'CPU Time by cluster by process',
         a: createCannedQuery(CPU_TIME_BY_CLUSTER_BY_PROCESS),
         i: 'search',
+      },
+      {
+        t: 'Trace stats',
+        a: createCannedQuery(TRACE_STATS),
+        i: 'bug_report',
       },
       {
         t: 'Debug SQL performance',
@@ -188,6 +207,7 @@ function openTraceUrl(url: string): (e: Event) => void {
     globals.dispatch(Actions.openTraceFromUrl({url}));
   };
 }
+
 function onInputElementFileSelectionChanged(e: Event) {
   if (!(e.target instanceof HTMLInputElement)) {
     throw new Error('Not an input element');
@@ -222,6 +242,25 @@ function navigateViewer(e: Event) {
 function dispatchCreatePermalink(e: Event) {
   e.preventDefault();
   globals.dispatch(Actions.createPermalink({}));
+}
+
+function downloadTrace(e: Event) {
+  e.preventDefault();
+  const engine = Object.values(globals.state.engines)[0];
+  if (!engine) return;
+  const src = engine.source;
+  if (typeof src === 'string') {
+    window.open(src);
+  } else {
+    const url = URL.createObjectURL(src);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = src.name;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
 }
 
 export class Sidebar implements m.ClassComponent {

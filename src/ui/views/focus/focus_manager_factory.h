@@ -20,8 +20,7 @@ class Widget;
 class VIEWS_EXPORT FocusManagerFactory {
  public:
   // Create a FocusManager for the given |widget| using the installed Factory.
-  static std::unique_ptr<FocusManager> Create(Widget* widget,
-                                              bool desktop_widget);
+  static std::unique_ptr<FocusManager> Create(Widget* widget);
 
   // Installs FocusManagerFactory. If |factory| is NULL, it resets
   // to the default factory which creates plain FocusManager.
@@ -32,11 +31,7 @@ class VIEWS_EXPORT FocusManagerFactory {
   virtual ~FocusManagerFactory();
 
   // Create a FocusManager for the given |widget|.
-  // The |desktop_widget| bool is true for widgets created in the desktop and
-  // false for widgets created in the shell.
-  virtual std::unique_ptr<FocusManager> CreateFocusManager(
-      Widget* widget,
-      bool desktop_widget) = 0;
+  virtual std::unique_ptr<FocusManager> CreateFocusManager(Widget* widget) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FocusManagerFactory);

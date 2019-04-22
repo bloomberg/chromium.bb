@@ -36,6 +36,12 @@ namespace net {
 
 namespace internal {
 
+// Converts a UTF-16 domain name to ASCII, possibly using punycode.
+// Returns true if the conversion succeeds and output is not empty. In case of
+// failure, |domain| might become dirty.
+bool NET_EXPORT_PRIVATE ParseDomainASCII(base::StringPiece16 widestr,
+                                         std::string* domain);
+
 // Parses |value| as search list (comma-delimited list of domain names) from
 // a registry key and stores it in |out|. Returns true on success. Empty
 // entries (e.g., "chromium.org,,org") terminate the list. Non-ascii hostnames

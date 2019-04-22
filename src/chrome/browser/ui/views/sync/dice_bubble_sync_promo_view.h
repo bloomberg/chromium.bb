@@ -73,7 +73,6 @@ class DiceBubbleSyncPromoView : public views::View,
   std::unique_ptr<DiceAccountsMenu> dice_accounts_menu_;
 
   std::vector<AccountInfo> accounts_for_submenu_;
-  std::vector<gfx::Image> images_for_submenu_;
 
   DISALLOW_COPY_AND_ASSIGN(DiceBubbleSyncPromoView);
 };

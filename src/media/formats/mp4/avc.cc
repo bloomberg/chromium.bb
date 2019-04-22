@@ -23,9 +23,9 @@ static const uint8_t kAnnexBStartCode[] = {0, 0, 0, 1};
 static const int kAnnexBStartCodeSize = 4;
 
 static bool ConvertAVCToAnnexBInPlaceForLengthSize4(std::vector<uint8_t>* buf) {
-  const int kLengthSize = 4;
+  const size_t kLengthSize = 4;
   size_t pos = 0;
-  while (pos + kLengthSize < buf->size()) {
+  while (buf->size() > kLengthSize && buf->size() - kLengthSize > pos) {
     uint32_t nal_length = (*buf)[pos];
     nal_length = (nal_length << 8) + (*buf)[pos+1];
     nal_length = (nal_length << 8) + (*buf)[pos+2];
@@ -63,7 +63,7 @@ int AVC::FindSubsampleIndex(const std::vector<uint8_t>& buffer,
 }
 
 // static
-bool AVC::ConvertFrameToAnnexB(int length_size,
+bool AVC::ConvertFrameToAnnexB(size_t length_size,
                                std::vector<uint8_t>* buffer,
                                std::vector<SubsampleEntry>* subsamples) {
   RCHECK(length_size == 1 || length_size == 2 || length_size == 4);
@@ -79,8 +79,8 @@ bool AVC::ConvertFrameToAnnexB(int length_size,
   buffer->reserve(temp.size() + 32);
 
   size_t pos = 0;
-  while (pos + length_size < temp.size()) {
-    int nal_length = temp[pos];
+  while (temp.size() > length_size && temp.size() - length_size > pos) {
+    size_t nal_length = temp[pos];
     if (length_size == 2) nal_length = (nal_length << 8) + temp[pos+1];
     pos += length_size;
 
@@ -89,7 +89,7 @@ bool AVC::ConvertFrameToAnnexB(int length_size,
       return false;
     }
 
-    RCHECK(pos + nal_length <= temp.size());
+    RCHECK(temp.size() >= nal_length && temp.size() - nal_length >= pos);
     buffer->insert(buffer->end(), kAnnexBStartCode,
                    kAnnexBStartCode + kAnnexBStartCodeSize);
     if (subsamples && !subsamples->empty()) {
@@ -134,10 +134,21 @@ bool AVC::InsertParamSetsAnnexB(const AVCDecoderConfigurationRecord& avc_config,
   RCHECK(AVC::ConvertConfigToAnnexB(avc_config, &param_sets));
 
   if (subsamples && !subsamples->empty()) {
-    int subsample_index = FindSubsampleIndex(*buffer, subsamples,
-                                             &(*config_insert_point));
-    // Update the size of the subsample where SPS/PPS is to be inserted.
-    (*subsamples)[subsample_index].clear_bytes += param_sets.size();
+    if (config_insert_point != buffer->end()) {
+      int subsample_index =
+          FindSubsampleIndex(*buffer, subsamples, &(*config_insert_point));
+      // Update the size of the subsample where SPS/PPS is to be inserted.
+      (*subsamples)[subsample_index].clear_bytes += param_sets.size();
+    } else {
+      int subsample_index = (*subsamples).size() - 1;
+      if ((*subsamples)[subsample_index].cypher_bytes == 0) {
+        // Extend the last clear range to include the inserted data.
+        (*subsamples)[subsample_index].clear_bytes += param_sets.size();
+      } else {
+        // Append a new subsample to cover the inserted data.
+        (*subsamples).emplace_back(param_sets.size(), 0);
+      }
+    }
   }
 
   buffer->insert(config_insert_point,

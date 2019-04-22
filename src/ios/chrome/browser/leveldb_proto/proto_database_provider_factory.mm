@@ -4,9 +4,9 @@
 
 #include "ios/chrome/browser/leveldb_proto/proto_database_provider_factory.h"
 
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
-#include "components/leveldb_proto/proto_database_provider.h"
+#include "components/leveldb_proto/public/proto_database_provider.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -17,14 +17,14 @@ namespace leveldb_proto {
 
 // static
 ProtoDatabaseProviderFactory* ProtoDatabaseProviderFactory::GetInstance() {
-  return base::Singleton<ProtoDatabaseProviderFactory>::get();
+  static base::NoDestructor<ProtoDatabaseProviderFactory> instance;
+  return instance.get();
 }
 
 // static
-leveldb_proto::ProtoDatabaseProvider*
-ProtoDatabaseProviderFactory::GetForBrowserState(
+ProtoDatabaseProvider* ProtoDatabaseProviderFactory::GetForBrowserState(
     ios::ChromeBrowserState* browser_state) {
-  return static_cast<leveldb_proto::ProtoDatabaseProvider*>(
+  return static_cast<ProtoDatabaseProvider*>(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
 }
 
@@ -38,9 +38,7 @@ ProtoDatabaseProviderFactory::~ProtoDatabaseProviderFactory() = default;
 std::unique_ptr<KeyedService>
 ProtoDatabaseProviderFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
-  base::FilePath profile_dir = context->GetStatePath();
-  return base::WrapUnique(
-      leveldb_proto::ProtoDatabaseProvider::Create(profile_dir));
+  return std::make_unique<ProtoDatabaseProvider>(context->GetStatePath());
 }
 
 }  // namespace leveldb_proto

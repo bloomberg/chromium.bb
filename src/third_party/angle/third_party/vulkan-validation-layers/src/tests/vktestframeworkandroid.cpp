@@ -1,9 +1,9 @@
 //  VK tests
 //
-//  Copyright (c) 2015-2016 The Khronos Group Inc.
-//  Copyright (c) 2015-2016 Valve Corporation
-//  Copyright (c) 2015-2016 LunarG, Inc.
-//  Copyright (c) 2015-2016 Google, Inc.
+//  Copyright (c) 2015-2019 The Khronos Group Inc.
+//  Copyright (c) 2015-2019 Valve Corporation
+//  Copyright (c) 2015-2019 LunarG, Inc.
+//  Copyright (c) 2015-2019 Google, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -77,11 +77,17 @@ shaderc_shader_kind MapShadercType(VkShaderStageFlagBits vkShader) {
 
 // Compile a given string containing GLSL into SPIR-V
 // Return value of false means an error was encountered
-bool VkTestFramework::GLSLtoSPV(const VkShaderStageFlagBits shader_type, const char *pshader, std::vector<unsigned int> &spirv) {
+bool VkTestFramework::GLSLtoSPV(const VkShaderStageFlagBits shader_type, const char *pshader, std::vector<unsigned int> &spirv,
+                                bool debug) {
     // On Android, use shaderc instead.
     shaderc::Compiler compiler;
+    shaderc::CompileOptions options;
+    if (debug) {
+        options.SetOptimizationLevel(shaderc_optimization_level_zero);
+        options.SetGenerateDebugInfo();
+    }
     shaderc::SpvCompilationResult result =
-        compiler.CompileGlslToSpv(pshader, strlen(pshader), MapShadercType(shader_type), "shader");
+        compiler.CompileGlslToSpv(pshader, strlen(pshader), MapShadercType(shader_type), "shader", options);
     if (result.GetCompilationStatus() != shaderc_compilation_status_success) {
         __android_log_print(ANDROID_LOG_ERROR, "VkLayerValidationTest", "GLSLtoSPV compilation failed: %s",
                             result.GetErrorMessage().c_str());

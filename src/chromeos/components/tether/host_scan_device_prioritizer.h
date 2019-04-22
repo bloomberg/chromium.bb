@@ -6,7 +6,7 @@
 #define CHROMEOS_COMPONENTS_TETHER_HOST_SCAN_DEVICE_PRIORITIZER_H_
 
 #include "base/macros.h"
-#include "components/cryptauth/remote_device_ref.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
 
 namespace chromeos {
 
@@ -27,7 +27,7 @@ class HostScanDevicePrioritizer {
 
   // Prioritizes |remote_devices| using the rules described above.
   virtual void SortByHostScanOrder(
-      cryptauth::RemoteDeviceRefList* remote_devices) const = 0;
+      multidevice::RemoteDeviceRefList* remote_devices) const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HostScanDevicePrioritizer);

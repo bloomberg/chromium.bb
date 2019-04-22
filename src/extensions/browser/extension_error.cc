@@ -36,7 +36,7 @@ ExtensionError::~ExtensionError() {
 std::string ExtensionError::GetDebugString() const {
   return std::string("Extension Error:") +
          "\n  OTR:     " + std::string(from_incognito_ ? "true" : "false") +
-         "\n  Level:   " + base::IntToString(static_cast<int>(level_)) +
+         "\n  Level:   " + base::NumberToString(level_) +
          "\n  Source:  " + base::UTF16ToUTF8(source_) +
          "\n  Message: " + base::UTF16ToUTF8(message_) +
          "\n  ID:      " + extension_id_;

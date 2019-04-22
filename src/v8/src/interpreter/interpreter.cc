@@ -14,10 +14,10 @@
 #include "src/counters-inl.h"
 #include "src/interpreter/bytecode-generator.h"
 #include "src/interpreter/bytecodes.h"
-#include "src/log.h"
 #include "src/objects-inl.h"
 #include "src/objects/shared-function-info.h"
 #include "src/objects/slots.h"
+#include "src/ostreams.h"
 #include "src/parsing/parse-info.h"
 #include "src/setup-isolate.h"
 #include "src/snapshot/snapshot.h"
@@ -128,7 +128,7 @@ void Interpreter::IterateDispatchTable(RootVisitor* v) {
       code = Code::GetCodeFromTargetAddress(code_entry);
     }
     Code old_code = code;
-    v->VisitRootPointer(Root::kDispatchTable, nullptr, ObjectSlot(&code));
+    v->VisitRootPointer(Root::kDispatchTable, nullptr, FullObjectSlot(&code));
     if (code != old_code) {
       dispatch_table_[i] = code->entry();
     }

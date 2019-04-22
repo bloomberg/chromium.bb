@@ -7,9 +7,10 @@
 
 #include <memory>
 
-#include "base/macros.h"
+#include "base/bind.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/extensions/api/platform_keys/platform_keys_test_base.h"
@@ -178,7 +179,7 @@ class EnterprisePlatformKeysTest
     // In order to use a prepared certificate, import a private key to the
     // user's token for which the Javscript test will import the certificate.
     ImportPrivateKeyPKCS8ToSlot(privateKeyPkcs8User,
-                                arraysize(privateKeyPkcs8User),
+                                base::size(privateKeyPkcs8User),
                                 cert_db->GetPrivateSlot().get());
     done_callback.Run();
   }
@@ -239,7 +240,7 @@ class EnterprisePlatformKeysTest
     // Import a private key to the system slot.  The Javascript part of this
     // test has a prepared certificate for this key.
     ImportPrivateKeyPKCS8ToSlot(privateKeyPkcs8System,
-                                arraysize(privateKeyPkcs8System),
+                                base::size(privateKeyPkcs8System),
                                 system_slot->slot());
   }
 
@@ -282,7 +283,7 @@ IN_PROC_BROWSER_TEST_P(EnterprisePlatformKeysTest, Basic) {
       << message_;
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CheckSystemTokenAvailability,
     EnterprisePlatformKeysTest,
     ::testing::Values(

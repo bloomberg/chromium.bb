@@ -336,7 +336,7 @@ Element* HTMLCollection::VirtualItemAfter(Element*) const {
   return nullptr;
 }
 
-// https://html.spec.whatwg.org/multipage/infrastructure.html#all-named-elements
+// https://html.spec.whatwg.org/C/#all-named-elements
 // The document.all collection returns only certain types of elements by name,
 // although it returns any type of element by id.
 static inline bool NameShouldBeVisibleInDocumentAll(
@@ -506,7 +506,7 @@ void HTMLCollection::UpdateIdNameCache() const {
   if (HasValidIdNameCache())
     return;
 
-  NamedItemCache* cache = NamedItemCache::Create();
+  auto* cache = MakeGarbageCollected<NamedItemCache>();
   unsigned length = this->length();
   for (unsigned i = 0; i < length; ++i) {
     Element* element = item(i);
@@ -543,7 +543,7 @@ void HTMLCollection::NamedItems(const AtomicString& name,
 
 HTMLCollection::NamedItemCache::NamedItemCache() = default;
 
-void HTMLCollection::Trace(blink::Visitor* visitor) {
+void HTMLCollection::Trace(Visitor* visitor) {
   visitor->Trace(named_item_cache_);
   visitor->Trace(collection_items_cache_);
   ScriptWrappable::Trace(visitor);

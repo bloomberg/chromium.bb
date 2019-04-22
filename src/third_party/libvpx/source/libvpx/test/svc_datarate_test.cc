@@ -19,9 +19,23 @@
 #include "vpx/vpx_codec.h"
 #include "vpx_ports/bitops.h"
 
+namespace svc_test {
 namespace {
 
-class DatarateOnePassCbrSvc : public ::svc_test::OnePassCbrSvc {
+typedef enum {
+  // Inter-layer prediction is on on all frames.
+  INTER_LAYER_PRED_ON,
+  // Inter-layer prediction is off on all frames.
+  INTER_LAYER_PRED_OFF,
+  // Inter-layer prediction is off on non-key frames and non-sync frames.
+  INTER_LAYER_PRED_OFF_NONKEY,
+  // Inter-layer prediction is on on all frames, but constrained such
+  // that any layer S (> 0) can only predict from previous spatial
+  // layer S-1, from the same superframe.
+  INTER_LAYER_PRED_ON_CONSTRAINED
+} INTER_LAYER_PRED;
+
+class DatarateOnePassCbrSvc : public OnePassCbrSvc {
  public:
   explicit DatarateOnePassCbrSvc(const ::libvpx_test::CodecFactory *codec)
       : OnePassCbrSvc(codec) {
@@ -61,6 +75,8 @@ class DatarateOnePassCbrSvc : public ::svc_test::OnePassCbrSvc {
     force_intra_only_frame_ = 0;
     superframe_has_intra_only_ = 0;
     use_post_encode_drop_ = 0;
+    denoiser_off_on_ = false;
+    denoiser_enable_layers_ = false;
   }
   virtual void BeginPassHook(unsigned int /*pass*/) {}
 
@@ -178,6 +194,46 @@ class DatarateOnePassCbrSvc : public ::svc_test::OnePassCbrSvc {
 
       if (use_post_encode_drop_) {
         encoder->Control(VP9E_SET_POSTENCODE_DROP, use_post_encode_drop_);
+      }
+    }
+
+    if (denoiser_off_on_) {
+      encoder->Control(VP9E_SET_AQ_MODE, 3);
+      // Set inter_layer_pred to INTER_LAYER_PRED_OFF_NONKEY (K-SVC).
+      encoder->Control(VP9E_SET_SVC_INTER_LAYER_PRED, 2);
+      if (!denoiser_enable_layers_) {
+        if (video->frame() == 0)
+          encoder->Control(VP9E_SET_NOISE_SENSITIVITY, 0);
+        else if (video->frame() == 100)
+          encoder->Control(VP9E_SET_NOISE_SENSITIVITY, 1);
+      } else {
+        // Cumulative bitrates for top spatial layers, for
+        // 3 temporal layers.
+        if (video->frame() == 0) {
+          encoder->Control(VP9E_SET_NOISE_SENSITIVITY, 0);
+          // Change layer bitrates to set top spatial layer to 0.
+          // This is for 3 spatial 3 temporal layers.
+          // This will trigger skip encoding/dropping of top spatial layer.
+          cfg_.rc_target_bitrate -= cfg_.layer_target_bitrate[8];
+          for (int i = 0; i < 3; i++)
+            bitrate_sl3_[i] = cfg_.layer_target_bitrate[i + 6];
+          cfg_.layer_target_bitrate[6] = 0;
+          cfg_.layer_target_bitrate[7] = 0;
+          cfg_.layer_target_bitrate[8] = 0;
+          encoder->Config(&cfg_);
+        } else if (video->frame() == 100) {
+          // Change layer bitrates to non-zero on top spatial layer.
+          // This will trigger skip encoding of top spatial layer
+          // on key frame (period = 100).
+          for (int i = 0; i < 3; i++)
+            cfg_.layer_target_bitrate[i + 6] = bitrate_sl3_[i];
+          cfg_.rc_target_bitrate += cfg_.layer_target_bitrate[8];
+          encoder->Config(&cfg_);
+        } else if (video->frame() == 120) {
+          // Enable denoiser and top spatial layer after key frame (period is
+          // 100).
+          encoder->Control(VP9E_SET_NOISE_SENSITIVITY, 1);
+        }
       }
     }
 
@@ -456,6 +512,7 @@ class DatarateOnePassCbrSvc : public ::svc_test::OnePassCbrSvc {
   }
 
   unsigned int GetMismatchFrames() { return mismatch_nframes_; }
+  unsigned int GetNonRefFrames() { return num_nonref_frames_; }
 
   vpx_codec_pts_t last_pts_;
   double timebase_;
@@ -464,7 +521,6 @@ class DatarateOnePassCbrSvc : public ::svc_test::OnePassCbrSvc {
   double file_datarate_[VPX_MAX_LAYERS];
   size_t bits_in_last_frame_;
   double mismatch_psnr_;
-  int mismatch_nframes_;
   int denoiser_on_;
   int tune_content_;
   int spatial_layer_id_;
@@ -478,7 +534,6 @@ class DatarateOnePassCbrSvc : public ::svc_test::OnePassCbrSvc {
   int middle_bitrate_;
   int top_bitrate_;
   int key_frame_spacing_;
-  unsigned int num_nonref_frames_;
   int layer_framedrop_;
   int force_key_;
   int force_key_test_;
@@ -488,6 +543,34 @@ class DatarateOnePassCbrSvc : public ::svc_test::OnePassCbrSvc {
   int force_intra_only_frame_;
   int superframe_has_intra_only_;
   int use_post_encode_drop_;
+  int bitrate_sl3_[3];
+  // Denoiser switched on the fly.
+  bool denoiser_off_on_;
+  // Top layer enabled on the fly.
+  bool denoiser_enable_layers_;
+
+ private:
+  virtual void SetConfig(const int num_temporal_layer) {
+    cfg_.rc_end_usage = VPX_CBR;
+    cfg_.g_lag_in_frames = 0;
+    cfg_.g_error_resilient = 1;
+    if (num_temporal_layer == 3) {
+      cfg_.ts_rate_decimator[0] = 4;
+      cfg_.ts_rate_decimator[1] = 2;
+      cfg_.ts_rate_decimator[2] = 1;
+      cfg_.temporal_layering_mode = 3;
+    } else if (num_temporal_layer == 2) {
+      cfg_.ts_rate_decimator[0] = 2;
+      cfg_.ts_rate_decimator[1] = 1;
+      cfg_.temporal_layering_mode = 2;
+    } else if (num_temporal_layer == 1) {
+      cfg_.ts_rate_decimator[0] = 1;
+      cfg_.temporal_layering_mode = 0;
+    }
+  }
+
+  unsigned int num_nonref_frames_;
+  unsigned int mismatch_nframes_;
 };
 
 // Params: speed setting.
@@ -513,27 +596,16 @@ class DatarateOnePassCbrSvcSingleBR
 // temporal layer, with screen content mode on and same speed setting for all
 // layers.
 TEST_P(DatarateOnePassCbrSvcSingleBR, OnePassCbrSvc2SL1TLScreenContent1) {
+  SetSvcConfig(2, 1);
   cfg_.rc_buf_initial_sz = 500;
   cfg_.rc_buf_optimal_sz = 500;
   cfg_.rc_buf_sz = 1000;
   cfg_.rc_min_quantizer = 0;
   cfg_.rc_max_quantizer = 63;
-  cfg_.rc_end_usage = VPX_CBR;
-  cfg_.g_lag_in_frames = 0;
-  cfg_.ss_number_layers = 2;
-  cfg_.ts_number_layers = 1;
-  cfg_.ts_rate_decimator[0] = 1;
-  cfg_.g_error_resilient = 1;
   cfg_.g_threads = 1;
-  cfg_.temporal_layering_mode = 0;
-  svc_params_.scaling_factor_num[0] = 144;
-  svc_params_.scaling_factor_den[0] = 288;
-  svc_params_.scaling_factor_num[1] = 288;
-  svc_params_.scaling_factor_den[1] = 288;
   cfg_.rc_dropframe_thresh = 10;
   cfg_.kf_max_dist = 9999;
-  number_spatial_layers_ = cfg_.ss_number_layers;
-  number_temporal_layers_ = cfg_.ts_number_layers;
+
   ::libvpx_test::Y4mVideoSource video("niklas_1280_720_30.y4m", 0, 60);
   top_sl_width_ = 1280;
   top_sl_height_ = 720;
@@ -547,38 +619,22 @@ TEST_P(DatarateOnePassCbrSvcSingleBR, OnePassCbrSvc2SL1TLScreenContent1) {
 #if CONFIG_VP9_DECODER
   // The non-reference frames are expected to be mismatched frames as the
   // encoder will avoid loopfilter on these frames.
-  EXPECT_EQ(num_nonref_frames_, GetMismatchFrames());
+  EXPECT_EQ(GetNonRefFrames(), GetMismatchFrames());
 #endif
 }
 
 // Check basic rate targeting for 1 pass CBR SVC: 3 spatial layers and
 // 3 temporal layers, with force key frame after frame drop
 TEST_P(DatarateOnePassCbrSvcSingleBR, OnePassCbrSvc3SL3TLForceKey) {
+  SetSvcConfig(3, 3);
   cfg_.rc_buf_initial_sz = 500;
   cfg_.rc_buf_optimal_sz = 500;
   cfg_.rc_buf_sz = 1000;
   cfg_.rc_min_quantizer = 0;
   cfg_.rc_max_quantizer = 63;
-  cfg_.rc_end_usage = VPX_CBR;
-  cfg_.g_lag_in_frames = 0;
-  cfg_.ss_number_layers = 3;
-  cfg_.ts_number_layers = 3;
-  cfg_.ts_rate_decimator[0] = 4;
-  cfg_.ts_rate_decimator[1] = 2;
-  cfg_.ts_rate_decimator[2] = 1;
-  cfg_.g_error_resilient = 1;
   cfg_.g_threads = 1;
-  cfg_.temporal_layering_mode = 3;
-  svc_params_.scaling_factor_num[0] = 72;
-  svc_params_.scaling_factor_den[0] = 288;
-  svc_params_.scaling_factor_num[1] = 144;
-  svc_params_.scaling_factor_den[1] = 288;
-  svc_params_.scaling_factor_num[2] = 288;
-  svc_params_.scaling_factor_den[2] = 288;
   cfg_.rc_dropframe_thresh = 30;
   cfg_.kf_max_dist = 9999;
-  number_spatial_layers_ = cfg_.ss_number_layers;
-  number_temporal_layers_ = cfg_.ts_number_layers;
   ::libvpx_test::I420VideoSource video("niklas_640_480_30.yuv", 640, 480, 30, 1,
                                        0, 400);
   top_sl_width_ = 640;
@@ -592,7 +648,7 @@ TEST_P(DatarateOnePassCbrSvcSingleBR, OnePassCbrSvc3SL3TLForceKey) {
 #if CONFIG_VP9_DECODER
   // The non-reference frames are expected to be mismatched frames as the
   // encoder will avoid loopfilter on these frames.
-  EXPECT_EQ(num_nonref_frames_, GetMismatchFrames());
+  EXPECT_EQ(GetNonRefFrames(), GetMismatchFrames());
 #endif
 }
 
@@ -601,30 +657,15 @@ TEST_P(DatarateOnePassCbrSvcSingleBR, OnePassCbrSvc3SL3TLForceKey) {
 // generate via SVC_SET_REF_FRAME_CONFIG. The new pattern also disables
 // inter-layer prediction.
 TEST_P(DatarateOnePassCbrSvcSingleBR, OnePassCbrSvc3SL2TLDynamicPatternChange) {
+  SetSvcConfig(3, 2);
   cfg_.rc_buf_initial_sz = 500;
   cfg_.rc_buf_optimal_sz = 500;
   cfg_.rc_buf_sz = 1000;
   cfg_.rc_min_quantizer = 0;
   cfg_.rc_max_quantizer = 63;
-  cfg_.rc_end_usage = VPX_CBR;
-  cfg_.g_lag_in_frames = 0;
-  cfg_.ss_number_layers = 3;
-  cfg_.ts_number_layers = 2;
-  cfg_.ts_rate_decimator[0] = 2;
-  cfg_.ts_rate_decimator[1] = 1;
-  cfg_.g_error_resilient = 1;
   cfg_.g_threads = 1;
-  cfg_.temporal_layering_mode = 2;
-  svc_params_.scaling_factor_num[0] = 72;
-  svc_params_.scaling_factor_den[0] = 288;
-  svc_params_.scaling_factor_num[1] = 144;
-  svc_params_.scaling_factor_den[1] = 288;
-  svc_params_.scaling_factor_num[2] = 288;
-  svc_params_.scaling_factor_den[2] = 288;
   cfg_.rc_dropframe_thresh = 30;
   cfg_.kf_max_dist = 9999;
-  number_spatial_layers_ = cfg_.ss_number_layers;
-  number_temporal_layers_ = cfg_.ts_number_layers;
   // Change SVC pattern on the fly.
   update_pattern_ = 1;
   ::libvpx_test::I420VideoSource video("niklas_640_480_30.yuv", 640, 480, 30, 1,
@@ -640,7 +681,81 @@ TEST_P(DatarateOnePassCbrSvcSingleBR, OnePassCbrSvc3SL2TLDynamicPatternChange) {
 #if CONFIG_VP9_DECODER
   // The non-reference frames are expected to be mismatched frames as the
   // encoder will avoid loopfilter on these frames.
-  EXPECT_EQ(num_nonref_frames_, GetMismatchFrames());
+  EXPECT_EQ(GetNonRefFrames(), GetMismatchFrames());
+#endif
+}
+
+// Check basic rate targeting for 1 pass CBR SVC with 3 spatial and 3 temporal
+// layers, for inter_layer_pred=OffKey (K-SVC) and on the fly switching
+// of denoiser from off to on (on at frame = 100). Key frame period is set to
+// 1000 so denoise is enabled on non-key.
+TEST_P(DatarateOnePassCbrSvcSingleBR,
+       OnePassCbrSvc3SL3TL_DenoiserOffOnFixedLayers) {
+  SetSvcConfig(3, 3);
+  cfg_.rc_buf_initial_sz = 500;
+  cfg_.rc_buf_optimal_sz = 500;
+  cfg_.rc_buf_sz = 1000;
+  cfg_.rc_min_quantizer = 0;
+  cfg_.rc_max_quantizer = 63;
+  cfg_.g_threads = 1;
+  cfg_.rc_dropframe_thresh = 30;
+  cfg_.kf_max_dist = 1000;
+  ::libvpx_test::I420VideoSource video("desktop_office1.1280_720-020.yuv", 1280,
+                                       720, 30, 1, 0, 300);
+  top_sl_width_ = 1280;
+  top_sl_height_ = 720;
+  cfg_.rc_target_bitrate = 1000;
+  ResetModel();
+  denoiser_off_on_ = true;
+  denoiser_enable_layers_ = false;
+  AssignLayerBitrates();
+  ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
+  // Don't check rate targeting on two top spatial layer since they will be
+  // skipped for part of the sequence.
+  CheckLayerRateTargeting(number_spatial_layers_ - 2, number_temporal_layers_,
+                          0.78, 1.15);
+#if CONFIG_VP9_DECODER
+  // The non-reference frames are expected to be mismatched frames as the
+  // encoder will avoid loopfilter on these frames.
+  EXPECT_EQ(GetNonRefFrames(), GetMismatchFrames());
+#endif
+}
+
+// Check basic rate targeting for 1 pass CBR SVC with 3 spatial and 3 temporal
+// layers, for inter_layer_pred=OffKey (K-SVC) and on the fly switching
+// of denoiser from off to on, for dynamic layers. Start at 2 spatial layers
+// and enable 3rd spatial layer at frame = 100. Use periodic key frame with
+// period 100 so enabling of spatial layer occurs at key frame. Enable denoiser
+// at frame > 100, after the key frame sync.
+TEST_P(DatarateOnePassCbrSvcSingleBR,
+       OnePassCbrSvc3SL3TL_DenoiserOffOnEnableLayers) {
+  SetSvcConfig(3, 3);
+  cfg_.rc_buf_initial_sz = 500;
+  cfg_.rc_buf_optimal_sz = 500;
+  cfg_.rc_buf_sz = 1000;
+  cfg_.rc_min_quantizer = 0;
+  cfg_.rc_max_quantizer = 63;
+  cfg_.g_threads = 1;
+  cfg_.rc_dropframe_thresh = 0;
+  cfg_.kf_max_dist = 100;
+  ::libvpx_test::I420VideoSource video("desktop_office1.1280_720-020.yuv", 1280,
+                                       720, 30, 1, 0, 300);
+  top_sl_width_ = 1280;
+  top_sl_height_ = 720;
+  cfg_.rc_target_bitrate = 1000;
+  ResetModel();
+  denoiser_off_on_ = true;
+  denoiser_enable_layers_ = true;
+  AssignLayerBitrates();
+  ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
+  // Don't check rate targeting on two top spatial layer since they will be
+  // skipped for part of the sequence.
+  CheckLayerRateTargeting(number_spatial_layers_ - 2, number_temporal_layers_,
+                          0.78, 1.15);
+#if CONFIG_VP9_DECODER
+  // The non-reference frames are expected to be mismatched frames as the
+  // encoder will avoid loopfilter on these frames.
+  EXPECT_EQ(GetNonRefFrames(), GetMismatchFrames());
 #endif
 }
 
@@ -649,29 +764,16 @@ TEST_P(DatarateOnePassCbrSvcSingleBR, OnePassCbrSvc3SL2TLDynamicPatternChange) {
 // is done by setting spatial layer bitrates to 0, and then back to non-zero,
 // during the sequence.
 TEST_P(DatarateOnePassCbrSvcSingleBR, OnePassCbrSvc3SL_DisableEnableLayers) {
+  SetSvcConfig(3, 1);
   cfg_.rc_buf_initial_sz = 500;
   cfg_.rc_buf_optimal_sz = 500;
   cfg_.rc_buf_sz = 1000;
   cfg_.rc_min_quantizer = 0;
   cfg_.rc_max_quantizer = 63;
-  cfg_.rc_end_usage = VPX_CBR;
-  cfg_.g_lag_in_frames = 0;
-  cfg_.ss_number_layers = 3;
-  cfg_.ts_number_layers = 1;
-  cfg_.ts_rate_decimator[0] = 1;
-  cfg_.g_error_resilient = 1;
   cfg_.g_threads = 1;
   cfg_.temporal_layering_mode = 0;
-  svc_params_.scaling_factor_num[0] = 72;
-  svc_params_.scaling_factor_den[0] = 288;
-  svc_params_.scaling_factor_num[1] = 144;
-  svc_params_.scaling_factor_den[1] = 288;
-  svc_params_.scaling_factor_num[2] = 288;
-  svc_params_.scaling_factor_den[2] = 288;
   cfg_.rc_dropframe_thresh = 30;
   cfg_.kf_max_dist = 9999;
-  number_spatial_layers_ = cfg_.ss_number_layers;
-  number_temporal_layers_ = cfg_.ts_number_layers;
   ::libvpx_test::I420VideoSource video("niklas_640_480_30.yuv", 640, 480, 30, 1,
                                        0, 400);
   top_sl_width_ = 640;
@@ -688,7 +790,7 @@ TEST_P(DatarateOnePassCbrSvcSingleBR, OnePassCbrSvc3SL_DisableEnableLayers) {
 #if CONFIG_VP9_DECODER
   // The non-reference frames are expected to be mismatched frames as the
   // encoder will avoid loopfilter on these frames.
-  EXPECT_EQ(num_nonref_frames_, GetMismatchFrames());
+  EXPECT_EQ(GetNonRefFrames(), GetMismatchFrames());
 #endif
 }
 
@@ -738,7 +840,7 @@ TEST_P(DatarateOnePassCbrSvcSingleBR, OnePassCbrSvc2SL1TL5x5MultipleRuns) {
 #if CONFIG_VP9_DECODER
   // The non-reference frames are expected to be mismatched frames as the
   // encoder will avoid loopfilter on these frames.
-  EXPECT_EQ(num_nonref_frames_, GetMismatchFrames());
+  EXPECT_EQ(GetNonRefFrames(), GetMismatchFrames());
 #endif
 }
 
@@ -764,29 +866,15 @@ class DatarateOnePassCbrSvcMultiBR
 // Check basic rate targeting for 1 pass CBR SVC: 2 spatial layers and
 // 3 temporal layers. Run CIF clip with 1 thread.
 TEST_P(DatarateOnePassCbrSvcMultiBR, OnePassCbrSvc2SL3TL) {
+  SetSvcConfig(2, 3);
   cfg_.rc_buf_initial_sz = 500;
   cfg_.rc_buf_optimal_sz = 500;
   cfg_.rc_buf_sz = 1000;
   cfg_.rc_min_quantizer = 0;
   cfg_.rc_max_quantizer = 63;
-  cfg_.rc_end_usage = VPX_CBR;
-  cfg_.g_lag_in_frames = 0;
-  cfg_.ss_number_layers = 2;
-  cfg_.ts_number_layers = 3;
-  cfg_.ts_rate_decimator[0] = 4;
-  cfg_.ts_rate_decimator[1] = 2;
-  cfg_.ts_rate_decimator[2] = 1;
-  cfg_.g_error_resilient = 1;
   cfg_.g_threads = 1;
-  cfg_.temporal_layering_mode = 3;
-  svc_params_.scaling_factor_num[0] = 144;
-  svc_params_.scaling_factor_den[0] = 288;
-  svc_params_.scaling_factor_num[1] = 288;
-  svc_params_.scaling_factor_den[1] = 288;
   cfg_.rc_dropframe_thresh = 30;
   cfg_.kf_max_dist = 9999;
-  number_spatial_layers_ = cfg_.ss_number_layers;
-  number_temporal_layers_ = cfg_.ts_number_layers;
   ::libvpx_test::I420VideoSource video("niklas_640_480_30.yuv", 640, 480, 30, 1,
                                        0, 400);
   top_sl_width_ = 640;
@@ -803,7 +891,7 @@ TEST_P(DatarateOnePassCbrSvcMultiBR, OnePassCbrSvc2SL3TL) {
 #if CONFIG_VP9_DECODER
   // The non-reference frames are expected to be mismatched frames as the
   // encoder will avoid loopfilter on these frames.
-  EXPECT_EQ(num_nonref_frames_, GetMismatchFrames());
+  EXPECT_EQ(GetNonRefFrames(), GetMismatchFrames());
 #endif
 }
 
@@ -830,29 +918,15 @@ class DatarateOnePassCbrSvcFrameDropMultiBR
 // Check basic rate targeting for 1 pass CBR SVC: 2 spatial layers and
 // 3 temporal layers. Run HD clip with 4 threads.
 TEST_P(DatarateOnePassCbrSvcFrameDropMultiBR, OnePassCbrSvc2SL3TL4Threads) {
+  SetSvcConfig(2, 3);
   cfg_.rc_buf_initial_sz = 500;
   cfg_.rc_buf_optimal_sz = 500;
   cfg_.rc_buf_sz = 1000;
   cfg_.rc_min_quantizer = 0;
   cfg_.rc_max_quantizer = 63;
-  cfg_.rc_end_usage = VPX_CBR;
-  cfg_.g_lag_in_frames = 0;
-  cfg_.ss_number_layers = 2;
-  cfg_.ts_number_layers = 3;
-  cfg_.ts_rate_decimator[0] = 4;
-  cfg_.ts_rate_decimator[1] = 2;
-  cfg_.ts_rate_decimator[2] = 1;
-  cfg_.g_error_resilient = 1;
   cfg_.g_threads = 4;
-  cfg_.temporal_layering_mode = 3;
-  svc_params_.scaling_factor_num[0] = 144;
-  svc_params_.scaling_factor_den[0] = 288;
-  svc_params_.scaling_factor_num[1] = 288;
-  svc_params_.scaling_factor_den[1] = 288;
   cfg_.rc_dropframe_thresh = 30;
   cfg_.kf_max_dist = 9999;
-  number_spatial_layers_ = cfg_.ss_number_layers;
-  number_temporal_layers_ = cfg_.ts_number_layers;
   ::libvpx_test::Y4mVideoSource video("niklas_1280_720_30.y4m", 0, 60);
   top_sl_width_ = 1280;
   top_sl_height_ = 720;
@@ -868,38 +942,22 @@ TEST_P(DatarateOnePassCbrSvcFrameDropMultiBR, OnePassCbrSvc2SL3TL4Threads) {
 #if CONFIG_VP9_DECODER
   // The non-reference frames are expected to be mismatched frames as the
   // encoder will avoid loopfilter on these frames.
-  EXPECT_EQ(num_nonref_frames_, GetMismatchFrames());
+  EXPECT_EQ(GetNonRefFrames(), GetMismatchFrames());
 #endif
 }
 
 // Check basic rate targeting for 1 pass CBR SVC: 3 spatial layers and
 // 3 temporal layers. Run HD clip with 4 threads.
 TEST_P(DatarateOnePassCbrSvcFrameDropMultiBR, OnePassCbrSvc3SL3TL4Threads) {
+  SetSvcConfig(3, 3);
   cfg_.rc_buf_initial_sz = 500;
   cfg_.rc_buf_optimal_sz = 500;
   cfg_.rc_buf_sz = 1000;
   cfg_.rc_min_quantizer = 0;
   cfg_.rc_max_quantizer = 63;
-  cfg_.rc_end_usage = VPX_CBR;
-  cfg_.g_lag_in_frames = 0;
-  cfg_.ss_number_layers = 3;
-  cfg_.ts_number_layers = 3;
-  cfg_.ts_rate_decimator[0] = 4;
-  cfg_.ts_rate_decimator[1] = 2;
-  cfg_.ts_rate_decimator[2] = 1;
-  cfg_.g_error_resilient = 1;
   cfg_.g_threads = 4;
-  cfg_.temporal_layering_mode = 3;
-  svc_params_.scaling_factor_num[0] = 72;
-  svc_params_.scaling_factor_den[0] = 288;
-  svc_params_.scaling_factor_num[1] = 144;
-  svc_params_.scaling_factor_den[1] = 288;
-  svc_params_.scaling_factor_num[2] = 288;
-  svc_params_.scaling_factor_den[2] = 288;
   cfg_.rc_dropframe_thresh = 30;
   cfg_.kf_max_dist = 9999;
-  number_spatial_layers_ = cfg_.ss_number_layers;
-  number_temporal_layers_ = cfg_.ts_number_layers;
   ::libvpx_test::Y4mVideoSource video("niklas_1280_720_30.y4m", 0, 60);
   top_sl_width_ = 1280;
   top_sl_height_ = 720;
@@ -915,7 +973,7 @@ TEST_P(DatarateOnePassCbrSvcFrameDropMultiBR, OnePassCbrSvc3SL3TL4Threads) {
 #if CONFIG_VP9_DECODER
   // The non-reference frames are expected to be mismatched frames as the
   // encoder will avoid loopfilter on these frames.
-  EXPECT_EQ(num_nonref_frames_, GetMismatchFrames());
+  EXPECT_EQ(GetNonRefFrames(), GetMismatchFrames());
 #endif
 }
 
@@ -944,31 +1002,18 @@ class DatarateOnePassCbrSvcInterLayerPredSingleBR
 // pass CBR SVC: 3 spatial layers and 3 temporal layers. Run CIF clip with 1
 // thread.
 TEST_P(DatarateOnePassCbrSvcInterLayerPredSingleBR, OnePassCbrSvc3SL3TL) {
+  // Disable test for inter-layer pred off for now since simulcast_mode fails.
+  if (inter_layer_pred_mode_ == INTER_LAYER_PRED_OFF) return;
+  SetSvcConfig(3, 3);
   cfg_.rc_buf_initial_sz = 500;
   cfg_.rc_buf_optimal_sz = 500;
   cfg_.rc_buf_sz = 1000;
   cfg_.rc_min_quantizer = 0;
   cfg_.rc_max_quantizer = 63;
-  cfg_.rc_end_usage = VPX_CBR;
-  cfg_.g_lag_in_frames = 0;
-  cfg_.ss_number_layers = 3;
-  cfg_.ts_number_layers = 3;
-  cfg_.ts_rate_decimator[0] = 4;
-  cfg_.ts_rate_decimator[1] = 2;
-  cfg_.ts_rate_decimator[2] = 1;
-  cfg_.g_error_resilient = 1;
   cfg_.g_threads = 1;
   cfg_.temporal_layering_mode = 3;
-  svc_params_.scaling_factor_num[0] = 72;
-  svc_params_.scaling_factor_den[0] = 288;
-  svc_params_.scaling_factor_num[1] = 144;
-  svc_params_.scaling_factor_den[1] = 288;
-  svc_params_.scaling_factor_num[2] = 288;
-  svc_params_.scaling_factor_den[2] = 288;
   cfg_.rc_dropframe_thresh = 30;
   cfg_.kf_max_dist = 9999;
-  number_spatial_layers_ = cfg_.ss_number_layers;
-  number_temporal_layers_ = cfg_.ts_number_layers;
   ::libvpx_test::I420VideoSource video("niklas_640_480_30.yuv", 640, 480, 30, 1,
                                        0, 400);
   top_sl_width_ = 640;
@@ -982,7 +1027,7 @@ TEST_P(DatarateOnePassCbrSvcInterLayerPredSingleBR, OnePassCbrSvc3SL3TL) {
 #if CONFIG_VP9_DECODER
   // The non-reference frames are expected to be mismatched frames as the
   // encoder will avoid loopfilter on these frames.
-  EXPECT_EQ(num_nonref_frames_, GetMismatchFrames());
+  EXPECT_EQ(GetNonRefFrames(), GetMismatchFrames());
 #endif
 }
 
@@ -990,31 +1035,15 @@ TEST_P(DatarateOnePassCbrSvcInterLayerPredSingleBR, OnePassCbrSvc3SL3TL) {
 // CBR SVC: 3 spatial layers and 3 temporal layers, changing the target bitrate
 // at the middle of encoding.
 TEST_P(DatarateOnePassCbrSvcSingleBR, OnePassCbrSvc3SL3TLDynamicBitrateChange) {
+  SetSvcConfig(3, 3);
   cfg_.rc_buf_initial_sz = 500;
   cfg_.rc_buf_optimal_sz = 500;
   cfg_.rc_buf_sz = 1000;
   cfg_.rc_min_quantizer = 0;
   cfg_.rc_max_quantizer = 63;
-  cfg_.rc_end_usage = VPX_CBR;
-  cfg_.g_lag_in_frames = 0;
-  cfg_.ss_number_layers = 3;
-  cfg_.ts_number_layers = 3;
-  cfg_.ts_rate_decimator[0] = 4;
-  cfg_.ts_rate_decimator[1] = 2;
-  cfg_.ts_rate_decimator[2] = 1;
-  cfg_.g_error_resilient = 1;
   cfg_.g_threads = 1;
-  cfg_.temporal_layering_mode = 3;
-  svc_params_.scaling_factor_num[0] = 72;
-  svc_params_.scaling_factor_den[0] = 288;
-  svc_params_.scaling_factor_num[1] = 144;
-  svc_params_.scaling_factor_den[1] = 288;
-  svc_params_.scaling_factor_num[2] = 288;
-  svc_params_.scaling_factor_den[2] = 288;
   cfg_.rc_dropframe_thresh = 30;
   cfg_.kf_max_dist = 9999;
-  number_spatial_layers_ = cfg_.ss_number_layers;
-  number_temporal_layers_ = cfg_.ts_number_layers;
   ::libvpx_test::I420VideoSource video("niklas_640_480_30.yuv", 640, 480, 30, 1,
                                        0, 400);
   top_sl_width_ = 640;
@@ -1029,15 +1058,16 @@ TEST_P(DatarateOnePassCbrSvcSingleBR, OnePassCbrSvc3SL3TLDynamicBitrateChange) {
 #if CONFIG_VP9_DECODER
   // The non-reference frames are expected to be mismatched frames as the
   // encoder will avoid loopfilter on these frames.
-  EXPECT_EQ(num_nonref_frames_, GetMismatchFrames());
+  EXPECT_EQ(GetNonRefFrames(), GetMismatchFrames());
 #endif
 }
 
 #if CONFIG_VP9_TEMPORAL_DENOISING
-// Params: speed setting, noise sensitivity and index for bitrate array.
+// Params: speed setting, noise sensitivity, index for bitrate array and inter
+// layer pred mode.
 class DatarateOnePassCbrSvcDenoiser
     : public DatarateOnePassCbrSvc,
-      public ::libvpx_test::CodecTestWith3Params<int, int, int> {
+      public ::libvpx_test::CodecTestWith4Params<int, int, int, int> {
  public:
   DatarateOnePassCbrSvcDenoiser() : DatarateOnePassCbrSvc(GET_PARAM(0)) {
     memset(&svc_params_, 0, sizeof(svc_params_));
@@ -1049,6 +1079,7 @@ class DatarateOnePassCbrSvcDenoiser
     InitializeConfig();
     SetMode(::libvpx_test::kRealTime);
     speed_setting_ = GET_PARAM(1);
+    inter_layer_pred_mode_ = GET_PARAM(3);
     ResetModel();
   }
 };
@@ -1056,25 +1087,13 @@ class DatarateOnePassCbrSvcDenoiser
 // Check basic rate targeting for 1 pass CBR SVC with denoising.
 // 2 spatial layers and 3 temporal layer. Run HD clip with 2 threads.
 TEST_P(DatarateOnePassCbrSvcDenoiser, OnePassCbrSvc2SL3TLDenoiserOn) {
+  SetSvcConfig(2, 3);
   cfg_.rc_buf_initial_sz = 500;
   cfg_.rc_buf_optimal_sz = 500;
   cfg_.rc_buf_sz = 1000;
   cfg_.rc_min_quantizer = 0;
   cfg_.rc_max_quantizer = 63;
-  cfg_.rc_end_usage = VPX_CBR;
-  cfg_.g_lag_in_frames = 0;
-  cfg_.ss_number_layers = 2;
-  cfg_.ts_number_layers = 3;
-  cfg_.ts_rate_decimator[0] = 4;
-  cfg_.ts_rate_decimator[1] = 2;
-  cfg_.ts_rate_decimator[2] = 1;
-  cfg_.g_error_resilient = 1;
   cfg_.g_threads = 2;
-  cfg_.temporal_layering_mode = 3;
-  svc_params_.scaling_factor_num[0] = 144;
-  svc_params_.scaling_factor_den[0] = 288;
-  svc_params_.scaling_factor_num[1] = 288;
-  svc_params_.scaling_factor_den[1] = 288;
   cfg_.rc_dropframe_thresh = 30;
   cfg_.kf_max_dist = 9999;
   number_spatial_layers_ = cfg_.ss_number_layers;
@@ -1098,7 +1117,7 @@ TEST_P(DatarateOnePassCbrSvcDenoiser, OnePassCbrSvc2SL3TLDenoiserOn) {
 #if CONFIG_VP9_DECODER
   // The non-reference frames are expected to be mismatched frames as the
   // encoder will avoid loopfilter on these frames.
-  EXPECT_EQ(num_nonref_frames_, GetMismatchFrames());
+  EXPECT_EQ(GetNonRefFrames(), GetMismatchFrames());
 #endif
 }
 #endif
@@ -1125,31 +1144,15 @@ class DatarateOnePassCbrSvcSmallKF
 // Check basic rate targeting for 1 pass CBR SVC: 3 spatial layers and 3
 // temporal layers. Run CIF clip with 1 thread, and few short key frame periods.
 TEST_P(DatarateOnePassCbrSvcSmallKF, OnePassCbrSvc3SL3TLSmallKf) {
+  SetSvcConfig(3, 3);
   cfg_.rc_buf_initial_sz = 500;
   cfg_.rc_buf_optimal_sz = 500;
   cfg_.rc_buf_sz = 1000;
   cfg_.rc_min_quantizer = 0;
   cfg_.rc_max_quantizer = 63;
-  cfg_.rc_end_usage = VPX_CBR;
-  cfg_.g_lag_in_frames = 0;
-  cfg_.ss_number_layers = 3;
-  cfg_.ts_number_layers = 3;
-  cfg_.ts_rate_decimator[0] = 4;
-  cfg_.ts_rate_decimator[1] = 2;
-  cfg_.ts_rate_decimator[2] = 1;
-  cfg_.g_error_resilient = 1;
   cfg_.g_threads = 1;
-  cfg_.temporal_layering_mode = 3;
-  svc_params_.scaling_factor_num[0] = 72;
-  svc_params_.scaling_factor_den[0] = 288;
-  svc_params_.scaling_factor_num[1] = 144;
-  svc_params_.scaling_factor_den[1] = 288;
-  svc_params_.scaling_factor_num[2] = 288;
-  svc_params_.scaling_factor_den[2] = 288;
   cfg_.rc_dropframe_thresh = 10;
   cfg_.rc_target_bitrate = 800;
-  number_spatial_layers_ = cfg_.ss_number_layers;
-  number_temporal_layers_ = cfg_.ts_number_layers;
   ::libvpx_test::I420VideoSource video("niklas_640_480_30.yuv", 640, 480, 30, 1,
                                        0, 400);
   top_sl_width_ = 640;
@@ -1168,36 +1171,22 @@ TEST_P(DatarateOnePassCbrSvcSmallKF, OnePassCbrSvc3SL3TLSmallKf) {
 #if CONFIG_VP9_DECODER
   // The non-reference frames are expected to be mismatched frames as the
   // encoder will avoid loopfilter on these frames.
-  EXPECT_EQ(num_nonref_frames_, GetMismatchFrames());
+  EXPECT_EQ(GetNonRefFrames(), GetMismatchFrames());
 #endif
 }
 
 // Check basic rate targeting for 1 pass CBR SVC: 2 spatial layers and 3
 // temporal layers. Run CIF clip with 1 thread, and few short key frame periods.
 TEST_P(DatarateOnePassCbrSvcSmallKF, OnePassCbrSvc2SL3TLSmallKf) {
+  SetSvcConfig(2, 3);
   cfg_.rc_buf_initial_sz = 500;
   cfg_.rc_buf_optimal_sz = 500;
   cfg_.rc_buf_sz = 1000;
   cfg_.rc_min_quantizer = 0;
   cfg_.rc_max_quantizer = 63;
-  cfg_.rc_end_usage = VPX_CBR;
-  cfg_.g_lag_in_frames = 0;
-  cfg_.ss_number_layers = 2;
-  cfg_.ts_number_layers = 3;
-  cfg_.ts_rate_decimator[0] = 4;
-  cfg_.ts_rate_decimator[1] = 2;
-  cfg_.ts_rate_decimator[2] = 1;
-  cfg_.g_error_resilient = 1;
   cfg_.g_threads = 1;
-  cfg_.temporal_layering_mode = 3;
-  svc_params_.scaling_factor_num[0] = 144;
-  svc_params_.scaling_factor_den[0] = 288;
-  svc_params_.scaling_factor_num[1] = 288;
-  svc_params_.scaling_factor_den[1] = 288;
   cfg_.rc_dropframe_thresh = 10;
   cfg_.rc_target_bitrate = 400;
-  number_spatial_layers_ = cfg_.ss_number_layers;
-  number_temporal_layers_ = cfg_.ts_number_layers;
   ::libvpx_test::I420VideoSource video("niklas_640_480_30.yuv", 640, 480, 30, 1,
                                        0, 400);
   top_sl_width_ = 640;
@@ -1215,7 +1204,7 @@ TEST_P(DatarateOnePassCbrSvcSmallKF, OnePassCbrSvc2SL3TLSmallKf) {
 #if CONFIG_VP9_DECODER
   // The non-reference frames are expected to be mismatched frames as the
   // encoder will avoid loopfilter on these frames.
-  EXPECT_EQ(num_nonref_frames_, GetMismatchFrames());
+  EXPECT_EQ(GetNonRefFrames(), GetMismatchFrames());
 #endif
 }
 
@@ -1224,32 +1213,16 @@ TEST_P(DatarateOnePassCbrSvcSmallKF, OnePassCbrSvc2SL3TLSmallKf) {
 // one at middle layer first, then another one for top layer, and another
 // insert for base spatial layer (which forces key frame).
 TEST_P(DatarateOnePassCbrSvcSingleBR, OnePassCbrSvc3SL3TLSyncFrames) {
+  SetSvcConfig(3, 3);
   cfg_.rc_buf_initial_sz = 500;
   cfg_.rc_buf_optimal_sz = 500;
   cfg_.rc_buf_sz = 1000;
   cfg_.rc_min_quantizer = 0;
   cfg_.rc_max_quantizer = 63;
-  cfg_.rc_end_usage = VPX_CBR;
-  cfg_.g_lag_in_frames = 0;
-  cfg_.ss_number_layers = 3;
-  cfg_.ts_number_layers = 3;
-  cfg_.ts_rate_decimator[0] = 4;
-  cfg_.ts_rate_decimator[1] = 2;
-  cfg_.ts_rate_decimator[2] = 1;
-  cfg_.g_error_resilient = 1;
   cfg_.g_threads = 1;
-  cfg_.temporal_layering_mode = 3;
-  svc_params_.scaling_factor_num[0] = 72;
-  svc_params_.scaling_factor_den[0] = 288;
-  svc_params_.scaling_factor_num[1] = 144;
-  svc_params_.scaling_factor_den[1] = 288;
-  svc_params_.scaling_factor_num[2] = 288;
-  svc_params_.scaling_factor_den[2] = 288;
   cfg_.kf_max_dist = 9999;
   cfg_.rc_dropframe_thresh = 10;
   cfg_.rc_target_bitrate = 400;
-  number_spatial_layers_ = cfg_.ss_number_layers;
-  number_temporal_layers_ = cfg_.ts_number_layers;
   ::libvpx_test::I420VideoSource video("niklas_640_480_30.yuv", 640, 480, 30, 1,
                                        0, 400);
   top_sl_width_ = 640;
@@ -1263,7 +1236,7 @@ TEST_P(DatarateOnePassCbrSvcSingleBR, OnePassCbrSvc3SL3TLSyncFrames) {
 #if CONFIG_VP9_DECODER
   // The non-reference frames are expected to be mismatched frames as the
   // encoder will avoid loopfilter on these frames.
-  EXPECT_EQ(num_nonref_frames_, GetMismatchFrames());
+  EXPECT_EQ(GetNonRefFrames(), GetMismatchFrames());
 #endif
 }
 
@@ -1271,30 +1244,16 @@ TEST_P(DatarateOnePassCbrSvcSingleBR, OnePassCbrSvc3SL3TLSyncFrames) {
 // intra-only frame as sync frame on base spatial layer.
 // Intra_only is inserted at start and in middle of sequence.
 TEST_P(DatarateOnePassCbrSvcSingleBR, OnePassCbrSvc3SL1TLSyncWithIntraOnly) {
+  SetSvcConfig(3, 1);
   cfg_.rc_buf_initial_sz = 500;
   cfg_.rc_buf_optimal_sz = 500;
   cfg_.rc_buf_sz = 1000;
   cfg_.rc_min_quantizer = 0;
   cfg_.rc_max_quantizer = 63;
-  cfg_.rc_end_usage = VPX_CBR;
-  cfg_.g_lag_in_frames = 0;
-  cfg_.ss_number_layers = 3;
-  cfg_.ts_number_layers = 1;
-  cfg_.ts_rate_decimator[0] = 1;
-  cfg_.temporal_layering_mode = 0;
-  cfg_.g_error_resilient = 1;
   cfg_.g_threads = 4;
-  svc_params_.scaling_factor_num[0] = 72;
-  svc_params_.scaling_factor_den[0] = 288;
-  svc_params_.scaling_factor_num[1] = 144;
-  svc_params_.scaling_factor_den[1] = 288;
-  svc_params_.scaling_factor_num[2] = 288;
-  svc_params_.scaling_factor_den[2] = 288;
   cfg_.rc_dropframe_thresh = 30;
   cfg_.kf_max_dist = 9999;
   cfg_.rc_target_bitrate = 400;
-  number_spatial_layers_ = cfg_.ss_number_layers;
-  number_temporal_layers_ = cfg_.ts_number_layers;
   ::libvpx_test::I420VideoSource video("niklas_640_480_30.yuv", 640, 480, 30, 1,
                                        0, 400);
   top_sl_width_ = 640;
@@ -1310,7 +1269,7 @@ TEST_P(DatarateOnePassCbrSvcSingleBR, OnePassCbrSvc3SL1TLSyncWithIntraOnly) {
 #if CONFIG_VP9_DECODER
   // The non-reference frames are expected to be mismatched frames as the
   // encoder will avoid loopfilter on these frames.
-  EXPECT_EQ(num_nonref_frames_, GetMismatchFrames());
+  EXPECT_EQ(GetNonRefFrames(), GetMismatchFrames());
 #endif
 }
 
@@ -1363,7 +1322,7 @@ TEST_P(DatarateOnePassCbrSvcSingleBR, OnePassCbrSvc2QL1TLScreen) {
 #if CONFIG_VP9_DECODER
   // The non-reference frames are expected to be mismatched frames as the
   // encoder will avoid loopfilter on these frames.
-  EXPECT_EQ(num_nonref_frames_, GetMismatchFrames());
+  EXPECT_EQ(GetNonRefFrames(), GetMismatchFrames());
 #endif
 }
 
@@ -1437,7 +1396,7 @@ TEST_P(DatarateOnePassCbrSvcPostencodeDrop, OnePassCbrSvc2QL1TLScreen) {
 #if CONFIG_VP9_DECODER
   // The non-reference frames are expected to be mismatched frames as the
   // encoder will avoid loopfilter on these frames.
-  EXPECT_EQ(num_nonref_frames_, GetMismatchFrames());
+  EXPECT_EQ(GetNonRefFrames(), GetMismatchFrames());
 #endif
 }
 
@@ -1460,9 +1419,10 @@ VP9_INSTANTIATE_TEST_CASE(DatarateOnePassCbrSvcFrameDropMultiBR,
 #if CONFIG_VP9_TEMPORAL_DENOISING
 VP9_INSTANTIATE_TEST_CASE(DatarateOnePassCbrSvcDenoiser,
                           ::testing::Range(5, 10), ::testing::Range(1, 3),
-                          ::testing::Range(0, 3));
+                          ::testing::Range(0, 3), ::testing::Range(0, 4));
 #endif
 
 VP9_INSTANTIATE_TEST_CASE(DatarateOnePassCbrSvcSmallKF, ::testing::Range(5, 10),
                           ::testing::Range(32, 36));
 }  // namespace
+}  // namespace svc_test

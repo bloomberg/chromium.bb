@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
@@ -18,17 +19,18 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/desktop_media_id.h"
-#include "content/public/common/media_stream_request.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/media_switches.h"
 #include "media/capture/video/fake_video_capture_device.h"
 #include "media/capture/video/fake_video_capture_device_factory.h"
+#include "media/capture/video/scoped_video_capture_jpeg_decoder.h"
 #include "media/capture/video/video_capture_buffer_pool_impl.h"
 #include "media/capture/video/video_capture_buffer_tracker_factory_impl.h"
 #include "media/capture/video/video_capture_device_client.h"
 #include "media/capture/video/video_capture_jpeg_decoder_impl.h"
 #include "media/capture/video/video_frame_receiver.h"
 #include "media/capture/video/video_frame_receiver_on_task_runner.h"
+#include "third_party/blink/public/common/mediastream/media_stream_request.h"
 
 #if defined(ENABLE_SCREEN_CAPTURE)
 #include "content/browser/media/capture/desktop_capture_device_uma_types.h"
@@ -48,12 +50,15 @@ namespace {
 std::unique_ptr<media::VideoCaptureJpegDecoder> CreateGpuJpegDecoder(
     media::VideoCaptureJpegDecoder::DecodeDoneCB decode_done_cb,
     base::Callback<void(const std::string&)> send_log_message_cb) {
-  return std::make_unique<media::VideoCaptureJpegDecoderImpl>(
-      base::BindRepeating(
-          &content::VideoCaptureDependencies::CreateJpegDecodeAccelerator),
-      base::CreateSingleThreadTaskRunnerWithTraits(
-          {content::BrowserThread::IO}),
-      std::move(decode_done_cb), std::move(send_log_message_cb));
+  auto io_task_runner = base::CreateSingleThreadTaskRunnerWithTraits(
+      {content::BrowserThread::IO});
+  return std::make_unique<media::ScopedVideoCaptureJpegDecoder>(
+      std::make_unique<media::VideoCaptureJpegDecoderImpl>(
+          base::BindRepeating(
+              &content::VideoCaptureDependencies::CreateJpegDecodeAccelerator),
+          io_task_runner, std::move(decode_done_cb),
+          std::move(send_log_message_cb)),
+      io_task_runner);
 }
 
 // The maximum number of video frame buffers in-flight at any one time. This
@@ -79,7 +84,7 @@ InProcessVideoCaptureDeviceLauncher::~InProcessVideoCaptureDeviceLauncher() {
 
 void InProcessVideoCaptureDeviceLauncher::LaunchDeviceAsync(
     const std::string& device_id,
-    MediaStreamType stream_type,
+    blink::MediaStreamType stream_type,
     const media::VideoCaptureParams& params,
     base::WeakPtr<media::VideoFrameReceiver> receiver_on_io_thread,
     base::OnceClosure /* connection_lost_cb */,
@@ -111,7 +116,7 @@ void InProcessVideoCaptureDeviceLauncher::LaunchDeviceAsync(
                      base::Unretained(this), callbacks, std::move(done_cb)));
 
   switch (stream_type) {
-    case MEDIA_DEVICE_VIDEO_CAPTURE: {
+    case blink::MEDIA_DEVICE_VIDEO_CAPTURE: {
       if (!video_capture_system_) {
         // Clients who create an instance of |this| without providing a
         // VideoCaptureSystem instance are expected to know that
@@ -132,7 +137,7 @@ void InProcessVideoCaptureDeviceLauncher::LaunchDeviceAsync(
 
 #if defined(ENABLE_SCREEN_CAPTURE)
 #if !defined(OS_ANDROID)
-    case MEDIA_GUM_TAB_VIDEO_CAPTURE:
+    case blink::MEDIA_GUM_TAB_VIDEO_CAPTURE:
       start_capture_closure = base::BindOnce(
           &InProcessVideoCaptureDeviceLauncher::DoStartTabCaptureOnDeviceThread,
           base::Unretained(this), device_id, params, std::move(receiver),
@@ -140,9 +145,9 @@ void InProcessVideoCaptureDeviceLauncher::LaunchDeviceAsync(
       break;
 #endif  // !defined(OS_ANDROID)
 
-    case MEDIA_GUM_DESKTOP_VIDEO_CAPTURE:
+    case blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE:
       FALLTHROUGH;
-    case MEDIA_DISPLAY_VIDEO_CAPTURE: {
+    case blink::MEDIA_DISPLAY_VIDEO_CAPTURE: {
       const DesktopMediaID desktop_id = DesktopMediaID::Parse(device_id);
       if (desktop_id.is_null()) {
         DLOG(ERROR) << "Desktop media ID is null";
@@ -190,7 +195,7 @@ void InProcessVideoCaptureDeviceLauncher::LaunchDeviceAsync(
 #endif  // !defined(OS_ANDROID)
 
 #if defined(USE_AURA)
-      if (desktop_id.aura_id != DesktopMediaID::kNullId) {
+      if (desktop_id.window_id != DesktopMediaID::kNullId) {
         start_capture_closure = base::BindOnce(
             &InProcessVideoCaptureDeviceLauncher::
                 DoStartAuraWindowCaptureOnDeviceThread,

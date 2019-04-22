@@ -55,8 +55,9 @@ class RequestQueueStore {
       bool /* success */,
       std::vector<std::unique_ptr<SavePageRequest>> /* requests */)>
       GetRequestsCallback;
-  typedef base::OnceCallback<void(ItemActionStatus)> AddCallback;
+  typedef base::OnceCallback<void(AddRequestResult)> AddCallback;
   using UpdateCallback = RequestQueue::UpdateCallback;
+  using AddOptions = RequestQueue::AddOptions;
 
   RequestQueueStore(
       scoped_refptr<base::SequencedTaskRunner> background_task_runner,
@@ -81,7 +82,9 @@ class RequestQueueStore {
 
   // Asynchronously adds request in store. Fails if request with the same
   // offline ID already exists.
-  void AddRequest(const SavePageRequest& offline_page, AddCallback callback);
+  void AddRequest(const SavePageRequest& offline_page,
+                  AddOptions options,
+                  AddCallback callback);
 
   // Asynchronously updates requests in store.
   void UpdateRequests(const std::vector<SavePageRequest>& requests,
@@ -94,6 +97,20 @@ class RequestQueueStore {
   // be deleted, e.g. because it was missing.
   void RemoveRequests(const std::vector<int64_t>& request_ids,
                       UpdateCallback callback);
+
+  // Invokes |remove_predicate| for all requests in the queue, and removes each
+  // request where |remove_predicate| returns true. Note: |remove_predicate| is
+  // called from a background thread.
+  void RemoveRequestsIf(const base::RepeatingCallback<
+                            bool(const SavePageRequest&)>& remove_predicate,
+                        UpdateCallback done_callback);
+
+  // Asynchronously sets the auto fetch notification state on the request with
+  // |request_id|.
+  void SetAutoFetchNotificationState(
+      int64_t request_id,
+      SavePageRequest::AutoFetchNotificationState state,
+      base::OnceCallback<void(bool updated)> callback);
 
   // Resets the store (removes any existing data).
   // Virtual for testing only.

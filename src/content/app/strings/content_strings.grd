@@ -245,6 +245,7 @@ below:
         <ph name="WEEK">$1<ex>Week 38, 2014</ex></ph>, starting on <ph name="WEEK_START_DATE">$2<ex>September 15, 2014</ex></ph>
       </message>
 
+      <!-- Localized names for accessibility roles -->
       <message name="IDS_AX_ROLE_ARTICLE" desc="Accessibility role description for article">
         article
       </message>
@@ -604,6 +605,38 @@ below:
         </message>
       </if>
 
+      <!-- Automatic image annotations for accessibility -->
+      <if expr="is_win">
+        <then>
+          <message name="IDS_AX_UNLABELED_IMAGE_ROLE_DESCRIPTION" desc="Accessibility role description for a graphic (image) on a web page that does not have a description for blind users.">
+            Unlabeled graphic
+          </message>
+        </then>
+        <else>
+          <message name="IDS_AX_UNLABELED_IMAGE_ROLE_DESCRIPTION" desc="Accessibility role description for an image on a web page that does not have a description for blind users.">
+            Unlabeled image
+          </message>
+        </else>
+      </if>
+      <message name="IDS_AX_IMAGE_ELIGIBLE_FOR_ANNOTATION" desc="Accessibility message spoken out loud to screen reader users to inform them that they can get a description of an image by opening the context menu.">
+        To get missing image descriptions, open the context menu.
+      </message>
+      <message name="IDS_AX_IMAGE_ANNOTATION_PENDING" desc="Accessibility message spoken out loud to screen reader users saying that the browser is in the middle of trying to get a description for an image.">
+        Getting description...
+      </message>
+      <message name="IDS_AX_IMAGE_ANNOTATION_ADULT" desc="Accessibility message spoken out loud to screen reader users indicating that an image appears to be something like nudity or pornography or other policy violation that is not appropriate for children.">
+        Appears to contain adult content. No description available.
+      </message>
+      <message name="IDS_AX_IMAGE_ANNOTATION_NO_DESCRIPTION" desc="Accessibility message spoken out loud to screen reader users indicating that the browser was unable to provide a description for an image.">
+        No description available.
+      </message>
+      <message name="IDS_AX_IMAGE_ANNOTATION_OCR_CONTEXT" desc="Accessibility message spoken out loud to screen reader users when reading text that was automatically extracted from an image, for an example the word 'stop' could be extracted from a photo of a stop sign. Because automatic text extraction sometimes contains errors it is important that the language used indicates some uncertainty - it may say 'stop' or it appears to say 'stop', not it definitely says 'stop'.">
+        Appears to say: <ph name="OCR_TEXT">$1<ex>Stop</ex></ph>
+      </message>
+      <message name="IDS_AX_IMAGE_ANNOTATION_DESCRIPTION_CONTEXT" desc="Accessibility message spoken out loud to screen reader users when reading a computer-generated description of an image, for example a photo of the president at a press conference might be described as 'A person at a podium'. Because automatic image description is sometimes incorrect, it is important that the langauge used indicates some uncertainty - it may be a person, it appears to be a person, not it definitely is a person.">
+        Appears to be: <ph name="DESCRIPTION">$1<ex>A person at a podium</ex></ph>
+      </message>
+
       <message name="IDS_AX_AM_PM_FIELD_TEXT" desc="Accessible description of the AM/PM field in a date/time control">
         AM/PM
       </message>
@@ -645,11 +678,11 @@ below:
       </message>
 
       <message name="IDS_AX_MEDIA_CURRENT_TIME_DISPLAY" desc="Accessibility role description for elapsed time display">
-        elapsed time
+        elapsed time: <ph name="ELAPSED_TIME">$1<ex>0:25</ex></ph>
       </message>
 
       <message name="IDS_AX_MEDIA_TIME_REMAINING_DISPLAY" desc="Accessibility role description for time remaining display">
-        remaining time
+        remaining time: <ph name="REMAINING_TIME">$1<ex>3:25</ex></ph>
       </message>
 
       <message name="IDS_AX_MEDIA_ENTER_FULL_SCREEN_BUTTON" desc="Accessibility role description for enter fullscreen button">
@@ -672,12 +705,16 @@ below:
         exit picture-in-picture
       </message>
 
-      <message name="IDS_AX_MEDIA_SHOW_CLOSED_CAPTIONS_BUTTON" desc="Accessibility role description for show closed captions button">
-        show closed captions
+      <message name="IDS_AX_MEDIA_LOADING_PANEL" desc="Accessibility role description for the loading/buffering panel">
+        buffering
       </message>
 
-      <message name="IDS_AX_MEDIA_HIDE_CLOSED_CAPTIONS_BUTTON" desc="Accessibility role description for hide closed captions button">
-        hide closed captions
+      <message name="IDS_AX_MEDIA_SHOW_CLOSED_CAPTIONS_MENU_BUTTON" desc="Accessibility role description for show closed captions menu button">
+        show closed captions menu
+      </message>
+
+      <message name="IDS_AX_MEDIA_HIDE_CLOSED_CAPTIONS_MENU_BUTTON" desc="Accessibility role description for hide closed captions menu button">
+        hide closed captions menu
       </message>
 
       <message name="IDS_AX_MEDIA_CAST_OFF_BUTTON" desc="Accessibility role description for remote playback button">
@@ -709,7 +746,7 @@ below:
       </message>
 
       <message name="IDS_AX_MEDIA_VIDEO_SLIDER_HELP" desc="Accessibility help description for video timeline slider">
-        movie time scrubber
+        video time scrubber
       </message>
 
       <message name="IDS_AX_MEDIA_VOLUME_SLIDER_HELP" desc="Accessibility help description for volume slider">
@@ -721,7 +758,7 @@ below:
       </message>
 
       <message name="IDS_AX_MEDIA_TIME_REMAINING_DISPLAY_HELP" desc="Accessibility help description for time remaining display">
-        number of seconds of movie remaining
+        number of seconds of video remaining
       </message>
 
       <message name="IDS_AX_MEDIA_OVERFLOW_BUTTON_HELP" desc="Accessibility help description for overflow button.">
@@ -928,7 +965,7 @@ below:
           Exit picture-in-picture mode
       </message>
       <message name="IDS_MEDIA_PICTURE_IN_PICTURE_INTERSTITIAL_TEXT" desc="Text message shown to user when in picture in picture mode. When a video is in picture in picture mode, an interstitial with this text appears where the video player is positioned. The video continues to play back in another window that gives the experience that the video is 'popped out'.">
-        This video is playing in picture-in-picture mode
+        Playing in picture-in-picture mode
       </message>
       <message name="IDS_MEDIA_REMOTING_CAST_TEXT" desc="Text message shown to the user when casting a video to a known remote device.">
        Now casting to <ph name="DEVICE_FRIENDLY_NAME">$1<ex>Living Room TV</ex></ph>
@@ -960,6 +997,10 @@ below:
         Couldn't load plugin.
       </message>
 
+      <message name="IDS_MEDIA_PLAYBACK_ERROR" desc="Message informing that the user that there were issues playing back their media.">
+        Unable to play media.
+      </message>
+
       <!-- Byte size units -->
       <message name="IDS_UNITS_KIBIBYTES" desc="Units tag indicating a quantity of kilobytes">
         <ph name="QUANTITY">$1<ex>42.0</ex></ph> KB
@@ -977,6 +1018,15 @@ below:
         <ph name="QUANTITY">$1<ex>42.0</ex></ph> PB
       </message>
 
+      <message name="CONTENT_INVALID_TRUE" desc="Error message for aria-invalid = true">
+        Invalid entry
+      </message>
+      <message name="CONTENT_INVALID_SPELLING" desc="Error message for aria-invalid = spelling">
+        Invalid spelling
+      </message>
+      <message name="CONTENT_INVALID_GRAMMAR" desc="Error message for aria-invalid = grammar">
+        Invalid grammar
+      </message>
     </messages>
   </release>
 </grit>

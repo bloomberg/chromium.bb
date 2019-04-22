@@ -15,10 +15,10 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/containers/hash_tables.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_math.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -99,7 +99,7 @@ bool IsBuiltInFragmentVarying(const std::string& name) {
       "gl_FrontFacing",
       "gl_PointCoord"
   };
-  for (size_t ii = 0; ii < arraysize(kBuiltInVaryings); ++ii) {
+  for (size_t ii = 0; ii < base::size(kBuiltInVaryings); ++ii) {
     if (name == kBuiltInVaryings[ii])
       return true;
   }
@@ -399,6 +399,7 @@ Program::Program(ProgramManager* manager, GLuint service_id)
       valid_(false),
       link_status_(false),
       uniforms_cleared_(false),
+      draw_id_uniform_location_(-1),
       transform_feedback_buffer_mode_(GL_NONE),
       effective_transform_feedback_buffer_mode_(GL_NONE),
       fragment_output_type_mask_(0u),
@@ -426,6 +427,7 @@ void Program::Reset() {
   attrib_location_to_index_map_.clear();
   fragment_output_type_mask_ = 0u;
   fragment_output_written_mask_ = 0u;
+  draw_id_uniform_location_ = -1;
   ClearVertexInputMasks();
 }
 
@@ -560,6 +562,15 @@ void Program::UpdateTransformFeedbackInfo() {
     transform_feedback_data_size_per_vertex_[0] =
         total.ValueOrDefault(std::numeric_limits<GLsizeiptr>::max());
   }
+}
+
+void Program::UpdateDrawIDUniformLocation() {
+  DCHECK(IsValid());
+  GLint fake_location = GetUniformFakeLocation("gl_DrawID");
+  draw_id_uniform_location_ = -1;
+  GLint array_index;
+  GetUniformInfoByFakeLocation(fake_location, &draw_id_uniform_location_,
+                               &array_index);
 }
 
 std::string Program::ProcessLogInfo(const std::string& log) {
@@ -747,12 +758,31 @@ void Program::Update() {
     DCHECK(length == 0 || name_buffer[length] == '\0');
     std::string original_name;
     GetVertexAttribData(name_buffer.get(), &original_name, &type);
-    size_t location_count = size * LocationCountForAttribType(type);
-    // TODO(gman): Should we check for error?
-    GLint location = glGetAttribLocation(service_id_, name_buffer.get());
-    num_locations = std::max(num_locations, location + location_count);
+    base::CheckedNumeric<size_t> location_count = size;
+    location_count *= LocationCountForAttribType(type);
+    size_t safe_location_count = 0;
+    if (!location_count.AssignIfValid(&safe_location_count))
+      return;
+    GLint location;
+    if (base::StartsWith(name_buffer.get(), "gl_",
+                         base::CompareCase::SENSITIVE)) {
+      // Built-in attributes, for example, gl_VertexID, are still considered
+      // as active but their location is -1.
+      // However, on MacOSX, drivers return 0 in this case.
+      // Set |location| to -1 directly.
+      location = -1;
+    } else {
+      // TODO(gman): Should we check for error?
+      location = glGetAttribLocation(service_id_, name_buffer.get());
+      base::CheckedNumeric<size_t> max_location = location;
+      max_location += safe_location_count;
+      size_t safe_max_location = 0;
+      if (!max_location.AssignIfValid(&safe_max_location))
+        return;
+      num_locations = std::max(num_locations, safe_max_location);
+    }
     attrib_infos_.push_back(
-        VertexAttrib(1, type, original_name, location, location_count));
+        VertexAttrib(1, type, original_name, location, safe_location_count));
     max_attrib_name_length_ = std::max(
         max_attrib_name_length_, static_cast<GLsizei>(original_name.size()));
   }
@@ -957,7 +987,7 @@ bool Program::UpdateUniforms() {
     if (size > 1) {
       for (GLsizei ii = 1; ii < size; ++ii) {
         std::string element_name(service_base_name + "[" +
-                                 base::IntToString(ii) + "]");
+                                 base::NumberToString(ii) + "]");
         service_locations[ii] =
             glGetUniformLocation(service_id_, element_name.c_str());
       }
@@ -1029,14 +1059,14 @@ void Program::UpdateFragmentInputs() {
     // Unlike when binding uniforms, we expect the driver to give correct
     // names: "name" for simple variable, "name[0]" for an array.
     GLsizei query_length = 0;
-    GLint query_results[arraysize(kQueryProperties)] = {
+    GLint query_results[base::size(kQueryProperties)] = {
         0,
     };
     glGetProgramResourceiv(service_id_, GL_FRAGMENT_INPUT_NV, ii,
-                           arraysize(kQueryProperties), kQueryProperties,
-                           arraysize(query_results), &query_length,
+                           base::size(kQueryProperties), kQueryProperties,
+                           base::size(query_results), &query_length,
                            query_results);
-    DCHECK(query_length == arraysize(kQueryProperties));
+    DCHECK(query_length == base::size(kQueryProperties));
 
     GLenum type = static_cast<GLenum>(query_results[1]);
     GLsizei size = static_cast<GLsizei>(query_results[2]);
@@ -1081,7 +1111,7 @@ void Program::UpdateFragmentInputs() {
     }
 
     for (GLsizei jj = 1; jj < size; ++jj) {
-      std::string array_spec(std::string("[") + base::IntToString(jj) + "]");
+      std::string array_spec(std::string("[") + base::NumberToString(jj) + "]");
       std::string client_element_name =
           parsed_client_name.base_name() + array_spec;
 
@@ -1147,15 +1177,16 @@ void Program::UpdateProgramOutputs() {
       if (color_name >= 0) {
         GLint index = 0;
         for (size_t ii = 0; ii < output_var.getOutermostArraySize(); ++ii) {
-          std::string array_spec(
-              std::string("[") + base::IntToString(ii) + "]");
+          std::string array_spec(std::string("[") + base::NumberToString(ii) +
+                                 "]");
           program_output_infos_.push_back(ProgramOutputInfo(
               color_name + ii, index, client_name + array_spec));
         }
       }
     } else {
       for (size_t ii = 0; ii < output_var.getOutermostArraySize(); ++ii) {
-        std::string array_spec(std::string("[") + base::IntToString(ii) + "]");
+        std::string array_spec(std::string("[") + base::NumberToString(ii) +
+                               "]");
         std::string service_element_name(service_name + array_spec);
         GLint color_name =
             glGetFragDataLocation(service_id_, service_element_name.c_str());
@@ -1236,7 +1267,7 @@ void Program::ExecuteProgramOutputBindCalls() {
         std::string name = output_var.name;
         std::string array_spec;
         if (is_array) {
-          array_spec = std::string("[") + base::IntToString(jj) + "]";
+          array_spec = std::string("[") + base::NumberToString(jj) + "]";
           name += array_spec;
         }
         auto it = bind_program_output_location_index_map_.find(name);
@@ -1881,7 +1912,7 @@ bool Program::DetectAttribLocationBindingConflicts() const {
         continue;
       attrib = shader->GetAttribInfo(*mapped_name);
       if (attrib) {
-        if (attrib->staticUse)
+        if (shader->shader_version() >= 300 || attrib->staticUse)
           break;
         else
           attrib = nullptr;
@@ -2052,7 +2083,7 @@ bool Program::DetectProgramOutputLocationBindingConflicts() const {
     for (size_t jj = 0; jj < count; ++jj) {
       std::string name = output_var.name;
       if (is_array)
-        name += std::string("[") + base::IntToString(jj) + "]";
+        name += std::string("[") + base::NumberToString(jj) + "]";
 
       auto it = bind_program_output_location_index_map_.find(name);
       if (it == bind_program_output_location_index_map_.end())
@@ -2521,7 +2552,7 @@ bool Program::GetUniformsES3(CommonDecoder::Bucket* bucket) const {
     GL_UNIFORM_IS_ROW_MAJOR,
   };
   const GLint kDefaultValue[] = { -1, -1, -1, -1, 0 };
-  const size_t kNumPnames = arraysize(kPname);
+  const size_t kNumPnames = base::size(kPname);
   std::vector<GLuint> indices(count);
   for (GLsizei ii = 0; ii < count; ++ii) {
     indices[ii] = ii;
@@ -2718,6 +2749,11 @@ void ProgramManager::UnuseProgram(
 void ProgramManager::ClearUniforms(Program* program) {
   DCHECK(program);
   program->ClearUniforms(&zero_);
+}
+
+void ProgramManager::UpdateDrawIDUniformLocation(Program* program) {
+  DCHECK(program);
+  program->UpdateDrawIDUniformLocation();
 }
 
 int32_t ProgramManager::MakeFakeLocation(int32_t index, int32_t element) {

@@ -52,10 +52,14 @@ class DataReductionProxyMetricsObserverBase
   void OnLoadedResource(const page_load_metrics::ExtraRequestCompleteInfo&
                             extra_request_compelte_info) override;
   void OnResourceDataUseObserved(
+      content::RenderFrameHost* rfh,
       const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
           resources) override;
   void OnEventOccurred(const void* const event_key) override;
-  void OnUserInput(const blink::WebInputEvent& event) override;
+  void OnUserInput(
+      const blink::WebInputEvent& event,
+      const page_load_metrics::mojom::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
 
   // Exponentially bucket the number of bytes for privacy-implicated resources.
   // Input below 10KB returns 0.
@@ -179,10 +183,6 @@ class DataReductionProxyMetricsObserverBase
 
   // The number of main frame redirects that occurred before commit.
   uint32_t redirect_count_;
-
-  // The time when the navigation started. Used to estimate
-  // |navigation_start_to_main_frame_fetch_start_|.
-  base::Optional<base::TimeTicks> navigation_start_;
 
   // The time of the fetchStart of the main page HTML.
   base::Optional<base::TimeTicks> main_frame_fetch_start_;

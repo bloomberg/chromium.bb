@@ -24,7 +24,7 @@ class ScopedProcessInformation;
 namespace credential_provider {
 
 // Manages OS processes and process attributes.
-class OSProcessManager {
+class [[clang::lto_visibility_public]] OSProcessManager {
  public:
   static OSProcessManager* Get();
 
@@ -52,6 +52,10 @@ class OSProcessManager {
       const base::CommandLine& command_line,
       _STARTUPINFOW* startupinfo,
       base::win::ScopedProcessInformation* procinfo);
+
+  // This method is called from dllmain.cc when setting fakes from one module
+  // to another.
+  static void SetInstanceForTesting(OSProcessManager* instance);
 
  protected:
   OSProcessManager() {}

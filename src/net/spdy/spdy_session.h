@@ -27,11 +27,11 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_states.h"
+#include "net/base/load_timing_info.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_export.h"
 #include "net/base/request_priority.h"
 #include "net/log/net_log_source.h"
-#include "net/socket/client_socket_handle.h"
 #include "net/socket/client_socket_pool.h"
 #include "net/socket/next_proto.h"
 #include "net/socket/ssl_client_socket.h"
@@ -46,10 +46,10 @@
 #include "net/spdy/spdy_stream.h"
 #include "net/spdy/spdy_write_queue.h"
 #include "net/ssl/ssl_config_service.h"
-#include "net/third_party/spdy/core/spdy_alt_svc_wire_format.h"
-#include "net/third_party/spdy/core/spdy_framer.h"
-#include "net/third_party/spdy/core/spdy_header_block.h"
-#include "net/third_party/spdy/core/spdy_protocol.h"
+#include "net/third_party/quiche/src/spdy/core/spdy_alt_svc_wire_format.h"
+#include "net/third_party/quiche/src/spdy/core/spdy_framer.h"
+#include "net/third_party/quiche/src/spdy/core/spdy_header_block.h"
+#include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "url/gurl.h"
 #include "url/scheme_host_port.h"
@@ -86,7 +86,6 @@ const int kYieldAfterDurationMilliseconds = 20;
 const spdy::SpdyStreamId kFirstStreamId = 1;
 const spdy::SpdyStreamId kLastStreamId = 0x7fffffff;
 
-struct LoadTimingInfo;
 class NetLog;
 class NetworkQualityEstimator;
 class SpdyStream;
@@ -179,7 +178,8 @@ enum class SpdyPushedStreamFate {
   kAcceptedMatchingVary = 18,
   kPushDisabled = 19,
   kAlreadyInCache = 20,
-  kMaxValue = kAlreadyInCache
+  kUnsupportedStatusCode = 21,
+  kMaxValue = kUnsupportedStatusCode
 };
 
 // If these compile asserts fail then SpdyProtocolErrorDetails needs
@@ -203,6 +203,9 @@ class NET_EXPORT_PRIVATE SpdyStreamRequest {
   // is not created, an error is returned, and ReleaseStream() may not
   // be called.
   //
+  // If |can_send_early| is true, this request is allowed to be sent over
+  // TLS 1.3 0RTT without confirming the handshake.
+  //
   // If OK is returned, must not be called again without
   // ReleaseStream() being called first. If ERR_IO_PENDING is
   // returned, must not be called again without CancelRequest() or
@@ -211,6 +214,7 @@ class NET_EXPORT_PRIVATE SpdyStreamRequest {
   int StartRequest(SpdyStreamType type,
                    const base::WeakPtr<SpdySession>& session,
                    const GURL& url,
+                   bool can_send_early,
                    RequestPriority priority,
                    const SocketTag& socket_tag,
                    const NetLogWithSource& net_log,
@@ -241,6 +245,17 @@ class NET_EXPORT_PRIVATE SpdyStreamRequest {
  private:
   friend class SpdySession;
 
+  enum State {
+    STATE_NONE,
+    STATE_WAIT_FOR_CONFIRMATION,
+    STATE_REQUEST_STREAM,
+  };
+
+  void OnIOComplete(int rv);
+  int DoLoop(int rv);
+  int DoWaitForConfirmation();
+  int DoRequestStream(int rv);
+
   // Called by |session_| when the stream attempt has finished
   // successfully.
   void OnRequestCompleteSuccess(const base::WeakPtr<SpdyStream>& stream);
@@ -262,11 +277,13 @@ class NET_EXPORT_PRIVATE SpdyStreamRequest {
   base::WeakPtr<SpdySession> session_;
   base::WeakPtr<SpdyStream> stream_;
   GURL url_;
+  bool can_send_early_;
   RequestPriority priority_;
   SocketTag socket_tag_;
   NetLogWithSource net_log_;
   CompletionOnceCallback callback_;
   MutableNetworkTrafficAnnotationTag traffic_annotation_;
+  State next_state_;
 
   base::WeakPtrFactory<SpdyStreamRequest> weak_ptr_factory_;
 
@@ -348,10 +365,19 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // |pool| is the SpdySessionPool that owns us.  Its lifetime must
   // strictly be greater than |this|.
   //
-  // The session begins reading from |connection| on a subsequent event loop
-  // iteration, so the SpdySession may close immediately afterwards if the first
-  // read of |connection| fails.
-  void InitializeWithSocket(std::unique_ptr<ClientSocketHandle> connection,
+  // The session begins reading from |client_socket_handle| on a subsequent
+  // event loop iteration, so the SpdySession may close immediately afterwards
+  // if the first read of |client_socket_handle| fails.
+  void InitializeWithSocketHandle(
+      std::unique_ptr<ClientSocketHandle> client_socket_handle,
+      SpdySessionPool* pool);
+
+  // Just like InitializeWithSocketHandle(), but for use when the session is not
+  // on top of a socket pool, but instead directly on top of a socket, which the
+  // session has sole ownership of, and is responsible for deleting directly
+  // itself.
+  void InitializeWithSocket(std::unique_ptr<StreamSocket> stream_socket,
+                            const LoadTimingInfo::ConnectTiming& connect_timing,
                             SpdySessionPool* pool);
 
   // Check to see if this SPDY session can support an additional domain.
@@ -372,6 +398,11 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   void EnqueueStreamWrite(const base::WeakPtr<SpdyStream>& stream,
                           spdy::SpdyFrameType frame_type,
                           std::unique_ptr<SpdyBufferProducer> producer);
+
+  // Runs the handshake to completion to confirm the handshake with the server.
+  // If ERR_IO_PENDING is returned, then when the handshake is confirmed,
+  // |callback| will be called.
+  int ConfirmHandshake(CompletionOnceCallback callback);
 
   // Creates and returns a HEADERS frame for |stream_id|.
   std::unique_ptr<spdy::SpdySerializedFrame> CreateHeaders(
@@ -476,9 +507,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
 
   // Returns true if the underlying transport socket ever had any reads or
   // writes.
-  bool WasEverUsed() const {
-    return connection_->socket()->WasEverUsed();
-  }
+  bool WasEverUsed() const { return socket_->WasEverUsed(); }
 
   // Returns the load timing information from the perspective of the given
   // stream.  If it's not the first stream, the connection is considered reused
@@ -595,6 +624,9 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
     WRITE_STATE_DO_WRITE_COMPLETE,
   };
 
+  // Has the shared logic for the other two Initialize methods that call it.
+  void InitializeInternal(SpdySessionPool* pool);
+
   // Called by SpdyStreamRequest to start a request to create a
   // stream. If OK is returned, then |stream| will be filled in with a
   // valid stream. If ERR_IO_PENDING is returned, then
@@ -693,6 +725,8 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // The implementations of the states of the WriteState state machine.
   int DoWrite();
   int DoWriteComplete(int result);
+
+  void NotifyRequestsOfConfirmation(int rv);
 
   // TODO(akalin): Rename the Send* and Write* functions below to
   // Enqueue*.
@@ -836,7 +870,8 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
                  spdy::SpdyStreamId parent_stream_id,
                  bool exclusive,
                  bool fin,
-                 spdy::SpdyHeaderBlock headers) override;
+                 spdy::SpdyHeaderBlock headers,
+                 base::TimeTicks recv_first_byte_time) override;
   void OnAltSvc(spdy::SpdyStreamId stream_id,
                 base::StringPiece origin,
                 const spdy::SpdyAltSvcWireFormat::AlternativeServiceVector&
@@ -936,8 +971,18 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   TransportSecurityState* transport_security_state_;
   SSLConfigService* ssl_config_service_;
 
-  // The socket handle for this session.
-  std::unique_ptr<ClientSocketHandle> connection_;
+  // One of these two owns the socket for this session, which is stored in
+  // |socket_|. If |client_socket_handle_| is non-null, this session is on top
+  // of a socket in a socket pool. If |owned_stream_socket_| is non-null, this
+  // session is directly on top of a socket, which is not in a socket pool.
+  std::unique_ptr<ClientSocketHandle> client_socket_handle_;
+  std::unique_ptr<StreamSocket> owned_stream_socket_;
+
+  // This is non-null only if |owned_stream_socket_| is non-null.
+  std::unique_ptr<LoadTimingInfo::ConnectTiming> connect_timing_;
+
+  // The socket for this session.
+  StreamSocket* socket_;
 
   // The read buffer used to read data from the socket.
   // Non-null if there is a Read() pending.
@@ -1032,6 +1077,13 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // valid HTTP/2 frame.  See
   // https://tools.ietf.org/html/draft-bishop-httpbis-grease-00.
   const base::Optional<SpdySessionPool::GreasedHttp2Frame> greased_http2_frame_;
+
+  // The callbacks to notify a request that the handshake has been confirmed.
+  std::vector<CompletionOnceCallback> waiting_for_confirmation_callbacks_;
+
+  // True if there is an ongoing handshake confirmation with outstanding
+  // requests.
+  bool in_confirm_handshake_;
 
   // Limits
   size_t max_concurrent_streams_;

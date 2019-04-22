@@ -17,7 +17,9 @@ js_type_check("js_resources") {
     ":action_link",
     ":assert",
     ":cr",
+    ":dark_mode",
     ":event_tracker",
+    ":find_shortcut_behavior",
     ":i18n_behavior",
     ":i18n_template",
     ":i18n_template_no_process",
@@ -29,9 +31,11 @@ js_type_check("js_resources") {
     ":search_highlight_utils",
     ":util",
     ":web_ui_listener_behavior",
-    ":webui_listener_tracker",
     ":webui_resource_test",
   ]
+  if (is_ios) {
+    deps += [ "ios:web_ui" ]
+  }
 }
 
 js_library("action_link") {
@@ -48,13 +52,14 @@ js_library("cr") {
   externs_list = [ "$externs_path/chrome_send.js" ]
 }
 
-js_library("event_tracker") {
-}
-
-js_library("webui_listener_tracker") {
+js_library("dark_mode") {
   deps = [
     ":cr",
   ]
+  externs_list = [ "$externs_path/pending.js" ]
+}
+
+js_library("event_tracker") {
 }
 
 js_library("search_highlight_utils") {
@@ -123,4 +128,12 @@ js_library("web_ui_listener_behavior") {
 
 js_library("webui_resource_test") {
   externs_list = [ "dom_automation_controller.js" ]
+}
+
+js_library("find_shortcut_behavior") {
+  deps = [
+    ":assert",
+    ":cr",
+    "cr/ui:command",
+  ]
 }

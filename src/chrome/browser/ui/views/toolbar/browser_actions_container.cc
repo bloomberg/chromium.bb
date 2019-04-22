@@ -4,8 +4,13 @@
 
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 
+#include <algorithm>
+#include <set>
+#include <string>
 #include <utility>
+#include <vector>
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/ranges.h"
@@ -18,11 +23,11 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/extensions/browser_action_drag_data.h"
 #include "chrome/browser/ui/views/frame/app_menu_button.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/toolbar/browser_app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_actions_bar_bubble_views.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
@@ -90,6 +95,8 @@ BrowserActionsContainer::BrowserActionsContainer(
       separator_ = new views::Separator();
       AddChildView(separator_);
     }
+  } else {
+    DCHECK(!base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu));
   }
 }
 
@@ -155,12 +162,13 @@ gfx::Size BrowserActionsContainer::GetToolbarActionSize() {
 }
 
 void BrowserActionsContainer::AddViewForAction(
-   ToolbarActionViewController* view_controller,
-   size_t index) {
+    ToolbarActionViewController* view_controller,
+    size_t index) {
   ToolbarActionView* view = new ToolbarActionView(view_controller, this);
   toolbar_action_views_.insert(toolbar_action_views_.begin() + index,
                                base::WrapUnique(view));
   AddChildViewAt(view, index);
+  PreferredSizeChanged();
 }
 
 void BrowserActionsContainer::RemoveViewForAction(
@@ -174,10 +182,12 @@ void BrowserActionsContainer::RemoveViewForAction(
       break;
     }
   }
+  PreferredSizeChanged();
 }
 
 void BrowserActionsContainer::RemoveAllViews() {
   toolbar_action_views_.clear();
+  PreferredSizeChanged();
 }
 
 void BrowserActionsContainer::Redraw(bool order_changed) {
@@ -187,15 +197,15 @@ void BrowserActionsContainer::Redraw(bool order_changed) {
     return;
   }
 
-  // Don't allow resizing if the bar is highlighting.
-  if (resize_area_)
-    resize_area_->SetEnabled(!toolbar_actions_bar()->is_highlighting());
+  // Need to update the resize area because resizing is not allowed when the
+  // actions bar is highlighting.
+  UpdateResizeArea();
 
-  std::vector<ToolbarActionViewController*> actions =
-      toolbar_actions_bar_->GetActions();
   if (order_changed) {
     // Run through the views and compare them to the desired order. If something
     // is out of place, find the correct spot for it.
+    std::vector<ToolbarActionViewController*> actions =
+        toolbar_actions_bar_->GetActions();
     for (int i = 0; i < static_cast<int>(actions.size()) - 1; ++i) {
       if (actions[i] != toolbar_action_views_[i]->view_controller()) {
         // Find where the correct view is (it's guaranteed to be after our
@@ -306,12 +316,10 @@ void BrowserActionsContainer::ShowToolbarActionBubble(
 }
 
 bool BrowserActionsContainer::CloseOverflowMenuIfOpen() {
-  // TODO(mgiuca): Use toolbar_button_provider() instead of toolbar(), so this
-  // also works for hosted app windows.
-  BrowserAppMenuButton* app_menu_button =
+  AppMenuButton* app_menu_button =
       BrowserView::GetBrowserViewForBrowser(browser_)
-          ->toolbar()
-          ->app_menu_button();
+          ->toolbar_button_provider()
+          ->GetAppMenuButton();
   if (!app_menu_button || !app_menu_button->IsMenuShowing())
     return false;
 
@@ -328,18 +336,51 @@ void BrowserActionsContainer::OnWidgetDestroying(views::Widget* widget) {
 }
 
 int BrowserActionsContainer::GetWidthForMaxWidth(int max_width) const {
+  DCHECK_GE(max_width, 0);
   int preferred_width = GetPreferredSize().width();
   if (preferred_width > max_width) {
-    // If we can't even show the resize area width, just throw in the towel (and
-    // show nothing).
-    // TODO(pbos): Consider making this the size of one item + resize area +
-    // separator, since it doesn't make that much sense to have a drag handle if
-    // there's not enough room to drag anything out.
-    if (max_width < GetResizeAreaWidth())
-      return 0;
-    preferred_width = GetWidthForIconCount(WidthToIconCount(max_width));
+    // If we're trying to be nonzero width, we should make sure we at least ask
+    // for enough space to show the resize handle (if there are no icons, we
+    // will ask for a width of zero so it won't matter).
+    preferred_width =
+        std::max(GetResizeAreaWidth(), GetWidthForIconCount(WidthToIconCount(
+                                           max_width - GetResizeAreaWidth())));
   }
   return preferred_width;
+}
+
+// static
+views::FlexRule BrowserActionsContainer::GetFlexRule() {
+  // We only want to flex to widths which are integer multiples of the icon
+  // size, plus the size of the drag handle. The one exception is if there are
+  // no extensions at all.
+  return base::BindRepeating(
+      [](const views::View* view, const views::SizeBounds& maximum_size) {
+        const BrowserActionsContainer* browser_actions =
+            static_cast<const BrowserActionsContainer*>(view);
+        gfx::Size preferred_size = browser_actions->GetPreferredSize();
+        if (maximum_size.width()) {
+          int width;
+          if (browser_actions->resizing() || browser_actions->animating()) {
+            // When there are actions present, the floor on the size of the
+            // browser actions bar should be the resize handle.
+            const int min_width = browser_actions->num_toolbar_actions() == 0
+                                      ? 0
+                                      : browser_actions->GetResizeAreaWidth();
+            // The ceiling on the value is the lesser of the preferred and
+            // available size.
+            width = std::max(min_width, std::min(preferred_size.width(),
+                                                 *maximum_size.width()));
+          } else {
+            // When not animating or resizing, the desired width should always
+            // be based on the number of icons that can be displayed.
+            width = browser_actions->GetWidthForMaxWidth(*maximum_size.width());
+          }
+          preferred_size =
+              gfx::Size(width, browser_actions->GetHeightForWidth(width));
+        }
+        return preferred_size;
+      });
 }
 
 void BrowserActionsContainer::SetSeparatorColor(SkColor color) {
@@ -463,7 +504,7 @@ void BrowserActionsContainer::Layout() {
 
 bool BrowserActionsContainer::GetDropFormats(
     int* formats,
-    std::set<ui::Clipboard::FormatType>* format_types) {
+    std::set<ui::ClipboardFormatType>* format_types) {
   return BrowserActionDragData::GetDropFormats(format_types);
 }
 
@@ -494,20 +535,18 @@ int BrowserActionsContainer::OnDragUpdated(
     const auto size = toolbar_actions_bar_->GetViewSize();
     const int offset_into_icon_area = GetMirroredXInView(event.x()) -
                                       GetResizeAreaWidth() + (size.width() / 2);
-    const int before_icon_unclamped = offset_into_icon_area / size.width();
-
-    // Next, figure out what row we're on. This only matters for overflow mode,
-    // but the calculation is the same for both.
-    row_index = event.y() / size.height();
-
-    // Sanity check - we should never be on a different row in the main
-    // container.
-    DCHECK(ShownInsideMenu() || row_index == 0);
+    const int before_icon_unclamped =
+        toolbar_actions_bar_->WidthToIconCount(offset_into_icon_area);
 
     // We need to figure out how many icons are visible on the relevant row.
     // In the main container, this will just be the visible actions.
     int visible_icons_on_row = VisibleBrowserActionsAfterAnimation();
     if (ShownInsideMenu()) {
+      // Next, figure out what row we're on.
+      const int element_padding = GetLayoutConstant(TOOLBAR_ELEMENT_PADDING);
+      row_index =
+          (event.y() + element_padding) / (size.height() + element_padding);
+
       const int icons_per_row = platform_settings().icons_per_overflow_menu_row;
       // If this is the final row of the overflow, then this is the remainder of
       // visible icons. Otherwise, it's a full row (kIconsPerRow).
@@ -550,11 +589,8 @@ int BrowserActionsContainer::OnPerformDrop(
   // Make sure we have the same view as we started with.
   DCHECK_EQ(GetIdAt(data.index()), data.id());
 
-  size_t i = drop_position_->row *
-      platform_settings().icons_per_overflow_menu_row +
-      drop_position_->icon_in_row;
-  if (ShownInsideMenu())
-    i += main_container_->VisibleBrowserActionsAfterAnimation();
+  size_t i = GetDropPositionIndex();
+
   // |i| now points to the item to the right of the drop indicator*, which is
   // correct when dragging an icon to the left. When dragging to the right,
   // however, we want the icon being dragged to get the index of the item to
@@ -652,6 +688,14 @@ void BrowserActionsContainer::OnResize(int resize_amount, bool done_resizing) {
   toolbar_actions_bar_->OnResizeComplete(icon_area_width);
 }
 
+void BrowserActionsContainer::OnBoundsChanged(
+    const gfx::Rect& previous_bounds) {
+  // When bounds change, it's possible that the amount of space available to the
+  // view changes as well. If the amount of space is not enough to fit a single
+  // icon, the resize handle should be disabled.
+  UpdateResizeArea();
+}
+
 void BrowserActionsContainer::AnimationProgressed(
     const gfx::Animation* animation) {
   DCHECK_EQ(resize_animation_.get(), animation);
@@ -687,23 +731,18 @@ void BrowserActionsContainer::OnPaint(gfx::Canvas* canvas) {
     // The two-pixel width drop indicator.
     constexpr int kDropIndicatorWidth = 2;
 
-    // Convert back to a pixel offset into the container.  First find the X
-    // coordinate of the drop icon.
-    const auto size = toolbar_actions_bar_->GetViewSize();
-    // TODO(pbos): The drag/drop separator and view placement should share code
-    // after ToolbarActionsBar and BrowserActionsContainer merge.
-    const int drop_icon_x = GetResizeAreaWidth() +
-                            drop_position_->icon_in_row * size.width() -
-                            (kDropIndicatorWidth / 2);
-
-    // Next, clamp so the indicator doesn't touch the adjoining toolbar items.
-    const int drop_indicator_x =
-        base::ClampToRange(drop_icon_x, 1, width() - kDropIndicatorWidth - 1);
-
-    const int row_height = size.height();
-    const int drop_indicator_y = row_height * drop_position_->row;
-    gfx::Rect indicator_bounds = GetMirroredRect(gfx::Rect(
-        drop_indicator_x, drop_indicator_y, kDropIndicatorWidth, row_height));
+    const size_t i = GetDropPositionIndex();
+    const gfx::Rect frame = toolbar_actions_bar_->GetFrameForIndex(i);
+    gfx::Rect indicator_bounds = GetMirroredRect(
+        gfx::Rect(GetResizeAreaWidth() + frame.x() -
+                      GetLayoutConstant(TOOLBAR_ELEMENT_PADDING) / 2 -
+                      kDropIndicatorWidth / 2,
+                  frame.y(), kDropIndicatorWidth, frame.height()));
+    // Clamp the indicator to the view bounds so that heading / trailing markers
+    // don't paint outside the controller. It's OK if they paint over the resize
+    // area or separator (but the in-menu container has neither).
+    indicator_bounds.set_x(base::ClampToRange(
+        indicator_bounds.x(), 0, width() - indicator_bounds.width()));
 
     // Color of the drop indicator.
     // Always get the theme provider of the browser widget, since if this view
@@ -715,18 +754,14 @@ void BrowserActionsContainer::OnPaint(gfx::Canvas* canvas) {
             ->frame()
             ->GetThemeProvider();
 
-    // TODO(afakhry): This operation is done in several places, try to find a
-    // centeral location for it. Part of themes work for
-    // https://crbug.com/820495.
-    const SkColor drop_indicator_color = color_utils::BlendTowardOppositeLuma(
-        theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR),
-        SK_AlphaOPAQUE);
+    const SkColor drop_indicator_color = color_utils::GetColorWithMaxContrast(
+        theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR));
     canvas->FillRect(indicator_bounds, drop_indicator_color);
   }
 }
 
 void BrowserActionsContainer::ViewHierarchyChanged(
-    const ViewHierarchyChangedDetails& details) {
+    const views::ViewHierarchyChangedDetails& details) {
   if (!toolbar_actions_bar_->enabled())
     return;
 
@@ -762,12 +797,21 @@ int BrowserActionsContainer::GetWidthForIconCount(size_t num_icons) const {
   if (num_icons == 0)
     return 0;
   return GetResizeAreaWidth() + GetSeparatorAreaWidth() +
-         num_icons * toolbar_actions_bar_->GetViewSize().width();
+         toolbar_actions_bar_->IconCountToWidth(num_icons);
 }
 
 int BrowserActionsContainer::GetWidthWithAllActionsVisible() const {
   return GetWidthForIconCount(
       toolbar_actions_bar_->toolbar_actions_unordered().size());
+}
+
+size_t BrowserActionsContainer::GetDropPositionIndex() const {
+  size_t i =
+      drop_position_->row * platform_settings().icons_per_overflow_menu_row +
+      drop_position_->icon_in_row;
+  if (ShownInsideMenu())
+    i += main_container_->VisibleBrowserActionsAfterAnimation();
+  return i;
 }
 
 int BrowserActionsContainer::GetResizeAreaWidth() const {
@@ -782,4 +826,15 @@ int BrowserActionsContainer::GetSeparatorAreaWidth() const {
     return 0;
   return 2 * GetLayoutConstant(TOOLBAR_STANDARD_SPACING) +
          views::Separator::kThickness;
+}
+
+void BrowserActionsContainer::UpdateResizeArea() {
+  if (!resize_area_)
+    return;
+
+  const base::Optional<int> max_width = delegate_->GetMaxBrowserActionsWidth();
+  const bool enable_resize_area =
+      interactive_ && !toolbar_actions_bar()->is_highlighting() &&
+      (!max_width || *max_width >= GetWidthForIconCount(1));
+  resize_area_->SetEnabled(enable_resize_area);
 }

@@ -35,7 +35,6 @@ void DependencyManager::AddEdge(KeyedServiceBaseFactory* depended,
 }
 
 void DependencyManager::RegisterPrefsForServices(
-    base::SupportsUserData* context,
     user_prefs::PrefRegistrySyncable* pref_registry) {
   std::vector<DependencyNode*> construction_order;
   if (!dependency_graph_.GetConstructionOrder(&construction_order)) {
@@ -45,11 +44,11 @@ void DependencyManager::RegisterPrefsForServices(
   for (auto* dependency_node : construction_order) {
     KeyedServiceBaseFactory* factory =
         static_cast<KeyedServiceBaseFactory*>(dependency_node);
-    factory->RegisterPrefsIfNecessaryForContext(context, pref_registry);
+    factory->RegisterPrefs(pref_registry);
   }
 }
 
-void DependencyManager::CreateContextServices(base::SupportsUserData* context,
+void DependencyManager::CreateContextServices(void* context,
                                               bool is_testing_context) {
   MarkContextLive(context);
 
@@ -74,35 +73,72 @@ void DependencyManager::CreateContextServices(base::SupportsUserData* context,
   }
 }
 
-void DependencyManager::DestroyContextServices(
-    base::SupportsUserData* context) {
-  std::vector<DependencyNode*> destruction_order;
-  if (!dependency_graph_.GetDestructionOrder(&destruction_order)) {
-    NOTREACHED();
-  }
+void DependencyManager::DestroyContextServices(void* context) {
+  std::vector<DependencyNode*> destruction_order = GetDestructionOrder();
 
 #ifndef NDEBUG
   DumpContextDependencies(context);
 #endif
 
-  for (auto* dependency_node : destruction_order) {
+  ShutdownFactoriesInOrder(context, destruction_order);
+  MarkContextDead(context);
+  DestroyFactoriesInOrder(context, destruction_order);
+}
+
+// static
+void DependencyManager::PerformInterlockedTwoPhaseShutdown(
+    DependencyManager* dependency_manager1,
+    void* context1,
+    DependencyManager* dependency_manager2,
+    void* context2) {
+  std::vector<DependencyNode*> destruction_order1 =
+      dependency_manager1->GetDestructionOrder();
+  std::vector<DependencyNode*> destruction_order2 =
+      dependency_manager2->GetDestructionOrder();
+
+#ifndef NDEBUG
+  dependency_manager1->DumpContextDependencies(context1);
+  dependency_manager2->DumpContextDependencies(context2);
+#endif
+
+  ShutdownFactoriesInOrder(context1, destruction_order1);
+  ShutdownFactoriesInOrder(context2, destruction_order2);
+
+  dependency_manager1->MarkContextDead(context1);
+  dependency_manager2->MarkContextDead(context2);
+
+  DestroyFactoriesInOrder(context1, destruction_order1);
+  DestroyFactoriesInOrder(context2, destruction_order2);
+}
+
+std::vector<DependencyNode*> DependencyManager::GetDestructionOrder() {
+  std::vector<DependencyNode*> destruction_order;
+  if (!dependency_graph_.GetDestructionOrder(&destruction_order))
+    NOTREACHED();
+  return destruction_order;
+}
+
+void DependencyManager::ShutdownFactoriesInOrder(
+    void* context,
+    std::vector<DependencyNode*>& order) {
+  for (auto* dependency_node : order) {
     KeyedServiceBaseFactory* factory =
         static_cast<KeyedServiceBaseFactory*>(dependency_node);
     factory->ContextShutdown(context);
   }
+}
 
-  // The context is now dead to the rest of the program.
-  dead_context_pointers_.insert(context);
-
-  for (auto* dependency_node : destruction_order) {
+void DependencyManager::DestroyFactoriesInOrder(
+    void* context,
+    std::vector<DependencyNode*>& order) {
+  for (auto* dependency_node : order) {
     KeyedServiceBaseFactory* factory =
         static_cast<KeyedServiceBaseFactory*>(dependency_node);
     factory->ContextDestroyed(context);
   }
 }
 
-void DependencyManager::AssertContextWasntDestroyed(
-    base::SupportsUserData* context) const {
+void DependencyManager::AssertContextWasntDestroyed(void* context) const {
   if (dead_context_pointers_.find(context) != dead_context_pointers_.end()) {
 #if DCHECK_IS_ON()
     NOTREACHED() << "Attempted to access a context that was ShutDown(). "
@@ -116,8 +152,12 @@ void DependencyManager::AssertContextWasntDestroyed(
   }
 }
 
-void DependencyManager::MarkContextLive(base::SupportsUserData* context) {
+void DependencyManager::MarkContextLive(void* context) {
   dead_context_pointers_.erase(context);
+}
+
+void DependencyManager::MarkContextDead(void* context) {
+  dead_context_pointers_.insert(context);
 }
 
 #ifndef NDEBUG

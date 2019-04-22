@@ -4,10 +4,16 @@
 
 #include "ash/wm/pip/pip_window_resizer.h"
 
+#include <algorithm>
+#include <utility>
+
+#include "ash/metrics/pip_uma.h"
 #include "ash/wm/pip/pip_positioner.h"
 #include "ash/wm/widget_finder.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/screen.h"
@@ -53,6 +59,80 @@ bool IsPastLeftOrRightEdge(const gfx::Rect& bounds, const gfx::Rect& area) {
   return bounds.x() < area.x() || bounds.right() > area.right();
 }
 
+void CollectFreeResizeAreaMetric(const char* metric_name,
+                                 aura::Window* window) {
+  aura::Window* root_window = window->GetRootWindow();
+  const gfx::Rect bounds = window->GetBoundsInRootWindow();
+  const int root_window_area =
+      root_window->bounds().width() * root_window->bounds().height();
+  const int window_area = bounds.width() * bounds.height();
+  if (root_window_area != 0) {
+    const int percentage =
+        std::round(float(window_area) / float(root_window_area) * 100.f);
+    base::UmaHistogramPercentage(metric_name, percentage);
+  }
+}
+
+int ComputeIntersectionArea(const gfx::Rect& ninth, const gfx::Rect& bounds) {
+  gfx::Rect intersection = ninth;
+  intersection.Intersect(bounds);
+  return intersection.width() * intersection.height();
+}
+
+gfx::Rect ScaleRect(const gfx::Rect& rect, int scale) {
+  return gfx::Rect(rect.x() * scale, rect.y() * scale, rect.width() * scale,
+                   rect.height() * scale);
+}
+
+void CollectPositionMetric(const gfx::Rect& bounds_in_screen,
+                           const gfx::Rect& area_in_screen) {
+  const int width = area_in_screen.width();
+  const int height = area_in_screen.height();
+  // Scale by three to avoid truncation.
+  const gfx::Rect area = ScaleRect(area_in_screen, 3);
+  const gfx::Rect bounds = ScaleRect(bounds_in_screen, 3);
+
+  // Choose corners first, then edges, and finally middle in the case of a tie.
+  // This is based on the enum integer values.
+  // For this to work, all of the 9 buckets need to have the same area.
+  std::pair<int, AshPipPosition> area_ninths[9] = {
+      {ComputeIntersectionArea(
+           gfx::Rect(area.x() + width, area.y() + height, width, height),
+           bounds),
+       AshPipPosition::MIDDLE},
+      {ComputeIntersectionArea(
+           gfx::Rect(area.x() + width, area.y(), width, height), bounds),
+       AshPipPosition::TOP_MIDDLE},
+      {ComputeIntersectionArea(
+           gfx::Rect(area.x(), area.y() + height, width, height), bounds),
+       AshPipPosition::MIDDLE_LEFT},
+      {ComputeIntersectionArea(
+           gfx::Rect(area.x() + 2 * width, area.y() + height, width, height),
+           bounds),
+       AshPipPosition::MIDDLE_RIGHT},
+      {ComputeIntersectionArea(
+           gfx::Rect(area.x() + width, area.y() + 2 * height, width, height),
+           bounds),
+       AshPipPosition::BOTTOM_MIDDLE},
+      {ComputeIntersectionArea(gfx::Rect(area.x(), area.y(), width, height),
+                               bounds),
+       AshPipPosition::TOP_LEFT},
+      {ComputeIntersectionArea(
+           gfx::Rect(area.x() + 2 * width, area.y(), width, height), bounds),
+       AshPipPosition::TOP_RIGHT},
+      {ComputeIntersectionArea(
+           gfx::Rect(area.x(), area.y() + 2 * height, width, height), bounds),
+       AshPipPosition::BOTTOM_LEFT},
+      {ComputeIntersectionArea(gfx::Rect(area.x() + 2 * width,
+                                         area.y() + 2 * height, width, height),
+                               bounds),
+       AshPipPosition::BOTTOM_RIGHT}};
+
+  std::sort(area_ninths, area_ninths + base::size(area_ninths));
+  UMA_HISTOGRAM_ENUMERATION(kAshPipPositionHistogramName,
+                            area_ninths[8].second);
+}
+
 }  // namespace
 
 PipWindowResizer::PipWindowResizer(wm::WindowState* window_state)
@@ -60,8 +140,13 @@ PipWindowResizer::PipWindowResizer(wm::WindowState* window_state)
   window_state->OnDragStarted(details().window_component);
 
   bool is_resize = details().bounds_change & kBoundsChange_Resizes;
-  // Don't allow swipe-to-dismiss for resizes.
-  if (!is_resize) {
+  if (is_resize) {
+    UMA_HISTOGRAM_ENUMERATION(kAshPipEventsHistogramName,
+                              AshPipEvents::FREE_RESIZE);
+    CollectFreeResizeAreaMetric(kAshPipFreeResizeInitialAreaHistogramName,
+                                GetTarget());
+  } else {
+    // Don't allow swipe-to-dismiss for resizes.
     gfx::Rect area = PipPositioner::GetMovementArea(window_state->GetDisplay());
     // Check in which directions we can dismiss. Usually this is only in one
     // direction, except when the PIP window is in the corner. In that case,
@@ -74,7 +159,11 @@ PipWindowResizer::PipWindowResizer(wm::WindowState* window_state)
   }
 }
 
-PipWindowResizer::~PipWindowResizer() {}
+PipWindowResizer::~PipWindowResizer() {
+  // Drag details should be deleted upon destruction of the resizer.
+  if (window_state())
+    window_state()->DeleteDragDetails();
+}
 
 // TODO(edcourtney): Implement swipe-to-dismiss on fling.
 void PipWindowResizer::Drag(const gfx::Point& location_in_parent,
@@ -93,6 +182,9 @@ void PipWindowResizer::Drag(const gfx::Point& location_in_parent,
   }
 
   gfx::Rect new_bounds = CalculateBoundsForDrag(location_in_parent);
+  // We do everything in Screen coordinates, so convert here.
+  ::wm::ConvertRectToScreen(GetTarget()->parent(), &new_bounds);
+
   display::Display display = window_state()->GetDisplay();
   gfx::Rect area = PipPositioner::GetMovementArea(display);
 
@@ -111,14 +203,16 @@ void PipWindowResizer::Drag(const gfx::Point& location_in_parent,
   // window is no longer poking outside of the movement area, disable any
   // further swipe-to-dismiss gesture for this drag. Use the initial bounds
   // to decide the locked axis position.
+  gfx::Rect initial_bounds_in_screen = details().initial_bounds_in_parent;
+  ::wm::ConvertRectToScreen(GetTarget()->parent(), &initial_bounds_in_screen);
   if (may_dismiss_horizontally_) {
     if (IsPastLeftOrRightEdge(new_bounds, area))
-      new_bounds.set_y(details().initial_bounds_in_parent.y());
+      new_bounds.set_y(initial_bounds_in_screen.y());
     else if (!IsAtLeftOrRightEdge(new_bounds, area))
       may_dismiss_horizontally_ = false;
   } else if (may_dismiss_vertically_) {
     if (IsPastTopOrBottomEdge(new_bounds, area))
-      new_bounds.set_x(details().initial_bounds_in_parent.x());
+      new_bounds.set_x(initial_bounds_in_screen.x());
     else if (!IsAtTopOrBottomEdge(new_bounds, area))
       may_dismiss_vertically_ = false;
   }
@@ -127,9 +221,7 @@ void PipWindowResizer::Drag(const gfx::Point& location_in_parent,
   if (!may_dismiss_horizontally_ && !may_dismiss_vertically_) {
     // Reset opacity if it's not a dismiss gesture.
     GetTarget()->layer()->SetOpacity(1.f);
-    ::wm::ConvertRectToScreen(GetTarget()->parent(), &new_bounds);
     new_bounds = PipPositioner::GetBoundsForDrag(display, new_bounds);
-    ::wm::ConvertRectFromScreen(GetTarget()->parent(), &new_bounds);
   } else {
     gfx::Rect dismiss_bounds = new_bounds;
     dismiss_bounds.Intersect(area);
@@ -150,15 +242,27 @@ void PipWindowResizer::Drag(const gfx::Point& location_in_parent,
     may_dismiss_vertically_ = false;
   }
 
+  // Convert back to root window coordinates for setting bounds.
+  ::wm::ConvertRectFromScreen(GetTarget()->parent(), &new_bounds);
   if (new_bounds != GetTarget()->bounds()) {
     moved_or_resized_ = true;
-    GetTarget()->SetBounds(new_bounds);
+    SetBoundsDuringResize(new_bounds);
   }
 }
 
 void PipWindowResizer::CompleteDrag() {
+  if (details().bounds_change & kBoundsChange_Resizes) {
+    CollectFreeResizeAreaMetric(kAshPipFreeResizeFinishAreaHistogramName,
+                                GetTarget());
+  } else {
+    // Collect final position on drag-move.
+    display::Display display = window_state()->GetDisplay();
+    gfx::Rect area = PipPositioner::GetMovementArea(display);
+    CollectPositionMetric(GetTarget()->GetBoundsInScreen(), area);
+  }
+
   window_state()->OnCompleteDrag(last_location_in_screen_);
-  window_state()->DeleteDragDetails();
+
   window_state()->ClearRestoreBounds();
   window_state()->set_bounds_changed_by_user(moved_or_resized_);
 
@@ -174,9 +278,7 @@ void PipWindowResizer::CompleteDrag() {
   if (should_dismiss) {
     // Close the widget. This will trigger an animation dismissing the PIP
     // window.
-    auto* widget = GetInternalWidgetForWindow(window_state()->window());
-    if (widget)
-      widget->Close();
+    wm::CloseWidgetForWindow(window_state()->window());
   } else {
     // Animate the PIP window to its resting position.
     gfx::Rect bounds;
@@ -192,6 +294,7 @@ void PipWindowResizer::CompleteDrag() {
 
     base::TimeDelta duration =
         base::TimeDelta::FromMilliseconds(kPipSnapToEdgeAnimationDurationMs);
+    ::wm::ConvertRectFromScreen(GetTarget()->parent(), &bounds);
     wm::SetBoundsEvent event(wm::WM_EVENT_SET_BOUNDS, bounds, /*animate=*/true,
                              duration);
     window_state()->OnWMEvent(&event);
@@ -209,7 +312,7 @@ void PipWindowResizer::CompleteDrag() {
     // TODO(edcourtney): This may not be the best place for this. Consider
     // doing this a different way or saving these bounds at a later point when
     // the work area changes.
-    window_state()->SaveCurrentBoundsForRestore();
+    window_state()->SetRestoreBoundsInParent(bounds);
   }
 }
 

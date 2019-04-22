@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -124,10 +125,7 @@ PasswordFormFillData GetTestPasswordFormFillData() {
   non_preferred_match.password_value = ASCIIToUTF16("test1");
   matches[non_preferred_match.username_value] = &non_preferred_match;
 
-  PasswordFormFillData result;
-  InitPasswordFormFillData(form_on_page, matches, &preferred_match, true,
-                           &result);
-  return result;
+  return PasswordFormFillData(form_on_page, matches, preferred_match, true);
 }
 
 MATCHER(WerePasswordsCleared, "Passwords not cleared") {
@@ -242,8 +240,8 @@ TEST_F(ContentPasswordManagerDriverTest, NotInformAboutBlacklistedForm) {
   driver->FillPasswordForm(fill_data);
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        ContentPasswordManagerDriverTest,
-                        testing::Values(true, false));
+INSTANTIATE_TEST_SUITE_P(,
+                         ContentPasswordManagerDriverTest,
+                         testing::Values(true, false));
 
 }  // namespace password_manager

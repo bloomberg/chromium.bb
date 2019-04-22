@@ -22,17 +22,17 @@ using content::BrowserThread;
 
 namespace {
 
-SQLiteCursor::JavaColumnType ToJavaColumnType(sql::ColType type) {
+SQLiteCursor::JavaColumnType ToJavaColumnType(sql::ColumnType type) {
   switch (type) {
-    case sql::COLUMN_TYPE_INTEGER:
+    case sql::ColumnType::kInteger:
       return SQLiteCursor::NUMERIC;
-    case sql::COLUMN_TYPE_FLOAT:
+    case sql::ColumnType::kFloat:
       return SQLiteCursor::DOUBLE;
-    case sql::COLUMN_TYPE_TEXT:
+    case sql::ColumnType::kText:
       return SQLiteCursor::LONG_VAR_CHAR;
-    case sql::COLUMN_TYPE_BLOB:
+    case sql::ColumnType::kBlob:
       return SQLiteCursor::BLOB;
-    case sql::COLUMN_TYPE_NULL:
+    case sql::ColumnType::kNull:
       return SQLiteCursor::NULL_TYPE;
     default:
       NOTREACHED();
@@ -126,9 +126,10 @@ jboolean SQLiteCursor::IsNull(JNIEnv* env,
 jint SQLiteCursor::MoveTo(JNIEnv* env,
                           const JavaParamRef<jobject>& obj,
                           jint pos) {
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::Bind(&SQLiteCursor::RunMoveStatementOnUIThread,
-                                      base::Unretained(this), pos));
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(&SQLiteCursor::RunMoveStatementOnUIThread,
+                     base::Unretained(this), pos));
   if (test_observer_)
     test_observer_->OnPostMoveToTask();
 
@@ -151,8 +152,8 @@ void SQLiteCursor::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
     DestroyOnUIThread();
   } else if (!base::PostTaskWithTraits(
                  FROM_HERE, {BrowserThread::UI},
-                 base::Bind(&SQLiteCursor::DestroyOnUIThread,
-                            base::Unretained(this)))) {
+                 base::BindOnce(&SQLiteCursor::DestroyOnUIThread,
+                                base::Unretained(this)))) {
     delete this;
   }
 }
@@ -186,7 +187,7 @@ bool SQLiteCursor::GetFavicon(favicon_base::FaviconID id,
   if (id) {
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
-        base::Bind(
+        base::BindOnce(
             &SQLiteCursor::GetFaviconForIDInUIThread, base::Unretained(this),
             id,
             base::Bind(&SQLiteCursor::OnFaviconData, base::Unretained(this))));
@@ -237,7 +238,7 @@ SQLiteCursor::JavaColumnType SQLiteCursor::GetColumnTypeInternal(int column) {
   if (column == statement_->favicon_index())
     return SQLiteCursor::BLOB;
 
-  return ToJavaColumnType(statement_->statement()->ColumnType(column));
+  return ToJavaColumnType(statement_->statement()->GetColumnType(column));
 }
 
 void SQLiteCursor::RunMoveStatementOnUIThread(int pos) {

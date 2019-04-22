@@ -20,20 +20,20 @@
 
 #undef DEFINE_bool
 #define DEFINE_bool(name, default_value, comment) \
-    bool FLAGS_##name = default_value;
+    bool FLAGS_##name = default_value
 #undef DEFINE_int32
 #define DEFINE_int32(name, default_value, comment) \
-    int32 FLAGS_##name = default_value;
+    int32 FLAGS_##name = default_value
 #undef DEFINE_string
 #define DEFINE_string(name, default_value, comment) \
-    string FLAGS_##name = default_value;
+    string FLAGS_##name = default_value
 
 #undef DECLARE_bool
-#define DECLARE_bool(name) extern bool FLAGS_##name;
+#define DECLARE_bool(name) extern bool FLAGS_##name
 #undef DECLARE_int32
-#define DECLARE_int32(name) extern int32 FLAGS_##name;
+#define DECLARE_int32(name) extern int32 FLAGS_##name
 #undef DECLARE_string
-#define DECLARE_string(name) extern string FLAGS_##name;
+#define DECLARE_string(name) extern string FLAGS_##name
 
 
 #endif  // UTIL_COMMANDLINEFLAGS_H_

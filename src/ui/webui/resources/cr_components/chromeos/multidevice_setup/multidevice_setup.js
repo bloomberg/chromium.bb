@@ -6,7 +6,6 @@ cr.exportPath('multidevice_setup');
 
 /** @enum {string} */
 multidevice_setup.PageName = {
-  FAILURE: 'setup-failed-page',
   PASSWORD: 'password-page',
   SUCCESS: 'setup-succeeded-page',
   START: 'start-setup-page',
@@ -80,7 +79,7 @@ cr.define('multidevice_setup', function() {
        * DOM Element corresponding to the visible page.
        *
        * @private {!PasswordPageElement|!StartSetupPageElement|
-       *           !SetupSucceededPageElement|!SetupFailedPageElement}
+       *           !SetupSucceededPageElement}
        */
       visiblePage_: Object,
 
@@ -95,7 +94,7 @@ cr.define('multidevice_setup', function() {
       /**
        * Array of objects representing all potential MultiDevice hosts.
        *
-       * @private {!Array<!chromeos.deviceSync.mojom.RemoteDevice>}
+       * @private {!Array<!chromeos.multidevice.mojom.RemoteDevice>}
        */
       devices_: Array,
 
@@ -144,7 +143,7 @@ cr.define('multidevice_setup', function() {
     },
 
     initializeSetupFlow: function() {
-      this.mojoInterfaceProvider_.getInterfacePtr()
+      this.mojoInterfaceProvider_.getMojoServiceProxy()
           .getEligibleHostDevices()
           .then((responseParams) => {
             if (responseParams.eligibleHostDevices.length == 0) {
@@ -153,6 +152,7 @@ cr.define('multidevice_setup', function() {
             }
 
             this.devices_ = responseParams.eligibleHostDevices;
+            this.fire('forward-button-focus-requested');
           })
           .catch((error) => {
             console.warn('Mojo service failure: ' + error);
@@ -171,16 +171,19 @@ cr.define('multidevice_setup', function() {
 
       this.$$('password-page').clearPasswordTextInput();
       this.visiblePageName = PageName.START;
+      this.fire('forward-button-focus-requested');
     },
 
     /** @private */
     onForwardNavigationRequested_: function() {
-      if (this.forwardButtonDisabled)
+      if (this.forwardButtonDisabled) {
         return;
+      }
 
       this.visiblePage_.getCanNavigateToNextPage().then((canNavigate) => {
-        if (!canNavigate)
+        if (!canNavigate) {
           return;
+        }
         this.navigateForward_();
       });
     },
@@ -188,9 +191,6 @@ cr.define('multidevice_setup', function() {
     /** @private */
     navigateForward_: function() {
       switch (this.visiblePageName) {
-        case PageName.FAILURE:
-          this.visiblePageName = PageName.START;
-          return;
         case PageName.PASSWORD:
           this.$$('password-page').clearPasswordTextInput();
           this.setHostDevice_();
@@ -199,10 +199,11 @@ cr.define('multidevice_setup', function() {
           this.exitSetupFlow_(true /* didUserCompleteSetup */);
           return;
         case PageName.START:
-          if (this.delegate.isPasswordRequiredToSetHost())
+          if (this.delegate.isPasswordRequiredToSetHost()) {
             this.visiblePageName = PageName.PASSWORD;
-          else
+          } else {
             this.setHostDevice_();
+          }
           return;
       }
     },
@@ -212,7 +213,7 @@ cr.define('multidevice_setup', function() {
       // An authentication token must be set if a password is required.
       assert(this.delegate.isPasswordRequiredToSetHost() == !!this.authToken_);
 
-      let deviceId = /** @type {string} */ (this.selectedDeviceId_);
+      const deviceId = /** @type {string} */ (this.selectedDeviceId_);
       this.delegate.setHostDevice(deviceId, this.authToken_)
           .then((responseParams) => {
             if (!responseParams.success) {
@@ -244,8 +245,9 @@ cr.define('multidevice_setup', function() {
      * @private
      */
     getForwardButtonText_: function() {
-      if (!this.visiblePage_)
+      if (!this.visiblePage_) {
         return undefined;
+      }
       return this.visiblePage_.forwardButtonText;
     },
 
@@ -264,8 +266,9 @@ cr.define('multidevice_setup', function() {
      * @private
      */
     getCancelButtonText_: function() {
-      if (!this.visiblePage_)
+      if (!this.visiblePage_) {
         return undefined;
+      }
       return this.visiblePage_.cancelButtonText;
     },
 
@@ -275,8 +278,9 @@ cr.define('multidevice_setup', function() {
      * @private
      */
     getBackwardButtonText_: function() {
-      if (!this.visiblePage_)
+      if (!this.visiblePage_) {
         return undefined;
+      }
       return this.visiblePage_.backwardButtonText;
     },
 

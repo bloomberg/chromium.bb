@@ -30,6 +30,7 @@
 #include <utility>
 
 #include "third_party/blink/public/common/manifest/web_display_mode.h"
+#include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink.h"
 #include "third_party/blink/public/platform/shape_properties.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/frame_view.h"
@@ -41,39 +42,45 @@
 #include "third_party/blink/renderer/platform/geometry/layout_size.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
+#include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
 #include "third_party/blink/renderer/platform/graphics/paint_invalidation_reason.h"
 #include "third_party/blink/renderer/platform/graphics/subtree_paint_property_update_reason.h"
 #include "third_party/blink/renderer/platform/timer.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
+#include "third_party/skia/include/core/SkColor.h"
+
+namespace cc {
+class AnimationHost;
+class Layer;
+}
 
 namespace blink {
-
 class AXObjectCache;
 class ChromeClient;
-class CompositorAnimationHost;
 class CompositorAnimationTimeline;
 class Cursor;
 class DisplayItemClient;
-class Document;
 class DocumentLifecycle;
-class Element;
-class ElementVisibilityObserver;
 class FloatRect;
 class FloatSize;
+class FragmentAnchor;
 class Frame;
 class FrameViewAutoSizeInfo;
+class IntersectionObserver;
+class IntersectionObserverEntry;
 class JSONObject;
 class JankTracker;
 class KURL;
 class LayoutAnalyzer;
 class LayoutBox;
-class LayoutEmbeddedContent;
 class LayoutEmbeddedObject;
 class LayoutObject;
 class LayoutRect;
 class LayoutSVGRoot;
 class LayoutView;
 class LocalFrame;
-class Node;
 class Page;
 class PaintArtifactCompositor;
 class PaintController;
@@ -93,7 +100,7 @@ struct AnnotatedRegionValue;
 struct IntrinsicSizingInfo;
 struct WebScrollIntoViewParams;
 
-typedef unsigned long long DOMTimeStamp;
+typedef uint64_t DOMTimeStamp;
 using LayerTreeFlags = unsigned;
 using MainThreadScrollingReasons = uint32_t;
 
@@ -104,9 +111,16 @@ class CORE_EXPORT LocalFrameView final
 
   friend class PaintControllerPaintTestBase;
   friend class Internals;
-  friend class LayoutEmbeddedContent;  // for invalidateTreeIfNeeded
 
  public:
+  class CORE_EXPORT LifecycleNotificationObserver
+      : public GarbageCollectedMixin {
+   public:
+    // These are called when the lifecycle updates start/finish.
+    virtual void WillStartLifecycleUpdate(const LocalFrameView&) = 0;
+    virtual void DidFinishLifecycleUpdate(const LocalFrameView&) = 0;
+  };
+
   static LocalFrameView* Create(LocalFrame&);
   static LocalFrameView* Create(LocalFrame&, const IntSize& initial_size);
 
@@ -205,7 +219,9 @@ class CORE_EXPORT LocalFrameView final
 
   // Get the InstersectionObservation::ComputeFlags for target elements in this
   // view.
-  unsigned GetIntersectionObservationFlags() const;
+  unsigned GetIntersectionObservationFlags(unsigned parent_flags) const;
+
+  void SetPaintArtifactCompositorNeedsUpdate() const;
 
   // Marks this frame, and ancestor frames, as needing a mandatory compositing
   // update. This overrides throttling for one frame, up to kCompositingClean.
@@ -250,9 +266,6 @@ class CORE_EXPORT LocalFrameView final
 
   // Scale used to convert incoming input events.
   float InputEventsScaleFactor() const;
-
-  // Scale used to convert incoming input events while emulating device metics.
-  void SetInputEventsScaleForEmulation(float);
 
   void DidChangeScrollOffset();
 
@@ -359,8 +372,11 @@ class CORE_EXPORT LocalFrameView final
   // desired state.
   bool UpdateLifecycleToLayoutClean();
 
-  // Record any UMA and UKM metrics that depend on the end of a main frame.
-  void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time);
+  // This for doing work that needs to run synchronously at the end of lifecyle
+  // updates, but needs to happen outside of the lifecycle code. It's OK to
+  // schedule another animation frame here, but the layout tree should not be
+  // invalidated.
+  void RunPostLifecycleSteps();
 
   void ScheduleVisualUpdateForPaintInvalidationIfNeeded();
 
@@ -378,15 +394,15 @@ class CORE_EXPORT LocalFrameView final
                                 const FloatSize& original_page_size,
                                 float maximum_shrink_factor);
 
-  enum UrlFragmentBehavior { kUrlFragmentScroll, kUrlFragmentDontScroll };
   // Updates the fragment anchor element based on URL's fragment identifier.
   // Updates corresponding ':target' CSS pseudo class on the anchor element.
-  // If |UrlFragmentScroll| is passed it sets the anchor element so that it
-  // will be focused and scrolled into view during layout. The scroll offset is
-  // maintained during the frame loading process.
-  void ProcessUrlFragment(const KURL&,
-                          UrlFragmentBehavior = kUrlFragmentScroll);
-  void ClearFragmentAnchor();
+  // If |Behavior| is passed it can be used to prevent scrolling/focusing while
+  // still performing all related side-effects like setting :target (used for
+  // e.g. in history restoration to override the scroll offset). The scroll
+  // offset is maintained during the frame loading process.
+  void ProcessUrlFragment(const KURL&, bool should_scroll = true);
+  FragmentAnchor* GetFragmentAnchor() { return fragment_anchor_; }
+  void InvokeFragmentAnchor();
 
   // Methods to convert points and rects between the coordinate space of the
   // layoutObject, and this view.
@@ -532,19 +548,24 @@ class CORE_EXPORT LocalFrameView final
   LayoutPoint FrameToDocument(const LayoutPoint&) const;
   LayoutRect FrameToDocument(const LayoutRect&) const;
 
-  // Handles painting of the contents of the view as well as the scrollbars.
-  void Paint(GraphicsContext&,
-             const GlobalPaintFlags,
-             const CullRect&,
-             const IntSize& paint_offset = IntSize()) const override;
-  // Paints, and also updates the lifecycle to in-paint and paint clean
-  // beforehand.  Call this for painting use-cases outside of the lifecycle.
-  void PaintWithLifecycleUpdate(GraphicsContext&,
-                                const GlobalPaintFlags,
-                                const CullRect&);
-  void PaintContents(GraphicsContext&,
-                     const GlobalPaintFlags,
-                     const IntRect& damage_rect);
+  // Normally a LocalFrameView synchronously paints during full lifecycle
+  // updates, into the local frame root's PaintController (CompositeAfterPaint)
+  // or the PaintControllers of GraphicsLayers (pre-CompositeAfterPaint)
+  // However, in some cases (e.g. when printing) we need to paint the frame view
+  // into a PaintController other than the default one(s). The following
+  // functions are provided for these cases. This frame view must be in
+  // PrePaintClean or PaintClean state when these functions are called.
+  void PaintOutsideOfLifecycle(
+      GraphicsContext&,
+      const GlobalPaintFlags,
+      const CullRect& cull_rect = CullRect::Infinite());
+  void PaintContentsOutsideOfLifecycle(GraphicsContext&,
+                                       const GlobalPaintFlags,
+                                       const CullRect&);
+
+  // Get the PaintRecord based on the cached paint artifact generated during
+  // the last paint in lifecycle update. For CompositeAfterPaint only.
+  sk_sp<PaintRecord> GetPaintRecord() const;
 
   void Show() override;
   void Hide() override;
@@ -584,10 +605,6 @@ class CORE_EXPORT LocalFrameView final
   bool IsHiddenForThrottling() const { return hidden_for_throttling_; }
   void SetupRenderThrottling();
 
-  // For testing, run pending intersection observer notifications for this
-  // frame.
-  void UpdateRenderThrottlingStatusForTesting();
-
   void BeginLifecycleUpdates();
 
   // Shorthands of LayoutView's corresponding methods.
@@ -606,7 +623,7 @@ class CORE_EXPORT LocalFrameView final
   void DequeueScrollAnchoringAdjustment(ScrollableArea*);
   void PerformScrollAnchoringAdjustments();
 
-  // Only for SPv2.
+  // Only for CompositeAfterPaint.
   std::unique_ptr<JSONObject> CompositedLayersAsJSON(LayerTreeFlags);
 
   // Recursively update frame tree. Each frame has its only
@@ -641,7 +658,7 @@ class CORE_EXPORT LocalFrameView final
 
   LayoutUnit CaretWidth() const;
 
-  size_t PaintFrameCount() const { return paint_frame_count_; };
+  size_t PaintFrameCount() const { return paint_frame_count_; }
 
   // Return the ScrollableArea in a FrameView with the given ElementId, if any.
   // This is not recursive and will only return ScrollableAreas owned by this
@@ -654,10 +671,14 @@ class CORE_EXPORT LocalFrameView final
                                          const WebScrollIntoViewParams&);
 
   PaintArtifactCompositor* GetPaintArtifactCompositorForTesting() {
-    DCHECK(RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
+    DCHECK(RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
            RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled());
     return paint_artifact_compositor_.get();
   }
+
+  PaintArtifactCompositor* GetPaintArtifactCompositor() const;
+
+  const cc::Layer* RootCcLayer() const;
 
   enum ForceThrottlingInvalidationBehavior {
     kDontForceThrottlingInvalidation,
@@ -681,10 +702,9 @@ class CORE_EXPORT LocalFrameView final
   void ScrollableAreasDidChange();
 
   ScrollingCoordinatorContext* GetScrollingContext() const;
-  CompositorAnimationHost* GetCompositorAnimationHost() const;
+  cc::AnimationHost* GetCompositorAnimationHost() const;
   CompositorAnimationTimeline* GetCompositorAnimationTimeline() const;
 
-  void ScrollAndFocusFragmentAnchor();
   JankTracker& GetJankTracker() { return *jank_tracker_; }
   PaintTimingDetector& GetPaintTimingDetector() const {
     return *paint_timing_detector_;
@@ -693,37 +713,40 @@ class CORE_EXPORT LocalFrameView final
   // Return the UKM aggregator for this frame, creating it if necessary.
   LocalFrameUkmAggregator& EnsureUkmAggregator();
 
+#if DCHECK_IS_ON()
+  void SetIsUpdatingDescendantDependentFlags(bool val) {
+    is_updating_descendant_dependent_flags_ = val;
+  }
+  bool IsUpdatingDescendantDependentFlags() const {
+    return is_updating_descendant_dependent_flags_;
+  }
+#endif
+
+  void RegisterForLifecycleNotifications(LifecycleNotificationObserver*);
+  void UnregisterFromLifecycleNotifications(LifecycleNotificationObserver*);
+
  protected:
   void NotifyFrameRectsChangedIfNeeded();
 
  private:
 #if DCHECK_IS_ON()
   class DisallowLayoutInvalidationScope {
+    STACK_ALLOCATED();
+
    public:
-    DisallowLayoutInvalidationScope(LocalFrameView* view)
-        : local_frame_view_(view) {
-      local_frame_view_->allows_layout_invalidation_after_layout_clean_ = false;
-      local_frame_view_->ForAllChildLocalFrameViews(
-          [](LocalFrameView& frame_view) {
-            if (!frame_view.ShouldThrottleRendering())
-              frame_view.CheckDoesNotNeedLayout();
-            frame_view.allows_layout_invalidation_after_layout_clean_ = false;
-          });
-    }
-    ~DisallowLayoutInvalidationScope() {
-      local_frame_view_->allows_layout_invalidation_after_layout_clean_ = true;
-      local_frame_view_->ForAllChildLocalFrameViews(
-          [](LocalFrameView& frame_view) {
-            if (!frame_view.ShouldThrottleRendering())
-              frame_view.CheckDoesNotNeedLayout();
-            frame_view.allows_layout_invalidation_after_layout_clean_ = true;
-          });
-    }
+    explicit DisallowLayoutInvalidationScope(LocalFrameView* view);
+    ~DisallowLayoutInvalidationScope();
 
    private:
     UntracedMember<LocalFrameView> local_frame_view_;
   };
 #endif
+
+  // EmbeddedContentView implementation
+  void Paint(GraphicsContext&,
+             const GlobalPaintFlags,
+             const CullRect&,
+             const IntSize& = IntSize()) const final;
 
   void PaintInternal(GraphicsContext&,
                      const GlobalPaintFlags,
@@ -736,6 +759,8 @@ class CORE_EXPORT LocalFrameView final
 
   void SetupPrintContext();
   void ClearPrintContext();
+
+  void StopDeferringCommits();
 
   // Returns whether the lifecycle was succesfully updated to the
   // target state.
@@ -761,6 +786,8 @@ class CORE_EXPORT LocalFrameView final
   void PrePaint();
   void PaintTree();
   void UpdateStyleAndLayoutIfNeededRecursive();
+  void OnViewportIntersectionChanged(
+      const HeapVector<Member<IntersectionObserverEntry>>& entries);
 
   void PushPaintArtifactToCompositor(
       CompositorElementIdSet& composited_element_ids);
@@ -772,6 +799,8 @@ class CORE_EXPORT LocalFrameView final
   void PerformPostLayoutTasks();
 
   DocumentLifecycle& Lifecycle() const;
+
+  void RunIntersectionObserverSteps();
 
   // Methods to do point conversion via layoutObjects, in order to take
   // transforms into account.
@@ -795,10 +824,6 @@ class CORE_EXPORT LocalFrameView final
   void ScheduleUpdatePluginsIfNecessary();
   void UpdatePluginsTimerFired(TimerBase*);
   bool UpdatePlugins();
-
-  bool ProcessUrlFragmentHelper(const String&, UrlFragmentBehavior);
-  bool ParseCSSFragmentIdentifier(const String&, String*);
-  Element* FindCSSFragmentAnchor(const AtomicString&, Document*);
 
   void UpdateCompositedSelectionIfNeeded();
   void SetNeedsCompositingUpdate(CompositingUpdateType);
@@ -824,7 +849,9 @@ class CORE_EXPORT LocalFrameView final
   template <typename Function>
   void ForAllNonThrottledLocalFrameViews(const Function&);
 
-  void UpdateViewportIntersectionsForSubtree() override;
+  bool UpdateViewportIntersectionsForSubtree(unsigned parent_flags) override;
+  void DeliverSynchronousIntersectionObservations();
+
   void UpdateThrottlingStatusForSubtree();
 
   void NotifyResizeObservers();
@@ -835,18 +862,21 @@ class CORE_EXPORT LocalFrameView final
 
   void LayoutFromRootObject(LayoutObject& root);
 
+  void UpdateVisibility(bool is_visible);
+
   LayoutSize size_;
 
   typedef HashSet<scoped_refptr<LayoutEmbeddedObject>> EmbeddedObjectSet;
   EmbeddedObjectSet part_update_set_;
 
   Member<LocalFrame> frame_;
-  Member<LocalFrameView> parent_;
 
   IntRect frame_rect_;
   bool is_attached_;
   bool self_visible_;
   bool parent_visible_;
+  blink::mojom::FrameVisibility visibility_ =
+      blink::mojom::FrameVisibility::kRenderedInViewport;
 
   WebDisplayMode display_mode_;
 
@@ -879,7 +909,7 @@ class CORE_EXPORT LocalFrameView final
   bool is_visually_non_empty_;
   LayoutObjectCounter layout_object_counter_;
 
-  Member<Node> fragment_anchor_;
+  Member<FragmentAnchor> fragment_anchor_;
 
   Member<ScrollableAreaSet> scrollable_areas_;
   Member<ScrollableAreaSet> animating_scrollable_areas_;
@@ -888,8 +918,6 @@ class CORE_EXPORT LocalFrameView final
   unsigned sticky_position_object_count_;
   ObjectSet background_attachment_fixed_objects_;
   Member<FrameViewAutoSizeInfo> auto_size_info_;
-
-  float input_events_scale_factor_for_emulation_;
 
   IntSize layout_size_;
   IntSize initial_viewport_size_;
@@ -949,7 +977,7 @@ class CORE_EXPORT LocalFrameView final
 
   bool needs_focus_on_fragment_;
 
-  Member<ElementVisibilityObserver> visibility_observer_;
+  Member<IntersectionObserver> visibility_observer_;
 
   IntRect remote_viewport_intersection_;
 
@@ -960,13 +988,20 @@ class CORE_EXPORT LocalFrameView final
   std::unique_ptr<Vector<ObjectPaintInvalidation>>
       tracked_object_paint_invalidations_;
 
-  // For Slimming Paint v2 only.
+  // For CompositeAfterPaint only.
   std::unique_ptr<PaintController> paint_controller_;
   std::unique_ptr<PaintArtifactCompositor> paint_artifact_compositor_;
 
+  // The set of ElementIds that were composited by PaintArtifactCompositor
+  // during the Paint lifecycle phase. Only used by BlinkGenPropertyTrees and
+  // CompositeAfterPaint. These are stored here because sometimes
+  // PaintArtifactCompositor::Update() does not run (if the dirty bit is not
+  // set) and in that case, the element ids from the prior run are retained.
+  base::Optional<CompositorElementIdSet> composited_element_ids_;
+
   MainThreadScrollingReasons main_thread_scrolling_reasons_;
 
-  std::unique_ptr<LocalFrameUkmAggregator> ukm_aggregator_;
+  scoped_refptr<LocalFrameUkmAggregator> ukm_aggregator_;
   unsigned forced_layout_stack_depth_;
   TimeTicks forced_layout_start_time_;
 
@@ -978,6 +1013,12 @@ class CORE_EXPORT LocalFrameView final
   UniqueObjectId unique_id_;
   std::unique_ptr<JankTracker> jank_tracker_;
   Member<PaintTimingDetector> paint_timing_detector_;
+
+  HeapHashSet<WeakMember<LifecycleNotificationObserver>> lifecycle_observers_;
+
+#if DCHECK_IS_ON()
+  bool is_updating_descendant_dependent_flags_;
+#endif
 
   FRIEND_TEST_ALL_PREFIXES(WebViewTest, DeviceEmulationResetScrollbars);
 };
@@ -1021,11 +1062,12 @@ inline std::ostream& operator<<(
   return os << info.name << " reason=" << info.reason;
 }
 
-DEFINE_TYPE_CASTS(LocalFrameView,
-                  EmbeddedContentView,
-                  embedded_content_view,
-                  embedded_content_view->IsLocalFrameView(),
-                  embedded_content_view.IsLocalFrameView());
+template <>
+struct DowncastTraits<LocalFrameView> {
+  static bool AllowFrom(const EmbeddedContentView& embedded_content_view) {
+    return embedded_content_view.IsLocalFrameView();
+  }
+};
 
 }  // namespace blink
 

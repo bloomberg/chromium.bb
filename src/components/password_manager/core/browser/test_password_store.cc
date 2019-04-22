@@ -143,16 +143,6 @@ DatabaseCleanupResult TestPasswordStore::DeleteUndecryptableLogins() {
   return DatabaseCleanupResult::kSuccess;
 }
 
-std::vector<std::unique_ptr<autofill::PasswordForm>>
-TestPasswordStore::FillLoginsForSameOrganizationName(
-    const std::string& signon_realm) {
-  // Note: To keep TestPasswordStore simple, and because no tests currently
-  // require anything more complex, this is a simplistic implementation which
-  // assumes that that the signon_realm is a serialised URL.
-  return FillMatchingLogins(FormDigest(autofill::PasswordForm::SCHEME_HTML,
-                                       signon_realm, GURL(signon_realm)));
-}
-
 std::vector<InteractionsStats> TestPasswordStore::GetSiteStatsImpl(
     const GURL& origin_domain) {
   return std::vector<InteractionsStats>();
@@ -210,6 +200,33 @@ void TestPasswordStore::RemoveSiteStatsImpl(const GURL& origin_domain) {
 std::vector<InteractionsStats> TestPasswordStore::GetAllSiteStatsImpl() {
   NOTIMPLEMENTED();
   return std::vector<InteractionsStats>();
+}
+
+bool TestPasswordStore::BeginTransaction() {
+  return true;
+}
+
+void TestPasswordStore::RollbackTransaction() {}
+
+bool TestPasswordStore::CommitTransaction() {
+  return true;
+}
+
+FormRetrievalResult TestPasswordStore::ReadAllLogins(
+    PrimaryKeyToFormMap* key_to_form_map) {
+  NOTIMPLEMENTED();
+  return FormRetrievalResult::kSuccess;
+}
+
+PasswordStoreChangeList TestPasswordStore::RemoveLoginByPrimaryKeySync(
+    int primary_key) {
+  NOTIMPLEMENTED();
+  return PasswordStoreChangeList();
+}
+
+PasswordStoreSync::MetadataStore* TestPasswordStore::GetMetadataStore() {
+  NOTIMPLEMENTED();
+  return nullptr;
 }
 
 }  // namespace password_manager

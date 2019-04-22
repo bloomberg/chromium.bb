@@ -16,7 +16,6 @@
 <translation id="152892567002884378">Palielināt skaļumu</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, pēc tam <ph name="ESC" /></translation>
 <translation id="1652741121070700329">Pāriet uz iepriekšējā vārda sākumu</translation>
-<translation id="1671169355475348905">Pārslēgties uz iepriekšējās valodas ievades metodi</translation>
 <translation id="1679841710523778799">Palielināt spilgtumu</translation>
 <translation id="168356808214100546">Nospiediet un turiet taustiņu <ph name="ALT" />, pieskarieties taustiņam <ph name="TAB" />, kamēr ieraugāt atveramo logu, pēc tam atlaidiet.</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -33,6 +32,7 @@
 <translation id="2181097965834437145">Rādīt vai paslēpt grāmatzīmju joslu</translation>
 <translation id="2185166372312820725">Pāriet uz iepriekšējo cilni</translation>
 <translation id="2194790690264064655">Nospiediet <ph name="CTRL" /> un noklikšķiniet uz saites</translation>
+<translation id="2246352309084894470">Atvērt/aizvērt pilnekrāna režīma palaidēju</translation>
 <translation id="2382644247745281995">Netiek atbalstīts pašreizējā tastatūras izkārtojumā</translation>
 <translation id="2397416548179033562">Rādīt Chrome izvēlni</translation>
 <translation id="2424073332829844142">Ieslēgt un izslēgt taustiņu Caps Lock</translation>
@@ -44,7 +44,6 @@
 <translation id="2574014812750545982">Atiestatīt lapas tālummaiņas līmeni</translation>
 <translation id="2596078834055697711">Uzņemt loga ekrānuzņēmumu</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, pēc tam <ph name="TAB" /> vai <ph name="RIGHT" /></translation>
-<translation id="2687057317448262550">Pārslēgties uz nākamās valodas ievades metodi</translation>
 <translation id="2699509451653686398">Saglabāt pašreizējo tīmekļa lapu kā grāmatzīmi</translation>
 <translation id="2750942583782703988">Atkārtoti ielādēt pašreizējo lapu</translation>
 <translation id="2764005613199379871">Pārvietot kursoru meklēšanas adreses joslā</translation>
@@ -147,6 +146,7 @@
 <translation id="671928215901716392">Bloķēt ekrānu</translation>
 <translation id="6727005317916125192">Iepriekšējā rūts</translation>
 <translation id="6740781404993465795">Atlasīt nākamo vārdu vai burtu</translation>
+<translation id="6755851152783057058">Pārslēgties uz iepriekšējo izmantoto ievades metodi</translation>
 <translation id="6760706756348334449">Samazināt skaļumu</translation>
 <translation id="6941333068993625698">Iesniegt atsauksmes</translation>
 <translation id="6981982820502123353">Pieejamība</translation>
@@ -157,6 +157,7 @@
 <translation id="7237562915163138771">Ierakstiet tīmekļa adresi adreses joslā, pēc tam nospiediet <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /></translation>
 <translation id="7254764037241667478">Iestatīt ierīci miega režīmā (apturēt darbību)</translation>
 <translation id="7379254767514753910"><ph name="ALT" /> vai <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
+<translation id="7422707470576323858">Pārslēgt uz nākamo pieejamo ievades metodi</translation>
 <translation id="743754632698445141">Atspraust lietotni</translation>
 <translation id="7439718573248533901">Dzēst nākamo burtu (turpvērstā dzēšana)</translation>
 <translation id="7611271430932669992">Izcelt uznirstošos logus un dialoglodziņus</translation>

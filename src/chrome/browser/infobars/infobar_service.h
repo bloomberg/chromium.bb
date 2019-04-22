@@ -78,6 +78,8 @@ class InfoBarService : public infobars::InfoBarManager,
   // See description in set_ignore_next_reload().
   bool ignore_next_reload_;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(InfoBarService);
 };
 

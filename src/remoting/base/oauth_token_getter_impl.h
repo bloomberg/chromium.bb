@@ -42,8 +42,7 @@ class OAuthTokenGetterImpl : public OAuthTokenGetter,
   ~OAuthTokenGetterImpl() override;
 
   // OAuthTokenGetter interface.
-  void CallWithToken(
-      const OAuthTokenGetter::TokenCallback& on_access_token) override;
+  void CallWithToken(OAuthTokenGetter::TokenCallback on_access_token) override;
   void InvalidateCache() override;
 
  private:

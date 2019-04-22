@@ -5,7 +5,7 @@
  *   FreeType glyph image formats and default raster interface
  *   (specification).
  *
- * Copyright 1996-2018 by
+ * Copyright (C) 1996-2019 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -1105,7 +1105,7 @@ FT_BEGIN_HEADER
    *
    *   pool_base ::
    *     Previously, the address in memory of the render pool.  Set this to
-   *     NULL.
+   *     `NULL`.
    *
    *   pool_size ::
    *     Previously, the size in bytes of the render pool.  Set this to 0.

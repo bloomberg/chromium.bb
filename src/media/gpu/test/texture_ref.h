@@ -13,12 +13,6 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
-#if defined(OS_CHROMEOS)
-namespace gfx {
-class NativePixmap;
-}
-#endif
-
 namespace media {
 namespace test {
 
@@ -38,14 +32,7 @@ class TextureRef : public base::RefCounted<TextureRef> {
       gfx::BufferUsage buffer_usage);
 
   gfx::GpuMemoryBufferHandle ExportGpuMemoryBufferHandle() const;
-  scoped_refptr<VideoFrame> CreateVideoFrame(
-      const gfx::Rect& visible_rect) const;
-
-  // Return true if contains data in a buffer and format directly mappable and
-  // readable (e.g. not tiled), without a need to first format convert it.
-  // TODO(crbug.com/900865): Remove this once it is doable to get tiled
-  // information in media::VideoFrame.
-  bool IsDirectlyMappable() const;
+  scoped_refptr<VideoFrame> ExportVideoFrame(gfx::Rect visible_rect) const;
 
   int32_t texture_id() const { return texture_id_; }
 
@@ -58,8 +45,7 @@ class TextureRef : public base::RefCounted<TextureRef> {
   uint32_t texture_id_;
   base::OnceClosure no_longer_needed_cb_;
 #if defined(OS_CHROMEOS)
-  scoped_refptr<gfx::NativePixmap> pixmap_;
-  gfx::Size coded_size_;
+  scoped_refptr<VideoFrame> frame_;
 #endif
   THREAD_CHECKER(thread_checker_);
 };

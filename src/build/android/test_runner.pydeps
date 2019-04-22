@@ -7,12 +7,17 @@
 ../../third_party/catapult/common/py_trace_event/py_trace_event/trace_event_impl/log.py
 ../../third_party/catapult/common/py_trace_event/py_trace_event/trace_event_impl/meta_class.py
 ../../third_party/catapult/common/py_trace_event/py_trace_event/trace_event_impl/multiprocessing_shim.py
+../../third_party/catapult/common/py_trace_event/py_trace_event/trace_event_impl/perfetto_proto_classes.py
+../../third_party/catapult/common/py_trace_event/py_trace_event/trace_event_impl/perfetto_trace_writer.py
 ../../third_party/catapult/common/py_trace_event/py_trace_event/trace_time.py
+../../third_party/catapult/common/py_trace_event/third_party/protobuf/encoder.py
+../../third_party/catapult/common/py_trace_event/third_party/protobuf/wire_format.py
 ../../third_party/catapult/common/py_utils/py_utils/__init__.py
 ../../third_party/catapult/common/py_utils/py_utils/cloud_storage.py
 ../../third_party/catapult/common/py_utils/py_utils/cloud_storage_global_lock.py
 ../../third_party/catapult/common/py_utils/py_utils/contextlib_ext.py
 ../../third_party/catapult/common/py_utils/py_utils/lock.py
+../../third_party/catapult/common/py_utils/py_utils/modules_util.py
 ../../third_party/catapult/common/py_utils/py_utils/tempfile_ext.py
 ../../third_party/catapult/dependency_manager/dependency_manager/__init__.py
 ../../third_party/catapult/dependency_manager/dependency_manager/archive_info.py
@@ -44,6 +49,8 @@
 ../../third_party/catapult/devil/devil/android/install_commands.py
 ../../third_party/catapult/devil/devil/android/logcat_monitor.py
 ../../third_party/catapult/devil/devil/android/md5sum.py
+../../third_party/catapult/devil/devil/android/ndk/__init__.py
+../../third_party/catapult/devil/devil/android/ndk/abis.py
 ../../third_party/catapult/devil/devil/android/ports.py
 ../../third_party/catapult/devil/devil/android/sdk/__init__.py
 ../../third_party/catapult/devil/devil/android/sdk/aapt.py
@@ -59,6 +66,7 @@
 ../../third_party/catapult/devil/devil/android/tools/device_status.py
 ../../third_party/catapult/devil/devil/android/tools/script_common.py
 ../../third_party/catapult/devil/devil/android/tools/system_app.py
+../../third_party/catapult/devil/devil/android/tools/webview_app.py
 ../../third_party/catapult/devil/devil/android/valgrind_tools/__init__.py
 ../../third_party/catapult/devil/devil/android/valgrind_tools/base_tool.py
 ../../third_party/catapult/devil/devil/base_error.py

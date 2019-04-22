@@ -45,7 +45,7 @@ class NodeListsNodeData final : public GarbageCollected<NodeListsNodeData> {
     DCHECK(ThreadState::Current()->IsGCForbidden());
     if (child_node_list_)
       return ToChildNodeList(child_node_list_);
-    ChildNodeList* list = ChildNodeList::Create(node);
+    auto* list = MakeGarbageCollected<ChildNodeList>(node);
     child_node_list_ = list;
     return list;
   }
@@ -54,7 +54,7 @@ class NodeListsNodeData final : public GarbageCollected<NodeListsNodeData> {
     DCHECK(ThreadState::Current()->IsGCForbidden());
     if (child_node_list_)
       return ToEmptyNodeList(child_node_list_);
-    EmptyNodeList* list = EmptyNodeList::Create(node);
+    auto* list = MakeGarbageCollected<EmptyNodeList>(node);
     child_node_list_ = list;
     return list;
   }
@@ -77,10 +77,10 @@ class NodeListsNodeData final : public GarbageCollected<NodeListsNodeData> {
   };
 
   typedef HeapHashMap<NamedNodeListKey,
-                      TraceWrapperMember<LiveNodeListBase>,
+                      Member<LiveNodeListBase>,
                       NodeListAtomicCacheMapEntryHash>
       NodeListAtomicNameCacheMap;
-  typedef HeapHashMap<QualifiedName, TraceWrapperMember<TagCollectionNS>>
+  typedef HeapHashMap<QualifiedName, Member<TagCollectionNS>>
       TagCollectionNSCache;
 
   template <typename T>
@@ -136,10 +136,6 @@ class NodeListsNodeData final : public GarbageCollected<NodeListsNodeData> {
     return list;
   }
 
-  static NodeListsNodeData* Create() {
-    return MakeGarbageCollected<NodeListsNodeData>();
-  }
-
   NodeListsNodeData() : child_node_list_(nullptr) {}
 
   void InvalidateCaches(const QualifiedName* attr_name = nullptr);
@@ -174,11 +170,11 @@ class NodeListsNodeData final : public GarbageCollected<NodeListsNodeData> {
     }
   }
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   // Can be a ChildNodeList or an EmptyNodeList.
-  TraceWrapperMember<NodeList> child_node_list_;
+  Member<NodeList> child_node_list_;
   NodeListAtomicNameCacheMap atomic_name_caches_;
   TagCollectionNSCache tag_collection_ns_caches_;
   DISALLOW_COPY_AND_ASSIGN(NodeListsNodeData);

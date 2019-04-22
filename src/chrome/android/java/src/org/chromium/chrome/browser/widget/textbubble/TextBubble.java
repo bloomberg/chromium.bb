@@ -76,13 +76,11 @@ public class TextBubble implements AnchoredPopupWindow.LayoutObserver {
     private long mAutoDismissTimeoutMs;
 
     // Content specific variables.
-    /** The resource id for the string to show in the bubble. */
-    @StringRes
-    private final int mStringId;
+    /** The string to show in the bubble. */
+    private final String mString;
 
-    /** The resource id for the accessibility string associated with the bubble. */
-    @StringRes
-    private final int mAccessibilityStringId;
+    /** The accessibility string associated with the bubble. */
+    private final String mAccessibilityString;
 
     /** The content view shown in the popup window. */
     protected View mContentView;
@@ -158,10 +156,25 @@ public class TextBubble implements AnchoredPopupWindow.LayoutObserver {
     public TextBubble(Context context, View rootView, @StringRes int stringId,
             @StringRes int accessibilityStringId, boolean showArrow,
             RectProvider anchorRectProvider) {
+        this(context, rootView, context.getString(stringId),
+                context.getString(accessibilityStringId), showArrow, anchorRectProvider);
+    }
+
+    /**
+     * Constructs a {@link TextBubble} instance.
+     * @param context  Context to draw resources from.
+     * @param rootView The {@link View} to use for size calculations and for display.
+     * @param contentString The string for the text that should be shown.
+     * @param accessibilityString The string shown in the bubble when accessibility is enabled.
+     * @param showArrow Whether the bubble should have an arrow.
+     * @param anchorRectProvider The {@link RectProvider} used to anchor the text bubble.
+     */
+    public TextBubble(Context context, View rootView, String contentString,
+            String accessibilityString, boolean showArrow, RectProvider anchorRectProvider) {
         mContext = context;
         mRootView = rootView.getRootView();
-        mStringId = stringId;
-        mAccessibilityStringId = accessibilityStringId;
+        mString = contentString;
+        mAccessibilityString = accessibilityString;
 
         mDrawable = new ArrowBubbleDrawable(context);
         mDrawable.setShowArrow(showArrow);
@@ -178,7 +191,7 @@ public class TextBubble implements AnchoredPopupWindow.LayoutObserver {
         mPopupWindow.setMargin(
                 context.getResources().getDimensionPixelSize(R.dimen.text_bubble_margin));
         mPopupWindow.setPreferredHorizontalOrientation(
-                AnchoredPopupWindow.HORIZONTAL_ORIENTATION_CENTER);
+                AnchoredPopupWindow.HorizontalOrientation.CENTER);
         mPopupWindow.setLayoutObserver(this);
 
         mHandler = new Handler();
@@ -321,8 +334,7 @@ public class TextBubble implements AnchoredPopupWindow.LayoutObserver {
      * @param view The {@link TextView} to set text on.
      */
     protected void setText(TextView view) {
-        view.setText(
-                AccessibilityUtil.isAccessibilityEnabled() ? mAccessibilityStringId : mStringId);
+        view.setText(AccessibilityUtil.isAccessibilityEnabled() ? mAccessibilityString : mString);
     }
 
     /**
@@ -343,7 +355,7 @@ public class TextBubble implements AnchoredPopupWindow.LayoutObserver {
                     view = mRootView;
                 }
                 if (view == null) return;
-                view.announceForAccessibility(mContext.getString(mAccessibilityStringId));
+                view.announceForAccessibility(mAccessibilityString);
             }
         });
     }

@@ -38,22 +38,19 @@ class AudioPostProcessorWrapper : public AudioPostProcessor2 {
 
  private:
   // AudioPostProcessor2 implementation:
-  bool SetSampleRate(int sample_rate) override;
-  int ProcessFrames(float* data,
-                    int frames,
-                    float system_volume,
-                    float volume_dbfs) override;
-  float* GetOutputBuffer() override;
-  int GetRingingTimeInFrames() override;
+  bool SetConfig(const Config& config) override;
+  const Status& GetStatus() override;
+  void ProcessFrames(float* data,
+                     int frames,
+                     float system_volume,
+                     float volume_dbfs) override;
   bool UpdateParameters(const std::string& message) override;
   void SetContentType(AudioContentType content_type) override;
   void SetPlayoutChannel(int channel) override;
-  int NumOutputChannels() override;
 
   std::unique_ptr<AudioPostProcessor> owned_pp_;
+  Status status_;
   AudioPostProcessor* pp_;
-  int channels_;
-  float* output_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioPostProcessorWrapper);
 };

@@ -40,6 +40,10 @@ bool IsValidCreditCardExpirationDate(int year,
                                      int month,
                                      const base::Time& now);
 
+// Returns true if |year| describes a year later than or equal to |now|'s year.
+// |year| must have 4 digits.
+bool IsValidCreditCardExpirationYear(int year, const base::Time& now);
+
 // Returns true if |text| looks like a valid credit card number.
 // Uses the Luhn formula to validate the number.
 bool IsValidCreditCardNumber(const base::string16& text);
@@ -48,7 +52,7 @@ bool IsValidCreditCardNumber(const base::string16& text);
 bool HasCorrectLength(const base::string16& number);
 
 // Returns true if |number| passes the validation by Luhn formula.
-bool PassesLuhnCheck(base::string16& number);
+bool PassesLuhnCheck(const base::string16& number);
 
 // Returns true if |code| looks like a valid credit card security code
 // for the given credit card type.

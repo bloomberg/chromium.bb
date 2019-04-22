@@ -86,6 +86,16 @@ found in the LICENSE file.
           <td class="value">no</td>
         </tr>
       </tbody>
+      <tbody jsselect="customLinks">
+        <tr>
+          <th colspan="2">CUSTOM_LINKS</th>
+        </tr>
+        <tr>
+          <td class="detail">enabled</td>
+          <td class="value" jsdisplay="$this">yes</td>
+          <td class="value" jsdisplay="!$this">no</td>
+        </tr>
+      </tbody>
       <tbody jsselect="whitelist">
         <tr>
           <th colspan="2">WHITELIST</th>
@@ -116,9 +126,10 @@ found in the LICENSE file.
           <td class="value" jsdisplay="source == 1">SUGGESTIONS_SERVICE</td>
           <td class="value" jsdisplay="source == 2">POPULAR</td>
           <td class="value" jsdisplay="source == 3">POPULAR_BAKED_IN</td>
-          <td class="value" jsdisplay="source == 4">WHITELIST</td>
-          <td class="value" jsdisplay="source == 5">HOMEPAGE</td>
-          <td class="value" jsdisplay="source &gt; 5">???</td>
+          <td class="value" jsdisplay="source == 4">CUSTOM_LINKS</td>
+          <td class="value" jsdisplay="source == 5">WHITELIST</td>
+          <td class="value" jsdisplay="source == 6">HOMEPAGE</td>
+          <td class="value" jsdisplay="source &gt; 6">???</td>
         </tr>
         <tr>
           <td class="detail">URL</td>
@@ -131,6 +142,11 @@ found in the LICENSE file.
             (<span jscontent="width + 'x' + height"></span>
             <span class="value" jsdisplay="onDemand">, on-demand</span>)
           </td>
+        </tr>
+        <tr jsdisplay="fromMostVisited != null">
+          <td class="detail">From Most Visited</td>
+          <td class="value" jsdisplay="fromMostVisited">yes</td>
+          <td class="value" jsdisplay="!fromMostVisited">no</td>
         </tr>
       </tbody>
     </table>

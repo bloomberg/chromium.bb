@@ -4,13 +4,13 @@
 
 #include "content/browser/background_fetch/storage/image_helpers.h"
 
+#include "base/bind.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "ui/gfx/image/image.h"
 
 namespace content {
-
 namespace background_fetch {
 
 namespace {
@@ -68,5 +68,4 @@ void DeserializeIcon(std::unique_ptr<std::string> serialized_icon,
 }
 
 }  // namespace background_fetch
-
 }  // namespace content

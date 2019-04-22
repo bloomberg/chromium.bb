@@ -11,12 +11,6 @@
 
 namespace blink {
 
-DoublePoint::DoublePoint(const LayoutPoint& p)
-    : x_(p.X().ToDouble()), y_(p.Y().ToDouble()) {}
-
-DoublePoint::DoublePoint(const FloatSize& size)
-    : x_(size.Width()), y_(size.Height()) {}
-
 DoublePoint DoublePoint::ExpandedTo(const DoublePoint& other) const {
   return DoublePoint(std::max(x_, other.x_), std::max(y_, other.y_));
 }

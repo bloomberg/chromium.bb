@@ -9,25 +9,24 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/fetch/bytes_consumer.h"
+#include "third_party/blink/renderer/core/streams/readable_stream.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/loader/fetch/bytes_consumer.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
 class ScriptState;
 
-// This class is a BytesConsumer pulling bytes from ReadableStream
-// implemented with V8 Extras.
+// This class is a BytesConsumer pulling bytes from a ReadableStream.
 // The stream will be immediately locked by the consumer and will never be
 // released.
 class CORE_EXPORT ReadableStreamBytesConsumer final : public BytesConsumer {
   USING_PRE_FINALIZER(ReadableStreamBytesConsumer, Dispose);
 
  public:
-  ReadableStreamBytesConsumer(ScriptState*, ScriptValue stream_reader);
+  ReadableStreamBytesConsumer(ScriptState*, ReadableStream*, ExceptionState&);
   ~ReadableStreamBytesConsumer() override;
 
   Result BeginRead(const char** buffer, size_t* available) override;
@@ -52,7 +51,7 @@ class CORE_EXPORT ReadableStreamBytesConsumer final : public BytesConsumer {
   void OnRejected();
   void Notify();
 
-  TraceWrapperV8Reference<v8::Value> reader_;
+  Member<ReadableStream::ReadHandle> read_handle_;
   Member<ScriptState> script_state_;
   Member<BytesConsumer::Client> client_;
   Member<DOMUint8Array> pending_buffer_;

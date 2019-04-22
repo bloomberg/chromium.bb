@@ -5,7 +5,7 @@
 #include "chrome/browser/subresource_filter/subresource_filter_content_settings_manager.h"
 
 #include <set>
-#include <utility>
+#include <string>
 
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -237,8 +237,8 @@ TEST_F(SubresourceFilterContentSettingsManagerHistoryTest,
   base::RunLoop run_loop;
   base::CancelableTaskTracker task_tracker;
   history_service->ExpireHistoryBetween(std::set<GURL>(), base::Time(),
-                                        base::Time(), run_loop.QuitClosure(),
-                                        &task_tracker);
+                                        base::Time(), /*user_initiated*/ true,
+                                        run_loop.QuitClosure(), &task_tracker);
   run_loop.Run();
 
   EXPECT_TRUE(settings_manager()->ShouldShowUIForSite(url1));

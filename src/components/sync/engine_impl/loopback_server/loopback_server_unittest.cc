@@ -155,8 +155,8 @@ TEST_F(LoopbackServerTest, WrongBirthday) {
 TEST_F(LoopbackServerTest, GetUpdateCommand) {
   ClientToServerResponse response =
       GetUpdatesForType(EntitySpecifics::kBookmarkFieldNumber);
-  // Expect to see the three top-level folders in this update already.
-  EXPECT_EQ(3, response.get_updates().entries_size());
+  // Expect to see the four top-level folders in this update already.
+  EXPECT_EQ(4, response.get_updates().entries_size());
 }
 
 TEST_F(LoopbackServerTest, GetUpdateCommandShouldFilterByDataType) {
@@ -241,8 +241,8 @@ TEST_F(LoopbackServerTest, LoadSavedState) {
                                         &response));
   EXPECT_EQ(SyncEnums::SUCCESS, response.error_code());
   ASSERT_TRUE(response.has_get_updates());
-  // Expect to see the three top-level folders and the newly added bookmark!
-  EXPECT_EQ(4, response.get_updates().entries_size());
+  // Expect to see the four top-level folders and the newly added bookmark!
+  EXPECT_EQ(5, response.get_updates().entries_size());
   EXPECT_EQ(1U, ResponseToMap(response).count(id));
 }
 
@@ -256,8 +256,8 @@ TEST_F(LoopbackServerTest, CommitCommandUpdate) {
   ClientToServerResponse response =
       GetUpdatesForType(EntitySpecifics::kBookmarkFieldNumber);
   ASSERT_TRUE(response.has_get_updates());
-  // Expect to see no fifth bookmark!
-  EXPECT_EQ(4, response.get_updates().entries_size());
+  // Expect to see no sixth bookmark!
+  EXPECT_EQ(5, response.get_updates().entries_size());
   EXPECT_EQ(kUrl2, ResponseToMap(response)[id].specifics().bookmark().url());
 }
 

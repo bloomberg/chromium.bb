@@ -45,21 +45,22 @@ bool BluetoothAdapterFactoryWrapper::IsLowEnergySupported() {
 
 void BluetoothAdapterFactoryWrapper::AcquireAdapter(
     BluetoothAdapter::Observer* observer,
-    const AcquireAdapterCallback& callback) {
+    AcquireAdapterCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!GetAdapter(observer));
 
   AddAdapterObserver(observer);
   if (adapter_.get()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, base::Unretained(adapter_.get())));
+        FROM_HERE,
+        base::BindOnce(std::move(callback), base::Unretained(adapter_.get())));
     return;
   }
 
   DCHECK(BluetoothAdapterFactory::Get().IsLowEnergySupported());
   BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&BluetoothAdapterFactoryWrapper::OnGetAdapter,
-                 weak_ptr_factory_.GetWeakPtr(), callback));
+      base::BindOnce(&BluetoothAdapterFactoryWrapper::OnGetAdapter,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void BluetoothAdapterFactoryWrapper::ReleaseAdapter(
@@ -94,12 +95,12 @@ BluetoothAdapterFactoryWrapper::BluetoothAdapterFactoryWrapper()
 }
 
 void BluetoothAdapterFactoryWrapper::OnGetAdapter(
-    const AcquireAdapterCallback& continuation,
+    AcquireAdapterCallback continuation,
     scoped_refptr<BluetoothAdapter> adapter) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   set_adapter(adapter);
-  continuation.Run(adapter_.get());
+  std::move(continuation).Run(adapter_.get());
 }
 
 bool BluetoothAdapterFactoryWrapper::HasAdapter(

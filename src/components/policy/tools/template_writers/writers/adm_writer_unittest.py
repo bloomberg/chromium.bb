@@ -24,6 +24,17 @@ MESSAGES = '''
     'doc_reference_link': {
       'text': 'Reference: $6', 'desc': 'bleh'
     },
+    'deprecated_policy_group_caption': {
+      'text': 'Deprecated policies', 'desc': 'bleh'
+    },
+    'deprecated_policy_group_desc': {
+      'desc': 'bleh',
+      'text': 'These policies are included here to make them easy to remove.'
+    },
+    'deprecated_policy_desc': {
+      'desc': 'bleh',
+      'text': 'This policy is deprecated. blah blah blah'
+    },
   }'''
 
 
@@ -1100,6 +1111,80 @@ Reference: https://www.chromium.org/administrators/policy-list-3#EnumPolicy.B"
 EnumPolicy_B_Part="Caption of policy B."
 ''')
     self.CompareOutputs(output, expected_output)
+
+  def testDeprecatedPolicy(self):
+    # Tests that a deprecated policy gets placed in the special
+    # 'DeprecatedPolicies' group.
+    policy_json = '''
+      {
+        'policy_definitions': [
+          {
+            'name': 'Policy1',
+            'type': 'string',
+            'deprecated': True,
+            'features': { 'can_be_recommended': True },
+            'supported_on': ['chrome.win:8-'],
+            'caption': 'Caption of policy1.',
+            'desc': """Description of policy1."""
+          },
+        ],
+        'placeholders': [],
+        'messages': %s
+      }''' % MESSAGES
+    output = self.GetOutput(policy_json, {'_chromium': '1'}, 'adm')
+    expected_output = self.ConstructOutput(['MACHINE', 'USER'], '''
+  CATEGORY !!chromium
+    KEYNAME "Software\\Policies\\Chromium"
+
+    CATEGORY !!DeprecatedPolicies_Category
+      POLICY !!Policy1_Policy
+        #if version >= 4
+          SUPPORTED !!SUPPORTED_WIN7
+        #endif
+        EXPLAIN !!Policy1_Explain
+
+        PART !!Policy1_Part  EDITTEXT
+          VALUENAME "Policy1"
+          MAXLEN 1000000
+        END PART
+      END POLICY
+
+    END CATEGORY
+
+  END CATEGORY
+
+  CATEGORY !!chromium_recommended
+    KEYNAME "Software\\Policies\\Chromium\\Recommended"
+
+    CATEGORY !!DeprecatedPolicies_Category
+      POLICY !!Policy1_Policy
+        #if version >= 4
+          SUPPORTED !!SUPPORTED_WIN7
+        #endif
+        EXPLAIN !!Policy1_Explain
+
+        PART !!Policy1_Part  EDITTEXT
+          VALUENAME "Policy1"
+          MAXLEN 1000000
+        END PART
+      END POLICY
+
+    END CATEGORY
+
+  END CATEGORY
+
+
+''', '''[Strings]
+SUPPORTED_WIN7="Microsoft Windows 7 or later"
+chromium="Chromium"
+chromium_recommended="Chromium - Recommended"
+DeprecatedPolicies_Category="Deprecated policies"
+Policy1_Policy="Caption of policy1."
+Policy1_Explain="This policy is deprecated. blah blah blah\\n\\n"
+Policy1_Part="Caption of policy1."
+''')
+    self.CompareOutputs(output, expected_output)
+
 
 
 if __name__ == '__main__':

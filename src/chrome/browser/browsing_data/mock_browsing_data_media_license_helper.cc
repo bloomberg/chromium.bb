@@ -13,11 +13,10 @@ MockBrowsingDataMediaLicenseHelper::MockBrowsingDataMediaLicenseHelper(
 
 MockBrowsingDataMediaLicenseHelper::~MockBrowsingDataMediaLicenseHelper() {}
 
-void MockBrowsingDataMediaLicenseHelper::StartFetching(
-    const FetchCallback& callback) {
+void MockBrowsingDataMediaLicenseHelper::StartFetching(FetchCallback callback) {
   ASSERT_FALSE(callback.is_null());
   ASSERT_TRUE(callback_.is_null());
-  callback_ = callback;
+  callback_ = std::move(callback);
 }
 
 void MockBrowsingDataMediaLicenseHelper::DeleteMediaLicenseOrigin(
@@ -43,8 +42,7 @@ void MockBrowsingDataMediaLicenseHelper::AddMediaLicenseSamples() {
 }
 
 void MockBrowsingDataMediaLicenseHelper::Notify() {
-  callback_.Run(media_licenses_);
-  callback_ = FetchCallback();
+  std::move(callback_).Run(media_licenses_);
 }
 
 bool MockBrowsingDataMediaLicenseHelper::AllDeleted() {

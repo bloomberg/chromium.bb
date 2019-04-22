@@ -21,23 +21,18 @@ cr.define('advanced_item_test', function() {
     /** @override */
     setup(function() {
       PolymerTest.clearBody();
+      const model = document.createElement('print-preview-model');
+      document.body.appendChild(model);
+
       item = document.createElement('print-preview-advanced-settings-item');
 
       // Create capability.
       item.capability = print_preview_test_utils
                             .getCddTemplateWithAdvancedSettings(2, 'FooDevice')
                             .capabilities.printer.vendor_capability[1];
-
-      // Settings - only need vendor items
-      item.settings = {
-        vendorItems: {
-          value: {},
-          unavailableValue: {},
-          valid: true,
-          available: true,
-          key: 'vendorOptions',
-        },
-      };
+      item.settings = model.settings;
+      test_util.fakeDataBind(model, item, 'settings');
+      model.set('settings.vendorItems.available', true);
 
       document.body.appendChild(item);
       Polymer.dom.flush();

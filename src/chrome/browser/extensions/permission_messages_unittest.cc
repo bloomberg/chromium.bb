@@ -7,7 +7,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/permissions_test_util.h"
@@ -339,7 +339,7 @@ TEST_F(USBDevicePermissionMessagesTest, MultipleDevice) {
   EXPECT_EQ(base::ASCIIToUTF16(kMessage), messages.front().message());
   const std::vector<base::string16>& submessages =
       messages.front().submessages();
-  ASSERT_EQ(arraysize(kDetails), submessages.size());
+  ASSERT_EQ(base::size(kDetails), submessages.size());
   for (size_t i = 0; i < submessages.size(); i++)
     EXPECT_EQ(base::ASCIIToUTF16(kDetails[i]), submessages[i]);
 }

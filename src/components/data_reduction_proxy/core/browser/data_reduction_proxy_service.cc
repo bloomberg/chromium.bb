@@ -127,9 +127,6 @@ void DataReductionProxyService::ReadPersistedClientConfig() {
 
   // A config older than 24 hours should not be used.
   bool persisted_config_is_expired =
-      GetFieldTrialParamByFeatureAsBool(
-          features::kDataReductionProxyRobustConnection,
-          "use_24h_config_expiration_time", true) &&
       !last_config_retrieval_time.is_null() &&
       time_since_last_config_retrieval > base::TimeDelta::FromHours(24);
 

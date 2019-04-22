@@ -39,14 +39,6 @@ Polymer({
     }
   },
 
-  /** @private {?settings.AndroidAppsBrowserProxy} */
-  browserProxy_: null,
-
-  /** @override */
-  created: function() {
-    this.browserProxy_ = settings.AndroidAppsBrowserProxyImpl.getInstance();
-  },
-
   /** @private */
   onPlayStoreEnabledChanged_: function(enabled) {
     if (!enabled &&
@@ -102,6 +94,17 @@ Polymer({
 
   /** @private */
   onConfirmDisableDialogClose_: function() {
-    cr.ui.focusWithoutInk(assert(this.$$('#remove button')));
+    cr.ui.focusWithoutInk(assert(this.$$('#remove')));
+  },
+
+  /**
+   * @param {!MouseEvent} event
+   * @private
+   */
+  onManageAndroidAppsTap_: function(event) {
+    // |event.detail| is the click count. Keyboard events will have 0 clicks.
+    const isKeyboardAction = event.detail == 0;
+    settings.AndroidAppsBrowserProxyImpl.getInstance().showAndroidAppsSettings(
+        isKeyboardAction);
   },
 });

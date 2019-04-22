@@ -10,7 +10,6 @@
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "components/safe_browsing/db/database_manager.h"
 #include "components/safe_browsing/db/test_database_manager.h"
-#include "components/safe_browsing/db/v4_feature_list.h"
 
 namespace safe_browsing {
 
@@ -31,6 +30,15 @@ V4ProtocolConfig TestSafeBrowsingService::GetV4ProtocolConfig() const {
 
 void TestSafeBrowsingService::UseV4LocalDatabaseManager() {
   use_v4_local_db_manager_ = true;
+}
+
+std::unique_ptr<SafeBrowsingService::StateSubscription>
+TestSafeBrowsingService::RegisterStateCallback(
+    const base::Callback<void(void)>& callback) {
+  // This override is required since TestSafeBrowsingService can be destroyed
+  // before CertificateReportingService, which causes a crash due to the
+  // leftover callback at destruction time.
+  return nullptr;
 }
 
 std::string TestSafeBrowsingService::serilized_download_report() {

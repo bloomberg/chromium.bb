@@ -4,13 +4,14 @@
 
 #include "media/capture/video/video_capture_jpeg_decoder_impl.h"
 
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "media/base/media_switches.h"
 
 namespace media {
 
 VideoCaptureJpegDecoderImpl::VideoCaptureJpegDecoderImpl(
-    MojoJpegDecodeAcceleratorFactoryCB jpeg_decoder_factory,
+    MojoMjpegDecodeAcceleratorFactoryCB jpeg_decoder_factory,
     scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
     DecodeDoneCB decode_done_cb,
     base::RepeatingCallback<void(const std::string&)> send_log_message_cb)
@@ -20,32 +21,12 @@ VideoCaptureJpegDecoderImpl::VideoCaptureJpegDecoderImpl(
       send_log_message_cb_(std::move(send_log_message_cb)),
       has_received_decoded_frame_(false),
       next_bitstream_buffer_id_(0),
-      in_buffer_id_(media::JpegDecodeAccelerator::kInvalidBitstreamBufferId),
+      in_buffer_id_(media::MjpegDecodeAccelerator::kInvalidBitstreamBufferId),
       decoder_status_(INIT_PENDING),
       weak_ptr_factory_(this) {}
 
 VideoCaptureJpegDecoderImpl::~VideoCaptureJpegDecoderImpl() {
-  // |this| was set as |decoder_|'s client. |decoder_| has to be deleted on
-  // |decoder_task_runner_| before this destructor returns to ensure that it
-  // doesn't call back into its client.
-
-  if (!decoder_)
-    return;
-
-  if (decoder_task_runner_->RunsTasksInCurrentSequence()) {
-    decoder_.reset();
-    return;
-  }
-
-  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
-                            base::WaitableEvent::InitialState::NOT_SIGNALED);
-  // base::Unretained is safe because |this| will be valid until |event|
-  // is signaled.
-  decoder_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&VideoCaptureJpegDecoderImpl::DestroyDecoderOnIOThread,
-                     base::Unretained(this), &event));
-  event.Wait();
+  DCHECK(decoder_task_runner_->RunsTasksInCurrentSequence());
 }
 
 void VideoCaptureJpegDecoderImpl::Initialize() {
@@ -61,8 +42,7 @@ void VideoCaptureJpegDecoderImpl::Initialize() {
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-VideoCaptureJpegDecoderImpl::STATUS VideoCaptureJpegDecoderImpl::GetStatus()
-    const {
+VideoCaptureJpegDecoder::STATUS VideoCaptureJpegDecoderImpl::GetStatus() const {
   base::AutoLock lock(lock_);
   return decoder_status_;
 }
@@ -166,7 +146,7 @@ void VideoCaptureJpegDecoderImpl::DecodeCapturedData(
   // base::Unretained is safe because |decoder_| is deleted on
   // |decoder_task_runner_|.
   decoder_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&media::JpegDecodeAccelerator::Decode,
+      FROM_HERE, base::BindOnce(&media::MjpegDecodeAccelerator::Decode,
                                 base::Unretained(decoder_.get()), in_buffer,
                                 std::move(out_frame)));
 }
@@ -190,7 +170,7 @@ void VideoCaptureJpegDecoderImpl::VideoFrameReady(int32_t bitstream_buffer_id) {
                << ", expected " << in_buffer_id_;
     return;
   }
-  in_buffer_id_ = media::JpegDecodeAccelerator::kInvalidBitstreamBufferId;
+  in_buffer_id_ = media::MjpegDecodeAccelerator::kInvalidBitstreamBufferId;
 
   std::move(decode_done_closure_).Run();
 
@@ -200,7 +180,7 @@ void VideoCaptureJpegDecoderImpl::VideoFrameReady(int32_t bitstream_buffer_id) {
 
 void VideoCaptureJpegDecoderImpl::NotifyError(
     int32_t bitstream_buffer_id,
-    media::JpegDecodeAccelerator::Error error) {
+    media::MjpegDecodeAccelerator::Error error) {
   DCHECK(decoder_task_runner_->RunsTasksInCurrentSequence());
   LOG(ERROR) << "Decode error, bitstream_buffer_id=" << bitstream_buffer_id
              << ", error=" << error;
@@ -214,11 +194,11 @@ void VideoCaptureJpegDecoderImpl::FinishInitialization() {
   TRACE_EVENT0("gpu", "VideoCaptureJpegDecoderImpl::FinishInitialization");
   DCHECK(decoder_task_runner_->RunsTasksInCurrentSequence());
 
-  media::mojom::JpegDecodeAcceleratorPtr remote_decoder;
+  media::mojom::MjpegDecodeAcceleratorPtr remote_decoder;
   jpeg_decoder_factory_.Run(mojo::MakeRequest(&remote_decoder));
 
   base::AutoLock lock(lock_);
-  decoder_ = std::make_unique<media::MojoJpegDecodeAccelerator>(
+  decoder_ = std::make_unique<media::MojoMjpegDecodeAccelerator>(
       decoder_task_runner_, remote_decoder.PassInterface());
 
   decoder_->InitializeAsync(

@@ -6,14 +6,15 @@
 
 #include "xfa/fxfa/parser/cxfa_validationmessaging.h"
 
+#include "fxjs/xfa/cjx_node.h"
+#include "third_party/base/ptr_util.h"
+
 namespace {
 
 const CXFA_Node::AttributeData kValidationMessagingAttributeData[] = {
     {XFA_Attribute::Desc, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Lock, XFA_AttributeType::Integer, (void*)0},
-    {XFA_Attribute::Unknown, XFA_AttributeType::Integer, nullptr}};
-
-constexpr wchar_t kValidationMessagingName[] = L"validationMessaging";
+};
 
 }  // namespace
 
@@ -24,8 +25,8 @@ CXFA_ValidationMessaging::CXFA_ValidationMessaging(CXFA_Document* doc,
                 XFA_XDPPACKET_Config,
                 XFA_ObjectType::NodeV,
                 XFA_Element::ValidationMessaging,
-                nullptr,
+                {},
                 kValidationMessagingAttributeData,
-                kValidationMessagingName) {}
+                pdfium::MakeUnique<CJX_Node>(this)) {}
 
-CXFA_ValidationMessaging::~CXFA_ValidationMessaging() {}
+CXFA_ValidationMessaging::~CXFA_ValidationMessaging() = default;

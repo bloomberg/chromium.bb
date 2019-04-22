@@ -122,7 +122,7 @@ void SetEncryptableProtoValues(const EntryKernel& kernel,
 // Helper functions for SetFieldValues().
 
 std::unique_ptr<base::Value> Int64ToValue(int64_t i) {
-  return std::make_unique<base::Value>(base::Int64ToString(i));
+  return std::make_unique<base::Value>(base::NumberToString(i));
 }
 
 std::unique_ptr<base::Value> TimeToValue(const base::Time& t) {

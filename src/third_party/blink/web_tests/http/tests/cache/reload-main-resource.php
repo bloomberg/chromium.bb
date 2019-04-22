@@ -14,6 +14,9 @@ if (window.testRunner) {
 }
 
 function reloadIframe() {
+    if (localStorage.reloaded)
+        return;
+    localStorage.reloaded = true;
     window.frames[0].location.reload();
 }
 

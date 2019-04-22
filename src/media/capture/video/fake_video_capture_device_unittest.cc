@@ -98,7 +98,7 @@ VideoCaptureDevice::Client::Buffer CreateStubBuffer(int buffer_id,
       buffer_id, arbitrary_frame_feedback_id,
       std::make_unique<StubBufferHandleProvider>(mapped_size, buffer),
       std::make_unique<StubReadWritePermission>(buffer));
-};
+}
 
 class ImageCaptureClient : public base::RefCounted<ImageCaptureClient> {
  public:
@@ -175,12 +175,12 @@ class FakeVideoCaptureDeviceTestBase : public ::testing::Test {
                           const media::VideoCaptureFormat& frame_format,
                           base::TimeTicks,
                           base::TimeDelta) { OnFrameCaptured(frame_format); }));
-    ON_CALL(*result, DoOnIncomingCapturedBufferExt(_, _, _, _, _, _))
-        .WillByDefault(
-            Invoke([this](media::VideoCaptureDevice::Client::Buffer&,
-                          const media::VideoCaptureFormat& frame_format,
-                          base::TimeTicks, base::TimeDelta, gfx::Rect,
-                          const media::VideoFrameMetadata&) {
+    ON_CALL(*result, DoOnIncomingCapturedBufferExt(_, _, _, _, _, _, _))
+        .WillByDefault(Invoke(
+            [this](media::VideoCaptureDevice::Client::Buffer&,
+                   const media::VideoCaptureFormat& frame_format,
+                   const gfx::ColorSpace&, base::TimeTicks, base::TimeDelta,
+                   gfx::Rect, const media::VideoFrameMetadata&) {
               OnFrameCaptured(frame_format);
             }));
     return result;
@@ -262,7 +262,7 @@ TEST_P(FakeVideoCaptureDeviceTest, CaptureUsing) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ,
     FakeVideoCaptureDeviceTest,
     Combine(
@@ -310,21 +310,6 @@ TEST_F(FakeVideoCaptureDeviceTest, GetDeviceSupportedFormats) {
     EXPECT_GE(supported_formats[4].frame_rate, 20.0);
     device_index++;
   }
-}
-
-TEST_F(FakeVideoCaptureDeviceTest, GetCameraCalibration) {
-  const size_t device_count = 2;
-  video_capture_device_factory_->SetToDefaultDevicesConfig(device_count);
-  video_capture_device_factory_->GetDeviceDescriptors(descriptors_.get());
-  ASSERT_EQ(device_count, descriptors_->size());
-  ASSERT_FALSE(descriptors_->at(0).camera_calibration);
-  const VideoCaptureDeviceDescriptor& depth_device = descriptors_->at(1);
-  EXPECT_EQ("/dev/video1", depth_device.device_id);
-  ASSERT_TRUE(depth_device.camera_calibration);
-  EXPECT_EQ(135.0, depth_device.camera_calibration->focal_length_x);
-  EXPECT_EQ(135.6, depth_device.camera_calibration->focal_length_y);
-  EXPECT_EQ(0.0, depth_device.camera_calibration->depth_near);
-  EXPECT_EQ(65.535, depth_device.camera_calibration->depth_far);
 }
 
 TEST_F(FakeVideoCaptureDeviceTest, ErrorDeviceReportsError) {
@@ -566,7 +551,7 @@ TEST_P(FakeVideoCaptureDeviceFactoryTest,
   }
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ,
     FakeVideoCaptureDeviceFactoryTest,
     Values(CommandLineTestData{"fps=-1",
@@ -617,4 +602,4 @@ INSTANTIATE_TEST_CASE_P(
                1u,
                FakeVideoCaptureDevice::DisplayMediaType::BROWSER,
                {PIXEL_FORMAT_I420}}));
-};  // namespace media
+}  // namespace media

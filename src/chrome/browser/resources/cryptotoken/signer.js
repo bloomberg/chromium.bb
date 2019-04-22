@@ -214,8 +214,9 @@ function QueuedSignRequest(
 
 /** Closes this sign request. */
 QueuedSignRequest.prototype.close = function() {
-  if (this.closed_)
+  if (this.closed_) {
     return;
+  }
   var hadBegunSigning = false;
   if (this.begun_ && this.signer_) {
     this.signer_.close();
@@ -338,8 +339,9 @@ function Signer(timer, sender, errorCb, successCb, opt_logMsgUrl) {
  */
 Signer.prototype.setChallenges = function(
     signChallenges, opt_defaultChallenge, opt_appId) {
-  if (this.challengesSet_ || this.done_)
+  if (this.challengesSet_ || this.done_) {
     return false;
+  }
   if (this.timer_.expired()) {
     this.notifyError_({errorCode: ErrorCodes.TIMEOUT});
     return true;
@@ -465,14 +467,16 @@ Signer.prototype.doSign_ = async function() {
   }).then(shouldUseWebAuthn => {
     if (shouldUseWebAuthn) {
       // If we can proxy to WebAuthn, send the request via WebAuthn.
+      console.log('Proxying sign request to WebAuthn');
       return this.doSignWebAuthn_(encodedChallenges, challengeVal);
     }
     var request = makeSignHelperRequest(
         encodedChallenges, timeoutSeconds, this.logMsgUrl_);
     this.handler_ = FACTORY_REGISTRY.getRequestHelper().getHandler(
         /** @type {HelperRequest} */ (request));
-    if (!this.handler_)
+    if (!this.handler_) {
       return false;
+    }
     return this.handler_.run(this.helperComplete_.bind(this));
   });
 };
@@ -491,11 +495,28 @@ Signer.prototype.doSignWebAuthn_ = function(encodedChallenges, challengeVal) {
     return false;
   }
 
+  const decodedChallenge = B64_decode(challengeVal);
+  if (decodedChallenge.length == 0) {
+    this.notifyError_({
+      errorCode: ErrorCodes.BAD_REQUEST,
+      errorMessage: 'challenge must be base64url encoded',
+    });
+    return false;
+  }
+
   const credentialList = [];
   for (let i = 0; i < encodedChallenges.length; i++) {
+    const decodedKeyHandle = B64_decode(encodedChallenges[i]['keyHandle']);
+    if (decodedKeyHandle.length == 0) {
+      this.notifyError_({
+        errorCode: ErrorCodes.BAD_REQUEST,
+        errorMessage: 'keyHandle must be base64url encoded',
+      });
+      return false;
+    }
     credentialList.push({
       type: 'public-key',
-      id: new Uint8Array(B64_decode(encodedChallenges[i].keyHandle)).buffer,
+      id: new Uint8Array(decodedKeyHandle).buffer,
     });
   }
   // App ID could be defined for each challenge or globally.
@@ -505,7 +526,7 @@ Signer.prototype.doSignWebAuthn_ = function(encodedChallenges, challengeVal) {
 
   const request = {
     publicKey: {
-      challenge: new Uint8Array(B64_decode(challengeVal)).buffer,
+      challenge: new Uint8Array(decodedChallenge).buffer,
       timeout: this.timer_.millisecondsUntilExpired(),
       rpId: this.sender_.origin,
       allowCredentials: credentialList,
@@ -651,8 +672,9 @@ Signer.prototype.close_ = function(opt_notifying) {
  * @private
  */
 Signer.prototype.notifyError_ = function(error) {
-  if (this.done_)
+  if (this.done_) {
     return;
+  }
   this.done_ = true;
   this.close_(true);
   this.errorCb_(error);
@@ -666,8 +688,9 @@ Signer.prototype.notifyError_ = function(error) {
  * @private
  */
 Signer.prototype.notifySuccess_ = function(challenge, info, browserData) {
-  if (this.done_)
+  if (this.done_) {
     return;
+  }
   this.done_ = true;
   this.close_(true);
   this.successCb_(challenge, info, browserData);

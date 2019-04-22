@@ -17,7 +17,7 @@
 namespace media {
 class VideoFrame;
 class VideoFrameReceiver;
-};  // namespace media
+}  // namespace media
 
 namespace content {
 

@@ -102,7 +102,7 @@ class CrOSDataSource : public tracing::ProducerClient::DataSourceBase {
   // Called from the tracing::ProducerClient on its sequence.
   void StartTracing(
       tracing::ProducerClient* producer_client,
-      const tracing::mojom::DataSourceConfig& data_source_config) override {
+      const perfetto::DataSourceConfig& data_source_config) override {
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&CrOSDataSource::StartTracingOnUI,
@@ -131,17 +131,16 @@ class CrOSDataSource : public tracing::ProducerClient::DataSourceBase {
     DETACH_FROM_SEQUENCE(ui_sequence_checker_);
   }
 
-  void StartTracingOnUI(
-      tracing::ProducerClient* producer_client,
-      const tracing::mojom::DataSourceConfig& data_source_config) {
+  void StartTracingOnUI(tracing::ProducerClient* producer_client,
+                        const perfetto::DataSourceConfig& data_source_config) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(ui_sequence_checker_);
     DCHECK(!producer_client_);
     DCHECK(!session_);
     producer_client_ = producer_client;
-    target_buffer_ = data_source_config.target_buffer;
+    target_buffer_ = data_source_config.target_buffer();
     session_ = std::make_unique<CrOSSystemTracingSession>();
     session_->StartTracing(
-        data_source_config.trace_config,
+        data_source_config.chrome_config().trace_config(),
         base::BindOnce(&CrOSDataSource::SystemTracerStartedOnUI,
                        base::Unretained(this)));
   }
@@ -201,7 +200,7 @@ class CrOSDataSource : public tracing::ProducerClient::DataSourceBase {
     session_started_ = false;
     producer_client_ = nullptr;
 
-    producer_client->GetTaskRunner()->PostTask(
+    producer_client->GetTaskRunner()->task_runner()->PostTask(
         FROM_HERE, std::move(stop_complete_callback));
   }
 
@@ -217,11 +216,9 @@ class CrOSDataSource : public tracing::ProducerClient::DataSourceBase {
 
 }  // namespace
 
-CrOSTracingAgent::CrOSTracingAgent(service_manager::Connector* connector)
-    : BaseAgent(connector,
-                tracing::mojom::kSystemTraceEventLabel,
+CrOSTracingAgent::CrOSTracingAgent()
+    : BaseAgent(tracing::mojom::kSystemTraceEventLabel,
                 tracing::mojom::TraceDataType::STRING,
-                false /* supports_explicit_clock_sync */,
                 base::kNullProcessId) {
   tracing::ProducerClient::Get()->AddDataSource(CrOSDataSource::GetInstance());
 }
@@ -240,8 +237,9 @@ void CrOSTracingAgent::StartTracing(const std::string& config,
 }
 
 void CrOSTracingAgent::StopAndFlush(tracing::mojom::RecorderPtr recorder) {
-  // We should only be called after starting the trace session succeeded.
-  DCHECK(session_);
+  // This may be called even if we are not tracing.
+  if (!session_)
+    return;
   recorder_ = std::move(recorder);
   session_->StopTracing(
       base::BindOnce(&CrOSTracingAgent::RecorderProxy, base::Unretained(this)));

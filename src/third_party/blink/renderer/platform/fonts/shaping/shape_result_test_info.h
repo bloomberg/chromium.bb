@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/platform/fonts/shaping/harfbuzz_shaper.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_bloberizer.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 #include <hb.h>
 
@@ -32,6 +33,8 @@ class PLATFORM_EXPORT ShapeResultTestInfo : public ShapeResult {
 };
 
 class PLATFORM_EXPORT ShapeResultBloberizerTestInfo {
+  STATIC_ONLY(ShapeResultBloberizerTestInfo);
+
  public:
   static const SimpleFontData* PendingRunFontData(
       const ShapeResultBloberizer& bloberizer) {
@@ -66,6 +69,30 @@ class PLATFORM_EXPORT ShapeResultBloberizerTestInfo {
     return bloberizer.blobs_.size();
   }
 };
+
+struct PLATFORM_EXPORT ShapeResultTestGlyphInfo {
+  unsigned character_index;
+  Glyph glyph;
+  float advance;
+};
+
+void PLATFORM_EXPORT AddGlyphInfo(void* context,
+                                  unsigned character_index,
+                                  Glyph,
+                                  FloatSize glyph_offset,
+                                  float advance,
+                                  bool is_horizontal,
+                                  CanvasRotationInVertical,
+                                  const SimpleFontData*);
+
+void PLATFORM_EXPORT ComputeGlyphResults(const ShapeResult&,
+                                         Vector<ShapeResultTestGlyphInfo>*);
+
+bool PLATFORM_EXPORT
+CompareResultGlyphs(const Vector<ShapeResultTestGlyphInfo>& test,
+                    const Vector<ShapeResultTestGlyphInfo>& reference,
+                    unsigned reference_start,
+                    unsigned num_glyphs);
 
 }  // namespace blink
 

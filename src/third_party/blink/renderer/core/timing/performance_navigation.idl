@@ -41,5 +41,5 @@
     const unsigned short TYPE_RESERVED = 255;
     readonly attribute unsigned short type;
     readonly attribute unsigned short redirectCount;
-    serializer = {attribute};
+    [CallWith=ScriptState, ImplementedAs=toJSONForBinding] object toJSON();
 };

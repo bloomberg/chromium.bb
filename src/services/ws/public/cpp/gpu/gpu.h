@@ -22,6 +22,8 @@ class Connector;
 
 namespace ws {
 
+class ContextProviderCommandBuffer;
+
 class Gpu : public gpu::GpuChannelEstablishFactory {
  public:
   // The Gpu has to be initialized in the main thread before establishing
@@ -37,11 +39,11 @@ class Gpu : public gpu::GpuChannelEstablishFactory {
     return gpu_memory_buffer_manager_.get();
   }
 
-  scoped_refptr<viz::ContextProvider> CreateContextProvider(
+  scoped_refptr<ws::ContextProviderCommandBuffer> CreateContextProvider(
       scoped_refptr<gpu::GpuChannelHost> gpu_channel);
 
   void CreateJpegDecodeAccelerator(
-      media::mojom::JpegDecodeAcceleratorRequest jda_request);
+      media::mojom::MjpegDecodeAcceleratorRequest jda_request);
   void CreateVideoEncodeAcceleratorProvider(
       media::mojom::VideoEncodeAcceleratorProviderRequest vea_provider_request);
 
@@ -60,9 +62,7 @@ class Gpu : public gpu::GpuChannelEstablishFactory {
   class GpuPtrIO;
   class EstablishRequest;
 
-  using GpuPtrFactory = base::RepeatingCallback<mojom::GpuPtr(void)>;
-
-  Gpu(GpuPtrFactory factory,
+  Gpu(mojom::GpuPtr gpu_ptr,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // Sends a request to establish a gpu channel. If a request is currently

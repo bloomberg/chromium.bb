@@ -5,6 +5,7 @@
 #ifndef CHROMEOS_SERVICES_SECURE_CHANNEL_CONNECTION_ATTEMPT_BASE_H_
 #define CHROMEOS_SERVICES_SECURE_CHANNEL_CONNECTION_ATTEMPT_BASE_H_
 
+#include "base/bind.h"
 #include "base/containers/flat_map.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -12,7 +13,7 @@
 #include "base/observer_list.h"
 #include "base/stl_util.h"
 #include "base/time/default_clock.h"
-#include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/services/secure_channel/authenticated_channel.h"
 #include "chromeos/services/secure_channel/connect_to_device_operation.h"
 #include "chromeos/services/secure_channel/connection_attempt.h"

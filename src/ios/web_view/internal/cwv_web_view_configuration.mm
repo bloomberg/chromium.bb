@@ -8,8 +8,8 @@
 
 #include "base/logging.h"
 #include "base/threading/thread_restrictions.h"
-#include "components/browser_sync/profile_sync_service.h"
-#include "ios/web_view/cwv_web_view_features.h"
+#include "components/sync/driver/sync_service.h"
+#include "ios/web_view/cwv_web_view_buildflags.h"
 #include "ios/web_view/internal/app/application_context.h"
 #import "ios/web_view/internal/autofill/cwv_autofill_data_manager_internal.h"
 #include "ios/web_view/internal/autofill/web_view_personal_data_manager_factory.h"
@@ -17,11 +17,9 @@
 #import "ios/web_view/internal/cwv_user_content_controller_internal.h"
 #import "ios/web_view/internal/cwv_web_view_internal.h"
 #include "ios/web_view/internal/signin/ios_web_view_signin_client.h"
-#include "ios/web_view/internal/signin/web_view_account_tracker_service_factory.h"
-#include "ios/web_view/internal/signin/web_view_oauth2_token_service_factory.h"
+#include "ios/web_view/internal/signin/web_view_identity_manager_factory.h"
 #include "ios/web_view/internal/signin/web_view_signin_client_factory.h"
 #include "ios/web_view/internal/signin/web_view_signin_error_controller_factory.h"
-#include "ios/web_view/internal/signin/web_view_signin_manager_factory.h"
 #import "ios/web_view/internal/sync/cwv_sync_controller_internal.h"
 #import "ios/web_view/internal/sync/web_view_profile_sync_service_factory.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
@@ -155,28 +153,20 @@ CWVWebViewConfiguration* gIncognitoConfiguration = nil;
 #pragma mark - Sync
 - (CWVSyncController*)syncController {
   if (!_syncController && self.persistent) {
-    browser_sync::ProfileSyncService* profileSyncService =
+    syncer::SyncService* syncService =
         ios_web_view::WebViewProfileSyncServiceFactory::GetForBrowserState(
             self.browserState);
-    AccountTrackerService* accountTrackerService =
-        ios_web_view::WebViewAccountTrackerServiceFactory::GetForBrowserState(
-            self.browserState);
-    SigninManager* signinManager =
-        ios_web_view::WebViewSigninManagerFactory::GetForBrowserState(
-            self.browserState);
-    ProfileOAuth2TokenService* tokenService =
-        ios_web_view::WebViewOAuth2TokenServiceFactory::GetForBrowserState(
+    identity::IdentityManager* identityManager =
+        ios_web_view::WebViewIdentityManagerFactory::GetForBrowserState(
             self.browserState);
     SigninErrorController* signinErrorController =
         ios_web_view::WebViewSigninErrorControllerFactory::GetForBrowserState(
             self.browserState);
 
-    _syncController = [[CWVSyncController alloc]
-        initWithProfileSyncService:profileSyncService
-             accountTrackerService:accountTrackerService
-                     signinManager:signinManager
-                      tokenService:tokenService
-             signinErrorController:signinErrorController];
+    _syncController =
+        [[CWVSyncController alloc] initWithSyncService:syncService
+                                       identityManager:identityManager
+                                 signinErrorController:signinErrorController];
 
     // Set the newly created CWVSyncController on IOSWebViewSigninClient to
     // so access tokens can be fetched.

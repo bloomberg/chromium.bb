@@ -42,6 +42,34 @@ promise_test(() => {
       });
 }, 'implementations can reply with multiple reply arguments');
 
+promise_test(async (t) => {
+  const impl = new TargetImpl;
+  const proxy = impl.target.createProxy();
+
+  await proxy.ping();
+  proxy.$.close();
+
+  await promise_rejects(t, new Error(), proxy.ping());
+}, 'after the pipe is closed all future calls should fail');
+
+promise_test(async (t) => {
+  const impl = new TargetImpl;
+  const proxy = impl.target.createProxy();
+
+  // None of these promises should successfully resolve because we are
+  // immediately closing the pipe.
+  const promises = []
+  for (let i = 0; i < 10; i++) {
+    promises.push(proxy.ping());
+  }
+
+  proxy.$.close();
+
+  for (const promise of promises) {
+    await promise_rejects(t, new Error(), promise);
+  }
+}, 'closing the pipe drops any pending messages');
+
 promise_test(() => {
   let impl = new TargetImpl;
 
@@ -109,7 +137,7 @@ promise_test(() => {
   let clientRouter = new liteJsTest.mojom.SubinterfaceClientCallbackRouter;
   let subinterfaceProxy = new liteJsTest.mojom.SubinterfaceProxy;
   targetProxy.requestSubinterface(
-      subinterfaceProxy.createRequest(), clientRouter.createProxy());
+      subinterfaceProxy.$.createRequest(), clientRouter.createProxy());
   return new Promise(resolve => {
     clientRouter.didFlush.addListener(values => {
       assert_array_equals(values, kTestNumbers);
@@ -156,7 +184,7 @@ promise_test(() => {
   const kNumPokes = 100;
   for (let i = 0; i < kNumPokes; ++i)
     proxy.poke();
-  return proxy.flushForTesting().then(() => {
+  return proxy.$.flushForTesting().then(() => {
     assert_equals(impl.numPokes, kNumPokes);
   });
 }, 'can use generated flushForTesting API for synchronization in tests');

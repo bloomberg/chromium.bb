@@ -23,11 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// https://html.spec.whatwg.org/#media-elements
+// https://html.spec.whatwg.org/C/#media-elements
 
-// The `URLString` reference below is from Trusted Types:
-// https://github.com/WICG/trusted-types/, which is still WIP.
-// https://crbug.com/739170.
 enum CanPlayTypeResult { "" /* empty string */, "maybe", "probably" };
 [
     ActiveScriptWrappable
@@ -49,7 +46,7 @@ enum CanPlayTypeResult { "" /* empty string */, "maybe", "probably" };
     [CEReactions] attribute DOMString preload;
     readonly attribute TimeRanges buffered;
     void load();
-    CanPlayTypeResult canPlayType(DOMString type);
+    [HighEntropy, Measure] CanPlayTypeResult canPlayType(DOMString type);
 
     // ready state
     const unsigned short HAVE_NOTHING = 0;

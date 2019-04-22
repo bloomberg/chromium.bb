@@ -187,7 +187,7 @@ WideString CPDF_FileSpec::EncodeFileName(const WideString& filepath) {
     return L'/' + ChangeSlashToPDF(filepath.c_str());
   return ChangeSlashToPDF(filepath.c_str());
 #elif _FX_PLATFORM_ == _FX_PLATFORM_APPLE_
-  if (filepath.Left(sizeof("Mac") - 1) == L"Mac")
+  if (filepath.Left(sizeof("Mac") - 1).EqualsASCII("Mac"))
     return L'/' + ChangeSlashToPDF(filepath.c_str());
   return ChangeSlashToPDF(filepath.c_str());
 #else
@@ -206,6 +206,6 @@ void CPDF_FileSpec::SetFileName(const WideString& wsFileName) {
     m_pWritableObj->SetString(wsStr.ToDefANSI());
   } else if (CPDF_Dictionary* pDict = m_pWritableObj->AsDictionary()) {
     pDict->SetNewFor<CPDF_String>(pdfium::stream::kF, wsStr.ToDefANSI(), false);
-    pDict->SetNewFor<CPDF_String>("UF", PDF_EncodeText(wsStr), false);
+    pDict->SetNewFor<CPDF_String>("UF", wsStr);
   }
 }

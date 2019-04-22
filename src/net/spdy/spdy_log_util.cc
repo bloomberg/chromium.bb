@@ -6,32 +6,33 @@
 
 #include <utility>
 
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "net/http/http_log_util.h"
 
 namespace net {
 
-std::string ElideGoAwayDebugDataForNetLog(NetLogCaptureMode capture_mode,
+base::Value ElideGoAwayDebugDataForNetLog(NetLogCaptureMode capture_mode,
                                           base::StringPiece debug_data) {
-  if (capture_mode.include_cookies_and_credentials()) {
-    return debug_data.as_string();
-  }
+  if (capture_mode.include_cookies_and_credentials())
+    return NetLogStringValue(debug_data);
 
-  return std::string("[") + base::NumberToString(debug_data.size()) +
-         std::string(" bytes were stripped]");
+  return NetLogStringValue(base::StrCat(
+      {"[", base::NumberToString(debug_data.size()), " bytes were stripped]"}));
 }
 
 std::unique_ptr<base::ListValue> ElideSpdyHeaderBlockForNetLog(
     const spdy::SpdyHeaderBlock& headers,
     NetLogCaptureMode capture_mode) {
   auto headers_list = std::make_unique<base::ListValue>();
-  for (spdy::SpdyHeaderBlock::const_iterator it = headers.begin();
-       it != headers.end(); ++it) {
-    headers_list->AppendString(
-        it->first.as_string() + ": " +
-        ElideHeaderValueForNetLog(capture_mode, it->first.as_string(),
-                                  it->second.as_string()));
+  for (const auto& header : headers) {
+    base::StringPiece key = header.first;
+    base::StringPiece value = header.second;
+    headers_list->GetList().push_back(NetLogStringValue(
+        base::StrCat({key, ": ",
+                      ElideHeaderValueForNetLog(capture_mode, key.as_string(),
+                                                value.as_string())})));
   }
   return headers_list;
 }
@@ -40,15 +41,7 @@ std::unique_ptr<base::Value> SpdyHeaderBlockNetLogCallback(
     const spdy::SpdyHeaderBlock* headers,
     NetLogCaptureMode capture_mode) {
   auto dict = std::make_unique<base::DictionaryValue>();
-  auto headers_dict = std::make_unique<base::DictionaryValue>();
-  for (spdy::SpdyHeaderBlock::const_iterator it = headers->begin();
-       it != headers->end(); ++it) {
-    headers_dict->SetKey(
-        it->first.as_string(),
-        base::Value(ElideHeaderValueForNetLog(
-            capture_mode, it->first.as_string(), it->second.as_string())));
-  }
-  dict->Set("headers", std::move(headers_dict));
+  dict->Set("headers", ElideSpdyHeaderBlockForNetLog(*headers, capture_mode));
   return std::move(dict);
 }
 

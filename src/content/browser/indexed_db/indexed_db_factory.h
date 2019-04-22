@@ -10,6 +10,7 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <tuple>
 #include <utility>
 
 #include "base/files/file_path.h"
@@ -113,20 +114,12 @@ class CONTENT_EXPORT IndexedDBFactory
   IndexedDBFactory() {}
   virtual ~IndexedDBFactory() {}
 
-  virtual scoped_refptr<IndexedDBBackingStore> OpenBackingStore(
-      const url::Origin& origin,
-      const base::FilePath& data_directory,
-      IndexedDBDataLossInfo* data_loss_info,
-      bool* disk_full,
-      leveldb::Status* status) = 0;
-
-  virtual scoped_refptr<IndexedDBBackingStore> OpenBackingStoreHelper(
-      const url::Origin& origin,
-      const base::FilePath& data_directory,
-      IndexedDBDataLossInfo* data_loss_info,
-      bool* disk_full,
-      bool first_time,
-      leveldb::Status* status) = 0;
+  virtual std::tuple<scoped_refptr<IndexedDBBackingStore>,
+                     leveldb::Status,
+                     IndexedDBDataLossInfo,
+                     bool /* disk_full */>
+  OpenBackingStore(const url::Origin& origin,
+                   const base::FilePath& data_directory) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(IndexedDBFactory);

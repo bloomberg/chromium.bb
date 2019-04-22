@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <cstring>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -169,6 +170,16 @@ class FuzzedDataProvider {
   template <typename T, size_t size>
   T PickValueInArray(T (&array)[size]) {
     return array[ConsumeIntegralInRange<size_t>(0, size - 1)];
+  }
+
+  // Return an enum value. The enum must start at 0 and be contiguous. It must
+  // also contain kMaxValue aliased to its largest (inclusive) value. Such as:
+  // enum class Foo { SomeValue, OtherValue, kMaxValue = OtherValue };
+  template <typename T>
+  T ConsumeEnum() {
+    static_assert(std::is_enum<T>::value, "|T| must be an enum type.");
+    return static_cast<T>(ConsumeIntegralInRange<uint32_t>(
+        0, static_cast<uint32_t>(T::kMaxValue)));
   }
 
   // Reports the remaining bytes available for fuzzed input.

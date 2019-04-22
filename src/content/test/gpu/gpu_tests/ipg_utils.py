@@ -19,23 +19,20 @@ An easy way to use the APIs are:
    5 seconds, call AnalyzeIPGLogFile(skip_in_sec=5).
 """
 
+import datetime
 import json
 import logging
 import os
 import subprocess
-import datetime
 
 def LocateIPG():
   ipg_dir = os.getenv('IPG_Dir')
   if not ipg_dir:
-    logging.warning("No env IPG_Dir")
-    return None
+    raise Exception("No env IPG_Dir")
   gadget_path = os.path.join(ipg_dir, "PowerLog3.0.exe")
-  logging.debug("Try to locale Intel Power Gadget at " + gadget_path)
-  if os.path.isfile(gadget_path):
-    logging.debug("Intel Power Gadget Found")
-    return gadget_path
-  return None
+  if not os.path.isfile(gadget_path):
+    raise Exception("Can't locate Intel Power Gadget at " + gadget_path)
+  return gadget_path
 
 def GenerateIPGLogFilename(log_prefix='PowerLog', log_dir=None, current_run=1,
                            total_runs=1, timestamp=False):
@@ -51,9 +48,6 @@ def GenerateIPGLogFilename(log_prefix='PowerLog', log_dir=None, current_run=1,
 
 def RunIPG(duration_in_s=60, resolution_in_ms=100, logfile=None):
   intel_power_gadget_path = LocateIPG()
-  if not intel_power_gadget_path:
-    logging.warning("Can't locate Intel Power Gadget")
-    return
   command = ('"%s" -duration %d -resolution %d' %
              (intel_power_gadget_path, duration_in_s, resolution_in_ms))
   if not logfile:
@@ -61,19 +55,15 @@ def RunIPG(duration_in_s=60, resolution_in_ms=100, logfile=None):
     logfile = GenerateIPGLogFilename()
   command = command + (' -file %s' %logfile)
   logging.debug("Running: " + command)
-  try:
-    output = subprocess.check_output(command)
-    logging.debug("Running: DONE")
-    logging.debug(output)
-  except subprocess.CalledProcessError as err:
-    logging.warning(err)
+  output = subprocess.check_output(command)
+  logging.debug("Running: DONE")
+  logging.debug(output)
 
 def AnalyzeIPGLogFile(logfile=None, skip_in_sec=0):
   if not logfile:
     logfile = GenerateIPGLogFilename()
   if not os.path.isfile(logfile):
-    logging.warning("Can't locate logfile at " + logfile)
-    return {}
+    raise Exception("Can't locate logfile at " + logfile)
   first_line = True
   samples = 0
   cols = 0

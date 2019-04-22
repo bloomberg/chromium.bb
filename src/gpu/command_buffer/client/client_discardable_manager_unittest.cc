@@ -16,7 +16,7 @@ class FakeCommandBuffer : public CommandBuffer {
   State GetLastState() override {
     NOTREACHED();
     return State();
-  };
+  }
   void Flush(int32_t put_offset) override { NOTREACHED(); }
   void OrderingBarrier(int32_t put_offset) override { NOTREACHED(); }
   State WaitForTokenInRange(int32_t start, int32_t end) override {
@@ -31,15 +31,11 @@ class FakeCommandBuffer : public CommandBuffer {
     return State();
   }
   void SetGetBuffer(int32_t transfer_buffer_id) override { NOTREACHED(); }
-  scoped_refptr<gpu::Buffer> CreateTransferBuffer(size_t size,
+  scoped_refptr<gpu::Buffer> CreateTransferBuffer(uint32_t size,
                                                   int32_t* id) override {
     *id = next_id_++;
     active_ids_.insert(*id);
-    base::UnsafeSharedMemoryRegion shmem_region =
-        base::UnsafeSharedMemoryRegion::Create(size);
-    base::WritableSharedMemoryMapping shmem_mapping = shmem_region.Map();
-    return MakeBufferFromSharedMemory(std::move(shmem_region),
-                                      std::move(shmem_mapping));
+    return MakeMemoryBuffer(size);
   }
   void DestroyTransferBuffer(int32_t id) override {
     auto found = active_ids_.find(id);

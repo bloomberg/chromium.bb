@@ -77,6 +77,8 @@ GLboolean OESVertexArrayObject::isVertexArrayOES(
 
   if (!array_object->HasEverBeenBound())
     return 0;
+  if (array_object->MarkedForDeletion())
+    return 0;
 
   return scoped.Context()->ContextGL()->IsVertexArrayOES(
       array_object->Object());
@@ -88,12 +90,9 @@ void OESVertexArrayObject::bindVertexArrayOES(
   if (scoped.IsLost())
     return;
 
-  if (array_object && (array_object->IsDeleted() ||
-                       !array_object->Validate(nullptr, scoped.Context()))) {
-    scoped.Context()->SynthesizeGLError(
-        GL_INVALID_OPERATION, "bindVertexArrayOES", "invalid arrayObject");
+  if (!scoped.Context()->ValidateNullableWebGLObject(
+          "OESVertexArrayObject.bindVertexArrayOES", array_object))
     return;
-  }
 
   if (array_object && !array_object->IsDefaultObject() &&
       array_object->Object()) {

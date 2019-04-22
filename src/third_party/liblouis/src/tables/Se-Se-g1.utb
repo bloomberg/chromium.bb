@@ -1,4 +1,25 @@
 # liblouis: Swedish Grade 1 Braille Table
+#
+#  Copyright (C) 2004-2008 ViewPlus Technologies, Inc. www.viewplus.com
+#  Copyright (C) 2004-2006 JJB Software, Inc. www.jjb-software.com
+#  Copyright (C) 2012 Mesar Hameed <mesar.hameed@gmail.com>
+#
+#  This file is part of liblouis.
+#
+#  liblouis is free software: you can redistribute it and/or modify it
+#  under the terms of the GNU Lesser General Public License as
+#  published by the Free Software Foundation, either version 2.1 of the
+#  License, or (at your option) any later version.
+#
+#  liblouis is distributed in the hope that it will be useful, but
+#  WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+#  Lesser General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public
+#  License along with liblouis. If not, see
+#  <http://www.gnu.org/licenses/>.
+
 # Created by Leon Ungier <Leon.Ungier@ViewPlus.com>.
 
 locale Sweden
@@ -28,8 +49,6 @@ punctuation - 36			hyphen-minus				x002D
 punctuation . 3				point								x002E
 math / 34							solidus							x002F
 
-include digits6Dots.uti
-
 punctuation : 25			colon								x003A
 punctuation ; 23			semicolon						x003B
 math < 246-3					less-than sign			x003C
@@ -39,6 +58,9 @@ punctuation ? 26			question mark				x003F
 sign @ 45-12356				commercial at				x0040
 
 include latinLetterDef6Dots.uti
+include digits6Dots.uti # must come after letters
+include litdigits6Dots.uti # Must come after letters
+
 
 punctuation [ 12356	left square bracket		x005B
 sign \\ 45-34				reverse solidus				x005C
@@ -99,12 +121,12 @@ punctuation	\x201F 56		# 8223			smart double high reverse quotation mark
 punctuation \x2026 3-3-3 # 8230			smart ellipsis
 
 sign \x20AC 15-136-1235-135					Euro sign
-
+noback sign \X25CF 35	# 9679 black circle
 
 # -----------------------
 
-capsign 6
-begcaps 6-6			# uncomment if you don't want capitalization
+capsletter 6
+begcapsword 6-6			# uncomment if you don't want capitalization
 
 sign \x00B7 3456			# so the line below compile
 numsign 3456

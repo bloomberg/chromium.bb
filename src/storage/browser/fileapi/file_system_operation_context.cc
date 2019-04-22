@@ -28,7 +28,7 @@ FileSystemOperationContext::FileSystemOperationContext(
 
 FileSystemOperationContext::~FileSystemOperationContext() {
   DetachFromSequence();
-  setter_thread_checker_.DetachFromThread();
+  DETACH_FROM_THREAD(setter_thread_checker_);
 }
 
 }  // namespace storage

@@ -152,12 +152,8 @@ class AwWebContentsDelegateAdapter extends AwWebContentsDelegate {
                 Log.w(TAG, "Unknown message level, defaulting to DEBUG");
                 break;
         }
-
         boolean result = mContentsClient.onConsoleMessage(
                 new AwConsoleMessage(message, sourceId, lineNumber, messageLevel));
-        if (result && message != null && message.startsWith("[blocked]")) {
-            Log.e(TAG, "Blocked URL: " + message);
-        }
         return result;
     }
 

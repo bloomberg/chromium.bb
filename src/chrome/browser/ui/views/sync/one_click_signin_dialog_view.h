@@ -27,12 +27,11 @@ class View;
 class OneClickSigninDialogView : public views::DialogDelegateView,
                                  public views::LinkListener {
  public:
-  // Show the one-click signin dialog if not already showing. |start_sync| is
-  // called to start sync.
+  // Show the one-click signin dialog if not already showing.
   static void ShowDialog(const base::string16& email,
                          std::unique_ptr<OneClickSigninLinksDelegate> delegate,
                          gfx::NativeWindow window,
-                         const BrowserWindow::StartSyncCallback& start_sync);
+                         base::OnceCallback<void(bool)> confirmed_callback);
 
   static bool IsShowing();
 
@@ -47,7 +46,7 @@ class OneClickSigninDialogView : public views::DialogDelegateView,
   OneClickSigninDialogView(
       const base::string16& email,
       std::unique_ptr<OneClickSigninLinksDelegate> delegate,
-      const BrowserWindow::StartSyncCallback& start_sync_callback);
+      base::OnceCallback<void(bool)> confirmed_callback);
 
   ~OneClickSigninDialogView() override;
 
@@ -79,7 +78,7 @@ class OneClickSigninDialogView : public views::DialogDelegateView,
   // This callback is nulled once its called, so that it is called only once.
   // It will be called when the bubble is closed if it has not been called
   // and nulled earlier.
-  BrowserWindow::StartSyncCallback start_sync_callback_;
+  base::OnceCallback<void(bool)> confirmed_callback_;
 
   // Link to sync setup advanced page.
   views::Link* advanced_link_;

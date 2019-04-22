@@ -13,6 +13,9 @@
 
 namespace autofill {
 
+class AutofillField;
+class AutofillScanner;
+
 // Search fields are not filled by autofill, but identifying them will help
 // to reduce the number of false positives.
 class SearchField : public FormField {

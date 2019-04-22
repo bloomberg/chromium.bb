@@ -43,8 +43,8 @@ class AndroidUiGestureTarget {
                        int64_t time_ms,
                        int delay_ms);
 
-  int scroll_x_ = 0;
-  int scroll_y_ = 0;
+  float scroll_x_ = 0.0f;
+  float scroll_y_ = 0.0f;
   float scale_factor_;
   float scroll_ratio_;
   int touch_slop_;

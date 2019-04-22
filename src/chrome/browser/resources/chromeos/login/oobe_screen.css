@@ -94,7 +94,7 @@ html[dir=rtl] .step-controls {
   top: 0;
 }
 
-/* Fixes perfomance problem caused by http://crbug.com/229405 . */
+/* Fixes performance problem caused by http://crbug.com/229405 . */
 .step.hidden .throbber,
 .step.hidden .spinner,
 .step.hidden .inline-spinner {

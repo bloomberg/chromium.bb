@@ -12,8 +12,8 @@
 #include <iostream>
 #include <sstream>
 
-#include "random_utils.h"
-#include "shader_utils.h"
+#include "util/random_utils.h"
+#include "util/shader_utils.h"
 
 using namespace angle;
 
@@ -137,7 +137,7 @@ void PointSpritesBenchmark::initializeBenchmark()
     fstrstr << "    gl_FragColor = colorOut;\n"
                "}\n";
 
-    mProgram = CompileProgram(vstrstr.str(), fstrstr.str());
+    mProgram = CompileProgram(vstrstr.str().c_str(), fstrstr.str().c_str());
     ASSERT_NE(0u, mProgram);
 
     // Use the program object

@@ -68,7 +68,7 @@ function getNodeDisplay(node) {
  * @return {!HtmlElement} The newly created element.
  */
 function addNode(parentNode, tagName) {
-  var elem = parentNode.ownerDocument.createElement(tagName);
+  const elem = parentNode.ownerDocument.createElement(tagName);
   parentNode.appendChild(elem);
   return elem;
 }
@@ -80,7 +80,7 @@ function addNode(parentNode, tagName) {
  * @return {!Object} The newly created text node.
  */
 function addTextNode(parentNode, text) {
-  var textNode = parentNode.ownerDocument.createTextNode(text);
+  const textNode = parentNode.ownerDocument.createTextNode(text);
   parentNode.appendChild(textNode);
   return textNode;
 }
@@ -95,7 +95,7 @@ function addTextNode(parentNode, text) {
  * @return {!HtmlElement} The newly created element.
  */
 function addNodeWithText(parentNode, tagName, text) {
-  var elem = parentNode.ownerDocument.createElement(tagName);
+  const elem = parentNode.ownerDocument.createElement(tagName);
   parentNode.appendChild(elem);
   addTextNode(elem, text);
   return elem;

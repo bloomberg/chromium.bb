@@ -13,18 +13,13 @@ resolved or rejected while the DON flow is active.
     <script src="../resources/webxr_e2e.js"></script>
     <script src="../resources/webvr_boilerplate.js"></script>
     <script>
-      var t = async_test("Presentation promise is unresolved during DON flow");
       function onVrRequestPresentWithDon() {
         vrDisplay.requestPresent([{source: webglCanvas}]).then( () => {
-          t.step( () => {
-            assert_unreached("requestPresent promise resolved");
-          });
+          assert_unreached("requestPresent promise resolved");
         }, () => {
-          t.step( () => {
-            assert_unreached("requestPresent promise rejected");
-          });
+          assert_unreached("requestPresent promise rejected");
         });
-        window.setTimeout( () => {t.done();}, 2000);
+        window.setTimeout( () => { done(); }, 2000);
       }
       webglCanvas.onclick = onVrRequestPresentWithDon;
     </script>

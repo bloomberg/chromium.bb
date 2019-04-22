@@ -317,7 +317,9 @@ var availableTests = [
             },
             IPAddressConfigType: 'Static',
             StaticIPConfig: {
-              IPAddress: '1.2.3.4'
+              IPAddress: '1.2.3.4',
+              Gateway: '0.0.0.0',
+              RoutingPrefix: 1
             }
           };
           chrome.networkingPrivate.setProperties(
@@ -337,6 +339,8 @@ var availableTests = [
                       assertTrue('StaticIPConfig' in result);
                       assertEq('1.2.3.4',
                                result['StaticIPConfig']['IPAddress']);
+                      assertEq('0.0.0.0', result['StaticIPConfig']['Gateway']);
+                      assertEq(1, result['StaticIPConfig']['RoutingPrefix']);
                       done();
                     }));
               }));

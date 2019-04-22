@@ -140,8 +140,9 @@ void GlCanvas::DrawTexture(int texture_id,
 
   glVertexAttribPointer(position_location_, kVertexSize, GL_FLOAT, GL_FALSE, 0,
                         0);
-  glVertexAttribPointer(tex_cord_location_, kVertexSize, GL_FLOAT, GL_FALSE, 0,
-                        static_cast<float*>(0) + kVertexSize * kVertexCount);
+  glVertexAttribPointer(
+      tex_cord_location_, kVertexSize, GL_FLOAT, GL_FALSE, 0,
+      reinterpret_cast<void*>(kVertexSize * kVertexCount * sizeof(GLfloat)));
 
   glDrawArrays(GL_TRIANGLE_STRIP, 0, kVertexCount);
   glBindBuffer(GL_ARRAY_BUFFER, 0);

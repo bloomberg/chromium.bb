@@ -31,7 +31,7 @@ TEST_F(SplitTextNodeCommandTest, splitInMarkerInterior) {
   GetDocument().Markers().AddTextMatchMarker(
       range, TextMatchMarker::MatchStatus::kInactive);
 
-  SimpleEditCommand* command = SplitTextNodeCommand::Create(
+  SimpleEditCommand* command = MakeGarbageCollected<SplitTextNodeCommand>(
       ToText(GetDocument().body()->firstChild()->firstChild()), 8);
 
   EditingState editingState;

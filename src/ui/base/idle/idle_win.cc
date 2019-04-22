@@ -46,8 +46,8 @@ bool IsScreensaverRunning() {
 
 }  // namespace
 
-void CalculateIdleTime(IdleTimeCallback notify) {
-  notify.Run(static_cast<int>(CalculateIdleTimeInternal()));
+int CalculateIdleTime() {
+  return static_cast<int>(CalculateIdleTimeInternal());
 }
 
 bool CheckIdleStateIsLocked() {

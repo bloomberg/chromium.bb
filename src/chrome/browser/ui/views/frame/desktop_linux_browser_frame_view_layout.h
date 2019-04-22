@@ -23,8 +23,6 @@ class DesktopLinuxBrowserFrameViewLayout : public OpaqueBrowserFrameViewLayout {
   int GetWindowCaptionSpacing(views::FrameButton button_id,
                               bool leading_spacing,
                               bool is_leading_button) const override;
-  bool ShouldDrawImageMirrored(views::ImageButton* button,
-                               ButtonAlignment alignment) const override;
 
  private:
   views::NavButtonProvider* nav_button_provider_;

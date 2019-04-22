@@ -56,6 +56,6 @@ class CC_PAINT_EXPORT TransferCacheDeserializeHelper {
   size_t total_size_ = 0;
 };
 
-};  // namespace cc
+}  // namespace cc
 
 #endif  // CC_PAINT_TRANSFER_CACHE_DESERIALIZE_HELPER_H_

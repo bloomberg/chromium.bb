@@ -4,6 +4,9 @@
 
 #include "chrome/browser/sessions/tab_loader_tester.h"
 
+#include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
+
 TabLoaderTester::TabLoaderTester() = default;
 
 TabLoaderTester::TabLoaderTester(TabLoader* tab_loader)
@@ -51,6 +54,10 @@ void TabLoaderTester::SetTabLoadingEnabled(bool enabled) {
   tab_loader_->SetTabLoadingEnabled(enabled);
 }
 
+bool TabLoaderTester::IsLoadingEnabled() const {
+  return tab_loader_->IsLoadingEnabled();
+}
+
 size_t TabLoaderTester::force_load_delay_multiplier() const {
   return tab_loader_->force_load_delay_multiplier_;
 }
@@ -61,10 +68,6 @@ base::TimeTicks TabLoaderTester::force_load_time() const {
 
 base::OneShotTimer& TabLoaderTester::force_load_timer() {
   return tab_loader_->force_load_timer_;
-}
-
-bool TabLoaderTester::is_loading_enabled() const {
-  return tab_loader_->is_loading_enabled_;
 }
 
 const TabLoader::TabVector& TabLoaderTester::tabs_to_load() const {
@@ -80,6 +83,10 @@ TabLoader* TabLoaderTester::shared_tab_loader() {
   return TabLoader::shared_tab_loader_;
 }
 
+resource_coordinator::SessionRestorePolicy* TabLoaderTester::GetPolicy() {
+  return tab_loader_->delegate_->GetPolicyForTesting();
+}
+
 bool TabLoaderTester::IsSharedTabLoader() const {
   return tab_loader_ == TabLoader::shared_tab_loader_;
 }
@@ -91,4 +98,17 @@ bool TabLoaderTester::HasTimedOutLoads() const {
       tab_loader_->tabs_loading_.begin()->loading_start_time +
       tab_loader_->GetLoadTimeoutPeriod();
   return expiry_time <= tab_loader_->clock_->NowTicks();
+}
+
+void TabLoaderTester::WaitForTabLoadingEnabled() {
+  base::RunLoop run_loop;
+  TabLoader* tab_loader = tab_loader_;
+  auto callback =
+      base::BindLambdaForTesting([&run_loop, tab_loader](bool loading_enabled) {
+        if (loading_enabled && tab_loader->IsLoadingEnabled())
+          run_loop.Quit();
+      });
+  tab_loader_->SetTabLoadingEnabledCallbackForTesting(&callback);
+  run_loop.Run();
+  tab_loader_->SetTabLoadingEnabledCallbackForTesting(nullptr);
 }

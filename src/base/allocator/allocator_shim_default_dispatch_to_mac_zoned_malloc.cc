@@ -102,6 +102,9 @@ const AllocatorDispatch AllocatorDispatch::default_dispatch = {
     &BatchMallocImpl,      /* batch_malloc_function */
     &BatchFreeImpl,        /* batch_free_function */
     &FreeDefiniteSizeImpl, /* free_definite_size_function */
+    nullptr,               /* aligned_malloc_function */
+    nullptr,               /* aligned_realloc_function */
+    nullptr,               /* aligned_free_function */
     nullptr,               /* next */
 };
 

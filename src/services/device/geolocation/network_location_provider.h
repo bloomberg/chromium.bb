@@ -10,6 +10,7 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -23,60 +24,13 @@
 #include "services/device/public/mojom/geoposition.mojom.h"
 
 namespace device {
-
+class PositionCache;
 class NetworkLocationProvider : public LocationProvider {
  public:
-  // To ensure the last-used position estimate can be preserved when the network
-  // location provider is torn down, a delegate manages the state of the cached
-  // position estimate outside of this provider.
-  class LastPositionCache {
-   public:
-    virtual ~LastPositionCache() = default;
-    virtual void SetLastNetworkPosition(
-        const mojom::Geoposition& new_position) = 0;
-    virtual const mojom::Geoposition& GetLastNetworkPosition() = 0;
-  };
-
-  // Cache of recently resolved locations, keyed by the set of unique WiFi APs
-  // used in the network query. Public for tests.
-  class PositionCache {
-   public:
-    // The maximum size of the cache of positions.
-    static const size_t kMaximumSize;
-
-    PositionCache();
-    ~PositionCache();
-
-    // Caches the current position response for the current set of cell ID and
-    // WiFi data. In the case of the cache exceeding kMaximumSize this will
-    // evict old entries in FIFO orderer of being added.
-    // Returns true on success, false otherwise.
-    bool CachePosition(const WifiData& wifi_data,
-                       const mojom::Geoposition& position);
-
-    // Searches for a cached position response for the current set of data.
-    // Returns NULL if the position is not in the cache, or the cached
-    // position if available. Ownership remains with the cache.
-    const mojom::Geoposition* FindPosition(const WifiData& wifi_data);
-
-   private:
-    // Makes the key for the map of cached positions, using a set of
-    // data. Returns true if a good key was generated, false otherwise.
-    static bool MakeKey(const WifiData& wifi_data, base::string16* key);
-
-    // The cache of positions. This is stored as a map keyed on a string that
-    // represents a set of data, and a list to provide
-    // least-recently-added eviction.
-    typedef std::map<base::string16, mojom::Geoposition> CacheMap;
-    CacheMap cache_;
-    typedef std::list<CacheMap::iterator> CacheAgeList;
-    CacheAgeList cache_age_list_;  // Oldest first.
-  };
-
   NetworkLocationProvider(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const std::string& api_key,
-      LastPositionCache* last_position_cache);
+      PositionCache* position_cache);
   ~NetworkLocationProvider() override;
 
   // LocationProvider implementation
@@ -113,9 +67,7 @@ class NetworkLocationProvider : public LocationProvider {
   // The timestamp for the latest wifi data update.
   base::Time wifi_timestamp_;
 
-  // A delegate to manage the current best network position estimate. Must not
-  // be nullptr.
-  LastPositionCache* const last_position_delegate_;
+  PositionCache* const position_cache_;
 
   LocationProvider::LocationProviderUpdateCallback
       location_provider_update_callback_;
@@ -127,9 +79,6 @@ class NetworkLocationProvider : public LocationProvider {
 
   // The network location request object.
   const std::unique_ptr<NetworkLocationRequest> request_;
-
-  // The cache of positions.
-  const std::unique_ptr<PositionCache> position_cache_;
 
   base::ThreadChecker thread_checker_;
 

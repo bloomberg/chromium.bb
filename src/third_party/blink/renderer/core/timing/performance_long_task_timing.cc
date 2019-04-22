@@ -13,20 +13,6 @@
 
 namespace blink {
 
-// static
-PerformanceLongTaskTiming* PerformanceLongTaskTiming::Create(
-    double start_time,
-    double end_time,
-    const AtomicString& name,
-    const String& frame_src,
-    const String& frame_id,
-    const String& frame_name,
-    const SubTaskAttribution::EntriesVector& sub_task_attributions) {
-  return MakeGarbageCollected<PerformanceLongTaskTiming>(
-      start_time, end_time, name, frame_src, frame_id, frame_name,
-      sub_task_attributions);
-}
-
 PerformanceLongTaskTiming::PerformanceLongTaskTiming(
     double start_time,
     double end_time,

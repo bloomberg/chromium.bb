@@ -6,14 +6,19 @@
 #define CHROME_BROWSER_BROWSER_SWITCHER_BROWSER_SWITCHER_SITELIST_H_
 
 #include "base/macros.h"
+#include "chrome/browser/browser_switcher/browser_switcher_prefs.h"
 #include "components/prefs/pref_change_registrar.h"
 
-class PrefService;
 class GURL;
 
 namespace browser_switcher {
 
+class BrowserSwitcherPrefs;
 class ParsedXml;
+
+// Pre-processes the URL rule and modifies it in-place if needed, to avoid
+// having to convert uppercase/lowercase for every rule at every navigation.
+void CanonicalizeRule(std::string* rule);
 
 // Interface that decides whether a navigation should trigger a browser
 // switch.
@@ -33,6 +38,9 @@ class BrowserSwitcherSitelist {
   // policies. This XML file is in the same format as an IEEM sitelist.
   // Consumes the object, and performs no copy.
   virtual void SetExternalSitelist(ParsedXml&& sitelist) = 0;
+
+  virtual const RuleSet* GetIeemSitelist() const = 0;
+  virtual const RuleSet* GetExternalSitelist() const = 0;
 };
 
 // Manages the sitelist configured by the administrator for
@@ -40,37 +48,26 @@ class BrowserSwitcherSitelist {
 // switch.
 class BrowserSwitcherSitelistImpl : public BrowserSwitcherSitelist {
  public:
-  explicit BrowserSwitcherSitelistImpl(PrefService* prefs);
+  explicit BrowserSwitcherSitelistImpl(const BrowserSwitcherPrefs* prefs);
   ~BrowserSwitcherSitelistImpl() override;
 
   // BrowserSwitcherSitelist
   bool ShouldSwitch(const GURL& url) const override;
   void SetIeemSitelist(ParsedXml&& sitelist) override;
   void SetExternalSitelist(ParsedXml&& sitelist) override;
+  const RuleSet* GetIeemSitelist() const override;
+  const RuleSet* GetExternalSitelist() const override;
 
  private:
-  void OnUrlListChanged();
-  void OnGreylistChanged();
-
   // Returns true if there are any rules configured.
   bool IsActive() const;
 
   bool ShouldSwitchImpl(const GURL& url) const;
 
-  struct RuleSet {
-    RuleSet();
-    ~RuleSet();
-
-    std::vector<std::string> sitelist;
-    std::vector<std::string> greylist;
-  };
-
-  RuleSet chrome_policies_;
   RuleSet ieem_sitelist_;
   RuleSet external_sitelist_;
 
-  PrefService* const prefs_;
-  PrefChangeRegistrar change_registrar_;
+  const BrowserSwitcherPrefs* const prefs_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserSwitcherSitelistImpl);
 };

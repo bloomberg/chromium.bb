@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_elements_helper.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/text/platform_locale.h"
 
 namespace {
 
@@ -36,8 +37,7 @@ namespace blink {
 //   This contains the inner circle with the actual play/pause icon.
 MediaControlOverlayPlayButtonElement::MediaControlOverlayPlayButtonElement(
     MediaControlsImpl& media_controls)
-    : MediaControlInputElement(media_controls, kMediaPlayButton),
-      internal_button_(nullptr) {
+    : MediaControlInputElement(media_controls), internal_button_(nullptr) {
   EnsureUserAgentShadowRoot();
   setType(input_type_names::kButton);
   SetShadowPseudoId(AtomicString("-webkit-media-controls-overlay-play-button"));
@@ -53,8 +53,11 @@ void MediaControlOverlayPlayButtonElement::UpdateDisplayType() {
   SetIsWanted(MediaElement().ShouldShowControls() &&
               (MediaControlsImpl::IsModern() || MediaElement().paused()));
   if (MediaControlsImpl::IsModern()) {
-    SetDisplayType(MediaElement().paused() ? kMediaPlayButton
-                                           : kMediaPauseButton);
+    WebLocalizedString::Name state =
+        MediaElement().paused() ? WebLocalizedString::kAXMediaPlayButton
+                                : WebLocalizedString::kAXMediaPauseButton;
+    setAttribute(html_names::kAriaLabelAttr,
+                 WTF::AtomicString(GetLocale().QueryString(state)));
   }
   MediaControlInputElement::UpdateDisplayType();
 }
@@ -91,7 +94,8 @@ void MediaControlOverlayPlayButtonElement::MaybePlayPause() {
 }
 
 void MediaControlOverlayPlayButtonElement::DefaultEventHandler(Event& event) {
-  if (event.type() == event_type_names::kClick) {
+  if (!IsDisabled() && (event.type() == event_type_names::kClick ||
+                        event.type() == event_type_names::kGesturetap)) {
     event.SetDefaultHandled();
     MaybePlayPause();
   }

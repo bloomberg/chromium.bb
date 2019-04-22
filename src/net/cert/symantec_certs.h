@@ -34,7 +34,8 @@ NET_EXPORT_PRIVATE extern const size_t kSymantecManagedCAsLength;
 // issued by independently-operated subordinate CAs or from any "Managed CAs"
 // that comply with
 // https://security.googleblog.com/2017/09/chromes-plan-to-distrust-symantec.html.
-NET_EXPORT bool IsLegacySymantecCert(const HashValueVector& public_key_hashes);
+NET_EXPORT_PRIVATE bool IsLegacySymantecCert(
+    const HashValueVector& public_key_hashes);
 
 }  // namespace net
 

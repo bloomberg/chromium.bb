@@ -46,12 +46,6 @@ enum PaintLayerType {
   kForcedPaintLayer
 };
 
-enum : uint32_t {
-  kBackgroundPaintInGraphicsLayer = 1 << 0,
-  kBackgroundPaintInScrollingContents = 1 << 1
-};
-using BackgroundPaintLocation = uint32_t;
-
 // Modes for some of the line-related functions.
 enum LinePositionMode {
   kPositionOnContainingLine,
@@ -181,9 +175,6 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
 
   virtual LayoutRect VisualOverflowRect() const = 0;
 
-  // Checks if this box, or any of it's descendants, or any of it's
-  // continuations, will take up space in the layout of the page.
-  bool HasNonEmptyLayoutSize() const;
   bool UsesCompositedScrolling() const;
 
   // Returns which layers backgrounds should be painted into for overflow
@@ -286,10 +277,6 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
                              -BorderLeft());
   }
 
-  bool HasBorderOrPadding() const {
-    return StyleRef().HasBorder() || StyleRef().HasPadding();
-  }
-
   LayoutUnit BorderAndPaddingStart() const {
     return BorderStart() + PaddingStart();
   }
@@ -313,7 +300,7 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
     return BorderLeft() + BorderRight() + PaddingLeft() + PaddingRight();
   }
   DISABLE_CFI_PERF LayoutUnit BorderAndPaddingLogicalHeight() const {
-    return HasBorderOrPadding()
+    return (StyleRef().HasBorder() || StyleRef().MayHavePadding())
                ? BorderAndPaddingBefore() + BorderAndPaddingAfter()
                : LayoutUnit();
   }
@@ -422,8 +409,6 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
   void ContentChanged(ContentChangeType);
   bool HasAcceleratedCompositing() const;
 
-  void ComputeLayerHitTestRects(LayerHitTestRects&, TouchAction) const override;
-
   // Returns true if the background is painted opaque in the given rect.
   // The query rect is given in local coordinate system.
   virtual bool BackgroundIsKnownToBeOpaqueInRect(const LayoutRect&) const {
@@ -455,6 +440,17 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
   virtual bool HasOverrideContainingBlockContentWidth() const { return false; }
   virtual bool HasOverrideContainingBlockContentHeight() const { return false; }
 
+  // Returns the continuation associated with |this|.
+  // Returns nullptr if no continuation is associated with |this|.
+  //
+  // See the section about CONTINUATIONS AND ANONYMOUS LAYOUTBLOCKFLOWS in
+  // LayoutInline for more details about them.
+  //
+  // Our implementation uses a HashMap to store them to avoid paying the cost
+  // for each LayoutBoxModelObject (|continuationMap| in the cpp file).
+  // public only for NGOutOfFlowLayoutPart, otherwise protected.
+  LayoutBoxModelObject* Continuation() const;
+
  protected:
   // Compute absolute quads for |this|, but not any continuations. May only be
   // called for objects which can be or have continuations, i.e. LayoutInline or
@@ -466,16 +462,6 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
 
   LayoutPoint AdjustedPositionRelativeTo(const LayoutPoint&,
                                          const Element*) const;
-
-  // Returns the continuation associated with |this|.
-  // Returns nullptr if no continuation is associated with |this|.
-  //
-  // See the section about CONTINUATIONS AND ANONYMOUS LAYOUTBLOCKFLOWS in
-  // LayoutInline for more details about them.
-  //
-  // Our implementation uses a HashMap to store them to avoid paying the cost
-  // for each LayoutBoxModelObject (|continuationMap| in the cpp file).
-  LayoutBoxModelObject* Continuation() const;
 
   // Set the next link in the continuation chain.
   //
@@ -489,9 +475,14 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
   LayoutRect LocalCaretRectForEmptyElement(LayoutUnit width,
                                            LayoutUnit text_indent_offset) const;
 
-  bool HasAutoHeightOrContainingBlockWithAutoHeight() const;
+  enum RegisterPercentageDescendant {
+    kDontRegisterPercentageDescendant,
+    kRegisterPercentageDescendant,
+  };
+  bool HasAutoHeightOrContainingBlockWithAutoHeight(
+      RegisterPercentageDescendant = kRegisterPercentageDescendant) const;
   LayoutBlock* ContainingBlockForAutoHeightDetection(
-      Length logical_height) const;
+      const Length& logical_height) const;
 
   void AddOutlineRectsForNormalChildren(Vector<LayoutRect>&,
                                         const LayoutPoint& additional_offset,
@@ -500,13 +491,6 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
                                     Vector<LayoutRect>&,
                                     const LayoutPoint& additional_offset,
                                     NGOutlineType) const;
-
-  void AddLayerHitTestRects(LayerHitTestRects&,
-                            const PaintLayer*,
-                            const LayoutPoint&,
-                            TouchAction,
-                            const LayoutRect&,
-                            TouchAction) const override;
 
   void StyleWillChange(StyleDifference,
                        const ComputedStyle& new_style) override;

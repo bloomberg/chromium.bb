@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/deferred_sequenced_task_runner.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -126,10 +127,7 @@ class TestNetworkQualityObserver
 
 class NetworkQualityTrackerBrowserTest : public InProcessBrowserTest {
  public:
-  NetworkQualityTrackerBrowserTest()
-      : network_service_enabled_(
-            base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-  }
+  NetworkQualityTrackerBrowserTest() {}
   ~NetworkQualityTrackerBrowserTest() override {}
 
   // Simulates a network quality change.
@@ -164,11 +162,6 @@ class NetworkQualityTrackerBrowserTest : public InProcessBrowserTest {
                              base::Unretained(&run_loop)));
     run_loop.Run();
   }
-
-  bool network_service_enabled() const { return network_service_enabled_; }
-
- private:
-  const bool network_service_enabled_;
 };
 
 // Basic test to make sure NetworkQualityTracker is set up, and observers are
@@ -246,8 +239,8 @@ IN_PROC_BROWSER_TEST_F(NetworkQualityTrackerBrowserTest,
 // manager binds to the restarted network service.
 IN_PROC_BROWSER_TEST_F(NetworkQualityTrackerBrowserTest,
                        SimulateNetworkServiceCrash) {
-  // Network servicification is not enabled.
-  if (!network_service_enabled())
+  // Network service is not running out of process, so cannot be crashed.
+  if (!content::IsOutOfProcessNetworkService())
     return;
 
   // Change the network quality to UNKNOWN to prevent any spurious

@@ -54,6 +54,7 @@ ClipboardX11::ClipboardX11()
 }
 
 ClipboardX11::~ClipboardX11() {
+  x_connection_watch_controller_ = nullptr;
   if (display_)
     XCloseDisplay(display_);
 }

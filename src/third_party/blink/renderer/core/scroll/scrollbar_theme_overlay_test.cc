@@ -19,7 +19,8 @@ TEST_F(ScrollbarThemeOverlayTest, PaintInvalidation) {
       platform;
 
   NiceMock<MockScrollableArea>* mock_scrollable_area =
-      new NiceMock<MockScrollableArea>(ScrollOffset(100, 100));
+      MakeGarbageCollected<NiceMock<MockScrollableArea>>(
+          ScrollOffset(100, 100));
   ScrollbarThemeOverlay theme(14, 0, ScrollbarThemeOverlay::kAllowHitTest);
 
   Scrollbar* vertical_scrollbar = Scrollbar::CreateForTesting(
@@ -135,7 +136,7 @@ TEST_F(ScrollbarThemeOverlayTest, PaintInvalidation) {
   EXPECT_TRUE(vertical_scrollbar->ThumbNeedsRepaint());
   EXPECT_TRUE(mock_scrollable_area->VerticalScrollbarNeedsPaintInvalidation());
 
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
 }
 
 }  // namespace blink

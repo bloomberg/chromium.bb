@@ -25,9 +25,10 @@ class UploadDomAction : public Action {
 
   void OnWaitForElement(ActionDelegate* delegate,
                         ProcessActionCallback callback,
+                        const Selector& selector,
                         bool element_found);
   void OnGetOuterHtml(ProcessActionCallback callback,
-                      bool successful,
+                      const ClientStatus& status,
                       const std::string& outer_html);
 
   base::WeakPtrFactory<UploadDomAction> weak_ptr_factory_;

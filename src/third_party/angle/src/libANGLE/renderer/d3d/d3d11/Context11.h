@@ -21,7 +21,7 @@ class Renderer11;
 class Context11 : public ContextD3D, public MultisampleTextureInitializer
 {
   public:
-    Context11(const gl::ContextState &state, Renderer11 *renderer);
+    Context11(const gl::State &state, gl::ErrorSet *errorSet, Renderer11 *renderer);
     ~Context11() override;
 
     angle::Result initialize() override;
@@ -65,6 +65,9 @@ class Context11 : public ContextD3D, public MultisampleTextureInitializer
     // Path object creation.
     std::vector<PathImpl *> createPaths(GLsizei) override;
 
+    // Memory object creation.
+    MemoryObjectImpl *createMemoryObject() override;
+
     // Flush and finish.
     angle::Result flush(const gl::Context *context) override;
     angle::Result finish(const gl::Context *context) override;
@@ -83,12 +86,12 @@ class Context11 : public ContextD3D, public MultisampleTextureInitializer
     angle::Result drawElements(const gl::Context *context,
                                gl::PrimitiveMode mode,
                                GLsizei count,
-                               GLenum type,
+                               gl::DrawElementsType type,
                                const void *indices) override;
     angle::Result drawElementsInstanced(const gl::Context *context,
                                         gl::PrimitiveMode mode,
                                         GLsizei count,
-                                        GLenum type,
+                                        gl::DrawElementsType type,
                                         const void *indices,
                                         GLsizei instances) override;
     angle::Result drawRangeElements(const gl::Context *context,
@@ -96,18 +99,18 @@ class Context11 : public ContextD3D, public MultisampleTextureInitializer
                                     GLuint start,
                                     GLuint end,
                                     GLsizei count,
-                                    GLenum type,
+                                    gl::DrawElementsType type,
                                     const void *indices) override;
     angle::Result drawArraysIndirect(const gl::Context *context,
                                      gl::PrimitiveMode mode,
                                      const void *indirect) override;
     angle::Result drawElementsIndirect(const gl::Context *context,
                                        gl::PrimitiveMode mode,
-                                       GLenum type,
+                                       gl::DrawElementsType type,
                                        const void *indirect) override;
 
     // Device loss
-    GLenum getResetStatus() override;
+    gl::GraphicsResetStatus getResetStatus() override;
 
     // Vendor and description strings.
     std::string getVendorString() const override;
@@ -119,7 +122,7 @@ class Context11 : public ContextD3D, public MultisampleTextureInitializer
     void popGroupMarker() override;
 
     // KHR_debug
-    void pushDebugGroup(GLenum source, GLuint id, GLsizei length, const char *message) override;
+    void pushDebugGroup(GLenum source, GLuint id, const std::string &message) override;
     void popDebugGroup() override;
 
     // State sync with dirty bits.
@@ -153,7 +156,7 @@ class Context11 : public ContextD3D, public MultisampleTextureInitializer
 
     angle::Result triggerDrawCallProgramRecompilation(const gl::Context *context,
                                                       gl::PrimitiveMode drawMode);
-
+    angle::Result triggerDispatchCallProgramRecompilation(const gl::Context *context);
     angle::Result getIncompleteTexture(const gl::Context *context,
                                        gl::TextureType type,
                                        gl::Texture **textureOut);
@@ -171,7 +174,7 @@ class Context11 : public ContextD3D, public MultisampleTextureInitializer
     angle::Result drawElementsImpl(const gl::Context *context,
                                    gl::PrimitiveMode mode,
                                    GLsizei indexCount,
-                                   GLenum indexType,
+                                   gl::DrawElementsType indexType,
                                    const void *indices,
                                    GLsizei instanceCount);
 

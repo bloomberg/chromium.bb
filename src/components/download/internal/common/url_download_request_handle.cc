@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/download/public/common/url_download_request_handle.h"
+#include "base/bind.h"
 
 namespace download {
 

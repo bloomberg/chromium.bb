@@ -177,6 +177,17 @@ class AppBannerSettingsHelper {
   // app banners and add to homescreen.
   static LanguageOption GetHomescreenLanguageOption();
 
+  // Returns whether we are out of |scope|'s animation suppression period and
+  // can show an animation.
+  static bool CanShowInstallTextAnimation(content::WebContents* web_contents,
+                                          const GURL& scope);
+
+  // Records the fact that we've shown an animation for |scope| and updates its
+  // animation suppression period.
+  static void RecordInstallTextAnimationShown(
+      content::WebContents* web_contents,
+      const GURL& scope);
+
   // Utility class for testing, which sets how long the banner should be
   // suppressed after it is dismissed or ignored. The previous configuration
   // is restored when this object is destructed.

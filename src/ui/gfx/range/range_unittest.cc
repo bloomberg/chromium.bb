@@ -15,7 +15,7 @@ class RangeTest : public testing::Test {
 };
 
 typedef testing::Types<gfx::Range, gfx::RangeF> RangeTypes;
-TYPED_TEST_CASE(RangeTest, RangeTypes);
+TYPED_TEST_SUITE(RangeTest, RangeTypes);
 
 template <typename T>
 void TestContainsAndIntersects(const T& r1,

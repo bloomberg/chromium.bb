@@ -68,7 +68,7 @@ IN_PROC_BROWSER_TEST_F(TabReactivationTrackerTest, CorrectTracking) {
   EXPECT_EQ(1, tab_deactivation_count());
 
   // Reactivate the first tab.
-  browser()->tab_strip_model()->ActivateTabAt(0, false);
+  browser()->tab_strip_model()->ActivateTabAt(0);
   EXPECT_EQ(1, tab_reactivation_count());
   EXPECT_EQ(2, tab_deactivation_count());
 

@@ -9,7 +9,7 @@
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/task/post_task.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/device_event_log/device_event_log.h"
 #include "device/base/features.h"
@@ -76,12 +76,7 @@ UsbService::~UsbService() {
     observer.WillDestroyUsbService();
 }
 
-UsbService::UsbService(
-    scoped_refptr<base::SequencedTaskRunner> blocking_task_runner)
-    : blocking_task_runner_(std::move(blocking_task_runner)) {
-  if (base::ThreadTaskRunnerHandle::IsSet())
-    task_runner_ = base::ThreadTaskRunnerHandle::Get();
-}
+UsbService::UsbService() {}
 
 scoped_refptr<UsbDevice> UsbService::GetDevice(const std::string& guid) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -96,10 +91,8 @@ void UsbService::GetDevices(const GetDevicesCallback& callback) {
   devices.reserve(devices_.size());
   for (const auto& map_entry : devices_)
     devices.push_back(map_entry.second);
-  if (task_runner_)
-    task_runner_->PostTask(FROM_HERE, base::BindOnce(callback, devices));
-  else
-    callback.Run(devices);
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(callback, devices));
 }
 
 void UsbService::AddObserver(Observer* observer) {

@@ -11,8 +11,8 @@
 
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/country_names.h"
 #include "components/autofill/core/browser/webdata/autofill_change.h"
@@ -262,7 +262,7 @@ class AutofillProfileSyncableServiceTest : public testing::Test {
   }
 
  protected:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
   MockAutofillProfileSyncableService autofill_syncable_service_;
   std::unique_ptr<MockSyncChangeProcessor> sync_processor_;
 };
@@ -593,7 +593,8 @@ TEST_F(AutofillProfileSyncableServiceTest, AutofillProfileDeleted) {
   AutofillProfileChange change1(AutofillProfileChange::ADD, kGuid1, &profile);
   autofill_syncable_service_.AutofillProfileChanged(change1);
 
-  AutofillProfileChange change2(AutofillProfileChange::REMOVE, kGuid1, nullptr);
+  AutofillProfileChange change2(AutofillProfileChange::REMOVE, kGuid1,
+                                &profile);
   autofill_syncable_service_.AutofillProfileChanged(change2);
 
   ASSERT_EQ(1U, sync_change_processor->changes().size());
@@ -611,7 +612,9 @@ TEST_F(AutofillProfileSyncableServiceTest,
   TestSyncChangeProcessor* sync_change_processor = new TestSyncChangeProcessor;
   autofill_syncable_service_.set_sync_processor(sync_change_processor);
 
-  AutofillProfileChange change(AutofillProfileChange::REMOVE, kGuid2, nullptr);
+  AutofillProfile profile(kGuid2, kEmptyOrigin);
+  profile.SetRawInfo(NAME_FIRST, ASCIIToUTF16("Jane"));
+  AutofillProfileChange change(AutofillProfileChange::REMOVE, kGuid2, &profile);
   autofill_syncable_service_.AutofillProfileChanged(change);
 
   ASSERT_EQ(0U, sync_change_processor->changes().size());
@@ -1502,7 +1505,7 @@ class SyncUpdatesUsageStatsTest
   }
 
  protected:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
   MockAutofillProfileSyncableService autofill_syncable_service_;
   std::unique_ptr<MockSyncChangeProcessor> sync_processor_;
 };
@@ -1557,7 +1560,7 @@ TEST_P(SyncUpdatesUsageStatsTest, SyncUpdatesUsageStats) {
   autofill_syncable_service_.StopSyncing(syncer::AUTOFILL_PROFILE);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AutofillProfileSyncableServiceTest,
     SyncUpdatesUsageStatsTest,
     testing::Values(
@@ -1604,7 +1607,7 @@ TEST_F(AutofillProfileSyncableServiceTest, ClientOverwritesUsageStats) {
       .WillOnce(Return(true));
   autofill_syncable_service_.MergeDataAndStartSyncing(
       syncer::AUTOFILL_PROFILE, data_list,
-      base::WrapUnique(sync_change_processor),
+      std::unique_ptr<TestSyncChangeProcessor>(sync_change_processor),
       std::unique_ptr<syncer::SyncErrorFactory>(
           new syncer::SyncErrorFactoryMock()));
 
@@ -1640,7 +1643,7 @@ TEST_F(AutofillProfileSyncableServiceTest, IgnoreServerProfileUpdate) {
       .WillOnce(Return(true));
   autofill_syncable_service_.MergeDataAndStartSyncing(
       syncer::AUTOFILL_PROFILE, syncer::SyncDataList(),
-      base::WrapUnique(new TestSyncChangeProcessor),
+      std::make_unique<TestSyncChangeProcessor>(),
       std::unique_ptr<syncer::SyncErrorFactory>(
           new syncer::SyncErrorFactoryMock()));
   AutofillProfile server_profile(AutofillProfile::SERVER_PROFILE, "server-id");

@@ -22,11 +22,8 @@ namespace component_updater {
 // The instance of this Class lives on UI thread.
 class MetadataTable {
  public:
+  explicit MetadataTable(PrefService* pref_service);
   ~MetadataTable();
-
-  // Create and return a MetadataTable instance.
-  static std::unique_ptr<component_updater::MetadataTable> Create(
-      PrefService* perf_service);
 
   // Create and return a MetadataTable instance for testing purpose.
   static std::unique_ptr<component_updater::MetadataTable> CreateForTest();
@@ -47,9 +44,7 @@ class MetadataTable {
   FRIEND_TEST_ALL_PREFIXES(CrOSComponentInstallerMetadataTest, Add);
   FRIEND_TEST_ALL_PREFIXES(CrOSComponentInstallerMetadataTest, Delete);
 
-  explicit MetadataTable(PrefService* pref_service);
-
-  // Constructor for testing purpose.
+  // Constructor for testing purpose. Access via CreateForTest().
   MetadataTable();
 
   // Loads |installed_items_| from PrefService.

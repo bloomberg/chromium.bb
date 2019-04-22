@@ -1,7 +1,8 @@
 This is a testharness.js-based test.
+Found 686 tests; 659 PASS, 27 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Partial interface Document: original interface defined
-PASS Partial interface NavigatorID: original interface defined
+PASS Partial interface mixin NavigatorID: original interface mixin defined
 PASS Partial interface HTMLAnchorElement: original interface defined
 PASS Partial interface HTMLAreaElement: original interface defined
 PASS Partial interface HTMLBodyElement: original interface defined
@@ -77,10 +78,8 @@ PASS Window interface: operation alert(DOMString)
 PASS Window interface: operation confirm(DOMString)
 PASS Window interface: operation prompt(DOMString, DOMString)
 PASS Window interface: operation print()
-PASS Window interface: operation requestAnimationFrame(FrameRequestCallback)
-PASS Window interface: operation cancelAnimationFrame(unsigned long)
 PASS Window interface: operation postMessage(any, USVString, [object Object])
-PASS Window interface: operation postMessage(any, [object Object], WindowPostMessageOptions)
+PASS Window interface: operation postMessage(any, WindowPostMessageOptions)
 PASS Window interface: operation captureEvents()
 PASS Window interface: operation releaseEvents()
 PASS Window interface: attribute external
@@ -109,6 +108,7 @@ PASS Window interface: attribute onemptied
 PASS Window interface: attribute onended
 PASS Window interface: attribute onerror
 PASS Window interface: attribute onfocus
+PASS Window interface: attribute onformdata
 PASS Window interface: attribute oninput
 PASS Window interface: attribute oninvalid
 PASS Window interface: attribute onkeydown
@@ -169,8 +169,11 @@ PASS Window interface: operation setTimeout(TimerHandler, long, any)
 PASS Window interface: operation clearTimeout(long)
 PASS Window interface: operation setInterval(TimerHandler, long, any)
 PASS Window interface: operation clearInterval(long)
+PASS Window interface: operation queueMicrotask(VoidFunction)
 PASS Window interface: operation createImageBitmap(ImageBitmapSource, ImageBitmapOptions)
 PASS Window interface: operation createImageBitmap(ImageBitmapSource, long, long, long, long, ImageBitmapOptions)
+PASS Window interface: operation requestAnimationFrame(FrameRequestCallback)
+PASS Window interface: operation cancelAnimationFrame(unsigned long)
 PASS Window interface: attribute sessionStorage
 PASS Window interface: attribute localStorage
 PASS Window interface: internal [[SetPrototypeOf]] method of global platform object - setting to a new value via Object.setPrototypeOf should throw a TypeError
@@ -218,14 +221,10 @@ PASS Window interface: calling confirm(DOMString) on window with too few argumen
 PASS Window interface: window must inherit property "prompt(DOMString, DOMString)" with the proper type
 PASS Window interface: calling prompt(DOMString, DOMString) on window with too few arguments must throw TypeError
 PASS Window interface: window must inherit property "print()" with the proper type
-PASS Window interface: window must inherit property "requestAnimationFrame(FrameRequestCallback)" with the proper type
-PASS Window interface: calling requestAnimationFrame(FrameRequestCallback) on window with too few arguments must throw TypeError
-PASS Window interface: window must inherit property "cancelAnimationFrame(unsigned long)" with the proper type
-PASS Window interface: calling cancelAnimationFrame(unsigned long) on window with too few arguments must throw TypeError
 PASS Window interface: window must inherit property "postMessage(any, USVString, [object Object])" with the proper type
 PASS Window interface: calling postMessage(any, USVString, [object Object]) on window with too few arguments must throw TypeError
-PASS Window interface: window must inherit property "postMessage(any, [object Object], WindowPostMessageOptions)" with the proper type
-PASS Window interface: calling postMessage(any, [object Object], WindowPostMessageOptions) on window with too few arguments must throw TypeError
+PASS Window interface: window must inherit property "postMessage(any, WindowPostMessageOptions)" with the proper type
+PASS Window interface: calling postMessage(any, WindowPostMessageOptions) on window with too few arguments must throw TypeError
 PASS Window interface: window must inherit property "captureEvents()" with the proper type
 PASS Window interface: window must inherit property "releaseEvents()" with the proper type
 PASS Window interface: window must inherit property "external" with the proper type
@@ -254,6 +253,7 @@ PASS Window interface: window must inherit property "onemptied" with the proper 
 PASS Window interface: window must inherit property "onended" with the proper type
 PASS Window interface: window must inherit property "onerror" with the proper type
 PASS Window interface: window must inherit property "onfocus" with the proper type
+PASS Window interface: window must inherit property "onformdata" with the proper type
 PASS Window interface: window must inherit property "oninput" with the proper type
 PASS Window interface: window must inherit property "oninvalid" with the proper type
 PASS Window interface: window must inherit property "onkeydown" with the proper type
@@ -320,10 +320,16 @@ PASS Window interface: window must inherit property "setInterval(TimerHandler, l
 PASS Window interface: calling setInterval(TimerHandler, long, any) on window with too few arguments must throw TypeError
 PASS Window interface: window must inherit property "clearInterval(long)" with the proper type
 PASS Window interface: calling clearInterval(long) on window with too few arguments must throw TypeError
+PASS Window interface: window must inherit property "queueMicrotask(VoidFunction)" with the proper type
+PASS Window interface: calling queueMicrotask(VoidFunction) on window with too few arguments must throw TypeError
 PASS Window interface: window must inherit property "createImageBitmap(ImageBitmapSource, ImageBitmapOptions)" with the proper type
 PASS Window interface: calling createImageBitmap(ImageBitmapSource, ImageBitmapOptions) on window with too few arguments must throw TypeError
 PASS Window interface: window must inherit property "createImageBitmap(ImageBitmapSource, long, long, long, long, ImageBitmapOptions)" with the proper type
 PASS Window interface: calling createImageBitmap(ImageBitmapSource, long, long, long, long, ImageBitmapOptions) on window with too few arguments must throw TypeError
+PASS Window interface: window must inherit property "requestAnimationFrame(FrameRequestCallback)" with the proper type
+PASS Window interface: calling requestAnimationFrame(FrameRequestCallback) on window with too few arguments must throw TypeError
+PASS Window interface: window must inherit property "cancelAnimationFrame(unsigned long)" with the proper type
+PASS Window interface: calling cancelAnimationFrame(unsigned long) on window with too few arguments must throw TypeError
 PASS Window interface: window must inherit property "sessionStorage" with the proper type
 PASS Window interface: window must inherit property "localStorage" with the proper type
 PASS Document interface: attribute domain
@@ -395,6 +401,7 @@ PASS Document interface: attribute onemptied
 PASS Document interface: attribute onended
 PASS Document interface: attribute onerror
 PASS Document interface: attribute onfocus
+PASS Document interface: attribute onformdata
 PASS Document interface: attribute oninput
 PASS Document interface: attribute oninvalid
 PASS Document interface: attribute onkeydown
@@ -516,6 +523,7 @@ PASS Document interface: iframe.contentDocument must inherit property "onemptied
 PASS Document interface: iframe.contentDocument must inherit property "onended" with the proper type
 PASS Document interface: iframe.contentDocument must inherit property "onerror" with the proper type
 PASS Document interface: iframe.contentDocument must inherit property "onfocus" with the proper type
+PASS Document interface: iframe.contentDocument must inherit property "onformdata" with the proper type
 PASS Document interface: iframe.contentDocument must inherit property "oninput" with the proper type
 PASS Document interface: iframe.contentDocument must inherit property "oninvalid" with the proper type
 PASS Document interface: iframe.contentDocument must inherit property "onkeydown" with the proper type
@@ -637,6 +645,7 @@ PASS Document interface: new Document() must inherit property "onemptied" with t
 PASS Document interface: new Document() must inherit property "onended" with the proper type
 PASS Document interface: new Document() must inherit property "onerror" with the proper type
 PASS Document interface: new Document() must inherit property "onfocus" with the proper type
+PASS Document interface: new Document() must inherit property "onformdata" with the proper type
 PASS Document interface: new Document() must inherit property "oninput" with the proper type
 PASS Document interface: new Document() must inherit property "oninvalid" with the proper type
 PASS Document interface: new Document() must inherit property "onkeydown" with the proper type

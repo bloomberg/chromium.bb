@@ -9,8 +9,8 @@
 #include <stdint.h>
 
 #include <memory>
+#include <unordered_map>
 
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "gles2_impl_export.h"
 
@@ -101,7 +101,7 @@ class GLES2_IMPL_EXPORT VertexArrayObjectManager {
   GLuint bound_element_array_buffer() const;
 
  private:
-  typedef base::hash_map<GLuint, VertexArrayObject*> VertexArrayObjectMap;
+  typedef std::unordered_map<GLuint, VertexArrayObject*> VertexArrayObjectMap;
 
   bool IsDefaultVAOBound() const;
 

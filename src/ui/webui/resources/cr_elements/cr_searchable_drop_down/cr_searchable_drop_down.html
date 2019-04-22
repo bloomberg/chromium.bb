@@ -2,22 +2,24 @@
 
 <link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_scrollable_behavior.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-dropdown/iron-dropdown.html">
 
 <dom-module id="cr-searchable-drop-down">
   <template>
     <style>
-      cr-input {
+      :host(:not([error-message-allowed])) cr-input {
         --cr-input-error-display: none;
       }
 
       iron-dropdown,
       cr-input {
-        width: var(--cr-searchable-drop-down-width, 270px);
+        width: var(--cr-searchable-drop-down-width,
+                   var(--cr-default-input-max-width));
       }
 
       iron-dropdown {
-        height: 270px;
+        max-height: 270px;
       }
 
       iron-dropdown [slot='dropdown-content'] {
@@ -50,7 +52,9 @@
       explicitly used. -->
     <cr-input label="[[label]]" on-click="onClick_" value="[[value]]"
         on-input="onInput_" id="search" autofocus="[[autofocus]]"
-        placeholder="[[placeholder]]">
+        placeholder="[[placeholder]]"
+        error-message="[[getErrorMessage_(errorMessage, errorMessageAllowed)]]"
+        invalid="[[shouldShowErrorMessage_(errorMessage, errorMessageAllowed)]]">
     </cr-input>
     <iron-dropdown horizontal-align="left" vertical-align="top"
         vertical-offset="52">

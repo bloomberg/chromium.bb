@@ -18,12 +18,40 @@
 }
 
 #edit-bg {
-  border-radius: 8px;
+  align-items: center;
+  border-radius: 500px;
   bottom: 16px;
-  height: 28px;
+  display: flex;
+  height: 32px;
+  justify-content: center;
+  min-width: 32px;
   position: fixed;
   right: 16px;
-  width: 28px;
+  width: fit-content;
+}
+
+#edit-bg.ep-enhanced {
+  background-color: rgb(255, 255, 255);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 1px 2px rgba(0, 0, 0, 0.23);
+  cursor: pointer;
+}
+
+#edit-bg:hover,
+#edit-bg:active {
+  background-color: rgba(255, 255, 255, .1);
+}
+
+#edit-bg:hover.ep-enhanced {
+  background-color: rgb(var( --GB050-rgb));
+}
+
+
+html[darkmode=true] #edit-bg.ep-enhanced {
+  background-color: rgb(41, 42, 45);
+}
+
+html[darkmode=true] #edit-bg:hover.ep-enhanced {
+  background-color: rgb(50, 51, 54);
 }
 
 html[dir=rtl] #edit-bg {
@@ -31,37 +59,52 @@ html[dir=rtl] #edit-bg {
   right: auto;
 }
 
-#edit-bg:hover {
-  background-color: rgba(32, 33, 36, .1);
+.non-google-page #edit-bg {
+  display: none;
 }
 
-#edit-bg:active {
-  background-color: rgba(32, 33, 36, .16);
-}
-
-.non-white-bg #edit-bg:hover {
-  background-color: rgba(255, 255, 255, .1);
-}
-
-.non-white-bg #edit-bg:active {
-  background-color: rgba(255, 255, 255, .16);
-}
-
-.using-mouse-nav .bg-option:focus {
-  outline: none;
-}
-
-#edit-bg-gear {
-  background: url(../../../../ui/webui/resources/images/icon_settings.svg) no-repeat center;
-  background-size: 16px 16px;
+#edit-bg-icon {
+  -webkit-mask-image: url(icons/icon_pencil.svg);
+  -webkit-mask-position-x: center;
+  -webkit-mask-position-y: center;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 16px;
+  background-color: rgb(255, 255, 255);
   cursor: pointer;
-  height: 100%;
-  width: 100%;
+  height: 16px;
+  margin-inline-start: 0;
+  width: 16px;
 }
 
-.non-white-bg #edit-bg-gear {
-  background: url(../../../../ui/webui/resources/images/icon_settings_white.svg) no-repeat center;
-  background-size: 16px 16px;
+.ep-enhanced #edit-bg-icon {
+  background-color: rgb(var(--GB600-rgb));
+}
+
+html[darkmode=true] .ep-enhanced #edit-bg-icon {
+  background-color: rgb(var(--GB300-rgb));
+}
+
+#edit-bg-text {
+  color: rgb(var(--GB600-rgb));
+  display: none;
+  font-size: 14px;
+  padding-inline-end: 12px;
+  padding-inline-start: 8px;
+  user-select: none;
+}
+
+html[darkmode=true] .ep-enhanced #edit-bg-text {
+  color: rgb(var(--GB300-rgb));
+}
+
+@media (min-width: 550px) {
+  .ep-enhanced #edit-bg-icon {
+    margin-inline-start: 12px;
+  }
+
+  .ep-enhanced #edit-bg-text {
+    display: inline;
+  }
 }
 
 #edit-bg-dialog::backdrop {
@@ -74,11 +117,18 @@ html[dir=rtl] #edit-bg {
   border-radius: 8px;
   border-width: thin;
   bottom: 44px;
-  box-shadow: 0 1px 3px 0 rgba(60, 64, 67, 0.3), 0 4px 8px 3px rgba(60, 64, 67, 0.15);
+  box-shadow: 0 1px 3px 0 rgba(var(--GG800-rgb), 0.3),
+      0 4px 8px 3px rgba(var(--GG800-rgb), 0.15);
   left: auto;
   padding: 0;
   position: fixed;
   right: 16px;
+}
+
+html[darkmode=true] #edit-bg-dialog {
+  background-color: rgb(41, 42, 45);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3),
+      0 4px 8px 3px rgba(0, 0, 0, 0.15);
 }
 
 #edit-bg-menu {
@@ -92,8 +142,7 @@ html[dir=rtl] #edit-bg-dialog {
 }
 
 #edit-bg-title {
-  color: rgb(32, 33, 36);
-  font-family: 'Roboto', arial, sans-serif;
+  color: rgb(var(--GG900-rgb));
   font-size: 15px;
   height: 30px;
   padding: 16px 0 0 16px;
@@ -103,16 +152,31 @@ html[dir=rtl] #edit-bg-title {
   padding: 16px 16px 0 0;
 }
 
+html[darkmode=true] #edit-bg-title {
+  color: rgb(var(--GG200-rgb));
+}
+
+.using-mouse-nav .bg-option:focus {
+  outline: none;
+}
+
 .bg-option {
-  color: rgb(60, 64, 67);
-  font-family: 'Roboto', arial, sans-serif;
+  color: rgb(var(--GG800-rgb));
   font-size: 13px;
   height: 40px;
   line-height: 40px;
 }
 
+html[darkmode=true] .bg-option {
+  color: rgb(var(--GG200-rgb));
+}
+
 .bg-option:hover {
-  background-color: rgb(241, 243, 244);
+  background-color: rgb(var(--GG100-rgb));
+}
+
+html[darkmode=true] .bg-option:hover {
+  background-color: rgb(var(--GG800-rgb));
 }
 
 .bg-option-img {
@@ -134,16 +198,17 @@ html[dir=rtl] .bg-option-img {
   opacity: 0.28;
 }
 
+html[darkmode=true] .bg-option.bg-option-disabled {
+  opacity: 0.38;
+}
+
 .bg-option.bg-option-disabled:focus {
   outline: none;
 }
 
-.bg-option.bg-option-disabled:hover {
+.bg-option.bg-option-disabled:hover,
+html[darkmode=true] .bg-option.bg-option-disabled:hover {
   background-color: transparent;
-}
-
-#edit-bg-google-photos .bg-option-img {
-  background: url(icons/photos.svg) no-repeat center;
 }
 
 #edit-bg-default-wallpapers .bg-option-img {
@@ -151,23 +216,27 @@ html[dir=rtl] .bg-option-img {
 }
 
 #edit-bg-upload-image .bg-option-img {
-  background: rgb(241, 243, 244) url(icons/upload.svg) no-repeat center;
+  background: rgb(var(--GG100-rgb)) url(icons/upload.svg) no-repeat center;
   border-radius: 50%;
 }
 
 #edit-bg-divider {
-  border-bottom: 1px solid rgb(232, 234, 237);
+  border-bottom: 1px solid rgb(var(--GG200-rgb));
   margin: 8px 0;
   width: 100%;
 }
 
+html[darkmode=true] #edit-bg-divider {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
 #custom-links-restore-default .bg-option-img {
-  background: rgb(241, 243, 244) url(icons/link_gray.svg) no-repeat center;
+  background: rgb(var(--GG100-rgb)) url(icons/link_gray.svg) no-repeat center;
   border-radius: 50%;
 }
 
 #edit-bg-restore-default .bg-option-img {
-  background: rgb(241, 243, 244) url(icons/chrome.svg)  no-repeat center;
+  background: rgb(var(--GG100-rgb)) url(icons/chrome.svg)  no-repeat center;
   border-radius: 50%;
 }
 
@@ -176,21 +245,11 @@ html[dir=rtl] .bg-option-img {
   line-height: normal;
   max-width: 250px;
   overflow: hidden;
-  padding-left: 16px;
-  text-align: left;
+  padding-inline-start: 16px;
+  text-align: start;
   text-overflow: ellipsis;
   vertical-align: middle;
   white-space: nowrap;
-}
-
-html[dir=rtl] .bg-option-text {
-  padding-left: auto;
-  padding-right: 16px;
-  text-align: right;
-}
-
-#bg-sel-menu::backdrop {
-  background-color: rgba(255, 255, 255, .75);
 }
 
 /* The width here should match that used in customBackgrounds.getNextTile. */
@@ -199,19 +258,22 @@ html[dir=rtl] .bg-option-text {
   border: none;
   border-radius: 8px;
   bottom: 0;
-  box-shadow: 0 1px 3px 0 rgba(60, 64, 67, 0.3), 0 4px 8px 3px rgba(60, 64, 67, 0.15);
-  font-family: 'Roboto', arial, sans-serif;
+  box-shadow: 0 1px 3px 0 rgba(var(--GG800-rgb), 0.3),
+      0 4px 8px 3px rgba(var(--GG800-rgb), 0.15);
   height: 400px;
-  left: 0;
-  margin: auto;
   padding: 0 0 0 0;
-  position: absolute;
-  right: 0;
+  position: fixed;
   top: 0;
   /* Suitable for 3 columns of tiles on all platforms, accounting for larger
    * scrollbar width on Windows.*/
   width: 517px;
   z-index: 10000;
+}
+
+html[darkmode=true] #bg-sel-menu {
+  background-color: rgb(41, 42, 45);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3),
+      0 4px 8px 3px rgba(0, 0, 0, 0.15);
 }
 
 /* The width is decided by the longest text length plus 16px margin on the
@@ -225,7 +287,7 @@ right, so that every text can stay on its row even on the smallest window */
 #bg-sel-tiles {
   height: 284px;
   overflow-y: scroll;
-  padding-left: 8px;
+  padding-inline-start: 8px;
 }
 
 #bg-sel-tiles::-webkit-scrollbar-track {
@@ -236,23 +298,17 @@ right, so that every text can stay on its row even on the smallest window */
   outline: none;
 }
 
-html[dir=rtl] #bg-sel-tiles {
-  padding-left: auto;
-  padding-right: 8px;
-}
-
-html[dir=rtl] #bg-sel-tiles {
-  padding-left: 0;
-  padding-right: 8px;
-}
-
 #bg-sel-title-bar {
-  border-bottom: 1px solid rgb(232, 234, 237);
+  border-bottom: 1px solid rgb(var(--GG200-rgb));
   font-size: 15px;
   height: 51px;
   line-height: 52px;
   text-align: center;
   user-select: none;
+}
+
+html[darkmode=true] #bg-sel-title-bar {
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 #bg-sel-back {
@@ -261,6 +317,26 @@ html[dir=rtl] #bg-sel-tiles {
   display: none;
   height: 20px;
   outline: none;
+  position: relative;
+  width: 20px;
+}
+
+html[darkmode=true] #bg-sel-back {
+  background: transparent;
+}
+
+/* We use ::after without content to provide the masked arrow element. */
+html[darkmode=true] #bg-sel-back::after {
+  -webkit-mask-image: url(../../../../ui/webui/resources/images/icon_arrow_back.svg);
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 20px;
+  background-color: rgb(var(--GG200-rgb));
+  content: '';
+  display: block;
+  height: 20px;
+  left: 0;
+  position: absolute;
+  top: 0;
   width: 20px;
 }
 
@@ -275,19 +351,24 @@ html[dir=rtl] #bg-sel-tiles {
 
 #bg-sel-back-circle:active,
 #bg-sel-back-circle:focus {
-  background: rgb(218, 220, 224);
+  background: rgb(var(--GG300-rgb));
   background-position: center;
   background-size: 36px 36px;
 }
 
+html[darkmode=true] #bg-sel-back-circle:active,
+html[darkmode=true] #bg-sel-back-circle:focus {
+  background: rgb(var(--GG800-rgb));
+}
+
 .is-col-sel #bg-sel-back {
   display: none;
-  text-align: left;
+  text-align: start;
 }
 
 .is-col-sel #bg-sel-back-circle {
   display: none;
-  text-align: left;
+  text-align: start;
 }
 
 .is-img-sel #bg-sel-back-circle {
@@ -315,7 +396,7 @@ html[dir=rtl] .is-img-sel #bg-sel-back {
 }
 
 #bg-sel-title {
-  color: rgb(32, 33, 36);
+  color: rgb(var(--GG900-rgb));
   display: inline-block;
   height: 20px;
   line-height: 20px;
@@ -323,8 +404,12 @@ html[dir=rtl] .is-img-sel #bg-sel-back {
   text-align: center;
 }
 
+html[darkmode=true] #bg-sel-title {
+  color: rgb(var(--GG200-rgb));
+}
+
 .is-col-sel #bg-sel-title {
-  padding-left: 0;
+  padding-inline-start: 0;
   text-align: center;
 }
 
@@ -336,42 +421,27 @@ html[dir=rtl] .is-img-sel #bg-sel-back {
 html[dir=rtl] .is-img-sel #bg-sel-title {
   float: right;
   margin: 16px 8px 0 0;
-  text-align: left;
+  text-align: start;
 }
 
 #bg-sel-footer {
-  border-top: 1px solid rgba(232, 234, 237, 1);
+  border-top: 1px solid rgb(var(--GG200-rgb));
   bottom: 0;
-  color: rgb(60, 64, 67);
+  color: rgb(var(--GG800-rgb));
   height: 64px;
-  padding-left: 0;
+  padding-inline-start: 0;
   position: absolute;
-  text-align: right;
+  text-align: end;
   user-select: none;
   width: 100%;
 }
 
-html[dir=rtl] #bg-sel-footer {
-  text-align: left;
+html[darkmode=true] #bg-sel-footer {
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 .bg-sel-footer-button {
-  border: none;
-  border-radius: 4px;
-  font-family: 'Roboto', arial, sans-serif;
-  font-size: 12px;
-  font-weight: 500;
-  height: 32px;
-  line-height: normal;
   margin-top: 16px;
-  min-width: 60px;
-  padding: 0 16px;
-  position: relative;
-  text-align: center;
-  transition-duration: 200ms;
-  transition-property: background-color, color, box-shadow, border;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  vertical-align: middle;
 }
 
 .bg-sel-footer-button:disabled {
@@ -379,53 +449,11 @@ html[dir=rtl] #bg-sel-footer {
 }
 
 #bg-sel-footer-done {
-  background-color: rgb(241, 243, 244);
-  color: rgb(128, 134, 139);
-  margin-right: 16px;
-}
-
-html[dir=rtl] #bg-sel-footer-done {
-  margin-left: 16px;
-  margin-right: 0;
+  margin-inline-end: 16px;
 }
 
 #bg-sel-footer-cancel {
-  background-color: white;
-  border: 1px solid rgb(218, 220, 224);
-  color: rgb(26, 115, 232);
-  margin-right: 8px;
-}
-
-html[dir=rtl] #bg-sel-footer-cancel {
-  margin-left: 8px;
-}
-
-#bg-sel-footer-cancel:hover {
-  background-color: rgba(66, 133, 244, 0.04);
-  border-color: rgb(210, 227, 252);
-}
-
-#bg-sel-footer-cancel:active {
-  background-color: white;
-  border-color: white;
-  box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3),
-  0 3px 6px 2px rgba(60, 64, 67, 0.15);
-}
-
-#bg-sel-footer-done:not(:disabled) {
-  background-color: rgb(26, 115, 232);
-  color: white;
-}
-
-#bg-sel-footer-done:hover:not(:disabled) {
-  background-color: rgb(41, 123, 231);
-  box-shadow: 0 1px 2px 0 rgba(66, 133, 244, 0.3),
-      0 1px 3px 1px rgba(66, 133, 244, 0.15);
-}
-
-#bg-sel-footer-done:active:not(:disabled) {
-  box-shadow: 0 1px 2px 0 rgba(66, 133, 244, 0.3),
-      0 3px 6px 2px rgba(66, 133, 244, 0.15);
+  margin-inline-end: 8px;
 }
 
 #bg-sel-footer-toggle-text {
@@ -445,7 +473,7 @@ html[dir=rtl] .bg-sel-tile-bg {
 }
 
 .bg-sel-tile-bg {
-  background-color: rgb(241, 243, 244);
+  background-color: rgb(var(--GG100-rgb));
   background-size: cover;
   display: inline-block;
   height: 117px;
@@ -453,6 +481,10 @@ html[dir=rtl] .bg-sel-tile-bg {
   position: relative;
   /* 8px for the margin on the left */
   width: calc(33% - 8px);
+}
+
+html[darkmode=true] .bg-sel-tile-bg {
+  background-color: rgb(var(--GG900-rgb));
 }
 
 /* The width here should match that used in customBackgrounds.getTilesWide. */
@@ -483,12 +515,16 @@ html[dir=rtl] .bg-sel-tile-bg {
 }
 
 .selected-border {
-  border: 2px solid rgba(26, 115, 232, .4);
+  border: 2px solid rgba(var(--GB600-rgb), .4);
   border-radius: 4px;
   box-sizing: border-box;
   height: 100%;
   position: relative;
   width: 100%;
+}
+
+html[darkmode=true] .selected-border {
+  border-color: rgb(var(--GB300-rgb));
 }
 
 .selected-circle {
@@ -506,6 +542,10 @@ html[dir=rtl] .selected-circle {
   right: 66px;
 }
 
+html[darkmode=true] .selected-circle {
+  background-color: rgb(var(--GG900-rgb));
+}
+
 .selected-check {
   background: url(../../../../ui/webui/resources/images/check_circle.svg) no-repeat center;
   background-size: 28px 28px;
@@ -521,16 +561,36 @@ html[dir=rtl] .selected-check {
   right: 63px;
 }
 
+html[darkmode=true] .selected-check {
+  background: transparent;
+}
+
+/* We use ::after without content to provide the masked check element. */
+html[darkmode=true] .selected-check::after {
+  -webkit-mask-image: url(../../../../ui/webui/resources/images/check_circle.svg);
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 28px;
+  background-color: rgb(var(--GB300-rgb));
+  content: '';
+  display: block;
+  height: 28px;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 28px;
+}
+
 .bg-sel-tile-title {
-  background-color: rgba(32, 33, 36, 0.71);
+  background-color: rgba(var(--GG900-rgb), 0.71);
   bottom: 0;
   box-sizing: border-box;
   color: #FFF;
   display: inline-block;
   font-size: 13px;
-  height: 32px;
+  line-height: 1.6;
+  min-height: 32px;
   overflow: hidden;
-  padding: 8px 16px 0 16px;
+  padding: 8px 16px;
   position: absolute;
   text-overflow: ellipsis;
   user-select: none;
@@ -583,9 +643,9 @@ html[dir=rtl] .plus-icon {
   border-radius: 8px;
   bottom: 16px;
   color: white;
-  font-family: 'Roboto', arial, sans-serif;
   font-weight: 500;
   left: 16px;
+  max-width: 80%;
   padding: 8px 8px 8px 8px;
   position: fixed;
   text-shadow: 0 0 16px rgba(0, 0, 0, 0.3);
@@ -598,26 +658,26 @@ html[dir=rtl] #custom-bg-attr {
   right: 16px;
 }
 
-.attr1 {
+.attr-common {
   font-size: 13px;
   height: 20px;
   line-height: 20px;
+  overflow: hidden;
+  text-overflow: ellipsis;
   vertical-align: middle;
+  white-space: nowrap;
+  width: -webkit-fill-available;
 }
 
-.attr2 {
+.attr-common.attr-small {
   font-size: 11px;
-  height: 20px;
-  line-height: 20px;
-  vertical-align: middle;
 }
 
 #custom-bg-attr.attr-link:hover {
-  background: rgba(32, 33, 36, .1);
+  background: rgba(var(--GG900-rgb), .1);
 }
 
-.attr1.attr-link,
-.attr2.attr-link {
+.attr-link {
   display: inline-block;
   text-decoration: underline;
 }
@@ -627,7 +687,7 @@ html[dir=rtl] #custom-bg-attr {
   background-size: 10px 10px;
   display: inline-block;
   height: 10px;
-  margin-right: 8px;
+  margin-inline-end: 8px;
   vertical-align: middle;
   width: 10px;
 }
@@ -636,9 +696,4 @@ html[dir=rtl] #custom-bg-attr {
   background-size: 16px 16px;
   height: 18px;
   width: 16px;
-}
-
-html[dir=rtl] #link-icon {
-  margin-left: 8px;
-  margin-right: auto;
 }

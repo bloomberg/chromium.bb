@@ -23,6 +23,13 @@ namespace navigation_interception {
 
 class NavigationParams;
 
+enum class SynchronyMode {
+  // Support async interception in some cases (See ShouldCheckAsynchronously).
+  kAsync,
+  // Only support synchronous interception.
+  kSync
+};
+
 // This class allows the provider of the Callback to selectively ignore top
 // level navigations. This is a UI thread class.
 class InterceptNavigationThrottle : public content::NavigationThrottle {
@@ -35,20 +42,17 @@ class InterceptNavigationThrottle : public content::NavigationThrottle {
   static const base::Feature kAsyncCheck;
 
   InterceptNavigationThrottle(content::NavigationHandle* navigation_handle,
-                              CheckCallback should_ignore_callback);
+                              CheckCallback should_ignore_callback,
+                              SynchronyMode async_mode);
   ~InterceptNavigationThrottle() override;
 
   // content::NavigationThrottle implementation:
   ThrottleCheckResult WillStartRequest() override;
   ThrottleCheckResult WillRedirectRequest() override;
-  ThrottleCheckResult WillFailRequest() override;
   ThrottleCheckResult WillProcessResponse() override;
   const char* GetNameForLogging() override;
 
  private:
-  // To be called on either WillFailRequest or WillProcessResponse.
-  ThrottleCheckResult WillFinish();
-
   ThrottleCheckResult CheckIfShouldIgnoreNavigation(bool is_redirect);
   void RunCheckAsync(const NavigationParams& params);
 
@@ -64,6 +68,8 @@ class InterceptNavigationThrottle : public content::NavigationThrottle {
 
   // Note that the CheckCallback currently has thread affinity on the Java side.
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
+
+  const SynchronyMode mode_ = SynchronyMode::kSync;
 
   // The remaining members are only set for asynchronous checking.
   //

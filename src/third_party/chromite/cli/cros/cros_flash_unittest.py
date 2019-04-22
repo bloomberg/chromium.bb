@@ -84,7 +84,9 @@ class CrosFlashTest(cros_test_lib.MockTempDirTestCase,
         'yes': False,
         'force': False,
         'debug': False,
-        'send_payload_in_parallel': False}
+        'send_payload_in_parallel': False,
+        'experimental_au': False,
+    }
     # Overwrite defaults with any variations in this test.
     expected_kwargs.update(kwargs)
     self.assertDictEqual(expected_kwargs, flash_kwargs)

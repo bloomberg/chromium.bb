@@ -20,11 +20,7 @@
 #include "third_party/sqlite/sqlite3.h"
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-#include <CoreFoundation/CoreFoundation.h>
-#include <CoreServices/CoreServices.h>
-
 #include "base/mac/mac_util.h"
-#include "base/mac/scoped_cftyperef.h"
 #endif
 
 // Test that certain features are/are-not enabled in our SQLite.
@@ -180,24 +176,6 @@ TEST_F(SQLiteFeaturesTest, BooleanSupport) {
   EXPECT_TRUE(!s.ColumnBool(3)) << " default FALSE added by altering the table";
 }
 
-#if defined(OS_FUCHSIA)
-// If the platform cannot support SQLite mmap'ed I/O, make sure SQLite isn't
-// offering to support it.
-TEST_F(SQLiteFeaturesTest, NoMmap) {
-  // For recent versions of SQLite, SQLITE_MAX_MMAP_SIZE=0 can be used to
-  // disable mmap support.  Alternately, sqlite3_config() could be used.  In
-  // that case, the pragma will run successfully, but the size will always be 0.
-  //
-  // MojoVFS implements a no-op for xFileControl().  PRAGMA mmap_size is
-  // implemented in terms of SQLITE_FCNTL_MMAP_SIZE.  In that case, the pragma
-  // will succeed but with no effect.
-  ignore_result(db().Execute("PRAGMA mmap_size = 1048576"));
-  sql::Statement s(db().GetUniqueStatement("PRAGMA mmap_size"));
-  ASSERT_TRUE(!s.Step() || !s.ColumnInt64(0));
-}
-#endif  // defined(OS_FUCHSIA)
-
-#if !defined(OS_FUCHSIA)
 // Verify that OS file writes are reflected in the memory mapping of a
 // memory-mapped file.  Normally SQLite writes to memory-mapped files using
 // memcpy(), which should stay consistent.  Our SQLite is slightly patched to
@@ -269,7 +247,6 @@ TEST_F(SQLiteFeaturesTest, Mmap) {
     ASSERT_EQ('4', m.data()[kOffset]);
   }
 }
-#endif  // !defined(OS_FUCHSIA)
 
 // Verify that http://crbug.com/248608 is fixed.  In this bug, the
 // compiled regular expression is effectively cached with the prepared
@@ -305,145 +282,35 @@ TEST_F(SQLiteFeaturesTest, CachedRegexp) {
 }
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-base::ScopedCFTypeRef<CFURLRef> CFURLRefForPath(const base::FilePath& path){
-  base::ScopedCFTypeRef<CFStringRef> urlString(
-      CFStringCreateWithFileSystemRepresentation(
-          kCFAllocatorDefault, path.value().c_str()));
-  base::ScopedCFTypeRef<CFURLRef> url(
-      CFURLCreateWithFileSystemPath(kCFAllocatorDefault, urlString,
-                                    kCFURLPOSIXPathStyle, FALSE));
-  return url;
-}
-
 // If a database file is marked to be excluded from Time Machine, verify that
 // journal files are also excluded.
 TEST_F(SQLiteFeaturesTest, TimeMachine) {
   ASSERT_TRUE(db().Execute("CREATE TABLE t (id INTEGER PRIMARY KEY)"));
   db().Close();
 
-  base::FilePath journal = sql::Database::JournalPath(db_path());
+  base::FilePath journal_path = sql::Database::JournalPath(db_path());
   ASSERT_TRUE(GetPathExists(db_path()));
-  ASSERT_TRUE(GetPathExists(journal));
-
-  base::ScopedCFTypeRef<CFURLRef> dbURL(CFURLRefForPath(db_path()));
-  base::ScopedCFTypeRef<CFURLRef> journalURL(CFURLRefForPath(journal));
+  ASSERT_TRUE(GetPathExists(journal_path));
 
   // Not excluded to start.
-  EXPECT_FALSE(CSBackupIsItemExcluded(dbURL, nullptr));
-  EXPECT_FALSE(CSBackupIsItemExcluded(journalURL, nullptr));
+  EXPECT_FALSE(base::mac::GetFileBackupExclusion(db_path()));
+  EXPECT_FALSE(base::mac::GetFileBackupExclusion(journal_path));
 
   // Exclude the main database file.
   EXPECT_TRUE(base::mac::SetFileBackupExclusion(db_path()));
 
-  Boolean excluded_by_path = FALSE;
-  EXPECT_TRUE(CSBackupIsItemExcluded(dbURL, &excluded_by_path));
-  EXPECT_FALSE(excluded_by_path);
-  EXPECT_FALSE(CSBackupIsItemExcluded(journalURL, nullptr));
+  EXPECT_TRUE(base::mac::GetFileBackupExclusion(db_path()));
+  EXPECT_FALSE(base::mac::GetFileBackupExclusion(journal_path));
 
   EXPECT_TRUE(db().Open(db_path()));
   ASSERT_TRUE(db().Execute("INSERT INTO t VALUES (1)"));
-  EXPECT_TRUE(CSBackupIsItemExcluded(dbURL, &excluded_by_path));
-  EXPECT_FALSE(excluded_by_path);
-  EXPECT_TRUE(CSBackupIsItemExcluded(journalURL, &excluded_by_path));
-  EXPECT_FALSE(excluded_by_path);
+  EXPECT_TRUE(base::mac::GetFileBackupExclusion(db_path()));
+  EXPECT_TRUE(base::mac::GetFileBackupExclusion(journal_path));
 
   // TODO(shess): In WAL mode this will touch -wal and -shm files.  -shm files
   // could be always excluded.
 }
 #endif
-
-// Test that Chromium's patch to make auto_vacuum integrate with
-// SQLITE_FCNTL_CHUNK_SIZE is working.
-TEST_F(SQLiteFeaturesTest, SmartAutoVacuum) {
-  // Turn on auto_vacuum, and set the page size low to make results obvious.
-  // These settings require re-writing the database, which VACUUM does.
-  ASSERT_TRUE(db().Execute("PRAGMA auto_vacuum = FULL"));
-  ASSERT_TRUE(db().Execute("PRAGMA page_size = 1024"));
-  ASSERT_TRUE(db().Execute("VACUUM"));
-
-  // Code-coverage of the PRAGMA set/get implementation.
-  static const char kPragmaSql[] = "PRAGMA auto_vacuum_slack_pages";
-  ASSERT_EQ("0", sql::test::ExecuteWithResult(&db(), kPragmaSql));
-  ASSERT_TRUE(db().Execute("PRAGMA auto_vacuum_slack_pages = 4"));
-  ASSERT_EQ("4", sql::test::ExecuteWithResult(&db(), kPragmaSql));
-  // Max out at 255.
-  ASSERT_TRUE(db().Execute("PRAGMA auto_vacuum_slack_pages = 1000"));
-  ASSERT_EQ("255", sql::test::ExecuteWithResult(&db(), kPragmaSql));
-  ASSERT_TRUE(db().Execute("PRAGMA auto_vacuum_slack_pages = 0"));
-
-  // With page_size=1024, the following will insert rows which take up an
-  // overflow page, plus a small header in a b-tree node.  An empty table takes
-  // a single page, so for small row counts each insert will add one page, and
-  // each delete will remove one page.
-  static const char kCreateSql[] =
-      "CREATE TABLE t (id INTEGER PRIMARY KEY, value)";
-  static const char kInsertSql[] =
-      "INSERT INTO t (value) VALUES (randomblob(980))";
-#if !defined(OS_WIN)
-  static const char kDeleteSql[] =
-      "DELETE FROM t WHERE id = (SELECT MIN(id) FROM t)";
-#endif
-
-  // This database will be 34 overflow pages plus the table's root page plus the
-  // SQLite header page plus the freelist page.
-  ASSERT_TRUE(db().Execute(kCreateSql));
-  {
-    sql::Statement s(db().GetUniqueStatement(kInsertSql));
-    for (int i = 0; i < 34; ++i) {
-      s.Reset(true);
-      ASSERT_TRUE(s.Run());
-    }
-  }
-  ASSERT_EQ("37", sql::test::ExecuteWithResult(&db(), "PRAGMA page_count"));
-
-  // http://sqlite.org/mmap.html indicates that Windows will silently fail when
-  // truncating a memory-mapped file.  That pretty much invalidates these tests
-  // against the actual file size.
-#if !defined(OS_WIN)
-  // Each delete will delete a single page, including crossing a
-  // multiple-of-four boundary.
-  {
-    sql::Statement s(db().GetUniqueStatement(kDeleteSql));
-    for (int i = 0; i < 5; ++i) {
-      int64_t file_size_before, file_size_after;
-      ASSERT_TRUE(base::GetFileSize(db_path(), &file_size_before));
-
-      s.Reset(true);
-      ASSERT_TRUE(s.Run());
-
-      ASSERT_TRUE(base::GetFileSize(db_path(), &file_size_after));
-      ASSERT_EQ(file_size_after, file_size_before - 1024);
-    }
-  }
-
-  // Turn on "smart" auto-vacuum to remove 4 pages at a time.
-  ASSERT_TRUE(db().Execute("PRAGMA auto_vacuum_slack_pages = 4"));
-
-  // No pages removed, then four deleted at once.
-  {
-    sql::Statement s(db().GetUniqueStatement(kDeleteSql));
-    for (int i = 0; i < 3; ++i) {
-      int64_t file_size_before, file_size_after;
-      ASSERT_TRUE(base::GetFileSize(db_path(), &file_size_before));
-
-      s.Reset(true);
-      ASSERT_TRUE(s.Run());
-
-      ASSERT_TRUE(base::GetFileSize(db_path(), &file_size_after));
-      ASSERT_EQ(file_size_after, file_size_before);
-    }
-
-    int64_t file_size_before, file_size_after;
-    ASSERT_TRUE(base::GetFileSize(db_path(), &file_size_before));
-
-    s.Reset(true);
-    ASSERT_TRUE(s.Run());
-
-    ASSERT_TRUE(base::GetFileSize(db_path(), &file_size_after));
-    ASSERT_EQ(file_size_after, file_size_before - 4096);
-  }
-#endif
-}
 
 #if !defined(OS_FUCHSIA)
 // SQLite WAL mode defaults to checkpointing the WAL on close.  This would push

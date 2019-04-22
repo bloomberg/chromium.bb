@@ -43,7 +43,6 @@
       "Window type constants must match")
 
 WINDOW_TYPES_MATCH(WINDOW);
-WINDOW_TYPES_MATCH(PANEL);
 WINDOW_TYPES_MATCH(WINDOW_FRAMELESS);
 WINDOW_TYPES_MATCH(CONTROL);
 WINDOW_TYPES_MATCH(POPUP);
@@ -112,15 +111,18 @@ MusClient::MusClient(const InitParams& params) : identity_(params.identity) {
         std::make_unique<ui::ClipboardClient>(std::move(clipboard_host_ptr)));
 
     if (params.use_accessibility_host) {
-      ax_remote_host_ = std::make_unique<AXRemoteHost>();
+      ax_aura_obj_cache_ = std::make_unique<AXAuraObjCache>();
+      ax_remote_host_ =
+          std::make_unique<AXRemoteHost>(ax_aura_obj_cache_.get());
       ax_remote_host_->Init(connector);
     }
   }
 
-  ViewsDelegate::GetInstance()->set_native_widget_factory(
-      base::Bind(&MusClient::CreateNativeWidget, base::Unretained(this)));
-  ViewsDelegate::GetInstance()->set_desktop_window_tree_host_factory(base::Bind(
-      &MusClient::CreateDesktopWindowTreeHost, base::Unretained(this)));
+  ViewsDelegate::GetInstance()->set_native_widget_factory(base::BindRepeating(
+      &MusClient::CreateNativeWidget, base::Unretained(this)));
+  ViewsDelegate::GetInstance()->set_desktop_window_tree_host_factory(
+      base::BindRepeating(&MusClient::CreateDesktopWindowTreeHost,
+                          base::Unretained(this)));
 }
 
 MusClient::~MusClient() {
@@ -176,11 +178,10 @@ bool MusClient::ShouldCreateDesktopNativeWidgetAura(
 // static
 bool MusClient::ShouldMakeWidgetWindowsTranslucent(
     const Widget::InitParams& params) {
-  // |TYPE_WINDOW| and |TYPE_PANEL| are forced to translucent so that the
-  // window manager can draw the client decorations.
+  // |TYPE_WINDOW| is forced to translucent so that the window manager
+  // can draw the client decorations.
   return params.opacity == Widget::InitParams::TRANSLUCENT_WINDOW ||
-         params.type == Widget::InitParams::TYPE_WINDOW ||
-         params.type == Widget::InitParams::TYPE_PANEL;
+         params.type == Widget::InitParams::TYPE_WINDOW;
 }
 
 // static
@@ -218,7 +219,7 @@ MusClient::ConfigurePropertiesFromParams(
       mojo::ConvertTo<TransportType>(
           static_cast<PrimitiveType>(init_params.keep_on_top));
 
-  properties[WindowManager::kRemoveStandardFrame_InitProperty] =
+  properties[WindowManager::kClientProvidesFrame_InitProperty] =
       mojo::ConvertTo<TransportType>(init_params.remove_standard_frame);
 
   if (init_params.corner_radius) {
@@ -247,22 +248,6 @@ MusClient::ConfigurePropertiesFromParams(
       properties[WindowManager::kWindowTitle_Property] =
           mojo::ConvertTo<TransportType>(
               init_params.delegate->GetWindowTitle());
-    }
-
-    // TODO(crbug.com/667566): Support additional scales or gfx::Image[Skia].
-    gfx::ImageSkia app_icon = init_params.delegate->GetWindowAppIcon();
-    SkBitmap app_bitmap = app_icon.GetRepresentation(1.f).GetBitmap();
-    if (!app_bitmap.isNull()) {
-      properties[WindowManager::kAppIcon_Property] =
-          mojo::ConvertTo<TransportType>(app_bitmap);
-    }
-
-    // TODO(crbug.com/667566): Support additional scales or gfx::Image[Skia].
-    gfx::ImageSkia window_icon = init_params.delegate->GetWindowIcon();
-    SkBitmap window_bitmap = window_icon.GetRepresentation(1.f).GetBitmap();
-    if (!window_bitmap.isNull()) {
-      properties[WindowManager::kWindowIcon_Property] =
-          mojo::ConvertTo<TransportType>(window_bitmap);
     }
   }
 
@@ -347,7 +332,10 @@ void MusClient::OnEmbed(
   NOTREACHED();
 }
 
-void MusClient::OnLostConnection(aura::WindowTreeClient* client) {}
+void MusClient::OnLostConnection(aura::WindowTreeClient* client) {
+  // Better to crash than to be left in a broken state.
+  IMMEDIATE_CRASH();
+}
 
 void MusClient::OnEmbedRootDestroyed(
     aura::WindowTreeHostMus* window_tree_host) {

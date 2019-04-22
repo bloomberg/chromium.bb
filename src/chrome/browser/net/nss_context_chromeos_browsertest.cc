@@ -44,8 +44,9 @@ class DBTester {
     base::RunLoop run_loop;
     base::PostTaskWithTraits(
         FROM_HERE, {content::BrowserThread::IO},
-        base::Bind(&DBTester::GetDBAndDoTestsOnIOThread, base::Unretained(this),
-                   profile_->GetResourceContext(), run_loop.QuitClosure()));
+        base::BindOnce(&DBTester::GetDBAndDoTestsOnIOThread,
+                       base::Unretained(this), profile_->GetResourceContext(),
+                       run_loop.QuitClosure()));
     run_loop.Run();
     return !!db_;
   }
@@ -55,9 +56,9 @@ class DBTester {
     base::RunLoop run_loop;
     base::PostTaskWithTraits(
         FROM_HERE, {content::BrowserThread::IO},
-        base::Bind(&DBTester::DoGetDBAgainTestsOnIOThread,
-                   base::Unretained(this), profile_->GetResourceContext(),
-                   run_loop.QuitClosure()));
+        base::BindOnce(&DBTester::DoGetDBAgainTestsOnIOThread,
+                       base::Unretained(this), profile_->GetResourceContext(),
+                       run_loop.QuitClosure()));
     run_loop.Run();
   }
 

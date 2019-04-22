@@ -12,11 +12,10 @@
 #include "ios/chrome/browser/drag_and_drop/drag_and_drop_flag.h"
 #include "ios/chrome/browser/drag_and_drop/drop_and_navigate_delegate.h"
 #include "ios/chrome/browser/drag_and_drop/drop_and_navigate_interaction.h"
-#include "ios/chrome/browser/experimental_flags.h"
+#include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/image_util/image_util.h"
 #include "ios/chrome/browser/ui/util/rtl_geometry.h"
-#include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/highlight_button.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
@@ -386,26 +385,13 @@ const int kTabCloseTintIncognito = 0xFFFFFF;
 }
 
 - (void)updateCloseButtonImages {
-  if (IsUIRefreshPhase1Enabled()) {
-    [_closeButton
-        setImage:[[UIImage imageNamed:@"grid_cell_close_button"]
-                     imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]
-        forState:UIControlStateNormal];
-    _closeButton.tintColor = _incognitoStyle
-                                 ? UIColorFromRGB(kTabCloseTintIncognito)
-                                 : UIColorFromRGB(kTabCloseTint);
-  } else {
-    NSString* incognito = self.incognitoStyle ? @"_incognito" : @"";
-    UIImage* normalImage = [UIImage
-        imageNamed:[NSString stringWithFormat:@"tabstrip_tab_close%@_legacy",
-                                              incognito]];
-    UIImage* pressedImage = [UIImage
-        imageNamed:[NSString
-                       stringWithFormat:@"tabstrip_tab_close%@_pressed_legacy",
-                                        incognito]];
-    [_closeButton setImage:normalImage forState:UIControlStateNormal];
-    [_closeButton setImage:pressedImage forState:UIControlStateHighlighted];
-  }
+  [_closeButton
+      setImage:[[UIImage imageNamed:@"grid_cell_close_button"]
+                   imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]
+      forState:UIControlStateNormal];
+  _closeButton.tintColor = _incognitoStyle
+                               ? UIColorFromRGB(kTabCloseTintIncognito)
+                               : UIColorFromRGB(kTabCloseTint);
 }
 
 - (UIImage*)defaultFaviconImage {

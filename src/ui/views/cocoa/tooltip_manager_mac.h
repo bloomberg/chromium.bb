@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_COCOA_TOOLTOP_MANAGER_MAC_H_
-#define UI_VIEWS_COCOA_TOOLTOP_MANAGER_MAC_H_
+#ifndef UI_VIEWS_COCOA_TOOLTIP_MANAGER_MAC_H_
+#define UI_VIEWS_COCOA_TOOLTIP_MANAGER_MAC_H_
 
 #include "base/macros.h"
 #include "ui/views/widget/tooltip_manager.h"
@@ -38,4 +38,4 @@ class TooltipManagerMac : public TooltipManager {
 
 }  // namespace views
 
-#endif  // UI_VIEWS_COCOA_TOOLTOP_MANAGER_MAC_H_
+#endif  // UI_VIEWS_COCOA_TOOLTIP_MANAGER_MAC_H_

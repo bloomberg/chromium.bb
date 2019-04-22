@@ -68,7 +68,6 @@ class WebMouseWheelEvent;
 namespace ui {
 enum class DomCode;
 class LatencyInfo;
-class Layer;
 struct DidOverscrollParams;
 }
 
@@ -110,7 +109,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   RenderWidgetHostImpl* GetFocusedWidget() const;
 
   // RenderWidgetHostView implementation.
-  RenderWidgetHost* GetRenderWidgetHost() const final;
+  RenderWidgetHost* GetRenderWidgetHost() final;
   ui::TextInputClient* GetTextInputClient() override;
   void WasUnOccluded() override {}
   void WasOccluded() override {}
@@ -119,13 +118,13 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   bool IsMouseLocked() override;
   bool LockKeyboard(base::Optional<base::flat_set<ui::DomCode>> codes) override;
   void SetBackgroundColor(SkColor color) override;
-  base::Optional<SkColor> GetBackgroundColor() const override;
+  base::Optional<SkColor> GetBackgroundColor() override;
   void UnlockKeyboard() override;
   bool IsKeyboardLocked() override;
   base::flat_map<std::string, std::string> GetKeyboardLayoutMap() override;
-  gfx::Size GetVisibleViewportSize() const override;
+  gfx::Size GetVisibleViewportSize() override;
   void SetInsets(const gfx::Insets& insets) override;
-  bool IsSurfaceAvailableForCopy() const override;
+  bool IsSurfaceAvailableForCopy() override;
   void CopyFromSurface(
       const gfx::Rect& src_rect,
       const gfx::Size& output_size,
@@ -133,14 +132,15 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   std::unique_ptr<viz::ClientFrameSinkVideoCapturer> CreateVideoCapturer()
       override;
   void FocusedNodeTouched(bool editable) override;
-  void GetScreenInfo(ScreenInfo* screen_info) const override;
+  void GetScreenInfo(ScreenInfo* screen_info) override;
   void EnableAutoResize(const gfx::Size& min_size,
                         const gfx::Size& max_size) override;
   void DisableAutoResize(const gfx::Size& new_size) override;
-  bool IsScrollOffsetAtTop() const override;
-  float GetDeviceScaleFactor() const final;
+  bool IsScrollOffsetAtTop() override;
+  float GetDeviceScaleFactor() final;
   TouchSelectionControllerClientManager*
   GetTouchSelectionControllerClientManager() override;
+  void SetLastTabChangeStartTime(base::TimeTicks start_time) final;
 
   // This only needs to be overridden by RenderWidgetHostViewBase subclasses
   // that handle content embedded within other RenderWidgetHostViews.
@@ -200,6 +200,11 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   virtual viz::ScopedSurfaceIdAllocator DidUpdateVisualProperties(
       const cc::RenderFrameMetadata& metadata);
 
+  // Returns the time set by SetLastTabChangeStartTime. If this was not
+  // preceded by a call to SetLastTabChangeStartTime, this will return null.
+  // Calling this will reset the stored time to null.
+  base::TimeTicks GetAndResetLastTabChangeStartTime();
+
   base::WeakPtr<RenderWidgetHostViewBase> GetWeakPtr();
 
   //----------------------------------------------------------------------------
@@ -216,23 +221,13 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
 
   // The requested size of the renderer. May differ from GetViewBounds().size()
   // when the view requires additional throttling.
-  virtual gfx::Size GetRequestedRendererSize() const;
+  virtual gfx::Size GetRequestedRendererSize();
 
   // Returns the current capture sequence number.
   virtual uint32_t GetCaptureSequenceNumber() const;
 
   // The size of the view's backing surface in non-DPI-adjusted pixels.
-  virtual gfx::Size GetCompositorViewportPixelSize() const;
-
-  // Whether or not the renderer's viewport size should be shrunk by the height
-  // of the URL-bar.
-  virtual bool DoBrowserControlsShrinkRendererSize() const;
-
-  // The height of the URL-bar browser controls.
-  virtual float GetTopControlsHeight() const;
-
-  // The height of the bottom bar.
-  virtual float GetBottomControlsHeight() const;
+  virtual gfx::Size GetCompositorViewportPixelSize();
 
   // If mouse wheels can only specify the number of ticks of some static
   // multiplier constant, this method returns that constant (in DIPs). If mouse
@@ -259,10 +254,21 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   virtual void GestureEventAck(const blink::WebGestureEvent& event,
                                InputEventAckState ack_result);
 
+  // When key event is not uncosumed in render, browser may want to consume it.
+  virtual bool OnUnconsumedKeyboardEventAck(
+      const NativeWebKeyboardEventWithLatencyInfo& event);
+
+  // Call platform APIs for Fallback Cursor Mode.
+  virtual void FallbackCursorModeLockCursor(bool left,
+                                            bool right,
+                                            bool up,
+                                            bool down);
+  virtual void FallbackCursorModeSetCursorVisibility(bool visible);
+
   // Create a platform specific SyntheticGestureTarget implementation that will
   // be used to inject synthetic input events.
   virtual std::unique_ptr<SyntheticGestureTarget>
-  CreateSyntheticGestureTarget();
+  CreateSyntheticGestureTarget() = 0;
 
   // Create a BrowserAccessibilityManager for a frame in this view.
   // If |for_root_frame| is true, creates a BrowserAccessibilityManager
@@ -274,6 +280,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   virtual void AccessibilityShowMenu(const gfx::Point& point);
   virtual gfx::AcceleratedWidget AccessibilityGetAcceleratedWidget();
   virtual gfx::NativeViewAccessible AccessibilityGetNativeViewAccessible();
+  virtual gfx::NativeViewAccessible
+  AccessibilityGetNativeViewAccessibleForWindow();
   virtual void SetMainFrameAXTreeID(ui::AXTreeID id) {}
   // Informs that the focused DOM node has changed.
   virtual void FocusedNodeChanged(bool is_editable_node,
@@ -348,9 +356,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
       gfx::PointF* transformed_point,
       bool* out_query_renderer);
 
-  virtual void InjectTouchEvent(const blink::WebTouchEvent& event,
-                                const ui::LatencyInfo& latency) {}
-
   virtual void PreProcessMouseEvent(const blink::WebMouseEvent& event) {}
   virtual void PreProcessTouchEvent(const blink::WebTouchEvent& event) {}
 
@@ -374,11 +379,9 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   // spaces of surfaces where one does not contain the other. To transform
   // between sibling surfaces, the point must be transformed to the root's
   // coordinate space as an intermediate step.
-  bool TransformPointToLocalCoordSpace(
-      const gfx::PointF& point,
-      const viz::SurfaceId& original_surface,
-      gfx::PointF* transformed_point,
-      viz::EventSource source = viz::EventSource::ANY);
+  bool TransformPointToLocalCoordSpace(const gfx::PointF& point,
+                                       const viz::SurfaceId& original_surface,
+                                       gfx::PointF* transformed_point);
 
   // This is deprecated, and will be removed once Viz hit-test is the default.
   virtual bool TransformPointToLocalCoordSpaceLegacy(
@@ -393,8 +396,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   virtual bool TransformPointToCoordSpaceForView(
       const gfx::PointF& point,
       RenderWidgetHostViewBase* target_view,
-      gfx::PointF* transformed_point,
-      viz::EventSource source = viz::EventSource::ANY);
+      gfx::PointF* transformed_point);
 
   // On success, returns true and modifies |*transform| to represent the
   // transformation mapping a point in the coordinate space of this view
@@ -447,6 +449,11 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   // view may use this notification to clean up associated resources. This
   // should be called before the WebContents is fully destroyed.
   virtual void OnInterstitialPageGoingAway() {}
+
+  // Returns true if the visual properties should be sent to the renderer at
+  // this time. This function is intended for subclasses to suppress
+  // synchronization, the default implementation returns true.
+  virtual bool CanSynchronizeVisualProperties();
 
   //----------------------------------------------------------------------------
   // The following methods are related to IME.
@@ -588,11 +595,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   // Use only for resize on macOS. Returns true if there is not currently a
   // frame of the view's size being displayed.
   virtual bool ShouldContinueToPauseForFrame();
-
-  // Specify a ui::Layer into which the renderer's content should be
-  // composited. If nullptr is specified, then this layer will create a
-  // separate ui::Compositor as needed (e.g, for tab capture).
-  virtual void SetParentUiLayer(ui::Layer* parent_ui_layer);
 #endif
 
   virtual void DidNavigate();
@@ -717,16 +719,14 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   bool TransformPointToTargetCoordSpace(RenderWidgetHostViewBase* original_view,
                                         RenderWidgetHostViewBase* target_view,
                                         const gfx::PointF& point,
-                                        gfx::PointF* transformed_point,
-                                        viz::EventSource source) const;
+                                        gfx::PointF* transformed_point) const;
 
   // Used to transform |point| when Viz hit-test is enabled.
   // TransformPointToLocalCoordSpaceLegacy is used in non-Viz hit-testing.
   bool TransformPointToLocalCoordSpaceViz(
       const gfx::PointF& point,
       const viz::SurfaceId& original_surface,
-      gfx::PointF* transformed_point,
-      viz::EventSource source);
+      gfx::PointF* transformed_point);
 
   bool view_stopped_flinging_for_test() const {
     return view_stopped_flinging_for_test_;
@@ -751,6 +751,11 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
 #endif
 
   base::Optional<blink::WebGestureEvent> pending_touchpad_pinch_begin_;
+
+  // The last tab switch processing start time. This should only be set and
+  // retrieved using SetLastTabChangeStartTime and
+  // GetAndResetLastTabChangeStartTime.
+  base::TimeTicks last_tab_switch_start_time_;
 
   // True when StopFlingingIfNecessary() calls StopFling().
   bool view_stopped_flinging_for_test_ = false;

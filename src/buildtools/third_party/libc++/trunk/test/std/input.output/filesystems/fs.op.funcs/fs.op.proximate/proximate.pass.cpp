@@ -1,9 +1,8 @@
 //===----------------------------------------------------------------------===//
 //
-//                     The LLVM Compiler Infrastructure
-//
-// This file is dual licensed under the MIT and the University of Illinois Open
-// Source Licenses. See LICENSE.TXT for details.
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
 
@@ -75,12 +74,12 @@ TEST_CASE(basic_test) {
       {"a", parent_cwd, "fs.op.proximate/a"},
       {"/", "a", dot_dot_to_root / ".."},
       {"/", "a/b", dot_dot_to_root / "../.."},
-      {"/", "a/b/", dot_dot_to_root / "../../.."},
+      {"/", "a/b/", dot_dot_to_root / "../.."},
       {"a", "/", relative_cwd / "a"},
       {"a/b", "/", relative_cwd / "a/b"},
       {"a", "/net", ".." / relative_cwd / "a"},
-      {"//foo/", "//foo", "/foo/"},
-      {"//foo", "//foo/", ".."},
+      {"//foo/", "//foo", "."},
+      {"//foo", "//foo/", "."},
       {"//foo", "//foo", "."},
       {"//foo/", "//foo/", "."},
       {"//base", "a", dot_dot_to_root / "../base"},

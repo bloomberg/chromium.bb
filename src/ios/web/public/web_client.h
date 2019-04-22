@@ -11,13 +11,14 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/values.h"
 #include "ios/web/public/user_agent.h"
 #include "mojo/public/cpp/system/message_pipe.h"
-#include "services/service_manager/public/cpp/embedded_service_info.h"
+#include "services/service_manager/public/cpp/manifest.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 #include "ui/base/layout.h"
 #include "url/url_util.h"
@@ -93,10 +94,6 @@ class WebClient {
   // Returns text to be displayed for an unsupported plugin.
   virtual base::string16 GetPluginNotSupportedText() const;
 
-  // Returns a string describing the embedder product name and version, of the
-  // form "productname/version".  Used as part of the user agent string.
-  virtual std::string GetProduct() const;
-
   // Returns the user agent string for the specified type.
   virtual std::string GetUserAgent(UserAgentType type) const;
 
@@ -141,23 +138,19 @@ class WebClient {
   virtual NSString* GetDocumentStartScriptForMainFrame(
       BrowserState* browser_state) const;
 
-  using StaticServiceMap =
-      std::map<std::string, service_manager::EmbeddedServiceInfo>;
-
-  // Registers services to be loaded by the Service Manager.
-  virtual void RegisterServices(StaticServiceMap* services) {}
-
-  // Handles an incoming service request from the Service Manager. Prefer this
-  // instead of registrations via |RegisterServices()|.
+  // Handles an incoming service request from the Service Manager.
   virtual std::unique_ptr<service_manager::Service> HandleServiceRequest(
       const std::string& service_name,
       service_manager::mojom::ServiceRequest request);
 
-  // Allows the embedder to provide a dictionary loaded from a JSON file
-  // resembling a service manifest whose capabilities section will be merged
-  // with web's own for |name|. Additional entries will be appended to their
-  // respective sections.
-  virtual std::unique_ptr<base::Value> GetServiceManifestOverlay(
+  // Allows the embedder to augment service manifests for existing services.
+  // Specifically, the sets of exposed and required capabilities, interface
+  // filter capabilities (deprecated), and packaged services will be taken from
+  // the returned Manifest and amended to those of the existing Manifest for the
+  // service named |name|.
+  //
+  // If no overlay is provided for the service, this returns |base::nullopt|.
+  virtual base::Optional<service_manager::Manifest> GetServiceManifestOverlay(
       base::StringPiece name);
 
   // Allows the embedder to bind an interface request for a WebState-scoped
@@ -185,7 +178,9 @@ class WebClient {
   // |error| and |error_html| are always valid pointers. Embedder may set
   // |error_html| to an HTML page containing the details of the error and maybe
   // links to more info.
-  virtual void PrepareErrorPage(NSError* error,
+  virtual void PrepareErrorPage(WebState* web_state,
+                                const GURL& url,
+                                NSError* error,
                                 bool is_post,
                                 bool is_off_the_record,
                                 NSString** error_html);
@@ -195,6 +190,9 @@ class WebClient {
   // second flag arises before clean up, consider generalizing to an experiment
   // flags struct instead of adding a bool method for each experiment.
   virtual bool IsSlimNavigationManagerEnabled() const;
+
+  // Instructs the embedder to return a container that is attached to a window.
+  virtual UIView* GetWindowedContainer();
 };
 
 }  // namespace web

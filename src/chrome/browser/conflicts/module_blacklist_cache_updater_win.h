@@ -7,14 +7,14 @@
 
 #include <vector>
 
+#include "base/callback.h"
+#include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
+#include "base/hash/md5.h"
 #include "base/macros.h"
-#include "base/md5.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
-#include "base/time/time.h"
-#include "base/timer/timer.h"
 #include "chrome/browser/conflicts/module_database_observer_win.h"
 #include "chrome/browser/conflicts/proto/module_list.pb.h"
 #include "chrome_elf/third_party_dlls/packed_list_format.h"
@@ -30,15 +30,8 @@ class SequencedTaskRunner;
 // is used by chrome_elf.dll to determine which module to block from loading
 // into the process.
 //
-// Two things can happen that requires an update to the cache:
-//   1. The Module Database becomes idle and this class identified new
-//      blacklisted modules. They must be added to the cache.
-//   2. The module load attempt log was drained and contained blocked entries.
-//      Their timestamp in the cache must be updated.
-//
-// To coalesce these events and reduce the number of updates, a timer is started
-// when the load attempt log is drained. Once expired, an update is triggered
-// unless one was already done because of newly blacklisted modules.
+// The cache is updated everytime the module database becomes idle and at least
+// one module must be added to the cache.
 //
 //
 // Additional implementation details about the module blacklist cache file:
@@ -76,14 +69,17 @@ class ModuleBlacklistCacheUpdater : public ModuleDatabaseObserver {
   // IncompatibleApplicationsUpdater. This is done so that it is easier to keep
   // the 2 features separate, as they can be independently enabled/disabled.
   enum class ModuleBlockingDecision {
-    // Explicitly defined as zero so it is the default value when a
-    // ModuleBlockingDecision variable is value-initialized
-    // (std::vector::resize()).
-    kUnknown = 0,
+    // No decision was taken yet for the module.
+    kUnknown,
 
     // Detailed reasons why modules will be allowed to load in subsequent
     // startups.
 
+    // A shell extension or IME that is not loaded in the process yet.
+    kNotLoaded,
+    // A module that is loaded into a process type where third-party modules are
+    // explicitly allowed.
+    kAllowedInProcessType,
     // Input method editors are allowed.
     kAllowedIME,
     // Allowed because the certificate's subject of the module matches the
@@ -98,6 +94,9 @@ class ModuleBlacklistCacheUpdater : public ModuleDatabaseObserver {
     kAllowedMicrosoft,
     // Explicitly whitelisted by the Module List component.
     kAllowedWhitelisted,
+    // Module analysis was interrupted using DisableModuleAnalysis(). This
+    // module will not be added to the cache.
+    kNotAnalyzed,
     // New "allowed" reasons should be added here!
 
     // Unwanted, but allowed to load by the Module List component. This is
@@ -122,20 +121,20 @@ class ModuleBlacklistCacheUpdater : public ModuleDatabaseObserver {
   struct ModuleBlockingState {
     // Whether or not the module was in the blacklist cache that existed at
     // startup.
-    bool was_in_blacklist_cache;
+    bool was_in_blacklist_cache = false;
 
     // Whether or not the module was ever actively blocked from loading during
     // this session.
-    bool was_blocked;
+    bool was_blocked = false;
 
     // Whether or not the module ever loaded during this session. Usually this
     // means that the module is currently loaded, but it's possible for DLLs to
     // subsequently be unloaded at runtime.
-    bool was_loaded;
+    bool was_loaded = false;
 
     // The current blocking decision. This is synced to the cache and will be
     // applied at the next startup.
-    ModuleBlockingDecision blocking_decision;
+    ModuleBlockingDecision blocking_decision = ModuleBlockingDecision::kUnknown;
   };
 
   struct CacheUpdateResult {
@@ -144,11 +143,6 @@ class ModuleBlacklistCacheUpdater : public ModuleDatabaseObserver {
   };
   using OnCacheUpdatedCallback =
       base::RepeatingCallback<void(const CacheUpdateResult&)>;
-
-  // The amount of time the timer will run before triggering an update of the
-  // cache.
-  static constexpr base::TimeDelta kUpdateTimerDuration =
-      base::TimeDelta::FromMinutes(2);
 
   // Creates an instance of the updater. The callback will be invoked every time
   // the cache is updated.
@@ -161,12 +155,14 @@ class ModuleBlacklistCacheUpdater : public ModuleDatabaseObserver {
       scoped_refptr<ModuleListFilter> module_list_filter,
       const std::vector<third_party_dlls::PackedListModule>&
           initial_blacklisted_modules,
-      OnCacheUpdatedCallback on_cache_updated_callback);
+      OnCacheUpdatedCallback on_cache_updated_callback,
+      bool module_analysis_disabled);
   ~ModuleBlacklistCacheUpdater() override;
 
-  // Returns true if the blocking of third-party modules is enabled. The return
-  // value will not change throughout the lifetime of the process.
-  static bool IsThirdPartyModuleBlockingEnabled();
+  // Returns true if the blocking of third-party modules is enabled. Can be
+  // called on any thread. Notably does not check the ThirdPartyBlockingEnabled
+  // group policy.
+  static bool IsBlockingEnabled();
 
   // Returns the path to the module blacklist cache.
   static base::FilePath GetModuleBlacklistCachePath();
@@ -184,7 +180,11 @@ class ModuleBlacklistCacheUpdater : public ModuleDatabaseObserver {
 
   // Returns the blocking decision for a module.
   const ModuleBlockingState& GetModuleBlockingState(
-      ModuleInfoKey module_key) const;
+      const ModuleInfoKey& module_key) const;
+
+  // Disables the analysis of newly found modules. This is a one way switch that
+  // will apply until Chrome is restarted.
+  void DisableModuleAnalysis();
 
  private:
   // The state of the module with respect to the ModuleList.
@@ -199,8 +199,6 @@ class ModuleBlacklistCacheUpdater : public ModuleDatabaseObserver {
     // The module is explicitly blacklisted.
     kBlacklisted,
   };
-
-  void OnTimerExpired();
 
   // Gets the state of a module with respect to the module list.
   ModuleListState DetermineModuleListState(const ModuleInfoKey& module_key,
@@ -238,13 +236,12 @@ class ModuleBlacklistCacheUpdater : public ModuleDatabaseObserver {
   // until they are used to update the cache.
   std::vector<third_party_dlls::PackedListModule> blocked_modules_;
 
-  // Ensures that the cache is updated when new blocked modules arrives even if
-  // OnModuleDatabaseIdle() is never called again.
-  base::OneShotTimer timer_;
+  // Holds the blocking state for all known modules.
+  base::flat_map<ModuleInfoKey, ModuleBlockingState> module_blocking_states_;
 
-  // Holds the blocking state for all known modules. The index is the module
-  // id.
-  std::vector<ModuleBlockingState> module_blocking_state_;
+  // Indicates if the analysis of newly found modules is disabled. Used as a
+  // workaround for https://crbug.com/892294.
+  bool module_analysis_disabled_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

@@ -147,9 +147,11 @@ CSSRule* CSSGroupingRule::Item(unsigned index) const {
 }
 
 CSSRuleList* CSSGroupingRule::cssRules() const {
-  if (!rule_list_cssom_wrapper_)
-    rule_list_cssom_wrapper_ = LiveCSSRuleList<CSSGroupingRule>::Create(
-        const_cast<CSSGroupingRule*>(this));
+  if (!rule_list_cssom_wrapper_) {
+    rule_list_cssom_wrapper_ =
+        MakeGarbageCollected<LiveCSSRuleList<CSSGroupingRule>>(
+            const_cast<CSSGroupingRule*>(this));
+  }
   return rule_list_cssom_wrapper_.Get();
 }
 

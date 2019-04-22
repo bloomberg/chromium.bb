@@ -15,15 +15,15 @@ function MultiProfileShareDialog(parentNode) {
   this.mailLabel_ = parentNode.ownerDocument.createElement('label');
   this.mailLabel_.className = 'mail-label';
 
-  var canEdit = parentNode.ownerDocument.createElement('option');
+  const canEdit = parentNode.ownerDocument.createElement('option');
   canEdit.textContent = str('DRIVE_SHARE_TYPE_CAN_EDIT');
   canEdit.value = MultiProfileShareDialog.Result.CAN_EDIT;
 
-  var canComment = parentNode.ownerDocument.createElement('option');
+  const canComment = parentNode.ownerDocument.createElement('option');
   canComment.textContent = str('DRIVE_SHARE_TYPE_CAN_COMMENT');
   canComment.value = MultiProfileShareDialog.Result.CAN_COMMET;
 
-  var canView = parentNode.ownerDocument.createElement('option');
+  const canView = parentNode.ownerDocument.createElement('option');
   canView.textContent = str('DRIVE_SHARE_TYPE_CAN_VIEW');
   canView.value = MultiProfileShareDialog.Result.CAN_VIEW;
 
@@ -33,7 +33,7 @@ function MultiProfileShareDialog(parentNode) {
   this.shareTypeSelect_.appendChild(canComment);
   this.shareTypeSelect_.appendChild(canView);
 
-  var shareLine = parentNode.ownerDocument.createElement('div');
+  const shareLine = parentNode.ownerDocument.createElement('div');
   shareLine.className = 'share-line';
   shareLine.appendChild(this.mailLabel_);
   shareLine.appendChild(this.shareTypeSelect_);
@@ -41,9 +41,9 @@ function MultiProfileShareDialog(parentNode) {
   this.frame_.insertBefore(shareLine, this.buttons);
   this.frame_.id = 'multi-profile-share-dialog';
 
-  this.currentProfileId_ = new Promise(function(callback) {
+  this.currentProfileId_ = new Promise(callback => {
     chrome.fileManagerPrivate.getProfiles(
-        function(profiles, currentId, displayedId) {
+        (profiles, currentId, displayedId) => {
           callback(currentId);
         });
   });
@@ -72,28 +72,27 @@ MultiProfileShareDialog.prototype = {
  * @return {!Promise} Promise fulfilled with the result of dialog. If the dialog
  *     is already opened, it returns null.
  */
-MultiProfileShareDialog.prototype.showMultiProfileShareDialog =
-    function(plural) {
-  return this.currentProfileId_.then(function(currentProfileId) {
-    return new Promise(function(fulfill, reject) {
+MultiProfileShareDialog.prototype.showMultiProfileShareDialog = function(
+    plural) {
+  return this.currentProfileId_.then(currentProfileId => {
+    return new Promise((fulfill, reject) => {
       this.shareTypeSelect_.selectedIndex = 0;
       this.mailLabel_.textContent = currentProfileId;
-      var result = FileManagerDialogBase.prototype.showOkCancelDialog.call(
+      const result = FileManagerDialogBase.prototype.showOkCancelDialog.call(
           this,
-          str(plural ?
-              'MULTI_PROFILE_SHARE_DIALOG_TITLE_PLURAL' :
-              'MULTI_PROFILE_SHARE_DIALOG_TITLE'),
-          str(plural ?
-              'MULTI_PROFILE_SHARE_DIALOG_MESSAGE_PLURAL' :
-              'MULTI_PROFILE_SHARE_DIALOG_MESSAGE'),
-          function() {
+          str(plural ? 'MULTI_PROFILE_SHARE_DIALOG_TITLE_PLURAL' :
+                       'MULTI_PROFILE_SHARE_DIALOG_TITLE'),
+          str(plural ? 'MULTI_PROFILE_SHARE_DIALOG_MESSAGE_PLURAL' :
+                       'MULTI_PROFILE_SHARE_DIALOG_MESSAGE'),
+          () => {
             fulfill(this.shareTypeSelect_.value);
-          }.bind(this),
-          function() {
+          },
+          () => {
             fulfill(MultiProfileShareDialog.Result.CANCEL);
           });
-      if (!result)
+      if (!result) {
         reject(new Error('Another dialog has already shown.'));
-    }.bind(this));
-  }.bind(this));
+      }
+    });
+  });
 };

@@ -739,7 +739,7 @@ error::Error GLES2DecoderImpl::HandleDeleteBuffersImmediate(
           cmd_data);
   GLsizei n = static_cast<GLsizei>(c.n);
   uint32_t buffers_size;
-  if (!SafeMultiplyUint32(n, sizeof(GLuint), &buffers_size)) {
+  if (!base::CheckMul(n, sizeof(GLuint)).AssignIfValid(&buffers_size)) {
     return error::kOutOfBounds;
   }
   volatile const GLuint* buffers = GetImmediateDataAs<volatile const GLuint*>(
@@ -759,7 +759,7 @@ error::Error GLES2DecoderImpl::HandleDeleteFramebuffersImmediate(
           cmd_data);
   GLsizei n = static_cast<GLsizei>(c.n);
   uint32_t framebuffers_size;
-  if (!SafeMultiplyUint32(n, sizeof(GLuint), &framebuffers_size)) {
+  if (!base::CheckMul(n, sizeof(GLuint)).AssignIfValid(&framebuffers_size)) {
     return error::kOutOfBounds;
   }
   volatile const GLuint* framebuffers =
@@ -780,7 +780,7 @@ error::Error GLES2DecoderImpl::HandleDeleteRenderbuffersImmediate(
           cmd_data);
   GLsizei n = static_cast<GLsizei>(c.n);
   uint32_t renderbuffers_size;
-  if (!SafeMultiplyUint32(n, sizeof(GLuint), &renderbuffers_size)) {
+  if (!base::CheckMul(n, sizeof(GLuint)).AssignIfValid(&renderbuffers_size)) {
     return error::kOutOfBounds;
   }
   volatile const GLuint* renderbuffers =
@@ -803,7 +803,7 @@ error::Error GLES2DecoderImpl::HandleDeleteSamplersImmediate(
           cmd_data);
   GLsizei n = static_cast<GLsizei>(c.n);
   uint32_t samplers_size;
-  if (!SafeMultiplyUint32(n, sizeof(GLuint), &samplers_size)) {
+  if (!base::CheckMul(n, sizeof(GLuint)).AssignIfValid(&samplers_size)) {
     return error::kOutOfBounds;
   }
   volatile const GLuint* samplers = GetImmediateDataAs<volatile const GLuint*>(
@@ -834,7 +834,7 @@ error::Error GLES2DecoderImpl::HandleDeleteTexturesImmediate(
           cmd_data);
   GLsizei n = static_cast<GLsizei>(c.n);
   uint32_t textures_size;
-  if (!SafeMultiplyUint32(n, sizeof(GLuint), &textures_size)) {
+  if (!base::CheckMul(n, sizeof(GLuint)).AssignIfValid(&textures_size)) {
     return error::kOutOfBounds;
   }
   volatile const GLuint* textures = GetImmediateDataAs<volatile const GLuint*>(
@@ -857,7 +857,7 @@ error::Error GLES2DecoderImpl::HandleDeleteTransformFeedbacksImmediate(
           cmd_data);
   GLsizei n = static_cast<GLsizei>(c.n);
   uint32_t ids_size;
-  if (!SafeMultiplyUint32(n, sizeof(GLuint), &ids_size)) {
+  if (!base::CheckMul(n, sizeof(GLuint)).AssignIfValid(&ids_size)) {
     return error::kOutOfBounds;
   }
   volatile const GLuint* ids = GetImmediateDataAs<volatile const GLuint*>(
@@ -1111,7 +1111,7 @@ error::Error GLES2DecoderImpl::HandleGenBuffersImmediate(
       *static_cast<const volatile gles2::cmds::GenBuffersImmediate*>(cmd_data);
   GLsizei n = static_cast<GLsizei>(c.n);
   uint32_t buffers_size;
-  if (!SafeMultiplyUint32(n, sizeof(GLuint), &buffers_size)) {
+  if (!base::CheckMul(n, sizeof(GLuint)).AssignIfValid(&buffers_size)) {
     return error::kOutOfBounds;
   }
   volatile GLuint* buffers = GetImmediateDataAs<volatile GLuint*>(
@@ -1151,7 +1151,7 @@ error::Error GLES2DecoderImpl::HandleGenFramebuffersImmediate(
           cmd_data);
   GLsizei n = static_cast<GLsizei>(c.n);
   uint32_t framebuffers_size;
-  if (!SafeMultiplyUint32(n, sizeof(GLuint), &framebuffers_size)) {
+  if (!base::CheckMul(n, sizeof(GLuint)).AssignIfValid(&framebuffers_size)) {
     return error::kOutOfBounds;
   }
   volatile GLuint* framebuffers = GetImmediateDataAs<volatile GLuint*>(
@@ -1177,7 +1177,7 @@ error::Error GLES2DecoderImpl::HandleGenRenderbuffersImmediate(
           cmd_data);
   GLsizei n = static_cast<GLsizei>(c.n);
   uint32_t renderbuffers_size;
-  if (!SafeMultiplyUint32(n, sizeof(GLuint), &renderbuffers_size)) {
+  if (!base::CheckMul(n, sizeof(GLuint)).AssignIfValid(&renderbuffers_size)) {
     return error::kOutOfBounds;
   }
   volatile GLuint* renderbuffers = GetImmediateDataAs<volatile GLuint*>(
@@ -1204,7 +1204,7 @@ error::Error GLES2DecoderImpl::HandleGenSamplersImmediate(
       *static_cast<const volatile gles2::cmds::GenSamplersImmediate*>(cmd_data);
   GLsizei n = static_cast<GLsizei>(c.n);
   uint32_t samplers_size;
-  if (!SafeMultiplyUint32(n, sizeof(GLuint), &samplers_size)) {
+  if (!base::CheckMul(n, sizeof(GLuint)).AssignIfValid(&samplers_size)) {
     return error::kOutOfBounds;
   }
   volatile GLuint* samplers = GetImmediateDataAs<volatile GLuint*>(
@@ -1229,7 +1229,7 @@ error::Error GLES2DecoderImpl::HandleGenTexturesImmediate(
       *static_cast<const volatile gles2::cmds::GenTexturesImmediate*>(cmd_data);
   GLsizei n = static_cast<GLsizei>(c.n);
   uint32_t textures_size;
-  if (!SafeMultiplyUint32(n, sizeof(GLuint), &textures_size)) {
+  if (!base::CheckMul(n, sizeof(GLuint)).AssignIfValid(&textures_size)) {
     return error::kOutOfBounds;
   }
   volatile GLuint* textures = GetImmediateDataAs<volatile GLuint*>(
@@ -1257,7 +1257,7 @@ error::Error GLES2DecoderImpl::HandleGenTransformFeedbacksImmediate(
           cmd_data);
   GLsizei n = static_cast<GLsizei>(c.n);
   uint32_t ids_size;
-  if (!SafeMultiplyUint32(n, sizeof(GLuint), &ids_size)) {
+  if (!base::CheckMul(n, sizeof(GLuint)).AssignIfValid(&ids_size)) {
     return error::kOutOfBounds;
   }
   volatile GLuint* ids =
@@ -2733,6 +2733,37 @@ error::Error GLES2DecoderImpl::HandleShaderSourceBucket(
       len.size() > 0 ? const_cast<const GLint*>(&len[0]) : nullptr;
   (void)length;
   DoShaderSource(shader, count, str, length);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleMultiDrawBeginCHROMIUM(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile gles2::cmds::MultiDrawBeginCHROMIUM& c =
+      *static_cast<const volatile gles2::cmds::MultiDrawBeginCHROMIUM*>(
+          cmd_data);
+  if (!features().webgl_multi_draw) {
+    return error::kUnknownCommand;
+  }
+
+  GLsizei drawcount = static_cast<GLsizei>(c.drawcount);
+  if (drawcount < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glMultiDrawBeginCHROMIUM",
+                       "drawcount < 0");
+    return error::kNoError;
+  }
+  DoMultiDrawBeginCHROMIUM(drawcount);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleMultiDrawEndCHROMIUM(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  if (!features().webgl_multi_draw) {
+    return error::kUnknownCommand;
+  }
+
+  DoMultiDrawEndCHROMIUM();
   return error::kNoError;
 }
 
@@ -4282,6 +4313,62 @@ error::Error GLES2DecoderImpl::HandleRenderbufferStorageMultisampleCHROMIUM(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleRenderbufferStorageMultisampleAdvancedAMD(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile gles2::cmds::RenderbufferStorageMultisampleAdvancedAMD& c =
+      *static_cast<const volatile gles2::cmds::
+                       RenderbufferStorageMultisampleAdvancedAMD*>(cmd_data);
+  if (!features().amd_framebuffer_multisample_advanced) {
+    return error::kUnknownCommand;
+  }
+
+  GLenum target = static_cast<GLenum>(c.target);
+  GLsizei samples = static_cast<GLsizei>(c.samples);
+  GLsizei storageSamples = static_cast<GLsizei>(c.storageSamples);
+  GLenum internalformat = static_cast<GLenum>(c.internalformat);
+  GLsizei width = static_cast<GLsizei>(c.width);
+  GLsizei height = static_cast<GLsizei>(c.height);
+  if (!validators_->render_buffer_target.IsValid(target)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM(
+        "glRenderbufferStorageMultisampleAdvancedAMD", target, "target");
+    return error::kNoError;
+  }
+  if (samples < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE,
+                       "glRenderbufferStorageMultisampleAdvancedAMD",
+                       "samples < 0");
+    return error::kNoError;
+  }
+  if (storageSamples < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE,
+                       "glRenderbufferStorageMultisampleAdvancedAMD",
+                       "storageSamples < 0");
+    return error::kNoError;
+  }
+  if (!validators_->render_buffer_format.IsValid(internalformat)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM(
+        "glRenderbufferStorageMultisampleAdvancedAMD", internalformat,
+        "internalformat");
+    return error::kNoError;
+  }
+  if (width < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE,
+                       "glRenderbufferStorageMultisampleAdvancedAMD",
+                       "width < 0");
+    return error::kNoError;
+  }
+  if (height < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE,
+                       "glRenderbufferStorageMultisampleAdvancedAMD",
+                       "height < 0");
+    return error::kNoError;
+  }
+  DoRenderbufferStorageMultisampleAdvancedAMD(target, samples, storageSamples,
+                                              internalformat, width, height);
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderImpl::HandleRenderbufferStorageMultisampleEXT(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
@@ -4417,7 +4504,7 @@ error::Error GLES2DecoderImpl::HandleGenQueriesEXTImmediate(
           cmd_data);
   GLsizei n = static_cast<GLsizei>(c.n);
   uint32_t queries_size;
-  if (!SafeMultiplyUint32(n, sizeof(GLuint), &queries_size)) {
+  if (!base::CheckMul(n, sizeof(GLuint)).AssignIfValid(&queries_size)) {
     return error::kOutOfBounds;
   }
   volatile GLuint* queries = GetImmediateDataAs<volatile GLuint*>(
@@ -4443,7 +4530,7 @@ error::Error GLES2DecoderImpl::HandleDeleteQueriesEXTImmediate(
           cmd_data);
   GLsizei n = static_cast<GLsizei>(c.n);
   uint32_t queries_size;
-  if (!SafeMultiplyUint32(n, sizeof(GLuint), &queries_size)) {
+  if (!base::CheckMul(n, sizeof(GLuint)).AssignIfValid(&queries_size)) {
     return error::kOutOfBounds;
   }
   volatile const GLuint* queries = GetImmediateDataAs<volatile const GLuint*>(
@@ -4535,7 +4622,7 @@ error::Error GLES2DecoderImpl::HandleGenVertexArraysOESImmediate(
           cmd_data);
   GLsizei n = static_cast<GLsizei>(c.n);
   uint32_t arrays_size;
-  if (!SafeMultiplyUint32(n, sizeof(GLuint), &arrays_size)) {
+  if (!base::CheckMul(n, sizeof(GLuint)).AssignIfValid(&arrays_size)) {
     return error::kOutOfBounds;
   }
   volatile GLuint* arrays =
@@ -4561,7 +4648,7 @@ error::Error GLES2DecoderImpl::HandleDeleteVertexArraysOESImmediate(
           cmd_data);
   GLsizei n = static_cast<GLsizei>(c.n);
   uint32_t arrays_size;
-  if (!SafeMultiplyUint32(n, sizeof(GLuint), &arrays_size)) {
+  if (!base::CheckMul(n, sizeof(GLuint)).AssignIfValid(&arrays_size)) {
     return error::kOutOfBounds;
   }
   volatile const GLuint* arrays = GetImmediateDataAs<volatile const GLuint*>(
@@ -4632,6 +4719,12 @@ error::Error GLES2DecoderImpl::HandleBindImageTexture(
 }
 
 error::Error GLES2DecoderImpl::HandleDispatchCompute(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  return error::kUnknownCommand;
+}
+
+error::Error GLES2DecoderImpl::HandleGetProgramInterfaceiv(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
   return error::kUnknownCommand;
@@ -5090,6 +5183,44 @@ error::Error GLES2DecoderImpl::HandleFlushDriverCachesCHROMIUM(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleScheduleDCLayerCHROMIUM(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile gles2::cmds::ScheduleDCLayerCHROMIUM& c =
+      *static_cast<const volatile gles2::cmds::ScheduleDCLayerCHROMIUM*>(
+          cmd_data);
+  GLuint y_texture_id = static_cast<GLuint>(c.y_texture_id);
+  GLuint uv_texture_id = static_cast<GLuint>(c.uv_texture_id);
+  GLint z_order = static_cast<GLint>(c.z_order);
+  GLint content_x = static_cast<GLint>(c.content_x);
+  GLint content_y = static_cast<GLint>(c.content_y);
+  GLint content_width = static_cast<GLint>(c.content_width);
+  GLint content_height = static_cast<GLint>(c.content_height);
+  GLint quad_x = static_cast<GLint>(c.quad_x);
+  GLint quad_y = static_cast<GLint>(c.quad_y);
+  GLint quad_width = static_cast<GLint>(c.quad_width);
+  GLint quad_height = static_cast<GLint>(c.quad_height);
+  GLfloat transform_c1r1 = static_cast<GLfloat>(c.transform_c1r1);
+  GLfloat transform_c2r1 = static_cast<GLfloat>(c.transform_c2r1);
+  GLfloat transform_c1r2 = static_cast<GLfloat>(c.transform_c1r2);
+  GLfloat transform_c2r2 = static_cast<GLfloat>(c.transform_c2r2);
+  GLfloat transform_tx = static_cast<GLfloat>(c.transform_tx);
+  GLfloat transform_ty = static_cast<GLfloat>(c.transform_ty);
+  GLboolean is_clipped = static_cast<GLboolean>(c.is_clipped);
+  GLint clip_x = static_cast<GLint>(c.clip_x);
+  GLint clip_y = static_cast<GLint>(c.clip_y);
+  GLint clip_width = static_cast<GLint>(c.clip_width);
+  GLint clip_height = static_cast<GLint>(c.clip_height);
+  GLuint protected_video_type = static_cast<GLuint>(c.protected_video_type);
+  DoScheduleDCLayerCHROMIUM(
+      y_texture_id, uv_texture_id, z_order, content_x, content_y, content_width,
+      content_height, quad_x, quad_y, quad_width, quad_height, transform_c1r1,
+      transform_c2r1, transform_c1r2, transform_c2r2, transform_tx,
+      transform_ty, is_clipped, clip_x, clip_y, clip_width, clip_height,
+      protected_video_type);
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderImpl::HandleMatrixLoadfCHROMIUMImmediate(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
@@ -5430,16 +5561,15 @@ error::Error GLES2DecoderImpl::HandleSetReadbackBufferShadowAllocationINTERNAL(
   return error::kNoError;
 }
 
-error::Error GLES2DecoderImpl::HandleFramebufferTextureMultiviewLayeredANGLE(
+error::Error GLES2DecoderImpl::HandleFramebufferTextureMultiviewOVR(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
   if (!feature_info_->IsWebGL2OrES3OrHigherContext())
     return error::kUnknownCommand;
-  const volatile gles2::cmds::FramebufferTextureMultiviewLayeredANGLE& c =
-      *static_cast<
-          const volatile gles2::cmds::FramebufferTextureMultiviewLayeredANGLE*>(
+  const volatile gles2::cmds::FramebufferTextureMultiviewOVR& c =
+      *static_cast<const volatile gles2::cmds::FramebufferTextureMultiviewOVR*>(
           cmd_data);
-  if (!features().angle_multiview) {
+  if (!features().ovr_multiview2) {
     return error::kUnknownCommand;
   }
 
@@ -5450,13 +5580,12 @@ error::Error GLES2DecoderImpl::HandleFramebufferTextureMultiviewLayeredANGLE(
   GLint baseViewIndex = static_cast<GLint>(c.baseViewIndex);
   GLsizei numViews = static_cast<GLsizei>(c.numViews);
   if (numViews < 0) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE,
-                       "glFramebufferTextureMultiviewLayeredANGLE",
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glFramebufferTextureMultiviewOVR",
                        "numViews < 0");
     return error::kNoError;
   }
-  DoFramebufferTextureMultiviewLayeredANGLE(target, attachment, texture, level,
-                                            baseViewIndex, numViews);
+  DoFramebufferTextureMultiviewOVR(target, attachment, texture, level,
+                                   baseViewIndex, numViews);
   return error::kNoError;
 }
 
@@ -5484,7 +5613,7 @@ GLES2DecoderImpl::HandleCreateAndTexStorage2DSharedImageINTERNALImmediate(
                            CreateAndTexStorage2DSharedImageINTERNALImmediate*>(
           cmd_data);
   GLuint texture = static_cast<GLuint>(c.texture);
-  GLenum internalFormat = static_cast<GLenum>(c.internalFormat);
+  GLenum internalformat = static_cast<GLenum>(c.internalformat);
   uint32_t mailbox_size;
   if (!GLES2Util::ComputeDataSize<GLbyte, 16>(1, &mailbox_size)) {
     return error::kOutOfBounds;
@@ -5494,16 +5623,10 @@ GLES2DecoderImpl::HandleCreateAndTexStorage2DSharedImageINTERNALImmediate(
   }
   volatile const GLbyte* mailbox = GetImmediateDataAs<volatile const GLbyte*>(
       c, mailbox_size, immediate_data_size);
-  if (!validators_->texture_internal_format.IsValid(internalFormat)) {
-    LOCAL_SET_GL_ERROR_INVALID_ENUM(
-        "glCreateAndTexStorage2DSharedImageINTERNAL", internalFormat,
-        "internalFormat");
-    return error::kNoError;
-  }
   if (mailbox == nullptr) {
     return error::kOutOfBounds;
   }
-  DoCreateAndTexStorage2DSharedImageINTERNAL(texture, internalFormat, mailbox);
+  DoCreateAndTexStorage2DSharedImageINTERNAL(texture, internalformat, mailbox);
   return error::kNoError;
 }
 

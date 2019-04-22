@@ -56,7 +56,7 @@ IN_PROC_BROWSER_TEST_F(
   ExpectBodyContains(
       {"\"billingAddress\": {", "\"666 Erebus St.\"", "\"Apt 8\"",
        "\"city\": \"Elysium\"", "\"dependentLocality\": \"\"",
-       "\"country\": \"US\"", "\"sortingCode\": \"\"", "\"languageCode\": \"\"",
+       "\"country\": \"US\"", "\"sortingCode\": \"\"",
        "\"organization\": \"Underworld\"", "\"phone\": \"+16502111111\"",
        "\"postalCode\": \"91111\"", "\"recipient\": \"John H. Doe\"",
        "\"region\": \"CA\""});
@@ -96,13 +96,12 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentResponseShippingAddressTest,
   PayWithCreditCardAndWait(base::ASCIIToUTF16("123"));
 
   // Test that the shipping address was sent to the merchant.
-  ExpectBodyContains({"\"country\": \"US\"", "\"123 Main Street\"",
-                      "\"Unit 1\"", "\"region\": \"MI\"",
-                      "\"city\": \"Greensdale\"", "\"dependentLocality\": \"\"",
-                      "\"postalCode\": \"48838\"", "\"sortingCode\": \"\"",
-                      "\"languageCode\": \"\"", "\"organization\": \"ACME\"",
-                      "\"recipient\": \"Jane A. Smith\"",
-                      "\"phone\": \"+13105557889\""});
+  ExpectBodyContains(
+      {"\"country\": \"US\"", "\"123 Main Street\"", "\"Unit 1\"",
+       "\"region\": \"MI\"", "\"city\": \"Greensdale\"",
+       "\"dependentLocality\": \"\"", "\"postalCode\": \"48838\"",
+       "\"sortingCode\": \"\"", "\"organization\": \"ACME\"",
+       "\"recipient\": \"Jane A. Smith\"", "\"phone\": \"+13105557889\""});
 
   // Test that the shipping option was sent to the merchant.
   ExpectBodyContains({"\"shippingOption\": \"freeShippingOption\""});
@@ -138,6 +137,44 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentResponseAllContactDetailsTest,
   ExpectBodyContains({"\"payerName\": \"John H. Doe\"",
                       "\"payerEmail\": \"johndoe@hades.com\"",
                       "\"payerPhone\": \"+16502111111\""});
+}
+
+// Tests that the PaymentResponse contains all the correct contact details
+// when user changes the selected contact information after retry() called once.
+IN_PROC_BROWSER_TEST_F(
+    PaymentRequestPaymentResponseAllContactDetailsTest,
+    RetryWithPayerErrors_HasSameValueButDifferentErrorsShown) {
+  NavigateTo("/payment_request_retry_with_payer_errors.html");
+
+  autofill::AutofillProfile contact = autofill::test::GetFullProfile();
+  contact.set_use_count(1000);
+  AddAutofillProfile(contact);
+
+  autofill::AutofillProfile contact2 = autofill::test::GetFullProfile2();
+  AddAutofillProfile(contact2);
+
+  autofill::CreditCard card = autofill::test::GetCreditCard();
+  card.set_billing_address_id(contact.guid());
+  AddCreditCard(card);
+
+  InvokePaymentRequestUI();
+  PayWithCreditCard(base::ASCIIToUTF16("123"));
+  ExpectBodyContains({"\"payerName\": \"John H. Doe\"",
+                      "\"payerEmail\": \"johndoe@hades.com\"",
+                      "\"payerPhone\": \"+16502111111\""});
+
+  RetryPaymentRequest("{}", dialog_view());
+
+  // Select "contact2" profile
+  OpenContactInfoScreen();
+  views::View* list_view = dialog_view()->GetViewByID(
+      static_cast<int>(DialogViewID::CONTACT_INFO_SHEET_LIST_VIEW));
+  DCHECK(list_view);
+  ClickOnDialogViewAndWait(list_view->child_at(1));
+
+  ExpectBodyContains({"\"payerName\": \"Jane A. Smith\"",
+                      "\"payerEmail\": \"jsmith@example.com\"",
+                      "\"payerPhone\": \"+13105557889\""});
 }
 
 class PaymentRequestPaymentResponseOneContactDetailTest

@@ -148,18 +148,26 @@ bool CreateThread(size_t stack_size,
 // CHECK/DCHECKs.
 thread_local pid_t g_thread_id = -1;
 
-void ClearTidCache() {
-  g_thread_id = -1;
-}
-
 class InitAtFork {
  public:
-  InitAtFork() { pthread_atfork(nullptr, nullptr, ClearTidCache); }
+  InitAtFork() { pthread_atfork(nullptr, nullptr, internal::ClearTidCache); }
 };
 
 #endif  // defined(OS_LINUX)
 
 }  // namespace
+
+#if defined(OS_LINUX)
+
+namespace internal {
+
+void ClearTidCache() {
+  g_thread_id = -1;
+}
+
+}  // namespace internal
+
+#endif  // defined(OS_LINUX)
 
 // static
 PlatformThreadId PlatformThread::CurrentId() {
@@ -264,9 +272,8 @@ void PlatformThread::Join(PlatformThreadHandle thread_handle) {
   // Joining another thread may block the current thread for a long time, since
   // the thread referred to by |thread_handle| may still be running long-lived /
   // blocking tasks.
-  // TODO(https://crbug.com/707362): Make this a
-  // ScopedBlockingCallWithBaseSyncPrimitives.
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::internal::ScopedBlockingCallWithBaseSyncPrimitives scoped_blocking_call(
+      base::BlockingType::MAY_BLOCK);
   CHECK_EQ(0, pthread_join(thread_handle.platform_handle(), nullptr));
 }
 

@@ -4,6 +4,8 @@
 
 #include "chrome/service/cloud_print/cloud_print_auth.h"
 
+#include <vector>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
@@ -164,8 +166,10 @@ void CloudPrintAuth::OnNetworkError(int response_code) {
 CloudPrintURLFetcher::ResponseAction CloudPrintAuth::HandleJSONData(
     const net::URLFetcher* source,
     const GURL& url,
-    const base::DictionaryValue* json_data,
+    const base::Value& json_data,
     bool succeeded) {
+  DCHECK(json_data.is_dict());
+
   if (!succeeded) {
     VLOG(1) << "CP_AUTH: Creating robot account failed";
     UMA_HISTOGRAM_ENUMERATION("CloudPrint.AuthEvent",
@@ -175,8 +179,8 @@ CloudPrintURLFetcher::ResponseAction CloudPrintAuth::HandleJSONData(
     return CloudPrintURLFetcher::STOP_PROCESSING;
   }
 
-  std::string auth_code;
-  if (!json_data->GetString(kOAuthCodeValue, &auth_code)) {
+  const std::string* auth_code = json_data.FindStringKey(kOAuthCodeValue);
+  if (!auth_code) {
     VLOG(1) << "CP_AUTH: Creating robot account returned invalid json response";
     UMA_HISTOGRAM_ENUMERATION("CloudPrint.AuthEvent",
                               AUTH_EVENT_ROBO_JSON_ERROR,
@@ -189,14 +193,14 @@ CloudPrintURLFetcher::ResponseAction CloudPrintAuth::HandleJSONData(
                               AUTH_EVENT_ROBO_SUCCEEDED,
                               AUTH_EVENT_MAX);
 
-  json_data->GetString(kXMPPJidValue, &robot_email_);
+  const std::string* robot_email = json_data.FindStringKey(kXMPPJidValue);
+  if (robot_email)
+    robot_email_ = *robot_email;
   // Now that we have an auth code we need to get the refresh and access tokens.
-  oauth_client_.reset(
-      new gaia::GaiaOAuthClient(client_->GetURLLoaderFactory()));
-  oauth_client_->GetTokensFromAuthCode(oauth_client_info_,
-                                       auth_code,
-                                       kCloudPrintAPIMaxRetryCount,
-                                       this);
+  oauth_client_ =
+      std::make_unique<gaia::GaiaOAuthClient>(client_->GetURLLoaderFactory());
+  oauth_client_->GetTokensFromAuthCode(oauth_client_info_, *auth_code,
+                                       kCloudPrintAPIMaxRetryCount, this);
 
   return CloudPrintURLFetcher::STOP_PROCESSING;
 }

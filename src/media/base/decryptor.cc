@@ -24,4 +24,8 @@ Decryptor::Decryptor() = default;
 
 Decryptor::~Decryptor() = default;
 
+bool Decryptor::CanAlwaysDecrypt() {
+  return false;
+}
+
 }  // namespace media

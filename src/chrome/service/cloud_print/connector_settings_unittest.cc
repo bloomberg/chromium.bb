@@ -10,9 +10,9 @@
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/common/cloud_print/cloud_print_constants.h"
@@ -72,7 +72,7 @@ class ConnectorSettingsTest : public testing::Test {
   }
 
   base::ScopedTempDir temp_dir_;
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };
 
@@ -83,7 +83,7 @@ TEST_F(ConnectorSettingsTest, InitFromEmpty) {
     "{'foo': []}",
     "{'foo',,}",
   };
-  for (size_t i = 0; i < arraysize(kEmptyJSons); ++i) {
+  for (size_t i = 0; i < base::size(kEmptyJSons); ++i) {
     std::unique_ptr<ServiceProcessPrefs> prefs(CreateTestFile(kEmptyJSons[i]));
     ConnectorSettings settings;
     settings.InitFrom(prefs.get());

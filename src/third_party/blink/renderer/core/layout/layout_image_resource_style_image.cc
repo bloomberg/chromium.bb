@@ -47,7 +47,7 @@ void LayoutImageResourceStyleImage::Initialize(LayoutObject* layout_object) {
   LayoutImageResource::Initialize(layout_object);
 
   if (style_image_->IsImageResource())
-    cached_image_ = ToStyleFetchedImage(style_image_)->CachedImage();
+    cached_image_ = To<StyleFetchedImage>(style_image_.Get())->CachedImage();
 
   style_image_->AddClient(layout_object_);
 }
@@ -59,13 +59,13 @@ void LayoutImageResourceStyleImage::Shutdown() {
 }
 
 scoped_refptr<Image> LayoutImageResourceStyleImage::GetImage(
-    const LayoutSize& size) const {
+    const FloatSize& size) const {
   // Generated content may trigger calls to image() while we're still pending,
   // don't assert but gracefully exit.
   if (style_image_->IsPendingImage())
     return nullptr;
   return style_image_->GetImage(*layout_object_, layout_object_->GetDocument(),
-                                layout_object_->StyleRef(), FloatSize(size));
+                                layout_object_->StyleRef(), size);
 }
 
 FloatSize LayoutImageResourceStyleImage::ImageSize(float multiplier) const {

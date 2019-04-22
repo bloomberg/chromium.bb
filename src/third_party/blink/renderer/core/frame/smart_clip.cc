@@ -32,6 +32,7 @@
 
 #include "third_party/blink/renderer/core/dom/container_node.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/node_traversal.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -54,8 +55,8 @@ static IntRect ConvertToContentCoordinatesWithoutCollapsingToZero(
 }
 
 static Node* NodeInsideFrame(Node* node) {
-  if (node->IsFrameOwnerElement())
-    return ToHTMLFrameOwnerElement(node)->contentDocument();
+  if (auto* frame_owner_element = DynamicTo<HTMLFrameOwnerElement>(node))
+    return frame_owner_element->contentDocument();
   return nullptr;
 }
 
@@ -233,8 +234,8 @@ String SmartClip::ExtractTextFromNode(Node* node) {
 
   StringBuilder result;
   for (Node& current_node : NodeTraversal::InclusiveDescendantsOf(*node)) {
-    const ComputedStyle* style = current_node.EnsureComputedStyle();
-    if (style && style->UserSelect() == EUserSelect::kNone)
+    const ComputedStyle* style = current_node.GetComputedStyle();
+    if (!style || style->UserSelect() == EUserSelect::kNone)
       continue;
 
     if (Node* node_from_frame = NodeInsideFrame(&current_node))

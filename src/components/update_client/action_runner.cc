@@ -13,18 +13,22 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/task/post_task.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/crx_file/crx_verifier.h"
 #include "components/update_client/component.h"
 #include "components/update_client/configurator.h"
+#include "components/update_client/patcher.h"
 #include "components/update_client/task_traits.h"
+#include "components/update_client/unzipper.h"
 #include "components/update_client/update_client.h"
 #include "components/update_client/update_engine.h"
 
 namespace update_client {
 
 ActionRunner::ActionRunner(const Component& component)
-    : component_(component),
+    : is_per_user_install_(component.config()->IsPerUserInstall()),
+      component_(component),
       main_task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
 
 ActionRunner::~ActionRunner() {
@@ -39,22 +43,27 @@ void ActionRunner::Run(Callback run_complete) {
   base::CreateSequencedTaskRunnerWithTraits(kTaskTraits)
       ->PostTask(
           FROM_HERE,
-          base::BindOnce(&ActionRunner::Unpack, base::Unretained(this),
-                         component_.config()->CreateServiceManagerConnector()));
+          base::BindOnce(&ActionRunner::RunOnTaskRunner, base::Unretained(this),
+                         component_.config()->GetUnzipperFactory()->Create(),
+                         component_.config()->GetPatcherFactory()->Create()));
 }
 
-void ActionRunner::Unpack(
-    std::unique_ptr<service_manager::Connector> connector) {
+void ActionRunner::RunOnTaskRunner(std::unique_ptr<Unzipper> unzip,
+                                   scoped_refptr<Patcher> patch) {
   const auto installer = component_.crx_component()->installer;
 
-  base::FilePath file_path;
-  installer->GetInstalledFile(component_.action_run(), &file_path);
+  base::FilePath crx_path;
+  installer->GetInstalledFile(component_.action_run(), &crx_path);
 
-  // Contains the key hash of the CRX this object is allowed to run.
-  const auto key_hash = component_.config()->GetRunActionKeyHash();
+  if (!is_per_user_install_) {
+    RunRecoveryCRXElevated(std::move(crx_path));
+    return;
+  }
+
+  const auto config = component_.config();
   auto unpacker = base::MakeRefCounted<ComponentUnpacker>(
-      key_hash, file_path, installer, std::move(connector),
-      component_.crx_component()->crx_format_requirement);
+      config->GetRunActionKeyHash(), crx_path, installer, std::move(unzip),
+      std::move(patch), component_.crx_component()->crx_format_requirement);
   unpacker->Unpack(
       base::BindOnce(&ActionRunner::UnpackComplete, base::Unretained(this)));
 }
@@ -78,6 +87,10 @@ void ActionRunner::UnpackComplete(const ComponentUnpacker::Result& result) {
 }
 
 #if !defined(OS_WIN)
+
+void ActionRunner::RunRecoveryCRXElevated(const base::FilePath& crx_path) {
+  NOTREACHED();
+}
 
 void ActionRunner::RunCommand(const base::CommandLine& cmdline) {
   base::DeleteFile(unpack_path_, true);

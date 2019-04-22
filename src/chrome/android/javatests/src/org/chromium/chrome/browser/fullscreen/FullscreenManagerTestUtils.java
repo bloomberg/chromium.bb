@@ -8,7 +8,7 @@ import android.os.SystemClock;
 
 import org.junit.Assert;
 
-import org.chromium.base.ThreadUtils;
+import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
 import org.chromium.chrome.browser.tab.Tab;
@@ -16,9 +16,11 @@ import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.content_public.browser.GestureListenerManager;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.RenderCoordinates;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.content_public.browser.test.util.WebContentsUtils;
 
@@ -46,9 +48,9 @@ public class FullscreenManagerTestUtils {
         // the delay in a scroll start being sent.
         float dragStartY = browserControlsHeight * 3;
         float dragEndY = dragStartY - browserControlsHeight * 2;
-        float expectedPosition = -browserControlsHeight;
+        int expectedPosition = -browserControlsHeight;
         if (show) {
-            expectedPosition = 0f;
+            expectedPosition = 0;
             float tempDragStartY = dragStartY;
             dragStartY = dragEndY;
             dragEndY = tempDragStartY;
@@ -67,12 +69,12 @@ public class FullscreenManagerTestUtils {
      * @param position The desired top controls offset.
      */
     public static void waitForBrowserControlsPosition(
-            ChromeTabbedActivityTestRule testRule, float position) {
+            ChromeTabbedActivityTestRule testRule, int position) {
         final ChromeFullscreenManager fullscreenManager =
                 testRule.getActivity().getFullscreenManager();
-        CriteriaHelper.pollUiThread(Criteria.equals(position, new Callable<Float>() {
+        CriteriaHelper.pollUiThread(Criteria.equals(position, new Callable<Integer>() {
             @Override
-            public Float call() {
+            public Integer call() {
                 return fullscreenManager.getTopControlOffset();
             }
         }));
@@ -105,7 +107,7 @@ public class FullscreenManagerTestUtils {
      */
     public static void waitForBrowserControlsToBeMoveable(
             ChromeTabbedActivityTestRule testRule, final Tab tab) throws InterruptedException {
-        waitForBrowserControlsPosition(testRule, 0f);
+        waitForBrowserControlsPosition(testRule, 0);
 
         final CallbackHelper contentMovedCallback = new CallbackHelper();
         final ChromeFullscreenManager fullscreenManager =
@@ -115,7 +117,7 @@ public class FullscreenManagerTestUtils {
         fullscreenManager.addListener(new FullscreenListener() {
             @Override
             public void onControlsOffsetChanged(
-                    float topOffset, float bottomOffset, boolean needsAnimate) {
+                    int topOffset, int bottomOffset, boolean needsAnimate) {
                 if (fullscreenManager.getTopVisibleContentOffset() != initialVisibleContentOffset) {
                     contentMovedCallback.notifyCalled();
                     fullscreenManager.removeListener(this);
@@ -126,7 +128,7 @@ public class FullscreenManagerTestUtils {
             public void onToggleOverlayVideoMode(boolean enabled) {}
 
             @Override
-            public void onContentOffsetChanged(float offset) {}
+            public void onContentOffsetChanged(int offset) {}
 
             @Override
             public void onBottomControlsHeightChanged(int bottomControlsHeight) {}
@@ -225,27 +227,16 @@ public class FullscreenManagerTestUtils {
      * Disable any browser visibility overrides for testing.
      */
     public static void disableBrowserOverrides() {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                BrowserStateBrowserControlsVisibilityDelegate.disableForTesting();
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> BrowserStateBrowserControlsVisibilityDelegate.disableForTesting());
     }
 
     public static void fling(ChromeTabbedActivityTestRule testRule, final int vx, final int vy) {
-        try {
-            ThreadUtils.runOnUiThread(new Callable<Boolean>() {
-                @Override
-                public Boolean call() {
+        PostTask.runOrPostTask(
+                UiThreadTaskTraits.DEFAULT, () -> {
                     testRule.getWebContents().getEventForwarder().startFling(
                             SystemClock.uptimeMillis(), vx, vy, /*synthetic_scroll*/ false,
                             /*prevent_boosting*/ false);
-                    return true;
-                }
-            });
-        } catch (Throwable e) {
-            Assert.fail("Failed to fling");
-        }
+                });
     }
 }

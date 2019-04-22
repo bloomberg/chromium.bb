@@ -270,7 +270,7 @@ void DefaultChannelIDStore::Flush() {
   store_->Flush();
 }
 
-int DefaultChannelIDStore::GetChannelIDCount() {
+size_t DefaultChannelIDStore::GetChannelIDCount() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   return channel_ids_.size();

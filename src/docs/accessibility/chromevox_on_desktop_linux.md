@@ -110,6 +110,19 @@ they need to chmod or chown too, it really depends on your system.**
 After you do that, just run "chrome" as above (e.g. out/cros/chrome) and press
 Ctrl+Alt+Z, and you should hear it speak! If not, check the logs.
 
+### eSpeak
+
+To get [eSpeak](espeak.md) on Chrome OS on Desktop Linux, copy the eSpeak
+extension (chrome branch) to the same place:
+
+```
+cd ~
+git clone https://chromium.googlesource.com/chromiumos/third_party/espeak-ng
+cd espeak-ng
+git checkout chrome
+sudo cp -r chrome-extension /usr/share/chromeos-assets/speech_synthesis/espeak-ng
+```
+
 ## Braille
 
 ChromeVox uses extension APIs to deliver braille to Brltty through libbrlapi

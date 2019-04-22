@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -23,6 +24,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/common/extension_urls.h"
+#include "extensions/common/verifier_formats.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -183,8 +185,10 @@ TEST_F(ExternalCacheImplTest, Basic) {
   base::FilePath temp_file2 = temp_dir.Append("b.crx");
   CreateFile(temp_file2);
   external_cache.OnExtensionDownloadFinished(
-      extensions::CRXFileInfo(kTestExtensionId2, temp_file2), true, GURL(), "2",
-      extensions::ExtensionDownloaderDelegate::PingResult(), std::set<int>(),
+      extensions::CRXFileInfo(kTestExtensionId2,
+                              extensions::GetTestVerifierFormat(), temp_file2),
+      true, GURL(), "2", extensions::ExtensionDownloaderDelegate::PingResult(),
+      std::set<int>(),
       extensions::ExtensionDownloaderDelegate::InstallCallback());
 
   content::RunAllTasksUntilIdle();
@@ -208,8 +212,10 @@ TEST_F(ExternalCacheImplTest, Basic) {
   base::FilePath temp_file4 = temp_dir.Append("d.crx");
   CreateFile(temp_file4);
   external_cache.OnExtensionDownloadFinished(
-      extensions::CRXFileInfo(kTestExtensionId4, temp_file4), true, GURL(), "4",
-      extensions::ExtensionDownloaderDelegate::PingResult(), std::set<int>(),
+      extensions::CRXFileInfo(kTestExtensionId4,
+                              extensions::GetTestVerifierFormat(), temp_file4),
+      true, GURL(), "4", extensions::ExtensionDownloaderDelegate::PingResult(),
+      std::set<int>(),
       extensions::ExtensionDownloaderDelegate::InstallCallback());
 
   content::RunAllTasksUntilIdle();

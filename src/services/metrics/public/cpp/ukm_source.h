@@ -61,6 +61,12 @@ class METRICS_EXPORT UkmSource {
     // The previous source id for this tab.
     SourceId previous_source_id = kInvalidSourceId;
 
+    // The source id for the previous same document navigation, if the
+    // previously committed source was a same document navigation. If
+    // the previously committed source was not a same document
+    // navigation, this field will be set to kInvalidSourceId.
+    SourceId previous_same_document_source_id = kInvalidSourceId;
+
     // The source id for the source which opened this tab. This should be set to
     // kInvalidSourceId for all but the first navigation in the tab.
     SourceId opener_source_id = kInvalidSourceId;
@@ -68,6 +74,11 @@ class METRICS_EXPORT UkmSource {
     // A unique identifier for the tab the source navigated in. Tab ids should
     // be increasing over time within a session.
     int64_t tab_id = 0;
+
+    // Whether this source is for a same document navigation. Examples of same
+    // document navigations are fragment navigations, pushState/replaceState,
+    // and same page history navigation.
+    bool is_same_document_navigation = false;
   };
 
   UkmSource(SourceId id, const GURL& url);

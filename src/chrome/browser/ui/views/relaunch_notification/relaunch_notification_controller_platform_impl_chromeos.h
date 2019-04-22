@@ -19,17 +19,17 @@ class RelaunchNotificationControllerPlatformImpl {
   ~RelaunchNotificationControllerPlatformImpl();
 
   // Shows the relaunch recommended notification if it is not already open.
-  void NotifyRelaunchRecommended(base::TimeTicks detection_time);
+  void NotifyRelaunchRecommended(base::Time detection_time);
 
   // Shows the relaunch required notification if it is not already open.
-  void NotifyRelaunchRequired(base::TimeTicks deadline);
+  void NotifyRelaunchRequired(base::Time deadline);
 
   // Sets the notification title to the default one on Chrome OS.
   void CloseRelaunchNotification();
 
   // Sets the relaunch deadline to |deadline| and refreshes the notification's
   // title accordingly.
-  void SetDeadline(base::TimeTicks deadline);
+  void SetDeadline(base::Time deadline);
 
   // Returns true if relaunch required notification is shown.
   bool IsRequiredNotificationShown() const;

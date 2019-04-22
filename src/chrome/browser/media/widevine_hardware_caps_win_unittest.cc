@@ -6,6 +6,9 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
+// TODO(xhwang): Add tests using D3D11 mocks. Currently this cannot be done
+// because we cannot depend on media/gpu/windows/d3d11_mocks.*.
+
 TEST(WidevineHardwareCapsTest, GetWidevineHardwareCaps) {
   base::flat_set<media::CdmProxy::Protocol> cdm_proxy_protocols = {
       media::CdmProxy::Protocol::kIntel};

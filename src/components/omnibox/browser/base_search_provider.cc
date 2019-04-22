@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <memory>
 
+#include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/i18n/case_conversion.h"
 #include "base/macros.h"
@@ -103,11 +104,11 @@ SuggestionDeletionHandler::SuggestionDeletionHandler(
         })");
   auto request = std::make_unique<network::ResourceRequest>();
   request->url = url;
-  variations::AppendVariationHeadersUnknownSignedIn(
+  variations::AppendVariationsHeaderUnknownSignedIn(
       request->url,
       client->IsOffTheRecord() ? variations::InIncognito::kYes
                                : variations::InIncognito::kNo,
-      &request->headers);
+      request.get());
   // TODO(https://crbug.com/808498) re-add data use measurement once
   // SimpleURLLoader supports it.
   // data_use_measurement::DataUseUserData::OMNIBOX
@@ -151,7 +152,7 @@ bool BaseSearchProvider::ShouldPrefetch(const AutocompleteMatch& match) {
 AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
     const base::string16& suggestion,
     AutocompleteMatchType::Type type,
-    bool from_keyword_provider,
+    bool from_keyword,
     const TemplateURL* template_url,
     const SearchTermsData& search_terms_data) {
   // These calls use a number of default values.  For instance, they assume
@@ -159,13 +160,35 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
   // mode.  They also assume the caller knows what it's doing and we set
   // this match to look as if it was received/created synchronously.
   SearchSuggestionParser::SuggestResult suggest_result(
-      suggestion, type, /*subtype_identifier=*/0, from_keyword_provider,
+      suggestion, type, /*subtype_identifier=*/0, from_keyword,
       /*relevance=*/0, /*relevance_from_server=*/false,
       /*input_text=*/base::string16());
   suggest_result.set_received_after_last_keystroke(false);
-  return CreateSearchSuggestion(nullptr, AutocompleteInput(),
-                                from_keyword_provider, suggest_result,
-                                template_url, search_terms_data, 0, false);
+  return CreateSearchSuggestion(nullptr, AutocompleteInput(), from_keyword,
+                                suggest_result, template_url, search_terms_data,
+                                0, false);
+}
+
+// static
+AutocompleteMatch BaseSearchProvider::CreateOnDeviceSearchSuggestion(
+    AutocompleteProvider* autocomplete_provider,
+    const AutocompleteInput& input,
+    const base::string16& suggestion,
+    int relevance,
+    const TemplateURL* template_url,
+    const SearchTermsData& search_terms_data,
+    int accepted_suggestion) {
+  SearchSuggestionParser::SuggestResult suggest_result(
+      suggestion, AutocompleteMatchType::SEARCH_SUGGEST,
+      /*subtype_identifier=*/271, /*from_keyword_provider=*/false, relevance,
+      /*relevance_from_server=*/false,
+      base::CollapseWhitespace(input.text(), false));
+  // On device providers are synchronous.
+  suggest_result.set_received_after_last_keystroke(false);
+  return CreateSearchSuggestion(
+      autocomplete_provider, input, /*in_keyword_mode=*/false, suggest_result,
+      template_url, search_terms_data, accepted_suggestion,
+      /*append_extra_query_params_from_command_line=*/true);
 }
 
 // static
@@ -190,8 +213,8 @@ void BaseSearchProvider::DeleteMatch(const AutocompleteMatch& match) {
   if (!match.GetAdditionalInfo(BaseSearchProvider::kDeletionUrlKey).empty()) {
     deletion_handlers_.push_back(std::make_unique<SuggestionDeletionHandler>(
         client(), match.GetAdditionalInfo(BaseSearchProvider::kDeletionUrlKey),
-        base::Bind(&BaseSearchProvider::OnDeletionComplete,
-                   base::Unretained(this))));
+        base::BindRepeating(&BaseSearchProvider::OnDeletionComplete,
+                            base::Unretained(this))));
   }
 
   const TemplateURL* template_url =
@@ -289,15 +312,18 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
   const base::string16 input_lower = base::i18n::ToLower(input.text());
   // suggestion.match_contents() should have already been collapsed.
   match.allowed_to_be_default_match =
-      (!in_keyword_mode || suggestion.from_keyword_provider()) &&
+      (!in_keyword_mode || suggestion.from_keyword()) &&
       (base::CollapseWhitespace(input_lower, false) ==
        base::i18n::ToLower(suggestion.match_contents()));
+
+  if (suggestion.from_keyword())
+    match.from_keyword = true;
 
   // We only allow inlinable navsuggestions that were received before the
   // last keystroke because we don't want asynchronous inline autocompletions.
   if (!input.prevent_inline_autocomplete() &&
       !suggestion.received_after_last_keystroke() &&
-      (!in_keyword_mode || suggestion.from_keyword_provider()) &&
+      (!in_keyword_mode || suggestion.from_keyword()) &&
       base::StartsWith(
           base::i18n::ToLower(suggestion.suggestion()), input_lower,
           base::CompareCase::SENSITIVE)) {
@@ -330,8 +356,8 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
       *match.search_terms_args, search_terms_data));
 
   // Search results don't look like URLs.
-  match.transition = suggestion.from_keyword_provider() ?
-      ui::PAGE_TRANSITION_KEYWORD : ui::PAGE_TRANSITION_GENERATED;
+  match.transition = suggestion.from_keyword() ? ui::PAGE_TRANSITION_KEYWORD
+                                               : ui::PAGE_TRANSITION_GENERATED;
 
   return match;
 }
@@ -342,7 +368,7 @@ base::string16 BaseSearchProvider::GetFillIntoEdit(
     const TemplateURL* template_url) {
   base::string16 fill_into_edit;
 
-  if (suggest_result.from_keyword_provider())
+  if (suggest_result.from_keyword())
     fill_into_edit.append(template_url->keyword() + base::char16(' '));
 
   fill_into_edit.append(suggest_result.suggestion());
@@ -427,8 +453,8 @@ void BaseSearchProvider::AddMatchToMap(
     bool in_keyword_mode,
     MatchMap* map) {
   AutocompleteMatch match = CreateSearchSuggestion(
-      this, GetInput(result.from_keyword_provider()), in_keyword_mode, result,
-      GetTemplateURL(result.from_keyword_provider()),
+      this, GetInput(result.from_keyword()), in_keyword_mode, result,
+      GetTemplateURL(result.from_keyword()),
       client_->GetTemplateURLService()->search_terms_data(),
       accepted_suggestion, ShouldAppendExtraParams(result));
   if (!match.destination_url.is_valid())
@@ -469,9 +495,8 @@ void BaseSearchProvider::AddMatchToMap(
                                      i.first->second.duplicate_matches.end());
       i.first->second.duplicate_matches.clear();
       match.duplicate_matches.push_back(i.first->second);
-      i.first->second = match;
+      i.first->second = std::move(match);
     } else {
-      i.first->second.duplicate_matches.push_back(match);
       if (match.keyword == i.first->second.keyword) {
         // Old and new matches are from the same search provider. It is okay to
         // record one match's prefetch data onto a different match (for the same
@@ -491,6 +516,7 @@ void BaseSearchProvider::AddMatchToMap(
         if (should_prefetch)
           i.first->second.RecordAdditionalInfo(kSuggestMetadataKey, metadata);
       }
+      i.first->second.duplicate_matches.push_back(std::move(match));
     }
     // Copy over answer data from lower-ranking item, if necessary.
     // This depends on the lower-ranking item always being added last - see

@@ -9,10 +9,13 @@
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
 class DocumentOrShadowRoot {
+  STATIC_ONLY(DocumentOrShadowRoot);
+
  public:
   static Element* activeElement(Document& document) {
     return document.ActiveElement();
@@ -30,13 +33,15 @@ class DocumentOrShadowRoot {
     return &shadow_root.StyleSheets();
   }
 
-  static StyleSheetList* adoptedStyleSheets(TreeScope& tree_scope) {
-    return &tree_scope.AdoptedStyleSheets();
+  static const HeapVector<Member<CSSStyleSheet>>& adoptedStyleSheets(
+      TreeScope& tree_scope) {
+    return tree_scope.AdoptedStyleSheets();
   }
 
-  static void setAdoptedStyleSheets(TreeScope& tree_scope,
-                                    StyleSheetList* adopted_style_sheets,
-                                    ExceptionState& exception_state) {
+  static void setAdoptedStyleSheets(
+      TreeScope& tree_scope,
+      HeapVector<Member<CSSStyleSheet>>& adopted_style_sheets,
+      ExceptionState& exception_state) {
     tree_scope.SetAdoptedStyleSheets(adopted_style_sheets, exception_state);
   }
 

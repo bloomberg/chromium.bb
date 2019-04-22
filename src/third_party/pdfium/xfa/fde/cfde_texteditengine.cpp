@@ -790,7 +790,7 @@ void CFDE_TextEditEngine::SetSelection(size_t start_idx, size_t count) {
 
 WideString CFDE_TextEditEngine::GetSelectedText() const {
   if (!has_selection_)
-    return L"";
+    return WideString();
 
   WideString text;
   if (selection_.start_idx < gap_position_) {
@@ -824,7 +824,7 @@ WideString CFDE_TextEditEngine::GetSelectedText() const {
 WideString CFDE_TextEditEngine::DeleteSelectedText(
     RecordOperation add_operation) {
   if (!has_selection_)
-    return L"";
+    return WideString();
 
   return Delete(selection_.start_idx, selection_.count, add_operation);
 }
@@ -833,10 +833,10 @@ WideString CFDE_TextEditEngine::Delete(size_t start_idx,
                                        size_t length,
                                        RecordOperation add_operation) {
   if (start_idx >= text_length_)
-    return L"";
+    return WideString();
 
   TextChange change;
-  change.text = L"";
+  change.text.clear();
   change.cancelled = false;
   if (delegate_ && (add_operation != RecordOperation::kSkipRecord &&
                     add_operation != RecordOperation::kSkipNotify)) {
@@ -846,7 +846,7 @@ WideString CFDE_TextEditEngine::Delete(size_t start_idx,
 
     delegate_->OnTextWillChange(&change);
     if (change.cancelled)
-      return L"";
+      return WideString();
 
     start_idx = change.selection_start;
     length = change.selection_end - change.selection_start;
@@ -873,7 +873,7 @@ WideString CFDE_TextEditEngine::Delete(size_t start_idx,
   ClearSelection();
 
   // The JS requested the insertion of text instead of just a deletion.
-  if (change.text != L"")
+  if (!change.text.IsEmpty())
     Insert(start_idx, change.text, RecordOperation::kSkipRecord);
 
   if (delegate_)
@@ -1005,7 +1005,7 @@ size_t CFDE_TextEditEngine::GetIndexForPoint(const CFX_PointF& point) {
     }
 
     // Point is not within the horizontal range of any characters, it's
-    // afterwards. Return the position after the the last character.
+    // afterwards. Return the position after the last character.
     // The last line has nCount equal to the number of characters + 1 (sentinel
     // character maybe?). Restrict to the text_length_ to account for that.
     size_t pos = std::min(
@@ -1042,7 +1042,7 @@ std::vector<CFX_RectF> CFDE_TextEditEngine::GetCharRects(
   if (piece.nCount < 1)
     return std::vector<CFX_RectF>();
 
-  FX_TXTRUN tr;
+  CFX_TxtBreak::Run tr;
   tr.pEdtEngine = this;
   tr.iStart = piece.nStart;
   tr.iLength = piece.nCount;
@@ -1054,12 +1054,12 @@ std::vector<CFX_RectF> CFDE_TextEditEngine::GetCharRects(
   return text_break_.GetCharRects(&tr, false);
 }
 
-std::vector<FXTEXT_CHARPOS> CFDE_TextEditEngine::GetDisplayPos(
+std::vector<TextCharPos> CFDE_TextEditEngine::GetDisplayPos(
     const FDE_TEXTEDITPIECE& piece) {
   if (piece.nCount < 1)
-    return std::vector<FXTEXT_CHARPOS>();
+    return std::vector<TextCharPos>();
 
-  FX_TXTRUN tr;
+  CFX_TxtBreak::Run tr;
   tr.pEdtEngine = this;
   tr.iStart = piece.nStart;
   tr.iLength = piece.nCount;
@@ -1069,7 +1069,7 @@ std::vector<FXTEXT_CHARPOS> CFDE_TextEditEngine::GetDisplayPos(
   tr.dwCharStyles = piece.dwCharStyles;
   tr.pRect = &piece.rtPiece;
 
-  std::vector<FXTEXT_CHARPOS> data(text_break_.GetDisplayPos(&tr, nullptr));
+  std::vector<TextCharPos> data(text_break_.GetDisplayPos(&tr, nullptr));
   text_break_.GetDisplayPos(&tr, data.data());
   return data;
 }

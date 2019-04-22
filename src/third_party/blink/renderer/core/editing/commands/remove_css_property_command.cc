@@ -67,7 +67,7 @@ void RemoveCSSPropertyCommand::DoUnapply() {
       GetDocument().GetSecureContextMode(), IGNORE_EXCEPTION_FOR_TESTING);
 }
 
-void RemoveCSSPropertyCommand::Trace(blink::Visitor* visitor) {
+void RemoveCSSPropertyCommand::Trace(Visitor* visitor) {
   visitor->Trace(element_);
   SimpleEditCommand::Trace(visitor);
 }

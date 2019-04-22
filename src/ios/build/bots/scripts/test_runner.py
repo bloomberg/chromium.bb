@@ -4,30 +4,31 @@
 
 """Test runners for iOS."""
 
-from multiprocessing import pool
-
-import argparse
-import collections
 import errno
+import signal
+import sys
+
+import collections
 import glob
 import json
+import logging
+from multiprocessing import pool
 import os
 import plistlib
+import psutil
 import re
 import shutil
-import signal
 import subprocess
-import sys
 import tempfile
+import threading
 import time
-
-from multiprocessing import pool
 
 import gtest_utils
 import xctest_utils
 
-
+LOGGER = logging.getLogger(__name__)
 DERIVED_DATA = os.path.expanduser('~/Library/Developer/Xcode/DerivedData')
+READLINE_TIMEOUT = 180
 
 
 class Error(Exception):
@@ -96,14 +97,14 @@ class XcodeVersionNotFoundError(TestRunnerError):
   """The requested version of Xcode was not found."""
   def __init__(self, xcode_version):
     super(XcodeVersionNotFoundError, self).__init__(
-        'Xcode version not found: %s', xcode_version)
+        'Xcode version not found: %s' % xcode_version)
 
 
 class XCTestPlugInNotFoundError(TestRunnerError):
   """The .xctest PlugIn was not found."""
   def __init__(self, xctest_path):
     super(XCTestPlugInNotFoundError, self).__init__(
-        'XCTest not found: %s', xctest_path)
+        'XCTest not found: %s' % xctest_path)
 
 
 class MacToolchainNotFoundError(TestRunnerError):
@@ -121,11 +122,16 @@ class XcodePathNotFoundError(TestRunnerError):
 
 
 class ReplayPathNotFoundError(TestRunnerError):
-  """The requested app was not found."""
+  """The replay path was not found."""
   def __init__(self, replay_path):
     super(ReplayPathNotFoundError, self).__init__(
         'Replay path does not exist: %s' % replay_path)
 
+class CertPathNotFoundError(TestRunnerError):
+  """The certificate path was not found."""
+  def __init__(self, replay_path):
+    super(CertPathNotFoundError, self).__init__(
+        'Cert path does not exist: %s' % replay_path)
 
 class WprToolsNotFoundError(TestRunnerError):
   """wpr_tools_path is not specified."""
@@ -137,7 +143,80 @@ class WprToolsNotFoundError(TestRunnerError):
 class ShardingDisabledError(TestRunnerError):
   """Temporary error indicating that sharding is not yet implemented."""
   def __init__(self):
-    super(ShardingDisabledError, self).__init__('Sharding has not been implemented!')
+    super(ShardingDisabledError, self).__init__(
+      'Sharding has not been implemented!')
+
+
+def terminate_process(proc):
+  """Terminates the process.
+
+  If an error occurs ignore it, just print out a message.
+
+  Args:
+    proc: A subprocess to terminate.
+  """
+  try:
+    LOGGER.info('Killing hung process %s' % proc.pid)
+    proc.terminate()
+    attempts_to_kill = 3
+    ps = psutil.Process(proc.pid)
+    for _ in range(attempts_to_kill):
+      # Check whether proc.pid process is still alive.
+      if ps.is_running():
+        LOGGER.info(
+            'Process iossim is still alive! Xcodebuild process might block it.')
+        xcodebuild_processes = [
+            p for p in psutil.process_iter()
+            # Use as_dict() to avoid API changes across versions of psutil.
+            if 'xcodebuild' == p.as_dict(attrs=['name'])['name']]
+        if not xcodebuild_processes:
+          LOGGER.debug('There are no running xcodebuild processes.')
+          break
+        LOGGER.debug('List of running xcodebuild processes: %s'
+                     % xcodebuild_processes)
+        # Killing xcodebuild processes
+        for p in xcodebuild_processes:
+          p.send_signal(signal.SIGKILL)
+        psutil.wait_procs(xcodebuild_processes)
+      else:
+        LOGGER.info('Process was killed!')
+        break
+  except OSError as ex:
+    LOGGER.info('Error while killing a process: %s' % ex)
+
+
+def print_process_output(proc, parser, timeout=READLINE_TIMEOUT):
+  """Logs process messages in console and waits until process is done.
+
+  Method waits until no output message and if no message for timeout seconds,
+  process will be terminated.
+
+  Args:
+    proc: A running process.
+    Parser: A parser.
+    timeout: Timeout(in seconds) to subprocess.stdout.readline method.
+  """
+  out = []
+  while True:
+    # subprocess.stdout.readline() might be stuck from time to time
+    # and tests fail because of TIMEOUT.
+    # Try to fix the issue by adding timer-thread for `timeout` seconds
+    # that will kill `frozen` running process if no new line is read
+    # and will finish test attempt.
+    # If new line appears in timeout, just cancel timer.
+    timer = threading.Timer(timeout, terminate_process, [proc])
+    timer.start()
+    line = proc.stdout.readline()
+    timer.cancel()
+    if not line:
+      break
+    line = line.rstrip()
+    out.append(line)
+    parser.ProcessLine(line)
+    LOGGER.info(line)
+    sys.stdout.flush()
+  LOGGER.debug('Finished print_process_output.')
+  return out
 
 
 def get_kif_test_filter(tests, invert=False):
@@ -342,8 +421,10 @@ class TestRunner(object):
       raise XcodeVersionNotFoundError(xcode_build_version)
 
     xcode_info = get_current_xcode_info()
-    print 'Using Xcode version %s build %s at %s' % (
-      xcode_info['version'], xcode_info['build'], xcode_info['path'])
+    LOGGER.info('Using Xcode version %s build %s at %s',
+                 xcode_info['version'],
+                 xcode_info['build'],
+                 xcode_info['path'])
 
     if not os.path.exists(out_dir):
       os.makedirs(out_dir)
@@ -454,6 +535,32 @@ class TestRunner(object):
     """
     raise NotImplementedError
 
+  def set_sigterm_handler(self, handler):
+    """Sets the SIGTERM handler for the test runner.
+
+    This is its own separate function so it can be mocked in tests.
+
+    Args:
+      handler: The handler to be called when a SIGTERM is caught
+
+    Returns:
+      The previous SIGTERM handler for the test runner.
+    """
+    LOGGER.debug('Setting sigterm handler.')
+    return signal.signal(signal.SIGTERM, handler)
+
+  def handle_sigterm(self, proc):
+    """Handles a SIGTERM sent while a test command is executing.
+
+    Will SIGKILL the currently executing test process, then
+    attempt to exit gracefully.
+
+    Args:
+      proc: The currently executing test process.
+    """
+    LOGGER.warning('Sigterm caught during test run. Killing test process.')
+    proc.kill()
+
   def _run(self, cmd, shards=1):
     """Runs the specified command, parsing GTest output.
 
@@ -479,9 +586,9 @@ class TestRunner(object):
       thread_pool = pool.ThreadPool(processes=shards)
       for out, name, ret in thread_pool.imap_unordered(
         self.run_tests, test_shards):
-        print "Simulator %s" % name
+        LOGGER.info('Simulator %s', name)
         for line in out:
-          print line
+          LOGGER.info(line)
           parser.ProcessLine(line)
         returncode = ret if ret else 0
       thread_pool.close()
@@ -495,23 +602,23 @@ class TestRunner(object):
           stdout=subprocess.PIPE,
           stderr=subprocess.STDOUT,
       )
-      while True:
-        line = proc.stdout.readline()
-        if not line:
-          break
-        line = line.rstrip()
-        parser.ProcessLine(line)
-        print line
-        sys.stdout.flush()
+      old_handler = self.set_sigterm_handler(
+          lambda _signum, _frame: self.handle_sigterm(proc))
+      print_process_output(proc, parser)
 
+      LOGGER.info('Waiting for test process to terminate.')
       proc.wait()
+      LOGGER.info('Test process terminated.')
+      self.set_sigterm_handler(old_handler)
       sys.stdout.flush()
+      LOGGER.debug('Stdout flushed after test process.')
 
       returncode = proc.returncode
 
     if self.xctest_path and parser.SystemAlertPresent():
       raise SystemAlertPresentError()
 
+    LOGGER.debug('Processing test results.')
     for test in parser.FailedTests(include_flaky=True):
       # Test cases are named as <test group>.<test case>. If the test case
       # is prefixed with "FLAKY_", it should be reported as flaked not failed.
@@ -522,8 +629,7 @@ class TestRunner(object):
 
     result.passed_tests.extend(parser.PassedTests(include_flaky=True))
 
-    print '%s returned %s' % (cmd[0], returncode)
-    print
+    LOGGER.info('%s returned %s\n', cmd[0], returncode)
 
     # iossim can return 5 if it exits noncleanly even if all tests passed.
     # Therefore we cannot rely on process exit code to determine success.
@@ -540,8 +646,7 @@ class TestRunner(object):
         # If the app crashed but not during any particular test case, assume
         # it crashed on startup. Try one more time.
         self.shutdown_and_restart()
-        print 'Crashed on startup, retrying...'
-        print
+        LOGGER.warning('Crashed on startup, retrying...\n')
         result = self._run(cmd)
 
       if result.crashed and not result.crashed_test:
@@ -557,8 +662,8 @@ class TestRunner(object):
           # If the app crashes during a specific test case, then resume at the
           # next test case. This is achieved by filtering out every test case
           # which has already run.
-          print 'Crashed during %s, resuming...' % result.crashed_test
-          print
+          LOGGER.warning('Crashed during %s, resuming...\n',
+                         result.crashed_test)
           result = self._run(self.get_launch_command(
               test_filter=passed + failed.keys() + flaked.keys(), invert=True,
           ))
@@ -567,20 +672,17 @@ class TestRunner(object):
           flaked.update(result.flaked_tests)
       except OSError as e:
         if e.errno == errno.E2BIG:
-          print 'Too many test cases to resume.'
-          print
+          LOGGER.error('Too many test cases to resume.')
         else:
           raise
 
       # Retry failed test cases.
       retry_results = {}
       if self.retries and failed:
-        print '%s tests failed and will be retried.' % len(failed)
-        print
+        LOGGER.warning('%s tests failed and will be retried.\n', len(failed))
         for i in xrange(self.retries):
           for test in failed.keys():
-            print 'Retry #%s for %s.' % (i + 1, test)
-            print
+            LOGGER.info('Retry #%s for %s.\n', i + 1, test)
             retry_result = self._run(self.get_launch_command(
                 test_filter=[test]
             ))
@@ -609,6 +711,10 @@ class TestRunner(object):
       self.test_results['tests'] = tests
 
       self.logs['passed tests'] = passed
+      if flaked:
+        self.logs['flaked tests'] = flaked
+      if failed:
+        self.logs['failed tests'] = failed
       for test, log_lines in failed.iteritems():
         self.logs[test] = log_lines
       for test, log_lines in flaked.iteritems():
@@ -636,6 +742,8 @@ class SimulatorTestRunner(TestRunner):
       shards=None,
       test_args=None,
       test_cases=None,
+      use_trusted_cert=False,
+      wpr_tools_path='',
       xcode_path='',
       xctest=False,
   ):
@@ -657,6 +765,9 @@ class SimulatorTestRunner(TestRunner):
         launching.
       test_cases: List of tests to be included in the test run. None or [] to
         include all tests.
+      use_trusted_cert: Whether to install to the sim a cert that allows for
+        HTTPS tests to run locally.
+      wpr_tools_path: Path to pre-installed WPR-related tools
       xcode_path: Path to Xcode.app folder where its contents will be installed.
       xctest: Whether or not this is an XCTest.
 
@@ -689,6 +800,8 @@ class SimulatorTestRunner(TestRunner):
     self.start_time = None
     self.version = version
     self.shards = shards
+    self.use_trusted_cert = use_trusted_cert
+    self.wpr_tools_path = wpr_tools_path
 
   @staticmethod
   def kill_simulators():
@@ -791,15 +904,22 @@ class SimulatorTestRunner(TestRunner):
 
   def tear_down(self):
     """Performs cleanup actions which must occur after every test launch."""
+    LOGGER.debug('Extracting test data.')
     self.extract_test_data()
+    LOGGER.debug('Retrieving crash reports.')
     self.retrieve_crash_reports()
+    LOGGER.debug('Retrieving derived data.')
     self.retrieve_derived_data()
+    LOGGER.debug('Making desktop screenshots.')
     self.screenshot_desktop()
+    LOGGER.debug('Killing simulators.')
     self.kill_simulators()
+    LOGGER.debug('Wiping simulator.')
     self.wipe_simulator()
     if os.path.exists(self.homedir):
       shutil.rmtree(self.homedir, ignore_errors=True)
       self.homedir = ''
+    LOGGER.debug('End of tear_down.')
 
   def run_tests(self, test_shard=None):
     """Runs passed-in tests. Builds a command and create a simulator to
@@ -830,13 +950,7 @@ class SimulatorTestRunner(TestRunner):
         stderr=subprocess.STDOUT,
     )
 
-    out = []
-    while True:
-      line = proc.stdout.readline()
-      if not line:
-        break
-      out.append(line.rstrip())
-
+    out = print_process_output(proc, xctest_utils.XCTestLogParser())
     self.deleteSimulator(udid)
     return (out, udid, proc.returncode)
 
@@ -863,16 +977,24 @@ class SimulatorTestRunner(TestRunner):
         runtime_id = runtime['identifier']
 
     name = '%s test' % self.platform
-    print 'creating simulator %s' % name
+    LOGGER.info('creating simulator %s', name)
     udid = subprocess.check_output([
       'xcrun', 'simctl', 'create', name, device_type_id, runtime_id]).rstrip()
-    print udid
+    LOGGER.info(udid)
+
+    if self.use_trusted_cert:
+      if not os.path.exists(self.wpr_tools_path):
+        raise WprToolsNotFoundError(self.wpr_tools_path)
+
+      cert_path = "{}/TrustStore_trust.sqlite3".format(self.wpr_tools_path)
+      self.copy_trusted_certificate(cert_path)
+
     return udid
 
   def deleteSimulator(self, udid=None):
     """Removes dynamically created simulator devices."""
     if udid:
-      print 'deleting simulator %s' % udid
+      LOGGER.info('deleting simulator %s', udid)
       subprocess.call(['xcrun', 'simctl', 'delete', udid])
 
   def get_launch_command(self, test_filter=None, invert=False, test_shard=None):
@@ -942,11 +1064,14 @@ class SimulatorTestRunner(TestRunner):
         cert_path: Path to the certificate to copy to all emulators
     '''
 
+    if not os.path.exists(cert_path):
+      raise CertPathNotFoundError(cert_path)
+
     trustStores = glob.glob(
         '{}/Library/Developer/CoreSimulator/Devices/*/data/Library'.
         format(os.path.expanduser('~')))
     for trustStore in trustStores:
-      print 'Copying TrustStore to {}'.format(trustStore)
+      LOGGER.info('Copying TrustStore to %s', trustStore)
       if not os.path.exists(trustStore + "/Keychains/"):
         os.makedirs(trustStore + "/Keychains/")
       shutil.copy(cert_path, trustStore + "/Keychains/TrustStore.sqlite3")
@@ -984,6 +1109,7 @@ class WprProxySimulatorTestRunner(SimulatorTestRunner):
         by running "iossim -l". e.g. "iPhone 5s", "iPad Retina".
       version: Version of iOS the platform should be running. Supported values
         can be found by running "iossim -l". e.g. "9.3", "8.2", "7.1".
+      wpr_tools_path: Path to pre-installed (from CIPD) WPR-related tools
       xcode_build_version: Xcode build version to install before running tests.
       out_dir: Directory to emit test data into.
       env_vars: List of environment variables to pass to the test itself.
@@ -993,7 +1119,6 @@ class WprProxySimulatorTestRunner(SimulatorTestRunner):
         launching.
       test_cases: List of tests to be included in the test run. None or [] to
         include all tests.
-      wpr_tools_path: Path to pre-installed (from CIPD) WPR-related tools
       xcode_path: Path to Xcode.app folder where its contents will be installed.
       xctest: Whether or not this is an XCTest.
 
@@ -1016,9 +1141,11 @@ class WprProxySimulatorTestRunner(SimulatorTestRunner):
       shards=shards,
       test_args=test_args,
       test_cases=test_cases,
+      wpr_tools_path=wpr_tools_path,
       xcode_path=xcode_path,
       xctest=xctest,
     )
+    self.use_trusted_cert = True
 
     replay_path = os.path.abspath(replay_path)
     if not os.path.exists(replay_path):
@@ -1027,7 +1154,6 @@ class WprProxySimulatorTestRunner(SimulatorTestRunner):
 
     if not os.path.exists(wpr_tools_path):
       raise WprToolsNotFoundError(wpr_tools_path)
-    self.wpr_tools_path = wpr_tools_path
 
     self.proxy_process = None
     self.wprgo_process = None
@@ -1044,14 +1170,113 @@ class WprProxySimulatorTestRunner(SimulatorTestRunner):
     self.proxy_stop()
     self.wprgo_stop()
 
+  def run_wpr_test(self, udid, recipe_path, replay_path):
+    '''Runs a single WPR test.
+
+    Args:
+      udid: UDID for the simulator to run the test on
+      recipe_path: Path to the recipe file (i.e. ios_costco.test)
+      replay_path: Path to the replay file (i.e. ios_costco)
+
+    Returns
+      [parser, return code from test] where
+      parser: a XCTest or GTestLogParser which has processed all
+        the output from the test
+    '''
+
+    LOGGER.info('Running test for recipe %s', recipe_path)
+    self.wprgo_start(replay_path)
+
+    # TODO(crbug.com/881096): Consider reusing get_launch_command
+    #  and adding the autofillautomation flag to it
+
+    # TODO(crbug.com/881096): We only run AutofillAutomationTestCase
+    #  as we have other unit tests in the suite which are not related
+    #  to testing website recipe/replays. We should consider moving
+    #  one or the other to a different suite.
+
+    # For the website replay test suite, we need to pass in a single
+    # recipe at a time, with the flag "autofillautomation"
+    recipe_cmd = [
+      self.iossim_path, '-d', self.platform, '-s',
+      self.version, '-t', 'AutofillAutomationTestCase', '-c',
+      '--enable-features=AutofillShowTypePredictions {}={}'.format(
+        '-autofillautomation', recipe_path),
+      '-u', udid,
+    ]
+    for env_var in self.env_vars:
+      recipe_cmd.extend(['-e', env_var])
+
+    for test_arg in self.test_args:
+      recipe_cmd.extend(['-c', test_arg])
+
+    recipe_cmd.append(self.app_path)
+    if self.xctest_path:
+      recipe_cmd.append(self.xctest_path)
+
+    proc = subprocess.Popen(
+        recipe_cmd,
+        env=self.get_launch_env(),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+    )
+    old_handler = self.set_sigterm_handler(
+      lambda _signum, _frame: self.handle_sigterm(proc))
+
+    if self.xctest_path:
+      parser = xctest_utils.XCTestLogParser()
+    else:
+      parser = gtest_utils.GTestLogParser()
+
+    print_process_output(proc, parser)
+
+    proc.wait()
+    self.set_sigterm_handler(old_handler)
+    sys.stdout.flush()
+
+    self.wprgo_stop()
+
+    return parser, proc.returncode
+
+  def should_run_wpr_test(self, recipe_name, test_filter, invert):
+    '''Returns whether the WPR test should be run, given the filters.
+
+      Args:
+        recipe_name: Filename of the recipe to run (i.e. 'ios_costco')
+        test_filter: List of tests to run. If recipe_name is found as
+          a substring of any of these, then the filter is matched.
+        invert: If true, run tests that are not matched by the filter.
+
+      Returns:
+        True if the test should be run.
+    '''
+    # If the matching replay for the recipe doesn't exist, don't run it
+    replay_path = '{}/{}'.format(self.replay_path, recipe_name)
+    if not os.path.isfile(replay_path):
+      LOGGER.error('No matching replay file for recipe %s',
+                   recipe_name)
+      return False
+
+    # if there is no filter, then run tests
+    if test_filter == []:
+      return True
+
+    test_matched_filter = False
+    for filter_name in test_filter:
+      if recipe_name in filter_name:
+        test_matched_filter = True
+
+    return test_matched_filter != invert
+
   def _run(self, cmd, shards=1):
     '''Runs the specified command, parsing GTest output.
 
     Args:
       cmd: List of strings forming the command to run.
       NOTE: in the case of WprProxySimulatorTestRunner, cmd
-        is just a descriptor for the test, and not indicative
-        of the actual command we build and execute in _run.
+        is a dict forming the configuration for the test (including
+        filter rules), and not indicative of the actual command
+        we build and execute in _run.
 
     Returns:
       GTestResult instance.
@@ -1060,7 +1285,6 @@ class WprProxySimulatorTestRunner(SimulatorTestRunner):
     result = gtest_utils.GTestResult(cmd)
     completed_without_failure = True
     total_returncode = 0
-
     if shards > 1:
       # TODO(crbug.com/881096): reimplement sharding in the future
       raise ShardingDisabledError()
@@ -1071,85 +1295,29 @@ class WprProxySimulatorTestRunner(SimulatorTestRunner):
       # Create a simulator for these tests, and prepare it with the
       # certificate needed for HTTPS proxying.
       udid = self.getSimulator()
-      cert_path = "{}/TrustStore_trust.sqlite3".format(self.wpr_tools_path)
-      self.copy_trusted_certificate(cert_path)
 
-      # General algorithm explanation (will clean up later)
-      # For each recipe in the test folder, if there is a matching replay,
-      # Run the test suite on it (similar to how SimulatorTestRunner does)
-      # and record the results for that test into the parser.
-      # I still need to take the results from the parser and change the test
-      # name to be the recipe name (since the test suite name is the same)
-      # before loading those results into the result variable.
-      for recipePath in glob.glob('{}/*.test'.format(self.replay_path)):
-        baseName = os.path.basename(recipePath)
-        testName = os.path.splitext(baseName)[0]
-        replayPath = '{}/{}'.format(self.replay_path, testName)
+      for recipe_path in glob.glob('{}/*.test'.format(self.replay_path)):
+        base_name = os.path.basename(recipe_path)
+        test_name = os.path.splitext(base_name)[0]
+        replay_path = '{}/{}'.format(self.replay_path, test_name)
 
-        if os.path.isfile(replayPath):
-          print 'Running test for recipe {}'.format(recipePath)
-          self.wprgo_start(replayPath)
+        if self.should_run_wpr_test(
+          test_name, cmd['test_filter'], cmd['invert']):
 
-          # TODO(crbug.com/881096): Consider reusing get_launch_command
-          #  and adding the autofillautomation flag to it
+          parser, returncode = self.run_wpr_test(
+            udid, recipe_path, replay_path)
 
-          # TODO(crbug.com/881096): We only run AutofillAutomationTestCase
-          #  as we have other unit tests in the suite which are not related
-          #  to testing website recipe/replays. We should consider moving
-          #  one or the other to a different suite.
-
-          # For the website replay test suite, we need to pass in a single
-          # recipe at a time, with the flag "autofillautomation"
-          recipe_cmd = [
-            self.iossim_path, '-d', self.platform, '-s',
-            self.version, '-t', 'AutofillAutomationTestCase', '-c',
-            '--enable-features=AutofillShowTypePredictions {}={}'.format(
-              '-autofillautomation', recipePath),
-            '-u', udid,
-          ]
-          for env_var in self.env_vars:
-            recipe_cmd.extend(['-e', env_var])
-
-          for test_arg in self.test_args:
-            recipe_cmd.extend(['-c', test_arg])
-
-          recipe_cmd.append(self.app_path)
-          if self.xctest_path:
-            recipe_cmd.append(self.xctest_path)
-
-          proc = subprocess.Popen(
-              recipe_cmd,
-              env=self.get_launch_env(),
-              stdout=subprocess.PIPE,
-              stderr=subprocess.STDOUT,
-          )
-
-          if self.xctest_path:
-            parser = xctest_utils.XCTestLogParser()
-          else:
-            parser = gtest_utils.GTestLogParser()
-
-          while True:
-            line = proc.stdout.readline()
-            if not line:
-              break
-            line = line.rstrip()
-            parser.ProcessLine(line)
-            print line
-            sys.stdout.flush()
-
-          proc.wait()
-          sys.stdout.flush()
-
-          self.wprgo_stop()
+          # If this test fails, immediately rerun it to see if it deflakes.
+          # We simply overwrite the first result with the second.
+          if parser.FailedTests(include_flaky=True):
+            parser, returncode = self.run_wpr_test(
+              udid, recipe_path, replay_path)
 
           for test in parser.FailedTests(include_flaky=True):
-            # All test names will be the same since we re-run the same suite
+            # All test names will be the same since we re-run the same suite;
             # therefore, to differentiate the results, we append the recipe
             # name to the test suite.
-            # This is why we create a new parser for each recipe run, since when
-            # ingesting results from xcode, the test suite name is the same.
-            testWithRecipeName = "{}.{}".format(baseName, test)
+            testWithRecipeName = "{}.{}".format(base_name, test)
 
             # Test cases are named as <test group>.<test case>. If the test case
             # is prefixed w/"FLAKY_", it should be reported as flaked not failed
@@ -1162,22 +1330,17 @@ class WprProxySimulatorTestRunner(SimulatorTestRunner):
                   testWithRecipeName] = parser.FailureDescription(test)
 
           for test in parser.PassedTests(include_flaky=True):
-            testWithRecipeName = "{}.{}".format(baseName, test)
+            testWithRecipeName = "{}.{}".format(base_name, test)
             result.passed_tests.extend([testWithRecipeName])
 
           # Check for runtime errors.
           if self.xctest_path and parser.SystemAlertPresent():
             raise SystemAlertPresentError()
-          if proc.returncode != 0:
-            total_returncode = proc.returncode
+          if returncode != 0:
+            total_returncode = returncode
           if parser.CompletedWithoutFailure() == False:
             completed_without_failure = False
-          print '%s test returned %s' % (recipePath, proc.returncode)
-          print
-
-        else:
-          print 'No matching replay file for recipe {}'.format(
-              recipePath)
+          LOGGER.info('%s test returned %s\n', recipe_path, returncode)
 
       self.deleteSimulator(udid)
 
@@ -1189,9 +1352,9 @@ class WprProxySimulatorTestRunner(SimulatorTestRunner):
     return result
 
   def get_launch_command(self, test_filter=[], invert=False):
-    '''Returns the name of the test, instead of the real launch command.
-    We build our own command in _run, which is what this is usually passed to,
-    so instead we just use this for a test descriptor.
+    '''Returns a config dict for the test, instead of the real launch command.
+    Normally this is passed into _run as the command it should use, but since
+    the WPR runner builds its own cmd, we use this to configure the function.
 
     Args:
       test_filter: List of test cases to filter.
@@ -1199,21 +1362,13 @@ class WprProxySimulatorTestRunner(SimulatorTestRunner):
       match everything except the given test cases.
 
     Returns:
-      A list of strings forming the command to launch the test.
+      A dict forming the configuration for the test.
     '''
 
-    invert_str = "Inverted" if invert else ""
-    if test_filter:
-      return [
-        '{} WprProxySimulatorTest'.format(invert_str),
-        'Test folder: {}'.format(self.replay_path)
-      ]
-    else:
-      return [
-        '{} WprProxySimulatorTest'.format(invert_str),
-        'Filter: {}'.format(' '.join(test_filter)),
-        'Test folder: {}'.format(self.replay_path)
-      ]
+    test_config = {}
+    test_config['invert'] = invert
+    test_config['test_filter'] = test_filter
+    return test_config
 
   def proxy_start(self):
     '''Starts tsproxy and routes the machine's traffic through tsproxy.'''
@@ -1352,9 +1507,6 @@ class DeviceTestRunner(TestRunner):
       xcode_info = get_current_xcode_info()
       xcode_version = float(xcode_info['version'])
       inject_path = 'usr/lib/libXCTestBundleInject.dylib'
-      # This can be removed once xcode versions < 10 are deprecated.
-      if 10 > xcode_version:
-        inject_path = 'Library/PrivateFrameworks/IDEBundleInjection.framework/'
       self.xctestrun_file = tempfile.mkstemp()[1]
       self.xctestrun_data = {
         'TestTargetName': {
@@ -1412,7 +1564,7 @@ class DeviceTestRunner(TestRunner):
     # in a few hours unexpectedly, which is assumed as an ios beta issue. Should
     # remove this method once the bug is fixed.
     if self.restart:
-      print 'Restarting device, wait for two minutes.'
+      LOGGER.info('Restarting device, wait for two minutes.')
       try:
         subprocess.check_call(
           ['idevicediagnostics', 'restart', '--udid', self.udid])
@@ -1433,7 +1585,7 @@ class DeviceTestRunner(TestRunner):
       ])
     except subprocess.CalledProcessError:
       # TODO(crbug.com/828951): Raise the exception when the bug is fixed.
-      print 'Warning: Failed to retrieve crash reports from the device.'
+      LOGGER.warning('Failed to retrieve crash reports from device.')
 
   def tear_down(self):
     """Performs cleanup actions which must occur after every test launch."""

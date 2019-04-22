@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/automation_internal/automation_event_router.h"
@@ -17,15 +19,19 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/automation_internal.h"
 #include "chrome/common/extensions/chrome_extension_messages.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/ax_event_notification_details.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_serializable_tree.h"
 #include "ui/accessibility/ax_tree.h"
@@ -50,7 +56,7 @@ static const char kGotTree[] = "got_tree";
 class AutomationApiTest : public ExtensionApiTest {
  protected:
   GURL GetURLForPath(const std::string& host, const std::string& path) {
-    std::string port = base::UintToString(embedded_test_server()->port());
+    std::string port = base::NumberToString(embedded_test_server()->port());
     GURL::Replacements replacements;
     replacements.SetHostStr(host);
     replacements.SetPortStr(port);
@@ -69,10 +75,18 @@ class AutomationApiTest : public ExtensionApiTest {
   }
 
  public:
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kExperimentalAccessibilityLabels);
+    ExtensionApiTest::SetUp();
+  }
+
   void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
     host_resolver()->AddRule("*", "127.0.0.1");
   }
+
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(AutomationApiTest, TestRendererAccessibilityEnabled) {
@@ -102,7 +116,36 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, SanityCheck) {
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(AutomationApiTest, GetTreeByTabId) {
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, ImageLabels) {
+  StartEmbeddedTestServer();
+  const GURL url = GetURLForPath(kDomain, "/index.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // Enable image labels.
+  browser()->profile()->GetPrefs()->SetBoolean(
+      prefs::kAccessibilityImageLabelsEnabled, true);
+
+  // Initially there should be no accessibility mode set.
+  ASSERT_EQ(1, browser()->tab_strip_model()->count());
+  content::WebContents* const web_contents =
+      browser()->tab_strip_model()->GetWebContentsAt(0);
+  ASSERT_EQ(ui::AXMode(), web_contents->GetAccessibilityMode());
+
+  // Enable automation.
+  base::FilePath extension_path =
+      test_data_dir_.AppendASCII("automation/tests/basic");
+  ExtensionTestMessageListener got_tree(kGotTree, false /* no reply */);
+  LoadExtension(extension_path);
+  ASSERT_TRUE(got_tree.WaitUntilSatisfied());
+
+  // Now the AXMode should include kLabelImages.
+  ui::AXMode expected_mode = ui::kAXModeWebContentsOnly;
+  expected_mode.set_mode(ui::AXMode::kLabelImages, true);
+  EXPECT_EQ(expected_mode, web_contents->GetAccessibilityMode());
+}
+
+// TODO(aboxhall): Fix flakiness
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, DISABLED_GetTreeByTabId) {
   StartEmbeddedTestServer();
   ASSERT_TRUE(RunExtensionSubtest("automation/tests/tabs", "tab_id.html"))
       << message_;
@@ -132,8 +175,7 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, Location2) {
       << message_;
 }
 
-// TODO(https://crbug.com/908509): sarakato to investigate cause of flakiness.
-IN_PROC_BROWSER_TEST_F(AutomationApiTest, DISABLED_BoundsForRange) {
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, BoundsForRange) {
   StartEmbeddedTestServer();
   ASSERT_TRUE(RunExtensionSubtest("automation/tests/tabs",
                                   "bounds_for_range.html"))
@@ -335,6 +377,23 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, DocumentSelection) {
 IN_PROC_BROWSER_TEST_F(AutomationApiTest, HitTest) {
   StartEmbeddedTestServer();
   ASSERT_TRUE(RunExtensionSubtest("automation/tests/tabs", "hit_test.html"))
+      << message_;
+}
+
+class AutomationApiTestWithLanguageDetection : public AutomationApiTest {
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    AutomationApiTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(
+        ::switches::kEnableExperimentalAccessibilityLanguageDetection);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(AutomationApiTestWithLanguageDetection,
+                       DetectedLanguage) {
+  StartEmbeddedTestServer();
+  ASSERT_TRUE(
+      RunExtensionSubtest("automation/tests/tabs", "detected_language.html"))
       << message_;
 }
 

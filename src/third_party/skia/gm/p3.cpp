@@ -6,9 +6,11 @@
  */
 
 #include "gm.h"
+
 #include "SkColorSpace.h"
 #include "SkColorSpaceXformSteps.h"
 #include "SkDashPathEffect.h"
+#include "SkFont.h"
 #include "SkGradientShader.h"
 #include "SkString.h"
 
@@ -33,8 +35,8 @@ static SkColor4f transform(SkColor4f c, SkColorSpace* src, SkColorSpace* dst) {
 static void compare_pixel(const char* label,
                           SkCanvas* canvas, int x, int y,
                           SkColor4f color, SkColorSpace* cs) {
-    SkPaint text;
-    text.setAntiAlias(true);
+    SkPaint paint;
+    SkFont font;
     auto canvas_cs = canvas->imageInfo().refColorSpace();
 
     // I'm not really sure if this makes things easier or harder to follow,
@@ -50,7 +52,7 @@ static void compare_pixel(const char* label,
     bm.allocPixels(SkImageInfo::Make(1,1, kRGBA_F32_SkColorType, kUnpremul_SkAlphaType, canvas_cs));
     if (!canvas->readPixels(bm, x,y)) {
         MarkGMGood(canvas, 140,40);
-        canvas->drawString("can't readPixels() on this canvas :(", 100,20, text);
+        canvas->drawString("can't readPixels() on this canvas :(", 100,20, font, paint);
         return;
     }
 
@@ -85,17 +87,16 @@ static void compare_pixel(const char* label,
     };
 
     SkAutoCanvasRestore saveRestore(canvas, true);
-    canvas->drawString(label, 80,20, text);
+    canvas->drawString(label, 80,20, font, paint);
     for (auto l : lines) {
         canvas->translate(0,20);
-        canvas->drawString(l.label,               80,20, text);
-        canvas->drawString(fmt(l.color).c_str(), 140,20, text);
+        canvas->drawString(l.label,               80,20, font, paint);
+        canvas->drawString(fmt(l.color).c_str(), 140,20, font, paint);
     }
 }
 
 DEF_SIMPLE_GM(p3, canvas, 450, 1300) {
-    auto p3 = SkColorSpace::MakeRGB(SkColorSpace::kSRGB_RenderTargetGamma,
-                                    SkColorSpace::kDCIP3_D65_Gamut);
+    auto p3 = SkColorSpace::MakeRGB(SkNamedTransferFn::kSRGB, SkNamedGamut::kDCIP3);
     auto srgb = SkColorSpace::MakeSRGB();
 
     auto p3_to_srgb = [&](SkColor4f c) {
@@ -178,8 +179,7 @@ DEF_SIMPLE_GM(p3, canvas, 450, 1300) {
         SkAssertResult(pm.erase({1,0,0,1} /*in p3*/));
 
         SkPaint paint;
-        paint.setShader(SkShader::MakeBitmapShader(bm, SkShader::kRepeat_TileMode,
-                                                   SkShader::kRepeat_TileMode));
+        paint.setShader(bm.makeShader(SkTileMode::kRepeat, SkTileMode::kRepeat));
 
         canvas->drawRect({10,10,70,70}, paint);
         compare_pixel("drawBitmapAsShader P3 red, from SkPixmap::erase",
@@ -188,6 +188,8 @@ DEF_SIMPLE_GM(p3, canvas, 450, 1300) {
     }
 
     canvas->translate(0,80);
+
+    // TODO(mtklein): sample and check the middle points of these gradients too.
 
     // Draw a gradient from P3 red to P3 green interpolating in unpremul P3, checking the corners.
     {
@@ -198,7 +200,7 @@ DEF_SIMPLE_GM(p3, canvas, 450, 1300) {
         SkPaint paint;
         paint.setShader(SkGradientShader::MakeLinear(points, colors, p3,
                                                      nullptr, SK_ARRAY_COUNT(colors),
-                                                     SkShader::kClamp_TileMode));
+                                                     SkTileMode::kClamp));
         canvas->drawRect({10,10,70,70}, paint);
         canvas->save();
             compare_pixel("UPM P3 gradient, P3 red",
@@ -225,7 +227,7 @@ DEF_SIMPLE_GM(p3, canvas, 450, 1300) {
         paint.setShader(
                 SkGradientShader::MakeLinear(points, colors, p3,
                                              nullptr, SK_ARRAY_COUNT(colors),
-                                             SkShader::kClamp_TileMode,
+                                             SkTileMode::kClamp,
                                              SkGradientShader::kInterpolateColorsInPremul_Flag,
                                              nullptr/*local matrix*/));
         canvas->drawRect({10,10,70,70}, paint);
@@ -253,7 +255,7 @@ DEF_SIMPLE_GM(p3, canvas, 450, 1300) {
         SkPaint paint;
         paint.setShader(SkGradientShader::MakeLinear(points, colors, srgb,
                                                      nullptr, SK_ARRAY_COUNT(colors),
-                                                     SkShader::kClamp_TileMode));
+                                                     SkTileMode::kClamp));
         canvas->drawRect({10,10,70,70}, paint);
         canvas->save();
             compare_pixel("UPM sRGB gradient, P3 red",
@@ -280,20 +282,48 @@ DEF_SIMPLE_GM(p3, canvas, 450, 1300) {
         paint.setShader(
                 SkGradientShader::MakeLinear(points, colors, srgb,
                                              nullptr, SK_ARRAY_COUNT(colors),
-                                             SkShader::kClamp_TileMode,
+                                             SkTileMode::kClamp,
                                              SkGradientShader::kInterpolateColorsInPremul_Flag,
                                              nullptr/*local matrix*/));
         canvas->drawRect({10,10,70,70}, paint);
         canvas->save();
-            compare_pixel("PM P3 gradient, P3 red",
+            compare_pixel("PM sRGB gradient, P3 red",
                           canvas, 10,10,
                           {1,0,0,1}, p3.get());
 
             canvas->translate(180, 0);
 
-            compare_pixel("PM P3 gradient, P3 green",
+            compare_pixel("PM sRGB gradient, P3 green",
                           canvas, 69,69,
                           {0,1,0,1}, p3.get());
+        canvas->restore();
+    }
+
+    canvas->translate(0,80);
+
+    // Leon's blue -> green -> red gradient, interpolating in premul.
+    {
+        SkPoint points[] = {{10.5,10.5}, {10.5,69.5}};
+        SkColor4f colors[] = { {0,0,1,1}, {0,1,0,1}, {1,0,0,1} };
+
+        SkPaint paint;
+        paint.setShader(
+                SkGradientShader::MakeLinear(points, colors, p3,
+                                             nullptr, SK_ARRAY_COUNT(colors),
+                                             SkTileMode::kClamp,
+                                             SkGradientShader::kInterpolateColorsInPremul_Flag,
+                                             nullptr/*local matrix*/));
+        canvas->drawRect({10,10,70,70}, paint);
+        canvas->save();
+            compare_pixel("Leon's gradient, P3 blue",
+                          canvas, 10,10,
+                          {0,0,1,1}, p3.get());
+
+            canvas->translate(180, 0);
+
+            compare_pixel("Leon's gradient, P3 red",
+                          canvas, 10,69,
+                          {1,0,0,1}, p3.get());
         canvas->restore();
     }
 
@@ -315,8 +345,7 @@ DEF_SIMPLE_GM(p3, canvas, 450, 1300) {
         SkPaint as_shader;
         as_shader.setColor4f({1,0,0,1}, p3.get());
         as_shader.setFilterQuality(kLow_SkFilterQuality);
-        as_shader.setShader(SkShader::MakeBitmapShader(bm, SkShader::kClamp_TileMode
-                                                         , SkShader::kClamp_TileMode));
+        as_shader.setShader(bm.makeShader());
 
         canvas->drawBitmap(bm, 10,10, &as_bitmap);
         compare_pixel("A8 sprite bitmap P3 red",
@@ -356,8 +385,7 @@ DEF_SIMPLE_GM(p3, canvas, 450, 1300) {
 }
 
 DEF_SIMPLE_GM(p3_ovals, canvas, 450, 320) {
-    auto p3 = SkColorSpace::MakeRGB(SkColorSpace::kSRGB_RenderTargetGamma,
-                                    SkColorSpace::kDCIP3_D65_Gamut);
+    auto p3 = SkColorSpace::MakeRGB(SkNamedTransferFn::kSRGB, SkNamedGamut::kDCIP3);
 
     // Test cases that exercise each Op in GrOvalOpFactory.cpp
 

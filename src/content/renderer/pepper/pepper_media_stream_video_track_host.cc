@@ -7,13 +7,12 @@
 #include <stddef.h>
 
 #include "base/base64.h"
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
-#include "content/renderer/media/stream/media_stream_video_source.h"
-#include "content/renderer/media/stream/media_stream_video_track.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_util.h"
 #include "ppapi/c/pp_errors.h"
@@ -23,6 +22,8 @@
 #include "ppapi/host/host_message_context.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/media_stream_buffer.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/libyuv/include/libyuv.h"
 
 using media::VideoFrame;
@@ -176,12 +177,12 @@ void ConvertFromMediaVideoFrame(const scoped_refptr<media::VideoFrame>& src,
 namespace content {
 
 // Internal class used for delivering video frames on the IO-thread to
-// the MediaStreamVideoSource implementation.
+// the blink::MediaStreamVideoSource implementation.
 class PepperMediaStreamVideoTrackHost::FrameDeliverer
     : public base::RefCountedThreadSafe<FrameDeliverer> {
  public:
   FrameDeliverer(scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-                 const VideoCaptureDeliverFrameCB& new_frame_callback);
+                 const blink::VideoCaptureDeliverFrameCB& new_frame_callback);
 
   void DeliverVideoFrame(const scoped_refptr<media::VideoFrame>& frame);
 
@@ -192,16 +193,16 @@ class PepperMediaStreamVideoTrackHost::FrameDeliverer
   void DeliverFrameOnIO(const scoped_refptr<media::VideoFrame>& frame);
 
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
-  VideoCaptureDeliverFrameCB new_frame_callback_;
+  blink::VideoCaptureDeliverFrameCB new_frame_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameDeliverer);
 };
 
 PepperMediaStreamVideoTrackHost::FrameDeliverer::FrameDeliverer(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-    const VideoCaptureDeliverFrameCB& new_frame_callback)
-    : io_task_runner_(io_task_runner), new_frame_callback_(new_frame_callback) {
-}
+    const blink::VideoCaptureDeliverFrameCB& new_frame_callback)
+    : io_task_runner_(io_task_runner),
+      new_frame_callback_(new_frame_callback) {}
 
 PepperMediaStreamVideoTrackHost::FrameDeliverer::~FrameDeliverer() {
 }
@@ -302,7 +303,7 @@ void PepperMediaStreamVideoTrackHost::InitBuffers() {
 }
 
 void PepperMediaStreamVideoTrackHost::OnClose() {
-  MediaStreamVideoSink::DisconnectFromTrack();
+  blink::MediaStreamVideoSink::DisconnectFromTrack();
   weak_factory_.InvalidateWeakPtrs();
 }
 
@@ -408,7 +409,7 @@ void PepperMediaStreamVideoTrackHost::OnVideoFrame(
 }
 
 class PepperMediaStreamVideoTrackHost::VideoSource final
-    : public MediaStreamVideoSource {
+    : public blink::MediaStreamVideoSource {
  public:
   explicit VideoSource(base::WeakPtr<PepperMediaStreamVideoTrackHost> host)
       : host_(std::move(host)) {}
@@ -416,7 +417,7 @@ class PepperMediaStreamVideoTrackHost::VideoSource final
   ~VideoSource() final { StopSourceImpl(); }
 
   void StartSourceImpl(
-      const VideoCaptureDeliverFrameCB& frame_callback) final {
+      const blink::VideoCaptureDeliverFrameCB& frame_callback) final {
     if (host_) {
       host_->frame_deliverer_ =
           new FrameDeliverer(io_task_runner(), frame_callback);
@@ -445,12 +446,13 @@ class PepperMediaStreamVideoTrackHost::VideoSource final
 };
 
 void PepperMediaStreamVideoTrackHost::DidConnectPendingHostToResource() {
-  if (!MediaStreamVideoSink::connected_track().IsNull())
+  if (!blink::MediaStreamVideoSink::connected_track().IsNull())
     return;
-  MediaStreamVideoSink::ConnectToTrack(
-      track_, media::BindToCurrentLoop(
-                  base::Bind(&PepperMediaStreamVideoTrackHost::OnVideoFrame,
-                             weak_factory_.GetWeakPtr())),
+  blink::MediaStreamVideoSink::ConnectToTrack(
+      track_,
+      media::BindToCurrentLoop(
+          base::Bind(&PepperMediaStreamVideoTrackHost::OnVideoFrame,
+                     weak_factory_.GetWeakPtr())),
       false);
 }
 
@@ -513,12 +515,13 @@ void PepperMediaStreamVideoTrackHost::InitBlinkTrack() {
                            blink::WebMediaStreamSource::kTypeVideo,
                            blink::WebString::FromASCII(kPepperVideoSourceName),
                            false /* remote */);
-  MediaStreamVideoSource* const source =
+  blink::MediaStreamVideoSource* const source =
       new VideoSource(weak_factory_.GetWeakPtr());
-  webkit_source.SetExtraData(source);  // Takes ownership of |source|.
+  webkit_source.SetPlatformSource(
+      base::WrapUnique(source));  // Takes ownership of |source|.
 
   const bool enabled = true;
-  track_ = MediaStreamVideoTrack::CreateVideoTrack(
+  track_ = blink::MediaStreamVideoTrack::CreateVideoTrack(
       source,
       base::Bind(&PepperMediaStreamVideoTrackHost::OnTrackStarted,
                  base::Unretained(this)),
@@ -528,8 +531,8 @@ void PepperMediaStreamVideoTrackHost::InitBlinkTrack() {
 }
 
 void PepperMediaStreamVideoTrackHost::OnTrackStarted(
-    MediaStreamSource* source,
-    MediaStreamRequestResult result,
+    blink::WebPlatformMediaStreamSource* source,
+    blink::MediaStreamRequestResult result,
     const blink::WebString& result_name) {
   DVLOG(3) << "OnTrackStarted result: " << result;
 }

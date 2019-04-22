@@ -24,10 +24,9 @@
 #include "gpu/command_buffer/service/gr_cache_controller.h"
 #include "gpu/command_buffer/service/gr_shader_cache.h"
 #include "gpu/command_buffer/service/passthrough_discardable_manager.h"
-#include "gpu/command_buffer/service/raster_decoder_context_state.h"
 #include "gpu/command_buffer/service/service_discardable_manager.h"
 #include "gpu/command_buffer/service/shader_translator_cache.h"
-#include "gpu/command_buffer/service/shared_image_manager.h"
+#include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_preferences.h"
@@ -50,6 +49,7 @@ class GpuChannel;
 class GpuChannelManagerDelegate;
 class GpuMemoryBufferFactory;
 class GpuWatchdogThread;
+class ImageDecodeAcceleratorWorker;
 class MailboxManager;
 class Scheduler;
 class SyncPointManager;
@@ -74,10 +74,12 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       Scheduler* scheduler,
       SyncPointManager* sync_point_manager,
+      SharedImageManager* shared_image_manager,
       GpuMemoryBufferFactory* gpu_memory_buffer_factory,
       const GpuFeatureInfo& gpu_feature_info,
       GpuProcessActivityFlags activity_flags,
       scoped_refptr<gl::GLSurface> default_offscreen_surface,
+      ImageDecodeAcceleratorWorker* image_decode_accelerator_worker,
       viz::VulkanContextProvider* vulkan_context_provider = nullptr);
   ~GpuChannelManager() override;
 
@@ -103,8 +105,7 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
   // Remove the channel for a particular renderer.
   void RemoveChannel(int client_id);
 
-  void LoseAllContexts();
-  void MaybeExitOnContextLost();
+  void OnContextLost(bool synthetic_loss);
 
   const GpuPreferences& gpu_preferences() const { return gpu_preferences_; }
   const GpuDriverBugWorkarounds& gpu_driver_bug_workarounds() const {
@@ -143,21 +144,19 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
 
   void OnApplicationBackgrounded();
 
-  bool is_exiting_for_lost_context() { return exiting_for_lost_context_; }
-
   MailboxManager* mailbox_manager() { return mailbox_manager_.get(); }
 
   gl::GLShareGroup* share_group() const { return share_group_.get(); }
 
   SyncPointManager* sync_point_manager() const { return sync_point_manager_; }
 
-  SharedImageManager* shared_image_manager() { return &shared_image_manager_; }
+  SharedImageManager* shared_image_manager() { return shared_image_manager_; }
 
   // Retrieve GPU Resource consumption statistics for the task manager
   void GetVideoMemoryUsageStats(
       VideoMemoryUsageStats* video_memory_usage_stats) const;
 
-  scoped_refptr<raster::RasterDecoderContextState> GetRasterDecoderContextState(
+  scoped_refptr<SharedContextState> GetSharedContextState(
       ContextResult* result);
   void ScheduleGrContextCleanup();
   raster::GrShaderCache* gr_shader_cache() {
@@ -167,9 +166,12 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
   // raster::GrShaderCache::Client implementation.
   void StoreShader(const std::string& key, const std::string& shader) override;
 
+  void SetImageDecodeAcceleratorWorkerForTesting(
+      ImageDecodeAcceleratorWorker* worker);
+
+ private:
   void InternalDestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id, int client_id);
-  void InternalDestroyGpuMemoryBufferOnIO(gfx::GpuMemoryBufferId id,
-                                          int client_id);
+
 #if defined(OS_ANDROID)
   void ScheduleWakeUpGpu();
   void DoWakeUpGpu();
@@ -177,6 +179,8 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
 
   void HandleMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
+
+  void LoseAllContexts();
 
   // These objects manage channels to individual renderer processes. There is
   // one channel for each renderer process that has connected to this GPU
@@ -199,7 +203,8 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
   std::unique_ptr<gles2::Outputter> outputter_;
   Scheduler* scheduler_;
   // SyncPointManager guaranteed to outlive running MessageLoop.
-  SyncPointManager* sync_point_manager_;
+  SyncPointManager* const sync_point_manager_;
+  SharedImageManager* const shared_image_manager_;
   std::unique_ptr<gles2::ProgramCache> program_cache_;
   gles2::ShaderTranslatorCache shader_translator_cache_;
   gles2::FramebufferCompletenessCache framebuffer_completeness_cache_;
@@ -208,7 +213,6 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
   GpuFeatureInfo gpu_feature_info_;
   ServiceDiscardableManager discardable_manager_;
   PassthroughDiscardableManager passthrough_discardable_manager_;
-  SharedImageManager shared_image_manager_;
 #if defined(OS_ANDROID)
   // Last time we know the GPU was powered on. Global for tracking across all
   // transport surfaces.
@@ -216,8 +220,7 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
   base::TimeTicks begin_wake_up_time_;
 #endif
 
-  // Set during intentional GPU process shutdown.
-  bool exiting_for_lost_context_;
+  ImageDecodeAcceleratorWorker* image_decode_accelerator_worker_ = nullptr;
 
   // Flags which indicate GPU process activity. Read by the browser process
   // on GPU process crash.
@@ -225,20 +228,19 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
 
   base::MemoryPressureListener memory_pressure_listener_;
 
-  // The RasterDecoderContextState is shared across all RasterDecoders. Note
+  // The SharedContextState is shared across all RasterDecoders. Note
   // that this class needs to be ref-counted to conveniently manage the lifetime
   // of the shared context in the case of a context loss. While the
   // GpuChannelManager strictly outlives the RasterDecoders, in the event of a
   // context loss the clients need to re-create the GpuChannel and command
   // buffers once notified. In this interim state we can have multiple instances
-  // of the RasterDecoderContextState, for the lost and recovered clients. In
+  // of the SharedContextState, for the lost and recovered clients. In
   // order to avoid having the GpuChannelManager keep the lost context state
   // alive until all clients have recovered, we use a ref-counted object and
   // allow the decoders to manage its lifetime.
   base::Optional<raster::GrShaderCache> gr_shader_cache_;
   base::Optional<raster::GrCacheController> gr_cache_controller_;
-  scoped_refptr<raster::RasterDecoderContextState>
-      raster_decoder_context_state_;
+  scoped_refptr<SharedContextState> shared_context_state_;
 
   // With --enable-vulkan, the vulkan_context_provider_ will be set from
   // viz::GpuServiceImpl. The raster decoders will use it for rasterization.

@@ -43,7 +43,7 @@ namespace blink {
 // instead.
 template <typename T>
 class SharedPersistent : public RefCounted<SharedPersistent<T>> {
-  WTF_MAKE_NONCOPYABLE(SharedPersistent);
+  USING_FAST_MALLOC(SharedPersistent);
 
  public:
   static scoped_refptr<SharedPersistent<T>> Create(v8::Local<T> value,
@@ -65,6 +65,8 @@ class SharedPersistent : public RefCounted<SharedPersistent<T>> {
   explicit SharedPersistent(v8::Local<T> value, v8::Isolate* isolate)
       : value_(isolate, value) {}
   ScopedPersistent<T> value_;
+
+  DISALLOW_COPY_AND_ASSIGN(SharedPersistent);
 };
 
 }  // namespace blink

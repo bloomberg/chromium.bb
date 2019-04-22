@@ -12,6 +12,9 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "net/base/network_change_notifier.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/chromoting_host_context.h"
@@ -62,11 +65,13 @@ class ChromotingHostTest : public testing::Test {
   ChromotingHostTest() = default;
 
   void SetUp() override {
-    task_runner_ = new AutoThreadTaskRunner(message_loop_.task_runner(),
+    network_change_notifier_.reset(net::NetworkChangeNotifier::Create());
+
+    task_runner_ = new AutoThreadTaskRunner(base::ThreadTaskRunnerHandle::Get(),
                                             base::DoNothing());
 
     desktop_environment_factory_.reset(
-        new FakeDesktopEnvironmentFactory(message_loop_.task_runner()));
+        new FakeDesktopEnvironmentFactory(base::ThreadTaskRunnerHandle::Get()));
     session_manager_ = new protocol::MockSessionManager();
 
     host_.reset(new ChromotingHost(
@@ -205,7 +210,8 @@ class ChromotingHostTest : public testing::Test {
   }
 
  protected:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   scoped_refptr<AutoThreadTaskRunner> task_runner_;
   MockConnectionToClientEventHandler handler_;
   std::unique_ptr<FakeDesktopEnvironmentFactory> desktop_environment_factory_;

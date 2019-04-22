@@ -271,6 +271,7 @@ Elements.ElementsPanel = class extends UI.Panel {
     if (this._popoverHelper)
       this._popoverHelper.hidePopover();
     super.willHide();
+    UI.context.setFlavor(Elements.ElementsPanel, null);
   }
 
   /**
@@ -647,16 +648,15 @@ Elements.ElementsPanel = class extends UI.Panel {
   /**
    * @param {!SDK.DOMNode} node
    * @param {boolean} focus
+   * @param {boolean=} omitHighlight
    * @return {!Promise}
    */
-  revealAndSelectNode(node, focus) {
-    if (Elements.inspectElementModeController && Elements.inspectElementModeController.isInInspectElementMode())
-      Elements.inspectElementModeController.stopInspection();
-
+  revealAndSelectNode(node, focus, omitHighlight) {
     this._omitDefaultSelection = true;
 
     node = Common.moduleSetting('showUAShadowDOM').get() ? node : this._leaveUserAgentShadowDOM(node);
-    node.highlightForTwoSeconds();
+    if (!omitHighlight)
+      node.highlightForTwoSeconds();
 
     return UI.viewManager.showView('elements', false, !focus).then(() => {
       this.selectDOMNode(node, focus);
@@ -674,6 +674,58 @@ Elements.ElementsPanel = class extends UI.Panel {
   _showUAShadowDOMChanged() {
     for (let i = 0; i < this._treeOutlines.length; ++i)
       this._treeOutlines[i].update();
+  }
+
+  /**
+   * @param {!Element} stylePaneWrapperElement
+   */
+  _setupTextSelectionHack(stylePaneWrapperElement) {
+    // We "extend" the sidebar area when dragging, in order to keep smooth text
+    // selection. It should be replaced by 'user-select: contain' in the future.
+    const uninstallHackBound = uninstallHack.bind(this);
+
+    // Fallback to cover unforeseen cases where text selection has ended.
+    const uninstallHackOnMousemove = event => {
+      if (event.buttons === 0)
+        uninstallHack.call(this);
+    };
+
+    stylePaneWrapperElement.addEventListener('mousedown', event => {
+      if (event.which !== 1)
+        return;
+      this._splitWidget.element.classList.add('disable-resizer-for-elements-hack');
+      stylePaneWrapperElement.style.setProperty('height', `${stylePaneWrapperElement.offsetHeight}px`);
+      const largeLength = 1000000;
+      stylePaneWrapperElement.style.setProperty('left', `${- 1 * largeLength}px`);
+      stylePaneWrapperElement.style.setProperty('padding-left', `${largeLength}px`);
+      stylePaneWrapperElement.style.setProperty('width', `calc(100% + ${largeLength}px)`);
+      stylePaneWrapperElement.style.setProperty('position', `fixed`);
+
+      stylePaneWrapperElement.window().addEventListener('blur', uninstallHackBound);
+      stylePaneWrapperElement.window().addEventListener('contextmenu', uninstallHackBound, true);
+      stylePaneWrapperElement.window().addEventListener('dragstart', uninstallHackBound, true);
+      stylePaneWrapperElement.window().addEventListener('mousemove', uninstallHackOnMousemove, true);
+      stylePaneWrapperElement.window().addEventListener('mouseup', uninstallHackBound, true);
+      stylePaneWrapperElement.window().addEventListener('visibilitychange', uninstallHackBound);
+    }, true);
+
+    /**
+     * @this {!Elements.ElementsPanel}
+     */
+    function uninstallHack() {
+      this._splitWidget.element.classList.remove('disable-resizer-for-elements-hack');
+      stylePaneWrapperElement.style.removeProperty('left');
+      stylePaneWrapperElement.style.removeProperty('padding-left');
+      stylePaneWrapperElement.style.removeProperty('width');
+      stylePaneWrapperElement.style.removeProperty('position');
+
+      stylePaneWrapperElement.window().removeEventListener('blur', uninstallHackBound);
+      stylePaneWrapperElement.window().removeEventListener('contextmenu', uninstallHackBound, true);
+      stylePaneWrapperElement.window().removeEventListener('dragstart', uninstallHackBound, true);
+      stylePaneWrapperElement.window().removeEventListener('mousemove', uninstallHackOnMousemove, true);
+      stylePaneWrapperElement.window().removeEventListener('mouseup', uninstallHackBound, true);
+      stylePaneWrapperElement.window().removeEventListener('visibilitychange', uninstallHackBound);
+    }
   }
 
   _updateSidebarPosition() {
@@ -707,6 +759,7 @@ Elements.ElementsPanel = class extends UI.Panel {
     const matchedStylePanesWrapper = new UI.VBox();
     matchedStylePanesWrapper.element.classList.add('style-panes-wrapper');
     this._stylesWidget.show(matchedStylePanesWrapper.element);
+    this._setupTextSelectionHack(matchedStylePanesWrapper.element);
 
     const computedStylePanesWrapper = new UI.VBox();
     computedStylePanesWrapper.element.classList.add('style-panes-wrapper');

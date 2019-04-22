@@ -14,6 +14,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_piece_forward.h"
+#include "services/network/initiator_lock_compatibility.h"
+#include "services/network/public/mojom/fetch_api.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -49,6 +51,17 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
     kInvalidMimeType = kMax,
   };
 
+  enum class CorbResultVsInitiatorLockCompatibility {
+    // Note that these values are used in histograms, and must not change.
+    kNoBlocking = 0,
+    kBenignBlocking = 1,
+    kBlockingWhenIncorrectLock = 2,
+    kBlockingWhenCompatibleLock = 3,
+    kBlockingWhenOtherLock = 4,
+
+    kMaxValue = kBlockingWhenOtherLock
+  };
+
   // An instance for tracking the state of analyzing a single response
   // and deciding whether CORB should block the response.
   class COMPONENT_EXPORT(NETWORK_SERVICE) ResponseAnalyzer {
@@ -56,7 +69,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
     // Creates a ResponseAnalyzer for the |request|, |response| pair.  The
     // ResponseAnalyzer will decide whether |response| needs to be blocked.
     ResponseAnalyzer(const net::URLRequest& request,
-                     const ResourceResponse& response);
+                     const ResourceResponse& response,
+                     base::Optional<url::Origin> request_initiator_site_lock,
+                     mojom::FetchRequestMode fetch_request_mode);
 
     ~ResponseAnalyzer();
 
@@ -119,6 +134,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
       kNeedToSniffMore,
     };
     BlockingDecision ShouldBlockBasedOnHeaders(
+        mojom::FetchRequestMode fetch_request_mode,
         const net::URLRequest& request,
         const ResourceResponse& response);
 
@@ -143,6 +159,15 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
     // The HTTP response code (e.g. 200 or 404) received in response to this
     // resource request.
     int http_response_code_ = 0;
+
+    // Whether |request_initiator| was compatible with
+    // |request_initiator_site_lock|.  For safety initialized to kIncorrectLock,
+    // but in practice it will always be explicitly set by the constructor.
+    InitiatorLockCompatibility initiator_compatibility_ =
+        InitiatorLockCompatibility::kIncorrectLock;
+
+    // Propagated from URLLoaderFactoryParams::request_initiator_site_lock;
+    base::Optional<url::Origin> request_initiator_site_lock_;
 
     // The sniffers to be used.
     std::vector<std::unique_ptr<ConfirmationSniffer>> sniffers_;

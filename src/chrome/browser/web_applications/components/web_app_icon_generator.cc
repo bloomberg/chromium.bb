@@ -41,7 +41,6 @@ class GeneratedIconImageSource : public gfx::CanvasImageSource {
  private:
   // gfx::CanvasImageSource overrides:
   void Draw(gfx::Canvas* canvas) override {
-    const uint8_t kLumaThreshold = 190;
     const int icon_size = output_size_ * 3 / 4;
     const int icon_inset = output_size_ / 8;
     const size_t border_radius = output_size_ / 16;
@@ -64,13 +63,10 @@ class GeneratedIconImageSource : public gfx::CanvasImageSource {
 
     // The text rect's size needs to be odd to center the text correctly.
     gfx::Rect text_rect(icon_inset, icon_inset, icon_size + 1, icon_size + 1);
-    // Draw the letter onto the rounded rect. The letter's color depends on the
-    // luma of |color|.
-    const uint8_t luma = color_utils::GetLuma(color_);
     canvas->DrawStringRectWithFlags(
         base::string16(1, std::toupper(letter_)),
         gfx::FontList(gfx::Font(font_name, font_size)),
-        (luma > kLumaThreshold) ? SK_ColorBLACK : SK_ColorWHITE, text_rect,
+        color_utils::GetColorWithMaxContrast(color_), text_rect,
         gfx::Canvas::TEXT_ALIGN_CENTER);
   }
 
@@ -149,7 +145,7 @@ std::map<int, BitmapAndSource> ConstrainBitmapsToSizes(
     ordered_bitmaps[bitmap.width()] = bitmap_and_source;
   }
 
-  if (ordered_bitmaps.size() > 0) {
+  if (!ordered_bitmaps.empty()) {
     for (const auto& size : sizes) {
       // Find the closest not-smaller bitmap, or failing that use the largest
       // icon available.
@@ -203,7 +199,7 @@ std::map<int, BitmapAndSource> ResizeIconsAndGenerateMissing(
 
   // Determine the color that will be used for the icon's background. For this
   // the dominant color of the first icon found is used.
-  if (resized_bitmaps.size()) {
+  if (!resized_bitmaps.empty()) {
     color_utils::GridSampler sampler;
     *generated_icon_color = color_utils::CalculateKMeanColorOfBitmap(
         resized_bitmaps.begin()->second.bitmap);

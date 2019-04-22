@@ -4,6 +4,7 @@
 
 #include "components/autofill_assistant/browser/actions/get_payment_information_action.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/bind.h"
@@ -33,8 +34,7 @@ void GetPaymentInformationAction::InternalProcessAction(
   const GetPaymentInformationProto& get_payment_information =
       proto_.get_payment_information();
 
-  payments::mojom::PaymentOptionsPtr payment_options =
-      payments::mojom::PaymentOptions::New();
+  auto payment_options = std::make_unique<PaymentRequestOptions>();
   if (get_payment_information.has_contact_details()) {
     auto contact_details = get_payment_information.contact_details();
     payment_options->request_payer_email =
@@ -44,25 +44,23 @@ void GetPaymentInformationAction::InternalProcessAction(
         contact_details.request_payer_phone();
   }
 
-  std::vector<std::string> supported_basic_card_networks;
   std::copy(get_payment_information.supported_basic_card_networks().begin(),
             get_payment_information.supported_basic_card_networks().end(),
-            std::back_inserter(supported_basic_card_networks));
+            std::back_inserter(payment_options->supported_basic_card_networks));
 
   payment_options->request_shipping =
       !get_payment_information.shipping_address_name().empty();
+  payment_options->request_payment_method =
+      get_payment_information.ask_for_payment();
 
-  // During payment request user might need to modify the data. Enable keyboard.
-  delegate->AllowShowingSoftKeyboard(true);
-  delegate->GetPaymentInformation(
-      std::move(payment_options),
+  payment_options->callback =
       base::BindOnce(&GetPaymentInformationAction::OnGetPaymentInformation,
                      weak_ptr_factory_.GetWeakPtr(), delegate,
-                     std::move(get_payment_information), std::move(callback)),
-      get_payment_information.prompt(), supported_basic_card_networks);
+                     std::move(get_payment_information), std::move(callback));
   if (get_payment_information.has_prompt()) {
-    delegate->ShowStatusMessage(get_payment_information.prompt());
+    delegate->SetStatusMessage(get_payment_information.prompt());
   }
+  delegate->GetPaymentInformation(std::move(payment_options));
 }
 
 void GetPaymentInformationAction::OnGetPaymentInformation(
@@ -70,7 +68,6 @@ void GetPaymentInformationAction::OnGetPaymentInformation(
     const GetPaymentInformationProto& get_payment_information,
     ProcessActionCallback callback,
     std::unique_ptr<PaymentInformation> payment_information) {
-  delegate->AllowShowingSoftKeyboard(false);
   bool succeed = payment_information->succeed;
   if (succeed) {
     if (get_payment_information.ask_for_payment()) {
@@ -83,6 +80,13 @@ void GetPaymentInformationAction::OnGetPaymentInformation(
           ->set_card_issuer_network(card_issuer_network);
       delegate->GetClientMemory()->set_selected_card(
           std::move(payment_information->card));
+
+      if (!get_payment_information.billing_address_name().empty()) {
+        DCHECK(payment_information->billing_address);
+        delegate->GetClientMemory()->set_selected_address(
+            get_payment_information.billing_address_name(),
+            std::move(payment_information->billing_address));
+      }
     }
 
     if (!get_payment_information.shipping_address_name().empty()) {
@@ -90,13 +94,6 @@ void GetPaymentInformationAction::OnGetPaymentInformation(
       delegate->GetClientMemory()->set_selected_address(
           get_payment_information.shipping_address_name(),
           std::move(payment_information->shipping_address));
-    }
-
-    if (!get_payment_information.billing_address_name().empty()) {
-      DCHECK(payment_information->billing_address);
-      delegate->GetClientMemory()->set_selected_address(
-          get_payment_information.billing_address_name(),
-          std::move(payment_information->billing_address));
     }
 
     if (get_payment_information.has_contact_details()) {
@@ -125,7 +122,8 @@ void GetPaymentInformationAction::OnGetPaymentInformation(
     }
     processed_action_proto_->mutable_payment_details()
         ->set_is_terms_and_conditions_accepted(
-            payment_information->is_terms_and_conditions_accepted);
+            payment_information->terms_and_conditions ==
+            TermsAndConditionsState::ACCEPTED);
     processed_action_proto_->mutable_payment_details()->set_payer_email(
         payment_information->payer_email);
   }

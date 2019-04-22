@@ -34,6 +34,9 @@ class OilpanGCTimesTestData(object):
     self._renderer_thread = self._renderer_process.GetOrCreateThread(2)
     self._renderer_thread.name = thread_name
     self._results = page_test_results.PageTestResults()
+    self._results.telemetry_info.benchmark_name = 'benchmark'
+    self._results.telemetry_info.benchmark_start_epoch = 123
+    self._results.telemetry_info.benchmark_descriptions = 'foo'
 
   @property
   def results(self):
@@ -86,14 +89,13 @@ class OilpanGCTimesTest(page_test_test_case.PageTestTestCase):
   def setUp(self):
     self._options = options_for_unittests.GetCopy()
 
-  @decorators.Disabled('all')  # crbug.com/909752
   # Disable for accessing private API of _OilpanGCTimesBase.
   # pylint: disable=protected-access
   def testForParsingOldFormat(self):
     def getMetric(results, name):
       metrics = results.FindAllPageSpecificValuesNamed(name)
       self.assertEquals(1, len(metrics))
-      return metrics[0].GetBuildbotValue()
+      return metrics[0].values
 
     data = self._GenerateDataForParsingOldFormat()
 
@@ -120,14 +122,13 @@ class OilpanGCTimesTest(page_test_test_case.PageTestTestCase):
     self.assertEquals(2, len(getMetric(results,
                                        'oilpan_forced_complete_sweep')))
 
-  @decorators.Disabled('all')  # crbug.com/909752
   # Disable for accessing private API of _OilpanGCTimesBase.
   # pylint: disable=protected-access
   def testForParsing(self):
     def getMetric(results, name):
       metrics = results.FindAllPageSpecificValuesNamed(name)
       self.assertEquals(1, len(metrics))
-      return metrics[0].GetBuildbotValue()
+      return metrics[0].values
 
     data = self._GenerateDataForParsing()
 

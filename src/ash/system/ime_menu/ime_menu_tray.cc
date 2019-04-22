@@ -126,11 +126,10 @@ SystemMenuButton* CreateImeMenuButton(views::ButtonListener* listener,
 class ImeTitleView : public views::View, public views::ButtonListener {
  public:
   explicit ImeTitleView(bool show_settings_button) : settings_button_(nullptr) {
-    const int separator_width = TrayConstants::separator_width();
     SetBorder(views::CreatePaddedBorder(
-        views::CreateSolidSidedBorder(0, 0, separator_width, 0,
+        views::CreateSolidSidedBorder(0, 0, kMenuSeparatorWidth, 0,
                                       kMenuSeparatorColor),
-        gfx::Insets(kMenuSeparatorVerticalPadding - separator_width, 0)));
+        gfx::Insets(kMenuSeparatorVerticalPadding - kMenuSeparatorWidth, 0)));
     auto box_layout =
         std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal);
     box_layout->set_minimum_cross_axis_size(kTrayPopupItemMinHeight);
@@ -222,13 +221,12 @@ class ImeButtonsView : public views::View, public views::ButtonListener {
   void Init(bool show_emoji, bool show_handwriting, bool show_voice) {
     auto box_layout =
         std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal);
-    const int separator_width = TrayConstants::separator_width();
     box_layout->set_minimum_cross_axis_size(kTrayPopupItemMinHeight);
     SetLayoutManager(std::move(box_layout));
     SetBorder(views::CreatePaddedBorder(
-        views::CreateSolidSidedBorder(separator_width, 0, 0, 0,
+        views::CreateSolidSidedBorder(kMenuSeparatorWidth, 0, 0, 0,
                                       kMenuSeparatorColor),
-        gfx::Insets(kMenuSeparatorVerticalPadding - separator_width,
+        gfx::Insets(kMenuSeparatorVerticalPadding - kMenuSeparatorWidth,
                     kMenuExtraMarginFromLeftEdge)));
 
     const int right_border = 1;
@@ -272,54 +270,43 @@ class ImeButtonsView : public views::View, public views::ButtonListener {
 
 // A list of available IMEs shown in the opt-in IME menu, which has a different
 // height depending on the number of IMEs in the list.
-class ImeMenuListView : public ImeListView, public DetailedViewDelegate {
+class ImeMenuListView : public ImeListView {
  public:
-  ImeMenuListView() : ImeListView(this, false /* use_unified_theme */) {
-    set_should_focus_ime_after_selection_with_keyboard(true);
-  }
-
+  ImeMenuListView() : ImeMenuListView(std::make_unique<Delegate>()) {}
   ~ImeMenuListView() override = default;
 
-  // DetailedViewDelegate:
-  void TransitionToMainView(bool restore_focus) override {}
-  void CloseBubble() override {}
-  SkColor GetBackgroundColor(ui::NativeTheme* native_theme) override {
-    return native_theme->GetSystemColor(
-        ui::NativeTheme::kColorId_BubbleBackground);
-  }
-  bool IsOverflowIndicatorEnabled() const override { return true; }
-  TriView* CreateTitleRow(int string_id) override { return nullptr; }
-  views::View* CreateTitleSeparator() override { return nullptr; }
-  void ShowStickyHeaderSeparator(views::View* view,
-                                 bool show_separator) override {}
-  views::Separator* CreateListSubHeaderSeparator() override { return nullptr; }
-  HoverHighlightView* CreateScrollListItem(
-      ViewClickListener* listener,
-      const gfx::VectorIcon& icon,
-      const base::string16& text) override {
-    return nullptr;
-  }
-  views::Button* CreateBackButton(views::ButtonListener* listener) override {
-    return nullptr;
-  }
-  views::Button* CreateInfoButton(views::ButtonListener* listener,
-                                  int info_accessible_name_id) override {
-    return nullptr;
-  }
-  views::Button* CreateSettingsButton(views::ButtonListener* listener,
-                                      int setting_accessible_name_id) override {
-    return nullptr;
-  }
-  views::Button* CreateHelpButton(views::ButtonListener* listener) override {
-    return nullptr;
+ private:
+  class Delegate : public DetailedViewDelegate {
+   public:
+    Delegate() : DetailedViewDelegate(nullptr /* tray_controller */) {}
+
+    // DetailedViewDelegate:
+    void TransitionToMainView(bool restore_focus) override {}
+    void CloseBubble() override {}
+    SkColor GetBackgroundColor(ui::NativeTheme* native_theme) override {
+      return native_theme->GetSystemColor(
+          ui::NativeTheme::kColorId_BubbleBackground);
+    }
+    bool IsOverflowIndicatorEnabled() const override { return true; }
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Delegate);
+  };
+
+  ImeMenuListView(std::unique_ptr<Delegate> delegate)
+      : ImeListView(delegate.get(), false /* use_unified_theme */) {
+    set_should_focus_ime_after_selection_with_keyboard(true);
+    delegate_ = std::move(delegate);
   }
 
- protected:
+  // ImeListView:
   void Layout() override {
     gfx::Range height_range = GetImeListViewRange();
     scroller()->ClipHeightTo(height_range.start(), height_range.end());
     ImeListView::Layout();
   }
+
+  std::unique_ptr<Delegate> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ImeMenuListView);
 };
@@ -365,7 +352,7 @@ void ImeMenuTray::ShowImeMenuBubbleInternal(bool show_by_click) {
   init_params.delegate = this;
   init_params.parent_window = GetBubbleWindowContainer();
   init_params.anchor_view = GetBubbleAnchor();
-  init_params.anchor_alignment = GetAnchorAlignment();
+  init_params.shelf_alignment = shelf()->alignment();
   init_params.min_width = kTrayMenuWidth;
   init_params.max_width = kTrayMenuWidth;
   init_params.close_on_deactivate = true;
@@ -406,10 +393,9 @@ void ImeMenuTray::ShowKeyboardWithKeyset(
 
 bool ImeMenuTray::ShouldShowBottomButtons() {
   // Emoji, handwriting and voice input is not supported for these cases:
-  // 1) features::kEHVInputOnImeMenu is not enabled.
-  // 2) third party IME extensions.
-  // 3) login/lock screen.
-  // 4) password input client.
+  // 1) third party IME extensions.
+  // 2) login/lock screen.
+  // 3) password input client.
 
   bool should_show_buttom_buttoms =
       ime_controller_->is_extra_input_options_enabled() &&
@@ -430,7 +416,7 @@ bool ImeMenuTray::ShouldShowBottomButtons() {
 
 bool ImeMenuTray::ShouldShowKeyboardToggle() const {
   return keyboard_suppressed_ &&
-         !Shell::Get()->accessibility_controller()->IsVirtualKeyboardEnabled();
+         !Shell::Get()->accessibility_controller()->virtual_keyboard_enabled();
 }
 
 base::string16 ImeMenuTray::GetAccessibleNameForTray() {
@@ -502,7 +488,7 @@ base::string16 ImeMenuTray::GetAccessibleNameForBubble() {
 }
 
 bool ImeMenuTray::ShouldEnableExtraKeyboardAccessibility() {
-  return Shell::Get()->accessibility_controller()->IsSpokenFeedbackEnabled();
+  return Shell::Get()->accessibility_controller()->spoken_feedback_enabled();
 }
 
 void ImeMenuTray::HideBubble(const TrayBubbleView* bubble_view) {
@@ -534,7 +520,7 @@ void ImeMenuTray::UpdateTrayLabel() {
   if (chromeos::extension_ime_util::IsArcIME(current_ime.id)) {
     CreateImageView();
     image_view_->SetImage(
-        gfx::CreateVectorIcon(kShelfGlobeIcon, kTrayIconSize, kTrayIconColor));
+        gfx::CreateVectorIcon(kShelfGlobeIcon, kTrayIconColor));
     return;
   }
 

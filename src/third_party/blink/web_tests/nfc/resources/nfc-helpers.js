@@ -67,19 +67,19 @@ function createUrlRecord(url) {
   return createRecord('url', 'text/plain', url);
 }
 
-function toMojoNFCRecordType(type) {
+function toMojoNDEFRecordType(type) {
   switch (type) {
   case 'text':
-    return device.mojom.NFCRecordType.TEXT;
+    return device.mojom.NDEFRecordType.TEXT;
   case 'url':
-    return device.mojom.NFCRecordType.URL;
+    return device.mojom.NDEFRecordType.URL;
   case 'json':
-    return device.mojom.NFCRecordType.JSON;
+    return device.mojom.NDEFRecordType.JSON;
   case 'opaque':
-    return device.mojom.NFCRecordType.OPAQUE_RECORD;
+    return device.mojom.NDEFRecordType.OPAQUE_RECORD;
   }
 
-  return device.mojom.NFCRecordType.EMPTY;
+  return device.mojom.NDEFRecordType.EMPTY;
 }
 
 function toMojoNFCPushTarget(target) {
@@ -101,20 +101,20 @@ function toMojoNFCWatchMode(mode) {
   return device.mojom.NFCWatchMode.ANY;
 }
 
-// Converts between NFCMessage https://w3c.github.io/web-nfc/#dom-nfcmessage
-// and mojo::NFCMessage structure, so that nfc.watch function can be tested.
-function toMojoNFCMessage(message) {
-  let nfcMessage = new device.mojom.NFCMessage();
-  nfcMessage.url = message.url;
-  nfcMessage.data = [];
+// Converts between NDEFMessage https://w3c.github.io/web-nfc/#dom-ndefmessage
+// and mojom.NDEFMessage structure, so that nfc.watch function can be tested.
+function toMojoNDEFMessage(message) {
+  let ndefMessage = new device.mojom.NDEFMessage();
+  ndefMessage.url = message.url;
+  ndefMessage.data = [];
   for (let record of message.records)
-    nfcMessage.data.push(toMojoNFCRecord(record));
-  return nfcMessage;
+    ndefMessage.data.push(toMojoNDEFRecord(record));
+  return ndefMessage;
 }
 
-function toMojoNFCRecord(record) {
-  let nfcRecord = new device.mojom.NFCRecord();
-  nfcRecord.recordType = toMojoNFCRecordType(record.recordType);
+function toMojoNDEFRecord(record) {
+  let nfcRecord = new device.mojom.NDEFRecord();
+  nfcRecord.recordType = toMojoNDEFRecordType(record.recordType);
   nfcRecord.mediaType = record.mediaType;
   nfcRecord.data = toByteArray(record.data);
   return nfcRecord;
@@ -136,13 +136,13 @@ function toByteArray(data) {
   return byteArray;
 }
 
-// Compares NFCMessage that was provided to the API
-// (e.g. navigator.nfc.push), and NFCMessage that was received by the
+// Compares NDEFMessage that was provided to the API
+// (e.g. navigator.nfc.push), and NDEFMessage that was received by the
 // mock NFC service.
-function assertNFCMessagesEqual(providedMessage, receivedMessage) {
+function assertNDEFMessagesEqual(providedMessage, receivedMessage) {
   // If simple data type is passed, e.g. String or ArrayBuffer, convert it
-  // to NFCMessage before comparing.
-  // https://w3c.github.io/web-nfc/#idl-def-nfcpushmessage
+  // to NDEFMessage before comparing.
+  // https://w3c.github.io/web-nfc/#dom-ndefmessagesource
   let provided = providedMessage;
   if (providedMessage instanceof ArrayBuffer)
     provided = createMessage([createOpaqueRecord(providedMessage)]);
@@ -150,17 +150,17 @@ function assertNFCMessagesEqual(providedMessage, receivedMessage) {
     provided = createMessage([createTextRecord(providedMessage)]);
 
   assert_equals(provided.records.length, receivedMessage.data.length,
-      'NFCMessages must have same number of NFCRecords');
+      'NDEFMessages must have same number of NDEFRecords');
 
-  // Compare contents of each individual NFCRecord
+  // Compare contents of each individual NDEFRecord
   for (let i = 0; i < provided.records.length; ++i)
-    compareNFCRecords(provided.records[i], receivedMessage.data[i]);
+    compareNDEFRecords(provided.records[i], receivedMessage.data[i]);
 }
 
 // Used to compare two WebNFC messages, one that is provided to mock NFC
 // service through triggerWatchCallback and another that is received by
 // callback that is provided to navigator.nfc.watch function.
-function assertWebNFCMessagesEqual(a, b) {
+function assertWebNDEFMessagesEqual(a, b) {
   assert_equals(a.url, b.url);
   assert_equals(a.records.length, b.records.length);
   for(let i in a.records) {
@@ -183,9 +183,9 @@ function assertWebNFCMessagesEqual(a, b) {
   }
 }
 
-// Compares NFCRecords that were provided / received by the mock service.
-function compareNFCRecords(providedRecord, receivedRecord) {
-  assert_equals(toMojoNFCRecordType(providedRecord.recordType),
+// Compares NDEFRecords that were provided / received by the mock service.
+function compareNDEFRecords(providedRecord, receivedRecord) {
+  assert_equals(toMojoNDEFRecordType(providedRecord.recordType),
                 receivedRecord.recordType);
 
   // Compare media types without charset.
@@ -194,8 +194,8 @@ function compareNFCRecords(providedRecord, receivedRecord) {
   assert_equals(providedRecord.mediaType,
       receivedRecord.mediaType.substring(0, providedRecord.mediaType.length));
 
-  assert_false(toMojoNFCRecordType(providedRecord.recordType) ==
-              device.mojom.NFCRecordType.EMPTY);
+  assert_false(toMojoNDEFRecordType(providedRecord.recordType) ==
+              device.mojom.NDEFRecordType.EMPTY);
 
   assert_array_equals(toByteArray(providedRecord.data),
                       new Uint8Array(receivedRecord.data));
@@ -240,7 +240,7 @@ function assertNFCWatchOptionsEqual(provided, received) {
 
   if (provided.recordType !== undefined) {
     assert_equals(!+received.record_filter, true);
-    assert_equals(toMojoNFCRecordType(provided.recordType),
+    assert_equals(toMojoNDEFRecordType(provided.recordType),
         received.recordFilter.recordType);
   }
 }
@@ -424,7 +424,7 @@ class MockNFC {
   triggerWatchCallback(id, message) {
     assert_true(this.client_ !== null);
     if (this.watchers_.length > 0) {
-      this.client_.onWatch([id], toMojoNFCMessage(message));
+      this.client_.onWatch([id], toMojoNDEFMessage(message));
     }
   }
 }

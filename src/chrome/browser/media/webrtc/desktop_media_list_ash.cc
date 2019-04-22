@@ -6,6 +6,7 @@
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
+#include "base/bind.h"
 #include "chrome/grit/generated_resources.h"
 #include "media/base/video_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -60,9 +61,9 @@ void DesktopMediaListAsh::EnumerateWindowsForRoot(
        it != container->children().rend(); ++it) {
     if (!(*it)->IsVisible() || !(*it)->CanFocus())
       continue;
-    content::DesktopMediaID id = content::DesktopMediaID::RegisterAuraWindow(
+    content::DesktopMediaID id = content::DesktopMediaID::RegisterNativeWindow(
         content::DesktopMediaID::TYPE_WINDOW, *it);
-    if (id.aura_id == view_dialog_id_.aura_id)
+    if (id.window_id == view_dialog_id_.window_id)
       continue;
     SourceDescription window_source(id, (*it)->GetTitle());
     sources->push_back(window_source);
@@ -80,7 +81,7 @@ void DesktopMediaListAsh::EnumerateSources(
   for (size_t i = 0; i < root_windows.size(); ++i) {
     if (type_ == content::DesktopMediaID::TYPE_SCREEN) {
       SourceDescription screen_source(
-          content::DesktopMediaID::RegisterAuraWindow(
+          content::DesktopMediaID::RegisterNativeWindow(
               content::DesktopMediaID::TYPE_SCREEN, root_windows[i]),
           root_windows[i]->GetTitle());
 
@@ -107,10 +108,15 @@ void DesktopMediaListAsh::EnumerateSources(
 
       CaptureThumbnail(screen_source.id, root_windows[i]);
     } else {
-      EnumerateWindowsForRoot(
-          sources, root_windows[i], ash::kShellWindowId_DefaultContainer);
-      EnumerateWindowsForRoot(
-          sources, root_windows[i], ash::kShellWindowId_AlwaysOnTopContainer);
+      constexpr int kContainersIds[] = {
+          ash::kShellWindowId_DefaultContainerDeprecated,
+          // TODO(afakhry): Add rest of desks containers.
+          ash::kShellWindowId_AlwaysOnTopContainer,
+          ash::kShellWindowId_PipContainer,
+      };
+
+      for (int id : kContainersIds)
+        EnumerateWindowsForRoot(sources, root_windows[i], id);
     }
   }
 }

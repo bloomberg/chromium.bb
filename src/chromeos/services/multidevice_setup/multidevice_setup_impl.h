@@ -18,14 +18,11 @@
 
 class PrefService;
 
-namespace cryptauth {
-class GcmDeviceInfoProvider;
-}  // namespace cryptauth
-
 namespace chromeos {
 
 namespace device_sync {
 class DeviceSyncClient;
+class GcmDeviceInfoProvider;
 }  // namespace device_sync
 
 namespace multidevice_setup {
@@ -59,11 +56,9 @@ class MultiDeviceSetupImpl : public MultiDeviceSetupBase,
         device_sync::DeviceSyncClient* device_sync_client,
         AuthTokenValidator* auth_token_validator,
         OobeCompletionTracker* oobe_completion_tracker,
-        std::unique_ptr<AndroidSmsAppHelperDelegate>
-            android_sms_app_helper_delegate,
-        std::unique_ptr<AndroidSmsPairingStateTracker>
-            android_sms_pairing_state_tracker,
-        const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider);
+        AndroidSmsAppHelperDelegate* android_sms_app_helper_delegate,
+        AndroidSmsPairingStateTracker* android_sms_pairing_state_tracker,
+        const device_sync::GcmDeviceInfoProvider* gcm_device_info_provider);
 
    private:
     static Factory* test_factory_;
@@ -79,11 +74,9 @@ class MultiDeviceSetupImpl : public MultiDeviceSetupBase,
       device_sync::DeviceSyncClient* device_sync_client,
       AuthTokenValidator* auth_token_validator,
       OobeCompletionTracker* oobe_completion_tracker,
-      std::unique_ptr<AndroidSmsAppHelperDelegate>
-          android_sms_app_helper_delegate,
-      std::unique_ptr<AndroidSmsPairingStateTracker>
-          android_sms_pairing_state_tracker,
-      const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider);
+      AndroidSmsAppHelperDelegate* android_sms_app_helper_delegate,
+      AndroidSmsPairingStateTracker* android_sms_pairing_state_tracker,
+      const device_sync::GcmDeviceInfoProvider* gcm_device_info_provider);
 
   // mojom::MultiDeviceSetup:
   void SetAccountStatusChangeDelegate(

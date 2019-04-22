@@ -38,6 +38,7 @@ class NavigationHandleImpl;
 class NavigationRequest;
 class NavigationThrottle;
 class RenderFrameHostImpl;
+class RenderProcessHost;
 class WebContents;
 
 struct SignedExchangeError;
@@ -53,6 +54,17 @@ bool WillCreateURLLoaderFactory(
     bool is_navigation,
     bool is_download,
     network::mojom::URLLoaderFactoryRequest* loader_factory_request);
+
+bool WillCreateURLLoaderFactoryForServiceWorker(
+    RenderProcessHost* rph,
+    int routing_id,
+    network::mojom::URLLoaderFactoryRequest* loader_factory_request);
+
+bool WillCreateURLLoaderFactory(
+    RenderFrameHostImpl* rfh,
+    bool is_navigation,
+    bool is_download,
+    std::unique_ptr<network::mojom::URLLoaderFactory>* factory);
 
 void OnResetNavigationRequest(NavigationRequest* navigation_request);
 void OnNavigationRequestWillBeSent(const NavigationRequest& navigation_request);

@@ -16,27 +16,6 @@ from chromite.lib.paygen import utils
 class TestUtils(cros_test_lib.TempDirTestCase):
   """Test utils methods."""
 
-  def testCreateTempFileWithContents(self):
-    """Verify that we create a temp file with the right message in it."""
-
-    message = 'Test Message With Rocks In'
-
-    # Create the temp file.
-    with utils.CreateTempFileWithContents(message) as temp_file:
-      temp_name = temp_file.name
-
-      # Verify the name is valid.
-      self.assertExists(temp_name)
-
-      # Verify it has the right contents
-      with open(temp_name, 'r') as f:
-        contents = f.readlines()
-
-      self.assertEqual([message], contents)
-
-    # Verify the temp file goes away when we close it.
-    self.assertNotExists(temp_name)
-
   def testListdirFullpath(self):
     file_a = os.path.join(self.tempdir, 'a')
     file_b = os.path.join(self.tempdir, 'b')

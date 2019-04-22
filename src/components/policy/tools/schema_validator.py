@@ -16,14 +16,16 @@ ALLOWED_ATTRIBUTES_AND_TYPES = {
     'boolean': {
         'type': str,  # required
         'id': str,  # optional
-        'description': str  # optional
+        'description': str,  # optional
+        'sensitiveValue': bool  # optional
     },
     'string': {
         'type': str,  # required
         'id': str,  # optional
         'description': str,  # optional
         'enum': list,  # optional
-        'pattern': str  # optional
+        'pattern': str,  # optional
+        'sensitiveValue': bool  # optional
     },
     'integer': {
         'type': str,  # required
@@ -31,13 +33,15 @@ ALLOWED_ATTRIBUTES_AND_TYPES = {
         'description': str,  # optional
         'enum': list,  # optional
         'minimum': int,  # optional
-        'maximum': int  # optional
+        'maximum': int,  # optional
+        'sensitiveValue': bool  # optional
     },
     'array': {
         'type': str,  # required
         'id': str,  # optional
+        'items': dict,  # required,
         'description': str,  # optional
-        'items': dict  # required
+        'sensitiveValue': bool  # optional
     },
     'object': {
         'type': str,  # required
@@ -46,7 +50,8 @@ ALLOWED_ATTRIBUTES_AND_TYPES = {
         'properties': dict,  #           one of these 3 properties is required
         'patternProperties': dict,  #    one of these 3 properties is required
         'additionalProperties': dict,  # one of these 3 properties is required
-        'required': list  # optional
+        'required': list,  # optional
+        'sensitiveValue': bool  # optional
     }
 }
 

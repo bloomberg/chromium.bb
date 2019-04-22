@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/stl_util.h"
 #include "third_party/blink/public/platform/web_editing_command_type.h"
 #include "third_party/blink/renderer/core/editing/commands/editor_command.h"
 #include "third_party/blink/renderer/core/editing/commands/editor_command_names.h"
 #include "third_party/blink/renderer/core/editing/editor.h"
 #include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/platform/wtf/string_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -26,7 +27,7 @@ const CommandNameEntry kCommandNameEntries[] = {
 };
 // Test all commands except WebEditingCommandType::Invalid.
 static_assert(
-    arraysize(kCommandNameEntries) + 1 ==
+    base::size(kCommandNameEntries) + 1 ==
         static_cast<size_t>(WebEditingCommandType::kNumberOfCommandTypes),
     "must test all valid WebEditingCommandType");
 
@@ -35,9 +36,10 @@ static_assert(
 class EditingCommandTest : public EditingTestBase {};
 
 TEST_F(EditingCommandTest, EditorCommandOrder) {
-  for (size_t i = 1; i < arraysize(kCommandNameEntries); ++i) {
-    EXPECT_GT(0, strcasecmp(kCommandNameEntries[i - 1].name,
-                            kCommandNameEntries[i].name))
+  for (size_t i = 1; i < base::size(kCommandNameEntries); ++i) {
+    EXPECT_GT(0,
+              WTF::CodePointCompareIgnoringASCIICase(
+                  kCommandNameEntries[i - 1].name, kCommandNameEntries[i].name))
         << "EDITOR_COMMAND_MAP must be case-folding ordered. Incorrect index:"
         << i;
   }

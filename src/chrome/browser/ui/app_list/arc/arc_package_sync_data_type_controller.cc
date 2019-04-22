@@ -16,10 +16,12 @@
 ArcPackageSyncDataTypeController::ArcPackageSyncDataTypeController(
     syncer::ModelType type,
     const base::Closure& dump_stack,
+    syncer::SyncService* sync_service,
     syncer::SyncClient* sync_client,
     Profile* profile)
     : syncer::AsyncDirectoryTypeController(type,
                                            dump_stack,
+                                           sync_service,
                                            sync_client,
                                            syncer::GROUP_UI,
                                            base::ThreadTaskRunnerHandle::Get()),
@@ -75,32 +77,13 @@ void ArcPackageSyncDataTypeController::OnArcPlayStoreEnabledChanged(
     bool enabled) {
   DCHECK(CalledOnValidThread());
 
-  // Delay enabling DTC until ARC successfully signed in.
-  if (ReadyForStart())
-    return;
-
-  // If enable ARC in settings is turned off then generate an unrecoverable
-  // error.
-  if (state() != NOT_RUNNING && state() != STOPPING) {
-    syncer::SyncError error(
-        FROM_HERE, syncer::SyncError::DATATYPE_POLICY_ERROR,
-        "ARC package sync is now disabled because user disables ARC.", type());
-    CreateErrorHandler()->OnUnrecoverableError(error);
-  }
+  sync_service()->ReadyForStartChanged(type());
 }
 
 void ArcPackageSyncDataTypeController::OnArcInitialStart() {
-  EnableDataType();
-}
-
-void ArcPackageSyncDataTypeController::EnableDataType() {
-  syncer::SyncService* sync_service = sync_client_->GetSyncService();
-  DCHECK(sync_service);
-  sync_service->ReenableDatatype(type());
+  sync_service()->ReadyForStartChanged(type());
 }
 
 bool ArcPackageSyncDataTypeController::ShouldSyncArc() const {
-  syncer::SyncService* sync_service = sync_client_->GetSyncService();
-  DCHECK(sync_service);
-  return sync_service->GetPreferredDataTypes().Has(type());
+  return sync_service()->GetPreferredDataTypes().Has(type());
 }

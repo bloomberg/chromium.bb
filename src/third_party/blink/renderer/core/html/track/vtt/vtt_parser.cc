@@ -85,7 +85,7 @@ bool VTTParser::ParsePercentageValuePair(VTTScanner& value_scanner,
 VTTParser::VTTParser(VTTParserClient* client, Document& document)
     : document_(&document),
       state_(kInitial),
-      decoder_(TextResourceDecoder::Create(TextResourceDecoderOptions(
+      decoder_(std::make_unique<TextResourceDecoder>(TextResourceDecoderOptions(
           TextResourceDecoderOptions::kPlainTextContent,
           UTF8Encoding()))),
       current_start_time_(0),
@@ -600,7 +600,7 @@ void VTTTreeBuilder::ConstructTreeFromToken(Document& document) {
   }
 }
 
-void VTTParser::Trace(blink::Visitor* visitor) {
+void VTTParser::Trace(Visitor* visitor) {
   visitor->Trace(document_);
   visitor->Trace(current_region_);
   visitor->Trace(client_);

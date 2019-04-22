@@ -141,9 +141,9 @@ TEST_P(SSLPlatformKeyNSSTest, KeyMatches) {
   TestSSLPrivateKeyMatches(key.get(), pkcs8);
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        SSLPlatformKeyNSSTest,
-                        testing::ValuesIn(kTestKeys),
-                        TestKeyToString);
+INSTANTIATE_TEST_SUITE_P(,
+                         SSLPlatformKeyNSSTest,
+                         testing::ValuesIn(kTestKeys),
+                         TestKeyToString);
 
 }  // namespace net

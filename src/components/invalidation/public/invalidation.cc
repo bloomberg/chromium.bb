@@ -145,7 +145,7 @@ std::unique_ptr<base::DictionaryValue> Invalidation::ToValue() const {
     value->SetBoolean(kIsUnknownVersionKey, true);
   } else {
     value->SetBoolean(kIsUnknownVersionKey, false);
-    value->SetString(kVersionKey, base::Int64ToString(version_));
+    value->SetString(kVersionKey, base::NumberToString(version_));
     value->SetString(kPayloadKey, payload_);
   }
   return value;

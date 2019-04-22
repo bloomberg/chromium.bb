@@ -16,8 +16,8 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -82,8 +82,8 @@ class CreateVisualElementsManifestTest
   // Creates a dummy test file at |path|.
   void CreateTestFile(const base::FilePath& path) {
     static constexpr char kBlah[] = "blah";
-    ASSERT_EQ(static_cast<int>(arraysize(kBlah) - 1),
-              base::WriteFile(path, &kBlah[0], arraysize(kBlah) - 1));
+    ASSERT_EQ(static_cast<int>(base::size(kBlah) - 1),
+              base::WriteFile(path, &kBlah[0], base::size(kBlah) - 1));
   }
 
   // Creates the VisualElements directory and a light asset, if testing such.
@@ -175,28 +175,28 @@ constexpr char kExpectedCanaryManifest[] =
     "      BackgroundColor='#5F6368'/>\r\n"
     "</Application>\r\n";
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     GoogleChrome,
     CreateVisualElementsManifestTest,
     testing::Combine(testing::Values(install_static::STABLE_INDEX),
                      testing::Values(kExpectedPrimaryManifest)));
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     BetaChrome,
     CreateVisualElementsManifestTest,
     testing::Combine(testing::Values(install_static::BETA_INDEX),
                      testing::Values(kExpectedBetaManifest)));
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     DevChrome,
     CreateVisualElementsManifestTest,
     testing::Combine(testing::Values(install_static::DEV_INDEX),
                      testing::Values(kExpectedDevManifest)));
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CanaryChrome,
     CreateVisualElementsManifestTest,
     testing::Combine(testing::Values(install_static::CANARY_INDEX),
                      testing::Values(kExpectedCanaryManifest)));
 #else
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     Chromium,
     CreateVisualElementsManifestTest,
     testing::Combine(testing::Values(install_static::CHROMIUM_INDEX),
@@ -288,7 +288,7 @@ class InstallShortcutTest : public testing::Test {
     };
 
     std::string master_prefs("{\"distribution\":{");
-    for (size_t i = 0; i < arraysize(desired_prefs); ++i) {
+    for (size_t i = 0; i < base::size(desired_prefs); ++i) {
       master_prefs += (i == 0 ? "\"" : ",\"");
       master_prefs += desired_prefs[i].pref_name;
       master_prefs += "\":";
@@ -505,16 +505,15 @@ TEST_P(MigrateShortcutTest, MigrateAwayFromDeprecatedStartMenuTest) {
 
 // Verify that any installer operation for any installation level triggers
 // the migration from sub-folder to root of start-menu.
-INSTANTIATE_TEST_CASE_P(
-    MigrateShortcutTests, MigrateShortcutTest,
+INSTANTIATE_TEST_SUITE_P(
+    MigrateShortcutTests,
+    MigrateShortcutTest,
     testing::Combine(
         testing::Values(
             installer::INSTALL_SHORTCUT_REPLACE_EXISTING,
             installer::INSTALL_SHORTCUT_CREATE_EACH_IF_NO_SYSTEM_LEVEL,
             installer::INSTALL_SHORTCUT_CREATE_ALL),
-        testing::Values(
-            installer::CURRENT_USER,
-            installer::ALL_USERS)));
+        testing::Values(installer::CURRENT_USER, installer::ALL_USERS)));
 
 TEST_F(InstallShortcutTest, CreateIfNoSystemLevelAllSystemShortcutsExist) {
   base::win::ShortcutProperties dummy_properties;

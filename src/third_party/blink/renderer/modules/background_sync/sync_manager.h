@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_BACKGROUND_SYNC_SYNC_MANAGER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_BACKGROUND_SYNC_SYNC_MANAGER_H_
 
-#include "third_party/blink/public/platform/modules/background_sync/background_sync.mojom-blink.h"
+#include "third_party/blink/public/mojom/background_sync/background_sync.mojom-blink.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -43,11 +43,11 @@ class SyncManager final : public ScriptWrappable {
   // Callbacks
   void RegisterCallback(ScriptPromiseResolver*,
                         mojom::blink::BackgroundSyncError,
-                        mojom::blink::SyncRegistrationPtr options);
+                        mojom::blink::SyncRegistrationOptionsPtr options);
   static void GetRegistrationsCallback(
       ScriptPromiseResolver*,
       mojom::blink::BackgroundSyncError,
-      WTF::Vector<mojom::blink::SyncRegistrationPtr> registrations);
+      WTF::Vector<mojom::blink::SyncRegistrationOptionsPtr> registrations);
 
   Member<ServiceWorkerRegistration> registration_;
   mojom::blink::BackgroundSyncServicePtr background_sync_service_;

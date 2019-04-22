@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_DOCUMENT_WRITE_INTERVENTION_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_DOCUMENT_WRITE_INTERVENTION_H_
 
-#include "third_party/blink/renderer/platform/cross_origin_attribute_value.h"
+#include "third_party/blink/renderer/platform/loader/fetch/cross_origin_attribute_value.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
 
 // document.write() intervention may

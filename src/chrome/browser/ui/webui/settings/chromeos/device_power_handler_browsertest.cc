@@ -14,9 +14,8 @@
 #include "base/values.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_power_manager_client.h"
-#include "chromeos/dbus/power_policy_controller.h"
+#include "chromeos/dbus/power/fake_power_manager_client.h"
+#include "chromeos/dbus/power/power_policy_controller.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/policy_constants.h"
@@ -54,10 +53,6 @@ class PowerHandlerTest : public InProcessBrowserTest {
 
   // InProcessBrowserTest:
   void SetUpInProcessBrowserTestFixture() override {
-    power_manager_client_ = new chromeos::FakePowerManagerClient;
-    chromeos::DBusThreadManager::GetSetterForTesting()->SetPowerManagerClient(
-        base::WrapUnique(power_manager_client_));
-
     // Initialize user policy.
     ON_CALL(provider_, IsInitializationComplete(_)).WillByDefault(Return(true));
     policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
@@ -145,9 +140,6 @@ class PowerHandlerTest : public InProcessBrowserTest {
     base::RunLoop().RunUntilIdle();
   }
 
-  // Owned by chromeos::DBusThreadManager.
-  chromeos::FakePowerManagerClient* power_manager_client_;
-
   std::unique_ptr<TestPowerHandler> handler_;
   std::unique_ptr<TestPowerHandler::TestAPI> test_api_;
 
@@ -172,8 +164,8 @@ IN_PROC_BROWSER_TEST_F(PowerHandlerTest, SendInitialSettings) {
 
 // Verifies that WebUI receives updated settings when the lid state changes.
 IN_PROC_BROWSER_TEST_F(PowerHandlerTest, SendSettingsForLidStateChanges) {
-  power_manager_client_->SetLidState(PowerManagerClient::LidState::NOT_PRESENT,
-                                     base::TimeTicks());
+  chromeos::FakePowerManagerClient::Get()->SetLidState(
+      PowerManagerClient::LidState::NOT_PRESENT, base::TimeTicks());
   EXPECT_EQ(
       CreateSettingsChangedString(
           PowerHandler::IdleBehavior::DISPLAY_OFF_SLEEP,
@@ -181,8 +173,8 @@ IN_PROC_BROWSER_TEST_F(PowerHandlerTest, SendSettingsForLidStateChanges) {
           false /* lid_closed_controlled */, false /* has_lid */),
       GetLastSettingsChangedMessage());
 
-  power_manager_client_->SetLidState(PowerManagerClient::LidState::OPEN,
-                                     base::TimeTicks());
+  chromeos::FakePowerManagerClient::Get()->SetLidState(
+      PowerManagerClient::LidState::OPEN, base::TimeTicks());
   EXPECT_EQ(
       CreateSettingsChangedString(
           PowerHandler::IdleBehavior::DISPLAY_OFF_SLEEP,

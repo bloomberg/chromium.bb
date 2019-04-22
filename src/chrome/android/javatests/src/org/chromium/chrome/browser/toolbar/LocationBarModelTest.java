@@ -15,7 +15,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -24,11 +23,13 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.omnibox.UrlBarData;
+import org.chromium.chrome.browser.tab.MockTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.top.ToolbarLayout;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**
  * Tests for LocationBarModel.
@@ -67,7 +68,7 @@ public class LocationBarModelTest {
     @Test
     @SmallTest
     public void testDisplayAndEditText() throws Exception {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             TestLocationBarModel model = new TestLocationBarModel();
             model.mUrl = UrlConstants.NTP_URL;
             assertDisplayAndEditText(model, "", null);
@@ -91,7 +92,7 @@ public class LocationBarModelTest {
 
     private void assertDisplayAndEditText(
             ToolbarDataProvider dataProvider, String displayText, String editText) {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             UrlBarData urlBarData = dataProvider.getUrlBarData();
             Assert.assertEquals(
                     "Display text did not match", displayText, urlBarData.displayText.toString());
@@ -122,7 +123,7 @@ public class LocationBarModelTest {
             super(ContextUtils.getApplicationContext());
             initializeWithNative();
 
-            Tab tab = new Tab(0, false, null) {
+            Tab tab = new MockTab(0, false) {
                 @Override
                 public boolean isInitialized() {
                     return true;

@@ -67,8 +67,8 @@ IN_PROC_BROWSER_TEST_F(PasswordGenerationPopupViewTest,
 
   GetViewTester()->SimulateMouseMovementAt(gfx::Point(1, 1));
 
-  // Deletes |controller_|.
-  controller_->HideAndDestroy();
+  // This hides the popup and destroys the controller.
+  GetWebContents()->Close();
 }
 
 // Verify that we calling Show() with an invalid container does not crash.
@@ -76,6 +76,9 @@ IN_PROC_BROWSER_TEST_F(PasswordGenerationPopupViewTest,
 IN_PROC_BROWSER_TEST_F(PasswordGenerationPopupViewTest, InvalidContainerView) {
   controller_ = new autofill::TestPasswordGenerationPopupController(
       GetWebContents(), NULL);
+
+  // Creation of the popup view should fail, in which case the controller
+  // is destroyed.
   controller_->Show(PasswordGenerationPopupController::kOfferGeneration);
 }
 
@@ -85,6 +88,7 @@ IN_PROC_BROWSER_TEST_F(PasswordGenerationPopupViewTest,
   controller_ = new autofill::TestPasswordGenerationPopupController(
       GetWebContents(), GetNativeView());
   controller_->Show(PasswordGenerationPopupController::kEditGeneratedPassword);
+
   GetWebContents()->Close();
 }
 

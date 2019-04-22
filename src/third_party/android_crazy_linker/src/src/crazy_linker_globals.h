@@ -47,15 +47,28 @@ class Globals {
   // Initialized from LD_LIBRARY_PATH when ::Get() creates the instance.
   SearchPathList* search_path_list() { return &search_paths_; }
 
-  // Android API level for the current device (if known).
-  // This is static because it must be set before the first call to Get().
-  static int sdk_build_version;
+  // Save JavaVM instance pointer and minimum JNI version required by this
+  // client. If |java_vm| is not nullptr, it will be used to call JNI_OnLoad()
+  // on every library loaded through the crazy linker, if available, and
+  // JNI_UnLoad() when unloading them, respectively.
+  void InitJavaVm(void* java_vm, int min_jni_version) {
+    java_vm_ = java_vm;
+    min_jni_version_ = min_jni_version;
+  }
+
+  // Return current JavaVM instance pointer.
+  void* java_vm() const { return java_vm_; }
+
+  // Return current minimum JNI version number.
+  int minimum_jni_version() const { return min_jni_version_; }
 
   // Convenience function to get the global RDebug instance.
   static RDebug* GetRDebug() { return Get()->rdebug(); }
 
  private:
   pthread_mutex_t lock_;
+  void* java_vm_ = nullptr;
+  int min_jni_version_ = 0;
   LibraryList libraries_;
   SearchPathList search_paths_;
   RDebug rdebug_;

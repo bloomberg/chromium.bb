@@ -152,7 +152,8 @@ std::vector<double> CalculateDerivedFeaturesFromJSON(
     return std::vector<double>();
   }
 
-  std::unique_ptr<base::Value> json = base::JSONReader::Read(stringified);
+  std::unique_ptr<base::Value> json =
+      base::JSONReader::ReadDeprecated(stringified);
   if (!json) {
     return std::vector<double>();
   }

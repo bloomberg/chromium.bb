@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://html.spec.whatwg.org/multipage/workers.html#navigator.hardwareconcurrency
+// https://html.spec.whatwg.org/C/#navigator.hardwareconcurrency
 
 [
-    NoInterfaceObject,
-    Exposed=(Window,Worker)
-] interface NavigatorConcurrentHardware {
-    readonly attribute unsigned long long hardwareConcurrency;
+    Exposed=(Window, Worker)
+] interface mixin NavigatorConcurrentHardware {
+    [HighEntropy, MeasureAs=NavigatorHardwareConcurrency] readonly attribute unsigned long long hardwareConcurrency;
 };

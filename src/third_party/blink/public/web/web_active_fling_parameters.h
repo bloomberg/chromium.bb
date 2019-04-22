@@ -45,7 +45,7 @@ struct WebActiveFlingParameters {
   base::TimeTicks start_time;
 
   WebActiveFlingParameters()
-      : modifiers(0), source_device(kWebGestureDeviceTouchpad) {}
+      : modifiers(0), source_device(WebGestureDevice::kTouchpad) {}
 };
 }  // namespace blink
 

@@ -67,6 +67,11 @@ cr.define('chrome', function() {
       this.networkStates_ = this.networkStates_.concat(networks);
     },
 
+    /** @param {!{chrome.networkingPrivate.CertificateLists}} */
+    setCertificatesForTest: function(certificateLists) {
+      this.certificateLists_ = certificateLists;
+    },
+
     /**
      * @param {string} type
      * @return {?chrome.networkingPrivate.DeviceStateProperties}
@@ -151,8 +156,9 @@ cr.define('chrome', function() {
       var devices = [];
       Object.keys(this.deviceStates_).forEach(function(type) {
         var state = this.deviceStates_[type];
-        if (state.State != '')
+        if (state.State != '') {
           devices.push(state);
+        }
       }.bind(this));
       callback(devices);
       this.methodCalled('getDeviceStates');

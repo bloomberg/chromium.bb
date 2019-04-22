@@ -22,20 +22,17 @@ source_set("common") {
   public_deps = [
     "../../gn:default_deps",
     "../../include/perfetto/base",
+    "../../include/perfetto/trace_processor:trace_processor",
     "../../include/perfetto/traced:sys_stats_counters",
     "../../protos/perfetto/trace:lite",
     "../../protos/perfetto/trace/ftrace:lite",
     "../../protos/perfetto/trace/profiling:lite",
     "../../protos/third_party/pprof:lite",
     "../../src/base",
+    "../../src/trace_processor:lib",
   ]
   sources = [
-    "ftrace_event_formatter.cc",
-    "ftrace_event_formatter.h",
-    "ftrace_inode_handler.cc",
-    "ftrace_inode_handler.h",
     "main.cc",
-    "process_formatter.h",
     "trace_to_profile.cc",
     "trace_to_profile.h",
     "trace_to_systrace.cc",
@@ -44,6 +41,11 @@ source_set("common") {
     "utils.cc",
     "utils.h",
   ]
+  if (perfetto_build_standalone) {
+    deps = [
+      "../../gn/standalone:gen_git_revision",
+    ]
+  }
 }
 
 # Lite target for the WASM UI. Doesn't have any dependency on libprotobuf-full.

@@ -5,28 +5,29 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/service_manager/public/c/main.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_context.h"
-#include "services/service_manager/public/cpp/service_runner.h"
-#include "services/service_manager/tests/lifecycle/lifecycle_unittest.mojom.h"
+#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/cpp/service_executable/service_main.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
+#include "services/service_manager/tests/lifecycle/lifecycle.test-mojom.h"
 
 namespace {
 
 class Parent : public service_manager::Service,
                public service_manager::test::mojom::Parent {
  public:
-  Parent() {
+  explicit Parent(service_manager::mojom::ServiceRequest request)
+      : service_binding_(this, std::move(request)) {
     registry_.AddInterface<service_manager::test::mojom::Parent>(
         base::Bind(&Parent::Create, base::Unretained(this)));
   }
-  ~Parent() override {
-    parent_bindings_.CloseAllBindings();
-  }
+
+  ~Parent() override = default;
 
  private:
   // Service:
@@ -43,16 +44,19 @@ class Parent : public service_manager::Service,
   // service_manager::test::mojom::Parent:
   void ConnectToChild(ConnectToChildCallback callback) override {
     service_manager::test::mojom::LifecycleControlPtr lifecycle;
-    context()->connector()->BindInterface("lifecycle_unittest_app", &lifecycle);
-    {
-      base::RunLoop loop(base::RunLoop::Type::kNestableTasksAllowed);
-      lifecycle->Ping(loop.QuitClosure());
-      loop.Run();
-    }
+    service_binding_.GetConnector()->BindInterface("lifecycle_unittest_app",
+                                                   &lifecycle);
+
+    base::RunLoop loop(base::RunLoop::Type::kNestableTasksAllowed);
+    lifecycle->Ping(loop.QuitClosure());
+    loop.Run();
+
     std::move(callback).Run();
   }
-  void Quit() override { context()->QuitNow(); }
 
+  void Quit() override { Terminate(); }
+
+  service_manager::ServiceBinding service_binding_;
   service_manager::BinderRegistry registry_;
   mojo::BindingSet<service_manager::test::mojom::Parent> parent_bindings_;
 
@@ -61,7 +65,7 @@ class Parent : public service_manager::Service,
 
 }  // namespace
 
-MojoResult ServiceMain(MojoHandle service_request_handle) {
-  Parent* parent = new Parent;
-  return service_manager::ServiceRunner(parent).Run(service_request_handle);
+void ServiceMain(service_manager::mojom::ServiceRequest request) {
+  base::MessageLoop message_loop;
+  Parent(std::move(request)).RunUntilTermination();
 }

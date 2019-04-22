@@ -7,13 +7,13 @@
 #include <string>
 #include <vector>
 
+#include "base/base64.h"
 #include "base/command_line.h"
 #include "base/format_macros.h"
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/icu_string_conversions.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -663,6 +663,9 @@ bool TemplateURLRef::ParseParameter(size_t start,
   } else if (parameter == "google:imageThumbnail") {
     replacements->push_back(
         Replacement(TemplateURLRef::GOOGLE_IMAGE_THUMBNAIL, start));
+  } else if (parameter == "google:imageThumbnailBase64") {
+    replacements->push_back(
+        Replacement(TemplateURLRef::GOOGLE_IMAGE_THUMBNAIL_BASE64, start));
   } else if (parameter == "google:imageURL") {
     replacements->push_back(Replacement(TemplateURLRef::GOOGLE_IMAGE_URL,
                                         start));
@@ -1011,18 +1014,18 @@ std::string TemplateURLRef::HandleReplacements(
 
       case GOOGLE_INPUT_TYPE:
         DCHECK(!i->is_post_param);
-        HandleReplacement(
-            "oit", base::IntToString(search_terms_args.input_type), *i, &url);
+        HandleReplacement("oit",
+                          base::NumberToString(search_terms_args.input_type),
+                          *i, &url);
         break;
 
       case GOOGLE_CONTEXTUAL_SEARCH_VERSION:
         if (search_terms_args.contextual_search_params.version >= 0) {
           HandleReplacement(
               "ctxs",
-              base::IntToString(
+              base::NumberToString(
                   search_terms_args.contextual_search_params.version),
-              *i,
-              &url);
+              *i, &url);
         }
         break;
 
@@ -1035,17 +1038,17 @@ std::string TemplateURLRef::HandleReplacements(
 
         if (params.contextual_cards_version > 0) {
           args.push_back("ctxsl_coca=" +
-                         base::IntToString(params.contextual_cards_version));
+                         base::NumberToString(params.contextual_cards_version));
         }
         if (!params.home_country.empty())
           args.push_back("ctxs_hc=" + params.home_country);
         if (params.previous_event_id != 0) {
           args.push_back("ctxsl_pid=" +
-                         base::Int64ToString(params.previous_event_id));
+                         base::NumberToString(params.previous_event_id));
         }
         if (params.previous_event_results != 0) {
           args.push_back("ctxsl_per=" +
-                         base::IntToString(params.previous_event_results));
+                         base::NumberToString(params.previous_event_results));
         }
 
         HandleReplacement(std::string(), base::JoinString(args, "&"), *i, &url);
@@ -1065,8 +1068,9 @@ std::string TemplateURLRef::HandleReplacements(
         if (search_terms_args.page_classification !=
             metrics::OmniboxEventProto::INVALID_SPEC) {
           HandleReplacement(
-              "pgcl", base::IntToString(search_terms_args.page_classification),
-              *i, &url);
+              "pgcl",
+              base::NumberToString(search_terms_args.page_classification), *i,
+              &url);
         }
         break;
 
@@ -1157,6 +1161,16 @@ std::string TemplateURLRef::HandleReplacements(
           post_params_[i->index].content_type = "image/jpeg";
         break;
 
+      case GOOGLE_IMAGE_THUMBNAIL_BASE64: {
+        std::string base64_thumbnail_content;
+        base::Base64Encode(search_terms_args.image_thumbnail_content,
+                           &base64_thumbnail_content);
+        HandleReplacement(std::string(), base64_thumbnail_content, *i, &url);
+        if (i->is_post_param)
+          post_params_[i->index].content_type = "image/jpeg";
+        break;
+      }
+
       case GOOGLE_IMAGE_URL:
         if (search_terms_args.image_url.is_valid()) {
           HandleReplacement(
@@ -1166,19 +1180,19 @@ std::string TemplateURLRef::HandleReplacements(
 
       case GOOGLE_IMAGE_ORIGINAL_WIDTH:
         if (!search_terms_args.image_original_size.IsEmpty()) {
-          HandleReplacement(
-              std::string(),
-              base::IntToString(search_terms_args.image_original_size.width()),
-              *i, &url);
+          HandleReplacement(std::string(),
+                            base::NumberToString(
+                                search_terms_args.image_original_size.width()),
+                            *i, &url);
         }
         break;
 
       case GOOGLE_IMAGE_ORIGINAL_HEIGHT:
         if (!search_terms_args.image_original_size.IsEmpty()) {
-          HandleReplacement(
-              std::string(),
-              base::IntToString(search_terms_args.image_original_size.height()),
-              *i, &url);
+          HandleReplacement(std::string(),
+                            base::NumberToString(
+                                search_terms_args.image_original_size.height()),
+                            *i, &url);
         }
         break;
 
@@ -1291,7 +1305,7 @@ GURL TemplateURL::GenerateFaviconURL(const GURL& url) {
   GURL::Replacements rep;
 
   const char favicon_path[] = "/favicon.ico";
-  int favicon_path_len = arraysize(favicon_path) - 1;
+  int favicon_path_len = base::size(favicon_path) - 1;
 
   rep.SetPath(favicon_path, url::Component(0, favicon_path_len));
   rep.ClearUsername();

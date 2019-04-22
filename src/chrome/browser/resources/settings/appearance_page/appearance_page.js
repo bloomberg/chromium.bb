@@ -169,10 +169,12 @@ Polymer({
    * @private
    */
   getShowHomeSubLabel_: function(showHomepage, isNtp, homepageValue) {
-    if (!showHomepage)
+    if (!showHomepage) {
       return this.i18n('homeButtonDisabled');
-    if (isNtp)
+    }
+    if (isNtp) {
       return this.i18n('homePageNtp');
+    }
     return homepageValue || this.i18n('customWebAddress');
   },
 
@@ -274,8 +276,9 @@ Polymer({
    * @private
    */
   themeChanged_: function(themeId, useSystemTheme) {
-    if (this.prefs == undefined || useSystemTheme == undefined)
+    if (this.prefs == undefined || useSystemTheme == undefined) {
       return;
+    }
 
     if (themeId.length > 0) {
       assert(!useSystemTheme);

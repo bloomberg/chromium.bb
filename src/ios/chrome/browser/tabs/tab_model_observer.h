@@ -24,9 +24,6 @@
 // The given tab will be removed.
 - (void)tabModel:(TabModel*)model willRemoveTab:(Tab*)tab;
 
-// All tabs in the model will close.
-- (void)tabModelClosedAllTabs:(TabModel*)model;
-
 // A tab was removed at the given index.
 - (void)tabModel:(TabModel*)model
     didRemoveTab:(Tab*)tab
@@ -54,34 +51,14 @@
            previousTab:(Tab*)previousTab
                atIndex:(NSUInteger)index;
 
-// The number of Tabs in this TabModel changed.
-- (void)tabModelDidChangeTabCount:(TabModel*)model;
-
-// |tab| is about to start loading a new URL.
-- (void)tabModel:(TabModel*)model willStartLoadingTab:(Tab*)tab;
-
 // Some properties about the given tab changed, such as the URL or title.
 - (void)tabModel:(TabModel*)model didChangeTab:(Tab*)tab;
-
-// |tab| started loading a new URL.
-- (void)tabModel:(TabModel*)model didStartLoadingTab:(Tab*)tab;
-
-// |tab| finished loading a new URL.
-- (void)tabModel:(TabModel*)model didFinishLoadingTab:(Tab*)tab;
 
 // |tab| has been added to the tab model and will open. If |tab| isn't the
 // active tab, |inBackground| is YES, NO otherwise.
 - (void)tabModel:(TabModel*)model
     newTabWillOpen:(Tab*)tab
       inBackground:(BOOL)background;
-
-// |tab| stopped being the active tab.
-- (void)tabModel:(TabModel*)model didDeselectTab:(Tab*)tab;
-
-// The |tab|'s snapshot was changed to |image|.
-- (void)tabModel:(TabModel*)model
-    didChangeTabSnapshot:(Tab*)tab
-               withImage:image;
 
 @end
 

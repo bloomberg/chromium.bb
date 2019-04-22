@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.payments;
 
+import android.support.annotation.Nullable;
+
 import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.payments.mojom.PaymentMethodData;
 
@@ -11,8 +13,6 @@ import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import javax.annotation.Nullable;
 
 /**
  * The interface that a payment app implements. A payment app can get its data from Chrome autofill,
@@ -31,6 +31,31 @@ public interface PaymentApp {
          */
         void onInstrumentsReady(PaymentApp app, List<PaymentInstrument> instruments);
     }
+
+    /**
+     * The interface for listener to payment method change events. Note: What the spec calls
+     * "payment methods" in the context of a "change event", this code calls "instruments".
+     */
+    public interface PaymentMethodChangeCallback {
+        /**
+         * Called to notify merchant of payment method change. The payment app should block user
+         * interaction until updateWith() or noUpdatedPaymentDetails().
+         * https://w3c.github.io/payment-request/#paymentmethodchangeevent-interface
+         *
+         * @param methodName         Method name. For example, "https://google.com/pay".
+         * @param stringifiedDetails JSON-serialzied object. For example, {"type": "debit"}.
+         */
+        void onPaymentMethodChange(String methodName, String stringifiedDetails);
+    }
+
+    /**
+     * Sets the listener to payment method change events. Should be called before a payment method
+     * has been selected, e.g., before getInstruments(), which constructs the payment methods.
+     *
+     * @param methodChangeCallback The object that will receive notifications of payment method
+     *                             changes.
+     */
+    default void setPaymentMethodChangeCallback(PaymentMethodChangeCallback methodChangeCallback) {}
 
     /**
      * Provides a list of all payment instruments in this app. For example, this can be all credit

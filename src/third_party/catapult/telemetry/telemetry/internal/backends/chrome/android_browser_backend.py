@@ -59,7 +59,7 @@ class AndroidBrowserBackend(chrome_browser_backend.ChromeBrowserBackend):
     # stopping also clears the app state in Android's activity manager.
     self.platform_backend.StopApplication(self._backend_settings.package)
 
-  def Start(self, startup_args, startup_url=None):
+  def Start(self, startup_args):
     assert not startup_args, (
         'Startup arguments for Android should be set during '
         'possible_browser.SetUpEnvironment')
@@ -68,7 +68,7 @@ class AndroidBrowserBackend(chrome_browser_backend.ChromeBrowserBackend):
     self.device.StartActivity(
         intent.Intent(package=self._backend_settings.package,
                       activity=self._backend_settings.activity,
-                      action=None, data=startup_url, category=None,
+                      action=None, data='about:blank', category=None,
                       extras=user_agent_dict),
         blocking=True)
     try:
@@ -123,17 +123,6 @@ class AndroidBrowserBackend(chrome_browser_backend.ChromeBrowserBackend):
             action=None,
             flags=[intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED]),
         blocking=True)
-
-  def GetBrowserStartupUrl(self):
-    # TODO(crbug.com/787834): Move to the corresponding possible-browser class.
-    if self.browser_options.startup_url:
-      return self.browser_options.startup_url
-    elif self.browser_options.profile_dir:
-      return None
-    else:
-      # If we have no existing tabs start with a blank page since default
-      # startup with the NTP can lead to race conditions with Telemetry
-      return 'about:blank'
 
   def ForceJavaHeapGarbageCollection(self):
     # Send USR1 signal to force GC on Chrome processes forked from Zygote.

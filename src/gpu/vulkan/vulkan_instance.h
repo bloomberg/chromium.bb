@@ -29,7 +29,8 @@ class VULKAN_EXPORT VulkanInstance {
   bool Initialize(const std::vector<const char*>& required_extensions,
                   const std::vector<const char*>& required_layers);
 
-  void Destroy();
+  // VkApplicationInfo.apiVersion value used to initialize the instance.
+  uint32_t api_version() const { return api_version_; }
 
   const gfx::ExtensionSet& enabled_extensions() const {
     return enabled_extensions_;
@@ -38,6 +39,10 @@ class VULKAN_EXPORT VulkanInstance {
   VkInstance vk_instance() { return vk_instance_; }
 
  private:
+  void Destroy();
+
+  uint32_t api_version_;
+
   VkInstance vk_instance_ = VK_NULL_HANDLE;
   gfx::ExtensionSet enabled_extensions_;
   bool debug_report_enabled_ = false;

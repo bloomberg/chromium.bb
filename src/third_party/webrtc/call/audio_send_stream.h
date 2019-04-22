@@ -21,13 +21,13 @@
 #include "api/audio_codecs/audio_encoder_factory.h"
 #include "api/audio_codecs/audio_format.h"
 #include "api/call/transport.h"
-#include "api/crypto/cryptooptions.h"
-#include "api/crypto/frameencryptorinterface.h"
+#include "api/crypto/crypto_options.h"
+#include "api/crypto/frame_encryptor_interface.h"
 #include "api/media_transport_interface.h"
-#include "api/rtpparameters.h"
+#include "api/rtp_parameters.h"
+#include "api/scoped_refptr.h"
 #include "call/rtp_config.h"
 #include "modules/audio_processing/include/audio_processing_statistics.h"
-#include "rtc_base/scoped_ref_ptr.h"
 
 namespace webrtc {
 
@@ -42,7 +42,11 @@ class AudioSendStream {
     // TODO(solenberg): Harmonize naming and defaults with receive stream stats.
     uint32_t local_ssrc = 0;
     int64_t bytes_sent = 0;
+    // https://w3c.github.io/webrtc-stats/#dom-rtcoutboundrtpstreamstats-retransmittedbytessent
+    uint64_t retransmitted_bytes_sent = 0;
     int32_t packets_sent = 0;
+    // https://w3c.github.io/webrtc-stats/#dom-rtcoutboundrtpstreamstats-retransmittedpacketssent
+    uint64_t retransmitted_packets_sent = 0;
     int32_t packets_lost = -1;
     float fraction_lost = -1.0f;
     std::string codec_name;
@@ -78,6 +82,10 @@ class AudioSendStream {
 
       // Sender SSRC.
       uint32_t ssrc = 0;
+
+      // The value to send in the RID RTP header extension if the extension is
+      // included in the list of extensions.
+      std::string rid;
 
       // The value to send in the MID RTP header extension if the extension is
       // included in the list of extensions.

@@ -74,6 +74,11 @@ class ConnectParams {
     return std::move(interface_pipe_);
   }
 
+  void set_priority(mojom::BindInterfacePriority priority) {
+    priority_ = priority;
+  }
+  mojom::BindInterfacePriority priority() const { return priority_; }
+
   void set_connection_callback(ConnectionCallback callback) {
     connection_callback_ = std::move(callback);
   }
@@ -100,6 +105,8 @@ class ConnectParams {
   mojom::PIDReceiverRequest pid_receiver_request_;
   std::string interface_name_;
   mojo::ScopedMessagePipeHandle interface_pipe_;
+  mojom::BindInterfacePriority priority_ =
+      mojom::BindInterfacePriority::kImportant;
   ConnectionCallback connection_callback_;
 
   // These values are supplied to the response callback for WarmService()/

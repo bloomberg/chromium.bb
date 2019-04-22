@@ -383,8 +383,9 @@ TEST_F(SupervisedUserWhitelistInstallerTest, InstallNewWhitelist) {
 
   // The actual file contents don't have to be equal, but the parsed values
   // should be.
-  EXPECT_TRUE(base::JSONReader::Read(kWhitelistContents)
-                  ->Equals(base::JSONReader::Read(whitelist_contents).get()))
+  EXPECT_TRUE(
+      base::JSONReader::ReadDeprecated(kWhitelistContents)
+          ->Equals(base::JSONReader::ReadDeprecated(whitelist_contents).get()))
       << kWhitelistContents << " vs. " << whitelist_contents;
 
   EXPECT_EQ(JsonToString(pref_),

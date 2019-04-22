@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/stl_util.h"
 #include "net/websockets/websocket_extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -142,7 +143,7 @@ TEST(WebSocketExtensionParserTest, InvalidPatterns) {
       "foo; bar=\"baz\\"    // ends with backslash
   };
 
-  for (size_t i = 0; i < arraysize(patterns); ++i) {
+  for (size_t i = 0; i < base::size(patterns); ++i) {
     WebSocketExtensionParser parser;
     EXPECT_FALSE(parser.Parse(patterns[i]));
     EXPECT_EQ(0U, parser.extensions().size());

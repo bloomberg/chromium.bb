@@ -63,6 +63,13 @@ static int64_t AVIOSeekOperation(void* opaque, int64_t offset, int whence) {
   return new_offset;
 }
 
+static void LogContainer(bool is_local_file,
+                         container_names::MediaContainerName container) {
+  base::UmaHistogramSparse("Media.DetectedContainer", container);
+  if (is_local_file)
+    base::UmaHistogramSparse("Media.DetectedContainer.Local", container);
+}
+
 FFmpegGlue::FFmpegGlue(FFmpegURLProtocol* protocol) {
   // Initialize an AVIOContext using our custom read and seek operations.  Don't
   // keep pointers to the buffer since FFmpeg may reallocate it on the fly.  It
@@ -125,9 +132,7 @@ bool FFmpegGlue::OpenContext(bool is_local_file) {
       return false;
 
     container_ = container_names::DetermineContainer(buffer.data(), num_read);
-    base::UmaHistogramSparse("Media.DetectedContainer", container_);
-    if (is_local_file)
-      base::UmaHistogramSparse("Media.DetectedContainer.Local", container_);
+    LogContainer(is_local_file, container_);
 
     detected_hls_ =
         container_ == container_names::MediaContainerName::CONTAINER_HLS;
@@ -157,7 +162,7 @@ bool FFmpegGlue::OpenContext(bool is_local_file) {
     container_ = container_names::CONTAINER_AVI;
 
   DCHECK_NE(container_, container_names::CONTAINER_UNKNOWN);
-  base::UmaHistogramSparse("Media.DetectedContainer", container_);
+  LogContainer(is_local_file, container_);
 
   return true;
 }

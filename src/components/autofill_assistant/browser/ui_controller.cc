@@ -9,8 +9,20 @@
 
 namespace autofill_assistant {
 
-PaymentInformation::PaymentInformation() : succeed(false) {}
+UiController::UiController() = default;
+UiController::~UiController() = default;
 
-PaymentInformation::~PaymentInformation() = default;
+void UiController::OnStateChanged(AutofillAssistantState new_state) {}
+void UiController::OnStatusMessageChanged(const std::string& message) {}
+void UiController::WillShutdown(Metrics::DropOutReason reason) {}
+void UiController::OnSuggestionsChanged(const std::vector<Chip>& suggestions) {}
+void UiController::OnActionsChanged(const std::vector<Chip>& actions) {}
+void UiController::OnPaymentRequestChanged(
+    const PaymentRequestOptions* options) {}
+void UiController::OnDetailsChanged(const Details* details) {}
+void UiController::OnInfoBoxChanged(const InfoBox* info_box) {}
+void UiController::OnProgressChanged(int progress) {}
+void UiController::OnProgressVisibilityChanged(bool visible) {}
+void UiController::OnTouchableAreaChanged(const std::vector<RectF>& areas) {}
 
 }  // namespace autofill_assistant

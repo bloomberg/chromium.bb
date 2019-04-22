@@ -97,8 +97,10 @@ void DOMSelection::UpdateFrameSelection(
   Element* focused_element = GetFrame()->GetDocument()->FocusedElement();
   frame_selection.DidSetSelectionDeprecated(options);
   if (GetFrame() && GetFrame()->GetDocument() &&
-      focused_element != GetFrame()->GetDocument()->FocusedElement())
-    UseCounter::Count(GetFrame(), WebFeature::kSelectionFuncionsChangeFocus);
+      focused_element != GetFrame()->GetDocument()->FocusedElement()) {
+    UseCounter::Count(GetFrame()->GetDocument(),
+                      WebFeature::kSelectionFuncionsChangeFocus);
+  }
 }
 
 VisibleSelection DOMSelection::GetVisibleSelection() const {
@@ -231,7 +233,8 @@ void DOMSelection::collapse(Node* node,
   // 1. If node is null, this method must behave identically as
   // removeAllRanges() and abort these steps.
   if (!node) {
-    UseCounter::Count(GetFrame(), WebFeature::kSelectionCollapseNull);
+    UseCounter::Count(GetFrame()->GetDocument(),
+                      WebFeature::kSelectionCollapseNull);
     GetFrame()->Selection().Clear();
     return;
   }
@@ -356,12 +359,14 @@ void DOMSelection::setBaseAndExtent(Node* base_node,
   // TODO(editing-dev): Behavior on where base or extent is null is still
   // under discussion: https://github.com/w3c/selection-api/issues/72
   if (!base_node) {
-    UseCounter::Count(GetFrame(), WebFeature::kSelectionSetBaseAndExtentNull);
+    UseCounter::Count(GetFrame()->GetDocument(),
+                      WebFeature::kSelectionSetBaseAndExtentNull);
     GetFrame()->Selection().Clear();
     return;
   }
   if (!extent_node) {
-    UseCounter::Count(GetFrame(), WebFeature::kSelectionSetBaseAndExtentNull);
+    UseCounter::Count(GetFrame()->GetDocument(),
+                      WebFeature::kSelectionSetBaseAndExtentNull);
     extent_offset = 0;
   }
 
@@ -447,16 +452,18 @@ void DOMSelection::modify(const String& alter_string,
   else
     return;
 
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of UpdateStyleAndLayout
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  GetFrame()->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetFrame()->GetDocument()->UpdateStyleAndLayout();
 
   Element* focused_element = GetFrame()->GetDocument()->FocusedElement();
   GetFrame()->Selection().Modify(alter, direction, granularity,
                                  SetSelectionBy::kSystem);
   if (GetFrame() && GetFrame()->GetDocument() &&
-      focused_element != GetFrame()->GetDocument()->FocusedElement())
-    UseCounter::Count(GetFrame(), WebFeature::kSelectionFuncionsChangeFocus);
+      focused_element != GetFrame()->GetDocument()->FocusedElement()) {
+    UseCounter::Count(GetFrame()->GetDocument(),
+                      WebFeature::kSelectionFuncionsChangeFocus);
+  }
 }
 
 // https://www.w3.org/TR/selection-api/#dom-selection-extend
@@ -662,7 +669,7 @@ void DOMSelection::addRange(Range* new_range) {
   // TODO(tkent): "Merge the ranges if they intersect" was removed. We show a
   // warning message for a while, and continue to collect the usage data.
   // <https://code.google.com/p/chromium/issues/detail?id=353069>.
-  Deprecation::CountDeprecation(GetFrame(),
+  Deprecation::CountDeprecation(tree_scope_->GetDocument(),
                                 WebFeature::kSelectionAddRangeIntersect);
 }
 
@@ -679,9 +686,9 @@ void DOMSelection::deleteFromDocument() {
     return;
   }
 
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of UpdateStyleAndLayout
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  GetFrame()->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetFrame()->GetDocument()->UpdateStyleAndLayout();
 
   // The following code is necessary for
   // editing/selection/deleteFromDocument-crash.html, which assumes
@@ -714,10 +721,10 @@ bool DOMSelection::containsNode(const Node* n, bool allow_partial) const {
 
   unsigned node_index = n->NodeIndex();
 
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of UpdateStyleAndLayout
   // needs to be audited.  See http://crbug.com/590369 for more details.
   // |VisibleSelection::toNormalizedEphemeralRange| requires clean layout.
-  GetFrame()->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetFrame()->GetDocument()->UpdateStyleAndLayout();
 
   FrameSelection& selection = GetFrame()->Selection();
   const EphemeralRange selected_range =
@@ -775,9 +782,9 @@ String DOMSelection::toString() {
   if (!IsAvailable())
     return String();
 
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // TODO(editing-dev): The use of UpdateStyleAndLayout
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  GetFrame()->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  GetFrame()->GetDocument()->UpdateStyleAndLayout();
 
   DocumentLifecycle::DisallowTransitionScope disallow_transition(
       GetFrame()->GetDocument()->Lifecycle());
@@ -834,12 +841,13 @@ bool DOMSelection::IsValidForPosition(Node* node) const {
 
 void DOMSelection::AddConsoleWarning(const String& message) {
   if (tree_scope_) {
-    tree_scope_->GetDocument().AddConsoleMessage(ConsoleMessage::Create(
-        kJSMessageSource, kWarningMessageLevel, message));
+    tree_scope_->GetDocument().AddConsoleMessage(
+        ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
+                               mojom::ConsoleMessageLevel::kWarning, message));
   }
 }
 
-void DOMSelection::Trace(blink::Visitor* visitor) {
+void DOMSelection::Trace(Visitor* visitor) {
   visitor->Trace(tree_scope_);
   ScriptWrappable::Trace(visitor);
   ContextClient::Trace(visitor);

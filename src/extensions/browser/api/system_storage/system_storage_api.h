@@ -16,7 +16,7 @@ namespace extensions {
 // call relative to browser UI thread.
 class SystemStorageGetInfoFunction : public UIThreadExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("system.storage.getInfo", SYSTEM_STORAGE_GETINFO);
+  DECLARE_EXTENSION_FUNCTION("system.storage.getInfo", SYSTEM_STORAGE_GETINFO)
   SystemStorageGetInfoFunction();
 
  private:
@@ -31,7 +31,7 @@ class SystemStorageGetInfoFunction : public UIThreadExtensionFunction {
 class SystemStorageEjectDeviceFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("system.storage.ejectDevice",
-                             SYSTEM_STORAGE_EJECTDEVICE);
+                             SYSTEM_STORAGE_EJECTDEVICE)
 
  protected:
   ~SystemStorageEjectDeviceFunction() override;
@@ -50,7 +50,7 @@ class SystemStorageGetAvailableCapacityFunction
     : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("system.storage.getAvailableCapacity",
-                             SYSTEM_STORAGE_GETAVAILABLECAPACITY);
+                             SYSTEM_STORAGE_GETAVAILABLECAPACITY)
   SystemStorageGetAvailableCapacityFunction();
 
  private:

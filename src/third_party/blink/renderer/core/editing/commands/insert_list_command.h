@@ -37,15 +37,11 @@ class CORE_EXPORT InsertListCommand final : public CompositeEditCommand {
  public:
   enum Type { kOrderedList, kUnorderedList };
 
-  static InsertListCommand* Create(Document& document, Type list_type) {
-    return MakeGarbageCollected<InsertListCommand>(document, list_type);
-  }
-
   InsertListCommand(Document&, Type);
 
   bool PreservesTypingStyle() const override { return true; }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void DoApply(EditingState*) override;

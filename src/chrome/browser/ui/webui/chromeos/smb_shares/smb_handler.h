@@ -34,6 +34,9 @@ class SmbHandler : public content::WebUIMessageHandler {
   // WebUI call to start file share discovery on the network.
   void HandleStartDiscovery(const base::ListValue* args);
 
+  // WebUI call to update the credentials of a mounted share.
+  void HandleUpdateCredentials(const base::ListValue* args);
+
   // Callback handler for SmbMount.
   void HandleSmbMountResponse(const std::string& callback_id,
                               SmbMountResult result);

@@ -38,6 +38,7 @@ jumbo_component("aura") {
     "local/window_port_local.h",
     "mus/capture_synchronizer.h",
     "mus/capture_synchronizer_delegate.h",
+    "mus/client_side_window_move_handler.h",
     "mus/client_surface_embedder.h",
     "mus/drag_drop_controller_host.h",
     "mus/drag_drop_controller_mus.h",
@@ -79,6 +80,7 @@ jumbo_component("aura") {
     "window_event_dispatcher.h",
     "window_event_dispatcher_observer.h",
     "window_observer.h",
+    "window_occlusion_change_builder.h",
     "window_occlusion_tracker.h",
     "window_port.h",
     "window_targeter.h",
@@ -114,6 +116,7 @@ jumbo_component("aura") {
     "mouse_location_manager.cc",
     "mouse_location_manager.h",
     "mus/capture_synchronizer.cc",
+    "mus/client_side_window_move_handler.cc",
     "mus/client_surface_embedder.cc",
     "mus/drag_drop_controller_mus.cc",
     "mus/embed_root.cc",
@@ -123,6 +126,8 @@ jumbo_component("aura") {
     "mus/in_flight_change.cc",
     "mus/input_method_mus.cc",
     "mus/mus_context_factory.cc",
+    "mus/mus_lsi_allocator.cc",
+    "mus/mus_lsi_allocator.h",
     "mus/mus_mouse_location_updater.cc",
     "mus/os_exchange_data_provider_mus.cc",
     "mus/property_converter.cc",
@@ -146,6 +151,7 @@ jumbo_component("aura") {
     "window_delegate.cc",
     "window_event_dispatcher.cc",
     "window_observer.cc",
+    "window_occlusion_change_builder.cc",
     "window_occlusion_tracker.cc",
     "window_port.cc",
     "window_port_for_shutdown.cc",
@@ -155,11 +161,7 @@ jumbo_component("aura") {
     "window_tree_host_platform.cc",
   ]
 
-  # aura_interactive_ui_tests needs access to native_window_occlusion_tracker.h.
-  friend = [
-    ":aura_interactive_ui_tests",
-    ":aura_unittests",
-  ]
+  friend = [ ":*" ]
 
   defines = [ "AURA_IMPLEMENTATION" ]
 
@@ -184,7 +186,8 @@ jumbo_component("aura") {
     "//services/ws/public/mojom",
     "//skia",
     "//ui/base",
-    "//ui/base/ime",
+    "//ui/base/clipboard",
+    "//ui/base/ime/init",
     "//ui/display",
     "//ui/events",
     "//ui/events:dom_keyboard_layout",
@@ -199,6 +202,7 @@ jumbo_component("aura") {
   ]
 
   public_deps = [
+    "//ui/base/ime",
     "//ui/compositor",
   ]
 
@@ -216,6 +220,10 @@ jumbo_component("aura") {
       "//ipc",
       "//ui/platform_window/win",
     ]
+  }
+
+  if (is_win) {
+    libs = [ "wtsapi32.lib" ]
   }
 
   if (use_ozone) {
@@ -297,8 +305,8 @@ jumbo_static_library("test_support") {
     ":aura",
     "//services/ws/common",
 
-    # Must be public as headers include ui_features.h.
-    "//ui/base:ui_features",
+    # Must be public as headers include buildflags.h.
+    "//ui/base:buildflags",
   ]
   deps = [
     "//base/test:test_support",
@@ -310,7 +318,7 @@ jumbo_static_library("test_support") {
     "//skia",
     "//testing/gtest",
     "//ui/base:test_support",
-    "//ui/base/ime",
+    "//ui/base/ime/init",
     "//ui/compositor:test_support",
     "//ui/display",
     "//ui/display/manager",
@@ -361,13 +369,14 @@ executable("demo") {
     "//skia",
     "//third_party/icu",
     "//ui/base",
-    "//ui/base/ime",
+    "//ui/base/ime/init",
     "//ui/compositor",
     "//ui/compositor:test_support",
     "//ui/display",
     "//ui/events",
     "//ui/gfx",
     "//ui/gfx/geometry",
+    "//ui/gl",
     "//ui/gl/init",
   ]
 
@@ -379,9 +388,9 @@ executable("demo") {
 test("aura_unittests") {
   sources = [
     "../compositor_extra/shadow_unittest.cc",
-    "//ui/aura_extra/window_occlusion_impl_unittest_win.cc",
     "gestures/gesture_recognizer_unittest.cc",
     "mouse_location_manager_unittest.cc",
+    "mus/client_side_window_move_handler_unittest.cc",
     "mus/drag_drop_controller_mus_unittest.cc",
     "mus/focus_synchronizer_unittest.cc",
     "mus/gesture_synchronizer_unittest.cc",
@@ -395,6 +404,7 @@ test("aura_unittests") {
     "test/aura_test_suite.h",
     "test/run_all_unittests.cc",
     "window_event_dispatcher_unittest.cc",
+    "window_occlusion_change_builder_unittest.cc",
     "window_occlusion_tracker_unittest.cc",
     "window_targeter_unittest.cc",
     "window_tree_host_unittest.cc",
@@ -417,7 +427,9 @@ test("aura_unittests") {
     "//skia",
     "//testing/gtest",
     "//ui/aura_extra",
+    "//ui/aura_extra:tests",
     "//ui/base:test_support",
+    "//ui/base/clipboard:clipboard_types",
     "//ui/compositor:test_support",
     "//ui/compositor_extra",
     "//ui/display:test_support",
@@ -451,7 +463,7 @@ source_set("aura_interactive_ui_tests") {
       "//base/test:test_support",
       "//net",
       "//testing/gtest",
-      "//ui/base/ime:ime",
+      "//ui/base/ime/init",
       "//ui/display:display",
       "//ui/gfx",
       "//ui/gfx/geometry",

@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/synchronization/waitable_event.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/mojom/net/ip_address_space.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
@@ -29,7 +30,6 @@
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/network/content_security_policy_parsers.h"
-#include "third_party/blink/renderer/platform/waitable_event.h"
 #include "third_party/blink/renderer/platform/web_thread_supporting_gc.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
@@ -57,9 +57,15 @@ class FakeWorkerGlobalScope : public WorkerGlobalScope {
   }
 
   // WorkerGlobalScope
-  void ImportModuleScript(
+  void FetchAndRunClassicScript(
+      const KURL& script_url,
+      const FetchClientSettingsObjectSnapshot& outside_settings_object,
+      const v8_inspector::V8StackTraceId& stack_id) override {
+    NOTREACHED();
+  }
+  void FetchAndRunModuleScript(
       const KURL& module_url_record,
-      FetchClientSettingsObjectSnapshot* outside_settings_object,
+      const FetchClientSettingsObjectSnapshot& outside_settings_object,
       network::mojom::FetchCredentialsMode) override {
     NOTREACHED();
   }
@@ -72,7 +78,7 @@ class WorkerThreadForTest : public WorkerThread {
   explicit WorkerThreadForTest(
       WorkerReportingProxy& mock_worker_reporting_proxy)
       : WorkerThread(mock_worker_reporting_proxy),
-        worker_backing_thread_(WorkerBackingThread::Create(
+        worker_backing_thread_(std::make_unique<WorkerBackingThread>(
             ThreadCreationParams(WebThreadType::kTestThread))) {}
 
   ~WorkerThreadForTest() override = default;
@@ -91,14 +97,16 @@ class WorkerThreadForTest : public WorkerThread {
     Vector<CSPHeaderAndType> headers{
         {"contentSecurityPolicy", kContentSecurityPolicyHeaderTypeReport}};
     auto creation_params = std::make_unique<GlobalScopeCreationParams>(
-        script_url, mojom::ScriptType::kClassic, "fake user agent",
+        script_url, mojom::ScriptType::kClassic,
+        OffMainThreadWorkerScriptFetchOption::kDisabled,
+        "fake global scope name", "fake user agent",
         nullptr /* web_worker_fetch_context */, headers,
         network::mojom::ReferrerPolicy::kDefault, security_origin,
         false /* starter_secure_context */,
         CalculateHttpsState(security_origin), worker_clients,
         mojom::IPAddressSpace::kLocal, nullptr,
         base::UnguessableToken::Create(),
-        std::make_unique<WorkerSettings>(Settings::Create().get()),
+        std::make_unique<WorkerSettings>(std::make_unique<Settings>().get()),
         kV8CacheOptionsDefault, nullptr /* worklet_module_responses_map */);
 
     Start(std::move(creation_params),
@@ -110,9 +118,9 @@ class WorkerThreadForTest : public WorkerThread {
   }
 
   void WaitForInit() {
-    WaitableEvent completion_event;
+    base::WaitableEvent completion_event;
     GetWorkerBackingThread().BackingThread().PostTask(
-        FROM_HERE, CrossThreadBind(&WaitableEvent::Signal,
+        FROM_HERE, CrossThreadBind(&base::WaitableEvent::Signal,
                                    CrossThreadUnretained(&completion_event)));
     completion_event.Wait();
   }
@@ -130,6 +138,32 @@ class WorkerThreadForTest : public WorkerThread {
   }
 
   std::unique_ptr<WorkerBackingThread> worker_backing_thread_;
+};
+
+class MockWorkerReportingProxy final : public WorkerReportingProxy {
+ public:
+  MockWorkerReportingProxy() = default;
+  ~MockWorkerReportingProxy() override = default;
+
+  MOCK_METHOD1(DidCreateWorkerGlobalScope, void(WorkerOrWorkletGlobalScope*));
+  MOCK_METHOD0(DidInitializeWorkerContext, void());
+  MOCK_METHOD2(WillEvaluateClassicScriptMock,
+               void(size_t scriptSize, size_t cachedMetadataSize));
+  MOCK_METHOD1(DidEvaluateClassicScript, void(bool success));
+  MOCK_METHOD0(DidCloseWorkerGlobalScope, void());
+  MOCK_METHOD0(WillDestroyWorkerGlobalScope, void());
+  MOCK_METHOD0(DidTerminateWorkerThread, void());
+
+  void WillEvaluateClassicScript(size_t script_size,
+                                 size_t cached_metadata_size) override {
+    script_evaluation_event_.Signal();
+    WillEvaluateClassicScriptMock(script_size, cached_metadata_size);
+  }
+
+  void WaitUntilScriptEvaluation() { script_evaluation_event_.Wait(); }
+
+ private:
+  base::WaitableEvent script_evaluation_event_;
 };
 
 }  // namespace blink

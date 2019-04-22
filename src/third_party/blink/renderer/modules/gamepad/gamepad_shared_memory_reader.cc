@@ -3,9 +3,13 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/modules/gamepad/gamepad_shared_memory_reader.h"
+
 #include "base/metrics/histogram_macros.h"
+#include "device/gamepad/public/cpp/gamepads.h"
+#include "device/gamepad/public/mojom/gamepad_hardware_buffer.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/platform/interface_provider.h"
+#include "third_party/blink/public/platform/web_gamepad_listener.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 
 namespace blink {
@@ -15,7 +19,10 @@ GamepadSharedMemoryReader::GamepadSharedMemoryReader(LocalFrame& frame)
   frame.GetInterfaceProvider().GetInterface(
       mojo::MakeRequest(&gamepad_monitor_));
   device::mojom::blink::GamepadObserverPtr observer;
-  binding_.Bind(mojo::MakeRequest(&observer));
+  // See https://bit.ly/2S0zRAS for task types
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      frame.GetTaskRunner(TaskType::kMiscPlatformAPI);
+  binding_.Bind(mojo::MakeRequest(&observer, task_runner), task_runner);
   gamepad_monitor_->SetObserver(std::move(observer));
 }
 

@@ -19,7 +19,6 @@
 #include "chrome/browser/ui/views/media_router/cast_dialog_sink_button.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/views/chrome_views_test_base.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -80,6 +79,7 @@ class MockCastDialogController : public CastDialogController {
   MOCK_METHOD1(
       ChooseLocalFile,
       void(base::OnceCallback<void(const ui::SelectedFileInfo*)> callback));
+  MOCK_METHOD1(ClearIssue, void(const Issue::Id& issue_id));
 };
 
 class CastDialogViewTest : public ChromeViewsTestBase {
@@ -141,19 +141,12 @@ class CastDialogViewTest : public ChromeViewsTestBase {
     return dialog_->sources_menu_runner_for_test();
   }
 
-  content::TestBrowserThreadBundle test_thread_bundle_;
   std::unique_ptr<views::Widget> anchor_widget_;
   MockCastDialogController controller_;
   CastDialogView* dialog_ = nullptr;
 };
 
-// Flaky on Mac. https://crbug.com/843599
-#if defined(OS_MACOSX)
-#define MAYBE_ShowAndHideDialog DISABLED_ShowAndHideDialog
-#else
-#define MAYBE_ShowAndHideDialog ShowAndHideDialog
-#endif
-TEST_F(CastDialogViewTest, MAYBE_ShowAndHideDialog) {
+TEST_F(CastDialogViewTest, ShowAndHideDialog) {
   EXPECT_FALSE(CastDialogView::IsShowing());
   EXPECT_EQ(nullptr, CastDialogView::GetCurrentDialogWidget());
 
@@ -200,6 +193,19 @@ TEST_F(CastDialogViewTest, StopCasting) {
   EXPECT_CALL(controller_,
               StopCasting(model.media_sinks()[1].route->media_route_id()));
   SinkPressedAtIndex(1);
+}
+
+TEST_F(CastDialogViewTest, ClearIssue) {
+  std::vector<UIMediaSink> media_sinks = {CreateAvailableSink()};
+  media_sinks[0].issue = Issue(IssueInfo("title", IssueInfo::Action::DISMISS,
+                                         IssueInfo::Severity::WARNING));
+  CastDialogModel model = CreateModelWithSinks(std::move(media_sinks));
+  InitializeDialogWithModel(model);
+  // When there is an issue, clicking on an available sink should clear the
+  // issue instead of starting casting.
+  EXPECT_CALL(controller_, StartCasting(_, _)).Times(0);
+  EXPECT_CALL(controller_, ClearIssue(model.media_sinks()[0].issue->id()));
+  SinkPressedAtIndex(0);
 }
 
 TEST_F(CastDialogViewTest, ShowSourcesMenu) {

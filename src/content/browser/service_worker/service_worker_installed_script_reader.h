@@ -12,6 +12,7 @@
 #include "content/browser/service_worker/service_worker_disk_cache.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/system/data_pipe.h"
+#include "mojo/public/cpp/system/simple_watcher.h"
 #include "services/network/public/cpp/net_adapters.h"
 
 namespace content {

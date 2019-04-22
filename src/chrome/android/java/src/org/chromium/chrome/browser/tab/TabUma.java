@@ -6,20 +6,21 @@ package org.chromium.chrome.browser.tab;
 
 import android.os.SystemClock;
 import android.support.annotation.IntDef;
+import android.text.format.DateUtils;
 
 import org.chromium.base.UserData;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.tab.Tab.TabHidingType;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
+import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
-import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
-import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
+import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.net.NetError;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Centralizes UMA data collection for Tab management.
@@ -179,10 +180,10 @@ public class TabUma extends EmptyTabObserver implements UserData {
     private void recordTabStateTransition(int prevState, int newState, long delta) {
         if (prevState == TAB_STATE_ACTIVE && newState == TAB_STATE_INACTIVE) {
             RecordHistogram.recordLongTimesHistogram100(
-                    "Tabs.StateTransfer.Time_Active_Inactive", delta, TimeUnit.MILLISECONDS);
+                    "Tabs.StateTransfer.Time_Active_Inactive", delta);
         } else if (prevState == TAB_STATE_ACTIVE && newState == TAB_STATE_CLOSED) {
             RecordHistogram.recordLongTimesHistogram100(
-                    "Tabs.StateTransfer.Time_Active_Closed", delta, TimeUnit.MILLISECONDS);
+                    "Tabs.StateTransfer.Time_Active_Closed", delta);
         }
 
         if (prevState == TAB_STATE_INITIAL) {
@@ -242,7 +243,7 @@ public class TabUma extends EmptyTabObserver implements UserData {
 
     @Override
     public void onShown(Tab tab, @TabSelectionType int selectionType) {
-        int rank = computeMRURank(tab, tab.getTabModelSelector().getModel(tab.isIncognito()));
+        int rank = computeMRURank(tab, TabModelSelector.from(tab).getModel(tab.isIncognito()));
         long previousTimestampMillis = tab.getTimestampMillis();
         long now = SystemClock.elapsedRealtime();
 
@@ -303,8 +304,7 @@ public class TabUma extends EmptyTabObserver implements UserData {
                     if (previousTimestampMillis > 0) {
                         RecordHistogram.recordMediumTimesHistogram(
                                 "Tab.LostTabAgeWhenSwitchedToForeground",
-                                System.currentTimeMillis() - previousTimestampMillis,
-                                TimeUnit.MILLISECONDS);
+                                System.currentTimeMillis() - previousTimestampMillis);
                     }
                 }
             } else if (mTabCreationState == TabCreationState.FROZEN_FOR_LAZY_LOAD) {
@@ -324,7 +324,7 @@ public class TabUma extends EmptyTabObserver implements UserData {
                     }
                 }
             };
-            tab.getTabModelSelector().addObserver(mNewTabObserver);
+            TabModelSelector.from(tab).addObserver(mNewTabObserver);
         }
 
         // Record "tab age upon first display" metrics. previousTimestampMillis is persisted through
@@ -332,12 +332,12 @@ public class TabUma extends EmptyTabObserver implements UserData {
         if (mLastShownTimestamp == -1 && previousTimestampMillis > 0) {
             if (isOnBrowserStartup) {
                 RecordHistogram.recordCountHistogram("Tabs.ForegroundTabAgeAtStartup",
-                        (int) millisecondsToMinutes(System.currentTimeMillis()
-                                                             - previousTimestampMillis));
+                        (int) ((System.currentTimeMillis() - previousTimestampMillis)
+                                / DateUtils.MINUTE_IN_MILLIS));
             } else if (selectionType == TabSelectionType.FROM_USER) {
                 RecordHistogram.recordCountHistogram("Tab.AgeUponRestoreFromColdStart",
-                        (int) millisecondsToMinutes(System.currentTimeMillis()
-                                                             - previousTimestampMillis));
+                        (int) ((System.currentTimeMillis() - previousTimestampMillis)
+                                / DateUtils.MINUTE_IN_MILLIS));
             }
         }
 
@@ -372,7 +372,7 @@ public class TabUma extends EmptyTabObserver implements UserData {
     }
 
     private void removeObservers(Tab tab) {
-        if (mNewTabObserver != null) tab.getTabModelSelector().removeObserver(mNewTabObserver);
+        if (mNewTabObserver != null) TabModelSelector.from(tab).removeObserver(mNewTabObserver);
         tab.removeObserver(this);
     }
 
@@ -446,9 +446,5 @@ public class TabUma extends EmptyTabObserver implements UserData {
 
     private static void increaseTabShowCount() {
         sAllTabsShowCount++;
-    }
-
-    private static long millisecondsToMinutes(long msec) {
-        return msec / 1000 / 60;
     }
 }

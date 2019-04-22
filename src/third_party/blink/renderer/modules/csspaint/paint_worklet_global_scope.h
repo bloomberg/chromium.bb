@@ -17,6 +17,7 @@ namespace blink {
 
 class CSSPaintDefinition;
 class ExceptionState;
+class V8NoArgumentConstructor;
 class WorkerReportingProxy;
 
 class MODULES_EXPORT PaintWorkletGlobalScope final : public WorkletGlobalScope {
@@ -29,8 +30,7 @@ class MODULES_EXPORT PaintWorkletGlobalScope final : public WorkletGlobalScope {
       LocalFrame*,
       std::unique_ptr<GlobalScopeCreationParams>,
       WorkerReportingProxy&,
-      PaintWorkletPendingGeneratorRegistry*,
-      size_t global_scope_number);
+      PaintWorkletPendingGeneratorRegistry*);
 
   // Creates an worklet-thread bound PaintWorkletGlobalScope.
   static PaintWorkletGlobalScope* Create(
@@ -48,7 +48,7 @@ class MODULES_EXPORT PaintWorkletGlobalScope final : public WorkletGlobalScope {
 
   bool IsPaintWorkletGlobalScope() const final { return true; }
   void registerPaint(const String& name,
-                     const ScriptValue& constructor_value,
+                     V8NoArgumentConstructor* paint_ctor,
                      ExceptionState&);
 
   CSSPaintDefinition* FindDefinition(const String& name);
@@ -63,8 +63,7 @@ class MODULES_EXPORT PaintWorkletGlobalScope final : public WorkletGlobalScope {
 
   // The implementation of the "paint definition" concept:
   // https://drafts.css-houdini.org/css-paint-api/#paint-definition
-  typedef HeapHashMap<String, TraceWrapperMember<CSSPaintDefinition>>
-      DefinitionMap;
+  typedef HeapHashMap<String, Member<CSSPaintDefinition>> DefinitionMap;
   DefinitionMap paint_definitions_;
 
   // Only used for main-thread bound PaintWorkletGlobalScopes.

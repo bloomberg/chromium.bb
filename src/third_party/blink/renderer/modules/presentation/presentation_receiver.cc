@@ -32,7 +32,10 @@ PresentationReceiver::PresentationReceiver(LocalFrame* frame)
   interface_provider->GetInterface(mojo::MakeRequest(&presentation_service_));
 
   mojom::blink::PresentationReceiverPtr receiver_ptr;
-  receiver_binding_.Bind(mojo::MakeRequest(&receiver_ptr));
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      frame->GetTaskRunner(TaskType::kPresentation);
+  receiver_binding_.Bind(mojo::MakeRequest(&receiver_ptr, task_runner),
+                         task_runner);
   presentation_service_->SetReceiver(std::move(receiver_ptr));
 }
 
@@ -52,7 +55,7 @@ ScriptPromise PresentationReceiver::connectionList(ScriptState* script_state) {
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   RecordOriginTypeAccess(*execution_context);
   if (!connection_list_property_) {
-    connection_list_property_ = new ConnectionListProperty(
+    connection_list_property_ = MakeGarbageCollected<ConnectionListProperty>(
         execution_context, this, ConnectionListProperty::kReady);
   }
 
@@ -71,7 +74,7 @@ void PresentationReceiver::Terminate() {
   if (!window || window->closed())
     return;
 
-  window->close(window);
+  window->Close(window);
 }
 
 void PresentationReceiver::RemoveConnection(

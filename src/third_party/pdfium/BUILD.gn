@@ -20,33 +20,16 @@ config("pdfium_common_config") {
   ldflags = []
   include_dirs = [ "." ]
   defines = [
-    "OPJ_STATIC",
     "PNG_PREFIX",
     "PNG_USE_READ_MACROS",
   ]
 
-  if (pdf_enable_v8) {
-    defines += [ "PDF_ENABLE_V8" ]
+  if (!use_system_libopenjpeg2) {
+    defines += [ "OPJ_STATIC" ]
   }
 
   if (pdf_enable_click_logging) {
     defines += [ "PDF_ENABLE_CLICK_LOGGING" ]
-  }
-
-  if (pdf_enable_xfa) {
-    defines += [ "PDF_ENABLE_XFA" ]
-    if (pdf_enable_xfa_bmp) {
-      defines += [ "PDF_ENABLE_XFA_BMP" ]
-    }
-    if (pdf_enable_xfa_gif) {
-      defines += [ "PDF_ENABLE_XFA_GIF" ]
-    }
-    if (pdf_enable_xfa_png) {
-      defines += [ "PDF_ENABLE_XFA_PNG" ]
-    }
-    if (pdf_enable_xfa_tiff) {
-      defines += [ "PDF_ENABLE_XFA_TIFF" ]
-    }
   }
 
   if (pdf_use_skia) {
@@ -57,20 +40,47 @@ config("pdfium_common_config") {
     defines += [ "_SKIA_SUPPORT_PATHS_" ]
   }
 
-  if (pdf_use_win32_gdi) {
-    defines += [ "PDFIUM_PRINT_TEXT_WITH_GDI" ]
-  }
-
   if (is_win) {
     # Assume UTF-8 by default to avoid code page dependencies.
     cflags += [ "/utf-8" ]
   }
 }
 
+config("pdfium_public_config") {
+  defines = []
+
+  if (pdf_enable_v8) {
+    defines += [ "PDF_ENABLE_V8" ]
+
+    if (pdf_enable_xfa) {
+      defines += [ "PDF_ENABLE_XFA" ]
+      if (pdf_enable_xfa_bmp) {
+        defines += [ "PDF_ENABLE_XFA_BMP" ]
+      }
+      if (pdf_enable_xfa_gif) {
+        defines += [ "PDF_ENABLE_XFA_GIF" ]
+      }
+      if (pdf_enable_xfa_png) {
+        defines += [ "PDF_ENABLE_XFA_PNG" ]
+      }
+      if (pdf_enable_xfa_tiff) {
+        defines += [ "PDF_ENABLE_XFA_TIFF" ]
+      }
+    }
+  }
+
+  if (pdf_use_win32_gdi) {
+    defines += [ "PDFIUM_PRINT_TEXT_WITH_GDI" ]
+  }
+}
+
 config("pdfium_core_config") {
   cflags = []
-  configs = [ ":pdfium_common_config" ]
-  defines = [ "V8_DEPRECATION_WARNINGS" ]
+  configs = [
+    ":pdfium_common_config",
+    ":pdfium_public_config",
+  ]
+  defines = []
   if (is_clang) {
     cflags += [ "-Wshadow" ]
   }
@@ -115,6 +125,8 @@ jumbo_source_set("pdfium_public_headers") {
     "public/fpdf_transformpage.h",
     "public/fpdfview.h",
   ]
+
+  public_configs = [ ":pdfium_public_config" ]
 }
 
 jumbo_static_library("pdfium") {
@@ -162,7 +174,6 @@ jumbo_static_library("pdfium") {
     "core/fxge",
     "fpdfsdk",
     "fpdfsdk/formfiller",
-    "fpdfsdk/pwl",
     "fxjs",
     "third_party:pdfium_base",
     "third_party:skia_shared",
@@ -244,10 +255,10 @@ test("pdfium_unittests") {
     "core/fxcodec:unittests",
     "core/fxcrt",
     "core/fxcrt:unittests",
-    "core/fxge",
     "core/fxge:unittests",
     "fpdfsdk:unittests",
     "testing:test_support",
+    "testing:unit_test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]
@@ -269,8 +280,8 @@ test("pdfium_unittests") {
     deps += [
       "fxbarcode:unittests",
       "xfa/fde:unittests",
-      "xfa/fgas",
       "xfa/fgas:unittests",
+      "xfa/fgas/layout:unittests",
       "xfa/fwl:unittests",
       "xfa/fxfa:unittests",
       "xfa/fxfa/fm2js:unittests",
@@ -305,7 +316,6 @@ test("pdfium_embeddertests") {
   deps = [
     ":pdfium",
     "core/fpdfapi/edit:embeddertests",
-    "core/fpdfapi/page:embeddertests",
     "core/fpdfapi/parser:embeddertests",
     "core/fpdfapi/render:embeddertests",
     "core/fxcodec:embeddertests",
@@ -335,6 +345,7 @@ test("pdfium_embeddertests") {
 
   if (pdf_enable_xfa) {
     deps += [
+      "fpdfsdk/fpdfxfa:embeddertests",
       "xfa/fwl:embeddertests",
       "xfa/fxfa/parser:embeddertests",
     ]

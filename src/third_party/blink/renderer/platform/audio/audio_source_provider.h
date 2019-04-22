@@ -53,7 +53,7 @@ class PLATFORM_EXPORT AudioSourceProvider {
 
   // If a client is set, we call it back when the audio format is available or
   // changes.
-  virtual void SetClient(AudioSourceProviderClient*){};
+  virtual void SetClient(AudioSourceProviderClient*) {}
 
   virtual ~AudioSourceProvider() = default;
 };

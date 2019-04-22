@@ -6,7 +6,6 @@
 <script src="../external/wpt/resources/chromium/webxr-test.js"></script>
 <script src="../xr/resources/xr-internal-device-mocking.js"></script>
 <script src="../xr/resources/xr-test-utils.js"></script>
-<script src="../xr/resources/test-constants.js"></script>
 <canvas id="webgl-canvas"></canvas>
 
 <script>
@@ -16,13 +15,13 @@ let testName = "A frame should be submitted if the base layer was written to "
 
 let fakeDeviceInitParams = { supportsImmersive: true };
 
-let requestSessionOptions =  [{ immersive: true }];
+let requestSessionOptions =  ['immersive-vr'];
 
 let testFunction =
   (session, t, fakeDeviceController) => new Promise((resolve, reject) => {
   // Session must have a baseLayer or else frame requests will be ignored.
   let webglLayer = new XRWebGLLayer(session, gl);
-  session.baseLayer = webglLayer;
+  session.updateRenderState({ baseLayer: webglLayer });
 
   function onSkipFrame(time, xrFrame) {
     assert_equals(fakeDeviceController.getSubmitFrameCount(), 0);

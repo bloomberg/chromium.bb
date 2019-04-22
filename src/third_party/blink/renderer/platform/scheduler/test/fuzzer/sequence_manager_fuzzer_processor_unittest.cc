@@ -1478,5 +1478,23 @@ TEST(SequenceManagerFuzzerProcessorTest,
   EXPECT_THAT(executed_tasks, ContainerEq(expected_tasks));
 }
 
+TEST(SequenceManagerFuzzerProcessorTest, CrossThreadPostFromChildThreads) {
+  // We do not wait for child threads to start, so their ThreadManager* might
+  // not be registered by the time we cross post the task
+  SequenceManagerTestDescription description;
+  auto* main_thread =
+      description.add_main_thread_actions()->mutable_create_thread();
+  for (int i = 0; i < 100; ++i) {
+    auto* child_thread =
+        main_thread->add_initial_thread_actions()->mutable_create_thread();
+
+    child_thread->add_initial_thread_actions()
+        ->mutable_cross_thread_post()
+        ->set_thread_id(i + 1234);
+  }
+
+  SequenceManagerFuzzerProcessor::ParseAndRun(description);
+}
+
 }  // namespace sequence_manager
 }  // namespace base

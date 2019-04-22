@@ -21,6 +21,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/net/profile_network_context_service.h"
 #include "chrome/browser/net/profile_network_context_service_factory.h"
@@ -28,7 +29,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -36,6 +36,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/pref_names.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/prefs/pref_service.h"
 #include "components/proxy_config/proxy_config_dictionary.h"
@@ -45,6 +46,7 @@
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/network_service_util.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/simple_url_loader_test_helper.h"
@@ -133,11 +135,6 @@ struct TestCase {
   NetworkContextType network_context_type;
 };
 
-network::mojom::NetworkContextParamsPtr CreateDefaultNetworkContextParams() {
-  return g_browser_process->system_network_context_manager()
-      ->CreateDefaultNetworkContextParams();
-}
-
 // Tests the system, profile, and incognito profile NetworkContexts.
 class NetworkContextConfigurationBrowserTest
     : public InProcessBrowserTest,
@@ -187,6 +184,8 @@ class NetworkContextConfigurationBrowserTest
   void SetUpInProcessBrowserTestFixture() override {
     if (GetParam().network_service_state != NetworkServiceState::kDisabled)
       feature_list_.InitAndEnableFeature(network::features::kNetworkService);
+    else
+      feature_list_.InitAndDisableFeature(network::features::kNetworkService);
   }
 
   void SetUpOnMainThread() override {
@@ -552,7 +551,8 @@ class NetworkContextConfigurationBrowserTest
         url, net::CookieOptions(),
         base::BindOnce(
             [](std::string* cookies_out, base::RunLoop* run_loop,
-               const std::vector<net::CanonicalCookie>& cookies) {
+               const std::vector<net::CanonicalCookie>& cookies,
+               const net::CookieStatusList& excluded_cookies) {
               *cookies_out = net::CanonicalCookie::BuildCookieLine(cookies);
               run_loop->Quit();
             },
@@ -586,13 +586,13 @@ class NetworkContextConfigurationBrowserTest
   bool IsRestartStateWithInProcessNetworkService() {
     return GetParam().network_service_state ==
                NetworkServiceState::kRestarted &&
-           content::IsNetworkServiceRunningInProcess();
+           content::IsInProcessNetworkService();
   }
 
  private:
   void SimulateNetworkServiceCrashIfNecessary() {
     if (GetParam().network_service_state != NetworkServiceState::kRestarted ||
-        content::IsNetworkServiceRunningInProcess()) {
+        content::IsInProcessNetworkService()) {
       return;
     }
 
@@ -698,7 +698,7 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
     "permissions": ["<all_urls>"]
    })");
   extension_dir.WriteFile(FILE_PATH_LITERAL("background.js"), "");
-  extensions::ChromeTestExtensionLoader loader(browser()->profile());
+  extensions::ChromeTestExtensionLoader loader(GetProfile());
   loader.set_allow_incognito_access(true);
   scoped_refptr<const extensions::Extension> extension =
       loader.LoadExtension(extension_dir.UnpackedPath());
@@ -1001,8 +1001,7 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, PRE_Hsts) {
       net::test_server::EmbeddedTestServer::TYPE_HTTPS);
   ssl_server.SetSSLConfig(
       net::test_server::EmbeddedTestServer::CERT_COMMON_NAME_IS_DOMAIN);
-  ssl_server.AddDefaultHandlers(
-      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ssl_server.AddDefaultHandlers(GetChromeTestDataDir());
   ASSERT_TRUE(ssl_server.Start());
 
   // Make a request whose response has an STS header.
@@ -1126,8 +1125,7 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, PRE_SSLConfig) {
   ssl_config.version_min = net::SSL_PROTOCOL_VERSION_TLS1;
   ssl_config.version_max = net::SSL_PROTOCOL_VERSION_TLS1;
   ssl_server.SetSSLConfig(net::EmbeddedTestServer::CERT_OK, ssl_config);
-  ssl_server.AddDefaultHandlers(
-      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ssl_server.AddDefaultHandlers(GetChromeTestDataDir());
   ASSERT_TRUE(ssl_server.Start());
 
   std::unique_ptr<network::ResourceRequest> request =
@@ -1228,7 +1226,8 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
 
   // Now change the profile a different language, and see if the headers
   // get updated.
-  browser()->profile()->GetPrefs()->SetString(prefs::kAcceptLanguages, "uk");
+  browser()->profile()->GetPrefs()->SetString(language::prefs::kAcceptLanguages,
+                                              "uk");
   FlushNetworkInterface();
   std::string accept_language2, user_agent2;
   ASSERT_TRUE(FetchHeaderEcho("accept-language", &accept_language2));
@@ -1237,7 +1236,7 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
   EXPECT_EQ(::GetUserAgent(), user_agent2);
 
   // Try a more complicated one, with multiple languages.
-  browser()->profile()->GetPrefs()->SetString(prefs::kAcceptLanguages,
+  browser()->profile()->GetPrefs()->SetString(language::prefs::kAcceptLanguages,
                                               "uk, en_US");
   FlushNetworkInterface();
   std::string accept_language3, user_agent3;
@@ -1574,8 +1573,14 @@ class NetworkContextConfigurationProxyOnStartBrowserTest
 
 // Test that when there's a proxy configuration at startup, the initial requests
 // use that configuration.
+// Flaky on CrOS only. http://crbug.com/922876
+#if defined(OS_CHROMEOS)
+#define MAYBE_TestInitialProxyConfig DISABLED_TestInitialProxyConfig
+#else
+#define MAYBE_TestInitialProxyConfig TestInitialProxyConfig
+#endif
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationProxyOnStartBrowserTest,
-                       TestInitialProxyConfig) {
+                       MAYBE_TestInitialProxyConfig) {
   if (IsRestartStateWithInProcessNetworkService())
     return;
   TestProxyConfigured(/*expect_success=*/true);
@@ -1726,8 +1731,7 @@ class NetworkContextConfigurationFtpPacBrowserTest
     : public NetworkContextConfigurationBrowserTest {
  public:
   NetworkContextConfigurationFtpPacBrowserTest()
-      : ftp_server_(net::SpawnedTestServer::TYPE_FTP,
-                    base::FilePath(FILE_PATH_LITERAL("chrome/test/data"))) {
+      : ftp_server_(net::SpawnedTestServer::TYPE_FTP, GetChromeTestDataDir()) {
     EXPECT_TRUE(ftp_server_.Start());
   }
   ~NetworkContextConfigurationFtpPacBrowserTest() override {}
@@ -1812,144 +1816,60 @@ class NetworkContextConfigurationHttpsStrippingPacBrowserTest
   }
 };
 
-// Start Chrome and check that PAC HTTPS path stripping is enabled.
-IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationHttpsStrippingPacBrowserTest,
-                       PRE_PacHttpsUrlStripping) {
-  if (IsRestartStateWithInProcessNetworkService())
-    return;
-  ASSERT_FALSE(CreateDefaultNetworkContextParams()
-                   ->dangerously_allow_pac_access_to_secure_urls);
-
-  std::unique_ptr<network::ResourceRequest> request =
-      std::make_unique<network::ResourceRequest>();
-  // This URL should be directed to the proxy that fails with
-  // ERR_TUNNEL_CONNECTION_FAILED.
-  request->url = GURL("https://does.not.resolve.test:1872/foo");
-
-  content::SimpleURLLoaderTestHelper simple_loader_helper;
-  std::unique_ptr<network::SimpleURLLoader> simple_loader =
-      network::SimpleURLLoader::Create(std::move(request),
-                                       TRAFFIC_ANNOTATION_FOR_TESTS);
-
-  simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
-      loader_factory(), simple_loader_helper.GetCallback());
-  simple_loader_helper.WaitForCallback();
-  EXPECT_FALSE(simple_loader_helper.response_body());
-  EXPECT_EQ(net::ERR_TUNNEL_CONNECTION_FAILED, simple_loader->NetError());
-
-  // Disable stripping paths from HTTPS PAC URLs for the next test.
-  g_browser_process->local_state()->SetBoolean(
-      prefs::kPacHttpsUrlStrippingEnabled, false);
-  // Check that the changed setting is reflected in the network context params.
-  // The changes aren't applied to existing URLRequestContexts, however, so have
-  // to restart to see the setting change respected.
-  EXPECT_TRUE(CreateDefaultNetworkContextParams()
-                  ->dangerously_allow_pac_access_to_secure_urls);
-}
-
-// Restart Chrome and check the case where PAC HTTPS path stripping is disabled.
-// Have to restart Chrome because the setting is only checked on NetworkContext
-// creation.
-// Flaky. See https://crbug.com/840127.
-IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationHttpsStrippingPacBrowserTest,
-                       DISABLED_PacHttpsUrlStripping) {
-  if (IsRestartStateWithInProcessNetworkService())
-    return;
-  ASSERT_TRUE(CreateDefaultNetworkContextParams()
-                  ->dangerously_allow_pac_access_to_secure_urls);
-
-  std::unique_ptr<network::ResourceRequest> request =
-      std::make_unique<network::ResourceRequest>();
-  // This URL should be directed to the proxy that fails with
-  // ERR_PROXY_CONNECTION_FAILED.
-  request->url = GURL("https://does.not.resolve.test:1872/foo");
-
-  content::SimpleURLLoaderTestHelper simple_loader_helper;
-  std::unique_ptr<network::SimpleURLLoader> simple_loader =
-      network::SimpleURLLoader::Create(std::move(request),
-                                       TRAFFIC_ANNOTATION_FOR_TESTS);
-
-  simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
-      loader_factory(), simple_loader_helper.GetCallback());
-  simple_loader_helper.WaitForCallback();
-  EXPECT_FALSE(simple_loader_helper.response_body());
-  EXPECT_EQ(net::ERR_PROXY_CONNECTION_FAILED, simple_loader->NetError());
-}
-
 // Instiates tests with a prefix indicating which NetworkContext is being
 // tested, and a suffix of "/0" if the network service is disabled, "/1" if it's
 // enabled, and "/2" if it's enabled and restarted.
 
+#if defined(OS_CHROMEOS)
+// There's an extra network change event on ChromeOS, likely from
+// NetworkChangeNotifierPosix that makes these tests flaky on ChromeOS when
+// there's an out of process network stack.
+//
+// TODO(https://crbug.com/927293): Fix that, and enable these tests on ChromeOS.
+#define TEST_CASES(network_context_type) \
+  TestCase({NetworkServiceState::kDisabled, network_context_type})
+#else  // !defined(OS_CHROMEOS)
+#define TEST_CASES(network_context_type)                               \
+  TestCase({NetworkServiceState::kDisabled, network_context_type}),    \
+      TestCase({NetworkServiceState::kEnabled, network_context_type}), \
+      TestCase({NetworkServiceState::kRestarted, network_context_type})
+#endif  // !defined(OS_CHROMEOS)
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-#define INSTANTIATE_EXTENSION_TESTS(TestFixture)                          \
-  INSTANTIATE_TEST_CASE_P(                                                \
-      OnDiskApp, TestFixture,                                             \
-      ::testing::Values(TestCase({NetworkServiceState::kDisabled,         \
-                                  NetworkContextType::kOnDiskApp}),       \
-                        TestCase({NetworkServiceState::kEnabled,          \
-                                  NetworkContextType::kOnDiskApp}),       \
-                        TestCase({NetworkServiceState::kRestarted,        \
-                                  NetworkContextType::kOnDiskApp})));     \
-                                                                          \
-  INSTANTIATE_TEST_CASE_P(                                                \
-      InMemoryApp, TestFixture,                                           \
-      ::testing::Values(TestCase({NetworkServiceState::kDisabled,         \
-                                  NetworkContextType::kInMemoryApp}),     \
-                        TestCase({NetworkServiceState::kEnabled,          \
-                                  NetworkContextType::kInMemoryApp}),     \
-                        TestCase({NetworkServiceState::kRestarted,        \
-                                  NetworkContextType::kInMemoryApp})));   \
-                                                                          \
-  INSTANTIATE_TEST_CASE_P(                                                \
-      OnDiskAppWithIncognitoProfile, TestFixture,                         \
-      ::testing::Values(                                                  \
-          TestCase({NetworkServiceState::kDisabled,                       \
-                    NetworkContextType::kOnDiskAppWithIncognitoProfile}), \
-          TestCase({NetworkServiceState::kEnabled,                        \
-                    NetworkContextType::kOnDiskAppWithIncognitoProfile}), \
-          TestCase({NetworkServiceState::kRestarted,                      \
-                    NetworkContextType::kOnDiskAppWithIncognitoProfile})));
+#define INSTANTIATE_EXTENSION_TESTS(TestFixture)                        \
+  INSTANTIATE_TEST_SUITE_P(                                             \
+      OnDiskApp, TestFixture,                                           \
+      ::testing::Values(TEST_CASES(NetworkContextType::kOnDiskApp)));   \
+                                                                        \
+  INSTANTIATE_TEST_SUITE_P(                                             \
+      InMemoryApp, TestFixture,                                         \
+      ::testing::Values(TEST_CASES(NetworkContextType::kInMemoryApp))); \
+                                                                        \
+  INSTANTIATE_TEST_SUITE_P(                                             \
+      OnDiskAppWithIncognitoProfile, TestFixture,                       \
+      ::testing::Values(                                                \
+          TEST_CASES(NetworkContextType::kOnDiskAppWithIncognitoProfile)));
 #else  // !BUILDFLAG(ENABLE_EXTENSIONS)
 #define INSTANTIATE_EXTENSION_TESTS(TestFixture)
 #endif  // !BUILDFLAG(ENABLE_EXTENSIONS)
 
-#define INSTANTIATE_TEST_CASES_FOR_TEST_FIXTURE(TestFixture)               \
-  INSTANTIATE_EXTENSION_TESTS(TestFixture)                                 \
-  INSTANTIATE_TEST_CASE_P(                                                 \
-      SystemNetworkContext, TestFixture,                                   \
-      ::testing::Values(TestCase({NetworkServiceState::kDisabled,          \
-                                  NetworkContextType::kSystem}),           \
-                        TestCase({NetworkServiceState::kEnabled,           \
-                                  NetworkContextType::kSystem}),           \
-                        TestCase({NetworkServiceState::kRestarted,         \
-                                  NetworkContextType::kSystem})));         \
-                                                                           \
-  INSTANTIATE_TEST_CASE_P(                                                 \
-      SafeBrowsingNetworkContext, TestFixture,                             \
-      ::testing::Values(TestCase({NetworkServiceState::kDisabled,          \
-                                  NetworkContextType::kSafeBrowsing}),     \
-                        TestCase({NetworkServiceState::kEnabled,           \
-                                  NetworkContextType::kSafeBrowsing}),     \
-                        TestCase({NetworkServiceState::kRestarted,         \
-                                  NetworkContextType::kSafeBrowsing})));   \
-                                                                           \
-  INSTANTIATE_TEST_CASE_P(                                                 \
-      ProfileMainNetworkContext, TestFixture,                              \
-      ::testing::Values(TestCase({NetworkServiceState::kDisabled,          \
-                                  NetworkContextType::kProfile}),          \
-                        TestCase({NetworkServiceState::kEnabled,           \
-                                  NetworkContextType::kProfile}),          \
-                        TestCase({NetworkServiceState::kRestarted,         \
-                                  NetworkContextType::kProfile})));        \
-                                                                           \
-  INSTANTIATE_TEST_CASE_P(                                                 \
-      IncognitoProfileMainNetworkContext, TestFixture,                     \
-      ::testing::Values(TestCase({NetworkServiceState::kDisabled,          \
-                                  NetworkContextType::kIncognitoProfile}), \
-                        TestCase({NetworkServiceState::kEnabled,           \
-                                  NetworkContextType::kIncognitoProfile}), \
-                        TestCase({NetworkServiceState::kRestarted,         \
-                                  NetworkContextType::kIncognitoProfile})));
+#define INSTANTIATE_TEST_CASES_FOR_TEST_FIXTURE(TestFixture)             \
+  INSTANTIATE_EXTENSION_TESTS(TestFixture)                               \
+  INSTANTIATE_TEST_SUITE_P(                                              \
+      SystemNetworkContext, TestFixture,                                 \
+      ::testing::Values(TEST_CASES(NetworkContextType::kSystem)));       \
+                                                                         \
+  INSTANTIATE_TEST_SUITE_P(                                              \
+      SafeBrowsingNetworkContext, TestFixture,                           \
+      ::testing::Values(TEST_CASES(NetworkContextType::kSafeBrowsing))); \
+                                                                         \
+  INSTANTIATE_TEST_SUITE_P(                                              \
+      ProfileMainNetworkContext, TestFixture,                            \
+      ::testing::Values(TEST_CASES(NetworkContextType::kProfile)));      \
+                                                                         \
+  INSTANTIATE_TEST_SUITE_P(                                              \
+      IncognitoProfileMainNetworkContext, TestFixture,                   \
+      ::testing::Values(TEST_CASES(NetworkContextType::kIncognitoProfile)))
 
 INSTANTIATE_TEST_CASES_FOR_TEST_FIXTURE(NetworkContextConfigurationBrowserTest);
 INSTANTIATE_TEST_CASES_FOR_TEST_FIXTURE(

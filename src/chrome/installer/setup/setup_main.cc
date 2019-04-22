@@ -22,7 +22,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/persistent_histogram_storage.h"
 #include "base/numerics/safe_conversions.h"
@@ -30,6 +29,7 @@
 #include "base/process/launch.h"
 #include "base/process/memory.h"
 #include "base/process/process.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -62,12 +62,12 @@
 #include "chrome/installer/setup/setup_util.h"
 #include "chrome/installer/setup/uninstall.h"
 #include "chrome/installer/setup/user_experiment.h"
+#include "chrome/installer/util/conditional_work_item_list.h"
 #include "chrome/installer/util/delete_after_reboot_helper.h"
 #include "chrome/installer/util/delete_old_versions.h"
 #include "chrome/installer/util/delete_tree_work_item.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
-#include "chrome/installer/util/google_update_util.h"
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/html_dialog.h"
 #include "chrome/installer/util/install_util.h"
@@ -84,6 +84,10 @@
 #include "components/crash/content/app/crash_switches.h"
 #include "components/crash/content/app/run_as_crashpad_handler_win.h"
 #include "content/public/common/content_switches.h"
+
+#if defined(GOOGLE_CHROME_BUILD)
+#include "chrome/installer/util/google_update_util.h"
+#endif
 
 using installer::InstallerState;
 using installer::InstallationState;
@@ -234,7 +238,7 @@ base::string16 FindMsiProductId(const InstallerState& installer_state) {
     base::string16 value_name(value_iter.Name());
     if (base::StartsWith(value_name, kMsiProductIdPrefix,
                          base::CompareCase::INSENSITIVE_ASCII)) {
-      return value_name.substr(arraysize(kMsiProductIdPrefix) - 1);
+      return value_name.substr(base::size(kMsiProductIdPrefix) - 1);
     }
   }
   return base::string16();
@@ -402,11 +406,12 @@ installer::InstallStatus RepeatDeleteOldVersions(
 
 // This function is called when --rename-chrome-exe option is specified on
 // setup.exe command line. This function assumes an in-use update has happened
-// for Chrome so there should be a file called new_chrome.exe on the file
-// system and a key called 'opv' in the registry. This function will move
-// new_chrome.exe to chrome.exe and delete 'opv' key in one atomic operation.
-// This function also deletes elevation policies associated with the old version
-// if they exist. |setup_exe| is the path to the current executable.
+// for Chrome so there should be files called new_chrome.exe and
+// new_chrome_proxy.exe on the file system and a key called 'opv' in the
+// registry. This function will move new_chrome.exe to chrome.exe,
+// new_chrome_proxy.exe to chrome_proxy.exe and delete 'opv' key in one atomic
+// operation. This function also deletes elevation policies associated with the
+// old version if they exist. |setup_exe| is the path to the current executable.
 installer::InstallStatus RenameChromeExecutables(
     const base::FilePath& setup_exe,
     const InstallationState& original_state,
@@ -415,6 +420,12 @@ installer::InstallStatus RenameChromeExecutables(
   base::FilePath chrome_exe(target_path.Append(installer::kChromeExe));
   base::FilePath chrome_new_exe(target_path.Append(installer::kChromeNewExe));
   base::FilePath chrome_old_exe(target_path.Append(installer::kChromeOldExe));
+  base::FilePath chrome_proxy_exe(
+      target_path.Append(installer::kChromeProxyExe));
+  base::FilePath chrome_proxy_new_exe(
+      target_path.Append(installer::kChromeProxyNewExe));
+  base::FilePath chrome_proxy_old_exe(
+      target_path.Append(installer::kChromeProxyOldExe));
 
   // Create a temporary backup directory on the same volume as chrome.exe so
   // that moving in-use files doesn't lead to trouble.
@@ -438,6 +449,22 @@ installer::InstallStatus RenameChromeExecutables(
                                     WorkItem::ALWAYS_MOVE);
   install_list->AddDeleteTreeWorkItem(chrome_new_exe, temp_path.path());
 
+  // Move chrome_proxy.exe to old_chrome_proxy.exe if it exists (a previous
+  // installation may not have included it), then move new_chrome_proxy.exe to
+  // chrome_proxy.exe.
+  std::unique_ptr<WorkItemList> existing_proxy_rename_list(
+      WorkItem::CreateConditionalWorkItemList(
+          new ConditionRunIfFileExists(chrome_proxy_exe)));
+  existing_proxy_rename_list->set_log_message("ExistingProxyRenameItemList");
+  existing_proxy_rename_list->AddMoveTreeWorkItem(
+      chrome_proxy_exe.value(), chrome_proxy_old_exe.value(),
+      temp_path.path().value(), WorkItem::ALWAYS_MOVE);
+  install_list->AddWorkItem(existing_proxy_rename_list.release());
+  install_list->AddMoveTreeWorkItem(
+      chrome_proxy_new_exe.value(), chrome_proxy_exe.value(),
+      temp_path.path().value(), WorkItem::ALWAYS_MOVE);
+  install_list->AddDeleteTreeWorkItem(chrome_proxy_new_exe, temp_path.path());
+
   // Add work items to delete Chrome's "opv", "cpv", and "cmd" values.
   // TODO(grt): Clean this up; https://crbug.com/577816.
   HKEY reg_root = installer_state->root_key();
@@ -453,6 +480,8 @@ installer::InstallStatus RenameChromeExecutables(
                                           google_update::kRegRenameCmdField);
   // old_chrome.exe is still in use in most cases, so ignore failures here.
   install_list->AddDeleteTreeWorkItem(chrome_old_exe, temp_path.path())
+      ->set_best_effort(true);
+  install_list->AddDeleteTreeWorkItem(chrome_proxy_old_exe, temp_path.path())
       ->set_best_effort(true);
 
   installer::InstallStatus ret = installer::RENAME_SUCCESSFUL;
@@ -615,6 +644,7 @@ installer::InstallStatus UninstallProducts(
   if (!system_level_cmd.GetProgram().empty())
     base::LaunchProcess(system_level_cmd, base::LaunchOptions());
 
+#if defined(GOOGLE_CHROME_BUILD)
   // Tell Google Update that an uninstall has taken place if this install did
   // not originate from the MSI. Google Update has its own logic relating to
   // MSI-driven uninstalls that conflicts with this. Ignore the return value:
@@ -622,6 +652,7 @@ installer::InstallStatus UninstallProducts(
   // failure of Chrome's uninstallation.
   if (!installer_state.is_msi())
     google_update::UninstallGoogleUpdate(installer_state.system_install());
+#endif  // defined(GOOGLE_CHROME_BUILD)
 
   return install_status;
 }
@@ -1099,7 +1130,7 @@ InstallStatus InstallProductsHelper(const InstallationState& original_state,
   int32_t ntstatus = 0;
   DWORD lzma_result = UnPackArchive(uncompressed_archive, unpack_path, NULL,
                                     &unpack_status, &ntstatus);
-  RecordUnPackMetrics(unpack_status, ntstatus,
+  RecordUnPackMetrics(unpack_status, ntstatus, lzma_result,
                       UnPackConsumer::UNCOMPRESSED_CHROME_ARCHIVE);
   if (lzma_result) {
     installer_state.WriteInstallerResult(

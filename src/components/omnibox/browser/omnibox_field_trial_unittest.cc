@@ -89,9 +89,8 @@ void OmniboxFieldTrialTest::ExpectRuleValue(
     const std::string& rule_value,
     const std::string& rule,
     OmniboxEventProto::PageClassification page_classification) {
-  EXPECT_EQ(rule_value,
-            OmniboxFieldTrial::GetValueForRuleInContext(
-                rule, page_classification));
+  EXPECT_EQ(rule_value, OmniboxFieldTrial::internal::GetValueForRuleInContext(
+                            rule, page_classification));
 }
 
 void OmniboxFieldTrialTest::VerifySuggestPollingStrategy(
@@ -426,21 +425,6 @@ TEST_F(OmniboxFieldTrialTest, HalfLifeTimeDecay) {
   EXPECT_EQ(0.25, buckets.HalfLifeTimeDecay(base::TimeDelta::FromDays(14)));
   EXPECT_EQ(1.0, buckets.HalfLifeTimeDecay(base::TimeDelta::FromDays(0)));
   EXPECT_EQ(1.0, buckets.HalfLifeTimeDecay(base::TimeDelta::FromDays(-1)));
-}
-
-TEST_F(OmniboxFieldTrialTest, DisableResultsCaching) {
-  EXPECT_FALSE(OmniboxFieldTrial::DisableResultsCaching());
-
-  {
-    std::map<std::string, std::string> params;
-    params[std::string(OmniboxFieldTrial::kDisableResultsCachingRule)] = "true";
-    ASSERT_TRUE(variations::AssociateVariationParams(
-        OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params));
-    base::FieldTrialList::CreateFieldTrial(
-        OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
-
-    EXPECT_TRUE(OmniboxFieldTrial::DisableResultsCaching());
-  }
 }
 
 TEST_F(OmniboxFieldTrialTest, GetSuggestPollingStrategy) {

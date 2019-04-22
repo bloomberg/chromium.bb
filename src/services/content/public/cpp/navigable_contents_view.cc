@@ -6,6 +6,7 @@
 
 #include <map>
 
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/no_destructor.h"
 #include "base/synchronization/atomic_flag.h"
@@ -16,6 +17,7 @@
 #include "ui/accessibility/ax_node_data.h"
 
 #if defined(TOOLKIT_VIEWS)
+#include "ui/views/focus/focus_manager.h"  // nogncheck
 #include "ui/views/layout/fill_layout.h"  // nogncheck
 #include "ui/views/view.h"                // nogncheck
 
@@ -83,7 +85,7 @@ class LocalWindowLayoutManager : public aura::LayoutManager {
  private:
   void ResizeChildren() {
     for (auto* child : owner_->children())
-      SetChildBoundsDirect(child, owner_->bounds());
+      SetChildBoundsDirect(child, gfx::Rect(owner_->bounds().size()));
   }
 
   aura::Window* const owner_;
@@ -144,6 +146,14 @@ bool NavigableContentsView::IsClientRunningInServiceProcess() {
   return GetInServiceProcessFlag().IsSet();
 }
 
+void NavigableContentsView::ClearNativeFocus() {
+#if defined(TOOLKIT_VIEWS) && defined(USE_AURA)
+  auto* focus_manager = view_->GetFocusManager();
+  if (focus_manager)
+    focus_manager->ClearNativeFocus();
+#endif  // defined(TOOLKIT_VIEWS) && defined(USE_AURA)
+}
+
 void NavigableContentsView::NotifyAccessibilityTreeChange() {
 #if defined(TOOLKIT_VIEWS) && defined(USE_AURA)
   view_->NotifyAccessibilityEvent(ax::mojom::Event::kChildrenChanged, false);
@@ -154,7 +164,7 @@ NavigableContentsView::NavigableContentsView(NavigableContents* contents)
     : contents_(contents) {
 #if defined(TOOLKIT_VIEWS) && defined(USE_AURA)
 #if BUILDFLAG(ENABLE_REMOTE_NAVIGABLE_CONTENTS_VIEW)
-  if (!IsClientRunningInServiceProcess()) {
+  if (contents_->ShouldUseWindowService()) {
     RemoteViewManager* manager = GetRemoteViewManager().get();
     if (manager)
       view_ = manager->CreateRemoteViewHost();
@@ -191,7 +201,7 @@ void NavigableContentsView::EmbedUsingToken(
     const base::UnguessableToken& token) {
 #if defined(TOOLKIT_VIEWS)
 #if BUILDFLAG(ENABLE_REMOTE_NAVIGABLE_CONTENTS_VIEW)
-  if (!IsClientRunningInServiceProcess()) {
+  if (contents_->ShouldUseWindowService()) {
     RemoteViewManager* manager = GetRemoteViewManager().get();
     if (manager) {
       manager->EmbedUsingToken(view_.get(), token);

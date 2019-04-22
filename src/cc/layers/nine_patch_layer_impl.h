@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "cc/cc_export.h"
 #include "cc/layers/layer_impl.h"
@@ -29,7 +28,10 @@ class CC_EXPORT NinePatchLayerImpl : public UIResourceLayerImpl {
                                                     int id) {
     return base::WrapUnique(new NinePatchLayerImpl(tree_impl, id));
   }
+  NinePatchLayerImpl(const NinePatchLayerImpl&) = delete;
   ~NinePatchLayerImpl() override;
+
+  NinePatchLayerImpl& operator=(const NinePatchLayerImpl&) = delete;
 
   // For parameter meanings, see the declaration of NinePatchGenerator.
   void SetLayout(const gfx::Rect& image_aperture,
@@ -44,7 +46,7 @@ class CC_EXPORT NinePatchLayerImpl : public UIResourceLayerImpl {
   void AppendQuads(viz::RenderPass* render_pass,
                    AppendQuadsData* append_quads_data) override;
 
-  std::unique_ptr<base::DictionaryValue> LayerAsJson() override;
+  std::unique_ptr<base::DictionaryValue> LayerAsJson() const override;
 
  protected:
   NinePatchLayerImpl(LayerTreeImpl* tree_impl, int id);
@@ -53,8 +55,6 @@ class CC_EXPORT NinePatchLayerImpl : public UIResourceLayerImpl {
   const char* LayerTypeAsString() const override;
 
   NinePatchGenerator quad_generator_;
-
-  DISALLOW_COPY_AND_ASSIGN(NinePatchLayerImpl);
 };
 
 }  // namespace cc

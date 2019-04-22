@@ -28,6 +28,7 @@ class WebContents;
 namespace offline_pages {
 struct OfflinePageHeader;
 struct OfflinePageItem;
+struct PageCriteria;
 
 class OfflinePageUtils {
  public:
@@ -72,6 +73,11 @@ class OfflinePageUtils {
       int tab_id,
       base::OnceCallback<void(const std::vector<OfflinePageItem>&)> callback);
 
+  static void SelectPagesWithCriteria(
+      content::BrowserContext* browser_context,
+      const PageCriteria& criteria,
+      base::OnceCallback<void(const std::vector<OfflinePageItem>&)> callback);
+
   // Gets the offline page corresponding to the given web contents.  The
   // returned pointer is owned by the web_contents and may be deleted by user
   // navigation, so it is unsafe to store a copy of the returned pointer.
@@ -98,8 +104,6 @@ class OfflinePageUtils {
   // Returns true if the |web_contents| is currently being presented inside a
   // custom tab.
   static bool CurrentlyShownInCustomTab(content::WebContents* web_contents);
-
-  static bool EqualsIgnoringFragment(const GURL& lhs, const GURL& rhs);
 
   // Returns original URL of the given web contents. Empty URL is returned if
   // no redirect occurred.
@@ -161,7 +165,7 @@ class OfflinePageUtils {
   // Note that the offline header is assumed to be the onlt extra header if it
   // exists.
   static std::string ExtractOfflineHeaderValueFromNavigationEntry(
-      const content::NavigationEntry& entry);
+      content::NavigationEntry* entry);
 
   // Returns true if |web_contents| is showing a trusted offline page.
   static bool IsShowingTrustedOfflinePage(content::WebContents* web_contents);

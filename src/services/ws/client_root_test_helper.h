@@ -16,13 +16,15 @@ namespace ws {
 
 class ClientRoot;
 
-// Used for accessing private members of ServerWindow in tests.
+// Used for accessing private members of ClientRoot in tests.
 class ClientRootTestHelper {
  public:
   explicit ClientRootTestHelper(ClientRoot* client_root);
   ~ClientRootTestHelper();
 
   aura::ClientSurfaceEmbedder* GetClientSurfaceEmbedder();
+
+  bool IsWindowForcedVisible();
 
  private:
   ClientRoot* client_root_;

@@ -19,7 +19,6 @@ from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.cbuildbot.stages import sync_stages_unittest
 from chromite.cbuildbot.stages import sync_stages
-from chromite.lib.const import waterfall
 from chromite.lib import alerts
 from chromite.lib import auth
 from chromite.lib import buildbucket_lib
@@ -31,7 +30,7 @@ from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import portage_util
 from chromite.lib import tree_status
-
+from chromite.lib.buildstore import FakeBuildStore
 
 # pylint: disable=protected-access
 
@@ -44,16 +43,18 @@ class ManifestVersionedSyncCompletionStageTest(
 
   BOT_ID = 'eve-release'
 
+  def setUp(self):
+    self.buildstore = FakeBuildStore()
 
   def testManifestVersionedSyncCompletedSuccess(self):
     """Tests basic ManifestVersionedSyncStageCompleted on success"""
     board_runattrs = self._run.GetBoardRunAttrs('eve')
     board_runattrs.SetParallel('success', True)
-    update_status_mock = self.PatchObject(
-        manifest_version.BuildSpecsManager, 'UpdateStatus')
+    update_status_mock = self.PatchObject(manifest_version.BuildSpecsManager,
+                                          'UpdateStatus')
 
     stage = completion_stages.ManifestVersionedSyncCompletionStage(
-        self._run, self.sync_stage, success=True)
+        self._run, self.buildstore, self.sync_stage, success=True)
 
     stage.Run()
     update_status_mock.assert_called_once_with(
@@ -62,24 +63,24 @@ class ManifestVersionedSyncCompletionStageTest(
   def testManifestVersionedSyncCompletedFailure(self):
     """Tests basic ManifestVersionedSyncStageCompleted on failure"""
     stage = completion_stages.ManifestVersionedSyncCompletionStage(
-        self._run, self.sync_stage, success=False)
+        self._run, self.buildstore, self.sync_stage, success=False)
     message = 'foo'
     get_msg_mock = self.PatchObject(
-        generic_stages.BuilderStage, 'GetBuildFailureMessage',
+        generic_stages.BuilderStage,
+        'GetBuildFailureMessage',
         return_value=message)
-    update_status_mock = self.PatchObject(
-        manifest_version.BuildSpecsManager, 'UpdateStatus')
+    update_status_mock = self.PatchObject(manifest_version.BuildSpecsManager,
+                                          'UpdateStatus')
 
     stage.Run()
     update_status_mock.assert_called_once_with(
         message='foo', success_map={self.BOT_ID: False})
     get_msg_mock.assert_called_once_with()
 
-
   def testManifestVersionedSyncCompletedIncomplete(self):
     """Tests basic ManifestVersionedSyncStageCompleted on incomplete build."""
     stage = completion_stages.ManifestVersionedSyncCompletionStage(
-        self._run, self.sync_stage, success=False)
+        self._run, self.buildstore, self.sync_stage, success=False)
     stage.Run()
 
   def testGetBuilderSuccessMap(self):
@@ -106,11 +107,13 @@ class MasterSlaveSyncCompletionStageMockConfigTest(
     # Use our mocked out SiteConfig for all tests.
     self.test_config = self._GetTestConfig()
     self._Prepare(site_config=self.test_config)
+    self.buildstore = FakeBuildStore()
 
   def ConstructStage(self):
-    sync_stage = sync_stages.ManifestVersionedSyncStage(self._run)
+    sync_stage = sync_stages.ManifestVersionedSyncStage(self._run,
+                                                        self.buildstore)
     return completion_stages.MasterSlaveSyncCompletionStage(
-        self._run, sync_stage, success=True)
+        self._run, self.buildstore, sync_stage, success=True)
 
   def _GetTestConfig(self):
     test_config = config_lib.SiteConfig()
@@ -122,7 +125,6 @@ class MasterSlaveSyncCompletionStageMockConfigTest(
         master=True,
         slave_configs=['test3', 'test5'],
         manifest_version=True,
-        active_waterfall=waterfall.WATERFALL_INTERNAL,
     )
     test_config.Add(
         'test1',
@@ -136,7 +138,6 @@ class MasterSlaveSyncCompletionStageMockConfigTest(
         branch=False,
         internal=False,
         master=False,
-        active_waterfall=waterfall.WATERFALL_INTERNAL,
     )
     test_config.Add(
         'test2',
@@ -150,7 +151,6 @@ class MasterSlaveSyncCompletionStageMockConfigTest(
         branch=False,
         internal=False,
         master=False,
-        active_waterfall=waterfall.WATERFALL_INTERNAL,
     )
     test_config.Add(
         'test3',
@@ -164,7 +164,6 @@ class MasterSlaveSyncCompletionStageMockConfigTest(
         branch=False,
         internal=True,
         master=False,
-        active_waterfall=waterfall.WATERFALL_INTERNAL,
     )
     test_config.Add(
         'test4',
@@ -178,7 +177,6 @@ class MasterSlaveSyncCompletionStageMockConfigTest(
         branch=True,
         internal=True,
         master=False,
-        active_waterfall=waterfall.WATERFALL_INTERNAL,
     )
     test_config.Add(
         'test5',
@@ -192,7 +190,6 @@ class MasterSlaveSyncCompletionStageMockConfigTest(
         branch=False,
         internal=False,
         master=False,
-        active_waterfall=waterfall.WATERFALL_INTERNAL,
     )
     return test_config
 
@@ -214,15 +211,17 @@ class MasterSlaveSyncCompletionStageTest(
     self.branch = 'master'
 
     self._Prepare()
+    self.buildstore = FakeBuildStore()
 
   def _Prepare(self, bot_id=None, **kwargs):
     super(MasterSlaveSyncCompletionStageTest, self)._Prepare(bot_id, **kwargs)
     self._run.config['manifest_version'] = True
 
   def ConstructStage(self):
-    sync_stage = sync_stages.ManifestVersionedSyncStage(self._run)
+    sync_stage = sync_stages.ManifestVersionedSyncStage(self._run,
+                                                        self.buildstore)
     return completion_stages.MasterSlaveSyncCompletionStage(
-        self._run, sync_stage, success=True)
+        self._run, self.buildstore, sync_stage, success=True)
 
   def testIsFailureFatal(self):
     """Tests the correctness of the _IsFailureFatal method"""
@@ -250,11 +249,11 @@ class MasterSlaveSyncCompletionStageTest(
     """Test GetBuilderStatusesFetcher."""
     mock_fetcher = mock.Mock()
     self.PatchObject(
-        builder_status_lib, 'BuilderStatusesFetcher',
-        return_value=mock_fetcher)
+        builder_status_lib, 'BuilderStatusesFetcher', return_value=mock_fetcher)
 
     stage = self.ConstructStage()
     self.assertEqual(stage._GetBuilderStatusesFetcher(), mock_fetcher)
+
 
 class MasterSlaveSyncCompletionStageTestWithMasterPaladin(
     generic_stages_unittest.AbstractStageTestCase):
@@ -266,44 +265,45 @@ class MasterSlaveSyncCompletionStageTestWithMasterPaladin(
     self.manifest_version_url = 'fake manifest url'
     self.branch = 'master'
 
-    self.PatchObject(buildbucket_lib, 'GetServiceAccount',
-                     return_value=True)
-    self.PatchObject(auth.AuthorizedHttp, '__init__',
-                     return_value=None)
-    self.PatchObject(buildbucket_lib.BuildbucketClient,
-                     'SendBuildbucketRequest',
-                     return_value=None)
-    self.PatchObject(buildbucket_lib.BuildbucketClient,
-                     '_GetHost',
-                     return_value=buildbucket_lib.BUILDBUCKET_TEST_HOST)
+    self.PatchObject(buildbucket_lib, 'GetServiceAccount', return_value=True)
+    self.PatchObject(auth.AuthorizedHttp, '__init__', return_value=None)
+    self.PatchObject(
+        buildbucket_lib.BuildbucketClient,
+        'SendBuildbucketRequest',
+        return_value=None)
+    self.PatchObject(
+        buildbucket_lib.BuildbucketClient,
+        '_GetHost',
+        return_value=buildbucket_lib.BUILDBUCKET_TEST_HOST)
     self.mock_handle_failure = self.PatchObject(
         completion_stages.MasterSlaveSyncCompletionStage, 'HandleFailure')
-    self.PatchObject(builder_status_lib.BuilderStatusesFetcher, '__init__',
-                     return_value=None)
+    self.PatchObject(
+        builder_status_lib.BuilderStatusesFetcher,
+        '__init__',
+        return_value=None)
 
     self._Prepare()
+    self.buildstore = FakeBuildStore()
 
   def tearDown(self):
     cidb.CIDBConnectionFactory.ClearMock()
 
   def ConstructStage(self):
-    sync_stage = sync_stages.ManifestVersionedSyncStage(self._run)
+    sync_stage = sync_stages.ManifestVersionedSyncStage(self._run,
+                                                        self.buildstore)
 
-    scheduled_slaves_list = {
-        ('build_1', 'buildbucket_id_1', 1),
-        ('build_2', 'buildbucket_id_2', 2)
-    }
+    scheduled_slaves_list = {('build_1', 'buildbucket_id_1', 1),
+                             ('build_2', 'buildbucket_id_2', 2)}
     self._run.attrs.metadata.ExtendKeyListWithList(
         constants.METADATA_SCHEDULED_IMPORTANT_SLAVES, scheduled_slaves_list)
     return completion_stages.MasterSlaveSyncCompletionStage(
-        self._run, sync_stage, success=True)
+        self._run, self.buildstore, sync_stage, success=True)
 
   def testGetBuilderStatusesFetcher(self):
     """Test GetBuilderStatusesFetcher."""
     mock_fetcher = mock.Mock()
     self.PatchObject(
-        builder_status_lib, 'BuilderStatusesFetcher',
-        return_value=mock_fetcher)
+        builder_status_lib, 'BuilderStatusesFetcher', return_value=mock_fetcher)
     mock_wait = self.PatchObject(
         completion_stages.MasterSlaveSyncCompletionStage,
         '_WaitForSlavesToComplete')
@@ -320,14 +320,18 @@ class MasterSlaveSyncCompletionStageTestWithMasterPaladin(
     stage._run.attrs.manifest_manager = mock.MagicMock()
 
     statuses = {
-        'build_1': builder_status_lib.BuilderStatus(
-            constants.BUILDER_STATUS_INFLIGHT, None),
-        'build_2': builder_status_lib.BuilderStatus(
-            constants.BUILDER_STATUS_MISSING, None)
+        'build_1':
+            builder_status_lib.BuilderStatus(constants.BUILDER_STATUS_INFLIGHT,
+                                             None),
+        'build_2':
+            builder_status_lib.BuilderStatus(constants.BUILDER_STATUS_MISSING,
+                                             None)
     }
 
-    self.PatchObject(builder_status_lib.BuilderStatusesFetcher,
-                     'GetBuilderStatuses', return_value=(statuses, {}))
+    self.PatchObject(
+        builder_status_lib.BuilderStatusesFetcher,
+        'GetBuilderStatuses',
+        return_value=(statuses, {}))
     mock_annotate = self.PatchObject(
         completion_stages.MasterSlaveSyncCompletionStage,
         '_AnnotateFailingBuilders')
@@ -370,18 +374,16 @@ class MasterSlaveSyncCompletionStageTestWithMasterPaladin(
     """Test AnnotateBuildStatusFromBuildbucket"""
     stage = self.ConstructStage()
 
-    scheduled_slaves_list = {
-        ('build_1', 'buildbucket_id_1', 1),
-        ('build_2', 'buildbucket_id_2', 2)
-    }
+    scheduled_slaves_list = {('build_1', 'buildbucket_id_1', 1),
+                             ('build_2', 'buildbucket_id_2', 2)}
     stage.buildbucket_info_dict = (
         buildbucket_lib.GetScheduledBuildDict(scheduled_slaves_list))
 
     mock_logging_link = self.PatchObject(
-        logging, 'PrintBuildbotLink',
-        side_effect=logging.PrintBuildbotLink)
+        logging, 'PrintBuildbotLink', side_effect=logging.PrintBuildbotLink)
     mock_logging_text = self.PatchObject(
-        logging, 'PrintBuildbotStepText',
+        logging,
+        'PrintBuildbotStepText',
         side_effect=logging.PrintBuildbotStepText)
 
     no_stat = set(['not_scheduled_build_1'])
@@ -397,15 +399,15 @@ class MasterSlaveSyncCompletionStageTestWithMasterPaladin(
             "failure_reason": "BUILD_FAILURE",
         }
     }
-    self.PatchObject(buildbucket_lib.BuildbucketClient,
-                     'GetBuildRequest',
-                     return_value=build_content)
+    self.PatchObject(
+        buildbucket_lib.BuildbucketClient,
+        'GetBuildRequest',
+        return_value=build_content)
     no_stat = set(['build_1'])
     stage._AnnotateNoStatBuilders(no_stat)
     mock_logging_link.assert_called_once_with(
         '%s: [status] %s [result] %s [failure_reason] %s' %
-        ('build_1', 'COMPLETED', 'FAILURE', 'BUILD_FAILURE'),
-        'dashboard_url')
+        ('build_1', 'COMPLETED', 'FAILURE', 'BUILD_FAILURE'), 'dashboard_url')
 
     mock_logging_link.reset_mock()
     build_content = {
@@ -416,9 +418,10 @@ class MasterSlaveSyncCompletionStageTestWithMasterPaladin(
             "cancelation_reason": "CANCELED_EXPLICITLY",
         }
     }
-    self.PatchObject(buildbucket_lib.BuildbucketClient,
-                     'GetBuildRequest',
-                     return_value=build_content)
+    self.PatchObject(
+        buildbucket_lib.BuildbucketClient,
+        'GetBuildRequest',
+        return_value=build_content)
     no_stat = set(['build_1'])
     stage._AnnotateNoStatBuilders(no_stat)
     mock_logging_link.assert_called_once_with(
@@ -426,16 +429,16 @@ class MasterSlaveSyncCompletionStageTestWithMasterPaladin(
         ('build_1', 'COMPLETED', 'CANCELED', 'CANCELED_EXPLICITLY'),
         'dashboard_url')
 
-
     mock_logging_text.reset_mock()
-    self.PatchObject(buildbucket_lib.BuildbucketClient,
-                     'GetBuildRequest',
-                     side_effect=buildbucket_lib.BuildbucketResponseException)
+    self.PatchObject(
+        buildbucket_lib.BuildbucketClient,
+        'GetBuildRequest',
+        side_effect=buildbucket_lib.BuildbucketResponseException)
     no_stat = set(['build_1'])
     stage._AnnotateNoStatBuilders(no_stat)
     mock_logging_text.assert_called_once_with(
-        'No status found for build %s buildbucket_id %s' %
-        ('build_1', 'buildbucket_id_1'))
+        'No status found for build %s buildbucket_id %s' % ('build_1',
+                                                            'buildbucket_id_1'))
 
   def test_AnnotateNoStatBuildersWithBuildbucketSchedulder(self):
     """Tests _AnnotateNoStatBuilders with master using Buildbucket scheduler."""
@@ -462,8 +465,8 @@ class MasterSlaveSyncCompletionStageTestWithMasterPaladin(
     no_stat = {'no_stat_build'}
     failed_msg = build_failure_message.BuildFailureMessage(
         'message', [], True, 'reason', 'bot')
-    failed_status = builder_status_lib.BuilderStatus(
-        'failed', failed_msg, 'url')
+    failed_status = builder_status_lib.BuilderStatus('failed', failed_msg,
+                                                     'url')
     inflight_status = builder_status_lib.BuilderStatus('inflight', None, 'url')
     statuses = {'failing_build' : failed_status,
                 'inflight_build': inflight_status}
@@ -485,8 +488,7 @@ class MasterSlaveSyncCompletionStageTestWithMasterPaladin(
     stage = self.ConstructStage()
 
     print_build_message_mock = self.PatchObject(
-        completion_stages.MasterSlaveSyncCompletionStage,
-        '_PrintBuildMessage')
+        completion_stages.MasterSlaveSyncCompletionStage, '_PrintBuildMessage')
 
     failed_msg = build_failure_message.BuildFailureMessage(
         'message', [], True, 'reason', 'bot')
@@ -526,11 +528,11 @@ class MasterSlaveSyncCompletionStageTestWithMasterPaladin(
     stage._run.attrs.metadata.UpdateWithDict(
         {constants.METADATA_EXPERIMENTAL_BUILDERS: ['build_2']})
     stage.PerformStage()
-    mock_annotate.assert_called_once_with(
-        set(), set(), set(), status, experimental_status, False)
+    mock_annotate.assert_called_once_with(set(), set(), set(), status,
+                                          experimental_status, False)
 
-class CanaryCompletionStageTest(
-    generic_stages_unittest.AbstractStageTestCase):
+
+class CanaryCompletionStageTest(generic_stages_unittest.AbstractStageTestCase):
   """Tests how canary master handles failures in CanaryCompletionStage."""
   BOT_ID = 'master-release'
 
@@ -540,19 +542,20 @@ class CanaryCompletionStageTest(
   def setUp(self):
     self.build_type = constants.CANARY_TYPE
     self._Prepare()
+    self.buildstore = FakeBuildStore()
 
   def ConstructStage(self):
     """Returns a CanaryCompletionStage object."""
-    sync_stage = sync_stages.ManifestVersionedSyncStage(self._run)
+    sync_stage = sync_stages.ManifestVersionedSyncStage(self._run,
+                                                        self.buildstore)
     return completion_stages.CanaryCompletionStage(
-        self._run, sync_stage, success=True)
+        self._run, self.buildstore, sync_stage, success=True)
 
   def testGetBuilderStatusesFetcher(self):
     """Test GetBuilderStatusesFetcher."""
     mock_fetcher = mock.Mock()
     self.PatchObject(
-        builder_status_lib, 'BuilderStatusesFetcher',
-        return_value=mock_fetcher)
+        builder_status_lib, 'BuilderStatusesFetcher', return_value=mock_fetcher)
     mock_wait = self.PatchObject(
         completion_stages.MasterSlaveSyncCompletionStage,
         '_WaitForSlavesToComplete')
@@ -570,6 +573,7 @@ class BaseCommitQueueCompletionStageTest(
   def setUp(self):
     self.build_type = constants.PFQ_TYPE
     self._Prepare()
+    self.buildstore = FakeBuildStore()
 
     self.partial_submit_changes = ['C', 'D']
     self.other_changes = ['A', 'B']
@@ -586,12 +590,12 @@ class BaseCommitQueueCompletionStageTest(
 
   def ConstructStage(self):
     """Returns a CommitQueueCompletionStage object."""
-    sync_stage = sync_stages.CommitQueueSyncStage(self._run)
+    sync_stage = sync_stages.CommitQueueSyncStage(self._run, self.buildstore)
     sync_stage.pool = mock.MagicMock()
     sync_stage.pool.applied = self.changes
 
     return completion_stages.CommitQueueCompletionStage(
-        self._run, sync_stage, success=True)
+        self._run, self.buildstore, sync_stage, success=True)
 
   def VerifyStage(self, failing=(), inflight=(), no_stat=(), alert=False,
                   stage=None, build_passed=False):
@@ -750,9 +754,10 @@ class MasterCommitQueueCompletionStageTest(BaseCommitQueueCompletionStageTest):
     """test _IsFailureFatal with self-destruction."""
     mock_cidb = mock.MagicMock()
     cidb.CIDBConnectionFactory.SetupMockCidb(mock_cidb)
-    self.PatchObject(builder_status_lib,
-                     'GetSlavesAbortedBySelfDestructedMaster',
-                     return_value={'slave-1', 'slave-2', 'slave-3'})
+    self.PatchObject(
+        builder_status_lib,
+        'GetSlavesAbortedBySelfDestructedMaster',
+        return_value={'slave-1', 'slave-2', 'slave-3'})
     stage = self.ConstructStage()
 
     self.assertFalse(stage._IsFailureFatal(
@@ -765,9 +770,10 @@ class MasterCommitQueueCompletionStageTest(BaseCommitQueueCompletionStageTest):
     """test _IsFailureFatal with self-destruction-with-success."""
     mock_cidb = mock.MagicMock()
     cidb.CIDBConnectionFactory.SetupMockCidb(mock_cidb)
-    self.PatchObject(builder_status_lib,
-                     'GetSlavesAbortedBySelfDestructedMaster',
-                     return_value={'slave-1', 'slave-2', 'slave-3'})
+    self.PatchObject(
+        builder_status_lib,
+        'GetSlavesAbortedBySelfDestructedMaster',
+        return_value={'slave-1', 'slave-2', 'slave-3'})
     stage = self.ConstructStage()
     stage._run.attrs.metadata.UpdateWithDict(
         {constants.SELF_DESTRUCTED_WITH_SUCCESS_BUILD: True})
@@ -836,12 +842,14 @@ class PublishUprevChangesStageTest(
     self.PatchObject(commands, 'UprevPackages')
 
     self._Prepare()
+    self.buildstore = FakeBuildStore()
 
   def ConstructStage(self):
-    sync_stage = sync_stages.ManifestVersionedSyncStage(self._run)
+    sync_stage = sync_stages.ManifestVersionedSyncStage(self._run,
+                                                        self.buildstore)
     sync_stage.pool = mock.MagicMock()
     return completion_stages.PublishUprevChangesStage(
-        self._run, sync_stage, success=True)
+        self._run, self.buildstore, sync_stage, success=True)
 
   def testPush(self):
     """Test values for PublishUprevChanges."""
@@ -861,7 +869,6 @@ class PublishUprevChangesStageTest(
     stage = self.ConstructStage()
     stage._build_stage_id = 'test_build_stage_id'
 
-    build_id = 'test_master_build_id'
     mock_cidb = mock.MagicMock()
     cidb.CIDBConnectionFactory.SetupMockCidb(mock_cidb)
 
@@ -871,8 +878,7 @@ class PublishUprevChangesStageTest(
     slave_b = 'slave_b'
     slave_c = 'slave_c'
 
-    slave_configs_a = [{'name': slave_a},
-                       {'name': slave_b}]
+    slave_configs_a = [{'name': slave_a}, {'name': slave_b}]
     slave_stages_a = [{'name': stage_name,
                        'build_config': slave_a,
                        'status': constants.BUILDER_STATUS_PASSED},
@@ -880,14 +886,16 @@ class PublishUprevChangesStageTest(
                        'build_config': slave_b,
                        'status': constants.BUILDER_STATUS_PASSED}]
 
-    self.PatchObject(completion_stages.PublishUprevChangesStage,
-                     '_GetSlaveConfigs', return_value=slave_configs_a)
-    self.PatchObject(mock_cidb, 'GetSlaveStages',
+    self.PatchObject(
+        completion_stages.PublishUprevChangesStage,
+        '_GetSlaveConfigs',
+        return_value=slave_configs_a)
+    self.PatchObject(FakeBuildStore, 'GetBuildStatuses', return_value=[])
+    self.PatchObject(FakeBuildStore, 'GetBuildsStages',
                      return_value=slave_stages_a)
 
     # All important slaves are covered
-    self.assertTrue(stage.CheckSlaveUploadPrebuiltsTest(
-        mock_cidb, build_id))
+    self.assertTrue(stage.CheckSlaveUploadPrebuiltsTest())
 
     slave_stages_b = [{'name': stage_name,
                        'build_config': slave_a,
@@ -895,33 +903,33 @@ class PublishUprevChangesStageTest(
                       {'name': stage_name,
                        'build_config': slave_b,
                        'status': constants.BUILDER_STATUS_PASSED}]
-    self.PatchObject(completion_stages.PublishUprevChangesStage,
-                     '_GetSlaveConfigs', return_value=slave_configs_a)
-    self.PatchObject(mock_cidb, 'GetSlaveStages',
+    self.PatchObject(
+        completion_stages.PublishUprevChangesStage,
+        '_GetSlaveConfigs',
+        return_value=slave_configs_a)
+    self.PatchObject(FakeBuildStore, 'GetBuildsStages',
                      return_value=slave_stages_b)
 
     # Slave_a didn't pass the stage
-    self.assertFalse(stage.CheckSlaveUploadPrebuiltsTest(
-        mock_cidb, build_id))
+    self.assertFalse(stage.CheckSlaveUploadPrebuiltsTest())
 
-    slave_configs_b = [{'name': slave_a},
-                       {'name': slave_b},
-                       {'name': slave_c}]
-    self.PatchObject(completion_stages.PublishUprevChangesStage,
-                     '_GetSlaveConfigs', return_value=slave_configs_b)
-    self.PatchObject(mock_cidb, 'GetSlaveStages',
+    slave_configs_b = [{'name': slave_a}, {'name': slave_b}, {'name': slave_c}]
+    self.PatchObject(
+        completion_stages.PublishUprevChangesStage,
+        '_GetSlaveConfigs',
+        return_value=slave_configs_b)
+    self.PatchObject(FakeBuildStore, 'GetBuildsStages',
                      return_value=slave_stages_a)
 
     # No stage information for slave_c
-    self.assertFalse(stage.CheckSlaveUploadPrebuiltsTest(
-        mock_cidb, build_id))
+    self.assertFalse(stage.CheckSlaveUploadPrebuiltsTest())
 
   def testAndroidPush(self):
     """Test values for PublishUprevChanges with Android PFQ."""
-    self._Prepare(bot_id=constants.NYC_ANDROID_PFQ_MASTER,
-                  extra_config={'push_overlays': constants.PUBLIC_OVERLAYS},
-                  extra_cmd_args=['--android_rev',
-                                  constants.ANDROID_REV_LATEST])
+    self._Prepare(
+        bot_id=constants.NYC_ANDROID_PFQ_MASTER,
+        extra_config={'push_overlays': constants.PUBLIC_OVERLAYS},
+        extra_cmd_args=['--android_rev', constants.ANDROID_REV_LATEST])
     self._run.options.prebuilts = True
     self.RunStage()
     self.push_mock.assert_called_once_with(
@@ -937,8 +945,7 @@ class PublishUprevChangesStageTest(
     stage.sync_stage.pool.HasPickedUpCLs.return_value = True
     stage.PerformStage()
     self.push_mock.assert_called_once_with(
-        self.build_root, overlay_type='both', dryrun=False,
-        staging_branch=None)
+        self.build_root, overlay_type='both', dryrun=False, staging_branch=None)
 
   def testPerformStageOnCQMasterWithPickedUpCLs(self):
     """Test PerformStage on CQ-master with picked up CLs."""
@@ -947,8 +954,7 @@ class PublishUprevChangesStageTest(
     stage.sync_stage.pool.HasPickedUpCLs.return_value = True
     stage.PerformStage()
     self.push_mock.assert_called_once_with(
-        self.build_root, overlay_type='both', dryrun=False,
-        staging_branch=None)
+        self.build_root, overlay_type='both', dryrun=False, staging_branch=None)
 
   def testPerformStageOnCQMasterWithoutPickedUpCLs(self):
     """Test PerformStage on CQ-master without picked up CLs."""

@@ -24,11 +24,13 @@ class PLATFORM_EXPORT LinkHighlight : public DisplayItemClient {
   virtual void ClearCurrentGraphicsLayer() = 0;
   virtual cc::Layer* Layer() = 0;
 
-  virtual const EffectPaintPropertyNode* effect() = 0;
+  virtual const EffectPaintPropertyNode& Effect() const = 0;
 
   // DisplayItemClient methods
+  // TODO(wangxianzhu): This class doesn't need to be a DisplayItemClient in
+  // CompositeAfterPaint.
   String DebugName() const final { return "LinkHighlight"; }
-  LayoutRect VisualRect() const final { return LayoutRect(); }
+  IntRect VisualRect() const final { return IntRect(); }
 };
 
 }  // namespace blink

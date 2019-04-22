@@ -4,6 +4,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
@@ -57,8 +58,7 @@ class PluginPrivateFileSystemBackendTest : public testing::Test {
   FileSystemURL CreateURL(const GURL& root_url, const std::string& relative) {
     FileSystemURL root = context_->CrackURL(root_url);
     return context_->CreateCrackedFileSystemURL(
-        root.origin(),
-        root.mount_type(),
+        root.origin().GetURL(), root.mount_type(),
         root.virtual_path().AppendASCII(relative));
   }
 

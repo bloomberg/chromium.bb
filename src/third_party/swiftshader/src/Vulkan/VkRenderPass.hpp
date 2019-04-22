@@ -29,7 +29,55 @@ public:
 
 	static size_t ComputeRequiredAllocationSize(const VkRenderPassCreateInfo* pCreateInfo);
 
+	void getRenderAreaGranularity(VkExtent2D* pGranularity) const;
+
+	void begin();
+	void nextSubpass();
+	void end();
+
+	uint32_t getAttachmentCount() const
+	{
+		return attachmentCount;
+	}
+
+	VkAttachmentDescription getAttachment(uint32_t i) const
+	{
+		return attachments[i];
+	}
+
+	uint32_t getSubpassCount() const
+	{
+		return subpassCount;
+	}
+
+	VkSubpassDescription getSubpass(uint32_t i) const
+	{
+		return subpasses[i];
+	}
+
+	VkSubpassDescription getCurrentSubpass() const
+	{
+		return subpasses[currentSubpass];
+	}
+
+	uint32_t getDependencyCount() const
+	{
+		return dependencyCount;
+	}
+
+	VkSubpassDependency getDependency(uint32_t i) const
+	{
+		return dependencies[i];
+	}
+
 private:
+	uint32_t                 attachmentCount = 0;
+	VkAttachmentDescription* attachments = nullptr;
+	uint32_t                 subpassCount = 0;
+	VkSubpassDescription*    subpasses = nullptr;
+	uint32_t                 dependencyCount = 0;
+	VkSubpassDependency*     dependencies = nullptr;
+	uint32_t                 currentSubpass = 0;
 };
 
 static inline RenderPass* Cast(VkRenderPass object)

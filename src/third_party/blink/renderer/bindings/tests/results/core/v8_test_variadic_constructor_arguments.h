@@ -24,6 +24,8 @@
 
 namespace blink {
 
+CORE_EXPORT extern const WrapperTypeInfo v8_test_variadic_constructor_arguments_wrapper_type_info;
+
 class V8TestVariadicConstructorArguments {
   STATIC_ONLY(V8TestVariadicConstructorArguments);
  public:
@@ -34,7 +36,11 @@ class V8TestVariadicConstructorArguments {
     return ToScriptWrappable(object)->ToImpl<TestVariadicConstructorArguments>();
   }
   CORE_EXPORT static TestVariadicConstructorArguments* ToImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
-  CORE_EXPORT static const WrapperTypeInfo wrapper_type_info;
+
+  CORE_EXPORT static constexpr const WrapperTypeInfo* GetWrapperTypeInfo() {
+    return &v8_test_variadic_constructor_arguments_wrapper_type_info;
+  }
+
   static constexpr int kInternalFieldCount = kV8DefaultWrapperInternalFieldCount;
 
   // Callback functions

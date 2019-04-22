@@ -10,14 +10,13 @@
 #include "base/macros.h"
 #include "components/infobars/core/infobar_manager.h"
 #include "ios/web/public/web_state/web_state_observer.h"
-#include "ios/web/public/web_state/web_state_user_data.h"
+#import "ios/web/public/web_state/web_state_user_data.h"
 
 namespace infobars {
 class InfoBar;
 }
 
 namespace web {
-struct LoadCommittedDetails;
 class WebState;
 }
 
@@ -40,9 +39,8 @@ class InfoBarManagerImpl : public infobars::InfoBarManager,
       std::unique_ptr<ConfirmInfoBarDelegate> delegate) override;
 
   // web::WebStateObserver implementation.
-  void NavigationItemCommitted(
-      web::WebState* web_state,
-      const web::LoadCommittedDetails& load_details) override;
+  void DidFinishNavigation(web::WebState* web_state,
+                           web::NavigationContext* navigation_context) override;
   void WebStateDestroyed(web::WebState* web_state) override;
 
   // Opens a URL according to the specified |disposition|.
@@ -51,6 +49,8 @@ class InfoBarManagerImpl : public infobars::InfoBarManager,
   // The WebState this instance is observing. Will be null after
   // WebStateDestroyed has been called.
   web::WebState* web_state_ = nullptr;
+
+  WEB_STATE_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(InfoBarManagerImpl);
 };

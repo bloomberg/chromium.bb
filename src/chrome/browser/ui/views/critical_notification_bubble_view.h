@@ -23,7 +23,7 @@ class CriticalNotificationBubbleView : public views::BubbleDialogDelegateView {
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) override;
+      const views::ViewHierarchyChangedDetails& details) override;
 
  private:
   // Helper function to calculate the remaining time (in seconds) until

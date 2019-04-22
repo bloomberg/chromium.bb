@@ -25,17 +25,6 @@ enum BackgroundRenderMode {
   BG_RENDER_RECURSIVE,
 };
 
-std::string GetGtkSettingsStringProperty(GtkSettings* settings,
-                                         const gchar* prop_name) {
-  GValue layout = G_VALUE_INIT;
-  g_value_init(&layout, G_TYPE_STRING);
-  g_object_get_property(G_OBJECT(settings), prop_name, &layout);
-  DCHECK(G_VALUE_HOLDS_STRING(&layout));
-  std::string prop_value(g_value_get_string(&layout));
-  g_value_unset(&layout);
-  return prop_value;
-}
-
 ScopedStyleContext GetTooltipContext() {
   return AppendCssNodeToStyleContext(
       nullptr, GtkVersionCheck(3, 20) ? "#tooltip.background"
@@ -88,6 +77,8 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
     case ui::NativeTheme::kColorId_DialogBackground:
     case ui::NativeTheme::kColorId_BubbleBackground:
       return GetBgColor("");
+    case ui::NativeTheme::kColorId_BubbleFooterBackground:
+      return GetBgColor("#statusbar");
 
     // FocusableBorder
     case ui::NativeTheme::kColorId_FocusedBorderColor:
@@ -136,6 +127,8 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
     case ui::NativeTheme::kColorId_HighlightedMenuItemBackgroundColor:
     case ui::NativeTheme::kColorId_HighlightedMenuItemForegroundColor:
     case ui::NativeTheme::kColorId_FocusedHighlightedMenuItemBackgroundColor:
+    case ui::NativeTheme::kColorId_MenuItemAlertBackgroundColorMax:
+    case ui::NativeTheme::kColorId_MenuItemAlertBackgroundColorMin:
       return ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
           color_id);
 
@@ -198,6 +191,7 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
 
     // ProminentButton
     case ui::NativeTheme::kColorId_ProminentButtonColor:
+    case ui::NativeTheme::kColorId_ProminentButtonFocusedColor:
       return GetBgColor(
           "GtkTreeView#treeview.view "
           "GtkTreeView#treeview.view.cell:selected:focus");
@@ -205,6 +199,10 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
       return GetFgColor(
           "GtkTreeView#treeview.view "
           "GtkTreeView#treeview.view.cell:selected:focus GtkLabel");
+    case ui::NativeTheme::kColorId_ProminentButtonDisabledColor:
+      return GetBgColor("GtkButton#button.text-button:disabled");
+    case ui::NativeTheme::kColorId_ButtonBorderColor:
+      return GetBorderColor("GtkButton#button.text-button");
 
     // TabbedPane
     case ui::NativeTheme::kColorId_TabTitleColorActive:
@@ -292,7 +290,7 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
               ui::NativeTheme::kColorId_TextfieldDefaultBackground),
           SkColorFromColorId(
               ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused),
-          0x80);
+          0.5f);
     case ui::NativeTheme::kColorId_ResultsTableNormalText:
       return SkColorFromColorId(
           ui::NativeTheme::kColorId_TextfieldDefaultColor);
@@ -301,7 +299,7 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
           SkColorFromColorId(ui::NativeTheme::kColorId_TextfieldDefaultColor),
           SkColorFromColorId(
               ui::NativeTheme::kColorId_TextfieldDefaultBackground),
-          0x80);
+          0.5f);
 
     // Throbber
     // TODO(thomasanderson): Render GtkSpinner directly.
@@ -325,6 +323,11 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
               : ui::NativeThemeDarkAura::instance();
       return fallback_theme->GetSystemColor(color_id);
     }
+
+    case ui::NativeTheme::kColorId_DefaultIconColor:
+      if (GtkVersionCheck(3, 20))
+        return GetFgColor("GtkMenu#menu GtkMenuItem#menuitem #radio");
+      return GetFgColor("GtkMenu#menu GtkMenuItem#menuitem.radio");
 
     case ui::NativeTheme::kColorId_NumColors:
       NOTREACHED();

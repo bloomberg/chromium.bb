@@ -4,7 +4,7 @@
 
 #include "components/metrics/system_session_analyzer_win.h"
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/time/time.h"
 
 namespace metrics {
@@ -249,7 +249,7 @@ bool SystemSessionAnalyzer::ProcessSession(const EventInfo& end,
 
 SystemSessionAnalyzer::EvtHandle SystemSessionAnalyzer::CreateRenderContext() {
   LPCWSTR value_paths[] = {kEventIdPath, kEventTimePath};
-  const DWORD kValueCnt = arraysize(value_paths);
+  const DWORD kValueCnt = base::size(value_paths);
 
   EVT_HANDLE context = nullptr;
   context =

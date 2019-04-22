@@ -6,20 +6,23 @@
 
 #include <stdint.h>
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "ash/public/cpp/ash_pref_names.h"
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/image_decoder.h"
 #include "chrome/browser/ui/ash/test_wallpaper_controller.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
+#include "components/arc/session/arc_bridge_service.h"
 #include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_wallpaper_instance.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -70,6 +73,8 @@ class ArcWallpaperServiceTest : public testing::Test {
         ash::prefs::kUserWallpaperInfo);
     pref_service_.registry()->RegisterDictionaryPref(
         ash::prefs::kWallpaperColors);
+    pref_service_.registry()->RegisterStringPref(
+        prefs::kDeviceWallpaperImageFilePath, std::string());
 
     // User
     user_manager_->AddUser(user_manager::StubAccountId());

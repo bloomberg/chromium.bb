@@ -4,7 +4,7 @@
 
 #include "chrome/browser/android/preferences/prefs.h"
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "chrome/browser/android/preferences/pref_service_bridge.h"
 #include "chrome/common/pref_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -26,7 +26,7 @@ TEST_F(PrefsTest, TestIndex) {
 
   // If one of these checks fails, most likely the Pref enum and
   // |kPrefExposedToJava| are out of sync.
-  EXPECT_EQ(Pref::PREF_NUM_PREFS, arraysize(kPrefsExposedToJava));
+  EXPECT_EQ(Pref::PREF_NUM_PREFS, base::size(kPrefsExposedToJava));
 
   EXPECT_EQ(prefs::kAllowDeletingBrowserHistory,
             GetPrefName(ALLOW_DELETING_BROWSER_HISTORY));
@@ -34,10 +34,19 @@ TEST_F(PrefsTest, TestIndex) {
             GetPrefName(CONTEXTUAL_SUGGESTIONS_ENABLED));
   EXPECT_EQ(prefs::kIncognitoModeAvailability,
             GetPrefName(INCOGNITO_MODE_AVAILABILITY));
+
+#if BUILDFLAG(ENABLE_FEED_IN_CHROME)
   EXPECT_EQ(feed::prefs::kEnableSnippets,
             GetPrefName(NTP_ARTICLES_SECTION_ENABLED));
   EXPECT_EQ(feed::prefs::kArticlesListVisible,
             GetPrefName(NTP_ARTICLES_LIST_VISIBLE));
+#else   // BUILDFLAG(ENABLE_FEED_IN_CHROME)
+  EXPECT_EQ(ntp_snippets::prefs::kEnableSnippets,
+            GetPrefName(NTP_ARTICLES_SECTION_ENABLED));
+  EXPECT_EQ(ntp_snippets::prefs::kArticlesListVisible,
+            GetPrefName(NTP_ARTICLES_LIST_VISIBLE));
+#endif  // BUILDFLAG(ENABLE_FEED_IN_CHROME)
+
   EXPECT_EQ(prefs::kPromptForDownloadAndroid,
             GetPrefName(PROMPT_FOR_DOWNLOAD_ANDROID));
   EXPECT_EQ(dom_distiller::prefs::kReaderForAccessibility,
@@ -52,6 +61,7 @@ TEST_F(PrefsTest, TestIndex) {
             GetPrefName(AUTOFILL_PROFILE_ENABLED));
   EXPECT_EQ(autofill::prefs::kAutofillCreditCardEnabled,
             GetPrefName(AUTOFILL_CREDIT_CARD_ENABLED));
+  EXPECT_EQ(prefs::kUsageStatsEnabled, GetPrefName(USAGE_STATS_ENABLED));
 
   // If this check fails, a pref is missing a test case above.
   EXPECT_EQ(Pref::PREF_NUM_PREFS, pref_count_);

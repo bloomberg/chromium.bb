@@ -57,6 +57,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_paths.h"
+#include "content/public/common/network_service_util.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/browsing_data_remover_test_util.h"
 #include "content/public/test/download_test_observer.h"
@@ -64,6 +65,7 @@
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "media/base/media_switches.h"
+#include "media/mojo/interfaces/media_types.mojom.h"
 #include "media/mojo/services/video_decode_perf_history.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/dns/mock_host_resolver.h"
@@ -267,20 +269,25 @@ bool SetGaiaCookieForProfile(Profile* profile) {
   GURL google_url = GaiaUrls::GetInstance()->google_url();
   net::CanonicalCookie cookie("APISID", std::string(), "." + google_url.host(),
                               "/", base::Time(), base::Time(), base::Time(),
-                              false, false, net::CookieSameSite::DEFAULT_MODE,
+                              false, false, net::CookieSameSite::NO_RESTRICTION,
                               net::COOKIE_PRIORITY_DEFAULT);
 
   bool success = false;
   base::RunLoop loop;
-  base::OnceCallback<void(bool)> callback =
-      base::BindLambdaForTesting([&success, &loop](bool s) {
-        success = s;
-        loop.Quit();
-      });
+  base::OnceCallback<void(net::CanonicalCookie::CookieInclusionStatus)>
+      callback = base::BindLambdaForTesting(
+          [&success, &loop](net::CanonicalCookie::CookieInclusionStatus s) {
+            success =
+                (s == net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
+            loop.Quit();
+          });
   network::mojom::CookieManager* cookie_manager =
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetCookieManagerForBrowserProcess();
-  cookie_manager->SetCanonicalCookie(cookie, true, true, std::move(callback));
+  net::CookieOptions options;
+  options.set_include_httponly();
+  cookie_manager->SetCanonicalCookie(cookie, "https", options,
+                                     std::move(callback));
   loop.Run();
   return success;
 }
@@ -533,11 +540,10 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
         new BrowsingDataDatabaseHelper(profile),
         new BrowsingDataLocalStorageHelper(profile),
         /*session_storage_helper=*/nullptr,
-        new BrowsingDataAppCacheHelper(profile),
+        new BrowsingDataAppCacheHelper(storage_partition->GetAppCacheService()),
         new BrowsingDataIndexedDBHelper(indexed_db_context),
         BrowsingDataFileSystemHelper::Create(file_system_context),
         BrowsingDataQuotaHelper::Create(profile),
-        BrowsingDataChannelIDHelper::Create(profile->GetRequestContext()),
         new BrowsingDataServiceWorkerHelper(service_worker_context),
         new BrowsingDataSharedWorkerHelper(storage_partition,
                                            profile->GetResourceContext()),
@@ -691,7 +697,7 @@ IN_PROC_BROWSER_TEST_F(DiceBrowsingDataRemoverBrowserTest, SyncTokenError) {
   AccountInfo primary_account =
       AddAccountToProfile(kAccountId, profile, /*is_primary=*/true);
   auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
-  identity::SetAccountWithRefreshTokenInPersistentErrorState(
+  identity::UpdatePersistentErrorOfRefreshTokenForAccount(
       identity_manager, primary_account.account_id,
       GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
           GoogleServiceAuthError::InvalidGaiaCredentialsReason::
@@ -780,8 +786,9 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, VideoDecodePerfHistory) {
   {
     base::RunLoop run_loop;
     video_decode_perf_history->GetSaveCallback().Run(
-        ukm::kInvalidSourceId, kIsTopFrame, prediction_features,
-        prediction_targets, kPlayerId, run_loop.QuitWhenIdleClosure());
+        ukm::kInvalidSourceId, media::learning::FeatureValue(0), kIsTopFrame,
+        prediction_features, prediction_targets, kPlayerId,
+        run_loop.QuitWhenIdleClosure());
     run_loop.Run();
   }
 
@@ -899,7 +906,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, Cache) {
 // after the crash.
 IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
                        ClearCacheAndNetworkServiceCrashes) {
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
+  if (!content::IsOutOfProcessNetworkService())
     return;
 
   // Clear the cached data with a task posted to crash the network service.
@@ -994,21 +1001,12 @@ IN_PROC_BROWSER_TEST_P(BrowsingDataRemoverBrowserTestP, SessionCookieDeletion) {
   TestSiteData("SessionCookie", GetParam());
 }
 
-// TODO(crbug.com/849238): This test is flaky on Mac (dbg) builds.
-#if defined(OS_MACOSX)
-#define MAYBE_LocalStorageDeletion DISABLED_LocalStorageDeletion
-#define MAYBE_LocalStorageIncognitoDeletion \
-  DISABLED_LocalStorageIncognitoDeletion
-#else
-#define MAYBE_LocalStorageDeletion LocalStorageDeletion
-#define MAYBE_LocalStorageIncognitoDeletion LocalStorageIncognitoDeletion
-#endif
-IN_PROC_BROWSER_TEST_P(BrowsingDataRemoverBrowserTestP,
-                       MAYBE_LocalStorageDeletion) {
+IN_PROC_BROWSER_TEST_P(BrowsingDataRemoverBrowserTestP, LocalStorageDeletion) {
   TestSiteData("LocalStorage", GetParam());
 }
+
 IN_PROC_BROWSER_TEST_P(BrowsingDataRemoverBrowserTestP,
-                       MAYBE_LocalStorageIncognitoDeletion) {
+                       LocalStorageIncognitoDeletion) {
   UseIncognitoBrowser();
   TestSiteData("LocalStorage", GetParam());
 }
@@ -1131,7 +1129,7 @@ IN_PROC_BROWSER_TEST_P(BrowsingDataRemoverBrowserTestP, MediaLicenseDeletion) {
   EXPECT_FALSE(HasDataForType(kMediaLicenseType));
 
   SetDataForType(kMediaLicenseType);
-  EXPECT_EQ(0, GetSiteDataCount());
+  EXPECT_EQ(1, GetSiteDataCount());
   EXPECT_EQ(1, GetMediaLicenseCount());
   ExpectCookieTreeModelCount(1);
   EXPECT_TRUE(HasDataForType(kMediaLicenseType));
@@ -1140,7 +1138,7 @@ IN_PROC_BROWSER_TEST_P(BrowsingDataRemoverBrowserTestP, MediaLicenseDeletion) {
   // which should not remove the recently created Media License.
   RemoveAndWait(content::BrowsingDataRemover::DATA_TYPE_MEDIA_LICENSES,
                 delete_begin, kLastHour);
-  EXPECT_EQ(0, GetSiteDataCount());
+  EXPECT_EQ(1, GetSiteDataCount());
   EXPECT_EQ(1, GetMediaLicenseCount());
   ExpectCookieTreeModelCount(1);
   EXPECT_TRUE(HasDataForType(kMediaLicenseType));
@@ -1174,7 +1172,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
   EXPECT_FALSE(HasDataForType(kMediaLicenseType));
 
   SetDataForType(kMediaLicenseType);
-  EXPECT_EQ(0, GetSiteDataCount());
+  EXPECT_EQ(1, GetSiteDataCount());
   EXPECT_EQ(1, GetMediaLicenseCount());
   ExpectCookieTreeModelCount(1);
   EXPECT_TRUE(HasDataForType(kMediaLicenseType));
@@ -1233,6 +1231,53 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
   EXPECT_EQ(0, GetMediaLicenseCount());
   ExpectCookieTreeModelCount(0);
 }
+
+IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
+                       MediaLicenseDeletionWithFilter) {
+  const std::string kMediaLicenseType = "MediaLicense";
+
+  GURL url =
+      embedded_test_server()->GetURL("/browsing_data/media_license.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  EXPECT_EQ(0, GetMediaLicenseCount());
+  EXPECT_FALSE(HasDataForType(kMediaLicenseType));
+
+  SetDataForType(kMediaLicenseType);
+  EXPECT_EQ(1, GetMediaLicenseCount());
+  EXPECT_TRUE(HasDataForType(kMediaLicenseType));
+
+  // Try to remove the Media Licenses using a whitelist that doesn't include
+  // the current URL. Media License should not be deleted.
+  std::unique_ptr<BrowsingDataFilterBuilder> filter_builder =
+      BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST);
+  filter_builder->AddOrigin(
+      url::Origin::CreateFromNormalizedTuple("https", "test-origin", 443));
+  RemoveWithFilterAndWait(
+      content::BrowsingDataRemover::DATA_TYPE_MEDIA_LICENSES,
+      std::move(filter_builder));
+  EXPECT_EQ(1, GetMediaLicenseCount());
+
+  // Now try with a blacklist that includes the current URL. Media License
+  // should not be deleted.
+  filter_builder =
+      BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::BLACKLIST);
+  filter_builder->AddOrigin(url::Origin::Create(url));
+  RemoveWithFilterAndWait(
+      content::BrowsingDataRemover::DATA_TYPE_MEDIA_LICENSES,
+      std::move(filter_builder));
+  EXPECT_EQ(1, GetMediaLicenseCount());
+
+  // Now try with a whitelist that includes the current URL. Media License
+  // should be deleted this time.
+  filter_builder =
+      BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST);
+  filter_builder->AddOrigin(url::Origin::Create(url));
+  RemoveWithFilterAndWait(
+      content::BrowsingDataRemover::DATA_TYPE_MEDIA_LICENSES,
+      std::move(filter_builder));
+  EXPECT_EQ(0, GetMediaLicenseCount());
+}
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 const std::vector<std::string> kStorageTypes{
@@ -1290,10 +1335,6 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, StorageRemovedFromDisk) {
   // but there are a few bugs that need to be fixed.
   // Any addition to this list must have an associated TODO().
   static const std::vector<std::string> whitelist = {
-    // TODO(crbug.com/823071): LevelDB logs are not deleted immediately.
-    "File System/Origins/[0-9]*.log",
-    "Service Worker/Database/[0-9]*.log",
-
 #if defined(OS_CHROMEOS)
     // TODO(crbug.com/846297): Many leveldb files remain on ChromeOS. I couldn't
     // reproduce this in manual testing, so it might be a timing issue when
@@ -1305,13 +1346,18 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, StorageRemovedFromDisk) {
   EXPECT_EQ(0, found) << "A non-whitelisted file contains the hostname.";
 }
 
-// TODO(crbug.com/840080, crbug.com/824533): Filesystem and
-// CacheStorage can't be deleted on exit correctly at the moment.
+// TODO(crbug.com/840080): Filesystem can't be deleted on exit correctly at the
+// moment.
+// TODO(crbug.com/927312): LocalStorage deletion is flaky.
 const std::vector<std::string> kSessionOnlyStorageTestTypes{
-    "Cookie", "LocalStorage",
+    "Cookie",
+    // "LocalStorage",
     // "FileSystem",
-    "SessionStorage", "IndexedDb", "WebSql", "ServiceWorker",
-    // "CacheStorage",
+    "SessionStorage",
+    "IndexedDb",
+    "WebSql",
+    "ServiceWorker",
+    "CacheStorage",
 };
 
 // Test that storage gets deleted if marked as SessionOnly.
@@ -1347,6 +1393,6 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
 
 // Some storage backend use a different code path for full deletions and
 // partial deletions, so we need to test both.
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        BrowsingDataRemoverBrowserTestP,
-                        ::testing::Values(base::Time(), kLastHour));
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         BrowsingDataRemoverBrowserTestP,
+                         ::testing::Values(base::Time(), kLastHour));

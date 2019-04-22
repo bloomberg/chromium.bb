@@ -12,8 +12,8 @@
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_fetcher.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_loader_client.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
+#include "third_party/blink/renderer/core/script/module_record_resolver.h"
 #include "third_party/blink/renderer/core/script/module_script.h"
-#include "third_party/blink/renderer/core/script/script_module_resolver.h"
 #include "third_party/blink/renderer/core/testing/dummy_modulator.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
@@ -48,32 +48,32 @@ class TestSingleModuleClient final : public SingleModuleClient {
   Member<ModuleScript> module_script_;
 };
 
-class TestScriptModuleResolver final : public ScriptModuleResolver {
+class TestModuleRecordResolver final : public ModuleRecordResolver {
  public:
-  TestScriptModuleResolver() {}
+  TestModuleRecordResolver() {}
 
   int RegisterModuleScriptCallCount() const {
     return register_module_script_call_count_;
   }
 
-  void RegisterModuleScript(ModuleScript*) override {
+  void RegisterModuleScript(const ModuleScript*) override {
     register_module_script_call_count_++;
   }
 
-  void UnregisterModuleScript(ModuleScript*) override {
+  void UnregisterModuleScript(const ModuleScript*) override {
     FAIL() << "UnregisterModuleScript shouldn't be called in ModuleMapTest";
   }
 
-  ModuleScript* GetHostDefined(const ScriptModule&) const override {
+  const ModuleScript* GetHostDefined(const ModuleRecord&) const override {
     NOTREACHED();
     return nullptr;
   }
 
-  ScriptModule Resolve(const String& specifier,
-                       const ScriptModule& referrer,
+  ModuleRecord Resolve(const String& specifier,
+                       const ModuleRecord& referrer,
                        ExceptionState&) override {
     NOTREACHED();
-    return ScriptModule();
+    return ModuleRecord();
   }
 
  private:
@@ -89,14 +89,14 @@ class ModuleMapTestModulator final : public DummyModulator {
 
   void Trace(blink::Visitor*) override;
 
-  TestScriptModuleResolver* GetTestScriptModuleResolver() {
+  TestModuleRecordResolver* GetTestModuleRecordResolver() {
     return resolver_.Get();
   }
   void ResolveFetches();
 
  private:
   // Implements Modulator:
-  ScriptModuleResolver* GetScriptModuleResolver() override {
+  ModuleRecordResolver* GetModuleRecordResolver() override {
     return resolver_.Get();
   }
   ScriptState* GetScriptState() override { return script_state_; }
@@ -110,11 +110,13 @@ class ModuleMapTestModulator final : public DummyModulator {
     explicit TestModuleScriptFetcher(ModuleMapTestModulator* modulator)
         : modulator_(modulator) {}
     void Fetch(FetchParameters& request,
+               ResourceFetcher*,
+               const Modulator* modulator_for_built_in_modules,
                ModuleGraphLevel,
                ModuleScriptFetcher::Client* client) override {
       TestRequest* test_request = MakeGarbageCollected<TestRequest>(
           ModuleScriptCreationParams(
-              request.Url(), ParkableString(String("").ReleaseImpl()),
+              request.Url(), ParkableString(String("").ReleaseImpl()), nullptr,
               request.GetResourceRequest().GetFetchCredentialsMode()),
           client);
       modulator_->test_requests_.push_back(test_request);
@@ -134,36 +136,37 @@ class ModuleMapTestModulator final : public DummyModulator {
     return MakeGarbageCollected<TestModuleScriptFetcher>(this);
   }
 
-  Vector<ModuleRequest> ModuleRequestsFromScriptModule(ScriptModule) override {
+  Vector<ModuleRequest> ModuleRequestsFromModuleRecord(ModuleRecord) override {
     return Vector<ModuleRequest>();
   }
 
   base::SingleThreadTaskRunner* TaskRunner() override {
     return Thread::Current()->GetTaskRunner().get();
-  };
+  }
 
   struct TestRequest final : public GarbageCollectedFinalized<TestRequest> {
     TestRequest(const ModuleScriptCreationParams& params,
                 ModuleScriptFetcher::Client* client)
         : params_(params), client_(client) {}
     void NotifyFetchFinished() {
-      client_->NotifyFetchFinished(params_,
+      client_->NotifyFetchFinished(*params_,
                                    HeapVector<Member<ConsoleMessage>>());
     }
     void Trace(blink::Visitor* visitor) { visitor->Trace(client_); }
 
    private:
-    ModuleScriptCreationParams params_;
+    base::Optional<ModuleScriptCreationParams> params_;
     Member<ModuleScriptFetcher::Client> client_;
   };
   HeapVector<Member<TestRequest>> test_requests_;
 
   Member<ScriptState> script_state_;
-  Member<TestScriptModuleResolver> resolver_;
+  Member<TestModuleRecordResolver> resolver_;
 };
 
 ModuleMapTestModulator::ModuleMapTestModulator(ScriptState* script_state)
-    : script_state_(script_state), resolver_(new TestScriptModuleResolver) {}
+    : script_state_(script_state),
+      resolver_(MakeGarbageCollected<TestModuleRecordResolver>()) {}
 
 void ModuleMapTestModulator::Trace(blink::Visitor* visitor) {
   visitor->Trace(test_requests_);
@@ -199,7 +202,7 @@ void ModuleMapTest::SetUp() {
   GetDocument().SetSecurityOrigin(SecurityOrigin::Create(GetDocument().Url()));
   modulator_ = MakeGarbageCollected<ModuleMapTestModulator>(
       ToScriptStateForMainWorld(&GetFrame()));
-  map_ = ModuleMap::Create(modulator_);
+  map_ = MakeGarbageCollected<ModuleMap>(modulator_);
 }
 
 TEST_F(ModuleMapTest, sequentialRequests) {
@@ -208,13 +211,12 @@ TEST_F(ModuleMapTest, sequentialRequests) {
   platform->AdvanceClockSeconds(1.);  // For non-zero DocumentParserTimings
 
   KURL url(NullURL(), "https://example.com/foo.js");
-  auto* settings_object =
-      GetDocument().CreateFetchClientSettingsObjectSnapshot();
 
   // First request
-  TestSingleModuleClient* client = new TestSingleModuleClient;
+  TestSingleModuleClient* client =
+      MakeGarbageCollected<TestSingleModuleClient>();
   Map()->FetchSingleModuleScript(ModuleScriptFetchRequest::CreateForTest(url),
-                                 settings_object,
+                                 GetDocument().Fetcher(),
                                  ModuleGraphLevel::kTopLevelModuleFetch,
                                  ModuleScriptCustomFetchType::kNone, client);
   Modulator()->ResolveFetches();
@@ -223,16 +225,17 @@ TEST_F(ModuleMapTest, sequentialRequests) {
   platform->RunUntilIdle();
 
   EXPECT_EQ(Modulator()
-                ->GetTestScriptModuleResolver()
+                ->GetTestModuleRecordResolver()
                 ->RegisterModuleScriptCallCount(),
             1);
   EXPECT_TRUE(client->WasNotifyFinished());
   EXPECT_TRUE(client->GetModuleScript());
 
   // Secondary request
-  TestSingleModuleClient* client2 = new TestSingleModuleClient;
+  TestSingleModuleClient* client2 =
+      MakeGarbageCollected<TestSingleModuleClient>();
   Map()->FetchSingleModuleScript(ModuleScriptFetchRequest::CreateForTest(url),
-                                 settings_object,
+                                 GetDocument().Fetcher(),
                                  ModuleGraphLevel::kTopLevelModuleFetch,
                                  ModuleScriptCustomFetchType::kNone, client2);
   Modulator()->ResolveFetches();
@@ -241,7 +244,7 @@ TEST_F(ModuleMapTest, sequentialRequests) {
   platform->RunUntilIdle();
 
   EXPECT_EQ(Modulator()
-                ->GetTestScriptModuleResolver()
+                ->GetTestModuleRecordResolver()
                 ->RegisterModuleScriptCallCount(),
             1)
       << "registerModuleScript sholudn't be called in secondary request.";
@@ -255,20 +258,20 @@ TEST_F(ModuleMapTest, concurrentRequestsShouldJoin) {
   platform->AdvanceClockSeconds(1.);  // For non-zero DocumentParserTimings
 
   KURL url(NullURL(), "https://example.com/foo.js");
-  auto* settings_object =
-      GetDocument().CreateFetchClientSettingsObjectSnapshot();
 
   // First request
-  TestSingleModuleClient* client = new TestSingleModuleClient;
+  TestSingleModuleClient* client =
+      MakeGarbageCollected<TestSingleModuleClient>();
   Map()->FetchSingleModuleScript(ModuleScriptFetchRequest::CreateForTest(url),
-                                 settings_object,
+                                 GetDocument().Fetcher(),
                                  ModuleGraphLevel::kTopLevelModuleFetch,
                                  ModuleScriptCustomFetchType::kNone, client);
 
   // Secondary request (which should join the first request)
-  TestSingleModuleClient* client2 = new TestSingleModuleClient;
+  TestSingleModuleClient* client2 =
+      MakeGarbageCollected<TestSingleModuleClient>();
   Map()->FetchSingleModuleScript(ModuleScriptFetchRequest::CreateForTest(url),
-                                 settings_object,
+                                 GetDocument().Fetcher(),
                                  ModuleGraphLevel::kTopLevelModuleFetch,
                                  ModuleScriptCustomFetchType::kNone, client2);
 
@@ -280,7 +283,7 @@ TEST_F(ModuleMapTest, concurrentRequestsShouldJoin) {
   platform->RunUntilIdle();
 
   EXPECT_EQ(Modulator()
-                ->GetTestScriptModuleResolver()
+                ->GetTestModuleRecordResolver()
                 ->RegisterModuleScriptCallCount(),
             1);
 

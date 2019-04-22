@@ -20,7 +20,7 @@ std::string CredentialTypeToString(CredentialType value) {
       return "CredentialType::CREDENTIAL_TYPE_FEDERATED";
   }
   return "Unknown CredentialType value: " +
-         base::IntToString(static_cast<int>(value));
+         base::NumberToString(static_cast<int>(value));
 }
 
 std::ostream& operator<<(std::ostream& os, CredentialType value) {

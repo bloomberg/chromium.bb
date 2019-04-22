@@ -20,6 +20,7 @@
 #include "ash/wallpaper/wallpaper_info.h"
 #include "ash/wallpaper/wallpaper_utils/wallpaper_color_calculator_observer.h"
 #include "ash/wallpaper/wallpaper_utils/wallpaper_resizer_observer.h"
+#include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
@@ -68,6 +69,7 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
                                        public WallpaperResizerObserver,
                                        public WallpaperColorCalculatorObserver,
                                        public SessionObserver,
+                                       public TabletModeObserver,
                                        public ui::CompositorLockClient {
  public:
   enum WallpaperResolution {
@@ -153,12 +155,15 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
   // always return true thereafter.
   bool HasShownAnyWallpaper() const;
 
-  // Shows the wallpaper and alerts observers of changes. Does not show the
-  // image if |preview_mode| is false and the current wallpaper is still being
-  // previewed. See comments for |confirm_preview_wallpaper_callback_|.
+  // Shows the wallpaper and alerts observers of changes.
+  // Does not show the image if:
+  // 1)  |preview_mode| is false and the current wallpaper is still being
+  //     previewed. See comments for |confirm_preview_wallpaper_callback_|.
+  // 2)  |always_on_top| is false but the current wallpaper is always-on-top.
   void ShowWallpaperImage(const gfx::ImageSkia& image,
                           WallpaperInfo info,
-                          bool preview_mode);
+                          bool preview_mode,
+                          bool always_on_top);
 
   // Returns whether a wallpaper policy is enforced for |account_id| (not
   // including device policy).
@@ -218,8 +223,7 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
             const base::FilePath& user_data_path,
             const base::FilePath& chromeos_wallpapers_path,
             const base::FilePath& chromeos_custom_wallpapers_path,
-            const base::FilePath& device_policy_wallpaper_path,
-            bool is_device_wallpaper_policy_enforced) override;
+            const base::FilePath& device_policy_wallpaper_path) override;
   void SetCustomWallpaper(mojom::WallpaperUserInfoPtr user_info,
                           const std::string& wallpaper_files_id,
                           const std::string& file_name,
@@ -248,7 +252,8 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
   void SetPolicyWallpaper(mojom::WallpaperUserInfoPtr user_info,
                           const std::string& wallpaper_files_id,
                           const std::string& data) override;
-  void SetDeviceWallpaperPolicyEnforced(bool enforced) override;
+  void SetDevicePolicyWallpaperPath(
+      const base::FilePath& device_policy_wallpaper_path) override;
   void SetThirdPartyWallpaper(mojom::WallpaperUserInfoPtr user_info,
                               const std::string& wallpaper_files_id,
                               const std::string& file_name,
@@ -262,6 +267,8 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
   void ShowUserWallpaper(mojom::WallpaperUserInfoPtr user_info) override;
   void ShowSigninWallpaper() override;
   void ShowOneShotWallpaper(const gfx::ImageSkia& image) override;
+  void ShowAlwaysOnTopWallpaper(const base::FilePath& image_path) override;
+  void RemoveAlwaysOnTopWallpaper() override;
   void RemoveUserWallpaper(mojom::WallpaperUserInfoPtr user_info,
                            const std::string& wallpaper_files_id) override;
   void RemovePolicyWallpaper(mojom::WallpaperUserInfoPtr user_info,
@@ -289,6 +296,8 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
   // ShellObserver:
   void OnRootWindowAdded(aura::Window* root_window) override;
   void OnLocalStatePrefServiceInitialized(PrefService* pref_service) override;
+  void OnShellInitialized() override;
+  void OnShellDestroying() override;
 
   // WallpaperResizerObserver:
   void OnWallpaperResized() override;
@@ -298,6 +307,10 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
 
   // SessionObserver:
   void OnSessionStateChanged(session_manager::SessionState state) override;
+
+  // TabletModeObserver:
+  void OnTabletModeStarted() override;
+  void OnTabletModeEnded() override;
 
   // CompositorLockClient:
   void CompositorLockTimedOut() override;
@@ -500,6 +513,10 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
   base::Optional<std::vector<SkColor>> GetCachedColors(
       const std::string& current_location) const;
 
+  // The callback when decoding of the always-on-top wallpaper completes.
+  void OnAlwaysOnTopWallpaperDecoded(const WallpaperInfo& info,
+                                     const gfx::ImageSkia& image);
+
   // Move all wallpaper widgets to the locked container.
   // Returns true if the wallpaper moved.
   bool MoveToLockedContainer();
@@ -538,6 +555,10 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
   // When wallpaper resizes, we can check which displays will be affected. For
   // simplicity, we only lock the compositor for the internal display.
   void GetInternalDisplayCompositorLock();
+
+  // Schedules paint on all WallpaperViews owned by WallpaperWidgetControllers.
+  // This is used when we want to change wallpaper dimming.
+  void RepaintWallpaper();
 
   bool locked_;
 
@@ -597,12 +618,14 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
   // The wallpaper animation duration. An empty value disables the animation.
   base::TimeDelta animation_duration_;
 
-  // Whether the device wallpaper policy is enforced on this device.
-  bool is_device_wallpaper_policy_enforced_ = false;
+  base::FilePath device_policy_wallpaper_path_;
 
   // Whether the current wallpaper (if any) is the first wallpaper since the
   // controller initialization. Empty wallpapers for testing don't count.
   bool is_first_wallpaper_ = false;
+
+  // If true, the current wallpaper should always stay on top.
+  bool is_always_on_top_wallpaper_ = false;
 
   scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
 
@@ -620,6 +643,11 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
   // Called when the preview wallpaper needs to be reloaded (e.g. display size
   // change). Has the same lifetime with |confirm_preview_wallpaper_callback_|.
   base::RepeatingClosure reload_preview_wallpaper_callback_;
+
+  // Called when the always-on-top wallpaper needs to be reloaded (e.g. display
+  // size change). Non-empty if and only if |is_always_on_top_wallpaper_| is
+  // true.
+  base::RepeatingClosure reload_always_on_top_wallpaper_callback_;
 
   // If true, use a solid color wallpaper as if it is the decoded image.
   bool bypass_decode_for_testing_ = false;

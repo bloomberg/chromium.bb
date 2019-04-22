@@ -4,12 +4,10 @@
 
 package org.chromium.chrome.browser.toolbar.bottom;
 
-import android.content.res.ColorStateList;
-
+import org.chromium.chrome.browser.ThemeColorProvider;
+import org.chromium.chrome.browser.ThemeColorProvider.ThemeColorObserver;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior.OverviewModeObserver;
-import org.chromium.chrome.browser.toolbar.ThemeColorProvider;
-import org.chromium.chrome.browser.toolbar.ThemeColorProvider.ThemeColorObserver;
 
 /**
  * This class is responsible for reacting to events from the outside world, interacting with other
@@ -38,10 +36,17 @@ class TabSwitcherBottomToolbarMediator implements OverviewModeObserver, ThemeCol
         mModel = model;
 
         mThemeColorProvider = themeColorProvider;
-        mThemeColorProvider.addObserver(this);
+        mThemeColorProvider.addThemeColorObserver(this);
 
         mOverviewModeBehavior = overviewModeBehavior;
         mOverviewModeBehavior.addOverviewModeObserver(this);
+    }
+
+    /**
+     * @param showOnTop Whether to show the tab switcher bottom toolbar on the top of the screen.
+     */
+    void showToolbarOnTop(boolean showOnTop) {
+        mModel.set(TabSwitcherBottomToolbarModel.SHOW_ON_TOP, showOnTop);
     }
 
     /**
@@ -49,7 +54,7 @@ class TabSwitcherBottomToolbarMediator implements OverviewModeObserver, ThemeCol
      */
     void destroy() {
         if (mOverviewModeBehavior != null) mOverviewModeBehavior.removeOverviewModeObserver(this);
-        if (mThemeColorProvider != null) mThemeColorProvider.removeObserver(this);
+        if (mThemeColorProvider != null) mThemeColorProvider.removeThemeColorObserver(this);
     }
 
     @Override
@@ -69,7 +74,7 @@ class TabSwitcherBottomToolbarMediator implements OverviewModeObserver, ThemeCol
     public void onOverviewModeFinishedHiding() {}
 
     @Override
-    public void onThemeColorChanged(ColorStateList tint, int primaryColor) {
+    public void onThemeColorChanged(int primaryColor, boolean shouldAnimate) {
         mModel.set(TabSwitcherBottomToolbarModel.PRIMARY_COLOR, primaryColor);
     }
 }

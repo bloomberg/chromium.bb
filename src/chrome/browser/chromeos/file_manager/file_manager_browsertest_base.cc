@@ -6,22 +6,31 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <memory>
 #include <utility>
 
 #include "ash/public/interfaces/constants.mojom.h"
-#include "ash/public/interfaces/shell_test_api.mojom.h"
+#include "ash/public/interfaces/shell_test_api.test-mojom-test-utils.h"
+#include "ash/public/interfaces/shell_test_api.test-mojom.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/containers/circular_deque.h"
+#include "base/files/file_path.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_value_converter.h"
 #include "base/json/json_writer.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_util.h"
+#include "chrome/browser/chromeos/arc/fileapi/arc_media_view_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
@@ -29,6 +38,8 @@
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/file_manager_test_util.h"
+#include "chrome/browser/chromeos/file_manager/file_tasks_notifier.h"
+#include "chrome/browser/chromeos/file_manager/file_tasks_observer.h"
 #include "chrome/browser/chromeos/file_manager/mount_test_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
@@ -36,24 +47,36 @@
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/sync_file_system/mock_remote_file_sync_service.h"
 #include "chrome/browser/sync_file_system/sync_file_system_service_factory.h"
+#include "chrome/browser/ui/app_list/search/chrome_search_result.h"
+#include "chrome/browser/ui/app_list/search/launcher_search/launcher_search_provider.h"
 #include "chrome/browser/ui/ash/tablet_mode_client_test_util.h"
+#include "chrome/browser/ui/views/extensions/extension_dialog.h"
+#include "chrome/browser/ui/views/select_file_dialog_extension.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
-#include "chromeos/chromeos_features.h"
-#include "chromeos/chromeos_switches.h"
 #include "chromeos/components/drivefs/drivefs_host.h"
 #include "chromeos/components/drivefs/fake_drivefs.h"
+#include "chromeos/constants/chromeos_features.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/concierge/service.pb.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cros_disks_client.h"
+#include "components/arc/arc_features.h"
+#include "components/arc/arc_service_manager.h"
+#include "components/arc/arc_util.h"
+#include "components/arc/session/arc_bridge_service.h"
+#include "components/arc/test/connection_holder_util.h"
+#include "components/arc/test/fake_file_system_instance.h"
 #include "components/drive/chromeos/file_system_interface.h"
 #include "components/drive/drive_pref_names.h"
 #include "components/drive/service/fake_drive_service.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/common/service_manager_connection.h"
+#include "content/public/test/network_connection_change_simulator.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api/test/test_api.h"
@@ -69,11 +92,38 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "storage/browser/fileapi/external_mount_points.h"
+#include "storage/browser/fileapi/file_system_context.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/message_center/public/cpp/notification.h"
+#include "ui/shell_dialogs/select_file_dialog.h"
+#include "ui/shell_dialogs/select_file_dialog_factory.h"
+#include "ui/shell_dialogs/select_file_policy.h"
+
+class SelectFileDialogExtensionTestFactory
+    : public ui::SelectFileDialogFactory {
+ public:
+  SelectFileDialogExtensionTestFactory() = default;
+  ~SelectFileDialogExtensionTestFactory() override = default;
+
+  ui::SelectFileDialog* Create(
+      ui::SelectFileDialog::Listener* listener,
+      std::unique_ptr<ui::SelectFilePolicy> policy) override {
+    last_select_ =
+        SelectFileDialogExtension::Create(listener, std::move(policy));
+    return last_select_.get();
+  }
+
+  views::Widget* GetLastWidget() {
+    return last_select_->extension_dialog_->GetWidget();
+  }
+
+ private:
+  scoped_refptr<SelectFileDialogExtension> last_select_;
+};
 
 namespace file_manager {
 namespace {
@@ -119,7 +169,8 @@ struct AddEntriesMessage {
     DRIVE_VOLUME,
     CROSTINI_VOLUME,
     USB_VOLUME,
-    ANDROID_FILES_VOLUME
+    ANDROID_FILES_VOLUME,
+    DOCUMENTS_PROVIDER_VOLUME
   };
 
   // Represents the different types of entries (e.g. file, folder).
@@ -165,6 +216,8 @@ struct AddEntriesMessage {
       *volume = USB_VOLUME;
     else if (value == "android_files")
       *volume = ANDROID_FILES_VOLUME;
+    else if (value == "documents_provider")
+      *volume = DOCUMENTS_PROVIDER_VOLUME;
     else
       return false;
     return true;
@@ -504,7 +557,89 @@ class OfflineGetDriveConnectionState : public UIThreadExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(OfflineGetDriveConnectionState);
 };
 
+base::Lock& GetLockForBlockingDefaultFileTaskRunner() {
+  static base::NoDestructor<base::Lock> lock;
+  return *lock;
+}
+
+// Ensures the default HTML filesystem API blocking task runner is blocked for a
+// test.
+void BlockFileTaskRunner(Profile* profile) {
+  GetLockForBlockingDefaultFileTaskRunner().Acquire();
+
+  content::BrowserContext::GetDefaultStoragePartition(profile)
+      ->GetFileSystemContext()
+      ->default_file_task_runner()
+      ->PostTask(FROM_HERE, base::BindOnce([] {
+                   base::AutoLock l(GetLockForBlockingDefaultFileTaskRunner());
+                 }));
+}
+
+// Undo the effects of |BlockFileTaskRunner()|.
+void UnblockFileTaskRunner() {
+  GetLockForBlockingDefaultFileTaskRunner().Release();
+}
+
+struct ExpectFileTasksMessage {
+  static bool ConvertJSONValue(const base::DictionaryValue& value,
+                               ExpectFileTasksMessage* message) {
+    base::JSONValueConverter<ExpectFileTasksMessage> converter;
+    return converter.Convert(value, message);
+  }
+
+  static void RegisterJSONConverter(
+      base::JSONValueConverter<ExpectFileTasksMessage>* converter) {
+    converter->RegisterCustomField(
+        "openType", &ExpectFileTasksMessage::open_type, &MapStringToOpenType);
+    converter->RegisterRepeatedString("fileNames",
+                                      &ExpectFileTasksMessage::file_names);
+  }
+
+  static bool MapStringToOpenType(
+      base::StringPiece value,
+      file_tasks::FileTasksObserver::OpenType* open_type) {
+    using OpenType = file_tasks::FileTasksObserver::OpenType;
+    if (value == "launch") {
+      *open_type = OpenType::kLaunch;
+    } else if (value == "open") {
+      *open_type = OpenType::kOpen;
+    } else if (value == "saveAs") {
+      *open_type = OpenType::kSaveAs;
+    } else if (value == "download") {
+      *open_type = OpenType::kDownload;
+    } else {
+      return false;
+    }
+    return true;
+  }
+
+  std::vector<std::unique_ptr<std::string>> file_names;
+  file_tasks::FileTasksObserver::OpenType open_type;
+};
+
 }  // anonymous namespace
+
+class FileManagerBrowserTestBase::MockFileTasksObserver
+    : public file_tasks::FileTasksObserver {
+ public:
+  explicit MockFileTasksObserver(Profile* profile) : observer_(this) {
+    observer_.Add(file_tasks::FileTasksNotifier::GetForProfile(profile));
+  }
+
+  MOCK_METHOD2(OnFilesOpenedImpl,
+               void(const std::string& path, OpenType open_type));
+
+  void OnFilesOpened(const std::vector<FileOpenEvent>& opens) {
+    ASSERT_TRUE(!opens.empty());
+    for (auto& open : opens) {
+      OnFilesOpenedImpl(open.path.value(), open.open_type);
+    }
+  }
+
+ private:
+  ScopedObserver<file_tasks::FileTasksNotifier, file_tasks::FileTasksObserver>
+      observer_;
+};
 
 // LocalTestVolume: test volume for a local drive.
 class LocalTestVolume : public TestVolume {
@@ -582,6 +717,91 @@ class LocalTestVolume : public TestVolume {
   std::map<base::FilePath, const AddEntriesMessage::TestEntryInfo> entries_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalTestVolume);
+};
+
+// Removable TestVolume: local test volume for external media devices.
+class RemovableTestVolume : public LocalTestVolume {
+ public:
+  RemovableTestVolume(const std::string& name,
+                      VolumeType volume_type,
+                      chromeos::DeviceType device_type,
+                      const base::FilePath& device_path,
+                      const std::string& drive_label)
+      : LocalTestVolume(name),
+        volume_type_(volume_type),
+        device_type_(device_type),
+        device_path_(device_path),
+        drive_label_(drive_label) {}
+  ~RemovableTestVolume() override = default;
+
+  bool PreparePartitionTestEntries(Profile* profile) {
+    if (!CreateRootDirectory(profile))
+      return false;
+
+    // Create fake file on the removable volume.
+    CreateEntry(AddEntriesMessage::TestEntryInfo(AddEntriesMessage::FILE,
+                                                 "text.txt", "hello.txt")
+                    .SetMimeType("text/plain"));
+
+    CreateEntry(AddEntriesMessage::TestEntryInfo(AddEntriesMessage::DIRECTORY,
+                                                 "", "Folder"));
+    base::RunLoop().RunUntilIdle();
+    return true;
+  }
+
+  bool PrepareUsbTestEntries(Profile* profile) {
+    if (!CreateRootDirectory(profile))
+      return false;
+
+    // Create fake file on the removable volume.
+    CreateEntry(AddEntriesMessage::TestEntryInfo(AddEntriesMessage::FILE,
+                                                 "text.txt", "hello.txt")
+                    .SetMimeType("text/plain"));
+    CreateEntry(AddEntriesMessage::TestEntryInfo(AddEntriesMessage::DIRECTORY,
+                                                 "", "Folder"));
+
+    base::RunLoop().RunUntilIdle();
+    return true;
+  }
+
+  bool Mount(Profile* profile) override {
+    if (!CreateRootDirectory(profile))
+      return false;
+
+    // Revoke name() mount point first, then re-add its mount point.
+    GetMountPoints()->RevokeFileSystem(name());
+    const bool added = GetMountPoints()->RegisterFileSystem(
+        name(), storage::kFileSystemTypeNativeLocal,
+        storage::FileSystemMountOption(), root_path());
+    if (!added)
+      return false;
+
+    // Expose the mount point with the given volume and device type.
+    VolumeManager::Get(profile)->AddVolumeForTesting(
+        root_path(), volume_type_, device_type_, read_only_, device_path_,
+        drive_label_);
+    base::RunLoop().RunUntilIdle();
+    return true;
+  }
+
+  void Unmount(Profile* profile) {
+    VolumeManager::Get(profile)->RemoveVolumeForTesting(
+        root_path(), volume_type_, device_type_, read_only_, device_path_,
+        drive_label_);
+  }
+
+ private:
+  storage::ExternalMountPoints* GetMountPoints() {
+    return storage::ExternalMountPoints::GetSystemInstance();
+  }
+
+  const VolumeType volume_type_;
+  const chromeos::DeviceType device_type_;
+  const base::FilePath device_path_;
+  const bool read_only_ = false;
+  const std::string drive_label_;
+
+  DISALLOW_COPY_AND_ASSIGN(RemovableTestVolume);
 };
 
 // DownloadsTestVolume: local test volume for the "Downloads" directory.
@@ -744,6 +964,11 @@ class FakeTestVolume : public LocalTestVolume {
                                                      device_type_, read_only_);
     base::RunLoop().RunUntilIdle();
     return true;
+  }
+
+  void Unmount(Profile* profile) {
+    VolumeManager::Get(profile)->RemoveVolumeForTesting(
+        root_path(), volume_type_, device_type_, read_only_);
   }
 
  private:
@@ -948,7 +1173,7 @@ class DriveTestVolume : public TestVolume {
     EXPECT_FALSE(integration_service_);
     integration_service_ = new drive::DriveIntegrationService(
         profile, nullptr, fake_drive_service_, std::string(),
-        root_path().Append("v1"), nullptr, CreateDriveFsConnectionDelegate());
+        root_path().Append("v1"), nullptr, CreateDriveFsBootstrapListener());
 
     return integration_service_;
   }
@@ -961,7 +1186,7 @@ class DriveTestVolume : public TestVolume {
       return false;
 
     integration_service_->SetEnabled(true);
-    CreateDriveFsConnectionDelegate();
+    CreateDriveFsBootstrapListener();
     return true;
   }
 
@@ -969,8 +1194,8 @@ class DriveTestVolume : public TestVolume {
 
  private:
   virtual base::RepeatingCallback<
-      std::unique_ptr<drivefs::DriveFsHost::MojoConnectionDelegate>()>
-  CreateDriveFsConnectionDelegate() {
+      std::unique_ptr<drivefs::DriveFsBootstrapListener>()>
+  CreateDriveFsBootstrapListener() {
     return {};
   }
 
@@ -1040,9 +1265,8 @@ class DriveFsTestVolume : public DriveTestVolume {
   }
 
  private:
-  base::RepeatingCallback<
-      std::unique_ptr<drivefs::DriveFsHost::MojoConnectionDelegate>()>
-  CreateDriveFsConnectionDelegate() override {
+  base::RepeatingCallback<std::unique_ptr<drivefs::DriveFsBootstrapListener>()>
+  CreateDriveFsBootstrapListener() override {
     CHECK(base::CreateDirectory(GetMyDrivePath()));
     CHECK(base::CreateDirectory(GetTeamDriveGrandRoot()));
     CHECK(base::CreateDirectory(GetComputerGrandRoot()));
@@ -1052,7 +1276,7 @@ class DriveFsTestVolume : public DriveTestVolume {
           std::make_unique<drive::FakeDriveFsHelper>(profile_, mount_path());
     }
 
-    return fake_drivefs_helper_->CreateFakeDriveFsConnectionDelegateFactory();
+    return fake_drivefs_helper_->CreateFakeDriveFsListenerFactory();
   }
 
   // Updates the ModifiedTime of the entry, and its parent directories if
@@ -1142,6 +1366,105 @@ class DriveFsTestVolume : public DriveTestVolume {
   DISALLOW_COPY_AND_ASSIGN(DriveFsTestVolume);
 };
 
+// DocumentsProviderTestVolume: test volume for Android DocumentsProvider.
+class DocumentsProviderTestVolume : public TestVolume {
+ public:
+  DocumentsProviderTestVolume(
+      const std::string& name,
+      arc::FakeFileSystemInstance* const file_system_instance,
+      const std::string& authority,
+      const std::string& root_document_id)
+      : TestVolume(name),
+        file_system_instance_(file_system_instance),
+        authority_(authority),
+        root_document_id_(root_document_id) {}
+  DocumentsProviderTestVolume(
+      arc::FakeFileSystemInstance* const file_system_instance,
+      const std::string& authority,
+      const std::string& root_document_id)
+      : DocumentsProviderTestVolume("DocumentsProvider",
+                                    file_system_instance,
+                                    authority,
+                                    root_document_id) {}
+  ~DocumentsProviderTestVolume() override = default;
+
+  virtual void CreateEntry(const AddEntriesMessage::TestEntryInfo& entry) {
+    // Register a document to the fake FileSystemInstance.
+    arc::FakeFileSystemInstance::Document document(
+        authority_, entry.name_text, root_document_id_, entry.name_text,
+        GetMimeType(entry), GetFileSize(entry),
+        entry.last_modified_time.ToJavaTime());
+    file_system_instance_->AddDocument(document);
+  }
+
+  virtual bool Mount(Profile* profile) {
+    RegisterRoot();
+
+    // Tell VolumeManager that a new DocumentsProvider volume is added.
+    VolumeManager::Get(profile)->OnDocumentsProviderRootAdded(
+        authority_, root_document_id_, root_document_id_, name(), "", GURL(),
+        true, std::vector<std::string>());
+    return true;
+  }
+
+ protected:
+  arc::FakeFileSystemInstance* const file_system_instance_;
+  std::string authority_;
+  std::string root_document_id_;
+
+  // Register a root document of this volume.
+  void RegisterRoot() {
+    arc::FakeFileSystemInstance::Document document(
+        authority_, root_document_id_, "", "", arc::kAndroidDirectoryMimeType,
+        0, 0);
+    file_system_instance_->AddDocument(document);
+  }
+
+ private:
+  int64_t GetFileSize(const AddEntriesMessage::TestEntryInfo& entry) {
+    if (entry.type != AddEntriesMessage::FILE)
+      return 0;
+
+    int64_t file_size = 0;
+    const base::FilePath source_path =
+        TestVolume::GetTestDataFilePath(entry.source_file_name);
+    bool success = base::GetFileSize(source_path, &file_size);
+    return success ? file_size : 0;
+  }
+
+  std::string GetMimeType(const AddEntriesMessage::TestEntryInfo& entry) {
+    return entry.type == AddEntriesMessage::FILE
+               ? entry.mime_type
+               : arc::kAndroidDirectoryMimeType;
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(DocumentsProviderTestVolume);
+};
+
+// MediaViewTestVolume: Test volume for the "media views": Audio, Images and
+// Videos.
+class MediaViewTestVolume : public DocumentsProviderTestVolume {
+ public:
+  MediaViewTestVolume(arc::FakeFileSystemInstance* const file_system_instance,
+                      const std::string& authority,
+                      const std::string& root_document_id)
+      : DocumentsProviderTestVolume(root_document_id,
+                                    file_system_instance,
+                                    authority,
+                                    root_document_id) {}
+
+  ~MediaViewTestVolume() override = default;
+
+  bool Mount(Profile* profile) override {
+    RegisterRoot();
+    return VolumeManager::Get(profile)->RegisterMediaViewForTesting(
+        root_document_id_);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MediaViewTestVolume);
+};
+
 FileManagerBrowserTestBase::FileManagerBrowserTestBase() = default;
 
 FileManagerBrowserTestBase::~FileManagerBrowserTestBase() = default;
@@ -1187,19 +1510,38 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
 
   std::vector<base::Feature> enabled_features;
   std::vector<base::Feature> disabled_features;
+
   if (!IsGuestModeTest()) {
     enabled_features.emplace_back(features::kCrostini);
-    enabled_features.emplace_back(features::kExperimentalCrostiniUI);
-    enabled_features.emplace_back(chromeos::features::kCrostiniFiles);
   }
+
+  if (!IsNativeSmbTest()) {
+    disabled_features.emplace_back(features::kNativeSmb);
+  }
+
   if (IsDriveFsTest()) {
     enabled_features.emplace_back(chromeos::features::kDriveFs);
   } else {
     disabled_features.emplace_back(chromeos::features::kDriveFs);
   }
 
-  if (IsMyFilesVolume())
+  if (IsMyFilesVolume()) {
     enabled_features.emplace_back(chromeos::features::kMyFilesVolume);
+  } else {
+    disabled_features.emplace_back(chromeos::features::kMyFilesVolume);
+  }
+
+  if (IsArcTest()) {
+    arc::SetArcAvailableCommandLineForTesting(command_line);
+  }
+
+  if (IsDocumentsProviderTest()) {
+    enabled_features.emplace_back(
+        arc::kEnableDocumentsProviderInFilesAppFeature);
+  } else {
+    disabled_features.emplace_back(
+        arc::kEnableDocumentsProviderInFilesAppFeature);
+  }
 
   feature_list_.InitWithFeatures(enabled_features, disabled_features);
 
@@ -1241,21 +1583,35 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
   CHECK(profile());
   CHECK_EQ(!!browser(), GetRequiresStartupBrowser());
 
-  CHECK(local_volume_->Mount(profile()));
+  if (DoesTestStartWithNoVolumesMounted()) {
+    VolumeManager::Get(profile())->RemoveDownloadsDirectoryForTesting();
+  } else {
+    CHECK(local_volume_->Mount(profile()));
+  }
 
   if (!IsGuestModeTest()) {
     // Start the embedded test server to serve the mocked CWS widget container.
     CHECK(embedded_test_server()->Start());
     drive_volume_ = drive_volumes_[profile()->GetOriginalProfile()].get();
-    test_util::WaitUntilDriveMountPointIsAdded(profile());
+    if (!DoesTestStartWithNoVolumesMounted()) {
+      test_util::WaitUntilDriveMountPointIsAdded(profile());
+    }
 
-    // Init crostini.  Set prefs to enable crostini and register
-    // CustomMountPointCallback. TODO(joelhockey): It would be better if the
-    // crostini interface allowed for testing without such tight coupling.
+    // Init crostini.  Set prefs to enable crostini, set VM and container
+    // running for testing, and register CustomMountPointCallback.
+    // TODO(joelhockey): It would be better if the crostini interface allowed
+    // for testing without such tight coupling.
     crostini_volume_ = std::make_unique<CrostiniTestVolume>();
     profile()->GetPrefs()->SetBoolean(crostini::prefs::kCrostiniEnabled, true);
-    crostini::CrostiniManager::GetForProfile(profile()->GetOriginalProfile())
-        ->set_skip_restart_for_testing();
+    crostini::CrostiniManager* crostini_manager =
+        crostini::CrostiniManager::GetForProfile(
+            profile()->GetOriginalProfile());
+    crostini_manager->set_skip_restart_for_testing();
+    crostini_manager->AddRunningVmForTesting(crostini::kCrostiniDefaultVmName);
+    crostini_manager->AddRunningContainerForTesting(
+        crostini::kCrostiniDefaultVmName,
+        crostini::ContainerInfo(crostini::kCrostiniDefaultContainerName,
+                                "testuser", "/home/testuser"));
     chromeos::DBusThreadManager* dbus_thread_manager =
         chromeos::DBusThreadManager::Get();
     static_cast<chromeos::FakeCrosDisksClient*>(
@@ -1264,8 +1620,47 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
             base::BindRepeating(&FileManagerBrowserTestBase::MaybeMountCrostini,
                                 base::Unretained(this)));
 
-    android_files_volume_ = std::make_unique<AndroidFilesTestVolume>();
-    android_files_volume_->Mount(profile());
+    if (arc::IsArcAvailable()) {
+      // When ARC is marked as available, we create fake FileSystemInstance and
+      // register it so that ARC-related services can work without real ARC
+      // container.
+      arc_file_system_instance_ =
+          std::make_unique<arc::FakeFileSystemInstance>();
+      arc::ArcServiceManager::Get()
+          ->arc_bridge_service()
+          ->file_system()
+          ->SetInstance(arc_file_system_instance_.get());
+      arc::WaitForInstanceReady(
+          arc::ArcServiceManager::Get()->arc_bridge_service()->file_system());
+      ASSERT_TRUE(arc_file_system_instance_->InitCalled());
+
+      if (IsDocumentsProviderTest()) {
+        // Though we can have multiple DocumentsProvider volumes, only one
+        // volume is created and mounted for now.
+        documents_provider_volume_ =
+            std::make_unique<DocumentsProviderTestVolume>(
+                arc_file_system_instance_.get(), "com.example.documents",
+                "root");
+        if (!DoesTestStartWithNoVolumesMounted()) {
+          documents_provider_volume_->Mount(profile());
+        }
+      }
+    } else {
+      // When ARC is not available, "Android Files" will not be mounted.
+      // We need to mount testing volume here.
+      android_files_volume_ = std::make_unique<AndroidFilesTestVolume>();
+      if (!DoesTestStartWithNoVolumesMounted()) {
+        android_files_volume_->Mount(profile());
+      }
+    }
+
+    if (!IsIncognitoModeTest()) {
+      file_tasks_observer_ =
+          std::make_unique<testing::StrictMock<MockFileTasksObserver>>(
+              profile());
+    } else {
+      EXPECT_FALSE(file_tasks::FileTasksNotifier::GetForProfile(profile()));
+    }
   }
 
   display_service_ =
@@ -1277,6 +1672,11 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
         &NewExtensionFunction<OfflineGetDriveConnectionState>);
   }
 
+  content::NetworkConnectionChangeSimulator network_change_simulator;
+  network_change_simulator.SetConnectionType(
+      IsOfflineTest() ? network::mojom::ConnectionType::CONNECTION_NONE
+                      : network::mojom::ConnectionType::CONNECTION_ETHERNET);
+
   // The test resources are setup: enable and add default ChromeOS component
   // extensions now and not before: crbug.com/831074, crbug.com/804413
   test::AddDefaultComponentExtensionsOnMainThread(profile());
@@ -1285,6 +1685,15 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
   if (IsTabletModeTest()) {
     EnableVirtualKeyboard();
   }
+
+  select_factory_ = new SelectFileDialogExtensionTestFactory();
+  ui::SelectFileDialog::SetFactory(select_factory_);
+}
+
+void FileManagerBrowserTestBase::TearDownOnMainThread() {
+  file_tasks_observer_.reset();
+  select_factory_ = nullptr;
+  ui::SelectFileDialog::SetFactory(nullptr);
 }
 
 bool FileManagerBrowserTestBase::GetTabletMode() const {
@@ -1299,6 +1708,14 @@ bool FileManagerBrowserTestBase::GetEnableDriveFs() const {
   return true;
 }
 
+bool FileManagerBrowserTestBase::GetEnableDocumentsProvider() const {
+  return false;
+}
+
+bool FileManagerBrowserTestBase::GetEnableArc() const {
+  return false;
+}
+
 bool FileManagerBrowserTestBase::GetRequiresStartupBrowser() const {
   return false;
 }
@@ -1308,6 +1725,14 @@ bool FileManagerBrowserTestBase::GetNeedsZipSupport() const {
 }
 
 bool FileManagerBrowserTestBase::GetIsOffline() const {
+  return false;
+}
+
+bool FileManagerBrowserTestBase::GetEnableNativeSmb() const {
+  return true;
+}
+
+bool FileManagerBrowserTestBase::GetStartWithNoVolumesMounted() const {
   return false;
 }
 
@@ -1345,7 +1770,7 @@ void FileManagerBrowserTestBase::RunTestMessageLoop() {
 
     // If the message in JSON format has no command, ignore it
     // but note a reply is required: use std::string().
-    const auto json = base::JSONReader::Read(message.message);
+    const auto json = base::JSONReader::ReadDeprecated(message.message);
     const base::DictionaryValue* dictionary = nullptr;
     std::string command;
     if (!json || !json->GetAsDictionary(&dictionary) ||
@@ -1397,7 +1822,7 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
       auto event = std::make_unique<extensions::Event>(
           extensions::events::FOR_TEST,
           extensions::api::test::OnMessage::kEventName,
-          base::ListValue::From(base::JSONReader::Read(
+          base::ListValue::From(base::JSONReader::ReadDeprecated(
               R"([{"data": "preloadZip", "lastMessage": false}])")),
           profile());
       extensions::EventRouter::Get(profile())->DispatchEventToExtension(
@@ -1497,6 +1922,13 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
             LOG(FATAL) << "Add entry: but no Android files volume.";
           }
           break;
+        case AddEntriesMessage::DOCUMENTS_PROVIDER_VOLUME:
+          if (documents_provider_volume_) {
+            documents_provider_volume_->CreateEntry(*message.entries[i]);
+          } else {
+            LOG(FATAL) << "Add entry: but no DocumentsProvider volume.";
+          }
+          break;
       }
     }
 
@@ -1515,6 +1947,43 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
       ASSERT_TRUE(usb_volume_->PrepareDcimTestEntries(profile()));
 
     ASSERT_TRUE(usb_volume_->Mount(profile()));
+    return;
+  }
+
+  if (name == "unmountUsb") {
+    DCHECK(usb_volume_);
+    usb_volume_->Unmount(profile());
+  }
+
+  if (name == "mountUsbWithPartitions") {
+    // Create a device path to mimic a realistic device path.
+    constexpr char kDevicePath[] =
+        "sys/devices/pci0000:00/0000:00:14.0/usb1/1-2/1-2.2/1-2.2:1.0/host0/"
+        "target0:0:0/0:0:0:0";
+    const base::FilePath device_path(kDevicePath);
+
+    // Create partition volumes with the same device path and drive label.
+    partition_1_ = std::make_unique<RemovableTestVolume>(
+        "partition-1", VOLUME_TYPE_REMOVABLE_DISK_PARTITION,
+        chromeos::DEVICE_TYPE_USB, device_path, "Drive Label");
+    partition_2_ = std::make_unique<RemovableTestVolume>(
+        "partition-2", VOLUME_TYPE_REMOVABLE_DISK_PARTITION,
+        chromeos::DEVICE_TYPE_USB, device_path, "Drive Label");
+
+    // Create fake entries on partitions.
+    ASSERT_TRUE(partition_1_->PreparePartitionTestEntries(profile()));
+    ASSERT_TRUE(partition_2_->PreparePartitionTestEntries(profile()));
+
+    ASSERT_TRUE(partition_1_->Mount(profile()));
+    ASSERT_TRUE(partition_2_->Mount(profile()));
+    return;
+  }
+
+  if (name == "unmountPartitions") {
+    DCHECK(partition_1_);
+    DCHECK(partition_2_);
+    partition_1_->Unmount(profile());
+    partition_2_->Unmount(profile());
     return;
   }
 
@@ -1549,10 +2018,35 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     return;
   }
 
-  if (name == "unmountAllVolumes") {
-    local_volume_->Unmount(profile());
+  if (name == "mountMediaView") {
+    CHECK(arc::IsArcAvailable())
+        << "ARC required for mounting media view volumes";
+
+    media_view_images_ = std::make_unique<MediaViewTestVolume>(
+        arc_file_system_instance_.get(),
+        "com.android.providers.media.documents", arc::kImagesRootDocumentId);
+    media_view_videos_ = std::make_unique<MediaViewTestVolume>(
+        arc_file_system_instance_.get(),
+        "com.android.providers.media.documents", arc::kVideosRootDocumentId);
+    media_view_audio_ = std::make_unique<MediaViewTestVolume>(
+        arc_file_system_instance_.get(),
+        "com.android.providers.media.documents", arc::kAudioRootDocumentId);
+
+    ASSERT_TRUE(media_view_images_->Mount(profile()));
+    ASSERT_TRUE(media_view_videos_->Mount(profile()));
+    ASSERT_TRUE(media_view_audio_->Mount(profile()));
+    return;
+  }
+
+  if (name == "mountPlayFiles") {
+    DCHECK(android_files_volume_);
+    android_files_volume_->Mount(profile());
+    return;
+  }
+
+  if (name == "unmountPlayFiles") {
+    DCHECK(android_files_volume_);
     android_files_volume_->Unmount(profile());
-    drive_volume_->Unmount();
     return;
   }
 
@@ -1609,8 +2103,97 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
         extensions::AppWindowRegistry::Get(profile())->app_windows();
     ASSERT_FALSE(app_windows.empty());
     app_windows.front()->GetNativeWindow()->GetHost()->DispatchKeyEventPostIME(
-        &key_event, base::BindOnce([](bool) {}));
+        &key_event, base::NullCallback());
     *output = "mediaKeyDispatched";
+    return;
+  }
+
+  if (name == "dispatchTabKey") {
+    ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_TAB, 0);
+
+    // Try to dispatch the event close-to-native without pulling in too many
+    // dependencies (i.e. X11/Ozone/Wayland/Mus). aura::WindowTreeHost is pretty
+    // high up in the dispatch stack, but we might need event_injector.mojom
+    // for a more realistic Mus dispatch.
+    const auto& app_windows =
+        extensions::AppWindowRegistry::Get(profile())->app_windows();
+    aura::WindowTreeHost* host = nullptr;
+    if (app_windows.empty()) {
+      ASSERT_TRUE(select_factory_);
+      views::Widget* widget = select_factory_->GetLastWidget();
+      ASSERT_TRUE(widget);
+      host = widget->GetNativeWindow()->GetHost();
+    } else {
+      host = app_windows.front()->GetNativeWindow()->GetHost();
+    }
+    ASSERT_TRUE(host);
+    host->DispatchKeyEventPostIME(&key_event, base::NullCallback());
+    *output = "tabKeyDispatched";
+    return;
+  }
+
+  if (name == "getAppWindowId") {
+    std::string window_url;
+    ASSERT_TRUE(value.GetString("windowUrl", &window_url));
+
+    const auto& app_windows =
+        extensions::AppWindowRegistry::Get(profile())->app_windows();
+    ASSERT_FALSE(app_windows.empty());
+    *output = "none";
+    for (auto* window : app_windows) {
+      if (!window->web_contents())
+        continue;
+
+      if (window->web_contents()->GetLastCommittedURL() == window_url) {
+        *output = base::NumberToString(window->session_id().id());
+        break;
+      }
+    }
+    return;
+  }
+
+  if (name == "countAppWindows") {
+    std::string app_id;
+    ASSERT_TRUE(value.GetString("appId", &app_id));
+
+    const auto& app_windows =
+        extensions::AppWindowRegistry::Get(profile())->app_windows();
+    ASSERT_FALSE(app_windows.empty());
+    int window_count = 0;
+    for (auto* window : app_windows) {
+      if (window->extension_id() == app_id)
+        window_count++;
+    }
+    *output = base::NumberToString(window_count);
+    return;
+  }
+
+  if (name == "runJsInAppWindow") {
+    std::string window_id_str;
+    ASSERT_TRUE(value.GetString("windowId", &window_id_str));
+    int window_id = 0;
+    ASSERT_TRUE(base::StringToInt(window_id_str, &window_id));
+    std::string script;
+    ASSERT_TRUE(value.GetString("script", &script));
+
+    const auto& app_windows =
+        extensions::AppWindowRegistry::Get(profile())->app_windows();
+    ASSERT_FALSE(app_windows.empty());
+    for (auto* window : app_windows) {
+      CHECK(window);
+      if (window->session_id().id() != window_id) {
+        continue;
+      }
+
+      if (!window->web_contents())
+        break;
+
+      CHECK(window->web_contents()->GetMainFrame());
+      window->web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(
+          base::UTF8ToUTF16(script), base::NullCallback());
+
+      break;
+    }
     return;
   }
 
@@ -1629,6 +2212,55 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     return;
   }
 
+  if (name == "isSmbEnabled") {
+    *output = IsNativeSmbTest() ? "true" : "false";
+    return;
+  }
+
+  if (name == "runLauncherSearch") {
+    app_list::LauncherSearchProvider search_provider(profile());
+    base::string16 query;
+    ASSERT_TRUE(value.GetString("query", &query));
+
+    search_provider.Start(query);
+    base::RunLoop run_loop;
+    search_provider.set_result_changed_callback(run_loop.QuitClosure());
+    run_loop.Run();
+
+    std::vector<base::Value> names;
+    for (auto& result : search_provider.results()) {
+      names.emplace_back(result->title());
+    }
+    std::sort(names.begin(), names.end());
+    base::JSONWriter::Write(base::Value(std::move(names)), output);
+    return;
+  }
+
+  if (name == "blockFileTaskRunner") {
+    BlockFileTaskRunner(profile());
+    return;
+  }
+
+  if (name == "unblockFileTaskRunner") {
+    UnblockFileTaskRunner();
+    return;
+  }
+
+  if (name == "expectFileTask") {
+    ExpectFileTasksMessage message;
+    ASSERT_TRUE(ExpectFileTasksMessage::ConvertJSONValue(value, &message));
+    // FileTasksNotifier is disabled in incognito or guest profiles.
+    if (!file_tasks_observer_) {
+      return;
+    }
+    for (const auto& file_name : message.file_names) {
+      EXPECT_CALL(
+          *file_tasks_observer_,
+          OnFilesOpenedImpl(testing::HasSubstr(*file_name), message.open_type));
+    }
+    return;
+  }
+
   FAIL() << "Unknown test message: " << name;
 }
 
@@ -1637,7 +2269,7 @@ FileManagerBrowserTestBase::CreateDriveIntegrationService(Profile* profile) {
   if (base::FeatureList::IsEnabled(chromeos::features::kDriveFs)) {
     drive_volumes_[profile->GetOriginalProfile()] =
         std::make_unique<DriveFsTestVolume>(profile->GetOriginalProfile());
-    if (!IsIncognitoModeTest() &&
+    if (!IsIncognitoModeTest() && !DoesTestStartWithNoVolumesMounted() &&
         profile->GetPath().BaseName().value() == "user") {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
@@ -1648,8 +2280,15 @@ FileManagerBrowserTestBase::CreateDriveIntegrationService(Profile* profile) {
     drive_volumes_[profile->GetOriginalProfile()] =
         std::make_unique<DriveTestVolume>();
   }
-  return drive_volumes_[profile->GetOriginalProfile()]
-      ->CreateDriveIntegrationService(profile);
+  if (DoesTestStartWithNoVolumesMounted()) {
+    profile->GetPrefs()->SetBoolean(drive::prefs::kDriveFsPinnedMigrated, true);
+  }
+  auto* integration_service = drive_volumes_[profile->GetOriginalProfile()]
+                                  ->CreateDriveIntegrationService(profile);
+  if (DoesTestStartWithNoVolumesMounted()) {
+    integration_service->SetEnabled(false);
+  }
+  return integration_service;
 }
 
 base::FilePath FileManagerBrowserTestBase::MaybeMountCrostini(
@@ -1660,13 +2299,7 @@ base::FilePath FileManagerBrowserTestBase::MaybeMountCrostini(
   if (source_url.scheme() != "sshfs") {
     return {};
   }
-  // Mount crostini volume, and set VM now running for CrostiniManager.
   CHECK(crostini_volume_->Mount(profile()));
-  crostini::CrostiniManager* crostini_manager =
-      crostini::CrostiniManager::GetForProfile(profile()->GetOriginalProfile());
-  vm_tools::concierge::VmInfo vm_info;
-  crostini_manager->AddRunningVmForTesting(crostini::kCrostiniDefaultVmName,
-                                           std::move(vm_info));
   return crostini_volume_->mount_path();
 }
 

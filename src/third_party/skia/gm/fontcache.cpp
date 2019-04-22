@@ -11,22 +11,23 @@
 #include "gm.h"
 
 #include "GrContext.h"
-#include "GrContextPriv.h"
 #include "GrContextOptions.h"
+#include "GrContextPriv.h"
 #include "SkCanvas.h"
 #include "SkGraphics.h"
 #include "SkImage.h"
 #include "SkTypeface.h"
+#include "ToolUtils.h"
 #include "gm.h"
-#include "sk_tool_utils.h"
 
 static SkScalar draw_string(SkCanvas* canvas, const SkString& text, SkScalar x,
-                           SkScalar y, const SkPaint& paint) {
-    canvas->drawString(text, x, y, paint);
-    return x + paint.measureText(text.c_str(), text.size());
+                           SkScalar y, const SkFont& font) {
+    SkPaint paint;
+    canvas->drawString(text, x, y, font, paint);
+    return x + font.measureText(text.c_str(), text.size(), kUTF8_SkTextEncoding);
 }
 
-class FontCacheGM : public skiagm::GM {
+class FontCacheGM : public skiagm::GpuGM {
 public:
     FontCacheGM(GrContextOptions::Enable allowMultipleTextures)
         : fAllowMultipleTextures(allowMultipleTextures) {
@@ -50,30 +51,21 @@ protected:
     SkISize onISize() override { return SkISize::Make(kSize, kSize); }
 
     void onOnceBeforeDraw() override {
-        fTypefaces[0] = sk_tool_utils::create_portable_typeface("serif", SkFontStyle::Italic());
-        fTypefaces[1] = sk_tool_utils::create_portable_typeface("sans-serif",SkFontStyle::Italic());
-        fTypefaces[2] = sk_tool_utils::create_portable_typeface("serif", SkFontStyle::Normal());
-        fTypefaces[3] =
-                sk_tool_utils::create_portable_typeface("sans-serif", SkFontStyle::Normal());
-        fTypefaces[4] = sk_tool_utils::create_portable_typeface("serif", SkFontStyle::Bold());
-        fTypefaces[5] = sk_tool_utils::create_portable_typeface("sans-serif", SkFontStyle::Bold());
+        fTypefaces[0] = ToolUtils::create_portable_typeface("serif", SkFontStyle::Italic());
+        fTypefaces[1] = ToolUtils::create_portable_typeface("sans-serif", SkFontStyle::Italic());
+        fTypefaces[2] = ToolUtils::create_portable_typeface("serif", SkFontStyle::Normal());
+        fTypefaces[3] = ToolUtils::create_portable_typeface("sans-serif", SkFontStyle::Normal());
+        fTypefaces[4] = ToolUtils::create_portable_typeface("serif", SkFontStyle::Bold());
+        fTypefaces[5] = ToolUtils::create_portable_typeface("sans-serif", SkFontStyle::Bold());
     }
 
-    void onDraw(SkCanvas* canvas) override {
-        GrRenderTargetContext* renderTargetContext =
-            canvas->internal_private_accessTopLayerRenderTargetContext();
-        if (!renderTargetContext) {
-            skiagm::GM::DrawGpuOnlyMessage(canvas);
-            return;
-        }
-
-        canvas->clear(SK_ColorLTGRAY);
+    void onDraw(GrContext*, GrRenderTargetContext*, SkCanvas* canvas) override {
         this->drawText(canvas);
         //  Debugging tool for GPU.
         static const bool kShowAtlas = false;
         if (kShowAtlas) {
             if (auto ctx = canvas->getGrContext()) {
-                auto img = ctx->contextPriv().getFontAtlasImage_ForTesting(kA8_GrMaskFormat);
+                auto img = ctx->priv().testingOnly_getFontAtlasImage(kA8_GrMaskFormat);
                 canvas->drawImage(img, 0, 0);
             }
         }
@@ -87,10 +79,9 @@ private:
                                           SkString("abcdefghijklmnopqrstuvwxyz"),
                                           SkString("0123456789"),
                                           SkString("!@#$%^&*()<>[]{}")};
-        SkPaint paint;
-        paint.setAntiAlias(true);
-        paint.setLCDRenderText(false);
-        paint.setSubpixelText(true);
+        SkFont font;
+        font.setEdging(SkFont::Edging::kAntiAlias);
+        font.setSubpixel(true);
 
         static const SkScalar kSubPixelInc = 1 / 2.f;
         SkScalar x = 0;
@@ -106,11 +97,11 @@ private:
         do {
             for (auto s : kSizes) {
                 auto size = 2 * s;
-                paint.setTextSize(size);
+                font.setSize(size);
                 for (const auto& typeface : fTypefaces) {
-                    paint.setTypeface(typeface);
+                    font.setTypeface(typeface);
                     for (const auto& text : kTexts) {
-                        x = size + draw_string(canvas, text, x + subpixelX, y + subpixelY, paint);
+                        x = size + draw_string(canvas, text, x + subpixelX, y + subpixelY, font);
                         x = SkScalarCeilToScalar(x);
                         if (x + 100 > kSize) {
                             x = 0;

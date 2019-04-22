@@ -83,17 +83,18 @@ document.addEventListener('DOMContentLoaded', function(event) {
 });
 </script>
 
-[TOC]
+# ECMAScript Features in Chromium
 
-> **TBD:** Do we need to differentiate per-project?
-
-> **TBD:** Cross-platform build support? As in: transpilers?
+This doc extends the [style guide](web.md#JavaScript) by specifying which new
+features of ES2015 and beyond are allowed in Chromium.
 
 You can propose changing the status of a feature by sending an email to
 chromium-dev@chromium.org. Include a short blurb on what the feature is and why
 you think it should or should not be allowed, along with links to any relevant
 previous discussion. If the list arrives at some consensus, send a codereview
 to change this file accordingly, linking to your discussion thread.
+
+[TOC]
 
 # ES2015 Support In Chromium
 
@@ -462,6 +463,106 @@ and I am ${to - from} years old`;
 
 ---
 
+### Spread Operators
+
+Spreading the elements from an iterable collection into individual literals as
+function parameters.
+
+This only applies to arrays and not objects.
+
+**Usage Example:**
+
+```js
+// Spreading an Array
+var params = ['hello', true, 7];
+var other = [1, 2, ...params];  // [1, 2, 'hello', true, 7]
+
+// Spreading a String
+var str = 'foo';
+var chars = [...str];  // ['f', 'o', 'o']
+```
+
+**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-argument-lists-runtime-semantics-argumentlistevaluation)
+
+**Discussion Notes / Link to Thread:** [link](https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/LqP4AniIs8c)
+
+---
+
+### Rest Parameters
+
+Aggregation of function arguments into one Array variable.
+
+This only applies to arrays and function parameters, and not objects.
+
+**Usage Example:**
+
+```js
+function usesRestParams(a, b, ...theRest) {
+  console.log(a);  // 'a'
+  console.log(b);  // 'b'
+  console.log(theRest);  // [1, 2, 3]
+}
+
+usesRestParams('a', 'b', 1, 2, 3);
+```
+
+**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-function-definitions)
+
+**Discussion Notes / Link to Thread:** [link](https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/LqP4AniIs8c)
+
+---
+
+### Destructuring Assignment
+
+Flexible destructuring of collections or parameters.
+
+**Usage Example:**
+
+```js
+// Array
+const [a, , b] = [1, 2, 3];  // a = 1, b = 3
+
+// Object
+const {width, height} = document.body.getBoundingClientRect();
+// width = rect.width, height = rect.height
+
+// Parameters
+function f([name, val]) {
+  console.log(name, val);  // 'bar', 42
+}
+f(['bar', 42, 'extra 1', 'extra 2']);  // 'extra 1' and 'extra 2' are ignored.
+
+function g({name: n, val: v}) {
+  console.log(n, v);  // 'foo', 7
+}
+g({name: 'foo', val:  7});
+
+function h({name, val}) {
+  console.log(name, val);  // 'bar', 42
+}
+h({name: 'bar', val: 42});
+
+```
+**Mixing with [Rest Parameters](#rest-parameters)**
+
+Using rest parameters while destructuring objects is not supported by iOS 10 and requires setting the closure arg `language_in` to `ECMASCRIPT_2018`.
+
+```js
+const {one, ...rest} = {one: 1, two: 2, three: 3};
+```
+
+Using rest parameters while destructuring arrays, on the other hand, is supported by iOS 10 and `ECMASCRIPT_2017`.
+
+```js
+const [one, ...rest] = [1, 2, 3];
+```
+
+**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-destructuring-assignment)
+
+**Discussion Notes / Link to Thread:** [link](https://groups.google.com/a/chromium.org/d/topic/chromium-dev/mwFnj7MTzgU)
+
+---
+
 ## Banned Features
 
 The following features are banned for Chromium development.
@@ -524,51 +625,6 @@ hide(document.body, false);  // Not animated.
 
 **Documentation:** [link](https://tc39.github.io/ecma262/#sec-functiondeclarationinstantiation)
 [link](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Default_parameters)
-
-**Discussion Notes / Link to Thread:**
-
----
-
-### Rest Parameters
-
-Aggregation of function arguments into one Array variable.
-
-**Usage Example:**
-
-```js
-function usesRestParams(a, b, ...theRest) {
-  console.log(a);  // 'a'
-  console.log(b);  // 'b'
-  console.log(theRest);  // [1, 2, 3]
-}
-
-usesRestParams('a', 'b', 1, 2, 3);
-```
-
-**Documentation:** [link](https://tc39.github.io/ecma262/#sec-function-definitions)
-
-**Discussion Notes / Link to Thread:**
-
----
-
-### Spread Operators
-
-Spreading the elements from an iterable collection into individual literals as
-function parameters.
-
-**Usage Example:**
-
-```js
-// Spreading an Array
-const params = ['hello', true, 7];
-const other = [1, 2, ...params];  // [1, 2, 'hello', true, 7]
-
-// Spreading a String
-const str = 'foo';
-const chars = [...str];  // ['f', 'o', 'o']
-```
-
-**Documentation:** [link](https://tc39.github.io/ecma262/#sec-argument-lists-runtime-semantics-argumentlistevaluation)
 
 **Discussion Notes / Link to Thread:**
 
@@ -671,44 +727,6 @@ result === 'yy' && re.lastIndex === 5;  // true
 ```
 
 **Documentation:** [link](http://es6-features.org/#RegularExpressionStickyMatching)
-
-**Discussion Notes / Link to Thread:**
-
----
-
-### Destructuring Assignment
-
-Flexible destructuring of collections or parameters.
-
-**Usage Example:**
-
-```js
-// Array
-const [a, , b] = [1, 2, 3];  // a = 1, b = 3
-
-// Object
-const {width, height} = document.body.getBoundingClientRect();
-// width = rect.width, height = rect.height
-
-// Parameters
-function f([name, val]) {
-  console.log(name, val);  // 'bar', 42
-}
-f(['bar', 42, 'extra 1', 'extra 2']);  // 'extra 1' and 'extra 2' are ignored.
-
-function g({name: n, val: v}) {
-  console.log(n, v);  // 'foo', 7
-}
-g({name: 'foo', val:  7});
-
-function h({name, val}) {
-  console.log(name, val);  // 'bar', 42
-}
-h({name: 'bar', val: 42});
-
-```
-
-**Documentation:** [link](https://tc39.github.io/ecma262/#sec-destructuring-assignment)
 
 **Discussion Notes / Link to Thread:**
 

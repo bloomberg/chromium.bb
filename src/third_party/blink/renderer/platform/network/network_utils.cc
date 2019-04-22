@@ -65,9 +65,8 @@ String GetDomainAndRegistry(const String& host, PrivateRegistryFilter filter) {
   return String(domain.data(), domain.length());
 }
 
-scoped_refptr<SharedBuffer> ParseDataURLAndPopulateResponse(
-    const KURL& url,
-    ResourceResponse& response) {
+std::tuple<int, ResourceResponse, scoped_refptr<SharedBuffer>> ParseDataURL(
+    const KURL& url) {
   // The following code contains duplication of GetInfoFromDataURL() and
   // WebURLLoaderImpl::PopulateURLResponse() in
   // content/child/web_url_loader_impl.cc. Merge them once content/child is
@@ -75,34 +74,30 @@ scoped_refptr<SharedBuffer> ParseDataURLAndPopulateResponse(
   std::string utf8_mime_type;
   std::string utf8_charset;
   std::string data_string;
-  scoped_refptr<net::HttpResponseHeaders> headers(
-      new net::HttpResponseHeaders(std::string()));
+  auto headers = base::MakeRefCounted<net::HttpResponseHeaders>(std::string());
 
   int result = net::URLRequestDataJob::BuildResponse(
       GURL(url), &utf8_mime_type, &utf8_charset, &data_string, headers.get());
   if (result != net::OK)
-    return nullptr;
+    return std::make_tuple(result, ResourceResponse(), nullptr);
 
-  if (!blink::IsSupportedMimeType(utf8_mime_type))
-    return nullptr;
-
-  scoped_refptr<SharedBuffer> data =
-      SharedBuffer::Create(data_string.data(), data_string.size());
-  response.SetHTTPStatusCode(200);
-  response.SetHTTPStatusText("OK");
-  response.SetURL(url);
+  auto buffer = SharedBuffer::Create(data_string.data(), data_string.size());
+  ResourceResponse response;
+  response.SetHttpStatusCode(200);
+  response.SetHttpStatusText("OK");
+  response.SetCurrentRequestUrl(url);
   response.SetMimeType(WebString::FromUTF8(utf8_mime_type));
-  response.SetExpectedContentLength(data->size());
+  response.SetExpectedContentLength(buffer->size());
   response.SetTextEncodingName(WebString::FromUTF8(utf8_charset));
 
   size_t iter = 0;
   std::string name;
   std::string value;
   while (headers->EnumerateHeaderLines(&iter, &name, &value)) {
-    response.AddHTTPHeaderField(WebString::FromLatin1(name),
+    response.AddHttpHeaderField(WebString::FromLatin1(name),
                                 WebString::FromLatin1(value));
   }
-  return data;
+  return std::make_tuple(net::OK, std::move(response), std::move(buffer));
 }
 
 bool IsDataURLMimeTypeSupported(const KURL& url) {
@@ -122,15 +117,26 @@ bool IsCertificateTransparencyRequiredError(int error_code) {
   return error_code == net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED;
 }
 
-bool IsLegacySymantecCertError(int error_code) {
-  return error_code == net::ERR_CERT_SYMANTEC_LEGACY;
-}
-
 String GenerateAcceptLanguageHeader(const String& lang) {
   CString cstring(lang.Utf8());
   std::string string(cstring.data(), cstring.length());
   return WebString::FromUTF8(
       net::HttpUtil::GenerateAcceptLanguageHeader(string));
+}
+
+Vector<char> ParseMultipartBoundary(const AtomicString& content_type_header) {
+  CString cstring(content_type_header.Utf8());
+  std::string string(cstring.data(), cstring.length());
+  std::string mime_type;
+  std::string charset;
+  bool had_charset = false;
+  std::string boundary;
+  net::HttpUtil::ParseContentType(string, &mime_type, &charset, &had_charset,
+                                  &boundary);
+  base::TrimString(boundary, " \"", &boundary);
+  Vector<char> result;
+  result.Append(boundary.data(), boundary.size());
+  return result;
 }
 
 }  // namespace network_utils

@@ -37,7 +37,6 @@ using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::AtLeast;
 using ::testing::Gt;
-using ::testing::NiceMock;
 using ::testing::NotNull;
 
 namespace media {
@@ -345,7 +344,7 @@ TEST_F(WinAudioInputTest, WASAPIAudioInputStreamOpenStartAndClose) {
   ScopedAudioInputStream ais(
       CreateDefaultAudioInputStream(audio_manager_.get()));
   EXPECT_TRUE(ais->Open());
-  NiceMock<MockAudioInputCallback> sink;
+  MockAudioInputCallback sink;
   ais->Start(&sink);
   ais.Close();
 }
@@ -356,7 +355,7 @@ TEST_F(WinAudioInputTest, WASAPIAudioInputStreamOpenStartStopAndClose) {
   ScopedAudioInputStream ais(
       CreateDefaultAudioInputStream(audio_manager_.get()));
   EXPECT_TRUE(ais->Open());
-  NiceMock<MockAudioInputCallback> sink;
+  MockAudioInputCallback sink;
   ais->Start(&sink);
   ais->Stop();
   ais.Close();

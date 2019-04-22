@@ -5,6 +5,7 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
+#include "base/stl_util.h"
 #include "components/exo/wayland/clients/client_base.h"
 #include "components/exo/wayland/clients/client_helper.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -139,7 +140,7 @@ void VulkanClient::Run(const ClientBase::InitParams& params) {
 
       ScopedVulkanRenderFrame vulkan_frame(
           this, buffer->vk_framebuffer->get(),
-          kColors[++frame_count % arraysize(kColors)]);
+          kColors[++frame_count % base::size(kColors)]);
 
       // This is where the drawing code would go.
       // This client is not drawing anything. Just clearing the fb.

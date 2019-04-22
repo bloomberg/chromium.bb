@@ -127,8 +127,9 @@ const UiPageContainerBehaviorImpl = {
    * @private
    */
   computeLocalizedText_: function(textId) {
-    if (!this.i18nExists(textId))
+    if (!this.i18nExists(textId)) {
       return;
+    }
 
     return loadTimeData.getString(textId);
   },

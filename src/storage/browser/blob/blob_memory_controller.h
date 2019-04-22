@@ -18,6 +18,7 @@
 
 #include "base/callback_forward.h"
 #include "base/callback_helpers.h"
+#include "base/component_export.h"
 #include "base/containers/mru_cache.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
@@ -28,7 +29,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/time/time.h"
-#include "storage/browser/storage_browser_export.h"
 #include "storage/common/blob_storage/blob_storage_constants.h"
 
 namespace base {
@@ -52,7 +52,7 @@ class ShareableFileReference;
 // * Maintaining an LRU of memory items to choose candidates to page to disk
 //   (NotifyMemoryItemsUsed).
 // This class can only be interacted with on the IO thread.
-class STORAGE_EXPORT BlobMemoryController {
+class COMPONENT_EXPORT(STORAGE_BROWSER) BlobMemoryController {
  public:
   enum class Strategy {
     // We don't have enough memory for this blob.
@@ -65,7 +65,7 @@ class STORAGE_EXPORT BlobMemoryController {
     FILE
   };
 
-  struct STORAGE_EXPORT FileCreationInfo {
+  struct COMPONENT_EXPORT(STORAGE_BROWSER) FileCreationInfo {
     FileCreationInfo();
     ~FileCreationInfo();
     FileCreationInfo(FileCreationInfo&& other);
@@ -197,6 +197,10 @@ class STORAGE_EXPORT BlobMemoryController {
   // synchronously.
   void CallWhenStorageLimitsAreKnown(base::OnceClosure callback);
 
+  void set_amount_of_physical_memory_for_testing(int64_t amount_of_memory) {
+    amount_of_memory_for_testing_ = amount_of_memory;
+  }
+
  private:
   class FileQuotaAllocationTask;
   class MemoryQuotaAllocationTask;
@@ -273,6 +277,8 @@ class STORAGE_EXPORT BlobMemoryController {
   bool did_schedule_limit_calculation_ = false;
   bool did_calculate_storage_limits_ = false;
   std::vector<base::OnceClosure> on_calculate_limits_callbacks_;
+
+  base::Optional<int64_t> amount_of_memory_for_testing_;
 
   // Memory bookkeeping. These numbers are all disjoint.
   // This is the amount of memory we're using for blobs in RAM, including the

@@ -4,6 +4,7 @@
 
 #include "content/browser/service_worker/service_worker_script_loader_factory.h"
 
+#include "base/bind_helpers.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
@@ -15,7 +16,6 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/test/test_url_loader_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/features.h"
 
 namespace content {
 
@@ -80,9 +80,6 @@ class ServiceWorkerScriptLoaderFactoryTest : public testing::Test {
   ~ServiceWorkerScriptLoaderFactoryTest() override = default;
 
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        blink::features::kServiceWorkerServicification);
-
     helper_ = std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath());
     ServiceWorkerContextCore* context = helper_->context();
     context->storage()->LazyInitializeForTest(base::DoNothing());
@@ -126,7 +123,6 @@ class ServiceWorkerScriptLoaderFactoryTest : public testing::Test {
     return loader;
   }
 
-  base::test::ScopedFeatureList scoped_feature_list_;
   TestBrowserThreadBundle browser_thread_bundle_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   GURL scope_;
@@ -155,8 +151,7 @@ TEST_F(ServiceWorkerScriptLoaderFactoryTest, Redundant) {
 }
 
 TEST_F(ServiceWorkerScriptLoaderFactoryTest, NoProviderHost) {
-  helper_->context()->RemoveProviderHost(helper_->mock_render_process_id(),
-                                         provider_host_->provider_id());
+  helper_->context()->RemoveProviderHost(provider_host_->provider_id());
 
   network::TestURLLoaderClient client;
   network::mojom::URLLoaderPtr loader = CreateTestLoaderAndStart(&client);

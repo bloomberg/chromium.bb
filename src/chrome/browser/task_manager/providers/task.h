@@ -54,6 +54,7 @@ class Task {
     WORKER,         /* A web worker process. */
     NACL,           /* A NativeClient loader or broker process. */
     SANDBOX_HELPER, /* A sandbox helper process. */
+    SERVICE_WORKER, /* A service worker running on the renderer process. */
   };
 
   // Create a task with the given |title| and the given favicon |icon|. This
@@ -153,6 +154,9 @@ class Task {
 
   // Returns the keep-alive counter if the Task is an event page, -1 otherwise.
   virtual int GetKeepaliveCount() const;
+
+  // Returns true if the task is running inside a VM.
+  virtual bool IsRunningInVM() const;
 
   int64_t task_id() const { return task_id_; }
 

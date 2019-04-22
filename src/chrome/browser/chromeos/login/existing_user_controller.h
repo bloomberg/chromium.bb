@@ -22,7 +22,6 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/login/screens/encryption_migration_mode.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
-#include "chrome/browser/chromeos/login/signin/token_handle_util.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
 #include "chrome/browser/chromeos/policy/minimum_version_policy_handler.h"
 #include "chrome/browser/chromeos/policy/pre_signin_policy_fetcher.h"
@@ -150,6 +149,8 @@ class ExistingUserController
 
   FRIEND_TEST_ALL_PREFIXES(ExistingUserControllerTest, ExistingUserLogin);
 
+  class PolicyStoreLoadWaiter;
+
   void LoginAsGuest();
   void LoginAsPublicSession(const UserContext& user_context);
   void LoginAsKioskApp(const std::string& app_id, bool diagnostic_mode);
@@ -204,6 +205,9 @@ class ExistingUserController
   // Shows "enable developer features" screen.
   void ShowEnableDebuggingScreen();
 
+  // Shows privacy notification in case of auto lunch managed guest session.
+  void ShowAutoLaunchManagedGuestSessionNotification();
+
   // Shows kiosk feature enable screen.
   void ShowKioskEnableScreen();
 
@@ -242,6 +246,14 @@ class ExistingUserController
 
   // Sends an accessibility alert event to extension listeners.
   void SendAccessibilityAlert(const std::string& alert_text);
+
+  // Continues public session login if the associated user cloud policy store is
+  // loaded.
+  // This is intended to delay public session login if the login is requested
+  // before the policy store is initialized (in which case the login attempt
+  // would fail).
+  void LoginAsPublicSessionWithPolicyStoreReady(
+      const UserContext& user_context);
 
   // Callback invoked when the keyboard layouts available for a public session
   // have been retrieved. Selects the first layout from the list and continues
@@ -282,11 +294,6 @@ class ExistingUserController
   // Callback invoked when |oauth2_token_initializer_| has finished.
   void OnOAuth2TokensFetched(bool success, const UserContext& user_context);
 
-  // Callback invoked when |token_handle_util_| finishes token check.
-  void OnTokenHandleChecked(
-      const AccountId&,
-      TokenHandleUtil::TokenHandleStatus token_handle_status);
-
   // Called on completition of a pre-signin policy fetch, which is performed to
   // check if there is a user policy governing migration action.
   void OnPolicyFetchResult(
@@ -308,7 +315,7 @@ class ExistingUserController
 
   // Restart authpolicy daemon in case of Active Directory authentication.
   // Used to prevent data from leaking from one user session into another.
-  // Should be called to cancel AuthPolicyLoginHelper::TryAuthenticateUser call.
+  // Should be called to cancel AuthPolicyHelper::TryAuthenticateUser call.
   void ClearActiveDirectoryState();
 
   // Public session auto-login timer.
@@ -374,10 +381,6 @@ class ExistingUserController
   LoginPerformer::AuthorizationMode auth_mode_ =
       LoginPerformer::AUTH_MODE_EXTENSION;
 
-  // When the sign-in or GAIA UI is finished loading
-  // public session or ARC kiosk are ready to auto-launch.
-  bool auto_launch_ready_ = false;
-
   // Indicates use of local (not GAIA) authentication.
   bool auth_flow_offline_ = false;
 
@@ -407,9 +410,11 @@ class ExistingUserController
 
   std::unique_ptr<OAuth2TokenInitializer> oauth2_token_initializer_;
 
-  std::unique_ptr<TokenHandleUtil> token_handle_util_;
-
   std::unique_ptr<policy::PreSigninPolicyFetcher> pre_signin_policy_fetcher_;
+
+  // Used to wait for cloud policy store load during public session login, if
+  // the store is not yet initialized when the login is attempted.
+  std::unique_ptr<PolicyStoreLoadWaiter> policy_store_waiter_;
 
   // Factory of callbacks.
   base::WeakPtrFactory<ExistingUserController> weak_factory_;

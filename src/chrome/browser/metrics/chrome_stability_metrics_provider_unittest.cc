@@ -93,8 +93,9 @@ TEST_F(ChromeStabilityMetricsProviderTest, BrowserChildProcessObserverUtility) {
   child_process_data.metrics_name = kTestUtilityProcessName;
 
   provider.BrowserChildProcessLaunchedAndConnected(child_process_data);
+  const int kExitCode = 1;
   content::ChildProcessTerminationInfo abnormal_termination_info{
-      base::TERMINATION_STATUS_ABNORMAL_TERMINATION, 1};
+      base::TERMINATION_STATUS_ABNORMAL_TERMINATION, kExitCode};
   provider.BrowserChildProcessCrashed(child_process_data,
                                       abnormal_termination_info);
   provider.BrowserChildProcessCrashed(child_process_data,
@@ -120,6 +121,8 @@ TEST_F(ChromeStabilityMetricsProviderTest, BrowserChildProcessObserverUtility) {
   histogram_tester.ExpectUniqueSample(
       "ChildProcess.Crashed.UtilityProcessHash",
       variations::HashName(kTestUtilityProcessName), 2);
+  histogram_tester.ExpectUniqueSample(
+      "ChildProcess.Crashed.UtilityProcessExitCode", kExitCode, 2);
 }
 
 TEST_F(ChromeStabilityMetricsProviderTest, NotificationObserver) {

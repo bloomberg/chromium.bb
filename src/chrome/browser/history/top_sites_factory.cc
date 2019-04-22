@@ -11,8 +11,8 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
-#include "base/macros.h"
 #include "base/memory/singleton.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/engagement/site_engagement_service_factory.h"
@@ -20,7 +20,6 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_utils.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search/ntp_features.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
@@ -50,8 +49,6 @@ struct RawPrepopulatedPage {
   int url_id;            // The resource for the page URL.
   int title_id;          // The resource for the page title.
   int favicon_id;        // The raw data resource for the favicon.
-  int large_favicon_id;  // The raw data resource for the larger favicon.
-  int thumbnail_id;      // The raw data resource for the thumbnail.
   SkColor color;         // The best color to highlight the page (should
                          // roughly match favicon).
 };
@@ -60,9 +57,10 @@ struct RawPrepopulatedPage {
 // Android does not use prepopulated pages.
 const RawPrepopulatedPage kRawPrepopulatedPages[] = {
     {
-        IDS_WEBSTORE_URL, IDS_EXTENSION_WEB_STORE_TITLE_SHORT,
-        IDR_WEBSTORE_ICON_16, IDR_WEBSTORE_ICON_32,
-        IDR_NEWTAB_WEBSTORE_THUMBNAIL, SkColorSetRGB(63, 132, 197),
+        IDS_WEBSTORE_URL,
+        IDS_EXTENSION_WEB_STORE_TITLE_SHORT,
+        IDR_WEBSTORE_ICON_32,
+        SkColorSetRGB(63, 132, 197),
     },
 };
 #endif
@@ -73,16 +71,14 @@ void InitializePrepopulatedPageList(
 #if !defined(OS_ANDROID)
   DCHECK(prepopulated_pages);
   bool hide_web_store_icon = prefs->GetBoolean(prefs::kHideWebStoreIcon);
-  prepopulated_pages->reserve(arraysize(kRawPrepopulatedPages));
-  for (size_t i = 0; i < arraysize(kRawPrepopulatedPages); ++i) {
+  prepopulated_pages->reserve(base::size(kRawPrepopulatedPages));
+  for (size_t i = 0; i < base::size(kRawPrepopulatedPages); ++i) {
     const RawPrepopulatedPage& page = kRawPrepopulatedPages[i];
     if (hide_web_store_icon && page.url_id == IDS_WEBSTORE_URL)
       continue;
     prepopulated_pages->push_back(history::PrepopulatedPage(
         GURL(l10n_util::GetStringUTF8(page.url_id)),
-        l10n_util::GetStringUTF16(page.title_id),
-        features::IsMDIconsEnabled() ? page.large_favicon_id : page.favicon_id,
-        page.thumbnail_id, page.color));
+        l10n_util::GetStringUTF16(page.title_id), page.favicon_id, page.color));
   }
 #endif
 }

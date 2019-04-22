@@ -18,4 +18,4 @@ class ExtensionTerminalPrivateApiTest : public extensions::ExtensionApiTest {
 IN_PROC_BROWSER_TEST_F(ExtensionTerminalPrivateApiTest, TerminalTest) {
   EXPECT_TRUE(RunExtensionSubtest("terminal/component_extension", "test.html"))
       << message_;
-};
+}

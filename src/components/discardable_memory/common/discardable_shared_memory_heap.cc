@@ -9,9 +9,9 @@
 #include <utility>
 
 #include "base/format_macros.h"
-#include "base/macros.h"
 #include "base/memory/discardable_shared_memory.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/memory_dump_manager.h"
 
@@ -102,7 +102,7 @@ DiscardableSharedMemoryHeap::~DiscardableSharedMemoryHeap() {
   memory_segments_.clear();
   DCHECK_EQ(num_blocks_, 0u);
   DCHECK_EQ(num_free_blocks_, 0u);
-  DCHECK_EQ(std::count_if(free_spans_, free_spans_ + arraysize(free_spans_),
+  DCHECK_EQ(std::count_if(free_spans_, free_spans_ + base::size(free_spans_),
                           [](const base::LinkedList<Span>& free_spans) {
                             return !free_spans.empty();
                           }),
@@ -196,7 +196,7 @@ DiscardableSharedMemoryHeap::SearchFreeLists(size_t blocks, size_t slack) {
   size_t max_length = blocks + slack;
 
   // Search array of free lists for a suitable span.
-  while (length - 1 < arraysize(free_spans_) - 1) {
+  while (length - 1 < base::size(free_spans_) - 1) {
     const base::LinkedList<Span>& free_spans = free_spans_[length - 1];
     if (!free_spans.empty()) {
       // Return the most recently used span located in tail.
@@ -209,7 +209,7 @@ DiscardableSharedMemoryHeap::SearchFreeLists(size_t blocks, size_t slack) {
   }
 
   const base::LinkedList<Span>& overflow_free_spans =
-      free_spans_[arraysize(free_spans_) - 1];
+      free_spans_[base::size(free_spans_) - 1];
 
   // Search overflow free list for a suitable span. Starting with the most
   // recently used span located in tail and moving towards head.
@@ -265,7 +265,7 @@ bool DiscardableSharedMemoryHeap::OnMemoryDump(
 void DiscardableSharedMemoryHeap::InsertIntoFreeList(
     std::unique_ptr<DiscardableSharedMemoryHeap::Span> span) {
   DCHECK(!IsInFreeList(span.get()));
-  size_t index = std::min(span->length_, arraysize(free_spans_)) - 1;
+  size_t index = std::min(span->length_, base::size(free_spans_)) - 1;
   free_spans_[index].Append(span.release());
 }
 

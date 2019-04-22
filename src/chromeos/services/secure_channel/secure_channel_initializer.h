@@ -48,19 +48,20 @@ class SecureChannelInitializer : public SecureChannelBase {
   ~SecureChannelInitializer() override;
 
  private:
-  SecureChannelInitializer(scoped_refptr<base::TaskRunner> task_runner);
+  explicit SecureChannelInitializer(
+      scoped_refptr<base::TaskRunner> task_runner);
 
   struct ConnectionRequestArgs {
-    ConnectionRequestArgs(const cryptauth::RemoteDevice& device_to_connect,
-                          const cryptauth::RemoteDevice& local_device,
+    ConnectionRequestArgs(const multidevice::RemoteDevice& device_to_connect,
+                          const multidevice::RemoteDevice& local_device,
                           const std::string& feature,
                           ConnectionPriority connection_priority,
                           mojom::ConnectionDelegatePtr delegate,
                           bool is_listen_request);
     ~ConnectionRequestArgs();
 
-    cryptauth::RemoteDevice device_to_connect;
-    cryptauth::RemoteDevice local_device;
+    multidevice::RemoteDevice device_to_connect;
+    multidevice::RemoteDevice local_device;
     std::string feature;
     ConnectionPriority connection_priority;
     mojom::ConnectionDelegatePtr delegate;
@@ -69,14 +70,14 @@ class SecureChannelInitializer : public SecureChannelBase {
 
   // mojom::SecureChannel:
   void ListenForConnectionFromDevice(
-      const cryptauth::RemoteDevice& device_to_connect,
-      const cryptauth::RemoteDevice& local_device,
+      const multidevice::RemoteDevice& device_to_connect,
+      const multidevice::RemoteDevice& local_device,
       const std::string& feature,
       ConnectionPriority connection_priority,
       mojom::ConnectionDelegatePtr delegate) override;
   void InitiateConnectionToDevice(
-      const cryptauth::RemoteDevice& device_to_connect,
-      const cryptauth::RemoteDevice& local_device,
+      const multidevice::RemoteDevice& device_to_connect,
+      const multidevice::RemoteDevice& local_device,
       const std::string& feature,
       ConnectionPriority connection_priority,
       mojom::ConnectionDelegatePtr delegate) override;

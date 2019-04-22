@@ -40,7 +40,7 @@
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
-#include "third_party/webrtc/rtc_base/rtccertificate.h"
+#include "third_party/webrtc/rtc_base/rtc_certificate.h"
 
 namespace blink {
 

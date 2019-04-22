@@ -57,8 +57,8 @@
     debug("- set same defaultValue");
     ta.setSelectionRange(2, 3);
     ta.defaultValue = 'abc123456';
-    shouldBe('ta.selectionStart', '9');
-    shouldBe('ta.selectionEnd', '9');
+    shouldBe('ta.selectionStart', '2');
+    shouldBe('ta.selectionEnd', '3');
 
     debug("- append a text node");
     ta.appendChild(document.createTextNode('foo'));

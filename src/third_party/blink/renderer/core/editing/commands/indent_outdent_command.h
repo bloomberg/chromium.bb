@@ -32,12 +32,9 @@ namespace blink {
 
 class CORE_EXPORT IndentOutdentCommand final : public ApplyBlockElementCommand {
  public:
-  enum EIndentType { kIndent, kOutdent };
-  static IndentOutdentCommand* Create(Document& document, EIndentType type) {
-    return MakeGarbageCollected<IndentOutdentCommand>(document, type);
-  }
+  enum IndentType { kIndent, kOutdent };
 
-  IndentOutdentCommand(Document&, EIndentType);
+  IndentOutdentCommand(Document&, IndentType);
 
   bool PreservesTypingStyle() const override { return true; }
 
@@ -63,7 +60,7 @@ class CORE_EXPORT IndentOutdentCommand final : public ApplyBlockElementCommand {
                    HTMLElement*& blockquote_for_next_indent,
                    EditingState*) override;
 
-  EIndentType type_of_action_;
+  IndentType type_of_action_;
 };
 
 }  // namespace blink

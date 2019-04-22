@@ -101,7 +101,7 @@ cr.define('cr_toolbar_search_field', function() {
         // Expecting identical query to be ignored.
         simulateSearch('query2');
 
-        assertEquals(['query1', '', 'query2'].join(), searches.join());
+        assertDeepEquals(['query1', '', 'query2'], searches);
       });
 
       test('notifies on setValue', function() {
@@ -112,7 +112,7 @@ cr.define('cr_toolbar_search_field', function() {
         // Expecting identical query to be ignored.
         field.setValue('bar');
         field.setValue('baz');
-        assertEquals(['foo', '', 'bar', 'baz'].join(), searches.join());
+        assertDeepEquals(['foo', '', 'bar', 'baz'], searches);
       });
 
       test('does not notify on setValue with noEvent=true', function() {
@@ -120,23 +120,55 @@ cr.define('cr_toolbar_search_field', function() {
         field.setValue('foo', true);
         field.setValue('bar');
         field.setValue('baz', true);
-        assertEquals(['bar'].join(), searches.join());
+        assertDeepEquals(['bar'], searches);
       });
 
       test('treat consecutive whitespace as single space', function() {
         field.click();
-        const query = '   foo        bar     baz      ';
+        const query = 'foo        bar     baz';
         simulateSearch(query);
         Polymer.dom.flush();
         assertEquals(query, field.getValue());
 
         // Expecting effectively the same query to be ignored.
-        const effectivelySameQuery = '  foo   bar    baz     ';
+        const effectivelySameQuery = 'foo   bar    baz';
         simulateSearch(effectivelySameQuery);
         Polymer.dom.flush();
         assertEquals(effectivelySameQuery, field.getValue());
 
-        assertEquals(' foo bar baz ', searches.join());
+        assertDeepEquals(['foo bar baz'], searches);
+      });
+
+      test('ignore leading whitespace', () => {
+        field.click();
+        const query = ' foo';
+        simulateSearch(query);
+        Polymer.dom.flush();
+        assertEquals(query, field.getValue());
+
+        // Expecting effectively the same query to be ignored.
+        const effectivelySameQuery = '     foo';
+        simulateSearch(effectivelySameQuery);
+        Polymer.dom.flush();
+        assertEquals(effectivelySameQuery, field.getValue());
+
+        assertDeepEquals(['foo'], searches);
+      });
+
+      test('when there is trailing whitespace, replace with one space', () => {
+        field.click();
+        const query = 'foo  ';
+        simulateSearch(query);
+        Polymer.dom.flush();
+        assertEquals(query, field.getValue());
+
+        // Expecting effectively the same query to be ignored.
+        const effectivelySameQuery = 'foo        ';
+        simulateSearch(effectivelySameQuery);
+        Polymer.dom.flush();
+        assertEquals(effectivelySameQuery, field.getValue());
+
+        assertDeepEquals(['foo '], searches);
       });
 
       // Tests that calling setValue() from within a 'search-changed' callback
@@ -153,7 +185,7 @@ cr.define('cr_toolbar_search_field', function() {
         field.click();
         field.setValue('bar');
         assertEquals(1, counter);
-        assertEquals(['bar'].join(), searches.join());
+        assertDeepEquals(['bar'], searches);
       });
 
       test('blur does not close field when a search is active', function() {

@@ -13,14 +13,14 @@ cr.define('ntp', function() {
    * Live list of the navigation dots.
    * @type {!NodeList|undefined}
    */
-  var navDots;
+  let navDots;
 
   /**
    * Creates a new DotList object.
    * @constructor
    * @extends {HTMLUListElement}
    */
-  var DotList = cr.ui.define('ul');
+  const DotList = cr.ui.define('ul');
 
   DotList.prototype = {
     __proto__: HTMLUListElement.prototype,
@@ -44,24 +44,28 @@ cr.define('ntp', function() {
      * @param {!Event} e The KeyboardEvent.
      */
     onKeyDown_: function(e) {
-      if (hasKeyModifiers(e))
+      if (hasKeyModifiers(e)) {
         return;
+      }
 
-      var direction = 0;
-      if (e.key == 'ArrowLeft')
+      let direction = 0;
+      if (e.key == 'ArrowLeft') {
         direction = -1;
-      else if (e.key == 'ArrowRight')
+      } else if (e.key == 'ArrowRight') {
         direction = 1;
-      else
+      } else {
         return;
+      }
 
-      var focusDot = this.querySelector('.dot:focus');
-      if (!focusDot)
+      const focusDot = this.querySelector('.dot:focus');
+      if (!focusDot) {
         return;
-      var focusIndex = Array.prototype.indexOf.call(navDots, focusDot);
-      var newFocusIndex = focusIndex + direction;
-      if (focusIndex == newFocusIndex)
+      }
+      const focusIndex = Array.prototype.indexOf.call(navDots, focusDot);
+      let newFocusIndex = focusIndex + direction;
+      if (focusIndex == newFocusIndex) {
         return;
+      }
 
       newFocusIndex = (newFocusIndex + navDots.length) % navDots.length;
       navDots[newFocusIndex].tabIndex = 3;

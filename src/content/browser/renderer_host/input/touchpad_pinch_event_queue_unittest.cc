@@ -55,7 +55,7 @@ class TouchpadPinchEventQueueTest : public testing::TestWithParam<bool> {
         blink::WebInputEvent::kGesturePinchBegin,
         blink::WebInputEvent::kNoModifiers,
         blink::WebInputEvent::GetStaticTimeStampForTests(),
-        blink::kWebGestureDeviceTouchpad);
+        blink::WebGestureDevice::kTouchpad);
     event.SetPositionInWidget(gfx::PointF(1, 1));
     event.SetPositionInScreen(gfx::PointF(1, 1));
     event.SetNeedsWheelEvent(true);
@@ -67,7 +67,7 @@ class TouchpadPinchEventQueueTest : public testing::TestWithParam<bool> {
         blink::WebInputEvent::kGesturePinchEnd,
         blink::WebInputEvent::kNoModifiers,
         blink::WebInputEvent::GetStaticTimeStampForTests(),
-        blink::kWebGestureDeviceTouchpad);
+        blink::WebGestureDevice::kTouchpad);
     event.SetPositionInWidget(gfx::PointF(1, 1));
     event.SetPositionInScreen(gfx::PointF(1, 1));
     event.SetNeedsWheelEvent(true);
@@ -79,7 +79,7 @@ class TouchpadPinchEventQueueTest : public testing::TestWithParam<bool> {
         blink::WebInputEvent::kGesturePinchUpdate,
         blink::WebInputEvent::kNoModifiers,
         blink::WebInputEvent::GetStaticTimeStampForTests(),
-        blink::kWebGestureDeviceTouchpad);
+        blink::WebGestureDevice::kTouchpad);
     event.SetPositionInWidget(gfx::PointF(1, 1));
     event.SetPositionInScreen(gfx::PointF(1, 1));
     event.SetNeedsWheelEvent(true);
@@ -93,7 +93,7 @@ class TouchpadPinchEventQueueTest : public testing::TestWithParam<bool> {
         blink::WebInputEvent::kGestureDoubleTap,
         blink::WebInputEvent::kNoModifiers,
         blink::WebInputEvent::GetStaticTimeStampForTests(),
-        blink::kWebGestureDeviceTouchpad);
+        blink::WebGestureDevice::kTouchpad);
     event.SetPositionInWidget(gfx::PointF(1, 1));
     event.SetPositionInScreen(gfx::PointF(1, 1));
     event.data.tap.tap_count = 1;
@@ -112,7 +112,7 @@ class TouchpadPinchEventQueueTest : public testing::TestWithParam<bool> {
   const bool async_events_enabled_;
 };
 
-INSTANTIATE_TEST_CASE_P(, TouchpadPinchEventQueueTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(, TouchpadPinchEventQueueTest, ::testing::Bool());
 
 MATCHER_P(EventHasType,
           type,

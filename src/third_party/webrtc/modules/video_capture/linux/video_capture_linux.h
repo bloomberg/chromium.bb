@@ -11,11 +11,13 @@
 #ifndef MODULES_VIDEO_CAPTURE_MAIN_SOURCE_LINUX_VIDEO_CAPTURE_LINUX_H_
 #define MODULES_VIDEO_CAPTURE_MAIN_SOURCE_LINUX_VIDEO_CAPTURE_LINUX_H_
 
+#include <stddef.h>
+#include <stdint.h>
 #include <memory>
 
-#include "common_types.h"  // NOLINT(build/include)
+#include "modules/video_capture/video_capture_defines.h"
 #include "modules/video_capture/video_capture_impl.h"
-#include "rtc_base/criticalsection.h"
+#include "rtc_base/critical_section.h"
 #include "rtc_base/platform_thread.h"
 
 namespace webrtc {

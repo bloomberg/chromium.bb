@@ -29,7 +29,7 @@ class CONTENT_EXPORT MemoryMonitorAndroid : public MemoryMonitor {
   class Delegate {
    public:
     Delegate() {}
-    virtual ~Delegate() {};
+    virtual ~Delegate() {}
 
     // Get MemoryInfo. Implementations should fill |out| accordingly.
     virtual void GetMemoryInfo(MemoryInfo* out) = 0;

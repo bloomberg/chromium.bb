@@ -91,6 +91,12 @@ CompositorView::CompositorView(JNIEnv* env,
 
   root_layer_->SetIsDrawable(true);
   root_layer_->SetBackgroundColor(SK_ColorWHITE);
+
+  surface_control_feature_checker_ = content::GpuFeatureChecker::Create(
+      gpu::GpuFeatureType::GPU_FEATURE_TYPE_ANDROID_SURFACE_CONTROL,
+      base::Bind(&CompositorView::OnSurfaceControlFeatureStatusUpdate,
+                 weak_factory_.GetWeakPtr()));
+  surface_control_feature_checker_->CheckGpuFeatureAvailability();
 }
 
 CompositorView::~CompositorView() {
@@ -142,6 +148,15 @@ void CompositorView::DidSwapBuffers(const gfx::Size& swap_size) {
 
 ui::UIResourceProvider* CompositorView::GetUIResourceProvider() {
   return compositor_ ? &compositor_->GetUIResourceProvider() : nullptr;
+}
+
+void CompositorView::OnSurfaceControlFeatureStatusUpdate(bool available) {
+  if (available) {
+    JNIEnv* env = base::android::AttachCurrentThread();
+    Java_CompositorView_notifyWillUseSurfaceControl(env, obj_);
+  }
+
+  surface_control_feature_checker_.reset();
 }
 
 void CompositorView::SurfaceCreated(JNIEnv* env,

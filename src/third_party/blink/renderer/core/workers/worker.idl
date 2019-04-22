@@ -25,7 +25,7 @@
  *
  */
 
-// https://html.spec.whatwg.org/#dedicated-workers-and-the-worker-interface
+// https://html.spec.whatwg.org/C/#dedicated-workers-and-the-worker-interface
 
 [
     ActiveScriptWrappable,
@@ -42,4 +42,4 @@
     attribute EventHandler onmessage;
 };
 
-Worker implements AbstractWorker;
+Worker includes AbstractWorker;

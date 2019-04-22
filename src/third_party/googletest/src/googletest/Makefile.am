@@ -4,11 +4,8 @@ ACLOCAL_AMFLAGS = -I m4
 
 # Nonstandard package files for distribution
 EXTRA_DIST = \
-  CHANGES \
   CONTRIBUTORS \
   LICENSE \
-  include/gtest/gtest-param-test.h.pump \
-  include/gtest/internal/gtest-param-util-generated.h.pump \
   include/gtest/internal/gtest-type-util.h.pump \
   make/Makefile \
   scripts/fuse_gtest_files.py \
@@ -22,6 +19,7 @@ GTEST_SRC = \
   src/gtest-death-test.cc \
   src/gtest-filepath.cc \
   src/gtest-internal-inl.h \
+  src/gtest-matchers.cc \
   src/gtest-port.cc \
   src/gtest-printers.cc \
   src/gtest-test-part.cc \
@@ -45,21 +43,21 @@ EXTRA_DIST += \
 
 # C++ test files that we don't compile directly.
 EXTRA_DIST += \
-  test/gtest-death-test_ex_test.cc \
-  test/gtest-death-test_test.cc \
-  test/gtest-filepath_test.cc \
-  test/gtest-listener_test.cc \
-  test/gtest-message_test.cc \
-  test/gtest-options_test.cc \
+  test/googletest-death-test_ex_test.cc \
+  test/googletest-death-test-test.cc \
+  test/googletest-filepath-test.cc \
+  test/googletest-listener-test.cc \
+  test/googletest-message-test.cc \
+  test/googletest-options-test.cc \
   test/googletest-param-test2-test.cc \
   test/googletest-param-test2-test.cc \
   test/googletest-param-test-test.cc \
   test/googletest-param-test-test.cc \
-  test/gtest-param-test_test.h \
-  test/gtest-port_test.cc \
+  test/googletest-param-test-test.h \
+  test/googletest-port-test.cc \
   test/gtest_premature_exit_test.cc \
-  test/gtest-printers_test.cc \
-  test/gtest-test-part_test.cc \
+  test/googletest-printers-test.cc \
+  test/googletest-test-part-test.cc \
   test/gtest-typed-test2_test.cc \
   test/gtest-typed-test_test.cc \
   test/gtest-typed-test_test.h \
@@ -102,7 +100,7 @@ EXTRA_DIST += \
   test/gtest_help_test.py \
   test/googletest-list-tests-unittest.py \
   test/googletest-output-test.py \
-  test/googletest-output-test_golden_lin.txt \
+  test/googletest-output-test-golden-lin.txt \
   test/googletest-shuffle-test.py \
   test/gtest_test_utils.py \
   test/googletest-throw-on-failure-test.py \
@@ -184,6 +182,7 @@ lib_libgtest_la_SOURCES = src/gtest-all.cc
 
 pkginclude_HEADERS = \
   include/gtest/gtest-death-test.h \
+  include/gtest/gtest-matchers.h \
   include/gtest/gtest-message.h \
   include/gtest/gtest-param-test.h \
   include/gtest/gtest-printers.h \
@@ -199,7 +198,6 @@ pkginclude_internal_HEADERS = \
   include/gtest/internal/gtest-death-test-internal.h \
   include/gtest/internal/gtest-filepath.h \
   include/gtest/internal/gtest-internal.h \
-  include/gtest/internal/gtest-param-util-generated.h \
   include/gtest/internal/gtest-param-util.h \
   include/gtest/internal/gtest-port.h \
   include/gtest/internal/gtest-port-arch.h \
@@ -284,6 +282,12 @@ check_PROGRAMS += test/gtest_all_test
 test_gtest_all_test_SOURCES = test/gtest_all_test.cc
 test_gtest_all_test_LDADD = lib/libgtest_main.la \
                             lib/libgtest.la
+
+TESTS += test/gtest_skip_in_environment_setup_test
+check_PROGRAMS += test/gtest_skip_in_environment_setup_test
+test_gtest_skip_in_environment_setup_test_SOURCES = test/gtest_skip_in_environment_setup_test.cc
+test_gtest_skip_in_environment_setup_test_LDADD= lib/libgtest_main.la \
+                                                 lib/libgtest.la
 
 # Tests that fused gtest files compile and work.
 FUSED_GTEST_SRC = \

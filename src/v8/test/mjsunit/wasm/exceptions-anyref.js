@@ -4,29 +4,8 @@
 
 // Flags: --experimental-wasm-eh --experimental-wasm-anyref --allow-natives-syntax
 
-load("test/mjsunit/wasm/wasm-constants.js");
 load("test/mjsunit/wasm/wasm-module-builder.js");
-
-// TODO(mstarzinger): Duplicated in the exceptions.js file. Dedupe.
-function assertWasmThrows(instance, runtime_id, values, code) {
-  try {
-    if (typeof code === 'function') {
-      code();
-    } else {
-      eval(code);
-    }
-  } catch (e) {
-    assertInstanceof(e, WebAssembly.RuntimeError);
-    var e_runtime_id = %GetWasmExceptionId(e, instance);
-    assertTrue(Number.isInteger(e_runtime_id));
-    assertEquals(e_runtime_id, runtime_id);
-    var e_values = %GetWasmExceptionValues(e);
-    assertArrayEquals(values, e_values);
-    return;  // Success.
-  }
-  throw new MjsUnitAssertionError('Did not throw expected <' + runtime_id +
-                                  '> with values: ' + values);
-}
+load("test/mjsunit/wasm/exceptions-utils.js");
 
 // Test the encoding of a thrown exception with a null-ref value.
 (function TestThrowRefNull() {
@@ -50,22 +29,25 @@ function assertWasmThrows(instance, runtime_id, values, code) {
   let except = builder.addException(kSig_v_r);
   builder.addFunction("throw_catch_null", kSig_i_i)
       .addBody([
-        kExprTry, kWasmI32,
+        kExprTry, kWasmAnyRef,
           kExprGetLocal, 0,
           kExprI32Eqz,
-          kExprIf, kWasmI32,
+          kExprIf, kWasmAnyRef,
             kExprRefNull,
             kExprThrow, except,
           kExprElse,
             kExprI32Const, 42,
+            kExprReturn,
           kExprEnd,
-        kExprCatch, except,
-          kExprRefIsNull,
-          kExprIf, kWasmI32,
-            kExprI32Const, 23,
-          kExprElse,
-            kExprUnreachable,
-          kExprEnd,
+        kExprCatch,
+          kExprBrOnExn, 0, except,
+          kExprRethrow,
+        kExprEnd,
+        kExprRefIsNull,
+        kExprIf, kWasmI32,
+          kExprI32Const, 23,
+        kExprElse,
+          kExprUnreachable,
         kExprEnd,
       ]).exportFunc();
   let instance = builder.instantiate();
@@ -103,8 +85,9 @@ function assertWasmThrows(instance, runtime_id, values, code) {
         kExprTry, kWasmAnyRef,
           kExprGetLocal, 0,
           kExprThrow, except,
-        kExprCatch, except,
-          // fall-through
+        kExprCatch,
+          kExprBrOnExn, 0, except,
+          kExprRethrow,
         kExprEnd,
       ]).exportFunc();
   let instance = builder.instantiate();

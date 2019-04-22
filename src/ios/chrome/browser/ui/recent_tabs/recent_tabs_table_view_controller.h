@@ -7,15 +7,17 @@
 
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_consumer.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
+#include "ui/base/window_open_disposition.h"
 
 namespace ios {
 class ChromeBrowserState;
 }
+enum class UrlLoadStrategy;
+class WebStateList;
 
 @protocol ApplicationCommands;
 @protocol RecentTabsTableViewControllerDelegate;
 @protocol RecentTabsPresentationDelegate;
-@protocol UrlLoader;
 @protocol TableViewFaviconDataSource;
 
 @interface RecentTabsTableViewController
@@ -24,11 +26,14 @@ class ChromeBrowserState;
 @property(nonatomic, assign) ios::ChromeBrowserState* browserState;
 // The dispatcher used by this ViewController.
 @property(nonatomic, weak) id<ApplicationCommands> dispatcher;
-// UrlLoader used by this ViewController.
-@property(nonatomic, weak) id<UrlLoader> loader;
-
+// Opaque instructions on how to open urls.
+@property(nonatomic) UrlLoadStrategy loadStrategy;
+// Disposition for tabs restored by this object. Defaults to CURRENT_TAB.
+@property(nonatomic, assign) WindowOpenDisposition restoredTabDisposition;
 // RecentTabsTableViewControllerDelegate delegate.
 @property(nonatomic, weak) id<RecentTabsTableViewControllerDelegate> delegate;
+// WebStateList for tabs restored by this object.
+@property(nonatomic, assign) WebStateList* webStateList;
 
 // Delegate to present the tab UI.
 @property(nonatomic, weak) id<RecentTabsPresentationDelegate>

@@ -26,15 +26,17 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.Tab.TabHidingType;
 import org.chromium.chrome.browser.tab.TabWebContentsObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
+import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
-import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
-import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
+import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.util.browser.TabTitleObserver;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TestTouchUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
 
@@ -51,6 +53,13 @@ import java.util.concurrent.TimeoutException;
  */
 public class ChromeTabUtils {
     private static final String TAG = "cr_ChromeTabUtils";
+    public static final int TITLE_UPDATE_TIMEOUT_MS = 3000;
+
+    /**
+     * The required page load percentage for the page to be considered ready assuming the
+     * TextureView is also ready.
+     */
+    private static final int CONSIDERED_READY_LOAD_PERCENTAGE = 100;
 
     /**
      * An observer that waits for a Tab to load a page.
@@ -171,16 +180,13 @@ public class ChromeTabUtils {
 
         final CountDownLatch loadStoppedLatch = new CountDownLatch(1);
         final CallbackHelper loadedCallback = new CallbackHelper();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                // Don't check for the load being already complete if there is a trigger to run.
-                if (loadTrigger == null && loadComplete(tab, url)) {
-                    loadedCallback.notifyCalled();
-                    return;
-                }
-                tab.addObserver(new TabPageLoadedObserver(loadedCallback, url, loadStoppedLatch));
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            // Don't check for the load being already complete if there is a trigger to run.
+            if (loadTrigger == null && loadComplete(tab, url)) {
+                loadedCallback.notifyCalled();
+                return;
             }
+            tab.addObserver(new TabPageLoadedObserver(loadedCallback, url, loadStoppedLatch));
         });
         if (loadTrigger != null) {
             loadTrigger.run();
@@ -225,17 +231,14 @@ public class ChromeTabUtils {
             final Tab tab, Runnable loadTrigger, long secondsToWait)
             throws InterruptedException {
         final CallbackHelper startedCallback = new CallbackHelper();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                tab.addObserver(new EmptyTabObserver() {
-                    @Override
-                    public void onPageLoadStarted(Tab tab, String url) {
-                        startedCallback.notifyCalled();
-                        tab.removeObserver(this);
-                    }
-                });
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            tab.addObserver(new EmptyTabObserver() {
+                @Override
+                public void onPageLoadStarted(Tab tab, String url) {
+                    startedCallback.notifyCalled();
+                    tab.removeObserver(this);
+                }
+            });
         });
         loadTrigger.run();
         try {
@@ -299,17 +302,14 @@ public class ChromeTabUtils {
         Assert.assertFalse(ThreadUtils.runningOnUiThread());
 
         final CallbackHelper interactableCallback = new CallbackHelper();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                // If a tab is hidden, don't wait for interactivity. See note in
-                // TabPageInteractableObserver.
-                if (tab.isUserInteractable() || tab.isHidden()) {
-                    interactableCallback.notifyCalled();
-                    return;
-                }
-                tab.addObserver(new TabPageInteractableObserver(tab, interactableCallback));
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            // If a tab is hidden, don't wait for interactivity. See note in
+            // TabPageInteractableObserver.
+            if (tab.isUserInteractable() || tab.isHidden()) {
+                interactableCallback.notifyCalled();
+                return;
             }
+            tab.addObserver(new TabPageInteractableObserver(tab, interactableCallback));
         });
 
         try {
@@ -326,12 +326,8 @@ public class ChromeTabUtils {
      */
     public static void switchTabInCurrentTabModel(final ChromeActivity activity,
             final int tabIndex) {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                TabModelUtils.setIndex(activity.getCurrentTabModel(), tabIndex);
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { TabModelUtils.setIndex(activity.getCurrentTabModel(), tabIndex); });
     }
 
     /**
@@ -460,12 +456,7 @@ public class ChromeTabUtils {
     }
 
     public static void loadUrlOnUiThread(final Tab tab, final String url) {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                tab.loadUrl(new LoadUrlParams(url));
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(() -> { tab.loadUrl(new LoadUrlParams(url)); });
     }
 
     /**
@@ -483,7 +474,7 @@ public class ChromeTabUtils {
      * Fetch the number of tabs open in the current model.
      */
     public static int getNumOpenTabs(final ChromeActivity activity) {
-        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Integer>() {
+        return TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Integer>() {
             @Override
             public Integer call() throws Exception {
                 return activity.getCurrentTabModel().getCount();
@@ -562,7 +553,7 @@ public class ChromeTabUtils {
         final CallbackHelper closeCallback = new CallbackHelper();
         final TabModelObserver observer = new EmptyTabModelObserver() {
             @Override
-            public void allTabsPendingClosure(List<Tab> tabs) {
+            public void multipleTabsPendingClosure(List<Tab> tabs, boolean isAllTabs) {
                 closeCallback.notifyCalled();
             }
         };
@@ -576,12 +567,8 @@ public class ChromeTabUtils {
             }
         });
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                activity.getTabModelSelector().closeAllTabs();
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { activity.getTabModelSelector().closeAllTabs(); });
 
         try {
             closeCallback.waitForCallback(0);
@@ -747,5 +734,22 @@ public class ChromeTabUtils {
         if (observer != null) {
             observer.simulateRendererKilledForTesting(wasOomProtected);
         }
+    }
+
+    public static void waitForTitle(Tab tab, String newTitle) throws InterruptedException {
+        TabTitleObserver titleObserver = new TabTitleObserver(tab, newTitle);
+        try {
+            titleObserver.waitForTitleUpdate(TITLE_UPDATE_TIMEOUT_MS);
+        } catch (TimeoutException e) {
+            Assert.fail(String.format(Locale.ENGLISH,
+                    "Tab title didn't update to %s in time.", newTitle));
+        }
+    }
+
+    /**
+     * @return Whether or not the loading and rendering of the page is done.
+     */
+    public static boolean isLoadingAndRenderingDone(Tab tab) {
+        return tab.isReady() && tab.getProgress() >= CONSIDERED_READY_LOAD_PERCENTAGE;
     }
 }

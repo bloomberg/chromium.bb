@@ -20,7 +20,7 @@ namespace extensions {
 
 // Cancel file selection Dialog.  Closes the dialog window.
 class FileManagerPrivateCancelDialogFunction
-    : public LoggedAsyncExtensionFunction {
+    : public LoggedUIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.cancelDialog",
                              FILEMANAGERPRIVATE_CANCELDIALOG)
@@ -28,12 +28,12 @@ class FileManagerPrivateCancelDialogFunction
  protected:
   ~FileManagerPrivateCancelDialogFunction() override = default;
 
-  // ChromeAsyncExtensionFunction overrides.
-  bool RunAsync() override;
+  // ExtensionFunction overrides.
+  ResponseAction Run() override;
 };
 
 class FileManagerPrivateSelectFileFunction
-    : public LoggedAsyncExtensionFunction {
+    : public LoggedUIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.selectFile",
                              FILEMANAGERPRIVATE_SELECTFILE)
@@ -41,19 +41,20 @@ class FileManagerPrivateSelectFileFunction
  protected:
   ~FileManagerPrivateSelectFileFunction() override = default;
 
-  // ChromeAsyncExtensionFunction overrides.
-  bool RunAsync() override;
+  // ExtensionFunction overrides.
+  ResponseAction Run() override;
 
  private:
   // A callback method to handle the result of GetSelectedFileInfo.
   void GetSelectedFileInfoResponse(
+      bool for_open,
       int index,
       const std::vector<ui::SelectedFileInfo>& files);
 };
 
 // Select multiple files.  Closes the dialog window.
 class FileManagerPrivateSelectFilesFunction
-    : public LoggedAsyncExtensionFunction {
+    : public LoggedUIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.selectFiles",
                              FILEMANAGERPRIVATE_SELECTFILES)
@@ -61,12 +62,13 @@ class FileManagerPrivateSelectFilesFunction
  protected:
   ~FileManagerPrivateSelectFilesFunction() override = default;
 
-  // ChromeAsyncExtensionFunction overrides.
-  bool RunAsync() override;
+  // ExtensionFunction overrides.
+  ResponseAction Run() override;
 
  private:
   // A callback method to handle the result of GetSelectedFileInfo.
   void GetSelectedFileInfoResponse(
+      bool for_open,
       const std::vector<ui::SelectedFileInfo>& files);
 };
 

@@ -1,5 +1,9 @@
 Tests that data is correctly loaded by IndexedDBModel from IndexedDB object store and index.
 
+entries count: 6
+key gen value: 1
+entries count: 6
+key gen value: 7
 Dumping values, fromIndex = false, skipCount = 0, pageSize = 2, idbKeyRange = null
     Key = key_01, primaryKey = key_01, value = {"key":"key_01","value":"value_01"}
     Key = key_02, primaryKey = key_02, value = {"key":"key_02","value":"value_02"}
@@ -64,4 +68,12 @@ VM:3 InspectorTest.IndexedDB_callback9
 VM:3 InspectorTest.IndexedDB_callback10
 VM:3 InspectorTest.IndexedDB_callback11
 VM:3 InspectorTest.IndexedDB_callback12
+VM:3 InspectorTest.IndexedDB_callback13
+VM:3 InspectorTest.IndexedDB_callback14
+VM:3 InspectorTest.IndexedDB_callback15
+VM:3 InspectorTest.IndexedDB_callback16
+VM:3 InspectorTest.IndexedDB_callback17
+VM:3 InspectorTest.IndexedDB_callback18
+VM:3 InspectorTest.IndexedDB_callback19
+VM:3 InspectorTest.IndexedDB_callback20
 

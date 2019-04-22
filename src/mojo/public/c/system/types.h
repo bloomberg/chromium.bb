@@ -164,7 +164,7 @@ struct MOJO_ALIGNAS(8) MojoInitializeOptions {
   MOJO_POINTER_FIELD(const char*, mojo_core_path);
   uint32_t mojo_core_path_length;
 };
-MOJO_STATIC_ASSERT(sizeof(MojoInitializeOptions) == 24,
+MOJO_STATIC_ASSERT(sizeof(struct MojoInitializeOptions) == 24,
                    "MojoInitializeOptions has wrong size");
 
 // Flags passed to |MojoShutdown()| via |MojoShutdownOptions|.
@@ -181,7 +181,7 @@ struct MOJO_ALIGNAS(8) MojoShutdownOptions {
   // See |MojoShutdownFlags|.
   MojoShutdownFlags flags;
 };
-MOJO_STATIC_ASSERT(sizeof(MojoShutdownOptions) == 8,
+MOJO_STATIC_ASSERT(sizeof(struct MojoShutdownOptions) == 8,
                    "MojoShutdownOptions has wrong size");
 
 // |MojoHandleSignals|: Used to specify signals that can be watched for on a
@@ -240,7 +240,7 @@ struct MOJO_ALIGNAS(4) MojoHandleSignalsState {
   MojoHandleSignals satisfied_signals;
   MojoHandleSignals satisfiable_signals;
 };
-MOJO_STATIC_ASSERT(sizeof(MojoHandleSignalsState) == 8,
+MOJO_STATIC_ASSERT(sizeof(struct MojoHandleSignalsState) == 8,
                    "MojoHandleSignalsState has wrong size");
 
 // TODO(https://crbug.com/819046): Remove these aliases.

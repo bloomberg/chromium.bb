@@ -4,20 +4,23 @@
 
 #include "ui/views/accessibility/ax_aura_obj_cache.h"
 
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/window.h"
 #include "ui/views/accessibility/ax_aura_obj_wrapper.h"
+#include "ui/views/accessibility/ax_aura_window_utils.h"
 #include "ui/views/accessibility/ax_view_obj_wrapper.h"
 #include "ui/views/accessibility/ax_widget_obj_wrapper.h"
 #include "ui/views/accessibility/ax_window_obj_wrapper.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
 namespace views {
+namespace {
 
 aura::client::FocusClient* GetFocusClient(aura::Window* root_window) {
   if (!root_window)
@@ -25,10 +28,7 @@ aura::client::FocusClient* GetFocusClient(aura::Window* root_window) {
   return aura::client::GetFocusClient(root_window);
 }
 
-// static
-AXAuraObjCache* AXAuraObjCache::GetInstance() {
-  return base::Singleton<AXAuraObjCache>::get();
-}
+}  // namespace
 
 AXAuraObjWrapper* AXAuraObjCache::GetOrCreate(View* view) {
   // Avoid problems with transient focus events. https://crbug.com/729449
@@ -63,8 +63,8 @@ void AXAuraObjCache::Remove(View* view) {
 
 void AXAuraObjCache::RemoveViewSubtree(View* view) {
   Remove(view);
-  for (int i = 0; i < view->child_count(); ++i)
-    RemoveViewSubtree(view->child_at(i));
+  for (View* child : view->children())
+    RemoveViewSubtree(child);
 }
 
 void AXAuraObjCache::Remove(Widget* widget) {
@@ -92,16 +92,20 @@ AXAuraObjWrapper* AXAuraObjCache::Get(int32_t id) {
 
 void AXAuraObjCache::GetTopLevelWindows(
     std::vector<AXAuraObjWrapper*>* children) {
-  for (const auto& it : window_to_id_map_) {
-    if (!it.first->parent())
-      children->push_back(GetOrCreate(it.first));
-  }
+  for (aura::Window* root : root_windows_)
+    children->push_back(GetOrCreate(root));
 }
 
 AXAuraObjWrapper* AXAuraObjCache::GetFocus() {
   View* focused_view = GetFocusedView();
-  if (focused_view)
+  if (focused_view) {
+    const ViewAccessibility& view_accessibility =
+        focused_view->GetViewAccessibility();
+    if (view_accessibility.FocusedVirtualChild())
+      return view_accessibility.FocusedVirtualChild()->GetOrCreateWrapper(this);
+
     return GetOrCreate(focused_view);
+  }
   return nullptr;
 }
 
@@ -119,9 +123,10 @@ void AXAuraObjCache::FireEvent(AXAuraObjWrapper* aura_obj,
 
 AXAuraObjCache::AXAuraObjCache() = default;
 
+// Never runs because object is leaked.
 AXAuraObjCache::~AXAuraObjCache() {
-  is_destroying_ = true;
-  cache_.clear();
+  if (!root_windows_.empty() && GetFocusClient(*root_windows_.begin()))
+    GetFocusClient(*root_windows_.begin())->RemoveObserver(this);
 }
 
 View* AXAuraObjCache::GetFocusedView() {
@@ -139,13 +144,15 @@ View* AXAuraObjCache::GetFocusedView() {
     if (!focused_window)
       return nullptr;
 
-    focused_widget = Widget::GetWidgetForNativeView(focused_window);
+    // SingleProcessMash may need to jump between ash and client windows.
+    AXAuraWindowUtils* window_utils = AXAuraWindowUtils::Get();
+    focused_widget = window_utils->GetWidgetForNativeView(focused_window);
     while (!focused_widget) {
       focused_window = focused_window->parent();
       if (!focused_window)
         break;
 
-      focused_widget = Widget::GetWidgetForNativeView(focused_window);
+      focused_widget = window_utils->GetWidgetForNativeView(focused_window);
     }
   }
 
@@ -168,7 +175,7 @@ View* AXAuraObjCache::GetFocusedView() {
     // focus.
     if (focused_widget->non_client_view() &&
         focused_widget->non_client_view()->client_view() &&
-        focused_widget->non_client_view()->client_view()->has_children()) {
+        !focused_widget->non_client_view()->client_view()->children().empty()) {
       return focused_widget->non_client_view()->client_view()->child_at(0);
     }
 
@@ -207,7 +214,7 @@ AXAuraObjWrapper* AXAuraObjCache::CreateInternal(
   if (it != aura_view_to_id_map.end())
     return Get(it->second);
 
-  auto wrapper = std::make_unique<AuraViewWrapper>(aura_view);
+  auto wrapper = std::make_unique<AuraViewWrapper>(this, aura_view);
   int32_t id = wrapper->GetUniqueId();
   aura_view_to_id_map[aura_view] = id;
   cache_[id] = std::move(wrapper);

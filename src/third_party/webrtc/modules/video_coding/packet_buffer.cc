@@ -10,15 +10,21 @@
 
 #include "modules/video_coding/packet_buffer.h"
 
+#include <string.h>
 #include <algorithm>
-#include <limits>
+#include <cstdint>
 #include <utility>
 
+#include "absl/types/variant.h"
+#include "api/video/encoded_frame.h"
 #include "common_video/h264/h264_common.h"
+#include "modules/rtp_rtcp/source/rtp_video_header.h"
+#include "modules/video_coding/codecs/h264/include/h264_globals.h"
 #include "modules/video_coding/frame_object.h"
-#include "rtc_base/atomicops.h"
+#include "rtc_base/atomic_ops.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/logging.h"
+#include "rtc_base/numerics/mod_ops.h"
 #include "system_wrappers/include/clock.h"
 #include "system_wrappers/include/field_trial.h"
 
@@ -29,15 +35,15 @@ rtc::scoped_refptr<PacketBuffer> PacketBuffer::Create(
     Clock* clock,
     size_t start_buffer_size,
     size_t max_buffer_size,
-    OnReceivedFrameCallback* received_frame_callback) {
+    OnAssembledFrameCallback* assembled_frame_callback) {
   return rtc::scoped_refptr<PacketBuffer>(new PacketBuffer(
-      clock, start_buffer_size, max_buffer_size, received_frame_callback));
+      clock, start_buffer_size, max_buffer_size, assembled_frame_callback));
 }
 
 PacketBuffer::PacketBuffer(Clock* clock,
                            size_t start_buffer_size,
                            size_t max_buffer_size,
-                           OnReceivedFrameCallback* received_frame_callback)
+                           OnAssembledFrameCallback* assembled_frame_callback)
     : clock_(clock),
       size_(start_buffer_size),
       max_size_(max_buffer_size),
@@ -46,7 +52,7 @@ PacketBuffer::PacketBuffer(Clock* clock,
       is_cleared_to_first_seq_num_(false),
       data_buffer_(start_buffer_size),
       sequence_buffer_(start_buffer_size),
-      received_frame_callback_(received_frame_callback),
+      assembled_frame_callback_(assembled_frame_callback),
       unique_frames_seen_(0),
       sps_pps_idr_is_h264_keyframe_(
           field_trial::IsEnabled("WebRTC-SpsPpsIdrIsH264Keyframe")) {
@@ -106,8 +112,8 @@ bool PacketBuffer::InsertPacket(VCMPacket* packet) {
       }
     }
 
-    sequence_buffer_[index].frame_begin = packet->is_first_packet_in_frame;
-    sequence_buffer_[index].frame_end = packet->is_last_packet_in_frame;
+    sequence_buffer_[index].frame_begin = packet->is_first_packet_in_frame();
+    sequence_buffer_[index].frame_end = packet->is_last_packet_in_frame();
     sequence_buffer_[index].seq_num = packet->seqNum;
     sequence_buffer_[index].continuous = false;
     sequence_buffer_[index].frame_created = false;
@@ -119,14 +125,14 @@ bool PacketBuffer::InsertPacket(VCMPacket* packet) {
 
     int64_t now_ms = clock_->TimeInMilliseconds();
     last_received_packet_ms_ = now_ms;
-    if (packet->frameType == kVideoFrameKey)
+    if (packet->frameType == VideoFrameType::kVideoFrameKey)
       last_received_keyframe_packet_ms_ = now_ms;
 
     found_frames = FindFrames(seq_num);
   }
 
   for (std::unique_ptr<RtpFrameObject>& frame : found_frames)
-    received_frame_callback_->OnReceivedFrame(std::move(frame));
+    assembled_frame_callback_->OnAssembledFrame(std::move(frame));
 
   return true;
 }
@@ -196,7 +202,7 @@ void PacketBuffer::PaddingReceived(uint16_t seq_num) {
   }
 
   for (std::unique_ptr<RtpFrameObject>& frame : found_frames)
-    received_frame_callback_->OnReceivedFrame(std::move(frame));
+    assembled_frame_callback_->OnAssembledFrame(std::move(frame));
 }
 
 absl::optional<int64_t> PacketBuffer::LastReceivedPacketMs() const {
@@ -259,6 +265,8 @@ bool PacketBuffer::PotentialNewFrame(uint16_t seq_num) const {
       static_cast<uint16_t>(sequence_buffer_[index].seq_num - 1)) {
     return false;
   }
+  if (data_buffer_[prev_index].timestamp != data_buffer_[index].timestamp)
+    return false;
   if (sequence_buffer_[prev_index].continuous)
     return true;
 
@@ -278,6 +286,8 @@ std::vector<std::unique_ptr<RtpFrameObject>> PacketBuffer::FindFrames(
       size_t frame_size = 0;
       int max_nack_count = -1;
       uint16_t start_seq_num = seq_num;
+      int64_t min_recv_time = data_buffer_[index].receive_time_ms;
+      int64_t max_recv_time = data_buffer_[index].receive_time_ms;
 
       // Find the start index by searching backward until the packet with
       // the |frame_begin| flag is set.
@@ -286,7 +296,7 @@ std::vector<std::unique_ptr<RtpFrameObject>> PacketBuffer::FindFrames(
       int64_t frame_timestamp = data_buffer_[start_index].timestamp;
 
       // Identify H.264 keyframes by means of SPS, PPS, and IDR.
-      bool is_h264 = data_buffer_[start_index].codec == kVideoCodecH264;
+      bool is_h264 = data_buffer_[start_index].codec() == kVideoCodecH264;
       bool has_h264_sps = false;
       bool has_h264_pps = false;
       bool has_h264_idr = false;
@@ -298,6 +308,11 @@ std::vector<std::unique_ptr<RtpFrameObject>> PacketBuffer::FindFrames(
         max_nack_count =
             std::max(max_nack_count, data_buffer_[start_index].timesNacked);
         sequence_buffer_[start_index].frame_created = true;
+
+        min_recv_time =
+            std::min(min_recv_time, data_buffer_[start_index].receive_time_ms);
+        max_recv_time =
+            std::max(max_recv_time, data_buffer_[start_index].receive_time_ms);
 
         if (!is_h264 && sequence_buffer_[start_index].frame_begin)
           break;
@@ -362,9 +377,11 @@ std::vector<std::unique_ptr<RtpFrameObject>> PacketBuffer::FindFrames(
         const size_t first_packet_index = start_seq_num % size_;
         RTC_CHECK_LT(first_packet_index, size_);
         if (is_h264_keyframe) {
-          data_buffer_[first_packet_index].frameType = kVideoFrameKey;
+          data_buffer_[first_packet_index].frameType =
+              VideoFrameType::kVideoFrameKey;
         } else {
-          data_buffer_[first_packet_index].frameType = kVideoFrameDelta;
+          data_buffer_[first_packet_index].frameType =
+              VideoFrameType::kVideoFrameDelta;
         }
 
         // If this is not a keyframe, make sure there are no gaps in the
@@ -386,7 +403,7 @@ std::vector<std::unique_ptr<RtpFrameObject>> PacketBuffer::FindFrames(
 
       found_frames.emplace_back(
           new RtpFrameObject(this, start_seq_num, seq_num, frame_size,
-                             max_nack_count, clock_->TimeInMilliseconds()));
+                             max_nack_count, min_recv_time, max_recv_time));
     }
     ++seq_num;
   }

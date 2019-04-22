@@ -9,7 +9,8 @@
 #include "ash/accessibility/accessibility_focus_ring_layer.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/interfaces/constants.mojom.h"
-#include "ash/public/interfaces/status_area_widget_test_api.mojom.h"
+#include "ash/public/interfaces/status_area_widget_test_api.test-mojom-test-utils.h"
+#include "ash/public/interfaces/status_area_widget_test_api.test-mojom.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
@@ -19,6 +20,7 @@
 #include "base/strings/pattern.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/speech_monitor.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -279,17 +281,22 @@ IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, BreaksAtParagraphBounds) {
                                  "Second paragraph*"));
 }
 
-IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, FocusRingMovesWithMouse) {
+// Flaky test. https://crbug.com/950049
+IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, DISABLED_FocusRingMovesWithMouse) {
   // Create a callback for the focus ring observer.
   base::RepeatingCallback<void()> callback =
       base::BindRepeating(&SelectToSpeakTest::OnFocusRingChanged, GetWeakPtr());
   chromeos::AccessibilityManager::Get()->SetFocusRingObserverForTest(callback);
 
+  std::string focus_ring_id =
+      chromeos::AccessibilityManager::Get()->GetFocusRingId(
+          extension_misc::kSelectToSpeakExtensionId, "");
+
   ash::AccessibilityFocusRingController* controller =
       ash::Shell::Get()->accessibility_focus_ring_controller();
+  controller->SetNoFadeForTesting();
   const ash::AccessibilityFocusRingGroup* focus_ring_group =
-      controller->GetFocusRingGroupForTesting(
-          extension_misc::kSelectToSpeakExtensionId);
+      controller->GetFocusRingGroupForTesting(focus_ring_id);
   // No focus rings to start.
   EXPECT_EQ(nullptr, focus_ring_group);
 
@@ -303,8 +310,7 @@ IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, FocusRingMovesWithMouse) {
 
   // Expect a focus ring to have been drawn.
   WaitForFocusRingChanged();
-  focus_ring_group = controller->GetFocusRingGroupForTesting(
-      extension_misc::kSelectToSpeakExtensionId);
+  focus_ring_group = controller->GetFocusRingGroupForTesting(focus_ring_id);
   ASSERT_NE(nullptr, focus_ring_group);
   std::vector<std::unique_ptr<ash::AccessibilityFocusRingLayer>> const&
       focus_rings = focus_ring_group->focus_layers_for_testing();

@@ -14,20 +14,22 @@
 namespace content {
 
 class CONTENT_EXPORT IndexedDBDatabaseError {
+  // TODO(dmurph): Move the WebIDBDatabaseException enum into mojo, and make
+  // the |code| type the mojo enum type.
  public:
   IndexedDBDatabaseError();
-  explicit IndexedDBDatabaseError(uint16_t code);
-  IndexedDBDatabaseError(uint16_t code, const char* message);
-  IndexedDBDatabaseError(uint16_t code, const base::string16& message);
+  explicit IndexedDBDatabaseError(int32_t code);
+  IndexedDBDatabaseError(int32_t code, const char* message);
+  IndexedDBDatabaseError(int32_t code, const base::string16& message);
   ~IndexedDBDatabaseError();
 
   IndexedDBDatabaseError& operator=(const IndexedDBDatabaseError& rhs);
 
-  uint16_t code() const { return code_; }
+  int32_t code() const { return code_; }
   const base::string16& message() const { return message_; }
 
  private:
-  uint16_t code_ = 0;
+  int32_t code_ = 0;
   base::string16 message_;
 };
 

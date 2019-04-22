@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 #include "content/browser/code_cache/generated_code_cache_context.h"
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/task/post_task.h"
 #include "content/browser/code_cache/generated_code_cache.h"

@@ -21,7 +21,7 @@ class View;
 }
 
 namespace ash {
-class ShelfTooltipBubbleBase;
+class ShelfBubble;
 class ShelfView;
 
 // ShelfTooltipManager manages the tooltip bubble that appears for shelf items.
@@ -51,6 +51,7 @@ class ASH_EXPORT ShelfTooltipManager : public ui::EventHandler,
   // ui::EventHandler overrides:
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnTouchEvent(ui::TouchEvent* event) override;
+  void OnKeyEvent(ui::KeyEvent* event) override;
 
   // ShelfObserver overrides:
   void WillChangeVisibilityState(ShelfVisibilityState new_state) override;
@@ -69,7 +70,7 @@ class ASH_EXPORT ShelfTooltipManager : public ui::EventHandler,
   int timer_delay_;
   base::OneShotTimer timer_;
   ShelfView* shelf_view_;
-  ShelfTooltipBubbleBase* bubble_ = nullptr;
+  ShelfBubble* bubble_ = nullptr;
 
   base::WeakPtrFactory<ShelfTooltipManager> weak_factory_;
 

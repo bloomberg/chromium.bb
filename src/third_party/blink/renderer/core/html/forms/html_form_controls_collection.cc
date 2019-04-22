@@ -134,7 +134,7 @@ void HTMLFormControlsCollection::UpdateIdNameCache() const {
   if (HasValidIdNameCache())
     return;
 
-  NamedItemCache* cache = NamedItemCache::Create();
+  auto* cache = MakeGarbageCollected<NamedItemCache>();
   HashSet<StringImpl*> found_input_elements;
 
   for (const auto& listed_element : ListedElements()) {
@@ -221,7 +221,7 @@ void HTMLFormControlsCollection::SupportedPropertyNames(Vector<String>& names) {
   }
 }
 
-void HTMLFormControlsCollection::Trace(blink::Visitor* visitor) {
+void HTMLFormControlsCollection::Trace(Visitor* visitor) {
   visitor->Trace(cached_element_);
   HTMLCollection::Trace(visitor);
 }

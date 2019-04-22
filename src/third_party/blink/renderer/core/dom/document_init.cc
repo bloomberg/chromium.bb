@@ -76,10 +76,9 @@ bool DocumentInit::ShouldSetURL() const {
   return (loader && loader->GetFrame()->Tree().Parent()) || !url_.IsEmpty();
 }
 
-bool DocumentInit::ShouldTreatURLAsSrcdocDocument() const {
-  return parent_document_ &&
-         document_loader_->GetFrame()->Loader().ShouldTreatURLAsSrcdocDocument(
-             url_);
+bool DocumentInit::IsSrcdocDocument() const {
+  // TODO(dgozman): why do we check |parent_document_| here?
+  return parent_document_ && is_srcdoc_document_;
 }
 
 DocumentLoader* DocumentInit::MasterDocumentLoader() const {
@@ -94,16 +93,16 @@ DocumentLoader* DocumentInit::MasterDocumentLoader() const {
   return nullptr;
 }
 
-SandboxFlags DocumentInit::GetSandboxFlags() const {
+WebSandboxFlags DocumentInit::GetSandboxFlags() const {
   DCHECK(MasterDocumentLoader());
   DocumentLoader* loader = MasterDocumentLoader();
-  SandboxFlags flags = loader->GetFrame()->Loader().EffectiveSandboxFlags();
+  WebSandboxFlags flags = loader->GetFrame()->Loader().EffectiveSandboxFlags();
 
   // If the load was blocked by CSP, force the Document's origin to be unique,
   // so that the blocked document appears to be a normal cross-origin document's
   // load per CSP spec: https://www.w3.org/TR/CSP3/#directive-frame-ancestors.
   if (loader->WasBlockedAfterCSP()) {
-    flags |= kSandboxOrigin;
+    flags |= WebSandboxFlags::kOrigin;
   }
 
   return flags;
@@ -168,7 +167,29 @@ DocumentInit& DocumentInit::WithURL(const KURL& url) {
 
 DocumentInit& DocumentInit::WithOwnerDocument(Document* owner_document) {
   DCHECK(!owner_document_);
+  DCHECK(!initiator_origin_ || !owner_document ||
+         owner_document->GetSecurityOrigin() == initiator_origin_);
   owner_document_ = owner_document;
+  return *this;
+}
+
+DocumentInit& DocumentInit::WithInitiatorOrigin(
+    scoped_refptr<const SecurityOrigin> initiator_origin) {
+  DCHECK(!initiator_origin_);
+  DCHECK(!initiator_origin || !owner_document_ ||
+         owner_document_->GetSecurityOrigin() == initiator_origin);
+  initiator_origin_ = std::move(initiator_origin);
+  return *this;
+}
+
+DocumentInit& DocumentInit::WithOriginToCommit(
+    scoped_refptr<SecurityOrigin> origin_to_commit) {
+  origin_to_commit_ = std::move(origin_to_commit);
+  return *this;
+}
+
+DocumentInit& DocumentInit::WithSrcdocDocument(bool is_srcdoc_document) {
+  is_srcdoc_document_ = is_srcdoc_document;
   return *this;
 }
 
@@ -193,20 +214,13 @@ V0CustomElementRegistrationContext* DocumentInit::RegistrationContext(
     return nullptr;
 
   if (create_new_registration_context_)
-    return V0CustomElementRegistrationContext::Create();
+    return MakeGarbageCollected<V0CustomElementRegistrationContext>();
 
   return registration_context_.Get();
 }
 
 Document* DocumentInit::ContextDocument() const {
   return context_document_;
-}
-
-DocumentInit& DocumentInit::WithPreviousDocumentCSP(
-    const ContentSecurityPolicy* previous_csp) {
-  DCHECK(!previous_csp_);
-  previous_csp_ = previous_csp;
-  return *this;
 }
 
 }  // namespace blink

@@ -10,7 +10,6 @@
 #include <set>
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "cc/base/math_util.h"
 #include "cc/test/fake_output_surface_client.h"
@@ -86,8 +85,16 @@ class TestablePictureLayerTiling : public PictureLayerTiling {
 
 class PictureLayerTilingIteratorTest : public testing::Test {
  public:
+  using VerifyTilesCallback =
+      base::RepeatingCallback<void(Tile* tile, const gfx::Rect& geometry_rect)>;
+
   PictureLayerTilingIteratorTest() = default;
+  PictureLayerTilingIteratorTest(const PictureLayerTilingIteratorTest&) =
+      delete;
   ~PictureLayerTilingIteratorTest() override = default;
+
+  PictureLayerTilingIteratorTest& operator=(
+      const PictureLayerTilingIteratorTest&) = delete;
 
   void Initialize(const gfx::Size& tile_size,
                   float contents_scale,
@@ -183,27 +190,19 @@ class PictureLayerTilingIteratorTest : public testing::Test {
     VerifyTilesExactlyCoverRect(rect_scale, rect, rect);
   }
 
-  void VerifyTiles(
-      float rect_scale,
-      const gfx::Rect& rect,
-      base::Callback<void(Tile* tile,
-                          const gfx::Rect& geometry_rect)> callback) {
-    VerifyTiles(tiling_.get(),
-                rect_scale,
-                rect,
-                callback);
+  void VerifyTiles(float rect_scale,
+                   const gfx::Rect& rect,
+                   VerifyTilesCallback callback) {
+    VerifyTiles(tiling_.get(), rect_scale, rect, callback);
   }
 
-  void VerifyTiles(
-      PictureLayerTiling* tiling,
-      float rect_scale,
-      const gfx::Rect& rect,
-      base::Callback<void(Tile* tile,
-                          const gfx::Rect& geometry_rect)> callback) {
+  void VerifyTiles(PictureLayerTiling* tiling,
+                   float rect_scale,
+                   const gfx::Rect& rect,
+                   VerifyTilesCallback callback) {
     Region remaining = rect;
     for (PictureLayerTiling::CoverageIterator iter(tiling, rect_scale, rect);
-         iter;
-         ++iter) {
+         iter; ++iter) {
       remaining.Subtract(iter.geometry_rect());
       callback.Run(*iter, iter.geometry_rect());
     }
@@ -223,9 +222,6 @@ class PictureLayerTilingIteratorTest : public testing::Test {
   FakePictureLayerTilingClient client_;
   std::unique_ptr<TestablePictureLayerTiling> tiling_;
   bool loose_texel_extent_check_ = false;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PictureLayerTilingIteratorTest);
 };
 
 TEST_F(PictureLayerTilingIteratorTest, ResizeDeletesTiles) {
@@ -676,7 +672,8 @@ TEST_F(PictureLayerTilingIteratorTest, TilesExist) {
   gfx::Size layer_bounds(1099, 801);
   Initialize(gfx::Size(100, 100), 1.f, layer_bounds);
   VerifyTilesExactlyCoverRect(1.f, gfx::Rect(layer_bounds));
-  VerifyTiles(1.f, gfx::Rect(layer_bounds), base::Bind(&TileExists, false));
+  VerifyTiles(1.f, gfx::Rect(layer_bounds),
+              base::BindRepeating(&TileExists, false));
 
   tiling_->ComputeTilePriorityRects(
       gfx::Rect(layer_bounds),  // visible rect
@@ -685,19 +682,22 @@ TEST_F(PictureLayerTilingIteratorTest, TilesExist) {
       gfx::Rect(layer_bounds),  // eventually rect
       1.f,                      // current contents scale
       Occlusion());
-  VerifyTiles(1.f, gfx::Rect(layer_bounds), base::Bind(&TileExists, true));
+  VerifyTiles(1.f, gfx::Rect(layer_bounds),
+              base::BindRepeating(&TileExists, true));
 
   // Make the viewport rect empty. All tiles are killed and become zombies.
   tiling_->ComputeTilePriorityRects(gfx::Rect(), gfx::Rect(), gfx::Rect(),
                                     gfx::Rect(), 1.f, Occlusion());
-  VerifyTiles(1.f, gfx::Rect(layer_bounds), base::Bind(&TileExists, false));
+  VerifyTiles(1.f, gfx::Rect(layer_bounds),
+              base::BindRepeating(&TileExists, false));
 }
 
 TEST_F(PictureLayerTilingIteratorTest, TilesExistGiantViewport) {
   gfx::Size layer_bounds(1099, 801);
   Initialize(gfx::Size(100, 100), 1.f, layer_bounds);
   VerifyTilesExactlyCoverRect(1.f, gfx::Rect(layer_bounds));
-  VerifyTiles(1.f, gfx::Rect(layer_bounds), base::Bind(&TileExists, false));
+  VerifyTiles(1.f, gfx::Rect(layer_bounds),
+              base::BindRepeating(&TileExists, false));
 
   gfx::Rect giant_rect(-10000000, -10000000, 1000000000, 1000000000);
 
@@ -708,19 +708,22 @@ TEST_F(PictureLayerTilingIteratorTest, TilesExistGiantViewport) {
       gfx::Rect(layer_bounds),  // eventually rect
       1.f,                      // current contents scale
       Occlusion());
-  VerifyTiles(1.f, gfx::Rect(layer_bounds), base::Bind(&TileExists, true));
+  VerifyTiles(1.f, gfx::Rect(layer_bounds),
+              base::BindRepeating(&TileExists, true));
 
   // If the visible content rect is huge, we should still have live tiles.
   tiling_->ComputeTilePriorityRects(giant_rect, giant_rect, giant_rect,
                                     giant_rect, 1.f, Occlusion());
-  VerifyTiles(1.f, gfx::Rect(layer_bounds), base::Bind(&TileExists, true));
+  VerifyTiles(1.f, gfx::Rect(layer_bounds),
+              base::BindRepeating(&TileExists, true));
 }
 
 TEST_F(PictureLayerTilingIteratorTest, TilesExistOutsideViewport) {
   gfx::Size layer_bounds(1099, 801);
   Initialize(gfx::Size(100, 100), 1.f, layer_bounds);
   VerifyTilesExactlyCoverRect(1.f, gfx::Rect(layer_bounds));
-  VerifyTiles(1.f, gfx::Rect(layer_bounds), base::Bind(&TileExists, false));
+  VerifyTiles(1.f, gfx::Rect(layer_bounds),
+              base::BindRepeating(&TileExists, false));
 
   // This rect does not intersect with the layer, as the layer is outside the
   // viewport.
@@ -733,7 +736,8 @@ TEST_F(PictureLayerTilingIteratorTest, TilesExistOutsideViewport) {
                         -settings.tiling_interest_area_padding);
   tiling_->ComputeTilePriorityRects(viewport_rect, viewport_rect, viewport_rect,
                                     eventually_rect, 1.f, Occlusion());
-  VerifyTiles(1.f, gfx::Rect(layer_bounds), base::Bind(&TileExists, true));
+  VerifyTiles(1.f, gfx::Rect(layer_bounds),
+              base::BindRepeating(&TileExists, true));
 }
 
 static void TilesIntersectingRectExist(const gfx::Rect& rect,
@@ -760,7 +764,8 @@ TEST_F(PictureLayerTilingIteratorTest,
       PENDING_TREE, gfx::AxisTransform2d(), raster_source, &client_, settings);
   tiling_->set_resolution(HIGH_RESOLUTION);
   VerifyTilesExactlyCoverRect(1.f, gfx::Rect(layer_bounds));
-  VerifyTiles(1.f, gfx::Rect(layer_bounds), base::Bind(&TileExists, false));
+  VerifyTiles(1.f, gfx::Rect(layer_bounds),
+              base::BindRepeating(&TileExists, false));
 
   gfx::Rect visible_rect(8000, 8000, 50, 50);
 
@@ -770,9 +775,9 @@ TEST_F(PictureLayerTilingIteratorTest,
                                     visible_rect,  // eventually rect
                                     1.f,           // current contents scale
                                     Occlusion());
-  VerifyTiles(1.f,
-              gfx::Rect(layer_bounds),
-              base::Bind(&TilesIntersectingRectExist, visible_rect, true));
+  VerifyTiles(
+      1.f, gfx::Rect(layer_bounds),
+      base::BindRepeating(&TilesIntersectingRectExist, visible_rect, true));
 }
 
 TEST(ComputeTilePriorityRectsTest, VisibleTiles) {
@@ -1116,7 +1121,7 @@ TEST_F(PictureLayerTilingIteratorTest, UseLeastTilesToCover) {
   ASSERT_TRUE(tiling_->tiling_data()->TexelExtent(1, 1).Contains(overlaped));
   VerifyTilesExactlyCoverRect(2.f, gfx::Rect(199, 199));
   VerifyTiles(2.f, gfx::Rect(199, 199),
-              base::Bind(&TileHasGeometryRect, gfx::Rect(199, 199)));
+              base::BindRepeating(&TileHasGeometryRect, gfx::Rect(199, 199)));
 }
 
 TEST_F(PictureLayerTilingIteratorTest, UseLeastTilesToCover2) {
@@ -1130,7 +1135,8 @@ TEST_F(PictureLayerTilingIteratorTest, UseLeastTilesToCover2) {
   ASSERT_TRUE(tiling_->tiling_data()->TexelExtent(1, 2).Contains(overlaped));
   gfx::Rect dest_rect(197, 393, 198, 198);
   VerifyTilesExactlyCoverRect(2.f, dest_rect);
-  VerifyTiles(2.f, dest_rect, base::Bind(&TileHasGeometryRect, dest_rect));
+  VerifyTiles(2.f, dest_rect,
+              base::BindRepeating(&TileHasGeometryRect, dest_rect));
 }
 
 TEST_F(PictureLayerTilingIteratorTest, TightCover) {

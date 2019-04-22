@@ -51,6 +51,7 @@ class BluetoothTestMac : public BluetoothTestBase {
       BluetoothDevice* device,
       BluetoothDevice::ConnectErrorCode errorCode) override;
   void SimulateGattDisconnection(BluetoothDevice* device) override;
+  void SimulateGattDisconnectionError(BluetoothDevice* device) override;
   void SimulateGattServicesDiscovered(
       BluetoothDevice* device,
       const std::vector<std::string>& uuids) override;
@@ -98,6 +99,9 @@ class BluetoothTestMac : public BluetoothTestBase {
   void SimulateGattDescriptorWriteError(
       BluetoothRemoteGattDescriptor* descriptor,
       BluetoothRemoteGattService::GattErrorCode error_code) override;
+  void SimulateGattDescriptorUpdateError(
+      BluetoothRemoteGattDescriptor* descriptor,
+      BluetoothRemoteGattService::GattErrorCode error_code) override;
   void ExpectedChangeNotifyValueAttempts(int attempts) override;
   void ExpectedNotifyValue(NotifyValueState expected_value_state) override;
 
@@ -106,11 +110,19 @@ class BluetoothTestMac : public BluetoothTestBase {
   // set of attributes.
   // Simulates service discovery for a device.
   void SimulateDidDiscoverServicesMac(BluetoothDevice* device);
+  // Simulates error in service discovery for a device.
+  void SimulateDidDiscoverServicesMacWithError(BluetoothDevice* device);
   // Simulates characteristic discovery for a service.
   void SimulateDidDiscoverCharacteristicsMac(
       BluetoothRemoteGattService* service);
+  // Simulates error in characteristic discovery for a service.
+  void SimulateDidDiscoverCharacteristicsWithErrorMac(
+      BluetoothRemoteGattService* service);
   // Simulates descriptor discovery for a characteristic.
   void SimulateDidDiscoverDescriptorsMac(
+      BluetoothRemoteGattCharacteristic* characteristic);
+  // Simulates error in descriptor discovery for a characteristic.
+  void SimulateDidDiscoverDescriptorsWithErrorMac(
       BluetoothRemoteGattCharacteristic* characteristic);
   // CoreBluetooth can return NSData when reading remote gatt descriptors.
   // This methods simulate receiving NSData from CoreBluetooth.

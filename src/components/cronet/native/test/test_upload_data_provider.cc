@@ -125,7 +125,7 @@ void TestUploadDataProvider::Read(Cronet_UploadDataSinkPtr upload_data_sink,
   bool final_chunk = (chunked_ && next_read_ == reads_.size() - 1);
   EXPECT_TRUE(next_read_ < reads_.size()) << "Too many reads: " << next_read_;
   const auto& read = reads_[next_read_];
-  EXPECT_TRUE(read.size() < Cronet_Buffer_GetSize(buffer))
+  EXPECT_TRUE(read.size() <= Cronet_Buffer_GetSize(buffer))
       << "Read buffer smaller than expected.";
   memcpy(Cronet_Buffer_GetData(buffer), read.data(), read.size());
   ++next_read_;

@@ -73,7 +73,7 @@ PaintInfo PaintInfo::CreateChildPaintInfo(const PaintInfo& parent_paint_info,
                    is_layer);
 }
 
-PaintInfo::~PaintInfo() {}
+PaintInfo::~PaintInfo() = default;
 
 bool PaintInfo::IsPixelCanvas() const {
   return context().is_pixel_canvas();

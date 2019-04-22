@@ -7,12 +7,16 @@
 
 #include <stdint.h>
 
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
 #include "services/ws/common/types.h"
 #include "services/ws/public/mojom/window_tree.mojom.h"
 #include "ui/aura/mus/mus_types.h"
+#include "ui/base/hit_test.h"
+#include "ui/base/ime/mojo/ime.mojom.h"
+#include "ui/platform_window/mojo/text_input_state.mojom.h"
 
 namespace aura {
 
@@ -113,8 +117,16 @@ class TestWindowTree : public ws::mojom::WindowTree {
     return last_touch_hit_test_insets_;
   }
 
+  const ui::Cursor& last_cursor() const { return last_cursor_; }
+
   const base::Optional<viz::LocalSurfaceId>& last_local_surface_id() const {
     return last_local_surface_id_;
+  }
+  size_t get_and_clear_update_local_surface_id_from_child_count() {
+    size_t update_local_surface_id_from_child_count = 0u;
+    std::swap(update_local_surface_id_from_child_count_,
+              update_local_surface_id_from_child_count);
+    return update_local_surface_id_from_child_count;
   }
 
   const gfx::Rect& last_set_window_bounds() const {
@@ -130,9 +142,35 @@ class TestWindowTree : public ws::mojom::WindowTree {
   ws::Id last_cancelled_window_id() const { return last_cancelled_window_id_; }
   ws::Id last_transfer_current() const { return last_transfer_current_; }
   ws::Id last_transfer_new() const { return last_transfer_new_; }
+  ws::Id last_focused_window_id() const { return last_focused_window_id_; }
   bool last_transfer_should_cancel() const {
     return last_transfer_should_cancel_;
   }
+
+  bool last_accepts_drops() const { return last_accepts_drops_; }
+
+  size_t get_and_clear_accepts_drops_count() {
+    const int value = accepts_drops_count_;
+    accepts_drops_count_ = 0u;
+    return value;
+  }
+
+  bool last_can_focus() const { return last_can_focus_; }
+  size_t get_and_clear_can_focus_count() {
+    const int value = can_focus_count_;
+    can_focus_count_ = 0u;
+    return value;
+  }
+
+  int last_move_hit_test() const { return last_move_hit_test_; }
+
+  size_t get_and_clear_window_resize_shadow_count() {
+    const size_t value = window_resize_shadow_count_;
+    window_resize_shadow_count_ = 0u;
+    return value;
+  }
+
+  int last_window_resize_shadow() const { return last_window_resize_shadow_; }
 
  private:
   struct Change {
@@ -156,11 +194,15 @@ class TestWindowTree : public ws::mojom::WindowTree {
       const base::flat_map<std::string, std::vector<uint8_t>>& properties)
       override;
   void DeleteWindow(uint32_t change_id, ws::Id window_id) override;
-  void SetWindowBounds(
-      uint32_t change_id,
-      ws::Id window_id,
-      const gfx::Rect& bounds,
-      const base::Optional<viz::LocalSurfaceId>& local_surface_id) override;
+  void SetWindowBounds(uint32_t change_id,
+                       ws::Id window_id,
+                       const gfx::Rect& bounds,
+                       const base::Optional<viz::LocalSurfaceIdAllocation>&
+                           local_surface_id_allocation) override;
+  void UpdateLocalSurfaceIdFromChild(ws::Id transport_window_id,
+                                     const viz::LocalSurfaceIdAllocation&
+                                         local_surface_id_allocation) override;
+  void AllocateLocalSurfaceId(uint64_t window_id) override {}
   void SetWindowTransform(uint32_t change_id,
                           ws::Id window_id,
                           const gfx::Transform& transform) override;
@@ -171,10 +213,14 @@ class TestWindowTree : public ws::mojom::WindowTree {
   void SetHitTestInsets(ws::Id window_id,
                         const gfx::Insets& mouse,
                         const gfx::Insets& touch) override;
+  void SetShape(ws::Id window_id, const std::vector<gfx::Rect>& shape) override;
   void SetCanAcceptDrops(ws::Id window_id, bool accepts_drags) override;
   void SetWindowVisibility(uint32_t change_id,
                            ws::Id window_id,
                            bool visible) override;
+  void SetWindowTransparent(uint32_t change_id,
+                            ws::Id window_id,
+                            bool transparent) override;
   void SetWindowProperty(
       uint32_t change_id,
       ws::Id window_id,
@@ -228,7 +274,7 @@ class TestWindowTree : public ws::mojom::WindowTree {
                                ws::mojom::EventTargetingPolicy policy) override;
   void SetCursor(uint32_t change_id,
                  ws::Id transport_window_id,
-                 ui::CursorData cursor_data) override;
+                 ui::Cursor cursor) override;
   void SetWindowTextInputState(ws::Id window_id,
                                ui::mojom::TextInputStatePtr state) override;
   void SetImeVisibility(ws::Id window_id,
@@ -259,11 +305,13 @@ class TestWindowTree : public ws::mojom::WindowTree {
   void PerformWindowMove(uint32_t change_id,
                          ws::Id window_id,
                          ws::mojom::MoveLoopSource source,
-                         const gfx::Point& cursor_location) override;
+                         const gfx::Point& cursor_location,
+                         int hit_test) override;
   void CancelWindowMove(ws::Id window_id) override;
   void ObserveTopmostWindow(ws::mojom::MoveLoopSource source,
                             ws::Id window_id) override;
   void StopObservingTopmostWindow() override;
+  void SetWindowResizeShadow(ws::Id window_id, int hit_test) override;
   void CancelActiveTouchesExcept(ws::Id not_cancelled_window_id) override;
   void CancelActiveTouches(ws::Id window_id) override;
   void TransferGestureEventsTo(ws::Id current_id,
@@ -272,6 +320,8 @@ class TestWindowTree : public ws::mojom::WindowTree {
   void TrackOcclusionState(ws::Id window_id) override;
   void PauseWindowOcclusionTracking() override;
   void UnpauseWindowOcclusionTracking() override;
+  void ConnectToImeEngine(ime::mojom::ImeEngineRequest engine_request,
+                          ime::mojom::ImeEngineClientPtr client) override;
 
   struct AckedEvent {
     uint32_t event_id;
@@ -286,6 +336,7 @@ class TestWindowTree : public ws::mojom::WindowTree {
 
   ws::mojom::WindowTreeClient* client_ = nullptr;
 
+  ui::Cursor last_cursor_ = ui::CursorType::kNull;
   base::Optional<base::flat_map<std::string, std::vector<uint8_t>>>
       last_new_window_properties_;
 
@@ -308,7 +359,20 @@ class TestWindowTree : public ws::mojom::WindowTree {
   ws::Id last_cancelled_window_id_ = 0u;
   ws::Id last_transfer_current_ = 0u;
   ws::Id last_transfer_new_ = 0u;
+  ws::Id last_focused_window_id_ = 0u;
   bool last_transfer_should_cancel_ = false;
+  bool last_accepts_drops_ = false;
+  size_t can_focus_count_ = 0u;
+  bool last_can_focus_ = false;
+
+  size_t accepts_drops_count_ = 0u;
+
+  size_t update_local_surface_id_from_child_count_ = 0u;
+
+  int last_move_hit_test_ = HTNOWHERE;
+
+  size_t window_resize_shadow_count_ = 0u;
+  int last_window_resize_shadow_ = HTNOWHERE;
 
   // Support only one scheduled embed in test.
   base::UnguessableToken scheduled_embed_;

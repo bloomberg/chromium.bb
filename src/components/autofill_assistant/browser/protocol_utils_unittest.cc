@@ -28,48 +28,49 @@ void AssertClientContext(const ClientContextProto& context) {
   EXPECT_EQ("v", context.chrome().chrome_version());
 }
 
-TEST(ProtocolUtilsTest, NoScripts) {
+TEST(ProtocolUtilsTest, ScriptMissingPath) {
+  SupportedScriptProto script;
+  script.mutable_presentation()->set_name("missing path");
   std::vector<std::unique_ptr<Script>> scripts;
-  EXPECT_TRUE(ProtocolUtils::ParseScripts("", &scripts));
+  ProtocolUtils::AddScript(script, &scripts);
+
   EXPECT_THAT(scripts, IsEmpty());
 }
 
-TEST(ProtocolUtilsTest, SomeInvalidScripts) {
-  SupportsScriptResponseProto proto;
-
-  // 2 Invalid scripts, 1 valid one, with no preconditions.
-  proto.add_scripts()->mutable_presentation()->set_name("missing path");
-  proto.add_scripts()->set_path("missing name");
-  SupportedScriptProto* script = proto.add_scripts();
-  script->set_path("ok");
-  script->mutable_presentation()->set_name("ok name");
-
-  // Only the valid script is returned.
+TEST(ProtocolUtilsTest, ScriptMissingName) {
+  SupportedScriptProto script;
+  script.set_path("missing name");
   std::vector<std::unique_ptr<Script>> scripts;
-  std::string proto_str;
-  proto.SerializeToString(&proto_str);
-  EXPECT_TRUE(ProtocolUtils::ParseScripts(proto_str, &scripts));
+  ProtocolUtils::AddScript(script, &scripts);
+
+  EXPECT_THAT(scripts, IsEmpty());
+}
+
+TEST(ProtocolUtilsTest, MinimalValidScript) {
+  SupportedScriptProto script;
+  script.set_path("path");
+  script.mutable_presentation()->set_name("name");
+  std::vector<std::unique_ptr<Script>> scripts;
+  ProtocolUtils::AddScript(script, &scripts);
+
   ASSERT_THAT(scripts, SizeIs(1));
-  EXPECT_EQ("ok", scripts[0]->handle.path);
-  EXPECT_EQ("ok name", scripts[0]->handle.name);
+  EXPECT_EQ("path", scripts[0]->handle.path);
+  EXPECT_EQ("name", scripts[0]->handle.name);
   EXPECT_NE(nullptr, scripts[0]->precondition);
 }
 
 TEST(ProtocolUtilsTest, OneFullyFeaturedScript) {
-  SupportsScriptResponseProto proto;
-
-  SupportedScriptProto* script = proto.add_scripts();
-  script->set_path("path");
-  auto* presentation = script->mutable_presentation();
+  SupportedScriptProto script_proto;
+  script_proto.set_path("path");
+  auto* presentation = script_proto.mutable_presentation();
   presentation->set_name("name");
   presentation->set_autostart(true);
   presentation->set_initial_prompt("prompt");
   presentation->mutable_precondition()->add_domain("www.example.com");
 
   std::vector<std::unique_ptr<Script>> scripts;
-  std::string proto_str;
-  proto.SerializeToString(&proto_str);
-  EXPECT_TRUE(ProtocolUtils::ParseScripts(proto_str, &scripts));
+  ProtocolUtils::AddScript(script_proto, &scripts);
+
   ASSERT_THAT(scripts, SizeIs(1));
   EXPECT_EQ("path", scripts[0]->handle.path);
   EXPECT_EQ("name", scripts[0]->handle.name);
@@ -79,20 +80,16 @@ TEST(ProtocolUtilsTest, OneFullyFeaturedScript) {
 }
 
 TEST(ProtocolUtilsTest, AllowInterruptsWithNoName) {
-  SupportsScriptResponseProto proto;
-
-  SupportedScriptProto* script = proto.add_scripts();
-  script->set_path("path");
-  auto* presentation = script->mutable_presentation();
+  SupportedScriptProto script_proto;
+  script_proto.set_path("path");
+  auto* presentation = script_proto.mutable_presentation();
   presentation->set_autostart(true);
   presentation->set_initial_prompt("prompt");
   presentation->set_interrupt(true);
   presentation->mutable_precondition()->add_domain("www.example.com");
 
   std::vector<std::unique_ptr<Script>> scripts;
-  std::string proto_str;
-  proto.SerializeToString(&proto_str);
-  EXPECT_TRUE(ProtocolUtils::ParseScripts(proto_str, &scripts));
+  ProtocolUtils::AddScript(script_proto, &scripts);
   ASSERT_THAT(scripts, SizeIs(1));
   EXPECT_EQ("path", scripts[0]->handle.path);
   EXPECT_EQ("", scripts[0]->handle.name);
@@ -100,17 +97,19 @@ TEST(ProtocolUtilsTest, AllowInterruptsWithNoName) {
 }
 
 TEST(ProtocolUtilsTest, CreateInitialScriptActionsRequest) {
-  std::map<std::string, std::string> parameters;
-  parameters["a"] = "b";
-  parameters["c"] = "d";
+  TriggerContext trigger_context;
+  trigger_context.script_parameters["a"] = "b";
+  trigger_context.script_parameters["c"] = "d";
+  trigger_context.experiment_ids = "1,2,3";
 
   ScriptActionRequestProto request;
   EXPECT_TRUE(
       request.ParseFromString(ProtocolUtils::CreateInitialScriptActionsRequest(
-          "script_path", GURL("http://example.com/"), parameters,
+          "script_path", GURL("http://example.com/"), trigger_context,
           "global_payload", "script_payload", CreateClientContextProto())));
 
   AssertClientContext(request.client_context());
+  EXPECT_THAT(request.client_context().experiment_ids(), Eq("1,2,3"));
 
   const InitialScriptActionsRequestProto& initial = request.initial_request();
   EXPECT_THAT(initial.query().script_path(), ElementsAre("script_path"));
@@ -124,16 +123,38 @@ TEST(ProtocolUtilsTest, CreateInitialScriptActionsRequest) {
   EXPECT_EQ("script_payload", request.script_payload());
 }
 
+TEST(ProtocolUtilsTest, CreateNextScriptActionsRequest) {
+  TriggerContext trigger_context;
+  trigger_context.script_parameters["a"] = "b";
+  trigger_context.script_parameters["c"] = "d";
+  trigger_context.experiment_ids = "1,2,3";
+
+  ScriptActionRequestProto request;
+  std::vector<ProcessedActionProto> processed_actions;
+  processed_actions.emplace_back(ProcessedActionProto());
+  EXPECT_TRUE(
+      request.ParseFromString(ProtocolUtils::CreateNextScriptActionsRequest(
+          trigger_context, "global_payload", "script_payload",
+          processed_actions, CreateClientContextProto())));
+
+  AssertClientContext(request.client_context());
+  EXPECT_THAT(request.client_context().experiment_ids(), Eq("1,2,3"));
+  EXPECT_EQ(1, request.next_request().processed_actions().size());
+}
+
 TEST(ProtocolUtilsTest, CreateGetScriptsRequest) {
-  std::map<std::string, std::string> parameters;
-  parameters["a"] = "b";
-  parameters["c"] = "d";
+  TriggerContext trigger_context;
+  trigger_context.script_parameters["a"] = "b";
+  trigger_context.script_parameters["c"] = "d";
+  trigger_context.experiment_ids = "1,2,3";
 
   SupportsScriptRequestProto request;
   EXPECT_TRUE(request.ParseFromString(ProtocolUtils::CreateGetScriptsRequest(
-      GURL("http://example.com/"), parameters, CreateClientContextProto())));
+      GURL("http://example.com/"), trigger_context,
+      CreateClientContextProto())));
 
   AssertClientContext(request.client_context());
+  EXPECT_THAT(request.client_context().experiment_ids(), Eq("1,2,3"));
 
   EXPECT_EQ("http://example.com/", request.url());
   ASSERT_EQ(2, request.script_parameters_size());

@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -123,8 +124,9 @@ class CertNetFetcherImplTest : public PlatformTest {
     if (!network_thread_)
       return;
     network_thread_->task_runner()->PostTask(
-        FROM_HERE, base::Bind(&CertNetFetcherImplTest::TeardownOnNetworkThread,
-                              base::Unretained(this)));
+        FROM_HERE,
+        base::BindOnce(&CertNetFetcherImplTest::TeardownOnNetworkThread,
+                       base::Unretained(this)));
     network_thread_->Stop();
   }
 
@@ -141,8 +143,8 @@ class CertNetFetcherImplTest : public PlatformTest {
                              base::WaitableEvent::InitialState::NOT_SIGNALED);
     network_thread_->task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(&CertNetFetcherImplTest::CreateFetcherOnNetworkThread,
-                   base::Unretained(this), &done));
+        base::BindOnce(&CertNetFetcherImplTest::CreateFetcherOnNetworkThread,
+                       base::Unretained(this), &done));
     done.Wait();
   }
 
@@ -156,8 +158,8 @@ class CertNetFetcherImplTest : public PlatformTest {
                              base::WaitableEvent::InitialState::NOT_SIGNALED);
     network_thread_->task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(&CertNetFetcherImplTest::ShutDownFetcherOnNetworkThread,
-                   base::Unretained(this), &done));
+        base::BindOnce(&CertNetFetcherImplTest::ShutDownFetcherOnNetworkThread,
+                       base::Unretained(this), &done));
     done.Wait();
   }
 
@@ -166,8 +168,8 @@ class CertNetFetcherImplTest : public PlatformTest {
     base::WaitableEvent done(base::WaitableEvent::ResetPolicy::MANUAL,
                              base::WaitableEvent::InitialState::NOT_SIGNALED);
     network_thread_->task_runner()->PostTask(
-        FROM_HERE, base::Bind(&CertNetFetcherImplTest::CountCreatedRequests,
-                              base::Unretained(this), &count, &done));
+        FROM_HERE, base::BindOnce(&CertNetFetcherImplTest::CountCreatedRequests,
+                                  base::Unretained(this), &count, &done));
     done.Wait();
     return count;
   }
@@ -182,8 +184,8 @@ class CertNetFetcherImplTest : public PlatformTest {
     base::WaitableEvent done(base::WaitableEvent::ResetPolicy::MANUAL,
                              base::WaitableEvent::InitialState::NOT_SIGNALED);
     network_thread_->task_runner()->PostTask(
-        FROM_HERE, base::Bind(&CertNetFetcherImplTest::InitOnNetworkThread,
-                              base::Unretained(this), &done));
+        FROM_HERE, base::BindOnce(&CertNetFetcherImplTest::InitOnNetworkThread,
+                                  base::Unretained(this), &done));
     done.Wait();
   }
 
@@ -203,8 +205,8 @@ class CertNetFetcherImplTest : public PlatformTest {
                              base::WaitableEvent::InitialState::NOT_SIGNALED);
     network_thread_->task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(&CertNetFetcherImplTest::ResetStateOnNetworkThread,
-                   base::Unretained(this), &done));
+        base::BindOnce(&CertNetFetcherImplTest::ResetStateOnNetworkThread,
+                       base::Unretained(this), &done));
     done.Wait();
   }
 

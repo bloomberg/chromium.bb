@@ -8,6 +8,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
@@ -177,7 +178,8 @@ WARN_UNUSED_RESULT ::testing::AssertionResult ReadCompleteLogFile(
     return ::testing::AssertionFailure()
            << log_path.value() << " could not be read.";
   }
-  *root = base::DictionaryValue::From(base::JSONReader::Read(log_string));
+  *root =
+      base::DictionaryValue::From(base::JSONReader::ReadDeprecated(log_string));
   if (!*root) {
     return ::testing::AssertionFailure()
            << "Contents of " << log_path.value()

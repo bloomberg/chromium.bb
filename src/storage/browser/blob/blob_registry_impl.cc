@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/barrier_closure.h"
+#include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -16,6 +17,8 @@
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/blob/blob_transport_strategy.h"
 #include "storage/browser/blob/blob_url_store_impl.h"
+#include "third_party/blink/public/mojom/blob/data_element.mojom.h"
+#include "third_party/blink/public/mojom/blob/serialized_blob.mojom.h"
 
 namespace storage {
 
@@ -476,7 +479,14 @@ BlobRegistryImpl::BlobRegistryImpl(
       file_system_context_(std::move(file_system_context)),
       weak_ptr_factory_(this) {}
 
-BlobRegistryImpl::~BlobRegistryImpl() = default;
+BlobRegistryImpl::~BlobRegistryImpl() {
+  // BlobBuilderFromStream needs to be aborted before it can be destroyed, but
+  // don't iterate directly over |blobs_being_streamed_|, as this iteration can
+  // can change the underlying set.
+  auto builders = std::move(blobs_being_streamed_);
+  for (const auto& builder : builders)
+    builder->Abort();
+}
 
 void BlobRegistryImpl::Bind(blink::mojom::BlobRegistryRequest request,
                             std::unique_ptr<Delegate> delegate) {

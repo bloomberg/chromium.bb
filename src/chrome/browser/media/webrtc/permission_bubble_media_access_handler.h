@@ -7,7 +7,7 @@
 
 #include <map>
 
-#include "base/containers/circular_deque.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/media/media_access_handler.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -22,12 +22,12 @@ class PermissionBubbleMediaAccessHandler
 
   // MediaAccessHandler implementation.
   bool SupportsStreamType(content::WebContents* web_contents,
-                          const content::MediaStreamType type,
+                          const blink::MediaStreamType type,
                           const extensions::Extension* extension) override;
   bool CheckMediaAccessPermission(
       content::RenderFrameHost* render_frame_host,
       const GURL& security_origin,
-      content::MediaStreamType type,
+      blink::MediaStreamType type,
       const extensions::Extension* extension) override;
   void HandleRequest(content::WebContents* web_contents,
                      const content::MediaStreamRequest& request,
@@ -36,18 +36,19 @@ class PermissionBubbleMediaAccessHandler
   void UpdateMediaRequestState(int render_process_id,
                                int render_frame_id,
                                int page_request_id,
-                               content::MediaStreamType stream_type,
+                               blink::MediaStreamType stream_type,
                                content::MediaRequestState state) override;
 
  private:
   struct PendingAccessRequest;
-  using RequestsQueue = base::circular_deque<PendingAccessRequest>;
-  using RequestsQueues = std::map<content::WebContents*, RequestsQueue>;
+  using RequestsMap = std::map<int, PendingAccessRequest>;
+  using RequestsMaps = std::map<content::WebContents*, RequestsMap>;
 
   void ProcessQueuedAccessRequest(content::WebContents* web_contents);
   void OnAccessRequestResponse(content::WebContents* web_contents,
-                               const content::MediaStreamDevices& devices,
-                               content::MediaStreamRequestResult result,
+                               int request_id,
+                               const blink::MediaStreamDevices& devices,
+                               blink::MediaStreamRequestResult result,
                                std::unique_ptr<content::MediaStreamUI> ui);
 
   // content::NotificationObserver implementation.
@@ -55,7 +56,11 @@ class PermissionBubbleMediaAccessHandler
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
-  RequestsQueues pending_requests_;
+  int next_request_id_ = 0;
+  RequestsMaps pending_requests_;
   content::NotificationRegistrar notifications_registrar_;
+
+  base::WeakPtrFactory<PermissionBubbleMediaAccessHandler> weak_factory_;
 };
+
 #endif  // CHROME_BROWSER_MEDIA_WEBRTC_PERMISSION_BUBBLE_MEDIA_ACCESS_HANDLER_H_

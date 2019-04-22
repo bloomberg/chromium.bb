@@ -5,7 +5,7 @@
 #import "ios/chrome/browser/voice/voice_search_navigations_tab_helper.h"
 
 #include "base/test/scoped_feature_list.h"
-#include "ios/web/public/features.h"
+#include "ios/web/common/features.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
 #import "ios/web/public/web_state/web_state.h"
@@ -57,7 +57,7 @@ TEST_P(VoiceSearchNavigationsTest, CommitResetVoiceSearchExpectation) {
   EXPECT_FALSE(navigations()->IsExpectingVoiceSearch());
 }
 
-INSTANTIATE_TEST_CASE_P(ProgrammaticVoiceSearchNavigationsTest,
-                        VoiceSearchNavigationsTest,
-                        ::testing::Values(NavigationManagerChoice::LEGACY,
-                                          NavigationManagerChoice::WK_BASED));
+INSTANTIATE_TEST_SUITE_P(ProgrammaticVoiceSearchNavigationsTest,
+                         VoiceSearchNavigationsTest,
+                         ::testing::Values(NavigationManagerChoice::LEGACY,
+                                           NavigationManagerChoice::WK_BASED));

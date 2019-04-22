@@ -1,10 +1,6 @@
 per-file *.mojom=set noparent
 per-file *.mojom=file://ipc/SECURITY_OWNERS
 
-# Extending enum WebFeature by adding new features is allowed without OWNERS
-# review, but you should add a security team OWNER if you are changing others.
-per-file web_feature.mojom=file://third_party/blink/renderer/core/OWNERS
-
 per-file *_enum_traits*.*=set noparent
 per-file *_enum_traits*.*=file://ipc/SECURITY_OWNERS
 per-file *_struct_traits*.*=set noparent
@@ -12,5 +8,14 @@ per-file *_struct_traits*.*=file://ipc/SECURITY_OWNERS
 per-file *.typemap=set noparent
 per-file *.typemap=file://ipc/SECURITY_OWNERS
 
+per-file web_application_cache_*=pwnall@chromium.org
 per-file web_rtc_*=hbos@chromium.org
 per-file web_media_player*=mlamouri@chromium.org
+
+# Video SurfaceLayer functionality.
+per-file web_video_frame*=file://media/OWNERS
+per-file web_video_frame*=mlamouri@chromium.org
+per-file web_video_frame*=lethalantidote@chromium.org
+per-file web_surface_layer_bridge*=file://media/OWNERS
+per-file web_surface_layer_bridge*=mlamouri@chromium.org
+per-file web_surface_layer_bridge*=lethalantidote@chromium.org

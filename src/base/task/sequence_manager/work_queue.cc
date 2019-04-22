@@ -70,7 +70,7 @@ void WorkQueue::Push(Task task) {
   // Make sure the |enqueue_order()| is monotonically increasing.
   DCHECK(was_empty || tasks_.back().enqueue_order() < task.enqueue_order());
 
-  // Amoritized O(1).
+  // Amortized O(1).
   tasks_.push_back(std::move(task));
 
   if (!was_empty)
@@ -79,6 +79,42 @@ void WorkQueue::Push(Task task) {
   // If we hit the fence, pretend to WorkQueueSets that we're empty.
   if (work_queue_sets_ && !BlockedByFence())
     work_queue_sets_->OnTaskPushedToEmptyQueue(this);
+}
+
+WorkQueue::TaskPusher::TaskPusher(WorkQueue* work_queue)
+    : work_queue_(work_queue), was_empty_(work_queue->Empty()) {}
+
+WorkQueue::TaskPusher::TaskPusher(TaskPusher&& other)
+    : work_queue_(other.work_queue_), was_empty_(other.was_empty_) {
+  other.work_queue_ = nullptr;
+}
+
+void WorkQueue::TaskPusher::Push(Task* task) {
+  DCHECK(work_queue_);
+
+#ifndef NDEBUG
+  DCHECK(task->enqueue_order_set());
+#endif
+
+  // Make sure the |enqueue_order()| is monotonically increasing.
+  DCHECK(work_queue_->tasks_.empty() ||
+         work_queue_->tasks_.back().enqueue_order() < task->enqueue_order());
+
+  // Amortized O(1).
+  work_queue_->tasks_.push_back(std::move(*task));
+}
+
+WorkQueue::TaskPusher::~TaskPusher() {
+  // If |work_queue_| became non empty and it isn't blocked by a fence then we
+  // must notify |work_queue_->work_queue_sets_|.
+  if (was_empty_ && work_queue_ && !work_queue_->Empty() &&
+      work_queue_->work_queue_sets_ && !work_queue_->BlockedByFence()) {
+    work_queue_->work_queue_sets_->OnTaskPushedToEmptyQueue(work_queue_);
+  }
+}
+
+WorkQueue::TaskPusher WorkQueue::CreateTaskPusher() {
+  return TaskPusher(this);
 }
 
 void WorkQueue::PushNonNestableTaskToFront(Task task) {
@@ -97,7 +133,7 @@ void WorkQueue::PushNonNestableTaskToFront(Task task) {
         << " : " << name_;
   }
 
-  // Amoritized O(1).
+  // Amortized O(1).
   tasks_.push_front(std::move(task));
 
   if (!work_queue_sets_)
@@ -111,14 +147,14 @@ void WorkQueue::PushNonNestableTaskToFront(Task task) {
   if (was_empty || was_blocked) {
     work_queue_sets_->OnTaskPushedToEmptyQueue(this);
   } else {
-    work_queue_sets_->OnFrontTaskChanged(this);
+    work_queue_sets_->OnQueuesFrontTaskChanged(this);
   }
 }
 
-void WorkQueue::ReloadEmptyImmediateQueue() {
+void WorkQueue::TakeImmediateIncomingQueueTasks() {
   DCHECK(tasks_.empty());
 
-  task_queue_->ReloadEmptyImmediateQueue(&tasks_);
+  task_queue_->TakeImmediateIncomingQueueTasks(&tasks_);
   if (tasks_.empty())
     return;
 
@@ -137,24 +173,32 @@ Task WorkQueue::TakeTaskFromWorkQueue() {
   if (tasks_.empty()) {
     // NB delayed tasks are inserted via Push, no don't need to reload those.
     if (queue_type_ == QueueType::kImmediate) {
-      // Short-circuit the queue reload so that OnPopQueue does the right
-      // thing.
-      task_queue_->ReloadEmptyImmediateQueue(&tasks_);
+      // Short-circuit the queue reload so that OnPopMinQueueInSet does the
+      // right thing.
+      task_queue_->TakeImmediateIncomingQueueTasks(&tasks_);
     }
     // Since the queue is empty, now is a good time to consider reducing it's
     // capacity if we're wasting memory.
     tasks_.MaybeShrinkQueue();
   }
 
-  // OnPopQueue calls GetFrontTaskEnqueueOrder which checks BlockedByFence() so
-  // we don't need to here.
-  work_queue_sets_->OnPopQueue(this);
+  DCHECK(work_queue_sets_);
+#if DCHECK_IS_ON()
+  // If diagnostics are on it's possible task queues are being selected at
+  // random so we can't use the (slightly) more efficient OnPopMinQueueInSet.
+  work_queue_sets_->OnQueuesFrontTaskChanged(this);
+#else
+  // OnPopMinQueueInSet calls GetFrontTaskEnqueueOrder which checks
+  // BlockedByFence() so we don't need to here.
+  work_queue_sets_->OnPopMinQueueInSet(this);
+#endif
   task_queue_->TraceQueueSize();
   return pending_task;
 }
 
 bool WorkQueue::RemoveAllCanceledTasksFromFront() {
-  DCHECK(work_queue_sets_);
+  if (!work_queue_sets_)
+    return false;
   bool task_removed = false;
   while (!tasks_.empty() &&
          (!tasks_.front().task || tasks_.front().task.IsCancelled())) {
@@ -165,15 +209,18 @@ bool WorkQueue::RemoveAllCanceledTasksFromFront() {
     if (tasks_.empty()) {
       // NB delayed tasks are inserted via Push, no don't need to reload those.
       if (queue_type_ == QueueType::kImmediate) {
-        // Short-circuit the queue reload so that OnPopQueue does the right
-        // thing.
-        task_queue_->ReloadEmptyImmediateQueue(&tasks_);
+        // Short-circuit the queue reload so that OnPopMinQueueInSet does the
+        // right thing.
+        task_queue_->TakeImmediateIncomingQueueTasks(&tasks_);
       }
       // Since the queue is empty, now is a good time to consider reducing it's
       // capacity if we're wasting memory.
       tasks_.MaybeShrinkQueue();
     }
-    work_queue_sets_->OnPopQueue(this);
+    // If we have a valid |heap_handle_| (i.e. we're not blocked by a fence or
+    // disabled) then |work_queue_sets_| needs to be told.
+    if (heap_handle_.IsValid())
+      work_queue_sets_->OnQueuesFrontTaskChanged(this);
     task_queue_->TraceQueueSize();
   }
   return task_removed;
@@ -203,10 +250,11 @@ void WorkQueue::InsertFenceSilently(EnqueueOrder fence) {
 
 bool WorkQueue::InsertFence(EnqueueOrder fence) {
   bool was_blocked_by_fence = InsertFenceImpl(fence);
+  if (!work_queue_sets_)
+    return false;
 
   // Moving the fence forward may unblock some tasks.
-  if (work_queue_sets_ && !tasks_.empty() && was_blocked_by_fence &&
-      !BlockedByFence()) {
+  if (!tasks_.empty() && was_blocked_by_fence && !BlockedByFence()) {
     work_queue_sets_->OnTaskPushedToEmptyQueue(this);
     return true;
   }
@@ -247,7 +295,8 @@ void WorkQueue::DeletePendingTasks() {
   tasks_.clear();
 
   if (work_queue_sets_ && heap_handle().IsValid())
-    work_queue_sets_->OnPopQueue(this);
+    work_queue_sets_->OnQueuesFrontTaskChanged(this);
+  DCHECK(!heap_handle_.IsValid());
 }
 
 void WorkQueue::PopTaskForTesting() {

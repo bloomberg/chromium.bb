@@ -20,16 +20,14 @@ namespace net {
 
 CookieStoreCommand::CookieStoreCommand(
     Type type,
-    const CookieMonster::PersistentCookieStore::LoadedCallback& loaded_callback,
+    CookieMonster::PersistentCookieStore::LoadedCallback loaded_callback,
     const std::string& key)
-    : type(type), loaded_callback(loaded_callback), key(key) {}
+    : type(type), loaded_callback(std::move(loaded_callback)), key(key) {}
 
 CookieStoreCommand::CookieStoreCommand(Type type, const CanonicalCookie& cookie)
     : type(type), cookie(cookie) {}
 
-CookieStoreCommand::CookieStoreCommand(const CookieStoreCommand& other) =
-    default;
-
+CookieStoreCommand::CookieStoreCommand(CookieStoreCommand&& other) = default;
 CookieStoreCommand::~CookieStoreCommand() = default;
 
 MockPersistentCookieStore::MockPersistentCookieStore()
@@ -42,11 +40,11 @@ void MockPersistentCookieStore::SetLoadExpectation(
   load_result_.swap(result);
 }
 
-void MockPersistentCookieStore::Load(const LoadedCallback& loaded_callback,
+void MockPersistentCookieStore::Load(LoadedCallback loaded_callback,
                                      const NetLogWithSource& /* net_log */) {
   if (store_load_commands_) {
-    commands_.push_back(
-        CookieStoreCommand(CookieStoreCommand::LOAD, loaded_callback, ""));
+    commands_.push_back(CookieStoreCommand(CookieStoreCommand::LOAD,
+                                           std::move(loaded_callback), ""));
     return;
   }
   std::vector<std::unique_ptr<CanonicalCookie>> out_cookies;
@@ -55,23 +53,26 @@ void MockPersistentCookieStore::Load(const LoadedCallback& loaded_callback,
     loaded_ = true;
   }
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(loaded_callback, base::Passed(&out_cookies)));
+      FROM_HERE,
+      base::BindOnce(std::move(loaded_callback), std::move(out_cookies)));
 }
 
 void MockPersistentCookieStore::LoadCookiesForKey(
     const std::string& key,
-    const LoadedCallback& loaded_callback) {
+    LoadedCallback loaded_callback) {
   if (store_load_commands_) {
-    commands_.push_back(CookieStoreCommand(
-        CookieStoreCommand::LOAD_COOKIES_FOR_KEY, loaded_callback, key));
+    commands_.push_back(
+        CookieStoreCommand(CookieStoreCommand::LOAD_COOKIES_FOR_KEY,
+                           std::move(loaded_callback), key));
     return;
   }
   if (!loaded_) {
-    Load(loaded_callback, NetLogWithSource());
+    Load(std::move(loaded_callback), NetLogWithSource());
   } else {
     std::vector<std::unique_ptr<CanonicalCookie>> empty_cookies;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(loaded_callback, base::Passed(&empty_cookies)));
+        FROM_HERE,
+        base::BindOnce(std::move(loaded_callback), std::move(empty_cookies)));
   }
 }
 
@@ -89,7 +90,7 @@ void MockPersistentCookieStore::DeleteCookie(const CanonicalCookie& cookie) {
 
 void MockPersistentCookieStore::SetForceKeepSessionState() {}
 
-void MockPersistentCookieStore::SetBeforeFlushCallback(
+void MockPersistentCookieStore::SetBeforeCommitCallback(
     base::RepeatingClosure callback) {}
 
 void MockPersistentCookieStore::Flush(base::OnceClosure callback) {
@@ -139,7 +140,7 @@ MockSimplePersistentCookieStore::MockSimplePersistentCookieStore()
 }
 
 void MockSimplePersistentCookieStore::Load(
-    const LoadedCallback& loaded_callback,
+    LoadedCallback loaded_callback,
     const NetLogWithSource& /* net_log */) {
   std::vector<std::unique_ptr<CanonicalCookie>> out_cookies;
 
@@ -147,46 +148,48 @@ void MockSimplePersistentCookieStore::Load(
     out_cookies.push_back(std::make_unique<CanonicalCookie>(it->second));
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(loaded_callback, base::Passed(&out_cookies)));
+      FROM_HERE,
+      base::BindOnce(std::move(loaded_callback), std::move(out_cookies)));
   loaded_ = true;
 }
 
 void MockSimplePersistentCookieStore::LoadCookiesForKey(
     const std::string& key,
-    const LoadedCallback& loaded_callback) {
+    LoadedCallback loaded_callback) {
   if (!loaded_) {
-    Load(loaded_callback, NetLogWithSource());
+    Load(std::move(loaded_callback), NetLogWithSource());
   } else {
     std::vector<std::unique_ptr<CanonicalCookie>> empty_cookies;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(loaded_callback, base::Passed(&empty_cookies)));
+        FROM_HERE,
+        base::BindOnce(std::move(loaded_callback), std::move(empty_cookies)));
   }
 }
 
 void MockSimplePersistentCookieStore::AddCookie(const CanonicalCookie& cookie) {
-  int64_t creation_time = cookie.CreationDate().ToInternalValue();
-  EXPECT_TRUE(cookies_.find(creation_time) == cookies_.end());
-  cookies_[creation_time] = cookie;
+  const auto& key = cookie.UniqueKey();
+  EXPECT_TRUE(cookies_.find(key) == cookies_.end());
+  cookies_[key] = cookie;
 }
 
 void MockSimplePersistentCookieStore::UpdateCookieAccessTime(
     const CanonicalCookie& cookie) {
-  int64_t creation_time = cookie.CreationDate().ToInternalValue();
-  ASSERT_TRUE(cookies_.find(creation_time) != cookies_.end());
-  cookies_[creation_time].SetLastAccessDate(base::Time::Now());
+  const auto& key = cookie.UniqueKey();
+  ASSERT_TRUE(cookies_.find(key) != cookies_.end());
+  cookies_[key].SetLastAccessDate(base::Time::Now());
 }
 
 void MockSimplePersistentCookieStore::DeleteCookie(
     const CanonicalCookie& cookie) {
-  int64_t creation_time = cookie.CreationDate().ToInternalValue();
-  auto it = cookies_.find(creation_time);
+  const auto& key = cookie.UniqueKey();
+  auto it = cookies_.find(key);
   ASSERT_TRUE(it != cookies_.end());
   cookies_.erase(it);
 }
 
 void MockSimplePersistentCookieStore::SetForceKeepSessionState() {}
 
-void MockSimplePersistentCookieStore::SetBeforeFlushCallback(
+void MockSimplePersistentCookieStore::SetBeforeCommitCallback(
     base::RepeatingClosure callback) {}
 
 void MockSimplePersistentCookieStore::Flush(base::OnceClosure callback) {
@@ -233,12 +236,12 @@ std::unique_ptr<CookieMonster> CreateMonsterFromStoreForGC(
     std::unique_ptr<CanonicalCookie> cc(std::make_unique<CanonicalCookie>(
         "a", "1", base::StringPrintf("h%05d.izzle", i), "/path", creation_time,
         expiration_time, base::Time(), secure, false,
-        CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT));
+        CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT));
     cc->SetLastAccessDate(last_access_time);
     store->AddCookie(*cc);
   }
 
-  return std::make_unique<CookieMonster>(store.get(), nullptr, nullptr);
+  return std::make_unique<CookieMonster>(store.get(), nullptr);
 }
 
 MockSimplePersistentCookieStore::~MockSimplePersistentCookieStore() = default;

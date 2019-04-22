@@ -111,7 +111,7 @@ NET_ERROR(CONTEXT_SHUT_DOWN, -26)
 
 // The request failed because the response was delivered along with requirements
 // which are not met ('X-Frame-Options' and 'Content-Security-Policy' ancestor
-// checks, for instance).
+// checks and 'Cross-Origin-Resource-Policy', for instance).
 NET_ERROR(BLOCKED_BY_RESPONSE, -27)
 
 // The request failed after the response was received, based on client-side
@@ -261,9 +261,12 @@ NET_ERROR(NETWORK_ACCESS_DENIED, -138)
 NET_ERROR(TEMPORARILY_THROTTLED, -139)
 
 // A request to create an SSL tunnel connection through the HTTPS proxy
-// received a non-200 (OK) and non-407 (Proxy Auth) response.  The response
-// body might include a description of why the request failed.
-NET_ERROR(HTTPS_PROXY_TUNNEL_RESPONSE, -140)
+// received a 302 (temporary redirect) response.  The response body might
+// include a description of why the request failed.
+//
+// TODO(https://crbug.com/928551): This is deprecated and should not be used by
+// new code.
+NET_ERROR(HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT, -140)
 
 // We were unable to sign the CertificateVerify data of an SSL client auth
 // handshake with the client certificate's private key.
@@ -433,6 +436,10 @@ NET_ERROR(WRONG_VERSION_ON_EARLY_DATA, -179)
 // TLS-terminating proxy which implemented TLS 1.2 incorrectly. (See
 // https://crbug.com/boringssl/226.)
 NET_ERROR(TLS13_DOWNGRADE_DETECTED, -180)
+
+// The server's certificate has a keyUsage extension incompatible with the
+// negotiated TLS key exchange method.
+NET_ERROR(SSL_KEY_USAGE_INCOMPATIBLE, -181)
 
 // Certificate error codes
 //
@@ -825,6 +832,12 @@ NET_ERROR(CACHE_AUTH_FAILURE_AFTER_READ, -410)
 // that the cache entry would not have been useable with the transaction's
 // current configuration (e.g. load flags, mode, etc.)
 NET_ERROR(CACHE_ENTRY_NOT_SUITABLE, -411)
+
+// The disk cache is unable to doom this entry.
+NET_ERROR(CACHE_DOOM_FAILURE, -412)
+
+// The disk cache is unable to open or create this entry.
+NET_ERROR(CACHE_OPEN_OR_CREATE_FAILURE, -413)
 
 // The server's response was insecure (e.g. there was a cert error).
 NET_ERROR(INSECURE_RESPONSE, -501)

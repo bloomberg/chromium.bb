@@ -30,7 +30,6 @@ class PermissionRequestCreatorApiary : public PermissionRequestCreator {
  public:
   PermissionRequestCreatorApiary(
       identity::IdentityManager* identity_manager,
-      const std::string& account_id,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   ~PermissionRequestCreatorApiary() override;
 
@@ -73,7 +72,6 @@ class PermissionRequestCreatorApiary : public PermissionRequestCreator {
   void DispatchResult(RequestList::iterator it, bool success);
 
   identity::IdentityManager* identity_manager_;
-  std::string account_id_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   bool retry_on_network_change_;
 

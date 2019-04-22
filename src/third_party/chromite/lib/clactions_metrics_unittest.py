@@ -10,7 +10,6 @@ from __future__ import print_function
 import datetime
 import itertools
 
-from chromite.lib.const import waterfall
 from chromite.lib import constants
 from chromite.lib import metadata_lib
 from chromite.lib import fake_cidb
@@ -29,16 +28,16 @@ class TestCLActionsMetrics(cros_test_lib.TestCase):
     """Test that we correctly compute a CL's handling time."""
     change = metadata_lib.GerritPatchTuple(1, 1, False)
     launcher_id = self.fake_db.InsertBuild(
-        'launcher', waterfall.WATERFALL_INTERNAL, 1,
+        'launcher', 1,
         constants.PRE_CQ_LAUNCHER_CONFIG, 'hostname')
     trybot_id = self.fake_db.InsertBuild(
-        'banana pre cq', waterfall.WATERFALL_INTERNAL, 1,
+        'banana pre cq', 1,
         'banana-pre-cq', 'hostname')
     master_id = self.fake_db.InsertBuild(
-        'CQ master', waterfall.WATERFALL_INTERNAL, 1,
+        'CQ master', 1,
         constants.CQ_MASTER, 'hostname')
     slave_id = self.fake_db.InsertBuild(
-        'banana paladin', waterfall.WATERFALL_INTERNAL, 1,
+        'banana paladin', 1,
         'banana-paladin', 'hostname')
 
     start_time = datetime.datetime.now()

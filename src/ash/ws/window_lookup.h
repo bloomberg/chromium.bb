@@ -17,8 +17,20 @@ class Window;
 namespace ash {
 namespace window_lookup {
 
-// Returns the aura::Window by transport id.
-ASH_EXPORT aura::Window* GetWindowByClientId(ws::Id transport_id);
+// Returns true if |window| is a proxy created by the WindowService to represent
+// a window created by another client.
+ASH_EXPORT bool IsProxyWindow(aura::Window* window);
+
+// Returns the proxy aura::Window that represents a window created with aura
+// configured to use mus.
+ASH_EXPORT aura::Window* GetProxyWindowForClientWindow(aura::Window* window);
+
+// Returns the client window for a proxy window.
+ASH_EXPORT aura::Window* GetClientWindowForProxyWindow(aura::Window* window);
+
+// Returns true if |window| is a proxy for a window created by a client that
+// is running in its own process (e.g. shortcut_viewer).
+ASH_EXPORT bool IsProxyWindowForOutOfProcess(aura::Window* window);
 
 }  // namespace window_lookup
 }  // namespace ash

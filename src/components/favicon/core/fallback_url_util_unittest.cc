@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -44,7 +44,7 @@ TEST(FallbackURLUtilTest, GetFallbackIconText) {
       {"http://xn--oogle-60a/", "X"},
       {"http://xn-oogle-60a/", "X"},
   };
-  for (size_t i = 0; i < arraysize(test_cases); ++i) {
+  for (size_t i = 0; i < base::size(test_cases); ++i) {
     base::string16 expected = base::ASCIIToUTF16(test_cases[i].expected);
     GURL url(test_cases[i].url_str);
     EXPECT_EQ(expected, GetFallbackIconText(url)) << " for test_cases[" << i

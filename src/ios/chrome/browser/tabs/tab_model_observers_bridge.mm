@@ -43,7 +43,6 @@
                   didInsertTab:LegacyTabHelper::GetTabForWebState(webState)
                        atIndex:static_cast<NSUInteger>(atIndex)
                   inForeground:activating];
-  [_tabModelObservers tabModelDidChangeTabCount:_tabModel];
 }
 
 - (void)webStateList:(WebStateList*)webStateList
@@ -76,7 +75,6 @@
   [_tabModelObservers tabModel:_tabModel
                   didRemoveTab:LegacyTabHelper::GetTabForWebState(webState)
                        atIndex:static_cast<NSUInteger>(atIndex)];
-  [_tabModelObservers tabModelDidChangeTabCount:_tabModel];
 }
 
 - (void)webStateList:(WebStateList*)webStateList

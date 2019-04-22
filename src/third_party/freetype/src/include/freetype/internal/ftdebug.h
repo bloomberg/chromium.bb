@@ -4,7 +4,7 @@
  *
  *   Debugging and logging component (specification).
  *
- * Copyright 1996-2018 by
+ * Copyright (C) 1996-2019 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -135,8 +135,8 @@ FT_BEGIN_HEADER
    *
    * @return:
    *   The name of the trace component.  This is a statically allocated
-   *   C~string, so do not free it after use.  NULL if FreeType is not built
-   *   with FT_DEBUG_LEVEL_TRACE definition.
+   *   C~string, so do not free it after use.  `NULL` if FreeType is not
+   *   built with FT_DEBUG_LEVEL_TRACE definition.
    *
    * @note:
    *   Use @FT_Trace_Get_Count to get the number of available trace

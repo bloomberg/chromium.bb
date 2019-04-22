@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/network_service_util.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/test/browser_test_utils.h"
@@ -28,7 +29,7 @@ void ContentMockCertVerifier::CertVerifier::set_default_result(
   verifier_->set_default_result(default_result);
 
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService) ||
-      IsNetworkServiceRunningInProcess()) {
+      IsInProcessNetworkService()) {
     return;
   }
 
@@ -52,7 +53,7 @@ void ContentMockCertVerifier::CertVerifier::AddResultForCertAndHost(
   verifier_->AddResultForCertAndHost(cert, host_pattern, verify_result, rv);
 
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService) ||
-      IsNetworkServiceRunningInProcess()) {
+      IsInProcessNetworkService()) {
     return;
   }
 
@@ -84,7 +85,7 @@ void ContentMockCertVerifier::SetUpCommandLine(
   // Check here instead of the constructor since some tests may set the feature
   // flag in their constructor.
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService) ||
-      IsNetworkServiceRunningInProcess()) {
+      IsInProcessNetworkService()) {
     return;
   }
 
@@ -96,14 +97,14 @@ void ContentMockCertVerifier::SetUpCommandLine(
 }
 
 void ContentMockCertVerifier::SetUpInProcessBrowserTestFixture() {
-  if (IsNetworkServiceRunningInProcess()) {
+  if (IsInProcessNetworkService()) {
     network::NetworkContext::SetCertVerifierForTesting(
         mock_cert_verifier_.get());
   }
 }
 
 void ContentMockCertVerifier::TearDownInProcessBrowserTestFixture() {
-  if (IsNetworkServiceRunningInProcess())
+  if (IsInProcessNetworkService())
     network::NetworkContext::SetCertVerifierForTesting(nullptr);
 }
 

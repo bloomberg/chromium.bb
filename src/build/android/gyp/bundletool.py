@@ -8,6 +8,7 @@
 Bundletool is distributed as a versioned jar file. This script abstracts the
 location and version of this jar file, as well as the JVM invokation."""
 
+import logging
 import os
 import subprocess
 import sys
@@ -17,13 +18,14 @@ BUNDLETOOL_DIR = os.path.abspath(os.path.join(
     __file__, '..', '..', '..', '..', 'third_party', 'android_build_tools',
     'bundletool'))
 
-BUNDLETOOL_VERSION = '0.7.1'
+BUNDLETOOL_VERSION = '0.9.0'
 
 BUNDLETOOL_JAR_PATH = os.path.join(
     BUNDLETOOL_DIR, 'bundletool-all-%s.jar' % BUNDLETOOL_VERSION)
 
 def RunBundleTool(args):
   args = ['java', '-jar', BUNDLETOOL_JAR_PATH] + args
+  logging.debug(' '.join(args))
   subprocess.check_call(args)
 
 if __name__ == '__main__':

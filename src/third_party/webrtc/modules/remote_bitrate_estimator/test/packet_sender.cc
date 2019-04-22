@@ -10,15 +10,21 @@
 
 #include "modules/remote_bitrate_estimator/test/packet_sender.h"
 
+#include <assert.h>
+#include <math.h>
 #include <algorithm>
+#include <cmath>
+#include <limits>
 #include <list>
-#include <sstream>
+#include <vector>
 
-#include "modules/include/module_common_types.h"
+#include "modules/include/module_common_types_public.h"
 #include "modules/pacing/pacer.h"
 #include "modules/remote_bitrate_estimator/test/bbr_paced_sender.h"
 #include "modules/remote_bitrate_estimator/test/bwe.h"
+#include "modules/remote_bitrate_estimator/test/bwe_test_logging.h"
 #include "modules/remote_bitrate_estimator/test/metric_recorder.h"
+#include "modules/rtp_rtcp/include/rtp_rtcp_defines.h"
 #include "rtc_base/checks.h"
 
 namespace webrtc {
@@ -417,7 +423,7 @@ int TcpSender::GetFeedbackIntervalMs() const {
 }
 
 void TcpSender::SendPackets(Packets* in_out) {
-  int cwnd = ceil(cwnd_);
+  int cwnd = std::ceil(cwnd_);
   int packets_to_send = std::max(cwnd - static_cast<int>(in_flight_.size()), 0);
   int timed_out = TriggerTimeouts();
   if (timed_out > 0) {

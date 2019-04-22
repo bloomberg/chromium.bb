@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
@@ -21,6 +22,7 @@
 namespace views {
 
 class View;
+class Widget;
 
 // An object that manages the accessibility interface for a View.
 //
@@ -63,6 +65,22 @@ class VIEWS_EXPORT ViewAccessibility {
   void OverrideDescription(const base::string16& description);
   void OverrideIsLeaf(bool value);
   void OverrideIsIgnored(bool value);
+  void OverrideBounds(const gfx::RectF& bounds);
+
+  // Override indexes used by some screen readers when describing elements in a
+  // menu, list, etc. If not specified, a view's index in its parent and its
+  // parent's number of children provide the values for these.
+  //
+  // Note: |pos_in_set| is 1-indexed.
+  void OverridePosInSet(int pos_in_set, int set_size);
+
+  // Override the next or previous focused widget. Some screen readers may
+  // utilize this information to transition focus from the beginning or end of
+  // one window to another when navigating by its default navigation method.
+  void OverrideNextFocus(Widget* widget);
+  void OverridePreviousFocus(Widget* widget);
+  Widget* GetNextFocus();
+  Widget* GetPreviousFocus();
 
   virtual gfx::NativeViewAccessible GetNativeObject();
   virtual void NotifyAccessibilityEvent(ax::mojom::Event event_type) {}
@@ -98,6 +116,11 @@ class VIEWS_EXPORT ViewAccessibility {
 
   int virtual_child_count() const {
     return static_cast<int>(virtual_children_.size());
+  }
+
+  AXVirtualView* virtual_child_at(int index) {
+    return const_cast<AXVirtualView*>(
+        const_cast<const ViewAccessibility*>(this)->virtual_child_at(index));
   }
 
   const AXVirtualView* virtual_child_at(int index) const {
@@ -155,6 +178,9 @@ class VIEWS_EXPORT ViewAccessibility {
   // Similar to setting the role of an ARIA widget to "none" or
   // "presentational".
   bool is_ignored_;
+
+  Widget* next_focus_ = nullptr;
+  Widget* previous_focus_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ViewAccessibility);
 };

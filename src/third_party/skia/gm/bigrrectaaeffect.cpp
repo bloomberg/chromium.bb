@@ -5,26 +5,26 @@
  * found in the LICENSE file.
  */
 
-#include "gm.h"
-#include "sk_tool_utils.h"
 #include "GrCaps.h"
 #include "GrContext.h"
 #include "GrRenderTargetContextPriv.h"
 #include "SkRRect.h"
+#include "ToolUtils.h"
 #include "effects/GrRRectEffect.h"
+#include "gm.h"
 #include "ops/GrDrawOp.h"
-#include "ops/GrRectOpFactory.h"
+#include "ops/GrFillRectOp.h"
 
 namespace skiagm {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class BigRRectAAEffectGM : public GM {
+class BigRRectAAEffectGM : public GpuGM {
 public:
     BigRRectAAEffectGM(const SkRRect& rrect, const char* name)
         : fRRect(rrect)
         , fName(name) {
-        this->setBGColor(sk_tool_utils::color_to_565(SK_ColorBLUE));
+        this->setBGColor(ToolUtils::color_to_565(SK_ColorBLUE));
         // Each test case draws the rrect with gaps around it.
         fTestWidth = SkScalarCeilToInt(rrect.width()) + 2 * kGap;
         fTestHeight = SkScalarCeilToInt(rrect.height()) + 2 * kGap;
@@ -48,19 +48,8 @@ protected:
 
     SkISize onISize() override { return SkISize::Make(fWidth, fHeight); }
 
-    void onDraw(SkCanvas* canvas) override {
-        GrRenderTargetContext* renderTargetContext =
-            canvas->internal_private_accessTopLayerRenderTargetContext();
-        if (!renderTargetContext) {
-            skiagm::GM::DrawGpuOnlyMessage(canvas);
-            return;
-        }
-
-        GrContext* context = canvas->getGrContext();
-        if (!context) {
-            return;
-        }
-
+    void onDraw(GrContext* context, GrRenderTargetContext* renderTargetContext,
+                SkCanvas* canvas) override {
         SkPaint paint;
 
         int y = kPad;
@@ -95,9 +84,8 @@ protected:
                     bounds.offset(SkIntToScalar(x), SkIntToScalar(y));
 
                     renderTargetContext->priv().testingOnly_addDrawOp(
-                            GrRectOpFactory::MakeNonAAFill(context, std::move(grPaint),
-                                                           SkMatrix::I(),
-                                                           bounds, GrAAType::kNone));
+                            GrFillRectOp::Make(context, std::move(grPaint), GrAAType::kNone,
+                                               SkMatrix::I(), bounds));
                 }
             canvas->restore();
             x = x + fTestOffsetX;

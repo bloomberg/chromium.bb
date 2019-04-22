@@ -209,7 +209,9 @@ void InitGeneratedTypeResolver() {
 }
 
 TypeResolver* GetGeneratedTypeResolver() {
-  ::google::protobuf::GoogleOnceInit(&generated_type_resolver_init_, &InitGeneratedTypeResolver);
+  ::google::protobuf::GoogleOnceInit(
+      &GOOGLE_PROTOBUF_GET_ONCE(generated_type_resolver_init_),
+      &InitGeneratedTypeResolver);
   return generated_type_resolver_;
 }
 }  // namespace

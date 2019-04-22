@@ -19,15 +19,16 @@
 #include "common/angleutils.h"
 #include "libANGLE/Caps.h"
 #include "libANGLE/Constants.h"
-#include "libANGLE/ContextState.h"
 #include "libANGLE/Context_gles_1_0_autogen.h"
 #include "libANGLE/Error.h"
 #include "libANGLE/HandleAllocator.h"
 #include "libANGLE/RefCountObject.h"
 #include "libANGLE/ResourceManager.h"
 #include "libANGLE/ResourceMap.h"
+#include "libANGLE/State.h"
 #include "libANGLE/VertexAttribute.h"
 #include "libANGLE/Workarounds.h"
+#include "libANGLE/WorkerThread.h"
 #include "libANGLE/angletypes.h"
 
 namespace rx
@@ -52,6 +53,7 @@ class FenceNV;
 class Framebuffer;
 class GLES1Renderer;
 class MemoryProgramCache;
+class MemoryObject;
 class Program;
 class ProgramPipeline;
 class Query;
@@ -84,6 +86,13 @@ class ErrorSet : angle::NonCopyable
   private:
     Context *mContext;
     std::set<GLenum> mErrors;
+};
+
+enum class VertexAttribTypeCase
+{
+    Invalid        = 0,
+    Valid          = 1,
+    ValidSize4Only = 2,
 };
 
 // Helper class for managing cache variables and state changes.
@@ -130,9 +139,22 @@ class StateCache final : angle::NonCopyable
     // 9. onDefaultVertexAttributeChange.
     // 10. onActiveTextureChange.
     // 11. onQueryChange.
-    // 12. onTransformFeedbackChange.
+    // 12. onActiveTransformFeedbackChange.
     // 13. onUniformBufferStateChange.
     // 14. onBufferBindingChange.
+    bool hasBasicDrawStatesError(Context *context) const
+    {
+        if (mCachedBasicDrawStatesError == 0)
+        {
+            return false;
+        }
+        if (mCachedBasicDrawStatesError != kInvalidPointer)
+        {
+            return true;
+        }
+        return getBasicDrawStatesErrorImpl(context) != 0;
+    }
+
     intptr_t getBasicDrawStatesError(Context *context) const
     {
         if (mCachedBasicDrawStatesError != kInvalidPointer)
@@ -143,8 +165,23 @@ class StateCache final : angle::NonCopyable
         return getBasicDrawStatesErrorImpl(context);
     }
 
+    // Places that can trigger updateBasicDrawElementsError:
+    // 1. onActiveTransformFeedbackChange.
+    // 2. onVertexArrayBufferStateChange.
+    // 3. onBufferBindingChange.
+    intptr_t getBasicDrawElementsError(Context *context) const
+    {
+        if (mCachedBasicDrawElementsError != kInvalidPointer)
+        {
+            return mCachedBasicDrawElementsError;
+        }
+
+        return getBasicDrawElementsErrorImpl(context);
+    }
+
     // Places that can trigger updateValidDrawModes:
     // 1. onProgramExecutableChange.
+    // 2. onActiveTransformFeedbackChange.
     bool isValidDrawMode(PrimitiveMode primitiveMode) const
     {
         return mCachedValidDrawModes[primitiveMode];
@@ -154,6 +191,30 @@ class StateCache final : angle::NonCopyable
     bool isValidBindTextureType(TextureType type) const
     {
         return mCachedValidBindTextureTypes[type];
+    }
+
+    // Cannot change except on Context/Extension init.
+    bool isValidDrawElementsType(DrawElementsType type) const
+    {
+        return mCachedValidDrawElementsTypes[type];
+    }
+
+    // Places that can trigger updateTransformFeedbackActiveUnpaused:
+    // 1. onActiveTransformFeedbackChange.
+    bool isTransformFeedbackActiveUnpaused() const
+    {
+        return mCachedTransformFeedbackActiveUnpaused;
+    }
+
+    // Cannot change except on Context/Extension init.
+    VertexAttribTypeCase getVertexAttribTypeValidation(VertexAttribType type) const
+    {
+        return mCachedVertexAttribTypesValidation[type];
+    }
+
+    VertexAttribTypeCase getIntegerVertexAttribTypeValidation(VertexAttribType type) const
+    {
+        return mCachedIntegerVertexAttribTypesValidation[type];
     }
 
     // State change notifications.
@@ -170,7 +231,7 @@ class StateCache final : angle::NonCopyable
     void onDefaultVertexAttributeChange(Context *context);
     void onActiveTextureChange(Context *context);
     void onQueryChange(Context *context);
-    void onTransformFeedbackChange(Context *context);
+    void onActiveTransformFeedbackChange(Context *context);
     void onUniformBufferStateChange(Context *context);
     void onBufferBindingChange(Context *context);
 
@@ -178,11 +239,19 @@ class StateCache final : angle::NonCopyable
     // Cache update functions.
     void updateActiveAttribsMask(Context *context);
     void updateVertexElementLimits(Context *context);
-    void updateBasicDrawStatesError();
+    void updateVertexElementLimitsImpl(Context *context);
     void updateValidDrawModes(Context *context);
     void updateValidBindTextureTypes(Context *context);
+    void updateValidDrawElementsTypes(Context *context);
+    void updateBasicDrawStatesError();
+    void updateBasicDrawElementsError();
+    void updateTransformFeedbackActiveUnpaused(Context *context);
+    void updateVertexAttribTypesValidation(Context *context);
+
+    void setValidDrawModes(bool pointsOK, bool linesOK, bool trisOK, bool lineAdjOK, bool triAdjOK);
 
     intptr_t getBasicDrawStatesErrorImpl(Context *context) const;
+    intptr_t getBasicDrawElementsErrorImpl(Context *context) const;
 
     static constexpr intptr_t kInvalidPointer = 1;
 
@@ -193,12 +262,24 @@ class StateCache final : angle::NonCopyable
     GLint64 mCachedNonInstancedVertexElementLimit;
     GLint64 mCachedInstancedVertexElementLimit;
     mutable intptr_t mCachedBasicDrawStatesError;
+    mutable intptr_t mCachedBasicDrawElementsError;
+    bool mCachedTransformFeedbackActiveUnpaused;
 
     // Reserve an extra slot at the end of these maps for invalid enum.
     angle::PackedEnumMap<PrimitiveMode, bool, angle::EnumSize<PrimitiveMode>() + 1>
         mCachedValidDrawModes;
     angle::PackedEnumMap<TextureType, bool, angle::EnumSize<TextureType>() + 1>
         mCachedValidBindTextureTypes;
+    angle::PackedEnumMap<DrawElementsType, bool, angle::EnumSize<DrawElementsType>() + 1>
+        mCachedValidDrawElementsTypes;
+    angle::PackedEnumMap<VertexAttribType,
+                         VertexAttribTypeCase,
+                         angle::EnumSize<VertexAttribType>() + 1>
+        mCachedVertexAttribTypesValidation;
+    angle::PackedEnumMap<VertexAttribType,
+                         VertexAttribTypeCase,
+                         angle::EnumSize<VertexAttribType>() + 1>
+        mCachedIntegerVertexAttribTypesValidation;
 };
 
 class Context final : public egl::LabeledObject, angle::NonCopyable, public angle::ObserverInterface
@@ -214,7 +295,7 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
             const egl::ClientExtensions &clientExtensions);
 
     egl::Error onDestroy(const egl::Display *display);
-    ~Context();
+    ~Context() override;
 
     void setLabel(EGLLabelKHR label) override;
     EGLLabelKHR getLabel() const override;
@@ -232,6 +313,7 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
     GLuint genPaths(GLsizei range);
     GLuint createProgramPipeline();
     GLuint createShaderProgramv(ShaderType type, GLsizei count, const GLchar *const *strings);
+    GLuint createMemoryObject();
 
     void deleteBuffer(GLuint buffer);
     void deleteShader(GLuint shader);
@@ -240,6 +322,7 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
     void deleteRenderbuffer(GLuint renderbuffer);
     void deletePaths(GLuint first, GLsizei range);
     void deleteProgramPipeline(GLuint pipeline);
+    void deleteMemoryObject(GLuint memoryObject);
 
     // CHROMIUM_path_rendering
     bool isPath(GLuint path) const;
@@ -256,6 +339,9 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
     void getPathParameteriv(GLuint path, GLenum pname, GLint *value);
     void pathStencilFunc(GLenum func, GLint ref, GLuint mask);
 
+    // GL_CHROMIUM_lose_context
+    void loseContext(GraphicsResetStatus current, GraphicsResetStatus other);
+
     // Framebuffers are owned by the Context, so these methods do not pass through
     GLuint createFramebuffer();
     void deleteFramebuffer(GLuint framebuffer);
@@ -268,6 +354,71 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
     GLboolean isFenceNV(GLuint fence);
     void setFenceNV(GLuint fence, GLenum condition);
     GLboolean testFenceNV(GLuint fence);
+
+    // GL_EXT_memory_object
+    void deleteMemoryObjects(GLsizei n, const GLuint *memoryObjects);
+    GLboolean isMemoryObject(GLuint memoryObject);
+    void createMemoryObjects(GLsizei n, GLuint *memoryObjects);
+    void memoryObjectParameteriv(GLuint memoryObject, GLenum pname, const GLint *params);
+    void getMemoryObjectParameteriv(GLuint memoryObject, GLenum pname, GLint *params);
+    void texStorageMem2D(TextureType target,
+                         GLsizei levels,
+                         GLenum internalFormat,
+                         GLsizei width,
+                         GLsizei height,
+                         GLuint memory,
+                         GLuint64 offset);
+    void texStorageMem2DMultisample(TextureType target,
+                                    GLsizei samples,
+                                    GLenum internalFormat,
+                                    GLsizei width,
+                                    GLsizei height,
+                                    GLboolean fixedSampleLocations,
+                                    GLuint memory,
+                                    GLuint64 offset);
+    void texStorageMem3D(TextureType target,
+                         GLsizei levels,
+                         GLenum internalFormat,
+                         GLsizei width,
+                         GLsizei height,
+                         GLsizei depth,
+                         GLuint memory,
+                         GLuint64 offset);
+    void texStorageMem3DMultisample(TextureType target,
+                                    GLsizei samples,
+                                    GLenum internalFormat,
+                                    GLsizei width,
+                                    GLsizei height,
+                                    GLsizei depth,
+                                    GLboolean fixedSampleLocations,
+                                    GLuint memory,
+                                    GLuint64 offset);
+    void bufferStorageMem(TextureType target, GLsizeiptr size, GLuint memory, GLuint64 offset);
+
+    // GL_EXT_memory_object_fd
+    void importMemoryFd(GLuint memory, GLuint64 size, HandleType handleType, GLint fd);
+
+    // GL_EXT_semaphore
+    void genSemaphores(GLsizei n, GLuint *semaphores);
+    void deleteSemaphores(GLsizei n, const GLuint *semaphores);
+    GLboolean isSemaphore(GLuint semaphore);
+    void semaphoreParameterui64v(GLuint semaphore, GLenum pname, const GLuint64 *params);
+    void getSemaphoreParameterui64v(GLuint semaphore, GLenum pname, GLuint64 *params);
+    void waitSemaphore(GLuint semaphore,
+                       GLuint numBufferBarriers,
+                       const GLuint *buffers,
+                       GLuint numTextureBarriers,
+                       const GLuint *textures,
+                       const GLenum *srcLayouts);
+    void signalSemaphore(GLuint semaphore,
+                         GLuint numBufferBarriers,
+                         const GLuint *buffers,
+                         GLuint numTextureBarriers,
+                         const GLuint *textures,
+                         const GLenum *dstLayouts);
+
+    // GL_EXT_semaphore_fd
+    void importSemaphoreFd(GLuint semaphore, HandleType handleType, GLint fd);
 
     // GLES1 emulation: Interface to entry points
     ANGLE_GLES1_CONTEXT_API
@@ -499,7 +650,7 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
     Sync *getSync(GLsync handle) const;
     ANGLE_INLINE Texture *getTexture(GLuint handle) const
     {
-        return mState.mTextures->getTexture(handle);
+        return mState.mTextureManager->getTexture(handle);
     }
 
     Framebuffer *getFramebuffer(GLuint handle) const;
@@ -510,6 +661,7 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
     Query *getQuery(GLuint handle) const;
     TransformFeedback *getTransformFeedback(GLuint handle) const;
     ProgramPipeline *getProgramPipeline(GLuint handle) const;
+    MemoryObject *getMemoryObject(GLuint handle) const;
 
     void objectLabel(GLenum identifier, GLuint name, GLsizei length, const GLchar *label);
     void objectPtrLabel(const void *ptr, GLsizei length, const GLchar *label);
@@ -520,7 +672,8 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
                         GLchar *label) const;
     void getObjectPtrLabel(const void *ptr, GLsizei bufSize, GLsizei *length, GLchar *label) const;
 
-    Texture *getTargetTexture(TextureType type) const;
+    Texture *getTextureByType(TextureType type) const;
+    Texture *getTextureByTarget(TextureTarget target) const;
     Texture *getSamplerTexture(unsigned int sampler, TextureType type) const;
 
     Compiler *getCompiler() const;
@@ -563,6 +716,8 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
                                GLsizei bufSize,
                                GLsizei *length,
                                GLint64 *data);
+    void getUnsignedBytev(GLenum pname, GLubyte *data);
+    void getUnsignedBytei_v(GLenum target, GLuint index, GLubyte *data);
 
     void activeShaderProgram(GLuint pipeline, GLuint program);
     void activeTexture(GLenum texture);
@@ -604,20 +759,23 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
     void vertexAttrib4fv(GLuint index, const GLfloat *values);
     void vertexAttribFormat(GLuint attribIndex,
                             GLint size,
-                            GLenum type,
+                            VertexAttribType type,
                             GLboolean normalized,
                             GLuint relativeOffset);
-    void vertexAttribIFormat(GLuint attribIndex, GLint size, GLenum type, GLuint relativeOffset);
+    void vertexAttribIFormat(GLuint attribIndex,
+                             GLint size,
+                             VertexAttribType type,
+                             GLuint relativeOffset);
     void vertexAttribBinding(GLuint attribIndex, GLuint bindingIndex);
     void vertexAttribPointer(GLuint index,
                              GLint size,
-                             GLenum type,
+                             VertexAttribType type,
                              GLboolean normalized,
                              GLsizei stride,
                              const void *ptr);
     void vertexAttribIPointer(GLuint index,
                               GLint size,
-                              GLenum type,
+                              VertexAttribType type,
                               GLsizei stride,
                               const void *pointer);
     void viewport(GLint x, GLint y, GLsizei width, GLsizei height);
@@ -690,20 +848,23 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
     void drawArrays(PrimitiveMode mode, GLint first, GLsizei count);
     void drawArraysInstanced(PrimitiveMode mode, GLint first, GLsizei count, GLsizei instanceCount);
 
-    void drawElements(PrimitiveMode mode, GLsizei count, GLenum type, const void *indices);
+    void drawElements(PrimitiveMode mode,
+                      GLsizei count,
+                      DrawElementsType type,
+                      const void *indices);
     void drawElementsInstanced(PrimitiveMode mode,
                                GLsizei count,
-                               GLenum type,
+                               DrawElementsType type,
                                const void *indices,
                                GLsizei instances);
     void drawRangeElements(PrimitiveMode mode,
                            GLuint start,
                            GLuint end,
                            GLsizei count,
-                           GLenum type,
+                           DrawElementsType type,
                            const void *indices);
     void drawArraysIndirect(PrimitiveMode mode, const void *indirect);
-    void drawElementsIndirect(PrimitiveMode mode, GLenum type, const void *indirect);
+    void drawElementsIndirect(PrimitiveMode mode, DrawElementsType type, const void *indirect);
 
     void blitFramebuffer(GLint srcX0,
                          GLint srcY0,
@@ -764,7 +925,7 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
                            GLsizei width,
                            GLsizei height);
 
-    void copyTexSubImage3D(TextureType target,
+    void copyTexSubImage3D(TextureTarget target,
                            GLint level,
                            GLint xoffset,
                            GLint yoffset,
@@ -790,18 +951,13 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
                                  GLuint texture,
                                  GLint level,
                                  GLint layer);
-    void framebufferTextureMultiviewLayered(GLenum target,
-                                            GLenum attachment,
-                                            GLuint texture,
-                                            GLint level,
-                                            GLint baseViewIndex,
-                                            GLsizei numViews);
-    void framebufferTextureMultiviewSideBySide(GLenum target,
-                                               GLenum attachment,
-                                               GLuint texture,
-                                               GLint level,
-                                               GLsizei numViews,
-                                               const GLint *viewportOffsets);
+
+    void framebufferTextureMultiview(GLenum target,
+                                     GLenum attachment,
+                                     GLuint texture,
+                                     GLint level,
+                                     GLint baseViewIndex,
+                                     GLsizei numViews);
 
     void drawBuffers(GLsizei n, const GLenum *bufs);
     void readBuffer(GLenum mode);
@@ -835,7 +991,7 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
                           GLenum type,
                           GLsizei bufSize,
                           const void *pixels);
-    void texImage3D(TextureType target,
+    void texImage3D(TextureTarget target,
                     GLint level,
                     GLint internalformat,
                     GLsizei width,
@@ -845,7 +1001,7 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
                     GLenum format,
                     GLenum type,
                     const void *pixels);
-    void texImage3DRobust(TextureType target,
+    void texImage3DRobust(TextureTarget target,
                           GLint level,
                           GLint internalformat,
                           GLsizei width,
@@ -875,7 +1031,7 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
                              GLenum type,
                              GLsizei bufSize,
                              const void *pixels);
-    void texSubImage3D(TextureType target,
+    void texSubImage3D(TextureTarget target,
                        GLint level,
                        GLint xoffset,
                        GLint yoffset,
@@ -886,7 +1042,7 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
                        GLenum format,
                        GLenum type,
                        const void *pixels);
-    void texSubImage3DRobust(TextureType target,
+    void texSubImage3DRobust(TextureTarget target,
                              GLint level,
                              GLint xoffset,
                              GLint yoffset,
@@ -915,7 +1071,7 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
                                     GLsizei imageSize,
                                     GLsizei dataSize,
                                     const GLvoid *data);
-    void compressedTexImage3D(TextureType target,
+    void compressedTexImage3D(TextureTarget target,
                               GLint level,
                               GLenum internalformat,
                               GLsizei width,
@@ -924,7 +1080,7 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
                               GLint border,
                               GLsizei imageSize,
                               const void *data);
-    void compressedTexImage3DRobust(TextureType target,
+    void compressedTexImage3DRobust(TextureTarget target,
                                     GLint level,
                                     GLenum internalformat,
                                     GLsizei width,
@@ -953,7 +1109,7 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
                                        GLsizei imageSize,
                                        GLsizei dataSize,
                                        const GLvoid *data);
-    void compressedTexSubImage3D(TextureType target,
+    void compressedTexSubImage3D(TextureTarget target,
                                  GLint level,
                                  GLint xoffset,
                                  GLint yoffset,
@@ -964,7 +1120,7 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
                                  GLenum format,
                                  GLsizei imageSize,
                                  const void *data);
-    void compressedTexSubImage3DRobust(TextureType target,
+    void compressedTexSubImage3DRobust(TextureTarget target,
                                        GLint level,
                                        GLint xoffset,
                                        GLint yoffset,
@@ -1572,15 +1728,17 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
                                   GLsizei drawcount);
     void multiDrawElements(PrimitiveMode mode,
                            const GLsizei *counts,
-                           GLenum type,
+                           DrawElementsType type,
                            const GLvoid *const *indices,
                            GLsizei drawcount);
     void multiDrawElementsInstanced(PrimitiveMode mode,
                                     const GLsizei *counts,
-                                    GLenum type,
+                                    DrawElementsType type,
                                     const GLvoid *const *indices,
                                     const GLsizei *instanceCounts,
                                     GLsizei drawcount);
+
+    void provokingVertex(ProvokingVertex provokeMode);
 
     void framebufferTexture(GLenum target, GLenum attachment, GLuint texture, GLint level);
 
@@ -1603,7 +1761,7 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
     void validationError(GLenum errorCode, const char *message);
 
     GLenum getError();
-    void markContextLost();
+    void markContextLost(GraphicsResetStatus status);
 
     bool isContextLost() const { return mContextLost; }
 
@@ -1636,28 +1794,24 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
 
     MemoryProgramCache *getMemoryProgramCache() const { return mMemoryProgramCache; }
 
-    // Notification for a state change in a Texture.
-    void onTextureChange(const Texture *texture);
-
     bool hasBeenCurrent() const { return mHasBeenCurrent; }
-    egl::Display *getCurrentDisplay() const { return mCurrentDisplay; }
+    egl::Display *getDisplay() const { return mDisplay; }
     egl::Surface *getCurrentDrawSurface() const { return mCurrentSurface; }
     egl::Surface *getCurrentReadSurface() const { return mCurrentSurface; }
 
-    bool isRobustResourceInitEnabled() const { return mGLState.isRobustResourceInitEnabled(); }
+    bool isRobustResourceInitEnabled() const { return mState.isRobustResourceInitEnabled(); }
 
     bool isCurrentTransformFeedback(const TransformFeedback *tf) const;
 
     bool isCurrentVertexArray(const VertexArray *va) const
     {
-        return mGLState.isCurrentVertexArray(va);
+        return mState.isCurrentVertexArray(va);
     }
 
-    const ContextState &getContextState() const { return mState; }
+    const State &getState() const { return mState; }
     GLint getClientMajorVersion() const { return mState.getClientMajorVersion(); }
     GLint getClientMinorVersion() const { return mState.getClientMinorVersion(); }
     const Version &getClientVersion() const { return mState.getClientVersion(); }
-    const State &getGLState() const { return mState.getState(); }
     const Caps &getCaps() const { return mState.getCaps(); }
     const TextureCapsMap &getTextureCaps() const { return mState.getTextureCaps(); }
     const Extensions &getExtensions() const { return mState.getExtensions(); }
@@ -1671,7 +1825,7 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
 
     ANGLE_INLINE Program *getProgramResolveLink(GLuint handle) const
     {
-        Program *program = mState.mShaderPrograms->getProgram(handle);
+        Program *program = mState.mShaderProgramManager->getProgram(handle);
         if (program)
         {
             program->resolveLink(this);
@@ -1684,12 +1838,12 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
 
     ANGLE_INLINE bool isTextureGenerated(GLuint texture) const
     {
-        return mState.mTextures->isHandleGenerated(texture);
+        return mState.mTextureManager->isHandleGenerated(texture);
     }
 
     ANGLE_INLINE bool isBufferGenerated(GLuint buffer) const
     {
-        return mState.mBuffers->isHandleGenerated(buffer);
+        return mState.mBufferManager->isHandleGenerated(buffer);
     }
 
     bool isRenderbufferGenerated(GLuint renderbuffer) const;
@@ -1715,10 +1869,15 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
     std::shared_ptr<angle::WorkerThreadPool> getWorkerThreadPool() const { return mThreadPool; }
 
     const StateCache &getStateCache() const { return mStateCache; }
+    StateCache &getStateCache() { return mStateCache; }
 
     void onSubjectStateChange(const Context *context,
                               angle::SubjectIndex index,
                               angle::SubjectMessage message) override;
+
+    void onSamplerUniformChange(size_t textureUnitIndex);
+
+    bool isBufferAccessValidationEnabled() const { return mBufferAccessValidationEnabled; }
 
   private:
     void initialize();
@@ -1732,10 +1891,7 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
     angle::Result syncState(const State::DirtyBits &bitMask, const State::DirtyObjects &objectMask);
     angle::Result syncDirtyBits();
     angle::Result syncDirtyBits(const State::DirtyBits &bitMask);
-    ANGLE_INLINE angle::Result syncDirtyObjects(const State::DirtyObjects &objectMask)
-    {
-        return mGLState.syncDirtyObjects(this, objectMask);
-    }
+    angle::Result syncDirtyObjects(const State::DirtyObjects &objectMask);
     angle::Result syncStateForReadPixels();
     angle::Result syncStateForTexImage();
     angle::Result syncStateForBlit();
@@ -1743,6 +1899,8 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
 
     VertexArray *checkVertexArrayAllocation(GLuint vertexArrayHandle);
     TransformFeedback *checkTransformFeedbackAllocation(GLuint transformFeedback);
+
+    angle::Result onProgramLink(Program *programObject);
 
     void detachBuffer(Buffer *buffer);
     void detachTexture(GLuint texture);
@@ -1770,9 +1928,12 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
 
     void setUniform1iImpl(Program *program, GLint location, GLsizei count, const GLint *v);
 
-    ContextState mState;
+    State mState;
     bool mSkipValidation;
     bool mDisplayTextureShareGroup;
+
+    // Recorded errors
+    ErrorSet mErrors;
 
     // Stores for each buffer binding type whether is it allowed to be used in this context.
     angle::PackedEnumBitSet<BufferBinding> mValidBufferBindings;
@@ -1781,20 +1942,12 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
 
     EGLLabelKHR mLabel;
 
-    // Caps to use for validation
-    Caps mCaps;
-    TextureCapsMap mTextureCaps;
-    Extensions mExtensions;
-    Limitations mLimitations;
-
     // Extensions supported by the implementation plus extensions that are implemented entirely
     // within the frontend.
     Extensions mSupportedExtensions;
 
     // Shader compiler. Lazily initialized hence the mutable value.
     mutable BindingPointer<Compiler> mCompiler;
-
-    State mGLState;
 
     const egl::Config *mConfig;
     EGLenum mClientType;
@@ -1821,24 +1974,22 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
     const char *mRequestableExtensionString;
     std::vector<const char *> mRequestableExtensionStrings;
 
-    // Recorded errors
-    ErrorSet mErrors;
-
     // GLES1 renderer state
     std::unique_ptr<GLES1Renderer> mGLES1Renderer;
 
     // Current/lost context flags
     bool mHasBeenCurrent;
     bool mContextLost;
-    GLenum mResetStatus;
+    GraphicsResetStatus mResetStatus;
     bool mContextLostForced;
     GLenum mResetStrategy;
     const bool mRobustAccess;
     const bool mSurfacelessSupported;
     const bool mExplicitContextAvailable;
     egl::Surface *mCurrentSurface;
-    egl::Display *mCurrentDisplay;
+    egl::Display *mDisplay;
     const bool mWebGLContext;
+    bool mBufferAccessValidationEnabled;
     const bool mExtensionsEnabled;
     MemoryProgramCache *mMemoryProgramCache;
 
@@ -1874,6 +2025,7 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
 
     std::shared_ptr<angle::WorkerThreadPool> mThreadPool;
 };
+
 }  // namespace gl
 
 #endif  // LIBANGLE_CONTEXT_H_

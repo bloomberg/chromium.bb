@@ -198,3 +198,25 @@ ul {
 .diff .size-header::after {
   content: " diff";
 }
+
+.table {
+  display: table;
+  margin: auto;
+}
+
+.form-divider {
+  width: 10%;
+  vertical-align: middle;
+}
+
+.form {
+  width: 40%;
+}
+
+.note {
+  margin:20pt 0 10pt;
+}
+
+.center-text {
+  text-align: center;
+}

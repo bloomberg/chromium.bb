@@ -3,8 +3,12 @@
 # found in the LICENSE file.
 
 import collections
+import datetime
 import re
 
+from google.appengine.ext import deferred
+
+from dashboard.pinpoint.models.change import commit_cache
 from dashboard.pinpoint.models.change import repository as repository_module
 from dashboard.services import gitiles_service
 
@@ -14,6 +18,33 @@ class NonLinearError(Exception):
 
 
 Dep = collections.namedtuple('Dep', ('repository_url', 'git_hash'))
+
+
+def ParseDateWithUTCOffset(date_string):
+  # Parsing the utc offset within strptime isn't supported until python 3, so
+  # using workaround from https://stackoverflow.com/questions/26165659/
+  if '+' in date_string:
+    utc_sign = '+'
+  elif '-' in date_string:
+    utc_sign = '-'
+  else:
+    utc_sign = None
+
+  if utc_sign:
+    date_string, utc_offset = date_string.split(utc_sign)
+    date_string = date_string.strip()
+
+  dt = datetime.datetime.strptime(
+      date_string, '%a %b %d %H:%M:%S %Y')
+
+  if utc_sign and len(utc_offset) == 4:
+    if utc_sign == '+':
+      dt -= datetime.timedelta(
+          hours=int(utc_offset[0:2]), minutes=int(utc_offset[2:]))
+    elif utc_sign == '-':
+      dt += datetime.timedelta(
+          hours=int(utc_offset[0:2]), minutes=int(utc_offset[2:]))
+  return dt
 
 
 class Commit(collections.namedtuple('Commit', ('repository', 'git_hash'))):
@@ -87,29 +118,52 @@ class Commit(collections.namedtuple('Commit', ('repository', 'git_hash'))):
 
     return frozenset(commits)
 
-  def AsDict(self):
-    # CommitInfo is cached in gitiles_service.
-    commit_info = gitiles_service.CommitInfo(self.repository_url, self.git_hash)
-    details = {
-        'repository': self.repository,
-        'git_hash': commit_info['commit'],
-        'url': self.repository_url + '/+/' + commit_info['commit'],
-        'subject': commit_info['message'].split('\n', 1)[0],
-        'author': commit_info['author']['email'],
-        'time': commit_info['committer']['time'],
-    }
-    commit_position = _ParseCommitPosition(commit_info['message'])
-    if commit_position:
-      details['commit_position'] = commit_position
-    author = details['author']
-    if (author == 'v8-autoroll@chromium.org' or
-        author.endswith('skia-buildbots.google.com.iam.gserviceaccount.com')):
+  def CacheCommitInfo(self):
+    try:
+      return commit_cache.Get(self.id_string)
+    except KeyError:
+      commit_info = gitiles_service.CommitInfo(
+          self.repository_url, self.git_hash)
+      url = self.repository_url + '/+/' + commit_info['commit']
+      author = commit_info['author']['email']
+
+      created = ParseDateWithUTCOffset(commit_info['committer']['time'])
+
+      subject = commit_info['message'].split('\n', 1)[0]
       message = commit_info['message']
-      if message:
-        m = re.search(r'TBR=([^,^\s]*)', message)
-        if m:
-          details['tbr'] = m.group(1)
-    return details
+
+      commit_cache.Put(self.id_string, url, author, created, subject, message)
+
+      return {
+          'url': url,
+          'author': author,
+          'created': created,
+          'subject': subject,
+          'message': message,
+      }
+
+  def AsDict(self):
+    d = {
+        'repository': self.repository,
+        'git_hash': self.git_hash,
+    }
+
+    d.update(self.CacheCommitInfo())
+    d['created'] = d['created'].isoformat()
+
+    commit_position = _ParseCommitPosition(d['message'])
+    if commit_position:
+      d['commit_position'] = commit_position
+
+    review_url = _ParseCommitField('Reviewed-on: ', d['message'])
+    if review_url:
+      d['review_url'] = review_url
+
+    change_id = _ParseCommitField('Change-Id: ', d['message'])
+    if change_id:
+      d['change_id'] = change_id
+
+    return d
 
   @classmethod
   def FromDep(cls, dep):
@@ -216,18 +270,47 @@ class Commit(collections.namedtuple('Commit', ('repository', 'git_hash'))):
       raise NonLinearError('Repositories differ between Commits: %s vs %s' %
                            (commit_a.repository, commit_b.repository))
 
-    commits = gitiles_service.CommitRange(commit_a.repository_url,
-                                          commit_a.git_hash, commit_b.git_hash)
+    # We need to get the full list of commits in between two git hashes, and
+    # only look into the chain formed by following the first parents of each
+    # commit. This gives us a linear view of the log even in the presence of
+    # merge commits.
+    commits = []
+
+    # The commit_range by default is in reverse-chronological (latest commit
+    # first) order. This means we should keep following the first parent to get
+    # the linear history for a branch that we're exploring.
+    expected_parent = commit_b.git_hash
+    commit_range = gitiles_service.CommitRange(commit_a.repository_url,
+                                               commit_a.git_hash,
+                                               commit_b.git_hash)
+    for commit in commit_range:
+      # Skip commits until we find the parent we're looking for.
+      if commit['commit'] == expected_parent:
+        commits.append(commit)
+        if 'parents' in commit and len(commit['parents']):
+          expected_parent = commit['parents'][0]
+
     # We don't handle NotFoundErrors because we assume that all Commits either
     # came from this method or were already validated elsewhere.
     if len(commits) == 0:
       raise NonLinearError('Commit "%s" does not come before commit "%s".' %
-                           commit_a, commit_b)
+                           (commit_a, commit_b))
+
     if len(commits) == 1:
       return commit_a
+
     commits.pop(0)  # Remove commit_b from the range.
 
+    deferred.defer(
+        _CacheCommitDetails,
+        commit_a.repository, commits[len(commits) / 2]['commit'])
+
     return cls(commit_a.repository, commits[len(commits) / 2]['commit'])
+
+
+def _CacheCommitDetails(repository, git_url):
+  c = Commit(repository, git_url)
+  c.CacheCommitInfo()
 
 
 def _ParseCommitPosition(commit_message):
@@ -242,4 +325,12 @@ def _ParseCommitPosition(commit_message):
                     commit_message, re.MULTILINE)
   if match:
     return int(match.group(1))
+  return None
+
+
+def _ParseCommitField(field, commit_message):
+  for l in commit_message.splitlines():
+    match = l.split(field)
+    if len(match) == 2:
+      return match[1]
   return None

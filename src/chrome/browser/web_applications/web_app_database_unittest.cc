@@ -23,20 +23,26 @@
 
 namespace web_app {
 
-namespace {
+bool operator==(const WebApp::IconInfo& icon_info,
+                const WebApp::IconInfo& icon_info2) {
+  return std::tie(icon_info.url, icon_info.size_in_px) ==
+         std::tie(icon_info2.url, icon_info2.size_in_px);
+}
 
 bool operator==(const WebApp& web_app, const WebApp& web_app2) {
   return std::tie(web_app.app_id(), web_app.name(), web_app.launch_url(),
-                  web_app.description(), web_app.scope(),
-                  web_app.theme_color()) ==
+                  web_app.description(), web_app.scope(), web_app.theme_color(),
+                  web_app.icons()) ==
          std::tie(web_app2.app_id(), web_app2.name(), web_app2.launch_url(),
                   web_app2.description(), web_app2.scope(),
-                  web_app2.theme_color());
+                  web_app2.theme_color(), web_app2.icons());
 }
 
 bool operator!=(const WebApp& web_app, const WebApp& web_app2) {
   return !operator==(web_app, web_app2);
 }
+
+namespace {
 
 bool IsRegistryEqual(const Registry& registry, const Registry& registry2) {
   if (registry.size() != registry2.size())
@@ -72,11 +78,13 @@ class WebAppDatabaseTest : public testing::Test {
 
   static std::unique_ptr<WebApp> CreateWebApp(const std::string& base_url,
                                               int suffix) {
-    const auto launch_url = base_url + base::IntToString(suffix);
+    const auto launch_url = base_url + base::NumberToString(suffix);
     const AppId app_id = GenerateAppIdFromURL(GURL(launch_url));
-    const std::string name = "Name" + base::IntToString(suffix);
-    const std::string description = "Description" + base::IntToString(suffix);
-    const std::string scope = base_url + "/scope" + base::IntToString(suffix);
+    const std::string name = "Name" + base::NumberToString(suffix);
+    const std::string description =
+        "Description" + base::NumberToString(suffix);
+    const std::string scope =
+        base_url + "/scope" + base::NumberToString(suffix);
     const base::Optional<SkColor> theme_color = suffix;
 
     auto app = std::make_unique<WebApp>(app_id);
@@ -86,6 +94,15 @@ class WebAppDatabaseTest : public testing::Test {
     app->SetLaunchUrl(GURL(launch_url));
     app->SetScope(GURL(scope));
     app->SetThemeColor(theme_color);
+
+    const std::string icon_url =
+        base_url + "/icon" + base::NumberToString(suffix);
+    const int icon_size_in_px = 256;
+
+    WebApp::Icons icons;
+    icons.push_back({GURL(icon_url), icon_size_in_px});
+
+    app->SetIcons(std::move(icons));
 
     return app;
   }
@@ -198,6 +215,11 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_TRUE(app->scope().is_empty());
   EXPECT_FALSE(app->theme_color().has_value());
 
+  // |icons| is mandatory data member for a representation in DB. If no icons,
+  // WebAppDatabase::CreateWebApp(from_proto) returns nullptr.
+  WebApp::Icons icons;
+  icons.push_back({GURL("https://example.com/icon"), 512});
+  app->SetIcons(std::move(icons));
   registrar_->RegisterApp(std::move(app));
 
   Registry registry = ReadRegistry();
@@ -214,6 +236,38 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_TRUE(app_copy->description().empty());
   EXPECT_TRUE(app_copy->scope().is_empty());
   EXPECT_FALSE(app_copy->theme_color().has_value());
+}
+
+TEST_F(WebAppDatabaseTest, WebAppWithManyIcons) {
+  InitRegistrar();
+
+  const int num_icons = 32;
+  const std::string base_url = "https://example.com/path";
+
+  auto app = CreateWebApp(base_url, 0);
+  auto app_id = app->app_id();
+
+  WebApp::Icons icons;
+  for (int i = 1; i <= num_icons; ++i) {
+    const std::string icon_url =
+        base_url + "/icon" + base::NumberToString(num_icons);
+    // Let size equals the icon's number squared.
+    const int icon_size_in_px = i * i;
+    icons.push_back({GURL(icon_url), icon_size_in_px});
+  }
+  app->SetIcons(std::move(icons));
+
+  registrar_->RegisterApp(std::move(app));
+
+  Registry registry = ReadRegistry();
+  EXPECT_EQ(1UL, registry.size());
+
+  std::unique_ptr<WebApp>& app_copy = registry.at(app_id);
+  EXPECT_EQ(static_cast<unsigned>(num_icons), app_copy->icons().size());
+  for (int i = 1; i <= num_icons; ++i) {
+    const int icon_size_in_px = i * i;
+    EXPECT_EQ(icon_size_in_px, app_copy->icons()[i - 1].size_in_px);
+  }
 }
 
 }  // namespace web_app

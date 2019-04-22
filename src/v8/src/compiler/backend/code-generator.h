@@ -86,17 +86,17 @@ class DeoptimizationLiteral {
 };
 
 // Generates native code for a sequence of instructions.
-class CodeGenerator final : public GapResolver::Assembler {
+class V8_EXPORT_PRIVATE CodeGenerator final : public GapResolver::Assembler {
  public:
   explicit CodeGenerator(Zone* codegen_zone, Frame* frame, Linkage* linkage,
-                         InstructionSequence* code,
+                         InstructionSequence* instructions,
                          OptimizedCompilationInfo* info, Isolate* isolate,
                          base::Optional<OsrHelper> osr_helper,
                          int start_source_position,
                          JumpOptimizationInfo* jump_opt,
                          PoisoningMitigationLevel poisoning_level,
-                         const AssemblerOptions& options,
-                         int32_t builtin_index);
+                         const AssemblerOptions& options, int32_t builtin_index,
+                         std::unique_ptr<AssemblerBuffer> = {});
 
   // Generate native code. After calling AssembleCode, call FinalizeCode to
   // produce the actual code object. If an error occurs during either phase,
@@ -108,7 +108,7 @@ class CodeGenerator final : public GapResolver::Assembler {
   OwnedVector<trap_handler::ProtectedInstructionData>
   GetProtectedInstructions();
 
-  InstructionSequence* code() const { return code_; }
+  InstructionSequence* instructions() const { return instructions_; }
   FrameAccessState* frame_access_state() const { return frame_access_state_; }
   const Frame* frame() const { return frame_access_state_->frame(); }
   Isolate* isolate() const { return isolate_; }
@@ -130,10 +130,11 @@ class CodeGenerator final : public GapResolver::Assembler {
 
   // Record a safepoint with the given pointer map.
   void RecordSafepoint(ReferenceMap* references, Safepoint::Kind kind,
-                       int arguments, Safepoint::DeoptMode deopt_mode);
+                       Safepoint::DeoptMode deopt_mode);
 
   Zone* zone() const { return zone_; }
   TurboAssembler* tasm() { return &tasm_; }
+  SafepointTableBuilder* safepoint_table_builder() { return &safepoints_; }
   size_t GetSafepointTableOffset() const { return safepoints_.GetCodeOffset(); }
   size_t GetHandlerTableOffset() const { return handler_table_offset_; }
 
@@ -261,7 +262,7 @@ class CodeGenerator final : public GapResolver::Assembler {
     kScalarPush = kRegisterPush | kStackSlotPush
   };
 
-  typedef base::Flags<PushTypeFlag> PushTypeFlags;
+  using PushTypeFlags = base::Flags<PushTypeFlag>;
 
   static bool IsValidPush(InstructionOperand source, PushTypeFlags push_type);
 
@@ -308,6 +309,7 @@ class CodeGenerator final : public GapResolver::Assembler {
                                 int first_unused_stack_slot);
 
   void FinishCode();
+  void MaybeEmitOutOfLineConstantPool();
 
   // ===========================================================================
   // ============== Architecture-specific gap resolver methods. ================
@@ -400,7 +402,7 @@ class CodeGenerator final : public GapResolver::Assembler {
   Isolate* isolate_;
   FrameAccessState* frame_access_state_;
   Linkage* const linkage_;
-  InstructionSequence* const code_;
+  InstructionSequence* const instructions_;
   UnwindingInfoWriter unwinding_info_writer_;
   OptimizedCompilationInfo* const info_;
   Label* const labels_;
@@ -415,10 +417,10 @@ class CodeGenerator final : public GapResolver::Assembler {
   ZoneDeque<DeoptimizationExit*> deoptimization_exits_;
   ZoneDeque<DeoptimizationState*> deoptimization_states_;
   ZoneDeque<DeoptimizationLiteral> deoptimization_literals_;
-  size_t inlined_function_count_;
+  size_t inlined_function_count_ = 0;
   TranslationBuffer translations_;
-  int handler_table_offset_;
-  int last_lazy_deopt_pc_;
+  int handler_table_offset_ = 0;
+  int last_lazy_deopt_pc_ = 0;
 
   // kArchCallCFunction could be reached either:
   //   kArchCallCFunction;

@@ -24,7 +24,7 @@ namespace remoting {
 class ActionExecutor;
 class AudioCapturer;
 class ClientSessionControl;
-class FileProxyWrapper;
+class FileOperations;
 class InputInjector;
 class ScreenControls;
 
@@ -43,7 +43,7 @@ class DesktopEnvironment {
   virtual std::unique_ptr<webrtc::DesktopCapturer> CreateVideoCapturer() = 0;
   virtual std::unique_ptr<webrtc::MouseCursorMonitor>
   CreateMouseCursorMonitor() = 0;
-  virtual std::unique_ptr<FileProxyWrapper> CreateFileProxyWrapper() = 0;
+  virtual std::unique_ptr<FileOperations> CreateFileOperations() = 0;
 
   // Returns the set of all capabilities supported by |this|.
   virtual std::string GetCapabilities() const = 0;

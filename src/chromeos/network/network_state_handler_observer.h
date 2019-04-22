@@ -8,8 +8,8 @@
 #include <string>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/macros.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/network/network_type_pattern.h"
 
 namespace chromeos {
@@ -19,7 +19,7 @@ class NetworkState;
 
 // Observer class for all network state changes, including changes to
 // active (connecting or connected) services.
-class CHROMEOS_EXPORT NetworkStateHandlerObserver {
+class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkStateHandlerObserver {
  public:
   NetworkStateHandlerObserver();
   virtual ~NetworkStateHandlerObserver();
@@ -40,6 +40,13 @@ class CHROMEOS_EXPORT NetworkStateHandlerObserver {
 
   // The connection state of |network| changed.
   virtual void NetworkConnectionStateChanged(const NetworkState* network);
+
+  // Triggered when the connection state of any current or previously active
+  // (connected or connecting) network changes. Includes significant changes to
+  // the signal strength. Provides the current list of active networks, which
+  // may include a VPN.
+  virtual void ActiveNetworksChanged(
+      const std::vector<const NetworkState*>& active_networks);
 
   // One or more properties of |network| have been updated. Note: this will get
   // called in *addition* to NetworkConnectionStateChanged() when the

@@ -11,7 +11,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -195,7 +194,7 @@ class EndToEndAsyncTest : public testing::Test {
       response_strings_.push_back(std::string());
     }
     run_loop_->Quit();
-  };
+  }
 
   // Wait for the given number of errors.
   void WaitForErrors(size_t num_errors) {
@@ -310,7 +309,7 @@ TEST_F(EndToEndAsyncTest, EchoWithErrorCallback) {
 TEST_F(EndToEndAsyncTest, EchoThreeTimes) {
   const char* kMessages[] = { "foo", "bar", "baz" };
 
-  for (size_t i = 0; i < arraysize(kMessages); ++i) {
+  for (size_t i = 0; i < base::size(kMessages); ++i) {
     // Create the method call.
     MethodCall method_call("org.chromium.TestInterface", "Echo");
     MessageWriter writer(&method_call);

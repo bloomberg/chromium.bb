@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/execution_context/remote_security_context.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
 #include "third_party/blink/renderer/core/frame/remote_frame_view.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace cc {
 class Layer;
@@ -89,11 +90,10 @@ inline RemoteFrameView* RemoteFrame::View() const {
   return view_.Get();
 }
 
-DEFINE_TYPE_CASTS(RemoteFrame,
-                  Frame,
-                  remoteFrame,
-                  remoteFrame->IsRemoteFrame(),
-                  remoteFrame.IsRemoteFrame());
+template <>
+struct DowncastTraits<RemoteFrame> {
+  static bool AllowFrom(const Frame& frame) { return frame.IsRemoteFrame(); }
+};
 
 }  // namespace blink
 

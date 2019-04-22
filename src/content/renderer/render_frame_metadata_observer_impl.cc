@@ -81,6 +81,21 @@ void RenderFrameMetadataObserverImpl::OnRenderFrameSubmission(
         needs_activation_notification;
     render_frame_metadata_observer_client_->OnRenderFrameMetadataChanged(
         needs_activation_notification ? last_frame_token_ : 0u, metadata_copy);
+    TRACE_EVENT_WITH_FLOW1(
+        TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"),
+        "RenderFrameMetadataObserverImpl::OnRenderFrameSubmission",
+        metadata_copy.local_surface_id_allocation &&
+                metadata_copy.local_surface_id_allocation->IsValid()
+            ? metadata_copy.local_surface_id_allocation->local_surface_id()
+                      .submission_trace_id() +
+                  metadata_copy.local_surface_id_allocation->local_surface_id()
+                      .embed_trace_id()
+            : 0,
+        TRACE_EVENT_FLAG_FLOW_OUT, "local_surface_id_allocation",
+        metadata_copy.local_surface_id_allocation
+            ? metadata_copy.local_surface_id_allocation->local_surface_id()
+                  .ToString()
+            : "null");
   }
 
   // Always cache the initial frame token, so that if a test connects later on

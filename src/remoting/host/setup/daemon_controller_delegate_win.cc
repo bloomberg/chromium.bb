@@ -11,8 +11,8 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "base/win/scoped_bstr.h"
@@ -75,8 +75,8 @@ bool ReadConfig(const base::FilePath& filename,
   }
 
   // Parse the JSON configuration, expecting it to contain a dictionary.
-  std::unique_ptr<base::Value> value =
-      base::JSONReader::Read(file_content, base::JSON_ALLOW_TRAILING_COMMAS);
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(
+      file_content, base::JSON_ALLOW_TRAILING_COMMAS);
 
   base::DictionaryValue* dictionary;
   if (!value || !value->GetAsDictionary(&dictionary)) {
@@ -159,7 +159,8 @@ bool WriteConfig(const std::string& content) {
   }
 
   // Extract the configuration data that the user will verify.
-  std::unique_ptr<base::Value> config_value = base::JSONReader::Read(content);
+  std::unique_ptr<base::Value> config_value =
+      base::JSONReader::ReadDeprecated(content);
   if (!config_value.get()) {
     return false;
   }
@@ -384,7 +385,7 @@ void DaemonControllerDelegateWin::UpdateConfig(
     std::unique_ptr<base::DictionaryValue> config,
     const DaemonController::CompletionCallback& done) {
   // Check for bad keys.
-  for (size_t i = 0; i < arraysize(kReadonlyKeys); ++i) {
+  for (size_t i = 0; i < base::size(kReadonlyKeys); ++i) {
     if (config->HasKey(kReadonlyKeys[i])) {
       LOG(ERROR) << "Cannot update config: '" << kReadonlyKeys[i]
                  << "' is read only.";

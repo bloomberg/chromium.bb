@@ -130,7 +130,7 @@ std::unique_ptr<Shape> Shape::CreateShape(const BasicShape* basic_shape,
 
   switch (basic_shape->GetType()) {
     case BasicShape::kBasicShapeCircleType: {
-      const BasicShapeCircle* circle = ToBasicShapeCircle(basic_shape);
+      const BasicShapeCircle* circle = To<BasicShapeCircle>(basic_shape);
       FloatPoint center =
           FloatPointForCenterCoordinate(circle->CenterX(), circle->CenterY(),
                                         FloatSize(box_width, box_height));
@@ -144,7 +144,7 @@ std::unique_ptr<Shape> Shape::CreateShape(const BasicShape* basic_shape,
     }
 
     case BasicShape::kBasicShapeEllipseType: {
-      const BasicShapeEllipse* ellipse = ToBasicShapeEllipse(basic_shape);
+      const BasicShapeEllipse* ellipse = To<BasicShapeEllipse>(basic_shape);
       FloatPoint center =
           FloatPointForCenterCoordinate(ellipse->CenterX(), ellipse->CenterY(),
                                         FloatSize(box_width, box_height));
@@ -160,7 +160,7 @@ std::unique_ptr<Shape> Shape::CreateShape(const BasicShape* basic_shape,
     }
 
     case BasicShape::kBasicShapePolygonType: {
-      const BasicShapePolygon* polygon = ToBasicShapePolygon(basic_shape);
+      const BasicShapePolygon* polygon = To<BasicShapePolygon>(basic_shape);
       const Vector<Length>& values = polygon->Values();
       wtf_size_t values_size = values.size();
       DCHECK(!(values_size % 2));
@@ -176,7 +176,7 @@ std::unique_ptr<Shape> Shape::CreateShape(const BasicShape* basic_shape,
     }
 
     case BasicShape::kBasicShapeInsetType: {
-      const BasicShapeInset& inset = *ToBasicShapeInset(basic_shape);
+      const BasicShapeInset& inset = *To<BasicShapeInset>(basic_shape);
       float left = FloatValueForLength(inset.Left(), box_width);
       float top = FloatValueForLength(inset.Top(), box_height);
       float right = FloatValueForLength(inset.Right(), box_width);
@@ -255,14 +255,11 @@ static bool ExtractImageData(Image* image,
   PaintFlags flags;
   FloatRect image_source_rect(FloatPoint(), FloatSize(image->Size()));
   IntRect image_dest_rect(IntPoint(), image_size);
-  // TODO(ccameron): No color conversion is required here.
-  std::unique_ptr<cc::PaintCanvas> canvas =
-      color_params.WrapCanvas(surface->getCanvas());
-  canvas->save();
-  canvas->clear(SK_ColorTRANSPARENT);
+  SkiaPaintCanvas canvas(surface->getCanvas());
+  canvas.clear(SK_ColorTRANSPARENT);
 
-  image->Draw(canvas.get(), flags, FloatRect(image_dest_rect),
-              image_source_rect, kDoNotRespectImageOrientation,
+  image->Draw(&canvas, flags, FloatRect(image_dest_rect), image_source_rect,
+              kDoNotRespectImageOrientation,
               Image::kDoNotClampImageToSourceRect, Image::kSyncDecode);
 
   return StaticBitmapImage::ConvertToArrayBufferContents(

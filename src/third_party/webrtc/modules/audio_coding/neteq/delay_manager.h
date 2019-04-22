@@ -13,12 +13,14 @@
 
 #include <string.h>  // Provide access to size_t.
 
+#include <deque>
 #include <memory>
-#include <vector>
 
 #include "absl/types/optional.h"
+#include "modules/audio_coding/neteq/histogram.h"
+#include "modules/audio_coding/neteq/statistics_calculator.h"
 #include "modules/audio_coding/neteq/tick_timer.h"
-#include "rtc_base/constructormagic.h"
+#include "rtc_base/constructor_magic.h"
 
 namespace webrtc {
 
@@ -27,22 +29,34 @@ class DelayPeakDetector;
 
 class DelayManager {
  public:
-  typedef std::vector<int> IATVector;
+  enum HistogramMode {
+    INTER_ARRIVAL_TIME,
+    RELATIVE_ARRIVAL_DELAY,
+  };
+
+  DelayManager(size_t max_packets_in_buffer,
+               int base_minimum_delay_ms,
+               int histogram_quantile,
+               HistogramMode histogram_mode,
+               bool enable_rtx_handling,
+               DelayPeakDetector* peak_detector,
+               const TickTimer* tick_timer,
+               StatisticsCalculator* statistics,
+               std::unique_ptr<Histogram> histogram);
 
   // Create a DelayManager object. Notify the delay manager that the packet
   // buffer can hold no more than |max_packets_in_buffer| packets (i.e., this
   // is the number of packet slots in the buffer) and that the target delay
-  // should be greater than or equal to |base_min_target_delay_ms|. Supply a
+  // should be greater than or equal to |base_minimum_delay_ms|. Supply a
   // PeakDetector object to the DelayManager.
-  DelayManager(size_t max_packets_in_buffer,
-               int base_min_target_delay_ms,
-               DelayPeakDetector* peak_detector,
-               const TickTimer* tick_timer);
+  static std::unique_ptr<DelayManager> Create(size_t max_packets_in_buffer,
+                                              int base_minimum_delay_ms,
+                                              bool enable_rtx_handling,
+                                              DelayPeakDetector* peak_detector,
+                                              const TickTimer* tick_timer,
+                                              StatisticsCalculator* statistics);
 
   virtual ~DelayManager();
-
-  // Read the inter-arrival time histogram. Mainly for testing purposes.
-  virtual const IATVector& iat_vector() const;
 
   // Updates the delay manager with a new incoming packet, with
   // |sequence_number| and |timestamp| from the RTP header. This updates the
@@ -57,7 +71,7 @@ class DelayManager {
   // Sets target_level_ (in Q8) and returns the same value. Also calculates
   // and updates base_target_level_, which is the target buffer level before
   // taking delay peaks into account.
-  virtual int CalculateTargetLevel(int iat_packets);
+  virtual int CalculateTargetLevel(int iat_packets, bool reordered);
 
   // Notifies the DelayManager of how much audio data is carried in each packet.
   // The method updates the DelayPeakDetector too, and resets the inter-arrival
@@ -101,53 +115,74 @@ class DelayManager {
   // packet will shift the sequence numbers for the following packets.
   virtual void RegisterEmptyPacket();
 
-  // Apply compression or stretching to the IAT histogram, for a change in frame
-  // size. This returns an updated histogram. This function is public for
-  // testability.
-  static IATVector ScaleHistogram(const IATVector& histogram,
-                                  int old_packet_length,
-                                  int new_packet_length);
-
   // Accessors and mutators.
   // Assuming |delay| is in valid range.
   virtual bool SetMinimumDelay(int delay_ms);
   virtual bool SetMaximumDelay(int delay_ms);
+  virtual bool SetBaseMinimumDelay(int delay_ms);
+  virtual int GetBaseMinimumDelay() const;
   virtual int base_target_level() const;
   virtual void set_streaming_mode(bool value);
   virtual int last_pack_cng_or_dtmf() const;
   virtual void set_last_pack_cng_or_dtmf(int value);
 
   // This accessor is only intended for testing purposes.
-  const absl::optional<int>& forced_limit_probability_for_test() const {
-    return forced_limit_probability_;
+  int effective_minimum_delay_ms_for_test() const {
+    return effective_minimum_delay_ms_;
   }
 
+  // This accessor is only intended for testing purposes.
+  HistogramMode histogram_mode() const { return histogram_mode_; }
+  int histogram_quantile() const { return histogram_quantile_; }
+  int histogram_forget_factor() const { return histogram_->forget_factor(); }
+
  private:
-  // Sets |iat_vector_| to the default start distribution and sets the
-  // |base_target_level_| and |target_level_| to the corresponding values.
-  void ResetHistogram();
+  // Provides value which minimum delay can't exceed based on current buffer
+  // size and given |maximum_delay_ms_|. Lower bound is a constant 0.
+  int MinimumDelayUpperBound() const;
+
+  // Provides 75% of currently possible maximum buffer size in milliseconds.
+  int MaxBufferTimeQ75() const;
+
+  // Updates |delay_history_|.
+  void UpdateDelayHistory(int iat_delay);
+
+  // Calculate relative packet arrival delay from |delay_history_|.
+  int CalculateRelativePacketArrivalDelay() const;
 
   // Updates |iat_cumulative_sum_| and |max_iat_cumulative_sum_|. (These are
   // used by the streaming mode.) This method is called by Update().
   void UpdateCumulativeSums(int packet_len_ms, uint16_t sequence_number);
 
-  // Updates the histogram |iat_vector_|. The probability for inter-arrival time
-  // equal to |iat_packets| (in integer packets) is increased slightly, while
-  // all other entries are decreased. This method is called by Update().
-  void UpdateHistogram(size_t iat_packets);
+  // Updates |effective_minimum_delay_ms_| delay based on current
+  // |minimum_delay_ms_|, |base_minimum_delay_ms_| and |maximum_delay_ms_|
+  // and buffer size.
+  void UpdateEffectiveMinimumDelay();
 
   // Makes sure that |target_level_| is not too large, taking
   // |max_packets_in_buffer_| and |extra_delay_ms_| into account. This method is
   // called by Update().
   void LimitTargetLevel();
 
+  // Makes sure that |delay_ms| is less than maximum delay, if any maximum
+  // is set. Also, if possible check |delay_ms| to be less than 75% of
+  // |max_packets_in_buffer_|.
+  bool IsValidMinimumDelay(int delay_ms) const;
+
+  bool IsValidBaseMinimumDelay(int delay_ms) const;
+
   bool first_packet_received_;
   const size_t max_packets_in_buffer_;  // Capacity of the packet buffer.
-  IATVector iat_vector_;                // Histogram of inter-arrival times.
-  int iat_factor_;  // Forgetting factor for updating the IAT histogram (Q15).
+  std::unique_ptr<Histogram> histogram_;
+  const int histogram_quantile_;
+  const HistogramMode histogram_mode_;
   const TickTimer* tick_timer_;
-  const int base_min_target_delay_ms_;  // Lower bound for target_level_ and
-                                        // minimum_delay_ms_.
+  StatisticsCalculator* statistics_;
+  int base_minimum_delay_ms_;
+  // Provides delay which is used by LimitTargetLevel as lower bound on target
+  // delay.
+  int effective_minimum_delay_ms_;
+
   // Time elapsed since last packet.
   std::unique_ptr<TickTimer::Stopwatch> packet_iat_stopwatch_;
   int base_target_level_;  // Currently preferred buffer level before peak
@@ -169,7 +204,9 @@ class DelayManager {
   DelayPeakDetector& peak_detector_;
   int last_pack_cng_or_dtmf_;
   const bool frame_length_change_experiment_;
-  const absl::optional<int> forced_limit_probability_;
+  const bool enable_rtx_handling_;
+  int num_reordered_packets_ = 0;  // Number of consecutive reordered packets.
+  std::deque<int> delay_history_;
 
   RTC_DISALLOW_COPY_AND_ASSIGN(DelayManager);
 };

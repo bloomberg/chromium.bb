@@ -7,6 +7,8 @@
 
 #include <string>
 
+namespace metrics {
+
 // Struct containing the CPU identity fields used to choose perf commands.
 // These are populated from base::CPU, but having them in a settable struct
 // makes things testable.
@@ -57,5 +59,7 @@ extern const CpuUarchTableEntry kCpuUarchTable[];
 extern const CpuUarchTableEntry* kCpuUarchTableEnd;
 
 }  // namespace internal
+
+}  // namespace metrics
 
 #endif  // CHROME_BROWSER_METRICS_PERF_CPU_IDENTITY_H_

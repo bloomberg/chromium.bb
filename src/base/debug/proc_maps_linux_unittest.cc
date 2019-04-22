@@ -7,8 +7,8 @@
 
 #include "base/debug/proc_maps_linux.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
@@ -172,7 +172,7 @@ TEST(ProcMapsTest, Permissions) {
          MappedMemoryRegion::EXECUTE | MappedMemoryRegion::PRIVATE},
   };
 
-  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+  for (size_t i = 0; i < base::size(kTestCases); ++i) {
     SCOPED_TRACE(
         base::StringPrintf("kTestCases[%zu] = %s", i, kTestCases[i].input));
 
@@ -185,13 +185,14 @@ TEST(ProcMapsTest, Permissions) {
   }
 }
 
-#if defined(ADDRESS_SANITIZER)
 // AddressSanitizer may move local variables to a dedicated "fake stack" which
 // is outside the stack region listed in /proc/self/maps. We disable ASan
 // instrumentation for this function to force the variable to be local.
-__attribute__((no_sanitize_address))
-#endif
-void CheckProcMapsRegions(const std::vector<MappedMemoryRegion> &regions) {
+//
+// Similarly, HWAddressSanitizer may add a tag to all stack pointers which may
+// move it outside of the stack regions in /proc/self/maps.
+__attribute__((no_sanitize("address", "hwaddress"))) void CheckProcMapsRegions(
+    const std::vector<MappedMemoryRegion>& regions) {
   // We should be able to find both the current executable as well as the stack
   // mapped into memory. Use the address of |exe_path| as a way of finding the
   // stack.
@@ -268,7 +269,7 @@ TEST(ProcMapsTest, MissingFields) {
     "00400000-0040b000 r-xp 00000000 794418 /bin/cat\n",   // Missing device.
   };
 
-  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+  for (size_t i = 0; i < base::size(kTestCases); ++i) {
     SCOPED_TRACE(base::StringPrintf("kTestCases[%zu] = %s", i, kTestCases[i]));
     std::vector<MappedMemoryRegion> regions;
     EXPECT_FALSE(ParseProcMaps(kTestCases[i], &regions));
@@ -285,7 +286,7 @@ TEST(ProcMapsTest, InvalidInput) {
     "00400000-0040b000 rwxp 00000000 fc:00 parse! /bin/cat\n",
   };
 
-  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+  for (size_t i = 0; i < base::size(kTestCases); ++i) {
     SCOPED_TRACE(base::StringPrintf("kTestCases[%zu] = %s", i, kTestCases[i]));
     std::vector<MappedMemoryRegion> regions;
     EXPECT_FALSE(ParseProcMaps(kTestCases[i], &regions));

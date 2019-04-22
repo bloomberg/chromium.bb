@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/json/json_reader.h"
@@ -89,8 +90,9 @@ void CreateRequestValueFromJSON(const std::string& json,
 
   int json_error_code;
   std::string json_error_msg;
-  std::unique_ptr<base::Value> value = base::JSONReader::ReadAndReturnError(
-      json, base::JSON_PARSE_RFC, &json_error_code, &json_error_msg);
+  std::unique_ptr<base::Value> value =
+      base::JSONReader::ReadAndReturnErrorDeprecated(
+          json, base::JSON_PARSE_RFC, &json_error_code, &json_error_msg);
   ASSERT_TRUE(value.get()) << json_error_msg;
 
   base::ListValue* value_as_list;

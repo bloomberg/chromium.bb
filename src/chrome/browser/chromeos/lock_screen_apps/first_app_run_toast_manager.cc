@@ -130,8 +130,8 @@ void FirstAppRunToastManager::OnAppWindowActivated(
     // activation completes.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&FirstAppRunToastManager::CreateAndShowToastDialog,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&FirstAppRunToastManager::CreateAndShowToastDialog,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 }
 

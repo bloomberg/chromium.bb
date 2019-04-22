@@ -18,10 +18,9 @@ class ChromePDFWebContentsHelperClient
   // pdf::PDFWebContentsHelperClient:
   void UpdateContentRestrictions(content::WebContents* contents,
                                  int content_restrictions) override;
-
   void OnPDFHasUnsupportedFeature(content::WebContents* contents) override;
-
   void OnSaveURL(content::WebContents* contents) override;
+  void SetPluginCanSave(content::WebContents* contents, bool can_save) override;
 
   DISALLOW_COPY_AND_ASSIGN(ChromePDFWebContentsHelperClient);
 };

@@ -14,7 +14,6 @@
 
 #include "dawn_native/vulkan/BufferVk.h"
 
-#include "dawn_native/vulkan/BufferUploader.h"
 #include "dawn_native/vulkan/DeviceVk.h"
 #include "dawn_native/vulkan/FencedDeleter.h"
 
@@ -138,22 +137,15 @@ namespace dawn_native { namespace vulkan {
     }
 
     Buffer::~Buffer() {
-        Device* device = ToBackend(GetDevice());
-
-        device->GetMemoryAllocator()->Free(&mMemoryAllocation);
-
-        if (mHandle != VK_NULL_HANDLE) {
-            device->GetFencedDeleter()->DeleteWhenUnused(mHandle);
-            mHandle = VK_NULL_HANDLE;
-        }
+        DestroyInternal();
     }
 
     void Buffer::OnMapReadCommandSerialFinished(uint32_t mapSerial, const void* data) {
-        CallMapReadCallback(mapSerial, DAWN_BUFFER_MAP_ASYNC_STATUS_SUCCESS, data);
+        CallMapReadCallback(mapSerial, DAWN_BUFFER_MAP_ASYNC_STATUS_SUCCESS, data, GetSize());
     }
 
     void Buffer::OnMapWriteCommandSerialFinished(uint32_t mapSerial, void* data) {
-        CallMapWriteCallback(mapSerial, DAWN_BUFFER_MAP_ASYNC_STATUS_SUCCESS, data);
+        CallMapWriteCallback(mapSerial, DAWN_BUFFER_MAP_ASYNC_STATUS_SUCCESS, data, GetSize());
     }
 
     VkBuffer Buffer::GetHandle() const {
@@ -196,17 +188,7 @@ namespace dawn_native { namespace vulkan {
         mLastUsage = usage;
     }
 
-    void Buffer::SetSubDataImpl(uint32_t start, uint32_t count, const uint8_t* data) {
-        Device* device = ToBackend(GetDevice());
-
-        VkCommandBuffer commands = device->GetPendingCommandBuffer();
-        TransitionUsageNow(commands, dawn::BufferUsageBit::TransferDst);
-
-        BufferUploader* uploader = device->GetBufferUploader();
-        uploader->BufferSubData(mHandle, start, count, data);
-    }
-
-    void Buffer::MapReadAsyncImpl(uint32_t serial, uint32_t start, uint32_t /*count*/) {
+    void Buffer::MapReadAsyncImpl(uint32_t serial) {
         Device* device = ToBackend(GetDevice());
 
         VkCommandBuffer commands = device->GetPendingCommandBuffer();
@@ -216,10 +198,10 @@ namespace dawn_native { namespace vulkan {
         ASSERT(memory != nullptr);
 
         MapRequestTracker* tracker = device->GetMapRequestTracker();
-        tracker->Track(this, serial, memory + start, false);
+        tracker->Track(this, serial, memory, false);
     }
 
-    void Buffer::MapWriteAsyncImpl(uint32_t serial, uint32_t start, uint32_t /*count*/) {
+    void Buffer::MapWriteAsyncImpl(uint32_t serial) {
         Device* device = ToBackend(GetDevice());
 
         VkCommandBuffer commands = device->GetPendingCommandBuffer();
@@ -229,11 +211,20 @@ namespace dawn_native { namespace vulkan {
         ASSERT(memory != nullptr);
 
         MapRequestTracker* tracker = device->GetMapRequestTracker();
-        tracker->Track(this, serial, memory + start, true);
+        tracker->Track(this, serial, memory, true);
     }
 
     void Buffer::UnmapImpl() {
         // No need to do anything, we keep CPU-visible memory mapped at all time.
+    }
+
+    void Buffer::DestroyImpl() {
+        ToBackend(GetDevice())->GetMemoryAllocator()->Free(&mMemoryAllocation);
+
+        if (mHandle != VK_NULL_HANDLE) {
+            ToBackend(GetDevice())->GetFencedDeleter()->DeleteWhenUnused(mHandle);
+            mHandle = VK_NULL_HANDLE;
+        }
     }
 
     // MapRequestTracker
@@ -252,7 +243,7 @@ namespace dawn_native { namespace vulkan {
         request.data = data;
         request.isWrite = isWrite;
 
-        mInflightRequests.Enqueue(std::move(request), mDevice->GetSerial());
+        mInflightRequests.Enqueue(std::move(request), mDevice->GetPendingCommandSerial());
     }
 
     void MapRequestTracker::Tick(Serial finishedSerial) {

@@ -78,6 +78,10 @@ class TestDeviceEventDispatcherEvdev : public DeviceEventDispatcherEvdev {
       const std::vector<InputDevice>& devices) override {
     event_factory_evdev_->DispatchTouchpadDevicesUpdated(devices);
   }
+  void DispatchUncategorizedDevicesUpdated(
+      const std::vector<InputDevice>& devices) override {
+    event_factory_evdev_->DispatchUncategorizedDevicesUpdated(devices);
+  }
   void DispatchDeviceListsComplete() override {
     event_factory_evdev_->DispatchDeviceListsComplete();
   }

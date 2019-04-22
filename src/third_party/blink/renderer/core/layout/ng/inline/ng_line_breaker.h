@@ -18,10 +18,8 @@
 namespace blink {
 
 class Hyphenation;
-class NGContainerFragmentBuilder;
 class NGInlineBreakToken;
 class NGInlineItem;
-struct NGPositionedFloat;
 
 // The line breaker needs to know which mode its in to properly handle floats.
 enum class NGLineBreakerMode { kContent, kMinContent, kMaxContent };
@@ -37,23 +35,40 @@ class CORE_EXPORT NGLineBreaker {
   NGLineBreaker(NGInlineNode,
                 NGLineBreakerMode,
                 const NGConstraintSpace&,
-                Vector<NGPositionedFloat>*,
-                NGUnpositionedFloatVector*,
-                NGContainerFragmentBuilder* container_builder,
-                NGExclusionSpace*,
-                unsigned handled_float_index,
                 const NGLineLayoutOpportunity&,
-                const NGInlineBreakToken* = nullptr);
+                const NGPositionedFloatVector& leading_floats,
+                unsigned handled_leading_floats_index,
+                const NGInlineBreakToken*,
+                NGExclusionSpace*);
   ~NGLineBreaker();
+
+  const NGInlineItemsData& ItemsData() const { return items_data_; }
 
   // Compute the next line break point and produces NGInlineItemResults for
   // the line.
-  void NextLine(NGLineInfo*);
+  inline void NextLine(NGLineInfo* line_info) {
+    NextLine(NGSizeIndefinite, nullptr, line_info);
+  }
+
+  // During the min/max size calculation we need a special percentage
+  // resolution block-size to pass to children/pass to children.
+  // TODO(layout-dev): Split into two methods (NextLine/NextLineForMinMax) or,
+  // better yet, subclass or templetize the line-breaker for Min/Max computation
+  // if we can do that without incurring a performance penalty
+  void NextLine(LayoutUnit percentage_resolution_block_size_for_min_max,
+                Vector<LayoutObject*>* out_floats_for_min_max,
+                NGLineInfo*);
 
   bool IsFinished() const { return item_index_ >= Items().size(); }
 
   // Create an NGInlineBreakToken for the last line returned by NextLine().
   scoped_refptr<NGInlineBreakToken> CreateBreakToken(const NGLineInfo&) const;
+
+  // Computing |NGLineBreakerMode::kMinContent| with |MaxSizeCache| caches
+  // information that can help computing |kMaxContent|. It is recommended to set
+  // this when computing both |kMinContent| and |kMaxContent|.
+  using MaxSizeCache = Vector<LayoutUnit, 64>;
+  void SetMaxSizeCache(MaxSizeCache* max_size_cache);
 
   // Compute NGInlineItemResult for an open tag item.
   // Returns true if this item has edge and may have non-zero inline size.
@@ -61,21 +76,37 @@ class CORE_EXPORT NGLineBreaker {
                                    const NGConstraintSpace&,
                                    NGInlineItemResult*);
 
+  // This enum is private, except for |WhitespaceStateForTesting()|. See
+  // |whitespace_| member.
+  enum class WhitespaceState {
+    kLeading,
+    kNone,
+    kUnknown,
+    kCollapsible,
+    kCollapsed,
+    kPreserved,
+  };
+  WhitespaceState TrailingWhitespaceForTesting() const {
+    return trailing_whitespace_;
+  }
+
  private:
   const String& Text() const { return items_data_.text_content; }
   const Vector<NGInlineItem>& Items() const { return items_data_.items; }
 
-  NGInlineItemResult* AddItem(const NGInlineItem&, unsigned end_offset);
-  NGInlineItemResult* AddItem(const NGInlineItem&);
-  void SetLineEndFragment(scoped_refptr<const NGPhysicalTextFragment>);
-  void ComputeCanBreakAfter(NGInlineItemResult*) const;
+  NGInlineItemResult* AddItem(const NGInlineItem&,
+                              unsigned end_offset,
+                              NGLineInfo*);
+  NGInlineItemResult* AddItem(const NGInlineItem&, NGLineInfo*);
+  void SetLineEndFragment(scoped_refptr<const NGPhysicalTextFragment>,
+                          NGLineInfo*);
 
-  void BreakLine();
+  void BreakLine(LayoutUnit percentage_resolution_block_size_for_min_max,
+                 Vector<LayoutObject*>* out_floats_for_min_max,
+                 NGLineInfo*);
+  void PrepareNextLine(NGLineInfo*);
 
-  void PrepareNextLine();
-
-  void UpdatePosition();
-  void ComputeLineLocation() const;
+  void ComputeLineLocation(NGLineInfo*) const;
 
   enum class LineBreakState {
     // The line breaking is complete.
@@ -86,44 +117,59 @@ class CORE_EXPORT NGLineBreaker {
     // when it is overflowing.
     kTrailing,
 
-    // The initial state, until the first character is found.
-    kLeading,
-
     // Looking for more items to fit into the current line.
     kContinue,
   };
 
-  void HandleText(const NGInlineItem&);
+  inline void HandleText(const NGInlineItem& item, NGLineInfo* line_info) {
+    DCHECK(item.TextShapeResult());
+    HandleText(item, *item.TextShapeResult(), line_info);
+  }
+  void HandleText(const NGInlineItem& item, const ShapeResult&, NGLineInfo*);
   void BreakText(NGInlineItemResult*,
                  const NGInlineItem&,
-                 LayoutUnit available_width);
+                 const ShapeResult&,
+                 LayoutUnit available_width,
+                 NGLineInfo*);
+  bool HandleTextForFastMinContent(NGInlineItemResult*,
+                                   const NGInlineItem&,
+                                   const ShapeResult&,
+                                   NGLineInfo*);
 
   scoped_refptr<ShapeResultView> TruncateLineEndResult(
-      const NGInlineItemResult& item_result,
+      const NGLineInfo&,
+      const NGInlineItemResult&,
       unsigned end_offset);
-  void UpdateShapeResult(NGInlineItemResult*);
-  scoped_refptr<ShapeResult> ShapeText(const NGInlineItem& item,
+  void UpdateShapeResult(const NGLineInfo&, NGInlineItemResult*);
+  scoped_refptr<ShapeResult> ShapeText(const NGInlineItem&,
                                        unsigned start,
                                        unsigned end);
 
-  void HandleTrailingSpaces(const NGInlineItem&);
-  void RemoveTrailingCollapsibleSpace();
-  LayoutUnit TrailingCollapsibleSpaceWidth();
-  void ComputeTrailingCollapsibleSpace();
+  void HandleTrailingSpaces(const NGInlineItem&,
+                            const ShapeResult&,
+                            NGLineInfo*);
+  void RemoveTrailingCollapsibleSpace(NGLineInfo*);
+  LayoutUnit TrailingCollapsibleSpaceWidth(NGLineInfo*);
+  void ComputeTrailingCollapsibleSpace(NGLineInfo*);
 
-  void AppendHyphen(const NGInlineItem& item);
+  void HandleControlItem(const NGInlineItem&, NGLineInfo*);
+  void HandleBidiControlItem(const NGInlineItem&, NGLineInfo*);
+  void HandleAtomicInline(
+      const NGInlineItem&,
+      LayoutUnit percentage_resolution_block_size_for_min_max,
+      NGLineInfo*);
+  void HandleFloat(const NGInlineItem&,
+                   Vector<LayoutObject*>* out_floats_for_min_max,
+                   NGLineInfo*);
 
-  void HandleControlItem(const NGInlineItem&);
-  void HandleBidiControlItem(const NGInlineItem&);
-  void HandleAtomicInline(const NGInlineItem&);
-  void HandleFloat(const NGInlineItem&);
+  void HandleOpenTag(const NGInlineItem&, NGLineInfo*);
+  void HandleCloseTag(const NGInlineItem&, NGLineInfo*);
 
-  void HandleOpenTag(const NGInlineItem&);
-  void HandleCloseTag(const NGInlineItem&);
+  void HandleOverflow(NGLineInfo*);
+  void Rewind(unsigned new_end, NGLineInfo*);
 
-  void HandleOverflow();
-  void Rewind(unsigned new_end);
-
+  const ComputedStyle& ComputeCurrentStyle(unsigned item_result_index,
+                                           NGLineInfo*) const;
   void SetCurrentStyle(const ComputedStyle&);
 
   void MoveToNextOf(const NGInlineItem&);
@@ -138,16 +184,14 @@ class CORE_EXPORT NGLineBreaker {
     return AvailableWidth().AddEpsilon();
   }
 
-  // These fields are the output of the current line.
-  // NGInlineItemResults is a pointer because the move operation is not cheap
-  // due to its inline buffer.
-  NGLineInfo* line_info_ = nullptr;
-  NGInlineItemResults* item_results_ = nullptr;
-
   // Represents the current offset of the input.
   LineBreakState state_;
   unsigned item_index_ = 0;
   unsigned offset_ = 0;
+
+  // |WhitespaceState| of the current end. When a line is broken, this indicates
+  // the state of trailing whitespaces.
+  WhitespaceState trailing_whitespace_;
 
   // The current position from inline_start. Unlike NGInlineLayoutAlgorithm
   // that computes position in visual order, this position in logical order.
@@ -168,8 +212,9 @@ class CORE_EXPORT NGLineBreaker {
   // True when current box has 'word-break/word-wrap: break-word'.
   bool break_anywhere_if_overflow_ = false;
 
-  // Force LineBreakType::kBreakCharacter by ignoring the current style.
-  // Set to find grapheme cluster boundaries for 'break-word' after overflow.
+  // Force LineBreakType::kBreakCharacter by ignoring the current style if
+  // |break_anywhere_if_overflow_| is set. Set to find grapheme cluster
+  // boundaries for 'break-word' after overflow.
   bool override_break_anywhere_ = false;
 
   // True when breaking at soft hyphens (U+00AD) is allowed.
@@ -183,23 +228,22 @@ class CORE_EXPORT NGLineBreaker {
   // True when the line we are breaking has a list marker.
   bool has_list_marker_ = false;
 
-  // True if trailing collapsible spaces have been collapsed.
-  bool trailing_spaces_collapsed_ = false;
-
   // Set when the line ended with a forced break. Used to setup the states for
   // the next line.
   bool is_after_forced_break_ = false;
 
   bool ignore_floats_ = false;
 
+  // Set in quirks mode when we're not supposed to break inside table cells
+  // between images, and between text and images.
+  bool sticky_images_quirk_ = false;
+
   const NGInlineItemsData& items_data_;
 
   NGLineBreakerMode mode_;
   const NGConstraintSpace& constraint_space_;
-  Vector<NGPositionedFloat>* positioned_floats_;
-  NGUnpositionedFloatVector* unpositioned_floats_;
-  NGContainerFragmentBuilder* container_builder_; /* May be nullptr */
   NGExclusionSpace* exclusion_space_;
+  scoped_refptr<const NGInlineBreakToken> break_token_;
   scoped_refptr<const ComputedStyle> current_style_;
 
   LazyLineBreakIterator break_iterator_;
@@ -217,7 +261,16 @@ class CORE_EXPORT NGLineBreaker {
   base::Optional<TrailingCollapsibleSpace> trailing_collapsible_space_;
 
   // Keep track of handled float items. See HandleFloat().
-  unsigned handled_floats_end_item_index_;
+  const NGPositionedFloatVector& leading_floats_;
+  unsigned leading_floats_index_ = 0u;
+  unsigned handled_leading_floats_index_;
+
+  // Cache for computing |MinMaxSize|. See |MaxSizeCache|.
+  MaxSizeCache* max_size_cache_ = nullptr;
+
+  // Keep the last item |HandleTextForFastMinContent()| has handled. This is
+  // used to fallback the last word to |HandleText()|.
+  const NGInlineItem* fast_min_content_item_ = nullptr;
 
   // The current base direction for the bidi algorithm.
   // This is copied from NGInlineNode, then updated after each forced line break

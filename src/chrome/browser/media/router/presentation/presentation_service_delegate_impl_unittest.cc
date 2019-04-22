@@ -278,7 +278,7 @@ TEST_F(PresentationServiceDelegateImplTest, AddScreenAvailabilityListener) {
       main_frame_process_id_, main_frame_routing_id_, &listener1_));
   EXPECT_TRUE(delegate_impl_->HasScreenAvailabilityListenerForTest(
       main_frame_process_id_, main_frame_routing_id_, source1_.id()))
-      << "Mapping not found for " << source1_.ToString();
+      << "Mapping not found for " << source1_;
 
   EXPECT_CALL(*router_, UnregisterMediaSinksObserver(_));
   delegate_impl_->RemoveScreenAvailabilityListener(
@@ -297,10 +297,10 @@ TEST_F(PresentationServiceDelegateImplTest, AddMultipleListenersToFrame) {
       main_frame_process_id_, main_frame_routing_id_, &listener2_));
   EXPECT_TRUE(delegate_impl_->HasScreenAvailabilityListenerForTest(
       main_frame_process_id_, main_frame_routing_id_, source1_.id()))
-      << "Mapping not found for " << source1_.ToString();
+      << "Mapping not found for " << source1_;
   EXPECT_TRUE(delegate_impl_->HasScreenAvailabilityListenerForTest(
       main_frame_process_id_, main_frame_routing_id_, source2_.id()))
-      << "Mapping not found for " << source2_.ToString();
+      << "Mapping not found for " << source2_;
 
   EXPECT_CALL(*router_, UnregisterMediaSinksObserver(_)).Times(2);
   delegate_impl_->RemoveScreenAvailabilityListener(
@@ -582,9 +582,9 @@ TEST_F(PresentationServiceDelegateImplTest, ConnectToLocalPresentation) {
   MockPresentationConnectionProxy receiver_proxy;
   mojo::Binding<PresentationConnection> receiver_binding(&receiver_proxy);
   auto& mock_local_manager = GetMockLocalPresentationManager();
-  EXPECT_CALL(mock_local_manager, RegisterLocalPresentationControllerInternal(
-                                      InfoEquals(presentation_info), rfh_id, _,
-                                      _, Equals(media_route)))
+  EXPECT_CALL(mock_local_manager,
+              RegisterLocalPresentationControllerInternal(
+                  InfoEquals(presentation_info), rfh_id, _, _, media_route))
       .WillOnce([&receiver_binding, &controller_ptr](
                     const PresentationInfo&,
                     const content::GlobalFrameRoutingId&,

@@ -560,6 +560,8 @@ var availableTests = [
           Source: 'User',
           StaticIPConfig: {
             IPAddress: '1.2.3.4',
+            Gateway: '0.0.0.0',
+            RoutingPrefix: 1,
             Type: 'IPv4'
           },
           Type: NetworkType.WI_FI,
@@ -749,7 +751,9 @@ var availableTests = [
             },
             IPAddressConfigType: 'Static',
             StaticIPConfig: {
-              IPAddress: '1.2.3.4'
+              IPAddress: '1.2.3.4',
+              Gateway: '0.0.0.0',
+              RoutingPrefix: 1
             }
           };
           chrome.networkingPrivate.setProperties(
@@ -769,6 +773,8 @@ var availableTests = [
                       assertTrue('StaticIPConfig' in result);
                       assertEq('1.2.3.4',
                                result['StaticIPConfig']['IPAddress']);
+                      assertEq('0.0.0.0', result['StaticIPConfig']['Gateway']);
+                      assertEq(1, result['StaticIPConfig']['RoutingPrefix']);
                     }));
               }));
         }));
@@ -865,9 +871,9 @@ var availableTests = [
     // Connecting to wifi2 should set wifi1 to offline. Connected or Connecting
     // networks should be listed first, sorted by type.
     var expected = ['stub_ethernet_guid',
-                    'stub_wifi2_guid',
                     'stub_wimax_guid',
                     'stub_vpn1_guid',
+                    'stub_wifi2_guid',
                     'stub_wifi1_guid',
                     'stub_vpn2_guid'];
     var done = chrome.test.callbackAdded();

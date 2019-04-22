@@ -5,14 +5,14 @@
 package org.chromium.chrome.browser.tab;
 
 import android.graphics.Bitmap;
-import android.support.annotation.Nullable;
 import android.view.ContextMenu;
 
 import org.chromium.chrome.browser.TabLoadStatus;
 import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.tab.Tab.TabHidingType;
-import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
+import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.BrowserControlsState;
 
@@ -20,6 +20,14 @@ import org.chromium.content_public.common.BrowserControlsState;
  * An observer that is notified of changes to a {@link Tab} object.
  */
 public interface TabObserver {
+    /**
+     * Called when a {@link Tab} finished initialization. The {@link TabState} contains,
+     * if not {@code null}, various states that a Tab should restore itself from.
+     * @param tab The notifying {@link Tab}.
+     * @param tabState {@link TabState} to restore tab's state from if not {@code null}.
+     */
+    void onInitialized(Tab tab, TabState tabState);
+
     /**
      * Called when a {@link Tab} is shown.
      * @param tab The notifying {@link Tab}.
@@ -162,6 +170,12 @@ public interface TabObserver {
     // WebContentsDelegateAndroid methods ---------------------------------------------------------
 
     /**
+     * Called when the WebContents is closed.
+     * @param tab The notifying {@link Tab}.
+     */
+    void onCloseContents(Tab tab);
+
+    /**
      * Called when the WebContents starts loading. Different from
      * {@link #onPageLoadStarted(Tab, String)}, if the user is navigated to a different url while
      * staying in the same html document, {@link #onLoadStarted(Tab)} will be called, while
@@ -222,38 +236,26 @@ public interface TabObserver {
     /**
      * Called when a navigation is started in the WebContents.
      * @param tab The notifying {@link Tab}.
-     * @param url The validated URL for the loading page.
-     * @param isInMainFrame Whether the navigation is for the main frame.
-     * @param isSameDocument Whether the main frame navigation did not cause changes to the
-     *                   document (for example scrolling to a named anchor or PopState).
-     * @param isErrorPage Whether the navigation shows an error page.
+     * @param navigationHandle Pointer to a NavigationHandle representing the navigation.
+     *                         Its lifetime end at the end of onDidFinishNavigation().
      */
-    public void onDidStartNavigation(Tab tab, String url, boolean isInMainFrame,
-            boolean isSameDocument, boolean isErrorPage);
+    public void onDidStartNavigation(Tab tab, NavigationHandle navigationHandle);
+
+    /**
+     * Called when a navigation is redirected in the WebContents.
+     * @param tab The notifying {@link Tab}.
+     * @param navigationHandle Pointer to a NavigationHandle representing the navigation.
+     *                         Its lifetime end at the end of onDidFinishNavigation().
+     */
+    public void onDidRedirectNavigation(Tab tab, NavigationHandle navigationHandle);
 
     /**
      * Called when a navigation is finished i.e. committed, aborted or replaced by a new one.
      * @param tab The notifying {@link Tab}.
-     * @param url The validated URL for the loading page.
-     * @param isInMainFrame Whether the navigation is for the main frame.
-     * @param isErrorPage Whether the navigation shows an error page.
-     * @param hasCommitted Whether the navigation has committed. This returns true for either
-     *                     successful commits or error pages that replace the previous page
-     *                     (distinguished by |isErrorPage|), and false for errors that leave the
-     *                     user on the previous page.
-     * @param isSameDocument Whether the main frame navigation did not cause changes to the
-     *                   document (for example scrolling to a named anchor or PopState).
-     * @param isFragmentNavigation Whether the main frame navigation did not cause changes
-     *                             to the document (for example scrolling to a named anchor
-     *                             or PopState).
-     * @param pageTransition The page transition type associated with this navigation.
-     * @param errorCode The net error code if an error occurred prior to commit, otherwise net::OK.
-     * @param httpStatusCode The HTTP status code of the navigation.
+     * @param navigationHandle Pointer to a NavigationHandle representing the navigation.
+     *                         Its lifetime end at the end of this function.
      */
-    public void onDidFinishNavigation(Tab tab, String url, boolean isInMainFrame,
-            boolean isErrorPage, boolean hasCommitted, boolean isSameDocument,
-            boolean isFragmentNavigation, @Nullable Integer pageTransition, int errorCode,
-            int httpStatusCode);
+    public void onDidFinishNavigation(Tab tab, NavigationHandle navigation);
 
     /**
      * Called when the page has painted something non-empty.

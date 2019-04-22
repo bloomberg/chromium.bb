@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_ARC_ARC_APP_SHORTCUTS_SEARCH_PROVIDER_H_
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_ARC_ARC_APP_SHORTCUTS_SEARCH_PROVIDER_H_
 
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -18,23 +19,34 @@ class Profile;
 
 namespace app_list {
 
+class AppSearchResultRanker;
+
 class ArcAppShortcutsSearchProvider : public SearchProvider {
  public:
   ArcAppShortcutsSearchProvider(int max_results,
                                 Profile* profile,
-                                AppListControllerDelegate* list_controller);
+                                AppListControllerDelegate* list_controller,
+                                AppSearchResultRanker* ranker);
   ~ArcAppShortcutsSearchProvider() override;
 
   // SearchProvider:
   void Start(const base::string16& query) override;
+  void Train(const std::string& id, RankingItemType type) override;
 
  private:
+  // QueryBased: filter and rerank results for non-empty queries
   void OnGetAppShortcutGlobalQueryItems(
       std::vector<arc::mojom::AppShortcutItemPtr> shortcut_items);
+  // ZeroState: filter and rerank results for empty queries
+  void UpdateRecomendedResults(
+      std::vector<arc::mojom::AppShortcutItemPtr> shortcut_items);
+  bool ShouldRerankZeroState() const;
+  bool ShouldReRankQueryBased() const;
 
   const int max_results_;
   Profile* const profile_;                            // Owned by ProfileInfo.
   AppListControllerDelegate* const list_controller_;  // Owned by AppListClient.
+  AppSearchResultRanker* ranker_;
 
   base::WeakPtrFactory<ArcAppShortcutsSearchProvider> weak_ptr_factory_;
 

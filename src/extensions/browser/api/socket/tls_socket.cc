@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "content/public/browser/browser_thread.h"
@@ -114,23 +115,24 @@ Socket::SocketType TLSSocket::GetSocketType() const {
 
 int TLSSocket::WriteImpl(net::IOBuffer* io_buffer,
                          int io_buffer_size,
-                         const net::CompletionCallback& callback) {
+                         net::CompletionOnceCallback callback) {
   if (!mojo_data_pump_)
     return net::ERR_SOCKET_NOT_CONNECTED;
-  mojo_data_pump_->Write(io_buffer, io_buffer_size,
-                         base::BindOnce(&TLSSocket::OnWriteComplete,
-                                        base::Unretained(this), callback));
+  mojo_data_pump_->Write(
+      io_buffer, io_buffer_size,
+      base::BindOnce(&TLSSocket::OnWriteComplete, base::Unretained(this),
+                     std::move(callback)));
   return net::ERR_IO_PENDING;
 }
 
-void TLSSocket::OnWriteComplete(const net::CompletionCallback& callback,
+void TLSSocket::OnWriteComplete(net::CompletionOnceCallback callback,
                                 int result) {
   if (result < 0) {
     // Write side has terminated. This can be an error or a graceful close.
     // TCPSocketEventDispatcher doesn't distinguish between the two.
     Disconnect(false /* socket_destroying */);
   }
-  callback.Run(result);
+  std::move(callback).Run(result);
 }
 
 void TLSSocket::OnReadComplete(int result,

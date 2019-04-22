@@ -90,11 +90,6 @@ LocatedToNonLocatedKeyboardCode(KeyboardCode key_code);
 EVENTS_BASE_EXPORT KeyboardCode
 NonLocatedToLocatedKeyboardCode(KeyboardCode key_code, DomCode dom_code);
 
-// Determine the located VKEY corresponding to a non-located VKEY for
-// keypad vkeys. (eg. VKEY_1 (with DomCode::NUMPAD1 maps to VKEY_NUMPAD1).
-EVENTS_BASE_EXPORT KeyboardCode
-NonLocatedToLocatedKeypadKeyboardCode(KeyboardCode key_code, DomCode dom_code);
-
 // Returns a DOM Level 3 |code| from a Windows-based VKEY value.
 // This assumes a US layout and should only be used when |code| cannot be
 // determined from a physical scan code, for example when a key event was
@@ -111,6 +106,10 @@ EVENTS_BASE_EXPORT KeyboardCode DomCodeToUsLayoutKeyboardCode(DomCode dom_code);
 // (e.g. VKEY_SHIFT).
 EVENTS_BASE_EXPORT KeyboardCode
 DomCodeToUsLayoutNonLocatedKeyboardCode(DomCode dom_code);
+
+// Returns the ui::EventFlags value associated with a modifier key,
+// or 0 (EF_NONE) if the key is not a modifier.
+EVENTS_BASE_EXPORT int ModifierDomKeyToEventFlag(DomKey key);
 
 }  // namespace ui
 

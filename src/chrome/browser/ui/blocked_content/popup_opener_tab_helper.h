@@ -77,6 +77,8 @@ class PopupOpenerTabHelper
 
   bool has_opened_popup_since_last_user_gesture_ = false;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(PopupOpenerTabHelper);
 };
 

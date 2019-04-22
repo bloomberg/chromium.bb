@@ -16,7 +16,6 @@
 <translation id="152892567002884378">Subir el volumen</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> y <ph name="ESC" /></translation>
 <translation id="1652741121070700329">Desplazarse al principio de la palabra anterior</translation>
-<translation id="1671169355475348905">Cambiar al método de introducción del idioma anterior</translation>
 <translation id="1679841710523778799">Aumentar el brillo</translation>
 <translation id="168356808214100546">Mantén pulsada la tecla <ph name="ALT" />, pulsa <ph name="TAB" /> hasta llegar a la ventana que quieras abrir y suelta las teclas.</translation>
 <translation id="169515659049020177">Mayús</translation>
@@ -33,6 +32,7 @@
 <translation id="2181097965834437145">Mostrar u ocultar la barra de marcadores</translation>
 <translation id="2185166372312820725">Ir a la pestaña anterior</translation>
 <translation id="2194790690264064655">Pulsa <ph name="CTRL" /> y haz clic en un enlace</translation>
+<translation id="2246352309084894470">Abrir o cerrar el menú de aplicaciones a pantalla completa</translation>
 <translation id="2382644247745281995">No compatible con el diseño de teclado actual</translation>
 <translation id="2397416548179033562">Mostrar menú de Chrome</translation>
 <translation id="2424073332829844142">Activar y desactivar la función de bloqueo de mayúsculas</translation>
@@ -44,7 +44,6 @@
 <translation id="2574014812750545982">Restablecer el nivel de zoom de la página</translation>
 <translation id="2596078834055697711">Hacer una captura de pantalla de la ventana</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> y <ph name="TAB" /> o <ph name="RIGHT" /></translation>
-<translation id="2687057317448262550">Cambiar al método de introducción del siguiente idioma</translation>
 <translation id="2699509451653686398">Guardar la página web actual en los marcadores</translation>
 <translation id="2750942583782703988">Volver a cargar la página actual</translation>
 <translation id="2764005613199379871">Seleccionar la barra de direcciones</translation>
@@ -99,7 +98,7 @@
 <translation id="4698850295812410683">Mostrar herramientas del lápiz óptico</translation>
 <translation id="4801989101741319327">Desplazarse al final de la siguiente palabra</translation>
 <translation id="4916163929714267752">Abrir el enlace en una ventana nueva</translation>
-<translation id="5030659775136592441">Mostrar administrador de favoritos</translation>
+<translation id="5030659775136592441">Mostrar administrador de marcadores</translation>
 <translation id="5034421018520995080">Ir a la parte superior de la página</translation>
 <translation id="5042305953558921026">Tecla del modo de descripción general</translation>
 <translation id="5104462712192763270">Guardar la página actual</translation>
@@ -147,6 +146,7 @@
 <translation id="671928215901716392">Bloquear pantalla</translation>
 <translation id="6727005317916125192">Panel anterior</translation>
 <translation id="6740781404993465795">Seleccionar la palabra o la letra siguientes</translation>
+<translation id="6755851152783057058">Cambiar al último método de introducción utilizado</translation>
 <translation id="6760706756348334449">Bajar el volumen</translation>
 <translation id="6941333068993625698">Enviar comentarios</translation>
 <translation id="6981982820502123353">Accesibilidad</translation>
@@ -157,6 +157,7 @@
 <translation id="7237562915163138771">Escribe una dirección web en la barra de direcciones y pulsa <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /></translation>
 <translation id="7254764037241667478">Poner el dispositivo en modo de suspensión</translation>
 <translation id="7379254767514753910"><ph name="ALT" /> o <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
+<translation id="7422707470576323858">Cambiar al siguiente método de introducción disponible</translation>
 <translation id="743754632698445141">No fijar una aplicación</translation>
 <translation id="7439718573248533901">Eliminar la letra siguiente (eliminar hacia delante)</translation>
 <translation id="7611271430932669992">Mover el enfoque a ventanas emergentes y cuadros de diálogo</translation>

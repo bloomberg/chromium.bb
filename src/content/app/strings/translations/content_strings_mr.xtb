@@ -19,6 +19,7 @@
 <translation id="1591562245178063882">या महिन्यात</translation>
 <translation id="1637811476055996098">फायली निवडा</translation>
 <translation id="1650423536718072820">पुलकोट</translation>
+<translation id="1727886345390570319">सबटायटल मेनू लपवा</translation>
 <translation id="1729654308190250600">कृपया एक रिक्त नसलेला ईमेल अॅड्रेस एंटर करा.</translation>
 <translation id="1758486001363313524">अन्य...</translation>
 <translation id="1806710327868736751">सूचना_संवाद</translation>
@@ -41,6 +42,7 @@
 <translation id="2291999235780842123">चेकबॉक्‍स</translation>
 <translation id="2311842470354187719">पेज ब्रेक</translation>
 <translation id="2335594187091864976">तारीख आणि वेळ निवडक</translation>
+<translation id="245932805758469625">व्हिडिओच्या शिल्लक सेकंदांची संख्या</translation>
 <translation id="248395913932153421">दिवस</translation>
 <translation id="2507943997699731163">कृपया हे फील्ड भरा.</translation>
 <translation id="2508569020611168319">टॅब सूची</translation>
@@ -50,7 +52,6 @@
 <translation id="2653659639078652383">सबमिट करा</translation>
 <translation id="2657045182931379222">ग्राफिक्स ऑब्जेक्ट</translation>
 <translation id="2674318244760992338">अधोलेख</translation>
-<translation id="2706474812903655270">हा व्हिडिओ चित्रात-चित्र मोडमध्ये प्ले होत आहे</translation>
 <translation id="2709516037105925701">ऑटोफिल</translation>
 <translation id="2723001399770238859">ऑडिओ</translation>
 <translation id="2746543609216772311">मूल्य <ph name="MINIMUM_DATE_OR_TIME" /> किंवा नंतरचे असणे आवश्यक आहे.</translation>
@@ -71,11 +72,10 @@
 <translation id="3450233048674729344">मूल्य <ph name="MAXIMUM" /> पेक्षा कमी किंवा समान असावे.</translation>
 <translation id="3486220673238053218">परिभाषा</translation>
 <translation id="3557673793733683882">शीर्षक <ph name="HEADING_LEVEL" /></translation>
-<translation id="3639613635497528239">चित्रपटाचे शिल्लक सेकंद</translation>
+<translation id="3685101356851116974">लेबल न केलेली इमेज</translation>
 <translation id="3706100364254443312">स्विच करा</translation>
 <translation id="3732799496749320381">mm</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
-<translation id="3785482301506746191">चित्रपट वेळ स्क्रबर</translation>
 <translation id="3808586225841795776">संज्ञा</translation>
 <translation id="3822383571486410024">कृपया हा मजकूर <ph name="MIN_CHARACTERS" /> वर्ण किंवा त्यापेक्षा अधिक मोठा करा (तुम्ही सध्‍या <ph name="CURRENT_LENGTH" /> वर्ण वापरत आहात).</translation>
 <translation id="383465348367842624">'<ph name="ATSIGN" />' मागुन येणार्‍या भागामध्ये '<ph name="INVALIDCHARACTER" />' चिन्ह नसावे.</translation>
@@ -94,8 +94,10 @@
 <translation id="4360991593054037559">कृपया एक वैध मूल्य एंटर करा. दोन जवळील वैध मूल्ये <ph name="VALID_VALUE_LOW" /> आणि <ph name="VALID_VALUE_HIGHER" /> आहेत.</translation>
 <translation id="4384583879834880242">प्रश्नोत्तरे</translation>
 <translation id="4413860115965805769">मेनू बटण</translation>
+<translation id="4444765639179266822">असे म्हणत असल्याचे दिसत आहे: <ph name="OCR_TEXT" /></translation>
 <translation id="4446524499724042288">शब्दावली संदर्भ</translation>
 <translation id="4522570452068850558">तपशील</translation>
+<translation id="4542388879936266156">शिल्लक वेळ: <ph name="REMAINING_TIME" /></translation>
 <translation id="4597532268155981612">फॉर्म</translation>
 <translation id="4661075872484491155">tree</translation>
 <translation id="4664250907885839816">'<ph name="ATSIGN" />' चे फॉलो करणार्‍या भागामध्ये '<ph name="INVALIDCHARACTER" />' चिन्ह नसावे.</translation>
@@ -111,6 +113,7 @@
 <translation id="4992066212339426712">सशब्द करा</translation>
 <translation id="49969490063480558">कृपया '<ph name="ATSIGN" />' चे फॉलो करणारा भाग एंटर करा. '<ph name="INVALIDADDRESS" />' अपूर्ण आहे.</translation>
 <translation id="5034860022980953847">प्रगती सूचक</translation>
+<translation id="5090250355906949916">व्हिडिओ वेळ स्क्रबर</translation>
 <translation id="5093189678851173835">बोधवाक्य</translation>
 <translation id="5117590920725113268">पुढील महिना दर्शवा</translation>
 <translation id="512758898067543763">पंक्ती शीर्षलेख</translation>
@@ -118,6 +121,7 @@
 <translation id="5164977714490026579">मूल्य <ph name="MINIMUM" /> पेक्षा मोठे किंवा समान असावे.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">कृपया '<ph name="ATSIGN" />' मागुन येणारा भाग एंटर करा. '<ph name="INVALIDADDRESS" />' अपूर्ण आहे.</translation>
+<translation id="5334352251556557839">मीडिया प्ले करता आला नाही.</translation>
 <translation id="5406322316791861025">आकृती</translation>
 <translation id="5453733299334684579">ट्री आयटम</translation>
 <translation id="5466621249238537318">कृपया एक किंवा अधिक फायली निवडा.</translation>
@@ -144,12 +148,16 @@
 <translation id="6150588977291308318">ग्रंथसूची</translation>
 <translation id="6164829606128959761">मीटर</translation>
 <translation id="6166809985690652833">अंतिम शब्द</translation>
+<translation id="6209276755895393898">असे असल्याचे दिसत आहे: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">शब्दावली</translation>
+<translation id="628938136236500310">चित्रात-चित्र मोडमध्ये प्ले करत आहे</translation>
 <translation id="6398862346408813489">महिना निवड पॅनेल दाखवा</translation>
 <translation id="6404546809543547843">ऑडिओ वेळ स्क्रबर</translation>
+<translation id="6443871981718447451">सबटायटल मेनू दाखवा</translation>
 <translation id="6453774872122745852">श्रेयनिर्देश</translation>
 <translation id="648732519525291180">वेळ निवडक</translation>
 <translation id="6550675742724504774">पर्याय</translation>
+<translation id="6572309429103589720">चुकीचे व्याकरण</translation>
 <translation id="658823671542763450">फुल स्क्रीन एंटर करा</translation>
 <translation id="663493177488814956">फीड</translation>
 <translation id="6637586476836377253">लॉग</translation>
@@ -162,7 +170,6 @@
 <translation id="6820355525329141109">प्लगिन लोड करणे शक्य झाले नाही.</translation>
 <translation id="6820615603175220800">ग्रंथसूची संदर्भ</translation>
 <translation id="6843725295806269523">नि:शब्द करा</translation>
-<translation id="6853785296079745596">बंद मथळा लपवा</translation>
 <translation id="6885760532393684712">निर्देशिका</translation>
 <translation id="689129560213475294">बोधचिन्ह</translation>
 <translation id="6934078000481955284">ब्लॉककोट</translation>
@@ -170,25 +177,29 @@
 <translation id="6981594929165378967">घालणे</translation>
 <translation id="6989848892321993519">कृपया हा मजकूर <ph name="MIN_CHARACTERS" /> वर्ण किंवा त्यापेक्षा अधिक मोठा करा (तुम्ही सध्‍या 1 वर्ण वापरत आहात).</translation>
 <translation id="709897737746224366">कृपया विनंती केलेले स्वरूपन जुळवा.</translation>
+<translation id="7118469954320184356">कोणतेही वर्णन उपलब्ध नाही.</translation>
 <translation id="7139483182332611405">प्रस्तावना</translation>
-<translation id="7223624360433298498">लोटलेला अवधी</translation>
 <translation id="7263440858009898357">कृपया सूचीमधील आयटम निवडा.</translation>
 <translation id="727747134524199931">स्तंभ शीर्षलेख</translation>
+<translation id="7320576522385648310">बफर होत आहे</translation>
 <translation id="7353453495576941748">श्रेय</translation>
 <translation id="7364796246159120393">फाइल निवडा</translation>
 <translation id="739024184232394898">अन्य...</translation>
 <translation id="7405738980073107433">अंतिम नोंदी</translation>
+<translation id="7410239719251593705">प्रौढांसाठी असलेला आशय असल्याचे वाटत आहे. कोणतेही वर्णन उपलब्ध नाही.</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7491962110804786152">टॅब</translation>
 <translation id="7514365320538308">डाउनलोड करा</translation>
 <translation id="7529102961911894712">मागील लिंक</translation>
+<translation id="7533959249147584474">लेबल न केलेले ग्राफिक</translation>
 <translation id="7647456547678091388">टीप</translation>
 <translation id="7661956066982048809">ग्राफिक्स दस्तऐवज</translation>
 <translation id="7673697353781729403">तास</translation>
 <translation id="7681220483256441252">अनुक्रमणिका</translation>
-<translation id="7720026100085573005">शिल्लक वेळ</translation>
 <translation id="7740050170769002709">HTML सामुग्री</translation>
+<translation id="7745230546936012372">नसलेले इमेज वर्णन मिळवण्यासाठी, संदर्भ मेनू उघडा.</translation>
 <translation id="7750228210027921155">चित्रात-चित्र</translation>
+<translation id="775297008183122718">अवैध प्रविष्टी</translation>
 <translation id="7789962463072032349">विराम द्या</translation>
 <translation id="7802800022689234070">त्रिकोण प्रकटन</translation>
 <translation id="7888071071722539607">कृपया ईमेल पत्त्यामध्ये '<ph name="ATSIGN" />' समाविष्ट करा. '<ph name="INVALIDADDRESS" />' '<ph name="ATSIGN" />' गमावत आहे.</translation>
@@ -197,10 +208,13 @@
 <translation id="8053789581856978548">मजकूर फील्ड दर्शवा</translation>
 <translation id="8057695513531652401">सूचना</translation>
 <translation id="8105797009065549151">टीप संदर्भ</translation>
+<translation id="811583516810654505">वर्णन मिळवत आहे...</translation>
 <translation id="8117451130807776954">या आठवड्यात</translation>
 <translation id="8199524924445686405">yyyy</translation>
+<translation id="8261464734335370856">चुकीचे शब्दलेखन</translation>
 <translation id="8284326494547611709">मथळे</translation>
 <translation id="835897206747267392">चुकीचे मूल्य.</translation>
+<translation id="8403857369060869934">गेलेला वेळ: <ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">भाग</translation>
 <translation id="8433900881053900389">टूलबार</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES" /> फायली</translation>
@@ -225,7 +239,6 @@
 <translation id="8987927404178983737">महिना</translation>
 <translation id="901493112792887934">वर्तमान वेळ सेकंदांमध्ये</translation>
 <translation id="9048119486235211610">नेव्हिगेशन</translation>
-<translation id="9050748414552849310">बंद मथळा दर्शवा</translation>
 <translation id="9062295712474918030">दस्तऐवज</translation>
 <translation id="9093215626363556771">चित्रात-चित्र मधून बाहेर पडा</translation>
 <translation id="9108370397979208512">गणित</translation>

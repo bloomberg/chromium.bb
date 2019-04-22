@@ -2,11 +2,19 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/buildflag_header.gni")
 import("//build/config/android/rules.gni")
 import("//build/config/locales.gni")
 import("//testing/test.gni")
+import("//ui/android/features.gni")
 
 assert(is_android)
+
+# Generate a buildflag header for compile-time checking of android night mode support.
+buildflag_header("buildflags") {
+  header = "buildflags.h"
+  flags = [ "ENABLE_ANDROID_NIGHT_MODE=$enable_android_night_mode" ]
+}
 
 component("android") {
   output_name = "ui_android"
@@ -55,6 +63,7 @@ component("android") {
   defines = [ "UI_ANDROID_IMPLEMENTATION" ]
 
   deps = [
+    ":buildflags",
     ":java_enums_srcjar",
     ":ui_android_jni_headers",
     "//base",
@@ -113,6 +122,7 @@ java_cpp_enum("java_enums_srcjar") {
     "../base/ui_base_types.h",
     "../events/android/gesture_event_type.h",
     "../gfx/android/java_bitmap.h",
+    "overscroll_refresh.h",
     "resources/resource_manager.h",
     "resources/system_ui_resource_type.h",
   ]
@@ -121,22 +131,24 @@ java_cpp_enum("java_enums_srcjar") {
 java_strings_grd("ui_strings_grd") {
   grd_file = "java/strings/android_ui_strings.grd"
   outputs = [
+    "values/android_ui_strings.xml",
     "values-am/android_ui_strings.xml",
     "values-ar/android_ui_strings.xml",
     "values-bg/android_ui_strings.xml",
+    "values-bn/android_ui_strings.xml",
     "values-ca/android_ui_strings.xml",
     "values-cs/android_ui_strings.xml",
     "values-da/android_ui_strings.xml",
     "values-de/android_ui_strings.xml",
     "values-el/android_ui_strings.xml",
-    "values/android_ui_strings.xml",
     "values-en-rGB/android_ui_strings.xml",
     "values-es/android_ui_strings.xml",
     "values-es-rUS/android_ui_strings.xml",
+    "values-et/android_ui_strings.xml",
     "values-fa/android_ui_strings.xml",
     "values-fi/android_ui_strings.xml",
-    "values-tl/android_ui_strings.xml",
     "values-fr/android_ui_strings.xml",
+    "values-gu/android_ui_strings.xml",
     "values-hi/android_ui_strings.xml",
     "values-hr/android_ui_strings.xml",
     "values-hu/android_ui_strings.xml",
@@ -144,11 +156,15 @@ java_strings_grd("ui_strings_grd") {
     "values-it/android_ui_strings.xml",
     "values-iw/android_ui_strings.xml",
     "values-ja/android_ui_strings.xml",
+    "values-kn/android_ui_strings.xml",
     "values-ko/android_ui_strings.xml",
     "values-lt/android_ui_strings.xml",
     "values-lv/android_ui_strings.xml",
-    "values-nl/android_ui_strings.xml",
+    "values-ml/android_ui_strings.xml",
+    "values-mr/android_ui_strings.xml",
+    "values-ms/android_ui_strings.xml",
     "values-nb/android_ui_strings.xml",
+    "values-nl/android_ui_strings.xml",
     "values-pl/android_ui_strings.xml",
     "values-pt-rBR/android_ui_strings.xml",
     "values-pt-rPT/android_ui_strings.xml",
@@ -159,7 +175,10 @@ java_strings_grd("ui_strings_grd") {
     "values-sr/android_ui_strings.xml",
     "values-sv/android_ui_strings.xml",
     "values-sw/android_ui_strings.xml",
+    "values-ta/android_ui_strings.xml",
+    "values-te/android_ui_strings.xml",
     "values-th/android_ui_strings.xml",
+    "values-tl/android_ui_strings.xml",
     "values-tr/android_ui_strings.xml",
     "values-uk/android_ui_strings.xml",
     "values-vi/android_ui_strings.xml",
@@ -168,55 +187,15 @@ java_strings_grd("ui_strings_grd") {
   ]
 }
 
-# Generate an Android resources target that contains localized strings
-# describing the current locale used by the Android framework to display
-# UI strings. These are used by org.chromium.ui.base.LocalizationUtils.
-#
-# Variables:
-#    ui_locales: List of Chromium locale names to generate resources for.
-#
-template("generate_ui_locale_resources") {
-  _generating_target_name = "${target_name}__generate"
-  _rebased_output_zip_path = rebase_path(target_gen_dir, root_gen_dir)
-  _output_zip = "${root_out_dir}/resource_zips/${_rebased_output_zip_path}/" +
-                "${target_name}.zip"
-
-  _locales = invoker.ui_locales
-  _depfile = "$target_gen_dir/$target_name.d"
-
-  action(_generating_target_name) {
-    script = "build/create_ui_locale_resources.py"
-    depfile = _depfile
-    outputs = [
-      _output_zip,
-    ]
-    args = [
-      "--locale-list=$_locales",
-      "--depfile",
-      rebase_path(_depfile, root_build_dir),
-      "--output-zip",
-      rebase_path(_output_zip, root_build_dir),
-    ]
-  }
-
-  android_generated_resources(target_name) {
-    generating_target_name = ":$_generating_target_name"
-    generated_resources_zip = _output_zip
-  }
-}
-
-generate_ui_locale_resources("ui_locale_string_resources") {
-  # NOTE: It is not possible to pass just |locales| here, otherwise
-  # the lint step will later complain that 3 strings in android_ui_strings.grd
-  # are not localized to the omitted locales!
-  ui_locales = locales - android_chrome_omitted_locales
-}
-
 android_resources("ui_java_resources") {
   custom_package = "org.chromium.ui"
   resource_dirs = [ "java/res" ]
+
+  if (enable_android_night_mode) {
+    resource_dirs += [ "//ui/android/java/res_night" ]
+  }
+
   deps = [
-    ":ui_locale_string_resources",
     ":ui_strings_grd",
   ]
 }
@@ -239,6 +218,7 @@ android_library("ui_utils_java") {
   ]
   deps = [
     "//base:base_java",
+    "//third_party/android_deps:android_support_v7_appcompat_java",
   ]
 }
 
@@ -266,6 +246,7 @@ android_library("ui_full_java") {
     "java/src/org/chromium/ui/base/Clipboard.java",
     "java/src/org/chromium/ui/base/DeviceFormFactor.java",
     "java/src/org/chromium/ui/base/EventForwarder.java",
+    "java/src/org/chromium/ui/base/IdleDetector.java",
     "java/src/org/chromium/ui/base/LocalizationUtils.java",
     "java/src/org/chromium/ui/base/PermissionCallback.java",
     "java/src/org/chromium/ui/base/ResourceBundle.java",
@@ -284,11 +265,32 @@ android_library("ui_full_java") {
     "java/src/org/chromium/ui/drawable/AnimationLooper.java",
     "java/src/org/chromium/ui/drawable/StateListDrawableBuilder.java",
     "java/src/org/chromium/ui/events/devices/InputDeviceObserver.java",
+    "java/src/org/chromium/ui/gfx/Animation.java",
     "java/src/org/chromium/ui/gfx/BitmapHelper.java",
     "java/src/org/chromium/ui/gfx/ViewConfigurationHelper.java",
     "java/src/org/chromium/ui/gl/SurfaceTextureListener.java",
     "java/src/org/chromium/ui/gl/SurfaceTexturePlatformWrapper.java",
     "java/src/org/chromium/ui/interpolators/BakedBezierInterpolator.java",
+    "java/src/org/chromium/ui/modaldialog/DialogDismissalCause.java",
+    "java/src/org/chromium/ui/modaldialog/ModalDialogManager.java",
+    "java/src/org/chromium/ui/modaldialog/ModalDialogProperties.java",
+    "java/src/org/chromium/ui/modelutil/ForwardingListObservable.java",
+    "java/src/org/chromium/ui/modelutil/LazyConstructionPropertyMcp.java",
+    "java/src/org/chromium/ui/modelutil/ListModel.java",
+    "java/src/org/chromium/ui/modelutil/ListModelBase.java",
+    "java/src/org/chromium/ui/modelutil/ListModelChangeProcessor.java",
+    "java/src/org/chromium/ui/modelutil/ListObservable.java",
+    "java/src/org/chromium/ui/modelutil/ListObservableImpl.java",
+    "java/src/org/chromium/ui/modelutil/ModelListAdapter.java",
+    "java/src/org/chromium/ui/modelutil/PropertyKey.java",
+    "java/src/org/chromium/ui/modelutil/PropertyListModel.java",
+    "java/src/org/chromium/ui/modelutil/PropertyModel.java",
+    "java/src/org/chromium/ui/modelutil/PropertyModelChangeProcessor.java",
+    "java/src/org/chromium/ui/modelutil/PropertyObservable.java",
+    "java/src/org/chromium/ui/modelutil/RecyclerViewAdapter.java",
+    "java/src/org/chromium/ui/modelutil/SimpleList.java",
+    "java/src/org/chromium/ui/modelutil/SimpleRecyclerViewMcp.java",
+    "java/src/org/chromium/ui/modelutil/SimpleRecyclerViewMcpBase.java",
     "java/src/org/chromium/ui/resources/HandleViewResources.java",
     "java/src/org/chromium/ui/resources/LayoutResource.java",
     "java/src/org/chromium/ui/resources/Resource.java",
@@ -308,9 +310,12 @@ android_library("ui_full_java") {
     "java/src/org/chromium/ui/resources/system/SystemResourceLoader.java",
     "java/src/org/chromium/ui/text/NoUnderlineClickableSpan.java",
     "java/src/org/chromium/ui/text/SpanApplier.java",
+    "java/src/org/chromium/ui/touchless/CursorObserver.java",
+    "java/src/org/chromium/ui/touchless/TouchlessEventHandler.java",
     "java/src/org/chromium/ui/widget/AnchoredPopupWindow.java",
     "java/src/org/chromium/ui/widget/ButtonCompat.java",
     "java/src/org/chromium/ui/widget/CheckableImageView.java",
+    "java/src/org/chromium/ui/widget/ChipView.java",
     "java/src/org/chromium/ui/widget/ChromeBulletSpan.java",
     "java/src/org/chromium/ui/widget/ChromeImageView.java",
     "java/src/org/chromium/ui/widget/ChromeImageButton.java",
@@ -328,8 +333,9 @@ android_library("ui_full_java") {
     ":ui_java_resources",
     ":ui_utils_java",
     "//base:base_java",
-    "//third_party/android_deps:android_support_annotations_java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
+    "//third_party/android_deps:com_android_support_recyclerview_v7_java",
+    "//third_party/android_deps:com_android_support_support_annotations_java",
   ]
   srcjar_deps = [
     ":java_enums_srcjar",
@@ -344,11 +350,13 @@ android_library("ui_java_test_support") {
     "javatests/src/org/chromium/ui/test/util/UiDisableIfSkipCheck.java",
     "javatests/src/org/chromium/ui/test/util/UiRestriction.java",
     "javatests/src/org/chromium/ui/test/util/UiRestrictionSkipCheck.java",
+    "javatests/src/org/chromium/ui/test/util/modelutil/FakeViewProvider.java",
   ]
   deps = [
     ":ui_java",
     "//base:base_java",
     "//base:base_java_test_support",
+    "//third_party/junit",
   ]
 }
 
@@ -366,6 +374,10 @@ junit_binary("ui_junit_tests") {
     "junit/src/org/chromium/ui/base/LocalizationUtilsTest.java",
     "junit/src/org/chromium/ui/base/SelectFileDialogTest.java",
     "junit/src/org/chromium/ui/drawable/StateListDrawableBuilderTest.java",
+    "junit/src/org/chromium/ui/modaldialog/ModalDialogManagerTest.java",
+    "junit/src/org/chromium/ui/modelutil/LazyConstructionPropertyMcpTest.java",
+    "junit/src/org/chromium/ui/modelutil/PropertyModelTest.java",
+    "junit/src/org/chromium/ui/modelutil/SimpleListObservableTest.java",
     "junit/src/org/chromium/ui/text/SpanApplierTest.java",
     "junit/src/org/chromium/ui/shadows/ShadowAsyncLayoutInflater.java",
     "junit/src/org/chromium/ui/shadows/ShadowAppCompatResources.java",
@@ -375,6 +387,7 @@ junit_binary("ui_junit_tests") {
   ]
   deps = [
     ":ui_java",
+    ":ui_java_test_support",
     ":ui_javatest_resources",
     "//base:base_java",
     "//base:base_java_test_support",

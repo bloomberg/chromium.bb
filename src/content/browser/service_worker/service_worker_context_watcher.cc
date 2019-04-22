@@ -13,7 +13,8 @@
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/console_message_level.h"
+#include "content/public/browser/console_message.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 #include "url/gurl.h"
@@ -317,7 +318,7 @@ void ServiceWorkerContextWatcher::OnReportConsoleMessage(
     int64_t version_id,
     const ConsoleMessage& message) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (message.message_level != CONSOLE_MESSAGE_LEVEL_ERROR)
+  if (message.message_level != blink::mojom::ConsoleMessageLevel::kError)
     return;
   int64_t registration_id = blink::mojom::kInvalidServiceWorkerRegistrationId;
   auto it = version_info_map_.find(version_id);

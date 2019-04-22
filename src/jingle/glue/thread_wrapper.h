@@ -83,12 +83,17 @@ class JingleThreadWrapper
             uint32_t id,
             rtc::MessageData* data) override;
 
-  // Following methods are not supported.They are overriden just to
+  // Quitting is not supported (see below); this method performs
+  // NOTIMPLEMENTED_LOG_ONCE() and returns false.
+  // TODO(https://crbug.com/webrtc/10364): When rtc::MessageQueue::Post()
+  // returns a bool, !IsQuitting() will not be needed to infer success and we
+  // may implement this as NOTREACHED() like the rest of the methods.
+  bool IsQuitting() override;
+  // Following methods are not supported. They are overriden just to
   // ensure that they are not called (each of them contain NOTREACHED
   // in the body). Some of this methods can be implemented if it
   // becomes neccessary to use libjingle code that calls them.
   void Quit() override;
-  bool IsQuitting() override;
   void Restart() override;
   bool Get(rtc::Message* message, int delay_ms, bool process_io) override;
   bool Peek(rtc::Message* message, int delay_ms) override;

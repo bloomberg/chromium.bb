@@ -8,6 +8,7 @@
 
 #include <memory>
 
+#include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/cpp/window_state_type.h"
@@ -75,6 +76,11 @@ views::Widget::InitParams BrowserFrameMash::GetWidgetParams() {
   properties[ash::mojom::kCanConsumeSystemKeys_Property] =
       mojo::ConvertTo<std::vector<uint8_t>>(
           static_cast<int64_t>(browser->is_app()));
+  properties[ash::mojom::kAppType_Property] =
+      mojo::ConvertTo<std::vector<uint8_t>>(static_cast<int64_t>(
+          BrowserNonClientFrameViewAsh::UsePackagedAppHeaderStyle(browser)
+              ? ash::AppType::CHROME_APP
+              : ash::AppType::BROWSER));
 
   aura::WindowTreeHostMusInitParams window_tree_host_init_params =
       aura::CreateInitParamsForTopLevel(
@@ -82,9 +88,6 @@ views::Widget::InitParams BrowserFrameMash::GetWidgetParams() {
   std::unique_ptr<views::DesktopWindowTreeHostMus> desktop_window_tree_host =
       std::make_unique<views::DesktopWindowTreeHostMus>(
           std::move(window_tree_host_init_params), browser_frame_, this);
-  // BrowserNonClientFrameViewAsh::OnBoundsChanged() takes care of updating
-  // the insets.
-  desktop_window_tree_host->set_auto_update_client_area(false);
   SetDesktopWindowTreeHost(std::move(desktop_window_tree_host));
   return params;
 }

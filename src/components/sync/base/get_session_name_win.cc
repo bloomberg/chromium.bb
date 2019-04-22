@@ -7,7 +7,7 @@
 #include <windows.h>
 
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 
 namespace syncer {
@@ -15,7 +15,7 @@ namespace internal {
 
 std::string GetComputerName() {
   wchar_t computer_name[MAX_COMPUTERNAME_LENGTH + 1] = {0};
-  DWORD size = arraysize(computer_name);
+  DWORD size = base::size(computer_name);
   if (::GetComputerNameW(computer_name, &size)) {
     std::string result;
     bool conversion_successful = base::WideToUTF8(computer_name, size, &result);

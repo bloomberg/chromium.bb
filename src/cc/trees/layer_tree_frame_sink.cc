@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/trees/layer_tree_frame_sink_client.h"
@@ -25,7 +24,10 @@ class LayerTreeFrameSink::ContextLostForwarder
   ContextLostForwarder(base::WeakPtr<LayerTreeFrameSink> frame_sink,
                        scoped_refptr<base::SingleThreadTaskRunner> task_runner)
       : frame_sink_(frame_sink), task_runner_(std::move(task_runner)) {}
+  ContextLostForwarder(const ContextLostForwarder&) = delete;
   ~ContextLostForwarder() override = default;
+
+  ContextLostForwarder& operator=(const ContextLostForwarder&) = delete;
 
   void OnContextLost() override {
     task_runner_->PostTask(
@@ -36,7 +38,6 @@ class LayerTreeFrameSink::ContextLostForwarder
  private:
   base::WeakPtr<LayerTreeFrameSink> frame_sink_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  DISALLOW_COPY_AND_ASSIGN(ContextLostForwarder);
 };
 
 LayerTreeFrameSink::LayerTreeFrameSink(
@@ -65,6 +66,11 @@ bool LayerTreeFrameSink::BindToClient(LayerTreeFrameSinkClient* client) {
   DCHECK(client);
   DCHECK(!client_);
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  // Note: If |context_provider_| was always bound to a thread before here then
+  // the return value could be replaced with a PostTask to OnContextLost(). This
+  // would simplify the calling code so it didn't have to handle failures in
+  // BindToClient().
 
   if (context_provider_) {
     context_provider_->AddObserver(this);

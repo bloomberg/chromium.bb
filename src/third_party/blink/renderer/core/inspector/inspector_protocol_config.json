@@ -48,7 +48,7 @@
             },
             {
                 "domain": "IndexedDB",
-                "async": ["requestDatabaseNames", "requestDatabase", "requestData", "deleteObjectStoreEntries", "clearObjectStore", "deleteDatabase"]
+                "async": ["requestDatabaseNames", "requestDatabase", "requestData", "getMetadata", "deleteObjectStoreEntries", "clearObjectStore", "deleteDatabase"]
             },
             {
                 "domain": "LayerTree"
@@ -69,12 +69,12 @@
             },
             {
                 "domain": "Memory",
-                "include": ["getDOMCounters", "startSampling", "stopSampling", "getSamplingProfile", "getAllTimeSamplingProfile"]
+                "include": ["getDOMCounters", "forciblyPurgeJavaScriptMemory", "startSampling", "stopSampling", "getSamplingProfile", "getAllTimeSamplingProfile"]
             },
             {
                 "domain": "Page",
-                "exclude": ["getNavigationHistory", "navigateToHistoryEntry", "captureScreenshot", "screencastFrameAck", "handleJavaScriptDialog", "setColorPickerEnabled",
-                            "getAppManifest", "requestAppBanner", "setControlNavigations", "processNavigation", "printToPDF", "bringToFront", "setDownloadBehavior", "navigate", "crash", "close", "setWebLifecycleState", "captureSnapshot"],
+                "exclude": ["getNavigationHistory", "navigateToHistoryEntry", "resetNavigationHistory", "captureScreenshot", "screencastFrameAck", "handleJavaScriptDialog", "setColorPickerEnabled",
+                            "getAppManifest", "setControlNavigations", "processNavigation", "printToPDF", "bringToFront", "setDownloadBehavior", "navigate", "crash", "close", "setWebLifecycleState", "captureSnapshot", "getInstallabilityErrors"],
                 "async": ["getResourceContent", "searchInResource"],
                 "exclude_events": ["screencastFrame", "screencastVisibilityChanged", "colorPicked", "interstitialShown", "interstitialHidden", "javascriptDialogOpening", "javascriptDialogClosed", "navigationRequested"]
             },
@@ -94,9 +94,6 @@
                             "setRequestInterception", "continueInterceptedRequest", "getResponseBodyForInterception",
                             "takeResponseBodyForInterceptionAsStream"],
                 "async": ["getResponseBody", "getRequestPostData"]
-            },
-            {
-                "domain": "Testing"
             }
         ]
     },

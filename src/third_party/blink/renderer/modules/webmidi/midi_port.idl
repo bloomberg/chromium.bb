@@ -65,6 +65,6 @@ enum MIDIPortType {
 
     attribute EventHandler onstatechange;
 
-    [CallWith=ScriptState] Promise open();
-    [CallWith=ScriptState] Promise close();
+    [CallWith=ScriptState] Promise<MIDIPort> open();
+    [CallWith=ScriptState] Promise<MIDIPort> close();
 };

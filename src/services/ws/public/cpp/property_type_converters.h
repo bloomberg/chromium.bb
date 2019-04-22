@@ -21,6 +21,7 @@ class UnguessableToken;
 namespace gfx {
 class Rect;
 class Size;
+class SizeF;
 }  // namespace gfx
 
 namespace mojo {
@@ -45,6 +46,15 @@ struct TypeConverter<std::vector<uint8_t>, gfx::Size> {
 template <>
 struct TypeConverter<gfx::Size, std::vector<uint8_t>> {
   static gfx::Size Convert(const std::vector<uint8_t>& input);
+};
+
+template <>
+struct TypeConverter<std::vector<uint8_t>, gfx::SizeF> {
+  static std::vector<uint8_t> Convert(const gfx::SizeF& input);
+};
+template <>
+struct TypeConverter<gfx::SizeF, std::vector<uint8_t>> {
+  static gfx::SizeF Convert(const std::vector<uint8_t>& input);
 };
 
 template <>

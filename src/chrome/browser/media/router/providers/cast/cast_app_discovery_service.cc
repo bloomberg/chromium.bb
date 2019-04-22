@@ -4,6 +4,7 @@
 
 #include "chrome/browser/media/router/providers/cast/cast_app_discovery_service.h"
 
+#include "base/bind.h"
 #include "base/time/tick_clock.h"
 #include "chrome/browser/media/router/providers/cast/cast_media_route_provider_metrics.h"
 #include "components/cast_channel/cast_message_handler.h"
@@ -175,7 +176,7 @@ void CastAppDiscoveryServiceImpl::UpdateAppAvailability(
     return;
 
   DVLOG(1) << "App " << app_id << " on sink " << sink_id << " is "
-           << cast_channel::GetAppAvailabilityResultToString(availability);
+           << ToString(availability);
 
   UpdateSinkQueries(availability_tracker_.UpdateAppAvailability(
       sink_id, app_id, {availability, clock_->NowTicks()}));

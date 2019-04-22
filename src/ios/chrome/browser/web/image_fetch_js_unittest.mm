@@ -5,6 +5,7 @@
 #import <UIKit/UIKit.h>
 
 #include "base/base64.h"
+#include "base/bind.h"
 #include "base/macros.h"
 #import "base/test/ios/wait_util.h"
 #import "ios/web/public/test/web_js_test.h"

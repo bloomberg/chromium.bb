@@ -91,11 +91,13 @@ class FakeDownloadTaskImplDelegate : public DownloadTaskImpl::Delegate {
 
   // Returns mock, which can be accessed via session() method.
   NSURLSession* CreateSession(NSString* identifier,
+                              NSArray<NSHTTPCookie*>* cookies,
                               id<NSURLSessionDataDelegate> delegate,
                               NSOperationQueue* delegate_queue) {
     // Make sure this method is called only once.
     EXPECT_FALSE(session_delegate_);
     session_delegate_ = delegate;
+    cookies_ = [cookies copy];
     return session_;
   }
 
@@ -104,9 +106,13 @@ class FakeDownloadTaskImplDelegate : public DownloadTaskImpl::Delegate {
   id session() { return session_; }
   id<NSURLSessionDataDelegate> session_delegate() { return session_delegate_; }
 
+  // Returns the cookies passed to Create session method.
+  NSArray<NSHTTPCookie*>* cookies() { return cookies_; }
+
  private:
   id<NSURLSessionDataDelegate> session_delegate_;
   id configuration_;
+  NSArray<NSHTTPCookie*>* cookies_ = nil;
   id session_;
 };
 
@@ -535,34 +541,26 @@ TEST_F(DownloadTaskImplTest, FailureInTheMiddle) {
   EXPECT_CALL(task_delegate_, OnTaskDestroyed(task_.get()));
 }
 
-// Tests that NSURLSessionConfiguration contains up to date cookie from browser
-// state before the download started.
+// Tests that CreateSession is called with the correct cookies from the cookie
+// store.
 TEST_F(DownloadTaskImplTest, Cookie) {
-  if (@available(iOS 11, *)) {
-    // Remove all cookies from the session configuration.
-    auto storage = task_delegate_.configuration().HTTPCookieStorage;
-    for (NSHTTPCookie* cookie in storage.cookies)
-      [storage deleteCookie:cookie];
+  // Add a cookie to BrowserState.
+  NSURL* cookie_url = [NSURL URLWithString:@(kUrl)];
+  NSHTTPCookie* cookie = [NSHTTPCookie cookieWithProperties:@{
+    NSHTTPCookieName : @"name",
+    NSHTTPCookieValue : @"value",
+    NSHTTPCookiePath : cookie_url.path,
+    NSHTTPCookieDomain : cookie_url.host,
+    NSHTTPCookieVersion : @1,
+  }];
+  ASSERT_TRUE(SetCookie(cookie));
 
-    // Add a cookie to BrowserState.
-    NSURL* cookie_url = [NSURL URLWithString:@(kUrl)];
-    NSHTTPCookie* cookie = [NSHTTPCookie cookieWithProperties:@{
-      NSHTTPCookieName : @"name",
-      NSHTTPCookieValue : @"value",
-      NSHTTPCookiePath : cookie_url.path,
-      NSHTTPCookieDomain : cookie_url.host,
-      NSHTTPCookieVersion : @1,
-    }];
-    ASSERT_TRUE(SetCookie(cookie));
-
-    // Start the download and make sure that all cookie from BrowserState were
-    // picked up.
-    EXPECT_CALL(task_observer_, OnDownloadUpdated(task_.get()));
-    ASSERT_TRUE(Start());
-    EXPECT_EQ(1U, storage.cookies.count);
-    EXPECT_NSEQ(cookie, storage.cookies.firstObject);
-  }
-
+  // Start the download and make sure that all cookie from BrowserState were
+  // picked up.
+  EXPECT_CALL(task_observer_, OnDownloadUpdated(task_.get()));
+  ASSERT_TRUE(Start());
+  EXPECT_EQ(1U, task_delegate_.cookies().count);
+  EXPECT_NSEQ(cookie, task_delegate_.cookies().firstObject);
   EXPECT_CALL(task_delegate_, OnTaskDestroyed(task_.get()));
 }
 

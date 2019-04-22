@@ -134,14 +134,10 @@ jumbo_source_set("parser") {
     "cxfa_connectionset.h",
     "cxfa_connectstring.cpp",
     "cxfa_connectstring.h",
-    "cxfa_containerlayoutitem.cpp",
-    "cxfa_containerlayoutitem.h",
     "cxfa_contentarea.cpp",
     "cxfa_contentarea.h",
     "cxfa_contentcopy.cpp",
     "cxfa_contentcopy.h",
-    "cxfa_contentlayoutitem.cpp",
-    "cxfa_contentlayoutitem.h",
     "cxfa_copies.cpp",
     "cxfa_copies.h",
     "cxfa_corner.cpp",
@@ -314,8 +310,6 @@ jumbo_source_set("parser") {
     "cxfa_interactive.h",
     "cxfa_issuers.cpp",
     "cxfa_issuers.h",
-    "cxfa_itemlayoutprocessor.cpp",
-    "cxfa_itemlayoutprocessor.h",
     "cxfa_items.cpp",
     "cxfa_items.h",
     "cxfa_jog.cpp",
@@ -328,14 +322,6 @@ jumbo_source_set("parser") {
     "cxfa_labelprinter.h",
     "cxfa_layout.cpp",
     "cxfa_layout.h",
-    "cxfa_layoutcontext.cpp",
-    "cxfa_layoutcontext.h",
-    "cxfa_layoutitem.cpp",
-    "cxfa_layoutitem.h",
-    "cxfa_layoutpagemgr.cpp",
-    "cxfa_layoutpagemgr.h",
-    "cxfa_layoutprocessor.cpp",
-    "cxfa_layoutprocessor.h",
     "cxfa_level.cpp",
     "cxfa_level.h",
     "cxfa_line.cpp",
@@ -396,7 +382,6 @@ jumbo_source_set("parser") {
     "cxfa_neverembed.h",
     "cxfa_node.cpp",
     "cxfa_node.h",
-    "cxfa_node_statics.cpp",
     "cxfa_nodehelper.cpp",
     "cxfa_nodehelper.h",
     "cxfa_nodeiteratortemplate.h",
@@ -628,8 +613,6 @@ jumbo_source_set("parser") {
     "cxfa_traversal.h",
     "cxfa_traverse.cpp",
     "cxfa_traverse.h",
-    "cxfa_traversestrategy_contentareacontainerlayoutitem.h",
-    "cxfa_traversestrategy_layoutitem.h",
     "cxfa_traversestrategy_xfacontainernode.h",
     "cxfa_traversestrategy_xfanode.h",
     "cxfa_treelist.cpp",
@@ -690,9 +673,8 @@ jumbo_source_set("parser") {
     "cxfa_xsl.h",
     "cxfa_zpl.cpp",
     "cxfa_zpl.h",
+    "xfa_basic_data.cpp",
     "xfa_basic_data.h",
-    "xfa_basic_data_element_script.cpp",
-    "xfa_basic_data_enum.cpp",
     "xfa_document_datamerger_imp.cpp",
     "xfa_document_datamerger_imp.h",
     "xfa_resolvenode_rs.h",
@@ -710,10 +692,7 @@ jumbo_source_set("parser") {
     "../../fgas",
     "../../fxgraphics",
   ]
-  allow_circular_includes_from = [
-    "../../fgas",
-    "../../../fxjs",
-  ]
+  allow_circular_includes_from = [ "../../../fxjs" ]
   configs += [
     "../../../:pdfium_core_config",
     "../../:xfa_warnings",
@@ -725,13 +704,16 @@ pdfium_unittest_source_set("unittests") {
   sources = [
     "cxfa_document_parser_unittest.cpp",
     "cxfa_localevalue_unittest.cpp",
+    "cxfa_measurement_unittest.cpp",
     "cxfa_node_unittest.cpp",
     "cxfa_nodeiteratortemplate_unittest.cpp",
     "cxfa_xmllocale_unittest.cpp",
+    "xfa_basic_data_unittest.cpp",
     "xfa_utils_unittest.cpp",
   ]
   deps = [
     ":parser",
+    "../../../fxjs",
   ]
   pdfium_root_dir = "../../../"
 }

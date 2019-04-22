@@ -29,11 +29,12 @@ APIActivityLogger::APIActivityLogger(ScriptContext* context)
 APIActivityLogger::~APIActivityLogger() {}
 
 void APIActivityLogger::AddRoutes() {
-  RouteHandlerFunction("LogEvent", base::Bind(&APIActivityLogger::LogForJS,
-                                              base::Unretained(this), EVENT));
+  RouteHandlerFunction("LogEvent",
+                       base::BindRepeating(&APIActivityLogger::LogForJS,
+                                           base::Unretained(this), EVENT));
   RouteHandlerFunction("LogAPICall",
-                       base::Bind(&APIActivityLogger::LogForJS,
-                                  base::Unretained(this), APICALL));
+                       base::BindRepeating(&APIActivityLogger::LogForJS,
+                                           base::Unretained(this), APICALL));
 }
 
 // static
@@ -123,8 +124,10 @@ void APIActivityLogger::LogForJS(
     converter->SetFunctionAllowed(true);
     converter->SetStrategy(&strategy);
     for (size_t i = 0; i < arg_array->Length(); ++i) {
-      std::unique_ptr<base::Value> converted_arg =
-          converter->FromV8Value(arg_array->Get(i), context);
+      // TODO(crbug.com/913942): Possibly replace ToLocalChecked here with
+      // actual error handling.
+      std::unique_ptr<base::Value> converted_arg = converter->FromV8Value(
+          arg_array->Get(context, i).ToLocalChecked(), context);
       arguments->Append(converted_arg ? std::move(converted_arg)
                                       : std::make_unique<base::Value>());
     }

@@ -35,7 +35,6 @@
 #include "third_party/blink/renderer/platform/wtf/container_annotations.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"  // For default Vector template parameters.
 #include "third_party/blink/renderer/platform/wtf/hash_table_deleted_value_type.h"
-#include "third_party/blink/renderer/platform/wtf/not_found.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/vector_traits.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
@@ -395,7 +394,7 @@ class VectorBufferBase {
     else
       buffer_ = Allocator::template AllocateVectorBacking<T>(size_to_allocate);
     capacity_ = static_cast<wtf_size_t>(size_to_allocate / sizeof(T));
-    Allocator::BackingWriteBarrier(buffer_);
+    Allocator::BackingWriteBarrier(buffer_, 0);
   }
 
   void AllocateExpandedBuffer(wtf_size_t new_capacity) {
@@ -408,7 +407,7 @@ class VectorBufferBase {
       buffer_ = Allocator::template AllocateExpandedVectorBacking<T>(
           size_to_allocate);
     capacity_ = static_cast<wtf_size_t>(size_to_allocate / sizeof(T));
-    Allocator::BackingWriteBarrier(buffer_);
+    Allocator::BackingWriteBarrier(buffer_, 0);
   }
 
   size_t AllocationSize(size_t capacity) const {
@@ -534,12 +533,12 @@ class VectorBuffer<T, 0, Allocator>
                         OffsetRange this_hole,
                         OffsetRange other_hole) {
     static_assert(VectorTraits<T>::kCanSwapUsingCopyOrMove,
-                  "Cannot swap HeapVectors of TraceWrapperMembers.");
+                  "Cannot swap using copy or move.");
     std::swap(buffer_, other.buffer_);
-    Allocator::BackingWriteBarrier(buffer_);
-    Allocator::BackingWriteBarrier(other.buffer_);
     std::swap(capacity_, other.capacity_);
     std::swap(size_, other.size_);
+    Allocator::BackingWriteBarrier(buffer_, size_);
+    Allocator::BackingWriteBarrier(other.buffer_, other.size_);
   }
 
   using Base::AllocateBuffer;
@@ -677,16 +676,16 @@ class VectorBuffer : protected VectorBufferBase<T, true, Allocator> {
     using TypeOperations = VectorTypeOperations<T, Allocator>;
 
     static_assert(VectorTraits<T>::kCanSwapUsingCopyOrMove,
-                  "Cannot swap HeapVectors of TraceWrapperMembers.");
+                  "Cannot swap using copy or move.");
 
     if (Buffer() != InlineBuffer() && other.Buffer() != other.InlineBuffer()) {
       // The easiest case: both buffers are non-inline. We just need to swap the
       // pointers.
       std::swap(buffer_, other.buffer_);
-      Allocator::BackingWriteBarrier(buffer_);
-      Allocator::BackingWriteBarrier(other.buffer_);
       std::swap(capacity_, other.capacity_);
       std::swap(size_, other.size_);
+      Allocator::BackingWriteBarrier(buffer_, size_);
+      Allocator::BackingWriteBarrier(other.buffer_, other.size_);
       return;
     }
 
@@ -747,7 +746,7 @@ class VectorBuffer : protected VectorBufferBase<T, true, Allocator> {
       other.buffer_ = other.InlineBuffer();
       std::swap(size_, other.size_);
       ANNOTATE_NEW_BUFFER(other.buffer_, inlineCapacity, other.size_);
-      Allocator::BackingWriteBarrier(buffer_);
+      Allocator::BackingWriteBarrier(buffer_, size_);
     } else if (!this_source_begin &&
                other_source_begin) {  // Their buffer is inline, ours is not.
       DCHECK_NE(Buffer(), InlineBuffer());
@@ -757,7 +756,7 @@ class VectorBuffer : protected VectorBufferBase<T, true, Allocator> {
       buffer_ = InlineBuffer();
       std::swap(size_, other.size_);
       ANNOTATE_NEW_BUFFER(buffer_, inlineCapacity, size_);
-      Allocator::BackingWriteBarrier(other.buffer_);
+      Allocator::BackingWriteBarrier(other.buffer_, other.size_);
     } else {  // Both buffers are inline.
       DCHECK(this_source_begin);
       DCHECK(other_source_begin);
@@ -1263,9 +1262,13 @@ class Vector : private VectorBuffer<T, INLINE_CAPACITY, Allocator> {
       size_ = 0;  // Partial protection against use-after-free.
     }
 
-    // If this is called during sweeping, it must not touch the OutOfLineBuffer.
-    if (Allocator::IsSweepForbidden())
-      return;
+    // If this is called during sweeping, the backing should not be touched.
+    // Other collections have an early return here if IsSweepForbidden(), but
+    // adding that resulted in performance regression for shadow dom benchmarks
+    // (crbug.com/866084) because of the additional access to TLS. The check has
+    // been removed but the same check exists in HeapAllocator::BackingFree() so
+    // things should be fine as long as VectorBase does not touch the backing.
+
     Base::Destruct();
   }
 

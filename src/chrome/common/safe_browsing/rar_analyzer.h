@@ -29,14 +29,16 @@ struct ArchiveAnalyzerResults;
 
 namespace rar_analyzer {
 
-// |rar_file| is a platform-agnostic handle to the file. Since |AnalyzeRarFile|
-// runs inside a sandbox, it isn't allowed to open file handles. So the file is
-// opened in |SandboxedRarAnalyzer|, which runs in the browser process, and the
-// handle is passed here. The function populates the various fields in |results|
-// based on the results of parsing the rar file.
-// If the parsing fails for any reason, including crashing the sandbox process,
-// the browser process considers the file safe.
+// |rar_file| is a platform-agnostic handle to the file, and |temp_file| is a
+// handle for a temporary file the sandbox can write to. Since |AnalyzeRarFile|
+// runs inside a sandbox, it isn't allowed to open file handles. So both files
+// are opened in |SandboxedRarAnalyzer|, which runs in the browser process, and
+// the handles are passed here. The function populates the various fields in
+// |results| based on the results of parsing the rar file. If the parsing fails
+// for any reason, including crashing the sandbox process, the browser process
+// considers the file safe.
 void AnalyzeRarFile(base::File rar_file,
+                    base::File temp_file,
                     ArchiveAnalyzerResults* results);
 
 }  // namespace rar_analyzer

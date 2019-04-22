@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/exclusive_access/keyboard_lock_controller.h"
 
+#include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/default_tick_clock.h"
@@ -40,10 +41,6 @@ constexpr TimeDelta kDefaultEscRepeatWindow = TimeDelta::FromSeconds(1);
 // Number of times ESC must be pressed within |kDefaultEscRepeatWindow| to
 // trigger the exit instructions to be shown again.
 constexpr int kEscRepeatCountToTriggerUiReshow = 3;
-
-bool IsExperimentalKeyboardLockApiEnabled() {
-  return base::FeatureList::IsEnabled(features::kKeyboardLockAPI);
-}
 
 }  // namespace
 
@@ -98,8 +95,7 @@ bool KeyboardLockController::RequiresPressAndHoldEscToExit() const {
 
 void KeyboardLockController::RequestKeyboardLock(WebContents* web_contents,
                                                  bool esc_key_locked) {
-  if (!IsExperimentalKeyboardLockApiEnabled() ||
-      !exclusive_access_manager()
+  if (!exclusive_access_manager()
            ->fullscreen_controller()
            ->IsFullscreenForTabOrPending(web_contents)) {
     return;

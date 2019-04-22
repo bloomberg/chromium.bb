@@ -4,6 +4,7 @@
 
 #include "chrome/browser/android/explore_sites/ntp_json_fetcher.h"
 
+#include "base/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/test/base/testing_profile.h"

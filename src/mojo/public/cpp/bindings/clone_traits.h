@@ -79,7 +79,7 @@ struct CloneTraits<base::flat_map<K, V>, false> {
 template <typename T>
 T Clone(const T& input) {
   return CloneTraits<T>::Clone(input);
-};
+}
 
 }  // namespace mojo
 

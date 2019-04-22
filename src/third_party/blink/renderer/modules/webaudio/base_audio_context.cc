@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
 
 #include "build/build_config.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom-shared.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
@@ -33,10 +34,8 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
-#include "third_party/blink/renderer/core/html/media/autoplay_policy.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
-#include "third_party/blink/renderer/core/inspector/console_types.h"
 #include "third_party/blink/renderer/modules/webaudio/analyser_node.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_buffer.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_buffer_source_node.h"
@@ -75,6 +74,8 @@
 #include "third_party/blink/renderer/platform/uuid.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
+#include <algorithm>
+
 namespace blink {
 
 BaseAudioContext* BaseAudioContext::Create(
@@ -87,11 +88,12 @@ BaseAudioContext* BaseAudioContext::Create(
 // Constructor for rendering to the audio hardware.
 BaseAudioContext::BaseAudioContext(Document* document,
                                    enum ContextType context_type)
-    : PausableObject(document),
+    : ContextLifecycleStateObserver(document),
       destination_node_(nullptr),
+      is_resolving_resume_promises_(false),
+      task_runner_(document->GetTaskRunner(TaskType::kInternalMedia)),
       uuid_(CreateCanonicalUUIDString()),
       is_cleared_(false),
-      is_resolving_resume_promises_(false),
       has_posted_cleanup_task_(false),
       deferred_task_handler_(DeferredTaskHandler::Create(
           document->GetTaskRunner(TaskType::kInternalMedia))),
@@ -99,9 +101,7 @@ BaseAudioContext::BaseAudioContext(Document* document,
       periodic_wave_sine_(nullptr),
       periodic_wave_square_(nullptr),
       periodic_wave_sawtooth_(nullptr),
-      periodic_wave_triangle_(nullptr),
-      output_position_(),
-      task_runner_(document->GetTaskRunner(TaskType::kInternalMedia)) {}
+      periodic_wave_triangle_(nullptr) {}
 
 BaseAudioContext::~BaseAudioContext() {
   {
@@ -120,7 +120,7 @@ void BaseAudioContext::Initialize() {
 
   FFTFrame::Initialize();
 
-  audio_worklet_ = AudioWorklet::Create(this);
+  audio_worklet_ = MakeGarbageCollected<AudioWorklet>(this);
 
   if (destination_node_) {
     destination_node_->Handler().Initialize();
@@ -134,7 +134,7 @@ void BaseAudioContext::Initialize() {
 
     // The AudioParams in the listener need access to the destination node, so
     // only create the listener if the destination node exists.
-    listener_ = AudioListener::Create(*this);
+    listener_ = MakeGarbageCollected<AudioListener>(*this);
   }
 }
 
@@ -172,7 +172,15 @@ void BaseAudioContext::Uninitialize() {
 
   DCHECK(!is_resolving_resume_promises_);
   DCHECK_EQ(resume_resolvers_.size(), 0u);
-  DCHECK_EQ(active_source_nodes_.size(), 0u);
+}
+
+void BaseAudioContext::ContextLifecycleStateChanged(
+    mojom::FrameLifecycleState state) {
+  if (state == mojom::FrameLifecycleState::kRunning)
+    destination()->GetAudioDestinationHandler().Resume();
+  else if (state == mojom::FrameLifecycleState::kFrozen ||
+           state == mojom::FrameLifecycleState::kFrozenAutoResumeMedia)
+    destination()->GetAudioDestinationHandler().Pause();
 }
 
 void BaseAudioContext::ContextDestroyed(ExecutionContext*) {
@@ -198,13 +206,28 @@ AudioDestinationNode* BaseAudioContext::destination() const {
   return destination_node_;
 }
 
-void BaseAudioContext::ThrowExceptionForClosedState(
-    ExceptionState& exception_state) {
-  exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                    "AudioContext has been closed.");
+void BaseAudioContext::WarnIfContextClosed(const AudioHandler* handler) const {
+  DCHECK(handler);
+
+  if (IsContextClosed() && GetDocument()) {
+    GetDocument()->AddConsoleMessage(
+        ConsoleMessage::Create(mojom::ConsoleMessageSource::kOther,
+                               mojom::ConsoleMessageLevel::kWarning,
+                               "Construction of " + handler->NodeTypeName() +
+                                   " is not useful when context is closed."));
+  }
 }
 
-AudioBuffer* BaseAudioContext::createBuffer(unsigned number_of_channels,
+void BaseAudioContext::WarnForConnectionIfContextClosed() const {
+  if (IsContextClosed() && GetDocument()) {
+    GetDocument()->AddConsoleMessage(ConsoleMessage::Create(
+        mojom::ConsoleMessageSource::kOther,
+        mojom::ConsoleMessageLevel::kWarning,
+        "Connecting nodes after the context has been closed is not useful."));
+  }
+}
+
+AudioBuffer* BaseAudioContext::createBuffer(uint32_t number_of_channels,
                                             uint32_t number_of_frames,
                                             float sample_rate,
                                             ExceptionState& exception_state) {
@@ -284,7 +307,7 @@ ScriptPromise BaseAudioContext::decodeAudioData(
   DCHECK(IsMainThread());
   DCHECK(audio_data);
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   v8::Isolate* isolate = script_state->GetIsolate();
@@ -369,7 +392,7 @@ ScriptProcessorNode* BaseAudioContext::createScriptProcessor(
 }
 
 ScriptProcessorNode* BaseAudioContext::createScriptProcessor(
-    size_t buffer_size,
+    uint32_t buffer_size,
     ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
@@ -377,8 +400,8 @@ ScriptProcessorNode* BaseAudioContext::createScriptProcessor(
 }
 
 ScriptProcessorNode* BaseAudioContext::createScriptProcessor(
-    size_t buffer_size,
-    size_t number_of_input_channels,
+    uint32_t buffer_size,
+    uint32_t number_of_input_channels,
     ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
@@ -387,9 +410,9 @@ ScriptProcessorNode* BaseAudioContext::createScriptProcessor(
 }
 
 ScriptProcessorNode* BaseAudioContext::createScriptProcessor(
-    size_t buffer_size,
-    size_t number_of_input_channels,
-    size_t number_of_output_channels,
+    uint32_t buffer_size,
+    uint32_t number_of_input_channels,
+    uint32_t number_of_output_channels,
     ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
@@ -473,7 +496,7 @@ ChannelSplitterNode* BaseAudioContext::createChannelSplitter(
 }
 
 ChannelSplitterNode* BaseAudioContext::createChannelSplitter(
-    size_t number_of_outputs,
+    uint32_t number_of_outputs,
     ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
@@ -488,7 +511,7 @@ ChannelMergerNode* BaseAudioContext::createChannelMerger(
 }
 
 ChannelMergerNode* BaseAudioContext::createChannelMerger(
-    size_t number_of_inputs,
+    uint32_t number_of_inputs,
     ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
@@ -601,17 +624,6 @@ void BaseAudioContext::SetContextState(AudioContextState new_state) {
 
   context_state_ = new_state;
 
-  // Audibility checks only happen when the context is running so manual
-  // notification is required when the context gets suspended or closed.
-  if (was_audible_ && context_state_ != kRunning) {
-    was_audible_ = false;
-    GetExecutionContext()
-        ->GetTaskRunner(TaskType::kMediaElementEvent)
-        ->PostTask(FROM_HERE,
-                   WTF::Bind(&BaseAudioContext::NotifyAudibleAudioStopped,
-                             WrapPersistent(this)));
-  }
-
   if (new_state == kClosed)
     GetDeferredTaskHandler().StopAcceptingTailProcessing();
 
@@ -630,11 +642,9 @@ void BaseAudioContext::NotifyStateChange() {
 
 void BaseAudioContext::NotifySourceNodeFinishedProcessing(
     AudioHandler* handler) {
-  // This can be called from either the main thread or the audio thread.  The
-  // mutex below protects access to |finished_source_handlers_| between the two
-  // threads.
-  MutexLocker lock(finished_source_handlers_mutex_);
-  finished_source_handlers_.push_back(handler);
+  DCHECK(IsAudioThread());
+
+  GetDeferredTaskHandler().GetFinishedSourceHandlers()->push_back(handler);
 }
 
 Document* BaseAudioContext::GetDocument() const {
@@ -645,109 +655,42 @@ void BaseAudioContext::NotifySourceNodeStartedProcessing(AudioNode* node) {
   DCHECK(IsMainThread());
   GraphAutoLocker locker(this);
 
-  active_source_nodes_.push_back(node);
+  GetDeferredTaskHandler().GetActiveSourceHandlers()->insert(&node->Handler());
   node->Handler().MakeConnection();
 }
 
 void BaseAudioContext::ReleaseActiveSourceNodes() {
   DCHECK(IsMainThread());
-  for (auto& source_node : active_source_nodes_)
-    source_node->Handler().BreakConnection();
-
-  active_source_nodes_.clear();
+  for (auto source_handler :
+       *GetDeferredTaskHandler().GetActiveSourceHandlers()) {
+    source_handler->BreakConnection();
+  }
 }
 
 void BaseAudioContext::HandleStoppableSourceNodes() {
   DCHECK(IsAudioThread());
   AssertGraphOwner();
 
-  if (finished_source_handlers_.size())
-    ScheduleMainThreadCleanup();
-}
+  HashSet<scoped_refptr<AudioHandler>>* active_source_handlers =
+      GetDeferredTaskHandler().GetActiveSourceHandlers();
 
-void BaseAudioContext::HandlePreRenderTasks(
-    const AudioIOPosition& output_position) {
-  DCHECK(IsAudioThread());
-
-  // At the beginning of every render quantum, try to update the internal
-  // rendering graph state (from main thread changes).  It's OK if the tryLock()
-  // fails, we'll just take slightly longer to pick up the changes.
-  if (TryLock()) {
-    GetDeferredTaskHandler().HandleDeferredTasks();
-
-    ResolvePromisesForUnpause();
-
-    // Check to see if source nodes can be stopped because the end time has
-    // passed.
-    HandleStoppableSourceNodes();
-
-    // Update the dirty state of the listener.
-    listener()->UpdateState();
-
-    // Update output timestamp.
-    output_position_ = output_position;
-
-    unlock();
-  }
-}
-
-// Determine if the rendered data is audible.
-static bool IsAudible(const AudioBus* rendered_data) {
-  // Compute the energy in each channel and sum up the energy in each channel
-  // for the total energy.
-  float energy = 0;
-
-  unsigned data_size = rendered_data->length();
-  for (unsigned k = 0; k < rendered_data->NumberOfChannels(); ++k) {
-    const float* data = rendered_data->Channel(k)->Data();
-    float channel_energy;
-    vector_math::Vsvesq(data, 1, &channel_energy, data_size);
-    energy += channel_energy;
-  }
-
-  return energy > 0;
-}
-
-void BaseAudioContext::HandlePostRenderTasks(const AudioBus* destination_bus) {
-  DCHECK(IsAudioThread());
-
-  // Must use a tryLock() here too.  Don't worry, the lock will very rarely be
-  // contended and this method is called frequently.  The worst that can happen
-  // is that there will be some nodes which will take slightly longer than usual
-  // to be deleted or removed from the render graph (in which case they'll
-  // render silence).
-  if (TryLock()) {
-    // Take care of AudioNode tasks where the tryLock() failed previously.
-    GetDeferredTaskHandler().BreakConnections();
-
-    GetDeferredTaskHandler().HandleDeferredTasks();
-    GetDeferredTaskHandler().RequestToDeleteHandlersOnMainThread();
-
-    unlock();
-  }
-
-  // Notify browser if audible audio has started or stopped.
-  if (HasRealtimeConstraint()) {
-    // Detect silence (or not) for MEI
-    bool is_audible = IsAudible(destination_bus);
-
-    if (is_audible) {
-      ++total_audible_renders_;
-    }
-
-    if (was_audible_ != is_audible) {
-      // Audibility changed in this render, so report the change.
-      was_audible_ = is_audible;
-      if (is_audible) {
-        PostCrossThreadTask(
-            *task_runner_, FROM_HERE,
-            CrossThreadBind(&BaseAudioContext::NotifyAudibleAudioStarted,
-                            WrapCrossThreadPersistent(this)));
-      } else {
-        PostCrossThreadTask(
-            *task_runner_, FROM_HERE,
-            CrossThreadBind(&BaseAudioContext::NotifyAudibleAudioStopped,
-                            WrapCrossThreadPersistent(this)));
+  if (active_source_handlers->size()) {
+    // Find source handlers to see if we can stop playing them.  Note: this
+    // check doesn't have to be done every render quantum, if this checking
+    // becomes to expensive.  It's ok to do this on a less frequency basis as
+    // long as the active nodes eventually get stopped if they're done.
+    for (auto handler : *active_source_handlers) {
+      switch (handler->GetNodeType()) {
+        case AudioHandler::kNodeTypeAudioBufferSource:
+        case AudioHandler::kNodeTypeOscillator:
+        case AudioHandler::kNodeTypeConstantSource: {
+          AudioScheduledSourceHandler* source_handler =
+              static_cast<AudioScheduledSourceHandler*>(handler.get());
+          source_handler->HandleStoppableSourceNode();
+          break;
+        }
+        default:
+          break;
       }
     }
   }
@@ -772,54 +715,6 @@ void BaseAudioContext::PerformCleanupOnMainThread() {
     is_resolving_resume_promises_ = false;
   }
 
-  if (active_source_nodes_.size()) {
-    // Find AudioBufferSourceNodes to see if we can stop playing them.
-    for (AudioNode* node : active_source_nodes_) {
-      if (node->Handler().GetNodeType() ==
-          AudioHandler::kNodeTypeAudioBufferSource) {
-        AudioBufferSourceNode* source_node =
-            static_cast<AudioBufferSourceNode*>(node);
-        source_node->GetAudioBufferSourceHandler().HandleStoppableSourceNode();
-      }
-    }
-
-    Vector<AudioHandler*> finished_handlers;
-    {
-      MutexLocker lock(finished_source_handlers_mutex_);
-      finished_source_handlers_.swap(finished_handlers);
-    }
-    // Break the connection and release active nodes that have finished
-    // playing.
-    unsigned remove_count = 0;
-    Vector<bool> removables;
-    removables.resize(active_source_nodes_.size());
-    for (AudioHandler* handler : finished_handlers) {
-      for (unsigned i = 0; i < active_source_nodes_.size(); ++i) {
-        if (handler == &active_source_nodes_[i]->Handler()) {
-          handler->BreakConnectionWithLock();
-          removables[i] = true;
-          remove_count++;
-          break;
-        }
-      }
-    }
-
-    // Copy over the surviving active nodes after removal.
-    if (remove_count > 0) {
-      HeapVector<Member<AudioNode>> actives;
-      DCHECK_GE(active_source_nodes_.size(), remove_count);
-      size_t initial_capacity =
-          std::min(active_source_nodes_.size() - remove_count,
-                   active_source_nodes_.size());
-      actives.ReserveInitialCapacity(initial_capacity);
-      for (unsigned i = 0; i < removables.size(); ++i) {
-        if (!removables[i])
-          actives.push_back(active_source_nodes_[i]);
-      }
-      active_source_nodes_.swap(actives);
-    }
-  }
-
   has_posted_cleanup_task_ = false;
 }
 
@@ -833,33 +728,12 @@ void BaseAudioContext::ScheduleMainThreadCleanup() {
   has_posted_cleanup_task_ = true;
 }
 
-void BaseAudioContext::ResolvePromisesForUnpause() {
-  // This runs inside the BaseAudioContext's lock when handling pre-render
-  // tasks.
-  DCHECK(IsAudioThread());
-  AssertGraphOwner();
-
-  // Resolve any pending promises created by resume(). Only do this if we
-  // haven't already started resolving these promises. This gets called very
-  // often and it takes some time to resolve the promises in the main thread.
-  if (!is_resolving_resume_promises_ && resume_resolvers_.size() > 0) {
-    is_resolving_resume_promises_ = true;
-    ScheduleMainThreadCleanup();
-  }
-}
-
 void BaseAudioContext::RejectPendingDecodeAudioDataResolvers() {
   // Now reject any pending decodeAudioData resolvers
   for (auto& resolver : decode_audio_resolvers_)
     resolver->Reject(DOMException::Create(DOMExceptionCode::kInvalidStateError,
                                           "Audio context is going away"));
   decode_audio_resolvers_.clear();
-}
-
-AudioIOPosition BaseAudioContext::OutputPosition() const {
-  DCHECK(IsMainThread());
-  GraphAutoLocker locker(this);
-  return output_position_;
 }
 
 void BaseAudioContext::RejectPendingResolvers() {
@@ -883,7 +757,7 @@ const AtomicString& BaseAudioContext::InterfaceName() const {
 }
 
 ExecutionContext* BaseAudioContext::GetExecutionContext() const {
-  return PausableObject::GetExecutionContext();
+  return ContextLifecycleStateObserver::GetExecutionContext();
 }
 
 void BaseAudioContext::StartRendering() {
@@ -902,7 +776,6 @@ void BaseAudioContext::StartRendering() {
 void BaseAudioContext::Trace(blink::Visitor* visitor) {
   visitor->Trace(destination_node_);
   visitor->Trace(listener_);
-  visitor->Trace(active_source_nodes_);
   visitor->Trace(resume_resolvers_);
   visitor->Trace(decode_audio_resolvers_);
   visitor->Trace(periodic_wave_sine_);
@@ -911,7 +784,7 @@ void BaseAudioContext::Trace(blink::Visitor* visitor) {
   visitor->Trace(periodic_wave_triangle_);
   visitor->Trace(audio_worklet_);
   EventTargetWithInlineData::Trace(visitor);
-  PausableObject::Trace(visitor);
+  ContextLifecycleStateObserver::Trace(visitor);
 }
 
 const SecurityOrigin* BaseAudioContext::GetSecurityOrigin() const {
@@ -940,10 +813,11 @@ void BaseAudioContext::NotifyWorkletIsReady() {
         audioWorklet()->GetMessagingProxy()->GetBackingWorkerThread();
   }
 
-  // If the context is running or suspended, restart the destination to switch
-  // the render thread with the worklet thread. Note that restarting can happen
-  // right after the context construction.
-  if (ContextState() != kClosed) {
+  // If the context is running, restart the destination to switch the render
+  // thread with the worklet thread. When the context is suspended, the next
+  // resume() call will start rendering with the worklet thread.
+  // Note that restarting can happen right after the context construction.
+  if (ContextState() == kRunning) {
     destination()->GetAudioDestinationHandler().RestartRendering();
   }
 }

@@ -10,10 +10,10 @@
 </body>
 <script>
 function setup() {
-  janktest.ontouchstart = function() {
+  document.getElementById('janktest').addEventListener('touchstart', (e) => {
     var end = performance.now() + 1200;
-    while (performance.now() < end) ;
-  };
+    while (performance.now() < end);
+  }, {passive: false});
 }
 </script>
 </html>

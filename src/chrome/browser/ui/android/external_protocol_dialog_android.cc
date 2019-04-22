@@ -18,14 +18,9 @@ using content::WebContents;
 // static
 void ExternalProtocolHandler::RunExternalProtocolDialog(
     const GURL& url,
-    int render_process_host_id,
-    int routing_id,
+    WebContents* web_contents,
     ui::PageTransition page_transition,
     bool has_user_gesture) {
-  WebContents* web_contents = tab_util::GetWebContentsByID(
-      render_process_host_id, routing_id);
-  if (!web_contents)
-    return;
   navigation_interception::InterceptNavigationDelegate* delegate =
       navigation_interception::InterceptNavigationDelegate::Get(web_contents);
   if (!delegate)

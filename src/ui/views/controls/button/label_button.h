@@ -65,6 +65,9 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   // Sets the horizontal alignment used for the button; reversed in RTL. The
   // optional image will lead the text, unless the button is right-aligned.
   void SetHorizontalAlignment(gfx::HorizontalAlignment alignment);
+  gfx::HorizontalAlignment horizontal_alignment() const {
+    return horizontal_alignment_;
+  }
 
   void SetMinSize(const gfx::Size& min_size);
   void SetMaxSize(const gfx::Size& max_size);
@@ -95,9 +98,6 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   void EnableCanvasFlippingForRTLUI(bool flip) override;
   void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
   void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
-  std::unique_ptr<InkDrop> CreateInkDrop() override;
-  std::unique_ptr<InkDropRipple> CreateInkDropRipple() const override;
-  std::unique_ptr<InkDropHighlight> CreateInkDropHighlight() const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
  protected:
@@ -114,10 +114,6 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   // Returns the available area for the label and image. Subclasses can change
   // these bounds if they need room to do manual painting.
   virtual gfx::Rect GetChildAreaBounds();
-
-  // Returns true if the CreateInkDrop*() methods should create flood fill ink
-  // drop components.
-  virtual bool ShouldUseFloodFillInkDrop() const;
 
   // View:
   void OnFocus() override;
@@ -195,7 +191,7 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   // A separate view is necessary to hold the ink drop layer so that it can
   // be stacked below |image_| and on top of |label_|, without resorting to
   // drawing |label_| on a layer (which can mess with subpixel anti-aliasing).
-  InkDropContainerView* ink_drop_container_;
+  InkDropContainerView* const ink_drop_container_;
 
   // The cached font lists in the normal and default button style. The latter
   // may be bold.

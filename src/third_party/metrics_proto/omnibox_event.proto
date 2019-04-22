@@ -193,10 +193,13 @@ message OmniboxEventProto {
     // This enum value is currently only used by Android GSA. It represents
     // a suggestion powered by a Chrome content provider.
     ON_DEVICE_CHROME = 13;
-    CLIPBOARD_URL = 14;  // Suggestion coming from clipboard (iOS only).
-    PHYSICAL_WEB = 15;   // Suggestions triggered by URLs broadcast by nearby
-                         // devices (iOS and Android).
-    DOCUMENT = 16;       // Suggestions for documents in a cloud corpus.
+    CLIPBOARD = 14;     // Suggestion coming from clipboard.
+    PHYSICAL_WEB = 15;  // DEPRECATED. Suggestions triggered by URLs broadcast
+                        // by nearby devices.
+    DOCUMENT = 16;      // Suggestions for documents in a cloud corpus.
+    // Non personalized query suggestions generated from a lightweight on device
+    // head model.
+    ON_DEVICE_HEAD = 17;
   }
 
   // The result set displayed on the completion popup
@@ -263,12 +266,14 @@ message OmniboxEventProto {
                                      // own type but instead can be attached to
                                      // suggestions of any type.
       CALCULATOR = 23;               // A calculator answer.
-      CLIPBOARD = 24;                // An URL based on the clipboard.
-      PHYSICAL_WEB = 25;             // A Physical Web nearby URL.
-      PHYSICAL_WEB_OVERFLOW = 26;    // An item representing multiple Physical
-                                     // Web nearby URLs.
-      DOCUMENT = 27;                 // An item representing a cloud document
-                                     // suggestion.
+      CLIPBOARD_URL = 24;            // An URL based on the clipboard.
+      PHYSICAL_WEB = 25;             // DEPRECATED. A Physical Web nearby URL.
+      PHYSICAL_WEB_OVERFLOW = 26;  // DEPRECATED. An item representing multiple
+                                   // Physical Web nearby URLs.
+      DOCUMENT = 27;               // An item representing a cloud document
+                                   // suggestion.
+      CLIPBOARD_TEXT = 28;         // Text based on the clipboard.
+      CLIPBOARD_IMAGE = 29;        // An image based on the clipboard.
     }
     optional ResultType result_type = 2;
 

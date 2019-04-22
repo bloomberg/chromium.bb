@@ -6,6 +6,7 @@
 
 #import <Foundation/Foundation.h>
 
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/reading_list/core/reading_list_model.h"
@@ -16,7 +17,7 @@
 #include "ios/web/public/navigation_item.h"
 #include "ios/web/public/navigation_manager.h"
 #include "ios/web/public/reload_type.h"
-#include "ios/web/public/web_state/web_state_user_data.h"
+#import "ios/web/public/web_state/web_state_user_data.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -298,3 +299,5 @@ void ReadingListWebStateObserver::LoadOfflineReadingListEntry() {
   reading_list_model_->SetReadStatus(entry->URL(), true);
   UMA_HISTOGRAM_BOOLEAN("ReadingList.OfflineVersionDisplayed", true);
 }
+
+WEB_STATE_USER_DATA_KEY_IMPL(ReadingListWebStateObserver)

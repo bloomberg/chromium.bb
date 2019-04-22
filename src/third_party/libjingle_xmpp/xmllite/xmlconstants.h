@@ -8,12 +8,12 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#ifndef WEBRTC_LIBJINGLE_XMLLITE_XMLCONSTANTS_H_
-#define WEBRTC_LIBJINGLE_XMLLITE_XMLCONSTANTS_H_
+#ifndef THIRD_PARTY_LIBJINGLE_XMPP_XMLLITE_XMLCONSTANTS_H_
+#define THIRD_PARTY_LIBJINGLE_XMPP_XMLLITE_XMLCONSTANTS_H_
 
 #include "third_party/libjingle_xmpp/xmllite/qname.h"
 
-namespace buzz {
+namespace jingle_xmpp {
 
 extern const char STR_EMPTY[];
 extern const char NS_XML[];
@@ -25,6 +25,6 @@ extern const char STR_ENCODING[];
 
 extern const StaticQName QN_XMLNS;
 
-}  // namespace buzz
+}  // namespace jingle_xmpp
 
-#endif  // WEBRTC_LIBJINGLE_XMLLITE_XMLCONSTANTS_H_
+#endif  // THIRD_PARTY_LIBJINGLE_XMPP_XMLLITE_XMLCONSTANTS_H_

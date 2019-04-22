@@ -14,10 +14,10 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/shared_memory_handle.h"
 #include "base/process/kill.h"
 #include "base/rand_util.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -416,7 +416,7 @@ TEST_P(SharedMemoryTest, GetReadOnlyHandle) {
   uintptr_t addr;
   EXPECT_NE(ZX_OK, zx::vmar::root_self()->map(
                        0, *zx::unowned_vmo(handle.GetHandle()), 0,
-                       contents.size(), ZX_VM_FLAG_PERM_WRITE, &addr))
+                       contents.size(), ZX_VM_PERM_WRITE, &addr))
       << "Shouldn't be able to map as writable.";
 
   zx::vmo duped_handle;
@@ -558,8 +558,8 @@ TEST_P(SharedMemoryTest, MapAt) {
 
   memory.Unmap();
 
-  off_t offset = SysInfo::VMAllocationGranularity();
-  ASSERT_TRUE(memory.MapAt(offset, kDataSize - offset));
+  size_t offset = SysInfo::VMAllocationGranularity();
+  ASSERT_TRUE(memory.MapAt(static_cast<off_t>(offset), kDataSize - offset));
   offset /= sizeof(uint32_t);
   ptr = static_cast<uint32_t*>(memory.memory());
   ASSERT_NE(ptr, static_cast<void*>(nullptr));
@@ -723,7 +723,7 @@ TEST_P(SharedMemoryTest, MapMinimumAlignment) {
 TEST_P(SharedMemoryTest, UnsafeImageSection) {
   const char kTestSectionName[] = "UnsafeImageSection";
   wchar_t path[MAX_PATH];
-  EXPECT_GT(::GetModuleFileName(nullptr, path, arraysize(path)), 0U);
+  EXPECT_GT(::GetModuleFileName(nullptr, path, base::size(path)), 0U);
 
   // Map the current executable image to save us creating a new PE file on disk.
   base::win::ScopedHandle file_handle(::CreateFile(
@@ -872,13 +872,13 @@ TEST_P(SharedMemoryTest, MappedId) {
 }
 #endif  // !(defined(OS_MACOSX) && !defined(OS_IOS)
 
-INSTANTIATE_TEST_CASE_P(Default,
-                        SharedMemoryTest,
-                        ::testing::Values(Mode::Default));
+INSTANTIATE_TEST_SUITE_P(Default,
+                         SharedMemoryTest,
+                         ::testing::Values(Mode::Default));
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-INSTANTIATE_TEST_CASE_P(SkipDevShm,
-                        SharedMemoryTest,
-                        ::testing::Values(Mode::DisableDevShm));
+INSTANTIATE_TEST_SUITE_P(SkipDevShm,
+                         SharedMemoryTest,
+                         ::testing::Values(Mode::DisableDevShm));
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
 #if defined(OS_ANDROID)

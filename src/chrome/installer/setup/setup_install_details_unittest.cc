@@ -360,6 +360,6 @@ TEST_P(MakeInstallDetailsTest, Test) {
   EXPECT_THAT(details->channel(), Eq(test_data().channel));
 }
 
-INSTANTIATE_TEST_CASE_P(All,
-                        MakeInstallDetailsTest,
-                        testing::ValuesIn(kTestData));
+INSTANTIATE_TEST_SUITE_P(All,
+                         MakeInstallDetailsTest,
+                         testing::ValuesIn(kTestData));

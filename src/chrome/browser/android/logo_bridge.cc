@@ -10,12 +10,13 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/search_provider_logos/logo_service_factory.h"
+#include "components/search_provider_logos/logo_observer.h"
 #include "components/search_provider_logos/logo_service.h"
-#include "components/search_provider_logos/logo_tracker.h"
 #include "content/public/browser/storage_partition.h"
 #include "jni/LogoBridge_jni.h"
 #include "net/http/http_status_code.h"
@@ -109,82 +110,6 @@ class LogoObserverAndroid : public search_provider_logos::LogoObserver {
 
 }  // namespace
 
-class LogoBridge::AnimatedLogoLoader {
- public:
-  explicit AnimatedLogoLoader(
-      scoped_refptr<network::SharedURLLoaderFactory> factory)
-      : shared_url_loader_factory_(std::move(factory)) {}
-
-  void Start(JNIEnv* env,
-             const GURL& url,
-             const JavaParamRef<jobject>& j_callback) {
-    DCHECK(j_callback);
-
-    if (loader_ && url_ == url)
-      return;
-
-    url_ = url;
-    j_callback_.Reset(env, j_callback);
-    auto request = std::make_unique<network::ResourceRequest>();
-    request->url = url;
-    loader_ = network::SimpleURLLoader::Create(std::move(request),
-                                               NO_TRAFFIC_ANNOTATION_YET);
-    loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
-        shared_url_loader_factory_.get(),
-        base::BindOnce(&AnimatedLogoLoader::OnURLLoaderComplete,
-                       base::Unretained(this)));
-    start_time_ = base::TimeTicks::Now();
-  }
-
- private:
-  void OnURLLoaderComplete(std::unique_ptr<std::string> response_body) {
-    DCHECK(loader_);
-    DCHECK(!j_callback_.is_null());
-    int response_code = -1;
-    if (loader_->ResponseInfo() && loader_->ResponseInfo()->headers)
-      response_code = loader_->ResponseInfo()->headers->response_code();
-    if (!response_body || response_code != net::HTTP_OK) {
-      ClearLoader();
-      return;
-    }
-
-    UMA_HISTOGRAM_TIMES("NewTabPage.AnimatedLogoDownloadTime",
-                        base::TimeTicks::Now() - start_time_);
-
-    JNIEnv* env = base::android::AttachCurrentThread();
-
-    ScopedJavaLocalRef<jbyteArray> j_bytes = ToJavaByteArray(
-        env, reinterpret_cast<const uint8_t*>(response_body->data()),
-        response_body->size());
-    ScopedJavaLocalRef<jobject> j_gif_image =
-        Java_LogoBridge_createGifImage(env, j_bytes);
-    Java_AnimatedLogoCallback_onAnimatedLogoAvailable(env, j_callback_,
-                                                      j_gif_image);
-    ClearLoader();
-  }
-
-  void ClearLoader() {
-    loader_.reset();
-    j_callback_.Reset();
-  }
-
-  scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
-
-  base::android::ScopedJavaGlobalRef<jobject> j_callback_;
-
-  // The original url used for the request.
-  GURL url_;
-
-  // The SimpleURLLoader currently fetching the animated logo, or nullptr when
-  // not fetching.
-  std::unique_ptr<network::SimpleURLLoader> loader_;
-
-  // The time when the current fetch was started.
-  base::TimeTicks start_time_;
-
-  DISALLOW_COPY_AND_ASSIGN(AnimatedLogoLoader);
-};
-
 static jlong JNI_LogoBridge_Init(JNIEnv* env,
                                  const JavaParamRef<jobject>& obj,
                                  const JavaParamRef<jobject>& j_profile) {
@@ -198,10 +123,6 @@ LogoBridge::LogoBridge(const JavaRef<jobject>& j_profile)
   DCHECK(profile);
 
   logo_service_ = LogoServiceFactory::GetForProfile(profile);
-
-  animated_logo_loader_ = std::make_unique<AnimatedLogoLoader>(
-      content::BrowserContext::GetDefaultStoragePartition(profile)
-          ->GetURLLoaderFactoryForBrowserProcess());
 }
 
 LogoBridge::~LogoBridge() {}
@@ -217,12 +138,4 @@ void LogoBridge::GetCurrentLogo(JNIEnv* env,
   LogoObserverAndroid* observer = new LogoObserverAndroid(
       weak_ptr_factory_.GetWeakPtr(), env, j_logo_observer);
   logo_service_->GetLogo(observer);
-}
-
-void LogoBridge::GetAnimatedLogo(JNIEnv* env,
-                                 const JavaParamRef<jobject>& obj,
-                                 const JavaParamRef<jobject>& j_callback,
-                                 const JavaParamRef<jstring>& j_url) {
-  GURL url = GURL(ConvertJavaStringToUTF8(env, j_url));
-  animated_logo_loader_->Start(env, url, j_callback);
 }

@@ -10,11 +10,13 @@
 
 #include "ash/ash_export.h"
 #include "base/macros.h"
+#include "base/timer/timer.h"
 #include "device/bluetooth/bluetooth_common.h"
 #include "services/device/public/mojom/bluetooth_system.mojom.h"
 
 namespace ash {
 
+using BluetoothAddress = std::array<uint8_t, 6>;
 using BluetoothDeviceList = std::vector<device::mojom::BluetoothDeviceInfoPtr>;
 
 // Maps UI concepts from the Bluetooth system tray (e.g. "Bluetooth is on") into
@@ -57,7 +59,7 @@ class ASH_EXPORT TrayBluetoothHelper {
   virtual void StopBluetoothDiscovering() = 0;
 
   // Connect to a specific bluetooth device.
-  virtual void ConnectToBluetoothDevice(const std::string& address) = 0;
+  virtual void ConnectToBluetoothDevice(const BluetoothAddress& address) = 0;
 
   // Returns the state of Bluetooth in the system e.g. has hardware support,
   // is enabled, etc.

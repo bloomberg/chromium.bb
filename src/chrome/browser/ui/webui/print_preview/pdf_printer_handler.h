@@ -23,10 +23,6 @@ namespace content {
 class WebContents;
 }
 
-namespace gfx {
-class Size;
-}
-
 namespace printing {
 class StickySettings;
 }
@@ -34,12 +30,14 @@ class StickySettings;
 class GURL;
 class Profile;
 
+namespace printing {
+
 class PdfPrinterHandler : public PrinterHandler,
                           public ui::SelectFileDialog::Listener {
  public:
   PdfPrinterHandler(Profile* profile,
                     content::WebContents* preview_web_contents,
-                    printing::StickySettings* sticky_settings);
+                    StickySettings* sticky_settings);
 
   ~PdfPrinterHandler() override;
 
@@ -50,12 +48,9 @@ class PdfPrinterHandler : public PrinterHandler,
                         GetPrintersDoneCallback done_callback) override;
   void StartGetCapability(const std::string& destination_id,
                           GetCapabilityCallback callback) override;
-  void StartPrint(const std::string& destination_id,
-                  const std::string& capability,
-                  const base::string16& job_title,
-                  const std::string& ticket_json,
-                  const gfx::Size& page_size,
-                  const scoped_refptr<base::RefCountedMemory>& print_data,
+  void StartPrint(const base::string16& job_title,
+                  base::Value settings,
+                  scoped_refptr<base::RefCountedMemory> print_data,
                   PrintCallback callback) override;
 
   // SelectFileDialog::Listener implementation.
@@ -96,7 +91,7 @@ class PdfPrinterHandler : public PrinterHandler,
                            const base::FilePath& directory);
 
   Profile* const profile_;
-  printing::StickySettings* const sticky_settings_;
+  StickySettings* const sticky_settings_;
 
   // Holds the path to the print to pdf request. It is empty if no such request
   // exists.
@@ -116,5 +111,7 @@ class PdfPrinterHandler : public PrinterHandler,
 
   DISALLOW_COPY_AND_ASSIGN(PdfPrinterHandler);
 };
+
+}  // namespace printing
 
 #endif  // CHROME_BROWSER_UI_WEBUI_PRINT_PREVIEW_PDF_PRINTER_HANDLER_H_

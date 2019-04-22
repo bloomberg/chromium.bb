@@ -51,7 +51,7 @@ bool CanBeAnchorNode<EditingInFlatTreeStrategy>(Node* node) {
 #endif
 
 template <typename Strategy>
-void PositionTemplate<Strategy>::Trace(blink::Visitor* visitor) {
+void PositionTemplate<Strategy>::Trace(Visitor* visitor) {
   visitor->Trace(anchor_node_);
 }
 
@@ -395,8 +395,8 @@ bool PositionTemplate<Strategy>::IsValidFor(const Document& document) const {
          OffsetInContainerNode() <= LastOffsetInNode(*AnchorNode());
 }
 
-int ComparePositions(const PositionInFlatTree& position_a,
-                     const PositionInFlatTree& position_b) {
+int16_t ComparePositions(const PositionInFlatTree& position_a,
+                         const PositionInFlatTree& position_b) {
   DCHECK(position_a.IsNotNull());
   DCHECK(position_b.IsNotNull());
 
@@ -411,7 +411,7 @@ int ComparePositions(const PositionInFlatTree& position_a,
 }
 
 template <typename Strategy>
-int PositionTemplate<Strategy>::CompareTo(
+int16_t PositionTemplate<Strategy>::CompareTo(
     const PositionTemplate<Strategy>& other) const {
   return ComparePositions(*this, other);
 }

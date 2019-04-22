@@ -9,6 +9,11 @@
         "type": "android"
       },
       "gl_vendor": "Imagination.*",
+      "gl_type": "gles",
+      "gl_version": {
+        "op": "<",
+        "value": "3.0"
+      },
       "features": [
         "use_client_side_arrays_for_stream_buffers"
       ]
@@ -21,6 +26,11 @@
         "type": "android"
       },
       "gl_vendor": "ARM.*",
+      "gl_type": "gles",
+      "gl_version": {
+        "op": "<",
+        "value": "3.0"
+      },
       "features": [
         "use_client_side_arrays_for_stream_buffers"
       ]
@@ -217,22 +227,6 @@
       ]
     },
     {
-      "id": 36,
-      "cr_bugs": [163464, 233612],
-      "description": "Share-group related crashes on Qualcomm drivers",
-      "os": {
-        "type": "android",
-        "version": {
-          "op": "<",
-          "value": "4.3"
-        }
-      },
-      "gl_vendor": "Qualcomm.*",
-      "features": [
-        "use_virtualized_gl_contexts"
-      ]
-    },
-    {
       "id": 37,
       "cr_bugs": [286468],
       "description": "Program link fails in NVIDIA Linux if gl_Position is not set",
@@ -247,7 +241,7 @@
     },
     {
       "id": 38,
-      "cr_bugs": [289461],
+      "cr_bugs": [163464, 233612, 289461],
       "description": "Non-virtual contexts on Qualcomm sometimes cause out-of-order frames",
       "os": {
         "type": "android"
@@ -320,6 +314,8 @@
       "os": {
         "type": "chromeos"
       },
+      "gl_vendor": "ARM.*",
+      "gl_renderer": "Mali.*",
       "features": [
         "disable_discard_framebuffer"
       ]
@@ -453,6 +449,10 @@
       },
       "gl_type": "gl",
       "gl_renderer": ".*Mesa.*",
+      "direct_rendering_version": {
+        "op" : "<",
+        "value": "2.3"
+      },
       "features": [
         "disable_post_sub_buffers_for_onscreen_surfaces"
       ]
@@ -1616,23 +1616,19 @@
       "id": 172,
       "description": "Use GL_INTEL_framebuffer_CMAA on ChromeOS",
       "cr_bugs": [535198],
-      "exceptions" : [
-        {
-          "os": {
-            "type" : "chromeos"
-          },
-          "vendor_id": "0x8086",
-          "driver_vendor": "Mesa",
-          "gl_vendor": "Intel.*",
-          "gl_type": "gles",
-          "gl_version": {
-            "op": ">=",
-            "value": "3.1"
-          }
-        }
-      ],
+      "os": {
+        "type" : "chromeos"
+      },
+      "vendor_id": "0x8086",
+      "driver_vendor": "Mesa",
+      "gl_vendor": "Intel.*",
+      "gl_type": "gles",
+      "gl_version": {
+        "op": ">=",
+        "value": "3.1"
+      },
       "features": [
-        "disable_framebuffer_cmaa"
+        "use_framebuffer_cmaa"
       ]
     },
     {
@@ -1873,6 +1869,10 @@
       },
       "gl_type": "gl",
       "gl_version_string": ".*Mesa.*",
+      "direct_rendering_version": {
+        "op" : "<",
+        "value": "2.3"
+      },
       "features": [
         "disable_post_sub_buffers_for_onscreen_surfaces"
       ]
@@ -1967,7 +1967,7 @@
     },
     {
       "id": 197,
-      "description": "adjust src/dst region if blitting pixels outside read framebuffer on Mac",
+      "description": "adjust src/dst region if blitting pixels outside framebuffer on Mac",
       "cr_bugs": [644740],
       "os": {
         "type": "macosx"
@@ -1978,7 +1978,7 @@
     },
     {
       "id": 198,
-      "description": "adjust src/dst region if blitting pixels outside read framebuffer on Linux Intel",
+      "description": "adjust src/dst region if blitting pixels outside framebuffer on Linux Intel",
       "cr_bugs": [664740],
       "os": {
         "type": "linux"
@@ -1990,7 +1990,7 @@
     },
     {
       "id": 199,
-      "description": "adjust src/dst region if blitting pixels outside read framebuffer on Linux AMD",
+      "description": "adjust src/dst region if blitting pixels outside framebuffer on Linux AMD",
       "cr_bugs": [664740],
       "os": {
         "type": "linux"
@@ -2417,7 +2417,7 @@
     {
       "id": 233,
       "description": "Delayed copy NV12 displays incorrect colors on NVIDIA drivers.",
-      "cr_bugs": [728670],
+      "cr_bugs": [727216],
       "os": {
         "type": "win"
       },
@@ -2588,19 +2588,6 @@
       ]
     },
     {
-      "id": 248,
-      "description": "Direct composition causes slow presents on Intel Sandybridge",
-      "cr_bugs": [775898, 785648],
-      "os": {
-        "type": "win"
-      },
-      "vendor_id": "0x8086",
-      "device_id": ["0x0116"],
-      "features": [
-        "disable_direct_composition"
-      ]
-    },
-    {
       "id": 249,
       "description": "Direct composition causes slow presents on old Nvidia GPUs",
       "cr_bugs": [775898],
@@ -2659,15 +2646,16 @@
     },
     {
       "id": 254,
-      "description": "Limit MSAA samples to 4x on AMD Stoney",
-      "cr_bugs": [798936],
+      "description": "Limit MSAA quality samples to 4 and storage samples 2 on AMD Stoney",
+      "cr_bugs": [875471],
       "os": {
         "type" : "chromeos"
       },
       "vendor_id": "0x1002",
       "device_id": ["0x98e4"],
       "features": [
-        "max_msaa_sample_count_4"
+        "max_msaa_sample_count_4",
+        "use_eqaa_storage_samples_2"
       ]
     },
     {
@@ -3039,6 +3027,272 @@
       },
       "features": [
         "exit_on_context_lost"
+      ]
+    },
+    {
+      "id": 284,
+      "cr_bugs": [913301],
+      "description": "Clamp texture's BASE_LEVEL/MAX_LEVEL for GenerateMipmap",
+      "os": {
+        "type": "macosx"
+      },
+      "features": [
+        "clamp_texture_base_level_and_max_level"
+      ]
+    },
+    {
+      "id": 285,
+      "cr_bugs": [914976],
+      "description": "Context flush ordering doesn't seem to work on AMD",
+      "vendor_id": "0x1002",
+      "os": {
+        "type": "linux"
+      },
+      "features": [
+        "use_virtualized_gl_contexts"
+      ]
+    },
+    {
+      "id": 286,
+      "cr_bugs": [908069],
+      "description": "Video corruption on Intel HD 530 without hardware overlay support",
+      "vendor_id": "0x8086",
+      "device_id": ["0x1912"],
+      "os": {
+        "type": "win"
+      },
+      "driver_version": {
+        "op": ">=",
+        "value": "24"
+      },
+      "hardware_overlay": "unsupported",
+      "features": [
+        "disable_direct_composition"
+      ]
+    },
+    {
+      "id": 287,
+      "description": "glCopyTexImage2D on Adreno fails if source is GL_RGB10_A2 and destination is not.",
+      "cr_bugs": [925986],
+      "os": {
+        "type": "android",
+        "version": {
+          "op": ">=",
+          "value": "5.0.0"
+        }
+      },
+      "gl_vendor": "Qualcomm.*",
+      "gl_renderer": ".*4\\d\\d",
+      "gl_renderer": "Adreno \\(TM\\) [345].*",
+      "features": [
+        "disable_copy_tex_image_2d_rgb10_a2_adreno"
+      ]
+    },
+    {
+      "id": 288,
+      "description": "glCopyTexImage2D on NVIDIA Tegra fails in certain cases if source is GL_RGB10_A2.",
+      "cr_bugs": [925986],
+      "os": {
+        "type": "android"
+      },
+      "gl_vendor": "NVIDIA.*",
+      "gl_type": "gles",
+      "gl_version": {
+        "op": ">=",
+        "value": "3.0"
+      },
+      "features": [
+        "disable_copy_tex_image_2d_rgb10_a2_tegra"
+      ]
+    },
+    {
+      "id": 289,
+      "description": "Fake entry for testing command buffer init failures on ES 2.0",
+      "cr_bugs": [923134],
+      "test_group": 3,
+      "features": [
+        "disable_es3_gl_context_for_testing"
+      ]
+    },
+    {
+      "id": 290,
+      "description": "Round down glBindBufferRange size to a multiple of 4 on Qualcomm Adreno GPUs for uniform buffers",
+      "cr_bugs": [906743],
+      "os": {
+        "type": "android"
+      },
+      "gl_renderer": "Adreno \\(TM\\) .*",
+      "features": [
+        "round_down_uniform_bind_buffer_range_size"
+      ]
+    },
+    {
+      "id": 291,
+      "description": "adjust src/dst region if blitting pixels outside framebuffer on Linux NVIDIA",
+      "cr_bugs": [830046],
+      "os": {
+        "type": "linux"
+      },
+      "vendor_id": "0x10de",
+      "features": [
+        "adjust_src_dst_region_for_blitframebuffer"
+      ]
+    },
+    {
+      "id": 292,
+      "description": "adjust src/dst region if blitting pixels outside framebuffer on Android NVIDIA",
+      "cr_bugs": [830046],
+      "os": {
+        "type": "android"
+      },
+      "gl_vendor": "NVIDIA.*",
+      "features": [
+        "adjust_src_dst_region_for_blitframebuffer"
+      ]
+    },
+    {
+      "id": 293,
+      "cr_bugs": [931527],
+      "description": "Frequent crashes in glClear on Android N with driver 12.0.04rel0",
+      "os": {
+        "type": "android",
+        "version": {
+          "op": "<",
+          "value": "8.0"
+        }
+      },
+      "driver_version": {
+        "op": "=",
+        "value": "12.0.04rel0"
+      },
+      "features": [
+        "gl_clear_broken"
+      ]
+    },
+    {
+      "id": 294,
+      "cr_bugs": [932879],
+      "description": "Hardware overlays result in black videos on non-Intel GPUs",
+      "os": {
+        "type": "win"
+      },
+      "exceptions": [
+        {
+          "vendor_id": "0x8086"
+        }
+      ],
+      "features": [
+        "disable_direct_composition_layers"
+      ]
+    },
+    {
+      "id": 295,
+      "description": "Avoid waiting on a egl fence before swapping buffers and rely on implicit sync on Intel GPUs",
+      "cr_bugs": [938286],
+      "os": {
+        "type": "linux"
+      },
+      "gl_vendor": "Intel.*",
+      "features": [
+        "rely_on_implicit_sync_for_swap_buffers"
+      ]
+    },
+    {
+      "id": 296,
+      "description": "Avoid waiting on a egl fence before swapping buffers and rely on implicit sync on Broadcom GPUs",
+      "cr_bugs": [938286],
+      "os": {
+        "type": "linux"
+      },
+      "gl_vendor": "Broadcom.*",
+      "features": [
+        "rely_on_implicit_sync_for_swap_buffers"
+      ]
+    },
+    {
+      "id": 297,
+      "cr_bugs": [938678],
+      "description": "Needed to pass dEQP-EGL.functional.robustness.reset_context.shaders.infinite_loop.*",
+      "os": {
+        "type" : "chromeos"
+      },
+      "vendor_id": "0x1002",
+      "features": [
+        "exit_on_context_lost"
+      ]
+    },
+    {
+      "id": 298,
+      "cr_bugs": [941716],
+      "description": "AImageReader is very crashy on this driver version",
+      "os": {
+        "type" : "android"
+      },
+      "gl_vendor": "Qualcomm.*",
+      "driver_version": {
+        "op": "=",
+        "value": "269.0"
+      },
+      "features": [
+        "disable_aimagereader"
+      ]
+    },
+    {
+      "id": 299,
+      "description": "Context lost recovery often fails on PowerVR Rogue GE8* GPUs on Android.",
+      "cr_bugs": [942106],
+      "os": {
+        "type": "android"
+      },
+      "gl_vendor": "Imagination.*",
+      "gl_renderer": "PowerVR Rogue GE8.*",
+      "features": [
+        "exit_on_context_lost"
+      ]
+    },
+    {
+      "id": 300,
+      "cr_bugs": [775898, 785648, 9245627],
+      "description": "Direct composition causes rendering issues on Intel SandyBridge and IvyBridge GPUs",
+      "os": {
+        "type" : "win"
+      },
+      "gpu_series": [
+        "intel_sandybridge",
+        "intel_ivybridge"
+      ],
+      "features": [
+        "disable_direct_composition"
+      ]
+    },
+    {
+      "id": 301,
+      "description": "Mesa hangs the system when allocating large textures",
+      "cr_bugs": [927470],
+      "os": {
+        "type" : "linux"
+      },
+      "driver_vendor": "Mesa",
+      "driver_version": {
+        "op": ">=",
+        "value": "18"
+      },
+      "features": [
+        "max_texture_size_limit_4096",
+        "max_3d_array_texture_size_1024"
+      ]
+    },
+    {
+      "id": 302,
+      "description": "glCopyTexImage2D on Mali-T820 fails in certain cases if source is GL_RGB10_A2.",
+      "cr_bugs": [953771],
+      "os": {
+        "type": "android"
+      },
+      "gl_vendor": "ARM.*",
+      "gl_renderer": "Mali-T820",
+      "features": [
+        "disable_copy_tex_image_2d_rgb10_a2_mali"
       ]
     }
   ]

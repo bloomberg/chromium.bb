@@ -59,7 +59,7 @@ ValidatingAuthenticator::CreateChannelAuthenticator() const {
 }
 
 void ValidatingAuthenticator::ProcessMessage(
-    const buzz::XmlElement* message,
+    const jingle_xmpp::XmlElement* message,
     const base::Closure& resume_callback) {
   DCHECK_EQ(state_, WAITING_MESSAGE);
   state_ = PROCESSING_MESSAGE;
@@ -69,13 +69,13 @@ void ValidatingAuthenticator::ProcessMessage(
                           weak_factory_.GetWeakPtr(), resume_callback));
 }
 
-std::unique_ptr<buzz::XmlElement> ValidatingAuthenticator::GetNextMessage() {
+std::unique_ptr<jingle_xmpp::XmlElement> ValidatingAuthenticator::GetNextMessage() {
   if (pending_auth_message_) {
     DCHECK(state_ == ACCEPTED || state_ == WAITING_MESSAGE);
     return std::move(pending_auth_message_);
   }
 
-  std::unique_ptr<buzz::XmlElement> result(
+  std::unique_ptr<jingle_xmpp::XmlElement> result(
       current_authenticator_->GetNextMessage());
   state_ = current_authenticator_->state();
   DCHECK(state_ == ACCEPTED || state_ == WAITING_MESSAGE);

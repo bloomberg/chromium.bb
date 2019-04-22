@@ -14,17 +14,17 @@ BackgroundFetchRecord::BackgroundFetchRecord(Request* request,
     : request_(request), script_state_(script_state) {
   DCHECK(request_);
   DCHECK(script_state_);
-  response_ready_property_ =
-      new ResponseReadyProperty(ExecutionContext::From(script_state), this,
-                                ResponseReadyProperty::kResponseReady);
+
+  response_ready_property_ = MakeGarbageCollected<ResponseReadyProperty>(
+      ExecutionContext::From(script_state), this,
+      ResponseReadyProperty::kResponseReady);
 }
 
 BackgroundFetchRecord::~BackgroundFetchRecord() = default;
 
 void BackgroundFetchRecord::ResolveResponseReadyProperty(Response* response) {
-  if (!response_ready_property_ ||
-      response_ready_property_->GetState() !=
-          ScriptPromisePropertyBase::State::kPending) {
+  if (response_ready_property_->GetState() !=
+      ScriptPromisePropertyBase::State::kPending) {
     return;
   }
 
@@ -45,7 +45,7 @@ void BackgroundFetchRecord::ResolveResponseReadyProperty(Response* response) {
       if (!script_state_->ContextIsValid())
         return;
 
-      // TODO(crbug.com/875201):Per https://wicg.github.io/background-fetch/
+      // TODO(crbug.com/875201): Per https://wicg.github.io/background-fetch/
       // #background-fetch-response-exposed, this should be resolved with a
       // TypeError. Figure out a way to do so.
       // Rejecting this with a TypeError here doesn't work because the
@@ -68,6 +68,8 @@ void BackgroundFetchRecord::UpdateState(
     BackgroundFetchRecord::State updated_state) {
   DCHECK_EQ(record_state_, State::kPending);
 
+  if (!script_state_->ContextIsValid())
+    return;
   record_state_ = updated_state;
   ResolveResponseReadyProperty(/* updated_response = */ nullptr);
 }
@@ -81,11 +83,24 @@ void BackgroundFetchRecord::SetResponseAndUpdateState(
     return;
   record_state_ = State::kSettled;
 
+  ScriptState::Scope scope(script_state_);
   ResolveResponseReadyProperty(Response::Create(script_state_, *response));
 }
 
 bool BackgroundFetchRecord::IsRecordPending() {
   return record_state_ == State::kPending;
+}
+
+void BackgroundFetchRecord::OnRequestCompleted(
+    mojom::blink::FetchAPIResponsePtr response) {
+  if (!response.is_null())
+    SetResponseAndUpdateState(response);
+  else
+    UpdateState(State::kSettled);
+}
+
+const KURL& BackgroundFetchRecord::ObservedUrl() const {
+  return request_->url();
 }
 
 void BackgroundFetchRecord::Trace(blink::Visitor* visitor) {

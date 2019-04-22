@@ -8,9 +8,9 @@
 
 #include "ash/components/tap_visualizer/tap_renderer.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
-#include "services/service_manager/public/cpp/service_context.h"
 #include "services/ws/public/cpp/property_type_converters.h"
 #include "services/ws/public/mojom/window_manager.mojom.h"
 #include "services/ws/public/mojom/window_tree_constants.mojom.h"
@@ -24,14 +24,43 @@
 
 namespace tap_visualizer {
 
-TapVisualizerApp::TapVisualizerApp() = default;
+TapVisualizerApp::TapVisualizerApp(
+    service_manager::mojom::ServiceRequest request)
+    : service_binding_(this, std::move(request)) {
+  registry_.AddInterface<mojom::TapVisualizer>(base::BindRepeating(
+      &TapVisualizerApp::AddBinding, base::Unretained(this)));
+}
 
 TapVisualizerApp::~TapVisualizerApp() {
   display::Screen::GetScreen()->RemoveObserver(this);
   aura::Env::GetInstance()->RemoveEventObserver(this);
 }
 
-void TapVisualizerApp::Start() {
+void TapVisualizerApp::OnStart() {
+  views::AuraInit::InitParams params;
+  params.connector = service_binding_.GetConnector();
+  params.identity = service_binding_.identity();
+  params.register_path_provider = false;
+  aura_init_ = views::AuraInit::Create(params);
+  if (!aura_init_) {
+    Terminate();
+    return;
+  }
+}
+
+void TapVisualizerApp::OnBindInterface(
+    const service_manager::BindSourceInfo& remote_info,
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle interface_pipe) {
+  registry_.BindInterface(interface_name, std::move(interface_pipe));
+}
+
+void TapVisualizerApp::Show() {
+  // Only show the first time.
+  if (is_showing_)
+    return;
+  is_showing_ = true;
+
   // Watches moves so the user can drag around a touch point.
   aura::Env* env = aura::Env::GetInstance();
   std::set<ui::EventType> types = {ui::ET_TOUCH_PRESSED, ui::ET_TOUCH_RELEASED,
@@ -42,19 +71,6 @@ void TapVisualizerApp::Start() {
        display::Screen::GetScreen()->GetAllDisplays()) {
     CreateWidgetForDisplay(display.id());
   }
-}
-
-void TapVisualizerApp::OnStart() {
-  views::AuraInit::InitParams params;
-  params.connector = context()->connector();
-  params.identity = context()->identity();
-  params.register_path_provider = false;
-  aura_init_ = views::AuraInit::Create(params);
-  if (!aura_init_) {
-    context()->QuitNow();
-    return;
-  }
-  Start();
 }
 
 void TapVisualizerApp::OnEvent(const ui::Event& event) {
@@ -103,6 +119,11 @@ void TapVisualizerApp::CreateWidgetForDisplay(int64_t display_id) {
 
   display_id_to_renderer_[display_id] =
       std::make_unique<TapRenderer>(std::move(widget));
+}
+
+void TapVisualizerApp::AddBinding(mojom::TapVisualizerRequest request) {
+  tap_visualizer_binding_.Close();
+  tap_visualizer_binding_.Bind(std::move(request));
 }
 
 }  // namespace tap_visualizer

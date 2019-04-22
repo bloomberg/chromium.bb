@@ -200,7 +200,7 @@ static void InitLibcLocaltimeFunctions() {
       reinterpret_cast<LocaltimeRFunction>(dlsym(RTLD_NEXT, "localtime64_r"));
 
   if (!g_libc_funcs->localtime || !g_libc_funcs->localtime_r) {
-    // http://code.google.com/p/chromium/issues/detail?id=16800
+    // https://bugs.chromium.org/p/chromium/issues/detail?id=16800
     //
     // Nvidia's libGL.so overrides dlsym for an unknown reason and replaces
     // it with a version which doesn't work. In this case we'll get a NULL
@@ -208,7 +208,7 @@ static void InitLibcLocaltimeFunctions() {
     LOG(ERROR) << "Your system is broken: dlsym doesn't work! This has been "
                   "reported to be caused by Nvidia's libGL. You should expect"
                   " time related functions to misbehave. "
-                  "http://code.google.com/p/chromium/issues/detail?id=16800";
+                  "https://bugs.chromium.org/p/chromium/issues/detail?id=16800";
   }
 
   if (!g_libc_funcs->localtime)

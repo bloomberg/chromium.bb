@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
@@ -163,8 +164,8 @@ void SecurityKeyIpcServerImpl::OnChannelConnected(int32_t peer_pid) {
         new ChromotingNetworkToRemoteSecurityKeyMsg_InvalidSession());
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&SecurityKeyIpcServerImpl::OnChannelError,
-                              weak_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&SecurityKeyIpcServerImpl::OnChannelError,
+                                  weak_factory_.GetWeakPtr()));
     return;
   }
 #else   // !defined(OS_WIN)

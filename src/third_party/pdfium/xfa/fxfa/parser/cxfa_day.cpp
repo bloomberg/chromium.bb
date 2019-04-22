@@ -6,11 +6,8 @@
 
 #include "xfa/fxfa/parser/cxfa_day.h"
 
-namespace {
-
-constexpr wchar_t kDayName[] = L"day";
-
-}  // namespace
+#include "fxjs/xfa/cjx_node.h"
+#include "third_party/base/ptr_util.h"
 
 CXFA_Day::CXFA_Day(CXFA_Document* doc, XFA_PacketType packet)
     : CXFA_Node(doc,
@@ -18,8 +15,8 @@ CXFA_Day::CXFA_Day(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_XDPPACKET_LocaleSet,
                 XFA_ObjectType::ContentNode,
                 XFA_Element::Day,
-                nullptr,
-                nullptr,
-                kDayName) {}
+                {},
+                {},
+                pdfium::MakeUnique<CJX_Node>(this)) {}
 
-CXFA_Day::~CXFA_Day() {}
+CXFA_Day::~CXFA_Day() = default;

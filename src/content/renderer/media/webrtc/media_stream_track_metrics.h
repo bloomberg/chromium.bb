@@ -12,8 +12,8 @@
 
 #include "base/sequence_checker.h"
 #include "content/common/content_export.h"
-#include "content/common/media/media_stream.mojom.h"
-#include "third_party/webrtc/api/peerconnectioninterface.h"
+#include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
+#include "third_party/webrtc/api/peer_connection_interface.h"
 
 namespace content {
 
@@ -86,9 +86,10 @@ class CONTENT_EXPORT MediaStreamTrackMetrics {
   // track object and the PeerConnection it is attached to both exist.
   uint64_t MakeUniqueId(const std::string& track_id, Direction direction);
 
-  mojom::MediaStreamTrackMetricsHostPtr& GetMediaStreamTrackMetricsHost();
+  blink::mojom::MediaStreamTrackMetricsHostPtr&
+  GetMediaStreamTrackMetricsHost();
 
-  mojom::MediaStreamTrackMetricsHostPtr track_metrics_host_;
+  blink::mojom::MediaStreamTrackMetricsHostPtr track_metrics_host_;
 
   typedef std::vector<std::unique_ptr<MediaStreamTrackMetricsObserver>>
       ObserverVector;

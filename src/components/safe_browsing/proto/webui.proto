@@ -20,6 +20,10 @@ message DatabaseManagerInfo {
     // The time, since epoch, when the last update request was sent to
     // SafeBrowsing.
     optional uint64 last_update_time_millis = 2;
+
+    // The time, since epoch, when the next update request will be sent to
+    // SafeBrowsing.
+    optional uint64 next_update_time_millis = 3;
   }
 
   optional UpdateInfo update_info = 1;

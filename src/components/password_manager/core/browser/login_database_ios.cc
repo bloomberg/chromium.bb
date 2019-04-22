@@ -16,11 +16,44 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/password_manager/core/common/passwords_directory_util_ios.h"
+#include "sql/statement.h"
 
 using base::ScopedCFTypeRef;
 using autofill::PasswordForm;
 
 namespace password_manager {
+
+namespace {
+
+void DeleteEncryptedPasswordFromKeychain(const std::string& cipher_text) {
+  if (cipher_text.empty())
+    return;
+
+  ScopedCFTypeRef<CFMutableDictionaryRef> query(
+      CFDictionaryCreateMutable(NULL, 0, &kCFTypeDictionaryKeyCallBacks,
+                                &kCFTypeDictionaryValueCallBacks));
+  CFDictionarySetValue(query, kSecClass, kSecClassGenericPassword);
+
+  ScopedCFTypeRef<CFStringRef> item_ref(
+      base::SysUTF8ToCFStringRef(cipher_text));
+  // We are using the account attribute to store item references.
+  CFDictionarySetValue(query, kSecAttrAccount, item_ref);
+
+  OSStatus status = SecItemDelete(query);
+  if (status != errSecSuccess && status != errSecItemNotFound) {
+    NOTREACHED() << "Unable to remove password from keychain: " << status;
+  }
+
+  // Delete the temporary passwords directory, since there might be leftover
+  // temporary files used for password export that contain the password being
+  // deleted. It can be called for a removal triggered by sync, which might
+  // happen at the same time as an export operation. In the unlikely event
+  // that the file is still needed by the consumer app, the export operation
+  // will fail.
+  password_manager::DeletePasswordsDirectory();
+}
+
+}  // namespace
 
 // On iOS, the LoginDatabase uses Keychain API to store passwords. The
 // "encrypted" version of the password is a unique ID (UUID) that is
@@ -114,31 +147,26 @@ LoginDatabase::EncryptionResult LoginDatabase::DecryptedString(
 
 void LoginDatabase::DeleteEncryptedPassword(const PasswordForm& form) {
   std::string cipher_text = GetEncryptedPassword(form);
-  if (cipher_text.size() == 0)
-    return;
+  DeleteEncryptedPasswordFromKeychain(cipher_text);
+}
 
-  ScopedCFTypeRef<CFStringRef> item_ref(
-      base::SysUTF8ToCFStringRef(cipher_text));
-  ScopedCFTypeRef<CFMutableDictionaryRef> query(
-      CFDictionaryCreateMutable(NULL, 0, &kCFTypeDictionaryKeyCallBacks,
-                                &kCFTypeDictionaryValueCallBacks));
-  CFDictionarySetValue(query, kSecClass, kSecClassGenericPassword);
+void LoginDatabase::DeleteEncryptedPasswordById(int id) {
+  std::string cipher_text = GetEncryptedPasswordById(id);
+  DeleteEncryptedPasswordFromKeychain(cipher_text);
+}
 
-  // We are using the account attribute to store item references.
-  CFDictionarySetValue(query, kSecAttrAccount, item_ref);
+std::string LoginDatabase::GetEncryptedPasswordById(int id) const {
+  DCHECK(!encrypted_password_statement_by_id_.empty());
+  sql::Statement s(db_.GetCachedStatement(
+      SQL_FROM_HERE, encrypted_password_statement_by_id_.c_str()));
 
-  OSStatus status = SecItemDelete(query);
-  if (status != errSecSuccess && status != errSecItemNotFound) {
-    NOTREACHED() << "Unable to remove password from keychain: " << status;
+  s.BindInt(0, id);
+
+  std::string encrypted_password;
+  if (s.Step()) {
+    s.ColumnBlobAsString(0, &encrypted_password);
   }
-
-  // Delete the temporary passwords directory, since there might be leftover
-  // temporary files used for password export that contain the password being
-  // deleted. It can be called for a removal triggered by sync, which might
-  // happen at the same time as an export operation. In the unlikely event
-  // that the file is still needed by the consumer app, the export operation
-  // will fail.
-  password_manager::DeletePasswordsDirectory();
+  return encrypted_password;
 }
 
 }  // namespace password_manager

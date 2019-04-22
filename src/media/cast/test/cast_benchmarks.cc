@@ -453,14 +453,14 @@ class TransportClient : public CastTransport::Client {
 
   void OnStatusChanged(CastTransportStatus status) final {
     EXPECT_EQ(TRANSPORT_STREAM_INITIALIZED, status);
-  };
+  }
   void OnLoggingEventsReceived(
       std::unique_ptr<std::vector<FrameEvent>> frame_events,
-      std::unique_ptr<std::vector<PacketEvent>> packet_events) final{};
+      std::unique_ptr<std::vector<PacketEvent>> packet_events) final {}
   void ProcessRtpPacket(std::unique_ptr<Packet> packet) final {
     if (run_one_benchmark_)
       run_one_benchmark_->ReceivePacket(std::move(packet));
-  };
+  }
 
  private:
   RunOneBenchmark* const run_one_benchmark_;
@@ -651,11 +651,9 @@ class CastBenchmark {
       SearchVector ac = a.blend(c, static_cast<double>(x) / max);
       SearchVector v = ab.blend(ac, x == y ? 1.0 : static_cast<double>(y) / x);
       thread_num++;
-      (*threads)[thread_num % threads->size()]
-          ->task_runner()
-          ->PostTask(FROM_HERE,
-                     base::Bind(&CastBenchmark::BinarySearch,
-                                base::Unretained(this), v, accuracy));
+      (*threads)[thread_num % threads->size()]->task_runner()->PostTask(
+          FROM_HERE, base::BindOnce(&CastBenchmark::BinarySearch,
+                                    base::Unretained(this), v, accuracy));
     } else {
       skip *= 2;
       SpanningSearch(max, x, y, skip, a, b, c, accuracy, threads);

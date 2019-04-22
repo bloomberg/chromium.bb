@@ -10,7 +10,6 @@ import("//build/config/win/manifest.gni")
 import("//media/media_options.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//ppapi/buildflags/buildflags.gni")
-import("//services/service_manager/public/service_manifest.gni")
 import("//tools/grit/grit_rule.gni")
 import("//tools/grit/repack.gni")
 import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
@@ -27,6 +26,7 @@ if (is_android) {
 declare_args() {
   content_shell_product_name = "Content Shell"
   content_shell_version = "99.77.34.5"
+  content_shell_major_version = "99"
 }
 
 config("content_shell_lib_warnings") {
@@ -46,19 +46,43 @@ source_set("android_shell_descriptors") {
   ]
 }
 
-source_set("layout_test_switches") {
+source_set("web_test_messages") {
   testonly = true
   sources = [
-    "common/layout_test/layout_test_switches.cc",
-    "common/layout_test/layout_test_switches.h",
+    # Note that if this target becomes jumbofied, it should use
+    # jumbo_excluded_sources to exclude the messages.cc files.
+    # IPC uses multiple inclusions in different macro contexts to
+    # generate the code. This is not compatible with jumbo
+    # compilations since all other files need the "clean" version of
+    # the message headers.
+    "common/web_test/blink_test_messages.cc",
+    "common/web_test/blink_test_messages.h",
+    "common/web_test/web_test_messages.cc",
+    "common/web_test/web_test_messages.h",
+  ]
+
+  deps = [
+    "//content/public/common",
+    "//ipc",
+    "//net",
+    "//skia",
+    "//url/ipc:url_ipc",
   ]
 }
 
-source_set("layout_test_utils") {
+source_set("web_test_switches") {
   testonly = true
   sources = [
-    "common/layout_test/layout_test_utils.cc",
-    "common/layout_test/layout_test_utils.h",
+    "common/web_test/web_test_switches.cc",
+    "common/web_test/web_test_switches.h",
+  ]
+}
+
+source_set("web_test_utils") {
+  testonly = true
+  sources = [
+    "common/web_test/web_test_utils.cc",
+    "common/web_test/web_test_utils.h",
   ]
   deps = [
     "//cc/paint:paint",
@@ -73,8 +97,6 @@ jumbo_static_library("content_shell_lib") {
     "android/shell_manager.cc",
     "android/shell_manager.h",
     "app/blink_test_platform_support.h",
-    "app/blink_test_platform_support_android.cc",
-    "app/blink_test_platform_support_linux.cc",
     "app/blink_test_platform_support_mac.mm",
     "app/blink_test_platform_support_win.cc",
     "app/paths_mac.h",
@@ -85,52 +107,6 @@ jumbo_static_library("content_shell_lib") {
     "app/shell_main_delegate.h",
     "app/shell_main_delegate_mac.h",
     "app/shell_main_delegate_mac.mm",
-    "browser/layout_test/blink_test_controller.cc",
-    "browser/layout_test/blink_test_controller.h",
-    "browser/layout_test/devtools_protocol_test_bindings.cc",
-    "browser/layout_test/devtools_protocol_test_bindings.h",
-    "browser/layout_test/fake_bluetooth_chooser.cc",
-    "browser/layout_test/fake_bluetooth_chooser.h",
-    "browser/layout_test/layout_test_background_fetch_delegate.cc",
-    "browser/layout_test/layout_test_background_fetch_delegate.h",
-    "browser/layout_test/layout_test_bluetooth_adapter_provider.cc",
-    "browser/layout_test/layout_test_bluetooth_adapter_provider.h",
-    "browser/layout_test/layout_test_bluetooth_chooser_factory.cc",
-    "browser/layout_test/layout_test_bluetooth_chooser_factory.h",
-    "browser/layout_test/layout_test_bluetooth_fake_adapter_setter_impl.cc",
-    "browser/layout_test/layout_test_bluetooth_fake_adapter_setter_impl.h",
-    "browser/layout_test/layout_test_browser_context.cc",
-    "browser/layout_test/layout_test_browser_context.h",
-    "browser/layout_test/layout_test_browser_main.cc",
-    "browser/layout_test/layout_test_browser_main.h",
-    "browser/layout_test/layout_test_browser_main_parts.cc",
-    "browser/layout_test/layout_test_browser_main_parts.h",
-    "browser/layout_test/layout_test_content_browser_client.cc",
-    "browser/layout_test/layout_test_content_browser_client.h",
-    "browser/layout_test/layout_test_devtools_bindings.cc",
-    "browser/layout_test/layout_test_devtools_bindings.h",
-    "browser/layout_test/layout_test_download_manager_delegate.cc",
-    "browser/layout_test/layout_test_download_manager_delegate.h",
-    "browser/layout_test/layout_test_first_device_bluetooth_chooser.cc",
-    "browser/layout_test/layout_test_first_device_bluetooth_chooser.h",
-    "browser/layout_test/layout_test_javascript_dialog_manager.cc",
-    "browser/layout_test/layout_test_javascript_dialog_manager.h",
-    "browser/layout_test/layout_test_message_filter.cc",
-    "browser/layout_test/layout_test_message_filter.h",
-    "browser/layout_test/layout_test_permission_manager.cc",
-    "browser/layout_test/layout_test_permission_manager.h",
-    "browser/layout_test/layout_test_push_messaging_service.cc",
-    "browser/layout_test/layout_test_push_messaging_service.h",
-    "browser/layout_test/layout_test_url_request_context_getter.cc",
-    "browser/layout_test/layout_test_url_request_context_getter.h",
-    "browser/layout_test/leak_detector.cc",
-    "browser/layout_test/leak_detector.h",
-    "browser/layout_test/mojo_layout_test_helper.cc",
-    "browser/layout_test/mojo_layout_test_helper.h",
-    "browser/layout_test/secondary_test_window_observer.cc",
-    "browser/layout_test/secondary_test_window_observer.h",
-    "browser/layout_test/test_info_extractor.cc",
-    "browser/layout_test/test_info_extractor.h",
     "browser/renderer_host/shell_render_widget_host_view_mac_delegate.h",
     "browser/renderer_host/shell_render_widget_host_view_mac_delegate.mm",
     "browser/shell.cc",
@@ -184,20 +160,62 @@ jumbo_static_library("content_shell_lib") {
     "browser/shell_web_contents_view_delegate_android.cc",
     "browser/shell_web_contents_view_delegate_creator.h",
     "browser/shell_web_contents_view_delegate_mac.mm",
-    "common/layout_test/layout_test_content_client.cc",
-    "common/layout_test/layout_test_content_client.h",
-    "common/layout_test/layout_test_messages.cc",
-    "common/layout_test/layout_test_messages.h",
+    "browser/web_test/blink_test_controller.cc",
+    "browser/web_test/blink_test_controller.h",
+    "browser/web_test/devtools_protocol_test_bindings.cc",
+    "browser/web_test/devtools_protocol_test_bindings.h",
+    "browser/web_test/fake_bluetooth_chooser.cc",
+    "browser/web_test/fake_bluetooth_chooser.h",
+    "browser/web_test/leak_detector.cc",
+    "browser/web_test/leak_detector.h",
+    "browser/web_test/mojo_web_test_helper.cc",
+    "browser/web_test/mojo_web_test_helper.h",
+    "browser/web_test/secondary_test_window_observer.cc",
+    "browser/web_test/secondary_test_window_observer.h",
+    "browser/web_test/test_info_extractor.cc",
+    "browser/web_test/test_info_extractor.h",
+    "browser/web_test/web_test_background_fetch_delegate.cc",
+    "browser/web_test/web_test_background_fetch_delegate.h",
+    "browser/web_test/web_test_bluetooth_adapter_provider.cc",
+    "browser/web_test/web_test_bluetooth_adapter_provider.h",
+    "browser/web_test/web_test_bluetooth_chooser_factory.cc",
+    "browser/web_test/web_test_bluetooth_chooser_factory.h",
+    "browser/web_test/web_test_bluetooth_fake_adapter_setter_impl.cc",
+    "browser/web_test/web_test_bluetooth_fake_adapter_setter_impl.h",
+    "browser/web_test/web_test_browser_context.cc",
+    "browser/web_test/web_test_browser_context.h",
+    "browser/web_test/web_test_browser_main.cc",
+    "browser/web_test/web_test_browser_main.h",
+    "browser/web_test/web_test_browser_main_parts.cc",
+    "browser/web_test/web_test_browser_main_parts.h",
+    "browser/web_test/web_test_content_browser_client.cc",
+    "browser/web_test/web_test_content_browser_client.h",
+    "browser/web_test/web_test_devtools_bindings.cc",
+    "browser/web_test/web_test_devtools_bindings.h",
+    "browser/web_test/web_test_download_manager_delegate.cc",
+    "browser/web_test/web_test_download_manager_delegate.h",
+    "browser/web_test/web_test_first_device_bluetooth_chooser.cc",
+    "browser/web_test/web_test_first_device_bluetooth_chooser.h",
+    "browser/web_test/web_test_javascript_dialog_manager.cc",
+    "browser/web_test/web_test_javascript_dialog_manager.h",
+    "browser/web_test/web_test_message_filter.cc",
+    "browser/web_test/web_test_message_filter.h",
+    "browser/web_test/web_test_permission_manager.cc",
+    "browser/web_test/web_test_permission_manager.h",
+    "browser/web_test/web_test_push_messaging_service.cc",
+    "browser/web_test/web_test_push_messaging_service.h",
+    "browser/web_test/web_test_url_request_context_getter.cc",
+    "browser/web_test/web_test_url_request_context_getter.h",
     "common/power_monitor_test_impl.cc",
     "common/power_monitor_test_impl.h",
     "common/shell_content_client.cc",
     "common/shell_content_client.h",
-    "common/shell_messages.cc",
-    "common/shell_messages.h",
     "common/shell_origin_trial_policy.cc",
     "common/shell_origin_trial_policy.h",
     "common/shell_switches.cc",
     "common/shell_switches.h",
+    "common/web_test/web_test_content_client.cc",
+    "common/web_test/web_test_content_client.h",
     "gpu/shell_content_gpu_client.cc",
     "gpu/shell_content_gpu_client.h",
     "renderer/shell_content_renderer_client.cc",
@@ -224,15 +242,6 @@ jumbo_static_library("content_shell_lib") {
     "utility/shell_content_utility_client.h",
   ]
 
-  jumbo_excluded_sources = [
-    # IPC uses multiple inclusions in different macro contexts to
-    # generate the code. This is not compatible with jumbo
-    # compilations since all other files need the "clean" version of
-    # the message headers.
-    "common/layout_test/layout_test_messages.cc",
-    "common/shell_messages.cc",
-  ]
-
   configs += [
     ":content_shell_lib_warnings",
     "//build/config:precompiled_headers",
@@ -241,12 +250,15 @@ jumbo_static_library("content_shell_lib") {
     "//build/config/compiler:no_size_t_to_int_warning",
   ]
 
-  defines = [ "CONTENT_SHELL_VERSION=\"$content_shell_version\"" ]
+  defines = [
+    "CONTENT_SHELL_VERSION=\"$content_shell_version\"",
+    "CONTENT_SHELL_MAJOR_VERSION=\"$content_shell_major_version\"",
+  ]
 
   public_deps = [
     ":android_shell_descriptors",
 
-    # #include'ed by renderer/layout_test/blink_test_runner.h
+    # #include'ed by renderer/web_test/blink_test_runner.h
     ":mojo_bindings",
 
     # This exposes all public content APIs.
@@ -257,14 +269,13 @@ jumbo_static_library("content_shell_lib") {
     "//content/public/gpu",
     "//content/public/renderer",
     "//content/public/utility",
-    "//ipc",
     "//services/network:network_service",
   ]
   deps = [
-    ":content_shell_packaged_services_manifest_overlay",
-    ":layout_test_switches",
-    ":layout_test_utils",
     ":resources",
+    ":web_test_messages",
+    ":web_test_switches",
+    ":web_test_utils",
     "//base",
     "//base:base_static",
     "//base/third_party/dynamic_annotations",
@@ -278,6 +289,7 @@ jumbo_static_library("content_shell_lib") {
     "//components/download/public/background_service:public",
     "//components/download/public/common:public",
     "//components/keyed_service/content",
+    "//components/keyed_service/core:test_support",
     "//components/network_session_configurator/browser",
     "//components/plugins/renderer",
     "//components/url_formatter",
@@ -290,12 +302,13 @@ jumbo_static_library("content_shell_lib") {
     "//content/public/common:service_names",
     "//content/shell/test_runner:test_runner",
     "//content/test:content_test_mojo_bindings",
-    "//content/test:layouttest_support",
-    "//content/test:mojo_layouttest_bindings",
+    "//content/test:mojo_web_test_bindings",
     "//content/test:test_support",
+    "//content/test:web_test_support",
     "//device/bluetooth",
     "//device/bluetooth:fake_bluetooth",
     "//device/bluetooth:mocks",
+    "//device/bluetooth/public/mojom:fake_bluetooth_interfaces",
     "//gin",
     "//gpu",
     "//media",
@@ -312,8 +325,10 @@ jumbo_static_library("content_shell_lib") {
     "//services/service_manager/embedder:embedder_result_codes",
     "//services/service_manager/public/cpp",
     "//services/test/echo:lib",
+    "//services/test/echo/public/cpp:manifest",
     "//services/test/echo/public/mojom",
     "//skia",
+    "//skia:test_fonts",
     "//storage/browser",
     "//testing/gmock",
     "//testing/gtest",
@@ -324,7 +339,8 @@ jumbo_static_library("content_shell_lib") {
     "//third_party/blink/public:test_support",
     "//third_party/icu",
     "//ui/base",
-    "//ui/base/ime",
+    "//ui/base/clipboard",
+    "//ui/base/ime/init",
     "//ui/display",
     "//ui/events:events_base",
     "//ui/gfx",
@@ -339,17 +355,16 @@ jumbo_static_library("content_shell_lib") {
   ]
 
   if (is_fuchsia) {
-    sources += [ "app/blink_test_platform_support_fuchsia.cc" ]
     deps -= [
       "//components/crash/content/app",
       "//components/crash/content/app:test_support",
       "//components/crash/content/browser",
     ]
-    deps += [ "//third_party/fuchsia-sdk/sdk:policy" ]
+    deps += [ "//third_party/fuchsia-sdk/sdk:ui_policy" ]
   }
 
-  # Annoyingly, this target and layouttest_support have circular includes.
-  allow_circular_includes_from = [ "//content/test:layouttest_support" ]
+  # Annoyingly, this target and web_test_support have circular includes.
+  allow_circular_includes_from = [ "//content/test:web_test_support" ]
 
   if (enable_plugins) {
     deps += [
@@ -389,14 +404,15 @@ jumbo_static_library("content_shell_lib") {
 
   if (is_android) {
     sources += [
-      "browser/layout_test/scoped_android_configuration.cc",
-      "browser/layout_test/scoped_android_configuration.h",
+      "browser/web_test/scoped_android_configuration.cc",
+      "browser/web_test/scoped_android_configuration.h",
     ]
     deps += [
       "//base/test:test_support",
       "//components/embedder_support/android:view",
       "//content/shell/android:content_shell_jni_headers",
       "//mojo/public/java/system:test_support",
+      "//ui/android",
     ]
   }
 
@@ -439,8 +455,9 @@ jumbo_static_library("content_shell_lib") {
 
   if (is_chromeos) {
     deps += [
-      "//chromeos",
+      "//chromeos/dbus",
       "//services/ws/test_ws:lib",
+      "//services/ws/test_ws:manifest",
       "//services/ws/test_ws:mojom",
       "//ui/wm:test_support",
     ]
@@ -472,16 +489,6 @@ grit("content_shell_resources_grit") {
     "grit/shell_resources.h",
     "shell_resources.pak",
   ]
-
-  # Mojo manifest overlays are generated.
-  source_is_generated = true
-  grit_flags = [
-    "-E",
-    "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
-  ]
-  deps = [
-    ":content_shell_packaged_services_manifest_overlay",
-  ]
 }
 
 copy("copy_shell_resources") {
@@ -504,12 +511,6 @@ group("resources") {
 
   public_deps = [
     ":copy_shell_resources",
-  ]
-  deps = [
-    "//content/shell/test_runner:resources",
-  ]
-  data_deps = [
-    "//content/shell/test_runner:resources",
   ]
 }
 
@@ -586,11 +587,6 @@ if (is_android) {
     deps = [
       ":content_shell_framework_bundle_data",
       ":content_shell_resources_bundle_data",
-
-      # TODO(rsesek): Remove this after GYP is gone, since it only needs to
-      # be here per the comment in blink_test_platform_support_mac.mm about
-      # the bundle structure.
-      "//content/shell/test_runner:resources",
     ]
     info_plist_target = ":content_shell_plist"
     data_deps = [
@@ -666,13 +662,13 @@ if (is_mac) {
   bundle_data("content_shell_framework_helpers") {
     testonly = true
     sources = [
-      "$root_out_dir/crashpad_handler",
+      "$root_out_dir/chrome_crashpad_handler",
     ]
     outputs = [
       "{{bundle_contents_dir}}/Helpers/{{source_file_part}}",
     ]
     public_deps = [
-      "//third_party/crashpad/crashpad/handler:crashpad_handler",
+      "//components/crash/content/app:chrome_crashpad_handler",
     ]
   }
 
@@ -916,10 +912,10 @@ if (is_mac) {
 
 mojom("mojo_bindings") {
   sources = [
-    "common/layout_test.mojom",
-    "common/layout_test/fake_bluetooth_chooser.mojom",
-    "common/layout_test/layout_test_bluetooth_fake_adapter_setter.mojom",
     "common/power_monitor_test.mojom",
+    "common/web_test.mojom",
+    "common/web_test/fake_bluetooth_chooser.mojom",
+    "common/web_test/web_test_bluetooth_fake_adapter_setter.mojom",
   ]
   public_deps = [
     "//mojo/public/mojom/base",
@@ -927,17 +923,6 @@ mojom("mojo_bindings") {
     "//ui/gfx/geometry/mojo",
     "//url/mojom:url_mojom_gurl",
   ]
-}
-
-service_manifest("content_shell_packaged_services_manifest_overlay") {
-  testonly = true
-
-  source = "//content/shell/browser/content_shell_packaged_services_manifest_overlay.json"
-  packaged_services = [ "//services/test/echo:manifest" ]
-
-  if (is_chromeos) {
-    packaged_services += [ "//services/ws/test_ws:manifest" ]
-  }
 }
 
 group("content_shell_crash_test") {

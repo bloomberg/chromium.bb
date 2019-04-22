@@ -20,6 +20,7 @@
 #include "base/optional.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/common/buildflags.h"
 
 class PrefService;
 class Profile;
@@ -161,22 +162,33 @@ class ComponentLoader {
   void AddDefaultComponentExtensionsWithBackgroundPages(
       bool skip_session_components);
   void AddDefaultComponentExtensionsWithBackgroundPagesForKioskMode();
-  void AddFileManagerExtension();
-  void AddVideoPlayerExtension();
-  void AddAudioPlayerExtension();
-  void AddGalleryExtension();
-  void AddZipArchiverExtension();
+
+#if BUILDFLAG(ENABLE_HANGOUT_SERVICES_EXTENSION)
   void AddHangoutServicesExtension();
-  void AddImageLoaderExtension();
+#endif  // BUILDFLAG(ENABLE_HANGOUT_SERVICES_EXTENSION)
+
   void AddNetworkSpeechSynthesisExtension();
 
   void AddWithNameAndDescription(int manifest_resource_id,
                                  const base::FilePath& root_directory,
                                  const std::string& name_string,
                                  const std::string& description_string);
+#if BUILDFLAG(ENABLE_APP_LIST)
   void AddChromeApp();
-  void AddKeyboardApp();
+#endif  // BUILDFLAG(ENABLE_APP_LIST)
+
   void AddWebStoreApp();
+
+#if defined(OS_CHROMEOS)
+  void AddFileManagerExtension();
+  void AddVideoPlayerExtension();
+  void AddAudioPlayerExtension();
+  void AddGalleryExtension();
+  void AddImageLoaderExtension();
+  void AddKeyboardApp();
+  void AddChromeCameraApp();
+  void AddZipArchiverExtension();
+#endif  // defined(OS_CHROMEOS)
 
   scoped_refptr<const Extension> CreateExtension(
       const ComponentExtensionInfo& info, std::string* utf8_error);
@@ -184,10 +196,10 @@ class ComponentLoader {
   // Unloads |component| from the memory.
   void UnloadComponent(ComponentExtensionInfo* component);
 
+#if defined(OS_CHROMEOS)
   // Enable HTML5 FileSystem for given component extension in Guest mode.
   void EnableFileSystemInGuestMode(const std::string& id);
 
-#if defined(OS_CHROMEOS)
   // Used as a reply callback by |AddComponentFromDir|.
   // Called with a |root_directory| and parsed |manifest| and invokes
   // |done_cb| after adding the extension.
@@ -198,6 +210,9 @@ class ComponentLoader {
       const base::Optional<std::string>& description_string,
       const base::Closure& done_cb,
       std::unique_ptr<base::DictionaryValue> manifest);
+
+  // Finishes loading an extension tts engine.
+  void FinishLoadSpeechSynthesisExtension(const char* extension_id);
 #endif
 
   PrefService* profile_prefs_;

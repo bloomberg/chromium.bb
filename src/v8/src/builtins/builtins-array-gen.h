@@ -23,8 +23,6 @@ class ArrayBuiltinsAssembler : public CodeStubAssembler {
 
   typedef std::function<void(ArrayBuiltinsAssembler* masm)> PostLoopAction;
 
-  enum class MissingPropertyMode { kSkip, kUseUndefined };
-
   void FindResultGenerator();
 
   Node* FindProcessor(Node* k_value, Node* k);
@@ -51,12 +49,6 @@ class ArrayBuiltinsAssembler : public CodeStubAssembler {
 
   void ReducePostLoopAction();
 
-  void FilterResultGenerator();
-
-  Node* FilterProcessor(Node* k_value, Node* k);
-
-  void MapResultGenerator();
-
   void TypedArrayMapResultGenerator();
 
   Node* SpecCompliantMapProcessor(Node* k_value, Node* k);
@@ -80,13 +72,13 @@ class ArrayBuiltinsAssembler : public CodeStubAssembler {
     TNode<ExternalReference> isolate_ptr =
         ExternalConstant(ExternalReference::isolate_address(isolate()));
     return UncheckedCast<String>(
-        CallCFunction5(MachineType::AnyTagged(),  // <return> String
-                       MachineType::Pointer(),    // Isolate*
-                       MachineType::AnyTagged(),  // FixedArray fixed_array
-                       MachineType::IntPtr(),     // intptr_t length
-                       MachineType::AnyTagged(),  // String sep
-                       MachineType::AnyTagged(),  // String dest
-                       func, isolate_ptr, fixed_array, length, sep, dest));
+        CallCFunction(func,
+                      MachineType::AnyTagged(),  // <return> String
+                      std::make_pair(MachineType::Pointer(), isolate_ptr),
+                      std::make_pair(MachineType::AnyTagged(), fixed_array),
+                      std::make_pair(MachineType::IntPtr(), length),
+                      std::make_pair(MachineType::AnyTagged(), sep),
+                      std::make_pair(MachineType::AnyTagged(), dest)));
   }
 
  protected:
@@ -106,25 +98,9 @@ class ArrayBuiltinsAssembler : public CodeStubAssembler {
                                      TNode<Object> receiver, Node* callbackfn,
                                      Node* this_arg, TNode<IntPtrT> argc);
 
-  void GenerateIteratingArrayBuiltinBody(
-      const char* name, const BuiltinResultGenerator& generator,
-      const CallResultProcessor& processor, const PostLoopAction& action,
-      const Callable& slow_case_continuation,
-      MissingPropertyMode missing_property_mode,
-      ForEachDirection direction = ForEachDirection::kForward);
-  void InitIteratingArrayBuiltinLoopContinuation(
-      TNode<Context> context, TNode<Object> receiver, Node* callbackfn,
-      Node* this_arg, Node* a, TNode<JSReceiver> o, Node* initial_k,
-      TNode<Number> len, Node* to);
-
   void GenerateIteratingTypedArrayBuiltinBody(
       const char* name, const BuiltinResultGenerator& generator,
       const CallResultProcessor& processor, const PostLoopAction& action,
-      ForEachDirection direction = ForEachDirection::kForward);
-
-  void GenerateIteratingArrayBuiltinLoopContinuation(
-      const CallResultProcessor& processor, const PostLoopAction& action,
-      MissingPropertyMode missing_property_mode,
       ForEachDirection direction = ForEachDirection::kForward);
 
   void TailCallArrayConstructorStub(
@@ -159,9 +135,6 @@ class ArrayBuiltinsAssembler : public CodeStubAssembler {
       TNode<Object> new_target, TNode<Int32T> argc,
       TNode<HeapObject> maybe_allocation_site);
 
-  void GenerateInternalArrayNoArgumentConstructor(ElementsKind kind);
-  void GenerateInternalArraySingleArgumentConstructor(ElementsKind kind);
-
  private:
   static ElementsKind ElementsKindForInstanceType(InstanceType type);
 
@@ -169,18 +142,6 @@ class ArrayBuiltinsAssembler : public CodeStubAssembler {
                                   const CallResultProcessor& processor,
                                   Label* detached, ForEachDirection direction,
                                   TNode<JSTypedArray> typed_array);
-
-  void VisitAllFastElementsOneKind(ElementsKind kind,
-                                   const CallResultProcessor& processor,
-                                   Label* array_changed, ParameterMode mode,
-                                   ForEachDirection direction,
-                                   MissingPropertyMode missing_property_mode,
-                                   TNode<Smi> length);
-
-  void HandleFastElements(const CallResultProcessor& processor,
-                          const PostLoopAction& action, Label* slow,
-                          ForEachDirection direction,
-                          MissingPropertyMode missing_property_mode);
 
   // Perform ArraySpeciesCreate (ES6 #sec-arrayspeciescreate).
   // This version is specialized to create a zero length array

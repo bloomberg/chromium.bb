@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/picture_image_layer.h"
@@ -27,7 +28,7 @@ namespace {
 
 using LayerTreeHostMasksPixelTest = ParameterizedPixelResourceTest;
 
-INSTANTIATE_PIXEL_RESOURCE_TEST_CASE_P(LayerTreeHostMasksPixelTest);
+INSTANTIATE_PIXEL_RESOURCE_TEST_SUITE_P(LayerTreeHostMasksPixelTest);
 
 class MaskContentLayerClient : public ContentLayerClient {
  public:
@@ -90,6 +91,541 @@ TEST_P(LayerTreeHostMasksPixelTest, MaskOfLayer) {
 
   RunPixelResourceTest(background,
                        base::FilePath(FILE_PATH_LITERAL("mask_of_layer.png")));
+}
+
+class LayerTreeHostLayerListPixelTest : public ParameterizedPixelResourceTest {
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    settings->use_layer_lists = true;
+  }
+};
+
+INSTANTIATE_PIXEL_RESOURCE_TEST_SUITE_P(LayerTreeHostLayerListPixelTest);
+
+TEST_P(LayerTreeHostLayerListPixelTest, MaskWithEffect) {
+  PropertyTrees property_trees;
+  scoped_refptr<Layer> root_layer;
+  InitializeForLayerListMode(&root_layer, &property_trees);
+
+  EffectNode isolation_effect;
+  isolation_effect.clip_id = 1;
+  isolation_effect.stable_id = 2;
+  isolation_effect.has_render_surface = true;
+  isolation_effect.transform_id = 1;
+  property_trees.effect_tree.Insert(isolation_effect, 1);
+
+  EffectNode mask_effect;
+  mask_effect.clip_id = 1;
+  mask_effect.stable_id = 2;
+  mask_effect.transform_id = 1;
+  mask_effect.blend_mode = SkBlendMode::kDstIn;
+  property_trees.effect_tree.Insert(mask_effect, 2);
+
+  scoped_refptr<SolidColorLayer> background =
+      CreateSolidColorLayer(gfx::Rect(100, 100), SK_ColorWHITE);
+  background->set_property_tree_sequence_number(property_trees.sequence_number);
+  background->SetClipTreeIndex(1);
+  background->SetEffectTreeIndex(1);
+  background->SetScrollTreeIndex(1);
+  background->SetTransformTreeIndex(1);
+  root_layer->AddChild(background);
+
+  scoped_refptr<SolidColorLayer> green =
+      CreateSolidColorLayer(gfx::Rect(25, 25, 50, 50), kCSSGreen);
+  green->set_property_tree_sequence_number(property_trees.sequence_number);
+  green->SetClipTreeIndex(1);
+  green->SetEffectTreeIndex(2);
+  green->SetScrollTreeIndex(1);
+  green->SetTransformTreeIndex(1);
+
+  root_layer->AddChild(green);
+
+  gfx::Size mask_bounds(50, 50);
+  MaskContentLayerClient client(mask_bounds);
+
+  scoped_refptr<PictureLayer> mask = PictureLayer::Create(&client);
+  mask->SetOffsetToTransformParent(gfx::Vector2dF(25, 25));
+  mask->set_property_tree_sequence_number(property_trees.sequence_number);
+  mask->SetBounds(mask_bounds);
+  mask->SetIsDrawable(true);
+  mask->SetClipTreeIndex(1);
+  mask->SetEffectTreeIndex(3);
+  mask->SetScrollTreeIndex(1);
+  mask->SetTransformTreeIndex(1);
+  root_layer->AddChild(mask);
+
+  RunPixelResourceTestWithLayerList(
+      root_layer, base::FilePath(FILE_PATH_LITERAL("mask_with_effect.png")),
+      &property_trees);
+}
+
+// This tests that a solid color empty layer with mask effect works correctly.
+TEST_P(LayerTreeHostLayerListPixelTest, SolidColorLayerEmptyMaskWithEffect) {
+  PropertyTrees property_trees;
+  scoped_refptr<Layer> root_layer;
+  InitializeForLayerListMode(&root_layer, &property_trees);
+
+  EffectNode isolation_effect;
+  isolation_effect.clip_id = 1;
+  isolation_effect.stable_id = 2;
+  isolation_effect.has_render_surface = true;
+  isolation_effect.transform_id = 1;
+  property_trees.effect_tree.Insert(isolation_effect, 1);
+
+  EffectNode mask_effect;
+  mask_effect.clip_id = 1;
+  mask_effect.stable_id = 3;
+  mask_effect.transform_id = 1;
+  mask_effect.blend_mode = SkBlendMode::kDstIn;
+  property_trees.effect_tree.Insert(mask_effect, 2);
+
+  scoped_refptr<SolidColorLayer> background =
+      CreateSolidColorLayer(gfx::Rect(100, 100), SK_ColorWHITE);
+  background->set_property_tree_sequence_number(property_trees.sequence_number);
+  background->SetClipTreeIndex(1);
+  background->SetEffectTreeIndex(1);
+  background->SetScrollTreeIndex(1);
+  background->SetTransformTreeIndex(1);
+  root_layer->AddChild(background);
+
+  scoped_refptr<SolidColorLayer> green =
+      CreateSolidColorLayer(gfx::Rect(25, 25, 50, 50), kCSSGreen);
+  green->set_property_tree_sequence_number(property_trees.sequence_number);
+  green->SetClipTreeIndex(1);
+  green->SetEffectTreeIndex(2);
+  green->SetScrollTreeIndex(1);
+  green->SetTransformTreeIndex(1);
+
+  root_layer->AddChild(green);
+
+  // Apply a mask that is empty and solid-color. This should result in
+  // the green layer being entirely clipped out.
+  gfx::Size mask_bounds(50, 50);
+  scoped_refptr<SolidColorLayer> mask =
+      CreateSolidColorLayer(gfx::Rect(25, 25, 50, 50), SK_ColorTRANSPARENT);
+  mask->SetOffsetToTransformParent(gfx::Vector2dF(25, 25));
+  mask->set_property_tree_sequence_number(property_trees.sequence_number);
+  mask->SetBounds(mask_bounds);
+  mask->SetIsDrawable(true);
+  mask->SetClipTreeIndex(1);
+  mask->SetEffectTreeIndex(3);
+  mask->SetScrollTreeIndex(1);
+  mask->SetTransformTreeIndex(1);
+  root_layer->AddChild(mask);
+
+  RunPixelResourceTestWithLayerList(
+      root_layer,
+      base::FilePath(
+          FILE_PATH_LITERAL("solid_color_empty_mask_with_effect.png")),
+      &property_trees);
+}
+
+class SolidColorEmptyMaskContentLayerClient : public ContentLayerClient {
+ public:
+  explicit SolidColorEmptyMaskContentLayerClient(const gfx::Size& bounds)
+      : bounds_(bounds) {}
+  ~SolidColorEmptyMaskContentLayerClient() override = default;
+
+  bool FillsBoundsCompletely() const override { return false; }
+  size_t GetApproximateUnsharedMemoryUsage() const override { return 0; }
+
+  gfx::Rect PaintableRegion() override { return gfx::Rect(bounds_); }
+
+  scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
+      PaintingControlSetting picture_control) override {
+    // Intentionally return a solid color, empty mask display list. This
+    // is a situation where all content should be masked out.
+    auto display_list = base::MakeRefCounted<DisplayItemList>();
+    return display_list;
+  }
+
+ private:
+  gfx::Size bounds_;
+};
+
+TEST_P(LayerTreeHostLayerListPixelTest, SolidColorEmptyMaskWithEffect) {
+  PropertyTrees property_trees;
+  scoped_refptr<Layer> root_layer;
+  InitializeForLayerListMode(&root_layer, &property_trees);
+
+  EffectNode isolation_effect;
+  isolation_effect.clip_id = 1;
+  isolation_effect.stable_id = 2;
+  isolation_effect.has_render_surface = true;
+  isolation_effect.transform_id = 1;
+  property_trees.effect_tree.Insert(isolation_effect, 1);
+
+  EffectNode mask_effect;
+  mask_effect.clip_id = 1;
+  mask_effect.stable_id = 3;
+  mask_effect.transform_id = 1;
+  mask_effect.blend_mode = SkBlendMode::kDstIn;
+  property_trees.effect_tree.Insert(mask_effect, 2);
+
+  scoped_refptr<SolidColorLayer> background =
+      CreateSolidColorLayer(gfx::Rect(100, 100), SK_ColorWHITE);
+  background->set_property_tree_sequence_number(property_trees.sequence_number);
+  background->SetClipTreeIndex(1);
+  background->SetEffectTreeIndex(1);
+  background->SetScrollTreeIndex(1);
+  background->SetTransformTreeIndex(1);
+  root_layer->AddChild(background);
+
+  scoped_refptr<SolidColorLayer> green =
+      CreateSolidColorLayer(gfx::Rect(25, 25, 50, 50), kCSSGreen);
+  green->set_property_tree_sequence_number(property_trees.sequence_number);
+  green->SetClipTreeIndex(1);
+  green->SetEffectTreeIndex(2);
+  green->SetScrollTreeIndex(1);
+  green->SetTransformTreeIndex(1);
+
+  root_layer->AddChild(green);
+
+  // Apply a mask that is empty and solid-color. This should result in
+  // the green layer being entirely clipped out.
+  gfx::Size mask_bounds(50, 50);
+  SolidColorEmptyMaskContentLayerClient client(mask_bounds);
+
+  scoped_refptr<PictureLayer> mask = PictureLayer::Create(&client);
+  mask->SetOffsetToTransformParent(gfx::Vector2dF(25, 25));
+  mask->set_property_tree_sequence_number(property_trees.sequence_number);
+  mask->SetBounds(mask_bounds);
+  mask->SetIsDrawable(true);
+  mask->SetClipTreeIndex(1);
+  mask->SetEffectTreeIndex(3);
+  mask->SetScrollTreeIndex(1);
+  mask->SetTransformTreeIndex(1);
+  root_layer->AddChild(mask);
+
+  RunPixelResourceTestWithLayerList(
+      root_layer,
+      base::FilePath(
+          FILE_PATH_LITERAL("solid_color_empty_mask_with_effect.png")),
+      &property_trees);
+}
+
+// same as SolidColorEmptyMaskWithEffect, except the mask has a render surface.
+TEST_P(LayerTreeHostLayerListPixelTest,
+       SolidColorEmptyMaskWithEffectAndRenderSurface) {
+  PropertyTrees property_trees;
+  scoped_refptr<Layer> root_layer;
+  InitializeForLayerListMode(&root_layer, &property_trees);
+
+  EffectNode isolation_effect;
+  isolation_effect.clip_id = 1;
+  isolation_effect.stable_id = 2;
+  isolation_effect.has_render_surface = true;
+  isolation_effect.transform_id = 1;
+  property_trees.effect_tree.Insert(isolation_effect, 1);
+
+  EffectNode mask_effect;
+  mask_effect.clip_id = 1;
+  mask_effect.stable_id = 3;
+  mask_effect.transform_id = 1;
+  mask_effect.blend_mode = SkBlendMode::kDstIn;
+  mask_effect.has_render_surface = true;
+  property_trees.effect_tree.Insert(mask_effect, 2);
+
+  scoped_refptr<SolidColorLayer> background =
+      CreateSolidColorLayer(gfx::Rect(100, 100), SK_ColorWHITE);
+  background->set_property_tree_sequence_number(property_trees.sequence_number);
+  background->SetClipTreeIndex(1);
+  background->SetEffectTreeIndex(1);
+  background->SetScrollTreeIndex(1);
+  background->SetTransformTreeIndex(1);
+  root_layer->AddChild(background);
+
+  scoped_refptr<SolidColorLayer> green =
+      CreateSolidColorLayer(gfx::Rect(25, 25, 50, 50), kCSSGreen);
+  green->set_property_tree_sequence_number(property_trees.sequence_number);
+  green->SetClipTreeIndex(1);
+  green->SetEffectTreeIndex(2);
+  green->SetScrollTreeIndex(1);
+  green->SetTransformTreeIndex(1);
+
+  root_layer->AddChild(green);
+
+  // Apply a mask that is empty and solid-color. This should result in
+  // the green layer being entirely clipped out.
+  gfx::Size mask_bounds(50, 50);
+  SolidColorEmptyMaskContentLayerClient client(mask_bounds);
+
+  scoped_refptr<PictureLayer> mask = PictureLayer::Create(&client);
+  mask->SetOffsetToTransformParent(gfx::Vector2dF(25, 25));
+  mask->set_property_tree_sequence_number(property_trees.sequence_number);
+  mask->SetBounds(mask_bounds);
+  mask->SetIsDrawable(true);
+  mask->SetClipTreeIndex(1);
+  mask->SetEffectTreeIndex(3);
+  mask->SetScrollTreeIndex(1);
+  mask->SetTransformTreeIndex(1);
+  root_layer->AddChild(mask);
+
+  RunPixelResourceTestWithLayerList(
+      root_layer,
+      base::FilePath(
+          FILE_PATH_LITERAL("solid_color_empty_mask_with_effect.png")),
+      &property_trees);
+}
+
+// Tests a situation in which there is no other content in the target
+// render surface that the mask applies to. In this situation, the mask
+// should have no effect on the rendered output.
+TEST_P(LayerTreeHostLayerListPixelTest, MaskWithEffectNoContentToMask) {
+  PropertyTrees property_trees;
+  scoped_refptr<Layer> root_layer;
+  InitializeForLayerListMode(&root_layer, &property_trees);
+
+  EffectNode isolation_effect;
+  isolation_effect.clip_id = 1;
+  isolation_effect.stable_id = 2;
+  isolation_effect.has_render_surface = true;
+  isolation_effect.transform_id = 1;
+  property_trees.effect_tree.Insert(isolation_effect, 1);
+
+  EffectNode mask_effect;
+  mask_effect.clip_id = 1;
+  mask_effect.stable_id = 2;
+  mask_effect.transform_id = 1;
+  mask_effect.blend_mode = SkBlendMode::kDstIn;
+  property_trees.effect_tree.Insert(mask_effect, 2);
+
+  scoped_refptr<SolidColorLayer> background =
+      CreateSolidColorLayer(gfx::Rect(100, 100), SK_ColorRED);
+  background->set_property_tree_sequence_number(property_trees.sequence_number);
+  background->SetClipTreeIndex(1);
+  background->SetEffectTreeIndex(1);
+  background->SetScrollTreeIndex(1);
+  background->SetTransformTreeIndex(1);
+  root_layer->AddChild(background);
+
+  gfx::Size mask_bounds(50, 50);
+  MaskContentLayerClient client(mask_bounds);
+
+  scoped_refptr<PictureLayer> mask = PictureLayer::Create(&client);
+  mask->SetOffsetToTransformParent(gfx::Vector2dF(0, 0));
+  mask->set_property_tree_sequence_number(property_trees.sequence_number);
+  mask->SetBounds(mask_bounds);
+  mask->SetIsDrawable(true);
+  mask->SetClipTreeIndex(1);
+  mask->SetEffectTreeIndex(3);
+  mask->SetScrollTreeIndex(1);
+  mask->SetTransformTreeIndex(1);
+  root_layer->AddChild(mask);
+
+  RunPixelResourceTestWithLayerList(
+      root_layer,
+      base::FilePath(FILE_PATH_LITERAL("mask_with_effect_no_content.png")),
+      &property_trees);
+}
+
+TEST_P(LayerTreeHostLayerListPixelTest, ScaledMaskWithEffect) {
+  PropertyTrees property_trees;
+  scoped_refptr<Layer> root_layer;
+  InitializeForLayerListMode(&root_layer, &property_trees);
+
+  EffectNode isolation_effect;
+  isolation_effect.clip_id = 1;
+  isolation_effect.stable_id = 2;
+  isolation_effect.has_render_surface = true;
+  isolation_effect.transform_id = 1;
+  property_trees.effect_tree.Insert(isolation_effect, 1);
+
+  EffectNode mask_effect;
+  mask_effect.clip_id = 1;
+  mask_effect.stable_id = 2;
+  mask_effect.transform_id = 2;
+  mask_effect.blend_mode = SkBlendMode::kDstIn;
+  property_trees.effect_tree.Insert(mask_effect, 2);
+
+  // Scale the mask with a non-integral transform. This will trigger the
+  // AA path in the renderer.
+  TransformNode transform;
+  transform.local = gfx::Transform();
+  transform.local.Scale(1.5, 1.5);
+  property_trees.transform_tree.Insert(transform, 1);
+
+  scoped_refptr<SolidColorLayer> background =
+      CreateSolidColorLayer(gfx::Rect(100, 100), SK_ColorWHITE);
+  background->set_property_tree_sequence_number(property_trees.sequence_number);
+  background->SetClipTreeIndex(1);
+  background->SetEffectTreeIndex(1);
+  background->SetScrollTreeIndex(1);
+  background->SetTransformTreeIndex(1);
+  root_layer->AddChild(background);
+
+  scoped_refptr<SolidColorLayer> green =
+      CreateSolidColorLayer(gfx::Rect(25, 25, 50, 50), kCSSGreen);
+  green->set_property_tree_sequence_number(property_trees.sequence_number);
+  green->SetClipTreeIndex(1);
+  green->SetEffectTreeIndex(2);
+  green->SetScrollTreeIndex(1);
+  green->SetTransformTreeIndex(1);
+
+  root_layer->AddChild(green);
+
+  gfx::Size mask_bounds(50, 50);
+  MaskContentLayerClient client(mask_bounds);
+
+  scoped_refptr<PictureLayer> mask = PictureLayer::Create(&client);
+  mask->SetOffsetToTransformParent(gfx::Vector2dF(25, 25));
+  mask->set_property_tree_sequence_number(property_trees.sequence_number);
+  mask->SetBounds(mask_bounds);
+  mask->SetIsDrawable(true);
+  mask->SetClipTreeIndex(1);
+  mask->SetEffectTreeIndex(3);
+  mask->SetScrollTreeIndex(1);
+  mask->SetTransformTreeIndex(2);
+  root_layer->AddChild(mask);
+
+  float percentage_pixels_large_error = 2.5f;  // 2.5%, ~250px / (100*100)
+  float percentage_pixels_small_error = 0.0f;
+  float average_error_allowed_in_bad_pixels = 100.0f;
+  int large_error_allowed = 256;
+  int small_error_allowed = 0;
+  pixel_comparator_ = std::make_unique<FuzzyPixelComparator>(
+      true,  // discard_alpha
+      percentage_pixels_large_error, percentage_pixels_small_error,
+      average_error_allowed_in_bad_pixels, large_error_allowed,
+      small_error_allowed);
+
+  RunPixelResourceTestWithLayerList(
+      root_layer,
+      base::FilePath(FILE_PATH_LITERAL("scaled_mask_with_effect.png")),
+      &property_trees);
+}
+
+TEST_P(LayerTreeHostLayerListPixelTest, MaskWithEffectDifferentSize) {
+  PropertyTrees property_trees;
+  scoped_refptr<Layer> root_layer;
+  InitializeForLayerListMode(&root_layer, &property_trees);
+
+  EffectNode isolation_effect;
+  isolation_effect.clip_id = 1;
+  isolation_effect.stable_id = 2;
+  isolation_effect.has_render_surface = true;
+  isolation_effect.transform_id = 1;
+  property_trees.effect_tree.Insert(isolation_effect, 1);
+
+  EffectNode mask_effect;
+  mask_effect.clip_id = 1;
+  mask_effect.stable_id = 2;
+  mask_effect.transform_id = 1;
+  mask_effect.blend_mode = SkBlendMode::kDstIn;
+  property_trees.effect_tree.Insert(mask_effect, 2);
+
+  scoped_refptr<SolidColorLayer> background =
+      CreateSolidColorLayer(gfx::Rect(100, 100), SK_ColorWHITE);
+  background->set_property_tree_sequence_number(property_trees.sequence_number);
+  background->SetClipTreeIndex(1);
+  background->SetEffectTreeIndex(1);
+  background->SetScrollTreeIndex(1);
+  background->SetTransformTreeIndex(1);
+  root_layer->AddChild(background);
+
+  scoped_refptr<SolidColorLayer> green =
+      CreateSolidColorLayer(gfx::Rect(25, 25, 50, 50), kCSSGreen);
+  green->set_property_tree_sequence_number(property_trees.sequence_number);
+  green->SetClipTreeIndex(1);
+  green->SetEffectTreeIndex(2);
+  green->SetScrollTreeIndex(1);
+  green->SetTransformTreeIndex(1);
+
+  root_layer->AddChild(green);
+
+  gfx::Size mask_bounds(25, 25);
+  MaskContentLayerClient client(mask_bounds);
+
+  scoped_refptr<PictureLayer> mask = PictureLayer::Create(&client);
+  mask->SetOffsetToTransformParent(gfx::Vector2dF(25, 25));
+  mask->set_property_tree_sequence_number(property_trees.sequence_number);
+  mask->SetBounds(mask_bounds);
+  mask->SetIsDrawable(true);
+  mask->SetClipTreeIndex(1);
+  mask->SetEffectTreeIndex(3);
+  mask->SetScrollTreeIndex(1);
+  mask->SetTransformTreeIndex(1);
+  root_layer->AddChild(mask);
+
+  // The mask is half the size of thing it's masking. In layer-list mode,
+  // the mask is not automatically scaled to match the other layer.
+  RunPixelResourceTestWithLayerList(
+      root_layer,
+      base::FilePath(FILE_PATH_LITERAL("mask_with_effect_different_size.png")),
+      &property_trees);
+}
+
+TEST_P(LayerTreeHostLayerListPixelTest, ImageMaskWithEffect) {
+  PropertyTrees property_trees;
+  scoped_refptr<Layer> root_layer;
+  InitializeForLayerListMode(&root_layer, &property_trees);
+
+  EffectNode isolation_effect;
+  isolation_effect.clip_id = 1;
+  isolation_effect.stable_id = 2;
+  isolation_effect.has_render_surface = true;
+  isolation_effect.transform_id = 1;
+  property_trees.effect_tree.Insert(isolation_effect, 1);
+
+  EffectNode mask_effect;
+  mask_effect.clip_id = 1;
+  mask_effect.stable_id = 2;
+  mask_effect.transform_id = 1;
+  mask_effect.blend_mode = SkBlendMode::kDstIn;
+  property_trees.effect_tree.Insert(mask_effect, 2);
+
+  scoped_refptr<SolidColorLayer> background =
+      CreateSolidColorLayer(gfx::Rect(100, 100), SK_ColorWHITE);
+  background->set_property_tree_sequence_number(property_trees.sequence_number);
+  background->SetClipTreeIndex(1);
+  background->SetEffectTreeIndex(1);
+  background->SetScrollTreeIndex(1);
+  background->SetTransformTreeIndex(1);
+  root_layer->AddChild(background);
+
+  scoped_refptr<SolidColorLayer> green =
+      CreateSolidColorLayer(gfx::Rect(25, 25, 50, 50), kCSSGreen);
+  green->set_property_tree_sequence_number(property_trees.sequence_number);
+  green->SetClipTreeIndex(1);
+  green->SetEffectTreeIndex(2);
+  green->SetScrollTreeIndex(1);
+  green->SetTransformTreeIndex(1);
+
+  root_layer->AddChild(green);
+
+  gfx::Size mask_bounds(50, 50);
+  MaskContentLayerClient client(mask_bounds);
+
+  scoped_refptr<PictureImageLayer> mask = PictureImageLayer::Create();
+  mask->SetOffsetToTransformParent(gfx::Vector2dF(25, 25));
+  mask->set_property_tree_sequence_number(property_trees.sequence_number);
+  mask->SetBounds(mask_bounds);
+  mask->SetIsDrawable(true);
+  mask->SetClipTreeIndex(1);
+  mask->SetEffectTreeIndex(3);
+  mask->SetScrollTreeIndex(1);
+  mask->SetTransformTreeIndex(1);
+
+  sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(200, 200);
+  SkCanvas* canvas = surface->getCanvas();
+  canvas->scale(SkIntToScalar(4), SkIntToScalar(4));
+  scoped_refptr<DisplayItemList> mask_display_list =
+      client.PaintContentsToDisplayList(
+          ContentLayerClient::PAINTING_BEHAVIOR_NORMAL);
+  mask_display_list->Raster(canvas);
+  mask->SetImage(PaintImageBuilder::WithDefault()
+                     .set_id(PaintImage::GetNextId())
+                     .set_image(surface->makeImageSnapshot(),
+                                PaintImage::GetNextContentId())
+                     .TakePaintImage(),
+                 SkMatrix::I(), false);
+  root_layer->AddChild(mask);
+
+  // The mask is half the size of thing it's masking. In layer-list mode,
+  // the mask is not automatically scaled to match the other layer.
+  RunPixelResourceTestWithLayerList(
+      root_layer,
+      base::FilePath(FILE_PATH_LITERAL("image_mask_with_effect.png")),
+      &property_trees);
 }
 
 TEST_P(LayerTreeHostMasksPixelTest, ImageMaskOfLayer) {
@@ -270,7 +806,7 @@ class CircleContentLayerClient : public ContentLayerClient {
 using LayerTreeHostMasksForBackdropFiltersPixelTest =
     ParameterizedPixelResourceTest;
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     PixelResourceTest,
     LayerTreeHostMasksForBackdropFiltersPixelTest,
     ::testing::Combine(
@@ -296,7 +832,9 @@ TEST_P(LayerTreeHostMasksForBackdropFiltersPixelTest,
 
   FilterOperations filters;
   filters.Append(FilterOperation::CreateGrayscaleFilter(1.0));
+  gfx::RRectF backdrop_filter_bounds;
   blur->SetBackdropFilters(filters);
+  blur->SetBackdropFilterBounds(backdrop_filter_bounds);
 
   gfx::Size mask_bounds(100, 100);
   CircleContentLayerClient mask_client(mask_bounds);
@@ -493,7 +1031,7 @@ class LayerTreeHostMaskAsBlendingPixelTest
     for (int j = 0; j < (bounds.height() + grid_size - 1) / grid_size; j++) {
       for (int i = 0; i < (bounds.width() + grid_size - 1) / grid_size; i++) {
         PaintFlags flags;
-        flags.setColor(test_colors[(i + j * 3) % arraysize(test_colors)]);
+        flags.setColor(test_colors[(i + j * 3) % base::size(test_colors)]);
         display_list->push<DrawRectOp>(
             SkRect::MakeXYWH(i * grid_size, j * grid_size, grid_size,
                              grid_size),
@@ -530,9 +1068,9 @@ class LayerTreeHostMaskAsBlendingPixelTest
   bool force_shaders_;
 };
 
-INSTANTIATE_TEST_CASE_P(All,
-                        LayerTreeHostMaskAsBlendingPixelTest,
-                        ::testing::Range(0, 5));
+INSTANTIATE_TEST_SUITE_P(All,
+                         LayerTreeHostMaskAsBlendingPixelTest,
+                         ::testing::Range(0, 5));
 // Instantiate 5 test modes of the following:
 // 0: SOFTWARE (golden sample)
 // 1: GL
@@ -756,6 +1294,8 @@ TEST_P(LayerTreeHostMasksForBackdropFiltersPixelTest,
   FilterOperations filters;
   filters.Append(FilterOperation::CreateGrayscaleFilter(1.0));
   picture_horizontal->SetBackdropFilters(filters);
+  gfx::RRectF backdrop_filter_bounds;
+  picture_horizontal->SetBackdropFilterBounds(backdrop_filter_bounds);
 
   background->AddChild(picture_vertical);
   background->AddChild(picture_horizontal);

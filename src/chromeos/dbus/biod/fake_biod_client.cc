@@ -30,6 +30,8 @@ const char kRecordObjectPathPrefix[] = "/Record/";
 // time.
 const char kAuthSessionObjectPath[] = "/AuthSession/";
 
+FakeBiodClient* g_instance = nullptr;
+
 }  // namespace
 
 // FakeRecord is the definition of a fake stored fingerprint template.
@@ -41,9 +43,21 @@ struct FakeBiodClient::FakeRecord {
   std::vector<std::string> fake_fingerprint;
 };
 
-FakeBiodClient::FakeBiodClient() = default;
+FakeBiodClient::FakeBiodClient() {
+  DCHECK(!g_instance);
+  g_instance = this;
+}
 
-FakeBiodClient::~FakeBiodClient() = default;
+FakeBiodClient::~FakeBiodClient() {
+  DCHECK_EQ(this, g_instance);
+  g_instance = nullptr;
+}
+
+// static
+FakeBiodClient* FakeBiodClient::Get() {
+  DCHECK(g_instance);
+  return g_instance;
+}
 
 void FakeBiodClient::SendEnrollScanDone(const std::string& fingerprint,
                                         biod::ScanResult type_result,
@@ -108,8 +122,6 @@ void FakeBiodClient::Reset() {
   current_session_ = FingerprintSession::NONE;
 }
 
-void FakeBiodClient::Init(dbus::Bus* bus) {}
-
 void FakeBiodClient::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }
@@ -168,12 +180,10 @@ void FakeBiodClient::StartAuthSession(const ObjectPathCallback& callback) {
       base::BindOnce(callback, dbus::ObjectPath(kAuthSessionObjectPath)));
 }
 
-void FakeBiodClient::RequestType(const BiometricTypeCallback& callback) {
+void FakeBiodClient::RequestType(BiometricTypeCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindOnce(callback,
-                     static_cast<uint32_t>(
-                         biod::BiometricType::BIOMETRIC_TYPE_FINGERPRINT)));
+      base::BindOnce(std::move(callback), biod::BIOMETRIC_TYPE_FINGERPRINT));
 }
 
 void FakeBiodClient::CancelEnrollSession(VoidDBusMethodCallback callback) {
@@ -189,8 +199,6 @@ void FakeBiodClient::CancelEnrollSession(VoidDBusMethodCallback callback) {
 }
 
 void FakeBiodClient::EndAuthSession(VoidDBusMethodCallback callback) {
-  DCHECK_EQ(current_session_, FingerprintSession::AUTH);
-
   current_session_ = FingerprintSession::NONE;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), true));

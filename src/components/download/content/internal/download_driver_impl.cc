@@ -5,15 +5,20 @@
 #include "components/download/content/internal/download_driver_impl.h"
 
 #include <set>
+#include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "components/download/internal/background_service/driver_entry.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_url_parameters.h"
+#include "components/download/public/common/simple_download_manager_coordinator.h"
+#include "content/public/browser/browser_thread.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 
@@ -97,12 +102,26 @@ DriverEntry DownloadDriverImpl::CreateDriverEntry(
         !item->GetETag().empty() || !item->GetLastModifiedTime().empty();
   }
   entry.url_chain = item->GetUrlChain();
+
+  if (item->GetState() == DownloadItem::DownloadState::COMPLETE) {
+    std::string hash = item->GetHash();
+    if (!hash.empty())
+      entry.hash256 = base::HexEncode(hash.data(), hash.size());
+  }
+
   return entry;
 }
 
-DownloadDriverImpl::DownloadDriverImpl(content::DownloadManager* manager)
-    : download_manager_(manager), client_(nullptr), weak_ptr_factory_(this) {
+DownloadDriverImpl::DownloadDriverImpl(
+    content::DownloadManager* manager,
+    SimpleDownloadManagerCoordinator* download_manager_coordinator)
+    : download_manager_(manager),
+      client_(nullptr),
+      download_manager_coordinator_(download_manager_coordinator),
+      weak_ptr_factory_(this) {
   DCHECK(download_manager_);
+  DCHECK(!download_manager_coordinator_ ||
+         !download_manager_coordinator_->HasSetDownloadManager());
 }
 
 DownloadDriverImpl::~DownloadDriverImpl() = default;
@@ -165,7 +184,9 @@ void DownloadDriverImpl::Start(
       download::DownloadSource::INTERNAL_API);
   download_url_params->set_post_body(post_body);
   download_url_params->set_follow_cross_origin_redirects(true);
-
+  download_url_params->set_upload_progress_callback(
+      base::BindRepeating(&DownloadDriverImpl::OnUploadProgress,
+                          weak_ptr_factory_.GetWeakPtr(), guid));
   download_manager_->DownloadUrl(std::move(download_url_params),
                                  nullptr /* blob_data_handle */,
                                  nullptr /* blob_url_loader_factory */);
@@ -209,7 +230,7 @@ void DownloadDriverImpl::Resume(const std::string& guid) {
     return;
   DownloadItem* item = download_manager_->GetDownloadByGuid(guid);
   if (item)
-    item->Resume();
+    item->Resume(true);
 }
 
 base::Optional<DriverEntry> DownloadDriverImpl::Find(const std::string& guid) {
@@ -292,6 +313,12 @@ void DownloadDriverImpl::OnDownloadCreated(content::DownloadManager* manager,
   // be loaded before the driver is ready.
   if (IsReady())
     client_->OnDownloadCreated(entry);
+}
+
+void DownloadDriverImpl::OnUploadProgress(const std::string& guid,
+                                          uint64_t bytes_uploaded) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  client_->OnUploadProgress(guid, bytes_uploaded);
 }
 
 void DownloadDriverImpl::OnManagerInitialized(

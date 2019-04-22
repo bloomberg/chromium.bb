@@ -170,6 +170,10 @@ int MatchFontFaceWithFallback(const std::string& face,
   int good_enough_index = -1;
   bool good_enough_index_set = false;
 
+  const char* c_filename;
+  const char* c_sysroot =
+      reinterpret_cast<const char*>(FcConfigGetSysRoot(nullptr));
+  const std::string sysroot = c_sysroot ? c_sysroot : "";
   if (font_set) {
     for (int i = 0; i < font_set->nfont; ++i) {
       FcPattern* current = font_set->fonts[i];
@@ -183,11 +187,12 @@ int MatchFontFaceWithFallback(const std::string& face,
         continue;
       }
 
-      FcChar8* c_filename;
-      if (FcPatternGetString(current, FC_FILE, 0, &c_filename) !=
-          FcResultMatch) {
+      if (FcPatternGetString(current, FC_FILE, 0,
+                             reinterpret_cast<FcChar8**>(const_cast<char**>(
+                                 &c_filename))) != FcResultMatch) {
         continue;
       }
+      const std::string filename = sysroot + c_filename;
 
       // We only want to return sfnt (TrueType) based fonts. We don't have a
       // very good way of detecting this so we'll filter based on the
@@ -200,8 +205,8 @@ int MatchFontFaceWithFallback(const std::string& face,
           // None of the extensions matched.
           break;
         }
-        if (base::EndsWith(std::string(reinterpret_cast<char*>(c_filename)),
-                           kSFNTExtensions[j], base::CompareCase::SENSITIVE)) {
+        if (base::EndsWith(filename, kSFNTExtensions[j],
+                           base::CompareCase::SENSITIVE)) {
           is_sfnt = true;
           break;
         }
@@ -236,8 +241,7 @@ int MatchFontFaceWithFallback(const std::string& face,
         continue;
       }
 
-      font_fd =
-          HANDLE_EINTR(open(reinterpret_cast<char*>(c_filename), O_RDONLY));
+      font_fd = HANDLE_EINTR(open(filename.c_str(), O_RDONLY));
       if (font_fd >= 0)
         break;
     }
@@ -247,9 +251,12 @@ int MatchFontFaceWithFallback(const std::string& face,
     // We didn't find a font that we liked, so we fallback to something
     // acceptable.
     FcPattern* current = font_set->fonts[good_enough_index];
-    FcChar8* c_filename;
-    FcPatternGetString(current, FC_FILE, 0, &c_filename);
-    font_fd = HANDLE_EINTR(open(reinterpret_cast<char*>(c_filename), O_RDONLY));
+    if (!FcPatternGetString(
+            current, FC_FILE, 0,
+            reinterpret_cast<FcChar8**>(const_cast<char**>(&c_filename)))) {
+      const std::string filename = sysroot + c_filename;
+      font_fd = HANDLE_EINTR(open(filename.c_str(), O_RDONLY));
+    }
   }
 
   if (font_set)

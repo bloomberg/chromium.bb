@@ -17,6 +17,7 @@
 #include "components/translate/core/common/translate_errors.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "url/gurl.h"
 
 namespace blink {
@@ -44,10 +45,12 @@ class TranslateHelper : public content::RenderFrameObserver,
   void PrepareForUrl(const GURL& url);
 
   // mojom::Page implementation.
-  void Translate(const std::string& translate_script,
-                 const std::string& source_lang,
-                 const std::string& target_lang,
-                 TranslateCallback callback) override;
+  void Translate(
+      const std::string& translate_script,
+      network::mojom::URLLoaderFactoryPtr loader_factory_for_translate_script,
+      const std::string& source_lang,
+      const std::string& target_lang,
+      TranslateCallback callback) override;
   void RevertTranslation() override;
 
  protected:

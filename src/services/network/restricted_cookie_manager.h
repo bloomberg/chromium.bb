@@ -16,6 +16,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_change_dispatcher.h"
+#include "net/cookies/cookie_store.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -26,6 +27,8 @@ class CookieStore;
 
 namespace network {
 
+class CookieSettings;
+
 // RestrictedCookieManager implementation.
 //
 // Instances of this class must be created and used on the sequence that hosts
@@ -33,7 +36,9 @@ namespace network {
 class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
     : public mojom::RestrictedCookieManager {
  public:
+  // |*cookie_store|, |*cookie_settings| must outlive this.
   RestrictedCookieManager(net::CookieStore* cookie_store,
+                          const CookieSettings* cookie_settings,
                           const url::Origin& origin);
   ~RestrictedCookieManager() override;
 
@@ -62,7 +67,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
       const GURL& site_for_cookies,
       mojom::CookieManagerGetOptionsPtr options,
       GetAllForUrlCallback callback,
-      const net::CookieList& cookie_list);
+      const net::CookieList& cookie_list,
+      const net::CookieStatusList& excluded_cookies);
 
   // Called when the Mojo pipe associated with a listener is closed.
   void RemoveChangeListener(Listener* listener);
@@ -77,6 +83,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
   bool ValidateAccessToCookiesAt(const GURL& url);
 
   net::CookieStore* const cookie_store_;
+  const CookieSettings* const cookie_settings_;
   const url::Origin origin_;
 
   base::LinkedList<Listener> listeners_;

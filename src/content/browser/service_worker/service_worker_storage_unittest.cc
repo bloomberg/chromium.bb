@@ -9,11 +9,13 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -208,7 +210,7 @@ int WriteStringResponse(ServiceWorkerStorage* storage,
 int WriteBasicResponse(ServiceWorkerStorage* storage, int64_t id) {
   const char kHttpHeaders[] = "HTTP/1.0 200 HONKYDORY\0Content-Length: 5\0\0";
   const char kHttpBody[] = "Hello";
-  std::string headers(kHttpHeaders, arraysize(kHttpHeaders));
+  std::string headers(kHttpHeaders, base::size(kHttpHeaders));
   return WriteStringResponse(storage, id, headers, std::string(kHttpBody));
 }
 
@@ -520,6 +522,18 @@ class ServiceWorkerStorageTest : public testing::Test {
     return result.value();
   }
 
+  blink::ServiceWorkerStatusCode ClearUserDataForAllRegistrationsByKeyPrefix(
+      const std::string& key_prefix) {
+    bool was_called = false;
+    base::Optional<blink::ServiceWorkerStatusCode> result;
+    storage()->ClearUserDataForAllRegistrationsByKeyPrefix(
+        key_prefix, MakeStatusCallback(&was_called, &result));
+    EXPECT_FALSE(was_called);  // always async
+    base::RunLoop().RunUntilIdle();
+    EXPECT_TRUE(was_called);
+    return result.value();
+  }
+
   blink::ServiceWorkerStatusCode UpdateToActiveState(
       scoped_refptr<ServiceWorkerRegistration> registration) {
     bool was_called = false;
@@ -686,6 +700,8 @@ TEST_F(ServiceWorkerStorageTest, DisabledStorage) {
   std::vector<std::pair<int64_t, std::string>> data_list_out;
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorAbort,
             GetUserDataForAllRegistrations(kUserDataKey, &data_list_out));
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorAbort,
+            ClearUserDataForAllRegistrationsByKeyPrefix("prefix"));
 
   // Next available ids should be invalid.
   EXPECT_EQ(blink::mojom::kInvalidServiceWorkerRegistrationId,
@@ -1122,6 +1138,12 @@ TEST_F(ServiceWorkerStorageTest, StoreUserData) {
   ASSERT_EQ(1u, data_out.size());
   EXPECT_EQ("data3", data_out[0]);
 
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
+            ClearUserDataForAllRegistrationsByKeyPrefix("prefixB"));
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
+            GetUserDataByKeyPrefix(kRegistrationId, "prefix", &data_out));
+  EXPECT_TRUE(data_out.empty());
+
   // User data should be deleted when the associated registration is deleted.
   ASSERT_EQ(
       blink::ServiceWorkerStatusCode::kOk,
@@ -1187,6 +1209,8 @@ TEST_F(ServiceWorkerStorageTest, StoreUserData) {
             ClearUserDataByKeyPrefixes(kRegistrationId, {}));
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorFailed,
             ClearUserDataByKeyPrefixes(kRegistrationId, {std::string()}));
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorFailed,
+            ClearUserDataForAllRegistrationsByKeyPrefix(std::string()));
   data_list_out.clear();
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorFailed,
             GetUserDataForAllRegistrations(std::string(), &data_list_out));
@@ -1216,6 +1240,8 @@ TEST_F(ServiceWorkerStorageTest, ClearUserData_BeforeInitialize) {
             ClearUserData(kRegistrationId, {"key"}));
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
             ClearUserDataByKeyPrefixes(kRegistrationId, {"prefix"}));
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
+            ClearUserDataForAllRegistrationsByKeyPrefix("key"));
 }
 
 TEST_F(ServiceWorkerStorageTest,
@@ -1441,10 +1467,9 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_ActiveVersion) {
   registration_->SetActiveVersion(registration_->waiting_version());
   storage()->UpdateToActiveState(registration_.get(), base::DoNothing());
   ServiceWorkerRemoteProviderEndpoint remote_endpoint;
-  std::unique_ptr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
-      33 /* dummy render process id */, 1 /* dummy provider_id */,
-      true /* is_parent_frame_secure */, context()->AsWeakPtr(),
-      &remote_endpoint);
+  base::WeakPtr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
+      33 /* dummy render process id */, true /* is_parent_frame_secure */,
+      context()->AsWeakPtr(), &remote_endpoint);
   registration_->active_version()->AddControllee(host.get());
 
   bool was_called = false;
@@ -1472,7 +1497,7 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_ActiveVersion) {
   EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id2_, true));
 
   // Removing the controllee should cause the resources to be deleted.
-  registration_->active_version()->RemoveControllee(host.get()->client_uuid());
+  registration_->active_version()->RemoveControllee(host->client_uuid());
   registration_->active_version()->Doom();
   base::RunLoop().RunUntilIdle();
   verify_ids.clear();
@@ -1490,10 +1515,9 @@ TEST_F(ServiceWorkerResourceStorageDiskTest, CleanupOnRestart) {
   registration_->SetWaitingVersion(nullptr);
   storage()->UpdateToActiveState(registration_.get(), base::DoNothing());
   ServiceWorkerRemoteProviderEndpoint remote_endpoint;
-  std::unique_ptr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
-      33 /* dummy render process id */, 1 /* dummy provider_id */,
-      true /* is_parent_frame_secure */, context()->AsWeakPtr(),
-      &remote_endpoint);
+  base::WeakPtr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
+      33 /* dummy render process id */, true /* is_parent_frame_secure */,
+      context()->AsWeakPtr(), &remote_endpoint);
   registration_->active_version()->AddControllee(host.get());
 
   bool was_called = false;
@@ -1650,10 +1674,9 @@ TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration) {
   registration_->SetActiveVersion(registration_->waiting_version());
   storage()->UpdateToActiveState(registration_.get(), base::DoNothing());
   ServiceWorkerRemoteProviderEndpoint remote_endpoint;
-  std::unique_ptr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
-      33 /* dummy render process id */, 1 /* dummy provider_id */,
-      true /* is_parent_frame_secure */, helper_->context()->AsWeakPtr(),
-      &remote_endpoint);
+  base::WeakPtr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
+      33 /* dummy render process id */, true /* is_parent_frame_secure */,
+      helper_->context()->AsWeakPtr(), &remote_endpoint);
   registration_->active_version()->AddControllee(host.get());
 
   bool was_called = false;
@@ -1694,7 +1717,7 @@ TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration) {
 
   // Removing the controllee should cause the old version's resources to be
   // deleted.
-  registration_->active_version()->RemoveControllee(host.get()->client_uuid());
+  registration_->active_version()->RemoveControllee(host->client_uuid());
   registration_->active_version()->Doom();
   base::RunLoop().RunUntilIdle();
   verify_ids.clear();
@@ -1844,7 +1867,7 @@ class ServiceWorkerStorageOriginTrialsDiskTest
     bool IsOriginTrialsSupported() const override { return true; }
     base::StringPiece GetPublicKey() const override {
       return base::StringPiece(reinterpret_cast<const char*>(kTestPublicKey),
-                               arraysize(kTestPublicKey));
+                               base::size(kTestPublicKey));
     }
     bool IsOriginSecure(const GURL& url) const override {
       return content::IsOriginSecure(url);
@@ -1930,7 +1953,6 @@ TEST_F(ServiceWorkerStorageOriginTrialsDiskTest, FromMainScript) {
 
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
             StoreRegistration(registration, version));
-
   // Simulate browser shutdown and restart.
   registration = nullptr;
   version = nullptr;
@@ -1979,6 +2001,51 @@ TEST_F(ServiceWorkerStorageTest, AbsentNavigationPreloadState) {
       found_registration->active_version()->navigation_preload_state();
   EXPECT_FALSE(state.enabled);
   EXPECT_EQ("true", state.header);
+}
+
+// Tests storing the script response time for DevTools.
+TEST_F(ServiceWorkerStorageDiskTest, ScriptResponseTime) {
+  // Make a registration.
+  LazyInitialize();
+  const GURL kScope("https://example.com/scope");
+  const GURL kScript("https://example.com/script.js");
+  scoped_refptr<ServiceWorkerRegistration> registration =
+      CreateLiveRegistrationAndVersion(kScope, kScript);
+  ServiceWorkerVersion* version = registration->waiting_version();
+
+  // Give it a main script response info.
+  net::HttpResponseInfo http_info;
+  http_info.headers =
+      base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/1.1 200 OK");
+  http_info.response_time = base::Time::FromJsTime(19940123);
+  version->SetMainScriptHttpResponseInfo(http_info);
+  EXPECT_TRUE(version->main_script_http_info_);
+  EXPECT_EQ(http_info.response_time,
+            version->script_response_time_for_devtools_);
+  EXPECT_EQ(http_info.response_time, version->GetInfo().script_response_time);
+
+  // Store the registration.
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
+            StoreRegistration(registration, version));
+
+  // Simulate browser shutdown and restart.
+  registration = nullptr;
+  version = nullptr;
+  InitializeTestHelper();
+  LazyInitialize();
+
+  // Read the registration. The main script's response time should be gettable.
+  scoped_refptr<ServiceWorkerRegistration> found_registration;
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
+            FindRegistrationForDocument(kScope, &found_registration));
+  ASSERT_TRUE(found_registration);
+  auto* waiting_version = found_registration->waiting_version();
+  ASSERT_TRUE(waiting_version);
+  EXPECT_FALSE(waiting_version->main_script_http_info_);
+  EXPECT_EQ(http_info.response_time,
+            waiting_version->script_response_time_for_devtools_);
+  EXPECT_EQ(http_info.response_time,
+            waiting_version->GetInfo().script_response_time);
 }
 
 TEST_F(ServiceWorkerStorageDiskTest, RegisteredOriginCount) {

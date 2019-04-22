@@ -74,7 +74,7 @@ constexpr net::NetworkTrafficAnnotationTag kReporterTrafficAnnotation =
               "Chrome Cleanup can also be explicitly requested by the user in "
               "\"Reset and clean up\" in settings under Advanced. To disable "
               "this report, turn off \"Report details to Google\" before "
-              "choosing \"Find and remove harmful software\"."
+              "choosing \"Find harmful software\"."
             chrome_policy {
               SafeBrowsingExtendedReportingEnabled {
                 SafeBrowsingExtendedReportingEnabled: false
@@ -147,7 +147,7 @@ void ReporterLoggingService::Initialize(RegistryLogger* registry_logger) {
     FoilReporterLogs_EnvironmentData* env_data =
         reporter_logs_.mutable_environment();
     env_data->set_windows_version(base::win::GetVersion());
-    env_data->set_reporter_version(CHROME_VERSION_UTF8_STRING);
+    env_data->set_reporter_version(CHROME_CLEANER_VERSION_UTF8_STRING);
     if (version_string_succeeded)
       env_data->set_chrome_version(base::WideToUTF8(version_string));
     if (has_chrome_channel)
@@ -276,12 +276,32 @@ void ReporterLoggingService::SetWinHttpProxySettings(
 
 void ReporterLoggingService::AddInstalledExtension(
     const base::string16& extension_id,
-    ExtensionInstallMethod install_method) {}
+    ExtensionInstallMethod install_method,
+    const std::vector<internal::FileInformation>& extension_files) {}
 
 void ReporterLoggingService::AddScheduledTask(
     const base::string16& /*name*/,
     const base::string16& /*description*/,
     const std::vector<internal::FileInformation>& /*actions*/) {}
+
+void ReporterLoggingService::AddShortcutData(
+    const base::string16& /*lnk_path*/,
+    const base::string16& /*executable_path*/,
+    const std::string& /*executable _hash*/,
+    const std::vector<base::string16>& /*command_line_arguments*/) {}
+
+void ReporterLoggingService::SetFoundModifiedChromeShortcuts(
+    bool found_modified_shortcuts) {
+  base::AutoLock lock(lock_);
+  reporter_logs_.set_found_modified_chrome_shortcuts(found_modified_shortcuts);
+}
+
+void ReporterLoggingService::SetScannedLocations(
+    const std::vector<UwS::TraceLocation>& scanned_locations) {
+  base::AutoLock lock(lock_);
+  for (UwS::TraceLocation location : scanned_locations)
+    reporter_logs_.add_scanned_locations(location);
+}
 
 void ReporterLoggingService::LogProcessInformation(
     SandboxType process_type,

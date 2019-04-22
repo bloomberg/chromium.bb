@@ -96,9 +96,6 @@ class BrowserStatusMonitor : public BrowserTabStripTrackerDelegate,
   // Remove LocalWebContentsObserver for |contents|.
   void RemoveWebContentsObserver(content::WebContents* contents);
 
-  // Returns the ShelfID for |contents|.
-  ash::ShelfID GetShelfIDForWebContents(content::WebContents* contents);
-
   // Sets the shelf id for browsers represented by the browser shortcut item.
   void SetShelfIDForBrowserWindowContents(Browser* browser,
                                           content::WebContents* web_contents);

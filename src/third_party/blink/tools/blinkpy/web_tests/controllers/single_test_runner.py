@@ -201,7 +201,7 @@ class SingleTestRunner(object):
 
         # Remove |output_path| if it exists and is not the generic expectation to
         # avoid extra baseline if the new baseline is the same as the fallback baseline.
-        generic_dir = fs.join(port.layout_tests_dir(),
+        generic_dir = fs.join(port.web_tests_dir(),
                               fs.dirname(port.lookup_virtual_test_base(self._test_name) or self._test_name))
         if (not data or output_dir != generic_dir) and fs.exists(output_path):
             _log.info('Removing the current baseline "%s"', port.relative_test_filename(output_path))
@@ -461,6 +461,10 @@ class SingleTestRunner(object):
     def _compare_image(self, expected_driver_output, driver_output):
         if not expected_driver_output.image or not expected_driver_output.image_hash:
             return []
+        # The presence of an expected image, but a lack of an outputted image
+        # does not signify an error. content::BlinkTestController checks the
+        # image_hash, and upon a match simply skips recording the outputted
+        # image. This even occurs when results_directory is set.
         if not driver_output.image or not driver_output.image_hash:
             return []
 

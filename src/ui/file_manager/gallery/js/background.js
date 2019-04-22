@@ -46,8 +46,9 @@ function openGalleryWindow(urls) {
                .catch(reject);
          })
       .then(function(urls) {
-        if (urls.length === 0)
+        if (urls.length === 0) {
           return Promise.reject('No file to open.');
+        }
 
         // Opens a window.
         return new Promise(function(fulfill, reject) {
@@ -57,8 +58,9 @@ function openGalleryWindow(urls) {
             .then(function(galleryWrapper) {
               var galleryWrapperDocument =
                   galleryWrapper.rawAppWindow.contentWindow.document;
-              if (galleryWrapperDocument.readyState == 'complete')
+              if (galleryWrapperDocument.readyState == 'complete') {
                 return galleryWrapper;
+              }
 
               return new Promise(function(fulfill, reject) {
                 galleryWrapperDocument.addEventListener(
@@ -68,15 +70,16 @@ function openGalleryWindow(urls) {
       })
       .then(function(galleryWrapper) {
         // If the window is minimized, we need to restore it first.
-        if (galleryWrapper.rawAppWindow.isMinimized())
+        if (galleryWrapper.rawAppWindow.isMinimized()) {
           galleryWrapper.rawAppWindow.restore();
+        }
 
         galleryWrapper.rawAppWindow.show();
 
         return galleryWrapper.rawAppWindow.contentWindow.appID;
       })
       .catch(function(error) {
-        console.error('Launch failed' + error.stack || error);
+        console.error('Launch failed: ' + (error.stack || error));
         return Promise.reject(error);
       });
 }

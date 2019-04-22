@@ -7,9 +7,9 @@
 
 #include <memory>
 
-#include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/no_destructor.h"
 
 namespace i18n {
 namespace addressinput {
@@ -30,7 +30,7 @@ class ValidationRulesStorageFactory {
   static std::unique_ptr<::i18n::addressinput::Storage> CreateStorage();
 
  private:
-  friend struct base::LazyInstanceTraitsBase<ValidationRulesStorageFactory>;
+  friend class base::NoDestructor<ValidationRulesStorageFactory>;
 
   ValidationRulesStorageFactory();
   ~ValidationRulesStorageFactory();

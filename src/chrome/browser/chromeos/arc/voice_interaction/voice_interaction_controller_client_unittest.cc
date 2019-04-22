@@ -5,12 +5,13 @@
 #include "chrome/browser/chromeos/arc/voice_interaction/voice_interaction_controller_client.h"
 
 #include "ash/shell.h"
-#include "ash/test/ash_test_base.h"
 #include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/voice_interaction/fake_voice_interaction_controller.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/ui/ash/assistant/assistant_pref_util.h"
+#include "chrome/test/base/chrome_ash_test_base.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_util.h"
@@ -22,7 +23,7 @@
 
 namespace arc {
 
-class VoiceInteractionControllerClientTest : public ash::AshTestBase {
+class VoiceInteractionControllerClientTest : public ChromeAshTestBase {
  public:
   VoiceInteractionControllerClientTest()
       : fake_user_manager_(
@@ -30,7 +31,7 @@ class VoiceInteractionControllerClientTest : public ash::AshTestBase {
   ~VoiceInteractionControllerClientTest() override = default;
 
   void SetUp() override {
-    AshTestBase::SetUp();
+    ChromeAshTestBase::SetUp();
 
     // Setup test profile.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -59,12 +60,12 @@ class VoiceInteractionControllerClientTest : public ash::AshTestBase {
   }
 
   void TearDown() override {
-    arc_session_manager_->Shutdown();
-    arc_session_manager_.reset();
     voice_interaction_controller_.reset();
     voice_interaction_controller_client_.reset();
     profile_.reset();
-    AshTestBase::TearDown();
+    arc_session_manager_->Shutdown();
+    arc_session_manager_.reset();
+    ChromeAshTestBase::TearDown();
   }
 
   FakeVoiceInteractionController* voice_interaction_controller() {
@@ -138,15 +139,17 @@ TEST_F(VoiceInteractionControllerClientTest, PrefChangeSendsNotification) {
       false,
       voice_interaction_controller()->voice_interaction_notification_enabled());
 
-  ASSERT_EQ(false,
-            prefs->GetBoolean(prefs::kArcVoiceInteractionValuePropAccepted));
-  prefs->SetBoolean(prefs::kArcVoiceInteractionValuePropAccepted, true);
-  ASSERT_EQ(true,
-            prefs->GetBoolean(prefs::kArcVoiceInteractionValuePropAccepted));
+  ASSERT_EQ(static_cast<int>(ash::mojom::ConsentStatus::kUnknown),
+            prefs->GetInteger(assistant::prefs::kAssistantConsentStatus));
+  prefs->SetInteger(
+      assistant::prefs::kAssistantConsentStatus,
+      static_cast<int>(ash::mojom::ConsentStatus::kActivityControlAccepted));
+  ASSERT_EQ(
+      static_cast<int>(ash::mojom::ConsentStatus::kActivityControlAccepted),
+      prefs->GetInteger(assistant::prefs::kAssistantConsentStatus));
   voice_interaction_controller_client()->FlushMojoForTesting();
-  EXPECT_EQ(
-      true,
-      voice_interaction_controller()->voice_interaction_setup_completed());
+  EXPECT_EQ(ash::mojom::ConsentStatus::kActivityControlAccepted,
+            voice_interaction_controller()->voice_interaction_consent_status());
 
   ASSERT_EQ("", prefs->GetString(language::prefs::kApplicationLocale));
   prefs->SetString(language::prefs::kApplicationLocale, "en-CA");

@@ -98,7 +98,7 @@ void DesktopDragDropClientWin::RemoveObserver(
 void DesktopDragDropClientWin::OnNativeWidgetDestroying(HWND window) {
   if (drop_target_.get()) {
     RevokeDragDrop(window);
-    drop_target_ = NULL;
+    drop_target_ = nullptr;
   }
 }
 

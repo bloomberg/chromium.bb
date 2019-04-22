@@ -195,22 +195,44 @@ class AutoEnrollmentController {
   // Sets |state_| and notifies |progress_callbacks_|.
   void UpdateState(policy::AutoEnrollmentState state);
 
+  // Clears everything that needs to be cleared at OOBE if
+  // the device gets the response that forced re-enrollment is not required.
+  // This currently removes firmware management parameters and sets
+  // block_devmode=0 and check_enrollment=0 in RW_VPD by making asynchronous
+  // calls to the respective D-Bus services.
+  // The notifications have to be sent only after the FWMP and VPD is cleared,
+  // because the user might try to switch to devmode. In this case, if
+  // block_devmode is in FWMP and the clear operation didn't finish, the switch
+  // would be denied. Also the safeguard timer has to be active until the FWMP
+  // is cleared to avoid the risk of blocked flow.
+  void StartCleanupForcedReEnrollment();
+
   // Makes a D-Bus call to cryptohome to remove the firmware management
   // parameters (FWMP) from TPM. Stops the |safeguard_timer_| and notifies the
-  // |progress_callbacks_| after update is done if the timer is still running.
-  // The notifications have to be sent only after the FWMP is cleared, because
-  // the user might try to switch to devmode. In this case, if block_devmode is
-  // in FWMP and the clear operation didn't finish, the switch would be denied.
-  // Also the safeguard timer has to be active until the FWMP is cleared to
-  // avoid the risk of blocked flow. |service_is_ready| indicates if cryptohome
-  // D-Bus service is ready.
+  // |progress_callbacks_| in case cryptohome does not become available and the
+  // timer is still running.
+  // |service_is_ready| indicates if the cryptohome D-Bus service is ready.
   void StartRemoveFirmwareManagementParameters(bool service_is_ready);
 
   // Callback for RemoveFirmwareManagementParameters(). If an error is received
   // here, it is logged only, without changing the flow after that, because
   // the FWMP is used only for newer devices.
+  // This also starts the VPD clearing process.
   void OnFirmwareManagementParametersRemoved(
       base::Optional<cryptohome::BaseReply> reply);
+
+  // Makes a D-Bus call to session_manager to set block_devmode=0 and
+  // check_enrollment=0 in RW_VPD. Stops the |safeguard_timer_| and notifies the
+  // |progress_callbacks_| in case session manager does not become available
+  // and the timer is still running.
+  // |service_is_ready| indicates if the session manager D-Bus service is ready.
+  void StartClearForcedReEnrollmentVpd(bool service_is_ready);
+
+  // Callback for ClearForcedReEnrollmentVpd(). If an error is received
+  // here, it is logged only, without changing the flow after that.
+  // This also notifies the |progress_callbacks_| since the forced re-enrollment
+  // cleanup is finished at this point.
+  void OnForcedReEnrollmentVpdCleared(bool reply);
 
   // Handles timeout of the safeguard timer and stops waiting for a result.
   void Timeout();

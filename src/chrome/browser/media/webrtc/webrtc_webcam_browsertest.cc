@@ -113,6 +113,6 @@ IN_PROC_BROWSER_TEST_P(WebRtcWebcamBrowserTest,
             GetUserMediaAndGetStreamSize(tab, kVideoCallConstraints1080p));
 }
 
-INSTANTIATE_TEST_CASE_P(WebRtcWebcamBrowserTests,
-                        WebRtcWebcamBrowserTest,
-                        testing::ValuesIn(kTargetVideoCaptureImplementations));
+INSTANTIATE_TEST_SUITE_P(WebRtcWebcamBrowserTests,
+                         WebRtcWebcamBrowserTest,
+                         testing::ValuesIn(kTargetVideoCaptureImplementations));

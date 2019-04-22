@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_text_end_effect.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_positioned_float.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
@@ -47,7 +48,12 @@ struct CORE_EXPORT NGInlineItemResult {
   scoped_refptr<const ShapeResultView> shape_result;
 
   // NGLayoutResult for atomic inline items.
-  scoped_refptr<NGLayoutResult> layout_result;
+  scoped_refptr<const NGLayoutResult> layout_result;
+
+  // NGPositionedFloat for floating inline items. Should only be present for
+  // positioned floats (not unpositioned). It indicates where it was placed
+  // within the BFC.
+  base::Optional<NGPositionedFloat> positioned_float;
 
   // Margins, borders, and padding for open tags.
   // Margins are set for atomic inlines too.
@@ -75,6 +81,11 @@ struct CORE_EXPORT NGInlineItemResult {
   // characters.
   bool has_only_trailing_spaces = false;
 
+  // The previous value of |break_anywhere_if_overflow| in the
+  // NGInlineItemResults list. Like |should_create_line_box|, this value is used
+  // to rewind properly.
+  bool break_anywhere_if_overflow = false;
+
   // We don't create "certain zero-height line boxes".
   // https://drafts.csswg.org/css2/visuren.html#phantom-line-box
   // Such line boxes do not prevent two margins being "adjoining", and thus
@@ -91,6 +102,11 @@ struct CORE_EXPORT NGInlineItemResult {
   // correctly determine that we don't need a line box.
   bool should_create_line_box = false;
 
+  // This field should be initialized and maintained like
+  // |should_create_line_box|. It indicates if there are (at the current
+  // position) any unpositioned floats.
+  bool has_unpositioned_floats = false;
+
   // End effects for text items.
   // The effects are included in |shape_result|, but not in text content.
   NGTextEndEffect text_end_effect = NGTextEndEffect::kNone;
@@ -100,10 +116,12 @@ struct CORE_EXPORT NGInlineItemResult {
                      unsigned index,
                      unsigned start,
                      unsigned end,
-                     bool should_create_line_box);
+                     bool break_anywhere_if_overflow,
+                     bool should_create_line_box,
+                     bool has_unpositioned_floats);
 
 #if DCHECK_IS_ON()
-  void CheckConsistency(bool during_line_break = false) const;
+  void CheckConsistency(bool allow_null_shape_result = false) const;
 #endif
 };
 
@@ -160,9 +178,26 @@ class CORE_EXPORT NGLineInfo {
 
   NGBfcOffset BfcOffset() const { return bfc_offset_; }
   LayoutUnit AvailableWidth() const { return available_width_; }
+
+  // The width of this line. Includes trailing spaces if they were preserved.
+  // Negative width created by negative 'text-indent' is clamped to zero.
   LayoutUnit Width() const { return width_.ClampNegativeToZero(); }
+  // Same as |Width()| but returns negative value as is.
   LayoutUnit WidthForAlignment() const { return width_; }
+  // The width of preserved trailing spaces.
+  LayoutUnit ComputeTrailingSpaceWidth(
+      unsigned* end_offset_out = nullptr) const;
+  // Compute |Width()| from |Results()|. Used during line breaking, before
+  // |Width()| is set. After line breaking, this should match to |Width()|
+  // without clamping.
   LayoutUnit ComputeWidth() const;
+
+  bool HasTrailingSpaces() const { return has_trailing_spaces_; }
+  void SetHasTrailingSpaces() { has_trailing_spaces_ = true; }
+
+  // True if this line has overflow, excluding preserved trailing spaces.
+  bool HasOverflow() const { return has_overflow_; }
+  void SetHasOverflow() { has_overflow_ = true; }
 
   void SetBfcOffset(const NGBfcOffset& bfc_offset) { bfc_offset_ = bfc_offset; }
   void SetWidth(LayoutUnit available_width, LayoutUnit width) {
@@ -173,6 +208,10 @@ class CORE_EXPORT NGLineInfo {
   // Start text offset of this line.
   unsigned StartOffset() const { return start_offset_; }
   void SetStartOffset(unsigned offset) { start_offset_ = offset; }
+  // End text offset of this line, excluding out-of-flow objects such as
+  // floating or positioned.
+  unsigned InflowEndOffset() const;
+  // End item index of this line.
   unsigned EndItemIndex() const { return end_item_index_; }
   void SetEndItemIndex(unsigned index) { end_item_index_ = index; }
 
@@ -182,6 +221,10 @@ class CORE_EXPORT NGLineInfo {
     base_direction_ = direction;
   }
 
+  // Whether an accurate end position is needed, typically for end, center, and
+  // justify alignment.
+  bool NeedsAccurateEndPosition() const { return needs_accurate_end_position_; }
+
   // Fragment to append to the line end. Used by 'text-overflow: ellipsis'.
   scoped_refptr<const NGPhysicalTextFragment>& LineEndFragment() {
     return line_end_fragment_;
@@ -189,6 +232,8 @@ class CORE_EXPORT NGLineInfo {
   void SetLineEndFragment(scoped_refptr<const NGPhysicalTextFragment>);
 
  private:
+  bool ComputeNeedsAccurateEndPosition() const;
+
   const NGInlineItemsData* items_data_ = nullptr;
   const ComputedStyle* line_style_ = nullptr;
   NGInlineItemResults results_;
@@ -208,6 +253,9 @@ class CORE_EXPORT NGLineInfo {
   bool use_first_line_style_ = false;
   bool is_last_line_ = false;
   bool is_empty_line_ = false;
+  bool has_overflow_ = false;
+  bool has_trailing_spaces_ = false;
+  bool needs_accurate_end_position_ = false;
 };
 
 }  // namespace blink

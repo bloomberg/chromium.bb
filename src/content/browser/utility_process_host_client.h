@@ -36,6 +36,6 @@ class UtilityProcessHostClient
   virtual ~UtilityProcessHostClient() {}
 };
 
-};  // namespace content
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_UTILITY_PROCESS_HOST_CLIENT_H_

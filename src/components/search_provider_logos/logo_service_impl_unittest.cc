@@ -35,17 +35,13 @@
 #include "components/search_provider_logos/fixed_logo_api.h"
 #include "components/search_provider_logos/google_logo_api.h"
 #include "components/search_provider_logos/logo_cache.h"
-#include "components/search_provider_logos/logo_tracker.h"
-#include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/fake_gaia_cookie_manager_service.h"
-#include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
-#include "components/signin/core/browser/test_signin_client.h"
-#include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "components/search_provider_logos/logo_observer.h"
 #include "net/base/url_util.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/identity/public/cpp/identity_test_environment.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -64,8 +60,8 @@ using ::testing::NiceMock;
 using ::testing::Not;
 using ::testing::NotNull;
 using ::testing::Pointee;
-using ::testing::StrictMock;
 using ::testing::Return;
+using ::testing::StrictMock;
 
 using sync_preferences::TestingPrefServiceSyncable;
 
@@ -266,14 +262,13 @@ class MockLogoCache : public LogoCache {
 
 class FakeImageDecoder : public image_fetcher::ImageDecoder {
  public:
-  void DecodeImage(
-      const std::string& image_data,
-      const gfx::Size& desired_image_frame_size,
-      const image_fetcher::ImageDecodedCallback& callback) override {
+  void DecodeImage(const std::string& image_data,
+                   const gfx::Size& desired_image_frame_size,
+                   image_fetcher::ImageDecodedCallback callback) override {
     gfx::Image image = gfx::Image::CreateFrom1xPNGBytes(
         reinterpret_cast<const uint8_t*>(image_data.data()), image_data.size());
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, image));
+        FROM_HERE, base::BindOnce(std::move(callback), image));
   }
 };
 
@@ -281,38 +276,25 @@ class FakeImageDecoder : public image_fetcher::ImageDecoder {
 // signing in/out.
 class SigninHelper {
  public:
-  explicit SigninHelper(base::test::ScopedTaskEnvironment* task_environment)
-      : task_environment_(task_environment),
-        signin_client_(&pref_service_),
-        token_service_(&pref_service_),
-        cookie_service_(&token_service_, &signin_client_) {
-    // GaiaCookieManagerService calls static methods of AccountTrackerService
-    // which access prefs.
-    AccountTrackerService::RegisterPrefs(pref_service_.registry());
+  explicit SigninHelper() : identity_test_env_(&test_url_loader_factory_) {}
+
+  identity::IdentityManager* identity_manager() {
+    return identity_test_env_.identity_manager();
   }
 
-  GaiaCookieManagerService* cookie_service() { return &cookie_service_; }
-
   void SignIn() {
-    cookie_service_.SetListAccountsResponseOneAccount("user@gmail.com",
-                                                      "gaia_id");
-    cookie_service_.TriggerListAccounts();
-    task_environment_->RunUntilIdle();
+    std::string email("user@gmail.com");
+    identity_test_env_.SetCookieAccounts(
+        {{email, identity::GetTestGaiaIdForEmail(email)}});
   }
 
   void SignOut() {
-    cookie_service_.SetListAccountsResponseNoAccounts();
-    cookie_service_.TriggerListAccounts();
-    task_environment_->RunUntilIdle();
+    identity_test_env_.SetCookieAccounts({});
   }
 
  private:
-  base::test::ScopedTaskEnvironment* task_environment_;
-
-  TestingPrefServiceSyncable pref_service_;
-  TestSigninClient signin_client_;
-  FakeProfileOAuth2TokenService token_service_;
-  FakeGaiaCookieManagerService cookie_service_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
+  identity::IdentityTestEnvironment identity_test_env_;
 };
 
 class LogoServiceImplTest : public ::testing::Test {
@@ -323,7 +305,6 @@ class LogoServiceImplTest : public ::testing::Test {
         shared_factory_(
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &test_url_loader_factory_)),
-        signin_helper_(&task_environment_),
         use_gray_background_(false) {
     test_url_loader_factory_.SetInterceptor(base::BindRepeating(
         &LogoServiceImplTest::CapturingInterceptor, base::Unretained(this)));
@@ -336,7 +317,7 @@ class LogoServiceImplTest : public ::testing::Test {
 
     test_clock_.SetNow(base::Time::FromJsTime(INT64_C(1388686828000)));
     logo_service_ = std::make_unique<LogoServiceImpl>(
-        base::FilePath(), signin_helper_.cookie_service(),
+        base::FilePath(), signin_helper_.identity_manager(),
         &template_url_service_, std::make_unique<FakeImageDecoder>(),
         shared_factory_,
         base::BindRepeating(&LogoServiceImplTest::use_gray_background,
@@ -346,10 +327,11 @@ class LogoServiceImplTest : public ::testing::Test {
   }
 
   void TearDown() override {
-    // |logo_service_|'s LogoTracker owns |logo_cache_|, which gets destroyed on
-    // a background sequence after the LogoTracker's destruction. Ensure that
+    // |logo_service_|'s owns |logo_cache_|, which gets destroyed on
+    // a background sequence after the LogoService's destruction. Ensure that
     // |logo_cache_| is actually destroyed before the test ends to make gmock
     // happy.
+    logo_service_->Shutdown();
     logo_service_.reset();
     task_environment_.RunUntilIdle();
   }
@@ -357,12 +339,12 @@ class LogoServiceImplTest : public ::testing::Test {
   // Returns the response that the server would send for the given logo.
   std::string ServerResponse(const Logo& logo);
 
-  // Sets the response to be returned when the LogoTracker fetches the logo.
+  // Sets the response to be returned when the LogoService fetches the logo.
   void SetServerResponse(const std::string& response,
                          int error_code = net::OK,
                          net::HttpStatusCode response_code = net::HTTP_OK);
 
-  // Sets the response to be returned when the LogoTracker fetches the logo and
+  // Sets the response to be returned when the LogoService fetches the logo and
   // provides the given fingerprint.
   void SetServerResponseWhenFingerprint(
       const std::string& fingerprint,

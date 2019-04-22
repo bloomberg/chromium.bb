@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/platform/web_callbacks.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -26,7 +27,8 @@ class WebImageCaptureFrameGrabber {
 
   virtual void GrabFrame(
       WebMediaStreamTrack*,
-      std::unique_ptr<WebImageCaptureGrabFrameCallbacks> callbacks) = 0;
+      std::unique_ptr<WebImageCaptureGrabFrameCallbacks> callbacks,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) = 0;
 };
 
 }  // namespace blink

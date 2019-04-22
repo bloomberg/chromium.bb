@@ -18,8 +18,6 @@ import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.tab.Tab;
 
-import java.util.concurrent.TimeUnit;
-
 /**
  * Exposes methods to report suggestions related events, for UMA or Fetch scheduling purposes.
  */
@@ -69,10 +67,6 @@ public abstract class SuggestionsMetrics {
 
     // Effect/Purpose of the interactions. Most are recorded in |content_suggestions_metrics.h|
 
-    public static void recordActionViewAll() {
-        RecordUserAction.record("Suggestions.Category.ViewAll");
-    }
-
     /**
      * Records metrics for the visit to the provided content suggestion, such as the time spent on
      * the website, or if the user comes back to the starting point.
@@ -108,8 +102,7 @@ public abstract class SuggestionsMetrics {
      */
     public static void recordArticleFaviconFetchTime(long fetchTime) {
         RecordHistogram.recordMediumTimesHistogram(
-                "NewTabPage.ContentSuggestions.ArticleFaviconFetchTime", fetchTime,
-                TimeUnit.MILLISECONDS);
+                "NewTabPage.ContentSuggestions.ArticleFaviconFetchTime", fetchTime);
     }
 
     /**
@@ -139,8 +132,7 @@ public abstract class SuggestionsMetrics {
     public static DurationTracker getSpinnerVisibilityReporter() {
         return new DurationTracker((duration) -> {
             RecordHistogram.recordTimesHistogram(
-                    "ContentSuggestions.FetchPendingSpinner.VisibleDuration", duration,
-                    TimeUnit.MILLISECONDS);
+                    "ContentSuggestions.Feed.FetchPendingSpinner.VisibleDuration", duration);
         });
     }
 
@@ -151,8 +143,7 @@ public abstract class SuggestionsMetrics {
      * @param duration Duration of date formatting.
      */
     static void recordDateFormattingDuration(long duration) {
-        RecordHistogram.recordTimesHistogram(
-                "Android.StrictMode.SnippetUIBuildTime", duration, TimeUnit.MILLISECONDS);
+        RecordHistogram.recordTimesHistogram("Android.StrictMode.SnippetUIBuildTime", duration);
     }
 
     /**

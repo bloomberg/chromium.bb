@@ -5,7 +5,7 @@
 <script src="resources/gamepad-helpers.js"></script>
 <script>
 
-promise_test(async () => {
+promise_test(async (t) => {
     assert_inherits(navigator, 'getGamepads');
     assert_own_property(window, 'GamepadEvent');
 
@@ -15,13 +15,14 @@ promise_test(async () => {
     assert_class_string(gamepads.item, 'Function', 'gamepads.item');
     assert_equals(gamepads.item(0), null, 'gamepads.item(0)');
 
+    let connectPromise = ongamepadconnected(t);
     gamepadController.connect(0);
     gamepadController.setId(0, "MockStick 3000");
     gamepadController.setButtonCount(0, 1);
     gamepadController.setAxisCount(0, 1);
     gamepadController.dispatchConnected(0);
+    await connectPromise;
 
-    await ongamepadconnected();
     let gamepad = navigator.getGamepads()[0];
     assert_not_equals(gamepad, null, 'gamepad');
     assert_true(gamepad.connected, 'gamepad.connected');

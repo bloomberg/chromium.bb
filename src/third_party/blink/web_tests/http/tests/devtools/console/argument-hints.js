@@ -82,6 +82,9 @@
   await testHints('(() => window)().URL["revokeObjectURL"](');
   await testHints('var notInAfunction');
   await testHints('some gibberish $@#)(*^@#');
+  await testHints('Date.parse(');
+  await testHints('JSON.parse(');
+  await testHints('CSSNumericValue.parse(');
   TestRunner.completeTest();
 
   /**

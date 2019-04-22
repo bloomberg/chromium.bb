@@ -15,7 +15,7 @@
 #include "chrome/browser/chromeos/login/demo_mode/demo_resources.h"
 #include "chrome/browser/component_updater/fake_cros_component_manager.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "chromeos/chromeos_paths.h"
+#include "chromeos/constants/chromeos_paths.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 
 namespace chromeos {
@@ -35,6 +35,7 @@ DemoModeTestHelper::DemoModeTestHelper()
       chromeos::DIR_PREINSTALLED_COMPONENTS, components_temp_dir_.GetPath());
 
   CHECK(base::CreateDirectory(GetDemoResourcesPath()));
+  CHECK(base::CreateDirectory(GetPreinstalledDemoResourcesPath()));
 }
 
 DemoModeTestHelper::~DemoModeTestHelper() {
@@ -72,6 +73,12 @@ base::FilePath DemoModeTestHelper::GetDemoResourcesPath() {
   return components_temp_dir_.GetPath()
       .AppendASCII("cros-components")
       .AppendASCII(DemoResources::kDemoModeResourcesComponentName);
+}
+
+base::FilePath DemoModeTestHelper::GetPreinstalledDemoResourcesPath() {
+  return components_temp_dir_.GetPath()
+      .AppendASCII("cros-components")
+      .AppendASCII(DemoResources::kOfflineDemoModeResourcesComponentName);
 }
 
 void DemoModeTestHelper::InitializeCrosComponentManager() {

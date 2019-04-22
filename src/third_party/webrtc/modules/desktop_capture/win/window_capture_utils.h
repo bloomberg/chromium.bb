@@ -13,7 +13,7 @@
 #include <wrl/client.h>
 
 #include "modules/desktop_capture/desktop_geometry.h"
-#include "rtc_base/constructormagic.h"
+#include "rtc_base/constructor_magic.h"
 
 namespace webrtc {
 
@@ -67,6 +67,10 @@ class WindowCaptureHelperWin {
 
   bool IsAeroEnabled();
   bool IsWindowChromeNotification(HWND hwnd);
+  bool IsWindowIntersectWithSelectedWindow(
+      HWND hwnd,
+      HWND selected_hwnd,
+      const DesktopRect& selected_window_rect);
   bool IsWindowOnCurrentDesktop(HWND hwnd);
   bool IsWindowVisibleOnCurrentDesktop(HWND hwnd);
 

@@ -18,7 +18,7 @@ class TestLocationIconDelegate : public LocationIconView::Delegate {
 
   content::WebContents* GetWebContents() override { return nullptr; }
 
-  bool IsEditingOrEmpty() override { return is_editing_or_empty_; }
+  bool IsEditingOrEmpty() const override { return is_editing_or_empty_; }
   void set_is_editing_or_empty(bool is_editing_or_empty) {
     is_editing_or_empty_ = is_editing_or_empty;
   }

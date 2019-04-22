@@ -139,7 +139,7 @@ void LayoutTableCell::ColSpanOrRowSpanChanged() {
 
 Length LayoutTableCell::LogicalWidthFromColumns(
     LayoutTableCol* first_col_for_this_cell,
-    Length width_from_style) const {
+    const Length& width_from_style) const {
   DCHECK(first_col_for_this_cell);
   DCHECK_EQ(first_col_for_this_cell,
             Table()
@@ -150,7 +150,7 @@ Length LayoutTableCell::LogicalWidthFromColumns(
   unsigned col_span_count = ColSpan();
   int col_width_sum = 0;
   for (unsigned i = 1; i <= col_span_count; i++) {
-    Length col_width = table_col->StyleRef().LogicalWidth();
+    const Length& col_width = table_col->StyleRef().LogicalWidth();
 
     // Percentage value should be returned only for colSpan == 1.
     // Otherwise we return original width for the cell.
@@ -171,11 +171,11 @@ Length LayoutTableCell::LogicalWidthFromColumns(
   // Column widths specified on <col> apply to the border box of the cell, see
   // bug 8126.
   // FIXME: Why is border/padding ignored in the negative width case?
-  if (col_width_sum > 0)
-    return Length(
-        std::max(0, col_width_sum - BorderAndPaddingLogicalWidth().Ceil()),
-        kFixed);
-  return Length(col_width_sum, kFixed);
+  if (col_width_sum > 0) {
+    return Length::Fixed(
+        std::max(0, col_width_sum - BorderAndPaddingLogicalWidth().Ceil()));
+  }
+  return Length::Fixed(col_width_sum);
 }
 
 void LayoutTableCell::ComputePreferredLogicalWidths() {
@@ -212,24 +212,6 @@ void LayoutTableCell::ComputePreferredLogicalWidths() {
           std::max(LayoutUnit(w.Value()), min_preferred_logical_width_);
     }
   }
-}
-
-void LayoutTableCell::AddLayerHitTestRects(
-    LayerHitTestRects& layer_rects,
-    const PaintLayer* current_layer,
-    const LayoutPoint& layer_offset,
-    TouchAction supported_fast_actions,
-    const LayoutRect& container_rect,
-    TouchAction container_whitelisted_touch_action) const {
-  LayoutPoint adjusted_layer_offset = layer_offset;
-  // LayoutTableCell's location includes the offset of it's containing
-  // LayoutTableRow, so we need to subtract that again here (as for
-  // LayoutTableCell::offsetFromContainer.
-  if (Parent())
-    adjusted_layer_offset -= ParentBox()->LocationOffset();
-  LayoutBox::AddLayerHitTestRects(
-      layer_rects, current_layer, adjusted_layer_offset, supported_fast_actions,
-      container_rect, container_whitelisted_touch_action);
 }
 
 void LayoutTableCell::ComputeIntrinsicPadding(int collapsed_height,
@@ -383,10 +365,8 @@ void LayoutTableCell::SetIsSpanningCollapsedColumn(
 }
 
 void LayoutTableCell::ComputeVisualOverflow(
-    const LayoutRect& previous_visual_overflow_rect,
     bool recompute_floats) {
-  LayoutBlockFlow::ComputeVisualOverflow(previous_visual_overflow_rect,
-                                         recompute_floats);
+  LayoutBlockFlow::ComputeVisualOverflow(recompute_floats);
 
   UpdateCollapsedBorderValues();
   if (!collapsed_border_values_)
@@ -460,6 +440,9 @@ void LayoutTableCell::StyleDidChange(StyleDifference diff,
   LayoutBlockFlow::StyleDidChange(diff, old_style);
   SetHasBoxDecorationBackground(true);
 
+  if (Row() && Section() && Table() && Table()->ShouldCollapseBorders())
+    SetHasNonCollapsedBorderDecoration(false);
+
   if (!old_style)
     return;
 
@@ -491,14 +474,14 @@ void LayoutTableCell::StyleDidChange(StyleDifference diff,
   if (LayoutTableBoxComponent::DoCellsHaveDirtyWidth(*this, *table, diff,
                                                      *old_style)) {
     if (PreviousCell()) {
-      // TODO(dgrogan) Add a layout test showing that setChildNeedsLayout is
-      // needed instead of setNeedsLayout.
+      // TODO(dgrogan) Add a web test showing that SetChildNeedsLayout is
+      // needed instead of SetNeedsLayout.
       PreviousCell()->SetChildNeedsLayout();
       PreviousCell()->SetPreferredLogicalWidthsDirty(kMarkOnlyThis);
     }
     if (NextCell()) {
-      // TODO(dgrogan) Add a layout test showing that setChildNeedsLayout is
-      // needed instead of setNeedsLayout.
+      // TODO(dgrogan) Add a web test showing that SetChildNeedsLayout is
+      // needed instead of SetNeedsLayout.
       NextCell()->SetChildNeedsLayout();
       NextCell()->SetPreferredLogicalWidthsDirty(kMarkOnlyThis);
     }
@@ -1163,9 +1146,10 @@ void LayoutTableCell::ScrollbarsChanged(bool horizontal_scrollbar_changed,
 
 LayoutTableCell* LayoutTableCell::CreateAnonymous(
     Document* document,
-    scoped_refptr<ComputedStyle> style) {
+    scoped_refptr<ComputedStyle> style,
+    LegacyLayout legacy) {
   LayoutTableCell* layout_object =
-      LayoutObjectFactory::CreateTableCell(*document, *style);
+      LayoutObjectFactory::CreateTableCell(*document, *style, legacy);
   layout_object->SetDocumentForAnonymous(document);
   layout_object->SetStyle(std::move(style));
   return layout_object;
@@ -1176,8 +1160,10 @@ LayoutTableCell* LayoutTableCell::CreateAnonymousWithParent(
   scoped_refptr<ComputedStyle> new_style =
       ComputedStyle::CreateAnonymousStyleWithDisplay(parent->StyleRef(),
                                                      EDisplay::kTableCell);
+  LegacyLayout legacy =
+      parent->ForceLegacyLayout() ? LegacyLayout::kForce : LegacyLayout::kAuto;
   LayoutTableCell* new_cell = LayoutTableCell::CreateAnonymous(
-      &parent->GetDocument(), std::move(new_style));
+      &parent->GetDocument(), std::move(new_style), legacy);
   return new_cell;
 }
 

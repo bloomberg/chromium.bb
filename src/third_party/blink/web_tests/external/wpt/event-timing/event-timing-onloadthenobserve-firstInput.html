@@ -2,7 +2,8 @@
 <html>
 <meta charset=utf-8 />
 <title>Event Timing: buffer long-latency events before onload</title>
-<button id='button' onclick='1'>Generate a 'click' event</button>
+<meta name="timeout" content="long">
+<button id='button'>Generate a 'click' event</button>
 <script src=/resources/testharness.js></script>
 <script src=/resources/testharnessreport.js></script>
 <script src=/resources/testdriver.js></script>
@@ -23,7 +24,8 @@
     let numFirstInputObserved = 0;
     let numEventsObserved = 0;
     new PerformanceObserver(t.step_func((entryList, obs) => {
-        const observedEntries = entryList.getEntries();
+        const observedEntries = entryList.getEntries().filter(
+            entry => entry.name === 'mousedown');
         numEventsObserved += observedEntries.filter(entry =>
             entry.entryType == 'event').length;
         numFirstInputObserved += observedEntries.filter(entry =>
@@ -31,8 +33,8 @@
         if (numEventsObserved >= 2) {
           assert_equals(performance.getEntriesByType('event').length, 0,
             "There should be no buffered event entries.");
-          assert_equals(performance.getEntriesByType('firstInput').length, 0,
-            "There should be no buffered firstInput entries.");
+          assert_equals(performance.getEntriesByType('firstInput').length, 1,
+            "There should be a buffered firstInput entry.");
           // There should be 2 event entries and one firstInput entry.
           assert_equals(numEventsObserved, 2,
             "There should be 2 observed event entries.");
@@ -42,8 +44,8 @@
         }
     })).observe({ entryTypes: ['event', 'firstInput'] });
     on_event(window, 'load', () => {
-      clickAndBlockMain('button').then(wait).then(() => {
-        clickAndBlockMain('button').then(wait);
+      clickAndBlockMain('button').then(() => {
+        clickAndBlockMain('button');
       });
     });
   },

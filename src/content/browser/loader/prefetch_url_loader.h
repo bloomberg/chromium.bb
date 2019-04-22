@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_LOADER_PREFETCH_URL_LOADER_H_
 
 #include <memory>
+#include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -15,6 +16,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/data_pipe_drainer.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "url/gurl.h"
 
@@ -60,16 +62,15 @@ class CONTENT_EXPORT PrefetchURLLoader : public network::mojom::URLLoader,
       ResourceContext* resource_context,
       scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       scoped_refptr<SignedExchangePrefetchMetricRecorder>
-          signed_exchange_prefetch_metric_recorder);
+          signed_exchange_prefetch_metric_recorder,
+      const std::string& accept_langs);
   ~PrefetchURLLoader() override;
 
  private:
   // network::mojom::URLLoader overrides:
-  void FollowRedirect(
-      const base::Optional<std::vector<std::string>>&
-          to_be_removed_request_headers,
-      const base::Optional<net::HttpRequestHeaders>& modified_request_headers,
-      const base::Optional<GURL>& new_url) override;
+  void FollowRedirect(const std::vector<std::string>& removed_headers,
+                      const net::HttpRequestHeaders& modified_headers,
+                      const base::Optional<GURL>& new_url) override;
   void ProceedWithResponse() override;
   void SetPriority(net::RequestPriority priority,
                    int intra_priority_value) override;
@@ -97,10 +98,9 @@ class CONTENT_EXPORT PrefetchURLLoader : public network::mojom::URLLoader,
   void OnNetworkConnectionError();
 
   const base::RepeatingCallback<int(void)> frame_tree_node_id_getter_;
-  const GURL url_;
-  const bool report_raw_headers_;
-  const int load_flags_;
-  const base::Optional<base::UnguessableToken> throttling_profile_id_;
+
+  // Set in the constructor and updated when redirected.
+  network::ResourceRequest resource_request_;
 
   scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory_;
 
@@ -110,8 +110,6 @@ class CONTENT_EXPORT PrefetchURLLoader : public network::mojom::URLLoader,
 
   // To be a URLLoader for the client.
   network::mojom::URLLoaderClientPtr forwarding_client_;
-
-  url::Origin request_initiator_;
 
   // |url_loader_throttles_getter_| and |resource_context_| should be
   // valid as far as |request_context_getter_| returns non-null value.
@@ -124,10 +122,9 @@ class CONTENT_EXPORT PrefetchURLLoader : public network::mojom::URLLoader,
   std::unique_ptr<SignedExchangePrefetchHandler>
       signed_exchange_prefetch_handler_;
 
-  GURL new_url_for_redirect_;
-
   scoped_refptr<SignedExchangePrefetchMetricRecorder>
       signed_exchange_prefetch_metric_recorder_;
+  const std::string accept_langs_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefetchURLLoader);
 };

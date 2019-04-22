@@ -6,19 +6,26 @@
 
 #include "src/handles-inl.h"
 #include "src/objects-inl.h"
+#include "src/objects/allocation-site-inl.h"
+#include "src/zone/zone-handle-set.h"
 
 namespace v8 {
 namespace internal {
 namespace compiler {
 
-CompilationDependencies::CompilationDependencies(Isolate* isolate, Zone* zone)
-    : zone_(zone), dependencies_(zone) {}
+CompilationDependencies::CompilationDependencies(JSHeapBroker* broker,
+                                                 Zone* zone)
+    : zone_(zone), broker_(broker), dependencies_(zone) {}
 
 class CompilationDependencies::Dependency : public ZoneObject {
  public:
   virtual bool IsValid() const = 0;
   virtual void PrepareInstall() {}
   virtual void Install(const MaybeObjectHandle& code) = 0;
+
+#ifdef DEBUG
+  virtual bool IsPretenureModeDependency() const { return false; }
+#endif
 };
 
 class InitialMapDependency final : public CompilationDependencies::Dependency {
@@ -130,13 +137,14 @@ class PretenureModeDependency final
  public:
   // TODO(neis): Once the concurrent compiler frontend is always-on, we no
   // longer need to explicitly store the mode.
-  PretenureModeDependency(const AllocationSiteRef& site, PretenureFlag mode)
-      : site_(site), mode_(mode) {
-    DCHECK_EQ(mode_, site_.GetPretenureMode());
+  PretenureModeDependency(const AllocationSiteRef& site,
+                          AllocationType allocation)
+      : site_(site), allocation_(allocation) {
+    DCHECK_EQ(allocation, site_.GetAllocationType());
   }
 
   bool IsValid() const override {
-    return mode_ == site_.object()->GetPretenureMode();
+    return allocation_ == site_.object()->GetAllocationType();
   }
 
   void Install(const MaybeObjectHandle& code) override {
@@ -146,9 +154,48 @@ class PretenureModeDependency final
         DependentCode::kAllocationSiteTenuringChangedGroup);
   }
 
+#ifdef DEBUG
+  bool IsPretenureModeDependency() const override { return true; }
+#endif
+
  private:
   AllocationSiteRef site_;
-  PretenureFlag mode_;
+  AllocationType allocation_;
+};
+
+class FieldRepresentationDependency final
+    : public CompilationDependencies::Dependency {
+ public:
+  // TODO(neis): Once the concurrent compiler frontend is always-on, we no
+  // longer need to explicitly store the representation.
+  FieldRepresentationDependency(const MapRef& owner, int descriptor,
+                                Representation representation)
+      : owner_(owner),
+        descriptor_(descriptor),
+        representation_(representation) {
+    DCHECK(owner_.equals(owner_.FindFieldOwner(descriptor_)));
+    DCHECK(representation_.Equals(
+        owner_.GetPropertyDetails(descriptor_).representation()));
+  }
+
+  bool IsValid() const override {
+    DisallowHeapAllocation no_heap_allocation;
+    Handle<Map> owner = owner_.object();
+    return representation_.Equals(owner->instance_descriptors()
+                                      ->GetDetails(descriptor_)
+                                      .representation());
+  }
+
+  void Install(const MaybeObjectHandle& code) override {
+    SLOW_DCHECK(IsValid());
+    DependentCode::InstallDependency(owner_.isolate(), code, owner_.object(),
+                                     DependentCode::kFieldOwnerGroup);
+  }
+
+ private:
+  MapRef owner_;
+  int descriptor_;
+  Representation representation_;
 };
 
 class FieldTypeDependency final : public CompilationDependencies::Dependency {
@@ -156,24 +203,17 @@ class FieldTypeDependency final : public CompilationDependencies::Dependency {
   // TODO(neis): Once the concurrent compiler frontend is always-on, we no
   // longer need to explicitly store the type.
   FieldTypeDependency(const MapRef& owner, int descriptor,
-                      const ObjectRef& type, PropertyConstness constness)
-      : owner_(owner),
-        descriptor_(descriptor),
-        type_(type),
-        constness_(constness) {
+                      const ObjectRef& type)
+      : owner_(owner), descriptor_(descriptor), type_(type) {
     DCHECK(owner_.equals(owner_.FindFieldOwner(descriptor_)));
     DCHECK(type_.equals(owner_.GetFieldType(descriptor_)));
-    DCHECK_EQ(constness_, owner_.GetPropertyDetails(descriptor_).constness());
   }
 
   bool IsValid() const override {
     DisallowHeapAllocation no_heap_allocation;
     Handle<Map> owner = owner_.object();
     Handle<Object> type = type_.object();
-    return *type == owner->instance_descriptors()->GetFieldType(descriptor_) &&
-           constness_ == owner->instance_descriptors()
-                             ->GetDetails(descriptor_)
-                             .constness();
+    return *type == owner->instance_descriptors()->GetFieldType(descriptor_);
   }
 
   void Install(const MaybeObjectHandle& code) override {
@@ -186,7 +226,34 @@ class FieldTypeDependency final : public CompilationDependencies::Dependency {
   MapRef owner_;
   int descriptor_;
   ObjectRef type_;
-  PropertyConstness constness_;
+};
+
+class FieldConstnessDependency final
+    : public CompilationDependencies::Dependency {
+ public:
+  FieldConstnessDependency(const MapRef& owner, int descriptor)
+      : owner_(owner), descriptor_(descriptor) {
+    DCHECK(owner_.equals(owner_.FindFieldOwner(descriptor_)));
+    DCHECK_EQ(PropertyConstness::kConst,
+              owner_.GetPropertyDetails(descriptor_).constness());
+  }
+
+  bool IsValid() const override {
+    DisallowHeapAllocation no_heap_allocation;
+    Handle<Map> owner = owner_.object();
+    return PropertyConstness::kConst ==
+           owner->instance_descriptors()->GetDetails(descriptor_).constness();
+  }
+
+  void Install(const MaybeObjectHandle& code) override {
+    SLOW_DCHECK(IsValid());
+    DependentCode::InstallDependency(owner_.isolate(), code, owner_.object(),
+                                     DependentCode::kFieldOwnerGroup);
+  }
+
+ private:
+  MapRef owner_;
+  int descriptor_;
 };
 
 class GlobalPropertyDependency final
@@ -346,22 +413,55 @@ void CompilationDependencies::DependOnTransition(const MapRef& target_map) {
   }
 }
 
-PretenureFlag CompilationDependencies::DependOnPretenureMode(
+AllocationType CompilationDependencies::DependOnPretenureMode(
     const AllocationSiteRef& site) {
-  PretenureFlag mode = site.GetPretenureMode();
-  dependencies_.push_front(new (zone_) PretenureModeDependency(site, mode));
-  return mode;
+  AllocationType allocation = site.GetAllocationType();
+  dependencies_.push_front(new (zone_)
+                               PretenureModeDependency(site, allocation));
+  return allocation;
+}
+
+PropertyConstness CompilationDependencies::DependOnFieldConstness(
+    const MapRef& map, int descriptor) {
+  MapRef owner = map.FindFieldOwner(descriptor);
+  PropertyConstness constness =
+      owner.GetPropertyDetails(descriptor).constness();
+  if (constness == PropertyConstness::kMutable) return constness;
+
+  // If the map can have fast elements transitions, then the field can be only
+  // considered constant if the map does not transition.
+  if (Map::CanHaveFastTransitionableElementsKind(map.instance_type())) {
+    // If the map can already transition away, let us report the field as
+    // mutable.
+    if (!map.is_stable()) {
+      return PropertyConstness::kMutable;
+    }
+    DependOnStableMap(map);
+  }
+
+  DCHECK_EQ(constness, PropertyConstness::kConst);
+  dependencies_.push_front(new (zone_)
+                               FieldConstnessDependency(owner, descriptor));
+  return PropertyConstness::kConst;
+}
+
+void CompilationDependencies::DependOnFieldRepresentation(const MapRef& map,
+                                                          int descriptor) {
+  MapRef owner = map.FindFieldOwner(descriptor);
+  PropertyDetails details = owner.GetPropertyDetails(descriptor);
+  DCHECK(details.representation().Equals(
+      map.GetPropertyDetails(descriptor).representation()));
+  dependencies_.push_front(new (zone_) FieldRepresentationDependency(
+      owner, descriptor, details.representation()));
 }
 
 void CompilationDependencies::DependOnFieldType(const MapRef& map,
                                                 int descriptor) {
   MapRef owner = map.FindFieldOwner(descriptor);
   ObjectRef type = owner.GetFieldType(descriptor);
-  PropertyConstness constness =
-      owner.GetPropertyDetails(descriptor).constness();
   DCHECK(type.equals(map.GetFieldType(descriptor)));
-  dependencies_.push_front(
-      new (zone_) FieldTypeDependency(owner, descriptor, type, constness));
+  dependencies_.push_front(new (zone_)
+                               FieldTypeDependency(owner, descriptor, type));
 }
 
 void CompilationDependencies::DependOnGlobalProperty(
@@ -372,8 +472,46 @@ void CompilationDependencies::DependOnGlobalProperty(
                                GlobalPropertyDependency(cell, type, read_only));
 }
 
-void CompilationDependencies::DependOnProtector(const PropertyCellRef& cell) {
+bool CompilationDependencies::DependOnProtector(const PropertyCellRef& cell) {
+  if (cell.value().AsSmi() != Isolate::kProtectorValid) return false;
   dependencies_.push_front(new (zone_) ProtectorDependency(cell));
+  return true;
+}
+
+bool CompilationDependencies::DependOnArrayBufferDetachingProtector() {
+  return DependOnProtector(PropertyCellRef(
+      broker_,
+      broker_->isolate()->factory()->array_buffer_detaching_protector()));
+}
+
+bool CompilationDependencies::DependOnArrayIteratorProtector() {
+  return DependOnProtector(PropertyCellRef(
+      broker_, broker_->isolate()->factory()->array_iterator_protector()));
+}
+
+bool CompilationDependencies::DependOnArraySpeciesProtector() {
+  return DependOnProtector(PropertyCellRef(
+      broker_, broker_->isolate()->factory()->array_species_protector()));
+}
+
+bool CompilationDependencies::DependOnNoElementsProtector() {
+  return DependOnProtector(PropertyCellRef(
+      broker_, broker_->isolate()->factory()->no_elements_protector()));
+}
+
+bool CompilationDependencies::DependOnPromiseHookProtector() {
+  return DependOnProtector(PropertyCellRef(
+      broker_, broker_->isolate()->factory()->promise_hook_protector()));
+}
+
+bool CompilationDependencies::DependOnPromiseSpeciesProtector() {
+  return DependOnProtector(PropertyCellRef(
+      broker_, broker_->isolate()->factory()->promise_species_protector()));
+}
+
+bool CompilationDependencies::DependOnPromiseThenProtector() {
+  return DependOnProtector(PropertyCellRef(
+      broker_, broker_->isolate()->factory()->promise_then_protector()));
 }
 
 void CompilationDependencies::DependOnElementsKind(
@@ -416,7 +554,22 @@ bool CompilationDependencies::Commit(Handle<Code> code) {
     }
     dep->Install(MaybeObjectHandle::Weak(code));
   }
-  SLOW_DCHECK(AreValid());
+
+  // It is even possible that a GC during the above installations invalidated
+  // one of the dependencies. However, this should only affect pretenure mode
+  // dependencies, which we assert below. It is safe to return successfully in
+  // these cases, because once the code gets executed it will do a stack check
+  // that triggers its deoptimization.
+  if (FLAG_stress_gc_during_compilation) {
+    broker_->isolate()->heap()->PreciseCollectAllGarbage(
+        Heap::kNoGCFlags, GarbageCollectionReason::kTesting,
+        kGCCallbackFlagForced);
+  }
+#ifdef DEBUG
+  for (auto dep : dependencies_) {
+    CHECK_IMPLIES(!dep->IsValid(), dep->IsPretenureModeDependency());
+  }
+#endif
 
   dependencies_.clear();
   return true;
@@ -424,35 +577,46 @@ bool CompilationDependencies::Commit(Handle<Code> code) {
 
 namespace {
 // This function expects to never see a JSProxy.
-void DependOnStablePrototypeChain(JSHeapBroker* broker,
-                                  CompilationDependencies* deps, MapRef map,
-                                  const JSObjectRef& last_prototype) {
+void DependOnStablePrototypeChain(CompilationDependencies* deps, MapRef map,
+                                  base::Optional<JSObjectRef> last_prototype) {
   while (true) {
     map.SerializePrototype();
-    JSObjectRef proto = map.prototype().AsJSObject();
+    HeapObjectRef proto = map.prototype();
+    if (!proto.IsJSObject()) {
+      CHECK_EQ(proto.map().oddball_type(), OddballType::kNull);
+      break;
+    }
     map = proto.map();
     deps->DependOnStableMap(map);
-    if (proto.equals(last_prototype)) break;
+    if (last_prototype.has_value() && proto.equals(*last_prototype)) break;
   }
 }
 }  // namespace
 
+template <class MapContainer>
 void CompilationDependencies::DependOnStablePrototypeChains(
-    JSHeapBroker* broker, std::vector<Handle<Map>> const& receiver_maps,
-    const JSObjectRef& holder) {
+    MapContainer const& receiver_maps, WhereToStart start,
+    base::Optional<JSObjectRef> last_prototype) {
   // Determine actual holder and perform prototype chain checks.
   for (auto map : receiver_maps) {
-    MapRef receiver_map(broker, map);
+    MapRef receiver_map(broker_, map);
     if (receiver_map.IsPrimitiveMap()) {
       // Perform the implicit ToObject for primitives here.
       // Implemented according to ES6 section 7.3.2 GetV (V, P).
       base::Optional<JSFunctionRef> constructor =
-          broker->native_context().GetConstructorFunction(receiver_map);
+          broker_->native_context().GetConstructorFunction(receiver_map);
       if (constructor.has_value()) receiver_map = constructor->initial_map();
     }
-    DependOnStablePrototypeChain(broker, this, receiver_map, holder);
+    if (start == kStartAtReceiver) DependOnStableMap(receiver_map);
+    DependOnStablePrototypeChain(this, receiver_map, last_prototype);
   }
 }
+template void CompilationDependencies::DependOnStablePrototypeChains(
+    MapHandles const& receiver_maps, WhereToStart start,
+    base::Optional<JSObjectRef> last_prototype);
+template void CompilationDependencies::DependOnStablePrototypeChains(
+    ZoneHandleSet<Map> const& receiver_maps, WhereToStart start,
+    base::Optional<JSObjectRef> last_prototype);
 
 void CompilationDependencies::DependOnElementsKinds(
     const AllocationSiteRef& site) {
@@ -469,7 +633,7 @@ SlackTrackingPrediction::SlackTrackingPrediction(MapRef initial_map,
                                                  int instance_size)
     : instance_size_(instance_size),
       inobject_property_count_(
-          (instance_size >> kPointerSizeLog2) -
+          (instance_size >> kTaggedSizeLog2) -
           initial_map.GetInObjectPropertiesStartInWords()) {}
 
 SlackTrackingPrediction

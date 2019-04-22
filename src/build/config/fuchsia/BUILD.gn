@@ -10,7 +10,7 @@ assert(is_fuchsia)
 assert(!is_posix)
 
 config("compiler") {
-  sdk_version_file = rebase_path("${fuchsia_sdk}/.hash")
+  sdk_version_file = "${fuchsia_sdk}/.hash"
   sdk_version = read_file(sdk_version_file, "trim string")
   defines = [
     # To force full builds after SDK updates in case of ABI changes.
@@ -47,7 +47,7 @@ config("compiler") {
   ]
 
   # Add SDK lib dir for -lfdio above.
-  lib_dirs = [ rebase_path("${fuchsia_sdk}/arch/${current_cpu}/lib") ]
+  lib_dirs = [ "${fuchsia_sdk}/arch/${current_cpu}/lib" ]
 
   # TODO(crbug.com/821951): Clang enables SafeStack by default when targeting
   # Fuchsia, but it breaks some tests, notably in V8.
@@ -77,9 +77,9 @@ action("blobstore_extended_fvm") {
   ]
 
   args = [
-    rebase_path("${fuchsia_sdk}/tools/fvm"),
-    rebase_path("${_target_dir}/fvm.blk"),
-    rebase_path(blobstore_extended_path),
+    rebase_path("${fuchsia_sdk}/tools/fvm", root_build_dir),
+    rebase_path("${_target_dir}/fvm.blk", root_build_dir),
+    rebase_path(blobstore_extended_path, root_build_dir),
     _extend_size,
   ]
 }
@@ -117,8 +117,8 @@ action("blobstore_extended_qcow2") {
     "-O",
     "qcow2",
     "-c",
-    rebase_path(blobstore_extended_path),
-    rebase_path(blobstore_qcow_path),
+    rebase_path(blobstore_extended_path, root_build_dir),
+    rebase_path(blobstore_qcow_path, root_build_dir),
   ]
 }
 

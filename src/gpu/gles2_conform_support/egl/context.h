@@ -80,7 +80,7 @@ class Context : public base::RefCountedThreadSafe<Context>,
   bool IsFenceSyncReleased(uint64_t release) override;
   void SignalSyncToken(const gpu::SyncToken& sync_token,
                        base::OnceClosure callback) override;
-  void WaitSyncTokenHint(const gpu::SyncToken& sync_token) override;
+  void WaitSyncToken(const gpu::SyncToken& sync_token) override;
   bool CanWaitUnverifiedSyncToken(const gpu::SyncToken& sync_token) override;
 
   // Called by ThreadState to set the needed global variables when this context
@@ -111,7 +111,6 @@ class Context : public base::RefCountedThreadSafe<Context>,
   bool is_current_in_some_thread_;
   bool is_destroyed_;
   const gpu::GpuDriverBugWorkarounds gpu_driver_bug_workarounds_;
-  std::unique_ptr<gpu::TransferBufferManager> transfer_buffer_manager_;
   std::unique_ptr<gpu::CommandBufferDirect> command_buffer_;
   std::unique_ptr<gpu::gles2::GLES2CmdHelper> gles2_cmd_helper_;
 

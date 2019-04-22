@@ -385,9 +385,8 @@ void MojoAsyncResourceHandler::OnReadCompleted(
 }
 
 void MojoAsyncResourceHandler::FollowRedirect(
-    const base::Optional<std::vector<std::string>>&
-        to_be_removed_request_headers,
-    const base::Optional<net::HttpRequestHeaders>& modified_request_headers,
+    const std::vector<std::string>& removed_headers,
+    const net::HttpRequestHeaders& modified_headers,
     const base::Optional<GURL>& new_url) {
   if (new_url) {
     ReportBadMessage(
@@ -410,7 +409,7 @@ void MojoAsyncResourceHandler::FollowRedirect(
   DCHECK(!did_defer_on_writing_);
   did_defer_on_redirect_ = false;
   request()->LogUnblocked();
-  ResumeForRedirect(modified_request_headers);
+  ResumeForRedirect(removed_headers, modified_headers);
 }
 
 void MojoAsyncResourceHandler::ProceedWithResponse() {

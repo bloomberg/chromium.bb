@@ -300,6 +300,9 @@ class EVENTS_EXPORT Event {
   void SetHandled();
   bool handled() const { return result_ != ER_UNHANDLED; }
 
+  // For debugging. Not a stable serialization format.
+  virtual std::string ToString() const;
+
  protected:
   Event(EventType type, base::TimeTicks time_stamp, int flags);
   Event(const PlatformEvent& native_event, EventType type, int flags);
@@ -378,7 +381,8 @@ class EVENTS_EXPORT LocatedEvent : public Event {
       const gfx::Transform& inverted_root_transform,
       const gfx::Transform& inverted_local_transform);
 
-  template <class T> void ConvertLocationToTarget(T* source, T* target) {
+  template <class T>
+  void ConvertLocationToTarget(const T* source, const T* target) {
     if (!target || target == source)
       return;
     gfx::Point offset = gfx::ToFlooredPoint(location_);
@@ -386,6 +390,9 @@ class EVENTS_EXPORT LocatedEvent : public Event {
     gfx::Vector2d diff = gfx::ToFlooredPoint(location_) - offset;
     location_ = location_ - diff;
   }
+
+  // Event:
+  std::string ToString() const override;
 
  protected:
   friend class LocatedEventTestApi;
@@ -414,13 +421,15 @@ class EVENTS_EXPORT LocatedEvent : public Event {
 
   // Location of the event relative to the target window and in the target
   // window's coordinate space. If there is no target this is the same as
-  // |root_location_|.
+  // |root_location_|. Native events may generate float values with sub-pixel
+  // precision.
   gfx::PointF location_;
 
   // Location of the event. What coordinate system this is in depends upon the
-  // phase of event dispatch. For client code (meaning EventHanalders) it is
+  // phase of event dispatch. For client code (meaning EventHandlers) it is
   // generally in screen coordinates, but early on it may be in pixels and
-  // relative to a display.
+  // relative to a display. Native events may generate float values with
+  // sub-pixel precision.
   gfx::PointF root_location_;
 };
 
@@ -531,6 +540,17 @@ class EVENTS_EXPORT MouseEvent : public LocatedEvent {
   }
 
   // Note: Use the ctor for MouseWheelEvent if type is ET_MOUSEWHEEL.
+  MouseEvent(EventType type,
+             const gfx::PointF& location,
+             const gfx::PointF& root_location,
+             base::TimeTicks time_stamp,
+             int flags,
+             int changed_button_flags,
+             const PointerDetails& pointer_details =
+                 PointerDetails(EventPointerType::POINTER_TYPE_MOUSE,
+                                kMousePointerId));
+
+  // DEPRECATED: Prefer constructor that takes gfx::PointF.
   MouseEvent(EventType type,
              const gfx::Point& location,
              const gfx::Point& root_location,
@@ -648,6 +668,14 @@ class EVENTS_EXPORT MouseWheelEvent : public MouseEvent {
 
   // Used for synthetic events in testing and by the gesture recognizer.
   MouseWheelEvent(const gfx::Vector2d& offset,
+                  const gfx::PointF& location,
+                  const gfx::PointF& root_location,
+                  base::TimeTicks time_stamp,
+                  int flags,
+                  int changed_button_flags);
+
+  // DEPRECATED: Prefer the constructor that takes gfx::PointF.
+  MouseWheelEvent(const gfx::Vector2d& offset,
                   const gfx::Point& location,
                   const gfx::Point& root_location,
                   base::TimeTicks time_stamp,
@@ -683,6 +711,14 @@ class EVENTS_EXPORT TouchEvent : public LocatedEvent {
         hovering_(false),
         pointer_details_(model.pointer_details_) {}
 
+  TouchEvent(EventType type,
+             const gfx::PointF& location,
+             const gfx::PointF& root_location,
+             base::TimeTicks time_stamp,
+             const PointerDetails& pointer_details,
+             int flags = 0);
+
+  // DEPRECATED: Prefer the constructor that takes gfx::PointF.
   TouchEvent(EventType type,
              const gfx::Point& location,
              base::TimeTicks time_stamp,
@@ -798,7 +834,7 @@ class EVENTS_EXPORT KeyEvent : public Event {
    public:
     explicit KeyDispatcherApi(KeyEvent* event) : event_(event) {}
 
-    void set_async_callback(base::OnceCallback<void(bool)> callback) {
+    void set_async_callback(base::OnceCallback<void(bool, bool)> callback) {
       event_->async_callback_ = std::move(callback);
     }
 
@@ -830,7 +866,8 @@ class EVENTS_EXPORT KeyEvent : public Event {
            DomCode code,
            int flags,
            DomKey key,
-           base::TimeTicks time_stamp);
+           base::TimeTicks time_stamp,
+           bool is_char = false);
 
   // Create a character event.
   KeyEvent(base::char16 character,
@@ -905,7 +942,7 @@ class EVENTS_EXPORT KeyEvent : public Event {
   bool IsUnicodeKeyCode() const;
 
   // Returns the DOM .code (physical key identifier) for a keystroke event.
-  DomCode code() const { return code_; };
+  DomCode code() const { return code_; }
   std::string GetCodeString() const;
 
   // Returns the DOM .key (layout meaning) for a keystroke event.
@@ -918,7 +955,7 @@ class EVENTS_EXPORT KeyEvent : public Event {
   // Called if the event is handled asynchronously. If the returned callback is
   // non-null, it *must* be run once async handling is complete. The argument
   // to the callback indicates if the event was handled or not.
-  base::OnceCallback<void(bool)> WillHandleAsync();
+  base::OnceCallback<void(bool, bool)> WillHandleAsync();
   bool HasAsyncCallback() const { return !async_callback_.is_null(); }
 
  protected:
@@ -959,7 +996,7 @@ class EVENTS_EXPORT KeyEvent : public Event {
   // it may be set only if and when GetCharacter() or GetDomKey() is called.
   mutable DomKey key_ = DomKey::NONE;
 
-  base::OnceCallback<void(bool)> async_callback_;
+  base::OnceCallback<void(bool, bool)> async_callback_;
 
   static KeyEvent* last_key_event_;
 #if defined(USE_X11)
@@ -970,6 +1007,7 @@ class EVENTS_EXPORT KeyEvent : public Event {
 class EVENTS_EXPORT ScrollEvent : public MouseEvent {
  public:
   explicit ScrollEvent(const PlatformEvent& native_event);
+
   template <class T>
   ScrollEvent(const ScrollEvent& model, T* source, T* target)
       : MouseEvent(model, source, target),
@@ -981,6 +1019,20 @@ class EVENTS_EXPORT ScrollEvent : public MouseEvent {
         momentum_phase_(model.momentum_phase_),
         scroll_event_phase_(model.scroll_event_phase_) {}
 
+  ScrollEvent(EventType type,
+              const gfx::PointF& location,
+              const gfx::PointF& root_location,
+              base::TimeTicks time_stamp,
+              int flags,
+              float x_offset,
+              float y_offset,
+              float x_offset_ordinal,
+              float y_offset_ordinal,
+              int finger_count,
+              EventMomentumPhase momentum_phase = EventMomentumPhase::NONE,
+              ScrollEventPhase phase = ScrollEventPhase::kNone);
+
+  // DEPRECATED: Prefer the constructor that takes gfx::PointF.
   ScrollEvent(EventType type,
               const gfx::Point& location,
               base::TimeTicks time_stamp,
@@ -1008,6 +1060,9 @@ class EVENTS_EXPORT ScrollEvent : public MouseEvent {
   int finger_count() const { return finger_count_; }
   EventMomentumPhase momentum_phase() const { return momentum_phase_; }
   ScrollEventPhase scroll_event_phase() const { return scroll_event_phase_; }
+
+  // Event:
+  std::string ToString() const override;
 
  private:
   // Potential accelerated offsets.

@@ -97,27 +97,43 @@ interface ResolveHostHandle {
 // Response interface used to receive results of NetworkContext::ResolveHost
 // requests.
 //
-// TODO(crbug.com/821021): Add additional methods to receive non-address
-// results (eg TXT DNS responses).
+// If only some result types are expected for an implementation, e.g. only
+// address types will be queried, see
+// services/network/public/cpp/resolve_host_client_base.h for a partial C++
+// implementation that allows overriding just expected result types.
 interface ResolveHostClient {
   // Called on completion of a resolve host request. Results are a network error
-  // code, and on success (network error code OK), an AddressList.
+  // code, and on success (network error code OK) and when results are in
+  // address form, an AddressList.
+  //
+  // Always called last to signal completion of the ResolveHost() request.
+  // Unless the ResolveHostClient is closed, this method will always be called
+  // exactly once, and afterwards, no more methods in the interface will be
+  // called.
   OnComplete(int32 result, AddressList? resolved_addresses);
+
+  // One or more On...Results() methods may be called when non-address results
+  // are available. Always called before OnComplete().
+  OnTextResults(array<string> text_results);
+  OnHostnameResults(array<HostPortPair> hosts);
+};
+
+// DNS query type for a ResolveHostRequest.
+// See:
+// https://www.iana.org/assignments/dns-parameters/dns-parameters.xhtml#dns-parameters-4
+enum DnsQueryType {
+  UNSPECIFIED,
+  A,
+  AAAA,
+  TXT,
+  PTR,
+  SRV,
 };
 
 // Parameter-grouping struct for additional optional parameters for
 // HostResolver::ResolveHost() calls. All fields are optional and have a
 // reasonable default.
 struct ResolveHostParameters {
-  // DNS query type for a ResolveHostRequest.
-  // See:
-  // https://www.iana.org/assignments/dns-parameters/dns-parameters.xhtml#dns-parameters-4
-  enum DnsQueryType {
-    UNSPECIFIED,
-    A,
-    AAAA,
-  };
-
   // Requested DNS query type. If UNSPECIFIED, resolver will pick A or AAAA (or
   // both) based on IPv4/IPv6 settings.
   DnsQueryType dns_query_type = DnsQueryType.UNSPECIFIED;
@@ -140,6 +156,11 @@ struct ResolveHostParameters {
 
     // Results will only come from Multicast DNS queries.
     MULTICAST_DNS,
+
+    // No external sources will be used. Results will only come from fast local
+    // sources that are available no matter the source setting, e.g. cache,
+    // hosts file, IP literal resolution, etc.
+    LOCAL_ONLY,
   };
 
   // The source to use for resolved addresses. Default allows the resolver to
@@ -173,9 +194,36 @@ struct ResolveHostParameters {
   bool is_speculative = false;
 };
 
+// Response interface used to receive notifications from
+// HostResolver::MdnsListen requests. All methods have a |query_type| field to
+// allow a single BindingSet and implementation to be used to listen for updates
+// for multiple types for the same host.
+interface MdnsListenClient {
+  enum UpdateType {
+    ADDED,
+    CHANGED,
+    REMOVED
+  };
+
+  OnAddressResult(UpdateType update_type,
+                  DnsQueryType query_type,
+                  IPEndPoint endpoint);
+  OnTextResult(UpdateType update_type,
+               DnsQueryType query_type,
+               array<string> text_records);
+  OnHostnameResult(UpdateType update_type,
+                   DnsQueryType query_type,
+                   HostPortPair host);
+
+  // For results which may be valid MDNS but are not handled/parsed by network
+  // service, e.g. pointers to the root domain.
+  OnUnhandledResult(UpdateType update_type, DnsQueryType query_type);
+};
+
 // Interface that can be passed to code/processes without direct access to
 // NetworkContext to make ResolveHost requests. If destroyed, all outstanding
-// ResolveHost requests from the destroyed interface will be cancelled.
+// ResolveHost and MdnsListen requests from the destroyed interface will be
+// cancelled.
 interface HostResolver {
   // Resolves the given hostname (or IP address literal). Results are a network
   // error code, and on success (network error code OK), an AddressList. All
@@ -192,12 +240,20 @@ interface HostResolver {
   // All outstanding requests are cancelled if the HostResolver or parent
   // NetworkContext are destroyed. Such requests will receive ERR_FAILED via
   // |response_client|.
-  //
-  // TODO(crbug.com/821021): Implement more complex functionality to meet full
-  // capabilities of Resolve() and DnsClient/MDnsClient functionality.
   ResolveHost(HostPortPair host,
               ResolveHostParameters? optional_parameters,
               ResolveHostClient response_client);
+
+  // Starts a listener to watch for updates to a multicast DNS result. Result is
+  // a network error code indicating the success of starting the listener. On
+  // success (result OK), |response_client| will begin receiving update
+  // notifications.
+  //
+  // All outstanding listeners are cancelled and will receive no further
+  // notifications if the HostResolver or parent NetworkContext are destroyed.
+  MdnsListen(HostPortPair host,
+             DnsQueryType query_type,
+             MdnsListenClient response_client) => (int32 result);
 };
 
 // A client interface that subscribes to DNS config change events from

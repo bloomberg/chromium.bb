@@ -10,10 +10,16 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/numerics/safe_conversions.h"
+#include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/password_manager/core/browser/form_fetcher.h"
+#include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/password_manager/core/browser/statistics_table.h"
 
+using autofill::FieldPropertiesFlags;
+using autofill::FormData;
+using autofill::FormFieldData;
 using autofill::PasswordForm;
 
 namespace password_manager {
@@ -66,6 +72,75 @@ bool HasGeneratedPassword(
                         kPasswordAccepted ||
           status == PasswordFormMetricsRecorder::GeneratedPasswordStatus::
                         kPasswordEdited);
+}
+
+// Contains information whether saved username/password were filled or typed.
+struct UsernamePasswordsState {
+  bool saved_password_typed = false;
+  bool saved_username_typed = false;
+  bool password_manually_filled = false;
+  bool username_manually_filled = false;
+  bool password_automatically_filled = false;
+  bool username_automatically_filled = false;
+  bool unknown_password_typed = false;
+
+  bool IsPasswordFilled() {
+    return password_automatically_filled || password_manually_filled;
+  }
+};
+
+// Calculates whether saved usernames/passwords were filled or typed in
+// |submitted_form|.
+UsernamePasswordsState CalculateUsernamePasswordsState(
+    const FormData& submitted_form,
+    const std::set<base::string16>& saved_usernames,
+    const std::set<base::string16>& saved_passwords) {
+  UsernamePasswordsState result;
+
+  for (const FormFieldData& field : submitted_form.fields) {
+    const base::string16& value =
+        field.typed_value.empty() ? field.value : field.typed_value;
+
+    bool user_typed = field.properties_mask & FieldPropertiesFlags::USER_TYPED;
+    bool manually_filled = field.properties_mask &
+                           FieldPropertiesFlags::AUTOFILLED_ON_USER_TRIGGER;
+    bool automatically_filled =
+        field.properties_mask & FieldPropertiesFlags::AUTOFILLED_ON_PAGELOAD;
+
+    if (saved_usernames.count(value)) {
+      result.saved_username_typed |= user_typed;
+      result.username_manually_filled |= manually_filled;
+      result.username_automatically_filled |= automatically_filled;
+    } else if (saved_passwords.count(value)) {
+      result.saved_password_typed |= user_typed;
+      result.password_manually_filled |= manually_filled;
+      result.password_automatically_filled |= automatically_filled;
+    } else if (user_typed && field.form_control_type == "password") {
+      result.unknown_password_typed = true;
+    }
+  }
+
+  return result;
+}
+
+// Returns whether any value of |submitted_form| is listed in the
+// |interactions_stats| has having been prompted to save as a credential and
+// being ignored too often.
+bool BlacklistedBySmartBubble(
+    const FormData& submitted_form,
+    const std::vector<InteractionsStats>& interactions_stats) {
+  const int show_threshold =
+      password_bubble_experiment::GetSmartBubbleDismissalThreshold();
+  for (const FormFieldData& field : submitted_form.fields) {
+    const base::string16& value =
+        field.typed_value.empty() ? field.value : field.typed_value;
+    for (const InteractionsStats& stat : interactions_stats) {
+      if (stat.username_value == value &&
+          stat.dismissal_count >= show_threshold)
+        return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace
@@ -174,6 +249,23 @@ PasswordFormMetricsRecorder::~PasswordFormMetricsRecorder() {
                               static_cast<uint32_t>(kMaxFormDifferencesValue));
   }
 
+  if (submit_result_ == kSubmitResultPassed && filling_assistance_) {
+    FillingAssistance filling_assistance = *filling_assistance_;
+    UMA_HISTOGRAM_ENUMERATION("PasswordManager.FillingAssistance",
+                              filling_assistance);
+    ukm_entry_builder_.SetManagerFill_Assistance(
+        static_cast<int64_t>(filling_assistance));
+
+    if (is_main_frame_secure_) {
+      UMA_HISTOGRAM_ENUMERATION(
+          "PasswordManager.FillingAssistance.SecureOrigin", filling_assistance);
+    } else {
+      UMA_HISTOGRAM_ENUMERATION(
+          "PasswordManager.FillingAssistance.InsecureOrigin",
+          filling_assistance);
+    }
+  }
+
   ukm_entry_builder_.Record(ukm::UkmRecorder::Get());
 }
 
@@ -196,23 +288,72 @@ void PasswordFormMetricsRecorder::SetManagerAction(
   manager_action_ = manager_action;
 }
 
-void PasswordFormMetricsRecorder::SetUserAction(UserAction user_action) {
-  if (user_action == UserAction::kChoose) {
-    base::RecordAction(
-        base::UserMetricsAction("PasswordManager_UsedNonDefaultUsername"));
-  } else if (user_action == UserAction::kChoosePslMatch) {
-    base::RecordAction(
-        base::UserMetricsAction("PasswordManager_ChoseSubdomainPassword"));
-  } else if (user_action == UserAction::kOverridePassword) {
-    base::RecordAction(
-        base::UserMetricsAction("PasswordManager_LoggedInWithNewPassword"));
-  } else if (user_action == UserAction::kOverrideUsernameAndPassword) {
-    base::RecordAction(
-        base::UserMetricsAction("PasswordManager_LoggedInWithNewUsername"));
-  } else {
-    NOTREACHED();
+void PasswordFormMetricsRecorder::CalculateUserAction(
+    const std::map<base::string16, const autofill::PasswordForm*>& best_matches,
+    const autofill::PasswordForm& submitted_form) {
+  const base::string16& submitted_password =
+      !submitted_form.new_password_value.empty()
+          ? submitted_form.new_password_value
+          : submitted_form.password_value;
+
+  if (submitted_form.username_value.empty()) {
+    // In case the submitted form does not have a username field we do not
+    // autofill. Thus the user either explicitly chose this credential from the
+    // dropdown, or created a new password.
+    for (const auto& match : best_matches) {
+      if (match.second->password_value == submitted_password) {
+        user_action_ = UserAction::kChoose;
+        return;
+      }
+    }
+
+    user_action_ = UserAction::kOverridePassword;
+    return;
   }
+
+  // In case the submitted form has a username value, check if there is an
+  // existing match with the same username. If not, the user created a new
+  // credential.
+  auto found = best_matches.find(submitted_form.username_value);
+  if (found == best_matches.end()) {
+    user_action_ = UserAction::kOverrideUsernameAndPassword;
+    return;
+  }
+
+  // Otherwise check if the user changed the password.
+  const autofill::PasswordForm* existing_match = found->second;
+  if (existing_match->password_value != submitted_password) {
+    user_action_ = UserAction::kOverridePassword;
+    return;
+  }
+
+  // If the existing match is a PSL match, the user purposefully chose it, since
+  // PSL credentials are not autofilled.
+  if (existing_match->is_public_suffix_match) {
+    user_action_ = UserAction::kChoosePslMatch;
+    return;
+  }
+
+  // Lastly, in case the existing match is not a preferred match, or the form
+  // was not filled on page load, the user purposefully chose a credential.
+  // Otherwise the user either did not do anything, or re-selected the default
+  // option.
+  if (!existing_match->preferred ||
+      manager_action_ != kManagerActionAutofilled) {
+    user_action_ = UserAction::kChoose;
+    return;
+  }
+
+  user_action_ = UserAction::kNone;
+}
+
+void PasswordFormMetricsRecorder::SetUserActionForTesting(
+    UserAction user_action) {
   user_action_ = user_action;
+}
+
+UserAction PasswordFormMetricsRecorder::GetUserAction() const {
+  return user_action_;
 }
 
 void PasswordFormMetricsRecorder::LogSubmitPassed() {
@@ -330,82 +471,90 @@ void PasswordFormMetricsRecorder::RecordFormChangeBitmask(uint32_t bitmask) {
     *form_changes_bitmask_ |= bitmask;
 }
 
+void PasswordFormMetricsRecorder::RecordFirstFillingResult(int32_t result) {
+  if (recorded_first_filling_result_)
+    return;
+  ukm_entry_builder_.SetFill_FirstFillingResultInRenderer(result);
+  recorded_first_filling_result_ = true;
+}
+
+void PasswordFormMetricsRecorder::RecordFirstWaitForUsernameReason(
+    WaitForUsernameReason reason) {
+  if (recorded_wait_for_username_reason_)
+    return;
+  UMA_HISTOGRAM_ENUMERATION("PasswordManager.FirstWaitForUsernameReason",
+                            reason);
+  ukm_entry_builder_.SetFill_FirstWaitForUsernameReason(
+      static_cast<int64_t>(reason));
+  recorded_wait_for_username_reason_ = true;
+}
+
+void PasswordFormMetricsRecorder::CalculateFillingAssistanceMetric(
+    const FormData& submitted_form,
+    const std::set<base::string16>& saved_usernames,
+    const std::set<base::string16>& saved_passwords,
+    bool is_blacklisted,
+    const std::vector<InteractionsStats>& interactions_stats) {
+  if (saved_passwords.empty() && is_blacklisted) {
+    filling_assistance_ = FillingAssistance::kNoSavedCredentialsAndBlacklisted;
+    return;
+  }
+
+  if (saved_passwords.empty()) {
+    filling_assistance_ =
+        BlacklistedBySmartBubble(submitted_form, interactions_stats)
+            ? FillingAssistance::kNoSavedCredentialsAndBlacklistedBySmartBubble
+            : FillingAssistance::kNoSavedCredentials;
+    return;
+  }
+
+  // Saved credentials are assumed to be correct as they match stored
+  // credentials in subsequent calculations.
+
+  UsernamePasswordsState username_password_state =
+      CalculateUsernamePasswordsState(submitted_form, saved_usernames,
+                                      saved_passwords);
+
+  // Consider cases when the user typed known or unknown credentials.
+  if (username_password_state.saved_password_typed) {
+    filling_assistance_ = FillingAssistance::kKnownPasswordTyped;
+    return;
+  }
+
+  if (!username_password_state.IsPasswordFilled()) {
+    filling_assistance_ =
+        username_password_state.unknown_password_typed
+            ? FillingAssistance::kNewPasswordTypedWhileCredentialsExisted
+            : FillingAssistance::kNoUserInputNoFillingInPasswordFields;
+    return;
+  }
+
+  if (username_password_state.saved_username_typed) {
+    filling_assistance_ = FillingAssistance::kUsernameTypedPasswordFilled;
+    return;
+  }
+
+  // Cases related to user typing are already considered and excluded. Only
+  // filling related cases are left.
+  if (username_password_state.username_manually_filled ||
+      username_password_state.password_manually_filled) {
+    filling_assistance_ = FillingAssistance::kManual;
+    return;
+  }
+
+  if (username_password_state.password_automatically_filled) {
+    filling_assistance_ = FillingAssistance::kAutomatic;
+    return;
+  }
+
+  // If execution gets here, we have a bug in our state machine.
+  NOTREACHED();
+}
+
 int PasswordFormMetricsRecorder::GetActionsTaken() const {
   return static_cast<int>(user_action_) +
          static_cast<int>(UserAction::kMax) *
              (manager_action_ + kManagerActionMax * submit_result_);
-}
-
-void PasswordFormMetricsRecorder::RecordHistogramsOnSuppressedAccounts(
-    bool observed_form_origin_has_cryptographic_scheme,
-    const FormFetcher& form_fetcher,
-    const PasswordForm& pending_credentials) {
-  UMA_HISTOGRAM_BOOLEAN("PasswordManager.QueryingSuppressedAccountsFinished",
-                        form_fetcher.DidCompleteQueryingSuppressedForms());
-
-  if (!form_fetcher.DidCompleteQueryingSuppressedForms())
-    return;
-
-  SuppressedAccountExistence best_match = kSuppressedAccountNone;
-
-  if (!observed_form_origin_has_cryptographic_scheme) {
-    best_match = GetBestMatchingSuppressedAccount(
-        form_fetcher.GetSuppressedHTTPSForms(), PasswordForm::TYPE_GENERATED,
-        pending_credentials);
-    UMA_HISTOGRAM_ENUMERATION(
-        "PasswordManager.SuppressedAccount.Generated.HTTPSNotHTTP",
-        GetHistogramSampleForSuppressedAccounts(best_match),
-        kMaxSuppressedAccountStats);
-    ukm_entry_builder_.SetSuppressedAccount_Generated_HTTPSNotHTTP(best_match);
-
-    best_match = GetBestMatchingSuppressedAccount(
-        form_fetcher.GetSuppressedHTTPSForms(), PasswordForm::TYPE_MANUAL,
-        pending_credentials);
-    UMA_HISTOGRAM_ENUMERATION(
-        "PasswordManager.SuppressedAccount.Manual.HTTPSNotHTTP",
-        GetHistogramSampleForSuppressedAccounts(best_match),
-        kMaxSuppressedAccountStats);
-    ukm_entry_builder_.SetSuppressedAccount_Manual_HTTPSNotHTTP(best_match);
-  }
-
-  best_match = GetBestMatchingSuppressedAccount(
-      form_fetcher.GetSuppressedPSLMatchingForms(),
-      PasswordForm::TYPE_GENERATED, pending_credentials);
-  UMA_HISTOGRAM_ENUMERATION(
-      "PasswordManager.SuppressedAccount.Generated.PSLMatching",
-      GetHistogramSampleForSuppressedAccounts(best_match),
-      kMaxSuppressedAccountStats);
-  ukm_entry_builder_.SetSuppressedAccount_Generated_PSLMatching(best_match);
-  best_match = GetBestMatchingSuppressedAccount(
-      form_fetcher.GetSuppressedPSLMatchingForms(), PasswordForm::TYPE_MANUAL,
-      pending_credentials);
-  UMA_HISTOGRAM_ENUMERATION(
-      "PasswordManager.SuppressedAccount.Manual.PSLMatching",
-      GetHistogramSampleForSuppressedAccounts(best_match),
-      kMaxSuppressedAccountStats);
-  ukm_entry_builder_.SetSuppressedAccount_Manual_PSLMatching(best_match);
-
-  best_match = GetBestMatchingSuppressedAccount(
-      form_fetcher.GetSuppressedSameOrganizationNameForms(),
-      PasswordForm::TYPE_GENERATED, pending_credentials);
-  UMA_HISTOGRAM_ENUMERATION(
-      "PasswordManager.SuppressedAccount.Generated.SameOrganizationName",
-      GetHistogramSampleForSuppressedAccounts(best_match),
-      kMaxSuppressedAccountStats);
-  ukm_entry_builder_.SetSuppressedAccount_Generated_SameOrganizationName(
-      best_match);
-  best_match = GetBestMatchingSuppressedAccount(
-      form_fetcher.GetSuppressedSameOrganizationNameForms(),
-      PasswordForm::TYPE_MANUAL, pending_credentials);
-  UMA_HISTOGRAM_ENUMERATION(
-      "PasswordManager.SuppressedAccount.Manual.SameOrganizationName",
-      GetHistogramSampleForSuppressedAccounts(best_match),
-      kMaxSuppressedAccountStats);
-  ukm_entry_builder_.SetSuppressedAccount_Manual_SameOrganizationName(
-      best_match);
-
-  if (current_bubble_ != CurrentBubbleOfInterest::kNone)
-    RecordUIDismissalReason(metrics_util::NO_DIRECT_INTERACTION);
 }
 
 void PasswordFormMetricsRecorder::RecordPasswordBubbleShown(
@@ -492,42 +641,6 @@ void PasswordFormMetricsRecorder::RecordUIDismissalReason(
 
 void PasswordFormMetricsRecorder::RecordFillEvent(ManagerAutofillEvent event) {
   ukm_entry_builder_.SetManagerFill_Action(event);
-}
-
-PasswordFormMetricsRecorder::SuppressedAccountExistence
-PasswordFormMetricsRecorder::GetBestMatchingSuppressedAccount(
-    const std::vector<const PasswordForm*>& suppressed_forms,
-    PasswordForm::Type manual_or_generated,
-    const PasswordForm& pending_credentials) const {
-  SuppressedAccountExistence best_matching_account = kSuppressedAccountNone;
-  for (const PasswordForm* form : suppressed_forms) {
-    if (form->type != manual_or_generated)
-      continue;
-
-    SuppressedAccountExistence current_account;
-    if (pending_credentials.password_value.empty())
-      current_account = kSuppressedAccountExists;
-    else if (form->username_value != pending_credentials.username_value)
-      current_account = kSuppressedAccountExistsDifferentUsername;
-    else if (form->password_value != pending_credentials.password_value)
-      current_account = kSuppressedAccountExistsSameUsername;
-    else
-      current_account = kSuppressedAccountExistsSameUsernameAndPassword;
-
-    best_matching_account = std::max(best_matching_account, current_account);
-  }
-  return best_matching_account;
-}
-
-int PasswordFormMetricsRecorder::GetHistogramSampleForSuppressedAccounts(
-    SuppressedAccountExistence best_matching_account) const {
-  // Encoding: most significant digit is the |best_matching_account|.
-  int mixed_base_encoding = 0;
-  mixed_base_encoding += best_matching_account;
-  mixed_base_encoding *= PasswordFormMetricsRecorder::kMaxNumActionsTakenNew;
-  mixed_base_encoding += GetActionsTakenNew();
-  DCHECK_LT(mixed_base_encoding, kMaxSuppressedAccountStats);
-  return mixed_base_encoding;
 }
 
 }  // namespace password_manager

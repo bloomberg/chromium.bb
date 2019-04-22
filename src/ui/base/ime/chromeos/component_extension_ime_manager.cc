@@ -9,63 +9,15 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/ime/input_methods.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 
 namespace chromeos {
 
 namespace {
-
-// The whitelist for enabling extension based xkb keyboards at login session.
-const char* kLoginLayoutWhitelist[] = {
-  "be",
-  "br",
-  "ca",
-  "ca(eng)",
-  "ca(multix)",
-  "ch",
-  "ch(fr)",
-  "cz",
-  "cz(qwerty)",
-  "de",
-  "de(neo)",
-  "dk",
-  "ee",
-  "es",
-  "es(cat)",
-  "fi",
-  "fr",
-  "fr(oss)",
-  "gb(dvorak)",
-  "gb(extd)",
-  "hr",
-  "hu",
-  "ie",
-  "is",
-  "it",
-  "jp",
-  "latam",
-  "lt",
-  "lv(apostrophe)",
-  "mt",
-  "no",
-  "pl",
-  "pt",
-  "ro",
-  "se",
-  "si",
-  "tr",
-  "us",
-  "us(altgr-intl)",
-  "us(colemak)",
-  "us(dvorak)",
-  "us(dvp)",
-  "us(intl)",
-  "us(workman)",
-  "us(workman-intl)"
-};
 
 // Gets the input method category according to the given input method id.
 // This is used for sorting a list of input methods.
@@ -115,8 +67,9 @@ ComponentExtensionIMEManagerDelegate::~ComponentExtensionIMEManagerDelegate() {
 }
 
 ComponentExtensionIMEManager::ComponentExtensionIMEManager() {
-  for (size_t i = 0; i < arraysize(kLoginLayoutWhitelist); ++i) {
-    login_layout_set_.insert(kLoginLayoutWhitelist[i]);
+  for (size_t i = 0; i < base::size(input_method::kInputMethods); ++i) {
+    if (input_method::kInputMethods[i].is_login_keyboard)
+      login_layout_set_.insert(input_method::kInputMethods[i].xkb_layout_id);
   }
 }
 
@@ -178,9 +131,6 @@ bool ComponentExtensionIMEManager::IsWhitelistedExtension(
 
 input_method::InputMethodDescriptors
     ComponentExtensionIMEManager::GetAllIMEAsInputMethodDescriptor() {
-  bool enable_new_korean_ime =
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableNewKoreanIme);
   input_method::InputMethodDescriptors result;
   for (std::map<std::string, ComponentExtensionIME>::const_iterator it =
           component_extension_imes_.begin();
@@ -188,9 +138,6 @@ input_method::InputMethodDescriptors
     const ComponentExtensionIME& ext = it->second;
     for (size_t j = 0; j < ext.engines.size(); ++j) {
       const ComponentExtensionEngine& ime = ext.engines[j];
-      // Filter out new Korean IME if the experimental flag is OFF.
-      if (!enable_new_korean_ime && ime.engine_id == "ko-t-i0-und")
-        continue;
       const std::string input_method_id =
           extension_ime_util::GetComponentInputMethodID(
               ext.id, ime.engine_id);

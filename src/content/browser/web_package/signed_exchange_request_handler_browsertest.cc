@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
@@ -11,7 +12,10 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
+#include "content/browser/loader/prefetch_url_loader_service.h"
+#include "content/browser/storage_partition_impl.h"
 #include "content/browser/web_package/signed_exchange_handler.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/public/browser/browser_context.h"
@@ -30,6 +34,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/content_cert_verifier_browser_test.h"
+#include "content/public/test/signed_exchange_browser_test_helper.h"
 #include "content/public/test/test_navigation_throttle.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "content/shell/browser/shell.h"
@@ -49,17 +54,17 @@
 #include "services/network/public/cpp/features.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 
 namespace content {
 
 namespace {
 
-const uint64_t kSignatureHeaderDate = 1520834000;  // 2018-03-12T05:53:20Z
-const uint64_t kSignatureHeaderExpires = 1520837600;  // 2018-03-12T06:53:20Z
-
 constexpr char kExpectedSXGEnabledAcceptHeaderForPrefetch[] =
-    "application/signed-exchange;v=b2;q=0.9,*/*;q=0.8";
+    "application/signed-exchange;v=b3;q=0.9,*/*;q=0.8";
+
+constexpr char kLoadResultHistogram[] = "SignedExchange.LoadResult2";
+constexpr char kPrefetchResultHistogram[] =
+    "SignedExchange.Prefetch.LoadResult2";
 
 class RedirectObserver : public WebContentsObserver {
  public:
@@ -95,6 +100,17 @@ class AssertNavigationHandleFlagObserver : public WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(AssertNavigationHandleFlagObserver);
 };
 
+class MockContentBrowserClient final : public ContentBrowserClient {
+ public:
+  std::string GetAcceptLangs(BrowserContext* context) override {
+    return accept_langs_;
+  }
+  void SetAcceptLangs(const std::string langs) { accept_langs_ = langs; }
+
+ private:
+  std::string accept_langs_ = "en";
+};
+
 }  // namespace
 
 class SignedExchangeRequestHandlerBrowserTestBase
@@ -108,60 +124,43 @@ class SignedExchangeRequestHandlerBrowserTestBase
   }
 
   void SetUp() override {
-    SignedExchangeHandler::SetVerificationTimeForTesting(
-        base::Time::UnixEpoch() +
-        base::TimeDelta::FromSeconds(kSignatureHeaderDate));
+    sxg_test_helper_.SetUp();
     feature_list_.InitWithFeatures({features::kSignedHTTPExchange}, {});
     CertVerifierBrowserTest::SetUp();
   }
 
+  void SetUpOnMainThread() override {
+    CertVerifierBrowserTest::SetUpOnMainThread();
+#if defined(OS_ANDROID)
+    // TODO(crbug.com/864403): It seems that we call unsupported Android APIs on
+    // KitKat when we set a ContentBrowserClient. Don't call such APIs and make
+    // this test available on KitKat.
+    int32_t major_version = 0, minor_version = 0, bugfix_version = 0;
+    base::SysInfo::OperatingSystemVersionNumbers(&major_version, &minor_version,
+                                                 &bugfix_version);
+    if (major_version < 5)
+      return;
+#endif
+    original_client_ = SetBrowserClientForTesting(&client_);
+  }
+
   void TearDownOnMainThread() override {
-    interceptor_.reset();
-    SignedExchangeHandler::SetVerificationTimeForTesting(
-        base::Optional<base::Time>());
+    sxg_test_helper_.TearDownOnMainThread();
+    if (original_client_)
+      SetBrowserClientForTesting(original_client_);
   }
 
  protected:
-  static scoped_refptr<net::X509Certificate> LoadCertificate(
-      const std::string& cert_file) {
-    base::ScopedAllowBlockingForTesting allow_io;
-    base::FilePath dir_path;
-    base::PathService::Get(content::DIR_TEST_DATA, &dir_path);
-    dir_path = dir_path.AppendASCII("sxg");
-
-    return net::CreateCertificateChainFromFile(
-        dir_path, cert_file, net::X509Certificate::FORMAT_PEM_CERT_SEQUENCE);
-  }
-
   void InstallUrlInterceptor(const GURL& url, const std::string& data_path) {
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      if (!interceptor_) {
-        interceptor_ = std::make_unique<
-            URLLoaderInterceptor>(base::BindRepeating(
-            &SignedExchangeRequestHandlerBrowserTestBase::OnInterceptCallback,
-            base::Unretained(this)));
-      }
-      interceptor_data_path_map_[url] = data_path;
-    } else {
-      base::PostTaskWithTraits(
-          FROM_HERE, {BrowserThread::IO},
-          base::BindOnce(&InstallMockInterceptors, url, data_path));
-    }
+    sxg_test_helper_.InstallUrlInterceptor(url, data_path);
   }
 
   void InstallMockCert() {
-    // Make the MockCertVerifier treat the certificate
-    // "prime256v1-sha256.public.pem" as valid for "test.example.org".
-    scoped_refptr<net::X509Certificate> original_cert =
-        LoadCertificate("prime256v1-sha256.public.pem");
-    net::CertVerifyResult dummy_result;
-    dummy_result.verified_cert = original_cert;
-    dummy_result.cert_status = net::OK;
-    dummy_result.ocsp_result.response_status = net::OCSPVerifyResult::PROVIDED;
-    dummy_result.ocsp_result.revocation_status =
-        net::OCSPRevocationStatus::GOOD;
-    mock_cert_verifier()->AddResultForCertAndHost(
-        original_cert, "test.example.org", dummy_result, net::OK);
+    sxg_test_helper_.InstallMockCert(mock_cert_verifier());
+  }
+
+  void InstallMockCertChainInterceptor() {
+    sxg_test_helper_.InstallMockCertChainInterceptor();
   }
 
   void TriggerPrefetch(const GURL& url, bool expect_success) {
@@ -174,29 +173,28 @@ class SignedExchangeRequestHandlerBrowserTestBase
     EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
   }
 
-  const base::HistogramTester histogram_tester_;
-
- private:
-  static void InstallMockInterceptors(const GURL& url,
-                                      const std::string& data_path) {
-    base::FilePath root_path;
-    CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &root_path));
-    net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
-        url, net::URLRequestMockHTTPJob::CreateInterceptorForSingleFile(
-                 root_path.AppendASCII(data_path)));
-  }
-
-  bool OnInterceptCallback(URLLoaderInterceptor::RequestParams* params) {
-    const auto it = interceptor_data_path_map_.find(params->url_request.url);
-    if (it == interceptor_data_path_map_.end())
+  // Returns false if we cannot override accept languages. It happens only on
+  // Android Kitkat or older systems.
+  bool SetAcceptLangs(const std::string langs) {
+    if (!original_client_)
       return false;
-    URLLoaderInterceptor::WriteResponse(it->second, params->client.get());
+
+    client_.SetAcceptLangs(langs);
+    StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
+        BrowserContext::GetDefaultStoragePartition(
+            shell()->web_contents()->GetBrowserContext()));
+    partition->GetPrefetchURLLoaderService()->SetAcceptLanguages(langs);
     return true;
   }
 
+  const base::HistogramTester histogram_tester_;
+
+ private:
+  ContentBrowserClient* original_client_ = nullptr;
+  MockContentBrowserClient client_;
+
   base::test::ScopedFeatureList feature_list_;
-  std::unique_ptr<URLLoaderInterceptor> interceptor_;
-  std::map<GURL, std::string> interceptor_data_path_map_;
+  SignedExchangeBrowserTestHelper sxg_test_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(SignedExchangeRequestHandlerBrowserTestBase);
 };
@@ -224,10 +222,8 @@ class SignedExchangeRequestHandlerBrowserTest
 };
 
 IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, Simple) {
-  InstallUrlInterceptor(
-      GURL("https://cert.example.org/cert.msg"),
-      "content/test/data/sxg/test.example.org.public.pem.cbor");
   InstallMockCert();
+  InstallMockCertChainInterceptor();
 
   embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -259,19 +255,19 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, Simple) {
       net::X509Certificate::CalculateFingerprint256(
           entry->GetSSL().certificate->cert_buffer());
   scoped_refptr<net::X509Certificate> original_cert =
-      LoadCertificate("prime256v1-sha256.public.pem");
+      SignedExchangeBrowserTestHelper::LoadCertificate();
   const net::SHA256HashValue original_fingerprint =
       net::X509Certificate::CalculateFingerprint256(
           original_cert->cert_buffer());
   EXPECT_EQ(original_fingerprint, fingerprint);
-  histogram_tester_.ExpectUniqueSample("SignedExchange.LoadResult",
+  histogram_tester_.ExpectUniqueSample(kLoadResultHistogram,
                                        SignedExchangeLoadResult::kSuccess,
                                        PrefetchIsEnabled() ? 2 : 1);
   histogram_tester_.ExpectTotalCount(
       "SignedExchange.Time.CertificateFetch.Success",
       PrefetchIsEnabled() ? 2 : 1);
   if (PrefetchIsEnabled()) {
-    histogram_tester_.ExpectUniqueSample("SignedExchange.Prefetch.LoadResult",
+    histogram_tester_.ExpectUniqueSample(kPrefetchResultHistogram,
                                          SignedExchangeLoadResult::kSuccess, 1);
     histogram_tester_.ExpectUniqueSample(
         "SignedExchange.Prefetch.Recall.30Seconds", true, 1);
@@ -283,14 +279,87 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, Simple) {
   }
 }
 
+IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, VariantMatch) {
+  if (!SetAcceptLangs("en-US,fr"))
+    return;
+  InstallUrlInterceptor(
+      GURL("https://cert.example.org/cert.msg"),
+      "content/test/data/sxg/test.example.org.public.pem.cbor");
+  InstallMockCert();
+
+  embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url =
+      embedded_test_server()->GetURL("/sxg/test.example.org_fr_variant.sxg");
+  if (PrefetchIsEnabled())
+    TriggerPrefetch(url, true);
+
+  base::string16 title = base::ASCIIToUTF16("https://test.example.org/test/");
+  TitleWatcher title_watcher(shell()->web_contents(), title);
+  NavigateToURL(shell(), url);
+  EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
+  histogram_tester_.ExpectUniqueSample(kLoadResultHistogram,
+                                       SignedExchangeLoadResult::kSuccess,
+                                       PrefetchIsEnabled() ? 2 : 1);
+}
+
 IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest,
-                       InvalidContentType) {
+                       VariantMismatch) {
+  if (!SetAcceptLangs("en-US,ja"))
+    return;
   InstallUrlInterceptor(
       GURL("https://cert.example.org/cert.msg"),
       "content/test/data/sxg/test.example.org.public.pem.cbor");
   InstallUrlInterceptor(GURL("https://test.example.org/test/"),
                         "content/test/data/sxg/fallback.html");
   InstallMockCert();
+
+  embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url =
+      embedded_test_server()->GetURL("/sxg/test.example.org_fr_variant.sxg");
+  if (PrefetchIsEnabled())
+    TriggerPrefetch(url, false);
+
+  base::string16 title = base::ASCIIToUTF16("Fallback URL response");
+  TitleWatcher title_watcher(shell()->web_contents(), title);
+  NavigateToURL(shell(), url);
+  EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
+  histogram_tester_.ExpectUniqueSample(
+      kLoadResultHistogram, SignedExchangeLoadResult::kVariantMismatch,
+      PrefetchIsEnabled() ? 2 : 1);
+}
+
+IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest,
+                       MissingNosniff) {
+  InstallUrlInterceptor(GURL("https://test.example.org/test/"),
+                        "content/test/data/sxg/fallback.html");
+  InstallMockCert();
+
+  embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url = embedded_test_server()->GetURL(
+      "/sxg/test.example.org_test_missing_nosniff.sxg");
+  if (PrefetchIsEnabled())
+    TriggerPrefetch(url, false);
+
+  base::string16 title = base::ASCIIToUTF16("Fallback URL response");
+  TitleWatcher title_watcher(shell()->web_contents(), title);
+  RedirectObserver redirect_observer(shell()->web_contents());
+  NavigateToURL(shell(), url);
+  EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
+  EXPECT_EQ(303, redirect_observer.response_code());
+  histogram_tester_.ExpectUniqueSample(
+      kLoadResultHistogram, SignedExchangeLoadResult::kSXGServedWithoutNosniff,
+      PrefetchIsEnabled() ? 2 : 1);
+}
+
+IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest,
+                       InvalidContentType) {
+  InstallUrlInterceptor(GURL("https://test.example.org/test/"),
+                        "content/test/data/sxg/fallback.html");
+  InstallMockCert();
+  InstallMockCertChainInterceptor();
 
   embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -306,18 +375,17 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest,
   EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
   EXPECT_EQ(303, redirect_observer.response_code());
   histogram_tester_.ExpectUniqueSample(
-      "SignedExchange.LoadResult", SignedExchangeLoadResult::kVersionMismatch,
+      kLoadResultHistogram, SignedExchangeLoadResult::kVersionMismatch,
       PrefetchIsEnabled() ? 2 : 1);
 }
 
 IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, Expired) {
   SignedExchangeHandler::SetVerificationTimeForTesting(
       base::Time::UnixEpoch() +
-      base::TimeDelta::FromSeconds(kSignatureHeaderExpires + 1));
+      base::TimeDelta::FromSeconds(
+          SignedExchangeBrowserTestHelper::kSignatureHeaderExpires + 1));
 
-  InstallUrlInterceptor(
-      GURL("https://cert.example.org/cert.msg"),
-      "content/test/data/sxg/test.example.org.public.pem.cbor");
+  InstallMockCertChainInterceptor();
   InstallUrlInterceptor(GURL("https://test.example.org/test/"),
                         "content/test/data/sxg/fallback.html");
   InstallMockCert();
@@ -333,11 +401,11 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, Expired) {
   EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
   EXPECT_EQ(303, redirect_observer.response_code());
   histogram_tester_.ExpectUniqueSample(
-      "SignedExchange.LoadResult",
+      kLoadResultHistogram,
       SignedExchangeLoadResult::kSignatureVerificationError, 1);
   histogram_tester_.ExpectUniqueSample(
       "SignedExchange.SignatureVerificationResult",
-      SignedExchangeSignatureVerifier::Result::kErrInvalidTimestamp, 1);
+      SignedExchangeSignatureVerifier::Result::kErrExpired, 1);
 }
 
 IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest,
@@ -367,14 +435,73 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest,
     NavigateToURL(shell(), url);
     EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
   }
-  histogram_tester_.ExpectTotalCount("SignedExchange.LoadResult",
+  histogram_tester_.ExpectTotalCount(kLoadResultHistogram,
                                      PrefetchIsEnabled() ? 4 : 2);
   histogram_tester_.ExpectBucketCount(
-      "SignedExchange.LoadResult", SignedExchangeLoadResult::kVersionMismatch,
+      kLoadResultHistogram, SignedExchangeLoadResult::kVersionMismatch,
       PrefetchIsEnabled() ? 2 : 1);
   histogram_tester_.ExpectBucketCount(
-      "SignedExchange.LoadResult", SignedExchangeLoadResult::kHeaderParseError,
+      kLoadResultHistogram, SignedExchangeLoadResult::kHeaderParseError,
       PrefetchIsEnabled() ? 2 : 1);
+}
+
+IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, BadMICE) {
+  InstallMockCertChainInterceptor();
+  InstallMockCert();
+
+  embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL url =
+      embedded_test_server()->GetURL("/sxg/test.example.org_test_bad_mice.sxg");
+
+  if (PrefetchIsEnabled())
+    TriggerPrefetch(url, false);
+
+  const base::string16 title_good = base::ASCIIToUTF16("Reached End: false");
+  const base::string16 title_bad = base::ASCIIToUTF16("Reached End: true");
+  TitleWatcher title_watcher(shell()->web_contents(), title_good);
+  title_watcher.AlsoWaitForTitle(title_bad);
+  NavigateToURL(shell(), url);
+  EXPECT_EQ(title_good, title_watcher.WaitAndGetTitle());
+
+  histogram_tester_.ExpectTotalCount(kLoadResultHistogram,
+                                     PrefetchIsEnabled() ? 2 : 1);
+  {
+    SCOPED_TRACE(testing::Message()
+                 << "testing SignedExchangeLoadResult::kMerkleIntegrityError");
+    histogram_tester_.ExpectBucketCount(
+        kLoadResultHistogram, SignedExchangeLoadResult::kMerkleIntegrityError,
+        PrefetchIsEnabled() ? 2 : 1);
+  }
+}
+
+IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, BadMICESmall) {
+  InstallMockCertChainInterceptor();
+  InstallMockCert();
+
+  embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL url = embedded_test_server()->GetURL(
+      "/sxg/test.example.org_test_bad_mice_small.sxg");
+
+  if (PrefetchIsEnabled())
+    TriggerPrefetch(url, false);
+
+  // Note: TitleWatcher is not needed. NavigateToURL waits until navigation
+  // complete.
+  NavigateToURL(shell(), url);
+
+  histogram_tester_.ExpectTotalCount(kLoadResultHistogram,
+                                     PrefetchIsEnabled() ? 2 : 1);
+  {
+    SCOPED_TRACE(testing::Message()
+                 << "testing SignedExchangeLoadResult::kMerkleIntegrityError");
+    histogram_tester_.ExpectBucketCount(
+        kLoadResultHistogram, SignedExchangeLoadResult::kMerkleIntegrityError,
+        PrefetchIsEnabled() ? 2 : 1);
+  }
 }
 
 IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, CertNotFound) {
@@ -395,14 +522,14 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, CertNotFound) {
   NavigateToURL(shell(), url);
   EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
   histogram_tester_.ExpectUniqueSample(
-      "SignedExchange.LoadResult", SignedExchangeLoadResult::kCertFetchError,
+      kLoadResultHistogram, SignedExchangeLoadResult::kCertFetchError,
       PrefetchIsEnabled() ? 2 : 1);
   histogram_tester_.ExpectTotalCount(
       "SignedExchange.Time.CertificateFetch.Failure",
       PrefetchIsEnabled() ? 2 : 1);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SignedExchangeRequestHandlerBrowserTest,
     SignedExchangeRequestHandlerBrowserTest,
     testing::Values(
@@ -485,6 +612,27 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerDownloadBrowserTest,
             observer->observed_content_disposition());
 }
 
+IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerDownloadBrowserTest,
+                       DataURLDownload) {
+  const GURL sxg_url = GURL("data:application/signed-exchange,");
+  std::unique_ptr<DownloadObserver> observer =
+      std::make_unique<DownloadObserver>(BrowserContext::GetDownloadManager(
+          shell()->web_contents()->GetBrowserContext()));
+
+  embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
+  ASSERT_TRUE(embedded_test_server()->Start());
+  NavigateToURL(shell(), embedded_test_server()->GetURL("/empty.html"));
+
+  const std::string load_sxg = base::StringPrintf(
+      "const iframe = document.createElement('iframe');"
+      "iframe.src = '%s';"
+      "document.body.appendChild(iframe);",
+      sxg_url.spec().c_str());
+  EXPECT_TRUE(ExecuteScript(shell()->web_contents(), load_sxg));
+  observer->WaitUntilDownloadCreated();
+  EXPECT_EQ(sxg_url, observer->observed_url());
+}
+
 class SignedExchangeRequestHandlerRealCertVerifierBrowserTest
     : public SignedExchangeRequestHandlerBrowserTestBase {
  public:
@@ -496,9 +644,7 @@ class SignedExchangeRequestHandlerRealCertVerifierBrowserTest
 
 IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerRealCertVerifierBrowserTest,
                        Basic) {
-  InstallUrlInterceptor(
-      GURL("https://cert.example.org/cert.msg"),
-      "content/test/data/sxg/test.example.org.public.pem.cbor");
+  InstallMockCertChainInterceptor();
   InstallUrlInterceptor(GURL("https://test.example.org/test/"),
                         "content/test/data/sxg/fallback.html");
 
@@ -517,60 +663,17 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerRealCertVerifierBrowserTest,
   NavigateToURL(shell(), url);
   EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
   // Verify that it failed at the OCSP check step.
-  histogram_tester_.ExpectUniqueSample("SignedExchange.LoadResult",
+  histogram_tester_.ExpectUniqueSample(kLoadResultHistogram,
                                        SignedExchangeLoadResult::kOCSPError, 1);
 }
 
-enum class SignedExchangeRequestHandlerWithServiceWorkerBrowserTestParam {
-  kLegacy,
-  kServiceWorkerServicification,
-  kNetworkService
-};
-
-class SignedExchangeRequestHandlerWithServiceWorkerBrowserTest
-    : public SignedExchangeRequestHandlerBrowserTestBase,
-      public testing::WithParamInterface<
-          SignedExchangeRequestHandlerWithServiceWorkerBrowserTestParam> {
- public:
-  SignedExchangeRequestHandlerWithServiceWorkerBrowserTest() = default;
-  void SetUp() override {
-    switch (GetParam()) {
-      case SignedExchangeRequestHandlerWithServiceWorkerBrowserTestParam::
-          kLegacy:
-        feature_list_.InitWithFeatures(
-            {}, {blink::features::kServiceWorkerServicification,
-                 network::features::kNetworkService});
-        break;
-      case SignedExchangeRequestHandlerWithServiceWorkerBrowserTestParam::
-          kServiceWorkerServicification:
-        feature_list_.InitWithFeatures(
-            {blink::features::kServiceWorkerServicification},
-            {network::features::kNetworkService});
-        break;
-      case SignedExchangeRequestHandlerWithServiceWorkerBrowserTestParam::
-          kNetworkService:
-        feature_list_.InitAndEnableFeature(network::features::kNetworkService);
-        break;
-    }
-    SignedExchangeRequestHandlerBrowserTestBase::SetUp();
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(
-      SignedExchangeRequestHandlerWithServiceWorkerBrowserTest);
-};
-
-IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerWithServiceWorkerBrowserTest,
+IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest,
                        LogicalUrlInServiceWorkerScope) {
   // SW-scope: https://test.example.org/test/
   // SXG physical URL: http://127.0.0.1:PORT/sxg/test.example.org_test.sxg
   // SXG logical URL: https://test.example.org/test/
-  InstallUrlInterceptor(
-      GURL("https://cert.example.org/cert.msg"),
-      "content/test/data/sxg/test.example.org.public.pem.cbor");
   InstallMockCert();
+  InstallMockCertChainInterceptor();
 
   const GURL install_sw_url =
       GURL("https://test.example.org/test/publisher-service-worker.html");
@@ -599,15 +702,13 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerWithServiceWorkerBrowserTest,
   EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
 }
 
-IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerWithServiceWorkerBrowserTest,
+IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest,
                        NotControlledByDistributorsSW) {
   // SW-scope: http://127.0.0.1:PORT/sxg/
   // SXG physical URL: http://127.0.0.1:PORT/sxg/test.example.org_test.sxg
   // SXG logical URL: https://test.example.org/test/
-  InstallUrlInterceptor(
-      GURL("https://cert.example.org/cert.msg"),
-      "content/test/data/sxg/test.example.org.public.pem.cbor");
   InstallMockCert();
+  InstallMockCertChainInterceptor();
   embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -631,15 +732,13 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerWithServiceWorkerBrowserTest,
   EXPECT_EQ(false, EvalJs(shell(), "!!navigator.serviceWorker.controller"));
 }
 
-IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerWithServiceWorkerBrowserTest,
+IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest,
                        NotControlledBySameOriginDistributorsSW) {
   // SW-scope: https://test.example.org/scope/
   // SXG physical URL: https://test.example.org/scope/test.example.org_test.sxg
   // SXG logical URL: https://test.example.org/test/
-  InstallUrlInterceptor(
-      GURL("https://cert.example.org/cert.msg"),
-      "content/test/data/sxg/test.example.org.public.pem.cbor");
   InstallMockCert();
+  InstallMockCertChainInterceptor();
 
   InstallUrlInterceptor(GURL("https://test.example.org/scope/test.sxg"),
                         "content/test/data/sxg/test.example.org_test.sxg");
@@ -670,14 +769,12 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerWithServiceWorkerBrowserTest,
   EXPECT_EQ(false, EvalJs(shell(), "!!navigator.serviceWorker.controller"));
 }
 
-IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerWithServiceWorkerBrowserTest,
+IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest,
                        RegisterServiceWorkerFromSignedExchange) {
   // SXG physical URL: http://127.0.0.1:PORT/sxg/test.example.org_test.sxg
   // SXG logical URL: https://test.example.org/test/
-  InstallUrlInterceptor(
-      GURL("https://cert.example.org/cert.msg"),
-      "content/test/data/sxg/test.example.org.public.pem.cbor");
   InstallMockCert();
+  InstallMockCertChainInterceptor();
 
   InstallUrlInterceptor(
       GURL("https://test.example.org/test/publisher-service-worker.js"),
@@ -713,87 +810,32 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerWithServiceWorkerBrowserTest,
   EXPECT_FALSE(result);
 }
 
-INSTANTIATE_TEST_CASE_P(
-    SignedExchangeRequestHandlerWithServiceWorkerBrowserTest,
-    SignedExchangeRequestHandlerWithServiceWorkerBrowserTest,
-    testing::Values(
-        SignedExchangeRequestHandlerWithServiceWorkerBrowserTestParam::kLegacy,
-        SignedExchangeRequestHandlerWithServiceWorkerBrowserTestParam::
-            kServiceWorkerServicification,
-        SignedExchangeRequestHandlerWithServiceWorkerBrowserTestParam::
-            kNetworkService));
-
-struct SignedExchangeAcceptHeaderBrowserTestParam {
-  SignedExchangeAcceptHeaderBrowserTestParam(
-      bool sxg_enabled,
-      bool sxg_origin_trial_enabled,
-      bool sxg_accept_header_enabled,
-      bool service_worker_servicification_enabled)
-      : sxg_enabled(sxg_enabled),
-        sxg_origin_trial_enabled(sxg_origin_trial_enabled),
-        sxg_accept_header_enabled(sxg_accept_header_enabled),
-        service_worker_servicification_enabled(
-            service_worker_servicification_enabled) {}
-  const bool sxg_enabled;
-  const bool sxg_origin_trial_enabled;
-  const bool sxg_accept_header_enabled;
-  const bool service_worker_servicification_enabled;
-};
-
 class SignedExchangeAcceptHeaderBrowserTest
     : public ContentBrowserTest,
-      public testing::WithParamInterface<
-          SignedExchangeAcceptHeaderBrowserTestParam> {
+      public testing::WithParamInterface<bool> {
  public:
   using self = SignedExchangeAcceptHeaderBrowserTest;
   SignedExchangeAcceptHeaderBrowserTest()
-      : enabled_https_server_(net::EmbeddedTestServer::TYPE_HTTPS),
-        disabled_https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
+      : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
   ~SignedExchangeAcceptHeaderBrowserTest() override = default;
 
  protected:
   void SetUp() override {
-    std::vector<base::Feature> enable_features;
-    std::vector<base::Feature> disable_features;
-    if (GetParam().sxg_enabled) {
-      enable_features.push_back(features::kSignedHTTPExchange);
+    if (GetParam()) {
+      feature_list_.InitAndEnableFeature(features::kSignedHTTPExchange);
     } else {
-      disable_features.push_back(features::kSignedHTTPExchange);
+      feature_list_.InitAndDisableFeature(features::kSignedHTTPExchange);
     }
-    if (GetParam().sxg_origin_trial_enabled) {
-      enable_features.push_back(features::kSignedHTTPExchangeOriginTrial);
-    } else {
-      disable_features.push_back(features::kSignedHTTPExchangeOriginTrial);
-    }
-    if (GetParam().service_worker_servicification_enabled) {
-      enable_features.push_back(blink::features::kServiceWorkerServicification);
-    } else {
-      disable_features.push_back(
-          blink::features::kServiceWorkerServicification);
-    }
-    feature_list_.InitWithFeatures(enable_features, disable_features);
 
-    enabled_https_server_.ServeFilesFromSourceDirectory("content/test/data");
-    enabled_https_server_.RegisterRequestHandler(
+    https_server_.ServeFilesFromSourceDirectory("content/test/data");
+    https_server_.RegisterRequestHandler(
         base::BindRepeating(&self::RedirectResponseHandler));
-    enabled_https_server_.RegisterRequestMonitor(
+    https_server_.RegisterRequestHandler(
+        base::BindRepeating(&self::FallbackSxgResponseHandler));
+    https_server_.RegisterRequestMonitor(
         base::BindRepeating(&self::MonitorRequest, base::Unretained(this)));
-    ASSERT_TRUE(enabled_https_server_.Start());
+    ASSERT_TRUE(https_server_.Start());
 
-    disabled_https_server_.ServeFilesFromSourceDirectory("content/test/data");
-    disabled_https_server_.RegisterRequestHandler(
-        base::BindRepeating(&self::RedirectResponseHandler));
-    disabled_https_server_.RegisterRequestMonitor(
-        base::BindRepeating(&self::MonitorRequest, base::Unretained(this)));
-    ASSERT_TRUE(disabled_https_server_.Start());
-
-    if (GetParam().sxg_accept_header_enabled) {
-      std::map<std::string, std::string> feature_parameters;
-      feature_parameters["OriginsList"] =
-          base::StringPrintf("127.0.0.1:%u", enabled_https_server_.port());
-      feature_list_for_accept_header_.InitAndEnableFeatureWithParameters(
-          features::kSignedHTTPExchangeAcceptHeader, feature_parameters);
-    }
     ContentBrowserTest::SetUp();
   }
 
@@ -804,26 +846,16 @@ class SignedExchangeAcceptHeaderBrowserTest
     EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
   }
 
-  bool ShouldHaveSXGAcceptHeaderInEnabledOrigin() const {
-    return GetParam().sxg_enabled || (GetParam().sxg_origin_trial_enabled &&
-                                      GetParam().sxg_accept_header_enabled);
-  }
+  bool IsSignedExchangeEnabled() const { return GetParam(); }
 
-  bool ShouldHaveSXGAcceptHeaderInDisabledOrigin() const {
-    return GetParam().sxg_enabled;
-  }
-
-  void CheckAcceptHeader(const GURL& url, bool is_navigation) {
-    const bool is_enabled_origin =
-        url.IntPort() == enabled_https_server_.port();
-    const bool should_have_sxg =
-        is_enabled_origin ? ShouldHaveSXGAcceptHeaderInEnabledOrigin()
-                          : ShouldHaveSXGAcceptHeaderInDisabledOrigin();
+  void CheckAcceptHeader(const GURL& url,
+                         bool is_navigation,
+                         bool is_fallback) {
     const auto accept_header = GetInterceptedAcceptHeader(url);
     ASSERT_TRUE(accept_header);
     EXPECT_EQ(
         *accept_header,
-        should_have_sxg
+        IsSignedExchangeEnabled() && !is_fallback
             ? (is_navigation
                    ? std::string(network::kFrameAcceptHeader) +
                          std::string(kAcceptHeaderSignedExchangeSuffix)
@@ -835,14 +867,22 @@ class SignedExchangeAcceptHeaderBrowserTest
   void CheckNavigationAcceptHeader(const std::vector<GURL>& urls) {
     for (const auto& url : urls) {
       SCOPED_TRACE(url);
-      CheckAcceptHeader(url, true /* is_navigation */);
+      CheckAcceptHeader(url, true /* is_navigation */, false /* is_fallback */);
     }
   }
 
   void CheckPrefetchAcceptHeader(const std::vector<GURL>& urls) {
     for (const auto& url : urls) {
       SCOPED_TRACE(url);
-      CheckAcceptHeader(url, false /* is_navigation */);
+      CheckAcceptHeader(url, false /* is_navigation */,
+                        false /* is_fallback */);
+    }
+  }
+
+  void CheckFallbackAcceptHeader(const std::vector<GURL>& urls) {
+    for (const auto& url : urls) {
+      SCOPED_TRACE(url);
+      CheckAcceptHeader(url, true /* is_navigation */, true /* is_fallback */);
     }
   }
 
@@ -856,8 +896,7 @@ class SignedExchangeAcceptHeaderBrowserTest
 
   void ClearInterceptedAcceptHeaders() { url_accept_header_map_.clear(); }
 
-  net::EmbeddedTestServer enabled_https_server_;
-  net::EmbeddedTestServer disabled_https_server_;
+  net::EmbeddedTestServer https_server_;
 
  private:
   static std::unique_ptr<net::test_server::HttpResponse>
@@ -871,6 +910,33 @@ class SignedExchangeAcceptHeaderBrowserTest
     http_response->set_code(net::HTTP_MOVED_PERMANENTLY);
     http_response->AddCustomHeader("Location", request.relative_url.substr(3));
     http_response->AddCustomHeader("Cache-Control", "no-cache");
+    return std::move(http_response);
+  }
+
+  // Responds with a prologue-only signed exchange that triggers a fallback
+  // redirect.
+  static std::unique_ptr<net::test_server::HttpResponse>
+  FallbackSxgResponseHandler(const net::test_server::HttpRequest& request) {
+    const std::string prefix = "/fallback_sxg?";
+    if (!base::StartsWith(request.relative_url, prefix,
+                          base::CompareCase::SENSITIVE)) {
+      return std::unique_ptr<net::test_server::HttpResponse>();
+    }
+    std::string fallback_url(request.relative_url.substr(prefix.length()));
+
+    std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
+        new net::test_server::BasicHttpResponse);
+    http_response->set_code(net::HTTP_OK);
+    http_response->set_content_type("application/signed-exchange;v=b3");
+
+    std::string sxg("sxg1-b3", 8);
+    sxg.push_back(fallback_url.length() >> 8);
+    sxg.push_back(fallback_url.length() & 0xff);
+    sxg += fallback_url;
+    // FallbackUrlAndAfter() requires 6 more bytes for sizes of next fields.
+    sxg.resize(sxg.length() + 6);
+
+    http_response->set_content(sxg);
     return std::move(http_response);
   }
 
@@ -888,121 +954,63 @@ class SignedExchangeAcceptHeaderBrowserTest
   std::map<GURL, std::string> url_accept_header_map_;
 };
 
-IN_PROC_BROWSER_TEST_P(SignedExchangeAcceptHeaderBrowserTest, EnabledOrigin) {
-  const GURL enabled_test_url = enabled_https_server_.GetURL("/sxg/test.html");
-  EXPECT_EQ(ShouldHaveSXGAcceptHeaderInEnabledOrigin(),
-            signed_exchange_utils::ShouldAdvertiseAcceptHeader(
-                url::Origin::Create(enabled_test_url)));
-  NavigateAndWaitForTitle(enabled_test_url, enabled_test_url.spec());
-  CheckNavigationAcceptHeader({enabled_test_url});
+IN_PROC_BROWSER_TEST_P(SignedExchangeAcceptHeaderBrowserTest, Simple) {
+  const GURL test_url = https_server_.GetURL("/sxg/test.html");
+  NavigateAndWaitForTitle(test_url, test_url.spec());
+  CheckNavigationAcceptHeader({test_url});
 }
 
-IN_PROC_BROWSER_TEST_P(SignedExchangeAcceptHeaderBrowserTest, DisabledOrigin) {
-  const GURL disabled_test_url =
-      disabled_https_server_.GetURL("/sxg/test.html");
-  EXPECT_EQ(GetParam().sxg_enabled,
-            signed_exchange_utils::ShouldAdvertiseAcceptHeader(
-                url::Origin::Create(disabled_test_url)));
+IN_PROC_BROWSER_TEST_P(SignedExchangeAcceptHeaderBrowserTest, Redirect) {
+  const GURL test_url = https_server_.GetURL("/sxg/test.html");
+  const GURL redirect_url = https_server_.GetURL("/r?" + test_url.spec());
+  const GURL redirect_redirect_url =
+      https_server_.GetURL("/r?" + redirect_url.spec());
+  NavigateAndWaitForTitle(redirect_redirect_url, test_url.spec());
 
-  NavigateAndWaitForTitle(disabled_test_url, disabled_test_url.spec());
-  CheckNavigationAcceptHeader({disabled_test_url});
+  CheckNavigationAcceptHeader({redirect_redirect_url, redirect_url, test_url});
 }
 
 IN_PROC_BROWSER_TEST_P(SignedExchangeAcceptHeaderBrowserTest,
-                       RedirectEnabledToDisabledToEnabled) {
-  const GURL enabled_test_url = enabled_https_server_.GetURL("/sxg/test.html");
-  const GURL redirect_disabled_to_enabled_url =
-      disabled_https_server_.GetURL("/r?" + enabled_test_url.spec());
-  const GURL redirect_enabled_to_disabled_to_enabled_url =
-      enabled_https_server_.GetURL("/r?" +
-                                   redirect_disabled_to_enabled_url.spec());
-  NavigateAndWaitForTitle(redirect_enabled_to_disabled_to_enabled_url,
-                          enabled_test_url.spec());
+                       FallbackRedirect) {
+  if (!IsSignedExchangeEnabled())
+    return;
 
-  CheckNavigationAcceptHeader({redirect_enabled_to_disabled_to_enabled_url,
-                               redirect_disabled_to_enabled_url,
-                               enabled_test_url});
-}
+  const GURL fallback_url = https_server_.GetURL("/sxg/test.html");
+  const GURL test_url =
+      https_server_.GetURL("/fallback_sxg?" + fallback_url.spec());
+  NavigateAndWaitForTitle(test_url, fallback_url.spec());
 
-IN_PROC_BROWSER_TEST_P(SignedExchangeAcceptHeaderBrowserTest,
-                       RedirectDisabledToEnabledToDisabled) {
-  const GURL disabled_test_url =
-      disabled_https_server_.GetURL("/sxg/test.html");
-  const GURL redirect_enabled_to_disabled_url =
-      enabled_https_server_.GetURL("/r?" + disabled_test_url.spec());
-  const GURL redirect_disabled_to_enabled_to_disabled_url =
-      disabled_https_server_.GetURL("/r?" +
-                                    redirect_enabled_to_disabled_url.spec());
-  NavigateAndWaitForTitle(redirect_disabled_to_enabled_to_disabled_url,
-                          disabled_test_url.spec());
-
-  CheckNavigationAcceptHeader({redirect_disabled_to_enabled_to_disabled_url,
-                               redirect_enabled_to_disabled_url,
-                               disabled_test_url});
+  CheckNavigationAcceptHeader({test_url});
+  CheckFallbackAcceptHeader({fallback_url});
 }
 
 IN_PROC_BROWSER_TEST_P(SignedExchangeAcceptHeaderBrowserTest,
                        PrefetchEnabledPageEnabledTarget) {
-  const GURL enabled_target = enabled_https_server_.GetURL("/sxg/hello.txt");
-  const GURL enabled_page_url = enabled_https_server_.GetURL(
-      std::string("/sxg/prefetch.html#") + enabled_target.spec());
-  NavigateAndWaitForTitle(enabled_page_url, "OK");
-  CheckPrefetchAcceptHeader({enabled_target});
+  const GURL target = https_server_.GetURL("/sxg/hello.txt");
+  const GURL page_url =
+      https_server_.GetURL(std::string("/sxg/prefetch.html#") + target.spec());
+  NavigateAndWaitForTitle(page_url, "OK");
+  CheckPrefetchAcceptHeader({target});
 }
 
 IN_PROC_BROWSER_TEST_P(SignedExchangeAcceptHeaderBrowserTest,
-                       PrefetchEnabledPageDisabledTarget) {
-  const GURL disabled_target = disabled_https_server_.GetURL("/sxg/hello.txt");
-  const GURL enabled_page_url = enabled_https_server_.GetURL(
-      std::string("/sxg/prefetch.html#") + disabled_target.spec());
-  NavigateAndWaitForTitle(enabled_page_url, "OK");
-  CheckPrefetchAcceptHeader({disabled_target});
-}
+                       PrefetchRedirect) {
+  const GURL target = https_server_.GetURL("/sxg/hello.txt");
+  const GURL redirect_url = https_server_.GetURL("/r?" + target.spec());
+  const GURL redirect_redirect_url =
+      https_server_.GetURL("/r?" + redirect_url.spec());
 
-IN_PROC_BROWSER_TEST_P(SignedExchangeAcceptHeaderBrowserTest,
-                       PrefetchDisabledPageEnabledTarget) {
-  const GURL enabled_target = enabled_https_server_.GetURL("/sxg/hello.txt");
-  const GURL disabled_page_url = disabled_https_server_.GetURL(
-      std::string("/sxg/prefetch.html#") + enabled_target.spec());
-  NavigateAndWaitForTitle(disabled_page_url, "OK");
-  CheckPrefetchAcceptHeader({enabled_target});
-}
+  const GURL page_url = https_server_.GetURL(
+      std::string("/sxg/prefetch.html#") + redirect_redirect_url.spec());
 
-IN_PROC_BROWSER_TEST_P(SignedExchangeAcceptHeaderBrowserTest,
-                       PrefetchDisabledPageDisabledTarget) {
-  const GURL disabled_target = disabled_https_server_.GetURL("/sxg/hello.txt");
-  const GURL disabled_page_url = disabled_https_server_.GetURL(
-      std::string("/sxg/prefetch.html#") + disabled_target.spec());
-  NavigateAndWaitForTitle(disabled_page_url, "OK");
-  CheckPrefetchAcceptHeader({disabled_target});
-}
+  NavigateAndWaitForTitle(page_url, "OK");
 
-IN_PROC_BROWSER_TEST_P(
-    SignedExchangeAcceptHeaderBrowserTest,
-    PrefetchEnabledPageRedirectFromDisabledToEnabledToDisabledTarget) {
-  const GURL disabled_target = disabled_https_server_.GetURL("/sxg/hello.txt");
-  const GURL redirect_enabled_to_disabled_url =
-      enabled_https_server_.GetURL("/r?" + disabled_target.spec());
-  const GURL redirect_disabled_to_enabled_to_disabled_url =
-      disabled_https_server_.GetURL("/r?" +
-                                    redirect_enabled_to_disabled_url.spec());
-
-  const GURL enabled_page_url = enabled_https_server_.GetURL(
-      std::string("/sxg/prefetch.html#") +
-      redirect_disabled_to_enabled_to_disabled_url.spec());
-
-  NavigateAndWaitForTitle(enabled_page_url, "OK");
-
-  CheckPrefetchAcceptHeader({redirect_disabled_to_enabled_to_disabled_url,
-                             redirect_enabled_to_disabled_url,
-                             disabled_target});
+  CheckPrefetchAcceptHeader({redirect_redirect_url, redirect_url, target});
 }
 
 IN_PROC_BROWSER_TEST_P(SignedExchangeAcceptHeaderBrowserTest, ServiceWorker) {
-  NavigateAndWaitForTitle(
-      enabled_https_server_.GetURL("/sxg/service-worker.html"), "Done");
-  NavigateAndWaitForTitle(
-      disabled_https_server_.GetURL("/sxg/service-worker.html"), "Done");
+  NavigateAndWaitForTitle(https_server_.GetURL("/sxg/service-worker.html"),
+                          "Done");
 
   const std::string frame_accept = std::string(network::kFrameAcceptHeader);
   const std::string frame_accept_with_sxg =
@@ -1014,105 +1022,52 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeAcceptHeaderBrowserTest, ServiceWorker) {
     SCOPED_TRACE(scope);
     const bool is_generated_scope =
         scope == std::string("/sxg/sw-scope-generated/");
-    const GURL enabled_target_url =
-        enabled_https_server_.GetURL(scope + "test.html");
-    const GURL disabled_target_url =
-        disabled_https_server_.GetURL(scope + "test.html");
-    const GURL redirect_disabled_to_enabled_target_url =
-        disabled_https_server_.GetURL("/r?" + enabled_target_url.spec());
-    const GURL redirect_enabled_to_disabled_to_enabled_target_url =
-        enabled_https_server_.GetURL(
-            "/r?" + redirect_disabled_to_enabled_target_url.spec());
-    const GURL redirect_enabled_to_disabled_target_url =
-        enabled_https_server_.GetURL("/r?" + disabled_target_url.spec());
-    const GURL redirect_disabled_to_enabled_to_disabled_target_url =
-        disabled_https_server_.GetURL(
-            "/r?" + redirect_enabled_to_disabled_target_url.spec());
+    const GURL target_url = https_server_.GetURL(scope + "test.html");
+    const GURL redirect_target_url =
+        https_server_.GetURL("/r?" + target_url.spec());
+    const GURL redirect_redirect_target_url =
+        https_server_.GetURL("/r?" + redirect_target_url.spec());
 
-    const std::string expected_enabled_title =
-        is_generated_scope ? (ShouldHaveSXGAcceptHeaderInEnabledOrigin()
-                                  ? frame_accept_with_sxg
-                                  : frame_accept)
-                           : "Done";
-    const std::string expected_disabled_title =
-        is_generated_scope ? (ShouldHaveSXGAcceptHeaderInDisabledOrigin()
-                                  ? frame_accept_with_sxg
-                                  : frame_accept)
-                           : "Done";
-    const base::Optional<std::string> expected_enabled_target_accept_header =
-        is_generated_scope ? base::nullopt
-                           : base::Optional<std::string>(
-                                 ShouldHaveSXGAcceptHeaderInEnabledOrigin()
-                                     ? frame_accept_with_sxg
-                                     : frame_accept);
-    const base::Optional<std::string> expected_disabled_target_accept_header =
-        is_generated_scope ? base::nullopt
-                           : base::Optional<std::string>(
-                                 ShouldHaveSXGAcceptHeaderInDisabledOrigin()
-                                     ? frame_accept_with_sxg
-                                     : frame_accept);
+    const std::string expected_title =
+        is_generated_scope
+            ? (IsSignedExchangeEnabled() ? frame_accept_with_sxg : frame_accept)
+            : "Done";
+    const base::Optional<std::string> expected_target_accept_header =
+        is_generated_scope
+            ? base::nullopt
+            : base::Optional<std::string>(IsSignedExchangeEnabled()
+                                              ? frame_accept_with_sxg
+                                              : frame_accept);
 
-    NavigateAndWaitForTitle(enabled_target_url, expected_enabled_title);
-    EXPECT_EQ(expected_enabled_target_accept_header,
-              GetInterceptedAcceptHeader(enabled_target_url));
+    NavigateAndWaitForTitle(target_url, expected_title);
+    EXPECT_EQ(expected_target_accept_header,
+              GetInterceptedAcceptHeader(target_url));
     ClearInterceptedAcceptHeaders();
 
-    NavigateAndWaitForTitle(disabled_target_url, expected_disabled_title);
-    EXPECT_EQ(expected_disabled_target_accept_header,
-              GetInterceptedAcceptHeader(disabled_target_url));
+    NavigateAndWaitForTitle(redirect_target_url, expected_title);
+    CheckNavigationAcceptHeader({redirect_target_url});
+    EXPECT_EQ(expected_target_accept_header,
+              GetInterceptedAcceptHeader(target_url));
     ClearInterceptedAcceptHeaders();
 
-    NavigateAndWaitForTitle(redirect_disabled_to_enabled_target_url,
-                            expected_enabled_title);
-    CheckNavigationAcceptHeader({redirect_disabled_to_enabled_target_url});
-    EXPECT_EQ(expected_enabled_target_accept_header,
-              GetInterceptedAcceptHeader(enabled_target_url));
-    ClearInterceptedAcceptHeaders();
-
-    NavigateAndWaitForTitle(redirect_enabled_to_disabled_target_url,
-                            expected_disabled_title);
-    CheckNavigationAcceptHeader({redirect_enabled_to_disabled_target_url});
-    EXPECT_EQ(expected_disabled_target_accept_header,
-              GetInterceptedAcceptHeader(disabled_target_url));
-    ClearInterceptedAcceptHeaders();
-
-    NavigateAndWaitForTitle(redirect_enabled_to_disabled_to_enabled_target_url,
-                            expected_enabled_title);
+    NavigateAndWaitForTitle(redirect_redirect_target_url, expected_title);
     CheckNavigationAcceptHeader(
-        {redirect_enabled_to_disabled_to_enabled_target_url,
-         redirect_disabled_to_enabled_target_url});
-    EXPECT_EQ(expected_enabled_target_accept_header,
-              GetInterceptedAcceptHeader(enabled_target_url));
+        {redirect_redirect_target_url, redirect_target_url});
+    EXPECT_EQ(expected_target_accept_header,
+              GetInterceptedAcceptHeader(target_url));
     ClearInterceptedAcceptHeaders();
-
-    NavigateAndWaitForTitle(redirect_disabled_to_enabled_to_disabled_target_url,
-                            expected_disabled_title);
-    CheckNavigationAcceptHeader(
-        {redirect_disabled_to_enabled_to_disabled_target_url,
-         redirect_enabled_to_disabled_target_url});
-    EXPECT_EQ(expected_disabled_target_accept_header,
-              GetInterceptedAcceptHeader(disabled_target_url));
   }
 }
 
 IN_PROC_BROWSER_TEST_P(SignedExchangeAcceptHeaderBrowserTest,
                        ServiceWorkerPrefetch) {
   NavigateAndWaitForTitle(
-      enabled_https_server_.GetURL("/sxg/service-worker-prefetch.html"),
-      "Done");
-  NavigateAndWaitForTitle(
-      disabled_https_server_.GetURL("/sxg/service-worker-prefetch.html"),
-      "Done");
+      https_server_.GetURL("/sxg/service-worker-prefetch.html"), "Done");
   const std::string scope = "/sxg/sw-prefetch-scope/";
-  const GURL enabled_target_url =
-      enabled_https_server_.GetURL(scope + "test.html");
-  const GURL disabled_target_url =
-      disabled_https_server_.GetURL(scope + "test.html");
+  const GURL target_url = https_server_.GetURL(scope + "test.html");
 
-  const GURL enabled_prefetch_target =
-      enabled_https_server_.GetURL(std::string("/sxg/hello.txt"));
-  const GURL disabled_prefetch_target =
-      disabled_https_server_.GetURL(std::string("/sxg/hello.txt"));
+  const GURL prefetch_target =
+      https_server_.GetURL(std::string("/sxg/hello.txt"));
   const std::string load_prefetch_script = base::StringPrintf(
       "(function loadPrefetch(urls) {"
       "  for (let url of urls) {"
@@ -1134,44 +1089,19 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeAcceptHeaderBrowserTest,
       "    }"
       "  }"
       "  check();"
-      "})(['%s','%s'])",
-      enabled_prefetch_target.spec().c_str(),
-      disabled_prefetch_target.spec().c_str());
+      "})(['%s'])",
+      prefetch_target.spec().c_str());
   bool unused = false;
 
-  NavigateAndWaitForTitle(enabled_target_url, "Done");
+  NavigateAndWaitForTitle(target_url, "Done");
   EXPECT_TRUE(ExecuteScriptAndExtractBool(shell()->web_contents(),
                                           load_prefetch_script, &unused));
-  CheckPrefetchAcceptHeader(
-      {enabled_prefetch_target, disabled_prefetch_target});
+  CheckPrefetchAcceptHeader({prefetch_target});
   ClearInterceptedAcceptHeaders();
-
-  NavigateAndWaitForTitle(disabled_target_url, "Done");
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(shell()->web_contents(),
-                                          load_prefetch_script, &unused));
-  CheckPrefetchAcceptHeader(
-      {enabled_prefetch_target, disabled_prefetch_target});
 }
 
-INSTANTIATE_TEST_CASE_P(
-    SignedExchangeAcceptHeaderBrowserTest,
-    SignedExchangeAcceptHeaderBrowserTest,
-    testing::Values(
-        SignedExchangeAcceptHeaderBrowserTestParam(false, false, false, false),
-        SignedExchangeAcceptHeaderBrowserTestParam(false, false, false, true),
-        SignedExchangeAcceptHeaderBrowserTestParam(false, false, true, false),
-        SignedExchangeAcceptHeaderBrowserTestParam(false, false, true, true),
-        SignedExchangeAcceptHeaderBrowserTestParam(false, true, false, false),
-        SignedExchangeAcceptHeaderBrowserTestParam(false, true, false, true),
-        SignedExchangeAcceptHeaderBrowserTestParam(false, true, true, false),
-        SignedExchangeAcceptHeaderBrowserTestParam(false, true, true, true),
-        SignedExchangeAcceptHeaderBrowserTestParam(true, false, false, false),
-        SignedExchangeAcceptHeaderBrowserTestParam(true, false, false, true),
-        SignedExchangeAcceptHeaderBrowserTestParam(true, false, true, false),
-        SignedExchangeAcceptHeaderBrowserTestParam(true, false, true, true),
-        SignedExchangeAcceptHeaderBrowserTestParam(true, true, false, false),
-        SignedExchangeAcceptHeaderBrowserTestParam(true, true, false, true),
-        SignedExchangeAcceptHeaderBrowserTestParam(true, true, true, false),
-        SignedExchangeAcceptHeaderBrowserTestParam(true, true, true, true)));
+INSTANTIATE_TEST_SUITE_P(SignedExchangeAcceptHeaderBrowserTest,
+                         SignedExchangeAcceptHeaderBrowserTest,
+                         testing::Bool());
 
 }  // namespace content

@@ -8,12 +8,13 @@
 
 #include <sstream>
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
-#include "cc/base/lap_timer.h"
+#include "base/timer/lap_timer.h"
 #include "cc/layers/nine_patch_layer.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/texture_layer.h"
@@ -107,16 +108,18 @@ class LayerTreeHostPerfTest : public LayerTreeTest {
   void AfterTest() override {
     CHECK(!test_name_.empty()) << "Must SetTestName() before AfterTest().";
     perf_test::PrintResult("layer_tree_host_frame_time", "", test_name_,
-                           1000 * draw_timer_.MsPerLap(), "us", true);
+                           draw_timer_.TimePerLap().InMicrosecondsF(), "us",
+                           true);
     if (measure_commit_cost_) {
       perf_test::PrintResult("layer_tree_host_commit_time", "", test_name_,
-                             1000 * commit_timer_.MsPerLap(), "us", true);
+                             commit_timer_.TimePerLap().InMicrosecondsF(), "us",
+                             true);
     }
   }
 
  protected:
-  LapTimer draw_timer_;
-  LapTimer commit_timer_;
+  base::LapTimer draw_timer_;
+  base::LapTimer commit_timer_;
 
   std::string test_name_;
   FakeContentLayerClient fake_content_layer_client_;
@@ -319,7 +322,7 @@ class BrowserCompositorInvalidateLayerTreePerfTest
     gpu_mailbox.SetName(
         reinterpret_cast<const int8_t*>(name_stream.str().c_str()));
     std::unique_ptr<viz::SingleReleaseCallback> callback =
-        viz::SingleReleaseCallback::Create(base::Bind(
+        viz::SingleReleaseCallback::Create(base::BindOnce(
             &BrowserCompositorInvalidateLayerTreePerfTest::ReleaseMailbox,
             base::Unretained(this)));
 

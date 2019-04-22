@@ -72,6 +72,7 @@ static void yuvconfig2image(aom_image_t *img, const YV12_BUFFER_CONFIG *yv12,
   img->img_data = yv12->buffer_alloc;
   img->img_data_owner = 0;
   img->self_allocd = 0;
+  img->sz = yv12->frame_size;
 }
 
 static aom_codec_err_t image2yuvconfig(const aom_image_t *img,
@@ -123,7 +124,12 @@ static aom_codec_err_t image2yuvconfig(const aom_image_t *img,
   } else {
     yv12->flags = 0;
   }
-  yv12->border = (yv12->y_stride - img->w) / 2;
+
+  // Note(yunqing): if img is allocated the same as the frame buffer, y_stride
+  // is 32-byte aligned. Also, handle the cases while allocating img without a
+  // border or stride_align is less than 32.
+  int border = (yv12->y_stride - (int)((img->w + 31) & ~31)) / 2;
+  yv12->border = (border < 0) ? 0 : border;
   yv12->subsampling_x = img->x_chroma_shift;
   yv12->subsampling_y = img->y_chroma_shift;
   return AOM_CODEC_OK;

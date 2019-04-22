@@ -9,6 +9,7 @@ if (is_android) {
 
 static_library("core") {
   sources = [
+    "fail_state.cc",
     "fail_state.h",
     "filtered_offline_item_observer.cc",
     "filtered_offline_item_observer.h",
@@ -21,6 +22,7 @@ static_library("core") {
     "offline_item_filter.h",
     "offline_item_state.h",
     "pending_state.h",
+    "rename_result.h",
     "throttled_offline_content_provider.cc",
     "throttled_offline_content_provider.h",
   ]
@@ -91,7 +93,7 @@ if (is_android) {
 
     deps = [
       "//base:base_java",
-      "//third_party/android_deps:android_support_annotations_java",
+      "//third_party/android_deps:com_android_support_support_annotations_java",
     ]
   }
 
@@ -118,6 +120,7 @@ if (is_android) {
       "offline_item_filter.h",
       "offline_item_state.h",
       "pending_state.h",
+      "rename_result.h",
     ]
   }
 }

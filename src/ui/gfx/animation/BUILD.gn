@@ -14,6 +14,7 @@ jumbo_component("animation") {
   sources = [
     "animation.cc",
     "animation.h",
+    "animation_android.cc",
     "animation_container.cc",
     "animation_container.h",
     "animation_container_element.h",
@@ -58,5 +59,10 @@ jumbo_component("animation") {
     "//ui/gfx:gfx_export",
     "//ui/gfx/geometry",
   ]
+
+  if (is_android) {
+    deps += [ "//ui/gfx:gfx_jni_headers" ]
+  }
+
   defines = [ "ANIMATION_IMPLEMENTATION" ]
 }

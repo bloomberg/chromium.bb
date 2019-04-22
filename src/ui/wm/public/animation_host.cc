@@ -11,7 +11,7 @@ DEFINE_UI_CLASS_PROPERTY_TYPE(wm::AnimationHost*)
 
 namespace wm {
 
-DEFINE_UI_CLASS_PROPERTY_KEY(AnimationHost*, kRootWindowAnimationHostKey, NULL);
+DEFINE_UI_CLASS_PROPERTY_KEY(AnimationHost*, kRootWindowAnimationHostKey, NULL)
 
 void SetAnimationHost(aura::Window* window, AnimationHost* animation_host) {
   DCHECK(window);

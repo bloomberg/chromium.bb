@@ -18,7 +18,7 @@ public:
 namespace WTF {
 inline void Adopted(const SkRefCnt* object) {}
 inline void RequireAdoption(const SkRefCnt* object) {}
-};
+}  // namespace WTF
 
 using WTF::Adopted;
 using WTF::RequireAdoption;

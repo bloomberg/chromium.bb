@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/extension_management_constants.h"
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 
 namespace extensions {
 namespace schema_constants {
@@ -45,7 +45,7 @@ const AllowedTypesMapEntry kAllowedTypesMap[] = {
   // policy.
 };
 
-const size_t kAllowedTypesMapSize = arraysize(kAllowedTypesMap);
+const size_t kAllowedTypesMapSize = base::size(kAllowedTypesMap);
 
 Manifest::Type GetManifestType(const std::string& name) {
   for (size_t index = 0; index < kAllowedTypesMapSize; ++index) {

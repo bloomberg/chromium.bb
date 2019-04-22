@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/core/paint/nine_piece_image_grid.h"
 
-#include "third_party/blink/renderer/core/style/nine_piece_image.h"
+#include "base/numerics/clamped_math.h"
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/geometry/length_functions.h"
@@ -27,16 +27,35 @@ static int ComputeEdgeSlice(const Length& slice, int maximum) {
                        ValueForLength(slice, LayoutUnit(maximum)).Round());
 }
 
+// Scale the width of the |start| and |end| edges using |scale_factor|.
+// Always round the width of |start|. Based on available space (|box_extent|),
+// the width of |end| is either rounded or floored. This should keep abutting
+// edges flush, while not producing potentially "uneven" widths for a
+// non-overlapping case.
+static void ScaleEdgeWidths(NinePieceImageGrid::Edge& start,
+                            NinePieceImageGrid::Edge& end,
+                            int box_extent,
+                            float scale_factor) {
+  LayoutUnit start_width(start.width);
+  start_width *= scale_factor;
+  LayoutUnit end_width(end.width);
+  end_width *= scale_factor;
+  start.width = start_width.Round();
+  int remaining = box_extent - start.width;
+  int rounded_end = end_width.Round();
+  end.width = rounded_end > remaining ? end_width.Floor() : rounded_end;
+}
+
 NinePieceImageGrid::NinePieceImageGrid(const NinePieceImage& nine_piece_image,
                                        IntSize image_size,
                                        IntRect border_image_area,
                                        const IntRectOutsets& border_widths,
                                        bool include_left_edge,
-                                       bool include_rigt_edge)
+                                       bool include_right_edge)
     : border_image_area_(border_image_area),
       image_size_(image_size),
-      horizontal_tile_rule_((Image::TileRule)nine_piece_image.HorizontalRule()),
-      vertical_tile_rule_((Image::TileRule)nine_piece_image.VerticalRule()),
+      horizontal_tile_rule_(nine_piece_image.HorizontalRule()),
+      vertical_tile_rule_(nine_piece_image.VerticalRule()),
       fill_(nine_piece_image.Fill()) {
   top_.slice = ComputeEdgeSlice(nine_piece_image.ImageSlices().Top(),
                                 image_size.Height());
@@ -47,10 +66,12 @@ NinePieceImageGrid::NinePieceImageGrid(const NinePieceImage& nine_piece_image,
   left_.slice = ComputeEdgeSlice(nine_piece_image.ImageSlices().Left(),
                                  image_size.Width());
 
+  // TODO(fs): Compute edge widths to LayoutUnit, and then only round to
+  // integer at the end - after (potential) compensation for overlapping edges.
   top_.width = ComputeEdgeWidth(nine_piece_image.BorderSlices().Top(),
                                 border_widths.Top(), top_.slice,
                                 border_image_area.Height());
-  right_.width = include_rigt_edge
+  right_.width = include_right_edge
                      ? ComputeEdgeWidth(nine_piece_image.BorderSlices().Right(),
                                         border_widths.Right(), right_.slice,
                                         border_image_area.Width())
@@ -68,16 +89,16 @@ NinePieceImageGrid::NinePieceImageGrid(const NinePieceImage& nine_piece_image,
   // as its height, and Wside as the border image width offset for the side, let
   // f = min(Lwidth/(Wleft+Wright), Lheight/(Wtop+Wbottom)). If f < 1, then all
   // W are reduced by multiplying them by f.
-  int border_side_width = ClampAdd(left_.width, right_.width).Max(1);
-  int border_side_height = ClampAdd(top_.width, bottom_.width).Max(1);
+  int border_side_width = base::ClampAdd(left_.width, right_.width).Max(1);
+  int border_side_height = base::ClampAdd(top_.width, bottom_.width).Max(1);
   float border_side_scale_factor =
       std::min((float)border_image_area.Width() / border_side_width,
                (float)border_image_area.Height() / border_side_height);
   if (border_side_scale_factor < 1) {
-    top_.width *= border_side_scale_factor;
-    right_.width *= border_side_scale_factor;
-    bottom_.width *= border_side_scale_factor;
-    left_.width *= border_side_scale_factor;
+    ScaleEdgeWidths(top_, bottom_, border_image_area.Height(),
+                    border_side_scale_factor);
+    ScaleEdgeWidths(left_, right_, border_image_area.Width(),
+                    border_side_scale_factor);
   }
 }
 
@@ -160,13 +181,13 @@ static inline void SetHorizontalEdge(
     const NinePieceImageGrid::Edge& edge,
     const FloatRect& source,
     const FloatRect& destination,
-    Image::TileRule tile_rule) {
+    ENinePieceImageRule tile_rule) {
   draw_info.is_drawable = edge.IsDrawable() && source.Width() > 0;
   if (draw_info.is_drawable) {
     draw_info.source = source;
     draw_info.destination = destination;
     draw_info.tile_scale = FloatSize(edge.Scale(), edge.Scale());
-    draw_info.tile_rule = {tile_rule, Image::kStretchTile};
+    draw_info.tile_rule = {tile_rule, kStretchImageRule};
   }
 }
 
@@ -175,13 +196,13 @@ static inline void SetVerticalEdge(
     const NinePieceImageGrid::Edge& edge,
     const FloatRect& source,
     const FloatRect& destination,
-    Image::TileRule tile_rule) {
+    ENinePieceImageRule tile_rule) {
   draw_info.is_drawable = edge.IsDrawable() && source.Height() > 0;
   if (draw_info.is_drawable) {
     draw_info.source = source;
     draw_info.destination = destination;
     draw_info.tile_scale = FloatSize(edge.Scale(), edge.Scale());
-    draw_info.tile_rule = {Image::kStretchTile, tile_rule};
+    draw_info.tile_rule = {kStretchImageRule, tile_rule};
   }
 }
 
@@ -268,11 +289,11 @@ void NinePieceImageGrid::SetDrawInfoMiddle(NinePieceDrawInfo& draw_info) const {
     // factor unless they have a rule other than "stretch". The middle however
     // can have "stretch" specified in one axis but not the other, so we have to
     // correct the scale here.
-    if (horizontal_tile_rule_ == (Image::TileRule)kStretchImageRule)
+    if (horizontal_tile_rule_ == kStretchImageRule)
       middle_scale_factor.SetWidth((float)destination_size.Width() /
                                    source_size.Width());
 
-    if (vertical_tile_rule_ == (Image::TileRule)kStretchImageRule)
+    if (vertical_tile_rule_ == kStretchImageRule)
       middle_scale_factor.SetHeight((float)destination_size.Height() /
                                     source_size.Height());
   }

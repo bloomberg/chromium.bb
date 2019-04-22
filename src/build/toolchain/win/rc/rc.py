@@ -141,12 +141,7 @@ def Preprocess(rc_file_data, flags):
   # lines in the file except the preprocessor directives."""
   # Thankfully, the Microsoft headers are mostly good about putting everything
   # in the system headers behind `if !defined(RC_INVOKED)`, so regular
-  # preprocessing with RC_INVOKED defined almost works. The one exception
-  # is struct tagCRGB in dlgs.h, but that will be fixed in the next major
-  # SDK release too.
-  # TODO(thakis): Remove this once an SDK with the fix has been released.
-  preprocessed_output = re.sub('typedef struct tagCRGB\s*{[^}]*} CRGB;', '',
-                               preprocessed_output)
+  # preprocessing with RC_INVOKED defined works.
   return preprocessed_output
 
 

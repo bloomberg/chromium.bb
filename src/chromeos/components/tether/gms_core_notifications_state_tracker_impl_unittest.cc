@@ -9,8 +9,8 @@
 #include <string>
 #include <vector>
 
-#include "components/cryptauth/remote_device_ref.h"
-#include "components/cryptauth/remote_device_test_util.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
+#include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -24,13 +24,13 @@ const int kNumTestDevices = 3;
 
 // Creates test devices which have the naming scheme of "testDevice0",
 // "testDevice1", etc.
-cryptauth::RemoteDeviceRefList CreateTestDevices() {
-  cryptauth::RemoteDeviceRefList test_devices =
-      cryptauth::CreateRemoteDeviceRefListForTest(kNumTestDevices);
+multidevice::RemoteDeviceRefList CreateTestDevices() {
+  multidevice::RemoteDeviceRefList test_devices =
+      multidevice::CreateRemoteDeviceRefListForTest(kNumTestDevices);
   for (size_t i = 0; i < kNumTestDevices; ++i) {
     std::stringstream ss;
     ss << "testDevice" << i;
-    test_devices.push_back(cryptauth::RemoteDeviceRefBuilder()
+    test_devices.push_back(multidevice::RemoteDeviceRefBuilder()
                                .SetName(std::string(ss.str()))
                                .Build());
   }
@@ -94,15 +94,15 @@ class GmsCoreNotificationsStateTrackerImplTest : public testing::Test {
         scanned_device_infos_, devices_to_send_, is_final_scan_result);
   }
 
-  void AddScannedRemoteDevice(cryptauth::RemoteDeviceRef remote_device) {
+  void AddScannedRemoteDevice(multidevice::RemoteDeviceRef remote_device) {
     scanned_device_infos_.emplace_back(remote_device, DeviceStatus(),
                                        false /* setup_required */);
   }
 
-  const cryptauth::RemoteDeviceRefList test_devices_;
+  const multidevice::RemoteDeviceRefList test_devices_;
 
   std::vector<HostScannerOperation::ScannedDeviceInfo> scanned_device_infos_;
-  cryptauth::RemoteDeviceRefList devices_to_send_;
+  multidevice::RemoteDeviceRefList devices_to_send_;
 
   std::unique_ptr<GmsCoreNotificationsStateTrackerImpl> tracker_;
   std::unique_ptr<TestObserver> observer_;
@@ -212,8 +212,8 @@ TEST_F(GmsCoreNotificationsStateTrackerImplTest, TestTracking_SameName) {
 
   // Make a copy of device 1, and change its name to be the same as device 0's
   // while keeping its public key (and, thus, ID) the same.
-  cryptauth::RemoteDeviceRef device_1_copy =
-      cryptauth::RemoteDeviceRefBuilder()
+  multidevice::RemoteDeviceRef device_1_copy =
+      multidevice::RemoteDeviceRefBuilder()
           .SetPublicKey(test_devices_[1].public_key())
           .SetName(test_devices_[0].name())
           .Build();

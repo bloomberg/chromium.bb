@@ -60,7 +60,7 @@ class VolumeArchive {
   // then last VolumeArchive::ReadData offset, then the read will be restarted
   // from the beginning of the archive.
   //
-  // For improving perfomance use VolumeArchive::MaybeDecompressAhead. Using
+  // For improving performance use VolumeArchive::MaybeDecompressAhead. Using
   // VolumeArchive::MaybeDecompressAhead is not mandatory, but without it
   // performance will suffer.
   //

@@ -17,33 +17,33 @@ class MediaCaptureDevicesImpl : public MediaCaptureDevices {
   static MediaCaptureDevicesImpl* GetInstance();
 
   // Overriden from MediaCaptureDevices
-  const MediaStreamDevices& GetAudioCaptureDevices() override;
-  const MediaStreamDevices& GetVideoCaptureDevices() override;
+  const blink::MediaStreamDevices& GetAudioCaptureDevices() override;
+  const blink::MediaStreamDevices& GetVideoCaptureDevices() override;
   void AddVideoCaptureObserver(media::VideoCaptureObserver* observer) override;
   void RemoveAllVideoCaptureObservers() override;
 
   // Called by MediaStreamManager to notify the change of media capture
   // devices, these 2 methods are called in IO thread.
-  void OnAudioCaptureDevicesChanged(const MediaStreamDevices& devices);
-  void OnVideoCaptureDevicesChanged(const MediaStreamDevices& devices);
+  void OnAudioCaptureDevicesChanged(const blink::MediaStreamDevices& devices);
+  void OnVideoCaptureDevicesChanged(const blink::MediaStreamDevices& devices);
 
  private:
   friend struct base::DefaultSingletonTraits<MediaCaptureDevicesImpl>;
   MediaCaptureDevicesImpl();
   ~MediaCaptureDevicesImpl() override;
 
-  void UpdateAudioDevicesOnUIThread(const content::MediaStreamDevices& devices);
-  void UpdateVideoDevicesOnUIThread(const content::MediaStreamDevices& devices);
+  void UpdateAudioDevicesOnUIThread(const blink::MediaStreamDevices& devices);
+  void UpdateVideoDevicesOnUIThread(const blink::MediaStreamDevices& devices);
 
   // Flag to indicate if device enumeration has been done/doing.
   // Only accessed on UI thread.
   bool devices_enumerated_;
 
   // A list of cached audio capture devices.
-  MediaStreamDevices audio_devices_;
+  blink::MediaStreamDevices audio_devices_;
 
   // A list of cached video capture devices.
-  MediaStreamDevices video_devices_;
+  blink::MediaStreamDevices video_devices_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaCaptureDevicesImpl);
 };

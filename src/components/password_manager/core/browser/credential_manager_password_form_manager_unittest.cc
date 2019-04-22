@@ -7,8 +7,8 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/fake_form_fetcher.h"
 #include "components/password_manager/core/browser/stub_form_saver.h"
@@ -36,7 +36,7 @@ class CredentialManagerPasswordFormManagerTest : public testing::Test {
 
  protected:
   // Necessary for callbacks, and for TestAutofillDriver.
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
 
   StubPasswordManagerClient client_;
 
@@ -60,9 +60,9 @@ TEST_F(CredentialManagerPasswordFormManagerTest, AbortEarly) {
   // in turn should delete |form_fetcher|.
   EXPECT_CALL(delegate, OnProvisionalSaveComplete()).WillOnce(Invoke(deleter));
   static_cast<FakeFormFetcher*>(form_manager->GetFormFetcher())
-      ->SetNonFederated(std::vector<const PasswordForm*>(), 0u);
+      ->NotifyFetchCompleted();
   // Check that |form_manager| was not deleted yet; doing so would have caused
-  // use after free during SetNonFederated.
+  // use after free during NotifyFetchCompleted.
   EXPECT_TRUE(form_manager);
 
   base::RunLoop().RunUntilIdle();

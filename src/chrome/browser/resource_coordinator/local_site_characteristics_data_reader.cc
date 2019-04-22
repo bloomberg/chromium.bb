@@ -4,13 +4,16 @@
 
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_reader.h"
 
+#include <utility>
+
+#include "base/bind.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_impl.h"
 
 namespace resource_coordinator {
 
 LocalSiteCharacteristicsDataReader::LocalSiteCharacteristicsDataReader(
     scoped_refptr<internal::LocalSiteCharacteristicsDataImpl> impl)
-    : impl_(std::move(impl)) {}
+    : impl_(std::move(impl)), weak_factory_(this) {}
 
 LocalSiteCharacteristicsDataReader::~LocalSiteCharacteristicsDataReader() {}
 
@@ -32,6 +35,26 @@ SiteFeatureUsage LocalSiteCharacteristicsDataReader::UsesAudioInBackground()
 SiteFeatureUsage
 LocalSiteCharacteristicsDataReader::UsesNotificationsInBackground() const {
   return impl_->UsesNotificationsInBackground();
+}
+
+bool LocalSiteCharacteristicsDataReader::DataLoaded() const {
+  return impl_->DataLoaded();
+}
+
+void LocalSiteCharacteristicsDataReader::RegisterDataLoadedCallback(
+    base::OnceClosure&& callback) {
+  // Register a closure that is bound using a weak pointer to this instance.
+  // In that way it won't be invoked by the underlying |impl_| after this
+  // reader is destroyed.
+  base::OnceClosure closure(
+      base::BindOnce(&LocalSiteCharacteristicsDataReader::RunClosure,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
+  impl_->RegisterDataLoadedCallback(std::move(closure));
+}
+
+void LocalSiteCharacteristicsDataReader::RunClosure(
+    base::OnceClosure&& closure) {
+  std::move(closure).Run();
 }
 
 }  // namespace resource_coordinator

@@ -21,7 +21,6 @@
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop_current.h"
@@ -66,7 +65,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
@@ -87,8 +85,9 @@
 
 using content::BrowserContext;
 using content::BrowserThread;
-using download::DownloadItem;
 using content::DownloadManager;
+using download::DownloadItem;
+using download::DownloadPathReservationTracker;
 
 namespace download_extension_errors {
 
@@ -188,7 +187,7 @@ const char* const kDangerStrings[] = {
     kDangerSafe,     kDangerUncommon,
     kDangerAccepted, kDangerHost,
     kDangerUnwanted, kDangerWhitelistedByPolicy};
-static_assert(arraysize(kDangerStrings) == download::DOWNLOAD_DANGER_TYPE_MAX,
+static_assert(base::size(kDangerStrings) == download::DOWNLOAD_DANGER_TYPE_MAX,
               "kDangerStrings should have DOWNLOAD_DANGER_TYPE_MAX elements");
 
 // Note: Any change to the state strings, should be accompanied by a
@@ -199,22 +198,22 @@ const char* const kStateStrings[] = {
   kStateInterrupted,
   kStateInterrupted,
 };
-static_assert(arraysize(kStateStrings) ==
+static_assert(base::size(kStateStrings) ==
                   download::DownloadItem::MAX_DOWNLOAD_STATE,
               "kStateStrings should have MAX_DOWNLOAD_STATE elements");
 
 const char* DangerString(download::DownloadDangerType danger) {
   DCHECK(danger >= 0);
   DCHECK(danger <
-         static_cast<download::DownloadDangerType>(arraysize(kDangerStrings)));
+         static_cast<download::DownloadDangerType>(base::size(kDangerStrings)));
   if (danger < 0 || danger >= static_cast<download::DownloadDangerType>(
-                                  arraysize(kDangerStrings)))
+                                  base::size(kDangerStrings)))
     return "";
   return kDangerStrings[danger];
 }
 
 download::DownloadDangerType DangerEnumFromString(const std::string& danger) {
-  for (size_t i = 0; i < arraysize(kDangerStrings); ++i) {
+  for (size_t i = 0; i < base::size(kDangerStrings); ++i) {
     if (danger == kDangerStrings[i])
       return static_cast<download::DownloadDangerType>(i);
   }
@@ -224,16 +223,16 @@ download::DownloadDangerType DangerEnumFromString(const std::string& danger) {
 const char* StateString(download::DownloadItem::DownloadState state) {
   DCHECK(state >= 0);
   DCHECK(state < static_cast<download::DownloadItem::DownloadState>(
-                     arraysize(kStateStrings)));
+                     base::size(kStateStrings)));
   if (state < 0 || state >= static_cast<download::DownloadItem::DownloadState>(
-                                arraysize(kStateStrings)))
+                                base::size(kStateStrings)))
     return "";
   return kStateStrings[state];
 }
 
 download::DownloadItem::DownloadState StateEnumFromString(
     const std::string& state) {
-  for (size_t i = 0; i < arraysize(kStateStrings); ++i) {
+  for (size_t i = 0; i < base::size(kStateStrings); ++i) {
     if ((kStateStrings[i] != NULL) && (state == kStateStrings[i]))
       return static_cast<DownloadItem::DownloadState>(i);
   }
@@ -599,8 +598,8 @@ void RunDownloadQuery(
   query_out.Search(all_items.begin(), all_items.end(), results);
 }
 
-DownloadPathReservationTracker::FilenameConflictAction ConvertConflictAction(
-    downloads::FilenameConflictAction action) {
+download::DownloadPathReservationTracker::FilenameConflictAction
+ConvertConflictAction(downloads::FilenameConflictAction action) {
   switch (action) {
     case downloads::FILENAME_CONFLICT_ACTION_NONE:
     case downloads::FILENAME_CONFLICT_ACTION_UNIQUIFY:
@@ -611,7 +610,7 @@ DownloadPathReservationTracker::FilenameConflictAction ConvertConflictAction(
       return DownloadPathReservationTracker::PROMPT;
   }
   NOTREACHED();
-  return DownloadPathReservationTracker::UNIQUIFY;
+  return download::DownloadPathReservationTracker::UNIQUIFY;
 }
 
 class ExtensionDownloadsEventRouterData : public base::SupportsUserData::Data {
@@ -1029,7 +1028,7 @@ bool DownloadsDownloadFunction::RunAsync() {
         })");
   std::unique_ptr<download::DownloadUrlParameters> download_params(
       new download::DownloadUrlParameters(
-          download_url, render_frame_host()->GetProcess()->GetID(),
+          download_url, source_process_id(),
           render_frame_host()->GetRenderViewHost()->GetRoutingID(),
           render_frame_host()->GetRoutingID(), traffic_annotation));
 
@@ -1218,7 +1217,7 @@ ExtensionFunction::ResponseAction DownloadsResumeFunction::Run() {
   }
   // Note that if the item isn't paused, this will be a no-op, and the extension
   // call will seem successful.
-  download_item->Resume();
+  download_item->Resume(user_gesture());
   RecordApiFunctions(DOWNLOADS_FUNCTION_RESUME);
   return RespondNow(NoArguments());
 }
@@ -2001,7 +2000,7 @@ void ExtensionDownloadsEventRouter::DispatchEvent(
     events::HistogramValue histogram_value,
     const std::string& event_name,
     bool include_incognito,
-    const Event::WillDispatchCallback& will_dispatch_callback,
+    Event::WillDispatchCallback will_dispatch_callback,
     std::unique_ptr<base::Value> arg) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!EventRouter::Get(profile_))
@@ -2024,7 +2023,7 @@ void ExtensionDownloadsEventRouter::DispatchEvent(
   auto event =
       std::make_unique<Event>(histogram_value, event_name, std::move(args),
                               restrict_to_browser_context);
-  event->will_dispatch_callback = will_dispatch_callback;
+  event->will_dispatch_callback = std::move(will_dispatch_callback);
   EventRouter::Get(profile_)->BroadcastEvent(std::move(event));
   DownloadsNotificationSource notification_source;
   notification_source.event_name = event_name;

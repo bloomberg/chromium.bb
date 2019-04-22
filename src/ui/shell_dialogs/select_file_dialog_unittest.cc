@@ -4,7 +4,7 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
@@ -101,7 +101,7 @@ TEST(ShellDialogs, ShortenFileNameIfNeeded) {
                          "jklmnopqrstuvwxyz1234abcdefghijklmnopqrstuvwxyz1234ab"
                          "cdefghijklmnopqrstuvwxyz1234ab.abcdefghijkl")}};
 
-  for (size_t i = 0; i < arraysize(test_cases); ++i) {
+  for (size_t i = 0; i < base::size(test_cases); ++i) {
     base::FilePath input =
         base::FilePath(test_cases[i].input).NormalizePathSeparators();
     base::FilePath output =

@@ -14,10 +14,7 @@ common_closure_args = [
   "extra_annotation_name=submodule",
 ]
 
-# Additional closure args for performing full checks.
-checking_closure_args = [
-  "compilation_level=SIMPLE_OPTIMIZATIONS",
-
+strict_error_checking_closure_args = [
   "jscomp_error=accessControls",
   "jscomp_error=ambiguousFunctionDecl",
   "jscomp_error=checkTypes",
@@ -36,22 +33,27 @@ checking_closure_args = [
   "jscomp_error=unknownDefines",
   "jscomp_error=uselessCode",
   "jscomp_error=visibility",
-
-  "language_in=ECMASCRIPT_2017",
-  "language_out=ECMASCRIPT5_STRICT",
-
-  "chrome_pass",
-  "polymer_pass",
-
-  "jscomp_off=duplicate",
 ]
+
+# Additional closure args for performing full checks.
+checking_closure_args = strict_error_checking_closure_args + [
+                          "compilation_level=SIMPLE_OPTIMIZATIONS",
+
+                          "language_in=ECMASCRIPT_2017",
+                          "language_out=ECMASCRIPT5_STRICT",
+
+                          "chrome_pass",
+                          "polymer_pass",
+
+                          "jscomp_off=duplicate",
+                        ]
 
 # Additional closure arguments for minifying
 minifying_closure_args = [
   "compilation_level=WHITESPACE_ONLY",
 
   "language_in=ECMASCRIPT_NEXT",
-  "language_out=ECMASCRIPT6",
+  "language_out=ECMASCRIPT_2017",
 
   # TODO(wychen): turn on 'use strict'. crbug.com/729689
   "emit_use_strict=false",

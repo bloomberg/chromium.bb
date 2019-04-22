@@ -22,10 +22,10 @@ TEST(MediaSinksObserverTest, OriginMatching) {
   sink_list.push_back(MediaSink("sinkId", "Sink", SinkIconType::CAST));
   MockMediaSinksObserver observer(&router, source, origin);
 
-  EXPECT_CALL(observer, OnSinksReceived(SequenceEquals(sink_list)));
+  EXPECT_CALL(observer, OnSinksReceived(sink_list));
   observer.OnSinksUpdated(sink_list, origin_list);
 
-  EXPECT_CALL(observer, OnSinksReceived(SequenceEquals(sink_list)));
+  EXPECT_CALL(observer, OnSinksReceived(sink_list));
   observer.OnSinksUpdated(sink_list, std::vector<url::Origin>());
 
   url::Origin origin2 =

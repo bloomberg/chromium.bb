@@ -24,7 +24,7 @@ void ClearLog();
 // This function can be called from any thread.
 void Log(logging::LogSeverity level,
          const base::Location& location,
-         _Printf_format_string_ const char* format,
+         const char* format,
          ...) PRINTF_FORMAT(3, 4);
 
 // Returns the log history.

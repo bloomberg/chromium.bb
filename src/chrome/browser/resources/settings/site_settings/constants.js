@@ -29,6 +29,7 @@ settings.ContentSettingsTypes = {
   BACKGROUND_SYNC: 'background-sync',
   MIDI_DEVICES: 'midi-sysex',
   USB_DEVICES: 'usb-devices',
+  SERIAL_PORTS: 'serial-ports',
   ZOOM_LEVELS: 'zoom-levels',
   PROTECTED_CONTENT: 'protected-content',
   ADS: 'ads',
@@ -50,6 +51,18 @@ settings.ContentSetting = {
   ASK: 'ask',
   SESSION_ONLY: 'session_only',
   IMPORTANT_CONTENT: 'detect_important_content',
+};
+
+/**
+ * All possible ChooserTypes that we currently support configuring in the UI.
+ * This should be kept in sync with the |kChooserTypeGroupNames| array in
+ * chrome/browser/ui/webui/site_settings_helper.cc
+ * @enum {string}
+ */
+settings.ChooserType = {
+  NONE: '',
+  USB_DEVICES: 'usb-devices-data',
+  SERIAL_PORTS: 'serial-ports-data',
 };
 
 /**
@@ -83,3 +96,26 @@ settings.ALL_SITES = 'all-sites';
  * @type {string}
  */
 settings.INVALID_CATEGORY_SUBTYPE = '';
+
+/**
+ * Contains the possible record action types.
+ * This should be kept in sync with the |AllSitesAction| enum in
+ * chrome/browser/ui/webui/settings/site_settings_handler.cc
+ * @enum {number}
+ */
+settings.AllSitesAction = {
+  LOAD_PAGE: 0,
+  RESET_PERMISSIONS: 1,
+  CLEAR_DATA: 2,
+  ENTER_SITE_DETAILS: 3,
+};
+
+/**
+ * Contains the possible sort methods.
+ * @enum {string}
+ */
+settings.SortMethod = {
+  NAME: 'name',
+  MOST_VISITED: 'most-visited',
+  STORAGE: 'data-stored',
+};

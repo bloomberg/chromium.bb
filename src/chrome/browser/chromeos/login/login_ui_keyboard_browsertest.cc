@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
@@ -12,12 +13,15 @@
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/login/test/js_checker.h"
+#include "chrome/browser/chromeos/login/test/login_screen_tester.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
-#include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
+#include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
+#include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/test_utils.h"
 
@@ -131,7 +135,7 @@ IN_PROC_BROWSER_TEST_F(LoginUIKeyboardTest, PRE_CheckPODScreenDefault) {
 // Check default IME initialization, when there is no IME configuration in
 // local_state.
 IN_PROC_BROWSER_TEST_F(LoginUIKeyboardTest, CheckPODScreenDefault) {
-  js_checker().ExpectEQ("$('pod-row').pods.length", 2);
+  test::OobeJS().ExpectEQ("$('pod-row').pods.length", 2);
 
   std::vector<std::string> expected_input_methods;
   Append_en_US_InputMethods(&expected_input_methods);
@@ -152,7 +156,7 @@ IN_PROC_BROWSER_TEST_F(LoginUIKeyboardTest, PRE_CheckPODScreenWithUsers) {
 
 // TODO(crbug.com/602951): Test is flaky.
 IN_PROC_BROWSER_TEST_F(LoginUIKeyboardTest, DISABLED_CheckPODScreenWithUsers) {
-  js_checker().ExpectEQ("$('pod-row').pods.length", 2);
+  test::OobeJS().ExpectEQ("$('pod-row').pods.length", 2);
 
   EXPECT_EQ(user_input_methods[0], input_method::InputMethodManager::Get()
                                        ->GetActiveIMEState()
@@ -169,7 +173,7 @@ IN_PROC_BROWSER_TEST_F(LoginUIKeyboardTest, DISABLED_CheckPODScreenWithUsers) {
                                         ->GetActiveInputMethodIds());
 
   FocusPODWaiter waiter;
-  js_checker().Evaluate("$('pod-row').focusPod($('pod-row').pods[1])");
+  test::OobeJS().Evaluate("$('pod-row').focusPod($('pod-row').pods[1])");
   waiter.Wait();
 
   EXPECT_EQ(user_input_methods[1], input_method::InputMethodManager::Get()
@@ -184,13 +188,6 @@ class LoginUIKeyboardTestWithUsersAndOwner : public chromeos::LoginManagerTest {
       : LoginManagerTest(false, true /* should_initialize_webui */) {}
   ~LoginUIKeyboardTestWithUsersAndOwner() override {}
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    LoginManagerTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kStubCrosSettings);
-
-    LoginManagerTest::SetUpCommandLine(command_line);
-  }
-
   void SetUpOnMainThread() override {
     user_input_methods.push_back("xkb:fr::fra");
     user_input_methods.push_back("xkb:de::ger");
@@ -199,7 +196,8 @@ class LoginUIKeyboardTestWithUsersAndOwner : public chromeos::LoginManagerTest {
     chromeos::input_method::InputMethodManager::Get()->MigrateInputMethods(
         &user_input_methods);
 
-    settings_helper_.SetString(kDeviceOwner, kTestUser3);
+    scoped_testing_cros_settings_.device_settings()->Set(
+        kDeviceOwner, base::Value(kTestUser3));
 
     LoginManagerTest::SetUpOnMainThread();
   }
@@ -224,8 +222,7 @@ class LoginUIKeyboardTestWithUsersAndOwner : public chromeos::LoginManagerTest {
 
  protected:
   std::vector<std::string> user_input_methods;
-  ScopedCrosSettingsTestHelper settings_helper_{
-      /* create_settings_service= */ false};
+  ScopedTestingCrosSettings scoped_testing_cros_settings_;
 };
 
 void LoginUIKeyboardTestWithUsersAndOwner::CheckGaiaKeyboard() {
@@ -253,7 +250,7 @@ IN_PROC_BROWSER_TEST_F(LoginUIKeyboardTestWithUsersAndOwner,
 
 IN_PROC_BROWSER_TEST_F(LoginUIKeyboardTestWithUsersAndOwner,
                        CheckPODScreenKeyboard) {
-  js_checker().ExpectEQ("$('pod-row').pods.length", 3);
+  test::OobeJS().ExpectEQ("$('pod-row').pods.length", 3);
 
   std::vector<std::string> expected_input_methods;
   // Owner input method.
@@ -268,12 +265,12 @@ IN_PROC_BROWSER_TEST_F(LoginUIKeyboardTestWithUsersAndOwner,
                                         ->GetActiveInputMethodIds());
 
   // Switch to Gaia.
-  js_checker().Evaluate("$('add-user-button').click()");
+  ASSERT_TRUE(test::LoginScreenTester().ClickAddUserButton());
   OobeScreenWaiter(OobeScreen::SCREEN_GAIA_SIGNIN).Wait();
   CheckGaiaKeyboard();
 
   // Switch back.
-  js_checker().Evaluate("$('gaia-signin').cancel()");
+  test::OobeJS().Evaluate("$('gaia-signin').cancel()");
   OobeScreenWaiter(OobeScreen::SCREEN_ACCOUNT_PICKER).Wait();
 
   EXPECT_EQ(expected_input_methods, input_method::InputMethodManager::Get()

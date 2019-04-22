@@ -4,9 +4,14 @@
 
 #include "mojo/core/channel.h"
 
+#include <atomic>
+
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/optional.h"
+#include "base/process/process_handle.h"
+#include "base/run_loop.h"
 #include "base/threading/thread.h"
 #include "mojo/core/platform_handle_utils.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
@@ -19,7 +24,8 @@ namespace {
 
 class TestChannel : public Channel {
  public:
-  TestChannel(Channel::Delegate* delegate) : Channel(delegate) {}
+  TestChannel(Channel::Delegate* delegate)
+      : Channel(delegate, Channel::HandlePolicy::kAcceptHandles) {}
 
   char* GetReadBufferTest(size_t* buffer_capacity) {
     return GetReadBuffer(buffer_capacity);
@@ -193,6 +199,7 @@ class ChannelTestShutdownAndWriteDelegate : public Channel::Delegate {
         client_channel_(std::move(client_channel)),
         client_thread_(std::move(client_thread)) {
     channel_ = Channel::Create(this, ConnectionParams(std::move(endpoint)),
+                               Channel::HandlePolicy::kAcceptHandles,
                                std::move(task_runner));
     channel_->Start();
   }
@@ -249,9 +256,9 @@ TEST(ChannelTest, PeerShutdownDuringRead) {
   client_thread->StartWithOptions(
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
 
-  scoped_refptr<Channel> client_channel =
-      Channel::Create(nullptr, ConnectionParams(channel.TakeRemoteEndpoint()),
-                      client_thread->task_runner());
+  scoped_refptr<Channel> client_channel = Channel::Create(
+      nullptr, ConnectionParams(channel.TakeRemoteEndpoint()),
+      Channel::HandlePolicy::kAcceptHandles, client_thread->task_runner());
   client_channel->Start();
 
   // On the "client" IO thread, create and write a message.
@@ -271,6 +278,211 @@ TEST(ChannelTest, PeerShutdownDuringRead) {
       run_loop.QuitClosure());
 
   run_loop.Run();
+}
+
+class RejectHandlesDelegate : public Channel::Delegate {
+ public:
+  RejectHandlesDelegate() = default;
+
+  size_t num_messages() const { return num_messages_; }
+
+  // Channel::Delegate:
+  void OnChannelMessage(const void* payload,
+                        size_t payload_size,
+                        std::vector<PlatformHandle> handles) override {
+    ++num_messages_;
+  }
+
+  void OnChannelError(Channel::Error error) override {
+    if (wait_for_error_loop_)
+      wait_for_error_loop_->Quit();
+  }
+
+  void WaitForError() {
+    wait_for_error_loop_.emplace();
+    wait_for_error_loop_->Run();
+  }
+
+ private:
+  size_t num_messages_ = 0;
+  base::Optional<base::RunLoop> wait_for_error_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(RejectHandlesDelegate);
+};
+
+TEST(ChannelTest, RejectHandles) {
+  base::MessageLoop message_loop(base::MessageLoop::TYPE_IO);
+  PlatformChannel platform_channel;
+
+  RejectHandlesDelegate receiver_delegate;
+  scoped_refptr<Channel> receiver = Channel::Create(
+      &receiver_delegate,
+      ConnectionParams(platform_channel.TakeLocalEndpoint()),
+      Channel::HandlePolicy::kRejectHandles, message_loop.task_runner());
+  receiver->Start();
+
+  RejectHandlesDelegate sender_delegate;
+  scoped_refptr<Channel> sender = Channel::Create(
+      &sender_delegate, ConnectionParams(platform_channel.TakeRemoteEndpoint()),
+      Channel::HandlePolicy::kRejectHandles, message_loop.task_runner());
+  sender->Start();
+
+  // Create another platform channel just to stuff one of its endpoint handles
+  // into a message. Sending this message to the receiver should cause the
+  // receiver to reject it and close the Channel without ever dispatching the
+  // message.
+  PlatformChannel dummy_channel;
+  std::vector<mojo::PlatformHandle> handles;
+  handles.push_back(dummy_channel.TakeLocalEndpoint().TakePlatformHandle());
+  auto message = std::make_unique<Channel::Message>(0 /* payload_size */,
+                                                    1 /* max_handles */);
+  message->SetHandles(std::move(handles));
+  sender->Write(std::move(message));
+
+  receiver_delegate.WaitForError();
+  EXPECT_EQ(0u, receiver_delegate.num_messages());
+}
+
+TEST(ChannelTest, DeserializeMessage_BadExtraHeaderSize) {
+  // Verifies that a message payload is rejected when the extra header chunk
+  // size not properly aligned.
+  constexpr uint16_t kBadAlignment = kChannelMessageAlignment + 1;
+  constexpr uint16_t kTotalHeaderSize =
+      sizeof(Channel::Message::Header) + kBadAlignment;
+  constexpr uint32_t kEmptyPayloadSize = 8;
+  constexpr uint32_t kMessageSize = kTotalHeaderSize + kEmptyPayloadSize;
+  char message[kMessageSize];
+  memset(message, 0, kMessageSize);
+
+  Channel::Message::Header* header =
+      reinterpret_cast<Channel::Message::Header*>(&message[0]);
+  header->num_bytes = kMessageSize;
+  header->num_header_bytes = kTotalHeaderSize;
+  header->message_type = Channel::Message::MessageType::NORMAL;
+  header->num_handles = 0;
+  EXPECT_EQ(nullptr, Channel::Message::Deserialize(&message[0], kMessageSize,
+                                                   base::kNullProcessHandle));
+}
+
+class CountingChannelDelegate : public Channel::Delegate {
+ public:
+  explicit CountingChannelDelegate(base::OnceClosure on_final_message)
+      : on_final_message_(std::move(on_final_message)) {}
+  ~CountingChannelDelegate() override = default;
+
+  void OnChannelMessage(const void* payload,
+                        size_t payload_size,
+                        std::vector<PlatformHandle> handles) override {
+    // If this is the special "final message", run the closure.
+    if (payload_size == 1) {
+      auto* payload_str = reinterpret_cast<const char*>(payload);
+      if (payload_str[0] == '!') {
+        std::move(on_final_message_).Run();
+        return;
+      }
+    }
+
+    ++message_count_;
+  }
+
+  void OnChannelError(Channel::Error error) override { ++error_count_; }
+
+  size_t message_count_ = 0;
+  size_t error_count_ = 0;
+
+ private:
+  base::OnceClosure on_final_message_;
+};
+
+TEST(ChannelTest, PeerStressTest) {
+  constexpr size_t kLotsOfMessages = 1024;
+
+  base::MessageLoop message_loop(base::MessageLoop::TYPE_IO);
+  base::RunLoop run_loop;
+
+  // Both channels should receive all the messages that each is sent. When
+  // the count becomes 2 (indicating both channels have received the final
+  // message), quit the main test thread's run loop.
+  std::atomic_int count_channels_received_final_message(0);
+  auto quit_when_both_channels_received_final_message = base::BindRepeating(
+      [](std::atomic_int* count_channels_received_final_message,
+         base::OnceClosure quit_closure) {
+        if (++(*count_channels_received_final_message) == 2) {
+          std::move(quit_closure).Run();
+        }
+      },
+      base::Unretained(&count_channels_received_final_message),
+      run_loop.QuitClosure());
+
+  // Create a second IO thread for the peer channel.
+  base::Thread::Options thread_options;
+  thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
+  base::Thread peer_thread("peer_b_io");
+  peer_thread.StartWithOptions(thread_options);
+
+  // Create two channels that run on separate threads.
+  PlatformChannel platform_channel;
+
+  CountingChannelDelegate delegate_a(
+      quit_when_both_channels_received_final_message);
+  scoped_refptr<Channel> channel_a = Channel::Create(
+      &delegate_a, ConnectionParams(platform_channel.TakeLocalEndpoint()),
+      Channel::HandlePolicy::kRejectHandles, message_loop.task_runner());
+
+  CountingChannelDelegate delegate_b(
+      quit_when_both_channels_received_final_message);
+  scoped_refptr<Channel> channel_b = Channel::Create(
+      &delegate_b, ConnectionParams(platform_channel.TakeRemoteEndpoint()),
+      Channel::HandlePolicy::kRejectHandles, peer_thread.task_runner());
+
+  // Send a lot of messages, followed by a final terminating message.
+  auto send_lots_of_messages = [](scoped_refptr<Channel> channel) {
+    for (size_t i = 0; i < kLotsOfMessages; ++i) {
+      channel->Write(std::make_unique<Channel::Message>(0, 0));
+    }
+  };
+  auto send_final_message = [](scoped_refptr<Channel> channel) {
+    auto message = std::make_unique<Channel::Message>(1, 0);
+    auto* payload = static_cast<char*>(message->mutable_payload());
+    payload[0] = '!';
+    channel->Write(std::move(message));
+  };
+
+  channel_a->Start();
+  channel_b->Start();
+
+  send_lots_of_messages(channel_a);
+  send_lots_of_messages(channel_b);
+
+  message_loop.task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(send_lots_of_messages, channel_a));
+  message_loop.task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(send_lots_of_messages, channel_a));
+  message_loop.task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(send_final_message, channel_a));
+
+  peer_thread.task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(send_lots_of_messages, channel_b));
+  peer_thread.task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(send_lots_of_messages, channel_b));
+  peer_thread.task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(send_final_message, channel_b));
+
+  // Run until quit_when_both_channels_received_final_message quits the loop.
+  run_loop.Run();
+
+  channel_a->ShutDown();
+  channel_b->ShutDown();
+
+  peer_thread.StopSoon();
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(kLotsOfMessages * 3, delegate_a.message_count_);
+  EXPECT_EQ(kLotsOfMessages * 3, delegate_b.message_count_);
+
+  EXPECT_EQ(0u, delegate_a.error_count_);
+  EXPECT_EQ(0u, delegate_b.error_count_);
 }
 
 }  // namespace

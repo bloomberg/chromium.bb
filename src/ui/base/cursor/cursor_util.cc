@@ -5,7 +5,6 @@
 #include "ui/base/cursor/cursor_util.h"
 
 #include "base/logging.h"
-#include "skia/ext/image_operations.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -39,7 +38,7 @@ bool ConvertSkBitmapAlphaType(SkBitmap* bitmap, SkAlphaType alpha_type) {
   return true;
 }
 
-} // namespace
+}  // namespace
 
 void ScaleAndRotateCursorBitmapAndHotpoint(float scale,
                                            display::Display::Rotation rotation,
@@ -90,11 +89,17 @@ void ScaleAndRotateCursorBitmapAndHotpoint(float scale,
   gfx::Size scaled_size = gfx::ScaleToFlooredSize(
       gfx::Size(bitmap->width(), bitmap->height()), scale);
 
-  *bitmap = skia::ImageOperations::Resize(
-      *bitmap,
-      skia::ImageOperations::RESIZE_BETTER,
-      scaled_size.width(),
-      scaled_size.height());
+  // TODO(crbug.com/919866): skia::ImageOperations::Resize() doesn't support
+  // unpremultiplied alpha bitmaps.
+  SkBitmap scaled_bitmap;
+  scaled_bitmap.setInfo(
+      bitmap->info().makeWH(scaled_size.width(), scaled_size.height()));
+  if (scaled_bitmap.tryAllocPixels()) {
+    bitmap->pixmap().scalePixels(scaled_bitmap.pixmap(),
+                                 kMedium_SkFilterQuality);
+  }
+
+  *bitmap = scaled_bitmap;
   *hotpoint = gfx::ScaleToFlooredPoint(*hotpoint, scale);
 }
 

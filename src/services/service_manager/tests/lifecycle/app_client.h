@@ -15,7 +15,7 @@
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_binding.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
-#include "services/service_manager/tests/lifecycle/lifecycle_unittest.mojom.h"
+#include "services/service_manager/tests/lifecycle/lifecycle.test-mojom.h"
 
 namespace service_manager {
 namespace test {
@@ -23,8 +23,7 @@ namespace test {
 class AppClient : public Service,
                   public mojom::LifecycleControl {
  public:
-  explicit AppClient(service_manager::mojom::ServiceRequest request,
-                     base::OnceClosure quit_closure);
+  explicit AppClient(service_manager::mojom::ServiceRequest request);
   ~AppClient() override;
 
   // Service:
@@ -42,13 +41,9 @@ class AppClient : public Service,
   void CloseServiceManagerConnection() override;
 
  private:
-  class ServiceImpl;
-
   void LifecycleControlBindingLost();
 
   ServiceBinding service_binding_;
-  base::OnceClosure quit_closure_;
-
   BinderRegistry registry_;
   mojo::BindingSet<mojom::LifecycleControl> bindings_;
 

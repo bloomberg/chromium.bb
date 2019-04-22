@@ -34,6 +34,15 @@ const char kNumBytesKey[] = "num_bytes";
 const char kAnimatedUrlKey[] = "animated_url";
 const char kLogUrlKey[] = "log_url";
 const char kCtaLogUrlKey[] = "cta_log_url";
+const char kShortLinkKey[] = "short_link";
+const char kIframeWidthPx[] = "iframe_width_px";
+const char kIframeHeightPx[] = "iframe_height_px";
+
+const char kShareButtonX[] = "share_button_x";
+const char kShareButtonY[] = "share_button_y";
+const char kShareButtonOpacity[] = "share_button_opacity";
+const char kShareButtonIcon[] = "share_button_icon";
+const char kShareButtonBg[] = "share_button_bg";
 
 const char kSimpleType[] = "SIMPLE";
 const char kAnimatedType[] = "ANIMATED";
@@ -56,7 +65,7 @@ void SetTimeValue(base::DictionaryValue& dict,
                   const std::string& key,
                   const base::Time& time) {
   int64_t internal_time_value = time.ToInternalValue();
-  dict.SetString(key, base::Int64ToString(internal_time_value));
+  dict.SetString(key, base::NumberToString(internal_time_value));
 }
 
 LogoType LogoTypeFromString(base::StringPiece type) {
@@ -117,13 +126,16 @@ const LogoMetadata* LogoCache::GetCachedLogoMetadata() {
 
 void LogoCache::SetCachedLogo(const EncodedLogo* logo) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  std::unique_ptr<LogoMetadata> metadata;
-  if (logo) {
-    metadata = std::make_unique<LogoMetadata>(logo->metadata);
-    logo_num_bytes_ = static_cast<int>(logo->encoded_image->size());
+  if (!logo) {
+    UpdateMetadata(nullptr);
+    DeleteLogoAndMetadata();
+    return;
   }
-  UpdateMetadata(std::move(metadata));
-  WriteLogo(logo ? logo->encoded_image : nullptr);
+
+  logo_num_bytes_ =
+      logo->encoded_image ? static_cast<int>(logo->encoded_image->size()) : 0;
+  UpdateMetadata(std::make_unique<LogoMetadata>(logo->metadata));
+  WriteLogo(logo->encoded_image);
 }
 
 std::unique_ptr<EncodedLogo> LogoCache::GetCachedLogo() {
@@ -133,18 +145,21 @@ std::unique_ptr<EncodedLogo> LogoCache::GetCachedLogo() {
   if (!metadata_)
     return nullptr;
 
-  scoped_refptr<base::RefCountedString> encoded_image =
-      new base::RefCountedString();
-  if (!base::ReadFileToString(GetLogoPath(), &encoded_image->data())) {
-    UpdateMetadata(nullptr);
-    return nullptr;
-  }
+  scoped_refptr<base::RefCountedString> encoded_image;
+  if (logo_num_bytes_ != 0) {
+    encoded_image = new base::RefCountedString();
 
-  if (encoded_image->size() != static_cast<size_t>(logo_num_bytes_)) {
-    // Delete corrupt metadata and logo.
-    DeleteLogoAndMetadata();
-    UpdateMetadata(nullptr);
-    return nullptr;
+    if (!base::ReadFileToString(GetLogoPath(), &encoded_image->data())) {
+      UpdateMetadata(nullptr);
+      return nullptr;
+    }
+
+    if (encoded_image->size() != static_cast<size_t>(logo_num_bytes_)) {
+      // Delete corrupt metadata and logo.
+      DeleteLogoAndMetadata();
+      UpdateMetadata(nullptr);
+      return nullptr;
+    }
   }
 
   std::unique_ptr<EncodedLogo> logo(new EncodedLogo());
@@ -157,7 +172,7 @@ std::unique_ptr<EncodedLogo> LogoCache::GetCachedLogo() {
 std::unique_ptr<LogoMetadata> LogoCache::LogoMetadataFromString(
     const std::string& str,
     int* logo_num_bytes) {
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(str);
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(str);
   base::DictionaryValue* dict;
   if (!value || !value->GetAsDictionary(&dict))
     return nullptr;
@@ -170,6 +185,7 @@ std::unique_ptr<LogoMetadata> LogoCache::LogoMetadataFromString(
   std::string animated_url;
   std::string log_url;
   std::string cta_log_url;
+  std::string short_link;
   if (!dict->GetString(kSourceUrlKey, &source_url) ||
       !dict->GetString(kFingerprintKey, &metadata->fingerprint) ||
       !dict->GetString(kTypeKey, &type) ||
@@ -179,10 +195,18 @@ std::unique_ptr<LogoMetadata> LogoCache::LogoMetadataFromString(
       !dict->GetString(kAnimatedUrlKey, &animated_url) ||
       !dict->GetString(kLogUrlKey, &log_url) ||
       !dict->GetString(kCtaLogUrlKey, &cta_log_url) ||
+      !dict->GetString(kShortLinkKey, &short_link) ||
       !dict->GetString(kMimeTypeKey, &metadata->mime_type) ||
       !dict->GetBoolean(kCanShowAfterExpirationKey,
                         &metadata->can_show_after_expiration) ||
       !dict->GetInteger(kNumBytesKey, logo_num_bytes) ||
+      !dict->GetInteger(kShareButtonX, &metadata->share_button_x) ||
+      !dict->GetInteger(kShareButtonY, &metadata->share_button_y) ||
+      !dict->GetDouble(kShareButtonOpacity, &metadata->share_button_opacity) ||
+      !dict->GetString(kShareButtonIcon, &metadata->share_button_icon) ||
+      !dict->GetString(kShareButtonBg, &metadata->share_button_bg) ||
+      !dict->GetInteger(kIframeWidthPx, &metadata->iframe_width_px) ||
+      !dict->GetInteger(kIframeHeightPx, &metadata->iframe_height_px) ||
       !GetTimeValue(*dict, kExpirationTimeKey, &metadata->expiration_time)) {
     return nullptr;
   }
@@ -193,6 +217,7 @@ std::unique_ptr<LogoMetadata> LogoCache::LogoMetadataFromString(
   metadata->animated_url = GURL(animated_url);
   metadata->log_url = GURL(log_url);
   metadata->cta_log_url = GURL(cta_log_url);
+  metadata->short_link = GURL(short_link);
 
   return metadata;
 }
@@ -211,10 +236,18 @@ void LogoCache::LogoMetadataToString(const LogoMetadata& metadata,
   dict.SetString(kAnimatedUrlKey, metadata.animated_url.spec());
   dict.SetString(kLogUrlKey, metadata.log_url.spec());
   dict.SetString(kCtaLogUrlKey, metadata.cta_log_url.spec());
+  dict.SetString(kShortLinkKey, metadata.short_link.spec());
   dict.SetString(kMimeTypeKey, metadata.mime_type);
   dict.SetBoolean(kCanShowAfterExpirationKey,
                   metadata.can_show_after_expiration);
   dict.SetInteger(kNumBytesKey, num_bytes);
+  dict.SetInteger(kShareButtonX, metadata.share_button_x);
+  dict.SetInteger(kShareButtonY, metadata.share_button_y);
+  dict.SetDouble(kShareButtonOpacity, metadata.share_button_opacity);
+  dict.SetString(kShareButtonIcon, metadata.share_button_icon);
+  dict.SetString(kShareButtonBg, metadata.share_button_bg);
+  dict.SetInteger(kIframeWidthPx, metadata.iframe_width_px);
+  dict.SetInteger(kIframeHeightPx, metadata.iframe_height_px);
   SetTimeValue(dict, kExpirationTimeKey, metadata.expiration_time);
   base::JSONWriter::Write(dict, str);
 }
@@ -263,7 +296,7 @@ void LogoCache::WriteLogo(scoped_refptr<base::RefCountedMemory> encoded_image) {
   if (!EnsureCacheDirectoryExists())
     return;
 
-  if (!metadata_ || !encoded_image) {
+  if (!metadata_) {
     DeleteLogoAndMetadata();
     return;
   }
@@ -277,10 +310,9 @@ void LogoCache::WriteLogo(scoped_refptr<base::RefCountedMemory> encoded_image) {
   if (!base::DeleteFile(metadata_path, false))
     return;
 
-  if (base::WriteFile(
-          logo_path,
-          encoded_image->front_as<char>(),
-          static_cast<int>(encoded_image->size())) == -1) {
+  if (encoded_image &&
+      base::WriteFile(logo_path, encoded_image->front_as<char>(),
+                      static_cast<int>(encoded_image->size())) == -1) {
     base::DeleteFile(logo_path, false);
     return;
   }

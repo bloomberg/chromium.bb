@@ -76,7 +76,8 @@ public final class DualControlLayout extends ViewGroup {
             secondaryButton.setId(R.id.button_secondary);
             secondaryButton.setOnClickListener(listener);
             secondaryButton.setText(text);
-            ApiCompatibilityUtils.setTextAppearance(secondaryButton, R.style.BlueButtonText2);
+            ApiCompatibilityUtils.setTextAppearance(
+                    secondaryButton, R.style.TextAppearance_BlueButtonText2);
             return secondaryButton;
         }
     }
@@ -201,7 +202,7 @@ public final class DualControlLayout extends ViewGroup {
         int rightPadding = getPaddingRight();
 
         int width = right - left;
-        boolean isRtl = ApiCompatibilityUtils.isLayoutRtl(this);
+        boolean isRtl = getLayoutDirection() == LAYOUT_DIRECTION_RTL;
         boolean isPrimaryOnRight = (isRtl && mAlignment == DualControlLayoutAlignment.START)
                 || (!isRtl
                            && (mAlignment == DualControlLayoutAlignment.APART

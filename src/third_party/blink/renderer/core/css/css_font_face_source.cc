@@ -53,12 +53,14 @@ scoped_refptr<SimpleFontData> CSSFontFaceSource::GetFontData(
   if (!IsValid())
     return nullptr;
 
-  if (IsLocal()) {
+  if (IsLocalNonBlocking()) {
     // We're local. Just return a SimpleFontData from the normal cache.
     return CreateFontData(font_description, font_selection_capabilities);
   }
 
-  FontCacheKey key = font_description.CacheKey(FontFaceCreationParams());
+  bool is_unique_match = false;
+  FontCacheKey key =
+      font_description.CacheKey(FontFaceCreationParams(), is_unique_match);
 
   // Get or create the font data. Take care to avoid dangling references into
   // font_data_table_, because it is modified below during pruning.

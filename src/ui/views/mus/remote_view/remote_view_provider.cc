@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/scoped_observer.h"
@@ -14,7 +15,10 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/views/mus/cursor_manager_owner.h"
 #include "ui/views/mus/mus_client.h"
+#include "ui/views/mus/screen_position_client_mus.h"
+#include "ui/views/widget/desktop_aura/desktop_screen_position_client.h"
 
 namespace views {
 
@@ -51,9 +55,8 @@ class RemoteViewProvider::EmbeddingWindowObserver
     : public aura::WindowObserver {
  public:
   using SizeChangedCallback = base::RepeatingCallback<void(const gfx::Size&)>;
-  EmbeddingWindowObserver(aura::Window* window,
-                          const SizeChangedCallback& callback)
-      : window_observer_(this), on_size_changed_(callback) {
+  EmbeddingWindowObserver(aura::Window* window, SizeChangedCallback callback)
+      : window_observer_(this), on_size_changed_(std::move(callback)) {
     window_observer_.Add(window);
   }
   ~EmbeddingWindowObserver() override = default;
@@ -106,10 +109,10 @@ void RemoteViewProvider::GetEmbedToken(GetEmbedTokenCallback callback) {
   embed_root_ = window_tree_client->CreateEmbedRoot(this);
 }
 
-void RemoteViewProvider::SetCallbacks(const OnEmbedCallback& on_embed,
-                                      const OnUnembedCallback& on_unembed) {
-  on_embed_callback_ = on_embed;
-  on_unembed_callback_ = on_unembed;
+void RemoteViewProvider::SetCallbacks(OnEmbedCallback on_embed,
+                                      OnUnembedCallback on_unembed) {
+  on_embed_callback_ = std::move(on_embed);
+  on_unembed_callback_ = std::move(on_unembed);
 }
 
 void RemoteViewProvider::OnEmbeddedWindowDestroyed() {
@@ -133,9 +136,12 @@ void RemoteViewProvider::OnEmbedTokenAvailable(
 void RemoteViewProvider::OnEmbed(aura::Window* window) {
   DCHECK(embedded_);
 
+  screen_position_client_ = std::make_unique<ScreenPositionClientMus>(
+      embed_root_->window_tree_host());
   embedding_window_observer_ = std::make_unique<EmbeddingWindowObserver>(
       window, base::BindRepeating(&RemoteViewProvider::OnEmbeddingWindowResized,
                                   base::Unretained(this)));
+  cursor_manager_owner_ = std::make_unique<CursorManagerOwner>(window);
   OnEmbeddingWindowResized(window->bounds().size());
   window->AddChild(embedded_);
 
@@ -144,7 +150,9 @@ void RemoteViewProvider::OnEmbed(aura::Window* window) {
 }
 
 void RemoteViewProvider::OnUnembed() {
+  screen_position_client_.reset();
   embedding_window_observer_.reset();
+  cursor_manager_owner_.reset();
   embed_root_.reset();
 
   if (on_unembed_callback_)

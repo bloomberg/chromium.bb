@@ -57,6 +57,13 @@ class MEDIA_EXPORT MediaResource {
   //   Should not be called.
   virtual MediaUrlParams GetMediaUrlParams() const;
 
+  // This method is only used with the MediaUrlDemuxer, to propagate duration
+  // changes coming from the MediaPlayerRendereClient.
+  //
+  // This method could be refactored if WMPI was aware of the concrete type of
+  // Demuxer* it is dealing with.
+  virtual void ForwardDurationChangeToDemuxerHost(base::TimeDelta duration);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(MediaResource);
 };

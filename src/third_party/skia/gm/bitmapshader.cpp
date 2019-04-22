@@ -67,11 +67,11 @@ protected:
             }
 
             canvas->save();
-            paint.setShader(SkShader::MakeBitmapShader(fBitmap, SkShader::kClamp_TileMode,
-                                                       SkShader::kClamp_TileMode, &s));
+            paint.setShader(fBitmap.makeShader(&s));
 
             // draw the shader with a bitmap mask
             canvas->drawBitmap(fMask, 0, 0, &paint);
+            // no blue circle expected (the bitmap shader's coordinates are aligned to CTM still)
             canvas->drawBitmap(fMask, 30, 0, &paint);
 
             canvas->translate(0, 25);
@@ -89,8 +89,7 @@ protected:
 
             canvas->translate(0, 25);
 
-            paint.setShader(SkShader::MakeBitmapShader(fMask, SkShader::kRepeat_TileMode,
-                                                       SkShader::kRepeat_TileMode, &s));
+            paint.setShader(fMask.makeShader(SkTileMode::kRepeat, SkTileMode::kRepeat, &s));
             paint.setColor(SK_ColorRED);
 
             // draw the mask using the shader and a color
@@ -119,7 +118,7 @@ DEF_SIMPLE_GM(hugebitmapshader, canvas, 100, 100) {
     int bitmapW = 1;
     int bitmapH = 60000;
     if (auto* ctx = canvas->getGrContext()) {
-        bitmapH = ctx->contextPriv().caps()->maxTextureSize() + 1;
+        bitmapH = ctx->priv().caps()->maxTextureSize() + 1;
     }
     bitmap.setInfo(SkImageInfo::MakeA8(bitmapW, bitmapH), bitmapW);
     uint8_t* pixels = new uint8_t[bitmapH];
@@ -128,8 +127,7 @@ DEF_SIMPLE_GM(hugebitmapshader, canvas, 100, 100) {
     }
     bitmap.setPixels(pixels);
 
-    paint.setShader(SkShader::MakeBitmapShader(bitmap,
-             SkShader::kMirror_TileMode, SkShader::kMirror_TileMode));
+    paint.setShader(bitmap.makeShader(SkTileMode::kMirror, SkTileMode::kMirror));
     paint.setColor(SK_ColorRED);
     paint.setAntiAlias(true);
     canvas->drawCircle(50, 50, 50, paint);
@@ -138,7 +136,6 @@ DEF_SIMPLE_GM(hugebitmapshader, canvas, 100, 100) {
 
 //////////////////////////////////////////////////////////////////////////////
 
-static GM* MyFactory(void*) { return new BitmapShaderGM; }
-static GMRegistry reg(MyFactory);
+DEF_GM( return new BitmapShaderGM; )
 
 }

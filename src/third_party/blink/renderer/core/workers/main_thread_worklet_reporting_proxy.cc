@@ -18,14 +18,14 @@ void MainThreadWorkletReportingProxy::CountFeature(WebFeature feature) {
   DCHECK(IsMainThread());
   // A parent document is on the same thread, so just record API use in the
   // document's UseCounter.
-  UseCounter::Count(document_->GetFrame(), feature);
+  UseCounter::Count(document_, feature);
 }
 
 void MainThreadWorkletReportingProxy::CountDeprecation(WebFeature feature) {
   DCHECK(IsMainThread());
   // A parent document is on the same thread, so just record API use in the
   // document's UseCounter.
-  Deprecation::CountDeprecation(document_->GetFrame(), feature);
+  Deprecation::CountDeprecation(document_, feature);
 }
 
 void MainThreadWorkletReportingProxy::DidTerminateWorkerThread() {

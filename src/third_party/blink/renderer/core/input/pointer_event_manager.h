@@ -44,12 +44,13 @@ class CORE_EXPORT PointerEventManager
   // and sets the newNodeUnderMouse if the capturing is set
   // in this function.
   WebInputEventResult SendMousePointerEvent(
-      Node* target,
+      Element* target,
       const String& canvas_region_id,
       const WebInputEvent::Type,
       const WebMouseEvent&,
       const Vector<WebMouseEvent>& coalesced_events,
-      const Vector<WebMouseEvent>& predicted_events);
+      const Vector<WebMouseEvent>& predicted_events,
+      bool skip_click_dispatch);
 
   // Sends boundary events pointerout/leave/over/enter and
   // mouseout/leave/over/enter to the corresponding targets.
@@ -57,48 +58,38 @@ class CORE_EXPORT PointerEventManager
   // leaving a frame. Note that normal mouse events (e.g. mousemove/down/up)
   // and their corresponding boundary events will be handled altogether by
   // sendMousePointerEvent function.
-  void SendMouseAndPointerBoundaryEvents(Node* entered_node,
+  void SendMouseAndPointerBoundaryEvents(Element* entered_element,
                                          const String& canvas_region_id,
                                          const WebMouseEvent&);
 
   WebInputEventResult DirectDispatchMousePointerEvent(
-      Node* target,
+      Element* target,
       const WebMouseEvent&,
       const AtomicString& event_type,
       const Vector<WebMouseEvent>& coalesced_events,
       const Vector<WebMouseEvent>& predicted_events,
       const String& canvas_node_id = String());
 
-  WebInputEventResult CreateAndDispatchPointerEvent(
-      Node* target,
-      const AtomicString& mouse_event_name,
-      const WebMouseEvent&,
-      const Vector<WebMouseEvent>& coalesced_events,
-      const Vector<WebMouseEvent>& predicted_events);
-
   // Resets the internal state of this object.
   void Clear();
 
-  void ElementRemoved(EventTarget*);
+  void ElementRemoved(Element*);
 
-  void SetPointerCapture(int, EventTarget*);
-  void ReleasePointerCapture(int, EventTarget*);
+  bool SetPointerCapture(PointerId, Element*);
+  bool ReleasePointerCapture(PointerId, Element*);
   void ReleaseMousePointerCapture();
 
-  // See Element::hasPointerCapture(int).
-  bool HasPointerCapture(int, const EventTarget*) const;
+  // See Element::hasPointerCapture(PointerId).
+  bool HasPointerCapture(PointerId, const Element*) const;
 
-  // See Element::hasProcessedPointerCapture(int).
-  bool HasProcessedPointerCapture(int, const EventTarget*) const;
-
-  bool IsActive(const int) const;
+  bool IsActive(const PointerId) const;
 
   // Returns whether there is any touch on the screen.
   bool IsAnyTouchActive() const;
 
   // Returns whether pointerId is for an active touch pointerevent and whether
   // the last event was sent to the given frame.
-  bool IsTouchPointerIdActiveOnFrame(int, LocalFrame*) const;
+  bool IsTouchPointerIdActiveOnFrame(PointerId, LocalFrame*) const;
 
   // Returns true if the primary pointerdown corresponding to the given
   // |uniqueTouchEventId| was canceled. Also drops stale ids from
@@ -109,6 +100,8 @@ class CORE_EXPORT PointerEventManager
 
   void RemoveLastMousePosition();
 
+  Element* GetMouseCaptureTarget();
+
   // Sends any outstanding events. For example it notifies TouchEventManager
   // to group any changes to touch since last FlushEvents and send the touch
   // event out to js. Since after this function any outstanding event is sent,
@@ -117,21 +110,25 @@ class CORE_EXPORT PointerEventManager
   WebInputEventResult FlushEvents();
 
  private:
-  typedef HeapHashMap<int,
-                      Member<EventTarget>,
-                      WTF::IntHash<int>,
-                      WTF::UnsignedWithZeroKeyHashTraits<int>>
-      PointerCapturingMap;
   class EventTargetAttributes {
     DISALLOW_NEW();
 
    public:
     void Trace(blink::Visitor* visitor) { visitor->Trace(target); }
-    Member<EventTarget> target;
+    Member<Element> target;
     EventTargetAttributes() : target(nullptr) {}
-    EventTargetAttributes(EventTarget* target)
-        : target(target) {}
+    EventTargetAttributes(Element* target) : target(target) {}
   };
+  // We use int64_t to cover the whole range for PointerId with no
+  // deleted hash value.
+  template <typename T>
+  using PointerIdKeyMap =
+      HeapHashMap<int64_t,
+                  T,
+                  WTF::IntHash<int64_t>,
+                  WTF::UnsignedWithZeroKeyHashTraits<int64_t>>;
+  using PointerCapturingMap = PointerIdKeyMap<Member<Element>>;
+  using ElementUnderPointerMap = PointerIdKeyMap<EventTargetAttributes>;
 
   class PointerEventBoundaryEventDispatcher : public BoundaryEventDispatcher {
    public:
@@ -168,6 +165,13 @@ class CORE_EXPORT PointerEventManager
   // touchevents continue to fire).
   void HandlePointerInterruption(const WebPointerEvent&);
 
+  WebInputEventResult CreateAndDispatchPointerEvent(
+      Element* target,
+      const AtomicString& mouse_event_name,
+      const WebMouseEvent&,
+      const Vector<WebMouseEvent>& coalesced_events,
+      const Vector<WebMouseEvent>& predicted_events);
+
   // Returns PointerEventTarget for a WebTouchPoint, hit-testing as necessary.
   event_handling_util::PointerEventTarget ComputePointerEventTarget(
       const WebPointerEvent&);
@@ -179,14 +183,14 @@ class CORE_EXPORT PointerEventManager
       const event_handling_util::PointerEventTarget&);
 
   // Returns whether the event is consumed or not.
-  WebInputEventResult SendTouchPointerEvent(EventTarget*,
+  WebInputEventResult SendTouchPointerEvent(Element*,
                                             PointerEvent*,
                                             bool hovering);
 
   void SendBoundaryEvents(EventTarget* exited_target,
                           EventTarget* entered_target,
                           PointerEvent*);
-  void SetNodeUnderPointer(PointerEvent*, EventTarget*);
+  void SetElementUnderPointer(PointerEvent*, Element*);
 
   // Processes the assignment of |m_pointerCaptureTarget| from
   // |m_pendingPointerCaptureTarget| and sends the got/lostpointercapture
@@ -194,30 +198,30 @@ class CORE_EXPORT PointerEventManager
   // https://w3c.github.io/pointerevents/#process-pending-pointer-capture
   void ProcessPendingPointerCapture(PointerEvent*);
 
-  // Processes the capture state of a pointer, updates node under
+  // Processes the capture state of a pointer, updates element under
   // pointer, and sends corresponding boundary events for pointer if
   // setPointerPosition is true. It also sends corresponding boundary events
   // for mouse if sendMouseEvent is true.
   // Returns the target that the pointer event is supposed to be fired at.
-  EventTarget* ProcessCaptureAndPositionOfPointerEvent(
+  Element* ProcessCaptureAndPositionOfPointerEvent(
       PointerEvent*,
-      EventTarget* hit_test_target,
+      Element* hit_test_target,
       const String& canvas_region_id = String(),
       const WebMouseEvent* = nullptr);
 
   void RemoveTargetFromPointerCapturingMapping(PointerCapturingMap&,
-                                               const EventTarget*);
-  EventTarget* GetEffectiveTargetForPointerEvent(EventTarget*, int);
-  EventTarget* GetCapturingNode(int);
+                                               const Element*);
+  Element* GetEffectiveTargetForPointerEvent(Element*, PointerId);
+  Element* GetCapturingElement(PointerId);
   void RemovePointer(PointerEvent*);
   WebInputEventResult DispatchPointerEvent(EventTarget*,
                                            PointerEvent*,
                                            bool check_for_listener = false);
-  void ReleasePointerCapture(int);
+  void ReleasePointerCapture(PointerId);
   // Returns true if capture target and pending capture target were different.
-  bool GetPointerCaptureState(int pointer_id,
-                              EventTarget** pointer_capture_target,
-                              EventTarget** pending_pointer_capture_target);
+  bool GetPointerCaptureState(PointerId pointer_id,
+                              Element** pointer_capture_target,
+                              Element** pending_pointer_capture_target);
 
   // Only adjust touch type primary pointer down.
   bool ShouldAdjustPointerEvent(const WebPointerEvent&) const;
@@ -242,16 +246,11 @@ class CORE_EXPORT PointerEventManager
 
   Deque<uint32_t> touch_ids_for_canceled_pointerdowns_;
 
-  // Note that this map keeps track of node under pointer with id=1 as well
+  // Note that this map keeps track of element under pointer with id=1 as well
   // which might be different than m_nodeUnderMouse in EventHandler. That one
   // keeps track of any compatibility mouse event positions but this map for
   // the pointer with id=1 is only taking care of true mouse related events.
-  using NodeUnderPointerMap =
-      HeapHashMap<int,
-                  EventTargetAttributes,
-                  WTF::IntHash<int>,
-                  WTF::UnsignedWithZeroKeyHashTraits<int>>;
-  NodeUnderPointerMap node_under_pointer_;
+  ElementUnderPointerMap element_under_pointer_;
 
   PointerCapturingMap pointer_capture_target_;
   PointerCapturingMap pending_pointer_capture_target_;
@@ -270,7 +269,7 @@ class CORE_EXPORT PointerEventManager
 
   // The pointerId of the PointerEvent currently being dispatched within this
   // frame or 0 if none.
-  int dispatching_pointer_id_;
+  PointerId dispatching_pointer_id_;
 
   DISALLOW_COPY_AND_ASSIGN(PointerEventManager);
 };

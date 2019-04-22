@@ -33,11 +33,6 @@
           "reason": "geometry"
         },
         {
-          "object": "LayoutNGBlockFlow DIV",
-          "rect": [8, 108, 100, 100],
-          "reason": "geometry"
-        },
-        {
           "object": "NGPhysicalTextFragment ' '",
           "rect": [108, 193, 4, 19],
           "reason": "geometry"

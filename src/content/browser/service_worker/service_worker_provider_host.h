@@ -23,8 +23,6 @@
 #include "content/browser/service_worker/service_worker_object_host.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/common/content_export.h"
-#include "content/common/service_worker/service_worker_container.mojom.h"
-#include "content/common/service_worker/service_worker_provider.mojom.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/resource_type.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
@@ -32,10 +30,12 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_container.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider_type.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
-#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom.h"
-#include "third_party/blink/public/platform/web_feature.mojom.h"
+#include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
 
 namespace network {
 class ResourceRequestBody;
@@ -45,25 +45,13 @@ namespace service_worker_object_host_unittest {
 class ServiceWorkerObjectHostTest;
 }
 
-namespace storage {
-class BlobStorageContext;
-}
-
 namespace content {
 
+class NavigationLoaderInterceptor;
 class ServiceWorkerContextCore;
 class ServiceWorkerRegistrationObjectHost;
-class ServiceWorkerRequestHandler;
 class ServiceWorkerVersion;
 class WebContents;
-
-namespace service_worker_dispatcher_host_unittest {
-class ServiceWorkerDispatcherHostTest;
-FORWARD_DECLARE_TEST(ServiceWorkerDispatcherHostTest,
-                     DispatchExtendableMessageEvent);
-FORWARD_DECLARE_TEST(ServiceWorkerDispatcherHostTest,
-                     DispatchExtendableMessageEvent_Fail);
-}  // namespace service_worker_dispatcher_host_unittest
 
 // ServiceWorkerProviderHost is the browser-process representation of a
 // renderer-process entity that can involve service workers. Currently, these
@@ -88,65 +76,57 @@ FORWARD_DECLARE_TEST(ServiceWorkerDispatcherHostTest,
 // ServiceWorkerProviderHost for this frame/worker, which, again, makes the
 // frame/worker alive in the browser's service worker world.
 //
-// The analogue of ServiceWorkerProviderHost ("provider host") on the renderer
-// process is ServiceWorkerProviderContext ("provider"). A provider host has a
-// Mojo connection to the provider in the renderer. Destruction of the host
-// happens upon disconnection of the Mojo pipe.
+// A provider host has a Mojo connection to the provider in the renderer.
+// Destruction of the host happens upon disconnection of the Mojo pipe.
 //
 // There are two general types of providers:
 // 1) those for service worker clients (windows or shared workers), and
 // 2) those for service workers themselves.
 //
-// For client providers, there is a provider per frame or shared worker in the
-// renderer process. The lifetime of this host object is tied to the lifetime of
-// the document or the worker.
+// For client providers, there is a provider (ServiceWorkerProviderContext) per
+// frame or shared worker in the renderer process. The lifetime of this host
+// object is tied to the lifetime of the document or the worker.
 //
-// For service worker providers, there is a provider per running service worker
-// in the renderer process. The lifetime of this host object is tied to the
-// lifetime of the running service worker.
+// For service worker providers, there is a provider
+// (ServiceWorkerContextClient) per running service worker in the renderer
+// process. The lifetime of this host object is tied to the lifetime of the
+// running service worker.
 //
 // A ServiceWorkerProviderHost is created in the following situations:
 //
 // 1) For a client created for a navigation (for both top-level and
 // non-top-level frames), the provider host for the resulting document is
-// pre-created by the browser process. Upon navigation commit, the provider is
-// created on the renderer, which sends an OnProviderCreated IPC to establish
-// the Mojo connection.
+// pre-created by the browser process and the provider info is sent in the
+// navigation commit IPC.
 //
-// 2) For clients created by the renderer not due to navigations (shared workers
-// in the non-S13nServiceWorker case, and about:blank iframes), the provider
-// host is created and the Mojo connection is established when the provider is
-// created by the renderer process and sends an OnProviderCreated IPC.
-//
-// 3) For shared workers in the S13nServiceWorker case and for service workers,
-// the provider host is pre-created by the browser process, and information
-// about the host is sent in the start worker IPC message. The Mojo connection
-// is established when renderer process receives the start message and creates
-// the provider.
+// 2) For shared workers and for service workers, the provider host is
+// pre-created by the browser process and the provider info is sent in the start
+// worker IPC message.
 class CONTENT_EXPORT ServiceWorkerProviderHost
     : public ServiceWorkerRegistration::Listener,
       public base::SupportsWeakPtr<ServiceWorkerProviderHost>,
-      public mojom::ServiceWorkerContainerHost,
+      public blink::mojom::ServiceWorkerContainerHost,
       public service_manager::mojom::InterfaceProvider {
  public:
   using WebContentsGetter = base::RepeatingCallback<WebContents*()>;
   using ExecutionReadyCallback = base::OnceClosure;
 
   // Used to pre-create a ServiceWorkerProviderHost for a navigation. The
-  // ServiceWorkerNetworkProvider will later be created in the renderer, should
+  // ServiceWorkerProviderContext will later be created in the renderer, should
   // the navigation succeed. |are_ancestors_secure| should be true for main
   // frames. Otherwise it is true iff all ancestor frames of this frame have a
   // secure origin. |web_contents_getter| indicates the tab where the navigation
   // is occurring.
   //
-  // The returned host is owned by |context|. Upon successful navigation, the
-  // caller should remove it from |context| and re-add it after calling
-  // CompleteNavigationInitialized() to update it with the correct process id.
-  // If navigation fails, the caller should remove it from |context|.
+  // The returned host stays alive as long as the filled |out_provider_info|
+  // stays alive (namely, as long as |out_provider_info->host_ptr_info| stays
+  // alive). Upon navigation commit, OnBeginNavigationCommit() will complete
+  // initialization for it.
   static base::WeakPtr<ServiceWorkerProviderHost> PreCreateNavigationHost(
       base::WeakPtr<ServiceWorkerContextCore> context,
       bool are_ancestors_secure,
-      WebContentsGetter web_contents_getter);
+      WebContentsGetter web_contents_getter,
+      blink::mojom::ServiceWorkerProviderInfoForWindowPtr* out_provider_info);
 
   // Used for starting a service worker. Returns a provider host for the service
   // worker and partially fills |out_provider_info|.  The host stays alive as
@@ -157,9 +137,9 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   static base::WeakPtr<ServiceWorkerProviderHost> PreCreateForController(
       base::WeakPtr<ServiceWorkerContextCore> context,
       scoped_refptr<ServiceWorkerVersion> version,
-      mojom::ServiceWorkerProviderInfoForStartWorkerPtr* out_provider_info);
+      blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr*
+          out_provider_info);
 
-  // S13nServiceWorker:
   // Used for starting a shared worker. Returns a provider host for the shared
   // worker and fills |out_provider_info| with info to send to the renderer to
   // connect to the host. The host stays alive as long as this info stays alive
@@ -167,15 +147,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   static base::WeakPtr<ServiceWorkerProviderHost> PreCreateForSharedWorker(
       base::WeakPtr<ServiceWorkerContextCore> context,
       int process_id,
-      mojom::ServiceWorkerProviderInfoForSharedWorkerPtr* out_provider_info);
-
-  // Used to create a ServiceWorkerProviderHost when the renderer-side provider
-  // is created. This ProviderHost will be created for the process specified by
-  // |process_id|.
-  static std::unique_ptr<ServiceWorkerProviderHost> Create(
-      int process_id,
-      mojom::ServiceWorkerProviderHostInfoPtr info,
-      base::WeakPtr<ServiceWorkerContextCore> context);
+      blink::mojom::ServiceWorkerProviderInfoForWorkerPtr* out_provider_info);
 
   ~ServiceWorkerProviderHost() override;
 
@@ -185,21 +157,20 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   }
   base::TimeTicks create_time() const { return create_time_; }
   int process_id() const { return render_process_id_; }
-  int provider_id() const { return info_->provider_id; }
-  int frame_id() const;
-  int route_id() const { return info_->route_id; }
+  int provider_id() const { return provider_id_; }
+  int frame_id() const { return frame_id_; }
   const WebContentsGetter& web_contents_getter() const {
     return web_contents_getter_;
   }
 
-  bool is_parent_frame_secure() const { return info_->is_parent_frame_secure; }
+  bool is_parent_frame_secure() const { return is_parent_frame_secure_; }
 
   // Returns whether this provider host is secure enough to have a service
   // worker controller.
-  // Analogous to Blink's Document::isSecureContext. Because of how service
+  // Analogous to Blink's Document::IsSecureContext. Because of how service
   // worker intercepts main resource requests, this check must be done
   // browser-side once the URL is known (see comments in
-  // ServiceWorkerNetworkProvider::CreateForNavigation). This function uses
+  // ServiceWorkerNetworkProviderForFrame::Create). This function uses
   // |url_| and |is_parent_frame_secure_| to determine context security, so they
   // must be set properly before calling this function.
   bool IsContextSecureForServiceWorker() const;
@@ -230,12 +201,10 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // CompleteStartWorkerPreparation() is called).
   ServiceWorkerVersion* running_hosted_version() const {
     DCHECK(!running_hosted_version_ ||
-           info_->type ==
-               blink::mojom::ServiceWorkerProviderType::kForServiceWorker);
+           type_ == blink::mojom::ServiceWorkerProviderType::kForServiceWorker);
     return running_hosted_version_.get();
   }
 
-  // S13nServiceWorker:
   // For service worker clients. Similar to EnsureControllerServiceWorker, but
   // this returns a bound Mojo ptr which is supposed to be sent to clients. The
   // controller ptr passed to the clients will be used to intercept requests
@@ -269,7 +238,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   //
   // TODO(kinuko): revisit this if we start to use the ControllerServiceWorker
   // for posting messages.
-  mojom::ControllerServiceWorkerPtr GetControllerServiceWorkerPtr();
+  blink::mojom::ControllerServiceWorkerPtr GetControllerServiceWorkerPtr();
 
   // For service worker clients. Sets |url_| and |site_for_cookies_| and updates
   // the client uuid if it's a cross-origin transition.
@@ -285,7 +254,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // OriginCanAccessServiceWorkers returned false).
   //
   // The URL may also change on redirects during loading. Once
-  // is_execution_ready() is true, the URL should no longer change.
+  // is_response_committed() is true, the URL should no longer change.
   const GURL& url() const;
 
   // The URL representing the first-party site for this context. See
@@ -295,7 +264,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   const GURL& site_for_cookies() const;
 
   blink::mojom::ServiceWorkerProviderType provider_type() const {
-    return info_->type;
+    return type_;
   }
   bool IsProviderForServiceWorker() const;
   bool IsProviderForClient() const;
@@ -317,7 +286,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // TODO(crbug.com/866353): This should be unneccessary: registration code
   // already avoids claiming clients that are not execution ready. However
   // there may be edge cases with shared workers (pre-NetS13nServiceWorker) and
-  // about:blank iframes, since |is_execution_ready_| is initialized true for
+  // about:blank iframes, since |is_execution_ready()| is initialized true for
   // them. Try to remove this after S13nServiceWorker.
   void AllowSetControllerRegistration(bool allow) {
     allow_set_controller_registration_ = allow;
@@ -326,9 +295,9 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
     return allow_set_controller_registration_;
   }
 
-  // Returns a handler for a request. May return nullptr if the request doesn't
-  // require special handling.
-  std::unique_ptr<ServiceWorkerRequestHandler> CreateRequestHandler(
+  // Returns an interceptor for a main resource request. May return nullptr if
+  // the request doesn't require interception.
+  std::unique_ptr<NavigationLoaderInterceptor> CreateLoaderInterceptor(
       network::mojom::FetchRequestMode request_mode,
       network::mojom::FetchCredentialsMode credentials_mode,
       network::mojom::FetchRedirectMode redirect_mode,
@@ -337,7 +306,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       ResourceType resource_type,
       blink::mojom::RequestContextType request_context_type,
       network::mojom::RequestContextFrameType frame_type,
-      base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
       scoped_refptr<network::ResourceRequestBody> body,
       bool skip_service_worker);
 
@@ -378,34 +346,22 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   void ClaimedByRegistration(
       scoped_refptr<ServiceWorkerRegistration> registration);
 
-  // For service worker clients. Completes initialization of
-  // provider hosts used for navigation requests.
-  void CompleteNavigationInitialized(
-      int process_id,
-      mojom::ServiceWorkerProviderHostInfoPtr info);
+  // For service worker window clients. Called when the navigation is ready to
+  // commit in the browser process to complete the initialization for the
+  // pre-created instance.
+  void OnBeginNavigationCommit(int render_process_id, int render_frame_id);
 
   // For service worker execution contexts. Completes initialization of this
   // provider host. It is called once a renderer process has been found to host
-  // the worker. Returns the info needed for creating a provider on the renderer
-  // which will be connected to this provider host.
-  //
-  // |provider_info| should be the info returned by PreCreateForController(),
-  // which is partially filled out. This function returns it after
-  // filling it out completely.
-  //
-  // S13nServiceWorker:
-  // |loader_factory| is the factory to use for "network" requests for the
-  // service worker main script and import scripts. It is possibly not the
-  // simple direct network factory, since service worker scripts can have
-  // non-NetworkService schemes, e.g., chrome-extension:// URLs.
-  mojom::ServiceWorkerProviderInfoForStartWorkerPtr
-  CompleteStartWorkerPreparation(
+  // the worker.
+  void CompleteStartWorkerPreparation(
       int process_id,
-      scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
-      mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info);
+      service_manager::mojom::InterfaceProviderRequest
+          interface_provider_request);
 
   // Called when the shared worker main script resource has finished loading.
-  // After this is called, is_execution_ready() returns true.
+  // After this is called, is_response_committed() and is_execution_ready()
+  // return true.
   void CompleteSharedWorkerPreparation();
 
   // For service worker clients. The host keeps track of all the prospective
@@ -443,7 +399,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // cache.
   void NotifyControllerLost();
 
-  // S13nServiceWorker:
   // For service worker clients. Called when |version| is the active worker upon
   // the main resource request for this client. Remembers |version| as needing
   // a Soft Update. To avoid affecting page load performance, the update occurs
@@ -457,23 +412,37 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   //
   // This can be called multiple times due to redirects during a main resource
   // load. All service workers are updated.
-  //
-  // For non-S13nServiceWorker: The update logic is controlled entirely by
-  // ServiceWorkerControlleeRequestHandler, which sees all resource request
-  // activity and schedules an update at a convenient time.
   void AddServiceWorkerToUpdate(scoped_refptr<ServiceWorkerVersion> version);
 
   // For service worker clients. |callback| is called when this client becomes
   // execution ready or if it is destroyed first.
   void AddExecutionReadyCallback(ExecutionReadyCallback callback);
 
-  bool is_execution_ready() const { return is_execution_ready_; }
+  // For service worker clients. True if the response for the main resource load
+  // was committed to the renderer. When this is false, the client's URL may
+  // still change due to redirects.
+  bool is_response_committed() const;
+
+  // For service worker clients. True if the client is execution ready and
+  // therefore can be exposed to JavaScript. Execution ready implies connected
+  // to renderer.
+  // https://html.spec.whatwg.org/multipage/webappapis.html#concept-environment-execution-ready-flag
+  bool is_execution_ready() const;
 
  private:
+  // For service worker clients. The flow is kInitial -> kResponseCommitted ->
+  // kExecutionReady.
+  //
+  // - kInitial: The initial phase.
+  // - kResponseCommitted: The response for the main resource has been
+  //   committed to the renderer. This client's URL should no longer change.
+  // - kExecutionReady: This client can be exposed to JavaScript as a Client
+  //   object.
+  enum class ClientPhase { kInitial, kResponseCommitted, kExecutionReady };
+
   friend class LinkHeaderServiceWorkerTest;
   friend class ServiceWorkerProviderHostTest;
   friend class ServiceWorkerWriteToCacheJobTest;
-  friend class ServiceWorkerContextRequestHandlerTest;
   friend class service_worker_controllee_request_handler_unittest::
       ServiceWorkerControlleeRequestHandlerTest;
   friend class service_worker_object_host_unittest::ServiceWorkerObjectHostTest;
@@ -486,12 +455,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
                            Update_ElongatedScript);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerWriteToCacheJobTest,
                            Update_EmptyScript);
-  FRIEND_TEST_ALL_PREFIXES(
-      service_worker_dispatcher_host_unittest::ServiceWorkerDispatcherHostTest,
-      DispatchExtendableMessageEvent);
-  FRIEND_TEST_ALL_PREFIXES(
-      service_worker_dispatcher_host_unittest::ServiceWorkerDispatcherHostTest,
-      DispatchExtendableMessageEvent_Fail);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerProviderHostTest, ContextSecurity);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerJobTest, Unregister);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerJobTest, RegisterDuplicateScript);
@@ -500,9 +463,16 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   FRIEND_TEST_ALL_PREFIXES(BackgroundSyncManagerTest,
                            RegisterWithoutLiveSWRegistration);
 
-  ServiceWorkerProviderHost(int process_id,
-                            mojom::ServiceWorkerProviderHostInfoPtr info,
-                            base::WeakPtr<ServiceWorkerContextCore> context);
+  static void RegisterToContextCore(
+      base::WeakPtr<ServiceWorkerContextCore> context,
+      std::unique_ptr<ServiceWorkerProviderHost> host);
+
+  ServiceWorkerProviderHost(
+      blink::mojom::ServiceWorkerProviderType type,
+      bool is_parent_frame_secure,
+      blink::mojom::ServiceWorkerContainerHostAssociatedRequest host_request,
+      blink::mojom::ServiceWorkerContainerAssociatedPtrInfo client_ptr_info,
+      base::WeakPtr<ServiceWorkerContextCore> context);
 
   // ServiceWorkerRegistration::Listener overrides.
   void OnVersionAttributesChanged(
@@ -538,11 +508,17 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // instructs the renderer to dispatch a 'controllerchange' event.
   void SendSetControllerServiceWorker(bool notify_controllerchange);
 
+  // For service worker clients. Returns false if it's not yet time to send the
+  // renderer information about the controller. Basically returns false if this
+  // client is still loading so due to potential redirects the initial
+  // controller has not yet been decided.
+  bool IsControllerDecided() const;
+
 #if DCHECK_IS_ON()
   void CheckControllerConsistency() const;
 #endif  // DCHECK_IS_ON()
 
-  // Implements mojom::ServiceWorkerContainerHost.
+  // Implements blink::mojom::ServiceWorkerContainerHost.
   void Register(const GURL& script_url,
                 blink::mojom::ServiceWorkerRegistrationOptionsPtr options,
                 RegisterCallback callback) override;
@@ -552,12 +528,13 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   void GetRegistrationForReady(
       GetRegistrationForReadyCallback callback) override;
   void EnsureControllerServiceWorker(
-      mojom::ControllerServiceWorkerRequest controller_request,
-      mojom::ControllerServiceWorkerPurpose purpose) override;
-  void CloneContainerHost(
-      mojom::ServiceWorkerContainerHostRequest container_host_request) override;
+      blink::mojom::ControllerServiceWorkerRequest controller_request,
+      blink::mojom::ControllerServiceWorkerPurpose purpose) override;
+  void CloneContainerHost(blink::mojom::ServiceWorkerContainerHostRequest
+                              container_host_request) override;
   void Ping(PingCallback callback) override;
   void HintToUpdateServiceWorker() override;
+  void OnExecutionReady() override;
 
   // Callback for ServiceWorkerContextCore::RegisterServiceWorker().
   void RegistrationComplete(RegisterCallback callback,
@@ -582,7 +559,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
 
   // Callback for ServiceWorkerVersion::RunAfterStartWorker()
   void StartControllerComplete(
-      mojom::ControllerServiceWorkerRequest controller_request,
+      blink::mojom::ControllerServiceWorkerRequest controller_request,
       blink::ServiceWorkerStatusCode status);
 
   bool IsValidGetRegistrationMessage(const GURL& client_url,
@@ -612,6 +589,15 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
 
   void RunExecutionReadyCallbacks();
 
+  void TransitionToClientPhase(ClientPhase new_phase);
+
+  void SetRenderProcessId(int process_id);
+
+  // Unique among all provider hosts.
+  const int provider_id_;
+
+  const blink::mojom::ServiceWorkerProviderType type_;
+
   // A GUID that is web-exposed as FetchEvent.clientId.
   std::string client_uuid_;
 
@@ -633,7 +619,19 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // Otherwise, |kDocumentMainThreadId|.
   int render_thread_id_;
 
-  mojom::ServiceWorkerProviderHostInfoPtr info_;
+  // The window's RenderFrame id, if this is a service worker window client.
+  // Otherwise, |MSG_ROUTING_NONE|.
+  int frame_id_;
+
+  // |is_parent_frame_secure_| is false if the provider host is created for a
+  // document whose parent frame is not secure. This doesn't mean the document
+  // is necessarily an insecure context, because the document may have a URL
+  // whose scheme is granted an exception that allows bypassing the ancestor
+  // secure context check. If the provider is not created for a document, or the
+  // document does not have a parent frame, is_parent_frame_secure_| is true.
+  // TODO(leonhsl): make it be const, currently only some test code wants to
+  // change its value.
+  bool is_parent_frame_secure_;
 
   // Only set when this object is pre-created for a navigation. It indicates the
   // tab where the navigation occurs.
@@ -695,28 +693,30 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
 
   // |container_| is the Mojo endpoint to the renderer-side
   // ServiceWorkerContainer that |this| is a ServiceWorkerContainerHost for.
-  mojom::ServiceWorkerContainerAssociatedPtr container_;
+  blink::mojom::ServiceWorkerContainerAssociatedPtr container_;
   // |binding_| is the Mojo binding that keeps the connection to the
   // renderer-side counterpart (content::ServiceWorkerProviderContext). When the
   // connection bound on |binding_| gets killed from the renderer side, or the
   // bound |ServiceWorkerProviderInfoForStartWorker::host_ptr_info| is otherwise
   // destroyed before being passed to the renderer, this
   // content::ServiceWorkerProviderHost will be destroyed.
-  mojo::AssociatedBinding<mojom::ServiceWorkerContainerHost> binding_;
+  mojo::AssociatedBinding<blink::mojom::ServiceWorkerContainerHost> binding_;
 
   // Container host bindings other than the original |binding_|. These include
   // bindings for container host pointers used from (dedicated or shared) worker
   // threads, or from ServiceWorkerSubresourceLoaderFactory.
-  mojo::BindingSet<mojom::ServiceWorkerContainerHost> additional_bindings_;
+  mojo::BindingSet<blink::mojom::ServiceWorkerContainerHost>
+      additional_bindings_;
 
   // For service worker execution contexts.
   mojo::Binding<service_manager::mojom::InterfaceProvider>
       interface_provider_binding_;
 
-  // For service worker clients. |is_execution_ready_| is true if the main
-  // resource for this host has finished loading. When false, the document URL
-  // may still change due to redirects.
-  bool is_execution_ready_ = false;
+  // For service worker clients.
+  ClientPhase client_phase_ = ClientPhase::kInitial;
+
+  // For service worker clients. Callbacks to run upon transition to
+  // kExecutionReady.
   std::vector<ExecutionReadyCallback> execution_ready_callbacks_;
 
   // For service worker clients. The service workers in the chain of redirects

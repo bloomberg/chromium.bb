@@ -302,8 +302,8 @@ class CIPDApi(recipe_api.RecipeApi):
         'result': self.test_api.make_pin(pkg_name),
       }))
     ret_data = result.json.output['result']
-    result.presentation.step_text = '</br>pkg: %(package)s' % ret_data
-    result.presentation.step_text += '</br>id: %(instance_id)s' % ret_data
+    result.presentation.links[ret_data['instance_id']] = (
+        'https://chrome-infra-packages.appspot.com/p/%(package)s/+/%(instance_id)s' % ret_data)
     return ret_data
 
   def create_from_yaml(self, pkg_def, refs=None, tags=None):

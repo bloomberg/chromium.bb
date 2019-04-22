@@ -13,16 +13,12 @@
 #include "base/logging.h"
 #include "base/metrics/field_trial_params.h"
 #include "build/build_config.h"
+#include "net/base/features.h"
 #include "net/nqe/network_quality_estimator.h"
 #include "net/nqe/network_quality_estimator_params.h"
 #include "services/network/public/cpp/network_switches.h"
 
 namespace {
-
-// Field trial for network quality estimator. Seeds RTT and downstream
-// throughput observations with values that correspond to the connection type
-// determined by the operating system.
-const char kNetworkQualityEstimatorFieldTrialName[] = "NetworkQualityEstimator";
 
 // Returns true if |past_value| is significantly different from |current_value|.
 bool MetricChangedMeaningfully(int32_t past_value, int32_t current_value) {
@@ -68,8 +64,8 @@ NetworkQualityEstimatorManager::NetworkQualityEstimatorManager(
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
   std::map<std::string, std::string> network_quality_estimator_params;
-  base::GetFieldTrialParams(kNetworkQualityEstimatorFieldTrialName,
-                            &network_quality_estimator_params);
+  base::GetFieldTrialParamsByFeature(net::features::kNetworkQualityEstimator,
+                                     &network_quality_estimator_params);
 
   if (command_line->HasSwitch(switches::kForceEffectiveConnectionType)) {
     const std::string force_ect_value = command_line->GetSwitchValueASCII(

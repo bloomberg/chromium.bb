@@ -36,7 +36,6 @@ HostContextFactoryPrivate::HostContextFactoryPrivate(
     scoped_refptr<base::SingleThreadTaskRunner> resize_task_runner)
     : frame_sink_id_allocator_(client_id),
       host_frame_sink_manager_(host_frame_sink_manager),
-      renderer_settings_(viz::CreateRendererSettings()),
       resize_task_runner_(std::move(resize_task_runner)) {
   DCHECK(host_frame_sink_manager_);
 }
@@ -78,9 +77,10 @@ void HostContextFactoryPrivate::ConfigureCompositor(
 
   // Initialize ExternalBeginFrameController client if enabled.
   compositor_data.external_begin_frame_controller_client.reset();
-  if (compositor->external_begin_frames_enabled()) {
+  if (compositor->external_begin_frame_client()) {
     compositor_data.external_begin_frame_controller_client =
-        std::make_unique<ExternalBeginFrameControllerClientImpl>(compositor);
+        std::make_unique<ExternalBeginFrameControllerClientImpl>(
+            compositor->external_begin_frame_client());
     root_params->external_begin_frame_controller =
         compositor_data.external_begin_frame_controller_client
             ->GetControllerRequest();
@@ -94,7 +94,7 @@ void HostContextFactoryPrivate::ConfigureCompositor(
   root_params->widget = compositor->widget();
 #endif
   root_params->gpu_compositing = gpu_compositing;
-  root_params->renderer_settings = renderer_settings_;
+  root_params->renderer_settings = viz::CreateRendererSettings();
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kDisableFrameRateLimit))
@@ -116,8 +116,6 @@ void HostContextFactoryPrivate::ConfigureCompositor(
       compositor->context_factory()->GetGpuMemoryBufferManager();
   params.pipes.compositor_frame_sink_associated_info = std::move(sink_info);
   params.pipes.client_request = std::move(client_request);
-  params.local_surface_id_provider =
-      std::make_unique<viz::DefaultLocalSurfaceIdProvider>();
   params.enable_surface_synchronization = true;
   if (features::IsVizHitTestingDrawQuadEnabled()) {
     params.hit_test_data_provider =
@@ -139,6 +137,14 @@ void HostContextFactoryPrivate::UnconfigureCompositor(Compositor* compositor) {
 #endif
 
   compositor_data_map_.erase(compositor);
+}
+
+base::flat_set<Compositor*> HostContextFactoryPrivate::GetAllCompositors() {
+  base::flat_set<Compositor*> all_compositors;
+  all_compositors.reserve(compositor_data_map_.size());
+  for (auto& pair : compositor_data_map_)
+    all_compositors.insert(pair.first);
+  return all_compositors;
 }
 
 std::unique_ptr<Reflector> HostContextFactoryPrivate::CreateReflector(
@@ -256,14 +262,6 @@ viz::FrameSinkManagerImpl* HostContextFactoryPrivate::GetFrameSinkManager() {
   // https://crbug.com/760181 for more context.
   NOTREACHED();
   return nullptr;
-}
-
-base::flat_set<Compositor*> HostContextFactoryPrivate::GetAllCompositors() {
-  base::flat_set<Compositor*> all_compositors;
-  all_compositors.reserve(compositor_data_map_.size());
-  for (auto& pair : compositor_data_map_)
-    all_compositors.insert(pair.first);
-  return all_compositors;
 }
 
 HostContextFactoryPrivate::CompositorData::CompositorData() = default;

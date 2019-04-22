@@ -6,16 +6,26 @@
 
 #include "base/logging.h"
 #include "base/metrics/metrics_hashes.h"
+#include "base/strings/string16.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_task_environment.h"
+#include "components/autofill/core/common/form_data.h"
+#include "components/autofill/core/common/form_field_data.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/password_manager/core/browser/statistics_table.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_source.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using autofill::FieldPropertiesFlags;
+using autofill::FormData;
+using autofill::FormFieldData;
+using base::ASCIIToUTF16;
 
 namespace password_manager {
 
@@ -259,8 +269,7 @@ TEST(PasswordFormMetricsRecorder, Actions) {
           test.is_main_frame_secure, &test_ukm_recorder);
 
       recorder->SetManagerAction(test.manager_action);
-      if (test.user_action != UserAction::kNone)
-        recorder->SetUserAction(test.user_action);
+      recorder->SetUserActionForTesting(test.user_action);
       if (test.submit_result ==
           PasswordFormMetricsRecorder::kSubmitResultFailed) {
         recorder->LogSubmitFailed();
@@ -281,62 +290,10 @@ TEST(PasswordFormMetricsRecorder, Actions) {
                   ::testing::ElementsAre(base::Bucket(test.actions_taken, 1)));
     }
 
-    switch (test.user_action) {
-      case UserAction::kNone:
-        break;
-      case UserAction::kChoose:
-        EXPECT_EQ(1, user_action_tester.GetActionCount(
-                         "PasswordManager_UsedNonDefaultUsername"));
-        break;
-      case UserAction::kChoosePslMatch:
-        EXPECT_EQ(1, user_action_tester.GetActionCount(
-                         "PasswordManager_ChoseSubdomainPassword"));
-        break;
-      case UserAction::kOverridePassword:
-        EXPECT_EQ(1, user_action_tester.GetActionCount(
-                         "PasswordManager_LoggedInWithNewPassword"));
-        break;
-      case UserAction::kOverrideUsernameAndPassword:
-        EXPECT_EQ(1, user_action_tester.GetActionCount(
-                         "PasswordManager_LoggedInWithNewUsername"));
-        break;
-      case UserAction::kMax:
-        break;
-    }
-
     ExpectUkmValueCount(&test_ukm_recorder,
                         UkmEntry::kUser_ActionSimplifiedName,
                         static_cast<int64_t>(test.user_action), 1);
   }
-}
-
-// Test that in the case of a sequence of user actions, only the last one is
-// recorded in ActionsV3 but all are recorded as UMA user actions.
-TEST(PasswordFormMetricsRecorder, ActionSequence) {
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
-  ukm::TestAutoSetUkmRecorder test_ukm_recorder;
-  base::HistogramTester histogram_tester;
-  base::UserActionTester user_action_tester;
-
-  // Use a scoped PasswordFromMetricsRecorder because some metrics are recored
-  // on destruction.
-  {
-    auto recorder = CreatePasswordFormMetricsRecorder(
-        true /*is_main_frame_secure*/, &test_ukm_recorder);
-    recorder->SetManagerAction(
-        PasswordFormMetricsRecorder::kManagerActionAutofilled);
-    recorder->SetUserAction(UserAction::kChoosePslMatch);
-    recorder->SetUserAction(UserAction::kOverrideUsernameAndPassword);
-    recorder->LogSubmitPassed();
-  }
-
-  EXPECT_THAT(histogram_tester.GetAllSamples("PasswordManager.ActionsTakenV3"),
-              ::testing::ElementsAre(base::Bucket(39, 1)));
-
-  EXPECT_EQ(1, user_action_tester.GetActionCount(
-                   "PasswordManager_ChoseSubdomainPassword"));
-  EXPECT_EQ(1, user_action_tester.GetActionCount(
-                   "PasswordManager_LoggedInWithNewUsername"));
 }
 
 TEST(PasswordFormMetricsRecorder, SubmittedFormType) {
@@ -709,6 +666,365 @@ TEST(PasswordFormMetricsRecorder, FormChangeBitmapRecordedMultipleTimes) {
   uint32_t expected = 1 /* fields number */ | (1 << 3) /* control types */;
   histogram_tester.ExpectUniqueSample("PasswordManager.DynamicFormChanges",
                                       expected, 1);
+}
+
+// todo add namespace
+
+struct FillingAssistanceTestCase {
+  struct FieldInfo {
+    std::string value;
+    std::string typed_value;
+    bool user_typed = false;
+    bool manually_filled = false;
+    bool automatically_filled = false;
+    bool is_password = false;
+  };
+
+  const char* description_for_logging;
+
+  bool is_blacklisted = false;
+  bool submission_detected = true;
+  bool submission_is_successful = true;
+
+  std::vector<FieldInfo> fields;
+  std::vector<std::string> saved_usernames;
+  std::vector<std::string> saved_passwords;
+  std::vector<InteractionsStats> interactions_stats;
+
+  base::Optional<PasswordFormMetricsRecorder::FillingAssistance> expectation;
+};
+
+FormData ConvertToFormData(
+    const std::vector<FillingAssistanceTestCase::FieldInfo>& fields) {
+  FormData form;
+  for (const auto& field : fields) {
+    FormFieldData form_field;
+    form_field.value = ASCIIToUTF16(field.value);
+    form_field.typed_value = ASCIIToUTF16(field.typed_value);
+
+    if (field.user_typed)
+      form_field.properties_mask |= FieldPropertiesFlags::USER_TYPED;
+
+    if (field.manually_filled)
+      form_field.properties_mask |=
+          FieldPropertiesFlags::AUTOFILLED_ON_USER_TRIGGER;
+
+    if (field.automatically_filled)
+      form_field.properties_mask |=
+          FieldPropertiesFlags::AUTOFILLED_ON_PAGELOAD;
+
+    form_field.form_control_type = field.is_password ? "password" : "text";
+
+    form.fields.push_back(form_field);
+  }
+  return form;
+}
+
+std::set<base::string16> ConvertToString16Set(
+    const std::vector<std::string>& v) {
+  std::set<base::string16> result;
+  for (const std::string& str : v)
+    result.insert(ASCIIToUTF16(str));
+  return result;
+}
+
+void CheckFillingAssistanceTestCase(
+    const FillingAssistanceTestCase& test_case) {
+  for (bool is_main_frame_secure : {false, true}) {
+    SCOPED_TRACE(testing::Message("Test description: ")
+                 << test_case.description_for_logging
+                 << ", is_main_frame_secure: " << std::boolalpha
+                 << is_main_frame_secure);
+
+    base::test::ScopedTaskEnvironment scoped_task_environment_;
+    base::HistogramTester histogram_tester;
+
+    FormData form_data = ConvertToFormData(test_case.fields);
+    std::set<base::string16> saved_usernames =
+        ConvertToString16Set(test_case.saved_usernames);
+    std::set<base::string16> saved_passwords =
+        ConvertToString16Set(test_case.saved_passwords);
+
+    auto recorder =
+        CreatePasswordFormMetricsRecorder(is_main_frame_secure, nullptr);
+    if (test_case.submission_detected) {
+      recorder->CalculateFillingAssistanceMetric(
+          form_data, saved_usernames, saved_passwords, test_case.is_blacklisted,
+          test_case.interactions_stats);
+    }
+
+    if (test_case.submission_is_successful)
+      recorder->LogSubmitPassed();
+    recorder.reset();
+
+    int expected_count = test_case.expectation ? 1 : 0;
+    int expected_insecure_count = !is_main_frame_secure ? expected_count : 0;
+    int expected_secure_count = is_main_frame_secure ? expected_count : 0;
+    histogram_tester.ExpectTotalCount("PasswordManager.FillingAssistance",
+                                      expected_count);
+    histogram_tester.ExpectTotalCount(
+        "PasswordManager.FillingAssistance.InsecureOrigin",
+        expected_insecure_count);
+    histogram_tester.ExpectTotalCount(
+        "PasswordManager.FillingAssistance.SecureOrigin",
+        expected_secure_count);
+    if (test_case.expectation) {
+      histogram_tester.ExpectUniqueSample("PasswordManager.FillingAssistance",
+                                          *test_case.expectation, 1);
+      histogram_tester.ExpectUniqueSample(
+          is_main_frame_secure
+              ? "PasswordManager.FillingAssistance.SecureOrigin"
+              : "PasswordManager.FillingAssistance.InsecureOrigin",
+          *test_case.expectation, 1);
+    }
+  }
+}
+
+TEST(PasswordFormMetricsRecorder, FillingAssistanceNoSubmission) {
+  CheckFillingAssistanceTestCase({
+      .description_for_logging = "No submission, no histogram recorded",
+      .submission_detected = false,
+      .fields = {{.value = "user1", .automatically_filled = true},
+                 {.value = "password1",
+                  .automatically_filled = true,
+                  .is_password = true}},
+      .saved_usernames = {"user1", "user2"},
+      .saved_passwords = {"password1", "secret"},
+  });
+}
+
+TEST(PasswordFormMetricsRecorder, FillingAssistanceNoSuccessfulSubmission) {
+  CheckFillingAssistanceTestCase({
+      .description_for_logging =
+          "No sucessful submission, no histogram recorded",
+      .submission_detected = true,
+      .submission_is_successful = false,
+      .fields = {{.value = "user1", .automatically_filled = true},
+                 {.value = "password1",
+                  .automatically_filled = true,
+                  .is_password = true}},
+      .saved_usernames = {"user1", "user2"},
+      .saved_passwords = {"password1", "secret"},
+  });
+}
+
+TEST(PasswordFormMetricsRecorder, FillingAssistanceNoSavedCredentials) {
+  CheckFillingAssistanceTestCase(
+      {.description_for_logging =
+           "No credentials, even when automatically filled",
+       // This case might happen when credentials were filled that the user
+       // removed them from the store.
+       .fields = {{.value = "user1", .automatically_filled = true},
+                  {.value = "password1",
+                   .automatically_filled = true,
+                   .is_password = true}},
+       .saved_usernames = {},
+       .saved_passwords = {},
+
+       .expectation = PasswordFormMetricsRecorder::FillingAssistance::
+           kNoSavedCredentials});
+}
+
+TEST(PasswordFormMetricsRecorder, FillingAssistanceEmptyForm) {
+  CheckFillingAssistanceTestCase(
+      {.description_for_logging = "Weird form submitted without values",
+       .fields = {{.value = ""}, {.value = "", .is_password = true}},
+       .saved_usernames = {"user1", "user2"},
+       .saved_passwords = {"password1", "secret", "password1"},
+
+       .expectation = PasswordFormMetricsRecorder::FillingAssistance::
+           kNoUserInputNoFillingInPasswordFields});
+}
+
+TEST(PasswordFormMetricsRecorder, FillingAssistanceAutomaticFilling) {
+  CheckFillingAssistanceTestCase(
+      {.description_for_logging = "Automatically filled sign-in form",
+       .fields = {{.value = "user1", .automatically_filled = true},
+                  {.value = "password1",
+                   .automatically_filled = true,
+                   .is_password = true}},
+       .saved_usernames = {"user1", "user2"},
+       .saved_passwords = {"password1", "secret"},
+
+       .expectation =
+           PasswordFormMetricsRecorder::FillingAssistance::kAutomatic});
+}
+
+TEST(PasswordFormMetricsRecorder, FillingAssistanceManualFilling) {
+  CheckFillingAssistanceTestCase(
+      {.description_for_logging = "Manually filled sign-in form",
+       .fields = {{.value = "user2", .manually_filled = true},
+                  {.value = "password2",
+                   .manually_filled = true,
+                   .is_password = true}},
+       .saved_usernames = {"user1", "user2"},
+       .saved_passwords = {"password1", "password2"},
+
+       .expectation = PasswordFormMetricsRecorder::FillingAssistance::kManual});
+}
+
+TEST(PasswordFormMetricsRecorder, FillingAssistanceAutomaticAndManualFilling) {
+  CheckFillingAssistanceTestCase(
+      {.description_for_logging =
+           "Manually filled sign-in form after automatic fill",
+       .fields = {{.value = "user2",
+                   .automatically_filled = true,
+                   .manually_filled = true},
+                  {.value = "password2",
+                   .automatically_filled = true,
+                   .manually_filled = true,
+                   .is_password = true}},
+       .saved_usernames = {"user1", "user2"},
+       .saved_passwords = {"password1", "password2"},
+
+       .expectation = PasswordFormMetricsRecorder::FillingAssistance::kManual});
+}
+
+TEST(PasswordFormMetricsRecorder, FillingAssistanceUserTypedPassword) {
+  CheckFillingAssistanceTestCase(
+      {.description_for_logging = "The user typed into password field",
+       .fields = {{.value = "user2", .automatically_filled = true},
+                  {.typed_value = "password2",
+                   .automatically_filled = true,
+                   .user_typed = true,
+                   .is_password = true}},
+       .saved_usernames = {"user1", "user2"},
+       .saved_passwords = {"password1", "password2"},
+
+       .expectation = PasswordFormMetricsRecorder::FillingAssistance::
+           kKnownPasswordTyped});
+}
+
+TEST(PasswordFormMetricsRecorder, FillingAssistanceUserTypedUsername) {
+  CheckFillingAssistanceTestCase(
+      {.description_for_logging = "The user typed into password field",
+       .fields = {{.value = "user2", .user_typed = true},
+                  {.typed_value = "password2",
+                   .automatically_filled = true,
+                   .is_password = true}},
+       .saved_usernames = {"user1", "user2"},
+       .saved_passwords = {"password1", "password2"},
+
+       .expectation = PasswordFormMetricsRecorder::FillingAssistance::
+           kUsernameTypedPasswordFilled});
+}
+
+TEST(PasswordFormMetricsRecorder, FillingAssistanceUserTypedNewCredentials) {
+  CheckFillingAssistanceTestCase(
+      {.description_for_logging = "New credentials were typed",
+       .fields = {{
+                      .value = "user2",
+                      .automatically_filled = true,
+                  },
+                  {.typed_value = "password3",
+                   .automatically_filled = true,
+                   .user_typed = true,
+                   .is_password = true}},
+       .saved_usernames = {"user1", "user2"},
+       .saved_passwords = {"password1", "password2"},
+
+       .expectation = PasswordFormMetricsRecorder::FillingAssistance::
+           kNewPasswordTypedWhileCredentialsExisted});
+}
+
+TEST(PasswordFormMetricsRecorder, FillingAssistanceChangePasswordForm) {
+  CheckFillingAssistanceTestCase(
+      {.description_for_logging = "Change password form",
+       .fields =
+           {{.value = "old_password",
+             .manually_filled = true,
+             .is_password = true},
+            {.value = "new_password", .user_typed = true, .is_password = true},
+            {.value = "new_password", .user_typed = true, .is_password = true}},
+       .saved_usernames = {"user1", "user2"},
+       .saved_passwords = {"old_password", "secret"},
+
+       .expectation = PasswordFormMetricsRecorder::FillingAssistance::kManual});
+}
+
+TEST(PasswordFormMetricsRecorder,
+     FillingAssistanceAutomaticallyFilledUserTypedInOtherFields) {
+  CheckFillingAssistanceTestCase(
+      {.description_for_logging =
+           "Credentials filled, the user typed in other fields",
+       .fields =
+           {
+               {.value = "12345", .user_typed = true},
+               {.value = "user1", .automatically_filled = true},
+               {.value = "mail@example.com", .user_typed = true},
+               {.value = "password2",
+                .automatically_filled = true,
+                .is_password = true},
+               {.value = "pin", .user_typed = true, .is_password = true},
+           },
+       .saved_usernames = {"user1", "user2"},
+       .saved_passwords = {"password1", "password2"},
+
+       .expectation =
+           PasswordFormMetricsRecorder::FillingAssistance::kAutomatic});
+}
+
+TEST(PasswordFormMetricsRecorder,
+     FillingAssistanceManuallyFilledUserTypedInOtherFields) {
+  CheckFillingAssistanceTestCase(
+      {.description_for_logging = "A password filled manually, a username "
+                                  "manually, the user typed in other fields",
+       .fields =
+           {
+               {.value = "12345", .user_typed = true},
+               {.value = "user1", .automatically_filled = true},
+               {.value = "mail@example.com", .user_typed = true},
+               {.value = "password2",
+                .manually_filled = true,
+                .is_password = true},
+               {.value = "pin", .user_typed = true, .is_password = true},
+           },
+       .saved_usernames = {"user1", "user2"},
+       .saved_passwords = {"password1", "password2"},
+
+       .expectation = PasswordFormMetricsRecorder::FillingAssistance::kManual});
+}
+
+TEST(PasswordFormMetricsRecorder, FillingAssistanceBlacklistedDomain) {
+  CheckFillingAssistanceTestCase(
+      {.description_for_logging = "Submission while domain is blacklisted",
+       .fields = {{.value = "user1"},
+                  {.value = "password1", .is_password = true}},
+       .is_blacklisted = true,
+       .saved_usernames = {},
+       .saved_passwords = {},
+       .expectation = PasswordFormMetricsRecorder::FillingAssistance::
+           kNoSavedCredentialsAndBlacklisted});
+}
+
+TEST(PasswordFormMetricsRecorder,
+     FillingAssistanceBlacklistedDomainWithCredential) {
+  CheckFillingAssistanceTestCase(
+      {.description_for_logging =
+           "Submission while domain is blacklisted but a credential is stored",
+       .fields = {{.value = "user1", .automatically_filled = true},
+                  {.value = "password1",
+                   .is_password = true,
+                   .automatically_filled = true}},
+       .is_blacklisted = true,
+       .saved_usernames = {"user1"},
+       .saved_passwords = {"password1"},
+       .expectation =
+           PasswordFormMetricsRecorder::FillingAssistance::kAutomatic});
+}
+
+TEST(PasswordFormMetricsRecorder, FillingAssistanceBlacklistedBySmartBubble) {
+  CheckFillingAssistanceTestCase(
+      {.description_for_logging = "Submission without saved credentials while "
+                                  "smart bubble suppresses saving",
+       .fields = {{.value = "user1"},
+                  {.value = "password1", .is_password = true}},
+       .saved_usernames = {},
+       .saved_passwords = {},
+       .interactions_stats = {{.username_value = ASCIIToUTF16("user1"),
+                               .dismissal_count = 10}},
+       .expectation = PasswordFormMetricsRecorder::FillingAssistance::
+           kNoSavedCredentialsAndBlacklistedBySmartBubble});
 }
 
 }  // namespace password_manager

@@ -17,7 +17,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/ash/chrome_keyboard_controller_client.h"
+#include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/common/extensions/api/input_ime.h"
 #include "chrome/common/extensions/api/input_method_private.h"
 #include "extensions/browser/extension_system.h"
@@ -27,6 +27,7 @@
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/ime/ime_engine_handler_interface.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/keyboard/public/keyboard_config.mojom.h"
 
 namespace input_ime = extensions::api::input_ime;
 namespace input_method_private = extensions::api::input_method_private;
@@ -44,6 +45,8 @@ namespace OnCompositionBoundsChanged =
     extensions::api::input_method_private::OnCompositionBoundsChanged;
 namespace NotifyImeMenuItemActivated =
     extensions::api::input_method_private::NotifyImeMenuItemActivated;
+namespace OnScreenProjectionChanged =
+    extensions::api::input_method_private::OnScreenProjectionChanged;
 using ui::IMEEngineHandlerInterface;
 using input_method::InputMethodEngineBase;
 using chromeos::InputMethodEngine;
@@ -166,6 +169,20 @@ class ImeObserverChromeOS : public ui::ImeObserver {
         input_ime::OnMenuItemActivated::kEventName, std::move(args));
   }
 
+  void OnScreenProjectionChanged(bool is_projected) override {
+    if (extension_id_.empty() ||
+        !HasListener(OnScreenProjectionChanged::kEventName)) {
+      return;
+    }
+    // Note: this is a private API event.
+    std::unique_ptr<base::ListValue> args(new base::ListValue());
+    args->Append(std::make_unique<base::Value>(is_projected));
+
+    DispatchEventToExtension(
+        extensions::events::INPUT_METHOD_PRIVATE_ON_SCREEN_PROJECTION_CHANGED,
+        OnScreenProjectionChanged::kEventName, std::move(args));
+  }
+
   void OnCompositionBoundsChanged(
       const std::vector<gfx::Rect>& bounds) override {
     if (extension_id_.empty() ||
@@ -207,8 +224,7 @@ class ImeObserverChromeOS : public ui::ImeObserver {
     // There is both a public and private OnFocus event. The private OnFocus
     // event is only for ChromeOS and contains additional information about pen
     // inputs. We ensure that we only trigger one OnFocus event.
-    if (ExtensionHasListener(input_method_private::OnFocus::kEventName) &&
-        base::FeatureList::IsEnabled(features::kEnableStylusVirtualKeyboard)) {
+    if (ExtensionHasListener(input_method_private::OnFocus::kEventName)) {
       input_method_private::InputContext input_context;
       input_context.context_id = context.id;
       input_context.type = input_method_private::ParseInputContextType(

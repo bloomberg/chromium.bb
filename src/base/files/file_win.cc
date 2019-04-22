@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/strings/string_util.h"
 #include "base/threading/scoped_blocking_call.h"
 
 #include <windows.h>
@@ -37,13 +38,13 @@ void File::Close() {
   if (!file_.IsValid())
     return;
 
-  ScopedBlockingCall scoped_blocking_call(BlockingType::MAY_BLOCK);
+  ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
   SCOPED_FILE_TRACE("Close");
   file_.Close();
 }
 
 int64_t File::Seek(Whence whence, int64_t offset) {
-  ScopedBlockingCall scoped_blocking_call(BlockingType::MAY_BLOCK);
+  ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
   DCHECK(IsValid());
 
   SCOPED_FILE_TRACE_WITH_SIZE("Seek", offset);
@@ -57,7 +58,7 @@ int64_t File::Seek(Whence whence, int64_t offset) {
 }
 
 int File::Read(int64_t offset, char* data, int size) {
-  ScopedBlockingCall scoped_blocking_call(BlockingType::MAY_BLOCK);
+  ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
   DCHECK(IsValid());
   DCHECK(!async_);
   if (size < 0)
@@ -68,7 +69,7 @@ int File::Read(int64_t offset, char* data, int size) {
   LARGE_INTEGER offset_li;
   offset_li.QuadPart = offset;
 
-  OVERLAPPED overlapped = {0};
+  OVERLAPPED overlapped = {};
   overlapped.Offset = offset_li.LowPart;
   overlapped.OffsetHigh = offset_li.HighPart;
 
@@ -82,7 +83,7 @@ int File::Read(int64_t offset, char* data, int size) {
 }
 
 int File::ReadAtCurrentPos(char* data, int size) {
-  ScopedBlockingCall scoped_blocking_call(BlockingType::MAY_BLOCK);
+  ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
   DCHECK(IsValid());
   DCHECK(!async_);
   if (size < 0)
@@ -110,7 +111,7 @@ int File::ReadAtCurrentPosNoBestEffort(char* data, int size) {
 }
 
 int File::Write(int64_t offset, const char* data, int size) {
-  ScopedBlockingCall scoped_blocking_call(BlockingType::MAY_BLOCK);
+  ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
   DCHECK(IsValid());
   DCHECK(!async_);
 
@@ -119,7 +120,7 @@ int File::Write(int64_t offset, const char* data, int size) {
   LARGE_INTEGER offset_li;
   offset_li.QuadPart = offset;
 
-  OVERLAPPED overlapped = {0};
+  OVERLAPPED overlapped = {};
   overlapped.Offset = offset_li.LowPart;
   overlapped.OffsetHigh = offset_li.HighPart;
 
@@ -131,7 +132,7 @@ int File::Write(int64_t offset, const char* data, int size) {
 }
 
 int File::WriteAtCurrentPos(const char* data, int size) {
-  ScopedBlockingCall scoped_blocking_call(BlockingType::MAY_BLOCK);
+  ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
   DCHECK(IsValid());
   DCHECK(!async_);
   if (size < 0)
@@ -151,7 +152,7 @@ int File::WriteAtCurrentPosNoBestEffort(const char* data, int size) {
 }
 
 int64_t File::GetLength() {
-  ScopedBlockingCall scoped_blocking_call(BlockingType::MAY_BLOCK);
+  ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
   DCHECK(IsValid());
 
   SCOPED_FILE_TRACE("GetLength");
@@ -164,7 +165,7 @@ int64_t File::GetLength() {
 }
 
 bool File::SetLength(int64_t length) {
-  ScopedBlockingCall scoped_blocking_call(BlockingType::MAY_BLOCK);
+  ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
   DCHECK(IsValid());
 
   SCOPED_FILE_TRACE_WITH_SIZE("SetLength", length);
@@ -195,7 +196,7 @@ bool File::SetLength(int64_t length) {
 }
 
 bool File::SetTimes(Time last_access_time, Time last_modified_time) {
-  ScopedBlockingCall scoped_blocking_call(BlockingType::MAY_BLOCK);
+  ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
   DCHECK(IsValid());
 
   SCOPED_FILE_TRACE("SetTimes");
@@ -207,7 +208,7 @@ bool File::SetTimes(Time last_access_time, Time last_modified_time) {
 }
 
 bool File::GetInfo(Info* info) {
-  ScopedBlockingCall scoped_blocking_call(BlockingType::MAY_BLOCK);
+  ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
   DCHECK(IsValid());
 
   SCOPED_FILE_TRACE("GetInfo");
@@ -229,12 +230,31 @@ bool File::GetInfo(Info* info) {
   return true;
 }
 
-File::Error File::Lock() {
+namespace {
+
+DWORD LockFileFlagsForMode(File::LockMode mode) {
+  DWORD flags = LOCKFILE_FAIL_IMMEDIATELY;
+  switch (mode) {
+    case File::LockMode::kShared:
+      return flags;
+    case File::LockMode::kExclusive:
+      return flags | LOCKFILE_EXCLUSIVE_LOCK;
+  }
+  NOTREACHED();
+}
+
+}  // namespace
+
+File::Error File::Lock(File::LockMode mode) {
   DCHECK(IsValid());
 
   SCOPED_FILE_TRACE("Lock");
 
-  BOOL result = LockFile(file_.Get(), 0, 0, MAXDWORD, MAXDWORD);
+  OVERLAPPED overlapped = {};
+  BOOL result =
+      LockFileEx(file_.Get(), LockFileFlagsForMode(mode), /*dwReserved=*/0,
+                 /*nNumberOfBytesToLockLow=*/MAXDWORD,
+                 /*nNumberOfBytesToLockHigh=*/MAXDWORD, &overlapped);
   if (!result)
     return GetLastFileError();
   return FILE_OK;
@@ -245,7 +265,11 @@ File::Error File::Unlock() {
 
   SCOPED_FILE_TRACE("Unlock");
 
-  BOOL result = UnlockFile(file_.Get(), 0, 0, MAXDWORD, MAXDWORD);
+  OVERLAPPED overlapped = {};
+  BOOL result =
+      UnlockFileEx(file_.Get(), /*dwReserved=*/0,
+                   /*nNumberOfBytesToLockLow=*/MAXDWORD,
+                   /*nNumberOfBytesToLockHigh=*/MAXDWORD, &overlapped);
   if (!result)
     return GetLastFileError();
   return FILE_OK;
@@ -318,7 +342,7 @@ File::Error File::OSErrorToFileError(DWORD last_error) {
 }
 
 void File::DoInitialize(const FilePath& path, uint32_t flags) {
-  ScopedBlockingCall scoped_blocking_call(BlockingType::MAY_BLOCK);
+  ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
   DCHECK(!IsValid());
 
   DWORD disposition = 0;
@@ -391,7 +415,7 @@ void File::DoInitialize(const FilePath& path, uint32_t flags) {
   if (flags & FLAG_SEQUENTIAL_SCAN)
     create_flags |= FILE_FLAG_SEQUENTIAL_SCAN;
 
-  file_.Set(CreateFile(path.value().c_str(), access, sharing, NULL,
+  file_.Set(CreateFile(as_wcstr(path.value()), access, sharing, NULL,
                        disposition, create_flags, NULL));
 
   if (file_.IsValid()) {
@@ -408,9 +432,13 @@ void File::DoInitialize(const FilePath& path, uint32_t flags) {
 }
 
 bool File::Flush() {
-  ScopedBlockingCall scoped_blocking_call(BlockingType::MAY_BLOCK);
+  ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
   DCHECK(IsValid());
   SCOPED_FILE_TRACE("Flush");
+
+  // On Windows 8 and above, FlushFileBuffers is guaranteed to flush the storage
+  // device's internal buffers (if they exist) before returning.
+  // https://blogs.msdn.microsoft.com/oldnewthing/20170510-00/?p=95505
   return ::FlushFileBuffers(file_.Get()) != FALSE;
 }
 

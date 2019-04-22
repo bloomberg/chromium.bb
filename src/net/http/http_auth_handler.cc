@@ -69,8 +69,8 @@ int HttpAuthHandler::GenerateAuthToken(const AuthCredentials* credentials,
                                        std::string* auth_token) {
   DCHECK(!callback.is_null());
   DCHECK(request);
-  DCHECK(credentials != NULL || AllowsDefaultCredentials());
-  DCHECK(auth_token != NULL);
+  DCHECK(credentials != nullptr || AllowsDefaultCredentials());
+  DCHECK(auth_token != nullptr);
   DCHECK(callback_.is_null());
   callback_ = std::move(callback);
   net_log_.BeginEvent(EventTypeFromAuthTarget(target_));

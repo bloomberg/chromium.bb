@@ -9,7 +9,6 @@
 @protocol ApplicationCommands;
 @protocol BookmarkInteractionControllerDelegate;
 @class Tab;
-@protocol UrlLoader;
 
 namespace bookmarks {
 class BookmarkNode;
@@ -17,7 +16,9 @@ class BookmarkNode;
 
 namespace ios {
 class ChromeBrowserState;
-}  // namespace ios
+}
+
+class WebStateList;
 
 // The BookmarkInteractionController abstracts the management of the various
 // UIViewControllers used to create, remove and edit a bookmark.
@@ -27,9 +28,9 @@ class ChromeBrowserState;
 @property(nonatomic, weak) id<BookmarkInteractionControllerDelegate> delegate;
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
-                              loader:(id<UrlLoader>)loader
                     parentController:(UIViewController*)parentController
                           dispatcher:(id<ApplicationCommands>)dispatcher
+                        webStateList:(WebStateList*)webStateList
     NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
 

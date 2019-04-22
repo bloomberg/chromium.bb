@@ -14,6 +14,9 @@ from dashboard.pinpoint.models import quest as quest_module
 
 _ERROR_BUG_ID = 'Bug ID must be an integer.'
 _ERROR_TAGS_DICT = 'Tags must be a dict of key/value string pairs.'
+_ERROR_UNSUPPORTED = 'This benchmark (%s) is unsupported.'
+
+_UNSUPPORTED_BENCHMARKS = []
 
 
 class New(api_request_handler.ApiRequestHandler):
@@ -65,14 +68,17 @@ def _CreateJob(request):
 def _ArgumentsWithConfiguration(original_arguments):
   # "configuration" is a special argument that maps to a list of preset
   # arguments. Pull any arguments from the specified "configuration", if any.
+  new_arguments = original_arguments.copy()
+
   configuration = original_arguments.get('configuration')
   if configuration:
-    new_arguments = bot_configurations.Get(configuration)
-  else:
-    new_arguments = {}
+    default_arguments = bot_configurations.Get(configuration)
+    if default_arguments:
+      for k, v in default_arguments.items():
+        new_arguments.setdefault(k, v)
 
-  # Override the configuration arguments with the API-provided arguments.
-  new_arguments.update(original_arguments)
+  if new_arguments.get('benchmark') in _UNSUPPORTED_BENCHMARKS:
+    raise ValueError(_ERROR_UNSUPPORTED % new_arguments.get('benchmark'))
 
   return new_arguments
 
@@ -162,6 +168,10 @@ def _GenerateQuests(arguments):
     if target in ('performance_test_suite', 'performance_webview_test_suite',
                   'telemetry_perf_tests', 'telemetry_perf_webview_tests'):
       quest_classes = (quest_module.FindIsolate, quest_module.RunTelemetryTest,
+                       quest_module.ReadHistogramsJsonValue)
+    elif target == 'vr_perf_tests':
+      quest_classes = (quest_module.FindIsolate,
+                       quest_module.RunVrTelemetryTest,
                        quest_module.ReadHistogramsJsonValue)
     else:
       quest_classes = (quest_module.FindIsolate, quest_module.RunGTest,

@@ -6,18 +6,16 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SYMBOLS_ITERATOR_H_
 
 #include <memory>
+
+#include "base/macros.h"
 #include "third_party/blink/renderer/platform/fonts/font_fallback_priority.h"
-#include "third_party/blink/renderer/platform/fonts/font_orientation.h"
-#include "third_party/blink/renderer/platform/fonts/script_run_iterator.h"
-#include "third_party/blink/renderer/platform/fonts/utf16_text_iterator.h"
+#include "third_party/blink/renderer/platform/fonts/utf16_ragel_iterator.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
 class PLATFORM_EXPORT SymbolsIterator {
   USING_FAST_MALLOC(SymbolsIterator);
-  WTF_MAKE_NONCOPYABLE(SymbolsIterator);
 
  public:
   SymbolsIterator(const UChar* buffer, unsigned buffer_size);
@@ -25,17 +23,15 @@ class PLATFORM_EXPORT SymbolsIterator {
   bool Consume(unsigned* symbols_limit, FontFallbackPriority*);
 
  private:
-  FontFallbackPriority FontFallbackPriorityForCharacter(UChar32);
+  UTF16RagelIterator buffer_iterator_;
+  unsigned cursor_;
 
-  std::unique_ptr<UTF16TextIterator> utf16_iterator_;
-  unsigned buffer_size_;
-  UChar32 next_char_;
-  bool at_end_;
+  unsigned next_token_end_;
+  bool next_token_emoji_;
 
-  FontFallbackPriority current_font_fallback_priority_;
-  FontFallbackPriority previous_font_fallback_priority_;
+  DISALLOW_COPY_AND_ASSIGN(SymbolsIterator);
 };
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SYMBOLS_ITERATOR_H_

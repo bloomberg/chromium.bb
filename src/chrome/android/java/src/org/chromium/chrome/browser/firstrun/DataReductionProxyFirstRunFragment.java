@@ -14,8 +14,9 @@ import android.view.ViewGroup;
 import android.widget.Button;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.datareduction.DataReductionBrandingResourceProvider;
+import org.chromium.chrome.browser.datareduction.DataReductionPromoUtils;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
-import org.chromium.chrome.browser.preferences.datareduction.DataReductionPromoUtils;
 
 /**
  * The First Run Experience fragment that allows the user to opt in to Data Saver.
@@ -32,7 +33,9 @@ public class DataReductionProxyFirstRunFragment extends Fragment implements Firs
     @Override
     public View onCreateView(
             LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fre_data_reduction_proxy, container, false);
+        return inflater.inflate(DataReductionBrandingResourceProvider.getFirstRunLayout(
+                                        R.layout.fre_data_reduction_proxy),
+                container, false);
     }
 
     @Override
@@ -49,9 +52,13 @@ public class DataReductionProxyFirstRunFragment extends Fragment implements Firs
                 DataReductionProxySettings.getInstance().setDataReductionProxyEnabled(
                         v.getContext(), enableDataSaverSwitch.isChecked());
                 if (enableDataSaverSwitch.isChecked()) {
-                    enableDataSaverSwitch.setText(R.string.data_reduction_enabled_switch);
+                    enableDataSaverSwitch.setText(
+                            DataReductionBrandingResourceProvider.getDataSaverBrandedString(
+                                    R.string.data_reduction_enabled_switch));
                 } else {
-                    enableDataSaverSwitch.setText(R.string.data_reduction_disabled_switch);
+                    enableDataSaverSwitch.setText(
+                            DataReductionBrandingResourceProvider.getDataSaverBrandedString(
+                                    R.string.data_reduction_disabled_switch));
                 }
             }
         });

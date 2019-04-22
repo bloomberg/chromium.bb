@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/memory/ref_counted_memory.h"
 #include "components/metrics_services_manager/metrics_services_manager.h"
 #include "components/ukm/debug/ukm_debug_data_extractor.h"

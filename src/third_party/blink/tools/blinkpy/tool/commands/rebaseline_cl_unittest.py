@@ -10,7 +10,7 @@ from blinkpy.common.checkout.git_mock import MockGit
 from blinkpy.common.net.buildbot import Build
 from blinkpy.common.net.git_cl import TryJobStatus
 from blinkpy.common.net.git_cl_mock import MockGitCL
-from blinkpy.common.net.layout_test_results import LayoutTestResults
+from blinkpy.common.net.web_test_results import WebTestResults
 from blinkpy.common.path_finder import RELATIVE_WEB_TESTS
 from blinkpy.common.system.log_testing import LoggingTestCase
 from blinkpy.tool.commands.rebaseline import TestBaselineSet
@@ -59,7 +59,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
                 'is_try_builder': True,
             },
         })
-        layout_test_results = LayoutTestResults({
+        web_test_results = WebTestResults({
             'tests': {
                 'one': {
                     'crash.html': {'expected': 'PASS', 'actual': 'CRASH', 'is_unexpected': True},
@@ -75,7 +75,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         })
 
         for build in builds:
-            self.tool.buildbot.set_results(build, layout_test_results)
+            self.tool.buildbot.set_results(build, web_test_results)
             self.tool.buildbot.set_retry_sumary_json(build, json.dumps({
                 'failures': [
                     'one/flaky-fail.html',
@@ -97,11 +97,11 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         ]
         for test in tests:
             path = self.mac_port.host.filesystem.join(
-                self.mac_port.layout_tests_dir(), test)
+                self.mac_port.web_tests_dir(), test)
             self._write(path, 'contents')
 
         self.mac_port.host.filesystem.write_text_file(
-            '/test.checkout/LayoutTests/external/wpt/MANIFEST.json', '{}')
+            '/test.checkout/web_tests/external/wpt/MANIFEST.json', '{}')
 
     def tearDown(self):
         BaseTestCase.tearDown(self)
@@ -358,7 +358,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         # one/flaky-fail.html is considered a real test to rebaseline.
         port = self.tool.port_factory.get('test-win-win7')
         path = port.host.filesystem.join(
-            port.layout_tests_dir(), 'one/flaky-fail.html')
+            port.web_tests_dir(), 'one/flaky-fail.html')
         self._write(path, 'contents')
         test_baseline_set = TestBaselineSet(self.tool)
         test_baseline_set.add(

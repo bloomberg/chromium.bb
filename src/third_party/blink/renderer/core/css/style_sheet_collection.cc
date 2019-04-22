@@ -41,15 +41,15 @@ void StyleSheetCollection::Dispose() {
 }
 
 void StyleSheetCollection::Swap(StyleSheetCollection& other) {
-  ::blink::swap(style_sheets_for_style_sheet_list_,
-                other.style_sheets_for_style_sheet_list_);
+  swap(style_sheets_for_style_sheet_list_,
+       other.style_sheets_for_style_sheet_list_);
   active_author_style_sheets_.swap(other.active_author_style_sheets_);
   sheet_list_dirty_ = false;
 }
 
 void StyleSheetCollection::SwapSheetsForSheetList(
     HeapVector<Member<StyleSheet>>& sheets) {
-  ::blink::swap(style_sheets_for_style_sheet_list_, sheets);
+  swap(style_sheets_for_style_sheet_list_, sheets);
   sheet_list_dirty_ = false;
 }
 

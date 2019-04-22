@@ -6,12 +6,14 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
@@ -64,7 +66,7 @@ class BlobBuilderFromStreamTestWithDelayedLimits
   void TearDown() override {
     // Make sure we clean up files.
     base::RunLoop().RunUntilIdle();
-    base::TaskScheduler::GetInstance()->FlushForTesting();
+    base::ThreadPool::GetInstance()->FlushForTesting();
     base::RunLoop().RunUntilIdle();
   }
 
@@ -187,7 +189,7 @@ class BlobBuilderFromStreamTest
   }
 };
 
-TEST_P(BlobBuilderFromStreamTest, CallbackCalledOnDeletion) {
+TEST_P(BlobBuilderFromStreamTest, CallbackCalledOnAbortBeforeDeletion) {
   mojo::DataPipe pipe;
 
   base::RunLoop loop;
@@ -202,6 +204,7 @@ TEST_P(BlobBuilderFromStreamTest, CallbackCalledOnDeletion) {
         loop.Quit();
       }));
   builder_ptr = builder.get();
+  builder->Abort();
   builder.reset();
   loop.Run();
 }
@@ -329,7 +332,7 @@ TEST_P(BlobBuilderFromStreamTest, TooLargeForQuota) {
 
   // Make sure we clean up files.
   base::RunLoop().RunUntilIdle();
-  base::TaskScheduler::GetInstance()->FlushForTesting();
+  base::ThreadPool::GetInstance()->FlushForTesting();
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(0u, context_->memory_controller().memory_usage());
@@ -427,12 +430,12 @@ TEST_P(BlobBuilderFromStreamTest, ProgressEvents) {
   EXPECT_GE(progress_client.call_count, 2);
 }
 
-INSTANTIATE_TEST_CASE_P(BlobBuilderFromStreamTest,
-                        BlobBuilderFromStreamTest,
-                        ::testing::Values(LengthHintTestType::kUnknownSize,
-                                          LengthHintTestType::kCorrectSize,
-                                          LengthHintTestType::kTooLargeSize,
-                                          LengthHintTestType::kTooSmallSize));
+INSTANTIATE_TEST_SUITE_P(BlobBuilderFromStreamTest,
+                         BlobBuilderFromStreamTest,
+                         ::testing::Values(LengthHintTestType::kUnknownSize,
+                                           LengthHintTestType::kCorrectSize,
+                                           LengthHintTestType::kTooLargeSize,
+                                           LengthHintTestType::kTooSmallSize));
 
 TEST_F(BlobBuilderFromStreamTestWithDelayedLimits, LargeStream) {
   const std::string kData =

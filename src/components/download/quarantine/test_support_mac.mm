@@ -11,7 +11,7 @@
 #include "base/files/file_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "components/download/quarantine/common_mac.h"
 #include "url/gurl.h"
 
@@ -20,17 +20,14 @@ namespace download {
 bool IsFileQuarantined(const base::FilePath& file,
                        const GURL& expected_source_url,
                        const GURL& referrer_url) {
-  base::AssertBlockingAllowedDeprecated();
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   if (!base::PathExists(file))
     return false;
 
   base::scoped_nsobject<NSMutableDictionary> properties;
-  bool success = false;
-  if (@available(macos 10.10, *))
-    success = GetQuarantineProperties(file, &properties);
-  else
-    success = GetQuarantinePropertiesDeprecated(file, &properties);
+  bool success = GetQuarantineProperties(file, &properties);
 
   if (!success || !properties)
     return false;

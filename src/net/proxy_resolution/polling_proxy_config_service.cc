@@ -38,7 +38,7 @@ class PollingProxyConfigService::Core
   // (observers should not be called past this point).
   void Orphan() {
     base::AutoLock lock(lock_);
-    origin_task_runner_ = NULL;
+    origin_task_runner_ = nullptr;
   }
 
   bool GetLatestProxyConfig(ProxyConfigWithAnnotation* config) {
@@ -96,7 +96,7 @@ class PollingProxyConfigService::Core
     base::PostTaskWithTraits(
         FROM_HERE,
         {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-        base::Bind(&Core::PollAsync, this, get_config_func_));
+        base::BindOnce(&Core::PollAsync, this, get_config_func_));
   }
 
  private:
@@ -110,7 +110,7 @@ class PollingProxyConfigService::Core
     base::AutoLock lock(lock_);
     if (origin_task_runner_.get()) {
       origin_task_runner_->PostTask(
-          FROM_HERE, base::Bind(&Core::GetConfigCompleted, this, config));
+          FROM_HERE, base::BindOnce(&Core::GetConfigCompleted, this, config));
     }
   }
 

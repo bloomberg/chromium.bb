@@ -57,7 +57,7 @@ void MojoAudioDecoderService::Initialize(const AudioDecoderConfig& config,
       base::Bind(&MojoAudioDecoderService::OnInitialized, weak_this_,
                  base::Passed(&callback)),
       base::Bind(&MojoAudioDecoderService::OnAudioBufferReady, weak_this_),
-      base::NullCallback());
+      base::Bind(&MojoAudioDecoderService::OnWaiting, weak_this_));
 }
 
 void MojoAudioDecoderService::SetDataSource(
@@ -138,6 +138,11 @@ void MojoAudioDecoderService::OnAudioBufferReady(
 
   // TODO(timav): Use DataPipe.
   client_->OnBufferDecoded(mojom::AudioBuffer::From(audio_buffer));
+}
+
+void MojoAudioDecoderService::OnWaiting(WaitingReason reason) {
+  DVLOG(1) << __func__;
+  client_->OnWaiting(reason);
 }
 
 }  // namespace media

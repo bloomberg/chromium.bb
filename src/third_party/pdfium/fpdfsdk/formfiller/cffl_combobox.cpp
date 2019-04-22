@@ -8,7 +8,7 @@
 
 #include <utility>
 
-#include "fpdfsdk/cpdfsdk_common.h"
+#include "constants/form_flags.h"
 #include "fpdfsdk/cpdfsdk_formfillenvironment.h"
 #include "fpdfsdk/cpdfsdk_widget.h"
 #include "fpdfsdk/formfiller/cba_fontmap.h"
@@ -36,7 +36,7 @@ CFFL_ComboBox::~CFFL_ComboBox() {
 
 CPWL_Wnd::CreateParams CFFL_ComboBox::GetCreateParam() {
   CPWL_Wnd::CreateParams cp = CFFL_TextObject::GetCreateParam();
-  if (m_pWidget->GetFieldFlags() & FIELDFLAG_EDIT)
+  if (m_pWidget->GetFieldFlags() & pdfium::form_flags::kChoiceEdit)
     cp.dwFlags |= PCBS_ALLOWCUSTOMTEXT;
 
   cp.pFontMap = MaybeCreateFontMap();
@@ -82,7 +82,7 @@ bool CFFL_ComboBox::IsDataChanged(CPDFSDK_PageView* pPageView) {
     return false;
 
   int32_t nCurSel = pWnd->GetSelect();
-  if (!(m_pWidget->GetFieldFlags() & FIELDFLAG_EDIT))
+  if (!(m_pWidget->GetFieldFlags() & pdfium::form_flags::kChoiceEdit))
     return nCurSel != m_pWidget->GetSelectedIndex(0);
 
   if (nCurSel >= 0)
@@ -100,7 +100,7 @@ void CFFL_ComboBox::SaveData(CPDFSDK_PageView* pPageView) {
   WideString swText = pWnd->GetText();
   int32_t nCurSel = pWnd->GetSelect();
   bool bSetValue = false;
-  if (m_pWidget->GetFieldFlags() & FIELDFLAG_EDIT)
+  if (m_pWidget->GetFieldFlags() & pdfium::form_flags::kChoiceEdit)
     bSetValue = (nCurSel < 0) || (swText != m_pWidget->GetOptionLabel(nCurSel));
 
   if (bSetValue) {
@@ -142,8 +142,8 @@ void CFFL_ComboBox::GetActionData(CPDFSDK_PageView* pPageView,
           fa.sChangeEx = GetSelectExportText();
 
           if (fa.bFieldFull) {
-            fa.sChange = L"";
-            fa.sChangeEx = L"";
+            fa.sChange.clear();
+            fa.sChangeEx.clear();
           }
         }
       }
@@ -226,6 +226,43 @@ void CFFL_ComboBox::RestoreState(CPDFSDK_PageView* pPageView) {
       }
     }
   }
+}
+
+bool CFFL_ComboBox::SetIndexSelected(int index, bool selected) {
+  if (!IsValid() || !selected)
+    return false;
+
+  if (index < 0 || index >= m_pWidget->CountOptions())
+    return false;
+
+  CPDFSDK_PageView* pPageView = GetCurPageView(true);
+  ASSERT(pPageView);
+
+  CPWL_ComboBox* pWnd =
+      static_cast<CPWL_ComboBox*>(GetPDFWindow(pPageView, false));
+  if (!pWnd)
+    return false;
+
+  pWnd->SetSelect(index);
+  return true;
+}
+
+bool CFFL_ComboBox::IsIndexSelected(int index) {
+  if (!IsValid())
+    return false;
+
+  if (index < 0 || index >= m_pWidget->CountOptions())
+    return false;
+
+  CPDFSDK_PageView* pPageView = GetCurPageView(true);
+  ASSERT(pPageView);
+
+  CPWL_ComboBox* pWnd =
+      static_cast<CPWL_ComboBox*>(GetPDFWindow(pPageView, false));
+  if (!pWnd)
+    return false;
+
+  return index == pWnd->GetSelect();
 }
 
 #ifdef PDF_ENABLE_XFA

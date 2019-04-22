@@ -215,9 +215,9 @@ const SimpleParseTestData simple_parse_tests[] = {
      ""},
 };
 
-INSTANTIATE_TEST_CASE_P(LinkHeaderTest,
-                        SimpleParseTest,
-                        testing::ValuesIn(simple_parse_tests));
+INSTANTIATE_TEST_SUITE_P(LinkHeaderTest,
+                         SimpleParseTest,
+                         testing::ValuesIn(simple_parse_tests));
 
 }  // namespace
 

@@ -15,17 +15,43 @@
 #ifndef DAWNNATIVE_METALBACKEND_H_
 #define DAWNNATIVE_METALBACKEND_H_
 
-#include <dawn/dawn.h>
 #include <dawn/dawn_wsi.h>
-#include <dawn_native/dawn_native_export.h>
+#include <dawn_native/DawnNative.h>
 
-#import <Metal/Metal.h>
-#import <QuartzCore/CAMetalLayer.h>
+// The specifics of the Metal backend expose types in function signatures that might not be
+// available in dependent's minimum supported SDK version. Suppress all availability errors using
+// clang's pragmas. Dependents using the types without guarded availability will still get errors
+// when using the types.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunguarded-availability"
+
+struct __IOSurface;
+typedef __IOSurface* IOSurfaceRef;
+
+#ifdef __OBJC__
+#    import <Metal/Metal.h>
+#endif  //__OBJC__
 
 namespace dawn_native { namespace metal {
-    DAWN_NATIVE_EXPORT dawnDevice CreateDevice(id<MTLDevice> metalDevice);
-    DAWN_NATIVE_EXPORT void SetNextDrawable(dawnDevice device, id<CAMetalDrawable> drawable);
-    DAWN_NATIVE_EXPORT void Present(dawnDevice device);
+    DAWN_NATIVE_EXPORT DawnTexture WrapIOSurface(DawnDevice device,
+                                                 const DawnTextureDescriptor* descriptor,
+                                                 IOSurfaceRef ioSurface,
+                                                 uint32_t plane);
+
+    // When making Metal interop with other APIs, we need to be careful that QueueSubmit doesn't
+    // mean that the operations will be visible to other APIs/Metal devices right away. macOS
+    // does have a global queue of graphics operations, but the command buffers are inserted there
+    // when they are "scheduled". Submitting other operations before the command buffer is
+    // scheduled could lead to races in who gets scheduled first and incorrect rendering.
+    DAWN_NATIVE_EXPORT void WaitForCommandsToBeScheduled(DawnDevice device);
 }}  // namespace dawn_native::metal
+
+#ifdef __OBJC__
+namespace dawn_native { namespace metal {
+    DAWN_NATIVE_EXPORT id<MTLDevice> GetMetalDevice(DawnDevice device);
+}}      // namespace dawn_native::metal
+#endif  // __OBJC__
+
+#pragma clang diagnostic pop
 
 #endif  // DAWNNATIVE_METALBACKEND_H_

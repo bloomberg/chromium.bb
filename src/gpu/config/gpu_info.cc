@@ -50,12 +50,57 @@ void EnumerateVideoEncodeAcceleratorSupportedProfile(
   enumerator->EndVideoEncodeAcceleratorSupportedProfile();
 }
 
+const char* ImageDecodeAcceleratorTypeToString(
+    gpu::ImageDecodeAcceleratorType type) {
+  switch (type) {
+    case gpu::ImageDecodeAcceleratorType::kJpeg:
+      return "JPEG";
+    case gpu::ImageDecodeAcceleratorType::kUnknown:
+      return "Unknown";
+  }
+}
+
+const char* ImageDecodeAcceleratorSubsamplingToString(
+    gpu::ImageDecodeAcceleratorSubsampling subsampling) {
+  switch (subsampling) {
+    case gpu::ImageDecodeAcceleratorSubsampling::k420:
+      return "4:2:0";
+    case gpu::ImageDecodeAcceleratorSubsampling::k422:
+      return "4:2:2";
+    case gpu::ImageDecodeAcceleratorSubsampling::k444:
+      return "4:4:4";
+  }
+}
+
+void EnumerateImageDecodeAcceleratorSupportedProfile(
+    const gpu::ImageDecodeAcceleratorSupportedProfile& profile,
+    gpu::GPUInfo::Enumerator* enumerator) {
+  enumerator->BeginImageDecodeAcceleratorSupportedProfile();
+  enumerator->AddString("imageType",
+                        ImageDecodeAcceleratorTypeToString(profile.image_type));
+  enumerator->AddString("minEncodedDimensions",
+                        profile.min_encoded_dimensions.ToString());
+  enumerator->AddString("maxEncodedDimensions",
+                        profile.max_encoded_dimensions.ToString());
+  std::string subsamplings;
+  for (size_t i = 0; i < profile.subsamplings.size(); i++) {
+    if (i > 0)
+      subsamplings += ", ";
+    subsamplings +=
+        ImageDecodeAcceleratorSubsamplingToString(profile.subsamplings[i]);
+  }
+  enumerator->AddString("subsamplings", subsamplings);
+  enumerator->EndImageDecodeAcceleratorSupportedProfile();
+}
+
 #if defined(OS_WIN)
 void EnumerateOverlayCapability(const gpu::OverlayCapability& cap,
                                 gpu::GPUInfo::Enumerator* enumerator) {
+  std::string key_string = "overlayCap";
+  key_string += OverlayFormatToString(cap.format);
   enumerator->BeginOverlayCapability();
-  enumerator->AddInt("format", static_cast<int>(cap.format));
-  enumerator->AddInt("isScalingSupported", cap.is_scaling_supported);
+  enumerator->AddString(key_string.c_str(),
+                        cap.is_scaling_supported ? "SCALING" : "DIRECT");
   enumerator->EndOverlayCapability();
 }
 
@@ -102,6 +147,24 @@ VideoDecodeAcceleratorCapabilities::VideoDecodeAcceleratorCapabilities(
 VideoDecodeAcceleratorCapabilities::~VideoDecodeAcceleratorCapabilities() =
     default;
 
+ImageDecodeAcceleratorSupportedProfile::ImageDecodeAcceleratorSupportedProfile()
+    : image_type(ImageDecodeAcceleratorType::kUnknown) {}
+
+ImageDecodeAcceleratorSupportedProfile::ImageDecodeAcceleratorSupportedProfile(
+    const ImageDecodeAcceleratorSupportedProfile& other) = default;
+
+ImageDecodeAcceleratorSupportedProfile::ImageDecodeAcceleratorSupportedProfile(
+    ImageDecodeAcceleratorSupportedProfile&& other) = default;
+
+ImageDecodeAcceleratorSupportedProfile::
+    ~ImageDecodeAcceleratorSupportedProfile() = default;
+
+ImageDecodeAcceleratorSupportedProfile& ImageDecodeAcceleratorSupportedProfile::
+operator=(const ImageDecodeAcceleratorSupportedProfile& other) = default;
+
+ImageDecodeAcceleratorSupportedProfile& ImageDecodeAcceleratorSupportedProfile::
+operator=(ImageDecodeAcceleratorSupportedProfile&& other) = default;
+
 GPUInfo::GPUDevice::GPUDevice()
     : vendor_id(0),
       device_id(0),
@@ -125,7 +188,6 @@ GPUInfo::GPUInfo()
       amd_switchable(false),
       gl_reset_notification_strategy(0),
       software_rendering(false),
-      direct_rendering(true),
       sandboxed(false),
       in_process_gpu(true),
       passthrough_cmd_decoder(false),
@@ -182,7 +244,7 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
     std::string gl_ws_extensions;
     uint32_t gl_reset_notification_strategy;
     bool software_rendering;
-    bool direct_rendering;
+    std::string direct_rendering_version;
     bool sandboxed;
     bool in_process_gpu;
     bool passthrough_cmd_decoder;
@@ -199,10 +261,15 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
     VideoEncodeAcceleratorSupportedProfiles
         video_encode_accelerator_supported_profiles;
     bool jpeg_decode_accelerator_supported;
+
+    ImageDecodeAcceleratorSupportedProfiles
+        image_decode_accelerator_supported_profiles;
+
 #if defined(USE_X11)
     VisualID system_visual;
     VisualID rgba_visual;
 #endif
+
     bool oop_rasterization_supported;
   };
 
@@ -240,7 +307,7 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
       static_cast<int>(gl_reset_notification_strategy));
   // TODO(kbr): add performance_stats.
   enumerator->AddBool("softwareRendering", software_rendering);
-  enumerator->AddBool("directRendering", direct_rendering);
+  enumerator->AddString("directRenderingVersion", direct_rendering_version);
   enumerator->AddBool("sandboxed", sandboxed);
   enumerator->AddBool("inProcessGpu", in_process_gpu);
   enumerator->AddBool("passthroughCmdDecoder", passthrough_cmd_decoder);
@@ -263,6 +330,8 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
     EnumerateVideoEncodeAcceleratorSupportedProfile(profile, enumerator);
   enumerator->AddBool("jpegDecodeAcceleratorSupported",
       jpeg_decode_accelerator_supported);
+  for (const auto& profile : image_decode_accelerator_supported_profiles)
+    EnumerateImageDecodeAcceleratorSupportedProfile(profile, enumerator);
 #if defined(USE_X11)
   enumerator->AddInt64("systemVisual", system_visual);
   enumerator->AddInt64("rgbaVisual", rgba_visual);

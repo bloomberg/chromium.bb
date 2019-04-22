@@ -122,7 +122,7 @@ class Renderer11 : public RendererD3D
     egl::ConfigSet generateConfigs() override;
     void generateDisplayExtensions(egl::DisplayExtensions *outExtensions) const override;
 
-    ContextImpl *createContext(const gl::ContextState &state) override;
+    ContextImpl *createContext(const gl::State &state, gl::ErrorSet *errorSet) override;
 
     angle::Result flush(Context11 *context11);
     angle::Result finish(Context11 *context11);
@@ -317,9 +317,9 @@ class Renderer11 : public RendererD3D
     // D3D11-renderer specific methods
     ID3D11Device *getDevice() { return mDevice; }
     void *getD3DDevice() override;
-    ID3D11DeviceContext *getDeviceContext() { return mDeviceContext; };
-    ID3D11DeviceContext1 *getDeviceContext1IfSupported() { return mDeviceContext1; };
-    IDXGIFactory *getDxgiFactory() { return mDxgiFactory; };
+    ID3D11DeviceContext *getDeviceContext() { return mDeviceContext; }
+    ID3D11DeviceContext1 *getDeviceContext1IfSupported() { return mDeviceContext1; }
+    IDXGIFactory *getDxgiFactory() { return mDxgiFactory; }
 
     angle::Result getBlendState(const gl::Context *context,
                                 const d3d11::BlendStateKey &key,
@@ -388,7 +388,7 @@ class Renderer11 : public RendererD3D
                                        bool stencilBlit);
 
     bool isES3Capable() const;
-    const Renderer11DeviceCaps &getRenderer11DeviceCaps() const { return mRenderer11DeviceCaps; };
+    const Renderer11DeviceCaps &getRenderer11DeviceCaps() const { return mRenderer11DeviceCaps; }
 
     RendererClass getRendererClass() const override;
     StateManager11 *getStateManager() { return &mStateManager; }
@@ -408,7 +408,7 @@ class Renderer11 : public RendererD3D
                                gl::PrimitiveMode mode,
                                GLint startVertex,
                                GLsizei indexCount,
-                               GLenum indexType,
+                               gl::DrawElementsType indexType,
                                const void *indices,
                                GLsizei instanceCount);
     angle::Result drawArraysIndirect(const gl::Context *context, const void *indirect);
@@ -509,13 +509,13 @@ class Renderer11 : public RendererD3D
 
     angle::Result drawLineLoop(const gl::Context *context,
                                GLuint count,
-                               GLenum type,
+                               gl::DrawElementsType type,
                                const void *indices,
                                int baseVertex,
                                int instances);
     angle::Result drawTriangleFan(const gl::Context *context,
                                   GLuint count,
-                                  GLenum type,
+                                  gl::DrawElementsType type,
                                   const void *indices,
                                   int baseVertex,
                                   int instances);
@@ -549,6 +549,8 @@ class Renderer11 : public RendererD3D
 
     d3d11::ANGLED3D11DeviceType getDeviceType() const;
 
+    // Make sure that the raw buffer is the latest buffer.
+    angle::Result markRawBufferUsage(const gl::Context *context);
     angle::Result markTransformFeedbackUsage(const gl::Context *context);
     angle::Result drawWithGeometryShaderAndTransformFeedback(Context11 *context11,
                                                              gl::PrimitiveMode mode,
@@ -605,7 +607,7 @@ class Renderer11 : public RendererD3D
 
     angle::ScratchBuffer mScratchMemoryBuffer;
 
-    gl::DebugAnnotator *mAnnotator;
+    DebugAnnotator11 mAnnotator;
 
     mutable Optional<bool> mSupportsShareHandles;
     ResourceManager11 mResourceManager11;

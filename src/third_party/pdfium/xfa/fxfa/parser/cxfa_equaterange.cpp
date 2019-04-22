@@ -6,6 +6,9 @@
 
 #include "xfa/fxfa/parser/cxfa_equaterange.h"
 
+#include "fxjs/xfa/cjx_node.h"
+#include "third_party/base/ptr_util.h"
+
 namespace {
 
 const CXFA_Node::AttributeData kEquateRangeAttributeData[] = {
@@ -14,9 +17,7 @@ const CXFA_Node::AttributeData kEquateRangeAttributeData[] = {
     {XFA_Attribute::Desc, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::From, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Lock, XFA_AttributeType::Integer, (void*)0},
-    {XFA_Attribute::Unknown, XFA_AttributeType::Integer, nullptr}};
-
-constexpr wchar_t kEquateRangeName[] = L"equateRange";
+};
 
 }  // namespace
 
@@ -26,8 +27,8 @@ CXFA_EquateRange::CXFA_EquateRange(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_XDPPACKET_Config,
                 XFA_ObjectType::NodeV,
                 XFA_Element::EquateRange,
-                nullptr,
+                {},
                 kEquateRangeAttributeData,
-                kEquateRangeName) {}
+                pdfium::MakeUnique<CJX_Node>(this)) {}
 
-CXFA_EquateRange::~CXFA_EquateRange() {}
+CXFA_EquateRange::~CXFA_EquateRange() = default;

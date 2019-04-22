@@ -30,7 +30,7 @@ namespace {
 
 // The group used by the buttons.  This name is chosen voluntarily big not to
 // conflict with other groups that could be in the dialog content.
-const int kButtonGroup = 6666;
+constexpr int kButtonGroup = 6666;
 
 // Returns true if the given view should be shown (i.e. exists and is
 // visible).
@@ -91,7 +91,8 @@ void DialogClientView::AcceptWindow() {
   // Only notify the delegate once. See |delegate_allowed_close_|'s comment.
   if (!delegate_allowed_close_ && GetDialogDelegate()->Accept()) {
     delegate_allowed_close_ = true;
-    GetWidget()->Close();
+    GetWidget()->CloseWithReason(
+        views::Widget::ClosedReason::kAcceptButtonClicked);
   }
 }
 
@@ -99,7 +100,8 @@ void DialogClientView::CancelWindow() {
   // Only notify the delegate once. See |delegate_allowed_close_|'s comment.
   if (!delegate_allowed_close_ && GetDialogDelegate()->Cancel()) {
     delegate_allowed_close_ = true;
-    GetWidget()->Close();
+    GetWidget()->CloseWithReason(
+        views::Widget::ClosedReason::kCancelButtonClicked);
   }
 }
 
@@ -184,7 +186,7 @@ void DialogClientView::Layout() {
 bool DialogClientView::AcceleratorPressed(const ui::Accelerator& accelerator) {
   DCHECK_EQ(accelerator.key_code(), ui::VKEY_ESCAPE);
 
-  GetWidget()->Close();
+  GetWidget()->CloseWithReason(Widget::ClosedReason::kEscKeyPressed);
   return true;
 }
 
@@ -262,19 +264,14 @@ DialogDelegate* DialogClientView::GetDialogDelegate() const {
   return GetWidget()->widget_delegate()->AsDialogDelegate();
 }
 
-void DialogClientView::ChildPreferredSizeChanged(View* child) {
-  if (!adding_or_removing_views_ && child == extra_view_)
-    Layout();
-}
-
 void DialogClientView::ChildVisibilityChanged(View* child) {
   // Showing or hiding |extra_view_| can alter which columns have linked sizes.
   if (child == extra_view_)
     UpdateDialogButtons();
-  ChildPreferredSizeChanged(child);
+  InvalidateLayout();
 }
 
-void DialogClientView::OnDialogModelChanged() {
+void DialogClientView::OnDialogChanged() {
   UpdateDialogButtons();
 }
 

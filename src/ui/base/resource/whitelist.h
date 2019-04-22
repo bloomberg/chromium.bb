@@ -9,8 +9,7 @@ namespace ui {
 
 // The purpose of this function template is to support resource whitelisting,
 // which is a mechanism for filtering out unused resources from the .pak files
-// that we ship (currently only supported on Android). The grit program
-// generates macros that look like this:
+// that we ship. The grit program generates macros that look like this:
 //
 // #define IDS_FOO (::ui::WhitelistedResource<123>(), 123)
 //
@@ -19,7 +18,7 @@ namespace ui {
 // attribute) emitted into the object file. After the program is linked, the
 // used resource identifiers can be found by searching the debug info in the
 // linker's output file for instantiations of the template. The implementation
-// of this lives in build/toolchain/gcc_solink_wrapper.py.
+// of this lives in tools/resources/generate_resource_whitelist.py.
 //
 // In ELF linkers, the function definitions themselves are dropped from the
 // final output file because of --gc-sections (debug info is immune to

@@ -4,6 +4,11 @@
 
 #include "content/browser/frame_host/input/input_injector_impl.h"
 
+#include <memory>
+#include <utility>
+
+#include "base/bind.h"
+#include "content/browser/renderer_host/input/synthetic_gesture.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
@@ -33,9 +38,7 @@ void InputInjectorImpl::Create(base::WeakPtr<RenderFrameHostImpl> frame_host,
 void InputInjectorImpl::QueueSyntheticSmoothDrag(
     const SyntheticSmoothDragGestureParams& drag,
     QueueSyntheticSmoothDragCallback callback) {
-  if (!frame_host_)
-    return;
-  frame_host_->GetRenderWidgetHost()->QueueSyntheticGesture(
+  QueueSyntheticGesture(
       SyntheticGesture::Create(drag),
       base::BindOnce(SyntheticGestureCallback, std::move(callback)));
 }
@@ -43,9 +46,7 @@ void InputInjectorImpl::QueueSyntheticSmoothDrag(
 void InputInjectorImpl::QueueSyntheticSmoothScroll(
     const SyntheticSmoothScrollGestureParams& scroll,
     QueueSyntheticSmoothScrollCallback callback) {
-  if (!frame_host_)
-    return;
-  frame_host_->GetRenderWidgetHost()->QueueSyntheticGesture(
+  QueueSyntheticGesture(
       SyntheticGesture::Create(scroll),
       base::BindOnce(SyntheticGestureCallback, std::move(callback)));
 }
@@ -53,18 +54,14 @@ void InputInjectorImpl::QueueSyntheticSmoothScroll(
 void InputInjectorImpl::QueueSyntheticPinch(
     const SyntheticPinchGestureParams& pinch,
     QueueSyntheticPinchCallback callback) {
-  if (!frame_host_)
-    return;
-  frame_host_->GetRenderWidgetHost()->QueueSyntheticGesture(
+  QueueSyntheticGesture(
       SyntheticGesture::Create(pinch),
       base::BindOnce(SyntheticGestureCallback, std::move(callback)));
 }
 
 void InputInjectorImpl::QueueSyntheticTap(const SyntheticTapGestureParams& tap,
                                           QueueSyntheticTapCallback callback) {
-  if (!frame_host_)
-    return;
-  frame_host_->GetRenderWidgetHost()->QueueSyntheticGesture(
+  QueueSyntheticGesture(
       SyntheticGesture::Create(tap),
       base::BindOnce(SyntheticGestureCallback, std::move(callback)));
 }
@@ -72,11 +69,31 @@ void InputInjectorImpl::QueueSyntheticTap(const SyntheticTapGestureParams& tap,
 void InputInjectorImpl::QueueSyntheticPointerAction(
     const SyntheticPointerActionListParams& pointer_action,
     QueueSyntheticPointerActionCallback callback) {
-  if (!frame_host_)
-    return;
-  frame_host_->GetRenderWidgetHost()->QueueSyntheticGesture(
+  QueueSyntheticGesture(
       SyntheticGesture::Create(pointer_action),
       base::BindOnce(SyntheticGestureCallback, std::move(callback)));
+}
+
+void InputInjectorImpl::QueueSyntheticGesture(
+    std::unique_ptr<SyntheticGesture> synthetic_gesture,
+    base::OnceCallback<void(SyntheticGesture::Result)> callback) {
+  if (!frame_host_)
+    return;
+
+  RenderWidgetHostViewBase* view =
+      static_cast<RenderWidgetHostViewBase*>(frame_host_->GetView());
+  if (!view)
+    return;
+
+  // Note that we do not transform coordinates in the case of a synthetic
+  // gesture that is initiated from an OOPIF. The coordinates are already
+  // expressed in terms of the root's visual viewport.
+  RenderWidgetHostViewBase* root_view = view->GetRootView();
+  if (!root_view)
+    return;
+
+  root_view->host()->QueueSyntheticGesture(std::move(synthetic_gesture),
+                                           std::move(callback));
 }
 
 }  // namespace content

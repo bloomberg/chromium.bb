@@ -56,12 +56,6 @@ struct GPU_EXPORT GpuPreferences {
   // ===================================
   // Settings from //content/public/common/content_switches.h
 
-  // Runs the renderer and plugins in the same process as the browser.
-  bool single_process = false;
-
-  // Run the GPU process as a thread in the browser process.
-  bool in_process_gpu = false;
-
   // Disables hardware acceleration of video decode, where available.
   bool disable_accelerated_video_decode = false;
 
@@ -201,14 +195,22 @@ struct GPU_EXPORT GpuPreferences {
   bool disable_oop_rasterization = false;
 
   bool enable_oop_rasterization_ddl = false;
-  bool enable_raster_to_sk_image = false;
 
   // Start the watchdog suspended, as the app is already backgrounded and won't
   // send a background/suspend signal.
   bool watchdog_starts_backgrounded = false;
 
+  // ===================================
+  // Settings from //gpu/command_buffer/service/gpu_switches.h
   // Use Vulkan for rasterization and display compositing.
   bool enable_vulkan = false;
+
+  // Use vulkan VK_KHR_surface for presenting.
+  bool disable_vulkan_surface = false;
+
+  // If Vulkan initialization has failed, do not fallback to GL. This is for
+  // testing in order to detect regressions which crash Vulkan.
+  bool disable_vulkan_fallback_to_gl_for_testing = false;
 
   // ===================================
   // Settings from //cc/base/switches.h

@@ -261,7 +261,7 @@ public final class InfoBarControlLayout extends ViewGroup {
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         int width = right - left;
-        boolean isRtl = ApiCompatibilityUtils.isLayoutRtl(this);
+        boolean isRtl = getLayoutDirection() == LAYOUT_DIRECTION_RTL;
 
         // Child positions were already determined during the measurement pass.
         for (int childIndex = 0; childIndex < getChildCount(); childIndex++) {

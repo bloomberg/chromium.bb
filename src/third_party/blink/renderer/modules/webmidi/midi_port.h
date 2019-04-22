@@ -35,10 +35,9 @@
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
-#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/webmidi/midi_accessor.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
@@ -79,7 +78,7 @@ class MIDIPort : public EventTargetWithInlineData,
 
   void Trace(blink::Visitor*) override;
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange, kStatechange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange, kStatechange)
 
   // EventTarget
   const AtomicString& InterfaceName() const override {
@@ -120,7 +119,7 @@ class MIDIPort : public EventTargetWithInlineData,
   String name_;
   TypeCode type_;
   String version_;
-  TraceWrapperMember<MIDIAccess> access_;
+  Member<MIDIAccess> access_;
   midi::mojom::PortState state_;
   ConnectionState connection_;
   unsigned running_open_count_ = 0;

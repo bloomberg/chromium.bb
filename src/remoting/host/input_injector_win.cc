@@ -13,11 +13,11 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/windows_version.h"
@@ -178,7 +178,7 @@ void SetLockStates(base::Optional<bool> caps_lock,
     if (client_capslock_state != host_capslock_state) {
       input[0].ki.wVk = VK_CAPITAL;
       input[1].ki.wVk = VK_CAPITAL;
-      SendInput(arraysize(input), input, sizeof(INPUT));
+      SendInput(base::size(input), input, sizeof(INPUT));
     }
   }
 
@@ -189,7 +189,7 @@ void SetLockStates(base::Optional<bool> caps_lock,
     if (client_numlock_state != host_numlock_state) {
       input[0].ki.wVk = VK_NUMLOCK;
       input[1].ki.wVk = VK_NUMLOCK;
-      SendInput(arraysize(input), input, sizeof(INPUT));
+      SendInput(base::size(input), input, sizeof(INPUT));
     }
   }
 }
@@ -303,7 +303,7 @@ InputInjectorWin::Core::Core(
 void InputInjectorWin::Core::InjectClipboardEvent(const ClipboardEvent& event) {
   if (!ui_task_runner_->BelongsToCurrentThread()) {
     ui_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&Core::InjectClipboardEvent, this, event));
+        FROM_HERE, base::BindOnce(&Core::InjectClipboardEvent, this, event));
     return;
   }
 
@@ -313,8 +313,8 @@ void InputInjectorWin::Core::InjectClipboardEvent(const ClipboardEvent& event) {
 
 void InputInjectorWin::Core::InjectKeyEvent(const KeyEvent& event) {
   if (!main_task_runner_->BelongsToCurrentThread()) {
-    main_task_runner_->PostTask(FROM_HERE,
-                                base::Bind(&Core::InjectKeyEvent, this, event));
+    main_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&Core::InjectKeyEvent, this, event));
     return;
   }
 
@@ -324,7 +324,7 @@ void InputInjectorWin::Core::InjectKeyEvent(const KeyEvent& event) {
 void InputInjectorWin::Core::InjectTextEvent(const TextEvent& event) {
   if (!main_task_runner_->BelongsToCurrentThread()) {
     main_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&Core::InjectTextEvent, this, event));
+        FROM_HERE, base::BindOnce(&Core::InjectTextEvent, this, event));
     return;
   }
 
@@ -334,7 +334,7 @@ void InputInjectorWin::Core::InjectTextEvent(const TextEvent& event) {
 void InputInjectorWin::Core::InjectMouseEvent(const MouseEvent& event) {
   if (!main_task_runner_->BelongsToCurrentThread()) {
     main_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&Core::InjectMouseEvent, this, event));
+        FROM_HERE, base::BindOnce(&Core::InjectMouseEvent, this, event));
     return;
   }
 
@@ -344,7 +344,7 @@ void InputInjectorWin::Core::InjectMouseEvent(const MouseEvent& event) {
 void InputInjectorWin::Core::InjectTouchEvent(const TouchEvent& event) {
   if (!main_task_runner_->BelongsToCurrentThread()) {
     main_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&Core::InjectTouchEvent, this, event));
+        FROM_HERE, base::BindOnce(&Core::InjectTouchEvent, this, event));
     return;
   }
 
@@ -356,7 +356,7 @@ void InputInjectorWin::Core::Start(
   if (!ui_task_runner_->BelongsToCurrentThread()) {
     ui_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&Core::Start, this, base::Passed(&client_clipboard)));
+        base::BindOnce(&Core::Start, this, std::move(client_clipboard)));
     return;
   }
 
@@ -366,7 +366,7 @@ void InputInjectorWin::Core::Start(
 
 void InputInjectorWin::Core::Stop() {
   if (!ui_task_runner_->BelongsToCurrentThread()) {
-    ui_task_runner_->PostTask(FROM_HERE, base::Bind(&Core::Stop, this));
+    ui_task_runner_->PostTask(FROM_HERE, base::BindOnce(&Core::Stop, this));
     return;
   }
 

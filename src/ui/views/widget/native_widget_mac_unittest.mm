@@ -6,6 +6,8 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/bind.h"
+#include "base/callback.h"
 #import "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #import "base/mac/scoped_nsautorelease_pool.h"
@@ -154,7 +156,7 @@ class TestWindowNativeWidgetMac : public NativeWidgetMac {
 // which need access to Cocoa APIs.
 class NativeWidgetMacTest : public WidgetTest {
  public:
-  NativeWidgetMacTest() {}
+  NativeWidgetMacTest() = default;
 
   // Make an NSWindow with a close button and a title bar to use as a parent.
   // This NSWindow is backed by a widget that is not exposed to the caller.
@@ -198,7 +200,7 @@ class NativeWidgetMacTest : public WidgetTest {
 
 class WidgetChangeObserver : public TestWidgetObserver {
  public:
-  WidgetChangeObserver(Widget* widget) : TestWidgetObserver(widget) {}
+  explicit WidgetChangeObserver(Widget* widget) : TestWidgetObserver(widget) {}
 
   void WaitForVisibleCounts(int gained, int lost) {
     if (gained_visible_count_ >= gained && lost_visible_count_ >= lost)
@@ -265,8 +267,8 @@ class NativeHostHolder {
 // BubbleDialogDelegateView.
 class SimpleBubbleView : public BubbleDialogDelegateView {
  public:
-  SimpleBubbleView() {}
-  ~SimpleBubbleView() override {}
+  SimpleBubbleView() = default;
+  ~SimpleBubbleView() override = default;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SimpleBubbleView);
@@ -278,10 +280,8 @@ class CustomTooltipView : public View {
       : tooltip_(tooltip), tooltip_handler_(tooltip_handler) {}
 
   // View:
-  bool GetTooltipText(const gfx::Point& p,
-                      base::string16* tooltip) const override {
-    *tooltip = tooltip_;
-    return true;
+  base::string16 GetTooltipText(const gfx::Point& p) const override {
+    return tooltip_;
   }
 
   View* GetTooltipHandlerForPoint(const gfx::Point& point) override {
@@ -293,6 +293,19 @@ class CustomTooltipView : public View {
   View* tooltip_handler_;  // Weak
 
   DISALLOW_COPY_AND_ASSIGN(CustomTooltipView);
+};
+
+// A Widget subclass that exposes counts to calls made to OnMouseEvent().
+class MouseTrackingWidget : public Widget {
+ public:
+  int GetMouseEventCount(ui::EventType type) { return counts_[type]; }
+  void OnMouseEvent(ui::MouseEvent* event) override {
+    ++counts_[event->type()];
+    Widget::OnMouseEvent(event);
+  }
+
+ private:
+  std::map<int, int> counts_;
 };
 
 // Test visibility states triggered externally.
@@ -455,10 +468,11 @@ TEST_F(NativeWidgetMacTest, DISABLED_OrderFrontAfterMiniaturize) {
 
   // Wait and check that child is really visible.
   // TODO(kirr): remove the fixed delay.
+  base::RunLoop run_loop;
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
+      FROM_HERE, run_loop.QuitWhenIdleClosure(),
       base::TimeDelta::FromSeconds(2));
-  base::RunLoop().Run();
+  run_loop.Run();
 
   EXPECT_FALSE(widget->IsMinimized());
   EXPECT_TRUE(widget->IsVisible());
@@ -599,10 +613,12 @@ TEST_F(NativeWidgetMacTest, MiniaturizeExternally) {
   EXPECT_EQ(3, view->paint_count());
 
   widget->CloseNow();
+}
 
+TEST_F(NativeWidgetMacTest, MiniaturizeFramelessWindow) {
   // Create a widget without a minimize button.
-  widget = CreateTopLevelFramelessPlatformWidget();
-  ns_window = widget->GetNativeWindow().GetNativeNSWindow();
+  Widget* widget = CreateTopLevelFramelessPlatformWidget();
+  NSWindow* ns_window = widget->GetNativeWindow().GetNativeNSWindow();
   widget->SetBounds(gfx::Rect(100, 100, 300, 300));
   widget->Show();
   EXPECT_FALSE(widget->IsMinimized());
@@ -613,6 +629,8 @@ TEST_F(NativeWidgetMacTest, MiniaturizeExternally) {
 
   // But this should work.
   widget->Minimize();
+  base::RunLoop().RunUntilIdle();
+
   EXPECT_TRUE(widget->IsMinimized());
 
   // Test closing while minimized.
@@ -716,7 +734,9 @@ TEST_F(NativeWidgetMacTest, AccessibilityIntegration) {
 
   id hit = [widget->GetNativeWindow().GetNativeNSWindow()
       accessibilityHitTest:midpoint];
-  id title = [hit accessibilityAttributeValue:NSAccessibilityValueAttribute];
+  ASSERT_TRUE([hit conformsToProtocol:@protocol(NSAccessibility)]);
+  id<NSAccessibility> ax_hit = hit;
+  id title = ax_hit.accessibilityValue;
   EXPECT_NSEQ(title, @"Green");
 
   widget->CloseNow();
@@ -1066,6 +1086,52 @@ TEST_F(NativeWidgetMacTest, TwoWidgetTooltips) {
 
   widget_above->CloseNow();
   widget_below->CloseNow();
+}
+
+// Ensure captured mouse events correctly update dragging state in BaseView.
+// Regression test for https://crbug.com/942452.
+TEST_F(NativeWidgetMacTest, CapturedMouseUpClearsDrag) {
+  MouseTrackingWidget* widget = new MouseTrackingWidget;
+  Widget::InitParams init_params(Widget::InitParams::TYPE_WINDOW);
+  widget->Init(init_params);
+
+  NSWindow* window = widget->GetNativeWindow().GetNativeNSWindow();
+  BridgedContentView* native_view = [window contentView];
+
+  // Note: using native coordinates for consistency.
+  [window setFrame:NSMakeRect(50, 50, 100, 100) display:YES animate:NO];
+  NSEvent* enter_event = cocoa_test_event_utils::EnterEvent({50, 50}, window);
+  NSEvent* exit_event = cocoa_test_event_utils::ExitEvent({200, 200}, window);
+
+  widget->Show();
+  EXPECT_EQ(0, widget->GetMouseEventCount(ui::ET_MOUSE_ENTERED));
+  EXPECT_EQ(0, widget->GetMouseEventCount(ui::ET_MOUSE_EXITED));
+
+  [native_view mouseEntered:enter_event];
+  EXPECT_EQ(1, widget->GetMouseEventCount(ui::ET_MOUSE_ENTERED));
+  EXPECT_EQ(0, widget->GetMouseEventCount(ui::ET_MOUSE_EXITED));
+
+  [native_view mouseExited:exit_event];
+  EXPECT_EQ(1, widget->GetMouseEventCount(ui::ET_MOUSE_ENTERED));
+  EXPECT_EQ(1, widget->GetMouseEventCount(ui::ET_MOUSE_EXITED));
+
+  // Send a click. Note a click may initiate a drag, so the mouse-up is sent as
+  // a captured event.
+  std::pair<NSEvent*, NSEvent*> click =
+      cocoa_test_event_utils::MouseClickInView(native_view, 1);
+  [native_view mouseDown:click.first];
+  [native_view processCapturedMouseEvent:click.second];
+
+  // After a click, Enter/Exit should still work.
+  [native_view mouseEntered:enter_event];
+  EXPECT_EQ(2, widget->GetMouseEventCount(ui::ET_MOUSE_ENTERED));
+  EXPECT_EQ(1, widget->GetMouseEventCount(ui::ET_MOUSE_EXITED));
+
+  [native_view mouseExited:exit_event];
+  EXPECT_EQ(2, widget->GetMouseEventCount(ui::ET_MOUSE_ENTERED));
+  EXPECT_EQ(2, widget->GetMouseEventCount(ui::ET_MOUSE_EXITED));
+
+  widget->CloseNow();
 }
 
 namespace {
@@ -1562,7 +1628,7 @@ TEST_F(NativeWidgetMacTest, NoopReparentNativeView) {
 
   [parent close];
 
-  Widget* parent_widget = CreateNativeDesktopWidget();
+  Widget* parent_widget = CreateTopLevelNativeWidget();
   parent = parent_widget->GetNativeWindow().GetNativeNSWindow();
   dialog = views::DialogDelegate::CreateDialogWidget(
       new DialogDelegateView, nullptr, [parent contentView]);
@@ -1680,14 +1746,14 @@ TEST_F(NativeWidgetMacTest, NoParentDelegateDuringTeardown) {
 // Tests Cocoa properties that should be given to particular widget types.
 TEST_F(NativeWidgetMacTest, NativeProperties) {
   // Create a regular widget (TYPE_WINDOW).
-  Widget* regular_widget = CreateNativeDesktopWidget();
+  Widget* regular_widget = CreateTopLevelNativeWidget();
   EXPECT_TRUE([regular_widget->GetNativeWindow().GetNativeNSWindow()
                    canBecomeKeyWindow]);
   EXPECT_TRUE([regular_widget->GetNativeWindow().GetNativeNSWindow()
                    canBecomeMainWindow]);
 
   // Disabling activation should prevent key and main status.
-  regular_widget->widget_delegate()->set_can_activate(false);
+  regular_widget->widget_delegate()->SetCanActivate(false);
   EXPECT_FALSE([regular_widget->GetNativeWindow().GetNativeNSWindow()
                     canBecomeKeyWindow]);
   EXPECT_FALSE([regular_widget->GetNativeWindow().GetNativeNSWindow()
@@ -1762,8 +1828,8 @@ class CustomTitleWidgetDelegate : public WidgetDelegate {
   // WidgetDelegate:
   base::string16 GetWindowTitle() const override { return title_; }
   bool ShouldShowWindowTitle() const override { return should_show_title_; }
-  Widget* GetWidget() override { return widget_; };
-  const Widget* GetWidget() const override { return widget_; };
+  Widget* GetWidget() override { return widget_; }
+  const Widget* GetWidget() const override { return widget_; }
 
  private:
   Widget* widget_;
@@ -2212,14 +2278,14 @@ class NativeWidgetMacViewsOrderTest : public WidgetTest {
     native_host_parent_ = new View();
     widget_->GetContentsView()->AddChildView(native_host_parent_);
 
-    const int kNativeViewCount = 3;
-    for (int i = 0; i < kNativeViewCount; ++i) {
-      std::unique_ptr<NativeHostHolder> holder(new NativeHostHolder());
+    const size_t kNativeViewCount = 3;
+    for (size_t i = 0; i < kNativeViewCount; ++i) {
+      auto holder = std::make_unique<NativeHostHolder>();
       native_host_parent_->AddChildView(holder->host());
       holder->AttachNativeView();
       hosts_.push_back(std::move(holder));
     }
-    EXPECT_EQ(kNativeViewCount, native_host_parent_->child_count());
+    EXPECT_EQ(kNativeViewCount, native_host_parent_->children().size());
     EXPECT_NSEQ([widget_->GetNativeView().GetNativeNSView() subviews],
                 ([GetStartingSubviews() arrayByAddingObjectsFromArray:@[
                   hosts_[0]->view(), hosts_[1]->view(), hosts_[2]->view()
@@ -2403,6 +2469,33 @@ TEST_F(NativeWidgetMacTest, TouchBar) {
   }
 
   delegate->GetWidget()->CloseNow();
+}
+
+TEST_F(NativeWidgetMacTest, InitCallback) {
+  NativeWidget* observed_native_widget = nullptr;
+  const auto callback = base::BindRepeating(
+      [](NativeWidget** observed, NativeWidgetMac* native_widget) {
+        *observed = native_widget;
+      },
+      &observed_native_widget);
+  NativeWidgetMac::SetInitNativeWidgetCallback(callback);
+
+  Widget* widget_a = CreateTopLevelPlatformWidget();
+  EXPECT_EQ(observed_native_widget, widget_a->native_widget());
+  Widget* widget_b = CreateTopLevelPlatformWidget();
+  EXPECT_EQ(observed_native_widget, widget_b->native_widget());
+
+  auto empty = base::RepeatingCallback<void(NativeWidgetMac*)>();
+  DCHECK(empty.is_null());
+  NativeWidgetMac::SetInitNativeWidgetCallback(empty);
+  observed_native_widget = nullptr;
+  Widget* widget_c = CreateTopLevelPlatformWidget();
+  // The original callback from above should no longer be firing.
+  EXPECT_EQ(observed_native_widget, nullptr);
+
+  widget_a->CloseNow();
+  widget_b->CloseNow();
+  widget_c->CloseNow();
 }
 
 }  // namespace test

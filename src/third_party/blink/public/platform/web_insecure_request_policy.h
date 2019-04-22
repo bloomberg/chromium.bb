@@ -9,6 +9,9 @@
 
 namespace blink {
 
+// The values of
+// https://w3c.github.io/webappsec-upgrade-insecure-requests/#insecure-requests-policy
+//
 // TODO(mkwst): In an ideal world, the combined state would be the same as
 // "Upgrade". Once we're consistently upgrading all requests, we can replace
 // this bitfield-style representation with an enum. Until then, we need to

@@ -9,6 +9,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
@@ -56,7 +57,8 @@ base::LinkNode<MemEntryImpl>* NextSkippingChildren(
 }  // namespace
 
 MemBackendImpl::MemBackendImpl(net::NetLog* net_log)
-    : max_size_(0),
+    : Backend(net::MEMORY_CACHE),
+      max_size_(0),
       current_size_(0),
       net_log_(net_log),
       memory_pressure_listener_(
@@ -159,12 +161,25 @@ void MemBackendImpl::SetPostCleanupCallback(base::OnceClosure cb) {
   post_cleanup_callback_ = std::move(cb);
 }
 
-net::CacheType MemBackendImpl::GetCacheType() const {
-  return net::MEMORY_CACHE;
-}
-
 int32_t MemBackendImpl::GetEntryCount() const {
   return static_cast<int32_t>(entries_.size());
+}
+
+net::Error MemBackendImpl::OpenOrCreateEntry(const std::string& key,
+                                             net::RequestPriority priority,
+                                             EntryWithOpened* entry_struct,
+                                             CompletionOnceCallback callback) {
+  net::Error rv = OpenEntry(key, priority, &(entry_struct->entry),
+                            CompletionOnceCallback());
+  if (rv == net::OK) {
+    entry_struct->opened = true;
+    return rv;
+  }
+  // Key was not opened, try creating it instead.
+  rv = CreateEntry(key, priority, &(entry_struct->entry),
+                   CompletionOnceCallback());
+  entry_struct->opened = false;
+  return rv;
 }
 
 net::Error MemBackendImpl::OpenEntry(const std::string& key,

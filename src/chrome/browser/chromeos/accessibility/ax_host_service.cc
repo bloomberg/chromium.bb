@@ -15,7 +15,8 @@ AXHostService* AXHostService::instance_ = nullptr;
 
 bool AXHostService::automation_enabled_ = false;
 
-AXHostService::AXHostService() {
+AXHostService::AXHostService(service_manager::mojom::ServiceRequest request)
+    : service_binding_(this, std::move(request)) {
   DCHECK(!instance_);
   instance_ = this;
   registry_.AddInterface<ax::mojom::AXHost>(
@@ -47,7 +48,7 @@ void AXHostService::RegisterRemoteHost(
   // Create the AXRemoteHostDelegate first so a tree ID will be assigned.
   auto remote_host_delegate =
       std::make_unique<AXRemoteHostDelegate>(this, std::move(remote_host_ptr));
-  ui::AXTreeID tree_id = remote_host_delegate->tree_id();
+  ui::AXTreeID tree_id = remote_host_delegate->ax_tree_id();
   DCHECK_NE(ui::AXTreeIDUnknown(), tree_id);
   DCHECK(!base::ContainsKey(remote_host_delegate_map_, tree_id));
   remote_host_delegate_map_[tree_id] = std::move(remote_host_delegate);

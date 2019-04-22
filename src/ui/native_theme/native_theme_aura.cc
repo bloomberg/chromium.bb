@@ -12,6 +12,7 @@
 #include "build/build_config.h"
 #include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_flags.h"
+#include "third_party/skia/include/core/SkPath.h"
 #include "ui/base/layout.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/canvas.h"
@@ -20,7 +21,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/path.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/native_theme/common_theme.h"
 #include "ui/native_theme/native_theme_features.h"
@@ -114,7 +114,7 @@ void NativeThemeAura::PaintMenuPopupBackground(
     flags.setAntiAlias(true);
     flags.setColor(color);
 
-    gfx::Path path;
+    SkPath path;
     SkRect rect = SkRect::MakeWH(SkIntToScalar(size.width()),
                                  SkIntToScalar(size.height()));
     SkScalar radius = SkIntToScalar(menu_background.corner_radius);

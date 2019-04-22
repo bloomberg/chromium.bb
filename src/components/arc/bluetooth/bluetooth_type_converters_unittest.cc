@@ -9,8 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "base/json/json_reader.h"
-#include "base/json/json_writer.h"
 #include "base/values.h"
 #include "device/bluetooth/bluetooth_gatt_service.h"
 #include "device/bluetooth/bluetooth_uuid.h"
@@ -31,16 +29,14 @@ arc::mojom::BluetoothSdpAttributePtr CreateDeepMojoSequenceAttribute(
 
   if (depth > 0u) {
     value->type = bluez::BluetoothServiceAttributeValueBlueZ::SEQUENCE;
-    value->json_value.reset();
+    value->value = base::Value();
     value->sequence.push_back(CreateDeepMojoSequenceAttribute(depth - 1));
     value->type_size = static_cast<uint32_t>(value->sequence.size());
   } else {
     uint16_t data = 3;
     value->type = bluez::BluetoothServiceAttributeValueBlueZ::UINT;
     value->type_size = static_cast<uint32_t>(sizeof(data));
-    std::string json;
-    base::JSONWriter::Write(base::Value(static_cast<int>(data)), &json);
-    value->json_value = std::move(json);
+    value->value = base::Value(data);
   }
   return value;
 }
@@ -79,12 +75,6 @@ size_t GetDepthOfBlueZAttribute(
       depth = std::max(depth, GetDepthOfBlueZAttribute(value) + 1);
   }
   return depth;
-}
-
-std::string ValueToJson(const base::Value& value) {
-  std::string json;
-  base::JSONWriter::Write(value, &json);
-  return json;
 }
 
 }  // namespace
@@ -135,7 +125,7 @@ TEST(BluetoothTypeConverterTest,
   auto mojo = arc::mojom::BluetoothSdpAttribute::New();
   mojo->type = bluez::BluetoothServiceAttributeValueBlueZ::BOOL;
   mojo->type_size = static_cast<uint32_t>(sizeof(bool));
-  mojo->json_value = ValueToJson(base::Value(true));
+  mojo->value = base::Value(true);
 
   auto blue_z = mojo.To<bluez::BluetoothServiceAttributeValueBlueZ>();
 
@@ -151,7 +141,7 @@ TEST(BluetoothTypeConverterTest,
   auto mojo = arc::mojom::BluetoothSdpAttribute::New();
   mojo->type = bluez::BluetoothServiceAttributeValueBlueZ::UINT;
   mojo->type_size = static_cast<uint32_t>(sizeof(kValue));
-  mojo->json_value = ValueToJson(base::Value(static_cast<int>(kValue)));
+  mojo->value = base::Value(static_cast<int>(kValue));
 
   auto blue_z = mojo.To<bluez::BluetoothServiceAttributeValueBlueZ>();
 
@@ -167,7 +157,7 @@ TEST(BluetoothTypeConverterTest,
   auto mojo = arc::mojom::BluetoothSdpAttribute::New();
   mojo->type = bluez::BluetoothServiceAttributeValueBlueZ::INT;
   mojo->type_size = static_cast<uint32_t>(sizeof(kValue));
-  mojo->json_value = ValueToJson(base::Value(static_cast<int>(kValue)));
+  mojo->value = base::Value(static_cast<int>(kValue));
 
   auto blue_z = mojo.To<bluez::BluetoothServiceAttributeValueBlueZ>();
 
@@ -186,7 +176,7 @@ TEST(BluetoothTypeConverterTest,
   // UUIDs are all stored in string form, but it can be converted to one of
   // UUID16, UUID32 and UUID128.
   mojo->type_size = static_cast<uint32_t>(sizeof(uint16_t));
-  mojo->json_value = ValueToJson(base::Value(kValue));
+  mojo->value = base::Value(kValue);
 
   auto blue_z = mojo.To<bluez::BluetoothServiceAttributeValueBlueZ>();
 
@@ -206,7 +196,7 @@ TEST(BluetoothTypeConverterTest,
   mojo->type = bluez::BluetoothServiceAttributeValueBlueZ::STRING;
   // Subtract '\0'-terminate size.
   mojo->type_size = static_cast<uint32_t>(kValueSize);
-  mojo->json_value = ValueToJson(base::Value(kValue));
+  mojo->value = base::Value(kValue);
 
   auto blue_z = mojo.To<bluez::BluetoothServiceAttributeValueBlueZ>();
 
@@ -228,7 +218,7 @@ TEST(BluetoothTypeConverterTest, ConvertMojoSequenceAttributeToBlueZAttribute) {
     auto value_uuid = arc::mojom::BluetoothSdpAttribute::New();
     value_uuid->type = bluez::BluetoothServiceAttributeValueBlueZ::UUID;
     value_uuid->type_size = static_cast<uint32_t>(sizeof(uint16_t));
-    value_uuid->json_value = ValueToJson(base::Value(kL2capUuid));
+    value_uuid->value = base::Value(kL2capUuid);
     sequence_mojo->sequence.push_back(std::move(value_uuid));
   }
   {
@@ -236,12 +226,11 @@ TEST(BluetoothTypeConverterTest, ConvertMojoSequenceAttributeToBlueZAttribute) {
     auto value_channel = arc::mojom::BluetoothSdpAttribute::New();
     value_channel->type = bluez::BluetoothServiceAttributeValueBlueZ::UINT;
     value_channel->type_size = static_cast<uint32_t>(sizeof(kL2capChannel));
-    value_channel->json_value =
-        ValueToJson(base::Value(static_cast<int>(kL2capChannel)));
+    value_channel->value = base::Value(static_cast<int>(kL2capChannel));
     sequence_mojo->sequence.push_back(std::move(value_channel));
   }
   sequence_mojo->type_size = sequence_mojo->sequence.size();
-  sequence_mojo->json_value = base::nullopt;
+  sequence_mojo->value = base::nullopt;
 
   auto sequence_blue_z =
       sequence_mojo.To<bluez::BluetoothServiceAttributeValueBlueZ>();
@@ -275,7 +264,7 @@ TEST(BluetoothTypeConverterTest,
   auto mojo = arc::mojom::BluetoothSdpAttribute::New();
   mojo->type = bluez::BluetoothServiceAttributeValueBlueZ::UINT;
   mojo->type_size = static_cast<uint32_t>(sizeof(uint32_t));
-  mojo->json_value = base::nullopt;
+  mojo->value = base::nullopt;
 
   auto blue_z = mojo.To<bluez::BluetoothServiceAttributeValueBlueZ>();
 
@@ -291,7 +280,7 @@ TEST(BluetoothTypeConverterTest,
   auto mojo = arc::mojom::BluetoothSdpAttribute::New();
   mojo->type = bluez::BluetoothServiceAttributeValueBlueZ::SEQUENCE;
   mojo->type_size = 0;
-  mojo->json_value = base::nullopt;
+  mojo->value = base::nullopt;
 
   auto blue_z = mojo.To<bluez::BluetoothServiceAttributeValueBlueZ>();
 
@@ -324,10 +313,8 @@ TEST(BluetoothTypeConverterTest,
   EXPECT_EQ(bluez::BluetoothServiceAttributeValueBlueZ::NULLTYPE, mojo->type);
   EXPECT_EQ(0u, mojo->type_size);
 
-  ASSERT_TRUE(mojo->json_value.has_value());
-  auto value = base::JSONReader::Read(mojo->json_value.value());
-  ASSERT_TRUE(value);
-  EXPECT_TRUE(value->is_none());
+  ASSERT_TRUE(mojo->value.has_value());
+  EXPECT_TRUE(mojo->value->is_none());
 }
 
 TEST(BluetoothTypeConverterTest,
@@ -343,11 +330,9 @@ TEST(BluetoothTypeConverterTest,
   EXPECT_EQ(bluez::BluetoothServiceAttributeValueBlueZ::UINT, mojo->type);
   EXPECT_EQ(sizeof(kValue), mojo->type_size);
 
-  ASSERT_TRUE(mojo->json_value.has_value());
-  auto value = base::JSONReader::Read(mojo->json_value.value());
-  ASSERT_TRUE(value);
-  ASSERT_TRUE(value->is_int());
-  EXPECT_EQ(kValue, static_cast<uint16_t>(value->GetInt()));
+  ASSERT_TRUE(mojo->value.has_value());
+  ASSERT_TRUE(mojo->value->is_int());
+  EXPECT_EQ(kValue, static_cast<uint16_t>(mojo->value->GetInt()));
 }
 
 TEST(BluetoothTypeConverterTest,
@@ -362,11 +347,9 @@ TEST(BluetoothTypeConverterTest,
   EXPECT_EQ(bluez::BluetoothServiceAttributeValueBlueZ::BOOL, mojo->type);
   EXPECT_EQ(static_cast<uint32_t>(sizeof(bool)), mojo->type_size);
 
-  ASSERT_TRUE(mojo->json_value.has_value());
-  auto value = base::JSONReader::Read(mojo->json_value.value());
-  ASSERT_TRUE(value);
-  ASSERT_TRUE(value->is_bool());
-  EXPECT_FALSE(value->GetBool());
+  ASSERT_TRUE(mojo->value.has_value());
+  ASSERT_TRUE(mojo->value->is_bool());
+  EXPECT_FALSE(mojo->value->GetBool());
 }
 
 TEST(BluetoothTypeConverterTest,
@@ -382,11 +365,9 @@ TEST(BluetoothTypeConverterTest,
   EXPECT_EQ(bluez::BluetoothServiceAttributeValueBlueZ::UUID, mojo->type);
   EXPECT_EQ(static_cast<uint32_t>(sizeof(uint16_t)), mojo->type_size);
 
-  ASSERT_TRUE(mojo->json_value.has_value());
-  auto value = base::JSONReader::Read(mojo->json_value.value());
-  ASSERT_TRUE(value);
-  ASSERT_TRUE(value->is_string());
-  EXPECT_EQ(kValue, value->GetString());
+  ASSERT_TRUE(mojo->value.has_value());
+  ASSERT_TRUE(mojo->value->is_string());
+  EXPECT_EQ(kValue, mojo->value->GetString());
 }
 
 TEST(BluetoothTypeConverterTest,
@@ -403,11 +384,9 @@ TEST(BluetoothTypeConverterTest,
   EXPECT_EQ(bluez::BluetoothServiceAttributeValueBlueZ::STRING, mojo->type);
   EXPECT_EQ(static_cast<uint32_t>(kValueSize), mojo->type_size);
 
-  ASSERT_TRUE(mojo->json_value.has_value());
-  auto value = base::JSONReader::Read(mojo->json_value.value());
-  ASSERT_TRUE(value);
-  ASSERT_TRUE(value->is_string());
-  EXPECT_EQ(kValue, value->GetString());
+  ASSERT_TRUE(mojo->value.has_value());
+  ASSERT_TRUE(mojo->value->is_string());
+  EXPECT_EQ(kValue, mojo->value->GetString());
 }
 
 TEST(BluetoothTypeConverterTest, ConvertBlueZSequenceAttributeToMojoAttribute) {
@@ -438,22 +417,18 @@ TEST(BluetoothTypeConverterTest, ConvertBlueZSequenceAttributeToMojoAttribute) {
     EXPECT_EQ(bluez::BluetoothServiceAttributeValueBlueZ::UUID, mojo->type);
     EXPECT_EQ(static_cast<uint32_t>(sizeof(uint16_t)), mojo->type_size);
 
-    ASSERT_TRUE(mojo->json_value.has_value());
-    auto value = base::JSONReader::Read(mojo->json_value.value());
-    ASSERT_TRUE(value);
-    ASSERT_TRUE(value->is_string());
-    EXPECT_EQ(kL2capUuid, value->GetString());
+    ASSERT_TRUE(mojo->value.has_value());
+    ASSERT_TRUE(mojo->value->is_string());
+    EXPECT_EQ(kL2capUuid, mojo->value->GetString());
   }
 
   {
     const auto& mojo = sequence_mojo->sequence[1];
     EXPECT_EQ(bluez::BluetoothServiceAttributeValueBlueZ::UINT, mojo->type);
     EXPECT_EQ(static_cast<uint32_t>(sizeof(uint16_t)), mojo->type_size);
-    ASSERT_TRUE(mojo->json_value.has_value());
-    auto value = base::JSONReader::Read(mojo->json_value.value());
-    ASSERT_TRUE(value);
-    ASSERT_TRUE(value->is_int());
-    EXPECT_EQ(kL2capChannel, static_cast<uint16_t>(value->GetInt()));
+    ASSERT_TRUE(mojo->value.has_value());
+    ASSERT_TRUE(mojo->value->is_int());
+    EXPECT_EQ(kL2capChannel, static_cast<uint16_t>(mojo->value->GetInt()));
   }
 }
 

@@ -22,7 +22,8 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom.h"
+#include "third_party/blink/public/common/fetch/fetch_api_request_headers_map.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 
 #if defined(OS_ANDROID)
 #include <jni.h>
@@ -45,7 +46,7 @@ class TestServiceManagerContext;
 blink::mojom::FetchAPIRequestPtr CreateFetchAPIRequest(
     const GURL& url,
     const std::string& method,
-    const base::flat_map<std::string, std::string>& headers,
+    const blink::FetchAPIRequestHeadersMap& headers,
     blink::mojom::ReferrerPtr referrer,
     bool is_reload);
 
@@ -71,7 +72,7 @@ void RunAllPendingInMessageLoop();
 // rather than flushing entire threads.
 void RunAllPendingInMessageLoop(BrowserThread::ID thread_id);
 
-// Runs all tasks on the current thread and TaskScheduler threads until idle.
+// Runs all tasks on the current thread and ThreadPool threads until idle.
 // Note: Prefer TestBrowserThreadBundle::RunUntilIdle() in unit tests.
 void RunAllTasksUntilIdle();
 
@@ -86,9 +87,8 @@ base::Closure GetDeferredQuitTaskForRunLoop(base::RunLoop* run_loop);
 // MessageLoop. When the result is available, it is returned.
 // This should not be used; the use of the ExecuteScript functions in
 // browser_test_utils is preferable.
-std::unique_ptr<base::Value> ExecuteScriptAndGetValue(
-    RenderFrameHost* render_frame_host,
-    const std::string& script);
+base::Value ExecuteScriptAndGetValue(RenderFrameHost* render_frame_host,
+                                     const std::string& script);
 
 // Returns true if all sites are isolated. Typically used to bail from a test
 // that is incompatible with --site-per-process.

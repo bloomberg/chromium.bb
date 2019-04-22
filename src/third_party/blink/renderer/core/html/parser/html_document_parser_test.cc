@@ -74,7 +74,7 @@ TEST_F(HTMLDocumentParserTest, AppendPrefetch) {
   HTMLDocument& document = ToHTMLDocument(GetDocument());
   ProvidePrerendererClientTo(
       *document.GetPage(),
-      new MockPrerendererClient(*document.GetPage(), true));
+      MakeGarbageCollected<MockPrerendererClient>(*document.GetPage(), true));
   EXPECT_TRUE(document.IsPrefetchOnly());
   HTMLDocumentParser* parser = CreateParser(document);
 

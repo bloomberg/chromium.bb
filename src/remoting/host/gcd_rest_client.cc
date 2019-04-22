@@ -82,7 +82,7 @@ void GcdRestClient::PatchState(
   resource_request_->method = "POST";
 
   token_getter_->CallWithToken(
-      base::Bind(&GcdRestClient::OnTokenReceived, base::Unretained(this)));
+      base::BindOnce(&GcdRestClient::OnTokenReceived, base::Unretained(this)));
 }
 
 void GcdRestClient::SetClockForTest(base::Clock* clock) {

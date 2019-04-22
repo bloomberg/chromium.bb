@@ -139,7 +139,7 @@ public abstract class WebsitePreferenceBridge {
     @SuppressWarnings("unchecked")
     @CalledByNative
     private static void insertLocalStorageInfoIntoMap(
-            HashMap map, String origin, String fullOrigin, long size, boolean important) {
+            HashMap map, String origin, long size, boolean important) {
         ((HashMap<String, LocalStorageInfo>) map)
                 .put(origin, new LocalStorageInfo(origin, size, important));
     }
@@ -190,8 +190,10 @@ public abstract class WebsitePreferenceBridge {
      */
     @CalledByNative
     private static void insertChosenObjectInfoIntoList(ArrayList<ChosenObjectInfo> list,
-            int contentSettingsType, String origin, String embedder, String name, String object) {
-        list.add(new ChosenObjectInfo(contentSettingsType, origin, embedder, name, object));
+            int contentSettingsType, String origin, String embedder, String name, String object,
+            boolean isManaged) {
+        list.add(new ChosenObjectInfo(
+                contentSettingsType, origin, embedder, name, object, isManaged));
     }
 
     /**

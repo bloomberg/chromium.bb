@@ -5,12 +5,12 @@
  * found in the LICENSE file.
  */
 
-#include "gm.h"
-#include "sk_tool_utils.h"
 #include "SkCanvas.h"
 #include "SkMaskFilter.h"
 #include "SkPath.h"
 #include "SkShader.h"
+#include "ToolUtils.h"
+#include "gm.h"
 
 namespace skiagm {
 
@@ -72,8 +72,7 @@ protected:
 
         createTexture();
 
-        fShader = SkShader::MakeBitmapShader(fTexture, SkShader::kRepeat_TileMode,
-                                             SkShader::kRepeat_TileMode);
+        fShader = fTexture.makeShader(SkTileMode::kRepeat, SkTileMode::kRepeat);
     }
 
     void createMaskFilter() {
@@ -95,10 +94,9 @@ protected:
         // stipple mask with a round rect soft clip
         SkPaint paint;
         paint.setAntiAlias(true);
-        paint.setTextSize(72);
         paint.setShader(fShader);
         paint.setMaskFilter(fMaskFilter);
-        sk_tool_utils::set_portable_typeface(&paint);
+        SkFont font(ToolUtils::create_portable_typeface(), 72);
 
         SkRect temp;
         temp.set(SkIntToScalar(115),
@@ -111,9 +109,7 @@ protected:
 
         canvas->clipPath(path, true); // AA is on
 
-        canvas->drawString("M",
-                         SkIntToScalar(100), SkIntToScalar(100),
-                         paint);
+        canvas->drawString("M", 100.0f, 100.0f, font, paint);
 
         canvas->restore();
 
@@ -122,13 +118,9 @@ protected:
         SkPaint paint2;
         paint2.setColor(SK_ColorBLACK);
         paint2.setAntiAlias(true);
-        paint2.setTextSize(72);
         paint2.setStyle(SkPaint::kStroke_Style);
         paint2.setStrokeWidth(1);
-        sk_tool_utils::set_portable_typeface(&paint2);
-        canvas->drawString("M",
-                         SkIntToScalar(100), SkIntToScalar(100),
-                         paint2);
+        canvas->drawString("M", 100.0f, 100.0f, font, paint2);
 
         paint2.setColor(SK_ColorGRAY);
 
@@ -146,7 +138,6 @@ private:
 
 //////////////////////////////////////////////////////////////////////////////
 
-static GM* MyFactory(void*) { return new SamplerStressGM; }
-static GMRegistry reg(MyFactory);
+DEF_GM( return new SamplerStressGM; )
 
 }

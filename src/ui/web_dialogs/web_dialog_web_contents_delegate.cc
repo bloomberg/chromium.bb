@@ -4,6 +4,8 @@
 
 #include "ui/web_dialogs/web_dialog_web_contents_delegate.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/blink/public/platform/web_gesture_event.h"
@@ -22,17 +24,16 @@ namespace ui {
 // when all incognito browsers close.
 WebDialogWebContentsDelegate::WebDialogWebContentsDelegate(
     content::BrowserContext* browser_context,
-    WebContentsHandler* handler)
-    : browser_context_(browser_context),
-      handler_(handler) {
-  CHECK(handler_.get());
+    std::unique_ptr<WebContentsHandler> handler)
+    : browser_context_(browser_context), handler_(std::move(handler)) {
+  DCHECK(handler_);
 }
 
 WebDialogWebContentsDelegate::~WebDialogWebContentsDelegate() {
 }
 
 void WebDialogWebContentsDelegate::Detach() {
-  browser_context_ = NULL;
+  browser_context_ = nullptr;
 }
 
 WebContents* WebDialogWebContentsDelegate::OpenURLFromTab(

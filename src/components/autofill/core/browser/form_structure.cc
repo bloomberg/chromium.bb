@@ -9,6 +9,8 @@
 #include <algorithm>
 #include <map>
 #include <memory>
+#include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -18,7 +20,6 @@
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -38,6 +39,7 @@
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_regex_constants.h"
 #include "components/autofill/core/common/autofill_regexes.h"
 #include "components/autofill/core/common/autofill_util.h"
@@ -288,6 +290,32 @@ HtmlFieldType FieldTypeFromAutocompleteAttributeValue(
   return HTML_TYPE_UNRECOGNIZED;
 }
 
+// Helper function for explicit conversion between |ButtonTitleType| defined in
+// "button_title_type.h" and "server.proto".
+AutofillUploadContents_ButtonTitle_ButtonTitleType ToServerButtonTitleType(
+    autofill::ButtonTitleType input) {
+  switch (input) {
+    case ButtonTitleType::NONE:
+      return AutofillUploadContents::ButtonTitle::NONE;
+    case ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE:
+      return AutofillUploadContents::ButtonTitle::BUTTON_ELEMENT_SUBMIT_TYPE;
+    case ButtonTitleType::BUTTON_ELEMENT_BUTTON_TYPE:
+      return AutofillUploadContents::ButtonTitle::BUTTON_ELEMENT_BUTTON_TYPE;
+    case ButtonTitleType::INPUT_ELEMENT_SUBMIT_TYPE:
+      return AutofillUploadContents::ButtonTitle::INPUT_ELEMENT_SUBMIT_TYPE;
+    case ButtonTitleType::INPUT_ELEMENT_BUTTON_TYPE:
+      return AutofillUploadContents::ButtonTitle::INPUT_ELEMENT_BUTTON_TYPE;
+    case ButtonTitleType::HYPERLINK:
+      return AutofillUploadContents::ButtonTitle::HYPERLINK;
+    case ButtonTitleType::DIV:
+      return AutofillUploadContents::ButtonTitle::DIV;
+    case ButtonTitleType::SPAN:
+      return AutofillUploadContents::ButtonTitle::SPAN;
+  }
+  NOTREACHED();
+  return AutofillUploadContents::ButtonTitle::NONE;
+}
+
 std::ostream& operator<<(
     std::ostream& out,
     const autofill::AutofillQueryResponseContents& response) {
@@ -314,6 +342,7 @@ bool AllTypesCaptured(const FormStructure& form,
 void EncodePasswordAttributesVote(
     const std::pair<PasswordAttribute, bool>& password_attributes_vote,
     const size_t password_length_vote,
+    const int password_symbol_vote,
     AutofillUploadContents* upload) {
   switch (password_attributes_vote.first) {
     case PasswordAttribute::kHasLowercaseLetter:
@@ -329,6 +358,8 @@ void EncodePasswordAttributesVote(
       break;
     case PasswordAttribute::kHasSpecialSymbol:
       upload->set_password_has_special_symbol(password_attributes_vote.second);
+      if (password_attributes_vote.second)
+        upload->set_password_special_symbol(password_symbol_vote);
       break;
     case PasswordAttribute::kPasswordAttributesCount:
       NOTREACHED();
@@ -435,15 +466,31 @@ void EncodeFieldMetadataForQuery(const FormFieldData& field,
       base::UTF16ToUTF8(field.placeholder));
 }
 
+// Creates the type relationship rules map. The keys represent the type that has
+// rules, and the value represents the list of required types for the given
+// key. In order to respect the rule, only one of the required types is needed.
+// For example, for Autofill to support fields of type
+// "PHONE_HOME_COUNTRY_CODE", there would need to be at least one other field
+// of type "PHONE_HOME_NUMBER" or "PHONE_HOME_CITY_AND_NUMBER".
+const std::unordered_map<ServerFieldType, ServerFieldTypeSet>&
+GetTypeRelationshipMap() {
+  // Initialized and cached on first use.
+  static const auto* const rules =
+      new std::unordered_map<ServerFieldType, ServerFieldTypeSet>(
+          {{PHONE_HOME_COUNTRY_CODE,
+            {PHONE_HOME_NUMBER, PHONE_HOME_CITY_AND_NUMBER}}});
+  return *rules;
+}
+
 }  // namespace
 
 FormStructure::FormStructure(const FormData& form)
     : id_attribute_(form.id_attribute),
       name_attribute_(form.name_attribute),
       form_name_(form.name),
-      button_title_(form.button_title),
+      button_titles_(form.button_titles),
       submission_event_(SubmissionIndicatorEvent::NONE),
-      source_url_(form.origin),
+      source_url_(form.url),
       target_url_(form.action),
       main_frame_origin_(form.main_frame_origin),
       autofill_count_(0),
@@ -459,6 +506,7 @@ FormStructure::FormStructure(const FormData& form)
       all_fields_are_passwords_(!form.fields.empty()),
       form_parsed_timestamp_(base::TimeTicks::Now()),
       passwords_were_revealed_(false),
+      password_symbol_vote_(0),
       developer_engagement_metrics_(0) {
   // Copy the form fields.
   std::map<base::string16, size_t> unique_names;
@@ -529,9 +577,7 @@ void FormStructure::DetermineHeuristicTypes() {
         1 << AutofillMetrics::FORM_CONTAINS_UPI_VPA_HINT;
   }
 
-  if (base::FeatureList::IsEnabled(
-          features::kAutofillRationalizeFieldTypePredictions))
-    RationalizeFieldTypePredictions();
+  RationalizeFieldTypePredictions();
 
   AutofillMetrics::LogDetermineHeuristicTypesTiming(
       base::TimeTicks::Now() - determine_heuristic_types_start_time);
@@ -551,6 +597,7 @@ bool FormStructure::EncodeUploadRequest(
   upload->set_autofill_used(form_was_autofilled);
   upload->set_data_present(EncodeFieldTypes(available_field_types));
   upload->set_passwords_revealed(passwords_were_revealed_);
+  upload->set_has_form_tag(is_form_tag_);
   if (!page_language_.empty() && randomized_encoder_ != nullptr) {
     upload->set_language(page_language_);
   }
@@ -567,13 +614,19 @@ bool FormStructure::EncodeUploadRequest(
 
   if (password_attributes_vote_) {
     EncodePasswordAttributesVote(*password_attributes_vote_,
-                                 password_length_vote_, upload);
+                                 password_length_vote_, password_symbol_vote_,
+                                 upload);
   }
 
   if (IsAutofillFieldMetadataEnabled()) {
     upload->set_action_signature(StrToHash64Bit(target_url_.host()));
     if (!form_name().empty())
       upload->set_form_name(base::UTF16ToUTF8(form_name()));
+    for (const ButtonTitleInfo& e : button_titles_) {
+      auto* button_title = upload->add_button_title();
+      button_title->set_title(base::UTF16ToUTF8(e.first));
+      button_title->set_type(ToServerButtonTitleType(e.second));
+    }
   }
 
   if (!login_form_signature.empty()) {
@@ -720,14 +773,8 @@ void FormStructure::ProcessQueryResponse(
         !query_response_has_no_server_data);
 
     form->UpdateAutofillCount();
-    if (base::FeatureList::IsEnabled(
-            features::kAutofillRationalizeRepeatedServerPredictions))
-      form->RationalizeRepeatedFields(form_interactions_ukm_logger);
-
-    if (base::FeatureList::IsEnabled(
-            features::kAutofillRationalizeFieldTypePredictions))
-      form->RationalizeFieldTypePredictions();
-
+    form->RationalizeRepeatedFields(form_interactions_ukm_logger);
+    form->RationalizeFieldTypePredictions();
     form->IdentifySections(false);
   }
 
@@ -752,7 +799,7 @@ std::vector<FormDataPredictions> FormStructure::GetFieldTypePredictions(
   for (const FormStructure* form_structure : form_structures) {
     FormDataPredictions form;
     form.data.name = form_structure->form_name_;
-    form.data.origin = form_structure->source_url_;
+    form.data.url = form_structure->source_url_;
     form.data.action = form_structure->target_url_;
     form.data.main_frame_origin = form_structure->main_frame_origin_;
     form.data.is_form_tag = form_structure->is_form_tag_;
@@ -877,7 +924,7 @@ bool FormStructure::ShouldBeUploaded() const {
 
 void FormStructure::RetrieveFromCache(
     const FormStructure& cached_form,
-    const bool apply_is_autofilled,
+    const bool should_keep_cached_value,
     const bool only_server_and_autofill_state) {
   // Map from field signatures to cached fields.
   std::map<base::string16, const AutofillField*> cached_fields;
@@ -898,14 +945,23 @@ void FormStructure::RetrieveFromCache(
         field->set_only_fill_when_focused(
             cached_field->second->only_fill_when_focused());
       }
-      if (apply_is_autofilled) {
+      if (should_keep_cached_value) {
         field->is_autofilled = cached_field->second->is_autofilled;
       }
-      if (field->form_control_type != "select-one" &&
-          field->value == cached_field->second->value) {
-        // From the perspective of learning user data, text fields containing
-        // default values are equivalent to empty fields.
-        field->value = base::string16();
+      if (field->form_control_type != "select-one") {
+        bool is_credit_card_field =
+            AutofillType(cached_field->second->Type().GetStorableType())
+                .group() == CREDIT_CARD;
+        if (should_keep_cached_value && is_credit_card_field &&
+            base::FeatureList::IsEnabled(
+                features::kAutofillImportDynamicForms)) {
+          field->value = cached_field->second->value;
+          value_from_dynamic_change_form_ = true;
+        } else if (field->value == cached_field->second->value) {
+          // From the perspective of learning user data, text fields containing
+          // default values are equivalent to empty fields.
+          field->value = base::string16();
+        }
       }
       field->set_server_type(cached_field->second->server_type());
       field->set_previously_autofilled(
@@ -942,6 +998,7 @@ void FormStructure::LogQualityMetrics(
   bool did_autofill_all_possible_fields = true;
   bool did_autofill_some_possible_fields = false;
   bool is_for_credit_card = IsCompleteCreditCardForm();
+  bool has_upi_vpa_field = false;
 
   // Determine the correct suffix for the metric, depending on whether or
   // not a submission was observed.
@@ -952,6 +1009,7 @@ void FormStructure::LogQualityMetrics(
   for (size_t i = 0; i < field_count(); ++i) {
     auto* const field = this->field(i);
     if (IsUPIVirtualPaymentAddress(field->value)) {
+      has_upi_vpa_field = true;
       AutofillMetrics::LogUserHappinessMetric(
           AutofillMetrics::USER_DID_ENTER_UPI_VPA, field->Type().group(),
           security_state::SecurityLevel::SECURITY_LEVEL_COUNT);
@@ -1036,8 +1094,8 @@ void FormStructure::LogQualityMetrics(
     }
 
     AutofillMetrics::LogAutofillFormSubmittedState(
-        state, is_for_credit_card, GetFormTypes(), form_parsed_timestamp_,
-        form_signature(), form_interactions_ukm_logger);
+        state, is_for_credit_card, has_upi_vpa_field, GetFormTypes(),
+        form_parsed_timestamp_, form_signature(), form_interactions_ukm_logger);
   }
 }
 
@@ -1196,24 +1254,6 @@ std::set<base::string16> FormStructure::PossibleValues(ServerFieldType type) {
   return values;
 }
 
-base::string16 FormStructure::GetUniqueValue(HtmlFieldType type) const {
-  base::string16 value;
-  for (const auto& field : fields_) {
-    if (field->html_type() != type)
-      continue;
-
-    // More than one value found; abort rather than choosing one arbitrarily.
-    if (!value.empty() && !field->value.empty()) {
-      value.clear();
-      break;
-    }
-
-    value = field->value;
-  }
-
-  return value;
-}
-
 const AutofillField* FormStructure::field(size_t index) const {
   if (index >= fields_.size()) {
     NOTREACHED();
@@ -1239,7 +1279,7 @@ size_t FormStructure::active_field_count() const {
 FormData FormStructure::ToFormData() const {
   FormData data;
   data.name = form_name_;
-  data.origin = source_url_;
+  data.url = source_url_;
   data.action = target_url_;
   data.main_frame_origin = main_frame_origin_;
 
@@ -1252,7 +1292,7 @@ FormData FormStructure::ToFormData() const {
 
 bool FormStructure::operator==(const FormData& form) const {
   // TODO(jhawkins): Is this enough to differentiate a form?
-  if (form_name_ == form.name && source_url_ == form.origin &&
+  if (form_name_ == form.name && source_url_ == form.url &&
       target_url_ == form.action) {
     return true;
   }
@@ -1694,8 +1734,16 @@ void FormStructure::RationalizeRepeatedFields(
 void FormStructure::RationalizeFieldTypePredictions() {
   RationalizeCreditCardFieldPredictions();
   for (const auto& field : fields_) {
-    field->SetTypeTo(field->Type());
+    if (base::FeatureList::IsEnabled(features::kAutofillOffNoServerData) &&
+        !field->should_autocomplete && field->server_type() == NO_SERVER_DATA) {
+      // When the field has autocomplete off, and the server returned no
+      // prediction, then assume Autofill is not useful for the current field.
+      field->SetTypeTo(AutofillType(UNKNOWN_TYPE));
+    } else {
+      field->SetTypeTo(field->Type());
+    }
   }
+  RationalizeTypeRelationships();
 }
 
 void FormStructure::EncodeFormForQuery(
@@ -2004,6 +2052,40 @@ base::string16 FormStructure::GetIdentifierForRefill() const {
 void FormStructure::set_randomized_encoder(
     std::unique_ptr<RandomizedEncoder> encoder) {
   randomized_encoder_ = std::move(encoder);
+}
+
+void FormStructure::RationalizeTypeRelationships() {
+  // Create a local set of all the types for faster lookup.
+  std::unordered_set<ServerFieldType> types;
+  for (const auto& field : fields_) {
+    types.insert(field->Type().GetStorableType());
+  }
+
+  const auto& type_relationship_rules = GetTypeRelationshipMap();
+
+  for (const auto& field : fields_) {
+    ServerFieldType field_type = field->Type().GetStorableType();
+    const auto& ruleset_iterator = type_relationship_rules.find(field_type);
+    if (ruleset_iterator != type_relationship_rules.end()) {
+      // We have relationship rules for this type. Verify that at least one of
+      // the required related type is present.
+      bool found = false;
+      for (ServerFieldType required_type : ruleset_iterator->second) {
+        if (types.find(required_type) != types.end()) {
+          // Found a required type, we can break as we only need one required
+          // type to respect the rule.
+          found = true;
+          break;
+        }
+      }
+
+      if (!found) {
+        // No required type was found, the current field failed the relationship
+        // requirements for its type. Disabling Autofill for this field.
+        field->SetTypeTo(AutofillType(UNKNOWN_TYPE));
+      }
+    }
+  }
 }
 
 }  // namespace autofill

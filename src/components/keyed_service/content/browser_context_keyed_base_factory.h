@@ -5,11 +5,11 @@
 #ifndef COMPONENTS_KEYED_SERVICE_CONTENT_BROWSER_CONTEXT_KEYED_BASE_FACTORY_H_
 #define COMPONENTS_KEYED_SERVICE_CONTENT_BROWSER_CONTEXT_KEYED_BASE_FACTORY_H_
 
+#include "base/macros.h"
 #include "components/keyed_service/core/keyed_service_base_factory.h"
 #include "components/keyed_service/core/keyed_service_export.h"
 
 class BrowserContextDependencyManager;
-class PrefService;
 
 namespace content {
 class BrowserContext;
@@ -34,17 +34,6 @@ class PrefRegistrySyncable;
 // on KeyedServiceBaseFactory instead.
 class KEYED_SERVICE_EXPORT BrowserContextKeyedBaseFactory
     : public KeyedServiceBaseFactory {
- public:
-  // Registers preferences used in this service on the pref service of
-  // |context|. This is the public interface and is safe to be called multiple
-  // times because testing code can have multiple services of the same type
-  // attached to a single |context|. Only test code is allowed to call this
-  // method.
-  // TODO(gab): This method can be removed entirely when
-  // PrefService::DeprecatedGetPrefRegistry() is phased out.
-  void RegisterUserPrefsOnBrowserContextForTest(
-      content::BrowserContext* context);
-
  protected:
   BrowserContextKeyedBaseFactory(const char* name,
                                  BrowserContextDependencyManager* manager);
@@ -89,9 +78,8 @@ class KEYED_SERVICE_EXPORT BrowserContextKeyedBaseFactory
   virtual void BrowserContextDestroyed(content::BrowserContext* context);
 
  private:
-  // Registers any user preferences on this service. This is called by
-  // RegisterPrefsIfNecessaryForContext() and should be overriden by any service
-  // that wants to register profile-specific preferences.
+  // Registers any user preferences on this service. This should be overriden by
+  // any service that wants to register profile-specific preferences.
   virtual void RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable* registry) {}
 
@@ -107,15 +95,16 @@ class KEYED_SERVICE_EXPORT BrowserContextKeyedBaseFactory
   virtual void CreateServiceNow(content::BrowserContext* context) = 0;
 
   // KeyedServiceBaseFactory:
-  base::SupportsUserData* GetContextToUse(
-      base::SupportsUserData* context) const final;
+  void* GetContextToUse(void* context) const final;
   bool ServiceIsCreatedWithContext() const final;
-  void ContextShutdown(base::SupportsUserData* context) final;
-  void ContextDestroyed(base::SupportsUserData* context) final;
+  void ContextShutdown(void* context) final;
+  void ContextDestroyed(void* context) final;
   void RegisterPrefs(user_prefs::PrefRegistrySyncable* registry) final;
-  void SetEmptyTestingFactory(base::SupportsUserData* context) final;
-  bool HasTestingFactory(base::SupportsUserData* context) final;
-  void CreateServiceNow(base::SupportsUserData* context) final;
+  void SetEmptyTestingFactory(void* context) final;
+  bool HasTestingFactory(void* context) final;
+  void CreateServiceNow(void* context) final;
+
+  DISALLOW_COPY_AND_ASSIGN(BrowserContextKeyedBaseFactory);
 };
 
 #endif  // COMPONENTS_KEYED_SERVICE_CONTENT_BROWSER_CONTEXT_KEYED_BASE_FACTORY_H_

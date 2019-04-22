@@ -43,7 +43,7 @@ const char kInvalidInstanceTypeError[] =
 const char kMissingInstanceTypeError[] = "Action is missing instanceType";
 const char kMissingParameter[] = "Missing parameter is required: %s";
 const char kNoAction[] =
-    "Can't use declarativeContent.ShowPageAction without an action";
+    "Can't use declarativeContent.ShowAction without an action";
 const char kNoPageOrBrowserAction[] =
     "Can't use declarativeContent.SetIcon without a page or browser action";
 const char kIconNotSufficientlyVisible[] =
@@ -56,10 +56,10 @@ bool g_allow_invisible_icons_content_action = true;
 //
 
 // Action that instructs to show an extension's page action.
-class ShowPageAction : public ContentAction {
+class ShowExtensionAction : public ContentAction {
  public:
-  ShowPageAction() {}
-  ~ShowPageAction() override {}
+  ShowExtensionAction() {}
+  ~ShowExtensionAction() override {}
 
   static std::unique_ptr<ContentAction> Create(
       content::BrowserContext* browser_context,
@@ -69,12 +69,11 @@ class ShowPageAction : public ContentAction {
     // TODO(devlin): We should probably throw an error if the extension has no
     // action specified in the manifest. Currently, this is allowed since
     // extensions will have a synthesized page action.
-    if (!ActionInfo::GetPageActionInfo(extension) &&
-        !ActionInfo::GetBrowserActionInfo(extension)) {
+    if (!ActionInfo::GetAnyActionInfo(extension)) {
       *error = kNoAction;
-      return std::unique_ptr<ContentAction>();
+      return nullptr;
     }
-    return base::WrapUnique(new ShowPageAction);
+    return std::make_unique<ShowExtensionAction>();
   }
 
   // Implementation of ContentAction:
@@ -103,14 +102,13 @@ class ShowPageAction : public ContentAction {
         ->GetExtensionAction(*extension);
   }
 
-  DISALLOW_COPY_AND_ASSIGN(ShowPageAction);
+  DISALLOW_COPY_AND_ASSIGN(ShowExtensionAction);
 };
 
 // Action that sets an extension's action icon.
 class SetIcon : public ContentAction {
  public:
-  SetIcon(const gfx::Image& icon, ActionInfo::Type action_type)
-      : icon_(icon), action_type_(action_type) {}
+  explicit SetIcon(const gfx::Image& icon) : icon_(icon) {}
   ~SetIcon() override {}
 
   static std::unique_ptr<ContentAction> Create(
@@ -152,20 +150,10 @@ class SetIcon : public ContentAction {
  private:
   ExtensionAction* GetExtensionAction(Profile* profile,
                                       const Extension* extension) const {
-    switch (action_type_) {
-      case ActionInfo::TYPE_BROWSER:
-        return ExtensionActionManager::Get(profile)
-            ->GetBrowserAction(*extension);
-      case ActionInfo::TYPE_PAGE:
-        return ExtensionActionManager::Get(profile)->GetPageAction(*extension);
-      default:
-        NOTREACHED();
-    }
-    return NULL;
+    return ExtensionActionManager::Get(profile)->GetExtensionAction(*extension);
   }
 
   gfx::Image icon_;
-  ActionInfo::Type action_type_;
 
   DISALLOW_COPY_AND_ASSIGN(SetIcon);
 };
@@ -199,8 +187,8 @@ struct ContentActionFactory {
   std::map<std::string, FactoryMethod> factory_methods;
 
   ContentActionFactory() {
-    factory_methods[declarative_content_constants::kShowPageAction] =
-        &ShowPageAction::Create;
+    factory_methods[declarative_content_constants::kShowAction] =
+        &ShowExtensionAction::Create;
     factory_methods[declarative_content_constants::kRequestContentScript] =
         &RequestContentScript::Create;
     factory_methods[declarative_content_constants::kSetIcon] = &SetIcon::Create;
@@ -398,12 +386,7 @@ std::unique_ptr<ContentAction> SetIcon::Create(
     const base::DictionaryValue* dict,
     std::string* error) {
   // We can't set a page or action's icon if the extension doesn't have one.
-  ActionInfo::Type type;
-  if (ActionInfo::GetPageActionInfo(extension) != NULL) {
-    type = ActionInfo::TYPE_PAGE;
-  } else if (ActionInfo::GetBrowserActionInfo(extension) != NULL) {
-    type = ActionInfo::TYPE_BROWSER;
-  } else {
+  if (!ActionInfo::GetAnyActionInfo(extension)) {
     *error = kNoPageOrBrowserAction;
     return nullptr;
   }
@@ -431,7 +414,7 @@ std::unique_ptr<ContentAction> SetIcon::Create(
     *error = kIconNotSufficientlyVisible;
     return nullptr;
   }
-  return base::WrapUnique(new SetIcon(image, type));
+  return std::make_unique<SetIcon>(image);
 }
 
 //

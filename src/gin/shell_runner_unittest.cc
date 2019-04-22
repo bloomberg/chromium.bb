@@ -34,7 +34,6 @@ TEST(RunnerTest, Run) {
 #endif
 
   gin::IsolateHolder::Initialize(gin::IsolateHolder::kStrictMode,
-                                 gin::IsolateHolder::kStableV8Extras,
                                  gin::ArrayBufferAllocator::SharedInstance());
   gin::IsolateHolder instance(base::ThreadTaskRunnerHandle::Get(),
                               gin::IsolateHolder::IsolateType::kTest);
@@ -46,8 +45,11 @@ TEST(RunnerTest, Run) {
   runner.Run(source, "test_data.js");
 
   std::string result;
-  EXPECT_TRUE(Converter<std::string>::FromV8(isolate,
-      runner.global()->Get(StringToV8(isolate, "result")),
+  EXPECT_TRUE(Converter<std::string>::FromV8(
+      isolate,
+      runner.global()
+          ->Get(isolate->GetCurrentContext(), StringToV8(isolate, "result"))
+          .ToLocalChecked(),
       &result));
   EXPECT_EQ("PASS", result);
 }

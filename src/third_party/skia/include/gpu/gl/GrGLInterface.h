@@ -35,13 +35,6 @@ SK_API sk_sp<const GrGLInterface> GrGLMakeNativeInterface();
 SK_API const GrGLInterface* GrGLCreateNativeInterface();
 
 /**
- * Creates a null GrGLInterface that doesn't draw anything. Used for measuring
- * CPU overhead. TODO: We would like to move this to tools/gpu/gl/null but currently
- * Chromium is using it in its unit tests.
- */
-const SK_API GrGLInterface* GrGLCreateNullInterface(bool enableNVPR = false);
-
-/**
  * GrContext uses the following interface to make all calls into OpenGL. When a
  * GrContext is created it is given a GrGLInterface. The interface's function
  * pointers must be valid for the OpenGL context associated with the GrContext.
@@ -195,7 +188,6 @@ public:
         GrGLFunction<GrGLPopGroupMarkerFn> fPopGroupMarker;
         GrGLFunction<GrGLPushGroupMarkerFn> fPushGroupMarker;
         GrGLFunction<GrGLQueryCounterFn> fQueryCounter;
-        GrGLFunction<GrGLRasterSamplesFn> fRasterSamples;
         GrGLFunction<GrGLReadBufferFn> fReadBuffer;
         GrGLFunction<GrGLReadPixelsFn> fReadPixels;
         GrGLFunction<GrGLRenderbufferStorageFn> fRenderbufferStorage;
@@ -240,6 +232,8 @@ public:
         GrGLFunction<GrGLTexBufferFn> fTexBuffer;
         GrGLFunction<GrGLTexBufferRangeFn> fTexBufferRange;
         GrGLFunction<GrGLTexImage2DFn> fTexImage2D;
+        GrGLFunction<GrGLTexParameterfFn> fTexParameterf;
+        GrGLFunction<GrGLTexParameterfvFn> fTexParameterfv;
         GrGLFunction<GrGLTexParameteriFn> fTexParameteri;
         GrGLFunction<GrGLTexParameterivFn> fTexParameteriv;
         GrGLFunction<GrGLTexSubImage2DFn> fTexSubImage2D;
@@ -309,9 +303,6 @@ public:
 
         /* NV_framebuffer_mixed_samples */
         GrGLFunction<GrGLCoverageModulationFn> fCoverageModulation;
-
-        /* ARB_sample_shading */
-        GrGLFunction<GrGLMinSampleShadingFn> fMinSampleShading;
 
         /* ARB_sync */
         GrGLFunction<GrGLFenceSyncFn> fFenceSync;

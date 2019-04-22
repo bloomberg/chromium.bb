@@ -32,7 +32,7 @@ std::string HttpAuthChallengeTokenizer::base64_param() const {
   // (See https://bugzilla.mozilla.org/show_bug.cgi?id=230351.)
   //
   // Our base64 decoder requires that the length be a multiple of 4.
-  int encoded_length = params_end_ - params_begin_;
+  auto encoded_length = params_end_ - params_begin_;
   while (encoded_length > 0 && encoded_length % 4 != 0 &&
          params_begin_[encoded_length - 1] == '=') {
     --encoded_length;

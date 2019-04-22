@@ -105,21 +105,21 @@ void EnsureMediaDirectoriesExists::ChangeMediaPathOverrides() {
   // a CHECK crash.
   music_override_.reset();
   std::string music_path_string("music");
-  music_path_string.append(base::IntToString(times_overrides_changed_));
+  music_path_string.append(base::NumberToString(times_overrides_changed_));
   music_override_.reset(new base::ScopedPathOverride(
       chrome::DIR_USER_MUSIC,
       fake_dir_.GetPath().AppendASCII(music_path_string)));
 
   pictures_override_.reset();
   std::string pictures_path_string("pictures");
-  pictures_path_string.append(base::IntToString(times_overrides_changed_));
+  pictures_path_string.append(base::NumberToString(times_overrides_changed_));
   pictures_override_.reset(new base::ScopedPathOverride(
       chrome::DIR_USER_PICTURES,
       fake_dir_.GetPath().AppendASCII(pictures_path_string)));
 
   video_override_.reset();
   std::string videos_path_string("videos");
-  videos_path_string.append(base::IntToString(times_overrides_changed_));
+  videos_path_string.append(base::NumberToString(times_overrides_changed_));
   video_override_.reset(new base::ScopedPathOverride(
       chrome::DIR_USER_VIDEOS,
       fake_dir_.GetPath().AppendASCII(videos_path_string)));

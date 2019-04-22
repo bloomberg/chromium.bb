@@ -23,7 +23,8 @@ struct SkIRect;
 
 class GrTextureOpList final : public GrOpList {
 public:
-    GrTextureOpList(GrResourceProvider*, sk_sp<GrOpMemoryPool>, GrTextureProxy*, GrAuditTrail*);
+    GrTextureOpList(GrResourceProvider*, sk_sp<GrOpMemoryPool>,
+                    sk_sp<GrTextureProxy>, GrAuditTrail*);
     ~GrTextureOpList() override;
 
     /**
@@ -48,7 +49,7 @@ public:
      * depending on the type of surface, configs, etc, and the backend-specific
      * limitations.
      */
-    bool copySurface(GrContext*,
+    bool copySurface(GrRecordingContext*,
                      GrSurfaceProxy* dst,
                      GrSurfaceProxy* src,
                      const SkIRect& srcRect,
@@ -59,6 +60,8 @@ public:
     SkDEBUGCODE(void dump(bool printDependencies) const override;)
 
 private:
+    bool onIsUsed(GrSurfaceProxy*) const override;
+
     void deleteOp(int index);
     void deleteOps();
 

@@ -5,12 +5,12 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PAYMENTS_PAYMENT_INSTRUMENTS_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PAYMENTS_PAYMENT_INSTRUMENTS_H_
 
+#include "base/macros.h"
 #include "third_party/blink/public/mojom/payments/payment_app.mojom-blink.h"
-#include "third_party/blink/public/platform/modules/permissions/permission.mojom-blink.h"
+#include "third_party/blink/public/mojom/permissions/permission.mojom-blink.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -24,7 +24,6 @@ class PaymentInstrumentParameter;
 
 class MODULES_EXPORT PaymentInstruments final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
-  WTF_MAKE_NONCOPYABLE(PaymentInstruments);
 
  public:
   explicit PaymentInstruments(const payments::mojom::blink::PaymentManagerPtr&);
@@ -64,6 +63,8 @@ class MODULES_EXPORT PaymentInstruments final : public ScriptWrappable {
   const payments::mojom::blink::PaymentManagerPtr& manager_;
 
   mojom::blink::PermissionServicePtr permission_service_;
+
+  DISALLOW_COPY_AND_ASSIGN(PaymentInstruments);
 };
 
 }  // namespace blink

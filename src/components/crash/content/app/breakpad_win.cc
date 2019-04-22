@@ -24,9 +24,9 @@
 #include "base/debug/dump_without_crashing.h"
 #include "base/environment.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -130,7 +130,7 @@ google_breakpad::CustomClientInfo* GetCustomInfo(
   custom_entries->push_back(
       google_breakpad::CustomInfoEntry(L"ptype", type.c_str()));
   custom_entries->push_back(google_breakpad::CustomInfoEntry(
-      L"pid", base::IntToString16(::GetCurrentProcessId()).c_str()));
+      L"pid", base::NumberToString16(::GetCurrentProcessId()).c_str()));
   custom_entries->push_back(
       google_breakpad::CustomInfoEntry(L"channel", channel_name.c_str()));
   custom_entries->push_back(
@@ -210,7 +210,7 @@ std::wstring GetProfileType() {
       { PT_ROAMING, L"roaming" },
       { PT_TEMPORARY, L"temporary" },
     };
-    for (size_t i = 0; i < arraysize(kBitNames); ++i) {
+    for (size_t i = 0; i < base::size(kBitNames); ++i) {
       const DWORD this_bit = kBitNames[i].bit;
       if ((profile_bits & this_bit) != 0) {
         profile_type.append(kBitNames[i].name);
@@ -372,9 +372,6 @@ extern "C" void __declspec(dllexport) TerminateProcessWithoutDump() {
 // Crashes the process after generating a dump for the provided exception. Note
 // that the crash reporter should be initialized before calling this function
 // for it to do anything.
-// NOTE: This function is used by SyzyASAN to invoke a crash. If you change the
-// the name or signature of this function you will break SyzyASAN instrumented
-// releases of Chrome. Please contact syzygy-team@chromium.org before doing so!
 extern "C" int __declspec(dllexport) CrashForException(
     EXCEPTION_POINTERS* info) {
   if (g_breakpad) {
@@ -633,75 +630,5 @@ ClearBreakpadPipeEnvironmentVariable() {
   std::unique_ptr<base::Environment> env(base::Environment::Create());
   env->UnSetVar(kPipeNameVar);
 }
-
-#ifdef _WIN64
-int CrashForExceptionInNonABICompliantCodeRange(
-    PEXCEPTION_RECORD ExceptionRecord,
-    ULONG64 EstablisherFrame,
-    PCONTEXT ContextRecord,
-    PDISPATCHER_CONTEXT DispatcherContext) {
-  EXCEPTION_POINTERS info = { ExceptionRecord, ContextRecord };
-  return CrashForException(&info);
-}
-
-struct ExceptionHandlerRecord {
-  RUNTIME_FUNCTION runtime_function;
-  UNWIND_INFO unwind_info;
-  unsigned char thunk[12];
-};
-
-extern "C" void __declspec(dllexport) __cdecl
-RegisterNonABICompliantCodeRange(void* start, size_t size_in_bytes) {
-  ExceptionHandlerRecord* record =
-      reinterpret_cast<ExceptionHandlerRecord*>(start);
-
-  // We assume that the first page of the code range is executable and
-  // committed and reserved for breakpad. What could possibly go wrong?
-
-  // All addresses are 32bit relative offsets to start.
-  record->runtime_function.BeginAddress = 0;
-  record->runtime_function.EndAddress =
-      base::checked_cast<DWORD>(size_in_bytes);
-  record->runtime_function.UnwindData =
-      offsetof(ExceptionHandlerRecord, unwind_info);
-
-  // Create unwind info that only specifies an exception handler.
-  record->unwind_info.Version = 1;
-  record->unwind_info.Flags = UNW_FLAG_EHANDLER;
-  record->unwind_info.SizeOfProlog = 0;
-  record->unwind_info.CountOfCodes = 0;
-  record->unwind_info.FrameRegister = 0;
-  record->unwind_info.FrameOffset = 0;
-  record->unwind_info.ExceptionHandler =
-      offsetof(ExceptionHandlerRecord, thunk);
-
-  // Hardcoded thunk.
-  // mov imm64, rax
-  record->thunk[0] = 0x48;
-  record->thunk[1] = 0xb8;
-  void* handler =
-      reinterpret_cast<void*>(&CrashForExceptionInNonABICompliantCodeRange);
-  memcpy(&record->thunk[2], &handler, 8);
-
-  // jmp rax
-  record->thunk[10] = 0xff;
-  record->thunk[11] = 0xe0;
-
-  // Protect reserved page against modifications.
-  DWORD old_protect;
-  CHECK(VirtualProtect(
-      start, sizeof(ExceptionHandlerRecord), PAGE_EXECUTE_READ, &old_protect));
-  CHECK(RtlAddFunctionTable(
-      &record->runtime_function, 1, reinterpret_cast<DWORD64>(start)));
-}
-
-extern "C" void __declspec(dllexport) __cdecl
-UnregisterNonABICompliantCodeRange(void* start) {
-  ExceptionHandlerRecord* record =
-      reinterpret_cast<ExceptionHandlerRecord*>(start);
-
-  CHECK(RtlDeleteFunctionTable(&record->runtime_function));
-}
-#endif
 
 }  // namespace breakpad

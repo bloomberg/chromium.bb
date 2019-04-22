@@ -4,6 +4,7 @@
 
 #import <EarlGrey/EarlGrey.h>
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #import "base/test/ios/wait_util.h"
 #include "ios/web/public/browser_state.h"

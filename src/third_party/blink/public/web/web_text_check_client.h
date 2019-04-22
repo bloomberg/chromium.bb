@@ -24,8 +24,8 @@ class WebTextCheckClient {
   // error, then upon return misspelledLength is 0. If optional_suggestions
   // is given, then it will be filled with suggested words (not a cheap step).
   virtual void CheckSpelling(const WebString& text,
-                             int& misspelled_offset,
-                             int& misspelled_length,
+                             size_t& misspelled_offset,
+                             size_t& misspelled_length,
                              WebVector<WebString>* optional_suggestions) {}
 
   // Requests asynchronous spelling and grammar checking, whose result should be
@@ -33,10 +33,6 @@ class WebTextCheckClient {
   virtual void RequestCheckingOfText(
       const WebString& text_to_check,
       WebTextCheckingCompletion* completion_callback) {}
-
-  // Clear all stored references to requests, so that it will not become a
-  // leak source.
-  virtual void CancelAllPendingRequests() {}
 
  protected:
   virtual ~WebTextCheckClient() = default;

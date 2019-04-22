@@ -24,7 +24,7 @@ namespace blink {
 ScriptPromise ShapeDetector::detect(
     ScriptState* script_state,
     const ImageBitmapSourceUnion& image_source) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   // ImageDatas cannot be tainted by definition.
@@ -49,8 +49,7 @@ ScriptPromise ShapeDetector::detect(
     return promise;
   }
 
-  if (canvas_image_source->WouldTaintOrigin(
-          ExecutionContext::From(script_state)->GetSecurityOrigin())) {
+  if (canvas_image_source->WouldTaintOrigin()) {
     resolver->Reject(DOMException::Create(DOMExceptionCode::kSecurityError,
                                           "Source would taint origin."));
     return promise;

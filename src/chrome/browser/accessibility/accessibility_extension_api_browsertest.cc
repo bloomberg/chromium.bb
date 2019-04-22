@@ -10,16 +10,10 @@ namespace extensions {
 
 using AccessibilityPrivateApiTest = ExtensionApiTest;
 
-#if defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(AccessibilityPrivateApiTest, SendSyntheticKeyEvent) {
-  // TODO(crbug.com/876043): Mash support.
-  if (features::IsUsingWindowService())
-    return;
-
   ASSERT_TRUE(RunExtensionSubtest("accessibility_private/",
                                   "send_synthetic_key_event.html"))
       << message_;
 }
-#endif  // defined (OS_CHROMEOS)
 
 }  // namespace extensions

@@ -11,13 +11,15 @@ import mock
 import time
 import copy
 
-from chromite.lib import cros_test_lib
 from chromite.lib import cidb
+from chromite.lib import fake_cidb
+from chromite.lib import constants
+from chromite.lib import cros_test_lib
 from chromite.lib import git
+from chromite.lib.buildstore import FakeBuildStore
 from chromite.cli import command_unittest
 from chromite.cli.cros import cros_pinchrome
 from chromite.cli.cros import cros_uprevchrome
-from chromite.lib import constants
 
 class MockUprevCommand(command_unittest.MockCommand):
   """Mock out the uprevchrome command."""
@@ -35,7 +37,7 @@ class CrosUprevChromeTest(cros_test_lib.MockTempDirTestCase,
                           cros_test_lib.OutputTestCase):
   """Test for cros uprevchrome."""
   cmd_args = ['--pfq-build=100',
-              '--cred-dir=/cred_dir',
+              '--fake-buildstore=True',
               '--bug=100']
   mock_pfq_info = {'id': '100',
                    'status': constants.BUILDER_STATUS_FAILED,
@@ -54,8 +56,8 @@ class CrosUprevChromeTest(cros_test_lib.MockTempDirTestCase,
     cidb.CIDBConnection.__init__ = mock.Mock(return_value=None)
     self.PatchObject(cros_pinchrome, 'CloneWorkingRepo')
     self.PatchObject(git, 'RunGit')
-    cidb.CIDBConnection.GetBuildStatus = mock.Mock(
-        return_value=self.mock_pfq_info)
+    FakeBuildStore.GetBuildStatuses = mock.Mock(
+        return_value=[self.mock_pfq_info])
     list_history = []
     cidb.CIDBConnection.GetBuildHistory = mock.Mock(
         return_value=list_history)
@@ -65,16 +67,21 @@ class CrosUprevChromeTest(cros_test_lib.MockTempDirTestCase,
     """Test ValidatePFQBuild."""
     self.SetupCommandMock(self.cmd_args)
     db = cidb.CIDBConnection('cred_dir')
-    self.assertEqual('100', self.cmd_mock.inst.ValidatePFQBuild(100, db))
+    buildstore = FakeBuildStore(db)
+    # Doesn't raise an exception.
+    result = self.cmd_mock.inst.ValidatePFQBuild(100,
+                                                 buildstore)
+    self.assertEqual(result.buildbucket_id, 100)
+    self.assertEqual(result.cidb_id, '100')
 
   def testPassedPFQBuildId(self):
     """Test a passed PFQ build_id"""
     self.SetupCommandMock(self.cmd_args)
     local_mock_pfq_info = copy.deepcopy(self.mock_pfq_info)
     local_mock_pfq_info['status'] = constants.BUILDER_STATUS_PASSED
-    cidb.CIDBConnection.GetBuildStatus = mock.Mock(
-        return_value=local_mock_pfq_info)
-    self.assertRaises(cros_uprevchrome.InvalidPFQBuildIdExcpetion,
+    FakeBuildStore.GetBuildStatuses = mock.Mock(
+        return_value=[local_mock_pfq_info])
+    self.assertRaises(cros_uprevchrome.InvalidPFQBuildbucketIdException,
                       self.cmd_mock.inst.Run)
 
   def testPassedPFQBuildHistory(self):
@@ -82,9 +89,9 @@ class CrosUprevChromeTest(cros_test_lib.MockTempDirTestCase,
     self.SetupCommandMock(self.cmd_args)
     pass_list_history = [{'id': '101',
                           'status': constants.BUILDER_STATUS_PASSED}]
-    cidb.CIDBConnection.GetBuildHistory = mock.Mock(
+    fake_cidb.FakeCIDBConnection.GetBuildHistory = mock.Mock(
         return_value=pass_list_history)
-    self.assertRaises(cros_uprevchrome.InvalidPFQBuildIdExcpetion,
+    self.assertRaises(cros_uprevchrome.InvalidPFQBuildbucketIdException,
                       self.cmd_mock.inst.Run)
 
   def testPassedPFQBuildHistory2(self):
@@ -94,9 +101,9 @@ class CrosUprevChromeTest(cros_test_lib.MockTempDirTestCase,
                           'status': constants.BUILDER_STATUS_FAILED},
                          {'id': '102',
                           'status': constants.BUILDER_STATUS_PASSED}]
-    cidb.CIDBConnection.GetBuildHistory = mock.Mock(
+    fake_cidb.FakeCIDBConnection.GetBuildHistory = mock.Mock(
         return_value=pass_list_history)
-    self.assertRaises(cros_uprevchrome.InvalidPFQBuildIdExcpetion,
+    self.assertRaises(cros_uprevchrome.InvalidPFQBuildbucketIdException,
                       self.cmd_mock.inst.Run)
 
   def testNoChangeIdCommitLogs(self):
@@ -108,4 +115,6 @@ class CrosUprevChromeTest(cros_test_lib.MockTempDirTestCase,
   def testSuccessfulRun(self):
     """Test a successful uprevchrome run."""
     self.SetupCommandMock(self.cmd_args)
+    fake_cidb.FakeCIDBConnection.GetBuildHistory = mock.Mock(
+        return_value=[])
     self.cmd_mock.inst.Run()

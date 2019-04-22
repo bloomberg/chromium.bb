@@ -18,10 +18,11 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/services/multidevice_setup/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/chromeos/devicetype_utils.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/notification_types.h"
 #include "ui/message_center/public/cpp/notifier_id.h"
@@ -114,8 +115,9 @@ MultiDeviceNotificationPresenter::~MultiDeviceNotificationPresenter() {
 void MultiDeviceNotificationPresenter::OnPotentialHostExistsForNewUser() {
   base::string16 title = l10n_util::GetStringUTF16(
       IDS_ASH_MULTI_DEVICE_SETUP_NEW_USER_POTENTIAL_HOST_EXISTS_TITLE);
-  base::string16 message = l10n_util::GetStringUTF16(
-      IDS_ASH_MULTI_DEVICE_SETUP_NEW_USER_POTENTIAL_HOST_EXISTS_MESSAGE);
+  base::string16 message = l10n_util::GetStringFUTF16(
+      IDS_ASH_MULTI_DEVICE_SETUP_NEW_USER_POTENTIAL_HOST_EXISTS_MESSAGE,
+      ui::GetChromeOSDeviceName());
   ShowNotification(Status::kNewUserNotificationVisible, title, message);
 }
 
@@ -130,8 +132,9 @@ void MultiDeviceNotificationPresenter::OnConnectedHostSwitchedForExistingUser(
   base::string16 title = l10n_util::GetStringFUTF16(
       IDS_ASH_MULTI_DEVICE_SETUP_EXISTING_USER_HOST_SWITCHED_TITLE,
       base::ASCIIToUTF16(new_host_device_name));
-  base::string16 message = l10n_util::GetStringUTF16(
-      IDS_ASH_MULTI_DEVICE_SETUP_EXISTING_USER_HOST_SWITCHED_MESSAGE);
+  base::string16 message = l10n_util::GetStringFUTF16(
+      IDS_ASH_MULTI_DEVICE_SETUP_EXISTING_USER_HOST_SWITCHED_MESSAGE,
+      ui::GetChromeOSDeviceName());
   ShowNotification(Status::kExistingUserHostSwitchedNotificationVisible, title,
                    message);
 }
@@ -139,10 +142,11 @@ void MultiDeviceNotificationPresenter::OnConnectedHostSwitchedForExistingUser(
 void MultiDeviceNotificationPresenter::OnNewChromebookAddedForExistingUser(
     const std::string& new_host_device_name) {
   base::string16 title = l10n_util::GetStringFUTF16(
-      IDS_ASH_MULTI_DEVICE_SETUP_EXISTING_USER_NEW_CHROMEBOOK_ADDED_TITLE,
+      IDS_ASH_MULTI_DEVICE_SETUP_EXISTING_USER_NEW_CHROME_DEVICE_ADDED_TITLE,
       base::ASCIIToUTF16(new_host_device_name));
-  base::string16 message = l10n_util::GetStringUTF16(
-      IDS_ASH_MULTI_DEVICE_SETUP_EXISTING_USER_NEW_CHROMEBOOK_ADDED_MESSAGE);
+  base::string16 message = l10n_util::GetStringFUTF16(
+      IDS_ASH_MULTI_DEVICE_SETUP_EXISTING_USER_NEW_CHROME_DEVICE_ADDED_MESSAGE,
+      ui::GetChromeOSDeviceName());
   ShowNotification(Status::kExistingUserNewChromebookNotificationVisible, title,
                    message);
 }

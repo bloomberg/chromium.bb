@@ -80,7 +80,7 @@ class SVGUseElement final : public SVGGraphicsElement,
 
   void SvgAttributeChanged(const QualifiedName&) override;
 
-  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout) override;
 
   void ScheduleShadowTreeRecreation();
   void CancelShadowTreeRecreation();

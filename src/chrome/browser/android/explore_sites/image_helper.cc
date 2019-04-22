@@ -4,6 +4,7 @@
 
 #include "chrome/browser/android/explore_sites/image_helper.h"
 
+#include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/android/explore_sites/explore_sites_types.h"

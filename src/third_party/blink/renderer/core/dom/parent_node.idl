@@ -31,9 +31,8 @@
 // https://dom.spec.whatwg.org/#interface-parentnode
 
 [
-    LegacyTreatAsPartialInterface,
-    NoInterfaceObject // Always used on target of 'implements'
-] interface ParentNode {
+    LegacyTreatAsPartialInterface
+] interface mixin ParentNode {
     [Affects=Nothing, SameObject, PerWorldBindings] readonly attribute HTMLCollection children;
     [Affects=Nothing, PerWorldBindings] readonly attribute Element? firstElementChild;
     [Affects=Nothing, PerWorldBindings] readonly attribute Element? lastElementChild;

@@ -27,6 +27,7 @@ class WebContentsSetBackgroundColor
   ~WebContentsSetBackgroundColor() override;
 
  private:
+  friend class content::WebContentsUserData<WebContentsSetBackgroundColor>;
   WebContentsSetBackgroundColor(content::WebContents* web_contents,
                                 SkColor color);
 
@@ -37,6 +38,8 @@ class WebContentsSetBackgroundColor
                              content::RenderViewHost* new_host) override;
 
   SkColor color_;
+
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsSetBackgroundColor);
 };

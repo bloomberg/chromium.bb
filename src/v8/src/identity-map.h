@@ -17,7 +17,7 @@ class Heap;
 
 // Base class of identity maps contains shared code for all template
 // instantions.
-class IdentityMapBase {
+class V8_EXPORT_PRIVATE IdentityMapBase {
  public:
   bool empty() const { return size_ == 0; }
   int size() const { return size_; }
@@ -49,8 +49,8 @@ class IdentityMapBase {
 
   Address KeyAtIndex(int index) const;
 
-  V8_EXPORT_PRIVATE RawEntry EntryAtIndex(int index) const;
-  V8_EXPORT_PRIVATE int NextIndex(int index) const;
+  RawEntry EntryAtIndex(int index) const;
+  int NextIndex(int index) const;
 
   void EnableIteration();
   void DisableIteration();
@@ -94,51 +94,34 @@ class IdentityMap : public IdentityMapBase {
   explicit IdentityMap(Heap* heap,
                        AllocationPolicy allocator = AllocationPolicy())
       : IdentityMapBase(heap), allocator_(allocator) {}
-  ~IdentityMap() override { Clear(); };
+  ~IdentityMap() override { Clear(); }
 
   // Searches this map for the given key using the object's address
   // as the identity, returning:
   //    found => a pointer to the storage location for the value
   //    not found => a pointer to a new storage location for the value
   V* Get(Handle<Object> key) { return Get(*key); }
-  V* Get(Object* key) {
-    return reinterpret_cast<V*>(GetEntry(reinterpret_cast<Address>(key)));
-  }
-  V* Get(ObjectPtr key) { return reinterpret_cast<V*>(GetEntry(key.ptr())); }
+  V* Get(Object key) { return reinterpret_cast<V*>(GetEntry(key.ptr())); }
 
   // Searches this map for the given key using the object's address
   // as the identity, returning:
   //    found => a pointer to the storage location for the value
   //    not found => {nullptr}
   V* Find(Handle<Object> key) const { return Find(*key); }
-  V* Find(Object* key) const {
-    return reinterpret_cast<V*>(FindEntry(reinterpret_cast<Address>(key)));
-  }
-  V* Find(ObjectPtr key) const {
+  V* Find(Object key) const {
     return reinterpret_cast<V*>(FindEntry(key.ptr()));
   }
 
   // Set the value for the given key.
   void Set(Handle<Object> key, V v) { Set(*key, v); }
-  void Set(Object* key, V v) {
-    *(reinterpret_cast<V*>(GetEntry(reinterpret_cast<Address>(key)))) = v;
-  }
-  void Set(ObjectPtr key, V v) {
+  void Set(Object key, V v) {
     *(reinterpret_cast<V*>(GetEntry(key.ptr()))) = v;
   }
 
   bool Delete(Handle<Object> key, V* deleted_value) {
     return Delete(*key, deleted_value);
   }
-  bool Delete(Object* key, V* deleted_value) {
-    void* v = nullptr;
-    bool deleted_something = DeleteEntry(reinterpret_cast<Address>(key), &v);
-    if (deleted_value != nullptr && deleted_something) {
-      *deleted_value = *reinterpret_cast<V*>(&v);
-    }
-    return deleted_something;
-  }
-  bool Delete(ObjectPtr key, V* deleted_value) {
+  bool Delete(Object key, V* deleted_value) {
     void* v = nullptr;
     bool deleted_something = DeleteEntry(key.ptr(), &v);
     if (deleted_value != nullptr && deleted_something) {
@@ -159,9 +142,7 @@ class IdentityMap : public IdentityMapBase {
       return *this;
     }
 
-    Object* key() const {
-      return reinterpret_cast<Object*>(map_->KeyAtIndex(index_));
-    }
+    Object key() const { return Object(map_->KeyAtIndex(index_)); }
     V* entry() const {
       return reinterpret_cast<V*>(map_->EntryAtIndex(index_));
     }

@@ -19,10 +19,6 @@ cr.define('onboarding_welcome_module_metrics', function() {
       return testMetricsProxy.whenCalled('recordPageShown');
     });
 
-    teardown(function() {
-      nux.EmailMetricsProxyImpl.instance_ = null;
-    });
-
     test('do nothing, click skip', function() {
       testMetricsManager.recordNoThanks();
       return testMetricsProxy.whenCalled('recordDidNothingAndChoseSkip');

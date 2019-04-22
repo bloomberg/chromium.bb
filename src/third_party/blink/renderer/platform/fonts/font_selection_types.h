@@ -27,6 +27,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_SELECTION_TYPES_H_
 
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_table_deleted_value_type.h"
 #include "third_party/blink/renderer/platform/wtf/hash_traits.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
@@ -40,6 +41,8 @@ namespace blink {
 // means the smallest positive representable value is 0.25, the maximum
 // representable value is 8191.75, and the minimum representable value is -8192.
 class PLATFORM_EXPORT FontSelectionValue {
+  USING_FAST_MALLOC(FontSelectionValue);
+
  public:
   FontSelectionValue() = default;
 
@@ -183,6 +186,18 @@ static inline const FontSelectionValue& NormalSlopeValue() {
 static inline const FontSelectionValue& ItalicSlopeValue() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(const FontSelectionValue, italicValue, (20));
   return italicValue;
+}
+
+static inline const FontSelectionValue& MaxObliqueValue() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(const FontSelectionValue, maxObliqueValue,
+                                  (90));
+  return maxObliqueValue;
+}
+
+static inline const FontSelectionValue& MinObliqueValue() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(const FontSelectionValue, minObliqueValue,
+                                  (-90));
+  return minObliqueValue;
 }
 
 static inline const FontSelectionValue& BoldThreshold() {

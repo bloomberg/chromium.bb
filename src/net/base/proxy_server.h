@@ -71,6 +71,10 @@ class NET_EXPORT ProxyServer {
   // Returns true if this ProxyServer is a QUIC proxy.
   bool is_quic() const { return scheme_ == SCHEME_QUIC; }
 
+  // Returns true of the ProxyServer's scheme is HTTP compatible (uses HTTP
+  // headers, has a CONNECT method for establishing tunnels).
+  bool is_http_like() const { return is_http() || is_https() || is_quic(); }
+
   // Returns true if the proxy is trusted to push cross-origin resources from
   // HTTP hosts.
   bool is_trusted_proxy() const { return is_trusted_proxy_; }
@@ -149,15 +153,17 @@ class NET_EXPORT ProxyServer {
 
   bool operator==(const ProxyServer& other) const {
     return scheme_ == other.scheme_ &&
-           host_port_pair_.Equals(other.host_port_pair_);
+           host_port_pair_.Equals(other.host_port_pair_) &&
+           is_trusted_proxy_ == other.is_trusted_proxy_;
   }
 
   bool operator!=(const ProxyServer& other) const { return !(*this == other); }
 
   // Comparator function so this can be placed in a std::map.
   bool operator<(const ProxyServer& other) const {
-    return std::tie(scheme_, host_port_pair_) <
-           std::tie(other.scheme_, other.host_port_pair_);
+    return std::tie(scheme_, host_port_pair_, is_trusted_proxy_) <
+           std::tie(other.scheme_, other.host_port_pair_,
+                    other.is_trusted_proxy_);
   }
 
   // Returns the estimate of dynamically allocated memory in bytes.

@@ -4,8 +4,9 @@
 
 #include "chrome/browser/history/android/bookmark_model_sql_handler.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -93,11 +94,9 @@ BookmarkModel* BookmarkModelSQLHandler::Task::GetBookmarkModel() {
   return BookmarkModelFactory::GetForBrowserContext(profile);
 }
 
-BookmarkModelSQLHandler::BookmarkModelSQLHandler(
-    URLDatabase* url_database)
-    : SQLHandler(kInterestingColumns, arraysize(kInterestingColumns)),
-      url_database_(url_database) {
-}
+BookmarkModelSQLHandler::BookmarkModelSQLHandler(URLDatabase* url_database)
+    : SQLHandler(kInterestingColumns, base::size(kInterestingColumns)),
+      url_database_(url_database) {}
 
 BookmarkModelSQLHandler::~BookmarkModelSQLHandler() {
 }
@@ -114,14 +113,14 @@ bool BookmarkModelSQLHandler::Update(const HistoryAndBookmarkRow& row,
         if (row.is_value_set_explicitly(HistoryAndBookmarkRow::PARENT_ID)) {
           base::PostTaskWithTraits(
               FROM_HERE, {BrowserThread::UI},
-              base::Bind(&BookmarkModelSQLHandler::Task::AddBookmark,
-                         scoped_refptr<BookmarkModelSQLHandler::Task>(
-                             new BookmarkModelSQLHandler::Task()),
-                         i->url, url_row.title(), row.parent_id()));
+              base::BindOnce(&BookmarkModelSQLHandler::Task::AddBookmark,
+                             scoped_refptr<BookmarkModelSQLHandler::Task>(
+                                 new BookmarkModelSQLHandler::Task()),
+                             i->url, url_row.title(), row.parent_id()));
         } else {
           base::PostTaskWithTraits(
               FROM_HERE, {BrowserThread::UI},
-              base::Bind(
+              base::BindOnce(
                   &BookmarkModelSQLHandler::Task::AddBookmarkToMobileFolder,
                   scoped_refptr<BookmarkModelSQLHandler::Task>(
                       new BookmarkModelSQLHandler::Task()),
@@ -130,18 +129,18 @@ bool BookmarkModelSQLHandler::Update(const HistoryAndBookmarkRow& row,
       } else {
         base::PostTaskWithTraits(
             FROM_HERE, {BrowserThread::UI},
-            base::Bind(&BookmarkModelSQLHandler::Task::RemoveBookmark,
-                       scoped_refptr<BookmarkModelSQLHandler::Task>(
-                           new BookmarkModelSQLHandler::Task()),
-                       i->url));
+            base::BindOnce(&BookmarkModelSQLHandler::Task::RemoveBookmark,
+                           scoped_refptr<BookmarkModelSQLHandler::Task>(
+                               new BookmarkModelSQLHandler::Task()),
+                           i->url));
       }
     } else if (row.is_value_set_explicitly(HistoryAndBookmarkRow::TITLE)) {
       base::PostTaskWithTraits(
           FROM_HERE, {BrowserThread::UI},
-          base::Bind(&BookmarkModelSQLHandler::Task::UpdateBookmarkTitle,
-                     scoped_refptr<BookmarkModelSQLHandler::Task>(
-                         new BookmarkModelSQLHandler::Task()),
-                     i->url, row.title()));
+          base::BindOnce(&BookmarkModelSQLHandler::Task::UpdateBookmarkTitle,
+                         scoped_refptr<BookmarkModelSQLHandler::Task>(
+                             new BookmarkModelSQLHandler::Task()),
+                         i->url, row.title()));
     }
   }
   return true;
@@ -152,10 +151,10 @@ bool BookmarkModelSQLHandler::Delete(const TableIDRows& ids_set) {
        i != ids_set.end(); ++i) {
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
-        base::Bind(&BookmarkModelSQLHandler::Task::RemoveBookmark,
-                   scoped_refptr<BookmarkModelSQLHandler::Task>(
-                       new BookmarkModelSQLHandler::Task()),
-                   i->url));
+        base::BindOnce(&BookmarkModelSQLHandler::Task::RemoveBookmark,
+                       scoped_refptr<BookmarkModelSQLHandler::Task>(
+                           new BookmarkModelSQLHandler::Task()),
+                       i->url));
   }
   return true;
 }
@@ -168,17 +167,18 @@ bool BookmarkModelSQLHandler::Insert(HistoryAndBookmarkRow* row) {
   if (row->is_value_set_explicitly(HistoryAndBookmarkRow::PARENT_ID)) {
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
-        base::Bind(&BookmarkModelSQLHandler::Task::AddBookmark,
-                   scoped_refptr<BookmarkModelSQLHandler::Task>(
-                       new BookmarkModelSQLHandler::Task()),
-                   row->url(), row->title(), row->parent_id()));
+        base::BindOnce(&BookmarkModelSQLHandler::Task::AddBookmark,
+                       scoped_refptr<BookmarkModelSQLHandler::Task>(
+                           new BookmarkModelSQLHandler::Task()),
+                       row->url(), row->title(), row->parent_id()));
   } else {
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
-        base::Bind(&BookmarkModelSQLHandler::Task::AddBookmarkToMobileFolder,
-                   scoped_refptr<BookmarkModelSQLHandler::Task>(
-                       new BookmarkModelSQLHandler::Task()),
-                   row->url(), row->title()));
+        base::BindOnce(
+            &BookmarkModelSQLHandler::Task::AddBookmarkToMobileFolder,
+            scoped_refptr<BookmarkModelSQLHandler::Task>(
+                new BookmarkModelSQLHandler::Task()),
+            row->url(), row->title()));
   }
   return true;
 }

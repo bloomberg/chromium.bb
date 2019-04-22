@@ -319,9 +319,9 @@ class _Generator(object):
                      'static_cast<const base::DictionaryValue*>(&value);')
         if self._generate_error_messages:
           c.Append('std::set<std::string> keys;')
-      for prop in type_.properties.itervalues():
+      for prop in type_.properties.values():
         c.Concat(self._InitializePropertyToDefault(prop, 'out'))
-      for prop in type_.properties.itervalues():
+      for prop in type_.properties.values():
         if self._generate_error_messages:
           c.Append('keys.insert("%s");' % (prop.name))
         c.Concat(self._GenerateTypePopulateProperty(prop, 'dict', 'out'))
@@ -670,7 +670,7 @@ class _Generator(object):
           ' || %(var)s.GetSize() > %(total)d) {')
     (c.Concat(self._GenerateError(
         '"expected %%(total)d arguments, got " '
-        '+ base::IntToString(%%(var)s.GetSize())'))
+        '+ base::NumberToString(%%(var)s.GetSize())'))
       .Append('return nullptr;')
       .Eblock('}')
       .Substitute({

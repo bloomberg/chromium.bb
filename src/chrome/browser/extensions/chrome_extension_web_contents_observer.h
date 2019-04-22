@@ -65,6 +65,8 @@ class ChromeExtensionWebContentsObserver
   // Reloads an extension if it is on the terminated list.
   void ReloadIfTerminated(content::RenderFrameHost* render_frame_host);
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(ChromeExtensionWebContentsObserver);
 };
 

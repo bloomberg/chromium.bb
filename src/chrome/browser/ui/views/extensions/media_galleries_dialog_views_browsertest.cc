@@ -49,7 +49,7 @@ class MediaGalleriesInteractiveDialogTest : public DialogBrowserTest {
     const GURL about_blank(url::kAboutBlankURL);
     content::WebContents* content = browser()->OpenURL(content::OpenURLParams(
         about_blank, content::Referrer(), WindowOpenDisposition::CURRENT_TAB,
-        ui::PAGE_TRANSITION_TYPED, true));
+        ui::PAGE_TRANSITION_TYPED, false));
     EXPECT_CALL(controller_, WebContents())
         .WillRepeatedly(testing::Return(content));
     content::TestNavigationManager manager(content, about_blank);

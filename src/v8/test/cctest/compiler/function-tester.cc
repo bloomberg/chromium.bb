@@ -5,7 +5,7 @@
 #include "test/cctest/compiler/function-tester.h"
 
 #include "src/api-inl.h"
-#include "src/compiler.h"
+#include "src/assembler.h"
 #include "src/compiler/linkage.h"
 #include "src/compiler/pipeline.h"
 #include "src/execution.h"
@@ -131,7 +131,7 @@ Handle<Object> FunctionTester::false_value() {
 
 Handle<JSFunction> FunctionTester::ForMachineGraph(Graph* graph,
                                                    int param_count) {
-  JSFunction* p = nullptr;
+  JSFunction p;
   {  // because of the implicit handle scope of FunctionTester.
     FunctionTester f(graph, param_count);
     p = *f.function;
@@ -141,25 +141,8 @@ Handle<JSFunction> FunctionTester::ForMachineGraph(Graph* graph,
 }
 
 Handle<JSFunction> FunctionTester::Compile(Handle<JSFunction> function) {
-  Handle<SharedFunctionInfo> shared(function->shared(), isolate);
-  CHECK(function->is_compiled() ||
-        Compiler::Compile(function, Compiler::CLEAR_EXCEPTION));
-
   Zone zone(isolate->allocator(), ZONE_NAME);
-  OptimizedCompilationInfo info(&zone, isolate, shared, function);
-
-  if (flags_ & OptimizedCompilationInfo::kInliningEnabled) {
-    info.MarkAsInliningEnabled();
-  }
-
-  CHECK(info.shared_info()->HasBytecodeArray());
-  JSFunction::EnsureFeedbackVector(function);
-
-  Handle<Code> code =
-      Pipeline::GenerateCodeForTesting(&info, isolate).ToHandleChecked();
-  info.native_context()->AddOptimizedCode(*code);
-  function->set_code(*code);
-  return function;
+  return Optimize(function, &zone, isolate, flags_);
 }
 
 // Compile the given machine graph instead of the source of the function

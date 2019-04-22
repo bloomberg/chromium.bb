@@ -37,6 +37,7 @@ const char kCustomTraceConfigString[] =
     "}"
     "],"
     "\"excluded_categories\":[\"excluded\",\"exc_pattern*\"],"
+    "\"histogram_names\":[\"uma1\",\"uma2\"],"
     "\"included_categories\":["
     "\"included\","
     "\"inc_pattern*\","
@@ -79,6 +80,21 @@ void CheckDefaultTraceConfigBehavior(const TraceConfig& tc) {
   EXPECT_TRUE(tc.IsCategoryGroupEnabled("Category1,disabled-by-default-cc"));
   EXPECT_FALSE(tc.IsCategoryGroupEnabled(
       "disabled-by-default-cc,disabled-by-default-cc2"));
+}
+
+// Returns an string in which word1 and word2 are swapped. word1 and word2 must
+// be non-overlapping substrings of the input string and word1 must be before
+// word2.
+std::string SwapWords(const std::string& in_str,
+                      const std::string& word1,
+                      const std::string& word2) {
+  size_t pos1 = in_str.find(word1);
+  size_t len1 = word1.size();
+  size_t pos2 = in_str.find(word2);
+  size_t len2 = word2.size();
+  return in_str.substr(0, pos1) + word2 +
+         in_str.substr(pos1 + len1, pos2 - pos1 - len1) + word1 +
+         in_str.substr(pos2 + len2);
 }
 
 }  // namespace
@@ -326,7 +342,7 @@ TEST(TraceConfigTest, TraceConfigFromDict) {
   EXPECT_STREQ("", tc.ToCategoryFilterString().c_str());
 
   std::unique_ptr<Value> default_value(
-      JSONReader::Read(kDefaultTraceConfigString));
+      JSONReader::ReadDeprecated(kDefaultTraceConfigString));
   DCHECK(default_value);
   const DictionaryValue* default_dict = nullptr;
   bool is_dict = default_value->GetAsDictionary(&default_dict);
@@ -339,13 +355,16 @@ TEST(TraceConfigTest, TraceConfigFromDict) {
   EXPECT_STREQ("", default_tc.ToCategoryFilterString().c_str());
 
   std::unique_ptr<Value> custom_value(
-      JSONReader::Read(kCustomTraceConfigString));
+      JSONReader::ReadDeprecated(kCustomTraceConfigString));
   DCHECK(custom_value);
   const DictionaryValue* custom_dict = nullptr;
   is_dict = custom_value->GetAsDictionary(&custom_dict);
   DCHECK(is_dict);
   TraceConfig custom_tc(*custom_dict);
-  EXPECT_STREQ(kCustomTraceConfigString, custom_tc.ToString().c_str());
+  std::string custom_tc_str = custom_tc.ToString();
+  EXPECT_TRUE(custom_tc_str == kCustomTraceConfigString ||
+              custom_tc_str ==
+                  SwapWords(kCustomTraceConfigString, "uma1", "uma2"));
   EXPECT_EQ(RECORD_CONTINUOUSLY, custom_tc.GetTraceRecordMode());
   EXPECT_TRUE(custom_tc.IsSystraceEnabled());
   EXPECT_TRUE(custom_tc.IsArgumentFilterEnabled());

@@ -135,6 +135,7 @@ SSL_HANDSHAKE::SSL_HANDSHAKE(SSL *ssl_arg)
       cert_request(false),
       certificate_status_expected(false),
       ocsp_stapling_requested(false),
+      delegated_credential_requested(false),
       should_ack_sni(false),
       in_false_start(false),
       in_early_data(false),
@@ -544,7 +545,7 @@ int ssl_run_handshake(SSL_HANDSHAKE *hs, bool *out_early_return) {
       case ssl_hs_read_server_hello:
       case ssl_hs_read_message:
       case ssl_hs_read_change_cipher_spec: {
-        if (ssl->ctx->quic_method) {
+        if (ssl->quic_method) {
           hs->wait = ssl_hs_ok;
           // The change cipher spec is omitted in QUIC.
           if (hs->wait != ssl_hs_read_change_cipher_spec) {

@@ -86,8 +86,8 @@ bool ObjectWatcher::StartWatchingInternal(HANDLE object, Delegate* delegate,
 
   // DoneWaiting can be synchronously called from RegisterWaitForSingleObject,
   // so set up all state now.
-  callback_ =
-      Bind(&ObjectWatcher::Signal, weak_factory_.GetWeakPtr(), delegate);
+  callback_ = BindRepeating(&ObjectWatcher::Signal, weak_factory_.GetWeakPtr(),
+                            delegate);
   object_ = object;
 
   if (!RegisterWaitForSingleObject(&wait_object_, object, DoneWaiting,

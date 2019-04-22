@@ -40,7 +40,7 @@ class JSPluralRules : public JSObject {
   V8_WARN_UNUSED_RESULT static MaybeHandle<String> ResolvePlural(
       Isolate* isolate, Handle<JSPluralRules> plural_rules, double number);
 
-  static std::set<std::string> GetAvailableLocales();
+  V8_EXPORT_PRIVATE static const std::set<std::string>& GetAvailableLocales();
 
   // [[Type]] is one of the values "cardinal" or "ordinal",
   // identifying the plural rules used.
@@ -80,13 +80,12 @@ class JSPluralRules : public JSObject {
   DEFINE_FIELD_OFFSET_CONSTANTS(JSObject::kHeaderSize, JS_PLURAL_RULES_FIELDS)
 #undef JS_PLURAL_RULES_FIELDS
 
-  DECL_ACCESSORS2(locale, String)
+  DECL_ACCESSORS(locale, String)
   DECL_INT_ACCESSORS(flags)
   DECL_ACCESSORS(icu_plural_rules, Managed<icu::PluralRules>)
   DECL_ACCESSORS(icu_decimal_format, Managed<icu::DecimalFormat>)
 
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(JSPluralRules);
+  OBJECT_CONSTRUCTORS(JSPluralRules, JSObject);
 };
 
 }  // namespace internal

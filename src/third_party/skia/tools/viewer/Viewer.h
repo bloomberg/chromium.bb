@@ -8,19 +8,24 @@
 #ifndef Viewer_DEFINED
 #define Viewer_DEFINED
 
-#include "sk_app/Application.h"
-#include "sk_app/CommandSet.h"
-#include "sk_app/Window.h"
-#include "gm.h"
+#include "AnimTimer.h"
 #include "ImGuiLayer.h"
-#include "SkAnimTimer.h"
+#include "MemoryCache.h"
 #include "SkExecutor.h"
+#include "SkFont.h"
 #include "SkScan.h"
+#include "ir/SkSLProgram.h"
+#include "SkSLString.h"
 #include "Slide.h"
 #include "StatsLayer.h"
 #include "TouchGesture.h"
+#include "gm.h"
+#include "sk_app/Application.h"
+#include "sk_app/CommandSet.h"
+#include "sk_app/Window.h"
 
 class SkCanvas;
+class SkData;
 
 class Viewer : public sk_app::Application, sk_app::Window::Layer {
 public:
@@ -30,7 +35,7 @@ public:
     void onIdle() override;
 
     void onBackendCreated() override;
-    void onPaint(SkCanvas* canvas) override;
+    void onPaint(SkSurface*) override;
     void onResize(int width, int height) override;
     bool onTouch(intptr_t owner, sk_app::Window::InputState state, float x, float y) override;
     bool onMouse(int x, int y, sk_app::Window::InputState state, uint32_t modifiers) override;
@@ -38,8 +43,21 @@ public:
     bool onKey(sk_app::Window::Key key, sk_app::Window::InputState state, uint32_t modifiers) override;
     bool onChar(SkUnichar c, uint32_t modifiers) override;
 
-    struct SkPaintFields {
+    struct SkFontFields {
         bool fTypeface = false;
+        bool fSize = false;
+        SkScalar fSizeRange[2] = { 0, 20 };
+        bool fScaleX = false;
+        bool fSkewX = false;
+        bool fHinting = false;
+        bool fEdging = false;
+        bool fSubpixel = false;
+        bool fForceAutoHinting = false;
+        bool fEmbeddedBitmaps = false;
+        bool fLinearMetrics = false;
+        bool fEmbolden = false;
+    };
+    struct SkPaintFields {
         bool fPathEffect = false;
         bool fShader = false;
         bool fMaskFilter = false;
@@ -47,35 +65,25 @@ public:
         bool fDrawLooper = false;
         bool fImageFilter = false;
 
-        bool fTextSize = false;
-        SkScalar fTextSizeRange[2] = { 0, 20 };
-        bool fTextScaleX = false;
-        bool fTextSkewX = false;
         bool fColor = false;
         bool fWidth = false;
         bool fMiterLimit = false;
         bool fBlendMode = false;
 
-        uint32_t fFlags = 0;
+        bool fAntiAlias = false;
+        bool fDither = false;
         enum class AntiAliasState {
             Alias,
             Normal,
             AnalyticAAEnabled,
             AnalyticAAForced,
-            DeltaAAEnabled,
-            DeltaAAForced,
-        } fAntiAlias = AntiAliasState::Alias;
+        } fAntiAliasState = AntiAliasState::Alias;
         const bool fOriginalSkUseAnalyticAA = gSkUseAnalyticAA;
         const bool fOriginalSkForceAnalyticAA = gSkForceAnalyticAA;
-        const bool fOriginalSkUseDeltaAA = gSkUseDeltaAA;
-        const bool fOriginalSkForceDeltaAA = gSkForceDeltaAA;
 
-        bool fTextAlign = false;
         bool fCapType = false;
         bool fJoinType = false;
         bool fStyle = false;
-        bool fTextEncoding = false;
-        bool fHinting = false;
         bool fFilterQuality = false;
     };
 private:
@@ -96,7 +104,7 @@ private:
 
     void updateUIState();
 
-    void drawSlide(SkCanvas* canvs);
+    void drawSlide(SkSurface* surface);
     void drawImGui();
 
     void changeZoomLevel(float delta);
@@ -113,13 +121,14 @@ private:
     StatsLayer::Timer      fFlushTimer;
     StatsLayer::Timer      fAnimateTimer;
 
-    SkAnimTimer            fAnimTimer;
+    AnimTimer              fAnimTimer;
     SkTArray<sk_sp<Slide>> fSlides;
     int                    fCurrentSlide;
 
     bool                   fRefresh; // whether to continuously refresh for measuring render time
 
     bool                   fSaveToSKP;
+    bool                   fShowSlideDimensions;
 
     ImGuiLayer             fImGuiLayer;
     SkPaint                fImGuiGamutPaint;
@@ -138,7 +147,7 @@ private:
     // Color properties for slide rendering
     ColorMode              fColorMode;
     SkColorSpacePrimaries  fColorSpacePrimaries;
-    SkColorSpaceTransferFn fColorSpaceTransferFn;
+    skcms_TransferFunction fColorSpaceTransferFn;
 
     // transform data
     SkScalar               fZoomLevel;
@@ -175,8 +184,22 @@ private:
 
     SkPaint fPaint;
     SkPaintFields fPaintOverrides;
+    SkFont fFont;
+    SkFontFields fFontOverrides;
     bool fPixelGeometryOverrides = false;
-};
 
+    struct CachedGLSL {
+        bool                fHovered = false;
+
+        sk_sp<const SkData> fKey;
+        SkString            fKeyString;
+
+        SkSL::Program::Inputs fInputs;
+        SkSL::String fShader[kGrShaderTypeCount];
+    };
+
+    sk_gpu_test::MemoryCache fPersistentCache;
+    SkTArray<CachedGLSL>     fCachedGLSL;
+};
 
 #endif

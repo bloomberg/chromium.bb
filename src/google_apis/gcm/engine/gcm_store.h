@@ -16,7 +16,6 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "google_apis/gcm/base/gcm_export.h"
@@ -36,11 +35,11 @@ class GCM_EXPORT GCMStore {
   };
 
   // Map of message id to message data for outgoing messages.
-  typedef std::map<std::string, linked_ptr<google::protobuf::MessageLite> >
-      OutgoingMessageMap;
+  using OutgoingMessageMap =
+      std::map<std::string, std::unique_ptr<google::protobuf::MessageLite>>;
 
   // List of account mappings.
-  typedef std::vector<AccountMapping> AccountMappings;
+  using AccountMappings = std::vector<AccountMapping>;
 
   // Container for Load(..) results.
   struct GCM_EXPORT LoadResult {
@@ -66,9 +65,9 @@ class GCM_EXPORT GCMStore {
     std::map<std::string, std::string> instance_id_data;
   };
 
-  typedef std::vector<std::string> PersistentIdList;
-  typedef base::Callback<void(std::unique_ptr<LoadResult> result)> LoadCallback;
-  typedef base::Callback<void(bool success)> UpdateCallback;
+  using PersistentIdList = std::vector<std::string>;
+  using LoadCallback = base::Callback<void(std::unique_ptr<LoadResult> result)>;
+  using UpdateCallback = base::Callback<void(bool success)>;
 
   GCMStore();
   virtual ~GCMStore();

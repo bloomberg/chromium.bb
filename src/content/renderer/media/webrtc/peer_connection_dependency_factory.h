@@ -17,8 +17,8 @@
 #include "content/renderer/media/webrtc/stun_field_trial.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
 #include "ipc/ipc_platform_file.h"
-#include "third_party/webrtc/api/peerconnectioninterface.h"
-#include "third_party/webrtc/p2p/stunprober/stunprober.h"
+#include "third_party/webrtc/api/peer_connection_interface.h"
+#include "third_party/webrtc/p2p/stunprober/stun_prober.h"
 
 namespace base {
 class WaitableEvent;
@@ -86,6 +86,10 @@ class CONTENT_EXPORT PeerConnectionDependencyFactory
   // controls according to the permissions granted on the page.
   virtual std::unique_ptr<P2PPortAllocator> CreatePortAllocator(
       blink::WebLocalFrame* web_frame);
+
+  // Creates an AsyncResolverFactory that uses the networking Mojo service.
+  virtual std::unique_ptr<webrtc::AsyncResolverFactory>
+  CreateAsyncResolverFactory();
 
   // Creates a libjingle representation of a Session description. Used by a
   // RTCPeerConnectionHandler instance.

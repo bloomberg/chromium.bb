@@ -9,12 +9,8 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
-
-namespace base {
-template <typename T>
-struct DefaultSingletonTraits;
-}
 
 namespace gcm {
 class GCMProfileService;
@@ -42,7 +38,7 @@ class IOSChromeGCMProfileServiceFactory
   static std::string GetProductCategoryForSubtypes();
 
  private:
-  friend struct base::DefaultSingletonTraits<IOSChromeGCMProfileServiceFactory>;
+  friend class base::NoDestructor<IOSChromeGCMProfileServiceFactory>;
 
   IOSChromeGCMProfileServiceFactory();
   ~IOSChromeGCMProfileServiceFactory() override;

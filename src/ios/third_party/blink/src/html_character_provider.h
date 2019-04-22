@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include "base/macros.h"
 #include "ios/third_party/blink/src/html_tokenizer_adapter.h"
 
 namespace WebCore {
@@ -16,8 +17,6 @@ const LChar kEndOfFileMarker = 0;
 // CharacterProvider provides input characters to WebCore::HTMLTokenizer.
 // It replaces WebCore::SegmentedString (which sits ontop of WTF::String).
 class CharacterProvider {
-    WTF_MAKE_NONCOPYABLE(CharacterProvider);
-
 public:
     CharacterProvider()
         : _totalBytes(0)
@@ -161,6 +160,8 @@ private:
     const LChar* _singleBytePtr;
     const UChar* _doubleBytePtr;
     bool _littleEndian;
+
+    DISALLOW_COPY_AND_ASSIGN(CharacterProvider);
 };
 
 }

@@ -4,8 +4,12 @@
 
 module device.mojom;
 
-struct SerialDeviceInfo {
-  string path;
+import "mojo/public/mojom/base/file_path.mojom";
+import "mojo/public/mojom/base/unguessable_token.mojom";
+
+struct SerialPortInfo {
+  mojo_base.mojom.UnguessableToken token;
+  mojo_base.mojom.FilePath path;
   uint16 vendor_id;
   bool has_vendor_id = false;
   uint16 product_id;
@@ -77,7 +81,7 @@ struct SerialHostControlSignals {
   bool has_rts = false;
 };
 
-struct SerialDeviceControlSignals {
+struct SerialPortControlSignals {
   bool dcd;
   bool cts;
   bool ri;
@@ -85,40 +89,40 @@ struct SerialDeviceControlSignals {
 };
 
 // Discovers and enumerates serial devices available to the host.
-interface SerialDeviceEnumerator {
-  GetDevices() => (array<SerialDeviceInfo> devices);
+interface SerialPortManager {
+  GetDevices() => (array<SerialPortInfo> devices);
+
+  // Creates a SerialPort instance attached to the port represented by |token|.
+  // When the pipe passed in |port_request| is closed the optional pipe passed
+  // in |watcher| will also be closed.
+  GetPort(mojo_base.mojom.UnguessableToken token,
+          SerialPort& port_request,
+          SerialPortConnectionWatcher? watcher);
 };
 
 // Performs asynchronous I/O on serial devices.
-interface SerialIoHandler {
+interface SerialPort {
   // Initiates an Open of the device then returns result.
-  Open(string port, SerialConnectionOptions options) => (bool success);
+  Open(SerialConnectionOptions options,
+       handle<data_pipe_consumer> in_stream,
+       handle<data_pipe_producer> out_stream,
+       associated SerialPortClient client) => (bool success);
 
-  // Performs a Read operation then returns retrieved data and the
-  // result. Note that the Read may succeed partially, means that even if
-  // |error| indicates an error other than NONE, |data| may still contain
-  // some retrieved data with the max size |bytes|. Behavior is undefined if
-  // this is called while a Read is already pending.
-  Read(uint32 bytes) => (array<uint8> data, SerialReceiveError error);
+  // Try to clear existing send error and reconnect the data pipe for send.
+  // This is supposed to be called after SerialPortClient#OnSendError is
+  // notified.
+  ClearSendError(handle<data_pipe_consumer> consumer);
 
-  // Performs a Write operation then returns written data and the result.
-  // Note that the Write may succeed partially, means that even if |error|
-  // indicates an error other than NONE, |bytes_written| bytes have already been
-  // written although it may be <= size of |data|. Behavior is undefined if this
-  // is called while a Write is already pending.
-  Write(array<uint8> data) => (uint32 bytes_written, SerialSendError error);
-
-  // Attempts to cancel a pending read operation.
-  CancelRead(SerialReceiveError reason);
-
-  // Attempts to cancel a pending write operation.
-  CancelWrite(SerialSendError reason);
+  // Try to clear existing read error and reconnect the data pipe for read.
+  // This is supposed to be called after SerialPortClient#OnReadError is
+  // notified.
+  ClearReadError(handle<data_pipe_producer> producer);
 
   // Flushes input and output buffers.
   Flush() => (bool success);
 
   // Reads current control signals (DCD, CTS, etc.).
-  GetControlSignals() => (SerialDeviceControlSignals signals);
+  GetControlSignals() => (SerialPortControlSignals signals);
 
   // Sets one or more control signals (DTR and/or RTS) and returns result.
   SetControlSignals(SerialHostControlSignals signals) => (bool success);
@@ -136,4 +140,12 @@ interface SerialIoHandler {
   // Terminates the BREAK signal. Places the transmission line in a nonbreak
   // state.
   ClearBreak() => (bool success);
+};
+
+interface SerialPortClient {
+  OnReadError(SerialReceiveError error);
+  OnSendError(SerialSendError error);
+};
+
+interface SerialPortConnectionWatcher {
 };

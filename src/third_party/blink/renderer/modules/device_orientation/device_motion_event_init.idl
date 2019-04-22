@@ -5,8 +5,8 @@
 // https://w3c.github.io/deviceorientation/spec-source-orientation.html#devicemotion
 
 dictionary DeviceMotionEventInit : EventInit {
-  DeviceAccelerationInit acceleration;
-  DeviceAccelerationInit accelerationIncludingGravity;
-  DeviceRotationRateInit rotationRate;
+  DeviceMotionEventAccelerationInit acceleration;
+  DeviceMotionEventAccelerationInit accelerationIncludingGravity;
+  DeviceMotionEventRotationRateInit rotationRate;
   double interval = 0;
 };

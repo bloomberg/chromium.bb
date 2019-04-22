@@ -12,6 +12,13 @@ Polymer({
     indicatorModel: Object,
   },
 
+  /** @override */
+  ready: function() {
+    this.$.appChooser.appProxy = nux.GoogleAppProxyImpl.getInstance();
+    this.$.appChooser.metricsManager = new nux.ModuleMetricsManager(
+        nux.GoogleAppsMetricsProxyImpl.getInstance());
+  },
+
   onRouteEnter: function() {
     this.$.appChooser.onRouteEnter();
   },

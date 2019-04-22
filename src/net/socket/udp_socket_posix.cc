@@ -11,6 +11,7 @@
 #include <netinet/in.h>
 #include <sys/ioctl.h>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/containers/stack_container.h"
@@ -441,7 +442,7 @@ int UDPSocketPosix::SendToOrWrite(IOBuffer* buf,
   if (!base::MessageLoopCurrentForIO::Get()->WatchFileDescriptor(
           socket_, true, base::MessagePumpForIO::WATCH_WRITE,
           &write_socket_watcher_, &write_watcher_)) {
-    DVLOG(1) << "WatchFileDescriptor failed on write, errno " << errno;
+    DVPLOG(1) << "WatchFileDescriptor failed on write";
     int result = MapSystemError(errno);
     LogWrite(result, NULL, NULL);
     return result;
@@ -461,7 +462,10 @@ int UDPSocketPosix::Connect(const IPEndPoint& address) {
   DCHECK_NE(socket_, kInvalidSocket);
   net_log_.BeginEvent(NetLogEventType::UDP_CONNECT,
                       CreateNetLogUDPConnectCallback(&address, bound_network_));
-  int rv = InternalConnect(address);
+  int rv = SetMulticastOptions();
+  if (rv != OK)
+    return rv;
+  rv = InternalConnect(address);
   net_log_.EndEventWithNetErrorCode(NetLogEventType::UDP_CONNECT, rv);
   is_connected_ = (rv == OK);
   if (rv != OK)
@@ -1185,17 +1189,12 @@ SendResult UDPSocketPosixSender::InternalSendmmsgBuffers(
     DatagramBuffers buffers) const {
   base::StackVector<struct iovec, kWriteAsyncMaxBuffersThreshold + 1> msg_iov;
   base::StackVector<struct mmsghdr, kWriteAsyncMaxBuffersThreshold + 1> msgvec;
-  int i = 0;
-  for (auto& buffer : buffers) {
-    msg_iov[i].iov_base = const_cast<char*>(buffer->data());
-    msg_iov[i].iov_len = buffer->length();
-    i++;
-  }
-  for (size_t j = 0; j < buffers.size(); j++) {
-    std::memset(&msgvec[j], 0, sizeof(msgvec[j]));
-    msgvec[j].msg_hdr.msg_iov = &msg_iov[j];
-    msgvec[j].msg_hdr.msg_iovlen = 1;
-  }
+  msg_iov->reserve(buffers.size());
+  for (auto& buffer : buffers)
+    msg_iov->push_back({const_cast<char*>(buffer->data()), buffer->length()});
+  msgvec->reserve(buffers.size());
+  for (size_t j = 0; j < buffers.size(); j++)
+    msgvec->push_back({{nullptr, 0, &msg_iov[j], 1, nullptr, 0, 0}, 0});
   int result = HANDLE_EINTR(Sendmmsg(fd, &msgvec[0], buffers.size(), 0));
   SendResult send_result(0, 0, std::move(buffers));
   if (result < 0) {
@@ -1415,7 +1414,7 @@ void UDPSocketPosix::DidSendBuffers(SendResult send_result) {
   if (last_async_result_ == ERR_IO_PENDING) {
     DVLOG(2) << __func__ << " WatchFileDescriptor start";
     if (!WatchFileDescriptor()) {
-      DVLOG(1) << "WatchFileDescriptor failed on write, errno " << errno;
+      DVPLOG(1) << "WatchFileDescriptor failed on write";
       last_async_result_ = MapSystemError(errno);
       LogWrite(last_async_result_, NULL, NULL);
     } else {

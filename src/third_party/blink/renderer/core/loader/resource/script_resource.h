@@ -42,6 +42,7 @@ namespace blink {
 class FetchParameters;
 class KURL;
 class ResourceFetcher;
+class ResponseBodyLoaderClient;
 
 // ScriptResource is a resource representing a JavaScript script. It is only
 // used for "classic" scripts, i.e. not modules.
@@ -54,6 +55,8 @@ class ResourceFetcher;
 // See also:
 // https://docs.google.com/document/d/143GOPl_XVgLPFfO-31b_MdBcnjklLEX2OIg_6eN6fQ4
 class CORE_EXPORT ScriptResource final : public TextResource {
+  USING_PRE_FINALIZER(ScriptResource, Prefinalize);
+
  public:
   // For scripts fetched with kAllowStreaming, the ScriptResource expects users
   // to call StartStreaming to start streaming the loaded data, and
@@ -90,19 +93,18 @@ class CORE_EXPORT ScriptResource final : public TextResource {
                  const TextResourceDecoderOptions&);
   ~ScriptResource() override;
 
+  void ResponseBodyReceived(
+      ResponseBodyLoaderDrainableInterface& body_loader,
+      scoped_refptr<base::SingleThreadTaskRunner> loader_task_runner) override;
+
   void Trace(blink::Visitor*) override;
 
   void OnMemoryDump(WebMemoryDumpLevelOfDetail,
                     WebProcessMemoryDump*) const override;
 
-  void SetSerializedCachedMetadata(const char*, size_t) override;
+  void SetSerializedCachedMetadata(const uint8_t*, size_t) override;
 
-  // Returns true if streaming was successfully started (or if an active
-  // streamer is already running)
-  //
-  // TODO(leszeks): This value is only used for work stealing, so make this
-  // function return void if work stealing is removed.
-  bool StartStreaming(
+  void StartStreaming(
       scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner);
 
   // State that a client of the script resource will no longer try to start
@@ -148,6 +150,7 @@ class CORE_EXPORT ScriptResource final : public TextResource {
 
   // Used in DCHECKs
   bool HasStreamer() { return !!streamer_; }
+  bool HasRunningStreamer() { return streamer_ && !streamer_->IsFinished(); }
   bool HasFinishedStreamer() { return streamer_ && streamer_->IsFinished(); }
 
   // Visible for tests.
@@ -158,8 +161,6 @@ class CORE_EXPORT ScriptResource final : public TextResource {
       std::unique_ptr<CachedMetadataSender> send_callback) override;
 
   void DestroyDecodedDataForFailedRevalidation() override;
-
-  void NotifyDataReceived(const char* data, size_t size) override;
 
   // ScriptResources are considered finished when either:
   //   1. Loading + streaming completes, or
@@ -197,6 +198,8 @@ class CORE_EXPORT ScriptResource final : public TextResource {
     }
   };
 
+  void Prefinalize();
+
   bool CanUseCacheValidator() const override;
 
   void AdvanceStreamingState(StreamingState new_state);
@@ -204,7 +207,15 @@ class CORE_EXPORT ScriptResource final : public TextResource {
   // Check that invariants for the state hold.
   void CheckStreamingState() const;
 
+  void OnDataPipeReadable(MojoResult result,
+                          const mojo::HandleSignalsState& state);
+
   ParkableString source_text_;
+
+  mojo::ScopedDataPipeConsumerHandle data_pipe_;
+  std::unique_ptr<mojo::SimpleWatcher> watcher_;
+  Member<ResponseBodyLoaderClient> response_body_loader_client_;
+
   Member<ScriptStreamer> streamer_;
   ScriptStreamer::NotStreamingReason not_streaming_reason_ =
       ScriptStreamer::kDidntTryToStartStreaming;

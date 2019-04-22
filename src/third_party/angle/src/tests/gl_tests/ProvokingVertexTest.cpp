@@ -40,7 +40,7 @@ class ProvokingVertexTest : public ANGLETest
     {
         ANGLETest::SetUp();
 
-        const std::string &vertexShader =
+        constexpr char kVS[] =
             "#version 300 es\n"
             "in int intAttrib;\n"
             "in vec2 position;\n"
@@ -50,7 +50,7 @@ class ProvokingVertexTest : public ANGLETest
             "  attrib = intAttrib;\n"
             "}";
 
-        const std::string &fragmentShader =
+        constexpr char kFS[] =
             "#version 300 es\n"
             "flat in int attrib;\n"
             "out int fragColor;\n"
@@ -60,8 +60,7 @@ class ProvokingVertexTest : public ANGLETest
 
         std::vector<std::string> tfVaryings;
         tfVaryings.push_back("attrib");
-        mProgram = CompileProgramWithTransformFeedback(vertexShader, fragmentShader, tfVaryings,
-                                                       GL_SEPARATE_ATTRIBS);
+        mProgram = CompileProgramWithTransformFeedback(kVS, kFS, tfVaryings, GL_SEPARATE_ATTRIBS);
         ASSERT_NE(0u, mProgram);
 
         glGenTextures(1, &mTexture);
@@ -298,6 +297,48 @@ TEST_P(ProvokingVertexTest, FlatTriStripPrimitiveRestart)
         unsigned int provokingVertexIndex = triIndex + 2;
 
         EXPECT_EQ(vertexData[provokingVertexIndex], pixelBuffer[pixelIndex]);
+    }
+}
+
+// Test with FRONT_CONVENTION if we have ANGLE_provoking_vertex.
+TEST_P(ProvokingVertexTest, ANGLEProvokingVertex)
+{
+    int32_t vertexData[] = {1, 2, 3};
+    float positionData[] = {-1.0f, -1.0f, 3.0f, -1.0f, -1.0f, 3.0f};
+
+    glEnableVertexAttribArray(mIntAttribLocation);
+    glVertexAttribIPointer(mIntAttribLocation, 1, GL_INT, 0, vertexData);
+
+    GLint positionLocation = glGetAttribLocation(mProgram, "position");
+    glEnableVertexAttribArray(positionLocation);
+    glVertexAttribPointer(positionLocation, 2, GL_FLOAT, GL_FALSE, 0, positionData);
+
+    glUseProgram(mProgram);
+    ASSERT_GL_NO_ERROR();
+
+    const auto &fnExpectId = [&](int id) {
+        const int32_t zero[4] = {};
+        glClearBufferiv(GL_COLOR, 0, zero);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+
+        int32_t pixelValue = 0;
+        glReadPixels(0, 0, 1, 1, GL_RED_INTEGER, GL_INT, &pixelValue);
+
+        ASSERT_GL_NO_ERROR();
+        EXPECT_EQ(vertexData[id], pixelValue);
+    };
+
+    fnExpectId(2);
+
+    const bool hasExt = extensionEnabled("GL_ANGLE_provoking_vertex");
+    if (IsD3D11())
+    {
+        EXPECT_TRUE(hasExt);
+    }
+    if (hasExt)
+    {
+        glProvokingVertexANGLE(GL_FIRST_VERTEX_CONVENTION);
+        fnExpectId(0);
     }
 }
 

@@ -38,16 +38,16 @@ class SlaveStatus(object):
   ACCEPTED_STATUSES = (constants.BUILDER_STATUS_PASSED,
                        constants.BUILDER_STATUS_SKIPPED,)
 
-  def __init__(self, start_time, builders_array, master_build_id, db,
-               config=None, metadata=None, buildbucket_client=None,
+  def __init__(self, start_time, builders_array, master_build_identifier,
+               buildstore, config=None, metadata=None, buildbucket_client=None,
                version=None, pool=None, dry_run=True):
     """Initializes a SlaveStatus instance.
 
     Args:
       start_time: datetime.datetime object of when the build started.
       builders_array: List of the expected slave builds.
-      master_build_id: The build_id of the master build.
-      db: An instance of cidb.CIDBConnection to fetch data from CIDB.
+      master_build_identifier: The BuildIdentifier instance of the master build.
+      buildstore: BuildStore instance to make DB calls.
       config: Instance of config_lib.BuildConfig. Config dict of this build.
       metadata: Instance of metadata_lib.CBuildbotMetadata. Metadata of this
                 build.
@@ -60,8 +60,10 @@ class SlaveStatus(object):
     """
     self.start_time = start_time
     self.all_builders = builders_array
-    self.master_build_id = master_build_id
-    self.db = db
+    self.master_build_identifier = master_build_identifier
+    self.master_build_id = master_build_identifier.cidb_id
+    self.buildstore = buildstore
+    self.db = buildstore.GetCIDBHandle()
     self.config = config
     self.metadata = metadata
     self.buildbucket_client = buildbucket_client
@@ -184,7 +186,8 @@ class SlaveStatus(object):
 
     self.all_cidb_status_dict = (
         builder_status_lib.SlaveBuilderStatus.GetAllSlaveCIDBStatusInfo(
-            self.db, self.master_build_id, self.all_buildbucket_info_dict))
+            self.buildstore, self.master_build_identifier,
+            self.all_buildbucket_info_dict))
     self.new_cidb_status_dict = self._GetNewSlaveCIDBStatusInfo(
         self.all_cidb_status_dict, self.completed_builds)
 
@@ -300,10 +303,10 @@ class SlaveStatus(object):
           logging.info('Not retriable build %s started already.', build)
           continue
 
-        assert self.db is not None
+        assert self.buildstore.AreClientsReady()
 
-        build_stages = self.db.GetBuildStages(
-            self.new_cidb_status_dict[build].build_id)
+        build_stages = self.buildstore.GetBuildsStages(buildbucket_ids=[
+            self.new_cidb_status_dict[build].buildbucket_id])
         accepted_stages = {stage['name'] for stage in build_stages
                            if stage['status'] in self.ACCEPTED_STATUSES}
 
@@ -411,7 +414,8 @@ class SlaveStatus(object):
     )
     all_experimental_cidb_status_dict = (
         builder_status_lib.SlaveBuilderStatus.GetAllSlaveCIDBStatusInfo(
-            self.db, self.master_build_id, all_experimental_bb_info_dict)
+            self.buildstore, self.master_build_identifier,
+            all_experimental_bb_info_dict)
     )
 
     completed_experimental_builds = set(
@@ -612,11 +616,12 @@ class SlaveStatus(object):
 
     if self.pool is not None:
       triage_relevant_changes = relevant_changes.TriageRelevantChanges(
-          self.master_build_id, self.db, self._GetExpectedBuilders(),
-          self.config, self.metadata, self.version, self.pool.build_root,
-          self.pool.applied, self.all_buildbucket_info_dict,
-          self.all_cidb_status_dict, self.completed_builds, self.dependency_map,
-          self.buildbucket_client, dry_run=self.dry_run)
+          self.master_build_identifier, self.buildstore,
+          self._GetExpectedBuilders(), self.config, self.metadata, self.version,
+          self.pool.build_root, self.pool.applied,
+          self.all_buildbucket_info_dict, self.all_cidb_status_dict,
+          self.completed_builds, self.dependency_map, self.buildbucket_client,
+          dry_run=self.dry_run)
 
       should_self_destruct, should_self_destruct_with_success = (
           triage_relevant_changes.ShouldSelfDestruct())
@@ -640,13 +645,11 @@ class SlaveStatus(object):
 
         # For every uncompleted build, the master build will insert an
         # ignored_reason message into the buildMessageTable.
-        for build in uncompleted_important_builds:
-          if build in self.all_cidb_status_dict:
-            self.db.InsertBuildMessage(
-                self.master_build_id,
-                message_type=constants.MESSAGE_TYPE_IGNORED_REASON,
-                message_subtype=constants.MESSAGE_SUBTYPE_SELF_DESTRUCTION,
-                message_value=str(self.all_cidb_status_dict[build].build_id))
+        killed_child_builds = [self.all_cidb_status_dict[build].buildbucket_id
+                               for build in uncompleted_important_builds
+                               if build in self.all_cidb_status_dict]
+        self.buildstore.InsertBuildMessage(self.master_build_id,
+                                           message_value=killed_child_builds)
         builder_status_lib.CancelBuilds(uncompleted_build_buildbucket_ids,
                                         self.buildbucket_client,
                                         self.dry_run,

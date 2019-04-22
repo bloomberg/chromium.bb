@@ -39,9 +39,13 @@ void ComputeCopyStorageBufferTests::BasicTest(const char* shader) {
     auto pl = utils::MakeBasicPipelineLayout(device, &bgl);
 
     dawn::ComputePipelineDescriptor csDesc;
-    csDesc.module = module;
-    csDesc.entryPoint = "main";
     csDesc.layout = pl;
+
+    dawn::PipelineStageDescriptor computeStage;
+    computeStage.module = module;
+    computeStage.entryPoint = "main";
+    csDesc.computeStage = &computeStage;
+
     dawn::ComputePipeline pipeline = device.CreateComputePipeline(&csDesc);
 
     // Set up src storage buffer
@@ -57,8 +61,6 @@ void ComputeCopyStorageBufferTests::BasicTest(const char* shader) {
     }
     src.SetSubData(0, sizeof(expected), reinterpret_cast<const uint8_t*>(expected.data()));
     EXPECT_BUFFER_U32_RANGE_EQ(expected.data(), src, 0, kNumUints);
-    auto srcView =
-        src.CreateBufferViewBuilder().SetExtent(0, kNumUints * sizeof(uint32_t)).GetResult();
 
     // Set up dst storage buffer
     dawn::BufferDescriptor dstDesc;
@@ -69,26 +71,23 @@ void ComputeCopyStorageBufferTests::BasicTest(const char* shader) {
 
     std::array<uint32_t, kNumUints> zero{};
     dst.SetSubData(0, sizeof(zero), reinterpret_cast<const uint8_t*>(zero.data()));
-    auto dstView =
-        dst.CreateBufferViewBuilder().SetExtent(0, kNumUints * sizeof(uint32_t)).GetResult();
 
     // Set up bind group and issue dispatch
-    auto bindGroup = device.CreateBindGroupBuilder()
-                         .SetLayout(bgl)
-                         .SetBufferViews(0, 1, &srcView)
-                         .SetBufferViews(1, 1, &dstView)
-                         .GetResult();
+    dawn::BindGroup bindGroup = utils::MakeBindGroup(device, bgl, {
+        {0, src, 0, kNumUints * sizeof(uint32_t)},
+        {1, dst, 0, kNumUints * sizeof(uint32_t)},
+    });
 
     dawn::CommandBuffer commands;
     {
-        dawn::CommandBufferBuilder builder = device.CreateCommandBufferBuilder();
-        dawn::ComputePassEncoder pass = builder.BeginComputePass();
-        pass.SetComputePipeline(pipeline);
-        pass.SetBindGroup(0, bindGroup);
+        dawn::CommandEncoder encoder = device.CreateCommandEncoder();
+        dawn::ComputePassEncoder pass = encoder.BeginComputePass();
+        pass.SetPipeline(pipeline);
+        pass.SetBindGroup(0, bindGroup, 0, nullptr);
         pass.Dispatch(kInstances, 1, 1);
         pass.EndPass();
 
-        commands = builder.GetResult();
+        commands = encoder.Finish();
     }
 
     queue.Submit(1, &commands);
@@ -196,4 +195,4 @@ DAWN_INSTANTIATE_TEST(ComputeCopyStorageBufferTests,
                      D3D12Backend,
                      MetalBackend,
                      OpenGLBackend,
-                     VulkanBackend)
+                     VulkanBackend);

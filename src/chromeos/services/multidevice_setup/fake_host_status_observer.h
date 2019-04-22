@@ -23,7 +23,7 @@ class FakeHostStatusObserver : public mojom::HostStatusObserver {
   mojom::HostStatusObserverPtr GenerateInterfacePtr();
 
   const std::vector<
-      std::pair<mojom::HostStatus, base::Optional<cryptauth::RemoteDevice>>>&
+      std::pair<mojom::HostStatus, base::Optional<multidevice::RemoteDevice>>>&
   host_status_updates() const {
     return host_status_updates_;
   }
@@ -32,10 +32,10 @@ class FakeHostStatusObserver : public mojom::HostStatusObserver {
   // mojom::HostStatusObserver:
   void OnHostStatusChanged(
       mojom::HostStatus host_status,
-      const base::Optional<cryptauth::RemoteDevice>& host_device) override;
+      const base::Optional<multidevice::RemoteDevice>& host_device) override;
 
   std::vector<
-      std::pair<mojom::HostStatus, base::Optional<cryptauth::RemoteDevice>>>
+      std::pair<mojom::HostStatus, base::Optional<multidevice::RemoteDevice>>>
       host_status_updates_;
 
   mojo::BindingSet<mojom::HostStatusObserver> bindings_;

@@ -12,6 +12,9 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/login/quick_unlock/auth_token.h"
+#include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_factory.h"
+#include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_storage.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -124,7 +127,7 @@ void FingerprintHandler::OnJavascriptDisallowed() {
 
 void FingerprintHandler::OnRestarted() {}
 
-void FingerprintHandler::OnEnrollScanDone(uint32_t scan_result,
+void FingerprintHandler::OnEnrollScanDone(device::mojom::ScanResult scan_result,
                                           bool enroll_session_complete,
                                           int percent_complete) {
   VLOG(1) << "Receive fingerprint enroll scan result. scan_result="
@@ -132,7 +135,7 @@ void FingerprintHandler::OnEnrollScanDone(uint32_t scan_result,
           << ", enroll_session_complete=" << enroll_session_complete
           << ", percent_complete=" << percent_complete;
   auto scan_attempt = std::make_unique<base::DictionaryValue>();
-  scan_attempt->SetInteger("result", scan_result);
+  scan_attempt->SetInteger("result", static_cast<int>(scan_result));
   scan_attempt->SetBoolean("isComplete", enroll_session_complete);
   scan_attempt->SetInteger("percentComplete", percent_complete);
 
@@ -140,7 +143,7 @@ void FingerprintHandler::OnEnrollScanDone(uint32_t scan_result,
 }
 
 void FingerprintHandler::OnAuthScanDone(
-    uint32_t scan_result,
+    device::mojom::ScanResult scan_result,
     const base::flat_map<std::string, std::vector<std::string>>& matches) {
   VLOG(1) << "Receive fingerprint auth scan result. scan_result="
           << scan_result;
@@ -164,7 +167,7 @@ void FingerprintHandler::OnAuthScanDone(
   }
 
   auto fingerprint_attempt = std::make_unique<base::DictionaryValue>();
-  fingerprint_attempt->SetInteger("result", scan_result);
+  fingerprint_attempt->SetInteger("result", static_cast<int>(scan_result));
   fingerprint_attempt->Set("indexes", std::move(fingerprint_ids));
 
   FireWebUIListener("on-fingerprint-attempt-received", *fingerprint_attempt);
@@ -228,11 +231,23 @@ void FingerprintHandler::HandleGetNumFingerprints(const base::ListValue* args) {
 void FingerprintHandler::HandleStartEnroll(const base::ListValue* args) {
   AllowJavascript();
 
+  std::string auth_token;
+  CHECK(args->GetString(0, &auth_token));
+
+  // Auth token expiration will trigger password prompt.
+  // Silently fail if auth token is incorrect.
+  quick_unlock::QuickUnlockStorage* quick_unlock_storage =
+      quick_unlock::QuickUnlockFactory::GetForProfile(profile_);
+  if (!quick_unlock_storage->GetAuthToken())
+    return;
+  if (auth_token != quick_unlock_storage->GetAuthToken()->Identifier())
+    return;
+
   // Determines what the newly added fingerprint's name should be.
   for (int i = 1; i <= kMaxAllowedFingerprints; ++i) {
     std::string fingerprint_name = l10n_util::GetStringFUTF8(
         IDS_SETTINGS_PEOPLE_LOCK_SCREEN_NEW_FINGERPRINT_DEFAULT_NAME,
-        base::IntToString16(i));
+        base::NumberToString16(i));
     if (!base::ContainsValue(fingerprints_labels_, fingerprint_name)) {
       fp_service_->StartEnrollSession(user_id_, fingerprint_name);
       break;

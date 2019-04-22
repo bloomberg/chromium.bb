@@ -8,6 +8,7 @@
 #include <fcntl.h>
 #include <fullscreen-shell-unstable-v1-client-protocol.h>
 #include <linux-dmabuf-unstable-v1-client-protocol.h>
+#include <linux-explicit-synchronization-unstable-v1-client-protocol.h>
 #include <presentation-time-client-protocol.h>
 #include <wayland-client-core.h>
 #include <wayland-client-protocol.h>
@@ -129,6 +130,11 @@ void RegistryHandler(void* data,
   } else if (strcmp(interface, "wl_output") == 0) {
     globals->output.reset(static_cast<wl_output*>(
         wl_registry_bind(registry, id, &wl_output_interface, 1)));
+  } else if (strcmp(interface, "zwp_linux_explicit_synchronization_v1") == 0) {
+    globals->linux_explicit_synchronization.reset(
+        static_cast<zwp_linux_explicit_synchronization_v1*>(wl_registry_bind(
+            registry, id, &zwp_linux_explicit_synchronization_v1_interface,
+            1)));
   }
 }
 
@@ -781,10 +787,10 @@ std::unique_ptr<ClientBase::Buffer> ClientBase::CreateDrmBuffer(
 
     buffer->params.reset(
         zwp_linux_dmabuf_v1_create_params(globals_.linux_dmabuf.get()));
-    for (size_t i = 0; i < gbm_bo_get_num_planes(buffer->bo.get()); ++i) {
+    for (size_t i = 0; i < gbm_bo_get_plane_count(buffer->bo.get()); ++i) {
       base::ScopedFD fd(gbm_bo_get_plane_fd(buffer->bo.get(), i));
-      uint32_t stride = gbm_bo_get_plane_stride(buffer->bo.get(), i);
-      uint32_t offset = gbm_bo_get_plane_offset(buffer->bo.get(), i);
+      uint32_t stride = gbm_bo_get_stride_for_plane(buffer->bo.get(), i);
+      uint32_t offset = gbm_bo_get_offset(buffer->bo.get(), i);
       zwp_linux_buffer_params_v1_add(buffer->params.get(), fd.get(), i, offset,
                                      stride, 0, 0);
     }
@@ -795,22 +801,23 @@ std::unique_ptr<ClientBase::Buffer> ClientBase::CreateDrmBuffer(
     buffer->buffer.reset(zwp_linux_buffer_params_v1_create_immed(
         buffer->params.get(), size.width(), size.height(), drm_format, flags));
 
-    if (gbm_bo_get_num_planes(buffer->bo.get()) != 1)
+    if (gbm_bo_get_plane_count(buffer->bo.get()) != 1)
       return buffer;
 
-    EGLint khr_image_attrs[] = {EGL_DMA_BUF_PLANE0_FD_EXT,
-                                fd.get(),
-                                EGL_WIDTH,
-                                size.width(),
-                                EGL_HEIGHT,
-                                size.height(),
-                                EGL_LINUX_DRM_FOURCC_EXT,
-                                drm_format,
-                                EGL_DMA_BUF_PLANE0_PITCH_EXT,
-                                gbm_bo_get_plane_stride(buffer->bo.get(), 0),
-                                EGL_DMA_BUF_PLANE0_OFFSET_EXT,
-                                0,
-                                EGL_NONE};
+    EGLint khr_image_attrs[] = {
+        EGL_DMA_BUF_PLANE0_FD_EXT,
+        fd.get(),
+        EGL_WIDTH,
+        size.width(),
+        EGL_HEIGHT,
+        size.height(),
+        EGL_LINUX_DRM_FOURCC_EXT,
+        drm_format,
+        EGL_DMA_BUF_PLANE0_PITCH_EXT,
+        gbm_bo_get_stride_for_plane(buffer->bo.get(), 0),
+        EGL_DMA_BUF_PLANE0_OFFSET_EXT,
+        0,
+        EGL_NONE};
     EGLImageKHR image = eglCreateImageKHR(
         eglGetCurrentDisplay(), EGL_NO_CONTEXT, EGL_LINUX_DMA_BUF_EXT,
         nullptr /* no client buffer */, khr_image_attrs);

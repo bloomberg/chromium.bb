@@ -16,6 +16,7 @@
 #include "media/base/video_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/native_pixmap_handle.h"
 
 namespace media {
 
@@ -235,10 +236,13 @@ TEST(VideoFrameLayout, ToString) {
 
   std::ostringstream ostream;
   ostream << *layout;
+  const std::string kNoModifier =
+      std::to_string(gfx::NativePixmapPlane::kNoModifier);
   EXPECT_EQ(ostream.str(),
             "VideoFrameLayout(format: PIXEL_FORMAT_I420, coded_size: 320x180, "
-            "planes (stride, offset): [(384, 0), (192, 0), (192, 0)], "
-            "buffer_sizes: [73728, 18432, 18432])");
+            "planes (stride, offset, modifier): [(384, 0, " +
+                kNoModifier + "), (192, 0, " + kNoModifier + "), (192, 0, " +
+                kNoModifier + ")], buffer_sizes: [73728, 18432, 18432])");
 }
 
 TEST(VideoFrameLayout, ToStringOneBuffer) {
@@ -253,9 +257,12 @@ TEST(VideoFrameLayout, ToStringOneBuffer) {
 
   std::ostringstream ostream;
   ostream << *layout;
+  const std::string kNoModifier =
+      std::to_string(gfx::NativePixmapPlane::kNoModifier);
   EXPECT_EQ(ostream.str(),
             "VideoFrameLayout(format: PIXEL_FORMAT_NV12, coded_size: 320x180, "
-            "planes (stride, offset): [(384, 100)], buffer_sizes: [122880])");
+            "planes (stride, offset, modifier): [(384, 100, " +
+                kNoModifier + ")], buffer_sizes: [122880])");
 }
 
 TEST(VideoFrameLayout, ToStringNoBufferInfo) {
@@ -265,9 +272,13 @@ TEST(VideoFrameLayout, ToStringNoBufferInfo) {
 
   std::ostringstream ostream;
   ostream << *layout;
+  const std::string kNoModifier =
+      std::to_string(gfx::NativePixmapPlane::kNoModifier);
   EXPECT_EQ(ostream.str(),
             "VideoFrameLayout(format: PIXEL_FORMAT_NV12, coded_size: 320x180, "
-            "planes (stride, offset): [(0, 0), (0, 0)], buffer_sizes: [])");
+            "planes (stride, offset, modifier): [(0, 0, " +
+                kNoModifier + "), (0, 0, " + kNoModifier +
+                ")], buffer_sizes: [])");
 }
 
 TEST(VideoFrameLayout, EqualOperator) {
@@ -275,21 +286,30 @@ TEST(VideoFrameLayout, EqualOperator) {
   std::vector<int32_t> strides = {384, 192, 192};
   std::vector<size_t> offsets = {0, 100, 200};
   std::vector<size_t> buffer_sizes = {73728, 18432, 18432};
+  const size_t align = VideoFrameLayout::kBufferAddressAlignment;
+
   auto layout = VideoFrameLayout::CreateWithPlanes(
       PIXEL_FORMAT_I420, coded_size, CreatePlanes(strides, offsets),
-      buffer_sizes);
+      buffer_sizes, align);
   ASSERT_TRUE(layout.has_value());
 
   auto same_layout = VideoFrameLayout::CreateWithPlanes(
       PIXEL_FORMAT_I420, coded_size, CreatePlanes(strides, offsets),
-      buffer_sizes);
+      buffer_sizes, align);
   ASSERT_TRUE(same_layout.has_value());
   EXPECT_EQ(*layout, *same_layout);
 
   std::vector<size_t> another_buffer_sizes = {73728};
   auto different_layout = VideoFrameLayout::CreateWithPlanes(
       PIXEL_FORMAT_I420, coded_size, CreatePlanes(strides, offsets),
-      another_buffer_sizes);
+      another_buffer_sizes, align);
+  ASSERT_TRUE(different_layout.has_value());
+  EXPECT_NE(*layout, *different_layout);
+
+  const size_t another_align = 0x1000;
+  different_layout = VideoFrameLayout::CreateWithPlanes(
+      PIXEL_FORMAT_I420, coded_size, CreatePlanes(strides, offsets),
+      buffer_sizes, another_align);
   ASSERT_TRUE(different_layout.has_value());
   EXPECT_NE(*layout, *different_layout);
 }

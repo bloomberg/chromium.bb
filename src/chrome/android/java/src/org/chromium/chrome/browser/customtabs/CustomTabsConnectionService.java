@@ -8,6 +8,8 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.customtabs.CustomTabsService;
 import android.support.customtabs.CustomTabsSessionToken;
 
@@ -100,6 +102,13 @@ public class CustomTabsConnectionService extends CustomTabsService {
     protected boolean cleanUpSession(CustomTabsSessionToken sessionToken) {
         mConnection.cleanUpSession(sessionToken);
         return super.cleanUpSession(sessionToken);
+    }
+
+
+    @Override
+    protected boolean receiveFile(@NonNull CustomTabsSessionToken sessionToken, @NonNull Uri uri,
+            int purpose, @Nullable Bundle extras) {
+        return mConnection.receiveFile(sessionToken, uri, purpose, extras);
     }
 
     private boolean isFirstRunDone() {

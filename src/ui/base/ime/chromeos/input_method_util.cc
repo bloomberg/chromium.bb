@@ -13,7 +13,7 @@
 #include <unordered_set>
 #include <utility>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -52,7 +52,7 @@ const struct {
     IDS_LANGUAGES_MEDIUM_LEN_NAME_BRAILLE },
 };
 const size_t kMappingImeIdToMediumLenNameResourceIdLen =
-    arraysize(kMappingImeIdToMediumLenNameResourceId);
+    base::size(kMappingImeIdToMediumLenNameResourceId);
 
 // Due to asynchronous initialization of component extension manager,
 // GetFirstLoginInputMethodIds may miss component extension IMEs. To enable
@@ -194,7 +194,7 @@ const struct EnglishToResouceId {
     {"xkb:us:workman:eng", IDS_STATUSBAR_LAYOUT_USA_WORKMAN},
 };
 const size_t kEnglishToResourceIdArraySize =
-    arraysize(kEnglishToResourceIdArray);
+    base::size(kEnglishToResourceIdArray);
 
 const struct InputMethodNameMap {
   const char* message_name;
@@ -408,7 +408,7 @@ std::string InputMethodUtil::GetLocalizedDisplayName(
   const std::string& disp = descriptor.name();
   if (base::StartsWith(disp, "__MSG_", base::CompareCase::SENSITIVE)) {
     const InputMethodNameMap* map = kInputMethodNameMap;
-    size_t map_size = arraysize(kInputMethodNameMap);
+    size_t map_size = base::size(kInputMethodNameMap);
     std::string name = base::ToUpperASCII(disp);
     const InputMethodNameMap map_key = {name.c_str(), 0};
     const InputMethodNameMap* p =
@@ -607,7 +607,7 @@ void InputMethodUtil::GetFirstLoginInputMethodIds(
 
   const std::string current_layout =
       preferred_input_method.GetPreferredKeyboardLayout();
-  for (size_t i = 0; i < arraysize(kDefaultInputMethodRecommendation); ++i) {
+  for (size_t i = 0; i < base::size(kDefaultInputMethodRecommendation); ++i) {
     if (kDefaultInputMethodRecommendation[i].locale == language_code &&
         (!kDefaultInputMethodRecommendation[i].layout[0] ||
          kDefaultInputMethodRecommendation[i].layout == current_layout)) {
@@ -666,7 +666,7 @@ std::string InputMethodUtil::MigrateInputMethod(
     const std::string& input_method_id) {
   std::string engine_id = input_method_id;
   // Migrates some Engine IDs from VPD.
-  for (size_t j = 0; j < arraysize(kEngineIdMigrationMap); ++j) {
+  for (size_t j = 0; j < base::size(kEngineIdMigrationMap); ++j) {
     size_t pos = engine_id.find(kEngineIdMigrationMap[j][0]);
     if (pos == 0) {
       engine_id.replace(0,

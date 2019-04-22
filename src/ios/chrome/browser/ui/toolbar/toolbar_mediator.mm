@@ -20,7 +20,7 @@
 #import "ios/public/provider/chrome/browser/voice/voice_search_provider.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/web_client.h"
-#include "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -267,8 +267,11 @@
   DCHECK(self.consumer);
   [self updateConsumerForWebState:self.webState];
 
-  [self.consumer setIsNTP:IsVisibleURLNewTabPage(self.webState)];
-  [self.consumer setLoadingState:self.webState->IsLoading()];
+  BOOL isNTP = IsVisibleURLNewTabPage(self.webState);
+  [self.consumer setIsNTP:isNTP];
+  // Never show the loading UI for an NTP.
+  BOOL isLoading = self.webState->IsLoading() && !isNTP;
+  [self.consumer setLoadingState:isLoading];
   [self updateBookmarksForWebState:self.webState];
   [self updateShareMenuForWebState:self.webState];
 }

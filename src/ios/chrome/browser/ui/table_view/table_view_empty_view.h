@@ -28,6 +28,9 @@
 // message iteself.
 @property(nonatomic, strong) NSString* messageAccessibilityLabel;
 
+// Insets of the inner ScrollView.
+@property(nonatomic, assign) UIEdgeInsets scrollViewContentInsets;
+
 // The empty view's accessibility identifier.
 + (NSString*)accessibilityIdentifier;
 

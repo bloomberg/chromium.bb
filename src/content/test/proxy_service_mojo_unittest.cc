@@ -111,20 +111,6 @@ void CheckCapturedNetLogEntries(const net::TestNetLogEntry::List& entries) {
   EXPECT_EQ(3, line_number);
 }
 
-class LoggingMockHostResolver : public net::MockHostResolver {
- public:
-  int Resolve(const RequestInfo& info,
-              net::RequestPriority priority,
-              net::AddressList* addresses,
-              net::CompletionOnceCallback callback,
-              std::unique_ptr<Request>* out_req,
-              const net::NetLogWithSource& net_log) override {
-    net_log.AddEvent(net::NetLogEventType::HOST_RESOLVER_IMPL_JOB);
-    return net::MockHostResolver::Resolve(
-        info, priority, addresses, std::move(callback), out_req, net_log);
-  }
-};
-
 }  // namespace
 
 class ProxyServiceMojoTest : public testing::Test {
@@ -148,7 +134,7 @@ class ProxyServiceMojoTest : public testing::Test {
   base::test::ScopedTaskEnvironment task_environment_;
   content::TestMojoProxyResolverFactory test_mojo_proxy_resolver_factory_;
   TestNetworkDelegate network_delegate_;
-  LoggingMockHostResolver mock_host_resolver_;
+  net::MockHostResolver mock_host_resolver_;
   // Owned by |proxy_resolution_service_|.
   net::MockPacFileFetcher* fetcher_;
   net::TestNetLog net_log_;
@@ -179,12 +165,11 @@ TEST_F(ProxyServiceMojoTest, Basic) {
 TEST_F(ProxyServiceMojoTest, DnsResolution) {
   net::ProxyInfo info;
   net::TestCompletionCallback callback;
-  net::BoundTestNetLog test_net_log;
   std::unique_ptr<net::ProxyResolutionService::Request> request;
   EXPECT_EQ(net::ERR_IO_PENDING,
             proxy_resolution_service_->ResolveProxy(
                 GURL("http://foo"), std::string(), &info, callback.callback(),
-                &request, test_net_log.bound()));
+                &request, net::NetLogWithSource()));
 
   // PAC file fetcher should have a fetch triggered by the first
   // |ResolveProxy()| request.
@@ -197,16 +182,6 @@ TEST_F(ProxyServiceMojoTest, DnsResolution) {
   EXPECT_EQ("QUIC bar:4321", info.ToPacString());
   EXPECT_EQ(1u, mock_host_resolver_.num_resolve());
   proxy_resolution_service_.reset();
-
-  net::TestNetLogEntry::List entries;
-  test_net_log.GetEntries(&entries);
-  // There should be one entry with type TYPE_HOST_RESOLVER_IMPL_JOB.
-  EXPECT_EQ(1,
-            std::count_if(entries.begin(), entries.end(),
-                          [](const net::TestNetLogEntry& entry) {
-                            return entry.type ==
-                                   net::NetLogEventType::HOST_RESOLVER_IMPL_JOB;
-                          }));
 }
 
 TEST_F(ProxyServiceMojoTest, Error) {

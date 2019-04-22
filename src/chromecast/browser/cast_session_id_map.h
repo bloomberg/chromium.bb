@@ -10,7 +10,6 @@
 #include <utility>
 
 #include "base/containers/flat_map.h"
-#include "base/memory/weak_ptr.h"
 #include "base/no_destructor.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
@@ -33,6 +32,7 @@ class CastSessionIdMap {
   // be specified for the instance to run on. Any subsequent calls to this
   // function will return the same map instance, but will not change the task
   // runner.
+  // This must be called for the first time on the browser main thread.
   static CastSessionIdMap* GetInstance(
       base::SequencedTaskRunner* task_runner = nullptr);
   // Map a session id to a particular group id in the provided WebContents.
@@ -61,18 +61,18 @@ class CastSessionIdMap {
   // This call be called on any thread.
   void SetSessionIdInternal(std::string session_id,
                             base::UnguessableToken group_id,
-                            content::WebContents* web_contents);
+                            std::unique_ptr<GroupObserver> group_observer);
   // Retrieves the session id for the provided group id.
   // This must be called on the |task_runner_|.
   std::string GetSessionIdInternal(std::string group_id);
 
+  const bool supports_group_id_;
   base::flat_map<
       std::string,
       std::pair<std::string /* group_id */, std::unique_ptr<GroupObserver>>>
       mapping_;
   base::SequencedTaskRunner* const task_runner_;
   SEQUENCE_CHECKER(sequence_checker_);
-  base::WeakPtrFactory<CastSessionIdMap> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CastSessionIdMap);
 };

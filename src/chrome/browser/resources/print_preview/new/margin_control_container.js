@@ -113,6 +113,9 @@ Polymer({
     },
   },
 
+  /** @private {boolean} */
+  textboxFocused_: false,
+
   observers: [
     'onMarginSettingsChange_(settings.customMargins.value)',
     'onMediaSizeOrLayoutChange_(' +
@@ -145,7 +148,7 @@ Polymer({
       // Set the custom margins values to the current document margins if the
       // custom margins were reset.
       const newMargins = {};
-      for (let side of Object.values(
+      for (const side of Object.values(
                print_preview.ticket_items.CustomMarginsOrientation)) {
         const key = print_preview_new.MARGIN_KEY_MAP.get(side);
         newMargins[key] = this.documentMargins.get(side);
@@ -159,6 +162,11 @@ Polymer({
   /** @private */
   onMarginSettingsChange_: function() {
     const margins = this.getSettingValue('customMargins');
+    if (margins.marginTop === undefined) {
+      // This may be called when print preview model initially sets the
+      // settings. It sets custom margins empty by default.
+      return;
+    }
     this.shadowRoot.querySelectorAll('print-preview-margin-control')
         .forEach(control => {
           const key = print_preview_new.MARGIN_KEY_MAP.get(control.side);
@@ -172,8 +180,9 @@ Polymer({
   onMediaSizeOrLayoutChange_: function() {
     // Reset the custom margins when the paper size changes. Don't do this if it
     // is the first preview.
-    if (this.resetMargins_ === null)
+    if (this.resetMargins_ === null) {
       return;
+    }
 
     this.resetMargins_ = true;
     const marginsSetting = this.getSetting('margins');
@@ -318,14 +327,67 @@ Polymer({
    */
   setInvisible: function(invisible) {
     // Ignore changes if the margin controls are not available.
-    if (!this.available_)
+    if (!this.available_) {
       return;
+    }
 
-    // Do not set the controls invisible if the user is dragging one of them.
-    if (invisible && this.dragging_ != '')
+    // Do not set the controls invisible if the user is dragging or focusing
+    // the textbox for one of them.
+    if (invisible && (this.dragging_ != '' || this.textboxFocused_)) {
       return;
+    }
 
     this.invisible_ = invisible;
+  },
+
+  /**
+   * @param {!Event} e Contains information about what control fired the event.
+   * @private
+   */
+  onTextFocus_: function(e) {
+    this.textboxFocused_ = true;
+    const control = /** @type {!PrintPreviewMarginControlElement} */ (e.target);
+
+    const x = control.offsetLeft;
+    const y = control.offsetTop;
+    const isTopOrBottom = this.isTopOrBottom_(
+        /** @type {!print_preview.ticket_items.CustomMarginsOrientation} */ (
+            control.side));
+    const position = {};
+    // Extra padding, in px, to ensure the full textbox will be visible and not
+    // just a portion of it. Can't be less than half the width or height of the
+    // clip area for the computations below to work.
+    const padding = Math.min(
+        Math.min(this.clipSize_.width / 2, this.clipSize_.height / 2), 50);
+
+    // Note: clipSize_ gives the current visible area of the margin control
+    // container. The offsets of the controls are relative to the origin of this
+    // visible area.
+    if (isTopOrBottom) {
+      // For top and bottom controls, the horizontal position of the box is
+      // around halfway across the control's width.
+      position.x = Math.min(x + control.offsetWidth / 2 - padding, 0);
+      position.x = Math.max(
+          x + control.offsetWidth / 2 + padding - this.clipSize_.width,
+          position.x);
+      // For top and bottom controls, the vertical position of the box is nearly
+      // the same as the vertical position of the control.
+      position.y = Math.min(y - padding, 0);
+      position.y = Math.max(y - this.clipSize_.height + padding, position.y);
+    } else {
+      // For left and right controls, the horizontal position of the box is
+      // nearly the same as the horizontal position of the control.
+      position.x = Math.min(x - padding, 0);
+      position.x = Math.max(x - this.clipSize_.width + padding, position.x);
+      // For top and bottom controls, the vertical position of the box is
+      // around halfway up the control's height.
+      position.y = Math.min(y + control.offsetHeight / 2 - padding, 0);
+      position.y = Math.max(
+          y + control.offsetHeight / 2 + padding - this.clipSize_.height,
+          position.y);
+    }
+
+    this.fire('text-focus-position', position);
   },
 
   /**
@@ -340,8 +402,9 @@ Polymer({
     const oldMargins = /** @type {print_preview.MarginsSetting} */ (
         this.getSettingValue('customMargins'));
     const key = print_preview_new.MARGIN_KEY_MAP.get(marginSide);
-    if (oldMargins[key] == marginValue)
+    if (oldMargins[key] == marginValue) {
       return;
+    }
     const newMargins = Object.assign({}, oldMargins);
     newMargins[key] = marginValue;
     this.setSetting('customMargins', newMargins);
@@ -357,18 +420,19 @@ Polymer({
     const marginSide =
         /** @type {!print_preview.ticket_items.CustomMarginsOrientation} */ (
             side);
-    if (value < 0)
+    if (value < 0) {
       return 0;
+    }
     const Orientation = print_preview.ticket_items.CustomMarginsOrientation;
     let limit = 0;
     const margins = this.getSettingValue('customMargins');
-    if (marginSide == Orientation.TOP)
+    if (marginSide == Orientation.TOP) {
       limit = this.pageSize.height - margins.marginBottom - MINIMUM_DISTANCE;
-    else if (marginSide == Orientation.RIGHT)
+    } else if (marginSide == Orientation.RIGHT) {
       limit = this.pageSize.width - margins.marginLeft - MINIMUM_DISTANCE;
-    else if (marginSide == Orientation.BOTTOM)
+    } else if (marginSide == Orientation.BOTTOM) {
       limit = this.pageSize.height - margins.marginTop - MINIMUM_DISTANCE;
-    else {
+    } else {
       assert(marginSide == Orientation.LEFT);
       limit = this.pageSize.width - margins.marginRight - MINIMUM_DISTANCE;
     }
@@ -376,11 +440,11 @@ Polymer({
   },
 
   /**
-   * @param {!CustomEvent} e Event containing the new textbox value.
+   * @param {!CustomEvent<string>} e Event containing the new textbox value.
    * @private
    */
   onTextChange_: function(e) {
-    const marginValue = this.parseValueToPts_(/** @type {string} */ (e.detail));
+    const marginValue = this.parseValueToPts_(e.detail);
     const control =
         /** @type {!PrintPreviewMarginControlElement} */ (e.target);
     if (marginValue == null) {
@@ -394,16 +458,20 @@ Polymer({
   },
 
   /**
-   * @param {!CustomEvent} e Event fired when a control with an invalid value's
-   *     text field is blurred.
+   * @param {!CustomEvent<boolean>} e Event fired when a control's text field
+   *     is blurred. Contains information about whether the control is in an
+   *     invalid state.
    * @private
    */
   onTextBlur_: function(e) {
-    const control =
-        /** @type {!PrintPreviewMarginControlElement} */ (e.target);
-    control.setTextboxValue(
-        this.serializeValueFromPts_(control.getPositionInPts()));
-    control.invalid = false;
+    if (e.detail /* detail is true if the control is in an invalid state */) {
+      const control =
+          /** @type {!PrintPreviewMarginControlElement} */ (e.target);
+      control.setTextboxValue(
+          this.serializeValueFromPts_(control.getPositionInPts()));
+      control.invalid = false;
+    }
+    this.textboxFocused_ = false;
   },
 
   /**
@@ -413,8 +481,9 @@ Polymer({
   onPointerDown_: function(e) {
     const control =
         /** @type {!PrintPreviewMarginControlElement} */ (e.target);
-    if (!control.shouldDrag(e))
+    if (!control.shouldDrag(e)) {
       return;
+    }
 
     this.pointerStartPositionInPixels_ =
         new print_preview.Coordinate2d(e.x, e.y);
@@ -439,8 +508,9 @@ Polymer({
    * @private
    */
   onTransitionEnd_: function() {
-    if (this.invisible_)
+    if (this.invisible_) {
       this.style.display = 'none';
+    }
   },
 
   /**
@@ -487,8 +557,9 @@ Polymer({
    * @param {number} scaleTransform Updated value of the scale transform.
    */
   updateScaleTransform: function(scaleTransform) {
-    if (scaleTransform != this.scaleTransform_)
+    if (scaleTransform != this.scaleTransform_) {
       this.scaleTransform_ = scaleTransform;
+    }
   },
 
   /**

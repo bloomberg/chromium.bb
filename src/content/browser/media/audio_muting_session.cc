@@ -9,7 +9,7 @@ namespace content {
 AudioMutingSession::AudioMutingSession(const base::UnguessableToken& group_id)
     : group_id_(group_id) {}
 
-AudioMutingSession::~AudioMutingSession(){};
+AudioMutingSession::~AudioMutingSession() {}
 
 void AudioMutingSession::Connect(audio::mojom::StreamFactory* factory) {
   if (muter_)

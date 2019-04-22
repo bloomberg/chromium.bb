@@ -28,7 +28,7 @@ PerfTestRunner.measureTime({
       deepSlot.assignedNodes();
     }
   },
-  done: () => {
+  teardown: () => {
     host.remove();
   }
 });

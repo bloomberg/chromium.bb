@@ -39,6 +39,30 @@ TraceConfig& TraceConfig::operator=(const TraceConfig&) = default;
 TraceConfig::TraceConfig(TraceConfig&&) noexcept = default;
 TraceConfig& TraceConfig::operator=(TraceConfig&&) = default;
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+bool TraceConfig::operator==(const TraceConfig& other) const {
+  return (buffers_ == other.buffers_) &&
+         (data_sources_ == other.data_sources_) &&
+         (duration_ms_ == other.duration_ms_) &&
+         (enable_extra_guardrails_ == other.enable_extra_guardrails_) &&
+         (lockdown_mode_ == other.lockdown_mode_) &&
+         (producers_ == other.producers_) &&
+         (statsd_metadata_ == other.statsd_metadata_) &&
+         (write_into_file_ == other.write_into_file_) &&
+         (file_write_period_ms_ == other.file_write_period_ms_) &&
+         (max_file_size_bytes_ == other.max_file_size_bytes_) &&
+         (guardrail_overrides_ == other.guardrail_overrides_) &&
+         (deferred_start_ == other.deferred_start_) &&
+         (flush_period_ms_ == other.flush_period_ms_) &&
+         (flush_timeout_ms_ == other.flush_timeout_ms_) &&
+         (disable_clock_snapshotting_ == other.disable_clock_snapshotting_) &&
+         (notify_traceur_ == other.notify_traceur_) &&
+         (trigger_config_ == other.trigger_config_) &&
+         (activate_triggers_ == other.activate_triggers_);
+}
+#pragma GCC diagnostic pop
+
 void TraceConfig::FromProto(const perfetto::protos::TraceConfig& proto) {
   buffers_.clear();
   for (const auto& field : proto.buffers()) {
@@ -102,6 +126,35 @@ void TraceConfig::FromProto(const perfetto::protos::TraceConfig& proto) {
                 "size mismatch");
   flush_period_ms_ =
       static_cast<decltype(flush_period_ms_)>(proto.flush_period_ms());
+
+  static_assert(sizeof(flush_timeout_ms_) == sizeof(proto.flush_timeout_ms()),
+                "size mismatch");
+  flush_timeout_ms_ =
+      static_cast<decltype(flush_timeout_ms_)>(proto.flush_timeout_ms());
+
+  static_assert(sizeof(disable_clock_snapshotting_) ==
+                    sizeof(proto.disable_clock_snapshotting()),
+                "size mismatch");
+  disable_clock_snapshotting_ =
+      static_cast<decltype(disable_clock_snapshotting_)>(
+          proto.disable_clock_snapshotting());
+
+  static_assert(sizeof(notify_traceur_) == sizeof(proto.notify_traceur()),
+                "size mismatch");
+  notify_traceur_ =
+      static_cast<decltype(notify_traceur_)>(proto.notify_traceur());
+
+  trigger_config_.FromProto(proto.trigger_config());
+
+  activate_triggers_.clear();
+  for (const auto& field : proto.activate_triggers()) {
+    activate_triggers_.emplace_back();
+    static_assert(
+        sizeof(activate_triggers_.back()) == sizeof(proto.activate_triggers(0)),
+        "size mismatch");
+    activate_triggers_.back() =
+        static_cast<decltype(activate_triggers_)::value_type>(field);
+  }
   unknown_fields_ = proto.unknown_fields();
 }
 
@@ -172,6 +225,32 @@ void TraceConfig::ToProto(perfetto::protos::TraceConfig* proto) const {
                 "size mismatch");
   proto->set_flush_period_ms(
       static_cast<decltype(proto->flush_period_ms())>(flush_period_ms_));
+
+  static_assert(sizeof(flush_timeout_ms_) == sizeof(proto->flush_timeout_ms()),
+                "size mismatch");
+  proto->set_flush_timeout_ms(
+      static_cast<decltype(proto->flush_timeout_ms())>(flush_timeout_ms_));
+
+  static_assert(sizeof(disable_clock_snapshotting_) ==
+                    sizeof(proto->disable_clock_snapshotting()),
+                "size mismatch");
+  proto->set_disable_clock_snapshotting(
+      static_cast<decltype(proto->disable_clock_snapshotting())>(
+          disable_clock_snapshotting_));
+
+  static_assert(sizeof(notify_traceur_) == sizeof(proto->notify_traceur()),
+                "size mismatch");
+  proto->set_notify_traceur(
+      static_cast<decltype(proto->notify_traceur())>(notify_traceur_));
+
+  trigger_config_.ToProto(proto->mutable_trigger_config());
+
+  for (const auto& it : activate_triggers_) {
+    proto->add_activate_triggers(
+        static_cast<decltype(proto->activate_triggers(0))>(it));
+    static_assert(sizeof(it) == sizeof(proto->activate_triggers(0)),
+                  "size mismatch");
+  }
   *(proto->mutable_unknown_fields()) = unknown_fields_;
 }
 
@@ -185,6 +264,14 @@ TraceConfig::BufferConfig::BufferConfig(TraceConfig::BufferConfig&&) noexcept =
     default;
 TraceConfig::BufferConfig& TraceConfig::BufferConfig::operator=(
     TraceConfig::BufferConfig&&) = default;
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+bool TraceConfig::BufferConfig::operator==(
+    const TraceConfig::BufferConfig& other) const {
+  return (size_kb_ == other.size_kb_) && (fill_policy_ == other.fill_policy_);
+}
+#pragma GCC diagnostic pop
 
 void TraceConfig::BufferConfig::FromProto(
     const perfetto::protos::TraceConfig_BufferConfig& proto) {
@@ -220,6 +307,15 @@ TraceConfig::DataSource::DataSource(TraceConfig::DataSource&&) noexcept =
     default;
 TraceConfig::DataSource& TraceConfig::DataSource::operator=(
     TraceConfig::DataSource&&) = default;
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+bool TraceConfig::DataSource::operator==(
+    const TraceConfig::DataSource& other) const {
+  return (config_ == other.config_) &&
+         (producer_name_filter_ == other.producer_name_filter_);
+}
+#pragma GCC diagnostic pop
 
 void TraceConfig::DataSource::FromProto(
     const perfetto::protos::TraceConfig_DataSource& proto) {
@@ -262,6 +358,16 @@ TraceConfig::ProducerConfig::ProducerConfig(
     TraceConfig::ProducerConfig&&) noexcept = default;
 TraceConfig::ProducerConfig& TraceConfig::ProducerConfig::operator=(
     TraceConfig::ProducerConfig&&) = default;
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+bool TraceConfig::ProducerConfig::operator==(
+    const TraceConfig::ProducerConfig& other) const {
+  return (producer_name_ == other.producer_name_) &&
+         (shm_size_kb_ == other.shm_size_kb_) &&
+         (page_size_kb_ == other.page_size_kb_);
+}
+#pragma GCC diagnostic pop
 
 void TraceConfig::ProducerConfig::FromProto(
     const perfetto::protos::TraceConfig_ProducerConfig& proto) {
@@ -311,6 +417,17 @@ TraceConfig::StatsdMetadata::StatsdMetadata(
 TraceConfig::StatsdMetadata& TraceConfig::StatsdMetadata::operator=(
     TraceConfig::StatsdMetadata&&) = default;
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+bool TraceConfig::StatsdMetadata::operator==(
+    const TraceConfig::StatsdMetadata& other) const {
+  return (triggering_alert_id_ == other.triggering_alert_id_) &&
+         (triggering_config_uid_ == other.triggering_config_uid_) &&
+         (triggering_config_id_ == other.triggering_config_id_) &&
+         (triggering_subscription_id_ == other.triggering_subscription_id_);
+}
+#pragma GCC diagnostic pop
+
 void TraceConfig::StatsdMetadata::FromProto(
     const perfetto::protos::TraceConfig_StatsdMetadata& proto) {
   static_assert(
@@ -330,6 +447,13 @@ void TraceConfig::StatsdMetadata::FromProto(
       "size mismatch");
   triggering_config_id_ = static_cast<decltype(triggering_config_id_)>(
       proto.triggering_config_id());
+
+  static_assert(sizeof(triggering_subscription_id_) ==
+                    sizeof(proto.triggering_subscription_id()),
+                "size mismatch");
+  triggering_subscription_id_ =
+      static_cast<decltype(triggering_subscription_id_)>(
+          proto.triggering_subscription_id());
   unknown_fields_ = proto.unknown_fields();
 }
 
@@ -357,6 +481,13 @@ void TraceConfig::StatsdMetadata::ToProto(
   proto->set_triggering_config_id(
       static_cast<decltype(proto->triggering_config_id())>(
           triggering_config_id_));
+
+  static_assert(sizeof(triggering_subscription_id_) ==
+                    sizeof(proto->triggering_subscription_id()),
+                "size mismatch");
+  proto->set_triggering_subscription_id(
+      static_cast<decltype(proto->triggering_subscription_id())>(
+          triggering_subscription_id_));
   *(proto->mutable_unknown_fields()) = unknown_fields_;
 }
 
@@ -370,6 +501,14 @@ TraceConfig::GuardrailOverrides::GuardrailOverrides(
     TraceConfig::GuardrailOverrides&&) noexcept = default;
 TraceConfig::GuardrailOverrides& TraceConfig::GuardrailOverrides::operator=(
     TraceConfig::GuardrailOverrides&&) = default;
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+bool TraceConfig::GuardrailOverrides::operator==(
+    const TraceConfig::GuardrailOverrides& other) const {
+  return (max_upload_per_day_bytes_ == other.max_upload_per_day_bytes_);
+}
+#pragma GCC diagnostic pop
 
 void TraceConfig::GuardrailOverrides::FromProto(
     const perfetto::protos::TraceConfig_GuardrailOverrides& proto) {
@@ -391,6 +530,128 @@ void TraceConfig::GuardrailOverrides::ToProto(
   proto->set_max_upload_per_day_bytes(
       static_cast<decltype(proto->max_upload_per_day_bytes())>(
           max_upload_per_day_bytes_));
+  *(proto->mutable_unknown_fields()) = unknown_fields_;
+}
+
+TraceConfig::TriggerConfig::TriggerConfig() = default;
+TraceConfig::TriggerConfig::~TriggerConfig() = default;
+TraceConfig::TriggerConfig::TriggerConfig(const TraceConfig::TriggerConfig&) =
+    default;
+TraceConfig::TriggerConfig& TraceConfig::TriggerConfig::operator=(
+    const TraceConfig::TriggerConfig&) = default;
+TraceConfig::TriggerConfig::TriggerConfig(
+    TraceConfig::TriggerConfig&&) noexcept = default;
+TraceConfig::TriggerConfig& TraceConfig::TriggerConfig::operator=(
+    TraceConfig::TriggerConfig&&) = default;
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+bool TraceConfig::TriggerConfig::operator==(
+    const TraceConfig::TriggerConfig& other) const {
+  return (trigger_mode_ == other.trigger_mode_) &&
+         (triggers_ == other.triggers_) &&
+         (trigger_timeout_ms_ == other.trigger_timeout_ms_);
+}
+#pragma GCC diagnostic pop
+
+void TraceConfig::TriggerConfig::FromProto(
+    const perfetto::protos::TraceConfig_TriggerConfig& proto) {
+  static_assert(sizeof(trigger_mode_) == sizeof(proto.trigger_mode()),
+                "size mismatch");
+  trigger_mode_ = static_cast<decltype(trigger_mode_)>(proto.trigger_mode());
+
+  triggers_.clear();
+  for (const auto& field : proto.triggers()) {
+    triggers_.emplace_back();
+    triggers_.back().FromProto(field);
+  }
+
+  static_assert(
+      sizeof(trigger_timeout_ms_) == sizeof(proto.trigger_timeout_ms()),
+      "size mismatch");
+  trigger_timeout_ms_ =
+      static_cast<decltype(trigger_timeout_ms_)>(proto.trigger_timeout_ms());
+  unknown_fields_ = proto.unknown_fields();
+}
+
+void TraceConfig::TriggerConfig::ToProto(
+    perfetto::protos::TraceConfig_TriggerConfig* proto) const {
+  proto->Clear();
+
+  static_assert(sizeof(trigger_mode_) == sizeof(proto->trigger_mode()),
+                "size mismatch");
+  proto->set_trigger_mode(
+      static_cast<decltype(proto->trigger_mode())>(trigger_mode_));
+
+  for (const auto& it : triggers_) {
+    auto* entry = proto->add_triggers();
+    it.ToProto(entry);
+  }
+
+  static_assert(
+      sizeof(trigger_timeout_ms_) == sizeof(proto->trigger_timeout_ms()),
+      "size mismatch");
+  proto->set_trigger_timeout_ms(
+      static_cast<decltype(proto->trigger_timeout_ms())>(trigger_timeout_ms_));
+  *(proto->mutable_unknown_fields()) = unknown_fields_;
+}
+
+TraceConfig::TriggerConfig::Trigger::Trigger() = default;
+TraceConfig::TriggerConfig::Trigger::~Trigger() = default;
+TraceConfig::TriggerConfig::Trigger::Trigger(
+    const TraceConfig::TriggerConfig::Trigger&) = default;
+TraceConfig::TriggerConfig::Trigger& TraceConfig::TriggerConfig::Trigger::
+operator=(const TraceConfig::TriggerConfig::Trigger&) = default;
+TraceConfig::TriggerConfig::Trigger::Trigger(
+    TraceConfig::TriggerConfig::Trigger&&) noexcept = default;
+TraceConfig::TriggerConfig::Trigger& TraceConfig::TriggerConfig::Trigger::
+operator=(TraceConfig::TriggerConfig::Trigger&&) = default;
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+bool TraceConfig::TriggerConfig::Trigger::operator==(
+    const TraceConfig::TriggerConfig::Trigger& other) const {
+  return (name_ == other.name_) &&
+         (producer_name_regex_ == other.producer_name_regex_) &&
+         (stop_delay_ms_ == other.stop_delay_ms_);
+}
+#pragma GCC diagnostic pop
+
+void TraceConfig::TriggerConfig::Trigger::FromProto(
+    const perfetto::protos::TraceConfig_TriggerConfig_Trigger& proto) {
+  static_assert(sizeof(name_) == sizeof(proto.name()), "size mismatch");
+  name_ = static_cast<decltype(name_)>(proto.name());
+
+  static_assert(
+      sizeof(producer_name_regex_) == sizeof(proto.producer_name_regex()),
+      "size mismatch");
+  producer_name_regex_ =
+      static_cast<decltype(producer_name_regex_)>(proto.producer_name_regex());
+
+  static_assert(sizeof(stop_delay_ms_) == sizeof(proto.stop_delay_ms()),
+                "size mismatch");
+  stop_delay_ms_ = static_cast<decltype(stop_delay_ms_)>(proto.stop_delay_ms());
+  unknown_fields_ = proto.unknown_fields();
+}
+
+void TraceConfig::TriggerConfig::Trigger::ToProto(
+    perfetto::protos::TraceConfig_TriggerConfig_Trigger* proto) const {
+  proto->Clear();
+
+  static_assert(sizeof(name_) == sizeof(proto->name()), "size mismatch");
+  proto->set_name(static_cast<decltype(proto->name())>(name_));
+
+  static_assert(
+      sizeof(producer_name_regex_) == sizeof(proto->producer_name_regex()),
+      "size mismatch");
+  proto->set_producer_name_regex(
+      static_cast<decltype(proto->producer_name_regex())>(
+          producer_name_regex_));
+
+  static_assert(sizeof(stop_delay_ms_) == sizeof(proto->stop_delay_ms()),
+                "size mismatch");
+  proto->set_stop_delay_ms(
+      static_cast<decltype(proto->stop_delay_ms())>(stop_delay_ms_));
   *(proto->mutable_unknown_fields()) = unknown_fields_;
 }
 

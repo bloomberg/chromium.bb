@@ -1,10 +1,11 @@
 agrieve@chromium.org
+brucedawson@chromium.org
 dpranke@chromium.org
 jbudorick@chromium.org
 jochen@chromium.org
 scottmg@chromium.org
 thakis@chromium.org
-brucedawson@chromium.org
+thomasanderson@chromium.org
 tikuta@chromium.org
 
 # Clang build config changes
@@ -12,7 +13,6 @@ hans@chromium.org
 
 per-file .gitignore=*
 per-file check_gn_headers_whitelist.txt=*
-per-file install-build-deps.sh=thomasanderson@chromium.org
 per-file mac_toolchain.py=erikchen@chromium.org
 per-file mac_toolchain.py=justincohen@chromium.org
 per-file package_mac_toolchain.py=erikchen@chromium.org

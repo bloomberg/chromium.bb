@@ -42,3 +42,30 @@ interface GuestView {
       extensions.mime_handler.BeforeUnloadControl? before_unload_control,
       int32 plugin_frame_id);
 };
+
+// An interface implemented by the renderer which is used for creating a
+// MimeHandlerViewFrameContainer. This interface is exposed on RenderFrame and
+// and is used by the browser to ask the renderer to start the MimeHandlerView
+// creation process (by creating a MimeHandlerViewFrameContainer).
+interface MimeHandlerViewContainerManager {
+  // Called by the browser to request a BeforeUnloadControl interface pointer
+  // which will later be connected to the request from the extension page to
+  // provide the beforeunload API (to setup beforeunload in the embedder
+  // document). This is only relevant for the non-embedded MimeHandlerView (
+  // e.g., full page navigations to a relevant MIME type).
+  CreateBeforeUnloadControl()
+      => (extensions.mime_handler.BeforeUnloadControl before_unload_control);
+
+  // Asks the renderer to destroy the MimeHandlerViewFrameContainer associated
+  // with |element_instance_id|.
+  DestroyFrameContainer(int32 element_instance_id);
+
+  // Asks the renderer to restart MimeHandlerViewGuest creation process. This
+  // happens when an initial request fails because the browser cannot find the
+  // corresponding frame/proxy that was to be used for attaching a GuestView.
+  RetryCreatingMimeHandlerViewGuest(int32 element_instance_id);
+
+  // Notifies the renderer that the contents of MimeHandlerViewGuest has
+  // finished loading.
+  DidLoad(int32 element_instance_id);
+};

@@ -23,7 +23,7 @@ CFX_Break::CFX_Break(uint32_t dwLayoutStyles)
 CFX_Break::~CFX_Break() = default;
 
 void CFX_Break::Reset() {
-  m_eCharType = FX_CHARTYPE_Unknown;
+  m_eCharType = FX_CHARTYPE::kUnknown;
   m_Line[0].Clear();
   m_Line[1].Clear();
 }
@@ -82,8 +82,14 @@ void CFX_Break::SetBreakStatus() {
     tc->m_dwStatus = CFX_BreakType::Piece;
 }
 
+bool CFX_Break::IsGreaterThanLineWidth(int32_t width) const {
+  FX_SAFE_INT32 line_width = m_iLineWidth;
+  line_width += m_iTolerance;
+  return line_width.IsValid() && width > line_width.ValueOrDie();
+}
+
 FX_CHARTYPE CFX_Break::GetUnifiedCharType(FX_CHARTYPE chartype) const {
-  return chartype >= FX_CHARTYPE_ArabicAlef ? FX_CHARTYPE_Arabic : chartype;
+  return chartype >= FX_CHARTYPE::kArabicAlef ? FX_CHARTYPE::kArabic : chartype;
 }
 
 void CFX_Break::FontChanged() {
@@ -151,7 +157,7 @@ CFX_Char* CFX_Break::GetLastChar(int32_t index,
   while (iStart > -1) {
     CFX_Char* pTC = &tca[iStart--];
     if (((bRichText && pTC->m_iCharWidth < 0) || bOmitChar) &&
-        pTC->GetCharType() == FX_CHARTYPE_Combination) {
+        pTC->GetCharType() == FX_CHARTYPE::kCombination) {
       continue;
     }
     if (--index < 0)

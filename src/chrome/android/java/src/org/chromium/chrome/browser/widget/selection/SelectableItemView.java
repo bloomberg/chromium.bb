@@ -40,8 +40,8 @@ public abstract class SelectableItemView<E> extends SelectableItemViewBase<E> {
      */
     public SelectableItemView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        mIconColorList =
-                AppCompatResources.getColorStateList(getContext(), R.color.white_mode_tint);
+        mIconColorList = AppCompatResources.getColorStateList(
+                getContext(), R.color.default_icon_color_inverse);
         mDefaultLevel = getResources().getInteger(R.integer.list_item_level_default);
         mSelectedLevel = getResources().getInteger(R.integer.list_item_level_selected);
         mCheckDrawable = AnimatedVectorDrawableCompat.create(
@@ -54,8 +54,8 @@ public abstract class SelectableItemView<E> extends SelectableItemViewBase<E> {
         super.onFinishInflate();
 
         mIconView = findViewById(R.id.icon_view);
-        mTitleView = (TextView) findViewById(R.id.title);
-        mDescriptionView = (TextView) findViewById(R.id.description);
+        mTitleView = findViewById(R.id.title);
+        mDescriptionView = findViewById(R.id.description);
 
         if (mIconView != null) {
             mIconView.setBackgroundResource(R.drawable.list_item_icon_modern_bg);
@@ -70,6 +70,13 @@ public abstract class SelectableItemView<E> extends SelectableItemViewBase<E> {
     protected void setIconDrawable(Drawable iconDrawable) {
         mIconDrawable = iconDrawable;
         updateView();
+    }
+
+    /**
+     * Returns the drawable set for the icon view, if any.
+     */
+    protected Drawable getIconDrawable() {
+        return mIconDrawable;
     }
 
     /**
@@ -115,10 +122,10 @@ public abstract class SelectableItemView<E> extends SelectableItemViewBase<E> {
     public static void applyModernIconStyle(
             ImageView imageView, Drawable defaultIcon, boolean isSelected) {
         imageView.setBackgroundResource(R.drawable.list_item_icon_modern_bg);
-        imageView.setImageDrawable(isSelected
-                        ? TintedDrawable.constructTintedDrawable(imageView.getContext(),
-                                  R.drawable.ic_check_googblue_24dp, R.color.white_mode_tint)
-                        : defaultIcon);
+        imageView.setImageDrawable(
+                isSelected ? TintedDrawable.constructTintedDrawable(imageView.getContext(),
+                        R.drawable.ic_check_googblue_24dp, R.color.default_icon_color_inverse)
+                           : defaultIcon);
         imageView.getBackground().setLevel(isSelected
                         ? imageView.getResources().getInteger(R.integer.list_item_level_selected)
                         : imageView.getResources().getInteger(R.integer.list_item_level_default));

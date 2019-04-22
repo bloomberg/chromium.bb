@@ -71,8 +71,9 @@ SettingsPageBrowserTest.prototype = {
     const page = settingsMain.$$(pageType);
 
     const idleRender = page && page.$$('settings-idle-load');
-    if (!idleRender)
+    if (!idleRender) {
       return Promise.resolve(page);
+    }
 
     return idleRender.get().then(function() {
       Polymer.dom.flush();
@@ -91,8 +92,9 @@ SettingsPageBrowserTest.prototype = {
     assertTrue(!!sections);
     for (let i = 0; i < sections.length; ++i) {
       const s = sections[i];
-      if (s.section == section)
+      if (s.section == section) {
         return s;
+      }
     }
     return undefined;
   },
@@ -106,8 +108,9 @@ SettingsPageBrowserTest.prototype = {
     // Check if there are sub-pages to verify.
     const pages = section.firstElementChild.shadowRoot.querySelector(
         'settings-animated-pages');
-    if (!pages)
+    if (!pages) {
       return;
+    }
 
     const children = pages.getContentChildren();
     const stampedChildren = children.filter(function(element) {

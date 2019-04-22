@@ -68,8 +68,9 @@ const SiteSettingsBehaviorImpl = {
    * @return {string} The URL with a scheme, or an empty string.
    */
   ensureUrlHasScheme: function(url) {
-    if (url.length == 0)
+    if (url.length == 0) {
       return url;
+    }
     return url.includes('://') ? url : 'http://' + url;
   },
 
@@ -107,8 +108,9 @@ const SiteSettingsBehaviorImpl = {
    * @protected
    */
   toUrl: function(originOrPattern) {
-    if (originOrPattern.length == 0)
+    if (originOrPattern.length == 0) {
       return null;
+    }
     // TODO(finnur): Hmm, it would probably be better to ensure scheme on the
     //     JS/C++ boundary.
     // TODO(dschuyler): I agree. This filtering should be done in one go, rather
@@ -161,11 +163,12 @@ const SiteSettingsBehaviorImpl = {
    */
   getCategoryList: function() {
     if (this.contentTypes_.length == 0) {
-      for (let typeName in settings.ContentSettingsTypes) {
+      for (const typeName in settings.ContentSettingsTypes) {
         const contentType = settings.ContentSettingsTypes[typeName];
         // <if expr="not chromeos">
-        if (contentType == settings.ContentSettingsTypes.PROTECTED_CONTENT)
+        if (contentType == settings.ContentSettingsTypes.PROTECTED_CONTENT) {
           continue;
+        }
         // </if>
         // Some categories store their data in a custom way.
         if (contentType == settings.ContentSettingsTypes.COOKIES ||
@@ -179,24 +182,24 @@ const SiteSettingsBehaviorImpl = {
 
     const addOrRemoveSettingWithFlag = (type, flag) => {
       if (loadTimeData.getBoolean(flag)) {
-        if (!this.contentTypes_.includes(type))
+        if (!this.contentTypes_.includes(type)) {
           this.contentTypes_.push(type);
+        }
       } else {
-        if (this.contentTypes_.includes(type))
+        if (this.contentTypes_.includes(type)) {
           this.contentTypes_.splice(this.contentTypes_.indexOf(type), 1);
+        }
       }
     };
     // These categories are gated behind flags.
     addOrRemoveSettingWithFlag(
         settings.ContentSettingsTypes.SENSORS, 'enableSensorsContentSetting');
     addOrRemoveSettingWithFlag(
+        settings.ContentSettingsTypes.SERIAL_PORTS,
+        'enableExperimentalWebPlatformFeatures');
+    addOrRemoveSettingWithFlag(
         settings.ContentSettingsTypes.ADS,
         'enableSafeBrowsingSubresourceFilter');
-    addOrRemoveSettingWithFlag(
-        settings.ContentSettingsTypes.SOUND, 'enableSoundContentSetting');
-    addOrRemoveSettingWithFlag(
-        settings.ContentSettingsTypes.CLIPBOARD,
-        'enableClipboardContentSetting');
     addOrRemoveSettingWithFlag(
         settings.ContentSettingsTypes.PAYMENT_HANDLER,
         'enablePaymentHandlerContentSetting');

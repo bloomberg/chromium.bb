@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
@@ -117,8 +118,9 @@ class ThreadAwareCallbackAbortTest : public proxy::PluginProxyMultiThreadTest {
     {
       ProxyAutoLock auto_lock;
       main_thread_task_runner_->PostTask(
-          FROM_HERE, base::Bind(&ThreadAwareCallbackAbortTest::DeleteCallback,
-                                base::Unretained(this)));
+          FROM_HERE,
+          base::BindOnce(&ThreadAwareCallbackAbortTest::DeleteCallback,
+                         base::Unretained(this)));
       // |main_thread_callback_| is still valid, even if DeleteCallback() can be
       // called before this following statement. That is because |auto_lock| is
       // still held by this method, which prevents DeleteCallback() from

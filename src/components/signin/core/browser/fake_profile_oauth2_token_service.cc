@@ -112,12 +112,6 @@ void FakeProfileOAuth2TokenService::IssueTokenForAllPendingRequests(
                    GoogleServiceAuthError::AuthErrorNone(), token_response);
 }
 
-void FakeProfileOAuth2TokenService::UpdateAuthErrorForTesting(
-    const std::string& account_id,
-    const GoogleServiceAuthError& error) {
-  ProfileOAuth2TokenService::UpdateAuthError(account_id, error);
-}
-
 void FakeProfileOAuth2TokenService::CompleteRequests(
     const std::string& account_id,
     bool all_scopes,
@@ -134,6 +128,12 @@ void FakeProfileOAuth2TokenService::CompleteRequests(
     bool scope_matches = all_scopes || it->scopes == scope;
     bool account_matches = account_id.empty() || account_id == it->account_id;
     if (account_matches && scope_matches) {
+      for (auto& diagnostic_observer : GetDiagnicsObservers()) {
+        diagnostic_observer.OnFetchAccessTokenComplete(
+            account_id, it->request->GetConsumerId(), scope, error,
+            base::Time());
+      }
+
       it->request->InformConsumer(
           error, OAuth2AccessTokenConsumer::TokenResponse(
                      token_response.access_token,
@@ -189,7 +189,7 @@ void FakeProfileOAuth2TokenService::FetchOAuth2Token(
         FROM_HERE,
         base::BindOnce(&FakeProfileOAuth2TokenService::CompleteRequests,
                        weak_ptr_factory_.GetWeakPtr(), account_id,
-                       /*all_scoped=*/true, ScopeSet(),
+                       /*all_scoped=*/true, scopes,
                        GoogleServiceAuthError::AuthErrorNone(),
                        OAuth2AccessTokenConsumer::TokenResponse(
                            "access_token", base::Time::Max(), std::string())));

@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram_macros.h"
@@ -227,8 +228,7 @@ DomDistillerViewerSource::DomDistillerViewerSource(
       dom_distiller_service_(dom_distiller_service),
       distiller_ui_handle_(std::move(ui_handle)) {}
 
-DomDistillerViewerSource::~DomDistillerViewerSource() {
-}
+DomDistillerViewerSource::~DomDistillerViewerSource() {}
 
 std::string DomDistillerViewerSource::GetSource() const {
   return scheme_ + "://";
@@ -254,8 +254,8 @@ void DomDistillerViewerSource::StartDataRequest(
   if (base::StartsWith(path, kViewerSaveFontScalingPath,
                        base::CompareCase::SENSITIVE)) {
     double scale = 1.0;
-    if (base::StringToDouble(
-        path.substr(strlen(kViewerSaveFontScalingPath)), &scale)) {
+    if (base::StringToDouble(path.substr(strlen(kViewerSaveFontScalingPath)),
+                             &scale)) {
       dom_distiller_service_->GetDistilledPagePrefs()->SetFontScaling(scale);
     }
   }
@@ -308,8 +308,7 @@ bool DomDistillerViewerSource::ShouldServiceRequest(
   return url.SchemeIs(scheme_);
 }
 
-std::string DomDistillerViewerSource::GetContentSecurityPolicyStyleSrc()
-    const {
+std::string DomDistillerViewerSource::GetContentSecurityPolicyStyleSrc() const {
   return "style-src 'self' https://fonts.googleapis.com;";
 }
 

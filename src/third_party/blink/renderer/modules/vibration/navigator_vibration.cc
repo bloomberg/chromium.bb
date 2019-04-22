@@ -70,7 +70,7 @@ bool NavigatorVibration::vibrate(Navigator& navigator,
   // reference to |window| or |navigator| was retained in another window.
   if (!frame)
     return false;
-  CollectHistogramMetrics(*frame);
+  CollectHistogramMetrics(navigator);
 
   DCHECK(frame->GetDocument());
   DCHECK(frame->GetPage());
@@ -101,13 +101,16 @@ bool NavigatorVibration::vibrate(Navigator& navigator,
 }
 
 // static
-void NavigatorVibration::CollectHistogramMetrics(const LocalFrame& frame) {
+void NavigatorVibration::CollectHistogramMetrics(const Navigator& navigator) {
   NavigatorVibrationType type;
-  bool user_gesture = frame.HasBeenActivated();
-  UseCounter::Count(&frame, WebFeature::kNavigatorVibrate);
-  if (!frame.IsMainFrame()) {
-    UseCounter::Count(&frame, WebFeature::kNavigatorVibrateSubFrame);
-    if (frame.IsCrossOriginSubframe()) {
+  LocalFrame* frame = navigator.GetFrame();
+  bool user_gesture = frame->HasBeenActivated();
+  UseCounter::Count(navigator.DomWindow()->document(),
+                    WebFeature::kNavigatorVibrate);
+  if (!frame->IsMainFrame()) {
+    UseCounter::Count(navigator.DomWindow()->document(),
+                      WebFeature::kNavigatorVibrateSubFrame);
+    if (frame->IsCrossOriginSubframe()) {
       if (user_gesture)
         type = NavigatorVibrationType::kCrossOriginSubFrameWithUserGesture;
       else

@@ -104,7 +104,7 @@ static bool TokenExitsMath(const CompactHTMLToken& token) {
 }
 
 static bool TokenExitsInSelect(const CompactHTMLToken& token) {
-  // https://html.spec.whatwg.org/#parsing-main-inselect
+  // https://html.spec.whatwg.org/C/#parsing-main-inselect
   const String& tag_name = token.Data();
   return ThreadSafeMatch(tag_name, kInputTag) ||
          ThreadSafeMatch(tag_name, kKeygenTag) ||
@@ -173,10 +173,9 @@ HTMLTreeBuilderSimulator::SimulatedToken HTMLTreeBuilderSimulator::Simulate(
           language_attribute_value = item->Value();
         }
 
-        mojom::ScriptType script_type;
         if (ScriptLoader::IsValidScriptTypeAndLanguage(
                 type_attribute_value, language_attribute_value,
-                ScriptLoader::kAllowLegacyTypeInTypeAttribute, script_type)) {
+                ScriptLoader::kAllowLegacyTypeInTypeAttribute)) {
           simulated_token = kValidScriptStart;
         }
       } else if (ThreadSafeMatch(tag_name, kLinkTag)) {
@@ -184,15 +183,14 @@ HTMLTreeBuilderSimulator::SimulatedToken HTMLTreeBuilderSimulator::Simulate(
       } else if (!in_select_insertion_mode_) {
         // If we're in the "in select" insertion mode, all of these tags are
         // ignored, so we shouldn't change the tokenizer state:
-        // https://html.spec.whatwg.org/#parsing-main-inselect
+        // https://html.spec.whatwg.org/C/#parsing-main-inselect
         if (ThreadSafeMatch(tag_name, kPlaintextTag) &&
             !in_select_insertion_mode_) {
           tokenizer->SetState(HTMLTokenizer::kPLAINTEXTState);
         } else if (ThreadSafeMatch(tag_name, kStyleTag) ||
                    ThreadSafeMatch(tag_name, kIFrameTag) ||
                    ThreadSafeMatch(tag_name, kXmpTag) ||
-                   (ThreadSafeMatch(tag_name, kNoembedTag) &&
-                    options_.plugins_enabled) ||
+                   ThreadSafeMatch(tag_name, kNoembedTag) ||
                    ThreadSafeMatch(tag_name, kNoframesTag) ||
                    (ThreadSafeMatch(tag_name, kNoscriptTag) &&
                     options_.script_enabled)) {
@@ -205,7 +203,7 @@ HTMLTreeBuilderSimulator::SimulatedToken HTMLTreeBuilderSimulator::Simulate(
       // into PLAINTEXTState, and whether '<xmp>' and others will consume
       // textual content.
       //
-      // https://html.spec.whatwg.org/#parsing-main-inselect
+      // https://html.spec.whatwg.org/C/#parsing-main-inselect
       if (ThreadSafeMatch(tag_name, kSelectTag)) {
         in_select_insertion_mode_ = true;
       } else if (in_select_insertion_mode_ && TokenExitsInSelect(token)) {
@@ -252,7 +250,7 @@ HTMLTreeBuilderSimulator::SimulatedToken HTMLTreeBuilderSimulator::Simulate(
   return simulated_token;
 }
 
-// https://html.spec.whatwg.org/multipage/parsing.html#html-integration-point
+// https://html.spec.whatwg.org/C/#html-integration-point
 bool HTMLTreeBuilderSimulator::IsHTMLIntegrationPointForStartTag(
     const CompactHTMLToken& token) const {
   DCHECK(token.GetType() == HTMLToken::kStartTag) << token.GetType();
@@ -278,7 +276,7 @@ bool HTMLTreeBuilderSimulator::IsHTMLIntegrationPointForStartTag(
   return false;
 }
 
-// https://html.spec.whatwg.org/multipage/parsing.html#html-integration-point
+// https://html.spec.whatwg.org/C/#html-integration-point
 bool HTMLTreeBuilderSimulator::IsHTMLIntegrationPointForEndTag(
     const CompactHTMLToken& token) const {
   if (token.GetType() != HTMLToken::kEndTag)

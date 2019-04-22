@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "chrome/common/safe_browsing/archive_analyzer_results.h"
 #include "chrome/services/file_util/public/mojom/constants.mojom.h"
@@ -16,9 +17,13 @@
 
 SandboxedDMGAnalyzer::SandboxedDMGAnalyzer(
     const base::FilePath& dmg_file,
+    const uint64_t max_size,
     const ResultCallback& callback,
     service_manager::Connector* connector)
-    : file_path_(dmg_file), callback_(callback), connector_(connector) {
+    : file_path_(dmg_file),
+      max_size_(max_size),
+      callback_(callback),
+      connector_(connector) {
   DCHECK(callback);
 }
 
@@ -29,7 +34,7 @@ void SandboxedDMGAnalyzer::Start() {
       FROM_HERE,
       {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::Bind(&SandboxedDMGAnalyzer::PrepareFileToAnalyze, this));
+      base::BindOnce(&SandboxedDMGAnalyzer::PrepareFileToAnalyze, this));
 }
 
 SandboxedDMGAnalyzer::~SandboxedDMGAnalyzer() = default;
@@ -45,9 +50,21 @@ void SandboxedDMGAnalyzer::PrepareFileToAnalyze() {
     return;
   }
 
+  uint64_t size = file.GetLength();
+
+  bool too_big_to_unpack = base::checked_cast<uint64_t>(size) > max_size_;
+  UMA_HISTOGRAM_BOOLEAN("SBClientDownload.DmgTooBigToUnpack",
+                        too_big_to_unpack);
+
+  if (too_big_to_unpack) {
+    DLOG(ERROR) << "File is too big: " << file_path_.value();
+    ReportFileFailure();
+    return;
+  }
+
   base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                           base::Bind(&SandboxedDMGAnalyzer::AnalyzeFile, this,
-                                      base::Passed(&file)));
+                           base::BindOnce(&SandboxedDMGAnalyzer::AnalyzeFile,
+                                          this, std::move(file)));
 }
 
 void SandboxedDMGAnalyzer::ReportFileFailure() {
@@ -56,7 +73,7 @@ void SandboxedDMGAnalyzer::ReportFileFailure() {
 
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::UI},
-      base::Bind(callback_, safe_browsing::ArchiveAnalyzerResults()));
+      base::BindOnce(callback_, safe_browsing::ArchiveAnalyzerResults()));
 }
 
 void SandboxedDMGAnalyzer::AnalyzeFile(base::File file) {

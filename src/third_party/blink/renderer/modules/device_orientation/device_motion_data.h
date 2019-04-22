@@ -31,8 +31,8 @@
 
 namespace blink {
 
-class DeviceAcceleration;
-class DeviceRotationRate;
+class DeviceMotionEventAcceleration;
+class DeviceMotionEventRotationRate;
 class DeviceMotionEventInit;
 
 class MODULES_EXPORT DeviceMotionData final
@@ -40,34 +40,39 @@ class MODULES_EXPORT DeviceMotionData final
  public:
   static DeviceMotionData* Create();
   static DeviceMotionData* Create(
-      DeviceAcceleration*,
-      DeviceAcceleration* acceleration_including_gravity,
-      DeviceRotationRate*,
+      DeviceMotionEventAcceleration*,
+      DeviceMotionEventAcceleration* acceleration_including_gravity,
+      DeviceMotionEventRotationRate*,
       double interval);
   static DeviceMotionData* Create(const DeviceMotionEventInit*);
 
   DeviceMotionData();
-  DeviceMotionData(DeviceAcceleration*,
-                   DeviceAcceleration* acceleration_including_gravity,
-                   DeviceRotationRate*,
-                   double interval);
+  DeviceMotionData(
+      DeviceMotionEventAcceleration*,
+      DeviceMotionEventAcceleration* acceleration_including_gravity,
+      DeviceMotionEventRotationRate*,
+      double interval);
 
   void Trace(blink::Visitor*);
 
-  DeviceAcceleration* GetAcceleration() const { return acceleration_.Get(); }
-  DeviceAcceleration* GetAccelerationIncludingGravity() const {
+  DeviceMotionEventAcceleration* GetAcceleration() const {
+    return acceleration_.Get();
+  }
+  DeviceMotionEventAcceleration* GetAccelerationIncludingGravity() const {
     return acceleration_including_gravity_.Get();
   }
-  DeviceRotationRate* GetRotationRate() const { return rotation_rate_.Get(); }
+  DeviceMotionEventRotationRate* GetRotationRate() const {
+    return rotation_rate_.Get();
+  }
 
   double Interval() const { return interval_; }
 
   bool CanProvideEventData() const;
 
  private:
-  Member<DeviceAcceleration> acceleration_;
-  Member<DeviceAcceleration> acceleration_including_gravity_;
-  Member<DeviceRotationRate> rotation_rate_;
+  Member<DeviceMotionEventAcceleration> acceleration_;
+  Member<DeviceMotionEventAcceleration> acceleration_including_gravity_;
+  Member<DeviceMotionEventRotationRate> rotation_rate_;
   double interval_;
 };
 

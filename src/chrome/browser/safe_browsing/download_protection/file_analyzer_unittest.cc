@@ -4,15 +4,18 @@
 
 #include "chrome/browser/safe_browsing/download_protection/file_analyzer.h"
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/safe_browsing/file_type_policies_test_util.h"
 #include "chrome/common/safe_browsing/mock_binary_feature_extractor.h"
+#include "components/safe_browsing/features.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -43,6 +46,8 @@ class FileAnalyzerTest : public testing::Test {
   void SetUp() override {
     has_result_ = false;
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    scoped_feature_list_.InitAndEnableFeature(
+        safe_browsing::kInspectRarContentFeature);
   }
 
   void TearDown() override {}
@@ -55,6 +60,7 @@ class FileAnalyzerTest : public testing::Test {
  private:
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
   content::InProcessUtilityThreadHelper in_process_utility_thread_helper_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 TEST_F(FileAnalyzerTest, TypeWinExecutable) {
@@ -693,5 +699,223 @@ TEST_F(FileAnalyzerTest, TypeSniffsDmgWithoutExtension) {
 }
 
 #endif
+
+TEST_F(FileAnalyzerTest, SmallRarHasContentInspection) {
+  scoped_refptr<MockBinaryFeatureExtractor> extractor =
+      new testing::StrictMock<MockBinaryFeatureExtractor>();
+  FileAnalyzer analyzer(extractor);
+  base::RunLoop run_loop;
+
+  base::FilePath target_path(FILE_PATH_LITERAL("has_exe.rar"));
+  base::FilePath rar_path;
+  EXPECT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &rar_path));
+  rar_path = rar_path.AppendASCII("safe_browsing")
+                 .AppendASCII("rar")
+                 .AppendASCII("has_exe.rar");
+
+  // Analyze the RAR with default size limit
+  analyzer.Start(
+      target_path, rar_path,
+      base::BindOnce(&FileAnalyzerTest::DoneCallback, base::Unretained(this),
+                     run_loop.QuitClosure()));
+  run_loop.Run();
+
+  ASSERT_TRUE(has_result_);
+  EXPECT_EQ(result_.type, ClientDownloadRequest::RAR_COMPRESSED_EXECUTABLE);
+  EXPECT_EQ(result_.archive_is_valid, FileAnalyzer::ArchiveValid::VALID);
+  ASSERT_EQ(1, result_.archived_binaries.size());
+
+  // Since the file is small enough, we should have a sha256
+  EXPECT_FALSE(result_.archived_binaries.Get(0).digests().sha256().empty());
+}
+
+// TODO(crbug.com/949399): The test is flaky (fail, timeout) on all platforms.
+TEST_F(FileAnalyzerTest, DISABLED_LargeRarSkipsContentInspection) {
+  scoped_refptr<MockBinaryFeatureExtractor> extractor =
+      new testing::StrictMock<MockBinaryFeatureExtractor>();
+  FileAnalyzer analyzer(extractor);
+  base::RunLoop run_loop;
+
+  FileTypePoliciesTestOverlay overlay;
+  std::unique_ptr<DownloadFileTypeConfig> config = overlay.DuplicateConfig();
+  for (DownloadFileType& file_type : *config->mutable_file_types()) {
+    if (file_type.extension() == "rar") {
+      // All archives will skip content inspection.
+      file_type.mutable_platform_settings(0)->set_max_file_size_to_analyze(0);
+      break;
+    }
+  }
+  overlay.SwapConfig(config);
+
+  base::FilePath target_path(FILE_PATH_LITERAL("has_exe.rar"));
+  base::FilePath rar_path;
+  EXPECT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &rar_path));
+  rar_path = rar_path.AppendASCII("safe_browsing")
+                 .AppendASCII("rar")
+                 .AppendASCII("has_exe.rar");
+
+  analyzer.Start(
+      target_path, rar_path,
+      base::BindOnce(&FileAnalyzerTest::DoneCallback, base::Unretained(this),
+                     run_loop.QuitClosure()));
+  run_loop.Run();
+
+  ASSERT_TRUE(has_result_);
+  EXPECT_EQ(result_.type, ClientDownloadRequest::INVALID_RAR);
+  EXPECT_EQ(result_.archive_is_valid, FileAnalyzer::ArchiveValid::INVALID);
+  ASSERT_EQ(0, result_.archived_binaries.size());
+}
+
+TEST_F(FileAnalyzerTest, ZipFilesGetFileCount) {
+  scoped_refptr<MockBinaryFeatureExtractor> extractor =
+      new testing::StrictMock<MockBinaryFeatureExtractor>();
+  FileAnalyzer analyzer(extractor);
+  base::RunLoop run_loop;
+
+  base::FilePath target_path(FILE_PATH_LITERAL("target.zip"));
+  base::FilePath tmp_path =
+      temp_dir_.GetPath().Append(FILE_PATH_LITERAL("tmp.crdownload"));
+
+  base::ScopedTempDir zip_source_dir;
+  ASSERT_TRUE(zip_source_dir.CreateUniqueTempDir());
+  std::string file_contents = "dummy file";
+  ASSERT_EQ(static_cast<int>(file_contents.size()),
+            base::WriteFile(
+                zip_source_dir.GetPath().Append(FILE_PATH_LITERAL("file.exe")),
+                file_contents.data(), file_contents.size()));
+  ASSERT_TRUE(zip::Zip(zip_source_dir.GetPath(), tmp_path,
+                       /* include_hidden_files= */
+                       false));
+
+  analyzer.Start(
+      target_path, tmp_path,
+      base::BindOnce(&FileAnalyzerTest::DoneCallback, base::Unretained(this),
+                     run_loop.QuitClosure()));
+  run_loop.Run();
+
+  ASSERT_TRUE(has_result_);
+  EXPECT_EQ(1, result_.file_count);
+  EXPECT_EQ(0, result_.directory_count);
+}
+
+TEST_F(FileAnalyzerTest, ZipFilesGetDirectoryCount) {
+  scoped_refptr<MockBinaryFeatureExtractor> extractor =
+      new testing::StrictMock<MockBinaryFeatureExtractor>();
+  FileAnalyzer analyzer(extractor);
+  base::RunLoop run_loop;
+
+  base::FilePath target_path(FILE_PATH_LITERAL("target.zip"));
+  base::FilePath tmp_path =
+      temp_dir_.GetPath().Append(FILE_PATH_LITERAL("tmp.crdownload"));
+
+  base::ScopedTempDir zip_source_dir;
+  ASSERT_TRUE(zip_source_dir.CreateUniqueTempDir());
+  ASSERT_TRUE(base::CreateDirectory(
+      zip_source_dir.GetPath().Append(FILE_PATH_LITERAL("direcotry"))));
+  ASSERT_TRUE(zip::Zip(zip_source_dir.GetPath(), tmp_path,
+                       /* include_hidden_files= */
+                       false));
+
+  analyzer.Start(
+      target_path, tmp_path,
+      base::BindOnce(&FileAnalyzerTest::DoneCallback, base::Unretained(this),
+                     run_loop.QuitClosure()));
+  run_loop.Run();
+
+  ASSERT_TRUE(has_result_);
+  EXPECT_EQ(0, result_.file_count);
+  EXPECT_EQ(1, result_.directory_count);
+}
+
+TEST_F(FileAnalyzerTest, RarFilesGetFileCount) {
+  scoped_refptr<MockBinaryFeatureExtractor> extractor =
+      new testing::StrictMock<MockBinaryFeatureExtractor>();
+  FileAnalyzer analyzer(extractor);
+  base::RunLoop run_loop;
+
+  base::FilePath target_path(FILE_PATH_LITERAL("has_exe.rar"));
+  base::FilePath rar_path;
+  EXPECT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &rar_path));
+  rar_path = rar_path.AppendASCII("safe_browsing")
+                 .AppendASCII("rar")
+                 .AppendASCII("has_exe.rar");
+
+  analyzer.Start(
+      target_path, rar_path,
+      base::BindOnce(&FileAnalyzerTest::DoneCallback, base::Unretained(this),
+                     run_loop.QuitClosure()));
+  run_loop.Run();
+
+  ASSERT_TRUE(has_result_);
+  EXPECT_EQ(1, result_.file_count);
+  EXPECT_EQ(0, result_.directory_count);
+}
+
+TEST_F(FileAnalyzerTest, RarFilesGetDirectoryCount) {
+  scoped_refptr<MockBinaryFeatureExtractor> extractor =
+      new testing::StrictMock<MockBinaryFeatureExtractor>();
+  FileAnalyzer analyzer(extractor);
+  base::RunLoop run_loop;
+
+  base::FilePath target_path(FILE_PATH_LITERAL("has_folder.rar"));
+  base::FilePath rar_path;
+  EXPECT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &rar_path));
+  rar_path = rar_path.AppendASCII("safe_browsing")
+                 .AppendASCII("rar")
+                 .AppendASCII("has_folder.rar");
+
+  analyzer.Start(
+      target_path, rar_path,
+      base::BindOnce(&FileAnalyzerTest::DoneCallback, base::Unretained(this),
+                     run_loop.QuitClosure()));
+  run_loop.Run();
+
+  ASSERT_TRUE(has_result_);
+  EXPECT_EQ(0, result_.file_count);
+  EXPECT_EQ(1, result_.directory_count);
+}
+
+TEST_F(FileAnalyzerTest, LargeZipSkipsContentInspection) {
+  scoped_refptr<MockBinaryFeatureExtractor> extractor =
+      new testing::StrictMock<MockBinaryFeatureExtractor>();
+  FileAnalyzer analyzer(extractor);
+  base::RunLoop run_loop;
+
+  FileTypePoliciesTestOverlay overlay;
+  std::unique_ptr<DownloadFileTypeConfig> config = overlay.DuplicateConfig();
+  for (DownloadFileType& file_type : *config->mutable_file_types()) {
+    if (file_type.extension() == "zip") {
+      // All archives will skip content inspection.
+      file_type.mutable_platform_settings(0)->set_max_file_size_to_analyze(0);
+      break;
+    }
+  }
+  overlay.SwapConfig(config);
+
+  base::FilePath target_path(FILE_PATH_LITERAL("target.zip"));
+  base::FilePath tmp_path =
+      temp_dir_.GetPath().Append(FILE_PATH_LITERAL("tmp.crdownload"));
+
+  base::ScopedTempDir zip_source_dir;
+  ASSERT_TRUE(zip_source_dir.CreateUniqueTempDir());
+  std::string file_contents = "dummy file";
+  ASSERT_EQ(static_cast<int>(file_contents.size()),
+            base::WriteFile(
+                zip_source_dir.GetPath().Append(FILE_PATH_LITERAL("file.exe")),
+                file_contents.data(), file_contents.size()));
+  ASSERT_TRUE(zip::Zip(zip_source_dir.GetPath(), tmp_path,
+                       /* include_hidden_files= */ false));
+
+  analyzer.Start(
+      target_path, tmp_path,
+      base::BindOnce(&FileAnalyzerTest::DoneCallback, base::Unretained(this),
+                     run_loop.QuitClosure()));
+  run_loop.Run();
+
+  ASSERT_TRUE(has_result_);
+  EXPECT_EQ(result_.type, ClientDownloadRequest::INVALID_ZIP);
+  EXPECT_EQ(result_.archive_is_valid, FileAnalyzer::ArchiveValid::INVALID);
+  ASSERT_EQ(0, result_.archived_binaries.size());
+}
 
 }  // namespace safe_browsing

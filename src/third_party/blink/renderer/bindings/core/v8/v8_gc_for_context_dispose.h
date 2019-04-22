@@ -31,6 +31,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_GC_FOR_CONTEXT_DISPOSE_H_
 #define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_GC_FOR_CONTEXT_DISPOSE_H_
 
+#include "base/macros.h"
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/timer.h"
@@ -39,7 +40,6 @@ namespace blink {
 
 class V8GCForContextDispose {
   USING_FAST_MALLOC(V8GCForContextDispose);
-  WTF_MAKE_NONCOPYABLE(V8GCForContextDispose);
 
  public:
   void NotifyContextDisposed(bool is_main_frame, WindowProxy::FrameReuseStatus);
@@ -61,6 +61,8 @@ class V8GCForContextDispose {
   bool did_dispose_context_for_main_frame_;
   double last_context_disposal_time_;
   bool force_page_navigation_gc_;
+
+  DISALLOW_COPY_AND_ASSIGN(V8GCForContextDispose);
 };
 
 }  // namespace blink

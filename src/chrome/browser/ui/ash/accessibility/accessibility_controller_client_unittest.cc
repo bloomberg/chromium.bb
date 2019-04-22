@@ -5,11 +5,14 @@
 #include "chrome/browser/ui/ash/accessibility/accessibility_controller_client.h"
 
 #include "ash/public/interfaces/accessibility_controller.mojom.h"
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
+#include "chrome/browser/ui/ash/accessibility/fake_accessibility_controller.h"
 #include "chromeos/audio/chromeos_sounds.h"
+#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_service_manager_context.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -18,44 +21,6 @@ namespace {
 
 constexpr base::TimeDelta kShutdownSoundDuration =
     base::TimeDelta::FromMilliseconds(1000);
-
-class TestAccessibilityController : ash::mojom::AccessibilityController {
- public:
-  TestAccessibilityController() : binding_(this) {}
-  ~TestAccessibilityController() override = default;
-
-  ash::mojom::AccessibilityControllerPtr CreateInterfacePtr() {
-    ash::mojom::AccessibilityControllerPtr ptr;
-    binding_.Bind(mojo::MakeRequest(&ptr));
-    return ptr;
-  }
-
-  // ash::mojom::AccessibilityController:
-  void SetClient(ash::mojom::AccessibilityControllerClientPtr client) override {
-    was_client_set_ = true;
-  }
-  void SetDarkenScreen(bool darken) override {}
-  void BrailleDisplayStateChanged(bool connected) override {}
-  void SetFocusHighlightRect(const gfx::Rect& bounds_in_screen) override {}
-  void SetCaretBounds(const gfx::Rect& bounds_in_screen) override {}
-  void SetAccessibilityPanelAlwaysVisible(bool always_visible) override {}
-  void SetAccessibilityPanelBounds(
-      const gfx::Rect& bounds,
-      ash::mojom::AccessibilityPanelState state) override {}
-  void SetSelectToSpeakState(ash::mojom::SelectToSpeakState state) override {}
-  void SetSelectToSpeakEventHandlerDelegate(
-      ash::mojom::SelectToSpeakEventHandlerDelegatePtr delegate) override {}
-  void ToggleDictationFromSource(
-      ash::mojom::DictationToggleSource source) override {}
-
-  bool was_client_set() const { return was_client_set_; }
-
- private:
-  mojo::Binding<ash::mojom::AccessibilityController> binding_;
-  bool was_client_set_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(TestAccessibilityController);
-};
 
 class FakeAccessibilityControllerClient : public AccessibilityControllerClient {
  public:
@@ -127,15 +92,16 @@ class AccessibilityControllerClientTest : public testing::Test {
   ~AccessibilityControllerClientTest() override = default;
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_enviroment_;
+  content::TestBrowserThreadBundle thread_bundle_;
+  content::TestServiceManagerContext context_;
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityControllerClientTest);
 };
 
 TEST_F(AccessibilityControllerClientTest, MethodCalls) {
   FakeAccessibilityControllerClient client;
-  TestAccessibilityController controller;
-  client.InitForTesting(controller.CreateInterfacePtr());
+  FakeAccessibilityController controller;
+  client.Init();
   client.FlushForTesting();
 
   // Tests client is set.

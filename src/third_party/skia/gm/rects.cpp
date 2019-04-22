@@ -81,7 +81,7 @@ protected:
             SkScalar pos[] = { 0, SK_ScalarHalf, SK_Scalar1 };
             p.setShader(SkGradientShader::MakeRadial(center, 20, colors, pos,
                                                      SK_ARRAY_COUNT(colors),
-                                                     SkShader::kClamp_TileMode));
+                                                     SkTileMode::kClamp));
             fPaints.push_back(p);
         }
 
@@ -279,7 +279,6 @@ private:
 
 //////////////////////////////////////////////////////////////////////////////
 
-static GM* MyFactory(void*) { return new RectsGM; }
-static GMRegistry reg(MyFactory);
+DEF_GM( return new RectsGM; )
 
 }

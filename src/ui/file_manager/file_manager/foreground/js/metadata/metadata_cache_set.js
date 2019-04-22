@@ -4,314 +4,319 @@
 
 /**
  * Set of MetadataCacheItem.
- * @param {!MetadataCacheSetStorage} items Storage object containing
- *     MetadataCacheItem.
- * @extends {cr.EventTarget}
- * @constructor
- * @struct
  */
-function MetadataCacheSet(items) {
-  cr.EventTarget.call(this);
+class MetadataCacheSet extends cr.EventTarget {
+  /**
+   * @param {!MetadataCacheSetStorage} items Storage object containing
+   *     MetadataCacheItem.
+   */
+  constructor(items) {
+    super();
+
+    /**
+     * @private {!MetadataCacheSetStorage}
+     * @const
+     */
+    this.items_ = items;
+  }
 
   /**
-   * @private {!MetadataCacheSetStorage}
-   * @const
+   * Creates list of MetadataRequest based on the cache state.
+   * @param {!Array<!Entry>} entries
+   * @param {!Array<string>} names
+   * @return {!Array<!MetadataRequest>}
    */
-  this.items_ = items;
-}
-
-MetadataCacheSet.prototype.__proto__ = cr.EventTarget.prototype;
-
-/**
- * Creates list of MetadataRequest based on the cache state.
- * @param {!Array<!Entry>} entries
- * @param {!Array<string>} names
- * @return {!Array<!MetadataRequest>}
- */
-MetadataCacheSet.prototype.createRequests = function(entries, names) {
-  var urls = util.entriesToURLs(entries);
-  var requests = [];
-  for (var i = 0; i < entries.length; i++) {
-    var item = this.items_.peek(urls[i]);
-    var requestedNames = item ? item.createRequests(names) : names;
-    if (requestedNames.length)
-      requests.push(new MetadataRequest(entries[i], requestedNames));
-  }
-  return requests;
-};
-
-/**
- * Updates cache states to start the given requests.
- * @param {number} requestId
- * @param {!Array<!MetadataRequest>} requests
- */
-MetadataCacheSet.prototype.startRequests = function(requestId, requests) {
-  for (var i = 0; i < requests.length; i++) {
-    var request = requests[i];
-    var url = requests[i].entry['cachedUrl'] || requests[i].entry.toURL();
-    var item = this.items_.peek(url);
-    if (!item) {
-      item = new MetadataCacheItem();
-      this.items_.put(url, item);
+  createRequests(entries, names) {
+    const urls = util.entriesToURLs(entries);
+    const requests = [];
+    for (let i = 0; i < entries.length; i++) {
+      const item = this.items_.peek(urls[i]);
+      const requestedNames = item ? item.createRequests(names) : names;
+      if (requestedNames.length) {
+        requests.push(new MetadataRequest(entries[i], requestedNames));
+      }
     }
-    item.startRequests(requestId, request.names);
+    return requests;
   }
-};
 
-/**
- * Stores results from MetadataProvider with the request Id.
- * @param {number} requestId Request ID. If a newer operation has already been
- *     done, the results must be ignored.
- * @param {!Array<!Entry>} entries
- * @param {!Array<!MetadataItem>} results
- * @param {!Array<string>} names Property names that have been requested and
- *     updated.
- * @return {boolean} Whether at least one result is stored or not.
- */
-MetadataCacheSet.prototype.storeProperties = function(
-    requestId, entries, results, names) {
-  var changedEntries = [];
-  var urls = util.entriesToURLs(entries);
-  const entriesMap = new Map();
-
-  for (var i = 0; i < entries.length; i++) {
-    var url = urls[i];
-    var item = this.items_.peek(url);
-    if (item && item.storeProperties(requestId, results[i])) {
-      changedEntries.push(entries[i]);
-      entriesMap.set(url, entries[i]);
+  /**
+   * Updates cache states to start the given requests.
+   * @param {number} requestId
+   * @param {!Array<!MetadataRequest>} requests
+   */
+  startRequests(requestId, requests) {
+    for (let i = 0; i < requests.length; i++) {
+      const request = requests[i];
+      const url = requests[i].entry['cachedUrl'] || requests[i].entry.toURL();
+      let item = this.items_.peek(url);
+      if (!item) {
+        item = new MetadataCacheItem();
+        this.items_.put(url, item);
+      }
+      item.startRequests(requestId, request.names);
     }
   }
 
-  if (!changedEntries.length)
-    return false;
+  /**
+   * Stores results from MetadataProvider with the request Id.
+   * @param {number} requestId Request ID. If a newer operation has already been
+   *     done, the results must be ignored.
+   * @param {!Array<!Entry>} entries
+   * @param {!Array<!MetadataItem>} results
+   * @param {!Array<string>} names Property names that have been requested and
+   *     updated.
+   * @return {boolean} Whether at least one result is stored or not.
+   */
+  storeProperties(requestId, entries, results, names) {
+    const changedEntries = [];
+    const urls = util.entriesToURLs(entries);
+    const entriesMap = new Map();
 
-  var event = new Event('update');
-  event.entries = changedEntries;
-  event.entriesMap = entriesMap;
-  event.names = new Set(names);
-  this.dispatchEvent(event);
-  return true;
-};
+    for (let i = 0; i < entries.length; i++) {
+      const url = urls[i];
+      const item = this.items_.peek(url);
+      if (item && item.storeProperties(requestId, results[i])) {
+        changedEntries.push(entries[i]);
+        entriesMap.set(url, entries[i]);
+      }
+    }
 
-/**
- * Obtains cached properties for entries and names.
- * Note that it returns invalidated properties also.
- * @param {!Array<!Entry>} entries Entries.
- * @param {!Array<string>} names Property names.
- */
-MetadataCacheSet.prototype.get = function(entries, names) {
-  var results = [];
-  var urls = util.entriesToURLs(entries);
-  for (var i = 0; i < entries.length; i++) {
-    var item = this.items_.get(urls[i]);
-    results.push(item ? item.get(names) : {});
-  }
-  return results;
-};
-
-/**
- * Marks the caches of entries as invalidates and forces to reload at the next
- * time of startRequests.
- * @param {number} requestId Request ID of the invalidation request. This must
- *     be larger than other requets ID passed to the set before.
- * @param {!Array<!Entry>} entries
- */
-MetadataCacheSet.prototype.invalidate = function(requestId, entries) {
-  var urls = util.entriesToURLs(entries);
-  for (var i = 0; i < entries.length; i++) {
-    var item = this.items_.peek(urls[i]);
-    if (item)
-      item.invalidate(requestId);
-  }
-};
-
-/**
- * Clears the caches of entries.
- * @param {!Array<string>} urls
- */
-MetadataCacheSet.prototype.clear = function(urls) {
-  for (var i = 0; i < urls.length; i++) {
-    this.items_.remove(urls[i]);
-  }
-};
-
-/**
- * Clears all cache.
- */
-MetadataCacheSet.prototype.clearAll = function() {
-  this.items_.removeAll();
-};
-
-/**
- * Creates snapshot of the cache for entries.
- * @param {!Array<!Entry>} entries
- */
-MetadataCacheSet.prototype.createSnapshot = function(entries) {
-  var items = {};
-  var urls = util.entriesToURLs(entries);
-  for (var i = 0; i < entries.length; i++) {
-    var url = urls[i];
-    var item = this.items_.peek(url);
-    if (item)
-      items[url] = item.clone();
-  }
-  return new MetadataCacheSet(new MetadataCacheSetStorageForObject(items));
-};
-
-/**
- * Returns whether all the given properties are fulfilled.
- * @param {!Array<!Entry>} entries Entries.
- * @param {!Array<string>} names Property names.
- * @return {boolean}
- */
-MetadataCacheSet.prototype.hasFreshCache = function(entries, names) {
-  if (!names.length)
-    return true;
-  var urls = util.entriesToURLs(entries);
-  for (var i = 0; i < entries.length; i++) {
-    var item = this.items_.peek(urls[i]);
-    if (!(item && item.hasFreshCache(names)))
+    if (!changedEntries.length) {
       return false;
+    }
+
+    const event = new Event('update');
+    event.entries = changedEntries;
+    event.entriesMap = entriesMap;
+    event.names = new Set(names);
+    this.dispatchEvent(event);
+    return true;
   }
-  return true;
-};
+
+  /**
+   * Obtains cached properties for entries and names.
+   * Note that it returns invalidated properties also.
+   * @param {!Array<!Entry>} entries Entries.
+   * @param {!Array<string>} names Property names.
+   */
+  get(entries, names) {
+    const results = [];
+    const urls = util.entriesToURLs(entries);
+    for (let i = 0; i < entries.length; i++) {
+      const item = this.items_.get(urls[i]);
+      results.push(item ? item.get(names) : {});
+    }
+    return results;
+  }
+
+  /**
+   * Marks the caches of entries as invalidates and forces to reload at the next
+   * time of startRequests.
+   * @param {number} requestId Request ID of the invalidation request. This must
+   *     be larger than other requets ID passed to the set before.
+   * @param {!Array<!Entry>} entries
+   */
+  invalidate(requestId, entries) {
+    const urls = util.entriesToURLs(entries);
+    for (let i = 0; i < entries.length; i++) {
+      const item = this.items_.peek(urls[i]);
+      if (item) {
+        item.invalidate(requestId);
+      }
+    }
+  }
+
+  /**
+   * Clears the caches of entries.
+   * @param {!Array<string>} urls
+   */
+  clear(urls) {
+    for (let i = 0; i < urls.length; i++) {
+      this.items_.remove(urls[i]);
+    }
+  }
+
+  /**
+   * Clears all cache.
+   */
+  clearAll() {
+    this.items_.removeAll();
+  }
+
+  /**
+   * Creates snapshot of the cache for entries.
+   * @param {!Array<!Entry>} entries
+   */
+  createSnapshot(entries) {
+    const items = {};
+    const urls = util.entriesToURLs(entries);
+    for (let i = 0; i < entries.length; i++) {
+      const url = urls[i];
+      const item = this.items_.peek(url);
+      if (item) {
+        items[url] = item.clone();
+      }
+    }
+    return new MetadataCacheSet(new MetadataCacheSetStorageForObject(items));
+  }
+
+  /**
+   * Returns whether all the given properties are fulfilled.
+   * @param {!Array<!Entry>} entries Entries.
+   * @param {!Array<string>} names Property names.
+   * @return {boolean}
+   */
+  hasFreshCache(entries, names) {
+    if (!names.length) {
+      return true;
+    }
+    const urls = util.entriesToURLs(entries);
+    for (let i = 0; i < entries.length; i++) {
+      const item = this.items_.peek(urls[i]);
+      if (!(item && item.hasFreshCache(names))) {
+        return false;
+      }
+    }
+    return true;
+  }
+}
 
 /**
  * Interface of raw strage for MetadataCacheItem.
  * @interface
  */
-function MetadataCacheSetStorage() {
+class MetadataCacheSetStorage {
+  /**
+   * Returns an item corresponding to the given URL.
+   * @param {string} url Entry URL.
+   * @return {MetadataCacheItem}
+   */
+  get(url) {}
+
+  /**
+   * Returns an item corresponding to the given URL without changing orders in
+   * the cache list.
+   * @param {string} url Entry URL.
+   * @return {MetadataCacheItem}
+   */
+  peek(url) {}
+
+  /**
+   * Saves an item corresponding to the given URL.
+   * @param {string} url Entry URL.
+   * @param {!MetadataCacheItem} item Item to be saved.
+   */
+  put(url, item) {}
+
+  /**
+   * Removes an item from the cache.
+   * @param {string} url Entry URL.
+   */
+  remove(url) {}
+
+  /**
+   * Remove all items from the cache.
+   */
+  removeAll() {}
 }
-
-/**
- * Returns an item corresponding to the given URL.
- * @param {string} url Entry URL.
- * @return {MetadataCacheItem}
- */
-MetadataCacheSetStorage.prototype.get = function(url) {};
-
-/**
- * Returns an item corresponding to the given URL without changing orders in
- * the cache list.
- * @param {string} url Entry URL.
- * @return {MetadataCacheItem}
- */
-MetadataCacheSetStorage.prototype.peek = function(url) {};
-
-/**
- * Saves an item corresponding to the given URL.
- * @param {string} url Entry URL.
- * @param {!MetadataCacheItem} item Item to be saved.
- */
-MetadataCacheSetStorage.prototype.put = function(url, item) {};
-
-/**
- * Removes an item from the cache.
- * @param {string} url Entry URL.
- */
-MetadataCacheSetStorage.prototype.remove = function(url) {};
-
-/**
- * Remove all items from the cache.
- */
-MetadataCacheSetStorage.prototype.removeAll = function() {};
 
 /**
  * Implementation of MetadataCacheSetStorage by using raw object.
- * @param {Object} items Map of URL and MetadataCacheItem.
- * @constructor
  * @implements {MetadataCacheSetStorage}
- * @struct
  */
-function MetadataCacheSetStorageForObject(items) {
-  this.items_ = items;
-}
+class MetadataCacheSetStorageForObject {
+  /** @param {Object} items Map of URL and MetadataCacheItem. */
+  constructor(items) {
+    this.items_ = items;
+  }
 
-/**
- * @override
- */
-MetadataCacheSetStorageForObject.prototype.get = function(url) {
-  return this.items_[url];
-};
+  /**
+   * @override
+   */
+  get(url) {
+    return this.items_[url];
+  }
 
-/**
- * @override
- */
-MetadataCacheSetStorageForObject.prototype.peek = function(url) {
-  return this.items_[url];
-};
+  /**
+   * @override
+   */
+  peek(url) {
+    return this.items_[url];
+  }
 
-/**
- * @override
- */
-MetadataCacheSetStorageForObject.prototype.put = function(url, item) {
-  this.items_[url] = item;
-};
+  /**
+   * @override
+   */
+  put(url, item) {
+    this.items_[url] = item;
+  }
 
-/**
- * @override
- */
-MetadataCacheSetStorageForObject.prototype.remove = function(url) {
-  delete this.items_[url];
-};
-
-/**
- * @override
- */
-MetadataCacheSetStorageForObject.prototype.removeAll = function() {
-  for (var url in this.items_) {
+  /**
+   * @override
+   */
+  remove(url) {
     delete this.items_[url];
   }
-};
+
+  /**
+   * @override
+   */
+  removeAll() {
+    for (const url in this.items_) {
+      delete this.items_[url];
+    }
+  }
+}
 
 /**
  * Implementation of MetadataCacheSetStorage by using LRUCache.
  * TODO(hirono): Remove this class.
- * @param {!LRUCache<!MetadataCacheItem>} cache LRUCache.
- * @constructor
  * @implements {MetadataCacheSetStorage}
- * @struct
  */
-function MetadataCacheSetStorageForLRUCache(cache) {
+class MetadataCacheSetStorageForLRUCache {
   /**
-   * @private {!LRUCache<!MetadataCacheItem>}
-   * @const
+   * @param {!LRUCache<!MetadataCacheItem>} cache LRUCache.
    */
-  this.cache_ = cache;
+  constructor(cache) {
+    /**
+     * @private {!LRUCache<!MetadataCacheItem>}
+     * @const
+     */
+    this.cache_ = cache;
+  }
+
+  /**
+   * @override
+   */
+  get(url) {
+    return this.cache_.get(url);
+  }
+
+  /**
+   * @override
+   */
+  peek(url) {
+    return this.cache_.peek(url);
+  }
+
+  /**
+   * @override
+   */
+  put(url, item) {
+    this.cache_.put(url, item);
+  }
+
+  /**
+   * @override
+   */
+  remove(url) {
+    this.cache_.remove(url);
+  }
+
+  /**
+   * @override
+   */
+  removeAll() {
+    assertNotReached('Not implemented.');
+  }
 }
-
-/**
- * @override
- */
-MetadataCacheSetStorageForLRUCache.prototype.get = function(url) {
-  return this.cache_.get(url);
-};
-
-/**
- * @override
- */
-MetadataCacheSetStorageForLRUCache.prototype.peek = function(url) {
-  return this.cache_.peek(url);
-};
-
-/**
- * @override
- */
-MetadataCacheSetStorageForLRUCache.prototype.put = function(url, item) {
-  this.cache_.put(url, item);
-};
-
-/**
- * @override
- */
-MetadataCacheSetStorageForLRUCache.prototype.remove = function(url) {
-  this.cache_.remove(url);
-};
-
-/**
- * @override
- */
-MetadataCacheSetStorageForLRUCache.prototype.removeAll = function() {
-  assertNotReached('Not implemented.');
-};

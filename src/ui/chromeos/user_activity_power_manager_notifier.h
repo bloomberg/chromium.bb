@@ -43,12 +43,12 @@ class UI_CHROMEOS_EXPORT UserActivityPowerManagerNotifier
 
   // fingerprint::mojom::FingerprintObserver:
   void OnAuthScanDone(
-      uint32_t scan_result,
+      device::mojom::ScanResult scan_result,
       const base::flat_map<std::string, std::vector<std::string>>& matches)
       override;
   void OnSessionFailed() override;
   void OnRestarted() override;
-  void OnEnrollScanDone(uint32_t scan_result,
+  void OnEnrollScanDone(device::mojom::ScanResult scan_result,
                         bool enroll_session_complete,
                         int percent_complete) override;
 

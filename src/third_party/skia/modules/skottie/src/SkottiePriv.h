@@ -30,12 +30,15 @@ class Value;
 
 namespace sksg {
 class Color;
-class Matrix;
 class Path;
 class RenderNode;
+class Transform;
 } // namespace sksg
 
 namespace skottie {
+
+class TransformAdapter2D;
+class TransformAdapter3D;
 
 namespace internal {
 
@@ -44,8 +47,9 @@ using AnimatorScope = sksg::AnimatorList;
 class AnimationBuilder final : public SkNoncopyable {
 public:
     AnimationBuilder(sk_sp<ResourceProvider>, sk_sp<SkFontMgr>, sk_sp<PropertyObserver>,
-                     sk_sp<Logger>, sk_sp<AnnotationObserver>,
-                     Animation::Builder::Stats*, float duration, float framerate);
+                     sk_sp<Logger>, sk_sp<MarkerObserver>,
+                     Animation::Builder::Stats*, const SkSize& size,
+                     float duration, float framerate);
 
     std::unique_ptr<sksg::Scene> parse(const skjson::ObjectValue&);
 
@@ -71,11 +75,16 @@ public:
 
     sk_sp<sksg::Color> attachColor(const skjson::ObjectValue&, AnimatorScope*,
                                    const char prop_name[]) const;
-    sk_sp<sksg::Matrix> attachMatrix(const skjson::ObjectValue&, AnimatorScope*,
-                                     sk_sp<sksg::Matrix>) const;
+    sk_sp<sksg::Transform> attachMatrix2D(const skjson::ObjectValue&, AnimatorScope*,
+                                          sk_sp<sksg::Transform>) const;
+    sk_sp<sksg::Transform> attachMatrix3D(const skjson::ObjectValue&, AnimatorScope*,
+                                          sk_sp<sksg::Transform>,
+                                          sk_sp<TransformAdapter3D> = nullptr) const;
     sk_sp<sksg::RenderNode> attachOpacity(const skjson::ObjectValue&, AnimatorScope*,
                                       sk_sp<sksg::RenderNode>) const;
     sk_sp<sksg::Path> attachPath(const skjson::Value&, AnimatorScope*) const;
+
+    bool hasNontrivialBlending() const { return fHasNontrivialBlending; }
 
 private:
     struct AttachLayerContext;
@@ -87,12 +96,15 @@ private:
     void parseFonts (const skjson::ObjectValue* jfonts,
                      const skjson::ArrayValue* jchars);
 
-    void dispatchAnnotations(const skjson::ObjectValue*) const;
+    void dispatchMarkers(const skjson::ArrayValue*) const;
 
     sk_sp<sksg::RenderNode> attachComposition(const skjson::ObjectValue&, AnimatorScope*) const;
     sk_sp<sksg::RenderNode> attachLayer(const skjson::ObjectValue*, AttachLayerContext*) const;
     sk_sp<sksg::RenderNode> attachLayerEffects(const skjson::ArrayValue& jeffects, AnimatorScope*,
                                                sk_sp<sksg::RenderNode>) const;
+
+    sk_sp<sksg::RenderNode> attachBlendMode(const skjson::ObjectValue&,
+                                            sk_sp<sksg::RenderNode>) const;
 
     sk_sp<sksg::RenderNode> attachShape(const skjson::ArrayValue*, AttachShapeContext*) const;
     sk_sp<sksg::RenderNode> attachAssetRef(const skjson::ObjectValue&, AnimatorScope*,
@@ -119,7 +131,7 @@ private:
 
     bool dispatchColorProperty(const sk_sp<sksg::Color>&) const;
     bool dispatchOpacityProperty(const sk_sp<sksg::OpacityEffect>&) const;
-    bool dispatchTransformProperty(const sk_sp<TransformAdapter>&) const;
+    bool dispatchTransformProperty(const sk_sp<TransformAdapter2D>&) const;
 
     // Delay resolving the fontmgr until it is actually needed.
     struct LazyResolveFontMgr {
@@ -165,12 +177,14 @@ private:
     LazyResolveFontMgr         fLazyFontMgr;
     sk_sp<PropertyObserver>    fPropertyObserver;
     sk_sp<Logger>              fLogger;
-    sk_sp<AnnotationObserver>  fAnnotationObserver;
+    sk_sp<MarkerObserver>      fMarkerObserver;
     Animation::Builder::Stats* fStats;
+    const SkSize               fSize;
     const float                fDuration,
                                fFrameRate;
-
     mutable const char*        fPropertyObserverContext;
+    mutable bool               fHasNontrivialBlending : 1;
+
 
     struct LayerInfo {
         float fInPoint,

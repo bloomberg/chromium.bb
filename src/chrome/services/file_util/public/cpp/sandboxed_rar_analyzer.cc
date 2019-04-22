@@ -39,7 +39,7 @@ void SandboxedRarAnalyzer::Start() {
 
 SandboxedRarAnalyzer::~SandboxedRarAnalyzer() = default;
 
-void SandboxedRarAnalyzer::AnalyzeFile(base::File file) {
+void SandboxedRarAnalyzer::AnalyzeFile(base::File file, base::File temp_file) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!analyzer_ptr_);
   DCHECK(!file_path_.value().empty());
@@ -50,7 +50,7 @@ void SandboxedRarAnalyzer::AnalyzeFile(base::File file) {
       &SandboxedRarAnalyzer::AnalyzeFileDone, base::Unretained(this),
       safe_browsing::ArchiveAnalyzerResults()));
   analyzer_ptr_->AnalyzeRarFile(
-      std::move(file),
+      std::move(file), std::move(temp_file),
       base::BindOnce(&SandboxedRarAnalyzer::AnalyzeFileDone, this));
 }
 
@@ -77,9 +77,25 @@ void SandboxedRarAnalyzer::PrepareFileToAnalyze() {
     return;
   }
 
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                           base::BindOnce(&SandboxedRarAnalyzer::AnalyzeFile,
-                                          this, std::move(file)));
+  base::FilePath temp_path;
+  base::File temp_file;
+  if (base::CreateTemporaryFile(&temp_path)) {
+    temp_file.Initialize(
+        temp_path, (base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_READ |
+                    base::File::FLAG_WRITE | base::File::FLAG_TEMPORARY |
+                    base::File::FLAG_DELETE_ON_CLOSE));
+  }
+
+  if (!temp_file.IsValid()) {
+    DLOG(ERROR) << "Could not open temp file: " << temp_path.value();
+    ReportFileFailure();
+    return;
+  }
+
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
+      base::BindOnce(&SandboxedRarAnalyzer::AnalyzeFile, this, std::move(file),
+                     std::move(temp_file)));
 }
 
 void SandboxedRarAnalyzer::ReportFileFailure() {

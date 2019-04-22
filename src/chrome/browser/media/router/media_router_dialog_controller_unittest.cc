@@ -5,6 +5,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/bind.h"
 #include "chrome/browser/media/router/media_router_dialog_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/media_router/media_route.h"
@@ -74,13 +75,15 @@ class MediaRouterDialogControllerTest : public ChromeRenderViewHostTestHarness {
 
   bool ShowMediaRouterDialogForPresentation() {
     return dialog_controller_->ShowMediaRouterDialogForPresentation(
-        content::PresentationRequest(
-            {1, 2}, {GURL("http://example.com"), GURL("http://example2.com")},
-            url::Origin::Create(GURL("http://google.com"))),
-        base::BindOnce(&MediaRouterDialogControllerTest::RequestSuccess,
-                       base::Unretained(this)),
-        base::BindOnce(&MediaRouterDialogControllerTest::RequestError,
-                       base::Unretained(this)));
+        std::make_unique<StartPresentationContext>(
+            content::PresentationRequest(
+                {1, 2},
+                {GURL("http://example.com"), GURL("http://example2.com")},
+                url::Origin::Create(GURL("http://google.com"))),
+            base::BindOnce(&MediaRouterDialogControllerTest::RequestSuccess,
+                           base::Unretained(this)),
+            base::BindOnce(&MediaRouterDialogControllerTest::RequestError,
+                           base::Unretained(this))));
   }
 
   std::unique_ptr<TestMediaRouterDialogController> dialog_controller_;

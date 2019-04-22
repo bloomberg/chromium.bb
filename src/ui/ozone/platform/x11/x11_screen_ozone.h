@@ -5,6 +5,7 @@
 #ifndef UI_OZONE_PLATFORM_X11_X11_SCREEN_OZONE_H_
 #define UI_OZONE_PLATFORM_X11_X11_SCREEN_OZONE_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"

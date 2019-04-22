@@ -16,6 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
+#include "crypto/nss_util.h"
 #include "crypto/scoped_test_nss_db.h"
 #include "net/cert/pem_tokenizer.h"
 #include "net/cert/x509_certificate.h"
@@ -61,15 +62,16 @@ class ClientCertStoreNSSTestDelegate {
 
     // Filters |selected_identities| using the logic being used to filter the
     // system store when GetClientCerts() is called.
+    crypto::EnsureNSSInit();
     ClientCertStoreNSS::FilterCertsOnWorkerThread(selected_identities,
                                                   cert_request_info);
     return true;
   }
 };
 
-INSTANTIATE_TYPED_TEST_CASE_P(NSS,
-                              ClientCertStoreTest,
-                              ClientCertStoreNSSTestDelegate);
+INSTANTIATE_TYPED_TEST_SUITE_P(NSS,
+                               ClientCertStoreTest,
+                               ClientCertStoreNSSTestDelegate);
 
 // Tests that ClientCertStoreNSS attempts to build a certificate chain by
 // querying NSS before return a certificate.
@@ -120,8 +122,8 @@ TEST(ClientCertStoreNSSTest, BuildsCertificateChain) {
     scoped_refptr<SSLPrivateKey> ssl_private_key;
     base::RunLoop key_loop;
     selected_identities[0]->AcquirePrivateKey(
-        base::Bind(SavePrivateKeyAndQuitCallback, &ssl_private_key,
-                   key_loop.QuitClosure()));
+        base::BindOnce(SavePrivateKeyAndQuitCallback, &ssl_private_key,
+                       key_loop.QuitClosure()));
     key_loop.Run();
 
     ASSERT_TRUE(ssl_private_key);
@@ -157,8 +159,8 @@ TEST(ClientCertStoreNSSTest, BuildsCertificateChain) {
     scoped_refptr<SSLPrivateKey> ssl_private_key;
     base::RunLoop key_loop;
     selected_identities[0]->AcquirePrivateKey(
-        base::Bind(SavePrivateKeyAndQuitCallback, &ssl_private_key,
-                   key_loop.QuitClosure()));
+        base::BindOnce(SavePrivateKeyAndQuitCallback, &ssl_private_key,
+                       key_loop.QuitClosure()));
     key_loop.Run();
     ASSERT_TRUE(ssl_private_key);
     EXPECT_EQ(expected, ssl_private_key->GetAlgorithmPreferences());
@@ -230,7 +232,7 @@ TEST(ClientCertStoreNSSTest, SubjectPrintableStringContainingUTF8) {
 
   scoped_refptr<SSLPrivateKey> ssl_private_key;
   base::RunLoop key_loop;
-  selected_identities[0]->AcquirePrivateKey(base::Bind(
+  selected_identities[0]->AcquirePrivateKey(base::BindOnce(
       SavePrivateKeyAndQuitCallback, &ssl_private_key, key_loop.QuitClosure()));
   key_loop.Run();
 

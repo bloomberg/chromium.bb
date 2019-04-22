@@ -35,6 +35,7 @@
 
 #if DCHECK_IS_ON()
 
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/threading.h"
 
 namespace WTF {
@@ -45,6 +46,8 @@ namespace WTF {
 // called.  The mode may be changed by calling useMutexMode (or
 // turnOffVerification).
 class ThreadRestrictionVerifier {
+  DISALLOW_NEW();
+
  public:
   ThreadRestrictionVerifier() : shared_(false), owning_thread_(0) {}
 
@@ -99,7 +102,7 @@ class ThreadRestrictionVerifier {
 
   bool shared_;
 
-  ThreadIdentifier owning_thread_;
+  base::PlatformThreadId owning_thread_;
 };
 
 }  // namespace WTF

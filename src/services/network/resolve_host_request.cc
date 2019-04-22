@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/optional.h"
@@ -87,6 +88,7 @@ void ResolveHostRequest::OnComplete(int error) {
   DCHECK(callback_);
 
   control_handle_binding_.Close();
+  SignalNonAddressResults();
   response_client_->OnComplete(error, GetAddressResults());
   response_client_ = nullptr;
 
@@ -104,6 +106,22 @@ const base::Optional<net::AddressList>& ResolveHostRequest::GetAddressResults()
 
   DCHECK(internal_request_);
   return internal_request_->GetAddressResults();
+}
+
+void ResolveHostRequest::SignalNonAddressResults() {
+  if (cancelled_)
+    return;
+  DCHECK(internal_request_);
+
+  if (internal_request_->GetTextResults()) {
+    response_client_->OnTextResults(
+        internal_request_->GetTextResults().value());
+  }
+
+  if (internal_request_->GetHostnameResults()) {
+    response_client_->OnHostnameResults(
+        internal_request_->GetHostnameResults().value());
+  }
 }
 
 }  // namespace network

@@ -20,8 +20,8 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/heap_profiling/supervisor.h"
-#include "components/services/heap_profiling/public/cpp/allocator_shim.h"
 #include "components/services/heap_profiling/public/cpp/controller.h"
+#include "components/services/heap_profiling/public/cpp/sampling_profiler_wrapper.h"
 #include "components/services/heap_profiling/public/cpp/settings.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -559,7 +559,7 @@ TestDriver::TestDriver()
                           base::WaitableEvent::InitialState::NOT_SIGNALED) {
   partition_allocator_.init();
 }
-TestDriver::~TestDriver() {}
+TestDriver::~TestDriver() = default;
 
 bool TestDriver::RunTest(const Options& options) {
   options_ = options;
@@ -591,7 +591,6 @@ bool TestDriver::RunTest(const Options& options) {
   if (running_on_ui_thread_) {
     if (!CheckOrStartProfilingOnUIThreadWithNestedRunLoops())
       return false;
-    Supervisor::GetInstance()->SetKeepSmallAllocations(true);
     if (ShouldProfileRenderer())
       WaitForProfilingToStartForAllRenderersUIThread();
     if (ShouldProfileBrowser())
@@ -605,11 +604,6 @@ bool TestDriver::RunTest(const Options& options) {
     wait_for_ui_thread_.Wait();
     if (!initialization_success_)
       return false;
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::UI},
-        base::BindOnce(&TestDriver::SetKeepSmallAllocationsOnUIThreadAndSignal,
-                       base::Unretained(this)));
-    wait_for_ui_thread_.Wait();
     if (ShouldProfileRenderer()) {
       base::PostTaskWithTraits(
           FROM_HERE, {content::BrowserThread::UI},
@@ -631,7 +625,7 @@ bool TestDriver::RunTest(const Options& options) {
   }
 
   std::unique_ptr<base::Value> dump_json =
-      base::JSONReader::Read(serialized_trace_);
+      base::JSONReader::ReadDeprecated(serialized_trace_);
   if (!dump_json) {
     LOG(ERROR) << "Failed to deserialize trace.";
     return false;
@@ -665,12 +659,6 @@ void TestDriver::CheckOrStartProfilingOnUIThreadAndSignal() {
   // profiling has started.
   if (!wait_for_profiling_to_start_)
     wait_for_ui_thread_.Signal();
-}
-
-void TestDriver::SetKeepSmallAllocationsOnUIThreadAndSignal() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  Supervisor::GetInstance()->SetKeepSmallAllocations(true);
-  wait_for_ui_thread_.Signal();
 }
 
 bool TestDriver::CheckOrStartProfilingOnUIThreadWithAsyncSignalling() {
@@ -788,6 +776,10 @@ void TestDriver::MakeTestAllocations() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   base::PlatformThread::SetName(kThreadName);
+
+  // Warm up the sampler. Once enabled it may need to see up to 1MB of
+  // allocations to start sampling.
+  leaks_.push_back(new char[base::PoissonAllocationSampler::kWarmupInterval]);
 
   // In sampling mode, only sampling allocations are relevant.
   if (!IsRecordingAllAllocations()) {

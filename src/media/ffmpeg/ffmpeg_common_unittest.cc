@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/media.h"
 #include "media/base/media_util.h"
@@ -53,7 +53,7 @@ void TestConfigConvertExtraData(
 
   // Valid combination: extra_data = non-nullptr && size > 0.
   codec_parameters->extradata = &kExtraData[0];
-  codec_parameters->extradata_size = arraysize(kExtraData);
+  codec_parameters->extradata_size = base::size(kExtraData);
   EXPECT_TRUE(converter_fn.Run(stream, decoder_config));
   EXPECT_EQ(static_cast<size_t>(codec_parameters->extradata_size),
             decoder_config->extra_data().size());
@@ -196,7 +196,7 @@ TEST_F(FFmpegCommonTest, TimeBaseConversions) {
       {1, 2, 1, 500000, 1}, {1, 3, 1, 333333, 1}, {1, 3, 2, 666667, 2},
   };
 
-  for (size_t i = 0; i < arraysize(test_data); ++i) {
+  for (size_t i = 0; i < base::size(test_data); ++i) {
     SCOPED_TRACE(i);
 
     AVRational time_base;
@@ -296,5 +296,69 @@ TEST_F(FFmpegCommonTest, VerifyUmaCodecHashes) {
   printf("</enum>\n");
 #endif
 }
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+TEST_F(FFmpegCommonTest, VerifyH264Profile) {
+  // Open a file to get a real AVStreams from FFmpeg.
+  base::MemoryMappedFile file;
+  ASSERT_TRUE(file.Initialize(GetTestDataFilePath("bear-1280x720.mp4")));
+  InMemoryUrlProtocol protocol(file.data(), file.length(), false);
+  FFmpegGlue glue(&protocol);
+  ASSERT_TRUE(glue.OpenContext());
+  AVFormatContext* format_context = glue.format_context();
 
+  for (size_t i = 0; i < format_context->nb_streams; ++i) {
+    AVStream* stream = format_context->streams[i];
+    AVCodecParameters* codec_parameters = stream->codecpar;
+    AVMediaType codec_type = codec_parameters->codec_type;
+
+    if (codec_type == AVMEDIA_TYPE_VIDEO) {
+      VideoDecoderConfig video_config;
+      EXPECT_TRUE(AVStreamToVideoDecoderConfig(stream, &video_config));
+      EXPECT_EQ(H264PROFILE_HIGH, video_config.profile());
+    } else {
+      // Only process video.
+      continue;
+    }
+  }
+}
+#endif
+
+// Verifies that the HDR Metadata and VideoColorSpace are correctly parsed.
+TEST_F(FFmpegCommonTest, VerifyHDRMetadataAndColorSpaceInfo) {
+  // Open a file to get a real AVStreams from FFmpeg.
+  base::MemoryMappedFile file;
+  ASSERT_TRUE(file.Initialize(GetTestDataFilePath("colour.webm")));
+  InMemoryUrlProtocol protocol(file.data(), file.length(), false);
+  FFmpegGlue glue(&protocol);
+  ASSERT_TRUE(glue.OpenContext());
+  AVFormatContext* format_context = glue.format_context();
+  ASSERT_EQ(format_context->nb_streams, 1u);
+
+  AVStream* stream = format_context->streams[0];
+  AVCodecParameters* codec_parameters = stream->codecpar;
+  AVMediaType codec_type = codec_parameters->codec_type;
+  ASSERT_EQ(codec_type, AVMEDIA_TYPE_VIDEO);
+
+  VideoDecoderConfig video_config;
+  EXPECT_TRUE(AVStreamToVideoDecoderConfig(stream, &video_config));
+  ASSERT_TRUE(video_config.hdr_metadata().has_value());
+  EXPECT_EQ(30.0,
+            video_config.hdr_metadata()->mastering_metadata.luminance_min);
+  EXPECT_EQ(40.0,
+            video_config.hdr_metadata()->mastering_metadata.luminance_max);
+  EXPECT_EQ(gfx::PointF(0.1, 0.2),
+            video_config.hdr_metadata()->mastering_metadata.primary_r);
+  EXPECT_EQ(gfx::PointF(0.1, 0.2),
+            video_config.hdr_metadata()->mastering_metadata.primary_g);
+  EXPECT_EQ(gfx::PointF(0.1, 0.2),
+            video_config.hdr_metadata()->mastering_metadata.primary_b);
+  EXPECT_EQ(gfx::PointF(0.1, 0.2),
+            video_config.hdr_metadata()->mastering_metadata.white_point);
+
+  EXPECT_EQ(VideoColorSpace(VideoColorSpace::PrimaryID::SMPTEST428_1,
+                            VideoColorSpace::TransferID::LOG,
+                            VideoColorSpace::MatrixID::RGB,
+                            gfx::ColorSpace::RangeID::FULL),
+            video_config.color_space_info());
+}
 }  // namespace media

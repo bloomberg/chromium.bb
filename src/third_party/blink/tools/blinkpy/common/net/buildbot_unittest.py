@@ -31,6 +31,7 @@ import logging
 import unittest
 
 from blinkpy.common.net.buildbot import BuildBot, Build, filter_latest_builds
+from blinkpy.common.net.web_mock import MockWeb
 from blinkpy.common.system.log_testing import LoggingTestCase
 
 
@@ -70,51 +71,57 @@ class BuilderTest(LoggingTestCase):
             BuildBot().accumulated_results_url_base('WebKit Mac10.8 (dbg)'),
             'https://test-results.appspot.com/data/layout_results/WebKit_Mac10_8__dbg_/results/layout-test-results')
 
-    def test_fetch_layout_test_results_with_no_results_fetched(self):
+    def test_fetch_web_test_results_with_no_results_fetched(self):
         buildbot = BuildBot()
-
-        def fetch_file(url):
-            return None if url.endswith('failing_results.json') else 'contents'
-
-        buildbot.fetch_file = fetch_file
-        results = buildbot.fetch_layout_test_results(buildbot.results_url('B'))
+        buildbot.web = MockWeb()
+        results = buildbot.fetch_web_test_results(buildbot.results_url('B'))
         self.assertIsNone(results)
         self.assertLog([
             'DEBUG: Got 404 response from:\n'
             'https://test-results.appspot.com/data/layout_results/B/results/layout-test-results/failing_results.json\n'
         ])
 
-    def test_fetch_layout_test_results_weird_step_name(self):
+    def test_fetch_results_with_weird_step_name(self):
         buildbot = BuildBot()
-
-        def fetch_file(url):
-            if '/testfile' in url:
-                return ('ADD_RESULTS(%s);' % (json.dumps(
+        buildbot.web = MockWeb(urls={
+            'https://test-results.appspot.com/testfile?buildnumber=123&'
+            'callback=ADD_RESULTS&builder=builder&name=full_results.json':
+                'ADD_RESULTS(%s);' % (json.dumps(
                     [{"TestType": "webkit_layout_tests on Intel GPU (with patch)"},
-                     {"TestType": "base_unittests (with patch)"}])))
-            return json.dumps({'passed': True}) if url.endswith('failing_results.json') else 'deadbeef'
-
-        buildbot.fetch_file = fetch_file
+                     {"TestType": "base_unittests (with patch)"}])),
+            'https://test-results.appspot.com/data/layout_results/builder/123/'
+            'webkit_layout_tests%20on%20Intel%20GPU%20%28with%20patch%29/'
+            'layout-test-results/failing_results.json':
+                json.dumps({'passed': True}),
+        })
         results = buildbot.fetch_results(Build('builder', 123))
         self.assertEqual(results._results, {  # pylint: disable=protected-access
             'passed': True
         })
         self.assertLog([])
 
+    def test_fetch_results_without_build_number(self):
+        buildbot = BuildBot()
+        self.assertIsNone(buildbot.fetch_results(Build('builder', None)))
+
     def test_get_step_name(self):
         buildbot = BuildBot()
-
-        def fetch_file(_):
-            return ('ADD_RESULTS(%s);' % (json.dumps(
-                [{"TestType": "webkit_layout_tests (with patch)"},
-                 {"TestType": "not_site_per_process_webkit_layout_tests (with patch)"},
-                 {"TestType": "webkit_layout_tests (retry with patch)"},
-                 {"TestType": "base_unittests (with patch)"}])))
-
-        buildbot.fetch_file = fetch_file
+        buildbot.web = MockWeb(urls={
+            'https://test-results.appspot.com/testfile?buildnumber=5&'
+            'callback=ADD_RESULTS&builder=foo&name=full_results.json':
+                'ADD_RESULTS(%s);' % (json.dumps(
+                    [{"TestType": "webkit_layout_tests (with patch)"},
+                     {"TestType": "not_site_per_process_webkit_layout_tests (with patch)"},
+                     {"TestType": "webkit_layout_tests (retry with patch)"},
+                     {"TestType": "base_unittests (with patch)"}]))
+        })
         step_name = buildbot.get_layout_test_step_name(Build('foo', 5))
         self.assertEqual(step_name, 'webkit_layout_tests (with patch)')
         self.assertLog([])
+
+    def test_get_step_name_without_build_number(self):
+        buildbot = BuildBot()
+        self.assertIsNone(buildbot.get_layout_test_step_name(Build('builder', None)))
 
 
 class BuildBotHelperFunctionTest(unittest.TestCase):

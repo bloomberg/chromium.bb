@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include "base/bind.h"
 #include "base/sequenced_task_runner.h"
 #include "storage/browser/fileapi/file_system_usage_cache.h"
 #include "storage/browser/fileapi/sandbox_file_system_backend_delegate.h"
@@ -41,7 +42,7 @@ void SandboxQuotaObserver::OnUpdate(const FileSystemURL& url, int64_t delta) {
 
   if (quota_manager_proxy_.get()) {
     quota_manager_proxy_->NotifyStorageModified(
-        storage::QuotaClient::kFileSystem, url::Origin::Create(url.origin()),
+        storage::QuotaClient::kFileSystem, url.origin(),
         FileSystemTypeToQuotaStorageType(url.type()), delta);
   }
 
@@ -78,7 +79,7 @@ void SandboxQuotaObserver::OnEndUpdate(const FileSystemURL& url) {
 void SandboxQuotaObserver::OnAccess(const FileSystemURL& url) {
   if (quota_manager_proxy_.get()) {
     quota_manager_proxy_->NotifyStorageAccessed(
-        storage::QuotaClient::kFileSystem, url::Origin::Create(url.origin()),
+        storage::QuotaClient::kFileSystem, url.origin(),
         FileSystemTypeToQuotaStorageType(url.type()));
   }
 }
@@ -100,7 +101,7 @@ base::FilePath SandboxQuotaObserver::GetUsageCachePath(
   base::File::Error error = base::File::FILE_OK;
   base::FilePath path =
       SandboxFileSystemBackendDelegate::GetUsageCachePathForOriginAndType(
-          sandbox_file_util_, url.origin(), url.type(), &error);
+          sandbox_file_util_, url.origin().GetURL(), url.type(), &error);
   if (error != base::File::FILE_OK) {
     LOG(WARNING) << "Could not get usage cache path for: "
                  << url.DebugString();

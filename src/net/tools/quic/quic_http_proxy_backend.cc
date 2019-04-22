@@ -13,6 +13,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "build/build_config.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -168,8 +169,8 @@ void QuicHttpProxyBackend::InitializeURLRequestContext() {
           ProxyConfigWithAnnotation::CreateDirect()));
 #endif
 
-  // Disable net::CookieStore and net::ChannelIDService.
-  context_builder.SetCookieAndChannelIdStores(nullptr, nullptr);
+  // Disable net::CookieStore.
+  context_builder.SetCookieStore(nullptr);
   context_ = context_builder.Build();
 }
 

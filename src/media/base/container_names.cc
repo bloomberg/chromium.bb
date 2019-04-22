@@ -10,8 +10,8 @@
 #include <limits>
 
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/stl_util.h"
 #include "media/base/bit_reader.h"
 
 namespace media {
@@ -73,11 +73,17 @@ static bool StartsWith(const uint8_t* buffer,
 }
 
 // Helper function to read up to 64 bits from a bit stream.
+// TODO(chcunningham): Delete this helper and replace with direct calls to
+// reader that handle read failure. As-is, we hide failure because returning 0
+// is valid for both a successful and failed read.
 static uint64_t ReadBits(BitReader* reader, int num_bits) {
   DCHECK_GE(reader->bits_available(), num_bits);
   DCHECK((num_bits > 0) && (num_bits <= 64));
-  uint64_t value;
-  reader->ReadBits(num_bits, &value);
+  uint64_t value = 0;
+
+  if (!reader->ReadBits(num_bits, &value))
+    return 0;
+
   return value;
 }
 
@@ -304,7 +310,9 @@ static bool CheckDts(const uint8_t* buffer, int buffer_size) {
     reader.SkipBits(6);
 
     // Verify core audio sampling frequency is an allowed value.
-    RCHECK(kSamplingFrequencyValid[ReadBits(&reader, 4)]);
+    size_t sampling_freq_index = ReadBits(&reader, 4);
+    RCHECK(sampling_freq_index < base::size(kSamplingFrequencyValid));
+    RCHECK(kSamplingFrequencyValid[sampling_freq_index]);
 
     // Verify transmission bit rate is valid.
     RCHECK(ReadBits(&reader, 5) <= 25);
@@ -316,7 +324,9 @@ static bool CheckDts(const uint8_t* buffer, int buffer_size) {
     reader.SkipBits(1 + 1 + 1 + 1);
 
     // Verify extension audio descriptor flag is an allowed value.
-    RCHECK(kExtAudioIdValid[ReadBits(&reader, 3)]);
+    size_t audio_id_index = ReadBits(&reader, 3);
+    RCHECK(audio_id_index < base::size(kExtAudioIdValid));
+    RCHECK(kExtAudioIdValid[audio_id_index]);
 
     // Skip extended coding flag and audio sync word insertion flag.
     reader.SkipBits(1 + 1);
@@ -375,7 +385,7 @@ static bool CheckDV(const uint8_t* buffer, int buffer_size) {
       reader.SkipBits(3);
       RCHECK(ReadBits(&reader, 24) == 0xffffff);
       current_sequence_number = sequence_number;
-      for (size_t i = 0; i < arraysize(last_block_number); ++i)
+      for (size_t i = 0; i < base::size(last_block_number); ++i)
         last_block_number[i] = -1;
     } else {
       // Sequence number must match (this will also fail if no header seen).

@@ -56,13 +56,6 @@ mojom::PaymentAddressPtr GetPaymentAddressFromAutofillProfile(
   payment_address->recipient =
       base::UTF16ToUTF8(profile.GetInfo(autofill::NAME_FULL, app_locale));
 
-  // The autofill profile |language_code| is the BCP-47 language tag (e.g.,
-  // "ja-Latn"), which can be split into a language code (e.g., "ja") and a
-  // script code (e.g., "Latn").
-  PaymentsValidators::SplitLanguageTag(profile.language_code(),
-                                       &payment_address->language_code,
-                                       &payment_address->script_code);
-
   // TODO(crbug.com/705945): Format phone number according to spec.
   payment_address->phone =
       base::UTF16ToUTF8(profile.GetRawInfo(autofill::PHONE_HOME_WHOLE_NUMBER));

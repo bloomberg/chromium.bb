@@ -4,6 +4,7 @@
 
 #include "chrome/renderer/supervised_user/supervised_user_error_page_controller.h"
 
+#include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/renderer/supervised_user/supervised_user_error_page_controller_delegate.h"
 #include "content/public/renderer/render_frame.h"
@@ -33,8 +34,11 @@ void SupervisedUserErrorPageController::Install(
     return;
 
   v8::Local<v8::Object> global = context->Global();
-  global->Set(gin::StringToV8(isolate, "supervisedUserErrorPageController"),
-              controller.ToV8());
+  global
+      ->Set(context,
+            gin::StringToV8(isolate, "supervisedUserErrorPageController"),
+            controller.ToV8())
+      .Check();
 }
 
 SupervisedUserErrorPageController::SupervisedUserErrorPageController(

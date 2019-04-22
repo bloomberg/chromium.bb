@@ -153,6 +153,7 @@ const char kArpGatewayProperty[] = "ArpGateway";
 const char kCountryProperty[] = "Country";
 const char kPortalHttpUrlProperty[] = "PortalHttpUrl";
 const char kPortalHttpsUrlProperty[] = "PortalHttpsUrl";
+const char kPortalFallbackUrlsStringProperty[] = "PortalFallbackUrlsString";
 const char kConnectionStateProperty[] = "ConnectionState";
 const char kClaimedDevicesProperty[] = "ClaimedDevices";
 
@@ -210,6 +211,9 @@ const char kStateAssociation[] = "association";
 const char kStateConfiguration[] = "configuration";
 const char kStateReady[] = "ready";
 const char kStatePortal[] = "portal";
+const char kStateNoConnectivity[] = "no-connectivity";
+const char kStateRedirectFound[] = "redirect-found";
+const char kStatePortalSuspected[] = "portal-suspected";
 const char kStateOffline[] = "offline";
 const char kStateOnline[] = "online";
 const char kStateDisconnect[] = "disconnect";
@@ -225,6 +229,7 @@ const char kPortalDetectionPhaseUnknown[] = "Unknown";
 const char kPortalDetectionStatusFailure[] = "Failure";
 const char kPortalDetectionStatusTimeout[] = "Timeout";
 const char kPortalDetectionStatusSuccess[] = "Success";
+const char kPortalDetectionStatusRedirect[] = "Redirect";
 
 // Flimflam property names for SIMLock status.
 const char kSIMLockStatusProperty[] = "Cellular.SIMLockStatus";
@@ -454,7 +459,6 @@ const char kTypeDHCP6[] = "dhcp6";
 const char kTypePPP[] = "ppp";
 
 // Flimflam error options.
-const char kError4WayTimeout[] = "4way-handshake-timeout";
 const char kErrorAaaFailed[] = "aaa-failed";
 const char kErrorActivationFailed[] = "activation-failed";
 const char kErrorBadPassphrase[] = "bad-passphrase";
@@ -593,7 +597,6 @@ const char kIgnoredDNSSearchPathsProperty[] = "IgnoredDNSSearchPaths";
 const char kLinkMonitorTechnologiesProperty[] =
     "LinkMonitorTechnologies";
 const char kNoAutoConnectTechnologiesProperty[] = "NoAutoConnectTechnologies";
-const char kPortalCheckIntervalProperty[] = "PortalCheckInterval";
 const char kProhibitedTechnologiesProperty[] = "ProhibitedTechnologies";
 const char kServiceCompleteListProperty[] = "ServiceCompleteList";
 const char kShortDNSTimeoutTechnologiesProperty[] =
@@ -681,6 +684,7 @@ const char kLastReceiveSignalDbmProperty[] = "LastReceiveSignalDbm";
 const char kPacketReceiveSuccessesProperty[] = "PacketReceiveSuccesses";
 const char kPacketTransmitFailuresProperty[] = "PacketTransmitFailures";
 const char kPacketTransmitSuccessesProperty[] = "PacketTrasmitSuccesses";
+const char kReceiveBitrateProperty[] = "ReceiveBitrate";
 const char kTransmitBitrateProperty[] = "TransmitBitrate";
 const char kTransmitRetriesProperty[] = "TransmitRetries";
 

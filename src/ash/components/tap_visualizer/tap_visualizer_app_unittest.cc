@@ -26,7 +26,7 @@ class TapVisualizerAppTestApi {
   explicit TapVisualizerAppTestApi(TapVisualizerApp* app) : app_(app) {}
   ~TapVisualizerAppTestApi() = default;
 
-  void Start() { app_->Start(); }
+  void Show() { app_->Show(); }
 
   bool HasRendererForDisplay(int64_t display_id) {
     return base::ContainsKey(app_->display_id_to_renderer_, display_id);
@@ -81,9 +81,9 @@ class TapVisualizerAppTest : public aura::test::AuraTestBase {
 
 TEST_F(TapVisualizerAppTest, Basics) {
   // Simulate the service starting.
-  TapVisualizerApp app;
+  TapVisualizerApp app(nullptr);
   TapVisualizerAppTestApi test_api(&app);
-  test_api.Start();
+  test_api.Show();
 
   // A fullscreen widget is created.
   views::Widget* widget = test_api.GetWidgetForDisplay(kFirstDisplayId);
@@ -92,7 +92,7 @@ TEST_F(TapVisualizerAppTest, Basics) {
 
   // No touch point views have been created yet.
   views::View* contents = widget->GetContentsView();
-  EXPECT_EQ(0, contents->child_count());
+  EXPECT_EQ(0u, contents->children().size());
 
   // Simulate a touch tap.
   ui::TouchEvent tap(
@@ -101,7 +101,7 @@ TEST_F(TapVisualizerAppTest, Basics) {
   widget->GetNativeWindow()->env()->NotifyEventObservers(tap);
 
   // A touch point view was created.
-  EXPECT_EQ(1, contents->child_count());
+  EXPECT_EQ(1u, contents->children().size());
 }
 
 TEST_F(TapVisualizerAppTest, MultiDisplay) {
@@ -111,9 +111,9 @@ TEST_F(TapVisualizerAppTest, MultiDisplay) {
       display::DisplayList::Type::NOT_PRIMARY);
 
   // Simulate the service starting.
-  TapVisualizerApp app;
+  TapVisualizerApp app(nullptr);
   TapVisualizerAppTestApi test_api(&app);
-  test_api.Start();
+  test_api.Show();
 
   // Two renderers are created.
   EXPECT_TRUE(test_api.HasRendererForDisplay(kFirstDisplayId));
@@ -130,8 +130,8 @@ TEST_F(TapVisualizerAppTest, MultiDisplay) {
   widget1->GetNativeWindow()->env()->NotifyEventObservers(tap);
 
   // A touch point view was created on the second display.
-  EXPECT_EQ(0, widget1->GetContentsView()->child_count());
-  EXPECT_EQ(1, widget2->GetContentsView()->child_count());
+  EXPECT_EQ(0u, widget1->GetContentsView()->children().size());
+  EXPECT_EQ(1u, widget2->GetContentsView()->children().size());
 
   // Disconnect the second display.
   screen_->display_list().RemoveDisplay(kSecondDisplayId);

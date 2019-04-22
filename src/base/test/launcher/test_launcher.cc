@@ -19,7 +19,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/format_macros.h"
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -40,7 +40,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/test/gtest_util.h"
 #include "base/test/launcher/test_launcher_tracer.h"
 #include "base/test/launcher/test_results_tracker.h"
@@ -89,8 +89,7 @@ const char kTestShardIndex[] = "GTEST_SHARD_INDEX";
 
 namespace {
 
-// Global tag for test runs where the results are incomplete or unreliable
-// for any reason, e.g. early exit because of too many broken tests.
+// Global tag for test runs where the results are unreliable for any reason.
 const char kUnreliableResultsTag[] = "UNRELIABLE_RESULTS";
 
 // Maximum time of no output after which we print list of processes still
@@ -134,24 +133,20 @@ TestLauncherTracer* GetTestLauncherTracer() {
   return tracer;
 }
 
-// Creates and starts a TaskScheduler with |num_parallel_jobs| dedicated to
+// Creates and starts a ThreadPool with |num_parallel_jobs| dedicated to
 // foreground blocking tasks (corresponds to the traits used to launch and wait
 // for child processes).
-void CreateAndStartTaskScheduler(int num_parallel_jobs) {
-  // These values are taken from TaskScheduler::StartWithDefaultParams(), which
+void CreateAndStartThreadPool(int num_parallel_jobs) {
+  // These values are taken from ThreadPool::StartWithDefaultParams(), which
   // is not used directly to allow a custom number of threads in the foreground
-  // blocking pool.
-  constexpr int kMaxBackgroundThreads = 1;
-  constexpr int kMaxBackgroundBlockingThreads = 2;
-  const int max_foreground_threads =
-      std::max(1, base::SysInfo::NumberOfProcessors());
+  // pool.
+  // TODO(etiennep): Change this to 2 in future CL.
+  constexpr int kMaxBackgroundThreads = 3;
   constexpr base::TimeDelta kSuggestedReclaimTime =
       base::TimeDelta::FromSeconds(30);
-  base::TaskScheduler::Create("TestLauncher");
-  base::TaskScheduler::GetInstance()->Start(
+  base::ThreadPool::Create("TestLauncher");
+  base::ThreadPool::GetInstance()->Start(
       {{kMaxBackgroundThreads, kSuggestedReclaimTime},
-       {kMaxBackgroundBlockingThreads, kSuggestedReclaimTime},
-       {max_foreground_threads, kSuggestedReclaimTime},
        {num_parallel_jobs, kSuggestedReclaimTime}});
 }
 
@@ -330,7 +325,7 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
   // that we can install a different /data.
   new_options.spawn_flags = FDIO_SPAWN_CLONE_STDIO | FDIO_SPAWN_CLONE_JOB;
 
-  const base::FilePath kDataPath("/data");
+  const base::FilePath kDataPath(base::fuchsia::kPersistedDataDirectoryPath);
 
   // Clone all namespace entries from the current process, except /data, which
   // is overridden below.
@@ -372,27 +367,8 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
 
   // Bind the new test subdirectory to /data in the child process' namespace.
   new_options.paths_to_transfer.push_back(
-      {kDataPath, base::fuchsia::GetHandleFromFile(
-                      base::File(nested_data_path,
-                                 base::File::FLAG_OPEN | base::File::FLAG_READ |
-                                     base::File::FLAG_DELETE_ON_CLOSE))
-                      .release()});
-
-  // The test launcher can use a shared data directory for providing tests with
-  // files deployed at runtime. The files are located under the directory
-  // "/data/shared". They will be mounted at "/test-shared" under the child
-  // process' namespace.
-  const base::FilePath kSharedDataSourcePath("/data/shared");
-  const base::FilePath kSharedDataTargetPath("/test-shared");
-  if (base::PathExists(kSharedDataSourcePath)) {
-    zx::handle shared_directory_handle = base::fuchsia::GetHandleFromFile(
-        base::File(kSharedDataSourcePath,
-                   base::File::FLAG_OPEN | base::File::FLAG_READ |
-                       base::File::FLAG_DELETE_ON_CLOSE));
-    new_options.paths_to_transfer.push_back(
-        {kSharedDataTargetPath, shared_directory_handle.release()});
-  }
-
+      {kDataPath,
+       base::fuchsia::OpenDirectory(nested_data_path).TakeChannel().release()});
 #endif  // defined(OS_FUCHSIA)
 
 #if defined(OS_LINUX)
@@ -472,9 +448,8 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
     zx_status_t status = job_handle.kill();
     ZX_CHECK(status == ZX_OK, status);
 
-    // The child process' data dir should have been deleted automatically,
-    // thanks to the DELETE_ON_CLOSE flag.
-    DCHECK(!base::DirectoryExists(nested_data_path));
+    // Cleanup the data directory.
+    CHECK(DeleteFile(nested_data_path, true));
 #elif defined(OS_POSIX)
     if (exit_code != 0) {
       // On POSIX, in case the test does not exit cleanly, either due to a crash
@@ -644,8 +619,8 @@ TestLauncher::TestLauncher(TestLauncherDelegate* launcher_delegate,
       parallel_jobs_(parallel_jobs) {}
 
 TestLauncher::~TestLauncher() {
-  if (base::TaskScheduler::GetInstance()) {
-    base::TaskScheduler::GetInstance()->Shutdown();
+  if (base::ThreadPool::GetInstance()) {
+    base::ThreadPool::GetInstance()->Shutdown();
   }
 }
 
@@ -818,7 +793,7 @@ void TestLauncher::OnTestFinished(const TestResult& original_result) {
     KillSpawnedTestProcesses();
 #endif  // defined(OS_POSIX)
 
-    MaybeSaveSummaryAsJSON({"BROKEN_TEST_EARLY_EXIT", kUnreliableResultsTag});
+    MaybeSaveSummaryAsJSON({"BROKEN_TEST_EARLY_EXIT"});
 
     exit(1);
   }
@@ -838,7 +813,6 @@ void TestLauncher::OnTestFinished(const TestResult& original_result) {
     fflush(stdout);
 
     results_tracker_.AddGlobalTag("BROKEN_TEST_SKIPPED_RETRIES");
-    results_tracker_.AddGlobalTag(kUnreliableResultsTag);
 
     OnTestIterationFinished();
     return;
@@ -1055,7 +1029,7 @@ bool TestLauncher::Init() {
   fprintf(stdout, "Using %" PRIuS " parallel jobs.\n", parallel_jobs_);
   fflush(stdout);
 
-  CreateAndStartTaskScheduler(static_cast<int>(parallel_jobs_));
+  CreateAndStartThreadPool(static_cast<int>(parallel_jobs_));
 
   std::vector<std::string> positive_file_filter;
   std::vector<std::string> positive_gtest_filter;
@@ -1227,10 +1201,10 @@ void TestLauncher::RunTests() {
         continue;
     }
 
-    if (!launcher_delegate_->ShouldRunTest(test_id.test_case_name,
-                                           test_id.test_name)) {
+    bool will_run_test = launcher_delegate_->WillRunTest(test_id.test_case_name,
+                                                         test_id.test_name);
+    if (!will_run_test)
       continue;
-    }
 
     // Count tests in the binary, before we apply filter and sharding.
     test_found_count_++;
@@ -1266,14 +1240,33 @@ void TestLauncher::RunTests() {
         continue;
     }
 
-    if (Hash(test_name) % total_shards_ != static_cast<uint32_t>(shard_index_))
+    // Tests with the name XYZ will cause tests with the name PRE_XYZ to run. We
+    // should bucket all of these tests together.
+    std::string test_name_to_bucket = test_name;
+    size_t index_of_first_period = test_name_to_bucket.find(".");
+    if (index_of_first_period == std::string::npos)
+      index_of_first_period = 0;
+    base::ReplaceSubstringsAfterOffset(&test_name_to_bucket,
+                                       index_of_first_period, "PRE_", "");
+
+    if (Hash(test_name_to_bucket) % total_shards_ !=
+        static_cast<uint32_t>(shard_index_)) {
       continue;
+    }
 
     // Report test locations after applying all filters, so that we report test
     // locations only for those tests that were run as part of this shard.
     results_tracker_.AddTestLocation(test_name, test_id.file, test_id.line);
 
-    test_names.push_back(test_name);
+    bool should_run_test = launcher_delegate_->ShouldRunTest(
+        test_id.test_case_name, test_id.test_name);
+    if (should_run_test) {
+      // Only a subset of tests that are run require placeholders -- namely,
+      // those that will output results.
+      results_tracker_.AddTestPlaceholder(test_name);
+
+      test_names.push_back(test_name);
+    }
   }
 
   if (shuffle_) {
@@ -1286,7 +1279,8 @@ void TestLauncher::RunTests() {
   }
 
   // Save an early test summary in case the launcher crashes or gets killed.
-  MaybeSaveSummaryAsJSON({"EARLY_SUMMARY", kUnreliableResultsTag});
+  results_tracker_.GeneratePlaceholderIteration();
+  MaybeSaveSummaryAsJSON({"EARLY_SUMMARY"});
 
   test_started_count_ = launcher_delegate_->RunTests(this, test_names);
 
@@ -1334,7 +1328,7 @@ void TestLauncher::OnShutdownPipeReadable() {
 
   KillSpawnedTestProcesses();
 
-  MaybeSaveSummaryAsJSON({"CAUGHT_TERMINATION_SIGNAL", kUnreliableResultsTag});
+  MaybeSaveSummaryAsJSON({"CAUGHT_TERMINATION_SIGNAL"});
 
   // The signal would normally kill the process, so exit now.
   _exit(1);

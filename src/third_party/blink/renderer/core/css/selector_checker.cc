@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/core/dom/v0_insertion_point.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/picture_in_picture_controller.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
@@ -59,6 +60,7 @@
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/spatial_navigation.h"
+#include "third_party/blink/renderer/core/page/spatial_navigation_controller.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
@@ -72,6 +74,12 @@ static bool IsFrameFocused(const Element& element) {
                                                  .GetFrame()
                                                  ->Selection()
                                                  .FrameIsFocusedAndActive();
+}
+
+static bool MatchesSpatialNavigationFocusPseudoClass(const Element& element) {
+  return IsHTMLOptionElement(element) &&
+         ToHTMLOptionElement(element).SpatialNavigationFocused() &&
+         IsFrameFocused(element);
 }
 
 static bool MatchesListBoxPseudoClass(const Element& element) {
@@ -276,8 +284,8 @@ SelectorChecker::MatchStatus SelectorChecker::MatchForSubSelector(
 }
 
 static inline bool IsV0ShadowRoot(const Node* node) {
-  return node && node->IsShadowRoot() &&
-         ToShadowRoot(node)->GetType() == ShadowRootType::V0;
+  auto* shadow_root = DynamicTo<ShadowRoot>(node);
+  return shadow_root && shadow_root->GetType() == ShadowRootType::V0;
 }
 
 SelectorChecker::MatchStatus SelectorChecker::MatchForPseudoShadow(
@@ -292,8 +300,8 @@ SelectorChecker::MatchStatus SelectorChecker::MatchForPseudoShadow(
 }
 
 static inline Element* ParentOrV0ShadowHostElement(const Element& element) {
-  if (element.parentNode() && element.parentNode()->IsShadowRoot()) {
-    if (ToShadowRoot(element.parentNode())->GetType() != ShadowRootType::V0)
+  if (auto* shadow_root = DynamicTo<ShadowRoot>(element.parentNode())) {
+    if (shadow_root->GetType() != ShadowRootType::V0)
       return nullptr;
   }
   return element.ParentOrShadowHostElement();
@@ -755,11 +763,11 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
     case CSSSelector::kPseudoNot:
       return CheckPseudoNot(context, result);
     case CSSSelector::kPseudoEmpty: {
-      bool result = true;
+      bool is_empty = true;
       bool has_whitespace = false;
       for (Node* n = element.firstChild(); n; n = n->nextSibling()) {
         if (n->IsElementNode()) {
-          result = false;
+          is_empty = false;
           break;
         }
         if (n->IsTextNode()) {
@@ -768,20 +776,20 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
             if (text_node->ContainsOnlyWhitespaceOrEmpty()) {
               has_whitespace = true;
             } else {
-              result = false;
+              is_empty = false;
               break;
             }
           }
         }
       }
-      if (result && has_whitespace) {
+      if (is_empty && has_whitespace) {
         UseCounter::Count(context.element->GetDocument(),
                           WebFeature::kCSSSelectorEmptyWhitespaceOnlyFail);
-        result = false;
+        is_empty = false;
       }
       if (mode_ == kResolvingStyle)
         element.SetStyleAffectedByEmpty();
-      return result;
+      return is_empty;
     }
     case CSSSelector::kPseudoFirstChild:
       if (mode_ == kResolvingStyle) {
@@ -935,7 +943,7 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
         else
           element.SetChildrenOrSiblingsAffectedByFocusWithin();
       }
-      probe::forcePseudoState(&element, CSSSelector::kPseudoFocusWithin,
+      probe::ForcePseudoState(&element, CSSSelector::kPseudoFocusWithin,
                               &force_pseudo_state);
       if (force_pseudo_state)
         return true;
@@ -949,7 +957,7 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
       }
       if (!ShouldMatchHoverOrActive(context))
         return false;
-      probe::forcePseudoState(&element, CSSSelector::kPseudoHover,
+      probe::ForcePseudoState(&element, CSSSelector::kPseudoHover,
                               &force_pseudo_state);
       if (force_pseudo_state)
         return true;
@@ -963,7 +971,7 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
       }
       if (!ShouldMatchHoverOrActive(context))
         return false;
-      probe::forcePseudoState(&element, CSSSelector::kPseudoActive,
+      probe::ForcePseudoState(&element, CSSSelector::kPseudoActive,
                               &force_pseudo_state);
       if (force_pseudo_state)
         return true;
@@ -1034,6 +1042,12 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
       return Fullscreen::IsFullscreenElement(element);
     case CSSSelector::kPseudoFullScreenAncestor:
       return element.ContainsFullScreenElement();
+    case CSSSelector::kPseudoPictureInPicture:
+      return PictureInPictureController::IsElementInPictureInPicture(
+                 &element) ||
+             (IsShadowHost(element) &&
+              PictureInPictureController::IsShadowHostInPictureInPicture(
+                  element));
     case CSSSelector::kPseudoVideoPersistent:
       DCHECK(is_ua_rule_);
       return IsHTMLVideoElement(element) &&
@@ -1058,19 +1072,28 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
         return false;
       if (context.scope == &element.GetDocument())
         return element == element.GetDocument().documentElement();
-      if (context.scope->IsShadowRoot())
-        return element == ToShadowRoot(context.scope)->host();
+      if (auto* shadow_root = DynamicTo<ShadowRoot>(context.scope.Get()))
+        return element == shadow_root->host();
       return context.scope == &element;
     case CSSSelector::kPseudoUnresolved:
       return !element.IsDefined() && element.IsUnresolvedV0CustomElement();
     case CSSSelector::kPseudoDefined:
       return element.IsDefined() || element.IsUpgradedV0CustomElement();
-    case CSSSelector::kPseudoHost:
     case CSSSelector::kPseudoHostContext:
+      UseCounter::Count(
+          context.element->GetDocument(),
+          mode_ == kQueryingRules
+              ? WebFeature::kCSSSelectorHostContextInSnapshotProfile
+              : WebFeature::kCSSSelectorHostContextInLiveProfile);
+      FALLTHROUGH;
+    case CSSSelector::kPseudoHost:
       return CheckPseudoHost(context, result);
     case CSSSelector::kPseudoSpatialNavigationFocus:
       DCHECK(is_ua_rule_);
       return MatchesSpatialNavigationFocusPseudoClass(element);
+    case CSSSelector::kPseudoSpatialNavigationInterest:
+      DCHECK(is_ua_rule_);
+      return MatchesSpatialNavigationInterestPseudoClass(element);
     case CSSSelector::kPseudoIsHtml:
       DCHECK(is_ua_rule_);
       return element.GetDocument().IsHTMLDocument();
@@ -1366,7 +1389,7 @@ bool SelectorChecker::CheckScrollbarPseudoClass(
 
 bool SelectorChecker::MatchesFocusPseudoClass(const Element& element) {
   bool force_pseudo_state = false;
-  probe::forcePseudoState(const_cast<Element*>(&element),
+  probe::ForcePseudoState(const_cast<Element*>(&element),
                           CSSSelector::kPseudoFocus, &force_pseudo_state);
   if (force_pseudo_state)
     return true;
@@ -1375,7 +1398,7 @@ bool SelectorChecker::MatchesFocusPseudoClass(const Element& element) {
 
 bool SelectorChecker::MatchesFocusVisiblePseudoClass(const Element& element) {
   bool force_pseudo_state = false;
-  probe::forcePseudoState(const_cast<Element*>(&element),
+  probe::ForcePseudoState(const_cast<Element*>(&element),
                           CSSSelector::kPseudoFocusVisible,
                           &force_pseudo_state);
   if (force_pseudo_state)
@@ -1394,19 +1417,20 @@ bool SelectorChecker::MatchesFocusVisiblePseudoClass(const Element& element) {
 }
 
 // static
-bool SelectorChecker::MatchesSpatialNavigationFocusPseudoClass(
+bool SelectorChecker::MatchesSpatialNavigationInterestPseudoClass(
     const Element& element) {
   if (!IsSpatialNavigationEnabled(element.GetDocument().GetFrame()))
     return false;
-  if (RuntimeEnabledFeatures::SpatialNavigationForcesOutlineEnabled()) {
-    // TODO(mthiesse): Decouple spatial navigation target from focus, so that
-    // if spat nav is enabled, but not used, we don't override focus ring
-    // behavior on that element.
-    return element.IsFocused() && IsFrameFocused(element);
-  }
-  return IsHTMLOptionElement(element) &&
-         ToHTMLOptionElement(element).SpatialNavigationFocused() &&
-         IsFrameFocused(element);
+
+  if (!RuntimeEnabledFeatures::FocuslessSpatialNavigationEnabled())
+    return false;
+
+  DCHECK(element.GetDocument().GetPage());
+  Element* interested_element = element.GetDocument()
+                                    .GetPage()
+                                    ->GetSpatialNavigationController()
+                                    .GetInterestedElement();
+  return interested_element && *interested_element == element;
 }
 
 }  // namespace blink

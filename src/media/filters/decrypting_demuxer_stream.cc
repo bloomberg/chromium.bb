@@ -28,11 +28,11 @@ static bool IsStreamValid(DemuxerStream* stream) {
 DecryptingDemuxerStream::DecryptingDemuxerStream(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     MediaLog* media_log,
-    const base::Closure& waiting_for_decryption_key_cb)
+    const WaitingCB& waiting_cb)
     : task_runner_(task_runner),
       media_log_(media_log),
       state_(kUninitialized),
-      waiting_for_decryption_key_cb_(waiting_for_decryption_key_cb),
+      waiting_cb_(waiting_cb),
       demuxer_stream_(NULL),
       decryptor_(NULL),
       key_added_while_decrypt_pending_(false),
@@ -305,7 +305,7 @@ void DecryptingDemuxerStream::DeliverBuffer(
 
     TRACE_EVENT_ASYNC_BEGIN0(
         "media", "DecryptingDemuxerStream::WaitingForDecryptionKey", this);
-    waiting_for_decryption_key_cb_.Run();
+    waiting_cb_.Run(WaitingReason::kNoDecryptionKey);
     return;
   }
 

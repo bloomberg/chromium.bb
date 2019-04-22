@@ -40,11 +40,11 @@ function DropEffectAndLabel(dropEffect, label) {
  */
 DropEffectAndLabel.prototype.getDropEffect = function() {
   return this.dropEffect_;
-}
+};
 
 /**
  * @return {?string} Returns the label. |none| if a label should not appear.
  */
 DropEffectAndLabel.prototype.getLabel = function() {
   return this.label_;
-}
+};

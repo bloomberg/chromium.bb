@@ -5,10 +5,6 @@
 #ifndef COMPONENTS_PDF_BROWSER_PDF_WEB_CONTENTS_HELPER_CLIENT_H_
 #define COMPONENTS_PDF_BROWSER_PDF_WEB_CONTENTS_HELPER_CLIENT_H_
 
-#include "base/callback.h"
-#include "base/strings/string16.h"
-#include "ipc/ipc_message.h"
-
 namespace content {
 class WebContents;
 }
@@ -25,6 +21,10 @@ class PDFWebContentsHelperClient {
   virtual void OnPDFHasUnsupportedFeature(content::WebContents* contents) = 0;
 
   virtual void OnSaveURL(content::WebContents* contents) = 0;
+
+  // Sets whether the PDF plugin can handle file saving internally.
+  virtual void SetPluginCanSave(content::WebContents* contents,
+                                bool can_save) = 0;
 };
 
 }  // namespace pdf

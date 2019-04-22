@@ -28,12 +28,18 @@ LogoMetadata GetExampleMetadata() {
                                      &metadata.expiration_time));
   metadata.can_show_after_expiration = true;
   metadata.type = LogoType::ANIMATED;
+  metadata.short_link = GURL("https://g.co/");
   metadata.on_click_url = GURL("https://www.google.com/search?q=chicken");
   metadata.animated_url = GURL("http://www.google.com/logos/doodle.png");
   metadata.alt_text = "A logo about chickens";
   metadata.mime_type = "image/jpeg";
   metadata.log_url = GURL("https://www.google.com/ddllog?a=b");
   metadata.cta_log_url = GURL("https://www.google.com/ddllog?c=d");
+  metadata.share_button_x = 200;
+  metadata.share_button_y = 100;
+  metadata.share_button_opacity = 0.5;
+  metadata.share_button_icon = "test_img";
+  metadata.share_button_bg = "#ff22ff";
   return metadata;
 }
 
@@ -76,6 +82,13 @@ std::unique_ptr<EncodedLogo> GetExampleLogo2() {
   return logo;
 }
 
+std::unique_ptr<EncodedLogo> GetExampleLogoWithoutImage() {
+  auto logo = std::make_unique<EncodedLogo>();
+  logo->encoded_image = nullptr;
+  logo->metadata = GetExampleMetadata2();
+  return logo;
+}
+
 void ExpectMetadataEqual(const LogoMetadata& expected_metadata,
                          const LogoMetadata& actual_metadata) {
   EXPECT_EQ(expected_metadata.source_url, actual_metadata.source_url);
@@ -91,6 +104,14 @@ void ExpectMetadataEqual(const LogoMetadata& expected_metadata,
   EXPECT_EQ(expected_metadata.mime_type, actual_metadata.mime_type);
   EXPECT_EQ(expected_metadata.log_url, actual_metadata.log_url);
   EXPECT_EQ(expected_metadata.cta_log_url, actual_metadata.cta_log_url);
+  EXPECT_EQ(expected_metadata.short_link, actual_metadata.short_link);
+  EXPECT_EQ(expected_metadata.share_button_x, actual_metadata.share_button_x);
+  EXPECT_EQ(expected_metadata.share_button_y, actual_metadata.share_button_y);
+  EXPECT_EQ(expected_metadata.share_button_opacity,
+            actual_metadata.share_button_opacity);
+  EXPECT_EQ(expected_metadata.share_button_icon,
+            actual_metadata.share_button_icon);
+  EXPECT_EQ(expected_metadata.share_button_bg, actual_metadata.share_button_bg);
 }
 
 void ExpectLogosEqual(const EncodedLogo& expected_logo,
@@ -139,6 +160,14 @@ class LogoCacheTest : public ::testing::Test {
     } else {
       ASSERT_FALSE(retrieved_logo);
     }
+  }
+
+  void ExpectLogoWithoutImage(const EncodedLogo* expected_logo) {
+    std::unique_ptr<EncodedLogo> retrieved_logo(cache_->GetCachedLogo());
+    ASSERT_TRUE(retrieved_logo.get());
+    ASSERT_FALSE(retrieved_logo->encoded_image.get());
+    ASSERT_FALSE(expected_logo->encoded_image.get());
+    ExpectMetadataEqual(expected_logo->metadata, retrieved_logo->metadata);
   }
 
   // Deletes the existing LogoCache and creates a new one. This clears any
@@ -228,6 +257,33 @@ TEST_F(LogoCacheTest, StoreAndRetrieveLogo) {
   // Read logo back from disk.
   SimulateRestart();
   ExpectLogo(logo.get());
+}
+
+TEST_F(LogoCacheTest, StoreAndRetrieveLogoWithoutImage) {
+  // Expect no metadata at first.
+  ExpectLogo(nullptr);
+
+  // Set initial logo.
+  std::unique_ptr<EncodedLogo> logo = GetExampleLogoWithoutImage();
+  cache_->SetCachedLogo(logo.get());
+  ExpectLogoWithoutImage(logo.get());
+
+  // Update logo to null.
+  cache_->SetCachedLogo(nullptr);
+  ExpectLogo(nullptr);
+
+  // Read logo back from disk.
+  SimulateRestart();
+  ExpectLogo(nullptr);
+
+  // Update logo.
+  logo = GetExampleLogoWithoutImage();
+  cache_->SetCachedLogo(logo.get());
+  ExpectLogoWithoutImage(logo.get());
+
+  // Read logo back from disk.
+  SimulateRestart();
+  ExpectLogoWithoutImage(logo.get());
 }
 
 TEST_F(LogoCacheTest, RetrieveCorruptMetadata) {

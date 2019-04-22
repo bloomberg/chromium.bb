@@ -4,6 +4,7 @@
 
 #include "chrome/browser/notifications/web_page_notifier_controller.h"
 
+#include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"

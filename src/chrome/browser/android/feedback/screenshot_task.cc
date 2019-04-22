@@ -39,7 +39,6 @@ void JNI_ScreenshotTask_SnapshotCallback(
 
 void JNI_ScreenshotTask_GrabWindowSnapshotAsync(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& jcallback,
     const JavaParamRef<jobject>& jwindow_android,
     jint window_width,

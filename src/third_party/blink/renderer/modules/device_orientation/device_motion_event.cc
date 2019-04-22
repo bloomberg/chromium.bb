@@ -25,10 +25,10 @@
 
 #include "third_party/blink/renderer/modules/device_orientation/device_motion_event.h"
 
-#include "third_party/blink/renderer/modules/device_orientation/device_acceleration.h"
 #include "third_party/blink/renderer/modules/device_orientation/device_motion_data.h"
+#include "third_party/blink/renderer/modules/device_orientation/device_motion_event_acceleration.h"
 #include "third_party/blink/renderer/modules/device_orientation/device_motion_event_init.h"
-#include "third_party/blink/renderer/modules/device_orientation/device_rotation_rate.h"
+#include "third_party/blink/renderer/modules/device_orientation/device_motion_event_rotation_rate.h"
 
 namespace blink {
 
@@ -47,15 +47,16 @@ DeviceMotionEvent::DeviceMotionEvent(const AtomicString& event_type,
     : Event(event_type, Bubbles::kNo, Cancelable::kNo),
       device_motion_data_(device_motion_data) {}
 
-DeviceAcceleration* DeviceMotionEvent::acceleration() {
+DeviceMotionEventAcceleration* DeviceMotionEvent::acceleration() {
   return device_motion_data_->GetAcceleration();
 }
 
-DeviceAcceleration* DeviceMotionEvent::accelerationIncludingGravity() {
+DeviceMotionEventAcceleration*
+DeviceMotionEvent::accelerationIncludingGravity() {
   return device_motion_data_->GetAccelerationIncludingGravity();
 }
 
-DeviceRotationRate* DeviceMotionEvent::rotationRate() {
+DeviceMotionEventRotationRate* DeviceMotionEvent::rotationRate() {
   return device_motion_data_->GetRotationRate();
 }
 

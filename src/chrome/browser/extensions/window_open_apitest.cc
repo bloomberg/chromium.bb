@@ -5,6 +5,7 @@
 #include <stddef.h>
 
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
@@ -372,7 +373,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest,
   ASSERT_TRUE(history_url.SchemeIs(content::kChromeUIScheme));
   ASSERT_TRUE(ntp_url.SchemeIs(chrome::kChromeSearchScheme));
   GURL start_urls[] = {history_url, ntp_url};
-  for (size_t i = 0; i < arraysize(start_urls); i++) {
+  for (size_t i = 0; i < base::size(start_urls); i++) {
     ui_test_utils::NavigateToURL(browser(), start_urls[i]);
     EXPECT_EQ(start_urls[i], tab->GetMainFrame()->GetLastCommittedURL());
 
@@ -461,13 +462,17 @@ IN_PROC_BROWSER_TEST_F(WindowOpenApiTest, VerifyCommandsInLockedFullscreen) {
                                       "updateWindowToLockedFullscreen"))
       << message_;
 
-  // IDC_EXIT is not enabled in locked fullscreen.
+  // IDC_EXIT should always be disabled in locked fullscreen.
   EXPECT_FALSE(browser()->command_controller()->IsCommandEnabled(IDC_EXIT));
+
+  // Some other disabled commands.
+  EXPECT_FALSE(browser()->command_controller()->IsCommandEnabled(IDC_FIND));
+  EXPECT_FALSE(
+      browser()->command_controller()->IsCommandEnabled(IDC_ZOOM_PLUS));
 
   // Verify some whitelisted commands.
   EXPECT_TRUE(browser()->command_controller()->IsCommandEnabled(IDC_COPY));
-  EXPECT_TRUE(browser()->command_controller()->IsCommandEnabled(IDC_FIND));
-  EXPECT_TRUE(browser()->command_controller()->IsCommandEnabled(IDC_ZOOM_PLUS));
+  EXPECT_TRUE(browser()->command_controller()->IsCommandEnabled(IDC_PASTE));
 }
 
 IN_PROC_BROWSER_TEST_F(WindowOpenApiTest,

@@ -14,18 +14,17 @@
 #include <vector>
 
 #include "core/fxcrt/autorestorer.h"
-#include "core/fxcrt/cfx_decimal.h"
 #include "core/fxcrt/cfx_readonlymemorystream.h"
 #include "core/fxcrt/fx_codepage.h"
 #include "core/fxcrt/fx_extension.h"
-#include "core/fxcrt/locale_iface.h"
 #include "core/fxcrt/xml/cfx_xmldocument.h"
 #include "core/fxcrt/xml/cfx_xmlelement.h"
 #include "core/fxcrt/xml/cfx_xmlnode.h"
 #include "core/fxcrt/xml/cfx_xmltext.h"
 #include "core/fxge/dib/cfx_dibitmap.h"
-#include "fxjs/cfxjse_engine.h"
-#include "fxjs/cfxjse_value.h"
+#include "core/fxge/fx_font.h"
+#include "fxjs/xfa/cfxjse_engine.h"
+#include "fxjs/xfa/cfxjse_value.h"
 #include "fxjs/xfa/cjx_node.h"
 #include "third_party/base/compiler_specific.h"
 #include "third_party/base/logging.h"
@@ -33,6 +32,8 @@
 #include "third_party/base/span.h"
 #include "third_party/base/stl_util.h"
 #include "xfa/fde/cfde_textout.h"
+#include "xfa/fgas/crt/cfgas_decimal.h"
+#include "xfa/fgas/crt/locale_iface.h"
 #include "xfa/fgas/font/cfgas_fontmgr.h"
 #include "xfa/fgas/font/cfgas_gefont.h"
 #include "xfa/fxfa/cxfa_eventparam.h"
@@ -42,36 +43,319 @@
 #include "xfa/fxfa/cxfa_ffwidget.h"
 #include "xfa/fxfa/cxfa_fontmgr.h"
 #include "xfa/fxfa/cxfa_textprovider.h"
+#include "xfa/fxfa/parser/cxfa_accessiblecontent.h"
+#include "xfa/fxfa/parser/cxfa_acrobat.h"
+#include "xfa/fxfa/parser/cxfa_acrobat7.h"
+#include "xfa/fxfa/parser/cxfa_adbe_jsconsole.h"
+#include "xfa/fxfa/parser/cxfa_adbe_jsdebugger.h"
+#include "xfa/fxfa/parser/cxfa_addsilentprint.h"
+#include "xfa/fxfa/parser/cxfa_addviewerpreferences.h"
+#include "xfa/fxfa/parser/cxfa_adjustdata.h"
+#include "xfa/fxfa/parser/cxfa_adobeextensionlevel.h"
+#include "xfa/fxfa/parser/cxfa_agent.h"
+#include "xfa/fxfa/parser/cxfa_alwaysembed.h"
+#include "xfa/fxfa/parser/cxfa_amd.h"
+#include "xfa/fxfa/parser/cxfa_appearancefilter.h"
+#include "xfa/fxfa/parser/cxfa_arc.h"
+#include "xfa/fxfa/parser/cxfa_area.h"
 #include "xfa/fxfa/parser/cxfa_arraynodelist.h"
+#include "xfa/fxfa/parser/cxfa_assist.h"
 #include "xfa/fxfa/parser/cxfa_attachnodelist.h"
+#include "xfa/fxfa/parser/cxfa_attributes.h"
+#include "xfa/fxfa/parser/cxfa_autosave.h"
+#include "xfa/fxfa/parser/cxfa_barcode.h"
+#include "xfa/fxfa/parser/cxfa_base.h"
+#include "xfa/fxfa/parser/cxfa_batchoutput.h"
+#include "xfa/fxfa/parser/cxfa_behavioroverride.h"
 #include "xfa/fxfa/parser/cxfa_bind.h"
+#include "xfa/fxfa/parser/cxfa_binditems.h"
+#include "xfa/fxfa/parser/cxfa_bookend.h"
+#include "xfa/fxfa/parser/cxfa_boolean.h"
 #include "xfa/fxfa/parser/cxfa_border.h"
+#include "xfa/fxfa/parser/cxfa_break.h"
+#include "xfa/fxfa/parser/cxfa_breakafter.h"
+#include "xfa/fxfa/parser/cxfa_breakbefore.h"
+#include "xfa/fxfa/parser/cxfa_button.h"
+#include "xfa/fxfa/parser/cxfa_cache.h"
 #include "xfa/fxfa/parser/cxfa_calculate.h"
+#include "xfa/fxfa/parser/cxfa_calendarsymbols.h"
 #include "xfa/fxfa/parser/cxfa_caption.h"
+#include "xfa/fxfa/parser/cxfa_certificate.h"
+#include "xfa/fxfa/parser/cxfa_certificates.h"
+#include "xfa/fxfa/parser/cxfa_change.h"
+#include "xfa/fxfa/parser/cxfa_checkbutton.h"
+#include "xfa/fxfa/parser/cxfa_choicelist.h"
+#include "xfa/fxfa/parser/cxfa_color.h"
 #include "xfa/fxfa/parser/cxfa_comb.h"
+#include "xfa/fxfa/parser/cxfa_command.h"
+#include "xfa/fxfa/parser/cxfa_common.h"
+#include "xfa/fxfa/parser/cxfa_compress.h"
+#include "xfa/fxfa/parser/cxfa_compression.h"
+#include "xfa/fxfa/parser/cxfa_compresslogicalstructure.h"
+#include "xfa/fxfa/parser/cxfa_compressobjectstream.h"
+#include "xfa/fxfa/parser/cxfa_config.h"
+#include "xfa/fxfa/parser/cxfa_conformance.h"
+#include "xfa/fxfa/parser/cxfa_connect.h"
+#include "xfa/fxfa/parser/cxfa_connectionset.h"
+#include "xfa/fxfa/parser/cxfa_connectstring.h"
+#include "xfa/fxfa/parser/cxfa_contentarea.h"
+#include "xfa/fxfa/parser/cxfa_contentcopy.h"
+#include "xfa/fxfa/parser/cxfa_copies.h"
+#include "xfa/fxfa/parser/cxfa_corner.h"
+#include "xfa/fxfa/parser/cxfa_creator.h"
+#include "xfa/fxfa/parser/cxfa_currencysymbol.h"
+#include "xfa/fxfa/parser/cxfa_currencysymbols.h"
+#include "xfa/fxfa/parser/cxfa_currentpage.h"
+#include "xfa/fxfa/parser/cxfa_data.h"
+#include "xfa/fxfa/parser/cxfa_datagroup.h"
+#include "xfa/fxfa/parser/cxfa_datamodel.h"
+#include "xfa/fxfa/parser/cxfa_datavalue.h"
+#include "xfa/fxfa/parser/cxfa_date.h"
+#include "xfa/fxfa/parser/cxfa_datepattern.h"
+#include "xfa/fxfa/parser/cxfa_datepatterns.h"
+#include "xfa/fxfa/parser/cxfa_datetime.h"
+#include "xfa/fxfa/parser/cxfa_datetimeedit.h"
+#include "xfa/fxfa/parser/cxfa_datetimesymbols.h"
+#include "xfa/fxfa/parser/cxfa_day.h"
+#include "xfa/fxfa/parser/cxfa_daynames.h"
+#include "xfa/fxfa/parser/cxfa_debug.h"
 #include "xfa/fxfa/parser/cxfa_decimal.h"
+#include "xfa/fxfa/parser/cxfa_defaulttypeface.h"
+#include "xfa/fxfa/parser/cxfa_defaultui.h"
+#include "xfa/fxfa/parser/cxfa_delete.h"
+#include "xfa/fxfa/parser/cxfa_delta.h"
+#include "xfa/fxfa/parser/cxfa_deltas.h"
+#include "xfa/fxfa/parser/cxfa_desc.h"
+#include "xfa/fxfa/parser/cxfa_destination.h"
+#include "xfa/fxfa/parser/cxfa_digestmethod.h"
+#include "xfa/fxfa/parser/cxfa_digestmethods.h"
 #include "xfa/fxfa/parser/cxfa_document.h"
 #include "xfa/fxfa/parser/cxfa_document_parser.h"
+#include "xfa/fxfa/parser/cxfa_documentassembly.h"
+#include "xfa/fxfa/parser/cxfa_draw.h"
+#include "xfa/fxfa/parser/cxfa_driver.h"
+#include "xfa/fxfa/parser/cxfa_dsigdata.h"
+#include "xfa/fxfa/parser/cxfa_duplexoption.h"
+#include "xfa/fxfa/parser/cxfa_dynamicrender.h"
+#include "xfa/fxfa/parser/cxfa_edge.h"
+#include "xfa/fxfa/parser/cxfa_effectiveinputpolicy.h"
+#include "xfa/fxfa/parser/cxfa_effectiveoutputpolicy.h"
+#include "xfa/fxfa/parser/cxfa_embed.h"
+#include "xfa/fxfa/parser/cxfa_encoding.h"
+#include "xfa/fxfa/parser/cxfa_encodings.h"
+#include "xfa/fxfa/parser/cxfa_encrypt.h"
+#include "xfa/fxfa/parser/cxfa_encryption.h"
+#include "xfa/fxfa/parser/cxfa_encryptionlevel.h"
+#include "xfa/fxfa/parser/cxfa_encryptionmethod.h"
+#include "xfa/fxfa/parser/cxfa_encryptionmethods.h"
+#include "xfa/fxfa/parser/cxfa_enforce.h"
+#include "xfa/fxfa/parser/cxfa_equate.h"
+#include "xfa/fxfa/parser/cxfa_equaterange.h"
+#include "xfa/fxfa/parser/cxfa_era.h"
+#include "xfa/fxfa/parser/cxfa_eranames.h"
 #include "xfa/fxfa/parser/cxfa_event.h"
+#include "xfa/fxfa/parser/cxfa_exclgroup.h"
+#include "xfa/fxfa/parser/cxfa_exclude.h"
+#include "xfa/fxfa/parser/cxfa_excludens.h"
+#include "xfa/fxfa/parser/cxfa_exdata.h"
+#include "xfa/fxfa/parser/cxfa_execute.h"
+#include "xfa/fxfa/parser/cxfa_exobject.h"
+#include "xfa/fxfa/parser/cxfa_extras.h"
+#include "xfa/fxfa/parser/cxfa_field.h"
+#include "xfa/fxfa/parser/cxfa_fill.h"
+#include "xfa/fxfa/parser/cxfa_filter.h"
+#include "xfa/fxfa/parser/cxfa_fliplabel.h"
+#include "xfa/fxfa/parser/cxfa_float.h"
 #include "xfa/fxfa/parser/cxfa_font.h"
+#include "xfa/fxfa/parser/cxfa_fontinfo.h"
+#include "xfa/fxfa/parser/cxfa_form.h"
 #include "xfa/fxfa/parser/cxfa_format.h"
+#include "xfa/fxfa/parser/cxfa_formfieldfilling.h"
+#include "xfa/fxfa/parser/cxfa_groupparent.h"
+#include "xfa/fxfa/parser/cxfa_handler.h"
+#include "xfa/fxfa/parser/cxfa_hyphenation.h"
+#include "xfa/fxfa/parser/cxfa_ifempty.h"
 #include "xfa/fxfa/parser/cxfa_image.h"
+#include "xfa/fxfa/parser/cxfa_imageedit.h"
+#include "xfa/fxfa/parser/cxfa_includexdpcontent.h"
+#include "xfa/fxfa/parser/cxfa_incrementalload.h"
+#include "xfa/fxfa/parser/cxfa_incrementalmerge.h"
+#include "xfa/fxfa/parser/cxfa_insert.h"
+#include "xfa/fxfa/parser/cxfa_instancemanager.h"
+#include "xfa/fxfa/parser/cxfa_integer.h"
+#include "xfa/fxfa/parser/cxfa_interactive.h"
+#include "xfa/fxfa/parser/cxfa_issuers.h"
 #include "xfa/fxfa/parser/cxfa_items.h"
+#include "xfa/fxfa/parser/cxfa_jog.h"
 #include "xfa/fxfa/parser/cxfa_keep.h"
-#include "xfa/fxfa/parser/cxfa_layoutprocessor.h"
+#include "xfa/fxfa/parser/cxfa_keyusage.h"
+#include "xfa/fxfa/parser/cxfa_labelprinter.h"
+#include "xfa/fxfa/parser/cxfa_layout.h"
+#include "xfa/fxfa/parser/cxfa_level.h"
+#include "xfa/fxfa/parser/cxfa_line.h"
+#include "xfa/fxfa/parser/cxfa_linear.h"
+#include "xfa/fxfa/parser/cxfa_linearized.h"
+#include "xfa/fxfa/parser/cxfa_locale.h"
+#include "xfa/fxfa/parser/cxfa_localeset.h"
 #include "xfa/fxfa/parser/cxfa_localevalue.h"
+#include "xfa/fxfa/parser/cxfa_lockdocument.h"
+#include "xfa/fxfa/parser/cxfa_log.h"
+#include "xfa/fxfa/parser/cxfa_manifest.h"
+#include "xfa/fxfa/parser/cxfa_map.h"
 #include "xfa/fxfa/parser/cxfa_margin.h"
+#include "xfa/fxfa/parser/cxfa_mdp.h"
 #include "xfa/fxfa/parser/cxfa_measurement.h"
+#include "xfa/fxfa/parser/cxfa_medium.h"
+#include "xfa/fxfa/parser/cxfa_mediuminfo.h"
+#include "xfa/fxfa/parser/cxfa_meridiem.h"
+#include "xfa/fxfa/parser/cxfa_meridiemnames.h"
+#include "xfa/fxfa/parser/cxfa_message.h"
+#include "xfa/fxfa/parser/cxfa_messaging.h"
+#include "xfa/fxfa/parser/cxfa_mode.h"
+#include "xfa/fxfa/parser/cxfa_modifyannots.h"
+#include "xfa/fxfa/parser/cxfa_month.h"
+#include "xfa/fxfa/parser/cxfa_monthnames.h"
+#include "xfa/fxfa/parser/cxfa_msgid.h"
+#include "xfa/fxfa/parser/cxfa_nameattr.h"
+#include "xfa/fxfa/parser/cxfa_neverembed.h"
 #include "xfa/fxfa/parser/cxfa_nodeiteratortemplate.h"
+#include "xfa/fxfa/parser/cxfa_numberofcopies.h"
+#include "xfa/fxfa/parser/cxfa_numberpattern.h"
+#include "xfa/fxfa/parser/cxfa_numberpatterns.h"
+#include "xfa/fxfa/parser/cxfa_numbersymbol.h"
+#include "xfa/fxfa/parser/cxfa_numbersymbols.h"
+#include "xfa/fxfa/parser/cxfa_numericedit.h"
 #include "xfa/fxfa/parser/cxfa_occur.h"
+#include "xfa/fxfa/parser/cxfa_oid.h"
+#include "xfa/fxfa/parser/cxfa_oids.h"
+#include "xfa/fxfa/parser/cxfa_openaction.h"
+#include "xfa/fxfa/parser/cxfa_operation.h"
+#include "xfa/fxfa/parser/cxfa_output.h"
+#include "xfa/fxfa/parser/cxfa_outputbin.h"
+#include "xfa/fxfa/parser/cxfa_outputxsl.h"
+#include "xfa/fxfa/parser/cxfa_overflow.h"
+#include "xfa/fxfa/parser/cxfa_overprint.h"
+#include "xfa/fxfa/parser/cxfa_packet.h"
+#include "xfa/fxfa/parser/cxfa_packets.h"
+#include "xfa/fxfa/parser/cxfa_pagearea.h"
+#include "xfa/fxfa/parser/cxfa_pageoffset.h"
+#include "xfa/fxfa/parser/cxfa_pagerange.h"
+#include "xfa/fxfa/parser/cxfa_pageset.h"
+#include "xfa/fxfa/parser/cxfa_pagination.h"
+#include "xfa/fxfa/parser/cxfa_paginationoverride.h"
 #include "xfa/fxfa/parser/cxfa_para.h"
+#include "xfa/fxfa/parser/cxfa_part.h"
+#include "xfa/fxfa/parser/cxfa_password.h"
+#include "xfa/fxfa/parser/cxfa_passwordedit.h"
+#include "xfa/fxfa/parser/cxfa_pattern.h"
+#include "xfa/fxfa/parser/cxfa_pcl.h"
+#include "xfa/fxfa/parser/cxfa_pdf.h"
+#include "xfa/fxfa/parser/cxfa_pdfa.h"
+#include "xfa/fxfa/parser/cxfa_permissions.h"
+#include "xfa/fxfa/parser/cxfa_picktraybypdfsize.h"
 #include "xfa/fxfa/parser/cxfa_picture.h"
+#include "xfa/fxfa/parser/cxfa_plaintextmetadata.h"
+#include "xfa/fxfa/parser/cxfa_presence.h"
+#include "xfa/fxfa/parser/cxfa_present.h"
+#include "xfa/fxfa/parser/cxfa_print.h"
+#include "xfa/fxfa/parser/cxfa_printername.h"
+#include "xfa/fxfa/parser/cxfa_printhighquality.h"
+#include "xfa/fxfa/parser/cxfa_printscaling.h"
+#include "xfa/fxfa/parser/cxfa_producer.h"
+#include "xfa/fxfa/parser/cxfa_proto.h"
+#include "xfa/fxfa/parser/cxfa_ps.h"
+#include "xfa/fxfa/parser/cxfa_psmap.h"
+#include "xfa/fxfa/parser/cxfa_query.h"
+#include "xfa/fxfa/parser/cxfa_radial.h"
+#include "xfa/fxfa/parser/cxfa_range.h"
+#include "xfa/fxfa/parser/cxfa_reason.h"
+#include "xfa/fxfa/parser/cxfa_reasons.h"
+#include "xfa/fxfa/parser/cxfa_record.h"
+#include "xfa/fxfa/parser/cxfa_recordset.h"
+#include "xfa/fxfa/parser/cxfa_rectangle.h"
+#include "xfa/fxfa/parser/cxfa_ref.h"
+#include "xfa/fxfa/parser/cxfa_relevant.h"
+#include "xfa/fxfa/parser/cxfa_rename.h"
+#include "xfa/fxfa/parser/cxfa_renderpolicy.h"
+#include "xfa/fxfa/parser/cxfa_rootelement.h"
+#include "xfa/fxfa/parser/cxfa_runscripts.h"
+#include "xfa/fxfa/parser/cxfa_script.h"
+#include "xfa/fxfa/parser/cxfa_scriptmodel.h"
+#include "xfa/fxfa/parser/cxfa_select.h"
+#include "xfa/fxfa/parser/cxfa_setproperty.h"
+#include "xfa/fxfa/parser/cxfa_severity.h"
+#include "xfa/fxfa/parser/cxfa_sharptext.h"
+#include "xfa/fxfa/parser/cxfa_sharpxhtml.h"
+#include "xfa/fxfa/parser/cxfa_sharpxml.h"
+#include "xfa/fxfa/parser/cxfa_signature.h"
+#include "xfa/fxfa/parser/cxfa_signatureproperties.h"
+#include "xfa/fxfa/parser/cxfa_signdata.h"
+#include "xfa/fxfa/parser/cxfa_signing.h"
+#include "xfa/fxfa/parser/cxfa_silentprint.h"
+#include "xfa/fxfa/parser/cxfa_soapaction.h"
+#include "xfa/fxfa/parser/cxfa_soapaddress.h"
+#include "xfa/fxfa/parser/cxfa_solid.h"
+#include "xfa/fxfa/parser/cxfa_source.h"
+#include "xfa/fxfa/parser/cxfa_sourceset.h"
+#include "xfa/fxfa/parser/cxfa_speak.h"
+#include "xfa/fxfa/parser/cxfa_staple.h"
+#include "xfa/fxfa/parser/cxfa_startnode.h"
+#include "xfa/fxfa/parser/cxfa_startpage.h"
+#include "xfa/fxfa/parser/cxfa_stipple.h"
 #include "xfa/fxfa/parser/cxfa_stroke.h"
 #include "xfa/fxfa/parser/cxfa_subform.h"
+#include "xfa/fxfa/parser/cxfa_subformset.h"
+#include "xfa/fxfa/parser/cxfa_subjectdn.h"
+#include "xfa/fxfa/parser/cxfa_subjectdns.h"
+#include "xfa/fxfa/parser/cxfa_submit.h"
+#include "xfa/fxfa/parser/cxfa_submitformat.h"
+#include "xfa/fxfa/parser/cxfa_submiturl.h"
+#include "xfa/fxfa/parser/cxfa_subsetbelow.h"
+#include "xfa/fxfa/parser/cxfa_suppressbanner.h"
+#include "xfa/fxfa/parser/cxfa_tagged.h"
+#include "xfa/fxfa/parser/cxfa_template.h"
+#include "xfa/fxfa/parser/cxfa_templatecache.h"
+#include "xfa/fxfa/parser/cxfa_text.h"
+#include "xfa/fxfa/parser/cxfa_textedit.h"
+#include "xfa/fxfa/parser/cxfa_threshold.h"
+#include "xfa/fxfa/parser/cxfa_time.h"
+#include "xfa/fxfa/parser/cxfa_timepattern.h"
+#include "xfa/fxfa/parser/cxfa_timepatterns.h"
+#include "xfa/fxfa/parser/cxfa_timestamp.h"
+#include "xfa/fxfa/parser/cxfa_to.h"
+#include "xfa/fxfa/parser/cxfa_tooltip.h"
+#include "xfa/fxfa/parser/cxfa_trace.h"
+#include "xfa/fxfa/parser/cxfa_transform.h"
+#include "xfa/fxfa/parser/cxfa_traversal.h"
+#include "xfa/fxfa/parser/cxfa_traverse.h"
 #include "xfa/fxfa/parser/cxfa_traversestrategy_xfacontainernode.h"
+#include "xfa/fxfa/parser/cxfa_type.h"
+#include "xfa/fxfa/parser/cxfa_typeface.h"
+#include "xfa/fxfa/parser/cxfa_typefaces.h"
 #include "xfa/fxfa/parser/cxfa_ui.h"
+#include "xfa/fxfa/parser/cxfa_update.h"
+#include "xfa/fxfa/parser/cxfa_uri.h"
+#include "xfa/fxfa/parser/cxfa_user.h"
 #include "xfa/fxfa/parser/cxfa_validate.h"
+#include "xfa/fxfa/parser/cxfa_validateapprovalsignatures.h"
+#include "xfa/fxfa/parser/cxfa_validationmessaging.h"
 #include "xfa/fxfa/parser/cxfa_value.h"
+#include "xfa/fxfa/parser/cxfa_variables.h"
+#include "xfa/fxfa/parser/cxfa_version.h"
+#include "xfa/fxfa/parser/cxfa_versioncontrol.h"
+#include "xfa/fxfa/parser/cxfa_viewerpreferences.h"
+#include "xfa/fxfa/parser/cxfa_webclient.h"
+#include "xfa/fxfa/parser/cxfa_whitespace.h"
+#include "xfa/fxfa/parser/cxfa_window.h"
+#include "xfa/fxfa/parser/cxfa_wsdladdress.h"
+#include "xfa/fxfa/parser/cxfa_wsdlconnection.h"
+#include "xfa/fxfa/parser/cxfa_xdc.h"
+#include "xfa/fxfa/parser/cxfa_xdp.h"
+#include "xfa/fxfa/parser/cxfa_xfa.h"
+#include "xfa/fxfa/parser/cxfa_xmlconnection.h"
+#include "xfa/fxfa/parser/cxfa_xsdconnection.h"
+#include "xfa/fxfa/parser/cxfa_xsl.h"
+#include "xfa/fxfa/parser/cxfa_zpl.h"
 #include "xfa/fxfa/parser/xfa_basic_data.h"
 #include "xfa/fxfa/parser/xfa_utils.h"
 
@@ -97,94 +381,82 @@ constexpr uint8_t g_inv_base64[128] = {
     49,  50,  51,  255, 255, 255, 255, 255,
 };
 
-uint8_t* XFA_RemoveBase64Whitespace(const uint8_t* pStr, int32_t iLen) {
-  uint8_t* pCP;
-  int32_t i = 0, j = 0;
-  if (iLen == 0) {
-    iLen = strlen((char*)pStr);
-  }
-  pCP = FX_Alloc(uint8_t, iLen + 1);
-  for (; i < iLen; i++) {
-    if ((pStr[i] & 128) == 0) {
-      if (g_inv_base64[pStr[i]] != 0xFF || pStr[i] == '=') {
-        pCP[j++] = pStr[i];
-      }
-    }
-  }
-  pCP[j] = '\0';
-  return pCP;
+inline uint8_t GetInvBase64(uint8_t x) {
+  return (x & 128) == 0 ? g_inv_base64[x] : 255;
 }
 
-int32_t XFA_Base64Decode(const char* pStr, uint8_t* pOutBuffer) {
-  if (!pStr) {
-    return 0;
+std::vector<uint8_t> XFA_RemoveBase64Whitespace(
+    pdfium::span<const uint8_t> spStr) {
+  std::vector<uint8_t> result;
+  result.reserve(spStr.size());
+  for (uint8_t ch : spStr) {
+    if (GetInvBase64(ch) != 255 || ch == '=')
+      result.push_back(ch);
   }
-  uint8_t* pBuffer =
-      XFA_RemoveBase64Whitespace((uint8_t*)pStr, strlen((char*)pStr));
-  if (!pBuffer) {
-    return 0;
-  }
-  int32_t iLen = strlen((char*)pBuffer);
-  int32_t i = 0, j = 0;
+  return result;
+}
+
+std::vector<uint8_t> XFA_Base64Decode(const ByteString& bsStr) {
+  std::vector<uint8_t> result;
+  if (bsStr.IsEmpty())
+    return result;
+
+  std::vector<uint8_t> buffer = XFA_RemoveBase64Whitespace(bsStr.AsRawSpan());
+  result.reserve(3 * (buffer.size() / 4));
+
   uint32_t dwLimb = 0;
-  for (; i + 3 < iLen; i += 4) {
-    if (pBuffer[i] == '=' || pBuffer[i + 1] == '=' || pBuffer[i + 2] == '=' ||
-        pBuffer[i + 3] == '=') {
-      if (pBuffer[i] == '=' || pBuffer[i + 1] == '=') {
+  for (size_t i = 0; i + 3 < buffer.size(); i += 4) {
+    if (buffer[i] == '=' || buffer[i + 1] == '=' || buffer[i + 2] == '=' ||
+        buffer[i + 3] == '=') {
+      if (buffer[i] == '=' || buffer[i + 1] == '=') {
         break;
       }
-      if (pBuffer[i + 2] == '=') {
-        dwLimb = ((uint32_t)g_inv_base64[pBuffer[i]] << 6) |
-                 ((uint32_t)g_inv_base64[pBuffer[i + 1]]);
-        pOutBuffer[j] = (uint8_t)(dwLimb >> 4) & 0xFF;
-        j++;
+      if (buffer[i + 2] == '=') {
+        dwLimb = ((uint32_t)g_inv_base64[buffer[i]] << 6) |
+                 ((uint32_t)g_inv_base64[buffer[i + 1]]);
+        result.push_back((uint8_t)(dwLimb >> 4) & 0xFF);
       } else {
-        dwLimb = ((uint32_t)g_inv_base64[pBuffer[i]] << 12) |
-                 ((uint32_t)g_inv_base64[pBuffer[i + 1]] << 6) |
-                 ((uint32_t)g_inv_base64[pBuffer[i + 2]]);
-        pOutBuffer[j] = (uint8_t)(dwLimb >> 10) & 0xFF;
-        pOutBuffer[j + 1] = (uint8_t)(dwLimb >> 2) & 0xFF;
-        j += 2;
+        dwLimb = ((uint32_t)g_inv_base64[buffer[i]] << 12) |
+                 ((uint32_t)g_inv_base64[buffer[i + 1]] << 6) |
+                 ((uint32_t)g_inv_base64[buffer[i + 2]]);
+        result.push_back((uint8_t)(dwLimb >> 10) & 0xFF);
+        result.push_back((uint8_t)(dwLimb >> 2) & 0xFF);
       }
     } else {
-      dwLimb = ((uint32_t)g_inv_base64[pBuffer[i]] << 18) |
-               ((uint32_t)g_inv_base64[pBuffer[i + 1]] << 12) |
-               ((uint32_t)g_inv_base64[pBuffer[i + 2]] << 6) |
-               ((uint32_t)g_inv_base64[pBuffer[i + 3]]);
-      pOutBuffer[j] = (uint8_t)(dwLimb >> 16) & 0xff;
-      pOutBuffer[j + 1] = (uint8_t)(dwLimb >> 8) & 0xff;
-      pOutBuffer[j + 2] = (uint8_t)(dwLimb)&0xff;
-      j += 3;
+      dwLimb = ((uint32_t)g_inv_base64[buffer[i]] << 18) |
+               ((uint32_t)g_inv_base64[buffer[i + 1]] << 12) |
+               ((uint32_t)g_inv_base64[buffer[i + 2]] << 6) |
+               ((uint32_t)g_inv_base64[buffer[i + 3]]);
+      result.push_back((uint8_t)(dwLimb >> 16) & 0xff);
+      result.push_back((uint8_t)(dwLimb >> 8) & 0xff);
+      result.push_back((uint8_t)(dwLimb)&0xff);
     }
   }
-  FX_Free(pBuffer);
-  return j;
+  return result;
 }
 
 FXCODEC_IMAGE_TYPE XFA_GetImageType(const WideString& wsType) {
   WideString wsContentType(wsType);
-  wsContentType.MakeLower();
-
-  if (wsContentType == L"image/jpg")
+  if (wsContentType.EqualsASCIINoCase("image/jpg"))
     return FXCODEC_IMAGE_JPG;
 
 #ifdef PDF_ENABLE_XFA_BMP
-  if (wsContentType == L"image/bmp")
+  if (wsContentType.EqualsASCIINoCase("image/bmp"))
     return FXCODEC_IMAGE_BMP;
 #endif  // PDF_ENABLE_XFA_BMP
 
 #ifdef PDF_ENABLE_XFA_GIF
-  if (wsContentType == L"image/gif")
+  if (wsContentType.EqualsASCIINoCase("image/gif"))
     return FXCODEC_IMAGE_GIF;
 #endif  // PDF_ENABLE_XFA_GIF
 
 #ifdef PDF_ENABLE_XFA_PNG
-  if (wsContentType == L"image/png")
+  if (wsContentType.EqualsASCIINoCase("image/png"))
     return FXCODEC_IMAGE_PNG;
 #endif  // PDF_ENABLE_XFA_PNG
 
 #ifdef PDF_ENABLE_XFA_TIFF
-  if (wsContentType == L"image/tif")
+  if (wsContentType.EqualsASCII("image/tif"))
     return FXCODEC_IMAGE_TIFF;
 #endif  // PDF_ENABLE_XFA_TIFF
 
@@ -202,25 +474,25 @@ RetainPtr<CFX_DIBitmap> XFA_LoadImageData(CXFA_FFDoc* pDoc,
     return nullptr;
 
   FXCODEC_IMAGE_TYPE type = XFA_GetImageType(pImage->GetContentType());
-  std::vector<uint8_t> buffer;
+  ByteString bsData;  // Must outlive |pImageFileRead|.
+  std::vector<uint8_t> buffer;  // Must outlive |pImageFileRead|.
   RetainPtr<IFX_SeekableReadStream> pImageFileRead;
   if (wsImage.GetLength() > 0) {
-    XFA_AttributeEnum iEncoding = pImage->GetTransferEncoding();
-    if (iEncoding == XFA_AttributeEnum::Base64) {
-      ByteString bsData = wsImage.ToUTF8();
-      buffer.resize(bsData.GetLength());
-      int32_t iRead = XFA_Base64Decode(bsData.c_str(), buffer.data());
-      if (iRead > 0) {
-        pImageFileRead = pdfium::MakeRetain<CFX_ReadOnlyMemoryStream>(
-            pdfium::make_span(buffer.data(), iRead));
-      }
+    XFA_AttributeValue iEncoding = pImage->GetTransferEncoding();
+    if (iEncoding == XFA_AttributeValue::Base64) {
+      bsData = wsImage.ToUTF8();
+      buffer = XFA_Base64Decode(bsData);
+      if (!buffer.empty())
+        pImageFileRead = pdfium::MakeRetain<CFX_ReadOnlyMemoryStream>(buffer);
     } else {
-      pImageFileRead = pdfium::MakeRetain<CFX_ReadOnlyMemoryStream>(
-          wsImage.ToDefANSI().AsRawSpan());
+      bsData = wsImage.ToDefANSI();
+      pImageFileRead =
+          pdfium::MakeRetain<CFX_ReadOnlyMemoryStream>(bsData.AsRawSpan());
     }
   } else {
     WideString wsURL = wsHref;
-    if (wsURL.Left(7) != L"http://" && wsURL.Left(6) != L"ftp://") {
+    if (!(wsURL.Left(7).EqualsASCII("http://") ||
+          wsURL.Left(6).EqualsASCII("ftp://"))) {
       RetainPtr<CFX_DIBitmap> pBitmap =
           pDoc->GetPDFNamedImage(wsURL.AsStringView(), iImageXDpi, iImageYDpi);
       if (pBitmap) {
@@ -242,8 +514,8 @@ RetainPtr<CFX_DIBitmap> XFA_LoadImageData(CXFA_FFDoc* pDoc,
 bool SplitDateTime(const WideString& wsDateTime,
                    WideString& wsDate,
                    WideString& wsTime) {
-  wsDate = L"";
-  wsTime = L"";
+  wsDate.clear();
+  wsTime.clear();
   if (wsDateTime.IsEmpty())
     return false;
 
@@ -255,13 +527,17 @@ bool SplitDateTime(const WideString& wsDateTime,
 
   wsDate = wsDateTime.Left(nSplitIndex.value());
   if (!wsDate.IsEmpty()) {
-    if (!std::any_of(wsDate.begin(), wsDate.end(), std::iswdigit))
+    if (!std::any_of(wsDate.begin(), wsDate.end(),
+                     [](wchar_t c) { return FXSYS_IsDecimalDigit(c); })) {
       return false;
+    }
   }
   wsTime = wsDateTime.Right(wsDateTime.GetLength() - nSplitIndex.value() - 1);
   if (!wsTime.IsEmpty()) {
-    if (!std::any_of(wsTime.begin(), wsTime.end(), std::iswdigit))
+    if (!std::any_of(wsTime.begin(), wsTime.end(),
+                     [](wchar_t c) { return FXSYS_IsDecimalDigit(c); })) {
       return false;
+    }
   }
   return true;
 }
@@ -372,7 +648,7 @@ float GetEdgeThickness(const std::vector<CXFA_Stroke*>& strokes,
 
 WideString FormatNumStr(const WideString& wsValue, LocaleIface* pLocale) {
   if (wsValue.IsEmpty())
-    return L"";
+    return WideString();
 
   WideString wsSrcNum = wsValue;
   WideString wsGroupSymbol = pLocale->GetGroupingSymbol();
@@ -386,7 +662,7 @@ WideString FormatNumStr(const WideString& wsValue, LocaleIface* pLocale) {
   dot_index = !dot_index.has_value() ? wsSrcNum.GetLength() : dot_index;
 
   if (dot_index.value() < 1)
-    return L"";
+    return WideString();
 
   size_t nPos = dot_index.value() % 3;
   WideString wsOutput;
@@ -404,6 +680,132 @@ WideString FormatNumStr(const WideString& wsValue, LocaleIface* pLocale) {
     return pLocale->GetMinusSymbol() + wsOutput;
 
   return wsOutput;
+}
+
+CXFA_Node* FindFirstSiblingNamedInList(CXFA_Node* parent,
+                                       uint32_t dwNameHash,
+                                       uint32_t dwFilter);
+CXFA_Node* FindFirstSiblingOfClassInList(CXFA_Node* parent,
+                                         XFA_Element element,
+                                         uint32_t dwFilter);
+
+CXFA_Node* FindFirstSiblingNamed(CXFA_Node* parent, uint32_t dwNameHash) {
+  CXFA_Node* result = FindFirstSiblingNamedInList(parent, dwNameHash,
+                                                  XFA_NODEFILTER_Properties);
+  if (result)
+    return result;
+
+  return FindFirstSiblingNamedInList(parent, dwNameHash,
+                                     XFA_NODEFILTER_Children);
+}
+
+CXFA_Node* FindFirstSiblingNamedInList(CXFA_Node* parent,
+                                       uint32_t dwNameHash,
+                                       uint32_t dwFilter) {
+  for (CXFA_Node* child : parent->GetNodeList(dwFilter, XFA_Element::Unknown)) {
+    if (child->GetNameHash() == dwNameHash)
+      return child;
+
+    CXFA_Node* result = FindFirstSiblingNamed(child, dwNameHash);
+    if (result)
+      return result;
+  }
+  return nullptr;
+}
+
+CXFA_Node* FindFirstSiblingOfClass(CXFA_Node* parent, XFA_Element element) {
+  CXFA_Node* result =
+      FindFirstSiblingOfClassInList(parent, element, XFA_NODEFILTER_Properties);
+  if (result)
+    return result;
+
+  return FindFirstSiblingOfClassInList(parent, element,
+                                       XFA_NODEFILTER_Children);
+}
+
+CXFA_Node* FindFirstSiblingOfClassInList(CXFA_Node* parent,
+                                         XFA_Element element,
+                                         uint32_t dwFilter) {
+  for (CXFA_Node* child : parent->GetNodeList(dwFilter, XFA_Element::Unknown)) {
+    if (child->GetElementType() == element)
+      return child;
+
+    CXFA_Node* result = FindFirstSiblingOfClass(child, element);
+    if (result)
+      return result;
+  }
+  return nullptr;
+}
+
+WideString GetNameExpressionSinglePath(CXFA_Node* pNode) {
+  const bool bIsProperty = pNode->IsProperty();
+  const bool bIsClassIndex =
+      pNode->IsUnnamed() ||
+      (bIsProperty && pNode->GetElementType() != XFA_Element::PageSet);
+  const wchar_t* pszFormat;
+  WideString ws;
+  if (bIsClassIndex) {
+    pszFormat = L"#%ls[%zu]";
+    ws = WideString::FromASCII(pNode->GetClassName());
+  } else {
+    pszFormat = L"%ls[%zu]";
+    ws = pNode->JSObject()->GetCData(XFA_Attribute::Name);
+    ws.Replace(L".", L"\\.");
+  }
+
+  return WideString::Format(pszFormat, ws.c_str(),
+                            pNode->GetIndex(bIsProperty, bIsClassIndex));
+}
+
+void TraverseSiblings(CXFA_Node* parent,
+                      uint32_t dwNameHash,
+                      std::vector<CXFA_Node*>* pSiblings,
+                      bool bIsClassName,
+                      bool bIsFindProperty) {
+  ASSERT(parent);
+  ASSERT(pSiblings);
+
+  if (bIsFindProperty) {
+    for (CXFA_Node* child :
+         parent->GetNodeList(XFA_NODEFILTER_Properties, XFA_Element::Unknown)) {
+      if (bIsClassName) {
+        if (child->GetClassHashCode() == dwNameHash)
+          pSiblings->push_back(child);
+      } else {
+        if (child->GetNameHash() == dwNameHash) {
+          if (child->GetElementType() != XFA_Element::PageSet &&
+              child->GetElementType() != XFA_Element::Extras &&
+              child->GetElementType() != XFA_Element::Items) {
+            pSiblings->push_back(child);
+          }
+        }
+      }
+      if (child->IsUnnamed() &&
+          child->GetElementType() == XFA_Element::PageSet) {
+        TraverseSiblings(child, dwNameHash, pSiblings, bIsClassName, false);
+      }
+    }
+    if (!pSiblings->empty())
+      return;
+  }
+  for (CXFA_Node* child :
+       parent->GetNodeList(XFA_NODEFILTER_Children, XFA_Element::Unknown)) {
+    if (child->GetElementType() == XFA_Element::Variables)
+      continue;
+
+    if (bIsClassName) {
+      if (child->GetClassHashCode() == dwNameHash)
+        pSiblings->push_back(child);
+    } else {
+      if (child->GetNameHash() == dwNameHash)
+        pSiblings->push_back(child);
+    }
+
+    if (child->IsTransparent() &&
+        child->GetElementType() != XFA_Element::PageSet) {
+      TraverseSiblings(child, dwNameHash, pSiblings, bIsClassName, false);
+    }
+  }
 }
 
 }  // namespace
@@ -543,61 +945,21 @@ class CXFA_ImageEditData final : public CXFA_FieldLayoutData {
   RetainPtr<CFX_DIBitmap> m_pDIBitmap;
 };
 
-// static
-WideString CXFA_Node::AttributeEnumToName(XFA_AttributeEnum item) {
-  return g_XFAEnumData[static_cast<int32_t>(item)].pName;
-}
-
-// static
-Optional<XFA_AttributeEnum> CXFA_Node::NameToAttributeEnum(
-    const WideStringView& name) {
-  if (name.IsEmpty())
-    return {};
-
-  static const auto* kXFAEnumDataEnd = g_XFAEnumData + g_szXFAEnumCount;
-  auto* it = std::lower_bound(g_XFAEnumData, kXFAEnumDataEnd,
-                              FX_HashCode_GetW(name, false),
-                              [](const XFA_AttributeEnumInfo& arg,
-                                 uint32_t hash) { return arg.uHash < hash; });
-  if (it != kXFAEnumDataEnd && name == it->pName)
-    return {it->eName};
-  return {};
-}
-
 CXFA_Node::CXFA_Node(CXFA_Document* pDoc,
                      XFA_PacketType ePacket,
                      uint32_t validPackets,
                      XFA_ObjectType oType,
                      XFA_Element eType,
-                     const PropertyData* properties,
-                     const AttributeData* attributes,
-                     const WideStringView& elementName,
-                     std::unique_ptr<CJX_Object> js_node)
-    : CXFA_Object(pDoc, oType, eType, elementName, std::move(js_node)),
+                     pdfium::span<const PropertyData> properties,
+                     pdfium::span<const AttributeData> attributes,
+                     std::unique_ptr<CJX_Object> js_object)
+    : CXFA_Object(pDoc, oType, eType, std::move(js_object)),
       m_Properties(properties),
       m_Attributes(attributes),
       m_ValidPackets(validPackets),
       m_ePacket(ePacket) {
   ASSERT(m_pDocument);
 }
-
-CXFA_Node::CXFA_Node(CXFA_Document* pDoc,
-                     XFA_PacketType ePacket,
-                     uint32_t validPackets,
-                     XFA_ObjectType oType,
-                     XFA_Element eType,
-                     const PropertyData* properties,
-                     const AttributeData* attributes,
-                     const WideStringView& elementName)
-    : CXFA_Node(pDoc,
-                ePacket,
-                validPackets,
-                oType,
-                eType,
-                properties,
-                attributes,
-                elementName,
-                pdfium::MakeUnique<CJX_Node>(this)) {}
 
 CXFA_Node::~CXFA_Node() = default;
 
@@ -633,7 +995,7 @@ CXFA_Node* CXFA_Node::Clone(bool bRecursive) {
       pCloneXML = pCloneXMLElement;
 
       pClone->JSObject()->SetEnum(XFA_Attribute::Contains,
-                                  XFA_AttributeEnum::Unknown, false);
+                                  XFA_AttributeValue::Unknown, false);
     } else {
       pCloneXML = xml_node_->Clone(
           GetDocument()->GetNotify()->GetHDOC()->GetXMLDocument());
@@ -689,15 +1051,10 @@ bool CXFA_Node::IsValidInPacket(XFA_PacketType packet) const {
 
 const CXFA_Node::PropertyData* CXFA_Node::GetPropertyData(
     XFA_Element property) const {
-  if (m_Properties == nullptr)
-    return nullptr;
-
-  for (size_t i = 0;; ++i) {
-    const PropertyData* data = m_Properties + i;
-    if (data->property == XFA_Element::Unknown)
-      break;
-    if (data->property == property)
-      return data;
+  ASSERT(property != XFA_Element::Unknown);
+  for (const auto& prop : m_Properties) {
+    if (prop.property == property)
+      return &prop;
   }
   return nullptr;
 }
@@ -716,31 +1073,20 @@ uint8_t CXFA_Node::PropertyOccuranceCount(XFA_Element property) const {
   return data ? data->occurance_count : 0;
 }
 
-Optional<XFA_Element> CXFA_Node::GetFirstPropertyWithFlag(uint8_t flag) {
-  if (m_Properties == nullptr)
-    return {};
-
-  for (size_t i = 0;; ++i) {
-    const PropertyData* data = m_Properties + i;
-    if (data->property == XFA_Element::Unknown)
-      break;
-    if (data->flags & flag)
-      return {data->property};
+Optional<XFA_Element> CXFA_Node::GetFirstPropertyWithFlag(uint8_t flag) const {
+  for (const auto& prop : m_Properties) {
+    if (prop.flags & flag)
+      return prop.property;
   }
   return {};
 }
 
 const CXFA_Node::AttributeData* CXFA_Node::GetAttributeData(
     XFA_Attribute attr) const {
-  if (m_Attributes == nullptr)
-    return nullptr;
-
-  for (size_t i = 0;; ++i) {
-    const AttributeData* cur_attr = &m_Attributes[i];
-    if (cur_attr->attribute == XFA_Attribute::Unknown)
-      break;
-    if (cur_attr->attribute == attr)
-      return cur_attr;
+  ASSERT(attr != XFA_Attribute::Unknown);
+  for (const auto& cur_attr : m_Attributes) {
+    if (cur_attr.attribute == attr)
+      return &cur_attr;
   }
   return nullptr;
 }
@@ -749,11 +1095,9 @@ bool CXFA_Node::HasAttribute(XFA_Attribute attr) const {
   return !!GetAttributeData(attr);
 }
 
-// Note: This Method assumes that i is a valid index ....
 XFA_Attribute CXFA_Node::GetAttribute(size_t i) const {
-  if (m_Attributes == nullptr)
-    return XFA_Attribute::Unknown;
-  return m_Attributes[i].attribute;
+  return i < m_Attributes.size() ? m_Attributes[i].attribute
+                                 : XFA_Attribute::Unknown;
 }
 
 XFA_AttributeType CXFA_Node::GetAttributeType(XFA_Attribute type) const {
@@ -809,15 +1153,14 @@ std::vector<CXFA_Node*> CXFA_Node::GetNodeList(uint32_t dwTypeFilter,
 
   if (!bFilterOneOfProperties || !nodes.empty())
     return nodes;
-  if (m_Properties == nullptr)
-    return nodes;
 
   Optional<XFA_Element> property =
       GetFirstPropertyWithFlag(XFA_PROPERTYFLAG_DefaultOneOf);
-  if (!property)
+  if (!property.has_value())
     return nodes;
 
-  CXFA_Node* pNewNode = m_pDocument->CreateNode(GetPacketType(), *property);
+  CXFA_Node* pNewNode =
+      m_pDocument->CreateNode(GetPacketType(), property.value());
   if (pNewNode) {
     InsertChild(pNewNode, nullptr);
     pNewNode->SetFlagAndNotify(XFA_NodeFlag_Initialized);
@@ -828,6 +1171,9 @@ std::vector<CXFA_Node*> CXFA_Node::GetNodeList(uint32_t dwTypeFilter,
 
 CXFA_Node* CXFA_Node::CreateSamePacketNode(XFA_Element eType) {
   CXFA_Node* pNode = m_pDocument->CreateNode(m_ePacket, eType);
+  if (!pNode)
+    return nullptr;
+
   pNode->SetFlagAndNotify(XFA_NodeFlag_Initialized);
   return pNode;
 }
@@ -920,7 +1266,7 @@ int32_t CXFA_Node::RemoveBindItem(CXFA_Node* pFormNode) {
   return 0;
 }
 
-bool CXFA_Node::HasBindItem() {
+bool CXFA_Node::HasBindItem() const {
   return GetPacketType() == XFA_PacketType::Datasets && GetBindingNode();
 }
 
@@ -979,18 +1325,22 @@ CXFA_Node* CXFA_Node::GetContainerNode() {
 
 LocaleIface* CXFA_Node::GetLocale() {
   Optional<WideString> localeName = GetLocaleName();
-  if (!localeName)
+  if (!localeName.has_value())
     return nullptr;
-  if (localeName.value() == L"ambient")
+  if (localeName.value().EqualsASCII("ambient"))
     return GetDocument()->GetLocaleMgr()->GetDefLocale();
   return GetDocument()->GetLocaleMgr()->GetLocaleByName(localeName.value());
 }
 
 Optional<WideString> CXFA_Node::GetLocaleName() {
-  CXFA_Node* pForm = GetDocument()->GetXFAObject(XFA_HASHCODE_Form)->AsNode();
+  CXFA_Node* pForm = ToNode(GetDocument()->GetXFAObject(XFA_HASHCODE_Form));
+  if (!pForm)
+    return {};
+
   CXFA_Subform* pTopSubform =
       pForm->GetFirstChildByClass<CXFA_Subform>(XFA_Element::Subform);
-  ASSERT(pTopSubform);
+  if (!pTopSubform)
+    return {};
 
   CXFA_Node* pLocaleNode = this;
   do {
@@ -1003,13 +1353,13 @@ Optional<WideString> CXFA_Node::GetLocaleName() {
   } while (pLocaleNode && pLocaleNode != pTopSubform);
 
   CXFA_Node* pConfig = ToNode(GetDocument()->GetXFAObject(XFA_HASHCODE_Config));
-  Optional<WideString> localeName = {
-      GetDocument()->GetLocaleMgr()->GetConfigLocaleName(pConfig)};
-  if (localeName && !localeName->IsEmpty())
-    return localeName;
+  WideString wsLocaleName =
+      GetDocument()->GetLocaleMgr()->GetConfigLocaleName(pConfig);
+  if (!wsLocaleName.IsEmpty())
+    return wsLocaleName;
 
   if (pTopSubform) {
-    localeName =
+    Optional<WideString> localeName =
         pTopSubform->JSObject()->TryCData(XFA_Attribute::Locale, false);
     if (localeName)
       return localeName;
@@ -1019,86 +1369,72 @@ Optional<WideString> CXFA_Node::GetLocaleName() {
   if (!pLocale)
     return {};
 
-  return {pLocale->GetName()};
+  return pLocale->GetName();
 }
 
-XFA_AttributeEnum CXFA_Node::GetIntact() {
+XFA_AttributeValue CXFA_Node::GetIntact() {
   CXFA_Keep* pKeep = GetFirstChildByClass<CXFA_Keep>(XFA_Element::Keep);
-  XFA_AttributeEnum eLayoutType = JSObject()
-                                      ->TryEnum(XFA_Attribute::Layout, true)
-                                      .value_or(XFA_AttributeEnum::Position);
+  auto layout = JSObject()->TryEnum(XFA_Attribute::Layout, true);
+  XFA_AttributeValue eLayoutType =
+      layout.value_or(XFA_AttributeValue::Position);
   if (pKeep) {
-    Optional<XFA_AttributeEnum> intact =
-        pKeep->JSObject()->TryEnum(XFA_Attribute::Intact, false);
-    if (intact) {
-      if (*intact == XFA_AttributeEnum::None &&
-          eLayoutType == XFA_AttributeEnum::Row &&
-          m_pDocument->GetCurVersionMode() < XFA_VERSION_208) {
-        CXFA_Node* pPreviewRow = GetPrevContainerSibling();
-        if (pPreviewRow &&
-            pPreviewRow->JSObject()->GetEnum(XFA_Attribute::Layout) ==
-                XFA_AttributeEnum::Row) {
-          Optional<XFA_AttributeEnum> value =
-              pKeep->JSObject()->TryEnum(XFA_Attribute::Previous, false);
-          if (value && (*value == XFA_AttributeEnum::ContentArea ||
-                        *value == XFA_AttributeEnum::PageArea)) {
-            return XFA_AttributeEnum::ContentArea;
-          }
-
-          CXFA_Keep* pNode =
-              pPreviewRow->GetFirstChildByClass<CXFA_Keep>(XFA_Element::Keep);
-          Optional<XFA_AttributeEnum> ret;
-          if (pNode)
-            ret = pNode->JSObject()->TryEnum(XFA_Attribute::Next, false);
-          if (ret && (*ret == XFA_AttributeEnum::ContentArea ||
-                      *ret == XFA_AttributeEnum::PageArea)) {
-            return XFA_AttributeEnum::ContentArea;
-          }
-        }
-      }
+    Optional<XFA_AttributeValue> intact = GetIntactFromKeep(pKeep, eLayoutType);
+    if (intact)
       return *intact;
-    }
   }
 
   switch (GetElementType()) {
     case XFA_Element::Subform:
       switch (eLayoutType) {
-        case XFA_AttributeEnum::Position:
-        case XFA_AttributeEnum::Row:
-          return XFA_AttributeEnum::ContentArea;
+        case XFA_AttributeValue::Position:
+        case XFA_AttributeValue::Row:
+          return XFA_AttributeValue::ContentArea;
         default:
-          return XFA_AttributeEnum::None;
+          return XFA_AttributeValue::None;
       }
     case XFA_Element::Field: {
       CXFA_Node* parent = GetParent();
       if (!parent || parent->GetElementType() == XFA_Element::PageArea)
-        return XFA_AttributeEnum::ContentArea;
-      if (parent->GetIntact() != XFA_AttributeEnum::None)
-        return XFA_AttributeEnum::ContentArea;
+        return XFA_AttributeValue::ContentArea;
+      if (parent->GetIntact() != XFA_AttributeValue::None)
+        return XFA_AttributeValue::ContentArea;
 
-      XFA_AttributeEnum eParLayout = parent->JSObject()
-                                         ->TryEnum(XFA_Attribute::Layout, true)
-                                         .value_or(XFA_AttributeEnum::Position);
-      if (eParLayout == XFA_AttributeEnum::Position ||
-          eParLayout == XFA_AttributeEnum::Row ||
-          eParLayout == XFA_AttributeEnum::Table) {
-        return XFA_AttributeEnum::None;
+      auto value = parent->JSObject()->TryEnum(XFA_Attribute::Layout, true);
+      XFA_AttributeValue eParLayout =
+          value.value_or(XFA_AttributeValue::Position);
+      if (eParLayout == XFA_AttributeValue::Position ||
+          eParLayout == XFA_AttributeValue::Row ||
+          eParLayout == XFA_AttributeValue::Table) {
+        return XFA_AttributeValue::None;
       }
 
       XFA_VERSION version = m_pDocument->GetCurVersionMode();
-      if (eParLayout == XFA_AttributeEnum::Tb && version < XFA_VERSION_208) {
+      if (eParLayout == XFA_AttributeValue::Tb && version < XFA_VERSION_208) {
         Optional<CXFA_Measurement> measureH =
             JSObject()->TryMeasure(XFA_Attribute::H, false);
         if (measureH)
-          return XFA_AttributeEnum::ContentArea;
+          return XFA_AttributeValue::ContentArea;
       }
-      return XFA_AttributeEnum::None;
+      return XFA_AttributeValue::None;
     }
     case XFA_Element::Draw:
-      return XFA_AttributeEnum::ContentArea;
+      return XFA_AttributeValue::ContentArea;
     default:
-      return XFA_AttributeEnum::None;
+      return XFA_AttributeValue::None;
   }
+}
+
+WideString CXFA_Node::GetNameExpression() {
+  WideString wsName = GetNameExpressionSinglePath(this);
+  CXFA_Node* parent = GetParent();
+  while (parent) {
+    WideString wsParent = GetNameExpressionSinglePath(parent);
+    wsParent += L".";
+    wsParent += wsName;
+    wsName = std::move(wsParent);
+    parent = parent->GetParent();
+  }
+  return wsName;
 }
 
 CXFA_Node* CXFA_Node::GetDataDescriptionNode() {
@@ -1152,7 +1488,7 @@ size_t CXFA_Node::CountChildren(XFA_Element eType, bool bOnlyChild) {
 
 CXFA_Node* CXFA_Node::GetChildInternal(size_t index,
                                        XFA_Element eType,
-                                       bool bOnlyChild) {
+                                       bool bOnlyChild) const {
   size_t count = 0;
   for (CXFA_Node* pNode = first_child_; pNode;
        pNode = pNode->GetNextSibling()) {
@@ -1169,9 +1505,8 @@ CXFA_Node* CXFA_Node::GetChildInternal(size_t index,
 }
 
 void CXFA_Node::InsertChild(int32_t index, CXFA_Node* pNode) {
-  if (!pNode || pNode->parent_ != nullptr) {
-    PDFIUM_IMMEDIATE_CRASH();
-  }
+  CHECK(pNode);
+  CHECK(!pNode->parent_);
 
   pNode->parent_ = this;
   pNode->ClearFlag(XFA_NodeFlag_HasRemovedChildren);
@@ -1225,9 +1560,7 @@ void CXFA_Node::InsertChild(int32_t index, CXFA_Node* pNode) {
 }
 
 void CXFA_Node::InsertChild(CXFA_Node* pNode, CXFA_Node* pBeforeNode) {
-  if (pBeforeNode && pBeforeNode->parent_ != this) {
-    PDFIUM_IMMEDIATE_CRASH();
-  }
+  CHECK(!pBeforeNode || pBeforeNode->parent_ == this);
 
   int32_t index = -1;
   if (!first_child_ || pBeforeNode == first_child_) {
@@ -1246,9 +1579,8 @@ void CXFA_Node::InsertChild(CXFA_Node* pNode, CXFA_Node* pBeforeNode) {
 }
 
 void CXFA_Node::RemoveChild(CXFA_Node* pNode, bool bNotify) {
-  if (!pNode || pNode->parent_ != this) {
-    PDFIUM_IMMEDIATE_CRASH();
-  }
+  CHECK(pNode);
+  CHECK_EQ(pNode->parent_, this);
 
   pNode->SetFlag(XFA_NodeFlag_HasRemovedChildren);
 
@@ -1308,10 +1640,10 @@ void CXFA_Node::RemoveChild(CXFA_Node* pNode, bool bNotify) {
   }
   pNode->xml_node_ = pNewXMLElement;
   pNode->JSObject()->SetEnum(XFA_Attribute::Contains,
-                             XFA_AttributeEnum::Unknown, false);
+                             XFA_AttributeValue::Unknown, false);
 }
 
-CXFA_Node* CXFA_Node::GetFirstChildByName(const WideStringView& wsName) const {
+CXFA_Node* CXFA_Node::GetFirstChildByName(WideStringView wsName) const {
   return GetFirstChildByName(FX_HashCode_GetW(wsName, false));
 }
 
@@ -1343,7 +1675,7 @@ CXFA_Node* CXFA_Node::GetNextSameNameSibling(uint32_t dwNameHash) const {
 }
 
 CXFA_Node* CXFA_Node::GetNextSameNameSiblingInternal(
-    const WideStringView& wsNodeName) const {
+    WideStringView wsNodeName) const {
   return GetNextSameNameSibling(FX_HashCode_GetW(wsNodeName, false));
 }
 
@@ -1354,6 +1686,62 @@ CXFA_Node* CXFA_Node::GetNextSameClassSiblingInternal(XFA_Element eType) const {
       return pNode;
   }
   return nullptr;
+}
+
+CXFA_Node* CXFA_Node::GetOneChildNamed(WideStringView wsName) {
+  return FindFirstSiblingNamed(this, FX_HashCode_GetW(wsName, false));
+}
+
+CXFA_Node* CXFA_Node::GetOneChildOfClass(WideStringView wsClass) {
+  XFA_Element element = XFA_GetElementByName(wsClass);
+  if (element == XFA_Element::Unknown)
+    return nullptr;
+
+  return FindFirstSiblingOfClass(this, element);
+}
+
+std::vector<CXFA_Node*> CXFA_Node::GetSiblings(bool bIsClassName) {
+  std::vector<CXFA_Node*> siblings;
+  CXFA_Node* parent = GetParent();
+  if (!parent)
+    return siblings;
+  if (!parent->HasProperty(GetElementType())) {
+    parent = GetTransparentParent();
+    if (!parent)
+      return siblings;
+  }
+
+  uint32_t dwNameHash = bIsClassName ? GetClassHashCode() : GetNameHash();
+  TraverseSiblings(parent, dwNameHash, &siblings, bIsClassName, true);
+  return siblings;
+}
+
+size_t CXFA_Node::GetIndex(bool bIsProperty, bool bIsClassIndex) {
+  CXFA_Node* parent = GetParent();
+  if (!parent)
+    return 0;
+
+  if (!bIsProperty) {
+    parent = GetTransparentParent();
+    if (!parent)
+      return 0;
+  }
+  uint32_t dwHashName = bIsClassIndex ? GetClassHashCode() : GetNameHash();
+  std::vector<CXFA_Node*> siblings;
+  TraverseSiblings(parent, dwHashName, &siblings, bIsClassIndex, true);
+  for (size_t i = 0; i < siblings.size(); ++i) {
+    if (siblings[i] == this)
+      return i;
+  }
+  return 0;
+}
+
+size_t CXFA_Node::GetIndexByName() {
+  return GetIndex(IsProperty(), /*bIsClassIndex=*/false);
+}
+
+size_t CXFA_Node::GetIndexByClassName() {
+  return GetIndex(IsProperty(), /*bIsClassIndex=*/true);
 }
 
 CXFA_Node* CXFA_Node::GetInstanceMgrOfSubform() {
@@ -1419,10 +1807,10 @@ void CXFA_Node::ClearFlag(uint32_t dwFlag) {
 
 bool CXFA_Node::IsAttributeInXML() {
   return JSObject()->GetEnum(XFA_Attribute::Contains) ==
-         XFA_AttributeEnum::MetaData;
+         XFA_AttributeValue::MetaData;
 }
 
-void CXFA_Node::OnRemoved(bool bNotify) {
+void CXFA_Node::OnRemoved(bool bNotify) const {
   if (!bNotify)
     return;
 
@@ -1448,7 +1836,7 @@ CFX_XMLNode* CXFA_Node::CreateXMLMappingNode() {
   return xml_node_.Get();
 }
 
-bool CXFA_Node::IsNeedSavingXMLNode() {
+bool CXFA_Node::IsNeedSavingXMLNode() const {
   return xml_node_ && (GetPacketType() == XFA_PacketType::Datasets ||
                        GetElementType() == XFA_Element::Xfa);
 }
@@ -1678,12 +2066,12 @@ Optional<WideString> CXFA_Node::GetDefaultCData(XFA_Attribute attr) const {
   return {WideString(static_cast<const wchar_t*>(*value))};
 }
 
-Optional<XFA_AttributeEnum> CXFA_Node::GetDefaultEnum(
+Optional<XFA_AttributeValue> CXFA_Node::GetDefaultEnum(
     XFA_Attribute attr) const {
   Optional<void*> value = GetDefaultValue(attr, XFA_AttributeType::Enum);
   if (!value)
     return {};
-  return {static_cast<XFA_AttributeEnum>(reinterpret_cast<uintptr_t>(*value))};
+  return {static_cast<XFA_AttributeValue>(reinterpret_cast<uintptr_t>(*value))};
 }
 
 Optional<void*> CXFA_Node::GetDefaultValue(XFA_Attribute attr,
@@ -1698,10 +2086,6 @@ Optional<void*> CXFA_Node::GetDefaultValue(XFA_Attribute attr,
 
 void CXFA_Node::SendAttributeChangeMessage(XFA_Attribute eAttribute,
                                            bool bScriptModify) {
-  CXFA_LayoutProcessor* pLayoutPro = GetDocument()->GetLayoutProcessor();
-  if (!pLayoutPro)
-    return;
-
   CXFA_FFNotify* pNotify = GetDocument()->GetNotify();
   if (!pNotify)
     return;
@@ -1796,7 +2180,7 @@ void CXFA_Node::SendAttributeChangeMessage(XFA_Attribute eAttribute,
     case XFA_Element::Field:
     case XFA_Element::Subform:
     case XFA_Element::SubformSet:
-      pLayoutPro->AddChangedContainer(this);
+      pNotify->OnContainerChanged(this);
       pNotify->OnValueChanged(this, eAttribute, this, this);
       break;
     case XFA_Element::Sharptext:
@@ -1844,7 +2228,7 @@ void CXFA_Node::SendAttributeChangeMessage(XFA_Attribute eAttribute,
     pParent = pParent->GetParent();
 
   if (pParent)
-    pLayoutPro->AddChangedContainer(pParent);
+    pNotify->OnContainerChanged(pParent);
 }
 
 void CXFA_Node::SyncValue(const WideString& wsValue, bool bNotify) {
@@ -1860,7 +2244,7 @@ WideString CXFA_Node::GetRawValue() {
   return JSObject()->GetContent(false);
 }
 
-int32_t CXFA_Node::GetRotate() {
+int32_t CXFA_Node::GetRotate() const {
   Optional<int32_t> degrees =
       JSObject()->TryInteger(XFA_Attribute::Rotate, false);
   return degrees ? XFA_MapRotation(*degrees) / 90 * 90 : 0;
@@ -1916,10 +2300,10 @@ CXFA_Para* CXFA_Node::GetParaIfExists() const {
   return JSObject()->GetProperty<CXFA_Para>(0, XFA_Element::Para);
 }
 
-bool CXFA_Node::IsOpenAccess() {
+bool CXFA_Node::IsOpenAccess() const {
   for (auto* pNode = this; pNode; pNode = pNode->GetContainerParent()) {
-    XFA_AttributeEnum iAcc = pNode->JSObject()->GetEnum(XFA_Attribute::Access);
-    if (iAcc != XFA_AttributeEnum::Open)
+    XFA_AttributeValue iAcc = pNode->JSObject()->GetEnum(XFA_Attribute::Access);
+    if (iAcc != XFA_AttributeValue::Open)
       return false;
   }
   return true;
@@ -1953,6 +2337,49 @@ CXFA_Bind* CXFA_Node::GetBindIfExists() const {
   return JSObject()->GetProperty<CXFA_Bind>(0, XFA_Element::Bind);
 }
 
+Optional<XFA_AttributeValue> CXFA_Node::GetIntactFromKeep(
+    const CXFA_Keep* pKeep,
+    XFA_AttributeValue eLayoutType) const {
+  Optional<XFA_AttributeValue> intact =
+      pKeep->JSObject()->TryEnum(XFA_Attribute::Intact, false);
+  if (!intact.has_value())
+    return {};
+
+  if (intact.value() != XFA_AttributeValue::None ||
+      eLayoutType != XFA_AttributeValue::Row ||
+      m_pDocument->GetCurVersionMode() >= XFA_VERSION_208) {
+    return intact;
+  }
+
+  CXFA_Node* pPreviewRow = GetPrevContainerSibling();
+  if (!pPreviewRow || pPreviewRow->JSObject()->GetEnum(XFA_Attribute::Layout) !=
+                          XFA_AttributeValue::Row) {
+    return intact;
+  }
+
+  Optional<XFA_AttributeValue> value =
+      pKeep->JSObject()->TryEnum(XFA_Attribute::Previous, false);
+  if (value && (*value == XFA_AttributeValue::ContentArea ||
+                *value == XFA_AttributeValue::PageArea)) {
+    return XFA_AttributeValue::ContentArea;
+  }
+
+  CXFA_Keep* pNode =
+      pPreviewRow->GetFirstChildByClass<CXFA_Keep>(XFA_Element::Keep);
+  if (!pNode)
+    return intact;
+
+  Optional<XFA_AttributeValue> ret =
+      pNode->JSObject()->TryEnum(XFA_Attribute::Next, false);
+  if (!ret)
+    return intact;
+
+  return (*ret == XFA_AttributeValue::ContentArea ||
+          *ret == XFA_AttributeValue::PageArea)
+             ? XFA_AttributeValue::ContentArea
+             : intact;
+}
+
 Optional<float> CXFA_Node::TryWidth() {
   return JSObject()->TryMeasureAsFloat(XFA_Attribute::W);
 }
@@ -1984,8 +2411,8 @@ CXFA_Node* CXFA_Node::GetExclGroupIfExists() {
   return pExcl;
 }
 
-int32_t CXFA_Node::ProcessEvent(CXFA_FFDocView* docView,
-                                XFA_AttributeEnum iActivity,
+int32_t CXFA_Node::ProcessEvent(CXFA_FFDocView* pDocView,
+                                XFA_AttributeValue iActivity,
                                 CXFA_EventParam* pEventParam) {
   if (GetElementType() == XFA_Element::Draw)
     return XFA_EVENTERROR_NotExist;
@@ -1995,7 +2422,7 @@ int32_t CXFA_Node::ProcessEvent(CXFA_FFDocView* docView,
   bool first = true;
   int32_t iRet = XFA_EVENTERROR_NotExist;
   for (CXFA_Event* event : eventArray) {
-    int32_t result = ProcessEvent(docView, event, pEventParam);
+    int32_t result = ProcessEvent(pDocView, iActivity, event, pEventParam);
     if (first || result == XFA_EVENTERROR_Success)
       iRet = result;
     first = false;
@@ -2003,7 +2430,8 @@ int32_t CXFA_Node::ProcessEvent(CXFA_FFDocView* docView,
   return iRet;
 }
 
-int32_t CXFA_Node::ProcessEvent(CXFA_FFDocView* docView,
+int32_t CXFA_Node::ProcessEvent(CXFA_FFDocView* pDocView,
+                                XFA_AttributeValue iActivity,
                                 CXFA_Event* event,
                                 CXFA_EventParam* pEventParam) {
   if (!event)
@@ -2013,7 +2441,11 @@ int32_t CXFA_Node::ProcessEvent(CXFA_FFDocView* docView,
     case XFA_Element::Execute:
       break;
     case XFA_Element::Script:
-      return ExecuteScript(docView, event->GetScriptIfExists(), pEventParam);
+      if (iActivity == XFA_AttributeValue::DocClose) {
+        // Too late, scripting engine already gone.
+        return false;
+      }
+      return ExecuteScript(pDocView, event->GetScriptIfExists(), pEventParam);
     case XFA_Element::SignData:
       break;
     case XFA_Element::Submit: {
@@ -2023,8 +2455,8 @@ int32_t CXFA_Node::ProcessEvent(CXFA_FFDocView* docView,
       CXFA_Submit* submit = event->GetSubmitIfExists();
       if (!submit)
         return XFA_EVENTERROR_NotExist;
-      return docView->GetDoc()->GetDocEnvironment()->Submit(docView->GetDoc(),
-                                                            submit);
+      return pDocView->GetDoc()->GetDocEnvironment()->Submit(pDocView->GetDoc(),
+                                                             submit);
 #else
       return XFA_EVENTERROR_Disabled;
 #endif  // PDF_XFA_ELEMENT_SUBMIT_ENABLED
@@ -2035,7 +2467,7 @@ int32_t CXFA_Node::ProcessEvent(CXFA_FFDocView* docView,
   return XFA_EVENTERROR_NotExist;
 }
 
-int32_t CXFA_Node::ProcessCalculate(CXFA_FFDocView* docView) {
+int32_t CXFA_Node::ProcessCalculate(CXFA_FFDocView* pDocView) {
   if (GetElementType() == XFA_Element::Draw)
     return XFA_EVENTERROR_NotExist;
 
@@ -2047,18 +2479,19 @@ int32_t CXFA_Node::ProcessCalculate(CXFA_FFDocView* docView) {
 
   CXFA_EventParam EventParam;
   EventParam.m_eType = XFA_EVENT_Calculate;
-  int32_t iRet = ExecuteScript(docView, calc->GetScriptIfExists(), &EventParam);
+  int32_t iRet =
+      ExecuteScript(pDocView, calc->GetScriptIfExists(), &EventParam);
   if (iRet != XFA_EVENTERROR_Success)
     return iRet;
 
   if (GetRawValue() != EventParam.m_wsResult) {
     SetValue(XFA_VALUEPICTURE_Raw, EventParam.m_wsResult);
-    UpdateUIDisplay(docView, nullptr);
+    UpdateUIDisplay(pDocView, nullptr);
   }
   return XFA_EVENTERROR_Success;
 }
 
-void CXFA_Node::ProcessScriptTestValidate(CXFA_FFDocView* docView,
+void CXFA_Node::ProcessScriptTestValidate(CXFA_FFDocView* pDocView,
                                           CXFA_Validate* validate,
                                           int32_t iRet,
                                           bool bRetValue,
@@ -2069,13 +2502,13 @@ void CXFA_Node::ProcessScriptTestValidate(CXFA_FFDocView* docView,
     return;
 
   IXFA_AppProvider* pAppProvider =
-      docView->GetDoc()->GetApp()->GetAppProvider();
+      pDocView->GetDoc()->GetApp()->GetAppProvider();
   if (!pAppProvider)
     return;
 
   WideString wsTitle = pAppProvider->GetAppTitle();
   WideString wsScriptMsg = validate->GetScriptMessageText();
-  if (validate->GetScriptTest() == XFA_AttributeEnum::Warning) {
+  if (validate->GetScriptTest() == XFA_AttributeValue::Warning) {
     if (IsUserInteractive())
       return;
     if (wsScriptMsg.IsEmpty())
@@ -2103,7 +2536,7 @@ void CXFA_Node::ProcessScriptTestValidate(CXFA_FFDocView* docView,
                        static_cast<uint32_t>(AlertButton::kOK));
 }
 
-int32_t CXFA_Node::ProcessFormatTestValidate(CXFA_FFDocView* docView,
+int32_t CXFA_Node::ProcessFormatTestValidate(CXFA_FFDocView* pDocView,
                                              CXFA_Validate* validate,
                                              bool bVersionFlag) {
   WideString wsPicture = validate->GetPicture();
@@ -2123,13 +2556,13 @@ int32_t CXFA_Node::ProcessFormatTestValidate(CXFA_FFDocView* docView,
     return XFA_EVENTERROR_Success;
 
   IXFA_AppProvider* pAppProvider =
-      docView->GetDoc()->GetApp()->GetAppProvider();
+      pDocView->GetDoc()->GetApp()->GetAppProvider();
   if (!pAppProvider)
     return XFA_EVENTERROR_NotExist;
 
   WideString wsFormatMsg = validate->GetFormatMessageText();
   WideString wsTitle = pAppProvider->GetAppTitle();
-  if (validate->GetFormatTest() == XFA_AttributeEnum::Error) {
+  if (validate->GetFormatTest() == XFA_AttributeValue::Error) {
     if (wsFormatMsg.IsEmpty())
       wsFormatMsg = GetValidateMessage(true, bVersionFlag);
     pAppProvider->MsgBox(wsFormatMsg, wsTitle,
@@ -2158,7 +2591,7 @@ int32_t CXFA_Node::ProcessFormatTestValidate(CXFA_FFDocView* docView,
   return XFA_EVENTERROR_Error;
 }
 
-int32_t CXFA_Node::ProcessNullTestValidate(CXFA_FFDocView* docView,
+int32_t CXFA_Node::ProcessNullTestValidate(CXFA_FFDocView* pDocView,
                                            CXFA_Validate* validate,
                                            int32_t iFlags,
                                            bool bVersionFlag) {
@@ -2167,35 +2600,35 @@ int32_t CXFA_Node::ProcessNullTestValidate(CXFA_FFDocView* docView,
   if (m_bIsNull && m_bPreNull)
     return XFA_EVENTERROR_Success;
 
-  XFA_AttributeEnum eNullTest = validate->GetNullTest();
+  XFA_AttributeValue eNullTest = validate->GetNullTest();
   WideString wsNullMsg = validate->GetNullMessageText();
   if (iFlags & 0x01) {
     int32_t iRet = XFA_EVENTERROR_Success;
-    if (eNullTest != XFA_AttributeEnum::Disabled)
+    if (eNullTest != XFA_AttributeValue::Disabled)
       iRet = XFA_EVENTERROR_Error;
 
-    if (!wsNullMsg.IsEmpty()) {
-      if (eNullTest != XFA_AttributeEnum::Disabled) {
-        docView->m_arrNullTestMsg.push_back(wsNullMsg);
-        return XFA_EVENTERROR_Error;
-      }
-      return XFA_EVENTERROR_Success;
+    if (wsNullMsg.IsEmpty())
+      return iRet;
+
+    if (eNullTest != XFA_AttributeValue::Disabled) {
+      pDocView->m_arrNullTestMsg.push_back(wsNullMsg);
+      return XFA_EVENTERROR_Error;
     }
-    return iRet;
+    return XFA_EVENTERROR_Success;
   }
   if (wsNullMsg.IsEmpty() && bVersionFlag &&
-      eNullTest != XFA_AttributeEnum::Disabled) {
+      eNullTest != XFA_AttributeValue::Disabled) {
     return XFA_EVENTERROR_Error;
   }
   IXFA_AppProvider* pAppProvider =
-      docView->GetDoc()->GetApp()->GetAppProvider();
+      pDocView->GetDoc()->GetApp()->GetAppProvider();
   if (!pAppProvider)
     return XFA_EVENTERROR_NotExist;
 
   WideString wsCaptionName;
   WideString wsTitle = pAppProvider->GetAppTitle();
   switch (eNullTest) {
-    case XFA_AttributeEnum::Error: {
+    case XFA_AttributeValue::Error: {
       if (wsNullMsg.IsEmpty()) {
         wsCaptionName = GetValidateCaptionName(bVersionFlag);
         wsNullMsg = wsCaptionName + L" cannot be blank.";
@@ -2205,7 +2638,7 @@ int32_t CXFA_Node::ProcessNullTestValidate(CXFA_FFDocView* docView,
                            static_cast<uint32_t>(AlertButton::kOK));
       return XFA_EVENTERROR_Error;
     }
-    case XFA_AttributeEnum::Warning: {
+    case XFA_AttributeValue::Warning: {
       if (IsUserInteractive())
         return true;
 
@@ -2223,14 +2656,14 @@ int32_t CXFA_Node::ProcessNullTestValidate(CXFA_FFDocView* docView,
       }
       return XFA_EVENTERROR_Error;
     }
-    case XFA_AttributeEnum::Disabled:
+    case XFA_AttributeValue::Disabled:
     default:
       break;
   }
   return XFA_EVENTERROR_Success;
 }
 
-int32_t CXFA_Node::ProcessValidate(CXFA_FFDocView* docView, int32_t iFlags) {
+int32_t CXFA_Node::ProcessValidate(CXFA_FFDocView* pDocView, int32_t iFlags) {
   if (GetElementType() == XFA_Element::Draw)
     return XFA_EVENTERROR_NotExist;
 
@@ -2239,7 +2672,7 @@ int32_t CXFA_Node::ProcessValidate(CXFA_FFDocView* docView, int32_t iFlags) {
     return XFA_EVENTERROR_NotExist;
 
   bool bInitDoc = validate->NeedsInitApp();
-  bool bStatus = docView->GetLayoutStatus() < XFA_DOCVIEW_LAYOUTSTATUS_End;
+  bool bStatus = pDocView->GetLayoutStatus() < XFA_DOCVIEW_LAYOUTSTATUS_End;
   int32_t iFormat = 0;
   int32_t iRet = XFA_EVENTERROR_NotExist;
   CXFA_Script* script = validate->GetScriptIfExists();
@@ -2249,10 +2682,10 @@ int32_t CXFA_Node::ProcessValidate(CXFA_FFDocView* docView, int32_t iFlags) {
     CXFA_EventParam eParam;
     eParam.m_eType = XFA_EVENT_Validate;
     eParam.m_pTarget = this;
-    std::tie(iRet, bRet) = ExecuteBoolScript(docView, script, &eParam);
+    std::tie(iRet, bRet) = ExecuteBoolScript(pDocView, script, &eParam);
   }
 
-  XFA_VERSION version = docView->GetDoc()->GetXFADoc()->GetCurVersionMode();
+  XFA_VERSION version = pDocView->GetDoc()->GetXFADoc()->GetCurVersionMode();
   bool bVersionFlag = false;
   if (version < XFA_VERSION_208)
     bVersionFlag = true;
@@ -2260,17 +2693,17 @@ int32_t CXFA_Node::ProcessValidate(CXFA_FFDocView* docView, int32_t iFlags) {
   if (bInitDoc) {
     validate->ClearFlag(XFA_NodeFlag_NeedsInitApp);
   } else {
-    iFormat = ProcessFormatTestValidate(docView, validate, bVersionFlag);
+    iFormat = ProcessFormatTestValidate(pDocView, validate, bVersionFlag);
     if (!bVersionFlag) {
       bVersionFlag =
-          docView->GetDoc()->GetXFADoc()->HasFlag(XFA_DOCFLAG_Scripting);
+          pDocView->GetDoc()->GetXFADoc()->HasFlag(XFA_DOCFLAG_Scripting);
     }
 
-    iRet |= ProcessNullTestValidate(docView, validate, iFlags, bVersionFlag);
+    iRet |= ProcessNullTestValidate(pDocView, validate, iFlags, bVersionFlag);
   }
 
   if (iFormat != XFA_EVENTERROR_Success && hasBoolResult)
-    ProcessScriptTestValidate(docView, validate, iRet, bRet, bVersionFlag);
+    ProcessScriptTestValidate(pDocView, validate, iRet, bRet, bVersionFlag);
 
   return iRet | iFormat;
 }
@@ -2307,17 +2740,17 @@ WideString CXFA_Node::GetValidateMessage(bool bError, bool bVersionFlag) {
   return result;
 }
 
-int32_t CXFA_Node::ExecuteScript(CXFA_FFDocView* docView,
+int32_t CXFA_Node::ExecuteScript(CXFA_FFDocView* pDocView,
                                  CXFA_Script* script,
                                  CXFA_EventParam* pEventParam) {
   bool bRet;
   int32_t iRet;
-  std::tie(iRet, bRet) = ExecuteBoolScript(docView, script, pEventParam);
+  std::tie(iRet, bRet) = ExecuteBoolScript(pDocView, script, pEventParam);
   return iRet;
 }
 
 std::pair<int32_t, bool> CXFA_Node::ExecuteBoolScript(
-    CXFA_FFDocView* docView,
+    CXFA_FFDocView* pDocView,
     CXFA_Script* script,
     CXFA_EventParam* pEventParam) {
   if (m_ExecuteRecursionDepth > kMaxExecuteRecursion)
@@ -2326,7 +2759,7 @@ std::pair<int32_t, bool> CXFA_Node::ExecuteBoolScript(
   ASSERT(pEventParam);
   if (!script)
     return {XFA_EVENTERROR_NotExist, false};
-  if (script->GetRunAt() == XFA_AttributeEnum::Server)
+  if (script->GetRunAt() == XFA_AttributeValue::Server)
     return {XFA_EVENTERROR_Disabled, false};
 
   WideString wsExpression = script->GetExpression();
@@ -2337,7 +2770,7 @@ std::pair<int32_t, bool> CXFA_Node::ExecuteBoolScript(
   if (eScriptType == CXFA_Script::Type::Unknown)
     return {XFA_EVENTERROR_Success, false};
 
-  CXFA_FFDoc* pDoc = docView->GetDoc();
+  CXFA_FFDoc* pDoc = pDocView->GetDoc();
   CFXJSE_Engine* pContext = pDoc->GetXFADoc()->GetScriptContext();
   pContext->SetEventParam(pEventParam);
   pContext->SetRunAtType(script->GetRunAt());
@@ -2374,7 +2807,7 @@ std::pair<int32_t, bool> CXFA_Node::ExecuteBoolScript(
         if ((iRet == XFA_EVENTERROR_Success) &&
             (GetRawValue() != pEventParam->m_wsResult)) {
           SetValue(XFA_VALUEPICTURE_Raw, pEventParam->m_wsResult);
-          docView->AddValidateNode(this);
+          pDocView->AddValidateNode(this);
         }
       }
       for (CXFA_Node* pRefNode : refNodes) {
@@ -2518,7 +2951,7 @@ CXFA_Node* CXFA_Node::CreateUINodeIfNeeded(CXFA_Ui* ui, XFA_Element type) {
 void CXFA_Node::CreateValueNodeIfNeeded(CXFA_Value* value,
                                         CXFA_Node* pUIChild) {
   // Value nodes only have one child. If we have one already we're done.
-  if (value->GetFirstChild() != nullptr)
+  if (value->GetFirstChild())
     return;
 
   // Create the Value node for our UI if needed.
@@ -2581,7 +3014,7 @@ CFX_RectF CXFA_Node::GetUIMargin() {
     return CFX_RectF();
 
   CXFA_Border* border = GetUIBorder();
-  if (border && border->GetPresence() != XFA_AttributeEnum::Visible)
+  if (border && border->GetPresence() != XFA_AttributeValue::Visible)
     return CFX_RectF();
 
   Optional<float> left = mgUI->TryLeftInset();
@@ -2591,7 +3024,7 @@ CFX_RectF CXFA_Node::GetUIMargin() {
   if (border) {
     bool bVisible = false;
     float fThickness = 0;
-    XFA_AttributeEnum iType = XFA_AttributeEnum::Unknown;
+    XFA_AttributeValue iType = XFA_AttributeValue::Unknown;
     std::tie(iType, bVisible, fThickness) = border->Get3DStyle();
     if (!left || !top || !right || !bottom) {
       std::vector<CXFA_Stroke*> strokes = border->GetStrokes();
@@ -2610,7 +3043,7 @@ CFX_RectF CXFA_Node::GetUIMargin() {
 }
 
 std::vector<CXFA_Event*> CXFA_Node::GetEventByActivity(
-    XFA_AttributeEnum iActivity,
+    XFA_AttributeValue iActivity,
     bool bIsFormReady) {
   std::vector<CXFA_Event*> events;
   for (CXFA_Node* node : GetNodeList(0, XFA_Element::Event)) {
@@ -2618,7 +3051,7 @@ std::vector<CXFA_Event*> CXFA_Node::GetEventByActivity(
     if (event->GetActivity() != iActivity)
       continue;
 
-    if (iActivity != XFA_AttributeEnum::Ready) {
+    if (iActivity != XFA_AttributeValue::Ready) {
       events.push_back(event);
       continue;
     }
@@ -2716,7 +3149,7 @@ void CXFA_Node::SetImageEdit(const WideString& wsContentType,
   CXFA_Node* pBind = GetBindData();
   if (!pBind) {
     if (image)
-      image->SetTransferEncoding(XFA_AttributeEnum::Base64);
+      image->SetTransferEncoding(XFA_AttributeValue::Base64);
     return;
   }
   pBind->JSObject()->SetCData(XFA_Attribute::ContentType, wsContentType, false,
@@ -2731,12 +3164,12 @@ void CXFA_Node::SetImageEdit(const WideString& wsContentType,
 }
 
 CXFA_FFWidget* CXFA_Node::GetNextWidget(CXFA_FFWidget* pWidget) {
-  return ToFFWidget(pWidget->GetNext());
+  return GetFFWidget(pWidget->GetLayoutItem()->GetNext());
 }
 
-void CXFA_Node::UpdateUIDisplay(CXFA_FFDocView* docView,
+void CXFA_Node::UpdateUIDisplay(CXFA_FFDocView* pDocView,
                                 CXFA_FFWidget* pExcept) {
-  CXFA_FFWidget* pWidget = docView->GetWidgetForNode(this);
+  CXFA_FFWidget* pWidget = pDocView->GetWidgetForNode(this);
   for (; pWidget; pWidget = GetNextWidget(pWidget)) {
     if (pWidget == pExcept || !pWidget->IsLoaded() ||
         (GetFFWidgetType() != XFA_FFWidgetType::kCheckButton &&
@@ -2756,10 +3189,10 @@ void CXFA_Node::CalcCaptionSize(CXFA_FFDoc* doc, CFX_SizeF* pszCap) {
   LoadCaption(doc);
 
   const float fCapReserve = caption->GetReserve();
-  const XFA_AttributeEnum iCapPlacement = caption->GetPlacementType();
+  const XFA_AttributeValue iCapPlacement = caption->GetPlacementType();
   const bool bReserveExit = fCapReserve > 0.01;
-  const bool bVert = iCapPlacement == XFA_AttributeEnum::Top ||
-                     iCapPlacement == XFA_AttributeEnum::Bottom;
+  const bool bVert = iCapPlacement == XFA_AttributeValue::Top ||
+                     iCapPlacement == XFA_AttributeValue::Bottom;
   CXFA_TextLayout* pCapTextLayout =
       m_pLayoutData->AsFieldLayoutData()->m_pCapTextLayout.get();
   if (pCapTextLayout) {
@@ -2815,17 +3248,18 @@ bool CXFA_Node::CalculateFieldAutoSize(CXFA_FFDoc* doc, CFX_SizeF* pSize) {
   pSize->height += rtUIMargin.top + rtUIMargin.height;
   if (szCap.width > 0 && szCap.height > 0) {
     CXFA_Caption* caption = GetCaptionIfExists();
-    XFA_AttributeEnum placement = caption ? caption->GetPlacementType()
-                                          : CXFA_Caption::kDefaultPlacementType;
+    XFA_AttributeValue placement = caption
+                                       ? caption->GetPlacementType()
+                                       : CXFA_Caption::kDefaultPlacementType;
     switch (placement) {
-      case XFA_AttributeEnum::Left:
-      case XFA_AttributeEnum::Right:
-      case XFA_AttributeEnum::Inline: {
+      case XFA_AttributeValue::Left:
+      case XFA_AttributeValue::Right:
+      case XFA_AttributeValue::Inline: {
         pSize->width += szCap.width;
         pSize->height = std::max(pSize->height, szCap.height);
       } break;
-      case XFA_AttributeEnum::Top:
-      case XFA_AttributeEnum::Bottom: {
+      case XFA_AttributeValue::Top:
+      case XFA_AttributeValue::Bottom: {
         pSize->height += szCap.height;
         pSize->width = std::max(pSize->width, szCap.width);
         break;
@@ -2914,15 +3348,15 @@ bool CXFA_Node::CalculateTextEditAutoSize(CXFA_FFDoc* doc, CFX_SizeF* pSize) {
     CFX_SizeF szCap;
     CalcCaptionSize(doc, &szCap);
     bool bCapExit = szCap.width > 0.01 && szCap.height > 0.01;
-    XFA_AttributeEnum iCapPlacement = XFA_AttributeEnum::Unknown;
+    XFA_AttributeValue iCapPlacement = XFA_AttributeValue::Unknown;
     if (bCapExit) {
       CXFA_Caption* caption = GetCaptionIfExists();
       iCapPlacement = caption ? caption->GetPlacementType()
                               : CXFA_Caption::kDefaultPlacementType;
       switch (iCapPlacement) {
-        case XFA_AttributeEnum::Left:
-        case XFA_AttributeEnum::Right:
-        case XFA_AttributeEnum::Inline: {
+        case XFA_AttributeValue::Left:
+        case XFA_AttributeValue::Right:
+        case XFA_AttributeValue::Inline: {
           pSize->width -= szCap.width;
           break;
         }
@@ -2940,13 +3374,13 @@ bool CXFA_Node::CalculateTextEditAutoSize(CXFA_FFDoc* doc, CFX_SizeF* pSize) {
     pSize->height += rtUIMargin.top + rtUIMargin.height;
     if (bCapExit) {
       switch (iCapPlacement) {
-        case XFA_AttributeEnum::Left:
-        case XFA_AttributeEnum::Right:
-        case XFA_AttributeEnum::Inline: {
+        case XFA_AttributeValue::Left:
+        case XFA_AttributeValue::Right:
+        case XFA_AttributeValue::Inline: {
           pSize->height = std::max(pSize->height, szCap.height);
         } break;
-        case XFA_AttributeEnum::Top:
-        case XFA_AttributeEnum::Bottom: {
+        case XFA_AttributeValue::Top:
+        case XFA_AttributeValue::Bottom: {
           pSize->height += szCap.height;
           break;
         }
@@ -3186,11 +3620,11 @@ CFX_SizeF CXFA_Node::CalculateAccWidthAndHeight(CXFA_FFDoc* doc, float fWidth) {
   return sz;
 }
 
-bool CXFA_Node::FindSplitPos(CXFA_FFDocView* docView,
-                             int32_t iBlockIndex,
-                             float* pCalcHeight) {
+Optional<float> CXFA_Node::FindSplitPos(CXFA_FFDocView* pDocView,
+                                        size_t szBlockIndex,
+                                        float fCalcHeight) {
   if (GetFFWidgetType() == XFA_FFWidgetType::kSubform)
-    return false;
+    return pdfium::nullopt;
 
   switch (GetFFWidgetType()) {
     case XFA_FFWidgetType::kText:
@@ -3199,13 +3633,12 @@ bool CXFA_Node::FindSplitPos(CXFA_FFDocView* docView,
     case XFA_FFWidgetType::kPasswordEdit:
       break;
     default:
-      *pCalcHeight = 0;
-      return true;
+      return 0.0f;
   }
 
   float fTopInset = 0;
   float fBottomInset = 0;
-  if (iBlockIndex == 0) {
+  if (szBlockIndex == 0) {
     CXFA_Margin* margin = GetMarginIfExists();
     if (margin) {
       fTopInset = margin->GetTopInset();
@@ -3217,44 +3650,41 @@ bool CXFA_Node::FindSplitPos(CXFA_FFDocView* docView,
     fBottomInset += rtUIMargin.width;
   }
   if (GetFFWidgetType() == XFA_FFWidgetType::kText) {
-    float fHeight = *pCalcHeight;
-    if (iBlockIndex == 0) {
-      *pCalcHeight -= fTopInset;
-      *pCalcHeight = std::max(*pCalcHeight, 0.0f);
+    float fHeight = fCalcHeight;
+    if (szBlockIndex == 0) {
+      fCalcHeight -= fTopInset;
+      fCalcHeight = std::max(fCalcHeight, 0.0f);
     }
     CXFA_TextLayout* pTextLayout =
         m_pLayoutData->AsTextLayoutData()->GetTextLayout();
-    *pCalcHeight =
-        pTextLayout->DoLayout(iBlockIndex, *pCalcHeight, *pCalcHeight,
-                              m_pLayoutData->m_fWidgetHeight - fTopInset);
-    if (*pCalcHeight != 0) {
-      if (iBlockIndex == 0)
-        *pCalcHeight += fTopInset;
-      if (fabs(fHeight - *pCalcHeight) < XFA_FLOAT_PERCISION)
-        return false;
+    fCalcHeight = pTextLayout->DoSplitLayout(
+        szBlockIndex, fCalcHeight, m_pLayoutData->m_fWidgetHeight - fTopInset);
+    if (fCalcHeight != 0) {
+      if (szBlockIndex == 0)
+        fCalcHeight += fTopInset;
+      if (fabs(fHeight - fCalcHeight) < kXFAWidgetPrecision)
+        return pdfium::nullopt;
     }
-    return true;
+    return fCalcHeight;
   }
 
-  XFA_AttributeEnum iCapPlacement = XFA_AttributeEnum::Unknown;
+  XFA_AttributeValue iCapPlacement = XFA_AttributeValue::Unknown;
   float fCapReserve = 0;
-  if (iBlockIndex == 0) {
+  if (szBlockIndex == 0) {
     CXFA_Caption* caption = GetCaptionIfExists();
     if (caption && !caption->IsHidden()) {
       iCapPlacement = caption->GetPlacementType();
       fCapReserve = caption->GetReserve();
     }
-    if (iCapPlacement == XFA_AttributeEnum::Top &&
-        *pCalcHeight < fCapReserve + fTopInset) {
-      *pCalcHeight = 0;
-      return true;
+    if (iCapPlacement == XFA_AttributeValue::Top &&
+        fCalcHeight < fCapReserve + fTopInset) {
+      return 0.0f;
     }
-    if (iCapPlacement == XFA_AttributeEnum::Bottom &&
+    if (iCapPlacement == XFA_AttributeValue::Bottom &&
         m_pLayoutData->m_fWidgetHeight - fCapReserve - fBottomInset) {
-      *pCalcHeight = 0;
-      return true;
+      return 0.0f;
     }
-    if (iCapPlacement != XFA_AttributeEnum::Top)
+    if (iCapPlacement != XFA_AttributeValue::Top)
       fCapReserve = 0;
   }
   CXFA_FieldLayoutData* pFieldData = m_pLayoutData->AsFieldLayoutData();
@@ -3264,31 +3694,31 @@ bool CXFA_Node::FindSplitPos(CXFA_FFDocView* docView,
     iLinesCount = 1;
   } else {
     if (!pFieldData->m_pTextOut) {
-      CFX_SizeF size =
-          CalculateAccWidthAndHeight(docView->GetDoc(), TryWidth().value_or(0));
+      CFX_SizeF size = CalculateAccWidthAndHeight(pDocView->GetDoc(),
+                                                  TryWidth().value_or(0));
       fHeight = size.height;
     }
 
     iLinesCount = pFieldData->m_pTextOut->GetTotalLines();
   }
   std::vector<float>* pFieldArray = &pFieldData->m_FieldSplitArray;
-  int32_t iFieldSplitCount = pdfium::CollectionSize<int32_t>(*pFieldArray);
-  if (iFieldSplitCount < (iBlockIndex * 3))
-    return false;
+  size_t szFieldSplitCount = pFieldArray->size();
+  if (szFieldSplitCount < szBlockIndex * 3)
+    return pdfium::nullopt;
 
-  for (int32_t i = 0; i < iBlockIndex * 3; i += 3) {
+  for (size_t i = 0; i < szBlockIndex * 3; i += 3) {
     iLinesCount -= (int32_t)(*pFieldArray)[i + 1];
     fHeight -= (*pFieldArray)[i + 2];
   }
   if (iLinesCount == 0)
-    return false;
+    return pdfium::nullopt;
 
   float fLineHeight = GetLineHeight();
   float fFontSize = GetFontSize();
   float fTextHeight = iLinesCount * fLineHeight - fLineHeight + fFontSize;
   float fSpaceAbove = 0;
   float fStartOffset = 0;
-  if (fHeight > 0.1f && iBlockIndex == 0) {
+  if (fHeight > 0.1f && szBlockIndex == 0) {
     fStartOffset = fTopInset;
     fHeight -= (fTopInset + fBottomInset);
     CXFA_Para* para = GetParaIfExists();
@@ -3297,13 +3727,13 @@ bool CXFA_Node::FindSplitPos(CXFA_FFDocView* docView,
       float fSpaceBelow = para->GetSpaceBelow();
       fHeight -= (fSpaceAbove + fSpaceBelow);
       switch (para->GetVerticalAlign()) {
-        case XFA_AttributeEnum::Top:
+        case XFA_AttributeValue::Top:
           fStartOffset += fSpaceAbove;
           break;
-        case XFA_AttributeEnum::Middle:
+        case XFA_AttributeValue::Middle:
           fStartOffset += ((fHeight - fTextHeight) / 2 + fSpaceAbove);
           break;
-        case XFA_AttributeEnum::Bottom:
+        case XFA_AttributeValue::Bottom:
           fStartOffset += (fHeight - fTextHeight + fSpaceAbove);
           break;
         default:
@@ -3314,109 +3744,102 @@ bool CXFA_Node::FindSplitPos(CXFA_FFDocView* docView,
     if (fStartOffset < 0.1f)
       fStartOffset = 0;
   }
-  for (int32_t i = iBlockIndex - 1; iBlockIndex > 0 && i < iBlockIndex; i++) {
+  if (szBlockIndex > 0) {
+    size_t i = szBlockIndex - 1;
     fStartOffset = (*pFieldArray)[i * 3] - (*pFieldArray)[i * 3 + 2];
     if (fStartOffset < 0.1f)
       fStartOffset = 0;
   }
-  if (iFieldSplitCount / 3 == (iBlockIndex + 1))
+  if (szFieldSplitCount / 3 == (szBlockIndex + 1))
     (*pFieldArray)[0] = fStartOffset;
   else
     pFieldArray->push_back(fStartOffset);
 
-  XFA_VERSION version = docView->GetDoc()->GetXFADoc()->GetCurVersionMode();
+  XFA_VERSION version = pDocView->GetDoc()->GetXFADoc()->GetCurVersionMode();
   bool bCanSplitNoContent = false;
-  XFA_AttributeEnum eLayoutMode = GetParent()
-                                      ->JSObject()
-                                      ->TryEnum(XFA_Attribute::Layout, true)
-                                      .value_or(XFA_AttributeEnum::Position);
-  if ((eLayoutMode == XFA_AttributeEnum::Position ||
-       eLayoutMode == XFA_AttributeEnum::Tb ||
-       eLayoutMode == XFA_AttributeEnum::Row ||
-       eLayoutMode == XFA_AttributeEnum::Table) &&
+  auto value = GetParent()->JSObject()->TryEnum(XFA_Attribute::Layout, true);
+  XFA_AttributeValue eLayoutMode = value.value_or(XFA_AttributeValue::Position);
+  if ((eLayoutMode == XFA_AttributeValue::Position ||
+       eLayoutMode == XFA_AttributeValue::Tb ||
+       eLayoutMode == XFA_AttributeValue::Row ||
+       eLayoutMode == XFA_AttributeValue::Table) &&
       version > XFA_VERSION_208) {
     bCanSplitNoContent = true;
   }
-  if ((eLayoutMode == XFA_AttributeEnum::Tb ||
-       eLayoutMode == XFA_AttributeEnum::Row ||
-       eLayoutMode == XFA_AttributeEnum::Table) &&
+  if ((eLayoutMode == XFA_AttributeValue::Tb ||
+       eLayoutMode == XFA_AttributeValue::Row ||
+       eLayoutMode == XFA_AttributeValue::Table) &&
       version <= XFA_VERSION_208) {
-    if (fStartOffset < *pCalcHeight) {
-      bCanSplitNoContent = true;
-    } else {
-      *pCalcHeight = 0;
-      return true;
-    }
-  }
-  if (bCanSplitNoContent) {
-    if ((*pCalcHeight - fTopInset - fSpaceAbove < fLineHeight)) {
-      *pCalcHeight = 0;
-      return true;
-    }
-    if (fStartOffset + XFA_FLOAT_PERCISION >= *pCalcHeight) {
-      if (iFieldSplitCount / 3 == (iBlockIndex + 1)) {
-        (*pFieldArray)[iBlockIndex * 3 + 1] = 0;
-        (*pFieldArray)[iBlockIndex * 3 + 2] = *pCalcHeight;
-      } else {
-        pFieldArray->push_back(0);
-        pFieldArray->push_back(*pCalcHeight);
-      }
-      return false;
-    }
-    if (*pCalcHeight - fStartOffset < fLineHeight) {
-      *pCalcHeight = fStartOffset;
-      if (iFieldSplitCount / 3 == (iBlockIndex + 1)) {
-        (*pFieldArray)[iBlockIndex * 3 + 1] = 0;
-        (*pFieldArray)[iBlockIndex * 3 + 2] = *pCalcHeight;
-      } else {
-        pFieldArray->push_back(0);
-        pFieldArray->push_back(*pCalcHeight);
-      }
-      return true;
-    }
-    float fTextNum =
-        *pCalcHeight + XFA_FLOAT_PERCISION - fCapReserve - fStartOffset;
-    int32_t iLineNum =
-        (int32_t)((fTextNum + (fLineHeight - fFontSize)) / fLineHeight);
-    if (iLineNum >= iLinesCount) {
-      if (*pCalcHeight - fStartOffset - fTextHeight >= fFontSize) {
-        if (iFieldSplitCount / 3 == (iBlockIndex + 1)) {
-          (*pFieldArray)[iBlockIndex * 3 + 1] = iLinesCount;
-          (*pFieldArray)[iBlockIndex * 3 + 2] = *pCalcHeight;
-        } else {
-          pFieldArray->push_back(iLinesCount);
-          pFieldArray->push_back(*pCalcHeight);
-        }
-        return false;
-      }
-      if (fHeight - fStartOffset - fTextHeight < fFontSize) {
-        iLineNum -= 1;
-        if (iLineNum == 0) {
-          *pCalcHeight = 0;
-          return true;
-        }
-      } else {
-        iLineNum = (int32_t)(fTextNum / fLineHeight);
-      }
-    }
-    if (iLineNum > 0) {
-      float fSplitHeight = iLineNum * fLineHeight + fCapReserve + fStartOffset;
-      if (iFieldSplitCount / 3 == (iBlockIndex + 1)) {
-        (*pFieldArray)[iBlockIndex * 3 + 1] = iLineNum;
-        (*pFieldArray)[iBlockIndex * 3 + 2] = fSplitHeight;
-      } else {
-        pFieldArray->push_back(iLineNum);
-        pFieldArray->push_back(fSplitHeight);
-      }
-      if (fabs(fSplitHeight - *pCalcHeight) < XFA_FLOAT_PERCISION)
-        return false;
+    if (fStartOffset >= fCalcHeight)
+      return 0.0f;
 
-      *pCalcHeight = fSplitHeight;
-      return true;
+    bCanSplitNoContent = true;
+  }
+  if (!bCanSplitNoContent ||
+      fCalcHeight - fTopInset - fSpaceAbove < fLineHeight) {
+    return 0.0f;
+  }
+
+  if (fStartOffset + kXFAWidgetPrecision >= fCalcHeight) {
+    if (szFieldSplitCount / 3 == (szBlockIndex + 1)) {
+      (*pFieldArray)[szBlockIndex * 3 + 1] = 0;
+      (*pFieldArray)[szBlockIndex * 3 + 2] = fCalcHeight;
+    } else {
+      pFieldArray->push_back(0);
+      pFieldArray->push_back(fCalcHeight);
+    }
+    return pdfium::nullopt;
+  }
+
+  if (fCalcHeight - fStartOffset < fLineHeight) {
+    fCalcHeight = fStartOffset;
+    if (szFieldSplitCount / 3 == (szBlockIndex + 1)) {
+      (*pFieldArray)[szBlockIndex * 3 + 1] = 0;
+      (*pFieldArray)[szBlockIndex * 3 + 2] = fCalcHeight;
+    } else {
+      pFieldArray->push_back(0);
+      pFieldArray->push_back(fCalcHeight);
+    }
+    return fCalcHeight;
+  }
+
+  float fTextNum =
+      fCalcHeight + kXFAWidgetPrecision - fCapReserve - fStartOffset;
+  int32_t iLineNum =
+      (int32_t)((fTextNum + (fLineHeight - fFontSize)) / fLineHeight);
+  if (iLineNum >= iLinesCount) {
+    if (fCalcHeight - fStartOffset - fTextHeight >= fFontSize) {
+      if (szFieldSplitCount / 3 == (szBlockIndex + 1)) {
+        (*pFieldArray)[szBlockIndex * 3 + 1] = iLinesCount;
+        (*pFieldArray)[szBlockIndex * 3 + 2] = fCalcHeight;
+      } else {
+        pFieldArray->push_back(iLinesCount);
+        pFieldArray->push_back(fCalcHeight);
+      }
+      return pdfium::nullopt;
+    }
+    if (fHeight - fStartOffset - fTextHeight < fFontSize) {
+      iLineNum -= 1;
+      if (iLineNum == 0)
+        return 0.0f;
+    } else {
+      iLineNum = (int32_t)(fTextNum / fLineHeight);
     }
   }
-  *pCalcHeight = 0;
-  return true;
+  if (iLineNum <= 0)
+    return 0.0f;
+
+  float fSplitHeight = iLineNum * fLineHeight + fCapReserve + fStartOffset;
+  if (szFieldSplitCount / 3 == (szBlockIndex + 1)) {
+    (*pFieldArray)[szBlockIndex * 3 + 1] = iLineNum;
+    (*pFieldArray)[szBlockIndex * 3 + 2] = fSplitHeight;
+  } else {
+    pFieldArray->push_back(iLineNum);
+    pFieldArray->push_back(fSplitHeight);
+  }
+  if (fabs(fSplitHeight - fCalcHeight) < kXFAWidgetPrecision)
+    return pdfium::nullopt;
+  return fSplitHeight;
 }
 
 void CXFA_Node::InitLayoutData() {
@@ -3461,7 +3884,7 @@ void CXFA_Node::StartTextLayout(CXFA_FFDoc* doc,
     pTextLayout->StartLayout(fWidth);
     fTextHeight = *pCalcHeight;
     fTextHeight = GetHeightWithoutMargin(fTextHeight);
-    pTextLayout->DoLayout(0, fTextHeight, -1, fTextHeight);
+    pTextLayout->DoLayout(fTextHeight);
     return;
   }
   if (*pCalcWidth > 0 && *pCalcHeight < 0) {
@@ -3486,7 +3909,7 @@ void CXFA_Node::StartTextLayout(CXFA_FFDoc* doc,
   }
   fTextHeight = m_pLayoutData->m_fWidgetHeight;
   fTextHeight = GetHeightWithoutMargin(fTextHeight);
-  pTextLayout->DoLayout(0, fTextHeight, -1, fTextHeight);
+  pTextLayout->DoLayout(fTextHeight);
   *pCalcHeight = m_pLayoutData->m_fWidgetHeight;
 }
 
@@ -3554,8 +3977,11 @@ bool CXFA_Node::HasButtonRollover() {
 
   for (CXFA_Node* pText = pItems->GetFirstChild(); pText;
        pText = pText->GetNextSibling()) {
-    if (pText->JSObject()->GetCData(XFA_Attribute::Name) == L"rollover")
+    if (pText->JSObject()
+            ->GetCData(XFA_Attribute::Name)
+            .EqualsASCII("rollover")) {
       return !pText->JSObject()->GetContent(false).IsEmpty();
+    }
   }
   return false;
 }
@@ -3567,8 +3993,9 @@ bool CXFA_Node::HasButtonDown() {
 
   for (CXFA_Node* pText = pItems->GetFirstChild(); pText;
        pText = pText->GetNextSibling()) {
-    if (pText->JSObject()->GetCData(XFA_Attribute::Name) == L"down")
+    if (pText->JSObject()->GetCData(XFA_Attribute::Name).EqualsASCII("down")) {
       return !pText->JSObject()->GetContent(false).IsEmpty();
+    }
   }
   return false;
 }
@@ -3581,9 +4008,8 @@ bool CXFA_Node::IsRadioButton() {
 float CXFA_Node::GetCheckButtonSize() {
   CXFA_Node* pUIChild = GetUIChildNode();
   if (pUIChild) {
-    return pUIChild->JSObject()
-        ->GetMeasure(XFA_Attribute::Size)
-        .ToUnit(XFA_Unit::Pt);
+    return pUIChild->JSObject()->GetMeasureInUnit(XFA_Attribute::Size,
+                                                  XFA_Unit::Pt);
   }
   return CXFA_Measurement(10, XFA_Unit::Pt).ToUnit(XFA_Unit::Pt);
 }
@@ -3686,8 +4112,7 @@ CXFA_Node* CXFA_Node::GetSelectedMember() {
   return pSelectedMember;
 }
 
-CXFA_Node* CXFA_Node::SetSelectedMember(const WideStringView& wsName,
-                                        bool bNotify) {
+CXFA_Node* CXFA_Node::SetSelectedMember(WideStringView wsName, bool bNotify) {
   uint32_t nameHash = FX_HashCode_GetW(wsName, false);
   for (CXFA_Node* pNode = ToNode(GetFirstChild()); pNode;
        pNode = pNode->GetNextSibling()) {
@@ -3699,7 +4124,7 @@ CXFA_Node* CXFA_Node::SetSelectedMember(const WideStringView& wsName,
   return nullptr;
 }
 
-void CXFA_Node::SetSelectedMemberByValue(const WideStringView& wsValue,
+void CXFA_Node::SetSelectedMemberByValue(WideStringView wsValue,
                                          bool bNotify,
                                          bool bScriptModify,
                                          bool bSyncData) {
@@ -3764,7 +4189,7 @@ bool CXFA_Node::IsChoiceListCommitOnSelect() {
   CXFA_Node* pUIChild = GetUIChildNode();
   if (pUIChild) {
     return pUIChild->JSObject()->GetEnum(XFA_Attribute::CommitOn) ==
-           XFA_AttributeEnum::Select;
+           XFA_AttributeValue::Select;
   }
   return true;
 }
@@ -3778,7 +4203,7 @@ bool CXFA_Node::IsChoiceListMultiSelect() {
   CXFA_Node* pUIChild = GetUIChildNode();
   if (pUIChild) {
     return pUIChild->JSObject()->GetEnum(XFA_Attribute::Open) ==
-           XFA_AttributeEnum::MultiSelect;
+           XFA_AttributeValue::MultiSelect;
   }
   return false;
 }
@@ -3788,9 +4213,9 @@ bool CXFA_Node::IsListBox() {
   if (!pUIChild)
     return false;
 
-  XFA_AttributeEnum attr = pUIChild->JSObject()->GetEnum(XFA_Attribute::Open);
-  return attr == XFA_AttributeEnum::Always ||
-         attr == XFA_AttributeEnum::MultiSelect;
+  XFA_AttributeValue attr = pUIChild->JSObject()->GetEnum(XFA_Attribute::Open);
+  return attr == XFA_AttributeValue::Always ||
+         attr == XFA_AttributeValue::MultiSelect;
 }
 
 int32_t CXFA_Node::CountChoiceListItems(bool bSaveValue) {
@@ -4070,12 +4495,12 @@ void CXFA_Node::InsertItem(const WideString& wsLabel,
     CXFA_Node* pNode = listitems[0];
     pNode->JSObject()->SetBoolean(XFA_Attribute::Save, false, false);
     pNode->JSObject()->SetEnum(XFA_Attribute::Presence,
-                               XFA_AttributeEnum::Visible, false);
+                               XFA_AttributeValue::Visible, false);
     CXFA_Node* pSaveItems = CreateSamePacketNode(XFA_Element::Items);
     InsertChild(-1, pSaveItems);
     pSaveItems->JSObject()->SetBoolean(XFA_Attribute::Save, true, false);
     pSaveItems->JSObject()->SetEnum(XFA_Attribute::Presence,
-                                    XFA_AttributeEnum::Hidden, false);
+                                    XFA_AttributeValue::Hidden, false);
     CXFA_Node* pListNode = pNode->GetFirstChild();
     int32_t i = 0;
     while (pListNode) {
@@ -4095,7 +4520,7 @@ void CXFA_Node::InsertItem(const WideString& wsLabel,
                                                     wsValue.c_str(), nIndex);
 }
 
-WideString CXFA_Node::GetItemLabel(const WideStringView& wsValue) const {
+WideString CXFA_Node::GetItemLabel(WideStringView wsValue) const {
   std::vector<CXFA_Node*> listitems;
   CXFA_Node* pItems = GetFirstChild();
   for (; pItems; pItems = pItems->GetNextSibling()) {
@@ -4135,7 +4560,7 @@ WideString CXFA_Node::GetItemLabel(const WideStringView& wsValue) const {
   return pText ? pText->JSObject()->GetContent(false) : WideString();
 }
 
-WideString CXFA_Node::GetItemValue(const WideStringView& wsLabel) {
+WideString CXFA_Node::GetItemValue(WideStringView wsLabel) {
   int32_t iCount = 0;
   std::vector<CXFA_Node*> listitems;
   for (CXFA_Node* pItems = GetFirstChild(); pItems;
@@ -4170,11 +4595,11 @@ WideString CXFA_Node::GetItemValue(const WideStringView& wsLabel) {
     iCount++;
   }
   if (iSearch < 0)
-    return L"";
+    return WideString();
 
   CXFA_Node* pText =
       pSaveItems->GetChild<CXFA_Node>(iSearch, XFA_Element::Unknown, false);
-  return pText ? pText->JSObject()->GetContent(false) : L"";
+  return pText ? pText->JSObject()->GetContent(false) : WideString();
 }
 
 bool CXFA_Node::DeleteItem(int32_t nIndex, bool bNotify, bool bScriptModify) {
@@ -4214,7 +4639,7 @@ bool CXFA_Node::IsHorizontalScrollPolicyOff() {
   CXFA_Node* pUIChild = GetUIChildNode();
   if (pUIChild) {
     return pUIChild->JSObject()->GetEnum(XFA_Attribute::HScrollPolicy) ==
-           XFA_AttributeEnum::Off;
+           XFA_AttributeValue::Off;
   }
   return false;
 }
@@ -4223,7 +4648,7 @@ bool CXFA_Node::IsVerticalScrollPolicyOff() {
   CXFA_Node* pUIChild = GetUIChildNode();
   if (pUIChild) {
     return pUIChild->JSObject()->GetEnum(XFA_Attribute::VScrollPolicy) ==
-           XFA_AttributeEnum::Off;
+           XFA_AttributeValue::Off;
   }
   return false;
 }
@@ -4328,7 +4753,7 @@ bool CXFA_Node::SetValue(XFA_VALUEPICTURE eValueType,
       bSyncData = true;
     }
   } else if (eType == XFA_Element::NumericEdit) {
-    if (wsNewText != L"0")
+    if (!wsNewText.EqualsASCII("0"))
       wsNewText = NumericLimit(wsNewText);
 
     bSyncData = true;
@@ -4341,7 +4766,7 @@ bool CXFA_Node::SetValue(XFA_VALUEPICTURE eValueType,
 
 WideString CXFA_Node::GetPictureContent(XFA_VALUEPICTURE ePicture) {
   if (ePicture == XFA_VALUEPICTURE_Raw)
-    return L"";
+    return WideString();
 
   CXFA_LocaleValue widgetValue = XFA_GetLocaleValue(this);
   switch (ePicture) {
@@ -4359,7 +4784,7 @@ WideString CXFA_Node::GetPictureContent(XFA_VALUEPICTURE ePicture) {
 
       LocaleIface* pLocale = GetLocale();
       if (!pLocale)
-        return L"";
+        return WideString();
 
       uint32_t dwType = widgetValue.GetType();
       switch (dwType) {
@@ -4374,7 +4799,7 @@ WideString CXFA_Node::GetPictureContent(XFA_VALUEPICTURE ePicture) {
         case XFA_VT_DECIMAL:
         case XFA_VT_FLOAT:
         default:
-          return L"";
+          return WideString();
       }
     }
     case XFA_VALUEPICTURE_Edit: {
@@ -4391,7 +4816,7 @@ WideString CXFA_Node::GetPictureContent(XFA_VALUEPICTURE ePicture) {
 
       LocaleIface* pLocale = GetLocale();
       if (!pLocale)
-        return L"";
+        return WideString();
 
       uint32_t dwType = widgetValue.GetType();
       switch (dwType) {
@@ -4404,7 +4829,7 @@ WideString CXFA_Node::GetPictureContent(XFA_VALUEPICTURE ePicture) {
                  L"T" +
                  pLocale->GetTimePattern(FX_LOCALEDATETIMESUBCATEGORY_Short);
         default:
-          return L"";
+          return WideString();
       }
     }
     case XFA_VALUEPICTURE_DataBind: {
@@ -4416,7 +4841,7 @@ WideString CXFA_Node::GetPictureContent(XFA_VALUEPICTURE ePicture) {
     default:
       break;
   }
-  return L"";
+  return WideString();
 }
 
 WideString CXFA_Node::GetValue(XFA_VALUEPICTURE eValueType) {
@@ -4435,7 +4860,8 @@ WideString CXFA_Node::GetValue(XFA_VALUEPICTURE eValueType) {
       if (eValueType == XFA_VALUEPICTURE_Display) {
         int32_t iSelItemIndex = GetSelectedItem(0);
         if (iSelItemIndex >= 0) {
-          wsValue = GetChoiceListItem(iSelItemIndex, false).value_or(L"");
+          wsValue =
+              GetChoiceListItem(iSelItemIndex, false).value_or(WideString());
           wsPicture.clear();
         }
       }
@@ -4486,7 +4912,7 @@ WideString CXFA_Node::GetValue(XFA_VALUEPICTURE eValueType) {
 
 WideString CXFA_Node::GetNormalizeDataValue(const WideString& wsValue) {
   if (wsValue.IsEmpty())
-    return L"";
+    return WideString();
 
   WideString wsPicture = GetPictureContent(XFA_VALUEPICTURE_DataBind);
   if (wsPicture.IsEmpty())
@@ -4505,7 +4931,7 @@ WideString CXFA_Node::GetNormalizeDataValue(const WideString& wsValue) {
 
 WideString CXFA_Node::GetFormatDataValue(const WideString& wsValue) {
   if (wsValue.IsEmpty())
-    return L"";
+    return WideString();
 
   WideString wsPicture = GetPictureContent(XFA_VALUEPICTURE_DataBind);
   if (wsPicture.IsEmpty())
@@ -4587,7 +5013,7 @@ WideString CXFA_Node::GetFormatDataValue(const WideString& wsValue) {
 
 WideString CXFA_Node::NormalizeNumStr(const WideString& wsValue) {
   if (wsValue.IsEmpty())
-    return L"";
+    return WideString();
 
   WideString wsOutput = wsValue;
   wsOutput.TrimLeft('0');
@@ -4639,9 +5065,9 @@ WideString CXFA_Node::NumericLimit(const WideString& wsValue) {
         iTread_++;
         if (iTread_ > iTread) {
           if (iTread != -1) {
-            CFX_Decimal wsDeci = CFX_Decimal(wsValue.AsStringView());
+            CFGAS_Decimal wsDeci = CFGAS_Decimal(wsValue.AsStringView());
             wsDeci.SetScale(iTread);
-            wsRet = wsDeci;
+            wsRet = wsDeci.ToWideString();
           }
           return wsRet;
         }
@@ -4655,18 +5081,28 @@ WideString CXFA_Node::NumericLimit(const WideString& wsValue) {
   return wsRet;
 }
 
+bool CXFA_Node::IsTransparent() const {
+  XFA_Element type = GetElementType();
+  return type == XFA_Element::SubformSet || type == XFA_Element::Area ||
+         type == XFA_Element::Proto || (IsUnnamed() && IsContainerNode());
+}
+
+bool CXFA_Node::IsProperty() const {
+  CXFA_Node* parent = GetParent();
+  return parent && parent->HasProperty(GetElementType());
+}
+
 bool CXFA_Node::PresenceRequiresSpace() const {
-  XFA_AttributeEnum ePresence = JSObject()
-                                    ->TryEnum(XFA_Attribute::Presence, true)
-                                    .value_or(XFA_AttributeEnum::Visible);
-  return ePresence == XFA_AttributeEnum::Visible ||
-         ePresence == XFA_AttributeEnum::Invisible;
+  auto value = JSObject()->TryEnum(XFA_Attribute::Presence, true);
+  XFA_AttributeValue ePresence = value.value_or(XFA_AttributeValue::Visible);
+  return ePresence == XFA_AttributeValue::Visible ||
+         ePresence == XFA_AttributeValue::Invisible;
 }
 
 void CXFA_Node::SetToXML(const WideString& value) {
   auto* pNode = GetXMLMappingNode();
   switch (pNode->GetType()) {
-    case FX_XMLNODE_Element: {
+    case CFX_XMLNode::Type::kElement: {
       auto* elem = static_cast<CFX_XMLElement*>(pNode);
       if (IsAttributeInXML()) {
         elem->SetAttribute(JSObject()->GetCData(XFA_Attribute::QualifiedName),
@@ -4695,10 +5131,947 @@ void CXFA_Node::SetToXML(const WideString& value) {
       elem->AppendChild(text);
       break;
     }
-    case FX_XMLNODE_Text:
+    case CFX_XMLNode::Type::kText:
       ToXMLText(GetXMLMappingNode())->SetText(value);
       break;
     default:
       NOTREACHED();
   }
+}
+
+CXFA_Node* CXFA_Node::GetTransparentParent() {
+  CXFA_Node* parent = GetParent();
+  while (parent) {
+    XFA_Element type = parent->GetElementType();
+    if (type == XFA_Element::Variables ||
+        (type != XFA_Element::SubformSet && !parent->IsUnnamed())) {
+      return parent;
+    }
+    parent = parent->GetParent();
+  }
+  return nullptr;
+}
+
+// static
+std::unique_ptr<CXFA_Node> CXFA_Node::Create(CXFA_Document* doc,
+                                             XFA_Element element,
+                                             XFA_PacketType packet) {
+  std::unique_ptr<CXFA_Node> node;
+  switch (element) {
+    case XFA_Element::Ps:
+      node = pdfium::MakeUnique<CXFA_Ps>(doc, packet);
+      break;
+    case XFA_Element::To:
+      node = pdfium::MakeUnique<CXFA_To>(doc, packet);
+      break;
+    case XFA_Element::Ui:
+      node = pdfium::MakeUnique<CXFA_Ui>(doc, packet);
+      break;
+    case XFA_Element::RecordSet:
+      node = pdfium::MakeUnique<CXFA_RecordSet>(doc, packet);
+      break;
+    case XFA_Element::SubsetBelow:
+      node = pdfium::MakeUnique<CXFA_SubsetBelow>(doc, packet);
+      break;
+    case XFA_Element::SubformSet:
+      node = pdfium::MakeUnique<CXFA_SubformSet>(doc, packet);
+      break;
+    case XFA_Element::AdobeExtensionLevel:
+      node = pdfium::MakeUnique<CXFA_AdobeExtensionLevel>(doc, packet);
+      break;
+    case XFA_Element::Typeface:
+      node = pdfium::MakeUnique<CXFA_Typeface>(doc, packet);
+      break;
+    case XFA_Element::Break:
+      node = pdfium::MakeUnique<CXFA_Break>(doc, packet);
+      break;
+    case XFA_Element::FontInfo:
+      node = pdfium::MakeUnique<CXFA_FontInfo>(doc, packet);
+      break;
+    case XFA_Element::NumberPattern:
+      node = pdfium::MakeUnique<CXFA_NumberPattern>(doc, packet);
+      break;
+    case XFA_Element::DynamicRender:
+      node = pdfium::MakeUnique<CXFA_DynamicRender>(doc, packet);
+      break;
+    case XFA_Element::PrintScaling:
+      node = pdfium::MakeUnique<CXFA_PrintScaling>(doc, packet);
+      break;
+    case XFA_Element::CheckButton:
+      node = pdfium::MakeUnique<CXFA_CheckButton>(doc, packet);
+      break;
+    case XFA_Element::DatePatterns:
+      node = pdfium::MakeUnique<CXFA_DatePatterns>(doc, packet);
+      break;
+    case XFA_Element::SourceSet:
+      node = pdfium::MakeUnique<CXFA_SourceSet>(doc, packet);
+      break;
+    case XFA_Element::Amd:
+      node = pdfium::MakeUnique<CXFA_Amd>(doc, packet);
+      break;
+    case XFA_Element::Arc:
+      node = pdfium::MakeUnique<CXFA_Arc>(doc, packet);
+      break;
+    case XFA_Element::Day:
+      node = pdfium::MakeUnique<CXFA_Day>(doc, packet);
+      break;
+    case XFA_Element::Era:
+      node = pdfium::MakeUnique<CXFA_Era>(doc, packet);
+      break;
+    case XFA_Element::Jog:
+      node = pdfium::MakeUnique<CXFA_Jog>(doc, packet);
+      break;
+    case XFA_Element::Log:
+      node = pdfium::MakeUnique<CXFA_Log>(doc, packet);
+      break;
+    case XFA_Element::Map:
+      node = pdfium::MakeUnique<CXFA_Map>(doc, packet);
+      break;
+    case XFA_Element::Mdp:
+      node = pdfium::MakeUnique<CXFA_Mdp>(doc, packet);
+      break;
+    case XFA_Element::BreakBefore:
+      node = pdfium::MakeUnique<CXFA_BreakBefore>(doc, packet);
+      break;
+    case XFA_Element::Oid:
+      node = pdfium::MakeUnique<CXFA_Oid>(doc, packet);
+      break;
+    case XFA_Element::Pcl:
+      node = pdfium::MakeUnique<CXFA_Pcl>(doc, packet);
+      break;
+    case XFA_Element::Pdf:
+      node = pdfium::MakeUnique<CXFA_Pdf>(doc, packet);
+      break;
+    case XFA_Element::Ref:
+      node = pdfium::MakeUnique<CXFA_Ref>(doc, packet);
+      break;
+    case XFA_Element::Uri:
+      node = pdfium::MakeUnique<CXFA_Uri>(doc, packet);
+      break;
+    case XFA_Element::Xdc:
+      node = pdfium::MakeUnique<CXFA_Xdc>(doc, packet);
+      break;
+    case XFA_Element::Xdp:
+      node = pdfium::MakeUnique<CXFA_Xdp>(doc, packet);
+      break;
+    case XFA_Element::Xfa:
+      node = pdfium::MakeUnique<CXFA_Xfa>(doc, packet);
+      break;
+    case XFA_Element::Xsl:
+      node = pdfium::MakeUnique<CXFA_Xsl>(doc, packet);
+      break;
+    case XFA_Element::Zpl:
+      node = pdfium::MakeUnique<CXFA_Zpl>(doc, packet);
+      break;
+    case XFA_Element::Cache:
+      node = pdfium::MakeUnique<CXFA_Cache>(doc, packet);
+      break;
+    case XFA_Element::Margin:
+      node = pdfium::MakeUnique<CXFA_Margin>(doc, packet);
+      break;
+    case XFA_Element::KeyUsage:
+      node = pdfium::MakeUnique<CXFA_KeyUsage>(doc, packet);
+      break;
+    case XFA_Element::Exclude:
+      node = pdfium::MakeUnique<CXFA_Exclude>(doc, packet);
+      break;
+    case XFA_Element::ChoiceList:
+      node = pdfium::MakeUnique<CXFA_ChoiceList>(doc, packet);
+      break;
+    case XFA_Element::Level:
+      node = pdfium::MakeUnique<CXFA_Level>(doc, packet);
+      break;
+    case XFA_Element::LabelPrinter:
+      node = pdfium::MakeUnique<CXFA_LabelPrinter>(doc, packet);
+      break;
+    case XFA_Element::CalendarSymbols:
+      node = pdfium::MakeUnique<CXFA_CalendarSymbols>(doc, packet);
+      break;
+    case XFA_Element::Para:
+      node = pdfium::MakeUnique<CXFA_Para>(doc, packet);
+      break;
+    case XFA_Element::Part:
+      node = pdfium::MakeUnique<CXFA_Part>(doc, packet);
+      break;
+    case XFA_Element::Pdfa:
+      node = pdfium::MakeUnique<CXFA_Pdfa>(doc, packet);
+      break;
+    case XFA_Element::Filter:
+      node = pdfium::MakeUnique<CXFA_Filter>(doc, packet);
+      break;
+    case XFA_Element::Present:
+      node = pdfium::MakeUnique<CXFA_Present>(doc, packet);
+      break;
+    case XFA_Element::Pagination:
+      node = pdfium::MakeUnique<CXFA_Pagination>(doc, packet);
+      break;
+    case XFA_Element::Encoding:
+      node = pdfium::MakeUnique<CXFA_Encoding>(doc, packet);
+      break;
+    case XFA_Element::Event:
+      node = pdfium::MakeUnique<CXFA_Event>(doc, packet);
+      break;
+    case XFA_Element::Whitespace:
+      node = pdfium::MakeUnique<CXFA_Whitespace>(doc, packet);
+      break;
+    case XFA_Element::DefaultUi:
+      node = pdfium::MakeUnique<CXFA_DefaultUi>(doc, packet);
+      break;
+    case XFA_Element::DataModel:
+      node = pdfium::MakeUnique<CXFA_DataModel>(doc, packet);
+      break;
+    case XFA_Element::Barcode:
+      node = pdfium::MakeUnique<CXFA_Barcode>(doc, packet);
+      break;
+    case XFA_Element::TimePattern:
+      node = pdfium::MakeUnique<CXFA_TimePattern>(doc, packet);
+      break;
+    case XFA_Element::BatchOutput:
+      node = pdfium::MakeUnique<CXFA_BatchOutput>(doc, packet);
+      break;
+    case XFA_Element::Enforce:
+      node = pdfium::MakeUnique<CXFA_Enforce>(doc, packet);
+      break;
+    case XFA_Element::CurrencySymbols:
+      node = pdfium::MakeUnique<CXFA_CurrencySymbols>(doc, packet);
+      break;
+    case XFA_Element::AddSilentPrint:
+      node = pdfium::MakeUnique<CXFA_AddSilentPrint>(doc, packet);
+      break;
+    case XFA_Element::Rename:
+      node = pdfium::MakeUnique<CXFA_Rename>(doc, packet);
+      break;
+    case XFA_Element::Operation:
+      node = pdfium::MakeUnique<CXFA_Operation>(doc, packet);
+      break;
+    case XFA_Element::Typefaces:
+      node = pdfium::MakeUnique<CXFA_Typefaces>(doc, packet);
+      break;
+    case XFA_Element::SubjectDNs:
+      node = pdfium::MakeUnique<CXFA_SubjectDNs>(doc, packet);
+      break;
+    case XFA_Element::Issuers:
+      node = pdfium::MakeUnique<CXFA_Issuers>(doc, packet);
+      break;
+    case XFA_Element::WsdlConnection:
+      node = pdfium::MakeUnique<CXFA_WsdlConnection>(doc, packet);
+      break;
+    case XFA_Element::Debug:
+      node = pdfium::MakeUnique<CXFA_Debug>(doc, packet);
+      break;
+    case XFA_Element::Delta:
+      node = pdfium::MakeUnique<CXFA_Delta>(doc, packet);
+      break;
+    case XFA_Element::EraNames:
+      node = pdfium::MakeUnique<CXFA_EraNames>(doc, packet);
+      break;
+    case XFA_Element::ModifyAnnots:
+      node = pdfium::MakeUnique<CXFA_ModifyAnnots>(doc, packet);
+      break;
+    case XFA_Element::StartNode:
+      node = pdfium::MakeUnique<CXFA_StartNode>(doc, packet);
+      break;
+    case XFA_Element::Button:
+      node = pdfium::MakeUnique<CXFA_Button>(doc, packet);
+      break;
+    case XFA_Element::Format:
+      node = pdfium::MakeUnique<CXFA_Format>(doc, packet);
+      break;
+    case XFA_Element::Border:
+      node = pdfium::MakeUnique<CXFA_Border>(doc, packet);
+      break;
+    case XFA_Element::Area:
+      node = pdfium::MakeUnique<CXFA_Area>(doc, packet);
+      break;
+    case XFA_Element::Hyphenation:
+      node = pdfium::MakeUnique<CXFA_Hyphenation>(doc, packet);
+      break;
+    case XFA_Element::Text:
+      node = pdfium::MakeUnique<CXFA_Text>(doc, packet);
+      break;
+    case XFA_Element::Time:
+      node = pdfium::MakeUnique<CXFA_Time>(doc, packet);
+      break;
+    case XFA_Element::Type:
+      node = pdfium::MakeUnique<CXFA_Type>(doc, packet);
+      break;
+    case XFA_Element::Overprint:
+      node = pdfium::MakeUnique<CXFA_Overprint>(doc, packet);
+      break;
+    case XFA_Element::Certificates:
+      node = pdfium::MakeUnique<CXFA_Certificates>(doc, packet);
+      break;
+    case XFA_Element::EncryptionMethods:
+      node = pdfium::MakeUnique<CXFA_EncryptionMethods>(doc, packet);
+      break;
+    case XFA_Element::SetProperty:
+      node = pdfium::MakeUnique<CXFA_SetProperty>(doc, packet);
+      break;
+    case XFA_Element::PrinterName:
+      node = pdfium::MakeUnique<CXFA_PrinterName>(doc, packet);
+      break;
+    case XFA_Element::StartPage:
+      node = pdfium::MakeUnique<CXFA_StartPage>(doc, packet);
+      break;
+    case XFA_Element::PageOffset:
+      node = pdfium::MakeUnique<CXFA_PageOffset>(doc, packet);
+      break;
+    case XFA_Element::DateTime:
+      node = pdfium::MakeUnique<CXFA_DateTime>(doc, packet);
+      break;
+    case XFA_Element::Comb:
+      node = pdfium::MakeUnique<CXFA_Comb>(doc, packet);
+      break;
+    case XFA_Element::Pattern:
+      node = pdfium::MakeUnique<CXFA_Pattern>(doc, packet);
+      break;
+    case XFA_Element::IfEmpty:
+      node = pdfium::MakeUnique<CXFA_IfEmpty>(doc, packet);
+      break;
+    case XFA_Element::SuppressBanner:
+      node = pdfium::MakeUnique<CXFA_SuppressBanner>(doc, packet);
+      break;
+    case XFA_Element::OutputBin:
+      node = pdfium::MakeUnique<CXFA_OutputBin>(doc, packet);
+      break;
+    case XFA_Element::Field:
+      node = pdfium::MakeUnique<CXFA_Field>(doc, packet);
+      break;
+    case XFA_Element::Agent:
+      node = pdfium::MakeUnique<CXFA_Agent>(doc, packet);
+      break;
+    case XFA_Element::OutputXSL:
+      node = pdfium::MakeUnique<CXFA_OutputXSL>(doc, packet);
+      break;
+    case XFA_Element::AdjustData:
+      node = pdfium::MakeUnique<CXFA_AdjustData>(doc, packet);
+      break;
+    case XFA_Element::AutoSave:
+      node = pdfium::MakeUnique<CXFA_AutoSave>(doc, packet);
+      break;
+    case XFA_Element::ContentArea:
+      node = pdfium::MakeUnique<CXFA_ContentArea>(doc, packet);
+      break;
+    case XFA_Element::WsdlAddress:
+      node = pdfium::MakeUnique<CXFA_WsdlAddress>(doc, packet);
+      break;
+    case XFA_Element::Solid:
+      node = pdfium::MakeUnique<CXFA_Solid>(doc, packet);
+      break;
+    case XFA_Element::DateTimeSymbols:
+      node = pdfium::MakeUnique<CXFA_DateTimeSymbols>(doc, packet);
+      break;
+    case XFA_Element::EncryptionLevel:
+      node = pdfium::MakeUnique<CXFA_EncryptionLevel>(doc, packet);
+      break;
+    case XFA_Element::Edge:
+      node = pdfium::MakeUnique<CXFA_Edge>(doc, packet);
+      break;
+    case XFA_Element::Stipple:
+      node = pdfium::MakeUnique<CXFA_Stipple>(doc, packet);
+      break;
+    case XFA_Element::Attributes:
+      node = pdfium::MakeUnique<CXFA_Attributes>(doc, packet);
+      break;
+    case XFA_Element::VersionControl:
+      node = pdfium::MakeUnique<CXFA_VersionControl>(doc, packet);
+      break;
+    case XFA_Element::Meridiem:
+      node = pdfium::MakeUnique<CXFA_Meridiem>(doc, packet);
+      break;
+    case XFA_Element::ExclGroup:
+      node = pdfium::MakeUnique<CXFA_ExclGroup>(doc, packet);
+      break;
+    case XFA_Element::ToolTip:
+      node = pdfium::MakeUnique<CXFA_ToolTip>(doc, packet);
+      break;
+    case XFA_Element::Compress:
+      node = pdfium::MakeUnique<CXFA_Compress>(doc, packet);
+      break;
+    case XFA_Element::Reason:
+      node = pdfium::MakeUnique<CXFA_Reason>(doc, packet);
+      break;
+    case XFA_Element::Execute:
+      node = pdfium::MakeUnique<CXFA_Execute>(doc, packet);
+      break;
+    case XFA_Element::ContentCopy:
+      node = pdfium::MakeUnique<CXFA_ContentCopy>(doc, packet);
+      break;
+    case XFA_Element::DateTimeEdit:
+      node = pdfium::MakeUnique<CXFA_DateTimeEdit>(doc, packet);
+      break;
+    case XFA_Element::Config:
+      node = pdfium::MakeUnique<CXFA_Config>(doc, packet);
+      break;
+    case XFA_Element::Image:
+      node = pdfium::MakeUnique<CXFA_Image>(doc, packet);
+      break;
+    case XFA_Element::SharpxHTML:
+      node = pdfium::MakeUnique<CXFA_SharpxHTML>(doc, packet);
+      break;
+    case XFA_Element::NumberOfCopies:
+      node = pdfium::MakeUnique<CXFA_NumberOfCopies>(doc, packet);
+      break;
+    case XFA_Element::BehaviorOverride:
+      node = pdfium::MakeUnique<CXFA_BehaviorOverride>(doc, packet);
+      break;
+    case XFA_Element::TimeStamp:
+      node = pdfium::MakeUnique<CXFA_TimeStamp>(doc, packet);
+      break;
+    case XFA_Element::Month:
+      node = pdfium::MakeUnique<CXFA_Month>(doc, packet);
+      break;
+    case XFA_Element::ViewerPreferences:
+      node = pdfium::MakeUnique<CXFA_ViewerPreferences>(doc, packet);
+      break;
+    case XFA_Element::ScriptModel:
+      node = pdfium::MakeUnique<CXFA_ScriptModel>(doc, packet);
+      break;
+    case XFA_Element::Decimal:
+      node = pdfium::MakeUnique<CXFA_Decimal>(doc, packet);
+      break;
+    case XFA_Element::Subform:
+      node = pdfium::MakeUnique<CXFA_Subform>(doc, packet);
+      break;
+    case XFA_Element::Select:
+      node = pdfium::MakeUnique<CXFA_Select>(doc, packet);
+      break;
+    case XFA_Element::Window:
+      node = pdfium::MakeUnique<CXFA_Window>(doc, packet);
+      break;
+    case XFA_Element::LocaleSet:
+      node = pdfium::MakeUnique<CXFA_LocaleSet>(doc, packet);
+      break;
+    case XFA_Element::Handler:
+      node = pdfium::MakeUnique<CXFA_Handler>(doc, packet);
+      break;
+    case XFA_Element::Presence:
+      node = pdfium::MakeUnique<CXFA_Presence>(doc, packet);
+      break;
+    case XFA_Element::Record:
+      node = pdfium::MakeUnique<CXFA_Record>(doc, packet);
+      break;
+    case XFA_Element::Embed:
+      node = pdfium::MakeUnique<CXFA_Embed>(doc, packet);
+      break;
+    case XFA_Element::Version:
+      node = pdfium::MakeUnique<CXFA_Version>(doc, packet);
+      break;
+    case XFA_Element::Command:
+      node = pdfium::MakeUnique<CXFA_Command>(doc, packet);
+      break;
+    case XFA_Element::Copies:
+      node = pdfium::MakeUnique<CXFA_Copies>(doc, packet);
+      break;
+    case XFA_Element::Staple:
+      node = pdfium::MakeUnique<CXFA_Staple>(doc, packet);
+      break;
+    case XFA_Element::SubmitFormat:
+      node = pdfium::MakeUnique<CXFA_SubmitFormat>(doc, packet);
+      break;
+    case XFA_Element::Boolean:
+      node = pdfium::MakeUnique<CXFA_Boolean>(doc, packet);
+      break;
+    case XFA_Element::Message:
+      node = pdfium::MakeUnique<CXFA_Message>(doc, packet);
+      break;
+    case XFA_Element::Output:
+      node = pdfium::MakeUnique<CXFA_Output>(doc, packet);
+      break;
+    case XFA_Element::PsMap:
+      node = pdfium::MakeUnique<CXFA_PsMap>(doc, packet);
+      break;
+    case XFA_Element::ExcludeNS:
+      node = pdfium::MakeUnique<CXFA_ExcludeNS>(doc, packet);
+      break;
+    case XFA_Element::Assist:
+      node = pdfium::MakeUnique<CXFA_Assist>(doc, packet);
+      break;
+    case XFA_Element::Picture:
+      node = pdfium::MakeUnique<CXFA_Picture>(doc, packet);
+      break;
+    case XFA_Element::Traversal:
+      node = pdfium::MakeUnique<CXFA_Traversal>(doc, packet);
+      break;
+    case XFA_Element::SilentPrint:
+      node = pdfium::MakeUnique<CXFA_SilentPrint>(doc, packet);
+      break;
+    case XFA_Element::WebClient:
+      node = pdfium::MakeUnique<CXFA_WebClient>(doc, packet);
+      break;
+    case XFA_Element::Producer:
+      node = pdfium::MakeUnique<CXFA_Producer>(doc, packet);
+      break;
+    case XFA_Element::Corner:
+      node = pdfium::MakeUnique<CXFA_Corner>(doc, packet);
+      break;
+    case XFA_Element::MsgId:
+      node = pdfium::MakeUnique<CXFA_MsgId>(doc, packet);
+      break;
+    case XFA_Element::Color:
+      node = pdfium::MakeUnique<CXFA_Color>(doc, packet);
+      break;
+    case XFA_Element::Keep:
+      node = pdfium::MakeUnique<CXFA_Keep>(doc, packet);
+      break;
+    case XFA_Element::Query:
+      node = pdfium::MakeUnique<CXFA_Query>(doc, packet);
+      break;
+    case XFA_Element::Insert:
+      node = pdfium::MakeUnique<CXFA_Insert>(doc, packet);
+      break;
+    case XFA_Element::ImageEdit:
+      node = pdfium::MakeUnique<CXFA_ImageEdit>(doc, packet);
+      break;
+    case XFA_Element::Validate:
+      node = pdfium::MakeUnique<CXFA_Validate>(doc, packet);
+      break;
+    case XFA_Element::DigestMethods:
+      node = pdfium::MakeUnique<CXFA_DigestMethods>(doc, packet);
+      break;
+    case XFA_Element::NumberPatterns:
+      node = pdfium::MakeUnique<CXFA_NumberPatterns>(doc, packet);
+      break;
+    case XFA_Element::PageSet:
+      node = pdfium::MakeUnique<CXFA_PageSet>(doc, packet);
+      break;
+    case XFA_Element::Integer:
+      node = pdfium::MakeUnique<CXFA_Integer>(doc, packet);
+      break;
+    case XFA_Element::SoapAddress:
+      node = pdfium::MakeUnique<CXFA_SoapAddress>(doc, packet);
+      break;
+    case XFA_Element::Equate:
+      node = pdfium::MakeUnique<CXFA_Equate>(doc, packet);
+      break;
+    case XFA_Element::FormFieldFilling:
+      node = pdfium::MakeUnique<CXFA_FormFieldFilling>(doc, packet);
+      break;
+    case XFA_Element::PageRange:
+      node = pdfium::MakeUnique<CXFA_PageRange>(doc, packet);
+      break;
+    case XFA_Element::Update:
+      node = pdfium::MakeUnique<CXFA_Update>(doc, packet);
+      break;
+    case XFA_Element::ConnectString:
+      node = pdfium::MakeUnique<CXFA_ConnectString>(doc, packet);
+      break;
+    case XFA_Element::Mode:
+      node = pdfium::MakeUnique<CXFA_Mode>(doc, packet);
+      break;
+    case XFA_Element::Layout:
+      node = pdfium::MakeUnique<CXFA_Layout>(doc, packet);
+      break;
+    case XFA_Element::Sharpxml:
+      node = pdfium::MakeUnique<CXFA_Sharpxml>(doc, packet);
+      break;
+    case XFA_Element::XsdConnection:
+      node = pdfium::MakeUnique<CXFA_XsdConnection>(doc, packet);
+      break;
+    case XFA_Element::Traverse:
+      node = pdfium::MakeUnique<CXFA_Traverse>(doc, packet);
+      break;
+    case XFA_Element::Encodings:
+      node = pdfium::MakeUnique<CXFA_Encodings>(doc, packet);
+      break;
+    case XFA_Element::Template:
+      node = pdfium::MakeUnique<CXFA_Template>(doc, packet);
+      break;
+    case XFA_Element::Acrobat:
+      node = pdfium::MakeUnique<CXFA_Acrobat>(doc, packet);
+      break;
+    case XFA_Element::ValidationMessaging:
+      node = pdfium::MakeUnique<CXFA_ValidationMessaging>(doc, packet);
+      break;
+    case XFA_Element::Signing:
+      node = pdfium::MakeUnique<CXFA_Signing>(doc, packet);
+      break;
+    case XFA_Element::Script:
+      node = pdfium::MakeUnique<CXFA_Script>(doc, packet);
+      break;
+    case XFA_Element::AddViewerPreferences:
+      node = pdfium::MakeUnique<CXFA_AddViewerPreferences>(doc, packet);
+      break;
+    case XFA_Element::AlwaysEmbed:
+      node = pdfium::MakeUnique<CXFA_AlwaysEmbed>(doc, packet);
+      break;
+    case XFA_Element::PasswordEdit:
+      node = pdfium::MakeUnique<CXFA_PasswordEdit>(doc, packet);
+      break;
+    case XFA_Element::NumericEdit:
+      node = pdfium::MakeUnique<CXFA_NumericEdit>(doc, packet);
+      break;
+    case XFA_Element::EncryptionMethod:
+      node = pdfium::MakeUnique<CXFA_EncryptionMethod>(doc, packet);
+      break;
+    case XFA_Element::Change:
+      node = pdfium::MakeUnique<CXFA_Change>(doc, packet);
+      break;
+    case XFA_Element::PageArea:
+      node = pdfium::MakeUnique<CXFA_PageArea>(doc, packet);
+      break;
+    case XFA_Element::SubmitUrl:
+      node = pdfium::MakeUnique<CXFA_SubmitUrl>(doc, packet);
+      break;
+    case XFA_Element::Oids:
+      node = pdfium::MakeUnique<CXFA_Oids>(doc, packet);
+      break;
+    case XFA_Element::Signature:
+      node = pdfium::MakeUnique<CXFA_Signature>(doc, packet);
+      break;
+    case XFA_Element::ADBE_JSConsole:
+      node = pdfium::MakeUnique<CXFA_ADBE_JSConsole>(doc, packet);
+      break;
+    case XFA_Element::Caption:
+      node = pdfium::MakeUnique<CXFA_Caption>(doc, packet);
+      break;
+    case XFA_Element::Relevant:
+      node = pdfium::MakeUnique<CXFA_Relevant>(doc, packet);
+      break;
+    case XFA_Element::FlipLabel:
+      node = pdfium::MakeUnique<CXFA_FlipLabel>(doc, packet);
+      break;
+    case XFA_Element::ExData:
+      node = pdfium::MakeUnique<CXFA_ExData>(doc, packet);
+      break;
+    case XFA_Element::DayNames:
+      node = pdfium::MakeUnique<CXFA_DayNames>(doc, packet);
+      break;
+    case XFA_Element::SoapAction:
+      node = pdfium::MakeUnique<CXFA_SoapAction>(doc, packet);
+      break;
+    case XFA_Element::DefaultTypeface:
+      node = pdfium::MakeUnique<CXFA_DefaultTypeface>(doc, packet);
+      break;
+    case XFA_Element::Manifest:
+      node = pdfium::MakeUnique<CXFA_Manifest>(doc, packet);
+      break;
+    case XFA_Element::Overflow:
+      node = pdfium::MakeUnique<CXFA_Overflow>(doc, packet);
+      break;
+    case XFA_Element::Linear:
+      node = pdfium::MakeUnique<CXFA_Linear>(doc, packet);
+      break;
+    case XFA_Element::CurrencySymbol:
+      node = pdfium::MakeUnique<CXFA_CurrencySymbol>(doc, packet);
+      break;
+    case XFA_Element::Delete:
+      node = pdfium::MakeUnique<CXFA_Delete>(doc, packet);
+      break;
+    case XFA_Element::DigestMethod:
+      node = pdfium::MakeUnique<CXFA_DigestMethod>(doc, packet);
+      break;
+    case XFA_Element::InstanceManager:
+      node = pdfium::MakeUnique<CXFA_InstanceManager>(doc, packet);
+      break;
+    case XFA_Element::EquateRange:
+      node = pdfium::MakeUnique<CXFA_EquateRange>(doc, packet);
+      break;
+    case XFA_Element::Medium:
+      node = pdfium::MakeUnique<CXFA_Medium>(doc, packet);
+      break;
+    case XFA_Element::TextEdit:
+      node = pdfium::MakeUnique<CXFA_TextEdit>(doc, packet);
+      break;
+    case XFA_Element::TemplateCache:
+      node = pdfium::MakeUnique<CXFA_TemplateCache>(doc, packet);
+      break;
+    case XFA_Element::CompressObjectStream:
+      node = pdfium::MakeUnique<CXFA_CompressObjectStream>(doc, packet);
+      break;
+    case XFA_Element::DataValue:
+      node = pdfium::MakeUnique<CXFA_DataValue>(doc, packet);
+      break;
+    case XFA_Element::AccessibleContent:
+      node = pdfium::MakeUnique<CXFA_AccessibleContent>(doc, packet);
+      break;
+    case XFA_Element::IncludeXDPContent:
+      node = pdfium::MakeUnique<CXFA_IncludeXDPContent>(doc, packet);
+      break;
+    case XFA_Element::XmlConnection:
+      node = pdfium::MakeUnique<CXFA_XmlConnection>(doc, packet);
+      break;
+    case XFA_Element::ValidateApprovalSignatures:
+      node = pdfium::MakeUnique<CXFA_ValidateApprovalSignatures>(doc, packet);
+      break;
+    case XFA_Element::SignData:
+      node = pdfium::MakeUnique<CXFA_SignData>(doc, packet);
+      break;
+    case XFA_Element::Packets:
+      node = pdfium::MakeUnique<CXFA_Packets>(doc, packet);
+      break;
+    case XFA_Element::DatePattern:
+      node = pdfium::MakeUnique<CXFA_DatePattern>(doc, packet);
+      break;
+    case XFA_Element::DuplexOption:
+      node = pdfium::MakeUnique<CXFA_DuplexOption>(doc, packet);
+      break;
+    case XFA_Element::Base:
+      node = pdfium::MakeUnique<CXFA_Base>(doc, packet);
+      break;
+    case XFA_Element::Bind:
+      node = pdfium::MakeUnique<CXFA_Bind>(doc, packet);
+      break;
+    case XFA_Element::Compression:
+      node = pdfium::MakeUnique<CXFA_Compression>(doc, packet);
+      break;
+    case XFA_Element::User:
+      node = pdfium::MakeUnique<CXFA_User>(doc, packet);
+      break;
+    case XFA_Element::Rectangle:
+      node = pdfium::MakeUnique<CXFA_Rectangle>(doc, packet);
+      break;
+    case XFA_Element::EffectiveOutputPolicy:
+      node = pdfium::MakeUnique<CXFA_EffectiveOutputPolicy>(doc, packet);
+      break;
+    case XFA_Element::ADBE_JSDebugger:
+      node = pdfium::MakeUnique<CXFA_ADBE_JSDebugger>(doc, packet);
+      break;
+    case XFA_Element::Acrobat7:
+      node = pdfium::MakeUnique<CXFA_Acrobat7>(doc, packet);
+      break;
+    case XFA_Element::Interactive:
+      node = pdfium::MakeUnique<CXFA_Interactive>(doc, packet);
+      break;
+    case XFA_Element::Locale:
+      node = pdfium::MakeUnique<CXFA_Locale>(doc, packet);
+      break;
+    case XFA_Element::CurrentPage:
+      node = pdfium::MakeUnique<CXFA_CurrentPage>(doc, packet);
+      break;
+    case XFA_Element::Data:
+      node = pdfium::MakeUnique<CXFA_Data>(doc, packet);
+      break;
+    case XFA_Element::Date:
+      node = pdfium::MakeUnique<CXFA_Date>(doc, packet);
+      break;
+    case XFA_Element::Desc:
+      node = pdfium::MakeUnique<CXFA_Desc>(doc, packet);
+      break;
+    case XFA_Element::Encrypt:
+      node = pdfium::MakeUnique<CXFA_Encrypt>(doc, packet);
+      break;
+    case XFA_Element::Draw:
+      node = pdfium::MakeUnique<CXFA_Draw>(doc, packet);
+      break;
+    case XFA_Element::Encryption:
+      node = pdfium::MakeUnique<CXFA_Encryption>(doc, packet);
+      break;
+    case XFA_Element::MeridiemNames:
+      node = pdfium::MakeUnique<CXFA_MeridiemNames>(doc, packet);
+      break;
+    case XFA_Element::Messaging:
+      node = pdfium::MakeUnique<CXFA_Messaging>(doc, packet);
+      break;
+    case XFA_Element::Speak:
+      node = pdfium::MakeUnique<CXFA_Speak>(doc, packet);
+      break;
+    case XFA_Element::DataGroup:
+      node = pdfium::MakeUnique<CXFA_DataGroup>(doc, packet);
+      break;
+    case XFA_Element::Common:
+      node = pdfium::MakeUnique<CXFA_Common>(doc, packet);
+      break;
+    case XFA_Element::Sharptext:
+      node = pdfium::MakeUnique<CXFA_Sharptext>(doc, packet);
+      break;
+    case XFA_Element::PaginationOverride:
+      node = pdfium::MakeUnique<CXFA_PaginationOverride>(doc, packet);
+      break;
+    case XFA_Element::Reasons:
+      node = pdfium::MakeUnique<CXFA_Reasons>(doc, packet);
+      break;
+    case XFA_Element::SignatureProperties:
+      node = pdfium::MakeUnique<CXFA_SignatureProperties>(doc, packet);
+      break;
+    case XFA_Element::Threshold:
+      node = pdfium::MakeUnique<CXFA_Threshold>(doc, packet);
+      break;
+    case XFA_Element::AppearanceFilter:
+      node = pdfium::MakeUnique<CXFA_AppearanceFilter>(doc, packet);
+      break;
+    case XFA_Element::Fill:
+      node = pdfium::MakeUnique<CXFA_Fill>(doc, packet);
+      break;
+    case XFA_Element::Font:
+      node = pdfium::MakeUnique<CXFA_Font>(doc, packet);
+      break;
+    case XFA_Element::Form:
+      node = pdfium::MakeUnique<CXFA_Form>(doc, packet);
+      break;
+    case XFA_Element::MediumInfo:
+      node = pdfium::MakeUnique<CXFA_MediumInfo>(doc, packet);
+      break;
+    case XFA_Element::Certificate:
+      node = pdfium::MakeUnique<CXFA_Certificate>(doc, packet);
+      break;
+    case XFA_Element::Password:
+      node = pdfium::MakeUnique<CXFA_Password>(doc, packet);
+      break;
+    case XFA_Element::RunScripts:
+      node = pdfium::MakeUnique<CXFA_RunScripts>(doc, packet);
+      break;
+    case XFA_Element::Trace:
+      node = pdfium::MakeUnique<CXFA_Trace>(doc, packet);
+      break;
+    case XFA_Element::Float:
+      node = pdfium::MakeUnique<CXFA_Float>(doc, packet);
+      break;
+    case XFA_Element::RenderPolicy:
+      node = pdfium::MakeUnique<CXFA_RenderPolicy>(doc, packet);
+      break;
+    case XFA_Element::Destination:
+      node = pdfium::MakeUnique<CXFA_Destination>(doc, packet);
+      break;
+    case XFA_Element::Value:
+      node = pdfium::MakeUnique<CXFA_Value>(doc, packet);
+      break;
+    case XFA_Element::Bookend:
+      node = pdfium::MakeUnique<CXFA_Bookend>(doc, packet);
+      break;
+    case XFA_Element::ExObject:
+      node = pdfium::MakeUnique<CXFA_ExObject>(doc, packet);
+      break;
+    case XFA_Element::OpenAction:
+      node = pdfium::MakeUnique<CXFA_OpenAction>(doc, packet);
+      break;
+    case XFA_Element::NeverEmbed:
+      node = pdfium::MakeUnique<CXFA_NeverEmbed>(doc, packet);
+      break;
+    case XFA_Element::BindItems:
+      node = pdfium::MakeUnique<CXFA_BindItems>(doc, packet);
+      break;
+    case XFA_Element::Calculate:
+      node = pdfium::MakeUnique<CXFA_Calculate>(doc, packet);
+      break;
+    case XFA_Element::Print:
+      node = pdfium::MakeUnique<CXFA_Print>(doc, packet);
+      break;
+    case XFA_Element::Extras:
+      node = pdfium::MakeUnique<CXFA_Extras>(doc, packet);
+      break;
+    case XFA_Element::Proto:
+      node = pdfium::MakeUnique<CXFA_Proto>(doc, packet);
+      break;
+    case XFA_Element::DSigData:
+      node = pdfium::MakeUnique<CXFA_DSigData>(doc, packet);
+      break;
+    case XFA_Element::Creator:
+      node = pdfium::MakeUnique<CXFA_Creator>(doc, packet);
+      break;
+    case XFA_Element::Connect:
+      node = pdfium::MakeUnique<CXFA_Connect>(doc, packet);
+      break;
+    case XFA_Element::Permissions:
+      node = pdfium::MakeUnique<CXFA_Permissions>(doc, packet);
+      break;
+    case XFA_Element::ConnectionSet:
+      node = pdfium::MakeUnique<CXFA_ConnectionSet>(doc, packet);
+      break;
+    case XFA_Element::Submit:
+      node = pdfium::MakeUnique<CXFA_Submit>(doc, packet);
+      break;
+    case XFA_Element::Range:
+      node = pdfium::MakeUnique<CXFA_Range>(doc, packet);
+      break;
+    case XFA_Element::Linearized:
+      node = pdfium::MakeUnique<CXFA_Linearized>(doc, packet);
+      break;
+    case XFA_Element::Packet:
+      node = pdfium::MakeUnique<CXFA_Packet>(doc, packet);
+      break;
+    case XFA_Element::RootElement:
+      node = pdfium::MakeUnique<CXFA_RootElement>(doc, packet);
+      break;
+    case XFA_Element::PlaintextMetadata:
+      node = pdfium::MakeUnique<CXFA_PlaintextMetadata>(doc, packet);
+      break;
+    case XFA_Element::NumberSymbols:
+      node = pdfium::MakeUnique<CXFA_NumberSymbols>(doc, packet);
+      break;
+    case XFA_Element::PrintHighQuality:
+      node = pdfium::MakeUnique<CXFA_PrintHighQuality>(doc, packet);
+      break;
+    case XFA_Element::Driver:
+      node = pdfium::MakeUnique<CXFA_Driver>(doc, packet);
+      break;
+    case XFA_Element::IncrementalLoad:
+      node = pdfium::MakeUnique<CXFA_IncrementalLoad>(doc, packet);
+      break;
+    case XFA_Element::SubjectDN:
+      node = pdfium::MakeUnique<CXFA_SubjectDN>(doc, packet);
+      break;
+    case XFA_Element::CompressLogicalStructure:
+      node = pdfium::MakeUnique<CXFA_CompressLogicalStructure>(doc, packet);
+      break;
+    case XFA_Element::IncrementalMerge:
+      node = pdfium::MakeUnique<CXFA_IncrementalMerge>(doc, packet);
+      break;
+    case XFA_Element::Radial:
+      node = pdfium::MakeUnique<CXFA_Radial>(doc, packet);
+      break;
+    case XFA_Element::Variables:
+      node = pdfium::MakeUnique<CXFA_Variables>(doc, packet);
+      break;
+    case XFA_Element::TimePatterns:
+      node = pdfium::MakeUnique<CXFA_TimePatterns>(doc, packet);
+      break;
+    case XFA_Element::EffectiveInputPolicy:
+      node = pdfium::MakeUnique<CXFA_EffectiveInputPolicy>(doc, packet);
+      break;
+    case XFA_Element::NameAttr:
+      node = pdfium::MakeUnique<CXFA_NameAttr>(doc, packet);
+      break;
+    case XFA_Element::Conformance:
+      node = pdfium::MakeUnique<CXFA_Conformance>(doc, packet);
+      break;
+    case XFA_Element::Transform:
+      node = pdfium::MakeUnique<CXFA_Transform>(doc, packet);
+      break;
+    case XFA_Element::LockDocument:
+      node = pdfium::MakeUnique<CXFA_LockDocument>(doc, packet);
+      break;
+    case XFA_Element::BreakAfter:
+      node = pdfium::MakeUnique<CXFA_BreakAfter>(doc, packet);
+      break;
+    case XFA_Element::Line:
+      node = pdfium::MakeUnique<CXFA_Line>(doc, packet);
+      break;
+    case XFA_Element::Source:
+      node = pdfium::MakeUnique<CXFA_Source>(doc, packet);
+      break;
+    case XFA_Element::Occur:
+      node = pdfium::MakeUnique<CXFA_Occur>(doc, packet);
+      break;
+    case XFA_Element::PickTrayByPDFSize:
+      node = pdfium::MakeUnique<CXFA_PickTrayByPDFSize>(doc, packet);
+      break;
+    case XFA_Element::MonthNames:
+      node = pdfium::MakeUnique<CXFA_MonthNames>(doc, packet);
+      break;
+    case XFA_Element::Severity:
+      node = pdfium::MakeUnique<CXFA_Severity>(doc, packet);
+      break;
+    case XFA_Element::GroupParent:
+      node = pdfium::MakeUnique<CXFA_GroupParent>(doc, packet);
+      break;
+    case XFA_Element::DocumentAssembly:
+      node = pdfium::MakeUnique<CXFA_DocumentAssembly>(doc, packet);
+      break;
+    case XFA_Element::NumberSymbol:
+      node = pdfium::MakeUnique<CXFA_NumberSymbol>(doc, packet);
+      break;
+    case XFA_Element::Tagged:
+      node = pdfium::MakeUnique<CXFA_Tagged>(doc, packet);
+      break;
+    case XFA_Element::Items:
+      node = pdfium::MakeUnique<CXFA_Items>(doc, packet);
+      break;
+    default:
+      NOTREACHED();
+      return nullptr;
+  }
+  if (!node || !node->IsValidInPacket(packet))
+    return nullptr;
+  return node;
 }

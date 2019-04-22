@@ -6,10 +6,12 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/threading/platform_thread.h"
+#include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "device/gamepad/gamepad_data_fetcher.h"
 #include "device/gamepad/gamepad_test_helpers.h"
@@ -44,7 +46,8 @@ class GamepadProviderTest : public testing::Test, public GamepadTestHelper {
   GamepadProvider* CreateProvider(const Gamepads& test_data) {
     mock_data_fetcher_ = new MockGamepadDataFetcher(test_data);
     provider_.reset(new GamepadProvider(
-        nullptr, std::unique_ptr<GamepadDataFetcher>(mock_data_fetcher_)));
+        nullptr, std::unique_ptr<GamepadDataFetcher>(mock_data_fetcher_),
+        std::unique_ptr<base::Thread>()));
     return provider_.get();
   }
 

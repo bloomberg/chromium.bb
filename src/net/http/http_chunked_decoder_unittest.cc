@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/format_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "net/base/net_errors.h"
 #include "net/test/gtest_util.h"
@@ -70,14 +71,14 @@ TEST(HttpChunkedDecoderTest, Basic) {
   const char* const inputs[] = {
     "B\r\nhello hello\r\n0\r\n\r\n"
   };
-  RunTest(inputs, arraysize(inputs), "hello hello", true, 0);
+  RunTest(inputs, base::size(inputs), "hello hello", true, 0);
 }
 
 TEST(HttpChunkedDecoderTest, OneChunk) {
   const char* const inputs[] = {
     "5\r\nhello\r\n"
   };
-  RunTest(inputs, arraysize(inputs), "hello", false, 0);
+  RunTest(inputs, base::size(inputs), "hello", false, 0);
 }
 
 TEST(HttpChunkedDecoderTest, Typical) {
@@ -87,7 +88,7 @@ TEST(HttpChunkedDecoderTest, Typical) {
     "5\r\nworld\r\n",
     "0\r\n\r\n"
   };
-  RunTest(inputs, arraysize(inputs), "hello world", true, 0);
+  RunTest(inputs, base::size(inputs), "hello world", true, 0);
 }
 
 TEST(HttpChunkedDecoderTest, Incremental) {
@@ -104,7 +105,7 @@ TEST(HttpChunkedDecoderTest, Incremental) {
     "\r",
     "\n"
   };
-  RunTest(inputs, arraysize(inputs), "hello", true, 0);
+  RunTest(inputs, base::size(inputs), "hello", true, 0);
 }
 
 // Same as above, but group carriage returns with previous input.
@@ -118,7 +119,7 @@ TEST(HttpChunkedDecoderTest, Incremental2) {
     "\n\r",
     "\n"
   };
-  RunTest(inputs, arraysize(inputs), "hello", true, 0);
+  RunTest(inputs, base::size(inputs), "hello", true, 0);
 }
 
 TEST(HttpChunkedDecoderTest, LF_InsteadOf_CRLF) {
@@ -131,7 +132,7 @@ TEST(HttpChunkedDecoderTest, LF_InsteadOf_CRLF) {
     "5\nworld\n",
     "0\n\n"
   };
-  RunTest(inputs, arraysize(inputs), "hello world", true, 0);
+  RunTest(inputs, base::size(inputs), "hello world", true, 0);
 }
 
 TEST(HttpChunkedDecoderTest, Extensions) {
@@ -139,7 +140,7 @@ TEST(HttpChunkedDecoderTest, Extensions) {
     "5;x=0\r\nhello\r\n",
     "0;y=\"2 \"\r\n\r\n"
   };
-  RunTest(inputs, arraysize(inputs), "hello", true, 0);
+  RunTest(inputs, base::size(inputs), "hello", true, 0);
 }
 
 TEST(HttpChunkedDecoderTest, Trailers) {
@@ -150,7 +151,7 @@ TEST(HttpChunkedDecoderTest, Trailers) {
     "Bar: 2\r\n",
     "\r\n"
   };
-  RunTest(inputs, arraysize(inputs), "hello", true, 0);
+  RunTest(inputs, base::size(inputs), "hello", true, 0);
 }
 
 TEST(HttpChunkedDecoderTest, TrailersUnfinished) {
@@ -159,7 +160,7 @@ TEST(HttpChunkedDecoderTest, TrailersUnfinished) {
     "0\r\n",
     "Foo: 1\r\n"
   };
-  RunTest(inputs, arraysize(inputs), "hello", false, 0);
+  RunTest(inputs, base::size(inputs), "hello", false, 0);
 }
 
 TEST(HttpChunkedDecoderTest, InvalidChunkSize_TooBig) {
@@ -170,7 +171,7 @@ TEST(HttpChunkedDecoderTest, InvalidChunkSize_TooBig) {
     "48469410265455838241\r\nhello\r\n",
     "0\r\n\r\n"
   };
-  RunTestUntilFailure(inputs, arraysize(inputs), 0);
+  RunTestUntilFailure(inputs, base::size(inputs), 0);
 }
 
 TEST(HttpChunkedDecoderTest, InvalidChunkSize_0X) {
@@ -181,7 +182,7 @@ TEST(HttpChunkedDecoderTest, InvalidChunkSize_0X) {
     "0x5\r\nhello\r\n",
     "0\r\n\r\n"
   };
-  RunTestUntilFailure(inputs, arraysize(inputs), 0);
+  RunTestUntilFailure(inputs, base::size(inputs), 0);
 }
 
 TEST(HttpChunkedDecoderTest, ChunkSize_TrailingSpace) {
@@ -193,7 +194,7 @@ TEST(HttpChunkedDecoderTest, ChunkSize_TrailingSpace) {
     "5      \r\nhello\r\n",
     "0\r\n\r\n"
   };
-  RunTest(inputs, arraysize(inputs), "hello", true, 0);
+  RunTest(inputs, base::size(inputs), "hello", true, 0);
 }
 
 TEST(HttpChunkedDecoderTest, InvalidChunkSize_TrailingTab) {
@@ -203,7 +204,7 @@ TEST(HttpChunkedDecoderTest, InvalidChunkSize_TrailingTab) {
     "5\t\r\nhello\r\n",
     "0\r\n\r\n"
   };
-  RunTestUntilFailure(inputs, arraysize(inputs), 0);
+  RunTestUntilFailure(inputs, base::size(inputs), 0);
 }
 
 TEST(HttpChunkedDecoderTest, InvalidChunkSize_TrailingFormFeed) {
@@ -214,7 +215,7 @@ TEST(HttpChunkedDecoderTest, InvalidChunkSize_TrailingFormFeed) {
     "5\f\r\nhello\r\n",
     "0\r\n\r\n"
   };
-  RunTestUntilFailure(inputs, arraysize(inputs), 0);
+  RunTestUntilFailure(inputs, base::size(inputs), 0);
 }
 
 TEST(HttpChunkedDecoderTest, InvalidChunkSize_TrailingVerticalTab) {
@@ -225,7 +226,7 @@ TEST(HttpChunkedDecoderTest, InvalidChunkSize_TrailingVerticalTab) {
     "5\v\r\nhello\r\n",
     "0\r\n\r\n"
   };
-  RunTestUntilFailure(inputs, arraysize(inputs), 0);
+  RunTestUntilFailure(inputs, base::size(inputs), 0);
 }
 
 TEST(HttpChunkedDecoderTest, InvalidChunkSize_TrailingNonHexDigit) {
@@ -236,7 +237,7 @@ TEST(HttpChunkedDecoderTest, InvalidChunkSize_TrailingNonHexDigit) {
     "5H\r\nhello\r\n",
     "0\r\n\r\n"
   };
-  RunTestUntilFailure(inputs, arraysize(inputs), 0);
+  RunTestUntilFailure(inputs, base::size(inputs), 0);
 }
 
 TEST(HttpChunkedDecoderTest, InvalidChunkSize_LeadingSpace) {
@@ -247,7 +248,7 @@ TEST(HttpChunkedDecoderTest, InvalidChunkSize_LeadingSpace) {
     " 5\r\nhello\r\n",
     "0\r\n\r\n"
   };
-  RunTestUntilFailure(inputs, arraysize(inputs), 0);
+  RunTestUntilFailure(inputs, base::size(inputs), 0);
 }
 
 TEST(HttpChunkedDecoderTest, InvalidLeadingSeparator) {
@@ -255,7 +256,7 @@ TEST(HttpChunkedDecoderTest, InvalidLeadingSeparator) {
     "\r\n5\r\nhello\r\n",
     "0\r\n\r\n"
   };
-  RunTestUntilFailure(inputs, arraysize(inputs), 0);
+  RunTestUntilFailure(inputs, base::size(inputs), 0);
 }
 
 TEST(HttpChunkedDecoderTest, InvalidChunkSize_NoSeparator) {
@@ -264,7 +265,7 @@ TEST(HttpChunkedDecoderTest, InvalidChunkSize_NoSeparator) {
     "1\r\n \r\n",
     "0\r\n\r\n"
   };
-  RunTestUntilFailure(inputs, arraysize(inputs), 1);
+  RunTestUntilFailure(inputs, base::size(inputs), 1);
 }
 
 TEST(HttpChunkedDecoderTest, InvalidChunkSize_Negative) {
@@ -272,7 +273,7 @@ TEST(HttpChunkedDecoderTest, InvalidChunkSize_Negative) {
     "8\r\n12345678\r\n-5\r\nhello\r\n",
     "0\r\n\r\n"
   };
-  RunTestUntilFailure(inputs, arraysize(inputs), 0);
+  RunTestUntilFailure(inputs, base::size(inputs), 0);
 }
 
 TEST(HttpChunkedDecoderTest, InvalidChunkSize_Plus) {
@@ -283,7 +284,7 @@ TEST(HttpChunkedDecoderTest, InvalidChunkSize_Plus) {
     "+5\r\nhello\r\n",
     "0\r\n\r\n"
   };
-  RunTestUntilFailure(inputs, arraysize(inputs), 0);
+  RunTestUntilFailure(inputs, base::size(inputs), 0);
 }
 
 TEST(HttpChunkedDecoderTest, InvalidConsecutiveCRLFs) {
@@ -292,7 +293,7 @@ TEST(HttpChunkedDecoderTest, InvalidConsecutiveCRLFs) {
     "\r\n\r\n\r\n\r\n",
     "0\r\n\r\n"
   };
-  RunTestUntilFailure(inputs, arraysize(inputs), 1);
+  RunTestUntilFailure(inputs, base::size(inputs), 1);
 }
 
 TEST(HttpChunkedDecoderTest, ReallyBigChunks) {
@@ -339,7 +340,7 @@ TEST(HttpChunkedDecoderTest, ReallyBigChunks) {
 
     // Chunk terminator and the final chunk.
     char final_chunk[] = "\r\n0\r\n\r\n";
-    EXPECT_EQ(OK, decoder.FilterBuf(final_chunk, arraysize(final_chunk)));
+    EXPECT_EQ(OK, decoder.FilterBuf(final_chunk, base::size(final_chunk)));
     EXPECT_TRUE(decoder.reached_eof());
 
     // Since |data| never included any chunk headers, it should not have been
@@ -353,20 +354,20 @@ TEST(HttpChunkedDecoderTest, ReallyBigChunks) {
 TEST(HttpChunkedDecoderTest, ExcessiveChunkLen) {
   // Smallest number that can't be represented as a signed int64.
   const char* const inputs[] = {"8000000000000000\r\nhello\r\n"};
-  RunTestUntilFailure(inputs, arraysize(inputs), 0);
+  RunTestUntilFailure(inputs, base::size(inputs), 0);
 }
 
 TEST(HttpChunkedDecoderTest, ExcessiveChunkLen2) {
   // Smallest number that can't be represented as an unsigned int64.
   const char* const inputs[] = {"10000000000000000\r\nhello\r\n"};
-  RunTestUntilFailure(inputs, arraysize(inputs), 0);
+  RunTestUntilFailure(inputs, base::size(inputs), 0);
 }
 
 TEST(HttpChunkedDecoderTest, BasicExtraData) {
   const char* const inputs[] = {
     "5\r\nhello\r\n0\r\n\r\nextra bytes"
   };
-  RunTest(inputs, arraysize(inputs), "hello", true, 11);
+  RunTest(inputs, base::size(inputs), "hello", true, 11);
 }
 
 TEST(HttpChunkedDecoderTest, IncrementalExtraData) {
@@ -383,7 +384,7 @@ TEST(HttpChunkedDecoderTest, IncrementalExtraData) {
     "\r",
     "\nextra bytes"
   };
-  RunTest(inputs, arraysize(inputs), "hello", true, 11);
+  RunTest(inputs, base::size(inputs), "hello", true, 11);
 }
 
 TEST(HttpChunkedDecoderTest, MultipleExtraDataBlocks) {
@@ -391,7 +392,7 @@ TEST(HttpChunkedDecoderTest, MultipleExtraDataBlocks) {
     "5\r\nhello\r\n0\r\n\r\nextra",
     " bytes"
   };
-  RunTest(inputs, arraysize(inputs), "hello", true, 11);
+  RunTest(inputs, base::size(inputs), "hello", true, 11);
 }
 
 // Test when the line with the chunk length is too long.
@@ -404,7 +405,7 @@ TEST(HttpChunkedDecoderTest, LongChunkLengthLine) {
     big_chunk.get(),
     "5"
   };
-  RunTestUntilFailure(inputs, arraysize(inputs), 1);
+  RunTestUntilFailure(inputs, base::size(inputs), 1);
 }
 
 // Test when the extension portion of the line with the chunk length is too
@@ -418,7 +419,7 @@ TEST(HttpChunkedDecoderTest, LongLengthLengthLine) {
     "5;",
     big_chunk.get()
   };
-  RunTestUntilFailure(inputs, arraysize(inputs), 1);
+  RunTestUntilFailure(inputs, base::size(inputs), 1);
 }
 
 }  // namespace

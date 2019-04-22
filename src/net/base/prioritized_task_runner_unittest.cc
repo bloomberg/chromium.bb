@@ -8,6 +8,7 @@
 #include <limits>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/rand_util.h"
@@ -357,7 +358,7 @@ TEST_F(PrioritizedTaskRunnerTest, OrderSamePriorityByPostOrder) {
     prioritized_task_runner->PostTaskAndReply(
         FROM_HERE,
         base::BindOnce(&PrioritizedTaskRunnerTest::PushName,
-                       base::Unretained(this), base::IntToString(id)),
+                       base::Unretained(this), base::NumberToString(id)),
         base::BindOnce(base::DoNothing::Once()), priority);
   }
   ReleaseTaskRunner();

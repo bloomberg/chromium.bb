@@ -30,7 +30,7 @@ void LocalSyncPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
     base::FilePath::StringType expanded_value =
         policy::path_parser::ExpandPathVariables(string_value);
     prefs->SetValue(syncer::prefs::kLocalSyncBackendDir,
-                    std::make_unique<base::Value>(expanded_value));
+                    base::Value(expanded_value));
   }
 }
 

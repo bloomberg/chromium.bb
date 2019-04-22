@@ -10,7 +10,7 @@
 #include <string>
 
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/ui/libgtkui/gtk_util.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -279,7 +279,7 @@ void GtkKeyBindingsHandler::DeleteFromCursor(GtkTextView* text_view,
   if (count < 0)
     count = -count;
   for (; count > 0; --count) {
-    for (size_t i = 0; i < arraysize(commands); ++i)
+    for (size_t i = 0; i < base::size(commands); ++i)
       if (commands[i] != TextEditCommand::INVALID_COMMAND)
         owner->EditCommandMatched(commands[i], std::string());
   }

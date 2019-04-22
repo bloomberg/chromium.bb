@@ -4,11 +4,19 @@
 
 #include "ui/gl/gl_image.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/scoped_hardware_buffer_fence_sync.h"
+#endif
+
 namespace gl {
 
 bool GLImage::BindTexImageWithInternalformat(unsigned target,
                                              unsigned internalformat) {
   return false;
+}
+
+void GLImage::SetColorSpace(const gfx::ColorSpace& color_space) {
+  color_space_ = color_space;
 }
 
 bool GLImage::EmulatingRGB() const {
@@ -20,19 +28,9 @@ GLImage::Type GLImage::GetType() const {
 }
 
 #if defined(OS_ANDROID)
-std::unique_ptr<GLImage::ScopedHardwareBuffer> GLImage::GetAHardwareBuffer() {
+std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
+GLImage::GetAHardwareBuffer() {
   return nullptr;
-}
-
-GLImage::ScopedHardwareBuffer::ScopedHardwareBuffer(
-    base::android::ScopedHardwareBufferHandle handle,
-    base::ScopedFD fence_fd)
-    : handle_(std::move(handle)), fence_fd_(std::move(fence_fd)) {}
-
-GLImage::ScopedHardwareBuffer::~ScopedHardwareBuffer() = default;
-
-base::ScopedFD GLImage::ScopedHardwareBuffer::TakeFence() {
-  return std::move(fence_fd_);
 }
 #endif
 

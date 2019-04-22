@@ -101,17 +101,32 @@ test_aat_get_feature_selectors (void)
   g_assert_cmpuint (0, ==, count);
 }
 
+static void
+test_aat_has (void)
+{
+  hb_face_t *morx = hb_test_open_font_file ("fonts/aat-morx.ttf");
+  hb_face_t *trak;
+  g_assert (hb_aat_layout_has_substitution (morx));
+  hb_face_destroy (morx);
+
+  trak = hb_test_open_font_file ("fonts/aat-trak.ttf");
+  g_assert (hb_aat_layout_has_tracking (trak));
+  hb_face_destroy (trak);
+}
+
 int
 main (int argc, char **argv)
 {
+  unsigned int status;
   hb_test_init (&argc, &argv);
 
   hb_test_add (test_aat_get_feature_types);
   hb_test_add (test_aat_get_feature_selectors);
+  hb_test_add (test_aat_has);
 
   face = hb_test_open_font_file ("fonts/aat-feat.ttf");
   sbix = hb_test_open_font_file ("fonts/chromacheck-sbix.ttf");
-  unsigned int status = hb_test_run ();
+  status = hb_test_run ();
   hb_face_destroy (sbix);
   hb_face_destroy (face);
   return status;

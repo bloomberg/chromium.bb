@@ -6,6 +6,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
+#include "base/bind.h"
 #include "build/build_config.h"
 #include "content/browser/android/java/gin_java_bound_object_delegate.h"
 #include "content/browser/android/java/gin_java_bridge_message_filter.h"
@@ -77,11 +78,6 @@ void GinJavaBridgeDispatcherHost::WebContentsDestroyed() {
       GinJavaBridgeMessageFilter::FromHost(this, false);
   if (filter)
     filter->RemoveHost(this);
-}
-
-void GinJavaBridgeDispatcherHost::RenderProcessGone(
-    base::TerminationStatus status) {
-  GinJavaBridgeMessageFilter::RemoveFilter(this);
 }
 
 void GinJavaBridgeDispatcherHost::RenderViewHostChanged(
@@ -246,7 +242,7 @@ void GinJavaBridgeDispatcherHost::SetAllowObjectContentsInspection(bool allow) {
   if (!JavaBridgeThread::CurrentlyOn()) {
     JavaBridgeThread::GetTaskRunner()->PostTask(
         FROM_HERE,
-        base::Bind(
+        base::BindOnce(
             &GinJavaBridgeDispatcherHost::SetAllowObjectContentsInspection,
             this, allow));
     return;

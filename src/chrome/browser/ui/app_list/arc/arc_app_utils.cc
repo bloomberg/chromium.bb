@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/json/json_writer.h"
 #include "base/metrics/histogram_macros.h"
@@ -13,6 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -28,12 +30,12 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/shelf_spinner_controller.h"
 #include "chrome/common/pref_names.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/common/intent_helper.mojom.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
+#include "components/arc/session/arc_bridge_service.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "ui/aura/window.h"
@@ -84,16 +86,11 @@ constexpr char kLaunchFlags[] = "launchFlags";
 
 constexpr char kAndroidClockAppId[] = "ddmmnabaeomoacfpfjgghfpocfolhjlg";
 constexpr char kAndroidFilesAppId[] = "gmiohhmfhgfclpeacmdfancbipocempm";
-constexpr char kAndroidCameraAppId[] = "goamfaniemdfcajgcmmflhchgkmbngka";
-constexpr char kAndroidLegacyCameraAppId[] = "obfofkigjfamlldmipdegnjlcpincibc";
-constexpr char kAndroidCameraMigrationAppId[] =
-    "ngmkobaiicipbagcngcmilfkhejlnfci";
 constexpr char kAndroidContactsAppId[] = "kipfkokfekalckplgaikemhghlbkgpfl";
 
 constexpr char const* kAppIdsHiddenInLauncher[] = {
-    kAndroidClockAppId,        kSettingsAppId,
-    kAndroidFilesAppId,        kAndroidCameraAppId,
-    kAndroidLegacyCameraAppId, kAndroidCameraMigrationAppId,
+    kAndroidClockAppId,   kSettingsAppId,     kAndroidFilesAppId,
+    kCameraAppId,         kLegacyCameraAppId, kCameraMigrationAppId,
     kAndroidContactsAppId};
 
 // Returns true if |event_flags| came from a mouse or touch event.
@@ -145,6 +142,10 @@ bool Launch(content::BrowserContext* context,
         kIntentHelperClassName, extras_string);
   }
 
+  // Unthrottle the ARC instance before launching an ARC app. This is done
+  // to minimize lag on an app launch.
+  SetArcCpuRestriction(false /* do_restrict */);
+
   if (app_info->shortcut || intent.has_value()) {
     const std::string intent_uri = intent.value_or(app_info->intent_uri);
     if (auto* app_instance = GET_APP_INSTANCE(LaunchIntent)) {
@@ -181,12 +182,15 @@ int64_t GetValidDisplayId(int64_t display_id) {
 
 }  // namespace
 
+const char kCameraAppId[] = "goamfaniemdfcajgcmmflhchgkmbngka";
+const char kCameraMigrationAppId[] = "ngmkobaiicipbagcngcmilfkhejlnfci";
 const char kGoogleDuo[] = "djkcbcmkefiiphjkonbeknmcgiheajce";
 const char kInfinitePainter[] = "afihfgfghkmdmggakhkgnfhlikhdpima";
 const char kLightRoom[] = "fpegfnbgomakooccabncdaelhfppceni";
 const char kPlayStoreAppId[] = "cnbgggchhmkkdmeppjobngjoejnihlei";
 const char kPlayBooksAppId[] = "cafegjnmmjpfibnlddppihpnkbkgicbg";
 const char kPlayGamesAppId[] = "nplnnjkbeijcggmpdcecpabgbjgeiedc";
+const char kLegacyCameraAppId[] = "obfofkigjfamlldmipdegnjlcpincibc";
 const char kPlayMoviesAppId[] = "dbbihmicnlldbflflckpafphlekmjfnm";
 const char kPlayMusicAppId[] = "ophbaopahelaolbjliokocojjbgfadfn";
 const char kPlayStorePackage[] = "com.android.vending";
@@ -327,7 +331,7 @@ bool LaunchAppWithIntent(content::BrowserContext* context,
       // default to avoid slowing down Chrome's user session restoration.
       // However, the restriction should be lifted once the user explicitly
       // tries to launch an ARC app.
-      SetArcCpuRestriction(false);
+      SetArcCpuRestriction(false /* do_restrict */);
     }
     prefs->SetLastLaunchTime(app_id);
     return true;
@@ -402,14 +406,6 @@ void ShowTalkBackSettings() {
       kShowTalkbackSettingsIntent,
       ArcIntentHelperBridge::kArcIntentHelperPackageName,
       kIntentHelperClassName, "{}");
-}
-
-void StartPaiFlow() {
-  DCHECK(!IsArcPlayAutoInstallDisabled());
-  arc::mojom::AppInstance* app_instance = GET_APP_INSTANCE(StartPaiFlow);
-  if (!app_instance)
-    return;
-  app_instance->StartPaiFlow();
 }
 
 std::vector<std::string> GetSelectedPackagesFromPrefs(
@@ -617,7 +613,18 @@ void GetLocaleAndPreferredLanguages(const Profile* profile,
   // conflict with another item in the list, then these will be dedupped (the
   // first one is taken) in ARC.
   *out_preferred_languages =
-      profile->GetPrefs()->GetString(::prefs::kLanguagePreferredLanguages);
+      profile->GetPrefs()->GetString(::language::prefs::kPreferredLanguages);
+}
+
+void GetAndroidId(
+    base::OnceCallback<void(bool ok, int64_t android_id)> callback) {
+  auto* app_instance = GET_APP_INSTANCE(GetAndroidId);
+  if (!app_instance) {
+    std::move(callback).Run(false, 0);
+    return;
+  }
+
+  app_instance->GetAndroidId(base::BindOnce(std::move(callback), true));
 }
 
 Intent::Intent() = default;

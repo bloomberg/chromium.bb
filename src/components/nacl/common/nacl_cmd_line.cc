@@ -4,7 +4,7 @@
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "components/nacl/common/nacl_switches.h"
 #include "content/public/common/content_switches.h"
@@ -32,7 +32,7 @@ void CopyNaClCommandLineArguments(base::CommandLine* cmd_line) {
 #endif
   };
   cmd_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
-                             arraysize(kSwitchNames));
+                             base::size(kSwitchNames));
 }
 
 }  // namespace nacl

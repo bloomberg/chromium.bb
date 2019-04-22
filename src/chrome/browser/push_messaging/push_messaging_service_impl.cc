@@ -55,7 +55,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/push_messaging_status.mojom.h"
 #include "content/public/common/push_subscription_options.h"
-#include "third_party/blink/public/platform/modules/permissions/permission_status.mojom.h"
+#include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if BUILDFLAG(ENABLE_BACKGROUND_MODE)
@@ -331,8 +331,7 @@ void PushMessagingServiceImpl::DeliverMessageCallback(
               switches::kAllowSilentPush)) {
         notification_manager_.EnforceUserVisibleOnlyRequirements(
             requesting_origin, service_worker_registration_id,
-            base::AdaptCallbackForRepeating(
-                completion_closure_runner.Release()));
+            completion_closure_runner.Release());
       }
       break;
     case content::mojom::PushDeliveryStatus::SERVICE_WORKER_ERROR:
@@ -419,8 +418,7 @@ void PushMessagingServiceImpl::OnSendAcknowledged(
 // GetEndpoint method ----------------------------------------------------------
 
 GURL PushMessagingServiceImpl::GetEndpoint(bool standard_protocol) const {
-  return GURL(standard_protocol ? kPushMessagingPushProtocolEndpoint
-                                : kPushMessagingGcmEndpoint);
+  return GURL(kPushMessagingGcmEndpoint);
 }
 
 // Subscribe and GetPermissionStatus methods -----------------------------------
@@ -460,7 +458,8 @@ void PushMessagingServiceImpl::SubscribeFromDocument(
 
   if (!options.user_visible_only) {
     web_contents->GetMainFrame()->AddMessageToConsole(
-        content::CONSOLE_MESSAGE_LEVEL_ERROR, kSilentPushUnsupportedMessage);
+        blink::mojom::ConsoleMessageLevel::kError,
+        kSilentPushUnsupportedMessage);
 
     SubscribeEndWithError(
         callback, content::mojom::PushRegistrationStatus::PERMISSION_DENIED);

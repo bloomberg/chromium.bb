@@ -424,7 +424,8 @@ class TestRunCommand(cros_test_lib.MockTestCase):
     """Test RunCommand(..., env=xyz) works."""
     # We'll put this bogus environment together, just to make sure
     # subprocess.Popen gets passed it.
-    env = {'Tom': 'Jerry', 'Itchy': 'Scratchy'}
+    rc_env = {'Tom': 'Jerry', 'Itchy': 'Scratchy'}
+    sp_env = dict(rc_env, LC_MESSAGES='C')
 
     # This is a simple case, copied from testReturnCodeZeroWithArrayCmd()
     self.proc_mock.returncode = 0
@@ -433,8 +434,8 @@ class TestRunCommand(cros_test_lib.MockTestCase):
     # Run.  We expect the env= to be passed through from sp (subprocess.Popen)
     # to rc (RunCommand).
     self._TestCmd(cmd_list, cmd_list,
-                  sp_kv=dict(env=env),
-                  rc_kv=dict(env=env))
+                  sp_kv=dict(env=sp_env),
+                  rc_kv=dict(env=rc_env))
 
   def testExtraEnvOnlyWorks(self):
     """Test RunCommand(..., extra_env=xyz) works."""
@@ -462,7 +463,12 @@ class TestRunCommand(cros_test_lib.MockTestCase):
     # subprocess.Popen gets passed it.
     env = {'Tom': 'Jerry', 'Itchy': 'Scratchy'}
     extra_env = {'Pinky': 'Brain'}
-    total_env = {'Tom': 'Jerry', 'Itchy': 'Scratchy', 'Pinky': 'Brain'}
+    total_env = {
+        'Tom': 'Jerry',
+        'Itchy': 'Scratchy',
+        'Pinky': 'Brain',
+        'LC_MESSAGES': 'C'
+    }
 
     # This is a simple case, copied from testReturnCodeZeroWithArrayCmd()
     self.proc_mock.returncode = 0
@@ -481,7 +487,12 @@ class TestRunCommand(cros_test_lib.MockTestCase):
     # subprocess.Popen gets passed it.
     env = {'Tom': 'Jerry', 'Itchy': 'Scratchy'}
     extra_env = {'Pinky': 'Brain'}
-    total_env = {'Tom': 'Jerry', 'Itchy': 'Scratchy', 'Pinky': 'Brain'}
+    total_env = {
+        'Tom': 'Jerry',
+        'Itchy': 'Scratchy',
+        'Pinky': 'Brain',
+        'LC_MESSAGES': 'C'
+    }
 
     # This is a simple case, copied from testReturnCodeZeroWithArrayCmd()
     self.proc_mock.returncode = 0
@@ -1435,19 +1446,20 @@ class TestGetHostname(cros_test_lib.MockTestCase):
 class GetImageDiskPartitionInfoTests(cros_test_lib.RunCommandTestCase):
   """Tests the GetImageDiskPartitionInfo function."""
 
-  SAMPLE_PARTED = """/foo/chromiumos_qemu_image.bin:3360MB:file:512:512:gpt:;
-11:0.03MB:8.42MB:8.39MB::RWFW:;
-6:8.42MB:8.42MB:0.00MB::KERN-C:;
-7:8.42MB:8.42MB:0.00MB::ROOT-C:;
-9:8.42MB:8.42MB:0.00MB::reserved:;
-10:8.42MB:8.42MB:0.00MB::reserved:;
-2:10.5MB:27.3MB:16.8MB::KERN-A:;
-4:27.3MB:44.0MB:16.8MB::KERN-B:;
-8:44.0MB:60.8MB:16.8MB:ext4:OEM:;
-12:128MB:145MB:16.8MB:fat16:EFI-SYSTEM:boot;
-5:145MB:2292MB:2147MB::ROOT-B:;
-3:2292MB:4440MB:2147MB:ext2:ROOT-A:;
-1:4440MB:7661MB:3221MB:ext4:STATE:;
+  SAMPLE_PARTED = """/foo/chromiumos_qemu_image.bin:\
+2271240192B:file:512:512:gpt::;
+11:32768B:8421375B:8388608B::RWFW:;
+6:8421376B:8421887B:512B::KERN-C:;
+7:8421888B:8422399B:512B::ROOT-C:;
+9:8422400B:8422911B:512B::reserved:;
+10:8422912B:8423423B:512B::reserved:;
+2:10485760B:27262975B:16777216B::KERN-A:;
+4:27262976B:44040191B:16777216B::KERN-B:;
+8:44040192B:60817407B:16777216B:ext4:OEM:msftdata;
+12:127926272B:161480703B:33554432B:fat16:EFI-SYSTEM:boot, esp;
+5:161480704B:163577855B:2097152B::ROOT-B:;
+3:163577856B:2260729855B:2097152000B:ext2:ROOT-A:;
+1:2260729856B:2271215615B:10485760B:ext2:STATE:msftdata;
 """
 
   SAMPLE_CGPT = """
@@ -1503,99 +1515,53 @@ EEC571FFB6E1)
     """Tests that we can list all partitions with `cgpt` correctly."""
     self.PatchObject(cros_build_lib, 'IsInsideChroot', return_value=True)
     self.rc.AddCmdResult(partial_mock.Ignore(), output=self.SAMPLE_CGPT)
-    partitions = cros_build_lib.GetImageDiskPartitionInfo('...', unit='B')
-    self.assertEqual(partitions['STATE'].start, 983564288)
-    self.assertEqual(partitions['STATE'].size, 1073741824)
-    self.assertEqual(partitions['STATE'].number, 1)
-    self.assertEqual(partitions['STATE'].name, 'STATE')
-    self.assertEqual(partitions['EFI-SYSTEM'].start, 249856 * 512)
-    self.assertEqual(partitions['EFI-SYSTEM'].size, 32768 * 512)
-    self.assertEqual(partitions['EFI-SYSTEM'].number, 12)
-    self.assertEqual(partitions['EFI-SYSTEM'].name, 'EFI-SYSTEM')
-    # Because "reserved" is duplicated, we only have 11 key-value pairs.
-    self.assertEqual(11, len(partitions))
+    partitions = cros_build_lib.GetImageDiskPartitionInfo('...')
+    part_dict = {p.name: p for p in partitions}
+    self.assertEqual(part_dict['STATE'].start, 983564288)
+    self.assertEqual(part_dict['STATE'].size, 1073741824)
+    self.assertEqual(part_dict['STATE'].number, 1)
+    self.assertEqual(part_dict['STATE'].name, 'STATE')
+    self.assertEqual(part_dict['EFI-SYSTEM'].start, 249856 * 512)
+    self.assertEqual(part_dict['EFI-SYSTEM'].size, 32768 * 512)
+    self.assertEqual(part_dict['EFI-SYSTEM'].number, 12)
+    self.assertEqual(part_dict['EFI-SYSTEM'].name, 'EFI-SYSTEM')
+    self.assertEqual(12, len(partitions))
 
   def testNormalPath(self):
     self.PatchObject(cros_build_lib, 'IsInsideChroot', return_value=False)
     self.rc.AddCmdResult(partial_mock.Ignore(), output=self.SAMPLE_PARTED)
     partitions = cros_build_lib.GetImageDiskPartitionInfo('_ignored')
-    # Because "reserved" is duplicated, we only have 11 key-value pairs.
-    self.assertEqual(11, len(partitions))
-    self.assertEqual(1, partitions['STATE'].number)
-    self.assertEqual(2147, partitions['ROOT-A'].size)
+    part_dict = {p.name: p for p in partitions}
+    self.assertEqual(12, len(partitions))
+    self.assertEqual(1, part_dict['STATE'].number)
+    self.assertEqual(2097152000, part_dict['ROOT-A'].size)
 
   def testKeyedByNumber(self):
     self.PatchObject(cros_build_lib, 'IsInsideChroot', return_value=False)
     self.rc.AddCmdResult(partial_mock.Ignore(), output=self.SAMPLE_PARTED)
     partitions = cros_build_lib.GetImageDiskPartitionInfo(
-        '_ignored', key_selector='number'
+        '_ignored'
     )
-    self.assertEqual(12, len(partitions))
-    self.assertEqual('STATE', partitions[1].name)
-    self.assertEqual(2147, partitions[3].size)
-    self.assertEqual('reserved', partitions[9].name)
-    self.assertEqual('reserved', partitions[10].name)
-
-  def testChangeUnitOutsideChroot(self):
-
-    def changeUnit(unit):
-      cros_build_lib.GetImageDiskPartitionInfo('_ignored', unit)
-      self.assertCommandContains(
-          ['-m', '_ignored', 'unit', unit, 'print'],
-      )
-
-    self.PatchObject(cros_build_lib, 'IsInsideChroot', return_value=False)
-    self.rc.AddCmdResult(partial_mock.Ignore(), output=self.SAMPLE_PARTED)
-    # We must use 2-char units here because the mocked output is in 'MB'.
-    changeUnit('MB')
-    changeUnit('KB')
+    part_dict = {p.number: p for p in partitions}
+    self.assertEqual(12, len(part_dict))
+    self.assertEqual('STATE', part_dict[1].name)
+    self.assertEqual(2097152000, part_dict[3].size)
+    self.assertEqual('reserved', part_dict[9].name)
+    self.assertEqual('reserved', part_dict[10].name)
 
   def testChangeUnitInsideChroot(self):
     self.PatchObject(cros_build_lib, 'IsInsideChroot', return_value=True)
     self.rc.AddCmdResult(partial_mock.Ignore(), output=self.SAMPLE_CGPT)
-    partitions = cros_build_lib.GetImageDiskPartitionInfo('_ignored', 'B')
-    self.assertEqual(partitions['STATE'].start, 983564288)
-    self.assertEqual(partitions['STATE'].size, 1073741824)
-    partitions = cros_build_lib.GetImageDiskPartitionInfo('_ignored', 'KB')
-    self.assertEqual(partitions['STATE'].start, 983564288 / 1000.0)
-    self.assertEqual(partitions['STATE'].size, 1073741824 / 1000.0)
-    partitions = cros_build_lib.GetImageDiskPartitionInfo('_ignored', 'MB')
-    self.assertEqual(partitions['STATE'].start, 983564288 / 10.0**6)
-    self.assertEqual(partitions['STATE'].size, 1073741824 / 10.0**6)
-
-    self.assertRaises(KeyError, cros_build_lib.GetImageDiskPartitionInfo,
-                      '_ignored', 'PB')
+    partitions = cros_build_lib.GetImageDiskPartitionInfo('_ignored')
+    part_dict = {p.name: p for p in partitions}
+    self.assertEqual(part_dict['STATE'].start, 983564288)
+    self.assertEqual(part_dict['STATE'].size, 1073741824)
 
 
 class DummyOutput(object):
   """Object with a component called output."""
   def __init__(self, output):
     self.output = output
-
-
-class MonitorDirectoriesTests(cros_test_lib.MockTestCase):
-  """Tests the MonitorDirectories function."""
-
-  def setUp(self):
-    """Mock RunCommand."""
-    self.Results = []
-
-    def Result(*_args, **_kwargs):
-      """Creates objects with string object called output a la RunCommand."""
-      return self.Results.pop(0)
-
-    self.mockRun = self.PatchObject(cros_build_lib, 'RunCommand',
-                                    autospec=True,
-                                    side_effect=Result)
-
-  def testRegexFiltering(self):
-    """Test the filtering of dummy lsof output."""
-    self.Results = [DummyOutput("p1234\n"
-                                "f0\n"
-                                "n/usr/lib/target_folder/sth\n"),
-                    DummyOutput("")]
-    cros_build_lib.MonitorDirectories(["/usr/lib/"], cwd=os.getcwd())
-    self.assertEqual(self.mockRun.call_count, 2)
 
 
 class CreateTarballTests(cros_test_lib.TempDirTestCase):
@@ -1634,6 +1600,16 @@ class CreateTarballTests(cros_test_lib.TempDirTestCase):
     cros_build_lib.CreateTarball(self.target, self.inputDir,
                                  inputs=self.inputsWithDirs)
 
+  def testSuccessWithTooManyFiles(self):
+    """Test a tarfile creation with -T /dev/stdin."""
+    num_inputs = cros_build_lib._THRESHOLD_TO_USE_T_FOR_TAR + 1
+    inputs = ['input%s' % x for x in xrange(num_inputs)]
+    largeInputDir = os.path.join(self.tempdir, 'largeinputs')
+    for i in inputs:
+      osutils.WriteFile(os.path.join(largeInputDir, i), i, makedirs=True)
+    cros_build_lib.CreateTarball(self.target, largeInputDir, inputs=inputs)
+
+
 # Tests for tar failure retry logic.
 
 class FailedCreateTarballTests(cros_test_lib.MockTestCase):
@@ -1649,17 +1625,9 @@ class FailedCreateTarballTests(cros_test_lib.MockTestCase):
       """Creates CommandResult objects for each tarResults value in turn."""
       return cros_build_lib.CommandResult(returncode=self.tarResults.pop(0))
 
-    def ReturnNone(*_args, **_kwargs):
-      """Return None mimicking MonitorDirectories."""
-      return None
-
     self.mockRun = self.PatchObject(cros_build_lib, 'RunCommand',
                                     autospec=True,
                                     side_effect=Result)
-
-    self.mockMonitor = self.PatchObject(cros_build_lib, 'MonitorDirectories',
-                                        autospec=True,
-                                        side_effect=ReturnNone)
 
   def testSuccess(self):
     """CreateTarball works the first time."""
@@ -1667,15 +1635,13 @@ class FailedCreateTarballTests(cros_test_lib.MockTestCase):
     cros_build_lib.CreateTarball('foo', 'bar', inputs=['a', 'b'])
 
     self.assertEqual(self.mockRun.call_count, 1)
-    self.assertEqual(self.mockMonitor.call_count, 0)
 
   def testFailedOnceSoft(self):
     """Force a single retry for CreateTarball."""
     self.tarResults = [1, 0]
-    cros_build_lib.CreateTarball('foo', 'bar', inputs=['a', 'b'])
+    cros_build_lib.CreateTarball('foo', 'bar', inputs=['a', 'b'], timeout=0)
 
     self.assertEqual(self.mockRun.call_count, 2)
-    self.assertEqual(self.mockMonitor.call_count, 1)
 
   def testFailedOnceHard(self):
     """Test unrecoverable error."""
@@ -1685,14 +1651,12 @@ class FailedCreateTarballTests(cros_test_lib.MockTestCase):
 
     self.assertEqual(self.mockRun.call_count, 1)
     self.assertEqual(cm.exception.args[1].returncode, 2)
-    self.assertEqual(self.mockMonitor.call_count, 1)
 
-  def testFailedTwiceSoft(self):
+  def testFailedThriceSoft(self):
     """Exhaust retries for recoverable errors."""
-    self.tarResults = [1, 1]
+    self.tarResults = [1, 1, 1]
     with self.assertRaises(cros_build_lib.RunCommandError) as cm:
-      cros_build_lib.CreateTarball('foo', 'bar', inputs=['a', 'b'])
+      cros_build_lib.CreateTarball('foo', 'bar', inputs=['a', 'b'], timeout=0)
 
-    self.assertEqual(self.mockRun.call_count, 2)
+    self.assertEqual(self.mockRun.call_count, 3)
     self.assertEqual(cm.exception.args[1].returncode, 1)
-    self.assertEqual(self.mockMonitor.call_count, 2)

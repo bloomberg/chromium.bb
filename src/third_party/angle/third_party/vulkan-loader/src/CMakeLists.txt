@@ -27,14 +27,24 @@ add_definitions(-DAPI_NAME="Vulkan")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 find_package(PythonInterp 3 REQUIRED)
 
-find_package(VulkanHeaders)
-if(NOT ${VulkanHeaders_FOUND})
-    message(FATAL_ERROR "Could not find Vulkan headers path. This can be fixed by setting VULKAN_HEADERS_INSTALL_DIR to an "
-                        "installation of the Vulkan-Headers repository.")
-endif()
-if(NOT ${VulkanRegistry_FOUND})
-    message(FATAL_ERROR "Could not find Vulkan registry path. This can be fixed by setting VULKAN_HEADERS_INSTALL_DIR to an "
-                        "installation of the Vulkan-Headers repository.")
+if (TARGET Vulkan::Headers)
+    message(STATUS "Using Vulkan headers from Vulkan::Headers target")
+    get_target_property(VulkanRegistry_DIR Vulkan::Registry INTERFACE_INCLUDE_DIRECTORIES)
+else()
+    find_package(VulkanHeaders)
+    if(NOT ${VulkanHeaders_FOUND})
+        message(FATAL_ERROR "Could not find Vulkan headers path. This can be fixed by setting VULKAN_HEADERS_INSTALL_DIR to an "
+                            "installation of the Vulkan-Headers repository.")
+    endif()
+    if(NOT ${VulkanRegistry_FOUND})
+        message(FATAL_ERROR "Could not find Vulkan registry path. This can be fixed by setting VULKAN_HEADERS_INSTALL_DIR to an "
+                            "installation of the Vulkan-Headers repository.")
+    endif()
+
+    # set up the Vulkan::Headers target for consistency
+    add_library(vulkan-headers INTERFACE)
+    target_include_directories(vulkan-headers INTERFACE "${VulkanHeaders_INCLUDE_DIRS}")
+    add_library(Vulkan::Headers ALIAS vulkan-headers)
 endif()
 
 option(USE_CCACHE "Use ccache" OFF)
@@ -84,7 +94,6 @@ if(UNIX AND NOT APPLE) # i.e.: Linux
     option(BUILD_WSI_XCB_SUPPORT "Build XCB WSI support" ON)
     option(BUILD_WSI_XLIB_SUPPORT "Build Xlib WSI support" ON)
     option(BUILD_WSI_WAYLAND_SUPPORT "Build Wayland WSI support" ON)
-    option(BUILD_WSI_MIR_SUPPORT "Build Mir WSI support" OFF)
 
     if(BUILD_WSI_XCB_SUPPORT)
         find_package(XCB REQUIRED)
@@ -97,10 +106,6 @@ if(UNIX AND NOT APPLE) # i.e.: Linux
     if(BUILD_WSI_WAYLAND_SUPPORT)
         find_package(Wayland REQUIRED)
         include_directories(${WAYLAND_CLIENT_INCLUDE_DIR})
-    endif()
-
-    if(BUILD_WSI_MIR_SUPPORT)
-        find_package(Mir REQUIRED)
     endif()
 endif()
 
@@ -117,11 +122,8 @@ else()
     option(BUILD_TESTS "Build Tests" OFF)
 endif()
 
-# Add location of Vulkan header files to include search path
-include_directories(${VulkanHeaders_INCLUDE_DIRS})
-
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_C_COMPILER_ID MATCHES "Clang")
-    set(COMMON_COMPILE_FLAGS "-Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers")
+    set(COMMON_COMPILE_FLAGS "-Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -Wno-stringop-truncation -Wno-stringop-overflow")
     set(COMMON_COMPILE_FLAGS "${COMMON_COMPILE_FLAGS} -fno-strict-aliasing -fno-builtin-memcmp")
 
     # For GCC version 7.1 or greater, we need to disable the implicit fallthrough warning since there's no consistent way to satisfy
@@ -143,19 +145,13 @@ if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_C_COMPILER_ID MATCHES "Clang")
 endif()
 
 if(MSVC)
-    # Treat warnings as errors
-    add_compile_options("/WX")
-    # Disable RTTI
-    add_compile_options("/GR-")
-    # Warn about nested declarations
-    add_compile_options("/w34456")
-    # Warn about potentially uninitialized variables
-    add_compile_options("/w34701")
-    add_compile_options("/w34703")
-    # Warn about different indirection types.
-    add_compile_options("/w34057")
-    # Warn about signed/unsigned mismatch.
-    add_compile_options("/w34245")
+    # /WX: Treat warnings as errors
+    # /GR-: Disable RTTI
+    # /w34456: Warn about nested declarations
+    # /w34701, /w34703: Warn about potentially uninitialized variables
+    # /w34057: Warn about different indirection types.
+    # /w34245: Warn about signed/unsigned mismatch.
+    set(MSVC_LOADER_COMPILE_OPTIONS /WX /GR- /w34456 /w34701 /w34703 /w34057 /w34245)
 endif()
 
 # Define a macro to generate source code from vk.xml

@@ -7,9 +7,10 @@
 
 #include "ui/views/views_export.h"
 
+class SkPath;
+
 namespace gfx {
 class Size;
-class Path;
 }
 
 namespace views {
@@ -18,7 +19,7 @@ namespace views {
 // ui/resources/window_*
 VIEWS_EXPORT void GetDefaultWindowMask(const gfx::Size& size,
                                        float scale,
-                                       gfx::Path* window_mask);
+                                       SkPath* window_mask);
 
 } // namespace views
 

@@ -70,3 +70,17 @@ class MojoHandle {
    */
   watch(signals, handler) {}
 };
+
+/**
+ * @typedef {{
+ *   result: !MojoResult,
+ *   handle0: !MojoHandle,
+ *   handle1: !MojoHandle,
+ * }}
+ */
+let MojoCreateMessagePipeResult;
+
+/**
+ * @return {!MojoCreateMessagePipeResult}
+ */
+Mojo.createMessagePipe = function() {}

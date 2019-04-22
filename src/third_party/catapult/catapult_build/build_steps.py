@@ -65,7 +65,6 @@ _CATAPULT_TESTS = [
         'name': 'Dashboard WCT Tests',
         'path': 'dashboard/bin/run_wct_tests',
         'disabled': ['android', 'win', 'mac'],
-        'uses_wct': True,
     },
     {
         'name': 'Dependency Manager Tests',
@@ -111,10 +110,6 @@ _CATAPULT_TESTS = [
         'disabled': ['android'],
     },
     {
-        'name': 'Soundwave Tests',
-        'path': 'experimental/soundwave/bin/run_tests',
-    },
-    {
         'name': 'Telemetry Tests with Stable Browser (Desktop)',
         'path': 'catapult_build/fetch_telemetry_deps_and_run_tests',
         'additional_args': [
@@ -139,7 +134,7 @@ _CATAPULT_TESTS = [
         'name': 'Telemetry Integration Tests with Stable Browser',
         'path': 'telemetry/bin/run_browser_tests',
         'additional_args': [
-            'SimpleBrowserTest',
+            'BrowserTest',
             '--browser=reference',
         ],
         'uses_sandbox_env': True,
@@ -281,8 +276,6 @@ def main(args=None):
       step['env']['CHROME_DEVEL_SANDBOX'] = '/opt/chromium/chrome_sandbox'
     if test.get('outputs_presentation_json'):
       step['outputs_presentation_json'] = True
-    if test.get('uses_wct'):
-      step['env']['WCT'] = args.wct_path
     steps.append(step)
   with open(args.output_json, 'w') as outfile:
     json.dump(steps, outfile)

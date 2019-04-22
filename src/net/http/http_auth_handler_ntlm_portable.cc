@@ -8,6 +8,7 @@
 #include "base/time/time.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_interfaces.h"
+#include "net/dns/host_resolver.h"
 #include "net/http/http_auth_preferences.h"
 
 namespace net {
@@ -119,6 +120,7 @@ int HttpAuthHandlerNTLM::Factory::CreateAuthHandler(
     CreateReason reason,
     int digest_nonce_count,
     const NetLogWithSource& net_log,
+    HostResolver* host_resolver,
     std::unique_ptr<HttpAuthHandler>* handler) {
   if (reason == CREATE_PREEMPTIVE)
     return ERR_UNSUPPORTED_AUTH_SCHEME;

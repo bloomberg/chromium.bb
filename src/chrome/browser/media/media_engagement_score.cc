@@ -57,6 +57,13 @@ std::unique_ptr<base::DictionaryValue> GetMediaEngagementScoreDictForSettings(
   return std::make_unique<base::DictionaryValue>();
 }
 
+void GetIntegerFromScore(base::DictionaryValue* dict,
+                         base::StringPiece key,
+                         int* out) {
+  if (base::Value* v = dict->FindKeyOfType(key, base::Value::Type::INTEGER))
+    *out = v->GetInt();
+}
+
 }  // namespace
 
 // static.
@@ -101,21 +108,31 @@ MediaEngagementScore::MediaEngagementScore(
   if (!score_dict_)
     return;
 
-  score_dict_->GetInteger(kVisitsKey, &visits_);
-  score_dict_->GetInteger(kMediaPlaybacksKey, &media_playbacks_);
-  score_dict_->GetBoolean(kHasHighScoreKey, &is_high_);
-  score_dict_->GetInteger(kAudiblePlaybacksKey, &audible_playbacks_);
-  score_dict_->GetInteger(kSignificantPlaybacksKey, &significant_playbacks_);
-  score_dict_->GetInteger(kVisitsWithMediaTagKey, &visits_with_media_tag_);
-  score_dict_->GetInteger(kHighScoreChanges, &high_score_changes_);
-  score_dict_->GetInteger(kSignificantMediaPlaybacksKey,
-                          &media_element_playbacks_);
-  score_dict_->GetInteger(kSignificantAudioContextPlaybacksKey,
-                          &audio_context_playbacks_);
+  GetIntegerFromScore(score_dict_.get(), kVisitsKey, &visits_);
+  GetIntegerFromScore(score_dict_.get(), kMediaPlaybacksKey, &media_playbacks_);
+  GetIntegerFromScore(score_dict_.get(), kAudiblePlaybacksKey,
+                      &audible_playbacks_);
+  GetIntegerFromScore(score_dict_.get(), kSignificantPlaybacksKey,
+                      &significant_playbacks_);
+  GetIntegerFromScore(score_dict_.get(), kVisitsWithMediaTagKey,
+                      &visits_with_media_tag_);
+  GetIntegerFromScore(score_dict_.get(), kHighScoreChanges,
+                      &high_score_changes_);
+  GetIntegerFromScore(score_dict_.get(), kSignificantMediaPlaybacksKey,
+                      &media_element_playbacks_);
+  GetIntegerFromScore(score_dict_.get(), kSignificantAudioContextPlaybacksKey,
+                      &audio_context_playbacks_);
 
-  double internal_time;
-  if (score_dict_->GetDouble(kLastMediaPlaybackTimeKey, &internal_time))
-    last_media_playback_time_ = base::Time::FromInternalValue(internal_time);
+  if (base::Value* value = score_dict_->FindKeyOfType(
+          kHasHighScoreKey, base::Value::Type::BOOLEAN)) {
+    is_high_ = value->GetBool();
+  }
+
+  if (base::Value* value = score_dict_->FindKeyOfType(
+          kLastMediaPlaybackTimeKey, base::Value::Type::DOUBLE)) {
+    last_media_playback_time_ =
+        base::Time::FromInternalValue(value->GetDouble());
+  }
 
   // Recalculate the total score and high bit. If the high bit changed we
   // should commit this. This should only happen if we change the threshold
@@ -184,21 +201,34 @@ bool MediaEngagementScore::UpdateScoreDict() {
   int stored_media_element_playbacks = 0;
   int stored_audio_context_playbacks = 0;
 
-  score_dict_->GetInteger(kVisitsKey, &stored_visits);
-  score_dict_->GetInteger(kMediaPlaybacksKey, &stored_media_playbacks);
-  score_dict_->GetDouble(kLastMediaPlaybackTimeKey,
-                         &stored_last_media_playback_internal);
-  score_dict_->GetBoolean(kHasHighScoreKey, &is_high);
-  score_dict_->GetInteger(kAudiblePlaybacksKey, &stored_audible_playbacks);
-  score_dict_->GetInteger(kSignificantPlaybacksKey,
-                          &stored_significant_playbacks);
-  score_dict_->GetInteger(kVisitsWithMediaTagKey,
-                          &stored_visits_with_media_tag);
-  score_dict_->GetInteger(kHighScoreChanges, &high_score_changes);
-  score_dict_->GetInteger(kSignificantMediaPlaybacksKey,
-                          &stored_media_element_playbacks);
-  score_dict_->GetInteger(kSignificantAudioContextPlaybacksKey,
-                          &stored_audio_context_playbacks);
+  if (!score_dict_)
+    return false;
+
+  if (base::Value* value = score_dict_->FindKeyOfType(
+          kHasHighScoreKey, base::Value::Type::BOOLEAN)) {
+    is_high = value->GetBool();
+  }
+
+  if (base::Value* value = score_dict_->FindKeyOfType(
+          kLastMediaPlaybackTimeKey, base::Value::Type::DOUBLE)) {
+    stored_last_media_playback_internal = value->GetDouble();
+  }
+
+  GetIntegerFromScore(score_dict_.get(), kVisitsKey, &stored_visits);
+  GetIntegerFromScore(score_dict_.get(), kMediaPlaybacksKey,
+                      &stored_media_playbacks);
+  GetIntegerFromScore(score_dict_.get(), kAudiblePlaybacksKey,
+                      &stored_audible_playbacks);
+  GetIntegerFromScore(score_dict_.get(), kSignificantPlaybacksKey,
+                      &stored_significant_playbacks);
+  GetIntegerFromScore(score_dict_.get(), kVisitsWithMediaTagKey,
+                      &stored_visits_with_media_tag);
+  GetIntegerFromScore(score_dict_.get(), kHighScoreChanges,
+                      &high_score_changes);
+  GetIntegerFromScore(score_dict_.get(), kSignificantMediaPlaybacksKey,
+                      &stored_media_element_playbacks);
+  GetIntegerFromScore(score_dict_.get(), kSignificantAudioContextPlaybacksKey,
+                      &stored_audio_context_playbacks);
 
   bool changed = stored_visits != visits() ||
                  stored_media_playbacks != media_playbacks() ||

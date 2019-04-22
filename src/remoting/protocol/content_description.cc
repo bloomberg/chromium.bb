@@ -15,8 +15,8 @@
 #include "remoting/protocol/authenticator.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 
-using buzz::QName;
-using buzz::XmlElement;
+using jingle_xmpp::QName;
+using jingle_xmpp::XmlElement;
 
 namespace remoting {
 namespace protocol {
@@ -71,7 +71,7 @@ XmlElement* FormatChannelConfig(const ChannelConfig& config,
 
   if (config.transport != ChannelConfig::TRANSPORT_NONE) {
     result->AddAttr(QName(kDefaultNs, kVersionAttr),
-                    base::IntToString(config.version));
+                    base::NumberToString(config.version));
 
     if (config.codec != ChannelConfig::CODEC_UNDEFINED) {
       result->AddAttr(QName(kDefaultNs, kCodecAttr),
@@ -119,7 +119,7 @@ bool ParseChannelConfig(const XmlElement* element, bool codec_required,
 
 ContentDescription::ContentDescription(
     std::unique_ptr<CandidateSessionConfig> config,
-    std::unique_ptr<buzz::XmlElement> authenticator_message)
+    std::unique_ptr<jingle_xmpp::XmlElement> authenticator_message)
     : candidate_config_(std::move(config)),
       authenticator_message_(std::move(authenticator_message)) {}
 
@@ -144,7 +144,7 @@ XmlElement* ContentDescription::ToXml() const {
 
   if (config()->ice_supported()) {
     root->AddElement(
-        new buzz::XmlElement(QName(kChromotingXmlNamespace, kStandardIceTag)));
+        new jingle_xmpp::XmlElement(QName(kChromotingXmlNamespace, kStandardIceTag)));
 
     for (const auto& channel_config : config()->control_configs()) {
       root->AddElement(FormatChannelConfig(channel_config, kControlTag));

@@ -14,19 +14,19 @@ CustomElementReactionQueue::CustomElementReactionQueue() : index_(0u) {}
 
 CustomElementReactionQueue::~CustomElementReactionQueue() = default;
 
-void CustomElementReactionQueue::Trace(blink::Visitor* visitor) {
+void CustomElementReactionQueue::Trace(Visitor* visitor) {
   visitor->Trace(reactions_);
 }
 
-void CustomElementReactionQueue::Add(CustomElementReaction* reaction) {
-  reactions_.push_back(reaction);
+void CustomElementReactionQueue::Add(CustomElementReaction& reaction) {
+  reactions_.push_back(&reaction);
 }
 
 // There is one queue per element, so this could be invoked
 // recursively.
-void CustomElementReactionQueue::InvokeReactions(Element* element) {
+void CustomElementReactionQueue::InvokeReactions(Element& element) {
   TRACE_EVENT1("blink", "CustomElementReactionQueue::invokeReactions", "name",
-               element->localName().Utf8());
+               element.localName().Utf8());
   while (index_ < reactions_.size()) {
     CustomElementReaction* reaction = reactions_[index_];
     reactions_[index_++] = nullptr;
@@ -35,7 +35,7 @@ void CustomElementReactionQueue::InvokeReactions(Element* element) {
   // Unlike V0CustomElementsCallbackQueue, reactions are always
   // inserted by steps which bump the global element queue. This
   // means we do not need queue "owner" guards.
-  // https://html.spec.whatwg.org/multipage/scripting.html#custom-element-reactions
+  // https://html.spec.whatwg.org/C/#custom-element-reactions
   Clear();
 }
 

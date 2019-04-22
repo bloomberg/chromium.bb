@@ -19,8 +19,7 @@ class ASH_EXPORT InternalInputDevicesEventBlocker
   ~InternalInputDevicesEventBlocker() override;
 
   // ui::InputDeviceEventObserver:
-  void OnKeyboardDeviceConfigurationChanged() override;
-  void OnTouchpadDeviceConfigurationChanged() override;
+  void OnInputDeviceConfigurationChanged(uint8_t input_device_types) override;
 
   void UpdateInternalInputDevices(bool should_block);
 

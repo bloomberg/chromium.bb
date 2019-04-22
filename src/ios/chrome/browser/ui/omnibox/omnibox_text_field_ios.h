@@ -66,6 +66,11 @@ typedef enum {
 // language match for |self.text|.
 - (NSTextAlignment)bestTextAlignment;
 
+// Returns the most likely semantic content attribute -- right to left, left to
+// right or unspecified -- based on the first character of |self.text| and the
+// device's current locale.
+- (UISemanticContentAttribute)bestSemanticContentAttribute;
+
 // Checks if direction of the omnibox text changed, and updates the UITextField.
 // alignment if necessary.
 - (void)updateTextDirection;
@@ -78,12 +83,6 @@ typedef enum {
 - (void)animateFadeWithStyle:(OmniboxTextFieldFadeStyle)style;
 // Called when animations added by |-animateFadeWithStyle:| can be removed.
 - (void)cleanUpFadeAnimations;
-
-// New animations API, currently behind clean-toolbar flag.
-// They replace all animations above.
-- (void)addExpandOmniboxAnimations:(UIViewPropertyAnimator*)animator
-                completionAnimator:(UIViewPropertyAnimator*)completionAnimator;
-- (void)addContractOmniboxAnimations:(UIViewPropertyAnimator*)animator;
 
 // Returns an x offset for a given string. If no such string is found, returns
 // some default offset.
@@ -111,7 +110,7 @@ typedef enum {
 @property(nonatomic, strong) NSString* preEditText;
 
 @property(nonatomic) BOOL clearingPreEditText;
-@property(nonatomic, strong) UIColor* selectedTextBackgroundColor;
+@property(nonatomic, readonly, strong) UIColor* selectedTextBackgroundColor;
 @property(nonatomic, strong) UIColor* placeholderTextColor;
 @property(nonatomic, assign) BOOL incognito;
 

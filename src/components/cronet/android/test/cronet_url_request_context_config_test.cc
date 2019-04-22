@@ -23,7 +23,6 @@ namespace cronet {
 // made it from the CronetEngine.Builder to the URLRequestContextConfig.
 static void JNI_CronetUrlRequestContextTest_VerifyUrlRequestContextConfig(
     JNIEnv* env,
-    const JavaParamRef<jclass>& jcaller,
     jlong jurl_request_context_config,
     const JavaParamRef<jstring>& jstorage_path) {
   URLRequestContextConfig* config =

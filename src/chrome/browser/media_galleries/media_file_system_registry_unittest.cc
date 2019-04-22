@@ -9,10 +9,12 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <functional>
 #include <memory>
 #include <set>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
@@ -513,8 +515,7 @@ void ProfileState::CheckGalleries(
       single_web_contents_.get(), no_permissions_extension_.get(),
       base::Bind(&ProfileState::CompareResults, base::Unretained(this),
                  base::StringPrintf("%s (no permission)", test.c_str()),
-                 base::ConstRef(empty_names),
-                 base::ConstRef(empty_expectation)));
+                 std::cref(empty_names), std::cref(empty_expectation)));
   content::RunAllTasksUntilIdle();
   EXPECT_EQ(1, GetAndClearComparisonCount());
 
@@ -523,8 +524,8 @@ void ProfileState::CheckGalleries(
       single_web_contents_.get(), regular_permission_extension_.get(),
       base::Bind(&ProfileState::CompareResults, base::Unretained(this),
                  base::StringPrintf("%s (regular permission)", test.c_str()),
-                 base::ConstRef(compare_names_read_),
-                 base::ConstRef(regular_extension_galleries)));
+                 std::cref(compare_names_read_),
+                 std::cref(regular_extension_galleries)));
   content::RunAllTasksUntilIdle();
   EXPECT_EQ(1, GetAndClearComparisonCount());
 
@@ -533,8 +534,8 @@ void ProfileState::CheckGalleries(
       single_web_contents_.get(), all_permission_extension_.get(),
       base::Bind(&ProfileState::CompareResults, base::Unretained(this),
                  base::StringPrintf("%s (all permission)", test.c_str()),
-                 base::ConstRef(compare_names_all_),
-                 base::ConstRef(all_extension_galleries)));
+                 std::cref(compare_names_all_),
+                 std::cref(all_extension_galleries)));
   content::RunAllTasksUntilIdle();
   EXPECT_EQ(1, GetAndClearComparisonCount());
 }

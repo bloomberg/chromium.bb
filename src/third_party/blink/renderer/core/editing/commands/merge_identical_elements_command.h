@@ -32,15 +32,9 @@ namespace blink {
 
 class MergeIdenticalElementsCommand final : public SimpleEditCommand {
  public:
-  static MergeIdenticalElementsCommand* Create(Element* element1,
-                                               Element* element2) {
-    return MakeGarbageCollected<MergeIdenticalElementsCommand>(element1,
-                                                               element2);
-  }
-
   MergeIdenticalElementsCommand(Element*, Element*);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void DoApply(EditingState*) override;

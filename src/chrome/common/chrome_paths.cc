@@ -232,7 +232,7 @@ bool PathProvider(int key, base::FilePath* result) {
       if (!GetDefaultUserDataDirectory(&cur))
         return false;
 #endif
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_ANDROID)
       cur = cur.Append(FILE_PATH_LITERAL("Crashpad"));
 #else
       cur = cur.Append(FILE_PATH_LITERAL("Crash Reports"));
@@ -418,15 +418,6 @@ bool PathProvider(int key, base::FilePath* result) {
       break;
 #endif
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-#if defined(OS_LINUX)
-    case chrome::DIR_SUPERVISED_USERS_DEFAULT_APPS:
-      if (!base::PathService::Get(chrome::DIR_STANDALONE_EXTERNAL_EXTENSIONS,
-                                  &cur)) {
-        return false;
-      }
-      cur = cur.Append(FILE_PATH_LITERAL("managed_users"));
-      break;
-#endif
     case chrome::DIR_SUPERVISED_USER_INSTALLED_WHITELISTS:
       if (!base::PathService::Get(chrome::DIR_USER_DATA, &cur))
         return false;
@@ -569,13 +560,6 @@ bool PathProvider(int key, base::FilePath* result) {
     case chrome::FILE_CHROME_OS_COMPONENT_FLASH:
       cur = base::FilePath(kChromeOSComponentFlash);
       create_dir = false;
-      break;
-    case chrome::DIR_CHILD_USERS_DEFAULT_APPS:
-      if (!base::PathService::Get(chrome::DIR_STANDALONE_EXTERNAL_EXTENSIONS,
-                                  &cur)) {
-        return false;
-      }
-      cur = cur.Append(FILE_PATH_LITERAL("child_users"));
       break;
     case chrome::FILE_CHROME_OS_TPM_FIRMWARE_UPDATE_LOCATION:
       cur = base::FilePath(kChromeOSTPMFirmwareUpdateLocation);

@@ -6,16 +6,14 @@
 #define CHROME_SERVICES_FILE_UTIL_FILE_UTIL_SERVICE_H_
 
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/service_context.h"
-#include "services/service_manager/public/cpp/service_context_ref.h"
+#include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/cpp/service_keepalive.h"
 
 class FileUtilService : public service_manager::Service {
  public:
-  FileUtilService();
+  explicit FileUtilService(service_manager::mojom::ServiceRequest request);
   ~FileUtilService() override;
-
-  // Factory method for creating the service.
-  static std::unique_ptr<service_manager::Service> CreateService();
 
   // Lifescycle events that occur after the service has started to spinup.
   void OnStart() override;
@@ -24,8 +22,8 @@ class FileUtilService : public service_manager::Service {
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
 
  private:
-  // State needed to manage service lifecycle and lifecycle of bound clients.
-  std::unique_ptr<service_manager::ServiceContextRefFactory> ref_factory_;
+  service_manager::ServiceBinding service_binding_;
+  service_manager::ServiceKeepalive service_keepalive_;
   service_manager::BinderRegistry registry_;
 
   DISALLOW_COPY_AND_ASSIGN(FileUtilService);

@@ -83,16 +83,16 @@ class ChromeBrowsingDataRemoverDelegate
 
     // "Site data" includes storage backend accessible to websites and some
     // additional metadata kept by the browser (e.g. site usage data).
-    DATA_TYPE_SITE_DATA = content::BrowsingDataRemover::DATA_TYPE_COOKIES |
-                          content::BrowsingDataRemover::DATA_TYPE_CHANNEL_IDS |
-                          content::BrowsingDataRemover::DATA_TYPE_DOM_STORAGE |
-                          DATA_TYPE_PLUGIN_DATA |
+    DATA_TYPE_SITE_DATA =
+        content::BrowsingDataRemover::DATA_TYPE_COOKIES |
+        content::BrowsingDataRemover::DATA_TYPE_DOM_STORAGE |
+        content::BrowsingDataRemover::DATA_TYPE_MEDIA_LICENSES |
+        DATA_TYPE_PLUGIN_DATA |
 #if defined(OS_ANDROID)
-                          DATA_TYPE_WEB_APP_DATA |
+        DATA_TYPE_WEB_APP_DATA |
 #endif
-                          DATA_TYPE_SITE_USAGE_DATA |
-                          DATA_TYPE_DURABLE_PERMISSION |
-                          DATA_TYPE_EXTERNAL_PROTOCOL_DATA,
+        DATA_TYPE_SITE_USAGE_DATA | DATA_TYPE_DURABLE_PERMISSION |
+        DATA_TYPE_EXTERNAL_PROTOCOL_DATA,
 
     // Datatypes protected by Important Sites.
     IMPORTANT_SITES_DATA_TYPES =
@@ -110,10 +110,9 @@ class ChromeBrowsingDataRemoverDelegate
     ALL_DATA_TYPES = DATA_TYPE_SITE_DATA |  //
                      content::BrowsingDataRemover::DATA_TYPE_CACHE |
                      content::BrowsingDataRemover::DATA_TYPE_DOWNLOADS |
-                     DATA_TYPE_FORM_DATA |  //
-                     DATA_TYPE_HISTORY |    //
-                     DATA_TYPE_PASSWORDS |
-                     content::BrowsingDataRemover::DATA_TYPE_MEDIA_LICENSES |
+                     DATA_TYPE_FORM_DATA |         //
+                     DATA_TYPE_HISTORY |           //
+                     DATA_TYPE_PASSWORDS |         //
                      DATA_TYPE_CONTENT_SETTINGS |  //
                      DATA_TYPE_BOOKMARKS,
 
@@ -192,19 +191,64 @@ class ChromeBrowsingDataRemoverDelegate
  private:
   using WebRtcEventLogManager = webrtc_event_logging::WebRtcEventLogManager;
 
-  // Called by the closures returned by CreatePendingTaskCompletionClosure().
+  // For debugging purposes. Please add new deletion tasks at the end.
+  // This enum is recorded in a histogram, so don't change or reuse ids.
+  // Entries must also be added to ChromeBrowsingDataRemoverTasks in enums.xml.
+  enum class TracingDataType {
+    kSynchronous = 1,
+    kHistory = 2,
+    kHostNameResolution = 3,
+    kNaclCache = 4,
+    kPnaclCache = 5,
+    kAutofillData = 6,
+    kAutofillOrigins = 7,
+    kPluginData = 8,
+    kFlashLsoHelper = 9,
+    kDomainReliability = 10,
+    kNetworkPredictor = 11,
+    kWebrtcLogs = 12,
+    kVideoDecodeHistory = 13,
+    kCookies = 14,
+    kPasswords = 15,
+    kHttpAuthCache = 16,
+    kDisableAutoSignin = 17,
+    kPasswordsStatistics = 18,
+    kKeywordsModel = 19,
+    kReportingCache = 20,
+    kNetworkErrorLogging = 21,
+    kFlashDeauthorization = 22,
+    kOfflinePages = 23,
+    kPrecache = 24,
+    kExploreSites = 25,
+    kLegacyStrikes = 26,
+    kWebrtcEventLogs = 27,
+    kDrmLicenses = 28,
+    kHostCache = 29,
+    kTpmAttestationKeys = 30,
+    kStrikes = 31,
+    kMaxValue = kStrikes,
+  };
+
+  // Called by CreateTaskCompletionClosure().
+  void OnTaskStarted(TracingDataType data_type);
+
+  // Called by the closures returned by CreateTaskCompletionClosure().
   // Checks if all tasks have completed, and if so, calls callback_.
-  void OnTaskComplete();
+  void OnTaskComplete(TracingDataType data_type);
 
   // Increments the number of pending tasks by one, and returns a OnceClosure
   // that calls OnTaskComplete(). The Remover is complete once all the closures
   // created by this method have been invoked.
-  base::OnceClosure CreatePendingTaskCompletionClosure();
+  base::OnceClosure CreateTaskCompletionClosure(TracingDataType data_type);
 
-  // Same as CreatePendingTaskCompletionClosure() but guarantees that
+  // Same as CreateTaskCompletionClosure() but guarantees that
   // OnTaskComplete() is called if the task is dropped. That can typically
   // happen when the connection is closed while an interface call is made.
-  base::OnceClosure CreatePendingTaskCompletionClosureForMojo();
+  base::OnceClosure CreateTaskCompletionClosureForMojo(
+      TracingDataType data_type);
+
+  // Records unfinished tasks from |pending_sub_tasks_| after a delay.
+  void RecordUnfinishedSubTasks();
 
   // Callback for when TemplateURLService has finished loading. Clears the data,
   // clears the respective waiting flag, and invokes NotifyIfDone.
@@ -249,8 +293,12 @@ class ChromeBrowsingDataRemoverDelegate
   // Completion callback to call when all data are deleted.
   base::OnceClosure callback_;
 
-  // Keeps track of number of tasks to be completed.
-  int num_pending_tasks_ = 0;
+  // Records which tasks of a deletion are currently active.
+  std::set<TracingDataType> pending_sub_tasks_;
+
+  // Fires after some time to track slow tasks. Cancelled when all tasks
+  // are finished.
+  base::CancelableClosure slow_pending_tasks_closure_;
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   // Used to delete plugin data.

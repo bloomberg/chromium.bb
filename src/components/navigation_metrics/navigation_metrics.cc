@@ -4,8 +4,9 @@
 
 #include "components/navigation_metrics/navigation_metrics.h"
 
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
+#include "base/stl_util.h"
 #include "components/dom_distiller/core/url_constants.h"
 #include "url/gurl.h"
 
@@ -34,7 +35,7 @@ const char* const kSchemeNames[] = {
     "externalfile",
 };
 
-static_assert(arraysize(kSchemeNames) == static_cast<int>(Scheme::COUNT),
+static_assert(base::size(kSchemeNames) == static_cast<int>(Scheme::COUNT),
               "kSchemeNames should have Scheme::COUNT elements");
 
 }  // namespace
@@ -66,7 +67,10 @@ void RecordMainFrameNavigation(const GURL& url,
       UMA_HISTOGRAM_ENUMERATION("Navigation.MainFrameSchemeDifferentPageOTR",
                                 scheme, Scheme::COUNT);
     }
+
+    base::RecordAction(base::UserMetricsAction("PageLoadInIncognito"));
   }
+  base::RecordAction(base::UserMetricsAction("PageLoad"));
 }
 
 void RecordOmniboxURLNavigation(const GURL& url) {

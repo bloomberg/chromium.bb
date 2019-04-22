@@ -271,6 +271,10 @@ void TabStripSceneLayer::PutStripTabLayer(
     jint id,
     jint close_resource_id,
     jint handle_resource_id,
+    jint handle_outline_resource_id,
+    jint close_tint,
+    jint handle_tint,
+    jint handle_outline_tint,
     jboolean foreground,
     jboolean close_pressed,
     jfloat toolbar_width,
@@ -290,14 +294,19 @@ void TabStripSceneLayer::PutStripTabLayer(
       ui::ResourceManagerImpl::FromJavaObject(jresource_manager);
   scoped_refptr<TabHandleLayer> layer = GetNextLayer(layer_title_cache);
   ui::NinePatchResource* tab_handle_resource =
-      ui::NinePatchResource::From(resource_manager->GetResource(
-          ui::ANDROID_RESOURCE_TYPE_STATIC, handle_resource_id));
-  ui::Resource* close_button_resource = resource_manager->GetResource(
-      ui::ANDROID_RESOURCE_TYPE_STATIC, close_resource_id);
+      ui::NinePatchResource::From(resource_manager->GetStaticResourceWithTint(
+          handle_resource_id, handle_tint));
+  ui::NinePatchResource* tab_handle_outline_resource =
+      ui::NinePatchResource::From(resource_manager->GetStaticResourceWithTint(
+          handle_outline_resource_id, handle_outline_tint));
+  ui::Resource* close_button_resource =
+      resource_manager->GetStaticResourceWithTint(close_resource_id,
+                                                  close_tint);
   layer->SetProperties(id, close_button_resource, tab_handle_resource,
-                       foreground, close_pressed, toolbar_width, x, y, width,
-                       height, content_offset_x, close_button_alpha, is_loading,
-                       spinner_rotation, background_tab_brightness_);
+                       tab_handle_outline_resource, foreground, close_pressed,
+                       toolbar_width, x, y, width, height, content_offset_x,
+                       close_button_alpha, is_loading, spinner_rotation,
+                       background_tab_brightness_);
 }
 
 scoped_refptr<TabHandleLayer> TabStripSceneLayer::GetNextLayer(

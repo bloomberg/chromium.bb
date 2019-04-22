@@ -134,6 +134,7 @@ ControllerImpl::ControllerImpl(
 }
 
 ControllerImpl::~ControllerImpl() {
+  navigation_monitor_->SetObserver(nullptr);
   base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
       this);
 }
@@ -305,6 +306,7 @@ DownloadClient ControllerImpl::GetOwnerOfDownload(const std::string& guid) {
 
 void ControllerImpl::OnStartScheduledTask(DownloadTaskType task_type,
                                           TaskFinishedCallback callback) {
+  device_status_listener_->Start(config_->network_startup_delay_backgroud_task);
   task_finished_callbacks_[task_type] = std::move(callback);
 
   switch (controller_state_) {
@@ -401,6 +403,8 @@ void ControllerImpl::HandleTaskFinished(DownloadTaskType task_type,
     case DownloadTaskType::CLEANUP_TASK:
       ScheduleCleanupTask();
       break;
+    case DownloadTaskType::DOWNLOAD_AUTO_RESUMPTION_TASK:
+      NOTREACHED();
   }
 }
 
@@ -498,13 +502,27 @@ void ControllerImpl::OnDownloadUpdated(const DriverEntry& download) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&ControllerImpl::SendOnDownloadUpdated,
                                 weak_ptr_factory_.GetWeakPtr(), entry->client,
-                                download.guid, download.bytes_downloaded));
+                                download.guid, entry->bytes_uploaded,
+                                download.bytes_downloaded));
 }
 
 bool ControllerImpl::IsTrackingDownload(const std::string& guid) const {
   if (controller_state_ != State::READY)
     return false;
   return !!model_->Get(guid);
+}
+
+void ControllerImpl::OnUploadProgress(const std::string& guid,
+                                      uint64_t bytes_uploaded) const {
+  Entry* entry = model_->Get(guid);
+  DCHECK(entry);
+
+  entry->bytes_uploaded = bytes_uploaded;
+
+  auto* client = clients_->GetClient(entry->client);
+  DCHECK(client);
+
+  client->OnDownloadUpdated(guid, bytes_uploaded, /* bytes_downloaded= */ 0u);
 }
 
 void ControllerImpl::OnFileMonitorReady(bool success) {
@@ -662,7 +680,8 @@ void ControllerImpl::AttemptToFinalizeSetup() {
     return;
   }
 
-  device_status_listener_->Start(this);
+  device_status_listener_->SetObserver(this);
+  device_status_listener_->Start(config_->network_startup_delay);
   PollActiveDriverDownloads();
   CancelOrphanedRequests();
   CleanupUnknownFiles();
@@ -1134,6 +1153,7 @@ void ControllerImpl::HandleCompleteDownload(CompletionType type,
     DCHECK(driver_entry.has_value());
     stats::LogFilePathRenamed(driver_entry->current_file_path !=
                               entry->target_file_path);
+    stats::LogHashPresence(!driver_entry->hash256.empty());
     entry->target_file_path = driver_entry->current_file_path;
     entry->completion_time = driver_entry->completion_time;
     entry->bytes_downloaded = driver_entry->bytes_downloaded;
@@ -1141,6 +1161,7 @@ void ControllerImpl::HandleCompleteDownload(CompletionType type,
                                    driver_entry->bytes_downloaded,
                                    entry->url_chain, entry->response_headers);
     completion_info.blob_handle = driver_entry->blob_handle;
+    completion_info.hash256 = driver_entry->hash256;
 
     entry->last_cleanup_check_time = driver_entry->completion_time;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -1342,13 +1363,14 @@ void ControllerImpl::SendOnServiceUnavailable() {
 
 void ControllerImpl::SendOnDownloadUpdated(DownloadClient client_id,
                                            const std::string& guid,
+                                           uint64_t bytes_uploaded,
                                            uint64_t bytes_downloaded) {
   if (!model_->Get(guid))
     return;
 
   auto* client = clients_->GetClient(client_id);
   DCHECK(client);
-  client->OnDownloadUpdated(guid, bytes_downloaded);
+  client->OnDownloadUpdated(guid, bytes_uploaded, bytes_downloaded);
 }
 
 void ControllerImpl::SendOnDownloadSucceeded(

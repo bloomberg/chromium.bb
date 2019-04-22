@@ -23,10 +23,13 @@ REPO_REV = 'stable'
 # limitations under the License.
 
 # increment this whenever we make important changes to this script
-VERSION = (1, 23)
+VERSION = (1, 25)
 
 # increment this if the MAINTAINER_KEYS block is modified
 KEYRING_VERSION = (1, 5)
+
+# Each individual key entry is created by using:
+# gpg --armor --export keyid
 MAINTAINER_KEYS = """
 
      Repo Maintainer <repo@android.kernel.org>
@@ -237,13 +240,14 @@ repodir = '.repo'                # name of repo's private directory
 S_repo = 'repo'                  # special repo repository
 S_manifests = 'manifests'        # special manifest repository
 REPO_MAIN = S_repo + '/main.py'  # main script
-MIN_PYTHON_VERSION = (2, 6)      # minimum supported python version
+MIN_PYTHON_VERSION = (2, 7)      # minimum supported python version
 GITC_CONFIG_FILE = '/gitc/.config'
 GITC_FS_ROOT_DIR = '/gitc/manifest-rw/'
 
 
 import errno
 import optparse
+import platform
 import re
 import shutil
 import stat
@@ -271,9 +275,12 @@ def _print(*objects, **kwargs):
 # Python version check
 ver = sys.version_info
 if (ver[0], ver[1]) < MIN_PYTHON_VERSION:
-  _print('error: Python version %s unsupported.\n'
-         'Please use Python 2.6 - 2.7 instead.'
-         % sys.version.split(' ')[0], file=sys.stderr)
+  _print('error: Python version {} unsupported.\n'
+         'Please use Python {}.{} instead.'.format(
+             sys.version.split(' ')[0],
+             MIN_PYTHON_VERSION[0],
+             MIN_PYTHON_VERSION[1],
+         ), file=sys.stderr)
   sys.exit(1)
 
 home_dot_repo = os.path.expanduser('~/.repoconfig')
@@ -299,6 +306,9 @@ group.add_option('-b', '--manifest-branch',
 group.add_option('-m', '--manifest-name',
                  dest='manifest_name',
                  help='initial manifest file', metavar='NAME.xml')
+group.add_option('--current-branch',
+                 dest='current_branch_only', action='store_true',
+                 help='fetch only current manifest branch from server')
 group.add_option('--mirror',
                  dest='mirror', action='store_true',
                  help='create a replica of the remote repositories '
@@ -313,6 +323,9 @@ group.add_option('--archive',
                  dest='archive', action='store_true',
                  help='checkout an archive instead of a git repository for '
                       'each project. See git archive.')
+group.add_option('--submodules',
+                 dest='submodules', action='store_true',
+                 help='sync any submodules associated with the manifest repo')
 group.add_option('-g', '--groups',
                  dest='groups', default='default',
                  help='restrict manifest projects to ones with specified '
@@ -326,6 +339,9 @@ group.add_option('-p', '--platform',
 group.add_option('--no-clone-bundle',
                  dest='no_clone_bundle', action='store_true',
                  help='disable use of /clone.bundle on HTTP/HTTPS')
+group.add_option('--no-tags',
+                 dest='no_tags', action='store_true',
+                 help="don't fetch tags in the manifest")
 
 
 # Tool
@@ -470,6 +486,10 @@ def _Init(args, gitc_init=False):
 
     dst = os.path.abspath(os.path.join(repodir, S_repo))
     _Clone(url, dst, opt.quiet, not opt.no_clone_bundle)
+
+    if not os.path.isfile('%s/repo' % dst):
+      _print("warning: '%s' does not look like a git-repo repository, is "
+             "REPO_URL set correctly?" % url, file=sys.stderr)
 
     if can_verify and not opt.no_repo_verify:
       rev = _Verify(dst, branch, opt.quiet)
@@ -977,7 +997,10 @@ def main(orig_args):
       try:
         _Init(args, gitc_init=(cmd == 'gitc-init'))
       except CloneFailure:
-        shutil.rmtree(os.path.join(repodir, S_repo), ignore_errors=True)
+        path = os.path.join(repodir, S_repo)
+        _print("fatal: cloning the git-repo repository failed, will remove "
+               "'%s' " % path, file=sys.stderr)
+        shutil.rmtree(path, ignore_errors=True)
         sys.exit(1)
       repo_main, rel_repo_dir = _FindRepo()
     else:
@@ -995,7 +1018,10 @@ def main(orig_args):
   me.extend(orig_args)
   me.extend(extra_args)
   try:
-    os.execv(sys.executable, me)
+    if platform.system() == "Windows":
+      sys.exit(subprocess.call(me))
+    else:
+      os.execv(sys.executable, me)
   except OSError as e:
     _print("fatal: unable to start %s" % repo_main, file=sys.stderr)
     _print("fatal: %s" % e, file=sys.stderr)
@@ -1005,6 +1031,6 @@ def main(orig_args):
 if __name__ == '__main__':
   if ver[0] == 3:
     _print('warning: Python 3 support is currently experimental. YMMV.\n'
-           'Please use Python 2.6 - 2.7 instead.',
+           'Please use Python 2.7 instead.',
            file=sys.stderr)
   main(sys.argv[1:])

@@ -4,6 +4,7 @@
 
 #include "mojo/public/cpp/system/handle_signal_tracker.h"
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"

@@ -8,7 +8,7 @@
 
 #include "base/callback.h"
 #include "base/logging.h"
-#include "chrome/common/webui_url_constants.h"
+#include "chrome/common/url_constants.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "services/identity/public/cpp/identity_manager.h"
@@ -19,7 +19,7 @@ namespace {
 void RedirectToNtp(content::WebContents* contents) {
   VLOG(1) << "RedirectToNtp";
   contents->GetController().LoadURL(
-      GURL(chrome::kChromeUINewTabURL), content::Referrer(),
+      GURL(chrome::kChromeSearchLocalNtpUrl), content::Referrer(),
       ui::PAGE_TRANSITION_AUTO_TOPLEVEL, std::string());
 }
 
@@ -42,20 +42,13 @@ ProcessDiceHeaderDelegateImpl::ProcessDiceHeaderDelegateImpl(
       redirect_url_(redirect_url) {
   DCHECK(web_contents);
   DCHECK(identity_manager_);
+  DCHECK(signin::DiceMethodGreaterOrEqual(
+      account_consistency_, signin::AccountConsistencyMethod::kDiceMigration));
 }
 
 ProcessDiceHeaderDelegateImpl::~ProcessDiceHeaderDelegateImpl() = default;
 
 bool ProcessDiceHeaderDelegateImpl::ShouldEnableSync() {
-  if (!signin::DiceMethodGreaterOrEqual(
-          account_consistency_,
-          signin::AccountConsistencyMethod::kDiceMigration)) {
-    // Dice migration not enabled.
-    VLOG(1)
-        << "Do not start sync after web sign-in [DICE migration not enabled].";
-    return false;
-  }
-
   if (identity_manager_->HasPrimaryAccount()) {
     VLOG(1) << "Do not start sync after web sign-in [already authenticated].";
     return false;

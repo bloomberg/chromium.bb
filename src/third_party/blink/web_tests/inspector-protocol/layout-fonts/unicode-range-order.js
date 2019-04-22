@@ -4,11 +4,11 @@
     <style>
         div { border: 1px solid; padding: 0 8px; margin: 8px 0; }
         span.ahem { font-family: 'Ahem'; }
-        span.courier { font-family: 'Courier New', 'Courier'; }
+        span.courier { font-family: 'Courier New', 'Courier', 'Cousine'; }
 
         @font-face {
             font-family: 'test1';
-            src: local('Times');
+            src: local('Times'), local('Tinos-Regular');
         }
         @font-face {
             font-family: 'test1';
@@ -18,7 +18,7 @@
 
         @font-face {
             font-family: 'test2';
-            src: local('Times');
+            src: local('Times'), local('Tinos-Regular');
         }
         @font-face {
             font-family: 'test2';
@@ -28,7 +28,7 @@
 
         @font-face {
             font-family: 'test3';
-            src: local('Times');
+            src: local('Times'), local('Tinos-Regular');
         }
         @font-face {
             font-family: 'test3';
@@ -38,7 +38,7 @@
 
         @font-face {
             font-family: 'test4';
-            src: local('Times');
+            src: local('Times'), local('Tinos-Regular');
         }
         @font-face {
             font-family: 'test4';
@@ -47,13 +47,13 @@
         }
         @font-face {
             font-family: 'test4';
-            src: local('Courier New'), local('Courier');
+            src: local('Courier New'), local('Courier'), local('Cousine-Regular');
             unicode-range: U+004F-0051;
         }
 
         @font-face {
             font-family: 'test5';
-            src: local('Times'), local('Times New Roman');
+            src: local('Times'), local('Tinos-Regular'), local('Times New Roman');
         }
         @font-face {
             font-family: 'test5';
@@ -62,13 +62,13 @@
         }
         @font-face {
             font-family: 'test5';
-            src: local('Courier New'), local('Courier');
+            src: local('Courier New'), local('Courier'), local('Cousine-Regular');
             unicode-range: U+0052-0055;
         }
 
         @font-face {
             font-family: 'test6';
-            src: local('Courier New'), local('Courier');
+            src: local('Courier New'), local('Courier'), local('Cousine-Regular');
         }
         @font-face {
             font-family: 'test6';

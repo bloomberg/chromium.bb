@@ -7,6 +7,8 @@ found in the LICENSE file.
 
 <link rel="import" href="/tracing/core/test_utils.html">
 <link rel="import" href="/tracing/value/diagnostics/breakdown.html">
+<link rel="import" href="/tracing/value/histogram_deserializer.html">
+<link rel="import" href="/tracing/value/histogram_serializer.html">
 
 <script>
 'use strict';
@@ -32,6 +34,30 @@ tr.b.unittest.testSuite(function() {
     a.colorScheme = 'fake color scheme';
     assert.isFalse(a.canAddDiagnostic(b));
     assert.isFalse(b.canAddDiagnostic(a));
+  });
+
+  test('deserialize', function() {
+    const b = tr.v.d.Breakdown.deserialize(
+        [4, 3, 1, 2, 3],
+        new tr.v.HistogramDeserializer([
+          'a', 'b', 'c',
+          [0, 1, 2],
+          'colors',
+        ]));
+    assert.strictEqual(b.colorScheme, 'colors');
+    assert.strictEqual(b.get('a'), 1);
+    assert.strictEqual(b.get('b'), 2);
+    assert.strictEqual(b.get('c'), 3);
+  });
+
+  test('serialize', function() {
+    const s = new tr.v.HistogramSerializer();
+    const b = tr.v.d.Breakdown.fromEntries([['a', 10], ['b', 20]]);
+    assert.deepEqual(b.serialize(s), [0, 3, 10, 20]);
+    assert.strictEqual(s.getOrAllocateId(''), 0);
+    assert.strictEqual(s.getOrAllocateId('a'), 1);
+    assert.strictEqual(s.getOrAllocateId('b'), 2);
+    assert.strictEqual(s.getOrAllocateId([1, 2]), 3);
   });
 });
 </script>

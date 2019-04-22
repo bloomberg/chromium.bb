@@ -234,7 +234,7 @@ component("bluetooth") {
   }
 
   if (is_chromeos) {
-    deps += [ "//chromeos" ]
+    deps += [ "//chromeos/constants" ]
   }
 
   if (is_mac) {

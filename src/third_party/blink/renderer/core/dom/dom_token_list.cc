@@ -78,7 +78,7 @@ bool CheckTokensSyntax(const Vector<String>& tokens,
 
 }  // anonymous namespace
 
-void DOMTokenList::Trace(blink::Visitor* visitor) {
+void DOMTokenList::Trace(Visitor* visitor) {
   visitor->Trace(element_);
   ScriptWrappable::Trace(visitor);
 }

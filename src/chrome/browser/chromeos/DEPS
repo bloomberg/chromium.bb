@@ -34,6 +34,9 @@ specific_include_rules = {
    "!ash",
    "+ash/public",
   ],
+  "assistant_util_unittest\.cc": [
+    "+ui/events/devices/device_data_manager.h",
+  ],
   "chrome_browser_main_chromeos\.cc": [
     # TODO(mash): Support EventRewriters, http://crbug.com/647781.
     "+ash/events/event_rewriter_controller.h",
@@ -42,6 +45,10 @@ specific_include_rules = {
   ],
   "event_rewriter_unittest\.cc": [
     "+ui/events/devices/device_data_manager.h",
+  ],
+  "file_manager_browsertest_base.cc": [
+    "+chrome/browser/ui/views/extensions/extension_dialog.h",
+    "+chrome/browser/ui/views/select_file_dialog_extension.h",
   ],
   "input_method_manager_impl\.cc": [
     # For GetInputMethodKeyboardController. TODO(stevenjb/shuchen): Fix this

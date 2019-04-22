@@ -15,6 +15,7 @@
 #include "utils/DawnHelpers.h"
 
 #include "common/Assert.h"
+#include "common/Constants.h"
 
 #include <shaderc/shaderc.hpp>
 
@@ -114,7 +115,7 @@ namespace utils {
 
     dawn::Buffer CreateBufferFromData(const dawn::Device& device,
                                       const void* data,
-                                      uint32_t size,
+                                      uint64_t size,
                                       dawn::BufferUsageBit usage) {
         dawn::BufferDescriptor descriptor;
         descriptor.size = size;
@@ -125,36 +126,115 @@ namespace utils {
         return buffer;
     }
 
+    ComboRenderPassDescriptor::ComboRenderPassDescriptor(
+        std::initializer_list<dawn::TextureView> colorAttachmentInfo,
+        dawn::TextureView depthStencil)
+        : cColorAttachmentsInfoPtr() {
+        for (uint32_t i = 0; i < kMaxColorAttachments; ++i) {
+            mColorAttachmentsInfo[i].loadOp = dawn::LoadOp::Clear;
+            mColorAttachmentsInfo[i].storeOp = dawn::StoreOp::Store;
+            mColorAttachmentsInfo[i].clearColor = {0.0f, 0.0f, 0.0f, 0.0f};
+            cColorAttachmentsInfoPtr[i] = nullptr;
+        }
+
+        cDepthStencilAttachmentInfo.clearDepth = 1.0f;
+        cDepthStencilAttachmentInfo.clearStencil = 0;
+        cDepthStencilAttachmentInfo.depthLoadOp = dawn::LoadOp::Clear;
+        cDepthStencilAttachmentInfo.depthStoreOp = dawn::StoreOp::Store;
+        cDepthStencilAttachmentInfo.stencilLoadOp = dawn::LoadOp::Clear;
+        cDepthStencilAttachmentInfo.stencilStoreOp = dawn::StoreOp::Store;
+
+        colorAttachmentCount = static_cast<uint32_t>(colorAttachmentInfo.size());
+        uint32_t colorAttachmentIndex = 0;
+        for (const dawn::TextureView& colorAttachment : colorAttachmentInfo) {
+            if (colorAttachment.Get() != nullptr) {
+                mColorAttachmentsInfo[colorAttachmentIndex].attachment = colorAttachment;
+                cColorAttachmentsInfoPtr[colorAttachmentIndex] =
+                    &mColorAttachmentsInfo[colorAttachmentIndex];
+            }
+            ++colorAttachmentIndex;
+        }
+        colorAttachments = cColorAttachmentsInfoPtr;
+
+        if (depthStencil.Get() != nullptr) {
+            cDepthStencilAttachmentInfo.attachment = depthStencil;
+            depthStencilAttachment = &cDepthStencilAttachmentInfo;
+        } else {
+            depthStencilAttachment = nullptr;
+        }
+    }
+
+    const ComboRenderPassDescriptor& ComboRenderPassDescriptor::operator=(
+        const ComboRenderPassDescriptor& otherRenderPass) {
+        cDepthStencilAttachmentInfo = otherRenderPass.cDepthStencilAttachmentInfo;
+        mColorAttachmentsInfo = otherRenderPass.mColorAttachmentsInfo;
+
+        colorAttachmentCount = otherRenderPass.colorAttachmentCount;
+
+        // Assign the pointers in colorAttachmentsInfoPtr to items in this->mColorAttachmentsInfo
+        for (uint32_t i = 0; i < colorAttachmentCount; ++i) {
+            if (otherRenderPass.cColorAttachmentsInfoPtr[i] != nullptr) {
+                cColorAttachmentsInfoPtr[i] = &mColorAttachmentsInfo[i];
+            } else {
+                cColorAttachmentsInfoPtr[i] = nullptr;
+            }
+        }
+        colorAttachments = cColorAttachmentsInfoPtr;
+
+        if (otherRenderPass.depthStencilAttachment != nullptr) {
+            // Assign desc.depthStencilAttachment to this->depthStencilAttachmentInfo;
+            depthStencilAttachment = &cDepthStencilAttachmentInfo;
+        } else {
+            depthStencilAttachment = nullptr;
+        }
+
+        return *this;
+    }
+
+    BasicRenderPass::BasicRenderPass()
+        : width(0),
+          height(0),
+          color(nullptr),
+          colorFormat(dawn::TextureFormat::R8G8B8A8Unorm),
+          renderPassInfo({}) {
+    }
+
+    BasicRenderPass::BasicRenderPass(uint32_t texWidth,
+                                     uint32_t texHeight,
+                                     dawn::Texture colorAttachment,
+                                     dawn::TextureFormat textureFormat)
+        : width(texWidth),
+          height(texHeight),
+          color(colorAttachment),
+          colorFormat(textureFormat),
+          renderPassInfo({colorAttachment.CreateDefaultView()}) {
+    }
+
     BasicRenderPass CreateBasicRenderPass(const dawn::Device& device,
                                           uint32_t width,
                                           uint32_t height) {
-        BasicRenderPass result;
-        result.width = width;
-        result.height = height;
+        DAWN_ASSERT(width > 0 && height > 0);
 
-        result.colorFormat = dawn::TextureFormat::R8G8B8A8Unorm;
+        dawn::TextureFormat kColorFormat = dawn::TextureFormat::R8G8B8A8Unorm;
+
         dawn::TextureDescriptor descriptor;
         descriptor.dimension = dawn::TextureDimension::e2D;
         descriptor.size.width = width;
         descriptor.size.height = height;
         descriptor.size.depth = 1;
-        descriptor.arrayLayer = 1;
-        descriptor.format = result.colorFormat;
-        descriptor.levelCount = 1;
+        descriptor.arrayLayerCount = 1;
+        descriptor.sampleCount = 1;
+        descriptor.format = kColorFormat;
+        descriptor.mipLevelCount = 1;
         descriptor.usage =
             dawn::TextureUsageBit::OutputAttachment | dawn::TextureUsageBit::TransferSrc;
-        result.color = device.CreateTexture(&descriptor);
+        dawn::Texture color = device.CreateTexture(&descriptor);
 
-        dawn::TextureView colorView = result.color.CreateDefaultTextureView();
-        result.renderPassInfo = device.CreateRenderPassDescriptorBuilder()
-                                    .SetColorAttachment(0, colorView, dawn::LoadOp::Clear)
-                                    .GetResult();
-
-        return result;
+        return BasicRenderPass(width, height, color, kColorFormat);
     }
 
     dawn::BufferCopyView CreateBufferCopyView(dawn::Buffer buffer,
-                                              uint32_t offset,
+                                              uint64_t offset,
                                               uint32_t rowPitch,
                                               uint32_t imageHeight) {
         dawn::BufferCopyView bufferCopyView;
@@ -169,14 +249,12 @@ namespace utils {
     dawn::TextureCopyView CreateTextureCopyView(dawn::Texture texture,
                                                 uint32_t level,
                                                 uint32_t slice,
-                                                dawn::Origin3D origin,
-                                                dawn::TextureAspect aspect) {
+                                                dawn::Origin3D origin) {
         dawn::TextureCopyView textureCopyView;
         textureCopyView.texture = texture;
         textureCopyView.level = level;
         textureCopyView.slice = slice;
         textureCopyView.origin = origin;
-        textureCopyView.aspect = aspect;
 
         return textureCopyView;
     }
@@ -190,6 +268,9 @@ namespace utils {
         desc.addressModeU = dawn::AddressMode::Repeat;
         desc.addressModeV = dawn::AddressMode::Repeat;
         desc.addressModeW = dawn::AddressMode::Repeat;
+        desc.lodMinClamp = kLodMin;
+        desc.lodMaxClamp = kLodMax;
+        desc.compareFunction = dawn::CompareFunction::Never;
 
         return desc;
     }
@@ -198,10 +279,10 @@ namespace utils {
                                                  const dawn::BindGroupLayout* bindGroupLayout) {
         dawn::PipelineLayoutDescriptor descriptor;
         if (bindGroupLayout) {
-            descriptor.numBindGroupLayouts = 1;
+            descriptor.bindGroupLayoutCount = 1;
             descriptor.bindGroupLayouts = bindGroupLayout;
         } else {
-            descriptor.numBindGroupLayouts = 0;
+            descriptor.bindGroupLayoutCount = 0;
             descriptor.bindGroupLayouts = nullptr;
         }
         return device.CreatePipelineLayout(&descriptor);
@@ -209,19 +290,67 @@ namespace utils {
 
     dawn::BindGroupLayout MakeBindGroupLayout(
         const dawn::Device& device,
-        std::initializer_list<dawn::BindGroupBinding> bindingsInitializer) {
-        std::vector<dawn::BindGroupBinding> bindings;
-        dawn::ShaderStageBit kNoStages{};
-        for (const dawn::BindGroupBinding& binding : bindingsInitializer) {
+        std::initializer_list<dawn::BindGroupLayoutBinding> bindingsInitializer) {
+        constexpr dawn::ShaderStageBit kNoStages{};
+
+        std::vector<dawn::BindGroupLayoutBinding> bindings;
+        for (const dawn::BindGroupLayoutBinding& binding : bindingsInitializer) {
             if (binding.visibility != kNoStages) {
                 bindings.push_back(binding);
             }
         }
 
         dawn::BindGroupLayoutDescriptor descriptor;
-        descriptor.numBindings = static_cast<uint32_t>(bindings.size());
+        descriptor.bindingCount = static_cast<uint32_t>(bindings.size());
         descriptor.bindings = bindings.data();
         return device.CreateBindGroupLayout(&descriptor);
+    }
+
+    BindingInitializationHelper::BindingInitializationHelper(uint32_t binding,
+                                                             const dawn::Sampler& sampler)
+        : binding(binding), sampler(sampler) {
+    }
+
+    BindingInitializationHelper::BindingInitializationHelper(uint32_t binding,
+                                                             const dawn::TextureView& textureView)
+        : binding(binding), textureView(textureView) {
+    }
+
+    BindingInitializationHelper::BindingInitializationHelper(uint32_t binding,
+                                                             const dawn::Buffer& buffer,
+                                                             uint64_t offset,
+                                                             uint64_t size)
+        : binding(binding), buffer(buffer), offset(offset), size(size) {
+    }
+
+    dawn::BindGroupBinding BindingInitializationHelper::GetAsBinding() const {
+        dawn::BindGroupBinding result;
+
+        result.binding = binding;
+        result.sampler = sampler;
+        result.textureView = textureView;
+        result.buffer = buffer;
+        result.offset = offset;
+        result.size = size;
+
+        return result;
+    }
+
+    dawn::BindGroup MakeBindGroup(
+        const dawn::Device& device,
+        const dawn::BindGroupLayout& layout,
+        std::initializer_list<BindingInitializationHelper> bindingsInitializer) {
+        std::vector<dawn::BindGroupBinding> bindings;
+        for (const BindingInitializationHelper& helper : bindingsInitializer) {
+            bindings.push_back(helper.GetAsBinding());
+        }
+
+        dawn::BindGroupDescriptor descriptor;
+        descriptor.layout = layout;
+        descriptor.bindingCount = bindings.size();
+        descriptor.bindings = bindings.data();
+
+        return device.CreateBindGroup(&descriptor);
     }
 
 }  // namespace utils

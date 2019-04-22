@@ -62,10 +62,9 @@ static sk_sp<SkImage> make_picture_image() {
 }
 
 static sk_sp<SkColorSpace> make_parametric_transfer_fn(const SkColorSpacePrimaries& primaries) {
-    SkMatrix44 toXYZD50;
+    skcms_Matrix3x3 toXYZD50;
     SkAssertResult(primaries.toXYZD50(&toXYZD50));
-    SkColorSpaceTransferFn fn;
-    fn.fA = 1.f; fn.fB = 0.f; fn.fC = 0.f; fn.fD = 0.f; fn.fE = 0.f; fn.fF = 0.f; fn.fG = 1.8f;
+    skcms_TransferFunction fn = { 1.8f, 1.f, 0.f, 0.f, 0.f, 0.f, 0.f };
     return SkColorSpace::MakeRGB(fn, toXYZD50);
 }
 
@@ -185,10 +184,10 @@ protected:
         return SkISize::Make(3 * (kEncodedWidth + 1), 12 * (kEncodedHeight + 1));
     }
 
-    void onDraw(SkCanvas* canvas) override {
+    DrawResult onDraw(SkCanvas* canvas, SkString* errorMsg) override {
         if (!canvas->imageInfo().colorSpace()) {
-            // This gm is only interesting in color correct modes.
-            return;
+            *errorMsg = "This gm is only interesting in color correct modes.";
+            return DrawResult::kSkip;
         }
 
         const SkAlphaType alphaTypes[] = {
@@ -225,6 +224,7 @@ protected:
             canvas->restore();
             canvas->translate((float) kEncodedWidth + 1, 0.0f);
         }
+        return DrawResult::kOk;
     }
 
 private:
@@ -248,10 +248,10 @@ protected:
         return SkISize::Make(3 * kWidth, 12 * kHeight);
     }
 
-    void onDraw(SkCanvas* canvas) override {
+    DrawResult onDraw(SkCanvas* canvas, SkString* errorMsg) override {
         if (!canvas->imageInfo().colorSpace()) {
-            // This gm is only interesting in color correct modes.
-            return;
+            *errorMsg = "This gm is only interesting in color correct modes.";
+            return DrawResult::kSkip;
         }
 
         const sk_sp<SkImage> images[] = {
@@ -292,6 +292,7 @@ protected:
                 canvas->translate((float) kWidth, 0.0f);
             }
         }
+        return DrawResult::kOk;
     }
 
 private:

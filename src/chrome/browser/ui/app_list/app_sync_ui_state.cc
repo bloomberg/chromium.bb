@@ -11,8 +11,9 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/app_list/app_sync_ui_state_factory.h"
 #include "chrome/browser/ui/app_list/app_sync_ui_state_observer.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/prefs/pref_service.h"
+#include "components/sync/driver/sync_service.h"
+#include "components/sync/driver/sync_user_settings.h"
 #include "components/user_manager/user_manager.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -37,7 +38,7 @@ bool AppSyncUIState::ShouldObserveAppSyncForProfile(Profile* profile) {
   if (!profile || profile->IsOffTheRecord())
     return false;
 
-  if (!ProfileSyncServiceFactory::HasProfileSyncService(profile))
+  if (!ProfileSyncServiceFactory::HasSyncService(profile))
     return false;
 
   return profile->IsNewProfile();
@@ -118,8 +119,10 @@ void AppSyncUIState::SetStatus(Status status) {
 }
 
 void AppSyncUIState::CheckAppSync() {
-  if (!sync_service_ || !sync_service_->IsFirstSetupComplete())
+  if (!sync_service_ ||
+      !sync_service_->GetUserSettings()->IsFirstSetupComplete()) {
     return;
+  }
 
   const bool synced = sync_service_->IsSyncFeatureActive();
   const bool has_pending_extension = extensions::ExtensionSystem::Get(profile_)

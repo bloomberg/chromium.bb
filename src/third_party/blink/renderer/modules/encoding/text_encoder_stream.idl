@@ -8,8 +8,7 @@
     Constructor(),
     ConstructorCallWith=ScriptState,
     RaisesException=Constructor,
-    MeasureAs=TextEncoderStreamConstructor,
-    RuntimeEnabled=EncodingStreams
+    MeasureAs=TextEncoderStreamConstructor
 ] interface TextEncoderStream {
     readonly attribute DOMString encoding;
     readonly attribute ReadableStream readable;

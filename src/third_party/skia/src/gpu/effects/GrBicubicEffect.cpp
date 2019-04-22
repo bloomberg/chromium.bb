@@ -20,6 +20,7 @@ public:
                               GrProcessorKeyBuilder* b) {
         const GrBicubicEffect& bicubicEffect = effect.cast<GrBicubicEffect>();
         b->add32(GrTextureDomain::GLDomain::DomainKey(bicubicEffect.domain()));
+        b->add32(bicubicEffect.alphaType());
     }
 
 protected:
@@ -75,8 +76,8 @@ void GrGLBicubicEffect::emitCode(EmitArgs& args) {
     // starting coords are near a texel boundary and accumulations of imgInc would cause us to skip/
     // double hit a texel.
     fragBuilder->codeAppendf("coord /= %s;", imgInc);
-    fragBuilder->codeAppend("float2 f = fract(coord);");
-    fragBuilder->codeAppendf("coord = (coord - f + float2(0.5)) * %s;", imgInc);
+    fragBuilder->codeAppend("half2 f = half2(fract(coord));");
+    fragBuilder->codeAppendf("coord = (coord - f + half2(0.5)) * %s;", imgInc);
     fragBuilder->codeAppend("half4 wx = kMitchellCoefficients * half4(1.0, f.x, f.x * f.x, f.x * f.x * f.x);");
     fragBuilder->codeAppend("half4 wy = kMitchellCoefficients * half4(1.0, f.y, f.y * f.y, f.y * f.y * f.y);");
     fragBuilder->codeAppend("half4 rowColors[4];");
@@ -98,43 +99,46 @@ void GrGLBicubicEffect::emitCode(EmitArgs& args) {
             "half4 s%d = wx.x * rowColors[0] + wx.y * rowColors[1] + wx.z * rowColors[2] + wx.w * rowColors[3];",
             y);
     }
-    SkString bicubicColor("(wy.x * s0 + wy.y * s1 + wy.z * s2 + wy.w * s3)");
-    fragBuilder->codeAppendf("%s = %s * %s;", args.fOutputColor, bicubicColor.c_str(),
-                             args.fInputColor);
+    fragBuilder->codeAppend("half4 bicubicColor = wy.x * s0 + wy.y * s1 + wy.z * s2 + wy.w * s3;");
+    // Bicubic can send colors out of range, so clamp to get them back in (source) gamut.
+    // The kind of clamp we have to do depends on the alpha type.
+    if (kPremul_SkAlphaType == bicubicEffect.alphaType()) {
+        fragBuilder->codeAppend("bicubicColor.a = saturate(bicubicColor.a);");
+        fragBuilder->codeAppend(
+                "bicubicColor.rgb = max(half3(0.0), min(bicubicColor.rgb, bicubicColor.aaa));");
+    } else {
+        fragBuilder->codeAppend("bicubicColor = saturate(bicubicColor);");
+    }
+    fragBuilder->codeAppendf("%s = bicubicColor * %s;", args.fOutputColor, args.fInputColor);
 }
 
 void GrGLBicubicEffect::onSetData(const GrGLSLProgramDataManager& pdman,
                                   const GrFragmentProcessor& processor) {
     const GrBicubicEffect& bicubicEffect = processor.cast<GrBicubicEffect>();
-    GrSurfaceProxy* proxy = processor.textureSampler(0).proxy();
+    GrTextureProxy* proxy = processor.textureSampler(0).proxy();
     GrTexture* texture = proxy->peekTexture();
 
     float imageIncrement[2];
     imageIncrement[0] = 1.0f / texture->width();
     imageIncrement[1] = 1.0f / texture->height();
     pdman.set2fv(fImageIncrementUni, 1, imageIncrement);
-    fDomain.setData(pdman, bicubicEffect.domain(), proxy);
+    fDomain.setData(pdman, bicubicEffect.domain(), proxy,
+                    processor.textureSampler(0).samplerState());
 }
 
 GrBicubicEffect::GrBicubicEffect(sk_sp<GrTextureProxy> proxy,
-                                 const SkMatrix& matrix,
-                                 const GrSamplerState::WrapMode wrapModes[2])
-        : INHERITED{kGrBicubicEffect_ClassID, ModulateByConfigOptimizationFlags(proxy->config())}
+                                 const SkMatrix& matrix, const SkRect& domain,
+                                 const GrSamplerState::WrapMode wrapModes[2],
+                                 GrTextureDomain::Mode modeX, GrTextureDomain::Mode modeY,
+                                 SkAlphaType alphaType)
+        : INHERITED{kGrBicubicEffect_ClassID,
+                    ModulateForSamplerOptFlags(proxy->config(),
+                            GrTextureDomain::IsDecalSampled(wrapModes, modeX,modeY))}
         , fCoordTransform(matrix, proxy.get())
-        , fDomain(GrTextureDomain::IgnoredDomain())
+        , fDomain(proxy.get(), domain, modeX, modeY)
         , fTextureSampler(std::move(proxy),
-                          GrSamplerState(wrapModes, GrSamplerState::Filter::kNearest)) {
-    this->addCoordTransform(&fCoordTransform);
-    this->setTextureSamplerCnt(1);
-}
-
-GrBicubicEffect::GrBicubicEffect(sk_sp<GrTextureProxy> proxy,
-                                 const SkMatrix& matrix,
-                                 const SkRect& domain)
-        : INHERITED(kGrBicubicEffect_ClassID, ModulateByConfigOptimizationFlags(proxy->config()))
-        , fCoordTransform(matrix, proxy.get())
-        , fDomain(proxy.get(), domain, GrTextureDomain::kClamp_Mode)
-        , fTextureSampler(std::move(proxy)) {
+                          GrSamplerState(wrapModes, GrSamplerState::Filter::kNearest))
+        , fAlphaType(alphaType) {
     this->addCoordTransform(&fCoordTransform);
     this->setTextureSamplerCnt(1);
 }
@@ -143,7 +147,8 @@ GrBicubicEffect::GrBicubicEffect(const GrBicubicEffect& that)
         : INHERITED(kGrBicubicEffect_ClassID, that.optimizationFlags())
         , fCoordTransform(that.fCoordTransform)
         , fDomain(that.fDomain)
-        , fTextureSampler(that.fTextureSampler) {
+        , fTextureSampler(that.fTextureSampler)
+        , fAlphaType(that.fAlphaType) {
     this->addCoordTransform(&fCoordTransform);
     this->setTextureSamplerCnt(1);
 }
@@ -170,7 +175,8 @@ std::unique_ptr<GrFragmentProcessor> GrBicubicEffect::TestCreate(GrProcessorTest
                                         : GrProcessorUnitTest::kAlphaTextureIdx;
     static const GrSamplerState::WrapMode kClampClamp[] = {GrSamplerState::WrapMode::kClamp,
                                                            GrSamplerState::WrapMode::kClamp};
-    return GrBicubicEffect::Make(d->textureProxy(texIdx), SkMatrix::I(), kClampClamp);
+    SkAlphaType alphaType = d->fRandom->nextBool() ? kPremul_SkAlphaType : kUnpremul_SkAlphaType;
+    return GrBicubicEffect::Make(d->textureProxy(texIdx), SkMatrix::I(), kClampClamp, alphaType);
 }
 #endif
 

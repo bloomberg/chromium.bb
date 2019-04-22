@@ -35,7 +35,7 @@ const char kPrefPromoClosed[] = "closed";
 
 NotificationPromo::NotificationPromo(PrefService* local_state)
     : local_state_(local_state),
-      promo_payload_(new base::DictionaryValue()),
+      promo_payload_(base::Value::Type::DICTIONARY),
       start_(0.0),
       end_(0.0),
       promo_id_(-1),
@@ -61,58 +61,66 @@ void NotificationPromo::InitFromVariations() {
   // paremeters. The payload is then added to the overall dictionary. This code
   // can be removed if this class is refactored and the payload is then
   // disregarded (crbug.com/608525).
-  base::DictionaryValue json;
-  base::DictionaryValue payload;
-  std::map<std::string, std::string>::iterator iter;
-  for (iter = params.begin(); iter != params.end(); ++iter) {
+  base::Value json(base::Value::Type::DICTIONARY);
+  base::Value payload(base::Value::Type::DICTIONARY);
+  for (const auto& param : params) {
     int converted_number;
-    bool converted = base::StringToInt(iter->second, &converted_number);
+    bool converted = base::StringToInt(param.second, &converted_number);
     // Choose the dictionary to which parameter is added based on whether the
     // parameter belongs in the payload or not.
-    base::DictionaryValue& json_or_payload =
-        IsPayloadParam(iter->first) ? payload : json;
+    base::Value& json_or_payload = IsPayloadParam(param.first) ? payload : json;
     if (converted) {
-      json_or_payload.SetInteger(iter->first, converted_number);
+      json_or_payload.SetKey(param.first, base::Value(converted_number));
     } else {
-      json_or_payload.SetString(iter->first, iter->second);
+      json_or_payload.SetKey(param.first, base::Value(param.second));
     }
   }
-  json.SetKey("payload", payload.Clone());
+  json.SetKey("payload", std::move(payload));
 
-  InitFromJson(json);
+  InitFromJson(std::move(json));
 }
 
-void NotificationPromo::InitFromJson(const base::DictionaryValue& promo) {
-  std::string time_str;
+void NotificationPromo::InitFromJson(base::Value promo) {
   base::Time time;
-  if (promo.GetString("start", &time_str) &&
-      base::Time::FromString(time_str.c_str(), &time)) {
+  const std::string* str = nullptr;
+
+  str = promo.FindStringKey("start");
+  if (str && base::Time::FromString(str->c_str(), &time)) {
     start_ = time.ToDoubleT();
-    DVLOG(1) << "start str=" << time_str
+    DVLOG(1) << "start str=" << *str
              << ", start_=" << base::NumberToString(start_);
   }
-  if (promo.GetString("end", &time_str) &&
-      base::Time::FromString(time_str.c_str(), &time)) {
+
+  str = promo.FindStringKey("end");
+  if (str && base::Time::FromString(str->c_str(), &time)) {
     end_ = time.ToDoubleT();
-    DVLOG(1) << "end str =" << time_str
-             << ", end_=" << base::NumberToString(end_);
+    DVLOG(1) << "end str =" << *str << ", end_=" << base::NumberToString(end_);
   }
 
-  promo.GetString("promo_text", &promo_text_);
+  str = promo.FindStringKey("promo_text");
+  if (str)
+    promo_text_ = *str;
   DVLOG(1) << "promo_text_=" << promo_text_;
 
-  const base::DictionaryValue* payload = NULL;
-  if (promo.GetDictionary("payload", &payload)) {
-    promo_payload_.reset(payload->DeepCopy());
+  const base::Value* payload =
+      promo.FindKeyOfType("payload", base::Value::Type::DICTIONARY);
+  if (payload) {
+    promo_payload_ = payload->Clone();
   }
 
-  promo.GetInteger("max_views", &max_views_);
+  base::Optional<int> max_views = promo.FindIntKey("max_views");
+  if (max_views.has_value())
+    max_views_ = max_views.value();
   DVLOG(1) << "max_views_ " << max_views_;
 
-  promo.GetInteger("max_seconds", &max_seconds_);
+  base::Optional<int> max_seconds = promo.FindIntKey("max_seconds");
+  if (max_seconds.has_value())
+    max_seconds_ = max_seconds.value();
   DVLOG(1) << "max_seconds_ " << max_seconds_;
 
-  promo.GetInteger("promo_id", &promo_id_);
+  base::Optional<int> promo_id = promo.FindIntKey("promo_id");
+  if (promo_id.has_value())
+    promo_id_ = promo_id.value();
   DVLOG(1) << "promo_id_ " << promo_id_;
 }
 
@@ -147,7 +155,7 @@ void NotificationPromo::WritePrefs(int promo_id,
 
   base::DictionaryValue promo_dict;
   promo_dict.MergeDictionary(local_state_->GetDictionary(kPrefPromoObject));
-  promo_dict.Set(base::IntToString(promo_id), std::move(ntp_promo));
+  promo_dict.Set(base::NumberToString(promo_id), std::move(ntp_promo));
   local_state_->Set(kPrefPromoObject, promo_dict);
   DVLOG(1) << "WritePrefs " << promo_dict;
 }
@@ -163,7 +171,7 @@ void NotificationPromo::InitFromPrefs() {
     return;
 
   const base::DictionaryValue* ntp_promo = NULL;
-  promo_dict->GetDictionary(base::IntToString(promo_id_), &ntp_promo);
+  promo_dict->GetDictionary(base::NumberToString(promo_id_), &ntp_promo);
   if (!ntp_promo)
     return;
 

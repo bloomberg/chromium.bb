@@ -61,4 +61,7 @@ interface PdfCompositor {
   // Sets the URL which is committed in the main frame of the WebContents,
   // for use in crash diagnosis.
   SetWebContentsURL(url.mojom.Url url);
+
+  // Sets the user-agent string for the document.
+  SetUserAgent(string user_agent);
 };

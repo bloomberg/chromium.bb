@@ -99,8 +99,20 @@ tr.exportTo('tr.v.d', function() {
       return key;
     }
 
+    serialize(serializer) {
+      const i = [...this].map(x => serializer.getOrAllocateId(x));
+      return (i.length === 1) ? i[0] : i;
+    }
+
     asDictInto_(d) {
       d.values = Array.from(this);
+    }
+
+    static deserialize(data, deserializer) {
+      if (!(data instanceof Array)) {
+        data = [data];
+      }
+      return new GenericSet(data.map(datum => deserializer.getObject(datum)));
     }
 
     static fromDict(d) {

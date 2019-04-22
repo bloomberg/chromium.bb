@@ -14,40 +14,36 @@ import os
 from chromite.cli import command
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
-from chromite.cli.cros import cros_cidbcreds
 from chromite.lib import cros_logging as logging
+from chromite.lib.buildstore import BuildStore
+from chromite.cli.cros import cros_cidbcreds
 
 
 _FINISHED_STATUSES = (
     'fail', 'pass', 'missing', 'aborted', 'skipped', 'forgiven')
 
 
-def FetchBuildStatuses(db, options):
+def FetchBuildStatuses(buildstore, options):
   """Fetch the requested build statuses.
 
   The results are NOT filtered or fixed up.
 
   Args:
-    db: CIDBConnection.
+    buildstore: BuildStore instance to make db calls.
     options: Parsed command line options set.
 
   Returns:
     List of build_status dicts from CIDB, or None.
   """
   if options.buildbucket_id:
-    build_status = db.GetBuildStatusWithBuildbucketId(
-        options.buildbucket_id)
-    if build_status:
-      return [build_status]
-  elif options.cidb_id:
-    build_status = db.GetBuildStatus(options.cidb_id)
+    build_status = buildstore.GetBuildStatuses([options.buildbucket_id])[0]
     if build_status:
       return [build_status]
   elif options.build_config:
     start_date = options.start_date or options.date
     end_date = options.end_date or options.date
-    return db.GetBuildHistory(
-        options.build_config, db.NUM_RESULTS_NO_LIMIT,
+    return buildstore.GetBuildHistory(
+        options.build_config, buildstore.NUM_RESULTS_NO_LIMIT,
         start_date=start_date, end_date=end_date)
   else:
     cros_build_lib.Die('You must specify which builds.')
@@ -57,7 +53,6 @@ def IsBuildStatusFinished(build_status):
   """Populates the 'artifacts_url' and 'stages' build_status fields.
 
   Args:
-    db: CIDBConnection.
     build_status: Single build_status dict returned by any Fetch method.
 
   Returns:
@@ -66,13 +61,13 @@ def IsBuildStatusFinished(build_status):
   return build_status['status'] in _FINISHED_STATUSES
 
 
-def FixUpBuildStatus(db, build_status):
+def FixUpBuildStatus(buildstore, build_status):
   """Add 'extra' build_status values we need.
 
   Populates the 'artifacts_url' and 'stages' build_status fields.
 
   Args:
-    db: CIDBConnection.
+    buildstore: BuildStore instance to make DB calls.
     build_status: Single build_status dict returned by any Fetch method.
 
   Returns:
@@ -86,7 +81,8 @@ def FixUpBuildStatus(db, build_status):
         build_status['metadata_url'])
 
   # Find stage information.
-  build_status['stages'] = db.GetBuildStages(build_status['id'])
+  build_status['stages'] = buildstore.GetBuildsStages(
+      buildbucket_ids=[build_status['buildbucket_id']])
 
   return build_status
 
@@ -104,7 +100,6 @@ def Report(build_statuses):
 
   for build_status in build_statuses:
     result += '\n'.join([
-        'cidb_id: %s' % build_status['id'],
         'buildbucket_id: %s' % build_status['buildbucket_id'],
         'status: %s' % build_status['status'],
         'artifacts_url: %s' % build_status['artifacts_url'],
@@ -131,7 +126,6 @@ def ReportJson(build_statuses):
 
   for build_status in build_statuses:
     report[build_status['buildbucket_id']] = {
-        'cidb_id': build_status['id'],
         'buildbucket_id': build_status['buildbucket_id'],
         'status': build_status['status'],
         'stages': {s['name']: s['status'] for s in build_status['stages']},
@@ -149,7 +143,6 @@ class BuildResultCommand(command.CliCommand):
   EPILOG = """
 Look up a single build result:
   cros buildresult --buildbucket-id 1234567890123
-  cros buildresult --cidb-id 1234
 
 Look up results by build config name:
   cros buildresult --build-config samus-pre-cq
@@ -194,9 +187,8 @@ Note:
     request_group = parser.add_mutually_exclusive_group()
 
     request_group.add_argument(
-        '--buildbucket-id', help='Buildbucket ID of build to look up.')
-    request_group.add_argument(
-        '--cidb-id', help='CIDB ID of the build to look up.')
+        '--buildbucket-id', help='Buildbucket ID of build to look up. '
+        'It is a 19-digit long ID which can be found in Milo or GoldenEye URL.')
     request_group.add_argument(
         '--build-config', help='')
 
@@ -230,13 +222,8 @@ Note:
     if not credentials:
       credentials = cros_cidbcreds.CheckAndGetCIDBCreds(
           force_update=self.options.force_update)
-
-    # Delay import so sqlalchemy isn't pulled in until we need it.
-    from chromite.lib import cidb
-
-    db = cidb.CIDBConnection(credentials)
-
-    build_statuses = FetchBuildStatuses(db, self.options)
+    buildstore = BuildStore(cidb_creds=credentials)
+    build_statuses = FetchBuildStatuses(buildstore, self.options)
 
     if build_statuses:
       # Filter out builds that don't exist in CIDB, or which aren't finished.
@@ -249,7 +236,7 @@ Note:
       return 2
 
     # Fixup all of the builds we have.
-    build_statuses = [FixUpBuildStatus(db, b) for b in build_statuses]
+    build_statuses = [FixUpBuildStatus(buildstore, b) for b in build_statuses]
 
     # Produce our final result.
     if self.options.report == 'json':

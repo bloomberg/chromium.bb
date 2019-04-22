@@ -13,10 +13,13 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "components/gcm_driver/instance_id/instance_id_driver.h"
+#include "components/invalidation/impl/invalidation_switches.h"
 #include "components/invalidation/public/identity_provider.h"
 #include "components/invalidation/public/invalidation_util.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -35,8 +38,6 @@ const char kActiveRegistrationToken[] =
 
 const char kInvalidationRegistrationScope[] =
     "https://firebaseperusertopics-pa.googleapis.com";
-
-const char kProjectId[] = "8181035976";
 
 const char kFCMOAuthScope[] =
     "https://www.googleapis.com/auth/firebase.messaging";
@@ -132,12 +133,14 @@ PerUserTopicRegistrationManager::PerUserTopicRegistrationManager(
     invalidation::IdentityProvider* identity_provider,
     PrefService* local_state,
     network::mojom::URLLoaderFactory* url_loader_factory,
-    const ParseJSONCallback& parse_json)
+    const ParseJSONCallback& parse_json,
+    const std::string& project_id)
     : local_state_(local_state),
       identity_provider_(identity_provider),
       request_access_token_backoff_(&kBackoffPolicy),
       parse_json_(parse_json),
-      url_loader_factory_(url_loader_factory) {}
+      url_loader_factory_(url_loader_factory),
+      project_id_(project_id) {}
 
 PerUserTopicRegistrationManager::~PerUserTopicRegistrationManager() {}
 
@@ -202,6 +205,10 @@ void PerUserTopicRegistrationManager::UpdateRegisteredTopics(
               base::Unretained(this)),
           PerUserTopicRegistrationRequest::UNSUBSCRIBE);
       it = topic_to_private_topic_.erase(it);
+      // The descision to unregister from the invalidations for the |topic| was
+      // made, the preferences should be cleaned up immediatelly.
+      DictionaryPrefUpdate update(local_state_, kTypeRegisteredForInvalidation);
+      update->RemoveKey(topic);
     } else {
       ++it;
     }
@@ -230,7 +237,7 @@ void PerUserTopicRegistrationManager::StartRegistrationRequest(
                             .SetPublicTopicName(topic)
                             .SetAuthenticationHeader(base::StringPrintf(
                                 "Bearer %s", access_token_.c_str()))
-                            .SetProjectId(kProjectId)
+                            .SetProjectId(project_id_)
                             .SetType(it->second->type)
                             .Build();
   it->second->request->Start(
@@ -240,44 +247,75 @@ void PerUserTopicRegistrationManager::StartRegistrationRequest(
       parse_json_, url_loader_factory_);
 }
 
+void PerUserTopicRegistrationManager::ActOnSuccesfullRegistration(
+    const Topic& topic,
+    const std::string& private_topic_name,
+    PerUserTopicRegistrationRequest::RequestType type) {
+  auto it = registration_statuses_.find(topic);
+  it->second->request_backoff_.InformOfRequest(true);
+  registration_statuses_.erase(it);
+  if (type == PerUserTopicRegistrationRequest::SUBSCRIBE) {
+    DictionaryPrefUpdate update(local_state_, kTypeRegisteredForInvalidation);
+    update->SetKey(topic, base::Value(private_topic_name));
+    topic_to_private_topic_[topic] = private_topic_name;
+    local_state_->CommitPendingWrite();
+  }
+  bool all_subscription_completed = true;
+  for (const auto& entry : registration_statuses_) {
+    if (entry.second->type == PerUserTopicRegistrationRequest::SUBSCRIBE) {
+      all_subscription_completed = false;
+    }
+  }
+  // Emit ENABLED once we recovered from failed request.
+  if (all_subscription_completed &&
+      base::FeatureList::IsEnabled(
+          invalidation::switches::kFCMInvalidationsConservativeEnabling)) {
+    NotifySubscriptionChannelStateChange(SubscriptionChannelState::ENABLED);
+  }
+}
+
+void PerUserTopicRegistrationManager::ScheduleRequestForRepetition(
+    const Topic& topic) {
+  auto completition_callback = base::BindOnce(
+      &PerUserTopicRegistrationManager::RegistrationFinishedForTopic,
+      base::Unretained(this));
+  registration_statuses_[topic]->completion_callback =
+      std::move(completition_callback);
+  registration_statuses_[topic]->request_backoff_.InformOfRequest(false);
+  registration_statuses_[topic]->request_retry_timer_.Start(
+      FROM_HERE,
+      registration_statuses_[topic]->request_backoff_.GetTimeUntilRelease(),
+      base::BindRepeating(
+          &PerUserTopicRegistrationManager::StartRegistrationRequest,
+          base::Unretained(this), topic));
+}
+
 void PerUserTopicRegistrationManager::RegistrationFinishedForTopic(
     Topic topic,
     Status code,
     std::string private_topic_name,
     PerUserTopicRegistrationRequest::RequestType type) {
   if (code.IsSuccess()) {
-    auto it = registration_statuses_.find(topic);
-    registration_statuses_.erase(it);
-    DictionaryPrefUpdate update(local_state_, kTypeRegisteredForInvalidation);
-    switch (type) {
-      case PerUserTopicRegistrationRequest::SUBSCRIBE: {
-        update->SetKey(topic, base::Value(private_topic_name));
-        topic_to_private_topic_[topic] = private_topic_name;
-        break;
-      }
-      case PerUserTopicRegistrationRequest::UNSUBSCRIBE: {
-        update->RemoveKey(topic);
-        break;
-      }
-    }
-    local_state_->CommitPendingWrite();
+    ActOnSuccesfullRegistration(topic, private_topic_name, type);
   } else {
+    auto it = registration_statuses_.find(topic);
+    it->second->request_backoff_.InformOfRequest(false);
     if (code.IsAuthFailure()) {
       // Re-request access token and fire registrations again.
       RequestAccessToken();
     } else {
-      auto completition_callback = base::BindOnce(
-          &PerUserTopicRegistrationManager::RegistrationFinishedForTopic,
-          base::Unretained(this));
-      registration_statuses_[topic]->completion_callback =
-          std::move(completition_callback);
-      registration_statuses_[topic]->request_backoff_.InformOfRequest(false);
-      registration_statuses_[topic]->request_retry_timer_.Start(
-          FROM_HERE,
-          registration_statuses_[topic]->request_backoff_.GetTimeUntilRelease(),
-          base::BindRepeating(
-              &PerUserTopicRegistrationManager::StartRegistrationRequest,
-              base::Unretained(this), topic));
+      // If one of the registration requests failed, emit SUBSCRIPTION_FAILURE.
+      if (type == PerUserTopicRegistrationRequest::SUBSCRIBE &&
+          base::FeatureList::IsEnabled(
+              invalidation::switches::kFCMInvalidationsConservativeEnabling)) {
+        NotifySubscriptionChannelStateChange(
+            SubscriptionChannelState::SUBSCRIPTION_FAILURE);
+      }
+      if (!code.ShouldRetry()) {
+        registration_statuses_.erase(it);
+        return;
+      }
+      ScheduleRequestForRepetition(topic);
     }
   }
 }
@@ -336,14 +374,16 @@ void PerUserTopicRegistrationManager::OnAccessTokenRequestSucceeded(
   // Reset backoff time after successful response.
   request_access_token_backoff_.Reset();
   access_token_ = access_token;
-  NotifySubscriptionChannelStateChange(INVALIDATIONS_ENABLED);
+  // Emit ENABLED when successfully got the token.
+  NotifySubscriptionChannelStateChange(SubscriptionChannelState::ENABLED);
   DoRegistrationUpdate();
 }
 
 void PerUserTopicRegistrationManager::OnAccessTokenRequestFailed(
     GoogleServiceAuthError error) {
   DCHECK_NE(error.state(), GoogleServiceAuthError::NONE);
-  NotifySubscriptionChannelStateChange(INVALIDATION_CREDENTIALS_REJECTED);
+  NotifySubscriptionChannelStateChange(
+      SubscriptionChannelState::ACCESS_TOKEN_FAILURE);
   request_access_token_backoff_.InformOfRequest(false);
   request_access_token_retry_timer_.Start(
       FROM_HERE, request_access_token_backoff_.GetTimeUntilRelease(),
@@ -372,9 +412,30 @@ void PerUserTopicRegistrationManager::DropAllSavedRegistrationsOnTokenChange(
 }
 
 void PerUserTopicRegistrationManager::NotifySubscriptionChannelStateChange(
-    InvalidatorState invalidator_state) {
-  for (auto& observer : observers_)
-    observer.OnSubscriptionChannelStateChanged(invalidator_state);
+    SubscriptionChannelState state) {
+  // NOT_STARTED is the default state of the subscription
+  // channel and shouldn't explicitly issued.
+  DCHECK(state != SubscriptionChannelState::NOT_STARTED);
+  if (last_issued_state_ == state) {
+    // Notify only on state change.
+    return;
+  }
+
+  last_issued_state_ = state;
+  for (auto& observer : observers_) {
+    observer.OnSubscriptionChannelStateChanged(state);
+  }
+}
+
+base::DictionaryValue PerUserTopicRegistrationManager::CollectDebugData()
+    const {
+  base::DictionaryValue status;
+  for (const auto& topic_to_private_topic : topic_to_private_topic_) {
+    status.SetString(topic_to_private_topic.first,
+                     topic_to_private_topic.second);
+  }
+  status.SetString("Instance id token", token_);
+  return status;
 }
 
 }  // namespace syncer

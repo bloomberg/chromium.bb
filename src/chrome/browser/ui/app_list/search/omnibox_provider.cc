@@ -6,6 +6,7 @@
 
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/profiles/profile.h"
@@ -51,8 +52,14 @@ void OmniboxProvider::Start(const base::string16& query) {
 
   // Sets the |from_omnibox_focus| flag to enable ZeroSuggestProvider to process
   // the requests from app_list.
-  if (is_zero_state_enabled_ && input.text().empty())
+  if (is_zero_state_enabled_ && input.text().empty()) {
     input.set_from_omnibox_focus(true);
+    is_zero_state_input_ = true;
+  } else {
+    is_zero_state_input_ = false;
+  }
+
+  query_start_time_ = base::TimeTicks::Now();
   controller_->Start(input);
 }
 
@@ -62,15 +69,29 @@ void OmniboxProvider::PopulateFromACResult(const AutocompleteResult& result) {
   for (const AutocompleteMatch& match : result) {
     if (!match.destination_url.is_valid())
       continue;
-
     new_results.emplace_back(std::make_unique<OmniboxResult>(
-        profile_, list_controller_, controller_.get(), match));
+        profile_, list_controller_, controller_.get(), match,
+        is_zero_state_input_));
   }
   SwapResults(&new_results);
 }
 
 void OmniboxProvider::OnResultChanged(bool default_match_changed) {
+  // Record the query latency.
+  RecordQueryLatencyHistogram();
+
   PopulateFromACResult(controller_->result());
+}
+
+void OmniboxProvider::RecordQueryLatencyHistogram() {
+  base::TimeDelta query_latency = base::TimeTicks::Now() - query_start_time_;
+  if (is_zero_state_input_) {
+    UMA_HISTOGRAM_TIMES("Apps.AppList.OmniboxProvider.ZeroStateLatency",
+                        query_latency);
+  } else {
+    UMA_HISTOGRAM_TIMES("Apps.AppList.OmniboxProvider.QueryTime",
+                        query_latency);
+  }
 }
 
 }  // namespace app_list

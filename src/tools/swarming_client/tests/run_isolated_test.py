@@ -40,8 +40,8 @@ from utils import on_error
 from utils import subprocess42
 from utils import tools
 
-import isolateserver_mock
-import cipdserver_mock
+import isolateserver_fake
+import cipdserver_fake
 
 
 ALGO = hashlib.sha1
@@ -140,7 +140,7 @@ class RunIsolatedTestBase(auto_stub.TestCase):
   @property
   def cipd_server(self):
     if not self._cipd_server:
-      self._cipd_server = cipdserver_mock.MockCipdServer()
+      self._cipd_server = cipdserver_fake.FakeCipdServer()
     return self._cipd_server
 
   def fake_make_temp_dir(self, prefix, _root_dir):
@@ -169,7 +169,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
     # list of func(args, **kwargs) -> retcode
     # if the func returns None, then it's skipped. The first function to return
     # non-None is taken as the retcode for the mocked Popen call.
-    self.popen_mocks = []
+    self.popen_fakes = []
     self.popen_calls = []
 
     self.capture_popen_env = False
@@ -193,7 +193,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
 
       def wait(self2, timeout=None):  # pylint: disable=unused-argument
         self2.returncode = 0
-        for mock_fn in self.popen_mocks:
+        for mock_fn in self.popen_fakes:
           ret = mock_fn(self2.args, **self2.kwargs)
           if ret is not None:
             self2.returncode = ret
@@ -240,7 +240,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
         {
           'command': ['foo.exe', 'cmd with space'],
         })
-    isolated_hash = isolateserver_mock.hash_content(isolated)
+    isolated_hash = isolateserver_fake.hash_content(isolated)
     def get_storage(server_ref):
       return StorageFake({isolated_hash:isolated}, server_ref)
     self.mock(isolateserver, 'get_storage', get_storage)
@@ -258,14 +258,14 @@ class RunIsolatedTest(RunIsolatedTestBase):
     self.assertEqual(
         [
           ([self.ir_dir(u'foo.exe'), u'cmd with space'],
-            {'cwd': self.ir_dir(), 'detached': True}),
+            {'cwd': self.ir_dir(), 'detached': True, 'close_fds': True}),
         ],
         self.popen_calls)
 
   def test_main_args(self):
     self.mock(tools, 'disable_buffering', lambda: None)
     isolated = json_dumps({'command': ['foo.exe', 'cmd w/ space']})
-    isolated_hash = isolateserver_mock.hash_content(isolated)
+    isolated_hash = isolateserver_fake.hash_content(isolated)
     def get_storage(server_ref):
       return StorageFake({isolated_hash:isolated}, server_ref)
     self.mock(isolateserver, 'get_storage', get_storage)
@@ -287,7 +287,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
     self.assertEqual(
         [
           ([self.ir_dir(u'foo.exe'), u'cmd w/ space', '--extraargs', 'bar'],
-            {'cwd': self.ir_dir(), 'detached': True}),
+            {'cwd': self.ir_dir(), 'detached': True, 'close_fds': True}),
         ],
         self.popen_calls)
 
@@ -326,7 +326,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
 
   def test_run_tha_test_naked(self):
     isolated = json_dumps({'command': ['invalid', 'command']})
-    isolated_hash = isolateserver_mock.hash_content(isolated)
+    isolated_hash = isolateserver_fake.hash_content(isolated)
     files = {isolated_hash:isolated}
     make_tree_call = self._run_tha_test(isolated_hash, files)
     self.assertEqual(
@@ -338,7 +338,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
     self.assertEqual(
         [
           ([self.ir_dir(u'invalid'), u'command'],
-            {'cwd': self.ir_dir(), 'detached': True}),
+            {'cwd': self.ir_dir(), 'detached': True, 'close_fds': True}),
         ],
         self.popen_calls)
 
@@ -348,7 +348,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
           'command': ['invalid', 'command'],
           'read_only': 0,
         })
-    isolated_hash = isolateserver_mock.hash_content(isolated)
+    isolated_hash = isolateserver_fake.hash_content(isolated)
     files = {isolated_hash:isolated}
     make_tree_call = self._run_tha_test(isolated_hash, files)
     self.assertEqual(
@@ -360,7 +360,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
     self.assertEqual(
         [
           ([self.ir_dir(u'invalid'), u'command'],
-            {'cwd': self.ir_dir(), 'detached': True}),
+            {'cwd': self.ir_dir(), 'detached': True, 'close_fds': True}),
         ],
         self.popen_calls)
 
@@ -370,7 +370,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
           'command': ['invalid', 'command'],
           'read_only': 1,
         })
-    isolated_hash = isolateserver_mock.hash_content(isolated)
+    isolated_hash = isolateserver_fake.hash_content(isolated)
     files = {isolated_hash:isolated}
     make_tree_call = self._run_tha_test(isolated_hash, files)
     self.assertEqual(
@@ -383,7 +383,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
         [
           (
             [self.ir_dir(u'invalid'), u'command'],
-            {'cwd': self.ir_dir(), 'detached': True}),
+            {'cwd': self.ir_dir(), 'detached': True, 'close_fds': True}),
         ],
         self.popen_calls)
 
@@ -393,7 +393,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
           'command': ['invalid', 'command'],
           'read_only': 2,
         })
-    isolated_hash = isolateserver_mock.hash_content(isolated)
+    isolated_hash = isolateserver_fake.hash_content(isolated)
     files = {isolated_hash:isolated}
     make_tree_call = self._run_tha_test(isolated_hash, files)
     self.assertEqual(
@@ -405,7 +405,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
     self.assertEqual(
         [
           ([self.ir_dir(u'invalid'), u'command'],
-            {'cwd': self.ir_dir(), 'detached': True}),
+            {'cwd': self.ir_dir(), 'detached': True, 'close_fds': True}),
         ],
         self.popen_calls)
 
@@ -421,7 +421,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
     # The most naked .isolated file that can exist.
     self.mock(tools, 'disable_buffering', lambda: None)
     isolated = json_dumps({'command': ['invalid', 'command']})
-    isolated_hash = isolateserver_mock.hash_content(isolated)
+    isolated_hash = isolateserver_fake.hash_content(isolated)
     def get_storage(server_ref):
       return StorageFake({isolated_hash:isolated}, server_ref)
     self.mock(isolateserver, 'get_storage', get_storage)
@@ -441,7 +441,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
         [
           (
             [self.ir_dir(u'invalid'), u'command'],
-            {'cwd': self.ir_dir(), 'detached': True}),
+            {'cwd': self.ir_dir(), 'detached': True, 'close_fds': True}),
         ],
         self.popen_calls)
 
@@ -463,7 +463,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
         [
           (
             [u'/bin/echo', u'hello', u'world'],
-            {'cwd': self.ir_dir(), 'detached': True}),
+            {'cwd': self.ir_dir(), 'detached': True, 'close_fds': True}),
         ],
         self.popen_calls)
 
@@ -571,7 +571,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
           }, json_out)
         return 0
 
-    self.popen_mocks.append(fake_ensure)
+    self.popen_fakes.append(fake_ensure)
     cipd_cache = os.path.join(self.tempdir, 'cipd_cache')
     cmd = [
       '--no-log',
@@ -659,7 +659,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
     self.assertEqual(
         [
           ([self.ir_dir(u'a', 'bin', 'echo'), u'hello', u'world'],
-            {'cwd': self.ir_dir('a'), 'detached': True}),
+            {'cwd': self.ir_dir('a'), 'detached': True, 'close_fds': True}),
         ],
         self.popen_calls)
 
@@ -730,14 +730,14 @@ class RunIsolatedTest(RunIsolatedTestBase):
         'command': ['../out/some.exe', 'arg'],
         'relative_cwd': 'some',
     })
-    isolated_hash = isolateserver_mock.hash_content(isolated)
+    isolated_hash = isolateserver_fake.hash_content(isolated)
     files = {isolated_hash:isolated}
     _ = self._run_tha_test(isolated_hash, files)
     self.assertEqual(
         [
           (
             [self.ir_dir(u'out', u'some.exe'), 'arg'],
-            {'cwd': self.ir_dir('some'), 'detached': True}),
+            {'cwd': self.ir_dir('some'), 'detached': True, 'close_fds': True}),
         ],
         self.popen_calls)
 
@@ -746,14 +746,15 @@ class RunIsolatedTest(RunIsolatedTestBase):
         'command': ['../out/cmd.py', 'arg'],
         'relative_cwd': 'some',
     })
-    isolated_hash = isolateserver_mock.hash_content(isolated)
+    isolated_hash = isolateserver_fake.hash_content(isolated)
     files = {isolated_hash:isolated}
     _ = self._run_tha_test(isolated_hash, files)
     # Injects sys.executable but on macOS, the path may be different than
     # sys.executable due to symlinks.
     self.assertEqual(1, len(self.popen_calls))
     cmd, args = self.popen_calls[0]
-    self.assertEqual({'cwd': self.ir_dir('some'), 'detached': True}, args)
+    self.assertEqual(
+        {'cwd': self.ir_dir('some'), 'detached': True, 'close_fds': True}, args)
     self.assertIn('python', cmd[0])
     self.assertEqual([os.path.join(u'..', 'out', 'cmd.py'), u'arg'], cmd[1:])
 
@@ -762,7 +763,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
     self.assertEqual(
         [
           ([u'/bin/echo', u'hello', u'world'],
-            {'cwd': self.ir_dir(), 'detached': True}),
+            {'cwd': self.ir_dir(), 'detached': True, 'close_fds': True}),
         ],
         self.popen_calls)
 
@@ -772,12 +773,12 @@ class RunIsolatedTestRun(RunIsolatedTestBase):
   def test_output(self):
     # Starts a full isolate server mock and have run_tha_test() uploads results
     # back after the task completed.
-    server = isolateserver_mock.MockIsolateServer()
+    server = isolateserver_fake.FakeIsolateServer()
     try:
       script = (
         'import sys\n'
         'open(sys.argv[1], "w").write("bar")\n')
-      script_hash = isolateserver_mock.hash_content(script)
+      script_hash = isolateserver_fake.hash_content(script)
       isolated = {
         u'algo': u'sha-1',
         u'command': [u'cmd.py', u'${ISOLATED_OUTDIR}/foo'],
@@ -793,7 +794,7 @@ class RunIsolatedTestRun(RunIsolatedTestBase):
       if sys.platform == 'win32':
         isolated[u'files'][u'cmd.py'].pop(u'm')
       isolated_data = json_dumps(isolated)
-      isolated_hash = isolateserver_mock.hash_content(isolated_data)
+      isolated_hash = isolateserver_fake.hash_content(isolated_data)
       server.add_content('default-store', script)
       server.add_content('default-store', isolated_data)
       store = isolateserver.get_storage(
@@ -824,7 +825,7 @@ class RunIsolatedTestRun(RunIsolatedTestBase):
 
       # It uploaded back. Assert the store has a new item containing foo.
       hashes = {isolated_hash, script_hash}
-      output_hash = isolateserver_mock.hash_content('bar')
+      output_hash = isolateserver_fake.hash_content('bar')
       hashes.add(output_hash)
       isolated = {
         u'algo': u'sha-1',
@@ -841,7 +842,7 @@ class RunIsolatedTestRun(RunIsolatedTestBase):
       if sys.platform == 'win32':
         isolated[u'files'][u'foo'].pop(u'm')
       uploaded = json_dumps(isolated)
-      uploaded_hash = isolateserver_mock.hash_content(uploaded)
+      uploaded_hash = isolateserver_fake.hash_content(uploaded)
       hashes.add(uploaded_hash)
       self.assertEqual(hashes, set(server.contents['default-store']))
 
@@ -1125,7 +1126,7 @@ class RunIsolatedTestOutputFiles(RunIsolatedTestBase):
   def _run_test(self, isolated, command, extra_args):
     # Starts a full isolate server mock and have run_tha_test() uploads results
     # back after the task completed.
-    server = isolateserver_mock.MockIsolateServer()
+    server = isolateserver_fake.FakeIsolateServer()
     try:
       # Output the following structure:
       #
@@ -1146,7 +1147,7 @@ class RunIsolatedTestOutputFiles(RunIsolatedTestBase):
         '  os.symlink(foo_realpath, sys.argv[2])\n'
         'else:\n'
         '  open(sys.argv[2], "w").write("foo2")\n')
-      script_hash = isolateserver_mock.hash_content(script)
+      script_hash = isolateserver_fake.hash_content(script)
       isolated['files']['cmd.py'] = {
         'h': script_hash,
         'm': 0700,
@@ -1155,7 +1156,7 @@ class RunIsolatedTestOutputFiles(RunIsolatedTestBase):
       if sys.platform == 'win32':
         isolated['files']['cmd.py'].pop('m')
       isolated_data = json_dumps(isolated)
-      isolated_hash = isolateserver_mock.hash_content(isolated_data)
+      isolated_hash = isolateserver_fake.hash_content(isolated_data)
       server.add_content('default-store', script)
       server.add_content('default-store', isolated_data)
       store = isolateserver.get_storage(
@@ -1186,9 +1187,9 @@ class RunIsolatedTestOutputFiles(RunIsolatedTestBase):
 
       # It uploaded back. Assert the store has a new item containing foo.
       hashes = {isolated_hash, script_hash}
-      foo1_output_hash = isolateserver_mock.hash_content('foo1')
-      foo2_output_hash = isolateserver_mock.hash_content('foo2')
-      bar1_output_hash = isolateserver_mock.hash_content('bar1')
+      foo1_output_hash = isolateserver_fake.hash_content('foo1')
+      foo2_output_hash = isolateserver_fake.hash_content('foo2')
+      bar1_output_hash = isolateserver_fake.hash_content('bar1')
       hashes.add(foo1_output_hash)
       hashes.add(foo2_output_hash)
       hashes.add(bar1_output_hash)
@@ -1221,7 +1222,7 @@ class RunIsolatedTestOutputFiles(RunIsolatedTestBase):
         isolated['files']['foodir/foo2_sl'].pop('m')
         isolated['files']['bardir/bar1'].pop('m')
       uploaded = json_dumps(isolated)
-      uploaded_hash = isolateserver_mock.hash_content(uploaded)
+      uploaded_hash = isolateserver_fake.hash_content(uploaded)
       hashes.add(uploaded_hash)
       self.assertEqual(hashes, set(server.contents['default-store']))
 
@@ -1299,7 +1300,7 @@ class RunIsolatedJsonTest(RunIsolatedTestBase):
       '${ISOLATED_OUTDIR}/out.txt',
     ]
     isolated_in_json = json_dumps({'command': sub_cmd})
-    isolated_in_hash = isolateserver_mock.hash_content(isolated_in_json)
+    isolated_in_hash = isolateserver_fake.hash_content(isolated_in_json)
     def get_storage(server_ref):
       return StorageFake({isolated_in_hash:isolated_in_json}, server_ref)
     self.mock(isolateserver, 'get_storage', get_storage)
@@ -1320,13 +1321,15 @@ class RunIsolatedJsonTest(RunIsolatedTestBase):
     sub_cmd[2] = self.popen_calls[0][0][2]
     self.assertNotIn('ISOLATED_OUTDIR', sub_cmd[2])
     self.assertEqual(
-        [(sub_cmd, {'cwd': self.ir_dir(), 'detached': True})],
+        [
+          (sub_cmd, {'cwd': self.ir_dir(), 'detached': True, 'close_fds': True})
+        ],
         self.popen_calls)
     isolated_out = {
       'algo': 'sha-1',
       'files': {
         'out.txt': {
-          'h': isolateserver_mock.hash_content('generated data\n'),
+          'h': isolateserver_fake.hash_content('generated data\n'),
           's': 15,
           'm': 0640,
         },
@@ -1336,7 +1339,7 @@ class RunIsolatedJsonTest(RunIsolatedTestBase):
     if sys.platform == 'win32':
       del isolated_out['files']['out.txt']['m']
     isolated_out_json = json_dumps(isolated_out)
-    isolated_out_hash = isolateserver_mock.hash_content(isolated_out_json)
+    isolated_out_hash = isolateserver_fake.hash_content(isolated_out_json)
     expected = {
       u'exit_code': 0,
       u'had_hard_timeout': False,

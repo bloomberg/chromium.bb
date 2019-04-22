@@ -36,8 +36,6 @@ inline bool isnan(double val) { return std::isnan(val); }
 inline bool isinf(double val) { return std::isinf(val); }
 #endif  // MSC_COMPAT
 
-IMkvReader::~IMkvReader() {}
-
 template <typename Type>
 Type* SafeArrayAlloc(unsigned long long num_elements,
                      unsigned long long element_size) {
@@ -5274,6 +5272,7 @@ bool Projection::Parse(IMkvReader* reader, long long start, long long size,
 VideoTrack::VideoTrack(Segment* pSegment, long long element_start,
                        long long element_size)
     : Track(pSegment, element_start, element_size),
+      m_colour_space(NULL),
       m_colour(NULL),
       m_projection(NULL) {}
 
@@ -5299,6 +5298,7 @@ long VideoTrack::Parse(Segment* pSegment, const Info& info,
   long long stereo_mode = 0;
 
   double rate = 0.0;
+  char* colour_space = NULL;
 
   IMkvReader* const pReader = pSegment->m_pReader;
 
@@ -5311,8 +5311,8 @@ long VideoTrack::Parse(Segment* pSegment, const Info& info,
 
   const long long stop = pos + s.size;
 
-  Colour* colour = NULL;
-  Projection* projection = NULL;
+  std::unique_ptr<Colour> colour_ptr;
+  std::unique_ptr<Projection> projection_ptr;
 
   while (pos < stop) {
     long long id, size;
@@ -5361,11 +5361,23 @@ long VideoTrack::Parse(Segment* pSegment, const Info& info,
       if (rate <= 0)
         return E_FILE_FORMAT_INVALID;
     } else if (id == libwebm::kMkvColour) {
-      if (!Colour::Parse(pReader, pos, size, &colour))
+      Colour* colour = NULL;
+      if (!Colour::Parse(pReader, pos, size, &colour)) {
         return E_FILE_FORMAT_INVALID;
+      } else {
+        colour_ptr.reset(colour);
+      }
     } else if (id == libwebm::kMkvProjection) {
-      if (!Projection::Parse(pReader, pos, size, &projection))
+      Projection* projection = NULL;
+      if (!Projection::Parse(pReader, pos, size, &projection)) {
         return E_FILE_FORMAT_INVALID;
+      } else {
+        projection_ptr.reset(projection);
+      }
+    } else if (id == libwebm::kMkvColourSpace) {
+      const long status = UnserializeString(pReader, pos, size, colour_space);
+      if (status < 0)
+        return status;
     }
 
     pos += size;  // consume payload
@@ -5396,8 +5408,9 @@ long VideoTrack::Parse(Segment* pSegment, const Info& info,
   pTrack->m_display_unit = display_unit;
   pTrack->m_stereo_mode = stereo_mode;
   pTrack->m_rate = rate;
-  pTrack->m_colour = colour;
-  pTrack->m_projection = projection;
+  pTrack->m_colour = colour_ptr.release();
+  pTrack->m_colour_space = colour_space;
+  pTrack->m_projection = projection_ptr.release();
 
   pResult = pTrack;
   return 0;  // success

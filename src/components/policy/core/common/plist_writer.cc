@@ -26,7 +26,7 @@ bool BuildPlistString(const base::Value& node, XmlWriter& plist_writer) {
 
     case base::Value::Type::INTEGER: {
       int value = node.GetInt();
-      plist_writer.WriteElement("integer", base::IntToString(value));
+      plist_writer.WriteElement("integer", base::NumberToString(value));
       return true;
     }
 

@@ -39,10 +39,6 @@ class Geoposition final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static Geoposition* Create(Coordinates* coordinates, DOMTimeStamp timestamp) {
-    return MakeGarbageCollected<Geoposition>(coordinates, timestamp);
-  }
-
   Geoposition(Coordinates* coordinates, DOMTimeStamp timestamp)
       : coordinates_(coordinates), timestamp_(timestamp) {
     DCHECK(coordinates_);

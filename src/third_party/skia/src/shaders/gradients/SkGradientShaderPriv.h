@@ -17,7 +17,6 @@
 #include "SkTemplates.h"
 
 class SkColorSpace;
-class SkColorSpaceXformer;
 class SkRasterPipeline;
 class SkReadBuffer;
 class SkWriteBuffer;
@@ -27,7 +26,7 @@ public:
     struct Descriptor {
         Descriptor() {
             sk_bzero(this, sizeof(*this));
-            fTileMode = SkShader::kClamp_TileMode;
+            fTileMode = SkTileMode::kClamp;
         }
 
         const SkMatrix*     fLocalMatrix;
@@ -35,7 +34,7 @@ public:
         sk_sp<SkColorSpace> fColorSpace;
         const SkScalar*     fPos;
         int                 fCount;
-        SkShader::TileMode  fTileMode;
+        SkTileMode          fTileMode;
         uint32_t            fGradFlags;
 
         void flatten(SkWriteBuffer&) const;
@@ -77,7 +76,7 @@ protected:
 
     bool onAsLuminanceColor(SkColor*) const override;
 
-    bool onAppendStages(const StageRec&) const override;
+    bool onAppendStages(const SkStageRec&) const override;
 
     virtual void appendGradientStages(SkArenaAlloc* alloc, SkRasterPipeline* tPipeline,
                                       SkRasterPipeline* postPipeline) const = 0;
@@ -91,14 +90,8 @@ protected:
         return ctx;
     }
 
-    struct AutoXformColors {
-        AutoXformColors(const SkGradientShaderBase&, SkColorSpaceXformer*);
-
-        SkAutoSTMalloc<8, SkColor> fColors;
-    };
-
     const SkMatrix fPtsToUnit;
-    TileMode       fTileMode;
+    SkTileMode      fTileMode;
     uint8_t        fGradFlags;
 
 public:
@@ -112,14 +105,22 @@ public:
         return fOrigColors4f[i].toSkColor();
     }
 
-    SkColor4f*          fOrigColors4f; // original colors, as linear floats
+    bool colorsCanConvertToSkColor() const {
+        bool canConvert = true;
+        for (int i = 0; i < fColorCount; ++i) {
+            canConvert &= fOrigColors4f[i].fitsInBytes();
+        }
+        return canConvert;
+    }
+
+    SkColor4f*          fOrigColors4f; // original colors, as floats
     SkScalar*           fOrigPos;      // original positions
     int                 fColorCount;
     sk_sp<SkColorSpace> fColorSpace;   // color space of gradient stops
 
     bool colorsAreOpaque() const { return fColorsAreOpaque; }
 
-    TileMode getTileMode() const { return fTileMode; }
+    SkTileMode getTileMode() const { return fTileMode; }
 
 private:
     // Reserve inline space for up to 4 stops.

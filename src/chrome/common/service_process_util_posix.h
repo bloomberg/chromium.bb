@@ -73,7 +73,7 @@ struct ServiceProcessState::StateData {
 #if defined(OS_MACOSX)
   bool WatchExecutable();
 
-  base::ScopedCFTypeRef<CFDictionaryRef> launchd_conf;
+  mac::services::JobCheckinInfo job_info;
   base::FilePathWatcher executable_watcher;
 #else
   std::unique_ptr<MultiProcessLock> initializing_lock;

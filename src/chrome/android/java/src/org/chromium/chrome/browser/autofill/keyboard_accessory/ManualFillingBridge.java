@@ -8,35 +8,34 @@ import android.graphics.Bitmap;
 import android.support.annotation.Px;
 
 import org.chromium.base.Callback;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.AccessorySheetData;
-import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Action;
-import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.FooterCommand;
-import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Item;
-import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.UserInfo;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.data.KeyboardAccessoryData.AccessorySheetData;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.data.KeyboardAccessoryData.Action;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.data.KeyboardAccessoryData.FooterCommand;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.data.KeyboardAccessoryData.UserInfo;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.data.PropertyProvider;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
 
-import java.util.ArrayList;
-import java.util.List;
-
 class ManualFillingBridge {
-    private final KeyboardAccessoryData.PropertyProvider<Item[]> mItemProvider =
-            new KeyboardAccessoryData.PropertyProvider<>();
-    private final KeyboardAccessoryData.PropertyProvider<Action[]> mActionProvider =
-            new KeyboardAccessoryData.PropertyProvider<>(
-                    AccessoryAction.GENERATE_PASSWORD_AUTOMATIC);
-    private final ManualFillingCoordinator mManualFillingCoordinator;
+    private final PropertyProvider<AccessorySheetData> mSheetDataProvider =
+            new PropertyProvider<>();
+    private final PropertyProvider<Action[]> mActionProvider =
+            new PropertyProvider<>(AccessoryAction.GENERATE_PASSWORD_AUTOMATIC);
+    private final ManualFillingComponent mManualFillingComponent;
     private final ChromeActivity mActivity;
     private long mNativeView;
 
     private ManualFillingBridge(long nativeView, WindowAndroid windowAndroid) {
         mNativeView = nativeView;
         mActivity = (ChromeActivity) windowAndroid.getActivity().get();
-        mManualFillingCoordinator = mActivity.getManualFillingController();
-        mManualFillingCoordinator.registerPasswordProvider(mItemProvider);
-        mManualFillingCoordinator.registerActionProvider(mActionProvider);
+        mManualFillingComponent = mActivity.getManualFillingComponent();
+        mManualFillingComponent.registerPasswordProvider(mSheetDataProvider);
+        mManualFillingComponent.registerCreditCardProvider();
+        mManualFillingComponent.registerActionProvider(mActionProvider);
     }
 
     @CalledByNative
@@ -46,7 +45,7 @@ class ManualFillingBridge {
 
     @CalledByNative
     private void onItemsAvailable(Object objAccessorySheetData) {
-        mItemProvider.notifyObservers(convertToItems((AccessorySheetData) objAccessorySheetData));
+        mSheetDataProvider.notifyObservers((AccessorySheetData) objAccessorySheetData);
     }
 
     @CalledByNative
@@ -65,7 +64,7 @@ class ManualFillingBridge {
                         assert mNativeView
                                 != 0
                             : "Controller has been destroyed but the bridge wasn't cleaned up!";
-                        KeyboardAccessoryMetricsRecorder.recordActionSelected(
+                        ManualFillingMetricsRecorder.recordActionSelected(
                                 AccessoryAction.GENERATE_PASSWORD_AUTOMATIC);
                         nativeOnGenerationRequested(mNativeView);
                     })};
@@ -77,38 +76,38 @@ class ManualFillingBridge {
 
     @CalledByNative
     void showWhenKeyboardIsVisible() {
-        mManualFillingCoordinator.showWhenKeyboardIsVisible();
+        mManualFillingComponent.showWhenKeyboardIsVisible();
     }
 
     @CalledByNative
     void hide() {
-        mManualFillingCoordinator.hide();
+        mManualFillingComponent.hide();
     }
 
     @CalledByNative
     private void closeAccessorySheet() {
-        mManualFillingCoordinator.closeAccessorySheet();
+        mManualFillingComponent.closeAccessorySheet();
     }
 
     @CalledByNative
     private void swapSheetWithKeyboard() {
-        mManualFillingCoordinator.swapSheetWithKeyboard();
+        mManualFillingComponent.swapSheetWithKeyboard();
     }
 
     @CalledByNative
     private void destroy() {
-        mItemProvider.notifyObservers(new Item[] {}); // There are no more items available!
+        mSheetDataProvider.notifyObservers(null);
         mNativeView = 0;
     }
 
     @CalledByNative
-    private static Object createAccessorySheetData(String title) {
-        return new AccessorySheetData(title);
+    private static Object createAccessorySheetData(@FallbackSheetType int type, String title) {
+        return new AccessorySheetData(type, title);
     }
 
     @CalledByNative
-    private static Object addUserInfoToAccessorySheetData(Object objAccessorySheetData) {
-        UserInfo userInfo = new UserInfo();
+    private Object addUserInfoToAccessorySheetData(Object objAccessorySheetData) {
+        UserInfo userInfo = new UserInfo(this::fetchFavicon);
         ((AccessorySheetData) objAccessorySheetData).getUserInfoList().add(userInfo);
         return userInfo;
     }
@@ -120,8 +119,7 @@ class ManualFillingBridge {
         if (selectable) {
             callback = (field) -> {
                 assert mNativeView != 0 : "Controller was destroyed but the bridge wasn't!";
-                KeyboardAccessoryMetricsRecorder.recordSuggestionSelected(
-                        AccessoryTabType.PASSWORDS,
+                ManualFillingMetricsRecorder.recordSuggestionSelected(AccessoryTabType.PASSWORDS,
                         field.isObfuscated() ? AccessorySuggestionType.PASSWORD
                                              : AccessorySuggestionType.USERNAME);
                 nativeOnFillingTriggered(mNativeView, field.isObfuscated(), field.getDisplayText());
@@ -143,54 +141,15 @@ class ManualFillingBridge {
                 }));
     }
 
-    private Item[] convertToItems(AccessorySheetData accessorySheetData) {
-        List<Item> items = new ArrayList<>();
-
-        items.add(Item.createTopDivider());
-
-        items.add(Item.createLabel(accessorySheetData.getTitle(), accessorySheetData.getTitle()));
-
-        for (UserInfo userInfo : accessorySheetData.getUserInfoList()) {
-            for (UserInfo.Field field : userInfo.getFields()) {
-                Callback<Item> itemSelectedCallback = null;
-                if (field.isSelectable()) {
-                    // TODO(crbug.com/902425): Create the callback in addFieldToUserInfo once the
-                    //                         Item type is replaced with AccessorySheetData.
-                    itemSelectedCallback = (item) -> {
-                        assert mNativeView != 0 : "Controller was destroyed but the bridge wasn't!";
-                        KeyboardAccessoryMetricsRecorder.recordSuggestionSelected(
-                                AccessoryTabType.PASSWORDS,
-                                item.isObfuscated() ? AccessorySuggestionType.PASSWORD
-                                                    : AccessorySuggestionType.USERNAME);
-                        nativeOnFillingTriggered(
-                                mNativeView, item.isObfuscated(), item.getCaption());
-                    };
-                }
-                // clang-format off
-                items.add(Item.createSuggestion(field.getDisplayText(), field.getA11yDescription(),
-                        field.isObfuscated(), itemSelectedCallback, this::fetchFavicon));
-                // clang-format on
-            }
-        }
-
-        if (!accessorySheetData.getFooterCommands().isEmpty()) {
-            items.add(Item.createDivider());
-            for (FooterCommand footerCommand : accessorySheetData.getFooterCommands()) {
-                items.add(Item.createOption(
-                        footerCommand.getDisplayText(), footerCommand.getDisplayText(), (item) -> {
-                            assert mNativeView
-                                    != 0 : "Controller was destroyed but the bridge wasn't!";
-                            nativeOnOptionSelected(mNativeView, item.getCaption());
-                        }));
-            }
-        }
-
-        return items.toArray(new Item[items.size()]);
-    }
-
     public void fetchFavicon(@Px int desiredSize, Callback<Bitmap> faviconCallback) {
         assert mNativeView != 0 : "Favicon was requested after the bridge was destroyed!";
         nativeOnFaviconRequested(mNativeView, desiredSize, faviconCallback);
+    }
+
+    @VisibleForTesting
+    public static void cachePasswordSheetData(
+            WebContents webContents, String[] userNames, String[] passwords) {
+        nativeCachePasswordSheetDataForTesting(webContents, userNames, passwords);
     }
 
     private native void nativeOnFaviconRequested(long nativeManualFillingViewAndroid,
@@ -200,4 +159,7 @@ class ManualFillingBridge {
     private native void nativeOnOptionSelected(
             long nativeManualFillingViewAndroid, String selectedOption);
     private native void nativeOnGenerationRequested(long nativeManualFillingViewAndroid);
+
+    private static native void nativeCachePasswordSheetDataForTesting(
+            WebContents webContents, String[] userNames, String[] passwords);
 }

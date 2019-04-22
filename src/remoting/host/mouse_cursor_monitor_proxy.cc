@@ -98,8 +98,8 @@ void MouseCursorMonitorProxy::Core::OnMouseCursor(webrtc::MouseCursor* cursor) {
 
   std::unique_ptr<webrtc::MouseCursor> owned_cursor(cursor);
   caller_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&MouseCursorMonitorProxy::OnMouseCursor, proxy_,
-                            base::Passed(&owned_cursor)));
+      FROM_HERE, base::BindOnce(&MouseCursorMonitorProxy::OnMouseCursor, proxy_,
+                                std::move(owned_cursor)));
 }
 
 void MouseCursorMonitorProxy::Core::OnMouseCursorPosition(
@@ -108,8 +108,8 @@ void MouseCursorMonitorProxy::Core::OnMouseCursorPosition(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   caller_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&MouseCursorMonitorProxy::OnMouseCursorPosition,
-                            proxy_, state, position));
+      FROM_HERE, base::BindOnce(&MouseCursorMonitorProxy::OnMouseCursorPosition,
+                                proxy_, state, position));
 }
 
 MouseCursorMonitorProxy::MouseCursorMonitorProxy(
@@ -118,8 +118,8 @@ MouseCursorMonitorProxy::MouseCursorMonitorProxy(
     : capture_task_runner_(capture_task_runner), weak_factory_(this) {
   core_.reset(new Core(weak_factory_.GetWeakPtr()));
   capture_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&Core::CreateMouseCursorMonitor,
-                            base::Unretained(core_.get()), options));
+      FROM_HERE, base::BindOnce(&Core::CreateMouseCursorMonitor,
+                                base::Unretained(core_.get()), options));
 }
 
 MouseCursorMonitorProxy::~MouseCursorMonitorProxy() {
@@ -130,21 +130,22 @@ void MouseCursorMonitorProxy::Init(Callback* callback, Mode mode) {
   DCHECK(thread_checker_.CalledOnValidThread());
   callback_ = callback;
   capture_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&Core::Init, base::Unretained(core_.get()), mode));
+      FROM_HERE,
+      base::BindOnce(&Core::Init, base::Unretained(core_.get()), mode));
 }
 
 void MouseCursorMonitorProxy::Capture() {
   DCHECK(thread_checker_.CalledOnValidThread());
   capture_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&Core::Capture, base::Unretained(core_.get())));
+      FROM_HERE, base::BindOnce(&Core::Capture, base::Unretained(core_.get())));
 }
 
 void MouseCursorMonitorProxy::SetMouseCursorMonitorForTests(
     std::unique_ptr<webrtc::MouseCursorMonitor> mouse_cursor_monitor) {
   capture_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&Core::SetMouseCursorMonitorForTests,
-                            base::Unretained(core_.get()),
-                            base::Passed(&mouse_cursor_monitor)));
+      FROM_HERE, base::BindOnce(&Core::SetMouseCursorMonitorForTests,
+                                base::Unretained(core_.get()),
+                                std::move(mouse_cursor_monitor)));
 }
 
 void MouseCursorMonitorProxy::OnMouseCursor(

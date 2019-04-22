@@ -92,6 +92,7 @@ void MediaKeyboardHookWinTest::SendMediaKeyUpEvent(KeyboardCode key_code,
       next_time_stamp()));
 }
 
+namespace {
 void VerifyKeyEvent(KeyEvent* key_event,
                     KeyboardCode non_located_key_code,
                     DomCode dom_code,
@@ -107,6 +108,7 @@ void VerifyKeyEvent(KeyEvent* key_event,
   ASSERT_EQ(key_event->key_code(), non_located_key_code);
   ASSERT_EQ(key_event->code(), dom_code);
 }
+}  // namespace
 
 TEST_F(MediaKeyboardHookWinTest, SimpleKeypressTest) {
   const KeyboardCode key_code = KeyboardCode::VKEY_MEDIA_PLAY_PAUSE;

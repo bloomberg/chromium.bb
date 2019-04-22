@@ -166,9 +166,7 @@ public class CallbackHelper {
      * @param currentCallCount the value obtained by calling getCallCount().
      * @param numberOfCallsToWaitFor number of calls (counting since
      *                               currentCallCount was obtained) that we will wait for.
-     * @param timeout timeout value. We will wait the specified amount of time for a single
-     *                callback to occur so the method call may block up to
-     *                <code>numberOfCallsToWaitFor * timeout</code> units.
+     * @param timeout timeout value for all callbacks to occur.
      * @param unit timeout unit.
      * @throws InterruptedException
      * @throws TimeoutException Thrown if the method times out before onPageFinished is called.
@@ -179,17 +177,17 @@ public class CallbackHelper {
         assert numberOfCallsToWaitFor > 0;
         synchronized (mLock) {
             int callCountWhenDoneWaiting = currentCallCount + numberOfCallsToWaitFor;
-            while (callCountWhenDoneWaiting > mCallCount) {
-                int callCountBeforeWait = mCallCount;
-                mLock.wait(unit.toMillis(timeout));
+            long deadline = System.currentTimeMillis() + unit.toMillis(timeout);
+            while (callCountWhenDoneWaiting > mCallCount && System.currentTimeMillis() < deadline) {
+                mLock.wait(deadline - System.currentTimeMillis());
                 if (mFailureString != null) {
                     String s = mFailureString;
                     mFailureString = null;
                     Assert.fail(s);
                 }
-                if (callCountBeforeWait == mCallCount) {
-                    throw new TimeoutException(msg == null ? "waitForCallback timed out!" : msg);
-                }
+            }
+            if (callCountWhenDoneWaiting > mCallCount) {
+                throw new TimeoutException(msg == null ? "waitForCallback timed out!" : msg);
             }
         }
     }

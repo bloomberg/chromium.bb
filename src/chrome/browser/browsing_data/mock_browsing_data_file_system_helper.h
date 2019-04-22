@@ -21,11 +21,11 @@ class MockBrowsingDataFileSystemHelper : public BrowsingDataFileSystemHelper {
   explicit MockBrowsingDataFileSystemHelper(Profile* profile);
 
   // BrowsingDataFileSystemHelper implementation.
-  void StartFetching(const FetchCallback& callback) override;
-  void DeleteFileSystemOrigin(const GURL& origin) override;
+  void StartFetching(FetchCallback callback) override;
+  void DeleteFileSystemOrigin(const url::Origin& origin) override;
 
   // Adds a specific filesystem.
-  void AddFileSystem(const GURL& origin,
+  void AddFileSystem(const url::Origin& origin,
                      bool has_persistent,
                      bool has_temporary,
                      bool has_syncable,
@@ -46,7 +46,7 @@ class MockBrowsingDataFileSystemHelper : public BrowsingDataFileSystemHelper {
   // deleted.
   bool AllDeleted();
 
-  GURL last_deleted_origin_;
+  url::Origin last_deleted_origin_;
 
  private:
   ~MockBrowsingDataFileSystemHelper() override;

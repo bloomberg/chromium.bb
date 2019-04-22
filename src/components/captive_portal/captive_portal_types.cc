@@ -5,7 +5,7 @@
 #include "components/captive_portal/captive_portal_types.h"
 
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 
 namespace captive_portal {
 
@@ -17,7 +17,7 @@ const char* const kCaptivePortalResultNames[] = {
   "BehindCaptivePortal",
   "NumCaptivePortalResults",
 };
-static_assert(arraysize(kCaptivePortalResultNames) == RESULT_COUNT + 1,
+static_assert(base::size(kCaptivePortalResultNames) == RESULT_COUNT + 1,
               "kCaptivePortalResultNames should have "
               "RESULT_COUNT + 1 elements");
 
@@ -27,7 +27,7 @@ static_assert(arraysize(kCaptivePortalResultNames) == RESULT_COUNT + 1,
 std::string CaptivePortalResultToString(CaptivePortalResult result) {
   DCHECK_GE(result, 0);
   DCHECK_LT(static_cast<unsigned int>(result),
-            arraysize(kCaptivePortalResultNames));
+            base::size(kCaptivePortalResultNames));
   return kCaptivePortalResultNames[result];
 }
 

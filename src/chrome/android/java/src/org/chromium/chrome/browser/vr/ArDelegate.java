@@ -4,32 +4,21 @@
 
 package org.chromium.chrome.browser.vr;
 
-import java.lang.reflect.InvocationTargetException;
+import android.app.Activity;
 
-/** This class provides methods to call into AR. */
-public class ArDelegate {
+/**
+ * Interface used by ChromeActivity to communicate with AR code that is only
+ * available if |enable_arcore| is set to true at build time.
+ */
+public interface ArDelegate {
     /**
-     * Needs to be called once native libraries are available. Has no effect if AR is not compiled
-     * into Chrome.
+     * Needs to be called once native libraries are available.
      **/
-    public static void maybeInit() {
-        try {
-            // AR may not be compiled into Chrome. Thus, use reflection to access it.
-            Class.forName("org.chromium.chrome.browser.vr.ArCoreJavaUtils")
-                    .getDeclaredMethod("installArCoreDeviceProviderFactory")
-                    .invoke(null);
-        } catch (ClassNotFoundException e) {
-            // AR not available. No initialization required.
-        } catch (NoSuchMethodException e) {
-            // This and the exceptions below should not happen. Multiple catch statements to work
-            // around ReflectiveOperationException in API level 19.
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        } catch (InvocationTargetException e) {
-            throw new RuntimeException(e);
-        }
-    }
+    public void init();
 
-    private ArDelegate() {}
+    /**
+     * Needs to be called in Activity's onResumeWithNative() method in order
+     * to notify AR that the activity was resumed.
+     **/
+    public void registerOnResumeActivity(Activity activity);
 }

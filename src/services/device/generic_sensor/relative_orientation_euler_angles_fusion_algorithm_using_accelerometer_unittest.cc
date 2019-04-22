@@ -5,7 +5,7 @@
 #include <cmath>
 
 #include "base/memory/ref_counted.h"
-#include "services/device/device_service_test_base.h"
+#include "base/test/scoped_task_environment.h"
 #include "services/device/generic_sensor/fake_platform_sensor_fusion.h"
 #include "services/device/generic_sensor/generic_sensor_consts.h"
 #include "services/device/generic_sensor/relative_orientation_euler_angles_fusion_algorithm_using_accelerometer.h"
@@ -16,7 +16,7 @@ namespace device {
 namespace {
 
 class RelativeOrientationEulerAnglesFusionAlgorithmUsingAccelerometerTest
-    : public DeviceServiceTestBase {
+    : public testing::Test {
  public:
   RelativeOrientationEulerAnglesFusionAlgorithmUsingAccelerometerTest() {
     auto fusion_algorithm = std::make_unique<
@@ -55,6 +55,7 @@ class RelativeOrientationEulerAnglesFusionAlgorithmUsingAccelerometerTest
   }
 
  protected:
+  base::test::ScopedTaskEnvironment task_environment_;
   scoped_refptr<FakePlatformSensorFusion> fake_fusion_sensor_;
   RelativeOrientationEulerAnglesFusionAlgorithmUsingAccelerometer*
       fusion_algorithm_;

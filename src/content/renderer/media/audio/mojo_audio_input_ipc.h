@@ -19,6 +19,7 @@
 #include "media/mojo/interfaces/audio_input_stream.mojom.h"
 #include "media/webrtc/audio_processor_controls.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/audio/public/mojom/audio_processing.mojom.h"
 
 namespace content {
 

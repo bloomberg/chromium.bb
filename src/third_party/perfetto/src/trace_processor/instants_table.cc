@@ -16,8 +16,7 @@
 
 #include "src/trace_processor/instants_table.h"
 
-#include "src/trace_processor/storage_cursor.h"
-#include "src/trace_processor/table_utils.h"
+#include "src/trace_processor/counter_definitions_table.h"
 
 namespace perfetto {
 namespace trace_processor {
@@ -25,54 +24,46 @@ namespace trace_processor {
 InstantsTable::InstantsTable(sqlite3*, const TraceStorage* storage)
     : storage_(storage) {
   ref_types_.resize(RefType::kRefMax);
-  ref_types_[RefType::kRefNoRef] = "";
+  ref_types_[RefType::kRefNoRef] = nullptr;
   ref_types_[RefType::kRefUtid] = "utid";
+  ref_types_[RefType::kRefUpid] = "upid";
   ref_types_[RefType::kRefCpuId] = "cpu";
   ref_types_[RefType::kRefIrq] = "irq";
   ref_types_[RefType::kRefSoftIrq] = "softirq";
-  ref_types_[RefType::kRefUpid] = "upid";
+  ref_types_[RefType::kRefUtidLookupUpid] = "upid";
 };
 
 void InstantsTable::RegisterTable(sqlite3* db, const TraceStorage* storage) {
   Table::Register<InstantsTable>(db, storage, "instants");
 }
 
-Table::Schema InstantsTable::CreateSchema(int, const char* const*) {
+StorageSchema InstantsTable::CreateStorageSchema() {
   const auto& instants = storage_->instants();
-  std::unique_ptr<StorageSchema::Column> cols[] = {
-      StorageSchema::NumericColumnPtr("ts", &instants.timestamps(),
-                                      false /* hidden */, true /* ordered */),
-      StorageSchema::StringColumnPtr("name", &instants.name_ids(),
-                                     &storage_->string_pool()),
-      StorageSchema::NumericColumnPtr("value", &instants.values()),
-      StorageSchema::NumericColumnPtr("ref", &instants.refs()),
-      StorageSchema::StringColumnPtr("ref_type", &instants.types(),
-                                     &ref_types_)};
-  schema_ = StorageSchema({
-      std::make_move_iterator(std::begin(cols)),
-      std::make_move_iterator(std::end(cols)),
-  });
-  return schema_.ToTableSchema({"name", "ts", "ref"});
+  return StorageSchema::Builder()
+      .AddGenericNumericColumn("id", RowIdAccessor(TableId::kInstants))
+      .AddOrderedNumericColumn("ts", &instants.timestamps())
+      .AddStringColumn("name", &instants.name_ids(), &storage_->string_pool())
+      .AddNumericColumn("value", &instants.values())
+      // TODO(lalitm): remove this hack.
+      .AddColumn<CounterDefinitionsTable::RefColumn>(
+          "ref", &instants.refs(), &instants.types(), storage_)
+      .AddStringColumn("ref_type", &instants.types(), &ref_types_)
+      .AddNumericColumn("arg_set_id", &instants.arg_set_ids())
+      .Build({"name", "ts", "ref"});
 }
 
-std::unique_ptr<Table::Cursor> InstantsTable::CreateCursor(
-    const QueryConstraints& qc,
-    sqlite3_value** argv) {
-  uint32_t count = static_cast<uint32_t>(storage_->instants().instant_count());
-  auto it = table_utils::CreateBestRowIteratorForGenericSchema(schema_, count,
-                                                               qc, argv);
-  return std::unique_ptr<Table::Cursor>(
-      new StorageCursor(std::move(it), schema_.ToColumnReporters()));
+uint32_t InstantsTable::RowCount() {
+  return static_cast<uint32_t>(storage_->instants().instant_count());
 }
 
 int InstantsTable::BestIndex(const QueryConstraints& qc, BestIndexInfo* info) {
   info->estimated_cost =
-      static_cast<uint32_t>(storage_->counters().counter_count());
+      static_cast<uint32_t>(storage_->instants().instant_count());
 
   // Only the string columns are handled by SQLite
   info->order_by_consumed = true;
-  size_t name_index = schema_.ColumnIndexFromName("name");
-  size_t ref_type_index = schema_.ColumnIndexFromName("ref_type");
+  size_t name_index = schema().ColumnIndexFromName("name");
+  size_t ref_type_index = schema().ColumnIndexFromName("ref_type");
   for (size_t i = 0; i < qc.constraints().size(); i++) {
     info->omit[i] =
         qc.constraints()[i].iColumn != static_cast<int>(name_index) &&

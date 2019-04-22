@@ -243,13 +243,8 @@ TEST(SurfaceLayerImplTest, SurfaceLayerImplWithMatchingPrimaryAndFallback) {
   std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
   AppendQuadsData data;
   surface_layer_impl->AppendQuads(render_pass.get(), &data);
-  // As the primary and fallback SurfaceInfos match, there is no reason to
-  // add the primary surface ID to |activation_dependencies| because it is not
-  // an unresolved dependency. The fallback surface will already be added as a
-  // reference in referenced_surfaces. Since the primary and fallback surface
-  // IDs match, there is no reason to propagate the deadline.
-  EXPECT_THAT(data.activation_dependencies, testing::IsEmpty());
-  EXPECT_EQ(base::nullopt, data.deadline_in_frames);
+  EXPECT_THAT(data.activation_dependencies, UnorderedElementsAre(surface_id1));
+  EXPECT_EQ(2u, data.deadline_in_frames);
 
   ASSERT_EQ(1u, render_pass->quad_list.size());
   const viz::SurfaceDrawQuad* surface_draw_quad1 =
@@ -259,6 +254,31 @@ TEST(SurfaceLayerImplTest, SurfaceLayerImplWithMatchingPrimaryAndFallback) {
   EXPECT_EQ(surface_id1, surface_draw_quad1->surface_range.end());
   EXPECT_EQ(surface_id1, surface_draw_quad1->surface_range.start());
   EXPECT_EQ(SK_ColorBLUE, surface_draw_quad1->default_background_color);
+}
+
+TEST(SurfaceLayerImplTest, GetEnclosingRectInTargetSpace) {
+  gfx::Size layer_size(902, 1000);
+  gfx::Size viewport_size(902, 1000);
+  LayerTestCommon::LayerImplTest impl;
+  SurfaceLayerImpl* surface_layer_impl =
+      impl.AddChildToRoot<SurfaceLayerImpl>();
+  surface_layer_impl->SetBounds(layer_size);
+  surface_layer_impl->SetDrawsContent(true);
+
+  // A device scale of 1.33 and transform of 1.5 were chosen as they produce
+  // different results when rounding at each stage, vs applying a single
+  // transform.
+  gfx::Transform transform;
+  transform.Scale(1.5, 1.5);
+  impl.host_impl()->active_tree()->SetDeviceScaleFactor(1.33);
+  impl.CalcDrawProps(viewport_size);
+  surface_layer_impl->draw_properties().target_space_transform = transform;
+
+  // GetEnclosingRectInTargetSpace() and GetScaledEnclosingRectInTargetSpace()
+  // should return the same value, otherwise we may not damage the right
+  // pixels.
+  EXPECT_EQ(surface_layer_impl->GetScaledEnclosingRectInTargetSpace(1.33),
+            surface_layer_impl->GetEnclosingRectInTargetSpace());
 }
 
 }  // namespace

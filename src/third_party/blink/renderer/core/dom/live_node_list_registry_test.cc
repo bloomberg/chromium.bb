@@ -101,14 +101,15 @@ TEST_F(LiveNodeListRegistryTest, ExplicitRemove) {
 struct LiveNodeListRegistryWrapper
     : public GarbageCollectedFinalized<LiveNodeListRegistryWrapper> {
   LiveNodeListRegistry registry;
-  void Trace(blink::Visitor* visitor) { visitor->Trace(registry); }
+  void Trace(Visitor* visitor) { visitor->Trace(registry); }
 };
 
 // The set of types which match should be updated as elements are removed due to
 // the garbage collected. Similar to the previous case, except all references to
 // |a| are removed together by the GC.
 TEST_F(LiveNodeListRegistryTest, ImplicitRemove) {
-  auto wrapper = WrapPersistent(new LiveNodeListRegistryWrapper);
+  auto wrapper =
+      WrapPersistent(MakeGarbageCollected<LiveNodeListRegistryWrapper>());
   auto& registry = wrapper->registry;
   auto a = WrapPersistent(CreateNodeList());
   auto b = WrapPersistent(CreateNodeList());
@@ -116,14 +117,14 @@ TEST_F(LiveNodeListRegistryTest, ImplicitRemove) {
   registry.Add(a, kInvalidateOnNameAttrChange);
   registry.Add(b, kInvalidateOnClassAttrChange);
   registry.Add(a, kInvalidateOnIdNameAttrChange);
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
   EXPECT_FALSE(registry.IsEmpty());
   EXPECT_TRUE(registry.ContainsInvalidationType(kInvalidateOnNameAttrChange));
   EXPECT_TRUE(registry.ContainsInvalidationType(kInvalidateOnClassAttrChange));
   EXPECT_TRUE(registry.ContainsInvalidationType(kInvalidateOnIdNameAttrChange));
 
   a.Clear();
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
   EXPECT_FALSE(registry.IsEmpty());
   EXPECT_FALSE(registry.ContainsInvalidationType(kInvalidateOnNameAttrChange));
   EXPECT_TRUE(registry.ContainsInvalidationType(kInvalidateOnClassAttrChange));
@@ -131,7 +132,7 @@ TEST_F(LiveNodeListRegistryTest, ImplicitRemove) {
       registry.ContainsInvalidationType(kInvalidateOnIdNameAttrChange));
 
   b.Clear();
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
   EXPECT_TRUE(registry.IsEmpty());
   EXPECT_FALSE(registry.ContainsInvalidationType(kInvalidateOnNameAttrChange));
   EXPECT_FALSE(registry.ContainsInvalidationType(kInvalidateOnClassAttrChange));

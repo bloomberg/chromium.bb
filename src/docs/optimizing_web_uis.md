@@ -120,5 +120,5 @@ To mark a WebUI's resources compressed, you'll need to do something like:
 ```c++
 WebUIDataSource* data_source = WebUIDataSource::Create(...);
 data_source->SetDefaultResource(IDR_MY_PAGE);
-data_source->UseGzip({"strings.js", ...});  // Omit arg to compress everything
+data_source->UseGzip();  // Optional callback if exclusions are needed.
 ```

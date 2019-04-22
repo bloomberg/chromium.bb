@@ -15,9 +15,9 @@
 #include "remoting/protocol/ice_config_request.h"
 #include "remoting/signaling/iq_sender.h"
 
-namespace buzz {
+namespace jingle_xmpp {
 class XmlElement;
-}  // namespace buzz
+}  // namespace jingle_xmpp
 
 namespace remoting {
 
@@ -35,7 +35,7 @@ class JingleInfoRequest : public IceConfigRequest {
   void Send(const OnIceConfigCallback& callback) override;
 
  private:
-  void OnResponse(IqRequest* request, const buzz::XmlElement* stanza);
+  void OnResponse(IqRequest* request, const jingle_xmpp::XmlElement* stanza);
 
   IqSender iq_sender_;
   std::unique_ptr<IqRequest> request_;

@@ -5,15 +5,18 @@
 import unittest
 
 from dashboard.pinpoint.models.quest import run_instrumentation_test
+from dashboard.pinpoint.models.quest import run_test_test
 
 _BASE_ARGUMENTS = {
     'swarming_server': 'server',
-    'dimensions': {'key': 'value'},
+    'dimensions': run_test_test.DIMENSIONS,
 }
 
 
 _BASE_EXTRA_ARGS = run_instrumentation_test._DEFAULT_EXTRA_ARGS
 
+
+_BASE_SWARMING_TAGS = {}
 
 class FromDictTest(unittest.TestCase):
 
@@ -21,7 +24,8 @@ class FromDictTest(unittest.TestCase):
     quest = run_instrumentation_test.RunInstrumentationTest.FromDict(
         _BASE_ARGUMENTS)
     expected = run_instrumentation_test.RunInstrumentationTest(
-        'server', {'key': 'value'}, _BASE_EXTRA_ARGS)
+        'server', run_test_test.DIMENSIONS, _BASE_EXTRA_ARGS,
+        _BASE_SWARMING_TAGS)
     self.assertEqual(quest, expected)
 
   def testAllArguments(self):
@@ -32,5 +36,5 @@ class FromDictTest(unittest.TestCase):
 
     extra_args = ['--test-filter', filter_string] + _BASE_EXTRA_ARGS
     expected = run_instrumentation_test.RunInstrumentationTest(
-        'server', {'key': 'value'}, extra_args)
+        'server', run_test_test.DIMENSIONS, extra_args, _BASE_SWARMING_TAGS)
     self.assertEqual(quest, expected)

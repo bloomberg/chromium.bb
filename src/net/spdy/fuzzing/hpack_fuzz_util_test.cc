@@ -10,7 +10,8 @@
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
-#include "net/third_party/spdy/platform/api/spdy_string_utils.h"
+#include "base/stl_util.h"
+#include "net/third_party/quiche/src/spdy/platform/api/spdy_string_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -68,7 +69,7 @@ TEST(HpackFuzzUtilTest, ParsesSequenceOfHeaderBlocks) {
       "fin";
 
   HpackFuzzUtil::Input input;
-  input.input.assign(fixture, arraysize(fixture) - 1);
+  input.input.assign(fixture, base::size(fixture) - 1);
 
   SpdyStringPiece block;
 
@@ -141,11 +142,11 @@ TEST(HpackFuzzUtilTest, ValidFuzzExamplesRegressionTest) {
 
 TEST(HpackFuzzUtilTest, FlipBitsMutatesBuffer) {
   char buffer[] = "testbuffer1234567890";
-  SpdyString unmodified(buffer, arraysize(buffer) - 1);
+  SpdyString unmodified(buffer, base::size(buffer) - 1);
 
   EXPECT_EQ(unmodified, buffer);
   HpackFuzzUtil::FlipBits(reinterpret_cast<uint8_t*>(buffer),
-                          arraysize(buffer) - 1, 1);
+                          base::size(buffer) - 1, 1);
   EXPECT_NE(unmodified, buffer);
 }
 

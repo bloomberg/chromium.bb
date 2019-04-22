@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <memory>
-
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
@@ -31,7 +29,6 @@ void OnIsPageDistillableUpdate(const JavaRef<jobject>& callback,
 
 static void JNI_DistillablePageUtils_SetDelegate(
     JNIEnv* env,
-    const JavaParamRef<jclass>& jcaller,
     const JavaParamRef<jobject>& webContents,
     const JavaParamRef<jobject>& callback) {
   content::WebContents* web_contents(
@@ -42,8 +39,8 @@ static void JNI_DistillablePageUtils_SetDelegate(
 
   DistillabilityDelegate delegate = base::Bind(
       OnIsPageDistillableUpdate, ScopedJavaGlobalRef<jobject>(env, callback));
-  setDelegate(web_contents, delegate);
+  SetDelegate(web_contents, delegate);
 }
 
-}
-}
+}  // namespace android
+}  // namespace dom_distiller

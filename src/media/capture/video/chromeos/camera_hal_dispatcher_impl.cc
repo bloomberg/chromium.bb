@@ -11,14 +11,17 @@
 
 #include <vector>
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/trace_event/trace_event.h"
+#include "media/capture/video/chromeos/mojo/camera_common.mojom.h"
 #include "mojo/public/cpp/platform/named_platform_channel.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/platform/socket_utils_posix.h"
@@ -38,21 +41,6 @@ std::string GenerateRandomToken() {
   return base::HexEncode(random_bytes, 16);
 }
 
-// Creates a pipe. Returns true on success, otherwise false.
-// On success, |read_fd| will be set to the fd of the read side, and
-// |write_fd| will be set to the one of write side.
-bool CreatePipe(base::ScopedFD* read_fd, base::ScopedFD* write_fd) {
-  int fds[2];
-  if (pipe2(fds, O_NONBLOCK | O_CLOEXEC) < 0) {
-    PLOG(ERROR) << "pipe2()";
-    return false;
-  }
-
-  read_fd->reset(fds[0]);
-  write_fd->reset(fds[1]);
-  return true;
-}
-
 // Waits until |raw_socket_fd| is readable.  We signal |raw_cancel_fd| when we
 // want to cancel the blocking wait and stop serving connections on
 // |raw_socket_fd|.  To notify such a situation, |raw_cancel_fd| is also passed
@@ -62,7 +50,7 @@ bool WaitForSocketReadable(int raw_socket_fd, int raw_cancel_fd) {
       {raw_socket_fd, POLLIN, 0}, {raw_cancel_fd, POLLIN, 0},
   };
 
-  if (HANDLE_EINTR(poll(fds, arraysize(fds), -1)) <= 0) {
+  if (HANDLE_EINTR(poll(fds, base::size(fds), -1)) <= 0) {
     PLOG(ERROR) << "poll()";
     return false;
   }
@@ -120,7 +108,7 @@ bool CameraHalDispatcherImpl::StartThreads() {
 }
 
 bool CameraHalDispatcherImpl::Start(
-    MojoJpegDecodeAcceleratorFactoryCB jda_factory,
+    MojoMjpegDecodeAcceleratorFactoryCB jda_factory,
     MojoJpegEncodeAcceleratorFactoryCB jea_factory) {
   DCHECK(!IsStarted());
   if (!StartThreads()) {
@@ -209,7 +197,7 @@ void CameraHalDispatcherImpl::RegisterClient(
 }
 
 void CameraHalDispatcherImpl::GetJpegDecodeAccelerator(
-    media::mojom::JpegDecodeAcceleratorRequest jda_request) {
+    media::mojom::MjpegDecodeAcceleratorRequest jda_request) {
   jda_factory_.Run(std::move(jda_request));
 }
 
@@ -291,9 +279,9 @@ void CameraHalDispatcherImpl::StartServiceLoop(base::ScopedFD socket_fd,
   DCHECK(socket_fd.is_valid());
 
   base::ScopedFD cancel_fd;
-  if (!CreatePipe(&cancel_fd, &cancel_pipe_)) {
+  if (!base::CreatePipe(&cancel_fd, &cancel_pipe_, true)) {
+    PLOG(ERROR) << "Failed to create cancel pipe";
     started->Signal();
-    LOG(ERROR) << "Failed to create cancel pipe";
     return;
   }
 
@@ -379,12 +367,10 @@ void CameraHalDispatcherImpl::OnCameraHalServerConnectionError() {
 void CameraHalDispatcherImpl::OnCameraHalClientConnectionError(
     CameraClientObserver* client_observer) {
   DCHECK(proxy_task_runner_->BelongsToCurrentThread());
-  for (auto& it : client_observers_) {
-    if (it.get() == client_observer) {
-      client_observers_.erase(it);
-      VLOG(1) << "Camera HAL client connection lost";
-      break;
-    }
+  auto it = client_observers_.find(client_observer);
+  if (it != client_observers_.end()) {
+    client_observers_.erase(it);
+    VLOG(1) << "Camera HAL client connection lost";
   }
 }
 

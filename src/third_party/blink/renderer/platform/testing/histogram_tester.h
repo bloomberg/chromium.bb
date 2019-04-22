@@ -7,6 +7,7 @@
 
 #include <memory>
 #include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace base {
 class HistogramTester;
@@ -16,6 +17,8 @@ namespace blink {
 
 // Blink interface for base::HistogramTester.
 class HistogramTester {
+  USING_FAST_MALLOC(HistogramTester);
+
  public:
   HistogramTester();
   ~HistogramTester();

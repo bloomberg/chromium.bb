@@ -8,8 +8,11 @@ import android.text.TextUtils;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.printing.Printable;
 
 import java.lang.ref.WeakReference;
@@ -20,11 +23,17 @@ import java.lang.ref.WeakReference;
  * This class doesn't have any lifetime expectations with regards to Tab, since we keep a weak
  * reference.
  */
+@JNINamespace("printing")
 public class TabPrinter implements Printable {
     private static final String TAG = "printing";
 
     private final WeakReference<Tab> mTab;
     private final String mDefaultTitle;
+
+    @CalledByNative
+    private static TabPrinter getPrintable(Tab tab) {
+        return new TabPrinter(tab);
+    }
 
     public TabPrinter(Tab tab) {
         mTab = new WeakReference<Tab>(tab);
@@ -37,7 +46,7 @@ public class TabPrinter implements Printable {
         if (!canPrint()) return false;
         Tab tab = mTab.get();
         assert tab != null && tab.isInitialized();
-        return tab.print(renderProcessId, renderFrameId);
+        return nativePrint(tab.getWebContents(), renderProcessId, renderFrameId);
     }
 
     @Override
@@ -64,4 +73,7 @@ public class TabPrinter implements Printable {
         }
         return true;
     }
+
+    private static native boolean nativePrint(
+            WebContents webContents, int renderProcessId, int renderFrameId);
 }

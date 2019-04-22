@@ -8,6 +8,7 @@
 #include <zircon/process.h>
 #include <zircon/syscalls.h>
 
+#include "base/clang_coverage_buildflags.h"
 #include "base/debug/activity_tracker.h"
 #include "base/fuchsia/default_job.h"
 #include "base/fuchsia/fuchsia_logging.h"
@@ -89,7 +90,7 @@ bool Process::CanBackgroundProcesses() {
 
 // static
 void Process::TerminateCurrentProcessImmediately(int exit_code) {
-#if defined(CLANG_COVERAGE)
+#if BUILDFLAG(CLANG_COVERAGE)
   WriteClangCoverageProfile();
 #endif
   _exit(exit_code);

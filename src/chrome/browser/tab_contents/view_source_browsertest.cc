@@ -205,7 +205,8 @@ IN_PROC_BROWSER_TEST_F(ViewSourceTest,
   }
 
   // Switch back to the first tab and navigate it cross-process.
-  browser()->tab_strip_model()->ActivateTabAt(0, true);
+  browser()->tab_strip_model()->ActivateTabAt(
+      0, {TabStripModel::GestureType::kOther});
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIVersionURL));
   EXPECT_TRUE(chrome::CanViewSource(browser()));
 
@@ -251,10 +252,11 @@ IN_PROC_BROWSER_TEST_F(ViewSourceTest, CrossSiteSubframe) {
 
   // Do a sanity check that in this particular test page the main frame and the
   // subframe are cross-site.
-  EXPECT_FALSE(content::SiteInstance::IsSameWebSite(
-      browser()->profile(), original_main_frame->GetLastCommittedURL(),
-      original_child_frame->GetLastCommittedURL()));
+  EXPECT_NE(original_main_frame->GetLastCommittedURL().GetOrigin(),
+            original_child_frame->GetLastCommittedURL().GetOrigin());
   if (content::AreAllSitesIsolatedForTesting()) {
+    EXPECT_NE(original_main_frame->GetSiteInstance(),
+              original_child_frame->GetSiteInstance());
     EXPECT_NE(original_main_frame->GetProcess()->GetID(),
               original_child_frame->GetProcess()->GetID());
   }
@@ -541,7 +543,7 @@ IN_PROC_BROWSER_TEST_F(ViewSourceFeaturePolicyTest,
                        ViewSourceNotAffectedByHeaderPolicy) {
   ASSERT_TRUE(embedded_test_server()->Start());
   const std::string k_verify_feature = R"(
-      var all_features = document.policy.allowedFeatures();
+      var all_features = document.featurePolicy.allowedFeatures();
       var vs = all_features.find((f) => f === 'vertical-scroll');
       console.log(vs);
       domAutomationController.send("" + vs);)";

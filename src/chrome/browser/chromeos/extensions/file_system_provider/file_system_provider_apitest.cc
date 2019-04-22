@@ -5,6 +5,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/chromeos/file_system_provider/request_manager.h"
 #include "chrome/browser/chromeos/file_system_provider/request_value.h"
 #include "chrome/browser/chromeos/file_system_provider/service.h"
+#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "ui/message_center/public/cpp/notification.h"
@@ -135,11 +137,15 @@ class FileSystemProviderApiTest : public ExtensionApiTest {
 
     display_service_ = std::make_unique<NotificationDisplayServiceTester>(
         browser()->profile());
+
+    user_manager_.AddUser(AccountId::FromUserEmailGaiaId(
+        browser()->profile()->GetProfileUserName(), "12345"));
   }
 
   std::unique_ptr<NotificationDisplayServiceTester> display_service_;
 
  private:
+  chromeos::FakeChromeUserManager user_manager_;
   DISALLOW_COPY_AND_ASSIGN(FileSystemProviderApiTest);
 };
 

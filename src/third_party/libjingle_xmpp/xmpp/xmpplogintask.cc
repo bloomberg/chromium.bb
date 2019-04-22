@@ -13,33 +13,15 @@
 #include <string>
 #include <vector>
 
+#include "base/logging.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 #include "third_party/libjingle_xmpp/xmpp/constants.h"
 #include "third_party/libjingle_xmpp/xmpp/jid.h"
 #include "third_party/libjingle_xmpp/xmpp/saslmechanism.h"
 #include "third_party/libjingle_xmpp/xmpp/xmppengineimpl.h"
-#include "third_party/webrtc/rtc_base/third_party/base64/base64.h"
 
-using rtc::ConstantLabel;
+namespace jingle_xmpp {
 
-namespace buzz {
-
-#if !defined(NDEBUG)
-const ConstantLabel XmppLoginTask::LOGINTASK_STATES[] = {
-  KLABEL(LOGINSTATE_INIT),
-  KLABEL(LOGINSTATE_STREAMSTART_SENT),
-  KLABEL(LOGINSTATE_STARTED_XMPP),
-  KLABEL(LOGINSTATE_TLS_INIT),
-  KLABEL(LOGINSTATE_AUTH_INIT),
-  KLABEL(LOGINSTATE_BIND_INIT),
-  KLABEL(LOGINSTATE_TLS_REQUESTED),
-  KLABEL(LOGINSTATE_SASL_RUNNING),
-  KLABEL(LOGINSTATE_BIND_REQUESTED),
-  KLABEL(LOGINSTATE_SESSION_REQUESTED),
-  KLABEL(LOGINSTATE_DONE),
-  LASTLABEL
-};
-#endif
 XmppLoginTask::XmppLoginTask(XmppEngineImpl * pctx) :
   pctx_(pctx),
   authNeeded_(true),
@@ -84,8 +66,7 @@ XmppLoginTask::Advance() {
     const XmlElement * element = NULL;
 
 #if !defined(NDEBUG)
-    RTC_LOG(LS_VERBOSE) << "XmppLoginTask::Advance - "
-      << rtc::ErrorName(state_, LOGINTASK_STATES);
+    DVLOG(1) << "XmppLoginTask::Advance - " << ErrorName(state_);
 #endif
 
     switch (state_) {
@@ -124,12 +105,12 @@ XmppLoginTask::Advance() {
 
         bool tls_present = (GetFeature(QN_TLS_STARTTLS) != NULL);
         // Error if TLS required but not present.
-        if (pctx_->tls_option_ == buzz::TLS_REQUIRED && !tls_present) {
+        if (pctx_->tls_option_ == jingle_xmpp::TLS_REQUIRED && !tls_present) {
           return Failure(XmppEngine::ERROR_TLS);
         }
         // Use TLS if required or enabled, and also available
-        if ((pctx_->tls_option_ == buzz::TLS_REQUIRED ||
-            pctx_->tls_option_ == buzz::TLS_ENABLED) && tls_present) {
+        if ((pctx_->tls_option_ == jingle_xmpp::TLS_REQUIRED ||
+            pctx_->tls_option_ == jingle_xmpp::TLS_ENABLED) && tls_present) {
           state_ = LOGINSTATE_TLS_INIT;
           continue;
         }
@@ -166,7 +147,7 @@ XmppLoginTask::Advance() {
         // to do so - see the implementation of XmppEngineImpl::StartTls and
         // XmppEngine::SetTlsServerDomain to see how you can use that feature
         pctx_->StartTls(pctx_->user_jid_.domain());
-        pctx_->tls_option_ = buzz::TLS_ENABLED;
+        pctx_->tls_option_ = jingle_xmpp::TLS_ENABLED;
         state_ = LOGINSTATE_INIT;
         continue;
       }
@@ -376,4 +357,27 @@ XmppLoginTask::FlushQueuedStanzas() {
   pvecQueuedStanzas_->clear();
 }
 
+#if !defined(NDEBUG)
+#define KLABEL(x) \
+  case x:         \
+    return #x
+
+const char* XmppLoginTask::ErrorName(int err) {
+  switch (err) {
+    KLABEL(LOGINSTATE_INIT);
+    KLABEL(LOGINSTATE_STREAMSTART_SENT);
+    KLABEL(LOGINSTATE_STARTED_XMPP);
+    KLABEL(LOGINSTATE_TLS_INIT);
+    KLABEL(LOGINSTATE_AUTH_INIT);
+    KLABEL(LOGINSTATE_BIND_INIT);
+    KLABEL(LOGINSTATE_TLS_REQUESTED);
+    KLABEL(LOGINSTATE_SASL_RUNNING);
+    KLABEL(LOGINSTATE_BIND_REQUESTED);
+    KLABEL(LOGINSTATE_SESSION_REQUESTED);
+    KLABEL(LOGINSTATE_DONE);
+    default:
+      return nullptr;
+  }
+}
+#endif
 }

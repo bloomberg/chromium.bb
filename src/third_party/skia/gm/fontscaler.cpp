@@ -4,9 +4,10 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-#include "gm.h"
-#include "sk_tool_utils.h"
+#include <SkFont.h>
 #include "SkTypeface.h"
+#include "ToolUtils.h"
+#include "gm.h"
 
 namespace skiagm {
 
@@ -19,9 +20,7 @@ public:
 protected:
 
     SkString onShortName() override {
-        SkString name("fontscaler");
-        name.append(sk_tool_utils::platform_font_manager());
-        return name;
+        return SkString("fontscaler");
     }
 
     SkISize onISize() override {
@@ -29,13 +28,11 @@ protected:
     }
 
     void onDraw(SkCanvas* canvas) override {
-        SkPaint paint;
-
-        paint.setAntiAlias(true);
-        paint.setLCDRenderText(true);
+        SkFont font;
+        font.setEdging(SkFont::Edging::kSubpixelAntiAlias);
         //With freetype the default (normal hinting) can be really ugly.
         //Most distros now set slight (vertical hinting only) in any event.
-        paint.setHinting(kSlight_SkFontHinting);
+        font.setHinting(kSlight_SkFontHinting);
 
         const char* text = "Hamburgefons ooo mmm";
         const size_t textLen = strlen(text);
@@ -61,13 +58,13 @@ protected:
                 }
 
                 for (int ps = 6; ps <= 22; ps++) {
-                    paint.setTextSize(SkIntToScalar(ps));
-                    canvas->drawText(text, textLen, x, y, paint);
-                    y += paint.getFontMetrics(nullptr);
+                    font.setSize(SkIntToScalar(ps));
+                    canvas->drawSimpleText(text, textLen, kUTF8_SkTextEncoding, x, y, font, SkPaint());
+                    y += font.getMetrics(nullptr);
                 }
             }
             canvas->translate(0, SkIntToScalar(360));
-            paint.setSubpixelText(true);
+            font.setSubpixel(true);
         }
     }
 
@@ -77,7 +74,6 @@ private:
 
 //////////////////////////////////////////////////////////////////////////////
 
-static GM* MyFactory(void*) { return new FontScalerGM; }
-static GMRegistry reg(MyFactory);
+DEF_GM( return new FontScalerGM; )
 
 }

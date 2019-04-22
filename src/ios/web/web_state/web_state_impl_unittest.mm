@@ -16,14 +16,13 @@
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"
+#include "ios/web/common/features.h"
 #import "ios/web/interstitials/web_interstitial_impl.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/wk_navigation_util.h"
 #import "ios/web/public/crw_navigation_item_storage.h"
 #import "ios/web/public/crw_session_storage.h"
-#include "ios/web/public/features.h"
 #import "ios/web/public/java_script_dialog_presenter.h"
-#include "ios/web/public/load_committed_details.h"
 #import "ios/web/public/test/fakes/fake_navigation_context.h"
 #import "ios/web/public/test/fakes/fake_web_frame.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
@@ -72,33 +71,17 @@ class TestGlobalWebStateObserver : public GlobalWebStateObserver {
  public:
   TestGlobalWebStateObserver()
       : GlobalWebStateObserver(),
-        navigation_items_pruned_called_(false),
-        navigation_item_changed_called_(false),
-        navigation_item_committed_called_(false),
         did_start_loading_called_(false),
         did_stop_loading_called_(false),
         did_start_navigation_called_(false),
-        page_loaded_called_with_success_(false),
         web_state_destroyed_called_(false) {}
 
   // Methods returning true if the corresponding GlobalWebStateObserver method
   // has been called.
-  bool navigation_items_pruned_called() const {
-    return navigation_items_pruned_called_;
-  }
-  bool navigation_item_changed_called() const {
-    return navigation_item_changed_called_;
-  }
-  bool navigation_item_committed_called() const {
-    return navigation_item_committed_called_;
-  }
   bool did_start_loading_called() const { return did_start_loading_called_; }
   bool did_stop_loading_called() const { return did_stop_loading_called_; }
   bool did_start_navigation_called() const {
     return did_start_navigation_called_;
-  }
-  bool page_loaded_called_with_success() const {
-    return page_loaded_called_with_success_;
   }
   bool web_state_destroyed_called() const {
     return web_state_destroyed_called_;
@@ -106,18 +89,6 @@ class TestGlobalWebStateObserver : public GlobalWebStateObserver {
 
  private:
   // GlobalWebStateObserver implementation:
-  void NavigationItemsPruned(WebState* web_state,
-                             size_t pruned_item_count) override {
-    navigation_items_pruned_called_ = true;
-  }
-  void NavigationItemChanged(WebState* web_state) override {
-    navigation_item_changed_called_ = true;
-  }
-  void NavigationItemCommitted(
-      WebState* web_state,
-      const LoadCommittedDetails& load_details) override {
-    navigation_item_committed_called_ = true;
-  }
   void WebStateDidStartLoading(WebState* web_state) override {
     did_start_loading_called_ = true;
   }
@@ -129,22 +100,13 @@ class TestGlobalWebStateObserver : public GlobalWebStateObserver {
       NavigationContext* navigation_context) override {
     did_start_navigation_called_ = true;
   }
-  void PageLoaded(WebState* web_state,
-                  PageLoadCompletionStatus load_completion_status) override {
-    page_loaded_called_with_success_ =
-        load_completion_status == PageLoadCompletionStatus::SUCCESS;
-  }
   void WebStateDestroyed(WebState* web_state) override {
     web_state_destroyed_called_ = true;
   }
 
-  bool navigation_items_pruned_called_;
-  bool navigation_item_changed_called_;
-  bool navigation_item_committed_called_;
   bool did_start_loading_called_;
   bool did_stop_loading_called_;
   bool did_start_navigation_called_;
-  bool page_loaded_called_with_success_;
   bool web_state_destroyed_called_;
 };
 
@@ -455,27 +417,6 @@ TEST_P(WebStateImplTest, ObserverTest) {
   EXPECT_EQ(web_state_.get(),
             observer->navigation_items_pruned_info()->web_state);
 
-  // Test that NavigationItemChanged() is called.
-  ASSERT_FALSE(observer->navigation_item_changed_info());
-  web_state_->OnNavigationItemChanged();
-  ASSERT_TRUE(observer->navigation_item_changed_info());
-  EXPECT_EQ(web_state_.get(),
-            observer->navigation_item_changed_info()->web_state);
-
-  // Test that NavigationItemCommitted() is called.
-  ASSERT_FALSE(observer->commit_navigation_info());
-  LoadCommittedDetails details;
-  auto item = std::make_unique<NavigationItemImpl>();
-  details.item = item.get();
-  web_state_->OnNavigationItemCommitted(details);
-  ASSERT_TRUE(observer->commit_navigation_info());
-  EXPECT_EQ(web_state_.get(), observer->commit_navigation_info()->web_state);
-  LoadCommittedDetails actual_details =
-      observer->commit_navigation_info()->load_details;
-  EXPECT_EQ(details.item, actual_details.item);
-  EXPECT_EQ(details.previous_item_index, actual_details.previous_item_index);
-  EXPECT_EQ(details.is_in_page, actual_details.is_in_page);
-
   // Test that OnPageLoaded() is called with success when there is no error.
   ASSERT_FALSE(observer->load_page_info());
   web_state_->OnPageLoaded(url, false);
@@ -554,7 +495,7 @@ TEST_P(WebStateImplTest, DelegateTest) {
   EXPECT_EQ(web_state_.get(),
             delegate.last_close_web_state_request()->web_state);
 
-  // Test that OpenURLFromWebState() is called.
+  // Test that OpenURLFromWebState() is called without a virtual URL.
   WebState::OpenURLParams params(GURL("https://chromium.test/"), Referrer(),
                                  WindowOpenDisposition::CURRENT_TAB,
                                  ui::PAGE_TRANSITION_LINK, true);
@@ -565,6 +506,27 @@ TEST_P(WebStateImplTest, DelegateTest) {
   EXPECT_EQ(web_state_.get(), open_url_request->web_state);
   WebState::OpenURLParams actual_params = open_url_request->params;
   EXPECT_EQ(params.url, actual_params.url);
+  EXPECT_EQ(GURL::EmptyGURL(), params.virtual_url);
+  EXPECT_EQ(GURL::EmptyGURL(), actual_params.virtual_url);
+  EXPECT_EQ(params.referrer.url, actual_params.referrer.url);
+  EXPECT_EQ(params.referrer.policy, actual_params.referrer.policy);
+  EXPECT_EQ(params.disposition, actual_params.disposition);
+  EXPECT_TRUE(
+      PageTransitionCoreTypeIs(params.transition, actual_params.transition));
+  EXPECT_EQ(params.is_renderer_initiated, actual_params.is_renderer_initiated);
+
+  // Test that OpenURLFromWebState() is called with a virtual URL.
+  params = WebState::OpenURLParams(
+      GURL("https://chromium.test/"), GURL("https://virtual.chromium.test/"),
+      Referrer(), WindowOpenDisposition::CURRENT_TAB, ui::PAGE_TRANSITION_LINK,
+      true);
+  web_state_->OpenURL(params);
+  open_url_request = delegate.last_open_url_request();
+  ASSERT_TRUE(open_url_request);
+  EXPECT_EQ(web_state_.get(), open_url_request->web_state);
+  actual_params = open_url_request->params;
+  EXPECT_EQ(params.url, actual_params.url);
+  EXPECT_EQ(params.virtual_url, actual_params.virtual_url);
   EXPECT_EQ(params.referrer.url, actual_params.referrer.url);
   EXPECT_EQ(params.referrer.policy, actual_params.referrer.policy);
   EXPECT_EQ(params.disposition, actual_params.disposition);
@@ -651,24 +613,6 @@ TEST_P(WebStateImplTest, GlobalObserverTest) {
   std::unique_ptr<TestGlobalWebStateObserver> observer(
       new TestGlobalWebStateObserver());
 
-  // Test that NavigationItemsPruned() is called.
-  EXPECT_FALSE(observer->navigation_items_pruned_called());
-  web_state_->OnNavigationItemsPruned(1);
-  EXPECT_TRUE(observer->navigation_items_pruned_called());
-
-  // Test that NavigationItemChanged() is called.
-  EXPECT_FALSE(observer->navigation_item_changed_called());
-  web_state_->OnNavigationItemChanged();
-  EXPECT_TRUE(observer->navigation_item_changed_called());
-
-  // Test that NavigationItemCommitted() is called.
-  EXPECT_FALSE(observer->navigation_item_committed_called());
-  LoadCommittedDetails details;
-  auto item = std::make_unique<NavigationItemImpl>();
-  details.item = item.get();
-  web_state_->OnNavigationItemCommitted(details);
-  EXPECT_TRUE(observer->navigation_item_committed_called());
-
   // Test that DidStartNavigation() is called.
   EXPECT_FALSE(observer->did_start_navigation_called());
   std::unique_ptr<NavigationContextImpl> context =
@@ -688,13 +632,6 @@ TEST_P(WebStateImplTest, GlobalObserverTest) {
   EXPECT_FALSE(observer->did_stop_loading_called());
   web_state_->SetIsLoading(false);
   EXPECT_TRUE(observer->did_stop_loading_called());
-
-  // Test that OnPageLoaded() is called with success when there is no error.
-  EXPECT_FALSE(observer->page_loaded_called_with_success());
-  web_state_->OnPageLoaded(GURL("http://test"), false);
-  EXPECT_FALSE(observer->page_loaded_called_with_success());
-  web_state_->OnPageLoaded(GURL("http://test"), true);
-  EXPECT_TRUE(observer->page_loaded_called_with_success());
 
   // Test that WebStateDestroyed() is called.
   EXPECT_FALSE(observer->web_state_destroyed_called());
@@ -1125,9 +1062,9 @@ TEST_P(WebStateImplTest, ShowAndClearInterstitialWithoutChangingSslStatus) {
   EXPECT_FALSE(observer.did_change_visible_security_state_info());
 }
 
-INSTANTIATE_TEST_CASE_P(ProgrammaticWebStateImplTest,
-                        WebStateImplTest,
-                        ::testing::Values(NavigationManagerChoice::LEGACY,
-                                          NavigationManagerChoice::WK_BASED));
+INSTANTIATE_TEST_SUITE_P(ProgrammaticWebStateImplTest,
+                         WebStateImplTest,
+                         ::testing::Values(NavigationManagerChoice::LEGACY,
+                                           NavigationManagerChoice::WK_BASED));
 
 }  // namespace web

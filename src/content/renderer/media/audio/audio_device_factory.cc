@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
@@ -178,7 +179,7 @@ AudioDeviceFactory::NewAudioCapturerSource(
 
   return base::MakeRefCounted<media::AudioInputDevice>(
       AudioInputIPCFactory::get()->CreateAudioInputIPC(render_frame_id, params),
-      base::ThreadPriority::REALTIME_AUDIO);
+      media::AudioInputDevice::Purpose::kUserInput);
 }
 
 // static

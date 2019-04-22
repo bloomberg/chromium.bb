@@ -18,8 +18,10 @@ import org.chromium.base.Callback;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ContentSettingsType;
+import org.chromium.chrome.browser.browserservices.Origin;
+import org.chromium.chrome.browser.browserservices.permissiondelegation.TrustedWebActivityPermissionManager;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.chrome.browser.preferences.website.ContentSetting;
+import org.chromium.chrome.browser.preferences.website.ContentSettingValues;
 import org.chromium.chrome.browser.preferences.website.ContentSettingsResources;
 import org.chromium.chrome.browser.preferences.website.WebsitePreferenceBridge;
 import org.chromium.components.location.LocationUtils;
@@ -65,7 +67,7 @@ class PermissionParamsListBuilder {
         mDisplayPermissionsCallback = displayPermissionsCallback;
     }
 
-    void addPermissionEntry(String name, int type, ContentSetting value) {
+    void addPermissionEntry(String name, int type, @ContentSettingValues int value) {
         mEntries.add(new PageInfoPermissionEntry(name, type, value));
     }
 
@@ -82,7 +84,7 @@ class PermissionParamsListBuilder {
         PageInfoView.PermissionParams permissionParams = new PageInfoView.PermissionParams();
 
         permissionParams.iconResource = getImageResourceForPermission(permission.type);
-        if (permission.setting == ContentSetting.ALLOW) {
+        if (permission.setting == ContentSettingValues.ALLOW) {
             LocationUtils locationUtils = LocationUtils.getInstance();
             Intent intentOverride = null;
             String[] androidPermissions = null;
@@ -122,19 +124,31 @@ class PermissionParamsListBuilder {
         builder.append(nameString);
         builder.append(" – "); // en-dash.
         String status_text = "";
-        switch (permission.setting) {
-            case ALLOW:
-                status_text = mContext.getString(R.string.page_info_permission_allowed);
-                break;
-            case BLOCK:
-                status_text = mContext.getString(R.string.page_info_permission_blocked);
-                break;
-            default:
-                assert false : "Invalid setting " + permission.setting + " for permission "
-                               + permission.type;
+
+        String managedBy = null;
+        if (permission.type == ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
+            TrustedWebActivityPermissionManager manager = TrustedWebActivityPermissionManager.get();
+            managedBy = manager.getDelegateAppName(new Origin(mFullUrl));
         }
-        if (WebsitePreferenceBridge.isPermissionControlledByDSE(permission.type, mFullUrl, false)) {
-            status_text = statusTextForDSEPermission(permission.setting);
+        if (managedBy != null) {
+            status_text = String.format(
+                    mContext.getString(R.string.website_notification_managed_by_app), managedBy);
+        } else {
+            switch (permission.setting) {
+                case ContentSettingValues.ALLOW:
+                    status_text = mContext.getString(R.string.page_info_permission_allowed);
+                    break;
+                case ContentSettingValues.BLOCK:
+                    status_text = mContext.getString(R.string.page_info_permission_blocked);
+                    break;
+                default:
+                    assert false : "Invalid setting " + permission.setting + " for permission "
+                                   + permission.type;
+            }
+            if (WebsitePreferenceBridge.isPermissionControlledByDSE(
+                        permission.type, mFullUrl, false)) {
+                status_text = statusTextForDSEPermission(permission.setting);
+            }
         }
         builder.append(status_text);
         permissionParams.status = builder;
@@ -208,8 +222,8 @@ class PermissionParamsListBuilder {
     /**
      * Returns the permission string for the Default Search Engine.
      */
-    private String statusTextForDSEPermission(ContentSetting setting) {
-        if (setting == ContentSetting.ALLOW) {
+    private String statusTextForDSEPermission(@ContentSettingValues int setting) {
+        if (setting == ContentSettingValues.ALLOW) {
             return mContext.getString(R.string.page_info_dse_permission_allowed);
         }
 
@@ -223,9 +237,9 @@ class PermissionParamsListBuilder {
     private static final class PageInfoPermissionEntry {
         public final String name;
         public final int type;
-        public final ContentSetting setting;
+        public final @ContentSettingValues int setting;
 
-        PageInfoPermissionEntry(String name, int type, ContentSetting setting) {
+        PageInfoPermissionEntry(String name, int type, @ContentSettingValues int setting) {
             this.name = name;
             this.type = type;
             this.setting = setting;

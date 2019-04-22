@@ -7,6 +7,7 @@
 #include <memory>
 #include <set>
 
+#include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/values.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -48,8 +49,9 @@ TEST(PrivetConfirmApiFlowTest, Parsing) {
       "123", base::Bind(&MockDelegate::Callback, base::Unretained(&delegate)));
   EXPECT_CALL(delegate, Callback(GCDApiFlow::SUCCESS)).Times(1);
 
-  std::unique_ptr<base::Value> value =
+  base::Optional<base::Value> value =
       base::JSONReader::Read(kSampleConfirmResponse);
+  ASSERT_TRUE(value);
   const base::DictionaryValue* dictionary = NULL;
   ASSERT_TRUE(value->GetAsDictionary(&dictionary));
   confirmation.OnGCDApiFlowComplete(*dictionary);
@@ -57,6 +59,7 @@ TEST(PrivetConfirmApiFlowTest, Parsing) {
   EXPECT_CALL(delegate, Callback(GCDApiFlow::ERROR_FROM_SERVER)).Times(1);
 
   value = base::JSONReader::Read(kFailedConfirmResponse);
+  ASSERT_TRUE(value);
   ASSERT_TRUE(value->GetAsDictionary(&dictionary));
   confirmation.OnGCDApiFlowComplete(*dictionary);
 }

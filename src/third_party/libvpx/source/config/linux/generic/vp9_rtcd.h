@@ -64,21 +64,6 @@ int vp9_diamond_search_sad_c(const struct macroblock* x,
                              const struct mv* center_mv);
 #define vp9_diamond_search_sad vp9_diamond_search_sad_c
 
-void vp9_fdct8x8_quant_c(const int16_t* input,
-                         int stride,
-                         tran_low_t* coeff_ptr,
-                         intptr_t n_coeffs,
-                         int skip_block,
-                         const int16_t* round_ptr,
-                         const int16_t* quant_ptr,
-                         tran_low_t* qcoeff_ptr,
-                         tran_low_t* dqcoeff_ptr,
-                         const int16_t* dequant_ptr,
-                         uint16_t* eob_ptr,
-                         const int16_t* scan,
-                         const int16_t* iscan);
-#define vp9_fdct8x8_quant vp9_fdct8x8_quant_c
-
 void vp9_fht16x16_c(const int16_t* input,
                     tran_low_t* output,
                     int stride,
@@ -219,7 +204,8 @@ void vp9_highbd_temporal_filter_apply_c(const uint8_t* frame1,
                                         unsigned int block_width,
                                         unsigned int block_height,
                                         int strength,
-                                        int filter_weight,
+                                        int* blk_fw,
+                                        int use_32x32,
                                         uint32_t* accumulator,
                                         uint16_t* count);
 #define vp9_highbd_temporal_filter_apply vp9_highbd_temporal_filter_apply_c

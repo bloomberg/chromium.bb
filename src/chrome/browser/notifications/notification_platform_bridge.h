@@ -28,7 +28,7 @@ class NotificationPlatformBridge {
   using NotificationBridgeReadyCallback =
       base::OnceCallback<void(bool /* success */)>;
 
-  static NotificationPlatformBridge* Create();
+  static std::unique_ptr<NotificationPlatformBridge> Create();
 
   // Returns whether a native bridge can handle a notification of the given
   // type. Ideally, this would always return true, but for now some platforms

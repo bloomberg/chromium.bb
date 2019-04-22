@@ -494,6 +494,7 @@ void ChromotingSession::Core::ConnectOnNetworkThread() {
   signaling_.reset(
       new XmppSignalStrategy(net::ClientSocketFactory::GetDefaultFactory(),
                              runtime_->url_requester(), xmpp_config));
+  logger_->SetSignalStrategyType(ChromotingEvent::SignalStrategyType::XMPP);
 
   token_getter_ = runtime_->CreateOAuthTokenGetter();
 

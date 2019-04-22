@@ -513,6 +513,26 @@ bool AggressiveDCEPass::AggressiveDCE(Function* func) {
       AddBranch(mergeBlockId, *bi);
       for (++bi; (*bi)->id() != mergeBlockId; ++bi) {
       }
+
+      auto merge_terminator = (*bi)->terminator();
+      if (merge_terminator->opcode() == SpvOpUnreachable) {
+        // The merge was unreachable. This is undefined behaviour so just
+        // return (or return an undef). Then mark the new return as live.
+        auto func_ret_type_inst = get_def_use_mgr()->GetDef(func->type_id());
+        if (func_ret_type_inst->opcode() == SpvOpTypeVoid) {
+          merge_terminator->SetOpcode(SpvOpReturn);
+        } else {
+          // Find an undef for the return value and make sure it gets kept by
+          // the pass.
+          auto undef_id = Type2Undef(func->type_id());
+          auto undef = get_def_use_mgr()->GetDef(undef_id);
+          live_insts_.Set(undef->unique_id());
+          merge_terminator->SetOpcode(SpvOpReturnValue);
+          merge_terminator->SetInOperands({{SPV_OPERAND_TYPE_ID, {undef_id}}});
+          get_def_use_mgr()->AnalyzeInstUse(merge_terminator);
+        }
+        live_insts_.Set(merge_terminator->unique_id());
+      }
     } else {
       ++bi;
     }
@@ -546,14 +566,30 @@ Pass::Status AggressiveDCEPass::ProcessImpl() {
   // TODO(greg-lunarg): Handle additional capabilities
   if (!context()->get_feature_mgr()->HasCapability(SpvCapabilityShader))
     return Status::SuccessWithoutChange;
+
   // Current functionality assumes relaxed logical addressing (see
   // instruction.h)
   // TODO(greg-lunarg): Handle non-logical addressing
   if (context()->get_feature_mgr()->HasCapability(SpvCapabilityAddresses))
     return Status::SuccessWithoutChange;
+
+  // The variable pointer extension is no longer needed to use the capability,
+  // so we have to look for the capability.
+  if (context()->get_feature_mgr()->HasCapability(
+          SpvCapabilityVariablePointersStorageBuffer))
+    return Status::SuccessWithoutChange;
+
   // If any extensions in the module are not explicitly supported,
   // return unmodified.
   if (!AllExtensionsSupported()) return Status::SuccessWithoutChange;
+
+  // If the decoration manager is kept live then the context will try to keep it
+  // up to date.  ADCE deals with group decorations by changing the operands in
+  // |OpGroupDecorate| instruction directly without informing the decoration
+  // manager.  This can put it in an invalid state which will cause an error
+  // when the context tries to update it.  To avoid this problem invalidate
+  // the decoration manager upfront.
+  context()->InvalidateAnalyses(IRContext::Analysis::kAnalysisDecorations);
 
   // Eliminate Dead functions.
   bool modified = EliminateDeadFunctions();
@@ -562,7 +598,7 @@ Pass::Status AggressiveDCEPass::ProcessImpl() {
 
   // Process all entry point functions.
   ProcessFunction pfn = [this](Function* fp) { return AggressiveDCE(fp); };
-  modified |= ProcessEntryPointCallTree(pfn, get_module());
+  modified |= context()->ProcessEntryPointCallTree(pfn);
 
   // Process module-level instructions. Now that all live instructions have
   // been marked, it is safe to remove dead global values.
@@ -575,7 +611,7 @@ Pass::Status AggressiveDCEPass::ProcessImpl() {
 
   // Cleanup all CFG including all unreachable blocks.
   ProcessFunction cleanup = [this](Function* f) { return CFGCleanup(f); };
-  modified |= ProcessEntryPointCallTree(cleanup, get_module());
+  modified |= context()->ProcessEntryPointCallTree(cleanup);
 
   return modified ? Status::SuccessWithChange : Status::SuccessWithoutChange;
 }
@@ -589,7 +625,7 @@ bool AggressiveDCEPass::EliminateDeadFunctions() {
     live_function_set.insert(fp);
     return false;
   };
-  ProcessEntryPointCallTree(mark_live, get_module());
+  context()->ProcessEntryPointCallTree(mark_live);
 
   bool modified = false;
   for (auto funcIter = get_module()->begin();

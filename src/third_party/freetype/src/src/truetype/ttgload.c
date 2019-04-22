@@ -4,7 +4,7 @@
  *
  *   TrueType Glyph Loader (body).
  *
- * Copyright 1996-2018 by
+ * Copyright (C) 1996-2019 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -816,15 +816,9 @@
 
 
 #ifdef TT_USE_BYTECODE_INTERPRETER
-    if ( loader->glyph->control_len > 0xFFFFL )
-    {
-      FT_TRACE1(( "TT_Hint_Glyph: too long instructions" ));
-      FT_TRACE1(( " (0x%lx byte) is truncated\n",
-                  loader->glyph->control_len ));
-    }
     n_ins = loader->glyph->control_len;
 
-    /* save original point position in org */
+    /* save original point positions in `org' array */
     if ( n_ins > 0 )
       FT_ARRAY_COPY( zone->org, zone->cur, zone->n_points );
 

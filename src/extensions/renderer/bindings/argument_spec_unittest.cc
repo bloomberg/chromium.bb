@@ -5,6 +5,8 @@
 #include "extensions/renderer/bindings/argument_spec.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/values.h"
 #include "extensions/renderer/bindings/api_binding_test_util.h"
 #include "extensions/renderer/bindings/api_invocation_errors.h"
@@ -394,7 +396,7 @@ TEST_F(ArgumentSpecUnitTest, Test) {
       // A non-empty (but zero-filled) ArrayBufferView.
       const char kBuffer[] = {0, 0, 0, 0};
       std::unique_ptr<base::Value> expected_value =
-          base::Value::CreateWithCopiedBuffer(kBuffer, arraysize(kBuffer));
+          base::Value::CreateWithCopiedBuffer(kBuffer, base::size(kBuffer));
       ASSERT_TRUE(expected_value);
       ExpectSuccessWithNoConversion(spec, "(new Int32Array(2))");
     }
@@ -402,7 +404,7 @@ TEST_F(ArgumentSpecUnitTest, Test) {
       // Actual data.
       const char kBuffer[] = {'p', 'i', 'n', 'g'};
       std::unique_ptr<base::Value> expected_value =
-          base::Value::CreateWithCopiedBuffer(kBuffer, arraysize(kBuffer));
+          base::Value::CreateWithCopiedBuffer(kBuffer, base::size(kBuffer));
       ASSERT_TRUE(expected_value);
       ExpectSuccess(spec,
                     "var b = new ArrayBuffer(4);\n"

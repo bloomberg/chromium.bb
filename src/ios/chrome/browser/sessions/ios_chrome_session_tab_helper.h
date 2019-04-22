@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "components/sessions/core/session_id.h"
-#include "ios/web/public/web_state/web_state_user_data.h"
+#import "ios/web/public/web_state/web_state_user_data.h"
 
 class IOSChromeSessionTabHelper
     : public web::WebStateUserData<IOSChromeSessionTabHelper> {
@@ -32,6 +32,8 @@ class IOSChromeSessionTabHelper
 
   // Unique identifier of the window the tab is in.
   SessionID window_id_;
+
+  WEB_STATE_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(IOSChromeSessionTabHelper);
 };

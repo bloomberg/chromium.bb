@@ -24,6 +24,10 @@ class NativeWidgetDelegate;
 // resized or its frame changing.
 bool DidClientAreaSizeChange(const WINDOWPOS* window_pos);
 
+// Returns true if the size data provided indicates that the window
+// transitioned from a minimized state to something else or vice versa.
+bool DidMinimizedChange(UINT old_size_param, UINT new_size_param);
+
 // Sets styles appropriate for |params| on |handler|.
 void ConfigureWindowStyles(
     HWNDMessageHandler* handler,

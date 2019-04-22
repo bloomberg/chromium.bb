@@ -4,5 +4,5 @@
 
 // https://w3c.github.io/webrtc-pc/#rtcrtpcodingparameters
 dictionary RTCRtpCodingParameters {
-    //TODO(orphis): Missing rid. https://crbug.com/857034
+    DOMString rid;
 };

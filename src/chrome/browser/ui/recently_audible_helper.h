@@ -93,6 +93,8 @@ class RecentlyAudibleHelper
   // The tick clock this object is using.
   const base::TickClock* tick_clock_;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(RecentlyAudibleHelper);
 };
 

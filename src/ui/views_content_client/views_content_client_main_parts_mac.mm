@@ -4,12 +4,17 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include <utility>
+
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/common/content_paths.h"
+#include "content/shell/browser/shell_application_mac.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "ui/views_content_client/views_content_client.h"
 #include "ui/views_content_client/views_content_client_main_parts.h"
@@ -18,11 +23,11 @@
 // activate a task when the application has finished loading.
 @interface ViewsContentClientAppController : NSObject<NSApplicationDelegate> {
  @private
-  base::Closure task_;
+  base::OnceClosure onApplicationDidFinishLaunching_;
 }
 
 // Set the task to run after receiving -applicationDidFinishLaunching:.
-- (void)setTask:(const base::Closure&)task;
+- (void)setOnApplicationDidFinishLaunching:(base::OnceClosure)task;
 
 @end
 
@@ -65,9 +70,12 @@ void ViewsContentClientMainPartsMac::PreMainMessageLoopRun() {
   // the widget can activate, but (even if configured) the mainMenu won't be
   // ready to switch over in the OSX UI, so it will look strange.
   NSWindow* window_context = nil;
-  [app_controller_ setTask:base::Bind(views_content_client()->task(),
-                                      base::Unretained(browser_context()),
-                                      base::Unretained(window_context))];
+  [app_controller_
+      setOnApplicationDidFinishLaunching:
+          base::BindOnce(&ViewsContentClient::OnPreMainMessageLoopRun,
+                         base::Unretained(views_content_client()),
+                         base::Unretained(browser_context()),
+                         base::Unretained(window_context))];
 }
 
 ViewsContentClientMainPartsMac::~ViewsContentClientMainPartsMac() {
@@ -84,12 +92,21 @@ ViewsContentClientMainParts* ViewsContentClientMainParts::Create(
       new ViewsContentClientMainPartsMac(content_params, views_content_client);
 }
 
+// static
+void ViewsContentClientMainParts::PreCreateMainMessageLoop() {
+  // Simply instantiating an instance of ShellCrApplication serves to register
+  // it as the application class. Do make sure that no other code has done this
+  // first, though.
+  CHECK_EQ(NSApp, nil);
+  [ShellCrApplication sharedApplication];
+}
+
 }  // namespace ui
 
 @implementation ViewsContentClientAppController
 
-- (void)setTask:(const base::Closure&)task {
-  task_ = task;
+- (void)setOnApplicationDidFinishLaunching:(base::OnceClosure)task {
+  onApplicationDidFinishLaunching_ = std::move(task);
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification*)aNotification {
@@ -114,7 +131,9 @@ ViewsContentClientMainParts* ViewsContentClientMainParts::Create(
               keyEquivalent:@"q"];
   [appMenuItem setSubmenu:appMenu];
 
-  task_.Run();
+  CHECK([NSApp isKindOfClass:[ShellCrApplication class]]);
+
+  std::move(onApplicationDidFinishLaunching_).Run();
 }
 
 @end

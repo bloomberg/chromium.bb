@@ -29,8 +29,8 @@ Interpolation* CreateInterpolation(int from, int to) {
   // the compositor (as z-index isn't compositor-compatible).
   PropertyHandle property_handle(GetCSSPropertyZIndex());
   CSSNumberInterpolationType interpolation_type(property_handle);
-  InterpolationValue start(InterpolableNumber::Create(from));
-  InterpolationValue end(InterpolableNumber::Create(to));
+  InterpolationValue start(std::make_unique<InterpolableNumber>(from));
+  InterpolationValue end(std::make_unique<InterpolableNumber>(to));
   return TransitionInterpolation::Create(property_handle, interpolation_type,
                                          std::move(start), std::move(end),
                                          nullptr, nullptr);
@@ -40,7 +40,7 @@ Interpolation* CreateInterpolation(int from, int to) {
 
 TEST(AnimationInterpolationEffectTest, SingleInterpolation) {
   Persistent<InterpolationEffect> interpolation_effect =
-      new InterpolationEffect;
+      MakeGarbageCollected<InterpolationEffect>();
   interpolation_effect->AddInterpolation(
       CreateInterpolation(0, 10), scoped_refptr<TimingFunction>(), 0, 1, -1, 2);
 
@@ -71,7 +71,7 @@ TEST(AnimationInterpolationEffectTest, SingleInterpolation) {
 
 TEST(AnimationInterpolationEffectTest, MultipleInterpolations) {
   Persistent<InterpolationEffect> interpolation_effect =
-      new InterpolationEffect;
+      MakeGarbageCollected<InterpolationEffect>();
   interpolation_effect->AddInterpolation(
       CreateInterpolation(10, 15), scoped_refptr<TimingFunction>(), 1, 2, 1, 3);
   interpolation_effect->AddInterpolation(

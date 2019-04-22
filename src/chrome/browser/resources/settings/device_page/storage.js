@@ -121,8 +121,9 @@ Polymer({
    * @protected
    */
   currentRouteChanged: function() {
-    if (settings.getCurrentRoute() == settings.routes.STORAGE)
+    if (settings.getCurrentRoute() == settings.routes.STORAGE) {
       this.onPageShown_();
+    }
   },
 
   /** @private */
@@ -149,8 +150,9 @@ Polymer({
    */
   onDriveCacheTap_: function(e) {
     e.preventDefault();
-    if (this.hasDriveCache_)
+    if (this.hasDriveCache_) {
       this.$.storageDriveCache.open();
+    }
   },
 
   /**
@@ -201,7 +203,7 @@ Polymer({
    * @private
    */
   handleDownloadsSizeChanged_: function(size) {
-    this.$.downloadsSize.textContent = size;
+    this.$.downloadsSize.subLabel = size;
   },
 
   /**
@@ -223,7 +225,7 @@ Polymer({
    * @private
    */
   handleBrowsingDataSizeChanged_: function(size) {
-    this.$.browsingDataSize.textContent = size;
+    this.$.browsingDataSize.subLabel = size;
   },
 
   /**
@@ -232,8 +234,9 @@ Polymer({
    * @private
    */
   handleAndroidSizeChanged_: function(size) {
-    if (this.androidEnabled_)
-      this.$$('#androidSize').textContent = size;
+    if (this.androidEnabled_) {
+      this.$$('#androidSize').subLabel = size;
+    }
   },
 
   /**
@@ -242,8 +245,9 @@ Polymer({
    * @private
    */
   handleCrostiniSizeChanged_: function(size) {
-    if (this.showCrostiniStorage_)
-      this.$$('#crostiniSize').textContent = size;
+    if (this.showCrostiniStorage_) {
+      this.$$('#crostiniSize').subLabel = size;
+    }
   },
 
   /**
@@ -251,8 +255,9 @@ Polymer({
    * @private
    */
   handleOtherUsersSizeChanged_: function(size) {
-    if (!this.isGuest_)
-      this.$$('#otherUsersSize').textContent = size;
+    if (!this.isGuest_) {
+      this.$$('#otherUsersSize').subLabel = size;
+    }
   },
 
   /**

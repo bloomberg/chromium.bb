@@ -7,6 +7,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -17,7 +18,10 @@ RendererResourceCoordinator* g_renderer_resource_coordinator = nullptr;
 }  // namespace
 
 // static
-void RendererResourceCoordinator::Initialize() {
+void RendererResourceCoordinator::MaybeInitialize() {
+  if (!RuntimeEnabledFeatures::PerformanceManagerInstrumentationEnabled())
+    return;
+
   blink::Platform* platform = Platform::Current();
   DCHECK(IsMainThread());
   DCHECK(platform);
@@ -33,9 +37,8 @@ void RendererResourceCoordinator::
 }
 
 // static
-RendererResourceCoordinator& RendererResourceCoordinator::Get() {
-  DCHECK(g_renderer_resource_coordinator);
-  return *g_renderer_resource_coordinator;
+RendererResourceCoordinator* RendererResourceCoordinator::Get() {
+  return g_renderer_resource_coordinator;
 }
 
 RendererResourceCoordinator::RendererResourceCoordinator(
@@ -60,12 +63,6 @@ void RendererResourceCoordinator::SetMainThreadTaskLoadIsLow(
   if (!service_)
     return;
   service_->SetMainThreadTaskLoadIsLow(main_thread_task_load_is_low);
-}
-
-void RendererResourceCoordinator::OnRendererIsBloated() {
-  if (!service_)
-    return;
-  service_->OnRendererIsBloated();
 }
 
 }  // namespace blink

@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
@@ -22,8 +23,8 @@
 #include "third_party/blink/public/platform/web_rtc_stats.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_heap.h"
+#include "third_party/webrtc/api/stats/rtc_stats_report.h"
 #include "third_party/webrtc/api/stats/rtcstats_objects.h"
-#include "third_party/webrtc/api/stats/rtcstatsreport.h"
 #include "third_party/webrtc/api/test/mock_rtpreceiver.h"
 
 namespace content {
@@ -82,8 +83,7 @@ class RTCRtpReceiverTest : public ::testing::Test {
   scoped_refptr<WebRTCStatsReportObtainer> GetStats() {
     scoped_refptr<WebRTCStatsReportObtainer> obtainer =
         new WebRTCStatsReportObtainer();
-    receiver_->GetStats(obtainer->GetStatsCallbackWrapper(),
-                        blink::RTCStatsFilter::kIncludeOnlyStandardMembers);
+    receiver_->GetStats(obtainer->GetStatsCallbackWrapper(), {});
     return obtainer;
   }
 
@@ -99,7 +99,7 @@ class RTCRtpReceiverTest : public ::testing::Test {
   }
 
   // Code under test expects to be run in a process with an initialized
-  // ChildProcess, which requires TaskScheduler, and a main-thread MessageLoop,
+  // ChildProcess, which requires ThreadPool, and a main-thread MessageLoop,
   // which the ScopedTaskEnvironment also provides.
   base::test::ScopedTaskEnvironment task_environment_;
   ChildProcess child_process_;

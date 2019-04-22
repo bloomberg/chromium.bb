@@ -10,6 +10,8 @@
 // clang-format off
 #include "third_party/blink/renderer/bindings/tests/results/core/v8_test_interface_named_constructor_2.h"
 
+#include <algorithm>
+
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
@@ -21,6 +23,7 @@
 #include "third_party/blink/renderer/platform/bindings/v8_object_constructor.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_context_data.h"
 #include "third_party/blink/renderer/platform/bindings/v8_private_property.h"
+#include "third_party/blink/renderer/platform/scheduler/public/cooperative_scheduling_manager.h"
 #include "third_party/blink/renderer/platform/wtf/get_ptr.h"
 
 namespace blink {
@@ -31,7 +34,7 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8TestInterfaceNamedConstructor2::wrapper_type_info = {
+const WrapperTypeInfo v8_test_interface_named_constructor_2_wrapper_type_info = {
     gin::kEmbedderBlink,
     V8TestInterfaceNamedConstructor2::DomTemplate,
     nullptr,
@@ -48,7 +51,7 @@ const WrapperTypeInfo V8TestInterfaceNamedConstructor2::wrapper_type_info = {
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in TestInterfaceNamedConstructor2.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
 // platform/bindings/ScriptWrappable.h.
-const WrapperTypeInfo& TestInterfaceNamedConstructor2::wrapper_type_info_ = V8TestInterfaceNamedConstructor2::wrapper_type_info;
+const WrapperTypeInfo& TestInterfaceNamedConstructor2::wrapper_type_info_ = v8_test_interface_named_constructor_2_wrapper_type_info;
 
 // not [ActiveScriptWrappable]
 static_assert(
@@ -73,7 +76,7 @@ namespace test_interface_named_constructor_2_v8_internal {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8TestInterfaceNamedConstructor2Constructor::wrapper_type_info = {
+const WrapperTypeInfo v8_test_interface_named_constructor_2_constructor_wrapper_type_info = {
     gin::kEmbedderBlink,
     V8TestInterfaceNamedConstructor2Constructor::DomTemplate,
     nullptr,
@@ -112,7 +115,7 @@ static void V8TestInterfaceNamedConstructor2ConstructorCallback(const v8::Functi
 
   TestInterfaceNamedConstructor2* impl = TestInterfaceNamedConstructor2::CreateForJSConstructor(string_arg);
   v8::Local<v8::Object> wrapper = info.Holder();
-  wrapper = impl->AssociateWithWrapper(info.GetIsolate(), &V8TestInterfaceNamedConstructor2Constructor::wrapper_type_info, wrapper);
+  wrapper = impl->AssociateWithWrapper(info.GetIsolate(), V8TestInterfaceNamedConstructor2Constructor::GetWrapperTypeInfo(), wrapper);
   V8SetReturnValue(info, wrapper);
 }
 
@@ -145,7 +148,7 @@ void V8TestInterfaceNamedConstructor2Constructor::NamedConstructorAttributeGette
   }
 
   v8::Local<v8::Function> named_constructor =
-      per_context_data->ConstructorForType(&V8TestInterfaceNamedConstructor2Constructor::wrapper_type_info);
+      per_context_data->ConstructorForType(V8TestInterfaceNamedConstructor2Constructor::GetWrapperTypeInfo());
 
   // Set the prototype of named constructors to the regular constructor.
   auto private_property =
@@ -156,15 +159,21 @@ void V8TestInterfaceNamedConstructor2Constructor::NamedConstructorAttributeGette
   if (!private_property.GetOrUndefined(named_constructor).ToLocal(&private_value) ||
       private_value->IsUndefined()) {
     v8::Local<v8::Function> interface =
-        per_context_data->ConstructorForType(&V8TestInterfaceNamedConstructor2::wrapper_type_info);
-    v8::Local<v8::Value> interfacePrototype =
+        per_context_data->ConstructorForType(V8TestInterfaceNamedConstructor2::GetWrapperTypeInfo());
+    v8::Local<v8::Value> interface_prototype =
         interface->Get(current_context, V8AtomicString(info.GetIsolate(), "prototype"))
         .ToLocalChecked();
-    bool result = named_constructor->Set(
+    // https://heycam.github.io/webidl/#named-constructors
+    // 8. Perform ! DefinePropertyOrThrow(F, "prototype",
+    //        PropertyDescriptor{[[Value]]: proto, [[Writable]]: false,
+    //                           [[Enumerable]]: false,
+    //                           [Configurable]]: false}).
+    const v8::PropertyAttribute prototype_attributes =
+        static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum | v8::DontDelete);
+    bool result = named_constructor->DefineOwnProperty(
         current_context, V8AtomicString(info.GetIsolate(), "prototype"),
-        interfacePrototype).ToChecked();
-    if (!result)
-      return;
+        interface_prototype, prototype_attributes).ToChecked();
+    CHECK(result);
     private_property.Set(named_constructor, v8::True(info.GetIsolate()));
   }
 
@@ -176,7 +185,7 @@ static void InstallV8TestInterfaceNamedConstructor2Template(
     const DOMWrapperWorld& world,
     v8::Local<v8::FunctionTemplate> interface_template) {
   // Initialize the interface object's template.
-  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interface_template, V8TestInterfaceNamedConstructor2::wrapper_type_info.interface_name, v8::Local<v8::FunctionTemplate>(), V8TestInterfaceNamedConstructor2::kInternalFieldCount);
+  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interface_template, V8TestInterfaceNamedConstructor2::GetWrapperTypeInfo()->interface_name, v8::Local<v8::FunctionTemplate>(), V8TestInterfaceNamedConstructor2::kInternalFieldCount);
 
   v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interface_template);
   ALLOW_UNUSED_LOCAL(signature);
@@ -212,18 +221,18 @@ void V8TestInterfaceNamedConstructor2::InstallRuntimeEnabledFeaturesOnTemplate(
 v8::Local<v8::FunctionTemplate> V8TestInterfaceNamedConstructor2::DomTemplate(
     v8::Isolate* isolate, const DOMWrapperWorld& world) {
   return V8DOMConfiguration::DomClassTemplate(
-      isolate, world, const_cast<WrapperTypeInfo*>(&wrapper_type_info),
+      isolate, world, const_cast<WrapperTypeInfo*>(V8TestInterfaceNamedConstructor2::GetWrapperTypeInfo()),
       InstallV8TestInterfaceNamedConstructor2Template);
 }
 
 bool V8TestInterfaceNamedConstructor2::HasInstance(v8::Local<v8::Value> v8_value, v8::Isolate* isolate) {
-  return V8PerIsolateData::From(isolate)->HasInstance(&wrapper_type_info, v8_value);
+  return V8PerIsolateData::From(isolate)->HasInstance(V8TestInterfaceNamedConstructor2::GetWrapperTypeInfo(), v8_value);
 }
 
 v8::Local<v8::Object> V8TestInterfaceNamedConstructor2::FindInstanceInPrototypeChain(
     v8::Local<v8::Value> v8_value, v8::Isolate* isolate) {
   return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(
-      &wrapper_type_info, v8_value);
+      V8TestInterfaceNamedConstructor2::GetWrapperTypeInfo(), v8_value);
 }
 
 TestInterfaceNamedConstructor2* V8TestInterfaceNamedConstructor2::ToImplWithTypeCheck(

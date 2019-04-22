@@ -24,6 +24,11 @@ namespace dawn_native {
     struct ToBackendTraits;
 
     template <typename BackendTraits>
+    struct ToBackendTraits<AdapterBase, BackendTraits> {
+        using BackendType = typename BackendTraits::AdapterType;
+    };
+
+    template <typename BackendTraits>
     struct ToBackendTraits<BindGroupBase, BackendTraits> {
         using BackendType = typename BackendTraits::BindGroupType;
     };
@@ -34,18 +39,8 @@ namespace dawn_native {
     };
 
     template <typename BackendTraits>
-    struct ToBackendTraits<BlendStateBase, BackendTraits> {
-        using BackendType = typename BackendTraits::BlendStateType;
-    };
-
-    template <typename BackendTraits>
     struct ToBackendTraits<BufferBase, BackendTraits> {
         using BackendType = typename BackendTraits::BufferType;
-    };
-
-    template <typename BackendTraits>
-    struct ToBackendTraits<BufferViewBase, BackendTraits> {
-        using BackendType = typename BackendTraits::BufferViewType;
     };
 
     template <typename BackendTraits>
@@ -59,18 +54,8 @@ namespace dawn_native {
     };
 
     template <typename BackendTraits>
-    struct ToBackendTraits<DepthStencilStateBase, BackendTraits> {
-        using BackendType = typename BackendTraits::DepthStencilStateType;
-    };
-
-    template <typename BackendTraits>
     struct ToBackendTraits<DeviceBase, BackendTraits> {
         using BackendType = typename BackendTraits::DeviceType;
-    };
-
-    template <typename BackendTraits>
-    struct ToBackendTraits<InputStateBase, BackendTraits> {
-        using BackendType = typename BackendTraits::InputStateType;
     };
 
     template <typename BackendTraits>
@@ -81,11 +66,6 @@ namespace dawn_native {
     template <typename BackendTraits>
     struct ToBackendTraits<QueueBase, BackendTraits> {
         using BackendType = typename BackendTraits::QueueType;
-    };
-
-    template <typename BackendTraits>
-    struct ToBackendTraits<RenderPassDescriptorBase, BackendTraits> {
-        using BackendType = typename BackendTraits::RenderPassDescriptorType;
     };
 
     template <typename BackendTraits>
@@ -101,6 +81,11 @@ namespace dawn_native {
     template <typename BackendTraits>
     struct ToBackendTraits<ShaderModuleBase, BackendTraits> {
         using BackendType = typename BackendTraits::ShaderModuleType;
+    };
+
+    template <typename BackendTraits>
+    struct ToBackendTraits<StagingBufferBase, BackendTraits> {
+        using BackendType = typename BackendTraits::StagingBufferType;
     };
 
     template <typename BackendTraits>

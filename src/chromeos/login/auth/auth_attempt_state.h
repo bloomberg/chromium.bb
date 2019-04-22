@@ -7,9 +7,9 @@
 
 #include <string>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/login/auth/auth_status_consumer.h"
 #include "chromeos/login/auth/user_context.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
@@ -19,7 +19,7 @@ namespace chromeos {
 
 // Tracks the state associated with a single attempt to log in to chromium OS.
 // Enforces that methods are only called on the UI thread.
-class CHROMEOS_EXPORT AuthAttemptState
+class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) AuthAttemptState
     : public base::SupportsWeakPtr<AuthAttemptState> {
  public:
   // Used to initialize for a login attempt.

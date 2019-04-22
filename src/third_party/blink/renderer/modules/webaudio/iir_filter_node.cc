@@ -109,11 +109,6 @@ IIRFilterNode* IIRFilterNode::Create(BaseAudioContext& context,
                                      ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
-  if (context.IsContextClosed()) {
-    context.ThrowExceptionForClosedState(exception_state);
-    return nullptr;
-  }
-
   if (feedback_coef.size() == 0 ||
       (feedback_coef.size() > IIRFilter::kMaxOrder + 1)) {
     exception_state.ThrowDOMException(
@@ -171,7 +166,8 @@ IIRFilterNode* IIRFilterNode::Create(BaseAudioContext& context,
     message.Append(']');
 
     context.GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
-        kJSMessageSource, kWarningMessageLevel, message.ToString()));
+        mojom::ConsoleMessageSource::kJavaScript,
+        mojom::ConsoleMessageLevel::kWarning, message.ToString()));
   }
 
   return MakeGarbageCollected<IIRFilterNode>(context, feedforward_coef,

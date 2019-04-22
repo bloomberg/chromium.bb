@@ -8,6 +8,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -426,7 +427,7 @@ void ExtensionStorageMonitor::OnImageLoaded(const std::string& extension_id,
       l10n_util::GetStringFUTF16(
           IDS_EXTENSION_STORAGE_MONITOR_TEXT,
           base::UTF8ToUTF16(extension->name()),
-          base::Int64ToString16(current_usage / kMBytes)),
+          base::NumberToString16(current_usage / kMBytes)),
       notification_image, base::string16() /* display source */, GURL(),
       message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
                                  kSystemNotifierId),
@@ -436,7 +437,7 @@ void ExtensionStorageMonitor::OnImageLoaded(const std::string& extension_id,
                      weak_ptr_factory_.GetWeakPtr(), extension_id)));
   notification.SetSystemPriority();
   NotificationDisplayService::GetForProfile(profile_)->Display(
-      NotificationHandler::Type::TRANSIENT, notification);
+      NotificationHandler::Type::TRANSIENT, notification, /*metadata=*/nullptr);
 
   notified_extension_ids_.insert(extension_id);
 }
@@ -548,8 +549,7 @@ void ExtensionStorageMonitor::ShowUninstallPrompt(
   if (!extension)
     return;
 
-  uninstall_dialog_.reset(
-      ExtensionUninstallDialog::Create(profile_, nullptr, this));
+  uninstall_dialog_ = ExtensionUninstallDialog::Create(profile_, nullptr, this);
 
   uninstall_extension_id_ = extension->id();
   uninstall_dialog_->ConfirmUninstall(
@@ -574,7 +574,7 @@ void ExtensionStorageMonitor::SetNextStorageThreshold(
   extension_prefs_->UpdateExtensionPref(
       extension_id, kPrefNextStorageThreshold,
       next_threshold > 0
-          ? std::make_unique<base::Value>(base::Int64ToString(next_threshold))
+          ? std::make_unique<base::Value>(base::NumberToString(next_threshold))
           : nullptr);
 }
 

@@ -16,14 +16,15 @@
 #include "ui/gfx/geometry/size.h"
 
 namespace gpu {
-namespace raster {
 
-struct RasterDecoderContextState;
+class SharedContextState;
+
+namespace raster {
 
 class GPU_GLES2_EXPORT WrappedSkImageFactory
     : public gpu::SharedImageBackingFactory {
  public:
-  explicit WrappedSkImageFactory(RasterDecoderContextState* context_state);
+  explicit WrappedSkImageFactory(SharedContextState* context_state);
   ~WrappedSkImageFactory() override;
 
   // SharedImageBackingFactory implementation:
@@ -32,7 +33,15 @@ class GPU_GLES2_EXPORT WrappedSkImageFactory
       viz::ResourceFormat format,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
-      uint32_t usage) override;
+      uint32_t usage,
+      bool is_thread_safe) override;
+  std::unique_ptr<SharedImageBacking> CreateSharedImage(
+      const Mailbox& mailbox,
+      viz::ResourceFormat format,
+      const gfx::Size& size,
+      const gfx::ColorSpace& color_space,
+      uint32_t usage,
+      base::span<const uint8_t> pixel_data) override;
   std::unique_ptr<SharedImageBacking> CreateSharedImage(
       const Mailbox& mailbox,
       int client_id,
@@ -44,7 +53,7 @@ class GPU_GLES2_EXPORT WrappedSkImageFactory
       uint32_t usage) override;
 
  private:
-  RasterDecoderContextState* const context_state_;
+  SharedContextState* const context_state_;
 
   DISALLOW_COPY_AND_ASSIGN(WrappedSkImageFactory);
 };

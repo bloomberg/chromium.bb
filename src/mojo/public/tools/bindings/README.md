@@ -1,18 +1,18 @@
-# Mojom IDL and Bindings Generator
+# Mojom Interface Definition Language (IDL)
 This document is a subset of the [Mojo documentation](/mojo/README.md).
 
 [TOC]
 
 ## Overview
 
-Mojom is the IDL for Mojo bindings interfaces. Given a `.mojom` file, the
+Mojom is the IDL for Mojo interfaces. Given a `.mojom` file, the
 [bindings
-generator](https://cs.chromium.org/chromium/src/mojo/public/tools/bindings/)
-outputs bindings for all supported languages: **C++**, **JavaScript**, and
+generator](https://cs.chromium.org/chromium/src/mojo/public/tools/bindings/) can
+output bindings for any supported language: **C++**, **JavaScript**, or
 **Java**.
 
 For a trivial example consider the following hypothetical Mojom file we write to
-`//services/widget/public/interfaces/frobinator.mojom`:
+`//services/widget/public/mojom/frobinator.mojom`:
 
 ```
 module widget.mojom;
@@ -25,15 +25,15 @@ interface Frobinator {
 This defines a single [interface](#Interfaces) named `Frobinator` in a
 [module](#Modules) named `widget.mojom` (and thus fully qualified in Mojom as
 `widget.mojom.Frobinator`.) Note that many interfaces and/or other types of
-definitions may be included in a single Mojom file.
+definitions (structs, enums, *etc.*) may be included in a single Mojom file.
 
 If we add a corresponding GN target to
-`//services/widget/public/interfaces/BUILD.gn`:
+`//services/widget/public/mojom/BUILD.gn`:
 
 ```
 import("mojo/public/tools/bindings/mojom.gni")
 
-mojom("interfaces") {
+mojom("mojom") {
   sources = [
     "frobinator.mojom",
   ]
@@ -43,22 +43,32 @@ mojom("interfaces") {
 and then build this target:
 
 ```
-ninja -C out/r services/widget/public/interfaces
+ninja -C out/r services/widget/public/mojom
 ```
 
 we'll find several generated sources in our output directory:
 
 ```
-out/r/gen/services/widget/public/interfaces/frobinator.mojom.cc
-out/r/gen/services/widget/public/interfaces/frobinator.mojom.h
-out/r/gen/services/widget/public/interfaces/frobinator.mojom.js
-out/r/gen/services/widget/public/interfaces/frobinator.mojom.srcjar
-...
+out/r/gen/services/widget/public/mojom/frobinator.mojom.cc
+out/r/gen/services/widget/public/mojom/frobinator.mojom.h
+out/r/gen/services/widget/public/mojom/frobinator.mojom-shared.h
+etc...
 ```
 
 Each of these generated source modules includes a set of definitions
-representing the Mojom contents within the target language. For more details
-regarding the generated outputs please see
+representing the Mojom contents in C++. You can also build or depend on suffixed
+target names to get bindings for other languages. For example,
+
+```
+ninja -C out/r services/widget/public/mojom:mojom_js
+ninja -C out/r services/widget/public/mojom:mojom_java
+```
+
+would generate JavaScript and Java bindings respectively, in the same generated
+output directory.
+
+For more details regarding the generated
+outputs please see
 [documentation for individual target languages](#Generated-Code-For-Target-Languages).
 
 ## Mojom Syntax
@@ -136,7 +146,7 @@ If your Mojom references definitions from other Mojom files, you must **import**
 those files. Import syntax is as follows:
 
 ```
-import "services/widget/public/interfaces/frobinator.mojom";
+import "services/widget/public/mojom/frobinator.mojom";
 ```
 
 Import paths are always relative to the top-level directory.
@@ -386,8 +396,9 @@ interesting attributes supported today.
 :   The `Native` attribute may be specified for an empty struct declaration to
     provide a nominal bridge between Mojo IPC and legacy `IPC::ParamTraits` or
     `IPC_STRUCT_TRAITS*` macros.
-    See [Using Legacy IPC Traits](/ipc/README.md#Using-Legacy-IPC-Traits) for
-    more details. Note support for this attribute is strictly limited to C++
+    See
+    [Repurposing Legacy IPC Traits](/docs/mojo_ipc_conversion.md#repurposing-and-invocations)
+    for more details. Note support for this attribute is strictly limited to C++
     bindings generation.
 
 **`[MinVersion=N]`**
@@ -493,7 +504,7 @@ relative ordering guarantees among them. Associated interfaces are useful when
 one interface needs to guarantee strict FIFO ordering with respect to one or
 more other interfaces, as they allow interfaces to share a single pipe.
 
-Currenly associated interfaces are only supported in generated C++ bindings.
+Currently associated interfaces are only supported in generated C++ bindings.
 See the documentation for
 [C++ Associated Interfaces](/mojo/public/cpp/bindings/README.md#Associated-Interfaces).
 
@@ -688,7 +699,7 @@ ModuleStatement = AttributeSection "module" Identifier ";"
 ImportStatement = "import" StringLiteral ";"
 Definition = Struct Union Interface Enum Const
 
-AttributeSection = "[" AttributeList "]"
+AttributeSection = <empty> | "[" AttributeList "]"
 AttributeList = <empty> | NonEmptyAttributeList
 NonEmptyAttributeList = Attribute
                       | Attribute "," NonEmptyAttributeList
@@ -702,7 +713,7 @@ StructBody = <empty>
            | StructBody Const
            | StructBody Enum
            | StructBody StructField
-StructField = AttributeSection TypeSpec Name Orginal Default ";"
+StructField = AttributeSection TypeSpec Name Ordinal Default ";"
 
 Union = AttributeSection "union" Name "{" UnionBody "}" ";"
 UnionBody = <empty> | UnionBody UnionField

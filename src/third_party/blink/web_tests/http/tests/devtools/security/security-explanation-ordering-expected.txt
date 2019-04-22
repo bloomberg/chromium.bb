@@ -10,18 +10,8 @@ Valid Certificate
         <DIV >
 The connection to this site is using a valid, trusted server certificate.
         </DIV>
-        <BUTTON is=text-button type=button class=security-certificate-button >
+        <BUTTON class=security-certificate-button text-button type=button >
 View certificate
-            <#document-fragment >
-                <STYLE type=text/css >
-                </STYLE>
-                <STYLE type=text/css >
-                </STYLE>
-                <STYLE type=text/css >
-                </STYLE>
-                <CONTENT >
-                </CONTENT>
-            </#document-fragment>
         </BUTTON>
     </DIV>
 </DIV>

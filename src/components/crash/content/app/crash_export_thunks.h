@@ -6,6 +6,7 @@
 #define COMPONENTS_CRASH_CONTENT_APP_CRASH_EXPORT_THUNKS_H_
 
 #include <stddef.h>
+#include <time.h>
 #include <windows.h>
 
 #include "build/build_config.h"
@@ -58,17 +59,14 @@ HANDLE InjectDumpForHungInput_ExportThunk(HANDLE process);
 // Returns the crashpad database path.
 const wchar_t* GetCrashpadDatabasePath_ExportThunk();
 
+// This function may be invoked across module boundaries to delete reports
+// within the time range. See crash_reporter::ClearReportsBetween.
+void ClearReportsBetween_ExportThunk(time_t begin, time_t end);
+
 // Immediately dump |process| to a crash dump adorned with |ptype|.
 // Takes ownership of |process|, does not kill nor affect the exit code of
 // |process|.
 bool DumpHungProcessWithPtype_ExportThunk(HANDLE process, const char* ptype);
-
-#if defined(ARCH_CPU_X86_64)
-// V8 support functions.
-void RegisterNonABICompliantCodeRange_ExportThunk(void* start,
-                                                  size_t size_in_bytes);
-void UnregisterNonABICompliantCodeRange_ExportThunk(void* start);
-#endif  // defined(ARCH_CPU_X86_64)
 
 }  // extern "C"
 

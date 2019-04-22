@@ -4,6 +4,18 @@ Tree: v1.0.1
 Revision: 21ce9b51a417fa9995cf6606e886aba0728f70a1
 Tree link: https://github.com/PolymerElements/font-roboto/tree/v1.0.1
 
+Name: html-imports
+Repository: https://github.com/webcomponents/html-imports.git
+Tree: v1.2.0
+Revision: bcdbb81201faad37270b03f59a29f2f27cb70312
+Tree link: https://github.com/webcomponents/html-imports/tree/v1.2.0
+
+Name: html-imports
+Repository: https://github.com/webcomponents/html-imports.git
+Tree: v0
+Revision: 5832a3028a3bb6f8f29f0c53b0c8d631efdfa0b4
+Tree link: https://github.com/webcomponents/html-imports/tree/v0
+
 Name: iron-a11y-announcer
 Repository: https://github.com/PolymerElements/iron-a11y-announcer.git
 Tree: v2.1.0
@@ -196,12 +208,6 @@ Tree: v2.2.2
 Revision: a89e8f491d01c77e167a4361d0535683591e0a01
 Tree link: https://github.com/PolymerElements/paper-input/tree/v2.2.2
 
-Name: paper-item
-Repository: https://github.com/PolymerElements/paper-item.git
-Tree: v2.0.0
-Revision: 07910f6f76e1042286e931da923bff8ceabc3dc6
-Tree link: https://github.com/PolymerElements/paper-item/tree/v2.0.0
-
 Name: paper-progress
 Repository: https://github.com/PolymerElements/paper-progress.git
 Tree: v2.0.1
@@ -213,12 +219,6 @@ Repository: https://github.com/PolymerElements/paper-ripple.git
 Tree: v2.0.1
 Revision: d0884e8508263e680fd9ee6c11b52c74a416f27f
 Tree link: https://github.com/PolymerElements/paper-ripple/tree/v2.0.1
-
-Name: paper-slider
-Repository: https://github.com/PolymerElements/paper-slider.git
-Tree: v2.0.2
-Revision: 2abcf4052ce04ad450b06f6800f11055cb26ce5b
-Tree link: https://github.com/PolymerElements/paper-slider/tree/v2.0.2
 
 Name: paper-spinner
 Repository: https://github.com/PolymerElements/paper-spinner.git
@@ -240,9 +240,9 @@ Tree link: https://github.com/PolymerElements/paper-tabs/tree/v2.0.0
 
 Name: paper-tooltip
 Repository: https://github.com/PolymerElements/paper-tooltip.git
-Tree: v2.0.0
-Revision: d6233ee968fa0670bc7381ff358e0e4eba64d5ff
-Tree link: https://github.com/PolymerElements/paper-tooltip/tree/v2.0.0
+Tree: v2.1.1
+Revision: 8507ec69ec4c943da4ce7ea859f55db9ab9d28f5
+Tree link: https://github.com/PolymerElements/paper-tooltip/tree/v2.1.1
 
 Name: polymer
 Repository: https://github.com/Polymer/polymer.git

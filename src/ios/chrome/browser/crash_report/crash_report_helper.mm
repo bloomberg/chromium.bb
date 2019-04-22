@@ -23,10 +23,13 @@
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/tabs/tab_model_observer.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
+#include "ios/chrome/browser/web_state_list/all_web_state_observation_forwarder.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/web/public/browser_state.h"
 #import "ios/web/public/navigation_item.h"
-#include "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state/navigation_context.h"
+#import "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state/web_state_observer_bridge.h"
 #include "ios/web/public/web_thread.h"
 #import "net/base/mac/url_conversions.h"
 
@@ -35,7 +38,8 @@
 #endif
 
 // TabModelObserver that allows loaded urls to be sent to the crash server.
-@interface CrashReporterURLObserver : NSObject<TabModelObserver> {
+@interface CrashReporterURLObserver
+    : NSObject <TabModelObserver, CRWWebStateObserver> {
  @private
   // Map associating the tab id to the breakpad key used to keep track of the
   // loaded URL.
@@ -43,6 +47,12 @@
   // List of keys to use for recording URLs. This list is sorted such that a new
   // tab must use the first key in this list to record its URLs.
   NSMutableArray* breakpadKeys_;
+  // The WebStateObserverBridge used to register self as a WebStateObserver
+  std::unique_ptr<web::WebStateObserverBridge> _webStateObserver;
+  // Forwards observer methods for all WebStates in the WebStateList monitored
+  // by the CrashReporterURLObserver.
+  std::unique_ptr<AllWebStateObservationForwarder>
+      _allWebStateObservationForwarder;
 }
 + (CrashReporterURLObserver*)uniqueInstance;
 // Removes the URL for the tab with the given id from the URLs sent to the crash
@@ -54,14 +64,15 @@
 - (void)recordURL:(NSString*)url
          forTabId:(NSString*)tabId
           pending:(BOOL)pending;
-// Callback for the kTabUrlStartedLoadingNotificationForCrashReporting
-// notification. Extracts the parameter from the notification and calls
-// |recordURL:forTabId:pending:|.
-- (void)urlChanged:(NSNotification*)notification;
-// Callback for the kTabUrlMayStartLoadingNotificationForCrashReporting
-// notification. Extracts the parameter from the notification and calls
-// |recordURL:forTabId:pending:|.
-- (void)urlChangeExpected:(NSNotification*)notification;
+// Observes |webState| by this instance of the CrashReporterURLObserver.
+- (void)observeWebState:(web::WebState*)webState;
+// Stop Observing |webState| by this instance of the CrashReporterURLObserver.
+- (void)stopObservingWebState:(web::WebState*)webState;
+// Observes |tabModel| by this instance of the CrashReporterURLObserver.
+- (void)observeTabModel:(TabModel*)tabModel;
+// Stop Observing |tabModel| by this instance of the CrashReporterURLObserver.
+- (void)stopObservingTabModel:(TabModel*)tabModel;
+
 @end
 
 // TabModelObserver that some tabs stats to be sent to the crash server.
@@ -124,39 +135,9 @@ const int kNumberOfURLsToSend = 1;
         [[NSMutableArray alloc] initWithCapacity:kNumberOfURLsToSend];
     for (int i = 0; i < kNumberOfURLsToSend; ++i)
       [breakpadKeys_ addObject:[NSString stringWithFormat:@"url%d", i]];
-    // Register for url changed notifications.
-    [[NSNotificationCenter defaultCenter]
-        addObserver:self
-           selector:@selector(urlChanged:)
-               name:kTabUrlStartedLoadingNotificationForCrashReporting
-             object:nil];
-    [[NSNotificationCenter defaultCenter]
-        addObserver:self
-           selector:@selector(urlChangeExpected:)
-               name:kTabUrlMayStartLoadingNotificationForCrashReporting
-             object:nil];
+    _webStateObserver = std::make_unique<web::WebStateObserverBridge>(self);
   }
   return self;
-}
-
-- (void)urlChanged:(NSNotification*)notification {
-  Tab* tab = notification.object;
-  DCHECK(tab);
-  if (tab.webState->GetBrowserState()->IsOffTheRecord())
-    return;
-  NSString* url = [notification.userInfo objectForKey:kTabUrlKey];
-  DCHECK(url);
-  [self recordURL:url forTabId:tab.tabId pending:NO];
-}
-
-- (void)urlChangeExpected:(NSNotification*)notification {
-  Tab* tab = notification.object;
-  DCHECK(tab);
-  if (tab.webState->GetBrowserState()->IsOffTheRecord())
-    return;
-  NSString* url = [notification.userInfo objectForKey:kTabUrlKey];
-  DCHECK(url);
-  [self recordURL:url forTabId:tab.tabId pending:YES];
 }
 
 - (void)removeTabId:(NSString*)tabId {
@@ -200,17 +181,40 @@ const int kNumberOfURLsToSend = 1;
   }
 }
 
+- (void)observeWebState:(web::WebState*)webState {
+  webState->AddObserver(_webStateObserver.get());
+}
+
+- (void)stopObservingWebState:(web::WebState*)webState {
+  webState->RemoveObserver(_webStateObserver.get());
+}
+
+- (void)observeTabModel:(TabModel*)tabModel {
+  [tabModel addObserver:self];
+  DCHECK(!_allWebStateObservationForwarder);
+  // Observe all webStates of this tabModel, so that URLs are saved in cases
+  // of crashing.
+  _allWebStateObservationForwarder =
+      std::make_unique<AllWebStateObservationForwarder>(
+          tabModel.webStateList, _webStateObserver.get());
+}
+
+- (void)stopObservingTabModel:(TabModel*)tabModel {
+  _allWebStateObservationForwarder.reset(nullptr);
+  [tabModel removeObserver:self];
+}
+
 - (void)tabModel:(TabModel*)model
     didRemoveTab:(Tab*)tab
          atIndex:(NSUInteger)index {
-  [self removeTabId:tab.tabId];
+  [self removeTabId:TabIdTabHelper::FromWebState(tab.webState)->tab_id()];
 }
 
 - (void)tabModel:(TabModel*)model
     didReplaceTab:(Tab*)oldTab
           withTab:(Tab*)newTab
           atIndex:(NSUInteger)index {
-  [self removeTabId:oldTab.tabId];
+  [self removeTabId:TabIdTabHelper::FromWebState(oldTab.webState)->tab_id()];
 }
 
 - (void)tabModel:(TabModel*)model
@@ -222,8 +226,31 @@ const int kNumberOfURLsToSend = 1;
   const GURL& URL = pendingItem ? pendingItem->GetURL()
                                 : newTab.webState->GetLastCommittedURL();
   [self recordURL:base::SysUTF8ToNSString(URL.spec())
-         forTabId:newTab.tabId
+         forTabId:TabIdTabHelper::FromWebState(newTab.webState)->tab_id()
           pending:pendingItem ? YES : NO];
+}
+
+#pragma mark - CRWWebStateObserver protocol
+
+- (void)webState:(web::WebState*)webState
+    didStartNavigation:(web::NavigationContext*)navigation {
+  NSString* urlString = base::SysUTF8ToNSString(navigation->GetUrl().spec());
+  if (!urlString.length || webState->GetBrowserState()->IsOffTheRecord())
+    return;
+  [self recordURL:urlString
+         forTabId:TabIdTabHelper::FromWebState(webState)->tab_id()
+          pending:YES];
+}
+
+- (void)webState:(web::WebState*)webState
+    didFinishNavigation:(web::NavigationContext*)navigation {
+  NSString* urlString =
+      base::SysUTF8ToNSString(webState->GetLastCommittedURL().spec());
+  if (!urlString.length || webState->GetBrowserState()->IsOffTheRecord())
+    return;
+  [self recordURL:urlString
+         forTabId:TabIdTabHelper::FromWebState(webState)->tab_id()
+          pending:NO];
 }
 
 // Empty method left in place in case jailbreakers are swizzling this.
@@ -261,7 +288,10 @@ const int kNumberOfURLsToSend = 1;
 
 - (void)closingDocument:(NSNotification*)notification {
   Tab* tab = notification.object;
-  [self closingDocumentInTab:[tab tabId]];
+  NSString* tabID = nil;
+  if (tab.webState)
+    tabID = TabIdTabHelper::FromWebState(tab.webState)->tab_id();
+  [self closingDocumentInTab:tabID];
 }
 
 - (void)closingDocumentInTab:(NSString*)tabId {
@@ -296,13 +326,16 @@ const int kNumberOfURLsToSend = 1;
 
 - (void)showingExportableDocument:(NSNotification*)notification {
   Tab* tab = notification.object;
-  NSString* oldMime = (NSString*)[self getTabInfo:@"mime" forTab:[tab tabId]];
+  NSString* tabID = nil;
+  if (tab.webState)
+    tabID = TabIdTabHelper::FromWebState(tab.webState)->tab_id();
+  NSString* oldMime = (NSString*)[self getTabInfo:@"mime" forTab:tabID];
   if ([oldMime isEqualToString:@"application/pdf"])
     return;
 
   std::string mime = [tab webState]->GetContentsMimeType();
   NSString* nsMime = base::SysUTF8ToNSString(mime);
-  [self setTabInfo:@"mime" withValue:nsMime forTab:[tab tabId]];
+  [self setTabInfo:@"mime" withValue:nsMime forTab:tabID];
   breakpad_helper::SetCurrentTabIsPDF(true);
 }
 
@@ -314,27 +347,35 @@ const int kNumberOfURLsToSend = 1;
 - (void)tabModel:(TabModel*)model
     didRemoveTab:(Tab*)tab
          atIndex:(NSUInteger)index {
-  [self removeTabId:tab.tabId];
+  [self removeTabId:TabIdTabHelper::FromWebState(tab.webState)->tab_id()];
 }
 
 - (void)tabModel:(TabModel*)model
     didReplaceTab:(Tab*)oldTab
           withTab:(Tab*)newTab
           atIndex:(NSUInteger)index {
-  [self removeTabId:oldTab.tabId];
+  [self removeTabId:TabIdTabHelper::FromWebState(oldTab.webState)->tab_id()];
 }
 
 @end
 
 namespace breakpad {
 
+void MonitorURLsForWebState(web::WebState* web_state) {
+  [[CrashReporterURLObserver uniqueInstance] observeWebState:web_state];
+}
+
+void StopMonitoringURLsForWebState(web::WebState* web_state) {
+  [[CrashReporterURLObserver uniqueInstance] stopObservingWebState:web_state];
+}
+
 void MonitorURLsForTabModel(TabModel* tab_model) {
   DCHECK(!tab_model.isOffTheRecord);
-  [tab_model addObserver:[CrashReporterURLObserver uniqueInstance]];
+  [[CrashReporterURLObserver uniqueInstance] observeTabModel:tab_model];
 }
 
 void StopMonitoringURLsForTabModel(TabModel* tab_model) {
-  [tab_model removeObserver:[CrashReporterURLObserver uniqueInstance]];
+  [[CrashReporterURLObserver uniqueInstance] stopObservingTabModel:tab_model];
 }
 
 void MonitorTabStateForTabModel(TabModel* tab_model) {

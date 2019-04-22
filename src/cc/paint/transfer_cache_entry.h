@@ -22,7 +22,6 @@ namespace cc {
 enum class TransferCacheEntryType : uint32_t {
   kRawMemory,
   kImage,
-  kColorSpace,
   kShader,
   // Add new entries above this line, make sure to update kLast.
   kLast = kShader,
@@ -45,7 +44,7 @@ class CC_PAINT_EXPORT ClientTransferCacheEntry {
   // Returns the serialized sized of this entry in bytes. This function will be
   // used to determine how much memory is going to be allocated and passed to
   // the Serialize() call.
-  virtual size_t SerializedSize() const = 0;
+  virtual uint32_t SerializedSize() const = 0;
 
   // Serializes the entry into the given span of memory. The size of the span is
   // guaranteed to be at least SerializedSize() bytes. Returns true on success
@@ -105,6 +104,6 @@ template <TransferCacheEntryType EntryType>
 using ServiceTransferCacheEntryBase =
     TransferCacheEntryBase<ServiceTransferCacheEntry, EntryType>;
 
-};  // namespace cc
+}  // namespace cc
 
 #endif  // CC_PAINT_TRANSFER_CACHE_ENTRY_H_

@@ -108,7 +108,8 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
       scoped_refptr<ServiceWorkerRegistration> registration);
 
   // This method is only called when ServiceWorkerImportedScriptUpdateCheck is
-  // enabled.
+  // enabled. When some script changed, the parameter |script_changed| is set
+  // to true.
   void OnUpdateCheckFinished(bool script_changed);
 
   void RegisterAndContinue();
@@ -147,6 +148,8 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
   base::WeakPtr<ServiceWorkerContextCore> context_;
 
   std::unique_ptr<ServiceWorkerUpdateChecker> update_checker_;
+  std::map<GURL, ServiceWorkerUpdateChecker::ComparedScriptInfo>
+      compared_script_info_map_;
 
   RegistrationJobType job_type_;
   const GURL scope_;

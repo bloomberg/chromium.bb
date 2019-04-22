@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "third_party/webrtc/common_video/include/video_frame_buffer.h"
-#include "third_party/webrtc/rtc_base/refcountedobject.h"
+#include "third_party/webrtc/rtc_base/ref_counted_object.h"
 
 namespace {
 

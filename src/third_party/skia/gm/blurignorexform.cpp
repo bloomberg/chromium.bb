@@ -5,8 +5,8 @@
  * found in the LICENSE file.
  */
 
+#include "ToolUtils.h"
 #include "gm.h"
-#include "sk_tool_utils.h"
 
 #include "SkBlurMask.h"
 #include "SkCanvas.h"
@@ -95,17 +95,15 @@ protected:
 
     void drawOverlay(SkCanvas* canvas) {
         canvas->translate(10, 0);
-        SkPaint textPaint;
-        sk_tool_utils::set_portable_typeface(&textPaint);
-        textPaint.setAntiAlias(true);
+        SkFont font(ToolUtils::create_portable_typeface());
         canvas->save();
         for (int i = 0; i < kNumBlurs; ++i) {
-            canvas->drawString(kBlurFlags[i].fName, 100, 0, textPaint);
+            canvas->drawString(kBlurFlags[i].fName, 100, 0, font, SkPaint());
             canvas->translate(SkIntToScalar(130), 0);
         }
         canvas->restore();
         for (auto scale : kMatrixScales) {
-            canvas->drawString(scale.fName, 0, 50, textPaint);
+            canvas->drawString(scale.fName, 0, 50, font, SkPaint());
             canvas->translate(0, SkIntToScalar(150));
         }
     }

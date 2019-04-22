@@ -51,9 +51,22 @@ class FileState {
     }
   }
 
-  uint64_t Size() const { return size_; }
+  uint64_t Size() const {
+    MutexLock lock(&blocks_mutex_);
+    return size_;
+  }
+
+  void Truncate() {
+    MutexLock lock(&blocks_mutex_);
+    for (char*& block : blocks_) {
+      delete[] block;
+    }
+    blocks_.clear();
+    size_ = 0;
+  }
 
   Status Read(uint64_t offset, size_t n, Slice* result, char* scratch) const {
+    MutexLock lock(&blocks_mutex_);
     if (offset > size_) {
       return Status::IOError("Offset greater than file size.");
     }
@@ -69,13 +82,6 @@ class FileState {
     assert(offset / kBlockSize <= std::numeric_limits<size_t>::max());
     size_t block = static_cast<size_t>(offset / kBlockSize);
     size_t block_offset = offset % kBlockSize;
-
-    if (n <= kBlockSize - block_offset) {
-      // The requested bytes are all in the first block.
-      *result = Slice(blocks_[block] + block_offset, n);
-      return Status::OK();
-    }
-
     size_t bytes_to_copy = n;
     char* dst = scratch;
 
@@ -100,6 +106,7 @@ class FileState {
     const char* src = data.data();
     size_t src_len = data.size();
 
+    MutexLock lock(&blocks_mutex_);
     while (src_len > 0) {
       size_t avail;
       size_t offset = size_ % kBlockSize;
@@ -128,10 +135,7 @@ class FileState {
  private:
   // Private since only Unref() should be used to delete it.
   ~FileState() {
-    for (std::vector<char*>::iterator i = blocks_.begin(); i != blocks_.end();
-         ++i) {
-      delete [] *i;
-    }
+    Truncate();
   }
 
   // No copying allowed.
@@ -141,11 +145,9 @@ class FileState {
   port::Mutex refs_mutex_;
   int refs_ GUARDED_BY(refs_mutex_);
 
-  // The following fields are not protected by any mutex. They are only mutable
-  // while the file is being written, and concurrent access is not allowed
-  // to writable files.
-  std::vector<char*> blocks_;
-  uint64_t size_;
+  mutable port::Mutex blocks_mutex_;
+  std::vector<char*> blocks_ GUARDED_BY(blocks_mutex_);
+  uint64_t size_ GUARDED_BY(blocks_mutex_);
 
   enum { kBlockSize = 8 * 1024 };
 };
@@ -269,13 +271,18 @@ class InMemoryEnv : public EnvWrapper {
   virtual Status NewWritableFile(const std::string& fname,
                                  WritableFile** result) {
     MutexLock lock(&mutex_);
-    if (file_map_.find(fname) != file_map_.end()) {
-      DeleteFileInternal(fname);
-    }
+    FileSystem::iterator it = file_map_.find(fname);
 
-    FileState* file = new FileState();
-    file->Ref();
-    file_map_[fname] = file;
+    FileState* file;
+    if (it == file_map_.end()) {
+      // File is not currently open.
+      file = new FileState();
+      file->Ref();
+      file_map_[fname] = file;
+    } else {
+      file = it->second;
+      file->Truncate();
+    }
 
     *result = new WritableFileImpl(file);
     return Status::OK();

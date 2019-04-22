@@ -16,7 +16,6 @@
 <translation id="152892567002884378">Zvýšenie hlasitosti</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, potom <ph name="ESC" /></translation>
 <translation id="1652741121070700329">Posunutie kurzora na začiatok predchádzajúceho slova</translation>
-<translation id="1671169355475348905">Prepnutie na metódu vstupu predchádzajúceho jazyka</translation>
 <translation id="1679841710523778799">Zvýšenie jasu</translation>
 <translation id="168356808214100546">Pridržanie klávesa <ph name="ALT" />. Následné klepnutie na kláves <ph name="TAB" />, kým neprejdete na okno, ktoré chcete otvoriť. Následné uvoľnenie klávesa.</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -33,6 +32,7 @@
 <translation id="2181097965834437145">Zobrazenie alebo skrytie panela so záložkami</translation>
 <translation id="2185166372312820725">Prechod na predchádzajúcu kartu</translation>
 <translation id="2194790690264064655">Stlačenie klávesa <ph name="CTRL" /> a kliknutie na odkaz</translation>
+<translation id="2246352309084894470">Otvoriť alebo zavrieť spúšťač celej obrazovky</translation>
 <translation id="2382644247745281995">S týmto rozložením klávesnice nie je podporované</translation>
 <translation id="2397416548179033562">Zobraziť Ponuku Chrome</translation>
 <translation id="2424073332829844142">Zapnutie a vypnutie klávesa Caps Lock</translation>
@@ -44,7 +44,6 @@
 <translation id="2574014812750545982">Obnovenie úrovne priblíženia/oddialenia na stránke</translation>
 <translation id="2596078834055697711">Vytvorenie snímky obrazovky okna</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, potom <ph name="TAB" /> alebo <ph name="RIGHT" /></translation>
-<translation id="2687057317448262550">Prepnutie na metódu vstupu ďalšieho jazyka</translation>
 <translation id="2699509451653686398">Uloženie aktuálnej webovej stránky ako záložky</translation>
 <translation id="2750942583782703988">Obnovenie aktuálnej stránky</translation>
 <translation id="2764005613199379871">Umiestnenie zamerania do panela s adresou vyhľadávania</translation>
@@ -147,6 +146,7 @@
 <translation id="671928215901716392">Uzamknúť obrazovku</translation>
 <translation id="6727005317916125192">Predchádzajúci panel</translation>
 <translation id="6740781404993465795">Výber ďalšieho slova alebo písmena</translation>
+<translation id="6755851152783057058">Prepnutie na poslednú použitú metódu vstupu</translation>
 <translation id="6760706756348334449">Zníženie hlasitosti</translation>
 <translation id="6941333068993625698">Odoslanie spätnej väzby</translation>
 <translation id="6981982820502123353">Dostupnosť</translation>
@@ -157,6 +157,7 @@
 <translation id="7237562915163138771">Zadajte do panela s adresou webovú adresu a potom stlačte <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /></translation>
 <translation id="7254764037241667478">Prepnutie zariadenia do režimu spánku (pozastaviť)</translation>
 <translation id="7379254767514753910"><ph name="ALT" /> alebo <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
+<translation id="7422707470576323858">Prepnutie na ďalšiu dostupnú metódu vstupu</translation>
 <translation id="743754632698445141">Odopnutie aplikácie</translation>
 <translation id="7439718573248533901">Odstránenie nasledujúceho písmena (odstránenie nasledujúceho znaku)</translation>
 <translation id="7611271430932669992">Presunutie zamerania na kontextové a dialógové okná</translation>

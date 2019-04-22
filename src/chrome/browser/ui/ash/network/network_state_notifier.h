@@ -8,6 +8,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -62,8 +63,8 @@ class NetworkStateNotifier : public NetworkConnectionObserver,
   void DisconnectRequested(const std::string& service_path) override;
 
   // NetworkStateHandlerObserver
-  void DefaultNetworkChanged(const NetworkState* network) override;
-  void NetworkConnectionStateChanged(const NetworkState* network) override;
+  void ActiveNetworksChanged(
+      const std::vector<const NetworkState*>& active_networks) override;
   void NetworkPropertiesUpdated(const NetworkState* network) override;
 
   void ConnectErrorPropertiesSucceeded(
@@ -89,7 +90,7 @@ class NetworkStateNotifier : public NetworkConnectionObserver,
 
   // Helper methods to update state and check for notifications.
   void UpdateVpnConnectionState(const NetworkState* vpn);
-  void UpdateCellularOutOfCredits(const NetworkState* cellular);
+  void UpdateCellularOutOfCredits();
   void UpdateCellularActivating(const NetworkState* cellular);
 
   // Shows the network settings for |network_id|.
@@ -98,11 +99,19 @@ class NetworkStateNotifier : public NetworkConnectionObserver,
   // Shows the mobile setup dialog for |network_id|.
   void ShowMobileSetup(const std::string& network_id);
 
-  std::string last_default_network_;
-  bool did_show_out_of_credits_;
+  // Set to the GUID of the connected VPN network if any, otherwise empty.
+  // Used for displaying VPN disconnected notification.
+  std::string connected_vpn_guid_;
+
+  // Tracks state for out of credits notification.
+  bool did_show_out_of_credits_ = false;
   base::Time out_of_credits_notify_time_;
-  std::set<std::string> cellular_activating_;
-  std::string connected_vpn_;
+  // Set to the GUID of the active non VPN network if any, otherwise empty.
+  std::string active_non_vpn_network_guid_;
+
+  // Tracks GUIDs of activating cellular networks for activation notification.
+  std::set<std::string> cellular_activating_guids_;
+
   base::WeakPtrFactory<NetworkStateNotifier> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkStateNotifier);

@@ -7,6 +7,7 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/model/locale_model.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/tray/actionable_view.h"
 #include "ash/system/tray/tray_popup_item_style.h"
@@ -120,12 +121,12 @@ void LocaleDetailedView::CreateItems() {
   CreateScrollableList();
 
   const std::vector<mojom::LocaleInfoPtr>& locales =
-      Shell::Get()->system_tray_model()->locale_list();
+      Shell::Get()->system_tray_model()->locale()->locale_list();
   int id = 0;
   for (auto& entry : locales) {
     const bool checked =
         entry->iso_code ==
-        Shell::Get()->system_tray_model()->current_locale_iso_code();
+        Shell::Get()->system_tray_model()->locale()->current_locale_iso_code();
     LocaleItem* item =
         new LocaleItem(this, entry->iso_code, entry->display_name, checked);
     scroll_content()->AddChildView(item);
@@ -141,7 +142,7 @@ void LocaleDetailedView::HandleViewClicked(views::View* view) {
   DCHECK(it != id_to_locale_.end());
   const std::string locale_iso_code = it->second;
   if (locale_iso_code !=
-      Shell::Get()->system_tray_model()->current_locale_iso_code()) {
+      Shell::Get()->system_tray_model()->locale()->current_locale_iso_code()) {
     Shell::Get()->system_tray_model()->client_ptr()->SetLocaleAndExit(
         locale_iso_code);
   }

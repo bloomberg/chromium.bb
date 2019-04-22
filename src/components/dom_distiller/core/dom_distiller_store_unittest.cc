@@ -209,9 +209,7 @@ TEST_F(DomDistillerStoreTest, TestDatabaseLoad) {
 
   CreateStore();
 
-  fake_db_->InitCallback(true);
-  EXPECT_EQ(fake_db_->GetDirectory(),
-            FakeDB<ArticleEntry>::DirectoryForTestDB());
+  fake_db_->InitStatusCallback(leveldb_proto::Enums::InitStatus::kOK);
 
   fake_db_->LoadCallback(true);
   EXPECT_TRUE(AreEntriesEqual(store_->GetEntries(), db_model_));
@@ -231,7 +229,7 @@ TEST_F(DomDistillerStoreTest, TestDatabaseLoadMerge) {
   AddEntry(GetSampleEntry(4), &expected_model);
 
   CreateStore();
-  fake_db_->InitCallback(true);
+  fake_db_->InitStatusCallback(leveldb_proto::Enums::InitStatus::kOK);
   fake_db_->LoadCallback(true);
 
   EXPECT_TRUE(AreEntriesEqual(store_->GetEntries(), expected_model));
@@ -240,7 +238,7 @@ TEST_F(DomDistillerStoreTest, TestDatabaseLoadMerge) {
 
 TEST_F(DomDistillerStoreTest, TestAddAndRemoveEntry) {
   CreateStore();
-  fake_db_->InitCallback(true);
+  fake_db_->InitStatusCallback(leveldb_proto::Enums::InitStatus::kOK);
   fake_db_->LoadCallback(true);
 
   EXPECT_TRUE(store_->GetEntries().empty());
@@ -263,7 +261,7 @@ TEST_F(DomDistillerStoreTest, TestAddAndRemoveEntry) {
 
 TEST_F(DomDistillerStoreTest, TestAddAndUpdateEntry) {
   CreateStore();
-  fake_db_->InitCallback(true);
+  fake_db_->InitStatusCallback(leveldb_proto::Enums::InitStatus::kOK);
   fake_db_->LoadCallback(true);
 
   EXPECT_TRUE(store_->GetEntries().empty());
@@ -297,7 +295,7 @@ TEST_F(DomDistillerStoreTest, TestObserver) {
   CreateStore();
   MockDistillerObserver observer;
   store_->AddObserver(&observer);
-  fake_db_->InitCallback(true);
+  fake_db_->InitStatusCallback(leveldb_proto::Enums::InitStatus::kOK);
   fake_db_->LoadCallback(true);
   std::vector<DomDistillerObserver::ArticleUpdate> expected_updates;
   DomDistillerObserver::ArticleUpdate update;

@@ -19,7 +19,6 @@
 #include "media/base/cdm_context.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/media.h"
-#include "media/base/media_log.h"
 #include "media/base/media_switches.h"
 #include "media/base/media_util.h"
 #include "media/cast/common/rtp_time.h"
@@ -166,7 +165,7 @@ class EndToEndFrameChecker
   friend class base::RefCountedThreadSafe<EndToEndFrameChecker>;
   virtual ~EndToEndFrameChecker() {}
 
-  MediaLog media_log_;
+  NullMediaLog media_log_;
   FFmpegVideoDecoder decoder_;
   base::queue<scoped_refptr<VideoFrame>> expectations_;
   int count_frames_checked_;
@@ -270,7 +269,7 @@ class H264VideoToolboxEncoderTest : public ::testing::Test {
 scoped_refptr<media::VideoFrame> H264VideoToolboxEncoderTest::frame_;
 FrameSenderConfig H264VideoToolboxEncoderTest::video_sender_config_;
 
-// Failed on mac_chromium_rel_ng trybot. http://crbug.com/627260
+// Failed on mac-rel trybot. http://crbug.com/627260
 TEST_F(H264VideoToolboxEncoderTest, DISABLED_CheckFrameMetadataSequence) {
   scoped_refptr<MetadataRecorder> metadata_recorder(new MetadataRecorder());
   VideoEncoder::FrameEncodedCallback cb = base::Bind(
@@ -300,7 +299,7 @@ TEST_F(H264VideoToolboxEncoderTest, DISABLED_CheckFrameMetadataSequence) {
 }
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
-// Failed on mac_chromium_rel_ng trybot. http://crbug.com/627260
+// Failed on mac-rel trybot. http://crbug.com/627260
 TEST_F(H264VideoToolboxEncoderTest, DISABLED_CheckFramesAreDecodable) {
   VideoDecoderConfig config(
       kCodecH264, H264PROFILE_MAIN, frame_->format(), VideoColorSpace(),

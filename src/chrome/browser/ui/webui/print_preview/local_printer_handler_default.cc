@@ -7,53 +7,71 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/task/post_task.h"
 #include "base/threading/scoped_blocking_call.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_utils.h"
-#include "components/printing/common/printer_capabilities.h"
+#include "components/printing/browser/printer_capabilities.h"
 #include "content/public/browser/browser_thread.h"
 #include "printing/backend/print_backend.h"
 
+#if defined(OS_MACOSX)
+#include "components/printing/browser/features.h"
+#include "components/printing/browser/printer_capabilities_mac.h"
+#endif
+
+namespace printing {
+
 namespace {
 
-printing::PrinterList EnumeratePrintersAsync() {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
-  scoped_refptr<printing::PrintBackend> print_backend(
-      printing::PrintBackend::CreateInstance(nullptr));
+PrinterList EnumeratePrintersAsync() {
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
+  scoped_refptr<PrintBackend> print_backend(
+      PrintBackend::CreateInstance(nullptr));
 
-  printing::PrinterList printer_list;
+  PrinterList printer_list;
   print_backend->EnumeratePrinters(&printer_list);
   return printer_list;
 }
 
-std::unique_ptr<base::DictionaryValue> FetchCapabilitiesAsync(
-    const std::string& device_name) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
-  scoped_refptr<printing::PrintBackend> print_backend(
-      printing::PrintBackend::CreateInstance(nullptr));
+base::Value FetchCapabilitiesAsync(const std::string& device_name) {
+  PrinterSemanticCapsAndDefaults::Papers additional_papers;
+#if defined(OS_MACOSX)
+  if (base::FeatureList::IsEnabled(features::kEnableCustomMacPaperSizes))
+    additional_papers = GetMacCustomPaperSizes();
+#endif
+
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
+  scoped_refptr<PrintBackend> print_backend(
+      PrintBackend::CreateInstance(nullptr));
 
   VLOG(1) << "Get printer capabilities start for " << device_name;
 
   if (!print_backend->IsValidPrinter(device_name)) {
     LOG(WARNING) << "Invalid printer " << device_name;
-    return nullptr;
+    return base::Value();
   }
 
-  printing::PrinterBasicInfo basic_info;
-  if (!print_backend->GetPrinterBasicInfo(device_name, &basic_info)) {
-    return nullptr;
-  }
+  PrinterBasicInfo basic_info;
+  if (!print_backend->GetPrinterBasicInfo(device_name, &basic_info))
+    return base::Value();
 
-  return printing::GetSettingsOnBlockingPool(device_name, basic_info,
-                                             print_backend);
+  return GetSettingsOnBlockingPool(device_name, basic_info, additional_papers,
+                                   /* has_secure_protocol */ false,
+                                   print_backend);
 }
 
 std::string GetDefaultPrinterAsync() {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
-  scoped_refptr<printing::PrintBackend> print_backend(
-      printing::PrintBackend::CreateInstance(nullptr));
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
+  scoped_refptr<PrintBackend> print_backend(
+      PrintBackend::CreateInstance(nullptr));
 
   std::string default_printer = print_backend->GetDefaultPrinterName();
   VLOG(1) << "Default Printer: " << default_printer;
@@ -73,8 +91,9 @@ void LocalPrinterHandlerDefault::Reset() {}
 void LocalPrinterHandlerDefault::GetDefaultPrinter(DefaultPrinterCallback cb) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
+  // USER_VISIBLE because the result is displayed in the print preview dialog.
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&GetDefaultPrinterAsync), std::move(cb));
 }
 
@@ -84,10 +103,11 @@ void LocalPrinterHandlerDefault::StartGetPrinters(
   VLOG(1) << "Enumerate printers start";
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
+  // USER_VISIBLE because the result is displayed in the print preview dialog.
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&EnumeratePrintersAsync),
-      base::BindOnce(&printing::ConvertPrinterListForCallback, callback,
+      base::BindOnce(&ConvertPrinterListForCallback, callback,
                      std::move(done_callback)));
 }
 
@@ -96,19 +116,19 @@ void LocalPrinterHandlerDefault::StartGetCapability(
     GetCapabilityCallback cb) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
+  // USER_VISIBLE because the result is displayed in the print preview dialog.
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&FetchCapabilitiesAsync, device_name), std::move(cb));
 }
 
 void LocalPrinterHandlerDefault::StartPrint(
-    const std::string& destination_id,
-    const std::string& capability,
     const base::string16& job_title,
-    const std::string& ticket_json,
-    const gfx::Size& page_size,
-    const scoped_refptr<base::RefCountedMemory>& print_data,
+    base::Value settings,
+    scoped_refptr<base::RefCountedMemory> print_data,
     PrintCallback callback) {
-  printing::StartLocalPrint(ticket_json, print_data, preview_web_contents_,
-                            std::move(callback));
+  StartLocalPrint(std::move(settings), std::move(print_data),
+                  preview_web_contents_, std::move(callback));
 }
+
+}  // namespace printing

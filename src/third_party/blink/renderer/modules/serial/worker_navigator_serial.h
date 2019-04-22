@@ -27,11 +27,11 @@ class WorkerNavigatorSerial final
   static Serial* serial(ScriptState*, WorkerNavigator&);
   Serial* serial(ScriptState*);
 
+  explicit WorkerNavigatorSerial(WorkerNavigator&);
+
   void Trace(Visitor*) override;
 
  private:
-  explicit WorkerNavigatorSerial(WorkerNavigator&);
-
   Member<Serial> serial_;
 };
 

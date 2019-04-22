@@ -21,6 +21,7 @@
 #include "media/base/encryption_scheme.h"
 #include "media/base/media_export.h"
 #include "media/base/subsample_entry.h"
+#include "media/base/waiting.h"
 
 // MediaCodecLoop is based on Android's MediaCodec API.
 // The MediaCodec API is required to play encrypted (as in EME) content on
@@ -183,6 +184,9 @@ class MEDIA_EXPORT MediaCodecLoop {
     // returning, then the client must call DoPendingWork when it releases it.
     // If this returns false, then we transition to STATE_ERROR.
     virtual bool OnDecodedFrame(const OutputBuffer& out) = 0;
+
+    // Notify the client when waiting for |reason|, e.g. STATE_WAITING_FOR_KEY.
+    virtual void OnWaiting(WaitingReason reason) = 0;
 
     // Processes the output format change on |media_codec|.  Returns true on
     // success, or false to transition to the error state.

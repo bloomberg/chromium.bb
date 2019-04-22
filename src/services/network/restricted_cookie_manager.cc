@@ -14,38 +14,14 @@
 #include "base/strings/string_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "mojo/public/cpp/bindings/message.h"
-#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_options.h"
 #include "net/cookies/cookie_store.h"
+#include "net/cookies/cookie_util.h"
+#include "services/network/cookie_managers_shared.h"
+#include "services/network/cookie_settings.h"
 
 namespace network {
-
-namespace {
-
-// TODO(pwnall): De-duplicate from cookie_manager.cc
-mojom::CookieChangeCause ToCookieChangeCause(net::CookieChangeCause net_cause) {
-  switch (net_cause) {
-    case net::CookieChangeCause::INSERTED:
-      return mojom::CookieChangeCause::INSERTED;
-    case net::CookieChangeCause::EXPLICIT:
-      return mojom::CookieChangeCause::EXPLICIT;
-    case net::CookieChangeCause::UNKNOWN_DELETION:
-      return mojom::CookieChangeCause::UNKNOWN_DELETION;
-    case net::CookieChangeCause::OVERWRITE:
-      return mojom::CookieChangeCause::OVERWRITE;
-    case net::CookieChangeCause::EXPIRED:
-      return mojom::CookieChangeCause::EXPIRED;
-    case net::CookieChangeCause::EVICTED:
-      return mojom::CookieChangeCause::EVICTED;
-    case net::CookieChangeCause::EXPIRED_OVERWRITE:
-      return mojom::CookieChangeCause::EXPIRED_OVERWRITE;
-  }
-  NOTREACHED();
-  return mojom::CookieChangeCause::EXPLICIT;
-}
-
-}  // anonymous namespace
 
 class RestrictedCookieManager::Listener : public base::LinkNode<Listener> {
  public:
@@ -79,7 +55,8 @@ class RestrictedCookieManager::Listener : public base::LinkNode<Listener> {
   void OnCookieChange(const net::CanonicalCookie& cookie,
                       net::CookieChangeCause cause) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    if (!cookie.IncludeForRequestURL(url_, options_))
+    if (cookie.IncludeForRequestURL(url_, options_) !=
+        net::CanonicalCookie::CookieInclusionStatus::INCLUDE)
       return;
     mojo_listener_->OnCookieChange(cookie, ToCookieChangeCause(cause));
   }
@@ -99,9 +76,14 @@ class RestrictedCookieManager::Listener : public base::LinkNode<Listener> {
   DISALLOW_COPY_AND_ASSIGN(Listener);
 };
 
-RestrictedCookieManager::RestrictedCookieManager(net::CookieStore* cookie_store,
-                                                 const url::Origin& origin)
-    : cookie_store_(cookie_store), origin_(origin), weak_ptr_factory_(this) {
+RestrictedCookieManager::RestrictedCookieManager(
+    net::CookieStore* cookie_store,
+    const CookieSettings* cookie_settings,
+    const url::Origin& origin)
+    : cookie_store_(cookie_store),
+      cookie_settings_(cookie_settings),
+      origin_(origin),
+      weak_ptr_factory_(this) {
   DCHECK(cookie_store);
 }
 
@@ -129,18 +111,18 @@ void RestrictedCookieManager::GetAllForUrl(
     return;
   }
 
-  net::CookieOptions net_options;
-  if (net::registry_controlled_domains::SameDomainOrHost(
-          url, site_for_cookies,
-          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
-    // TODO(mkwst): This check ought to further distinguish between frames
-    // initiated in a strict or lax same-site context.
-    net_options.set_same_site_cookie_mode(
-        net::CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX);
-  } else {
-    net_options.set_same_site_cookie_mode(
-        net::CookieOptions::SameSiteCookieMode::DO_NOT_INCLUDE);
+  // TODO(morlovich): Try to validate site_for_cookies as well.
+
+  if (!cookie_settings_->IsCookieAccessAllowed(url, site_for_cookies)) {
+    std::move(callback).Run({});
+    return;
   }
+
+  // TODO(https://crbug.com/925311): Wire initiator here.
+  net::CookieOptions net_options;
+  net_options.set_same_site_cookie_context(
+      net::cookie_util::ComputeSameSiteContext(url, site_for_cookies,
+                                               base::nullopt /*initiator*/));
 
   cookie_store_->GetCookieListWithOptionsAsync(
       url, net_options,
@@ -154,11 +136,9 @@ void RestrictedCookieManager::CookieListToGetAllForUrlCallback(
     const GURL& site_for_cookies,
     mojom::CookieManagerGetOptionsPtr options,
     GetAllForUrlCallback callback,
-    const net::CookieList& cookie_list) {
+    const net::CookieList& cookie_list,
+    const net::CookieStatusList& excluded_cookies) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  // TODO(pwnall): Call NetworkDelegate::CanGetCookies() on a NetworkDelegate
-  //               associated with the NetworkContext.
 
   std::vector<net::CanonicalCookie> result;
   result.reserve(cookie_list.size());
@@ -195,23 +175,29 @@ void RestrictedCookieManager::SetCanonicalCookie(
     return;
   }
 
+  // TODO(morlovich): Try to validate site_for_cookies as well.
+  if (!cookie_settings_->IsCookieAccessAllowed(url, site_for_cookies)) {
+    std::move(callback).Run(false);
+    return;
+  }
+
   // TODO(pwnall): Validate the CanonicalCookie fields.
 
-  // TODO(pwnall): Call NetworkDelegate::CanSetCookie() on a NetworkDelegate
-  //               associated with the NetworkContext.
   base::Time now = base::Time::NowFromSystemTime();
   auto sanitized_cookie = std::make_unique<net::CanonicalCookie>(
       cookie.Name(), cookie.Value(), cookie.Domain(), cookie.Path(), now,
       cookie.ExpiryDate(), now, cookie.IsSecure(), cookie.IsHttpOnly(),
       cookie.SameSite(), cookie.Priority());
 
-  // TODO(pwnall): secure_source should depend on url, and might depend on the
-  //               renderer.
-  bool secure_source = true;
-  bool modify_http_only = false;
-  cookie_store_->SetCanonicalCookieAsync(std::move(sanitized_cookie),
-                                         secure_source, modify_http_only,
-                                         std::move(callback));
+  // TODO(pwnall): source_scheme might depend on the renderer.
+  net::CookieOptions options;
+  // TODO(https://crbug.com/925311): Wire initiator here.
+  options.set_same_site_cookie_context(net::cookie_util::ComputeSameSiteContext(
+      url, site_for_cookies, base::nullopt /*initiator*/));
+  options.set_exclude_httponly();  // Default, but make it explicit here.
+  cookie_store_->SetCanonicalCookieAsync(
+      std::move(sanitized_cookie), origin_.scheme(), options,
+      net::cookie_util::AdaptCookieInclusionStatusToBool(std::move(callback)));
 }
 
 void RestrictedCookieManager::AddChangeListener(
@@ -225,18 +211,11 @@ void RestrictedCookieManager::AddChangeListener(
     return;
   }
 
+  // TODO(https://crbug.com/925311): Wire initiator here.
   net::CookieOptions net_options;
-  if (net::registry_controlled_domains::SameDomainOrHost(
-          url, site_for_cookies,
-          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
-    // TODO(mkwst): This check ought to further distinguish between frames
-    // initiated in a strict or lax same-site context.
-    net_options.set_same_site_cookie_mode(
-        net::CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX);
-  } else {
-    net_options.set_same_site_cookie_mode(
-        net::CookieOptions::SameSiteCookieMode::DO_NOT_INCLUDE);
-  }
+  net_options.set_same_site_cookie_context(
+      net::cookie_util::ComputeSameSiteContext(url, site_for_cookies,
+                                               base::nullopt /*initiator*/));
 
   auto listener = std::make_unique<Listener>(cookie_store_, url, net_options,
                                              std::move(mojo_listener));

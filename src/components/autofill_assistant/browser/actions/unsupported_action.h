@@ -20,8 +20,6 @@ class UnsupportedAction : public Action {
   void InternalProcessAction(ActionDelegate* delegate,
                              ProcessActionCallback callback) override;
 
-  void OnUnsupported(ProcessActionCallback callback, bool status);
-
   DISALLOW_COPY_AND_ASSIGN(UnsupportedAction);
 };
 

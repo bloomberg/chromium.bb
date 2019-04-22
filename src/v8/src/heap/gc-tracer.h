@@ -17,7 +17,7 @@
 namespace v8 {
 namespace internal {
 
-typedef std::pair<uint64_t, double> BytesAndDuration;
+using BytesAndDuration = std::pair<uint64_t, double>;
 
 inline BytesAndDuration MakeBytesAndDuration(uint64_t bytes, double duration) {
   return std::make_pair(bytes, duration);
@@ -71,7 +71,7 @@ class V8_EXPORT_PRIVATE GCTracer {
           NUMBER_OF_SCOPES,
 
       FIRST_INCREMENTAL_SCOPE = MC_INCREMENTAL,
-      LAST_INCREMENTAL_SCOPE = MC_INCREMENTAL_EXTERNAL_PROLOGUE,
+      LAST_INCREMENTAL_SCOPE = MC_INCREMENTAL_SWEEPING,
       FIRST_SCOPE = MC_INCREMENTAL,
       NUMBER_OF_INCREMENTAL_SCOPES =
           LAST_INCREMENTAL_SCOPE - FIRST_INCREMENTAL_SCOPE + 1,
@@ -179,11 +179,11 @@ class V8_EXPORT_PRIVATE GCTracer {
     // after the current GC.
     size_t end_holes_size;
 
-    // Size of new space objects in constructor.
-    size_t new_space_object_size;
+    // Size of young objects in constructor.
+    size_t young_object_size;
 
-    // Size of survived new space objects in destructor.
-    size_t survived_new_space_object_size;
+    // Size of survived young objects in destructor.
+    size_t survived_young_object_size;
 
     // Bytes marked incrementally for INCREMENTAL_MARK_COMPACTOR
     size_t incremental_marking_bytes;

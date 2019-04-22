@@ -4,7 +4,7 @@
  *
  *   The FreeType services (specification only).
  *
- * Copyright 2003-2018 by
+ * Copyright (C) 2003-2019 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -54,7 +54,7 @@ FT_BEGIN_HEADER
    *
    * @output:
    *   ptr ::
-   *     A variable that receives the service pointer.  Will be NULL if not
+   *     A variable that receives the service pointer.  Will be `NULL` if not
    *     found.
    */
 #ifdef __cplusplus
@@ -106,7 +106,7 @@ FT_BEGIN_HEADER
    *
    * @output:
    *   ptr ::
-   *     A variable that receives the service pointer.  Will be NULL if not
+   *     A variable that receives the service pointer.  Will be `NULL` if not
    *     found.
    */
 #ifdef __cplusplus
@@ -426,7 +426,7 @@ FT_BEGIN_HEADER
    *
    * @output:
    *   ptr ::
-   *     A variable receiving the service data.  NULL if not available.
+   *     A variable receiving the service data.  `NULL` if not available.
    */
 #ifdef __cplusplus
 

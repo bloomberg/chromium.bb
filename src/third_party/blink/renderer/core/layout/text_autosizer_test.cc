@@ -2,21 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "third_party/blink/renderer/core/layout/text_autosizer.h"
+
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
-#include "third_party/blink/renderer/core/layout/text_autosizer.h"
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_request.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
 class TextAutosizerClient : public EmptyChromeClient {
  public:
-  static TextAutosizerClient* Create() {
-    return MakeGarbageCollected<TextAutosizerClient>();
-  }
   float WindowToViewportScalar(const float value) const override {
     return value * device_scale_factor_;
   }
@@ -41,7 +43,7 @@ class TextAutosizerTest : public RenderingTest {
   }
   TextAutosizerClient& GetTextAutosizerClient() const {
     DEFINE_STATIC_LOCAL(Persistent<TextAutosizerClient>, client,
-                        (TextAutosizerClient::Create()));
+                        (MakeGarbageCollected<TextAutosizerClient>()));
     return *client;
   }
   void set_device_scale_factor(float device_scale_factor) {
@@ -1065,4 +1067,52 @@ TEST_F(TextAutosizerTest, AfterPrint) {
   EXPECT_FLOAT_EQ(20.0f * device_scale,
                   target->GetLayoutObject()->StyleRef().ComputedFontSize());
 }
+
+class TextAutosizerSimTest : public SimTest {
+ private:
+  void SetUp() override {
+    SimTest::SetUp();
+
+    WebSettings* web_settings = WebView().GetSettings();
+    web_settings->SetViewportEnabled(true);
+    web_settings->SetViewportMetaEnabled(true);
+
+    Settings& settings = WebView().GetPage()->GetSettings();
+    settings.SetTextAutosizingEnabled(true);
+    settings.SetTextAutosizingWindowSizeOverride(IntSize(400, 400));
+  }
+};
+
+TEST_F(TextAutosizerSimTest, CrossSiteUseCounter) {
+  WebView().MainFrameWidget()->Resize(WebSize(800, 800));
+
+  SimRequest main_resource("https://example.com/", "text/html");
+  SimRequest child_resource("https://crosssite.com/", "text/html");
+
+  LoadURL("https://example.com/");
+  main_resource.Complete(
+      "<iframe width=700 src='https://crosssite.com/'></iframe>");
+
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+
+  child_resource.Complete(R"HTML(
+    <body style='font-size: 20px'>
+      Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed
+      do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+      Ut enim ad minim veniam, quis nostrud exercitation ullamco
+      laboris nisi ut aliquip ex ea commodo consequat.
+    </body>
+  )HTML");
+
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+
+  auto* child_frame = To<WebLocalFrameImpl>(MainFrame().FirstChild());
+  auto* child_doc = child_frame->GetFrame()->GetDocument();
+
+  EXPECT_TRUE(UseCounter::IsCounted(*child_doc,
+                                    WebFeature::kTextAutosizedCrossSiteIframe));
+}
+
 }  // namespace blink

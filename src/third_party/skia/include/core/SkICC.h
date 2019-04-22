@@ -9,15 +9,11 @@
 #define SkICC_DEFINED
 
 #include "SkData.h"
-#include "SkMatrix44.h"
-#include "SkRefCnt.h"
 
-struct SkColorSpaceTransferFn;
+struct skcms_Matrix3x3;
+struct skcms_TransferFunction;
 
-SK_API sk_sp<SkData> SkWriteICCProfile(const SkColorSpaceTransferFn&, const float toXYZD50[9]);
-
-namespace SkICC {
-    SK_API sk_sp<SkData> WriteToICC(const SkColorSpaceTransferFn&, const SkMatrix44&);
-}
+SK_API sk_sp<SkData> SkWriteICCProfile(const skcms_TransferFunction&,
+                                       const skcms_Matrix3x3& toXYZD50);
 
 #endif//SkICC_DEFINED

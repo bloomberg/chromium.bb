@@ -8,6 +8,8 @@
 #include <limits>
 #include <utility>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/media_galleries/chromeos/mtp_device_object_enumerator.h"
@@ -92,7 +94,7 @@ void MTPDeviceTaskHelper::OpenStorage(const std::string& storage_name,
   DCHECK(!storage_name.empty());
   if (!device_handle_.empty()) {
     base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
-                             base::Bind(callback, true));
+                             base::BindOnce(callback, true));
     return;
   }
 
@@ -255,7 +257,7 @@ void MTPDeviceTaskHelper::OnDidOpenStorage(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   device_handle_ = device_handle;
   base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
-                           base::Bind(completion_callback, !error));
+                           base::BindOnce(completion_callback, !error));
 }
 
 void MTPDeviceTaskHelper::OnGetFileInfo(
@@ -283,7 +285,7 @@ void MTPDeviceTaskHelper::OnCreateDirectory(
   if (error) {
     base::PostTaskWithTraits(
         FROM_HERE, {content::BrowserThread::IO},
-        base::Bind(error_callback, base::File::FILE_ERROR_FAILED));
+        base::BindOnce(error_callback, base::File::FILE_ERROR_FAILED));
     return;
   }
 
@@ -420,7 +422,7 @@ void MTPDeviceTaskHelper::OnGetFileInfoToReadBytes(
   if (request.offset == file_info.size) {
     base::PostTaskWithTraits(
         FROM_HERE, {content::BrowserThread::IO},
-        base::Bind(request.success_callback, file_info, 0u));
+        base::BindOnce(request.success_callback, file_info, 0u));
     return;
   }
 
@@ -451,7 +453,7 @@ void MTPDeviceTaskHelper::OnDidReadBytes(
 
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::IO},
-      base::Bind(request.success_callback, file_info, data.length()));
+      base::BindOnce(request.success_callback, file_info, data.length()));
 }
 
 void MTPDeviceTaskHelper::OnRenameObject(
@@ -462,7 +464,7 @@ void MTPDeviceTaskHelper::OnRenameObject(
   if (error) {
     base::PostTaskWithTraits(
         FROM_HERE, {content::BrowserThread::IO},
-        base::Bind(error_callback, base::File::FILE_ERROR_FAILED));
+        base::BindOnce(error_callback, base::File::FILE_ERROR_FAILED));
     return;
   }
 
@@ -478,7 +480,7 @@ void MTPDeviceTaskHelper::OnCopyFileFromLocal(
   if (error) {
     base::PostTaskWithTraits(
         FROM_HERE, {content::BrowserThread::IO},
-        base::Bind(error_callback, base::File::FILE_ERROR_FAILED));
+        base::BindOnce(error_callback, base::File::FILE_ERROR_FAILED));
     return;
   }
 
@@ -494,7 +496,7 @@ void MTPDeviceTaskHelper::OnDeleteObject(
   if (error) {
     base::PostTaskWithTraits(
         FROM_HERE, {content::BrowserThread::IO},
-        base::Bind(error_callback, base::File::FILE_ERROR_FAILED));
+        base::BindOnce(error_callback, base::File::FILE_ERROR_FAILED));
     return;
   }
 
@@ -507,5 +509,5 @@ void MTPDeviceTaskHelper::HandleDeviceError(
     base::File::Error error) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
-                           base::Bind(error_callback, error));
+                           base::BindOnce(error_callback, error));
 }

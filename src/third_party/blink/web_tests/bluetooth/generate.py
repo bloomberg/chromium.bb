@@ -5,7 +5,7 @@
 # TODO(509038): Delete this file once all generated script tests have been
 # migrated to wpt/. A copy of this file already exists in wpt/bluetooth that
 # generates bluetooth tests inside of wpt/.
-"""Generator script for Web Bluetooth LayoutTests.
+"""Generator script for Web Bluetooth web tests.
 
 For each script-tests/X.js creates the following test files depending on the
 contents of X.js
@@ -52,7 +52,7 @@ promise_test(() => {
 }, 'example test for getPrimaryServices');
 
 Run
-$ python //third_party/WebKit/LayoutTests/bluetooth/generate.py
+$ python //third_party/blink/web_tests/bluetooth/generate.py
 and commit the generated files.
 """
 

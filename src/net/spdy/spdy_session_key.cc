@@ -17,10 +17,15 @@ SpdySessionKey::SpdySessionKey() = default;
 SpdySessionKey::SpdySessionKey(const HostPortPair& host_port_pair,
                                const ProxyServer& proxy_server,
                                PrivacyMode privacy_mode,
+                               IsProxySession is_proxy_session,
                                const SocketTag& socket_tag)
     : host_port_proxy_pair_(host_port_pair, proxy_server),
       privacy_mode_(privacy_mode),
+      is_proxy_session_(is_proxy_session),
       socket_tag_(socket_tag) {
+  // IsProxySession::kTrue should only be used with direct connections, since
+  // using multiple layers of proxies on top of each other isn't supported.
+  DCHECK(is_proxy_session != IsProxySession::kTrue || proxy_server.is_direct());
   DVLOG(1) << "SpdySessionKey(host=" << host_port_pair.ToString()
       << ", proxy=" << proxy_server.ToURI()
       << ", privacy=" << privacy_mode;
@@ -32,9 +37,11 @@ SpdySessionKey::~SpdySessionKey() = default;
 
 bool SpdySessionKey::operator<(const SpdySessionKey& other) const {
   return std::tie(privacy_mode_, host_port_proxy_pair_.first,
-                  host_port_proxy_pair_.second, socket_tag_) <
+                  host_port_proxy_pair_.second, is_proxy_session_,
+                  socket_tag_) <
          std::tie(other.privacy_mode_, other.host_port_proxy_pair_.first,
-                  other.host_port_proxy_pair_.second, other.socket_tag_);
+                  other.host_port_proxy_pair_.second, other.is_proxy_session_,
+                  other.socket_tag_);
 }
 
 bool SpdySessionKey::operator==(const SpdySessionKey& other) const {
@@ -42,6 +49,7 @@ bool SpdySessionKey::operator==(const SpdySessionKey& other) const {
          host_port_proxy_pair_.first.Equals(
              other.host_port_proxy_pair_.first) &&
          host_port_proxy_pair_.second == other.host_port_proxy_pair_.second &&
+         is_proxy_session_ == other.is_proxy_session_ &&
          socket_tag_ == other.socket_tag_;
 }
 

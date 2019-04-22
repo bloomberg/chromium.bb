@@ -20,7 +20,7 @@
 #include "media/base/video_util.h"
 #include "third_party/webrtc/api/video/i420_buffer.h"
 #include "third_party/webrtc/api/video/video_sink_interface.h"
-#include "third_party/webrtc/rtc_base/timeutils.h"  // for TimeMicros
+#include "third_party/webrtc/rtc_base/time_utils.h"  // for TimeMicros
 
 namespace content {
 
@@ -32,7 +32,7 @@ class MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate
  public:
   RemoteVideoSourceDelegate(
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-      const VideoCaptureDeliverFrameCB& new_frame_callback);
+      const blink::VideoCaptureDeliverFrameCB& new_frame_callback);
 
  protected:
   friend class base::RefCountedThreadSafe<RemoteVideoSourceDelegate>;
@@ -50,7 +50,7 @@ class MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   // |frame_callback_| is accessed on the IO thread.
-  VideoCaptureDeliverFrameCB frame_callback_;
+  blink::VideoCaptureDeliverFrameCB frame_callback_;
 
   // Timestamp of the first received frame.
   base::TimeDelta start_timestamp_;
@@ -62,7 +62,7 @@ class MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate
 MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::
     RemoteVideoSourceDelegate(
         scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-        const VideoCaptureDeliverFrameCB& new_frame_callback)
+        const blink::VideoCaptureDeliverFrameCB& new_frame_callback)
     : io_task_runner_(io_task_runner),
       frame_callback_(new_frame_callback),
       start_timestamp_(media::kNoTimestamp),
@@ -190,6 +190,9 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::OnFrame(
     video_frame->metadata()->SetTimeTicks(
         media::VideoFrameMetadata::REFERENCE_TIME, render_time);
   }
+  video_frame->metadata()->SetTimeTicks(
+      media::VideoFrameMetadata::DECODE_COMPLETE_TIMESTAMP,
+      base::TimeTicks::Now());
 
   io_task_runner_->PostTask(
       FROM_HERE,
@@ -226,14 +229,14 @@ void MediaStreamRemoteVideoSource::OnSourceTerminated() {
 }
 
 void MediaStreamRemoteVideoSource::StartSourceImpl(
-    const VideoCaptureDeliverFrameCB& frame_callback) {
+    const blink::VideoCaptureDeliverFrameCB& frame_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!delegate_.get());
   delegate_ = new RemoteVideoSourceDelegate(io_task_runner(), frame_callback);
   scoped_refptr<webrtc::VideoTrackInterface> video_track(
       static_cast<webrtc::VideoTrackInterface*>(observer_->track().get()));
   video_track->AddOrUpdateSink(delegate_.get(), rtc::VideoSinkWants());
-  OnStartDone(MEDIA_DEVICE_OK);
+  OnStartDone(blink::MEDIA_DEVICE_OK);
 }
 
 void MediaStreamRemoteVideoSource::StopSourceImpl() {
@@ -244,7 +247,7 @@ void MediaStreamRemoteVideoSource::StopSourceImpl() {
   // longer receives the video track.
   if (!observer_)
     return;
-  DCHECK(state() != MediaStreamVideoSource::ENDED);
+  DCHECK(state() != blink::MediaStreamVideoSource::ENDED);
   scoped_refptr<webrtc::VideoTrackInterface> video_track(
       static_cast<webrtc::VideoTrackInterface*>(observer_->track().get()));
   video_track->RemoveSink(delegate_.get());

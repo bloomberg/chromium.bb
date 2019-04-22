@@ -36,8 +36,7 @@ class CORE_EXPORT ImageElementBase : public CanvasImageSource,
                                                AccelerationHint,
                                                const FloatSize&) override;
 
-  bool WouldTaintOrigin(
-      const SecurityOrigin* destination_security_origin) const override;
+  bool WouldTaintOrigin() const override;
 
   FloatSize ElementSize(const FloatSize& default_object_size) const override;
   FloatSize DefaultDestinationSize(

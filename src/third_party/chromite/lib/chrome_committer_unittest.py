@@ -81,7 +81,7 @@ class ChromeCommitterTester(cros_test_lib.RunCommandTestCase,
     self.committer.Commit(['OWNERS', 'chromeos/BUILD.gn'],
                           'Modify OWNERS and BUILD.gn')
 
-    self.PatchObject(tree_status, 'GetSheriffEmailAddresses',
+    self.PatchObject(tree_status, 'GetGardenerEmailAddresses',
                      return_value=['gardener@chromium.org'])
     self.committer.Upload()
 
@@ -101,7 +101,7 @@ class ChromeCommitterTester(cros_test_lib.RunCommandTestCase,
     self.committer.Commit(['OWNERS', 'chromeos/BUILD.gn'],
                           'Modify OWNERS and BUILD.gn')
 
-    self.PatchObject(tree_status, 'GetSheriffEmailAddresses',
+    self.PatchObject(tree_status, 'GetGardenerEmailAddresses',
                      return_value=['gardener@chromium.org'])
     self.committer._dryrun = True  # pylint: disable=protected-access
     self.committer.Upload()

@@ -98,6 +98,11 @@ class CC_PAINT_EXPORT PaintImageBuilder {
     paint_image_.decoding_mode_ = decoding_mode;
     return std::move(*this);
   }
+  PaintImageBuilder&& set_paint_worklet_input(
+      scoped_refptr<PaintWorkletInput> input) {
+    paint_image_.paint_worklet_input_ = std::move(input);
+    return std::move(*this);
+  }
 
   PaintImage TakePaintImage();
 

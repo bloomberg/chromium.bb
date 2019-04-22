@@ -4,6 +4,7 @@
 
 #include "components/exo/data_offer.h"
 
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/no_destructor.h"
@@ -14,6 +15,8 @@
 #include "components/exo/data_offer_observer.h"
 #include "components/exo/file_helper.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/base/clipboard/clipboard_constants.h"
+#include "ui/base/clipboard/clipboard_types.h"
 #include "ui/base/dragdrop/file_info.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "url/gurl.h"
@@ -76,10 +79,10 @@ bool GetUrlListFromDataFile(FileHelper* file_helper,
   return !url_list_string->empty();
 }
 
-ui::Clipboard::FormatType GetClipboardFormatType() {
+ui::ClipboardFormatType GetClipboardFormatType() {
   static const char kFormatString[] = "chromium/x-file-system-files";
-  static base::NoDestructor<ui::Clipboard::FormatType> format_type(
-      ui::Clipboard::GetFormatType(kFormatString));
+  static base::NoDestructor<ui::ClipboardFormatType> format_type(
+      ui::ClipboardFormatType::GetType(kFormatString));
   return *format_type;
 }
 
@@ -103,7 +106,7 @@ void DataOffer::RemoveObserver(DataOfferObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void DataOffer::Accept(const std::string& mime_type) {}
+void DataOffer::Accept(const std::string* mime_type) {}
 
 void DataOffer::Receive(const std::string& mime_type, base::ScopedFD fd) {
   const auto data_it = data_.find(mime_type);
@@ -166,8 +169,7 @@ void DataOffer::SetDropData(FileHelper* file_helper,
 
   base::string16 string_content;
   if (data.HasString() && data.GetString(&string_content)) {
-    const std::string text_mime_type =
-        std::string(ui::Clipboard::kMimeTypeText);
+    const std::string text_mime_type = std::string(ui::kMimeTypeText);
     data_.emplace(text_mime_type,
                   RefCountedString16::TakeString(std::move(string_content)));
     delegate_->OnOffer(text_mime_type);
@@ -178,7 +180,7 @@ void DataOffer::SetDropData(FileHelper* file_helper,
 void DataOffer::SetClipboardData(FileHelper* file_helper,
                                  const ui::Clipboard& data) {
   DCHECK_EQ(0u, data_.size());
-  if (data.IsFormatAvailable(ui::Clipboard::GetPlainTextWFormatType(),
+  if (data.IsFormatAvailable(ui::ClipboardFormatType::GetPlainTextWType(),
                              ui::CLIPBOARD_TYPE_COPY_PASTE)) {
     base::string16 content;
     data.ReadText(ui::CLIPBOARD_TYPE_COPY_PASTE, &content);

@@ -90,7 +90,7 @@ class Worker : public Listener, public Sender {
   void Start() {
     StartThread(&listener_thread_, base::MessageLoop::TYPE_DEFAULT);
     ListenerThread()->task_runner()->PostTask(
-        FROM_HERE, base::Bind(&Worker::OnStart, base::Unretained(this)));
+        FROM_HERE, base::BindOnce(&Worker::OnStart, base::Unretained(this)));
   }
   void Shutdown() {
     // The IPC thread needs to outlive SyncChannel. We can't do this in
@@ -103,8 +103,8 @@ class Worker : public Listener, public Sender {
                  base::WaitableEvent::InitialState::NOT_SIGNALED);
     ListenerThread()->task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(&Worker::OnListenerThreadShutdown1, base::Unretained(this),
-                   &listener_done, &ipc_done));
+        base::BindOnce(&Worker::OnListenerThreadShutdown1,
+                       base::Unretained(this), &listener_done, &ipc_done));
     listener_done.Wait();
     ipc_done.Wait();
     ipc_thread_.Stop();
@@ -207,8 +207,8 @@ class Worker : public Listener, public Sender {
 
     ipc_thread_.task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(&Worker::OnIPCThreadShutdown, base::Unretained(this),
-                   listener_event, ipc_event));
+        base::BindOnce(&Worker::OnIPCThreadShutdown, base::Unretained(this),
+                       listener_event, ipc_event));
   }
 
   void OnIPCThreadShutdown(WaitableEvent* listener_event,
@@ -217,8 +217,8 @@ class Worker : public Listener, public Sender {
     ipc_event->Signal();
 
     listener_thread_.task_runner()->PostTask(
-        FROM_HERE, base::Bind(&Worker::OnListenerThreadShutdown2,
-                              base::Unretained(this), listener_event));
+        FROM_HERE, base::BindOnce(&Worker::OnListenerThreadShutdown2,
+                                  base::Unretained(this), listener_event));
   }
 
   void OnListenerThreadShutdown2(WaitableEvent* listener_event) {
@@ -945,60 +945,6 @@ TEST_F(IPCSyncChannelTest, QueuedReply) {
 
 //------------------------------------------------------------------------------
 
-class ChattyClient : public Worker {
- public:
-  explicit ChattyClient(mojo::ScopedMessagePipeHandle channel_handle)
-      : Worker(Channel::MODE_CLIENT,
-               "chatty_client",
-               std::move(channel_handle)) {}
-
-  void OnAnswer(int* answer) override {
-    // The PostMessage limit is 10k.  Send 20% more than that.
-    const int kMessageLimit = 10000;
-    const int kMessagesToSend = kMessageLimit * 120 / 100;
-    for (int i = 0; i < kMessagesToSend; ++i) {
-      if (!SendDouble(false, true))
-        break;
-    }
-    *answer = 42;
-    Done();
-  }
-};
-
-void ChattyServer(bool pump_during_send) {
-  std::vector<Worker*> workers;
-  mojo::MessagePipe pipe;
-  workers.push_back(
-      new UnblockServer(pump_during_send, false, std::move(pipe.handle0)));
-  workers.push_back(new ChattyClient(std::move(pipe.handle1)));
-  RunTest(workers);
-}
-
-#if defined(OS_ANDROID)
-// Times out.
-#define MAYBE_ChattyServer DISABLED_ChattyServer
-#else
-#define MAYBE_ChattyServer ChattyServer
-#endif
-// Tests http://b/1093251 - that sending lots of sync messages while
-// the receiver is waiting for a sync reply does not overflow the PostMessage
-// queue.
-TEST_F(IPCSyncChannelTest, MAYBE_ChattyServer) {
-  ChattyServer(false);
-}
-
-#if defined(OS_ANDROID)
-// Times out.
-#define MAYBE_ChattyServerPumpDuringSend DISABLED_ChattyServerPumpDuringSend
-#else
-#define MAYBE_ChattyServerPumpDuringSend ChattyServerPumpDuringSend
-#endif
-TEST_F(IPCSyncChannelTest, MAYBE_ChattyServerPumpDuringSend) {
-  ChattyServer(true);
-}
-
-//------------------------------------------------------------------------------
-
 void NestedCallback(Worker* server) {
   // Sleep a bit so that we wake up after the reply has been received.
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(250));
@@ -1020,9 +966,9 @@ class DoneEventRaceServer : public Worker {
 
   void Run() override {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&NestedCallback, base::Unretained(this)));
+        FROM_HERE, base::BindOnce(&NestedCallback, base::Unretained(this)));
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(&TimeoutCallback),
+        FROM_HERE, base::BindOnce(&TimeoutCallback),
         base::TimeDelta::FromSeconds(9));
     // Even though we have a timeout on the Send, it will succeed since for this
     // bug, the reply message comes back and is deserialized, however the done
@@ -1066,7 +1012,8 @@ class TestSyncMessageFilter : public SyncMessageFilter {
     SyncMessageFilter::OnFilterAdded(channel);
     task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&TestSyncMessageFilter::SendMessageOnHelperThread, this));
+        base::BindOnce(&TestSyncMessageFilter::SendMessageOnHelperThread,
+                       this));
   }
 
   void SendMessageOnHelperThread() {
@@ -1120,8 +1067,8 @@ class ServerSendAfterClose : public Worker {
   bool SendDummy() {
     ListenerThread()->task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(base::IgnoreResult(&ServerSendAfterClose::Send),
-                   base::Unretained(this), new SyncChannelTestMsg_NoArgs));
+        base::BindOnce(base::IgnoreResult(&ServerSendAfterClose::Send),
+                       base::Unretained(this), new SyncChannelTestMsg_NoArgs));
     return true;
   }
 
@@ -1189,8 +1136,8 @@ class RestrictedDispatchServer : public Worker {
     // Signal the event after the message has been sent on the channel, on the
     // IPC thread.
     ipc_thread().task_runner()->PostTask(
-        FROM_HERE, base::Bind(&RestrictedDispatchServer::OnPingSent,
-                              base::Unretained(this)));
+        FROM_HERE, base::BindOnce(&RestrictedDispatchServer::OnPingSent,
+                                  base::Unretained(this)));
   }
 
   void OnPingTTL(int ping, int* out) {
@@ -1271,8 +1218,8 @@ class RestrictedDispatchClient : public Worker {
     channel()->SetRestrictDispatchChannelGroup(1);
 
     server_->ListenerThread()->task_runner()->PostTask(
-        FROM_HERE, base::Bind(&RestrictedDispatchServer::OnDoPing,
-                              base::Unretained(server_), 1));
+        FROM_HERE, base::BindOnce(&RestrictedDispatchServer::OnDoPing,
+                                  base::Unretained(server_), 1));
     sent_ping_event_->Wait();
     Send(new SyncChannelTestMsg_NoArgs);
     if (ping_ == 1)
@@ -1286,8 +1233,8 @@ class RestrictedDispatchClient : public Worker {
         true, shutdown_event());
 
     server_->ListenerThread()->task_runner()->PostTask(
-        FROM_HERE, base::Bind(&RestrictedDispatchServer::OnDoPing,
-                              base::Unretained(server_), 2));
+        FROM_HERE, base::BindOnce(&RestrictedDispatchServer::OnDoPing,
+                                  base::Unretained(server_), 2));
     sent_ping_event_->Wait();
     // Check that the incoming message is *not* dispatched when sending on the
     // non restricted channel.
@@ -1312,8 +1259,8 @@ class RestrictedDispatchClient : public Worker {
     // Check that the incoming message on the non-restricted channel is
     // dispatched when sending on the restricted channel.
     server2_->ListenerThread()->task_runner()->PostTask(
-        FROM_HERE, base::Bind(&NonRestrictedDispatchServer::OnDoPingTTL,
-                              base::Unretained(server2_), 3));
+        FROM_HERE, base::BindOnce(&NonRestrictedDispatchServer::OnDoPingTTL,
+                                  base::Unretained(server2_), 3));
     int value = 0;
     Send(new SyncChannelTestMsg_PingTTL(4, &value));
     if (ping_ == 3 && value == 4)
@@ -1546,12 +1493,13 @@ class RestrictedDispatchDeadlockClient1 : public Worker {
   void Run() override {
     server_ready_event_->Wait();
     server_->ListenerThread()->task_runner()->PostTask(
-        FROM_HERE, base::Bind(&RestrictedDispatchDeadlockServer::OnDoServerTask,
-                              base::Unretained(server_)));
+        FROM_HERE,
+        base::BindOnce(&RestrictedDispatchDeadlockServer::OnDoServerTask,
+                       base::Unretained(server_)));
     peer_->ListenerThread()->task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(&RestrictedDispatchDeadlockClient2::OnDoClient2Task,
-                   base::Unretained(peer_)));
+        base::BindOnce(&RestrictedDispatchDeadlockClient2::OnDoClient2Task,
+                       base::Unretained(peer_)));
     events_[0]->Wait();
     events_[1]->Wait();
     DCHECK(received_msg_ == false);

@@ -49,6 +49,7 @@ class AudioWorkletHandler final : public AudioHandler {
 
   double TailTime() const override;
   double LatencyTime() const override { return 0; }
+  bool PropagatesSilence() const final;
 
   String Name() const { return name_; }
 
@@ -72,17 +73,15 @@ class AudioWorkletHandler final : public AudioHandler {
 
   String name_;
 
-  double tail_time_ = std::numeric_limits<double>::infinity();
-
   // MUST be set/used by render thread.
   CrossThreadPersistent<AudioWorkletProcessor> processor_;
 
   HashMap<String, scoped_refptr<AudioParamHandler>> param_handler_map_;
   HashMap<String, std::unique_ptr<AudioFloatArray>> param_value_map_;
 
-  // TODO(): Adjust this if needed based on the result of the process
-  // method or the value of |tail_time_|.
-  bool RequiresTailProcessing() const override { return true; }
+  // Any tail processing must be handled by the script; we can't really do
+  // anything meaningful ourselves.
+  bool RequiresTailProcessing() const override { return false; }
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 
@@ -102,25 +101,25 @@ class AudioWorkletNode final : public AudioNode,
                                   const AudioWorkletNodeOptions*,
                                   ExceptionState&);
 
-  // ActiveScriptWrappable
-  bool HasPendingActivity() const final;
-
-  // IDL
-  AudioParamMap* parameters() const;
-  MessagePort* port() const;
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(processorerror, kProcessorerror);
-
-  void FireProcessorError();
-
-  void Trace(blink::Visitor*) override;
-
- private:
   AudioWorkletNode(BaseAudioContext&,
                    const String& name,
                    const AudioWorkletNodeOptions*,
                    const Vector<CrossThreadAudioParamInfo>,
                    MessagePort* node_port);
 
+  // ActiveScriptWrappable
+  bool HasPendingActivity() const final;
+
+  // IDL
+  AudioParamMap* parameters() const;
+  MessagePort* port() const;
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(processorerror, kProcessorerror)
+
+  void FireProcessorError();
+
+  void Trace(blink::Visitor*) override;
+
+ private:
   scoped_refptr<AudioWorkletHandler> GetWorkletHandler() const;
 
   Member<AudioParamMap> parameter_map_;

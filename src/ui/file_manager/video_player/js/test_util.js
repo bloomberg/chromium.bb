@@ -15,8 +15,9 @@ function testElement(filename, testFunction) {
     if (contentWindow &&
         contentWindow.document.title === filename) {
       var element = contentWindow.document.querySelector('video');
-      if (element && testFunction(element))
+      if (element && testFunction(element)) {
         return true;
+      }
     }
   }
   return false;
@@ -42,6 +43,17 @@ test.util.sync.isPlaying = function(filename) {
  */
 test.util.sync.isMuted = function(filename) {
   return testElement(filename, element => element.volume === 0);
+};
+
+/**
+ * Returns if the video has subtitle attached.
+ *
+ * @param {string} filename Name of video file to be checked. This must be same
+ *     as entry.name() of the video file.
+ * @return {boolean} True if the video has subtitle, false otherwise.
+ */
+test.util.sync.hasSubtitle = function(filename) {
+  return testElement(filename, element => element.textTracks.length > 0);
 };
 
 /**

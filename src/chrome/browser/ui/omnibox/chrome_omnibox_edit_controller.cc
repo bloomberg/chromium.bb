@@ -20,13 +20,14 @@
 
 void ChromeOmniboxEditController::OnAutocompleteAccept(
     const GURL& destination_url,
+    TemplateURLRef::PostContent* post_content,
     WindowOpenDisposition disposition,
     ui::PageTransition transition,
     AutocompleteMatchType::Type match_type,
     base::TimeTicks match_selection_timestamp) {
-  OmniboxEditController::OnAutocompleteAccept(destination_url, disposition,
-                                              transition, match_type,
-                                              match_selection_timestamp);
+  OmniboxEditController::OnAutocompleteAccept(
+      destination_url, post_content, disposition, transition, match_type,
+      match_selection_timestamp);
   if (command_updater_)
     command_updater_->ExecuteCommand(IDC_OPEN_CURRENT_URL);
 
@@ -37,7 +38,6 @@ void ChromeOmniboxEditController::OnAutocompleteAccept(
 }
 
 void ChromeOmniboxEditController::OnInputInProgress(bool in_progress) {
-  GetLocationBarModel()->set_input_in_progress(in_progress);
   UpdateWithoutTabRestore();
 }
 

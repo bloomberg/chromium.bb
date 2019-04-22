@@ -10,16 +10,22 @@
 #ifndef TEST_SCENARIO_SIMULATED_TIME_H_
 #define TEST_SCENARIO_SIMULATED_TIME_H_
 
+#include <stdint.h>
 #include <deque>
 #include <map>
 #include <memory>
-#include <set>
 #include <string>
-#include <utility>
 #include <vector>
 
+#include "api/transport/network_control.h"
+#include "api/transport/network_types.h"
+#include "api/units/data_rate.h"
+#include "api/units/data_size.h"
+#include "api/units/time_delta.h"
+#include "api/units/timestamp.h"
+#include "rtc_base/copy_on_write_buffer.h"
+#include "test/logging/log_writer.h"
 #include "test/scenario/call_client.h"
-#include "test/scenario/column_printer.h"
 #include "test/scenario/network_node.h"
 #include "test/scenario/scenario_config.h"
 
@@ -41,20 +47,19 @@ class PacketStream {
   int64_t budget_ = 0;
 };
 
-class SimulatedFeedback : NetworkReceiverInterface {
+class SimulatedFeedback : EmulatedNetworkReceiverInterface {
  public:
   SimulatedFeedback(SimulatedTimeClientConfig config,
-                    uint64_t return_receiver_id,
-                    NetworkNode* return_node);
-  bool TryDeliverPacket(rtc::CopyOnWriteBuffer packet,
-                        uint64_t receiver,
-                        Timestamp at_time) override;
+                    rtc::IPAddress return_receiver_ip,
+                    EmulatedNetworkNode* return_node);
+
+  void OnPacketReceived(EmulatedIpPacket packet) override;
 
  private:
   friend class SimulatedTimeClient;
   const SimulatedTimeClientConfig config_;
-  const uint64_t return_receiver_id_;
-  NetworkNode* return_node_;
+  const rtc::SocketAddress return_receiver_address_;
+  EmulatedNetworkNode* return_node_;
   Timestamp last_feedback_time_ = Timestamp::MinusInfinity();
   int32_t next_feedback_seq_num_ = 1;
   std::map<int64_t, Timestamp> receive_times_;
@@ -83,7 +88,8 @@ class SimulatedSender {
     int64_t size;
   };
 
-  SimulatedSender(NetworkNode* send_node, uint64_t send_receiver_id);
+  SimulatedSender(EmulatedNetworkNode* send_node,
+                  rtc::IPAddress send_receiver_ip);
   SimulatedSender(const SimulatedSender&) = delete;
   ~SimulatedSender();
   TransportPacketsFeedback PullFeedbackReport(SimpleFeedbackReportPacket report,
@@ -93,8 +99,8 @@ class SimulatedSender {
 
  private:
   friend class SimulatedTimeClient;
-  NetworkNode* send_node_;
-  uint64_t send_receiver_id_;
+  EmulatedNetworkNode* send_node_;
+  const rtc::SocketAddress send_receiver_address_;
   PacerConfig pacer_config_;
   DataSize max_in_flight_ = DataSize::Infinity();
 
@@ -113,16 +119,18 @@ class SimulatedSender {
 // unit tests to ensure that congestion controllers behave in a reasonable way.
 // It does not, however, completely simulate the actual behavior of WebRTC. For
 // a more accurate simulation, use the real time only CallClient.
-class SimulatedTimeClient : NetworkReceiverInterface {
+class SimulatedTimeClient : EmulatedNetworkReceiverInterface {
  public:
-  SimulatedTimeClient(std::string log_filename,
-                      SimulatedTimeClientConfig config,
-                      std::vector<PacketStreamConfig> stream_configs,
-                      std::vector<NetworkNode*> send_link,
-                      std::vector<NetworkNode*> return_link,
-                      uint64_t send_receiver_id,
-                      uint64_t return_receiver_id,
-                      Timestamp at_time);
+  SimulatedTimeClient(
+      TimeController* time_controller,
+      std::unique_ptr<LogWriterFactoryInterface> log_writer_factory,
+      SimulatedTimeClientConfig config,
+      std::vector<PacketStreamConfig> stream_configs,
+      std::vector<EmulatedNetworkNode*> send_link,
+      std::vector<EmulatedNetworkNode*> return_link,
+      rtc::IPAddress send_receiver_ip,
+      rtc::IPAddress return_receiver_ip,
+      Timestamp at_time);
   SimulatedTimeClient(const SimulatedTimeClient&) = delete;
   ~SimulatedTimeClient();
   void Update(NetworkControlUpdate update);
@@ -133,23 +141,23 @@ class SimulatedTimeClient : NetworkReceiverInterface {
   TimeDelta GetNetworkControllerProcessInterval() const;
   double target_rate_kbps() const;
   DataRate link_capacity() const;
+  DataRate padding_rate() const;
 
-  bool TryDeliverPacket(rtc::CopyOnWriteBuffer packet,
-                        uint64_t receiver,
-                        Timestamp at_time) override;
+  void OnPacketReceived(EmulatedIpPacket packet) override;
 
  private:
   friend class Scenario;
+  std::unique_ptr<LogWriterFactoryInterface> log_writer_factory_;
   LoggingNetworkControllerFactory network_controller_factory_;
   std::unique_ptr<NetworkControllerInterface> congestion_controller_;
-  std::vector<NetworkNode*> send_link_;
-  std::vector<NetworkNode*> return_link_;
+  std::vector<EmulatedNetworkNode*> send_link_;
+  std::vector<EmulatedNetworkNode*> return_link_;
   SimulatedSender sender_;
   SimulatedFeedback feedback_;
   TargetRateConstraints current_contraints_;
   DataRate target_rate_ = DataRate::Infinity();
   DataRate link_capacity_ = DataRate::Infinity();
-  FILE* packet_log_ = nullptr;
+  std::unique_ptr<RtcEventLogOutput> packet_log_;
 
   std::vector<std::unique_ptr<PacketStream>> packet_streams_;
 };

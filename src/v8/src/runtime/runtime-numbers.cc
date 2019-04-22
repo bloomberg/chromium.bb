@@ -6,6 +6,7 @@
 #include "src/base/bits.h"
 #include "src/bootstrapper.h"
 #include "src/counters.h"
+#include "src/heap/heap-inl.h"  // For ToBoolean. TODO(jkummerow): Drop.
 #include "src/isolate-inl.h"
 #include "src/runtime/runtime-utils.h"
 
@@ -89,8 +90,7 @@ RUNTIME_FUNCTION(Runtime_SmiLexicographicCompare) {
   CONVERT_ARG_CHECKED(Smi, x_value, 0);
   CONVERT_ARG_CHECKED(Smi, y_value, 1);
 
-  return reinterpret_cast<Object*>(
-      Smi::LexicographicCompare(isolate, x_value, y_value));
+  return Object(Smi::LexicographicCompare(isolate, x_value, y_value));
 }
 
 RUNTIME_FUNCTION(Runtime_MaxSmi) {

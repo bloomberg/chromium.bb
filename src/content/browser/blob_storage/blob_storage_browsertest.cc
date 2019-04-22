@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <functional>
+
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
@@ -62,7 +65,7 @@ class BlobStorageBrowserTest : public ContentBrowserTest {
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&SetBlobLimitsOnIO, GetBlobContext(),
-                       base::ConstRef(limits_)));
+                       std::cref(limits_)));
   }
 
   void SimpleTest(const GURL& test_url, bool incognito = false) {

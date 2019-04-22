@@ -73,6 +73,7 @@ class TextDecoder final : public ScriptWrappable {
 
   WTF::TextEncoding encoding_;
   std::unique_ptr<WTF::TextCodec> codec_;
+  bool do_not_flush_ = false;
   bool fatal_;
   bool ignore_bom_;
   bool bom_seen_;

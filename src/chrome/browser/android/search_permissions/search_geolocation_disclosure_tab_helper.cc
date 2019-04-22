@@ -32,7 +32,7 @@
 #include "content/public/browser/web_contents.h"
 #include "jni/GeolocationHeader_jni.h"
 #include "jni/SearchGeolocationDisclosureTabHelper_jni.h"
-#include "third_party/blink/public/platform/modules/permissions/permission_status.mojom.h"
+#include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
 #include "url/origin.h"
 
 namespace {
@@ -250,15 +250,15 @@ Profile* SearchGeolocationDisclosureTabHelper::GetProfile() {
 
 // static
 void JNI_SearchGeolocationDisclosureTabHelper_SetIgnoreUrlChecksForTesting(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jclass>& clazz) {
+    JNIEnv* env) {
   gIgnoreUrlChecksForTesting = true;
 }
 
 // static
 void JNI_SearchGeolocationDisclosureTabHelper_SetDayOffsetForTesting(
     JNIEnv* env,
-    const base::android::JavaParamRef<jclass>& clazz,
     jint days) {
   gDayOffsetForTesting = days;
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(SearchGeolocationDisclosureTabHelper)

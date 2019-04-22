@@ -9,9 +9,12 @@
 #include <utility>
 #include <vector>
 
-#include "base/strings/string_piece.h"
+#include "base/callback_forward.h"
 #include "base/time/time.h"
 #include "net/base/net_export.h"
+#include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_options.h"
+#include "url/origin.h"
 
 class GURL;
 
@@ -59,8 +62,8 @@ NET_EXPORT bool IsDomainMatch(const std::string& domain,
                               const std::string& host);
 
 // A ParsedRequestCookie consists of the key and value of the cookie.
-typedef std::pair<base::StringPiece, base::StringPiece> ParsedRequestCookie;
-typedef std::vector<ParsedRequestCookie> ParsedRequestCookies;
+using ParsedRequestCookie = std::pair<std::string, std::string>;
+using ParsedRequestCookies = std::vector<ParsedRequestCookie>;
 
 // Assumes that |header_value| is the cookie header value of a HTTP Request
 // following the cookie-string schema of RFC 6265, section 4.2.1, and returns
@@ -75,6 +78,68 @@ NET_EXPORT void ParseRequestCookieLine(const std::string& header_value,
 // already be appropriately escaped.
 NET_EXPORT std::string SerializeRequestCookieLine(
     const ParsedRequestCookies& parsed_cookies);
+
+// Determines which of the cookies for |url| can be accessed, with respect to
+// the SameSite attribute.
+//
+// |site_for_cookies| is the currently navigated to site that should be
+// considered "first-party" for cookies.
+//
+// |initiator| is the origin ultimately responsible for getting the request
+// issued; it may be different from |site_for_cookies| in that it may be some
+// other website that caused the navigation to |site_for_cookies| to occur.
+//
+// base::nullopt for |initiator| denotes that the navigation was initiated by
+// the user directly interacting with the browser UI, e.g. entering a URL
+// or selecting a bookmark.
+//
+// See also documentation for corresponding methods on net::URLRequest.
+NET_EXPORT CookieOptions::SameSiteCookieContext ComputeSameSiteContext(
+    const GURL& url,
+    const GURL& site_for_cookies,
+    const base::Optional<url::Origin>& initiator);
+
+// As above, but applying to a request. |http_method| is used to enforce
+// the requirement that, in a context that's lax same-site but not strict
+// same-site, SameSite=lax cookies be only sent when the method is "safe" in the
+// RFC7231 section 4.2.1 sense.
+//
+// This also applies the net feature |URLRequest::site_for_cookies|, which
+// upgrades SameSite=Lax level access to Strict-level access if on.
+NET_EXPORT CookieOptions::SameSiteCookieContext
+ComputeSameSiteContextForRequest(const std::string& http_method,
+                                 const GURL& url,
+                                 const GURL& site_for_cookies,
+                                 const base::Optional<url::Origin>& initiator,
+                                 bool attach_same_site_cookies);
+
+// Takes a OnceCallback with only a CookieList and binds it to a callback that
+// also accepts a CookieStatusList, making it compatible with
+// CookieStore::GetCookieListCallback.
+//
+// Can be used when the CookieWithStatus list (the list of
+// cookies excluded from being sent) is not needed and therefore isn't in the
+// callback signature. Also useful if you're using
+NET_EXPORT base::OnceCallback<void(const CookieList&, const CookieStatusList&)>
+IgnoreCookieStatusList(base::OnceCallback<void(const CookieList&)> callback);
+
+// Takes a CookieStore::GetCookieListCallback and binds a function that only
+// takes a CookieList, sending an empty CookieStatusList.
+//
+// Can be used if you have a callback that's used with both GetCookieList and
+// GetAllCookies and you want to use the excluded cookies list when you have it.
+NET_EXPORT base::OnceCallback<void(const CookieList&)> AddCookieStatusList(
+    base::OnceCallback<void(const CookieList&, const CookieStatusList&)>
+        callback);
+
+// Takes a callback accepting a CookieInclusionStatus and returns a callback
+// that accepts a bool, setting the bool to true if the CookieInclusionStatus
+// was set to INCLUDE, else sending false.
+//
+// Can be used with SetCanonicalCookie when you don't need to know why a cookie
+// was blocked, only if it was blocked.
+NET_EXPORT base::OnceCallback<void(CanonicalCookie::CookieInclusionStatus)>
+AdaptCookieInclusionStatusToBool(base::OnceCallback<void(bool)> callback);
 
 }  // namespace cookie_util
 }  // namespace net

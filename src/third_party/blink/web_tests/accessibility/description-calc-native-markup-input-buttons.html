@@ -2,12 +2,6 @@
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 
-<style>
-.hideAllContainers .container {
-    display: none;
-}
-</style>
-
 <div class="container">
     <input id="button1" type="button">
 </div>
@@ -118,9 +112,4 @@ test(function(t) {
     assert_equals(axSubmitButton5.description, "Value");
     assert_equals(axSubmitButton5.descriptionFrom, "attribute");
 }, "Submit button with aria-label and value");
-</script>
-
-<script>
-if (window.testRunner)
-    document.body.className = "hideAllContainers";
 </script>

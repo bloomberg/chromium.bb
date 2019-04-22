@@ -10,7 +10,7 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/controls/scrollbar/base_scroll_bar.h"
+#include "ui/views/controls/scrollbar/scroll_bar.h"
 #include "ui/views/view.h"
 
 namespace gfx {
@@ -20,8 +20,7 @@ class Canvas;
 namespace views {
 
 // Views implementation for the scrollbar.
-class VIEWS_EXPORT ScrollBarViews : public BaseScrollBar,
-                                    public ButtonListener {
+class VIEWS_EXPORT ScrollBarViews : public ScrollBar, public ButtonListener {
  public:
   static const char kViewClassName[];
 

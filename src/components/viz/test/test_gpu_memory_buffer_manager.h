@@ -24,6 +24,10 @@ class TestGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager {
 
   void OnGpuMemoryBufferDestroyed(gfx::GpuMemoryBufferId gpu_memory_buffer_id);
 
+  void SetFailOnCreate(bool fail_on_create) {
+    fail_on_create_ = fail_on_create;
+  }
+
   // Overridden from gpu::GpuMemoryBufferManager:
   std::unique_ptr<gfx::GpuMemoryBuffer> CreateGpuMemoryBuffer(
       const gfx::Size& size,
@@ -47,6 +51,8 @@ class TestGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager {
   // Child infomration for parent managers.
   int last_client_id_ = 5000;
   std::map<int, TestGpuMemoryBufferManager*> clients_;
+
+  bool fail_on_create_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestGpuMemoryBufferManager);
 };

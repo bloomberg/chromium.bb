@@ -4,6 +4,7 @@
 
 #include "components/captive_portal/captive_portal_detector.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"

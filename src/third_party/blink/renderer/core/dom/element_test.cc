@@ -218,7 +218,7 @@ TEST_F(ElementTest, StickySubtreesAreTrackedCorrectly) {
   // This forces 'child' to fork it's StyleRareInheritedData, so that we can
   // ensure that the sticky subtree update behavior survives forking.
   document.getElementById("child")->SetInlineStyleProperty(
-      CSSPropertyWebkitRubyPosition, CSSValueAfter);
+      CSSPropertyID::kWebkitRubyPosition, CSSValueID::kAfter);
   document.View()->UpdateAllLifecyclePhases(
       DocumentLifecycle::LifecycleUpdateReason::kTest);
   EXPECT_EQ(DocumentLifecycle::kPaintClean, document.Lifecycle().GetState());
@@ -241,7 +241,7 @@ TEST_F(ElementTest, StickySubtreesAreTrackedCorrectly) {
   // it and the 'innerSticky' should be updated, and the 'innerSticky' should
   // fork it's StyleRareInheritedData to maintain the sticky subtree bit.
   document.getElementById("outerSticky")
-      ->SetInlineStyleProperty(CSSPropertyPosition, CSSValueStatic);
+      ->SetInlineStyleProperty(CSSPropertyID::kPosition, CSSValueID::kStatic);
   document.View()->UpdateAllLifecyclePhases(
       DocumentLifecycle::LifecycleUpdateReason::kTest);
   EXPECT_EQ(DocumentLifecycle::kPaintClean, document.Lifecycle().GetState());

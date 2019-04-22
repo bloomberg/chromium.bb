@@ -41,7 +41,6 @@ ACTION_P(RunClosure, closure) {
   closure.Run();
 }
 
-static const std::string kTestStreamUrl = "stream_url";
 static const std::string kTestVideoTrackId = "video_track_id";
 static const std::string kTestAudioTrackId = "audio_track_id";
 static const int kTestAudioChannels = 2;
@@ -86,7 +85,7 @@ class MediaRecorderHandlerTest : public TestWithParam<MediaRecorderTestParams>,
                       kTestAudioSampleRate) {
     EXPECT_FALSE(media_recorder_handler_->recording_);
 
-    registry_.Init(kTestStreamUrl);
+    registry_.Init();
   }
 
   ~MediaRecorderHandlerTest() {
@@ -177,8 +176,13 @@ TEST_F(MediaRecorderHandlerTest, CanSupportMimeType) {
   EXPECT_TRUE(media_recorder_handler_->CanSupportMimeType(
       mime_type_video, example_good_codecs_3));
   const WebString example_good_codecs_4(WebString::FromASCII("H264"));
+#if BUILDFLAG(RTC_USE_H264)
   EXPECT_TRUE(media_recorder_handler_->CanSupportMimeType(
       mime_type_video, example_good_codecs_4));
+#else
+  EXPECT_FALSE(media_recorder_handler_->CanSupportMimeType(
+      mime_type_video, example_good_codecs_4));
+#endif
 
   const WebString example_unsupported_codecs_1(WebString::FromASCII("daala"));
   EXPECT_FALSE(media_recorder_handler_->CanSupportMimeType(
@@ -315,9 +319,9 @@ TEST_P(MediaRecorderHandlerTest, EncodeVideoFrames) {
   media_recorder_handler_.reset();
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        MediaRecorderHandlerTest,
-                        ValuesIn(kMediaRecorderTestParams));
+INSTANTIATE_TEST_SUITE_P(,
+                         MediaRecorderHandlerTest,
+                         ValuesIn(kMediaRecorderTestParams));
 
 // Sends 2 frames and expect them as WebM (or MKV) contained encoded audio data
 // in writeData().

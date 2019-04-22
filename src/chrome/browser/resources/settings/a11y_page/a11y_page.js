@@ -11,6 +11,8 @@
 Polymer({
   is: 'settings-a11y-page',
 
+  behaviors: [WebUIListenerBehavior],
+
   properties: {
     /**
      * The current active route.
@@ -28,6 +30,14 @@ Polymer({
       notify: true,
     },
 
+    /**
+     * Whether to show accessibility labels settings.
+     */
+    showAccessibilityLabelsSetting_: {
+      type: Boolean,
+      value: false,
+    },
+
     /** @private {!Map<string, string>} */
     focusConfig_: {
       type: Object,
@@ -36,8 +46,7 @@ Polymer({
         // <if expr="chromeos">
         if (settings.routes.MANAGE_ACCESSIBILITY) {
           map.set(
-              settings.routes.MANAGE_ACCESSIBILITY.path,
-              '#subpage-trigger .subpage-arrow button');
+              settings.routes.MANAGE_ACCESSIBILITY.path, '#subpage-trigger');
         }
         // </if>
         return map;
@@ -59,10 +68,45 @@ Polymer({
     // </if>
   },
 
+  /** @override */
+  ready: function() {
+    this.addWebUIListener(
+        'screen-reader-state-changed',
+        this.onScreenReaderStateChanged_.bind(this));
+    chrome.send('getScreenReaderState');
+  },
+
+  /**
+   * @private
+   * @param {boolean} hasScreenReader Whether a screen reader is enabled.
+   */
+  onScreenReaderStateChanged_: function(hasScreenReader) {
+    // TODO(katie): Remove showExperimentalA11yLabels flag before launch.
+    this.showAccessibilityLabelsSetting_ = hasScreenReader &&
+        loadTimeData.getBoolean('showExperimentalA11yLabels');
+  },
+
+  /** @private */
+  onToggleAccessibilityImageLabels_: function() {
+    const a11yImageLabelsOn = this.$.a11yImageLabels.checked;
+    if (a11yImageLabelsOn) {
+      chrome.send('confirmA11yImageLabels');
+    }
+    chrome.metricsPrivate.recordBoolean(
+        'Accessibility.ImageLabels.FromSettings.ToggleSetting',
+        a11yImageLabelsOn);
+  },
+
   // <if expr="chromeos">
   /** @private */
   onManageAccessibilityFeaturesTap_: function() {
     settings.navigateTo(settings.routes.MANAGE_ACCESSIBILITY);
   },
   // </if>
+
+  /** private */
+  onMoreFeaturesLinkClick_: function() {
+    window.open(
+        'https://chrome.google.com/webstore/category/collection/accessibility');
+  },
 });

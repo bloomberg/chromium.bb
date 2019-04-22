@@ -95,7 +95,8 @@ PolicyCheckResult CheckDeveloperToolsAvailability(
   if (!IsValidDeveloperToolsAvailabilityValue(value)) {
     if (errors) {
       errors->AddError(key::kDeveloperToolsAvailability,
-                       IDS_POLICY_OUT_OF_RANGE_ERROR, base::IntToString(value));
+                       IDS_POLICY_OUT_OF_RANGE_ERROR,
+                       base::NumberToString(value));
     }
     return PolicyCheckResult::kInvalid;
   }
@@ -180,8 +181,7 @@ void DeveloperToolsPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
     if (value.value() == Availability::kDisallowed) {
       // Piggy-back disallowed developer tools to also force-disable
       // kExtensionsUIDeveloperMode.
-      prefs->SetValue(prefs::kExtensionsUIDeveloperMode,
-                      std::make_unique<base::Value>(false));
+      prefs->SetValue(prefs::kExtensionsUIDeveloperMode, base::Value(false));
     }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
   }
@@ -215,6 +215,12 @@ DeveloperToolsPolicyHandler::GetDevToolsAvailability(
   }
 
   return static_cast<Availability>(value);
+}
+
+// static
+bool DeveloperToolsPolicyHandler::IsDevToolsAvailabilitySetByPolicy(
+    const PrefService* pref_service) {
+  return pref_service->IsManagedPreference(prefs::kDevToolsAvailability);
 }
 
 // static

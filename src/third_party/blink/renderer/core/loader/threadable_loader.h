@@ -97,9 +97,13 @@ class CORE_EXPORT ThreadableLoader final
   // also for cancellation happened inside the loader.)
   //
   // ThreadableLoaderClient methods may call Cancel().
+  //
+  // The specified ResourceFetcher if non-null, or otherwise
+  // ExecutionContext::Fetcher() is used.
   ThreadableLoader(ExecutionContext&,
                    ThreadableLoaderClient*,
-                   const ResourceLoaderOptions&);
+                   const ResourceLoaderOptions&,
+                   ResourceFetcher* = nullptr);
   ~ThreadableLoader() override;
 
   // Exposed for testing. Code outside this class should not call this function.
@@ -147,25 +151,23 @@ class CORE_EXPORT ThreadableLoader final
 
   // RawResourceClient
   void DataSent(Resource*,
-                unsigned long long bytes_sent,
-                unsigned long long total_bytes_to_be_sent) override;
-  void ResponseReceived(Resource*,
-                        const ResourceResponse&,
-                        std::unique_ptr<WebDataConsumerHandle>) override;
-  void SetSerializedCachedMetadata(Resource*, const char*, size_t) override;
+                uint64_t bytes_sent,
+                uint64_t total_bytes_to_be_sent) override;
+  void ResponseReceived(Resource*, const ResourceResponse&) override;
+  void ResponseBodyReceived(Resource*, BytesConsumer& body) override;
+  void SetSerializedCachedMetadata(Resource*, const uint8_t*, size_t) override;
   void DataReceived(Resource*, const char* data, size_t data_length) override;
   bool RedirectReceived(Resource*,
                         const ResourceRequest&,
                         const ResourceResponse&) override;
   void RedirectBlocked() override;
-  void DataDownloaded(Resource*, int) override;
+  void DataDownloaded(Resource*, uint64_t) override;
   void DidReceiveResourceTiming(Resource*, const ResourceTimingInfo&) override;
   void DidDownloadToBlob(Resource*, scoped_refptr<BlobDataHandle>) override;
 
   // Notify Inspector and log to console about resource response. Use this
   // method if response is not going to be finished normally.
-  void ReportResponseReceived(unsigned long identifier,
-                              const ResourceResponse&);
+  void ReportResponseReceived(uint64_t identifier, const ResourceResponse&);
 
   void DidTimeout(TimerBase*);
   // Calls the appropriate loading method according to policy and data about
@@ -209,6 +211,7 @@ class CORE_EXPORT ThreadableLoader final
 
   Member<ThreadableLoaderClient> client_;
   Member<ExecutionContext> execution_context_;
+  Member<ResourceFetcher> resource_fetcher_;
 
   TimeDelta timeout_;
   // Some items may be overridden by m_forceDoNotAllowStoredCredentials and
@@ -223,9 +226,6 @@ class CORE_EXPORT ThreadableLoader final
   bool cors_flag_ = false;
   scoped_refptr<const SecurityOrigin> security_origin_;
   scoped_refptr<const SecurityOrigin> original_security_origin_;
-
-  // Set to true when the response data is given to a data consumer handle.
-  bool is_using_data_consumer_handle_;
 
   const bool async_;
 

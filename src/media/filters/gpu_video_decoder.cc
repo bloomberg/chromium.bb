@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <array>
+#include <cinttypes>
 #include <utility>
 
 #include "base/bind.h"
@@ -17,9 +18,13 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/memory_dump_manager.h"
+#include "base/trace_event/process_memory_dump.h"
 #include "build/build_config.h"
+#include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/cdm_context.h"
@@ -31,6 +36,7 @@
 #include "media/base/video_util.h"
 #include "media/media_buildflags.h"
 #include "media/video/gpu_video_accelerator_factories.h"
+#include "media/video/trace_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 #if defined(OS_ANDROID) && BUILDFLAG(USE_PROPRIETARY_CODECS)
@@ -91,6 +97,8 @@ GpuVideoDecoder::GpuVideoDecoder(
       bitstream_buffer_id_of_last_gc_(0),
       weak_factory_(this) {
   DCHECK(factories_);
+  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+      this, "media::GpuVideoDecoder", base::ThreadTaskRunnerHandle::Get());
 }
 
 void GpuVideoDecoder::Reset(const base::Closure& closure) {
@@ -152,13 +160,12 @@ std::string GpuVideoDecoder::GetDisplayName() const {
   return kDecoderName;
 }
 
-void GpuVideoDecoder::Initialize(
-    const VideoDecoderConfig& config,
-    bool /* low_delay */,
-    CdmContext* cdm_context,
-    const InitCB& init_cb,
-    const OutputCB& output_cb,
-    const WaitingForDecryptionKeyCB& /* waiting_for_decryption_key_cb */) {
+void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
+                                 bool /* low_delay */,
+                                 CdmContext* cdm_context,
+                                 const InitCB& init_cb,
+                                 const OutputCB& output_cb,
+                                 const WaitingCB& /* waiting_cb */) {
   DVLOG(3) << "Initialize()";
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
   DCHECK(config.IsValidConfig());
@@ -680,6 +687,10 @@ void GpuVideoDecoder::PictureReady(const media::Picture& picture) {
   frame->set_color_space(picture.color_space());
   if (picture.allow_overlay())
     frame->metadata()->SetBoolean(VideoFrameMetadata::ALLOW_OVERLAY, true);
+  if (picture.read_lock_fences_enabled()) {
+    frame->metadata()->SetBoolean(VideoFrameMetadata::READ_LOCK_FENCES_ENABLED,
+                                  true);
+  }
   if (picture.texture_owner())
     frame->metadata()->SetBoolean(VideoFrameMetadata::TEXTURE_OWNER, true);
   if (picture.wants_promotion_hint()) {
@@ -815,6 +826,9 @@ GpuVideoDecoder::~GpuVideoDecoder() {
   DVLOG(3) << __func__;
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
 
+  base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
+      this);
+
   if (vda_)
     DestroyVDA();
   DCHECK(assigned_picture_buffers_.empty());
@@ -888,6 +902,44 @@ void GpuVideoDecoder::NotifyError(media::VideoDecodeAccelerator::Error error) {
                             media::VideoDecodeAccelerator::ERROR_MAX + 1);
 
   DestroyVDA();
+}
+
+bool GpuVideoDecoder::OnMemoryDump(
+    const base::trace_event::MemoryDumpArgs& args,
+    base::trace_event::ProcessMemoryDump* pmd) {
+  using base::trace_event::MemoryAllocatorDump;
+  DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
+  if (assigned_picture_buffers_.empty())
+    return false;
+
+  if (!factories_)
+    return false;
+  auto* context_support = factories_->GetMediaContextProviderContextSupport();
+  if (!context_support)
+    return false;
+  const uint64_t context_group_tracing_id =
+      context_support->ShareGroupTracingGUID();
+
+  for (const auto& picture_buffer : assigned_picture_buffers_) {
+    PictureBuffer::TextureIds texture_ids =
+        picture_buffer.second.client_texture_ids();
+
+    for (uint32_t id : texture_ids) {
+      const auto dump_name = base::StringPrintf(
+          "gpu/video_decoding/context_group_0x%" PRIx64 "/texture_0x%" PRIX32,
+          context_group_tracing_id, id);
+      MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(dump_name);
+      dump->AddScalar(
+          MemoryAllocatorDump::kNameSize, MemoryAllocatorDump::kUnitsBytes,
+          static_cast<uint64_t>(picture_buffer.second.size().GetArea() * 4));
+
+      const auto client_guid =
+          GetGLTextureClientGUIDForTracing(context_group_tracing_id, id);
+      pmd->CreateSharedGlobalAllocatorDump(client_guid);
+      pmd->AddOwnershipEdge(dump->guid(), client_guid, 2 /* importance */);
+    }
+  }
+  return true;
 }
 
 bool GpuVideoDecoder::IsProfileSupported(

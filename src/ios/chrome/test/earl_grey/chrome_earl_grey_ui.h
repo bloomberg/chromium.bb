@@ -5,8 +5,11 @@
 #ifndef IOS_CHROME_TEST_EARL_GREY_CHROME_EARL_GREY_UI_H_
 #define IOS_CHROME_TEST_EARL_GREY_CHROME_EARL_GREY_UI_H_
 
-#import <EarlGrey/EarlGrey.h>
 #import <Foundation/Foundation.h>
+#include "base/compiler_specific.h"
+
+@protocol GREYMatcher;
+@class NSError;
 
 // Test methods that perform actions on Chrome. These methods only affect Chrome
 // using the UI with Earl Grey.
@@ -79,7 +82,7 @@
 // Waits for toolbar to become visible if |isVisible| is YES, otherwise waits
 // for it to disappear. If the condition is not met within a timeout, a
 // GREYAssert is induced.
-+ (void)waitForToolbarVisible:(BOOL)isVisible;
++ (NSError*)waitForToolbarVisible:(BOOL)isVisible WARN_UNUSED_RESULT;
 
 @end
 

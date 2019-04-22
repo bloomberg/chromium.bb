@@ -14,7 +14,7 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -310,7 +310,7 @@ ExtensionFunction::ResponseAction TabCaptureCaptureOffscreenTabFunction::Run() {
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kWhitelistedExtensionID) == extension()->id() ||
       SimpleFeature::IsIdInArray(extension()->id(), kMediaRouterExtensionIds,
-                                 arraysize(kMediaRouterExtensionIds));
+                                 base::size(kMediaRouterExtensionIds));
   if (!is_whitelisted_extension)
     return RespondNow(Error(kNotWhitelistedForOffscreenTabApi));
 

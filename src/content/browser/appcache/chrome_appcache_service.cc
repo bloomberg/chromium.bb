@@ -12,6 +12,7 @@
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "storage/browser/quota/quota_manager.h"
+#include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 
 namespace content {
 
@@ -43,9 +44,24 @@ void ChromeAppCacheService::InitializeOnIOThread(
   set_special_storage_policy(special_storage_policy.get());
 }
 
+void ChromeAppCacheService::CreateBackend(
+    int process_id,
+    blink::mojom::AppCacheBackendRequest request) {
+  // The process_id is the id of the RenderProcessHost, which can be reused for
+  // a new renderer process if the previous renderer process was shutdown.
+  // It can take some time after shutdown for the pipe error to propagate
+  // and unregister the previous backend. Since the AppCacheService assumes
+  // that there is one backend per process_id, we need to ensure that the
+  // previous backend is unregistered by eagerly unbinding the pipe.
+  Unbind(process_id);
+
+  Bind(std::make_unique<AppCacheBackendImpl>(this, process_id),
+       std::move(request), process_id);
+}
+
 void ChromeAppCacheService::Bind(
-    std::unique_ptr<mojom::AppCacheBackend> backend,
-    mojom::AppCacheBackendRequest request,
+    std::unique_ptr<blink::mojom::AppCacheBackend> backend,
+    blink::mojom::AppCacheBackendRequest request,
     int process_id) {
   DCHECK(process_bindings_.find(process_id) == process_bindings_.end());
   process_bindings_[process_id] =

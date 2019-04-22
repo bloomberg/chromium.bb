@@ -49,7 +49,6 @@
 - (BOOL)application:(UIApplication*)application
     didFinishLaunchingWithOptions:(NSDictionary*)launchOptions {
   [self launchRootViewController];
-  [RemotingTheme applyColorSchemes];
   [AVAudioSession.sharedInstance setCategory:AVAudioSessionCategoryAmbient
                                        error:NULL];
   [AppInitializer onAppDidFinishLaunching];

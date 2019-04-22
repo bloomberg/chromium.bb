@@ -13,7 +13,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/toolbar/media_router_action.h"
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
 #include "chrome/browser/ui/webui/media_router/media_router_ui.h"
 #include "chrome/common/url_constants.h"
@@ -98,7 +97,6 @@ class MediaRouterDialogDelegate : public WebDialogDelegate {
   bool ShouldShowDialogTitle() const override { return false; }
 
  private:
-  base::WeakPtr<MediaRouterAction> action_;
   base::WeakPtr<MediaRouterDialogControllerWebUIImpl> controller_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterDialogDelegate);
@@ -113,6 +111,13 @@ MediaRouterDialogControllerImplBase::GetOrCreateForWebContents(
     content::WebContents* web_contents) {
   return MediaRouterDialogControllerWebUIImpl::GetOrCreateForWebContents(
       web_contents);
+}
+
+// static
+MediaRouterDialogControllerImplBase*
+MediaRouterDialogControllerImplBase::FromWebContents(
+    content::WebContents* web_contents) {
+  return MediaRouterDialogControllerWebUIImpl::FromWebContents(web_contents);
 }
 #endif  // !defined(TOOLKIT_VIEWS)
 
@@ -151,8 +156,8 @@ MediaRouterDialogControllerWebUIImpl::GetOrCreateForWebContents(
     content::WebContents* web_contents) {
   DCHECK(web_contents);
   // This call does nothing if the controller already exists.
-  MediaRouterDialogControllerWebUIImpl::CreateForWebContents(web_contents);
-  return MediaRouterDialogControllerWebUIImpl::FromWebContents(web_contents);
+  CreateForWebContents(web_contents);
+  return FromWebContents(web_contents);
 }
 
 MediaRouterDialogControllerWebUIImpl::~MediaRouterDialogControllerWebUIImpl() {
@@ -177,10 +182,9 @@ void MediaRouterDialogControllerWebUIImpl::CreateMediaRouterDialog() {
       Profile::FromBrowserContext(initiator()->GetBrowserContext());
   DCHECK(profile);
 
-  // |web_dialog_delegate|'s owner is |constrained_delegate|.
-  // |constrained_delegate| is owned by the parent |views::View|.
-  WebDialogDelegate* web_dialog_delegate =
-      new MediaRouterDialogDelegate(weak_ptr_factory_.GetWeakPtr());
+  auto web_dialog_delegate = std::make_unique<MediaRouterDialogDelegate>(
+      weak_ptr_factory_.GetWeakPtr());
+  WebDialogDelegate* web_dialog_delegate_ptr = web_dialog_delegate.get();
 
   // |ShowConstrainedWebDialogWithAutoResize()| will end up creating
   // ConstrainedWebDialogDelegateViewViews containing a WebContents containing
@@ -188,9 +192,10 @@ void MediaRouterDialogControllerWebUIImpl::CreateMediaRouterDialog() {
   // view is shown as a modal dialog constrained to the |initiator| WebContents.
   // The dialog will resize between the given minimum and maximum size bounds
   // based on the currently rendered contents.
+  // |constrained_delegate| is owned by the parent |views::View|.
   ConstrainedWebDialogDelegate* constrained_delegate =
       ShowConstrainedWebDialogWithAutoResize(
-          profile, web_dialog_delegate, initiator(),
+          profile, std::move(web_dialog_delegate), initiator(),
           gfx::Size(kWidth, kMinHeight), gfx::Size(kWidth, kMaxHeight));
 
   WebContents* media_router_dialog = constrained_delegate->GetWebContents();
@@ -200,7 +205,7 @@ void MediaRouterDialogControllerWebUIImpl::CreateMediaRouterDialog() {
 
   // Clear the zoom level for the dialog so that it is not affected by the page
   // zoom setting.
-  const GURL dialog_url = web_dialog_delegate->GetDialogContentURL();
+  const GURL dialog_url = web_dialog_delegate_ptr->GetDialogContentURL();
   content::HostZoomMap::Get(media_router_dialog->GetSiteInstance())
       ->SetZoomLevelForHostAndScheme(dialog_url.scheme(), dialog_url.host(), 0);
 
@@ -310,5 +315,7 @@ void MediaRouterDialogControllerWebUIImpl::PopulateDialog(
 
   InitializeMediaRouterUI(media_router_ui);
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(MediaRouterDialogControllerWebUIImpl)
 
 }  // namespace media_router

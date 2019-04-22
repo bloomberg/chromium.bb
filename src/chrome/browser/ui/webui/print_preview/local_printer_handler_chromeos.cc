@@ -8,8 +8,10 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "base/values.h"
@@ -19,6 +21,7 @@
 #include "chrome/browser/chromeos/printing/cups_printers_manager_factory.h"
 #include "chrome/browser/chromeos/printing/ppd_provider_factory.h"
 #include "chrome/browser/chromeos/printing/printer_configurer.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_utils.h"
 #include "chrome/common/pref_names.h"
@@ -26,23 +29,28 @@
 #include "chromeos/dbus/debug_daemon_client.h"
 #include "chromeos/printing/ppd_provider.h"
 #include "chromeos/printing/printer_configuration.h"
-#include "components/printing/common/printer_capabilities.h"
+#include "components/printing/browser/printer_capabilities.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "printing/backend/print_backend_consts.h"
 #include "printing/backend/printing_restrictions.h"
+
+namespace printing {
 
 namespace {
 
 using chromeos::CupsPrintersManager;
 using chromeos::CupsPrintersManagerFactory;
 
+// We only support sending username for named users but just in case.
+const char kUsernamePlaceholder[] = "chronos";
+
 // Store the name used in CUPS, Printer#id in |printer_name|, the description
 // as the system_driverinfo option value, and the Printer#display_name in
 // the |printer_description| field.  This will match how Mac OS X presents
 // printer information.
-printing::PrinterBasicInfo ToBasicInfo(const chromeos::Printer& printer) {
-  printing::PrinterBasicInfo basic_info;
+PrinterBasicInfo ToBasicInfo(const chromeos::Printer& printer) {
+  PrinterBasicInfo basic_info;
 
   // TODO(skau): Unify Mac with the other platforms for display name
   // presentation so I can remove this strange code.
@@ -56,31 +64,34 @@ printing::PrinterBasicInfo ToBasicInfo(const chromeos::Printer& printer) {
 }
 
 void AddPrintersToList(const std::vector<chromeos::Printer>& printers,
-                       printing::PrinterList* list) {
+                       PrinterList* list) {
   for (const auto& printer : printers) {
     list->push_back(ToBasicInfo(printer));
   }
 }
 
-void CapabilitiesFetched(base::DictionaryValue policies,
+void CapabilitiesFetched(base::Value policies,
                          LocalPrinterHandlerChromeos::GetCapabilityCallback cb,
-                         std::unique_ptr<base::DictionaryValue> printer_info) {
-  printer_info->FindKey(printing::kPrinter)
-      ->SetKey(printing::kSettingPolicies, std::move(policies));
+                         base::Value printer_info) {
+  printer_info.FindKey(kPrinter)->SetKey(kSettingPolicies, std::move(policies));
   std::move(cb).Run(std::move(printer_info));
 }
 
 void FetchCapabilities(std::unique_ptr<chromeos::Printer> printer,
-                       base::DictionaryValue policies,
+                       base::Value policies,
                        LocalPrinterHandlerChromeos::GetCapabilityCallback cb) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  printing::PrinterBasicInfo basic_info = ToBasicInfo(*printer);
+  PrinterBasicInfo basic_info = ToBasicInfo(*printer);
+  bool has_secure_protocol = !printer->HasNetworkProtocol() ||
+                             printer->GetProtocol() == chromeos::Printer::kIpps;
 
+  // USER_VISIBLE because the result is displayed in the print preview dialog.
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::BindOnce(&printing::GetSettingsOnBlockingPool, printer->id(),
-                     basic_info, nullptr),
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+      base::BindOnce(&GetSettingsOnBlockingPool, printer->id(), basic_info,
+                     PrinterSemanticCapsAndDefaults::Papers(),
+                     has_secure_protocol, nullptr),
       base::BindOnce(&CapabilitiesFetched, std::move(policies), std::move(cb)));
 }
 
@@ -88,15 +99,44 @@ void FetchCapabilities(std::unique_ptr<chromeos::Printer> printer,
 
 LocalPrinterHandlerChromeos::LocalPrinterHandlerChromeos(
     Profile* profile,
-    content::WebContents* preview_web_contents)
+    content::WebContents* preview_web_contents,
+    chromeos::CupsPrintersManager* printers_manager,
+    std::unique_ptr<chromeos::PrinterConfigurer> printer_configurer)
     : profile_(profile),
       preview_web_contents_(preview_web_contents),
-      printers_manager_(
-          CupsPrintersManagerFactory::GetForBrowserContext(profile)),
-      printer_configurer_(chromeos::PrinterConfigurer::Create(profile)),
+      printers_manager_(printers_manager),
+      printer_configurer_(std::move(printer_configurer)),
       weak_factory_(this) {
   // Construct the CupsPrintJobManager to listen for printing events.
   chromeos::CupsPrintJobManagerFactory::GetForBrowserContext(profile);
+}
+
+// static
+std::unique_ptr<LocalPrinterHandlerChromeos>
+LocalPrinterHandlerChromeos::CreateDefault(
+    Profile* profile,
+    content::WebContents* preview_web_contents) {
+  chromeos::CupsPrintersManager* printers_manager(
+      CupsPrintersManagerFactory::GetForBrowserContext(profile));
+  std::unique_ptr<chromeos::PrinterConfigurer> printer_configurer(
+      chromeos::PrinterConfigurer::Create(profile));
+  // Using 'new' to access non-public constructor.
+  return base::WrapUnique(new LocalPrinterHandlerChromeos(
+      profile, preview_web_contents, printers_manager,
+      std::move(printer_configurer)));
+}
+
+// static
+std::unique_ptr<LocalPrinterHandlerChromeos>
+LocalPrinterHandlerChromeos::CreateForTesting(
+    Profile* profile,
+    content::WebContents* preview_web_contents,
+    chromeos::CupsPrintersManager* printers_manager,
+    std::unique_ptr<chromeos::PrinterConfigurer> printer_configurer) {
+  // Using 'new' to access non-public constructor.
+  return base::WrapUnique(new LocalPrinterHandlerChromeos(
+      profile, preview_web_contents, printers_manager,
+      std::move(printer_configurer)));
 }
 
 LocalPrinterHandlerChromeos::~LocalPrinterHandlerChromeos() {
@@ -122,10 +162,9 @@ void LocalPrinterHandlerChromeos::StartGetPrinters(
   // thread.
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  printing::PrinterList printer_list;
-  AddPrintersToList(
-      printers_manager_->GetPrinters(CupsPrintersManager::kConfigured),
-      &printer_list);
+  PrinterList printer_list;
+  AddPrintersToList(printers_manager_->GetPrinters(CupsPrintersManager::kSaved),
+                    &printer_list);
   AddPrintersToList(
       printers_manager_->GetPrinters(CupsPrintersManager::kEnterprise),
       &printer_list);
@@ -133,8 +172,8 @@ void LocalPrinterHandlerChromeos::StartGetPrinters(
       printers_manager_->GetPrinters(CupsPrintersManager::kAutomatic),
       &printer_list);
 
-  printing::ConvertPrinterListForCallback(
-      added_printers_callback, std::move(done_callback), printer_list);
+  ConvertPrinterListForCallback(added_printers_callback,
+                                std::move(done_callback), printer_list);
 }
 
 void LocalPrinterHandlerChromeos::StartGetCapability(
@@ -147,7 +186,7 @@ void LocalPrinterHandlerChromeos::StartGetCapability(
   if (!printer) {
     // If the printer was removed, the lookup will fail.
     base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                             base::BindOnce(std::move(cb), nullptr));
+                             base::BindOnce(std::move(cb), base::Value()));
     return;
   }
 
@@ -181,23 +220,9 @@ void LocalPrinterHandlerChromeos::HandlePrinterSetup(
       VLOG(1) << "Printer setup successful for " << printer->id()
               << " fetching properties";
       printers_manager_->PrinterInstalled(*printer, true /*is_automatic*/);
-
-      // populate |policies| with policies for native printers.
-      base::DictionaryValue policies;
-      policies.SetInteger(
-          printing::kAllowedColorModes,
-          profile_->GetPrefs()->GetInteger(prefs::kPrintingAllowedColorModes));
-      policies.SetInteger(
-          printing::kAllowedDuplexModes,
-          profile_->GetPrefs()->GetInteger(prefs::kPrintingAllowedDuplexModes));
-      policies.SetInteger(
-          printing::kDefaultColorMode,
-          profile_->GetPrefs()->GetInteger(prefs::kPrintingColorDefault));
-      policies.SetInteger(
-          printing::kDefaultDuplexMode,
-          profile_->GetPrefs()->GetInteger(prefs::kPrintingDuplexDefault));
       // fetch settings on the blocking pool and invoke callback.
-      FetchCapabilities(std::move(printer), std::move(policies), std::move(cb));
+      FetchCapabilities(std::move(printer), GetNativePrinterPolicies(),
+                        std::move(cb));
       return;
     }
     case chromeos::PrinterSetupResult::kPpdNotFound:
@@ -218,7 +243,10 @@ void LocalPrinterHandlerChromeos::HandlePrinterSetup(
     case chromeos::PrinterSetupResult::kFatalError:
     case chromeos::PrinterSetupResult::kNativePrintersNotAllowed:
     case chromeos::PrinterSetupResult::kInvalidPrinterUpdate:
-      LOG(ERROR) << "Unexpected error in printer setup." << result;
+    case chromeos::PrinterSetupResult::kDbusNoReply:
+    case chromeos::PrinterSetupResult::kDbusTimeout:
+    case chromeos::PrinterSetupResult::kEditSuccess:
+      LOG(ERROR) << "Unexpected error in printer setup. " << result;
       break;
     case chromeos::PrinterSetupResult::kMaxValue:
       NOTREACHED() << "This value is not expected";
@@ -226,20 +254,50 @@ void LocalPrinterHandlerChromeos::HandlePrinterSetup(
   }
 
   // TODO(skau): Open printer settings if this is resolvable.
-  std::move(cb).Run(nullptr);
+  std::move(cb).Run(base::Value());
 }
 
 void LocalPrinterHandlerChromeos::StartPrint(
-    const std::string& destination_id,
-    const std::string& capability,
     const base::string16& job_title,
-    const std::string& ticket_json,
-    const gfx::Size& page_size,
-    const scoped_refptr<base::RefCountedMemory>& print_data,
+    base::Value settings,
+    scoped_refptr<base::RefCountedMemory> print_data,
     PrintCallback callback) {
   size_t size_in_kb = print_data->size() / 1024;
   UMA_HISTOGRAM_MEMORY_KB("Printing.CUPS.PrintDocumentSize", size_in_kb);
-
-  printing::StartLocalPrint(ticket_json, print_data, preview_web_contents_,
-                            std::move(callback));
+  if (profile_->GetPrefs()->GetBoolean(
+          prefs::kPrintingSendUsernameAndFilenameEnabled)) {
+    std::string username = chromeos::ProfileHelper::Get()
+                               ->GetUserByProfile(profile_)
+                               ->display_email();
+    settings.SetKey(
+        kSettingUsername,
+        base::Value(username.empty() ? kUsernamePlaceholder : username));
+    settings.SetKey(kSettingSendUserInfo, base::Value(true));
+  }
+  StartLocalPrint(std::move(settings), std::move(print_data),
+                  preview_web_contents_, std::move(callback));
 }
+
+base::Value LocalPrinterHandlerChromeos::GetNativePrinterPolicies() const {
+  base::Value policies(base::Value::Type::DICTIONARY);
+  const PrefService* prefs = profile_->GetPrefs();
+  policies.SetKey(
+      kAllowedColorModes,
+      base::Value(prefs->GetInteger(prefs::kPrintingAllowedColorModes)));
+  policies.SetKey(
+      kAllowedDuplexModes,
+      base::Value(prefs->GetInteger(prefs::kPrintingAllowedDuplexModes)));
+  policies.SetKey(
+      kAllowedPinModes,
+      base::Value(prefs->GetInteger(prefs::kPrintingAllowedPinModes)));
+  policies.SetKey(kDefaultColorMode,
+                  base::Value(prefs->GetInteger(prefs::kPrintingColorDefault)));
+  policies.SetKey(
+      kDefaultDuplexMode,
+      base::Value(prefs->GetInteger(prefs::kPrintingDuplexDefault)));
+  policies.SetKey(kDefaultPinMode,
+                  base::Value(prefs->GetInteger(prefs::kPrintingPinDefault)));
+  return policies;
+}
+
+}  // namespace printing

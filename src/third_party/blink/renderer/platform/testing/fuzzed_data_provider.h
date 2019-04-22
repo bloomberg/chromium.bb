@@ -5,24 +5,24 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_FUZZED_DATA_PROVIDER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_FUZZED_DATA_PROVIDER_H_
 
+#include "base/macros.h"
 #include "base/test/fuzzed_data_provider.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
 // This class simply wraps //base/test/fuzzed_data_provider and vends Blink
 // friendly types.
 class FuzzedDataProvider {
-  WTF_MAKE_NONCOPYABLE(FuzzedDataProvider);
+  DISALLOW_NEW();
 
  public:
   FuzzedDataProvider(const uint8_t* bytes, size_t num_bytes);
 
-  // Returns a string with length between minBytes and maxBytes. If the
-  // length is greater than the length of the remaining data this is
-  // equivalent to ConsumeRemainingBytes().
-  CString ConsumeBytesInRange(uint32_t min_bytes, uint32_t max_bytes);
+  // Returns a string with length between 0 and max_length.
+  String ConsumeRandomLengthString(size_t max_length);
 
   // Returns a String containing all remaining bytes of the input data.
   CString ConsumeRemainingBytes();
@@ -59,6 +59,8 @@ class FuzzedDataProvider {
 
  private:
   base::FuzzedDataProvider provider_;
+
+  DISALLOW_COPY_AND_ASSIGN(FuzzedDataProvider);
 };
 
 }  // namespace blink

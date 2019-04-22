@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "components/journey/proto/batch_get_switcher_journey_from_pageload_request.pb.h"
@@ -144,8 +145,6 @@ JourneyInfoJsonRequest::Builder::BuildSimpleURLLoaderHeaders() const {
   if (!auth_header_.empty()) {
     headers.SetHeader("Authorization", auth_header_);
   }
-  variations::AppendVariationHeaders(url_, variations::InIncognito::kNo,
-                                     variations::SignedIn::kNo, &headers);
   return headers;
 }
 
@@ -153,34 +152,16 @@ std::unique_ptr<network::SimpleURLLoader>
 JourneyInfoJsonRequest::Builder::BuildSimpleURLLoader() const {
   // TODO(meiliang): update the policy section with correct setting and
   // chrome_policy
-  net::NetworkTrafficAnnotationTag traffic_annotation =
-      net::DefineNetworkTrafficAnnotation("journey_journey_info_json_request",
-                                          R"(
-        semantics {
-          sender: "Journey info Json request"
-          description:
-            "Chromium can show a list of pages that are related to currently "
-            "visited page."
-          trigger:
-            "Triggered at every tab selection, and every 30s has passed since "
-            "the last request for that journey if there is already a journey "
-            "to match to the tab."
-          data:
-            "Only white-listed signed-in test user's OAuth2 credentials,"
-            "the task_id or the timestamps of the current tab."
-          destination: GOOGLE_OWNED_SERVICE
-        }
-        policy {
-          cookies_allowed: NO
-          setting: "None."
-          chrome_policy {}
-        })");
+  net::NetworkTrafficAnnotationTag traffic_annotation = NO_TRAFFIC_ANNOTATION_YET;
 
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = GURL(url_);
   resource_request->load_flags =
       net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES;
   resource_request->headers = BuildSimpleURLLoaderHeaders();
+  variations::AppendVariationsHeader(url_, variations::InIncognito::kNo,
+                                     variations::SignedIn::kNo,
+                                     resource_request.get());
   resource_request->method = "POST";
 
   auto simple_loader = network::SimpleURLLoader::Create(

@@ -45,15 +45,15 @@ cr.define('cr.ui', function() {
      * @return {Array<Element>} The focusable elements.
      */
     getFocusableElements_: function() {
-      var focusableDiv = this.getFocusParent();
+      const focusableDiv = this.getFocusParent();
 
       // Create a TreeWalker object to traverse the DOM from |focusableDiv|.
-      var treeWalker = document.createTreeWalker(
+      const treeWalker = document.createTreeWalker(
           focusableDiv, NodeFilter.SHOW_ELEMENT,
           /** @type {NodeFilter} */
           ({
             acceptNode: function(node) {
-              var style = window.getComputedStyle(node);
+              const style = window.getComputedStyle(node);
               // Reject all hidden nodes. FILTER_REJECT also rejects these
               // nodes' children, so non-hidden elements that are descendants of
               // hidden <div>s will correctly be rejected.
@@ -64,8 +64,9 @@ cr.define('cr.ui', function() {
 
               // Skip nodes that cannot receive focus. FILTER_SKIP does not
               // cause this node's children also to be skipped.
-              if (node.disabled || node.tabIndex < 0)
+              if (node.disabled || node.tabIndex < 0) {
                 return NodeFilter.FILTER_SKIP;
+              }
 
               // Accept nodes that are non-hidden and focusable.
               return NodeFilter.FILTER_ACCEPT;
@@ -73,9 +74,10 @@ cr.define('cr.ui', function() {
           }),
           false);
 
-      var focusable = [];
-      while (treeWalker.nextNode())
+      const focusable = [];
+      while (treeWalker.nextNode()) {
         focusable.push(treeWalker.currentNode);
+      }
 
       return focusable;
     },
@@ -99,7 +101,7 @@ cr.define('cr.ui', function() {
      * @private
      */
     setFocus_: function() {
-      var element = this.selectFocusableElement_();
+      const element = this.selectFocusableElement_();
       if (element) {
         element.focus();
         this.dispatchFocusEvent_(element);
@@ -118,18 +120,19 @@ cr.define('cr.ui', function() {
       // current dialog. In this case, loop around and try to focus the last
       // element of the dialog; otherwise, try to focus the first element of the
       // dialog.
-      var focusableElements = this.getFocusableElements_();
-      var element = this.focusDirBackwards_ ? focusableElements.pop() :
+      const focusableElements = this.getFocusableElements_();
+      let element = this.focusDirBackwards_ ? focusableElements.pop() :
                                               focusableElements.shift();
-      if (!element)
+      if (!element) {
         return null;
+      }
       if (element.tagName != 'INPUT' || element.type != 'radio' ||
           element.name == '') {
         return element;
       }
       if (!element.checked) {
-        for (var i = 0; i < focusableElements.length; i++) {
-          var e = focusableElements[i];
+        for (let i = 0; i < focusableElements.length; i++) {
+          const e = focusableElements[i];
           if (e && e.tagName == 'INPUT' && e.type == 'radio' &&
               e.name == element.name && e.checked) {
             element = e;
@@ -148,7 +151,7 @@ cr.define('cr.ui', function() {
     onDocumentFocus_: function(event) {
       // If the element being focused is a descendant of the currently visible
       // page, focus is valid.
-      var targetNode = /** @type {Node} */ (event.target);
+      const targetNode = /** @type {Node} */ (event.target);
       if (this.isDescendantOf_(this.getFocusParent(), targetNode)) {
         this.dispatchFocusEvent_(event.target);
         return;
@@ -172,7 +175,7 @@ cr.define('cr.ui', function() {
      * @private
      */
     onDocumentKeyDown_: function(event) {
-      /** @const */ var tabKeyCode = 9;
+      /** @const */ const tabKeyCode = 9;
 
       if (event.keyCode == tabKeyCode) {
         // If the "Shift" key is held, focus is being transferred backward in

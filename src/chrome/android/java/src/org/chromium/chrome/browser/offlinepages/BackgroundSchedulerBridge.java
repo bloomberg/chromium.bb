@@ -4,12 +4,13 @@
 
 package org.chromium.chrome.browser.offlinepages;
 
+import android.text.format.DateUtils;
+
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-
-import java.util.concurrent.TimeUnit;
+import org.chromium.chrome.browser.DeviceConditions;
 
 /**
  * Provides Java scheduling support from native offlining code as
@@ -50,7 +51,7 @@ public class BackgroundSchedulerBridge {
     @CalledByNative
     private static void backupSchedule(TriggerConditions triggerConditions, long delayInSeconds) {
         BackgroundScheduler.getInstance().scheduleBackup(
-                triggerConditions, TimeUnit.SECONDS.toMillis(delayInSeconds));
+                triggerConditions, DateUtils.SECOND_IN_MILLIS * delayInSeconds);
     }
 
     @CalledByNative

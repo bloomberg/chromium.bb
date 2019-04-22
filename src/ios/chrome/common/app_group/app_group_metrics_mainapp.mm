@@ -35,7 +35,8 @@ void RecordWidgetUsage() {
 }
 
 void ProcessPendingLogs(ProceduralBlockWithData callback) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::WILL_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::WILL_BLOCK);
   NSFileManager* file_manager = [NSFileManager defaultManager];
   NSURL* store_url = [file_manager
       containerURLForSecurityApplicationGroupIdentifier:ApplicationGroup()];

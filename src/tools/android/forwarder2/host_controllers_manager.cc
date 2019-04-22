@@ -4,6 +4,7 @@
 
 #include "tools/android/forwarder2/host_controllers_manager.h"
 
+#include "base/bind.h"
 #include "base/process/launch.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -37,9 +38,9 @@ void HostControllersManager::HandleRequest(
   InitOnce();
   thread_->task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&HostControllersManager::HandleRequestOnInternalThread,
-                 base::Unretained(this), adb_path, device_serial, command,
-                 device_port, host_port, base::Passed(&client_socket)));
+      base::BindOnce(&HostControllersManager::HandleRequestOnInternalThread,
+                     base::Unretained(this), adb_path, device_serial, command,
+                     device_port, host_port, std::move(client_socket)));
 }
 
 // static
@@ -118,9 +119,8 @@ void HostControllersManager::Map(const std::string& adb_path,
   if (!SendMessage(msg, client_socket))
     return;
   host_controller->Start();
-  controllers_->insert(
-      std::make_pair(MakeHostControllerMapKey(adb_port, device_port),
-                     linked_ptr<HostController>(host_controller.release())));
+  controllers_->emplace(MakeHostControllerMapKey(adb_port, device_port),
+                        std::move(host_controller));
 }
 
 void HostControllersManager::Unmap(const std::string& adb_path,
@@ -148,9 +148,8 @@ void HostControllersManager::UnmapAll(const std::string& adb_path,
                                       int adb_port,
                                       Socket* client_socket) {
   const std::string adb_port_str = base::StringPrintf("%d", adb_port);
-  for (HostControllerMap::const_iterator controller_key =
-           controllers_->cbegin();
-       controller_key != controllers_->cend(); ++controller_key) {
+  for (auto controller_key = controllers_->begin();
+       controller_key != controllers_->end(); ++controller_key) {
     std::vector<std::string> pieces =
         base::SplitString(controller_key->first, ":", base::KEEP_WHITESPACE,
                           base::SPLIT_WANT_ALL);
@@ -234,15 +233,15 @@ bool HostControllersManager::Adb(const std::string& adb_path,
 void HostControllersManager::RemoveAdbPortForDeviceIfNeeded(
     const std::string& adb_path,
     const std::string& device_serial) {
-  base::hash_map<std::string, int>::const_iterator it =
+  std::unordered_map<std::string, int>::const_iterator it =
       device_serial_to_adb_port_map_.find(device_serial);
   if (it == device_serial_to_adb_port_map_.end())
     return;
 
   int port = it->second;
   const std::string prefix = base::StringPrintf("%d:", port);
-  for (HostControllerMap::const_iterator others = controllers_->begin();
-       others != controllers_->end(); ++others) {
+  for (auto others = controllers_->begin(); others != controllers_->end();
+       ++others) {
     if (base::StartsWith(others->first, prefix, base::CompareCase::SENSITIVE))
       return;
   }
@@ -280,7 +279,7 @@ void HostControllersManager::RemoveAdbPortForDeviceIfNeeded(
 int HostControllersManager::GetAdbPortForDevice(
     const std::string adb_path,
     const std::string& device_serial) {
-  base::hash_map<std::string, int>::const_iterator it =
+  std::unordered_map<std::string, int>::const_iterator it =
       device_serial_to_adb_port_map_.find(device_serial);
   if (it != device_serial_to_adb_port_map_.end())
     return it->second;

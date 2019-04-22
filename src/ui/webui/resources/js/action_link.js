@@ -32,8 +32,9 @@ class ActionLink extends HTMLAnchorElement {
     // Action links can start disabled (e.g. <a is="action-link" disabled>).
     this.tabIndex = this.disabled ? -1 : 0;
 
-    if (!this.hasAttribute('role'))
+    if (!this.hasAttribute('role')) {
       this.setAttribute('role', 'link');
+    }
 
     this.addEventListener('keydown', function(e) {
       if (!this.disabled && e.key == 'Enter' && !this.href) {
@@ -63,8 +64,9 @@ class ActionLink extends HTMLAnchorElement {
       document.addEventListener('mouseup', removePreventDefault);
 
       // If focus started via mouse press, don't show an outline.
-      if (document.activeElement != this)
+      if (document.activeElement != this) {
         this.classList.add('no-outline');
+      }
     });
 
     this.addEventListener('blur', function() {
@@ -74,10 +76,11 @@ class ActionLink extends HTMLAnchorElement {
 
   /** @param {boolean} disabled */
   set disabled(disabled) {
-    if (disabled)
+    if (disabled) {
       HTMLAnchorElement.prototype.setAttribute.call(this, 'disabled', '');
-    else
+    } else {
       HTMLAnchorElement.prototype.removeAttribute.call(this, 'disabled');
+    }
     this.tabIndex = disabled ? -1 : 0;
   }
 
@@ -87,18 +90,20 @@ class ActionLink extends HTMLAnchorElement {
 
   /** @override */
   setAttribute(attr, val) {
-    if (attr.toLowerCase() == 'disabled')
+    if (attr.toLowerCase() == 'disabled') {
       this.disabled = true;
-    else
+    } else {
       HTMLAnchorElement.prototype.setAttribute.apply(this, arguments);
+    }
   }
 
   /** @override */
   removeAttribute(attr) {
-    if (attr.toLowerCase() == 'disabled')
+    if (attr.toLowerCase() == 'disabled') {
       this.disabled = false;
-    else
+    } else {
       HTMLAnchorElement.prototype.removeAttribute.apply(this, arguments);
+    }
   }
 }
 customElements.define('action-link', ActionLink, {extends: 'a'});

@@ -8,12 +8,12 @@
 #include <memory>
 
 #include "ios/web/public/favicon_url.h"
-#include "ios/web/public/load_committed_details.h"
 #include "url/gurl.h"
 
 namespace web {
 
 class NavigationContext;
+struct SSLStatus;
 class WebFrame;
 class WebState;
 
@@ -43,12 +43,6 @@ struct TestDidFinishNavigationInfo {
   std::unique_ptr<web::NavigationContext> context;
 };
 
-// Arguments passed to |NavigationItemCommitted|.
-struct TestCommitNavigationInfo {
-  WebState* web_state = nullptr;
-  LoadCommittedDetails load_details;
-};
-
 // Arguments passed to |PageLoaded|.
 struct TestLoadPageInfo {
   WebState* web_state = nullptr;
@@ -67,19 +61,21 @@ struct TestNavigationItemsPrunedInfo {
   int count;
 };
 
-// Arguments passed to |NavigationItemChanged|.
-struct TestNavigationItemChangedInfo {
-  WebState* web_state = nullptr;
-};
-
 // Arguments passed to |TitleWasSet|.
 struct TestTitleWasSetInfo {
   WebState* web_state = nullptr;
 };
 
-// Arguments passed to |DidChangeVisibleSecurityState|.
+// Arguments passed to |DidChangeVisibleSecurityState| and SSLStatus of the
+// visible navigation item.
 struct TestDidChangeVisibleSecurityStateInfo {
+  TestDidChangeVisibleSecurityStateInfo();
+  ~TestDidChangeVisibleSecurityStateInfo();
   WebState* web_state = nullptr;
+
+  // SSLStatus of the visible navigation item when
+  // DidChangeVisibleSecurityState was called.
+  std::unique_ptr<SSLStatus> visible_ssl_status;
 };
 
 // Arguments passed to |FaviconUrlUpdated|.

@@ -6,6 +6,7 @@
 
 #include <limits>
 
+#include "base/bind.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
@@ -145,7 +146,7 @@ bool DelayedCacheCleanup(const base::FilePath& full_path) {
   base::PostTaskWithTraits(FROM_HERE,
                            {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
                             base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-                           base::Bind(&CleanupCallback, path, name_str));
+                           base::BindOnce(&CleanupCallback, path, name_str));
   return true;
 }
 

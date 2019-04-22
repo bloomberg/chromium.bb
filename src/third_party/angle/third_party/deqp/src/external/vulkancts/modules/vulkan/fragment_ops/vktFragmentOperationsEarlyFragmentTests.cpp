@@ -37,6 +37,7 @@
 #include "vkTypeUtil.hpp"
 #include "vkQueryUtil.hpp"
 #include "vkImageUtil.hpp"
+#include "vkBarrierUtil.hpp"
 #include "vkCmdUtil.hpp"
 #include "vkObjUtil.hpp"
 
@@ -167,20 +168,6 @@ Move<VkPipeline> makeGraphicsPipeline (const DeviceInterface&	vk,
 									DE_NULL,								// const VkPipelineRasterizationStateCreateInfo* rasterizationStateCreateInfo
 									DE_NULL,								// const VkPipelineMultisampleStateCreateInfo*   multisampleStateCreateInfo
 									&depthStencilStateCreateInfo);			// const VkPipelineDepthStencilStateCreateInfo*  depthStencilStateCreateInfo
-}
-
-VkBufferImageCopy makeBufferImageCopy (const VkImageAspectFlags aspectFlags, const tcu::IVec2& renderSize)
-{
-	const VkBufferImageCopy copyParams =
-	{
-		0ull,															//	VkDeviceSize				bufferOffset;
-		0u,																//	deUint32					bufferRowLength;
-		0u,																//	deUint32					bufferImageHeight;
-		makeImageSubresourceLayers(aspectFlags, 0u, 0u, 1u),			//	VkImageSubresourceLayers	imageSubresource;
-		makeOffset3D(0, 0, 0),											//	VkOffset3D					imageOffset;
-		makeExtent3D(renderSize.x(), renderSize.y(), 1u),				//	VkExtent3D					imageExtent;
-	};
-	return copyParams;
 }
 
 void commandClearStencilAttachment (const DeviceInterface&	vk,
@@ -400,7 +387,7 @@ tcu::TestStatus EarlyFragmentTestInstance::iterate (void)
 		pVertices[4] = tcu::Vec4( 1.0f,  1.0f,  1.0f,  1.0f);
 		pVertices[5] = tcu::Vec4( 1.0f, -1.0f,  0.5f,  1.0f);
 
-		flushMappedMemoryRange(vk, device, vertexBufferAlloc->getMemory(), vertexBufferAlloc->getOffset(), vertexBufferSizeBytes);
+		flushAlloc(vk, device, *vertexBufferAlloc);
 		// No barrier needed, flushed memory is automatically visible
 	}
 
@@ -414,7 +401,7 @@ tcu::TestStatus EarlyFragmentTestInstance::iterate (void)
 		deUint32* const pData = static_cast<deUint32*>(resultBufferAlloc->getHostPtr());
 
 		*pData = 0;
-		flushMappedMemoryRange(vk, device, resultBufferAlloc->getMemory(), resultBufferAlloc->getOffset(), resultBufferSizeBytes);
+		flushAlloc(vk, device, *resultBufferAlloc);
 	}
 
 	// Render result buffer (to retrieve color attachment contents)
@@ -476,7 +463,7 @@ tcu::TestStatus EarlyFragmentTestInstance::iterate (void)
 					*testImage, testSubresourceRange),
 			};
 
-			vk.cmdPipelineBarrier(*cmdBuffer, VK_PIPELINE_STAGE_HOST_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0u,
+			vk.cmdPipelineBarrier(*cmdBuffer, VK_PIPELINE_STAGE_HOST_BIT, VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0u,
 				0u, DE_NULL, 0u, DE_NULL, DE_LENGTH_OF_ARRAY(barriers), barriers);
 		}
 
@@ -494,30 +481,7 @@ tcu::TestStatus EarlyFragmentTestInstance::iterate (void)
 		vk.cmdDraw(*cmdBuffer, numVertices, 1u, 0u, 0u);
 		endRenderPass(vk, *cmdBuffer);
 
-		{
-			const VkBufferMemoryBarrier shaderWriteBarrier = makeBufferMemoryBarrier(
-				VK_ACCESS_SHADER_WRITE_BIT, VK_ACCESS_HOST_READ_BIT, *resultBuffer, 0ull, resultBufferSizeBytes);
-
-			vk.cmdPipelineBarrier(*cmdBuffer, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_HOST_BIT, 0u,
-				0u, DE_NULL, 1u, &shaderWriteBarrier, 0u, DE_NULL);
-
-			const VkImageMemoryBarrier preCopyColorImageBarrier = makeImageMemoryBarrier(
-				VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_ACCESS_TRANSFER_READ_BIT,
-				VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-				*colorImage, colorSubresourceRange);
-
-			vk.cmdPipelineBarrier(*cmdBuffer, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0u,
-				0u, DE_NULL, 0u, DE_NULL, 1u, &preCopyColorImageBarrier);
-
-			const VkBufferImageCopy copyRegion = makeBufferImageCopy(VK_IMAGE_ASPECT_COLOR_BIT, renderSize);
-			vk.cmdCopyImageToBuffer(*cmdBuffer, *colorImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, *colorBuffer, 1u, &copyRegion);
-
-			const VkBufferMemoryBarrier postCopyColorBufferBarrier = makeBufferMemoryBarrier(
-				VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_HOST_READ_BIT, *colorBuffer, 0ull, colorBufferSizeBytes);
-
-			vk.cmdPipelineBarrier(*cmdBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_HOST_BIT, 0u,
-				0u, DE_NULL, 1u, &postCopyColorBufferBarrier, 0u, DE_NULL);
-		}
+		copyImageToBuffer(vk, *cmdBuffer, *colorImage, *colorBuffer, renderSize, VK_ACCESS_SHADER_WRITE_BIT);
 
 		endCommandBuffer(vk, *cmdBuffer);
 		submitCommandsAndWait(vk, device, queue, *cmdBuffer);
@@ -525,7 +489,7 @@ tcu::TestStatus EarlyFragmentTestInstance::iterate (void)
 
 	// Log result image
 	{
-		invalidateMappedMemoryRange(vk, device, colorBufferAlloc->getMemory(), colorBufferAlloc->getOffset(), colorBufferSizeBytes);
+		invalidateAlloc(vk, device, *colorBufferAlloc);
 
 		const tcu::ConstPixelBufferAccess imagePixelAccess(mapVkFormat(colorFormat), renderSize.x(), renderSize.y(), 1, colorBufferAlloc->getHostPtr());
 
@@ -535,7 +499,7 @@ tcu::TestStatus EarlyFragmentTestInstance::iterate (void)
 
 	// Verify results
 	{
-		invalidateMappedMemoryRange(vk, device, resultBufferAlloc->getMemory(), resultBufferAlloc->getOffset(), resultBufferSizeBytes);
+		invalidateAlloc(vk, device, *resultBufferAlloc);
 
 		const int  actualCounter	   = *static_cast<deInt32*>(resultBufferAlloc->getHostPtr());
 		const bool expectPartialResult = (m_useEarlyTests && m_useTestAttachment);
@@ -590,7 +554,7 @@ tcu::TestCaseGroup* createEarlyFragmentTests (tcu::TestContext& testCtx)
 		{ "early_fragment_tests_stencil",					FLAG_TEST_STENCIL																		},
 		{ "no_early_fragment_tests_depth_no_attachment",	FLAG_TEST_DEPTH   | FLAG_DONT_USE_EARLY_FRAGMENT_TESTS | FLAG_DONT_USE_TEST_ATTACHMENT	},
 		{ "no_early_fragment_tests_stencil_no_attachment",	FLAG_TEST_STENCIL | FLAG_DONT_USE_EARLY_FRAGMENT_TESTS | FLAG_DONT_USE_TEST_ATTACHMENT	},
-		{ "early_fragment_tests_depth_no_attachment",		FLAG_TEST_DEPTH   |										 FLAG_DONT_USE_TEST_ATTACHMENT  },
+		{ "early_fragment_tests_depth_no_attachment",		FLAG_TEST_DEPTH   |										 FLAG_DONT_USE_TEST_ATTACHMENT	},
 		{ "early_fragment_tests_stencil_no_attachment",		FLAG_TEST_STENCIL |										 FLAG_DONT_USE_TEST_ATTACHMENT	},
 	};
 

@@ -6,7 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
-#include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 
 namespace chromeos {
 
@@ -44,19 +44,18 @@ SecureChannelDisconnectorImpl::SecureChannelDisconnectorImpl() = default;
 SecureChannelDisconnectorImpl::~SecureChannelDisconnectorImpl() = default;
 
 void SecureChannelDisconnectorImpl::DisconnectSecureChannel(
-    std::unique_ptr<cryptauth::SecureChannel> channel_to_disconnect) {
+    std::unique_ptr<SecureChannel> channel_to_disconnect) {
   // If |channel_to_disconnect| was already DISCONNECTING, this function is a
   // no-op. If |channel_to_disconnecting| was CONNECTING, this function
   // immediately causes the channel to switch to DISCONNECTED. Both of these
   // cases trigger an early return below.
   channel_to_disconnect->Disconnect();
-  if (channel_to_disconnect->status() ==
-      cryptauth::SecureChannel::Status::DISCONNECTED) {
+  if (channel_to_disconnect->status() == SecureChannel::Status::DISCONNECTED) {
     return;
   }
 
   // If no early return occurred, |channel_to_disconnect| is now DISCONNECTING.
-  DCHECK_EQ(cryptauth::SecureChannel::Status::DISCONNECTING,
+  DCHECK_EQ(SecureChannel::Status::DISCONNECTING,
             channel_to_disconnect->status());
 
   // Observe |channel_to_disconnect| so that we can be alerted when it does
@@ -66,10 +65,10 @@ void SecureChannelDisconnectorImpl::DisconnectSecureChannel(
 }
 
 void SecureChannelDisconnectorImpl::OnSecureChannelStatusChanged(
-    cryptauth::SecureChannel* secure_channel,
-    const cryptauth::SecureChannel::Status& old_status,
-    const cryptauth::SecureChannel::Status& new_status) {
-  if (new_status != cryptauth::SecureChannel::Status::DISCONNECTED)
+    SecureChannel* secure_channel,
+    const SecureChannel::Status& old_status,
+    const SecureChannel::Status& new_status) {
+  if (new_status != SecureChannel::Status::DISCONNECTED)
     return;
 
   for (auto it = disconnecting_channels_.begin();

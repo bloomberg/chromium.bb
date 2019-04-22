@@ -442,9 +442,9 @@ class DisplayResourceProviderTest : public testing::TestWithParam<bool> {
   std::unique_ptr<TestSharedBitmapManager> shared_bitmap_manager_;
 };
 
-INSTANTIATE_TEST_CASE_P(DisplayResourceProviderTests,
-                        DisplayResourceProviderTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(DisplayResourceProviderTests,
+                         DisplayResourceProviderTest,
+                         ::testing::Values(false, true));
 
 TEST_P(DisplayResourceProviderTest, LockForExternalUse) {
   // TODO(penghuang): consider supporting SW mode.
@@ -465,8 +465,9 @@ TEST_P(DisplayResourceProviderTest, LockForExternalUse) {
 
   // Transfer some resources to the parent.
   std::vector<TransferableResource> list;
-  child_resource_provider_->PrepareSendToParent({id1}, &list,
-                                                child_context_provider_.get());
+  child_resource_provider_->PrepareSendToParent(
+      {id1}, &list,
+      static_cast<RasterContextProvider*>(child_context_provider_.get()));
   ASSERT_EQ(1u, list.size());
   EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id1));
 
@@ -479,11 +480,11 @@ TEST_P(DisplayResourceProviderTest, LockForExternalUse) {
   unsigned parent_id = resource_map[list.front().id];
 
   DisplayResourceProvider::LockSetForExternalUse lock_set(
-      resource_provider_.get());
+      resource_provider_.get(), /*client=*/nullptr);
 
   ResourceMetadata metadata = lock_set.LockResource(parent_id);
-  ASSERT_EQ(metadata.mailbox, mailbox);
-  ASSERT_TRUE(metadata.sync_token.HasData());
+  ASSERT_EQ(metadata.mailbox_holder.mailbox, mailbox);
+  ASSERT_TRUE(metadata.mailbox_holder.sync_token.HasData());
 
   resource_provider_->DeclareUsedResourcesFromChild(child_id, ResourceIdSet());
   // The resource should not be returned due to the external use lock.
@@ -519,7 +520,8 @@ TEST_P(DisplayResourceProviderTest, ReadLockCountStopsReturnToChildOrDelete) {
     // Transfer some resources to the parent.
     std::vector<TransferableResource> list;
     child_resource_provider_->PrepareSendToParent(
-        {id1}, &list, child_context_provider_.get());
+        {id1}, &list,
+        static_cast<RasterContextProvider*>(child_context_provider_.get()));
     ASSERT_EQ(1u, list.size());
     EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id1));
 
@@ -583,8 +585,9 @@ TEST_P(DisplayResourceProviderTest, ReadLockFenceStopsReturnToChildOrDelete) {
 
   // Transfer some resources to the parent.
   std::vector<TransferableResource> list;
-  child_resource_provider_->PrepareSendToParent({id1}, &list,
-                                                child_context_provider_.get());
+  child_resource_provider_->PrepareSendToParent(
+      {id1}, &list,
+      static_cast<RasterContextProvider*>(child_context_provider_.get()));
   ASSERT_EQ(1u, list.size());
   EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id1));
   EXPECT_TRUE(list[0].read_lock_fences_enabled);
@@ -642,8 +645,9 @@ TEST_P(DisplayResourceProviderTest, ReadLockFenceDestroyChild) {
 
   // Transfer resources to the parent.
   std::vector<TransferableResource> list;
-  child_resource_provider_->PrepareSendToParent({id1, id2}, &list,
-                                                child_context_provider_.get());
+  child_resource_provider_->PrepareSendToParent(
+      {id1, id2}, &list,
+      static_cast<RasterContextProvider*>(child_context_provider_.get()));
   ASSERT_EQ(2u, list.size());
   EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id1));
   EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id2));
@@ -703,8 +707,9 @@ TEST_P(DisplayResourceProviderTest, ReadLockFenceContextLost) {
 
   // Transfer resources to the parent.
   std::vector<TransferableResource> list;
-  child_resource_provider_->PrepareSendToParent({id1, id2}, &list,
-                                                child_context_provider_.get());
+  child_resource_provider_->PrepareSendToParent(
+      {id1, id2}, &list,
+      static_cast<RasterContextProvider*>(child_context_provider_.get()));
   ASSERT_EQ(2u, list.size());
   EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id1));
   EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id2));
@@ -770,7 +775,8 @@ TEST_P(DisplayResourceProviderTest, ReturnResourcesWithoutSyncToken) {
     // Transfer some resources to the parent.
     std::vector<TransferableResource> list;
     no_token_resource_provider->PrepareSendToParent(
-        {id}, &list, child_context_provider_.get());
+        {id}, &list,
+        static_cast<RasterContextProvider*>(child_context_provider_.get()));
     ASSERT_EQ(1u, list.size());
     // A given sync point should be passed through.
     EXPECT_EQ(external_sync_token, list[0].mailbox_holder.sync_token);
@@ -832,8 +838,9 @@ TEST_P(DisplayResourceProviderTest, ScopedBatchReturnResourcesPreventsReturn) {
   std::vector<ResourceId> resource_ids_to_transfer(ids, ids + kTotalResources);
 
   std::vector<TransferableResource> list;
-  child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer, &list,
-                                                child_context_provider_.get());
+  child_resource_provider_->PrepareSendToParent(
+      resource_ids_to_transfer, &list,
+      static_cast<RasterContextProvider*>(child_context_provider_.get()));
   ASSERT_EQ(kTotalResources, list.size());
   for (const auto& id : ids)
     EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id));
@@ -951,8 +958,9 @@ TEST_P(DisplayResourceProviderTest, ReadSoftwareResources) {
   std::vector<ReturnedResource> returned_to_child;
   int child_id = resource_provider_->CreateChild(
       base::BindRepeating(&CollectResources, &returned_to_child), true);
-  child_resource_provider_->PrepareSendToParent({resource_id}, &send_to_parent,
-                                                child_context_provider_.get());
+  child_resource_provider_->PrepareSendToParent(
+      {resource_id}, &send_to_parent,
+      static_cast<RasterContextProvider*>(child_context_provider_.get()));
   resource_provider_->ReceiveFromChild(child_id, send_to_parent);
 
   // In DisplayResourceProvider's namespace, use the mapped resource id.
@@ -1070,8 +1078,9 @@ class ResourceProviderTestImportedResourceGLFilters {
     std::vector<ReturnedResource> returned_to_child;
     int child_id = resource_provider->CreateChild(
         base::BindRepeating(&CollectResources, &returned_to_child), true);
-    child_resource_provider->PrepareSendToParent({resource_id}, &send_to_parent,
-                                                 child_context_provider.get());
+    child_resource_provider->PrepareSendToParent(
+        {resource_id}, &send_to_parent,
+        static_cast<RasterContextProvider*>(child_context_provider.get()));
     resource_provider->ReceiveFromChild(child_id, send_to_parent);
 
     // In DisplayResourceProvider's namespace, use the mapped resource id.
@@ -1223,8 +1232,9 @@ TEST_P(DisplayResourceProviderTest, ReceiveGLTextureExternalOES) {
   std::vector<ReturnedResource> returned_to_child;
   int child_id = resource_provider->CreateChild(
       base::BindRepeating(&CollectResources, &returned_to_child), true);
-  child_resource_provider->PrepareSendToParent({resource_id}, &send_to_parent,
-                                               child_context_provider_.get());
+  child_resource_provider->PrepareSendToParent(
+      {resource_id}, &send_to_parent,
+      static_cast<RasterContextProvider*>(child_context_provider_.get()));
   resource_provider->ReceiveFromChild(child_id, send_to_parent);
 
   // Before create DrawQuad in DisplayResourceProvider's namespace, get the
@@ -1357,8 +1367,9 @@ TEST_P(DisplayResourceProviderTest, OverlayPromotionHint) {
 
   // Transfer some resources to the parent.
   std::vector<TransferableResource> list;
-  child_resource_provider_->PrepareSendToParent({id1, id2}, &list,
-                                                child_context_provider_.get());
+  child_resource_provider_->PrepareSendToParent(
+      {id1, id2}, &list,
+      static_cast<RasterContextProvider*>(child_context_provider_.get()));
   ASSERT_EQ(2u, list.size());
   resource_provider_->ReceiveFromChild(child_id, list);
   std::unordered_map<ResourceId, ResourceId> resource_map =

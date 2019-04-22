@@ -8,7 +8,7 @@
 
 namespace blink {
 
-unsigned short SVGEnumerationMap::ValueFromName(const String& name) const {
+uint16_t SVGEnumerationMap::ValueFromName(const String& name) const {
   for (const Entry& entry : *this) {
     if (name == entry.name)
       return entry.value;

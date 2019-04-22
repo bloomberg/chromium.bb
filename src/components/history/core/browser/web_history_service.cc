@@ -33,7 +33,6 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
-#include "ui/base/device_form_factor.h"
 #include "url/gurl.h"
 
 namespace history {
@@ -281,8 +280,9 @@ class RequestImpl : public WebHistoryService::Request {
 // history server.
 std::string ServerTimeString(base::Time time) {
   if (time < base::Time::UnixEpoch())
-    return base::Int64ToString(0);
-  return base::Int64ToString((time - base::Time::UnixEpoch()).InMicroseconds());
+    return base::NumberToString(0);
+  return base::NumberToString(
+      (time - base::Time::UnixEpoch()).InMicroseconds());
 }
 
 // Returns a URL for querying the history server for a query specified by
@@ -313,8 +313,8 @@ GURL GetQueryUrl(const base::string16& text_query,
   }
 
   if (options.max_count) {
-    url = net::AppendQueryParameter(
-        url, "num", base::IntToString(options.max_count));
+    url = net::AppendQueryParameter(url, "num",
+                                    base::NumberToString(options.max_count));
   }
 
   if (!text_query.empty())
@@ -382,7 +382,7 @@ std::unique_ptr<base::DictionaryValue> WebHistoryService::ReadResponse(
   std::unique_ptr<base::DictionaryValue> result;
   if (request->GetResponseCode() == net::HTTP_OK) {
     std::unique_ptr<base::Value> value =
-        base::JSONReader::Read(request->GetResponseBody());
+        base::JSONReader::ReadDeprecated(request->GetResponseBody());
     if (value && value->is_dict())
       result.reset(static_cast<base::DictionaryValue*>(value.release()));
     else
@@ -559,9 +559,7 @@ void WebHistoryService::QueryOtherFormsOfBrowsingHistory(
       CreateRequest(url, completion_callback, partial_traffic_annotation);
 
   // Set the Sync-specific user agent.
-  std::string user_agent = syncer::MakeUserAgentForSync(
-      channel, ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET);
-  request->SetUserAgent(user_agent);
+  request->SetUserAgent(syncer::MakeUserAgentForSync(channel));
 
   pending_other_forms_of_browsing_history_requests_[request] =
       base::WrapUnique(request);

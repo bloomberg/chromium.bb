@@ -54,3 +54,17 @@ class IsDistributedBuilderTest(cros_test_lib.TestCase):
                        constants.CHROME_REV_LOCAL,
                        constants.CHROME_REV_SPEC):
       _TestConfig(False)
+
+
+class PostsubmitBuilderTest(cros_test_lib.TestCase):
+  """Test for special parameters for ChromeOS Findit Integration."""
+
+  def testBuildPackages(self):
+    parser = cbuildbot.CreateParser()
+    argv = ['--buildroot', '/foo', '--buildbot',
+            '--cbb_snapshot_revision', 'hash1234',
+            '--cbb_build_packages', 'pkgA pkgB', 'caroline-postsubmit']
+    options = cbuildbot.ParseCommandLine(parser, argv)
+    expected = ['pkgA', 'pkgB']
+    self.assertEquals(expected, options.cbb_build_packages)
+    self.assertEquals('hash1234', options.cbb_snapshot_revision)

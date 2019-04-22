@@ -63,6 +63,11 @@ struct DisallowedFeatures {
     ext_color_buffer_half_float = false;
     oes_texture_float_linear = false;
     oes_texture_half_float_linear = false;
+    ext_float_blend = false;
+  }
+
+  bool operator==(const DisallowedFeatures& other) const {
+    return !std::memcmp(this, &other, sizeof(*this));
   }
 
   bool npot_support = false;
@@ -72,6 +77,7 @@ struct DisallowedFeatures {
   bool ext_color_buffer_half_float = false;
   bool oes_texture_float_linear = false;
   bool oes_texture_half_float_linear = false;
+  bool ext_float_blend = false;
 };
 
 // This class implements the DecoderContext interface, decoding GLES2
@@ -132,6 +138,8 @@ class GPU_GLES2_EXPORT GLES2Decoder : public CommonDecoder,
 
   Outputter* outputter() const override;
 
+  int GetRasterDecoderId() const override;
+
   // Set the surface associated with the default FBO.
   virtual void SetSurface(const scoped_refptr<gl::GLSurface>& surface) = 0;
   // Releases the surface associated with the GL context.
@@ -187,7 +195,8 @@ class GPU_GLES2_EXPORT GLES2Decoder : public CommonDecoder,
       CopyTexImageResourceManager* copy_tex_image_blit) = 0;
 
  protected:
-  GLES2Decoder(CommandBufferServiceBase* command_buffer_service,
+  GLES2Decoder(DecoderClient* client,
+               CommandBufferServiceBase* command_buffer_service,
                Outputter* outputter);
 
  private:

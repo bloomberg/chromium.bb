@@ -13,27 +13,24 @@
 #include "content/browser/background_fetch/storage/database_task.h"
 #include "content/browser/cache_storage/cache_storage_cache_handle.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
-#include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom.h"
+#include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace content {
-
-struct BackgroundFetchRegistration;
-
 namespace background_fetch {
 
 // Checks if the registration can be created, then writes the Background
 // Fetch metadata in the SW database with corresponding entries in the cache.
 class CreateMetadataTask : public DatabaseTask {
  public:
-  using CreateMetadataCallback =
-      base::OnceCallback<void(blink::mojom::BackgroundFetchError,
-                              const BackgroundFetchRegistration&)>;
+  using CreateMetadataCallback = base::OnceCallback<void(
+      blink::mojom::BackgroundFetchError,
+      blink::mojom::BackgroundFetchRegistrationDataPtr)>;
 
   CreateMetadataTask(DatabaseTaskHost* host,
                      const BackgroundFetchRegistrationId& registration_id,
                      std::vector<blink::mojom::FetchAPIRequestPtr> requests,
-                     const BackgroundFetchOptions& options,
+                     blink::mojom::BackgroundFetchOptionsPtr options,
                      const SkBitmap& icon,
                      bool start_paused,
                      CreateMetadataCallback callback);
@@ -61,7 +58,8 @@ class CreateMetadataTask : public DatabaseTask {
 
   void InitializeMetadataProto();
 
-  void DidOpenCache(CacheStorageCacheHandle handle,
+  void DidOpenCache(int64_t trace_id,
+                    CacheStorageCacheHandle handle,
                     blink::mojom::CacheStorageError error);
 
   void DidStoreRequests(CacheStorageCacheHandle handle,
@@ -73,7 +71,7 @@ class CreateMetadataTask : public DatabaseTask {
 
   BackgroundFetchRegistrationId registration_id_;
   std::vector<blink::mojom::FetchAPIRequestPtr> requests_;
-  BackgroundFetchOptions options_;
+  blink::mojom::BackgroundFetchOptionsPtr options_;
   SkBitmap icon_;
   bool start_paused_;
   CreateMetadataCallback callback_;
@@ -88,7 +86,6 @@ class CreateMetadataTask : public DatabaseTask {
 };
 
 }  // namespace background_fetch
-
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_BACKGROUND_FETCH_STORAGE_CREATE_METADATA_TASK_H_

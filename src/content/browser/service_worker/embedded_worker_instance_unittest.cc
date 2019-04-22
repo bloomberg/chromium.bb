@@ -8,21 +8,22 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
-#include "content/browser/service_worker/embedded_worker_registry.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
+#include "content/browser/service_worker/fake_embedded_worker_instance_client.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/browser/service_worker/service_worker_version.h"
-#include "content/common/service_worker/embedded_worker.mojom.h"
-#include "content/common/service_worker/service_worker.mojom.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -30,6 +31,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/service_worker/embedded_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
@@ -50,9 +52,11 @@ EmbeddedWorkerInstance::StatusCallback ReceiveStatus(
       out_status, std::move(quit));
 }
 
+const char kHistogramServiceWorkerRuntime[] = "ServiceWorker.Runtime";
+
 }  // namespace
 
-class EmbeddedWorkerInstanceTest : public testing::TestWithParam<bool>,
+class EmbeddedWorkerInstanceTest : public testing::Test,
                                    public EmbeddedWorkerInstance::Listener {
  protected:
   EmbeddedWorkerInstanceTest()
@@ -95,14 +99,7 @@ class EmbeddedWorkerInstanceTest : public testing::TestWithParam<bool>,
   }
 
   void SetUp() override {
-    if (GetParam()) {
-      scoped_feature_list_.InitAndEnableFeature(
-          blink::features::kServiceWorkerServicification);
-    } else {
-      scoped_feature_list_.InitAndDisableFeature(
-          blink::features::kServiceWorkerServicification);
-    }
-    helper_.reset(new EmbeddedWorkerTestHelper(base::FilePath()));
+    helper_ = std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath());
   }
 
   void TearDown() override { helper_.reset(); }
@@ -133,8 +130,9 @@ class EmbeddedWorkerInstanceTest : public testing::TestWithParam<bool>,
   // Calls worker->Start() and runs until the start IPC is sent.
   //
   // Expects success. For failure cases, call Start() manually.
-  void StartWorkerUntilStartSent(EmbeddedWorkerInstance* worker,
-                                 mojom::EmbeddedWorkerStartParamsPtr params) {
+  void StartWorkerUntilStartSent(
+      EmbeddedWorkerInstance* worker,
+      blink::mojom::EmbeddedWorkerStartParamsPtr params) {
     base::Optional<blink::ServiceWorkerStatusCode> status;
     base::RunLoop loop;
     worker->Start(std::move(params),
@@ -148,16 +146,16 @@ class EmbeddedWorkerInstanceTest : public testing::TestWithParam<bool>,
   //
   // Expects success. For failure cases, call Start() manually.
   void StartWorker(EmbeddedWorkerInstance* worker,
-                   mojom::EmbeddedWorkerStartParamsPtr params) {
+                   blink::mojom::EmbeddedWorkerStartParamsPtr params) {
     StartWorkerUntilStartSent(worker, std::move(params));
     // TODO(falken): Listen for OnStarted() instead of this.
     base::RunLoop().RunUntilIdle();
     EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, worker->status());
   }
 
-  mojom::EmbeddedWorkerStartParamsPtr CreateStartParams(
+  blink::mojom::EmbeddedWorkerStartParamsPtr CreateStartParams(
       scoped_refptr<ServiceWorkerVersion> version) {
-    auto params = mojom::EmbeddedWorkerStartParams::New();
+    auto params = blink::mojom::EmbeddedWorkerStartParams::New();
     params->service_worker_version_id = version->version_id();
     params->scope = version->scope();
     params->script_url = version->script_url();
@@ -171,20 +169,21 @@ class EmbeddedWorkerInstanceTest : public testing::TestWithParam<bool>,
     return params;
   }
 
-  mojom::ServiceWorkerProviderInfoForStartWorkerPtr CreateProviderInfo(
+  blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr CreateProviderInfo(
       scoped_refptr<ServiceWorkerVersion> version) {
-    auto provider_info = mojom::ServiceWorkerProviderInfoForStartWorker::New();
+    auto provider_info =
+        blink::mojom::ServiceWorkerProviderInfoForStartWorker::New();
     version->provider_host_ = ServiceWorkerProviderHost::PreCreateForController(
         context()->AsWeakPtr(), version, &provider_info);
     return provider_info;
   }
 
-  mojom::ServiceWorkerRequest CreateServiceWorker() {
+  blink::mojom::ServiceWorkerRequest CreateServiceWorker() {
     service_workers_.emplace_back();
     return mojo::MakeRequest(&service_workers_.back());
   }
 
-  mojom::ControllerServiceWorkerRequest CreateController() {
+  blink::mojom::ControllerServiceWorkerRequest CreateController() {
     controllers_.emplace_back();
     return mojo::MakeRequest(&controllers_.back());
   }
@@ -207,20 +206,9 @@ class EmbeddedWorkerInstanceTest : public testing::TestWithParam<bool>,
 
   ServiceWorkerContextCore* context() { return helper_->context(); }
 
-  EmbeddedWorkerRegistry* embedded_worker_registry() {
-    DCHECK(context());
-    return context()->embedded_worker_registry();
-  }
-
-  std::vector<std::unique_ptr<
-      EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient>>*
-  mock_instance_clients() {
-    return helper_->mock_instance_clients();
-  }
-
   // Mojo endpoints.
-  std::vector<mojom::ServiceWorkerPtr> service_workers_;
-  std::vector<mojom::ControllerServiceWorkerPtr> controllers_;
+  std::vector<blink::mojom::ServiceWorkerPtr> service_workers_;
+  std::vector<blink::mojom::ControllerServiceWorkerPtr> controllers_;
   std::vector<blink::mojom::ServiceWorkerInstalledScriptsManagerPtr>
       installed_scripts_managers_;
   std::vector<blink::mojom::ServiceWorkerInstalledScriptsManagerHostRequest>
@@ -235,67 +223,12 @@ class EmbeddedWorkerInstanceTest : public testing::TestWithParam<bool>,
   DISALLOW_COPY_AND_ASSIGN(EmbeddedWorkerInstanceTest);
 };
 
-// A helper to simulate the start worker sequence is stalled in a worker
-// process.
-class StalledInStartWorkerHelper : public EmbeddedWorkerTestHelper {
- public:
-  StalledInStartWorkerHelper() : EmbeddedWorkerTestHelper(base::FilePath()) {}
-  ~StalledInStartWorkerHelper() override {}
-
-  void OnStartWorker(
-      int embedded_worker_id,
-      int64_t service_worker_version_id,
-      const GURL& scope,
-      const GURL& script_url,
-      bool pause_after_download,
-      mojom::ServiceWorkerRequest service_worker_request,
-      mojom::ControllerServiceWorkerRequest controller_request,
-      mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
-      mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
-      blink::mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info)
-      override {
-    if (force_stall_in_start_) {
-      // Prepare for OnStopWorker().
-      instance_host_ptr_map_[embedded_worker_id].Bind(std::move(instance_host));
-      // Do nothing to simulate a stall in the worker process.
-      return;
-    }
-    EmbeddedWorkerTestHelper::OnStartWorker(
-        embedded_worker_id, service_worker_version_id, scope, script_url,
-        pause_after_download, std::move(service_worker_request),
-        std::move(controller_request), std::move(instance_host),
-        std::move(provider_info), std::move(installed_scripts_info));
-  }
-
-  void OnStopWorker(int embedded_worker_id) override {
-    if (instance_host_ptr_map_[embedded_worker_id]) {
-      instance_host_ptr_map_[embedded_worker_id]->OnStopped();
-      base::RunLoop().RunUntilIdle();
-      return;
-    }
-    EmbeddedWorkerTestHelper::OnStopWorker(embedded_worker_id);
-  }
-
-  void set_force_stall_in_start(bool force_stall_in_start) {
-    force_stall_in_start_ = force_stall_in_start;
-  }
-
- private:
-  bool force_stall_in_start_ = true;
-
-  std::map<
-      int /* embedded_worker_id */,
-      mojom::EmbeddedWorkerInstanceHostAssociatedPtr /* instance_host_ptr */>
-      instance_host_ptr_map_;
-};
-
-TEST_P(EmbeddedWorkerInstanceTest, StartAndStop) {
+TEST_F(EmbeddedWorkerInstanceTest, StartAndStop) {
   const GURL scope("http://example.com/");
   const GURL url("http://example.com/worker.js");
 
   RegistrationAndVersionPair pair = PrepareRegistrationAndVersion(scope, url);
-  std::unique_ptr<EmbeddedWorkerInstance> worker =
-      embedded_worker_registry()->CreateWorker(pair.second.get());
+  auto worker = std::make_unique<EmbeddedWorkerInstance>(pair.second.get());
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, worker->status());
   worker->AddObserver(this);
 
@@ -328,14 +261,13 @@ TEST_P(EmbeddedWorkerInstanceTest, StartAndStop) {
 
 // Test that a worker that failed twice will use a new render process
 // on the next attempt.
-TEST_P(EmbeddedWorkerInstanceTest, ForceNewProcess) {
+TEST_F(EmbeddedWorkerInstanceTest, ForceNewProcess) {
   const GURL scope("http://example.com/");
   const GURL url("http://example.com/worker.js");
 
   RegistrationAndVersionPair pair = PrepareRegistrationAndVersion(scope, url);
   const int64_t service_worker_version_id = pair.second->version_id();
-  std::unique_ptr<EmbeddedWorkerInstance> worker =
-      embedded_worker_registry()->CreateWorker(pair.second.get());
+  auto worker = std::make_unique<EmbeddedWorkerInstance>(pair.second.get());
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, worker->status());
 
   {
@@ -366,13 +298,12 @@ TEST_P(EmbeddedWorkerInstanceTest, ForceNewProcess) {
   }
 }
 
-TEST_P(EmbeddedWorkerInstanceTest, StopWhenDevToolsAttached) {
+TEST_F(EmbeddedWorkerInstanceTest, StopWhenDevToolsAttached) {
   const GURL scope("http://example.com/");
   const GURL url("http://example.com/worker.js");
 
   RegistrationAndVersionPair pair = PrepareRegistrationAndVersion(scope, url);
-  std::unique_ptr<EmbeddedWorkerInstance> worker =
-      embedded_worker_registry()->CreateWorker(pair.second.get());
+  auto worker = std::make_unique<EmbeddedWorkerInstance>(pair.second.get());
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, worker->status());
 
   // Start the worker and then call StopIfNotAttachedToDevTools().
@@ -403,55 +334,18 @@ TEST_P(EmbeddedWorkerInstanceTest, StopWhenDevToolsAttached) {
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, worker->status());
 }
 
-// Test that the removal of a worker from the registry doesn't remove
-// other workers in the same process.
-TEST_P(EmbeddedWorkerInstanceTest, RemoveWorkerInSharedProcess) {
-  const GURL scope("http://example.com/");
-  const GURL url("http://example.com/worker.js");
-
-  RegistrationAndVersionPair pair1 = PrepareRegistrationAndVersion(scope, url);
-  std::unique_ptr<EmbeddedWorkerInstance> worker1 =
-      embedded_worker_registry()->CreateWorker(pair1.second.get());
-  RegistrationAndVersionPair pair2 = PrepareRegistrationAndVersion(scope, url);
-  std::unique_ptr<EmbeddedWorkerInstance> worker2 =
-      embedded_worker_registry()->CreateWorker(pair2.second.get());
-
-  int process_id = helper_->mock_render_process_id();
-
-  // Start workers.
-  StartWorker(worker1.get(), CreateStartParams(pair1.second));
-  StartWorker(worker2.get(), CreateStartParams(pair2.second));
-
-  // The two workers share the same process.
-  EXPECT_EQ(worker1->process_id(), worker2->process_id());
-
-  // Destroy worker1. It removes itself from the registry.
-  int worker1_id = worker1->embedded_worker_id();
-  worker1->Stop();
-  worker1.reset();
-
-  // Only worker1 should be removed from the registry's process_map.
-  EmbeddedWorkerRegistry* registry =
-      helper_->context()->embedded_worker_registry();
-  EXPECT_EQ(0UL, registry->worker_process_map_[process_id].count(worker1_id));
-  EXPECT_EQ(1UL, registry->worker_process_map_[process_id].count(
-                     worker2->embedded_worker_id()));
-
-  worker2->Stop();
-}
-
-TEST_P(EmbeddedWorkerInstanceTest, DetachDuringProcessAllocation) {
+TEST_F(EmbeddedWorkerInstanceTest, DetachDuringProcessAllocation) {
   const GURL scope("http://example.com/");
   const GURL url("http://example.com/worker.js");
 
   RegistrationAndVersionPair pair = PrepareRegistrationAndVersion(scope, url);
-  std::unique_ptr<EmbeddedWorkerInstance> worker =
-      embedded_worker_registry()->CreateWorker(pair.second.get());
+  auto worker = std::make_unique<EmbeddedWorkerInstance>(pair.second.get());
   worker->AddObserver(this);
 
   // Run the start worker sequence and detach during process allocation.
   base::Optional<blink::ServiceWorkerStatusCode> status;
-  mojom::EmbeddedWorkerStartParamsPtr params = CreateStartParams(pair.second);
+  blink::mojom::EmbeddedWorkerStartParamsPtr params =
+      CreateStartParams(pair.second);
   worker->Start(std::move(params), ReceiveStatus(&status, base::DoNothing()));
   worker->Detach();
   base::RunLoop().RunUntilIdle();
@@ -468,16 +362,17 @@ TEST_P(EmbeddedWorkerInstanceTest, DetachDuringProcessAllocation) {
   EXPECT_EQ(EmbeddedWorkerStatus::STARTING, events_[0].status.value());
 }
 
-TEST_P(EmbeddedWorkerInstanceTest, DetachAfterSendingStartWorkerMessage) {
+TEST_F(EmbeddedWorkerInstanceTest, DetachAfterSendingStartWorkerMessage) {
   const GURL scope("http://example.com/");
   const GURL url("http://example.com/worker.js");
 
-  helper_.reset(new StalledInStartWorkerHelper());
   RegistrationAndVersionPair pair = PrepareRegistrationAndVersion(scope, url);
-  std::unique_ptr<EmbeddedWorkerInstance> worker =
-      embedded_worker_registry()->CreateWorker(pair.second.get());
+  auto worker = std::make_unique<EmbeddedWorkerInstance>(pair.second.get());
   worker->AddObserver(this);
 
+  auto* client = helper_->AddNewPendingInstanceClient<
+      DelayedFakeEmbeddedWorkerInstanceClient>(helper_.get());
+  client->UnblockStopWorker();
   StartWorkerUntilStartSent(worker.get(), CreateStartParams(pair.second));
   ASSERT_EQ(2u, events_.size());
   EXPECT_EQ(PROCESS_ALLOCATED, events_[0].type);
@@ -496,13 +391,12 @@ TEST_P(EmbeddedWorkerInstanceTest, DetachAfterSendingStartWorkerMessage) {
   EXPECT_EQ(EmbeddedWorkerStatus::STARTING, events_[0].status.value());
 }
 
-TEST_P(EmbeddedWorkerInstanceTest, StopDuringProcessAllocation) {
+TEST_F(EmbeddedWorkerInstanceTest, StopDuringProcessAllocation) {
   const GURL scope("http://example.com/");
   const GURL url("http://example.com/worker.js");
 
   RegistrationAndVersionPair pair = PrepareRegistrationAndVersion(scope, url);
-  std::unique_ptr<EmbeddedWorkerInstance> worker =
-      embedded_worker_registry()->CreateWorker(pair.second.get());
+  auto worker = std::make_unique<EmbeddedWorkerInstance>(pair.second.get());
   worker->AddObserver(this);
 
   // Stop the start worker sequence before a process is allocated.
@@ -539,12 +433,12 @@ TEST_P(EmbeddedWorkerInstanceTest, StopDuringProcessAllocation) {
 }
 
 class DontReceiveResumeAfterDownloadInstanceClient
-    : public EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient {
+    : public FakeEmbeddedWorkerInstanceClient {
  public:
-  explicit DontReceiveResumeAfterDownloadInstanceClient(
-      base::WeakPtr<EmbeddedWorkerTestHelper> helper,
+  DontReceiveResumeAfterDownloadInstanceClient(
+      EmbeddedWorkerTestHelper* helper,
       bool* was_resume_after_download_called)
-      : EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient(helper),
+      : FakeEmbeddedWorkerInstanceClient(helper),
         was_resume_after_download_called_(was_resume_after_download_called) {}
 
  private:
@@ -555,22 +449,22 @@ class DontReceiveResumeAfterDownloadInstanceClient
   bool* const was_resume_after_download_called_;
 };
 
-TEST_P(EmbeddedWorkerInstanceTest, StopDuringPausedAfterDownload) {
+TEST_F(EmbeddedWorkerInstanceTest, StopDuringPausedAfterDownload) {
   const GURL scope("http://example.com/");
   const GURL url("http://example.com/worker.js");
 
   bool was_resume_after_download_called = false;
-  helper_->RegisterMockInstanceClient(
+  helper_->AddPendingInstanceClient(
       std::make_unique<DontReceiveResumeAfterDownloadInstanceClient>(
-          helper_->AsWeakPtr(), &was_resume_after_download_called));
+          helper_.get(), &was_resume_after_download_called));
 
   RegistrationAndVersionPair pair = PrepareRegistrationAndVersion(scope, url);
-  std::unique_ptr<EmbeddedWorkerInstance> worker =
-      embedded_worker_registry()->CreateWorker(pair.second.get());
+  auto worker = std::make_unique<EmbeddedWorkerInstance>(pair.second.get());
   worker->AddObserver(this);
 
   // Run the start worker sequence until pause after download.
-  mojom::EmbeddedWorkerStartParamsPtr params = CreateStartParams(pair.second);
+  blink::mojom::EmbeddedWorkerStartParamsPtr params =
+      CreateStartParams(pair.second);
   params->pause_after_download = true;
   base::Optional<blink::ServiceWorkerStatusCode> status;
   worker->Start(std::move(params), ReceiveStatus(&status, base::DoNothing()));
@@ -588,15 +482,17 @@ TEST_P(EmbeddedWorkerInstanceTest, StopDuringPausedAfterDownload) {
   EXPECT_FALSE(was_resume_after_download_called);
 }
 
-TEST_P(EmbeddedWorkerInstanceTest, StopAfterSendingStartWorkerMessage) {
+TEST_F(EmbeddedWorkerInstanceTest, StopAfterSendingStartWorkerMessage) {
   const GURL scope("http://example.com/");
   const GURL url("http://example.com/worker.js");
 
-  helper_.reset(new StalledInStartWorkerHelper);
   RegistrationAndVersionPair pair = PrepareRegistrationAndVersion(scope, url);
-  std::unique_ptr<EmbeddedWorkerInstance> worker =
-      embedded_worker_registry()->CreateWorker(pair.second.get());
+  auto worker = std::make_unique<EmbeddedWorkerInstance>(pair.second.get());
   worker->AddObserver(this);
+
+  auto* client = helper_->AddNewPendingInstanceClient<
+      DelayedFakeEmbeddedWorkerInstanceClient>(helper_.get());
+  client->UnblockStopWorker();
 
   StartWorkerUntilStartSent(worker.get(), CreateStartParams(pair.second));
   ASSERT_EQ(2u, events_.size());
@@ -617,8 +513,6 @@ TEST_P(EmbeddedWorkerInstanceTest, StopAfterSendingStartWorkerMessage) {
   events_.clear();
 
   // Restart the worker.
-  static_cast<StalledInStartWorkerHelper*>(helper_.get())
-      ->set_force_stall_in_start(false);
   StartWorker(worker.get(), CreateStartParams(pair.second));
 
   // The worker should be started.
@@ -631,42 +525,31 @@ TEST_P(EmbeddedWorkerInstanceTest, StopAfterSendingStartWorkerMessage) {
   worker->Stop();
 }
 
-TEST_P(EmbeddedWorkerInstanceTest, Detach) {
+TEST_F(EmbeddedWorkerInstanceTest, Detach) {
   const GURL scope("http://example.com/");
   const GURL url("http://example.com/worker.js");
 
   RegistrationAndVersionPair pair = PrepareRegistrationAndVersion(scope, url);
-  std::unique_ptr<EmbeddedWorkerInstance> worker =
-      embedded_worker_registry()->CreateWorker(pair.second.get());
-  worker->AddObserver(this);
+  auto worker = std::make_unique<EmbeddedWorkerInstance>(pair.second.get());
 
   // Start the worker.
-  base::RunLoop run_loop;
   StartWorker(worker.get(), CreateStartParams(pair.second));
 
   // Detach.
-  int process_id = worker->process_id();
   worker->Detach();
-  EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, worker->status());
-
-  // Send the registry a message from the detached worker. Nothing should
-  // happen.
-  embedded_worker_registry()->OnWorkerStarted(process_id,
-                                              worker->embedded_worker_id());
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, worker->status());
 }
 
 // Test for when sending the start IPC failed.
-TEST_P(EmbeddedWorkerInstanceTest, FailToSendStartIPC) {
+TEST_F(EmbeddedWorkerInstanceTest, FailToSendStartIPC) {
   const GURL scope("http://example.com/");
   const GURL url("http://example.com/worker.js");
 
   // Let StartWorker fail; mojo IPC fails to connect to a remote interface.
-  helper_->RegisterMockInstanceClient(nullptr);
+  helper_->AddPendingInstanceClient(nullptr);
 
   RegistrationAndVersionPair pair = PrepareRegistrationAndVersion(scope, url);
-  std::unique_ptr<EmbeddedWorkerInstance> worker =
-      embedded_worker_registry()->CreateWorker(pair.second.get());
+  auto worker = std::make_unique<EmbeddedWorkerInstance>(pair.second.get());
   worker->AddObserver(this);
 
   // Attempt to start the worker. From the browser process's point of view, the
@@ -690,43 +573,28 @@ TEST_P(EmbeddedWorkerInstanceTest, FailToSendStartIPC) {
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, worker->status());
 }
 
-class FailEmbeddedWorkerInstanceClientImpl
-    : public EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient {
- public:
-  explicit FailEmbeddedWorkerInstanceClientImpl(
-      base::WeakPtr<EmbeddedWorkerTestHelper> helper)
-      : EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient(helper) {}
-
- private:
-  void StartWorker(mojom::EmbeddedWorkerStartParamsPtr) override {
-    helper_->mock_instance_clients()->clear();
-  }
-};
-
-TEST_P(EmbeddedWorkerInstanceTest, RemoveRemoteInterface) {
+TEST_F(EmbeddedWorkerInstanceTest, RemoveRemoteInterface) {
   const GURL scope("http://example.com/");
   const GURL url("http://example.com/worker.js");
 
-  // Let StartWorker fail; binding is discarded in the middle of IPC
-  helper_->RegisterMockInstanceClient(
-      std::make_unique<FailEmbeddedWorkerInstanceClientImpl>(
-          helper_->AsWeakPtr()));
-  ASSERT_EQ(mock_instance_clients()->size(), 1UL);
-
   RegistrationAndVersionPair pair = PrepareRegistrationAndVersion(scope, url);
-  std::unique_ptr<EmbeddedWorkerInstance> worker =
-      embedded_worker_registry()->CreateWorker(pair.second.get());
+  auto worker = std::make_unique<EmbeddedWorkerInstance>(pair.second.get());
   worker->AddObserver(this);
 
   // Attempt to start the worker.
   base::Optional<blink::ServiceWorkerStatusCode> status;
   base::RunLoop loop;
+  auto* client = helper_->AddNewPendingInstanceClient<
+      DelayedFakeEmbeddedWorkerInstanceClient>(helper_.get());
   worker->Start(CreateStartParams(pair.second),
                 ReceiveStatus(&status, loop.QuitClosure()));
   loop.Run();
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status.value());
 
-  // Worker should handle the sudden shutdown as detach.
+  // Disconnect the Mojo connection. Worker should handle the sudden shutdown as
+  // detach.
+  client->RunUntilBound();
+  client->Disconnect();
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(3u, events_.size());
   EXPECT_EQ(PROCESS_ALLOCATED, events_[0].type);
@@ -735,46 +603,50 @@ TEST_P(EmbeddedWorkerInstanceTest, RemoveRemoteInterface) {
   EXPECT_EQ(EmbeddedWorkerStatus::STARTING, events_[2].status.value());
 }
 
-class StoreMessageInstanceClient
-    : public EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient {
+class StoreMessageInstanceClient : public FakeEmbeddedWorkerInstanceClient {
  public:
-  explicit StoreMessageInstanceClient(
-      base::WeakPtr<EmbeddedWorkerTestHelper> helper)
-      : EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient(helper) {}
+  explicit StoreMessageInstanceClient(EmbeddedWorkerTestHelper* helper)
+      : FakeEmbeddedWorkerInstanceClient(helper) {}
 
-  const std::vector<std::pair<blink::WebConsoleMessage::Level, std::string>>&
-  message() {
-    return messages_;
+  // Returns messages from AddMessageToConsole.
+  const std::vector<std::pair<blink::mojom::ConsoleMessageLevel, std::string>>&
+  console_messages() {
+    return console_messages_;
+  }
+
+  void SetAddMessageToConsoleReceivedCallback(
+      const base::RepeatingClosure& closure) {
+    add_message_to_console_callback_ = closure;
   }
 
  private:
-  void AddMessageToConsole(blink::WebConsoleMessage::Level level,
+  void AddMessageToConsole(blink::mojom::ConsoleMessageLevel level,
                            const std::string& message) override {
-    messages_.push_back(std::make_pair(level, message));
+    console_messages_.emplace_back(level, message);
+    if (add_message_to_console_callback_)
+      add_message_to_console_callback_.Run();
   }
 
-  std::vector<std::pair<blink::WebConsoleMessage::Level, std::string>>
-      messages_;
+  std::vector<std::pair<blink::mojom::ConsoleMessageLevel, std::string>>
+      console_messages_;
+  base::RepeatingClosure add_message_to_console_callback_;
 };
 
-TEST_P(EmbeddedWorkerInstanceTest, AddMessageToConsole) {
+TEST_F(EmbeddedWorkerInstanceTest, AddMessageToConsole) {
   const GURL scope("http://example.com/");
   const GURL url("http://example.com/worker.js");
-  std::unique_ptr<StoreMessageInstanceClient> instance_client =
-      std::make_unique<StoreMessageInstanceClient>(helper_->AsWeakPtr());
-  StoreMessageInstanceClient* instance_client_rawptr = instance_client.get();
-  helper_->RegisterMockInstanceClient(std::move(instance_client));
-  ASSERT_EQ(mock_instance_clients()->size(), 1UL);
-
   RegistrationAndVersionPair pair = PrepareRegistrationAndVersion(scope, url);
-  std::unique_ptr<EmbeddedWorkerInstance> worker =
-      embedded_worker_registry()->CreateWorker(pair.second.get());
+  auto worker = std::make_unique<EmbeddedWorkerInstance>(pair.second.get());
   worker->AddObserver(this);
+
+  auto* client =
+      helper_->AddNewPendingInstanceClient<StoreMessageInstanceClient>(
+          helper_.get());
 
   // Attempt to start the worker and immediate AddMessageToConsole should not
   // cause a crash.
-  std::pair<blink::WebConsoleMessage::Level, std::string> test_message =
-      std::make_pair(blink::WebConsoleMessage::kLevelVerbose, "");
+  std::pair<blink::mojom::ConsoleMessageLevel, std::string> test_message =
+      std::make_pair(blink::mojom::ConsoleMessageLevel::kVerbose, "");
   base::Optional<blink::ServiceWorkerStatusCode> status;
   worker->Start(CreateStartParams(pair.second),
                 ReceiveStatus(&status, base::DoNothing()));
@@ -784,19 +656,21 @@ TEST_P(EmbeddedWorkerInstanceTest, AddMessageToConsole) {
   EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, worker->status());
 
   // Messages sent before sending StartWorker message won't be dispatched.
-  ASSERT_EQ(0UL, instance_client_rawptr->message().size());
+  ASSERT_EQ(0UL, client->console_messages().size());
   ASSERT_EQ(3UL, events_.size());
   EXPECT_EQ(PROCESS_ALLOCATED, events_[0].type);
   EXPECT_EQ(START_WORKER_MESSAGE_SENT, events_[1].type);
   EXPECT_EQ(STARTED, events_[2].type);
 
+  base::RunLoop loop;
+  client->SetAddMessageToConsoleReceivedCallback(loop.QuitClosure());
   worker->AddMessageToConsole(test_message.first, test_message.second);
-  base::RunLoop().RunUntilIdle();
+  loop.Run();
 
   // Messages sent after sending StartWorker message should be reached to
   // the renderer.
-  ASSERT_EQ(1UL, instance_client_rawptr->message().size());
-  EXPECT_EQ(test_message, instance_client_rawptr->message()[0]);
+  ASSERT_EQ(1UL, client->console_messages().size());
+  EXPECT_EQ(test_message, client->console_messages()[0]);
 
   // Ensure the worker is stopped.
   worker->Stop();
@@ -804,30 +678,17 @@ TEST_P(EmbeddedWorkerInstanceTest, AddMessageToConsole) {
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, worker->status());
 }
 
-// Records whether a CacheStoragePtr was sent as part of StartWorker.
-class RecordCacheStorageHelper : public EmbeddedWorkerTestHelper {
+class RecordCacheStorageInstanceClient
+    : public FakeEmbeddedWorkerInstanceClient {
  public:
-  RecordCacheStorageHelper() : EmbeddedWorkerTestHelper(base::FilePath()) {}
-  ~RecordCacheStorageHelper() override {}
+  explicit RecordCacheStorageInstanceClient(EmbeddedWorkerTestHelper* helper)
+      : FakeEmbeddedWorkerInstanceClient(helper) {}
+  ~RecordCacheStorageInstanceClient() override = default;
 
-  void OnStartWorker(
-      int embedded_worker_id,
-      int64_t service_worker_version_id,
-      const GURL& scope,
-      const GURL& script_url,
-      bool pause_after_download,
-      mojom::ServiceWorkerRequest service_worker_request,
-      mojom::ControllerServiceWorkerRequest controller_request,
-      mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
-      mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
-      blink::mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info)
-      override {
-    had_cache_storage_ = !!provider_info->cache_storage;
-    EmbeddedWorkerTestHelper::OnStartWorker(
-        embedded_worker_id, service_worker_version_id, scope, script_url,
-        pause_after_download, std::move(service_worker_request),
-        std::move(controller_request), std::move(instance_host),
-        std::move(provider_info), std::move(installed_scripts_info));
+  void StartWorker(
+      blink::mojom::EmbeddedWorkerStartParamsPtr start_params) override {
+    had_cache_storage_ = !!start_params->provider_info->cache_storage;
+    FakeEmbeddedWorkerInstanceClient::StartWorker(std::move(start_params));
   }
 
   bool had_cache_storage() const { return had_cache_storage_; }
@@ -838,24 +699,23 @@ class RecordCacheStorageHelper : public EmbeddedWorkerTestHelper {
 
 // Test that the worker is given a CacheStoragePtr during startup, when
 // |pause_after_download| is false.
-TEST_P(EmbeddedWorkerInstanceTest, CacheStorageOptimization) {
+TEST_F(EmbeddedWorkerInstanceTest, CacheStorageOptimization) {
   const GURL scope("http://example.com/");
   const GURL url("http://example.com/worker.js");
-  auto helper = std::make_unique<RecordCacheStorageHelper>();
-  auto* helper_rawptr = helper.get();
-  helper_ = std::move(helper);
 
   RegistrationAndVersionPair pair = PrepareRegistrationAndVersion(scope, url);
-  std::unique_ptr<EmbeddedWorkerInstance> worker =
-      embedded_worker_registry()->CreateWorker(pair.second.get());
+  auto worker = std::make_unique<EmbeddedWorkerInstance>(pair.second.get());
 
   // First, test a worker without pause after download.
   {
     // Start the worker.
+    auto* client =
+        helper_->AddNewPendingInstanceClient<RecordCacheStorageInstanceClient>(
+            helper_.get());
     StartWorker(worker.get(), CreateStartParams(pair.second));
 
     // Cache storage should have been sent.
-    EXPECT_TRUE(helper_rawptr->had_cache_storage());
+    EXPECT_TRUE(client->had_cache_storage());
 
     // Stop the worker.
     worker->Stop();
@@ -864,8 +724,13 @@ TEST_P(EmbeddedWorkerInstanceTest, CacheStorageOptimization) {
 
   // Second, test a worker with pause after download.
   {
+    auto* client =
+        helper_->AddNewPendingInstanceClient<RecordCacheStorageInstanceClient>(
+            helper_.get());
+
     // Start the worker until paused.
-    mojom::EmbeddedWorkerStartParamsPtr params = CreateStartParams(pair.second);
+    blink::mojom::EmbeddedWorkerStartParamsPtr params =
+        CreateStartParams(pair.second);
     params->pause_after_download = true;
     worker->Start(std::move(params), base::DoNothing());
     base::RunLoop().RunUntilIdle();
@@ -877,7 +742,7 @@ TEST_P(EmbeddedWorkerInstanceTest, CacheStorageOptimization) {
     EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, worker->status());
 
     // Cache storage should not have been sent.
-    EXPECT_FALSE(helper_rawptr->had_cache_storage());
+    EXPECT_FALSE(client->had_cache_storage());
 
     // Stop the worker.
     worker->Stop();
@@ -887,29 +752,30 @@ TEST_P(EmbeddedWorkerInstanceTest, CacheStorageOptimization) {
 
 // Test that the worker is not given a CacheStoragePtr during startup when
 // the feature is disabled.
-TEST_P(EmbeddedWorkerInstanceTest, CacheStorageOptimizationIsDisabled) {
+TEST_F(EmbeddedWorkerInstanceTest, CacheStorageOptimizationIsDisabled) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndDisableFeature(
       blink::features::kEagerCacheStorageSetupForServiceWorkers);
 
   const GURL scope("http://example.com/");
   const GURL url("http://example.com/worker.js");
-  auto helper = std::make_unique<RecordCacheStorageHelper>();
-  auto* helper_rawptr = helper.get();
-  helper_ = std::move(helper);
 
   RegistrationAndVersionPair pair = PrepareRegistrationAndVersion(scope, url);
-  std::unique_ptr<EmbeddedWorkerInstance> worker =
-      embedded_worker_registry()->CreateWorker(pair.second.get());
+  auto worker = std::make_unique<EmbeddedWorkerInstance>(pair.second.get());
 
   // First, test a worker without pause after download.
   {
+    auto* client =
+        helper_->AddNewPendingInstanceClient<RecordCacheStorageInstanceClient>(
+            helper_.get());
+
     // Start the worker.
-    mojom::EmbeddedWorkerStartParamsPtr params = CreateStartParams(pair.second);
+    blink::mojom::EmbeddedWorkerStartParamsPtr params =
+        CreateStartParams(pair.second);
     StartWorker(worker.get(), std::move(params));
 
     // Cache storage should not have been sent.
-    EXPECT_FALSE(helper_rawptr->had_cache_storage());
+    EXPECT_FALSE(client->had_cache_storage());
 
     // Stop the worker.
     worker->Stop();
@@ -918,8 +784,13 @@ TEST_P(EmbeddedWorkerInstanceTest, CacheStorageOptimizationIsDisabled) {
 
   // Second, test a worker with pause after download.
   {
+    auto* client =
+        helper_->AddNewPendingInstanceClient<RecordCacheStorageInstanceClient>(
+            helper_.get());
+
     // Start the worker until paused.
-    mojom::EmbeddedWorkerStartParamsPtr params = CreateStartParams(pair.second);
+    blink::mojom::EmbeddedWorkerStartParamsPtr params =
+        CreateStartParams(pair.second);
     params->pause_after_download = true;
     worker->Start(std::move(params), base::DoNothing());
     base::RunLoop().RunUntilIdle();
@@ -931,7 +802,7 @@ TEST_P(EmbeddedWorkerInstanceTest, CacheStorageOptimizationIsDisabled) {
     EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, worker->status());
 
     // Cache storage should not have been sent.
-    EXPECT_FALSE(helper_rawptr->had_cache_storage());
+    EXPECT_FALSE(client->had_cache_storage());
 
     // Stop the worker.
     worker->Stop();
@@ -940,33 +811,33 @@ TEST_P(EmbeddedWorkerInstanceTest, CacheStorageOptimizationIsDisabled) {
 }
 
 // Starts the worker with kAbruptCompletion status.
-class AbruptCompletionHelper : public EmbeddedWorkerTestHelper {
+class AbruptCompletionInstanceClient : public FakeEmbeddedWorkerInstanceClient {
  public:
-  AbruptCompletionHelper() : EmbeddedWorkerTestHelper(base::FilePath()) {}
-  ~AbruptCompletionHelper() override = default;
+  explicit AbruptCompletionInstanceClient(EmbeddedWorkerTestHelper* helper)
+      : FakeEmbeddedWorkerInstanceClient(helper) {}
+  ~AbruptCompletionInstanceClient() override = default;
 
-  void OnResumeAfterDownload(int embedded_worker_id) override {
-    SimulateScriptEvaluationStart(embedded_worker_id);
-    SimulateWorkerStarted(
-        embedded_worker_id,
-        blink::mojom::ServiceWorkerStartStatus::kAbruptCompletion,
-        GetNextThreadId());
+ protected:
+  void EvaluateScript() override {
+    host()->OnScriptEvaluationStart();
+    host()->OnStarted(blink::mojom::ServiceWorkerStartStatus::kAbruptCompletion,
+                      helper()->GetNextThreadId(),
+                      blink::mojom::EmbeddedWorkerStartTiming::New());
   }
 };
 
 // Tests that kAbruptCompletion is the OnStarted() status when the
 // renderer reports abrupt completion.
-TEST_P(EmbeddedWorkerInstanceTest, AbruptCompletion) {
+TEST_F(EmbeddedWorkerInstanceTest, AbruptCompletion) {
   const GURL scope("http://example.com/");
   const GURL url("http://example.com/worker.js");
-  helper_ = std::make_unique<AbruptCompletionHelper>();
-
   RegistrationAndVersionPair pair = PrepareRegistrationAndVersion(scope, url);
-  std::unique_ptr<EmbeddedWorkerInstance> worker =
-      embedded_worker_registry()->CreateWorker(pair.second.get());
+  auto worker = std::make_unique<EmbeddedWorkerInstance>(pair.second.get());
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, worker->status());
   worker->AddObserver(this);
 
+  helper_->AddPendingInstanceClient(
+      std::make_unique<AbruptCompletionInstanceClient>(helper_.get()));
   StartWorker(worker.get(), CreateStartParams(pair.second));
 
   ASSERT_EQ(3u, events_.size());
@@ -978,8 +849,87 @@ TEST_P(EmbeddedWorkerInstanceTest, AbruptCompletion) {
   worker->Stop();
 }
 
-INSTANTIATE_TEST_CASE_P(IsServiceWorkerServicificationEnabled,
-                        EmbeddedWorkerInstanceTest,
-                        ::testing::Bool(););
+// Tests recording the lifetime UMA.
+TEST_F(EmbeddedWorkerInstanceTest, Lifetime) {
+  const GURL scope("http://example.com/");
+  const GURL url("http://example.com/worker.js");
+
+  RegistrationAndVersionPair pair = PrepareRegistrationAndVersion(scope, url);
+  auto worker = std::make_unique<EmbeddedWorkerInstance>(pair.second.get());
+
+  base::HistogramTester metrics;
+
+  // Start the worker.
+  StartWorker(worker.get(), CreateStartParams(pair.second));
+  metrics.ExpectTotalCount(kHistogramServiceWorkerRuntime, 0);
+
+  // Stop the worker.
+  worker->Stop();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, worker->status());
+
+  // The runtime metric should have been recorded.
+  metrics.ExpectTotalCount(kHistogramServiceWorkerRuntime, 1);
+}
+
+// Tests that the lifetime UMA isn't recorded if DevTools was attached
+// while the worker was running.
+TEST_F(EmbeddedWorkerInstanceTest, Lifetime_DevToolsAttachedAfterStart) {
+  const GURL scope("http://example.com/");
+  const GURL url("http://example.com/worker.js");
+
+  RegistrationAndVersionPair pair = PrepareRegistrationAndVersion(scope, url);
+  auto worker = std::make_unique<EmbeddedWorkerInstance>(pair.second.get());
+
+  base::HistogramTester metrics;
+
+  // Start the worker.
+  StartWorker(worker.get(), CreateStartParams(pair.second));
+
+  // Attach DevTools.
+  worker->SetDevToolsAttached(true);
+
+  // To make things tricky, detach DevTools.
+  worker->SetDevToolsAttached(false);
+
+  // Stop the worker.
+  worker->Stop();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, worker->status());
+
+  // The runtime metric should not have ben recorded since DevTools
+  // was attached at some point during the worker's life.
+  metrics.ExpectTotalCount(kHistogramServiceWorkerRuntime, 0);
+}
+
+// Tests that the lifetime UMA isn't recorded if DevTools was attached
+// before the worker finished starting.
+TEST_F(EmbeddedWorkerInstanceTest, Lifetime_DevToolsAttachedDuringStart) {
+  const GURL scope("http://example.com/");
+  const GURL url("http://example.com/worker.js");
+
+  RegistrationAndVersionPair pair = PrepareRegistrationAndVersion(scope, url);
+  auto worker = std::make_unique<EmbeddedWorkerInstance>(pair.second.get());
+
+  base::HistogramTester metrics;
+
+  // Attach DevTools while the worker is starting.
+  worker->Start(CreateStartParams(pair.second), base::DoNothing());
+  worker->SetDevToolsAttached(true);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, worker->status());
+
+  // To make things tricky, detach DevTools.
+  worker->SetDevToolsAttached(false);
+
+  // Stop the worker.
+  worker->Stop();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, worker->status());
+
+  // The runtime metric should not have ben recorded since DevTools
+  // was attached at some point during the worker's life.
+  metrics.ExpectTotalCount(kHistogramServiceWorkerRuntime, 0);
+}
 
 }  // namespace content

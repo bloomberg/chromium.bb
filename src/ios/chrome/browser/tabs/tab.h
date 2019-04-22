@@ -16,36 +16,16 @@
 
 @class AutofillController;
 @class CastController;
-@class ExternalAppLauncher;
 class GURL;
 @class OpenInController;
-@class OverscrollActionsController;
-@protocol OverscrollActionsControllerDelegate;
 @class PasswordController;
 @class SnapshotManager;
 @class FormSuggestionController;
-@protocol TabDialogDelegate;
 @class Tab;
 
-namespace ios {
-class ChromeBrowserState;
-}
-
 namespace web {
-class NavigationItem;
-class NavigationManager;
 class WebState;
 }
-
-// Notification sent by a Tab when it starts to load a new URL. This
-// notification must only be used for crash reporting as it is also sent for
-// pre-rendered tabs.
-extern NSString* const kTabUrlStartedLoadingNotificationForCrashReporting;
-
-// Notification sent by a Tab when it is likely about to start loading a new
-// URL. This notification must only be used for crash reporting as it is also
-// sent for pre-rendered tabs.
-extern NSString* const kTabUrlMayStartLoadingNotificationForCrashReporting;
 
 // Notification sent by a Tab when it is showing an exportable file (e.g a pdf
 // file.
@@ -54,11 +34,6 @@ extern NSString* const kTabIsShowingExportableNotificationForCrashReporting;
 // Notification sent by a Tab when it is closing its current document, to go to
 // another location.
 extern NSString* const kTabClosingCurrentDocumentNotificationForCrashReporting;
-
-// The key containing the URL in the userInfo for the
-// kTabUrlStartedLoadingForCrashReporting and
-// kTabUrlMayStartLoadingNotificationForCrashReporting notifications.
-extern NSString* const kTabUrlKey;
 
 // The header name and value for the data reduction proxy to request an image to
 // be reloaded without optimizations.
@@ -71,28 +46,8 @@ extern NSString* const kProxyPassthroughHeaderValue;
 // loaded.
 @interface Tab : NSObject
 
-// Browser state associated with this Tab.
-@property(nonatomic, readonly) ios::ChromeBrowserState* browserState;
-
-// ID associated with this tab.
-@property(nonatomic, readonly) NSString* tabId;
-
 // The Webstate associated with this Tab.
 @property(nonatomic, readonly) web::WebState* webState;
-
-@property(nonatomic, readonly) BOOL canGoBack;
-@property(nonatomic, readonly) BOOL canGoForward;
-
-@property(nonatomic, readonly)
-    OverscrollActionsController* overscrollActionsController;
-@property(nonatomic, weak) id<OverscrollActionsControllerDelegate>
-    overscrollActionsControllerDelegate;
-
-// Delegate used to show HTTP Authentication dialogs.
-@property(nonatomic, weak) id<TabDialogDelegate> dialogDelegate;
-
-// |YES| if the tab has finished loading.
-@property(nonatomic, readonly) BOOL loadFinished;
 
 // Creates a new Tab with the given WebState.
 - (instancetype)initWithWebState:(web::WebState*)webState;
@@ -110,39 +65,6 @@ extern NSString* const kProxyPassthroughHeaderValue;
 
 // Dismisses all modals owned by the tab.
 - (void)dismissModals;
-
-// Returns the NavigationManager for this tab's WebState. Requires WebState to
-// be populated. Can return null.
-- (web::NavigationManager*)navigationManager;
-
-// Navigates forwards or backwards.
-// TODO(crbug.com/661664): These are passthroughs to the Tab's WebState's
-// NavigationManager. Convert all callers and remove these methods.
-- (void)goBack;
-- (void)goForward;
-
-// Called before capturing a snapshot for Tab.
-- (void)willUpdateSnapshot;
-
-// Whether or not desktop user agent is used for the currently visible page.
-@property(nonatomic, readonly) BOOL usesDesktopUserAgent;
-
-// Loads the original url of the last non-redirect item (including non-history
-// items). Used by request desktop/mobile site so that the updated user agent is
-// used.
-- (void)reloadWithUserAgentType:(web::UserAgentType)userAgentType;
-
-// Evaluates U2F result.
-- (void)evaluateU2FResultFromURL:(const GURL&)url;
-
-// Generates a GURL compliant with the x-callback-url specs for FIDO Universal
-// 2nd Factory (U2F) requests. Returns empty GURL if origin is not secure.
-// See http://x-callback-url.com/specifications/ for specifications.
-- (GURL)XCallbackFromRequestURL:(const GURL&)requestURL
-                      originURL:(const GURL&)originURL;
-
-// Sends a notification to indicate that |url| is going to start loading.
-- (void)notifyTabOfUrlMayStartLoading:(const GURL&)url;
 
 @end
 

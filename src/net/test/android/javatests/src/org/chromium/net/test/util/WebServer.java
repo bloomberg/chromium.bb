@@ -21,7 +21,9 @@ import java.net.SocketException;
 import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.concurrent.GuardedBy;
 import javax.net.ssl.KeyManager;
@@ -38,8 +40,8 @@ import javax.net.ssl.SSLContext;
 public class WebServer {
     private static final String TAG = "WebServer";
 
-    private static WebServer sInstance;
-    private static WebServer sSecureInstance;
+    private static Set<WebServer> sInstances = new HashSet<>();
+    private static Set<WebServer> sSecureInstances = new HashSet<>();
 
     private final ServerThread mServerThread;
     private String mServerUri;
@@ -296,22 +298,32 @@ public class WebServer {
     }
 
     /**
-     * Create and start a local HTTP server instance.
+     * Create and start a local HTTP server instance. Additional must only be true
+     * if an instance was already created. You are responsible for calling
+     * shutdown() on each instance you create.
+     *
      * @param port Port number the server must use, or 0 to automatically choose a free port.
      * @param ssl True if the server should be using secure sockets.
+     * @param additional True if creating an additional server instance.
      * @throws Exception
      */
-    public WebServer(int port, boolean ssl) throws Exception {
+    public WebServer(int port, boolean ssl, boolean additional) throws Exception {
         mPort = port;
         mSsl = ssl;
 
         if (mSsl) {
-            if (sSecureInstance != null) {
-                throw new IllegalStateException("Tried to start multiple SSL TestWebServers");
+            if ((additional && WebServer.sSecureInstances.isEmpty())
+                    || (!additional && !WebServer.sSecureInstances.isEmpty())) {
+                throw new IllegalStateException("There are " + WebServer.sSecureInstances.size()
+                        + " SSL WebServer instances. Expected " + (additional ? ">=1" : "0")
+                        + " because additional is " + additional);
             }
         } else {
-            if (sInstance != null) {
-                throw new IllegalStateException("Tried to start multiple TestWebServers");
+            if ((additional && WebServer.sInstances.isEmpty())
+                    || (!additional && !WebServer.sInstances.isEmpty())) {
+                throw new IllegalStateException("There are " + WebServer.sSecureInstances.size()
+                        + " WebServer instances. Expected " + (additional ? ">=1" : "0")
+                        + " because additional is " + additional);
             }
         }
         mServerThread = new ServerThread(mPort, mSsl);
@@ -320,10 +332,21 @@ public class WebServer {
 
         mServerThread.start();
         if (mSsl) {
-            WebServer.sSecureInstance = this;
+            WebServer.sSecureInstances.add(this);
         } else {
-            WebServer.sInstance = this;
+            WebServer.sInstances.add(this);
         }
+    }
+
+    /**
+     * Create and start a local HTTP server instance.
+     *
+     * @param port Port number the server must use, or 0 to automatically choose a free port.
+     * @param ssl True if the server should be using secure sockets.
+     * @throws Exception
+     */
+    public WebServer(int port, boolean ssl) throws Exception {
+        this(port, ssl, false);
     }
 
     /**
@@ -331,9 +354,9 @@ public class WebServer {
      */
     public void shutdown() {
         if (mSsl) {
-            WebServer.sSecureInstance = null;
+            WebServer.sSecureInstances.remove(this);
         } else {
-            WebServer.sInstance = null;
+            WebServer.sInstances.remove(this);
         }
 
         try {
@@ -491,7 +514,7 @@ public class WebServer {
                         if (request != null) {
                             handleRequest(request, socket.getOutputStream());
                         }
-                    } catch (InvalidRequest e) {
+                    } catch (InvalidRequest | IOException e) {
                         Log.e(TAG, e.getMessage());
                     } finally {
                         socket.close();

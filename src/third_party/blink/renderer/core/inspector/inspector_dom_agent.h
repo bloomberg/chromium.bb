@@ -161,6 +161,7 @@ class CORE_EXPORT InspectorDOMAgent final
       protocol::Maybe<int> node_id,
       protocol::Maybe<int> backend_node_id,
       protocol::Maybe<String> object_group,
+      protocol::Maybe<int> execution_context_id,
       std::unique_ptr<v8_inspector::protocol::Runtime::API::RemoteObject>*)
       override;
   protocol::Response getAttributes(
@@ -216,11 +217,14 @@ class CORE_EXPORT InspectorDOMAgent final
                                    int* backend_node_id,
                                    protocol::Maybe<int>* node_id) override;
 
+  protocol::Response getFileInfo(const String& object_id,
+                                 String* path) override;
+
   bool Enabled() const;
   void ReleaseDanglingNodes();
 
   // Methods called from the InspectorInstrumentation.
-  void DOMContentLoadedEventFired(LocalFrame*);
+  void DomContentLoadedEventFired(LocalFrame*);
   void DidCommitLoad(LocalFrame*, DocumentLoader*);
   void DidInsertDOMNode(Node*);
   void WillRemoveDOMNode(Node*);
@@ -247,7 +251,6 @@ class CORE_EXPORT InspectorDOMAgent final
   int BoundNodeId(Node*);
   void SetDOMListener(DOMListener*);
   int PushNodePathToFrontend(Node*);
-  protocol::Response PushDocumentUponHandlelessOperation();
   protocol::Response NodeForRemoteObjectId(const String& remote_object_id,
                                            Node*&);
 

@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_test_utils.h"
 
+#import <EarlGrey/EarlGrey.h>
+
 #include <string>
 
 #include "base/callback.h"
@@ -79,21 +81,6 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
                        stringWithFormat:
                            @"Omnibox has correct width: %g with margin: %g",
                            width, margin]];
-  };
-
-  return [[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
-                                              descriptionBlock:describe];
-}
-
-id<GREYMatcher> HeaderPinnedOffset(CGFloat offset) {
-  MatchesBlock matches = ^BOOL(UIView* view) {
-    return view.frame.origin.y == offset;
-  };
-  DescribeToBlock describe = ^void(id<GREYDescription> description) {
-    [description
-        appendText:[NSString
-                       stringWithFormat:@"CSHeader has correct offset: %g",
-                                        offset]];
   };
 
   return [[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches

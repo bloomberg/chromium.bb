@@ -12,6 +12,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.IntDef;
 import android.support.v7.app.ActionBar.OnMenuVisibilityListener;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -35,6 +36,8 @@ import org.chromium.chromoting.help.HelpSingleton;
 import org.chromium.chromoting.jni.Client;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.List;
 
 /**
@@ -44,14 +47,27 @@ public class Desktop
         extends AppCompatActivity implements View.OnSystemUiVisibilityChangeListener,
                                              CapabilityManager.CapabilitiesChangedListener {
     /** Used to set/store the selected input mode. */
-    public enum InputMode {
-        UNKNOWN,
-        TRACKPAD,
-        TOUCH;
+    @IntDef({InputMode.UNKNOWN, InputMode.TRACKPAD, InputMode.TOUCH})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface InputMode {
+        // Values are starting from 0 and don't have gaps.
+        int UNKNOWN = 0;
+        int TRACKPAD = 1;
+        int TOUCH = 2;
+        int NUM_ENTRIES = 3;
+    }
 
-        public boolean isSet() {
-            return this != UNKNOWN;
+    public static String getInputModeName(@InputMode int mode) {
+        switch (mode) {
+            case InputMode.UNKNOWN:
+                return "UNKNOWN";
+            case InputMode.TRACKPAD:
+                return "TRACKPAD";
+            case InputMode.TOUCH:
+                return "TOUCH";
         }
+        assert false : "Unreached";
+        return "";
     }
 
     /** Preference used to track the last input mode selected by the user. */
@@ -64,8 +80,9 @@ public class Desktop
     /** Duration for fade-in and fade-out animations for the ActionBar. */
     private static final int ACTIONBAR_ANIMATION_DURATION_MS = 250;
 
-    private final Event.Raisable<SystemUiVisibilityChangedEventParameter>
-            mOnSystemUiVisibilityChanged = new Event.Raisable<>();
+    private final Event
+            .Raisable<SystemUiVisibilityChangedEventParameter> mOnSystemUiVisibilityChanged =
+            new Event.Raisable<>();
 
     private final Event.Raisable<InputModeChangedEventParameter> mOnInputModeChanged =
             new Event.Raisable<>();
@@ -88,19 +105,19 @@ public class Desktop
     private Toolbar mToolbar;
 
     /** Tracks the current input mode (e.g. trackpad/touch). */
-    private InputMode mInputMode = InputMode.UNKNOWN;
+    private @InputMode int mInputMode = InputMode.UNKNOWN;
 
     /** Indicates whether the remote host supports touch injection. */
-    private CapabilityManager.HostCapability mHostTouchCapability =
+    private @CapabilityManager.HostCapability int mHostTouchCapability =
             CapabilityManager.HostCapability.UNKNOWN;
 
     private DesktopView mRemoteHostDesktop;
 
     /**
-     * Indicates whether the device is connected to a non-hidden physical qwerty keyboard. This is
-     * set by {@link Desktop#setKeyboardState(Configuration)}. DO NOT request a soft keyboard when a
-     * physical keyboard exists, otherwise the activity will enter an undefined state where the soft
-     * keyboard never shows up meanwhile request to hide status bar always fails.
+     * Indicates whether the device is connected to a non-hidden physical qwerty keyboard. This
+     * is set by {@link Desktop#setKeyboardState(Configuration)}. DO NOT request a soft keyboard
+     * when a physical keyboard exists, otherwise the activity will enter an undefined state
+     * where the soft keyboard never shows up meanwhile request to hide status bar always fails.
      */
     private boolean mHasPhysicalKeyboard;
 
@@ -139,10 +156,11 @@ public class Desktop
         View decorView = getWindow().getDecorView();
         decorView.setOnSystemUiVisibilityChangeListener(this);
 
-        // The background color is displayed when the user resizes the window in split-screen past
-        // the boundaries of the image we render.  The default background is white and we use black
-        // for our canvas, thus there is a visual artifact when we draw the canvas over the
-        // background.  Setting the background color to match our canvas will prevent the flash.
+        // The background color is displayed when the user resizes the window in split-screen
+        // past the boundaries of the image we render.  The default background is white and we
+        // use black for our canvas, thus there is a visual artifact when we draw the canvas
+        // over the background.  Setting the background color to match our canvas will prevent
+        // the flash.
         getWindow().setBackgroundDrawable(new ColorDrawable(Color.BLACK));
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
@@ -194,10 +212,10 @@ public class Desktop
         mActivityLifecycleListener.onActivityResumed(this);
         mClient.enableVideoChannel(true);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            // We want to call the change handler with an initial value as onMultiWindowModeChanged
-            // won't be called if the state hasn't changed, such as when the user resizes in
-            // split-screen, and we want to ensure we have a default value set (even though it may
-            // change soon after).
+            // We want to call the change handler with an initial value as
+            // onMultiWindowModeChanged won't be called if the state hasn't changed, such as
+            // when the user resizes in split-screen, and we want to ensure we have a default
+            // value set (even though it may change soon after).
             onMultiWindowModeChanged(isInMultiWindowMode());
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             setUpAutoHideToolbar();
@@ -212,8 +230,9 @@ public class Desktop
         }
         super.onPause();
         // The activity is paused in windowed mode when the user switches to another window.  In
-        // that case we should leave the video channel running so they continue to see updates from
-        // their remote machine.  The video channel will be stopped when onStop() is called.
+        // that case we should leave the video channel running so they continue to see updates
+        // from their remote machine.  The video channel will be stopped when onStop() is
+        // called.
         if (!mIsInWindowedMode) {
             mClient.enableVideoChannel(false);
         }
@@ -258,13 +277,14 @@ public class Desktop
         mActivityLifecycleListener.onActivityCreatedOptionsMenu(this, menu);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            // We don't need to show a hide ActionBar button if immersive fullscreen is supported.
+            // We don't need to show a hide ActionBar button if immersive fullscreen is
+            // supported.
             menu.findItem(R.id.actionbar_hide).setVisible(false);
 
-            // Although the MenuItems are being created here, they do not have any backing Views yet
-            // as those are created just after this method exits.  We post an async task to the UI
-            // thread here so that we can attach our interaction listeners shortly after the views
-            // have been created.
+            // Although the MenuItems are being created here, they do not have any backing Views
+            // yet as those are created just after this method exits.  We post an async task to
+            // the UI thread here so that we can attach our interaction listeners shortly after
+            // the views have been created.
             final Menu menuFinal = menu;
             new Handler().post(new Runnable() {
                 @Override
@@ -317,25 +337,25 @@ public class Desktop
         return mOnInputModeChanged;
     }
 
-    private InputMode getInitialInputModeValue() {
+    private @InputMode int getInitialInputModeValue() {
         // Load the previously-selected input mode from Preferences.
         // TODO(joedow): Evaluate and determine if we should use a different input mode based on
         //               a device characteristic such as screen size.
-        InputMode inputMode = InputMode.TRACKPAD;
+        @InputMode
+        int defaultInputMode = InputMode.TRACKPAD;
         String previousInputMode =
                 getPreferences(MODE_PRIVATE)
-                        .getString(PREFERENCE_INPUT_MODE, inputMode.name());
+                        .getString(PREFERENCE_INPUT_MODE, getInputModeName(defaultInputMode));
 
-        try {
-            inputMode = InputMode.valueOf(previousInputMode);
-        } catch (IllegalArgumentException ex) {
-            // Invalid or unexpected value was found, just use the default mode.
+        for (int i = 0; i < InputMode.NUM_ENTRIES; i++) {
+            if (getInputModeName(i).equals(previousInputMode)) return i;
         }
 
-        return inputMode;
+        // Invalid or unexpected value was found, just use the default mode.
+        return defaultInputMode;
     }
 
-    private void setInputMode(InputMode inputMode) {
+    private void setInputMode(@InputMode int inputMode) {
         Menu menu = mToolbar.getMenu();
         MenuItem trackpadModeMenuItem = menu.findItem(R.id.actionbar_trackpad_mode);
         MenuItem touchModeMenuItem = menu.findItem(R.id.actionbar_touch_mode);
@@ -353,7 +373,7 @@ public class Desktop
         mInputMode = inputMode;
         getPreferences(MODE_PRIVATE)
                 .edit()
-                .putString(PREFERENCE_INPUT_MODE, mInputMode.name())
+                .putString(PREFERENCE_INPUT_MODE, getInputModeName(mInputMode))
                 .apply();
 
         mOnInputModeChanged.raise(
@@ -393,8 +413,8 @@ public class Desktop
     }
 
     // Any time an onTouchListener is attached, a lint warning about filtering touch events is
-    // generated.  Since the function below is only used to listen to, not intercept, the events,
-    // the lint warning can be safely suppressed.
+    // generated.  Since the function below is only used to listen to, not intercept, the
+    // events, the lint warning can be safely suppressed.
     @SuppressLint("ClickableViewAccessibility")
     private void attachToolbarInteractionListenerToView(View view) {
         view.setOnTouchListener(new OnTouchListener() {
@@ -434,8 +454,9 @@ public class Desktop
         };
     }
 
-    // Posts a deplayed task to hide the ActionBar.  If an existing task has already been scheduled,
-    // then the previous task is removed and the new one scheduled, effectively resetting the timer.
+    // Posts a deplayed task to hide the ActionBar.  If an existing task has already been
+    // scheduled, then the previous task is removed and the new one scheduled, effectively
+    // resetting the timer.
     private void startActionBarAutoHideTimer() {
         if (mActionBarAutoHideTask != null) {
             stopActionBarAutoHideTimer();
@@ -472,7 +493,8 @@ public class Desktop
         // Ensure the action-bar's visibility matches that of the system controls. This
         // minimizes the number of states the UI can be in, to keep things simple for the user.
 
-        // Check if the system is in fullscreen/lights-out mode then update the ActionBar to match.
+        // Check if the system is in fullscreen/lights-out mode then update the ActionBar to
+        // match.
         int fullscreenFlags = getFullscreenFlags();
         if ((visibility & fullscreenFlags) != 0) {
             hideActionBar();
@@ -531,14 +553,16 @@ public class Desktop
     }
 
     public void showSystemUi() {
-        // Request exit from any fullscreen mode. The action-bar controls will be shown in response
-        // to the SystemUiVisibility notification. The visibility of the action-bar should be tied
-        // to the fullscreen state of the system, so there's no need to explicitly show it here.
+        // Request exit from any fullscreen mode. The action-bar controls will be shown in
+        // response to the SystemUiVisibility notification. The visibility of the action-bar
+        // should be tied to the fullscreen state of the system, so there's no need to
+        // explicitly show it here.
         int flags = View.SYSTEM_UI_FLAG_VISIBLE | getLayoutFlags();
         getWindow().getDecorView().setSystemUiVisibility(flags);
 
-        // The OS will not call onSystemUiVisibilityChange() if the soft keyboard is visible which
-        // means our ActionBar will not be shown if this function is called in that scenario.
+        // The OS will not call onSystemUiVisibilityChange() if the soft keyboard is visible
+        // which means our ActionBar will not be shown if this function is called in that
+        // scenario.
         if (mSoftInputVisible) {
             showActionBar();
         }
@@ -556,8 +580,8 @@ public class Desktop
 
     @SuppressLint("InlinedApi")
     public void hideSystemUi() {
-        // If a soft input device is present, then hide the ActionBar but do not hide the rest of
-        // system UI.  A second call will be made once the soft input device is hidden.
+        // If a soft input device is present, then hide the ActionBar but do not hide the rest
+        // of system UI.  A second call will be made once the soft input device is hidden.
         if (mSoftInputVisible) {
             hideActionBar();
             return;
@@ -571,11 +595,12 @@ public class Desktop
         // fullscreen state.
         int flags = getFullscreenFlags();
 
-        // HIDE_NAVIGATION hides the navigation bar. However, if the user touches the screen, the
-        // event is not seen by the application and instead the navigation bar is re-shown.
+        // HIDE_NAVIGATION hides the navigation bar. However, if the user touches the screen,
+        // the event is not seen by the application and instead the navigation bar is re-shown.
         // IMMERSIVE fixes this problem and allows the user to interact with the app while
         // keeping the navigation controls hidden. This flag was introduced in 4.4, later than
-        // HIDE_NAVIGATION, and so a runtime check is needed before setting either of these flags.
+        // HIDE_NAVIGATION, and so a runtime check is needed before setting either of these
+        // flags.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             flags |= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
             flags |= View.SYSTEM_UI_FLAG_IMMERSIVE;
@@ -641,22 +666,22 @@ public class Desktop
     private void attachSystemUiResizeListener() {
         View systemUiResizeDetector = findViewById(R.id.resize_detector);
         systemUiResizeDetector.addOnLayoutChangeListener(new OnLayoutChangeListener() {
-            // Tracks the maximum 'bottom' value seen during layout changes.  This value represents
-            // the top of the SystemUI displayed at the bottom of the screen.
-            // Note: This value is a screen coordinate so a larger value means lower on the screen.
+            // Tracks the maximum 'bottom' value seen during layout changes.  This value
+            // represents the top of the SystemUI displayed at the bottom of the screen. Note:
+            // This value is a screen coordinate so a larger value means lower on the screen.
             private int mMaxBottomValue;
 
             @Override
             public void onLayoutChange(View v, int left, int top, int right, int bottom,
                     int oldLeft, int oldTop, int oldRight, int oldBottom) {
                 // As the activity is started, a number of layout changes will flow through.  If
-                // this is a fresh start, then we will see one layout change which will represent
-                // the steady state of the UI and will include an accurate 'bottom' value.  If we
-                // are transitioning from another activity/orientation, then there may be several
-                // layout change events as the view is updated (i.e. the OSK might have been
-                // displayed previously but is being dismissed).  Therefore we want to track the
-                // largest value we have seen and use it to determine if a new system UI (such as
-                // the OSK) is being displayed.
+                // this is a fresh start, then we will see one layout change which will
+                // represent the steady state of the UI and will include an accurate 'bottom'
+                // value.  If we are transitioning from another activity/orientation, then there
+                // may be several layout change events as the view is updated (i.e. the OSK
+                // might have been displayed previously but is being dismissed).  Therefore we
+                // want to track the largest value we have seen and use it to determine if a new
+                // system UI (such as the OSK) is being displayed.
                 if (mMaxBottomValue < bottom) {
                     mMaxBottomValue = bottom;
                     return;
@@ -664,17 +689,17 @@ public class Desktop
 
                 // If the delta between lowest bound we have seen (should be a System UI such as
                 // the navigation bar) and the current bound does not match, then we have a form
-                // of soft input displayed.  Note that the size of a soft input device can change
-                // when the input method is changed so we want to send updates to the image canvas
-                // whenever they occur.
+                // of soft input displayed.  Note that the size of a soft input device can
+                // change when the input method is changed so we want to send updates to the
+                // image canvas whenever they occur.
                 boolean oldSoftInputVisible = mSoftInputVisible;
                 mSoftInputVisible = (bottom < mMaxBottomValue);
 
-                // Send the System UI sizes if either the Soft Keyboard is displayed or if we are in
-                // windowed mode and there is System UI present.  The user needs to be able to move
-                // the canvas so they can see where they are typing in the first case and in the
-                // second, the System UI is always present so the user needs a way to position the
-                // canvas so all parts of the desktop can be made visible.
+                // Send the System UI sizes if either the Soft Keyboard is displayed or if we
+                // are in windowed mode and there is System UI present.  The user needs to be
+                // able to move the canvas so they can see where they are typing in the first
+                // case and in the second, the System UI is always present so the user needs a
+                // way to position the canvas so all parts of the desktop can be made visible.
                 if (mSoftInputVisible || (mIsInWindowedMode && isSystemUiVisible())) {
                     mOnSystemUiVisibilityChanged.raise(
                             new SystemUiVisibilityChangedEventParameter(left, top, right, bottom));
@@ -701,9 +726,9 @@ public class Desktop
     }
 
     /**
-     * Sends preferred resolution to the host that matches the aspect ratio of the screen. This is
-     * calculated by the size of the DesktopView minus the safe insets.
-     * This method does nothing if resize-to-client has not been enabled by the user.
+     * Sends preferred resolution to the host that matches the aspect ratio of the screen. This
+     * is calculated by the size of the DesktopView minus the safe insets. This method does
+     * nothing if resize-to-client has not been enabled by the user.
      */
     public void sendPreferredHostResolution() {
         if (!mResizeToClientEnabled) {
@@ -720,9 +745,10 @@ public class Desktop
     }
 
     /**
-     * Called once when a keyboard key is pressed, then again when that same key is released. This
-     * is not guaranteed to be notified of all soft keyboard events: certain keyboards might not
-     * call it at all, while others might skip it in certain situations (e.g. swipe input).
+     * Called once when a keyboard key is pressed, then again when that same key is released.
+     * This is not guaranteed to be notified of all soft keyboard events: certain keyboards
+     * might not call it at all, while others might skip it in certain situations (e.g. swipe
+     * input).
      */
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {

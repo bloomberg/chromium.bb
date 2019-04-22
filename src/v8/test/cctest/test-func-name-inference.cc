@@ -71,7 +71,7 @@ static void CheckFunctionName(v8::Local<v8::Script> script,
   {
     i::DisallowHeapAllocation no_gc;
     Vector<const uint8_t> func_pos_str = i::OneByteVector(func_pos_src);
-    i::String::FlatContent script_content = script_src->GetFlatContent();
+    i::String::FlatContent script_content = script_src->GetFlatContent(no_gc);
     func_pos = SearchString(isolate, script_content.ToOneByteVector(),
                             func_pos_str, 0);
   }
@@ -453,8 +453,8 @@ TEST(FactoryHashmapVariable) {
               "  return obj;\n"
               "}");
   // Can't infer function names statically.
-  CheckFunctionName(script, "return 1", "obj.(anonymous function)");
-  CheckFunctionName(script, "return 2", "obj.(anonymous function)");
+  CheckFunctionName(script, "return 1", "obj.<computed>");
+  CheckFunctionName(script, "return 2", "obj.<computed>");
 }
 
 
@@ -470,7 +470,7 @@ TEST(FactoryHashmapConditional) {
       "  return obj;\n"
       "}");
   // Can't infer the function name statically.
-  CheckFunctionName(script, "return 1", "obj.(anonymous function)");
+  CheckFunctionName(script, "return 1", "obj.<computed>");
 }
 
 

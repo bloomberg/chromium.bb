@@ -124,7 +124,7 @@ class TestNode : public NodeDelegate {
     node_thread_.Start();
     node_thread_.task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(&TestNode::ProcessEvents, base::Unretained(this)));
+        base::BindOnce(&TestNode::ProcessEvents, base::Unretained(this)));
   }
 
   void StopWhenIdle() {

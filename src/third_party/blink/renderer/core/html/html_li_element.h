@@ -35,9 +35,9 @@ class HTMLLIElement final : public HTMLElement {
  public:
   DECLARE_NODE_FACTORY(HTMLLIElement);
 
- private:
   explicit HTMLLIElement(Document&);
 
+ private:
   void ParseAttribute(const AttributeModificationParams&) override;
   bool IsPresentationAttribute(const QualifiedName&) const override;
   void CollectStyleForPresentationAttribute(

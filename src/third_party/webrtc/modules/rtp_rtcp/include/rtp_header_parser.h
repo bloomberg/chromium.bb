@@ -10,7 +10,7 @@
 #ifndef MODULES_RTP_RTCP_INCLUDE_RTP_HEADER_PARSER_H_
 #define MODULES_RTP_RTCP_INCLUDE_RTP_HEADER_PARSER_H_
 
-#include "api/rtpparameters.h"
+#include "api/rtp_parameters.h"
 #include "modules/rtp_rtcp/include/rtp_rtcp_defines.h"
 
 namespace webrtc {
@@ -24,6 +24,7 @@ class RtpHeaderParser {
 
   // Returns true if the packet is an RTCP packet, false otherwise.
   static bool IsRtcp(const uint8_t* packet, size_t length);
+  static absl::optional<uint32_t> GetSsrc(const uint8_t* packet, size_t length);
 
   // Parses the packet and stores the parsed packet in |header|. Returns true on
   // success, false otherwise.

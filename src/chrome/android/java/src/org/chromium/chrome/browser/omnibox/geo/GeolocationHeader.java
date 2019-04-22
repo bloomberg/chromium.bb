@@ -14,6 +14,7 @@ import android.os.Process;
 import android.os.SystemClock;
 import android.provider.Settings;
 import android.support.annotation.IntDef;
+import android.support.annotation.Nullable;
 import android.support.v4.util.ObjectsCompat;
 import android.util.Base64;
 
@@ -28,7 +29,7 @@ import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.omnibox.geo.VisibleNetworks.VisibleCell;
 import org.chromium.chrome.browser.omnibox.geo.VisibleNetworks.VisibleWifi;
-import org.chromium.chrome.browser.preferences.website.ContentSetting;
+import org.chromium.chrome.browser.preferences.website.ContentSettingValues;
 import org.chromium.chrome.browser.preferences.website.PermissionInfo;
 import org.chromium.chrome.browser.preferences.website.WebsitePreferenceBridge;
 import org.chromium.chrome.browser.tab.Tab;
@@ -38,9 +39,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Locale;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
-
-import javax.annotation.Nullable;
 
 /**
  * Provides methods for building the X-Geo HTTP header, which provides device location to a server
@@ -405,7 +403,7 @@ public class GeolocationHeader {
                 WebsitePreferenceBridge.isPermissionControlledByDSE(
                         ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION, uri.toString(),
                         isIncognito)
-                && locationContentSettingForUrl(uri, isIncognito) == ContentSetting.ALLOW;
+                && locationContentSettingForUrl(uri, isIncognito) == ContentSettingValues.ALLOW;
         return !enabled;
     }
 
@@ -413,7 +411,8 @@ public class GeolocationHeader {
      * Returns the location permission for sharing their location with url (e.g. via the
      * geolocation infobar).
      */
-    static ContentSetting locationContentSettingForUrl(Uri uri, boolean isIncognito) {
+    static @ContentSettingValues @Nullable Integer locationContentSettingForUrl(
+            Uri uri, boolean isIncognito) {
         PermissionInfo locationSettings = new PermissionInfo(
                 PermissionInfo.Type.GEOLOCATION, uri.toString(), null, isIncognito);
         return locationSettings.getContentSetting();
@@ -497,11 +496,13 @@ public class GeolocationHeader {
      */
     @Permission
     private static int getDomainPermission(String url, boolean isIncognito) {
-        ContentSetting domainPermission = locationContentSettingForUrl(Uri.parse(url), isIncognito);
+        @ContentSettingValues
+        @Nullable
+        Integer domainPermission = locationContentSettingForUrl(Uri.parse(url), isIncognito);
         switch (domainPermission) {
-            case ALLOW:
+            case ContentSettingValues.ALLOW:
                 return Permission.GRANTED;
-            case ASK:
+            case ContentSettingValues.ASK:
                 return Permission.PROMPT;
             default:
                 return Permission.BLOCKED;
@@ -681,7 +682,7 @@ public class GeolocationHeader {
         String name = getTimeListeningHistogramEnum(locationSource, locationAttached);
         if (name == null) return;
         RecordHistogram.recordCustomTimesHistogram(
-                name, duration, 1, TIME_LISTENING_HISTOGRAM_MAX_MILLIS, TimeUnit.MILLISECONDS, 50);
+                name, duration, 1, TIME_LISTENING_HISTOGRAM_MAX_MILLIS, 50);
     }
 
     /** Records a data point for one of the GeolocationHeader.LocationAge* histograms. */

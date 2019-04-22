@@ -12,11 +12,11 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/common/password_form.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/sync/driver/sync_service.h"
 #include "ui/base/l10n/l10n_util.h"
 
 PasswordDialogControllerImpl::PasswordDialogControllerImpl(
@@ -79,7 +79,7 @@ base::string16 PasswordDialogControllerImpl::GetAutoSigninText() const {
 }
 
 bool PasswordDialogControllerImpl::ShouldShowFooter() const {
-  const browser_sync::ProfileSyncService* sync_service =
+  const syncer::SyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
   return password_bubble_experiment::IsSmartLockUser(sync_service);
 }

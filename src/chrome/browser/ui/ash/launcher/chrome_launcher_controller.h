@@ -275,11 +275,6 @@ class ChromeLauncherController
   // Invoked when the associated browser or app is closed.
   void RemoveShelfItem(const ash::ShelfID& id);
 
-  // Internal helpers for pinning and unpinning that handle both
-  // client-triggered and internal pinning operations.
-  void DoPinAppWithID(const std::string& app_id);
-  void DoUnpinAppWithID(const std::string& app_id, bool update_prefs);
-
   // Pin a running app with |shelf_id| internally to |index|.
   void PinRunningAppInternal(int index, const ash::ShelfID& shelf_id);
 
@@ -292,16 +287,13 @@ class ChromeLauncherController
   void SyncPinPosition(const ash::ShelfID& id);
 
   // Re-syncs shelf model.
-  void UpdateAppLaunchersFromPref();
+  void UpdateAppLaunchersFromSync();
 
   // Schedules re-sync of shelf model.
-  void ScheduleUpdateAppLaunchersFromPref();
+  void ScheduleUpdateAppLaunchersFromSync();
 
   // Update the policy-pinned flag for each shelf item.
   void UpdatePolicyPinnedAppsFromPrefs();
-
-  // Sets whether the virtual keyboard is enabled from prefs.
-  void SetVirtualKeyboardBehaviorFromPrefs();
 
   // Returns the shelf item status for the given |app_id|, which can be either
   // STATUS_RUNNING (if there is such an app) or STATUS_CLOSED.
@@ -364,8 +356,12 @@ class ChromeLauncherController
   // sync_preferences::PrefServiceSyncableObserver:
   void OnIsSyncingChanged() override;
 
-  // An internal helper to unpin a shelf item; this does not update prefs.
+  // An internal helper to unpin a shelf item; this does not update app sync.
   void UnpinShelfItemInternal(const ash::ShelfID& id);
+
+  // Updates the running status of an item, or removes it if necessary.
+  void SetItemStatusOrRemove(const ash::ShelfID& id,
+                             ash::ShelfItemStatus status);
 
   // Resolves the app icon image loader for the app.
   AppIconLoader* GetAppIconLoaderForApp(const std::string& app_id);
@@ -402,12 +398,16 @@ class ChromeLauncherController
   // Used to get app info for tabs.
   std::unique_ptr<LauncherControllerHelper> launcher_controller_helper_;
 
+  // TODO(crbug.com/836128): Remove this once SystemWebApps are enabled by
+  // default.
   // An observer that manages the shelf title and icon for settings windows.
-  SettingsWindowObserver settings_window_observer_;
+  std::unique_ptr<SettingsWindowObserver> settings_window_observer_;
 
+  // TODO(crbug.com/836128): Remove this once SystemWebApps are enabled by
+  // default.
   // An observer that manages the shelf title and icon for Chrome OS Discover
   // windows.
-  DiscoverWindowObserver dicover_window_observer_;
+  std::unique_ptr<DiscoverWindowObserver> discover_window_observer_;
 
   // Used to load the images for app items.
   std::vector<std::unique_ptr<AppIconLoader>> app_icon_loaders_;

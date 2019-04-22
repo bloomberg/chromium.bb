@@ -17,7 +17,8 @@ PaymentMethodChangeEvent* PaymentMethodChangeEvent::Create(
     ScriptState* script_state,
     const AtomicString& type,
     const PaymentMethodChangeEventInit* init) {
-  return new PaymentMethodChangeEvent(script_state, type, init);
+  return MakeGarbageCollected<PaymentMethodChangeEvent>(script_state, type,
+                                                        init);
 }
 
 const String& PaymentMethodChangeEvent::methodName() const {
@@ -28,7 +29,8 @@ const ScriptValue PaymentMethodChangeEvent::methodDetails(
     ScriptState* script_state) const {
   if (method_details_.IsEmpty())
     return ScriptValue::CreateNull(script_state);
-  return ScriptValue::ToWorldSafeScriptValue(script_state, method_details_);
+  return ScriptValue(script_state,
+                     method_details_.GetAcrossWorld(script_state));
 }
 
 void PaymentMethodChangeEvent::Trace(Visitor* visitor) {

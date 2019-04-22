@@ -19,8 +19,8 @@ Polymer({
     },
   },
 
-  /** @private {!print_preview.PrintSettingsUiMetricsContext} */
-  metrics_: new print_preview.PrintSettingsUiMetricsContext(),
+  /** @private {!print_preview.MetricsContext} */
+  metrics_: print_preview.MetricsContext.printSettingsUi(),
 
   /**
    * Toggles the expand button within the element being listened to.
@@ -30,11 +30,13 @@ Polymer({
   toggleExpandButton_: function(e) {
     // The expand button handles toggling itself.
     const expandButtonTag = 'CR-EXPAND-BUTTON';
-    if (e.target.tagName == expandButtonTag)
+    if (e.target.tagName == expandButtonTag) {
       return;
+    }
 
-    if (!e.currentTarget.hasAttribute('actionable'))
+    if (!e.currentTarget.hasAttribute('actionable')) {
       return;
+    }
 
     /** @type {!CrExpandButtonElement} */
     const expandButton = e.currentTarget.querySelector(expandButtonTag);

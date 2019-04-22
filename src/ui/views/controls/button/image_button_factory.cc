@@ -6,6 +6,7 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icon_types.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/image_button.h"
@@ -21,7 +22,6 @@ void ConfigureVectorImageButton(ImageButton* button) {
   button->set_has_ink_drop_action_on_click(true);
   button->SetImageAlignment(ImageButton::ALIGN_CENTER,
                             ImageButton::ALIGN_MIDDLE);
-  button->SetFocusPainter(nullptr);
   button->SetBorder(CreateEmptyBorder(
       LayoutProvider::Get()->GetInsetsMetric(INSETS_VECTOR_IMAGE_BUTTON)));
 }
@@ -40,6 +40,13 @@ ToggleImageButton* CreateVectorToggleImageButton(ButtonListener* listener) {
   return button;
 }
 
+void SetImageFromVectorIcon(ImageButton* button, const gfx::VectorIcon& icon) {
+  SetImageFromVectorIconWithColor(
+      button, icon,
+      ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
+          ui::NativeTheme::kColorId_DefaultIconColor));
+}
+
 void SetImageFromVectorIcon(ImageButton* button,
                             const gfx::VectorIcon& icon,
                             SkColor related_text_color) {
@@ -53,6 +60,20 @@ void SetImageFromVectorIcon(ImageButton* button,
                             SkColor related_text_color) {
   const SkColor icon_color =
       color_utils::DeriveDefaultIconColor(related_text_color);
+  SetImageFromVectorIconWithColor(button, icon, dip_size, icon_color);
+}
+
+void SetImageFromVectorIconWithColor(ImageButton* button,
+                                     const gfx::VectorIcon& icon,
+                                     SkColor icon_color) {
+  SetImageFromVectorIconWithColor(button, icon,
+                                  GetDefaultSizeOfVectorIcon(icon), icon_color);
+}
+
+void SetImageFromVectorIconWithColor(ImageButton* button,
+                                     const gfx::VectorIcon& icon,
+                                     int dip_size,
+                                     SkColor icon_color) {
   const SkColor disabled_color =
       SkColorSetA(icon_color, gfx::kDisabledControlAlpha);
   const gfx::ImageSkia& normal_image =
@@ -82,4 +103,4 @@ void SetToggledImageFromVectorIcon(ToggleImageButton* button,
   button->SetToggledImage(Button::STATE_DISABLED, &disabled_image);
 }
 
-}  // views
+}  // namespace views

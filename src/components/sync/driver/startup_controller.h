@@ -29,7 +29,7 @@ class StartupController {
 
   StartupController(
       base::RepeatingCallback<ModelTypeSet()> get_preferred_data_types,
-      base::RepeatingCallback<bool(bool force_immediate)> should_start,
+      base::RepeatingCallback<bool()> should_start,
       base::RepeatingClosure start_engine);
   ~StartupController();
 
@@ -68,7 +68,7 @@ class StartupController {
 
   // A function that can be invoked repeatedly to determine whether sync should
   // be started. |start_engine_| should not be invoked unless this returns true.
-  const base::RepeatingCallback<bool(bool)> should_start_callback_;
+  const base::RepeatingCallback<bool()> should_start_callback_;
 
   // The callback we invoke when it's time to call expensive
   // startup routines for the sync engine.

@@ -22,11 +22,12 @@
 #include "components/cast_channel/cast_channel_enum.h"
 #include "components/cast_channel/cast_socket.h"
 #include "components/cast_channel/cast_transport.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
 #include "net/log/net_log_source.h"
 #include "services/network/public/mojom/network_context.mojom.h"
+#include "services/network/public/mojom/tls_socket.mojom.h"
 
 namespace net {
 class X509Certificate;
@@ -68,6 +69,8 @@ class CastSocket {
     // Invoked when |socket| receives a message.
     virtual void OnMessage(const CastSocket& socket,
                            const CastMessage& message) = 0;
+
+    virtual void OnReadyStateChanged(const CastSocket& socket);
   };
 
   virtual ~CastSocket() {}
@@ -89,7 +92,7 @@ class CastSocket {
   // be in READY_STATE_CLOSED.
   //
   // It is fine to delete this object in |callback|.
-  virtual void Close(const net::CompletionCallback& callback) = 0;
+  virtual void Close(net::CompletionOnceCallback callback) = 0;
 
   // The IP endpoint for the destination of the channel.
   virtual const net::IPEndPoint& ip_endpoint() const = 0;
@@ -193,7 +196,7 @@ class CastSocketImpl : public CastSocket {
   // CastSocket interface.
   void Connect(OnOpenCallback callback) override;
   CastTransport* transport() const override;
-  void Close(const net::CompletionCallback& callback) override;
+  void Close(net::CompletionOnceCallback callback) override;
   const net::IPEndPoint& ip_endpoint() const override;
   int id() const override;
   void set_id(int channel_id) override;

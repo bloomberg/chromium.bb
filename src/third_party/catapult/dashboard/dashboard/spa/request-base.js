@@ -5,7 +5,7 @@
 'use strict';
 tr.exportTo('cp', () => {
   class RequestBase {
-    constructor(options) {
+    constructor(options = {}) {
       this.responsePromise_ = undefined;
       this.method_ = 'GET';
       this.headers_ = new Headers(options.headers);
@@ -22,9 +22,30 @@ tr.exportTo('cp', () => {
       return this.responsePromise_;
     }
 
+    // Some CacheRequest classes use ResultChannelSender to stream parts of the
+    // requested data as it becomes available.
+    async* reader() {
+      // Create the receiver before fetching so we don't miss any results.
+      const receiver = new cp.ResultChannelReceiver(this.channelName);
+      const response = await this.response;
+      if (response) yield response;
+
+      // The service worker doesn't actually run on localhost.
+      if (window.IS_DEBUG) return;
+      for await (const update of receiver) {
+        yield this.postProcess_(update, true);
+      }
+    }
+
+    get channelName() {
+      return (location.origin + this.url_ + '?' +
+              new URLSearchParams(this.body_));
+    }
+
     async addAuthorizationHeaders_() {
-      const headers = await cp.authorizationHeaders();
-      for (const [name, value] of headers) {
+      if (!window.AUTH_CLIENT_ID) return;
+      const headers = await window.getAuthorizationHeaders();
+      for (const [name, value] of Object.entries(headers)) {
         this.headers_.set(name, value);
       }
     }
@@ -41,7 +62,7 @@ tr.exportTo('cp', () => {
       return this.postProcess_(await response.json());
     }
 
-    postProcess_(response) {
+    postProcess_(response, isFromChannel = false) {
       return response;
     }
   }

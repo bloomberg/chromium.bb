@@ -16,7 +16,6 @@
 #include "media/base/audio_decoder_config.h"
 #include "media/base/byte_queue.h"
 #include "media/base/decrypt_config.h"
-#include "media/base/encryption_scheme.h"
 #include "media/base/media_export.h"
 #include "media/base/stream_parser.h"
 #include "media/base/video_decoder_config.h"
@@ -25,7 +24,6 @@
 
 namespace media {
 
-class DecryptConfig;
 class StreamParserBuffer;
 
 namespace mp2t {
@@ -121,10 +119,10 @@ class MEDIA_EXPORT Mp2tStreamParser : public StreamParser {
   void RegisterCencPids(int ca_pid, int pssh_pid);
   void UnregisterCencPids();
 
-  // Register a default encryption scheme to be used for decoder configs. This
+  // Register a default encryption mode to be used for decoder configs. This
   // value is only used in the absence of explicit encryption metadata, as might
   // be the case during an unencrypted portion of a live stream.
-  void RegisterEncryptionScheme(const EncryptionScheme& scheme);
+  void RegisterEncryptionMode(EncryptionMode mode);
 
   // Register the new KeyID and IV (parsed from CENC-ECM).
   void RegisterNewKeyIdAndIv(const std::string& key_id, const std::string& iv);
@@ -173,7 +171,7 @@ class MEDIA_EXPORT Mp2tStreamParser : public StreamParser {
   TimestampUnroller timestamp_unroller_;
 
 #if BUILDFLAG(ENABLE_HLS_SAMPLE_AES)
-  EncryptionScheme initial_scheme_;
+  EncryptionMode initial_encryption_mode_ = EncryptionMode::kUnencrypted;
 
   // TODO(jrummell): Rather than store the key_id and iv in a DecryptConfig,
   // provide a better way to access the last values seen in a ECM packet.

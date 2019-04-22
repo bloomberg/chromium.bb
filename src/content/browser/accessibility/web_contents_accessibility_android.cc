@@ -186,7 +186,7 @@ enum {
                             UMA_ACCESSIBILITYSERVICEINFO_MAX)
 
 using SearchKeyToPredicateMap =
-    base::hash_map<base::string16, AccessibilityMatchPredicate>;
+    std::unordered_map<base::string16, AccessibilityMatchPredicate>;
 base::LazyInstance<SearchKeyToPredicateMap>::Leaky
     g_search_key_to_predicate_map = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<base::string16>::Leaky g_all_search_keys =
@@ -631,7 +631,7 @@ jint WebContentsAccessibilityAndroid::GetEditableTextSelectionStart(
   if (!node)
     return false;
 
-  return node->GetIntAttribute(ax::mojom::IntAttribute::kTextSelStart);
+  return node->GetSelectionStart();
 }
 
 jint WebContentsAccessibilityAndroid::GetEditableTextSelectionEnd(
@@ -642,7 +642,7 @@ jint WebContentsAccessibilityAndroid::GetEditableTextSelectionEnd(
   if (!node)
     return false;
 
-  return node->GetIntAttribute(ax::mojom::IntAttribute::kTextSelEnd);
+  return node->GetSelectionEnd();
 }
 
 jboolean WebContentsAccessibilityAndroid::PopulateAccessibilityNodeInfo(
@@ -698,12 +698,13 @@ jboolean WebContentsAccessibilityAndroid::PopulateAccessibilityNodeInfo(
   float dip_scale = use_zoom_for_dsf_enabled_
                         ? 1 / root_manager_->device_scale_factor()
                         : 1.0;
-  gfx::Rect absolute_rect = gfx::ScaleToEnclosingRect(node->GetPageBoundsRect(),
-                                                      dip_scale, dip_scale);
+  gfx::Rect absolute_rect = gfx::ScaleToEnclosingRect(
+      node->GetUnclippedRootFrameBoundsRect(), dip_scale, dip_scale);
   gfx::Rect parent_relative_rect = absolute_rect;
   if (node->PlatformGetParent()) {
     gfx::Rect parent_rect = gfx::ScaleToEnclosingRect(
-        node->PlatformGetParent()->GetPageBoundsRect(), dip_scale, dip_scale);
+        node->PlatformGetParent()->GetUnclippedRootFrameBoundsRect(), dip_scale,
+        dip_scale);
     parent_relative_rect.Offset(-parent_rect.OffsetFromOrigin());
   }
   bool is_root = node->PlatformGetParent() == NULL;
@@ -719,12 +720,14 @@ jboolean WebContentsAccessibilityAndroid::PopulateAccessibilityNodeInfo(
       base::android::ConvertUTF16ToJavaString(env, node->GetHint()),
       node->GetIntAttribute(ax::mojom::IntAttribute::kTextSelStart),
       node->GetIntAttribute(ax::mojom::IntAttribute::kTextSelEnd),
-      node->HasImage());
+      node->HasImage(), node->IsContentInvalid());
 
   Java_WebContentsAccessibilityImpl_setAccessibilityNodeInfoLollipopAttributes(
       env, obj, info, node->CanOpenPopup(), node->IsContentInvalid(),
       node->IsDismissable(), node->IsMultiLine(), node->AndroidInputType(),
-      node->AndroidLiveRegionType());
+      node->AndroidLiveRegionType(),
+      base::android::ConvertUTF16ToJavaString(
+          env, node->GetContentInvalidErrorMessage()));
 
   bool has_character_locations = node->HasCharacterLocations();
   Java_WebContentsAccessibilityImpl_setAccessibilityNodeInfoOAttributes(
@@ -848,9 +851,10 @@ void WebContentsAccessibilityAndroid::ScrollToMakeNodeVisible(
     const JavaParamRef<jobject>& obj,
     jint unique_id) {
   BrowserAccessibilityAndroid* node = GetAXFromUniqueID(unique_id);
-  if (node)
+  if (node) {
     node->manager()->ScrollToMakeVisible(
-        *node, gfx::Rect(node->GetFrameBoundsRect().size()));
+        *node, gfx::Rect(node->GetClippedFrameBoundsRect().size()));
+  }
 }
 
 void WebContentsAccessibilityAndroid::SetTextFieldValue(
@@ -877,8 +881,9 @@ void WebContentsAccessibilityAndroid::SetSelection(
 
   BrowserAccessibilityAndroid* node = GetAXFromUniqueID(unique_id);
   if (node) {
-    node->manager()->SetSelection(AXPlatformRange(node->CreatePositionAt(start),
-                                                  node->CreatePositionAt(end)));
+    node->manager()->SetSelection(
+        AXPlatformRange(node->CreatePositionForSelectionAt(start),
+                        node->CreatePositionForSelectionAt(end)));
   }
 }
 
@@ -1193,10 +1198,11 @@ WebContentsAccessibilityAndroid::GetCharacterBoundingBoxes(
     return nullptr;
   }
 
-  gfx::Rect object_bounds = node->GetPageBoundsRect();
+  gfx::Rect object_bounds = node->GetUnclippedRootFrameBoundsRect();
   int coords[4 * len];
   for (int i = 0; i < len; i++) {
-    gfx::Rect char_bounds = node->GetPageBoundsForRange(start + i, 1, false);
+    gfx::Rect char_bounds = node->GetRootFrameRangeBoundsRect(
+        start + i, 1, ui::AXClippingBehavior::kUnclipped);
     if (char_bounds.IsEmpty())
       char_bounds = object_bounds;
     coords[4 * i + 0] = char_bounds.x();

@@ -87,6 +87,8 @@ class UsbServiceImpl :
   void EnumerationFailed(ScopedLibusbDeviceRef platform_device,
                          const base::Closure& refresh_complete);
 
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+
   // The libusb_context must outlive any references to libusb_device objects.
   scoped_refptr<UsbContext> context_;
   bool usb_unavailable_ = false;

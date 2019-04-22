@@ -17,7 +17,7 @@
 
 <dom-module id="settings-main">
   <template>
-    <style include="cr-hidden-style">
+    <style include="cr-hidden-style settings-shared">
       #overscroll {
         margin-top: 64px;
       }
@@ -44,10 +44,13 @@
       <settings-basic-page prefs="{{prefs}}"
           page-visibility="[[pageVisibility]]"
           show-android-apps="[[showAndroidApps]]"
+          show-kiosk-next-shell="[[showKioskNextShell]]"
           show-crostini="[[showCrostini]]"
-          show-multidevice="[[showMultidevice]]"
+          show-plugin-vm="[[showPluginVm]]"
           have-play-store-app="[[havePlayStoreApp]]"
-          on-subpage-expand="onSubpageExpand_"
+          on-showing-section="onShowingSection_"
+          on-subpage-expand="onShowingSubpage_"
+          on-showing-main-page="onShowingMainPage_"
           in-search-mode="[[inSearchMode_]]"
           advanced-toggle-expanded="{{advancedToggleExpanded}}">
       </settings-basic-page>
@@ -55,6 +58,8 @@
     <template is="dom-if" if="[[showPages_.about]]">
       <settings-about-page role="main"
           in-search-mode="[[inSearchMode_]]"
+          on-subpage-expand="onShowingSubpage_"
+          on-showing-main-page="onShowingMainPage_"
           prefs="{{prefs}}"
           show-crostini="[[showCrostini]]">
       </settings-about-page>

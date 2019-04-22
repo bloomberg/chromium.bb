@@ -63,6 +63,8 @@ class AudioDecoderForMixer : public MediaPipelineBackend::AudioDecoder,
   float SetAvSyncPlaybackRate(float rate);
   void RestartPlaybackAt(int64_t pts, int64_t timestamp);
 
+  RenderingDelay GetMixerRenderingDelay();
+
  private:
   friend class MockAudioDecoderForMixer;
   friend class AvSyncTest;

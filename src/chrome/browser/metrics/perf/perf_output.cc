@@ -9,6 +9,8 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon_client.h"
 
+namespace metrics {
+
 PerfOutputCall::PerfOutputCall(base::TimeDelta duration,
                                const std::vector<std::string>& perf_args,
                                DoneCallback callback)
@@ -16,7 +18,7 @@ PerfOutputCall::PerfOutputCall(base::TimeDelta duration,
       perf_args_(perf_args),
       done_callback_(std::move(callback)),
       weak_factory_(this) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   perf_data_pipe_reader_ =
       std::make_unique<chromeos::PipeReader>(base::CreateTaskRunnerWithTraits(
@@ -35,18 +37,20 @@ PerfOutputCall::PerfOutputCall(base::TimeDelta duration,
 PerfOutputCall::~PerfOutputCall() {}
 
 void PerfOutputCall::OnIOComplete(base::Optional<std::string> result) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   perf_data_pipe_reader_.reset();
   std::move(done_callback_).Run(result.value_or(std::string()));
   // The callback may delete us, so it's hammertime: Can't touch |this|.
 }
 
-void PerfOutputCall::OnGetPerfOutput(bool success) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+void PerfOutputCall::OnGetPerfOutput(base::Optional<uint64_t> result) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   // Signal pipe reader to shut down.
-  if (!success && perf_data_pipe_reader_.get()) {
+  if (!result.has_value() && perf_data_pipe_reader_.get()) {
     perf_data_pipe_reader_.reset();
     std::move(done_callback_).Run(std::string());
   }
 }
+
+}  // namespace metrics

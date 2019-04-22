@@ -20,6 +20,7 @@
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/border.h"
+#include "ui/views/view_class_properties.h"
 
 namespace ash {
 
@@ -104,6 +105,9 @@ void CustomShapeButton::PaintCustomShapePath(gfx::Canvas* canvas) {
 CollapseButton::CollapseButton(views::ButtonListener* listener)
     : CustomShapeButton(listener) {
   OnEnabledChanged();
+  auto path = std::make_unique<SkPath>(
+      CreateCustomShapePath(gfx::Rect(CalculatePreferredSize())));
+  SetProperty(views::kHighlightPathKey, path.release());
 }
 
 CollapseButton::~CollapseButton() = default;

@@ -11,10 +11,10 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "content/public/common/console_message_level.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
 #include "extensions/common/view_type.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "v8/include/v8.h"
 
 struct ExtensionMsg_ExternalConnectionInfo;
@@ -123,8 +123,8 @@ class ExtensionFrameHelper
   // RenderFrameObserver implementation.
   void DidCreateDocumentElement() override;
   void DidCreateNewDocument() override;
-  void DidStartProvisionalLoad(blink::WebDocumentLoader* document_loader,
-                               bool is_content_initiated) override;
+  void ReadyToCommitNavigation(
+      blink::WebDocumentLoader* document_loader) override;
   void DidCreateScriptContext(v8::Local<v8::Context>,
                               int world_id) override;
   void WillReleaseScriptContext(v8::Local<v8::Context>, int world_id) override;
@@ -133,16 +133,18 @@ class ExtensionFrameHelper
   void DraggableRegionsChanged() override;
 
   // IPC handlers.
-  void OnExtensionValidateMessagePort(const PortId& id);
+  void OnExtensionValidateMessagePort(int worker_thread_id, const PortId& id);
   void OnExtensionDispatchOnConnect(
+      int worker_thread_id,
       const PortId& target_port_id,
       const std::string& channel_name,
       const ExtensionMsg_TabConnectionInfo& source,
-      const ExtensionMsg_ExternalConnectionInfo& info,
-      const std::string& tls_channel_id);
-  void OnExtensionDeliverMessage(const PortId& target_port_id,
+      const ExtensionMsg_ExternalConnectionInfo& info);
+  void OnExtensionDeliverMessage(int worker_thread_id,
+                                 const PortId& target_port_id,
                                  const Message& message);
-  void OnExtensionDispatchOnDisconnect(const PortId& id,
+  void OnExtensionDispatchOnDisconnect(int worker_thread_id,
+                                       const PortId& id,
                                        const std::string& error_message);
   void OnExtensionSetTabId(int tab_id);
   void OnUpdateBrowserWindowId(int browser_window_id);

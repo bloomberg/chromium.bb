@@ -120,6 +120,10 @@ void FuzzedDatagramClientSocket::SetMaxPacketSize(size_t max_packet_size) {}
 void FuzzedDatagramClientSocket::SetWriteMultiCoreEnabled(bool enabled) {}
 void FuzzedDatagramClientSocket::SetSendmmsgEnabled(bool enabled) {}
 void FuzzedDatagramClientSocket::SetWriteBatchingActive(bool active) {}
+int FuzzedDatagramClientSocket::SetMulticastInterface(
+    uint32_t interface_index) {
+  return ERR_NOT_IMPLEMENTED;
+}
 
 const NetLogWithSource& FuzzedDatagramClientSocket::NetLog() const {
   return net_log_;

@@ -13,13 +13,13 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/audio/chromeos_sounds.h"
 #include "chromeos/audio/cras_audio_handler.h"
-#include "chromeos/chromeos_switches.h"
-#include "media/audio/sounds/sounds_manager.h"
+#include "chromeos/constants/chromeos_switches.h"
+#include "services/audio/public/cpp/sounds/sounds_manager.h"
 #include "ui/base/accelerators/accelerator.h"
 
 namespace {
 
-class SoundsManagerTestImpl : public media::SoundsManager {
+class SoundsManagerTestImpl : public audio::SoundsManager {
  public:
   SoundsManagerTestImpl()
       : is_sound_initialized_(chromeos::SOUND_COUNT),
@@ -149,7 +149,7 @@ class VolumeControllerSoundsTest : public VolumeControllerTest {
 
   void SetUpInProcessBrowserTestFixture() override {
     sounds_manager_ = new SoundsManagerTestImpl();
-    media::SoundsManager::InitializeForTesting(sounds_manager_);
+    audio::SoundsManager::InitializeForTesting(sounds_manager_);
   }
 
   bool is_sound_initialized() const {

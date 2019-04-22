@@ -24,6 +24,10 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 
+#if defined(USE_AURA)
+#include "chromecast/browser/ui/aura/accessibility/automation_manager_aura.h"
+#endif
+
 namespace extensions {
 namespace cast {
 
@@ -39,6 +43,10 @@ AutomationEventRouter::AutomationEventRouter() {
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
                  content::NotificationService::AllBrowserContextsAndSources());
+#if defined(USE_AURA)
+  // Not reset because |this| is leaked.
+  AutomationManagerAura::GetInstance()->set_event_bundle_sink(this);
+#endif
 }
 
 AutomationEventRouter::~AutomationEventRouter() {}
@@ -53,7 +61,27 @@ void AutomationEventRouter::RegisterListenerForOneTree(
 void AutomationEventRouter::RegisterListenerWithDesktopPermission(
     const ExtensionId& extension_id,
     int listener_process_id) {
-  Register(extension_id, listener_process_id, ui::DesktopAXTreeID(), true);
+  Register(extension_id, listener_process_id, ui::AXTreeIDUnknown(), true);
+}
+
+void AutomationEventRouter::DispatchActionResult(
+    const ui::AXActionData& data,
+    bool result,
+    content::BrowserContext* active_profile) {
+  CHECK(!data.source_extension_id.empty());
+
+  if (listeners_.empty())
+    return;
+
+  std::unique_ptr<base::ListValue> args(
+      api::automation_internal::OnActionResult::Create(
+          data.target_tree_id.ToString(), data.request_id, result));
+  auto event = std::make_unique<Event>(
+      events::AUTOMATION_INTERNAL_ON_ACTION_RESULT,
+      api::automation_internal::OnActionResult::kEventName, std::move(args),
+      active_profile);
+  EventRouter::Get(active_profile)
+      ->DispatchEventToExtension(data.source_extension_id, std::move(event));
 }
 
 void AutomationEventRouter::DispatchAccessibilityEvents(
@@ -93,7 +121,8 @@ void AutomationEventRouter::DispatchTreeDestroyedEvent(
     return;
 
   std::unique_ptr<base::ListValue> args(
-      api::automation_internal::OnAccessibilityTreeDestroyed::Create(tree_id));
+      api::automation_internal::OnAccessibilityTreeDestroyed::Create(
+          tree_id.ToString()));
   auto event = std::make_unique<Event>(
       events::AUTOMATION_INTERNAL_ON_ACCESSIBILITY_TREE_DESTROYED,
       api::automation_internal::OnAccessibilityTreeDestroyed::kEventName,
@@ -124,16 +153,32 @@ void AutomationEventRouter::Register(const ExtensionId& extension_id,
     listener.extension_id = extension_id;
     listener.process_id = listener_process_id;
     listener.desktop = desktop;
-    listener.tree_ids.insert(ax_tree_id);
+    if (!desktop)
+      listener.tree_ids.insert(ax_tree_id);
     listeners_.push_back(listener);
     return;
   }
 
   // We have an entry with that process so update the set of tree ids it wants
   // to listen to, and update its desktop permission.
-  iter->tree_ids.insert(ax_tree_id);
   if (desktop)
     iter->desktop = true;
+  else
+    iter->tree_ids.insert(ax_tree_id);
+}
+
+void AutomationEventRouter::DispatchAccessibilityEvents(
+    const ui::AXTreeID& tree_id,
+    std::vector<ui::AXTreeUpdate> updates,
+    const gfx::Point& mouse_location,
+    std::vector<ui::AXEvent> events) {
+  ExtensionMsg_AccessibilityEventBundleParams event_bundle;
+  event_bundle.tree_id = tree_id;
+  event_bundle.updates = std::move(updates);
+  event_bundle.mouse_location = mouse_location;
+  event_bundle.events = std::move(events);
+
+  DispatchAccessibilityEvents(event_bundle);
 }
 
 void AutomationEventRouter::Observe(

@@ -1,14 +1,24 @@
+/* liblouis Braille Translation and Back-Translation Library
+
+Copyright (C) 2014 Swiss Library for the Blind, Visually Impaired and Print Disabled
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved. This file is offered as-is,
+without any warranty. */
+
+#include <config.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include "louis.h"
+#include "internal.h"
 
 static char log_buffer[1024];
 static int log_buffer_pos = 0;
 
 static void
-log_to_buffer(int level, const char *message)
+log_to_buffer(logLevels level, const char *message)
 {
   switch(level) {
     case LOG_DEBUG:
@@ -52,9 +62,9 @@ main(int argc, char **argv)
   lou_registerLogCallback(log_to_buffer);
   log_buffer_pos = 0;
   lou_setLogLevel(LOG_WARN);
-  logMessage(LOG_ERROR, "foo");
-  logMessage(LOG_INFO, "bar");
+  _lou_logMessage(LOG_ERROR, "foo");
+  _lou_logMessage(LOG_INFO, "bar");
   lou_setLogLevel(LOG_INFO);
-  logMessage(LOG_INFO, "baz");
+  _lou_logMessage(LOG_INFO, "baz");
   return assert_log_buffer_equals("[ERROR] foo\n[INFO] baz\n");
 }

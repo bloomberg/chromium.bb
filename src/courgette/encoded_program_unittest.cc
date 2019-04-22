@@ -10,7 +10,7 @@
 #include <memory>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "courgette/image_utils.h"
 #include "courgette/label_manager.h"
 #include "courgette/streams.h"
@@ -109,7 +109,7 @@ TEST(EncodedProgramTest, Test) {
       0xF8, 0xFF, 0xFF,
       0xFF  // REL32 from next line to base + 2
   };
-  EXPECT_TRUE(CompareSink(golden, arraysize(golden), &assembled));
+  EXPECT_TRUE(CompareSink(golden, base::size(golden), &assembled));
 }
 
 // A larger test with multiple addresses. We encode the program and check the
@@ -138,14 +138,14 @@ TEST(EncodedProgramTest, TestWriteAddress) {
       0x03, 0x07, 0x03, 0x05  // 3 indexes: [7, 3, 5].
   };
   EXPECT_TRUE(CompareSink(golden_abs32_indexes,
-                          arraysize(golden_abs32_indexes),
+                          base::size(golden_abs32_indexes),
                           sinks.stream(kStreamAbs32Indexes)));
 
   const uint8_t golden_rel32_indexes[] = {
       0x03, 0x00, 0x03, 0x01  // 3 indexes: [0, 3, 1].
   };
   EXPECT_TRUE(CompareSink(golden_rel32_indexes,
-                          arraysize(golden_rel32_indexes),
+                          base::size(golden_rel32_indexes),
                           sinks.stream(kStreamRel32Indexes)));
 
   // Addresses: [_, _, _, 2, _, 23, _, 11].
@@ -159,7 +159,7 @@ TEST(EncodedProgramTest, TestWriteAddress) {
       0x00, 0x00, 0x00, 0x04, 0x00, 0x2A, 0x00, 0x17,
   };
   EXPECT_TRUE(CompareSink(golden_abs32_addresses,
-                          arraysize(golden_abs32_addresses),
+                          base::size(golden_abs32_addresses),
                           sinks.stream(kStreamAbs32Addresses)));
 
   // Addresses: [16, 7, _, 32].
@@ -173,7 +173,7 @@ TEST(EncodedProgramTest, TestWriteAddress) {
       0x20, 0x11, 0x00, 0x32,
   };
   EXPECT_TRUE(CompareSink(golden_rel32_addresses,
-                          arraysize(golden_rel32_addresses),
+                          base::size(golden_rel32_addresses),
                           sinks.stream(kStreamRel32Addresses)));
 }
 

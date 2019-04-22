@@ -92,14 +92,14 @@ void LayoutEmbeddedObject::UpdateLayout() {
   UpdateLogicalWidth();
   UpdateLogicalHeight();
 
-  overflow_.reset();
-  AddVisualEffectOverflow();
+  ClearLayoutOverflow();
 
   UpdateAfterLayout();
 
   if (!GetEmbeddedContentView() && GetFrameView())
     GetFrameView()->AddPartToUpdate(*this);
 
+  ClearSelfNeedsLayoutOverflowRecalc();
   ClearNeedsLayout();
 }
 
@@ -111,6 +111,7 @@ CompositingReasons LayoutEmbeddedObject::AdditionalCompositingReasons() const {
 
 void LayoutEmbeddedObject::ComputeIntrinsicSizingInfo(
     IntrinsicSizingInfo& intrinsic_sizing_info) const {
+  DCHECK(!ShouldApplySizeContainment());
   FrameView* frame_view = ChildFrameView();
   if (frame_view && frame_view->GetIntrinsicSizingInfo(intrinsic_sizing_info)) {
     // Handle zoom & vertical writing modes here, as the embedded document

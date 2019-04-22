@@ -138,9 +138,7 @@ bool TouchSelectionControllerClientChildFrame::IsCommandIdEnabled(
   bool editable = rwhv_->GetTextInputType() != ui::TEXT_INPUT_TYPE_NONE;
   bool readable = rwhv_->GetTextInputType() != ui::TEXT_INPUT_TYPE_PASSWORD;
 
-  gfx::Range selection_range;
-  bool has_selection =
-      rwhv_->GetSelectionRange(&selection_range) && !selection_range.is_empty();
+  bool has_selection = !rwhv_->GetSelectedText().empty();
   switch (command_id) {
     case IDS_APP_CUT:
       return editable && readable && has_selection;

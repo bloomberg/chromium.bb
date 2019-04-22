@@ -33,7 +33,9 @@ public class TraceEvent implements AutoCloseable {
     private static volatile boolean sATraceEnabled; // True when taking an Android systrace.
 
     private static class BasicLooperMonitor implements Printer {
-        private static final String EARLY_TOPLEVEL_TASK_NAME = "Looper.dispatchMessage: ";
+        private static final String LOOPER_TASK_PREFIX = "Looper.dispatch: ";
+        private static final int SHORTEST_LOG_PREFIX_LENGTH = "<<<<< Finished to ".length();
+        private String mCurrentTarget;
 
         @Override
         public void println(final String line) {
@@ -50,32 +52,57 @@ public class TraceEvent implements AutoCloseable {
             // will filter the event in this case.
             boolean earlyTracingActive = EarlyTraceEvent.isActive();
             if (sEnabled || earlyTracingActive) {
-                String target = getTarget(line);
+                mCurrentTarget = getTraceEventName(line);
                 if (sEnabled) {
-                    nativeBeginToplevel(target);
-                } else if (earlyTracingActive) {
-                    // Synthesize a task name instead of using a parameter, as early tracing doesn't
-                    // support parameters.
-                    EarlyTraceEvent.begin(EARLY_TOPLEVEL_TASK_NAME + target);
+                    nativeBeginToplevel(mCurrentTarget);
+                } else {
+                    EarlyTraceEvent.begin(mCurrentTarget);
                 }
             }
         }
 
         void endHandling(final String line) {
-            if (EarlyTraceEvent.isActive()) {
-                EarlyTraceEvent.end(EARLY_TOPLEVEL_TASK_NAME + getTarget(line));
+            boolean earlyTracingActive = EarlyTraceEvent.isActive();
+            if ((sEnabled || earlyTracingActive) && mCurrentTarget != null) {
+                if (sEnabled) {
+                    nativeEndToplevel(mCurrentTarget);
+                } else {
+                    EarlyTraceEvent.end(mCurrentTarget);
+                }
             }
-            if (sEnabled) nativeEndToplevel();
+            mCurrentTarget = null;
+        }
+
+        private static String getTraceEventName(String line) {
+            return LOOPER_TASK_PREFIX + getTarget(line) + "(" + getTargetName(line) + ")";
         }
 
         /**
-         * Android Looper formats |line| as ">>>>> Dispatching to (TARGET) [...]" since at least
-         * 2009 (Donut). Extracts the TARGET part of the message.
+         * Android Looper formats |logLine| as
+         *
+         * ">>>>> Dispatching to (TARGET) {HASH_CODE} TARGET_NAME: WHAT"
+         *
+         * and
+         *
+         * "<<<<< Finished to (TARGET) {HASH_CODE} TARGET_NAME".
+         *
+         * This has been the case since at least 2009 (Donut). This function extracts the
+         * TARGET part of the message.
          */
         private static String getTarget(String logLine) {
-            int start = logLine.indexOf('(', 21); // strlen(">>>>> Dispatching to ")
+            int start = logLine.indexOf('(', SHORTEST_LOG_PREFIX_LENGTH);
             int end = start == -1 ? -1 : logLine.indexOf(')', start);
             return end != -1 ? logLine.substring(start + 1, end) : "";
+        }
+
+        // Extracts the TARGET_NAME part of the log message (see above).
+        private static String getTargetName(String logLine) {
+            int start = logLine.indexOf('}', SHORTEST_LOG_PREFIX_LENGTH);
+            int end = start == -1 ? -1 : logLine.indexOf(':', start);
+            if (end == -1) {
+                end = logLine.length();
+            }
+            return start != -1 ? logLine.substring(start + 2, end) : "";
         }
     }
 
@@ -381,7 +408,7 @@ public class TraceEvent implements AutoCloseable {
     private static native void nativeBegin(String name, String arg);
     private static native void nativeEnd(String name, String arg);
     private static native void nativeBeginToplevel(String target);
-    private static native void nativeEndToplevel();
+    private static native void nativeEndToplevel(String target);
     private static native void nativeStartAsync(String name, long id);
     private static native void nativeFinishAsync(String name, long id);
 }

@@ -94,7 +94,7 @@ class ArcNotificationContentView
 
   // views::NativeViewHost
   void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) override;
+      const views::ViewHierarchyChangedDetails& details) override;
   void Layout() override;
   void OnPaint(gfx::Canvas* canvas) override;
   void OnMouseEntered(const ui::MouseEvent& event) override;
@@ -153,6 +153,19 @@ class ArcNotificationContentView
   // A helper to observe slide transform/animation and use surface layer copy
   // when a slide is in progress and restore the surface when it finishes.
   std::unique_ptr<SlideHelper> slide_helper_;
+
+  // Whether the notification is being slid or is at the origin. This stores the
+  // latest value of the |in_progress| from OnSlideChanged callback, which is
+  // called during both manual swipe and automatic slide on dismissing or
+  // resetting back to the origin.
+  // This value is synced with the visibility of the copied surface. If the
+  // value is true, the copied surface is visible instead of the original
+  // surface itself. Copied surgace doesn't have control buttons so they must be
+  // hidden if it's true.
+  // This value is stored in case of the change of surface. When a new surface
+  // sets, if this value is true, the copy of the new surface gets visible
+  // instead of the copied surface itself.
+  bool slide_in_progress_ = false;
 
   // A control buttons on top of NotificationSurface. Needed because the
   // aura::Window of NotificationSurface is added after hosting widget's

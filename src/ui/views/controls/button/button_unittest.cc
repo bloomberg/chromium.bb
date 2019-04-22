@@ -4,6 +4,8 @@
 
 #include "ui/views/controls/button/button.h"
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
@@ -47,13 +49,13 @@ namespace {
 // No-op test double of a ContextMenuController.
 class TestContextMenuController : public ContextMenuController {
  public:
-  TestContextMenuController() {}
-  ~TestContextMenuController() override {}
+  TestContextMenuController() = default;
+  ~TestContextMenuController() override = default;
 
   // ContextMenuController:
-  void ShowContextMenuForView(View* source,
-                              const gfx::Point& point,
-                              ui::MenuSourceType source_type) override {}
+  void ShowContextMenuForViewImpl(View* source,
+                                  const gfx::Point& point,
+                                  ui::MenuSourceType source_type) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestContextMenuController);
@@ -65,7 +67,7 @@ class TestButton : public Button, public ButtonListener {
     set_has_ink_drop_action_on_click(has_ink_drop_action_on_click);
   }
 
-  ~TestButton() override {}
+  ~TestButton() override = default;
 
   KeyClickAction GetKeyClickActionForEvent(const ui::KeyEvent& event) override {
     if (custom_key_click_action_ == KeyClickAction::CLICK_NONE)
@@ -122,16 +124,17 @@ class TestButton : public Button, public ButtonListener {
 
 class ButtonTest : public ViewsTestBase {
  public:
-  ButtonTest() {}
-  ~ButtonTest() override {}
+  ButtonTest() = default;
+  ~ButtonTest() override = default;
 
   void SetUp() override {
     ViewsTestBase::SetUp();
 
     // Create a widget so that the Button can query the hover state
     // correctly.
-    widget_.reset(new Widget);
-    Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+    widget_ = std::make_unique<Widget>();
+    Widget::InitParams params =
+        CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.bounds = gfx::Rect(0, 0, 650, 650);
     widget_->Init(params);

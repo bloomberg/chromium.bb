@@ -11,7 +11,7 @@ mojom("mojom") {
   ]
 
   public_deps = [
-    "//chromeos/services/device_sync/public/mojom",
+    "//chromeos/components/multidevice/mojom",
     "//mojo/public/mojom/base",
   ]
 }

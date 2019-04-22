@@ -75,5 +75,35 @@ chrome.test.runTests([
         });
       });
     });
+  },
+  // Test OnSettingsChanged event gets raised when a new key is added.
+  function eventRaisedWhenSettingToInitialValue() {
+    const listener = (ime, key, value) => {
+      chrome.test.assertEq('ime', ime);
+      chrome.test.assertEq('key', key);
+      chrome.test.assertEq('value', value);
+      chrome.test.succeed();
+
+      chrome.inputMethodPrivate.onSettingsChanged.removeListener(listener);
+    };
+
+    chrome.inputMethodPrivate.onSettingsChanged.addListener(listener);
+    chrome.inputMethodPrivate.setSetting('ime', 'key', 'value');
+  },
+  // Test OnSettingsChanged event gets raised when a key is changed.
+  function eventRaisedWhenSettingChanged() {
+    const listener = (ime, key, value) => {
+      chrome.test.assertEq('ime', ime);
+      chrome.test.assertEq('key', key);
+      chrome.test.assertEq('value2', value);
+      chrome.test.succeed();
+
+      chrome.inputMethodPrivate.onSettingsChanged.removeListener(listener);
+    };
+
+    chrome.inputMethodPrivate.setSetting('ime', 'key', 'value1', () => {
+      chrome.inputMethodPrivate.onSettingsChanged.addListener(listener);
+      chrome.inputMethodPrivate.setSetting('ime', 'key', 'value2');
+    });
   }
 ]);

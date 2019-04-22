@@ -16,7 +16,7 @@ enum NFCErrorType {
   IO_ERROR
 };
 
-enum NFCRecordType {
+enum NDEFRecordType {
   EMPTY,
   TEXT,
   URL,
@@ -46,20 +46,20 @@ struct NFCError {
   NFCErrorType error_type;
 };
 
-struct NFCRecord {
-  // The type of NFCRecord.
-  NFCRecordType record_type;
+struct NDEFRecord {
+  // The type of NDEFRecord.
+  NDEFRecordType record_type;
 
-  // Represents the IANA media type of the NFCRecord data field.
+  // Represents the IANA media type of the NDEFRecord data field.
   string? media_type;
 
-  // Payload of the NFCRecord.
+  // Payload of the NDEFRecord.
   array<uint8> data;
 };
 
-struct NFCMessage {
-  // The body of the NFCMessage is a collection of NFCRecord objects.
-  array<NFCRecord> data;
+struct NDEFMessage {
+  // The body of the NDEFMessage is a collection of NDEFRecord objects.
+  array<NDEFRecord> data;
 
   // The |url| field is an ASCII serialized origin, optionally followed by a URL
   // path. It represents Web NFC id, that can be used for matching Web NFC
@@ -82,8 +82,8 @@ struct NFCPushOptions {
   bool ignore_read;
 };
 
-struct NFCRecordTypeFilter {
-  NFCRecordType record_type;
+struct NDEFRecordTypeFilter {
+  NDEFRecordType record_type;
 };
 
 struct NFCWatchOptions {
@@ -91,7 +91,7 @@ struct NFCWatchOptions {
   string? url;
 
   // Defines filtering constraint for NFC records with specified record type.
-  NFCRecordTypeFilter? record_filter;
+  NDEFRecordTypeFilter? record_filter;
 
   // Defines media type filtering constraint.
   string? media_type;
@@ -101,7 +101,7 @@ struct NFCWatchOptions {
 };
 
 interface NFC {
-  // NFCClient interface is used to notify |client| when NFCMessage matches one
+  // NFCClient interface is used to notify |client| when NDEFMessage matches one
   // or more pending watch operations.
   SetClient(NFCClient client);
 
@@ -109,7 +109,7 @@ interface NFC {
   // NFCPushOptions specify timeout and type of device where data should be
   // pushed. If timeout is defined and data is not pushed before timeout is
   // expired, callback with corresponding error is called.
-  Push(NFCMessage message, NFCPushOptions? options) => (NFCError? error);
+  Push(NDEFMessage message, NFCPushOptions? options) => (NFCError? error);
 
   // Cancels pending push request.
   CancelPush(NFCPushTarget target) => (NFCError? error);
@@ -133,5 +133,5 @@ interface NFC {
 };
 
 interface NFCClient {
-  OnWatch(array<uint32> watch_ids, NFCMessage message);
+  OnWatch(array<uint32> watch_ids, NDEFMessage message);
 };

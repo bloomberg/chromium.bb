@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include "third_party/blink/renderer/core/dom/first_letter_pseudo_element.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/iterators/text_iterator_text_state.h"
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
@@ -53,18 +54,16 @@ struct StringAndOffsetRange {
 StringAndOffsetRange ComputeTextAndOffsetsForEmission(
     const NGOffsetMapping& mapping,
     const NGOffsetMappingUnit& unit,
-    unsigned run_start,
-    unsigned run_end,
     const TextIteratorBehavior& behavior) {
   // TODO(xiaochengh): Handle EmitsOriginalText.
-  unsigned text_content_start = unit.ConvertDOMOffsetToTextContent(run_start);
-  unsigned text_content_end = unit.ConvertDOMOffsetToTextContent(run_end);
-  unsigned length = text_content_end - text_content_start;
   if (behavior.EmitsSpaceForNbsp()) {
-    String string = mapping.GetText().Substring(text_content_start, length);
-    return {string, 0, 0};
+    String string = mapping.GetText().Substring(
+        unit.TextContentStart(),
+        unit.TextContentEnd() - unit.TextContentStart());
+    string.Replace(kNoBreakSpaceCharacter, kSpaceCharacter);
+    return {string, 0, string.length()};
   }
-  return {mapping.GetText(), text_content_start, text_content_end};
+  return {mapping.GetText(), unit.TextContentStart(), unit.TextContentEnd()};
 }
 
 }  // namespace
@@ -113,25 +112,21 @@ void TextIteratorTextNodeHandler::HandleTextNodeWithLayoutNG() {
     const unsigned initial_offset = offset_;
     for (const NGOffsetMappingUnit& unit :
          mapping->GetMappingUnitsForDOMRange(range_to_emit)) {
-      const unsigned run_start = std::max(offset_, unit.DOMStart());
-      const unsigned run_end = std::min(end_offset_, unit.DOMEnd());
-      if (run_start >= run_end ||
-          unit.ConvertDOMOffsetToTextContent(run_start) ==
-              unit.ConvertDOMOffsetToTextContent(run_end) ||
-          ShouldSkipInvisibleTextAt(*text_node_, run_start,
+      if (unit.TextContentEnd() == unit.TextContentStart() ||
+          ShouldSkipInvisibleTextAt(*text_node_, unit.DOMStart(),
                                     IgnoresStyleVisibility())) {
-        offset_ = run_end;
+        offset_ = unit.DOMEnd();
         continue;
       }
 
-      auto string_and_offsets = ComputeTextAndOffsetsForEmission(
-          *mapping, unit, run_start, run_end, behavior_);
+      auto string_and_offsets =
+          ComputeTextAndOffsetsForEmission(*mapping, unit, behavior_);
       const String& string = string_and_offsets.string;
       const unsigned text_content_start = string_and_offsets.start;
       const unsigned text_content_end = string_and_offsets.end;
-      text_state_.EmitText(*text_node_, run_start, run_end, string,
+      text_state_.EmitText(*text_node_, unit.DOMStart(), unit.DOMEnd(), string,
                            text_content_start, text_content_end);
-      offset_ = run_end;
+      offset_ = unit.DOMEnd();
       return;
     }
 

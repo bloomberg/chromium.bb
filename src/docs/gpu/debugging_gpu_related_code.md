@@ -19,6 +19,20 @@ WebGL, Skia/Ganesh, Aura), then in a debug build you can use the
 GPU service process. (From the point of view of a GPU client, it's calling
 OpenGL ES functions - but the real driver calls are made in the GPU process.)
 
+You can also use this flag in a release build by specifying the GN argument:
+
+```
+enable_gpu_client_logging=true
+```
+
+It's typically necessary to specify the `--enable-logging=stderr` flag as well:
+
+```
+--enable-gpu-client-logging --enable-logging=stderr
+```
+
+The output looks like this:
+
 ```
 [4782:4782:1219/141706:INFO:gles2_implementation.cc(1026)] [.WebGLRenderingContext] glUseProgram(3)
 [4782:4782:1219/141706:INFO:gles2_implementation_impl_autogen.h(401)] [.WebGLRenderingContext] glGenBuffers(1, 0x7fffc9e1269c)
@@ -122,7 +136,14 @@ that computation by running `build/gdb-add-index out/Debug/chrome`.
 
 ### `--enable-gpu-service-logging`
 
-In a debug build, this will print all actual calls into the GL driver.
+In a debug build or a release build with dcheck_always_on=true in GN argument,
+this will print all actual calls into the GL driver.
+
+To use it in Release builds without dcheck_always_on = true, specify GN argument
+enable_gpu_service_logging=true.
+
+For non-rooted devices running production builds, we can not set the command
+line flags. Use about://flags 'Enable gpu service logging' instead.
 
 ```
 [5497:5497:1219/142413:ERROR:gles2_cmd_decoder.cc(3301)] [.WebGLRenderingContext]cmd: kEnableVertexAttribArray

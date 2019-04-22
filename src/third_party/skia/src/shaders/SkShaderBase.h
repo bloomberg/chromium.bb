@@ -8,6 +8,7 @@
 #ifndef SkShaderBase_DEFINED
 #define SkShaderBase_DEFINED
 
+#include "SkEffectPriv.h"
 #include "SkFilterQuality.h"
 #include "SkMask.h"
 #include "SkMatrix.h"
@@ -20,11 +21,9 @@
 #endif
 
 class GrContext;
-class GrColorSpaceInfo;
 class GrFragmentProcessor;
 class SkArenaAlloc;
 class SkColorSpace;
-class SkColorSpaceXformer;
 class SkImage;
 struct SkImageInfo;
 class SkPaint;
@@ -75,6 +74,8 @@ public:
         const SkMatrix* fLocalMatrix;      // optional local matrix
         SkColorType     fDstColorType;     // the color type of the dest surface
         SkColorSpace*   fDstColorSpace;    // the color space of the dest surface (if any)
+
+        bool isLegacyCompatible(SkColorSpace* shadersColorSpace) const;
     };
 
     class Context : public ::SkNoncopyable {
@@ -99,8 +100,6 @@ public:
          */
         virtual void shadeSpan(int x, int y, SkPMColor[], int count) = 0;
 
-        virtual void shadeSpan4f(int x, int y, SkPMColor4f[], int count);
-
     protected:
         // Reference to shader, so we don't have to dupe information.
         const SkShaderBase& fShader;
@@ -123,15 +122,6 @@ public:
      * @return pointer to context or nullptr if can't be created
      */
     Context* makeContext(const ContextRec&, SkArenaAlloc*) const;
-
-    /**
-     * Shaders may opt-in for burst mode, if they can operate
-     * significantly more efficiently in that mode.
-     *
-     * Burst mode is prioritized in SkRasterPipelineBlitter over
-     * regular (appendStages) pipeline operation.
-     */
-    Context* makeBurstPipelineContext(const ContextRec&, SkArenaAlloc*) const;
 
 #if SK_SUPPORT_GPU
     /**
@@ -160,25 +150,8 @@ public:
      */
     bool asLuminanceColor(SkColor*) const;
 
-    /**
-     *  Returns a shader transformed into a new color space via the |xformer|.
-     */
-    sk_sp<SkShader> makeColorSpace(SkColorSpaceXformer* xformer) const {
-        return this->onMakeColorSpace(xformer);
-    }
-
-    struct StageRec {
-        SkRasterPipeline*   fPipeline;
-        SkArenaAlloc*       fAlloc;
-        SkColorType         fDstColorType;
-        SkColorSpace*       fDstCS;         // may be nullptr
-        const SkPaint&      fPaint;
-        const SkMatrix*     fLocalM;        // may be nullptr
-        SkMatrix            fCTM;
-    };
-
     // If this returns false, then we draw nothing (do not fall back to shader context)
-    bool appendStages(const StageRec&) const;
+    bool appendStages(const SkStageRec&) const;
 
     bool SK_WARN_UNUSED_RESULT computeTotalInverse(const SkMatrix& ctm,
                                                    const SkMatrix* outerLocalMatrix,
@@ -191,7 +164,7 @@ public:
     SkTCopyOnFirstWrite<SkMatrix> totalLocalMatrix(const SkMatrix* preLocalMatrix,
                                                    const SkMatrix* postLocalMatrix = nullptr) const;
 
-    virtual SkImage* onIsAImage(SkMatrix*, TileMode[2]) const {
+    virtual SkImage* onIsAImage(SkMatrix*, SkTileMode[2]) const {
         return nullptr;
     }
 
@@ -204,6 +177,12 @@ public:
                 SkFlattenable::Deserialize(GetFlattenableType(), data, size, procs).release()));
     }
     static void RegisterFlattenables();
+
+    /** DEPRECATED. skbug.com/8941
+     *  If this shader can be represented by another shader + a localMatrix, return that shader and
+     *  the localMatrix. If not, return nullptr and ignore the localMatrix parameter.
+     */
+    virtual sk_sp<SkShader> makeAsALocalMatrixShader(SkMatrix* localMatrix) const;
 
 protected:
     SkShaderBase(const SkMatrix* localMatrix = nullptr);
@@ -231,12 +210,8 @@ protected:
         return false;
     }
 
-    virtual sk_sp<SkShader> onMakeColorSpace(SkColorSpaceXformer*) const {
-        return sk_ref_sp(const_cast<SkShaderBase*>(this));
-    }
-
     // Default impl creates shadercontext and calls that (not very efficient)
-    virtual bool onAppendStages(const StageRec&) const;
+    virtual bool onAppendStages(const SkStageRec&) const;
 
 private:
     // This is essentially const, but not officially so it can be modified in constructors.

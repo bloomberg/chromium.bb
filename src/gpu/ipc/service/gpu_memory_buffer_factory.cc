@@ -12,7 +12,7 @@
 #include "gpu/ipc/service/gpu_memory_buffer_factory_io_surface.h"
 #endif
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_FUCHSIA)
 #include "gpu/ipc/service/gpu_memory_buffer_factory_native_pixmap.h"
 #endif
 
@@ -33,7 +33,7 @@ GpuMemoryBufferFactory::CreateNativeType() {
   return base::WrapUnique(new GpuMemoryBufferFactoryIOSurface);
 #elif defined(OS_ANDROID)
   return base::WrapUnique(new GpuMemoryBufferFactoryAndroidHardwareBuffer);
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || defined(OS_FUCHSIA)
   return base::WrapUnique(new GpuMemoryBufferFactoryNativePixmap);
 #elif defined(OS_WIN)
   return base::WrapUnique(new GpuMemoryBufferFactoryDXGI);

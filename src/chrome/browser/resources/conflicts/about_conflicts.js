@@ -6,7 +6,7 @@
  * This variable structure is here to document the structure that the template
  * expects to correctly populate the page.
  */
-var moduleListDataFormat = {
+const moduleListDataFormat = {
   'moduleList': [{
     'type_description':
         'The type of module (string), defaults to blank for regular modules',
@@ -29,8 +29,8 @@ var moduleListDataFormat = {
  */
 function renderTemplate(moduleListData) {
   // This is the javascript code that processes the template:
-  var input = new JsEvalContext(moduleListData);
-  var output = $('modulesTemplate');
+  const input = new JsEvalContext(moduleListData);
+  const output = $('modulesTemplate');
   jstProcess(input, output);
 }
 

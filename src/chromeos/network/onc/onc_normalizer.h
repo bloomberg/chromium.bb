@@ -7,8 +7,8 @@
 
 #include <memory>
 
+#include "base/component_export.h"
 #include "base/macros.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/network/onc/onc_mapper.h"
 
 namespace chromeos {
@@ -16,7 +16,7 @@ namespace onc {
 
 struct OncValueSignature;
 
-class CHROMEOS_EXPORT Normalizer : public Mapper {
+class COMPONENT_EXPORT(CHROMEOS_NETWORK) Normalizer : public Mapper {
  public:
   explicit Normalizer(bool remove_recommended_fields);
   ~Normalizer() override;
@@ -50,6 +50,7 @@ class CHROMEOS_EXPORT Normalizer : public Mapper {
   void NormalizeProxySettings(base::DictionaryValue* proxy);
   void NormalizeVPN(base::DictionaryValue* vpn);
   void NormalizeWiFi(base::DictionaryValue* wifi);
+  void NormalizeStaticIPConfigForNetwork(base::DictionaryValue* network);
 
   const bool remove_recommended_fields_;
 

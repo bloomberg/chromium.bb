@@ -17,12 +17,12 @@
 #include "base/strings/string16.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/time/clock.h"
 #include "chrome/browser/offline_pages/offline_page_utils.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "components/offline_pages/core/archive_validator.h"
 #include "components/offline_pages/core/model/offline_page_model_utils.h"
 #include "components/offline_pages/core/offline_clock.h"
+#include "components/offline_pages/core/offline_page_feature.h"
 #include "components/security_state/core/security_state.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
@@ -125,12 +125,13 @@ void OfflinePageMHTMLArchiver::GenerateMHTML(
   params.remove_popup_overlay = create_archive_params.remove_popup_overlay;
   params.use_page_problem_detectors =
       create_archive_params.use_page_problem_detectors;
+  params.compute_contents_hash = IsOnTheFlyMhtmlHashComputationEnabled();
 
   web_contents->GenerateMHTML(
       params,
       base::BindOnce(&OfflinePageMHTMLArchiver::OnGenerateMHTMLDone,
                      weak_ptr_factory_.GetWeakPtr(), url, file_path, title,
-                     create_archive_params.name_space, OfflineClock()->Now()));
+                     create_archive_params.name_space, OfflineTimeNow()));
 }
 
 void OfflinePageMHTMLArchiver::OnGenerateMHTMLDone(
@@ -146,7 +147,7 @@ void OfflinePageMHTMLArchiver::OnGenerateMHTMLDone(
     return;
   }
 
-  const base::Time digest_start_time = OfflineClock()->Now();
+  const base::Time digest_start_time = OfflineTimeNow();
   base::UmaHistogramTimes(
       model_utils::AddHistogramSuffix(
           name_space, "OfflinePages.SavePage.CreateArchiveTime"),
@@ -175,7 +176,7 @@ void OfflinePageMHTMLArchiver::OnComputeDigestDone(
   base::UmaHistogramTimes(
       model_utils::AddHistogramSuffix(
           name_space, "OfflinePages.SavePage.ComputeDigestTime"),
-      OfflineClock()->Now() - digest_start_time);
+      OfflineTimeNow() - digest_start_time);
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
@@ -189,10 +190,7 @@ bool OfflinePageMHTMLArchiver::HasConnectionSecurityError(
   SecurityStateTabHelper* helper =
       SecurityStateTabHelper::FromWebContents(web_contents);
   DCHECK(helper);
-  security_state::SecurityInfo security_info;
-  helper->GetSecurityInfo(&security_info);
-  return security_state::SecurityLevel::DANGEROUS ==
-         security_info.security_level;
+  return security_state::SecurityLevel::DANGEROUS == helper->GetSecurityLevel();
 }
 
 content::PageType OfflinePageMHTMLArchiver::GetPageType(

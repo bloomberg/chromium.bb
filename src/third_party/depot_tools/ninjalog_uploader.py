@@ -24,9 +24,23 @@ import multiprocessing
 import os
 import platform
 import socket
+import subprocess
 import sys
+import time
 
-from third_party import httplib2
+
+ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.join(ROOT_DIR, 'third_party'))
+
+import httplib2
+
+# These build configs affect build performance a lot.
+# TODO(tikuta): Add 'blink_symbol_level', 'closure_compile' and
+#               'use_jumbo_build'.
+WHITELISTED_CONFIGS = (
+    'symbol_level', 'use_goma', 'is_debug', 'is_component_build', 'enable_nacl',
+    'host_os', 'host_cpu', 'target_os', 'target_cpu'
+)
 
 def IsGoogler(server):
     """Check whether this script run inside corp network."""
@@ -37,36 +51,107 @@ def IsGoogler(server):
     except httplib2.HttpLib2Error:
         return False
 
-def GetMetadata(cmdline, ninjalog):
-    """Get metadata for uploaded ninjalog."""
+def ParseGNArgs(gn_args):
+    """Parse gn_args as json and return config dictionary."""
+    configs = json.loads(gn_args)
+    build_configs = {}
 
-    # TODO(tikuta): Support build_configs from args.gn.
+    for config in configs:
+        key = config["name"]
+        if key not in WHITELISTED_CONFIGS:
+            continue
+        if 'current' in config:
+            build_configs[key] = config['current']['value']
+        else:
+            build_configs[key] = config['default']['value']
+
+    return build_configs
+
+def GetBuildTargetFromCommandLine(cmdline):
+    """Get build targets from commandline."""
+
+    # Skip argv0.
+    idx = 1
+
+    # Skipping all args that involve these flags, and taking all remaining args
+    # as targets.
+    onearg_flags = ('-C', '-f', '-j', '-k', '-l', '-d', '-t', '-w')
+    zeroarg_flags = ('--version', '-n', '-v')
+
+    targets = []
+
+    while idx < len(cmdline):
+        if cmdline[idx] in onearg_flags:
+            idx += 2
+            continue
+
+        if (cmdline[idx][:2] in onearg_flags or
+            cmdline[idx] in zeroarg_flags):
+            idx += 1
+            continue
+
+        targets.append(cmdline[idx])
+        idx += 1
+
+    return targets
+
+def GetJflag(cmdline):
+    """Parse cmdline to get flag value for -j"""
+
+    for i in range(len(cmdline)):
+        if (cmdline[i] == '-j' and i + 1 < len(cmdline) and
+            cmdline[i+1].isdigit()):
+            return int(cmdline[i+1])
+
+        if (cmdline[i].startswith('-j') and
+            cmdline[i][len('-j'):].isdigit()):
+            return int(cmdline[i][len('-j'):])
+
+
+def GetMetadata(cmdline, ninjalog):
+    """Get metadata for uploaded ninjalog.
+
+    Returned metadata has schema defined in
+    https://cs.chromium.org?q="type+Metadata+struct+%7B"+file:%5Einfra/go/src/infra/appengine/chromium_build_stats/ninjalog/
+
+    TODO(tikuta): Collect GOMA_* env var.
+    """
 
     build_dir = os.path.dirname(ninjalog)
+
+    build_configs = {}
+
+    try:
+        args = ['gn', 'args', build_dir, '--list', '--short', '--json']
+        if sys.platform == 'win32':
+            # gn in PATH is bat file in windows environment (except cygwin).
+            args = ['cmd', '/c'] + args
+
+        gn_args = subprocess.check_output(args)
+        build_configs = ParseGNArgs(gn_args)
+    except subprocess.CalledProcessError as e:
+        logging.error("Failed to call gn %s", e)
+        build_configs = {}
+
+    # Stringify config.
+    for k in build_configs:
+        build_configs[k] = str(build_configs[k])
+
     metadata = {
         'platform': platform.system(),
-        'cwd': build_dir,
-        'hostname': socket.gethostname(),
         'cpu_core': multiprocessing.cpu_count(),
-        'cmdline': cmdline,
+        'build_configs': build_configs,
+        'targets': GetBuildTargetFromCommandLine(cmdline),
     }
+
+    jflag = GetJflag(cmdline)
+    if jflag is not None:
+        metadata['jobs'] = jflag
 
     return metadata
 
 def GetNinjalog(cmdline):
-    """GetNinjalog returns the path to ninjalog from cmdline.
-
-    >>> GetNinjalog(['ninja'])
-    './.ninja_log'
-    >>> GetNinjalog(['ninja', '-C', 'out/Release'])
-    'out/Release/.ninja_log'
-    >>> GetNinjalog(['ninja', '-Cout/Release'])
-    'out/Release/.ninja_log'
-    >>> GetNinjalog(['ninja', '-C'])
-    './.ninja_log'
-    >>> GetNinjalog(['ninja', '-C', 'out/Release', '-C', 'out/Debug'])
-    'out/Debug/.ninja_log'
-    """
+    """GetNinjalog returns the path to ninjalog from cmdline."""
     # ninjalog is in current working directory by default.
     ninjalog_dir = '.'
 
@@ -112,6 +197,12 @@ def main():
         logging.warn("ninjalog is not found in %s", ninjalog)
         return 1
 
+    # We assume that each ninja invocation interval takes at least 2 seconds.
+    # This is not to have duplicate entry in server when current build is no-op.
+    if os.stat(ninjalog).st_mtime < time.time() - 2:
+        logging.info("ninjalog is not updated recently %s", ninjalog)
+        return 0
+
     output = cStringIO.StringIO()
 
     with open(ninjalog) as f:
@@ -120,7 +211,7 @@ def main():
             g.write('# end of ninja log\n')
 
             metadata = GetMetadata(args.cmdline, ninjalog)
-            logging.info('send metadata: %s', metadata)
+            logging.info('send metadata: %s', json.dumps(metadata))
             g.write(json.dumps(metadata))
 
     h = httplib2.Http()

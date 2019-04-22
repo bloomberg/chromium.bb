@@ -14,19 +14,18 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/unified_consent/feature.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/experimental_flags.h"
-#include "ios/chrome/browser/signin/account_tracker_service_factory.h"
 #include "ios/chrome/browser/signin/authentication_service.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/constants.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
+#include "ios/chrome/browser/system_flags.h"
 #include "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/authentication_ui_util.h"
 #import "ios/chrome/browser/ui/commands/browsing_data_commands.h"
@@ -101,7 +100,13 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
 }
 
 - (void)commitSyncForBrowserState:(ios::ChromeBrowserState*)browserState {
-  SyncSetupServiceFactory::GetForBrowserState(browserState)->CommitChanges();
+  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
+    SyncSetupServiceFactory::GetForBrowserState(browserState)
+        ->CommitSyncChanges();
+  } else {
+    SyncSetupServiceFactory::GetForBrowserState(browserState)
+        ->PreUnityCommitChanges();
+  }
 }
 
 - (void)startWatchdogTimerForManagedStatus {
@@ -251,10 +256,14 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
 
   if (AuthenticationServiceFactory::GetForBrowserState(browserState)
           ->IsAuthenticatedIdentityManaged()) {
-    NSString* hostedDomain = base::SysUTF8ToNSString(
-        IdentityManagerFactory::GetForBrowserState(browserState)
-            ->GetPrimaryAccountInfo()
-            .hosted_domain);
+    identity::IdentityManager* identity_manager =
+        IdentityManagerFactory::GetForBrowserState(browserState);
+    base::Optional<AccountInfo> primary_account_info =
+        identity_manager->FindExtendedAccountInfoForAccount(
+            identity_manager->GetPrimaryAccountInfo());
+    DCHECK(primary_account_info);
+    NSString* hostedDomain =
+        base::SysUTF8ToNSString(primary_account_info->hosted_domain);
     [self promptSwitchFromManagedEmail:lastSignedInEmail
                       withHostedDomain:hostedDomain
                                toEmail:[identity userEmail]
@@ -295,7 +304,7 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
   std::string lastSignedInAccountId =
       browserState->GetPrefs()->GetString(prefs::kGoogleServicesLastAccountId);
   std::string currentSignedInAccountId =
-      ios::AccountTrackerServiceFactory::GetForBrowserState(browserState)
+      IdentityManagerFactory::GetForBrowserState(browserState)
           ->PickAccountIdForAccount(
               base::SysNSStringToUTF8([identity gaiaID]),
               base::SysNSStringToUTF8([identity userEmail]));

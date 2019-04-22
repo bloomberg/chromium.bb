@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
@@ -173,7 +174,7 @@ IN_PROC_BROWSER_TEST_F(ProxyBrowserTest, BasicAuthWSConnect) {
 class BaseHttpProxyScriptBrowserTest : public InProcessBrowserTest {
  public:
   BaseHttpProxyScriptBrowserTest() {
-    http_server_.ServeFilesFromSourceDirectory("chrome/test/data");
+    http_server_.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
   }
   ~BaseHttpProxyScriptBrowserTest() override {}
 

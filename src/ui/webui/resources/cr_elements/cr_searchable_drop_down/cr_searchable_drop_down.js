@@ -20,6 +20,22 @@ Polymer({
       reflectToAttribute: true,
     },
 
+    /**
+     * Whether space should be left below the text field to display an error
+     * message. Must be true for |errorMessage| to be displayed.
+     */
+    errorMessageAllowed: {
+      type: Boolean,
+      value: false,
+      reflectToAttribute: true,
+    },
+
+    /**
+     * When |errorMessage| is set, the text field is highlighted red and
+     * |errorMessage| is displayed beneath it.
+     */
+    errorMessage: String,
+
     placeholder: String,
 
     /** @type {!Array<string>} */
@@ -71,10 +87,35 @@ Polymer({
 
   /** @private */
   filterItems_: function(searchTerm) {
-    if (!searchTerm)
+    if (!searchTerm) {
       return null;
+    }
     return function(item) {
       return item.toLowerCase().includes(searchTerm.toLowerCase());
     };
   },
+
+  /**
+   * @param {string} errorMessage
+   * @param {boolean} errorMessageAllowed
+   * @return {boolean}
+   * @private
+   */
+  shouldShowErrorMessage_: function(errorMessage, errorMessageAllowed) {
+    return !!this.getErrorMessage_(errorMessage, errorMessageAllowed);
+  },
+
+  /**
+   * @param {string} errorMessage
+   * @param {boolean} errorMessageAllowed
+   * @return {string}
+   * @private
+   */
+  getErrorMessage_: function(errorMessage, errorMessageAllowed) {
+    if (!errorMessageAllowed) {
+      return '';
+    }
+    return errorMessage;
+  },
+
 });

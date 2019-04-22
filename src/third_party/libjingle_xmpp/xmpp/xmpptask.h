@@ -8,20 +8,20 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#ifndef WEBRTC_LIBJINGLE_XMPP_XMPPTASK_H_
-#define WEBRTC_LIBJINGLE_XMPP_XMPPTASK_H_
+#ifndef THIRD_PARTY_LIBJINGLE_XMPP_XMPP_XMPPTASK_H_
+#define THIRD_PARTY_LIBJINGLE_XMPP_XMPP_XMPPTASK_H_
 
 #include <deque>
 #include <memory>
 #include <string>
 
+#include "base/macros.h"
 #include "third_party/libjingle_xmpp/task_runner/task.h"
 #include "third_party/libjingle_xmpp/task_runner/taskparent.h"
 #include "third_party/libjingle_xmpp/xmpp/xmppengine.h"
-#include "third_party/webrtc/rtc_base/constructormagic.h"
 #include "third_party/webrtc/rtc_base/third_party/sigslot/sigslot.h"
 
-namespace buzz {
+namespace jingle_xmpp {
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -70,7 +70,7 @@ class XmppClientInterface {
   virtual void RemoveXmppTask(XmppTask* task) = 0;
   sigslot::signal0<> SignalDisconnected;
 
-  RTC_DISALLOW_COPY_AND_ASSIGN(XmppClientInterface);
+  DISALLOW_COPY_AND_ASSIGN(XmppClientInterface);
 };
 
 // XmppTaskParentInterface is the interface require for any parent of
@@ -80,16 +80,16 @@ class XmppClientInterface {
 // We really ought to inherit from a TaskParentInterface, but we tried
 // that and it's way too complicated to change
 // Task/TaskParent/TaskRunner.  For now, this works.
-class XmppTaskParentInterface : public rtc::Task {
+class XmppTaskParentInterface : public jingle_xmpp::Task {
  public:
-  explicit XmppTaskParentInterface(rtc::TaskParent* parent)
+  explicit XmppTaskParentInterface(jingle_xmpp::TaskParent* parent)
       : Task(parent) {
   }
   virtual ~XmppTaskParentInterface() {}
 
   virtual XmppClientInterface* GetClient() = 0;
 
-  RTC_DISALLOW_COPY_AND_ASSIGN(XmppTaskParentInterface);
+  DISALLOW_COPY_AND_ASSIGN(XmppTaskParentInterface);
 };
 
 class XmppTaskBase : public XmppTaskParentInterface {
@@ -107,7 +107,7 @@ class XmppTaskBase : public XmppTaskParentInterface {
  protected:
   XmppTaskParentInterface* parent_;
 
-  RTC_DISALLOW_COPY_AND_ASSIGN(XmppTaskBase);
+  DISALLOW_COPY_AND_ASSIGN(XmppTaskBase);
 };
 
 class XmppTask : public XmppTaskBase,
@@ -170,6 +170,6 @@ private:
 #endif
 };
 
-}  // namespace buzz
+}  // namespace jingle_xmpp
 
-#endif // WEBRTC_LIBJINGLE_XMPP_XMPPTASK_H_
+#endif // THIRD_PARTY_LIBJINGLE_XMPP_XMPP_XMPPTASK_H_

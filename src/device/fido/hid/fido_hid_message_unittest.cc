@@ -13,19 +13,10 @@
 
 namespace device {
 
-// Packets should be 64 bytes + 1 report ID byte.
-TEST(FidoHidMessageTest, TestPacketSize) {
-  uint32_t channel_id = 0x05060708;
-  std::vector<uint8_t> data;
-
-  auto init_packet = std::make_unique<FidoHidInitPacket>(
-      channel_id, FidoHidDeviceCommand::kInit, data, data.size());
-  EXPECT_EQ(64u, init_packet->GetSerializedData().size());
-
-  auto continuation_packet =
-      std::make_unique<FidoHidContinuationPacket>(channel_id, 0, data);
-  EXPECT_EQ(64u, continuation_packet->GetSerializedData().size());
-}
+static const size_t kDefaultInitDataSize =
+    kHidMaxPacketSize - kHidInitPacketHeaderSize;
+static const size_t kDefaultContinuationDataSize =
+    kHidMaxPacketSize - kHidContinuationPacketHeaderSize;
 
 /*
  * U2f Init Packets are of the format:
@@ -96,78 +87,117 @@ TEST(FidoHidMessageTest, TestMaxLengthPacketConstructors) {
   for (size_t i = 0; i < kHidMaxMessageSize; ++i)
     data.push_back(static_cast<uint8_t>(i % 0xff));
 
-  auto orig_msg =
-      FidoHidMessage::Create(channel_id, FidoHidDeviceCommand::kMsg, data);
-  ASSERT_TRUE(orig_msg);
+  for (size_t report_size = kHidInitPacketHeaderSize + 1;
+       report_size <= kHidMaxPacketSize; report_size++) {
+    auto orig_msg = FidoHidMessage::Create(
+        channel_id, FidoHidDeviceCommand::kMsg, report_size, data);
+    ASSERT_TRUE(orig_msg);
 
-  const auto& original_msg_packets = orig_msg->GetPacketsForTesting();
-  auto it = original_msg_packets.begin();
-  auto msg_data = (*it)->GetSerializedData();
-  auto new_msg = FidoHidMessage::CreateFromSerializedData(msg_data);
-  it++;
+    const auto& original_msg_packets = orig_msg->GetPacketsForTesting();
+    auto it = original_msg_packets.begin();
+    auto msg_data = (*it)->GetSerializedData();
+    auto new_msg = FidoHidMessage::CreateFromSerializedData(msg_data);
+    it++;
 
-  for (; it != original_msg_packets.end(); ++it) {
-    msg_data = (*it)->GetSerializedData();
-    new_msg->AddContinuationPacket(msg_data);
-  }
-
-  auto orig_it = original_msg_packets.begin();
-  const auto& new_msg_packets = new_msg->GetPacketsForTesting();
-  auto new_msg_it = new_msg_packets.begin();
-
-  for (; orig_it != original_msg_packets.end() &&
-         new_msg_it != new_msg_packets.end();
-       ++orig_it, ++new_msg_it) {
-    EXPECT_THAT((*orig_it)->GetPacketPayload(),
-                ::testing::ContainerEq((*new_msg_it)->GetPacketPayload()));
-
-    EXPECT_EQ((*orig_it)->channel_id(), (*new_msg_it)->channel_id());
-
-    ASSERT_EQ((*orig_it)->GetSerializedData().size(),
-              (*new_msg_it)->GetSerializedData().size());
-    for (size_t index = 0; index < (*orig_it)->GetSerializedData().size();
-         ++index) {
-      EXPECT_EQ((*orig_it)->GetSerializedData()[index],
-                (*new_msg_it)->GetSerializedData()[index])
-          << "mismatch at index " << index;
+    for (; it != original_msg_packets.end(); ++it) {
+      msg_data = (*it)->GetSerializedData();
+      new_msg->AddContinuationPacket(msg_data);
     }
+
+    EXPECT_EQ(new_msg->NumPackets(), orig_msg->NumPackets());
+
+    auto orig_it = original_msg_packets.begin();
+    const auto& new_msg_packets = new_msg->GetPacketsForTesting();
+    auto new_msg_it = new_msg_packets.begin();
+
+    for (; orig_it != original_msg_packets.end() &&
+           new_msg_it != new_msg_packets.end();
+         ++orig_it, ++new_msg_it) {
+      EXPECT_THAT((*orig_it)->GetPacketPayload(),
+                  ::testing::ContainerEq((*new_msg_it)->GetPacketPayload()));
+
+      EXPECT_EQ((*orig_it)->channel_id(), (*new_msg_it)->channel_id());
+
+      ASSERT_EQ((*orig_it)->GetSerializedData().size(),
+                (*new_msg_it)->GetSerializedData().size());
+      for (size_t index = 0; index < (*orig_it)->GetSerializedData().size();
+           ++index) {
+        EXPECT_EQ((*orig_it)->GetSerializedData()[index],
+                  (*new_msg_it)->GetSerializedData()[index])
+            << "mismatch at index " << index;
+      }
+    }
+
+    EXPECT_TRUE(orig_it == original_msg_packets.end());
+    EXPECT_TRUE(new_msg_it == new_msg_packets.end());
   }
 }
 
 TEST(FidoHidMessageTest, TestMessagePartitoning) {
   uint32_t channel_id = 0x01010203;
-  std::vector<uint8_t> data(kHidInitPacketDataSize + 1);
-  auto two_packet_message =
-      FidoHidMessage::Create(channel_id, FidoHidDeviceCommand::kPing, data);
+  std::vector<uint8_t> data(kDefaultInitDataSize + 1);
+  auto two_packet_message = FidoHidMessage::Create(
+      channel_id, FidoHidDeviceCommand::kPing, kHidMaxPacketSize, data);
   ASSERT_TRUE(two_packet_message);
   EXPECT_EQ(2U, two_packet_message->NumPackets());
 
-  data.resize(kHidInitPacketDataSize);
-  auto one_packet_message =
-      FidoHidMessage::Create(channel_id, FidoHidDeviceCommand::kPing, data);
+  data.resize(kDefaultInitDataSize);
+  auto one_packet_message = FidoHidMessage::Create(
+      channel_id, FidoHidDeviceCommand::kPing, kHidMaxPacketSize, data);
   ASSERT_TRUE(one_packet_message);
   EXPECT_EQ(1U, one_packet_message->NumPackets());
 
-  data.resize(kHidInitPacketDataSize + kHidContinuationPacketDataSize + 1);
-  auto three_packet_message =
-      FidoHidMessage::Create(channel_id, FidoHidDeviceCommand::kPing, data);
+  data.resize(kDefaultInitDataSize + kDefaultContinuationDataSize + 1);
+  auto three_packet_message = FidoHidMessage::Create(
+      channel_id, FidoHidDeviceCommand::kPing, kHidMaxPacketSize, data);
   ASSERT_TRUE(three_packet_message);
   EXPECT_EQ(3U, three_packet_message->NumPackets());
+
+  // With the minimal report size, only a single byte of data will fit in an
+  // init message, followed by three bytes in each continuation message.
+  data.resize(1 + 3 + 3);
+  auto three_small_messages =
+      FidoHidMessage::Create(channel_id, FidoHidDeviceCommand::kPing,
+                             kHidInitPacketHeaderSize + 1, data);
+  ASSERT_TRUE(three_small_messages);
+  EXPECT_EQ(3U, three_small_messages->NumPackets());
+}
+
+TEST(FidoHidMessageTest, TooLarge) {
+  std::vector<uint8_t> data;
+
+#if DCHECK_IS_ON()
+#define EXPECT_SIZE_FAILURE(x) EXPECT_DEATH_IF_SUPPORTED(x, "")
+#else
+#define EXPECT_SIZE_FAILURE(x) EXPECT_FALSE(x.has_value())
+#endif
+
+  // kHidInitPacketHeaderSize is too small a report size to be valid.
+  EXPECT_SIZE_FAILURE(FidoHidMessage::Create(kHidBroadcastChannel,
+                                             FidoHidDeviceCommand::kPing,
+                                             kHidInitPacketHeaderSize, data));
+
+  // kHidMaxPacketSize + 1 is too large a report size.
+  EXPECT_SIZE_FAILURE(FidoHidMessage::Create(kHidBroadcastChannel,
+                                             FidoHidDeviceCommand::kPing,
+                                             kHidMaxPacketSize + 1, data));
+
+#undef EXPECT_SIZE_FAILURE
 }
 
 TEST(FidoHidMessageTest, TestMaxSize) {
   uint32_t channel_id = 0x00010203;
   std::vector<uint8_t> data(kHidMaxMessageSize + 1);
-  auto oversize_message =
-      FidoHidMessage::Create(channel_id, FidoHidDeviceCommand::kPing, data);
+  auto oversize_message = FidoHidMessage::Create(
+      channel_id, FidoHidDeviceCommand::kPing, kHidMaxPacketSize, data);
   EXPECT_FALSE(oversize_message);
 }
 
 TEST(FidoHidMessageTest, TestDeconstruct) {
   uint32_t channel_id = 0x0A0B0C0D;
   std::vector<uint8_t> data(kHidMaxMessageSize, 0x7F);
-  auto filled_message =
-      FidoHidMessage::Create(channel_id, FidoHidDeviceCommand::kPing, data);
+  auto filled_message = FidoHidMessage::Create(
+      channel_id, FidoHidDeviceCommand::kPing, kHidMaxPacketSize, data);
   ASSERT_TRUE(filled_message);
   EXPECT_THAT(data,
               ::testing::ContainerEq(filled_message->GetMessagePayload()));
@@ -177,8 +207,8 @@ TEST(FidoHidMessageTest, TestDeserialize) {
   uint32_t channel_id = 0x0A0B0C0D;
   std::vector<uint8_t> data(kHidMaxMessageSize);
 
-  auto orig_message =
-      FidoHidMessage::Create(channel_id, FidoHidDeviceCommand::kPing, data);
+  auto orig_message = FidoHidMessage::Create(
+      channel_id, FidoHidDeviceCommand::kPing, kHidMaxPacketSize, data);
   ASSERT_TRUE(orig_message);
 
   base::circular_deque<std::vector<uint8_t>> orig_list;

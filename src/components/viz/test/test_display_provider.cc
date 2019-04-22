@@ -21,17 +21,12 @@ std::unique_ptr<Display> TestDisplayProvider::CreateDisplay(
     gpu::SurfaceHandle surface_handle,
     bool gpu_compositing,
     mojom::DisplayClient* display_client,
-    ExternalBeginFrameSource* external_begin_frame_source,
-    SyntheticBeginFrameSource* synthetic_begin_frame_source,
+    BeginFrameSource* begin_frame_source,
+    UpdateVSyncParametersCallback update_vsync_callback,
     const RendererSettings& renderer_settings,
     bool send_swap_size_notifications) {
   auto task_runner = base::ThreadTaskRunnerHandle::Get();
   DCHECK(task_runner);
-
-  BeginFrameSource* begin_frame_source =
-      synthetic_begin_frame_source
-          ? static_cast<BeginFrameSource*>(synthetic_begin_frame_source)
-          : static_cast<BeginFrameSource*>(external_begin_frame_source);
 
   std::unique_ptr<OutputSurface> output_surface;
   if (gpu_compositing) {

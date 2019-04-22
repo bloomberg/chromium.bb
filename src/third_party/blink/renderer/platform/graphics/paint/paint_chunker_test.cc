@@ -19,7 +19,7 @@ class PaintChunkerTest : public testing::Test {
  protected:
   class TestDisplayItemClient : public DisplayItemClient {
     String DebugName() const final { return "Test"; }
-    LayoutRect VisualRect() const final { return LayoutRect(); }
+    IntRect VisualRect() const final { return IntRect(); }
   };
   TestDisplayItemClient client_;
 };
@@ -33,12 +33,6 @@ class TestChunkerDisplayItem : public DisplayItem {
   TestChunkerDisplayItem(const DisplayItemClient& client,
                          DisplayItem::Type type = DisplayItem::kDrawingFirst)
       : DisplayItem(client, type, sizeof(*this)) {}
-
-  void Replay(GraphicsContext&) const final { NOTREACHED(); }
-  void AppendToDisplayItemList(const FloatSize&,
-                               cc::DisplayItemList&) const final {
-    NOTREACHED();
-  }
 };
 
 class TestDisplayItemRequiringSeparateChunk : public TestChunkerDisplayItem {
@@ -101,7 +95,7 @@ TEST_F(PaintChunkerTest, BuildMultipleChunksWithSinglePropertyChanging) {
   auto simple_transform_node = CreateTransform(
       t0(), TransformationMatrix(0, 1, 2, 3, 4, 5), FloatPoint3D(9, 8, 7));
   auto simple_transform = DefaultPaintChunkProperties();
-  simple_transform.SetTransform(simple_transform_node.get());
+  simple_transform.SetTransform(*simple_transform_node);
 
   PaintChunk::Id id2(client_, DisplayItemType(2));
   chunker.UpdateCurrentPaintChunkProperties(id2, simple_transform);
@@ -110,7 +104,7 @@ TEST_F(PaintChunkerTest, BuildMultipleChunksWithSinglePropertyChanging) {
   auto another_transform_node = CreateTransform(
       t0(), TransformationMatrix(0, 1, 2, 3, 4, 5), FloatPoint3D(9, 8, 7));
   auto another_transform = DefaultPaintChunkProperties();
-  another_transform.SetTransform(another_transform_node.get());
+  another_transform.SetTransform(*another_transform_node);
   PaintChunk::Id id3(client_, DisplayItemType(3));
   chunker.UpdateCurrentPaintChunkProperties(id3, another_transform);
   chunker.IncrementDisplayItemIndex(TestChunkerDisplayItem(client_));
@@ -131,7 +125,7 @@ TEST_F(PaintChunkerTest, BuildMultipleChunksWithDifferentPropertyChanges) {
   auto simple_transform_node = CreateTransform(
       t0(), TransformationMatrix(0, 0, 0, 0, 0, 0), FloatPoint3D(9, 8, 7));
   auto simple_transform = DefaultPaintChunkProperties();
-  simple_transform.SetTransform(simple_transform_node.get());
+  simple_transform.SetTransform(*simple_transform_node);
   PaintChunk::Id id2(client_, DisplayItemType(2));
   chunker.UpdateCurrentPaintChunkProperties(id2, simple_transform);
   chunker.IncrementDisplayItemIndex(TestChunkerDisplayItem(client_));
@@ -139,8 +133,8 @@ TEST_F(PaintChunkerTest, BuildMultipleChunksWithDifferentPropertyChanges) {
 
   auto simple_effect_node = CreateOpacityEffect(e0(), 0.5f);
   auto simple_transform_and_effect = DefaultPaintChunkProperties();
-  simple_transform_and_effect.SetTransform(simple_transform_node.get());
-  simple_transform_and_effect.SetEffect(simple_effect_node.get());
+  simple_transform_and_effect.SetTransform(*simple_transform_node);
+  simple_transform_and_effect.SetEffect(*simple_effect_node);
   PaintChunk::Id id3(client_, DisplayItemType(3));
   chunker.UpdateCurrentPaintChunkProperties(id3, simple_transform_and_effect);
   chunker.IncrementDisplayItemIndex(TestChunkerDisplayItem(client_));
@@ -152,9 +146,9 @@ TEST_F(PaintChunkerTest, BuildMultipleChunksWithDifferentPropertyChanges) {
       DefaultPaintChunkProperties();
   auto new_effect_node = CreateOpacityEffect(e0(), 0.5f);
   simple_transform_and_effect_with_updated_transform.SetTransform(
-      new_transform_node.get());
+      *new_transform_node);
   simple_transform_and_effect_with_updated_transform.SetEffect(
-      new_effect_node.get());
+      *new_effect_node);
   PaintChunk::Id id4(client_, DisplayItemType(4));
   chunker.UpdateCurrentPaintChunkProperties(
       id4, simple_transform_and_effect_with_updated_transform);
@@ -199,7 +193,7 @@ TEST_F(PaintChunkerTest, BuildChunksFromNestedTransforms) {
   auto simple_transform_node = CreateTransform(
       t0(), TransformationMatrix(0, 1, 2, 3, 4, 5), FloatPoint3D(9, 8, 7));
   auto simple_transform = DefaultPaintChunkProperties();
-  simple_transform.SetTransform(simple_transform_node.get());
+  simple_transform.SetTransform(*simple_transform_node);
   PaintChunk::Id id2(client_, DisplayItemType(2));
   chunker.UpdateCurrentPaintChunkProperties(id2, simple_transform);
   chunker.IncrementDisplayItemIndex(TestChunkerDisplayItem(client_));
@@ -228,14 +222,14 @@ TEST_F(PaintChunkerTest, ChangingPropertiesWithoutItems) {
   auto first_transform_node = CreateTransform(
       t0(), TransformationMatrix(0, 1, 2, 3, 4, 5), FloatPoint3D(9, 8, 7));
   auto first_transform = DefaultPaintChunkProperties();
-  first_transform.SetTransform(first_transform_node.get());
+  first_transform.SetTransform(*first_transform_node);
   PaintChunk::Id id2(client_, DisplayItemType(2));
   chunker.UpdateCurrentPaintChunkProperties(base::nullopt, first_transform);
 
   auto second_transform_node = CreateTransform(
       t0(), TransformationMatrix(9, 8, 7, 6, 5, 4), FloatPoint3D(3, 2, 1));
   auto second_transform = DefaultPaintChunkProperties();
-  second_transform.SetTransform(second_transform_node.get());
+  second_transform.SetTransform(*second_transform_node);
   PaintChunk::Id id3(client_, DisplayItemType(3));
   chunker.UpdateCurrentPaintChunkProperties(id3, second_transform);
 
@@ -403,7 +397,7 @@ TEST_F(PaintChunkerTest, ChunkIdsSkippingCache) {
   auto simple_transform_node = CreateTransform(
       t0(), TransformationMatrix(0, 1, 2, 3, 4, 5), FloatPoint3D(9, 8, 7));
   auto simple_transform = DefaultPaintChunkProperties();
-  simple_transform.SetTransform(simple_transform_node.get());
+  simple_transform.SetTransform(*simple_transform_node);
 
   TestDisplayItemClient uncacheable_client;
   uncacheable_client.Invalidate(PaintInvalidationReason::kUncacheable);

@@ -10,9 +10,11 @@
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/window_factory.h"
+#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/root_window_finder.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
+#include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/client/capture_client.h"
@@ -602,19 +604,21 @@ TEST_F(ExtendedDesktopTest, MoveWindowWithTransient) {
   wm::ActivateWindow(w1);
   // |w1_t1| is a transient child window of |w1|.
   std::unique_ptr<aura::Window> w1_t1 = CreateChildWindow(
-      w1, gfx::Rect(50, 50, 50, 50), kShellWindowId_DefaultContainer);
+      w1, gfx::Rect(50, 50, 50, 50), desks_util::GetActiveDeskContainerId());
   ::wm::AddTransientChild(w1, w1_t1.get());
   // |w1_t11| is a transient child window of transient child window |w1_t1|.
-  std::unique_ptr<aura::Window> w1_t11 = CreateChildWindow(
-      w1_t1.get(), gfx::Rect(2, 7, 35, 35), kShellWindowId_DefaultContainer);
+  std::unique_ptr<aura::Window> w1_t11 =
+      CreateChildWindow(w1_t1.get(), gfx::Rect(2, 7, 35, 35),
+                        desks_util::GetActiveDeskContainerId());
   ::wm::AddTransientChild(w1_t1.get(), w1_t11.get());
 
   // |w11| is a non-transient child window of |w1|.
   std::unique_ptr<aura::Window> w11 = CreateChildWindow(
-      w1, gfx::Rect(10, 10, 40, 40), kShellWindowId_DefaultContainer);
+      w1, gfx::Rect(10, 10, 40, 40), desks_util::GetActiveDeskContainerId());
   // |w11_t1| is a transient child window of |w11|.
-  std::unique_ptr<aura::Window> w11_t1 = CreateChildWindow(
-      w11.get(), gfx::Rect(30, 10, 80, 80), kShellWindowId_DefaultContainer);
+  std::unique_ptr<aura::Window> w11_t1 =
+      CreateChildWindow(w11.get(), gfx::Rect(30, 10, 80, 80),
+                        desks_util::GetActiveDeskContainerId());
   ::wm::AddTransientChild(w11.get(), w11_t1.get());
 
   EXPECT_EQ(root_windows[0], w1->GetRootWindow());
@@ -731,7 +735,8 @@ TEST_F(ExtendedDesktopTest, ConvertPoint) {
 }
 
 TEST_F(ExtendedDesktopTest, OpenSystemTray) {
-  UpdateDisplay("500x600,600x400");
+  // Two displays side by side and both are high enough for tray bubble.
+  UpdateDisplay("500x600,600x700");
   ASSERT_FALSE(IsBubbleShown());
 
   ui::test::EventGenerator* event_generator = GetEventGenerator();
@@ -742,21 +747,29 @@ TEST_F(ExtendedDesktopTest, OpenSystemTray) {
   event_generator->ClickLeftButton();
   EXPECT_TRUE(IsBubbleShown());
 
+  // Verifies that the bubble is within the primary display.
+  const gfx::Rect primary_display_bounds = GetPrimaryDisplay().bounds();
+  const gfx::Rect tray_bubble_bounds =
+      GetPrimaryUnifiedSystemTray()->GetBubbleBoundsInScreen();
+  EXPECT_TRUE(primary_display_bounds.Contains(tray_bubble_bounds))
+      << "primary display bounds=" << primary_display_bounds.ToString()
+      << ", tray bubble bounds=" << tray_bubble_bounds.ToString();
+
   UpdateDisplay("500x600");
   EXPECT_TRUE(IsBubbleShown());
-  UpdateDisplay("500x600,600x400");
+  UpdateDisplay("500x600,600x700");
   EXPECT_TRUE(IsBubbleShown());
 
   // Closes the tray and again makes sure that adding/removing displays doesn't
   // break anything.
   event_generator->ClickLeftButton();
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(IsBubbleShown());
 
   UpdateDisplay("500x600");
   EXPECT_FALSE(IsBubbleShown());
-  UpdateDisplay("500x600,600x400");
+  UpdateDisplay("500x600,600x700");
   EXPECT_FALSE(IsBubbleShown());
 }
 

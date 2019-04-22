@@ -18,7 +18,7 @@ class CXFA_FFComboBox final : public CXFA_FFDropDown {
   ~CXFA_FFComboBox() override;
 
   // CXFA_FFField
-  CFX_RectF GetBBox(uint32_t dwStatus, FocusOption focus) override;
+  CFX_RectF GetBBox(FocusOption focus) override;
   bool LoadWidget() override;
   void UpdateWidgetProperty() override;
   bool OnRButtonUp(uint32_t dwFlags, const CFX_PointF& point) override;
@@ -48,7 +48,7 @@ class CXFA_FFComboBox final : public CXFA_FFDropDown {
                     const CFX_Matrix& matrix) override;
 
   // CXFA_FFDropDown
-  void InsertItem(const WideStringView& wsLabel, int32_t nIndex) override;
+  void InsertItem(WideStringView wsLabel, int32_t nIndex) override;
   void DeleteItem(int32_t nIndex) override;
 
   void OpenDropDownList();

@@ -4,12 +4,26 @@
 
 mojom = "//media/mojo/interfaces/video_decoder.mojom"
 
-public_headers = [ "//media/base/overlay_info.h" ]
+public_headers = [
+  "//media/base/overlay_info.h",
+  "//media/video/supported_video_decoder_config.h",
+]
 
-traits_headers = [ "//media/base/ipc/media_param_traits_macros.h" ]
+traits_headers = [
+  "//media/base/ipc/media_param_traits_macros.h",
+  "//media/mojo/interfaces/supported_video_decoder_config_struct_traits.h",
+]
+
+sources = [
+  "supported_video_decoder_config_struct_traits.cc",
+  "supported_video_decoder_config_struct_traits.h",
+]
 
 deps = [
   "//media/gpu/ipc/common",
 ]
 
-type_mappings = [ "media.mojom.OverlayInfo=media::OverlayInfo" ]
+type_mappings = [
+  "media.mojom.OverlayInfo=media::OverlayInfo",
+  "media.mojom.SupportedVideoDecoderConfig=media::SupportedVideoDecoderConfig",
+]

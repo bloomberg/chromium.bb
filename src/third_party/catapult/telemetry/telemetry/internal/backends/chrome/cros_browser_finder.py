@@ -1,7 +1,7 @@
 # Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-"""Finds CrOS browsers that can be controlled by telemetry."""
+"""Finds CrOS browsers that can be started and controlled by telemetry."""
 
 import logging
 import os
@@ -12,7 +12,6 @@ from telemetry.core import platform as platform_module
 from telemetry.internal.backends.chrome import chrome_startup_args
 from telemetry.internal.backends.chrome import cros_browser_backend
 from telemetry.internal.backends.chrome import cros_browser_with_oobe
-from telemetry.internal.backends.chrome import gpu_compositing_checker
 from telemetry.internal.browser import browser
 from telemetry.internal.browser import browser_finder_exceptions
 from telemetry.internal.browser import possible_browser
@@ -26,7 +25,8 @@ class PossibleCrOSBrowser(possible_browser.PossibleBrowser):
 
   def __init__(self, browser_type, finder_options, cros_platform, is_guest):
     super(PossibleCrOSBrowser, self).__init__(browser_type, 'cros', True)
-    assert browser_type in FindAllBrowserTypes(finder_options), (
+    del finder_options
+    assert browser_type in FindAllBrowserTypes(), (
         'Please add %s to cros_browser_finder.FindAllBrowserTypes()' %
         browser_type)
     self._platform = cros_platform
@@ -86,7 +86,7 @@ class PossibleCrOSBrowser(possible_browser.PossibleBrowser):
     for extension in self._browser_options.extensions_to_load:
       self._platform_backend.cri.RmRF(posixpath.dirname(extension.local_path))
 
-  def Create(self, clear_caches=True):
+  def Create(self):
     startup_args = self.GetBrowserStartupArgs(self._browser_options)
 
     browser_backend = cros_browser_backend.CrOSBrowserBackend(
@@ -94,19 +94,11 @@ class PossibleCrOSBrowser(possible_browser.PossibleBrowser):
         self.browser_directory, self.profile_directory,
         self._is_guest)
 
-    # TODO(crbug.com/811244): Remove when this is handled by shared state.
-    if clear_caches:
-      self._ClearCachesOnStart()
-
     if self._browser_options.create_browser_with_oobe:
       return cros_browser_with_oobe.CrOSBrowserWithOOBE(
           browser_backend, self._platform_backend, startup_args)
-    returned_browser = browser.Browser(
+    return browser.Browser(
         browser_backend, self._platform_backend, startup_args)
-    if self._browser_options.assert_gpu_compositing:
-      gpu_compositing_checker.AssertGpuCompositingEnabled(
-          returned_browser.GetSystemInfo())
-    return returned_browser
 
   def GetBrowserStartupArgs(self, browser_options):
     startup_args = chrome_startup_args.GetFromBrowserOptions(browser_options)
@@ -128,14 +120,14 @@ class PossibleCrOSBrowser(possible_browser.PossibleBrowser):
         '--start-maximized',
         # Disable sounds.
         '--ash-disable-system-sounds',
-        '--mute-audio',
         # Skip user image selection screen, and post login screens.
         '--oobe-skip-postlogin',
-        # Disable chrome logging redirect. crbug.com/724273.
-        '--disable-logging-redirect',
         # Debug logging.
         '--vmodule=%s' % vmodule,
     ])
+
+    if browser_options.mute_audio:
+      startup_args.append('--mute-audio')
 
     if not browser_options.expect_policy_fetch:
       startup_args.append('--allow-failed-policy-fetch-for-test')
@@ -174,7 +166,7 @@ def CanFindAvailableBrowsers(finder_options):
           cros_interface.HasSSH())
 
 
-def FindAllBrowserTypes(_):
+def FindAllBrowserTypes():
   return [
       'cros-chrome',
       'cros-chrome-guest',

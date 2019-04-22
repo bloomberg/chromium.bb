@@ -27,6 +27,7 @@ class EmptyPredictor : public InputPredictor {
 
   // Returns the last_input_ for testing.
   bool GeneratePrediction(base::TimeTicks frame_time,
+                          bool is_resampling,
                           InputData* result) const override;
 
  private:

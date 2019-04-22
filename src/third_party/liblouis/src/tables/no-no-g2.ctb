@@ -1,9 +1,47 @@
 # liblouis: Norwegian contracted braille, level 2.
+#
+# -----------
+#-display-name: Norwegian grade 2 contracted braille
+#
+#+locale:no
+#+type:literary
+#+contraction:partial
+#+grade:2
+#
+# TODO: Please correct the metadata above. It is not meant to be
+# accurate nor complete. It hasn't been verified by the table
+# author yet. It is merely an attempt by the liblouis maintainers
+# to get some sensible initial values in place.
+#
+# TODO: Please add a reference to official documentation about
+# the implemented braille code. Preferably submit the documents
+# to https://github.com/liblouis/braille-specs.
+# -----------
+#
+#  Copyright (C) 2005 ViewPlus Technologies, Inc. www.viewplus.com
+#  Copyright (C) 2009 Lars Bjørndal <lars@lamasti.net>
+#
+#  This file is part of liblouis.
+#
+#  liblouis is free software: you can redistribute it and/or modify it
+#  under the terms of the GNU Lesser General Public License as
+#  published by the Free Software Foundation, either version 2.1 of the
+#  License, or (at your option) any later version.
+#
+#  liblouis is distributed in the hope that it will be useful, but
+#  WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+#  Lesser General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public
+#  License along with liblouis. If not, see
+#  <http://www.gnu.org/licenses/>.
+#
 # Created June 9, 2005 by Leon Ungier <Leon.Ungier@ViewPlus.com> with
-# help and guidance from Lars Bjørndal <lars@handytech.no>.
+# help and guidance from Lars Bjørndal <lars@lamasti.net>.
 # Modified Sep 30, 2005 by LU
 
-# Heavily overworked by lars@handytech.no, 2009.
+# Heavily overworked by lars@lamasti.net, 2009.
 
 include no-no-g1.ctb
 
@@ -49,10 +87,12 @@ word forholdsvis 12346-1236
 word fra 124											# level 1 contractions
 word fram 124-134
 begword fram 124-134
+begword ufram 136-124-134
 word før 246
 word gjennom 12456
 begword gjennom 12456
 endword gjennom 12456
+endword ugjennom 136-12456
 word gjennomfør 12456-246
 
 #word han 125
@@ -116,6 +156,7 @@ begword andre 1-12356
 
 word annen 1-126
 begword annen 1-126
+word annens 1-126-234
 
 word annerledes 1-1345-1235
 word annet 1-346
@@ -139,11 +180,14 @@ word bruk 12-13
 begword bruk 12-13
 begword ubruk 136-12-13
 endword bruk 12-13
+endword ubruk 136-12-13
 
-# de															# defined in level 1 contractions
+# de                                                            # defined in level 1 contractions
 begword de 1456
 begword ude 136-1456
+endword ude 136-1456
 endword des 1456-234
+begword des 1456-234
 
 word deg 145-1245									# level 2 contractions
 word dem 145-134
@@ -204,7 +248,8 @@ endword erne 156-2346
 endword erde 156-1456
 endword erte 156-1256
 
-# et															# defined in level 1
+# et
+word ett 346-2345															
 endword ets 346-234								# level 2 contractions
 endword ett 346-2345
 endword etne 346-2346
@@ -221,15 +266,21 @@ word fikk 124-13
 
 # word for 1246										# defined in level 1
 begword ufor 136-1246
+endword ufor 136-1246
 
-# forhold 12346										# defined in level 1
+# forhold 12346                                     # defined in level 1
+word forhold 12346
 begword uforhold 136-12346
+endword uforhold 136-12346
 word forholda 12346-1
 endword forholda 12346-1
+begword forholda 12346-1
 word forholdene 12346-15-2346
-endword forholdene 12346-15-346
+endword forholdene 12346-15-2346
+begword forholdene 12346-15-2346
 word forholdet 12346-346
 endword forholdet 12346-346
+begword forholdet 12346-346
 
 # word forholdsvis 12346-1236	# defined in level 1
 
@@ -238,20 +289,30 @@ endword forskjell 1246-14
 begword forskjell 1246-14
 word forskjellane 1246-14-1-2346
 endword forskjellane 1246-14-1-2346
+begword forskjellane 1246-14-1-2346
 word forskjellene 1246-14-15-2346
+begword forskjellene 1246-14-15-2346
 endword forskjellene 1246-14-15-2346
 word forskjellen 1246-14-126
 endword forskjellen 1246-14-126
+begword forskjellen 1246-14-126
 word forskjeller 1246-14-156
+begword forskjeller 1246-14-156
 endword forskjeller 1246-14-156
 word forskjellar 1246-14-3456
 endword forskjellar 1246-14-3456
+begword forskjellar 1246-14-3456
 
 # word fra 124												# defined in level 1
 
+word fulgt 124-1245-2345
 word fulgte 124-1245-1256
 word følg 124-1245
 begword følg 124-1245
+word følger 124-1245-156
+word følgers 124-1245-156-234
+word følgerne 124-1245-156-1246
+word følgernes 124-1245-156-1246-234
 
 word følge 124-1245-15
 begword følge 124-1245-15
@@ -294,7 +355,7 @@ word helst 125-123
 # word hun 136										# already in level 1
 word hverandre 2456-1-12356
 word hverandres 2456-1-12356-234
-word hvilke 2456-13-15
+word hvilke 2456-13
 word hvilken 2456-13-126
 word hvilket 2456-13-346
 word hvis 2456-234
@@ -342,6 +403,7 @@ word manges 134-234
 # word med 146										# defined in level 1
 endword med 146
 begword med 146
+endword umed 136-146
 begword umed 136-146
 
 word meg 134-1245									# level 2 contractions
@@ -372,6 +434,11 @@ word nedenfra 1345-124
 word neppe 1345-1234
 word noen 1345-1345
 begword noen 1345-1345
+
+word nødvendig 1345-1236
+begword nødvendig 1345-1236
+word unødvendig 136-1345-1236
+begword unødvendig 136-1345-1236
 
 word noko 1345-13
 word nokon 1345-13-1345
@@ -454,12 +521,15 @@ word utenfor 136-1246
 word utenfra 136-124
 word vil 1236-123
 word ville 1236-123-15
-word villet 1236-123-146
+word villet 1236-123-346
 
 word viss 1236-234
 word uviss 136-1236-234
 begword uviss 136-1236-234
 begword viss 1236-234
+
+word vanske 1236-14
+begword vanske 1236-14
 
 word vært 1236-2345
 
@@ -469,7 +539,7 @@ word vært 1236-2345
 word det 145-346
 word dets 145-346-234
 word den 145-126
-word dens 145-236-234
+word dens 145-126-234
 word dent 145-126-2345
 word dente 145-126-1256
 word dert 145-156-2345

@@ -18,6 +18,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
+#include "content/browser/indexed_db/scopes/scope_lock_range.h"
 #include "content/common/content_export.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key_path.h"
@@ -107,6 +108,17 @@ CONTENT_EXPORT int CompareKeys(const base::StringPiece& a,
 CONTENT_EXPORT int CompareIndexKeys(const base::StringPiece& a,
                                     const base::StringPiece& b);
 
+const constexpr int kDatabaseRangeLockLevel = 0;
+const constexpr int kObjectStoreRangeLockLevel = 1;
+const constexpr int kIndexedDBLockLevelCount = 2;
+
+CONTENT_EXPORT ScopeLockRange GetDatabaseLockRange(int64_t database_id);
+CONTENT_EXPORT ScopeLockRange GetObjectStoreLockRange(int64_t database_id,
+                                                      int64_t object_store_id);
+
+// TODO(dmurph): Modify all decoding methods to return something more sensible,
+// as it is not obvious that they modify the input slice to remove the decoded
+// bit. https://crbug.com/922225
 class KeyPrefix {
  public:
   // These are serialized to disk; any new items must be appended, and none can

@@ -45,7 +45,6 @@ public class ChromeBrowserTestRule extends NativeLibraryTestRule {
     }
 
     private void tearDown() {
-        SigninTestUtil.resetSigninState();
         SigninTestUtil.tearDownAuthForTest();
     }
 }

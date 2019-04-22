@@ -172,8 +172,8 @@ class SyncChannel::ReceivedSyncMsgQueue :
     dispatch_event_.Signal();
     if (!was_task_pending) {
       listener_task_runner_->PostTask(
-          FROM_HERE, base::Bind(&ReceivedSyncMsgQueue::DispatchMessagesTask,
-                                this, base::RetainedRef(context)));
+          FROM_HERE, base::BindOnce(&ReceivedSyncMsgQueue::DispatchMessagesTask,
+                                    this, base::RetainedRef(context)));
     }
   }
 
@@ -416,8 +416,8 @@ bool SyncChannel::SyncContext::Pop() {
   // Send() call.  So check if we have any queued replies available that
   // can now unblock the listener thread.
   ipc_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&ReceivedSyncMsgQueue::DispatchReplies,
-                            received_sync_msgs_));
+      FROM_HERE, base::BindOnce(&ReceivedSyncMsgQueue::DispatchReplies,
+                                received_sync_msgs_));
 
   return result;
 }
@@ -605,7 +605,8 @@ bool SyncChannel::Send(Message* message) {
                "line", IPC_MESSAGE_ID_LINE(message->type()));
 #endif
   if (!message->is_sync()) {
-    ChannelProxy::SendInternal(message);
+    ChannelProxy::SendInternal(
+        message, TRACE_HEAP_PROFILER_API_GET_CURRENT_TASK_CONTEXT());
     return true;
   }
 
@@ -620,7 +621,8 @@ bool SyncChannel::Send(Message* message) {
     return false;
   }
 
-  ChannelProxy::SendInternal(message);
+  ChannelProxy::SendInternal(
+      message, TRACE_HEAP_PROFILER_API_GET_CURRENT_TASK_CONTEXT());
 
   // Wait for reply, or for any other incoming synchronous messages.
   // |this| might get deleted, so only call static functions at this point.

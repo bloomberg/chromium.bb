@@ -4,9 +4,10 @@
 
 #include "services/video_capture/virtual_device_enabled_device_factory.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "media/capture/video/video_capture_device_info.h"
-#include "services/video_capture/device_factory_media_to_mojo_adapter.h"
+#include "services/video_capture/device_factory.h"
 #include "services/video_capture/shared_memory_virtual_device_mojo_adapter.h"
 #include "services/video_capture/texture_virtual_device_mojo_adapter.h"
 
@@ -85,7 +86,7 @@ class VirtualDeviceEnabledDeviceFactory::VirtualDeviceEntry {
 };
 
 VirtualDeviceEnabledDeviceFactory::VirtualDeviceEnabledDeviceFactory(
-    std::unique_ptr<DeviceFactoryMediaToMojoAdapter> device_factory)
+    std::unique_ptr<DeviceFactory> device_factory)
     : device_factory_(std::move(device_factory)), weak_factory_(this) {}
 
 VirtualDeviceEnabledDeviceFactory::~VirtualDeviceEnabledDeviceFactory() =
@@ -195,10 +196,15 @@ void VirtualDeviceEnabledDeviceFactory::AddTextureVirtualDevice(
 }
 
 void VirtualDeviceEnabledDeviceFactory::RegisterVirtualDevicesChangedObserver(
-    mojom::DevicesChangedObserverPtr observer) {
+    mojom::DevicesChangedObserverPtr observer,
+    bool raise_event_if_virtual_devices_already_present) {
   observer.set_connection_error_handler(base::BindOnce(
       &VirtualDeviceEnabledDeviceFactory::OnDevicesChangedObserverDisconnected,
-      weak_factory_.GetWeakPtr(), &observer));
+      weak_factory_.GetWeakPtr(), observer.get()));
+  if (!virtual_devices_by_id_.empty() &&
+      raise_event_if_virtual_devices_already_present) {
+    observer->OnDevicesChanged();
+  }
   devices_changed_observers_.push_back(std::move(observer));
 }
 
@@ -234,11 +240,11 @@ void VirtualDeviceEnabledDeviceFactory::EmitDevicesChangedEvent() {
 }
 
 void VirtualDeviceEnabledDeviceFactory::OnDevicesChangedObserverDisconnected(
-    mojom::DevicesChangedObserverPtr* observer) {
+    mojom::DevicesChangedObserverPtr::Proxy* observer) {
   auto iter = std::find_if(
       devices_changed_observers_.begin(), devices_changed_observers_.end(),
       [observer](const mojom::DevicesChangedObserverPtr& entry) {
-        return &entry == observer;
+        return entry.get() == observer;
       });
   if (iter == devices_changed_observers_.end()) {
     DCHECK(false);
@@ -246,5 +252,14 @@ void VirtualDeviceEnabledDeviceFactory::OnDevicesChangedObserverDisconnected(
   }
   devices_changed_observers_.erase(iter);
 }
+
+#if defined(OS_CHROMEOS)
+void VirtualDeviceEnabledDeviceFactory::BindCrosImageCaptureRequest(
+    cros::mojom::CrosImageCaptureRequest request) {
+  CHECK(device_factory_);
+
+  device_factory_->BindCrosImageCaptureRequest(std::move(request));
+}
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace video_capture

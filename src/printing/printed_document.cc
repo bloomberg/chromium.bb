@@ -304,12 +304,4 @@ PrintedDocument::Immutable::Immutable(const PrintSettings& settings,
 
 PrintedDocument::Immutable::~Immutable() = default;
 
-#if defined(OS_ANDROID)
-// This function is not used on android.
-bool PrintedDocument::RenderPrintedDocument(PrintingContext* context) {
-  NOTREACHED();
-  return false;
-}
-#endif
-
 }  // namespace printing

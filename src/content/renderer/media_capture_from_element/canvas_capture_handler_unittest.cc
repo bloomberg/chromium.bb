@@ -9,7 +9,6 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/child/child_process.h"
-#include "content/renderer/media/stream/media_stream_video_capturer_source.h"
 #include "media/base/limits.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -17,6 +16,7 @@
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_size.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_capturer_source.h"
 #include "third_party/blink/public/web/web_heap.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -83,8 +83,11 @@ class CanvasCaptureHandlerTest
 
   // Verify returned frames.
   static sk_sp<SkImage> GenerateTestImage(bool opaque, int width, int height) {
+    SkImageInfo info = SkImageInfo::MakeN32(
+        width, height, opaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType,
+        SkColorSpace::MakeSRGB());
     SkBitmap testBitmap;
-    testBitmap.allocN32Pixels(width, height, opaque);
+    testBitmap.allocPixels(info);
     testBitmap.eraseARGB(opaque ? 255 : kTestAlphaValue, 30, 60, 200);
     return SkImage::MakeFromBitmap(testBitmap);
   }
@@ -125,13 +128,13 @@ class CanvasCaptureHandlerTest
 
  protected:
   media::VideoCapturerSource* GetVideoCapturerSource(
-      MediaStreamVideoCapturerSource* ms_source) {
-    return ms_source->source_.get();
+      blink::MediaStreamVideoCapturerSource* ms_source) {
+    return ms_source->GetSourceForTesting();
   }
 
   // A ChildProcess is needed to fool the Tracks and Sources believing they are
   // on the right threads. A ScopedTaskEnvironment must be instantiated before
-  // ChildProcess to prevent it from leaking a TaskScheduler.
+  // ChildProcess to prevent it from leaking a ThreadPool.
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   ChildProcess child_process_;
 
@@ -164,9 +167,9 @@ TEST_P(CanvasCaptureHandlerTest, GetFormatsStartAndStop) {
   InSequence s;
   const blink::WebMediaStreamSource& web_media_stream_source = track_.Source();
   EXPECT_FALSE(web_media_stream_source.IsNull());
-  MediaStreamVideoCapturerSource* const ms_source =
-      static_cast<MediaStreamVideoCapturerSource*>(
-          web_media_stream_source.GetExtraData());
+  blink::MediaStreamVideoCapturerSource* const ms_source =
+      static_cast<blink::MediaStreamVideoCapturerSource*>(
+          web_media_stream_source.GetPlatformSource());
   EXPECT_TRUE(ms_source != nullptr);
   media::VideoCapturerSource* source = GetVideoCapturerSource(ms_source);
   EXPECT_TRUE(source != nullptr);
@@ -204,9 +207,9 @@ TEST_P(CanvasCaptureHandlerTest, VerifyFrame) {
   const bool width = testing::get<1>(GetParam());
   const bool height = testing::get<1>(GetParam());
   InSequence s;
-  media::VideoCapturerSource* const source =
-      GetVideoCapturerSource(static_cast<MediaStreamVideoCapturerSource*>(
-          track_.Source().GetExtraData()));
+  media::VideoCapturerSource* const source = GetVideoCapturerSource(
+      static_cast<blink::MediaStreamVideoCapturerSource*>(
+          track_.Source().GetPlatformSource()));
   EXPECT_TRUE(source != nullptr);
 
   base::RunLoop run_loop;
@@ -225,16 +228,16 @@ TEST_P(CanvasCaptureHandlerTest, VerifyFrame) {
 // Checks that needsNewFrame() works as expected.
 TEST_F(CanvasCaptureHandlerTest, CheckNeedsNewFrame) {
   InSequence s;
-  media::VideoCapturerSource* source =
-      GetVideoCapturerSource(static_cast<MediaStreamVideoCapturerSource*>(
-          track_.Source().GetExtraData()));
+  media::VideoCapturerSource* source = GetVideoCapturerSource(
+      static_cast<blink::MediaStreamVideoCapturerSource*>(
+          track_.Source().GetPlatformSource()));
   EXPECT_TRUE(source != nullptr);
   EXPECT_TRUE(canvas_capture_handler_->NeedsNewFrame());
   source->StopCapture();
   EXPECT_FALSE(canvas_capture_handler_->NeedsNewFrame());
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ,
     CanvasCaptureHandlerTest,
     ::testing::Combine(::testing::Bool(),

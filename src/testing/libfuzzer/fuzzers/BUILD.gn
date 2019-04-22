@@ -27,7 +27,6 @@ fuzzer_test("courgette_fuzzer") {
     "//base",
     "//courgette:courgette_lib",
   ]
-  additional_configs = [ "//testing/libfuzzer:no_clusterfuzz" ]
 }
 
 fuzzer_test("language_detection_fuzzer") {
@@ -69,8 +68,9 @@ fuzzer_test("template_url_parser_fuzzer") {
     "//base",
     "//base:i18n",
     "//components/search_engines:search_engines",
+    "//third_party/libxml:libxml",
   ]
-  dict = "dicts/xml.dict"
+  dict = "//third_party/libxml/fuzz/xml.dict"
   libfuzzer_options = [ "max_len=4096" ]
 }
 
@@ -137,7 +137,8 @@ fuzzer_test("libxml_xml_read_memory_fuzzer") {
   deps = [
     "//third_party/libxml:libxml",
   ]
-  dict = "dicts/generated/libxml_xml_read_memory_fuzzer.dict"
+  dict = "//third_party/libxml/fuzz/xml.dict"
+  seed_corpus = "//third_party/libxml/fuzz/seed_corpus"
 }
 
 fuzzer_test("libpng_progressive_read_fuzzer") {
@@ -399,9 +400,7 @@ proto_library("javascript_parser_proto") {
   sources = [
     "$target_gen_dir/javascript_parser.proto",
   ]
-  deps = [
-    ":gen_javascript_parser_proto",
-  ]
+  proto_deps = [ ":gen_javascript_parser_proto" ]
   proto_out_dir = ""
 }
 

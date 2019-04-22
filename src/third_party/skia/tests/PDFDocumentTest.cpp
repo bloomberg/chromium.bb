@@ -8,17 +8,18 @@
 
 #include "Resources.h"
 #include "SkCanvas.h"
+#include "SkExecutor.h"
 #include "SkOSFile.h"
 #include "SkOSPath.h"
 #include "SkPDFDocument.h"
 #include "SkStream.h"
 
-#include "sk_tool_utils.h"
+#include "ToolUtils.h"
 
 static void test_empty(skiatest::Reporter* reporter) {
     SkDynamicMemoryWStream stream;
 
-    sk_sp<SkDocument> doc(SkPDF::MakeDocument(&stream));
+    auto doc = SkPDF::MakeDocument(&stream);
 
     doc->close();
 
@@ -27,7 +28,7 @@ static void test_empty(skiatest::Reporter* reporter) {
 
 static void test_abort(skiatest::Reporter* reporter) {
     SkDynamicMemoryWStream stream;
-    sk_sp<SkDocument> doc(SkPDF::MakeDocument(&stream));
+    auto doc = SkPDF::MakeDocument(&stream);
 
     SkCanvas* canvas = doc->beginPage(100, 100);
     canvas->drawColor(SK_ColorRED);
@@ -56,7 +57,7 @@ static void test_abortWithFile(skiatest::Reporter* reporter) {
     // Make sure doc's destructor is called to flush.
     {
         SkFILEWStream stream(path.c_str());
-        sk_sp<SkDocument> doc = SkPDF::MakeDocument(&stream);
+        auto doc = SkPDF::MakeDocument(&stream);
 
         SkCanvas* canvas = doc->beginPage(100, 100);
         canvas->drawColor(SK_ColorRED);
@@ -87,7 +88,7 @@ static void test_file(skiatest::Reporter* reporter) {
 
     {
         SkFILEWStream stream(path.c_str());
-        sk_sp<SkDocument> doc = SkPDF::MakeDocument(&stream);
+        auto doc = SkPDF::MakeDocument(&stream);
         SkCanvas* canvas = doc->beginPage(100, 100);
 
         canvas->drawColor(SK_ColorRED);
@@ -105,7 +106,7 @@ static void test_file(skiatest::Reporter* reporter) {
 
 static void test_close(skiatest::Reporter* reporter) {
     SkDynamicMemoryWStream stream;
-    sk_sp<SkDocument> doc(SkPDF::MakeDocument(&stream));
+    auto doc = SkPDF::MakeDocument(&stream);
 
     SkCanvas* canvas = doc->beginPage(100, 100);
     canvas->drawColor(SK_ColorRED);
@@ -128,13 +129,13 @@ DEF_TEST(SkPDF_document_tests, reporter) {
 DEF_TEST(SkPDF_document_skbug_4734, r) {
     REQUIRE_PDF_DOCUMENT(SkPDF_document_skbug_4734, r);
     SkDynamicMemoryWStream stream;
-    sk_sp<SkDocument> doc(SkPDF::MakeDocument(&stream));
+    auto doc = SkPDF::MakeDocument(&stream);
     SkCanvas* canvas = doc->beginPage(64, 64);
     canvas->scale(10000.0f, 10000.0f);
     canvas->translate(20.0f, 10.0f);
     canvas->rotate(30.0f);
     const char text[] = "HELLO";
-    canvas->drawString(text, 0, 0, SkPaint());
+    canvas->drawString(text, 0, 0, SkFont(), SkPaint());
 }
 
 static bool contains(const uint8_t* result, size_t size, const char expectation[]) {
@@ -239,3 +240,19 @@ DEF_TEST(SkPDF_multiple_pages, r) {
                 SkColorSetARGB(0xFF, 0x00, (uint8_t)(255.0f * i / (n - 1)), 0x00));
     }
 }
+
+// Test to make sure that jobs launched by PDF backend don't cause a segfault
+// after calling abort().
+DEF_TEST(SkPDF_abort_jobs, rep) {
+    SkBitmap b;
+    b.allocN32Pixels(612, 792);
+    b.eraseColor(0x4F9643A0);
+    SkPDF::Metadata metadata;
+    std::unique_ptr<SkExecutor> executor = SkExecutor::MakeFIFOThreadPool();
+    metadata.fExecutor = executor.get();
+    SkNullWStream dst;
+    auto doc = SkPDF::MakeDocument(&dst, metadata);
+    doc->beginPage(612, 792)->drawBitmap(b, 0, 0);
+    doc->abort();
+}
+

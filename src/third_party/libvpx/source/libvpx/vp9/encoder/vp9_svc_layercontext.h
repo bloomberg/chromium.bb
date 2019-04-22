@@ -143,10 +143,11 @@ typedef struct SVC {
 
   INTER_LAYER_PRED disable_inter_layer_pred;
 
-  // Flag to indicate scene change at current superframe, scene detection is
-  // currently checked for each superframe prior to encoding, on the full
-  // resolution source.
+  // Flag to indicate scene change and high num of motion blocks at current
+  // superframe, scene detection is currently checked for each superframe prior
+  // to encoding, on the full resolution source.
   int high_source_sad_superframe;
+  int high_num_blocks_with_motion;
 
   // Flags used to get SVC pattern info.
   int update_buffer_slot[VPX_SS_MAX_LAYERS];
@@ -188,6 +189,9 @@ typedef struct SVC {
   int64_t time_stamp_prev[VPX_SS_MAX_LAYERS];
 
   int num_encoded_top_layer;
+
+  // Every spatial layer on a superframe whose base is key is key too.
+  int simulcast_mode;
 } SVC;
 
 struct VP9_COMP;
@@ -235,6 +239,10 @@ struct lookahead_entry *vp9_svc_lookahead_pop(struct VP9_COMP *const cpi,
 // Start a frame and initialize svc parameters
 int vp9_svc_start_frame(struct VP9_COMP *const cpi);
 
+#if CONFIG_VP9_TEMPORAL_DENOISING
+int vp9_denoise_svc_non_key(struct VP9_COMP *const cpi);
+#endif
+
 void vp9_copy_flags_ref_update_idx(struct VP9_COMP *const cpi);
 
 int vp9_one_pass_cbr_svc_start_layer(struct VP9_COMP *const cpi);
@@ -253,10 +261,13 @@ void vp9_svc_check_spatial_layer_sync(struct VP9_COMP *const cpi);
 
 void vp9_svc_update_ref_frame_buffer_idx(struct VP9_COMP *const cpi);
 
+void vp9_svc_update_ref_frame_key_simulcast(struct VP9_COMP *const cpi);
+
 void vp9_svc_update_ref_frame(struct VP9_COMP *const cpi);
 
 void vp9_svc_adjust_frame_rate(struct VP9_COMP *const cpi);
 
+void vp9_svc_adjust_avg_frame_qindex(struct VP9_COMP *const cpi);
 #ifdef __cplusplus
 }  // extern "C"
 #endif

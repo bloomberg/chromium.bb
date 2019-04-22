@@ -50,7 +50,7 @@ WebPluginDocument::WebPluginDocument(PluginDocument* elem)
 
 DEFINE_WEB_NODE_TYPE_CASTS(WebPluginDocument,
                            IsDocumentNode() &&
-                               ConstUnwrap<Document>()->IsPluginDocument());
+                               ConstUnwrap<Document>()->IsPluginDocument())
 
 WebPluginDocument& WebPluginDocument::operator=(PluginDocument* elem) {
   private_ = elem;
@@ -59,14 +59,6 @@ WebPluginDocument& WebPluginDocument::operator=(PluginDocument* elem) {
 
 WebPluginDocument::operator PluginDocument*() const {
   return static_cast<PluginDocument*>(private_.Get());
-}
-
-void WebPluginDocument::SetShowBeforeUnloadDialog(bool show_dialog) {
-  if (!IsPluginDocument())
-    return;
-
-  PluginDocument* doc = Unwrap<PluginDocument>();
-  doc->SetShowBeforeUnloadDialog(show_dialog);
 }
 
 }  // namespace blink

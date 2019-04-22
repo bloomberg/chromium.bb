@@ -19,7 +19,7 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/reading_list/core/reading_list_model.h"
 #include "components/reading_list/core/reading_list_model_observer.h"
-#include "ios/chrome/browser/experimental_flags.h"
+#include "ios/chrome/browser/system_flags.h"
 #include "ios/chrome/common/app_group/app_group_constants.h"
 #include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
@@ -169,7 +169,7 @@ void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
 - (void)createReadingListFolder {
   {
     base::ScopedBlockingCall scoped_blocking_call(
-        base::BlockingType::WILL_BLOCK);
+        FROM_HERE, base::BlockingType::WILL_BLOCK);
     NSFileManager* manager = [NSFileManager defaultManager];
     if (![manager fileExistsAtPath:[[self presentedItemURL] path]]) {
       [manager createDirectoryAtPath:[[self presentedItemURL] path]
@@ -283,7 +283,8 @@ void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
 }
 
 - (void)handleFileAtURL:(NSURL*)url withCompletion:(ProceduralBlock)completion {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::WILL_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::WILL_BLOCK);
   if (![[NSFileManager defaultManager] fileExistsAtPath:[url path]]) {
     // The handler is called on file modification, including deletion. Check
     // that the file exists before continuing.
@@ -295,7 +296,7 @@ void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
   };
   void (^readingAccessor)(NSURL*) = ^(NSURL* newURL) {
     base::ScopedBlockingCall scoped_blocking_call(
-        base::BlockingType::WILL_BLOCK);
+        FROM_HERE, base::BlockingType::WILL_BLOCK);
     NSFileManager* manager = [NSFileManager defaultManager];
     NSData* data = [manager contentsAtPath:[newURL path]];
     if (![weakSelf receivedData:data withCompletion:successCompletion]) {
@@ -313,10 +314,11 @@ void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
 }
 
 - (void)deleteFileAtURL:(NSURL*)url withCompletion:(ProceduralBlock)completion {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::WILL_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::WILL_BLOCK);
   void (^deletingAccessor)(NSURL*) = ^(NSURL* newURL) {
     base::ScopedBlockingCall scoped_blocking_call(
-        base::BlockingType::MAY_BLOCK);
+        FROM_HERE, base::BlockingType::MAY_BLOCK);
     NSFileManager* manager = [NSFileManager defaultManager];
     [manager removeItemAtURL:newURL error:nil];
   };
@@ -352,7 +354,8 @@ void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
 }
 
 - (void)processExistingFiles {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::WILL_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::WILL_BLOCK);
   NSMutableArray<NSURL*>* files = [NSMutableArray array];
   NSFileManager* manager = [NSFileManager defaultManager];
   NSArray<NSURL*>* oldFiles = [manager

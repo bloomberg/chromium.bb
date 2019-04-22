@@ -4,6 +4,7 @@
 
 #include "chrome/browser/android/accessibility/font_size_prefs_android.h"
 
+#include "base/bind.h"
 #include "base/observer_list.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/profiles/profile_manager.h"

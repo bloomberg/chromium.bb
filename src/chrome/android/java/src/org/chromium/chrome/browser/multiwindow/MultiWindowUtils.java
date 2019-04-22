@@ -15,6 +15,7 @@ import android.hardware.display.DisplayManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Browser;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.Display;
 
@@ -35,8 +36,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
-
-import javax.annotation.Nullable;
 
 /**
  * Utilities for detecting multi-window/multi-instance support.
@@ -237,9 +236,7 @@ public class MultiWindowUtils implements ActivityStateListener {
         // Find the activities.
         Activity tabbedActivity = null;
         Activity tabbedActivity2 = null;
-        for (WeakReference<Activity> reference : ApplicationStatus.getRunningActivities()) {
-            Activity activity = reference.get();
-            if (activity == null) continue;
+        for (Activity activity : ApplicationStatus.getRunningActivities()) {
             if (activity.getClass().equals(ChromeTabbedActivity.class)) {
                 tabbedActivity = activity;
             } else if (activity.getClass().equals(ChromeTabbedActivity2.class)) {
@@ -373,9 +370,7 @@ public class MultiWindowUtils implements ActivityStateListener {
      *         running.
      */
     private static boolean isPrimaryTabbedActivityRunning() {
-        for (WeakReference<Activity> reference : ApplicationStatus.getRunningActivities()) {
-            Activity activity = reference.get();
-            if (activity == null) continue;
+        for (Activity activity : ApplicationStatus.getRunningActivities()) {
             if (activity.getClass().equals(ChromeTabbedActivity.class)) return true;
         }
         return false;

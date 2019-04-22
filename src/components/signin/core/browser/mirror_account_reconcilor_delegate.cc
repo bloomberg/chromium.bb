@@ -59,15 +59,15 @@ MirrorAccountReconcilorDelegate::GetChromeAccountsForReconcile(
             gaia::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER);
   return ReorderChromeAccountsForReconcile(chrome_accounts, primary_account,
                                            gaia_accounts);
-  }
+}
 
 void MirrorAccountReconcilorDelegate::OnPrimaryAccountSet(
-    const AccountInfo& primary_account_info) {
+    const CoreAccountInfo& primary_account_info) {
   reconcilor()->EnableReconcile();
 }
 
 void MirrorAccountReconcilorDelegate::OnPrimaryAccountCleared(
-    const AccountInfo& previous_primary_account_info) {
+    const CoreAccountInfo& previous_primary_account_info) {
   reconcilor()->DisableReconcile(true /* logout_all_gaia_accounts */);
 }
 

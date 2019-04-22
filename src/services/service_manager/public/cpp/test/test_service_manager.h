@@ -6,10 +6,11 @@
 #define SERVICES_SERVICE_MANAGER_PUBLIC_CPP_TEST_TEST_SERVICE_MANAGER_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
-#include "base/values.h"
 #include "services/service_manager/public/cpp/identity.h"
+#include "services/service_manager/public/cpp/manifest.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace service_manager {
@@ -24,12 +25,12 @@ class BackgroundServiceManager;
 // example a live |base::test::ScopedTaskEnvironment| object.
 class TestServiceManager {
  public:
-  // Creates a TestServiceManager using the default global catalog.
+  // Creates a TestServiceManager using the default global list of manifests.
   TestServiceManager();
 
-  // Creates a TestServiceManager using the specific catalog contents in
-  // |catalog.|
-  explicit TestServiceManager(std::unique_ptr<base::Value> catalog);
+  // Creates a TestServiceManager configured a specific set of service
+  // manifests.
+  explicit TestServiceManager(const std::vector<Manifest>& manifests);
 
   ~TestServiceManager();
 

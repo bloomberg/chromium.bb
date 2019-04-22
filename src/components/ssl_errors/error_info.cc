@@ -7,7 +7,7 @@
 #include <stddef.h>
 
 #include "base/i18n/message_formatter.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
 #include "net/base/escape.h"
@@ -262,9 +262,9 @@ void ErrorInfo::GetErrorsForCertStatus(
       CERTIFICATE_TRANSPARENCY_REQUIRED,
       CERT_SYMANTEC_LEGACY,
   };
-  DCHECK(arraysize(kErrorFlags) == arraysize(kErrorTypes));
+  DCHECK(base::size(kErrorFlags) == base::size(kErrorTypes));
 
-  for (size_t i = 0; i < arraysize(kErrorFlags); ++i) {
+  for (size_t i = 0; i < base::size(kErrorFlags); ++i) {
     if ((cert_status & kErrorFlags[i]) && errors) {
       errors->push_back(
           ErrorInfo::CreateError(kErrorTypes[i], cert.get(), url));

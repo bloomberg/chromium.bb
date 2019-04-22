@@ -30,6 +30,9 @@ const char kXrCompositingSandbox[] = "xr_compositing";
 const char kPdfCompositorSandbox[] = "pdf_compositor";
 const char kProfilingSandbox[] = "profiling";
 const char kAudioSandbox[] = "audio";
+#if defined(OS_CHROMEOS)
+const char kImeSandbox[] = "ime";
+#endif  // OS_CHROMEOS
 
 // Flags owned by the service manager sandbox.
 
@@ -107,6 +110,7 @@ const char kEnableSandboxLogging[] = "enable-sandbox-logging";
 
 // Flags spied upon from other layers.
 const char kGpuProcess[] = "gpu-process";
+const char kNaClLoaderProcess[] = "nacl-loader";
 const char kPpapiBrokerProcess[] = "ppapi-broker";
 const char kPpapiPluginProcess[] = "ppapi";
 const char kRendererProcess[] = "renderer";

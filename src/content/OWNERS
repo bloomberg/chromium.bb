@@ -16,7 +16,7 @@ piman@chromium.org
 # structural changes, please get a review from a reviewer in this file.
 per-file BUILD.gn=*
 
-# For threading (BrowserThread, BrowserMainLoop, TaskScheduler, etc.)
+# For threading (BrowserThread, BrowserMainLoop, ThreadPool, etc.)
 per-file *browser_main_loop*=gab@chromium.org
 per-file *browser_thread*=gab@chromium.org
 
@@ -32,5 +32,8 @@ per-file *_mac*=ellyjones@chromium.org
 per-file *_mac*=tapted@chromium.org
 per-file *.mm=ellyjones@chromium.org
 per-file *.mm=tapted@chromium.org
+
+# Translation artifacts:
+per-file *.xtb=file://tools/translation/TRANSLATION_OWNERS
 
 # COMPONENT: Internals>Core

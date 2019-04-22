@@ -364,8 +364,6 @@ void DesktopCaptureDevice::Core::OnCaptureResult(
     // last frame.
     if (!black_frame_ || !black_frame_->size().equals(output_size)) {
       black_frame_.reset(new webrtc::BasicDesktopFrame(output_size));
-      memset(black_frame_->data(), 0,
-             black_frame_->stride() * black_frame_->size().height());
     }
     output_data = black_frame_->data();
   } else {
@@ -396,7 +394,6 @@ void DesktopCaptureDevice::Core::OnCaptureResult(
       // letterboxed areas.
       if (!output_frame_) {
         output_frame_.reset(new webrtc::BasicDesktopFrame(output_size));
-        memset(output_frame_->data(), 0, output_bytes);
       }
       DCHECK(output_frame_->size().equals(output_size));
 
@@ -418,7 +415,6 @@ void DesktopCaptureDevice::Core::OnCaptureResult(
       // crbug.com/437740).
       if (!output_frame_) {
         output_frame_.reset(new webrtc::BasicDesktopFrame(output_size));
-        memset(output_frame_->data(), 0, output_bytes);
       }
 
       output_frame_->CopyPixelsFrom(
@@ -562,7 +558,9 @@ void DesktopCaptureDevice::AllocateAndStart(
 
 void DesktopCaptureDevice::StopAndDeAllocate() {
   if (core_) {
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    // This thread should mostly be an idle observer. Stopping it should be
+    // fast.
+    base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_thread_join;
     thread_.task_runner()->DeleteSoon(FROM_HERE, core_.release());
     thread_.Stop();
   }

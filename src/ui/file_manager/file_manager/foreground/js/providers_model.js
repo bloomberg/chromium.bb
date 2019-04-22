@@ -133,15 +133,15 @@ function ProvidersModel(volumeManager) {
 /**
  * @return {!Promise<Array<ProvidersModelItem>>}
  */
-ProvidersModel.prototype.getInstalledProviders = function() {
-  return new Promise(function(fulfill, reject) {
-    chrome.fileManagerPrivate.getProviders(function(providers) {
+ProvidersModel.prototype.getInstalledProviders = () => {
+  return new Promise((fulfill, reject) => {
+    chrome.fileManagerPrivate.getProviders(providers => {
       if (chrome.runtime.lastError) {
         reject(chrome.runtime.lastError.message);
         return;
       }
-      var results = [];
-      providers.forEach(function(provider) {
+      const results = [];
+      providers.forEach(provider => {
         results.push(new ProvidersModelItem(
             provider.providerId, provider.iconSet, provider.name,
             provider.configurable, provider.watchable, provider.multipleMounts,
@@ -156,30 +156,31 @@ ProvidersModel.prototype.getInstalledProviders = function() {
  * @return {!Promise<Array<ProvidersModelItem>>}
  */
 ProvidersModel.prototype.getMountableProviders = function() {
-  return this.getInstalledProviders().then(function(providers) {
-    var mountedProviders = {};
-    for (var i = 0; i < this.volumeManager_.volumeInfoList.length; i++) {
-      var volumeInfo = this.volumeManager_.volumeInfoList.item(i);
-      if (volumeInfo.volumeType === VolumeManagerCommon.VolumeType.PROVIDED)
+  return this.getInstalledProviders().then(providers => {
+    const mountedProviders = {};
+    for (let i = 0; i < this.volumeManager_.volumeInfoList.length; i++) {
+      const volumeInfo = this.volumeManager_.volumeInfoList.item(i);
+      if (volumeInfo.volumeType === VolumeManagerCommon.VolumeType.PROVIDED) {
         mountedProviders[volumeInfo.providerId] = true;
+      }
     }
-    return providers.filter(function(item) {
+    return providers.filter(item => {
       // File systems handling files are mounted via file handlers. Device
       // handlers are mounted when a device is inserted. Only network file
       // systems are mounted manually by user via a menu.
       return item.source === 'network' &&
           (!mountedProviders[item.providerId] || item.multipleMounts);
     });
-  }.bind(this));
+  });
 };
 
 /**
  * @param {string} providerId
  */
-ProvidersModel.prototype.requestMount = function(providerId) {
-  chrome.fileManagerPrivate.addProvidedFileSystem(
-      assert(providerId), function() {
-        if (chrome.runtime.lastError)
-          console.error(chrome.runtime.lastError.message);
-      });
+ProvidersModel.prototype.requestMount = providerId => {
+  chrome.fileManagerPrivate.addProvidedFileSystem(assert(providerId), () => {
+    if (chrome.runtime.lastError) {
+      console.error(chrome.runtime.lastError.message);
+    }
+  });
 };

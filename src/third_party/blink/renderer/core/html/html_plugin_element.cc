@@ -47,13 +47,15 @@
 #include "third_party/blink/renderer/core/layout/layout_image.h"
 #include "third_party/blink/renderer/core/loader/mixed_content_checker.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/page/plugin_data.h"
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_from_url.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
-#include "third_party/blink/renderer/platform/plugins/plugin_data.h"
+#include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/public/scheduling_policy.h"
 
 namespace blink {
 
@@ -122,6 +124,11 @@ HTMLPlugInElement::HTMLPlugInElement(
       should_prefer_plug_ins_for_images_(prefer_plug_ins_for_images_option ==
                                          kShouldPreferPlugInsForImages) {
   SetHasCustomStyleCallbacks();
+  if (doc.GetScheduler()) {
+    doc.GetScheduler()->RegisterStickyFeature(
+        SchedulingPolicy::Feature::kContainsPlugins,
+        {SchedulingPolicy::DisableBackForwardCache()});
+  }
 }
 
 HTMLPlugInElement::~HTMLPlugInElement() {
@@ -129,7 +136,7 @@ HTMLPlugInElement::~HTMLPlugInElement() {
   DCHECK(!is_delaying_load_event_);
 }
 
-void HTMLPlugInElement::Trace(blink::Visitor* visitor) {
+void HTMLPlugInElement::Trace(Visitor* visitor) {
   visitor->Trace(image_loader_);
   visitor->Trace(persisted_plugin_);
   HTMLFrameOwnerElement::Trace(visitor);
@@ -175,20 +182,39 @@ bool HTMLPlugInElement::RequestObjectInternal(
   if (!AllowedToLoadObject(completed_url, service_type_))
     return false;
 
-  handled_externally_ =
-      GetDocument().GetFrame()->Client()->IsPluginHandledExternally(
-          *this, completed_url,
-          service_type_.IsEmpty() ? GetMIMETypeFromURL(completed_url)
-                                  : service_type_);
+  ObjectContentType object_type = GetObjectContentType();
+  if (object_type == ObjectContentType::kMimeHandlerViewPlugin) {
+    // The plugin might be handled externally using MimeHandlerView. If so, and
+    // there is no ContentFrame(), LoadOrRedirectSubframe call will create one.
+    handled_externally_ =
+        GetDocument().GetFrame()->Client()->MaybeCreateMimeHandlerView(
+            *this, completed_url,
+            service_type_.IsEmpty() ? GetMIMETypeFromURL(completed_url)
+                                    : service_type_);
+  }
+
   if (handled_externally_) {
+    ResetInstance();
     // This is a temporary placeholder and the logic around
     // |handled_externally_| might change as MimeHandlerView is moving towards
     // depending on OOPIFs instead of WebPlugin (https://crbug.com/659750).
     completed_url = BlankURL();
   }
-  ObjectContentType object_type = GetObjectContentType();
   if (object_type == ObjectContentType::kFrame ||
-      object_type == ObjectContentType::kImage || handled_externally_) {
+      object_type == ObjectContentType::kImage ||
+      object_type == ObjectContentType::kMimeHandlerViewPlugin) {
+    if (ContentFrame() && ContentFrame()->IsRemoteFrame()) {
+      // During lazy reattaching, the plugin element loses EmbeddedContentView.
+      // Since the ContentFrame() is not torn down the options here are to
+      // either re-create a new RemoteFrameView or reuse the old one. The former
+      // approach requires CommitNavigation for OOPF to be sent back here in
+      // the parent process. It is easier to just reuse the current FrameView
+      // instead until plugin element issue are properly resolved (for context
+      // see https://crbug.com/781880).
+      DCHECK(!OwnedEmbeddedContentView());
+      SetEmbeddedContentView(ContentFrame()->View());
+      DCHECK(OwnedEmbeddedContentView());
+    }
     // If the plugin element already contains a subframe,
     // loadOrRedirectSubframe will re-use it. Otherwise, it will create a
     // new frame and set it as the LayoutEmbeddedContent's EmbeddedContentView,
@@ -304,10 +330,8 @@ ParsedFeaturePolicy HTMLPlugInElement::ConstructContainerPolicy(
   // origin.
   // https://fullscreen.spec.whatwg.org/#model
   ParsedFeaturePolicy container_policy;
-  ParsedFeaturePolicyDeclaration allowlist;
-  allowlist.feature = mojom::FeaturePolicyFeature::kFullscreen;
-  allowlist.matches_all_origins = false;
-  allowlist.disposition = mojom::FeaturePolicyDisposition::kEnforce;
+  ParsedFeaturePolicyDeclaration allowlist(
+      mojom::FeaturePolicyFeature::kFullscreen, mojom::PolicyValueType::kBool);
   container_policy.push_back(allowlist);
   return container_policy;
 }
@@ -338,17 +362,17 @@ void HTMLPlugInElement::DetachLayoutTree(const AttachContext& context) {
   HTMLFrameOwnerElement::DetachLayoutTree(context);
 }
 
-LayoutObject* HTMLPlugInElement::CreateLayoutObject(
-    const ComputedStyle& style) {
+LayoutObject* HTMLPlugInElement::CreateLayoutObject(const ComputedStyle& style,
+                                                    LegacyLayout legacy) {
   // Fallback content breaks the DOM->layoutObject class relationship of this
   // class and all superclasses because createObject won't necessarily return
   // a LayoutEmbeddedObject or LayoutEmbeddedContent.
   if (UseFallbackContent())
-    return LayoutObject::CreateObject(this, style);
+    return LayoutObject::CreateObject(this, style, legacy);
 
   if (IsImageType()) {
     LayoutImage* image = new LayoutImage(this);
-    image->SetImageResource(LayoutImageResource::Create());
+    image->SetImageResource(MakeGarbageCollected<LayoutImageResource>());
     return image;
   }
 
@@ -358,12 +382,8 @@ LayoutObject* HTMLPlugInElement::CreateLayoutObject(
 
 void HTMLPlugInElement::FinishParsingChildren() {
   HTMLFrameOwnerElement::FinishParsingChildren();
-  if (UseFallbackContent())
-    return;
-
-  SetNeedsPluginUpdate(true);
-  if (isConnected())
-    LazyReattachIfNeeded();
+  if (!UseFallbackContent())
+    SetNeedsPluginUpdate(true);
 }
 
 void HTMLPlugInElement::ResetInstance() {
@@ -387,8 +407,22 @@ v8::Local<v8::Object> HTMLPlugInElement::PluginWrapper() {
     else
       plugin = PluginEmbeddedContentView();
 
-    if (plugin)
+    if (plugin) {
       plugin_wrapper_.Reset(isolate, plugin->ScriptableObject(isolate));
+    } else if (handled_externally_) {
+      // It is important to check for |handled_externally_| after calling
+      // PluginEmbeddedContentView(). Note that calling
+      // PluginEmbeddedContentView() leads to synchronously updating style and
+      // running post layout tasks, which ends up updating the plugin. It is
+      // after updating the plugin that we know whether or not the plugin is
+      // handled externally by a MimeHandlerView. To check for
+      // |handled_externally_| sooner is wrong since it is possible for JS to
+      // call int PluginWrapper() before the plugin has gone through the update
+      // phase (and wrongly assume it is not handled by MimeHandlerView). (see
+      // https://crbug.com/946709).
+      plugin_wrapper_.Reset(
+          isolate, frame->Client()->GetScriptableObject(*this, isolate));
+    }
   }
   return plugin_wrapper_.Get(isolate);
 }
@@ -420,15 +454,15 @@ void HTMLPlugInElement::CollectStyleForPresentationAttribute(
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
   if (name == kWidthAttr) {
-    AddHTMLLengthToStyle(style, CSSPropertyWidth, value);
+    AddHTMLLengthToStyle(style, CSSPropertyID::kWidth, value);
   } else if (name == kHeightAttr) {
-    AddHTMLLengthToStyle(style, CSSPropertyHeight, value);
+    AddHTMLLengthToStyle(style, CSSPropertyID::kHeight, value);
   } else if (name == kVspaceAttr) {
-    AddHTMLLengthToStyle(style, CSSPropertyMarginTop, value);
-    AddHTMLLengthToStyle(style, CSSPropertyMarginBottom, value);
+    AddHTMLLengthToStyle(style, CSSPropertyID::kMarginTop, value);
+    AddHTMLLengthToStyle(style, CSSPropertyID::kMarginBottom, value);
   } else if (name == kHspaceAttr) {
-    AddHTMLLengthToStyle(style, CSSPropertyMarginLeft, value);
-    AddHTMLLengthToStyle(style, CSSPropertyMarginRight, value);
+    AddHTMLLengthToStyle(style, CSSPropertyID::kMarginLeft, value);
+    AddHTMLLengthToStyle(style, CSSPropertyID::kMarginRight, value);
   } else if (name == kAlignAttr) {
     ApplyAlignmentAttributeToStyle(value, style);
   } else {
@@ -469,8 +503,10 @@ LayoutEmbeddedContent* HTMLPlugInElement::LayoutEmbeddedContentForJSBindings()
   // Needs to load the plugin immediatedly because this function is called
   // when JavaScript code accesses the plugin.
   // FIXME: Check if dispatching events here is safe.
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets(
-      Document::kRunPostLayoutTasksSynchronously);
+  GetDocument().UpdateStyleAndLayout();
+  if (auto* view = GetDocument().View())
+    view->FlushAnyPendingPostLayoutTasks();
+
   return ExistingLayoutEmbeddedContent();
 }
 
@@ -526,6 +562,11 @@ HTMLPlugInElement::ObjectContentType HTMLPlugInElement::GetObjectContentType()
   PluginData* plugin_data = GetDocument().GetFrame()->GetPluginData();
   bool plugin_supports_mime_type =
       plugin_data && plugin_data->SupportsMimeType(mime_type);
+  if (plugin_supports_mime_type &&
+      plugin_data->IsMimeHandlerViewMimeType(mime_type) &&
+      RuntimeEnabledFeatures::MimeHandlerViewInCrossProcessFrameEnabled()) {
+    return ObjectContentType::kMimeHandlerViewPlugin;
+  }
 
   if (MIMETypeRegistry::IsSupportedImageMIMEType(mime_type)) {
     return should_prefer_plug_ins_for_images_ && plugin_supports_mime_type
@@ -674,15 +715,15 @@ bool HTMLPlugInElement::AllowedToLoadObject(const KURL& url,
   return (!mime_type.IsEmpty() && url.IsEmpty()) ||
          !MixedContentChecker::ShouldBlockFetch(
              frame, mojom::RequestContextType::OBJECT,
-             network::mojom::RequestContextFrameType::kNone,
              ResourceRequest::RedirectStatus::kNoRedirect, url);
 }
 
 bool HTMLPlugInElement::AllowedToLoadPlugin(const KURL& url,
                                             const String& mime_type) {
-  if (GetDocument().IsSandboxed(kSandboxPlugins)) {
+  if (GetDocument().IsSandboxed(WebSandboxFlags::kPlugins)) {
     GetDocument().AddConsoleMessage(
-        ConsoleMessage::Create(kSecurityMessageSource, kErrorMessageLevel,
+        ConsoleMessage::Create(mojom::ConsoleMessageSource::kSecurity,
+                               mojom::ConsoleMessageLevel::kError,
                                "Failed to load '" + url.ElidedString() +
                                    "' as a plugin, because the "
                                    "frame into which the plugin "
@@ -724,7 +765,7 @@ scoped_refptr<ComputedStyle> HTMLPlugInElement::CustomStyleForLayoutObject() {
   if (IsImageType() && !GetLayoutObject() && style &&
       LayoutObjectIsNeeded(*style)) {
     if (!image_loader_)
-      image_loader_ = HTMLImageLoader::Create(this);
+      image_loader_ = MakeGarbageCollected<HTMLImageLoader>(this);
     image_loader_->UpdateFromElement();
   }
   return style;

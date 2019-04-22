@@ -4,6 +4,8 @@
 
 #include "chrome/browser/devtools/devtools_embedder_message_dispatcher.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/values.h"
 
@@ -17,6 +19,10 @@ bool GetValue(const base::Value& value, std::string* result) {
 
 bool GetValue(const base::Value& value, int* result) {
   return value.GetAsInteger(result);
+}
+
+bool GetValue(const base::Value& value, double* result) {
+  return value.GetAsDouble(result);
 }
 
 bool GetValue(const base::Value& value, bool* result) {
@@ -102,7 +108,7 @@ bool ParseAndHandleWithCallback(
   return true;
 }
 
-} // namespace
+}  // namespace
 
 /**
  * Dispatcher for messages sent from the frontend running in an
@@ -151,10 +157,10 @@ class DispatcherImpl : public DevToolsEmbedderMessageDispatcher {
 };
 
 // static
-DevToolsEmbedderMessageDispatcher*
+std::unique_ptr<DevToolsEmbedderMessageDispatcher>
 DevToolsEmbedderMessageDispatcher::CreateForDevToolsFrontend(
     Delegate* delegate) {
-  DispatcherImpl* d = new DispatcherImpl();
+  auto d = std::make_unique<DispatcherImpl>();
 
   d->RegisterHandler("bringToFront", &Delegate::ActivateWindow, delegate);
   d->RegisterHandler("closeWindow", &Delegate::CloseWindow, delegate);
@@ -204,6 +210,8 @@ DevToolsEmbedderMessageDispatcher::CreateForDevToolsFrontend(
                      delegate);
   d->RegisterHandler("recordEnumeratedHistogram",
                      &Delegate::RecordEnumeratedHistogram, delegate);
+  d->RegisterHandler("recordPerformanceHistogram",
+                     &Delegate::RecordPerformanceHistogram, delegate);
   d->RegisterHandlerWithCallback("sendJsonRequest",
                                  &Delegate::SendJsonRequest, delegate);
   d->RegisterHandlerWithCallback("getPreferences",

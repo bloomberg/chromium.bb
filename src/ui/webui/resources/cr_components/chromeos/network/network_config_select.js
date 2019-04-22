@@ -21,6 +21,13 @@ Polymer({
     certList: Boolean,
 
     /**
+     * Set true if the dropdown list should allow only device-wide
+     * certificates.
+     * Note: only used when |items| is a list of certificates.
+     */
+    deviceCertsOnly: Boolean,
+
+    /**
      * Array of item values to select from.
      * @type {!Array<string>}
      */
@@ -53,8 +60,9 @@ Polymer({
     // Wait for the dom-repeat to populate the <option> entries.
     this.async(function() {
       const select = this.$$('select');
-      if (select.value != this.value)
+      if (select.value != this.value) {
         select.value = this.value;
+      }
     });
   },
 
@@ -71,8 +79,9 @@ Polymer({
     }
     const key = /** @type {string} */ (item);
     const oncKey = 'Onc' + prefix.replace(/\./g, '-') + '_' + key;
-    if (this.i18nExists(oncKey))
+    if (this.i18nExists(oncKey)) {
       return this.i18n(oncKey);
+    }
     assertNotReached('ONC Key not found: ' + oncKey);
     return key;
   },
@@ -83,8 +92,9 @@ Polymer({
    * @private
    */
   getItemValue_: function(item) {
-    if (this.certList)
+    if (this.certList) {
       return /** @type {chrome.networkingPrivate.Certificate}*/ (item).hash;
+    }
     return /** @type {string} */ (item);
   },
 
@@ -96,6 +106,9 @@ Polymer({
   getItemEnabled_: function(item) {
     if (this.certList) {
       const cert = /** @type {chrome.networkingPrivate.Certificate}*/ (item);
+      if (this.deviceCertsOnly && !(cert.deviceWide || cert.isDefault)) {
+        return false;
+      }
       return !!cert.hash;
     }
     return true;

@@ -24,6 +24,7 @@ Informationen zum Datenschutz finden Sie in der Google-Datenschutzerklärung (ht
 <translation id="1520828917794284345">Desktop-Größe anpassen</translation>
 <translation id="154040539590487450">Fehler beim Starten des Remote-Zugriffsdienstes</translation>
 <translation id="1546934824884762070">Ein unerwarteter Fehler ist aufgetreten. Bitte melden Sie dieses Problem den Entwicklern.</translation>
+<translation id="1624185583382384493">Chrome Remote Desktop ist jetzt im Web verfügbar. Testen Sie unsere <ph name="LINK_BEGIN" />Web-App<ph name="LINK_END" />: Sie ist schnell, kostenlos und bietet noch mehr Funktionen. So wurde zum Beispiel die Unterstützung für mehrere Bildschirme verbessert.</translation>
 <translation id="1643640058022401035">Wenn Sie diese Seite verlassen, wird Ihre Chromoting-Sitzung beendet.</translation>
 <translation id="1654128982815600832">Remote-Verbindungen für diesen Computer werden aktiviert…</translation>
 <translation id="170207782578677537">Fehler beim Registrieren dieses Computers</translation>
@@ -37,7 +38,7 @@ Informationen zum Datenschutz finden Sie in der Google-Datenschutzerklärung (ht
 <translation id="1897488610212723051">Löschen</translation>
 <translation id="195619862187186579">Tastaturlayouts</translation>
 <translation id="1996161829609978754">Chrome lädt das Installationsprogramm für den Chromoting-Host herunter. Führen Sie nach dem Download das Installationsprogramm aus, bevor Sie fortfahren.</translation>
-<translation id="2009755455353575666">Fehler beim Herstellen der Verbindung</translation>
+<translation id="2009755455353575666">Verbindung fehlgeschlagen</translation>
 <translation id="2013884659108657024">Chrome lädt das Installationsprogramm für den Chrome Remote Desktop-Host herunter. Führen Sie nach dem Download das Installationsprogramm aus, bevor Sie fortfahren.</translation>
 <translation id="2013996867038862849">Alle gekoppelten Clients wurden gelöscht.</translation>
 <translation id="2038229918502634450">Der Host wird neu gestartet, um eine Richtlinienänderung zu übernehmen.</translation>
@@ -138,6 +139,7 @@ Informationen zum Datenschutz finden Sie in der Google-Datenschutzerklärung (ht
 <translation id="3989511127559254552">Um fortfahren zu können, müssen Sie zunächst erweiterte Zugriffsberechtigungen auf Ihren Computer gewähren. Dieser Schritt ist nur einmal erforderlich.</translation>
 <translation id="4006787130661126000">Aktivieren Sie die Remote-Verbindungen, wenn Sie mit Chrome Remote Desktop auf diesen Computer zugreifen möchten.</translation>
 <translation id="405887016757208221">Der Remote-Computer konnte die Sitzung nicht initialisieren. Sollte das Problem weiter bestehen, versuchen Sie bitte, den Host nochmals zu konfigurieren.</translation>
+<translation id="4060747889721220580">Datei herunterladen</translation>
 <translation id="4068946408131579958">Alle Verbindungen</translation>
 <translation id="409800995205263688">Hinweis: Die Richtlinieneinstellungen erlauben nur Verbindungen zwischen Computern in Ihrem Netzwerk.</translation>
 <translation id="4126409073460786861">Aktualisieren Sie diese Seite nach der Einrichtung. Anschließend können Sie auf den Computer zugreifen, indem Sie das Gerät auswählen und die PIN eingeben.</translation>
@@ -242,6 +244,7 @@ Wenn Sie diese Funktion aktivieren möchten, wählen Sie "<ph name="BUTTON_NAME"
 <translation id="6198252989419008588">PIN ändern</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (veraltet)</translation>
 <translation id="6221358653751391898">Sie sind nicht in Chrome angemeldet. Melden Sie sich an und versuchen Sie es erneut.</translation>
+<translation id="6227369581881558336">Chrome Remote Desktop ist jetzt im Web verfügbar und bietet neue Funktionen wie die Dateiübertragung. <ph name="LINK_BEGIN" />Hier gehts zur Web App.<ph name="LINK_END" /></translation>
 <translation id="6284412385303060032">Der Host, der auf dem Anmeldebildschirm für die Konsole ausgeführt wird, wurde heruntergefahren, um den Vorhangmodus zu unterstützen, indem zu einem Host in einer nutzerspezfischen Sitzung gewechselt wurde.</translation>
 <translation id="629730747756840877">Konto</translation>
 <translation id="6304318647555713317">Client</translation>
@@ -271,7 +274,7 @@ Wenn Sie diese Funktion aktivieren möchten, wählen Sie "<ph name="BUTTON_NAME"
 <translation id="6944854424004126054">Fenster wiederherstellen</translation>
 <translation id="6948905685698011662">Chrome Remote Desktop ist jetzt im Web verfügbar. Probieren Sie unsere <ph name="LINK_BEGIN" />kostenlose Web-App<ph name="LINK_END" /> aus.</translation>
 <translation id="6963936880795878952">Verbindungen zum Remote-Computer sind vorübergehend blockiert, da jemand versucht hat, eine Verbindung mit einer ungültigen PIN herzustellen. Bitte versuchen Sie es später noch einmal.</translation>
-<translation id="6965382102122355670">OK</translation>
+<translation id="6965382102122355670">Ok</translation>
 <translation id="6985691951107243942">Möchten Sie die Remote-Verbindung zu <ph name="HOSTNAME" /> wirklich deaktivieren? Wenn Sie die Verbindung später erneut aktivieren möchten, müssen Sie dies von dem betreffenden Computer aus tun.</translation>
 <translation id="6998989275928107238">An</translation>
 <translation id="7019153418965365059">Nicht erkannter Hostfehler: <ph name="HOST_OFFLINE_REASON" /></translation>
@@ -289,7 +292,6 @@ Wenn Sie diese Funktion aktivieren möchten, wählen Sie "<ph name="BUTTON_NAME"
 <translation id="7434397035092923453">Zugriff für folgenden Client verweigert: <ph name="CLIENT_USERNAME" /></translation>
 <translation id="7444276978508498879">Client verbunden: <ph name="CLIENT_USERNAME" /></translation>
 <translation id="7526139040829362392">Konto ändern</translation>
-<translation id="7589941250119944644">Chrome Remote Desktop ist jetzt im Web verfügbar. Probieren Sie die <ph name="LINK_BEGIN" />Web-App<ph name="LINK_END" /> aus: Sie ist schnell, kostenlos und bietet den gewohnten Funktionsumfang.</translation>
 <translation id="7606912958770842224">Remote-Verbindungen aktivieren</translation>
 <translation id="7628469622942688817">Meine PIN auf diesem Gerät speichern.</translation>
 <translation id="7649070708921625228">Hilfe</translation>

@@ -5,7 +5,6 @@
 package com.android.webview.chromium;
 
 import android.Manifest;
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -15,7 +14,6 @@ import android.os.Process;
 import android.util.Log;
 import android.webkit.CookieManager;
 import android.webkit.GeolocationPermissions;
-import android.webkit.TokenBindingService;
 import android.webkit.WebStorage;
 import android.webkit.WebViewDatabase;
 
@@ -27,6 +25,7 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsStatics;
 import org.chromium.android_webview.AwCookieManager;
 import org.chromium.android_webview.AwNetworkChangeNotifierRegistrationPolicy;
+import org.chromium.android_webview.AwProxyController;
 import org.chromium.android_webview.AwQuotaManagerBridge;
 import org.chromium.android_webview.AwResource;
 import org.chromium.android_webview.AwServiceWorkerController;
@@ -35,20 +34,23 @@ import org.chromium.android_webview.HttpAuthDatabase;
 import org.chromium.android_webview.ScopedSysTraceEvent;
 import org.chromium.android_webview.VariationsSeedLoader;
 import org.chromium.android_webview.WebViewChromiumRunQueue;
-import org.chromium.android_webview.command_line.CommandLineUtil;
+import org.chromium.android_webview.gfx.AwDrawFnImpl;
 import org.chromium.base.BuildConfig;
+import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.FieldTrialList;
+import org.chromium.base.JNIUtils;
 import org.chromium.base.PathService;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
-import org.chromium.base.annotations.DoNotInline;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.base.task.AsyncTask;
+import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.net.NetworkChangeNotifier;
 
 /**
@@ -61,26 +63,12 @@ public class WebViewChromiumAwInit {
 
     private static final String HTTP_AUTH_DATABASE_FILE = "http_auth.db";
 
-    /**
-     * This holds objects of classes that are defined in N and above to ensure that run-time class
-     * verification does not occur until it is actually used for N and above.
-     */
-    @TargetApi(Build.VERSION_CODES.N)
-    @DoNotInline
-    private static class ObjectHolderForN {
-        public TokenBindingService mTokenBindingService;
-    }
-
     // TODO(gsennton): store aw-objects instead of adapters here
     // Initialization guarded by mLock.
     private AwBrowserContext mBrowserContext;
     private SharedStatics mSharedStatics;
     private GeolocationPermissionsAdapter mGeolocationPermissions;
     private CookieManagerAdapter mCookieManager;
-
-    @TargetApi(Build.VERSION_CODES.N)
-    private ObjectHolderForN mObjectHolderForN =
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.N ? new ObjectHolderForN() : null;
 
     private WebIconDatabaseAdapter mWebIconDatabase;
     private WebStorageAdapter mWebStorage;
@@ -89,6 +77,7 @@ public class WebViewChromiumAwInit {
     private AwTracingController mAwTracingController;
     private VariationsSeedLoader mSeedLoader;
     private Thread mSetUpResourcesThread;
+    private AwProxyController mAwProxyController;
 
     // Guards accees to the other members, and is notifyAll() signalled on the UI thread
     // when the chromium process has been started.
@@ -116,6 +105,15 @@ public class WebViewChromiumAwInit {
         return mAwTracingController;
     }
 
+    public AwProxyController getAwProxyController() {
+        synchronized (mLock) {
+            if (mAwProxyController == null) {
+                ensureChromiumStartedLocked(true);
+            }
+        }
+        return mAwProxyController;
+    }
+
     // TODO: DIR_RESOURCE_PAKS_ANDROID needs to live somewhere sensible,
     // inlined here for simplicity setting up the HTMLViewer demo. Unfortunately
     // it can't go into base.PathService, as the native constant it refers to
@@ -136,6 +134,8 @@ public class WebViewChromiumAwInit {
             }
 
             final Context context = ContextUtils.getApplicationContext();
+
+            JNIUtils.setClassLoader(WebViewChromiumAwInit.class.getClassLoader());
 
             // We are rewriting Java resources in the background.
             // NOTE: Any reference to Java resources will cause a crash.
@@ -167,7 +167,7 @@ public class WebViewChromiumAwInit {
             AwBrowserProcess.handleMinidumpsAndSetMetricsConsent(true /* updateMetricsConsent */);
 
             mSharedStatics = new SharedStatics();
-            if (CommandLineUtil.isBuildDebuggable()) {
+            if (BuildInfo.isDebugAndroid()) {
                 mSharedStatics.setWebContentsDebuggingEnabledUnconditionally(true);
             }
 
@@ -198,6 +198,7 @@ public class WebViewChromiumAwInit {
                 mWebStorage = new WebStorageAdapter(mFactory, AwQuotaManagerBridge.getInstance());
                 mAwTracingController = awBrowserContext.getTracingController();
                 mServiceWorkerController = awBrowserContext.getServiceWorkerController();
+                mAwProxyController = new AwProxyController();
             }
 
             mFactory.getRunQueue().drainQueue();
@@ -284,7 +285,7 @@ public class WebViewChromiumAwInit {
 
         // We must post to the UI thread to cover the case that the user has invoked Chromium
         // startup by using the (thread-safe) CookieManager rather than creating a WebView.
-        ThreadUtils.postOnUiThread(new Runnable() {
+        PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
             @Override
             public void run() {
                 synchronized (mLock) {
@@ -305,6 +306,9 @@ public class WebViewChromiumAwInit {
     private void initPlatSupportLibrary() {
         try (ScopedSysTraceEvent e = ScopedSysTraceEvent.scoped(
                      "WebViewChromiumAwInit.initPlatSupportLibrary")) {
+            if (BuildInfo.isAtLeastQ()) {
+                AwDrawFnImpl.setDrawFnFunctionTable(DrawFunctor.getDrawFnFunctionTable());
+            }
             DrawGLFunctor.setChromiumAwDrawGLFunction(AwContents.getAwDrawGLFunction());
             AwContents.setAwDrawSWFunctionTable(GraphicsUtils.getDrawSWFunctionTable());
             AwContents.setAwDrawGLFunctionTable(GraphicsUtils.getDrawGLFunctionTable());
@@ -392,17 +396,6 @@ public class WebViewChromiumAwInit {
         return mServiceWorkerController;
     }
 
-    @TargetApi(Build.VERSION_CODES.N)
-    public TokenBindingService getTokenBindingService() {
-        synchronized (mLock) {
-            if (mObjectHolderForN.mTokenBindingService == null) {
-                mObjectHolderForN.mTokenBindingService =
-                        GlueApiHelperForN.createTokenBindingManagerAdapter(mFactory);
-            }
-        }
-        return mObjectHolderForN.mTokenBindingService;
-    }
-
     public android.webkit.WebIconDatabase getWebIconDatabase() {
         synchronized (mLock) {
             ensureChromiumStartedLocked(true);
@@ -459,7 +452,7 @@ public class WebViewChromiumAwInit {
     // If a certain app is installed, log field trials as they become active, for debugging
     // purposes. Check for the app asyncronously because PackageManager is slow.
     private static void maybeLogActiveTrials(final Context ctx) {
-        AsyncTask.THREAD_POOL_EXECUTOR.execute(() -> {
+        PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK, () -> {
             try {
                 // This must match the package name in:
                 // android_webview/tools/webview_log_verbosifier/AndroidManifest.xml
@@ -469,7 +462,7 @@ public class WebViewChromiumAwInit {
                 return;
             }
 
-            ThreadUtils.postOnUiThread(() -> FieldTrialList.logActiveTrials());
+            PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> FieldTrialList.logActiveTrials());
         });
     }
 

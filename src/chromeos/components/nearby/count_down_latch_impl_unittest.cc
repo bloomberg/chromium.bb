@@ -4,12 +4,13 @@
 
 #include "chromeos/components/nearby/count_down_latch_impl.h"
 
+#include "base/bind.h"
 #include "base/containers/flat_map.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/synchronization/lock.h"
 #include "base/task/post_task.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
@@ -30,7 +31,7 @@ class CountDownLatchImplTest : public testing::Test {
   }
 
   void WaitForAllPostedTasksToFinish() {
-    base::TaskScheduler::GetInstance()->FlushForTesting();
+    base::ThreadPool::GetInstance()->FlushForTesting();
   }
 
   // Returns a unique ID for the posted AwaitTask(). This ID can be used in
@@ -85,7 +86,7 @@ class CountDownLatchImplTest : public testing::Test {
     base::PlatformThread::Sleep(TestTimeouts::tiny_timeout());
   }
 
-  const base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::Lock map_lock_;
   base::flat_map<base::UnguessableToken,
                  base::Optional<location::nearby::ExceptionOr<bool>>>

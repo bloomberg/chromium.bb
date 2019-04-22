@@ -26,7 +26,6 @@ jumbo_source_set("fpdfsdk") {
     "cpdfsdk_baannot.h",
     "cpdfsdk_baannothandler.cpp",
     "cpdfsdk_baannothandler.h",
-    "cpdfsdk_common.h",
     "cpdfsdk_customaccess.cpp",
     "cpdfsdk_customaccess.h",
     "cpdfsdk_fieldaction.cpp",
@@ -63,11 +62,13 @@ jumbo_source_set("fpdfsdk") {
     "../core/fxge",
     "../fxjs",
     "formfiller",
+    "formfiller:fontmap",
     "pwl",
   ]
   allow_circular_includes_from = [
     "../fxjs",
     "formfiller",
+    "formfiller:fontmap",
     "pwl",
   ]
   visibility = [ "../*" ]
@@ -116,13 +117,16 @@ pdfium_embeddertest_source_set("embeddertests") {
     "fpdf_dataavail_embeddertest.cpp",
     "fpdf_doc_embeddertest.cpp",
     "fpdf_edit_embeddertest.cpp",
+    "fpdf_editpage_embeddertest.cpp",
     "fpdf_editpath_embeddertest.cpp",
     "fpdf_ext_embeddertest.cpp",
     "fpdf_flatten_embeddertest.cpp",
     "fpdf_formfill_embeddertest.cpp",
     "fpdf_ppo_embeddertest.cpp",
     "fpdf_save_embeddertest.cpp",
+    "fpdf_searchex_embeddertest.cpp",
     "fpdf_structtree_embeddertest.cpp",
+    "fpdf_sysfontinfo_embeddertest.cpp",
     "fpdf_text_embeddertest.cpp",
     "fpdf_transformpage_embeddertest.cpp",
     "fpdf_view_c_api_test.c",
@@ -131,6 +135,7 @@ pdfium_embeddertest_source_set("embeddertests") {
   ]
   deps = [
     ":fpdfsdk",
+    "../constants",
     "../core/fpdfapi/font",
     "../core/fpdfapi/page",
     "../core/fpdfapi/parser",

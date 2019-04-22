@@ -6,7 +6,8 @@
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/test/scoped_feature_list.h"
+#include "base/strings/stringprintf.h"
+#include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/extension_api_unittest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -17,9 +18,10 @@
 #include "chrome/browser/extensions/scripting_permissions_modifier.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/crx_file/id_util.h"
+#include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/extension_builder.h"
-#include "extensions/common/extension_features.h"
 #include "extensions/common/manifest_handlers/permissions_parser.h"
+#include "extensions/test/test_extension_dir.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -109,6 +111,8 @@ class PermissionsAPIUnitTest : public ExtensionServiceTestWithInstall {
     required_permissions.Append(manifest_permission);
     scoped_refptr<const Extension> extension = CreateExtensionWithPermissions(
         required_permissions.Build(), "My Extension", allow_file_access);
+    ExtensionPrefs::Get(profile())->SetAllowFileAccess(extension->id(),
+                                                       allow_file_access);
     scoped_refptr<PermissionsContainsFunction> function(
         new PermissionsContainsFunction());
     function->set_extension(extension.get());
@@ -183,14 +187,18 @@ TEST_F(PermissionsAPIUnitTest, Contains) {
       RunContainsFunction("file:///*", "[{\"origins\":[\"file:///*\"]}]",
                           true /* allow_file_access */);
   EXPECT_EQ(expected_has_permission, has_permission);
+
+  // Tests calling contains() with <all_urls> with and without file access.
+  // Regression test for https://crbug.com/931816.
+  EXPECT_TRUE(RunContainsFunction("<all_urls>",
+                                  R"([{"origins": ["<all_urls>"]}])",
+                                  false /* allow file access */));
+  EXPECT_TRUE(RunContainsFunction("<all_urls>",
+                                  R"([{"origins": ["<all_urls>"]}])",
+                                  true /* allow file access */));
 }
 
 TEST_F(PermissionsAPIUnitTest, ContainsAndGetAllWithRuntimeHostPermissions) {
-  // This test relies on the click-to-script feature.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      extensions_features::kRuntimeHostPermissions);
-
   constexpr char kExampleCom[] = "https://example.com/*";
   constexpr char kContentScriptCom[] = "https://contentscript.com/*";
   scoped_refptr<const Extension> extension =
@@ -279,7 +287,7 @@ TEST_F(PermissionsAPIUnitTest, ContainsAndGetAllWithRuntimeHostPermissions) {
     permissions_test_util::GrantRuntimePermissionsAndWaitForCompletion(
         profile(), *extension,
         PermissionSet(APIPermissionSet(), ManifestPermissionSet(),
-                      explicit_hosts, URLPatternSet()));
+                      std::move(explicit_hosts), URLPatternSet()));
     const GURL example_url("https://example.com");
     const PermissionSet& active_permissions =
         extension->permissions_data()->active_permissions();
@@ -297,10 +305,6 @@ TEST_F(PermissionsAPIUnitTest, ContainsAndGetAllWithRuntimeHostPermissions) {
 
 // Tests requesting withheld permissions with the permissions.request() API.
 TEST_F(PermissionsAPIUnitTest, RequestingWithheldPermissions) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      extensions_features::kRuntimeHostPermissions);
-
   // Create an extension with required host permissions, and withhold those
   // permissions.
   scoped_refptr<const Extension> extension =
@@ -338,10 +342,6 @@ TEST_F(PermissionsAPIUnitTest, RequestingWithheldPermissions) {
 // Tests requesting withheld content script permissions with the
 // permissions.request() API.
 TEST_F(PermissionsAPIUnitTest, RequestingWithheldContentScriptPermissions) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      extensions_features::kRuntimeHostPermissions);
-
   constexpr char kContentScriptPattern[] = "https://contentscript.com/*";
   // Create an extension with required host permissions, and withhold those
   // permissions.
@@ -380,10 +380,6 @@ TEST_F(PermissionsAPIUnitTest, RequestingWithheldContentScriptPermissions) {
 // scriptable host with the permissions.request() API.
 TEST_F(PermissionsAPIUnitTest,
        RequestingWithheldExplicitAndScriptablePermissionsInTheSameCall) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      extensions_features::kRuntimeHostPermissions);
-
   constexpr char kContentScriptPattern[] = "https://example.com/*";
   // Create an extension with required host permissions, and withhold those
   // permissions.
@@ -422,10 +418,6 @@ TEST_F(PermissionsAPIUnitTest,
 
 // Tests an extension re-requesting an optional host after the user removes it.
 TEST_F(PermissionsAPIUnitTest, ReRequestingWithheldOptionalPermissions) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      extensions_features::kRuntimeHostPermissions);
-
   // Create an extension an optional host permissions, and withhold those
   // permissions.
   scoped_refptr<const Extension> extension =
@@ -482,10 +474,6 @@ TEST_F(PermissionsAPIUnitTest, ReRequestingWithheldOptionalPermissions) {
 // Tests requesting both optional and withheld permissions in the same call to
 // permissions.request().
 TEST_F(PermissionsAPIUnitTest, RequestingWithheldAndOptionalPermissions) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      extensions_features::kRuntimeHostPermissions);
-
   // Create an extension with required and optional host permissions, and
   // withhold the required permissions.
   scoped_refptr<const Extension> extension =
@@ -532,10 +520,6 @@ TEST_F(PermissionsAPIUnitTest, RequestingWithheldAndOptionalPermissions) {
 // Tests requesting permissions that weren't specified in the manifest (either
 // in optional permissions or in required permissions).
 TEST_F(PermissionsAPIUnitTest, RequestingPermissionsNotSpecifiedInManifest) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      extensions_features::kRuntimeHostPermissions);
-
   // Create an extension with required and optional host permissions, and
   // withhold the required permissions.
   scoped_refptr<const Extension> extension =
@@ -575,10 +559,6 @@ TEST_F(PermissionsAPIUnitTest, RequestingPermissionsNotSpecifiedInManifest) {
 
 // Tests requesting withheld permissions that have already been granted.
 TEST_F(PermissionsAPIUnitTest, RequestingAlreadyGrantedWithheldPermissions) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      extensions_features::kRuntimeHostPermissions);
-
   // Create an extension with required host permissions, withhold host
   // permissions, and then grant one of the hosts.
   scoped_refptr<const Extension> extension =
@@ -667,6 +647,61 @@ TEST_F(PermissionsAPIUnitTest, RequestingChromeURLs) {
   EXPECT_FALSE(extension->permissions_data()->HasHostPermission(chrome_url));
   EXPECT_TRUE(extension->permissions_data()->HasHostPermission(
       GURL("https://example.com")));
+}
+
+// Tests requesting the a file:-scheme pattern with and without file
+// access granted. Regression test for https://crbug.com/932703.
+TEST_F(PermissionsAPIUnitTest, RequestingFilePermissions) {
+  // We need a "real" extension here, since toggling file access requires
+  // reloading the extension to re-initialize permissions.
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(
+      R"({
+           "name": "Extension",
+           "manifest_version": 2,
+           "version": "0.1",
+           "optional_permissions": ["file:///*"]
+         })");
+  ChromeTestExtensionLoader loader(profile());
+  loader.set_allow_file_access(false);
+  scoped_refptr<const Extension> extension =
+      loader.LoadExtension(test_dir.UnpackedPath());
+  ASSERT_TRUE(extension);
+  EXPECT_FALSE(util::AllowFileAccess(extension->id(), profile()));
+  const GURL file_url("file:///foo");
+  EXPECT_FALSE(extension->permissions_data()->HasHostPermission(file_url));
+
+  {
+    auto function = base::MakeRefCounted<PermissionsRequestFunction>();
+    function->set_user_gesture(true);
+    function->set_extension(extension.get());
+    std::string error =
+        extension_function_test_utils::RunFunctionAndReturnError(
+            function.get(), R"([{"origins": ["file:///*"]}])", browser(),
+            api_test_utils::NONE);
+    EXPECT_EQ("Extension must have file access enabled to request 'file:///*'.",
+              error);
+    EXPECT_FALSE(extension->permissions_data()->HasHostPermission(file_url));
+  }
+  {
+    TestExtensionRegistryObserver observer(registry(), extension->id());
+    // This will reload the extension, so we need to reset the extension
+    // pointer.
+    util::SetAllowFileAccess(extension->id(), profile(), true);
+    extension = base::WrapRefCounted(observer.WaitForExtensionLoaded());
+    ASSERT_TRUE(extension);
+  }
+
+  std::unique_ptr<const PermissionSet> prompted_permissions;
+  EXPECT_TRUE(RunRequestFunction(*extension, browser(),
+                                 R"([{"origins": ["file:///*"]}])",
+                                 &prompted_permissions));
+  // Note: There are no permission warnings associated with requesting file
+  // URLs (probably because there's a separate toggle to control it already);
+  // they are filtered out of the permission ID set when we get permission
+  // messages.
+  EXPECT_FALSE(prompted_permissions);
+  EXPECT_TRUE(extension->permissions_data()->HasHostPermission(file_url));
 }
 
 }  // namespace extensions

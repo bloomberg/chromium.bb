@@ -125,9 +125,8 @@ public class Client implements InputStub {
 
     /** Called whenever the connection status changes. */
     @CalledByNative
-    void onConnectionState(int stateCode, int errorCode) {
-        ConnectionListener.State state = ConnectionListener.State.fromValue(stateCode);
-        ConnectionListener.Error error = ConnectionListener.Error.fromValue(errorCode);
+    void onConnectionState(
+            @ConnectionListener.State int state, @ConnectionListener.Error int error) {
         mConnectionListener.onConnectionState(state, error);
         if (state == ConnectionListener.State.FAILED || state == ConnectionListener.State.CLOSED) {
             // Disconnect from the host here, otherwise the next time connectToHost() is called,
@@ -216,12 +215,12 @@ public class Client implements InputStub {
 
     /** Sends an array of TouchEvents to the host. */
     @Override
-    public void sendTouchEvent(TouchEventData.EventType eventType, TouchEventData[] data) {
+    public void sendTouchEvent(@TouchEventData.EventType int eventType, TouchEventData[] data) {
         if (!mConnected) {
             return;
         }
 
-        nativeSendTouchEvent(mNativeJniClient, eventType.value(), data);
+        nativeSendTouchEvent(mNativeJniClient, eventType, data);
     }
 
     /**

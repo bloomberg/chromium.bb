@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 38
+// Next MinVersion: 43
 
 module arc.mojom;
 
+import "components/arc/common/app_permissions.mojom";
 import "components/arc/common/gfx.mojom";
 import "components/arc/common/scale_factor.mojom";
 import "ui/accessibility/mojom/ax_assistant_structure.mojom";
@@ -26,6 +27,21 @@ struct AppInfo {
   [MinVersion=35] bool suspended;
 };
 
+// Describes the data required to install a web app.
+struct WebAppInfo {
+  string title;
+
+  // The URL which should be opened when the web app starts.
+  string start_url;
+
+  // The scope of URLs which are captured by the web app.
+  string scope_url;
+
+  // The color used for the title bar of the app. Passed as a 32 bit ARGB value.
+  // INT_MAX+1 represents an invalid color.
+  int64 theme_color;
+};
+
 // Describes ARC package.
 struct ArcPackageInfo {
   string package_name;
@@ -36,6 +52,11 @@ struct ArcPackageInfo {
   [MinVersion=11] bool system;  // true if package is system package.
   // true if package registers VPNService intent.
   [MinVersion=25] bool vpn_provider;
+
+  // If non-null, signifies this package represents a web app that should be
+  // installed on the browser side.
+  [MinVersion=38] WebAppInfo? web_app_info;
+  [MinVersion=41] map<AppPermission, bool>? permissions;
 };
 
 // Describes ARC app shortcut.
@@ -172,6 +193,42 @@ enum AppShortcutItemType {
   kDynamic = 1,
 };
 
+[Extensible]
+enum AppReinstallState {
+    // Request and response successful.
+    REQUEST_SUCCESS = 0,
+    // Request Timeout
+    REQUEST_TIMEOUT = 1,
+    // No Account.
+    REQUEST_NO_ACCOUNT = 2,
+    // Null data from aidl.
+    REQUEST_NULL_DATA = 3,
+    // Data that can't be converted from aidl bundle to mojom struct.
+    REQUEST_BUNDLE_ERROR = 4,
+    // Request failure other reason.
+    REQUEST_UNKNOWN_FAILURE = 5,
+};
+
+// Describes app reinstall candidates that are shown to users as suggestions.
+struct AppReinstallCandidate {
+  // The package name of this in the Play Store.
+  string package_name;
+
+  // The title of this package in the Play Store.
+  string title;
+
+  // The url of an icon for this package. Optional, a default icon is used if
+  // unset.
+  string? icon_url;
+
+  // Ratings Count from Play Store for this package. e.g. "17103" .
+  // Default of 0 if not set.
+  int64 rating_count;
+
+  // Mean star rating for this package, [1, 5]. 0 indicates missing.
+  float star_rating;
+};
+
 // Describes app shortcut that is published by Android's ShortcutManager.
 struct AppShortcutItem {
   // The ID of this shortcut. Unique within each publisher app and stable across
@@ -194,19 +251,36 @@ struct AppShortcutItem {
   [MinVersion=32] int32 rank;
 };
 
+[Extensible]
+enum PaiFlowState {
+    // PAI flow succeeded.
+    SUCCEEDED = 0,
+    // PAI flow state was not returned.
+    UNKNOWN = 1,
+    // PAI flow failed due to no account was provided.
+    NO_ACCOUNT = 2,
+    // PAI flow failed due Play Store returned no app to install.
+    NO_APPS = 3,
+    // PAI flow was interrupted.
+    INTERRUPTED = 4,
+    // PAI flow failed due to no response from Play Store.
+    PLAY_STORE_NOT_RESPONDED = 5,
+    // PAI flow failed due to no access to Play Store.
+    PLAY_STORE_NO_ACCESS = 6,
+    // PAI flow failed due to no ArcGmsProxy found.
+    PROXY_NOT_FOUND = 7,
+    // PAI flow failed due to no ArcGmsProxy access.
+    PROXY_NO_ACCESS = 8,
+    // PAI flow timeout occurred.
+    TIMEOUT = 9,
+};
+
 // Next method ID: 18
+// Deprecated method IDs: 1
 interface AppHost {
   // Sends newly added ARC app to Chrome. This message is sent when ARC receives
   // package added notification. Multiple apps may be added in the one package.
   [MinVersion=1] OnAppAddedDeprecated@2(AppInfo app);
-
-  // Receives an icon of required |scale_factor| for specific ARC app. The app
-  // is defined by |package_name| and |activity|. The icon content cannot be
-  // empty and must match to |scale_factor| assuming 48x48 for
-  // SCALE_FACTOR_100P.  |scale_factor| is an enum defined at ui/base/layout.h.
-  // |icon_png_data| is a png-encoded image.
-  OnAppIconDeprecated@1(string package_name, string activity,
-                        ScaleFactor scale_factor, array<uint8> icon_png_data);
 
   // Receives a list of available ARC apps to Chrome. Members of AppInfo must
   // contain non-empty string.
@@ -276,7 +350,8 @@ interface AppHost {
 };
 
 // TODO(lhchavez): Migrate all request/response messages to Mojo.
-// Next method ID: 30
+// Next method ID: 34
+// Deprecated method IDs: 2, 3, 13
 interface AppInstance {
   // DEPRECATED: Please use Init@21 instead.
   InitDeprecated@0(AppHost host_ptr);
@@ -318,12 +393,6 @@ interface AppInstance {
   // string. See Intent.toUri().
   [MinVersion=23] LaunchIntent@19(string intent_uri, int64 display_id);
 
-  // Sends a request to ARC to refresh a list of ARC apps.
-  // OnRefreshAppsList is expected in response to this message. However,
-  // response may not be sent if ARC is not ready yet (boot completed event is
-  // not received).
-  RefreshAppList@2();
-
   // Sends a request for the ARC shortcut icon of a given resource id and
   // |pixel_size|.
   [MinVersion=36] RequestAppIcon@27(string package_name,
@@ -331,23 +400,20 @@ interface AppInstance {
                                     int32 pixel_size) =>
                                         (array<uint8> icon_png_data);
 
-  // Sends a request to ARC for the ARC app icon of a required scale factor.
-  // Scale factor is an enum defined at ui/base/layout.h. App is defined by
-  // |package_name| and |activity|, which cannot be empty.
-  RequestAppIconDeprecated@3(string package_name, string activity,
-                             ScaleFactor scale_factor);
-
   // Sends a request for the ARC shortcut icon of a given resource id and
   // |pixel_size|.
   [MinVersion=36] RequestShortcutIcon@28(string icon_resource_id,
                                          int32 pixel_size) =>
                                              (array<uint8> icon_png_data);
 
-  // Sends a request for the ARC shortcut icon of a given resource id and scale
-  // factor.
-  [MinVersion=9] RequestShortcutIconDeprecated@13(
-      string icon_resource_id, ScaleFactor scale_factor) =>
-          (array<uint8> icon_png_data);
+  // Sends a request for the ARC icon for a given |package_name| and
+  // |pixel_size|. If |normalize| is true, the icon will be normalized per
+  // Android's icon guidelines, otherwise, the raw unnormalized icon is
+  // returned. Returns an empty array if an error occurred.
+  [MinVersion=38] RequestPackageIcon@30(string package_name,
+                                        int32 pixel_size,
+                                        bool normalize) =>
+                                            (array<uint8> icon_png_data);
 
   // Removes cached shortcut icon with the given resource id.
   [MinVersion=9] RemoveCachedIcon@14(string icon_resource_id);
@@ -372,14 +438,30 @@ interface AppInstance {
   [MinVersion=6] SetNotificationsEnabled@10(string package_name, bool enabled);
 
   // Sends a request to ARC to start PAI flow.
-  [MinVersion=21] StartPaiFlow@17();
+  [MinVersion=21] StartPaiFlowDeprecated@17();
+
+  // Sends a request to ARC to start PAI flow and receives result status.
+  [MinVersion=40] StartPaiFlow@32() => (PaiFlowState state);
 
   // Sends a request to ARC to start FastAppReinstall flow.
   [MinVersion=33] StartFastAppReinstallFlow@25(array<string> arc_package_names);
 
+  // Sends a request to ARC to retrieve an array of app reinstall
+  // candidates for this user on this device. Order of results is in an
+  // unspecified order of relevance from Play Store.
+  [MinVersion=39] GetAppReinstallCandidates@31() =>
+      (AppReinstallState state, array<AppReinstallCandidate> candidates);
+
   // Sends a request to ARC to uninstall the given package.  Error (if ever
   // happens) is ignored, and uninstall option should appear in the UI.
   [MinVersion=2] UninstallPackage@5(string package_name);
+
+  // Returns Android instance id as it is registered on Google servers. 0 is
+  // reserved for the case when Android instance id could not be determined,
+  // however this should not normally happen once app instance is connected
+  // after ARC provisioning that includes registering Android instance on
+  // Google servers (known as initial Check-in flow).
+  [MinVersion=42] GetAndroidId@33() => (int64 android_id);
 
   // Sends a request to ARC to get app shortcuts for apps in global scope that
   // match a |query|. Limits the results to only return |max_results|.

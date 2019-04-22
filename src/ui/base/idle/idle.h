@@ -5,9 +5,8 @@
 #ifndef UI_BASE_IDLE_IDLE_H_
 #define UI_BASE_IDLE_IDLE_H_
 
-#include "base/callback.h"
+#include "base/component_export.h"
 #include "build/build_config.h"
-#include "ui/base/ui_base_export.h"
 
 namespace ui {
 
@@ -21,22 +20,18 @@ enum IdleState {
 
 // For MacOSX, InitIdleMonitor needs to be called first to setup the monitor.
 #if defined(OS_MACOSX)
-UI_BASE_EXPORT void InitIdleMonitor();
+COMPONENT_EXPORT(UI_BASE_IDLE) void InitIdleMonitor();
 #endif
 
-typedef base::Callback<void(IdleState)> IdleCallback;
-typedef base::Callback<void(int)> IdleTimeCallback;
+// Calculate the Idle state. |idle_threshold| is the amount of time (in seconds)
+// before the user is considered idle.
+COMPONENT_EXPORT(UI_BASE_IDLE) IdleState CalculateIdleState(int idle_threshold);
 
-// Calculate the Idle state and notify the callback. |idle_threshold| is the
-// amount of time (in seconds) before considered idle. |notify| is
-// asynchronously called on some platforms.
-UI_BASE_EXPORT void CalculateIdleState(int idle_threshold, IdleCallback notify);
-
-// Calculate Idle time in seconds and notify the callback
-UI_BASE_EXPORT void CalculateIdleTime(IdleTimeCallback notify);
+// Calculate Idle time in seconds.
+COMPONENT_EXPORT(UI_BASE_IDLE) int CalculateIdleTime();
 
 // Checks synchronously if Idle state is IDLE_STATE_LOCKED.
-UI_BASE_EXPORT bool CheckIdleStateIsLocked();
+COMPONENT_EXPORT(UI_BASE_IDLE) bool CheckIdleStateIsLocked();
 
 }  // namespace ui
 

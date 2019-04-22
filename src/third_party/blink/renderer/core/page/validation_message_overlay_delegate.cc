@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/renderer/core/dom/dom_token_list.h"
 #include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/events/event_dispatch_forbidden_scope.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -16,6 +17,8 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/page_popup_client.h"
 #include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
+#include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_record_builder.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
 
@@ -25,19 +28,14 @@ namespace blink {
 class ValidationMessageChromeClient : public EmptyChromeClient {
  public:
   explicit ValidationMessageChromeClient(ChromeClient& main_chrome_client,
-                                         LocalFrameView* anchor_view,
-                                         PageOverlay& overlay)
-      : main_chrome_client_(main_chrome_client),
-        anchor_view_(anchor_view),
-        overlay_(overlay) {}
+                                         LocalFrameView* anchor_view)
+      : main_chrome_client_(main_chrome_client), anchor_view_(anchor_view) {}
 
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(main_chrome_client_);
     visitor->Trace(anchor_view_);
     EmptyChromeClient::Trace(visitor);
   }
-
-  void InvalidateRect(const IntRect&) override { overlay_.Update(); }
 
   void ScheduleAnimation(const LocalFrameView*) override {
     // Need to pass LocalFrameView for the anchor element because the Frame for
@@ -53,68 +51,76 @@ class ValidationMessageChromeClient : public EmptyChromeClient {
  private:
   Member<ChromeClient> main_chrome_client_;
   Member<LocalFrameView> anchor_view_;
-  PageOverlay& overlay_;
 };
 
-inline ValidationMessageOverlayDelegate::ValidationMessageOverlayDelegate(
-    Page& page,
+ValidationMessageOverlayDelegate::ValidationMessageOverlayDelegate(
+    Page& main_page,
     const Element& anchor,
     const String& message,
     TextDirection message_dir,
     const String& sub_message,
     TextDirection sub_message_dir)
-    : main_page_(page),
+    : main_page_(main_page),
       anchor_(anchor),
       message_(message),
       sub_message_(sub_message),
       message_dir_(message_dir),
       sub_message_dir_(sub_message_dir) {}
 
-std::unique_ptr<ValidationMessageOverlayDelegate>
-ValidationMessageOverlayDelegate::Create(Page& page,
-                                         const Element& anchor,
-                                         const String& message,
-                                         TextDirection message_dir,
-                                         const String& sub_message,
-                                         TextDirection sub_message_dir) {
-  return base::WrapUnique(new ValidationMessageOverlayDelegate(
-      page, anchor, message, message_dir, sub_message, sub_message_dir));
-}
-
 ValidationMessageOverlayDelegate::~ValidationMessageOverlayDelegate() {
-  if (page_)
+  if (page_) {
+    // This function can be called in EventDispatchForbiddenScope for the main
+    // document, and the following operations dispatch some events. It's safe
+    // because the page can't listen the events.
+    EventDispatchForbiddenScope::AllowUserAgentEvents allow_events;
     page_->WillBeDestroyed();
+  }
 }
 
 LocalFrameView& ValidationMessageOverlayDelegate::FrameView() const {
   DCHECK(page_)
-      << "Do not call FrameView() before the first call of EnsurePage()";
-  return *ToLocalFrame(page_->MainFrame())->View();
+      << "Do not call FrameView() before the first call of CreatePage()";
+  return *To<LocalFrame>(page_->MainFrame())->View();
 }
 
-void ValidationMessageOverlayDelegate::PaintPageOverlay(
-    const PageOverlay& overlay,
+void ValidationMessageOverlayDelegate::PaintFrameOverlay(
+    const FrameOverlay& overlay,
     GraphicsContext& context,
     const IntSize& view_size) const {
   if (IsHiding() && !page_)
     return;
+
+  if (DrawingRecorder::UseCachedDrawingIfPossible(context, overlay,
+                                                  DisplayItem::kFrameOverlay))
+    return;
+  DrawingRecorder recorder(context, overlay, DisplayItem::kFrameOverlay);
+
   const_cast<ValidationMessageOverlayDelegate*>(this)->UpdateFrameViewState(
       overlay, view_size);
-  LocalFrameView& view = FrameView();
-  view.PaintWithLifecycleUpdate(
-      context, kGlobalPaintNormalPhase,
-      CullRect(IntRect(0, 0, view.Width(), view.Height())));
+
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    context.DrawRecord(FrameView().GetPaintRecord());
+  } else {
+    // The overlay frame is has a standalone paint property tree. Paint it in
+    // its root space into a paint record, then draw the record into the proper
+    // target space in the overlaid frame.
+    PaintRecordBuilder paint_record_builder(nullptr, &context);
+    FrameView().PaintOutsideOfLifecycle(paint_record_builder.Context(),
+                                        kGlobalPaintNormalPhase);
+    context.DrawRecord(paint_record_builder.EndRecording());
+  }
 }
 
 void ValidationMessageOverlayDelegate::UpdateFrameViewState(
-    const PageOverlay& overlay,
+    const FrameOverlay& overlay,
     const IntSize& view_size) {
-  EnsurePage(overlay, view_size);
   if (FrameView().Size() != view_size) {
     FrameView().Resize(view_size);
     page_->GetVisualViewport().SetSize(view_size);
   }
-  AdjustBubblePosition(view_size);
+  IntRect intersection = overlay.Frame().RemoteViewportIntersection();
+  AdjustBubblePosition(intersection.IsEmpty() ? IntRect(IntPoint(), view_size)
+                                              : intersection);
 
   // This manual invalidation is necessary to avoid a DCHECK failure in
   // FindVisualRectNeedingUpdateScopeBase::CheckVisualRect().
@@ -124,26 +130,25 @@ void ValidationMessageOverlayDelegate::UpdateFrameViewState(
       DocumentLifecycle::LifecycleUpdateReason::kOther);
 }
 
-void ValidationMessageOverlayDelegate::EnsurePage(const PageOverlay& overlay,
-                                                  const IntSize& view_size) {
-  if (page_)
-    return;
+void ValidationMessageOverlayDelegate::CreatePage(const FrameOverlay& overlay) {
+  DCHECK(!page_);
+
   // TODO(tkent): Can we share code with WebPagePopupImpl and
   // InspectorOverlayAgent?
+  IntSize view_size = overlay.Size();
   Page::PageClients page_clients;
   FillWithEmptyClients(page_clients);
   chrome_client_ = MakeGarbageCollected<ValidationMessageChromeClient>(
-      main_page_->GetChromeClient(), anchor_->GetDocument().View(),
-      const_cast<PageOverlay&>(overlay));
+      main_page_->GetChromeClient(), anchor_->GetDocument().View());
   page_clients.chrome_client = chrome_client_;
   Settings& main_settings = main_page_->GetSettings();
-  page_ = Page::Create(page_clients);
+  page_ = Page::CreateNonOrdinary(page_clients);
   page_->GetSettings().SetMinimumFontSize(main_settings.GetMinimumFontSize());
   page_->GetSettings().SetMinimumLogicalFontSize(
       main_settings.GetMinimumLogicalFontSize());
 
-  LocalFrame* frame =
-      LocalFrame::Create(EmptyLocalFrameClient::Create(), *page_, nullptr);
+  auto* frame = LocalFrame::Create(
+      MakeGarbageCollected<EmptyLocalFrameClient>(), *page_, nullptr);
   frame->SetView(LocalFrameView::Create(*frame, view_size));
   frame->Init();
   frame->View()->SetCanHaveScrollbars(false);
@@ -159,15 +164,18 @@ void ValidationMessageOverlayDelegate::EnsurePage(const PageOverlay& overlay,
       main_page_->DeviceScaleFactorDeprecated());
   frame->ForceSynchronousDocumentInstall("text/html", data);
 
+  Element& main_message = GetElementById("main-message");
+  main_message.setTextContent(message_);
+  Element& sub_message = GetElementById("sub-message");
+  sub_message.setTextContent(sub_message_);
+
   Element& container = GetElementById("container");
   if (WebTestSupport::IsRunningWebTest()) {
-    container.SetInlineStyleProperty(CSSPropertyTransition, "none");
-    GetElementById("icon").SetInlineStyleProperty(CSSPropertyTransition,
+    container.SetInlineStyleProperty(CSSPropertyID::kTransition, "none");
+    GetElementById("icon").SetInlineStyleProperty(CSSPropertyID::kTransition,
                                                   "none");
-    GetElementById("main-message")
-        .SetInlineStyleProperty(CSSPropertyTransition, "none");
-    GetElementById("sub-message")
-        .SetInlineStyleProperty(CSSPropertyTransition, "none");
+    main_message.SetInlineStyleProperty(CSSPropertyID::kTransition, "none");
+    sub_message.SetInlineStyleProperty(CSSPropertyID::kTransition, "none");
   }
   // Get the size to decide position later.
   // TODO(schenney): This says get size, so we only need to update to layout.
@@ -177,7 +185,7 @@ void ValidationMessageOverlayDelegate::EnsurePage(const PageOverlay& overlay,
   // Add one because the content sometimes exceeds the exact width due to
   // rounding errors.
   bubble_size_.Expand(1, 0);
-  container.SetInlineStyleProperty(CSSPropertyMinWidth,
+  container.SetInlineStyleProperty(CSSPropertyID::kMinWidth,
                                    bubble_size_.Width() / zoom_factor,
                                    CSSPrimitiveValue::UnitType::kPixels);
   container.setAttribute(html_names::kClassAttr, "shown-initially");
@@ -202,17 +210,15 @@ void ValidationMessageOverlayDelegate::WriteDocument(SharedBuffer* data) {
       data);
   data->Append(Platform::Current()->GetDataResource("input_alert.svg"));
   PagePopupClient::AddString(message_dir_ == TextDirection::kLtr
-                                 ? "<div dir=ltr id=main-message>"
-                                 : "<div dir=rtl id=main-message>",
+                                 ? "<div dir=ltr id=main-message></div>"
+                                 : "<div dir=rtl id=main-message></div>",
                              data);
-  PagePopupClient::AddHTMLString(message_, data);
   PagePopupClient::AddString(sub_message_dir_ == TextDirection::kLtr
-                                 ? "</div><div dir=ltr id=sub-message>"
-                                 : "</div><div dir=rtl id=sub-message>",
+                                 ? "<div dir=ltr id=sub-message></div>"
+                                 : "<div dir=rtl id=sub-message></div>",
                              data);
-  PagePopupClient::AddHTMLString(sub_message_, data);
   PagePopupClient::AddString(
-      "</div></main>"
+      "</main>"
       "<div id=outer-arrow-bottom></div>"
       "<div id=inner-arrow-bottom></div>"
       "<div id=spacer-bottom></div>"
@@ -223,35 +229,35 @@ void ValidationMessageOverlayDelegate::WriteDocument(SharedBuffer* data) {
 Element& ValidationMessageOverlayDelegate::GetElementById(
     const AtomicString& id) const {
   Element* element =
-      ToLocalFrame(page_->MainFrame())->GetDocument()->getElementById(id);
+      To<LocalFrame>(page_->MainFrame())->GetDocument()->getElementById(id);
   DCHECK(element) << "No element with id=" << id
                   << ". Failed to load the document?";
   return *element;
 }
 
 void ValidationMessageOverlayDelegate::AdjustBubblePosition(
-    const IntSize& view_size) {
+    const IntRect& view_rect) {
   if (IsHiding())
     return;
-  float zoom_factor = ToLocalFrame(page_->MainFrame())->PageZoomFactor();
+  float zoom_factor = To<LocalFrame>(page_->MainFrame())->PageZoomFactor();
   IntRect anchor_rect = anchor_->VisibleBoundsInVisualViewport();
   bool show_bottom_arrow = false;
   double bubble_y = anchor_rect.MaxY();
-  if (view_size.Height() - anchor_rect.MaxY() < bubble_size_.Height()) {
+  if (view_rect.MaxY() - anchor_rect.MaxY() < bubble_size_.Height()) {
     bubble_y = anchor_rect.Y() - bubble_size_.Height();
     show_bottom_arrow = true;
   }
   double bubble_x =
       anchor_rect.X() + anchor_rect.Width() / 2 - bubble_size_.Width() / 2;
-  if (bubble_x < 0)
-    bubble_x = 0;
-  else if (bubble_x + bubble_size_.Width() > view_size.Width())
-    bubble_x = view_size.Width() - bubble_size_.Width();
+  if (bubble_x < view_rect.X())
+    bubble_x = view_rect.X();
+  else if (bubble_x + bubble_size_.Width() > view_rect.MaxX())
+    bubble_x = view_rect.MaxX() - bubble_size_.Width();
 
   Element& container = GetElementById("container");
-  container.SetInlineStyleProperty(CSSPropertyLeft, bubble_x / zoom_factor,
+  container.SetInlineStyleProperty(CSSPropertyID::kLeft, bubble_x / zoom_factor,
                                    CSSPrimitiveValue::UnitType::kPixels);
-  container.SetInlineStyleProperty(CSSPropertyTop, bubble_y / zoom_factor,
+  container.SetInlineStyleProperty(CSSPropertyID::kTop, bubble_y / zoom_factor,
                                    CSSPrimitiveValue::UnitType::kPixels);
 
   // Should match to --arrow-size in validation_bubble.css.
@@ -292,25 +298,25 @@ void ValidationMessageOverlayDelegate::AdjustBubblePosition(
   double arrow_anchor_percent = arrow_anchor_x * 100 / bubble_size_.Width();
   if (show_bottom_arrow) {
     GetElementById("outer-arrow-bottom")
-        .SetInlineStyleProperty(CSSPropertyLeft, arrow_x,
+        .SetInlineStyleProperty(CSSPropertyID::kLeft, arrow_x,
                                 CSSPrimitiveValue::UnitType::kPixels);
     GetElementById("inner-arrow-bottom")
-        .SetInlineStyleProperty(CSSPropertyLeft, arrow_x,
+        .SetInlineStyleProperty(CSSPropertyID::kLeft, arrow_x,
                                 CSSPrimitiveValue::UnitType::kPixels);
     container.setAttribute(html_names::kClassAttr, "shown-fully bottom-arrow");
     container.SetInlineStyleProperty(
-        CSSPropertyTransformOrigin,
+        CSSPropertyID::kTransformOrigin,
         String::Format("%.2f%% bottom", arrow_anchor_percent));
   } else {
     GetElementById("outer-arrow-top")
-        .SetInlineStyleProperty(CSSPropertyLeft, arrow_x,
+        .SetInlineStyleProperty(CSSPropertyID::kLeft, arrow_x,
                                 CSSPrimitiveValue::UnitType::kPixels);
     GetElementById("inner-arrow-top")
-        .SetInlineStyleProperty(CSSPropertyLeft, arrow_x,
+        .SetInlineStyleProperty(CSSPropertyID::kLeft, arrow_x,
                                 CSSPrimitiveValue::UnitType::kPixels);
     container.setAttribute(html_names::kClassAttr, "shown-fully");
     container.SetInlineStyleProperty(
-        CSSPropertyTransformOrigin,
+        CSSPropertyID::kTransformOrigin,
         String::Format("%.2f%% top", arrow_anchor_percent));
   }
 }

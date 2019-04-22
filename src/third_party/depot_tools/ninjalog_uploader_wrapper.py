@@ -8,14 +8,12 @@ import subprocess
 import json
 import sys
 
-from third_party import httplib2
-
 import ninjalog_uploader
 
 THIS_DIR = os.path.dirname(__file__)
 UPLOADER = os.path.join(THIS_DIR, 'ninjalog_uploader.py')
 CONFIG = os.path.join(THIS_DIR, 'ninjalog.cfg')
-VERSION = 1
+VERSION = 2
 
 
 def LoadConfig():
@@ -23,7 +21,7 @@ def LoadConfig():
         with open(CONFIG, 'rb') as f:
             config = json.load(f)
             if config['version'] == VERSION:
-                config['countdown'] -= 1
+                config['countdown'] = max(0, config['countdown'] - 1)
                 return config
 
     return {
@@ -40,30 +38,36 @@ def SaveConfig(config):
 
 
 def ShowMessage(countdown):
+    whitelisted = '\n'.join(['  * %s' % config for config in
+                             ninjalog_uploader.WHITELISTED_CONFIGS])
     print """
-Your ninjalog will be uploaded to build stats server. Uploaded log will be used
-to analyze user side build performance.
+Your ninjalog will be uploaded to build stats server. The uploaded log will be
+used to analyze user side build performance.
 
 The following information will be uploaded with ninjalog.
 * OS (e.g. Win, Mac or Linux)
-* build directory (e.g. /home/foo/chromium/src/out/Release)
-* hostname
 * number of cpu cores of building machine
-* cmdline passed to ninja (e.g. ninja -C out/Default -j1024 chrome)
-* build config (e.g. use_goma=true, is_component_build=true, etc)
+* build targets (e.g. chrome, browser_tests)
+* parallelism passed by -j flag
+* following build configs
+%s
 
 Uploading ninjalog will be started after you run autoninja another %d time.
 
 If you don't want to upload ninjalog, please run following command.
 $ %s opt-out
 
-If you allow upload ninjalog from next autoninja run, please run the following
-command.
+If you want to allow upload ninjalog from next autoninja run, please run the
+following command.
 $ %s opt-in
 
-If you have question about this, please send mail to infra-dev@chromium.org
+If you have questions about this, please send mail to infra-dev@chromium.org
 
-""" % (countdown, __file__, __file__)
+You can find a more detailed explanation in
+%s
+
+""" % (whitelisted, countdown, __file__, __file__,
+       os.path.abspath(os.path.join(THIS_DIR, "ninjalog.README.md")))
 
 
 def main():
@@ -82,8 +86,6 @@ def main():
         print('ninjalog upload is opted out.')
         return 0
 
-    SaveConfig(config)
-
     if 'opt-in' in config and not config['opt-in']:
         # Upload is opted out.
         return 0
@@ -95,6 +97,8 @@ def main():
     if config.get("countdown", 0) > 0:
         # Need to show message.
         ShowMessage(config["countdown"])
+        # Only save config if something has meaningfully changed.
+        SaveConfig(config)
         return 0
 
     if len(sys.argv) == 1:

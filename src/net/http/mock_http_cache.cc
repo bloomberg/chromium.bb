@@ -35,21 +35,28 @@ const int kMaxMockCacheEntrySize = 100 * 1000 * 1000;
 int g_test_mode = 0;
 
 int GetTestModeForEntry(const std::string& key) {
+  std::string url = key;
+
   // 'key' is prefixed with an identifier if it corresponds to a cached POST.
   // Skip past that to locate the actual URL.
   //
   // TODO(darin): It breaks the abstraction a bit that we assume 'key' is an
   // URL corresponding to a registered MockTransaction.  It would be good to
   // have another way to access the test_mode.
-  GURL url;
   if (isdigit(key[0])) {
     size_t slash = key.find('/');
     DCHECK(slash != std::string::npos);
-    url = GURL(key.substr(slash + 1));
-  } else {
-    url = GURL(key);
+    url = url.substr(slash + 1);
   }
-  const MockTransaction* t = FindMockTransaction(url);
+
+  // If we split the cache by top frame origin, then the origin is prepended to
+  // the key. Skip to the second url in the key.
+  if (base::StartsWith(url, "_dk_", base::CompareCase::SENSITIVE)) {
+    auto const pos = url.find("\nhttp");
+    url = url.substr(pos + 1);
+  }
+
+  const MockTransaction* t = FindMockTransaction(GURL(url));
   DCHECK(t);
   return t->test_mode;
 }
@@ -336,7 +343,7 @@ void MockDiskEntry::IgnoreCallbacks(bool value) {
     return;
   ignore_callbacks_ = value;
   if (!value)
-    StoreAndDeliverCallbacks(false, NULL, CompletionOnceCallback(), 0);
+    StoreAndDeliverCallbacks(false, nullptr, CompletionOnceCallback(), 0);
 }
 
 MockDiskEntry::~MockDiskEntry() = default;
@@ -397,7 +404,8 @@ bool MockDiskEntry::ignore_callbacks_ = false;
 //-----------------------------------------------------------------------------
 
 MockDiskCache::MockDiskCache()
-    : open_count_(0),
+    : Backend(DISK_CACHE),
+      open_count_(0),
       create_count_(0),
       doomed_count_(0),
       max_file_size_(std::numeric_limits<int>::max()),
@@ -407,6 +415,7 @@ MockDiskCache::MockDiskCache()
       double_create_check_(true),
       fail_sparse_requests_(false),
       support_in_memory_entry_data_(true),
+      force_fail_callback_later_(false),
       defer_op_(MockDiskEntry::DEFER_NONE),
       resume_return_code_(0) {}
 
@@ -414,12 +423,43 @@ MockDiskCache::~MockDiskCache() {
   ReleaseAll();
 }
 
-CacheType MockDiskCache::GetCacheType() const {
-  return DISK_CACHE;
-}
-
 int32_t MockDiskCache::GetEntryCount() const {
   return static_cast<int32_t>(entries_.size());
+}
+
+net::Error MockDiskCache::OpenOrCreateEntry(
+    const std::string& key,
+    net::RequestPriority request_priority,
+    disk_cache::EntryWithOpened* entry_struct,
+    CompletionOnceCallback callback) {
+  DCHECK(!callback.is_null());
+  base::RepeatingCallback<void(int)> copyable_callback;
+  if (callback)
+    copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
+
+  if (force_fail_callback_later_) {
+    CallbackLater(copyable_callback, ERR_CACHE_OPEN_OR_CREATE_FAILURE);
+    return ERR_IO_PENDING;
+  }
+
+  if (fail_requests_)
+    return ERR_CACHE_OPEN_OR_CREATE_FAILURE;
+
+  disk_cache::Entry** entry = &(entry_struct->entry);
+
+  // First try opening the entry.
+  entry_struct->opened = true;
+  net::Error rv = OpenEntry(key, request_priority, entry, copyable_callback);
+  if (rv == OK || rv == ERR_IO_PENDING)
+    return rv;
+
+  // Unable to open, try creating the entry.
+  entry_struct->opened = false;
+  rv = CreateEntry(key, request_priority, entry, copyable_callback);
+  if (rv == OK || rv == ERR_IO_PENDING)
+    return rv;
+
+  return ERR_CACHE_OPEN_OR_CREATE_FAILURE;
 }
 
 net::Error MockDiskCache::OpenEntry(const std::string& key,
@@ -427,6 +467,11 @@ net::Error MockDiskCache::OpenEntry(const std::string& key,
                                     disk_cache::Entry** entry,
                                     CompletionOnceCallback callback) {
   DCHECK(!callback.is_null());
+  if (force_fail_callback_later_) {
+    CallbackLater(std::move(callback), ERR_CACHE_OPEN_FAILURE);
+    return ERR_IO_PENDING;
+  }
+
   if (fail_requests_)
     return ERR_CACHE_OPEN_FAILURE;
 
@@ -464,6 +509,11 @@ net::Error MockDiskCache::CreateEntry(const std::string& key,
                                       disk_cache::Entry** entry,
                                       CompletionOnceCallback callback) {
   DCHECK(!callback.is_null());
+  if (force_fail_callback_later_) {
+    CallbackLater(std::move(callback), ERR_CACHE_CREATE_FAILURE);
+    return ERR_IO_PENDING;
+  }
+
   if (fail_requests_)
     return ERR_CACHE_CREATE_FAILURE;
 
@@ -518,6 +568,14 @@ net::Error MockDiskCache::DoomEntry(const std::string& key,
                                     net::RequestPriority request_priority,
                                     CompletionOnceCallback callback) {
   DCHECK(!callback.is_null());
+  if (force_fail_callback_later_) {
+    CallbackLater(std::move(callback), ERR_CACHE_DOOM_FAILURE);
+    return ERR_IO_PENDING;
+  }
+
+  if (fail_requests_)
+    return ERR_CACHE_DOOM_FAILURE;
+
   auto it = entries_.find(key);
   if (it != entries_.end()) {
     it->second->Release();
@@ -568,6 +626,7 @@ void MockDiskCache::GetStats(base::StringPairs* stats) {
 }
 
 void MockDiskCache::OnExternalCacheHit(const std::string& key) {
+  external_cache_hits_.push_back(key);
 }
 
 size_t MockDiskCache::DumpMemoryStats(
@@ -629,6 +688,10 @@ scoped_refptr<MockDiskEntry> MockDiskCache::GetDiskEntryRef(
   return it->second;
 }
 
+const std::vector<std::string>& MockDiskCache::GetExternalCacheHits() const {
+  return external_cache_hits_;
+}
+
 //-----------------------------------------------------------------------------
 
 int MockBackendFactory::CreateBackend(
@@ -662,7 +725,7 @@ disk_cache::Backend* MockHttpCache::backend() {
   disk_cache::Backend* backend;
   int rv = http_cache_.GetBackend(&backend, cb.callback());
   rv = cb.GetResult(rv);
-  return (rv == OK) ? backend : NULL;
+  return (rv == OK) ? backend : nullptr;
 }
 
 MockDiskCache* MockHttpCache::disk_cache() {
@@ -798,10 +861,7 @@ int MockBackendNoCbFactory::CreateBackend(
 //-----------------------------------------------------------------------------
 
 MockBlockingBackendFactory::MockBlockingBackendFactory()
-    : backend_(NULL),
-      block_(true),
-      fail_(false) {
-}
+    : backend_(nullptr), block_(true), fail_(false) {}
 
 MockBlockingBackendFactory::~MockBlockingBackendFactory() = default;
 

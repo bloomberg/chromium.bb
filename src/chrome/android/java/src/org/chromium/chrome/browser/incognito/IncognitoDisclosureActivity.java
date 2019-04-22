@@ -16,13 +16,11 @@ import android.widget.CheckBox;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.modaldialog.AppModalPresenter;
-import org.chromium.chrome.browser.modaldialog.ModalDialogManager;
-import org.chromium.chrome.browser.modaldialog.ModalDialogManager.ModalDialogType;
-import org.chromium.chrome.browser.modaldialog.ModalDialogProperties;
-import org.chromium.chrome.browser.modaldialog.ModalDialogView;
-import org.chromium.chrome.browser.modaldialog.ModalDialogView.ButtonType;
-import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.ui.modaldialog.ModalDialogManager;
+import org.chromium.ui.modaldialog.ModalDialogManager.ModalDialogType;
+import org.chromium.ui.modaldialog.ModalDialogProperties;
+import org.chromium.ui.modelutil.PropertyModel;
 
 /**
  * Activity that shows a dialog with a warning before opening an incognito Custom Tab when
@@ -78,25 +76,27 @@ public class IncognitoDisclosureActivity extends AppCompatActivity {
         finish();
     }
 
-    private final ModalDialogView.Controller mDialogController = new ModalDialogView.Controller() {
-        @Override
-        public void onClick(PropertyModel model, int buttonType) {
-            if (buttonType == ButtonType.NEGATIVE) {
-                finish();
-                return;
-            }
-            if (mCloseIncognitoTabs) {
-                mOpenCustomTabAfterCleanUpTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-            } else {
-                openCustomTabActivity();
-            }
-        }
+    private final ModalDialogProperties.Controller mDialogController =
+            new ModalDialogProperties.Controller() {
+                @Override
+                public void onClick(PropertyModel model, int buttonType) {
+                    if (buttonType == ModalDialogProperties.ButtonType.NEGATIVE) {
+                        finish();
+                        return;
+                    }
+                    if (mCloseIncognitoTabs) {
+                        mOpenCustomTabAfterCleanUpTask.executeOnExecutor(
+                                AsyncTask.THREAD_POOL_EXECUTOR);
+                    } else {
+                        openCustomTabActivity();
+                    }
+                }
 
-        @Override
-        public void onDismiss(PropertyModel model, int dismissalCause) {
-            finish();
-        }
-    };
+                @Override
+                public void onDismiss(PropertyModel model, int dismissalCause) {
+                    finish();
+                }
+            };
 
     private AsyncTask<Void> mOpenCustomTabAfterCleanUpTask = new AsyncTask<Void>() {
         @Override

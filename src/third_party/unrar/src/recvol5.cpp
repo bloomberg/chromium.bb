@@ -1,3 +1,5 @@
+namespace third_party_unrar {
+
 static const uint MaxVolumes=65535;
 
 RecVolumes5::RecVolumes5(bool TestOnly)
@@ -519,3 +521,5 @@ void RecVolumes5::Test(RAROptions *Cmd,const wchar *Name)
     NextVolumeName(VolName,ASIZE(VolName),false);
   }
 }
+
+}  // namespace third_party_unrar

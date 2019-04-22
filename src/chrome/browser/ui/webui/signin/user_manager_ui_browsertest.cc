@@ -15,6 +15,7 @@
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/ui/webui/signin/user_manager_screen_handler.h"
 #include "chrome/common/chrome_switches.h"
@@ -85,7 +86,9 @@ IN_PROC_BROWSER_TEST_F(UserManagerUIBrowserTest, PageLoads) {
   EXPECT_EQ(num_pods, static_cast<int>(profile_manager->GetNumberOfProfiles()));
 }
 
-IN_PROC_BROWSER_TEST_F(UserManagerUIBrowserTest, PageRedirectsToAboutChrome) {
+// https://crbug.com/945795
+IN_PROC_BROWSER_TEST_F(UserManagerUIBrowserTest,
+                       DISABLED_PageRedirectsToAboutChrome) {
   std::string user_manager_url = chrome::kChromeUIMdUserManagerUrl;
   user_manager_url += profiles::kUserManagerSelectProfileAboutChrome;
 
@@ -196,6 +199,7 @@ IN_PROC_BROWSER_TEST_F(UserManagerUIAuthenticatedUserBrowserTest,
 IN_PROC_BROWSER_TEST_F(UserManagerUIAuthenticatedUserBrowserTest,
                        ForcedPrimarySignin) {
   Init();
+  signin_util::SetForceSigninForTesting(true);
 
   LaunchAuthenticatedUser("");
 

@@ -4,21 +4,20 @@
 
 #include "content/browser/indexed_db/database_impl.h"
 
+#include <set>
+#include <utility>
+
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_math.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "content/browser/bad_message.h"
-#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_dispatcher_host.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
-#include "content/browser/indexed_db/indexed_db_value.h"
-#include "content/public/browser/browser_thread.h"
-#include "storage/browser/blob/blob_storage_context.h"
-#include "storage/browser/quota/quota_manager_proxy.h"
-#include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
+#include "content/browser/indexed_db/transaction_impl.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_exception.h"
 
 using blink::IndexedDBIndexKeys;
@@ -32,191 +31,96 @@ class IndexedDBKeyRange;
 }
 
 namespace content {
-class IndexedDBDatabaseError;
-
 namespace {
-const char kInvalidBlobUuid[] = "Blob does not exist";
-const char kInvalidBlobFilePath[] = "Blob file path is invalid";
+
+const char kTransactionAlreadyExists[] = "Transaction already exists";
+
 }  // namespace
-
-// Expect to be created on IO thread, and called/destroyed on IDB sequence.
-class DatabaseImpl::IDBSequenceHelper {
- public:
-  IDBSequenceHelper(std::unique_ptr<IndexedDBConnection> connection,
-                    const url::Origin& origin,
-                    scoped_refptr<IndexedDBContextImpl> indexed_db_context);
-  ~IDBSequenceHelper();
-
-  void ConnectionOpened();
-
-  void CreateObjectStore(int64_t transaction_id,
-                         int64_t object_store_id,
-                         const base::string16& name,
-                         const IndexedDBKeyPath& key_path,
-                         bool auto_increment);
-  void DeleteObjectStore(int64_t transaction_id, int64_t object_store_id);
-  void RenameObjectStore(int64_t transaction_id,
-                         int64_t object_store_id,
-                         const base::string16& new_name);
-  void CreateTransaction(int64_t transaction_id,
-                         const std::vector<int64_t>& object_store_ids,
-                         blink::mojom::IDBTransactionMode mode);
-  void Close();
-  void VersionChangeIgnored();
-  void AddObserver(int64_t transaction_id,
-                   int32_t observer_id,
-                   bool include_transaction,
-                   bool no_records,
-                   bool values,
-                   uint32_t operation_types);
-  void RemoveObservers(const std::vector<int32_t>& observers);
-  void Get(int64_t transaction_id,
-           int64_t object_store_id,
-           int64_t index_id,
-           const IndexedDBKeyRange& key_range,
-           bool key_only,
-           scoped_refptr<IndexedDBCallbacks> callbacks);
-  void GetAll(int64_t transaction_id,
-              int64_t object_store_id,
-              int64_t index_id,
-              const IndexedDBKeyRange& key_range,
-              bool key_only,
-              int64_t max_count,
-              scoped_refptr<IndexedDBCallbacks> callbacks);
-  void Put(int64_t transaction_id,
-           int64_t object_store_id,
-           blink::mojom::IDBValuePtr value,
-           std::vector<IndexedDBBlobInfo> blob_info,
-           const IndexedDBKey& key,
-           blink::mojom::IDBPutMode mode,
-           const std::vector<IndexedDBIndexKeys>& index_keys,
-           scoped_refptr<IndexedDBCallbacks> callbacks);
-  void SetIndexKeys(int64_t transaction_id,
-                    int64_t object_store_id,
-                    const IndexedDBKey& primary_key,
-                    const std::vector<IndexedDBIndexKeys>& index_keys);
-  void SetIndexesReady(int64_t transaction_id,
-                       int64_t object_store_id,
-                       const std::vector<int64_t>& index_ids);
-  void OpenCursor(int64_t transaction_id,
-                  int64_t object_store_id,
-                  int64_t index_id,
-                  const IndexedDBKeyRange& key_range,
-                  blink::mojom::IDBCursorDirection direction,
-                  bool key_only,
-                  blink::mojom::IDBTaskType task_type,
-                  scoped_refptr<IndexedDBCallbacks> callbacks);
-  void Count(int64_t transaction_id,
-             int64_t object_store_id,
-             int64_t index_id,
-             const IndexedDBKeyRange& key_range,
-             scoped_refptr<IndexedDBCallbacks> callbacks);
-  void DeleteRange(int64_t transaction_id,
-                   int64_t object_store_id,
-                   const IndexedDBKeyRange& key_range,
-                   scoped_refptr<IndexedDBCallbacks> callbacks);
-  void Clear(int64_t transaction_id,
-             int64_t object_store_id,
-             scoped_refptr<IndexedDBCallbacks> callbacks);
-  void CreateIndex(int64_t transaction_id,
-                   int64_t object_store_id,
-                   int64_t index_id,
-                   const base::string16& name,
-                   const IndexedDBKeyPath& key_path,
-                   bool unique,
-                   bool multi_entry);
-  void DeleteIndex(int64_t transaction_id,
-                   int64_t object_store_id,
-                   int64_t index_id);
-  void RenameIndex(int64_t transaction_id,
-                   int64_t object_store_id,
-                   int64_t index_id,
-                   const base::string16& new_name);
-  void Abort(int64_t transaction_id);
-  void AbortWithError(int64_t transaction_id,
-                      scoped_refptr<IndexedDBCallbacks> callbacks,
-                      const IndexedDBDatabaseError& error);
-  void Commit(int64_t transaction_id);
-  void OnGotUsageAndQuotaForCommit(int64_t transaction_id,
-                                   blink::mojom::QuotaStatusCode status,
-                                   int64_t usage,
-                                   int64_t quota);
-
- private:
-  scoped_refptr<IndexedDBContextImpl> indexed_db_context_;
-  std::unique_ptr<IndexedDBConnection> connection_;
-  const url::Origin origin_;
-  SEQUENCE_CHECKER(sequence_checker_);
-  base::WeakPtrFactory<IDBSequenceHelper> weak_factory_;
-};
 
 DatabaseImpl::DatabaseImpl(std::unique_ptr<IndexedDBConnection> connection,
                            const url::Origin& origin,
                            IndexedDBDispatcherHost* dispatcher_host,
                            scoped_refptr<base::SequencedTaskRunner> idb_runner)
     : dispatcher_host_(dispatcher_host),
+      indexed_db_context_(dispatcher_host->context()),
+      connection_(std::move(connection)),
       origin_(origin),
       idb_runner_(std::move(idb_runner)) {
-  DCHECK(connection);
-  helper_ = new IDBSequenceHelper(std::move(connection), origin,
-                                  dispatcher_host->context());
-  idb_runner_->PostTask(FROM_HERE,
-                        base::BindOnce(&IDBSequenceHelper::ConnectionOpened,
-                                       base::Unretained(helper_)));
+  DCHECK(idb_runner_->RunsTasksInCurrentSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(connection_);
+  indexed_db_context_->ConnectionOpened(origin_, connection_.get());
 }
 
 DatabaseImpl::~DatabaseImpl() {
-  idb_runner_->DeleteSoon(FROM_HERE, helper_);
-}
-
-void DatabaseImpl::CreateObjectStore(int64_t transaction_id,
-                                     int64_t object_store_id,
-                                     const base::string16& name,
-                                     const IndexedDBKeyPath& key_path,
-                                     bool auto_increment) {
-  idb_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&IDBSequenceHelper::CreateObjectStore,
-                     base::Unretained(helper_), transaction_id, object_store_id,
-                     name, key_path, auto_increment));
-}
-
-void DatabaseImpl::DeleteObjectStore(int64_t transaction_id,
-                                     int64_t object_store_id) {
-  idb_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&IDBSequenceHelper::DeleteObjectStore,
-                                base::Unretained(helper_), transaction_id,
-                                object_store_id));
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (connection_->IsConnected())
+    connection_->Close();
+  indexed_db_context_->ConnectionClosed(origin_, connection_.get());
 }
 
 void DatabaseImpl::RenameObjectStore(int64_t transaction_id,
                                      int64_t object_store_id,
                                      const base::string16& new_name) {
-  idb_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&IDBSequenceHelper::RenameObjectStore,
-                                base::Unretained(helper_), transaction_id,
-                                object_store_id, new_name));
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!connection_->IsConnected())
+    return;
+
+  IndexedDBTransaction* transaction =
+      connection_->GetTransaction(transaction_id);
+  if (!transaction)
+    return;
+
+  if (transaction->mode() != blink::mojom::IDBTransactionMode::VersionChange) {
+    mojo::ReportBadMessage(
+        "RenameObjectStore must be called from a version change transaction.");
+  }
+
+  // Note: This doesn't schedule a task on the transaction because version
+  // change transactions pre-start in the OpenRequest inside IndexedDBDatabase.
+  connection_->database()->RenameObjectStore(transaction, object_store_id,
+                                             new_name);
 }
 
 void DatabaseImpl::CreateTransaction(
+    blink::mojom::IDBTransactionAssociatedRequest transaction_request,
     int64_t transaction_id,
     const std::vector<int64_t>& object_store_ids,
     blink::mojom::IDBTransactionMode mode) {
-  idb_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&IDBSequenceHelper::CreateTransaction,
-                                base::Unretained(helper_), transaction_id,
-                                object_store_ids, mode));
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!connection_->IsConnected())
+    return;
+
+  if (connection_->GetTransaction(transaction_id)) {
+    mojo::ReportBadMessage(kTransactionAlreadyExists);
+    return;
+  }
+
+  IndexedDBTransaction* transaction = connection_->CreateTransaction(
+      transaction_id,
+      std::set<int64_t>(object_store_ids.begin(), object_store_ids.end()), mode,
+      new IndexedDBBackingStore::Transaction(
+          connection_->database()->backing_store()));
+  connection_->database()->RegisterAndScheduleTransaction(transaction);
+
+  dispatcher_host_->CreateAndBindTransactionImpl(
+      std::move(transaction_request), origin_, transaction->AsWeakPtr());
 }
 
 void DatabaseImpl::Close() {
-  idb_runner_->PostTask(FROM_HERE, base::BindOnce(&IDBSequenceHelper::Close,
-                                                  base::Unretained(helper_)));
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!connection_->IsConnected())
+    return;
+
+  connection_->Close();
 }
 
 void DatabaseImpl::VersionChangeIgnored() {
-  idb_runner_->PostTask(FROM_HERE,
-                        base::BindOnce(&IDBSequenceHelper::VersionChangeIgnored,
-                                       base::Unretained(helper_)));
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!connection_->IsConnected())
+    return;
+
+  connection_->VersionChangeIgnored();
 }
 
 void DatabaseImpl::AddObserver(int64_t transaction_id,
@@ -225,371 +129,6 @@ void DatabaseImpl::AddObserver(int64_t transaction_id,
                                bool no_records,
                                bool values,
                                uint32_t operation_types) {
-  idb_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&IDBSequenceHelper::AddObserver, base::Unretained(helper_),
-                     transaction_id, observer_id, include_transaction,
-                     no_records, values, operation_types));
-}
-
-void DatabaseImpl::RemoveObservers(const std::vector<int32_t>& observers) {
-  idb_runner_->PostTask(FROM_HERE,
-                        base::BindOnce(&IDBSequenceHelper::RemoveObservers,
-                                       base::Unretained(helper_), observers));
-}
-
-void DatabaseImpl::Get(
-    int64_t transaction_id,
-    int64_t object_store_id,
-    int64_t index_id,
-    const IndexedDBKeyRange& key_range,
-    bool key_only,
-    blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info) {
-  scoped_refptr<IndexedDBCallbacks> callbacks(
-      new IndexedDBCallbacks(dispatcher_host_->AsWeakPtr(), origin_,
-                             std::move(callbacks_info), idb_runner_));
-  idb_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&IDBSequenceHelper::Get, base::Unretained(helper_),
-                     transaction_id, object_store_id, index_id, key_range,
-                     key_only, std::move(callbacks)));
-}
-
-void DatabaseImpl::GetAll(
-    int64_t transaction_id,
-    int64_t object_store_id,
-    int64_t index_id,
-    const IndexedDBKeyRange& key_range,
-    bool key_only,
-    int64_t max_count,
-    blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info) {
-  scoped_refptr<IndexedDBCallbacks> callbacks(
-      new IndexedDBCallbacks(dispatcher_host_->AsWeakPtr(), origin_,
-                             std::move(callbacks_info), idb_runner_));
-  idb_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&IDBSequenceHelper::GetAll, base::Unretained(helper_),
-                     transaction_id, object_store_id, index_id, key_range,
-                     key_only, max_count, std::move(callbacks)));
-}
-
-void DatabaseImpl::Put(
-    int64_t transaction_id,
-    int64_t object_store_id,
-    blink::mojom::IDBValuePtr value,
-    const IndexedDBKey& key,
-    blink::mojom::IDBPutMode mode,
-    const std::vector<IndexedDBIndexKeys>& index_keys,
-    blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info) {
-  ChildProcessSecurityPolicyImpl* policy =
-      ChildProcessSecurityPolicyImpl::GetInstance();
-
-  scoped_refptr<IndexedDBCallbacks> callbacks(
-      new IndexedDBCallbacks(dispatcher_host_->AsWeakPtr(), origin_,
-                             std::move(callbacks_info), idb_runner_));
-
-  base::CheckedNumeric<uint64_t> total_blob_size = 0;
-  std::vector<IndexedDBBlobInfo> blob_info(value->blob_or_file_info.size());
-  for (size_t i = 0; i < value->blob_or_file_info.size(); ++i) {
-    blink::mojom::IDBBlobInfoPtr& info = value->blob_or_file_info[i];
-
-    std::unique_ptr<storage::BlobDataHandle> handle =
-        dispatcher_host_->blob_storage_context()->GetBlobDataFromUUID(
-            info->uuid);
-
-    // Due to known issue crbug.com/351753, blobs can die while being passed to
-    // a different process. So this case must be handled gracefully.
-    // TODO(dmurph): Revert back to using mojo::ReportBadMessage once fixed.
-    UMA_HISTOGRAM_BOOLEAN("Storage.IndexedDB.PutValidBlob",
-                          handle.get() != nullptr);
-    if (!handle) {
-      IndexedDBDatabaseError error(blink::kWebIDBDatabaseExceptionUnknownError,
-                                   kInvalidBlobUuid);
-      idb_runner_->PostTask(
-          FROM_HERE, base::BindOnce(&IDBSequenceHelper::AbortWithError,
-                                    base::Unretained(helper_), transaction_id,
-                                    std::move(callbacks), error));
-      return;
-    }
-    uint64_t size = handle->size();
-    UMA_HISTOGRAM_MEMORY_KB("Storage.IndexedDB.PutBlobSizeKB", size / 1024ull);
-    total_blob_size += size;
-
-    if (info->file) {
-      if (!info->file->path.empty() &&
-          !policy->CanReadFile(dispatcher_host_->ipc_process_id(),
-                               info->file->path)) {
-        mojo::ReportBadMessage(kInvalidBlobFilePath);
-        return;
-      }
-      blob_info[i] = IndexedDBBlobInfo(std::move(handle), info->file->path,
-                                       info->file->name, info->mime_type);
-      if (info->size != -1) {
-        blob_info[i].set_last_modified(info->file->last_modified);
-        blob_info[i].set_size(info->size);
-      }
-    } else {
-      blob_info[i] =
-          IndexedDBBlobInfo(std::move(handle), info->mime_type, info->size);
-    }
-  }
-  UMA_HISTOGRAM_COUNTS_1000("WebCore.IndexedDB.PutBlobsCount",
-                            blob_info.size());
-  uint64_t blob_size = total_blob_size.ValueOrDefault(0U);
-  if (blob_size != 0) {
-    // 1KB to 1GB.
-    UMA_HISTOGRAM_COUNTS_1M("WebCore.IndexedDB.PutBlobsTotalSize",
-                            blob_size / 1024);
-  }
-  idb_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&IDBSequenceHelper::Put, base::Unretained(helper_),
-                     transaction_id, object_store_id, std::move(value),
-                     std::move(blob_info), key, mode, index_keys,
-                     std::move(callbacks)));
-}
-
-void DatabaseImpl::SetIndexKeys(
-    int64_t transaction_id,
-    int64_t object_store_id,
-    const IndexedDBKey& primary_key,
-    const std::vector<IndexedDBIndexKeys>& index_keys) {
-  idb_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&IDBSequenceHelper::SetIndexKeys,
-                                base::Unretained(helper_), transaction_id,
-                                object_store_id, primary_key, index_keys));
-}
-
-void DatabaseImpl::SetIndexesReady(int64_t transaction_id,
-                                   int64_t object_store_id,
-                                   const std::vector<int64_t>& index_ids) {
-  idb_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&IDBSequenceHelper::SetIndexesReady,
-                                base::Unretained(helper_), transaction_id,
-                                object_store_id, index_ids));
-}
-
-void DatabaseImpl::OpenCursor(
-    int64_t transaction_id,
-    int64_t object_store_id,
-    int64_t index_id,
-    const IndexedDBKeyRange& key_range,
-    blink::mojom::IDBCursorDirection direction,
-    bool key_only,
-    blink::mojom::IDBTaskType task_type,
-    blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info) {
-  scoped_refptr<IndexedDBCallbacks> callbacks(
-      new IndexedDBCallbacks(dispatcher_host_->AsWeakPtr(), origin_,
-                             std::move(callbacks_info), idb_runner_));
-  idb_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&IDBSequenceHelper::OpenCursor, base::Unretained(helper_),
-                     transaction_id, object_store_id, index_id, key_range,
-                     direction, key_only, task_type, std::move(callbacks)));
-}
-
-void DatabaseImpl::Count(
-    int64_t transaction_id,
-    int64_t object_store_id,
-    int64_t index_id,
-    const IndexedDBKeyRange& key_range,
-    blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info) {
-  scoped_refptr<IndexedDBCallbacks> callbacks(
-      new IndexedDBCallbacks(dispatcher_host_->AsWeakPtr(), origin_,
-                             std::move(callbacks_info), idb_runner_));
-  idb_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&IDBSequenceHelper::Count, base::Unretained(helper_),
-                     transaction_id, object_store_id, index_id, key_range,
-                     std::move(callbacks)));
-}
-
-void DatabaseImpl::DeleteRange(
-    int64_t transaction_id,
-    int64_t object_store_id,
-    const IndexedDBKeyRange& key_range,
-    blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info) {
-  scoped_refptr<IndexedDBCallbacks> callbacks(
-      new IndexedDBCallbacks(dispatcher_host_->AsWeakPtr(), origin_,
-                             std::move(callbacks_info), idb_runner_));
-  idb_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&IDBSequenceHelper::DeleteRange, base::Unretained(helper_),
-                     transaction_id, object_store_id, key_range,
-                     std::move(callbacks)));
-}
-
-void DatabaseImpl::Clear(
-    int64_t transaction_id,
-    int64_t object_store_id,
-    blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info) {
-  scoped_refptr<IndexedDBCallbacks> callbacks(
-      new IndexedDBCallbacks(dispatcher_host_->AsWeakPtr(), origin_,
-                             std::move(callbacks_info), idb_runner_));
-  idb_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&IDBSequenceHelper::Clear, base::Unretained(helper_),
-                     transaction_id, object_store_id, std::move(callbacks)));
-}
-
-void DatabaseImpl::CreateIndex(int64_t transaction_id,
-                               int64_t object_store_id,
-                               int64_t index_id,
-                               const base::string16& name,
-                               const IndexedDBKeyPath& key_path,
-                               bool unique,
-                               bool multi_entry) {
-  idb_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&IDBSequenceHelper::CreateIndex, base::Unretained(helper_),
-                     transaction_id, object_store_id, index_id, name, key_path,
-                     unique, multi_entry));
-}
-
-void DatabaseImpl::DeleteIndex(int64_t transaction_id,
-                               int64_t object_store_id,
-                               int64_t index_id) {
-  idb_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&IDBSequenceHelper::DeleteIndex, base::Unretained(helper_),
-                     transaction_id, object_store_id, index_id));
-}
-
-void DatabaseImpl::RenameIndex(int64_t transaction_id,
-                               int64_t object_store_id,
-                               int64_t index_id,
-                               const base::string16& new_name) {
-  idb_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&IDBSequenceHelper::RenameIndex, base::Unretained(helper_),
-                     transaction_id, object_store_id, index_id, new_name));
-}
-
-void DatabaseImpl::Abort(int64_t transaction_id) {
-  idb_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&IDBSequenceHelper::Abort,
-                                base::Unretained(helper_), transaction_id));
-}
-
-void DatabaseImpl::Commit(int64_t transaction_id) {
-  idb_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&IDBSequenceHelper::Commit,
-                                base::Unretained(helper_), transaction_id));
-}
-
-DatabaseImpl::IDBSequenceHelper::IDBSequenceHelper(
-    std::unique_ptr<IndexedDBConnection> connection,
-    const url::Origin& origin,
-    scoped_refptr<IndexedDBContextImpl> indexed_db_context)
-    : indexed_db_context_(indexed_db_context),
-      connection_(std::move(connection)),
-      origin_(origin),
-      weak_factory_(this) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DETACH_FROM_SEQUENCE(sequence_checker_);
-}
-
-DatabaseImpl::IDBSequenceHelper::~IDBSequenceHelper() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (connection_->IsConnected())
-    connection_->Close();
-  indexed_db_context_->ConnectionClosed(origin_, connection_.get());
-}
-
-void DatabaseImpl::IDBSequenceHelper::ConnectionOpened() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  indexed_db_context_->ConnectionOpened(origin_, connection_.get());
-}
-
-void DatabaseImpl::IDBSequenceHelper::CreateObjectStore(
-    int64_t transaction_id,
-    int64_t object_store_id,
-    const base::string16& name,
-    const IndexedDBKeyPath& key_path,
-    bool auto_increment) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!connection_->IsConnected())
-    return;
-
-  IndexedDBTransaction* transaction =
-      connection_->GetTransaction(transaction_id);
-  if (!transaction)
-    return;
-
-  connection_->database()->CreateObjectStore(transaction, object_store_id, name,
-                                             key_path, auto_increment);
-}
-
-void DatabaseImpl::IDBSequenceHelper::DeleteObjectStore(
-    int64_t transaction_id,
-    int64_t object_store_id) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!connection_->IsConnected())
-    return;
-
-  IndexedDBTransaction* transaction =
-      connection_->GetTransaction(transaction_id);
-  if (!transaction)
-    return;
-
-  connection_->database()->DeleteObjectStore(transaction, object_store_id);
-}
-
-void DatabaseImpl::IDBSequenceHelper::RenameObjectStore(
-    int64_t transaction_id,
-    int64_t object_store_id,
-    const base::string16& new_name) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!connection_->IsConnected())
-    return;
-
-  IndexedDBTransaction* transaction =
-      connection_->GetTransaction(transaction_id);
-  if (!transaction)
-    return;
-
-  connection_->database()->RenameObjectStore(transaction, object_store_id,
-                                             new_name);
-}
-
-void DatabaseImpl::IDBSequenceHelper::CreateTransaction(
-    int64_t transaction_id,
-    const std::vector<int64_t>& object_store_ids,
-    blink::mojom::IDBTransactionMode mode) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!connection_->IsConnected())
-    return;
-
-  // Can't call BadMessage as we're no longer on the IO thread. So ignore.
-  if (connection_->GetTransaction(transaction_id))
-    return;
-
-  connection_->database()->CreateTransaction(transaction_id, connection_.get(),
-                                             object_store_ids, mode);
-}
-
-void DatabaseImpl::IDBSequenceHelper::Close() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!connection_->IsConnected())
-    return;
-
-  connection_->Close();
-}
-
-void DatabaseImpl::IDBSequenceHelper::VersionChangeIgnored() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!connection_->IsConnected())
-    return;
-
-  connection_->VersionChangeIgnored();
-}
-
-void DatabaseImpl::IDBSequenceHelper::AddObserver(int64_t transaction_id,
-                                                  int32_t observer_id,
-                                                  bool include_transaction,
-                                                  bool no_records,
-                                                  bool values,
-                                                  uint32_t operation_types) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!connection_->IsConnected())
     return;
@@ -605,8 +144,7 @@ void DatabaseImpl::IDBSequenceHelper::AddObserver(int64_t transaction_id,
                                               options);
 }
 
-void DatabaseImpl::IDBSequenceHelper::RemoveObservers(
-    const std::vector<int32_t>& observers) {
+void DatabaseImpl::RemoveObservers(const std::vector<int32_t>& observers) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!connection_->IsConnected())
     return;
@@ -614,14 +152,17 @@ void DatabaseImpl::IDBSequenceHelper::RemoveObservers(
   connection_->RemoveObservers(observers);
 }
 
-void DatabaseImpl::IDBSequenceHelper::Get(
+void DatabaseImpl::Get(
     int64_t transaction_id,
     int64_t object_store_id,
     int64_t index_id,
     const IndexedDBKeyRange& key_range,
     bool key_only,
-    scoped_refptr<IndexedDBCallbacks> callbacks) {
+    blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  scoped_refptr<IndexedDBCallbacks> callbacks(
+      new IndexedDBCallbacks(dispatcher_host_->AsWeakPtr(), origin_,
+                             std::move(callbacks_info), idb_runner_));
   if (!connection_->IsConnected())
     return;
 
@@ -635,15 +176,18 @@ void DatabaseImpl::IDBSequenceHelper::Get(
                                key_only, callbacks);
 }
 
-void DatabaseImpl::IDBSequenceHelper::GetAll(
+void DatabaseImpl::GetAll(
     int64_t transaction_id,
     int64_t object_store_id,
     int64_t index_id,
     const IndexedDBKeyRange& key_range,
     bool key_only,
     int64_t max_count,
-    scoped_refptr<IndexedDBCallbacks> callbacks) {
+    blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  scoped_refptr<IndexedDBCallbacks> callbacks(
+      new IndexedDBCallbacks(dispatcher_host_->AsWeakPtr(), origin_,
+                             std::move(callbacks_info), idb_runner_));
   if (!connection_->IsConnected())
     return;
 
@@ -658,46 +202,7 @@ void DatabaseImpl::IDBSequenceHelper::GetAll(
       std::move(callbacks));
 }
 
-void DatabaseImpl::IDBSequenceHelper::Put(
-    int64_t transaction_id,
-    int64_t object_store_id,
-    blink::mojom::IDBValuePtr mojo_value,
-    std::vector<IndexedDBBlobInfo> blob_info,
-    const IndexedDBKey& key,
-    blink::mojom::IDBPutMode mode,
-    const std::vector<IndexedDBIndexKeys>& index_keys,
-    scoped_refptr<IndexedDBCallbacks> callbacks) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!connection_->IsConnected())
-    return;
-
-  IndexedDBTransaction* transaction =
-      connection_->GetTransaction(transaction_id);
-  if (!transaction)
-    return;
-
-  // Value size recorded in IDBObjectStore before we can auto-wrap in a blob.
-  // 1KB to 10MB.
-  UMA_HISTOGRAM_COUNTS_10000("WebCore.IndexedDB.PutKeySize",
-                             key.size_estimate() / 1024);
-
-  uint64_t commit_size = mojo_value->bits.size() + key.size_estimate();
-  IndexedDBValue value;
-  // TODO(crbug.com/902498): Use mojom traits to map directly to std::string.
-  value.bits = std::string(mojo_value->bits.begin(), mojo_value->bits.end());
-  // Release mojo_value->bits std::vector.
-  mojo_value->bits.clear();
-  swap(value.blob_info, blob_info);
-  connection_->database()->Put(transaction, object_store_id, &value,
-                               std::make_unique<IndexedDBKey>(key), mode,
-                               std::move(callbacks), index_keys);
-
-  // Size can't be big enough to overflow because it represents the
-  // actual bytes passed through IPC.
-  transaction->set_size(transaction->size() + commit_size);
-}
-
-void DatabaseImpl::IDBSequenceHelper::SetIndexKeys(
+void DatabaseImpl::SetIndexKeys(
     int64_t transaction_id,
     int64_t object_store_id,
     const IndexedDBKey& primary_key,
@@ -711,15 +216,19 @@ void DatabaseImpl::IDBSequenceHelper::SetIndexKeys(
   if (!transaction)
     return;
 
+  if (transaction->mode() != blink::mojom::IDBTransactionMode::VersionChange) {
+    mojo::ReportBadMessage(
+        "SetIndexKeys must be called from a version change transaction.");
+  }
+
   connection_->database()->SetIndexKeys(
       transaction, object_store_id, std::make_unique<IndexedDBKey>(primary_key),
       index_keys);
 }
 
-void DatabaseImpl::IDBSequenceHelper::SetIndexesReady(
-    int64_t transaction_id,
-    int64_t object_store_id,
-    const std::vector<int64_t>& index_ids) {
+void DatabaseImpl::SetIndexesReady(int64_t transaction_id,
+                                   int64_t object_store_id,
+                                   const std::vector<int64_t>& index_ids) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!connection_->IsConnected())
     return;
@@ -729,11 +238,16 @@ void DatabaseImpl::IDBSequenceHelper::SetIndexesReady(
   if (!transaction)
     return;
 
+  if (transaction->mode() != blink::mojom::IDBTransactionMode::VersionChange) {
+    mojo::ReportBadMessage(
+        "SetIndexesReady must be called from a version change transaction.");
+  }
+
   connection_->database()->SetIndexesReady(transaction, object_store_id,
                                            index_ids);
 }
 
-void DatabaseImpl::IDBSequenceHelper::OpenCursor(
+void DatabaseImpl::OpenCursor(
     int64_t transaction_id,
     int64_t object_store_id,
     int64_t index_id,
@@ -741,8 +255,11 @@ void DatabaseImpl::IDBSequenceHelper::OpenCursor(
     blink::mojom::IDBCursorDirection direction,
     bool key_only,
     blink::mojom::IDBTaskType task_type,
-    scoped_refptr<IndexedDBCallbacks> callbacks) {
+    blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  scoped_refptr<IndexedDBCallbacks> callbacks(
+      new IndexedDBCallbacks(dispatcher_host_->AsWeakPtr(), origin_,
+                             std::move(callbacks_info), idb_runner_));
   if (!connection_->IsConnected())
     return;
 
@@ -751,19 +268,29 @@ void DatabaseImpl::IDBSequenceHelper::OpenCursor(
   if (!transaction)
     return;
 
+  if (transaction->mode() != blink::mojom::IDBTransactionMode::VersionChange &&
+      task_type == blink::mojom::IDBTaskType::Preemptive) {
+    mojo::ReportBadMessage(
+        "OpenCursor with |Preemptive| task type must be called from a version "
+        "change transaction.");
+  }
+
   connection_->database()->OpenCursor(
       transaction, object_store_id, index_id,
       std::make_unique<IndexedDBKeyRange>(key_range), direction, key_only,
       task_type, std::move(callbacks));
 }
 
-void DatabaseImpl::IDBSequenceHelper::Count(
+void DatabaseImpl::Count(
     int64_t transaction_id,
     int64_t object_store_id,
     int64_t index_id,
     const IndexedDBKeyRange& key_range,
-    scoped_refptr<IndexedDBCallbacks> callbacks) {
+    blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  scoped_refptr<IndexedDBCallbacks> callbacks(
+      new IndexedDBCallbacks(dispatcher_host_->AsWeakPtr(), origin_,
+                             std::move(callbacks_info), idb_runner_));
   if (!connection_->IsConnected())
     return;
 
@@ -777,11 +304,15 @@ void DatabaseImpl::IDBSequenceHelper::Count(
                                  std::move(callbacks));
 }
 
-void DatabaseImpl::IDBSequenceHelper::DeleteRange(
+void DatabaseImpl::DeleteRange(
     int64_t transaction_id,
     int64_t object_store_id,
     const IndexedDBKeyRange& key_range,
-    scoped_refptr<IndexedDBCallbacks> callbacks) {
+    blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  scoped_refptr<IndexedDBCallbacks> callbacks(
+      new IndexedDBCallbacks(dispatcher_host_->AsWeakPtr(), origin_,
+                             std::move(callbacks_info), idb_runner_));
   if (!connection_->IsConnected())
     return;
 
@@ -795,11 +326,34 @@ void DatabaseImpl::IDBSequenceHelper::DeleteRange(
       std::make_unique<IndexedDBKeyRange>(key_range), std::move(callbacks));
 }
 
-void DatabaseImpl::IDBSequenceHelper::Clear(
+void DatabaseImpl::GetKeyGeneratorCurrentNumber(
     int64_t transaction_id,
     int64_t object_store_id,
-    scoped_refptr<IndexedDBCallbacks> callbacks) {
+    blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  scoped_refptr<IndexedDBCallbacks> callbacks(
+      new IndexedDBCallbacks(dispatcher_host_->AsWeakPtr(), origin_,
+                             std::move(callbacks_info), idb_runner_));
+  if (!connection_->IsConnected())
+    return;
+
+  IndexedDBTransaction* transaction =
+      connection_->GetTransaction(transaction_id);
+  if (!transaction)
+    return;
+
+  connection_->database()->GetKeyGeneratorCurrentNumber(
+      transaction, object_store_id, std::move(callbacks));
+}
+
+void DatabaseImpl::Clear(
+    int64_t transaction_id,
+    int64_t object_store_id,
+    blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  scoped_refptr<IndexedDBCallbacks> callbacks(
+      new IndexedDBCallbacks(dispatcher_host_->AsWeakPtr(), origin_,
+                             std::move(callbacks_info), idb_runner_));
   if (!connection_->IsConnected())
     return;
 
@@ -811,14 +365,13 @@ void DatabaseImpl::IDBSequenceHelper::Clear(
   connection_->database()->Clear(transaction, object_store_id, callbacks);
 }
 
-void DatabaseImpl::IDBSequenceHelper::CreateIndex(
-    int64_t transaction_id,
-    int64_t object_store_id,
-    int64_t index_id,
-    const base::string16& name,
-    const IndexedDBKeyPath& key_path,
-    bool unique,
-    bool multi_entry) {
+void DatabaseImpl::CreateIndex(int64_t transaction_id,
+                               int64_t object_store_id,
+                               int64_t index_id,
+                               const base::string16& name,
+                               const IndexedDBKeyPath& key_path,
+                               bool unique,
+                               bool multi_entry) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!connection_->IsConnected())
     return;
@@ -827,14 +380,19 @@ void DatabaseImpl::IDBSequenceHelper::CreateIndex(
       connection_->GetTransaction(transaction_id);
   if (!transaction)
     return;
+
+  if (transaction->mode() != blink::mojom::IDBTransactionMode::VersionChange) {
+    mojo::ReportBadMessage(
+        "CreateIndex must be called from a version change transaction.");
+  }
 
   connection_->database()->CreateIndex(transaction, object_store_id, index_id,
                                        name, key_path, unique, multi_entry);
 }
 
-void DatabaseImpl::IDBSequenceHelper::DeleteIndex(int64_t transaction_id,
-                                                  int64_t object_store_id,
-                                                  int64_t index_id) {
+void DatabaseImpl::DeleteIndex(int64_t transaction_id,
+                               int64_t object_store_id,
+                               int64_t index_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!connection_->IsConnected())
     return;
@@ -843,15 +401,19 @@ void DatabaseImpl::IDBSequenceHelper::DeleteIndex(int64_t transaction_id,
       connection_->GetTransaction(transaction_id);
   if (!transaction)
     return;
+
+  if (transaction->mode() != blink::mojom::IDBTransactionMode::VersionChange) {
+    mojo::ReportBadMessage(
+        "DeleteIndex must be called from a version change transaction.");
+  }
 
   connection_->database()->DeleteIndex(transaction, object_store_id, index_id);
 }
 
-void DatabaseImpl::IDBSequenceHelper::RenameIndex(
-    int64_t transaction_id,
-    int64_t object_store_id,
-    int64_t index_id,
-    const base::string16& new_name) {
+void DatabaseImpl::RenameIndex(int64_t transaction_id,
+                               int64_t object_store_id,
+                               int64_t index_id,
+                               const base::string16& new_name) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!connection_->IsConnected())
     return;
@@ -860,12 +422,17 @@ void DatabaseImpl::IDBSequenceHelper::RenameIndex(
       connection_->GetTransaction(transaction_id);
   if (!transaction)
     return;
+
+  if (transaction->mode() != blink::mojom::IDBTransactionMode::VersionChange) {
+    mojo::ReportBadMessage(
+        "RenameIndex must be called from a version change transaction.");
+  }
 
   connection_->database()->RenameIndex(transaction, object_store_id, index_id,
                                        new_name);
 }
 
-void DatabaseImpl::IDBSequenceHelper::Abort(int64_t transaction_id) {
+void DatabaseImpl::Abort(int64_t transaction_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!connection_->IsConnected())
     return;
@@ -879,73 +446,6 @@ void DatabaseImpl::IDBSequenceHelper::Abort(int64_t transaction_id) {
       transaction,
       IndexedDBDatabaseError(blink::kWebIDBDatabaseExceptionAbortError,
                              "Transaction aborted by user."));
-}
-
-void DatabaseImpl::IDBSequenceHelper::AbortWithError(
-    int64_t transaction_id,
-    scoped_refptr<IndexedDBCallbacks> callbacks,
-    const IndexedDBDatabaseError& error) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  callbacks->OnError(error);
-
-  if (!connection_->IsConnected())
-    return;
-
-  IndexedDBTransaction* transaction =
-      connection_->GetTransaction(transaction_id);
-  if (!transaction)
-    return;
-
-  connection_->AbortTransaction(transaction, error);
-}
-
-void DatabaseImpl::IDBSequenceHelper::Commit(int64_t transaction_id) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!connection_->IsConnected())
-    return;
-
-  IndexedDBTransaction* transaction =
-      connection_->GetTransaction(transaction_id);
-  if (!transaction)
-    return;
-
-  // Always allow empty or delete-only transactions.
-  if (transaction->size() == 0) {
-    connection_->database()->Commit(transaction);
-    return;
-  }
-
-  indexed_db_context_->quota_manager_proxy()->GetUsageAndQuota(
-      indexed_db_context_->TaskRunner(), origin_,
-      blink::mojom::StorageType::kTemporary,
-      base::BindOnce(&IDBSequenceHelper::OnGotUsageAndQuotaForCommit,
-                     weak_factory_.GetWeakPtr(), transaction_id));
-}
-
-void DatabaseImpl::IDBSequenceHelper::OnGotUsageAndQuotaForCommit(
-    int64_t transaction_id,
-    blink::mojom::QuotaStatusCode status,
-    int64_t usage,
-    int64_t quota) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // May have disconnected while quota check was pending.
-  if (!connection_->IsConnected())
-    return;
-
-  IndexedDBTransaction* transaction =
-      connection_->GetTransaction(transaction_id);
-  if (!transaction)
-    return;
-
-  if (status == blink::mojom::QuotaStatusCode::kOk &&
-      usage + transaction->size() <= quota) {
-    connection_->database()->Commit(transaction);
-  } else {
-    connection_->AbortTransaction(
-        transaction,
-        IndexedDBDatabaseError(blink::kWebIDBDatabaseExceptionQuotaError));
-  }
 }
 
 }  // namespace content

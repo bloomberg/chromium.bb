@@ -5,61 +5,92 @@
 /**
  * Javascript for usb_internals.html, served from chrome://usb-internals/.
  */
+cr.define('usb_internals', function() {
+  class UsbInternals {
+    constructor() {}
 
-(function() {
-// Connection to the UsbInternalsPageHandler instance running in the browser
-// process.
-let pageHandler = null;
+    async initializeViews() {
+      // window.setupFn() provides a hook for the test suite to perform setup
+      // actions after the page is loaded but before any script is run.
+      await window.setupFn();
 
-function refreshDeviceList() {
-  pageHandler.getTestDevices().then(function(response) {
-    let tableBody = $('test-device-list');
-    tableBody.innerHTML = '';
-    for (let device of response.devices) {
-      let row = document.createElement('tr');
-      let name = document.createElement('td');
-      let serialNumber = document.createElement('td');
-      let landingPage = document.createElement('td');
-      let remove = document.createElement('td');
-      let removeButton = document.createElement('button');
-      name.textContent = device.name;
-      serialNumber.textContent = device.serialNumber;
-      landingPage.textContent = device.landingPage.url;
-      removeButton.addEventListener('click', function() {
-        pageHandler.removeDeviceForTesting(device.guid).then(refreshDeviceList);
+      const pageHandler = mojom.UsbInternalsPageHandler.getProxy();
+
+      // Connection to the UsbInternalsPageHandler instance running in the
+      // browser process.
+      /** @type {device.mojom.UsbDeviceManagerProxy} */
+      const usbManager = new device.mojom.UsbDeviceManagerProxy;
+      await pageHandler.bindUsbDeviceManagerInterface(
+          usbManager.$.createRequest());
+
+      /** @private {devices_page.DevicesPage} */
+      this.devicesPage_ = new devices_page.DevicesPage(usbManager);
+
+      /** @private {device.mojom.UsbDeviceManagerTestProxy} */
+      this.usbManagerTest_ = new device.mojom.UsbDeviceManagerTestProxy;
+      await pageHandler.bindTestInterface(
+          this.usbManagerTest_.$.createRequest());
+
+      $('add-test-device-form').addEventListener('submit', (event) => {
+        this.addTestDevice(event);
       });
-      removeButton.textContent = 'Remove';
-      row.appendChild(name);
-      row.appendChild(serialNumber);
-      row.appendChild(landingPage);
-      remove.appendChild(removeButton);
-      row.appendChild(remove);
-      tableBody.appendChild(row);
+      this.refreshTestDeviceList();
+
+      cr.ui.decorate('tabbox', cr.ui.TabBox);
     }
-  });
-}
 
-function addTestDevice(event) {
-  pageHandler
-      .addDeviceForTesting(
+    async refreshTestDeviceList() {
+      const response = await this.usbManagerTest_.getTestDevices();
+
+      const tableBody = $('test-device-list');
+      tableBody.innerHTML = '';
+
+      const rowTemplate = document.querySelector('#test-device-row');
+      const td = rowTemplate.content.querySelectorAll('td');
+
+      for (const device of response.devices) {
+        td[0].textContent = device.name;
+        td[1].textContent = device.serialNumber;
+        td[2].textContent = device.landingPage.url;
+
+        const clone = document.importNode(rowTemplate.content, true);
+
+        const removeButton = clone.querySelector('button');
+        removeButton.addEventListener('click', async () => {
+          await this.usbManagerTest_.removeDeviceForTesting(device.guid);
+          this.refreshTestDeviceList();
+        });
+
+        tableBody.appendChild(clone);
+      }
+    }
+
+    async addTestDevice(event) {
+      event.preventDefault();
+
+      const response = await this.usbManagerTest_.addDeviceForTesting(
           $('test-device-name').value, $('test-device-serial').value,
-          $('test-device-landing-page').value)
-      .then(function(response) {
-        if (response.success)
-          refreshDeviceList();
-        $('add-test-device-result').textContent = response.message;
-        $('add-test-device-result').className =
-            response.success ? 'action-success' : 'action-failure';
-      });
-  event.preventDefault();
-}
+          $('test-device-landing-page').value);
+      if (response.success) {
+        this.refreshTestDeviceList();
+      }
 
-document.addEventListener('DOMContentLoaded', function() {
-  pageHandler = new mojom.UsbInternalsPageHandlerPtr;
-  Mojo.bindInterface(
-      mojom.UsbInternalsPageHandler.name, mojo.makeRequest(pageHandler).handle);
+      $('add-test-device-result').textContent = response.message;
+      $('add-test-device-result').className =
+          response.success ? 'action-success' : 'action-failure';
+    }
+  }
 
-  $('add-test-device-form').addEventListener('submit', addTestDevice);
-  refreshDeviceList();
+  return {
+    UsbInternals,
+  };
 });
-})();
+
+window.setupFn = window.setupFn || function() {
+  return Promise.resolve();
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+  const usbInternalsPage = new usb_internals.UsbInternals();
+  usbInternalsPage.initializeViews();
+});

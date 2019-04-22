@@ -30,17 +30,16 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_DYNAMICS_COMPRESSOR_KERNEL_H_
 
 #include <memory>
+#include "base/macros.h"
 #include "third_party/blink/renderer/platform/audio/audio_array.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
 class PLATFORM_EXPORT DynamicsCompressorKernel {
   DISALLOW_NEW();
-  WTF_MAKE_NONCOPYABLE(DynamicsCompressorKernel);
 
  public:
   DynamicsCompressorKernel(float sample_rate, unsigned number_of_channels);
@@ -135,6 +134,9 @@ class PLATFORM_EXPORT DynamicsCompressorKernel {
 
   // Internal parameter for the knee portion of the curve.
   float knee_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DynamicsCompressorKernel);
 };
 
 }  // namespace blink

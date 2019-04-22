@@ -9,8 +9,6 @@
 #define GrRenderTargetContext_DEFINED
 
 #include "../private/GrRenderTargetProxy.h"
-#include "GrContext.h"
-#include "GrContextPriv.h"
 #include "GrPaint.h"
 #include "GrSurfaceContext.h"
 #include "GrTypesPriv.h"
@@ -18,6 +16,7 @@
 #include "SkCanvas.h"
 #include "SkDrawable.h"
 #include "SkRefCnt.h"
+#include "SkSurface.h"
 #include "SkSurfaceProps.h"
 #include "text/GrTextTarget.h"
 
@@ -28,6 +27,7 @@ class GrCoverageCountingPathRenderer;
 class GrDrawingManager;
 class GrDrawOp;
 class GrFixedClip;
+class GrOp;
 class GrRenderTarget;
 class GrRenderTargetContextPriv;
 class GrRenderTargetOpList;
@@ -110,12 +110,16 @@ public:
      * @param rectToDraw   the rectangle to draw
      * @param localRect    the rectangle of shader coordinates applied to rectToDraw
      */
-    void fillRectToRect(const GrClip&,
+    void fillRectToRect(const GrClip& clip,
                         GrPaint&& paint,
-                        GrAA,
+                        GrAA aa,
                         const SkMatrix& viewMatrix,
                         const SkRect& rectToDraw,
-                        const SkRect& localRect);
+                        const SkRect& localRect) {
+        this->fillRectWithEdgeAA(clip, std::move(paint), aa,
+                                 aa == GrAA::kYes ? GrQuadAAFlags::kAll : GrQuadAAFlags::kNone,
+                                 viewMatrix, rectToDraw, &localRect);
+    }
 
     /**
      * Fills a rect with a paint and a localMatrix.
@@ -127,6 +131,32 @@ public:
                                  const SkRect& rect,
                                  const SkMatrix& localMatrix);
 
+    /**
+     * Creates an op that draws a fill rect with per-edge control over anti-aliasing.
+     *
+     * This is a specialized version of fillQuadWithEdgeAA, but is kept separate since knowing
+     * the geometry is a rectangle affords more optimizations.
+     */
+    void fillRectWithEdgeAA(const GrClip& clip, GrPaint&& paint, GrAA aa, GrQuadAAFlags edgeAA,
+                            const SkMatrix& viewMatrix, const SkRect& rect,
+                            const SkRect* optionalLocalRect = nullptr);
+
+    /**
+     * Similar to fillRectWithEdgeAA but draws an arbitrary 2D convex quadrilateral transformed
+     * by 'viewMatrix', with per-edge control over anti-aliasing. The quad should follow the
+     * ordering used by SkRect::toQuad(), which determines how the edge AA is applied:
+     *  - "top" = points [0] and [1]
+     *  - "right" = points[1] and [2]
+     *  - "bottom" = points[2] and [3]
+     *  - "left" = points[3] and [0]
+     *
+     * The last argument, 'optionalLocalQuad', can be null if no separate local coordinates are
+     * necessary.
+     */
+    void fillQuadWithEdgeAA(const GrClip& clip, GrPaint&& paint, GrAA aa, GrQuadAAFlags edgeAA,
+                            const SkMatrix& viewMatrix, const SkPoint quad[4],
+                            const SkPoint optionalLocalQuad[4]);
+
     /** Used with drawQuadSet */
     struct QuadSetEntry {
         SkRect fRect;
@@ -135,6 +165,7 @@ public:
         GrQuadAAFlags fAAFlags;
     };
 
+    // TODO(michaelludwig) - remove if the bulk API is not useful for SkiaRenderer
     void drawQuadSet(const GrClip& clip, GrPaint&& paint, GrAA aa, const SkMatrix& viewMatrix,
                      const QuadSetEntry[], int cnt);
 
@@ -145,23 +176,40 @@ public:
      * device space.
      */
     void drawTexture(const GrClip& clip, sk_sp<GrTextureProxy>, GrSamplerState::Filter,
-                     const SkPMColor4f&, const SkRect& srcRect, const SkRect& dstRect,
-                     GrQuadAAFlags, SkCanvas::SrcRectConstraint, const SkMatrix& viewMatrix,
-                     sk_sp<GrColorSpaceXform> texXform);
+                     SkBlendMode mode, const SkPMColor4f&, const SkRect& srcRect,
+                     const SkRect& dstRect, GrAA, GrQuadAAFlags, SkCanvas::SrcRectConstraint,
+                     const SkMatrix& viewMatrix, sk_sp<GrColorSpaceXform> texXform);
+
+    /**
+     * Variant of drawTexture that instead draws the texture applied to 'dstQuad' transformed by
+     * 'viewMatrix', using the 'srcQuad' texture coordinates clamped to the optional 'domain'. If
+     * 'domain' is null, it's equivalent to using the fast src rect constraint. If 'domain' is
+     * provided, the strict src rect constraint is applied using 'domain'.
+     */
+    void drawTextureQuad(const GrClip& clip, sk_sp<GrTextureProxy>, GrSamplerState::Filter,
+                         SkBlendMode mode, const SkPMColor4f&, const SkPoint srcQuad[4],
+                         const SkPoint dstQuad[4], GrAA, GrQuadAAFlags, const SkRect* domain,
+                         const SkMatrix& viewMatrix, sk_sp<GrColorSpaceXform> texXform);
 
     /** Used with drawTextureSet */
     struct TextureSetEntry {
         sk_sp<GrTextureProxy> fProxy;
         SkRect fSrcRect;
         SkRect fDstRect;
+        const SkPoint* fDstClipQuad; // Must be null, or point to an array of 4 points
+        const SkMatrix* fPreViewMatrix; // If not null, entry's CTM is 'viewMatrix' * fPreViewMatrix
         float fAlpha;
         GrQuadAAFlags fAAFlags;
     };
     /**
      * Draws a set of textures with a shared filter, color, view matrix, color xform, and
      * texture color xform. The textures must all have the same GrTextureType and GrConfig.
+     *
+     * If any entries provide a non-null fDstClip array, it will be read from immediately based on
+     * fDstClipCount, so the pointer can become invalid after this returns.
      */
     void drawTextureSet(const GrClip&, const TextureSetEntry[], int cnt, GrSamplerState::Filter,
+                        SkBlendMode mode, GrAA aa, SkCanvas::SrcRectConstraint,
                         const SkMatrix& viewMatrix, sk_sp<GrColorSpaceXform> texXform);
 
     /**
@@ -358,39 +406,32 @@ public:
      * After this returns any pending surface IO will be issued to the backend 3D API and
      * if the surface has MSAA it will be resolved.
      */
-    GrSemaphoresSubmitted prepareForExternalIO(int numSemaphores,
-                                               GrBackendSemaphore backendSemaphores[]);
+    GrSemaphoresSubmitted flush(SkSurface::BackendSurfaceAccess access, const GrFlushInfo&);
 
     /**
      *  The next time this GrRenderTargetContext is flushed, the gpu will wait on the passed in
      *  semaphores before executing any commands.
      */
-    bool waitOnSemaphores(int numSemaphores, const GrBackendSemaphore* waitSemaphores);
+    bool waitOnSemaphores(int numSemaphores, const GrBackendSemaphore waitSemaphores[]);
 
     void insertEventMarker(const SkString&);
 
     GrFSAAType fsaaType() const { return fRenderTargetProxy->fsaaType(); }
-    const GrCaps* caps() const { return fContext->contextPriv().caps(); }
+    const GrCaps* caps() const;
     int width() const { return fRenderTargetProxy->width(); }
     int height() const { return fRenderTargetProxy->height(); }
     int numColorSamples() const { return fRenderTargetProxy->numColorSamples(); }
     int numStencilSamples() const { return fRenderTargetProxy->numStencilSamples(); }
     const SkSurfaceProps& surfaceProps() const { return fSurfaceProps; }
     GrSurfaceOrigin origin() const { return fRenderTargetProxy->origin(); }
+    bool wrapsVkSecondaryCB() const { return fRenderTargetProxy->wrapsVkSecondaryCB(); }
     GrMipMapped mipMapped() const;
-
-    bool wasAbandoned() const;
 
     void setNeedsStencil() { fRenderTargetProxy->setNeedsStencil(); }
 
-    GrRenderTarget* accessRenderTarget() {
-        // TODO: usage of this entry point needs to be reduced and potentially eliminated
-        // since it ends the deferral of the GrRenderTarget's allocation
-        if (!fRenderTargetProxy->instantiate(fContext->contextPriv().resourceProvider())) {
-            return nullptr;
-        }
-        return fRenderTargetProxy->peekRenderTarget();
-    }
+    // This entry point should only be called if the backing GPU object is known to be
+    // instantiated.
+    GrRenderTarget* accessRenderTarget() { return fRenderTargetProxy->peekRenderTarget(); }
 
     GrSurfaceProxy* asSurfaceProxy() override { return fRenderTargetProxy.get(); }
     const GrSurfaceProxy* asSurfaceProxy() const override { return fRenderTargetProxy.get(); }
@@ -414,18 +455,16 @@ public:
     bool isWrapped_ForTesting() const;
 
 protected:
-    GrRenderTargetContext(GrContext*, GrDrawingManager*, sk_sp<GrRenderTargetProxy>,
-                          sk_sp<SkColorSpace>, const SkSurfaceProps*, GrAuditTrail*,
-                          GrSingleOwner*, bool managedOpList = true);
+    GrRenderTargetContext(GrRecordingContext*, sk_sp<GrRenderTargetProxy>,
+                          sk_sp<SkColorSpace>, const SkSurfaceProps*,
+                          bool managedOpList = true);
 
     SkDEBUGCODE(void validate() const override;)
 
 private:
     class TextTarget;
 
-    inline GrAAType chooseAAType(GrAA aa, GrAllowMixedSamples allowMixedSamples) {
-        return GrChooseAAType(aa, this->fsaaType(), allowMixedSamples, *this->caps());
-    }
+    GrAAType chooseAAType(GrAA);
 
     friend class GrAtlasTextBlob;               // for access to add[Mesh]DrawOp
     friend class GrClipStackClip;               // for access to getOpList
@@ -452,6 +491,7 @@ private:
                              sk_sp<GrTextureProxy>);
 
     void internalClear(const GrFixedClip&, const SkPMColor4f&, CanClearFullscreen);
+    void internalStencilClear(const GrFixedClip&, bool insideStencilMask);
 
     // Only consumes the GrPaint if successful.
     bool drawFilledDRRect(const GrClip& clip,
@@ -461,13 +501,19 @@ private:
                           const SkRRect& origOuter,
                           const SkRRect& origInner);
 
-    // Only consumes the GrPaint if successful.
-    bool drawFilledRect(const GrClip& clip,
+    void drawFilledRect(const GrClip& clip,
                         GrPaint&& paint,
                         GrAA,
                         const SkMatrix& viewMatrix,
                         const SkRect& rect,
-                        const GrUserStencilSettings* ss);
+                        const GrUserStencilSettings* ss = nullptr);
+
+    // Only consumes the GrPaint if successful.
+    bool drawFilledRectAsClear(const GrClip& clip,
+                               GrPaint&& paint,
+                               GrAA aa,
+                               const SkMatrix& viewMatrix,
+                               const SkRect& rect);
 
     void drawShapeUsingPathRenderer(const GrClip&, GrPaint&&, GrAA, const SkMatrix&,
                                     const GrShape&);

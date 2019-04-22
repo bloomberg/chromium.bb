@@ -4,6 +4,7 @@
 
 #include "ui/wm/core/window_util.h"
 
+#include "base/bind.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/dip_util.h"
@@ -77,11 +78,11 @@ bool IsActiveWindow(const aura::Window* window) {
   return client && client->GetActiveWindow() == window;
 }
 
-bool CanActivateWindow(aura::Window* window) {
+bool CanActivateWindow(const aura::Window* window) {
   DCHECK(window);
   if (!window->GetRootWindow())
     return false;
-  ActivationClient* client = GetActivationClient(window->GetRootWindow());
+  const ActivationClient* client = GetActivationClient(window->GetRootWindow());
   return client && client->CanActivateWindow(window);
 }
 
@@ -118,7 +119,7 @@ void SetWindowFullscreen(aura::Window* window, bool fullscreen) {
   }
 }
 
-bool WindowStateIs(aura::Window* window, ui::WindowShowState state) {
+bool WindowStateIs(const aura::Window* window, ui::WindowShowState state) {
   return window->GetProperty(aura::client::kShowStateKey) == state;
 }
 
@@ -140,7 +141,12 @@ aura::Window* GetActivatableWindow(aura::Window* window) {
 }
 
 aura::Window* GetToplevelWindow(aura::Window* window) {
-  ActivationClient* client = GetActivationClient(window->GetRootWindow());
+  return const_cast<aura::Window*>(
+      GetToplevelWindow(const_cast<const aura::Window*>(window)));
+}
+
+const aura::Window* GetToplevelWindow(const aura::Window* window) {
+  const ActivationClient* client = GetActivationClient(window->GetRootWindow());
   return client ? client->GetToplevelWindow(window) : NULL;
 }
 
@@ -178,7 +184,7 @@ aura::Window* GetTransientParent(aura::Window* window) {
 const aura::Window* GetTransientParent(const aura::Window* window) {
   const TransientWindowManager* manager =
       TransientWindowManager::GetIfExists(window);
-  return manager ? manager->transient_parent() : NULL;
+  return manager ? manager->transient_parent() : nullptr;
 }
 
 const std::vector<aura::Window*>& GetTransientChildren(
@@ -190,6 +196,12 @@ const std::vector<aura::Window*>& GetTransientChildren(
 
   static std::vector<aura::Window*>* shared = new std::vector<aura::Window*>;
   return *shared;
+}
+
+aura::Window* GetTransientRoot(aura::Window* window) {
+  while (window && GetTransientParent(window))
+    window = GetTransientParent(window);
+  return window;
 }
 
 void AddTransientChild(aura::Window* parent, aura::Window* child) {

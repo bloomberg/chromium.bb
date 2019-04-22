@@ -49,8 +49,18 @@ AutofillProfileValidator* TestAutofillProfileValidator::GetInstance() {
   return &(instance.Get().autofill_profile_validator_);
 }
 
+// static
+TestAutofillProfileValidatorDelayed*
+TestAutofillProfileValidator::GetDelayedInstance() {
+  static base::LazyInstance<TestAutofillProfileValidator>::DestructorAtExit
+      instance = LAZY_INSTANCE_INITIALIZER;
+  return &(instance.Get().autofill_profile_validator_delayed_);
+}
+
 TestAutofillProfileValidator::TestAutofillProfileValidator()
-    : autofill_profile_validator_(GetInputSource(), GetInputStorage()) {}
+    : autofill_profile_validator_(GetInputSource(), GetInputStorage()),
+      autofill_profile_validator_delayed_(GetInputSource(), GetInputStorage()) {
+}
 
 TestAutofillProfileValidator::~TestAutofillProfileValidator() {}
 

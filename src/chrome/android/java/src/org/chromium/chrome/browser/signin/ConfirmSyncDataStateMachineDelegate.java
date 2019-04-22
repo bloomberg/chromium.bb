@@ -65,7 +65,7 @@ public class ConfirmSyncDataStateMachineDelegate {
                 dismiss();
             }
 
-            return new AlertDialog.Builder(getActivity(), R.style.SigninAlertDialogTheme)
+            return new AlertDialog.Builder(getActivity(), R.style.Theme_Chromium_AlertDialog)
                     .setView(R.layout.signin_progress_bar_dialog)
                     .setNegativeButton(R.string.cancel, (dialog, i) -> dialog.cancel())
                     .create();
@@ -107,7 +107,7 @@ public class ConfirmSyncDataStateMachineDelegate {
                 dismiss();
             }
 
-            return new AlertDialog.Builder(getActivity(), R.style.SigninAlertDialogTheme)
+            return new AlertDialog.Builder(getActivity(), R.style.Theme_Chromium_AlertDialog)
                     .setTitle(R.string.sign_in_timeout_title)
                     .setMessage(R.string.sign_in_timeout_message)
                     .setNegativeButton(R.string.cancel, (dialog, which) -> dialog.cancel())

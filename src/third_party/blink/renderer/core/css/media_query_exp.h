@@ -53,7 +53,7 @@ struct MediaQueryExpValue {
   bool is_ratio;
 
   MediaQueryExpValue()
-      : id(CSSValueInvalid),
+      : id(CSSValueID::kInvalid),
         value(0),
         unit(CSSPrimitiveValue::UnitType::kUnknown),
         numerator(0),

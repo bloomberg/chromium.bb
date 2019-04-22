@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_text_button_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
 
@@ -114,7 +115,7 @@ void ChromeTableViewControllerTest::CheckSectionFooterWithId(
   CheckSectionFooter(l10n_util::GetNSString(expected_text_id), section);
 }
 
-// TODO(crbug.com/894791): There are some unittests that are using
+// TODO(crbug.com/894800): There are some unittests that are using
 // CheckTextCellText to check Item with both "text" and "detailText". Change all
 // of them to CheckTextCellTextAndDetailText when the migration is finished.
 void ChromeTableViewControllerTest::CheckTextCellText(NSString* expected_text,
@@ -185,6 +186,23 @@ void ChromeTableViewControllerTest::CheckAccessoryType(
   id text_item = GetTableViewItem(section, item);
   EXPECT_TRUE([text_item respondsToSelector:@selector(accessoryType)]);
   EXPECT_EQ(accessory_type, [text_item accessoryType]);
+}
+
+void ChromeTableViewControllerTest::CheckTextButtonCellButtonText(
+    NSString* expected_button_text,
+    int section,
+    int item) {
+  id text_button_item = GetTableViewItem(section, item);
+  ASSERT_TRUE([text_button_item respondsToSelector:@selector(buttonText)]);
+  EXPECT_NSEQ(expected_button_text, [text_button_item buttonText]);
+}
+
+void ChromeTableViewControllerTest::CheckTextButtonCellButtonTextWithId(
+    int expected_button_text_id,
+    int section,
+    int item) {
+  CheckTextButtonCellButtonText(l10n_util::GetNSString(expected_button_text_id),
+                                section, item);
 }
 
 void ChromeTableViewControllerTest::DeleteItem(

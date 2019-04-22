@@ -777,13 +777,47 @@ def _Emerge(device, pkg_path, root, extra_args=None):
     cmd.append(extra_args)
 
   try:
-    device.RunCommand(cmd, extra_env=extra_env, remote_sudo=True,
-                      capture_output=False, debug_level=logging.INFO)
+    result = device.RunCommand(cmd, extra_env=extra_env, remote_sudo=True,
+                               capture_output=True, debug_level=logging.INFO)
+
+    pattern = ('A requested package will not be merged because '
+               'it is listed in package.provided')
+    output = result.error.replace('\n', ' ').replace('\r', '')
+    if pattern in output:
+      error = ('Package failed to emerge: %s\n'
+               'Remove %s from /etc/portage/make.profile/'
+               'package.provided/chromeos-base.packages\n'
+               '(also see crbug.com/920140 for more context)\n'
+               % (pattern, pkg_name))
+      cros_build_lib.Die(error)
   except Exception:
     logging.error('Failed to emerge package %s', pkg_name)
     raise
   else:
     logging.notice('%s has been installed.', pkg_name)
+
+
+def _SetSELinuxPermissive(device):
+  """Set SELinux to permissive on target device.
+
+  Args:
+    device: A ChromiumOSDevice object.
+  """
+  try:
+    enforce = device.CatFile('/sys/fs/selinux/enforce', max_size=None)
+    # See if SELinux is already disabled.
+    if enforce.strip() == '0':
+      return
+  except remote_access.CatFileError:
+    # Assume SELinux is not enabled.
+    return
+  device.RunCommand(['setenforce', '0'], remote_sudo=True)
+  device.RunCommand(['sed', '-i', 's/SELINUX=.*/SELINUX=permissive/',
+                     '/etc/selinux/config'], remote_sudo=True)
+  logging.notice('SELinux is set to permissive(crbug.com/932156). '
+                 'Use build_image to test whether the change works '
+                 'with current SELinux policy, or to test SELinux-'
+                 'related changes.')
 
 
 def _GetPackagesByCPV(cpvs, strip, sysroot):
@@ -827,30 +861,16 @@ def _GetPackagesByCPV(cpvs, strip, sysroot):
 def _GetPackagesPaths(pkgs, strip, sysroot):
   """Returns paths to binary |pkgs|.
 
-  Each package argument may be specified as a filename, in which case it is
-  returned as-is, or it may be a CPV value, in which case it is stripped (if
-  instructed) and a path to it is returned.
-
   Args:
-    pkgs: List of package arguments.
+    pkgs: List of package CPVs string.
     strip: Whether or not to run strip_package for CPV packages.
     sysroot: The sysroot path.
 
   Returns:
     List of paths corresponding to |pkgs|.
   """
-  indexes = []
-  cpvs = []
-  for i, pkg in enumerate(pkgs):
-    if not os.path.isfile(pkg):
-      indexes.append(i)
-      cpvs.append(portage_util.SplitCPV(pkg))
-
-  cpv_paths = cpvs and _GetPackagesByCPV(cpvs, strip, sysroot)
-  paths = list(pkgs)
-  for i, cpv_path in zip(indexes, cpv_paths):
-    paths[i] = cpv_path
-  return paths
+  cpvs = [portage_util.SplitCPV(p) for p in pkgs]
+  return _GetPackagesByCPV(cpvs, strip, sysroot)
 
 
 def _Unmerge(device, pkg, root):
@@ -1005,6 +1025,8 @@ def Deploy(device, packages, board=None, emerge=True, update=False, deep=False,
         op.Run(func, log_level=logging.DEBUG)
       else:
         func()
+
+      _SetSELinuxPermissive(device)
 
       logging.warning('Please restart any updated services on the device, '
                       'or just reboot it.')

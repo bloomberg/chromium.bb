@@ -22,19 +22,13 @@
   return UIEdgeInsetsZero;
 }
 
-- (NSArray<SnapshotOverlay*>*)snapshotGenerator:
-                                  (SnapshotGenerator*)snapshotGenerator
-                    snapshotOverlaysForWebState:(web::WebState*)webState {
+- (NSArray<UIView*>*)snapshotGenerator:(SnapshotGenerator*)snapshotGenerator
+           snapshotOverlaysForWebState:(web::WebState*)webState {
   return nil;
 }
 
 - (void)snapshotGenerator:(SnapshotGenerator*)snapshotGenerator
     willUpdateSnapshotForWebState:(web::WebState*)webState {
-}
-
-- (void)snapshotGenerator:(SnapshotGenerator*)snapshotGenerator
-    didUpdateSnapshotForWebState:(web::WebState*)webState
-                       withImage:(UIImage*)snapshot {
 }
 
 - (UIView*)snapshotGenerator:(SnapshotGenerator*)snapshotGenerator

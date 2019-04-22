@@ -4,6 +4,7 @@
 
 #include <stdint.h>
 
+#include "base/test/test_simple_task_runner.h"
 #include "gpu/ipc/common/command_buffer_id.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "gpu/ipc/service/gpu_channel.h"
@@ -12,7 +13,11 @@
 
 namespace gpu {
 
-class GpuChannelTest : public GpuChannelTestCommon {};
+class GpuChannelTest : public GpuChannelTestCommon {
+ public:
+  GpuChannelTest() : GpuChannelTestCommon(true /* use_stub_bindings */) {}
+  ~GpuChannelTest() override = default;
+};
 
 #if defined(OS_WIN)
 const SurfaceHandle kFakeSurfaceHandle = reinterpret_cast<SurfaceHandle>(1);
@@ -234,16 +239,55 @@ TEST_F(GpuChannelTest, CreateFailsIfSharedContextIsLost) {
 class GpuChannelExitForContextLostTest : public GpuChannelTestCommon {
  public:
   GpuChannelExitForContextLostTest()
-      : GpuChannelTestCommon({EXIT_ON_CONTEXT_LOST}) {}
+      : GpuChannelTestCommon({EXIT_ON_CONTEXT_LOST} /* enabled_workarounds */,
+                             true /* use_stub_bindings */) {}
 };
 
-TEST_F(GpuChannelExitForContextLostTest, CreateFailsDuringLostContextShutdown) {
+TEST_F(GpuChannelExitForContextLostTest,
+       CreateFailsDuringLostContextShutdown_1) {
   int32_t kClientId = 1;
   GpuChannel* channel = CreateChannel(kClientId, false);
   ASSERT_TRUE(channel);
 
   // Put channel manager into shutdown state.
-  channel_manager()->MaybeExitOnContextLost();
+  channel_manager()->OnContextLost(false /* synthetic_loss */);
+
+  // Calling OnContextLost() above may destroy the gpu channel via post task.
+  // Ensure that post task has happened.
+  task_runner()->RunPendingTasks();
+
+  // If the channel is destroyed, then skip the test.
+  if (!channel_manager()->LookupChannel(kClientId))
+    return;
+
+  // Try to create a context.
+  int32_t kRouteId =
+      static_cast<int32_t>(GpuChannelReservedRoutes::kMaxValue) + 1;
+  GPUCreateCommandBufferConfig init_params;
+  init_params.surface_handle = kNullSurfaceHandle;
+  init_params.share_group_id = MSG_ROUTING_NONE;
+  init_params.stream_id = 0;
+  init_params.stream_priority = SchedulingPriority::kNormal;
+  init_params.attribs = ContextCreationAttribs();
+  init_params.active_url = GURL();
+  gpu::ContextResult result = gpu::ContextResult::kSuccess;
+  gpu::Capabilities capabilities;
+  HandleMessage(channel, new GpuChannelMsg_CreateCommandBuffer(
+                             init_params, kRouteId, GetSharedMemoryRegion(),
+                             &result, &capabilities));
+  EXPECT_EQ(result, gpu::ContextResult::kTransientFailure);
+  EXPECT_FALSE(channel->LookupCommandBuffer(kRouteId));
+}
+
+TEST_F(GpuChannelExitForContextLostTest,
+       CreateFailsDuringLostContextShutdown_2) {
+  // Put channel manager into shutdown state. Do this before creating a channel,
+  // as doing this may destroy any active channels.
+  channel_manager()->OnContextLost(false /* synthetic_loss */);
+
+  int32_t kClientId = 1;
+  GpuChannel* channel = CreateChannel(kClientId, false);
+  ASSERT_TRUE(channel);
 
   // Try to create a context.
   int32_t kRouteId =

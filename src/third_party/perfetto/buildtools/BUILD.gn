@@ -57,6 +57,8 @@ config("libunwindstack_config") {
     rebase_path("android-core/libprocinfo/include", root_build_dir),
     "-isystem",
     rebase_path("android-core/base/include", root_build_dir),
+    "-isystem",
+    rebase_path("android-core/demangle/include", root_build_dir),
   ]
   if (is_android) {
     cflags += [
@@ -64,6 +66,7 @@ config("libunwindstack_config") {
       rebase_path("bionic/libc/include", root_build_dir),
     ]
   }
+  defines = [ "NO_LIBDEXFILE_SUPPORT" ]
 }
 
 # Config to include gtest.h in test targets.
@@ -684,13 +687,13 @@ source_set("libunwindstack") {
   deps = [
     ":lzma",
   ]
-  defines = [ "NO_LIBDEXFILE_SUPPORT" ]
   sources = [
     "android-core/base/file.cpp",
     "android-core/base/logging.cpp",
     "android-core/base/stringprintf.cpp",
     "android-core/base/strings.cpp",
     "android-core/base/threads.cpp",
+    "android-core/demangle/Demangler.cpp",
     "android-core/libunwindstack/ArmExidx.cpp",
     "android-core/libunwindstack/DwarfCfa.cpp",
     "android-core/libunwindstack/DwarfEhFrameWithHdr.cpp",

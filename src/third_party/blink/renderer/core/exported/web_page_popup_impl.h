@@ -44,8 +44,6 @@ class Layer;
 }
 
 namespace blink {
-
-class CompositorAnimationHost;
 class Page;
 class PagePopupChromeClient;
 class PagePopupClient;
@@ -61,40 +59,64 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
 
  public:
   ~WebPagePopupImpl() override;
+
   void Initialize(WebViewImpl*, PagePopupClient*);
+
+  // Cancel informs the PopupClient that it should initiate shutdown of this
+  // popup via ClosePopup(). It is called to indicate the popup was closed due
+  // to a user gesture outside the popup or other such reasons, where a default
+  // cancelled response can be made.
+  //
+  // When the user chooses a value in the popup and thus it is closed, or if the
+  // origin in the DOM disppears, then the Cancel() step would be skipped and go
+  // directly to ClosePopup().
+  void Cancel();
+  // Once ClosePopup() has been called, the WebPagePopupImpl should be disowned
+  // by any clients, and will be reaped when then browser closes its
+  // RenderWidget which closes this object. This will call back to the
+  // PopupClient to say DidClosePopup(), and to the WebViewImpl to cleanup
+  // its reference to the popup.
+  //
+  // Only HasSamePopupClient() may still be called after ClosePopup() runs.
   void ClosePopup();
-  WebWidgetClient* WidgetClient() const { return widget_client_; }
+
+  // Returns whether another WebPagePopupImpl has the same PopupClient as this
+  // instance. May be called after ClosePopup() has run still, in order to
+  // determine if a popup sharing the same client was created immediately after
+  // closing one.
   bool HasSamePopupClient(WebPagePopupImpl* other) {
     return other && popup_client_ == other->popup_client_;
   }
+
+  WebWidgetClient* WidgetClient() const { return web_page_popup_client_; }
+
   LocalDOMWindow* Window();
-  void LayoutAndPaintAsync(base::OnceClosure callback) override;
-  void CompositeAndReadbackAsync(
-      base::OnceCallback<void(const SkBitmap&)> callback) override;
-  WebPoint PositionRelativeToOwner() override;
-  void PostMessageToPopup(const String& message) override;
-  void Cancel();
 
-  // PageWidgetEventHandler functions.
-  WebInputEventResult HandleKeyEvent(const WebKeyboardEvent&) override;
-
+  // WebWidget implementation.
   WebInputEventResult DispatchBufferedTouchEvents() override;
 
+  // WebPagePopup implementation.
+  WebPoint PositionRelativeToOwner() override;
+  WebPagePopupClient* GetClientForTesting() const override;
+
+  // PagePopup implementation.
+  void PostMessageToPopup(const String& message) override;
+
+  // PageWidgetEventHandler implementation.
+  WebInputEventResult HandleKeyEvent(const WebKeyboardEvent&) override;
+
  private:
-  // WebWidget functions
-  void SetLayerTreeView(WebLayerTreeView*) override;
+  // WebWidget implementation.
+  void SetLayerTreeView(WebLayerTreeView*, cc::AnimationHost*) override;
   void SetSuppressFrameRequestsWorkaroundFor704763Only(bool) final;
-  void BeginFrame(base::TimeTicks last_frame_time) override;
+  void BeginFrame(base::TimeTicks last_frame_time,
+                  bool record_main_frame_metrics) override;
   void UpdateLifecycle(LifecycleUpdate requested_update,
-                       LifecycleUpdateReason reason /* Not used */) override;
-  void UpdateAllLifecyclePhasesAndCompositeForTesting(bool do_raster) override;
-  void WillCloseLayerTreeView() override;
-  void PaintContent(cc::PaintCanvas*, const WebRect&) override;
+                       LifecycleUpdateReason reason) override;
   void Resize(const WebSize&) override;
   void Close() override;
   WebInputEventResult HandleInputEvent(const WebCoalescedInputEvent&) override;
   void SetFocus(bool) override;
-  bool IsPagePopup() const override { return true; }
   bool IsAcceleratedCompositingActive() const override {
     return is_accelerated_compositing_active_;
   }
@@ -117,13 +139,13 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
   AXObject* RootAXObject() override;
   void SetWindowRect(const IntRect&) override;
 
-  explicit WebPagePopupImpl(WebWidgetClient*);
+  explicit WebPagePopupImpl(WebPagePopupClient*);
   void DestroyPage();
-  void SetRootLayer(cc::Layer*);
+  void SetRootLayer(scoped_refptr<cc::Layer>);
 
   WebRect WindowRectInScreen() const;
 
-  WebWidgetClient* widget_client_;
+  WebPagePopupClient* web_page_popup_client_;
   WebViewImpl* web_view_;
   // WebPagePopupImpl wraps its own Page that renders the content in the popup.
   // This member is non-null between the call to Initialize() and the call to
@@ -136,8 +158,9 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
   bool closing_ = false;
 
   WebLayerTreeView* layer_tree_view_ = nullptr;
+  cc::AnimationHost* animation_host_ = nullptr;
   scoped_refptr<cc::Layer> root_layer_;
-  std::unique_ptr<CompositorAnimationHost> animation_host_;
+  base::TimeTicks raf_aligned_input_start_time_;
   bool is_accelerated_compositing_active_ = false;
 
   friend class WebPagePopup;
@@ -146,13 +169,9 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
   DISALLOW_COPY_AND_ASSIGN(WebPagePopupImpl);
 };
 
-DEFINE_TYPE_CASTS(WebPagePopupImpl,
-                  WebWidget,
-                  widget,
-                  widget->IsPagePopup(),
-                  widget.IsPagePopup());
-// WebPagePopupImpl is the only implementation of PagePopup, so no
-// further checking required.
+// WebPagePopupImpl is the only implementation of WebPagePopup and PagePopup, so
+// no further checking required.
+DEFINE_TYPE_CASTS(WebPagePopupImpl, WebPagePopup, widget, true, true);
 DEFINE_TYPE_CASTS(WebPagePopupImpl, PagePopup, popup, true, true);
 
 }  // namespace blink

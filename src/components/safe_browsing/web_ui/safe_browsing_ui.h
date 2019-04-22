@@ -28,6 +28,12 @@ class SafeBrowsingUIHandler : public content::WebUIMessageHandler {
   SafeBrowsingUIHandler(content::BrowserContext* context);
   ~SafeBrowsingUIHandler() override;
 
+  // Callback when Javascript becomes allowed in the WebUI.
+  void OnJavascriptAllowed() override;
+
+  // Callback when Javascript becomes disallowed in the WebUI.
+  void OnJavascriptDisallowed() override;
+
   // Get the experiments that are currently enabled per Chrome instance.
   void GetExperiments(const base::ListValue* args);
 
@@ -188,6 +194,11 @@ class WebUIInfoSingleton {
   // Clear the log messages.
   void ClearLogMessages();
 
+  // Notify listeners of changes to the log messages. Static to avoid this being
+  // called after the destruction of the WebUIInfoSingleton
+  static void NotifyLogMessageListeners(const base::Time& timestamp,
+                                        const std::string& message);
+
   // Register the new WebUI listener object.
   void RegisterWebUIInstance(SafeBrowsingUIHandler* webui);
 
@@ -251,6 +262,8 @@ class WebUIInfoSingleton {
     return log_messages_;
   }
 
+  void AddListenerForTesting() { has_test_listener_ = true; }
+
  private:
   WebUIInfoSingleton();
   ~WebUIInfoSingleton();
@@ -300,6 +313,9 @@ class WebUIInfoSingleton {
 
   // The current referrer chain provider, if any. Can be nullptr.
   ReferrerChainProvider* referrer_chain_provider_ = nullptr;
+
+  // Whether there is a test listener.
+  bool has_test_listener_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WebUIInfoSingleton);
 };

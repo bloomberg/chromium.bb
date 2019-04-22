@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_number_conversions.h"
@@ -13,8 +14,14 @@
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/blob_reader.h"
 #include "extensions/browser/extensions_browser_client.h"
-#include "extensions/common/extensions_client.h"
 #include "net/base/network_change_notifier.h"
+
+#if defined(OS_CHROMEOS)
+#include "ash/public/interfaces/assistant_controller.mojom.h"
+#include "ash/public/interfaces/constants.mojom.h"
+#include "extensions/browser/api/feedback_private/log_source_access_manager.h"
+#include "services/service_manager/public/cpp/connector.h"
+#endif  // defined(OS_CHROMEOS)
 
 using content::BrowserThread;
 using feedback::FeedbackData;
@@ -30,9 +37,10 @@ void FeedbackService::SendFeedback(scoped_refptr<FeedbackData> feedback_data,
                                    const SendFeedbackCallback& callback) {
   feedback_data->set_locale(
       ExtensionsBrowserClient::Get()->GetApplicationLocale());
-  feedback_data->set_user_agent(ExtensionsClient::Get()->GetUserAgent());
+  feedback_data->set_user_agent(ExtensionsBrowserClient::Get()->GetUserAgent());
 
   if (!feedback_data->attached_file_uuid().empty()) {
+    VLOG(1) << "Attaching file to the report.";
     // Self-deleting object.
     BlobReader* attached_file_reader =
         new BlobReader(browser_context_, feedback_data->attached_file_uuid(),
@@ -42,6 +50,7 @@ void FeedbackService::SendFeedback(scoped_refptr<FeedbackData> feedback_data,
   }
 
   if (!feedback_data->screenshot_uuid().empty()) {
+    VLOG(1) << "Attaching screenshot to the report.";
     // Self-deleting object.
     BlobReader* screenshot_reader =
         new BlobReader(browser_context_, feedback_data->screenshot_uuid(),
@@ -60,7 +69,7 @@ void FeedbackService::AttachedFileCallback(
     int64_t /* total_blob_length */) {
   feedback_data->set_attached_file_uuid(std::string());
   if (data)
-    feedback_data->AttachAndCompressFileData(std::move(data));
+    feedback_data->AttachAndCompressFileData(std::move(*data));
 
   CompleteSendFeedback(feedback_data, callback);
 }
@@ -72,7 +81,7 @@ void FeedbackService::ScreenshotCallback(
     int64_t /* total_blob_length */) {
   feedback_data->set_screenshot_uuid(std::string());
   if (data)
-    feedback_data->set_image(std::move(data));
+    feedback_data->set_image(std::move(*data));
 
   CompleteSendFeedback(feedback_data, callback);
 }
@@ -92,6 +101,19 @@ void FeedbackService::CompleteSendFeedback(
   const bool screenshot_completed = feedback_data->screenshot_uuid().empty();
 
   if (screenshot_completed && attached_file_completed) {
+    VLOG(1) << "Attachments are ready.";
+#if defined(OS_CHROMEOS)
+    // Send feedback to Assistant server if triggered from Google Assistant.
+    if (feedback_data->from_assistant()) {
+      ash::mojom::AssistantControllerPtr assistant_controller;
+      content::BrowserContext::GetConnectorFor(browser_context_)
+          ->BindInterface(ash::mojom::kServiceName, &assistant_controller);
+      assistant_controller->SendAssistantFeedback(
+          feedback_data->assistant_debug_info_allowed(),
+          feedback_data->description(), feedback_data->image());
+    }
+#endif
+
     // Signal the feedback object that the data from the feedback page has been
     // filled - the object will manage sending of the actual report.
     feedback_data->OnFeedbackPageDataComplete();

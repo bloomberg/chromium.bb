@@ -13,17 +13,22 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <atomic>
 #include <memory>
 
 #include "absl/types/optional.h"
+#include "api/transport/field_trial_based_config.h"
 #include "api/transport/network_types.h"
+#include "api/transport/webrtc_key_value_config.h"
 #include "modules/pacing/bitrate_prober.h"
 #include "modules/pacing/interval_budget.h"
 #include "modules/pacing/pacer.h"
 #include "modules/pacing/round_robin_packet_queue.h"
 #include "modules/rtp_rtcp/include/rtp_rtcp_defines.h"
 #include "modules/utility/include/process_thread.h"
-#include "rtc_base/criticalsection.h"
+#include "rtc_base/critical_section.h"
+#include "rtc_base/deprecation.h"
+#include "rtc_base/experiments/field_trial_parser.h"
 #include "rtc_base/thread_annotations.h"
 
 namespace webrtc {
@@ -66,13 +71,14 @@ class PacedSender : public Pacer {
   // overshoots from the encoder.
   static const float kDefaultPaceMultiplier;
 
-  PacedSender(const Clock* clock,
+  PacedSender(Clock* clock,
               PacketSender* packet_sender,
-              RtcEventLog* event_log);
+              RtcEventLog* event_log,
+              const WebRtcKeyValueConfig* field_trials = nullptr);
 
   ~PacedSender() override;
 
-  virtual void CreateProbeCluster(int bitrate_bps);
+  virtual void CreateProbeCluster(int bitrate_bps, int cluster_id);
 
   // Temporarily pause all sending.
   void Pause();
@@ -117,6 +123,7 @@ class PacedSender : public Pacer {
   virtual int64_t QueueInMs() const;
 
   virtual size_t QueueSizePackets() const;
+  virtual int64_t QueueSizeBytes() const;
 
   // Returns the time when the first packet was sent, or -1 if no packet is
   // sent.
@@ -127,7 +134,7 @@ class PacedSender : public Pacer {
   virtual int64_t ExpectedQueueTimeMs() const;
 
   // Deprecated, alr detection will be moved out of the pacer.
-  virtual absl::optional<int64_t> GetApplicationLimitedRegionStartTime() const;
+  virtual absl::optional<int64_t> GetApplicationLimitedRegionStartTime();
 
   // Returns the number of milliseconds until the module want a worker thread
   // to call Process.
@@ -165,13 +172,16 @@ class PacedSender : public Pacer {
   bool Congested() const RTC_EXCLUSIVE_LOCKS_REQUIRED(critsect_);
   int64_t TimeMilliseconds() const RTC_EXCLUSIVE_LOCKS_REQUIRED(critsect_);
 
-  const Clock* const clock_;
+  Clock* const clock_;
   PacketSender* const packet_sender_;
-  const std::unique_ptr<AlrDetector> alr_detector_ RTC_PT_GUARDED_BY(critsect_);
+  const std::unique_ptr<FieldTrialBasedConfig> fallback_field_trials_;
+  const WebRtcKeyValueConfig* field_trials_;
+  std::unique_ptr<AlrDetector> alr_detector_ RTC_PT_GUARDED_BY(critsect_);
 
   const bool drain_large_queues_;
   const bool send_padding_if_silent_;
-  const bool video_blocks_audio_;
+  const bool pace_audio_;
+  FieldTrialParameter<int> min_packet_limit_ms_;
 
   rtc::CriticalSection critsect_;
   // TODO(webrtc:9716): Remove this when we are certain clocks are monotonic.

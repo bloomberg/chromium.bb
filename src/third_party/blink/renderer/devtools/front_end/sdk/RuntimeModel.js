@@ -243,7 +243,7 @@ SDK.RuntimeModel = class extends SDK.SDKModel {
    */
   async compileScript(expression, sourceURL, persistScript, executionContextId) {
     const response = await this._agent.invoke_compileScript({
-      expression: expression,
+      expression: String.escapeInvalidUnicodeCharacters(expression),
       sourceURL: sourceURL,
       persistScript: persistScript,
       executionContextId: executionContextId
@@ -489,8 +489,11 @@ SDK.RuntimeModel = class extends SDK.SDKModel {
     if (!testContext)
       return false;
     // Check for a positive throwOnSideEffect response without triggering side effects.
-    const response = await this._agent.invoke_evaluate(
-        {expression: SDK.RuntimeModel._sideEffectTestExpression, contextId: testContext.id, throwOnSideEffect: true});
+    const response = await this._agent.invoke_evaluate({
+      expression: String.escapeInvalidUnicodeCharacters(SDK.RuntimeModel._sideEffectTestExpression),
+      contextId: testContext.id,
+      throwOnSideEffect: true
+    });
 
     this._hasSideEffectSupport = SDK.RuntimeModel.isSideEffectFailure(response);
     return this._hasSideEffectSupport;
@@ -705,9 +708,43 @@ SDK.ExecutionContext = class {
       return 1;
     }
 
-    const weightDiff = targetWeight(a.target()) - targetWeight(b.target());
-    if (weightDiff)
-      return -weightDiff;
+    /**
+     * @param {!SDK.Target} target
+     * @return {!Array<!SDK.Target>}
+     */
+    function targetPath(target) {
+      let currentTarget = target;
+      const parents = [];
+      while (currentTarget) {
+        parents.push(currentTarget);
+        currentTarget = currentTarget.parentTarget();
+      }
+      return parents.reverse();
+    }
+
+    const tagetsA = targetPath(a.target());
+    const targetsB = targetPath(b.target());
+    let targetA;
+    let targetB;
+    for (let i = 0;; i++) {
+      if (!tagetsA[i] || !targetsB[i] || (tagetsA[i] !== targetsB[i])) {
+        targetA = tagetsA[i];
+        targetB = targetsB[i];
+        break;
+      }
+    }
+    if (!targetA && targetB)
+      return -1;
+
+    if (!targetB && targetA)
+      return 1;
+
+    if (targetA && targetB) {
+      const weightDiff = targetWeight(targetA) - targetWeight(targetB);
+      if (weightDiff)
+        return -weightDiff;
+      return targetA.id().localeCompare(targetB.id());
+    }
 
     // Main world context should always go first.
     if (a.isDefault)
@@ -775,7 +812,7 @@ SDK.ExecutionContext = class {
     }
 
     const response = await this.runtimeModel._agent.invoke_evaluate({
-      expression: options.expression,
+      expression: String.escapeInvalidUnicodeCharacters(options.expression),
       objectGroup: options.objectGroup,
       includeCommandLineAPI: options.includeCommandLineAPI,
       silent: options.silent,

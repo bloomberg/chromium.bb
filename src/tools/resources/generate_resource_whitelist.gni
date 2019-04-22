@@ -19,15 +19,13 @@
 #   }
 template("generate_resource_whitelist") {
   action(target_name) {
-    forward_variables_from(invoker, [ "deps" ])
-    assert(is_android,
-           "Resource whitelist currently implemented only on Android")
+    forward_variables_from(invoker,
+                           [
+                             "deps",
+                             "inputs",
+                           ])
 
     script = "//tools/resources/generate_resource_whitelist.py"
-
-    inputs = [
-      invoker.input,
-    ]
 
     outputs = [
       invoker.output,
@@ -36,7 +34,9 @@ template("generate_resource_whitelist") {
     args = [
       "-o",
       rebase_path(invoker.output, root_build_dir),
-      rebase_path(invoker.input, root_build_dir),
     ]
+    foreach(input, invoker.inputs) {
+      args += [ rebase_path(input, root_build_dir) ]
+    }
   }
 }

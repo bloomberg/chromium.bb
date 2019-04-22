@@ -23,6 +23,8 @@ source_set("exo") {
     "data_source_observer.h",
     "display.cc",
     "display.h",
+    "frame_sink_resource_manager.cc",
+    "frame_sink_resource_manager.h",
     "keyboard_delegate.h",
     "keyboard_device_configuration_delegate.h",
     "keyboard_observer.h",
@@ -57,7 +59,7 @@ source_set("exo") {
     "//device/gamepad",
     "//device/gamepad/public/cpp:shared_with_blink",
     "//gpu",
-    "//gpu/command_buffer/client:gles2_interface",
+    "//gpu/command_buffer/client:raster_interface",
     "//services/ws/public/mojom",
     "//skia",
     "//ui/aura",
@@ -82,7 +84,6 @@ source_set("exo") {
   if (is_chromeos) {
     deps += [
       "//ash/public/cpp",
-      "//chromeos",
       "//ui/keyboard",
       "//ui/keyboard:mojom",
     ]
@@ -128,21 +129,34 @@ source_set("exo") {
 source_set("test_support") {
   testonly = true
 
+  sources = [
+    "test/exo_test_base_aura.cc",
+    "test/exo_test_base_aura.h",
+    "test/exo_test_suite_aura.cc",
+    "test/exo_test_suite_aura.h",
+  ]
+
   deps = [
     ":exo",
     "//base",
+    "//base/test:test_support",
     "//gpu",
     "//skia",
     "//testing/gtest",
     "//ui/aura",
+    "//ui/aura:test_support",
+    "//ui/base/ime/init",
     "//ui/compositor",
+    "//ui/compositor:test_support",
+    "//ui/display/manager",
     "//ui/gfx/geometry",
+    "//ui/gl:test_support",
     "//ui/views",
     "//ui/wm",
   ]
 
   if (is_chromeos) {
-    sources = [
+    sources += [
       "test/exo_test_base.cc",
       "test/exo_test_base.h",
       "test/exo_test_helper.cc",
@@ -151,15 +165,8 @@ source_set("test_support") {
       "test/test_client_controlled_state_delegate.h",
     ]
     deps += [
-      "//ash:test_support_without_content",
+      "//ash:test_support",
       "//ash/public/cpp",
-    ]
-  }
-
-  if (is_chromecast) {
-    sources = [
-      "test/exo_test_base_cast.cc",
-      "test/exo_test_base_cast.h",
     ]
   }
 }
@@ -178,7 +185,7 @@ source_set("unit_tests") {
     "//components/viz/service",
     "//components/viz/test:test_support",
     "//device/gamepad:test_helpers",
-    "//gpu/command_buffer/client:gles2_interface",
+    "//gpu/command_buffer/client:raster_interface",
     "//skia",
     "//testing/gmock",
     "//testing/gtest",
@@ -222,7 +229,7 @@ source_set("unit_tests") {
 
     deps += [
       "//ash",
-      "//ash:test_support_without_content",
+      "//ash:test_support",
       "//ash/public/cpp",
       "//ui/keyboard",
     ]
@@ -241,6 +248,7 @@ test("exo_unittests") {
   ]
 
   deps = [
+    ":test_support",
     ":unit_tests",
     "//base",
     "//base/test:test_support",
@@ -257,9 +265,7 @@ test("exo_unittests") {
     "//ui/gl:test_support",
   ]
 
-  data_deps = [
-    "//testing/buildbot/filters:exo_unittests_filters",
-  ]
+  data_deps = []
 
   if (is_linux) {
     deps += [ "//components/exo/wayland:unit_tests" ]
@@ -272,7 +278,7 @@ test("exo_unittests") {
     ]
 
     deps += [
-      "//ash:test_support_without_content",
+      "//ash:test_support",
       "//ash/public/cpp",
     ]
 

@@ -10,7 +10,7 @@
 #include <unordered_map>
 
 #include "base/callback.h"
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 

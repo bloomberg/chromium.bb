@@ -6,7 +6,9 @@
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 
+#include "base/bind.h"
 #import "base/test/ios/wait_util.h"
+#include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
@@ -40,7 +42,6 @@ using chrome_test_util::OmniboxText;
 using chrome_test_util::OpenLinkInNewTabButton;
 using chrome_test_util::SystemSelectionCallout;
 using chrome_test_util::SystemSelectionCalloutCopyButton;
-using web::test::ElementSelector;
 
 namespace {
 // Directory containing the |kLogoPagePath| and |kLogoPageImageSourcePath|
@@ -60,7 +61,7 @@ const char kDestinationPageUrl[] = "/destination";
 // HTML content of the destination page.
 const char kDestinationHtml[] =
     "<html><body><script>document.title='new doc'</script>"
-    "<span id=\"message\">You made it!</span>"
+    "<center><span id=\"message\">You made it!</span></center>"
     "</body></html>";
 // The DOM element ID of the message on the destination page.
 const char kDestinationPageTextId[] = "message";
@@ -71,7 +72,7 @@ const char kDestinationPageText[] = "You made it!";
 const char kInitialPageUrl[] = "/scenarioContextMenuOpenInNewTab";
 // HTML content of a page with a link to the destination page.
 const char kInitialPageHtml[] =
-    "<html><body><a style='margin-left:50px' href='/destination' id='link'>"
+    "<html><body><a style='margin-left:150px' href='/destination' id='link'>"
     "link</a></body></html>";
 // The DOM element ID of the link to the destination page.
 const char kInitialPageDestinationLinkId[] = "link";
@@ -130,7 +131,7 @@ void LongPressElement(const char* element_id) {
       web::WebViewInWebState(chrome_test_util::GetCurrentWebState());
   [[EarlGrey selectElementWithMatcher:web_view_matcher]
       performAction:chrome_test_util::LongPressElementForContextMenu(
-                        ElementSelector::ElementSelectorId(element_id),
+                        [ElementSelector selectorWithElementID:element_id],
                         true /* menu should appear */)];
 }
 
@@ -203,15 +204,7 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
 
 // Tests that selecting "Open Image in New Tab" from the context menu properly
 // opens the image in a new background tab.
-// TODO(crbug.com/817810): Enable this test.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_testOpenImageInNewTabFromContextMenu \
-  testOpenImageInNewTabFromContextMenu
-#else
-#define MAYBE_testOpenImageInNewTabFromContextMenu \
-  FLAKY_testOpenImageInNewTabFromContextMenu
-#endif
-- (void)MAYBE_testOpenImageInNewTabFromContextMenu {
+- (void)testOpenImageInNewTabFromContextMenu {
   const GURL pageURL = self.testServer->GetURL(kLogoPagePath);
   [ChromeEarlGrey loadURL:pageURL];
   [ChromeEarlGrey waitForWebViewContainingText:kLogoPageText];
@@ -230,13 +223,7 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
 }
 
 // Tests "Open in New Tab" on context menu.
-// TODO(crbug.com/817810): Enable this test.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_testContextMenuOpenInNewTab testContextMenuOpenInNewTab
-#else
-#define MAYBE_testContextMenuOpenInNewTab FLAKY_testContextMenuOpenInNewTab
-#endif
-- (void)MAYBE_testContextMenuOpenInNewTab {
+- (void)testContextMenuOpenInNewTab {
   const GURL initialURL = self.testServer->GetURL(kInitialPageUrl);
   [ChromeEarlGrey loadURL:initialURL];
   [ChromeEarlGrey waitForWebViewContainingText:kInitialPageDestinationLinkText];
@@ -255,14 +242,7 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
 }
 
 // Tests that the context menu is displayed for an image url.
-// TODO(crbug.com/817810): Enable this test.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_testContextMenuDisplayedOnImage testContextMenuDisplayedOnImage
-#else
-#define MAYBE_testContextMenuDisplayedOnImage \
-  FLAKY_testContextMenuDisplayedOnImage
-#endif
-- (void)MAYBE_testContextMenuDisplayedOnImage {
+- (void)testContextMenuDisplayedOnImage {
   const GURL imageURL = self.testServer->GetURL(kLogoPageImageSourcePath);
   [ChromeEarlGrey loadURL:imageURL];
 
@@ -358,6 +338,73 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
                                    ^(NSString* error) {
                                      GREYFail(error);
                                    });
+}
+
+// Tests cancelling the context menu.
+- (void)testDismissContextMenu {
+  const GURL initialURL = self.testServer->GetURL(kInitialPageUrl);
+  [ChromeEarlGrey loadURL:initialURL];
+  [ChromeEarlGrey waitForWebViewContainingText:kInitialPageDestinationLinkText];
+
+  // Display the context menu twice.
+  for (NSInteger i = 0; i < 2; i++) {
+    LongPressElement(kInitialPageDestinationLinkId);
+
+    // Make sure the context menu appeared.
+    [[EarlGrey selectElementWithMatcher:OpenLinkInNewTabButton()]
+        assertWithMatcher:grey_notNil()];
+
+    if (IsIPadIdiom()) {
+      // Tap the tools menu to dismiss the popover.
+      [[EarlGrey selectElementWithMatcher:chrome_test_util::ToolsMenuButton()]
+          performAction:grey_tap()];
+    } else {
+      TapOnContextMenuButton(chrome_test_util::CancelButton());
+    }
+
+    // Make sure the context menu disappeared.
+    [[EarlGrey selectElementWithMatcher:OpenLinkInNewTabButton()]
+        assertWithMatcher:grey_nil()];
+  }
+
+  // Display the context menu one last time.
+  LongPressElement(kInitialPageDestinationLinkId);
+
+  // Make sure the context menu appeared.
+  [[EarlGrey selectElementWithMatcher:OpenLinkInNewTabButton()]
+      assertWithMatcher:grey_notNil()];
+}
+
+// Checks that all the options are displayed in the context menu.
+- (void)testAppropriateContextMenu {
+  const GURL initialURL = self.testServer->GetURL(kInitialPageUrl);
+  [ChromeEarlGrey loadURL:initialURL];
+  [ChromeEarlGrey waitForWebViewContainingText:kInitialPageDestinationLinkText];
+
+  LongPressElement(kInitialPageDestinationLinkId);
+
+  // Check the different buttons.
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
+                                   IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWTAB)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey selectElementWithMatcher:
+                 chrome_test_util::ButtonWithAccessibilityLabelId(
+                     IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWINCOGNITOTAB)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
+                                   IDS_IOS_CONTENT_CONTEXT_ADDTOREADINGLIST)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
+                                   IDS_IOS_CONTENT_CONTEXT_COPY)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  if (!IsIPadIdiom()) {
+    [[EarlGrey selectElementWithMatcher:
+                   chrome_test_util::ButtonWithAccessibilityLabelId(IDS_CANCEL)]
+        assertWithMatcher:grey_sufficientlyVisible()];
+  }
 }
 
 @end

@@ -23,14 +23,15 @@ class ShellWebClient : public WebClient {
 
   // WebClient implementation.
   std::unique_ptr<WebMainParts> CreateWebMainParts() override;
-  std::string GetProduct() const override;
   std::string GetUserAgent(UserAgentType type) const override;
   base::StringPiece GetDataResource(
       int resource_id,
       ui::ScaleFactor scale_factor) const override;
   base::RefCountedMemory* GetDataResourceBytes(int resource_id) const override;
-  void RegisterServices(StaticServiceMap* services) override;
-  std::unique_ptr<base::Value> GetServiceManifestOverlay(
+  std::unique_ptr<service_manager::Service> HandleServiceRequest(
+      const std::string& service_name,
+      service_manager::mojom::ServiceRequest request) override;
+  base::Optional<service_manager::Manifest> GetServiceManifestOverlay(
       base::StringPiece name) override;
   void BindInterfaceRequestFromMainFrame(
       WebState* web_state,

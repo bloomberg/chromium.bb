@@ -2,7 +2,6 @@ Request a file as the document type with asynchronous XMLHttpRequest in a docume
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS req.status is 200
 PASS req.response is non-null.
 PASS result is "PASS"

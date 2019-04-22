@@ -4,17 +4,12 @@
 
 #include "chrome/browser/conflicts/module_event_sink_impl_win.h"
 
+#include <windows.h>
+
 #include <memory>
 
-#include "base/threading/sequenced_task_runner_handle.h"
-#include "chrome/browser/conflicts/module_database_win.h"
-#include "chrome/common/conflicts/module_watcher_win.h"
-#include "chrome/test/base/scoped_testing_local_state.h"
-#include "chrome/test/base/testing_browser_process.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-#include <windows.h>
 
 namespace {
 
@@ -29,37 +24,39 @@ const uint64_t kInvalidLoadAddress = 0xDEADBEEF;
 
 class ModuleEventSinkImplTest : public testing::Test {
  protected:
-  ModuleEventSinkImplTest()
-      : scoped_testing_local_state_(TestingBrowserProcess::GetGlobal()),
-        module_database_(std::make_unique<ModuleDatabase>(
-            base::SequencedTaskRunnerHandle::Get())) {}
+  ModuleEventSinkImplTest() = default;
+  ~ModuleEventSinkImplTest() override = default;
 
   bool CreateModuleSinkImpl() {
     HANDLE process_handle = 0;
     if (!::DuplicateHandle(::GetCurrentProcess(), ::GetCurrentProcess(),
-                           ::GetCurrentProcess(), &process_handle,
-
-                                       0,
-                                       FALSE,
-                                       DUPLICATE_SAME_ACCESS)) {
+                           ::GetCurrentProcess(), &process_handle, 0, FALSE,
+                           DUPLICATE_SAME_ACCESS)) {
       return false;
     }
 
     module_event_sink_impl_ = std::make_unique<ModuleEventSinkImpl>(
         base::Process(process_handle), content::PROCESS_TYPE_BROWSER,
-        module_database_.get());
+        base::BindRepeating(&ModuleEventSinkImplTest::OnModuleEvent,
+                            base::Unretained(this)));
     return true;
   }
 
-  const ModuleDatabase::ModuleMap& modules() {
-    return module_database_->modules_;
+  void OnModuleEvent(content::ProcessType process_type,
+                     const base::FilePath& module_path,
+                     uint32_t module_size,
+                     uint32_t module_time_date_stamp) {
+    ++module_event_count_;
   }
 
-  // Must be before |module_database_|.
+  int module_event_count() { return module_event_count_; }
+
+  // Must be first.
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
-  ScopedTestingLocalState scoped_testing_local_state_;
-  std::unique_ptr<ModuleDatabase> module_database_;
+
   std::unique_ptr<ModuleEventSinkImpl> module_event_sink_impl_;
+
+  int module_event_count_ = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ModuleEventSinkImplTest);
@@ -68,20 +65,31 @@ class ModuleEventSinkImplTest : public testing::Test {
 TEST_F(ModuleEventSinkImplTest, CallsForwardedAsExpected) {
   const uintptr_t kValidLoadAddress = reinterpret_cast<uintptr_t>(&__ImageBase);
 
-  EXPECT_EQ(0u, modules().size());
+  EXPECT_EQ(0, module_event_count());
 
   ASSERT_TRUE(CreateModuleSinkImpl());
-  EXPECT_EQ(0u, modules().size());
+  EXPECT_EQ(0, module_event_count());
 
   // An invalid load event should not cause a module entry.
-  module_event_sink_impl_->OnModuleEvent(
-      mojom::ModuleEventType::MODULE_ALREADY_LOADED, kInvalidLoadAddress);
+  module_event_sink_impl_->OnModuleEvents({kInvalidLoadAddress});
   test_browser_thread_bundle_.RunUntilIdle();
-  EXPECT_EQ(0u, modules().size());
+  EXPECT_EQ(0, module_event_count());
 
   // A valid load event should cause a module entry.
-  module_event_sink_impl_->OnModuleEvent(mojom::ModuleEventType::MODULE_LOADED,
-                                         kValidLoadAddress);
+  module_event_sink_impl_->OnModuleEvents({kValidLoadAddress});
   test_browser_thread_bundle_.RunUntilIdle();
-  EXPECT_EQ(1u, modules().size());
+  EXPECT_EQ(1, module_event_count());
+}
+
+TEST_F(ModuleEventSinkImplTest, MultipleEvents) {
+  const uintptr_t kLoadAddress1 = reinterpret_cast<uintptr_t>(&__ImageBase);
+  const uintptr_t kLoadAddress2 =
+      reinterpret_cast<uintptr_t>(::GetModuleHandle(L"kernel32.dll"));
+  ASSERT_TRUE(CreateModuleSinkImpl());
+
+  EXPECT_EQ(0, module_event_count());
+
+  module_event_sink_impl_->OnModuleEvents({kLoadAddress1, kLoadAddress2});
+  test_browser_thread_bundle_.RunUntilIdle();
+  EXPECT_EQ(2, module_event_count());
 }

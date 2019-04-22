@@ -22,9 +22,6 @@ enum WindowType {
   // A window intended as a control. Not laid out by the shell.
   WINDOW_TYPE_CONTROL,
 
-  // Always on top windows aligned to bottom right of screen.
-  WINDOW_TYPE_PANEL,
-
   WINDOW_TYPE_MENU,
 
   WINDOW_TYPE_TOOLTIP,

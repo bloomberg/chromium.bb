@@ -4,7 +4,7 @@
 <translation id="1002108253973310084">זוהתה גרסת פרוטוקול לא תואמת. ודא שהתקנת את הגרסה העדכנית ביותר של התוכנה בשני המחשבים ונסה שוב.</translation>
 <translation id="1008557486741366299">לא עכשיו</translation>
 <translation id="1050693411695664090">איכות גרועה</translation>
-<translation id="1152528166145813711">בחר...</translation>
+<translation id="1152528166145813711">בחירה…</translation>
 <translation id="1199593201721843963">השבת חיבורים מרוחקים</translation>
 <translation id="1291443878853470558">‏אם ברצונך להשתמש ב-Chromoting כדי לגשת למחשב זה, עליך להפעיל חיבורים מרוחקים.</translation>
 <translation id="1297009705180977556">אירעה שגיאת התחברות אל <ph name="HOSTNAME" /></translation>
@@ -24,6 +24,7 @@
 <translation id="1520828917794284345">שנה את גודל שולחן העבודה</translation>
 <translation id="154040539590487450">הפעלת שירות הגישה מרחוק נכשלה.</translation>
 <translation id="1546934824884762070">אירעה שגיאה לא צפויה. דיווח על בעיה זו למפתחים.</translation>
+<translation id="1624185583382384493">‏Chrome Remote Desktop זמין עכשיו באינטרנט. כדאי לנסות את <ph name="LINK_BEGIN" />אפליקציית האינטרנט<ph name="LINK_END" /> — היא מהירה וחינמית, ויש בה יותר תכונות, כולל תמיכה משופרת בצגים מרובים.</translation>
 <translation id="1643640058022401035">‏יציאה מדף זה תגרום לסיום ההפעלה של Chromoting.</translation>
 <translation id="1654128982815600832">מפעיל חיבורים מרוחקים למחשב זה...</translation>
 <translation id="170207782578677537">הרישום של מחשב זה נכשל.</translation>
@@ -55,7 +56,7 @@
 <translation id="2208514473086078157">‏הגדרות המדיניות אינן מאפשרות שיתוף של מחשב זה כמארח Chrome Remote Desktop. יש לפנות למנהל המערכת שלך לקבלת סיוע.</translation>
 <translation id="2220529011494928058">דיווח על בעיה</translation>
 <translation id="2221097377466213233">‏השתמש במקש Ctrl למקש Win (⌘ ב-Mac)</translation>
-<translation id="2235518894410572517">שתף מחשב זה ואפשר למשתמש אחר להציג את התוכן שלו ולשלוט בו.</translation>
+<translation id="2235518894410572517">כדי שמשתמש אחר יוכל לשלוט במחשב ולראות אותו, יש לשתף את המחשב עם אותו משתמש.</translation>
 <translation id="2246783206985865117">ההגדרה הזו מנוהלת על ידי מדיניות הדומיין שלך.</translation>
 <translation id="2256115617011615191">הפעל מחדש כעת</translation>
 <translation id="225614027745146050">ברוכים הבאים</translation>
@@ -138,6 +139,7 @@
 <translation id="3989511127559254552">כדי להמשיך, ראשית עליך להעניק הרשאות גישה מורחבות למחשב שלך. עליך לעשות זאת פעם אחת בלבד.</translation>
 <translation id="4006787130661126000">‏אם ברצונך להשתמש ב-Chrome Remote Desktop כדי לגשת למחשב זה, עליך להפעיל חיבורים מרוחקים.</translation>
 <translation id="405887016757208221">המחשב המרוחק לא הצליח לאתחל את ההפעלה. אם הבעיה נמשכת, נסה להגדיר שוב את המארח.</translation>
+<translation id="4060747889721220580">הורדת קובץ</translation>
 <translation id="4068946408131579958">כל החיבורים</translation>
 <translation id="409800995205263688">הערה: הגדרות המדיניות מתירות חיבורים רק בין מחשבים הנמצאים בתוך הרשת שלך.</translation>
 <translation id="4126409073460786861">‏כשתהליך ההגדרה יסתיים, צריך יהיה לרענן את הדף ואז אפשר יהיה לבחור את המכשיר שלך ולהזין את ה-PIN כדי לגשת למחשב</translation>
@@ -242,6 +244,7 @@ Desktop
 <translation id="6198252989419008588">‏שנה PIN</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (לא עדכני)</translation>
 <translation id="6221358653751391898">‏אתה לא מחובר ל-Chrome. היכנס ונסה שוב.</translation>
+<translation id="6227369581881558336">‏Chrome Remote Desktop זמין עכשיו באינטרנט, עם יותר תכונות - כולל העברת קבצים! אפשר להתנסות ב<ph name="LINK_BEGIN" />אפליקציית האינטרנט<ph name="LINK_END" />.</translation>
 <translation id="6284412385303060032">המארח הפועל במסך הכניסה למסוף כבה כדי לתמוך במצב הסתרה על ידי מעבר אל מארח הרץ בפעילות באתר שהיא ספציפית למשתמש.</translation>
 <translation id="629730747756840877">חשבון</translation>
 <translation id="6304318647555713317">לקוח</translation>
@@ -250,7 +253,7 @@ Desktop
 <translation id="6441316101718669559">שילוב של שולחן עבודה אינו נתמך בפלטפורמה זו. תוכל עדיין להשתמש ביישום, אבל תהיה לכך השפעה שלילית על חוויית המשתמש.</translation>
 <translation id="6502629188777329097">גישה מאובטחת למחשב שלך</translation>
 <translation id="652218476070540101">‏ה-PIN של מחשב זה מתעדכן...</translation>
-<translation id="6527303717912515753">שתף</translation>
+<translation id="6527303717912515753">שיתוף</translation>
 <translation id="6541219117979389420">‏יומני יישומים עשויים לכלול פרטים אישיים, כולל הזהות שלך (כתובת אימייל) וגם השמות והתכונות של קבצים ותיקיות ב-Google Drive.</translation>
 <translation id="6542902059648396432">דיווח על בעיה...</translation>
 <translation id="6550675742724504774">אפשרויות</translation>
@@ -261,7 +264,7 @@ Desktop
 <translation id="6668065415969892472">‏ה-PIN שלך עודכן.</translation>
 <translation id="6681800064886881394">‏Copyright © 2013 Google Inc.‎. כל הזכויות שמורות.</translation>
 <translation id="6705482892455291412">לאחר הזנת הקוד, תתבקש לאשר את החיבור ולהתחיל בשיתוף ההפעלה.</translation>
-<translation id="6746493157771801606">נקה היסטוריה</translation>
+<translation id="6746493157771801606">ניקוי ההיסטוריה</translation>
 <translation id="6748108480210050150">מאת</translation>
 <translation id="677755392401385740">המארח הופעל עבור המשתמש: <ph name="HOST_USERNAME" />.</translation>
 <translation id="6865175692670882333">הצג/ערוך</translation>
@@ -289,12 +292,11 @@ Desktop
 <translation id="7434397035092923453">נדחתה גישה עבור לקוח: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7444276978508498879">לקוח שהתחבר: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7526139040829362392">החלף חשבון</translation>
-<translation id="7589941250119944644">‏Chrome Remote Desktop יהיה זמין מעכשיו באינטרנט. רוצה לנסות את <ph name="LINK_BEGIN" />אפליקציית האינטרנט<ph name="LINK_END" />? היא מהירה וחינמית, וכוללת את כל התכונות המוכרות.</translation>
 <translation id="7606912958770842224">הפעל חיבורים מרוחקים</translation>
 <translation id="7628469622942688817">‏זכור את ה-PIN שלי במכשיר הזה.</translation>
 <translation id="7649070708921625228">עזרה</translation>
 <translation id="7658239707568436148">ביטול</translation>
-<translation id="7665369617277396874">הוסף חשבון</translation>
+<translation id="7665369617277396874">חשבון חדש</translation>
 <translation id="7672203038394118626">חיבורים מרוחקים למחשב זה הושבתו.</translation>
 <translation id="7678209621226490279">עגינה לשמאל</translation>
 <translation id="7693372326588366043">רענן את רשימת המארחים</translation>

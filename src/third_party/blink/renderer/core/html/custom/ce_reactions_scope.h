@@ -16,7 +16,7 @@ namespace blink {
 class CustomElementReaction;
 class Element;
 
-// https://html.spec.whatwg.org/multipage/scripting.html#cereactions
+// https://html.spec.whatwg.org/C/#cereactions
 class CORE_EXPORT CEReactionsScope final {
   STACK_ALLOCATED();
 
@@ -33,7 +33,7 @@ class CORE_EXPORT CEReactionsScope final {
     top_of_stack_ = top_of_stack_->prev_;
   }
 
-  void EnqueueToCurrentQueue(Element*, CustomElementReaction*);
+  void EnqueueToCurrentQueue(Element&, CustomElementReaction&);
 
  private:
   static CEReactionsScope* top_of_stack_;

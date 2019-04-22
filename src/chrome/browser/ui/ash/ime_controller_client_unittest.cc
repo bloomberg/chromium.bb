@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -85,7 +86,7 @@ class TestInputMethodManager : public MockInputMethodManager {
       return InputMethodUtil::GetFallbackInputMethodDescriptor();
     }
     void SwitchToNextInputMethod() override { ++next_input_method_count_; }
-    void SwitchToPreviousInputMethod() override {
+    void SwitchToLastUsedInputMethod() override {
       ++previous_input_method_count_;
     }
 
@@ -328,7 +329,7 @@ TEST_F(ImeControllerClientTest, SwitchToNextIme) {
 
 TEST_F(ImeControllerClientTest, SwitchToPreviousIme) {
   ImeControllerClient client(&input_method_manager_);
-  client.SwitchToPreviousIme();
+  client.SwitchToLastUsedIme();
   EXPECT_EQ(1, input_method_manager_.state_->previous_input_method_count_);
 }
 

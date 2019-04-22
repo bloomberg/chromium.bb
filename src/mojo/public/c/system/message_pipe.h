@@ -36,7 +36,7 @@ struct MOJO_ALIGNAS(8) MojoCreateMessagePipeOptions {
   MojoCreateMessagePipeFlags flags;
 };
 MOJO_STATIC_ASSERT(MOJO_ALIGNOF(int64_t) <= 8, "int64_t has weird alignment");
-MOJO_STATIC_ASSERT(sizeof(MojoCreateMessagePipeOptions) == 8,
+MOJO_STATIC_ASSERT(sizeof(struct MojoCreateMessagePipeOptions) == 8,
                    "MojoCreateMessagePipeOptions has wrong size");
 
 // Flags passed to |MojoWriteMessage()| via |MojoWriteMessageOptions|. See
@@ -54,7 +54,7 @@ struct MOJO_ALIGNAS(8) MojoWriteMessageOptions {
   // See |MojoWriteMessageFlags|.
   MojoWriteMessageFlags flags;
 };
-MOJO_STATIC_ASSERT(sizeof(MojoWriteMessageOptions) == 8,
+MOJO_STATIC_ASSERT(sizeof(struct MojoWriteMessageOptions) == 8,
                    "MojoWriteMessageOptions has wrong size");
 
 // Flags passed to |MojoReadMessage()| via |MojoReadMessageOptions|. See values
@@ -72,7 +72,7 @@ struct MOJO_ALIGNAS(8) MojoReadMessageOptions {
   // See |MojoReadMessageFlags|.
   MojoReadMessageFlags flags;
 };
-MOJO_STATIC_ASSERT(sizeof(MojoReadMessageOptions) == 8,
+MOJO_STATIC_ASSERT(sizeof(struct MojoReadMessageOptions) == 8,
                    "MojoReadMessageOptions has wrong size");
 
 // Flags passed to |MojoFuseMessagePipes()| via |MojoFuseMessagePipeOptions|.
@@ -90,7 +90,7 @@ struct MOJO_ALIGNAS(8) MojoFuseMessagePipesOptions {
   // See |MojoFuseMessagePipesFlags|.
   MojoFuseMessagePipesFlags flags;
 };
-MOJO_STATIC_ASSERT(sizeof(MojoFuseMessagePipesOptions) == 8,
+MOJO_STATIC_ASSERT(sizeof(struct MojoFuseMessagePipesOptions) == 8,
                    "MojoFuseMessagePipesOptions has wrong size");
 
 // Flags passed to |MojoCreateMessage()| via |MojoCreateMessageOptions|.
@@ -107,7 +107,7 @@ struct MOJO_ALIGNAS(8) MojoCreateMessageOptions {
   // See |MojoCreateMessageFlags|.
   MojoCreateMessageFlags flags;
 };
-MOJO_STATIC_ASSERT(sizeof(MojoCreateMessageOptions) == 8,
+MOJO_STATIC_ASSERT(sizeof(struct MojoCreateMessageOptions) == 8,
                    "MojoCreateMessageOptions has wrong size");
 
 // Flags passed to |MojoSerializeMessage()| via |MojoSerializeMessageOptions|.
@@ -124,7 +124,7 @@ struct MOJO_ALIGNAS(8) MojoSerializeMessageOptions {
   // See |MojoSerializeMessageFlags|.
   MojoSerializeMessageFlags flags;
 };
-MOJO_STATIC_ASSERT(sizeof(MojoSerializeMessageOptions) == 8,
+MOJO_STATIC_ASSERT(sizeof(struct MojoSerializeMessageOptions) == 8,
                    "MojoSerializeMessageOptions has wrong size");
 
 // Flags passed to |MojoAppendMessageData()| via |MojoAppendMessageDataOptions|.
@@ -146,7 +146,7 @@ struct MOJO_ALIGNAS(8) MojoAppendMessageDataOptions {
   // See |MojoAppendMessageDataFlags|.
   MojoAppendMessageDataFlags flags;
 };
-MOJO_STATIC_ASSERT(sizeof(MojoAppendMessageDataOptions) == 8,
+MOJO_STATIC_ASSERT(sizeof(struct MojoAppendMessageDataOptions) == 8,
                    "MojoAppendMessageDataOptions has wrong size");
 
 // Flags passed to |MojoGetMessageData()| via |MojoGetMessageDataOptions|.
@@ -167,7 +167,7 @@ struct MOJO_ALIGNAS(8) MojoGetMessageDataOptions {
   // See |MojoGetMessageDataFlags|.
   MojoGetMessageDataFlags flags;
 };
-MOJO_STATIC_ASSERT(sizeof(MojoGetMessageDataOptions) == 8,
+MOJO_STATIC_ASSERT(sizeof(struct MojoGetMessageDataOptions) == 8,
                    "MojoGetMessageDataOptions has wrong size");
 
 // Flags passed to |MojoSetMessageContext()| via |MojoSetMessageContextOptions|.
@@ -184,7 +184,7 @@ struct MOJO_ALIGNAS(8) MojoSetMessageContextOptions {
   // See |MojoSetMessageContextFlags|.
   MojoSetMessageContextFlags flags;
 };
-MOJO_STATIC_ASSERT(sizeof(MojoSetMessageContextOptions) == 8,
+MOJO_STATIC_ASSERT(sizeof(struct MojoSetMessageContextOptions) == 8,
                    "MojoSetMessageContextOptions has wrong size");
 
 // Flags passed to |MojoGetMessageContext()| via |MojoGetMessageContextOptions|.
@@ -201,7 +201,7 @@ struct MOJO_ALIGNAS(8) MojoGetMessageContextOptions {
   // See |MojoGetMessageContextFlags|.
   MojoGetMessageContextFlags flags;
 };
-MOJO_STATIC_ASSERT(sizeof(MojoGetMessageContextOptions) == 8,
+MOJO_STATIC_ASSERT(sizeof(struct MojoGetMessageContextOptions) == 8,
                    "MojoGetMessageContextOptions has wrong size");
 
 // Flags passed to |MojoNotifyBadMessage()| via |MojoNotifyBadMessageOptions|.
@@ -218,7 +218,7 @@ struct MOJO_ALIGNAS(8) MojoNotifyBadMessageOptions {
   // See |MojoNotifyBadMessageFlags|.
   MojoNotifyBadMessageFlags flags;
 };
-MOJO_STATIC_ASSERT(sizeof(MojoNotifyBadMessageOptions) == 8,
+MOJO_STATIC_ASSERT(sizeof(struct MojoNotifyBadMessageOptions) == 8,
                    "MojoNotifyBadMessageOptions has wrong size");
 
 #ifdef __cplusplus

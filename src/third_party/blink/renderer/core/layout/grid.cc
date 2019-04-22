@@ -17,7 +17,7 @@ namespace {
 static inline GridTrackSizingDirection OrthogonalDirection(
     GridTrackSizingDirection direction) {
   return direction == kForRows ? kForColumns : kForRows;
-};
+}
 
 }  // namespace
 
@@ -156,31 +156,28 @@ static int ComparePositions(size_t first, size_t second) {
 DoublyLinkedList<ListGrid::GridCell>::AddResult ListGrid::GridTrack::Insert(
     GridCell* cell) {
   cell->SetTraversalMode(direction_);
-  auto compare_cells =
-      [](GridTrackSizingDirection direction, ListGrid::GridCell* first,
-         ListGrid::GridCell* second) {
+
+  return cells_.Insert(
+      cell, [this](ListGrid::GridCell* first, ListGrid::GridCell* second) {
         // This is ugly but we need to do this in order the
         // DoublyLinkedList::Insert() algorithm to work at that code
         // only uses next_ and prev_.
-        first->SetTraversalMode(direction);
-        second->SetTraversalMode(direction);
-        auto ortho_direction = OrthogonalDirection(direction);
+        first->SetTraversalMode(direction_);
+        second->SetTraversalMode(direction_);
+        auto ortho_direction = OrthogonalDirection(direction_);
         return ComparePositions(first->Index(ortho_direction),
                                 second->Index(ortho_direction));
-      };
-
-  return cells_.Insert(cell, WTF::BindRepeating(compare_cells, direction_));
+      });
 }
 
 DoublyLinkedList<ListGrid::GridCell>::AddResult ListGrid::GridTrack::Insert(
     LayoutBox& item,
     const GridSpan& span) {
-  auto compare_cells = [](GridTrackSizingDirection direction,
-                          ListGrid::GridCell* first,
-                          ListGrid::GridCell* second) {
-    first->SetTraversalMode(direction);
-    second->SetTraversalMode(direction);
-    auto ortho_direction = OrthogonalDirection(direction);
+  auto compare_cells = [this](ListGrid::GridCell* first,
+                              ListGrid::GridCell* second) {
+    first->SetTraversalMode(direction_);
+    second->SetTraversalMode(direction_);
+    auto ortho_direction = OrthogonalDirection(direction_);
     return ComparePositions(first->Index(ortho_direction),
                             second->Index(ortho_direction));
   };
@@ -188,9 +185,8 @@ DoublyLinkedList<ListGrid::GridCell>::AddResult ListGrid::GridTrack::Insert(
   size_t col_index = direction_ == kForColumns ? Index() : span.StartLine();
   size_t row_index = direction_ == kForColumns ? span.StartLine() : Index();
 
-  auto result =
-      cells_.Insert(base::WrapUnique(new GridCell(row_index, col_index)),
-                    WTF::BindRepeating(compare_cells, direction_));
+  auto result = cells_.Insert(
+      base::WrapUnique(new GridCell(row_index, col_index)), compare_cells);
   auto* cell = result.node;
   for (auto index : span) {
     cell->AppendItem(item);
@@ -274,9 +270,8 @@ ListGrid::GridTrack* ListGrid::InsertTracks(
   size_t start_line = span.StartLine();
   size_t end_line = span.EndLine();
 
-  DoublyLinkedList<ListGrid::GridTrack>::AddResult result =
-      tracks.Insert(base::WrapUnique(new GridTrack(start_line, direction)),
-                    WTF::BindRepeating(compare_tracks));
+  DoublyLinkedList<ListGrid::GridTrack>::AddResult result = tracks.Insert(
+      base::WrapUnique(new GridTrack(start_line, direction)), compare_tracks);
   auto* track = result.node;
   DCHECK(track);
 
@@ -452,17 +447,14 @@ std::unique_ptr<GridArea> ListGridIterator::NextEmptyGridArea(
   auto& varying_index = is_row_axis ? row_index_ : column_index_;
   const size_t fixed_index = is_row_axis ? column_index_ : row_index_;
   const size_t end_fixed_span = fixed_index + fixed_track_span - 1;
-  size_t last_varying_index = grid_.NumTracks(orthogonal_axis);
   auto* track_node = tracks.Head();
   while (track_node && track_node->Index() < varying_index)
     track_node = track_node->Next();
 
-  do {
-    if (!track_node) {
-      if (last_varying_index - varying_index >= varying_track_span)
-        return CreateUniqueGridArea();
-      return nullptr;
-    }
+  for (; track_node; track_node = track_node->Next()) {
+    if (!track_node)
+      return CreateUniqueGridArea();
+
     if (track_node->Index() - varying_index >= varying_track_span)
       return CreateUniqueGridArea();
 
@@ -473,10 +465,9 @@ std::unique_ptr<GridArea> ListGridIterator::NextEmptyGridArea(
       varying_index = track_node->Index() + 1;
     else if (track_node->Index() - varying_index >= varying_track_span)
       return CreateUniqueGridArea();
-    track_node = track_node->Next();
-  } while (true);  // track_node will eventually be nullptr
+  }
 
-  return nullptr;
+  return CreateUniqueGridArea();
 }
 
 }  // namespace blink

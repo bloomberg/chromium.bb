@@ -128,7 +128,7 @@ Polymer({
   /**
    * Returns true if we're in minimal migration mode.
    * @param {EncryptionMigrationUIState} state Current UI state
-   * @priave
+   * @private
    */
   isMigratingMinimal_: function(state) {
     return state == EncryptionMigrationUIState.MIGRATING_MINIMAL;

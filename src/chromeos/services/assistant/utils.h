@@ -11,14 +11,14 @@
 
 namespace base {
 class FilePath;
-}
+}  // namespace base
 
 namespace chromeos {
 namespace assistant {
 
 base::FilePath GetRootPath();
 
-std::string CreateLibAssistantConfig(bool disable_hotword);
+std::string CreateLibAssistantConfig();
 
 }  // namespace assistant
 }  // namespace chromeos

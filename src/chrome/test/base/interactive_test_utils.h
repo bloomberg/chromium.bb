@@ -190,7 +190,7 @@ void MoveMouseToCenterAndPress(
     views::View* view,
     ui_controls::MouseButton button,
     int button_state,
-    const base::RepeatingClosure& task,
+    base::OnceClosure task,
     int accelerator_state = ui_controls::kNoAccelerator);
 
 // Returns the center of |view| in screen coordinates.

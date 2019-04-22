@@ -6,7 +6,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/numerics/math_constants.h"
-#include "services/device/device_service_test_base.h"
+#include "base/test/scoped_task_environment.h"
 #include "services/device/generic_sensor/fake_platform_sensor_fusion.h"
 #include "services/device/generic_sensor/generic_sensor_consts.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -17,7 +17,7 @@ namespace {
 
 class
     RelativeOrientationEulerAnglesFusionAlgorithmUsingAccelerometerAndGyroscopeTest
-    : public DeviceServiceTestBase {
+    : public testing::Test {
  public:
   RelativeOrientationEulerAnglesFusionAlgorithmUsingAccelerometerAndGyroscopeTest() {
     auto fusion_algorithm = std::make_unique<
@@ -69,6 +69,7 @@ class
   }
 
  protected:
+  base::test::ScopedTaskEnvironment task_environment_;
   scoped_refptr<FakePlatformSensorFusion> fake_fusion_sensor_;
   RelativeOrientationEulerAnglesFusionAlgorithmUsingAccelerometerAndGyroscope*
       fusion_algorithm_;

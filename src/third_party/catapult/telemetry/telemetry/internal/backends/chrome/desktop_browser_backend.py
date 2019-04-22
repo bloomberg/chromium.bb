@@ -11,6 +11,7 @@ import os.path
 import random
 import re
 import shutil
+import signal
 import subprocess as subprocess
 import sys
 import tempfile
@@ -23,6 +24,7 @@ import dependency_manager  # pylint: disable=import-error
 from telemetry.internal.util import binary_manager
 from telemetry.core import exceptions
 from telemetry.internal.backends.chrome import chrome_browser_backend
+from telemetry.internal.util import format_for_logging
 from telemetry.internal.util import path
 
 
@@ -203,11 +205,7 @@ class DesktopBrowserBackend(chrome_browser_backend.ChromeBrowserBackend):
     browser_target = lines[1] if len(lines) >= 2 else None
     return devtools_port, browser_target
 
-  def GetBrowserStartupUrl(self):
-    # TODO(crbug.com/787834): Move to the corresponding possible-browser class.
-    return self.browser_options.startup_url
-
-  def Start(self, startup_args, startup_url=None):
+  def Start(self, startup_args):
     assert not self._proc, 'Must call Close() before Start()'
 
     # macOS displays a blocking crash resume dialog that we need to suppress.
@@ -226,9 +224,10 @@ class DesktopBrowserBackend(chrome_browser_backend.ChromeBrowserBackend):
       ])
 
     cmd = [self._executable]
+    if self.browser.platform.GetOSName() == 'mac':
+      cmd.append('--use-mock-keychain')  # crbug.com/865247
     cmd.extend(startup_args)
-    if startup_url:
-      cmd.append(startup_url)
+    cmd.append('about:blank')
     env = os.environ.copy()
     env['CHROME_HEADLESS'] = '1'  # Don't upload minidumps.
     env['BREAKPAD_DUMP_LOCATION'] = self._tmp_minidump_dir
@@ -236,7 +235,7 @@ class DesktopBrowserBackend(chrome_browser_backend.ChromeBrowserBackend):
       sys.stderr.write(
           'Chrome log file will be saved in %s\n' % self.log_file_path)
       env['CHROME_LOG_FILE'] = self.log_file_path
-    # Make sure we have predictable lanugage settings that don't differ from the
+    # Make sure we have predictable language settings that don't differ from the
     # recording.
     for name in ('LC_ALL', 'LC_MESSAGES', 'LANG'):
       encoding = 'en_US.UTF-8'
@@ -245,8 +244,7 @@ class DesktopBrowserBackend(chrome_browser_backend.ChromeBrowserBackend):
                      name, env[name], encoding)
       env[name] = 'en_US.UTF-8'
 
-    logging.info('Chrome Env: %s', repr(env))
-    logging.info('Starting Chrome %s', cmd)
+    self.LogStartCommand(cmd, env)
 
     if not self.browser_options.show_stdout:
       self._tmp_output_file = tempfile.NamedTemporaryFile('w', 0)
@@ -255,19 +253,32 @@ class DesktopBrowserBackend(chrome_browser_backend.ChromeBrowserBackend):
     else:
       self._proc = subprocess.Popen(cmd, env=env)
 
-    try:
-      self.BindDevToolsClient()
-      # browser is foregrounded by default on Windows and Linux, but not Mac.
-      if self.browser.platform.GetOSName() == 'mac':
-        subprocess.Popen([
-            'osascript', '-e',
-            ('tell application "%s" to activate' % self._executable)
-        ])
-      if self._supports_extensions:
-        self._WaitForExtensionsToLoad()
-    except:
-      self.Close()
-      raise
+    self.BindDevToolsClient()
+    # browser is foregrounded by default on Windows and Linux, but not Mac.
+    if self.browser.platform.GetOSName() == 'mac':
+      subprocess.Popen([
+          'osascript', '-e',
+          ('tell application "%s" to activate' % self._executable)
+      ])
+    if self._supports_extensions:
+      self._WaitForExtensionsToLoad()
+
+  def LogStartCommand(self, command, env):
+    """Log the command used to start Chrome.
+
+    In order to keep the length of logs down (see crbug.com/943650),
+    we sometimes trim the start command depending on browser_options.
+    The command may change between runs, but usually in innocuous ways like
+    --user-data-dir changes to a new temporary directory. Some benchmarks
+    do use different startup arguments for different stories, but this is
+    discouraged. This method could be changed to print arguments that are
+    different since the last run if need be.
+    """
+    formatted_command = format_for_logging.ShellFormat(
+        command, trim=self.browser_options.trim_logs)
+    logging.info('Starting Chrome: %s\n', formatted_command)
+    if not self.browser_options.trim_logs:
+      logging.info('Chrome Env: %s', env)
 
   def BindDevToolsClient(self):
     # In addition to the work performed by the base class, quickly check if
@@ -573,9 +584,11 @@ class DesktopBrowserBackend(chrome_browser_backend.ChromeBrowserBackend):
     if self.IsBrowserRunning():
       self._TryCooperativeShutdown()
 
-    # Second, try to politely shutdown with SIGTERM.
-    if self.IsBrowserRunning():
-      self._proc.terminate()
+    # Second, try to politely shutdown with SIGINT.  Use SIGINT instead of
+    # SIGTERM (or terminate()) here since the browser treats SIGTERM as a more
+    # urgent shutdown signal and may not free all resources.
+    if self.IsBrowserRunning() and self.browser.platform.GetOSName() != 'win':
+      self._proc.send_signal(signal.SIGINT)
       try:
         py_utils.WaitFor(lambda: not self.IsBrowserRunning(), timeout=5)
         self._proc = None

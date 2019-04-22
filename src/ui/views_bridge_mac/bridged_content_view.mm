@@ -9,6 +9,7 @@
 #import "base/mac/mac_util.h"
 #import "base/mac/scoped_nsobject.h"
 #import "base/mac/sdk_forward_declarations.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "ui/base/cocoa/appkit_utils.h"
@@ -18,7 +19,6 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_edit_commands.h"
 #include "ui/base/ime/text_input_client.h"
-#include "ui/compositor/canvas_painter.h"
 #import "ui/events/cocoa/cocoa_event_utils.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom/dom_code.h"
@@ -28,7 +28,6 @@
 #import "ui/gfx/decorated_text_mac.h"
 #include "ui/gfx/geometry/rect.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
-#include "ui/gfx/path.h"
 #import "ui/gfx/path_mac.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 #include "ui/views_bridge_mac/bridged_native_widget_host_helper.h"
@@ -60,128 +59,12 @@ gfx::Point MovePointToWindow(const NSPoint& point,
                     NSHeight(content_rect) - point_in_window.y);
 }
 
-// Returns true if |client| has RTL text.
-bool IsTextRTL(const ui::TextInputClient* client) {
-  return client && client->GetTextDirection() == base::i18n::RIGHT_TO_LEFT;
-}
-
 // Returns true if |event| may have triggered dismissal of an IME and would
 // otherwise be ignored by a ui::TextInputClient when inserted.
 bool IsImeTriggerEvent(NSEvent* event) {
   ui::KeyboardCode key = ui::KeyboardCodeFromNSEvent(event);
   return key == ui::VKEY_RETURN || key == ui::VKEY_TAB ||
          key == ui::VKEY_ESCAPE;
-}
-
-// Returns the boundary rectangle for composition characters in the
-// |requested_range|. Sets |actual_range| corresponding to the returned
-// rectangle. For cases, where there is no composition text or the
-// |requested_range| lies outside the composition range, a zero width rectangle
-// corresponding to the caret bounds is returned. Logic used is similar to
-// RenderWidgetHostViewMac::GetCachedFirstRectForCharacterRange(...).
-gfx::Rect GetFirstRectForRangeHelper(const ui::TextInputClient* client,
-                                     const gfx::Range& requested_range,
-                                     gfx::Range* actual_range) {
-  // NSRange doesn't support reversed ranges.
-  DCHECK(!requested_range.is_reversed());
-  DCHECK(actual_range);
-
-  // Set up default return values, to be returned in case of unusual cases.
-  gfx::Rect default_rect;
-  *actual_range = gfx::Range::InvalidRange();
-  if (!client)
-    return default_rect;
-
-  default_rect = client->GetCaretBounds();
-  default_rect.set_width(0);
-
-  // If possible, modify actual_range to correspond to caret position.
-  gfx::Range selection_range;
-  if (client->GetSelectionRange(&selection_range)) {
-    // Caret bounds correspond to end index of selection_range.
-    *actual_range = gfx::Range(selection_range.end());
-  }
-
-  gfx::Range composition_range;
-  if (!client->HasCompositionText() ||
-      !client->GetCompositionTextRange(&composition_range) ||
-      !composition_range.Contains(requested_range))
-    return default_rect;
-
-  DCHECK(!composition_range.is_reversed());
-
-  const size_t from = requested_range.start() - composition_range.start();
-  const size_t to = requested_range.end() - composition_range.start();
-
-  // Pick the first character's bounds as the initial rectangle, then grow it to
-  // the full |requested_range| if possible.
-  const bool request_is_composition_end = from == composition_range.length();
-  const size_t first_index = request_is_composition_end ? from - 1 : from;
-  gfx::Rect union_rect;
-  if (!client->GetCompositionCharacterBounds(first_index, &union_rect))
-    return default_rect;
-
-  // If requested_range is empty, return a zero width rectangle corresponding to
-  // it.
-  if (from == to) {
-    if (request_is_composition_end && !IsTextRTL(client)) {
-      // In case of an empty requested range at end of composition, return the
-      // rectangle to the right of the last compositioned character.
-      union_rect.set_origin(union_rect.top_right());
-    }
-    union_rect.set_width(0);
-    *actual_range = requested_range;
-    return union_rect;
-  }
-
-  // Toolkit-views textfields are always single-line, so no need to check for
-  // line breaks.
-  for (size_t i = from + 1; i < to; i++) {
-    gfx::Rect current_rect;
-    if (client->GetCompositionCharacterBounds(i, &current_rect)) {
-      union_rect.Union(current_rect);
-    } else {
-      *actual_range =
-          gfx::Range(requested_range.start(), i + composition_range.start());
-      return union_rect;
-    }
-  }
-  *actual_range = requested_range;
-  return union_rect;
-}
-
-// Returns the string corresponding to |requested_range| for the given |client|.
-// If a gfx::Range::InvalidRange() is passed, the full string stored by |client|
-// is returned. Sets |actual_range| corresponding to the returned string.
-base::string16 AttributedSubstringForRangeHelper(
-    const ui::TextInputClient* client,
-    const gfx::Range& requested_range,
-    gfx::Range* actual_range) {
-  // NSRange doesn't support reversed ranges.
-  DCHECK(!requested_range.is_reversed());
-  DCHECK(actual_range);
-
-  base::string16 substring;
-  gfx::Range text_range;
-  *actual_range = gfx::Range::InvalidRange();
-  if (!client || !client->GetTextRange(&text_range))
-    return substring;
-
-  // gfx::Range::Intersect() behaves a bit weirdly. If B is an empty range
-  // contained inside a non-empty range A, B intersection A returns
-  // gfx::Range::InvalidRange(), instead of returning B.
-  *actual_range = text_range.Contains(requested_range)
-                      ? requested_range
-                      : text_range.Intersect(requested_range);
-
-  // This is a special case for which the complete string should should be
-  // returned. NSTextView also follows this, though the same is not mentioned in
-  // NSTextInputClient documentation.
-  if (!requested_range.IsValid())
-    *actual_range = text_range;
-
-  client->GetTextFromRange(*actual_range, &substring);
-  return substring;
 }
 
 ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
@@ -256,6 +139,14 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 // Returns the native Widget's drag drop client. Possibly null.
 - (views_bridge_mac::DragDropClient*)dragDropClient NS_RETURNS_INNER_POINTER;
 
+// Returns true if there exists a ui::TextInputClient for the currently focused
+// views::View.
+- (BOOL)hasTextInputClient;
+
+// Returns true if there exists a ui::TextInputClient for the currently focused
+// views::View and that client is right-to-left.
+- (BOOL)isTextRTL;
+
 // Menu action handlers.
 - (void)undo:(id)sender;
 - (void)redo:(id)sender;
@@ -270,7 +161,6 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 @implementation BridgedContentView
 
 @synthesize bridge = bridge_;
-@synthesize textInputClient = textInputClient_;
 @synthesize drawMenuBackgroundForBlur = drawMenuBackgroundForBlur_;
 
 - (instancetype)initWithBridge:(views::BridgedNativeWidgetImpl*)bridge
@@ -309,6 +199,24 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
   return self;
 }
 
+- (ui::TextInputClient*)textInputClient {
+  return bridge_ ? bridge_->host_helper()->GetTextInputClient() : nullptr;
+}
+
+- (BOOL)hasTextInputClient {
+  bool hasTextInputClient = NO;
+  if (bridge_)
+    bridge_->text_input_host()->HasClient(&hasTextInputClient);
+  return hasTextInputClient;
+}
+
+- (BOOL)isTextRTL {
+  bool isRTL = NO;
+  if (bridge_)
+    bridge_->text_input_host()->IsRTL(&isRTL);
+  return isRTL;
+}
+
 - (void)dealloc {
   // By the time |self| is dealloc'd, it should never be in an NSWindow, and it
   // should never be the current input context.
@@ -320,41 +228,13 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 }
 
 - (void)clearView {
-  [self setTextInputClient:nullptr];
   bridge_ = nullptr;
   [[NSDistributedNotificationCenter defaultCenter] removeObserver:self];
   [cursorTrackingArea_.get() clearOwner];
   [self removeTrackingArea:cursorTrackingArea_.get()];
 }
 
-- (void)setTextInputClient:(ui::TextInputClient*)newTextInputClient {
-  if (pendingTextInputClient_ == newTextInputClient)
-    return;
-
-  // This method may cause the IME window to dismiss, which may cause it to
-  // insert text (e.g. to replace marked text with "real" text). That should
-  // happen in the old -inputContext (which AppKit stores a reference to).
-  // Unfortunately, the only way to invalidate the the old -inputContext is to
-  // invoke -[NSApp updateWindows], which also wants a reference to the _new_
-  // -inputContext. So put the new inputContext in |pendingTextInputClient_| and
-  // only use it for -inputContext.
-  ui::TextInputClient* oldInputClient = textInputClient_;
-
-  // Since dismissing an IME may insert text, a misbehaving IME or a
-  // ui::TextInputClient that acts on InsertChar() to change focus a second time
-  // may invoke -setTextInputClient: recursively; with [NSApp updateWindows]
-  // still on the stack. Calling [NSApp updateWindows] recursively may upset
-  // an IME. Since the rest of this method is only to decide whether to call
-  // updateWindows, and we're already calling it, just bail out.
-  if (textInputClient_ != pendingTextInputClient_) {
-    pendingTextInputClient_ = newTextInputClient;
-    return;
-  }
-
-  // Start by assuming no need to invoke -updateWindows.
-  textInputClient_ = newTextInputClient;
-  pendingTextInputClient_ = newTextInputClient;
-
+- (bool)needsUpdateWindows {
   // If |self| was being used for the input context, and would now report a
   // different input context, manually invoke [NSApp updateWindows]. This is
   // necessary because AppKit holds on to a raw pointer to a NSTextInputContext
@@ -365,7 +245,7 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
   // the inputContext may change before further event processing.
   NSTextInputContext* current = [NSTextInputContext currentInputContext];
   if (!current)
-    return;
+    return false;
 
   NSTextInputContext* newContext = [self inputContext];
   // If the newContext is non-nil, then it can only be [super inputContext]. So
@@ -373,17 +253,10 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
   // both cases, there's no need to call -updateWindows.
   if (newContext) {
     DCHECK_EQ(newContext, [super inputContext]);
-    return;
+    return false;
   }
 
-  if (current == [super inputContext]) {
-    DCHECK_NE(oldInputClient, textInputClient_);
-    textInputClient_ = oldInputClient;
-    [NSApp updateWindows];
-    // Note: |pendingTextInputClient_| (and therefore +[NSTextInputContext
-    // currentInputContext] may have changed if called recursively.
-    textInputClient_ = pendingTextInputClient_;
-  }
+  return current == [super inputContext];
 }
 
 // If |point| is classified as a draggable background (HTCAPTION), return nil so
@@ -412,11 +285,13 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 
   // If it's the view's window, process normally.
   if ([target isEqual:source]) {
-    if (isScrollEvent)
+    if (isScrollEvent) {
       [self scrollWheel:theEvent];
-    else
+    } else {
       [self mouseEvent:theEvent];
-
+      if ([theEvent type] == NSLeftMouseUp)
+        [self handleLeftMouseUp:theEvent];
+    }
     return;
   }
 
@@ -511,8 +386,11 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 
   // If there's an active TextInputClient, schedule the editing command to be
   // performed.
-  if (textInputClient_ && textInputClient_->IsTextEditCommandEnabled(command))
-    textInputClient_->SetTextEditCommandForNextKeyEvent(command);
+  // TODO(https://crbug.com/901490): Add mojo support for ui::TextEditCommand.
+  if ([self textInputClient] &&
+          [self textInputClient] -> IsTextEditCommandEnabled(command)) {
+    [self textInputClient] -> SetTextEditCommandForNextKeyEvent(command);
+  }
 
   [self dispatchKeyEvent:&event];
 }
@@ -591,27 +469,14 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
   }
 
   // Forward the |text| to |textInputClient_| if no menu is active.
-  if (textInputClient_ && ![self hasActiveMenuController]) {
-    // If a single character is inserted by keyDown's call to
-    // interpretKeyEvents: then use InsertChar() to allow editing events to be
-    // merged. We use ui::VKEY_UNKNOWN as the key code since it's not feasible
-    // to determine the correct key code for each unicode character. Also a
-    // correct keycode is not needed in the current context. Send ui::EF_NONE as
-    // the key modifier since |text| already accounts for the pressed key
-    // modifiers.
-
-    // Also, note we don't check isFinalInsertForKeyEvent, nor use
-    // |keyDownEvent_| to generate the synthetic ui::KeyEvent since:  For
-    //  composed text, [keyDownEvent_ characters] might not be the same as
-    // |text|. This is because |keyDownEvent_| will correspond to the event that
-    // caused the composition text to be confirmed, say, Return key press.
-    if (isCharacterEvent) {
-      textInputClient_->InsertChar(
-          ui::KeyEvent([text characterAtIndex:0], ui::VKEY_UNKNOWN,
-                       ui::DomCode::NONE, ui::EF_NONE));
-    } else {
-      textInputClient_->InsertText(base::SysNSStringToUTF16(text));
-    }
+  if ([self hasTextInputClient] && ![self hasActiveMenuController]) {
+    // Note we don't check isFinalInsertForKeyEvent, nor use |keyDownEvent_|
+    // to generate the synthetic ui::KeyEvent since:  For composed text,
+    // [keyDownEvent_ characters] might not be the same as |text|. This is
+    // because |keyDownEvent_| will correspond to the event that caused the
+    // composition text to be confirmed, say, Return key press.
+    bridge_->text_input_host()->InsertText(base::SysNSStringToUTF16(text),
+                                           isCharacterEvent);
     // Suppress accelerators that may be bound to this key, since it inserted
     // text instead. But note that IME may follow with -insertNewLine:, which
     // will resurrect the keyEvent for accelerator handling.
@@ -702,15 +567,29 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 
 // NSView implementation.
 
-// This view must consistently return YES or else dragging a tab may drag the
-// entire window. See r549802 for details.
+// Refuse first responder so that clicking a blank area of the view don't take
+// first responder away from another view. This does not prevent the view
+// becoming first responder via -[NSWindow makeFirstResponder:] when invoked
+// during Init or by FocusManager.
+//
+// The condition is to work around an AppKit quirk. When a window is being
+// ordered front, if its current first responder returns |NO| for this method,
+// it resigns it if it can find another responder in the key loop that replies
+// |YES|.
 - (BOOL)acceptsFirstResponder {
-  return YES;
+  return self.window.firstResponder == self;
+}
+
+// This undocumented method determines which parts of the view prevent
+// server-side window dragging (i.e. aren't draggable without asking the app
+// first). Since Views decides click-by-click whether to handle an event, the
+// whole view is off limits but, since the view's content is rendered out of
+// process and the view is locally transparent, AppKit won't guess that.
+- (NSRect)_opaqueRectForWindowMoveWhenInTitlebar {
+  return self.bounds;
 }
 
 - (BOOL)becomeFirstResponder {
-  if ([[self window] firstResponder] != self)
-    return NO;
   BOOL result = [super becomeFirstResponder];
   if (result && bridge_)
     bridge_->host()->OnIsFirstResponderChanged(true);
@@ -776,7 +655,11 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 
 - (NSDragOperation)draggingUpdated:(id<NSDraggingInfo>)sender {
   views_bridge_mac::DragDropClient* client = [self dragDropClient];
-  return client ? client->DragUpdate(sender) : ui::DragDropTypes::DRAG_NONE;
+  const auto drag_operation =
+      client ? client->DragUpdate(sender) : ui::DragDropTypes::DRAG_NONE;
+  UMA_HISTOGRAM_BOOLEAN("Event.DragDrop.AcceptDragUpdate",
+                        drag_operation != ui::DragDropTypes::DRAG_NONE);
+  return drag_operation;
 }
 
 - (void)draggingExited:(id<NSDraggingInfo>)sender {
@@ -791,28 +674,11 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 }
 
 - (NSTextInputContext*)inputContext {
-  // If the textInputClient_ does not exist, return nil since this view does not
-  // conform to NSTextInputClient protocol.
-  if (!pendingTextInputClient_)
+  if (!bridge_)
     return nil;
-
-  // If a menu is active, and -[NSView interpretKeyEvents:] asks for the
-  // input context, return nil. This ensures the action message is sent to
-  // the view, rather than any NSTextInputClient a subview has installed.
-  if ([self hasActiveMenuController])
-    return nil;
-
-  // When not in an editable mode, or while entering passwords
-  // (http://crbug.com/23219), we don't want to show IME candidate windows.
-  // Returning nil prevents this view from getting messages defined as part of
-  // the NSTextInputClient protocol.
-  switch (pendingTextInputClient_->GetTextInputType()) {
-    case ui::TEXT_INPUT_TYPE_NONE:
-    case ui::TEXT_INPUT_TYPE_PASSWORD:
-      return nil;
-    default:
-      return [super inputContext];
-  }
+  bool hasTextInputContext = false;
+  bridge_->text_input_host()->HasInputContext(&hasTextInputContext);
+  return hasTextInputContext ? [super inputContext] : nil;
 }
 
 // NSResponder implementation.
@@ -1244,25 +1110,23 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 }
 
 - (void)moveToLeftEndOfLine:(id)sender {
-  IsTextRTL(textInputClient_) ? [self moveToEndOfLine:sender]
-                              : [self moveToBeginningOfLine:sender];
+  [self isTextRTL] ? [self moveToEndOfLine:sender]
+                   : [self moveToBeginningOfLine:sender];
 }
 
 - (void)moveToRightEndOfLine:(id)sender {
-  IsTextRTL(textInputClient_) ? [self moveToBeginningOfLine:sender]
-                              : [self moveToEndOfLine:sender];
+  [self isTextRTL] ? [self moveToBeginningOfLine:sender]
+                   : [self moveToEndOfLine:sender];
 }
 
 - (void)moveToLeftEndOfLineAndModifySelection:(id)sender {
-  IsTextRTL(textInputClient_)
-      ? [self moveToEndOfLineAndModifySelection:sender]
-      : [self moveToBeginningOfLineAndModifySelection:sender];
+  [self isTextRTL] ? [self moveToEndOfLineAndModifySelection:sender]
+                   : [self moveToBeginningOfLineAndModifySelection:sender];
 }
 
 - (void)moveToRightEndOfLineAndModifySelection:(id)sender {
-  IsTextRTL(textInputClient_)
-      ? [self moveToBeginningOfLineAndModifySelection:sender]
-      : [self moveToEndOfLineAndModifySelection:sender];
+  [self isTextRTL] ? [self moveToBeginningOfLineAndModifySelection:sender]
+                   : [self moveToEndOfLineAndModifySelection:sender];
 }
 
 // Graphical Element transposition
@@ -1358,7 +1222,8 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
   BOOL canRead = [returnType isEqualToString:utf8Type];
   // Valid if (sendType, returnType) is either (string, nil), (nil, string),
   // or (string, string).
-  BOOL valid = textInputClient_ && ((canWrite && (canRead || !returnType)) ||
+  BOOL valid =
+      [self hasTextInputClient] && ((canWrite && (canRead || !returnType)) ||
                                     (canRead && (canWrite || !sendType)));
   return valid
              ? self
@@ -1373,15 +1238,13 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
   // either for when it is upgraded.
   DCHECK([types containsObject:NSStringPboardType] ||
          [types containsObject:base::mac::CFToNSCast(kUTTypeUTF8PlainText)]);
-  if (!textInputClient_)
-    return NO;
 
-  gfx::Range selectionRange;
-  if (!textInputClient_->GetSelectionRange(&selectionRange))
-    return NO;
-
+  bool result = NO;
   base::string16 text;
-  textInputClient_->GetTextFromRange(selectionRange, &text);
+  if (bridge_)
+    bridge_->text_input_host()->GetSelectionText(&result, &text);
+  if (!result)
+    return NO;
   return [pboard writeObjects:@[ base::SysUTF16ToNSString(text) ]];
 }
 
@@ -1395,7 +1258,7 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 
 // NSTextInputClient protocol implementation.
 
-// IMPORTANT: Always null-check |textInputClient_|. It can change (or be
+// IMPORTANT: Always null-check |[self textInputClient]|. It can change (or be
 // cleared) in -setTextInputClient:, which requires informing AppKit that the
 // -inputContext has changed and to update its raw pointer. However, the AppKit
 // method which does that may also spin a nested run loop communicating with an
@@ -1411,10 +1274,12 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
   // See https://crbug.com/888782.
   if (range.location == NSNotFound)
     range.length = 0;
-
-  gfx::Range actual_range;
-  base::string16 substring = AttributedSubstringForRangeHelper(
-      textInputClient_, gfx::Range(range), &actual_range);
+  base::string16 substring;
+  gfx::Range actual_range = gfx::Range::InvalidRange();
+  if (bridge_) {
+    bridge_->text_input_host()->GetAttributedSubstringForRange(
+        gfx::Range(range), &substring, &actual_range);
+  }
   if (actualRange) {
     // To maintain consistency with NSTextView, return range {0,0} for an out of
     // bounds requested range.
@@ -1479,77 +1344,64 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 
 - (NSRect)firstRectForCharacterRange:(NSRange)range
                          actualRange:(NSRangePointer)actualNSRange {
-  gfx::Range actualRange;
-  gfx::Rect rect = GetFirstRectForRangeHelper(textInputClient_,
-                                              gfx::Range(range), &actualRange);
+  gfx::Rect rect;
+  gfx::Range actualRange = gfx::Range::InvalidRange();
+  if (bridge_) {
+    bridge_->text_input_host()->GetFirstRectForRange(gfx::Range(range), &rect,
+                                                     &actualRange);
+  }
   if (actualNSRange)
     *actualNSRange = actualRange.ToNSRange();
   return gfx::ScreenRectToNSRect(rect);
 }
 
 - (BOOL)hasMarkedText {
-  return textInputClient_ && textInputClient_->HasCompositionText();
+  bool hasCompositionText = NO;
+  if (bridge_)
+    bridge_->text_input_host()->HasCompositionText(&hasCompositionText);
+  return hasCompositionText;
 }
 
 - (void)insertText:(id)text replacementRange:(NSRange)replacementRange {
-  if (!bridge_ || !textInputClient_)
+  if (!bridge_)
     return;
-
-  textInputClient_->DeleteRange(gfx::Range(replacementRange));
+  bridge_->text_input_host()->DeleteRange(gfx::Range(replacementRange));
   [self insertTextInternal:text];
 }
 
 - (NSRange)markedRange {
-  if (!textInputClient_)
-    return NSMakeRange(NSNotFound, 0);
-
-  gfx::Range range;
-  textInputClient_->GetCompositionTextRange(&range);
+  gfx::Range range = gfx::Range::InvalidRange();
+  if (bridge_)
+    bridge_->text_input_host()->GetCompositionTextRange(&range);
   return range.ToNSRange();
 }
 
 - (NSRange)selectedRange {
-  if (!textInputClient_)
-    return NSMakeRange(NSNotFound, 0);
-
-  gfx::Range range;
-  textInputClient_->GetSelectionRange(&range);
+  gfx::Range range = gfx::Range::InvalidRange();
+  if (bridge_)
+    bridge_->text_input_host()->GetSelectionRange(&range);
   return range.ToNSRange();
 }
 
 - (void)setMarkedText:(id)text
         selectedRange:(NSRange)selectedRange
      replacementRange:(NSRange)replacementRange {
-  if (!textInputClient_)
+  if (![self hasTextInputClient])
     return;
 
   if ([text isKindOfClass:[NSAttributedString class]])
     text = [text string];
-
-  textInputClient_->DeleteRange(gfx::Range(replacementRange));
-  ui::CompositionText composition;
-  composition.text = base::SysNSStringToUTF16(text);
-  composition.selection = gfx::Range(selectedRange);
-
-  // Add an underline with text color and a transparent background to the
-  // composition text. TODO(karandeepb): On Cocoa textfields, the target clause
-  // of the composition has a thick underlines. The composition text also has
-  // discontinous underlines for different clauses. This is also supported in
-  // the Chrome renderer. Add code to extract underlines from |text| once our
-  // render text implementation supports thick underlines and discontinous
-  // underlines for consecutive characters. See http://crbug.com/612675.
-  composition.ime_text_spans.push_back(
-      ui::ImeTextSpan(ui::ImeTextSpan::Type::kComposition, 0, [text length],
-                      ui::ImeTextSpan::Thickness::kThin, SK_ColorTRANSPARENT));
-  textInputClient_->SetCompositionText(composition);
+  bridge_->text_input_host()->SetCompositionText(base::SysNSStringToUTF16(text),
+                                                 gfx::Range(selectedRange),
+                                                 gfx::Range(replacementRange));
   hasUnhandledKeyDownEvent_ = NO;
 }
 
 - (void)unmarkText {
-  if (!textInputClient_)
+  if (![self hasTextInputClient])
     return;
 
-  textInputClient_->ConfirmCompositionText();
+  bridge_->text_input_host()->ConfirmCompositionText();
   hasUnhandledKeyDownEvent_ = NO;
 }
 
@@ -1565,8 +1417,9 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
   if (command == ui::TextEditCommand::INVALID_COMMAND)
     return NO;
 
-  if (textInputClient_)
-    return textInputClient_->IsTextEditCommandEnabled(command);
+  // TODO(https://crbug.com/901490): Add mojo support for ui::TextEditCommand.
+  if ([self textInputClient])
+    return [self textInputClient] -> IsTextEditCommandEnabled(command);
 
   // views::Label does not implement the TextInputClient interface but still
   // needs to intercept the Copy and Select All menu actions.
@@ -1594,16 +1447,15 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
     client->EndDrag();
 }
 
-// NSAccessibility informal protocol implementation.
+// NSAccessibility formal protocol implementation:
 
-- (id)accessibilityAttributeValue:(NSString*)attribute {
-  if ([attribute isEqualToString:NSAccessibilityChildrenAttribute]) {
-    if (id accessible = bridge_->host_helper()->GetNativeViewAccessible())
-      return @[ accessible ];
-  }
-
-  return [super accessibilityAttributeValue:attribute];
+- (NSArray*)accessibilityChildren {
+  if (id accessible = bridge_->host_helper()->GetNativeViewAccessible())
+    return @[ accessible ];
+  return [super accessibilityChildren];
 }
+
+// NSAccessibility informal protocol implementation:
 
 - (id)accessibilityHitTest:(NSPoint)point {
   return [bridge_->host_helper()->GetNativeViewAccessible()

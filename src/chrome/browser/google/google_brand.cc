@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <string>
 
-#include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
@@ -103,13 +102,13 @@ bool GetRlzBrand(std::string* brand) {
 }
 
 bool IsOrganic(const std::string& brand) {
-#if defined(OS_MACOSX)
   if (brand.empty()) {
-    // An empty brand string on Mac is used for channels other than stable,
-    // which are always organic.
+    // An empty brand string is considered the same as GGLS, which is organic.
+    // On Mac, channels other than stable never have a brand code. Linux,
+    // FreeBSD, and OpenBSD never have a brand code. Such installs are always
+    // organic.
     return true;
   }
-#endif
 
   const char* const kOrganicBrands[] = {
       "CHCA", "CHCB", "CHCG", "CHCH", "CHCI", "CHCJ", "CHCK", "CHCL", "CHFO",
@@ -119,7 +118,7 @@ bool IsOrganic(const std::string& brand) {
       "CHOU", "CHOX", "CHOY", "CHOZ", "CHPD", "CHPE", "CHPF", "CHPG", "ECBA",
       "ECBB", "ECDA", "ECDB", "ECSA", "ECSB", "ECVA", "ECVB", "ECWA", "ECWB",
       "ECWC", "ECWD", "ECWE", "ECWF", "EUBB", "EUBC", "GGLA", "GGLS"};
-  const char* const* end = &kOrganicBrands[arraysize(kOrganicBrands)];
+  const char* const* end = &kOrganicBrands[base::size(kOrganicBrands)];
   if (std::binary_search(&kOrganicBrands[0], end, brand))
     return true;
 
@@ -133,13 +132,10 @@ bool IsOrganic(const std::string& brand) {
 }
 
 bool IsOrganicFirstRun(const std::string& brand) {
-#if defined(OS_MACOSX)
   if (brand.empty()) {
-    // An empty brand string on Mac is used for channels other than stable,
-    // which are always organic.
+    // An empty brand string is the same as GGLS, which is organic.
     return true;
   }
-#endif
 
   return base::StartsWith(brand, "GG", base::CompareCase::SENSITIVE) ||
          base::StartsWith(brand, "EU", base::CompareCase::SENSITIVE);

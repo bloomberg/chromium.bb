@@ -13,11 +13,11 @@
         [
             '<div contenteditable>',
                 'b|<b></b>',
-                '<b><div style="display: inline !important;">ar</div></b>',
+                '<span style="font-weight: bold;">ar</span>',
                 '<b><div>baz</div></b>',
             '</div>',
         ].join('')),
-        'Merge multiple blocks with display:inline');
+        'Merge multiple blocks with bold format');
 
     test(() => assert_selection(
         [

@@ -5,9 +5,11 @@
 #include <memory>
 #include <string>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -143,7 +145,7 @@ IN_PROC_BROWSER_TEST_F(ChromeAppAPITest, IsInstalled) {
           &result));
   std::unique_ptr<base::DictionaryValue> app_details(
       static_cast<base::DictionaryValue*>(
-          base::JSONReader::Read(result).release()));
+          base::JSONReader::ReadDeprecated(result).release()));
   // extension->manifest() does not contain the id.
   app_details->Remove("id", NULL);
   EXPECT_TRUE(app_details.get());

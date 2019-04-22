@@ -28,7 +28,7 @@
 
 // Cell to display an Address into parts that are interactable
 // and sendable the data to the delegate.
-@interface ManualFillAddressCell : UITableViewCell
+@interface ManualFillAddressCell : TableViewCell
 
 // Updates the cell with address and the |delegate| to be notified.
 - (void)setUpWithAddress:(ManualFillAddress*)profile

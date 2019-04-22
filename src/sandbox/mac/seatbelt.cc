@@ -19,7 +19,7 @@ int sandbox_init_with_parameters(const char* profile,
 // 1 if sandboxed. Note `type` is actually a sandbox_filter_type enum value, but
 // it is unused currently.
 int sandbox_check(pid_t pid, const char* operation, int type, ...);
-};
+}
 
 namespace sandbox {
 

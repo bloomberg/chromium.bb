@@ -43,24 +43,27 @@ class TestRenderFrameObserver : public content::RenderFrameObserver {
   // content::RenderFrameObserver overrides.
   void OnDestruct() override { delete this; }
 
-  void DidStartProvisionalLoad(blink::WebDocumentLoader* document_loader,
-                               bool is_content_initiated) override {
-    // A provisional load notification is received when a frame navigation is
-    // sent to the browser. We don't want to log it again during commit.
-    if (delegate()->IsNavigationInitiatedByRenderer(
-            document_loader->GetRequest())) {
-      return;
-    }
-
+  void DidStartNavigation(
+      const GURL& url,
+      base::Optional<blink::WebNavigationType> navigation_type) override {
     if (test_runner()->shouldDumpFrameLoadCallbacks()) {
       WebFrameTestClient::PrintFrameDescription(delegate(),
                                                 render_frame()->GetWebFrame());
-      delegate()->PrintMessage(" - didStartProvisionalLoadForFrame\n");
+      delegate()->PrintMessage(" - DidStartNavigation\n");
     }
 
     if (test_runner()->shouldDumpUserGestureInFrameLoadCallbacks()) {
       PrintFrameUserGestureStatus(delegate(), render_frame()->GetWebFrame(),
-                                  " - in didStartProvisionalLoadForFrame\n");
+                                  " - in DidStartNavigation\n");
+    }
+  }
+
+  void ReadyToCommitNavigation(
+      blink::WebDocumentLoader* document_loader) override {
+    if (test_runner()->shouldDumpFrameLoadCallbacks()) {
+      WebFrameTestClient::PrintFrameDescription(delegate(),
+                                                render_frame()->GetWebFrame());
+      delegate()->PrintMessage(" - ReadyToCommitNavigation\n");
     }
   }
 
@@ -123,6 +126,13 @@ void WebFrameTestProxy::Initialize(
   test_client_ =
       interfaces->CreateWebFrameTestClient(view_proxy_for_frame, this);
   new TestRenderFrameObserver(this, view_proxy_for_frame);  // deletes itself.
+}
+
+void WebFrameTestProxy::UpdateAllLifecyclePhasesAndCompositeForTesting() {
+  if (!IsLocalRoot())
+    return;
+  auto* widget = static_cast<WebWidgetTestProxy*>(GetLocalRootRenderWidget());
+  widget->SynchronouslyComposite(/*do_raster=*/true);
 }
 
 // WebLocalFrameClient implementation.
@@ -248,7 +258,7 @@ void WebFrameTestProxy::DidReceiveResponse(
 
 void WebFrameTestProxy::BeginNavigation(
     std::unique_ptr<blink::WebNavigationInfo> info) {
-  if (test_client_->ShouldContinueNavigation(*info))
+  if (test_client_->ShouldContinueNavigation(info.get()))
     RenderFrameImpl::BeginNavigation(std::move(info));
 }
 
@@ -276,9 +286,9 @@ void WebFrameTestProxy::MarkWebAXObjectDirty(const blink::WebAXObject& object,
 
 void WebFrameTestProxy::CheckIfAudioSinkExistsAndIsAuthorized(
     const blink::WebString& sink_id,
-    std::unique_ptr<blink::WebSetSinkIdCallbacks> web_callbacks) {
-  test_client_->CheckIfAudioSinkExistsAndIsAuthorized(sink_id,
-                                                      std::move(web_callbacks));
+    blink::WebSetSinkIdCompleteCallback completion_callback) {
+  test_client_->CheckIfAudioSinkExistsAndIsAuthorized(
+      sink_id, std::move(completion_callback));
 }
 
 void WebFrameTestProxy::DidClearWindowObject() {

@@ -5,6 +5,7 @@
 #include "android_webview/browser/net/aw_url_request_context_getter.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -16,7 +17,7 @@
 #include "android_webview/browser/net/aw_request_interceptor.h"
 #include "android_webview/browser/net/aw_url_request_job_factory.h"
 #include "android_webview/browser/net/init_native_callback.h"
-#include "android_webview/browser/net/token_binding_manager.h"
+#include "android_webview/browser/network_service/net_helpers.h"
 #include "android_webview/common/aw_content_client.h"
 #include "base/base_paths_android.h"
 #include "base/bind.h"
@@ -42,8 +43,6 @@
 #include "net/base/cache_type.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cookies/cookie_store.h"
-#include "net/dns/mapped_host_resolver.h"
-#include "net/extras/sqlite/sqlite_channel_id_store.h"
 #include "net/http/http_auth_filter.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_auth_preferences.h"
@@ -57,7 +56,6 @@
 #include "net/proxy_resolution/proxy_config_service_android.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/socket/next_proto.h"
-#include "net/ssl/channel_id_service.h"
 #include "net/ssl/ssl_config.h"
 #include "net/ssl/ssl_config_service.h"
 #include "net/url_request/data_protocol_handler.h"
@@ -85,18 +83,13 @@ bool g_check_cleartext_permitted = false;
 
 
 const char kProxyServerSwitch[] = "proxy-server";
+const char kProxyBypassListSwitch[] = "proxy-bypass-list";
 
-void ApplyCmdlineOverridesToHostResolver(
-    net::MappedHostResolver* host_resolver) {
+std::string GetCmdlineOverridesForHostResolver() {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(network::switches::kHostResolverRules)) {
-    // If hostname remappings were specified on the command-line, layer these
-    // rules on top of the real host resolver. This allows forwarding all
-    // requests through a designated test server.
-    host_resolver->SetRulesFromString(command_line.GetSwitchValueASCII(
-        network::switches::kHostResolverRules));
-  }
+  return command_line.GetSwitchValueASCII(
+      network::switches::kHostResolverRules);
 }
 
 void ApplyCmdlineOverridesToNetworkSessionParams(
@@ -184,15 +177,13 @@ std::unique_ptr<net::URLRequestJobFactory> CreateJobFactory(
 
 AwURLRequestContextGetter::AwURLRequestContextGetter(
     const base::FilePath& cache_path,
-    const base::FilePath& channel_id_path,
     std::unique_ptr<net::ProxyConfigServiceAndroid> config_service,
     PrefService* user_pref_service,
     net::NetLog* net_log)
     : cache_path_(cache_path),
-      channel_id_path_(channel_id_path),
       net_log_(net_log),
       proxy_config_service_(std::move(config_service)),
-      proxy_config_service_android_(nullptr),
+      proxy_config_service_android_(proxy_config_service_.get()),
       http_user_agent_settings_(new AwHttpUserAgentSettings()) {
   // CreateSystemProxyConfigService for Android must be called on main thread.
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -216,19 +207,20 @@ AwURLRequestContextGetter::AwURLRequestContextGetter(
   // For net-log, use default capture mode and no channel information.
   // WebView can enable net-log only using commandline in userdebug
   // devices so there is no need to complicate things here. The net_log
-  // file is written under app_webview directory. The user is required to
-  // provide a file name using --log-net-log=<filename.json> and then
-  // pull the file to desktop and then import it to chrome://net-internals
-  // There is no good way to shutdown net-log at the moment. The file will
-  // always be truncated.
+  // file is written at an absolute path specified by the user using
+  // --log-net-log=<filename.json>. Note: the absolute path should be a
+  // subdirectory of the app's data directory, otherwise multiple WebView apps
+  // may write to the same file. The user should then 'adb pull' the file to
+  // desktop and then import it to chrome://net-internals There is no good way
+  // to shutdown net-log at the moment. The file will always be truncated.
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(network::switches::kLogNetLog)) {
-    FilePath net_log_path;
-    base::PathService::Get(base::DIR_ANDROID_APP_DATA, &net_log_path);
-    FilePath log_name =
+  // Note: Netlog is handled by the Network Service when that is enabled.
+  if (command_line.HasSwitch(network::switches::kLogNetLog) &&
+      !base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    // Assume the user gave us a path we can write to
+    FilePath net_log_path =
         command_line.GetSwitchValuePath(network::switches::kLogNetLog);
-    net_log_path = net_log_path.Append(log_name);
 
     std::unique_ptr<base::DictionaryValue> constants_dict =
         net::GetNetConstants();
@@ -264,6 +256,7 @@ AwURLRequestContextGetter::~AwURLRequestContextGetter() {
 void AwURLRequestContextGetter::InitializeURLRequestContext() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!url_request_context_);
+  DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
 
   net::URLRequestContextBuilder builder;
 
@@ -272,17 +265,6 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
   builder.set_ftp_enabled(false);  // Android WebView does not support ftp yet.
 #endif
   DCHECK(proxy_config_service_.get());
-  std::unique_ptr<net::ChannelIDService> channel_id_service;
-  if (TokenBindingManager::GetInstance()->is_enabled()) {
-    scoped_refptr<net::SQLiteChannelIDStore> channel_id_db;
-    channel_id_db = new net::SQLiteChannelIDStore(
-        channel_id_path_,
-        base::CreateSequencedTaskRunnerWithTraits(
-            {base::MayBlock(), base::TaskPriority::BEST_EFFORT}));
-
-    channel_id_service.reset(new net::ChannelIDService(
-        new net::DefaultChannelIDStore(channel_id_db.get())));
-  }
 
   // Android provides a local HTTP proxy that handles all the proxying.
   // Create the proxy without a resolver since we rely on this local HTTP proxy.
@@ -292,45 +274,44 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
       *base::CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(kProxyServerSwitch)) {
     std::string proxy = command_line.GetSwitchValueASCII(kProxyServerSwitch);
+    net::ProxyConfig proxy_config;
+    proxy_config.proxy_rules().ParseFromString(proxy);
+    if (command_line.HasSwitch(kProxyBypassListSwitch)) {
+      std::string bypass_list =
+          command_line.GetSwitchValueASCII(kProxyBypassListSwitch);
+      proxy_config.proxy_rules().bypass_rules.ParseFromString(bypass_list);
+    }
+
     builder.set_proxy_resolution_service(
-        net::ProxyResolutionService::CreateFixed(proxy,
-                                                 NO_TRAFFIC_ANNOTATION_YET));
+        net::ProxyResolutionService::CreateFixed(net::ProxyConfigWithAnnotation(
+            proxy_config, NO_TRAFFIC_ANNOTATION_YET)));
   } else {
-    // Retain a pointer to the config proxy service before ownership is passed
-    // on.
-    proxy_config_service_android_ = proxy_config_service_.get();
     builder.set_proxy_resolution_service(
         net::ProxyResolutionService::CreateWithoutProxyResolver(
             std::move(proxy_config_service_), net_log_));
   }
   builder.set_net_log(net_log_);
-  builder.SetCookieAndChannelIdStores(std::make_unique<AwCookieStoreWrapper>(),
-                                      std::move(channel_id_service));
+  builder.SetCookieStore(std::make_unique<AwCookieStoreWrapper>());
 
   net::URLRequestContextBuilder::HttpCacheParams cache_params;
-  // Note: we create this as IN_MEMORY when the network service is enabled
-  // only as a temporary measure, to avoid accessing the same HTTP cache from
-  // two spots in the code.
   cache_params.type =
-      base::FeatureList::IsEnabled(network::features::kNetworkService)
-          ? net::URLRequestContextBuilder::HttpCacheParams::IN_MEMORY
-          : net::URLRequestContextBuilder::HttpCacheParams::DISK_SIMPLE;
-  cache_params.max_size = 20 * 1024 * 1024;  // 20M
+      net::URLRequestContextBuilder::HttpCacheParams::DISK_SIMPLE;
+  cache_params.max_size = GetHttpCacheSize();
   cache_params.path = cache_path_;
   builder.EnableHttpCache(cache_params);
 
   net::HttpNetworkSession::Params network_session_params;
   ApplyCmdlineOverridesToNetworkSessionParams(&network_session_params);
   builder.set_http_network_session_params(network_session_params);
+
+  // Quic is not currently supported in WebView (http://crbug.com/763187).
   builder.SetSpdyAndQuicEnabled(true, false);
 
-  std::unique_ptr<net::MappedHostResolver> host_resolver(
-      new net::MappedHostResolver(
-          net::HostResolver::CreateDefaultResolver(nullptr)));
-  ApplyCmdlineOverridesToHostResolver(host_resolver.get());
-  builder.SetHttpAuthHandlerFactory(
-      CreateAuthHandlerFactory(host_resolver.get()));
-  builder.set_host_resolver(std::move(host_resolver));
+  builder.SetHttpAuthHandlerFactory(CreateAuthHandlerFactory());
+  builder.set_host_mapping_rules(GetCmdlineOverridesForHostResolver());
+
+  // Context copy allowed because NetworkService is confirmed disabled.
+  builder.set_allow_copy();
 
   url_request_context_ = builder.Build();
 
@@ -355,13 +336,6 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
   url_request_context_->set_job_factory(job_factory_.get());
   url_request_context_->set_http_user_agent_settings(
       http_user_agent_settings_.get());
-}
-
-// static
-void AwURLRequestContextGetter::RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterStringPref(prefs::kAuthServerWhitelist, std::string());
-  registry->RegisterStringPref(prefs::kAuthAndroidNegotiateAccountType,
-                               std::string());
 }
 
 // static
@@ -393,21 +367,13 @@ void AwURLRequestContextGetter::SetHandlersAndInterceptors(
 }
 
 std::unique_ptr<net::HttpAuthHandlerFactory>
-AwURLRequestContextGetter::CreateAuthHandlerFactory(
-    net::HostResolver* resolver) {
-  DCHECK(resolver);
-
-  // In Chrome this is configurable via the AuthSchemes policy. For WebView
-  // there is no interest to have it available so far.
-  std::vector<std::string> supported_schemes = {"basic", "digest", "ntlm",
-                                                "negotiate"};
-
+AwURLRequestContextGetter::CreateAuthHandlerFactory() {
   http_auth_preferences_.reset(new net::HttpAuthPreferences());
   UpdateServerWhitelist();
   UpdateAndroidAuthNegotiateAccountType();
 
   return net::HttpAuthHandlerRegistryFactory::Create(
-      resolver, http_auth_preferences_.get(), supported_schemes);
+      http_auth_preferences_.get(), AwBrowserContext::GetAuthSchemes());
 }
 
 void AwURLRequestContextGetter::UpdateServerWhitelist() {
@@ -419,21 +385,19 @@ void AwURLRequestContextGetter::UpdateAndroidAuthNegotiateAccountType() {
       auth_android_negotiate_account_type_.GetValue());
 }
 
-void AwURLRequestContextGetter::SetProxyOverride(
-    const std::string& host,
-    int port,
-    const std::vector<std::string>& exclusion_list,
+std::string AwURLRequestContextGetter::SetProxyOverride(
+    const std::vector<net::ProxyConfigServiceAndroid::ProxyOverrideRule>&
+        proxy_rules,
+    const std::vector<std::string>& bypass_rules,
     base::OnceClosure callback) {
-  if (proxy_config_service_android_ != NULL) {
-    proxy_config_service_android_->SetProxyOverride(host, port, exclusion_list,
-                                                    std::move(callback));
-  }
+  DCHECK(proxy_config_service_android_ != nullptr);
+  return proxy_config_service_android_->SetProxyOverride(
+      proxy_rules, bypass_rules, std::move(callback));
 }
 
 void AwURLRequestContextGetter::ClearProxyOverride(base::OnceClosure callback) {
-  if (proxy_config_service_android_ != NULL) {
-    proxy_config_service_android_->ClearProxyOverride(std::move(callback));
-  }
+  DCHECK(proxy_config_service_android_ != nullptr);
+  proxy_config_service_android_->ClearProxyOverride(std::move(callback));
 }
 
 }  // namespace android_webview

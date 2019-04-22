@@ -175,7 +175,7 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
     '''
     example_value = policy['example_value']
     self.AddElement(parent, 'dt', {}, 'Mac:')
-    mac = self._AddStyledElement(parent, 'dd', ['.monospace', '.pre'])
+    mac = self._AddStyledElement(parent, 'dd', ['.monospace', '.pre-wrap'])
 
     mac_text = ['<array>']
     for item in example_value:
@@ -197,7 +197,7 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
     os_header = self._GetLocalizedMessage('win_example_value') if is_win else \
                 self._GetLocalizedMessage('chrome_os_example_value')
     self.AddElement(parent, 'dt', {}, os_header)
-    element = self._AddStyledElement(parent, 'dd', ['.monospace', '.pre'])
+    element = self._AddStyledElement(parent, 'dd', ['.monospace', '.pre-wrap'])
     element_text = []
     cnt = 1
     key_name = self._GetRegistryKeyName(policy, is_win)
@@ -225,11 +225,10 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
     '''
     example_value = policy['example_value']
     self.AddElement(parent, 'dt', {}, 'Android/Linux:')
-    element = self._AddStyledElement(parent, 'dd', ['.monospace'])
-    text = []
-    for item in example_value:
-      text.append('"%s"' % item)
-    self.AddText(element, '[%s]' % ', '.join(text))
+    element = self._AddStyledElement(parent, 'dd', ['.monospace', '.pre-wrap'])
+    self.AddText(
+        element,
+        '[\n%s\n]' % ',\n'.join('  "%s"' % item for item in example_value))
 
   def _AddListExample(self, parent, policy):
     '''Adds the example value of a 'list' policy to a DOM node. Example output:
@@ -245,7 +244,12 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
         Software\Policies\ChromiumOS\DisabledPlugins\1 = "Shockwave Flash"
       </dd>
       <dt>Android/Linux:</dt>
-      <dd>["Java", "Shockwave Flash"]</dd>
+      <dd>
+        [
+          "Java",
+          "Shockwave Flash"
+        ]
+      </dd>
       <dt>Mac:</dt>
       <dd>
         <array>
@@ -309,7 +313,7 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
     '''
     example_value = policy['example_value']
     self.AddElement(parent, 'dt', {}, 'Mac:')
-    mac = self._AddStyledElement(parent, 'dd', ['.monospace', '.pre'])
+    mac = self._AddStyledElement(parent, 'dd', ['.monospace', '.pre-wrap'])
     mac_text = ['<key>%s</key>' % (policy['name'])]
     mac_text += self._PythonObjectToPlist(example_value)
     self.AddText(mac, '\n'.join(mac_text))
@@ -326,9 +330,9 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
     os_header = self._GetLocalizedMessage('win_example_value') if is_win else \
                 self._GetLocalizedMessage('chrome_os_example_value')
     self.AddElement(parent, 'dt', {}, os_header)
-    element = self._AddStyledElement(parent, 'dd', ['.monospace', '.pre'])
+    element = self._AddStyledElement(parent, 'dd', ['.monospace', '.pre-wrap'])
     key_name = self._GetRegistryKeyName(policy, is_win)
-    example = json.dumps(policy['example_value'])
+    example = json.dumps(policy['example_value'], indent=2, sort_keys=True)
     self.AddText(element, '%s\\%s = %s' % (key_name, policy['name'], example))
 
   def _AddDictionaryExampleAndroidLinux(self, parent, policy):
@@ -341,8 +345,8 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
         is generated.
     '''
     self.AddElement(parent, 'dt', {}, 'Android/Linux:')
-    element = self._AddStyledElement(parent, 'dd', ['.monospace'])
-    example = json.dumps(policy['example_value'])
+    element = self._AddStyledElement(parent, 'dd', ['.monospace', '.pre-wrap'])
+    example = json.dumps(policy['example_value'], indent=2, sort_keys=True)
     self.AddText(element, '%s: %s' % (policy['name'], example))
 
   def _AddDictionaryExample(self, parent, policy):
@@ -352,16 +356,21 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
     <dl>
       <dt>Windows (Windows clients):</dt>
       <dd>
-        Software\Policies\Chromium\ProxySettings = "{ 'ProxyMode': 'direct' }"
+        Software\Policies\Chromium\ProxySettings = {
+          "ProxyMode": "direct"
+        }
       </dd>
       <dt>Windows (Chromium OS clients):</dt>
       <dd>
-        Software\Policies\ChromiumOS\ProxySettings = "{ 'ProxyMode': 'direct' }"
+        Software\Policies\ChromiumOS\ProxySettings = {
+          "ProxyMode": "direct"
+        }
       </dd>
       <dt>Android/Linux:</dt>
-      <dd>"ProxySettings": {
-        "ProxyMode": "direct"
-      }
+      <dd>
+        ProxySettings: {
+          "ProxyMode": "direct"
+        }
       </dd>
       <dt>Mac:</dt>
       <dd>
@@ -499,6 +508,22 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
       # Add the list element:
       self.AddElement(ul, 'li', {}, ' '.join(text))
 
+  def _AddRangeRestrictionsList(self, parent, schema):
+    '''Creates a HTML list containing range restrictions for an integer type
+    policy.
+
+    Args:
+      parent: The DOM node for which the list will be added.
+      schema: The schema of the policy.
+    '''
+    ul = self._AddStyledElement(parent, 'ul', ['ul'])
+    if 'minimum' in schema:
+      text_min = self._GetLocalizedMessage('range_minimum')
+      self.AddElement(ul, 'li', {}, text_min + str(schema['minimum']))
+    if 'maximum' in schema:
+      text_max = self._GetLocalizedMessage('range_maximum')
+      self.AddElement(ul, 'li', {}, text_max + str(schema['maximum']))
+
   def _AddPolicyDetails(self, parent, policy):
     '''Adds the list of attributes of a policy to the HTML DOM node parent.
     It will have the form:
@@ -562,6 +587,10 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
     self._AddFeatures(dd, policy)
     dd = self._AddPolicyAttribute(dl, 'description')
     self._AddDescription(dd, policy)
+    if 'schema' in policy:
+      if self.SchemaHasRangeRestriction(policy['schema']):
+        dd = self._AddPolicyAttribute(dl, 'policy_restriction')
+        self._AddRangeRestrictionsList(dd, policy['schema'])
     if 'arc_support' in policy:
       dd = self._AddPolicyAttribute(dl, 'arc_support')
       self._AddParagraphs(dd, policy['arc_support'])
@@ -649,6 +678,13 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
                              policy['desc'])
     self.AddElement(parent2, 'a', {'href': '#top'},
                     self._GetLocalizedMessage('back_to_top'))
+
+  def SchemaHasRangeRestriction(self, schema):
+    if 'maximum' in schema:
+      return True
+    if 'minimum' in schema:
+      return schema['minimum'] != 0
+    return False
 
   #
   # Implementation of abstract methods of TemplateWriter:
@@ -768,7 +804,7 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
         'dt': 'font-weight: bold;',
         'dd dl': 'margin-top: 0px; margin-bottom: 0px;',
         '.monospace': 'font-family: monospace;',
-        '.pre': 'white-space: pre;',
+        '.pre-wrap': 'white-space: pre-wrap;',
         'div.note': 'border: 2px solid black; padding: 5px; margin: 5px;',
         'div.group_desc': 'margin-top: 20px; margin-bottom: 20px;',
         'ul': 'padding-left: 0px; margin-left: 0px;'

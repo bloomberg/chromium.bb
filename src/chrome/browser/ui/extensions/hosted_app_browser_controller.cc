@@ -4,9 +4,7 @@
 
 #include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 
-#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -26,7 +24,6 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/renderer_preferences.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
 #include "extensions/browser/extension_registry.h"
@@ -34,6 +31,7 @@
 #include "extensions/browser/management_policy.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
+#include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
@@ -46,9 +44,7 @@ bool IsSiteSecure(const content::WebContents* web_contents) {
   const SecurityStateTabHelper* helper =
       SecurityStateTabHelper::FromWebContents(web_contents);
   if (helper) {
-    security_state::SecurityInfo security_info;
-    helper->GetSecurityInfo(&security_info);
-    switch (security_info.security_level) {
+    switch (helper->GetSecurityLevel()) {
       case security_state::SECURITY_LEVEL_COUNT:
         NOTREACHED();
         return false;
@@ -75,9 +71,22 @@ bool IsSameHostAndPort(const GURL& app_url, const GURL& page_url) {
          app_url.port() == page_url.port();
 }
 
-// Returns true if |page_url| is in the scope of the app for |app_url|. If the
-// app has no scope defined (as in a bookmark app), we fall back to checking
-// |page_url| has the same origin as |app_url|.
+// Gets the icon to use if the extension app icon is not available.
+gfx::ImageSkia GetFallbackAppIcon(Browser* browser) {
+  gfx::ImageSkia page_icon = browser->GetCurrentPageIcon().AsImageSkia();
+  if (!page_icon.isNull())
+    return page_icon;
+
+  // The extension icon may be loading still. Return a transparent icon rather
+  // than using a placeholder to avoid flickering.
+  SkBitmap bitmap;
+  bitmap.allocN32Pixels(gfx::kFaviconSize, gfx::kFaviconSize);
+  bitmap.eraseColor(SK_ColorTRANSPARENT);
+  return gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
+}
+
+}  // namespace
+
 bool IsSameScope(const GURL& app_url,
                  const GURL& page_url,
                  content::BrowserContext* profile) {
@@ -99,35 +108,9 @@ bool IsSameScope(const GURL& app_url,
              profile, page_url, extensions::LAUNCH_CONTAINER_WINDOW);
 }
 
-// Gets the icon to use if the extension app icon is not available.
-gfx::ImageSkia GetFallbackAppIcon(Browser* browser) {
-  gfx::ImageSkia page_icon = browser->GetCurrentPageIcon().AsImageSkia();
-  if (!page_icon.isNull())
-    return page_icon;
-
-  // The extension icon may be loading still. Return a transparent icon rather
-  // than using a placeholder to avoid flickering.
-  SkBitmap bitmap;
-  bitmap.allocN32Pixels(gfx::kFaviconSize, gfx::kFaviconSize);
-  bitmap.eraseColor(SK_ColorTRANSPARENT);
-  return gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
-}
-
-}  // namespace
-
-const char kPwaWindowEngagementTypeHistogram[] =
-    "Webapp.Engagement.EngagementType";
-
-// static
-bool HostedAppBrowserController::IsForExperimentalHostedAppBrowser(
-    const Browser* browser) {
-  return browser && browser->hosted_app_controller() &&
-         browser->hosted_app_controller()->IsForExperimentalHostedAppBrowser();
-}
-
 // static
 void HostedAppBrowserController::SetAppPrefsForWebContents(
-    HostedAppBrowserController* controller,
+    WebAppBrowserController* controller,
     content::WebContents* web_contents) {
   auto* rvh = web_contents->GetRenderViewHost();
 
@@ -135,29 +118,21 @@ void HostedAppBrowserController::SetAppPrefsForWebContents(
   rvh->SyncRendererPrefs();
 
   // This function could be called for non Hosted Apps.
-  if (!controller)
+  if (!controller || !controller->IsHostedApp())
     return;
 
+  // All hosted apps should specify an app ID.
+  DCHECK(controller->GetAppId());
   extensions::TabHelper::FromWebContents(web_contents)
-      ->SetExtensionApp(controller->GetExtension());
+      ->SetExtensionApp(ExtensionRegistry::Get(controller->browser()->profile())
+                            ->GetExtensionById(*controller->GetAppId(),
+                                               ExtensionRegistry::EVERYTHING));
 
   web_contents->NotifyPreferencesChanged();
 }
 
-base::string16 HostedAppBrowserController::FormatUrlOrigin(const GURL& url) {
-  return url_formatter::FormatUrl(
-      url.GetOrigin(),
-      url_formatter::kFormatUrlOmitUsernamePassword |
-          url_formatter::kFormatUrlOmitHTTPS |
-          url_formatter::kFormatUrlOmitHTTP |
-          url_formatter::kFormatUrlOmitTrailingSlashOnBareHostname |
-          url_formatter::kFormatUrlOmitTrivialSubdomains,
-      net::UnescapeRule::SPACES, nullptr, nullptr, nullptr);
-}
-
 HostedAppBrowserController::HostedAppBrowserController(Browser* browser)
-    : SiteEngagementObserver(SiteEngagementService::Get(browser->profile())),
-      browser_(browser),
+    : WebAppBrowserController(browser),
       extension_id_(web_app::GetAppIdFromApplicationName(browser->app_name())),
       // If a bookmark app has a URL handler, then it is a PWA.
       // TODO(https://crbug.com/774918): Replace once there is a more explicit
@@ -165,11 +140,19 @@ HostedAppBrowserController::HostedAppBrowserController(Browser* browser)
       created_for_installed_pwa_(
           base::FeatureList::IsEnabled(::features::kDesktopPWAWindowing) &&
           UrlHandlers::GetUrlHandlers(GetExtension())) {
-  browser_->tab_strip_model()->AddObserver(this);
+  WebAppBrowserController::browser()->tab_strip_model()->AddObserver(this);
 }
 
 HostedAppBrowserController::~HostedAppBrowserController() {
-  browser_->tab_strip_model()->RemoveObserver(this);
+  browser()->tab_strip_model()->RemoveObserver(this);
+}
+
+base::Optional<std::string> HostedAppBrowserController::GetAppId() const {
+  return extension_id_;
+}
+
+bool HostedAppBrowserController::CreatedForInstalledPwa() const {
+  return created_for_installed_pwa_;
 }
 
 bool HostedAppBrowserController::IsForSystemWebApp() const {
@@ -179,12 +162,11 @@ bool HostedAppBrowserController::IsForSystemWebApp() const {
          extension->location() == Manifest::EXTERNAL_COMPONENT;
 }
 
-bool HostedAppBrowserController::IsForExperimentalHostedAppBrowser() const {
-  return base::FeatureList::IsEnabled(::features::kDesktopPWAWindowing);
+bool HostedAppBrowserController::IsHostedApp() const {
+  return true;
 }
 
 bool HostedAppBrowserController::ShouldShowToolbar() const {
-  // The extension can be null if this is invoked after uninstall.
   const Extension* extension = GetExtension();
   if (!extension)
     return false;
@@ -192,7 +174,7 @@ bool HostedAppBrowserController::ShouldShowToolbar() const {
   DCHECK(extension->is_hosted_app());
 
   content::WebContents* web_contents =
-      browser_->tab_strip_model()->GetActiveWebContents();
+      browser()->tab_strip_model()->GetActiveWebContents();
 
   // Don't show a toolbar until a navigation has occurred.
   if (!web_contents || web_contents->GetLastCommittedURL().is_empty())
@@ -241,55 +223,60 @@ bool HostedAppBrowserController::ShouldShowToolbar() const {
   return false;
 }
 
-void HostedAppBrowserController::UpdateToolbarVisibility(bool animate) const {
-  browser_->window()->UpdateToolbarVisibility(ShouldShowToolbar(), animate);
-}
-
 bool HostedAppBrowserController::ShouldShowHostedAppButtonContainer() const {
   // System Web Apps don't get the Hosted App buttons.
-  return IsForExperimentalHostedAppBrowser() && !IsForSystemWebApp();
+  return IsForExperimentalWebAppBrowser() && !IsForSystemWebApp();
 }
 
 gfx::ImageSkia HostedAppBrowserController::GetWindowAppIcon() const {
   // TODO(calamity): Use the app name to retrieve the app icon without using the
   // extensions tab helper to make icon load more immediate.
   content::WebContents* contents =
-      browser_->tab_strip_model()->GetActiveWebContents();
+      browser()->tab_strip_model()->GetActiveWebContents();
   if (!contents)
-    return GetFallbackAppIcon(browser_);
+    return GetFallbackAppIcon(browser());
 
   extensions::TabHelper* extensions_tab_helper =
       extensions::TabHelper::FromWebContents(contents);
   if (!extensions_tab_helper)
-    return GetFallbackAppIcon(browser_);
+    return GetFallbackAppIcon(browser());
 
   const SkBitmap* icon_bitmap = extensions_tab_helper->GetExtensionAppIcon();
   if (!icon_bitmap)
-    return GetFallbackAppIcon(browser_);
+    return GetFallbackAppIcon(browser());
 
   return gfx::ImageSkia::CreateFrom1xBitmap(*icon_bitmap);
 }
 
 gfx::ImageSkia HostedAppBrowserController::GetWindowIcon() const {
-  if (IsForExperimentalHostedAppBrowser(browser_))
+  if (IsForExperimentalWebAppBrowser())
     return GetWindowAppIcon();
 
-  return browser_->GetCurrentPageIcon().AsImageSkia();
+  return browser()->GetCurrentPageIcon().AsImageSkia();
 }
 
 base::Optional<SkColor> HostedAppBrowserController::GetThemeColor() const {
-  ExtensionRegistry* registry = ExtensionRegistry::Get(browser_->profile());
-  const Extension* extension =
-      registry->GetExtensionById(extension_id_, ExtensionRegistry::EVERYTHING);
-  if (extension) {
-    const base::Optional<SkColor> color =
-        AppThemeColorInfo::GetThemeColor(extension);
-    if (color) {
-      // The frame/tabstrip code expects an opaque color.
-      return SkColorSetA(*color, SK_AlphaOPAQUE);
-    }
+  base::Optional<SkColor> result;
+
+  const Extension* extension = GetExtension();
+  if (extension)
+    result = AppThemeColorInfo::GetThemeColor(extension);
+
+  // HTML meta theme-color tag overrides manifest theme_color, see spec:
+  // https://www.w3.org/TR/appmanifest/#theme_color-member
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  if (web_contents) {
+    base::Optional<SkColor> color = web_contents->GetThemeColor();
+    if (color)
+      result = color;
   }
-  return base::nullopt;
+
+  if (!result)
+    return base::nullopt;
+
+  // The frame/tabstrip code expects an opaque color.
+  return SkColorSetA(*result, SK_AlphaOPAQUE);
 }
 
 base::string16 HostedAppBrowserController::GetTitle() const {
@@ -304,7 +291,7 @@ base::string16 HostedAppBrowserController::GetTitle() const {
   }
 
   content::WebContents* web_contents =
-      browser_->tab_strip_model()->GetActiveWebContents();
+      browser()->tab_strip_model()->GetActiveWebContents();
   if (!web_contents)
     return base::string16();
 
@@ -313,8 +300,16 @@ base::string16 HostedAppBrowserController::GetTitle() const {
   return entry ? entry->GetTitle() : base::string16();
 }
 
+GURL HostedAppBrowserController::GetAppLaunchURL() const {
+  const Extension* extension = GetExtension();
+  if (!extension)
+    return GURL();
+
+  return AppLaunchInfo::GetLaunchWebURL(extension);
+}
+
 const Extension* HostedAppBrowserController::GetExtension() const {
-  return ExtensionRegistry::Get(browser_->profile())
+  return ExtensionRegistry::Get(browser()->profile())
       ->GetExtensionById(extension_id_, ExtensionRegistry::EVERYTHING);
 }
 
@@ -323,7 +318,8 @@ const Extension* HostedAppBrowserController::GetExtensionForTesting() const {
 }
 
 std::string HostedAppBrowserController::GetAppShortName() const {
-  return GetExtension()->short_name();
+  const Extension* extension = GetExtension();
+  return extension ? extension->short_name() : std::string();
 }
 
 base::string16 HostedAppBrowserController::GetFormattedUrlOrigin() const {
@@ -331,34 +327,20 @@ base::string16 HostedAppBrowserController::GetFormattedUrlOrigin() const {
 }
 
 bool HostedAppBrowserController::CanUninstall() const {
-  return extensions::ExtensionSystem::Get(browser_->profile())
+  return extensions::ExtensionSystem::Get(browser()->profile())
       ->management_policy()
       ->UserMayModifySettings(GetExtension(), nullptr);
 }
 
 void HostedAppBrowserController::Uninstall(UninstallReason reason,
                                            UninstallSource source) {
-  uninstall_dialog_.reset(ExtensionUninstallDialog::Create(
-      browser_->profile(), browser_->window()->GetNativeWindow(), this));
+  uninstall_dialog_ = ExtensionUninstallDialog::Create(
+      browser()->profile(), browser()->window()->GetNativeWindow(), this);
   uninstall_dialog_->ConfirmUninstall(GetExtension(), reason, source);
 }
 
-void HostedAppBrowserController::OnEngagementEvent(
-    content::WebContents* web_contents,
-    const GURL& /*url*/,
-    double /*score*/,
-    SiteEngagementService::EngagementType type) {
-  if (!created_for_installed_pwa_)
-    return;
-
-  // Check the event belongs to the controller's associated browser window.
-  if (!web_contents ||
-      web_contents != browser_->tab_strip_model()->GetActiveWebContents()) {
-    return;
-  }
-
-  UMA_HISTOGRAM_ENUMERATION(kPwaWindowEngagementTypeHistogram, type,
-                            SiteEngagementService::ENGAGEMENT_LAST);
+bool HostedAppBrowserController::IsInstalled() const {
+  return GetExtension();
 }
 
 void HostedAppBrowserController::OnTabStripModelChanged(
@@ -375,10 +357,15 @@ void HostedAppBrowserController::OnTabStripModelChanged(
 }
 
 void HostedAppBrowserController::OnTabInserted(content::WebContents* contents) {
+  DCHECK(!web_contents()) << "Hosted app windows are single tabbed only";
   HostedAppBrowserController::SetAppPrefsForWebContents(this, contents);
+  content::WebContentsObserver::Observe(contents);
 }
 
 void HostedAppBrowserController::OnTabRemoved(content::WebContents* contents) {
+  DCHECK_EQ(contents, web_contents());
+  content::WebContentsObserver::Observe(nullptr);
+
   auto* rvh = contents->GetRenderViewHost();
 
   contents->GetMutableRendererPrefs()->can_accept_load_drops = true;

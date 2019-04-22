@@ -110,7 +110,7 @@ lt{
         EZ{"euro zona"}
         FI{"Suomija"}
         FJ{"Fidžis"}
-        FK{"Folklando Salos"}
+        FK{"Folklando (Malvinų) Salos"}
         FM{"Mikronezija"}
         FO{"Farerų Salos"}
         FR{"Prancūzija"}
@@ -133,7 +133,7 @@ lt{
         GU{"Guamas"}
         GW{"Bisau Gvinėja"}
         GY{"Gajana"}
-        HK{"Ypatingasis Administracinis Kinijos Regionas Honkongas"}
+        HK{"Honkongas"}
         HM{"Herdo ir Makdonaldo Salos"}
         HN{"Hondūras"}
         HR{"Kroatija"}
@@ -183,11 +183,11 @@ lt{
         MF{"Sen Martenas"}
         MG{"Madagaskaras"}
         MH{"Maršalo Salos"}
-        MK{"Makedonija"}
+        MK{"Šiaurės Makedonija"}
         ML{"Malis"}
         MM{"Mianmaras (Birma)"}
         MN{"Mongolija"}
-        MO{"Ypatingasis Administracinis Kinijos Regionas Makao"}
+        MO{"Makao"}
         MP{"Marianos Šiaurinės Salos"}
         MQ{"Martinika"}
         MR{"Mauritanija"}
@@ -222,7 +222,7 @@ lt{
         PM{"Sen Pjeras ir Mikelonas"}
         PN{"Pitkerno salos"}
         PR{"Puerto Rikas"}
-        PS{"Palestinos teritorija"}
+        PS{"Palestina"}
         PT{"Portugalija"}
         PW{"Palau"}
         PY{"Paragvajus"}
@@ -287,6 +287,8 @@ lt{
         VU{"Vanuatu"}
         WF{"Volisas ir Futūna"}
         WS{"Samoa"}
+        XA{"XA"}
+        XB{"XB"}
         XK{"Kosovas"}
         YE{"Jemenas"}
         YT{"Majotas"}
@@ -297,9 +299,6 @@ lt{
     }
     Countries%short{
         GB{"JK"}
-        HK{"Honkongas"}
-        MO{"Makao"}
-        PS{"Palestina"}
         UN{"JT"}
         US{"JAV"}
     }
@@ -308,8 +307,7 @@ lt{
         CG{"Kongo Respublika"}
         CI{"Dramblio Kaulo Kranto Respublika"}
         CZ{"Čekijos Respublika"}
-        FK{"Folklando (Malvinų) Salos"}
-        MK{"Makedonijos Respublika"}
+        TL{"TL"}
     }
-    Version{"2.1.44.91"}
+    Version{"2.1.48.42"}
 }

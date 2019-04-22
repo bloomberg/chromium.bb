@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/payments/payments_validators.h"
 
 #include <ostream>  // NOLINT
+
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/modules/payments/payment_validation_errors.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -46,7 +47,7 @@ TEST_P(PaymentsCurrencyValidatorTest, IsValidCurrencyCodeFormat) {
       PaymentsValidators::IsValidCurrencyCodeFormat(GetParam().code, nullptr));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CurrencyCodes,
     PaymentsCurrencyValidatorTest,
     testing::Values(
@@ -98,7 +99,7 @@ TEST_P(PaymentsAmountValidatorTest, IsValidAmountFormat) {
                                                     "test value", nullptr));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     Amounts,
     PaymentsAmountValidatorTest,
     testing::Values(TestCase("0", true),
@@ -144,87 +145,22 @@ TEST_P(PaymentsRegionValidatorTest, IsValidCountryCodeFormat) {
       PaymentsValidators::IsValidCountryCodeFormat(GetParam().input, nullptr));
 }
 
-INSTANTIATE_TEST_CASE_P(CountryCodes,
-                        PaymentsRegionValidatorTest,
-                        testing::Values(TestCase("US", true),
-                                        // Invalid country code formats
-                                        TestCase("U1", false),
-                                        TestCase("U", false),
-                                        TestCase("us", false),
-                                        TestCase("USA", false),
-                                        TestCase("", false)));
-
-class PaymentsLanguageValidatorTest : public testing::TestWithParam<TestCase> {
-};
-
-TEST_P(PaymentsLanguageValidatorTest, IsValidLanguageCodeFormat) {
-  String error_message;
-  EXPECT_EQ(GetParam().expected_valid,
-            PaymentsValidators::IsValidLanguageCodeFormat(GetParam().input,
-                                                          &error_message))
-      << error_message;
-  EXPECT_EQ(GetParam().expected_valid, error_message.IsEmpty())
-      << error_message;
-
-  EXPECT_EQ(
-      GetParam().expected_valid,
-      PaymentsValidators::IsValidLanguageCodeFormat(GetParam().input, nullptr));
-}
-
-INSTANTIATE_TEST_CASE_P(LanguageCodes,
-                        PaymentsLanguageValidatorTest,
-                        testing::Values(TestCase("", true),
-                                        TestCase("en", true),
-                                        TestCase("eng", true),
-                                        // Invalid language code formats
-                                        TestCase("e1", false),
-                                        TestCase("en1", false),
-                                        TestCase("e", false),
-                                        TestCase("engl", false),
-                                        TestCase("EN", false)));
-
-class PaymentsScriptValidatorTest : public testing::TestWithParam<TestCase> {};
-
-TEST_P(PaymentsScriptValidatorTest, IsValidScriptCodeFormat) {
-  String error_message;
-  EXPECT_EQ(GetParam().expected_valid,
-            PaymentsValidators::IsValidScriptCodeFormat(GetParam().input,
-                                                        &error_message))
-      << error_message;
-  EXPECT_EQ(GetParam().expected_valid, error_message.IsEmpty())
-      << error_message;
-
-  EXPECT_EQ(
-      GetParam().expected_valid,
-      PaymentsValidators::IsValidScriptCodeFormat(GetParam().input, nullptr));
-}
-
-INSTANTIATE_TEST_CASE_P(ScriptCodes,
-                        PaymentsScriptValidatorTest,
-                        testing::Values(TestCase("", true),
-                                        TestCase("Latn", true),
-                                        // Invalid script code formats
-                                        TestCase("Lat1", false),
-                                        TestCase("1lat", false),
-                                        TestCase("Latin", false),
-                                        TestCase("Lat", false),
-                                        TestCase("latn", false),
-                                        TestCase("LATN", false)));
+INSTANTIATE_TEST_SUITE_P(CountryCodes,
+                         PaymentsRegionValidatorTest,
+                         testing::Values(TestCase("US", true),
+                                         // Invalid country code formats
+                                         TestCase("U1", false),
+                                         TestCase("U", false),
+                                         TestCase("us", false),
+                                         TestCase("USA", false),
+                                         TestCase("", false)));
 
 struct ShippingAddressTestCase {
-  ShippingAddressTestCase(const char* country_code,
-                          const char* language_code,
-                          const char* script_code,
-                          bool expected_valid)
-      : country_code(country_code),
-        language_code(language_code),
-        script_code(script_code),
-        expected_valid(expected_valid) {}
+  ShippingAddressTestCase(const char* country_code, bool expected_valid)
+      : country_code(country_code), expected_valid(expected_valid) {}
   ~ShippingAddressTestCase() = default;
 
   const char* country_code;
-  const char* language_code;
-  const char* script_code;
   bool expected_valid;
 };
 
@@ -235,8 +171,6 @@ TEST_P(PaymentsShippingAddressValidatorTest, IsValidShippingAddress) {
   payments::mojom::blink::PaymentAddressPtr address =
       payments::mojom::blink::PaymentAddress::New();
   address->country = GetParam().country_code;
-  address->language_code = GetParam().language_code;
-  address->script_code = GetParam().script_code;
 
   String error_message;
   EXPECT_EQ(GetParam().expected_valid,
@@ -249,24 +183,21 @@ TEST_P(PaymentsShippingAddressValidatorTest, IsValidShippingAddress) {
             PaymentsValidators::IsValidShippingAddress(address, nullptr));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ShippingAddresses,
     PaymentsShippingAddressValidatorTest,
-    testing::Values(
-        ShippingAddressTestCase("US", "en", "Latn", true),
-        ShippingAddressTestCase("US", "en", "", true),
-        ShippingAddressTestCase("US", "", "", true),
-        // Invalid shipping addresses
-        ShippingAddressTestCase("", "", "", false),
-        ShippingAddressTestCase("InvalidCountryCode", "", "", false),
-        ShippingAddressTestCase("US", "InvalidLanguageCode", "", false),
-        ShippingAddressTestCase("US", "en", "InvalidScriptCode", false),
-        ShippingAddressTestCase("US", "", "Latn", false)));
+    testing::Values(ShippingAddressTestCase("US", true),
+                    ShippingAddressTestCase("US", true),
+                    ShippingAddressTestCase("US", true),
+                    // Invalid shipping addresses
+                    ShippingAddressTestCase("", false),
+                    ShippingAddressTestCase("InvalidCountryCode", false)));
 
 struct ValidationErrorsTestCase {
   ValidationErrorsTestCase(bool expected_valid)
       : expected_valid(expected_valid) {}
 
+  const char* m_error = "";
   const char* m_payer_email = "";
   const char* m_payer_name = "";
   const char* m_payer_phone = "";
@@ -274,13 +205,11 @@ struct ValidationErrorsTestCase {
   const char* m_shipping_address_city = "";
   const char* m_shipping_address_country = "";
   const char* m_shipping_address_dependent_locality = "";
-  const char* m_shipping_address_language_code = "";
   const char* m_shipping_address_organization = "";
   const char* m_shipping_address_phone = "";
   const char* m_shipping_address_postal_code = "";
   const char* m_shipping_address_recipient = "";
   const char* m_shipping_address_region = "";
-  const char* m_shipping_address_region_code = "";
   const char* m_shipping_address_sorting_code = "";
   bool expected_valid;
 };
@@ -307,15 +236,14 @@ PaymentValidationErrors* toPaymentValidationErrors(
   shipping_address->setCountry(test_case.m_shipping_address_country);
   shipping_address->setDependentLocality(
       test_case.m_shipping_address_dependent_locality);
-  shipping_address->setLanguageCode(test_case.m_shipping_address_language_code);
   shipping_address->setOrganization(test_case.m_shipping_address_organization);
   shipping_address->setPhone(test_case.m_shipping_address_phone);
   shipping_address->setPostalCode(test_case.m_shipping_address_postal_code);
   shipping_address->setRecipient(test_case.m_shipping_address_recipient);
   shipping_address->setRegion(test_case.m_shipping_address_region);
-  shipping_address->setRegionCode(test_case.m_shipping_address_region_code);
   shipping_address->setSortingCode(test_case.m_shipping_address_sorting_code);
 
+  errors->setError(test_case.m_error);
   errors->setPayer(payer);
   errors->setShippingAddress(shipping_address);
 
@@ -336,10 +264,11 @@ TEST_P(PaymentsErrorMessageValidatorTest,
       << error_message;
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     PaymentValidationErrorss,
     PaymentsErrorMessageValidatorTest,
     testing::Values(
+        VALIDATION_ERRORS_TEST_CASE(error, "test", true),
         VALIDATION_ERRORS_TEST_CASE(payer_email, "test", true),
         VALIDATION_ERRORS_TEST_CASE(payer_name, "test", true),
         VALIDATION_ERRORS_TEST_CASE(payer_phone, "test", true),
@@ -352,9 +281,6 @@ INSTANTIATE_TEST_CASE_P(
         VALIDATION_ERRORS_TEST_CASE(shipping_address_dependent_locality,
                                     "test",
                                     true),
-        VALIDATION_ERRORS_TEST_CASE(shipping_address_language_code,
-                                    "test",
-                                    true),
         VALIDATION_ERRORS_TEST_CASE(shipping_address_organization,
                                     "test",
                                     true),
@@ -362,10 +288,10 @@ INSTANTIATE_TEST_CASE_P(
         VALIDATION_ERRORS_TEST_CASE(shipping_address_postal_code, "test", true),
         VALIDATION_ERRORS_TEST_CASE(shipping_address_recipient, "test", true),
         VALIDATION_ERRORS_TEST_CASE(shipping_address_region, "test", true),
-        VALIDATION_ERRORS_TEST_CASE(shipping_address_region_code, "test", true),
         VALIDATION_ERRORS_TEST_CASE(shipping_address_sorting_code,
                                     "test",
                                     true),
+        VALIDATION_ERRORS_TEST_CASE(error, LongString2049(), false),
         VALIDATION_ERRORS_TEST_CASE(payer_email, LongString2049(), false),
         VALIDATION_ERRORS_TEST_CASE(payer_name, LongString2049(), false),
         VALIDATION_ERRORS_TEST_CASE(payer_phone, LongString2049(), false),
@@ -384,9 +310,6 @@ INSTANTIATE_TEST_CASE_P(
         VALIDATION_ERRORS_TEST_CASE(shipping_address_dependent_locality,
                                     LongString2049(),
                                     false),
-        VALIDATION_ERRORS_TEST_CASE(shipping_address_language_code,
-                                    LongString2049(),
-                                    false),
         VALIDATION_ERRORS_TEST_CASE(shipping_address_organization,
                                     LongString2049(),
                                     false),
@@ -402,13 +325,32 @@ INSTANTIATE_TEST_CASE_P(
         VALIDATION_ERRORS_TEST_CASE(shipping_address_region,
                                     LongString2049(),
                                     false),
-        VALIDATION_ERRORS_TEST_CASE(shipping_address_region_code,
-                                    LongString2049(),
-                                    false),
         VALIDATION_ERRORS_TEST_CASE(shipping_address_sorting_code,
                                     LongString2049(),
                                     false)));
 
+TEST(PaymentMethodValidatorTest, IsValidPaymentMethod) {
+  const struct {
+    const char* payment_method;
+    bool expected_valid;
+  } kTestCases[] = {{"basic-card", true},
+                    {"https://bobpay.com", true},
+                    {"https://pay.bobpay.com", true},
+                    {"https://pay.bobpay.com/pay", true},
+                    {"https://pay.bobpay.com/pay?version=1", true},
+                    {"https://pay.bobpay.com/pay#", true},
+                    {"http://bobpay.com", false},
+                    {"https://username:password@bobpay.com", false},
+                    {"https://username@bobpay.com", false},
+                    {"unknown://bobpay.com", false},
+                    {"1card", false},
+                    {"Basic-card", false}};
+
+  for (const auto& test_case : kTestCases) {
+    EXPECT_EQ(test_case.expected_valid, PaymentsValidators::IsValidMethodFormat(
+                                            test_case.payment_method));
+  }
+}
 }  // namespace
 
 }  // namespace blink

@@ -36,7 +36,7 @@ PreviewsLitePageRedirectMetricsObserver::OnCommitCalled(
 
   previews::PreviewsUserData::ServerLitePageInfo* info =
       previews_data->server_lite_page_info();
-  if (!info)
+  if (!info || info->status == previews::ServerLitePageStatus::kUnknown)
     return STOP_OBSERVING;
 
   // Past this point, we know this navigation is a preview or at least attempted
@@ -48,13 +48,14 @@ PreviewsLitePageRedirectMetricsObserver::OnCommitCalled(
   data->set_session_key(info->drp_session_key);
   data->set_page_id(info->page_id);
   data->set_effective_connection_type(previews_data->navigation_ect());
+  data->set_lite_page_received(info->status ==
+                               previews::ServerLitePageStatus::kSuccess);
 
   data->set_connection_type(net::NetworkChangeNotifier::GetConnectionType());
   data->set_request_url(handle->GetURL());
   data->set_black_listed(previews_data->black_listed_for_lite_page());
   data->set_used_data_reduction_proxy(true);
   data->set_client_lofi_requested(false);
-  data->set_lite_page_received(false);
   data->set_lofi_policy_received(false);
   data->set_lofi_received(false);
   data->set_was_cached_data_reduction_proxy_response(false);

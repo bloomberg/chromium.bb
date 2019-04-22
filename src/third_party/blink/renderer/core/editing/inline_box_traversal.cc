@@ -146,9 +146,8 @@ class AbstractInlineBox {
       }
       return DirectionFromLevel(min_level);
     }
-    const NGPhysicalLineBoxFragment& line_box =
-        ToNGPhysicalLineBoxFragmentOrDie(
-            GetNGPaintFragment().ContainerLineBox()->PhysicalFragment());
+    const auto& line_box = To<NGPhysicalLineBoxFragment>(
+        GetNGPaintFragment().ContainerLineBox()->PhysicalFragment());
     return line_box.BaseDirection();
   }
 
@@ -189,8 +188,8 @@ bool IsAtFragmentStart(const NGCaretPosition& caret_position) {
     case NGCaretPositionType::kAfterBox:
       return false;
     case NGCaretPositionType::kAtTextOffset:
-      const NGPhysicalTextFragment& text_fragment =
-          ToNGPhysicalTextFragment(caret_position.fragment->PhysicalFragment());
+      const auto& text_fragment = To<NGPhysicalTextFragment>(
+          caret_position.fragment->PhysicalFragment());
       DCHECK(caret_position.text_offset.has_value());
       return *caret_position.text_offset == text_fragment.StartOffset();
   }
@@ -206,8 +205,8 @@ bool IsAtFragmentEnd(const NGCaretPosition& caret_position) {
     case NGCaretPositionType::kAfterBox:
       return true;
     case NGCaretPositionType::kAtTextOffset:
-      const NGPhysicalTextFragment& text_fragment =
-          ToNGPhysicalTextFragment(caret_position.fragment->PhysicalFragment());
+      const auto& text_fragment = To<NGPhysicalTextFragment>(
+          caret_position.fragment->PhysicalFragment());
       DCHECK(caret_position.text_offset.has_value());
       return *caret_position.text_offset == text_fragment.EndOffset();
   }
@@ -268,16 +267,13 @@ class AbstractInlineBoxAndSideAffinity {
     DCHECK(physical_fragment.IsInline());
 
     if (physical_fragment.IsBox()) {
-      DCHECK(physical_fragment.IsInline());
       return {&fragment,
               is_at_start ? NGCaretPositionType::kBeforeBox
                           : NGCaretPositionType::kAfterBox,
               base::nullopt};
     }
 
-    DCHECK(physical_fragment.IsText());
-    const NGPhysicalTextFragment& text_fragment =
-        ToNGPhysicalTextFragment(physical_fragment);
+    const auto& text_fragment = To<NGPhysicalTextFragment>(physical_fragment);
     return {
         &fragment, NGCaretPositionType::kAtTextOffset,
         is_at_start ? text_fragment.StartOffset() : text_fragment.EndOffset()};
@@ -289,9 +285,14 @@ class AbstractInlineBoxAndSideAffinity {
       return ToPositionInFlatTree(ToNGCaretPosition().ToPositionInDOMTree());
 
     const InlineBoxPosition inline_box_position = ToInlineBoxPosition();
-    return PositionInFlatTree::EditingPositionOf(
-        inline_box_position.inline_box->GetLineLayoutItem().GetNode(),
-        inline_box_position.offset_in_box);
+    const LineLayoutItem item =
+        inline_box_position.inline_box->GetLineLayoutItem();
+    const int text_start_offset =
+        item.IsText() ? LineLayoutText(item).TextStartOffset() : 0;
+    const int offset_in_node =
+        text_start_offset + inline_box_position.offset_in_box;
+    return PositionInFlatTree::EditingPositionOf(item.GetNode(),
+                                                 offset_in_node);
   }
 
   AbstractInlineBox GetBox() const { return box_; }
@@ -597,30 +598,34 @@ class RangeSelectionAdjuster {
 
  public:
   static SelectionInFlatTree AdjustFor(
-      const VisiblePositionInFlatTree& visible_base,
-      const VisiblePositionInFlatTree& visible_extent) {
-    DCHECK(visible_base.IsValid());
-    DCHECK(visible_extent.IsValid());
+      const PositionInFlatTreeWithAffinity& visible_base,
+      const PositionInFlatTreeWithAffinity& visible_extent) {
+    const SelectionInFlatTree& unchanged_selection =
+        SelectionInFlatTree::Builder()
+            .SetBaseAndExtent(visible_base.GetPosition(),
+                              visible_extent.GetPosition())
+            .Build();
+
+    if (RuntimeEnabledFeatures::BidiCaretAffinityEnabled()) {
+      if (NGInlineFormattingContextOf(visible_base.GetPosition()) ||
+          NGInlineFormattingContextOf(visible_extent.GetPosition()))
+        return unchanged_selection;
+    }
 
     RenderedPosition base = RenderedPosition::Create(visible_base);
     RenderedPosition extent = RenderedPosition::Create(visible_extent);
 
-    const SelectionInFlatTree& unchanged_selection =
-        SelectionInFlatTree::Builder()
-            .SetBaseAndExtent(visible_base.DeepEquivalent(),
-                              visible_extent.DeepEquivalent())
-            .Build();
-
     if (base.IsNull() || extent.IsNull() || base == extent ||
-        (!base.AtBidiBoundary() && !extent.AtBidiBoundary()))
+        (!base.AtBidiBoundary() && !extent.AtBidiBoundary())) {
       return unchanged_selection;
+    }
 
     if (base.AtBidiBoundary()) {
       if (ShouldAdjustBaseAtBidiBoundary(base, extent)) {
         const PositionInFlatTree adjusted_base =
             CreateVisiblePosition(base.GetPosition()).DeepEquivalent();
         return SelectionInFlatTree::Builder()
-            .SetBaseAndExtent(adjusted_base, visible_extent.DeepEquivalent())
+            .SetBaseAndExtent(adjusted_base, visible_extent.GetPosition())
             .Build();
       }
       return unchanged_selection;
@@ -630,7 +635,7 @@ class RangeSelectionAdjuster {
       const PositionInFlatTree adjusted_extent =
           CreateVisiblePosition(extent.GetPosition()).DeepEquivalent();
       return SelectionInFlatTree::Builder()
-          .SetBaseAndExtent(visible_base.DeepEquivalent(), adjusted_extent)
+          .SetBaseAndExtent(visible_base.GetPosition(), adjusted_extent)
           .Build();
     }
 
@@ -643,7 +648,7 @@ class RangeSelectionAdjuster {
 
    public:
     RenderedPosition() = default;
-    static RenderedPosition Create(const VisiblePositionInFlatTree&);
+    static RenderedPosition Create(const PositionInFlatTreeWithAffinity&);
 
     bool IsNull() const { return box_.IsNull(); }
     bool operator==(const RenderedPosition& other) const {
@@ -713,6 +718,7 @@ class RangeSelectionAdjuster {
     static BidiBoundaryType GetPotentialBidiBoundaryType(
         const NGCaretPosition& caret_position) {
       DCHECK(!caret_position.IsNull());
+      DCHECK(!RuntimeEnabledFeatures::BidiCaretAffinityEnabled());
       if (!IsAtFragmentStart(caret_position) &&
           !IsAtFragmentEnd(caret_position))
         return BidiBoundaryType::kNotBoundary;
@@ -723,12 +729,11 @@ class RangeSelectionAdjuster {
 
     // Helper function for Create().
     static RenderedPosition CreateUncanonicalized(
-        const VisiblePositionInFlatTree& position) {
-      if (position.IsNull() ||
-          !position.DeepEquivalent().AnchorNode()->GetLayoutObject())
+        const PositionInFlatTreeWithAffinity& position) {
+      if (position.IsNull() || !position.AnchorNode()->GetLayoutObject())
         return RenderedPosition();
       const PositionInFlatTreeWithAffinity adjusted =
-          ComputeInlineAdjustedPosition(position.ToPositionWithAffinity());
+          ComputeInlineAdjustedPosition(position);
       if (adjusted.IsNull())
         return RenderedPosition();
 
@@ -769,7 +774,7 @@ class RangeSelectionAdjuster {
 
 RangeSelectionAdjuster::RenderedPosition
 RangeSelectionAdjuster::RenderedPosition::Create(
-    const VisiblePositionInFlatTree& position) {
+    const PositionInFlatTreeWithAffinity& position) {
   const RenderedPosition uncanonicalized = CreateUncanonicalized(position);
   const BidiBoundaryType potential_type = uncanonicalized.bidi_boundary_type_;
   if (potential_type == BidiBoundaryType::kNotBoundary)
@@ -858,6 +863,7 @@ InlineBoxPosition BidiAdjustment::AdjustForCaretPositionResolution(
 
 NGCaretPosition BidiAdjustment::AdjustForCaretPositionResolution(
     const NGCaretPosition& caret_position) {
+  DCHECK(!RuntimeEnabledFeatures::BidiCaretAffinityEnabled());
   const AbstractInlineBoxAndSideAffinity unadjusted(caret_position);
   const AbstractInlineBoxAndSideAffinity adjusted =
       unadjusted.AtLeftSide()
@@ -880,6 +886,7 @@ InlineBoxPosition BidiAdjustment::AdjustForHitTest(
 
 NGCaretPosition BidiAdjustment::AdjustForHitTest(
     const NGCaretPosition& caret_position) {
+  DCHECK(!RuntimeEnabledFeatures::BidiCaretAffinityEnabled());
   const AbstractInlineBoxAndSideAffinity unadjusted(caret_position);
   const AbstractInlineBoxAndSideAffinity adjusted =
       unadjusted.AtLeftSide()
@@ -889,8 +896,8 @@ NGCaretPosition BidiAdjustment::AdjustForHitTest(
 }
 
 SelectionInFlatTree BidiAdjustment::AdjustForRangeSelection(
-    const VisiblePositionInFlatTree& base,
-    const VisiblePositionInFlatTree& extent) {
+    const PositionInFlatTreeWithAffinity& base,
+    const PositionInFlatTreeWithAffinity& extent) {
   return RangeSelectionAdjuster::AdjustFor(base, extent);
 }
 

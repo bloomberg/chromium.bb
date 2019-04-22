@@ -25,7 +25,9 @@ class ChromeMetricsServicesManagerClient;
 // setting up field trials, e.g. VariationsService, MetricsServicesManager etc.
 // before the full browser loop starts. The |local_state| is instantiated, and
 // its ownership will be taken by BrowserProcessImpl when the full browser
-// starts.
+// starts. Note: On Chrome OS, this class depends on
+// BrowserPolicyConnectorChromeOS whose behavior depends on DBusThreadManager
+// being initialized.
 class ChromeFeatureListCreator {
  public:
   ChromeFeatureListCreator();
@@ -38,6 +40,9 @@ class ChromeFeatureListCreator {
   // Sets the application locale and verifies (via a CHECK) that it matches
   // what was used when creating field trials.
   void SetApplicationLocale(const std::string& locale);
+
+  // Overrides cached UI strings on the resource bundle once it is initialized.
+  void OverrideCachedUIStrings();
 
   // Gets the MetricsServicesManagerClient* used in this class.
   metrics_services_manager::MetricsServicesManagerClient*
@@ -66,6 +71,10 @@ class ChromeFeatureListCreator {
     return browser_policy_connector_.get();
   }
   const std::string& actual_locale() { return actual_locale_; }
+
+  ChromeBrowserFieldTrials* browser_field_trials() {
+    return browser_field_trials_.get();
+  }
 
  private:
   void CreatePrefService();

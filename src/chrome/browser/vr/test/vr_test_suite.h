@@ -7,11 +7,9 @@
 
 #include "base/test/test_suite.h"
 
-namespace base {
-namespace test {
-class ScopedTaskEnvironment;
-}  // namespace test
-}  // namespace base
+namespace content {
+class TestBrowserThreadBundle;
+}  // namespace content
 
 namespace vr {
 
@@ -25,7 +23,7 @@ class VrTestSuite : public base::TestSuite {
   void Shutdown() override;
 
  private:
-  std::unique_ptr<base::test::ScopedTaskEnvironment> scoped_task_environment_;
+  std::unique_ptr<content::TestBrowserThreadBundle> thread_bundle_;
 
   DISALLOW_COPY_AND_ASSIGN(VrTestSuite);
 };

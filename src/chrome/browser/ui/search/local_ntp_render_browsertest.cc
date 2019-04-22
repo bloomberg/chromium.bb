@@ -55,8 +55,7 @@ class LocalNTPRenderTest : public InProcessBrowserTest {
  public:
   LocalNTPRenderTest() {
     // Making sure we are running with the Local NTP.
-    feature_list_.InitWithFeatures(
-        {features::kUseGoogleLocalNtp, ntp_tiles::kNtpCustomLinks}, {});
+    feature_list_.InitWithFeatures({features::kUseGoogleLocalNtp}, {});
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {

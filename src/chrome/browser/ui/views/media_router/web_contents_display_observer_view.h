@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/webui/media_router/web_contents_display_observer.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "ui/display/display.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -15,7 +16,8 @@ namespace media_router {
 
 class WebContentsDisplayObserverView : public WebContentsDisplayObserver,
                                        public BrowserListObserver,
-                                       public views::WidgetObserver {
+                                       public views::WidgetObserver,
+                                       public content::WebContentsObserver {
  public:
   WebContentsDisplayObserverView(content::WebContents* web_contents,
                                  base::RepeatingClosure callback);
@@ -33,6 +35,9 @@ class WebContentsDisplayObserverView : public WebContentsDisplayObserver,
   // WebContentsDisplayObserver overrides:
   const display::Display& GetCurrentDisplay() const override;
 
+  // content::WebContentsObserver overrides:
+  void WebContentsDestroyed() override;
+
  private:
   // Calls |callback_| if the WebContents is no longer on |display_|.
   void CheckForDisplayChange();
@@ -40,7 +45,7 @@ class WebContentsDisplayObserverView : public WebContentsDisplayObserver,
   // Returns the display that is the closest to |wdiget_|.
   virtual display::Display GetDisplayNearestWidget() const;
 
-  content::WebContents* const web_contents_;
+  content::WebContents* web_contents_;
 
   // The widget containing |web_contents_|.
   views::Widget* widget_;

@@ -192,6 +192,19 @@ class PRINTING_EXPORT PrintSettings {
     pages_per_sheet_ = pages_per_sheet;
   }
 
+#if defined(OS_CHROMEOS)
+  void set_send_user_info(bool send_user_info) {
+    send_user_info_ = send_user_info;
+  }
+  bool send_user_info() const { return send_user_info_; }
+
+  void set_username(const std::string& username) { username_ = username; }
+  const std::string& username() const { return username_; }
+
+  void set_pin_value(const std::string& pin_value) { pin_value_ = pin_value; }
+  const std::string& pin_value() const { return pin_value_; }
+#endif
+
   // Cookie generator. It is used to initialize PrintedDocument with its
   // associated PrintSettings, to be sure that each generated PrintedPage is
   // correctly associated with its corresponding PrintedDocument.
@@ -270,6 +283,17 @@ class PRINTING_EXPORT PrintSettings {
 
   // Number of pages per sheet.
   int pages_per_sheet_;
+
+#if defined(OS_CHROMEOS)
+  // Whether to send user info.
+  bool send_user_info_;
+
+  // Username if it's required by the printer.
+  std::string username_;
+
+  // PIN code entered by the user.
+  std::string pin_value_;
+#endif
 };
 
 }  // namespace printing

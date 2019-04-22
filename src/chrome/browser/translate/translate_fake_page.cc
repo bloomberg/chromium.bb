@@ -42,7 +42,7 @@ FakePageImpl::FakePageImpl()
     : called_translate_(false),
       called_revert_translation_(false),
       binding_(this) {}
-FakePageImpl::~FakePageImpl(){};
+FakePageImpl::~FakePageImpl() {}
 
 translate::mojom::PagePtr FakePageImpl::BindToNewPagePtr() {
   binding_.Close();
@@ -54,6 +54,8 @@ translate::mojom::PagePtr FakePageImpl::BindToNewPagePtr() {
 
 // translate::mojom::Page implementation.
 void FakePageImpl::Translate(const std::string& translate_script,
+                             network::mojom::URLLoaderFactoryPtr
+                                 unused_loader_factory_for_translate_script,
                              const std::string& source_lang,
                              const std::string& target_lang,
                              TranslateCallback callback) {

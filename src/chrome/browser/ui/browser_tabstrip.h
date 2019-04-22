@@ -12,6 +12,7 @@
 
 class Browser;
 class GURL;
+class TabGroupData;
 
 namespace gfx {
 class Rect;
@@ -22,7 +23,11 @@ namespace chrome {
 // Adds a tab to the tab strip of the specified browser and loads |url| into it.
 // If |url| is an empty URL, then the new tab-page is laoded. An |index| of -1
 // means to append it to the end of the tab strip.
-void AddTabAt(Browser* browser, const GURL& url, int index, bool foreground);
+void AddTabAt(Browser* browser,
+              const GURL& url,
+              int index,
+              bool foreground,
+              const TabGroupData* group = nullptr);
 
 // Adds a selected tab with the specified URL and transition, returns the
 // created WebContents.

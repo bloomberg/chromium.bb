@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//testing/test.gni")
 import("//build/config/compiler/compiler.gni")
+import("//testing/test.gni")
 
 if (is_android) {
   import("//build/config/android/rules.gni")
@@ -35,8 +35,8 @@ component("tracing") {
 
   if (is_android && can_unwind_with_cfi_table && is_official_build) {
     sources += [
-      "common/native_stack_sampler_android.cc",
-      "common/native_stack_sampler_android.h",
+      "common/stack_sampler_android.cc",
+      "common/stack_sampler_android.h",
       "common/stack_unwinder_android.cc",
       "common/stack_unwinder_android.h",
     ]
@@ -50,8 +50,6 @@ component("tracing") {
 
 component("startup_tracing") {
   sources = [
-    "common/trace_startup.cc",
-    "common/trace_startup.h",
     "common/trace_startup_config.cc",
     "common/trace_startup_config.h",
     "common/trace_to_console.cc",

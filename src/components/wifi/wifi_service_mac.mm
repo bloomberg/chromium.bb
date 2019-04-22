@@ -159,12 +159,13 @@ WiFiServiceMac::WiFiServiceMac() : wlan_observer_(nil) {
 }
 
 WiFiServiceMac::~WiFiServiceMac() {
+  UnInitialize();
 }
 
 void WiFiServiceMac::Initialize(
   scoped_refptr<base::SequencedTaskRunner> task_runner) {
   task_runner_.swap(task_runner);
-  interface_.reset([[CWInterface interface] retain]);
+  interface_.reset([[[CWWiFiClient sharedWiFiClient] interface] retain]);
   if (!interface_) {
     DVLOG(1) << "Failed to initialize default interface.";
     return;
@@ -400,8 +401,8 @@ void WiFiServiceMac::SetEventObservers(
             DVLOG(1) << "Received CWSSIDDidChangeNotification";
             task_runner_->PostTask(
                 FROM_HERE,
-                base::Bind(&WiFiServiceMac::OnWlanObserverNotification,
-                           base::Unretained(this)));
+                base::BindOnce(&WiFiServiceMac::OnWlanObserverNotification,
+                               base::Unretained(this)));
     };
 
     wlan_observer_ = [[NSNotificationCenter defaultCenter]
@@ -601,7 +602,8 @@ void WiFiServiceMac::NotifyNetworkListChanged(const NetworkList& networks) {
   }
 
   event_task_runner_->PostTask(
-      FROM_HERE, base::Bind(network_list_changed_observer_, current_networks));
+      FROM_HERE,
+      base::BindOnce(network_list_changed_observer_, current_networks));
 }
 
 void WiFiServiceMac::NotifyNetworkChanged(const std::string& network_guid) {
@@ -611,7 +613,7 @@ void WiFiServiceMac::NotifyNetworkChanged(const std::string& network_guid) {
   DVLOG(1) << "NotifyNetworkChanged: " << network_guid;
   NetworkGuidList changed_networks(1, network_guid);
   event_task_runner_->PostTask(
-      FROM_HERE, base::Bind(networks_changed_observer_, changed_networks));
+      FROM_HERE, base::BindOnce(networks_changed_observer_, changed_networks));
 }
 
 // static

@@ -391,18 +391,18 @@ TEST_F(NotificationViewTest, TestLineLimits) {
   notification()->set_image(CreateTestImage(2, 2));
   notification_view()->UpdateWithNotification(*notification());
 
-  EXPECT_EQ(2, notification_view()->GetMessageLineLimit(0, 360));
-  EXPECT_EQ(2, notification_view()->GetMessageLineLimit(1, 360));
-  EXPECT_EQ(1, notification_view()->GetMessageLineLimit(2, 360));
+  EXPECT_EQ(5, notification_view()->GetMessageLineLimit(0, 360));
+  EXPECT_EQ(5, notification_view()->GetMessageLineLimit(1, 360));
+  EXPECT_EQ(3, notification_view()->GetMessageLineLimit(2, 360));
 
   notification()->set_context_message(base::ASCIIToUTF16("foo"));
   notification_view()->UpdateWithNotification(*notification());
 
   EXPECT_TRUE(notification_view()->context_message_view_ != NULL);
 
-  EXPECT_EQ(1, notification_view()->GetMessageLineLimit(0, 360));
-  EXPECT_EQ(1, notification_view()->GetMessageLineLimit(1, 360));
-  EXPECT_EQ(0, notification_view()->GetMessageLineLimit(2, 360));
+  EXPECT_EQ(5, notification_view()->GetMessageLineLimit(0, 360));
+  EXPECT_EQ(5, notification_view()->GetMessageLineLimit(1, 360));
+  EXPECT_EQ(3, notification_view()->GetMessageLineLimit(2, 360));
 }
 
 TEST_F(NotificationViewTest, TestIconSizing) {

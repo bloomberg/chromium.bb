@@ -60,7 +60,7 @@ class MediaCodecBridge {
 
     private boolean mFlushed;
     private long mLastPresentationTimeUs;
-    private BitrateAdjuster mBitrateAdjuster;
+    private @BitrateAdjuster.Type int mBitrateAdjuster;
 
     // To support both the synchronous and asynchronous version of MediaCodec
     // (since we need to work on <M devices), we implement async support as a
@@ -238,7 +238,8 @@ class MediaCodecBridge {
         }
     };
 
-    MediaCodecBridge(MediaCodec mediaCodec, BitrateAdjuster bitrateAdjuster, boolean useAsyncApi) {
+    MediaCodecBridge(
+            MediaCodec mediaCodec, @BitrateAdjuster.Type int bitrateAdjuster, boolean useAsyncApi) {
         assert mediaCodec != null;
         mMediaCodec = mediaCodec;
         mLastPresentationTimeUs = 0;
@@ -545,7 +546,7 @@ class MediaCodecBridge {
     @TargetApi(Build.VERSION_CODES.KITKAT)
     @CalledByNative
     private void setVideoBitrate(int bps, int frameRate) {
-        int targetBps = mBitrateAdjuster.getTargetBitrate(bps, frameRate);
+        int targetBps = BitrateAdjuster.getTargetBitrate(mBitrateAdjuster, bps, frameRate);
         Bundle b = new Bundle();
         b.putInt(MediaCodec.PARAMETER_KEY_VIDEO_BITRATE, targetBps);
         try {

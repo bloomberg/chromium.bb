@@ -36,6 +36,10 @@ class ContentPaymentRequestDelegate : public PaymentRequestDelegate {
   virtual void EmbedPaymentHandlerWindow(
       const GURL& url,
       PaymentHandlerOpenWindowCallback callback) = 0;
+
+  // Returns whether user interaction is enabled. (False when showing a
+  // spinner.)
+  virtual bool IsInteractive() const = 0;
 };
 
 }  // namespace payments

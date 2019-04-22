@@ -32,6 +32,10 @@
 #include "base/posix/file_descriptor_shuffle.h"
 #endif
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+#include "base/mac/mach_port_rendezvous.h"
+#endif
+
 namespace base {
 
 class CommandLine;
@@ -161,19 +165,21 @@ struct BASE_EXPORT LaunchOptions {
   // the launched process if the current process has such permission.
   bool grant_foreground_privilege = false;
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
-  // Set/unset environment variables. These are applied on top of the parent
-  // process environment.  Empty (the default) means to inherit the same
-  // environment. See AlterEnvironment().
-  EnvironmentMap environ;
-
-  // Clear the environment for the new process before processing changes from
-  // |environ|.
-  bool clear_environ = false;
-
   // Remap file descriptors according to the mapping of src_fd->dest_fd to
   // propagate FDs into the child process.
   FileHandleMappingVector fds_to_remap;
 #endif  // defined(OS_WIN)
+
+#if defined(OS_WIN) || defined(OS_POSIX) || defined(OS_FUCHSIA)
+  // Set/unset environment variables. These are applied on top of the parent
+  // process environment.  Empty (the default) means to inherit the same
+  // environment. See internal::AlterEnvironment().
+  EnvironmentMap environment;
+
+  // Clear the environment for the new process before processing changes from
+  // |environment|.
+  bool clear_environment = false;
+#endif  // OS_WIN || OS_POSIX || OS_FUCHSIA
 
 #if defined(OS_LINUX)
   // If non-zero, start the process using clone(), using flags as provided.
@@ -190,6 +196,18 @@ struct BASE_EXPORT LaunchOptions {
   bool kill_on_parent_death = false;
 #endif  // defined(OS_LINUX)
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  // Mach ports that will be accessible to the child process. These are not
+  // directly inherited across process creation, but they are stored by a Mach
+  // IPC server that a child process can communicate with to retrieve them.
+  //
+  // After calling LaunchProcess(), any rights that were transferred with MOVE
+  // dispositions will be consumed, even on failure.
+  //
+  // See base/mac/mach_port_rendezvous.h for details.
+  MachPortsForRendezvous mach_ports_for_rendezvous;
+#endif
+
 #if defined(OS_FUCHSIA)
   // If valid, launches the application in that job object.
   zx_handle_t job_handle = ZX_HANDLE_INVALID;
@@ -199,7 +217,16 @@ struct BASE_EXPORT LaunchOptions {
   // PA_HND() macro. The child retrieves the handle
   // |zx_take_startup_handle(id)|. The supplied handles are consumed by
   // LaunchProcess() even on failure.
+  // Note that PA_USER1 ids are reserved for use by AddHandleToTransfer(), below
+  // and by convention PA_USER0 is reserved for use by the embedding
+  // application.
   HandlesToTransferVector handles_to_transfer;
+
+  // Allocates a unique id for |handle| in |handles_to_transfer|, inserts it,
+  // and returns the generated id.
+  static uint32_t AddHandleToTransfer(
+      HandlesToTransferVector* handles_to_transfer,
+      zx_handle_t handle);
 
   // Specifies which basic capabilities to grant to the child process.
   // By default the child process will receive the caller's complete namespace,

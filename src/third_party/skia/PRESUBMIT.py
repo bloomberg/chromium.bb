@@ -25,6 +25,8 @@ SKIA_TREE_STATUS_URL = 'http://skia-tree-status.appspot.com'
 
 # Please add the complete email address here (and not just 'xyz@' or 'xyz').
 PUBLIC_API_OWNERS = (
+    'mtklein@chromium.org',
+    'mtklein@google.com',
     'reed@chromium.org',
     'reed@google.com',
     'bsalomon@chromium.org',
@@ -43,7 +45,7 @@ GOLD_TRYBOT_URL = 'https://gold.skia.org/search?issue='
 SERVICE_ACCOUNT_SUFFIX = [
     '@%s.iam.gserviceaccount.com' % project for project in [
         'skia-buildbots.google.com', 'skia-swarming-bots', 'skia-public',
-        'skia-corp.google.com']]
+        'skia-corp.google.com', 'chops-service-accounts']]
 
 
 def _CheckChangeHasEol(input_api, output_api, source_file_filter=None):
@@ -60,36 +62,6 @@ def _CheckChangeHasEol(input_api, output_api, source_file_filter=None):
       'These files should end in a newline character:',
       items=eof_files)]
   return []
-
-
-def _PythonChecks(input_api, output_api):
-  """Run checks on any modified Python files."""
-  blacklist = [
-      r'infra[\\\/]bots[\\\/]recipes.py',
-
-      # Blacklist DEPS. Those under third_party are already covered by
-      # input_api.DEFAULT_BLACK_LIST.
-      r'common[\\\/].*',
-      r'buildtools[\\\/].*',
-      r'.*[\\\/]\.recipe_deps[\\\/].*',
-  ]
-  blacklist.extend(input_api.DEFAULT_BLACK_LIST)
-
-  pylint_disabled_warnings = (
-      'F0401',  # Unable to import.
-      'E0611',  # No name in module.
-      'W0232',  # Class has no __init__ method.
-      'E1002',  # Use of super on an old style class.
-      'W0403',  # Relative import used.
-      'R0201',  # Method could be a function.
-      'E1003',  # Using class name in super.
-      'W0613',  # Unused argument.
-      'W0105',  # String statement has no effect.
-  )
-  return input_api.canned_checks.RunPylint(
-      input_api, output_api,
-      disabled_warnings=pylint_disabled_warnings,
-      black_list=blacklist)
 
 
 def _JsonChecks(input_api, output_api):
@@ -251,7 +223,6 @@ def _CommonChecks(input_api, output_api):
         input_api, output_api, source_file_filter=sources))
     results.extend(input_api.canned_checks.CheckChangeHasNoStrayWhitespace(
         input_api, output_api, source_file_filter=sources))
-  results.extend(_PythonChecks(input_api, output_api))
   results.extend(_JsonChecks(input_api, output_api))
   results.extend(_IfDefChecks(input_api, output_api))
   results.extend(_CopyrightChecks(input_api, output_api,
@@ -472,12 +443,6 @@ def PostUploadHook(cl, change, output_api):
   This hook does the following:
   * Adds a link to preview docs changes if there are any docs changes in the CL.
   * Adds 'No-Try: true' if the CL contains only docs changes.
-  * Adds 'No-Tree-Checks: true' for non master branch changes since they do not
-    need to be gated on the master branch's tree.
-  * Adds 'No-Try: true' for non master branch changes since trybots do not yet
-    work on them.
-  * Adds 'No-Presubmit: true' for non master branch changes since those don't
-    run the presubmit checks.
   """
 
   results = []
@@ -526,30 +491,6 @@ def PostUploadHook(cl, change, output_api):
           output_api.PresubmitNotifyResult(
               'Automatically added a link to preview the docs changes to the '
               'CL\'s description'))
-
-    # If the target ref is not master then add 'No-Tree-Checks: true' and
-    # 'No-Try: true' to the CL's description if it does not already exist there.
-    target_ref = cl.GetRemoteBranch()[1]
-    if target_ref != 'refs/remotes/origin/master':
-      if not _FooterExists(footers, 'No-Tree-Checks', 'true'):
-        new_description_lines.append('No-Tree-Checks: true')
-        results.append(
-            output_api.PresubmitNotifyResult(
-                'Branch changes do not need to rely on the master branch\'s '
-                'tree status. Automatically added \'No-Tree-Checks: true\' to '
-                'the CL\'s description'))
-      if not _FooterExists(footers, 'No-Try', 'true'):
-        new_description_lines.append('No-Try: true')
-        results.append(
-            output_api.PresubmitNotifyResult(
-                'Trybots do not yet work for non-master branches. '
-                'Automatically added \'No-Try: true\' to the CL\'s '
-                'description'))
-      if not _FooterExists(footers, 'No-Presubmit', 'true'):
-        new_description_lines.append('No-Presubmit: true')
-        results.append(
-            output_api.PresubmitNotifyResult(
-                'Branch changes do not run the presubmit checks.'))
 
     # If the description has changed update it.
     if new_description_lines != original_description_lines:

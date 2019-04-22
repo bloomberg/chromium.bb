@@ -19,7 +19,7 @@ The following objects are allocated by Oilpan:
 * HeapVector<T>, HeapHashSet<T>, HeapHashMap<T, U> etc
 
 The implementation is in platform/heap/.
-See [BlinkGCDesign.md](../platform/heap/BlinkGCDesign.md) to learn the design.
+See [BlinkGCDesign.md](../heap/BlinkGCDesign.md) to learn the design.
 
 ### PartitionAlloc
 
@@ -74,7 +74,7 @@ you should use when allocating a new object:
 * Use Oilpan if you want a GC to manage the lifetime of the object.
 You need to make the object inherit from GarbageCollected<T> or
 GarbageCollectedFinalized<T>. See
-[BlinkGCAPIReference.md](../platform/heap/BlinkGCAPIReference.md) to learn
+[BlinkGCAPIReference.md](../heap/BlinkGCAPIReference.md) to learn
 programming with Oilpan.
 
 ```c++
@@ -88,8 +88,9 @@ void func() {
 ```
 
 * Use PartitionAlloc if you don't need a GC to manage the lifetime of
-the object (i.e., if RefPtr or OwnPtr is enough to manage the lifetime
-of the object). You need to add a USING_FAST_MALLOC macro to the object.
+the object (i.e., if scoped_refptr or unique_ptr is enough to manage the
+lifetime of the object). You need to add a USING_FAST_MALLOC macro to the
+object.
 
 ```c++
 class X {
@@ -159,7 +160,7 @@ void func() {
 }
 ```
 
-Note that these macros are inherited. See a comment in wtf/Allocator.h
+Note that these macros are inherited. See a comment in wtf/allocator.h
 for more details about the relationship between the macros and Oilpan.
 
 If you have any question, ask oilpan-reviews@chromium.org.

@@ -95,9 +95,9 @@ std::string StatusToString(BlobStatus status) {
     case BlobStatus::PENDING_TRANSPORT:
       return "BlobStatus::PENDING_TRANSPORT: Blob construction is pending on "
              "data transport from renderer.";
-    case BlobStatus::PENDING_INTERNALS:
-      return "BlobStatus::PENDING_INTERNALS: Blob construction is pending on "
-             "dependency blobs to finish construction.";
+    case BlobStatus::PENDING_REFERENCED_BLOBS:
+      return "BlobStatus::PENDING_REFERENCED_BLOBS: Blob construction is "
+             "pending on dependency blobs to finish construction.";
     case BlobStatus::PENDING_CONSTRUCTION:
       return "BlobStatus::PENDING_CONSTRUCTION: Blob construction is pending "
              "on resolving the UUIDs of refereneced blobs.";
@@ -225,11 +225,11 @@ void ViewBlobInternalsJob::GenerateHTMLForBlobData(
     const BlobEntry& blob_data,
     const std::string& content_type,
     const std::string& content_disposition,
-    int refcount,
+    size_t refcount,
     std::string* out) {
   StartHTMLList(out);
 
-  AddHTMLListItem(kRefcount, base::IntToString(refcount), out);
+  AddHTMLListItem(kRefcount, base::NumberToString(refcount), out);
   AddHTMLListItem(kStatus, StatusToString(blob_data.status()), out);
   if (!content_type.empty())
     AddHTMLListItem(kContentType, content_type, out);

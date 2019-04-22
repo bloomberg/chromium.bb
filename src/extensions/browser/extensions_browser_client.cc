@@ -102,4 +102,8 @@ UserScriptListener* ExtensionsBrowserClient::GetUserScriptListener() {
   return nullptr;
 }
 
+std::string ExtensionsBrowserClient::GetUserAgent() const {
+  return std::string();
+}
+
 }  // namespace extensions

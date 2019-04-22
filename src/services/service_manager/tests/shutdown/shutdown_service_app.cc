@@ -2,29 +2,32 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/macros.h"
+#include "base/message_loop/message_loop.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/service_manager/public/c/main.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_runner.h"
-#include "services/service_manager/tests/shutdown/shutdown_unittest.mojom.h"
+#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/cpp/service_executable/service_main.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
+#include "services/service_manager/tests/shutdown/shutdown.test-mojom.h"
 
 namespace service_manager {
 namespace {
 
-service_manager::ServiceRunner* g_app = nullptr;
-
 class ShutdownServiceApp : public Service, public mojom::ShutdownTestService {
  public:
-  ShutdownServiceApp() {
+  explicit ShutdownServiceApp(mojom::ServiceRequest request)
+      : service_binding_(this, std::move(request)) {
     registry_.AddInterface<mojom::ShutdownTestService>(
         base::Bind(&ShutdownServiceApp::Create, base::Unretained(this)));
   }
-  ~ShutdownServiceApp() override {}
+
+  ~ShutdownServiceApp() override = default;
 
  private:
-  // service_manager::Service:
+  // Service:
   void OnBindInterface(const BindSourceInfo& source_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override {
@@ -33,12 +36,13 @@ class ShutdownServiceApp : public Service, public mojom::ShutdownTestService {
 
   // mojom::ShutdownTestService:
   void SetClient(mojom::ShutdownTestClientPtr client) override {}
-  void ShutDown() override { g_app->Quit(); }
+  void ShutDown() override { Terminate(); }
 
   void Create(mojom::ShutdownTestServiceRequest request) {
     bindings_.AddBinding(this, std::move(request));
   }
 
+  ServiceBinding service_binding_;
   BinderRegistry registry_;
   mojo::BindingSet<mojom::ShutdownTestService> bindings_;
 
@@ -48,9 +52,7 @@ class ShutdownServiceApp : public Service, public mojom::ShutdownTestService {
 }  // namespace
 }  // namespace service_manager
 
-MojoResult ServiceMain(MojoHandle service_request_handle) {
-  service_manager::ServiceRunner runner(
-      new service_manager::ShutdownServiceApp);
-  service_manager::g_app = &runner;
-  return runner.Run(service_request_handle);
+void ServiceMain(service_manager::mojom::ServiceRequest request) {
+  base::MessageLoop message_loop;
+  service_manager::ShutdownServiceApp(std::move(request)).RunUntilTermination();
 }

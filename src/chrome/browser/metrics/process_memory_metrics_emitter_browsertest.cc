@@ -8,6 +8,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/trace_event_analyzer.h"
@@ -27,6 +28,7 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
+#include "services/resource_coordinator/public/cpp/memory_instrumentation/os_metrics.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
@@ -103,9 +105,7 @@ class ProcessMemoryMetricsEmitterFake : public ProcessMemoryMetricsEmitter {
     QuitIfFinished();
   }
 
-  void ReceivedProcessInfos(
-      std::vector<resource_coordinator::mojom::ProcessInfoPtr> process_infos)
-      override {
+  void ReceivedProcessInfos(std::vector<ProcessInfo> process_infos) override {
     ProcessMemoryMetricsEmitter::ReceivedProcessInfos(std::move(process_infos));
     finished_process_info_ = true;
     QuitIfFinished();
@@ -174,8 +174,9 @@ void CheckExperimentalMemoryMetrics(
     CheckMemoryMetric("Memory.Experimental.Renderer2.PartitionAlloc",
                       histogram_tester, count, ValueRestriction::NONE,
                       number_of_renderer_processes);
+    // V8 memory footprint can be below 1 MB, which is reported as zero.
     CheckMemoryMetric("Memory.Experimental.Renderer2.V8", histogram_tester,
-                      count, ValueRestriction::ABOVE_ZERO,
+                      count, ValueRestriction::NONE,
                       number_of_renderer_processes);
   }
   if (number_of_extension_processes) {
@@ -327,7 +328,7 @@ class ProcessMemoryMetricsEmitterTest
     const int64_t* value = ukm::TestUkmRecorder::GetEntryMetric(entry, name);
     ASSERT_TRUE(value) << name;
     EXPECT_GE(*value, 0) << name;
-    EXPECT_LE(*value, 10) << name;
+    EXPECT_LE(*value, 300) << name;
   }
 
   void CheckAllUkmEntries(size_t entry_count = 1u) {
@@ -582,8 +583,9 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
 #define MAYBE_FetchAndEmitMetricsWithHostedApps \
   DISABLED_FetchAndEmitMetricsWithHostedApps
 #else
+// TODO(crbug.com/943207): Re-enable this test once it's not flaky anymore.
 #define MAYBE_FetchAndEmitMetricsWithHostedApps \
-  FetchAndEmitMetricsWithHostedApps
+  DISABLED_FetchAndEmitMetricsWithHostedApps
 #endif
 IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
                        MAYBE_FetchAndEmitMetricsWithHostedApps) {
@@ -742,12 +744,9 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
   CheckPageInfoUkmMetrics(url, true);
 }
 
-#if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER)
-#define MAYBE_FetchThreeTimes DISABLED_FetchThreeTimes
-#else
-#define MAYBE_FetchThreeTimes FetchThreeTimes
-#endif
-IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest, MAYBE_FetchThreeTimes) {
+// Flaky test: https://crbug.com/731466
+IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
+                       DISABLED_FetchThreeTimes) {
   ASSERT_TRUE(embedded_test_server()->Start());
   const GURL url = embedded_test_server()->GetURL("foo.com", "/empty.html");
   ui_test_utils::NavigateToURLWithDisposition(
@@ -775,7 +774,10 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest, MAYBE_FetchThreeTimes) {
   CheckPageInfoUkmMetrics(url, true, count);
 }
 
-#if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER)
+// Test is flaky on chromeos and linux. https://crbug.com/938054.
+// Test is flaky on mac: https://crbug.com/948674.
+#if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) || \
+    defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_MACOSX)
 #define MAYBE_ForegroundAndBackgroundPages DISABLED_ForegroundAndBackgroundPages
 #else
 #define MAYBE_ForegroundAndBackgroundPages ForegroundAndBackgroundPages
@@ -832,4 +834,28 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
   CheckAllUkmEntries(2);
   CheckPageInfoUkmMetrics(url1, false /* is_visible */, 2);
   CheckPageInfoUkmMetrics(url2, true /* is_visible */, 2);
+}
+
+// Build id is only emitted for official builds.
+#if defined(OFFICIAL_BUILD)
+#define MAYBE_RendererBuildId RendererBuildId
+#else
+#define MAYBE_RendererBuildId DISABLED_RendererBuildId
+#endif
+IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest, MAYBE_RendererBuildId) {
+  for (content::RenderProcessHost::iterator rph_iter =
+           content::RenderProcessHost::AllHostsIterator();
+       !rph_iter.IsAtEnd(); rph_iter.Advance()) {
+    const base::Process& process = rph_iter.GetCurrentValue()->GetProcess();
+    auto maps =
+        memory_instrumentation::OSMetrics::GetProcessMemoryMaps(process.Pid());
+    bool found = false;
+    for (const memory_instrumentation::mojom::VmRegionPtr& region : maps) {
+      if (region->module_debugid.empty())
+        continue;
+      found = true;
+      break;
+    }
+    EXPECT_TRUE(found);
+  }
 }

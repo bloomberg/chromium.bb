@@ -75,10 +75,10 @@ MediaStream* HTMLCanvasElementCapture::captureStream(
   DCHECK(context);
   CanvasCaptureMediaStreamTrack* canvas_track;
   if (given_frame_rate) {
-    canvas_track = CanvasCaptureMediaStreamTrack::Create(
+    canvas_track = MakeGarbageCollected<CanvasCaptureMediaStreamTrack>(
         track, &element, context, std::move(handler), frame_rate);
   } else {
-    canvas_track = CanvasCaptureMediaStreamTrack::Create(
+    canvas_track = MakeGarbageCollected<CanvasCaptureMediaStreamTrack>(
         track, &element, context, std::move(handler));
   }
   // We want to capture a frame in the beginning.

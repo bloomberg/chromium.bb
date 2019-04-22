@@ -288,7 +288,7 @@ void LocalFileChangeTracker::ResetForFileSystem(const GURL& origin,
     // Advance |iter| before calling ResetForURL to avoid the iterator
     // invalidation in it.
     ++iter;
-    if (url.origin() == origin && url.type() == type)
+    if (url.origin().GetURL() == origin && url.type() == type)
       ResetForURL(url, change_seq, batch.get());
   }
 
@@ -298,7 +298,7 @@ void LocalFileChangeTracker::ResetForFileSystem(const GURL& origin,
     // Advance |iter| before calling ResetForURL to avoid the iterator
     // invalidation in it.
     ++iter;
-    if (url.origin() == origin && url.type() == type)
+    if (url.origin().GetURL() == origin && url.type() == type)
       ResetForURL(url, change_seq, batch.get());
   }
 
@@ -371,8 +371,8 @@ SyncStatusCode LocalFileChangeTracker::CollectLastDirtyChanges(
     dirty_files.pop();
     DCHECK_EQ(url.type(), storage::kFileSystemTypeSyncable);
 
-    switch (file_util->GetFileInfo(context.get(), url,
-                                   &file_info, &platform_path)) {
+    switch (file_util->GetFileInfo(context.get(), url, &file_info,
+                                   &platform_path)) {
       case base::File::FILE_OK: {
         if (!file_info.is_directory) {
           RecordChange(url, FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
@@ -386,11 +386,11 @@ SyncStatusCode LocalFileChangeTracker::CollectLastDirtyChanges(
 
         // Push files and directories in this directory into |dirty_files|.
         std::unique_ptr<FileSystemFileUtil::AbstractFileEnumerator> enumerator(
-            file_util->CreateFileEnumerator(context.get(), url));
+            file_util->CreateFileEnumerator(context.get(), url, false));
         base::FilePath path_each;
         while (!(path_each = enumerator->Next()).empty()) {
-          dirty_files.push(CreateSyncableFileSystemURL(
-                  url.origin(), path_each));
+          dirty_files.push(
+              CreateSyncableFileSystemURL(url.origin().GetURL(), path_each));
         }
         break;
       }

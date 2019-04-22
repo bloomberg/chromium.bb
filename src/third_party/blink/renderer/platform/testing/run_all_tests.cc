@@ -33,8 +33,10 @@
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_io_thread.h"
 #include "base/test/test_suite.h"
+#include "build/build_config.h"
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/core/embedder/scoped_ipc_support.h"
+#include "skia/ext/test_fonts.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 
@@ -42,7 +44,7 @@ namespace {
 
 int runTestSuite(base::TestSuite* testSuite) {
   int result = testSuite->Run();
-  blink::ThreadState::Current()->CollectAllGarbage();
+  blink::ThreadState::Current()->CollectAllGarbageForTesting();
   return result;
 }
 
@@ -51,6 +53,14 @@ int runTestSuite(base::TestSuite* testSuite) {
 int main(int argc, char** argv) {
   blink::ScopedUnittestsEnvironmentSetup testEnvironmentSetup(argc, argv);
   int result = 0;
+
+#if defined(OS_FUCHSIA)
+  // Some unittests depend on specific fonts provided by the system (e.g. some
+  // tests load Arial). On Fuchsia the default font set contains only Roboto.
+  // Load //third_party/test_fonts to make these tests pass on Fuchsia.
+  skia::ConfigureTestFont();
+#endif
+
   {
     base::TestSuite testSuite(argc, argv);
 

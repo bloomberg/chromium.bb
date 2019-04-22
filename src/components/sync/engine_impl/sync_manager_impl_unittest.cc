@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/files/scoped_temp_dir.h"
@@ -932,11 +933,6 @@ class SyncManagerTest : public testing::Test,
 
     extensions_activity_ = new ExtensionsActivity();
 
-    SyncCredentials credentials;
-    credentials.account_id = "foo@bar.com";
-    credentials.email = "foo@bar.com";
-    credentials.sync_token = "sometoken";
-
     sync_manager_.AddObserver(&manager_observer_);
     EXPECT_CALL(manager_observer_, OnInitializationComplete(_, _, _, _))
         .WillOnce(DoAll(SaveArg<0>(&js_backend_),
@@ -961,7 +957,7 @@ class SyncManagerTest : public testing::Test,
     args.extensions_activity = extensions_activity_.get(),
     args.change_delegate = this;
     if (!enable_local_sync_backend)
-      args.credentials = credentials;
+      args.authenticated_account_id = "foo@bar.com";
     args.invalidator_client_id = "fake_invalidator_client_id";
     args.enable_local_sync_backend = enable_local_sync_backend;
     args.local_sync_backend_folder = temp_dir_.GetPath();
@@ -970,8 +966,7 @@ class SyncManagerTest : public testing::Test,
     args.unrecoverable_error_handler =
         MakeWeakHandle(mock_unrecoverable_error_handler_.GetWeakPtr());
     args.cancelation_signal = &cancelation_signal_;
-    args.short_poll_interval = base::TimeDelta::FromMinutes(60);
-    args.long_poll_interval = base::TimeDelta::FromMinutes(120);
+    args.poll_interval = base::TimeDelta::FromMinutes(60);
     sync_manager_.Init(&args);
 
     sync_manager_.GetEncryptionHandler()->AddObserver(&encryption_observer_);
@@ -1002,7 +997,6 @@ class SyncManagerTest : public testing::Test,
     ModelTypeSet enabled_types;
     enabled_types.Put(NIGORI);
     enabled_types.Put(DEVICE_INFO);
-    enabled_types.Put(EXPERIMENTS);
     enabled_types.Put(BOOKMARKS);
     enabled_types.Put(THEMES);
     enabled_types.Put(SESSIONS);
@@ -2568,16 +2562,6 @@ TEST_F(SyncManagerTestWithMockScheduler, PurgeDisabledTypes) {
             sync_manager_.GetUserShare()->directory->InitialSyncEndedTypes());
   EXPECT_EQ(disabled_types, sync_manager_.GetTypesWithEmptyProgressMarkerToken(
                                 ModelTypeSet::All()));
-}
-
-// Test that SyncManager::ClearServerData invokes the scheduler.
-TEST_F(SyncManagerTestWithMockScheduler, ClearServerData) {
-  EXPECT_CALL(*scheduler(), Start(SyncScheduler::CLEAR_SERVER_DATA_MODE, _));
-  CallbackCounter callback_counter;
-  sync_manager_.ClearServerData(base::Bind(
-      &CallbackCounter::Callback, base::Unretained(&callback_counter)));
-  PumpLoop();
-  EXPECT_EQ(1, callback_counter.times_called());
 }
 
 // Test that PurgePartiallySyncedTypes purges only those types that have not

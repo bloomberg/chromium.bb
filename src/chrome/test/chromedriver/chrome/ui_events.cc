@@ -14,22 +14,37 @@ MouseEvent::MouseEvent(MouseEventType type,
                        int x,
                        int y,
                        int modifiers,
+                       int buttons,
                        int click_count)
     : type(type),
       button(button),
       x(x),
       y(y),
       modifiers(modifiers),
-      click_count(click_count) {}
+      buttons(buttons),
+      click_count(click_count),
+      origin(kViewPort),
+      element_id(std::string()),
+      pointer_type(kMouse) {}
+
+MouseEvent::MouseEvent(const MouseEvent& other) = default;
 
 MouseEvent::~MouseEvent() {}
 
-TouchEvent::TouchEvent(TouchEventType type,
-                       int x,
-                       int y)
+TouchEvent::TouchEvent(TouchEventType type, int x, int y)
     : type(type),
       x(x),
-      y(y) {}
+      y(y),
+      origin(kViewPort),
+      radiusX(1.0),
+      radiusY(1.0),
+      rotationAngle(0.0),
+      force(1.0),
+      id(0),
+      element_id(std::string()),
+      dispatch(true) {}
+
+TouchEvent::TouchEvent(const TouchEvent& other) = default;
 
 TouchEvent::~TouchEvent() {}
 
@@ -39,7 +54,10 @@ KeyEvent::KeyEvent()
       modified_text(std::string()),
       unmodified_text(std::string()),
       key(std::string()),
-      key_code(ui::VKEY_UNKNOWN) {}
+      key_code(ui::VKEY_UNKNOWN),
+      location(0),
+      code(),
+      is_from_action(false) {}
 
 KeyEvent::KeyEvent(const KeyEvent& that)
     : type(that.type),
@@ -47,7 +65,10 @@ KeyEvent::KeyEvent(const KeyEvent& that)
       modified_text(that.modified_text),
       unmodified_text(that.unmodified_text),
       key(that.key),
-      key_code(that.key_code) {}
+      key_code(that.key_code),
+      location(that.location),
+      code(that.code),
+      is_from_action(that.is_from_action) {}
 
 KeyEvent::~KeyEvent() {}
 
@@ -82,6 +103,27 @@ KeyEventBuilder* KeyEventBuilder::SetText(const std::string& unmodified_text,
 KeyEventBuilder* KeyEventBuilder::SetKeyCode(ui::KeyboardCode key_code) {
   key_event_.key_code = key_code;
   UpdateKeyString();
+  return this;
+}
+
+KeyEventBuilder* KeyEventBuilder::SetLocation(int location) {
+  key_event_.location = location;
+  return this;
+}
+
+KeyEventBuilder* KeyEventBuilder::SetDefaultKey(const std::string& key) {
+  if (key_event_.key.size() == 0)
+    key_event_.key = key;
+  return this;
+}
+
+KeyEventBuilder* KeyEventBuilder::SetCode(const std::string& code) {
+  key_event_.code = code;
+  return this;
+}
+
+KeyEventBuilder* KeyEventBuilder::SetIsFromAction() {
+  key_event_.is_from_action = true;
   return this;
 }
 

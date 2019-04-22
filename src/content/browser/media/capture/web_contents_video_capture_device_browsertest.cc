@@ -11,9 +11,11 @@
 #include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "cc/test/pixel_test_utils.h"
+#include "components/viz/common/features.h"
 #include "content/browser/media/capture/content_capture_device_browsertest_base.h"
 #include "content/browser/media/capture/fake_video_capture_stack.h"
 #include "content/browser/media/capture/frame_test_util.h"
+#include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -32,7 +34,8 @@ namespace content {
 namespace {
 
 class WebContentsVideoCaptureDeviceBrowserTest
-    : public ContentCaptureDeviceBrowserTestBase {
+    : public ContentCaptureDeviceBrowserTestBase,
+      public FrameTestUtil {
  public:
   WebContentsVideoCaptureDeviceBrowserTest() = default;
   ~WebContentsVideoCaptureDeviceBrowserTest() override = default;
@@ -69,47 +72,45 @@ class WebContentsVideoCaptureDeviceBrowserTest
         // Compute the Rects representing where the three regions would be in
         // the |rgb_frame|.
         const gfx::RectF content_in_frame_rect_f(
-            IsFixedAspectRatioTest() ? media::ComputeLetterboxRegion(
-                                           gfx::Rect(frame_size), source_size)
-                                     : gfx::Rect(frame_size));
-        const gfx::RectF iframe_in_frame_rect_f =
-            FrameTestUtil::TransformSimilarly(
-                gfx::Rect(source_size), content_in_frame_rect_f, iframe_rect);
-        const gfx::Rect content_in_frame_rect =
-            gfx::ToEnclosingRect(content_in_frame_rect_f);
-        const gfx::Rect iframe_in_frame_rect =
-            gfx::ToEnclosingRect(iframe_in_frame_rect_f);
+            media::ComputeLetterboxRegion(gfx::Rect(frame_size), source_size));
+        const gfx::RectF iframe_in_frame_rect_f = TransformSimilarly(
+            gfx::Rect(source_size), content_in_frame_rect_f, iframe_rect);
+
+        // viz::SoftwareRenderer does not do color space management. Otherwise
+        // (normal case), be strict about color differences.
+        // TODO(crbug/795132): SkiaRenderer temporarily uses same code as
+        // software compositor. Fix plumbing for SkiaRenderer.
+        const int max_color_diff =
+            (IsSoftwareCompositingTest() || features::IsUsingSkiaRenderer())
+                ? kVeryLooseMaxColorDifference
+                : kMaxColorDifference;
 
         // Determine the average RGB color in the three regions-of-interest in
         // the frame.
-        const auto average_iframe_rgb = FrameTestUtil::ComputeAverageColor(
-            rgb_frame, iframe_in_frame_rect, gfx::Rect());
-        const auto average_mainframe_rgb = FrameTestUtil::ComputeAverageColor(
-            rgb_frame, content_in_frame_rect, iframe_in_frame_rect);
-        const auto average_letterbox_rgb = FrameTestUtil::ComputeAverageColor(
-            rgb_frame, gfx::Rect(frame_size), content_in_frame_rect);
+        const auto average_iframe_rgb = ComputeAverageColor(
+            rgb_frame, ToSafeIncludeRect(iframe_in_frame_rect_f), gfx::Rect());
+        const auto average_mainframe_rgb = ComputeAverageColor(
+            rgb_frame, ToSafeIncludeRect(content_in_frame_rect_f),
+            ToSafeExcludeRect(iframe_in_frame_rect_f));
+        const auto average_letterbox_rgb =
+            ComputeAverageColor(rgb_frame, gfx::Rect(frame_size),
+                                ToSafeExcludeRect(content_in_frame_rect_f));
 
         VLOG(1)
             << "Video frame analysis: size=" << frame_size.ToString()
-            << ", captured upper-left quadrant of content should be at "
-            << iframe_in_frame_rect.ToString() << " and has average color "
-            << average_iframe_rgb
+            << ", captured upper-left quadrant of content should be bound by "
+               "approx. "
+            << ToSafeIncludeRect(iframe_in_frame_rect_f).ToString()
+            << " and has average color " << average_iframe_rgb
             << ", captured remaining quadrants of content should be bound by "
-            << content_in_frame_rect.ToString() << " and has average color "
-            << average_mainframe_rgb << ", letterbox region has average color "
-            << average_letterbox_rgb;
-
-        // TODO(crbug/810131): The software compositor ignores color space and
-        // always uses the REC609 conversion factors. Once that's fixed and
-        // color space info is fully plumbed-through, remove this.
-        const int max_color_diff =
-            IsSoftwareCompositingTest()
-                ? FrameTestUtil::kMaxInaccurateColorDifference
-                : FrameTestUtil::kMaxColorDifference;
+               "approx. "
+            << ToSafeIncludeRect(content_in_frame_rect_f).ToString()
+            << " and has average color " << average_mainframe_rgb
+            << ", letterbox region has average color " << average_letterbox_rgb;
 
         // The letterboxed region should always be black.
         if (IsFixedAspectRatioTest()) {
-          EXPECT_TRUE(FrameTestUtil::IsApproximatelySameColor(
+          EXPECT_TRUE(IsApproximatelySameColor(
               SK_ColorBLACK, average_letterbox_rgb, max_color_diff));
         }
 
@@ -121,17 +122,17 @@ class WebContentsVideoCaptureDeviceBrowserTest
 
         // Return if the content region(s) now has/have the expected color(s).
         if (IsCrossSiteCaptureTest() &&
-            FrameTestUtil::IsApproximatelySameColor(color, average_iframe_rgb,
-                                                    max_color_diff) &&
-            FrameTestUtil::IsApproximatelySameColor(
-                SK_ColorWHITE, average_mainframe_rgb, max_color_diff)) {
+            IsApproximatelySameColor(color, average_iframe_rgb,
+                                     max_color_diff) &&
+            IsApproximatelySameColor(SK_ColorWHITE, average_mainframe_rgb,
+                                     max_color_diff)) {
           VLOG(1) << "Observed desired frame.";
           return;
         } else if (!IsCrossSiteCaptureTest() &&
-                   FrameTestUtil::IsApproximatelySameColor(
-                       color, average_iframe_rgb, max_color_diff) &&
-                   FrameTestUtil::IsApproximatelySameColor(
-                       color, average_mainframe_rgb, max_color_diff)) {
+                   IsApproximatelySameColor(color, average_iframe_rgb,
+                                            max_color_diff) &&
+                   IsApproximatelySameColor(color, average_mainframe_rgb,
+                                            max_color_diff)) {
           VLOG(1) << "Observed desired frame.";
           return;
         } else {
@@ -148,6 +149,14 @@ class WebContentsVideoCaptureDeviceBrowserTest
                                       GetMinCapturePeriod());
       run_loop.Run();
     }
+  }
+
+  // Used by certain tests to determine whether the capturer has been
+  // re-targetted.
+  viz::FrameSinkId GetCurrentFrameSinkId() {
+    auto* const view = static_cast<RenderWidgetHostViewBase*>(
+        shell()->web_contents()->GetRenderWidgetHostView());
+    return view ? view->GetFrameSinkId() : viz::FrameSinkId();
   }
 
  protected:
@@ -231,6 +240,64 @@ IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
   StopAndDeAllocate();
 }
 
+// Tests that capture is re-targetted when the render view of a WebContents
+// changes.
+IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
+                       ChangesTargettedRenderView) {
+  NavigateToInitialDocument();
+  AllocateAndStartAndWaitForFirstFrame();
+  EXPECT_TRUE(shell()->web_contents()->IsBeingCaptured());
+
+  // Make a content change in the first page and wait for capture to reflect
+  // that.
+  ChangePageContentColor(SK_ColorRED);
+  WaitForFrameWithColor(SK_ColorRED);
+
+  // Navigate to an alternate site, checking that the FrameSinkIds before/after
+  // the navigation are different.
+  const viz::FrameSinkId frame_sink_id_before = GetCurrentFrameSinkId();
+  EXPECT_TRUE(frame_sink_id_before.is_valid());
+  NavigateToAlternateSite();
+  const viz::FrameSinkId frame_sink_id_after = GetCurrentFrameSinkId();
+  EXPECT_TRUE(frame_sink_id_after.is_valid());
+  EXPECT_NE(frame_sink_id_before, frame_sink_id_after);
+
+  // Make a content change in the second page and wait for capture to reflect
+  // that. This proves that the capturer was successfully re-targetted to the
+  // second page.
+  ChangePageContentColor(SK_ColorGREEN);
+  WaitForFrameWithColor(SK_ColorGREEN);
+}
+
+// Tests that capture is re-targetted when a renderer crash is followed by a
+// reload. Regression test for http://crbug.com/916332.
+IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
+                       RecoversAfterRendererCrash) {
+  NavigateToInitialDocument();
+  AllocateAndStartAndWaitForFirstFrame();
+  EXPECT_TRUE(shell()->web_contents()->IsBeingCaptured());
+
+  // Make a content change in the first page and wait for capture to reflect
+  // that.
+  ChangePageContentColor(SK_ColorRED);
+  WaitForFrameWithColor(SK_ColorRED);
+
+  // Crash the renderer.
+  EXPECT_TRUE(GetCurrentFrameSinkId().is_valid());
+  CrashTheRenderer();
+  EXPECT_FALSE(GetCurrentFrameSinkId().is_valid());
+
+  // Now, reload the page.
+  ReloadAfterCrash();
+  EXPECT_TRUE(GetCurrentFrameSinkId().is_valid());
+
+  // Make a content change in the reloaded page and wait for capture to reflect
+  // that. This proves that the capturer successfully re-targetted to the
+  // reloaded page.
+  ChangePageContentColor(SK_ColorGREEN);
+  WaitForFrameWithColor(SK_ColorGREEN);
+}
+
 // Tests that the device stops delivering frames while suspended. When resumed,
 // any content changes that occurred during the suspend should cause a new frame
 // to be delivered, to ensure the client is up-to-date.
@@ -308,7 +375,7 @@ class WebContentsVideoCaptureDeviceBrowserTestP
 };
 
 #if defined(OS_CHROMEOS)
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ,
     WebContentsVideoCaptureDeviceBrowserTestP,
     testing::Combine(
@@ -319,7 +386,7 @@ INSTANTIATE_TEST_CASE_P(
         testing::Values(false /* page has only a main frame */,
                         true /* page contains a cross-site iframe */)));
 #else
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ,
     WebContentsVideoCaptureDeviceBrowserTestP,
     testing::Combine(
@@ -331,19 +398,12 @@ INSTANTIATE_TEST_CASE_P(
                         true /* page contains a cross-site iframe */)));
 #endif  // defined(OS_CHROMEOS)
 
-// TODO(crbug/908854): This test is flaky on Win7 Tests.
-#if defined(OS_WIN)
-#define MAYBE_CapturesContentChanges DISABLED_CapturesContentChanges
-#else
-#define MAYBE_CapturesContentChanges CapturesContentChanges
-#endif
-
 // Tests that the device successfully captures a series of content changes,
 // whether the browser is running with software compositing or GPU-accelerated
 // compositing, whether the WebContents is visible/hidden or occluded/unoccluded
 // and whether the main document contains a cross-site iframe.
 IN_PROC_BROWSER_TEST_P(WebContentsVideoCaptureDeviceBrowserTestP,
-                       MAYBE_CapturesContentChanges) {
+                       CapturesContentChanges) {
   SCOPED_TRACE(testing::Message()
                << "Test parameters: "
                << (IsSoftwareCompositingTest() ? "Software Compositing"

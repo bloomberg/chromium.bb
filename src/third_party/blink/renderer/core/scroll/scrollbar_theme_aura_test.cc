@@ -54,7 +54,7 @@ TEST_F(ScrollbarThemeAuraTest, ButtonSizeHorizontal) {
   EXPECT_EQ(222, size2.Width());
   EXPECT_EQ(666, size2.Height());
 
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
 }
 
 TEST_F(ScrollbarThemeAuraTest, ButtonSizeVertical) {
@@ -79,7 +79,7 @@ TEST_F(ScrollbarThemeAuraTest, ButtonSizeVertical) {
   EXPECT_EQ(444, size2.Width());
   EXPECT_EQ(333, size2.Height());
 
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
 }
 
 TEST_F(ScrollbarThemeAuraTest, NoButtonsReturnsSize0) {
@@ -98,7 +98,7 @@ TEST_F(ScrollbarThemeAuraTest, NoButtonsReturnsSize0) {
   EXPECT_EQ(0, size.Width());
   EXPECT_EQ(0, size.Height());
 
-  ThreadState::Current()->CollectAllGarbage();
+  ThreadState::Current()->CollectAllGarbageForTesting();
 }
 
 }  // namespace blink

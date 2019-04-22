@@ -37,8 +37,8 @@ const size_t kAcknowledgementThresholdBytes = 1024 * 1024;  // 1 MB.
 using midi::IsDataByte;
 using midi::IsSystemRealTimeMessage;
 using midi::IsValidWebMIDIData;
-using midi::kSysExByte;
 using midi::kEndOfSysExByte;
+using midi::kSysExByte;
 using midi::mojom::PortState;
 using midi::mojom::Result;
 
@@ -72,14 +72,8 @@ void MidiHost::BindRequest(int render_process_id,
 void MidiHost::CompleteStartSession(Result result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(midi_client_);
-  if (result == Result::OK) {
-    // ChildSecurityPolicy is set just before OnStartSession by
-    // MidiDispatcherHost. So we can safely cache the policy.
-    has_sys_ex_permission_ =
-        ChildProcessSecurityPolicyImpl::GetInstance()->CanSendMidiSysExMessage(
-            renderer_process_id_);
+  if (result == Result::OK)
     midi_session_.Bind(std::move(pending_session_request_));
-  }
   midi_client_->SessionStarted(result);
 }
 
@@ -131,8 +125,15 @@ void MidiHost::ReceiveMidiData(uint32_t port,
     // MIDI devices may send a system exclusive messages even if the renderer
     // doesn't have a permission to receive it. Don't kill the renderer as
     // SendData() does.
-    if (message[0] == kSysExByte && !has_sys_ex_permission_)
-      continue;
+    if (message[0] == kSysExByte) {
+      if (!has_sys_ex_permission_) {
+        has_sys_ex_permission_ =
+            ChildProcessSecurityPolicyImpl::GetInstance()
+                ->CanSendMidiSysExMessage(renderer_process_id_);
+        if (!has_sys_ex_permission_)
+          continue;
+      }
+    }
 
     // Send to the renderer.
     CallClient(&midi::mojom::MidiSessionClient::DataReceived, port, message,
@@ -188,9 +189,8 @@ void MidiHost::SendData(uint32_t port,
   {
     base::AutoLock auto_lock(output_port_count_lock_);
     if (output_port_count_ <= port) {
-      bad_message::ReceivedBadMessage(
-          RenderProcessHost::FromID(renderer_process_id_),
-          bad_message::MH_INVALID_MIDI_PORT);
+      bad_message::ReceivedBadMessage(renderer_process_id_,
+                                      bad_message::MH_INVALID_MIDI_PORT);
       return;
     }
   }
@@ -201,11 +201,19 @@ void MidiHost::SendData(uint32_t port,
   // Blink running in a renderer checks permission to raise a SecurityError
   // in JavaScript. The actual permission check for security purposes
   // happens here in the browser process.
+  // Check |has_sys_ex_permission_| first to avoid searching kSysExByte in large
+  // bulk data transfers for correct uses.
   if (!has_sys_ex_permission_ && base::ContainsValue(data, kSysExByte)) {
-    bad_message::ReceivedBadMessage(
-        RenderProcessHost::FromID(renderer_process_id_),
-        bad_message::MH_SYS_EX_PERMISSION);
-    return;
+    if (!has_sys_ex_permission_) {
+      has_sys_ex_permission_ =
+          ChildProcessSecurityPolicyImpl::GetInstance()
+              ->CanSendMidiSysExMessage(renderer_process_id_);
+      if (!has_sys_ex_permission_) {
+        bad_message::ReceivedBadMessage(renderer_process_id_,
+                                        bad_message::MH_SYS_EX_PERMISSION);
+        return;
+      }
+    }
   }
 
   if (!IsValidWebMIDIData(data))
@@ -241,6 +249,6 @@ void MidiHost::EndSession() {
     midi_service_->EndSession(this);
   midi_client_.reset();
   midi_session_.Close();
-};
+}
 
 }  // namespace content

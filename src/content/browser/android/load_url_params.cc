@@ -15,7 +15,6 @@ using base::android::JavaParamRef;
 namespace content {
 
 jboolean JNI_LoadUrlParams_IsDataScheme(JNIEnv* env,
-                                        const JavaParamRef<jclass>& clazz,
                                         const JavaParamRef<jstring>& jurl) {
   GURL url(base::android::ConvertJavaStringToUTF8(env, jurl));
   return url.SchemeIs(url::kDataScheme);

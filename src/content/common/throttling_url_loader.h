@@ -50,8 +50,8 @@ class CONTENT_EXPORT ThrottlingURLLoader
 
   ~ThrottlingURLLoader() override;
 
-  void FollowRedirect(
-      const base::Optional<net::HttpRequestHeaders>& modified_request_headers);
+  void FollowRedirect(const std::vector<std::string>& removed_headers,
+                      const net::HttpRequestHeaders& modified_headers);
   // Follows a redirect, calling CreateLoaderAndStart() on the factory. This
   // is useful if the factory uses different loaders for different URLs.
   void FollowRedirectForcingRestart();
@@ -72,6 +72,8 @@ class CONTENT_EXPORT ThrottlingURLLoader
   // Disconnect the forwarding URLLoaderClient and the URLLoader. Returns the
   // datapipe endpoints.
   network::mojom::URLLoaderClientEndpointsPtr Unbind();
+
+  void CancelWithError(int error_code, base::StringPiece custom_reason);
 
   // Sets the forwarding client to receive all subsequent notifications.
   void set_forwarding_client(network::mojom::URLLoaderClient* client) {
@@ -130,9 +132,10 @@ class CONTENT_EXPORT ThrottlingURLLoader
 
   void OnClientConnectionError();
 
-  void CancelWithError(int error_code, base::StringPiece custom_reason);
   void Resume();
   void SetPriority(net::RequestPriority priority);
+  void UpdateDeferredRequestHeaders(
+      const net::HttpRequestHeaders& modified_request_headers);
   void UpdateDeferredResponseHead(
       const network::ResourceResponseHead& new_response_head);
   void PauseReadingBodyFromNet(URLLoaderThrottle* throttle);
@@ -151,7 +154,8 @@ class CONTENT_EXPORT ThrottlingURLLoader
     DEFERRED_START,
     DEFERRED_REDIRECT,
     DEFERRED_BEFORE_RESPONSE,
-    DEFERRED_RESPONSE
+    DEFERRED_RESPONSE,
+    DEFERRED_COMPLETE
   };
   DeferredStage deferred_stage_ = DEFERRED_NONE;
   bool loader_completed_ = false;
@@ -254,8 +258,8 @@ class CONTENT_EXPORT ThrottlingURLLoader
 
   bool response_intercepted_ = false;
 
-  base::Optional<std::vector<std::string>> to_be_removed_request_headers_;
-  base::Optional<net::HttpRequestHeaders> modified_request_headers_;
+  std::vector<std::string> removed_headers_;
+  net::HttpRequestHeaders modified_headers_;
 
   int pending_restart_flags_ = 0;
   bool has_pending_restart_ = false;

@@ -4,6 +4,7 @@
 
 #include "base/memory/memory_pressure_monitor_win.h"
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/message_loop/message_loop.h"
@@ -203,8 +204,8 @@ TEST_F(WinMemoryPressureMonitorTest, CheckMemoryPressure) {
   // Large-memory.
   testing::StrictMock<TestMemoryPressureMonitor> monitor(true);
   MemoryPressureListener listener(
-      base::Bind(&TestMemoryPressureMonitor::OnMemoryPressure,
-                 base::Unretained(&monitor)));
+      base::BindRepeating(&TestMemoryPressureMonitor::OnMemoryPressure,
+                          base::Unretained(&monitor)));
 
   // Checking the memory pressure at 0% load should not produce any
   // events.

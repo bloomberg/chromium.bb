@@ -24,7 +24,8 @@ bool MediaControlElementsHelper::IsUserInteractionEvent(const Event& event) {
          type == event_type_names::kMousedown ||
          type == event_type_names::kMouseup ||
          type == event_type_names::kClick ||
-         type == event_type_names::kDblclick || event.IsKeyboardEvent() ||
+         type == event_type_names::kDblclick ||
+         type == event_type_names::kGesturetap || event.IsKeyboardEvent() ||
          event.IsTouchEvent();
 }
 
@@ -54,16 +55,6 @@ bool MediaControlElementsHelper::IsUserInteractionEventForSlider(
          type == event_type_names::kPointerover ||
          type == event_type_names::kPointerout ||
          type == event_type_names::kPointermove;
-}
-
-// static
-MediaControlElementType MediaControlElementsHelper::GetMediaControlElementType(
-    const Node* node) {
-  SECURITY_DCHECK(node->IsMediaControlElement());
-  const HTMLElement* element = ToHTMLElement(node);
-  if (IsHTMLInputElement(*element))
-    return static_cast<const MediaControlInputElement*>(element)->DisplayType();
-  return static_cast<const MediaControlDivElement*>(element)->DisplayType();
 }
 
 // static

@@ -20,13 +20,9 @@ const Extension* GetNonBookmarkAppExtension(const ExtensionSet& extensions,
 // Check if navigating a toplevel page from |old_url| to |new_url| would cross
 // an extension process boundary (e.g. navigating from a web URL into an
 // extension URL).
-// We temporarily consider a workaround where we will keep non-app URLs in
-// an app process, but only if |should_consider_workaround| is true.  See
-// http://crbug.com/59285.
 bool CrossesExtensionProcessBoundary(const ExtensionSet& extensions,
                                      const GURL& old_url,
-                                     const GURL& new_url,
-                                     bool should_consider_workaround);
+                                     const GURL& new_url);
 
 }  // namespace extensions
 

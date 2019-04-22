@@ -28,7 +28,7 @@ class WebContents;
 // UsbChooserController creates a chooser for WebUSB.
 // It is owned by ChooserBubbleDelegate.
 class UsbChooserController : public ChooserController,
-                             public UsbChooserContext::Observer {
+                             public UsbChooserContext::DeviceObserver {
  public:
   UsbChooserController(
       content::RenderFrameHost* render_frame_host,
@@ -47,7 +47,7 @@ class UsbChooserController : public ChooserController,
   void Close() override;
   void OpenHelpCenterUrl() const override;
 
-  // UsbChooserContext::Observer implementation:
+  // UsbChooserContext::DeviceObserver implementation:
   void OnDeviceAdded(const device::mojom::UsbDeviceInfo& device_info) override;
   void OnDeviceRemoved(
       const device::mojom::UsbDeviceInfo& device_info) override;
@@ -64,7 +64,8 @@ class UsbChooserController : public ChooserController,
 
   content::WebContents* const web_contents_;
   base::WeakPtr<UsbChooserContext> chooser_context_;
-  ScopedObserver<UsbChooserContext, UsbChooserContext::Observer> observer_;
+  ScopedObserver<UsbChooserContext, UsbChooserContext::DeviceObserver>
+      observer_;
 
   // Each pair is a (device guid, device name).
   std::vector<std::pair<std::string, base::string16>> devices_;

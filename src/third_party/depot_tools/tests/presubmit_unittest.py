@@ -173,23 +173,20 @@ class PresubmitUnittest(PresubmitTestsBase):
   def testMembersChanged(self):
     self.mox.ReplayAll()
     members = [
-      'AffectedFile', 'Change', 'DoPostUploadExecuter', 'DoPresubmitChecks',
-      'GetPostUploadExecuter', 'GitAffectedFile', 'CommandData',
-      'GitChange', 'InputApi', 'ListRelevantPresubmitFiles', 'main',
-      'OutputApi', 'ParseFiles',
-      'PresubmitFailure', 'PresubmitExecuter', 'PresubmitOutput', 'ScanSubDirs',
-      'SigintHandler', 'ThreadPool',
-      'ast', 'cPickle', 'cpplint', 'cStringIO', 'contextlib',
-      'canned_check_filter', 'fix_encoding', 'fnmatch', 'gclient_utils',
-      'git_footers', 'glob', 'inspect', 'json', 'load_files', 'logging',
-      'marshal', 'normpath', 'optparse', 'os', 'owners', 'owners_finder',
-      'pickle', 'presubmit_canned_checks', 'random', 're', 'scm',
-      'sigint_handler', 'signal',
-      'subprocess', 'sys', 'tempfile', 'threading',
-      'time', 'traceback', 'types', 'unittest',
-      'urllib2', 'warn', 'multiprocessing', 'DoGetTryMasters',
-      'GetTryMastersExecuter', 'itertools', 'urlparse', 'gerrit_util',
-      'GerritAccessor',
+        'AffectedFile', 'Change', 'CommandData', 'DoGetTryMasters',
+        'DoPostUploadExecuter', 'DoPresubmitChecks', 'GerritAccessor',
+        'GetPostUploadExecuter', 'GetTryMastersExecuter', 'GitAffectedFile',
+        'GitChange', 'InputApi', 'ListRelevantPresubmitFiles', 'OutputApi',
+        'ParseFiles', 'PresubmitExecuter', 'PresubmitFailure',
+        'PresubmitOutput', 'ScanSubDirs', 'SigintHandler', 'ThreadPool', 'ast',
+        'cPickle', 'cStringIO', 'canned_check_filter', 'contextlib', 'cpplint',
+        'fix_encoding', 'fnmatch', 'gclient_paths', 'gclient_utils',
+        'gerrit_util', 'git_footers', 'glob', 'inspect', 'itertools', 'json',
+        'load_files', 'logging', 'main', 'marshal', 'multiprocessing',
+        'normpath', 'optparse', 'os', 'owners', 'owners_finder', 'pickle',
+        'presubmit_canned_checks', 'random', 're', 'scm', 'sigint_handler',
+        'signal', 'subprocess', 'sys', 'tempfile', 'threading', 'time',
+        'traceback', 'types', 'unittest', 'urllib2', 'urlparse', 'warn'
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(presubmit, members)
@@ -957,7 +954,7 @@ class InputApiUnittest(PresubmitTestsBase):
         'dry_run',
         'environ',
         'fnmatch',
-        'gclient_utils',
+        'gclient_paths',
         'gerrit',
         'glob',
         'is_committing',
@@ -979,6 +976,7 @@ class InputApiUnittest(PresubmitTestsBase):
         'subprocess',
         'tbr',
         'tempfile',
+        'temporary_directory',
         'thread_pool',
         'time',
         'traceback',
@@ -1392,7 +1390,6 @@ class OutputApiUnittest(PresubmitTestsBase):
         'PresubmitResult',
         'is_committing',
         'more_cc',
-        'EnsureCQIncludeTrybotsAreAdded',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(presubmit.OutputApi(False), members)
@@ -1461,119 +1458,6 @@ class OutputApiUnittest(PresubmitTestsBase):
     output.prompt_yes_no('prompt: ')
     self.failIf(output.should_continue())
     self.failUnless(output.getvalue().count('???'))
-
-  def _testIncludingCQTrybots(self, cl_text, new_trybots, updated_cl_text):
-    class FakeCL(object):
-      def __init__(self, description):
-        self._description = description
-
-      def GetDescription(self, force=False):
-        return self._description
-
-      def UpdateDescription(self, description, force=False):
-        self._description = description
-
-    def FakePresubmitNotifyResult(message):
-      return message
-
-    cl = FakeCL(cl_text)
-    output_api = presubmit.OutputApi(False)
-    output_api.PresubmitNotifyResult = FakePresubmitNotifyResult
-    message = 'Automatically added optional bots to run on CQ.'
-    results = output_api.EnsureCQIncludeTrybotsAreAdded(
-      cl,
-      new_trybots,
-      message)
-    self.assertEqual(updated_cl_text, cl.GetDescription())
-    self.assertEqual([message], results)
-
-  def testEnsureCQIncludeTrybotsAreAdded(self):
-    # We need long lines in this test.
-    # pylint: disable=line-too-long
-
-    # Deliberately has a spaces to exercise space-stripping code.
-    self._testIncludingCQTrybots(
-      """A change to GPU-related code.
-
-Cq-Include-Trybots:  luci.chromium.try:linux-blink-rel;luci.chromium.try:win_optional_gpu_tests_rel
-""",
-      [
-        'luci.chromium.try:linux_optional_gpu_tests_rel',
-        'luci.chromium.try:win_optional_gpu_tests_rel'
-      ],
-      """A change to GPU-related code.
-
-Cq-Include-Trybots: luci.chromium.try:linux-blink-rel;luci.chromium.try:linux_optional_gpu_tests_rel;luci.chromium.try:win_optional_gpu_tests_rel""")
-
-    # Starting without any CQ_INCLUDE_TRYBOTS line.
-    self._testIncludingCQTrybots(
-      """A change to GPU-related code.""",
-      [
-        'luci.chromium.try:linux_optional_gpu_tests_rel',
-        'luci.chromium.try:mac_optional_gpu_tests_rel',
-      ],
-      """A change to GPU-related code.
-
-Cq-Include-Trybots: luci.chromium.try:linux_optional_gpu_tests_rel;luci.chromium.try:mac_optional_gpu_tests_rel""")
-
-    # All pre-existing bots are already in output set.
-    self._testIncludingCQTrybots(
-      """A change to GPU-related code.
-
-Cq-Include-Trybots: luci.chromium.try:win_optional_gpu_tests_rel
-""",
-      [
-        'luci.chromium.try:linux_optional_gpu_tests_rel',
-        'luci.chromium.try:win_optional_gpu_tests_rel'
-      ],
-      """A change to GPU-related code.
-
-Cq-Include-Trybots: luci.chromium.try:linux_optional_gpu_tests_rel;luci.chromium.try:win_optional_gpu_tests_rel""")
-
-    # Equivalent tests with a pre-existing Change-Id line.
-    self._testIncludingCQTrybots(
-      """A change to GPU-related code.
-
-Change-Id: Idaeacea9cdbe912c24c8388147a8a767c7baa5f2""",
-      [
-        'luci.chromium.try:linux_optional_gpu_tests_rel',
-        'luci.chromium.try:mac_optional_gpu_tests_rel',
-      ],
-      """A change to GPU-related code.
-
-Cq-Include-Trybots: luci.chromium.try:linux_optional_gpu_tests_rel;luci.chromium.try:mac_optional_gpu_tests_rel
-Change-Id: Idaeacea9cdbe912c24c8388147a8a767c7baa5f2""")
-
-    self._testIncludingCQTrybots(
-      """A change to GPU-related code.
-
-Cq-Include-Trybots: luci.chromium.try:linux_optional_gpu_tests_rel
-Change-Id: Idaeacea9cdbe912c24c8388147a8a767c7baa5f2
-""",
-      [
-        'luci.chromium.try:linux_optional_gpu_tests_rel',
-        'luci.chromium.try:win_optional_gpu_tests_rel',
-      ],
-      """A change to GPU-related code.
-
-Cq-Include-Trybots: luci.chromium.try:linux_optional_gpu_tests_rel;luci.chromium.try:win_optional_gpu_tests_rel
-Change-Id: Idaeacea9cdbe912c24c8388147a8a767c7baa5f2""")
-
-    self._testIncludingCQTrybots(
-      """A change to GPU-related code.
-
-Cq-Include-Trybots: luci.chromium.try:linux_optional_gpu_tests_rel
-Cq-Include-Trybots: luci.chromium.try:linux_optional_gpu_tests_dbg
-Change-Id: Idaeacea9cdbe912c24c8388147a8a767c7baa5f2
-""",
-      [
-        'luci.chromium.try:linux_optional_gpu_tests_rel',
-        'luci.chromium.try:win_optional_gpu_tests_rel',
-      ],
-      """A change to GPU-related code.
-
-Cq-Include-Trybots: luci.chromium.try:linux_optional_gpu_tests_dbg;luci.chromium.try:linux_optional_gpu_tests_rel;luci.chromium.try:win_optional_gpu_tests_rel
-Change-Id: Idaeacea9cdbe912c24c8388147a8a767c7baa5f2""")
 
 
 class AffectedFileUnittest(PresubmitTestsBase):
@@ -1667,12 +1551,19 @@ class ChangeUnittest(PresubmitTestsBase):
     self.assertEquals('WHIZ=bang\nbar\nFOO=baz', change.FullDescriptionText())
     self.assertEquals({'WHIZ': 'bang', 'FOO': 'baz'}, change.tags)
 
-  def testBugsFromDescription(self):
+  def testBugsFromDescription_MixedTagsAndFooters(self):
     change = presubmit.Change(
-        '', 'foo\nBUG=2,1\n\nChange-Id: asdf\nBug: 3',
+        '', 'foo\nBUG=2,1\n\nChange-Id: asdf\nBug: 3, 6',
         self.fake_root_dir, [], 0, 0, '')
-    self.assertEquals(['1', '2', '3'], change.BugsFromDescription())
-    self.assertEquals('1,2,3', change.BUG)
+    self.assertEquals(['1', '2', '3', '6'], change.BugsFromDescription())
+    self.assertEquals('1,2,3,6', change.BUG)
+
+  def testBugsFromDescription_MultipleFooters(self):
+    change = presubmit.Change(
+        '', 'foo\n\nChange-Id: asdf\nBug: 1\nBug:4,  6',
+        self.fake_root_dir, [], 0, 0, '')
+    self.assertEquals(['1', '4', '6'], change.BugsFromDescription())
+    self.assertEquals('1,4,6', change.BUG)
 
   def testReviewersFromDescription(self):
     change = presubmit.Change(
@@ -1778,7 +1669,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
       'GetPythonUnitTests', 'GetPylint',
       'GetUnitTests', 'GetUnitTestsInDirectory', 'GetUnitTestsRecursively',
       'CheckCIPDManifest', 'CheckCIPDPackages', 'CheckCIPDClientDigests',
-      'CheckChangedLUCIConfigs',
+      'CheckChangedLUCIConfigs', 'CheckLucicfgGenOutput',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(presubmit_canned_checks, members)
@@ -1856,6 +1747,38 @@ class CannedChecksUnittest(PresubmitTestsBase):
     results2 = check(input_api2, presubmit.OutputApi, None)
     self.assertEquals(len(results2), 1)
     self.assertEquals(results2[0].__class__, error_type)
+
+  def PythonLongLineTest(self, maxlen, content, should_pass):
+    """Runs a test of Python long-line checking rule.
+
+    Because ContentTest() cannot be used here due to the different code path
+    that the implementation of CheckLongLines() uses for Python files.
+
+    Args:
+      maxlen: Maximum line length for content.
+      content: Python source which is expected to pass or fail the test.
+      should_pass: True iff the test should pass, False otherwise.
+    """
+    change = presubmit.Change('foo1', 'foo1\n', self.fake_root_dir, None, 0, 0,
+                              None)
+    input_api = self.MockInputApi(change, False)
+    affected_file = self.mox.CreateMock(presubmit.GitAffectedFile)
+    input_api.AffectedFiles(
+        include_deletes=False,
+        file_filter=mox.IgnoreArg()).AndReturn([affected_file])
+    affected_file.LocalPath().AndReturn('foo.py')
+    affected_file.LocalPath().AndReturn('foo.py')
+    affected_file.NewContents().AndReturn(content.splitlines())
+
+    self.mox.ReplayAll()
+    results = presubmit_canned_checks.CheckLongLines(
+        input_api, presubmit.OutputApi, maxlen)
+    if should_pass:
+      self.assertEquals(results, [])
+    else:
+      self.assertEquals(len(results), 1)
+      self.assertEquals(results[0].__class__,
+                        presubmit.OutputApi.PresubmitPromptWarning)
 
   def ReadFileTest(self, check, content1, content2, error_type):
     change1 = presubmit.Change(
@@ -2048,6 +1971,92 @@ class CannedChecksUnittest(PresubmitTestsBase):
     self.ContentTest(check, 'import ' + 'A ' * 150, 'foo.java',
                      'importSomething ' + 'A ' * 50, 'foo.java',
                      presubmit.OutputApi.PresubmitPromptWarning)
+
+  def testCannedCheckPythonLongLines(self):
+    # NOTE: Cannot use ContentTest() here because of the different code path
+    #       used for Python checks in CheckLongLines().
+    passing_cases = [
+        r"""
+01234568901234589012345689012345689
+A short line
+""",
+        r"""
+01234568901234589012345689012345689
+This line is too long but should pass # pylint: disable=line-too-long
+""",
+        r"""
+01234568901234589012345689012345689
+# pylint: disable=line-too-long
+This line is too long but should pass due to global disable
+""",
+        r"""
+01234568901234589012345689012345689
+   #pylint: disable=line-too-long
+This line is too long but should pass due to global disable.
+""",
+        r"""
+01234568901234589012345689012345689
+                       #    pylint: disable=line-too-long
+This line is too long but should pass due to global disable.
+""",
+        r"""
+01234568901234589012345689012345689
+# import is a valid exception
+import some.really.long.package.name.that.should.pass
+""",
+        r"""
+01234568901234589012345689012345689
+# from is a valid exception
+from some.really.long.package.name import passing.line
+""",
+        r"""
+01234568901234589012345689012345689
+                    import some.package
+""",
+        r"""
+01234568901234589012345689012345689
+                    from some.package import stuff
+""",
+    ]
+    for content in passing_cases:
+      self.PythonLongLineTest(40, content, should_pass=True)
+
+    failing_cases = [
+        r"""
+01234568901234589012345689012345689
+This line is definitely too long and should fail.
+""",
+        r"""
+01234568901234589012345689012345689
+# pylint: disable=line-too-long
+This line is too long and should pass due to global disable
+# pylint: enable=line-too-long
+But this line is too long and should still fail now
+""",
+        r"""
+01234568901234589012345689012345689
+# pylint: disable=line-too-long
+This line is too long and should pass due to global disable
+But this line is too long # pylint: enable=line-too-long
+""",
+        r"""
+01234568901234589012345689012345689
+This should fail because the global
+check is enabled on the next line.
+              #         pylint: enable=line-too-long
+""",
+        r"""
+01234568901234589012345689012345689
+# pylint: disable=line-too-long
+                  # pylint: enable-foo-bar should pass
+The following line should fail
+since global directives apply to
+the current line as well!
+                  # pylint: enable-line-too-long should fail
+""",
+    ]
+    for content in failing_cases[0:0]:
+      self.PythonLongLineTest(40, content, should_pass=False)
 
   def testCannedCheckJSLongLines(self):
     check = lambda x, y, _: presubmit_canned_checks.CheckLongLines(x, y, 10)

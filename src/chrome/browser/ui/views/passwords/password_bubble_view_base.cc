@@ -10,7 +10,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
-#include "chrome/browser/ui/views/page_action/page_action_icon_container_view.h"
+#include "chrome/browser/ui/views/page_action/omnibox_page_action_icon_container_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
 #include "chrome/browser/ui/views/passwords/password_auto_sign_in_view.h"
 #include "chrome/browser/ui/views/passwords/password_items_view.h"
@@ -42,7 +42,7 @@ void PasswordBubbleViewBase::ShowBubble(content::WebContents* web_contents,
   if (anchor_view) {
     g_manage_passwords_bubble_->SetHighlightedButton(
         browser_view->toolbar_button_provider()
-            ->GetPageActionIconContainerView()
+            ->GetOmniboxPageActionIconContainerView()
             ->GetPageActionIconView(PageActionIconType::kManagePasswords));
   } else {
     g_manage_passwords_bubble_->set_parent_window(

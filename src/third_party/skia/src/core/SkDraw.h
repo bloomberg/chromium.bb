@@ -82,7 +82,7 @@ public:
         this->drawPath(src, paint, nullptr, false, !isHairline, customBlitter);
     }
 
-    void paintPaths(SkSpan<const SkGlyphRunListPainter::PathAndPos> pathsAndPositions,
+    void paintPaths(SkSpan<const SkPathPos> pathsAndPositions,
                     SkScalar scale,
                     const SkPaint& paint) const override;
 
@@ -122,7 +122,6 @@ public:
     static RectType ComputeRectType(const SkPaint&, const SkMatrix&,
                                     SkPoint* strokeSize);
 
-    static bool ShouldDrawTextAsPaths(const SkPaint&, const SkMatrix&, SkScalar sizeLimit = 1024);
     static bool ShouldDrawTextAsPaths(const SkFont&, const SkPaint&, const SkMatrix&,
                                       SkScalar sizeLimit = 1024);
 

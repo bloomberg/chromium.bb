@@ -154,6 +154,7 @@ class GPU_GLES2_EXPORT DecoderContext : public AsyncAPIInterface,
 
   //
   // Methods required by GLES2DecoderHelper.
+  // Only functional for GLES2 Decoders.
   //
   virtual gles2::ContextGroup* GetContextGroup() = 0;
   virtual gles2::ErrorState* GetErrorState() = 0;
@@ -213,6 +214,19 @@ class GPU_GLES2_EXPORT DecoderContext : public AsyncAPIInterface,
   // Methods required by GpuTracer
   //
   virtual gles2::Outputter* outputter() const = 0;
+
+  // Restores all attributs in the gl context state.
+  virtual void RestoreAllAttributes() const = 0;
+
+  // Restores texture states for a given service id.
+  virtual void RestoreTextureState(unsigned service_id) = 0;
+
+  //
+  // Methods required by ImageDecodeAcceleratorStub
+  //
+  // Returns the ID of a RasterDecoder. This is not applicable to other
+  // implementations and it returns a negative number in that case.
+  virtual int GetRasterDecoderId() const = 0;
 };
 
 }  // namespace gpu

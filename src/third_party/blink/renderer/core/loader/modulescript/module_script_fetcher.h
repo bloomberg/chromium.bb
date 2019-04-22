@@ -16,6 +16,7 @@
 namespace blink {
 
 class ConsoleMessage;
+class ResourceFetcher;
 
 // ModuleScriptFetcher is an abstract class to fetch module scripts. Derived
 // classes are expected to fetch a module script for the given FetchParameters
@@ -36,7 +37,17 @@ class CORE_EXPORT ModuleScriptFetcher : public ResourceClient {
 
   // Takes a non-const reference to FetchParameters because
   // ScriptResource::Fetch() requires it.
-  virtual void Fetch(FetchParameters&, ModuleGraphLevel, Client*) = 0;
+  //
+  // Do not use |modulator_for_built_in_modules| other than for built-in
+  // modules. Fetching should depend sorely on the ResourceFetcher that
+  // represents fetch client settings object. https://crbug.com/928435
+  // |modulator_for_built_in_modules| can be nullptr in unit tests, and
+  // in such cases built-in modules are not loaded at all.
+  virtual void Fetch(FetchParameters&,
+                     ResourceFetcher*,
+                     const Modulator* modulator_for_built_in_modules,
+                     ModuleGraphLevel,
+                     Client*) = 0;
 
  protected:
   static bool WasModuleLoadSuccessful(

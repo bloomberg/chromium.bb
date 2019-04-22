@@ -23,8 +23,8 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chromeos/chromeos_switches.h"
-#include "chromeos/dbus/fake_session_manager_client.h"
+#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/version_info/channel.h"
 #include "components/version_info/version_info.h"
@@ -167,12 +167,6 @@ class SigninProfileAppsPolicyTestBase : public DevicePolicyCrosBrowserTest {
     command_line->AppendSwitch(chromeos::switches::kForceLoginManagerInTests);
   }
 
-  void SetUpInProcessBrowserTestFixture() override {
-    DevicePolicyCrosBrowserTest::SetUpInProcessBrowserTestFixture();
-    InstallOwnerKey();
-    MarkAsEnterpriseOwned();
-  }
-
   void SetUpOnMainThread() override {
     DevicePolicyCrosBrowserTest::SetUpOnMainThread();
 
@@ -191,8 +185,8 @@ class SigninProfileAppsPolicyTestBase : public DevicePolicyCrosBrowserTest {
         "$1;$2", {extension_id, update_manifest_url.spec()}, nullptr);
     device_policy()
         ->payload()
-        .mutable_device_login_screen_app_install_list()
-        ->add_device_login_screen_app_install_list(policy_item_value);
+        .mutable_device_login_screen_extensions()
+        ->add_device_login_screen_extensions(policy_item_value);
     RefreshDevicePolicy();
   }
 
@@ -304,13 +298,13 @@ IN_PROC_BROWSER_TEST_P(SigninProfileAppsPolicyPerChannelTest,
                    ->GetInstalledExtension(kTrivialExtensionId));
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        SigninProfileAppsPolicyPerChannelTest,
-                        testing::Values(version_info::Channel::UNKNOWN,
-                                        version_info::Channel::CANARY,
-                                        version_info::Channel::DEV,
-                                        version_info::Channel::BETA,
-                                        version_info::Channel::STABLE));
+INSTANTIATE_TEST_SUITE_P(,
+                         SigninProfileAppsPolicyPerChannelTest,
+                         testing::Values(version_info::Channel::UNKNOWN,
+                                         version_info::Channel::CANARY,
+                                         version_info::Channel::DEV,
+                                         version_info::Channel::BETA,
+                                         version_info::Channel::STABLE));
 
 namespace {
 

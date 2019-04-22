@@ -17,7 +17,7 @@
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
-#include "base/macros.h"
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
@@ -551,6 +551,12 @@ bool NaClProcessHost::LaunchSelLdr() {
   if (NaClBrowser::GetDelegate()->DialogsAreSuppressed())
     cmd_line->AppendSwitch(switches::kNoErrorDialogs);
 
+  // TODO(crbug.com/932175): Remove this after field trials no longer need to
+  // be consulted for the MojoChannelMac launch.
+  base::FieldTrialList::CopyFieldTrialStateToFlags(
+      switches::kFieldTrialHandle, switches::kEnableFeatures,
+      switches::kDisableFeatures, cmd_line.get());
+
 #if defined(OS_WIN)
   cmd_line->AppendArg(switches::kPrefetchArgumentOther);
 #endif  // defined(OS_WIN)
@@ -922,7 +928,7 @@ bool NaClProcessHost::StartPPAPIProxy(
     switches::kV,
     switches::kVModule,
   };
-  for (size_t i = 0; i < arraysize(flag_whitelist); ++i) {
+  for (size_t i = 0; i < base::size(flag_whitelist); ++i) {
     std::string value = cmdline->GetSwitchValueASCII(flag_whitelist[i]);
     if (!value.empty()) {
       args.switch_names.push_back(flag_whitelist[i]);

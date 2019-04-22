@@ -7,6 +7,11 @@
 #include <string>
 #include <utility>
 
+#if defined(OS_WIN)
+#include <vector>
+#endif
+
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
@@ -21,7 +26,6 @@
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/ime/constants.h"
 #include "ui/base/ime/input_method.h"
-#include "ui/base/ime/text_edit_commands.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/ui_base_switches_util.h"
@@ -83,14 +87,14 @@ namespace views {
 namespace {
 
 #if defined(OS_MACOSX)
-const gfx::SelectionBehavior kLineSelectionBehavior = gfx::SELECTION_EXTEND;
-const gfx::SelectionBehavior kWordSelectionBehavior = gfx::SELECTION_CARET;
-const gfx::SelectionBehavior kMoveParagraphSelectionBehavior =
+constexpr gfx::SelectionBehavior kLineSelectionBehavior = gfx::SELECTION_EXTEND;
+constexpr gfx::SelectionBehavior kWordSelectionBehavior = gfx::SELECTION_CARET;
+constexpr gfx::SelectionBehavior kMoveParagraphSelectionBehavior =
     gfx::SELECTION_CARET;
 #else
-const gfx::SelectionBehavior kLineSelectionBehavior = gfx::SELECTION_RETAIN;
-const gfx::SelectionBehavior kWordSelectionBehavior = gfx::SELECTION_RETAIN;
-const gfx::SelectionBehavior kMoveParagraphSelectionBehavior =
+constexpr gfx::SelectionBehavior kLineSelectionBehavior = gfx::SELECTION_RETAIN;
+constexpr gfx::SelectionBehavior kWordSelectionBehavior = gfx::SELECTION_RETAIN;
+constexpr gfx::SelectionBehavior kMoveParagraphSelectionBehavior =
     gfx::SELECTION_RETAIN;
 #endif
 
@@ -265,32 +269,8 @@ const gfx::FontList& Textfield::GetDefaultFontList() {
 
 Textfield::Textfield()
     : model_(new TextfieldModel(this)),
-      controller_(NULL),
-      scheduled_text_edit_command_(ui::TextEditCommand::INVALID_COMMAND),
-      read_only_(false),
-      default_width_in_chars_(0),
-      minimum_width_in_chars_(-1),
-      use_default_text_color_(true),
-      use_default_background_color_(true),
-      use_default_selection_text_color_(true),
-      use_default_selection_background_color_(true),
-      text_color_(SK_ColorBLACK),
-      background_color_(SK_ColorWHITE),
-      selection_text_color_(SK_ColorWHITE),
-      selection_background_color_(SK_ColorBLUE),
       placeholder_text_draw_flags_(gfx::Canvas::DefaultCanvasTextAlignment()),
-      invalid_(false),
-      label_ax_id_(0),
-      text_input_type_(ui::TEXT_INPUT_TYPE_TEXT),
-      text_input_flags_(0),
-      performing_user_action_(false),
-      skip_input_method_cancel_composition_(false),
-      drop_cursor_visible_(false),
-      initiating_drag_(false),
       selection_controller_(this),
-      drag_start_display_offset_(0),
-      touch_handles_hidden_due_to_scroll_(false),
-      use_focus_ring_(true),
       weak_ptr_factory_(this) {
   set_context_menu_controller(this);
   set_drag_controller(this);
@@ -354,9 +334,9 @@ void Textfield::SetReadOnly(bool read_only) {
 void Textfield::SetTextInputType(ui::TextInputType type) {
   GetRenderText()->SetObscured(type == ui::TEXT_INPUT_TYPE_PASSWORD);
   text_input_type_ = type;
-  OnCaretBoundsChanged();
   if (GetInputMethod())
     GetInputMethod()->OnTextInputTypeChanged(this);
+  OnCaretBoundsChanged();
   SchedulePaint();
 }
 
@@ -618,6 +598,11 @@ void Textfield::SetGlyphSpacing(int spacing) {
   GetRenderText()->set_glyph_spacing(spacing);
 }
 
+void Textfield::SetExtraInsets(const gfx::Insets& insets) {
+  extra_insets_ = insets;
+  UpdateBorder();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Textfield, View overrides:
 
@@ -824,7 +809,8 @@ void Textfield::OnGestureEvent(ui::GestureEvent* event) {
         event->SetHandled();
       break;
     case ui::ET_GESTURE_SCROLL_BEGIN:
-      touch_handles_hidden_due_to_scroll_ = touch_selection_controller_ != NULL;
+      touch_handles_hidden_due_to_scroll_ =
+          touch_selection_controller_ != nullptr;
       DestroyTouchSelection();
       drag_start_location_ = event->location();
       drag_start_display_offset_ =
@@ -914,7 +900,7 @@ bool Textfield::SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) {
 
 bool Textfield::GetDropFormats(
     int* formats,
-    std::set<ui::Clipboard::FormatType>* format_types) {
+    std::set<ui::ClipboardFormatType>* format_types) {
   if (!enabled() || read_only())
     return false;
   // TODO(msw): Can we support URL, FILENAME, etc.?
@@ -926,7 +912,7 @@ bool Textfield::GetDropFormats(
 
 bool Textfield::CanDrop(const OSExchangeData& data) {
   int formats;
-  std::set<ui::Clipboard::FormatType> format_types;
+  std::set<ui::ClipboardFormatType> format_types;
   GetDropFormats(&formats, &format_types);
   return enabled() && !read_only() && data.HasAnyFormat(formats, format_types);
 }
@@ -1046,7 +1032,7 @@ bool Textfield::HandleAccessibleAction(const ui::AXActionData& action_data) {
       return false;
     // TODO(nektar): Check that the focus_node_id matches the ID of this node.
     const gfx::Range range(action_data.anchor_offset, action_data.focus_offset);
-    return SetSelectionRange(range);
+    return SetEditableSelectionRange(range);
   }
 
   // Remaining actions cannot be performed on readonly fields.
@@ -1074,9 +1060,10 @@ void Textfield::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   // beyond their legibility, or enlarging controls dynamically with content.
   gfx::Rect bounds = GetLocalBounds();
   const gfx::Insets insets = GetInsets();
-  // The text will draw with the correct verticial alignment if we don't apply
+  // The text will draw with the correct vertical alignment if we don't apply
   // the vertical insets.
   bounds.Inset(insets.left(), 0, insets.right(), 0);
+  bounds.set_x(GetMirroredXForRect(bounds));
   GetRenderText()->SetDisplayRect(bounds);
   OnCaretBoundsChanged();
   UpdateCursorViewPosition();
@@ -1112,7 +1099,8 @@ void Textfield::OnFocus() {
 
 #if defined(OS_MACOSX)
   if (text_input_type_ == ui::TEXT_INPUT_TYPE_PASSWORD)
-    password_input_enabler_.reset(new ui::ScopedPasswordInputEnabler());
+    password_input_enabler_ =
+        std::make_unique<ui::ScopedPasswordInputEnabler>();
 #endif  // defined(OS_MACOSX)
 
   GetRenderText()->set_focused(true);
@@ -1184,22 +1172,13 @@ void Textfield::OnCompositionTextConfirmedOrCleared() {
 ////////////////////////////////////////////////////////////////////////////////
 // Textfield, ContextMenuController overrides:
 
-void Textfield::ShowContextMenuForView(View* source,
-                                       const gfx::Point& point,
-                                       ui::MenuSourceType source_type) {
-#if defined(OS_MACOSX)
-  // On Mac, the context menu contains a look up item which displays the
-  // selected text. As such, the menu needs to be updated if the selection has
-  // changed. Be careful to reset the MenuRunner first so it doesn't reference
-  // the old model.
-  context_menu_runner_.reset();
-  context_menu_contents_.reset();
-#endif
-
+void Textfield::ShowContextMenuForViewImpl(View* source,
+                                           const gfx::Point& point,
+                                           ui::MenuSourceType source_type) {
   UpdateContextMenu();
-  context_menu_runner_->RunMenuAt(GetWidget(), NULL,
+  context_menu_runner_->RunMenuAt(GetWidget(), nullptr,
                                   gfx::Rect(point, gfx::Size()),
-                                  MENU_ANCHOR_TOPLEFT, source_type);
+                                  MenuAnchorPosition::kTopLeft, source_type);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1234,7 +1213,7 @@ void Textfield::WriteDragDataForView(View* sender,
                         GetWidget()->GetCompositor()->is_pixel_canvas())
           .context(),
       label.size()));
-  const gfx::Vector2d kOffset(-15, 0);
+  constexpr gfx::Vector2d kOffset(-15, 0);
   gfx::ImageSkia image(gfx::ImageSkiaRep(bitmap, raster_scale));
   data->provider().SetDragImage(image, kOffset);
   if (controller_)
@@ -1590,14 +1569,14 @@ bool Textfield::GetCompositionTextRange(gfx::Range* range) const {
   return true;
 }
 
-bool Textfield::GetSelectionRange(gfx::Range* range) const {
+bool Textfield::GetEditableSelectionRange(gfx::Range* range) const {
   if (!ImeEditingAllowed())
     return false;
   *range = GetRenderText()->selection();
   return true;
 }
 
-bool Textfield::SetSelectionRange(const gfx::Range& range) {
+bool Textfield::SetEditableSelectionRange(const gfx::Range& range) {
   if (!ImeEditingAllowed() || !range.IsValid())
     return false;
   OnBeforeUserAction();
@@ -1777,6 +1756,21 @@ bool Textfield::ShouldDoLearning() {
   NOTIMPLEMENTED_LOG_ONCE();
   return false;
 }
+
+#if defined(OS_WIN)
+// TODO(https://crbug.com/952355): Implement this method to support Korean IME reconversion feature
+// on native text fields (e.g. find bar).
+void Textfield::SetCompositionFromExistingText(
+    const gfx::Range& range,
+    const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) {}
+
+// TODO(https://crbug.com/952355): Implement this method once TSF supports reconversion
+// features on native text fields.
+void Textfield::SetActiveCompositionForAccessibility(
+    const gfx::Range& range,
+    const base::string16& active_composition_text,
+    bool is_composition_committed) {}
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // Textfield, protected:
@@ -2112,8 +2106,14 @@ void Textfield::UpdateBorder() {
   auto border = std::make_unique<views::FocusableBorder>();
   const LayoutProvider* provider = LayoutProvider::Get();
   border->SetInsets(
-      provider->GetDistanceMetric(DISTANCE_CONTROL_VERTICAL_TEXT_PADDING),
-      provider->GetDistanceMetric(DISTANCE_TEXTFIELD_HORIZONTAL_TEXT_PADDING));
+      extra_insets_.top() +
+          provider->GetDistanceMetric(DISTANCE_CONTROL_VERTICAL_TEXT_PADDING),
+      extra_insets_.left() + provider->GetDistanceMetric(
+                                 DISTANCE_TEXTFIELD_HORIZONTAL_TEXT_PADDING),
+      extra_insets_.bottom() +
+          provider->GetDistanceMetric(DISTANCE_CONTROL_VERTICAL_TEXT_PADDING),
+      extra_insets_.right() + provider->GetDistanceMetric(
+                                  DISTANCE_TEXTFIELD_HORIZONTAL_TEXT_PADDING));
   if (invalid_)
     border->SetColorId(ui::NativeTheme::kColorId_AlertSeverityHigh);
   View::SetBorder(std::move(border));
@@ -2265,30 +2265,34 @@ bool Textfield::Paste() {
 }
 
 void Textfield::UpdateContextMenu() {
-  if (!context_menu_contents_.get()) {
-    context_menu_contents_.reset(new ui::SimpleMenuModel(this));
-    context_menu_contents_->AddItemWithStringId(IDS_APP_UNDO, IDS_APP_UNDO);
-    context_menu_contents_->AddSeparator(ui::NORMAL_SEPARATOR);
-    context_menu_contents_->AddItemWithStringId(IDS_APP_CUT, IDS_APP_CUT);
-    context_menu_contents_->AddItemWithStringId(IDS_APP_COPY, IDS_APP_COPY);
-    context_menu_contents_->AddItemWithStringId(IDS_APP_PASTE, IDS_APP_PASTE);
-    context_menu_contents_->AddItemWithStringId(IDS_APP_DELETE, IDS_APP_DELETE);
-    context_menu_contents_->AddSeparator(ui::NORMAL_SEPARATOR);
-    context_menu_contents_->AddItemWithStringId(IDS_APP_SELECT_ALL,
-                                                IDS_APP_SELECT_ALL);
+  // TextfieldController may modify Textfield's menu, so the menu should be
+  // recreated each time it's shown. Destroy the existing objects in the reverse
+  // order of creation.
+  context_menu_runner_.reset();
+  context_menu_contents_.reset();
 
-    // If the controller adds menu commands, also override ExecuteCommand() and
-    // IsCommandIdEnabled() as appropriate, for the commands added.
-    if (controller_)
-      controller_->UpdateContextMenu(context_menu_contents_.get());
+  context_menu_contents_ = std::make_unique<ui::SimpleMenuModel>(this);
+  context_menu_contents_->AddItemWithStringId(IDS_APP_UNDO, IDS_APP_UNDO);
+  context_menu_contents_->AddSeparator(ui::NORMAL_SEPARATOR);
+  context_menu_contents_->AddItemWithStringId(IDS_APP_CUT, IDS_APP_CUT);
+  context_menu_contents_->AddItemWithStringId(IDS_APP_COPY, IDS_APP_COPY);
+  context_menu_contents_->AddItemWithStringId(IDS_APP_PASTE, IDS_APP_PASTE);
+  context_menu_contents_->AddItemWithStringId(IDS_APP_DELETE, IDS_APP_DELETE);
+  context_menu_contents_->AddSeparator(ui::NORMAL_SEPARATOR);
+  context_menu_contents_->AddItemWithStringId(IDS_APP_SELECT_ALL,
+                                              IDS_APP_SELECT_ALL);
 
-    text_services_context_menu_ = ViewsTextServicesContextMenu::Create(
-        context_menu_contents_.get(), this);
-  }
+  // If the controller adds menu commands, also override ExecuteCommand() and
+  // IsCommandIdEnabled() as appropriate, for the commands added.
+  if (controller_)
+    controller_->UpdateContextMenu(context_menu_contents_.get());
 
-  context_menu_runner_.reset(
-      new MenuRunner(context_menu_contents_.get(),
-                     MenuRunner::HAS_MNEMONICS | MenuRunner::CONTEXT_MENU));
+  text_services_context_menu_ =
+      ViewsTextServicesContextMenu::Create(context_menu_contents_.get(), this);
+
+  context_menu_runner_ = std::make_unique<MenuRunner>(
+      context_menu_contents_.get(),
+      MenuRunner::HAS_MNEMONICS | MenuRunner::CONTEXT_MENU);
 }
 
 bool Textfield::ImeEditingAllowed() const {
@@ -2305,8 +2309,8 @@ void Textfield::RevealPasswordChar(int index, base::TimeDelta duration) {
   if (index != -1) {
     password_reveal_timer_.Start(
         FROM_HERE, duration,
-        base::Bind(&Textfield::RevealPasswordChar,
-                   weak_ptr_factory_.GetWeakPtr(), -1, duration));
+        base::BindOnce(&Textfield::RevealPasswordChar,
+                       weak_ptr_factory_.GetWeakPtr(), -1, duration));
   }
 }
 

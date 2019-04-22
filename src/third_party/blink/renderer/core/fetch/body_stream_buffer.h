@@ -7,17 +7,16 @@
 
 #include <memory>
 #include "base/optional.h"
-#include "third_party/blink/public/platform/web_data_consumer_handle.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/abort_signal.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
-#include "third_party/blink/renderer/core/fetch/bytes_consumer.h"
 #include "third_party/blink/renderer/core/fetch/fetch_data_loader.h"
 #include "third_party/blink/renderer/core/streams/underlying_source_base.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/loader/fetch/bytes_consumer.h"
 
 namespace blink {
 
@@ -98,10 +97,10 @@ class CORE_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase,
       ExceptionState& exception_state);
 
   Member<ScriptState> script_state_;
-  TraceWrapperMember<ReadableStream> stream_;
-  TraceWrapperMember<BytesConsumer> consumer_;
+  Member<ReadableStream> stream_;
+  Member<BytesConsumer> consumer_;
   // We need this member to keep it alive while loading.
-  TraceWrapperMember<FetchDataLoader> loader_;
+  Member<FetchDataLoader> loader_;
   // We need this to ensure that we detect that abort has been signalled
   // correctly.
   Member<AbortSignal> signal_;

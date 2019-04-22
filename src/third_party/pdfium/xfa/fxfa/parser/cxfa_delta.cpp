@@ -9,21 +9,14 @@
 #include "fxjs/xfa/cjx_delta.h"
 #include "third_party/base/ptr_util.h"
 
-namespace {
-
-constexpr wchar_t kDeltaName[] = L"delta";
-
-}  // namespace
-
 CXFA_Delta::CXFA_Delta(CXFA_Document* doc, XFA_PacketType packet)
     : CXFA_Node(doc,
                 packet,
                 XFA_XDPPACKET_Form,
                 XFA_ObjectType::Object,
                 XFA_Element::Delta,
-                nullptr,
-                nullptr,
-                kDeltaName,
+                {},
+                {},
                 pdfium::MakeUnique<CJX_Delta>(this)) {}
 
-CXFA_Delta::~CXFA_Delta() {}
+CXFA_Delta::~CXFA_Delta() = default;

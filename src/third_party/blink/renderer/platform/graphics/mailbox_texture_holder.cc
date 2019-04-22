@@ -79,7 +79,7 @@ void MailboxTextureHolder::Sync(MailboxSyncMode mode) {
     return;
   }
 
-  if (!ContextProviderWrapper() || IsAbandoned())
+  if (!ContextProviderWrapper())
     return;
 
   TRACE_EVENT0("blink", "MailboxTextureHolder::Sync");
@@ -129,7 +129,7 @@ bool MailboxTextureHolder::IsValid() const {
     // Just assume valid. Potential problem will be detected later.
     return true;
   }
-  return !IsAbandoned() && !!ContextProviderWrapper();
+  return !!ContextProviderWrapper();
 }
 
 bool MailboxTextureHolder::IsCrossThread() const {
@@ -141,20 +141,18 @@ MailboxTextureHolder::~MailboxTextureHolder() {
       new gpu::SyncToken(sync_token_));
   std::unique_ptr<gpu::Mailbox> passed_mailbox(new gpu::Mailbox(mailbox_));
 
-  if (!IsAbandoned()) {
-    if (texture_thread_task_runner_ &&
-        thread_id_ != Thread::Current()->ThreadId()) {
-      PostCrossThreadTask(
-          *texture_thread_task_runner_, FROM_HERE,
-          CrossThreadBind(&ReleaseTexture, is_converted_from_skia_texture_,
-                          texture_id_, WTF::Passed(std::move(passed_mailbox)),
-                          WTF::Passed(ContextProviderWrapper()),
-                          WTF::Passed(std::move(passed_sync_token))));
-    } else {
-      ReleaseTexture(is_converted_from_skia_texture_, texture_id_,
-                     std::move(passed_mailbox), ContextProviderWrapper(),
-                     std::move(passed_sync_token));
-    }
+  if (texture_thread_task_runner_ &&
+      thread_id_ != Thread::Current()->ThreadId()) {
+    PostCrossThreadTask(
+        *texture_thread_task_runner_, FROM_HERE,
+        CrossThreadBind(&ReleaseTexture, is_converted_from_skia_texture_,
+                        texture_id_, WTF::Passed(std::move(passed_mailbox)),
+                        WTF::Passed(ContextProviderWrapper()),
+                        WTF::Passed(std::move(passed_sync_token))));
+  } else {
+    ReleaseTexture(is_converted_from_skia_texture_, texture_id_,
+                   std::move(passed_mailbox), ContextProviderWrapper(),
+                   std::move(passed_sync_token));
   }
 
   texture_id_ = 0u;  // invalidate the texture.

@@ -37,13 +37,14 @@ class DownloadPrefs {
     DANGEROUS_FILES = 1,
     POTENTIALLY_DANGEROUS_FILES = 2,
     ALL_FILES = 3,
+    // MALICIOUS_FILES has a stricter definition of harmful file than
+    // DANGEROUS_FILES and does not block based on file extension.
+    MALICIOUS_FILES = 4,
   };
   explicit DownloadPrefs(Profile* profile);
   ~DownloadPrefs();
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
-
-  static void ReinitializeDefaultDownloadDirectoryForTesting();
 
   // Returns the default download directory.
   static const base::FilePath& GetDefaultDownloadDirectory();
@@ -113,6 +114,10 @@ class DownloadPrefs {
 
   void ResetAutoOpen();
 
+  // If this is called, the download target path will not be sanitized going
+  // forward - whatever has been passed to SetDownloadPath will be used.
+  void SkipSanitizeDownloadTargetPathForTesting();
+
  private:
   void SaveAutoOpenState();
 
@@ -148,6 +153,10 @@ class DownloadPrefs {
 #if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
   bool should_open_pdf_in_system_reader_;
 #endif
+
+  // If this is true, SanitizeDownloadTargetPath will always return the passed
+  // path verbatim.
+  bool skip_sanitize_download_target_path_for_testing_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadPrefs);
 };

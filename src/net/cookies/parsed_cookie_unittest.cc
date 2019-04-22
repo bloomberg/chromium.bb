@@ -181,7 +181,7 @@ TEST(ParsedCookieTest, MultipleEquals) {
   EXPECT_FALSE(pc.HasDomain());
   EXPECT_TRUE(pc.IsSecure());
   EXPECT_TRUE(pc.IsHttpOnly());
-  EXPECT_EQ(CookieSameSite::DEFAULT_MODE, pc.SameSite());
+  EXPECT_EQ(CookieSameSite::NO_RESTRICTION, pc.SameSite());
   EXPECT_EQ(COOKIE_PRIORITY_DEFAULT, pc.Priority());
   EXPECT_EQ(4U, pc.NumberOfAttributes());
 }
@@ -465,7 +465,7 @@ TEST(ParsedCookieTest, SetSameSite) {
   EXPECT_TRUE(pc.IsValid());
 
   EXPECT_EQ("name=value", pc.ToCookieLine());
-  EXPECT_EQ(CookieSameSite::DEFAULT_MODE, pc.SameSite());
+  EXPECT_EQ(CookieSameSite::NO_RESTRICTION, pc.SameSite());
 
   // Test each samesite directive, expect case-insensitive compare.
   EXPECT_TRUE(pc.SetSameSite("strict"));
@@ -486,7 +486,7 @@ TEST(ParsedCookieTest, SetSameSite) {
   // Remove the SameSite attribute.
   EXPECT_TRUE(pc.SetSameSite(""));
   EXPECT_EQ("name=value", pc.ToCookieLine());
-  EXPECT_EQ(CookieSameSite::DEFAULT_MODE, pc.SameSite());
+  EXPECT_EQ(CookieSameSite::NO_RESTRICTION, pc.SameSite());
   EXPECT_TRUE(pc.IsValid());
 
   EXPECT_TRUE(pc.SetSameSite("Blah"));
@@ -504,7 +504,7 @@ TEST(ParsedCookieTest, SameSiteValues) {
             {"n=v; samesite=lax", true, CookieSameSite::LAX_MODE},
             {"n=v; samesite=boo", true, CookieSameSite::NO_RESTRICTION},
             {"n=v; samesite", true, CookieSameSite::NO_RESTRICTION},
-            {"n=v", true, CookieSameSite::DEFAULT_MODE}};
+            {"n=v", true, CookieSameSite::NO_RESTRICTION}};
 
   for (const auto& test : cases) {
     SCOPED_TRACE(test.cookie);

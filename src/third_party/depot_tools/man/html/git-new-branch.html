@@ -790,7 +790,7 @@ new-branch --upstream_current &lt;branch_name&gt;</code>.</p></div>
 </p>
 </dd>
 <dt class="hdlist1">
---uptstream &lt;REF&gt;
+--upstream &lt;REF&gt;
 </dt>
 <dd>
 <p>
@@ -830,43 +830,51 @@ defaults to <em>origin/master</em>.  This is considered to be the <em>root</em> 
 <div class="sect1">
 <h2 id="_example">EXAMPLE</h2>
 <div class="sectionbody">
-<div class="paragraph"><p></p></div><div class="listingblock"><div class="content"><pre><code><span style="font-weight: bold; color: #ffffff">$ git map-branches</span>
-<span style="color: #e42e16"></span><span style="color: #e42e16">origin/master
-</span><span style="color: #19c518"></span><span style="color: #19c518">  cool_feature
-</span><span style="color: #19c518"></span><span style="color: #19c518">    subfeature
-</span><span style="color: #19c518"></span><span style="color: #19c518">  fixit
-</span><span style="color: #33d6e5"></span><span style="font-weight: bold; color: #33d6e5">    frozen_branch *
+<div class="paragraph"><p></p></div><div class="listingblock"><div class="content"><pre><code><span style="font-weight: bold; color: #ffffff">$ git map-branches -v</span>
+<span style="color: #e42e16"></span><span style="color: #e42e16">origin/master          </span><span style="color: #ffffff">  </span><span style="color: #d338d3">        </span><span style="color: #ffffff">  </span><span style="color: #d338d3">         </span><span style="color: #ffffff">
+</span><span style="color: #19c518"></span><span style="color: #19c518">  cool_feature         </span><span style="color: #ffffff">[ </span><span style="color: #d338d3">ahead 4 </span><span style="color: #ffffff">  </span><span style="color: #d338d3">         </span><span style="color: #ffffff">]
+</span><span style="color: #19c518"></span><span style="color: #19c518">    subfeature         </span><span style="color: #ffffff">[ </span><span style="color: #d338d3">ahead 2 </span><span style="color: #ffffff">| </span><span style="color: #d338d3">behind 1 </span><span style="color: #ffffff">]
+</span><span style="color: #19c518"></span><span style="color: #19c518">  fixit                </span><span style="color: #ffffff">[ </span><span style="color: #d338d3">ahead 2 </span><span style="color: #ffffff">  </span><span style="color: #d338d3">         </span><span style="color: #ffffff">]
+</span><span style="color: #33d6e5"></span><span style="font-weight: bold; color: #33d6e5">    frozen_branch *    </span><span style="font-weight: bold; color: #ffffff">[ </span><span style="font-weight: bold; color: #d338d3">ahead 3 </span><span style="font-weight: bold; color: #ffffff">  </span><span style="font-weight: bold; color: #d338d3">         </span><span style="font-weight: bold; color: #ffffff">]
 </span><span style="font-weight: bold; color: #ffffff">$ git new-branch independent_cl</span>
-<span style="font-weight: bold; color: #ffffff">$ git map-branches</span>
-<span style="color: #e42e16"></span><span style="font-weight: bold; color: #e42e16">origin/master
-</span><span style="font-weight: bold; color: #19c518"></span><span style="color: #19c518">  cool_feature
-</span><span style="color: #19c518"></span><span style="color: #19c518">    subfeature
-</span><span style="color: #19c518"></span><span style="color: #19c518">  fixit
-</span><span style="color: #19c518"></span><span style="color: #19c518">    frozen_branch
-</span><span style="color: #33d6e5"></span><span style="font-weight: bold; color: #33d6e5">  independent_cl *
+<span style="font-weight: bold; color: #ffffff">$ git map-branches -v</span>
+<span style="color: #e42e16"></span><span style="font-weight: bold; color: #e42e16">origin/master         </span><span style="font-weight: bold; color: #ffffff">  </span><span style="font-weight: bold; color: #d338d3">        </span><span style="font-weight: bold; color: #ffffff">  </span><span style="font-weight: bold; color: #d338d3">         </span><span style="font-weight: bold; color: #ffffff">
+</span><span style="font-weight: bold; color: #19c518"></span><span style="color: #19c518">  cool_feature        </span><span style="color: #ffffff">[ </span><span style="color: #d338d3">ahead 4 </span><span style="color: #ffffff">  </span><span style="color: #d338d3">         </span><span style="color: #ffffff">]
+</span><span style="color: #19c518"></span><span style="color: #19c518">    subfeature        </span><span style="color: #ffffff">[ </span><span style="color: #d338d3">ahead 2 </span><span style="color: #ffffff">| </span><span style="color: #d338d3">behind 1 </span><span style="color: #ffffff">]
+</span><span style="color: #19c518"></span><span style="color: #19c518">  fixit               </span><span style="color: #ffffff">[ </span><span style="color: #d338d3">ahead 2 </span><span style="color: #ffffff">  </span><span style="color: #d338d3">         </span><span style="color: #ffffff">]
+</span><span style="color: #19c518"></span><span style="color: #19c518">    frozen_branch     </span><span style="color: #ffffff">[ </span><span style="color: #d338d3">ahead 3 </span><span style="color: #ffffff">  </span><span style="color: #d338d3">         </span><span style="color: #ffffff">]
+</span><span style="color: #33d6e5"></span><span style="font-weight: bold; color: #33d6e5">  independent_cl *    </span><span style="font-weight: bold; color: #ffffff">  </span><span style="font-weight: bold; color: #d338d3">        </span><span style="font-weight: bold; color: #ffffff">  </span><span style="font-weight: bold; color: #d338d3">         </span><span style="font-weight: bold; color: #ffffff">
+</span><span style="font-weight: bold; color: #ffffff">$ vi foo &amp;&amp; git add -A &amp;&amp; git commit -m foo</span>
+<span style="font-weight: bold; color: #ffffff">$ git map-branches -v</span>
+<span style="color: #e42e16"></span><span style="color: #e42e16">origin/master         </span><span style="color: #ffffff">  </span><span style="color: #d338d3">        </span><span style="color: #ffffff">  </span><span style="color: #d338d3">         </span><span style="color: #ffffff">
+</span><span style="color: #19c518"></span><span style="color: #19c518">  cool_feature        </span><span style="color: #ffffff">[ </span><span style="color: #d338d3">ahead 4 </span><span style="color: #ffffff">  </span><span style="color: #d338d3">         </span><span style="color: #ffffff">]
+</span><span style="color: #19c518"></span><span style="color: #19c518">    subfeature        </span><span style="color: #ffffff">[ </span><span style="color: #d338d3">ahead 2 </span><span style="color: #ffffff">| </span><span style="color: #d338d3">behind 1 </span><span style="color: #ffffff">]
+</span><span style="color: #19c518"></span><span style="color: #19c518">  fixit               </span><span style="color: #ffffff">[ </span><span style="color: #d338d3">ahead 2 </span><span style="color: #ffffff">  </span><span style="color: #d338d3">         </span><span style="color: #ffffff">]
+</span><span style="color: #19c518"></span><span style="color: #19c518">    frozen_branch     </span><span style="color: #ffffff">[ </span><span style="color: #d338d3">ahead 3 </span><span style="color: #ffffff">  </span><span style="color: #d338d3">         </span><span style="color: #ffffff">]
+</span><span style="color: #33d6e5"></span><span style="font-weight: bold; color: #33d6e5">  independent_cl *    </span><span style="font-weight: bold; color: #ffffff">[ </span><span style="font-weight: bold; color: #d338d3">ahead 1 </span><span style="font-weight: bold; color: #ffffff">  </span><span style="font-weight: bold; color: #d338d3">         </span><span style="font-weight: bold; color: #ffffff">]
 </span><span style="font-weight: bold; color: #ffffff">$ git new-branch --upstream subfeature nested_cl</span>
-<span style="font-weight: bold; color: #ffffff">$ git map-branches</span>
-<span style="color: #e42e16"></span><span style="color: #e42e16">origin/master
-</span><span style="color: #19c518"></span><span style="color: #19c518">  cool_feature
-</span><span style="color: #33d6e5"></span><span style="font-weight: bold; color: #33d6e5">    subfeature</span> <b>&lt;1&gt;</b><span>
-</span><span style="font-weight: bold; color: #33d6e5"></span><span style="font-weight: bold; color: #33d6e5">      nested_cl *
-</span><span style="font-weight: bold; color: #19c518"></span><span style="color: #19c518">  fixit
-</span><span style="color: #19c518"></span><span style="color: #19c518">    frozen_branch
-</span><span style="color: #19c518"></span><span style="color: #19c518">  independent_cl
+<span style="font-weight: bold; color: #ffffff">$ git map-branches -v</span>
+<span style="color: #e42e16"></span><span style="color: #e42e16">origin/master        </span><span style="color: #ffffff">  </span><span style="color: #d338d3">        </span><span style="color: #ffffff">  </span><span style="color: #d338d3">         </span><span style="color: #ffffff">
+</span><span style="color: #19c518"></span><span style="color: #19c518">  cool_feature       </span><span style="color: #ffffff">[ </span><span style="color: #d338d3">ahead 4 </span><span style="color: #ffffff">  </span><span style="color: #d338d3">         </span><span style="color: #ffffff">]
+</span><span style="color: #33d6e5"></span><span style="font-weight: bold; color: #33d6e5">    subfeature       </span><span style="font-weight: bold; color: #ffffff">[ </span><span style="font-weight: bold; color: #d338d3">ahead 2 </span><span style="font-weight: bold; color: #ffffff">| </span><span style="font-weight: bold; color: #d338d3">behind 1 </span><span style="font-weight: bold; color: #ffffff">]</span> <b>&lt;1&gt;</b><span>
+</span><span style="font-weight: bold; color: #33d6e5"></span><span style="font-weight: bold; color: #33d6e5">      nested_cl *    </span><span style="font-weight: bold; color: #ffffff">  </span><span style="font-weight: bold; color: #d338d3">        </span><span style="font-weight: bold; color: #ffffff">  </span><span style="font-weight: bold; color: #d338d3">         </span><span style="font-weight: bold; color: #ffffff">
+</span><span style="font-weight: bold; color: #19c518"></span><span style="color: #19c518">  fixit              </span><span style="color: #ffffff">[ </span><span style="color: #d338d3">ahead 2 </span><span style="color: #ffffff">  </span><span style="color: #d338d3">         </span><span style="color: #ffffff">]
+</span><span style="color: #19c518"></span><span style="color: #19c518">    frozen_branch    </span><span style="color: #ffffff">[ </span><span style="color: #d338d3">ahead 3 </span><span style="color: #ffffff">  </span><span style="color: #d338d3">         </span><span style="color: #ffffff">]
+</span><span style="color: #19c518"></span><span style="color: #19c518">  independent_cl     </span><span style="color: #ffffff">[ </span><span style="color: #d338d3">ahead 1 </span><span style="color: #ffffff">  </span><span style="color: #d338d3">         </span><span style="color: #ffffff">]
 </span><span style="font-weight: bold; color: #ffffff">$ git checkout cool_feature</span>
 Switched to branch 'cool_feature'
 Your branch is ahead of 'origin/master' by 4 commits.
   (use "git push" to publish your local commits)
 <span style="font-weight: bold; color: #ffffff">$ git new-branch --upstream_current cl_depends_on_cool_feature</span>
-<span style="font-weight: bold; color: #ffffff">$ git map-branches</span>
-<span style="color: #e42e16"></span><span style="color: #e42e16">origin/master
-</span><span style="color: #33d6e5"></span><span style="font-weight: bold; color: #33d6e5">  cool_feature
-</span><span style="font-weight: bold; color: #33d6e5"></span><span style="font-weight: bold; color: #33d6e5">    cl_depends_on_cool_feature *
-</span><span style="font-weight: bold; color: #19c518"></span><span style="color: #19c518">    subfeature
-</span><span style="color: #19c518"></span><span style="color: #19c518">      nested_cl
-</span><span style="color: #19c518"></span><span style="color: #19c518">  fixit
-</span><span style="color: #19c518"></span><span style="color: #19c518">    frozen_branch
-</span><span style="color: #19c518"></span><span style="color: #19c518">  independent_cl</span>
+<span style="font-weight: bold; color: #ffffff">$ git map-branches -v</span>
+<span style="color: #e42e16"></span><span style="color: #e42e16">origin/master                       </span><span style="color: #ffffff">  </span><span style="color: #d338d3">        </span><span style="color: #ffffff">  </span><span style="color: #d338d3">         </span><span style="color: #ffffff">
+</span><span style="color: #33d6e5"></span><span style="font-weight: bold; color: #33d6e5">  cool_feature                      </span><span style="font-weight: bold; color: #ffffff">[ </span><span style="font-weight: bold; color: #d338d3">ahead 4 </span><span style="font-weight: bold; color: #ffffff">  </span><span style="font-weight: bold; color: #d338d3">         </span><span style="font-weight: bold; color: #ffffff">]
+</span><span style="font-weight: bold; color: #33d6e5"></span><span style="font-weight: bold; color: #33d6e5">    cl_depends_on_cool_feature *    </span><span style="font-weight: bold; color: #ffffff">  </span><span style="font-weight: bold; color: #d338d3">        </span><span style="font-weight: bold; color: #ffffff">  </span><span style="font-weight: bold; color: #d338d3">         </span><span style="font-weight: bold; color: #ffffff">
+</span><span style="font-weight: bold; color: #19c518"></span><span style="color: #19c518">    subfeature                      </span><span style="color: #ffffff">[ </span><span style="color: #d338d3">ahead 2 </span><span style="color: #ffffff">| </span><span style="color: #d338d3">behind 1 </span><span style="color: #ffffff">]
+</span><span style="color: #19c518"></span><span style="color: #19c518">      nested_cl                     </span><span style="color: #ffffff">  </span><span style="color: #d338d3">        </span><span style="color: #ffffff">  </span><span style="color: #d338d3">         </span><span style="color: #ffffff">
+</span><span style="color: #19c518"></span><span style="color: #19c518">  fixit                             </span><span style="color: #ffffff">[ </span><span style="color: #d338d3">ahead 2 </span><span style="color: #ffffff">  </span><span style="color: #d338d3">         </span><span style="color: #ffffff">]
+</span><span style="color: #19c518"></span><span style="color: #19c518">    frozen_branch                   </span><span style="color: #ffffff">[ </span><span style="color: #d338d3">ahead 3 </span><span style="color: #ffffff">  </span><span style="color: #d338d3">         </span><span style="color: #ffffff">]
+</span><span style="color: #19c518"></span><span style="color: #19c518">  independent_cl                    </span><span style="color: #ffffff">[ </span><span style="color: #d338d3">ahead 1 </span><span style="color: #ffffff">  </span><span style="color: #d338d3">         </span><span style="color: #ffffff">]</span>
 </code></pre></div></div><p><div class="paragraph"></p></div>
 <div class="olist arabic"><ol class="arabic">
 <li>
@@ -917,7 +925,7 @@ from <a href="https://chromium.googlesource.com/chromium/tools/depot_tools.git">
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2016-12-15 15:36:52 PST
+Last updated 2018-12-05 15:20:42 CET
 </div>
 </div>
 </body>

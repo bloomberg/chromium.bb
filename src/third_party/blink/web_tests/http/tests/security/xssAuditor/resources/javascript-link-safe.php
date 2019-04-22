@@ -10,8 +10,10 @@
     event.initEvent('click', true, true);
     document.getElementById('anchorLink').dispatchEvent(event);
 
-    if (window.testRunner)
-        testRunner.notifyDone();
+    setTimeout(function() {
+        if (window.testRunner)
+            testRunner.notifyDone();
+    }, 0);
 </script>
 </body>
 </html>

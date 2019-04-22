@@ -108,3 +108,5 @@ void PopupTracker::DidGetUserInteraction(
   // but the initial ctrl key press is registered as a kRawKeyDown.
   num_interactions_++;
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(PopupTracker)

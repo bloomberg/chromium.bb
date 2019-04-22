@@ -8,8 +8,8 @@
 
 #include <vector>
 
-#include "fxjs/cfxjse_value.h"
 #include "fxjs/js_resources.h"
+#include "fxjs/xfa/cfxjse_value.h"
 #include "xfa/fxfa/parser/cxfa_delta.h"
 
 const CJX_MethodSpec CJX_Delta::MethodSpecs[] = {{"restore", restore_static}};
@@ -19,6 +19,10 @@ CJX_Delta::CJX_Delta(CXFA_Delta* delta) : CJX_Object(delta) {
 }
 
 CJX_Delta::~CJX_Delta() {}
+
+bool CJX_Delta::DynamicTypeIs(TypeTag eType) const {
+  return eType == static_type__ || ParentType__::DynamicTypeIs(eType);
+}
 
 CJS_Result CJX_Delta::restore(CFX_V8* runtime,
                               const std::vector<v8::Local<v8::Value>>& params) {

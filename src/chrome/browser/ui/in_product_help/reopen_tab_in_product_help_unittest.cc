@@ -2,11 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <map>
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "chrome/browser/ui/in_product_help/reopen_tab_in_product_help.h"
 
+#include "base/bind.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -28,8 +32,26 @@ using ::testing::Return;
 
 using MockTracker = ::testing::NiceMock<feature_engagement::test::MockTracker>;
 
+namespace {
+
+constexpr base::TimeDelta kTabMinimumActiveDuration =
+    base::TimeDelta::FromSeconds(15);
+constexpr base::TimeDelta kNewTabOpenedTimeout =
+    base::TimeDelta::FromSeconds(5);
+
+}  // namespace
+
 class ReopenTabInProductHelpTest : public BrowserWithTestWindowTest {
  protected:
+  void SetUp() override {
+    BrowserWithTestWindowTest::SetUp();
+
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        feature_engagement::kIPHReopenTabFeature,
+        ReopenTabInProductHelpTrigger::GetFieldTrialParamsForTest(
+            kTabMinimumActiveDuration.InSeconds(),
+            kNewTabOpenedTimeout.InSeconds()));
+  }
   // We want to use |MockTracker| instead of |Tracker|, so we must override its
   // factory.
   TestingProfile::TestingFactories GetTestingFactories() override {
@@ -51,6 +73,7 @@ class ReopenTabInProductHelpTest : public BrowserWithTestWindowTest {
     return std::make_unique<MockTracker>();
   }
 
+  base::test::ScopedFeatureList scoped_feature_list_;
   base::SimpleTestTickClock clock_;
 };
 
@@ -66,7 +89,7 @@ TEST_F(ReopenTabInProductHelpTest, TriggersIPH) {
   AddTab(browser(), GURL("chrome://blank"));
   BrowserList::SetLastActive(browser());
 
-  clock()->Advance(ReopenTabInProductHelpTrigger::kTabMinimumActiveDuration);
+  clock()->Advance(kTabMinimumActiveDuration);
 
   auto* tab_strip_model = browser()->tab_strip_model();
   tab_strip_model->ToggleSelectionAt(0);

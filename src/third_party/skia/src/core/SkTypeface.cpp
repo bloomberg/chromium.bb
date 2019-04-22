@@ -8,6 +8,7 @@
 #include "SkAdvancedTypefaceMetrics.h"
 #include "SkEndian.h"
 #include "SkFontDescriptor.h"
+#include "SkFontMetrics.h"
 #include "SkFontMgr.h"
 #include "SkMakeUnique.h"
 #include "SkMutex.h"
@@ -43,7 +44,7 @@ public:
 protected:
     SkEmptyTypeface() : SkTypeface(SkFontStyle(), true) { }
 
-    SkStreamAsset* onOpenStream(int* ttcIndex) const override { return nullptr; }
+    std::unique_ptr<SkStreamAsset> onOpenStream(int* ttcIndex) const override { return nullptr; }
     sk_sp<SkTypeface> onMakeClone(const SkFontArguments& args) const override {
         return sk_ref_sp(this);
     }
@@ -56,12 +57,8 @@ protected:
         return nullptr;
     }
     void onGetFontDescriptor(SkFontDescriptor*, bool*) const override { }
-    virtual int onCharsToGlyphs(const void* chars, Encoding encoding,
-                                uint16_t glyphs[], int glyphCount) const override {
-        if (glyphs && glyphCount > 0) {
-            sk_bzero(glyphs, glyphCount * sizeof(glyphs[0]));
-        }
-        return 0;
+    void onCharsToGlyphs(const SkUnichar* chars, int count, SkGlyphID glyphs[]) const override {
+        sk_bzero(glyphs, count * sizeof(glyphs[0]));
     }
     int onCountGlyphs() const override { return 0; }
     int onGetUPEM() const override { return 0; }
@@ -261,7 +258,7 @@ size_t SkTypeface::getTableData(SkFontTableTag tag, size_t offset, size_t length
     return this->onGetTableData(tag, offset, length, data);
 }
 
-SkStreamAsset* SkTypeface::openStream(int* ttcIndex) const {
+std::unique_ptr<SkStreamAsset> SkTypeface::openStream(int* ttcIndex) const {
     int ttcIndexStorage;
     if (nullptr == ttcIndex) {
         // So our subclasses don't need to check for null param
@@ -284,23 +281,16 @@ std::unique_ptr<SkFontData> SkTypeface::onMakeFontData() const {
     return skstd::make_unique<SkFontData>(std::move(stream), index, nullptr, 0);
 };
 
-int SkTypeface::charsToGlyphs(const void* chars, Encoding encoding,
-                              uint16_t glyphs[], int glyphCount) const {
-    if (glyphCount <= 0) {
-        return 0;
+void SkTypeface::unicharsToGlyphs(const SkUnichar uni[], int count, SkGlyphID glyphs[]) const {
+    if (count > 0 && glyphs && uni) {
+        this->onCharsToGlyphs(uni, count, glyphs);
     }
-    if (nullptr == chars || (unsigned)encoding > kUTF32_Encoding) {
-        if (glyphs) {
-            sk_bzero(glyphs, glyphCount * sizeof(glyphs[0]));
-        }
-        return 0;
-    }
-    return this->onCharsToGlyphs(chars, encoding, glyphs, glyphCount);
 }
 
 SkGlyphID SkTypeface::unicharToGlyph(SkUnichar uni) const {
-    SkGlyphID glyphs[1];
-    return this->onCharsToGlyphs(&uni, kUTF32_Encoding, glyphs, 1) == 1 ? glyphs[0] : 0;
+    SkGlyphID glyphs[1] = { 0 };
+    this->onCharsToGlyphs(&uni, 1, glyphs);
+    return glyphs[0];
 }
 
 int SkTypeface::countGlyphs() const {

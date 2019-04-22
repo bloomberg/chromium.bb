@@ -39,7 +39,10 @@ CtapMakeCredentialRequest CreateRegisterRequestWithRegisteredKeys(
       PublicKeyCredentialParams(
           std::vector<PublicKeyCredentialParams::CredentialInfo>(1)));
   request.SetExcludeList(std::move(registered_keys));
-  request.SetIsIndividualAttestation(is_individual_attestation);
+  if (is_individual_attestation)
+    request.set_attestation_preference(
+        AttestationConveyancePreference::ENTERPRISE);
+
   return request;
 }
 
@@ -149,18 +152,17 @@ TEST_F(U2fRegisterOperationTest, TestRegistrationWithExclusionList) {
 
   auto device = std::make_unique<MockFidoDevice>();
   EXPECT_CALL(*device, GetId()).WillRepeatedly(::testing::Return("device"));
-  // DeviceTransact() will be called three times including two check only
-  // sign-in calls and one registration call. For the first two calls, device
-  // will invoke MockFidoDevice::WrongData as the authenticator did not create
-  // the two key handles provided in the exclude list. At the third call,
+  // DeviceTransact() will be called three times including two check only sign-
+  // in calls and one registration call. For the first two calls, device will
+  // invoke MockFidoDevice::WrongData/WrongLength as the authenticator did not
+  // create the two key handles provided in the exclude list. At the third call,
   // MockFidoDevice::NoErrorRegister will be invoked after registration.
   ::testing::InSequence s;
   device->ExpectRequestAndRespondWith(
-      test_data::kU2fCheckOnlySignCommandApduWithKeyAlpha,
+      test_data::kU2fSignCommandApduWithKeyAlpha,
       test_data::kU2fWrongDataApduResponse);
-  device->ExpectRequestAndRespondWith(
-      test_data::kU2fCheckOnlySignCommandApduWithKeyBeta,
-      test_data::kU2fWrongDataApduResponse);
+  device->ExpectRequestAndRespondWith(test_data::kU2fSignCommandApduWithKeyBeta,
+                                      test_data::kU2fWrongLengthApduResponse);
   device->ExpectRequestAndRespondWith(
       test_data::kU2fRegisterCommandApdu,
       test_data::kApduEncodedNoErrorRegisterResponse);
@@ -205,17 +207,13 @@ TEST_F(U2fRegisterOperationTest, TestRegistrationWithDuplicateHandle) {
   // MockFidoDevice::NoErrorRegister.
   ::testing::InSequence s;
   device->ExpectRequestAndRespondWith(
-      test_data::kU2fCheckOnlySignCommandApduWithKeyAlpha,
+      test_data::kU2fSignCommandApduWithKeyAlpha,
       test_data::kU2fWrongDataApduResponse);
+  device->ExpectRequestAndRespondWith(test_data::kU2fSignCommandApduWithKeyBeta,
+                                      test_data::kU2fWrongDataApduResponse);
   device->ExpectRequestAndRespondWith(
-      test_data::kU2fCheckOnlySignCommandApduWithKeyBeta,
-      test_data::kU2fWrongDataApduResponse);
-  device->ExpectRequestAndRespondWith(
-      test_data::kU2fCheckOnlySignCommandApduWithKeyGamma,
+      test_data::kU2fSignCommandApduWithKeyGamma,
       test_data::kApduEncodedNoErrorSignResponse);
-  device->ExpectRequestAndRespondWith(
-      test_data::kU2fFakeRegisterCommand,
-      test_data::kApduEncodedNoErrorRegisterResponse);
 
   auto u2f_register = std::make_unique<U2fRegisterOperation>(
       device.get(), std::move(request),

@@ -18,23 +18,24 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/memory_dump_request_args.h"
 #include "base/trace_event/process_memory_dump.h"
+#include "net/base/http_user_agent_settings.h"
 #include "net/cookies/cookie_store.h"
 #include "net/dns/host_resolver.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/socket/ssl_client_socket_impl.h"
-#include "net/url_request/http_user_agent_settings.h"
 #include "net/url_request/url_request.h"
 
 namespace net {
 
-URLRequestContext::URLRequestContext()
+URLRequestContext::URLRequestContext(bool allow_copy)
     : net_log_(nullptr),
       host_resolver_(nullptr),
       cert_verifier_(nullptr),
       channel_id_service_(nullptr),
       http_auth_handler_factory_(nullptr),
       proxy_resolution_service_(nullptr),
+      proxy_delegate_(nullptr),
       ssl_config_service_(nullptr),
       network_delegate_(nullptr),
       http_server_properties_(nullptr),
@@ -54,7 +55,8 @@ URLRequestContext::URLRequestContext()
       url_requests_(std::make_unique<std::set<const URLRequest*>>()),
       enable_brotli_(false),
       check_cleartext_permitted_(false),
-      name_("unknown") {
+      name_("unknown"),
+      allow_copy_(allow_copy) {
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "URLRequestContext", base::ThreadTaskRunnerHandle::Get());
 }
@@ -64,34 +66,6 @@ URLRequestContext::~URLRequestContext() {
   AssertNoURLRequests();
   base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
       this);
-}
-
-void URLRequestContext::CopyFrom(const URLRequestContext* other) {
-  // Copy URLRequestContext parameters.
-  set_net_log(other->net_log_);
-  set_host_resolver(other->host_resolver_);
-  set_cert_verifier(other->cert_verifier_);
-  set_channel_id_service(other->channel_id_service_);
-  set_http_auth_handler_factory(other->http_auth_handler_factory_);
-  set_proxy_resolution_service(other->proxy_resolution_service_);
-  set_ssl_config_service(other->ssl_config_service_);
-  set_network_delegate(other->network_delegate_);
-  set_http_server_properties(other->http_server_properties_);
-  set_cookie_store(other->cookie_store_);
-  set_transport_security_state(other->transport_security_state_);
-  set_cert_transparency_verifier(other->cert_transparency_verifier_);
-  set_ct_policy_enforcer(other->ct_policy_enforcer_);
-  set_http_transaction_factory(other->http_transaction_factory_);
-  set_job_factory(other->job_factory_);
-  set_throttler_manager(other->throttler_manager_);
-  set_http_user_agent_settings(other->http_user_agent_settings_);
-  set_network_quality_estimator(other->network_quality_estimator_);
-#if BUILDFLAG(ENABLE_REPORTING)
-  set_reporting_service(other->reporting_service_);
-  set_network_error_logging_service(other->network_error_logging_service_);
-#endif  // BUILDFLAG(ENABLE_REPORTING)
-  set_enable_brotli(other->enable_brotli_);
-  set_check_cleartext_permitted(other->check_cleartext_permitted_);
 }
 
 const HttpNetworkSession::Params* URLRequestContext::GetNetworkSessionParams(
@@ -154,8 +128,6 @@ void URLRequestContext::AssertNoURLRequests() const {
 bool URLRequestContext::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
-  SSLClientSocketImpl::DumpSSLClientSessionMemoryStats(pmd);
-
   std::string dump_name =
       base::StringPrintf("net/url_request_context/%s/0x%" PRIxPTR,
                          name_.c_str(), reinterpret_cast<uintptr_t>(this));
@@ -177,6 +149,39 @@ bool URLRequestContext::OnMemoryDump(
     cookie_store_->DumpMemoryStats(pmd, dump->absolute_name());
   }
   return true;
+}
+
+void URLRequestContext::CopyFrom(const URLRequestContext* other) {
+  // Copy disallowed in cases known to not currently need it. New copying should
+  // not be added as CopyFrom is fundamentally broken.
+  DCHECK(allow_copy_ && other->allow_copy_);
+
+  // Copy URLRequestContext parameters.
+  set_net_log(other->net_log_);
+  set_host_resolver(other->host_resolver_);
+  set_cert_verifier(other->cert_verifier_);
+  set_channel_id_service(other->channel_id_service_);
+  set_http_auth_handler_factory(other->http_auth_handler_factory_);
+  set_proxy_resolution_service(other->proxy_resolution_service_);
+  set_proxy_delegate(other->proxy_delegate_);
+  set_ssl_config_service(other->ssl_config_service_);
+  set_network_delegate(other->network_delegate_);
+  set_http_server_properties(other->http_server_properties_);
+  set_cookie_store(other->cookie_store_);
+  set_transport_security_state(other->transport_security_state_);
+  set_cert_transparency_verifier(other->cert_transparency_verifier_);
+  set_ct_policy_enforcer(other->ct_policy_enforcer_);
+  set_http_transaction_factory(other->http_transaction_factory_);
+  set_job_factory(other->job_factory_);
+  set_throttler_manager(other->throttler_manager_);
+  set_http_user_agent_settings(other->http_user_agent_settings_);
+  set_network_quality_estimator(other->network_quality_estimator_);
+#if BUILDFLAG(ENABLE_REPORTING)
+  set_reporting_service(other->reporting_service_);
+  set_network_error_logging_service(other->network_error_logging_service_);
+#endif  // BUILDFLAG(ENABLE_REPORTING)
+  set_enable_brotli(other->enable_brotli_);
+  set_check_cleartext_permitted(other->check_cleartext_permitted_);
 }
 
 }  // namespace net

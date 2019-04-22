@@ -28,6 +28,7 @@
 #include "base/path_service.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/rand_util.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
@@ -53,6 +54,7 @@
 #if !defined(OS_CHROMEOS)
 #include "components/crash/content/app/crashpad.h"
 #include "third_party/crashpad/crashpad/client/crashpad_client.h"  // nogncheck
+#include "third_party/crashpad/crashpad/util/posix/signals.h"      // nogncheck
 #endif
 
 using content::BrowserThread;
@@ -116,7 +118,6 @@ CrashHandlerHostLinux::CrashHandlerHostLinux(const std::string& process_type,
       upload_(upload),
 #endif
       fd_watch_controller_(FROM_HERE),
-      shutting_down_(false),
       blocking_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::USER_VISIBLE})) {
   int fds[2];
@@ -228,10 +229,9 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
 
   const ssize_t msg_size = HANDLE_EINTR(recvmsg(browser_socket_, &msg, 0));
   if (msg_size < 0) {
-    LOG(ERROR) << "Error reading from death signal socket. Crash dumping"
-               << " is disabled."
-               << " msg_size:" << msg_size
-               << " errno:" << errno;
+    PLOG(ERROR) << "Error reading from death signal socket. Crash dumping"
+                << " is disabled."
+                << " msg_size:" << msg_size;
     fd_watch_controller_.StopWatchingFileDescriptor();
     return;
   }
@@ -411,7 +411,8 @@ void CrashHandlerHostLinux::FindCrashingThreadAndDump(
 void CrashHandlerHostLinux::WriteDumpFile(BreakpadInfo* info,
                                           std::unique_ptr<char[]> crash_context,
                                           pid_t crashing_pid) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   // Set |info->distro| here because base::GetLinuxDistro() needs to run on a
   // blocking sequence.
@@ -491,12 +492,12 @@ void CrashHandlerHostLinux::WillDestroyCurrentMessageLoop() {
 
   // If we are quitting and there are crash dumps in the queue, turn them into
   // no-ops.
-  shutting_down_ = true;
+  shutting_down_.Set();
   uploader_thread_->Stop();
 }
 
 bool CrashHandlerHostLinux::IsShuttingDown() const {
-  return shutting_down_;
+  return shutting_down_.IsSet();
 }
 
 }  // namespace breakpad
@@ -569,15 +570,18 @@ void CrashHandlerHost::Init() {
 bool CrashHandlerHost::ReceiveClientMessage(int client_fd,
                                             base::ScopedFD* handler_fd) {
   int signo;
-  iovec iov;
-  iov.iov_base = &signo;
-  iov.iov_len = sizeof(signo);
+  unsigned char request_dump;
+  iovec iov[2];
+  iov[0].iov_base = &signo;
+  iov[0].iov_len = sizeof(signo);
+  iov[1].iov_base = &request_dump;
+  iov[1].iov_len = sizeof(request_dump);
 
   msghdr msg;
   msg.msg_name = nullptr;
   msg.msg_namelen = 0;
-  msg.msg_iov = &iov;
-  msg.msg_iovlen = 1;
+  msg.msg_iov = iov;
+  msg.msg_iovlen = base::size(iov);
 
   char cmsg_buf[CMSG_SPACE(sizeof(int)) + CMSG_SPACE(sizeof(ucred))];
   msg.msg_control = cmsg_buf;
@@ -615,7 +619,17 @@ bool CrashHandlerHost::ReceiveClientMessage(int client_fd,
     return false;
   }
 
-  NotifyCrashSignalObservers(child_pid, signo);
+  if (signo != crashpad::Signals::kSimulatedSigno) {
+    NotifyCrashSignalObservers(child_pid, signo);
+  }
+
+#if defined(OS_ANDROID)
+  if (!request_dump) {
+    return false;
+  }
+#else
+  DCHECK(request_dump);
+#endif
 
   handler_fd->reset(child_fd.release());
   return true;

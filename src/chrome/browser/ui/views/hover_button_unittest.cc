@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/test/views/chrome_views_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -77,7 +78,7 @@ TEST_F(HoverButtonTest, ValidateTestData) {
 
 // Tests whether the HoverButton has the correct tooltip and accessible name.
 TEST_F(HoverButtonTest, TooltipAndAccessibleName) {
-  for (size_t i = 0; i < arraysize(kTitleSubtitlePairs); ++i) {
+  for (size_t i = 0; i < base::size(kTitleSubtitlePairs); ++i) {
     TitleSubtitlePair pair = kTitleSubtitlePairs[i];
     SCOPED_TRACE(testing::Message() << "Index: " << i << ", expected_tooltip="
                                     << (pair.tooltip ? "true" : "false"));
@@ -99,13 +100,8 @@ TEST_F(HoverButtonTest, TooltipAndAccessibleName) {
         base::ASCIIToUTF16("\n"));
     EXPECT_EQ(expected, base::UTF8ToUTF16(accessible_name));
 
-    base::string16 tooltip_text;
-    button->GetTooltipText(gfx::Point(), &tooltip_text);
-    if (pair.tooltip) {
-      EXPECT_EQ(expected, tooltip_text);
-    } else {
-      EXPECT_EQ(base::string16(), tooltip_text);
-    }
+    EXPECT_EQ(pair.tooltip ? expected : base::string16(),
+              button->GetTooltipText(gfx::Point()));
   }
 }
 
@@ -114,7 +110,7 @@ TEST_F(HoverButtonTest, TooltipAndAccessibleName) {
 TEST_F(HoverButtonTest, CustomTooltip) {
   const base::string16 custom_tooltip = base::ASCIIToUTF16("custom");
 
-  for (size_t i = 0; i < arraysize(kTitleSubtitlePairs); ++i) {
+  for (size_t i = 0; i < base::size(kTitleSubtitlePairs); ++i) {
     SCOPED_TRACE(testing::Message() << "Index: " << i);
     TitleSubtitlePair pair = kTitleSubtitlePairs[i];
     auto button = std::make_unique<HoverButton>(
@@ -123,10 +119,7 @@ TEST_F(HoverButtonTest, CustomTooltip) {
     button->set_auto_compute_tooltip(false);
     button->SetTooltipText(custom_tooltip);
     button->SetSize(gfx::Size(kButtonWidth, 40));
-
-    base::string16 tooltip_text;
-    button->GetTooltipText(gfx::Point(), &tooltip_text);
-    EXPECT_EQ(custom_tooltip, tooltip_text);
+    EXPECT_EQ(custom_tooltip, button->GetTooltipText(gfx::Point()));
 
     // Make sure the accessible name is still set.
     ui::AXNodeData data;

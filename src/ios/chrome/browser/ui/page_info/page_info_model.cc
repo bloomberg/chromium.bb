@@ -39,21 +39,25 @@
 PageInfoModel::PageInfoModel(ios::ChromeBrowserState* browser_state,
                              const GURL& url,
                              const web::SSLStatus& ssl,
+                             bool is_offline_page,
                              PageInfoModelObserver* observer)
     : observer_(observer) {
+  if (is_offline_page) {
+    sections_.push_back(
+        SectionInfo(ICON_STATE_OFFLINE_PAGE,
+                    l10n_util::GetStringUTF16(IDS_IOS_PAGE_INFO_OFFLINE_TITLE),
+                    l10n_util::GetStringUTF16(IDS_IOS_PAGE_INFO_OFFLINE_PAGE),
+                    SECTION_INFO_INTERNAL_PAGE, BUTTON_RELOAD));
+    return;
+  }
+
   if (url.SchemeIs(kChromeUIScheme)) {
-    if (url.host() == kChromeUIOfflineHost) {
-      sections_.push_back(SectionInfo(
-          ICON_STATE_OFFLINE_PAGE,
-          l10n_util::GetStringUTF16(IDS_IOS_PAGE_INFO_OFFLINE_TITLE),
-          l10n_util::GetStringUTF16(IDS_IOS_PAGE_INFO_OFFLINE_PAGE),
-          SECTION_INFO_INTERNAL_PAGE, BUTTON_RELOAD));
-    } else {
-      sections_.push_back(
-          SectionInfo(ICON_STATE_INTERNAL_PAGE, base::string16(),
-                      l10n_util::GetStringUTF16(IDS_PAGE_INFO_INTERNAL_PAGE),
-                      SECTION_INFO_INTERNAL_PAGE, BUTTON_NONE));
-    }
+    base::string16 spec(base::UTF8ToUTF16(url.spec()));
+
+    sections_.push_back(
+        SectionInfo(ICON_STATE_INTERNAL_PAGE, spec,
+                    l10n_util::GetStringUTF16(IDS_PAGE_INFO_INTERNAL_PAGE),
+                    SECTION_INFO_INTERNAL_PAGE, BUTTON_NONE));
     return;
   }
 

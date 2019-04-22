@@ -20,26 +20,24 @@ namespace skiatest {
  */
 class GrGpuResource::CacheAccess {
 private:
+    /** The cache is allowed to go from no refs to 1 ref. */
+    void ref() { fResource->addInitialRef(); }
+
     /**
      * Is the resource currently cached as scratch? This means it is cached, has a valid scratch
      * key, and does not have a unique key.
      */
     bool isScratch() const {
         return !fResource->getUniqueKey().isValid() && fResource->fScratchKey.isValid() &&
-                SkBudgeted::kYes == fResource->resourcePriv().isBudgeted();
+               GrBudgetedType::kBudgeted == fResource->resourcePriv().budgetedType();
     }
-
-    /**
-     * Even if the resource has a unique key should we still try to purge it as soon as possible.
-     */
-    bool shouldPurgeImmediately() const { return fResource->fShouldPurgeImmediately; }
 
     /**
      * Called by the cache to delete the resource under normal circumstances.
      */
     void release() {
         fResource->release();
-        if (fResource->isPurgeable()) {
+        if (!fResource->hasRefOrPendingIO()) {
             delete fResource;
         }
     }
@@ -49,13 +47,16 @@ private:
      */
     void abandon() {
         fResource->abandon();
-        if (fResource->isPurgeable()) {
+        if (!fResource->hasRefOrPendingIO()) {
             delete fResource;
         }
     }
 
     /** Called by the cache to assign a new unique key. */
     void setUniqueKey(const GrUniqueKey& key) { fResource->fUniqueKey = key; }
+
+    /** Is the resource ref'ed (not counting pending IOs). */
+    bool hasRef() const { return fResource->hasRef(); }
 
     /** Called by the cache to make the unique key invalid. */
     void removeUniqueKey() { fResource->fUniqueKey.reset(); }
@@ -83,8 +84,8 @@ private:
     CacheAccess& operator=(const CacheAccess&); // unimpl
 
     // No taking addresses of this type.
-    const CacheAccess* operator&() const;
-    CacheAccess* operator&();
+    const CacheAccess* operator&() const = delete;
+    CacheAccess* operator&() = delete;
 
     GrGpuResource* fResource;
 

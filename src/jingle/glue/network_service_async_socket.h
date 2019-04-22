@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// An implementation of buzz::AsyncSocket that uses Chrome Network Service
+// An implementation of jingle_xmpp::AsyncSocket that uses Chrome Network Service
 // sockets.
 
 #ifndef JINGLE_GLUE_NETWORK_SERVICE_ASYNC_SOCKET_H_
@@ -21,13 +21,16 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
+#include "net/base/host_port_pair.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/mojom/proxy_resolving_socket.mojom.h"
+#include "services/network/public/mojom/tcp_socket.mojom.h"
+#include "services/network/public/mojom/tls_socket.mojom.h"
 #include "third_party/libjingle_xmpp/xmpp/asyncsocket.h"
 
 namespace jingle_glue {
 
-class NetworkServiceAsyncSocket : public buzz::AsyncSocket,
+class NetworkServiceAsyncSocket : public jingle_xmpp::AsyncSocket,
                                   public network::mojom::SocketObserver {
  public:
   NetworkServiceAsyncSocket(
@@ -40,9 +43,9 @@ class NetworkServiceAsyncSocket : public buzz::AsyncSocket,
   // Does not raise any signals.
   ~NetworkServiceAsyncSocket() override;
 
-  // buzz::AsyncSocket implementation.
+  // jingle_xmpp::AsyncSocket implementation.
 
-  // The current state (see buzz::AsyncSocket::State; all but
+  // The current state (see jingle_xmpp::AsyncSocket::State; all but
   // STATE_CLOSING is used).
   State state() override;
 
@@ -68,7 +71,7 @@ class NetworkServiceAsyncSocket : public buzz::AsyncSocket,
   // Otherwise, starts the connection process and returns true.
   // SignalConnected will be raised when the connection is successful;
   // otherwise, SignalClosed will be raised with a net error set.
-  bool Connect(const rtc::SocketAddress& address) override;
+  bool Connect(const net::HostPortPair& address) override;
 
   // Tries to read at most |len| bytes into |data|.
   //
@@ -213,9 +216,9 @@ class NetworkServiceAsyncSocket : public buzz::AsyncSocket,
 
   bool use_fake_tls_handshake_;
 
-  // buzz::AsyncSocket state.
-  buzz::AsyncSocket::State state_;
-  buzz::AsyncSocket::Error error_;
+  // jingle_xmpp::AsyncSocket state.
+  jingle_xmpp::AsyncSocket::State state_;
+  jingle_xmpp::AsyncSocket::Error error_;
   net::Error net_error_;
 
   // State for the read loop.  |read_start_| <= |read_end_| <=

@@ -28,7 +28,7 @@
 
 #include <memory>
 #include "third_party/blink/public/platform/web_rtc_dtmf_sender_handler_client.h"
-#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/platform/timer.h"
 
@@ -61,7 +61,7 @@ class RTCDTMFSender final : public EventTargetWithInlineData,
                   int inter_tone_gap,
                   ExceptionState&);
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(tonechange, kTonechange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(tonechange, kTonechange)
 
   // EventTarget
   const AtomicString& InterfaceName() const override;

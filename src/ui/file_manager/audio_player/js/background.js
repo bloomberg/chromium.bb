@@ -51,8 +51,9 @@ AudioPlayerBackground.prototype.onRestarted_ = function() {
   audioPlayer.reopen(function() {
     // If the audioPlayer is reopened, change its window's icon. Otherwise
     // there is no reopened window so just skip the call of setIcon.
-    if (audioPlayer.rawAppWindow)
+    if (audioPlayer.rawAppWindow) {
       audioPlayer.setIcon(AUDIO_PLAYER_ICON);
+    }
   });
 };
 
@@ -113,8 +114,9 @@ function open(urls) {
 
     // Adjusts the position to start playing.
     var maybePosition = util.entriesToURLs(audioEntries).indexOf(startUrl);
-    if (maybePosition !== -1)
+    if (maybePosition !== -1) {
       position = maybePosition;
+    }
 
     // Opens the audio player.
     return new Promise(function(fulfill, reject) {
@@ -128,7 +130,7 @@ function open(urls) {
     audioPlayer.rawAppWindow.focus();
     return AUDIO_PLAYER_APP_URL;
   }).catch(function(error) {
-    console.error('Launch failed' + error.stack || error);
+    console.error('Launch failed: ' + (error.stack || error));
     return Promise.reject(error);
   });
 }

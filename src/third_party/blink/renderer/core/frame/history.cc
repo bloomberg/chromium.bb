@@ -201,9 +201,8 @@ void History::go(ScriptState* script_state,
     // We intentionally call reload() for the current frame if delta is zero.
     // Otherwise, navigation happens on the root frame.
     // This behavior is designed in the following spec.
-    // https://html.spec.whatwg.org/multipage/browsers.html#dom-history-go
-    GetFrame()->Reload(WebFrameLoadType::kReload,
-                       ClientRedirectPolicy::kClientRedirect);
+    // https://html.spec.whatwg.org/C/#dom-history-go
+    GetFrame()->Reload(WebFrameLoadType::kReload);
   }
 }
 
@@ -213,7 +212,6 @@ void History::pushState(scoped_refptr<SerializedScriptValue> data,
                         ExceptionState& exception_state) {
   StateObjectAdded(std::move(data), title, url, ScrollRestorationInternal(),
                    WebFrameLoadType::kStandard, exception_state);
-  UseCounter::Count(GetFrame(), WebFeature::kHistoryPushState);
 }
 
 void History::replaceState(scoped_refptr<SerializedScriptValue> data,
@@ -222,7 +220,6 @@ void History::replaceState(scoped_refptr<SerializedScriptValue> data,
                            ExceptionState& exception_state) {
   StateObjectAdded(std::move(data), title, url, ScrollRestorationInternal(),
                    WebFrameLoadType::kReplaceCurrentItem, exception_state);
-  UseCounter::Count(GetFrame(), WebFeature::kHistoryReplaceState);
 }
 
 KURL History::UrlForState(const String& url_string) {

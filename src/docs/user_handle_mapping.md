@@ -84,7 +84,6 @@ For Chromium contributors that have different nicks on other domains.
 | pwnall            | pwnall          | costan          |
 | rch               | RyanHamilton    | rch             |
 | rdevlin.cronin    | rdcronin        | rdcronin        |
-| reillyg           | reillyeon       | reillyg         |
 | rlp               | rpetterson      | rlp             |
 | robliao           | robliao         | robliao         |
 | rsleevi           | sleevi, rsleevi | sleevi          |

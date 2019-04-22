@@ -10,9 +10,9 @@
 #include <string>
 
 
-namespace buzz {
+namespace jingle_xmpp {
 class XmlElement;
-}  // namespace buzz
+}  // namespace jingle_xmpp
 
 namespace remoting {
 
@@ -49,10 +49,10 @@ class ServerLogEntry {
   // Constructs a log stanza. The caller should add one or more log entry
   // stanzas as children of this stanza, before sending the log stanza to
   // the remoting bot.
-  static std::unique_ptr<buzz::XmlElement> MakeStanza();
+  static std::unique_ptr<jingle_xmpp::XmlElement> MakeStanza();
 
   // Converts this object to an XML stanza.
-  std::unique_ptr<buzz::XmlElement> ToStanza() const;
+  std::unique_ptr<jingle_xmpp::XmlElement> ToStanza() const;
 
  private:
   typedef std::map<std::string, std::string> ValuesMap;

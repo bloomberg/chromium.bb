@@ -9,8 +9,8 @@
 
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/strings/string16.h"
-#include "storage/browser/storage_browser_export.h"
 
 namespace sql {
 class Database;
@@ -18,7 +18,7 @@ class Database;
 
 namespace storage {
 
-struct STORAGE_EXPORT DatabaseDetails {
+struct COMPONENT_EXPORT(STORAGE_BROWSER) DatabaseDetails {
   DatabaseDetails();
   DatabaseDetails(const DatabaseDetails& other);
   ~DatabaseDetails();
@@ -29,7 +29,7 @@ struct STORAGE_EXPORT DatabaseDetails {
   int64_t estimated_size;
 };
 
-class STORAGE_EXPORT DatabasesTable {
+class COMPONENT_EXPORT(STORAGE_BROWSER) DatabasesTable {
  public:
   explicit DatabasesTable(sql::Database* db) : db_(db) {}
 

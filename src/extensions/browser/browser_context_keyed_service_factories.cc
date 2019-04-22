@@ -32,9 +32,8 @@
 #include "extensions/browser/api/sockets_udp/udp_socket_event_dispatcher.h"
 #include "extensions/browser/api/storage/storage_frontend.h"
 #include "extensions/browser/api/system_info/system_info_api.h"
+#include "extensions/browser/api/usb/usb_device_manager.h"
 #include "extensions/browser/api/usb/usb_device_resource.h"
-#include "extensions/browser/api/usb/usb_event_router.h"
-#include "extensions/browser/api/usb/usb_guid_map.h"
 #include "extensions/browser/api/virtual_keyboard_private/virtual_keyboard_private_api.h"
 #include "extensions/browser/api/web_request/web_request_api.h"
 #include "extensions/browser/api/webcam_private/webcam_private_api.h"
@@ -97,8 +96,7 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
 #if defined(OS_CHROMEOS)
   SystemPowerSourceAPI::GetFactoryInstance();
 #endif
-  UsbEventRouter::GetFactoryInstance();
-  UsbGuidMap::GetFactoryInstance();
+  UsbDeviceManager::GetFactoryInstance();
 #if defined(OS_CHROMEOS)
   VirtualKeyboardAPI::GetFactoryInstance();
   WebcamPrivateAPI::GetFactoryInstance();

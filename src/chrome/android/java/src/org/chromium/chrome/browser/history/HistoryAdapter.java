@@ -16,7 +16,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.UrlConstants;
@@ -275,7 +274,8 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
         TextView privacyDisclaimerTextView =
                 privacyDisclaimerContainer.findViewById(R.id.privacy_disclaimer);
         privacyDisclaimerTextView.setMovementMethod(LinkMovementMethod.getInstance());
-        privacyDisclaimerTextView.setText(getPrivacyDisclaimerText());
+        privacyDisclaimerTextView.setText(
+                getPrivacyDisclaimerText(privacyDisclaimerTextView.getResources()));
         mPrivacyDisclaimerBottomSpace =
                 privacyDisclaimerContainer.findViewById(R.id.privacy_disclaimer_bottom_space);
 
@@ -312,9 +312,8 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
      * Create a {@SpannableString} for privacy disclaimer.
      * @return The {@SpannableString} with the privacy disclaimer string resource and url.
      */
-    private SpannableString getPrivacyDisclaimerText() {
-        final Resources resources = ContextUtils.getApplicationContext().getResources();
-        NoUnderlineClickableSpan link = new NoUnderlineClickableSpan((view) -> {
+    private SpannableString getPrivacyDisclaimerText(Resources resources) {
+        NoUnderlineClickableSpan link = new NoUnderlineClickableSpan(resources, (view) -> {
             mHistoryManager.openUrl(UrlConstants.MY_ACTIVITY_URL_IN_HISTORY, null, true);
         });
         return SpanApplier.applySpans(

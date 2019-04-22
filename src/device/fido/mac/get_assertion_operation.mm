@@ -15,6 +15,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/device_event_log/device_event_log.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/mac/keychain.h"
 #include "device/fido/mac/util.h"
@@ -102,42 +103,25 @@ void GetAssertionOperation::PromptTouchIdDone(bool success) {
     // The keychain query already filtered for the RP ID encoded under this
     // operation's metadata secret, so the credential id really should have
     // been decryptable.
-    DVLOG(1) << "UnsealCredentialId failed";
+    FIDO_LOG(ERROR) << "UnsealCredentialId failed";
     std::move(callback())
         .Run(CtapDeviceResponseCode::kCtap2ErrNoCredentials, base::nullopt);
     return;
   }
 
-  base::ScopedCFTypeRef<SecKeyRef> public_key(
-      Keychain::GetInstance().KeyCopyPublicKey(credential->private_key));
-  if (!public_key) {
-    DLOG(ERROR) << "failed to get public key for credential id "
-                << base::HexEncode(credential->credential_id.data(),
-                                   credential->credential_id.size());
-    std::move(callback())
-        .Run(CtapDeviceResponseCode::kCtap2ErrOther, base::nullopt);
-    return;
-  }
-
-  base::Optional<AuthenticatorData> authenticator_data = MakeAuthenticatorData(
-      RpId(), credential->credential_id, SecKeyRefToECPublicKey(public_key));
-  if (!authenticator_data) {
-    DLOG(ERROR) << "MakeAuthenticatorData failed";
-    std::move(callback())
-        .Run(CtapDeviceResponseCode::kCtap2ErrOther, base::nullopt);
-    return;
-  }
+  AuthenticatorData authenticator_data =
+      MakeAuthenticatorData(RpId(), /*attested_credential_data=*/base::nullopt);
   base::Optional<std::vector<uint8_t>> signature =
-      GenerateSignature(*authenticator_data, request().client_data_hash(),
+      GenerateSignature(authenticator_data, request().client_data_hash(),
                         credential->private_key);
   if (!signature) {
-    DLOG(ERROR) << "GenerateSignature failed";
+    FIDO_LOG(ERROR) << "GenerateSignature failed";
     std::move(callback())
         .Run(CtapDeviceResponseCode::kCtap2ErrOther, base::nullopt);
     return;
   }
   auto response = AuthenticatorGetAssertionResponse(
-      std::move(*authenticator_data), std::move(*signature));
+      std::move(authenticator_data), std::move(*signature));
   response.SetCredential(PublicKeyCredentialDescriptor(
       CredentialType::kPublicKey, std::move(credential->credential_id)));
   response.SetUserEntity(credential_user->ToPublicKeyCredentialUserEntity());

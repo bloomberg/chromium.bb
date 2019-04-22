@@ -16,7 +16,6 @@
 #include <utility>
 
 #include "absl/memory/memory.h"
-#include "common_types.h"  // NOLINT(build/include)
 #include "logging/rtc_event_log/events/rtc_event_rtcp_packet_outgoing.h"
 #include "logging/rtc_event_log/rtc_event_log.h"
 #include "modules/rtp_rtcp/source/rtcp_packet/app.h"
@@ -24,6 +23,7 @@
 #include "modules/rtp_rtcp/source/rtcp_packet/compound_packet.h"
 #include "modules/rtp_rtcp/source/rtcp_packet/extended_reports.h"
 #include "modules/rtp_rtcp/source/rtcp_packet/fir.h"
+#include "modules/rtp_rtcp/source/rtcp_packet/loss_notification.h"
 #include "modules/rtp_rtcp/source/rtcp_packet/nack.h"
 #include "modules/rtp_rtcp/source/rtcp_packet/pli.h"
 #include "modules/rtp_rtcp/source/rtcp_packet/receiver_report.h"
@@ -37,7 +37,7 @@
 #include "modules/rtp_rtcp/source/time_util.h"
 #include "modules/rtp_rtcp/source/tmmbr_help.h"
 #include "rtc_base/checks.h"
-#include "rtc_base/constructormagic.h"
+#include "rtc_base/constructor_magic.h"
 #include "rtc_base/logging.h"
 #include "rtc_base/numerics/safe_conversions.h"
 #include "rtc_base/trace_event.h"
@@ -163,6 +163,7 @@ RTCPSender::RTCPSender(
   builders_[kRtcpRemb] = &RTCPSender::BuildREMB;
   builders_[kRtcpBye] = &RTCPSender::BuildBYE;
   builders_[kRtcpApp] = &RTCPSender::BuildAPP;
+  builders_[kRtcpLossNotification] = &RTCPSender::BuildLossNotification;
   builders_[kRtcpTmmbr] = &RTCPSender::BuildTMMBR;
   builders_[kRtcpTmmbn] = &RTCPSender::BuildTMMBN;
   builders_[kRtcpNack] = &RTCPSender::BuildNACK;
@@ -209,6 +210,23 @@ int32_t RTCPSender::SetSendingStatus(const FeedbackState& feedback_state,
   if (sendRTCPBye)
     return SendRTCP(feedback_state, kRtcpBye);
   return 0;
+}
+
+int32_t RTCPSender::SendLossNotification(const FeedbackState& feedback_state,
+                                         uint16_t last_decoded_seq_num,
+                                         uint16_t last_received_seq_num,
+                                         bool decodability_flag) {
+  rtc::CritScope lock(&critical_section_rtcp_sender_);
+
+  loss_notification_state_.last_decoded_seq_num = last_decoded_seq_num;
+  loss_notification_state_.last_received_seq_num = last_received_seq_num;
+  loss_notification_state_.decodability_flag = decodability_flag;
+
+  SetFlag(kRtcpLossNotification, /*is_volatile=*/true);
+
+  // Send immediately.
+  return SendCompoundRTCP(feedback_state,
+                          {RTCPPacketType::kRtcpLossNotification});
 }
 
 void RTCPSender::SetRemb(int64_t bitrate_bps, std::vector<uint32_t> ssrcs) {
@@ -583,6 +601,17 @@ std::unique_ptr<rtcp::RtcpPacket> RTCPSender::BuildAPP(const RtcpContext& ctx) {
   return std::unique_ptr<rtcp::RtcpPacket>(app);
 }
 
+std::unique_ptr<rtcp::RtcpPacket> RTCPSender::BuildLossNotification(
+    const RtcpContext& ctx) {
+  auto loss_notification = absl::make_unique<rtcp::LossNotification>(
+      loss_notification_state_.last_decoded_seq_num,
+      loss_notification_state_.last_received_seq_num,
+      loss_notification_state_.decodability_flag);
+  loss_notification->SetSenderSsrc(ssrc_);
+  loss_notification->SetMediaSsrc(remote_ssrc_);
+  return std::move(loss_notification);
+}
+
 std::unique_ptr<rtcp::RtcpPacket> RTCPSender::BuildNACK(
     const RtcpContext& ctx) {
   rtcp::Nack* nack = new rtcp::Nack();
@@ -908,6 +937,9 @@ void RTCPSender::SetVideoBitrateAllocation(
       CheckAndUpdateLayerStructure(bitrate);
   if (new_bitrate) {
     video_bitrate_allocation_ = *new_bitrate;
+    RTC_LOG(LS_INFO) << "Emitting TargetBitrate XR for SSRC " << ssrc_
+                     << " with new layers enabled/disabled: "
+                     << video_bitrate_allocation_.ToString();
     next_time_to_send_rtcp_ = clock_->TimeInMilliseconds();
   } else {
     video_bitrate_allocation_ = bitrate;

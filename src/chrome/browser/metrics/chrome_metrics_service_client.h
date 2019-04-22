@@ -18,6 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "build/build_config.h"
+#include "chrome/browser/metrics/incognito_observer.h"
 #include "chrome/browser/metrics/metrics_memory_details.h"
 #include "components/metrics/file_metrics_provider.h"
 #include "components/metrics/metrics_log_uploader.h"
@@ -33,11 +34,6 @@
 class PluginMetricsProvider;
 class Profile;
 class PrefRegistrySimple;
-
-#if defined(OS_ANDROID)
-class TabModelListObserver;
-#endif  // defined(OS_ANDROID)
-
 
 namespace metrics {
 class MetricsService;
@@ -60,9 +56,6 @@ class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
   // Registers local state prefs used by this class.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
-  // Checks if the user has forced metrics collection on via the override flag.
-  static bool IsMetricsReportingForceEnabled();
-
   // metrics::MetricsServiceClient:
   metrics::MetricsService* GetMetricsService() override;
   ukm::UkmService* GetUkmService() override;
@@ -76,8 +69,8 @@ class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
   void OnLogCleanShutdown() override;
   void CollectFinalMetricsForLog(const base::Closure& done_callback) override;
   std::unique_ptr<metrics::MetricsLogUploader> CreateUploader(
-      base::StringPiece server_url,
-      base::StringPiece insecure_server_url,
+      const GURL& server_url,
+      const GURL& insecure_server_url,
       base::StringPiece mime_type,
       metrics::MetricsLogUploader::MetricServiceType service_type,
       const metrics::MetricsLogUploader::UploadCallback& on_upload_complete)
@@ -91,6 +84,7 @@ class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
   bool SyncStateAllowsExtensionUkm() override;
   bool AreNotificationListenersEnabledOnAllProfiles() override;
   std::string GetAppPackageName() override;
+  std::string GetUploadSigningKey() override;
   static void SetNotificationListenerSetupFailedForTesting(
       bool simulate_failure);
 
@@ -178,12 +172,8 @@ class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
 
   content::NotificationRegistrar registrar_;
 
-#if defined(OS_ANDROID)
   // Listener for changes in incognito activity.
-  // Desktop platform use BrowserList, and can listen for
-  // chrome::NOTIFICATION_BROWSER_OPENED instead.
-  std::unique_ptr<TabModelListObserver> incognito_observer_;
-#endif  // defined(OS_ANDROID)
+  std::unique_ptr<IncognitoObserver> incognito_observer_;
 
   // Whether we registered all notification listeners successfully.
   bool notification_listeners_active_;

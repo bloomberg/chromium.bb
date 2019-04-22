@@ -5,12 +5,12 @@
  * found in the LICENSE file.
  */
 
-#include "gm.h"
-#include "sk_tool_utils.h"
 #include "SkCanvas.h"
 #include "SkPaint.h"
 #include "SkPath.h"
 #include "SkRandom.h"
+#include "ToolUtils.h"
+#include "gm.h"
 
 namespace skiagm {
 
@@ -84,16 +84,12 @@ protected:
         path.fName = "moveTo-quad";
 
         SkPaint titlePaint;
-        titlePaint.setColor(SK_ColorBLACK);
-        titlePaint.setAntiAlias(true);
-        sk_tool_utils::set_portable_typeface(&titlePaint);
-        titlePaint.setTextSize(15 * SK_Scalar1);
+        SkFont  font(ToolUtils::create_portable_typeface(), 15);
+        SkFont  labelFont(ToolUtils::create_portable_typeface(), 10);
+
         const char title[] = "Quad Drawn Into Rectangle Clips With "
                              "Indicated Style, Fill and Linecaps, with stroke width 10";
-        canvas->drawString(title,
-                           20 * SK_Scalar1,
-                           20 * SK_Scalar1,
-                           titlePaint);
+        canvas->drawString(title, 20.0f, 20.0f, font, titlePaint);
 
         SkRandom rand;
         SkRect rect = SkRect::MakeWH(100*SK_Scalar1, 30*SK_Scalar1);
@@ -115,7 +111,7 @@ protected:
                         canvas->translate(rect.width() + 40 * SK_Scalar1, 0);
                     }
 
-                    SkColor color = sk_tool_utils::color_to_565(0xff007000);
+                    SkColor color = ToolUtils::color_to_565(0xff007000);
                     this->drawPath(path.fPath, canvas, color, rect,
                                     gCaps[cap].fCap, gCaps[cap].fJoin, gStyles[style].fStyle,
                                     gFills[fill].fFill, SK_Scalar1*10);
@@ -129,18 +125,12 @@ protected:
 
                     SkPaint labelPaint;
                     labelPaint.setColor(color);
-                    labelPaint.setAntiAlias(true);
-                    sk_tool_utils::set_portable_typeface(&labelPaint);
-                    labelPaint.setTextSize(10 * SK_Scalar1);
-                    canvas->drawString(gStyles[style].fName,
-                                       0, rect.height() + 12 * SK_Scalar1,
-                                       labelPaint);
-                    canvas->drawString(gFills[fill].fName,
-                                       0, rect.height() + 24 * SK_Scalar1,
-                                       labelPaint);
-                    canvas->drawString(gCaps[cap].fName,
-                                       0, rect.height() + 36 * SK_Scalar1,
-                                       labelPaint);
+                    canvas->drawString(gStyles[style].fName, 0, rect.height() + 12.0f,
+                                       labelFont, labelPaint);
+                    canvas->drawString(gFills[fill].fName, 0, rect.height() + 24.0f,
+                                       labelFont, labelPaint);
+                    canvas->drawString(gCaps[cap].fName, 0, rect.height() + 36.0f,
+                                       labelFont, labelPaint);
                 }
                 canvas->restore();
             }
@@ -225,16 +215,11 @@ protected:
         path.fName = "moveTo-quad-close";
 
         SkPaint titlePaint;
-        titlePaint.setColor(SK_ColorBLACK);
-        titlePaint.setAntiAlias(true);
-        sk_tool_utils::set_portable_typeface(&titlePaint);
-        titlePaint.setTextSize(15 * SK_Scalar1);
+        SkFont     font(ToolUtils::create_portable_typeface(), 15);
+        SkFont     labelFont(ToolUtils::create_portable_typeface(), 10);
         const char title[] = "Quad Closed Drawn Into Rectangle Clips With "
                              "Indicated Style, Fill and Linecaps, with stroke width 10";
-        canvas->drawString(title,
-                           20 * SK_Scalar1,
-                           20 * SK_Scalar1,
-                           titlePaint);
+        canvas->drawString(title, 20.0f, 20.0f, font, titlePaint);
 
         SkRandom rand;
         SkRect rect = SkRect::MakeWH(100*SK_Scalar1, 30*SK_Scalar1);
@@ -256,7 +241,7 @@ protected:
                         canvas->translate(rect.width() + 40 * SK_Scalar1, 0);
                     }
 
-                    SkColor color = sk_tool_utils::color_to_565(0xff007000);
+                    SkColor color = ToolUtils::color_to_565(0xff007000);
                     this->drawPath(path.fPath, canvas, color, rect,
                                     gCaps[cap].fCap, gCaps[cap].fJoin, gStyles[style].fStyle,
                                     gFills[fill].fFill, SK_Scalar1*10);
@@ -270,18 +255,12 @@ protected:
 
                     SkPaint labelPaint;
                     labelPaint.setColor(color);
-                    labelPaint.setAntiAlias(true);
-                    sk_tool_utils::set_portable_typeface(&labelPaint);
-                    labelPaint.setTextSize(10 * SK_Scalar1);
-                    canvas->drawString(gStyles[style].fName,
-                                       0, rect.height() + 12 * SK_Scalar1,
-                                       labelPaint);
-                    canvas->drawString(gFills[fill].fName,
-                                       0, rect.height() + 24 * SK_Scalar1,
-                                       labelPaint);
-                    canvas->drawString(gCaps[cap].fName,
-                                       0, rect.height() + 36 * SK_Scalar1,
-                                       labelPaint);
+                    canvas->drawString(gStyles[style].fName, 0, rect.height() + 12.0f,
+                                       labelFont, labelPaint);
+                    canvas->drawString(gFills[fill].fName, 0, rect.height() + 24.0f,
+                                       labelFont, labelPaint);
+                    canvas->drawString(gCaps[cap].fName, 0, rect.height() + 36.0f,
+                                       labelFont, labelPaint);
                 }
                 canvas->restore();
             }
@@ -297,10 +276,8 @@ private:
 
 //////////////////////////////////////////////////////////////////////////////
 
-static GM* QuadPathFactory(void*) { return new QuadPathGM; }
-static GMRegistry regQuadPath(QuadPathFactory);
+DEF_GM( return new QuadPathGM; )
 
-static GM* QuadClosePathFactory(void*) { return new QuadClosePathGM; }
-static GMRegistry regQuadClosePath(QuadClosePathFactory);
+DEF_GM( return new QuadClosePathGM; )
 
 }

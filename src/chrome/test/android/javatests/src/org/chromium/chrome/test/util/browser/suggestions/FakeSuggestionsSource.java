@@ -11,7 +11,7 @@ import android.graphics.BitmapFactory;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ObserverList;
-import org.chromium.base.ThreadUtils;
+import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ntp.cards.SuggestionsCategoryInfo;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
@@ -19,6 +19,7 @@ import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -244,7 +245,7 @@ public class FakeSuggestionsSource implements SuggestionsSource {
     public void fetchSuggestionImage(
             final SnippetArticle suggestion, final Callback<Bitmap> callback) {
         if (mThumbnails.containsKey(suggestion.mIdWithinCategory)) {
-            ThreadUtils.postOnUiThread(
+            PostTask.postTask(UiThreadTaskTraits.DEFAULT,
                     () -> callback.onResult(mThumbnails.get(suggestion.mIdWithinCategory)));
         }
     }
@@ -253,7 +254,8 @@ public class FakeSuggestionsSource implements SuggestionsSource {
     public void fetchSuggestionFavicon(final SnippetArticle suggestion, int minimumSizePx,
             int desiredSizePx, final Callback<Bitmap> callback) {
         final Bitmap favicon = getFaviconForId(suggestion.mIdWithinCategory);
-        if (favicon != null) ThreadUtils.postOnUiThread(() -> callback.onResult(favicon));
+        if (favicon != null)
+            PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> callback.onResult(favicon));
     }
 
     private Bitmap getFaviconForId(String id) {

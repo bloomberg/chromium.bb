@@ -29,6 +29,11 @@ void StubPasswordManagerClient::ShowManualFallbackForSaving(
 
 void StubPasswordManagerClient::HideManualFallbackForSaving() {}
 
+void StubPasswordManagerClient::FocusedInputChanged(
+    const url::Origin& last_committed_origin,
+    bool is_fillable,
+    bool is_password_field) {}
+
 bool StubPasswordManagerClient::PromptUserToChooseCredentials(
     std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
     const GURL& origin,
@@ -72,7 +77,7 @@ const LogManager* StubPasswordManagerClient::GetLogManager() const {
   return &log_manager_;
 }
 
-#if defined(SAFE_BROWSING_DB_LOCAL)
+#if defined(FULL_SAFE_BROWSING)
 safe_browsing::PasswordProtectionService*
 StubPasswordManagerClient::GetPasswordProtectionService() const {
   return nullptr;
@@ -100,6 +105,10 @@ StubPasswordManagerClient::GetMetricsRecorder() {
     metrics_recorder_.emplace(GetUkmSourceId(), GetMainFrameURL());
   }
   return base::OptionalOrNullptr(metrics_recorder_);
+}
+
+bool StubPasswordManagerClient::IsIsolationForPasswordSitesEnabled() const {
+  return false;
 }
 
 }  // namespace password_manager

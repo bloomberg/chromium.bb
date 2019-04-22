@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 
+#include "ash/app_list/app_list_metrics.h"
 #include "ash/app_list/model/app_list_folder_item.h"
 #include "ash/app_list/model/app_list_item.h"
 #include "ash/app_list/model/app_list_model.h"
@@ -28,12 +29,11 @@
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/app_list/views/search_result_tile_item_view.h"
 #include "ash/app_list/views/suggestion_chip_container_view.h"
-#include "ash/app_list/views/suggestions_container_view.h"
 #include "ash/app_list/views/test/apps_grid_view_test_api.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
-#include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
+#include "ash/public/cpp/presentation_time_recorder.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -49,6 +49,7 @@
 #include "ui/events/event_utils.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/test/views_test_base.h"
 
 namespace app_list {
@@ -85,7 +86,7 @@ class PageFlipWaiter : public PaginationModelObserver {
   void SelectedPageChanged(int old_selected, int new_selected) override {
     if (!selected_pages_.empty())
       selected_pages_ += ',';
-    selected_pages_ += base::IntToString(new_selected);
+    selected_pages_ += base::NumberToString(new_selected);
 
     if (wait_)
       ui_run_loop_->QuitWhenIdle();
@@ -142,75 +143,24 @@ class TestSuggestedSearchResult : public TestSearchResult {
   DISALLOW_COPY_AND_ASSIGN(TestSuggestedSearchResult);
 };
 
-struct TestParams {
-  bool is_rtl_enabled;
-  bool is_apps_grid_gap_enabled;
-  bool is_new_style_launcher_enabled;
-};
-
-const TestParams kAppsGridViewTestParams[] = {
-    {false /* is_rtl_enabled */, false /* is_apps_grid_gap_enabled */,
-     false /* is_new_style_launcher_enabled */},
-    {false, false, true},
-    {true, false, false},
-    {true, false, true},
-};
-
-const TestParams kAppsGridViewDragTestParams[] = {
-    {false /* is_rtl_enabled */, false /* is_apps_grid_gap_enabled */,
-     false /* is_new_style_launcher_enabled */},
-    {false, false, true},
-    {true, false, false},
-    {true, false, true},
-    {false, true, false},
-    {false, true, true},
-    {true, true, false},
-    {true, true, true},
-};
-
-const TestParams kAppsGridGapTestParams[] = {
-    {false /* is_rtl_enabled */, true /* is_apps_grid_gap_enabled */,
-     false /* is_new_style_launcher_enabled */},
-    {false, true, true},
-    {true, true, false},
-    {true, true, true},
-};
-
 }  // namespace
 
 class AppsGridViewTest : public views::ViewsTestBase,
-                         public testing::WithParamInterface<TestParams> {
+                         public testing::WithParamInterface<bool> {
  public:
   AppsGridViewTest() = default;
+  explicit AppsGridViewTest(bool create_as_tablet_mode)
+      : create_as_tablet_mode_(create_as_tablet_mode) {}
   ~AppsGridViewTest() override = default;
 
   // testing::Test overrides:
   void SetUp() override {
     AppListView::SetShortAnimationForTesting(true);
-    std::vector<base::Feature> enabled_features;
-    std::vector<base::Feature> disabled_features;
     if (testing::UnitTest::GetInstance()->current_test_info()->value_param()) {
-      is_rtl_ = GetParam().is_rtl_enabled;
+      is_rtl_ = GetParam();
       if (is_rtl_)
         base::i18n::SetICUDefaultLocale("he");
-
-      is_apps_grid_gap_enabled_ = GetParam().is_apps_grid_gap_enabled;
-      is_new_style_launcher_enabled_ = GetParam().is_new_style_launcher_enabled;
     }
-    if (is_apps_grid_gap_enabled_) {
-      enabled_features.emplace_back(
-          app_list_features::kEnableAppsGridGapFeature);
-    } else {
-      disabled_features.emplace_back(
-          app_list_features::kEnableAppsGridGapFeature);
-    }
-    if (is_new_style_launcher_enabled_) {
-      enabled_features.emplace_back(app_list_features::kEnableNewStyleLauncher);
-    } else {
-      disabled_features.emplace_back(
-          app_list_features::kEnableNewStyleLauncher);
-    }
-    scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
     views::ViewsTestBase::SetUp();
     gfx::NativeView parent = GetContext();
     // Ensure that parent is big enough to show the full AppListView.
@@ -219,6 +169,7 @@ class AppsGridViewTest : public views::ViewsTestBase,
     app_list_view_ = new AppListView(delegate_.get());
     AppListView::InitParams params;
     params.parent = parent;
+    params.is_tablet_mode = create_as_tablet_mode_;
     app_list_view_->Initialize(params);
     contents_view_ = app_list_view_->app_list_main_view()->contents_view();
     apps_grid_view_ = contents_view_->GetAppsContainerView()->apps_grid_view();
@@ -226,27 +177,25 @@ class AppsGridViewTest : public views::ViewsTestBase,
 
     model_ = delegate_->GetTestModel();
     search_model_ = delegate_->GetSearchModel();
-    if (is_new_style_launcher_enabled_) {
-      suggestions_container_ = contents_view_->GetAppsContainerView()
-                                   ->suggestion_chip_container_view_for_test();
-    } else {
-      suggestions_container_ =
-          apps_grid_view_->suggestions_container_for_test();
-    }
-
-    expand_arrow_view_ = apps_grid_view_->expand_arrow_view_for_test();
+    suggestions_container_ = contents_view_->GetAppsContainerView()
+                                 ->suggestion_chip_container_view_for_test();
+    expand_arrow_view_ = contents_view_->expand_arrow_view();
     for (size_t i = 0; i < kNumOfSuggestedApps; ++i) {
       search_model_->results()->Add(
           std::make_unique<TestSuggestedSearchResult>());
     }
     // Needed to update suggestions from |model_|.
     suggestions_container_->Update();
-    app_list_view_->SetState(AppListViewState::FULLSCREEN_ALL_APPS);
+    app_list_view_->SetState(ash::mojom::AppListViewState::kFullscreenAllApps);
     app_list_view_->Layout();
 
     test_api_ = std::make_unique<AppsGridViewTestApi>(apps_grid_view_);
+    ash::PresentationTimeRecorder::SetReportPresentationTimeImmediatelyForTest(
+        true);
   }
   void TearDown() override {
+    ash::PresentationTimeRecorder::SetReportPresentationTimeImmediatelyForTest(
+        false);
     app_list_view_->GetWidget()->Close();
     views::ViewsTestBase::TearDown();
     AppListView::SetShortAnimationForTesting(false);
@@ -318,18 +267,23 @@ class AppsGridViewTest : public views::ViewsTestBase,
     apps_grid_view_->OnKeyPressed(key_event);
   }
 
+  void SimulateKeyReleased(ui::KeyboardCode key_code, int flags) {
+    ui::KeyEvent key_event(ui::ET_KEY_RELEASED, key_code, flags);
+    apps_grid_view_->OnKeyReleased(key_event);
+  }
+
   // Tests that the order of item views in the AppsGridView is in accordance
   // with the order in the view model.
   void TestAppListItemViewIndice() {
     const views::ViewModelT<AppListItemView>* view_model =
         apps_grid_view_->view_model();
     DCHECK_GT(view_model->view_size(), 0);
-    const int initial_index =
-        apps_grid_view_->GetIndexOf(view_model->view_at(0));
-    DCHECK_NE(-1, initial_index);
-    for (int i = 0; i < view_model->view_size(); ++i) {
-      EXPECT_EQ(view_model->view_at(i),
-                apps_grid_view_->child_at(i + initial_index));
+    auto app_iter = apps_grid_view_->FindChild(view_model->view_at(0));
+    DCHECK(app_iter != apps_grid_view_->children().cend());
+    for (int i = 1; i < view_model->view_size(); ++i) {
+      ++app_iter;
+      ASSERT_NE(apps_grid_view_->children().cend(), app_iter);
+      EXPECT_EQ(view_model->view_at(i), *app_iter);
     }
   }
 
@@ -345,8 +299,7 @@ class AppsGridViewTest : public views::ViewsTestBase,
   std::unique_ptr<AppsGridViewTestApi> test_api_;
   bool is_rtl_ = false;
   bool test_with_fullscreen_ = true;
-  bool is_apps_grid_gap_enabled_ = false;
-  bool is_new_style_launcher_enabled_ = false;
+  bool create_as_tablet_mode_ = false;
 
  private:
   // Restores the locale to default when destructor is called.
@@ -355,16 +308,10 @@ class AppsGridViewTest : public views::ViewsTestBase,
   // Used by AppListFolderView::UpdatePreferredBounds.
   keyboard::KeyboardController keyboard_controller_;
 
-  base::test::ScopedFeatureList scoped_feature_list_;
-
   DISALLOW_COPY_AND_ASSIGN(AppsGridViewTest);
 };
 
-// Instantiate the Boolean which is used to toggle RTL in
-// the parameterized tests.
-INSTANTIATE_TEST_CASE_P(,
-                        AppsGridViewTest,
-                        testing::ValuesIn(kAppsGridViewTestParams));
+INSTANTIATE_TEST_SUITE_P(, AppsGridViewTest, testing::Bool());
 
 class TestAppsGridViewFolderDelegate : public AppsGridViewFolderDelegate {
  public:
@@ -390,6 +337,9 @@ class TestAppsGridViewFolderDelegate : public AppsGridViewFolderDelegate {
 
   void SetRootLevelDragViewVisible(bool visible) override {}
 
+  void HandleKeyboardReparent(AppListItemView* reparented_item,
+                              ui::KeyboardCode key_code) override {}
+
  private:
   DISALLOW_COPY_AND_ASSIGN(TestAppsGridViewFolderDelegate);
 };
@@ -401,8 +351,7 @@ TEST_P(AppsGridViewTest, CreatePage) {
   EXPECT_EQ(kNumOfSuggestedApps, suggestions_container_->num_results());
   // For new style launcher, each page has the same number of rows.
   const int kExpectedTilesOnFirstPage =
-      apps_grid_view_->cols() * (apps_grid_view_->rows_per_page() -
-                                 (is_new_style_launcher_enabled_ ? 0 : 1));
+      apps_grid_view_->cols() * (apps_grid_view_->rows_per_page());
   EXPECT_EQ(kExpectedTilesOnFirstPage, GetTilesPerPage(kPages - 1));
 
   model_->PopulateApps(kPages * GetTilesPerPage(kPages - 1));
@@ -486,14 +435,12 @@ TEST_F(AppsGridViewTest, ItemLabelShortNameOverride) {
   AppListItem* item = model_->CreateAndAddItem("Item with short name");
   model_->SetItemNameAndShortName(item, expected_tooltip, expected_text);
 
-  base::string16 actual_tooltip;
   AppListItemView* item_view = GetItemViewAt(0);
   ASSERT_TRUE(item_view);
   const views::Label* title_label = item_view->title();
-  EXPECT_TRUE(item_view->GetTooltipText(title_label->bounds().CenterPoint(),
-                                        &actual_tooltip));
-  EXPECT_EQ(expected_tooltip, base::UTF16ToUTF8(actual_tooltip));
-  EXPECT_EQ(expected_text, base::UTF16ToUTF8(title_label->text()));
+  EXPECT_EQ(base::ASCIIToUTF16(expected_tooltip),
+            item_view->GetTooltipText(title_label->bounds().CenterPoint()));
+  EXPECT_EQ(base::ASCIIToUTF16(expected_text), title_label->text());
 }
 
 TEST_F(AppsGridViewTest, ItemLabelNoShortName) {
@@ -503,16 +450,17 @@ TEST_F(AppsGridViewTest, ItemLabelNoShortName) {
   AppListItem* item = model_->CreateAndAddItem(title);
   model_->SetItemNameAndShortName(item, title, "");
 
-  base::string16 actual_tooltip;
   AppListItemView* item_view = GetItemViewAt(0);
   ASSERT_TRUE(item_view);
   const views::Label* title_label = item_view->title();
-  EXPECT_FALSE(title_label->GetTooltipText(title_label->bounds().CenterPoint(),
-                                           &actual_tooltip));
-  EXPECT_EQ(title, base::UTF16ToUTF8(title_label->text()));
+  EXPECT_TRUE(
+      title_label->GetTooltipText(title_label->bounds().CenterPoint()).empty());
+  EXPECT_EQ(base::ASCIIToUTF16(title), title_label->text());
 }
 
 TEST_P(AppsGridViewTest, ScrollSequenceHandledByAppListView) {
+  base::HistogramTester histogram_tester;
+
   model_->PopulateApps(GetTilesPerPage(0) + 1);
   EXPECT_EQ(2, GetPaginationModel()->total_pages());
 
@@ -526,6 +474,9 @@ TEST_P(AppsGridViewTest, ScrollSequenceHandledByAppListView) {
       apps_grid_view_origin.x(), apps_grid_view_origin.y(), 0,
       base::TimeTicks(),
       ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_UPDATE, 0, 10));
+  ui::GestureEvent scroll_end(apps_grid_view_origin.x(),
+                              apps_grid_view_origin.y(), 0, base::TimeTicks(),
+                              ui::GestureEventDetails(ui::ET_GESTURE_END));
 
   // Drag down on the app grid when on page 1, this should move the AppListView
   // and not move the AppsGridView.
@@ -535,6 +486,8 @@ TEST_P(AppsGridViewTest, ScrollSequenceHandledByAppListView) {
   // Simulate redirecting the event to app list view through views hierarchy.
   app_list_view_->OnGestureEvent(&scroll_begin);
   EXPECT_TRUE(scroll_begin.handled());
+  histogram_tester.ExpectTotalCount(
+      "Apps.StateTransition.Drag.PresentationTime.ClamshellMode", 0);
 
   // The following scroll update events will be sent to the view that handled
   // the scroll begin event.
@@ -542,10 +495,24 @@ TEST_P(AppsGridViewTest, ScrollSequenceHandledByAppListView) {
   EXPECT_TRUE(scroll_update.handled());
   ASSERT_TRUE(app_list_view_->is_in_drag());
   ASSERT_EQ(0, GetPaginationModel()->transition().progress);
+  histogram_tester.ExpectTotalCount(
+      "Apps.StateTransition.Drag.PresentationTime.ClamshellMode", 1);
+  histogram_tester.ExpectTotalCount(
+      "Apps.StateTransition.Drag.PresentationTime.MaxLatency.ClamshellMode", 0);
+
+  app_list_view_->OnGestureEvent(&scroll_end);
+  EXPECT_TRUE(scroll_end.handled());
+
+  histogram_tester.ExpectTotalCount(
+      "Apps.StateTransition.Drag.PresentationTime.ClamshellMode", 1);
+  histogram_tester.ExpectTotalCount(
+      "Apps.StateTransition.Drag.PresentationTime.MaxLatency.ClamshellMode", 1);
 }
 
 TEST_F(AppsGridViewTest,
        OnGestureEventScrollSequenceHandleByPaginationController) {
+  base::HistogramTester histogram_tester;
+
   model_->PopulateApps(GetTilesPerPage(0) + 1);
   EXPECT_EQ(2, GetPaginationModel()->total_pages());
 
@@ -559,22 +526,42 @@ TEST_F(AppsGridViewTest,
       apps_grid_view_origin.x(), apps_grid_view_origin.y(), 0,
       base::TimeTicks(),
       ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_UPDATE, 0, -10));
+  ui::GestureEvent scroll_end(
+      apps_grid_view_origin.x(), apps_grid_view_origin.y(), 0,
+      base::TimeTicks(), ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_END));
 
   // Drag up on the app grid when on page 1, this should move the AppsGridView
   // but not the AppListView.
   apps_grid_view_->OnGestureEvent(&scroll_begin);
   EXPECT_TRUE(scroll_begin.handled());
+  histogram_tester.ExpectTotalCount(
+      "Apps.PaginationTransition.DragScroll.PresentationTime.ClamshellMode", 0);
+
   apps_grid_view_->OnGestureEvent(&scroll_update);
   EXPECT_TRUE(scroll_update.handled());
   ASSERT_FALSE(app_list_view_->is_in_drag());
   ASSERT_NE(0, GetPaginationModel()->transition().progress);
+  histogram_tester.ExpectTotalCount(
+      "Apps.PaginationTransition.DragScroll.PresentationTime.ClamshellMode", 1);
+  histogram_tester.ExpectTotalCount(
+      "Apps.PaginationTransition.DragScroll.PresentationTime.MaxLatency."
+      "ClamshellMode",
+      0);
+
+  apps_grid_view_->OnGestureEvent(&scroll_end);
+
+  histogram_tester.ExpectTotalCount(
+      "Apps.PaginationTransition.DragScroll.PresentationTime.MaxLatency."
+      "ClamshellMode",
+      1);
 }
 
 TEST_F(AppsGridViewTest, CloseFolderByClickingBackground) {
   AppsContainerView* apps_container_view =
       contents_view_->GetAppsContainerView();
 
-  const size_t kTotalItems = kMaxFolderItemsPerPage;
+  const size_t kTotalItems =
+      AppListConfig::instance().max_folder_items_per_page();
   model_->CreateAndPopulateFolderWithApps(kTotalItems);
   EXPECT_EQ(1u, model_->top_level_item_list()->item_count());
   EXPECT_EQ(AppListFolderItem::kItemType,
@@ -616,7 +603,9 @@ TEST_F(AppsGridViewTest, TapsBetweenAppsWontCloseAppList) {
 }
 
 TEST_F(AppsGridViewTest, PageResetAfterOpenFolder) {
-  const size_t kTotalItems = kMaxFolderPages * kMaxFolderItemsPerPage;
+  const size_t kTotalItems =
+      AppListConfig::instance().max_folder_pages() *
+      AppListConfig::instance().max_folder_items_per_page();
   model_->CreateAndPopulateFolderWithApps(kTotalItems);
   EXPECT_EQ(1u, model_->top_level_item_list()->item_count());
   EXPECT_EQ(AppListFolderItem::kItemType,
@@ -682,7 +671,8 @@ TEST_F(AppsGridViewTest, FolderColsAndRows) {
 }
 
 TEST_P(AppsGridViewTest, ScrollDownShouldNotExitFolder) {
-  const size_t kTotalItems = kMaxFolderItemsPerPage;
+  const size_t kTotalItems =
+      AppListConfig::instance().max_folder_items_per_page();
   model_->CreateAndPopulateFolderWithApps(kTotalItems);
   EXPECT_EQ(1u, model_->top_level_item_list()->item_count());
   EXPECT_EQ(AppListFolderItem::kItemType,
@@ -739,21 +729,7 @@ TEST_F(AppsGridViewTest, AppIconSelectedWhenMenuIsShown) {
   EXPECT_FALSE(apps_grid_view_->IsSelectedView(app));
 }
 
-// Tests various dragging behaviors.
-class AppsGridViewDragTest : public AppsGridViewTest {
- public:
-  AppsGridViewDragTest() = default;
-  ~AppsGridViewDragTest() override = default;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AppsGridViewDragTest);
-};
-
-INSTANTIATE_TEST_CASE_P(,
-                        AppsGridViewDragTest,
-                        testing::ValuesIn(kAppsGridViewDragTestParams));
-
-TEST_P(AppsGridViewDragTest, MouseDragItemIntoFolder) {
+TEST_P(AppsGridViewTest, MouseDragItemIntoFolder) {
   size_t kTotalItems = 3;
   model_->PopulateApps(kTotalItems);
   EXPECT_EQ(model_->top_level_item_list()->item_count(), kTotalItems);
@@ -800,9 +776,11 @@ TEST_P(AppsGridViewDragTest, MouseDragItemIntoFolder) {
   test_api_->LayoutToIdealBounds();
 }
 
-TEST_P(AppsGridViewDragTest, MouseDragMaxItemsInFolder) {
+TEST_P(AppsGridViewTest, MouseDragMaxItemsInFolder) {
   // Create and add a folder with |kMaxFolderItemsFullscreen - 1| items.
-  const size_t kMaxItems = kMaxFolderItemsPerPage * kMaxFolderPages;
+  const size_t kMaxItems =
+      AppListConfig::instance().max_folder_items_per_page() *
+      AppListConfig::instance().max_folder_pages();
   const size_t kTotalItems = kMaxItems - 1;
   AppListFolderItem* folder_item =
       model_->CreateAndPopulateFolderWithApps(kTotalItems);
@@ -845,9 +823,11 @@ TEST_P(AppsGridViewDragTest, MouseDragMaxItemsInFolder) {
 
 // Check that moving items around doesn't allow a drop to happen into a full
 // folder.
-TEST_P(AppsGridViewDragTest, MouseDragMaxItemsInFolderWithMovement) {
+TEST_P(AppsGridViewTest, MouseDragMaxItemsInFolderWithMovement) {
   // Create and add a folder with |kMaxFolderItemsFullscreen| in it.
-  const size_t kMaxItems = kMaxFolderItemsPerPage * kMaxFolderPages;
+  const size_t kMaxItems =
+      AppListConfig::instance().max_folder_items_per_page() *
+      AppListConfig::instance().max_folder_pages();
   size_t kTotalItems = kMaxItems;
   model_->CreateAndPopulateFolderWithApps(kMaxItems);
   EXPECT_EQ(1u, model_->top_level_item_list()->item_count());
@@ -896,7 +876,7 @@ TEST_P(AppsGridViewDragTest, MouseDragMaxItemsInFolderWithMovement) {
 }
 
 // Test reordering items via dragging.
-TEST_P(AppsGridViewDragTest, MouseDragItemReorder) {
+TEST_P(AppsGridViewTest, MouseDragItemReorder) {
   // The default layout is 5x4, populate 7 apps so that we have second row to
   // test dragging item to second row.
   model_->PopulateApps(7);
@@ -971,7 +951,7 @@ TEST_P(AppsGridViewDragTest, MouseDragItemReorder) {
   TestAppListItemViewIndice();
 }
 
-TEST_P(AppsGridViewDragTest, MouseDragFolderReorder) {
+TEST_P(AppsGridViewTest, MouseDragFolderReorder) {
   size_t kTotalItems = 2;
   model_->CreateAndPopulateFolderWithApps(kTotalItems);
   model_->PopulateAppWithId(kTotalItems);
@@ -996,7 +976,7 @@ TEST_P(AppsGridViewDragTest, MouseDragFolderReorder) {
   TestAppListItemViewIndice();
 }
 
-TEST_P(AppsGridViewDragTest, MouseDragWithCancelDeleteAddItem) {
+TEST_P(AppsGridViewTest, MouseDragWithCancelDeleteAddItem) {
   size_t kTotalItems = 4;
   model_->PopulateApps(kTotalItems);
   EXPECT_EQ(model_->top_level_item_list()->item_count(), kTotalItems);
@@ -1029,7 +1009,538 @@ TEST_P(AppsGridViewDragTest, MouseDragWithCancelDeleteAddItem) {
   test_api_->LayoutToIdealBounds();
 }
 
-TEST_P(AppsGridViewDragTest, MouseDragFlipPage) {
+// Test that control+arrow swaps app within the same page.
+TEST_F(AppsGridViewTest, ControlArrowSwapsAppsWithinSamePage) {
+  model_->PopulateApps(GetTilesPerPage(0));
+
+  AppListItemView* moving_item = GetItemViewAt(0);
+  apps_grid_view_->GetFocusManager()->SetFocusedView(moving_item);
+
+  // Test that moving left from 0,0 does not move the app.
+  SimulateKeyPress(ui::VKEY_LEFT, ui::EF_CONTROL_DOWN);
+
+  EXPECT_EQ(moving_item, test_api_->GetViewAtVisualIndex(0, 0));
+  EXPECT_TRUE(apps_grid_view_->IsSelectedView(moving_item));
+
+  // Test that moving up from 0,0 does not move the app.
+  SimulateKeyPress(ui::VKEY_UP, ui::EF_CONTROL_DOWN);
+
+  EXPECT_EQ(moving_item, GetItemViewAt(0));
+  EXPECT_TRUE(apps_grid_view_->IsSelectedView(moving_item));
+
+  // Test that moving right from 0,0 results in a swap with the item adjacent.
+  AppListItemView* swapped_item = GetItemViewAt(1);
+  SimulateKeyPress(ui::VKEY_RIGHT, ui::EF_CONTROL_DOWN);
+
+  EXPECT_EQ(moving_item, GetItemViewAt(1));
+  EXPECT_EQ(swapped_item, GetItemViewAt(0));
+  EXPECT_TRUE(apps_grid_view_->IsSelectedView(moving_item));
+
+  // Test that moving down from 0,1 results in a swap with the item at 1,1.
+  swapped_item = GetItemViewAt(apps_grid_view_->cols() + 1);
+  SimulateKeyPress(ui::VKEY_DOWN, ui::EF_CONTROL_DOWN);
+
+  EXPECT_EQ(moving_item, GetItemViewAt(apps_grid_view_->cols() + 1));
+  EXPECT_EQ(swapped_item, GetItemViewAt(1));
+  EXPECT_TRUE(apps_grid_view_->IsSelectedView(moving_item));
+
+  // Test that moving left from 1,1 results in a swap with the item at 1,0.
+  swapped_item = GetItemViewAt(apps_grid_view_->cols());
+  SimulateKeyPress(ui::VKEY_LEFT, ui::EF_CONTROL_DOWN);
+
+  EXPECT_EQ(moving_item, GetItemViewAt(apps_grid_view_->cols()));
+  EXPECT_EQ(swapped_item, GetItemViewAt(apps_grid_view_->cols() + 1));
+  EXPECT_TRUE(apps_grid_view_->IsSelectedView(moving_item));
+
+  // Test that moving up from 1,0 results in a swap with the item at 0,0.
+  swapped_item = GetItemViewAt(0);
+  SimulateKeyPress(ui::VKEY_UP, ui::EF_CONTROL_DOWN);
+
+  EXPECT_EQ(moving_item, GetItemViewAt(0));
+  EXPECT_EQ(swapped_item, GetItemViewAt(apps_grid_view_->cols()));
+  EXPECT_TRUE(apps_grid_view_->IsSelectedView(moving_item));
+}
+
+// Tests that histograms are recorded when apps are moved with control+arrow.
+TEST_F(AppsGridViewTest, ControlArrowRecordsHistogramBasic) {
+  base::HistogramTester histogram_tester;
+  model_->PopulateApps(GetTilesPerPage(0));
+
+  AppListItemView* moving_item = GetItemViewAt(0);
+  apps_grid_view_->GetFocusManager()->SetFocusedView(moving_item);
+
+  // Make one move right and expect a histogram is recorded.
+  SimulateKeyPress(ui::VKEY_RIGHT, ui::EF_CONTROL_DOWN);
+  SimulateKeyReleased(ui::VKEY_RIGHT, ui::EF_NONE);
+
+  histogram_tester.ExpectBucketCount("Apps.AppListAppMovingType", 6, 1);
+
+  // Make one move down and expect a histogram is recorded.
+  SimulateKeyPress(ui::VKEY_DOWN, ui::EF_CONTROL_DOWN);
+  SimulateKeyReleased(ui::VKEY_DOWN, ui::EF_NONE);
+
+  histogram_tester.ExpectBucketCount("Apps.AppListAppMovingType", 6, 2);
+
+  // Make one move up and expect a histogram is recorded.
+  SimulateKeyPress(ui::VKEY_UP, ui::EF_CONTROL_DOWN);
+  SimulateKeyReleased(ui::VKEY_UP, ui::EF_NONE);
+
+  histogram_tester.ExpectBucketCount("Apps.AppListAppMovingType", 6, 3);
+
+  // Make one move left and expect a histogram is recorded.
+  SimulateKeyPress(ui::VKEY_LEFT, ui::EF_CONTROL_DOWN);
+  SimulateKeyReleased(ui::VKEY_LEFT, ui::EF_NONE);
+
+  histogram_tester.ExpectBucketCount("Apps.AppListAppMovingType", 6, 4);
+}
+
+// Test that histograms do not record when the keyboard move is a no-op.
+TEST_F(AppsGridViewTest, ControlArrowDoesNotRecordHistogramWithNoOpMove) {
+  base::HistogramTester histogram_tester;
+  model_->PopulateApps(GetTilesPerPage(0));
+
+  AppListItemView* moving_item = GetItemViewAt(0);
+  apps_grid_view_->GetFocusManager()->SetFocusedView(moving_item);
+
+  // Make 2 no-op moves and one successful move from 0,0 ane expect a histogram
+  // is recorded only once.
+  SimulateKeyPress(ui::VKEY_LEFT, ui::EF_CONTROL_DOWN);
+  SimulateKeyReleased(ui::VKEY_LEFT, ui::EF_NONE);
+
+  SimulateKeyPress(ui::VKEY_UP, ui::EF_CONTROL_DOWN);
+  SimulateKeyReleased(ui::VKEY_UP, ui::EF_NONE);
+
+  SimulateKeyPress(ui::VKEY_RIGHT, ui::EF_CONTROL_DOWN);
+  SimulateKeyReleased(ui::VKEY_RIGHT, ui::EF_NONE);
+
+  histogram_tester.ExpectBucketCount("Apps.AppListAppMovingType", 6, 1);
+}
+
+// Tests that histograms only record once for a long move sequence.
+TEST_F(AppsGridViewTest, ControlArrowRecordsHistogramOnceWithOneMoveSequence) {
+  base::HistogramTester histogram_tester;
+  model_->PopulateApps(GetTilesPerPage(1) * 2);
+
+  AppListItemView* moving_item = GetItemViewAt(0);
+  apps_grid_view_->GetFocusManager()->SetFocusedView(moving_item);
+
+  // Make that a series of moves when the control key is left pressed and expect
+  // one histogram is recorded.
+  while (GetPaginationModel()->selected_page() != 1) {
+    SimulateKeyPress(ui::VKEY_DOWN, ui::EF_CONTROL_DOWN);
+    SimulateKeyReleased(ui::VKEY_DOWN, ui::EF_CONTROL_DOWN);
+  }
+  SimulateKeyReleased(ui::VKEY_DOWN, ui::EF_NONE);
+
+  histogram_tester.ExpectBucketCount("Apps.AppListAppMovingType", 6, 1);
+}
+
+// Tests that moving an app down when it is directly below a gap results in a
+// swap with the closest item.
+TEST_F(AppsGridViewTest, ControlArrowDownToGapOnSamePage) {
+  // Add two rows of apps, one full and one with just one app.
+  model_->PopulateApps(apps_grid_view_->cols() + 1);
+
+  // Select the far right item.
+  AppListItemView* moving_item = GetItemViewAt(apps_grid_view_->cols() - 1);
+  AppListItemView* swapped_item = GetItemViewAt(apps_grid_view_->cols());
+  apps_grid_view_->GetFocusManager()->SetFocusedView(moving_item);
+
+  // Press down to move the app to the next row. It should take the place of the
+  // app on the next row that is closes to the column of |moving_item|.
+  SimulateKeyPress(ui::VKEY_DOWN, ui::EF_CONTROL_DOWN);
+
+  EXPECT_EQ(moving_item, GetItemViewAt(apps_grid_view_->cols()));
+  EXPECT_EQ(swapped_item, GetItemViewAt(apps_grid_view_->cols() - 1));
+}
+
+// Tests that moving an app up/down/left/right to a full page results in the app
+// at the destination slot moving to the source slot (ie. a swap).
+TEST_F(AppsGridViewTest, ControlArrowSwapsBetweenFullPages) {
+  const int kPages = 3;
+  model_->PopulateApps(kPages * GetTilesPerPage(0));
+  // For every item in the first row, ensure an upward move results in the item
+  // swapping places with the item directly above it.
+  for (int i = 0; i < apps_grid_view_->cols(); ++i) {
+    GetPaginationModel()->SelectPage(1, false /*animate*/);
+    const GridIndex moved_view_index(1, i);
+    apps_grid_view_->GetFocusManager()->SetFocusedView(
+        test_api_->GetViewAtIndex(moved_view_index));
+
+    const GridIndex swapped_view_index(
+        0,
+        apps_grid_view_->cols() * (apps_grid_view_->rows_per_page() - 1) + i);
+    AppListItemView* moved_view = test_api_->GetViewAtIndex(moved_view_index);
+    AppListItemView* swapped_view =
+        test_api_->GetViewAtIndex(swapped_view_index);
+
+    SimulateKeyPress(ui::VKEY_UP, ui::EF_CONTROL_DOWN);
+
+    // |swapped_view| and |moved_view| should swap places when moving up to a
+    // full page.
+    EXPECT_EQ(swapped_view, test_api_->GetViewAtIndex(moved_view_index));
+    EXPECT_EQ(moved_view, test_api_->GetViewAtIndex(swapped_view_index));
+    EXPECT_EQ(0, GetPaginationModel()->selected_page());
+  }
+
+  // For every item in the last row of a full page, ensure a downward move
+  // results in the item swapping places when the target position is occupied.
+  for (int i = 0; i < apps_grid_view_->cols(); ++i) {
+    GetPaginationModel()->SelectPage(1, false /*animate*/);
+    const GridIndex moved_view_index(
+        0,
+        apps_grid_view_->cols() * (apps_grid_view_->rows_per_page() - 1) + i);
+    apps_grid_view_->GetFocusManager()->SetFocusedView(
+        test_api_->GetViewAtIndex(moved_view_index));
+
+    const GridIndex swapped_view_index(1, i);
+    AppListItemView* moved_view = test_api_->GetViewAtIndex(moved_view_index);
+    AppListItemView* swapped_view =
+        test_api_->GetViewAtIndex(swapped_view_index);
+
+    SimulateKeyPress(ui::VKEY_DOWN, ui::EF_CONTROL_DOWN);
+
+    // |swapped_view| and |moved_view| should swap places when moving up to a
+    // full page.
+    EXPECT_EQ(swapped_view, test_api_->GetViewAtIndex(moved_view_index));
+    EXPECT_EQ(moved_view, test_api_->GetViewAtIndex(swapped_view_index));
+    EXPECT_EQ(1, GetPaginationModel()->selected_page());
+  }
+
+  // For the final item on the first page, moving right to a full page should
+  // swap with the first item on the next page.
+  GetPaginationModel()->SelectPage(0, false /*animate*/);
+  GridIndex moved_view_index(
+      0, apps_grid_view_->cols() * apps_grid_view_->rows_per_page() - 1);
+  GridIndex swapped_view_index(1, 0);
+  AppListItemView* moved_view = test_api_->GetViewAtIndex(moved_view_index);
+  AppListItemView* swapped_view = test_api_->GetViewAtIndex(swapped_view_index);
+  apps_grid_view_->GetFocusManager()->SetFocusedView(
+      test_api_->GetViewAtIndex(moved_view_index));
+
+  SimulateKeyPress(ui::VKEY_RIGHT, ui::EF_CONTROL_DOWN);
+
+  EXPECT_EQ(swapped_view, test_api_->GetViewAtIndex(moved_view_index));
+  EXPECT_EQ(moved_view, test_api_->GetViewAtIndex(swapped_view_index));
+  EXPECT_EQ(1, GetPaginationModel()->selected_page());
+
+  // For the first item on the second page, moving left to a full page should
+  // swap with the first item on the previous page.
+  swapped_view_index = moved_view_index;
+  moved_view_index = GridIndex(1, 0);
+  moved_view = test_api_->GetViewAtIndex(moved_view_index);
+  swapped_view = test_api_->GetViewAtIndex(swapped_view_index);
+
+  SimulateKeyPress(ui::VKEY_LEFT, ui::EF_CONTROL_DOWN);
+
+  EXPECT_EQ(swapped_view, test_api_->GetViewAtIndex(moved_view_index));
+  EXPECT_EQ(moved_view, test_api_->GetViewAtIndex(swapped_view_index));
+  EXPECT_EQ(0, GetPaginationModel()->selected_page());
+}
+
+// Test that a page can be created while moving apps with the control+arrow.
+TEST_F(AppsGridViewTest, ControlArrowDownAndRightCreatesNewPage) {
+  base::HistogramTester histogram_tester;
+  const int kTilesPerPageStart = GetTilesPerPage(0);
+  model_->PopulateApps(kTilesPerPageStart);
+
+  // Focus the last item on the page.
+  AppListItemView* moving_item = GetItemViewAt(kTilesPerPageStart - 1);
+  apps_grid_view_->GetFocusManager()->SetFocusedView(moving_item);
+
+  // Test that pressing control-right creates a new page.
+  SimulateKeyPress(ui::VKEY_RIGHT, ui::EF_CONTROL_DOWN);
+
+  histogram_tester.ExpectBucketCount("Apps.AppListPageSwitcherSource", 7, 1);
+  EXPECT_EQ(moving_item, test_api_->GetViewAtIndex(GridIndex(1, 0)));
+  EXPECT_EQ(kTilesPerPageStart - 1, test_api_->AppsOnPage(0));
+  EXPECT_EQ(1, GetPaginationModel()->selected_page());
+  EXPECT_EQ(2, GetPaginationModel()->total_pages());
+
+  // Reset by moving the app back to the previous page.
+  SimulateKeyPress(ui::VKEY_UP, ui::EF_CONTROL_DOWN);
+
+  histogram_tester.ExpectBucketCount("Apps.AppListPageSwitcherSource", 7, 2);
+
+  // Test that control-down creates a new page.
+  SimulateKeyPress(ui::VKEY_DOWN, ui::EF_CONTROL_DOWN);
+
+  // The slot where |moving_item| originated should be empty because items get
+  // dumped on pages with room, and only swap if the destination page is full.
+  EXPECT_EQ(
+      nullptr,
+      test_api_->GetViewAtIndex(GridIndex(
+          0, apps_grid_view_->cols() * apps_grid_view_->rows_per_page() - 1)));
+  EXPECT_EQ(moving_item, test_api_->GetViewAtIndex(GridIndex(1, 0)));
+  EXPECT_EQ(kTilesPerPageStart - 1, test_api_->AppsOnPage(0));
+  EXPECT_EQ(1, test_api_->AppsOnPage(1));
+  EXPECT_EQ(1, GetPaginationModel()->selected_page());
+  EXPECT_EQ(2, GetPaginationModel()->total_pages());
+  histogram_tester.ExpectBucketCount("Apps.AppListPageSwitcherSource", 7, 3);
+}
+
+// Tests that a page can be deleted if a lonely app is moved down or right to
+// another page.
+TEST_F(AppsGridViewTest, ControlArrowUpOrLeftRemovesPage) {
+  base::HistogramTester histogram_tester;
+  // Move an app so it is by itself on page 1.
+  model_->PopulateApps(GetTilesPerPage(0));
+  AppListItemView* moving_item = GetItemViewAt(GetTilesPerPage(0) - 1);
+  apps_grid_view_->GetFocusManager()->SetFocusedView(moving_item);
+  SimulateKeyPress(ui::VKEY_DOWN, ui::EF_CONTROL_DOWN);
+  histogram_tester.ExpectBucketCount("Apps.AppListPageSwitcherSource", 7, 1);
+  EXPECT_EQ(1, GetPaginationModel()->selected_page());
+  EXPECT_EQ(2, GetPaginationModel()->total_pages());
+
+  // Move the app up, test that the page is deleted.
+  SimulateKeyPress(ui::VKEY_UP, ui::EF_CONTROL_DOWN);
+
+  histogram_tester.ExpectBucketCount("Apps.AppListPageSwitcherSource", 7, 2);
+  EXPECT_EQ(0, GetPaginationModel()->selected_page());
+  EXPECT_EQ(1, GetPaginationModel()->total_pages());
+
+  // Move the app to be by itself again on page 1.
+  SimulateKeyPress(ui::VKEY_DOWN, ui::EF_CONTROL_DOWN);
+  histogram_tester.ExpectBucketCount("Apps.AppListPageSwitcherSource", 7, 3);
+  EXPECT_EQ(1, GetPaginationModel()->selected_page());
+  EXPECT_EQ(2, GetPaginationModel()->total_pages());
+
+  // Move the app left, test that the page is deleted.
+  SimulateKeyPress(ui::VKEY_LEFT, ui::EF_CONTROL_DOWN);
+
+  histogram_tester.ExpectBucketCount("Apps.AppListPageSwitcherSource", 7, 4);
+  EXPECT_EQ(0, GetPaginationModel()->selected_page());
+  EXPECT_EQ(1, GetPaginationModel()->total_pages());
+}
+
+// Tests that moving a lonely app on the last page down is a no-op when there
+// are no pages below.
+TEST_F(AppsGridViewTest, ControlArrowDownOnLastAppOnLastPage) {
+  base::HistogramTester histogram_tester;
+  // Move an app so it is by itself on page 1.
+  model_->PopulateApps(GetTilesPerPage(0));
+  AppListItemView* moving_item = GetItemViewAt(GetTilesPerPage(0) - 1);
+  apps_grid_view_->GetFocusManager()->SetFocusedView(moving_item);
+  SimulateKeyPress(ui::VKEY_DOWN, ui::EF_CONTROL_DOWN);
+  SimulateKeyReleased(ui::VKEY_DOWN, ui::EF_NONE);
+  histogram_tester.ExpectBucketCount("Apps.AppListPageSwitcherSource", 7, 1);
+  histogram_tester.ExpectBucketCount("Apps.AppListAppMovingType", 6, 1);
+  EXPECT_EQ(1, GetPaginationModel()->selected_page());
+  EXPECT_EQ(2, GetPaginationModel()->total_pages());
+
+  // Move the app right, test that nothing changes and no histograms are
+  // recorded.
+  SimulateKeyPress(ui::VKEY_RIGHT, ui::EF_CONTROL_DOWN);
+  SimulateKeyReleased(ui::VKEY_RIGHT, ui::EF_NONE);
+
+  histogram_tester.ExpectBucketCount("Apps.AppListPageSwitcherSource", 7, 1);
+  histogram_tester.ExpectBucketCount("Apps.AppListAppMovingType", 6, 1);
+  EXPECT_EQ(1, GetPaginationModel()->selected_page());
+  EXPECT_EQ(2, GetPaginationModel()->total_pages());
+
+  // Move the app down, test that nothing changes and no histograms are
+  // recorded.
+  SimulateKeyPress(ui::VKEY_DOWN, ui::EF_CONTROL_DOWN);
+  SimulateKeyReleased(ui::VKEY_DOWN, ui::EF_NONE);
+
+  histogram_tester.ExpectBucketCount("Apps.AppListPageSwitcherSource", 7, 1);
+  histogram_tester.ExpectBucketCount("Apps.AppListAppMovingType", 6, 1);
+  EXPECT_EQ(1, GetPaginationModel()->selected_page());
+  EXPECT_EQ(2, GetPaginationModel()->total_pages());
+}
+
+// Test that moving an item down or right when it is by itself on a page with a
+// page below results in the page deletion.
+TEST_F(AppsGridViewTest, ControlArrowDownOrRightRemovesPage) {
+  // Move an app so it is by itself on page 1, with another app on page 2.
+  model_->PopulateApps(GetTilesPerPage(0));
+  AppListItemView* moving_item = GetItemViewAt(GetTilesPerPage(0) - 1);
+  apps_grid_view_->GetFocusManager()->SetFocusedView(moving_item);
+  SimulateKeyPress(ui::VKEY_DOWN, ui::EF_CONTROL_DOWN);
+  SimulateKeyPress(ui::VKEY_UP);
+  SimulateKeyPress(ui::VKEY_DOWN, ui::EF_CONTROL_DOWN);
+  SimulateKeyPress(ui::VKEY_DOWN, ui::EF_CONTROL_DOWN);
+  SimulateKeyPress(ui::VKEY_UP);
+  // The lonely app is selected on page 1, with a page below it containing one
+  // app.
+  EXPECT_EQ(1, GetPaginationModel()->selected_page());
+  EXPECT_EQ(3, GetPaginationModel()->total_pages());
+
+  // Test that moving the app on page 1 down, deletes the second page and
+  // creates a final page with 2 apps.
+  SimulateKeyPress(ui::VKEY_DOWN, ui::EF_CONTROL_DOWN);
+
+  EXPECT_EQ(1, GetPaginationModel()->selected_page());
+  EXPECT_EQ(2, GetPaginationModel()->total_pages());
+  EXPECT_EQ(2, test_api_->AppsOnPage(1));
+
+  // Create a third page, with an app by itself.
+  SimulateKeyPress(ui::VKEY_DOWN, ui::EF_CONTROL_DOWN);
+  SimulateKeyPress(ui::VKEY_UP);
+  EXPECT_EQ(1, GetPaginationModel()->selected_page());
+  EXPECT_EQ(3, GetPaginationModel()->total_pages());
+
+  // Test that moving the app right moves the selected app to the third page,
+  // and the second page is deleted.
+  SimulateKeyPress(ui::VKEY_RIGHT, ui::EF_CONTROL_DOWN);
+
+  EXPECT_EQ(1, GetPaginationModel()->selected_page());
+  EXPECT_EQ(2, GetPaginationModel()->total_pages());
+  EXPECT_EQ(2, test_api_->AppsOnPage(1));
+}
+
+// Tests that control + shift + arrow puts |selected_item_| into a folder or
+// creates a folder if one does not exist.
+TEST_F(AppsGridViewTest, ControlShiftArrowFoldersItemBasic) {
+  base::HistogramTester histogram_tester;
+  model_->PopulateApps(GetTilesPerPage(0));
+  // Select the first item in the grid, folder it with the item to the right.
+  AppListItemView* first_item = GetItemViewAt(0);
+  const std::string first_item_id = first_item->item()->id();
+  const std::string second_item_id = GetItemViewAt(1)->item()->id();
+  apps_grid_view_->GetFocusManager()->SetFocusedView(first_item);
+
+  SimulateKeyPress(ui::VKEY_RIGHT, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
+
+  // Test that the first item in the grid is now a folder with the first and
+  // second items, and that the folder is the selected view.
+  AppListItemView* new_folder = GetItemViewAt(0);
+  ASSERT_TRUE(apps_grid_view_->IsSelectedView(new_folder));
+  AppListFolderItem* folder_item =
+      static_cast<AppListFolderItem*>(new_folder->item());
+  EXPECT_TRUE(folder_item->is_folder());
+  EXPECT_EQ(2u, folder_item->ChildItemCount());
+  EXPECT_TRUE(folder_item->FindChildItem(first_item_id));
+  EXPECT_TRUE(folder_item->FindChildItem(second_item_id));
+  histogram_tester.ExpectBucketCount(kAppListAppMovingType,
+                                     kMoveByKeyboardIntoFolder, 1);
+
+  // Test that, when a folder is selected, control+shift+arrow does nothing.
+  SimulateKeyPress(ui::VKEY_RIGHT, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
+
+  EXPECT_TRUE(apps_grid_view_->IsSelectedView(new_folder));
+  EXPECT_EQ(2u, folder_item->ChildItemCount());
+  histogram_tester.ExpectBucketCount(kAppListAppMovingType,
+                                     kMoveByKeyboardIntoFolder, 1);
+
+  // Move selection to the item to the right of the folder and put it in the
+  // folder.
+  apps_grid_view_->GetFocusManager()->SetFocusedView(GetItemViewAt(1));
+
+  SimulateKeyPress(ui::VKEY_LEFT, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
+
+  EXPECT_TRUE(apps_grid_view_->IsSelectedView(new_folder));
+  EXPECT_EQ(3u, folder_item->ChildItemCount());
+  histogram_tester.ExpectBucketCount(kAppListAppMovingType,
+                                     kMoveByKeyboardIntoFolder, 2);
+
+  // Move selection to the item below the folder and put it in the folder.
+  SimulateKeyPress(ui::VKEY_DOWN);
+  SimulateKeyPress(ui::VKEY_UP, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
+
+  EXPECT_TRUE(apps_grid_view_->IsSelectedView(new_folder));
+  EXPECT_EQ(4u, folder_item->ChildItemCount());
+  histogram_tester.ExpectBucketCount(kAppListAppMovingType,
+                                     kMoveByKeyboardIntoFolder, 3);
+
+  // Move the folder to the second row, then put the item above the folder in
+  // the folder.
+  SimulateKeyPress(ui::VKEY_DOWN, ui::EF_CONTROL_DOWN);
+  SimulateKeyPress(ui::VKEY_UP);
+  SimulateKeyPress(ui::VKEY_DOWN, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
+
+  EXPECT_TRUE(apps_grid_view_->IsSelectedView(new_folder));
+  EXPECT_EQ(5u, folder_item->ChildItemCount());
+  histogram_tester.ExpectBucketCount(kAppListAppMovingType,
+                                     kMoveByKeyboardIntoFolder, 4);
+}
+
+// Tests that foldering an item that is on a different page fails.
+TEST_F(AppsGridViewTest, ControlShiftArrowFailsToFolderAcrossPages) {
+  model_->PopulateApps(2 * GetTilesPerPage(0));
+
+  // For every item on the last row of the first page, test that foldering to
+  // the next page fails.
+  for (int i = 0; i < apps_grid_view_->cols(); ++i) {
+    const GridIndex moved_view_index(
+        0,
+        apps_grid_view_->cols() * (apps_grid_view_->rows_per_page() - 1) + i);
+    AppListItemView* attempted_folder_view =
+        test_api_->GetViewAtIndex(moved_view_index);
+    apps_grid_view_->GetFocusManager()->SetFocusedView(attempted_folder_view);
+
+    SimulateKeyPress(ui::VKEY_DOWN, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
+
+    EXPECT_EQ(attempted_folder_view,
+              test_api_->GetViewAtIndex(moved_view_index));
+    EXPECT_EQ(0, GetPaginationModel()->selected_page());
+  }
+  // The last item on the col is selected, try moving right and test that that
+  // fails as well.
+  GridIndex moved_view_index(
+      0, apps_grid_view_->cols() * apps_grid_view_->rows_per_page() - 1);
+  AppListItemView* attempted_folder_view =
+      test_api_->GetViewAtIndex(moved_view_index);
+
+  SimulateKeyPress(ui::VKEY_RIGHT, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
+
+  EXPECT_EQ(attempted_folder_view, test_api_->GetViewAtIndex(moved_view_index));
+
+  // Move to the second page and test that foldering up to a new page fails.
+  SimulateKeyPress(ui::VKEY_DOWN);
+
+  // Select the first item on the second page.
+  moved_view_index = GridIndex(1, 0);
+  attempted_folder_view = test_api_->GetViewAtIndex(moved_view_index);
+
+  // Try to folder left to the previous page, it  should fail.
+  SimulateKeyPress(ui::VKEY_LEFT, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
+
+  EXPECT_EQ(attempted_folder_view, test_api_->GetViewAtIndex(moved_view_index));
+
+  // For every item on the first row of the second page, test that foldering to
+  // the next page fails.
+  for (int i = 0; i < apps_grid_view_->cols(); ++i) {
+    const GridIndex moved_view_index(1, i);
+    AppListItemView* attempted_folder_view =
+        test_api_->GetViewAtIndex(moved_view_index);
+    apps_grid_view_->GetFocusManager()->SetFocusedView(attempted_folder_view);
+
+    SimulateKeyPress(ui::VKEY_UP, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
+
+    EXPECT_EQ(attempted_folder_view,
+              test_api_->GetViewAtIndex(moved_view_index));
+    EXPECT_EQ(1, GetPaginationModel()->selected_page());
+  }
+}
+
+// Tests that foldering the item on the last slot of a page doesn't crash.
+TEST_F(AppsGridViewTest, ControlShiftArrowFolderLastItemOnPage) {
+  const int kNumberOfApps = 4;
+  model_->PopulateApps(kNumberOfApps);
+  // Select the second to last item in the grid, folder it with the item to the
+  // right.
+  AppListItemView* moving_item = GetItemViewAt(kNumberOfApps - 2);
+  const std::string first_item_id = moving_item->item()->id();
+  const std::string second_item_id =
+      GetItemViewAt(kNumberOfApps - 1)->item()->id();
+  apps_grid_view_->GetFocusManager()->SetFocusedView(moving_item);
+
+  SimulateKeyPress(ui::VKEY_RIGHT, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
+
+  // Test that the first item in the grid is now a folder with the first and
+  // second items, and that the folder is the selected view.
+  AppListItemView* new_folder = GetItemViewAt(kNumberOfApps - 2);
+  ASSERT_TRUE(apps_grid_view_->IsSelectedView(new_folder));
+  AppListFolderItem* folder_item =
+      static_cast<AppListFolderItem*>(new_folder->item());
+  EXPECT_TRUE(folder_item->is_folder());
+  EXPECT_EQ(2u, folder_item->ChildItemCount());
+  EXPECT_TRUE(folder_item->FindChildItem(first_item_id));
+  EXPECT_TRUE(folder_item->FindChildItem(second_item_id));
+}
+
+TEST_P(AppsGridViewTest, MouseDragFlipPage) {
   apps_grid_view_->set_page_flip_delay_in_ms_for_testing(10);
   GetPaginationModel()->SetTransitionDurations(10, 10);
 
@@ -1054,15 +1565,10 @@ TEST_P(AppsGridViewDragTest, MouseDragFlipPage) {
     page_flip_waiter.Wait();
   }
 
-  if (is_apps_grid_gap_enabled_) {
-    // When apps grid gap is enabled, the user can drag an item to an extra page
-    // created at the end.
-    EXPECT_EQ("1,2,3", page_flip_waiter.selected_pages());
-    EXPECT_EQ(3, GetPaginationModel()->selected_page());
-  } else {
-    EXPECT_EQ("1,2", page_flip_waiter.selected_pages());
-    EXPECT_EQ(2, GetPaginationModel()->selected_page());
-  }
+  // When apps grid gap is enabled, the user can drag an item to an extra page
+  // created at the end.
+  EXPECT_EQ("1,2,3", page_flip_waiter.selected_pages());
+  EXPECT_EQ(3, GetPaginationModel()->selected_page());
 
   // Cancel drag and put the dragged view back to its ideal position so that
   // the next drag would pick it up.
@@ -1085,7 +1591,7 @@ TEST_P(AppsGridViewDragTest, MouseDragFlipPage) {
   apps_grid_view_->EndDrag(true);
 }
 
-TEST_F(AppsGridViewDragTest, UpdateFolderBackgroundOnCancelDrag) {
+TEST_F(AppsGridViewTest, UpdateFolderBackgroundOnCancelDrag) {
   const int kTotalItems = 4;
   TestAppsGridViewFolderDelegate folder_delegate;
   apps_grid_view_->set_folder_delegate(&folder_delegate);
@@ -1103,6 +1609,87 @@ TEST_F(AppsGridViewDragTest, UpdateFolderBackgroundOnCancelDrag) {
             model_->GetModelContent());
 }
 
+// Test focus change before and after dragging an item. (See
+// https://crbug.com/834682)
+TEST_F(AppsGridViewTest, FocusOfDraggedView) {
+  model_->PopulateApps(1);
+  contents_view_->GetAppsContainerView()->Layout();
+  auto* search_box = contents_view_->GetSearchBoxView()->search_box();
+  auto* item_view = apps_grid_view_->view_model()->view_at(0);
+  EXPECT_TRUE(search_box->HasFocus());
+  EXPECT_FALSE(item_view->HasFocus());
+
+  // Dragging the item towards its right.
+  const gfx::Point from = GetItemRectOnCurrentPageAt(0, 0).CenterPoint();
+  const gfx::Point to = GetItemRectOnCurrentPageAt(0, 1).CenterPoint();
+  SimulateDrag(AppsGridView::MOUSE, from, to);
+  EXPECT_FALSE(search_box->HasFocus());
+  EXPECT_TRUE(item_view->HasFocus());
+
+  apps_grid_view_->EndDrag(false);
+  EXPECT_FALSE(search_box->HasFocus());
+  EXPECT_TRUE(item_view->HasFocus());
+}
+
+class AppsGridViewTabletTest : public AppsGridViewTest {
+ public:
+  AppsGridViewTabletTest() : AppsGridViewTest(/*is_in_tablet=*/true) {}
+  ~AppsGridViewTabletTest() override = default;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AppsGridViewTabletTest);
+};
+
+TEST_P(AppsGridViewTabletTest, Basic) {
+  base::HistogramTester histogram_tester;
+
+  model_->PopulateApps(GetTilesPerPage(0) + 1);
+  EXPECT_EQ(2, GetPaginationModel()->total_pages());
+
+  gfx::Point apps_grid_view_origin =
+      apps_grid_view_->GetBoundsInScreen().origin();
+  ui::GestureEvent scroll_begin(
+      apps_grid_view_origin.x(), apps_grid_view_origin.y(), 0,
+      base::TimeTicks(),
+      ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_BEGIN, 0, -1));
+  ui::GestureEvent scroll_update(
+      apps_grid_view_origin.x(), apps_grid_view_origin.y(), 0,
+      base::TimeTicks(),
+      ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_UPDATE, 0, -10));
+  ui::GestureEvent scroll_end(
+      apps_grid_view_origin.x(), apps_grid_view_origin.y(), 0,
+      base::TimeTicks(), ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_END));
+
+  // Drag up on the app grid when on page 1, this should move the AppsGridView
+  // but not the AppListView.
+  apps_grid_view_->OnGestureEvent(&scroll_begin);
+  EXPECT_TRUE(scroll_begin.handled());
+  histogram_tester.ExpectTotalCount(
+      "Apps.PaginationTransition.DragScroll.PresentationTime.TabletMode", 0);
+
+  apps_grid_view_->OnGestureEvent(&scroll_update);
+  EXPECT_TRUE(scroll_update.handled());
+  ASSERT_FALSE(app_list_view_->is_in_drag());
+  ASSERT_NE(0, GetPaginationModel()->transition().progress);
+  histogram_tester.ExpectTotalCount(
+      "Apps.PaginationTransition.DragScroll.PresentationTime.TabletMode", 1);
+  histogram_tester.ExpectTotalCount(
+      "Apps.PaginationTransition.DragScroll.PresentationTime.MaxLatency."
+      "TabletMode",
+      0);
+
+  apps_grid_view_->OnGestureEvent(&scroll_end);
+
+  histogram_tester.ExpectTotalCount(
+      "Apps.PaginationTransition.DragScroll.PresentationTime.TabletMode", 1);
+  histogram_tester.ExpectTotalCount(
+      "Apps.PaginationTransition.DragScroll.PresentationTime.MaxLatency."
+      "TabletMode",
+      1);
+}
+
+INSTANTIATE_TEST_SUITE_P(, AppsGridViewTabletTest, testing::Bool());
+
 // Test various dragging behaviors only allowed when apps grid gap (part of
 // home launcher feature) is enabled.
 class AppsGridGapTest : public AppsGridViewTest {
@@ -1112,8 +1699,6 @@ class AppsGridGapTest : public AppsGridViewTest {
 
   // testing::Test overrides:
   void SetUp() override {
-    scoped_feature_list_.InitWithFeatures(
-        {app_list_features::kEnableAppsGridGapFeature}, {});
     AppsGridViewTest::SetUp();
     apps_grid_view_->set_page_flip_delay_in_ms_for_testing(10);
     GetPaginationModel()->SetTransitionDurations(10, 10);
@@ -1167,14 +1752,8 @@ class AppsGridGapTest : public AppsGridViewTest {
   std::unique_ptr<PageFlipWaiter> page_flip_waiter_;
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
   DISALLOW_COPY_AND_ASSIGN(AppsGridGapTest);
 };
-
-INSTANTIATE_TEST_CASE_P(,
-                        AppsGridGapTest,
-                        testing::ValuesIn(kAppsGridGapTestParams));
 
 TEST_P(AppsGridGapTest, MoveAnItemToNewEmptyPage) {
   const int kApps = 2;
@@ -1361,7 +1940,7 @@ TEST_P(AppsGridGapTest, MoveItemToPreviousFullPage) {
     EXPECT_EQ(view_model->view_at(i), test_api_->GetViewAtVisualIndex(
                                           i / GetTilesPerPage(0) /* page */,
                                           i % GetTilesPerPage(0) /* slot */));
-    EXPECT_EQ("Item " + base::IntToString(i),
+    EXPECT_EQ("Item " + base::NumberToString(i),
               view_model->view_at(i)->item()->id());
   }
 
@@ -1369,7 +1948,7 @@ TEST_P(AppsGridGapTest, MoveItemToPreviousFullPage) {
   // two pages. It will only be added after user operations.
   std::string model_content = "Item 0";
   for (int i = 1; i < kApps; ++i)
-    model_content.append(",Item " + base::IntToString(i));
+    model_content.append(",Item " + base::NumberToString(i));
   EXPECT_EQ(model_content, model_->GetModelContent());
 
   // Drag the last item to the first item's left position in previous page.
@@ -1389,14 +1968,14 @@ TEST_P(AppsGridGapTest, MoveItemToPreviousFullPage) {
     EXPECT_EQ(view_model->view_at(i), test_api_->GetViewAtVisualIndex(
                                           i / GetTilesPerPage(0) /* page */,
                                           i % GetTilesPerPage(0) /* slot */));
-    EXPECT_EQ("Item " + base::IntToString((i + kApps - 1) % kApps),
+    EXPECT_EQ("Item " + base::NumberToString((i + kApps - 1) % kApps),
               view_model->view_at(i)->item()->id());
   }
 
   // A "page break" item is added to split the pages.
-  model_content = "Item " + base::IntToString(kApps - 1);
+  model_content = "Item " + base::NumberToString(kApps - 1);
   for (int i = 1; i < kApps; ++i) {
-    model_content.append(",Item " + base::IntToString(i - 1));
+    model_content.append(",Item " + base::NumberToString(i - 1));
     if (i == GetTilesPerPage(0) - 1)
       model_content.append(",PageBreakItem");
   }
@@ -1416,15 +1995,15 @@ TEST_P(AppsGridGapTest, MoveItemToPreviousFullPage) {
     EXPECT_EQ(view_model->view_at(i), test_api_->GetViewAtVisualIndex(
                                           i / GetTilesPerPage(0) /* page */,
                                           i % GetTilesPerPage(0) /* slot */));
-    EXPECT_EQ("Item " + base::IntToString((i + kApps - 2) % kApps),
+    EXPECT_EQ("Item " + base::NumberToString((i + kApps - 2) % kApps),
               view_model->view_at(i)->item()->id());
   }
 
   // A "page break" item still exists.
-  model_content = "Item " + base::IntToString(kApps - 2) + ",Item " +
-                  base::IntToString(kApps - 1);
+  model_content = "Item " + base::NumberToString(kApps - 2) + ",Item " +
+                  base::NumberToString(kApps - 1);
   for (int i = 2; i < kApps; ++i) {
-    model_content.append(",Item " + base::IntToString(i - 2));
+    model_content.append(",Item " + base::NumberToString(i - 2));
     if (i == GetTilesPerPage(0) - 1)
       model_content.append(",PageBreakItem");
   }

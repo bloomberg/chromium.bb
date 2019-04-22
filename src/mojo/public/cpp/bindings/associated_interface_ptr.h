@@ -11,13 +11,13 @@
 #include <utility>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/associated_interface_request.h"
-#include "mojo/public/cpp/bindings/bindings_export.h"
 #include "mojo/public/cpp/bindings/connection_error_callback.h"
 #include "mojo/public/cpp/bindings/lib/associated_interface_ptr_state.h"
 #include "mojo/public/cpp/bindings/lib/multiplex_router.h"
@@ -254,8 +254,8 @@ AssociatedInterfaceRequest<Interface> MakeRequestAssociatedWithDedicatedPipe(
 // method associates the interface with a dedicated, disconnected message pipe.
 // That way, the corresponding associated interface pointer of |handle| can
 // safely make calls (although those calls are silently dropped).
-MOJO_CPP_BINDINGS_EXPORT void AssociateWithDisconnectedPipe(
-    ScopedInterfaceEndpointHandle handle);
+COMPONENT_EXPORT(MOJO_CPP_BINDINGS)
+void AssociateWithDisconnectedPipe(ScopedInterfaceEndpointHandle handle);
 
 }  // namespace mojo
 

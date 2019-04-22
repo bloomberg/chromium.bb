@@ -12,7 +12,7 @@
  * @constructor
  * @extends {HTMLButtonElement}
  */
-var CommandButton = cr.ui.define('button');
+const CommandButton = cr.ui.define('button');
 
 /** @override */
 CommandButton.prototype.__proto__ = HTMLButtonElement.prototype;
@@ -28,9 +28,10 @@ CommandButton.prototype.command_ = null;
  * Initializes the menu item.
  */
 CommandButton.prototype.decorate = function() {
-  var commandId;
-  if ((commandId = this.getAttribute('command')))
+  let commandId;
+  if ((commandId = this.getAttribute('command'))) {
     this.setCommand(commandId);
+  }
 
   this.addEventListener('click', this.handleClick_.bind(this));
 };
@@ -50,12 +51,15 @@ CommandButton.prototype.getCommand = function() {
  */
 CommandButton.prototype.setCommand = function(command) {
   if (this.command_) {
-    this.command_.removeEventListener('labelChange',
-                                      /** @type {EventListener} */ (this));
-    this.command_.removeEventListener('disabledChange',
-                                      /** @type {EventListener} */ (this));
-    this.command_.removeEventListener('hiddenChange',
-                                      /** @type {EventListener} */ (this));
+    this.command_.removeEventListener(
+        'labelChange',
+        /** @type {EventListener} */ (this));
+    this.command_.removeEventListener(
+        'disabledChange',
+        /** @type {EventListener} */ (this));
+    this.command_.removeEventListener(
+        'hiddenChange',
+        /** @type {EventListener} */ (this));
   }
 
   if (typeof command == 'string') {
@@ -67,19 +71,23 @@ CommandButton.prototype.setCommand = function(command) {
 
   this.command_ = command;
   if (command) {
-    if (command.id)
+    if (command.id) {
       this.setAttribute('command', '#' + command.id);
+    }
 
     this.setLabel(command.label);
     this.disabled = command.disabled;
     this.hidden = command.hidden;
 
-    this.command_.addEventListener('labelChange',
-                                   /** @type {EventListener} */ (this));
-    this.command_.addEventListener('disabledChange',
-                                   /** @type {EventListener} */ (this));
-    this.command_.addEventListener('hiddenChange',
-                                   /** @type {EventListener} */ (this));
+    this.command_.addEventListener(
+        'labelChange',
+        /** @type {EventListener} */ (this));
+    this.command_.addEventListener(
+        'disabledChange',
+        /** @type {EventListener} */ (this));
+    this.command_.addEventListener(
+        'hiddenChange',
+        /** @type {EventListener} */ (this));
   }
 };
 
@@ -104,8 +112,9 @@ CommandButton.prototype.setLabel = function(label) {
   // Updating the label in customized button content should be done
   // automatically by specifying an element which should be synced with the
   // command label using class name or polymer's template binding.
-  if (!this.firstElementChild)
+  if (!this.firstElementChild) {
     this.textContent = label;
+  }
 };
 
 /**
@@ -114,8 +123,9 @@ CommandButton.prototype.setLabel = function(label) {
  * @private
  */
 CommandButton.prototype.handleClick_ = function(e) {
-  if (!this.disabled && this.command_)
+  if (!this.disabled && this.command_) {
     this.command_.execute(this);
+  }
 };
 
 /**
@@ -140,12 +150,10 @@ CommandButton.prototype.handleEvent = function(e) {
  * Whether the button is disabled or not.
  * @type {boolean}
  */
-cr.defineProperty(CommandButton, 'disabled',
-                  cr.PropertyKind.BOOL_ATTR);
+cr.defineProperty(CommandButton, 'disabled', cr.PropertyKind.BOOL_ATTR);
 
 /**
  * Whether the button is hidden or not.
  * @type {boolean}
  */
-cr.defineProperty(CommandButton, 'hidden',
-                  cr.PropertyKind.BOOL_ATTR);
+cr.defineProperty(CommandButton, 'hidden', cr.PropertyKind.BOOL_ATTR);

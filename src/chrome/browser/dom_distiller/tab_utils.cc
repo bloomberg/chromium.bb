@@ -11,7 +11,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
-#include "chrome/browser/ui/tab_contents/core_tab_helper_delegate.h"
 #include "components/dom_distiller/content/browser/distiller_page_web_contents.h"
 #include "components/dom_distiller/core/distiller_page.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
@@ -26,15 +25,15 @@
 
 namespace {
 
-using dom_distiller::ViewRequestDelegate;
-using dom_distiller::DistilledArticleProto;
 using dom_distiller::ArticleDistillationUpdate;
-using dom_distiller::ViewerHandle;
-using dom_distiller::SourcePageHandleWebContents;
+using dom_distiller::DistilledArticleProto;
+using dom_distiller::DistillerPage;
 using dom_distiller::DomDistillerService;
 using dom_distiller::DomDistillerServiceFactory;
-using dom_distiller::DistillerPage;
 using dom_distiller::SourcePageHandle;
+using dom_distiller::SourcePageHandleWebContents;
+using dom_distiller::ViewerHandle;
+using dom_distiller::ViewRequestDelegate;
 
 // An no-op ViewRequestDelegate which holds a ViewerHandle and deletes itself
 // after the WebContents navigates or goes away. This class is a band-aid to
@@ -87,19 +86,15 @@ void SelfDeletingRequestDelegate::WebContentsDestroyed() {
 
 SelfDeletingRequestDelegate::SelfDeletingRequestDelegate(
     content::WebContents* web_contents)
-    : WebContentsObserver(web_contents) {
-}
+    : WebContentsObserver(web_contents) {}
 
-SelfDeletingRequestDelegate::~SelfDeletingRequestDelegate() {
-}
+SelfDeletingRequestDelegate::~SelfDeletingRequestDelegate() {}
 
 void SelfDeletingRequestDelegate::OnArticleReady(
-    const DistilledArticleProto* article_proto) {
-}
+    const DistilledArticleProto* article_proto) {}
 
 void SelfDeletingRequestDelegate::OnArticleUpdated(
-    ArticleDistillationUpdate article_update) {
-}
+    ArticleDistillationUpdate article_update) {}
 
 void SelfDeletingRequestDelegate::TakeViewerHandle(
     std::unique_ptr<ViewerHandle> viewer_handle) {
@@ -153,7 +148,7 @@ void DistillCurrentPageAndView(content::WebContents* old_web_contents) {
 
   // Copy all navigation state from the old WebContents to the new one.
   new_web_contents->GetController().CopyStateFrom(
-      old_web_contents->GetController(), /* needs_reload */ true);
+      &old_web_contents->GetController(), /* needs_reload */ true);
 
   // StartNavigationToDistillerViewer must come before swapping the tab contents
   // to avoid triggering a reload of the page.  This reloadmakes it very

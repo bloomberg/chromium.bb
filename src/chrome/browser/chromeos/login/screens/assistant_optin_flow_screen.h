@@ -7,18 +7,18 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 
 namespace chromeos {
 
 class AssistantOptInFlowScreenView;
-class BaseScreenDelegate;
 
 class AssistantOptInFlowScreen : public BaseScreen {
  public:
-  AssistantOptInFlowScreen(BaseScreenDelegate* base_screen_delegate,
-                           AssistantOptInFlowScreenView* view);
+  AssistantOptInFlowScreen(AssistantOptInFlowScreenView* view,
+                           const base::RepeatingClosure& exit_callback);
   ~AssistantOptInFlowScreen() override;
 
   // Called when view is destroyed so there's no dead reference to it.
@@ -31,6 +31,7 @@ class AssistantOptInFlowScreen : public BaseScreen {
 
  private:
   AssistantOptInFlowScreenView* view_;
+  base::RepeatingClosure exit_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantOptInFlowScreen);
 };

@@ -36,7 +36,7 @@ class HTMLFormElement;
 // Inheritance of ListedElement was used for NPAPI form association, but
 // is still kept here so that legacy APIs such as form attribute can keep
 // working according to the spec.  See:
-// https://html.spec.whatwg.org/multipage/embedded-content.html#the-object-element
+// https://html.spec.whatwg.org/C/#the-object-element
 class CORE_EXPORT HTMLObjectElement final : public HTMLPlugInElement,
                                             public ListedElement,
                                             public FormAssociated {
@@ -48,10 +48,10 @@ class CORE_EXPORT HTMLObjectElement final : public HTMLPlugInElement,
 
   HTMLObjectElement(Document&, const CreateElementFlags);
   ~HTMLObjectElement() override;
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   // Returns attributes that should be checked against Trusted Types
-  const HashSet<AtomicString>& GetCheckedAttributeNames() const override;
+  const AttrNameToTrustedType& GetCheckedAttributeTypes() const override;
 
   const String& ClassId() const { return class_id_; }
 
@@ -88,7 +88,7 @@ class CORE_EXPORT HTMLObjectElement final : public HTMLPlugInElement,
 
   bool WillUseFallbackContentAtLayout() const;
 
-  FormAssociated* ToFormAssociatedOrNull() override { return this; };
+  FormAssociated* ToFormAssociatedOrNull() override { return this; }
   void AssociateWith(HTMLFormElement*) override;
 
  private:

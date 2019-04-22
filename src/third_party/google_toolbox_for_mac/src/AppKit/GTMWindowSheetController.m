@@ -130,14 +130,6 @@ willPositionSheet:(NSWindow*)sheet
   return self;
 }
 
-- (void)finalize {
-  _GTMDevAssert([sheets_ count] == 0,
-                @"Finalizing a controller with sheets still active!");
-  [[NSNotificationCenter defaultCenter] removeObserver:self];
-
-  [super finalize];
-}
-
 - (void)dealloc {
   _GTMDevAssert([sheets_ count] == 0,
                 @"Deallocing a controller with sheets still active!");
@@ -186,7 +178,7 @@ willPositionSheet:(NSWindow*)sheet
 - (NSArray*)viewsWithAttachedSheets {
   NSMutableArray* views = [NSMutableArray array];
   NSValue* key;
-  GTM_FOREACH_KEY(key, sheets_) {
+  for (key in sheets_) {
     [views addObject:[key nonretainedObjectValue]];
   }
 
@@ -489,7 +481,7 @@ willPositionSheet:(NSWindow*)sheet
 
 - (NSRect)screenFrameOfView:(NSView*)view {
   NSRect viewFrame = [view convertRect:[view bounds] toView:nil];
-  viewFrame.origin = [[view window] convertBaseToScreen:viewFrame.origin];
+  viewFrame = [[view window] convertRectToScreen:viewFrame];
   return viewFrame;
 }
 
@@ -570,7 +562,7 @@ willPositionSheet:(NSWindow*)sheet
 
 - (void)systemRequestsVisibilityForWindow:(NSWindow*)window {
   NSValue* key;
-  GTM_FOREACH_KEY(key, sheets_) {
+  for (key in sheets_) {
     GTMWSCSheetInfo* sheetInfo = [sheets_ objectForKey:key];
     if (sheetInfo->overlayWindow_ == window) {
       NSView* view = [key nonretainedObjectValue];

@@ -121,7 +121,7 @@ bool CXFA_FFTextEdit::AcceptsFocusOnButtonDown(uint32_t dwFlags,
 
 void CXFA_FFTextEdit::OnLButtonDown(uint32_t dwFlags, const CFX_PointF& point) {
   if (!IsFocused()) {
-    m_dwStatus |= XFA_WidgetStatus_Focused;
+    GetLayoutItem()->SetStatusBits(XFA_WidgetStatus_Focused);
     UpdateFWLData();
     InvalidateRect();
   }
@@ -136,7 +136,7 @@ void CXFA_FFTextEdit::OnLButtonDown(uint32_t dwFlags, const CFX_PointF& point) {
 
 void CXFA_FFTextEdit::OnRButtonDown(uint32_t dwFlags, const CFX_PointF& point) {
   if (!IsFocused()) {
-    m_dwStatus |= XFA_WidgetStatus_Focused;
+    GetLayoutItem()->SetStatusBits(XFA_WidgetStatus_Focused);
     UpdateFWLData();
     InvalidateRect();
   }
@@ -158,9 +158,9 @@ bool CXFA_FFTextEdit::OnRButtonUp(uint32_t dwFlags, const CFX_PointF& point) {
 }
 
 bool CXFA_FFTextEdit::OnSetFocus(CXFA_FFWidget* pOldWidget) {
-  m_dwStatus &= ~XFA_WidgetStatus_TextEditValueChanged;
+  GetLayoutItem()->ClearStatusBits(XFA_WidgetStatus_TextEditValueChanged);
   if (!IsFocused()) {
-    m_dwStatus |= XFA_WidgetStatus_Focused;
+    GetLayoutItem()->SetStatusBits(XFA_WidgetStatus_Focused);
     UpdateFWLData();
     InvalidateRect();
   }
@@ -173,15 +173,15 @@ bool CXFA_FFTextEdit::OnSetFocus(CXFA_FFWidget* pOldWidget) {
 bool CXFA_FFTextEdit::OnKillFocus(CXFA_FFWidget* pNewWidget) {
   CFWL_MessageKillFocus ms(nullptr, m_pNormalWidget.get());
   TranslateFWLMessage(&ms);
-  m_dwStatus &= ~XFA_WidgetStatus_Focused;
-
+  GetLayoutItem()->ClearStatusBits(XFA_WidgetStatus_Focused);
   SetEditScrollOffset();
   ProcessCommittedData();
   UpdateFWLData();
   InvalidateRect();
+
   CXFA_FFWidget::OnKillFocus(pNewWidget);
 
-  m_dwStatus &= ~XFA_WidgetStatus_TextEditValueChanged;
+  GetLayoutItem()->ClearStatusBits(XFA_WidgetStatus_TextEditValueChanged);
   return true;
 }
 
@@ -204,14 +204,14 @@ void CXFA_FFTextEdit::ValidateNumberField(const WideString& wsText) {
     return;
 
   WideString wsSomField = GetNode()->GetSOMExpression();
-  pAppProvider->MsgBox(wsText + L" can not contain " + wsSomField,
-                       pAppProvider->GetAppTitle(),
-                       static_cast<uint32_t>(AlertIcon::kError),
-                       static_cast<uint32_t>(AlertButton::kOK));
+  pAppProvider->MsgBox(
+      wsText + WideString::FromASCII(" can not contain ") + wsSomField,
+      pAppProvider->GetAppTitle(), static_cast<uint32_t>(AlertIcon::kError),
+      static_cast<uint32_t>(AlertButton::kOK));
 }
 
 bool CXFA_FFTextEdit::IsDataChanged() {
-  return (m_dwStatus & XFA_WidgetStatus_TextEditValueChanged) != 0;
+  return GetLayoutItem()->TestStatusBits(XFA_WidgetStatus_TextEditValueChanged);
 }
 
 uint32_t CXFA_FFTextEdit::GetAlignment() {
@@ -221,16 +221,16 @@ uint32_t CXFA_FFTextEdit::GetAlignment() {
 
   uint32_t dwExtendedStyle = 0;
   switch (para->GetHorizontalAlign()) {
-    case XFA_AttributeEnum::Center:
+    case XFA_AttributeValue::Center:
       dwExtendedStyle |= FWL_STYLEEXT_EDT_HCenter;
       break;
-    case XFA_AttributeEnum::Justify:
+    case XFA_AttributeValue::Justify:
       dwExtendedStyle |= FWL_STYLEEXT_EDT_Justified;
       break;
-    case XFA_AttributeEnum::JustifyAll:
-    case XFA_AttributeEnum::Radix:
+    case XFA_AttributeValue::JustifyAll:
+    case XFA_AttributeValue::Radix:
       break;
-    case XFA_AttributeEnum::Right:
+    case XFA_AttributeValue::Right:
       dwExtendedStyle |= FWL_STYLEEXT_EDT_HFar;
       break;
     default:
@@ -239,10 +239,10 @@ uint32_t CXFA_FFTextEdit::GetAlignment() {
   }
 
   switch (para->GetVerticalAlign()) {
-    case XFA_AttributeEnum::Middle:
+    case XFA_AttributeValue::Middle:
       dwExtendedStyle |= FWL_STYLEEXT_EDT_VCenter;
       break;
-    case XFA_AttributeEnum::Bottom:
+    case XFA_AttributeValue::Bottom:
       dwExtendedStyle |= FWL_STYLEEXT_EDT_VFar;
       break;
     default:
@@ -288,7 +288,7 @@ bool CXFA_FFTextEdit::UpdateFWLData() {
   WideString wsText = m_pNode->GetValue(eType);
   WideString wsOldText = pEdit->GetText();
   if (wsText != wsOldText || (eType == XFA_VALUEPICTURE_Edit && bUpdate)) {
-    pEdit->SetText(wsText, CFDE_TextEditEngine::RecordOperation::kSkipNotify);
+    pEdit->SetTextSkipNotify(wsText);
     bUpdate = true;
   }
   if (bUpdate)
@@ -299,7 +299,7 @@ bool CXFA_FFTextEdit::UpdateFWLData() {
 
 void CXFA_FFTextEdit::OnTextWillChange(CFWL_Widget* pWidget,
                                        CFWL_EventTextWillChange* event) {
-  m_dwStatus |= XFA_WidgetStatus_TextEditValueChanged;
+  GetLayoutItem()->SetStatusBits(XFA_WidgetStatus_TextEditValueChanged);
 
   CXFA_EventParam eParam;
   eParam.m_eType = XFA_EVENT_Change;
@@ -309,7 +309,7 @@ void CXFA_FFTextEdit::OnTextWillChange(CFWL_Widget* pWidget,
   eParam.m_iSelStart = static_cast<int32_t>(event->selection_start);
   eParam.m_iSelEnd = static_cast<int32_t>(event->selection_end);
 
-  m_pNode->ProcessEvent(GetDocView(), XFA_AttributeEnum::Change, &eParam);
+  m_pNode->ProcessEvent(GetDocView(), XFA_AttributeValue::Change, &eParam);
 
   // Copy the data back out of the EventParam and into the TextChanged event so
   // it can propagate back to the calling widget.
@@ -323,7 +323,7 @@ void CXFA_FFTextEdit::OnTextFull(CFWL_Widget* pWidget) {
   CXFA_EventParam eParam;
   eParam.m_eType = XFA_EVENT_Full;
   eParam.m_pTarget = m_pNode.Get();
-  m_pNode->ProcessEvent(GetDocView(), XFA_AttributeEnum::Full, &eParam);
+  m_pNode->ProcessEvent(GetDocView(), XFA_AttributeValue::Full, &eParam);
 }
 
 void CXFA_FFTextEdit::OnProcessMessage(CFWL_Message* pMessage) {

@@ -20,6 +20,8 @@ CustomTabsVisibilityHistogram GetCustomTabsVisibleValue();
 
 bool GetIsInMultiWindowModeValue();
 
+bool IsDownloadAutoResumptionEnabledInNative();
+
 } // namespace android
 } // namespace chrome
 

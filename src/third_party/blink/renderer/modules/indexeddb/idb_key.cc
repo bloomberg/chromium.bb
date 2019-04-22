@@ -29,12 +29,14 @@
 #include <memory>
 
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_key.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 
 namespace {
+
+// Very rough estimate of minimum key size overhead.
+const size_t kIDBKeyOverheadSize = 16;
 
 size_t CalculateIDBKeyArraySize(const IDBKey::KeyArray& keys) {
   size_t size(0);
@@ -45,36 +47,81 @@ size_t CalculateIDBKeyArraySize(const IDBKey::KeyArray& keys) {
 
 }  // namespace
 
-IDBKey::IDBKey() : type_(kInvalidType), size_estimate_(kIDBKeyOverheadSize) {}
+// static
+std::unique_ptr<IDBKey> IDBKey::Clone(const IDBKey* rkey) {
+  if (!rkey)
+    return IDBKey::CreateNull();
 
-IDBKey::IDBKey(Type type, double number)
+  switch (rkey->GetType()) {
+    case mojom::IDBKeyType::Invalid:
+      return IDBKey::CreateInvalid();
+    case mojom::IDBKeyType::Null:
+      return IDBKey::CreateNull();
+    case mojom::IDBKeyType::Array: {
+      IDBKey::KeyArray lkey_array;
+      const auto& rkey_array = rkey->Array();
+      for (const auto& rkey_item : rkey_array)
+        lkey_array.push_back(IDBKey::Clone(rkey_item));
+      return IDBKey::CreateArray(std::move(lkey_array));
+    }
+    case mojom::IDBKeyType::Binary:
+      return IDBKey::CreateBinary(rkey->Binary());
+    case mojom::IDBKeyType::String:
+      return IDBKey::CreateString(rkey->GetString());
+    case mojom::IDBKeyType::Date:
+      return IDBKey::CreateDate(rkey->Date());
+    case mojom::IDBKeyType::Number:
+      return IDBKey::CreateNumber(rkey->Number());
+
+    case mojom::IDBKeyType::Min:
+      break;  // Not used, NOTREACHED.
+  }
+  NOTREACHED();
+  return nullptr;
+}
+
+IDBKey::IDBKey()
+    : type_(mojom::IDBKeyType::Invalid), size_estimate_(kIDBKeyOverheadSize) {}
+
+// Must be Invalid or Null.
+IDBKey::IDBKey(mojom::IDBKeyType type)
+    : type_(type), size_estimate_(kIDBKeyOverheadSize) {
+  DCHECK(type_ == mojom::IDBKeyType::Invalid ||
+         type_ == mojom::IDBKeyType::Null);
+}
+
+// Must be Number or Date.
+IDBKey::IDBKey(mojom::IDBKeyType type, double number)
     : type_(type),
       number_(number),
-      size_estimate_(kIDBKeyOverheadSize + sizeof(number_)) {}
+      size_estimate_(kIDBKeyOverheadSize + sizeof(number_)) {
+  DCHECK(type_ == mojom::IDBKeyType::Number ||
+         type_ == mojom::IDBKeyType::Date);
+}
 
 IDBKey::IDBKey(const String& value)
-    : type_(kStringType),
+    : type_(mojom::IDBKeyType::String),
       string_(value),
       size_estimate_(kIDBKeyOverheadSize + (string_.length() * sizeof(UChar))) {
 }
 
 IDBKey::IDBKey(scoped_refptr<SharedBuffer> value)
-    : type_(kBinaryType),
+    : type_(mojom::IDBKeyType::Binary),
       binary_(std::move(value)),
       size_estimate_(kIDBKeyOverheadSize + binary_.get()->size()) {}
 
 IDBKey::IDBKey(KeyArray key_array)
-    : type_(kArrayType),
+    : type_(mojom::IDBKeyType::Array),
       array_(std::move(key_array)),
       size_estimate_(kIDBKeyOverheadSize + CalculateIDBKeyArraySize(array_)) {}
 
 IDBKey::~IDBKey() = default;
 
 bool IDBKey::IsValid() const {
-  if (type_ == kInvalidType)
+  if (type_ == mojom::IDBKeyType::Invalid)
     return false;
 
-  if (type_ == kArrayType) {
+  if (type_ == mojom::IDBKeyType::Array) {
     for (const auto& element : array_) {
       if (!element->IsValid())
         return false;
@@ -100,26 +147,29 @@ int IDBKey::Compare(const IDBKey* other) const {
     return type_ > other->type_ ? -1 : 1;
 
   switch (type_) {
-    case kArrayType:
+    case mojom::IDBKeyType::Array:
       for (wtf_size_t i = 0; i < array_.size() && i < other->array_.size();
            ++i) {
         if (int result = array_[i]->Compare(other->array_[i].get()))
           return result;
       }
       return CompareNumbers(array_.size(), other->array_.size());
-    case kBinaryType:
+    case mojom::IDBKeyType::Binary:
       if (int result =
               memcmp(binary_->Data(), other->binary_->Data(),
                      std::min(binary_->size(), other->binary_->size())))
         return result < 0 ? -1 : 1;
       return CompareNumbers(binary_->size(), other->binary_->size());
-    case kStringType:
+    case mojom::IDBKeyType::String:
       return CodePointCompare(string_, other->string_);
-    case kDateType:
-    case kNumberType:
+    case mojom::IDBKeyType::Date:
+    case mojom::IDBKeyType::Number:
       return CompareNumbers(number_, other->number_);
-    case kInvalidType:
-    case kTypeEnumMax:
+
+    // These values cannot be compared to each other.
+    case mojom::IDBKeyType::Invalid:
+    case mojom::IDBKeyType::Null:
+    case mojom::IDBKeyType::Min:
       NOTREACHED();
       return 0;
   }
@@ -141,11 +191,11 @@ bool IDBKey::IsEqual(const IDBKey* other) const {
 }
 
 // static
-WebVector<WebIDBKey> IDBKey::ToMultiEntryArray(
+Vector<std::unique_ptr<IDBKey>> IDBKey::ToMultiEntryArray(
     std::unique_ptr<IDBKey> array_key) {
-  DCHECK_EQ(array_key->type_, kArrayType);
-  WebVector<WebIDBKey> result;
-  result.reserve(array_key->array_.size());
+  DCHECK_EQ(array_key->type_, mojom::IDBKeyType::Array);
+  Vector<std::unique_ptr<IDBKey>> result;
+  result.ReserveInitialCapacity(array_key->array_.size());
   for (std::unique_ptr<IDBKey>& key : array_key->array_) {
     if (key->IsValid())
       result.emplace_back(std::move(key));
@@ -154,21 +204,15 @@ WebVector<WebIDBKey> IDBKey::ToMultiEntryArray(
   // Remove duplicates using std::sort/std::unique rather than a hashtable to
   // avoid the complexity of implementing DefaultHash<IDBKey>.
   std::sort(
-      result.begin(), result.end(), [](const WebIDBKey& a, const WebIDBKey& b) {
-        return static_cast<IDBKey*>(a)->IsLessThan(static_cast<IDBKey*>(b));
+      result.begin(), result.end(),
+      [](const std::unique_ptr<IDBKey>& a, const std::unique_ptr<IDBKey>& b) {
+        return (a)->IsLessThan(b.get());
       });
-  const auto end = std::unique(result.begin(), result.end());
+  std::unique_ptr<IDBKey>* end = std::unique(result.begin(), result.end());
   DCHECK_LE(static_cast<wtf_size_t>(end - result.begin()), result.size());
-  result.resize(end - result.begin());
+  result.resize(static_cast<wtf_size_t>(end - result.begin()));
 
   return result;
 }
-
-STATIC_ASSERT_ENUM(kWebIDBKeyTypeInvalid, IDBKey::kInvalidType);
-STATIC_ASSERT_ENUM(kWebIDBKeyTypeArray, IDBKey::kArrayType);
-STATIC_ASSERT_ENUM(kWebIDBKeyTypeBinary, IDBKey::kBinaryType);
-STATIC_ASSERT_ENUM(kWebIDBKeyTypeString, IDBKey::kStringType);
-STATIC_ASSERT_ENUM(kWebIDBKeyTypeDate, IDBKey::kDateType);
-STATIC_ASSERT_ENUM(kWebIDBKeyTypeNumber, IDBKey::kNumberType);
 
 }  // namespace blink

@@ -18,7 +18,7 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/threading/platform_thread.h"
-#include "third_party/webrtc/rtc_base/stringutils.h"
+#include "third_party/webrtc/rtc_base/string_utils.h"
 
 // This needs to be included after base/logging.h.
 #include "third_party/webrtc_overrides/rtc_base/diagnostic_logging.h"
@@ -56,32 +56,6 @@ static_assert(sizeof(base::subtle::Atomic32) == sizeof(base::PlatformThreadId),
               "Atomic32 not same size as PlatformThreadId");
 base::subtle::Atomic32 g_init_logging_delegate_thread_id = 0;
 #endif
-
-/////////////////////////////////////////////////////////////////////////////
-// Constant Labels
-/////////////////////////////////////////////////////////////////////////////
-
-const char* FindLabel(int value, const ConstantLabel entries[]) {
-  for (int i = 0; entries[i].label; ++i) {
-    if (value == entries[i].value)
-      return entries[i].label;
-  }
-  return 0;
-}
-
-std::string ErrorName(int err, const ConstantLabel* err_table) {
-  if (err == 0)
-    return "No error";
-
-  if (err_table != 0) {
-    if (const char* value = FindLabel(err, err_table))
-      return value;
-  }
-
-  char buffer[16];
-  base::snprintf(buffer, sizeof(buffer), "0x%08x", err);
-  return buffer;
-}
 
 /////////////////////////////////////////////////////////////////////////////
 // Log helper functions

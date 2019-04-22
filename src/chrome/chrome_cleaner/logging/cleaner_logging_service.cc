@@ -29,6 +29,7 @@
 #include "chrome/chrome_cleaner/logging/api_keys.h"
 #include "chrome/chrome_cleaner/logging/pending_logs_service.h"
 #include "chrome/chrome_cleaner/logging/proto/removal_status.pb.h"
+#include "chrome/chrome_cleaner/logging/proto/shared_data.pb.h"
 #include "chrome/chrome_cleaner/logging/registry_logger.h"
 #include "chrome/chrome_cleaner/logging/utils.h"
 #include "chrome/chrome_cleaner/os/disk_util.h"
@@ -67,8 +68,8 @@ constexpr net::NetworkTrafficAnnotationTag kCleanerReportTrafficAnnotation =
             trigger:
               "The user either accepted a prompt to remove unwanted software, "
               "or went to \"Clean up computer\" in the settings page and chose "
-              "to \"Find and remove harmful software\", and enabled \"Report "
-              "details to Google\"."
+              "to \"Find harmful software\", and enabled \"Report details to "
+              "Google\"."
             data:
               "The user's Chrome version, Windows version, and locale, file "
               "metadata related to the unwanted software that was detected, "
@@ -300,7 +301,7 @@ void CleanerLoggingService::Initialize(RegistryLogger* registry_logger) {
     ChromeCleanerReport_EnvironmentData* env_data =
         chrome_cleaner_report_.mutable_environment();
     env_data->set_windows_version(base::win::GetVersion());
-    env_data->set_cleaner_version(CHROME_VERSION_UTF8_STRING);
+    env_data->set_cleaner_version(CHROME_CLEANER_VERSION_UTF8_STRING);
     if (languages.size() > 0)
       env_data->set_default_locale(base::WideToUTF8(languages[0]));
     env_data->set_detailed_system_report(false);
@@ -585,13 +586,19 @@ void CleanerLoggingService::SetWinHttpProxySettings(
 
 void CleanerLoggingService::AddInstalledExtension(
     const base::string16& extension_id,
-    ExtensionInstallMethod install_method) {
+    ExtensionInstallMethod install_method,
+    const std::vector<internal::FileInformation>& extension_files) {
   base::AutoLock lock(lock_);
   ChromeCleanerReport_SystemReport_InstalledExtension* installed_extension =
       chrome_cleaner_report_.mutable_system_report()
           ->add_installed_extensions();
   installed_extension->set_extension_id(base::UTF16ToUTF8(extension_id));
   installed_extension->set_install_method(install_method);
+  for (const auto& file : extension_files) {
+    FileInformation proto_file_information;
+    FileInformationToProtoObject(file, &proto_file_information);
+    *installed_extension->add_extension_files() = proto_file_information;
+  }
 }
 
 void CleanerLoggingService::AddScheduledTask(
@@ -612,6 +619,28 @@ void CleanerLoggingService::AddScheduledTask(
   *chrome_cleaner_report_.mutable_system_report()->add_scheduled_tasks() =
       scheduled_task;
 }
+
+void CleanerLoggingService::AddShortcutData(
+    const base::string16& lnk_path,
+    const base::string16& executable_path,
+    const std::string& executable_hash,
+    const std::vector<base::string16>& command_line_arguments) {
+  base::AutoLock lock(lock_);
+  ChromeCleanerReport_SystemReport_ShortcutData* shortcut_data =
+      chrome_cleaner_report_.mutable_system_report()->add_shortcut_data();
+  shortcut_data->set_lnk_path(base::UTF16ToUTF8(lnk_path));
+  shortcut_data->set_executable_path(base::UTF16ToUTF8(executable_path));
+  shortcut_data->set_executable_hash(executable_hash);
+  for (const auto& argument : command_line_arguments) {
+    shortcut_data->add_command_line_arguments(base::UTF16ToUTF8(argument));
+  }
+}
+
+void CleanerLoggingService::SetFoundModifiedChromeShortcuts(
+    bool /*found_modified_shortcuts*/) {}
+
+void CleanerLoggingService::SetScannedLocations(
+    const std::vector<UwS::TraceLocation>& /*scanned_locations*/) {}
 
 void CleanerLoggingService::LogProcessInformation(
     SandboxType process_type,
@@ -652,8 +681,7 @@ bool CleanerLoggingService::AllExpectedRemovalsConfirmed() const {
       if (removal_status != REMOVAL_STATUS_REMOVED &&
           removal_status != REMOVAL_STATUS_SCHEDULED_FOR_REMOVAL &&
           removal_status != REMOVAL_STATUS_NOT_FOUND &&
-          removal_status != REMOVAL_STATUS_SCHEDULED_FOR_REMOVAL_FALLBACK &&
-          removal_status != REMOVAL_STATUS_NOT_REMOVED_INACTIVE_EXTENSION) {
+          removal_status != REMOVAL_STATUS_SCHEDULED_FOR_REMOVAL_FALLBACK) {
         return false;
       }
     }

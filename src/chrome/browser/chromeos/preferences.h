@@ -107,8 +107,6 @@ class Preferences : public sync_preferences::PrefServiceSyncableObserver,
   // Overriden form user_manager::UserManager::UserSessionStateObserver.
   void ActiveUserChanged(const user_manager::User* active_user) override;
 
-  void ActivateInputMethods(const user_manager::User* active_user);
-
   sync_preferences::PrefServiceSyncable* prefs_;
 
   input_method::InputMethodManager* input_method_manager_;

@@ -14,6 +14,7 @@
 
 #include "SampleUtils.h"
 
+#include "utils/ComboRenderPipelineDescriptor.h"
 #include "utils/DawnHelpers.h"
 #include "utils/SystemUtils.h"
 
@@ -113,23 +114,31 @@ void initRender() {
         }
     )");
 
-    dawn::InputState inputState = device.CreateInputStateBuilder()
-        .SetAttribute(0, 0, dawn::VertexFormat::FloatR32G32, offsetof(Particle, pos))
-        .SetAttribute(1, 0, dawn::VertexFormat::FloatR32G32, offsetof(Particle, vel))
-        .SetInput(0, sizeof(Particle), dawn::InputStepMode::Instance)
-        .SetAttribute(2, 1, dawn::VertexFormat::FloatR32G32, 0)
-        .SetInput(1, sizeof(glm::vec2), dawn::InputStepMode::Vertex)
-        .GetResult();
-
     depthStencilView = CreateDefaultDepthStencilView(device);
 
-    renderPipeline = device.CreateRenderPipelineBuilder()
-        .SetColorAttachmentFormat(0, GetPreferredSwapChainTextureFormat())
-        .SetDepthStencilAttachmentFormat(dawn::TextureFormat::D32FloatS8Uint)
-        .SetStage(dawn::ShaderStage::Vertex, vsModule, "main")
-        .SetStage(dawn::ShaderStage::Fragment, fsModule, "main")
-        .SetInputState(inputState)
-        .GetResult();
+    utils::ComboRenderPipelineDescriptor descriptor(device);
+    descriptor.cVertexStage.module = vsModule;
+    descriptor.cFragmentStage.module = fsModule;
+
+    descriptor.cInputState.numAttributes = 3;
+    descriptor.cInputState.cAttributes[0].offset = offsetof(Particle, pos);
+    descriptor.cInputState.cAttributes[0].format = dawn::VertexFormat::Float2;
+    descriptor.cInputState.cAttributes[1].shaderLocation = 1;
+    descriptor.cInputState.cAttributes[1].offset = offsetof(Particle, vel);
+    descriptor.cInputState.cAttributes[1].format = dawn::VertexFormat::Float2;
+    descriptor.cInputState.cAttributes[2].shaderLocation = 2;
+    descriptor.cInputState.cAttributes[2].inputSlot = 1;
+    descriptor.cInputState.cAttributes[2].format = dawn::VertexFormat::Float2;
+    descriptor.cInputState.numInputs = 2;
+    descriptor.cInputState.cInputs[0].stride = sizeof(Particle);
+    descriptor.cInputState.cInputs[0].stepMode = dawn::InputStepMode::Instance;
+    descriptor.cInputState.cInputs[1].inputSlot = 1;
+    descriptor.cInputState.cInputs[1].stride = sizeof(glm::vec2);
+    descriptor.depthStencilState = &descriptor.cDepthStencilState;
+    descriptor.cDepthStencilState.format = dawn::TextureFormat::D32FloatS8Uint;
+    descriptor.cColorStates[0]->format = GetPreferredSwapChainTextureFormat();
+
+    renderPipeline = device.CreateRenderPipeline(&descriptor);
 }
 
 void initSim() {
@@ -232,55 +241,49 @@ void initSim() {
     dawn::PipelineLayout pl = utils::MakeBasicPipelineLayout(device, &bgl);
 
     dawn::ComputePipelineDescriptor csDesc;
-    csDesc.module = module;
-    csDesc.entryPoint = "main";
     csDesc.layout = pl;
+
+    dawn::PipelineStageDescriptor computeStage;
+    computeStage.module = module;
+    computeStage.entryPoint = "main";
+    csDesc.computeStage = &computeStage;
+
     updatePipeline = device.CreateComputePipeline(&csDesc);
 
-    dawn::BufferView updateParamsView = updateParams.CreateBufferViewBuilder()
-        .SetExtent(0, sizeof(SimParams))
-        .GetResult();
-
-    std::array<dawn::BufferView, 2> views;
     for (uint32_t i = 0; i < 2; ++i) {
-        views[i] = particleBuffers[i].CreateBufferViewBuilder()
-            .SetExtent(0, kNumParticles * sizeof(Particle))
-            .GetResult();
-    }
-
-    for (uint32_t i = 0; i < 2; ++i) {
-        updateBGs[i] = device.CreateBindGroupBuilder()
-            .SetLayout(bgl)
-            .SetBufferViews(0, 1, &updateParamsView)
-            .SetBufferViews(1, 1, &views[i])
-            .SetBufferViews(2, 1, &views[(i + 1) % 2])
-            .GetResult();
+        updateBGs[i] = utils::MakeBindGroup(device, bgl, {
+            {0, updateParams, 0, sizeof(SimParams)},
+            {1, particleBuffers[i], 0, kNumParticles * sizeof(Particle)},
+            {2, particleBuffers[(i + 1) % 2], 0, kNumParticles * sizeof(Particle)},
+        });
     }
 }
 
-dawn::CommandBuffer createCommandBuffer(const dawn::RenderPassDescriptor& renderPass, size_t i) {
-    static const uint32_t zeroOffsets[1] = {0};
+dawn::CommandBuffer createCommandBuffer(const dawn::Texture backbuffer, size_t i) {
+    static const uint64_t zeroOffsets[1] = {0};
     auto& bufferDst = particleBuffers[(i + 1) % 2];
-    dawn::CommandBufferBuilder builder = device.CreateCommandBufferBuilder();
+    dawn::CommandEncoder encoder = device.CreateCommandEncoder();
 
     {
-        dawn::ComputePassEncoder pass = builder.BeginComputePass();
-        pass.SetComputePipeline(updatePipeline);
-        pass.SetBindGroup(0, updateBGs[i]);
+        dawn::ComputePassEncoder pass = encoder.BeginComputePass();
+        pass.SetPipeline(updatePipeline);
+        pass.SetBindGroup(0, updateBGs[i], 0, nullptr);
         pass.Dispatch(kNumParticles, 1, 1);
         pass.EndPass();
     }
 
     {
-        dawn::RenderPassEncoder pass = builder.BeginRenderPass(renderPass);
-        pass.SetRenderPipeline(renderPipeline);
+        utils::ComboRenderPassDescriptor renderPass({backbuffer.CreateDefaultView()},
+                                                    depthStencilView);
+        dawn::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass);
+        pass.SetPipeline(renderPipeline);
         pass.SetVertexBuffers(0, 1, &bufferDst, zeroOffsets);
         pass.SetVertexBuffers(1, 1, &modelBuffer, zeroOffsets);
-        pass.DrawArrays(3, kNumParticles, 0, 0);
+        pass.Draw(3, kNumParticles, 0, 0);
         pass.EndPass();
     }
 
-    return builder.GetResult();
+    return encoder.Finish();
 }
 
 void init() {
@@ -297,11 +300,9 @@ void init() {
 }
 
 void frame() {
-    dawn::Texture backbuffer;
-    dawn::RenderPassDescriptor renderPass;
-    GetNextRenderPassDescriptor(device, swapchain, depthStencilView, &backbuffer, &renderPass);
+    dawn::Texture backbuffer = swapchain.GetNextTexture();
 
-    dawn::CommandBuffer commandBuffer = createCommandBuffer(renderPass, pingpong);
+    dawn::CommandBuffer commandBuffer = createCommandBuffer(backbuffer, pingpong);
     queue.Submit(1, &commandBuffer);
     swapchain.Present(backbuffer);
     DoFlush();

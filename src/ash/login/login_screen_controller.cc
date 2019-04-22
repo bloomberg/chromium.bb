@@ -8,7 +8,6 @@
 
 #include "ash/focus_cycler.h"
 #include "ash/login/ui/lock_screen.h"
-#include "ash/login/ui/lock_window.h"
 #include "ash/login/ui/login_data_dispatcher.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/root_window_controller.h"
@@ -21,6 +20,7 @@
 #include "ash/system/status_area_widget_delegate.h"
 #include "ash/system/toast/toast_data.h"
 #include "ash/system/toast/toast_manager.h"
+#include "ash/system/tray/system_tray_notifier.h"
 #include "base/bind.h"
 #include "base/debug/alias.h"
 #include "base/strings/string_number_conversions.h"
@@ -59,9 +59,15 @@ void SetSystemTrayVisibility(SystemTrayVisibility visibility) {
 
 }  // namespace
 
-LoginScreenController::LoginScreenController() : weak_factory_(this) {}
+LoginScreenController::LoginScreenController(
+    SystemTrayNotifier* system_tray_notifier)
+    : system_tray_notifier_(system_tray_notifier), weak_factory_(this) {
+  system_tray_notifier_->AddSystemTrayFocusObserver(this);
+}
 
-LoginScreenController::~LoginScreenController() = default;
+LoginScreenController::~LoginScreenController() {
+  system_tray_notifier_->RemoveSystemTrayFocusObserver(this);
+}
 
 // static
 void LoginScreenController::RegisterProfilePrefs(PrefRegistrySimple* registry,
@@ -174,6 +180,21 @@ void LoginScreenController::AuthenticateUserWithEasyUnlock(
   if (!login_screen_client_)
     return;
   login_screen_client_->AuthenticateUserWithEasyUnlock(account_id);
+}
+
+void LoginScreenController::ValidateParentAccessCode(
+    const AccountId& account_id,
+    const std::string& code,
+    OnParentAccessValidation callback) {
+  if (!login_screen_client_) {
+    std::move(callback).Run(base::nullopt);
+    return;
+  }
+
+  login_screen_client_->ValidateParentAccessCode(
+      account_id, code,
+      base::BindOnce(&LoginScreenController::OnParentAccessValidationComplete,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void LoginScreenController::HardlockPod(const AccountId& account_id) {
@@ -396,13 +417,17 @@ void LoginScreenController::SetAvatarForUser(const AccountId& account_id,
     observer.SetAvatarForUser(account_id, avatar);
 }
 
-void LoginScreenController::SetAuthEnabledForUser(
+void LoginScreenController::EnableAuthForUser(const AccountId& account_id) {
+  if (DataDispatcher())
+    DataDispatcher()->EnableAuthForUser(account_id);
+}
+
+void LoginScreenController::DisableAuthForUser(
     const AccountId& account_id,
-    bool is_enabled,
-    base::Optional<base::Time> auth_reenabled_time) {
+    ash::mojom::AuthDisabledDataPtr auth_disabled_data) {
   if (DataDispatcher()) {
-    DataDispatcher()->SetAuthEnabledForUser(account_id, is_enabled,
-                                            auth_reenabled_time);
+    DataDispatcher()->DisableAuthForUser(account_id,
+                                         std::move(auth_disabled_data));
   }
 }
 
@@ -464,11 +489,13 @@ void LoginScreenController::SetPublicSessionShowFullManagementDisclosure(
 }
 
 void LoginScreenController::SetKioskApps(
-    std::vector<mojom::KioskAppInfoPtr> kiosk_apps) {
+    std::vector<mojom::KioskAppInfoPtr> kiosk_apps,
+    SetKioskAppsCallback callback) {
   Shelf::ForWindow(Shell::Get()->GetPrimaryRootWindow())
       ->shelf_widget()
       ->login_shelf_view()
       ->SetKioskApps(std::move(kiosk_apps));
+  std::move(callback).Run(true);
 }
 
 void LoginScreenController::ShowKioskAppError(const std::string& message) {
@@ -492,11 +519,23 @@ void LoginScreenController::SetAllowLoginAsGuest(bool allow_guest) {
       ->SetAllowLoginAsGuest(allow_guest);
 }
 
-void LoginScreenController::SetShowGuestButtonForGaiaScreen(bool can_show) {
+void LoginScreenController::SetShowGuestButtonInOobe(bool show) {
   Shelf::ForWindow(Shell::Get()->GetPrimaryRootWindow())
       ->shelf_widget()
       ->login_shelf_view()
-      ->SetShowGuestButtonForGaiaScreen(can_show);
+      ->SetShowGuestButtonInOobe(show);
+}
+
+void LoginScreenController::SetShowParentAccessButton(bool show) {
+  Shelf::ForWindow(Shell::Get()->GetPrimaryRootWindow())
+      ->shelf_widget()
+      ->login_shelf_view()
+      ->SetShowParentAccessButton(show);
+}
+
+void LoginScreenController::SetShowParentAccessDialog(bool show) {
+  if (DataDispatcher())
+    DataDispatcher()->SetShowParentAccessDialog(show);
 }
 
 void LoginScreenController::FocusLoginShelf(bool reverse) {
@@ -523,6 +562,13 @@ void LoginScreenController::SetAddUserButtonEnabled(bool enable) {
       ->SetAddUserButtonEnabled(enable);
 }
 
+void LoginScreenController::SetShutdownButtonEnabled(bool enable) {
+  Shelf::ForWindow(Shell::Get()->GetPrimaryRootWindow())
+      ->shelf_widget()
+      ->login_shelf_view()
+      ->SetShutdownButtonEnabled(enable);
+}
+
 void LoginScreenController::LaunchKioskApp(const std::string& app_id) {
   login_screen_client_->LaunchKioskApp(app_id);
 }
@@ -540,7 +586,13 @@ void LoginScreenController::ShowAccountAccessHelpApp() {
 }
 
 void LoginScreenController::FocusOobeDialog() {
+  if (!login_screen_client_)
+    return;
   login_screen_client_->FocusOobeDialog();
+}
+
+void LoginScreenController::NotifyUserActivity() {
+  login_screen_client_->OnUserActivity();
 }
 
 void LoginScreenController::OnAuthenticateComplete(
@@ -549,6 +601,12 @@ void LoginScreenController::OnAuthenticateComplete(
   authentication_stage_ = AuthenticationStage::kUserCallback;
   std::move(callback).Run(base::make_optional<bool>(success));
   authentication_stage_ = AuthenticationStage::kIdle;
+}
+
+void LoginScreenController::OnParentAccessValidationComplete(
+    OnParentAccessValidation callback,
+    bool success) {
+  std::move(callback).Run(base::make_optional<bool>(success));
 }
 
 LoginDataDispatcher* LoginScreenController::DataDispatcher() const {
@@ -565,6 +623,12 @@ void LoginScreenController::OnShow() {
     LOG(FATAL) << "Unexpected authentication stage "
                << static_cast<int>(authentication_stage_);
   }
+}
+
+void LoginScreenController::OnFocusLeavingSystemTray(bool reverse) {
+  if (!login_screen_client_)
+    return;
+  login_screen_client_->OnFocusLeavingSystemTray(reverse);
 }
 
 }  // namespace ash

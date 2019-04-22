@@ -65,24 +65,24 @@ void XSLTProcessor::ParseErrorFunc(void* user_data, xmlError* error) {
   if (!console)
     return;
 
-  MessageLevel level;
+  mojom::ConsoleMessageLevel level;
   switch (error->level) {
     case XML_ERR_NONE:
-      level = kVerboseMessageLevel;
+      level = mojom::ConsoleMessageLevel::kVerbose;
       break;
     case XML_ERR_WARNING:
-      level = kWarningMessageLevel;
+      level = mojom::ConsoleMessageLevel::kWarning;
       break;
     case XML_ERR_ERROR:
     case XML_ERR_FATAL:
     default:
-      level = kErrorMessageLevel;
+      level = mojom::ConsoleMessageLevel::kError;
       break;
   }
 
   console->AddMessage(ConsoleMessage::Create(
-      kXMLMessageSource, level, error->message,
-      SourceLocation::Create(error->file, error->line, 0, nullptr)));
+      mojom::ConsoleMessageSource::kXml, level, error->message,
+      std::make_unique<SourceLocation>(error->file, error->line, 0, nullptr)));
 }
 
 // FIXME: There seems to be no way to control the ctxt pointer for loading here,

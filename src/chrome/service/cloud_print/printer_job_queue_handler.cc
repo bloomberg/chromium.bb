@@ -25,22 +25,33 @@ base::Time TimeProviderImpl::GetNow() {
   return base::Time::Now();
 }
 
-JobDetails ConstructJobDetailsFromJson(const base::DictionaryValue& job_data) {
-  JobDetails job_details;
+JobDetails ConstructJobDetailsFromJson(const base::Value& job_data) {
+  DCHECK(job_data.is_dict());
 
-  job_data.GetString(kIdValue, &job_details.job_id_);
-  job_data.GetString(kTitleValue, &job_details.job_title_);
-  job_data.GetString(kOwnerValue, &job_details.job_owner_);
-  job_data.GetString(kTicketUrlValue, &job_details.print_ticket_url_);
-  job_data.GetString(kFileUrlValue, &job_details.print_data_url_);
+  JobDetails job_details;
+  const std::string* str = job_data.FindStringKey(kIdValue);
+  if (str)
+    job_details.job_id_ = *str;
+  str = job_data.FindStringKey(kTitleValue);
+  if (str)
+    job_details.job_title_ = *str;
+  str = job_data.FindStringKey(kOwnerValue);
+  if (str)
+    job_details.job_owner_ = *str;
+  str = job_data.FindStringKey(kTicketUrlValue);
+  if (str)
+    job_details.print_ticket_url_ = *str;
+  str = job_data.FindStringKey(kFileUrlValue);
+  if (str)
+    job_details.print_data_url_ = *str;
 
   // Get tags for print job.
-  const base::ListValue* tags = nullptr;
-  if (job_data.GetList(kTagsValue, &tags)) {
-    for (size_t i = 0; i < tags->GetSize(); i++) {
-      std::string value;
-      if (tags->GetString(i, &value))
-        job_details.tags_.push_back(value);
+  const base::Value* tags =
+      job_data.FindKeyOfType(kTagsValue, base::Value::Type::LIST);
+  if (tags) {
+    for (const auto& tag : tags->GetList()) {
+      if (tag.is_string())
+        job_details.tags_.push_back(tag.GetString());
     }
   }
   return job_details;
@@ -109,20 +120,22 @@ base::TimeDelta PrinterJobQueueHandler::ComputeBackoffTime(
 }
 
 std::vector<JobDetails> PrinterJobQueueHandler::GetJobsFromQueue(
-    const base::DictionaryValue& json_data) {
+    const base::Value& json_data) {
+  DCHECK(json_data.is_dict());
+
   std::vector<JobDetails> jobs;
 
-  const base::ListValue* job_list = nullptr;
-  if (!json_data.GetList(kJobListValue, &job_list))
+  const base::Value* job_list =
+      json_data.FindKeyOfType(kJobListValue, base::Value::Type::LIST);
+  if (!job_list)
     return jobs;
 
   std::vector<JobDetails> jobs_with_timeouts;
-  for (const auto& job_value : *job_list) {
-    const base::DictionaryValue* job_data = nullptr;
-    if (!job_value.GetAsDictionary(&job_data))
+  for (const auto& job_value : job_list->GetList()) {
+    if (!job_value.is_dict())
       continue;
 
-    JobDetails job_details_current = ConstructJobDetailsFromJson(*job_data);
+    JobDetails job_details_current = ConstructJobDetailsFromJson(job_value);
     job_details_current.time_remaining_ =
         ComputeBackoffTime(job_details_current.job_id_);
     if (job_details_current.time_remaining_.is_zero()) {

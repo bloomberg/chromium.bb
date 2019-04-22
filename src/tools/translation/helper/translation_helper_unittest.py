@@ -1,7 +1,6 @@
 # Copyright 2018 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """Unit tests for translation_helper.py."""
 import unittest
 import os
@@ -32,11 +31,53 @@ class TcHelperTest(unittest.TestCase):
     self.assertEqual([], grd.structure_paths)
     self.assertEqual([os.path.join(testdata_path, 'test_en-GB.xtb')],
                      grd.xtb_paths)
-    self.assertEqual({
-        'en-GB': os.path.join(testdata_path, 'test_en-GB.xtb')
-    }, grd.lang_to_xtb_path)
+    self.assertEqual({'en-GB': os.path.join(testdata_path, 'test_en-GB.xtb')},
+                     grd.lang_to_xtb_path)
     self.assertTrue(grd.appears_translatable)
     self.assertEquals(['en-GB'], grd.expected_languages)
+
+  # The expectations list an untranslatable file (not_translated.grd), but the
+  # grd list doesn't contain it.
+  def test_missing_untranslatable(self):
+    TRANSLATION_EXPECTATIONS = os.path.join(testdata_path,
+                                            'translation_expectations.pyl')
+    with self.assertRaises(Exception) as context:
+      translation_helper.get_translatable_grds(
+          testdata_path, ['test.grd'], TRANSLATION_EXPECTATIONS)
+    self.assertEqual(
+        '%s needs to be updated. Please fix these issues:\n'
+        ' - not_translated.grd is listed in the translation expectations, '
+        'but this grd file does not exist.' % TRANSLATION_EXPECTATIONS,
+        context.exception.message)
+
+  # The expectations list a translatable file (test.grd), but the grd list
+  # doesn't contain it.
+  def test_missing_translatable(self):
+    TRANSLATION_EXPECTATIONS = os.path.join(testdata_path,
+                                            'translation_expectations.pyl')
+    with self.assertRaises(Exception) as context:
+      translation_helper.get_translatable_grds(
+          testdata_path, ['not_translated.grd'], TRANSLATION_EXPECTATIONS)
+    self.assertEqual(
+        '%s needs to be updated. Please fix these issues:\n'
+        ' - test.grd is listed in the translation expectations, but this grd '
+        'file does not exist.' % TRANSLATION_EXPECTATIONS,
+        context.exception.message)
+
+  # The grd list contains a file (part.grdp) that's not listed in translation
+  # expectations.
+  def test_expectations_not_updated(self):
+    TRANSLATION_EXPECTATIONS = os.path.join(testdata_path,
+                                            'translation_expectations.pyl')
+    with self.assertRaises(Exception) as context:
+      translation_helper.get_translatable_grds(
+          testdata_path, ['test.grd', 'part.grdp', 'not_translated.grd'],
+          TRANSLATION_EXPECTATIONS)
+    self.assertEqual(
+        '%s needs to be updated. Please fix these issues:\n'
+        ' - part.grdp appears to be translatable (because it contains <file> '
+        'or <message> elements), but is not listed in the translation '
+        'expectations.' % TRANSLATION_EXPECTATIONS, context.exception.message)
 
 
 if __name__ == '__main__':

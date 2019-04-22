@@ -6,7 +6,7 @@
 
 namespace subresource_filter {
 
-const base::Feature kAdTagging{"AdTagging", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kAdTagging{"AdTagging", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kDelayUnsafeAds{"DelayUnsafeAds",
                                     base::FEATURE_DISABLED_BY_DEFAULT};

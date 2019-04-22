@@ -26,6 +26,9 @@ WorkletModuleTreeClient::WorkletModuleTreeClient(
 // https://drafts.css-houdini.org/worklets/#fetch-and-invoke-a-worklet-script
 void WorkletModuleTreeClient::NotifyModuleTreeLoadFinished(
     ModuleScript* module_script) {
+  // TODO(nhiroki): Call reporting proxy functions appropriately (e.g.,
+  // DidFailToFetchModuleScript(), WillEvaluateModuleScript()).
+
   if (!module_script) {
     // Step 3: "If script is null, then queue a task on outsideSettings's
     // responsible event loop to run these steps:"
@@ -71,7 +74,7 @@ void WorkletModuleTreeClient::NotifyModuleTreeLoadFinished(
       *outside_settings_task_runner_, FROM_HERE,
       CrossThreadBind(&WorkletPendingTasks::DecrementCounter,
                       WrapCrossThreadPersistent(pending_tasks_.Get())));
-};
+}
 
 void WorkletModuleTreeClient::Trace(blink::Visitor* visitor) {
   visitor->Trace(modulator_);

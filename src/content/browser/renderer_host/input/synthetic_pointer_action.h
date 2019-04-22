@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_INPUT_SYNTHETIC_POINTER_ACTION_H_
 #define CONTENT_BROWSER_RENDERER_HOST_INPUT_SYNTHETIC_POINTER_ACTION_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "content/browser/renderer_host/input/synthetic_gesture.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target.h"
@@ -15,6 +17,9 @@
 
 namespace content {
 
+// It generates and dispatches the synthetic events of touch, mouse and pen
+// inputs. The synthetic events are dispatched to each platform in browser and
+// sent to renderer to manipulate the DOM elements on the web pages.
 class CONTENT_EXPORT SyntheticPointerAction : public SyntheticGesture {
  public:
   explicit SyntheticPointerAction(
@@ -25,6 +30,13 @@ class CONTENT_EXPORT SyntheticPointerAction : public SyntheticGesture {
       const base::TimeTicks& timestamp,
       SyntheticGestureTarget* target) override;
   bool AllowHighFrequencyDispatch() const override;
+  void WaitForTargetAck(base::OnceClosure callback,
+                        SyntheticGestureTarget* target) const override;
+
+  void SetSyntheticPointerDriver(
+      SyntheticPointerDriver* synthetic_pointer_driver) {
+    synthetic_pointer_driver_ = synthetic_pointer_driver;
+  }
 
  private:
   enum class GestureState { UNINITIALIZED, RUNNING, INVALID, DONE };
@@ -35,7 +47,15 @@ class CONTENT_EXPORT SyntheticPointerAction : public SyntheticGesture {
   // params_ contains a list of lists of pointer actions, that each list of
   // pointer actions will be dispatched together.
   SyntheticPointerActionListParams params_;
-  std::unique_ptr<SyntheticPointerDriver> synthetic_pointer_driver_;
+
+  // It is owned by this class, which is used when synthetic_pointer_driver_ is
+  // not initialized, where the SyntheticPointerAction object is not created
+  // in InputHandler class.
+  std::unique_ptr<SyntheticPointerDriver> owned_synthetic_pointer_driver_;
+  // It is owned by InputHandler class, which is used to keep the states of the
+  // previous synthetic events when a sequence of actions are dispatched one by
+  // one.
+  SyntheticPointerDriver* synthetic_pointer_driver_ = nullptr;
   SyntheticGestureParams::GestureSourceType gesture_source_type_;
   GestureState state_;
   size_t num_actions_dispatched_;

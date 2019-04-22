@@ -143,7 +143,7 @@ bool EventHandlerRegistry::UpdateEventHandlerInternal(
 
   if (op != kRemoveAll) {
     if (handlers_changed)
-      NotifyHasHandlersChanged(target, handler_class, new_num_handlers > 0);
+      NotifyHandlersChanged(target, handler_class, new_num_handlers > 0);
 
     if (target_set_changed) {
       NotifyDidAddOrRemoveEventHandlerTarget(GetLocalFrameForTarget(target),
@@ -232,7 +232,7 @@ void EventHandlerRegistry::DidRemoveAllEventHandlers(EventTarget& target) {
     EventHandlerClass handler_class = static_cast<EventHandlerClass>(i);
     if (handlers_changed[i]) {
       bool has_handlers = targets_[handler_class].Contains(&target);
-      NotifyHasHandlersChanged(&target, handler_class, has_handlers);
+      NotifyHandlersChanged(&target, handler_class, has_handlers);
     }
     if (target_set_changed[i]) {
       NotifyDidAddOrRemoveEventHandlerTarget(GetLocalFrameForTarget(&target),
@@ -241,7 +241,7 @@ void EventHandlerRegistry::DidRemoveAllEventHandlers(EventTarget& target) {
   }
 }
 
-void EventHandlerRegistry::NotifyHasHandlersChanged(
+void EventHandlerRegistry::NotifyHandlersChanged(
     EventTarget* target,
     EventHandlerClass handler_class,
     bool has_active_handlers) {
@@ -299,25 +299,23 @@ void EventHandlerRegistry::NotifyHasHandlersChanged(
       break;
   }
 
-  if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled()) {
-    if (handler_class == kTouchStartOrMoveEventBlocking ||
-        handler_class == kTouchStartOrMoveEventBlockingLowLatency) {
-      if (auto* node = target->ToNode()) {
-        if (auto* layout_object = node->GetLayoutObject()) {
-          layout_object->MarkEffectiveWhitelistedTouchActionChanged();
-          auto* continuation = layout_object->VirtualContinuation();
-          while (continuation) {
-            continuation->MarkEffectiveWhitelistedTouchActionChanged();
-            continuation = continuation->VirtualContinuation();
-          }
+  if (handler_class == kTouchStartOrMoveEventBlocking ||
+      handler_class == kTouchStartOrMoveEventBlockingLowLatency) {
+    if (auto* node = target->ToNode()) {
+      if (auto* layout_object = node->GetLayoutObject()) {
+        layout_object->MarkEffectiveAllowedTouchActionChanged();
+        auto* continuation = layout_object->VirtualContinuation();
+        while (continuation) {
+          continuation->MarkEffectiveAllowedTouchActionChanged();
+          continuation = continuation->VirtualContinuation();
         }
-      } else if (auto* dom_window = target->ToLocalDOMWindow()) {
-        // This event handler is on a window. Ensure the layout view is
-        // invalidated because the layout view tracks the window's blocking
-        // touch event rects.
-        if (auto* layout_view = dom_window->GetFrame()->ContentLayoutObject())
-          layout_view->MarkEffectiveWhitelistedTouchActionChanged();
       }
+    } else if (auto* dom_window = target->ToLocalDOMWindow()) {
+      // This event handler is on a window. Ensure the layout view is
+      // invalidated because the layout view tracks the window's blocking
+      // touch event rects.
+      if (auto* layout_view = dom_window->GetFrame()->ContentLayoutObject())
+        layout_view->MarkEffectiveAllowedTouchActionChanged();
     }
   }
 }

@@ -17,6 +17,9 @@ NS_ASSUME_NONNULL_BEGIN
 RTC_OBJC_EXPORT
 @interface RTCRtpEncodingParameters : NSObject
 
+/** The idenfifier for the encoding layer. This is used in simulcast. */
+@property(nonatomic, copy, nullable) NSString *rid;
+
 /** Controls whether the encoding is currently transmitted. */
 @property(nonatomic, assign) BOOL isActive;
 
@@ -39,6 +42,11 @@ RTC_OBJC_EXPORT
  * if the default should be used.
  */
 @property(nonatomic, copy, nullable) NSNumber *numTemporalLayers;
+
+/** Scale the width and height down by this factor for video. If nil,
+ * implementation default scaling factor will be used.
+ */
+@property(nonatomic, copy, nullable) NSNumber *scaleResolutionDownBy;
 
 /** The SSRC being used by this encoding. */
 @property(nonatomic, readonly, nullable) NSNumber *ssrc;

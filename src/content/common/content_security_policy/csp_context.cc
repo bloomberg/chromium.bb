@@ -15,9 +15,11 @@ bool ShouldCheckPolicy(const ContentSecurityPolicy& policy,
                        CSPContext::CheckCSPDisposition check_csp_disposition) {
   switch (check_csp_disposition) {
     case CSPContext::CHECK_REPORT_ONLY_CSP:
-      return policy.header.type == blink::kWebContentSecurityPolicyTypeReport;
+      return policy.header.type ==
+             blink::mojom::ContentSecurityPolicyType::kReport;
     case CSPContext::CHECK_ENFORCED_CSP:
-      return policy.header.type == blink::kWebContentSecurityPolicyTypeEnforce;
+      return policy.header.type ==
+             blink::mojom::ContentSecurityPolicyType::kEnforce;
     case CSPContext::CHECK_ALL_CSP:
       return true;
   }
@@ -127,7 +129,7 @@ CSPViolationParams::CSPViolationParams(
     const std::vector<std::string>& report_endpoints,
     bool use_reporting_api,
     const std::string& header,
-    const blink::WebContentSecurityPolicyType& disposition,
+    const blink::mojom::ContentSecurityPolicyType& disposition,
     bool after_redirect,
     const SourceLocation& source_location)
     : directive(directive),

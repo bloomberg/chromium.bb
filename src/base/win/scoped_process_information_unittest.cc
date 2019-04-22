@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/win/scoped_process_information.h"
+
 #include <windows.h>
 
 #include <string>
@@ -9,8 +11,9 @@
 #include "base/command_line.h"
 #include "base/process/kill.h"
 #include "base/process/process.h"
+#include "base/strings/string16.h"
+#include "base/strings/string_util.h"
 #include "base/test/multiprocess_test.h"
-#include "base/win/scoped_process_information.h"
 #include "testing/multiprocess_func_list.h"
 
 namespace {
@@ -47,13 +50,13 @@ MULTIPROCESS_TEST_MAIN(ReturnNine) {
 
 void ScopedProcessInformationTest::DoCreateProcess(
     const std::string& main_id, PROCESS_INFORMATION* process_handle) {
-  std::wstring cmd_line = MakeCmdLine(main_id).GetCommandLineString();
+  base::string16 cmd_line = MakeCmdLine(main_id).GetCommandLineString();
   STARTUPINFO startup_info = {};
   startup_info.cb = sizeof(startup_info);
 
-  EXPECT_TRUE(::CreateProcess(NULL, &cmd_line[0],
-                              NULL, NULL, false, 0, NULL, NULL,
-                              &startup_info, process_handle));
+  EXPECT_TRUE(::CreateProcess(NULL, base::as_writable_wcstr(cmd_line), NULL,
+                              NULL, false, 0, NULL, NULL, &startup_info,
+                              process_handle));
 }
 
 TEST_F(ScopedProcessInformationTest, InitiallyInvalid) {

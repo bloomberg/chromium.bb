@@ -26,11 +26,11 @@ class VIZ_SERVICE_EXPORT OverlayStrategyFullscreen
       const SkMatrix44& output_color_matrix,
       const OverlayProcessor::FilterOperationsMap& render_pass_backdrop_filters,
       DisplayResourceProvider* resource_provider,
-      RenderPass* render_pass,
+      RenderPassList* render_pass,
       OverlayCandidateList* candidate_list,
       std::vector<gfx::Rect>* content_bounds) override;
 
-  OverlayProcessor::StrategyType GetUMAEnum() const override;
+  OverlayStrategy GetUMAEnum() const override;
 
  private:
   OverlayCandidateValidator* capability_checker_;  // Weak.

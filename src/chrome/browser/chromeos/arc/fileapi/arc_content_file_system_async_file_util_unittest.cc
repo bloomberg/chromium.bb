@@ -16,8 +16,8 @@
 #include "chrome/browser/chromeos/arc/fileapi/arc_file_system_operation_runner.h"
 #include "chrome/browser/chromeos/fileapi/external_file_url_util.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
+#include "components/arc/session/arc_bridge_service.h"
 #include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_file_system_instance.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
@@ -79,7 +79,7 @@ class ArcContentFileSystemAsyncFileUtilTest : public testing::Test {
     EXPECT_TRUE(
         mount_point_virtual_path.AppendRelativePath(virtual_path, &path));
     return storage::FileSystemURL::CreateForTest(
-        GURL(),  // origin
+        url::Origin(),  // origin
         storage::kFileSystemTypeArcContent, path);
   }
 

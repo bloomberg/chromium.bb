@@ -1,6 +1,8 @@
 #ifndef _RAR_OPTIONS_
 #define _RAR_OPTIONS_
 
+namespace third_party_unrar {
+
 #define DEFAULT_RECOVERY     -3
 
 #define DEFAULT_RECVOLUMES  -10
@@ -12,11 +14,7 @@ enum PATH_EXCL_MODE {
   EXCL_SKIPWHOLEPATH,  // -ep  (exclude the path completely)
   EXCL_BASEPATH,       // -ep1 (exclude the base part of path)
   EXCL_SAVEFULLPATH,   // -ep2 (the full path without the disk letter)
-  EXCL_ABSPATH,        // -ep3 (the full path with the disk letter)
-
-  EXCL_SKIPABSPATH     // Works as EXCL_BASEPATH for fully qualified paths
-                       // and as EXCL_UNCHANGED for relative paths.
-                       // Used by WinRAR GUI only.
+  EXCL_ABSPATH         // -ep3 (the full path with the disk letter)
 };
 
 enum {SOLID_NONE=0,SOLID_NORMAL=1,SOLID_COUNT=2,SOLID_FILEEXT=4,
@@ -64,7 +62,8 @@ enum SAVECOPY_MODE {
 };
 
 enum POWER_MODE {
-  POWERMODE_KEEP=0,POWERMODE_OFF,POWERMODE_HIBERNATE,POWERMODE_SLEEP
+  POWERMODE_KEEP=0,POWERMODE_OFF,POWERMODE_HIBERNATE,POWERMODE_SLEEP,
+  POWERMODE_RESTART
 };
 
 struct FilterMode
@@ -93,18 +92,6 @@ class RAROptions
 
 #ifdef USE_QOPEN
     QOPEN_MODE QOpenMode;
-#endif
-
-    bool ArcInMem;
-#ifdef USE_ARCMEM
-    void SetArcInMem(byte *Data,size_t Size)
-    {
-      ArcMemData=Data;
-      ArcMemSize=Size;
-      ArcInMem=Data!=NULL && Size>0;
-    }
-    byte *ArcMemData;
-    size_t ArcMemSize;
 #endif
 
     bool ConfigDisabled; // Switch -cfg-.
@@ -207,4 +194,7 @@ class RAROptions
     PROCESSDATAPROC ProcessDataProc;
 #endif
 };
+
+}  // namespace third_party_unrar
+
 #endif

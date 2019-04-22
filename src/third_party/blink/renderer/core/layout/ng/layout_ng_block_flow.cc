@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/layout/min_max_size.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_fragment_traversal.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node_data.h"
+#include "third_party/blink/renderer/core/layout/ng/layout_box_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
@@ -30,31 +31,8 @@ bool LayoutNGBlockFlow::IsOfType(LayoutObjectType type) const {
          LayoutNGMixin<LayoutBlockFlow>::IsOfType(type);
 }
 
-void LayoutNGBlockFlow::ComputeIntrinsicLogicalWidths(
-    LayoutUnit& min_logical_width,
-    LayoutUnit& max_logical_width) const {
-  NGBlockNode node(const_cast<LayoutNGBlockFlow*>(this));
-  if (!node.CanUseNewLayout()) {
-    LayoutBlockFlow::ComputeIntrinsicLogicalWidths(min_logical_width,
-                                                   max_logical_width);
-    return;
-  }
-  MinMaxSizeInput input;
-  // This function returns content-box plus scrollbar.
-  input.size_type = NGMinMaxSizeType::kContentBoxSize;
-  MinMaxSize sizes = node.ComputeMinMaxSize(StyleRef().GetWritingMode(), input);
-  sizes += LayoutUnit(ScrollbarLogicalWidth());
-  min_logical_width = sizes.min_size;
-  max_logical_width = sizes.max_size;
-}
-
 void LayoutNGBlockFlow::UpdateBlockLayout(bool relayout_children) {
   LayoutAnalyzer::BlockScope analyzer(*this);
-
-  // This block is an entry-point from the legacy engine to LayoutNG. This means
-  // that we need to be at a formatting context boundary, since NG and legacy
-  // don't cooperate on e.g. margin collapsing.
-  DCHECK(CreatesNewFormattingContext());
 
   if (IsOutOfFlowPositioned()) {
     UpdateOutOfFlowBlockLayout();
@@ -64,39 +42,12 @@ void LayoutNGBlockFlow::UpdateBlockLayout(bool relayout_children) {
   NGConstraintSpace constraint_space =
       NGConstraintSpace::CreateFromLayoutObject(*this);
 
-  scoped_refptr<NGLayoutResult> result =
+  scoped_refptr<const NGLayoutResult> result =
       NGBlockNode(this).Layout(constraint_space);
 
   for (const NGOutOfFlowPositionedDescendant& descendant :
        result->OutOfFlowPositionedDescendants())
     descendant.node.UseOldOutOfFlowPositioning();
-
-  const NGPhysicalBoxFragment* fragment =
-      ToNGPhysicalBoxFragment(result->PhysicalFragment());
-
-  // This object has already been positioned in legacy layout by our containing
-  // block. Copy the position and place the fragment.
-  //
-  // TODO(kojii): This object is not positioned yet when the containing legacy
-  // layout is not normal flow; e.g., table or flexbox. They lay out children to
-  // determine the overall layout, then move children. In flexbox case,
-  // LayoutLineItems() lays out children, which calls this function. Then later,
-  // ApplyLineItemPosition() changes Location() of the children. See also
-  // NGPhysicalFragment::IsPlacedByLayoutNG(). crbug.com/788590
-  //
-  // TODO(crbug.com/781241): LogicalLeft() is not calculated by the
-  // containing block until after our layout.
-  const LayoutBlock* containing_block = ContainingBlock();
-  NGPhysicalOffset physical_offset;
-  if (containing_block) {
-    NGPhysicalSize containing_block_size(containing_block->Size().Width(),
-                                         containing_block->Size().Height());
-    NGLogicalOffset logical_offset(LogicalLeft(), LogicalTop());
-    physical_offset = logical_offset.ConvertToPhysical(
-        constraint_space.GetWritingMode(), constraint_space.Direction(),
-        containing_block_size, fragment->Size());
-  }
-  result->SetOffset(physical_offset);
 }
 
 void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
@@ -104,13 +55,20 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
   LayoutBox* container =
       css_container->IsBox() ? ToLayoutBox(css_container) : ContainingBlock();
   const ComputedStyle* container_style = container->Style();
-  const ComputedStyle* parent_style = Parent()->Style();
   NGConstraintSpace constraint_space =
       NGConstraintSpace::CreateFromLayoutObject(*this);
+
+  // As this is part of the Legacy->NG bridge, the container_builder is used
+  // for indicating the resolved size of the OOF-positioned containing-block
+  // and not used for caching purposes.
+  // When we produce a layout result from it, we access its child fragments
+  // which must contain *at least* this node. We use the child fragments for
+  // copying back position information.
   NGBlockNode container_node(container);
   NGBoxFragmentBuilder container_builder(
       container_node, scoped_refptr<const ComputedStyle>(container_style),
-      container_style->GetWritingMode(), container_style->Direction());
+      /* space */ nullptr, container_style->GetWritingMode(),
+      container_style->Direction());
   container_builder.SetIsNewFormattingContext(
       container_node.CreatesNewFormattingContext());
 
@@ -118,8 +76,8 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
   // OverrideContainingBlockContentLogicalWidth/Height are used by e.g. grid
   // layout. Override sizes are padding box size, not border box, so we must add
   // borders and scrollbars to compensate.
-  NGBoxStrut borders_and_scrollbars =
-      ComputeBorders(constraint_space, *container_style) +
+  NGBoxStrut border_scrollbar =
+      ComputeBorders(constraint_space, container_node) +
       NGBlockNode(container).GetScrollbarSizes();
 
   // Calculate the border-box size of the object that's the containing block of
@@ -134,14 +92,14 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
   if (HasOverrideContainingBlockContentLogicalWidth()) {
     container_border_box_logical_width =
         OverrideContainingBlockContentLogicalWidth() +
-        borders_and_scrollbars.InlineSum();
+        border_scrollbar.InlineSum();
   } else {
     container_border_box_logical_width = container->LogicalWidth();
   }
   if (HasOverrideContainingBlockContentLogicalHeight()) {
     container_border_box_logical_height =
         OverrideContainingBlockContentLogicalHeight() +
-        borders_and_scrollbars.BlockSum();
+        border_scrollbar.BlockSum();
   } else {
     container_border_box_logical_height = container->LogicalHeight();
   }
@@ -149,83 +107,12 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
   container_builder.SetInlineSize(container_border_box_logical_width);
   container_builder.SetBlockSize(container_border_box_logical_height);
   container_builder.SetBorders(
-      ComputeBorders(constraint_space, *container_style));
+      ComputeBorders(constraint_space, container_node));
   container_builder.SetPadding(
       ComputePadding(constraint_space, *container_style));
 
-  // Calculate the actual size of the containing block for this out-of-flow
-  // descendant. This is what's used to size and position us.
-  LayoutUnit containing_block_logical_width =
-      ContainingBlockLogicalWidthForPositioned(css_container);
-  LayoutUnit containing_block_logical_height =
-      ContainingBlockLogicalHeightForPositioned(css_container);
-
-  // Determine static position.
-
-  // static_inline and static_block are inline/block direction offsets
-  // from physical origin. This is an unexpected blend of logical and
-  // physical in a single variable.
-  LayoutUnit static_inline;
-  LayoutUnit static_block;
-
-  Length logical_left;
-  Length logical_right;
-  Length logical_top;
-  Length logical_bottom;
-
-  ComputeInlineStaticDistance(logical_left, logical_right, this, css_container,
-                              containing_block_logical_width);
-  ComputeBlockStaticDistance(logical_top, logical_bottom, this, css_container);
-  if (parent_style->IsLeftToRightDirection()) {
-    if (!logical_left.IsAuto()) {
-      static_inline =
-          ValueForLength(logical_left, containing_block_logical_width);
-    }
-  } else {
-    if (!logical_right.IsAuto()) {
-      static_inline =
-          ValueForLength(logical_right, containing_block_logical_width);
-    }
-  }
-  if (!logical_top.IsAuto())
-    static_block = ValueForLength(logical_top, containing_block_logical_height);
-
-  // Legacy static position is relative to padding box. Convert to border
-  // box. Also flip offsets as necessary to make them relative to to the
-  // left/top edges.
-
-  // First convert the static inline offset to a line-left offset, i.e. physical
-  // left or top.
-  LayoutUnit inline_left_or_top =
-      parent_style->IsLeftToRightDirection()
-          ? static_inline
-          : containing_block_logical_width - static_inline;
-  // Now make it relative to the left or top border edge of the containing
-  // block.
-  inline_left_or_top +=
-      borders_and_scrollbars.LineLeft(container_style->Direction());
-
-  // Make the static block offset relative to the start border edge of the
-  // containing block.
-  static_block += borders_and_scrollbars.block_start;
-  // Then convert it to a physical top or left offset. Since we're already
-  // border-box relative, flip it around the size of the border box, rather than
-  // the size of the containing block (padding box).
-  LayoutUnit block_top_or_left =
-      container_style->IsFlippedBlocksWritingMode()
-          ? container_border_box_logical_height - static_block
-          : static_block;
-
-  // Convert to physical direction. This can be done with a simple coordinate
-  // flip because the distances are relative to physical top/left origin.
-  NGPhysicalOffset static_location =
-      container_style->IsHorizontalWritingMode()
-          ? NGPhysicalOffset(inline_left_or_top, block_top_or_left)
-          : NGPhysicalOffset(block_top_or_left, inline_left_or_top);
   NGStaticPosition static_position =
-      NGStaticPosition::Create(container_style->GetWritingMode(),
-                               parent_style->Direction(), static_location);
-
+      LayoutBoxUtils::ComputeStaticPositionFromLegacy(*this);
   // Set correct container for inline containing blocks.
   container_builder.AddOutOfFlowLegacyCandidate(
       NGBlockNode(this), static_position,
@@ -246,19 +133,19 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
   // Run(). Otherwise, NGOutOfFlowLayoutPart may also lay out other objects
   // it discovers that are part of the same containing block, but those
   // should get laid out by the actual containing block.
-  NGOutOfFlowLayoutPart(
-      &container_builder, css_container->CanContainAbsolutePositionObjects(),
-      css_container->CanContainFixedPositionObjects(), borders_and_scrollbars,
-      constraint_space, *container_style, initial_containing_block_fixed_size)
+  NGOutOfFlowLayoutPart(css_container->CanContainAbsolutePositionObjects(),
+                        css_container->CanContainFixedPositionObjects(),
+                        *container_style, constraint_space, border_scrollbar,
+                        &container_builder, initial_containing_block_fixed_size)
       .Run(/* only_layout */ this);
-  scoped_refptr<NGLayoutResult> result = container_builder.ToBoxFragment();
+  scoped_refptr<const NGLayoutResult> result =
+      container_builder.ToBoxFragment();
   // These are the unpositioned OOF descendants of the current OOF block.
-  for (NGOutOfFlowPositionedDescendant descendant :
+  for (const NGOutOfFlowPositionedDescendant& descendant :
        result->OutOfFlowPositionedDescendants())
     descendant.node.UseOldOutOfFlowPositioning();
 
-  const NGPhysicalBoxFragment* fragment =
-      ToNGPhysicalBoxFragment(result->PhysicalFragment());
+  const auto* fragment = To<NGPhysicalBoxFragment>(result->PhysicalFragment());
   DCHECK_GT(fragment->Children().size(), 0u);
   // Copy sizes of all child fragments to Legacy.
   // There could be multiple fragments, when this node has descendants whose

@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/media/media_internals.h"
@@ -13,6 +14,7 @@
 #include "content/public/browser/media_observer.h"
 #include "content/public/common/content_client.h"
 #include "media/audio/audio_logging.h"
+#include "media/mojo/interfaces/audio_data_pipe.mojom.h"
 
 namespace content {
 

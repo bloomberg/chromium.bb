@@ -70,29 +70,34 @@ CommandQueue.prototype.attachUI = function(
  * @param {function()} callback Callback.
  */
 CommandQueue.prototype.executeWhenReady = function(callback) {
-  if (this.isBusy())
+  if (this.isBusy()) {
     this.subscribers_.push(callback);
-  else
+  } else {
     setTimeout(callback, 0);
+  }
 };
 
 /**
  * @return {boolean} True if the command queue is busy.
  */
-CommandQueue.prototype.isBusy = function() { return this.busy_ };
+CommandQueue.prototype.isBusy = function() {
+  return this.busy_;
+};
 
 /**
  * Set the queue state to busy. Lock the UI.
  * @private
  */
 CommandQueue.prototype.setBusy_ = function() {
-  if (this.busy_)
+  if (this.busy_) {
     throw new Error('CommandQueue already busy');
+  }
 
   this.busy_ = true;
 
-  if (this.UIContext_.lock)
+  if (this.UIContext_.lock) {
     this.UIContext_.lock(true);
+  }
 
   ImageUtil.trace.resetTimer('command-busy');
 };
@@ -102,17 +107,20 @@ CommandQueue.prototype.setBusy_ = function() {
  * @private
  */
 CommandQueue.prototype.clearBusy_ = function() {
-  if (!this.busy_)
+  if (!this.busy_) {
     throw new Error('Inconsistent CommandQueue already not busy');
+  }
 
   this.busy_ = false;
 
   // Execute the actions requested while the queue was busy.
-  while (this.subscribers_.length)
+  while (this.subscribers_.length) {
     this.subscribers_.shift()();
+  }
 
-  if (this.UIContext_.lock)
+  if (this.UIContext_.lock) {
     this.UIContext_.lock(false);
+  }
 
   ImageUtil.trace.reportTimer('command-busy');
 };
@@ -137,8 +145,9 @@ CommandQueue.prototype.commit_ = function(showUndoAction, opt_delay) {
  * @private
  */
 CommandQueue.prototype.doExecute_ = function(command, uiContext, callback) {
-  if (!this.currentImage_)
+  if (!this.currentImage_) {
     throw new Error('Cannot operate on null image');
+  }
 
   command.execute(
       this.document_,
@@ -163,8 +172,9 @@ CommandQueue.prototype.doExecute_ = function(command, uiContext, callback) {
 CommandQueue.prototype.execute = function(command, opt_keep_redo) {
   this.setBusy_();
 
-  if (!opt_keep_redo)
+  if (!opt_keep_redo) {
     this.redo_ = [];
+  }
 
   this.undo_.push(command);
 
@@ -183,8 +193,9 @@ CommandQueue.prototype.canUndo = function() {
  * Undo the most recent command.
  */
 CommandQueue.prototype.undo = function() {
-  if (!this.canUndo())
+  if (!this.canUndo()) {
     throw new Error('Cannot undo');
+  }
 
   this.setBusy_();
 
@@ -211,9 +222,9 @@ CommandQueue.prototype.undo = function() {
     this.currentImage_ = this.baselineImage_;
 
     var replay = function(index) {
-      if (index < self.undo_.length)
+      if (index < self.undo_.length) {
         self.doExecute_(self.undo_[index], {}, replay.bind(null, index + 1));
-      else {
+      } else {
         complete();
       }
     };
@@ -233,8 +244,9 @@ CommandQueue.prototype.canRedo = function() {
  * Repeat the command that was recently un-done.
  */
 CommandQueue.prototype.redo = function() {
-  if (!this.canRedo())
+  if (!this.canRedo()) {
     throw new Error('Cannot redo');
+  }
 
   this.execute(this.redo_.pop(), true);
 };
@@ -420,8 +432,9 @@ Command.Filter.prototype.execute = function(
   function onProgressVisible(updatedRow, rowCount) {
     if (updatedRow == rowCount) {
       uiContext.imageView.replace(result);
-      if (self.message_)
+      if (self.message_) {
         uiContext.prompt.show(self.message_, 2000);
+      }
       callback(result);
     } else {
       var viewport = uiContext.imageView.viewport_;
@@ -477,7 +490,8 @@ Command.Resize.prototype.execute = function(
   var scaleY = this.newHeight_ / srcImage.height;
   ImageUtil.drawImageTransformed(result, srcImage, scaleX, scaleY, 0);
 
-  if(uiContext.imageView)
+  if (uiContext.imageView) {
     uiContext.imageView.replace(result);
+  }
   callback(result);
 };

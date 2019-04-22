@@ -16,7 +16,6 @@
 <translation id="152892567002884378">Volume up</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, then <ph name="ESC" /></translation>
 <translation id="1652741121070700329">Move to the start of the previous word</translation>
-<translation id="1671169355475348905">Switch to the input method of the previous language</translation>
 <translation id="1679841710523778799">Turn brightness up</translation>
 <translation id="168356808214100546">Press and hold <ph name="ALT" />, tap <ph name="TAB" /> until you get to the window that you want to open, then release.</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -33,6 +32,7 @@
 <translation id="2181097965834437145">Show or hide the bookmarks bar</translation>
 <translation id="2185166372312820725">Go to previous tab</translation>
 <translation id="2194790690264064655">Press <ph name="CTRL" /> and click a link</translation>
+<translation id="2246352309084894470">Open/close the full-screen launcher</translation>
 <translation id="2382644247745281995">Not supported with current keyboard layout</translation>
 <translation id="2397416548179033562">Show Chrome menu</translation>
 <translation id="2424073332829844142">Turn Caps Lock on and off</translation>
@@ -44,7 +44,6 @@
 <translation id="2574014812750545982">Reset zoom level on the page</translation>
 <translation id="2596078834055697711">Take window screenshot</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, then <ph name="TAB" /> or <ph name="RIGHT" /></translation>
-<translation id="2687057317448262550">Switch to the input method of the next language</translation>
 <translation id="2699509451653686398">Save your current web page as a bookmark</translation>
 <translation id="2750942583782703988">Reload your current page</translation>
 <translation id="2764005613199379871">Place focus in search address bar</translation>
@@ -147,6 +146,7 @@
 <translation id="671928215901716392">Lock screen</translation>
 <translation id="6727005317916125192">Previous pane</translation>
 <translation id="6740781404993465795">Select the next word or letter</translation>
+<translation id="6755851152783057058">Switch to the last used input method</translation>
 <translation id="6760706756348334449">Volume down</translation>
 <translation id="6941333068993625698">Submit feedback</translation>
 <translation id="6981982820502123353">Accessibility</translation>
@@ -157,6 +157,7 @@
 <translation id="7237562915163138771">Type a web address in the address bar, then press <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /></translation>
 <translation id="7254764037241667478">Put device in sleep mode (suspend)</translation>
 <translation id="7379254767514753910"><ph name="ALT" /> or <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
+<translation id="7422707470576323858">Switch to the next available input method</translation>
 <translation id="743754632698445141">Unpin an app</translation>
 <translation id="7439718573248533901">Delete the next letter (forward delete)</translation>
 <translation id="7611271430932669992">Move focus to pop-ups and dialogues</translation>

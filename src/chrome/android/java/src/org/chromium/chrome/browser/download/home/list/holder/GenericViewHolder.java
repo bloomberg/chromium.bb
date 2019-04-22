@@ -7,10 +7,8 @@ package org.chromium.chrome.browser.download.home.list.holder;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.DrawableRes;
-import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
-import android.support.v7.content.res.AppCompatResources;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,9 +18,9 @@ import android.widget.TextView;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.browser.download.home.list.ListItem;
 import org.chromium.chrome.browser.download.home.list.UiUtils;
-import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.download.R;
 import org.chromium.components.offline_items_collection.OfflineItemVisuals;
+import org.chromium.ui.modelutil.PropertyModel;
 
 /** A {@link RecyclerView.ViewHolder} specifically meant to display a generic {@code OfflineItem}.
  */
@@ -63,12 +61,8 @@ public class GenericViewHolder extends OfflineItemViewHolder {
         if (iconId != mGenericIconId) {
             mGenericIconId = iconId;
 
-            Drawable drawable = DrawableCompat.wrap(
-                    org.chromium.chrome.browser.download.home.list.view.UiUtils.getDrawable(
-                            itemView.getContext(), iconId));
-            DrawableCompat.setTintList(drawable,
-                    AppCompatResources.getColorStateList(
-                            itemView.getContext(), R.color.dark_mode_tint));
+            Drawable drawable = org.chromium.ui.UiUtils.getTintedDrawable(
+                    itemView.getContext(), iconId, R.color.standard_mode_tint);
 
             mThumbnail.setUnavailableDrawable(drawable);
             mThumbnail.setWaitingDrawable(drawable);

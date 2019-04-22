@@ -404,8 +404,8 @@ class LoadTimesExtensionWrapper : public v8::Extension {
   }
 };
 
-v8::Extension* LoadTimesExtension::Get() {
-  return new LoadTimesExtensionWrapper();
+std::unique_ptr<v8::Extension> LoadTimesExtension::Get() {
+  return std::make_unique<LoadTimesExtensionWrapper>();
 }
 
 }  // namespace extensions_v8

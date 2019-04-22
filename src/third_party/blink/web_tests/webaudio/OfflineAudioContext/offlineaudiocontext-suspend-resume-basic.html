@@ -77,10 +77,12 @@
         let context =
             new OfflineAudioContext(1, sampleRate * renderDuration, sampleRate);
 
-        // |suspendTime1| and |suspendTime2| are identical when quantized to
-        // the render quantum size.
-        let suspendTime1 = renderQuantum / sampleRate;
-        let suspendTime2 = 1.5 * renderQuantum / sampleRate;
+        // |suspendTime1| and |suspendTime2| are identical when quantized to the
+        // render quantum size.  The factors are arbitrary except they should be
+        // between 1 (exclusive) and 2 (inclusive).  Using a factor of 2 also
+        // tests that times are rounded up.
+        let suspendTime1 = 1.25 * renderQuantum / sampleRate;
+        let suspendTime2 = 2 * renderQuantum / sampleRate;
 
         should(
             () => context.suspend(suspendTime1).then(() => context.resume()),
@@ -88,7 +90,7 @@
             .notThrow();
 
         should(
-            context.suspend(suspendTime2),
+            context.suspend(suspendTime2).then(() => context.resume()),
             'Scheduling another suspend at the same rendering quantum')
             .beRejected();
 
@@ -97,7 +99,6 @@
 
       // Task: Resuming a running context should be resolved.
       audit.define('resume-before-suspend', (task, should) => {
-
         // Make the render length 5 times longer to minimize the flakiness.
         let longRenderDuration = renderDuration * 5;
         let context = new OfflineAudioContext(

@@ -33,7 +33,6 @@ def MockSiteConfig():
   # Add a single, simple build config.
   result.Add(
       'amd64-generic-paladin',
-      active_waterfall='chromiumos',
       boards=['amd64-generic'],
       display_label='MockLabel',
       build_type='paladin',
@@ -306,12 +305,12 @@ class BuildConfigClassTest(cros_test_lib.TestCase):
     self.assertEquals(bc1.name, bc2.name)
 
 
-class SiteParametersClassTest(cros_test_lib.TestCase):
-  """SiteParameters tests."""
+class GetSiteParamsTest(cros_test_lib.TestCase):
+  """Tests for the return value from config_lib.GetSiteParams()."""
 
   def testAttributeAccess(self):
-    """Test that SiteParameters dot-accessor works correctly."""
-    site_params = config_lib.SiteParameters()
+    """Test that dot-accessor works correctly."""
+    site_params = config_lib.GetSiteParams()
 
     # Ensure our test key is not in site_params.
     self.assertNotIn('foo', site_params)
@@ -338,15 +337,8 @@ class SiteConfigTest(cros_test_lib.TestCase):
         'value': 'default',
     }
 
-    self.complex_site_params = {
-        'site_foo': True,
-        'site_bar': False,
-        'nested': {'sub1': 1, 'sub2': 2},
-    }
-
     # Construct our test config.
-    site_config = config_lib.SiteConfig(
-        defaults=self.complex_defaults, site_params=self.complex_site_params)
+    site_config = config_lib.SiteConfig(defaults=self.complex_defaults)
 
     site_config.AddTemplate('match', value='default')
     site_config.AddTemplate('template', value='template')
@@ -688,6 +680,7 @@ class SiteConfigTest(cros_test_lib.TestCase):
     # Make sure we can dump long content without crashing.
     self.assertNotEqual(site_config.DumpExpandedConfigToString(), '')
     self.assertNotEqual(loaded.DumpExpandedConfigToString(), '')
+    self.assertNotEqual(loaded.DumpConfigCsv(), '')
 
     return loaded
 
@@ -701,8 +694,6 @@ class SiteConfigTest(cros_test_lib.TestCase):
     self.assertEqual(loaded._templates.keys(), [])
     self.assertDictEqual(
         loaded.GetDefault(), config_lib.DefaultSettings())
-    self.assertDictEqual(
-        loaded.params, config_lib.DefaultSiteParameters())
 
   def testSaveLoadComplex(self):
     """Create, save, and reload an complex config."""
@@ -713,11 +704,6 @@ class SiteConfigTest(cros_test_lib.TestCase):
     expected_defaults = config_lib.DefaultSettings()
     expected_defaults.update(self.complex_defaults)
     self.assertDictEqual(loaded.GetDefault(), expected_defaults)
-
-    # Verify Site Params.
-    expected_site_params = config_lib.DefaultSiteParameters()
-    expected_site_params.update(self.complex_site_params)
-    self.assertDictEqual(loaded.params, expected_site_params)
 
     # Ensure that expected templates are present.
     self.assertItemsEqual(loaded.templates.keys(), ['template', 'callable'])

@@ -41,11 +41,20 @@ EnumSet<E, Min, Max> Difference(EnumSet<E, Min, Max> set1,
 
 template <typename E, E MinEnumValue, E MaxEnumValue>
 class EnumSet {
+ private:
+  using enum_underlying_type = std::underlying_type_t<E>;
+
+  static constexpr enum_underlying_type GetUnderlyingValue(E value) {
+    return static_cast<enum_underlying_type>(value);
+  }
+
  public:
   using EnumType = E;
   static const E kMinValue = MinEnumValue;
   static const E kMaxValue = MaxEnumValue;
-  static const size_t kValueCount = kMaxValue - kMinValue + 1;
+  static const size_t kValueCount =
+      GetUnderlyingValue(kMaxValue) - GetUnderlyingValue(kMinValue) + 1;
+
   static_assert(kMinValue < kMaxValue, "min value must be less than max value");
 
  private:
@@ -260,11 +269,13 @@ class EnumSet {
 
   // Converts a value to/from an index into |enums_|.
 
-  static constexpr size_t ToIndex(E value) { return value - MinEnumValue; }
+  static constexpr size_t ToIndex(E value) {
+    return GetUnderlyingValue(value) - GetUnderlyingValue(MinEnumValue);
+  }
 
   static E FromIndex(size_t i) {
     DCHECK_LT(i, kValueCount);
-    return static_cast<E>(MinEnumValue + i);
+    return static_cast<E>(GetUnderlyingValue(MinEnumValue) + i);
   }
 
   EnumBitSet enums_;

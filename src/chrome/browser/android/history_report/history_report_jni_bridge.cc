@@ -183,6 +183,11 @@ void HistoryReportJniBridge::StartReporting() {
 jboolean HistoryReportJniBridge::AddHistoricVisitsToUsageReportsBuffer(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
+  DCHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  // Waiting is okay here because this is called from a background thread
+  // in Java.
+  base::ScopedAllowBaseSyncPrimitives allow_sync;
+
   data_provider_->StartVisitMigrationToUsageBuffer(
       usage_reports_buffer_service_.get());
   // TODO(nileshagrawal): Return true when actually done,

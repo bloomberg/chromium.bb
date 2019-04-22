@@ -58,53 +58,54 @@ namespace {
 // default_instance().ByteSize() won't change for most changes, since most of
 // our fields are optional. So we just settle for comments in the proto files.
 
-DEFINE_SPECIFICS_TO_VALUE_TEST(encrypted);
+DEFINE_SPECIFICS_TO_VALUE_TEST(encrypted)
 
-static_assert(43 == syncer::MODEL_TYPE_COUNT,
+static_assert(44 == syncer::ModelType::NUM_ENTRIES,
               "When adding a new field, add a DEFINE_SPECIFICS_TO_VALUE_TEST "
               "for your field below, and optionally a test for the specific "
               "conversions.");
 
-DEFINE_SPECIFICS_TO_VALUE_TEST(app);
-DEFINE_SPECIFICS_TO_VALUE_TEST(app_list);
-DEFINE_SPECIFICS_TO_VALUE_TEST(app_notification);
-DEFINE_SPECIFICS_TO_VALUE_TEST(app_setting);
-DEFINE_SPECIFICS_TO_VALUE_TEST(arc_package);
-DEFINE_SPECIFICS_TO_VALUE_TEST(article);
-DEFINE_SPECIFICS_TO_VALUE_TEST(autofill);
-DEFINE_SPECIFICS_TO_VALUE_TEST(autofill_profile);
-DEFINE_SPECIFICS_TO_VALUE_TEST(autofill_wallet);
-DEFINE_SPECIFICS_TO_VALUE_TEST(bookmark);
-DEFINE_SPECIFICS_TO_VALUE_TEST(device_info);
-DEFINE_SPECIFICS_TO_VALUE_TEST(dictionary);
-DEFINE_SPECIFICS_TO_VALUE_TEST(experiments);
-DEFINE_SPECIFICS_TO_VALUE_TEST(extension);
-DEFINE_SPECIFICS_TO_VALUE_TEST(extension_setting);
-DEFINE_SPECIFICS_TO_VALUE_TEST(favicon_image);
-DEFINE_SPECIFICS_TO_VALUE_TEST(favicon_tracking);
-DEFINE_SPECIFICS_TO_VALUE_TEST(history_delete_directive);
-DEFINE_SPECIFICS_TO_VALUE_TEST(managed_user);
-DEFINE_SPECIFICS_TO_VALUE_TEST(managed_user_setting);
-DEFINE_SPECIFICS_TO_VALUE_TEST(managed_user_shared_setting);
-DEFINE_SPECIFICS_TO_VALUE_TEST(managed_user_whitelist);
-DEFINE_SPECIFICS_TO_VALUE_TEST(mountain_share);
-DEFINE_SPECIFICS_TO_VALUE_TEST(nigori);
-DEFINE_SPECIFICS_TO_VALUE_TEST(password);
-DEFINE_SPECIFICS_TO_VALUE_TEST(preference);
-DEFINE_SPECIFICS_TO_VALUE_TEST(printer);
-DEFINE_SPECIFICS_TO_VALUE_TEST(priority_preference);
-DEFINE_SPECIFICS_TO_VALUE_TEST(reading_list);
-DEFINE_SPECIFICS_TO_VALUE_TEST(search_engine);
-DEFINE_SPECIFICS_TO_VALUE_TEST(send_tab_to_self);
-DEFINE_SPECIFICS_TO_VALUE_TEST(session);
-DEFINE_SPECIFICS_TO_VALUE_TEST(synced_notification);
-DEFINE_SPECIFICS_TO_VALUE_TEST(synced_notification_app_info);
-DEFINE_SPECIFICS_TO_VALUE_TEST(theme);
-DEFINE_SPECIFICS_TO_VALUE_TEST(typed_url);
-DEFINE_SPECIFICS_TO_VALUE_TEST(user_consent);
-DEFINE_SPECIFICS_TO_VALUE_TEST(user_event);
-DEFINE_SPECIFICS_TO_VALUE_TEST(wallet_metadata);
-DEFINE_SPECIFICS_TO_VALUE_TEST(wifi_credential);
+DEFINE_SPECIFICS_TO_VALUE_TEST(app)
+DEFINE_SPECIFICS_TO_VALUE_TEST(app_list)
+DEFINE_SPECIFICS_TO_VALUE_TEST(app_notification)
+DEFINE_SPECIFICS_TO_VALUE_TEST(app_setting)
+DEFINE_SPECIFICS_TO_VALUE_TEST(arc_package)
+DEFINE_SPECIFICS_TO_VALUE_TEST(article)
+DEFINE_SPECIFICS_TO_VALUE_TEST(autofill)
+DEFINE_SPECIFICS_TO_VALUE_TEST(autofill_profile)
+DEFINE_SPECIFICS_TO_VALUE_TEST(autofill_wallet)
+DEFINE_SPECIFICS_TO_VALUE_TEST(bookmark)
+DEFINE_SPECIFICS_TO_VALUE_TEST(device_info)
+DEFINE_SPECIFICS_TO_VALUE_TEST(dictionary)
+DEFINE_SPECIFICS_TO_VALUE_TEST(experiments)
+DEFINE_SPECIFICS_TO_VALUE_TEST(extension)
+DEFINE_SPECIFICS_TO_VALUE_TEST(extension_setting)
+DEFINE_SPECIFICS_TO_VALUE_TEST(favicon_image)
+DEFINE_SPECIFICS_TO_VALUE_TEST(favicon_tracking)
+DEFINE_SPECIFICS_TO_VALUE_TEST(history_delete_directive)
+DEFINE_SPECIFICS_TO_VALUE_TEST(managed_user)
+DEFINE_SPECIFICS_TO_VALUE_TEST(managed_user_setting)
+DEFINE_SPECIFICS_TO_VALUE_TEST(managed_user_shared_setting)
+DEFINE_SPECIFICS_TO_VALUE_TEST(managed_user_whitelist)
+DEFINE_SPECIFICS_TO_VALUE_TEST(mountain_share)
+DEFINE_SPECIFICS_TO_VALUE_TEST(nigori)
+DEFINE_SPECIFICS_TO_VALUE_TEST(password)
+DEFINE_SPECIFICS_TO_VALUE_TEST(preference)
+DEFINE_SPECIFICS_TO_VALUE_TEST(printer)
+DEFINE_SPECIFICS_TO_VALUE_TEST(priority_preference)
+DEFINE_SPECIFICS_TO_VALUE_TEST(reading_list)
+DEFINE_SPECIFICS_TO_VALUE_TEST(search_engine)
+DEFINE_SPECIFICS_TO_VALUE_TEST(security_event)
+DEFINE_SPECIFICS_TO_VALUE_TEST(send_tab_to_self)
+DEFINE_SPECIFICS_TO_VALUE_TEST(session)
+DEFINE_SPECIFICS_TO_VALUE_TEST(synced_notification)
+DEFINE_SPECIFICS_TO_VALUE_TEST(synced_notification_app_info)
+DEFINE_SPECIFICS_TO_VALUE_TEST(theme)
+DEFINE_SPECIFICS_TO_VALUE_TEST(typed_url)
+DEFINE_SPECIFICS_TO_VALUE_TEST(user_consent)
+DEFINE_SPECIFICS_TO_VALUE_TEST(user_event)
+DEFINE_SPECIFICS_TO_VALUE_TEST(wallet_metadata)
+DEFINE_SPECIFICS_TO_VALUE_TEST(wifi_credential)
 
 TEST(ProtoValueConversionsTest, PasswordSpecifics) {
   sync_pb::PasswordSpecifics specifics;
@@ -188,7 +189,8 @@ TEST(ProtoValueConversionsTest, BookmarkSpecificsData) {
   EXPECT_FALSE(value->empty());
   std::string encoded_time;
   EXPECT_TRUE(value->GetString("creation_time_us", &encoded_time));
-  EXPECT_EQ(base::Int64ToString(creation_time.ToInternalValue()), encoded_time);
+  EXPECT_EQ(base::NumberToString(creation_time.ToInternalValue()),
+            encoded_time);
   std::string encoded_icon_url;
   EXPECT_TRUE(value->GetString("icon_url", &encoded_icon_url));
   EXPECT_EQ(icon_url, encoded_icon_url);

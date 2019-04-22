@@ -15,6 +15,7 @@
       </style>
       <div id="marker"></div>
     `);
+  await TestRunner.addScriptTag('../../../resources/run-after-layout-and-paint.js');
   await TestRunner.evaluateInPagePromise(`
       function doActions()
       {
@@ -26,7 +27,7 @@
           img.addEventListener("load", onImageLoaded, false);
           function onImageLoaded()
           {
-              testRunner.layoutAndPaintAsyncThen(callback);
+              runAfterLayoutAndPaint(callback);
           }
           return promise;
       }

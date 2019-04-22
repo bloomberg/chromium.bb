@@ -102,7 +102,7 @@ void LoadPaper(const wchar_t* printer,
       paper.display_name = base::WideToUTF8(tmp_name);
     }
     if (!ids.empty())
-      paper.vendor_id = base::UintToString(ids[i]);
+      paper.vendor_id = base::NumberToString(ids[i]);
     caps->papers.push_back(paper);
   }
 

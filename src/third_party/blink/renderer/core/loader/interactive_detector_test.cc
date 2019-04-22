@@ -24,7 +24,7 @@ class NetworkActivityCheckerForTest
 
   virtual void SetActiveConnections(int active_connections) {
     active_connections_ = active_connections;
-  };
+  }
   int GetActiveConnections() override;
 
  private:
@@ -39,7 +39,7 @@ class InteractiveDetectorTest : public testing::Test {
  public:
   InteractiveDetectorTest() {
     platform_->AdvanceClockSeconds(1);
-    dummy_page_holder_ = DummyPageHolder::Create();
+    dummy_page_holder_ = std::make_unique<DummyPageHolder>();
 
     Document* document = &dummy_page_holder_->GetDocument();
 
@@ -505,8 +505,9 @@ TEST_F(InteractiveDetectorTest, InvalidatedFMP) {
                    TimeDelta::FromSecondsD(5.0 + 0.1));
   // Since FMP was invalidated, we do not have TTI or TTI Detection Time.
   EXPECT_EQ(GetInteractiveTime(), TimeTicks());
-  EXPECT_EQ(TimeTicksInSeconds(GetDetector()->GetInteractiveDetectionTime()),
-            0.0);
+  EXPECT_EQ(
+      GetDetector()->GetInteractiveDetectionTime().since_origin().InSecondsF(),
+      0.0);
   // Invalidating input timestamp is available.
   EXPECT_EQ(GetDetector()->GetFirstInvalidatingInputTime(),
             t0 + TimeDelta::FromSeconds(1));

@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/base_paths.h"
@@ -16,6 +17,7 @@
 #include "base/json/json_writer.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
@@ -48,6 +50,7 @@ const base::FilePath::CharType kClientStateFileName[] =
 const char kClientStateKeyAllowedPolicyTypes[] = "allowed_policy_types";
 const char kClientStateKeyDeviceId[] = "device_id";
 const char kClientStateKeyDeviceToken[] = "device_token";
+const char kClientStateKeyStateKeys[] = "state_keys";
 const char kClientStateKeyMachineName[] = "machine_name";
 const char kClientStateKeyMachineId[] = "machine_id";
 
@@ -61,15 +64,17 @@ bool IsUnsafeCharacter(char c) {
 }  // namespace
 
 LocalPolicyTestServer::LocalPolicyTestServer()
-    : net::LocalTestServer(net::BaseTestServer::TYPE_HTTP, base::FilePath()) {
-  base::ScopedAllowBlockingForTesting allow_blocking;
-  CHECK(server_data_dir_.CreateUniqueTempDir());
+    : LocalPolicyTestServer(base::FilePath()) {
   config_file_ = server_data_dir_.GetPath().Append(kPolicyFileName);
 }
 
 LocalPolicyTestServer::LocalPolicyTestServer(const base::FilePath& config_file)
     : net::LocalTestServer(net::BaseTestServer::TYPE_HTTP, base::FilePath()),
-      config_file_(config_file) {}
+      config_file_(config_file) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  CHECK(server_data_dir_.CreateUniqueTempDir());
+  client_state_file_ = server_data_dir_.GetPath().Append(kClientStateFileName);
+}
 
 LocalPolicyTestServer::LocalPolicyTestServer(const std::string& test_name)
     : net::LocalTestServer(net::BaseTestServer::TYPE_HTTP, base::FilePath()) {
@@ -107,10 +112,8 @@ bool LocalPolicyTestServer::SetSigningKeyAndSignature(
   // Write the signature data.
   base::FilePath signature_file =
       server_data_dir_.GetPath().Append(kSigningKeySignatureFileName);
-  bytes_written = base::WriteFile(
-      signature_file,
-      signature.c_str(),
-      signature.size());
+  bytes_written =
+      base::WriteFile(signature_file, signature.data(), signature.size());
 
   return bytes_written == base::checked_cast<int>(signature.size());
 }
@@ -119,27 +122,45 @@ void LocalPolicyTestServer::EnableAutomaticRotationOfSigningKeys() {
   automatic_rotation_of_signing_keys_enabled_ = true;
 }
 
-void LocalPolicyTestServer::RegisterClient(const std::string& dm_token,
-                                           const std::string& device_id) {
-  CHECK(server_data_dir_.IsValid());
+bool LocalPolicyTestServer::RegisterClient(
+    const std::string& dm_token,
+    const std::string& device_id,
+    const std::vector<std::string>& state_keys) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  CHECK(!client_state_file_.empty());
 
-  std::unique_ptr<base::DictionaryValue> client_dict(
-      new base::DictionaryValue());
-  client_dict->SetString(kClientStateKeyDeviceId, device_id);
-  client_dict->SetString(kClientStateKeyDeviceToken, dm_token);
-  client_dict->SetString(kClientStateKeyMachineName, std::string());
-  client_dict->SetString(kClientStateKeyMachineId, std::string());
+  base::Value client_dict(base::Value::Type::DICTIONARY);
+  client_dict.SetKey(kClientStateKeyDeviceId, base::Value(device_id));
+  client_dict.SetKey(kClientStateKeyDeviceToken, base::Value(dm_token));
+  base::Value state_keys_value(base::Value::Type::LIST);
+  for (const auto& key : state_keys) {
+    state_keys_value.GetList().push_back(base::Value(
+        base::ToLowerASCII(base::HexEncode(key.data(), key.size()))));
+  }
+  client_dict.SetKey(kClientStateKeyStateKeys, std::move(state_keys_value));
+  client_dict.SetKey(kClientStateKeyMachineName,
+                     base::Value(base::Value::Type::STRING));
+  client_dict.SetKey(kClientStateKeyMachineId,
+                     base::Value(base::Value::Type::STRING));
 
   // Allow all policy types for now.
-  std::unique_ptr<base::ListValue> types(new base::ListValue());
-  types->AppendString(dm_protocol::kChromeDevicePolicyType);
-  types->AppendString(dm_protocol::kChromeUserPolicyType);
-  types->AppendString(dm_protocol::kChromePublicAccountPolicyType);
-  types->AppendString(dm_protocol::kChromeExtensionPolicyType);
-  types->AppendString(dm_protocol::kChromeSigninExtensionPolicyType);
+  base::Value types(base::Value::Type::LIST);
+  types.GetList().emplace_back(dm_protocol::kChromeDevicePolicyType);
+  types.GetList().emplace_back(dm_protocol::kChromeUserPolicyType);
+  types.GetList().emplace_back(dm_protocol::kChromePublicAccountPolicyType);
+  types.GetList().emplace_back(dm_protocol::kChromeExtensionPolicyType);
+  types.GetList().emplace_back(dm_protocol::kChromeSigninExtensionPolicyType);
+  types.GetList().emplace_back(
+      dm_protocol::kChromeMachineLevelUserCloudPolicyType);
+  types.GetList().emplace_back(
+      dm_protocol::kChromeMachineLevelExtensionCloudPolicyType);
 
-  client_dict->Set(kClientStateKeyAllowedPolicyTypes, std::move(types));
-  clients_.Set(dm_token, std::move(client_dict));
+  client_dict.SetKey(kClientStateKeyAllowedPolicyTypes, std::move(types));
+  clients_.SetKey(dm_token, std::move(client_dict));
+  std::string json;
+  base::JSONWriter::Write(clients_, &json);
+  return base::WriteFile(client_state_file_, json.data(), json.size()) ==
+         base::checked_cast<int>(json.size());
 }
 
 bool LocalPolicyTestServer::UpdatePolicy(const std::string& type,
@@ -152,7 +173,7 @@ bool LocalPolicyTestServer::UpdatePolicy(const std::string& type,
   base::FilePath policy_file = server_data_dir_.GetPath().AppendASCII(
       base::StringPrintf("policy_%s.bin", selector.c_str()));
 
-  return base::WriteFile(policy_file, policy.c_str(), policy.size()) ==
+  return base::WriteFile(policy_file, policy.data(), policy.size()) ==
          base::checked_cast<int>(policy.size());
 }
 
@@ -166,35 +187,45 @@ bool LocalPolicyTestServer::UpdatePolicyData(const std::string& type,
   base::FilePath data_file = server_data_dir_.GetPath().AppendASCII(
       base::StringPrintf("policy_%s.data", selector.c_str()));
 
-  return base::WriteFile(data_file, data.c_str(), data.size()) ==
+  return base::WriteFile(data_file, data.data(), data.size()) ==
          base::checked_cast<int>(data.size());
+}
+
+bool LocalPolicyTestServer::SetConfig(const base::Value& config) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  std::string json;
+  base::JSONWriter::Write(config, &json);
+  return base::WriteFile(config_file_, json.data(), json.size()) ==
+         base::checked_cast<int>(json.size());
 }
 
 GURL LocalPolicyTestServer::GetServiceURL() const {
   return GetURL("device_management");
 }
 
-bool LocalPolicyTestServer::SetPythonPath() const {
+base::Optional<std::vector<base::FilePath>>
+LocalPolicyTestServer::GetPythonPath() const {
   base::ScopedAllowBlockingForTesting allow_blocking;
-  if (!net::LocalTestServer::SetPythonPath())
-    return false;
+  base::Optional<std::vector<base::FilePath>> ret =
+      net::LocalTestServer::GetPythonPath();
+  if (!ret)
+    return base::nullopt;
 
   // Add the net/tools/testserver directory to the path.
   base::FilePath net_testserver_path;
   if (!LocalTestServer::GetTestServerPath(&net_testserver_path)) {
     LOG(ERROR) << "Failed to get net testserver path.";
-    return false;
+    return base::nullopt;
   }
-  AppendToPythonPath(net_testserver_path.DirName());
+  ret->push_back(net_testserver_path.DirName());
 
   // We need protobuf python bindings.
   base::FilePath third_party_dir;
   if (!base::PathService::Get(base::DIR_SOURCE_ROOT, &third_party_dir)) {
     LOG(ERROR) << "Failed to get DIR_SOURCE_ROOT";
-    return false;
+    return base::nullopt;
   }
-  AppendToPythonPath(third_party_dir
-                     .AppendASCII("third_party")
+  ret->push_back(third_party_dir.AppendASCII("third_party")
                      .AppendASCII("protobuf")
                      .AppendASCII("python"));
 
@@ -202,23 +233,21 @@ bool LocalPolicyTestServer::SetPythonPath() const {
   base::FilePath pyproto_dir;
   if (!GetPyProtoPath(&pyproto_dir)) {
     LOG(ERROR) << "Cannot find pyproto dir for generated code.";
-    return false;
+    return base::nullopt;
   }
 
-  AppendToPythonPath(pyproto_dir
-                     .AppendASCII("components")
+  ret->push_back(pyproto_dir.AppendASCII("components")
                      .AppendASCII("policy")
                      .AppendASCII("proto"));
 #if defined(OS_CHROMEOS)
-  AppendToPythonPath(pyproto_dir
-                     .AppendASCII("chrome")
+  ret->push_back(pyproto_dir.AppendASCII("chrome")
                      .AppendASCII("browser")
                      .AppendASCII("chromeos")
                      .AppendASCII("policy")
                      .AppendASCII("proto"));
 #endif
 
-  return true;
+  return ret;
 }
 
 bool LocalPolicyTestServer::GetTestServerPath(
@@ -244,6 +273,8 @@ bool LocalPolicyTestServer::GenerateAdditionalArguments(
   if (!net::LocalTestServer::GenerateAdditionalArguments(arguments))
     return false;
 
+  // Possible values: ERROR, WARN, INFO, DEBUG.
+  arguments->SetString("log-level", "INFO");
   arguments->SetString("config-file", config_file_.AsUTF8Unsafe());
   if (!policy_key_.empty())
     arguments->SetString("policy-key", policy_key_.AsUTF8Unsafe());
@@ -251,21 +282,11 @@ bool LocalPolicyTestServer::GenerateAdditionalArguments(
     arguments->Set("rotate-policy-keys-automatically",
                    std::make_unique<base::Value>());
   }
-  if (server_data_dir_.IsValid()) {
+  if (server_data_dir_.IsValid())
     arguments->SetString("data-dir", server_data_dir_.GetPath().AsUTF8Unsafe());
 
-    if (!clients_.empty()) {
-      std::string json;
-      base::JSONWriter::Write(clients_, &json);
-      base::FilePath client_state_file =
-          server_data_dir_.GetPath().Append(kClientStateFileName);
-      if (base::WriteFile(client_state_file, json.c_str(), json.size()) !=
-          base::checked_cast<int>(json.size())) {
-        return false;
-      }
-      arguments->SetString("client-state", client_state_file.AsUTF8Unsafe());
-    }
-  }
+  if (!client_state_file_.empty())
+    arguments->SetString("client-state", client_state_file_.AsUTF8Unsafe());
 
   return true;
 }

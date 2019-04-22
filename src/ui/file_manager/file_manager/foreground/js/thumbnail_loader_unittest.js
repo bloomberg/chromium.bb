@@ -15,11 +15,11 @@ function getLoadTarget(entry, metadata) {
  * @return {string} Data url of a sample image.
  */
 function generateSampleImageDataUrl(width, height) {
-  var canvas = document.createElement('canvas');
+  const canvas = document.createElement('canvas');
   canvas.width = width;
   canvas.height = height;
 
-  var context = canvas.getContext('2d');
+  const context = canvas.getContext('2d');
   context.fillStyle = 'black';
   context.fillRect(0, 0, width / 2, height / 2);
   context.fillRect(width / 2, height / 2, width / 2, height / 2);
@@ -33,15 +33,15 @@ function generateSampleImageDataUrl(width, height) {
  * @param {function(!LoadImageRequest, function(!Object))} mockLoad
  */
 function installMockLoad(mockLoad) {
-  ImageLoaderClient.getInstance = function() {
+  ImageLoaderClient.getInstance = () => {
     return /** @type {!ImageLoaderClient} */ ({load: mockLoad});
   };
 }
 
 function testShouldUseMetadataThumbnail() {
-  var mockFileSystem = new MockFileSystem('volumeId');
-  var imageEntry = new MockEntry(mockFileSystem, '/test.jpg');
-  var pdfEntry = new MockEntry(mockFileSystem, '/test.pdf');
+  const mockFileSystem = new MockFileSystem('volumeId');
+  const imageEntry = new MockEntry(mockFileSystem, '/test.jpg');
+  const pdfEntry = new MockEntry(mockFileSystem, '/test.pdf');
 
   // Embed thumbnail is provided.
   assertEquals(
@@ -67,45 +67,47 @@ function testShouldUseMetadataThumbnail() {
 }
 
 function testLoadAsDataUrlFromImageClient(callback) {
-  installMockLoad(function(request, callback) {
+  installMockLoad((request, callback) => {
     callback({status: 'success', data: 'imageDataUrl', width: 32, height: 32});
   });
 
-  var fileSystem = new MockFileSystem('volume-id');
-  var entry = new MockEntry(fileSystem, '/Test1.jpg');
-  var thumbnailLoader = new ThumbnailLoader(entry);
+  const fileSystem = new MockFileSystem('volume-id');
+  const entry = new MockEntry(fileSystem, '/Test1.jpg');
+  const thumbnailLoader = new ThumbnailLoader(entry);
   reportPromise(
       thumbnailLoader.loadAsDataUrl(ThumbnailLoader.FillMode.OVER_FILL)
-      .then(function(result) {
-        assertEquals('imageDataUrl', result.data);
-      }), callback);
+          .then(result => {
+            assertEquals('imageDataUrl', result.data);
+          }),
+      callback);
 }
 
 function testLoadAsDataUrlFromExifThumbnail(callback) {
-  installMockLoad(function(request, callback) {
+  installMockLoad((request, callback) => {
     // Assert that data url is passed.
     assertTrue(/^data:/i.test(request.url));
     callback({status: 'success', data: request.url, width: 32, height: 32});
   });
 
-  var metadata = {
+  const metadata = {
     thumbnail: {
-      url: generateSampleImageDataUrl(32, 32)
-    }
+      url: generateSampleImageDataUrl(32, 32),
+    },
   };
 
-  var fileSystem = new MockFileSystem('volume-id');
-  var entry = new MockEntry(fileSystem, '/Test1.jpg');
-  var thumbnailLoader = new ThumbnailLoader(entry, undefined, metadata);
+  const fileSystem = new MockFileSystem('volume-id');
+  const entry = new MockEntry(fileSystem, '/Test1.jpg');
+  const thumbnailLoader = new ThumbnailLoader(entry, undefined, metadata);
   reportPromise(
       thumbnailLoader.loadAsDataUrl(ThumbnailLoader.FillMode.OVER_FILL)
-      .then(function(result) {
-        assertEquals(metadata.thumbnail.url, result.data);
-      }), callback);
+          .then(result => {
+            assertEquals(metadata.thumbnail.url, result.data);
+          }),
+      callback);
 }
 
 function testLoadAsDataUrlFromExifThumbnailPropagatesTransform(callback) {
-  installMockLoad(function(request, callback) {
+  installMockLoad((request, callback) => {
     // Assert that data url and transform info is passed.
     assertTrue(/^data:/i.test(request.url));
     assertEquals(1, request.orientation.rotate90);
@@ -117,7 +119,7 @@ function testLoadAsDataUrlFromExifThumbnailPropagatesTransform(callback) {
     });
   });
 
-  var metadata = {
+  const metadata = {
     thumbnail: {
       url: generateSampleImageDataUrl(64, 32),
       transform: {
@@ -128,24 +130,25 @@ function testLoadAsDataUrlFromExifThumbnailPropagatesTransform(callback) {
     }
   };
 
-  var fileSystem = new MockFileSystem('volume-id');
-  var entry = new MockEntry(fileSystem, '/Test1.jpg');
-  var thumbnailLoader = new ThumbnailLoader(entry, undefined, metadata);
+  const fileSystem = new MockFileSystem('volume-id');
+  const entry = new MockEntry(fileSystem, '/Test1.jpg');
+  const thumbnailLoader = new ThumbnailLoader(entry, undefined, metadata);
   reportPromise(
       thumbnailLoader.loadAsDataUrl(ThumbnailLoader.FillMode.OVER_FILL)
-      .then(function(result) {
-        assertEquals(32, result.width);
-        assertEquals(64, result.height);
-        assertEquals(generateSampleImageDataUrl(32, 64), result.data);
-      }), callback);
+          .then(result => {
+            assertEquals(32, result.width);
+            assertEquals(64, result.height);
+            assertEquals(generateSampleImageDataUrl(32, 64), result.data);
+          }),
+      callback);
 }
 
 function testLoadAsDataUrlFromExternal(callback) {
-  var externalThumbnailUrl = 'https://external-thumbnail-url/';
-  var externalCroppedThumbnailUrl = 'https://external-cropped-thumbnail-url/';
-  var externalThumbnailDataUrl = generateSampleImageDataUrl(32, 32);
+  const externalThumbnailUrl = 'https://external-thumbnail-url/';
+  const externalCroppedThumbnailUrl = 'https://external-cropped-thumbnail-url/';
+  const externalThumbnailDataUrl = generateSampleImageDataUrl(32, 32);
 
-  installMockLoad(function(request, callback) {
+  installMockLoad((request, callback) => {
     assertEquals(externalCroppedThumbnailUrl, request.url);
     callback({
       status: 'success',
@@ -155,25 +158,26 @@ function testLoadAsDataUrlFromExternal(callback) {
     });
   });
 
-  var metadata = {
+  const metadata = {
     external: {
       thumbnailUrl: externalThumbnailUrl,
       croppedThumbnailUrl: externalCroppedThumbnailUrl
     }
   };
 
-  var fileSystem = new MockFileSystem('volume-id');
-  var entry = new MockEntry(fileSystem, '/Test1.jpg');
-  var thumbnailLoader = new ThumbnailLoader(entry, undefined, metadata);
+  const fileSystem = new MockFileSystem('volume-id');
+  const entry = new MockEntry(fileSystem, '/Test1.jpg');
+  const thumbnailLoader = new ThumbnailLoader(entry, undefined, metadata);
   reportPromise(
       thumbnailLoader.loadAsDataUrl(ThumbnailLoader.FillMode.OVER_FILL)
-      .then(function(result) {
-        assertEquals(externalThumbnailDataUrl, result.data);
-      }), callback);
+          .then(result => {
+            assertEquals(externalThumbnailDataUrl, result.data);
+          }),
+      callback);
 }
 
 function testLoadDetachedFromExifInCavnasModeThumbnailDoesNotRotate(callback) {
-  installMockLoad(function(request, callback) {
+  installMockLoad((request, callback) => {
     // Assert that data url is passed.
     assertTrue(/^data:/i.test(request.url));
     // Assert that the rotation is propagated to ImageLoader.
@@ -187,7 +191,7 @@ function testLoadDetachedFromExifInCavnasModeThumbnailDoesNotRotate(callback) {
     });
   });
 
-  var metadata = {
+  const metadata = {
     thumbnail: {
       url: generateSampleImageDataUrl(64, 32),
       transform: {
@@ -198,18 +202,19 @@ function testLoadDetachedFromExifInCavnasModeThumbnailDoesNotRotate(callback) {
     }
   };
 
-  var fileSystem = new MockFileSystem('volume-id');
-  var entry = new MockEntry(fileSystem, '/Test1.jpg');
-  var thumbnailLoader =
+  const fileSystem = new MockFileSystem('volume-id');
+  const entry = new MockEntry(fileSystem, '/Test1.jpg');
+  const thumbnailLoader =
       new ThumbnailLoader(entry, ThumbnailLoader.LoaderType.CANVAS, metadata);
 
   reportPromise(
-    new Promise(function(resolve, reject) {
-      thumbnailLoader.loadDetachedImage(resolve);
-    }).then(function() {
-      var image = thumbnailLoader.getImage();
-      // No need to rotate by loadDetachedImage() as it's already done.
-      assertEquals(32, image.width);
-      assertEquals(64, image.height);
-    }), callback);
+      new Promise((resolve, reject) => {
+        thumbnailLoader.loadDetachedImage(resolve);
+      }).then(() => {
+        const image = thumbnailLoader.getImage();
+        // No need to rotate by loadDetachedImage() as it's already done.
+        assertEquals(32, image.width);
+        assertEquals(64, image.height);
+      }),
+      callback);
 }

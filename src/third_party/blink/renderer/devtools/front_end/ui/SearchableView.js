@@ -46,7 +46,7 @@ UI.SearchableView = class extends UI.VBox {
     this._setting = settingName ? Common.settings.createSetting(settingName, {}) : null;
     this._replaceable = false;
 
-    this.contentElement.createChild('content');
+    this.contentElement.createChild('slot');
     this._footerElementContainer = this.contentElement.createChild('div', 'search-bar hidden');
     this._footerElementContainer.style.order = 100;
     this._footerElement = this._footerElementContainer.createChild('div', 'toolbar-search');
@@ -374,7 +374,7 @@ UI.SearchableView = class extends UI.VBox {
    * @param {boolean=} isBackwardSearch
    */
   _jumpToNextSearchResult(isBackwardSearch) {
-    if (!this._currentQuery || !this._searchNavigationPrevElement.classList.contains('enabled'))
+    if (!this._currentQuery)
       return;
 
     if (isBackwardSearch)

@@ -59,7 +59,7 @@ enum DeferredInitTrigger {
 
 StartupController::StartupController(
     base::RepeatingCallback<ModelTypeSet()> get_preferred_data_types,
-    base::RepeatingCallback<bool(bool)> should_start,
+    base::RepeatingCallback<bool()> should_start,
     base::RepeatingClosure start_engine)
     : get_preferred_data_types_callback_(std::move(get_preferred_data_types)),
       should_start_callback_(std::move(should_start)),
@@ -102,7 +102,7 @@ void StartupController::StartUp(StartUpDeferredOption deferred_option) {
 }
 
 void StartupController::TryStart(bool force_immediate) {
-  if (!should_start_callback_.Run(force_immediate)) {
+  if (!should_start_callback_.Run()) {
     return;
   }
 
@@ -166,7 +166,7 @@ void StartupController::OnDataTypeRequestsSyncStartup(ModelType type) {
   // TODO(wychen): enum uma should be strongly typed. crbug.com/661401
   UMA_HISTOGRAM_ENUMERATION("Sync.Startup.TypeTriggeringInit",
                             ModelTypeToHistogramInt(type),
-                            static_cast<int>(MODEL_TYPE_COUNT));
+                            static_cast<int>(ModelType::NUM_ENTRIES));
   if (!start_up_time_.is_null()) {
     RecordTimeDeferred();
     UMA_HISTOGRAM_ENUMERATION("Sync.Startup.DeferredInitTrigger",

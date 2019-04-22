@@ -17,8 +17,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
-import org.chromium.base.task.AsyncTask;
+import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.share.ShareHelper;
@@ -27,6 +27,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.ChromeFileProvider;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
@@ -66,25 +67,20 @@ public class ShareIntentTest {
         @Override
         public void startActivity(Intent intent) {
             final Uri uri = intent.getClipData().getItemAt(0).getUri();
-            new AsyncTask<Void>() {
-                @Override
-                protected Void doInBackground() {
-                    ChromeFileProvider provider = new ChromeFileProvider();
-                    ParcelFileDescriptor file = null;
-                    try {
-                        file = provider.openFile(uri, "r");
-                        if (file != null) file.close();
-                    } catch (IOException e) {
-                        assert false : "Error while opening the file";
-                    }
-                    synchronized (mLock) {
-                        mCheckCompleted = true;
-                        mLock.notify();
-                    }
-                    return null;
+            PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK, () -> {
+                ChromeFileProvider provider = new ChromeFileProvider();
+                ParcelFileDescriptor file = null;
+                try {
+                    file = provider.openFile(uri, "r");
+                    if (file != null) file.close();
+                } catch (IOException e) {
+                    assert false : "Error while opening the file";
                 }
-            }
-                    .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                synchronized (mLock) {
+                    mCheckCompleted = true;
+                    mLock.notify();
+                }
+            });
         }
 
         /**
@@ -123,7 +119,7 @@ public class ShareIntentTest {
     @LargeTest
     @RetryOnFailure
     public void testShareIntent() throws ExecutionException, InterruptedException {
-        MockChromeActivity mockActivity = ThreadUtils.runOnUiThreadBlocking(() -> {
+        MockChromeActivity mockActivity = TestThreadUtils.runOnUiThreadBlocking(() -> {
             // Sets a test component as last shared and "shareDirectly" option is set so that
             // the share selector menu is not opened. The start activity is overriden, so the
             // package and class names do not matter.
@@ -134,8 +130,9 @@ public class ShareIntentTest {
         // Skips the capture of screenshot and notifies with an empty file.
         ShareMenuActionHandler.setScreenshotCaptureSkippedForTesting(true);
 
-        ThreadUtils.runOnUiThreadBlocking(() -> mockActivity.onShareMenuItemSelected(
-                    true /* shareDirectly */, false /* isIncognito */));
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> mockActivity.onShareMenuItemSelected(
+                                true /* shareDirectly */, false /* isIncognito */));
 
         mockActivity.waitForFileCheck();
 

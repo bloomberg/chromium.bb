@@ -7,8 +7,10 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/sequenced_task_runner.h"
+#include "base/sequenced_task_runner_helpers.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "media/gpu/media_gpu_export.h"
@@ -30,7 +32,7 @@ namespace media {
 // both hold a ref to the same CommandBufferHelper). Consider making an owned
 // variant.
 class MEDIA_GPU_EXPORT CommandBufferHelper
-    : public base::RefCountedThreadSafe<CommandBufferHelper> {
+    : public base::RefCountedDeleteOnSequence<CommandBufferHelper> {
  public:
   REQUIRE_ADOPTION_FOR_REFCOUNTED_TYPE();
 
@@ -47,13 +49,11 @@ class MEDIA_GPU_EXPORT CommandBufferHelper
   // EGLImages. New clients should use more specialized accessors instead.
   virtual gl::GLContext* GetGLContext() = 0;
 
+  // Checks whether the stub has been destroyed.
+  virtual bool HasStub() = 0;
+
   // Makes the GL context current.
   virtual bool MakeContextCurrent() = 0;
-
-  // Returns whether or not the the context is current in the
-  // GLContext::IsCurrent(nullptr) sense.  Note that this is not necessarily the
-  // same for virtual contexts as "Did somebody run MakeContextCurrent?".
-  virtual bool IsContextCurrent() const = 0;
 
   // Creates a texture and returns its |service_id|.
   //
@@ -117,12 +117,13 @@ class MEDIA_GPU_EXPORT CommandBufferHelper
   virtual void WaitForSyncToken(gpu::SyncToken sync_token,
                                 base::OnceClosure done_cb) = 0;
 
-  // Set the callback to be called when our stub is destroyed.  This callback
+  // Set the callback to be called when our stub is destroyed. This callback
   // may not change the current context.
   virtual void SetWillDestroyStubCB(WillDestroyStubCB will_destroy_stub_cb) = 0;
 
  protected:
-  CommandBufferHelper() = default;
+  explicit CommandBufferHelper(
+      scoped_refptr<base::SequencedTaskRunner> task_runner);
 
   // TODO(sandersd): Deleting remaining textures upon destruction requires
   // making the context current, which may be undesireable. Consider adding an
@@ -130,7 +131,8 @@ class MEDIA_GPU_EXPORT CommandBufferHelper
   virtual ~CommandBufferHelper() = default;
 
  private:
-  friend class base::RefCountedThreadSafe<CommandBufferHelper>;
+  friend class base::DeleteHelper<CommandBufferHelper>;
+  friend class base::RefCountedDeleteOnSequence<CommandBufferHelper>;
 
   DISALLOW_COPY_AND_ASSIGN(CommandBufferHelper);
 };

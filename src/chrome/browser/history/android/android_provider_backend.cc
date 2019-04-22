@@ -4,6 +4,7 @@
 
 #include "chrome/browser/history/android/android_provider_backend.h"
 
+#include "base/bind.h"
 #include "base/i18n/case_conversion.h"
 #include "chrome/browser/history/android/bookmark_model_sql_handler.h"
 #include "components/history/core/browser/android/android_time.h"
@@ -17,7 +18,6 @@
 #include "components/history/core/browser/history_database.h"
 #include "components/history/core/browser/keyword_search_term.h"
 #include "components/history/core/browser/thumbnail_database.h"
-
 
 namespace history {
 
@@ -787,7 +787,7 @@ bool AndroidProviderBackend::UpdateVisitedURLs() {
         base::Time::FromInternalValue(statement.ColumnInt64(1));
     base::Time created_time = last_visit_time;
 
-    if (statement.ColumnType(2) != sql::COLUMN_TYPE_NULL)
+    if (statement.GetColumnType(2) != sql::ColumnType::kNull)
       created_time = base::Time::FromInternalValue(statement.ColumnInt64(2));
 
     if (!history_db_->AddBookmarkCacheRow(created_time, last_visit_time,
@@ -807,15 +807,14 @@ bool AndroidProviderBackend::UpdateBookmarks() {
     return false;
   }
 
-  std::vector<URLAndTitle> bookmarks;
-  backend_client_->GetBookmarks(&bookmarks);
+  std::vector<URLAndTitle> pinned_urls = backend_client_->GetPinnedURLs();
 
-  if (bookmarks.empty())
+  if (pinned_urls.empty())
     return true;
 
   std::vector<URLID> url_ids;
-  for (std::vector<URLAndTitle>::const_iterator i =
-           bookmarks.begin(); i != bookmarks.end(); ++i) {
+  for (std::vector<URLAndTitle>::const_iterator i = pinned_urls.begin();
+       i != pinned_urls.end(); ++i) {
     URLID url_id = history_db_->GetRowForURL(i->url, NULL);
     if (url_id == 0) {
       URLRow url_row(i->url);

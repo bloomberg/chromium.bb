@@ -15,6 +15,9 @@
 namespace v8 {
 namespace internal {
 
+OBJECT_CONSTRUCTORS_IMPL(JSArray, JSObject)
+OBJECT_CONSTRUCTORS_IMPL(JSArrayIterator, JSObject)
+
 CAST_ACCESSOR(JSArray)
 CAST_ACCESSOR(JSArrayIterator)
 
@@ -22,7 +25,7 @@ ACCESSORS(JSArray, length, Object, kLengthOffset)
 
 void JSArray::set_length(Smi length) {
   // Don't need a write barrier for a Smi.
-  set_length(static_cast<Object*>(length), SKIP_WRITE_BARRIER);
+  set_length(Object(length.ptr()), SKIP_WRITE_BARRIER);
 }
 
 bool JSArray::SetLengthWouldNormalize(Heap* heap, uint32_t new_length) {
@@ -60,11 +63,11 @@ ACCESSORS(JSArrayIterator, next_index, Object, kNextIndexOffset)
 
 IterationKind JSArrayIterator::kind() const {
   return static_cast<IterationKind>(
-      Smi::cast(READ_FIELD(this, kKindOffset))->value());
+      Smi::cast(READ_FIELD(*this, kKindOffset))->value());
 }
 
 void JSArrayIterator::set_kind(IterationKind kind) {
-  WRITE_FIELD(this, kKindOffset, Smi::FromInt(static_cast<int>(kind)));
+  WRITE_FIELD(*this, kKindOffset, Smi::FromInt(static_cast<int>(kind)));
 }
 
 }  // namespace internal

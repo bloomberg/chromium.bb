@@ -136,11 +136,7 @@ void DrawTestsBaseClass::initialize (void)
 	deUint8* ptr = reinterpret_cast<deUint8*>(m_vertexBuffer->getBoundMemory().getHostPtr());
 	deMemcpy(ptr, &m_data[0], static_cast<size_t>(dataSize));
 
-	vk::flushMappedMemoryRange(m_vk,
-							   device,
-							   m_vertexBuffer->getBoundMemory().getMemory(),
-							   m_vertexBuffer->getBoundMemory().getOffset(),
-							   VK_WHOLE_SIZE);
+	vk::flushAlloc(m_vk, device, m_vertexBuffer->getBoundMemory());
 
 	const CmdPoolCreateInfo cmdPoolCreateInfo(queueFamilyIndex);
 	m_cmdPool	= vk::createCommandPool(m_vk, device, &cmdPoolCreateInfo);
@@ -173,7 +169,7 @@ void DrawTestsBaseClass::initPipeline (const vk::VkDevice device)
 	m_pipeline = vk::createGraphicsPipeline(m_vk, device, DE_NULL, &pipelineCreateInfo);
 }
 
-void DrawTestsBaseClass::beginRenderPass (void)
+void DrawTestsBaseClass::beginRenderPass (const vk::VkSubpassContents content)
 {
 	const vk::VkClearColorValue clearColor = { { 0.0f, 0.0f, 0.0f, 1.0f } };
 
@@ -199,7 +195,7 @@ void DrawTestsBaseClass::beginRenderPass (void)
 		0, 1, &memBarrier, 0, DE_NULL, 0, DE_NULL);
 
 	const vk::VkRect2D renderArea = vk::makeRect2D(WIDTH, HEIGHT);
-	vk::beginRenderPass(m_vk, *m_cmdBuffer, *m_renderPass, *m_framebuffer, renderArea);
+	vk::beginRenderPass(m_vk, *m_cmdBuffer, *m_renderPass, *m_framebuffer, renderArea, content);
 }
 
 }	// Draw

@@ -112,25 +112,18 @@ void NotificationControlButtonsView::ShowSnoozeButton(bool show) {
   }
 }
 
-void NotificationControlButtonsView::SetVisible(bool visible) {
+void NotificationControlButtonsView::ShowButtons(bool show) {
   DCHECK(layer());
   // Manipulate the opacity instead of changing the visibility to keep the tab
   // order even when the view is invisible.
-  layer()->SetOpacity(visible ? 1. : 0.);
-  set_can_process_events_within_subtree(visible);
+  layer()->SetOpacity(show ? 1. : 0.);
+  set_can_process_events_within_subtree(show);
 }
 
-void NotificationControlButtonsView::RequestFocusOnCloseButton() {
-  if (close_button_)
-    close_button_->RequestFocus();
-}
-
-bool NotificationControlButtonsView::IsCloseButtonFocused() const {
-  return close_button_ && close_button_->HasFocus();
-}
-
-bool NotificationControlButtonsView::IsSettingsButtonFocused() const {
-  return settings_button_ && settings_button_->HasFocus();
+bool NotificationControlButtonsView::IsAnyButtonFocused() const {
+  return (close_button_ && close_button_->HasFocus()) ||
+         (settings_button_ && settings_button_->HasFocus()) ||
+         (snooze_button_ && snooze_button_->HasFocus());
 }
 
 views::Button* NotificationControlButtonsView::close_button() const {

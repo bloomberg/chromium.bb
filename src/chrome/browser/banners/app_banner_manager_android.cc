@@ -6,8 +6,11 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/android/shortcut_helper.h"
+#include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/android/webapk/chrome_webapk_host.h"
 #include "chrome/browser/android/webapk/webapk_web_manifest_checker.h"
 #include "chrome/browser/banners/app_banner_infobar_delegate_android.h"
@@ -15,6 +18,7 @@
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/banners/app_banner_ui_delegate_android.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/common/chrome_features.h"
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_delegate.h"
 #include "content/public/browser/manifest_icon_downloader.h"
@@ -52,7 +56,7 @@ AppBannerManagerAndroid::AppBannerManagerAndroid(
     content::WebContents* web_contents)
     : AppBannerManager(web_contents) {
   can_install_webapk_ = ChromeWebApkHost::CanInstallWebApk();
-  CreateJavaBannerManager();
+  CreateJavaBannerManager(web_contents);
 }
 
 AppBannerManagerAndroid::~AppBannerManagerAndroid() {
@@ -111,16 +115,15 @@ bool AppBannerManagerAndroid::OnAppDetailsRetrieved(
       web_contents(), primary_icon_url_,
       ShortcutHelper::GetIdealHomescreenIconSizeInPx(),
       ShortcutHelper::GetMinimumHomescreenIconSizeInPx(),
-      base::Bind(&AppBannerManager::OnAppIconFetched, GetWeakPtr()));
+      base::BindOnce(&AppBannerManager::OnAppIconFetched, GetWeakPtr()));
 }
 
-void AppBannerManagerAndroid::RequestAppBanner(const GURL& validated_url,
-                                               bool is_debug_mode) {
+void AppBannerManagerAndroid::RequestAppBanner(const GURL& validated_url) {
   JNIEnv* env = base::android::AttachCurrentThread();
   if (!Java_AppBannerManager_isEnabledForTab(env, java_banner_manager_))
     return;
 
-  AppBannerManager::RequestAppBanner(validated_url, is_debug_mode);
+  AppBannerManager::RequestAppBanner(validated_url);
 }
 
 void AppBannerManagerAndroid::SendBannerDismissed() {
@@ -310,10 +313,14 @@ void AppBannerManagerAndroid::ShowBannerUi(WebappInstallSource install_source) {
   }
 }
 
-void AppBannerManagerAndroid::CreateJavaBannerManager() {
+void AppBannerManagerAndroid::CreateJavaBannerManager(
+    content::WebContents* web_contents) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  java_banner_manager_.Reset(
-      Java_AppBannerManager_create(env, reinterpret_cast<intptr_t>(this)));
+  TabAndroid* tab = TabAndroid::FromWebContents(web_contents);
+  base::android::ScopedJavaLocalRef<jobject> jtab(tab ? tab->GetJavaObject()
+                                                      : nullptr);
+  java_banner_manager_.Reset(Java_AppBannerManager_create(
+      env, jtab, reinterpret_cast<intptr_t>(this)));
 }
 
 std::string AppBannerManagerAndroid::ExtractQueryValueForName(
@@ -379,6 +386,9 @@ base::string16 AppBannerManagerAndroid::GetAppName() const {
 }
 
 void AppBannerManagerAndroid::MaybeShowAmbientBadge() {
+  if (!base::FeatureList::IsEnabled(features::kInstallableAmbientBadgeInfoBar))
+    return;
+
   // Do not show the ambient badge if it was recently dismissed.
   if (AppBannerSettingsHelper::WasBannerRecentlyBlocked(
           web_contents(), validated_url_, GetAppIdentifier(),
@@ -412,9 +422,7 @@ AppBannerManager* AppBannerManager::FromWebContents(
 }
 
 // static
-jint JNI_AppBannerManager_GetHomescreenLanguageOption(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& clazz) {
+jint JNI_AppBannerManager_GetHomescreenLanguageOption(JNIEnv* env) {
   return AppBannerSettingsHelper::GetHomescreenLanguageOption();
 }
 
@@ -422,7 +430,6 @@ jint JNI_AppBannerManager_GetHomescreenLanguageOption(
 base::android::ScopedJavaLocalRef<jobject>
 JNI_AppBannerManager_GetJavaBannerManagerForWebContents(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& java_web_contents) {
   AppBannerManagerAndroid* manager = AppBannerManagerAndroid::FromWebContents(
       content::WebContents::FromJavaWebContents(java_web_contents));
@@ -433,7 +440,6 @@ JNI_AppBannerManager_GetJavaBannerManagerForWebContents(
 // static
 void JNI_AppBannerManager_SetDaysAfterDismissAndIgnoreToTrigger(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     jint dismiss_days,
     jint ignore_days) {
   AppBannerSettingsHelper::SetDaysAfterDismissAndIgnoreToTrigger(dismiss_days,
@@ -443,7 +449,6 @@ void JNI_AppBannerManager_SetDaysAfterDismissAndIgnoreToTrigger(
 // static
 void JNI_AppBannerManager_SetTimeDeltaForTesting(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     jint days) {
   AppBannerManager::SetTimeDeltaForTesting(days);
 }
@@ -451,9 +456,10 @@ void JNI_AppBannerManager_SetTimeDeltaForTesting(
 // static
 void JNI_AppBannerManager_SetTotalEngagementToTrigger(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     jdouble engagement) {
   AppBannerSettingsHelper::SetTotalEngagementToTrigger(engagement);
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(AppBannerManagerAndroid)
 
 }  // namespace banners

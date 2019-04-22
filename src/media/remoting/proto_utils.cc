@@ -184,11 +184,10 @@ scoped_refptr<DecoderBuffer> ByteArrayToDecoderBuffer(const uint8_t* data,
   pb::DecoderBuffer segment;
   uint32_t buffer_size = 0;
   if (reader.ReadU8(&payload_version) && payload_version == 0 &&
-      reader.ReadU16(&proto_size) &&
-      static_cast<int>(proto_size) < reader.remaining() &&
+      reader.ReadU16(&proto_size) && proto_size < reader.remaining() &&
       segment.ParseFromArray(reader.ptr(), proto_size) &&
       reader.Skip(proto_size) && reader.ReadU32(&buffer_size) &&
-      static_cast<int64_t>(buffer_size) <= reader.remaining()) {
+      buffer_size <= reader.remaining()) {
     // Deserialize proto buffer. It passes the pre allocated DecoderBuffer into
     // the function because the proto buffer may overwrite DecoderBuffer since
     // it may be EOS buffer.

@@ -26,6 +26,7 @@
 #include "chrome/chrome_cleaner/logging/proto/chrome_cleaner_report.pb.h"
 #include "chrome/chrome_cleaner/logging/proto/shared_data.pb.h"
 #include "chrome/chrome_cleaner/logging/safe_browsing_reporter.h"
+#include "chrome/chrome_cleaner/os/disk_util_types.h"
 #include "chrome/chrome_cleaner/pup_data/pup_data.h"
 #include "components/chrome_cleaner/public/constants/result_codes.h"
 
@@ -89,12 +90,26 @@ class CleanerLoggingService : public LoggingServiceAPI {
                                bool autodetect) override;
   void SetWinHttpProxySettings(const base::string16& config,
                                const base::string16& bypass) override;
-  void AddInstalledExtension(const base::string16& extension_id,
-                             ExtensionInstallMethod install_method) override;
+  void AddInstalledExtension(
+      const base::string16& extension_id,
+      ExtensionInstallMethod install_method,
+      const std::vector<internal::FileInformation>& extension_files) override;
   void AddScheduledTask(
       const base::string16& name,
       const base::string16& description,
       const std::vector<internal::FileInformation>& actions) override;
+
+  void AddShortcutData(
+      const base::string16& lnk_path,
+      const base::string16& executable_path,
+      const std::string& executable_hash,
+      const std::vector<base::string16>& command_line_arguments) override;
+
+  void SetFoundModifiedChromeShortcuts(bool found_modified_shortcuts) override;
+
+  void SetScannedLocations(
+      const std::vector<UwS::TraceLocation>& scanned_locations) override;
+
   void LogProcessInformation(SandboxType process_type,
                              const SystemResourceUsage& usage) override;
 

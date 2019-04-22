@@ -35,7 +35,7 @@
 namespace blink {
 
 LayoutMedia::LayoutMedia(HTMLMediaElement* video) : LayoutImage(video) {
-  SetImageResource(LayoutImageResource::Create());
+  SetImageResource(MakeGarbageCollected<LayoutImageResource>());
 }
 
 LayoutMedia::~LayoutMedia() = default;
@@ -94,7 +94,8 @@ void LayoutMedia::UpdateLayout() {
     layout_box->SetLocation(new_rect.Location());
     layout_box->SetOverrideLogicalWidth(width);
     layout_box->SetOverrideLogicalHeight(new_rect.Height());
-    layout_box->ForceLayout();
+    // TODO(cbiesinger): Can this just be ForceLayout()?
+    layout_box->ForceLayoutWithPaintInvalidation();
   }
 
   ClearNeedsLayout();
@@ -118,7 +119,7 @@ bool LayoutMedia::IsChildAllowed(LayoutObject* child,
   // check can be removed if ::-webkit-media-controls is made
   // internal.
   if (child->GetNode()->IsMediaControls())
-    return child->IsFlexibleBox();
+    return child->IsFlexibleBoxIncludingNG();
 
   if (child->GetNode()->IsTextTrackContainer() ||
       child->GetNode()->IsMediaRemotingInterstitial() ||

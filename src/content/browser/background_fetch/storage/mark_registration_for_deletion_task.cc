@@ -6,13 +6,13 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "content/browser/background_fetch/background_fetch.pb.h"
 #include "content/browser/background_fetch/background_fetch_data_manager.h"
 #include "content/browser/background_fetch/storage/database_helpers.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 
 namespace content {
-
 namespace background_fetch {
 
 MarkRegistrationForDeletionTask::MarkRegistrationForDeletionTask(
@@ -129,17 +129,6 @@ void MarkRegistrationForDeletionTask::DidGetCompletedRequests(
       return;
     }
 
-    // TODO(rayankans): Delete this after M71 is out of use.
-    // |succeeded| was deprecated in favor of |failure_reason|.
-    // This can happen if a browser was updated while a fetch was ongoing.
-    if (completed_request.has_succeeded()) {
-      if (!completed_request.succeeded()) {
-        // The fetch failed, expose the error as FETCH_ERROR.
-        failure_reason_ =
-            blink::mojom::BackgroundFetchFailureReason::FETCH_ERROR;
-      }
-    }
-
     if (completed_request.failure_reason() !=
         proto::BackgroundFetchRegistration::NONE) {
       bool did_convert = MojoFailureReasonFromRegistrationProto(
@@ -170,5 +159,4 @@ std::string MarkRegistrationForDeletionTask::HistogramName() const {
 }
 
 }  // namespace background_fetch
-
 }  // namespace content

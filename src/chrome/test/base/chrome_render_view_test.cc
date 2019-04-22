@@ -18,7 +18,6 @@
 #include "components/spellcheck/renderer/spellcheck.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "content/public/browser/native_web_keyboard_event.h"
-#include "content/public/common/renderer_preferences.h"
 #include "content/public/renderer/render_view.h"
 #include "extensions/buildflags/buildflags.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -36,7 +35,6 @@
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/common/extension.h"
 #include "extensions/renderer/dispatcher.h"
-#include "extensions/renderer/event_bindings.h"
 #endif
 
 using autofill::AutofillAgent;

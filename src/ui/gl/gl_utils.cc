@@ -10,6 +10,11 @@
 #include "ui/gfx/color_space.h"
 #include "ui/gl/gl_bindings.h"
 
+#if defined(OS_ANDROID)
+#include "base/posix/eintr_wrapper.h"
+#include "third_party/libsync/src/include/sync/sync.h"
+#endif
+
 namespace gl {
 
 int GetGLColorSpace(const gfx::ColorSpace& color_space) {
@@ -26,4 +31,18 @@ void Crash() {
   volatile int* it_s_the_end_of_the_world_as_we_know_it = nullptr;
   *it_s_the_end_of_the_world_as_we_know_it = 0xdead;
 }
+
+#if defined(OS_ANDROID)
+base::ScopedFD MergeFDs(base::ScopedFD a, base::ScopedFD b) {
+  if (!a.is_valid())
+    return b;
+  if (!b.is_valid())
+    return a;
+
+  base::ScopedFD merged(HANDLE_EINTR(sync_merge("", a.get(), b.get())));
+  if (!merged.is_valid())
+    LOG(ERROR) << "Failed to merge fences.";
+  return merged;
+}
+#endif
 }

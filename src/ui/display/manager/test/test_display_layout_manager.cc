@@ -56,7 +56,7 @@ std::vector<DisplaySnapshot*> TestDisplayLayoutManager::GetDisplayStates()
 }
 
 bool TestDisplayLayoutManager::IsMirroring() const {
-  return display_state_ == MULTIPLE_DISPLAY_STATE_DUAL_MIRROR;
+  return display_state_ == MULTIPLE_DISPLAY_STATE_MULTI_MIRROR;
 }
 
 }  // namespace test

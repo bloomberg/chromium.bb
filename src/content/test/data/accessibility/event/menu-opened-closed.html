@@ -1,0 +1,26 @@
+<!--
+@WIN-DENY:EVENT_OBJECT_FOCUS*
+@UIA-WIN-DENY:AutomationFocusChanged*
+-->
+<!DOCTYPE html>
+<div tabindex="1" id="menu" aria-label="menu" role="menu">
+  <div tabindex="2" id="submenu1" aria-label="submenu1" role="menu"></div>
+  <div tabindex="3" id="submenu2" aria-label="submenu2" role="menu">
+    <div tabindex="4" id="option" aria-label="option" role="menuitem"></div>
+  </div>
+</div>
+<script>
+  const go_passes = [
+    () => document.getElementById('menu').focus(),
+    () => document.getElementById('submenu1').focus(),
+    () => document.getElementById('submenu1').blur(),
+    () => document.getElementById('submenu2').focus(),
+    () => document.getElementById('option').focus(),
+  ];
+
+  var current_pass = 0;
+  function go() {
+    go_passes[current_pass++].call();
+    return current_pass < go_passes.length;
+  }
+</script>

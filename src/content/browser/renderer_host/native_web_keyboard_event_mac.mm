@@ -62,7 +62,11 @@ NativeWebKeyboardEvent::NativeWebKeyboardEvent(
   size_t unmod_text_length =
       WebKeyboardEventTextLength(web_event.unmodified_text);
 
-  if (text_length == 0)
+  // Perform the reverse operation on type that was done in
+  // UnmodifiedTextFromEvent(). Avoid using text_length as the control key may
+  // cause Mac to set [NSEvent characters] to "\0" which for us is
+  // indistinguishable from "".
+  if (unmod_text_length == 0)
     type = NSFlagsChanged;
 
   NSString* text =

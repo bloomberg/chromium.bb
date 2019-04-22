@@ -27,13 +27,13 @@ namespace internal {
 // Commit() marks an edit as an independent operation that shouldn't be merged.
 class Edit {
  public:
-  enum Type {
-    INSERT_EDIT,
-    DELETE_EDIT,
-    REPLACE_EDIT,
+  enum class Type {
+    kInsert,
+    kDelete,
+    kReplace,
   };
 
-  virtual ~Edit() {}
+  virtual ~Edit() = default;
 
   // Revert the change made by this edit in |model|.
   void Undo(TextfieldModel* model) {
@@ -55,7 +55,7 @@ class Edit {
     // user deletes characters then hits return. In this case, the
     // delete should be treated as separate edit that can be undone
     // and should not be merged with the replace edit.
-    if (type_ != DELETE_EDIT && edit->force_merge()) {
+    if (type_ != Type::kDelete && edit->force_merge()) {
       MergeReplace(edit);
       return true;
     }
@@ -63,7 +63,7 @@ class Edit {
   }
 
   // Commits the edit and marks as un-mergeable.
-  void Commit() { merge_type_ = DO_NOT_MERGE; }
+  void Commit() { merge_type_ = MergeType::kDoNotMerge; }
 
  private:
   friend class InsertEdit;
@@ -95,10 +95,10 @@ class Edit {
   Type type() const { return type_; }
 
   // Can this edit be merged?
-  bool mergeable() const { return merge_type_ == MERGEABLE; }
+  bool mergeable() const { return merge_type_ == MergeType::kMergeable; }
 
   // Should this edit be forcibly merged with the previous edit?
-  bool force_merge() const { return merge_type_ == FORCE_MERGE; }
+  bool force_merge() const { return merge_type_ == MergeType::kForceMerge; }
 
   // Returns the end index of the |old_text_|.
   size_t old_text_end() const { return old_text_start_ + old_text_.length(); }
@@ -109,7 +109,7 @@ class Edit {
   // Merge the replace edit into the current edit. This handles the special case
   // where an omnibox autocomplete string is set after a new character is typed.
   void MergeReplace(const Edit* edit) {
-    CHECK_EQ(REPLACE_EDIT, edit->type_);
+    CHECK_EQ(Type::kReplace, edit->type_);
     CHECK_EQ(0U, edit->old_text_start_);
     CHECK_EQ(0U, edit->new_text_start_);
     base::string16 old_text = edit->old_text_;
@@ -123,7 +123,7 @@ class Edit {
 
     new_text_ = edit->new_text_;
     new_text_start_ = edit->new_text_start_;
-    merge_type_ = DO_NOT_MERGE;
+    merge_type_ = MergeType::kDoNotMerge;
   }
 
   Type type_;
@@ -151,8 +151,8 @@ class Edit {
 class InsertEdit : public Edit {
  public:
   InsertEdit(bool mergeable, const base::string16& new_text, size_t at)
-      : Edit(INSERT_EDIT,
-             mergeable ? MERGEABLE : DO_NOT_MERGE,
+      : Edit(Type::kInsert,
+             mergeable ? MergeType::kMergeable : MergeType::kDoNotMerge,
              base::string16(),
              at,
              gfx::Range(at, at),
@@ -163,7 +163,8 @@ class InsertEdit : public Edit {
 
   // Edit implementation.
   bool DoMerge(const Edit* edit) override {
-    if (edit->type() != INSERT_EDIT || new_text_end() != edit->new_text_start_)
+    if (edit->type() != Type::kInsert ||
+        new_text_end() != edit->new_text_start_)
       return false;
     // If continuous edit, merge it.
     // TODO(oshima): gtk splits edits between whitespace. Find out what
@@ -184,7 +185,7 @@ class ReplaceEdit : public Edit {
               size_t new_cursor_pos,
               const base::string16& new_text,
               size_t new_text_start)
-      : Edit(REPLACE_EDIT,
+      : Edit(Type::kReplace,
              merge_type,
              old_text,
              old_text_start,
@@ -196,7 +197,7 @@ class ReplaceEdit : public Edit {
 
   // Edit implementation.
   bool DoMerge(const Edit* edit) override {
-    if (edit->type() == DELETE_EDIT ||
+    if (edit->type() == Type::kDelete ||
         new_text_end() != edit->old_text_start_ ||
         edit->old_text_start_ != edit->new_text_start_)
       return false;
@@ -214,8 +215,8 @@ class DeleteEdit : public Edit {
              size_t text_start,
              bool backward,
              gfx::Range old_selection)
-      : Edit(DELETE_EDIT,
-             mergeable ? MERGEABLE : DO_NOT_MERGE,
+      : Edit(Type::kDelete,
+             mergeable ? MergeType::kMergeable : MergeType::kDoNotMerge,
              text,
              text_start,
              old_selection,
@@ -226,7 +227,7 @@ class DeleteEdit : public Edit {
 
   // Edit implementation.
   bool DoMerge(const Edit* edit) override {
-    if (edit->type() != DELETE_EDIT)
+    if (edit->type() != Type::kDelete)
       return false;
 
     if (delete_backward_) {
@@ -299,19 +300,10 @@ void SelectRangeInCompositionText(gfx::RenderText* render_text,
 
 }  // namespace
 
-using internal::Edit;
-using internal::DeleteEdit;
-using internal::InsertEdit;
-using internal::ReplaceEdit;
-using internal::MergeType;
-using internal::DO_NOT_MERGE;
-using internal::FORCE_MERGE;
-using internal::MERGEABLE;
-
 /////////////////////////////////////////////////////////////////
 // TextfieldModel: public
 
-TextfieldModel::Delegate::~Delegate() {}
+TextfieldModel::Delegate::~Delegate() = default;
 
 TextfieldModel::TextfieldModel(Delegate* delegate)
     : delegate_(delegate),
@@ -324,6 +316,7 @@ TextfieldModel::~TextfieldModel() {
 }
 
 bool TextfieldModel::SetText(const base::string16& new_text) {
+  using MergeType = internal::MergeType;
   bool changed = false;
   if (HasCompositionText()) {
     ConfirmCompositionText();
@@ -336,9 +329,9 @@ bool TextfieldModel::SetText(const base::string16& new_text) {
     size_t new_cursor = new_text.length();
     // If there is a composition text, don't merge with previous edit.
     // Otherwise, force merge the edits.
-    ExecuteAndRecordReplace(changed ? DO_NOT_MERGE : FORCE_MERGE,
-                            gfx::Range(0, text().length()), new_cursor,
-                            new_text, 0U);
+    ExecuteAndRecordReplace(
+        changed ? MergeType::kDoNotMerge : MergeType::kForceMerge,
+        gfx::Range(0, text().length()), new_cursor, new_text, 0U);
     render_text_->SetCursorPosition(new_cursor);
   }
   ClearSelection();
@@ -622,9 +615,10 @@ void TextfieldModel::DeleteSelection() {
 void TextfieldModel::DeleteSelectionAndInsertTextAt(
     const base::string16& new_text,
     size_t position) {
+  using MergeType = internal::MergeType;
   if (HasCompositionText())
     CancelCompositionText();
-  ExecuteAndRecordReplace(DO_NOT_MERGE, render_text_->selection(),
+  ExecuteAndRecordReplace(MergeType::kDoNotMerge, render_text_->selection(),
                           position + new_text.length(), new_text, position);
 }
 
@@ -681,7 +675,7 @@ void TextfieldModel::ConfirmCompositionText() {
       composition_range_.start(), composition_range_.length());
   // TODO(oshima): current behavior on ChromeOS is a bit weird and not
   // sure exactly how this should work. Find out and fix if necessary.
-  AddOrMergeEditHistory(std::make_unique<InsertEdit>(
+  AddOrMergeEditHistory(std::make_unique<internal::InsertEdit>(
       false, composition, composition_range_.start()));
   render_text_->SetCursorPosition(composition_range_.end());
   ClearComposition();
@@ -723,12 +717,13 @@ void TextfieldModel::ClearEditHistory() {
 
 void TextfieldModel::InsertTextInternal(const base::string16& new_text,
                                         bool mergeable) {
+  using MergeType = internal::MergeType;
   if (HasCompositionText()) {
     CancelCompositionText();
     ExecuteAndRecordInsert(new_text, mergeable);
   } else if (HasSelection()) {
-    ExecuteAndRecordReplaceSelection(mergeable ? MERGEABLE : DO_NOT_MERGE,
-                                     new_text);
+    ExecuteAndRecordReplaceSelection(
+        mergeable ? MergeType::kMergeable : MergeType::kDoNotMerge, new_text);
   } else {
     ExecuteAndRecordInsert(new_text, mergeable);
   }
@@ -771,14 +766,14 @@ void TextfieldModel::ExecuteAndRecordDelete(gfx::Range range, bool mergeable) {
   const base::string16 old_text = text().substr(old_text_start, range.length());
   bool backward = range.is_reversed();
   gfx::Range curr_selection = render_text_->selection();
-  auto edit = std::make_unique<DeleteEdit>(mergeable, old_text, old_text_start,
-                                           backward, curr_selection);
+  auto edit = std::make_unique<internal::DeleteEdit>(
+      mergeable, old_text, old_text_start, backward, curr_selection);
   edit->Redo(this);
   AddOrMergeEditHistory(std::move(edit));
 }
 
 void TextfieldModel::ExecuteAndRecordReplaceSelection(
-    MergeType merge_type,
+    internal::MergeType merge_type,
     const base::string16& new_text) {
   size_t new_text_start = render_text_->selection().GetMin();
   size_t new_cursor_pos = new_text_start + new_text.length();
@@ -786,14 +781,14 @@ void TextfieldModel::ExecuteAndRecordReplaceSelection(
                           new_text, new_text_start);
 }
 
-void TextfieldModel::ExecuteAndRecordReplace(MergeType merge_type,
+void TextfieldModel::ExecuteAndRecordReplace(internal::MergeType merge_type,
                                              gfx::Range replacement_range,
                                              size_t new_cursor_pos,
                                              const base::string16& new_text,
                                              size_t new_text_start) {
   size_t old_text_start = replacement_range.GetMin();
   bool backward = replacement_range.is_reversed();
-  auto edit = std::make_unique<ReplaceEdit>(
+  auto edit = std::make_unique<internal::ReplaceEdit>(
       merge_type, GetTextFromRange(replacement_range), old_text_start,
       render_text_->selection(), backward, new_cursor_pos, new_text,
       new_text_start);
@@ -803,13 +798,14 @@ void TextfieldModel::ExecuteAndRecordReplace(MergeType merge_type,
 
 void TextfieldModel::ExecuteAndRecordInsert(const base::string16& new_text,
                                             bool mergeable) {
-  auto edit =
-      std::make_unique<InsertEdit>(mergeable, new_text, GetCursorPosition());
+  auto edit = std::make_unique<internal::InsertEdit>(mergeable, new_text,
+                                                     GetCursorPosition());
   edit->Redo(this);
   AddOrMergeEditHistory(std::move(edit));
 }
 
-void TextfieldModel::AddOrMergeEditHistory(std::unique_ptr<Edit> edit) {
+void TextfieldModel::AddOrMergeEditHistory(
+    std::unique_ptr<internal::Edit> edit) {
   ClearRedoHistory();
 
   if (current_edit_ != edit_history_.end() &&

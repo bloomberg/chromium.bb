@@ -21,6 +21,8 @@
 
 namespace net {
 
+class RecordParsed;
+
 // Representation of a single HostResolverImpl::Job task to resolve the hostname
 // using multicast DNS transactions.  Destruction cancels the task and prevents
 // any callbacks from being invoked.
@@ -39,6 +41,11 @@ class HostResolverMdnsTask {
 
   // Results only available after invocation of the completion closure.
   HostCache::Entry GetResults() const;
+
+  static HostCache::Entry ParseResult(int error,
+                                      DnsQueryType query_type,
+                                      const RecordParsed* parsed,
+                                      const std::string& expected_hostname);
 
  private:
   class Transaction;

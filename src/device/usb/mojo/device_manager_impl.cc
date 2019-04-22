@@ -18,8 +18,15 @@
 #include "device/usb/mojo/type_converters.h"
 #include "device/usb/public/cpp/usb_utils.h"
 #include "device/usb/public/mojom/device.mojom.h"
+#include "device/usb/public/mojom/device_enumeration_options.mojom.h"
+#include "device/usb/public/mojom/device_manager_client.mojom.h"
 #include "device/usb/usb_device.h"
 #include "device/usb/usb_service.h"
+
+#if defined(OS_CHROMEOS)
+#include "chromeos/dbus/permission_broker/permission_broker_client.h"
+#include "device/usb/usb_device_linux.h"
+#endif  // defined(OS_CHROMEOS)
 
 namespace device {
 namespace usb {
@@ -62,6 +69,56 @@ void DeviceManagerImpl::GetDevice(const std::string& guid,
   DeviceImpl::Create(std::move(device), std::move(device_request),
                      std::move(device_client));
 }
+
+#if defined(OS_CHROMEOS)
+void DeviceManagerImpl::CheckAccess(const std::string& guid,
+                                    CheckAccessCallback callback) {
+  scoped_refptr<UsbDevice> device = usb_service_->GetDevice(guid);
+  if (device) {
+    device->CheckUsbAccess(std::move(callback));
+  } else {
+    LOG(ERROR) << "Was asked to check access to non-existent USB device: "
+               << guid;
+    std::move(callback).Run(false);
+  }
+}
+
+void DeviceManagerImpl::OpenFileDescriptor(
+    const std::string& guid,
+    OpenFileDescriptorCallback callback) {
+  scoped_refptr<UsbDevice> device = usb_service_->GetDevice(guid);
+  if (!device) {
+    LOG(ERROR) << "Was asked to open non-existent USB device: " << guid;
+    std::move(callback).Run(base::File());
+  } else {
+    auto copyable_callback =
+        base::AdaptCallbackForRepeating(std::move(callback));
+    auto devpath =
+        static_cast<device::UsbDeviceLinux*>(device.get())->device_path();
+    chromeos::PermissionBrokerClient::Get()->OpenPath(
+        devpath,
+        base::BindOnce(&DeviceManagerImpl::OnOpenFileDescriptor,
+                       weak_factory_.GetWeakPtr(), copyable_callback),
+        base::BindOnce(&DeviceManagerImpl::OnOpenFileDescriptorError,
+                       weak_factory_.GetWeakPtr(), copyable_callback));
+  }
+}
+
+void DeviceManagerImpl::OnOpenFileDescriptor(
+    OpenFileDescriptorCallback callback,
+    base::ScopedFD fd) {
+  std::move(callback).Run(base::File(fd.release()));
+}
+
+void DeviceManagerImpl::OnOpenFileDescriptorError(
+    OpenFileDescriptorCallback callback,
+    const std::string& error_name,
+    const std::string& message) {
+  LOG(ERROR) << "Failed to open USB device file: " << error_name << " "
+             << message;
+  std::move(callback).Run(base::File());
+}
+#endif  // defined(OS_CHROMEOS)
 
 void DeviceManagerImpl::SetClient(
     mojom::UsbDeviceManagerClientAssociatedPtrInfo client) {

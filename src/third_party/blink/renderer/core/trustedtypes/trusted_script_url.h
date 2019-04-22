@@ -7,13 +7,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
-#include "third_party/blink/renderer/platform/weborigin/kurl.h"
-
-namespace WTF {
-
-class String;
-
-}  // namespace WTF
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -21,17 +15,13 @@ class CORE_EXPORT TrustedScriptURL final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static TrustedScriptURL* Create(const KURL& url) {
-    return MakeGarbageCollected<TrustedScriptURL>(url);
-  }
-
-  TrustedScriptURL(const KURL&);
+  explicit TrustedScriptURL(const String& url);
 
   // TrustedScriptURL.idl
   String toString() const;
 
  private:
-  KURL url_;
+  const String url_;
 };
 
 }  // namespace blink

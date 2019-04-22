@@ -22,6 +22,7 @@ trusted code / OS (this only lists time spent in the untrusted code).
 # Pro: less custom code and possibility of understanding Dwarf info.
 # Con: lots of exec()s to cover all the samples...
 
+from __future__ import print_function
 
 import commands
 import getopt
@@ -31,7 +32,7 @@ import sys
 
 def Debug(mesg):
   sys.stdout.flush()             # Make stdout/stderr come out in order.
-  print >>sys.stderr, "# ", mesg
+  print("# ", mesg, file=sys.stderr)
   return
 
 def DemangleFunc(fun_name):
@@ -375,16 +376,17 @@ def PrintTopFunctions(assembly_ranges, address_to_events, trusted_events):
   top_30 = flattened[:30]
   total_samples = (sum(address_to_events.itervalues())
                    + sum(trusted_events.itervalues()))
-  print "============= Top 30 Functions ==============="
-  print "EVENTS\t\tPCT\tCUM\tFUNC [LOW_VMA, UPPER_VMA]"
+  print("============= Top 30 Functions ===============")
+  print("EVENTS\t\tPCT\tCUM\tFUNC [LOW_VMA, UPPER_VMA]")
   cum_pct = 0.0
   for ((func, lb, ub), count) in top_30:
     pct = 100.0 * count / total_samples
     cum_pct += pct
-    print "%d\t\t%.2f\t%.2f\t%s [%s, %s]" % (count, pct, cum_pct,
-                                       DemangleFunc(func), hex(lb), hex(ub))
-  print "%d samples filtered (%.2f%% of all samples)" % (filtered_events,
-        100.0 * filtered_events / (filtered_events + total_samples))
+    print("%d\t\t%.2f\t%.2f\t%s [%s, %s]" %
+          (count, pct, cum_pct, DemangleFunc(func), hex(lb), hex(ub)))
+  print("%d samples filtered (%.2f%% of all samples)" %
+        (filtered_events, 100.0 * filtered_events /
+         (filtered_events + total_samples)))
 
 
 #--------------- Annotate Assembly ---------------
@@ -399,9 +401,9 @@ def PrintAnnotatedAssembly(fd_in, address_to_events, fd_out):
     maybe_addr = GetAssemblyAddress(line)
     if maybe_addr in address_to_events:
       event_count = address_to_events[maybe_addr]
-      print >>fd_out, "%s    #; EVENTS: %d" % (line, event_count)
+      print("%s    #; EVENTS: %d" % (line, event_count), file=fd_out)
     else:
-      print >>fd_out, line
+      print(line, file=fd_out)
   fd_in.seek(0) # reset for future use.
 
 #--------------- Main ---------------
@@ -453,7 +455,8 @@ def main(argv):
 
     if untrusted_base:
       if mapfile_fd:
-        print 'Error: Specified both untrusted_base directly and w/ memmap file'
+        print(
+            'Error: Specified both untrusted_base directly and w/ memmap file')
         sys.exit(1)
       untrusted_base = int(untrusted_base, 16)
     else:
@@ -462,7 +465,7 @@ def main(argv):
               mapfile_name)
         untrusted_base = GetUntrustedBase(mapfile_fd)
       else:
-        print 'Error: Need sel_ldr log --memmap or --untrusted_base.'
+        print('Error: Need sel_ldr log --memmap or --untrusted_base.')
         sys.exit(1)
     if assembly_file and oprof_log:
       Debug('Parsing assembly file of nexe: %s' % assembly_file)
@@ -475,11 +478,11 @@ def main(argv):
       Debug('Printing annotated assembly to %s (or stdout)' % out_name)
       PrintAnnotatedAssembly(assembly_fd, untrusted_events, output)
     else:
-      print 'Need assembly file(%s) and oprofile log(%s)!' \
-          % (assembly_file, oprof_log)
+      print('Need assembly file(%s) and oprofile log(%s)!' \
+          % (assembly_file, oprof_log))
       sys.exit(1)
   except getopt.GetoptError, err:
-    print str(err)
+    print(str(err))
     sys.exit(1)
 
 if __name__ == '__main__':

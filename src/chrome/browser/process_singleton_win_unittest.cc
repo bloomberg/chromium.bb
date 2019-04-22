@@ -14,10 +14,10 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/process/launch.h"
 #include "base/process/process.h"
 #include "base/process/process_handle.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -200,7 +200,7 @@ class ProcessSingletonTest : public base::MultiProcessTest {
     // The wait should always return because either |ready_event| is signaled or
     // |browser_victim_| died unexpectedly or exited on error.
     DWORD result =
-        ::WaitForMultipleObjects(arraysize(handles), handles, FALSE, INFINITE);
+        ::WaitForMultipleObjects(base::size(handles), handles, FALSE, INFINITE);
     ASSERT_EQ(WAIT_OBJECT_0, result);
   }
 

@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_debug_daemon_client.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -22,10 +21,7 @@ using SupportedSource = SingleDebugDaemonLogSource::SupportedSource;
 
 class SingleDebugDaemonLogSourceTest : public ::testing::Test {
  public:
-  SingleDebugDaemonLogSourceTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI),
-        num_callback_calls_(0) {}
+  SingleDebugDaemonLogSourceTest() : num_callback_calls_(0) {}
 
   void SetUp() override {
     // Since no debug daemon will be available during a unit test, use
@@ -57,11 +53,7 @@ class SingleDebugDaemonLogSourceTest : public ::testing::Test {
     response_ = *response;
   }
 
-  // For running scheduled tasks.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
-
-  // Creates the necessary browser threads. Defined after
-  // |scoped_task_environment_| in order to use the MessageLoop it created.
+  // Creates the necessary browser threads.
   content::TestBrowserThreadBundle browser_thread_bundle_;
 
   // Used to verify that OnFetchComplete was called the correct number of times.

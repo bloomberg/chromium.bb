@@ -32,6 +32,7 @@
 #include "SkSize.h"
 #include "SkTypes.h"
 #include "base/macros.h"
+#include "base/memory/memory_pressure_listener.h"
 #include "base/memory/ptr_util.h"
 #include "cc/paint/paint_image_generator.h"
 #include "third_party/blink/renderer/platform/graphics/image_frame_generator.h"
@@ -117,13 +118,16 @@ class CacheEntry : public DoublyLinkedListNode<CacheEntry> {
 
 class DecoderCacheEntry final : public CacheEntry {
  public:
-  static std::unique_ptr<DecoderCacheEntry> Create(
-      const ImageFrameGenerator* generator,
-      std::unique_ptr<ImageDecoder> decoder,
-      cc::PaintImage::GeneratorClientId client_id) {
-    return base::WrapUnique(
-        new DecoderCacheEntry(generator, 0, std::move(decoder), client_id));
-  }
+  DecoderCacheEntry(const ImageFrameGenerator* generator,
+                    int count,
+                    std::unique_ptr<ImageDecoder> decoder,
+                    cc::PaintImage::GeneratorClientId client_id)
+      : CacheEntry(generator, count),
+        cached_decoder_(std::move(decoder)),
+        size_(SkISize::Make(cached_decoder_->DecodedSize().Width(),
+                            cached_decoder_->DecodedSize().Height())),
+        alpha_option_(cached_decoder_->GetAlphaOption()),
+        client_id_(client_id) {}
 
   size_t MemoryUsageInBytes() const override {
     return size_.width() * size_.height() * 4;
@@ -157,17 +161,6 @@ class DecoderCacheEntry final : public CacheEntry {
   ImageDecoder* CachedDecoder() const { return cached_decoder_.get(); }
 
  private:
-  DecoderCacheEntry(const ImageFrameGenerator* generator,
-                    int count,
-                    std::unique_ptr<ImageDecoder> decoder,
-                    cc::PaintImage::GeneratorClientId client_id)
-      : CacheEntry(generator, count),
-        cached_decoder_(std::move(decoder)),
-        size_(SkISize::Make(cached_decoder_->DecodedSize().Width(),
-                            cached_decoder_->DecodedSize().Height())),
-        alpha_option_(cached_decoder_->GetAlphaOption()),
-        client_id_(client_id) {}
-
   std::unique_ptr<ImageDecoder> cached_decoder_;
   SkISize size_;
   ImageDecoder::AlphaOption alpha_option_;
@@ -251,9 +244,7 @@ class PLATFORM_EXPORT ImageDecodingStore final {
   USING_FAST_MALLOC(ImageDecodingStore);
 
  public:
-  static std::unique_ptr<ImageDecodingStore> Create() {
-    return base::WrapUnique(new ImageDecodingStore);
-  }
+  ImageDecodingStore();
   ~ImageDecodingStore();
 
   static ImageDecodingStore& Instance();
@@ -286,9 +277,11 @@ class PLATFORM_EXPORT ImageDecodingStore final {
   int DecoderCacheEntries();
 
  private:
-  ImageDecodingStore();
-
   void Prune();
+
+  // Called by the memory pressure listener when the memory pressure rises.
+  void OnMemoryPressure(
+      base::MemoryPressureListener::MemoryPressureLevel level);
 
   // These helper methods are called while m_mutex is locked.
   template <class T, class U, class V>
@@ -346,6 +339,9 @@ class PLATFORM_EXPORT ImageDecodingStore final {
 
   size_t heap_limit_in_bytes_;
   size_t heap_memory_usage_in_bytes_;
+
+  // A listener to global memory pressure events.
+  base::MemoryPressureListener memory_pressure_listener_;
 
   // Protect concurrent access to these members:
   //   m_orderedCacheList

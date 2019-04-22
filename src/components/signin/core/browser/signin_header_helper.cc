@@ -107,7 +107,7 @@ std::string BuildMirrorRequestCookieIfPossible(
 }
 
 SigninHeaderHelper::SigninHeaderHelper(const std::string& histogram_suffix)
-    : histogram_suffix_(histogram_suffix){};
+    : histogram_suffix_(histogram_suffix) {}
 SigninHeaderHelper::~SigninHeaderHelper() = default;
 
 bool SigninHeaderHelper::AppendOrRemoveRequestHeader(
@@ -188,15 +188,12 @@ bool AppendOrRemoveDiceRequestHeader(
     const GURL& redirect_url,
     const std::string& account_id,
     bool sync_enabled,
-    bool sync_has_auth_error,
     AccountConsistencyMethod account_consistency,
     const content_settings::CookieSettings* cookie_settings,
     const std::string& device_id) {
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   const GURL& url = redirect_url.is_empty() ? request->GetUrl() : redirect_url;
-  DiceHeaderHelper dice_helper(
-      !account_id.empty() && sync_has_auth_error && sync_enabled,
-      account_consistency);
+  DiceHeaderHelper dice_helper(account_consistency);
   std::string dice_header_value;
   if (dice_helper.ShouldBuildRequestHeader(url, cookie_settings)) {
     dice_header_value = dice_helper.BuildRequestHeader(

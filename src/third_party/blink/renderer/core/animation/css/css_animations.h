@@ -239,6 +239,8 @@ class CSSAnimations final {
     void Trace(blink::Visitor*) override;
 
    private:
+    void EnqueueEvent(const WTF::AtomicString& type, double elapsed_time);
+
     const Element& TransitionTarget() const { return *transition_target_; }
     EventTarget* GetEventTarget() const;
     PseudoId GetPseudoId() const { return transition_target_->GetPseudoId(); }

@@ -195,8 +195,6 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestValidEventTiming) {
   // When last_event_time of the end_component is less than the first_event_time
   // of the start_component, zero is recorded instead of a negative value.
   histogram_tester().ExpectUniqueSample(
-      "Event.Latency.ScrollBegin.Wheel.TimeToScrollUpdateSwapBegin2", 0, 1);
-  histogram_tester().ExpectUniqueSample(
       "Event.Latency.ScrollBegin.Wheel.TimeToScrollUpdateSwapBegin4", 0, 1);
   histogram_tester().ExpectUniqueSample(
       "Event.Latency.Scroll.Wheel.TimeToScrollUpdateSwapBegin2", 0, 1);
@@ -261,20 +259,12 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestWheelToFirstScrollHistograms) {
                           0));
       EXPECT_TRUE(
           HistogramSizeEq("Event.Latency.ScrollBegin.Wheel."
-                          "TimeToScrollUpdateSwapBegin2",
-                          1));
-      EXPECT_TRUE(
-          HistogramSizeEq("Event.Latency.ScrollBegin.Wheel."
                           "TimeToScrollUpdateSwapBegin4",
                           1));
       EXPECT_TRUE(
           HistogramSizeEq("Event.Latency.Scroll.Wheel."
                           "TimeToScrollUpdateSwapBegin2",
                           1));
-      EXPECT_TRUE(
-          HistogramSizeEq("Event.Latency.ScrollUpdate.Wheel."
-                          "TimeToScrollUpdateSwapBegin2",
-                          0));
       EXPECT_TRUE(
           HistogramSizeEq("Event.Latency.ScrollUpdate.Wheel."
                           "TimeToScrollUpdateSwapBegin4",
@@ -374,18 +364,10 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestWheelToScrollHistograms) {
                           1));
       EXPECT_TRUE(
           HistogramSizeEq("Event.Latency.ScrollBegin.Wheel."
-                          "TimeToScrollUpdateSwapBegin2",
-                          0));
-      EXPECT_TRUE(
-          HistogramSizeEq("Event.Latency.ScrollBegin.Wheel."
                           "TimeToScrollUpdateSwapBegin4",
                           0));
       EXPECT_TRUE(
           HistogramSizeEq("Event.Latency.Scroll.Wheel."
-                          "TimeToScrollUpdateSwapBegin2",
-                          1));
-      EXPECT_TRUE(
-          HistogramSizeEq("Event.Latency.ScrollUpdate.Wheel."
                           "TimeToScrollUpdateSwapBegin2",
                           1));
       EXPECT_TRUE(
@@ -449,7 +431,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestInertialToScrollHistograms) {
     ResetHistograms();
     {
       auto scroll = SyntheticWebGestureEventBuilder::BuildScrollUpdate(
-          5.f, -5.f, 0, blink::kWebGestureDeviceTouchscreen);
+          5.f, -5.f, 0, blink::WebGestureDevice::kTouchscreen);
       base::TimeTicks now = base::TimeTicks::Now();
       scroll.SetTimeStamp(now);
       ui::LatencyInfo scroll_latency(ui::SourceEventType::INERTIAL);
@@ -466,10 +448,6 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestInertialToScrollHistograms) {
     }
 
     // UMA histograms.
-    EXPECT_TRUE(
-        HistogramSizeEq("Event.Latency.ScrollInertial.Touch."
-                        "TimeToScrollUpdateSwapBegin2",
-                        1));
     EXPECT_TRUE(
         HistogramSizeEq("Event.Latency.ScrollInertial.Touch."
                         "TimeToScrollUpdateSwapBegin4",
@@ -508,7 +486,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestTouchToFirstScrollHistograms) {
     ResetHistograms();
     {
       auto scroll = SyntheticWebGestureEventBuilder::BuildScrollUpdate(
-          5.f, -5.f, 0, blink::kWebGestureDeviceTouchscreen);
+          5.f, -5.f, 0, blink::WebGestureDevice::kTouchscreen);
       base::TimeTicks now = base::TimeTicks::Now();
       scroll.SetTimeStamp(now);
       ui::LatencyInfo scroll_latency;
@@ -563,12 +541,8 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestTouchToFirstScrollHistograms) {
                         "TimeToScrollUpdateSwapBegin2",
                         0));
     EXPECT_TRUE(HistogramSizeEq(
-        "Event.Latency.ScrollBegin.Touch.TimeToScrollUpdateSwapBegin2", 1));
-    EXPECT_TRUE(HistogramSizeEq(
         "Event.Latency.ScrollBegin.Touch.TimeToScrollUpdateSwapBegin4", 1));
 
-    EXPECT_TRUE(HistogramSizeEq(
-        "Event.Latency.ScrollUpdate.Touch.TimeToScrollUpdateSwapBegin2", 0));
     EXPECT_TRUE(HistogramSizeEq(
         "Event.Latency.ScrollUpdate.Touch.TimeToScrollUpdateSwapBegin4", 0));
 
@@ -622,7 +596,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestTouchToScrollHistograms) {
     ResetHistograms();
     {
       auto scroll = SyntheticWebGestureEventBuilder::BuildScrollUpdate(
-          5.f, -5.f, 0, blink::kWebGestureDeviceTouchscreen);
+          5.f, -5.f, 0, blink::WebGestureDevice::kTouchscreen);
       base::TimeTicks now = base::TimeTicks::Now();
       scroll.SetTimeStamp(now);
       ui::LatencyInfo scroll_latency;
@@ -676,11 +650,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestTouchToScrollHistograms) {
                         "TimeToScrollUpdateSwapBegin2",
                         1));
     EXPECT_TRUE(HistogramSizeEq(
-        "Event.Latency.ScrollBegin.Touch.TimeToScrollUpdateSwapBegin2", 0));
-    EXPECT_TRUE(HistogramSizeEq(
         "Event.Latency.ScrollBegin.Touch.TimeToScrollUpdateSwapBegin4", 0));
-    EXPECT_TRUE(HistogramSizeEq(
-        "Event.Latency.ScrollUpdate.Touch.TimeToScrollUpdateSwapBegin2", 1));
     EXPECT_TRUE(HistogramSizeEq(
         "Event.Latency.ScrollUpdate.Touch.TimeToScrollUpdateSwapBegin4", 1));
     EXPECT_TRUE(HistogramSizeEq(
@@ -726,7 +696,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest,
        LatencyTerminatedOnAckIfRenderingNotScheduled) {
   {
     auto scroll = SyntheticWebGestureEventBuilder::BuildScrollBegin(
-        5.f, -5.f, blink::kWebGestureDeviceTouchscreen);
+        5.f, -5.f, blink::WebGestureDevice::kTouchscreen);
     ui::LatencyInfo scroll_latency;
     AddFakeComponents(*tracker(), &scroll_latency);
     // Don't include the rendering schedule component, since we're testing the
@@ -801,8 +771,8 @@ TEST_F(RenderWidgetHostLatencyTrackerTest,
 
 TEST_F(RenderWidgetHostLatencyTrackerTest, LatencyTerminatedOnAckIfGSUIgnored) {
   for (blink::WebGestureDevice source_device :
-       {blink::kWebGestureDeviceTouchscreen,
-        blink::kWebGestureDeviceTouchpad}) {
+       {blink::WebGestureDevice::kTouchscreen,
+        blink::WebGestureDevice::kTouchpad}) {
     for (bool rendering_on_main : {false, true}) {
       auto scroll = SyntheticWebGestureEventBuilder::BuildScrollUpdate(
           5.f, -5.f, 0, source_device);
@@ -810,7 +780,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, LatencyTerminatedOnAckIfGSUIgnored) {
       scroll.SetTimeStamp(now);
       ui::LatencyInfo scroll_latency;
       scroll_latency.set_source_event_type(
-          source_device == blink::kWebGestureDeviceTouchscreen
+          source_device == blink::WebGestureDevice::kTouchscreen
               ? ui::SourceEventType::TOUCH
               : ui::SourceEventType::WHEEL);
       AddFakeComponentsWithTimeStamp(*tracker(), &scroll_latency, now);
@@ -825,7 +795,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, LatencyTerminatedOnAckIfGSUIgnored) {
 
 TEST_F(RenderWidgetHostLatencyTrackerTest, ScrollLatency) {
   auto scroll_begin = SyntheticWebGestureEventBuilder::BuildScrollBegin(
-      5, -5, blink::kWebGestureDeviceTouchscreen);
+      5, -5, blink::WebGestureDevice::kTouchscreen);
   ui::LatencyInfo scroll_latency;
   scroll_latency.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT);
   tracker()->OnInputEvent(scroll_begin, &scroll_latency);
@@ -836,7 +806,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, ScrollLatency) {
   // The first GestureScrollUpdate should be provided with
   // INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT.
   auto first_scroll_update = SyntheticWebGestureEventBuilder::BuildScrollUpdate(
-      5.f, -5.f, 0, blink::kWebGestureDeviceTouchscreen);
+      5.f, -5.f, 0, blink::WebGestureDevice::kTouchscreen);
   scroll_latency = ui::LatencyInfo();
   scroll_latency.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT);
   tracker()->OnInputEvent(first_scroll_update, &scroll_latency);
@@ -853,7 +823,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, ScrollLatency) {
   // Subsequent GestureScrollUpdates should be provided with
   // INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT.
   auto scroll_update = SyntheticWebGestureEventBuilder::BuildScrollUpdate(
-      -5.f, 5.f, 0, blink::kWebGestureDeviceTouchscreen);
+      -5.f, 5.f, 0, blink::WebGestureDevice::kTouchscreen);
   scroll_latency = ui::LatencyInfo();
   scroll_latency.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT);
   tracker()->OnInputEvent(scroll_update, &scroll_latency);
@@ -1215,72 +1185,6 @@ TEST_F(RenderWidgetHostLatencyTrackerTest,
               ElementsAre());
 }
 
-// Some touch input histograms aren't reported for multi-finger touch. Other
-// input modalities shouldn't be impacted by there being an active multi-finger
-// touch gesture.
-TEST_F(RenderWidgetHostLatencyTrackerTest, WheelDuringMultiFingerTouch) {
-  SyntheticWebTouchEvent touch_event;
-  InputEventAckState ack_state = INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
-
-  {
-    // First touch start.
-    ui::LatencyInfo latency;
-    latency.set_source_event_type(ui::SourceEventType::TOUCH);
-    touch_event.PressPoint(1, 1);
-    tracker()->OnInputEvent(touch_event, &latency);
-    tracker()->OnInputEventAck(touch_event, &latency, ack_state);
-  }
-
-  {
-    // Second touch start.
-    ui::LatencyInfo latency;
-    latency.set_source_event_type(ui::SourceEventType::TOUCH);
-    touch_event.PressPoint(1, 1);
-    tracker()->OnInputEvent(touch_event, &latency);
-    tracker()->OnInputEventAck(touch_event, &latency, ack_state);
-  }
-
-  {
-    // Wheel event.
-    ui::LatencyInfo latency;
-    latency.set_source_event_type(ui::SourceEventType::WHEEL);
-    // These numbers are sensitive to where the histogram buckets are.
-    int timestamps_ms[] = {11, 25, 35};
-    auto wheel_event = SyntheticWebMouseWheelEventBuilder::Build(
-        blink::WebMouseWheelEvent::kPhaseChanged);
-    tracker()->OnInputEvent(touch_event, &latency);
-
-    ui::LatencyInfo fake_latency;
-    fake_latency.set_trace_id(kTraceEventId);
-    fake_latency.set_source_event_type(ui::SourceEventType::TOUCH);
-    fake_latency.AddLatencyNumberWithTimestamp(
-        ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
-        base::TimeTicks() + base::TimeDelta::FromMilliseconds(timestamps_ms[0]),
-        1);
-
-    fake_latency.AddLatencyNumberWithTimestamp(
-        ui::INPUT_EVENT_LATENCY_RENDERER_MAIN_COMPONENT,
-        base::TimeTicks() + base::TimeDelta::FromMilliseconds(timestamps_ms[1]),
-        1);
-
-    fake_latency.AddLatencyNumberWithTimestamp(
-        ui::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT,
-        base::TimeTicks() + base::TimeDelta::FromMilliseconds(timestamps_ms[2]),
-        1);
-
-    // Call ComputeInputLatencyHistograms directly to avoid OnInputEventAck
-    // overwriting components.
-    tracker()->ComputeInputLatencyHistograms(wheel_event.GetType(),
-                                             fake_latency, ack_state);
-
-    tracker()->OnInputEventAck(wheel_event, &latency, ack_state);
-  }
-
-  EXPECT_THAT(histogram_tester().GetAllSamples(
-                  "Event.Latency.QueueingTime.MouseWheelDefaultAllowed"),
-              ElementsAre(Bucket(14, 1)));
-}
-
 TEST_F(RenderWidgetHostLatencyTrackerTest, TouchpadPinchEvents) {
   ui::LatencyInfo latency;
   latency.set_trace_id(kTraceEventId);
@@ -1298,115 +1202,6 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TouchpadPinchEvents) {
 
   EXPECT_TRUE(HistogramSizeEq("Event.Latency.EventToRender.TouchpadPinch", 1));
   EXPECT_TRUE(HistogramSizeEq("Event.Latency.EndToEnd.TouchpadPinch", 1));
-}
-
-TEST_F(RenderWidgetHostLatencyTrackerTest, TestScrollUpdateAverageLag) {
-  // Simulate a simple situation that events at every 10ms and start at t=15ms,
-  // frame swaps at every 10ms too and start at t=20ms.
-  base::TimeTicks event_time =
-      base::TimeTicks() + base::TimeDelta::FromMilliseconds(5);
-  base::TimeTicks frame_time =
-      base::TimeTicks() + base::TimeDelta::FromMilliseconds(10);
-  {
-    // ScrollBegin
-    SyntheticWebTouchEvent touch;
-    touch.PressPoint(0, 0);
-    ui::LatencyInfo touch_latency(ui::SourceEventType::TOUCH);
-
-    touch_latency.set_scroll_update_delta(10);
-    event_time += base::TimeDelta::FromMilliseconds(10);  // 15ms
-    touch_latency.AddLatencyNumberWithTimestamp(
-        ui::INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT,
-        event_time, 1);
-    touch_latency.AddLatencyNumberWithTimestamp(
-        ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_LAST_EVENT_COMPONENT, event_time,
-        1);
-
-    frame_time += base::TimeDelta::FromMilliseconds(10);  // 20ms
-    AddFakeComponentsWithTimeStamp(*tracker(), &touch_latency, frame_time);
-    AddRenderingScheduledComponent(&touch_latency,
-                                   false /* rendering_on_main */, frame_time);
-    tracker()->OnInputEvent(touch, &touch_latency);
-    tracker()->OnInputEventAck(touch, &touch_latency,
-                               INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-    viz_tracker()->OnGpuSwapBuffersCompleted(touch_latency);
-  }
-  // Send 101 ScrollUpdate events to verify that there is 1 AverageLag record
-  // per 1 second.
-  for (int i = 0; i <= 100; i++) {
-    // ScrollUpdate
-    SyntheticWebTouchEvent touch;
-    touch.PressPoint(0, 0);
-    ui::LatencyInfo touch_latency(ui::SourceEventType::TOUCH);
-
-    touch_latency.set_scroll_update_delta(10);
-    event_time += base::TimeDelta::FromMilliseconds(10);
-    touch_latency.AddLatencyNumberWithTimestamp(
-        ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT, event_time,
-        1);
-    touch_latency.AddLatencyNumberWithTimestamp(
-        ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_LAST_EVENT_COMPONENT, event_time,
-        1);
-
-    frame_time += base::TimeDelta::FromMilliseconds(10);
-    AddFakeComponentsWithTimeStamp(*tracker(), &touch_latency, frame_time);
-    AddRenderingScheduledComponent(&touch_latency, false /*rendering_on_main*/,
-                                   frame_time);
-    tracker()->OnInputEvent(touch, &touch_latency);
-    tracker()->OnInputEventAck(touch, &touch_latency,
-                               INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-    viz_tracker()->OnGpuSwapBuffersCompleted(touch_latency);
-  }
-  // ScrollBegin report_time is at 20ms, so the next ScrollUpdate report_time is
-  // at 1020ms. The last event_time that finish this report should be later than
-  // 1020ms.
-  EXPECT_EQ(event_time,
-            base::TimeTicks() + base::TimeDelta::FromMilliseconds(1025));
-  EXPECT_EQ(frame_time,
-            base::TimeTicks() + base::TimeDelta::FromMilliseconds(1030));
-
-  // ScrollBegin AverageLag are the area between the event original component
-  // (time=15ms, delta=10px) to the frame swap time (time=20ms, expect finger
-  // position at delta=15px). The AverageLag scaled to 1 second is
-  // (5ms*10px+5ms*5px/2)/5ms = 12.5px.
-  EXPECT_THAT(histogram_tester().GetAllSamples(
-                  "Event.Latency.ScrollBegin.Touch.AverageLag"),
-              ElementsAre(Bucket(12, 1)));
-  // This ScrollUpdate AverageLag are calculated as the finger uniformly scroll
-  // 10px each frame. For each frame, the Lag on the last frame start is 5px,
-  // and Lag on this frame swap is 15px, so the AverageLag in 1 second is 10px.
-  EXPECT_THAT(histogram_tester().GetAllSamples(
-                  "Event.Latency.ScrollUpdate.Touch.AverageLag"),
-              ElementsAre(Bucket(10, 1)));
-  ResetHistograms();
-
-  {
-    // Send another ScrollBegin to end the unfinished ScrollUpdate report.
-    SyntheticWebTouchEvent touch;
-    touch.PressPoint(0, 0);
-    ui::LatencyInfo touch_latency(ui::SourceEventType::TOUCH);
-
-    event_time += base::TimeDelta::FromMilliseconds(10);
-    touch_latency.AddLatencyNumberWithTimestamp(
-        ui::INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT,
-        event_time, 1);
-    touch_latency.AddLatencyNumberWithTimestamp(
-        ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_LAST_EVENT_COMPONENT, event_time,
-        1);
-
-    frame_time += base::TimeDelta::FromMilliseconds(10);
-    AddFakeComponentsWithTimeStamp(*tracker(), &touch_latency, frame_time);
-    AddRenderingScheduledComponent(&touch_latency,
-                                   false /* rendering_on_main */, frame_time);
-    tracker()->OnInputEvent(touch, &touch_latency);
-    tracker()->OnInputEventAck(touch, &touch_latency,
-                               INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-    viz_tracker()->OnGpuSwapBuffersCompleted(touch_latency);
-  }
-  // The last frame's lag is 8.75px and truncated to 8.
-  EXPECT_THAT(histogram_tester().GetAllSamples(
-                  "Event.Latency.ScrollUpdate.Touch.AverageLag"),
-              ElementsAre(Bucket(8, 1)));
 }
 
 }  // namespace content

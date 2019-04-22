@@ -70,7 +70,7 @@ MATCHER_P(ContainsTrackBufferExhaustionSkipLog, skip_milliseconds, "") {
                          "Media append that overlapped current playback "
                          "position caused time gap in playing VIDEO stream "
                          "because the next keyframe is " +
-                             base::IntToString(skip_milliseconds) +
+                             base::NumberToString(skip_milliseconds) +
                              "ms beyond last overlapped frame. Media may "
                              "appear temporarily frozen.");
 }
@@ -5904,11 +5904,11 @@ TEST_P(SourceBufferStreamTest,
   CheckNoNextBuffer();
 }
 
-INSTANTIATE_TEST_CASE_P(LegacyByDts,
-                        SourceBufferStreamTest,
-                        Values(BufferingApi::kLegacyByDts));
-INSTANTIATE_TEST_CASE_P(NewByPts,
-                        SourceBufferStreamTest,
-                        Values(BufferingApi::kNewByPts));
+INSTANTIATE_TEST_SUITE_P(LegacyByDts,
+                         SourceBufferStreamTest,
+                         Values(BufferingApi::kLegacyByDts));
+INSTANTIATE_TEST_SUITE_P(NewByPts,
+                         SourceBufferStreamTest,
+                         Values(BufferingApi::kNewByPts));
 
 }  // namespace media

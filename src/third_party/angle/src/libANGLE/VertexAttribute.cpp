@@ -40,18 +40,6 @@ VertexBinding &VertexBinding::operator=(VertexBinding &&binding)
     return *this;
 }
 
-void VertexBinding::setBuffer(const gl::Context *context, Buffer *bufferIn, bool containerIsBound)
-{
-    if (containerIsBound)
-    {
-        if (mBuffer.get())
-            mBuffer->onNonTFBindingChanged(-1);
-        if (bufferIn)
-            bufferIn->onNonTFBindingChanged(1);
-    }
-    mBuffer.set(context, bufferIn);
-}
-
 void VertexBinding::onContainerBindingChanged(const Context *context, int incr) const
 {
     if (mBuffer.get())
@@ -60,7 +48,7 @@ void VertexBinding::onContainerBindingChanged(const Context *context, int incr) 
 
 VertexAttribute::VertexAttribute(GLuint bindingIndex)
     : enabled(false),
-      type(GL_FLOAT),
+      type(VertexAttribType::Float),
       size(4u),
       normalized(false),
       pureInteger(false),
@@ -157,39 +145,6 @@ void VertexAttribute::updateCachedElementLimit(const VertexBinding &binding)
     mCachedElementLimit = elementLimit.ValueOrDefault(kIntegerOverflow);
 }
 
-size_t ComputeVertexAttributeTypeSize(const VertexAttribute &attrib)
-{
-    GLuint size = attrib.size;
-    switch (attrib.type)
-    {
-        case GL_BYTE:
-            return size * sizeof(GLbyte);
-        case GL_UNSIGNED_BYTE:
-            return size * sizeof(GLubyte);
-        case GL_SHORT:
-            return size * sizeof(GLshort);
-        case GL_UNSIGNED_SHORT:
-            return size * sizeof(GLushort);
-        case GL_INT:
-            return size * sizeof(GLint);
-        case GL_UNSIGNED_INT:
-            return size * sizeof(GLuint);
-        case GL_INT_2_10_10_10_REV:
-            return 4;
-        case GL_UNSIGNED_INT_2_10_10_10_REV:
-            return 4;
-        case GL_FIXED:
-            return size * sizeof(GLfixed);
-        case GL_HALF_FLOAT:
-            return size * sizeof(GLhalf);
-        case GL_FLOAT:
-            return size * sizeof(GLfloat);
-        default:
-            UNREACHABLE();
-            return size * sizeof(GLfloat);
-    }
-}
-
 size_t ComputeVertexAttributeStride(const VertexAttribute &attrib, const VertexBinding &binding)
 {
     // In ES 3.1, VertexAttribPointer will store the type size in the binding stride.
@@ -219,33 +174,6 @@ size_t ComputeVertexBindingElementCount(GLuint divisor, size_t drawCount, size_t
     }
 
     return drawCount;
-}
-
-GLenum GetVertexAttributeBaseType(const VertexAttribute &attrib)
-{
-    if (attrib.pureInteger)
-    {
-        switch (attrib.type)
-        {
-            case GL_BYTE:
-            case GL_SHORT:
-            case GL_INT:
-                return GL_INT;
-
-            case GL_UNSIGNED_BYTE:
-            case GL_UNSIGNED_SHORT:
-            case GL_UNSIGNED_INT:
-                return GL_UNSIGNED_INT;
-
-            default:
-                UNREACHABLE();
-                return GL_NONE;
-        }
-    }
-    else
-    {
-        return GL_FLOAT;
-    }
 }
 
 }  // namespace gl

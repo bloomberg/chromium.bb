@@ -6,13 +6,13 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_DUMMY_MODULATOR_H_
 
 #include "base/single_thread_task_runner.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_module.h"
+#include "third_party/blink/renderer/bindings/core/v8/module_record.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
-class ScriptModuleResolver;
+class ModuleRecordResolver;
 
 // DummyModulator provides empty Modulator interface implementation w/
 // NOTREACHED().
@@ -29,29 +29,31 @@ class DummyModulator : public Modulator {
   ~DummyModulator() override;
   void Trace(blink::Visitor*) override;
 
-  ScriptModuleResolver* GetScriptModuleResolver() override;
+  ModuleRecordResolver* GetModuleRecordResolver() override;
   base::SingleThreadTaskRunner* TaskRunner() override;
   ScriptState* GetScriptState() override;
+  V8CacheOptions GetV8CacheOptions() const override;
   bool IsScriptingDisabled() const override;
 
-  void FetchTree(
-      const KURL&,
-      FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
-      mojom::RequestContextType destination,
-      const ScriptFetchOptions&,
-      ModuleScriptCustomFetchType,
-      ModuleTreeClient*) override;
-  void FetchSingle(
-      const ModuleScriptFetchRequest&,
-      FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
-      ModuleGraphLevel,
-      ModuleScriptCustomFetchType,
-      SingleModuleClient*) override;
-  void FetchDescendantsForInlineScript(
-      ModuleScript*,
-      FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
-      mojom::RequestContextType destination,
-      ModuleTreeClient*) override;
+  bool BuiltInModuleInfraEnabled() const override;
+  bool BuiltInModuleEnabled(blink::layered_api::Module) const override;
+  void BuiltInModuleUseCount(blink::layered_api::Module) const override;
+
+  void FetchTree(const KURL&,
+                 ResourceFetcher*,
+                 mojom::RequestContextType destination,
+                 const ScriptFetchOptions&,
+                 ModuleScriptCustomFetchType,
+                 ModuleTreeClient*) override;
+  void FetchSingle(const ModuleScriptFetchRequest&,
+                   ResourceFetcher*,
+                   ModuleGraphLevel,
+                   ModuleScriptCustomFetchType,
+                   SingleModuleClient*) override;
+  void FetchDescendantsForInlineScript(ModuleScript*,
+                                       ResourceFetcher*,
+                                       mojom::RequestContextType destination,
+                                       ModuleTreeClient*) override;
   ModuleScript* GetFetchedModuleScript(const KURL&) override;
   KURL ResolveModuleSpecifier(const String&, const KURL&, String*) override;
   bool HasValidContext() override;
@@ -59,14 +61,17 @@ class DummyModulator : public Modulator {
                           const KURL&,
                           const ReferrerScriptInfo&,
                           ScriptPromiseResolver*) override;
-  ModuleImportMeta HostGetImportMetaProperties(ScriptModule) const override;
-  ScriptValue InstantiateModule(ScriptModule) override;
-  Vector<ModuleRequest> ModuleRequestsFromScriptModule(ScriptModule) override;
-  ScriptValue ExecuteModule(const ModuleScript*, CaptureEvalErrorFlag) override;
+  void RegisterImportMap(const ImportMap*) override;
+  bool IsAcquiringImportMaps() const override;
+  void ClearIsAcquiringImportMaps() override;
+  ModuleImportMeta HostGetImportMetaProperties(ModuleRecord) const override;
+  ScriptValue InstantiateModule(ModuleRecord) override;
+  Vector<ModuleRequest> ModuleRequestsFromModuleRecord(ModuleRecord) override;
+  ScriptValue ExecuteModule(ModuleScript*, CaptureEvalErrorFlag) override;
   ModuleScriptFetcher* CreateModuleScriptFetcher(
       ModuleScriptCustomFetchType) override;
 
-  Member<ScriptModuleResolver> resolver_;
+  Member<ModuleRecordResolver> resolver_;
 };
 
 }  // namespace blink

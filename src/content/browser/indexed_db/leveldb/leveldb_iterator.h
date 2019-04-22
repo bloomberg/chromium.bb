@@ -26,7 +26,7 @@ class CONTENT_EXPORT LevelDBIterator {
   // expense of reloading and seeking later if the iterator is needed again for
   // |Seek*|, |Next|, |Prev|, or |Value|.
   // Cannot be called more than once before the iterator is reloaded.
-  virtual void Detach() {};
+  virtual void Detach() {}
   virtual bool IsDetached() const;
 };
 

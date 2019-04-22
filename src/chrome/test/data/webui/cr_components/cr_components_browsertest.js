@@ -40,6 +40,28 @@ CrComponentsBrowserTest.prototype = {
   },
 };
 
+/**
+ * @constructor
+ * @extends {CrComponentsBrowserTest}
+ */
+function CrComponentsManagedFootnoteTest() {}
+
+CrComponentsManagedFootnoteTest.prototype = {
+  __proto__: CrComponentsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://downloads',
+
+  /** @override */
+  extraLibraries: CrComponentsBrowserTest.prototype.extraLibraries.concat([
+    'managed_footnote_test.js',
+  ]),
+};
+
+TEST_F('CrComponentsManagedFootnoteTest', 'All', function() {
+  mocha.run();
+});
+
 GEN('#if defined(OS_CHROMEOS)');
 
 /**
@@ -52,6 +74,7 @@ CrComponentsNetworkConfigTest.prototype = {
   __proto__: CrComponentsBrowserTest.prototype,
 
   /** @override */
+
   browsePreload: 'chrome://internet-config-dialog',
 
   /** @override */

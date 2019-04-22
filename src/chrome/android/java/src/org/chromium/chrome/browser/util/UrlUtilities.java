@@ -368,6 +368,7 @@ public class UrlUtilities {
             boolean includePrivateRegistries);
     private static native String nativeGetDomainAndRegistry(String url,
             boolean includePrivateRegistries);
+    public static native boolean nativeIsGoogleDomainUrl(String url, boolean allowNonStandardPort);
     public static native boolean nativeIsGoogleSearchUrl(String url);
     public static native boolean nativeIsGoogleHomePageUrl(String url);
     private static native boolean nativeIsUrlWithinScope(String url, String scopeUrl);

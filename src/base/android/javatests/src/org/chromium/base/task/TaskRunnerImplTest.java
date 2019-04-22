@@ -18,7 +18,7 @@ import org.chromium.base.test.task.SchedulerTestHelpers;
  * Note due to layering concerns we can't test post native functionality in a
  * base javatest. Instead see:
  * content/public/android/javatests/src/org/chromium/content/browser/scheduler/
- * TaskSchedulerTest.java
+ * NativePostTaskTest.java
  */
 @RunWith(BaseJUnit4ClassRunner.class)
 public class TaskRunnerImplTest {
@@ -28,6 +28,10 @@ public class TaskRunnerImplTest {
         TaskRunner taskQueue = new TaskRunnerImpl(new TaskTraits());
 
         // This should not time out.
-        SchedulerTestHelpers.postTaskAndBlockUntilRun(taskQueue);
+        try {
+            SchedulerTestHelpers.postTaskAndBlockUntilRun(taskQueue);
+        } finally {
+            taskQueue.destroy();
+        }
     }
 }

@@ -13,7 +13,7 @@
 
 #include "base/strings/string16.h"
 #include "base/strings/string_split.h"
-#include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_enums.mojom-forward.h"
 #include "ui/accessibility/ax_export.h"
 #include "ui/accessibility/ax_tree_id_registry.h"
 #include "ui/gfx/geometry/rect.h"
@@ -60,6 +60,7 @@ struct AX_EXPORT AXTreeData {
   // (selection end). If the offset could correspond to a position on two
   // different lines, sel_upstream_affinity means the cursor is on the first
   // line, otherwise it's on the second line.
+  bool sel_is_backward = false;
   int32_t sel_anchor_object_id = -1;
   int32_t sel_anchor_offset = -1;
   ax::mojom::TextAffinity sel_anchor_affinity =

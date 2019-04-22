@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 
+#include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -100,8 +101,10 @@ class QuotaBackendImplTest : public testing::Test {
   void SetUp() override {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     in_memory_env_ = leveldb_chrome::NewMemEnv("quota");
+    // TODO(https://crbug.com/93417): Add support for incognito tests.
     file_util_.reset(ObfuscatedFileUtil::CreateForTesting(
-        nullptr, data_dir_.GetPath(), in_memory_env_.get()));
+        nullptr, data_dir_.GetPath(), in_memory_env_.get(),
+        /*is_incognito*/ false));
     backend_ = std::make_unique<QuotaBackendImpl>(
         file_task_runner(), file_util_.get(), &file_system_usage_cache_,
         quota_manager_proxy_.get());

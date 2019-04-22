@@ -42,7 +42,7 @@ class WiFiDisplayAudioEncoderLPCM final
   // WiFiDisplayMediaEncoder
   WiFiDisplayElementaryStreamInfo CreateElementaryStreamInfo() const override;
 
-  // content::MediaStreamAudioSink
+  // blink::WebMediaStreamAudioSink
   void OnData(const media::AudioBus& input_bus,
               base::TimeTicks estimated_capture_time) override;
   void OnSetFormat(const media::AudioParameters& params) override;

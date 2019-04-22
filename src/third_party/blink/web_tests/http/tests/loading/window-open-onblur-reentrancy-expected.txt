@@ -1,7 +1,10 @@
-main frame - didStartProvisionalLoadForFrame
+main frame - DidStartNavigation
+main frame - ReadyToCommitNavigation
 main frame - didCommitLoadForFrame
 frame "i" - didReceiveTitle: 
-frame "i" - didStartProvisionalLoadForFrame
+frame "i" - BeginNavigation request to 'about:blank', http method GET
+frame "i" - DidStartNavigation
+frame "i" - ReadyToCommitNavigation
 frame "i" - didCommitLoadForFrame
 frame "i" - didReceiveTitle: 
 frame "i" - didFinishDocumentLoadForFrame

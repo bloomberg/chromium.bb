@@ -68,6 +68,7 @@ enum SerializationTag {
                                       // OffscreenCanvas. For OffscreenCanvas
                                       // transfer
   kReadableStreamTransferTag = 'r',   // index:uint32_t
+  kTransformStreamTransferTag = 'm',  // index:uint32_t
   kWritableStreamTransferTag = 'w',   // index:uint32_t
   kDOMPointTag = 'Q',                 // x:Double, y:Double, z:Double, w:Double
   kDOMPointReadOnlyTag = 'W',         // x:Double, y:Double, z:Double, w:Double
@@ -97,7 +98,8 @@ enum SerializationTag {
                              // pemCertificate:WebCoreString
   kDetectedBarcodeTag =
       'B',  // raw_value:WebCoreString, bounding_box:DOMRectReadOnly,
-            // corner_points:Point2D[length] -> DetectedBarcode (ref)
+            // format:String, corner_points:Point2D[length] ->
+            // DetectedBarcode (ref)
   kDetectedFaceTag =
       'F',  // raw_value:WebCoreString, bounding_box:DOMRectReadOnly,
             // corner_points:Point2D[length] -> DetectedText (ref)

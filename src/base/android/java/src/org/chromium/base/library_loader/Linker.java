@@ -9,22 +9,18 @@ import android.os.Bundle;
 import android.os.Parcel;
 import android.os.ParcelFileDescriptor;
 import android.os.Parcelable;
+import android.support.annotation.Nullable;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.StreamUtil;
 import org.chromium.base.SysUtils;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.AccessedByNative;
-import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JniIgnoreNatives;
-import org.chromium.base.annotations.MainDex;
 
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-
-import javax.annotation.Nullable;
 
 /*
  * Technical note:
@@ -201,11 +197,6 @@ public class Linker {
 
     // The name of a class that implements TestRunner.
     private String mTestRunnerClassName;
-
-    // Size of reserved Breakpad guard region. Should match the value of
-    // kBreakpadGuardRegionBytes on the JNI side. Used when computing the load
-    // addresses of multiple loaded libraries. Set to 0 to disable the guard.
-    private static final int BREAKPAD_GUARD_REGION_BYTES = 16 * 1024 * 1024;
 
     // Size of the area requested when using ASLR to obtain a random load address.
     // Should match the value of kAddressSpaceReservationSize on the JNI side.
@@ -443,7 +434,8 @@ public class Linker {
         } catch (UnsatisfiedLinkError e) {
             if (LibraryLoader.PLATFORM_REQUIRES_NATIVE_FALLBACK_EXTRACTION) {
                 System.load(LibraryLoader.getExtractedLibraryPath(
-                        ContextUtils.getApplicationContext(), LINKER_JNI_LIBRARY));
+                        ContextUtils.getApplicationContext().getApplicationInfo(),
+                        LINKER_JNI_LIBRARY));
                 LibraryLoader.incrementRelinkerCountHitHistogram();
             }
         }
@@ -958,8 +950,7 @@ public class Linker {
                 // is not 0, this is an explicit library load address. Otherwise,
                 // this is an explicit load address for relocated RELRO sections
                 // only.
-                mCurrentLoadAddress =
-                        libInfo.mLoadAddress + libInfo.mLoadSize + BREAKPAD_GUARD_REGION_BYTES;
+                mCurrentLoadAddress = libInfo.mLoadAddress + libInfo.mLoadSize;
             }
 
             mLoadedLibraries.put(sharedRelRoName, libInfo);
@@ -1075,32 +1066,6 @@ public class Linker {
             entry.getValue().close();
         }
     }
-
-    /**
-     * Move activity from the native thread to the main UI thread.
-     * Called from native code on its own thread. Posts a callback from
-     * the UI thread back to native code.
-     *
-     * @param opaque Opaque argument.
-     */
-    @CalledByNative
-    @MainDex
-    private static void postCallbackOnMainThread(final long opaque) {
-        ThreadUtils.postOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                nativeRunCallbackOnUiThread(opaque);
-            }
-        });
-    }
-
-    /**
-     * Native method to run callbacks on the main UI thread.
-     * Supplied by the crazy linker and called by postCallbackOnMainThread.
-     *
-     * @param opaque Opaque crazy linker arguments.
-     */
-    private static native void nativeRunCallbackOnUiThread(long opaque);
 
     /**
      * Native method used to load a library.

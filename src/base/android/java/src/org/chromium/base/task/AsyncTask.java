@@ -5,14 +5,17 @@
 package org.chromium.base.task;
 
 import android.os.Binder;
-import android.os.Process;
+import android.support.annotation.IntDef;
 import android.support.annotation.MainThread;
 import android.support.annotation.WorkerThread;
 
+import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.DoNotInline;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
@@ -33,8 +36,10 @@ public abstract class AsyncTask<Result> {
 
     /**
      * An {@link Executor} that can be used to execute tasks in parallel.
+     * We use the lowest task priority, and mayBlock = true since any user of this could block.
      */
-    public static final Executor THREAD_POOL_EXECUTOR = new ChromeThreadPoolExecutor();
+    public static final Executor THREAD_POOL_EXECUTOR =
+            (Runnable r) -> PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK, r);
 
     /**
      * An {@link Executor} that executes tasks one at a time in serial
@@ -47,7 +52,7 @@ public abstract class AsyncTask<Result> {
     private final Callable<Result> mWorker;
     private final FutureTask<Result> mFuture;
 
-    private volatile Status mStatus = Status.PENDING;
+    private volatile @Status int mStatus = Status.PENDING;
 
     private final AtomicBoolean mCancelled = new AtomicBoolean();
     private final AtomicBoolean mTaskInvoked = new AtomicBoolean();
@@ -63,19 +68,21 @@ public abstract class AsyncTask<Result> {
      * Indicates the current status of the task. Each status will be set only once
      * during the lifetime of a task.
      */
-    public enum Status {
+    @IntDef({Status.PENDING, Status.RUNNING, Status.FINISHED})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface Status {
         /**
          * Indicates that the task has not been executed yet.
          */
-        PENDING,
+        int PENDING = 0;
         /**
          * Indicates that the task is running.
          */
-        RUNNING,
+        int RUNNING = 1;
         /**
          * Indicates that {@link AsyncTask#onPostExecute} has finished.
          */
-        FINISHED,
+        int FINISHED = 2;
     }
 
     @SuppressWarnings("NoAndroidAsyncTaskCheck")
@@ -95,7 +102,6 @@ public abstract class AsyncTask<Result> {
                 mTaskInvoked.set(true);
                 Result result = null;
                 try {
-                    Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
                     result = doInBackground();
                     Binder.flushPendingCommands();
                 } catch (Throwable tr) {
@@ -119,7 +125,12 @@ public abstract class AsyncTask<Result> {
     }
 
     private void postResult(Result result) {
-        ThreadUtils.postOnUiThread(() -> { finish(result); });
+        // We check if this task is of a type which does not require post-execution.
+        if (this instanceof BackgroundOnlyAsyncTask) {
+            mStatus = Status.FINISHED;
+        } else {
+            ThreadUtils.postOnUiThread(() -> { finish(result); });
+        }
     }
 
     /**
@@ -127,7 +138,7 @@ public abstract class AsyncTask<Result> {
      *
      * @return The current status.
      */
-    public final Status getStatus() {
+    public final @Status int getStatus() {
         return mStatus;
     }
 
@@ -157,6 +168,9 @@ public abstract class AsyncTask<Result> {
      *
      * <p>This method won't be invoked if the task was cancelled.</p>
      *
+     * <p> Must be overridden by subclasses. If a subclass doesn't need
+     * post-execution, is should extend BackgroundOnlyAsyncTask instead.
+     *
      * @param result The result of the operation computed by {@link #doInBackground}.
      *
      * @see #onPreExecute
@@ -165,7 +179,7 @@ public abstract class AsyncTask<Result> {
      */
     @SuppressWarnings({"UnusedDeclaration"})
     @MainThread
-    protected void onPostExecute(Result result) {}
+    protected abstract void onPostExecute(Result result);
 
     /**
      * <p>Runs on the UI thread after {@link #cancel(boolean)} is invoked and
@@ -279,6 +293,25 @@ public abstract class AsyncTask<Result> {
         return r;
     }
 
+    @SuppressWarnings({"MissingCasesInEnumSwitch"})
+    private void executionPreamble() {
+        if (mStatus != Status.PENDING) {
+            switch (mStatus) {
+                case Status.RUNNING:
+                    throw new IllegalStateException("Cannot execute task:"
+                            + " the task is already running.");
+                case Status.FINISHED:
+                    throw new IllegalStateException("Cannot execute task:"
+                            + " the task has already been executed "
+                            + "(a task can be executed only once)");
+            }
+        }
+
+        mStatus = Status.RUNNING;
+
+        onPreExecute();
+    }
+
     /**
      * Executes the task with the specified parameters. The task returns
      * itself (this) so that the caller can keep a reference to it.
@@ -309,27 +342,37 @@ public abstract class AsyncTask<Result> {
      * @throws IllegalStateException If {@link #getStatus()} returns either
      *         {@link AsyncTask.Status#RUNNING} or {@link AsyncTask.Status#FINISHED}.
      */
-    @SuppressWarnings({"MissingCasesInEnumSwitch"})
     @MainThread
     public final AsyncTask<Result> executeOnExecutor(Executor exec) {
-        if (mStatus != Status.PENDING) {
-            switch (mStatus) {
-                case RUNNING:
-                    throw new IllegalStateException("Cannot execute task:"
-                            + " the task is already running.");
-                case FINISHED:
-                    throw new IllegalStateException("Cannot execute task:"
-                            + " the task has already been executed "
-                            + "(a task can be executed only once)");
-            }
-        }
-
-        mStatus = Status.RUNNING;
-
-        onPreExecute();
-
+        executionPreamble();
         exec.execute(mFuture);
+        return this;
+    }
 
+    /**
+     * Executes an AsyncTask on the given TaskRunner.
+     *
+     * @param taskRunner taskRunner to run this AsyncTask on.
+     * @return This instance of AsyncTask.
+     */
+    @MainThread
+    public final AsyncTask<Result> executeOnTaskRunner(TaskRunner taskRunner) {
+        executionPreamble();
+        taskRunner.postTask(mFuture);
+        return this;
+    }
+
+    /**
+     * Executes an AsyncTask with the given task traits. Provides no guarantees about sequencing or
+     * which thread it runs on.
+     *
+     * @param taskTraits traits which describe this AsyncTask.
+     * @return This instance of AsyncTask.
+     */
+    @MainThread
+    public final AsyncTask<Result> executeWithTaskTraits(TaskTraits taskTraits) {
+        executionPreamble();
+        PostTask.postTask(taskTraits, mFuture);
         return this;
     }
 
@@ -356,7 +399,7 @@ public abstract class AsyncTask<Result> {
             try {
                 postResultIfNotInvoked(get());
             } catch (InterruptedException e) {
-                android.util.Log.w(TAG, e);
+                Log.w(TAG, e.toString());
             } catch (ExecutionException e) {
                 throw new RuntimeException(
                         "An error occurred while executing doInBackground()", e.getCause());

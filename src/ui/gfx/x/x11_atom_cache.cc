@@ -12,6 +12,7 @@
 
 #include "base/logging.h"
 #include "base/memory/singleton.h"
+#include "base/stl_util.h"
 
 namespace {
 
@@ -228,7 +229,7 @@ constexpr const char* kAtomsToCache[] = {
     "XdndTypeList",
 };
 
-constexpr int kCacheCount = arraysize(kAtomsToCache);
+constexpr int kCacheCount = base::size(kAtomsToCache);
 
 }  // namespace
 

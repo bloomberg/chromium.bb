@@ -11,11 +11,11 @@
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_util.h"
-#include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/components/multidevice/logging/logging.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
+#include "chromeos/services/device_sync/proto/cryptauth_api.pb.h"
 #include "chromeos/services/secure_channel/ble_constants.h"
 #include "chromeos/services/secure_channel/ble_synchronizer_base.h"
-#include "components/cryptauth/proto/cryptauth_api.pb.h"
-#include "components/cryptauth/remote_device_ref.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
 #include "device/bluetooth/bluetooth_uuid.h"
@@ -50,7 +50,7 @@ void BleScannerImpl::Factory::SetFactoryForTesting(Factory* test_factory) {
 
 std::unique_ptr<BleScanner> BleScannerImpl::Factory::BuildInstance(
     Delegate* delegate,
-    secure_channel::BleServiceDataHelper* service_data_helper,
+    BleServiceDataHelper* service_data_helper,
     BleSynchronizerBase* ble_synchronizer,
     scoped_refptr<device::BluetoothAdapter> adapter) {
   return base::WrapUnique(new BleScannerImpl(delegate, service_data_helper,
@@ -66,11 +66,10 @@ BleScannerImpl::ServiceDataProvider::ExtractProximityAuthServiceData(
       device::BluetoothUUID(kAdvertisingServiceUuid));
 }
 
-BleScannerImpl::BleScannerImpl(
-    Delegate* delegate,
-    secure_channel::BleServiceDataHelper* service_data_helper,
-    BleSynchronizerBase* ble_synchronizer,
-    scoped_refptr<device::BluetoothAdapter> adapter)
+BleScannerImpl::BleScannerImpl(Delegate* delegate,
+                               BleServiceDataHelper* service_data_helper,
+                               BleSynchronizerBase* ble_synchronizer,
+                               scoped_refptr<device::BluetoothAdapter> adapter)
     : BleScanner(delegate),
       service_data_helper_(service_data_helper),
       ble_synchronizer_(ble_synchronizer),

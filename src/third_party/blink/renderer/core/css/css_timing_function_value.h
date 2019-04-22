@@ -30,20 +30,13 @@
 #include "third_party/blink/renderer/core/css/css_value.h"
 #include "third_party/blink/renderer/platform/animation/timing_function.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 namespace cssvalue {
 
 class CSSCubicBezierTimingFunctionValue : public CSSValue {
  public:
-  static CSSCubicBezierTimingFunctionValue* Create(double x1,
-                                                   double y1,
-                                                   double x2,
-                                                   double y2) {
-    return MakeGarbageCollected<CSSCubicBezierTimingFunctionValue>(x1, y1, x2,
-                                                                   y2);
-  }
-
   CSSCubicBezierTimingFunctionValue(double x1, double y1, double x2, double y2)
       : CSSValue(kCubicBezierTimingFunctionClass),
         x1_(x1),
@@ -70,9 +63,6 @@ class CSSCubicBezierTimingFunctionValue : public CSSValue {
   double x2_;
   double y2_;
 };
-
-DEFINE_CSS_VALUE_TYPE_CASTS(CSSCubicBezierTimingFunctionValue,
-                            IsCubicBezierTimingFunctionValue());
 
 class CSSStepsTimingFunctionValue : public CSSValue {
  public:
@@ -107,9 +97,6 @@ class CSSStepsTimingFunctionValue : public CSSValue {
   StepsTimingFunction::StepPosition step_position_;
 };
 
-DEFINE_CSS_VALUE_TYPE_CASTS(CSSStepsTimingFunctionValue,
-                            IsStepsTimingFunctionValue());
-
 class CSSFramesTimingFunctionValue : public CSSValue {
  public:
   static CSSFramesTimingFunctionValue* Create(int frames) {
@@ -135,10 +122,29 @@ class CSSFramesTimingFunctionValue : public CSSValue {
   int frames_;
 };
 
-DEFINE_CSS_VALUE_TYPE_CASTS(CSSFramesTimingFunctionValue,
-                            IsFramesTimingFunctionValue());
-
 }  // namespace cssvalue
+
+template <>
+struct DowncastTraits<cssvalue::CSSCubicBezierTimingFunctionValue> {
+  static bool AllowFrom(const CSSValue& value) {
+    return value.IsCubicBezierTimingFunctionValue();
+  }
+};
+
+template <>
+struct DowncastTraits<cssvalue::CSSStepsTimingFunctionValue> {
+  static bool AllowFrom(const CSSValue& value) {
+    return value.IsStepsTimingFunctionValue();
+  }
+};
+
+template <>
+struct DowncastTraits<cssvalue::CSSFramesTimingFunctionValue> {
+  static bool AllowFrom(const CSSValue& value) {
+    return value.IsFramesTimingFunctionValue();
+  }
+};
+
 }  // namespace blink
 
 #endif

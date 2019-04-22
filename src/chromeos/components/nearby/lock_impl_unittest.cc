@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/containers/flat_set.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"

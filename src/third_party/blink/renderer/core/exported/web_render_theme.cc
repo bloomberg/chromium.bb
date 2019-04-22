@@ -44,4 +44,12 @@ void SetFocusRingColor(SkColor color) {
   LayoutTheme::GetTheme().SetCustomFocusRingColor(color);
 }
 
+void SetMinimumStrokeWidthForFocusRing(float stroke_width) {
+  LayoutTheme::GetTheme().SetMinimumStrokeWidthForFocusRing(stroke_width);
+}
+
+void SetIsFocusRingOutset(bool is_outset) {
+  LayoutTheme::GetTheme().SetIsFocusRingOutset(is_outset);
+}
+
 }  // namespace blink

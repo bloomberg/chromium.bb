@@ -245,13 +245,10 @@ Field **NetworkConfigurations** is an array of
     * (required if **IPAddressConfigType** or **NameServersConfigType** is set
       to *Static*) - [IPConfig](#IPConfig-type)
     * Each property set in this IPConfig object overrides the respective
-      parameter received over DHCP.
-      If **IPAddressConfigType** is set to
-      *Static*, **IPAddress**
-      and **Gateway** are required.
-      If **NameServersConfigType** is set to
-      *Static*, **NameServers**
-      is required.
+      parameter received over DHCP. If **IPAddressConfigType** is set to
+      *Static*, **IPAddress**, **Gateway** and **RoutingPrefix** are required.
+      If **NameServersConfigType** is set to *Static*, **NameServers** is
+      required.
 
 * **SavedIPConfig**
     * (optional for connected networks, read-only) - [IPConfig](#IPConfig-type)
@@ -394,7 +391,7 @@ static IP configuration (see **StaticIPConfig**).
 ### IPConfig type
 
 * **Type**
-    * (required) - **string**
+    * (optional, defaults to *IPv4*) - **string**
     * Allowed values are:
         * *IPv4*
         * *IPv6*
@@ -403,8 +400,8 @@ static IP configuration (see **StaticIPConfig**).
 * **IPAddress**
     * (optional) - **string**
     * Describes the IPv4 or IPv6 address of a connection, depending on the value
-      of **Type** field. It should not contain the
-      routing prefix (i.e. should not end in something like /64).
+      of **Type** field. It should not contain the routing prefix (i.e. should
+      not end in something like /64).
 
 * **RoutingPrefix**
     * (required if **IPAddress** is set. Otherwise ignored.) - **integer**
@@ -420,9 +417,8 @@ static IP configuration (see **StaticIPConfig**).
 
 * **NameServers**
     * (optional) - **array of string**
-    * Array of addresses to use for name servers. Address format must match that
-      specified in the **Type** field. If not specified,
-      DHCP values will be used.
+    * Array of addresses to use for name servers. If not specified, DHCP values
+    will be used.
 
 * **SearchDomains**
     * (optional) - **array of string**

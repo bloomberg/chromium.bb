@@ -4,6 +4,9 @@
 
 #include "chrome/browser/browsing_data/site_data_size_collector.h"
 
+#include <utility>
+
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/task/post_task.h"
 #include "chrome/common/chrome_constants.h"
@@ -30,7 +33,6 @@ SiteDataSizeCollector::SiteDataSizeCollector(
     BrowsingDataAppCacheHelper* appcache_helper,
     BrowsingDataIndexedDBHelper* indexed_db_helper,
     BrowsingDataFileSystemHelper* file_system_helper,
-    BrowsingDataChannelIDHelper* channel_id_helper,
     BrowsingDataServiceWorkerHelper* service_worker_helper,
     BrowsingDataCacheStorageHelper* cache_storage_helper,
     BrowsingDataFlashLSOHelper* flash_lso_helper)
@@ -41,7 +43,6 @@ SiteDataSizeCollector::SiteDataSizeCollector(
       local_storage_helper_(local_storage_helper),
       indexed_db_helper_(indexed_db_helper),
       file_system_helper_(file_system_helper),
-      channel_id_helper_(channel_id_helper),
       service_worker_helper_(service_worker_helper),
       cache_storage_helper_(cache_storage_helper),
       flash_lso_helper_(flash_lso_helper),
@@ -52,72 +53,66 @@ SiteDataSizeCollector::SiteDataSizeCollector(
 SiteDataSizeCollector::~SiteDataSizeCollector() {
 }
 
-void SiteDataSizeCollector::Fetch(const FetchCallback& callback) {
+void SiteDataSizeCollector::Fetch(FetchCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!callback.is_null());
 
-  fetch_callback_ = callback;
+  fetch_callback_ = std::move(callback);
   total_bytes_ = 0;
   in_flight_operations_ = 0;
 
   if (appcache_helper_.get()) {
     appcache_helper_->StartFetching(
-        base::Bind(&SiteDataSizeCollector::OnAppCacheModelInfoLoaded,
-               weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&SiteDataSizeCollector::OnAppCacheModelInfoLoaded,
+                       weak_ptr_factory_.GetWeakPtr()));
     in_flight_operations_++;
   }
   if (cookie_helper_.get()) {
     cookie_helper_->StartFetching(
-        base::Bind(&SiteDataSizeCollector::OnCookiesModelInfoLoaded,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&SiteDataSizeCollector::OnCookiesModelInfoLoaded,
+                       weak_ptr_factory_.GetWeakPtr()));
     in_flight_operations_++;
   }
   if (database_helper_.get()) {
     database_helper_->StartFetching(
-        base::Bind(&SiteDataSizeCollector::OnDatabaseModelInfoLoaded,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&SiteDataSizeCollector::OnDatabaseModelInfoLoaded,
+                       weak_ptr_factory_.GetWeakPtr()));
     in_flight_operations_++;
   }
   if (local_storage_helper_.get()) {
     local_storage_helper_->StartFetching(
-        base::Bind(&SiteDataSizeCollector::OnLocalStorageModelInfoLoaded,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&SiteDataSizeCollector::OnLocalStorageModelInfoLoaded,
+                       weak_ptr_factory_.GetWeakPtr()));
     in_flight_operations_++;
   }
   if (indexed_db_helper_.get()) {
     indexed_db_helper_->StartFetching(
-        base::Bind(&SiteDataSizeCollector::OnIndexedDBModelInfoLoaded,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&SiteDataSizeCollector::OnIndexedDBModelInfoLoaded,
+                       weak_ptr_factory_.GetWeakPtr()));
     in_flight_operations_++;
   }
   if (file_system_helper_.get()) {
     file_system_helper_->StartFetching(
-        base::Bind(&SiteDataSizeCollector::OnFileSystemModelInfoLoaded,
-                   weak_ptr_factory_.GetWeakPtr()));
-    in_flight_operations_++;
-  }
-  if (channel_id_helper_.get()) {
-    channel_id_helper_->StartFetching(
-        base::Bind(&SiteDataSizeCollector::OnChannelIDModelInfoLoaded,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&SiteDataSizeCollector::OnFileSystemModelInfoLoaded,
+                       weak_ptr_factory_.GetWeakPtr()));
     in_flight_operations_++;
   }
   if (service_worker_helper_.get()) {
     service_worker_helper_->StartFetching(
-        base::Bind(&SiteDataSizeCollector::OnServiceWorkerModelInfoLoaded,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&SiteDataSizeCollector::OnServiceWorkerModelInfoLoaded,
+                       weak_ptr_factory_.GetWeakPtr()));
     in_flight_operations_++;
   }
   if (cache_storage_helper_.get()) {
     cache_storage_helper_->StartFetching(
-        base::Bind(&SiteDataSizeCollector::OnCacheStorageModelInfoLoaded,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&SiteDataSizeCollector::OnCacheStorageModelInfoLoaded,
+                       weak_ptr_factory_.GetWeakPtr()));
     in_flight_operations_++;
   }
   if (flash_lso_helper_.get()) {
     flash_lso_helper_->StartFetching(
-        base::Bind(&SiteDataSizeCollector::OnFlashLSOInfoLoaded,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&SiteDataSizeCollector::OnFlashLSOInfoLoaded,
+                       weak_ptr_factory_.GetWeakPtr()));
     in_flight_operations_++;
   }
   // TODO(fukino): SITE_USAGE_DATA and WEB_APP_DATA should be counted too.
@@ -125,15 +120,11 @@ void SiteDataSizeCollector::Fetch(const FetchCallback& callback) {
 }
 
 void SiteDataSizeCollector::OnAppCacheModelInfoLoaded(
-    scoped_refptr<content::AppCacheInfoCollection> appcache_info) {
+    const std::list<content::StorageUsageInfo>& info_list) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   int64_t total_size = 0;
-  if (appcache_info.get()) {
-    for (const auto& origin : appcache_info->infos_by_origin) {
-      for (const auto& info : origin.second)
-        total_size += info.size;
-    }
-  }
+  for (const auto& info : info_list)
+    total_size += info.total_size_bytes;
   OnStorageSizeFetched(total_size);
 }
 
@@ -149,9 +140,9 @@ void SiteDataSizeCollector::OnCookiesModelInfoLoaded(
       .Append(chrome::kCookieFilename);
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::Bind(&GetFileSizeBlocking, cookie_file_path),
-      base::Bind(&SiteDataSizeCollector::OnStorageSizeFetched,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&GetFileSizeBlocking, cookie_file_path),
+      base::BindOnce(&SiteDataSizeCollector::OnStorageSizeFetched,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void SiteDataSizeCollector::OnDatabaseModelInfoLoaded(
@@ -159,7 +150,7 @@ void SiteDataSizeCollector::OnDatabaseModelInfoLoaded(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   int64_t total_size = 0;
   for (const auto& database_info : database_info_list)
-    total_size += database_info.size;
+    total_size += database_info.total_size_bytes;
   OnStorageSizeFetched(total_size);
 }
 
@@ -168,7 +159,7 @@ void SiteDataSizeCollector::OnLocalStorageModelInfoLoaded(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   int64_t total_size = 0;
   for (const auto& local_storage_info : local_storage_info_list)
-    total_size += local_storage_info.size;
+    total_size += local_storage_info.total_size_bytes;
   OnStorageSizeFetched(total_size);
 }
 
@@ -190,23 +181,6 @@ void SiteDataSizeCollector::OnFileSystemModelInfoLoaded(
       total_size += usage.second;
   }
   OnStorageSizeFetched(total_size);
-}
-
-void SiteDataSizeCollector::OnChannelIDModelInfoLoaded(
-    const ChannelIDList& channel_id_list) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  if (channel_id_list.empty()) {
-    OnStorageSizeFetched(0);
-    return;
-  }
-  base::FilePath channel_id_file_path = default_storage_partition_path_
-      .Append(chrome::kChannelIDFilename);
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::Bind(&GetFileSizeBlocking, channel_id_file_path),
-      base::Bind(&SiteDataSizeCollector::OnStorageSizeFetched,
-                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void SiteDataSizeCollector::OnServiceWorkerModelInfoLoaded(
@@ -241,9 +215,9 @@ void SiteDataSizeCollector::OnFlashLSOInfoLoaded(
       .Append(content::kPepperDataDirname);
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::Bind(&base::ComputeDirectorySize, pepper_data_dir_path),
-      base::Bind(&SiteDataSizeCollector::OnStorageSizeFetched,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&base::ComputeDirectorySize, pepper_data_dir_path),
+      base::BindOnce(&SiteDataSizeCollector::OnStorageSizeFetched,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void SiteDataSizeCollector::OnStorageSizeFetched(int64_t size) {
@@ -251,5 +225,5 @@ void SiteDataSizeCollector::OnStorageSizeFetched(int64_t size) {
   if (size > 0)
     total_bytes_ += size;
   if (--in_flight_operations_ == 0)
-    fetch_callback_.Run(total_bytes_);
+    std::move(fetch_callback_).Run(total_bytes_);
 }

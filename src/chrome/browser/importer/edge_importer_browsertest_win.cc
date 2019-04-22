@@ -8,9 +8,9 @@
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -177,7 +177,7 @@ IN_PROC_BROWSER_TEST_F(EdgeImporterBrowserTest, EdgeImporter) {
       {false, 0, {}, L"InvalidFavicon", "http://www.invalid-favicon.com/"},
   };
   std::vector<BookmarkInfo> bookmark_entries(
-      kEdgeBookmarks, kEdgeBookmarks + arraysize(kEdgeBookmarks));
+      kEdgeBookmarks, kEdgeBookmarks + base::size(kEdgeBookmarks));
 
   const FaviconGroup kEdgeFaviconGroup[] = {
       {L"http://www.links-sublink.com/favicon.ico",
@@ -195,7 +195,7 @@ IN_PROC_BROWSER_TEST_F(EdgeImporterBrowserTest, EdgeImporter) {
   };
 
   std::vector<FaviconGroup> favicon_groups(
-      kEdgeFaviconGroup, kEdgeFaviconGroup + arraysize(kEdgeFaviconGroup));
+      kEdgeFaviconGroup, kEdgeFaviconGroup + base::size(kEdgeFaviconGroup));
 
   base::FilePath data_path;
   ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &data_path));
@@ -239,11 +239,11 @@ IN_PROC_BROWSER_TEST_F(EdgeImporterBrowserTest, EdgeImporterLegacyFallback) {
   const BookmarkInfo kEdgeBookmarks[] = {
       {false, 0, {}, L"Google", "http://www.google.com/"}};
   std::vector<BookmarkInfo> bookmark_entries(
-      kEdgeBookmarks, kEdgeBookmarks + arraysize(kEdgeBookmarks));
+      kEdgeBookmarks, kEdgeBookmarks + base::size(kEdgeBookmarks));
   const FaviconGroup kEdgeFaviconGroup[] = {
       {L"http://www.google.com/favicon.ico", L"http://www.google.com/"}};
   std::vector<FaviconGroup> favicon_groups(
-      kEdgeFaviconGroup, kEdgeFaviconGroup + arraysize(kEdgeFaviconGroup));
+      kEdgeFaviconGroup, kEdgeFaviconGroup + base::size(kEdgeFaviconGroup));
 
   base::FilePath data_path;
   ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &data_path));

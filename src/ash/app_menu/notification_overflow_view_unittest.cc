@@ -28,7 +28,8 @@ class NotificationOverflowViewTest : public views::ViewsTestBase {
   // Adds a notification and returns the string identifier.
   std::string AddNotification() {
     message_center::ProportionalImageView image_view(gfx::Size(16, 16));
-    std::string notification_id = base::IntToString(notification_identifier_++);
+    std::string notification_id =
+        base::NumberToString(notification_identifier_++);
     notification_overflow_view_->AddIcon(image_view, notification_id);
     return notification_id;
   }
@@ -108,7 +109,7 @@ TEST_F(NotificationOverflowViewTest, OverflowIcon) {
   EXPECT_TRUE(HasOverflowIcon());
 
   // Remove any notification that was added. The overflow icon should dissapear.
-  notification_overflow_view()->RemoveIcon(base::IntToString(0));
+  notification_overflow_view()->RemoveIcon(base::NumberToString(0));
   CheckNumberOfNotificationIcons(kMaxOverflowIcons);
   EXPECT_FALSE(HasOverflowIcon());
 

@@ -14,7 +14,6 @@
 #include "ash/wallpaper/wallpaper_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chromeos/login/scoped_test_public_session_login_state.h"
 #include "ui/display/display.h"
 #include "ui/views/widget/widget.h"
 

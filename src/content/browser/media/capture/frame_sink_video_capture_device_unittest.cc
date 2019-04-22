@@ -195,6 +195,7 @@ class MockVideoFrameReceiver : public media::VideoFrameReceiver {
   MOCK_METHOD1(OnFrameDropped, void(media::VideoCaptureFrameDropReason reason));
   MOCK_METHOD1(OnLog, void(const std::string& message));
   MOCK_METHOD0(OnStarted, void());
+  MOCK_METHOD0(OnStopped, void());
   void OnStartedUsingGpuDecode() final { NOTREACHED(); }
 
   base::ReadOnlySharedMemoryRegion TakeBufferHandle(int buffer_id) {
@@ -377,7 +378,7 @@ class FrameSinkVideoCaptureDeviceTest : public testing::Test {
                   base::Value(base::Value::Type::DICTIONARY), kFormat,
                   kResolution, gfx::Rect(kResolution),
                   gfx::ColorSpace::CreateREC709(), nullptr),
-              gfx::Rect(kResolution), gfx::Rect(kResolution),
+              gfx::Rect(kResolution),
               viz::mojom::FrameSinkVideoConsumerFrameCallbacksPtr(
                   std::move(callbacks_info)));
         },

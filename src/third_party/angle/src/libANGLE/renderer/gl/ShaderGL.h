@@ -13,7 +13,7 @@
 
 namespace rx
 {
-class FunctionsGL;
+class RendererGL;
 struct WorkaroundsGL;
 enum class MultiviewImplementationTypeGL;
 
@@ -23,24 +23,31 @@ class ShaderGL : public ShaderImpl
     ShaderGL(const gl::ShaderState &data,
              GLuint shaderID,
              MultiviewImplementationTypeGL multiviewImplementationType,
-             const FunctionsGL *functions);
+             const std::shared_ptr<RendererGL> &renderer);
     ~ShaderGL() override;
 
     void destroy() override;
 
-    // ShaderImpl implementation
-    ShCompileOptions prepareSourceAndReturnOptions(const gl::Context *context,
-                                                   std::stringstream *sourceStream,
-                                                   std::string *sourcePath) override;
-    bool postTranslateCompile(gl::ShCompilerInstance *compiler, std::string *infoLog) override;
+    std::shared_ptr<WaitableCompileEvent> compile(const gl::Context *context,
+                                                  gl::ShCompilerInstance *compilerInstance,
+                                                  ShCompileOptions options) override;
+
     std::string getDebugInfo() const override;
 
     GLuint getShaderID() const;
 
   private:
+    void compileAndCheckShader(const char *source);
+    void compileShader(const char *source);
+    void checkShader();
+    bool peekCompletion();
+    bool compileAndCheckShaderInWorker(const char *source);
+
     GLuint mShaderID;
     MultiviewImplementationTypeGL mMultiviewImplementationType;
-    const FunctionsGL *mFunctions;
+    std::shared_ptr<RendererGL> mRenderer;
+    GLint mCompileStatus;
+    std::string mInfoLog;
 };
 
 }  // namespace rx

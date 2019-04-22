@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "base/auto_reset.h"
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/system/sys_info.h"
@@ -15,7 +16,6 @@
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
-#include "third_party/blink/public/common/picture_in_picture/picture_in_picture_control_info.h"
 #include "third_party/blink/public/platform/web_fullscreen_video_status.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/web/web_scoped_user_gesture.h"
@@ -40,10 +40,6 @@ RendererWebMediaPlayerDelegate::RendererWebMediaPlayerDelegate(
     : RenderFrameObserver(render_frame),
       allow_idle_cleanup_(
           content::GetContentClient()->renderer()->IsIdleMediaSuspendEnabled()),
-      background_suspend_enabled_(
-          content::GetContentClient()
-              ->renderer()
-              ->IsBackgroundMediaSuspendEnabled(render_frame)),
       tick_clock_(base::DefaultTickClock::GetInstance()) {
   idle_cleanup_interval_ = base::TimeDelta::FromSeconds(5);
   idle_timeout_ = base::TimeDelta::FromSeconds(15);
@@ -121,59 +117,6 @@ void RendererWebMediaPlayerDelegate::DidPlayerMutedStatusChange(int delegate_id,
                                                                 bool muted) {
   Send(new MediaPlayerDelegateHostMsg_OnMutedStatusChanged(routing_id(),
                                                            delegate_id, muted));
-}
-
-void RendererWebMediaPlayerDelegate::DidPictureInPictureModeStart(
-    int delegate_id,
-    const viz::SurfaceId& surface_id,
-    const gfx::Size& natural_size,
-    blink::WebMediaPlayer::PipWindowOpenedCallback callback,
-    bool show_play_pause_button) {
-  int request_id = next_picture_in_picture_callback_id_++;
-  enter_picture_in_picture_callback_map_.insert(
-      std::make_pair(request_id, std::move(callback)));
-  Send(new MediaPlayerDelegateHostMsg_OnPictureInPictureModeStarted(
-      routing_id(), delegate_id, surface_id, natural_size, request_id,
-      show_play_pause_button));
-}
-
-void RendererWebMediaPlayerDelegate::DidPictureInPictureModeEnd(
-    int delegate_id,
-    base::OnceClosure callback) {
-  int request_id = next_picture_in_picture_callback_id_++;
-  exit_picture_in_picture_callback_map_.insert(
-      std::make_pair(request_id, std::move(callback)));
-  Send(new MediaPlayerDelegateHostMsg_OnPictureInPictureModeEnded(
-      routing_id(), delegate_id, request_id));
-}
-
-void RendererWebMediaPlayerDelegate::DidSetPictureInPictureCustomControls(
-    int delegate_id,
-    const std::vector<blink::PictureInPictureControlInfo>& controls) {
-  Send(new MediaPlayerDelegateHostMsg_OnSetPictureInPictureCustomControls(
-      routing_id(), delegate_id, controls));
-}
-
-void RendererWebMediaPlayerDelegate::DidPictureInPictureSurfaceChange(
-    int delegate_id,
-    const viz::SurfaceId& surface_id,
-    const gfx::Size& natural_size,
-    bool show_play_pause_button) {
-  Send(new MediaPlayerDelegateHostMsg_OnPictureInPictureSurfaceChanged(
-      routing_id(), delegate_id, surface_id, natural_size,
-      show_play_pause_button));
-}
-
-void RendererWebMediaPlayerDelegate::
-    RegisterPictureInPictureWindowResizeCallback(
-        int player_id,
-        blink::WebMediaPlayer::PipWindowResizedCallback callback) {
-  picture_in_picture_window_resize_observer_ =
-      std::make_pair(player_id, std::move(callback));
-}
-
-bool RendererWebMediaPlayerDelegate::IsBackgroundMediaSuspendEnabled() {
-  return background_suspend_enabled_;
 }
 
 void RendererWebMediaPlayerDelegate::DidPause(int player_id) {
@@ -284,6 +227,7 @@ bool RendererWebMediaPlayerDelegate::OnMessageReceived(
   IPC_BEGIN_MESSAGE_MAP(RendererWebMediaPlayerDelegate, msg)
     IPC_MESSAGE_HANDLER(MediaPlayerDelegateMsg_Pause, OnMediaDelegatePause)
     IPC_MESSAGE_HANDLER(MediaPlayerDelegateMsg_Play, OnMediaDelegatePlay)
+    IPC_MESSAGE_HANDLER(MediaPlayerDelegateMsg_Muted, OnMediaDelegateMuted)
     IPC_MESSAGE_HANDLER(MediaPlayerDelegateMsg_SeekForward,
                         OnMediaDelegateSeekForward)
     IPC_MESSAGE_HANDLER(MediaPlayerDelegateMsg_SeekBackward,
@@ -296,15 +240,6 @@ bool RendererWebMediaPlayerDelegate::OnMessageReceived(
                         OnMediaDelegateBecamePersistentVideo)
     IPC_MESSAGE_HANDLER(MediaPlayerDelegateMsg_EndPictureInPictureMode,
                         OnPictureInPictureModeEnded)
-    IPC_MESSAGE_HANDLER(MediaPlayerDelegateMsg_ClickPictureInPictureControl,
-                        OnPictureInPictureControlClicked)
-    IPC_MESSAGE_HANDLER(MediaPlayerDelegateMsg_OnPictureInPictureModeEnded_ACK,
-                        OnPictureInPictureModeEndedAck)
-    IPC_MESSAGE_HANDLER(
-        MediaPlayerDelegateMsg_OnPictureInPictureModeStarted_ACK,
-        OnPictureInPictureModeStartedAck)
-    IPC_MESSAGE_HANDLER(MediaPlayerDelegateMsg_OnPictureInPictureWindowResize,
-                        OnPictureInPictureWindowResize)
     IPC_MESSAGE_UNHANDLED(return false)
   IPC_END_MESSAGE_MAP()
   return true;
@@ -335,17 +270,21 @@ void RendererWebMediaPlayerDelegate::SetFrameHiddenForTesting(bool is_hidden) {
   ScheduleUpdateTask();
 }
 
-void RendererWebMediaPlayerDelegate::OnMediaDelegatePause(int player_id) {
+void RendererWebMediaPlayerDelegate::OnMediaDelegatePause(
+    int player_id,
+    bool triggered_by_user) {
   RecordAction(base::UserMetricsAction("Media.Controls.RemotePause"));
 
   Observer* observer = id_map_.Lookup(player_id);
   if (observer) {
-    // TODO(avayvod): remove when default play/pause is handled via
-    // the MediaSession code path.
-    std::unique_ptr<blink::WebScopedUserGesture> gesture(
-        render_frame()
-            ? new blink::WebScopedUserGesture(render_frame()->GetWebFrame())
-            : nullptr);
+    if (triggered_by_user) {
+      // TODO(avayvod): remove when default play/pause is handled via
+      // the MediaSession code path.
+      std::unique_ptr<blink::WebScopedUserGesture> gesture(
+          render_frame()
+              ? new blink::WebScopedUserGesture(render_frame()->GetWebFrame())
+              : nullptr);
+    }
     observer->OnPause();
   }
 }
@@ -363,6 +302,13 @@ void RendererWebMediaPlayerDelegate::OnMediaDelegatePlay(int player_id) {
             : nullptr);
     observer->OnPlay();
   }
+}
+
+void RendererWebMediaPlayerDelegate::OnMediaDelegateMuted(int player_id,
+                                                          bool muted) {
+  Observer* observer = id_map_.Lookup(player_id);
+  if (observer)
+    observer->OnMuted(muted);
 }
 
 void RendererWebMediaPlayerDelegate::OnMediaDelegateSeekForward(
@@ -414,47 +360,6 @@ void RendererWebMediaPlayerDelegate::OnPictureInPictureModeEnded(
   Observer* observer = id_map_.Lookup(player_id);
   if (observer)
     observer->OnPictureInPictureModeEnded();
-}
-
-void RendererWebMediaPlayerDelegate::OnPictureInPictureControlClicked(
-    int player_id,
-    const std::string& control_id) {
-  Observer* observer = id_map_.Lookup(player_id);
-  if (observer)
-    observer->OnPictureInPictureControlClicked(control_id);
-}
-
-void RendererWebMediaPlayerDelegate::OnPictureInPictureModeEndedAck(
-    int player_id,
-    int request_id) {
-  auto iter = exit_picture_in_picture_callback_map_.find(request_id);
-  DCHECK(iter != exit_picture_in_picture_callback_map_.end());
-
-  std::move(iter->second).Run();
-  exit_picture_in_picture_callback_map_.erase(iter);
-}
-
-void RendererWebMediaPlayerDelegate::OnPictureInPictureModeStartedAck(
-    int player_id,
-    int request_id,
-    const gfx::Size& window_size) {
-  auto iter = enter_picture_in_picture_callback_map_.find(request_id);
-  DCHECK(iter != enter_picture_in_picture_callback_map_.end());
-
-  std::move(iter->second).Run(blink::WebSize(window_size));
-  enter_picture_in_picture_callback_map_.erase(iter);
-}
-
-void RendererWebMediaPlayerDelegate::OnPictureInPictureWindowResize(
-    int player_id,
-    const gfx::Size& window_size) {
-  if (!picture_in_picture_window_resize_observer_ ||
-      picture_in_picture_window_resize_observer_->first != player_id) {
-    return;
-  }
-
-  picture_in_picture_window_resize_observer_->second.Run(
-      blink::WebSize(window_size));
 }
 
 void RendererWebMediaPlayerDelegate::ScheduleUpdateTask() {

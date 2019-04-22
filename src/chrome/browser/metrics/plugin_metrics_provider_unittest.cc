@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -117,22 +118,23 @@ TEST_F(PluginMetricsProviderTest, Plugins) {
 }
 
 TEST_F(PluginMetricsProviderTest, RecordCurrentStateWithDelay) {
-  content::TestBrowserThreadBundle thread_bundle;
+  content::TestBrowserThreadBundle thread_bundle(
+      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
 
   PluginMetricsProvider provider(prefs());
 
-  int delay_ms = 10;
-  EXPECT_TRUE(provider.RecordCurrentStateWithDelay(delay_ms));
-  EXPECT_FALSE(provider.RecordCurrentStateWithDelay(delay_ms));
+  EXPECT_TRUE(provider.RecordCurrentStateWithDelay());
+  EXPECT_FALSE(provider.RecordCurrentStateWithDelay());
 
-  base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(delay_ms));
+  thread_bundle.FastForwardBy(PluginMetricsProvider::GetRecordStateDelay());
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(provider.RecordCurrentStateWithDelay(delay_ms));
+  EXPECT_TRUE(provider.RecordCurrentStateWithDelay());
 }
 
 TEST_F(PluginMetricsProviderTest, RecordCurrentStateIfPending) {
-  content::TestBrowserThreadBundle thread_bundle;
+  content::TestBrowserThreadBundle thread_bundle(
+      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
 
   PluginMetricsProvider provider(prefs());
 
@@ -141,13 +143,12 @@ TEST_F(PluginMetricsProviderTest, RecordCurrentStateIfPending) {
 
   // After delayed task is posted RecordCurrentStateIfPending should return
   // true.
-  int delay_ms = 100000;
-  EXPECT_TRUE(provider.RecordCurrentStateWithDelay(delay_ms));
+  EXPECT_TRUE(provider.RecordCurrentStateWithDelay());
   EXPECT_TRUE(provider.RecordCurrentStateIfPending());
 
   // If RecordCurrentStateIfPending was successful then we should be able to
   // post a new delayed task.
-  EXPECT_TRUE(provider.RecordCurrentStateWithDelay(delay_ms));
+  EXPECT_TRUE(provider.RecordCurrentStateWithDelay());
 }
 
 TEST_F(PluginMetricsProviderTest, ProvideStabilityMetricsWhenPendingTask) {

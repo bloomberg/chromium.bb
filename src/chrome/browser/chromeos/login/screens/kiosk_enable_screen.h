@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
@@ -19,8 +20,8 @@ namespace chromeos {
 class KioskEnableScreen : public BaseScreen,
                           public KioskEnableScreenView::Delegate {
  public:
-  KioskEnableScreen(BaseScreenDelegate* base_screen_delegate,
-                    KioskEnableScreenView* view);
+  KioskEnableScreen(KioskEnableScreenView* view,
+                    const base::RepeatingClosure& exit_callback);
   ~KioskEnableScreen() override;
 
   // BaseScreen implementation:
@@ -33,6 +34,7 @@ class KioskEnableScreen : public BaseScreen,
 
  private:
   KioskEnableScreenView* view_;
+  base::RepeatingClosure exit_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(KioskEnableScreen);
 };

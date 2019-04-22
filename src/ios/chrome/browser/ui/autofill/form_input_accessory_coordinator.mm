@@ -13,6 +13,7 @@
 #include "components/keyed_service/core/service_access_type.h"
 #import "ios/chrome/browser/autofill/form_input_accessory_view_controller.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory_mediator.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/address_coordinator.h"
@@ -21,7 +22,9 @@
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_injection_handler.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/password_coordinator.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/chrome/grit/ios_strings.h"
+#import "ios/web/public/web_state/web_state.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -77,8 +80,12 @@
 
     auto passwordStore = IOSChromePasswordStoreFactory::GetForBrowserState(
         browserState, ServiceAccessType::EXPLICIT_ACCESS);
+
+    // There is no personal data manager in OTR (incognito). Get the original
+    // one for manual fallback.
     autofill::PersonalDataManager* personalDataManager =
-        autofill::PersonalDataManagerFactory::GetForBrowserState(browserState);
+        autofill::PersonalDataManagerFactory::GetForBrowserState(
+            browserState->GetOriginalChromeBrowserState());
 
     _formInputAccessoryMediator = [[FormInputAccessoryMediator alloc]
            initWithConsumer:self.formInputAccessoryViewController
@@ -92,6 +99,7 @@
 - (void)stop {
   [self stopChildren];
   [self.formInputAccessoryViewController restoreOriginalKeyboardView];
+  [self.formInputAccessoryMediator disconnect];
 }
 
 #pragma mark - Presenting Children
@@ -104,11 +112,14 @@
 }
 
 - (void)startPasswordsFromButton:(UIButton*)button {
+  DCHECK(self.webStateList->GetActiveWebState());
+  const GURL& URL =
+      self.webStateList->GetActiveWebState()->GetLastCommittedURL();
   ManualFillPasswordCoordinator* passwordCoordinator =
       [[ManualFillPasswordCoordinator alloc]
           initWithBaseViewController:self.baseViewController
                         browserState:self.browserState
-                        webStateList:self.webStateList
+                                 URL:URL
                     injectionHandler:self.manualFillInjectionHandler];
   passwordCoordinator.delegate = self;
   if (IsIPadIdiom()) {
@@ -125,6 +136,7 @@
   CardCoordinator* cardCoordinator = [[CardCoordinator alloc]
       initWithBaseViewController:self.baseViewController
                     browserState:self.browserState
+                                     ->GetOriginalChromeBrowserState()
                     webStateList:self.webStateList
                 injectionHandler:self.manualFillInjectionHandler];
   cardCoordinator.delegate = self;
@@ -142,6 +154,7 @@
   AddressCoordinator* addressCoordinator = [[AddressCoordinator alloc]
       initWithBaseViewController:self.baseViewController
                     browserState:self.browserState
+                                     ->GetOriginalChromeBrowserState()
                 injectionHandler:self.manualFillInjectionHandler];
   addressCoordinator.delegate = self;
   if (IsIPadIdiom()) {
@@ -214,7 +227,7 @@
 - (void)presentSecurityWarningAlertWithText:(NSString*)body {
   NSString* alertTitle =
       l10n_util::GetNSString(IDS_IOS_MANUAL_FALLBACK_NOT_SECURE_TITLE);
-  NSString* defaltActionTitle =
+  NSString* defaultActionTitle =
       l10n_util::GetNSString(IDS_IOS_MANUAL_FALLBACK_NOT_SECURE_OK_BUTTON);
 
   UIAlertController* alert =
@@ -222,7 +235,7 @@
                                           message:body
                                    preferredStyle:UIAlertControllerStyleAlert];
   UIAlertAction* defaultAction =
-      [UIAlertAction actionWithTitle:defaltActionTitle
+      [UIAlertAction actionWithTitle:defaultActionTitle
                                style:UIAlertActionStyleDefault
                              handler:^(UIAlertAction* action){
                              }];

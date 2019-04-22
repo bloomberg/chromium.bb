@@ -98,7 +98,7 @@ class ConstrainedWebDialogUI : public content::WebUIController {
 // |overshadowed| is the tab being overshadowed by the dialog.
 ConstrainedWebDialogDelegate* ShowConstrainedWebDialog(
     content::BrowserContext* browser_context,
-    ui::WebDialogDelegate* delegate,
+    std::unique_ptr<ui::WebDialogDelegate> delegate,
     content::WebContents* overshadowed);
 
 // Create and show a constrained HTML dialog with auto-resize enabled. The
@@ -111,7 +111,7 @@ ConstrainedWebDialogDelegate* ShowConstrainedWebDialog(
 // |max_size| is the maximum size of the dialog.
 ConstrainedWebDialogDelegate* ShowConstrainedWebDialogWithAutoResize(
     content::BrowserContext* browser_context,
-    ui::WebDialogDelegate* delegate,
+    std::unique_ptr<ui::WebDialogDelegate> delegate,
     content::WebContents* overshadowed,
     const gfx::Size& min_size,
     const gfx::Size& max_size);

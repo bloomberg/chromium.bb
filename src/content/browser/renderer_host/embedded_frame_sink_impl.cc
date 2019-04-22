@@ -44,8 +44,7 @@ EmbeddedFrameSinkImpl::~EmbeddedFrameSinkImpl() {
 
 void EmbeddedFrameSinkImpl::CreateCompositorFrameSink(
     viz::mojom::CompositorFrameSinkClientPtr client,
-    viz::mojom::CompositorFrameSinkRequest request,
-    blink::mojom::SurfaceEmbedderRequest surface_embedder_request) {
+    viz::mojom::CompositorFrameSinkRequest request) {
   // We might recreate the CompositorFrameSink on context loss or GPU crash.
   // Only register frame sink hierarchy the first time.
   if (!has_created_compositor_frame_sink_) {
@@ -62,9 +61,12 @@ void EmbeddedFrameSinkImpl::CreateCompositorFrameSink(
   host_frame_sink_manager_->CreateCompositorFrameSink(
       frame_sink_id_, std::move(request), std::move(client));
 
-  client_->BindSurfaceEmbedder(std::move(surface_embedder_request));
-
   has_created_compositor_frame_sink_ = true;
+}
+
+void EmbeddedFrameSinkImpl::ConnectToEmbedder(
+    blink::mojom::SurfaceEmbedderRequest surface_embedder_request) {
+  client_->BindSurfaceEmbedder(std::move(surface_embedder_request));
 }
 
 void EmbeddedFrameSinkImpl::OnFirstSurfaceActivation(

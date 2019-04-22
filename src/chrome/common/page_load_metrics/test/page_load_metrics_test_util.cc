@@ -4,7 +4,6 @@
 
 #include "chrome/common/page_load_metrics/test/page_load_metrics_test_util.h"
 
-#include "chrome/common/page_load_metrics/page_load_metrics.mojom.h"
 #include "chrome/common/page_load_metrics/page_load_metrics_util.h"
 
 using page_load_metrics::OptionalMin;
@@ -26,13 +25,11 @@ void PopulateRequiredTimingFields(
     inout_timing->paint_timing->first_contentful_paint =
         inout_timing->paint_timing->first_meaningful_paint;
   }
-  if ((inout_timing->paint_timing->first_text_paint ||
-       inout_timing->paint_timing->first_image_paint ||
+  if ((inout_timing->paint_timing->first_image_paint ||
        inout_timing->paint_timing->first_contentful_paint) &&
       !inout_timing->paint_timing->first_paint) {
     inout_timing->paint_timing->first_paint =
-        OptionalMin(OptionalMin(inout_timing->paint_timing->first_text_paint,
-                                inout_timing->paint_timing->first_image_paint),
+        OptionalMin(inout_timing->paint_timing->first_image_paint,
                     inout_timing->paint_timing->first_contentful_paint);
   }
   if (inout_timing->paint_timing->first_paint &&
@@ -86,4 +83,38 @@ void PopulateRequiredTimingFields(
           base::TimeDelta();
     }
   }
+}
+
+page_load_metrics::mojom::ResourceDataUpdatePtr CreateResource(
+    bool was_cached,
+    int64_t delta_bytes,
+    int64_t encoded_body_length,
+    bool is_complete) {
+  auto resource_data_update =
+      page_load_metrics::mojom::ResourceDataUpdate::New();
+  resource_data_update->was_fetched_via_cache = was_cached;
+  resource_data_update->delta_bytes = delta_bytes;
+  resource_data_update->received_data_length = delta_bytes;
+  resource_data_update->encoded_body_length = encoded_body_length;
+  resource_data_update->is_complete = is_complete;
+  return resource_data_update;
+}
+
+std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>
+GetSampleResourceDataUpdateForTesting(int64_t resource_size) {
+  // Prepare 3 resources of varying configurations.
+  std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr> resources;
+  // Cached resource.
+  resources.push_back(CreateResource(true /* was_cached */, 0 /* delta_bytes */,
+                                     resource_size /* encoded_body_length */,
+                                     true /* is_complete */));
+  // Uncached resource.
+  resources.push_back(CreateResource(
+      false /* was_cached */, resource_size /* delta_bytes */,
+      resource_size /* encoded_body_length */, true /* is_complete */));
+  // Uncached, unfinished, resource.
+  resources.push_back(
+      CreateResource(false /* was_cached */, resource_size /* delta_bytes */,
+                     0 /* encoded_body_length */, false /* is_complete */));
+  return resources;
 }

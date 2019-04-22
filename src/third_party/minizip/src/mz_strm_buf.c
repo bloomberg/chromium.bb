@@ -1,5 +1,5 @@
 /* mz_strm_buf.c -- Stream for buffering reads/writes
-   Version 2.7.5, November 13, 2018
+   Version 2.8.1, December 1, 2018
    part of the MiniZip project
 
    This version of ioapi is designed to buffer IO.
@@ -10,12 +10,6 @@
    This program is distributed under the terms of the same license as zlib.
    See the accompanying LICENSE file for the full text of the license.
 */
-
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <inttypes.h>
-#include <errno.h>
 
 #include "mz.h"
 #include "mz_strm.h"
@@ -266,8 +260,8 @@ int64_t mz_stream_buffered_tell(void *stream)
 
     buffered->position = position;
 
-    mz_stream_buffered_print("Buffered - Tell (pos %"PRId64" readpos %"PRId32" writepos %"PRId32" err %"PRId32")\n",
-        buffered->position, buffered->readbuf_pos, buffered->writebuf_pos, errno);
+    mz_stream_buffered_print("Buffered - Tell (pos %"PRId64" readpos %"PRId32" writepos %"PRId32")\n",
+        buffered->position, buffered->readbuf_pos, buffered->writebuf_pos);
 
     if (buffered->readbuf_len > 0)
         position -= ((int64_t)buffered->readbuf_len - buffered->readbuf_pos);
@@ -331,7 +325,7 @@ int32_t mz_stream_buffered_seek(void *stream, int64_t offset, int32_t origin)
                     buffered->writebuf_pos += (uint32_t)offset;
                     return MZ_OK;
                 }
-                //offset -= (buffered->writebuf_len - buffered->writebuf_pos);
+                /* offset -= (buffered->writebuf_len - buffered->writebuf_pos); */
             }
 
             err = mz_stream_buffered_flush(stream, &bytes_flushed);

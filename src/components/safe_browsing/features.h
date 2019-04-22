@@ -21,17 +21,21 @@ namespace safe_browsing {
 // Features list
 extern const base::Feature kAdSamplerTriggerFeature;
 
-// Controls the billing interstitial UI.
-extern const base::Feature kBillingInterstitial;
-
 extern const base::Feature kCheckByURLLoaderThrottle;
 
-// Forces the chrome://reset-password page to be shown for review or testing
-// purpose.
-extern const base::Feature kForceEnableResetPasswordWebUI;
+// Controls if safe browsing interstitials are implemented as committed
+// navigations instead of overlays.
+extern const base::Feature kCommittedSBInterstitials;
+
+// Enable GAIA password protection for signed-in users.
+extern const base::Feature kPasswordProtectionForSignedInUsers;
 
 // Controls the daily quota for the suspicious site trigger.
 extern const base::Feature kSuspiciousSiteTriggerQuotaFeature;
+
+// Controls whether we collect and send the referrer chain and other information
+// for APK downloads on Android.
+extern const base::Feature kTelemetryForApkDownloads;
 
 // Specifies which non-resource HTML Elements to collect based on their tag and
 // attributes. It's a single param containing a comma-separated list of pairs.
@@ -53,6 +57,16 @@ extern const base::Feature kTriggerThrottlerDailyQuotaFeature;
 
 // Controls whether Chrome on Android uses locally cached blacklists.
 extern const base::Feature kUseLocalBlacklistsV2;
+
+// Controls whether we inspect the content of RAR files, or just report the
+// filenames contained in the archive.
+extern const base::Feature kInspectRarContentFeature;
+
+// Controls whether we use AP download protection.
+extern const base::Feature kUseAPDownloadProtection;
+
+// Controls whether the user has forcible enabled AP download protection.
+extern const base::Feature kForceUseAPDownloadProtection;
 
 base::ListValue GetFeatureStatusList();
 

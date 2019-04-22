@@ -40,6 +40,19 @@ tr.b.unittest.testSuite(function() {
     }
   }
 
+  test('truncateBreakdowns', function() {
+    const hist = tr.v.Histogram.create('a', unitlessNumber, {
+      value: 1,
+      diagnostics: {b: tr.v.d.Breakdown.fromEntries([
+        ['c', 1 / 3],
+      ])},
+    }, {
+      binBoundaries: tr.v.HistogramBinBoundaries.SINGULAR,
+    });
+    assert.strictEqual(0.3333, hist.allBins[0].diagnosticMaps[0].get(
+        'b').get('c'));
+  });
+
   test('createWithNameUnitNumber', function() {
     const hist = tr.v.Histogram.create('a', unitlessNumber, 1);
     assert.strictEqual(hist.name, 'a');
@@ -66,7 +79,6 @@ tr.b.unittest.testSuite(function() {
     const hist = tr.v.Histogram.create('', unitlessNumber, [], {
       binBoundaries: tr.v.HistogramBinBoundaries.SINGULAR,
       description: 'foo',
-      shortName: 'shorty',
       diagnostics: {
         generic: new tr.v.d.GenericSet(['occam']),
       },
@@ -76,7 +88,6 @@ tr.b.unittest.testSuite(function() {
       }
     });
     assert.strictEqual(hist.description, 'foo');
-    assert.strictEqual(hist.shortName, 'shorty');
     assert.strictEqual(tr.b.getOnlyElement(
         hist.diagnostics.get('generic')), 'occam');
     assert.isFalse(hist.summaryOptions.get('count'));
@@ -224,26 +235,26 @@ tr.b.unittest.testSuite(function() {
     // You can change these numbers, but when you do, please explain in your CL
     // description why they changed.
     let dict = hist.asDict();
-    assert.strictEqual(107, JSON.stringify(dict).length);
+    assert.strictEqual(61, JSON.stringify(dict).length);
     assert.isUndefined(dict.allBins);
     assert.deepEqual(dict, tr.v.Histogram.fromDict(dict).asDict());
 
     hist.addSample(100);
     dict = hist.asDict();
-    assert.strictEqual(198, JSON.stringify(dict).length);
+    assert.strictEqual(142, JSON.stringify(dict).length);
     assert.isUndefined(dict.allBins.length);
     assert.deepEqual(dict, tr.v.Histogram.fromDict(dict).asDict());
 
     hist.addSample(100);
     dict = hist.asDict();
     // SAMPLE_VALUES grew by "100,"
-    assert.strictEqual(202, JSON.stringify(dict).length);
+    assert.strictEqual(146, JSON.stringify(dict).length);
     assert.isUndefined(dict.allBins.length);
     assert.deepEqual(dict, tr.v.Histogram.fromDict(dict).asDict());
 
     hist.addSample(271, {foo: new tr.v.d.GenericSet(['bar'])});
     dict = hist.asDict();
-    assert.strictEqual(268, JSON.stringify(dict).length);
+    assert.strictEqual(212, JSON.stringify(dict).length);
     assert.isUndefined(dict.allBins.length);
     assert.deepEqual(dict, tr.v.Histogram.fromDict(dict).asDict());
 
@@ -253,7 +264,7 @@ tr.b.unittest.testSuite(function() {
       hist.addSample(10 * i);
     }
     dict = hist.asDict();
-    assert.strictEqual(697, JSON.stringify(hist.asDict()).length);
+    assert.strictEqual(628, JSON.stringify(hist.asDict()).length);
     assert.lengthOf(dict.allBins, 12);
     assert.deepEqual(dict, tr.v.Histogram.fromDict(dict).asDict());
 
@@ -263,9 +274,47 @@ tr.b.unittest.testSuite(function() {
     // retained.
     hist.maxNumSampleValues = 10;
     dict = hist.asDict();
-    assert.strictEqual(389, JSON.stringify(dict).length);
+    assert.strictEqual(320, JSON.stringify(dict).length);
     assert.lengthOf(dict.allBins, 12);
     assert.deepEqual(dict, tr.v.Histogram.fromDict(dict).asDict());
+
+    // Test the case where 'allBins' isn't a list and we're attempting to index
+    // an invalid bucket. We start with a deep copy of the dict.
+    const e = JSON.parse(JSON.stringify(dict));
+    e.allBins = {1000: {}};
+    assert.throws(() => { tr.v.Histogram.fromDict(e).asDict(); }, {
+      name: 'Error',
+      message: /Invalid index/,
+    });
+  });
+
+  test('manyBinsRoundtrip', function() {
+    // In this test we want to create a histogram which will have less than half
+    // of the bins populated, so we can force the bin compaction (instead of a
+    // list of bind, use an object mapping bins to values) to do the conversion.
+    // We ensure that the object key ordering is not going to be an issue in the
+    // serialisation and deserialisation rundtrip.
+    const hist = new tr.v.Histogram('', unitlessNumber,
+        tr.v.HistogramBinBoundaries.createLinear(0, 1000, 10));
+
+    // Adding 400 samples allows us to fit the elements in approximately
+    // log10(1,000) bins which should give us more empty bins than there are
+    // non-empty bins. We also add samples from either end of the range, by
+    // treating odd numbers in the beginning and even numbers as negative
+    // offsets from the max of the range (1,000).
+    const samples = 400;
+    for (let sample = 0; sample < samples; ++sample) {
+      hist.addSample((sample % 2) ? sample : 10000 - sample);
+    }
+
+    const d = hist.asDict();
+    assert.strictEqual(samples, hist.numValues);
+    assert.strictEqual((hist.allBins.length / 2) - 1,
+        Object.entries(d.allBins).length);
+
+    // Ensure that we can reconstitute a histogram properly from a dict.
+    const e = tr.v.Histogram.fromDict(d);
+    assert.deepEqual(hist, e);
   });
 
   test('significance', function() {
@@ -567,7 +616,8 @@ tr.b.unittest.testSuite(function() {
       std: true,
       nans: true,
       geometricMean: true,
-      percentile: [0.5, 1]
+      percentile: [0.5, 1],
+      ci: [0.01, 0.95]
     });
 
     // Test round-tripping summaryOptions.
@@ -595,6 +645,12 @@ tr.b.unittest.testSuite(function() {
     assert.closeTo(stats.get('pct_100').value, 70, 1);
     assert.strictEqual(stats.get('geometricMean').unit, hist.unit);
     assert.closeTo(stats.get('geometricMean').value, 59.439, 1e-3);
+    assert(stats.get('ci_095_lower').value < stats.get('avg').value);
+    assert(stats.get('ci_095_upper').value > stats.get('avg').value);
+    assert.strictEqual(stats.get('ci_095').value,
+        stats.get('ci_095_upper').value - stats.get('ci_095_lower').value);
+    assert.strictEqual(stats.get('ci_001_lower').value, stats.get('avg').value);
+    assert.strictEqual(stats.get('ci_001_upper').value, stats.get('avg').value);
   });
 
   test('statisticsScalarsNoSummaryOptions', function() {
@@ -612,7 +668,8 @@ tr.b.unittest.testSuite(function() {
       sum: false,
       avg: false,
       std: false,
-      percentile: []
+      percentile: [],
+      ci: []
     });
 
     assert.strictEqual(hist.statisticsScalars.size, 0);
@@ -628,7 +685,8 @@ tr.b.unittest.testSuite(function() {
       sum: true,
       avg: true,
       std: true,
-      percentile: [0, 0.01, 0.1, 0.5, 0.995, 1]
+      percentile: [0, 0.01, 0.1, 0.5, 0.995, 1],
+      ci: [0.1, 0.8]
     });
 
     const stats = hist.statisticsScalars;
@@ -636,14 +694,20 @@ tr.b.unittest.testSuite(function() {
     assert.strictEqual(stats.get('min').value, Infinity);
     assert.strictEqual(stats.get('max').value, -Infinity);
     assert.strictEqual(stats.get('sum').value, 0);
-    assert.strictEqual(stats.get('avg'), undefined);
-    assert.strictEqual(stats.get('std'), undefined);
+    assert.isUndefined(stats.get('avg'));
+    assert.isUndefined(stats.get('std'));
     assert.isUndefined(stats.get('pct_000'));
     assert.isUndefined(stats.get('pct_001'));
     assert.isUndefined(stats.get('pct_010'));
     assert.isUndefined(stats.get('pct_050'));
     assert.isUndefined(stats.get('pct_099_5'));
     assert.isUndefined(stats.get('pct_100'));
+    assert.isUndefined(stats.get('ci_010_lower'));
+    assert.isUndefined(stats.get('ci_010_upper'));
+    assert.isUndefined(stats.get('ci_010'));
+    assert.isUndefined(stats.get('ci_080_lower'));
+    assert.isUndefined(stats.get('ci_080_upper'));
+    assert.isUndefined(stats.get('ci_080'));
   });
 
   test('sampleValues', function() {

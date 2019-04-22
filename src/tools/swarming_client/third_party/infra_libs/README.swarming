@@ -16,3 +16,5 @@ Local Modifications:
 - Installed using glyco (see ../README.txt for more info)
 - Copied LICENSE from the root of infra.git.
 - Removed silly imports from __init__.py
+- Took bqh.py from https://chromium-review.googlesource.com/1421479; will be
+  fixed later by maruel@ as infra_libs 2.0.0 is rolled in.

@@ -5,6 +5,7 @@
 #include "ash/shelf/shelf_tooltip_bubble.h"
 
 #include "ash/system/tray/tray_constants.h"
+#include "ash/wm/pip/pip_positioner.h"
 #include "ui/aura/window.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
@@ -31,25 +32,25 @@ const int kArrowTopBottomOffset = 1;
 const int kArrowLeftRightOffset = 1;
 
 ShelfTooltipBubble::ShelfTooltipBubble(views::View* anchor,
-                                       views::BubbleBorder::Arrow arrow,
+                                       ShelfAlignment alignment,
+                                       SkColor background_color,
                                        const base::string16& text)
-    : ShelfTooltipBubbleBase(anchor, arrow) {
-  set_close_on_deactivate(false);
-  set_can_activate(false);
-  set_accept_events(false);
+    : ShelfBubble(anchor, alignment, background_color) {
   set_margins(gfx::Insets(kTooltipTopBottomMargin, kTooltipLeftRightMargin));
+  set_close_on_deactivate(false);
+  SetCanActivate(false);
+  set_accept_events(false);
   set_shadow(views::BubbleBorder::NO_ASSETS);
   SetLayoutManager(std::make_unique<views::FillLayout>());
   views::Label* label = new views::Label(text);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   ui::NativeTheme* theme = anchor->GetWidget()->GetNativeTheme();
+  SkColor theme_background_color =
+      theme->GetSystemColor(ui::NativeTheme::kColorId_TooltipBackground);
+  set_color(theme_background_color);
   label->SetEnabledColor(
       theme->GetSystemColor(ui::NativeTheme::kColorId_TooltipText));
-  SkColor background_color =
-      theme->GetSystemColor(ui::NativeTheme::kColorId_TooltipBackground);
-  label->SetBackgroundColor(background_color);
-  // The background is not opaque, so we can't do subpixel rendering.
-  label->SetSubpixelRenderingEnabled(false);
+  label->SetBackgroundColor(theme_background_color);
   AddChildView(label);
 
   gfx::Insets insets(kArrowTopBottomOffset, kArrowLeftRightOffset);
@@ -59,7 +60,9 @@ ShelfTooltipBubble::ShelfTooltipBubble(views::View* anchor,
   insets += gfx::Insets(-kBubblePaddingHorizontalBottom);
   set_anchor_view_insets(insets);
 
-  views::BubbleDialogDelegateView::CreateBubble(this);
+  CreateBubble();
+  PipPositioner::MarkWindowAsIgnoredForCollisionDetection(
+      GetWidget()->GetNativeWindow());
 }
 
 gfx::Size ShelfTooltipBubble::CalculatePreferredSize() const {

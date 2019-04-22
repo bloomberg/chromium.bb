@@ -174,13 +174,17 @@ static const int rd_frame_type_factor[FRAME_UPDATE_TYPES] = { 128, 144, 128,
                                                               128, 144, 144 };
 
 int vp9_compute_rd_mult_based_on_qindex(const VP9_COMP *cpi, int qindex) {
-  // largest dc_quant is 21387, therefore rdmult should always fit in uint32_t
-  // i.e. 21387 * 21387 * 8 = 3659230152 = 0xDA1B6BC8
+  // largest dc_quant is 21387, therefore rdmult should always fit in int32_t
   const int q = vp9_dc_quant(qindex, 0, cpi->common.bit_depth);
   uint32_t rdmult = q * q;
 
   if (cpi->common.frame_type != KEY_FRAME) {
-    rdmult = rdmult * 3 + (rdmult * 2 / 3);
+    if (qindex < 128)
+      rdmult = rdmult * 4;
+    else if (qindex < 190)
+      rdmult = rdmult * 4 + rdmult / 2;
+    else
+      rdmult = rdmult * 3;
   } else {
     if (qindex < 64)
       rdmult = rdmult * 4;
@@ -305,6 +309,15 @@ static void set_block_thresholds(const VP9_COMMON *cm, RD_OPT *rd) {
   }
 }
 
+void vp9_build_inter_mode_cost(VP9_COMP *cpi) {
+  const VP9_COMMON *const cm = &cpi->common;
+  int i;
+  for (i = 0; i < INTER_MODE_CONTEXTS; ++i) {
+    vp9_cost_tokens((int *)cpi->inter_mode_cost[i], cm->fc->inter_mode_probs[i],
+                    vp9_inter_mode_tree);
+  }
+}
+
 void vp9_initialize_rd_consts(VP9_COMP *cpi) {
   VP9_COMMON *const cm = &cpi->common;
   MACROBLOCK *const x = &cpi->td.mb;
@@ -353,10 +366,7 @@ void vp9_initialize_rd_consts(VP9_COMP *cpi) {
             x->nmvjointcost,
             cm->allow_high_precision_mv ? x->nmvcost_hp : x->nmvcost,
             &cm->fc->nmvc, cm->allow_high_precision_mv);
-
-        for (i = 0; i < INTER_MODE_CONTEXTS; ++i)
-          vp9_cost_tokens((int *)cpi->inter_mode_cost[i],
-                          cm->fc->inter_mode_probs[i], vp9_inter_mode_tree);
+        vp9_build_inter_mode_cost(cpi);
       }
     }
   }

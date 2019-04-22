@@ -30,7 +30,6 @@
 #include "ipc/message_router.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
-#include "services/tracing/public/cpp/trace_event_agent.h"
 #include "third_party/blink/public/mojom/associated_interfaces/associated_interfaces.mojom.h"
 
 #if defined(OS_WIN)
@@ -129,12 +128,6 @@ class CONTENT_EXPORT ChildThreadImpl
   // Returns the one child thread. Can only be called on the main thread.
   static ChildThreadImpl* current();
 
-#if defined(OS_ANDROID)
-  // Called on Android's service thread to shutdown the main thread of this
-  // process.
-  static void ShutdownThread();
-#endif
-
  protected:
   friend class ChildProcess;
 
@@ -152,6 +145,10 @@ class CONTENT_EXPORT ChildThreadImpl
 #if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
   void SetIPCLoggingEnabled(bool enable) override;
 #endif
+  void RunService(
+      const std::string& service_name,
+      mojo::PendingReceiver<service_manager::mojom::Service> receiver) override;
+
   void OnChildControlRequest(mojom::ChildControlRequest);
 
   virtual bool OnControlMessageReceived(const IPC::Message& msg);
@@ -182,7 +179,7 @@ class CONTENT_EXPORT ChildThreadImpl
 
   void Init(const Options& options);
 
-  // Sets chrome_trace_event_agent_ if necessary.
+  // Initializes tracing if necessary.
   void InitTracing();
 
   // We create the channel first without connecting it so we can add filters
@@ -243,8 +240,6 @@ class CONTENT_EXPORT ChildThreadImpl
   std::unique_ptr<base::PowerMonitor> power_monitor_;
 
   scoped_refptr<base::SingleThreadTaskRunner> browser_process_io_runner_;
-
-  std::unique_ptr<tracing::TraceEventAgent> trace_event_agent_;
 
   std::unique_ptr<variations::ChildProcessFieldTrialSyncer> field_trial_syncer_;
 

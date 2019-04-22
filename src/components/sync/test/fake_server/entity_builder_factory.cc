@@ -23,7 +23,7 @@ BookmarkEntityBuilder EntityBuilderFactory::NewBookmarkEntityBuilder(
     const string& title) {
   --latest_client_item_id_;
   BookmarkEntityBuilder builder(title, cache_guid_,
-                                base::Int64ToString(latest_client_item_id_));
+                                base::NumberToString(latest_client_item_id_));
   return builder;
 }
 

@@ -98,7 +98,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
 	std::unique_ptr<ScopedPoolAllocatorAndTLS> allocatorAndTLS(new ScopedPoolAllocatorAndTLS);
 	std::unique_ptr<sw::VertexShader> shader(new sw::VertexShader);
 	std::unique_ptr<FakeVS> fakeVS(new FakeVS(shader.get()));
-	
+
 	std::unique_ptr<TranslatorASM> glslCompiler(new TranslatorASM(fakeVS.get(), GL_VERTEX_SHADER));
 
 	// TODO(cwallez@google.com): have a function to init to default values somewhere
@@ -118,6 +118,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
 	resources.OES_standard_derivatives = 1;
 	resources.OES_fragment_precision_high = 1;
 	resources.OES_EGL_image_external = 1;
+	resources.OES_EGL_image_external_essl3 = 1;
 	resources.EXT_draw_buffers = 1;
 	resources.ARB_texture_rectangle = 1;
 	resources.MaxCallStackDepth = 16;
@@ -140,7 +141,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
 
 	state.preTransformed = (data[0] & 0x01) != 0;
 	state.superSampling = (data[0] & 0x02) != 0;
-	state.multiSampling = (data[0] & 0x04) != 0;
 
 	state.transformFeedbackQueryEnabled = (data[0] & 0x08) != 0;
 	state.transformFeedbackEnabled = (data[0] & 0x10) != 0;
@@ -203,7 +203,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
 	sw::VertexProgram program(state, bytecodeShader.get());
 	program.generate();
 
-	sw::Routine *routine = program(L"VertexRoutine");
+	sw::Routine *routine = program("VertexRoutine");
 	assert(routine);
 	const void *entry = routine->getEntry();
 	assert(entry); (void)entry;

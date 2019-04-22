@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/callback.h"
-#include "chromeos/chromeos_export.h"
+#include "base/component_export.h"
 
 namespace base {
 class Value;
@@ -16,7 +16,7 @@ class Value;
 
 namespace chromeos {
 
-class CHROMEOS_EXPORT CrosSettingsProvider {
+class COMPONENT_EXPORT(CHROMEOS_SETTINGS) CrosSettingsProvider {
  public:
   // The callback type that is called to notify the CrosSettings observers
   // about a setting change.
@@ -41,9 +41,6 @@ class CHROMEOS_EXPORT CrosSettingsProvider {
   explicit CrosSettingsProvider(const NotifyObserversCallback& notify_cb);
   virtual ~CrosSettingsProvider();
 
-  // Sets |in_value| to given |path| in cros settings.
-  void Set(const std::string& path, const base::Value& in_value);
-
   // Gets settings value of given |path| to |out_value|.
   virtual const base::Value* Get(const std::string& path) const = 0;
 
@@ -66,10 +63,6 @@ class CHROMEOS_EXPORT CrosSettingsProvider {
   void NotifyObservers(const std::string& path);
 
  private:
-  // Does the real job for Set().
-  virtual void DoSet(const std::string& path,
-                     const base::Value& in_value) = 0;
-
   // Callback used to notify about setting changes.
   NotifyObserversCallback notify_cb_;
 };

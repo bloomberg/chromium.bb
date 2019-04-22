@@ -5,8 +5,8 @@
 #include "ui/keyboard/resources/keyboard_resource_util.h"
 
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/keyboard/grit/keyboard_resources.h"
 #include "ui/keyboard/grit/keyboard_resources_map.h"
@@ -16,11 +16,11 @@ namespace keyboard {
 const char kKeyboardURL[] = "chrome://keyboard";
 const char kKeyboardHost[] = "keyboard";
 
-const GritResourceMap* GetKeyboardExtensionResources(size_t* size) {
+const GzippedGritResourceMap* GetKeyboardExtensionResources(size_t* size) {
   // This looks a lot like the contents of a resource map; however it is
   // necessary to have a custom path for the extension path, so the resource
   // map cannot be used directly.
-  static const GritResourceMap kKeyboardResources[] = {
+  static const GzippedGritResourceMap kKeyboardResources[] = {
       {"keyboard/locales/en.js", IDR_KEYBOARD_LOCALES_EN},
       {"keyboard/config/emoji.js", IDR_KEYBOARD_CONFIG_EMOJI},
       {"keyboard/config/hwt.js", IDR_KEYBOARD_CONFIG_HWT},
@@ -93,7 +93,7 @@ const GritResourceMap* GetKeyboardExtensionResources(size_t* size) {
       {"keyboard/sounds/keypress-standard.wav",
        IDR_KEYBOARD_SOUNDS_KEYPRESS_STANDARD},
   };
-  *size = arraysize(kKeyboardResources);
+  *size = base::size(kKeyboardResources);
   return kKeyboardResources;
 }
 

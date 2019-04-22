@@ -9,7 +9,7 @@
 #include "base/atomic_sequence_num.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_math.h"
@@ -46,8 +46,9 @@ base::AtomicSequenceNumber g_unique_id;
 namespace content {
 
 // static
-ChildProcessHost* ChildProcessHost::Create(ChildProcessHostDelegate* delegate) {
-  return new ChildProcessHostImpl(delegate);
+std::unique_ptr<ChildProcessHost> ChildProcessHost::Create(
+    ChildProcessHostDelegate* delegate) {
+  return base::WrapUnique(new ChildProcessHostImpl(delegate));
 }
 
 // static
@@ -98,6 +99,12 @@ void ChildProcessHostImpl::BindInterface(
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
   return delegate_->BindInterface(interface_name, std::move(interface_pipe));
+}
+
+void ChildProcessHostImpl::RunService(
+    const std::string& service_name,
+    mojo::PendingReceiver<service_manager::mojom::Service> receiver) {
+  child_control_->RunService(service_name, std::move(receiver));
 }
 
 void ChildProcessHostImpl::ForceShutdown() {

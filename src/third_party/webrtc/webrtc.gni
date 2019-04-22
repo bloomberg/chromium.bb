@@ -109,7 +109,13 @@ declare_args() {
   rtc_use_x11 = use_x11
 
   # Set this to use PipeWire on the Wayland display server.
-  rtc_use_pipewire = false
+  # By default it's only enabled on desktop Linux (excludes ChromeOS) and
+  # only when using the sysroot as PipeWire is not available in older and
+  # supported Ubuntu and Debian distributions.
+  rtc_use_pipewire = is_desktop_linux && use_sysroot
+
+  # Set this to link PipeWire directly instead of using the dlopen.
+  rtc_link_pipewire = false
 
   # Enable to use the Mozilla internal settings.
   build_with_mozilla = false
@@ -117,9 +123,6 @@ declare_args() {
   # Enable use of Android AAudio which requires Android SDK 26 or above and
   # NDK r16 or above.
   rtc_enable_android_aaudio = false
-
-  # TODO(henrika): can this flag be removed?
-  rtc_enable_android_opensl = false
 
   # Link-Time Optimizations.
   # Executes code generation at link-time instead of compile-time.
@@ -132,11 +135,6 @@ declare_args() {
   # Use llvm's sancov -html-report for human readable reports.
   # See http://clang.llvm.org/docs/SanitizerCoverage.html .
   rtc_sanitize_coverage = ""
-
-  # Links a default implementation of task queues to targets
-  # that depend on the target rtc_task_queue. Set to false to
-  # use an external implementation.
-  rtc_link_task_queue_impl = true
 
   if (current_cpu == "arm" || current_cpu == "arm64") {
     rtc_prefer_fixed_point = true
@@ -153,7 +151,11 @@ declare_args() {
   # H.264, compilation succeeds but |H264DecoderImpl| fails to initialize.
   # CHECK THE OPENH264, FFMPEG AND H.264 LICENSES/PATENTS BEFORE BUILDING.
   # http://www.openh264.org, https://www.ffmpeg.org/
-  rtc_use_h264 = proprietary_codecs && !is_android && !is_ios
+  #
+  # Enabling H264 when building with MSVC is currently not supported, see
+  # bugs.webrtc.org/9213#c13 for more info.
+  rtc_use_h264 =
+      proprietary_codecs && !is_android && !is_ios && !(is_win && !is_clang)
 
   # By default, use normal platform audio support or dummy audio, but don't
   # use file-based audio playout and record.
@@ -165,9 +167,6 @@ declare_args() {
   # real audio samples.
   rtc_audio_device_plays_sinus_tone = false
 
-  # Disable this to build without support for built-in software codecs.
-  rtc_use_builtin_sw_codecs = true
-
   if (is_ios) {
     # Build broadcast extension in AppRTCMobile for iOS. This results in the
     # binary only running on iOS 11+, which is why it is disabled by default.
@@ -176,6 +175,26 @@ declare_args() {
 
   # Determines whether Metal is available on iOS/macOS.
   rtc_use_metal_rendering = is_mac || (is_ios && current_cpu == "arm64")
+
+  # When set to false, builtin audio encoder/decoder factories and all the
+  # audio codecs they depend on will not be included in libwebrtc.{a|lib}
+  # (they will still be included in libjingle_peerconnection_so.so and
+  # WebRTC.framework)
+  rtc_include_builtin_audio_codecs = true
+
+  # When set to false, builtin video encoder/decoder factories and all the
+  # video codecs they depends on will not be included in libwebrtc.{a|lib}
+  # (they will still be included in libjingle_peerconnection_so.so and
+  # WebRTC.framework)
+  rtc_include_builtin_video_codecs = true
+
+  # When set to true and in a standalone build, it will undefine UNICODE and
+  # _UNICODE (which are always defined globally by the Chromium Windows
+  # toolchain).
+  # This is only needed for testing purposes, WebRTC wants to be sure it
+  # doesn't assume /DUNICODE and /D_UNICODE but that it explicitly uses
+  # wide character functions.
+  rtc_win_undef_unicode = false
 }
 
 if (!build_with_mozilla) {
@@ -202,8 +221,6 @@ declare_args() {
   rtc_build_usrsctp = !build_with_mozilla
 
   # Enable libevent task queues on platforms that support it.
-  # rtc_link_task_queue_impl must be set to true for this to
-  # have an effect.
   if (is_win || is_mac || is_ios || is_nacl || is_fuchsia) {
     rtc_enable_libevent = false
     rtc_build_libevent = false
@@ -233,8 +250,8 @@ rtc_libvpx_dir = "//third_party/libvpx"
 rtc_opus_dir = "//third_party/opus"
 
 # Desktop capturer is supported only on Windows, OSX and Linux.
-rtc_desktop_capture_supported =
-    is_win || is_mac || (is_linux && (rtc_use_x11 || rtc_use_pipewire))
+rtc_desktop_capture_supported = (is_win && current_os != "winuwp") || is_mac ||
+                                (is_linux && (rtc_use_x11 || rtc_use_pipewire))
 
 ###############################################################################
 # Templates
@@ -270,6 +287,9 @@ rtc_common_inherited_config = webrtc_root + ":common_inherited_config"
 
 # Common configs to remove or add in all rtc targets.
 rtc_remove_configs = []
+if (!build_with_chromium && is_clang) {
+  rtc_remove_configs += [ "//build/config/clang:find_bad_constructs" ]
+}
 rtc_add_configs = rtc_common_configs
 rtc_prod_configs = [ webrtc_root + ":rtc_prod_config" ]
 rtc_library_impl_config = [ webrtc_root + ":library_impl_config" ]
@@ -713,7 +733,10 @@ if (is_mac) {
     modulemap_path = "$target_gen_dir/Modules/module.modulemap"
 
     mac_framework_bundle(target_name) {
-      forward_variables_from(invoker, "*", [])
+      forward_variables_from(invoker, "*", [ "configs" ])
+      if (defined(invoker.configs)) {
+        configs += invoker.configs
+      }
 
       framework_version = "A"
       framework_contents = [
@@ -817,6 +840,16 @@ if (is_android) {
       # Treat warnings as errors.
       errorprone_args += [ "-Werror" ]
 
+      # WebRTC supports API level 16 while Chromium only supports 19.
+      # (the manifest defines minimum supported SDK version)
+      if (defined(invoker.android_manifest_for_lint)) {
+        # Custom manifest defined by the target, use that one.
+        android_manifest_for_lint = invoker.android_manifest_for_lint
+      } else {
+        # Default manifest for WebRTC.
+        android_manifest_for_lint = "//sdk/android/AndroidManifest.xml"
+      }
+
       # TODO(crbug.com/824679): Find out why this fails in Chromium
       if (!build_with_chromium) {
         errorprone_args += [
@@ -834,7 +867,6 @@ if (is_android) {
       if (!defined(deps)) {
         deps = []
       }
-      deps += [ "//third_party/jsr-305:jsr_305_javalib" ]
 
       no_build_hooks = true
     }
@@ -866,7 +898,6 @@ if (is_android) {
       if (!defined(deps)) {
         deps = []
       }
-      deps += [ "//third_party/jsr-305:jsr_305_javalib" ]
 
       no_build_hooks = true
     }
@@ -898,7 +929,6 @@ if (is_android) {
       if (!defined(deps)) {
         deps = []
       }
-      deps += [ "//third_party/jsr-305:jsr_305_javalib" ]
 
       no_build_hooks = true
     }

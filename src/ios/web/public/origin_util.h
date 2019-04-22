@@ -6,7 +6,6 @@
 #define IOS_WEB_PUBLIC_ORIGIN_UTIL_H_
 
 class GURL;
-@class WKSecurityOrigin;
 
 namespace web {
 
@@ -16,10 +15,6 @@ namespace web {
 //
 // See https://www.w3.org/TR/powerful-features/#is-origin-trustworthy.
 bool IsOriginSecure(const GURL& url);
-
-// Converts WKSecurityOrigin to GURL origin.
-// Returns empty url if |origin| is nil.
-GURL GURLOriginWithWKSecurityOrigin(WKSecurityOrigin* origin);
 
 }  // namespace web
 

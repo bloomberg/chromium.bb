@@ -38,6 +38,7 @@ _DISABLED_TESTS = frozenset({
   # and will later be removed.
   'system_health.memory_mobile/browse:tech:discourse_infinite_scroll',
   'system_health.memory_mobile/browse:social:facebook_infinite_scroll',
+  'system_health.memory_mobile/browse:social:tumblr_infinite_scroll',
   'system_health.memory_mobile/browse:news:cnn',
   'system_health.memory_mobile/load:news:cnn',
   'system_health.memory_mobile/load:tools:stackoverflow',
@@ -46,6 +47,7 @@ _DISABLED_TESTS = frozenset({
   'system_health.memory_desktop/load_accessibility:media:wikipedia',
   'system_health.memory_desktop/browse:tech:discourse_infinite_scroll',
   'system_health.memory_desktop/browse:social:facebook_infinite_scroll',
+  'system_health.memory_desktop/browse:social:tumblr_infinite_scroll',
   'system_health.memory_desktop/browse:news:flipboard',
   'system_health.memory_desktop/browse:search:google',
   'system_health.memory_desktop/browse:news:hackernews',
@@ -132,6 +134,9 @@ _DISABLED_TESTS = frozenset({
 
   # crbug.com/903849
   'system_health.memory_mobile/browse:news:cnn:2018',
+
+  # crbug.com/937006
+  'system_health.memory_mobile/browse:news:toi',
 })
 
 
@@ -233,6 +238,8 @@ def GenerateBenchmarkOptions(benchmark_class):
   # all crashes and hence remove the need to enable logging in actual perf
   # benchmarks.
   options.browser_options.logging_verbosity = 'non-verbose'
+  options.target_platforms = benchmark_class.GetSupportedPlatformNames(
+      benchmark_class.SUPPORTED_PLATFORMS)
   return options
 
 

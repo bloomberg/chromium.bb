@@ -4,8 +4,11 @@
 
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_reader.h"
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_impl.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_unittest_utils.h"
@@ -179,6 +182,71 @@ TEST_F(LocalSiteCharacteristicsDataReaderTest,
       .Times(0);
   reader.reset();
   ::testing::Mock::VerifyAndClear(&database);
+}
+
+TEST_F(LocalSiteCharacteristicsDataReaderTest, OnDataLoadedCallbackInvoked) {
+  const url::Origin kOrigin = url::Origin::Create(GURL("foo.com"));
+  ::testing::StrictMock<MockLocalSiteCharacteristicsDatabase> database;
+
+  // Create the impl.
+  EXPECT_CALL(database, OnReadSiteCharacteristicsFromDB(
+                            ::testing::Property(&url::Origin::Serialize,
+                                                kOrigin.Serialize()),
+                            ::testing::_));
+  scoped_refptr<internal::LocalSiteCharacteristicsDataImpl> impl =
+      base::WrapRefCounted(new internal::LocalSiteCharacteristicsDataImpl(
+          kOrigin, &delegate_, &database));
+
+  // Create the reader.
+  std::unique_ptr<LocalSiteCharacteristicsDataReader> reader =
+      base::WrapUnique(new LocalSiteCharacteristicsDataReader(impl));
+  EXPECT_FALSE(reader->DataLoaded());
+
+  // Register a data ready closure.
+  bool on_data_loaded = false;
+  reader->RegisterDataLoadedCallback(base::BindLambdaForTesting(
+      [&on_data_loaded]() { on_data_loaded = true; }));
+
+  // Transition the impl to fully initialized, which should cause the callbacks
+  // to fire.
+  EXPECT_FALSE(impl->DataLoaded());
+  EXPECT_FALSE(on_data_loaded);
+  impl->TransitionToFullyInitialized();
+  EXPECT_TRUE(impl->DataLoaded());
+  EXPECT_TRUE(on_data_loaded);
+}
+
+TEST_F(LocalSiteCharacteristicsDataReaderTest,
+       DestroyingReaderCancelsPendingCallbacks) {
+  const url::Origin kOrigin = url::Origin::Create(GURL("foo.com"));
+  ::testing::StrictMock<MockLocalSiteCharacteristicsDatabase> database;
+
+  // Create the impl.
+  EXPECT_CALL(database, OnReadSiteCharacteristicsFromDB(
+                            ::testing::Property(&url::Origin::Serialize,
+                                                kOrigin.Serialize()),
+                            ::testing::_));
+  scoped_refptr<internal::LocalSiteCharacteristicsDataImpl> impl =
+      base::WrapRefCounted(new internal::LocalSiteCharacteristicsDataImpl(
+          kOrigin, &delegate_, &database));
+
+  // Create the reader.
+  std::unique_ptr<LocalSiteCharacteristicsDataReader> reader =
+      base::WrapUnique(new LocalSiteCharacteristicsDataReader(impl));
+  EXPECT_FALSE(reader->DataLoaded());
+
+  // Register a data ready closure.
+  reader->RegisterDataLoadedCallback(
+      base::MakeExpectedNotRunClosure(FROM_HERE));
+
+  // Reset the reader.
+  reader.reset();
+
+  // Transition the impl to fully initialized, which should cause the callbacks
+  // to fire. The reader's callback should *not* be invoked.
+  EXPECT_FALSE(impl->DataLoaded());
+  impl->TransitionToFullyInitialized();
+  EXPECT_TRUE(impl->DataLoaded());
 }
 
 }  // namespace resource_coordinator

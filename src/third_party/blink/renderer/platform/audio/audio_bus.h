@@ -30,8 +30,9 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_AUDIO_BUS_H_
 
 #include <memory>
+
+#include "base/macros.h"
 #include "third_party/blink/renderer/platform/audio/audio_channel.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -41,8 +42,6 @@ namespace blink {
 // The data layout is "planar" as opposed to "interleaved".  An AudioBus with
 // one channel is mono, an AudioBus with two channels is stereo, etc.
 class PLATFORM_EXPORT AudioBus : public ThreadSafeRefCounted<AudioBus> {
-  WTF_MAKE_NONCOPYABLE(AudioBus);
-
  public:
   enum {
     kChannelLeft = 0,
@@ -70,11 +69,13 @@ class PLATFORM_EXPORT AudioBus : public ThreadSafeRefCounted<AudioBus> {
   // is false then setChannelMemory() has to be called later on for each
   // channel before the AudioBus is useable...
   static scoped_refptr<AudioBus> Create(unsigned number_of_channels,
-                                        size_t length,
+                                        uint32_t length,
                                         bool allocate = true);
 
   // Tells the given channel to use an externally allocated buffer.
-  void SetChannelMemory(unsigned channel_index, float* storage, size_t length);
+  void SetChannelMemory(unsigned channel_index,
+                        float* storage,
+                        uint32_t length);
 
   // Channels
   unsigned NumberOfChannels() const { return channels_.size(); }
@@ -87,11 +88,11 @@ class PLATFORM_EXPORT AudioBus : public ThreadSafeRefCounted<AudioBus> {
   const AudioChannel* ChannelByType(unsigned type) const;
 
   // Number of sample-frames
-  size_t length() const { return length_; }
+  uint32_t length() const { return length_; }
 
   // resizeSmaller() can only be called with a new length <= the current length.
   // The data stored in the bus will remain undisturbed.
-  void ResizeSmaller(size_t new_length);
+  void ResizeSmaller(uint32_t new_length);
 
   // Sample-rate : 0.0 if unknown or "don't care"
   float SampleRate() const { return sample_rate_; }
@@ -167,7 +168,7 @@ class PLATFORM_EXPORT AudioBus : public ThreadSafeRefCounted<AudioBus> {
  protected:
   AudioBus() = default;
 
-  AudioBus(unsigned number_of_channels, size_t length, bool allocate);
+  AudioBus(unsigned number_of_channels, uint32_t length, bool allocate);
 
   void DiscreteSumFrom(const AudioBus&);
 
@@ -176,10 +177,13 @@ class PLATFORM_EXPORT AudioBus : public ThreadSafeRefCounted<AudioBus> {
   void SumFromByUpMixing(const AudioBus&);
   void SumFromByDownMixing(const AudioBus&);
 
-  size_t length_;
+  uint32_t length_;
   Vector<std::unique_ptr<AudioChannel>> channels_;
   int layout_;
   float sample_rate_;  // 0.0 if unknown or N/A
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AudioBus);
 };
 
 }  // namespace blink

@@ -60,32 +60,43 @@ TEST(InducedSuffixSortTest, BuildSLPartition) {
       {}, "a");
   TestSlPartition(
       {
-          SLType::LType, SLType::LType,
+          SLType::LType,
+          SLType::LType,
       },
       {}, "ba");
   TestSlPartition(
       {
-          SLType::SType, SLType::LType,
+          SLType::SType,
+          SLType::LType,
       },
       {}, "ab");
   TestSlPartition(
       {
-          SLType::SType, SLType::SType, SLType::LType,
+          SLType::SType,
+          SLType::SType,
+          SLType::LType,
       },
       {}, "aab");
   TestSlPartition(
       {
-          SLType::LType, SLType::LType, SLType::LType,
+          SLType::LType,
+          SLType::LType,
+          SLType::LType,
       },
       {}, "bba");
   TestSlPartition(
       {
-          SLType::LType, SLType::SType, SLType::LType,
+          SLType::LType,
+          SLType::SType,
+          SLType::LType,
       },
       {1}, "bab");
   TestSlPartition(
       {
-          SLType::LType, SLType::SType, SLType::SType, SLType::LType,
+          SLType::LType,
+          SLType::SType,
+          SLType::SType,
+          SLType::LType,
       },
       {1}, "baab");
 

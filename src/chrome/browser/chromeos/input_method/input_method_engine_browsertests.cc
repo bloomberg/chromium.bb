@@ -4,13 +4,14 @@
 
 #include <stddef.h>
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
-#include "chrome/browser/ui/ash/chrome_keyboard_controller_client.h"
+#include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api/virtual_keyboard_private/virtual_keyboard_delegate.h"
@@ -144,15 +145,15 @@ class KeyEventDoneCallback {
   DISALLOW_COPY_AND_ASSIGN(KeyEventDoneCallback);
 };
 
-INSTANTIATE_TEST_CASE_P(InputMethodEngineBrowserTest,
-                        InputMethodEngineBrowserTest,
-                        ::testing::Values(kTestTypeNormal));
-INSTANTIATE_TEST_CASE_P(InputMethodEngineIncognitoBrowserTest,
-                        InputMethodEngineBrowserTest,
-                        ::testing::Values(kTestTypeIncognito));
-INSTANTIATE_TEST_CASE_P(InputMethodEngineComponentExtensionBrowserTest,
-                        InputMethodEngineBrowserTest,
-                        ::testing::Values(kTestTypeComponent));
+INSTANTIATE_TEST_SUITE_P(InputMethodEngineBrowserTest,
+                         InputMethodEngineBrowserTest,
+                         ::testing::Values(kTestTypeNormal));
+INSTANTIATE_TEST_SUITE_P(InputMethodEngineIncognitoBrowserTest,
+                         InputMethodEngineBrowserTest,
+                         ::testing::Values(kTestTypeIncognito));
+INSTANTIATE_TEST_SUITE_P(InputMethodEngineComponentExtensionBrowserTest,
+                         InputMethodEngineBrowserTest,
+                         ::testing::Values(kTestTypeComponent));
 
 IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
                        BasicScenarioTest) {
@@ -233,8 +234,8 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
   ASSERT_TRUE(disabled_listener.WaitUntilSatisfied());
   ASSERT_TRUE(disabled_listener.was_satisfied());
 
-  ui::IMEBridge::Get()->SetInputContextHandler(NULL);
-  ui::IMEBridge::Get()->SetCandidateWindowHandler(NULL);
+  ui::IMEBridge::Get()->SetInputContextHandler(nullptr);
+  ui::IMEBridge::Get()->SetCandidateWindowHandler(nullptr);
 }
 
 IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
@@ -414,7 +415,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
     { ui::VKEY_F9, "F9", "AudioVolumeDown" },
     { ui::VKEY_F10, "F10", "AudioVolumeUp" },
   };
-  for (size_t i = 0; i < arraysize(kMediaKeyCases); ++i) {
+  for (size_t i = 0; i < base::size(kMediaKeyCases); ++i) {
     SCOPED_TRACE(std::string("KeyDown, ") + kMediaKeyCases[i].code);
     KeyEventDoneCallback callback(false);
     const std::string expected_value =
@@ -1019,8 +1020,8 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
     EXPECT_EQ("", mock_input_context->last_commit_text());
   }
 
-  ui::IMEBridge::Get()->SetInputContextHandler(NULL);
-  ui::IMEBridge::Get()->SetCandidateWindowHandler(NULL);
+  ui::IMEBridge::Get()->SetInputContextHandler(nullptr);
+  ui::IMEBridge::Get()->SetCandidateWindowHandler(nullptr);
 }
 
 IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest, RestrictedKeyboard) {
@@ -1133,6 +1134,9 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest, RestrictedKeyboard) {
     ASSERT_TRUE(focus_listener.WaitUntilSatisfied());
     ASSERT_TRUE(focus_listener.was_satisfied());
   }
+
+  ui::IMEBridge::Get()->SetInputContextHandler(nullptr);
+  ui::IMEBridge::Get()->SetCandidateWindowHandler(nullptr);
 }
 
 IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest, ShouldDoLearning) {
@@ -1162,6 +1166,9 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest, ShouldDoLearning) {
   engine_handler->FocusIn(context);
   ASSERT_TRUE(focus_listener.WaitUntilSatisfied());
   ASSERT_TRUE(focus_listener.was_satisfied());
+
+  ui::IMEBridge::Get()->SetInputContextHandler(nullptr);
+  ui::IMEBridge::Get()->SetCandidateWindowHandler(nullptr);
 }
 
 }  // namespace

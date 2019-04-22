@@ -256,18 +256,23 @@ void AutocompleteControllerAndroid::OnSuggestionSelected(
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(j_web_contents);
 
-  if (autocomplete_controller_->result().match_at(selected_index).type ==
-      AutocompleteMatchType::CLIPBOARD) {
+  const auto& match =
+      autocomplete_controller_->result().match_at(selected_index);
+  SuggestionAnswer::LogAnswerUsed(match.answer);
+  if (match.type == AutocompleteMatchType::CLIPBOARD_URL) {
     UMA_HISTOGRAM_LONG_TIMES_100(
         "MobileOmnibox.PressedClipboardSuggestionAge",
         ClipboardRecentContent::GetInstance()->GetClipboardContentAge());
   }
+
   OmniboxLog log(
       // For zero suggest, record an empty input string instead of the
       // current URL.
       input_.from_omnibox_focus() ? base::string16() : input_.text(),
       false, /* don't know */
       input_.type(),
+      false, /* not keyword mode */
+      OmniboxEventProto::INVALID,
       true,
       selected_index,
       WindowOpenDisposition::CURRENT_TAB,
@@ -625,7 +630,6 @@ static jlong JNI_AutocompleteController_Init(
 static ScopedJavaLocalRef<jstring>
 JNI_AutocompleteController_QualifyPartialURLQuery(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& jquery) {
   Profile* profile = ProfileManager::GetActiveUserProfile();
   if (!profile)
@@ -652,9 +656,7 @@ JNI_AutocompleteController_QualifyPartialURLQuery(
   return ConvertUTF8ToJavaString(env, match.destination_url.spec());
 }
 
-static void JNI_AutocompleteController_PrefetchZeroSuggestResults(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& clazz) {
+static void JNI_AutocompleteController_PrefetchZeroSuggestResults(JNIEnv* env) {
   Profile* profile = ProfileManager::GetActiveUserProfile();
   if (!profile)
     return;

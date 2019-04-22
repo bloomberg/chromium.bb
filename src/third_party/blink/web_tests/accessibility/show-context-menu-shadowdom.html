@@ -54,6 +54,8 @@ async_test(function(t)
     }, false);
 
     if (window.accessibilityController) {
+
+
         var axTarget = accessibilityController.accessibleElementById("target");
         axTargetText = axTarget.childAtIndex(0);
         assert_equals(axTargetText.role, 'AXRole: AXStaticText');

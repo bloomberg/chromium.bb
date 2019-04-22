@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "components/arc/common/usb_host.mojom.h"
-#include "components/arc/connection_observer.h"
+#include "components/arc/session/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "device/usb/public/mojom/device_manager.mojom.h"
 #include "device/usb/usb_device.h"
@@ -53,6 +53,9 @@ class ArcUsbHostBridge : public KeyedService,
                          const std::string& package,
                          bool interactive,
                          RequestPermissionCallback callback) override;
+  void OpenDeviceDeprecated(const std::string& guid,
+                            const base::Optional<std::string>& package,
+                            OpenDeviceCallback callback) override;
   void OpenDevice(const std::string& guid,
                   const base::Optional<std::string>& package,
                   OpenDeviceCallback callback) override;

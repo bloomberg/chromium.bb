@@ -1,4 +1,4 @@
-// META: global=worker
+// META: global=worker,jsshell
 // META: script=../resources/test-utils.js
 'use strict';
 
@@ -102,6 +102,11 @@ promise_test(t => {
   return methodRejectsForAll(t, WriterProto, 'close',
                              [fakeWSDefaultWriter(), realWS(), realWSDefaultController(), undefined, null]);
 }, 'WritableStreamDefaultWriter.prototype.close enforces a brand check');
+
+test(() => {
+  methodThrowsForAll(WriterProto, 'releaseLock',
+                     [fakeWSDefaultWriter(), realWS(), realWSDefaultController(), undefined, null]);
+}, 'WritableStreamDefaultWriter.prototype.releaseLock enforces a brand check');
 
 test(() => {
   methodThrowsForAll(WritableStreamDefaultController.prototype, 'error',

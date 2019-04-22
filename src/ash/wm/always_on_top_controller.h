@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/wm/window_state_observer.h"
 #include "base/macros.h"
 #include "ui/aura/window_observer.h"
 
@@ -19,20 +20,26 @@ class WorkspaceLayoutManager;
 // 'AlwaysOnTop' property. That is, putting a window into the worskpace
 // container if its "AlwaysOnTop" property is false. Otherwise, put it in
 // |always_on_top_container_|.
-class ASH_EXPORT AlwaysOnTopController : public aura::WindowObserver {
+class ASH_EXPORT AlwaysOnTopController : public aura::WindowObserver,
+                                         wm::WindowStateObserver {
  public:
-  explicit AlwaysOnTopController(aura::Window* viewport);
+  explicit AlwaysOnTopController(aura::Window* always_on_top_container,
+                                 aura::Window* pip_container);
   ~AlwaysOnTopController() override;
 
   // Gets container for given |window| based on its "AlwaysOnTop" property.
   aura::Window* GetContainer(aura::Window* window) const;
 
-  WorkspaceLayoutManager* GetLayoutManager() const;
-
   void SetLayoutManagerForTest(
       std::unique_ptr<WorkspaceLayoutManager> layout_manager);
 
+  static void SetDisallowReparent(aura::Window* window);
+
  private:
+  void AddWindow(aura::Window* window);
+  void RemoveWindow(aura::Window* window);
+  void ReparentWindow(aura::Window* window);
+
   // Overridden from aura::WindowObserver:
   void OnWindowHierarchyChanged(const HierarchyChangeParams& params) override;
   void OnWindowPropertyChanged(aura::Window* window,
@@ -40,11 +47,16 @@ class ASH_EXPORT AlwaysOnTopController : public aura::WindowObserver {
                                intptr_t old) override;
   void OnWindowDestroying(aura::Window* window) override;
 
+  // Overridden from wm::WindowStateObserver:
+  void OnPreWindowStateTypeChange(wm::WindowState* window_state,
+                                  mojom::WindowStateType old_type) override;
+
   aura::Window* always_on_top_container_;
+  aura::Window* pip_container_;
 
   DISALLOW_COPY_AND_ASSIGN(AlwaysOnTopController);
 };
 
-}  // namepsace ash
+}  // namespace ash
 
 #endif  // ASH_WM_ALWAYS_ON_TOP_CONTROLLER_H_

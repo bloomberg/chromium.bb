@@ -186,10 +186,6 @@ ChromeLayoutProvider::GetControlLabelGridAlignment() const {
   return views::GridLayout::LEADING;
 }
 
-bool ChromeLayoutProvider::UseExtraDialogPadding() const {
-  return false;
-}
-
 bool ChromeLayoutProvider::ShouldShowWindowIcon() const {
   return false;
 }

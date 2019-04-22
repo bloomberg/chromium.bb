@@ -36,7 +36,7 @@
   async function addUISourceCode2(url) {
     TestRunner.evaluateInPageAnonymously(`
       window.workers = window.workers || [];
-      window.workers.push(new Worker('${url}', {name: 'mock-target-100'}));
+      window.workers.push(new Worker('${url}'));
     `);
     var uiSourceCode = await waitForUISourceCodeAdded(url);
     uiSourceCodes.push(uiSourceCode);

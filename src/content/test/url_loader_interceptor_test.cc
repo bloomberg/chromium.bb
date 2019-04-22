@@ -19,6 +19,7 @@
 #include "content/shell/browser/shell.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
+#include "net/base/filename_util.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/test/test_url_loader_client.h"
@@ -68,17 +69,86 @@ IN_PROC_BROWSER_TEST_F(URLLoaderInterceptorTest, MonitorFrame) {
 }
 
 IN_PROC_BROWSER_TEST_F(URLLoaderInterceptorTest, InterceptFrame) {
+  bool seen = false;
   GURL url = GetPageURL();
   URLLoaderInterceptor interceptor(base::BindLambdaForTesting(
       [&](URLLoaderInterceptor::RequestParams* params) {
         EXPECT_EQ(params->url_request.url, url);
         EXPECT_EQ(params->process_id, 0);
+        seen = true;
         network::URLLoaderCompletionStatus status;
         status.error_code = net::ERR_FAILED;
         params->client->OnComplete(status);
         return true;
       }));
   EXPECT_FALSE(NavigateToURL(shell(), GetPageURL()));
+  EXPECT_TRUE(seen);
+}
+
+IN_PROC_BROWSER_TEST_F(URLLoaderInterceptorTest, InterceptFrameWithFileScheme) {
+  bool seen = false;
+  base::FilePath path = GetTestFilePath(nullptr, "empty.html");
+  GURL url = net::FilePathToFileURL(path);
+  URLLoaderInterceptor interceptor(base::BindLambdaForTesting(
+      [&](URLLoaderInterceptor::RequestParams* params) {
+        EXPECT_EQ(params->url_request.url, url);
+        EXPECT_EQ(params->process_id, 0);
+        seen = true;
+        network::URLLoaderCompletionStatus status;
+        status.error_code = net::ERR_FAILED;
+        params->client->OnComplete(status);
+        return true;
+      }));
+  EXPECT_FALSE(NavigateToURL(shell(), url));
+  EXPECT_TRUE(seen);
+}
+
+IN_PROC_BROWSER_TEST_F(URLLoaderInterceptorTest,
+                       AsynchronousInitializationInterceptFrame) {
+  bool seen = false;
+  GURL url = GetPageURL();
+  base::RunLoop run_loop;
+  URLLoaderInterceptor interceptor(
+      base::BindLambdaForTesting(
+          [&](URLLoaderInterceptor::RequestParams* params) {
+            EXPECT_EQ(params->url_request.url, url);
+            EXPECT_EQ(params->process_id, 0);
+            seen = true;
+            network::URLLoaderCompletionStatus status;
+            status.error_code = net::ERR_FAILED;
+            params->client->OnComplete(status);
+            return true;
+          }),
+      run_loop.QuitClosure());
+  run_loop.Run();
+  EXPECT_FALSE(NavigateToURL(shell(), GetPageURL()));
+  EXPECT_TRUE(seen);
+}
+
+IN_PROC_BROWSER_TEST_F(URLLoaderInterceptorTest,
+                       AsynchronousDestructionIsAppliedImmediately) {
+  const GURL url = GetPageURL();
+  {
+    bool seen = false;
+    base::RunLoop run_loop;
+    URLLoaderInterceptor interceptor(
+        base::BindLambdaForTesting(
+            [&](URLLoaderInterceptor::RequestParams* params) {
+              EXPECT_EQ(params->url_request.url, url);
+              EXPECT_EQ(params->process_id, 0);
+              seen = true;
+              network::URLLoaderCompletionStatus status;
+              status.error_code = net::ERR_FAILED;
+              params->client->OnComplete(status);
+              return true;
+            }),
+        run_loop.QuitClosure());
+    run_loop.Run();
+
+    ASSERT_FALSE(NavigateToURL(shell(), url));
+    EXPECT_TRUE(seen);
+  }
+  EXPECT_TRUE(NavigateToURL(shell(), url));
 }
 
 class TestBrowserClientWithHeaderClient
@@ -91,6 +161,7 @@ class TestBrowserClientWithHeaderClient
       content::RenderFrameHost* frame,
       int render_process_id,
       bool is_navigation,
+      bool is_download,
       const url::Origin& request_initiator,
       network::mojom::URLLoaderFactoryRequest* factory_request,
       network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
@@ -101,12 +172,9 @@ class TestBrowserClientWithHeaderClient
   }
 
   // network::mojom::TrustedURLLoaderHeaderClient:
-  void OnBeforeSendHeaders(int32_t request_id,
-                           const net::HttpRequestHeaders& headers,
-                           OnBeforeSendHeadersCallback callback) override {}
-  void OnHeadersReceived(int32_t request_id,
-                         const std::string& headers,
-                         OnHeadersReceivedCallback callback) override {}
+  void OnLoaderCreated(
+      int32_t request_id,
+      network::mojom::TrustedHeaderClientRequest request) override {}
 
   mojo::BindingSet<network::mojom::TrustedURLLoaderHeaderClient> bindings_;
 };
@@ -117,17 +185,20 @@ IN_PROC_BROWSER_TEST_F(URLLoaderInterceptorTest,
   content::ContentBrowserClient* old_browser_client =
       content::SetBrowserClientForTesting(&browser_client);
 
+  bool seen = false;
   GURL url = GetPageURL();
   URLLoaderInterceptor interceptor(base::BindLambdaForTesting(
       [&](URLLoaderInterceptor::RequestParams* params) {
         EXPECT_EQ(params->url_request.url, url);
         EXPECT_EQ(params->process_id, 0);
+        seen = true;
         network::URLLoaderCompletionStatus status;
         status.error_code = net::ERR_FAILED;
         params->client->OnComplete(status);
         return true;
       }));
   EXPECT_FALSE(NavigateToURL(shell(), GetPageURL()));
+  EXPECT_TRUE(seen);
 
   SetBrowserClientForTesting(old_browser_client);
 }
@@ -150,10 +221,12 @@ IN_PROC_BROWSER_TEST_F(URLLoaderInterceptorTest, MonitorSubresource) {
 }
 
 IN_PROC_BROWSER_TEST_F(URLLoaderInterceptorTest, InterceptSubresource) {
+  bool seen = false;
   GURL url = GetImageURL();
   URLLoaderInterceptor interceptor(base::BindLambdaForTesting(
       [&](URLLoaderInterceptor::RequestParams* params) {
         if (params->url_request.url == url) {
+          seen = true;
           network::URLLoaderCompletionStatus status;
           status.error_code = net::ERR_FAILED;
           params->client->OnComplete(status);
@@ -163,9 +236,11 @@ IN_PROC_BROWSER_TEST_F(URLLoaderInterceptorTest, InterceptSubresource) {
       }));
   Test();
   EXPECT_FALSE(DidImageLoad());
+  EXPECT_TRUE(seen);
 }
 
 IN_PROC_BROWSER_TEST_F(URLLoaderInterceptorTest, InterceptBrowser) {
+  bool seen = false;
   GURL url = GetImageURL();
   network::mojom::URLLoaderPtr loader;
   network::TestURLLoaderClient client;
@@ -174,6 +249,7 @@ IN_PROC_BROWSER_TEST_F(URLLoaderInterceptorTest, InterceptBrowser) {
 
   URLLoaderInterceptor interceptor(base::BindLambdaForTesting(
       [&](URLLoaderInterceptor::RequestParams* params) {
+        seen = true;
         EXPECT_EQ(params->url_request.url, url);
         network::URLLoaderCompletionStatus status;
         status.error_code = net::ERR_FAILED;
@@ -189,6 +265,7 @@ IN_PROC_BROWSER_TEST_F(URLLoaderInterceptorTest, InterceptBrowser) {
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
   client.RunUntilComplete();
   EXPECT_EQ(net::ERR_FAILED, client.completion_status().error_code);
+  EXPECT_TRUE(seen);
 }
 
 IN_PROC_BROWSER_TEST_F(URLLoaderInterceptorTest, WriteResponse) {

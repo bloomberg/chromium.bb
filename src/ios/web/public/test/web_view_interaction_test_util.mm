@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/json/string_escape.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #import "ios/web/public/web_state/ui/crw_web_view_scroll_view_proxy.h"
@@ -68,20 +69,23 @@ std::unique_ptr<base::Value> ExecuteJavaScript(web::WebState* web_state,
 }
 
 CGRect GetBoundingRectOfElement(web::WebState* web_state,
-                                const web::test::ElementSelector& selector) {
+                                ElementSelector* selector) {
+  std::string selector_script =
+      base::SysNSStringToUTF8(selector.selectorScript);
+  std::string selector_description =
+      base::SysNSStringToUTF8(selector.selectorDescription);
   std::string quoted_description;
-  bool success =
-      base::EscapeJSONString(selector.GetSelectorDescription(),
-                             true /* put_in_quotes */, &quoted_description);
+  bool success = base::EscapeJSONString(
+      selector_description, true /* put_in_quotes */, &quoted_description);
   if (!success) {
     DLOG(ERROR) << "Error quoting description: "
-                << selector.GetSelectorDescription();
+                << selector.selectorDescription;
   }
 
   std::string kGetBoundsScript =
       "(function() {"
       "  var element = " +
-      selector.GetSelectorScript() +
+      selector_script +
       ";"
       "  if (!element) {"
       "    var description = " +

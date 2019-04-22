@@ -7,9 +7,10 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "net/base/network_change_notifier.h"
-#include "net/base/network_change_notifier_chromeos.h"
+#include "net/base/network_change_notifier_posix.h"
 
 namespace network {
 
@@ -44,7 +45,7 @@ void NetworkChangeManager::RequestNotifications(
   clients_.push_back(std::move(client_ptr));
 }
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
 void NetworkChangeManager::OnNetworkChanged(
     bool dns_changed,
     bool ip_address_changed,
@@ -53,8 +54,8 @@ void NetworkChangeManager::OnNetworkChanged(
     bool connection_subtype_changed,
     mojom::ConnectionSubtype new_connection_subtype) {
   DCHECK(network_change_notifier_);
-  net::NetworkChangeNotifierChromeos* notifier =
-      static_cast<net::NetworkChangeNotifierChromeos*>(
+  net::NetworkChangeNotifierPosix* notifier =
+      static_cast<net::NetworkChangeNotifierPosix*>(
           network_change_notifier_.get());
   if (dns_changed)
     notifier->OnDNSChanged();

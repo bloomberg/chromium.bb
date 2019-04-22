@@ -109,6 +109,12 @@ struct WebBluetoothRequestDeviceOptions {
   bool accept_all_devices;
 };
 
+struct WebBluetoothRequestLEScanOptions {
+  array<WebBluetoothLeScanFilter>? filters;
+  bool keep_repeated_devices;
+  bool accept_all_advertisements;
+};
+
 // Indicates if the function will return a single or multiple
 // GATT objects.
 enum WebBluetoothGATTQueryQuantity {
@@ -138,6 +144,27 @@ struct WebBluetoothRemoteGATTCharacteristic {
   string instance_id; // See Instance ID Note above.
   bluetooth.mojom.UUID uuid;
   uint32 properties;
+};
+
+// On success, |options| contains the values used for the scan request. On
+// error, |result| will indicate the failure type.
+union RequestScanningStartResult {
+  WebBluetoothResult error_result;
+  WebBluetoothRequestLEScanOptions options;
+};
+
+struct WebBluetoothScanResult {
+  WebBluetoothDevice device;
+  string? name;
+  array<bluetooth.mojom.UUID> uuids;
+  bool appearance_is_set;
+  uint16 appearance;
+  bool tx_power_is_set;
+  uint8 tx_power;
+  bool rssi_is_set;
+  uint8 rssi;
+  map<uint16, array<uint8>> manufacturer_data;
+  map<string, array<uint8>> service_data;
 };
 
 struct WebBluetoothRemoteGATTDescriptor {
@@ -250,6 +277,11 @@ interface WebBluetoothService {
   RemoteDescriptorWriteValue(
     string descriptor_instance_id,
     array<uint8> value) => (WebBluetoothResult result);
+
+  // Starts scanning for low energy devices.
+  RequestScanningStart(associated WebBluetoothScanClient client,
+                       WebBluetoothRequestLEScanOptions options) => (
+                       RequestScanningStartResult result);
 };
 
 // Classes that implement this interface will be notified of device events.
@@ -263,4 +295,11 @@ interface WebBluetoothServerClient {
 interface WebBluetoothCharacteristicClient {
   // Called when we receive a notification for the characteristic.
   RemoteCharacteristicValueChanged(array<uint8> value);
+};
+
+// Classes that implement this interface will be notified of scan
+// events.
+interface WebBluetoothScanClient {
+  // Called when we receive a notification for the characteristic.
+  ScanEvent(WebBluetoothScanResult result);
 };

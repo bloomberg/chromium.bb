@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
@@ -33,7 +34,7 @@ class PermissionDelegationBrowserTest : public InProcessBrowserTest {
     https_embedded_test_server_.reset(
         new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
     https_embedded_test_server_->ServeFilesFromSourceDirectory(
-        "chrome/test/data");
+        GetChromeTestDataDir());
     host_resolver()->AddRule("*", "127.0.0.1");
     content::SetupCrossSiteRedirector(https_embedded_test_server_.get());
     ASSERT_TRUE(https_embedded_test_server_->Start());

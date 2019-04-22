@@ -29,7 +29,7 @@ int DeviceCountMetricsProvider::MaxActiveDeviceCount() const {
 
 void DeviceCountMetricsProvider::ProvideCurrentSessionData(
     metrics::ChromeUserMetricsExtension* uma_proto) {
-  base::UmaHistogramSparse("Sync.DeviceCount",
+  base::UmaHistogramSparse("Sync.DeviceCount2",
                            std::min(MaxActiveDeviceCount(), 100));
 }
 

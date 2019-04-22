@@ -4,6 +4,7 @@
 
 #include "storage/browser/blob/blob_url_store_impl.h"
 
+#include "base/bind.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "storage/browser/blob/blob_impl.h"
 #include "storage/browser/blob/blob_storage_context.h"
@@ -75,9 +76,25 @@ BlobURLStoreImpl::~BlobURLStoreImpl() {
 void BlobURLStoreImpl::Register(blink::mojom::BlobPtr blob,
                                 const GURL& url,
                                 RegisterCallback callback) {
-  if (!url.SchemeIsBlob() || !delegate_->CanCommitURL(url) ||
-      BlobUrlUtils::UrlHasFragment(url)) {
-    mojo::ReportBadMessage("Invalid Blob URL passed to BlobURLStore::Register");
+  if (!url.SchemeIsBlob()) {
+    mojo::ReportBadMessage("Invalid scheme passed to BlobURLStore::Register");
+    std::move(callback).Run();
+    return;
+  }
+  // Only report errors when we don't have permission to commit and
+  // the process is valid. The process check is a temporary solution to
+  // handle cases where this method is run after the
+  // process associated with |delegate_| has been destroyed.
+  // See https://crbug.com/933089 for details.
+  if (!delegate_->CanCommitURL(url) && delegate_->IsProcessValid()) {
+    mojo::ReportBadMessage(
+        "Non committable URL passed to BlobURLStore::Register");
+    std::move(callback).Run();
+    return;
+  }
+  if (BlobUrlUtils::UrlHasFragment(url)) {
+    mojo::ReportBadMessage(
+        "URL with fragment passed to BlobURLStore::Register");
     std::move(callback).Run();
     return;
   }
@@ -89,11 +106,25 @@ void BlobURLStoreImpl::Register(blink::mojom::BlobPtr blob,
 }
 
 void BlobURLStoreImpl::Revoke(const GURL& url) {
-  if (!url.SchemeIsBlob() || !delegate_->CanCommitURL(url) ||
-      BlobUrlUtils::UrlHasFragment(url)) {
-    mojo::ReportBadMessage("Invalid Blob URL passed to BlobURLStore::Revoke");
+  if (!url.SchemeIsBlob()) {
+    mojo::ReportBadMessage("Invalid scheme passed to BlobURLStore::Revoke");
     return;
   }
+  // Only report errors when we don't have permission to commit and
+  // the process is valid. The process check is a temporary solution to
+  // handle cases where this method is run after the
+  // process associated with |delegate_| has been destroyed.
+  // See https://crbug.com/933089 for details.
+  if (!delegate_->CanCommitURL(url) && delegate_->IsProcessValid()) {
+    mojo::ReportBadMessage(
+        "Non committable URL passed to BlobURLStore::Revoke");
+    return;
+  }
+  if (BlobUrlUtils::UrlHasFragment(url)) {
+    mojo::ReportBadMessage("URL with fragment passed to BlobURLStore::Revoke");
+    return;
+  }
+
   if (context_)
     context_->RevokePublicBlobURL(url);
   urls_.erase(url);

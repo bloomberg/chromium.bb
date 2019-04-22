@@ -49,25 +49,25 @@ class SecureChannelClientImpl : public SecureChannelClient {
 
   // SecureChannelClient:
   std::unique_ptr<ConnectionAttempt> InitiateConnectionToDevice(
-      cryptauth::RemoteDeviceRef device_to_connect,
-      cryptauth::RemoteDeviceRef local_device,
+      multidevice::RemoteDeviceRef device_to_connect,
+      multidevice::RemoteDeviceRef local_device,
       const std::string& feature,
       ConnectionPriority connection_priority) override;
   std::unique_ptr<ConnectionAttempt> ListenForConnectionFromDevice(
-      cryptauth::RemoteDeviceRef device_to_connect,
-      cryptauth::RemoteDeviceRef local_device,
+      multidevice::RemoteDeviceRef device_to_connect,
+      multidevice::RemoteDeviceRef local_device,
       const std::string& feature,
       ConnectionPriority connection_priority) override;
 
   void PerformInitiateConnectionToDevice(
-      cryptauth::RemoteDeviceRef device_to_connect,
-      cryptauth::RemoteDeviceRef local_device,
+      multidevice::RemoteDeviceRef device_to_connect,
+      multidevice::RemoteDeviceRef local_device,
       const std::string& feature,
       ConnectionPriority connection_priority,
       mojom::ConnectionDelegatePtr connection_delegate_ptr);
   void PerformListenForConnectionFromDevice(
-      cryptauth::RemoteDeviceRef device_to_connect,
-      cryptauth::RemoteDeviceRef local_device,
+      multidevice::RemoteDeviceRef device_to_connect,
+      multidevice::RemoteDeviceRef local_device,
       const std::string& feature,
       ConnectionPriority connection_priority,
       mojom::ConnectionDelegatePtr connection_delegate_ptr);

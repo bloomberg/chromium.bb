@@ -22,9 +22,9 @@
 
 using local_discovery::TestServiceDiscoveryClient;
 
-using testing::StrictMock;
-using testing::AtLeast;
 using testing::_;
+using testing::AtLeast;
+using testing::StrictMock;
 
 namespace cloud_print {
 
@@ -81,12 +81,14 @@ const uint8_t kAnnouncePacket[] = {
     0x03, 0x04,
 };
 
-const char kInfoIsLocalPrinter[] = "{"
+const char kInfoIsLocalPrinter[] =
+    "{"
     "\"api\" : [ \"/privet/printer/submitdoc\" ],"
     "\"x-privet-token\" : \"sample\""
     "}";
 
-const char kInfoIsNotLocalPrinter[] = "{"
+const char kInfoIsNotLocalPrinter[] =
+    "{"
     "\"api\" : [ \"/privet/register\" ],"
     "\"x-privet-token\" : \"sample\""
     "}";
@@ -116,18 +118,12 @@ class PrivetLocalPrinterListerTest : public testing::Test {
   PrivetLocalPrinterListerTest()
       : test_service_discovery_client_(
             base::MakeRefCounted<TestServiceDiscoveryClient>()),
-        test_shared_url_loader_factory_(
-            base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-                &test_url_loader_factory_)),
-        http_asynchronous_factory_impl_(test_shared_url_loader_factory_) {
+        http_asynchronous_factory_impl_(
+            test_url_loader_factory_.GetSafeWeakWrapper()) {
     local_printer_lister_ = std::make_unique<PrivetLocalPrinterLister>(
-        test_service_discovery_client_.get(), test_shared_url_loader_factory_,
-        &delegate_);
+        test_service_discovery_client_.get(),
+        test_url_loader_factory_.GetSafeWeakWrapper(), &delegate_);
     test_service_discovery_client_->Start();
-  }
-
-  ~PrivetLocalPrinterListerTest() override {
-    test_shared_url_loader_factory_->Detach();
   }
 
   void SimulateReceive(const uint8_t* packet, size_t size) {
@@ -146,8 +142,6 @@ class PrivetLocalPrinterListerTest : public testing::Test {
   std::unique_ptr<PrivetLocalPrinterLister> local_printer_lister_;
   StrictMock<MockLocalPrinterListerDelegate> delegate_;
   network::TestURLLoaderFactory test_url_loader_factory_;
-  scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
-      test_shared_url_loader_factory_;
   cloud_print::PrivetHTTPAsynchronousFactoryImpl
       http_asynchronous_factory_impl_;
 };

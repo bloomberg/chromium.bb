@@ -9,12 +9,11 @@
 'use strict';
 bluetooth_test(t => {
   return setBluetoothFakeAdapter('NoNameHeartRateAdapter')
-  .then(() => promise_rejects(
-    t, 'NotFoundError', requestDeviceWithTrustedClick({
-      filters: [{
-        name: 'a',
-        services: ['heart_rate']
-      }]})));
+      .then(
+          () => promise_rejects(
+              t, 'NotFoundError',
+              requestDeviceWithTrustedClick(
+                  {filters: [{name: 'a', services: ['heart_rate']}]})));
 }, 'An unnamed device can not be obtained by name filter.');
 </script>
 

@@ -245,7 +245,7 @@ class Writer : public base::RefCountedThreadSafe<Writer> {
   bool WriteTime(const std::string& time_string) {
     int64_t internal_value;
     base::StringToInt64(time_string, &internal_value);
-    return Write(base::Int64ToString(
+    return Write(base::NumberToString(
         base::Time::FromInternalValue(internal_value).ToTimeT()));
   }
 

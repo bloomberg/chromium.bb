@@ -88,13 +88,11 @@ static LayoutRect RelativeBounds(const LayoutObject* layout_object,
       LayoutUnit max_y =
           std::max(local_bounds.MaxY(),
                    ToLayoutBox(layout_object)->LayoutOverflowRect().MaxY());
-      if (layout_object->IsLayoutBlockFlow() &&
-          ToLayoutBlockFlow(layout_object)->ContainsFloats()) {
+      auto* layout_block_flow = DynamicTo<LayoutBlockFlow>(layout_object);
+      if (layout_block_flow && layout_block_flow->ContainsFloats()) {
         // Note that lowestFloatLogicalBottom doesn't include floating
         // grandchildren.
-        max_y = std::max(
-            max_y,
-            ToLayoutBlockFlow(layout_object)->LowestFloatLogicalBottom());
+        max_y = std::max(max_y, layout_block_flow->LowestFloatLogicalBottom());
       }
       local_bounds.ShiftMaxYEdgeTo(max_y);
     }
@@ -143,14 +141,13 @@ static const AtomicString UniqueClassnameAmongSiblings(Element* element) {
 
   auto classname_filter = std::make_unique<ClassnameFilter>();
 
-  Element* parent_element = ElementTraversal::FirstAncestor(*element->ToNode());
+  Element* parent_element = ElementTraversal::FirstAncestor(*element);
   Element* sibling_element =
-      parent_element ? ElementTraversal::FirstChild(*parent_element->ToNode())
-                     : element;
+      parent_element ? ElementTraversal::FirstChild(*parent_element) : element;
   // Add every classname of every sibling to our bloom filter, starting from the
   // leftmost sibling, but skipping |element|.
-  for (; sibling_element; sibling_element = ElementTraversal::NextSibling(
-                              *sibling_element->ToNode())) {
+  for (; sibling_element;
+       sibling_element = ElementTraversal::NextSibling(*sibling_element)) {
     if (sibling_element->HasClass() && sibling_element != element) {
       const SpaceSplitString& class_names = sibling_element->ClassNames();
       for (wtf_size_t i = 0; i < class_names.size(); ++i) {
@@ -231,7 +228,7 @@ static const String ComputeUniqueSelector(Node* anchor_node) {
 
   std::vector<String> selector_list;
   for (Element* element = ElementTraversal::FirstAncestorOrSelf(*anchor_node);
-       element; element = ElementTraversal::FirstAncestor(*element->ToNode())) {
+       element; element = ElementTraversal::FirstAncestor(*element)) {
     selector_list.push_back(UniqueSimpleSelectorAmongSiblings(element));
     if (element->HasID() &&
         !element->GetDocument().ContainsMultipleElementsWithId(
@@ -269,6 +266,9 @@ ScrollAnchor::ExamineResult ScrollAnchor::Examine(
   if (candidate == ScrollerLayoutBox(scroller_))
     return ExamineResult(kContinue);
 
+  if (candidate->StyleRef().OverflowAnchor() == EOverflowAnchor::kNone)
+    return ExamineResult(kSkip);
+
   if (candidate->IsLayoutInline())
     return ExamineResult(kContinue);
 
@@ -281,9 +281,6 @@ ScrollAnchor::ExamineResult ScrollAnchor::Examine(
     return ExamineResult(kSkip);
 
   if (!CandidateMayMoveWithScroller(candidate, scroller_))
-    return ExamineResult(kSkip);
-
-  if (candidate->StyleRef().OverflowAnchor() == EOverflowAnchor::kNone)
     return ExamineResult(kSkip);
 
   LayoutRect candidate_rect = RelativeBounds(candidate, scroller_);
@@ -333,9 +330,9 @@ bool ScrollAnchor::FindAnchorRecursive(LayoutObject* candidate) {
 
   // Make a separate pass to catch positioned descendants with a static DOM
   // parent that we skipped over (crbug.com/692701).
-  if (candidate->IsLayoutBlock()) {
+  if (auto* layouy_block = DynamicTo<LayoutBlock>(candidate)) {
     if (TrackedLayoutBoxListHashSet* positioned_descendants =
-            ToLayoutBlock(candidate)->PositionedObjects()) {
+            layouy_block->PositionedObjects()) {
       for (LayoutBox* descendant : *positioned_descendants) {
         if (descendant->Parent() != candidate) {
           if (FindAnchorRecursive(descendant))
@@ -399,10 +396,10 @@ void ScrollAnchor::NotifyBeforeLayout() {
       ComputeScrollAnchorDisablingStyleChanged();
 
   LocalFrameView* frame_view = ScrollerLayoutBox(scroller_)->GetFrameView();
-  ScrollableArea* owning_scroller =
-      scroller_->IsRootFrameViewport()
-          ? &ToRootFrameViewport(scroller_)->LayoutViewport()
-          : scroller_.Get();
+  auto* root_frame_viewport = DynamicTo<RootFrameViewport>(scroller_.Get());
+  ScrollableArea* owning_scroller = root_frame_viewport
+                                        ? &root_frame_viewport->LayoutViewport()
+                                        : scroller_.Get();
   frame_view->EnqueueScrollAnchoringAdjustment(owning_scroller);
   queued_ = true;
 }
@@ -505,7 +502,7 @@ bool ScrollAnchor::RestoreAnchor(const SerializedAnchor& serialized_anchor) {
 
   for (unsigned index = 0; index < found_elements->length(); index++) {
     Element* anchor_element = found_elements->item(index);
-    LayoutObject* anchor_object = anchor_element->ToNode()->GetLayoutObject();
+    LayoutObject* anchor_object = anchor_element->GetLayoutObject();
 
     if (!anchor_object) {
       continue;
@@ -586,10 +583,10 @@ void ScrollAnchor::ClearSelf() {
 void ScrollAnchor::Dispose() {
   if (scroller_) {
     LocalFrameView* frame_view = ScrollerLayoutBox(scroller_)->GetFrameView();
+    auto* root_frame_viewport = DynamicTo<RootFrameViewport>(scroller_.Get());
     ScrollableArea* owning_scroller =
-        scroller_->IsRootFrameViewport()
-            ? &ToRootFrameViewport(scroller_)->LayoutViewport()
-            : scroller_.Get();
+        root_frame_viewport ? &root_frame_viewport->LayoutViewport()
+                            : scroller_.Get();
     frame_view->DequeueScrollAnchoringAdjustment(owning_scroller);
     scroller_.Clear();
   }

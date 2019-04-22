@@ -10,7 +10,6 @@
 #include "ash/login/ui/lock_contents_view.h"
 #include "ash/login/ui/login_auth_user_view.h"
 #include "ash/login/ui/login_big_user_view.h"
-#include "ash/login/ui/login_bubble.h"
 #include "ash/login/ui/login_test_base.h"
 #include "ash/login/ui/login_test_utils.h"
 #include "ash/root_window_controller.h"
@@ -394,7 +393,7 @@ TEST_F(LockScreenSanityTest, RemoveUser) {
   // dropdown does not result in an interactive/focusable view.
   focus_and_submit(secondary().dropdown());
   EXPECT_TRUE(secondary().menu());
-  EXPECT_FALSE(HasFocusInAnyChildView(secondary().menu()->bubble_view()));
+  EXPECT_FALSE(HasFocusInAnyChildView(secondary().menu()));
   // TODO(jdufault): Run submit() and then EXPECT_FALSE(secondary().menu()); to
   // verify that double-enter closes the bubble.
 
@@ -404,7 +403,7 @@ TEST_F(LockScreenSanityTest, RemoveUser) {
   // well as removes the user from the UI.
   focus_and_submit(primary().dropdown());
   EXPECT_TRUE(primary().menu());
-  EXPECT_TRUE(HasFocusInAnyChildView(primary().menu()->bubble_view()));
+  EXPECT_TRUE(HasFocusInAnyChildView(primary().menu()));
   EXPECT_CALL(*client, OnRemoveUserWarningShown()).Times(1);
   submit();
   EXPECT_CALL(*client, RemoveUser(users()[0]->basic_user_info->account_id))

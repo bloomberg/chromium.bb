@@ -13,7 +13,7 @@ OverlayAgent::OverlayAgent(DOMAgent* dom_agent) : dom_agent_(dom_agent) {
 OverlayAgent::~OverlayAgent() {}
 
 protocol::Response OverlayAgent::setInspectMode(
-    const String& in_mode,
+    const protocol::String& in_mode,
     protocol::Maybe<protocol::Overlay::HighlightConfig> in_highlightConfig) {
   NOTREACHED();
   return protocol::Response::OK();

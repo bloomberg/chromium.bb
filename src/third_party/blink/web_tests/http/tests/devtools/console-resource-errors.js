@@ -34,18 +34,12 @@
       }
   `);
 
-  ConsoleTestRunner.addConsoleViewSniffer(addMessage, true);
-  async function addMessage(uiMessage) {
-    var element = uiMessage.toMessageElement();
-    // There will be only one such message.
-    if (element.deepTextContent().indexOf('non-existent-iframe') !== -1)
-      ConsoleTestRunner.expandConsoleMessages(onExpandedMessages);
-  }
+  TestRunner.evaluateInPage('performActions()');
+  await ConsoleTestRunner.waitForConsoleMessagesPromise(5);
+  ConsoleTestRunner.expandConsoleMessages(onExpandedMessages);
 
   function onExpandedMessages() {
     ConsoleTestRunner.dumpConsoleMessagesWithClasses(true);
     TestRunner.completeTest();
   }
-
-  TestRunner.evaluateInPage('performActions()');
 })();

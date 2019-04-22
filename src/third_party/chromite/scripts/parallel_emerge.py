@@ -1379,6 +1379,15 @@ class EmergeQueue(object):
     self._job_queue = multiprocessing.Queue()
     self._print_queue = multiprocessing.Queue()
 
+    # Portage 2.3.49 spawns a process to find the default value of _lock_fn
+    # which isn't allowed inside a Pool() worker process because they are
+    # marked as daemons which are not allowed to have children. This fix makes
+    # sure the default value is set prior to spawning the children.
+    try:
+      portage.locks._get_lock_fn()
+    except AttributeError:
+      pass
+
     self._fetch_queue = multiprocessing.Queue()
     args = (self._fetch_queue, self._job_queue, emerge, package_db, True)
     self._fetch_pool = multiprocessing.Pool(self._fetch_procs, EmergeWorker,

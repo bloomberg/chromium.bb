@@ -12,6 +12,7 @@
 
 #include "base/barrier_closure.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/files/file_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"

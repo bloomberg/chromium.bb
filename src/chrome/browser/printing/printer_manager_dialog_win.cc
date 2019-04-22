@@ -35,7 +35,7 @@ namespace printing {
 void PrinterManagerDialog::ShowPrinterManagerDialog() {
   base::PostTaskWithTraits(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
-      base::Bind(OpenPrintersDialogCallback));
+      base::BindOnce(OpenPrintersDialogCallback));
 }
 
 }  // namespace printing

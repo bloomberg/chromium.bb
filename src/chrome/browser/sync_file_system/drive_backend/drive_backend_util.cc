@@ -21,7 +21,7 @@ namespace drive_backend {
 
 void PutVersionToDB(int64_t version, LevelDBWrapper* db) {
   DCHECK(db);
-  db->Put(kDatabaseVersionKey, base::Int64ToString(version));
+  db->Put(kDatabaseVersionKey, base::NumberToString(version));
 }
 
 void PutServiceMetadataToDB(const ServiceMetadata& service_metadata,
@@ -49,7 +49,7 @@ void PutFileTrackerToDB(const FileTracker& tracker, LevelDBWrapper* db) {
   std::string value;
   bool success = tracker.SerializeToString(&value);
   DCHECK(success);
-  db->Put(kFileTrackerKeyPrefix + base::Int64ToString(tracker.tracker_id()),
+  db->Put(kFileTrackerKeyPrefix + base::NumberToString(tracker.tracker_id()),
           value);
 }
 
@@ -61,7 +61,7 @@ void PutFileMetadataDeletionToDB(const std::string& file_id,
 
 void PutFileTrackerDeletionToDB(int64_t tracker_id, LevelDBWrapper* db) {
   DCHECK(db);
-  db->Delete(kFileTrackerKeyPrefix + base::Int64ToString(tracker_id));
+  db->Delete(kFileTrackerKeyPrefix + base::NumberToString(tracker_id));
 }
 
 bool HasFileAsParent(const FileDetails& details, const std::string& file_id) {
@@ -155,7 +155,8 @@ bool RemovePrefix(const std::string& str, const std::string& prefix,
 }
 
 std::unique_ptr<ServiceMetadata> InitializeServiceMetadata(LevelDBWrapper* db) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   DCHECK(db);
 
   std::unique_ptr<ServiceMetadata> service_metadata;

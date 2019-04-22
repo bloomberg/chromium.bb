@@ -29,6 +29,10 @@ namespace SkSL {
     class Compiler;
 }
 
+// Helper macros for autorelease pools
+#define SK_BEGIN_AUTORELEASE_BLOCK @autoreleasepool {
+#define SK_END_AUTORELEASE_BLOCK }
+
 class GrMtlGpu : public GrGpu {
 public:
     static sk_sp<GrGpu> Make(GrContext* context, const GrContextOptions& options,
@@ -40,9 +44,9 @@ public:
 
     id<MTLDevice> device() const { return fDevice; }
 
-    id<MTLCommandBuffer> commandBuffer() const { return fCmdBuffer; }
-
     GrMtlResourceProvider& resourceProvider() { return fResourceProvider; }
+
+    id<MTLCommandBuffer> commandBuffer();
 
     enum SyncQueue {
         kForce_SyncQueue,
@@ -54,7 +58,7 @@ public:
     // command buffer to finish before creating a new buffer and returning.
     void submitCommandBuffer(SyncQueue sync);
 
-#ifdef GR_TEST_UTILS
+#if GR_TEST_UTILS
     GrBackendTexture createTestingOnlyBackendTexture(const void* pixels, int w, int h,
                                                      GrColorType colorType, bool isRT,
                                                      GrMipMapped, size_t rowBytes = 0) override;
@@ -108,7 +112,7 @@ public:
     sk_sp<GrSemaphore> wrapBackendSemaphore(const GrBackendSemaphore& semaphore,
                                             GrResourceProvider::SemaphoreWrapType wrapType,
                                             GrWrapOwnership ownership) override { return nullptr; }
-    void insertSemaphore(sk_sp<GrSemaphore> semaphore, bool flush) override {}
+    void insertSemaphore(sk_sp<GrSemaphore> semaphore) override {}
     void waitSemaphore(sk_sp<GrSemaphore> semaphore) override {}
     sk_sp<GrSemaphore> prepareTextureForCrossContextUsage(GrTexture*) override { return nullptr; }
 
@@ -127,24 +131,29 @@ private:
 
     void onResetContext(uint32_t resetBits) override {}
 
+    void querySampleLocations(GrRenderTarget*, SkTArray<SkPoint>*) override {
+        SkASSERT(!this->caps()->sampleLocationsSupport());
+        SK_ABORT("Sample locations not yet implemented for Metal.");
+    }
+
     void xferBarrier(GrRenderTarget*, GrXferBarrierType) override {}
 
     sk_sp<GrTexture> onCreateTexture(const GrSurfaceDesc& desc, SkBudgeted budgeted,
                                      const GrMipLevel texels[], int mipLevelCount) override;
 
-    sk_sp<GrTexture> onWrapBackendTexture(const GrBackendTexture&, GrWrapOwnership,
-                                          bool purgeImmediately) override;
+    sk_sp<GrTexture> onWrapBackendTexture(const GrBackendTexture&, GrWrapOwnership, GrWrapCacheable,
+                                          GrIOType) override;
 
-    sk_sp<GrTexture> onWrapRenderableBackendTexture(const GrBackendTexture&,
-                                                    int sampleCnt,
-                                                    GrWrapOwnership) override;
+    sk_sp<GrTexture> onWrapRenderableBackendTexture(const GrBackendTexture&, int sampleCnt,
+                                                    GrWrapOwnership, GrWrapCacheable) override;
 
     sk_sp<GrRenderTarget> onWrapBackendRenderTarget(const GrBackendRenderTarget&) override;
 
     sk_sp<GrRenderTarget> onWrapBackendTextureAsRenderTarget(const GrBackendTexture&,
                                                              int sampleCnt) override;
 
-    GrBuffer* onCreateBuffer(size_t, GrBufferType, GrAccessPattern, const void*) override;
+    sk_sp<GrGpuBuffer> onCreateBuffer(size_t, GrGpuBufferType, GrAccessPattern,
+                                      const void*) override;
 
     bool onReadPixels(GrSurface* surface, int left, int top, int width, int height, GrColorType,
                       void* buffer, size_t rowBytes) override;
@@ -152,24 +161,45 @@ private:
     bool onWritePixels(GrSurface*, int left, int top, int width, int height, GrColorType,
                        const GrMipLevel[], int mipLevelCount) override;
 
-    bool onTransferPixels(GrTexture*,
-                          int left, int top, int width, int height,
-                          GrColorType, GrBuffer*,
-                          size_t offset, size_t rowBytes) override {
+    bool onTransferPixelsTo(GrTexture*,
+                            int left, int top, int width, int height,
+                            GrColorType, GrGpuBuffer*,
+                            size_t offset, size_t rowBytes) override {
+        // TODO: not sure this is worth the work since nobody uses it
+        return false;
+    }
+    bool onTransferPixelsFrom(GrSurface*, int left, int top, int width, int height, GrColorType,
+                              GrGpuBuffer*, size_t offset) override {
+        // TODO: Will need to implement this to support async read backs.
         return false;
     }
 
-    bool onRegenerateMipMapLevels(GrTexture*) override { return false; }
+    bool onRegenerateMipMapLevels(GrTexture*) override;
 
     void onResolveRenderTarget(GrRenderTarget* target) override { return; }
 
-    void onFinishFlush(bool insertedSemaphores) override {
-        this->submitCommandBuffer(kSkip_SyncQueue);
+    void onFinishFlush(GrSurfaceProxy*, SkSurface::BackendSurfaceAccess access,
+                       const GrFlushInfo& info) override {
+        if (info.fFlags & kSyncCpu_GrFlushFlag) {
+            this->submitCommandBuffer(kForce_SyncQueue);
+            if (info.fFinishedProc) {
+                info.fFinishedProc(info.fFinishedContext);
+            }
+        } else {
+            this->submitCommandBuffer(kSkip_SyncQueue);
+            // TODO: support finishedProc to actually be called when the GPU is done with the work
+            // and not immediately.
+            if (info.fFinishedProc) {
+                info.fFinishedProc(info.fFinishedContext);
+            }
+        }
     }
 
     // Function that uploads data onto textures with private storage mode (GPU access only).
     bool uploadToTexture(GrMtlTexture* tex, int left, int top, int width, int height,
                          GrColorType dataColorType, const GrMipLevel texels[], int mipLevels);
+    // Function that fills texture with transparent black
+    bool clearTexture(GrMtlTexture*, GrColorType);
 
     GrStencilAttachment* createStencilAttachmentForRenderTarget(const GrRenderTarget*,
                                                                 int width,

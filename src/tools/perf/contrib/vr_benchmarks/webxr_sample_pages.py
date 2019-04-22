@@ -17,12 +17,17 @@ class WebXrSamplePage(XrSamplePage):
         extra_browser_args=extra_browser_args)
 
   def RunPageInteractions(self, action_runner):
+    # The user-visible text differs per-page (e.g. "Enter VR"), but the
+    # element's "title" attribute is currently always "Enter XR".
+    action_runner.WaitForElement(selector='button[title="Enter XR"]')
     action_runner.TapElement(selector='button[title="Enter XR"]')
     action_runner.MeasureMemory(True)
     # We don't want to be in VR or on a page with a WebGL canvas at the end of
     # the test, as this generates unnecessary heat while the trace data is being
-    # processed, so navigate to a blank page.
-    action_runner.Navigate("about:blank")
+    # processed, so navigate to a blank page if we're on a platform that cares
+    # about the heat generation.
+    if self._shared_page_state.ShouldNavigateToBlankPageBeforeFinishing():
+      action_runner.Navigate("about:blank")
 
 
 class WebXrSamplePageSet(VrStorySet):
@@ -32,9 +37,8 @@ class WebXrSamplePageSet(VrStorySet):
     super(WebXrSamplePageSet, self).__init__(
         use_fake_pose_tracker=use_fake_pose_tracker)
 
-    # Test cases that use the synthetic cube field page with VSync alignment
-    # turned off.
-    cube_test_cases_no_vsync = [
+    # Test cases that use the synthetic cube field page
+    cube_test_cases = [
       # Standard sample app with no changes.
       ['framebufferScale=1.0'],
       # Increased render scale.
@@ -50,6 +54,5 @@ class WebXrSamplePageSet(VrStorySet):
        'halfOnly=1', 'autorotate=1'],
     ]
 
-    for url_parameters in cube_test_cases_no_vsync:
-      self.AddStory(WebXrSamplePage(self, url_parameters, 'tests/cube-sea',
-          extra_browser_args=['--disable-features=WebVrVsyncAlign']))
+    for url_parameters in cube_test_cases:
+      self.AddStory(WebXrSamplePage(self, url_parameters, 'tests/cube-sea'))

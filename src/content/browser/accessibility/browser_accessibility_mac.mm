@@ -17,8 +17,7 @@ BrowserAccessibility* BrowserAccessibility::Create() {
 }
 
 BrowserAccessibilityMac::BrowserAccessibilityMac()
-    : browser_accessibility_cocoa_(NULL) {
-}
+    : browser_accessibility_cocoa_(NULL) {}
 
 bool BrowserAccessibilityMac::IsNative() const {
   return true;
@@ -81,8 +80,8 @@ BrowserAccessibility* BrowserAccessibilityMac::PlatformGetChild(
   return nullptr;
 }
 
-const BrowserAccessibilityCocoa*
-ToBrowserAccessibilityCocoa(const BrowserAccessibility* obj) {
+const BrowserAccessibilityCocoa* ToBrowserAccessibilityCocoa(
+    const BrowserAccessibility* obj) {
   DCHECK(obj);
   DCHECK(obj->IsNative());
   return static_cast<const BrowserAccessibilityMac*>(obj)->native_view();

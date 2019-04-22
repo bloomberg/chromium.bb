@@ -6,7 +6,7 @@
 
 #include "xfa/fxfa/parser/cxfa_text.h"
 
-#include "fxjs/xfa/cjx_text.h"
+#include "fxjs/xfa/cjx_object.h"
 #include "third_party/base/ptr_util.h"
 
 namespace {
@@ -18,9 +18,7 @@ const CXFA_Node::AttributeData kTextAttributeData[] = {
     {XFA_Attribute::Use, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::MaxChars, XFA_AttributeType::Integer, (void*)0},
     {XFA_Attribute::Usehref, XFA_AttributeType::CData, nullptr},
-    {XFA_Attribute::Unknown, XFA_AttributeType::Integer, nullptr}};
-
-constexpr wchar_t kTextName[] = L"text";
+};
 
 }  // namespace
 
@@ -31,12 +29,11 @@ CXFA_Text::CXFA_Text(CXFA_Document* doc, XFA_PacketType packet)
                  XFA_XDPPACKET_Form),
                 XFA_ObjectType::ContentNode,
                 XFA_Element::Text,
-                nullptr,
+                {},
                 kTextAttributeData,
-                kTextName,
-                pdfium::MakeUnique<CJX_Text>(this)) {}
+                pdfium::MakeUnique<CJX_Object>(this)) {}
 
-CXFA_Text::~CXFA_Text() {}
+CXFA_Text::~CXFA_Text() = default;
 
 WideString CXFA_Text::GetContent() {
   return JSObject()->GetContent(false);

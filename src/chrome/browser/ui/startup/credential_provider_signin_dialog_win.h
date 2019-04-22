@@ -29,15 +29,12 @@ class WebDialogView;
 
 // Callback signalled by the dialog when the Gaia sign in flow compltes.
 // Parameters are:
-// 1. A base::Value that is of type DICTIONARY. An empty dictionary signals an
-// error during the signin process
-// 2. The signed in user's access token.
-// 3. The signed in user's refresh token.
-// 4. A URL loader that will be used by various OAuth fetchers.
+// 1. A base::Value that is of type DICTIONARY. The dictionary will always
+//    contain an exit_code entry and possibly more data if exit_code ==
+//    credential_provider::kUiecSuccess.
+// 2. A URL loader that will be used by various OAuth fetchers.
 using HandleGcpwSigninCompleteResult =
     base::OnceCallback<void(base::Value,
-                            const std::string&,
-                            const std::string&,
                             scoped_refptr<network::SharedURLLoaderFactory>)>;
 
 // Starts the Google Credential Provider for Windows (GCPW) Sign in flow. First

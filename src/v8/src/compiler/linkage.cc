@@ -5,7 +5,6 @@
 #include "src/compiler/linkage.h"
 
 #include "src/assembler-inl.h"
-#include "src/code-stubs.h"
 #include "src/compiler/common-operator.h"
 #include "src/compiler/frame.h"
 #include "src/compiler/node.h"
@@ -43,6 +42,9 @@ std::ostream& operator<<(std::ostream& os, const CallDescriptor::Kind& k) {
       break;
     case CallDescriptor::kCallWasmImportWrapper:
       os << "WasmImportWrapper";
+      break;
+    case CallDescriptor::kCallBuiltinPointer:
+      os << "BuiltinPointer";
       break;
   }
   return os;
@@ -117,6 +119,17 @@ int CallDescriptor::GetStackParameterDelta(
   return stack_param_delta;
 }
 
+int CallDescriptor::GetTaggedParameterSlots() const {
+  int result = 0;
+  for (size_t i = 0; i < InputCount(); ++i) {
+    LinkageLocation operand = GetInputLocation(i);
+    if (!operand.IsRegister() && operand.GetType().IsTagged()) {
+      ++result;
+    }
+  }
+  return result;
+}
+
 bool CallDescriptor::CanTailCall(const Node* node) const {
   return HasSameReturnLocationsAs(CallDescriptorOf(node->op()));
 }
@@ -131,6 +144,7 @@ int CallDescriptor::CalculateFixedFrameSize() const {
       return CommonFrameConstants::kFixedSlotCountAboveFp +
              CommonFrameConstants::kCPSlotCount;
     case kCallCodeObject:
+    case kCallBuiltinPointer:
       return TypedFrameConstants::kFixedSlotCount;
     case kCallWasmFunction:
     case kCallWasmImportWrapper:
@@ -141,11 +155,11 @@ int CallDescriptor::CalculateFixedFrameSize() const {
 
 CallDescriptor* Linkage::ComputeIncoming(Zone* zone,
                                          OptimizedCompilationInfo* info) {
-  DCHECK(!info->IsStub());
+  DCHECK(!info->IsNotOptimizedFunctionOrWasmFunction());
   if (!info->closure().is_null()) {
     // If we are compiling a JS function, use a JS call descriptor,
     // plus the receiver.
-    SharedFunctionInfo* shared = info->closure()->shared();
+    SharedFunctionInfo shared = info->closure()->shared();
     return GetJSCallDescriptor(zone, info->is_osr(),
                                1 + shared->internal_formal_parameter_count(),
                                CallDescriptor::kCanUseRoots);
@@ -161,7 +175,7 @@ bool Linkage::NeedsFrameStateInput(Runtime::FunctionId function) {
     // not to call into arbitrary JavaScript, not to throw, and not to lazily
     // deoptimize are whitelisted here and can be called without a FrameState.
     case Runtime::kAbort:
-    case Runtime::kAllocateInTargetSpace:
+    case Runtime::kAllocateInOldGeneration:
     case Runtime::kCreateIterResultObject:
     case Runtime::kIncBlockCounter:
     case Runtime::kIsFunction:
@@ -393,12 +407,23 @@ CallDescriptor* Linkage::GetStubCallDescriptor(
   }
 
   // The target for stub calls depends on the requested mode.
-  CallDescriptor::Kind kind = stub_mode == StubCallMode::kCallWasmRuntimeStub
-                                  ? CallDescriptor::kCallWasmFunction
-                                  : CallDescriptor::kCallCodeObject;
-  MachineType target_type = stub_mode == StubCallMode::kCallWasmRuntimeStub
-                                ? MachineType::Pointer()
-                                : MachineType::AnyTagged();
+  CallDescriptor::Kind kind;
+  MachineType target_type;
+  switch (stub_mode) {
+    case StubCallMode::kCallCodeObject:
+      kind = CallDescriptor::kCallCodeObject;
+      target_type = MachineType::AnyTagged();
+      break;
+    case StubCallMode::kCallWasmRuntimeStub:
+      kind = CallDescriptor::kCallWasmFunction;
+      target_type = MachineType::Pointer();
+      break;
+    case StubCallMode::kCallBuiltinPointer:
+      kind = CallDescriptor::kCallBuiltinPointer;
+      target_type = MachineType::AnyTagged();
+      break;
+  }
+
   LinkageLocation target_loc = LinkageLocation::ForAnyRegister(target_type);
   return new (zone) CallDescriptor(          // --
       kind,                                  // kind

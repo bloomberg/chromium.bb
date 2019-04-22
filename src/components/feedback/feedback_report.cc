@@ -4,6 +4,7 @@
 
 #include "components/feedback/feedback_report.h"
 
+#include "base/bind.h"
 #include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
@@ -58,6 +59,9 @@ FeedbackReport::FeedbackReport(
 
 // static
 const char FeedbackReport::kCrashReportIdsKey[]  = "crash_report_ids";
+
+// static
+const char FeedbackReport::kAllCrashReportIdsKey[] = "all_crash_report_ids";
 
 // static
 void FeedbackReport::LoadReportsAndQueue(const base::FilePath& user_dir,

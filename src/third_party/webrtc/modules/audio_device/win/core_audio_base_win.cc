@@ -18,7 +18,7 @@
 #include "rtc_base/checks.h"
 #include "rtc_base/logging.h"
 #include "rtc_base/numerics/safe_conversions.h"
-#include "rtc_base/timeutils.h"
+#include "rtc_base/time_utils.h"
 #include "rtc_base/win/windows_version.h"
 
 using Microsoft::WRL::ComPtr;
@@ -591,7 +591,7 @@ bool CoreAudioBase::Stop() {
   // thread is not destroyed during restart attempts triggered by internal
   // error callbacks.
   if (!IsRestarting()) {
-    thread_checker_audio_.DetachFromThread();
+    thread_checker_audio_.Detach();
   }
 
   // Release all allocated COM interfaces to allow for a restart without

@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SENSOR_SENSOR_PROXY_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_SENSOR_SENSOR_PROXY_H_
 
+#include "base/macros.h"
 #include "services/device/public/cpp/generic_sensor/sensor_reading.h"
 #include "services/device/public/cpp/generic_sensor/sensor_reading_shared_buffer_reader.h"
 #include "services/device/public/mojom/sensor.mojom-blink.h"
@@ -23,7 +24,6 @@ class SensorProviderProxy;
 class SensorProxy : public GarbageCollectedFinalized<SensorProxy>,
                     public PageVisibilityObserver,
                     public FocusChangedObserver {
-  WTF_MAKE_NONCOPYABLE(SensorProxy);
   USING_GARBAGE_COLLECTED_MIXIN(SensorProxy);
 
  public:
@@ -113,6 +113,8 @@ class SensorProxy : public GarbageCollectedFinalized<SensorProxy>,
       sizeof(ReadingBuffer) ==
           device::mojom::blink::SensorInitParams::kReadBufferSizeForTests,
       "Check reading buffer size for tests");
+
+  DISALLOW_COPY_AND_ASSIGN(SensorProxy);
 };
 
 }  // namespace blink

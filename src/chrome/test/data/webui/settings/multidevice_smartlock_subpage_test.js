@@ -140,8 +140,7 @@ suite('Multidevice', function() {
     });
   });
 
-  test('Smart Lock enable feature toggle without authentication', function()
-  {
+  test('Smart Lock enable feature toggle without authentication', function() {
     smartLockSubPage = createSmartLockSubPage();
     setSuiteState(settings.MultiDeviceFeatureState.ENABLED_BY_USER);
     setSmartLockFeatureState(settings.MultiDeviceFeatureState.DISABLED_BY_USER);
@@ -238,11 +237,15 @@ suite('Multidevice', function() {
     assertEquals(settings.SignInEnabledState.DISABLED,
                  smartLockSignInRadio.selected);
 
-    // Simulate the user entering a valid password.
-    smartLockSubPage.fire('auth-token-changed', {value: 'validAuthToken'});
+    // Simulate the user entering a valid password into the dialog.
+    passwordDialog.authToken = 'validAuthToken';
+    passwordDialog.dispatchEvent(new CustomEvent('close'));
+    Polymer.dom.flush();
 
-    assertEquals(settings.SignInEnabledState.ENABLED,
-                  smartLockSignInRadio.selected);
+    return browserProxy.whenCalled('getSmartLockSignInEnabled').then(params => {
+      assertEquals(
+          settings.SignInEnabledState.ENABLED, smartLockSignInRadio.selected);
+    });
   });
 
   test('Smart Lock sign in cancel authentication', function() {

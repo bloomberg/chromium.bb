@@ -91,8 +91,9 @@ Polymer({
 
   /** @private */
   onCancelTap_: function() {
-    if (this.$.dialog.open)
+    if (this.$.dialog.open) {
       this.$.dialog.close();
+    }
   },
 
   /**
@@ -139,8 +140,9 @@ Polymer({
         this.authToken = '';
       }, lifetimeMs);
 
-      if (this.$.dialog.open)
+      if (this.$.dialog.open) {
         this.$.dialog.close();
+      }
     });
   },
 

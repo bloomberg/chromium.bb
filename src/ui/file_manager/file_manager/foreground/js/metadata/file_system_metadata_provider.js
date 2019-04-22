@@ -16,34 +16,38 @@ function FileSystemMetadataProvider() {
 /**
  * @const {!Array<string>}
  */
-FileSystemMetadataProvider.PROPERTY_NAMES = [
-  'modificationTime', 'size', 'present', 'availableOffline'
-];
+FileSystemMetadataProvider.PROPERTY_NAMES =
+    ['modificationTime', 'size', 'present', 'availableOffline'];
 
 FileSystemMetadataProvider.prototype.__proto__ = MetadataProvider.prototype;
 
 /**
  * @override
  */
-FileSystemMetadataProvider.prototype.get = function(requests) {
-  if (!requests.length)
+FileSystemMetadataProvider.prototype.get = requests => {
+  if (!requests.length) {
     return Promise.resolve([]);
-  return Promise.all(requests.map(function(request) {
-    return new Promise(function(fulfill, reject) {
-      request.entry.getMetadata(fulfill, reject);
-    }).then(function(result) {
-      var item = new MetadataItem();
-      item.modificationTime = result.modificationTime;
-      item.size = request.entry.isDirectory ? -1 : result.size;
-      item.present = true;
-      item.availableOffline = true;
-      return item;
-    }, function(error) {
-      // Can't use console.error because some tests hit this line and
-      // console.error causes them to fail because of JSErrorCount. This error
-      // is an acceptable condition.
-      console.warn('getMetadata failure for: ' + request.entry.toURL(), error);
-      return new MetadataItem();
-    });
+  }
+  return Promise.all(requests.map(request => {
+    return new Promise((fulfill, reject) => {
+             request.entry.getMetadata(fulfill, reject);
+           })
+        .then(
+            result => {
+              const item = new MetadataItem();
+              item.modificationTime = result.modificationTime;
+              item.size = request.entry.isDirectory ? -1 : result.size;
+              item.present = true;
+              item.availableOffline = true;
+              return item;
+            },
+            error => {
+              // Can't use console.error because some tests hit this line and
+              // console.error causes them to fail because of JSErrorCount. This
+              // error is an acceptable condition.
+              console.warn(
+                  'getMetadata failure for: ' + request.entry.toURL(), error);
+              return new MetadataItem();
+            });
   }));
 };

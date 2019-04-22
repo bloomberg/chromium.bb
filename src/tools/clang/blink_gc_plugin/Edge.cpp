@@ -23,6 +23,8 @@ void RecursiveEdgeVisitor::AtPersistent(Persistent*) {}
 void RecursiveEdgeVisitor::AtCrossThreadPersistent(CrossThreadPersistent*) {}
 void RecursiveEdgeVisitor::AtCollection(Collection*) {}
 void RecursiveEdgeVisitor::AtIterator(Iterator*) {}
+void RecursiveEdgeVisitor::AtTraceWrapperV8Reference(TraceWrapperV8Reference*) {
+}
 
 void RecursiveEdgeVisitor::VisitValue(Value* e) {
   AtValue(e);
@@ -87,4 +89,12 @@ void RecursiveEdgeVisitor::VisitCollection(Collection* e) {
 
 void RecursiveEdgeVisitor::VisitIterator(Iterator* e) {
   AtIterator(e);
+}
+
+void RecursiveEdgeVisitor::VisitTraceWrapperV8Reference(
+    TraceWrapperV8Reference* e) {
+  AtTraceWrapperV8Reference(e);
+  Enter(e);
+  e->ptr()->Accept(this);
+  Leave();
 }

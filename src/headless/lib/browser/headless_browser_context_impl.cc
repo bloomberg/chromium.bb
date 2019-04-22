@@ -203,6 +203,11 @@ HeadlessBrowserContextImpl::GetPermissionControllerDelegate() {
   return permission_controller_delegate_.get();
 }
 
+content::ClientHintsControllerDelegate*
+HeadlessBrowserContextImpl::GetClientHintsControllerDelegate() {
+  return nullptr;
+}
+
 content::BackgroundFetchDelegate*
 HeadlessBrowserContextImpl::GetBackgroundFetchDelegate() {
   return nullptr;

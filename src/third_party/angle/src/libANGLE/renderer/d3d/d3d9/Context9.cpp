@@ -27,15 +27,15 @@
 namespace rx
 {
 
-Context9::Context9(const gl::ContextState &state, Renderer9 *renderer)
-    : ContextD3D(state), mRenderer(renderer)
+Context9::Context9(const gl::State &state, gl::ErrorSet *errorSet, Renderer9 *renderer)
+    : ContextD3D(state, errorSet), mRenderer(renderer)
 {}
 
 Context9::~Context9() {}
 
 angle::Result Context9::initialize()
 {
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 void Context9::onDestroy(const gl::Context *context)
@@ -133,6 +133,12 @@ std::vector<PathImpl *> Context9::createPaths(GLsizei)
     return std::vector<PathImpl *>();
 }
 
+MemoryObjectImpl *Context9::createMemoryObject()
+{
+    UNREACHABLE();
+    return nullptr;
+}
+
 angle::Result Context9::flush(const gl::Context *context)
 {
     return mRenderer->flush(context);
@@ -163,7 +169,7 @@ angle::Result Context9::drawArraysInstanced(const gl::Context *context,
 angle::Result Context9::drawElements(const gl::Context *context,
                                      gl::PrimitiveMode mode,
                                      GLsizei count,
-                                     GLenum type,
+                                     gl::DrawElementsType type,
                                      const void *indices)
 {
     return mRenderer->genericDrawElements(context, mode, count, type, indices, 0);
@@ -172,7 +178,7 @@ angle::Result Context9::drawElements(const gl::Context *context,
 angle::Result Context9::drawElementsInstanced(const gl::Context *context,
                                               gl::PrimitiveMode mode,
                                               GLsizei count,
-                                              GLenum type,
+                                              gl::DrawElementsType type,
                                               const void *indices,
                                               GLsizei instances)
 {
@@ -184,7 +190,7 @@ angle::Result Context9::drawRangeElements(const gl::Context *context,
                                           GLuint start,
                                           GLuint end,
                                           GLsizei count,
-                                          GLenum type,
+                                          gl::DrawElementsType type,
                                           const void *indices)
 {
     return mRenderer->genericDrawElements(context, mode, count, type, indices, 0);
@@ -195,19 +201,19 @@ angle::Result Context9::drawArraysIndirect(const gl::Context *context,
                                            const void *indirect)
 {
     ANGLE_HR_UNREACHABLE(this);
-    return angle::Result::Stop();
+    return angle::Result::Stop;
 }
 
 angle::Result Context9::drawElementsIndirect(const gl::Context *context,
                                              gl::PrimitiveMode mode,
-                                             GLenum type,
+                                             gl::DrawElementsType type,
                                              const void *indirect)
 {
     ANGLE_HR_UNREACHABLE(this);
-    return angle::Result::Stop();
+    return angle::Result::Stop;
 }
 
-GLenum Context9::getResetStatus()
+gl::GraphicsResetStatus Context9::getResetStatus()
 {
     return mRenderer->getResetStatus();
 }
@@ -244,10 +250,10 @@ void Context9::popGroupMarker()
     }
 }
 
-void Context9::pushDebugGroup(GLenum source, GLuint id, GLsizei length, const char *message)
+void Context9::pushDebugGroup(GLenum source, GLuint id, const std::string &message)
 {
     // Fall through to the EXT_debug_marker functions
-    pushGroupMarker(length, message);
+    pushGroupMarker(message.size(), message.c_str());
 }
 
 void Context9::popDebugGroup()
@@ -260,8 +266,8 @@ angle::Result Context9::syncState(const gl::Context *context,
                                   const gl::State::DirtyBits &dirtyBits,
                                   const gl::State::DirtyBits &bitMask)
 {
-    mRenderer->getStateManager()->syncState(mState.getState(), dirtyBits);
-    return angle::Result::Continue();
+    mRenderer->getStateManager()->syncState(mState, dirtyBits);
+    return angle::Result::Continue;
 }
 
 GLint Context9::getGPUDisjoint()
@@ -276,6 +282,7 @@ GLint64 Context9::getTimestamp()
 
 angle::Result Context9::onMakeCurrent(const gl::Context *context)
 {
+    mRenderer->getStateManager()->setAllDirtyBits();
     return mRenderer->ensureVertexDataManagerInitialized(context);
 }
 
@@ -305,25 +312,25 @@ angle::Result Context9::dispatchCompute(const gl::Context *context,
                                         GLuint numGroupsZ)
 {
     ANGLE_HR_UNREACHABLE(this);
-    return angle::Result::Stop();
+    return angle::Result::Stop;
 }
 
 angle::Result Context9::dispatchComputeIndirect(const gl::Context *context, GLintptr indirect)
 {
     ANGLE_HR_UNREACHABLE(this);
-    return angle::Result::Stop();
+    return angle::Result::Stop;
 }
 
 angle::Result Context9::memoryBarrier(const gl::Context *context, GLbitfield barriers)
 {
     ANGLE_HR_UNREACHABLE(this);
-    return angle::Result::Stop();
+    return angle::Result::Stop;
 }
 
 angle::Result Context9::memoryBarrierByRegion(const gl::Context *context, GLbitfield barriers)
 {
     ANGLE_HR_UNREACHABLE(this);
-    return angle::Result::Stop();
+    return angle::Result::Stop;
 }
 
 angle::Result Context9::getIncompleteTexture(const gl::Context *context,

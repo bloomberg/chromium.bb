@@ -22,8 +22,8 @@ class TabStackTraceTest(tab_test_case.TabTestCase):
     self.assertTrue(c.exception.is_valid_dump)
 
   # Stack traces aren't working on Android yet.
-  @decorators.Enabled('mac', 'linux')
-  @decorators.Disabled('snowleopard')
+  # Disabled on mac, flaky: https://crbug.com/820282.
+  @decorators.Enabled('linux')
   def testCrashSymbols(self):
     with self.assertRaises(exceptions.DevtoolsTargetCrashException) as c:
       self._tab.Navigate('chrome://crash', timeout=5)
@@ -32,8 +32,9 @@ class TabStackTraceTest(tab_test_case.TabTestCase):
   # Some platforms do not support full stack traces, this test requires only
   # minimal symbols to be available.
   # Disabled on win due to crbug.com/706328.
-  @decorators.Enabled('mac', 'linux')
-  @decorators.Disabled('snowleopard', 'win')
+  # Disabled on mac, flaky: https://crbug.com/820282.
+  @decorators.Enabled('linux')
+  @decorators.Disabled('mac', 'win')
   def testCrashMinimalSymbols(self):
     with self.assertRaises(exceptions.DevtoolsTargetCrashException) as c:
       self._tab.Navigate('chrome://crash', timeout=5)

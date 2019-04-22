@@ -6,7 +6,7 @@
 
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_client.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/user_manager.h"
 
@@ -36,11 +36,12 @@ Profile* GetProfileFromAccountId(const AccountId& account_id) {
 }
 
 Profile* GetProfileFromWindow(aura::Window* window) {
-  MultiUserWindowManager* manager = MultiUserWindowManager::GetInstance();
-  // We might come here before the manager got created - or in a unit test.
-  if (!manager)
+  MultiUserWindowManagerClient* client =
+      MultiUserWindowManagerClient::GetInstance();
+  // We might come here before the client got created - or in a unit test.
+  if (!client)
     return nullptr;
-  const AccountId account_id = manager->GetUserPresentingWindow(window);
+  const AccountId account_id = client->GetUserPresentingWindow(window);
   return account_id.is_valid() ? GetProfileFromAccountId(account_id) : nullptr;
 }
 
@@ -62,9 +63,9 @@ const AccountId GetCurrentAccountId() {
 
 // Move the window to the current user's desktop.
 void MoveWindowToCurrentDesktop(aura::Window* window) {
-  if (!MultiUserWindowManager::GetInstance()->IsWindowOnDesktopOfUser(
+  if (!MultiUserWindowManagerClient::GetInstance()->IsWindowOnDesktopOfUser(
           window, GetCurrentAccountId())) {
-    MultiUserWindowManager::GetInstance()->ShowWindowForUser(
+    MultiUserWindowManagerClient::GetInstance()->ShowWindowForUser(
         window, GetCurrentAccountId());
   }
 }

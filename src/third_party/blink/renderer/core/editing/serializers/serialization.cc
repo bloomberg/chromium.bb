@@ -65,6 +65,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -86,7 +87,7 @@ class AttributeChange {
 
   void Apply() { element_->setAttribute(name_, AtomicString(value_)); }
 
-  void Trace(blink::Visitor* visitor) { visitor->Trace(element_); }
+  void Trace(Visitor* visitor) { visitor->Trace(element_); }
 
  private:
   Member<Element> element_;
@@ -96,7 +97,7 @@ class AttributeChange {
 
 }  // namespace blink
 
-WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::AttributeChange);
+WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::AttributeChange)
 
 namespace blink {
 
@@ -161,16 +162,17 @@ bool PropertyMissingOrEqualToNone(CSSPropertyValueSet* style,
   const CSSValue* value = style->GetPropertyCSSValue(property_id);
   if (!value)
     return true;
-  if (!value->IsIdentifierValue())
+  auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
+  if (!identifier_value)
     return false;
-  return ToCSSIdentifierValue(value)->GetValueID() == CSSValueNone;
+  return identifier_value->GetValueID() == CSSValueID::kNone;
 }
 
 template <typename Strategy>
 static HTMLElement* HighestAncestorToWrapMarkup(
     const PositionTemplate<Strategy>& start_position,
     const PositionTemplate<Strategy>& end_position,
-    EAnnotateForInterchange should_annotate,
+    AnnotateForInterchange should_annotate,
     Node* constraining_ancestor) {
   Node* first_node = start_position.NodeAsRangeFirstNode();
   // For compatibility reason, we use container node of start and end
@@ -217,6 +219,13 @@ static HTMLElement* HighestAncestorToWrapMarkup(
   Node* check_ancestor =
       special_common_ancestor ? special_common_ancestor : common_ancestor;
   if (check_ancestor->GetLayoutObject()) {
+    // We want to constrain the ancestor to the enclosing block.
+    // Ex: <b><p></p></b> is an ill-formed html and we don't want to return <b>
+    // as the ancestor because paragraph element is the enclosing block of the
+    // start and end positions provided to this API.
+    constraining_ancestor = constraining_ancestor
+                                ? constraining_ancestor
+                                : EnclosingBlock(check_ancestor);
     HTMLElement* new_special_common_ancestor =
         ToHTMLElement(HighestEnclosingNodeOfType(
             Position::FirstPositionInNode(*check_ancestor),
@@ -255,9 +264,9 @@ class CreateMarkupAlgorithm {
   static String CreateMarkup(
       const PositionTemplate<Strategy>& start_position,
       const PositionTemplate<Strategy>& end_position,
-      EAnnotateForInterchange should_annotate = kDoNotAnnotateForInterchange,
+      AnnotateForInterchange should_annotate = kDoNotAnnotateForInterchange,
       ConvertBlocksToInlines = ConvertBlocksToInlines::kNotConvert,
-      EAbsoluteURLs should_resolve_urls = kDoNotResolveURLs,
+      AbsoluteURLs should_resolve_urls = kDoNotResolveURLs,
       Node* constraining_ancestor = nullptr);
 };
 
@@ -269,9 +278,9 @@ template <typename Strategy>
 String CreateMarkupAlgorithm<Strategy>::CreateMarkup(
     const PositionTemplate<Strategy>& start_position,
     const PositionTemplate<Strategy>& end_position,
-    EAnnotateForInterchange should_annotate,
+    AnnotateForInterchange should_annotate,
     ConvertBlocksToInlines convert_blocks_to_inlines,
-    EAbsoluteURLs should_resolve_urls,
+    AbsoluteURLs should_resolve_urls,
     Node* constraining_ancestor) {
   if (start_position.IsNull() || end_position.IsNull())
     return g_empty_string;
@@ -303,9 +312,9 @@ String CreateMarkupAlgorithm<Strategy>::CreateMarkup(
 
 String CreateMarkup(const Position& start_position,
                     const Position& end_position,
-                    EAnnotateForInterchange should_annotate,
+                    AnnotateForInterchange should_annotate,
                     ConvertBlocksToInlines convert_blocks_to_inlines,
-                    EAbsoluteURLs should_resolve_urls,
+                    AbsoluteURLs should_resolve_urls,
                     Node* constraining_ancestor) {
   return CreateMarkupAlgorithm<EditingStrategy>::CreateMarkup(
       start_position, end_position, should_annotate, convert_blocks_to_inlines,
@@ -314,9 +323,9 @@ String CreateMarkup(const Position& start_position,
 
 String CreateMarkup(const PositionInFlatTree& start_position,
                     const PositionInFlatTree& end_position,
-                    EAnnotateForInterchange should_annotate,
+                    AnnotateForInterchange should_annotate,
                     ConvertBlocksToInlines convert_blocks_to_inlines,
-                    EAbsoluteURLs should_resolve_urls,
+                    AbsoluteURLs should_resolve_urls,
                     Node* constraining_ancestor) {
   return CreateMarkupAlgorithm<EditingInFlatTreeStrategy>::CreateMarkup(
       start_position, end_position, should_annotate, convert_blocks_to_inlines,
@@ -330,7 +339,7 @@ DocumentFragment* CreateFragmentFromMarkup(
     ParserContentPolicy parser_content_policy) {
   // We use a fake body element here to trick the HTML parser to using the
   // InBody insertion mode.
-  HTMLBodyElement* fake_body = HTMLBodyElement::Create(document);
+  auto* fake_body = MakeGarbageCollected<HTMLBodyElement>(document);
   DocumentFragment* fragment = DocumentFragment::Create(document);
 
   fragment->ParseHTML(markup, fake_body, parser_content_policy);
@@ -446,14 +455,13 @@ DocumentFragment* CreateFragmentFromMarkupWithContext(
 }
 
 String CreateMarkup(const Node* node,
-                    EChildrenOnly children_only,
-                    EAbsoluteURLs should_resolve_urls) {
+                    ChildrenOnly children_only,
+                    AbsoluteURLs should_resolve_urls) {
   if (!node)
     return "";
 
   MarkupAccumulator accumulator(should_resolve_urls);
-  return SerializeNodes<EditingStrategy>(accumulator, const_cast<Node&>(*node),
-                                         children_only);
+  return accumulator.SerializeNodes<EditingStrategy>(*node, children_only);
 }
 
 static void FillContainerFromString(ContainerNode* paragraph,
@@ -461,7 +469,7 @@ static void FillContainerFromString(ContainerNode* paragraph,
   Document& document = paragraph->GetDocument();
 
   if (string.IsEmpty()) {
-    paragraph->AppendChild(HTMLBRElement::Create(document));
+    paragraph->AppendChild(MakeGarbageCollected<HTMLBRElement>(document));
     return;
   }
 
@@ -550,7 +558,7 @@ DocumentFragment* CreateFragmentFromText(const EphemeralRange& context,
       ShouldPreserveNewline(context)) {
     fragment->AppendChild(document.createTextNode(string));
     if (string.EndsWith('\n')) {
-      HTMLBRElement* element = HTMLBRElement::Create(document);
+      auto* element = MakeGarbageCollected<HTMLBRElement>(document);
       element->setAttribute(kClassAttr, AppleInterchangeNewline);
       fragment->AppendChild(element);
     }
@@ -580,11 +588,11 @@ DocumentFragment* CreateFragmentFromText(const EphemeralRange& context,
     Element* element = nullptr;
     if (s.IsEmpty() && i + 1 == num_lines) {
       // For last line, use the "magic BR" rather than a P.
-      element = HTMLBRElement::Create(document);
+      element = MakeGarbageCollected<HTMLBRElement>(document);
       element->setAttribute(kClassAttr, AppleInterchangeNewline);
     } else {
       if (use_clones_of_enclosing_block)
-        element = block->CloneWithoutChildren();
+        element = &block->CloneWithoutChildren();
       else
         element = CreateDefaultParagraphElement(document);
       FillContainerFromString(element, s);
@@ -638,7 +646,7 @@ DocumentFragment* CreateFragmentForTransformToFragment(
     // Unfortunately, that's an implementation detail of the parser. We achieve
     // that effect here by passing in a fake body element as context for the
     // fragment.
-    HTMLBodyElement* fake_body = HTMLBodyElement::Create(output_doc);
+    auto* fake_body = MakeGarbageCollected<HTMLBodyElement>(output_doc);
     fragment->ParseHTML(source_string, fake_body);
   } else if (source_mime_type == "text/plain") {
     fragment->ParserAppendChild(Text::Create(output_doc, source_string));
@@ -730,22 +738,6 @@ void ReplaceChildrenWithText(ContainerNode* container,
   ContainerNode* container_node(container);
 
   ChildListMutationScope mutation(*container_node);
-
-  // FIXME: This is wrong if containerNode->firstChild() has more than one ref!
-  // Example:
-  // <div>foo</div>
-  // <script>
-  // var oldText = div.firstChild;
-  // console.log(oldText.data); // foo
-  // div.innerText = "bar";
-  // console.log(oldText.data); // bar!?!
-  // </script>
-  // I believe this is an intentional benchmark cheat from years ago.
-  // We should re-visit if we actually want this still.
-  if (container_node->HasOneTextChild()) {
-    ToText(container_node->firstChild())->setData(text);
-    return;
-  }
 
   // NOTE: This method currently always creates a text node, even if that text
   // node will be empty.

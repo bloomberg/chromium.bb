@@ -24,9 +24,10 @@ import org.junit.runner.RunWith;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.test.util.AwTestTouchUtils;
 import org.chromium.android_webview.test.util.CommonResources;
-import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer.OnPageCommitVisibleHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.util.TestWebServer;
 
 import java.util.concurrent.TimeUnit;
@@ -125,7 +126,7 @@ public class WebKitHitTestTest {
                     && stringEquals(expectedImageSrc, data.imgSrc);
         });
 
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             Handler dummyHandler = new Handler();
             Message focusNodeHrefMsg = dummyHandler.obtainMessage();
             Message imageRefMsg = dummyHandler.obtainMessage();
@@ -398,6 +399,7 @@ public class WebKitHitTestTest {
 
     @Test
     @SmallTest
+    @DisableIf.Build(hardware_is = "flo", message = "crbug.com/948622")
     @Feature({"AndroidWebView", "WebKitHitTest"})
     public void testUnknownTypeUnrecognizedNode() throws Throwable {
         // Since UNKNOWN_TYPE is the default, hit test another type first for

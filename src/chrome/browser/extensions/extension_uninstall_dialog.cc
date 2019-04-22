@@ -5,7 +5,7 @@
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/bind_helpers.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/chrome_app_icon_service.h"
@@ -15,7 +15,11 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/native_window_tracker.h"
+#include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
+#include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/url_formatter/elide_url.h"
+#include "content/public/browser/clear_site_data_utils.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -33,6 +37,7 @@
 #include "ui/display/screen.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
+#include "url/origin.h"
 
 namespace extensions {
 
@@ -131,7 +136,7 @@ void ExtensionUninstallDialog::OnIconUpdated(ChromeAppIcon* icon) {
       Show();
       break;
     case ScopedTestDialogAutoConfirm::ACCEPT_AND_OPTION:
-      OnDialogClosed(CLOSE_ACTION_UNINSTALL_AND_REPORT_ABUSE);
+      OnDialogClosed(CLOSE_ACTION_UNINSTALL_AND_CHECKBOX_CHECKED);
       break;
     case ScopedTestDialogAutoConfirm::ACCEPT:
       OnDialogClosed(CLOSE_ACTION_UNINSTALL);
@@ -166,34 +171,71 @@ std::string ExtensionUninstallDialog::GetHeadingText() {
                                    base::UTF8ToUTF16(extension_->name()));
 }
 
-bool ExtensionUninstallDialog::ShouldShowReportAbuseCheckbox() const {
-  return ManifestURL::UpdatesFromGallery(extension_.get());
+GURL ExtensionUninstallDialog::GetLaunchURL() const {
+  return AppLaunchInfo::GetFullLaunchURL(extension_.get());
+}
+
+bool ExtensionUninstallDialog::ShouldShowCheckbox() const {
+  return ShouldShowReportAbuseCheckbox() || ShouldShowRemoveDataCheckbox();
+}
+
+base::string16 ExtensionUninstallDialog::GetCheckboxLabel() const {
+  DCHECK(ShouldShowCheckbox());
+
+  if (ShouldShowReportAbuseCheckbox()) {
+    return triggering_extension_.get()
+               ? l10n_util::GetStringFUTF16(
+                     IDS_EXTENSION_PROMPT_UNINSTALL_REPORT_ABUSE_FROM_EXTENSION,
+                     base::UTF8ToUTF16(extension_->name()))
+               : l10n_util::GetStringUTF16(
+                     IDS_EXTENSION_PROMPT_UNINSTALL_REPORT_ABUSE);
+  }
+
+  DCHECK(ShouldShowRemoveDataCheckbox());
+  return l10n_util::GetStringFUTF16(
+      IDS_EXTENSION_UNINSTALL_PROMPT_REMOVE_DATA_CHECKBOX,
+      url_formatter::FormatUrlForSecurityDisplay(
+          GetLaunchURL(), url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC));
 }
 
 void ExtensionUninstallDialog::OnDialogClosed(CloseAction action) {
   // We don't want to artificially weight any of the options, so only record if
-  // reporting abuse was available.
+  // a checkbox was shown.
   if (ShouldShowReportAbuseCheckbox()) {
-    UMA_HISTOGRAM_ENUMERATION("Extensions.UninstallDialogAction",
-                              action,
+    UMA_HISTOGRAM_ENUMERATION("Extensions.UninstallDialogAction", action,
+                              CLOSE_ACTION_LAST);
+  } else if (ShouldShowRemoveDataCheckbox()) {
+    UMA_HISTOGRAM_ENUMERATION("Webapp.UninstallDialogAction", action,
                               CLOSE_ACTION_LAST);
   }
 
   bool success = false;
   base::string16 error;
   switch (action) {
-    case CLOSE_ACTION_UNINSTALL_AND_REPORT_ABUSE:
-      // If the extension specifies a custom uninstall page via
-      // chrome.runtime.setUninstallURL, then at uninstallation its uninstall
-      // page opens. To ensure that the CWS Report Abuse page is the active tab
-      // at uninstallation, HandleReportAbuse() is called after Uninstall().
+    case CLOSE_ACTION_UNINSTALL_AND_CHECKBOX_CHECKED:
       success = Uninstall(&error);
-      HandleReportAbuse();
+      if (ShouldShowRemoveDataCheckbox()) {
+        content::ClearSiteData(
+            base::BindRepeating(
+                [](content::BrowserContext* browser_context) {
+                  return browser_context;
+                },
+                base::Unretained(profile_)),
+            url::Origin::Create(GetLaunchURL()), true /*clear_cookies*/,
+            true /*clear_storage*/, true /*clear_cache*/,
+            false /*avoid_closing_connections*/, base::DoNothing());
+      } else {
+        // If the extension specifies a custom uninstall page via
+        // chrome.runtime.setUninstallURL, then at uninstallation its uninstall
+        // page opens. To ensure that the CWS Report Abuse page is the active
+        // tab at uninstallation, HandleReportAbuse() is called after
+        // Uninstall().
+        HandleReportAbuse();
+      }
       break;
-    case CLOSE_ACTION_UNINSTALL: {
+    case CLOSE_ACTION_UNINSTALL:
       success = Uninstall(&error);
       break;
-    }
     case CLOSE_ACTION_CANCELED:
       error = base::ASCIIToUTF16("User canceled uninstall dialog");
       break;
@@ -225,6 +267,14 @@ void ExtensionUninstallDialog::HandleReportAbuse() {
       ui::PAGE_TRANSITION_LINK);
   params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   Navigate(&params);
+}
+
+bool ExtensionUninstallDialog::ShouldShowReportAbuseCheckbox() const {
+  return ManifestURL::UpdatesFromGallery(extension_.get());
+}
+
+bool ExtensionUninstallDialog::ShouldShowRemoveDataCheckbox() const {
+  return extension_->from_bookmark();
 }
 
 }  // namespace extensions

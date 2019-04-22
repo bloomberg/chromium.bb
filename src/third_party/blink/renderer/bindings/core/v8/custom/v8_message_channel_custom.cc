@@ -44,7 +44,7 @@ void V8MessageChannel::ConstructorCustom(
   v8::Isolate* isolate = info.GetIsolate();
 
   ExecutionContext* context = CurrentExecutionContext(isolate);
-  MessageChannel* channel = MessageChannel::Create(context);
+  auto* channel = MakeGarbageCollected<MessageChannel>(context);
 
   v8::Local<v8::Object> wrapper = info.Holder();
 
@@ -57,7 +57,7 @@ void V8MessageChannel::ConstructorCustom(
       wrapper, ToV8(channel->port2(), wrapper, isolate));
 
   V8SetReturnValue(info, V8DOMWrapper::AssociateObjectWithWrapper(
-                             isolate, channel, &wrapper_type_info, wrapper));
+                             isolate, channel, GetWrapperTypeInfo(), wrapper));
 }
 
 }  // namespace blink

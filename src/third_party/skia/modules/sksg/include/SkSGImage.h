@@ -34,12 +34,13 @@ protected:
     explicit Image(sk_sp<SkImage>);
 
     void onRender(SkCanvas*, const RenderContext*) const override;
+    const RenderNode* onNodeAt(const SkPoint&)     const override;
 
     SkRect onRevalidate(InvalidationController*, const SkMatrix&) override;
 
 private:
     sk_sp<SkImage>  fImage;
-    SkFilterQuality fQuality   = kLow_SkFilterQuality;
+    SkFilterQuality fQuality   = kNone_SkFilterQuality;
     bool            fAntiAlias = true;
 
     typedef RenderNode INHERITED;

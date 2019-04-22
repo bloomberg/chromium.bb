@@ -6,16 +6,16 @@
 
 #include "base/logging.h"
 #include "chrome/browser/chromeos/customization/customization_document.h"
-#include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 
 namespace chromeos {
 
 KioskAutolaunchScreen::KioskAutolaunchScreen(
-    BaseScreenDelegate* base_screen_delegate,
-    KioskAutolaunchScreenView* view)
-    : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_KIOSK_AUTOLAUNCH),
-      view_(view) {
+    KioskAutolaunchScreenView* view,
+    const ScreenExitCallback& exit_callback)
+    : BaseScreen(OobeScreen::SCREEN_KIOSK_AUTOLAUNCH),
+      view_(view),
+      exit_callback_(exit_callback) {
   DCHECK(view_);
   if (view_)
     view_->SetDelegate(this);
@@ -32,8 +32,7 @@ void KioskAutolaunchScreen::Show() {
 }
 
 void KioskAutolaunchScreen::OnExit(bool confirmed) {
-  Finish(confirmed ? ScreenExitCode::KIOSK_AUTOLAUNCH_CONFIRMED
-                   : ScreenExitCode::KIOSK_AUTOLAUNCH_CANCELED);
+  exit_callback_.Run(confirmed ? Result::COMPLETED : Result::CANCELED);
 }
 
 void KioskAutolaunchScreen::OnViewDestroyed(KioskAutolaunchScreenView* view) {

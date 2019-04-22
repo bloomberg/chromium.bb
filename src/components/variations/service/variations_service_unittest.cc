@@ -11,12 +11,12 @@
 #include <vector>
 
 #include "base/base64.h"
+#include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
-#include "base/sha1.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -45,6 +45,7 @@
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_network_connection_tracker.h"
 #include "services/network/test/test_url_loader_factory.h"
+#include "services/network/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace variations {
@@ -974,6 +975,34 @@ TEST_F(VariationsServiceTest, DoNotRetryIfInsecureURLIsHTTPS) {
   EXPECT_FALSE(service.fetch_attempted());
 }
 
+TEST_F(VariationsServiceTest, SeedNotStoredWhenRedirected) {
+  VariationsService::EnableFetchForTesting();
+
+  TestVariationsService service(
+      std::make_unique<web_resource::TestRequestAllowedNotifier>(
+          &prefs_, network_tracker_),
+      &prefs_, GetMetricsStateManager(), true);
+
+  EXPECT_FALSE(service.seed_stored());
+
+  net::RedirectInfo redirect_info;
+  redirect_info.status_code = 301;
+  redirect_info.new_url = service.interception_url();
+  network::TestURLLoaderFactory::Redirects redirects{
+      {redirect_info, network::ResourceResponseHead()}};
+
+  network::ResourceResponseHead head =
+      network::CreateResourceResponseHead(net::HTTP_OK);
+
+  service.test_url_loader_factory()->AddResponse(
+      service.interception_url(), head, SerializeSeed(CreateTestSeed()),
+      network::URLLoaderCompletionStatus(), redirects);
+
+  service.set_intercepts_fetch(false);
+  service.DoActualFetch();
+  EXPECT_FALSE(service.seed_stored());
+}
+
 TEST_F(VariationsServiceTest, NullResponseReceivedWithHTTPOk) {
   VariationsService::EnableFetchForTesting();
 
@@ -1009,6 +1038,38 @@ TEST_F(VariationsServiceTest, NullResponseReceivedWithHTTPOk) {
   EXPECT_FALSE(service.seed_stored());
   histogram_tester.ExpectUniqueSample("Variations.SeedFetchResponseOrErrorCode",
                                       net::ERR_FAILED, 1);
+}
+
+TEST_F(VariationsServiceTest,
+       VariationsServiceStartsRequestOnNetworkChange) {
+  // Verifies VariationsService does a request when network status changes from
+  // none to connected. This is a regression test for https://crbug.com/826930.
+  VariationsService::EnableFetchForTesting();
+  network_tracker_->SetConnectionType(
+      network::mojom::ConnectionType::CONNECTION_NONE);
+  TestVariationsService service(
+      std::make_unique<web_resource::TestRequestAllowedNotifier>(
+          &prefs_, network_tracker_),
+      &prefs_, GetMetricsStateManager(), true);
+  service.set_intercepts_fetch(false);
+  service.CancelCurrentRequestForTesting();
+  base::RunLoop().RunUntilIdle();
+  // Simulate starting Chrome browser.
+  service.StartRepeatedVariationsSeedFetchForTesting();
+  const int initial_request_count = service.request_count();
+  // The variations seed can not be fetched if disconnected. So even we start
+  // repeated variations seed fetch (on Chrome start), no requests will be made.
+  EXPECT_EQ(0, initial_request_count);
+
+  service.GetResourceRequestAllowedNotifierForTesting()
+      ->SetObserverRequestedForTesting(true);
+  network_tracker_->SetConnectionType(
+      network::mojom::ConnectionType::CONNECTION_WIFI);
+  base::RunLoop().RunUntilIdle();
+
+  const int final_request_count = service.request_count();
+  // The request will be made once Chrome gets online.
+  EXPECT_EQ(initial_request_count + 1, final_request_count);
 }
 
 // TODO(isherman): Add an integration test for saving and loading a safe seed,

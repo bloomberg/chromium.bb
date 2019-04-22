@@ -32,7 +32,7 @@ TestRulesRegistry::TestRulesRegistry(content::BrowserContext* browser_context,
 
 std::string TestRulesRegistry::AddRulesImpl(
     const std::string& extension_id,
-    const std::vector<linked_ptr<api::events::Rule>>& rules) {
+    const std::vector<const api::events::Rule*>& rules) {
   return result_;
 }
 

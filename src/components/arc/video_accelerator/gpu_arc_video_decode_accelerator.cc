@@ -4,6 +4,7 @@
 
 #include "components/arc/video_accelerator/gpu_arc_video_decode_accelerator.h"
 
+#include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
@@ -523,7 +524,7 @@ void GpuArcVideoDecodeAccelerator::ImportBufferForPicture(
     auto protected_native_pixmap =
         protected_buffer_manager_->GetProtectedNativePixmapHandleFor(
             std::move(handle_fd));
-    if (protected_native_pixmap.fds.size() == 0) {
+    if (protected_native_pixmap.planes.size() == 0) {
       VLOGF(1) << "No protected native pixmap found for handle";
       client_->NotifyError(
           mojom::VideoDecodeAccelerator::Result::PLATFORM_FAILURE);
@@ -537,15 +538,31 @@ void GpuArcVideoDecodeAccelerator::ImportBufferForPicture(
           mojom::VideoDecodeAccelerator::Result::INVALID_ARGUMENT);
       return;
     }
-    gmb_handle.native_pixmap_handle.fds.push_back(
-        base::FileDescriptor(handle_fd.release(), true));
-    for (const auto& plane : planes) {
-      gmb_handle.native_pixmap_handle.planes.emplace_back(plane.stride,
-                                                          plane.offset, 0);
+
+    const size_t num_planes = media::VideoFrame::NumPlanes(pixel_format);
+
+    // TODO(crbug.com/911370): Remove this workaround once Android passes one fd
+    // per plane.
+    std::array<base::ScopedFD, media::VideoFrame::kMaxPlanes> scoped_fds;
+    scoped_fds[0].reset(handle_fd.release());
+    for (size_t i = 1; i < num_planes; ++i) {
+      scoped_fds[i].reset(HANDLE_EINTR(dup(scoped_fds[0].get())));
+      if (!scoped_fds[i].is_valid()) {
+        VLOGF(1) << "Failed to duplicate fd.";
+        client_->NotifyError(
+            mojom::VideoDecodeAccelerator::Result::PLATFORM_FAILURE);
+        return;
+      }
+    }
+
+    for (size_t i = 0; i < planes.size(); ++i) {
+      gmb_handle.native_pixmap_handle.planes.emplace_back(
+          planes[i].stride, planes[i].offset, 0, std::move(scoped_fds[i]));
     }
   }
 
-  vda_->ImportBufferForPicture(picture_buffer_id, pixel_format, gmb_handle);
+  vda_->ImportBufferForPicture(picture_buffer_id, pixel_format,
+                               std::move(gmb_handle));
 }
 
 void GpuArcVideoDecodeAccelerator::ReusePictureBuffer(

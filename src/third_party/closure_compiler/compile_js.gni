@@ -27,6 +27,9 @@ polymer_externs = "$externs_path/polymer-1.0.js"
 #     List of any other rules to depend on. E.g. a rule that generates js source
 #     files
 #
+#   extra_public_deps
+#     List of other targets to expose as public dependencies.
+#
 #   externs_list:
 #     A list of .js files to pass to the compiler as externs
 #
@@ -51,6 +54,7 @@ template("js_library") {
                              "deps",
                              "externs_list",
                              "extra_deps",
+                             "extra_public_deps",
                              "extra_sources",
                              "sources",
                              "testonly",
@@ -93,6 +97,9 @@ template("js_library") {
         deps = []
       }
       deps += extra_deps
+    }
+    if (defined(extra_public_deps)) {
+      public_deps = extra_public_deps
     }
   }
 }
@@ -215,6 +222,12 @@ template("js_binary") {
       rebase_path("$chrome_externs", root_build_dir),
       rebase_path("$polymer_externs", root_build_dir),
     ]
+    inputs = [
+      chrome_externs,
+      compiler_path,
+      polymer_externs,
+    ]
+
     if (defined(externs_list)) {
       args += rebase_path(externs_list, root_build_dir)
       sources += externs_list

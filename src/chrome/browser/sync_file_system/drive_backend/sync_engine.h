@@ -147,11 +147,10 @@ class SyncEngine
   void OnConnectionChanged(network::mojom::ConnectionType type) override;
 
   // IdentityManager::Observer overrides.
-  void OnPrimaryAccountSet(const AccountInfo& primary_account_info) override;
+  void OnPrimaryAccountSet(
+      const CoreAccountInfo& primary_account_info) override;
   void OnPrimaryAccountCleared(
-      const AccountInfo& previous_primary_account_info) override;
-  void OnPrimaryAccountSigninFailed(
-      const GoogleServiceAuthError& error) override;
+      const CoreAccountInfo& previous_primary_account_info) override;
 
  private:
   class WorkerObserver;

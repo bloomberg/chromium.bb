@@ -12,8 +12,8 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.support.v7.widget.AppCompatTextView;
 import android.util.AttributeSet;
+import android.widget.TextView;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 
 /**
@@ -45,7 +45,7 @@ public class TextViewWithCompoundDrawables extends AppCompatTextView {
         super.drawableStateChanged();
 
         if (mDrawableTint != null) {
-            setDrawableTint(ApiCompatibilityUtils.getCompoundDrawablesRelative(this));
+            setDrawableTint(getCompoundDrawablesRelative());
         }
     }
 
@@ -64,7 +64,7 @@ public class TextViewWithCompoundDrawables extends AppCompatTextView {
 
         if (mDrawableWidth <= 0 && mDrawableHeight <= 0 && mDrawableTint == null) return;
 
-        Drawable[] drawables = ApiCompatibilityUtils.getCompoundDrawablesRelative(this);
+        Drawable[] drawables = getCompoundDrawablesRelative();
         for (Drawable drawable : drawables) {
             if (drawable == null) continue;
 
@@ -82,8 +82,7 @@ public class TextViewWithCompoundDrawables extends AppCompatTextView {
 
         if (mDrawableTint != null) setDrawableTint(drawables);
 
-        ApiCompatibilityUtils.setCompoundDrawablesRelative(
-                this, drawables[0], drawables[1], drawables[2], drawables[3]);
+        setCompoundDrawablesRelative(drawables[0], drawables[1], drawables[2], drawables[3]);
     }
 
     private void setDrawableTint(Drawable[] drawables) {

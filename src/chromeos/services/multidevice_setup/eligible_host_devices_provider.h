@@ -6,7 +6,7 @@
 #define CHROMEOS_SERVICES_MULTIDEVICE_SETUP_ELIGIBLE_HOST_DEVICES_PROVIDER_H_
 
 #include "base/macros.h"
-#include "components/cryptauth/remote_device_ref.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
 
 namespace chromeos {
 
@@ -20,7 +20,7 @@ class EligibleHostDevicesProvider {
   // Returns all eligible host devices. In this context, this means that the
   // devices have a SoftwareFeatureState of kSupported or kEnabled for the
   // BETTER_TOGETHER_HOST feature.
-  virtual cryptauth::RemoteDeviceRefList GetEligibleHostDevices() const = 0;
+  virtual multidevice::RemoteDeviceRefList GetEligibleHostDevices() const = 0;
 
  protected:
   EligibleHostDevicesProvider() = default;

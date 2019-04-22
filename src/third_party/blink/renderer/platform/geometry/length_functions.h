@@ -24,6 +24,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_LENGTH_FUNCTIONS_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_LENGTH_FUNCTIONS_H_
 
+#include "third_party/blink/renderer/platform/geometry/layout_unit.h"
+#include "third_party/blink/renderer/platform/geometry/length.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
@@ -38,10 +40,17 @@ struct LengthPoint;
 
 PLATFORM_EXPORT int IntValueForLength(const Length&, int maximum_value);
 PLATFORM_EXPORT float FloatValueForLength(const Length&, float maximum_value);
-PLATFORM_EXPORT LayoutUnit MinimumValueForLength(const Length&,
-                                                 LayoutUnit maximum_value);
 PLATFORM_EXPORT LayoutUnit
-RoundedMinimumValueForLength(const Length&, LayoutUnit maximum_value);
+MinimumValueForLengthInternal(const Length&, LayoutUnit maximum_value);
+
+inline LayoutUnit MinimumValueForLength(const Length& length,
+                                        LayoutUnit maximum_value) {
+  if (LIKELY(length.IsFixed()))
+    return LayoutUnit(length.Value());
+
+  return MinimumValueForLengthInternal(length, maximum_value);
+}
+
 PLATFORM_EXPORT LayoutUnit ValueForLength(const Length&,
                                           LayoutUnit maximum_value);
 PLATFORM_EXPORT FloatSize FloatSizeForLengthSize(const LengthSize&,

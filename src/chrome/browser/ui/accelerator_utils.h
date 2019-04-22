@@ -15,8 +15,7 @@ namespace chrome {
 
 // Returns true if the given |accelerator| is currently registered by
 // Chrome.
-bool IsChromeAccelerator(const ui::Accelerator& accelerator,
-                         Profile* profile);
+bool IsChromeAccelerator(const ui::Accelerator& accelerator, Profile* profile);
 
 ui::Accelerator GetPrimaryChromeAcceleratorForBookmarkPage();
 

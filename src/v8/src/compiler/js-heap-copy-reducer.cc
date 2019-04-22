@@ -31,7 +31,7 @@ Reduction JSHeapCopyReducer::Reduce(Node* node) {
       if (object.IsJSFunction()) object.AsJSFunction().Serialize();
       if (object.IsJSObject()) object.AsJSObject().SerializeObjectCreateMap();
       if (object.IsModule()) object.AsModule().Serialize();
-      if (object.IsContext()) object.AsContext().Serialize();
+      if (object.IsContext()) object.AsContext().SerializeContextChain();
       break;
     }
     case IrOpcode::kJSCreateArray: {
@@ -114,22 +114,21 @@ Reduction JSHeapCopyReducer::Reduce(Node* node) {
       break;
     }
     case IrOpcode::kMapGuard: {
-      ZoneHandleSet<Map> const maps = MapGuardMapsOf(node->op()).maps();
+      ZoneHandleSet<Map> const& maps = MapGuardMapsOf(node->op());
       for (Handle<Map> map : maps) {
         MapRef(broker(), map);
       }
       break;
     }
     case IrOpcode::kCheckMaps: {
-      ZoneHandleSet<Map> const maps = CheckMapsParametersOf(node->op()).maps();
+      ZoneHandleSet<Map> const& maps = CheckMapsParametersOf(node->op()).maps();
       for (Handle<Map> map : maps) {
         MapRef(broker(), map);
       }
       break;
     }
     case IrOpcode::kCompareMaps: {
-      ZoneHandleSet<Map> const maps =
-          CompareMapsParametersOf(node->op()).maps();
+      ZoneHandleSet<Map> const& maps = CompareMapsParametersOf(node->op());
       for (Handle<Map> map : maps) {
         MapRef(broker(), map);
       }

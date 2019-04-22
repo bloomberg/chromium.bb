@@ -26,12 +26,12 @@ An invalidation set represents
 *   criteria for matching against a node
 *   instructions for whether/how to descend the tree into the node's children
 
-If we have a style rule `".c1 .c2 { ... }"`
+If we have a style rule `".c1 div.c2 { ... }"`
 then style recalculation is needed
 when a `c1`-class is added or removed
 as an ancestor of a `c2`-class
 or when a `c2`-class is added or removed
-as a descendant of a `c1`-class element
+from a div that is a descendant of a `c1`-class element
 (here adding/removing can be adding/removing an element
 or just adding/removing these classes on existing elements).
 We don't want to do full style recalc
@@ -43,13 +43,14 @@ otherwise we collect everything as pending invalidation sets.
 
 In the example,
 if a `c1`-class is added to an element in the tree,
-we need to invalidate all of its descendants which have class c2.
+we need to invalidate all of its descendants which have class `c2`.
 Rather than perform a search right now,
 we just mark the element with a pending invalidation set
 that matches against `c2`
 and descends into all light-descendants.
+(We won't invalidate all div descendants, as class `c2` is more specific.)
 
-If a `c2`-class element is added to the tree,
+If class `c2` is added to an element in the tree,
 then it needs recalculation
 if it has a `c1`-class ancestor.
 We never search _up_ the tree at this point
@@ -57,6 +58,7 @@ or during style invalidation,
 we only do that during recalculation,
 so this becomes an immediate invalidation,
 even though it may be unnecessary.
+Similarly, we don't check if the `c2`-class element is a div.
 
 Eventually all DOM changes have been turned into immediate invalidations
 or pending invalidation sets.

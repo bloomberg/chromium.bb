@@ -18,7 +18,7 @@ class ProxyResolverV8Tracing;
 }  // namespace net
 
 namespace service_manager {
-class ServiceContextRef;
+class ServiceKeepaliveRef;
 }  // namespace service_manager
 
 namespace proxy_resolver {
@@ -27,7 +27,7 @@ class ProxyResolverImpl : public mojom::ProxyResolver {
  public:
   ProxyResolverImpl(
       std::unique_ptr<net::ProxyResolverV8Tracing> resolver,
-      std::unique_ptr<service_manager::ServiceContextRef> service_ref);
+      std::unique_ptr<service_manager::ServiceKeepaliveRef> service_ref);
 
   ~ProxyResolverImpl() override;
 
@@ -42,7 +42,7 @@ class ProxyResolverImpl : public mojom::ProxyResolver {
 
   std::unique_ptr<net::ProxyResolverV8Tracing> resolver_;
   std::map<Job*, std::unique_ptr<Job>> resolve_jobs_;
-  std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
+  std::unique_ptr<service_manager::ServiceKeepaliveRef> service_ref_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyResolverImpl);
 };

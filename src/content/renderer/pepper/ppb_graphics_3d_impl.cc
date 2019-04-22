@@ -295,7 +295,7 @@ void PPB_Graphics3D_Impl::OnGpuControlErrorMessage(const char* message,
   if (!frame)
     return;
   WebConsoleMessage console_message = WebConsoleMessage(
-      WebConsoleMessage::kLevelError, WebString::FromUTF8(message));
+      blink::mojom::ConsoleMessageLevel::kError, WebString::FromUTF8(message));
   frame->AddMessageToConsole(console_message);
 }
 
@@ -326,6 +326,11 @@ void PPB_Graphics3D_Impl::OnGpuControlLostContextMaybeReentrant() {
 
 void PPB_Graphics3D_Impl::OnGpuControlSwapBuffersCompleted(
     const gpu::SwapBuffersCompleteParams& params) {}
+
+void PPB_Graphics3D_Impl::OnGpuControlReturnData(
+    base::span<const uint8_t> data) {
+  NOTIMPLEMENTED();
+}
 
 void PPB_Graphics3D_Impl::OnSwapBuffers() {
   if (HasPendingSwap()) {

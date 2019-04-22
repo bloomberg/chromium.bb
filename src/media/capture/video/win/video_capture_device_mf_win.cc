@@ -12,6 +12,7 @@
 #include <thread>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/stringprintf.h"
@@ -580,7 +581,8 @@ VideoCaptureDeviceMFWin::VideoCaptureDeviceMFWin(
       retry_delay_in_ms_(50),
       source_(source),
       engine_(engine),
-      is_started_(false) {
+      is_started_(false),
+      has_sent_on_started_to_client_(false) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
@@ -760,6 +762,15 @@ void VideoCaptureDeviceMFWin::AllocateAndStart(
     return;
   }
 
+  // Note, that it is not sufficient to wait for
+  // MF_CAPTURE_ENGINE_PREVIEW_STARTED as an indicator that starting capture has
+  // succeeded. If the capture device is already in use by a different
+  // application, MediaFoundation will still emit
+  // MF_CAPTURE_ENGINE_PREVIEW_STARTED, and only after that raise an error
+  // event. For the lack of any other events indicating success, we have to wait
+  // for the first video frame to arrive before sending our |OnStarted| event to
+  // |client_|.
+  has_sent_on_started_to_client_ = false;
   hr = engine_->StartPreview();
   if (FAILED(hr)) {
     OnError(VideoCaptureError::kWinMediaFoundationEngineStartPreviewFailed,
@@ -770,7 +781,6 @@ void VideoCaptureDeviceMFWin::AllocateAndStart(
   selected_video_capability_.reset(
       new CapabilityWin(best_match_video_capability));
 
-  client_->OnStarted();
   is_started_ = true;
 }
 
@@ -985,7 +995,14 @@ void VideoCaptureDeviceMFWin::OnIncomingCapturedData(
   base::AutoLock lock(lock_);
   DCHECK(data);
 
+  SendOnStartedIfNotYetSent();
+
   if (client_.get()) {
+    if (!has_sent_on_started_to_client_) {
+      has_sent_on_started_to_client_ = true;
+      client_->OnStarted();
+    }
+
     client_->OnIncomingCapturedData(
         data, length, selected_video_capability_->supported_format,
         GetCameraRotation(facing_mode_), reference_time, timestamp);
@@ -1017,6 +1034,9 @@ void VideoCaptureDeviceMFWin::OnIncomingCapturedData(
 void VideoCaptureDeviceMFWin::OnFrameDropped(
     VideoCaptureFrameDropReason reason) {
   base::AutoLock lock(lock_);
+
+  SendOnStartedIfNotYetSent();
+
   if (client_.get()) {
     client_->OnFrameDropped(reason);
   }
@@ -1047,6 +1067,13 @@ void VideoCaptureDeviceMFWin::OnError(VideoCaptureError error,
 
   client_->OnError(error, from_here,
                    base::StringPrintf("VideoCaptureDeviceMFWin: %s", message));
+}
+
+void VideoCaptureDeviceMFWin::SendOnStartedIfNotYetSent() {
+  if (!client_ || has_sent_on_started_to_client_)
+    return;
+  has_sent_on_started_to_client_ = true;
+  client_->OnStarted();
 }
 
 }  // namespace media

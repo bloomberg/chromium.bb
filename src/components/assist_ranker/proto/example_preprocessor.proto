@@ -31,7 +31,7 @@ message ExamplePreprocessorConfig {
   map<string, float> normalizers = 4;
 
   // Features inside this list will be converted to string_value. bool_value,
-  // int32_value will be converted by base::IntToString; string_value will be
+  // int32_value will be converted by base::NumberToString; string_value will be
   // kept as original; fails for other feature_types.
   repeated string convert_to_string_features = 5;
 }

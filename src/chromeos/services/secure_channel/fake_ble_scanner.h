@@ -19,7 +19,7 @@ namespace secure_channel {
 // Test BleScanner implementation.
 class FakeBleScanner : public BleScanner {
  public:
-  FakeBleScanner(Delegate* delegate);
+  explicit FakeBleScanner(Delegate* delegate);
   ~FakeBleScanner() override;
 
   size_t num_scan_filter_changes_handled() const {
@@ -47,7 +47,7 @@ class FakeBleScannerDelegate : public BleScanner::Delegate {
   FakeBleScannerDelegate();
   ~FakeBleScannerDelegate() override;
 
-  using ScannedResultList = std::vector<std::tuple<cryptauth::RemoteDeviceRef,
+  using ScannedResultList = std::vector<std::tuple<multidevice::RemoteDeviceRef,
                                                    device::BluetoothDevice*,
                                                    ConnectionRole>>;
 
@@ -56,7 +56,7 @@ class FakeBleScannerDelegate : public BleScanner::Delegate {
   }
 
  private:
-  void OnReceivedAdvertisement(cryptauth::RemoteDeviceRef remote_device,
+  void OnReceivedAdvertisement(multidevice::RemoteDeviceRef remote_device,
                                device::BluetoothDevice* bluetooth_device,
                                ConnectionRole connection_role) override;
 

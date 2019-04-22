@@ -15,7 +15,7 @@ namespace chromeos {
 class DeviceDisabledScreenHandler : public DeviceDisabledScreenView,
                                     public BaseScreenHandler {
  public:
-  DeviceDisabledScreenHandler();
+  explicit DeviceDisabledScreenHandler(JSCallsContainer* js_calls_container);
   ~DeviceDisabledScreenHandler() override;
 
   // DeviceDisabledScreenActor:

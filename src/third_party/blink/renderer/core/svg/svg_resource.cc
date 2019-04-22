@@ -155,8 +155,8 @@ Element* ExternalSVGResource::ResolveTarget() {
   Document* external_document = resource_document_->GetDocument();
   if (!external_document)
     return nullptr;
-  AtomicString decoded_fragment(
-      DecodeURLEscapeSequences(url_.FragmentIdentifier()));
+  AtomicString decoded_fragment(DecodeURLEscapeSequences(
+      url_.FragmentIdentifier(), DecodeURLMode::kUTF8OrIsomorphic));
   return external_document->getElementById(decoded_fragment);
 }
 

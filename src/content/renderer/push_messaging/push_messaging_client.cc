@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/child/child_thread_impl.h"
@@ -30,9 +31,12 @@ namespace content {
 PushMessagingClient::PushMessagingClient(RenderFrame* render_frame)
     : RenderFrameObserver(render_frame) {
   if (ChildThreadImpl::current()) {
+    // See https://bit.ly/2S0zRAS for task types.
     ChildThreadImpl::current()->GetConnector()->BindInterface(
         mojom::kBrowserServiceName,
-        mojo::MakeRequest(&push_messaging_manager_));
+        mojo::MakeRequest(
+            &push_messaging_manager_,
+            render_frame->GetTaskRunner(blink::TaskType::kMiscPlatformAPI)));
   }
 }
 

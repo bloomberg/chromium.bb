@@ -36,7 +36,7 @@ void PrintResult(const std::string& measurement,
                  const std::string& trace,
                  const base::TimeDelta& dt) {
   printf("*RESULT %s: %s= %s ms\n", measurement.c_str(), trace.c_str(),
-         base::Int64ToString(dt.InMilliseconds()).c_str());
+         base::NumberToString(dt.InMilliseconds()).c_str());
 }
 
 }  // namespace sync_timing_helper

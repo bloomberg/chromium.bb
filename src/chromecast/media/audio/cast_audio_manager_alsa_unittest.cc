@@ -35,6 +35,10 @@ std::unique_ptr<service_manager::Connector> CreateConnector() {
   return service_manager::Connector::Create(&request);
 }
 
+std::string DummyGetSessionId(std::string /* audio_group_id */) {
+  return "";
+}
+
 class CastAudioManagerAlsaTest : public testing::Test {
  public:
   CastAudioManagerAlsaTest()
@@ -46,6 +50,7 @@ class CastAudioManagerAlsaTest : public testing::Test {
         std::make_unique<::media::TestAudioThread>(), &audio_log_factory_,
         base::BindRepeating(&CastAudioManagerAlsaTest::GetCmaBackendFactory,
                             base::Unretained(this)),
+        base::BindRepeating(&DummyGetSessionId),
         base::ThreadTaskRunnerHandle::Get(), media_thread_.task_runner(),
         connector_.get(), false);
   }

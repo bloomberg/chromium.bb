@@ -40,15 +40,11 @@ class PrivetHTTPAsynchronousFactoryImpl : public PrivetHTTPAsynchronousFactory {
         scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
     ~ResolutionImpl() override;
 
-    void Start(const ResultCallback& callback) override;
-
     void Start(const net::HostPortPair& address,
-               const ResultCallback& callback) override;
-
-    const std::string& GetName() override;
+               ResultCallback callback) override;
 
    private:
-    void ResolveComplete(const ResultCallback& callback,
+    void ResolveComplete(ResultCallback callback,
                          const net::IPEndPoint& endpoint);
     std::string name_;
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;

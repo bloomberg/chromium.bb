@@ -29,9 +29,10 @@
 #include "third_party/blink/renderer/core/frame/embedded_content_view.h"
 #include "third_party/blink/renderer/core/frame/frame_owner.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/hash_counted_set.h"
 
 namespace blink {
@@ -99,10 +100,11 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
   void ClearContentFrame() final;
   void AddResourceTiming(const ResourceTimingInfo&) final;
   void DispatchLoad() final;
-  SandboxFlags GetSandboxFlags() const final { return sandbox_flags_; }
+  const FramePolicy& GetFramePolicy() const final { return frame_policy_; }
   bool CanRenderFallbackContent() const override { return false; }
   void RenderFallbackContent(Frame*) override {}
   void IntrinsicSizingInfoChanged() override {}
+  void SetNeedsOcclusionTracking(bool) override {}
   AtomicString BrowsingContextContainerName() const override {
     return getAttribute(html_names::kNameAttr);
   }
@@ -113,7 +115,6 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
   bool AllowPaymentRequest() const override { return false; }
   bool IsDisplayNone() const override { return !embedded_content_view_; }
   AtomicString RequiredCsp() const override { return g_null_atom; }
-  const ParsedFeaturePolicy& ContainerPolicy() const override;
   bool ShouldLazyLoadChildren() const final;
 
   // For unit tests, manually trigger the UpdateContainerPolicy method.
@@ -127,12 +128,15 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
 
   void ParseAttribute(const AttributeModificationParams&) override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   HTMLFrameOwnerElement(const QualifiedName& tag_name, Document&);
 
-  void SetSandboxFlags(SandboxFlags);
+  void SetSandboxFlags(WebSandboxFlags);
+  void SetAllowedToDownloadWithoutUserActivation(bool allowed) {
+    frame_policy_.allowed_to_download_without_user_activation = allowed;
+  }
 
   bool LoadOrRedirectSubframe(const KURL&,
                               const AtomicString& frame_name,
@@ -173,17 +177,15 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
     return network::mojom::ReferrerPolicy::kDefault;
   }
 
+  bool IsLoadingFrameDefaultEagerEnforced() const;
+
   Member<Frame> content_frame_;
   Member<EmbeddedContentView> embedded_content_view_;
-  SandboxFlags sandbox_flags_;
-
-  ParsedFeaturePolicy container_policy_;
+  FramePolicy frame_policy_;
 
   Member<LazyLoadFrameObserver> lazy_load_frame_observer_;
   bool should_lazy_load_children_;
 };
-
-DEFINE_ELEMENT_TYPE_CASTS(HTMLFrameOwnerElement, IsFrameOwnerElement());
 
 class SubframeLoadingDisabler {
   STACK_ALLOCATED();
@@ -223,11 +225,11 @@ class SubframeLoadingDisabler {
   Member<Node> root_;
 };
 
-DEFINE_TYPE_CASTS(HTMLFrameOwnerElement,
-                  FrameOwner,
-                  owner,
-                  owner->IsLocal(),
-                  owner.IsLocal());
+template <>
+struct DowncastTraits<HTMLFrameOwnerElement> {
+  static bool AllowFrom(const FrameOwner& owner) { return owner.IsLocal(); }
+  static bool AllowFrom(const Node& node) { return node.IsFrameOwnerElement(); }
+};
 
 }  // namespace blink
 

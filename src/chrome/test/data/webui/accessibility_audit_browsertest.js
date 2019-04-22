@@ -53,14 +53,16 @@ WebUIAccessibilityAuditBrowserTest.prototype = {
     var numAccessibilityWarnings = 0;
     for (var i = 0; i < accessibilityResults.length; i++) {
       var result = accessibilityResults[i];
-      if (result.rule.severity == axs.constants.Severity.Warning)
+      if (result.rule.severity == axs.constants.Severity.Warning) {
         numAccessibilityWarnings++;
-      else
+      } else {
         numAccessibilityErrors++;
+      }
     }
 
-    if (this.expectedErrors != null)
+    if (this.expectedErrors != null) {
       expectEquals(this.expectedErrors, numAccessibilityErrors);
+    }
     if (this.expectedWarnings != null) {
       expectEquals(this.expectedWarnings, numAccessibilityWarnings);
     }
@@ -157,8 +159,9 @@ function expectAuditWillRun(times, auditConfig) {
   var realAudit = axs.Audit;
   var expectedInvocation = audit.expects(exactly(times)).run(ANYTHING);
   var willArgs = [];
-  for (var i = 0; i < times; i++)
+  for (var i = 0; i < times; i++) {
     willArgs.push(callFunction(realAudit.run, auditConfig));
+  }
   expectedInvocation.will.apply(expectedInvocation, willArgs);
   axs.Audit = audit.proxy();
   axs.Audit.createReport = realAudit.createReport;

@@ -5,18 +5,25 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_WEBDATA_AUTOFILL_PROFILE_DATA_TYPE_CONTROLLER_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_WEBDATA_AUTOFILL_PROFILE_DATA_TYPE_CONTROLLER_H_
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/scoped_observer.h"
-#include "base/single_thread_task_runner.h"
+#include "base/sequenced_task_runner.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/sync/driver/async_directory_type_controller.h"
 
 namespace autofill {
 class AutofillWebDataService;
+class PersonalDataManager;
 }  // namespace autofill
+
+namespace syncer {
+class SyncClient;
+class SyncService;
+}  // namespace syncer
 
 namespace browser_sync {
 
@@ -25,11 +32,16 @@ class AutofillProfileDataTypeController
     : public syncer::AsyncDirectoryTypeController,
       public autofill::PersonalDataManagerObserver {
  public:
+  using PersonalDataManagerProvider =
+      base::RepeatingCallback<autofill::PersonalDataManager*()>;
+
   // |dump_stack| is called when an unrecoverable error occurs.
   AutofillProfileDataTypeController(
-      scoped_refptr<base::SingleThreadTaskRunner> db_thread,
+      scoped_refptr<base::SequencedTaskRunner> db_thread,
       const base::Closure& dump_stack,
+      syncer::SyncService* sync_service,
       syncer::SyncClient* sync_client,
+      const PersonalDataManagerProvider& pdm_provider,
       const scoped_refptr<autofill::AutofillWebDataService>& web_data_service);
   ~AutofillProfileDataTypeController() override;
 
@@ -52,11 +64,8 @@ class AutofillProfileDataTypeController
   // Returns true if the pref is set such that autofill sync should be enabled.
   bool IsEnabled();
 
-  // Report an error (which will stop the datatype asynchronously).
-  void DisableForPolicy();
-
-  // A pointer to the sync client.
-  syncer::SyncClient* const sync_client_;
+  // Callback that allows accessing PersonalDataManager lazily.
+  const PersonalDataManagerProvider pdm_provider_;
 
   // A reference to the AutofillWebDataService for this controller.
   scoped_refptr<autofill::AutofillWebDataService> web_data_service_;

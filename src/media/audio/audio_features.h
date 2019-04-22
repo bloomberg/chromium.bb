@@ -14,13 +14,8 @@ namespace features {
 MEDIA_EXPORT extern const base::Feature kDumpOnAudioServiceHang;
 
 #if defined(OS_CHROMEOS)
-MEDIA_EXPORT extern const base::Feature kEnumerateAudioDevices;
 MEDIA_EXPORT extern const base::Feature kCrOSSystemAEC;
 MEDIA_EXPORT extern const base::Feature kCrOSSystemAECDeactivatedGroups;
-#endif
-
-#if defined(OS_WIN)
-MEDIA_EXPORT extern const base::Feature kIncreaseInputAudioBufferSize;
 #endif
 
 #if defined(OS_MACOSX) || defined(OS_CHROMEOS)

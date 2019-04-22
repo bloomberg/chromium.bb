@@ -8,11 +8,9 @@
 #include <memory>
 #include <string>
 
-#include "base/debug/stack_trace.h"
 #include "base/files/file_path.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/media_router/media_cast_mode.h"
-#include "chrome/browser/ui/toolbar/media_router_action.h"
 #include "chrome/test/media_router/media_router_base_browsertest.h"
 #include "chrome/test/media_router/media_router_ui_for_test.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
@@ -20,8 +18,6 @@
 #include "content/public/test/test_navigation_observer.h"
 
 namespace media_router {
-
-struct IssueInfo;
 
 class MediaRouterIntegrationBrowserTest : public MediaRouterBaseBrowserTest {
  public:
@@ -107,14 +103,6 @@ class MediaRouterIntegrationBrowserTest : public MediaRouterBaseBrowserTest {
 
   // Returns the active WebContents for the current window.
   content::WebContents* GetActiveWebContents();
-
-  // Sets the MediaRouterFileDialog to act like a valid file was selected on
-  // opening the dialog.
-  void FileDialogSelectsFile(GURL file_url);
-
-  // Sets the MediaRouterFileDialog to act like a bad file was selected on
-  // opening the dialog.
-  void FileDialogSelectFails(const IssueInfo& issue);
 
   // Runs a basic test in which a presentation is created through the
   // MediaRouter dialog, then terminated.

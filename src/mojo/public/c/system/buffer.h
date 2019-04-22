@@ -31,7 +31,7 @@ struct MOJO_ALIGNAS(8) MojoCreateSharedBufferOptions {
   MojoCreateSharedBufferFlags flags;
 };
 MOJO_STATIC_ASSERT(MOJO_ALIGNOF(int64_t) <= 8, "int64_t has weird alignment");
-MOJO_STATIC_ASSERT(sizeof(MojoCreateSharedBufferOptions) == 8,
+MOJO_STATIC_ASSERT(sizeof(struct MojoCreateSharedBufferOptions) == 8,
                    "MojoCreateSharedBufferOptions has wrong size");
 
 // Flags passed to |MojoGetBufferInfo()| via |MojoGetBufferInfoOptions|. See
@@ -49,7 +49,7 @@ struct MOJO_ALIGNAS(8) MojoGetBufferInfoOptions {
   // See |MojoGetBufferInfoFlags|.
   MojoGetBufferInfoFlags flags;
 };
-MOJO_STATIC_ASSERT(sizeof(MojoGetBufferInfoOptions) == 8,
+MOJO_STATIC_ASSERT(sizeof(struct MojoGetBufferInfoOptions) == 8,
                    "MojoSharedBufferOptions has wrong size");
 
 // Structure used to receive information about a shared buffer via
@@ -61,7 +61,7 @@ struct MOJO_ALIGNAS(8) MojoSharedBufferInfo {
   // The size of the shared buffer.
   uint64_t size;
 };
-MOJO_STATIC_ASSERT(sizeof(MojoSharedBufferInfo) == 16,
+MOJO_STATIC_ASSERT(sizeof(struct MojoSharedBufferInfo) == 16,
                    "MojoSharedBufferInfo has wrong size");
 
 // Flags passed to |MojoDuplicateBufferHandle()| via
@@ -92,7 +92,7 @@ struct MojoDuplicateBufferHandleOptions {
   // See |MojoDuplicateBufferHandleFlags|.
   MojoDuplicateBufferHandleFlags flags;
 };
-MOJO_STATIC_ASSERT(sizeof(MojoDuplicateBufferHandleOptions) == 8,
+MOJO_STATIC_ASSERT(sizeof(struct MojoDuplicateBufferHandleOptions) == 8,
                    "MojoDuplicateBufferHandleOptions has wrong size");
 
 // Flags passed to |MojoMapBuffer()| via |MojoMapBufferOptions|. See values
@@ -110,7 +110,7 @@ struct MojoMapBufferOptions {
   // See |MojoMapBufferFlags|.
   MojoMapBufferFlags flags;
 };
-MOJO_STATIC_ASSERT(sizeof(MojoMapBufferOptions) == 8,
+MOJO_STATIC_ASSERT(sizeof(struct MojoMapBufferOptions) == 8,
                    "MojoMapBufferOptions has wrong size");
 
 #ifdef __cplusplus

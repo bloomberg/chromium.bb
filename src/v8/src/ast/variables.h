@@ -6,6 +6,7 @@
 #define V8_AST_VARIABLES_H_
 
 #include "src/ast/ast-value-factory.h"
+#include "src/base/threaded-list.h"
 #include "src/globals.h"
 #include "src/zone/zone.h"
 
@@ -59,7 +60,7 @@ class Variable final : public ZoneObject {
     return ForceContextAllocationField::decode(bit_field_);
   }
   void ForceContextAllocation() {
-    DCHECK(IsUnallocated() || IsContextSlot() ||
+    DCHECK(IsUnallocated() || IsContextSlot() || IsLookupSlot() ||
            location() == VariableLocation::MODULE);
     bit_field_ = ForceContextAllocationField::update(bit_field_, true);
   }
@@ -136,6 +137,11 @@ class Variable final : public ZoneObject {
     return kind() == SLOPPY_FUNCTION_NAME_VARIABLE;
   }
 
+  bool is_parameter() const { return kind() == PARAMETER_VARIABLE; }
+  bool is_sloppy_block_function() {
+    return kind() == SLOPPY_BLOCK_FUNCTION_VARIABLE;
+  }
+
   Variable* local_if_not_shadowed() const {
     DCHECK(mode() == VariableMode::kDynamicLocal &&
            local_if_not_shadowed_ != nullptr);
@@ -172,6 +178,13 @@ class Variable final : public ZoneObject {
     bit_field_ = LocationField::update(bit_field_, location);
     DCHECK_EQ(location, this->location());
     index_ = index;
+  }
+
+  void MakeParameterNonSimple() {
+    DCHECK(is_parameter());
+    bit_field_ = VariableModeField::update(bit_field_, VariableMode::kLet);
+    bit_field_ =
+        InitializationFlagField::update(bit_field_, kNeedsInitialization);
   }
 
   static InitializationFlag DefaultInitializationFlag(VariableMode mode) {

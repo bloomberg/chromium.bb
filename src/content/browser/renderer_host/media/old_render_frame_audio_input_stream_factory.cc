@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
@@ -31,7 +32,8 @@ void CheckPermissionAndGetSaltAndOrigin(
   // Check permissions for everything but the default device
   if (!media::AudioDeviceDescription::IsDefaultDevice(output_device_id) &&
       !MediaDevicesPermissionChecker().CheckPermissionOnUIThread(
-          MEDIA_DEVICE_TYPE_AUDIO_OUTPUT, render_process_id, render_frame_id)) {
+          blink::MEDIA_DEVICE_TYPE_AUDIO_OUTPUT, render_process_id,
+          render_frame_id)) {
     // If we're not allowed to use the device, don't call |cb|.
     return;
   }
@@ -47,7 +49,7 @@ void OldEnumerateOutputDevices(
     const MediaDeviceSaltAndOrigin& salt_and_origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   MediaDevicesManager::BoolDeviceTypes device_types;
-  device_types[MEDIA_DEVICE_TYPE_AUDIO_OUTPUT] = true;
+  device_types[blink::MEDIA_DEVICE_TYPE_AUDIO_OUTPUT] = true;
   media_devices_manager->EnumerateDevices(device_types,
                                           base::BindOnce(cb, salt_and_origin));
 }
@@ -215,7 +217,8 @@ void OldRenderFrameAudioInputStreamFactory::TranslateAndSetOutputDeviceForAec(
     const MediaDeviceEnumeration& device_array) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   std::string raw_output_device_id;
-  for (const auto& device_info : device_array[MEDIA_DEVICE_TYPE_AUDIO_OUTPUT]) {
+  for (const auto& device_info :
+       device_array[blink::MEDIA_DEVICE_TYPE_AUDIO_OUTPUT]) {
     if (MediaStreamManager::DoesMediaDeviceIDMatchHMAC(
             salt_and_origin.device_id_salt, salt_and_origin.origin,
             output_device_id, device_info.device_id)) {

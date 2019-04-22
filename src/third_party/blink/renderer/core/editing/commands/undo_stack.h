@@ -47,8 +47,6 @@ class UndoStack final : public GarbageCollected<UndoStack> {
   using UndoStepStack = HeapDeque<Member<UndoStep>>;
 
  public:
-  static UndoStack* Create();
-
   UndoStack();
 
   void RegisterUndoStep(UndoStep*);
@@ -75,7 +73,7 @@ class UndoStack final : public GarbageCollected<UndoStack> {
 
   UndoStepRange UndoSteps() const;
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   bool in_redo_;

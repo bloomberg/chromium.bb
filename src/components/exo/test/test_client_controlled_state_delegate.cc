@@ -6,6 +6,7 @@
 
 #include "ash/public/interfaces/window_state_type.mojom.h"
 #include "ash/wm/window_state.h"
+#include "base/bind.h"
 #include "components/exo/client_controlled_shell_surface.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -83,7 +84,7 @@ void TestClientControlledStateDelegate::InstallFactory() {
         return base::WrapUnique<ash::wm::ClientControlledState::Delegate>(
             new TestClientControlledStateDelegate());
       }));
-};
+}
 
 // static
 void TestClientControlledStateDelegate::UninstallFactory() {

@@ -4,13 +4,14 @@
 
 #include <stddef.h>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/shill_manager_client.h"
+#include "chromeos/dbus/shill/shill_clients.h"
+#include "chromeos/dbus/shill/shill_manager_client.h"
 #include "chromeos/geolocation/simple_geolocation_provider.h"
 #include "chromeos/geolocation/simple_geolocation_request_test_monitor.h"
 #include "chromeos/network/geolocation_handler.h"
@@ -272,8 +273,7 @@ TEST_F(SimpleGeolocationTest, InvalidResponse) {
 }
 
 TEST_F(SimpleGeolocationTest, NoWiFi) {
-  // This initializes DBusThreadManager and markes it "for tests only".
-  DBusThreadManager::GetSetterForTesting();
+  shill_clients::InitializeFakes();
   NetworkHandler::Initialize();
 
   WirelessTestMonitor requests_monitor;
@@ -300,7 +300,7 @@ TEST_F(SimpleGeolocationTest, NoWiFi) {
   EXPECT_EQ(1U, url_factory.attempts());
 
   NetworkHandler::Shutdown();
-  DBusThreadManager::Shutdown();
+  shill_clients::Shutdown();
 }
 
 // Test sending of WiFi Access points and Cell Towers.
@@ -312,11 +312,9 @@ class SimpleGeolocationWirelessTest : public ::testing::TestWithParam<bool> {
   ~SimpleGeolocationWirelessTest() override = default;
 
   void SetUp() override {
-    // This initializes DBusThreadManager and markes it "for tests only".
-    DBusThreadManager::GetSetterForTesting();
+    shill_clients::InitializeFakes();
     // Get the test interface for manager / device.
-    manager_test_ =
-        DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface();
+    manager_test_ = ShillManagerClient::Get()->GetTestInterface();
     ASSERT_TRUE(manager_test_);
     geolocation_handler_.reset(new GeolocationHandler());
     geolocation_handler_->Init();
@@ -325,7 +323,7 @@ class SimpleGeolocationWirelessTest : public ::testing::TestWithParam<bool> {
 
   void TearDown() override {
     geolocation_handler_.reset();
-    DBusThreadManager::Shutdown();
+    shill_clients::Shutdown();
   }
 
   bool GetWifiAccessPoints() {
@@ -342,8 +340,8 @@ class SimpleGeolocationWirelessTest : public ::testing::TestWithParam<bool> {
     base::DictionaryValue properties;
     std::string mac_address =
         base::StringPrintf("%02X:%02X:%02X:%02X:%02X:%02X", idx, 0, 0, 0, 0, 0);
-    std::string channel = base::IntToString(idx);
-    std::string strength = base::IntToString(idx * 10);
+    std::string channel = base::NumberToString(idx);
+    std::string strength = base::NumberToString(idx * 10);
     properties.SetKey(shill::kGeoMacAddressProperty, base::Value(mac_address));
     properties.SetKey(shill::kGeoChannelProperty, base::Value(channel));
     properties.SetKey(shill::kGeoSignalStrengthProperty, base::Value(strength));
@@ -355,10 +353,10 @@ class SimpleGeolocationWirelessTest : public ::testing::TestWithParam<bool> {
   // This should remain in sync with the format of shill (chromeos) dict entries
   void AddCellTower(int idx) {
     base::DictionaryValue properties;
-    std::string ci = base::IntToString(idx);
-    std::string lac = base::IntToString(idx * 3);
-    std::string mcc = base::IntToString(idx * 100);
-    std::string mnc = base::IntToString(idx * 100 + 1);
+    std::string ci = base::NumberToString(idx);
+    std::string lac = base::NumberToString(idx * 3);
+    std::string mcc = base::NumberToString(idx * 100);
+    std::string mnc = base::NumberToString(idx * 100 + 1);
 
     properties.SetKey(shill::kGeoCellIdProperty, base::Value(ci));
     properties.SetKey(shill::kGeoLocationAreaCodeProperty, base::Value(lac));
@@ -395,6 +393,7 @@ TEST_P(SimpleGeolocationWirelessTest, WiFiExists) {
           &url_factory),
       GURL(kTestGeolocationProviderUrl));
   url_factory.SetSimpleGeolocationProvider(&provider);
+  provider.set_geolocation_handler(geolocation_handler_.get());
   {
     GeolocationReceiver receiver;
     provider.RequestGeolocation(base::TimeDelta::FromSeconds(1), GetParam(),
@@ -446,9 +445,9 @@ TEST_P(SimpleGeolocationWirelessTest, WiFiExists) {
 }
 
 // This test verifies that WiFi data is sent only if sending was requested.
-INSTANTIATE_TEST_CASE_P(EnableDisableSendingWifiData,
-                        SimpleGeolocationWirelessTest,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(EnableDisableSendingWifiData,
+                         SimpleGeolocationWirelessTest,
+                         testing::Bool());
 
 TEST_P(SimpleGeolocationWirelessTest, CellularExists) {
   NetworkHandler::Initialize();
@@ -464,6 +463,7 @@ TEST_P(SimpleGeolocationWirelessTest, CellularExists) {
           &url_factory),
       GURL(kTestGeolocationProviderUrl));
   url_factory.SetSimpleGeolocationProvider(&provider);
+  provider.set_geolocation_handler(geolocation_handler_.get());
   {
     GeolocationReceiver receiver;
     provider.RequestGeolocation(base::TimeDelta::FromSeconds(1), false,
@@ -487,7 +487,7 @@ TEST_P(SimpleGeolocationWirelessTest, CellularExists) {
   EXPECT_TRUE(GetCellTowers());
   ASSERT_EQ(1u, cell_towers_.size());
   EXPECT_EQ(kCellTower1MNC, cell_towers_[0].mnc);
-  EXPECT_EQ(base::IntToString(1), cell_towers_[0].ci);
+  EXPECT_EQ(base::NumberToString(1), cell_towers_[0].ci);
 
   {
     GeolocationReceiver receiver;

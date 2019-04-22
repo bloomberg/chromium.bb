@@ -18,6 +18,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "net/base/net_errors.h"
 #include "net/proxy_resolution/proxy_info.h"
 #include "services/network/public/mojom/proxy_lookup_client.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -155,7 +156,7 @@ TEST_F(PepperProxyLookupHelperTest, Success) {
   StartLookup();
   net::ProxyInfo proxy_info_response;
   proxy_info_response.UseNamedProxy("result:80");
-  ClaimProxyLookupClient()->OnProxyLookupComplete(proxy_info_response);
+  ClaimProxyLookupClient()->OnProxyLookupComplete(net::OK, proxy_info_response);
   WaitForLookupCompletion();
   ASSERT_TRUE(proxy_info());
   EXPECT_EQ("PROXY result:80", proxy_info()->ToPacString());
@@ -165,7 +166,8 @@ TEST_F(PepperProxyLookupHelperTest, Success) {
 // through the ProxyLookupClient API.
 TEST_F(PepperProxyLookupHelperTest, Failure) {
   StartLookup();
-  ClaimProxyLookupClient()->OnProxyLookupComplete(base::nullopt);
+  ClaimProxyLookupClient()->OnProxyLookupComplete(net::ERR_FAILED,
+                                                  base::nullopt);
   WaitForLookupCompletion();
   EXPECT_FALSE(proxy_info());
 }

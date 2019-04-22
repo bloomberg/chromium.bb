@@ -58,6 +58,11 @@ bool IsSecondaryUser() {
          !session_controller->IsUserPrimary();
 }
 
+bool IsWifiEnabled() {
+  return NetworkHandler::Get()->network_state_handler()->IsTechnologyEnabled(
+      chromeos::NetworkTypePattern::WiFi());
+}
+
 }  // namespace
 
 // A bubble which displays network info.
@@ -133,8 +138,7 @@ class InfoThrobberLayout : public views::LayoutManager {
   void Layout(views::View* host) override {
     gfx::Size max_size(GetMaxChildSize(host));
     // Center each child view within |max_size|.
-    for (int i = 0; i < host->child_count(); ++i) {
-      views::View* child = host->child_at(i);
+    for (auto* child : host->children()) {
       if (!child->visible())
         continue;
       gfx::Size child_size = child->GetPreferredSize();
@@ -156,16 +160,12 @@ class InfoThrobberLayout : public views::LayoutManager {
 
  private:
   gfx::Size GetMaxChildSize(const views::View* host) const {
-    int width = 0, height = 0;
-    for (int i = 0; i < host->child_count(); ++i) {
-      const views::View* child = host->child_at(i);
-      if (!child->visible())
-        continue;
-      gfx::Size child_size = child->GetPreferredSize();
-      width = std::max(width, child_size.width());
-      height = std::max(height, child_size.width());
+    gfx::Size max_size;
+    for (const auto* child : host->children()) {
+      if (child->visible())
+        max_size.SetToMax(child->GetPreferredSize());
     }
-    return gfx::Size(width, height);
+    return max_size;
   }
 
   DISALLOW_COPY_AND_ASSIGN(InfoThrobberLayout);
@@ -194,6 +194,7 @@ NetworkStateListDetailedView::~NetworkStateListDetailedView() {
 void NetworkStateListDetailedView::Update() {
   UpdateNetworkList();
   UpdateHeaderButtons();
+  UpdateScanningBar();
   Layout();
 }
 
@@ -209,8 +210,8 @@ void NetworkStateListDetailedView::Init() {
 
   Update();
 
-  if (list_type_ == LIST_TYPE_NETWORK)
-    CallRequestScan();
+  if (list_type_ == LIST_TYPE_NETWORK && IsWifiEnabled())
+    ScanAndStartTimer();
 }
 
 void NetworkStateListDetailedView::HandleButtonPressed(views::Button* sender,
@@ -238,11 +239,13 @@ void NetworkStateListDetailedView::HandleViewClicked(views::View* view) {
       NetworkHandler::Get()->network_state_handler()->GetNetworkStateFromGuid(
           guid);
   bool can_connect = network && !network->IsConnectingOrConnected();
-  if (network->IsDefaultCellular())
-    can_connect = false;  // Default Cellular network is not connectable.
-  if (!network->connectable() && IsSecondaryUser()) {
-    // Secondary users can only connect to fully configured networks.
-    can_connect = false;
+  if (network) {
+    if (network->IsDefaultCellular())
+      can_connect = false;  // Default Cellular network is not connectable.
+    if (!network->connectable() && IsSecondaryUser()) {
+      // Secondary users can only connect to fully configured networks.
+      can_connect = false;
+    }
   }
   if (can_connect) {
     Shell::Get()->metrics()->RecordUserMetricsAction(
@@ -298,13 +301,25 @@ void NetworkStateListDetailedView::UpdateHeaderButtons() {
           Shell::Get()->session_controller()->ShouldEnableSettings());
     }
   }
-  if (list_type_ == LIST_TYPE_NETWORK) {
-    NetworkStateHandler* network_state_handler =
-        NetworkHandler::Get()->network_state_handler();
-    const bool scanning = network_state_handler->GetScanningByType(
-        NetworkTypePattern::WiFi() | NetworkTypePattern::Tether());
-    ShowProgress(-1, scanning);
-  }
+}
+
+void NetworkStateListDetailedView::UpdateScanningBar() {
+  if (list_type_ != LIST_TYPE_NETWORK)
+    return;
+
+  bool is_wifi_enabled = IsWifiEnabled();
+  if (is_wifi_enabled && !network_scan_repeating_timer_.IsRunning())
+    ScanAndStartTimer();
+
+  if (!is_wifi_enabled && network_scan_repeating_timer_.IsRunning())
+    network_scan_repeating_timer_.Stop();
+
+  const bool scanning_bar_visible =
+      is_wifi_enabled &&
+      NetworkHandler::Get()->network_state_handler()->GetScanningByType(
+          NetworkTypePattern::WiFi() | NetworkTypePattern::Tether());
+
+  ShowProgress(-1, scanning_bar_visible);
 }
 
 void NetworkStateListDetailedView::ToggleInfoBubble() {
@@ -380,15 +395,20 @@ views::View* NetworkStateListDetailedView::CreateNetworkInfoView() {
   return label;
 }
 
+void NetworkStateListDetailedView::ScanAndStartTimer() {
+  CallRequestScan();
+  network_scan_repeating_timer_.Start(
+      FROM_HERE, base::TimeDelta::FromSeconds(kRequestScanDelaySeconds), this,
+      &NetworkStateListDetailedView::CallRequestScan);
+}
+
 void NetworkStateListDetailedView::CallRequestScan() {
+  if (!IsWifiEnabled())
+    return;
+
   VLOG(1) << "Requesting Network Scan.";
   NetworkHandler::Get()->network_state_handler()->RequestScan(
       NetworkTypePattern::WiFi() | NetworkTypePattern::Tether());
-  // Periodically request a scan while this UI is open.
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&NetworkStateListDetailedView::CallRequestScan, AsWeakPtr()),
-      base::TimeDelta::FromSeconds(kRequestScanDelaySeconds));
 }
 
 }  // namespace tray

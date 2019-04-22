@@ -12,15 +12,17 @@ import android.support.annotation.CallSuper;
 import android.view.View;
 import android.widget.ImageView;
 
+import org.chromium.chrome.browser.download.home.filter.Filters;
 import org.chromium.chrome.browser.download.home.list.ListItem;
 import org.chromium.chrome.browser.download.home.list.ListProperties;
 import org.chromium.chrome.browser.download.home.list.view.AsyncImageView;
+import org.chromium.chrome.browser.download.home.metrics.UmaUtils;
 import org.chromium.chrome.browser.download.home.view.SelectionView;
-import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.browser.widget.ListMenuButton;
 import org.chromium.chrome.download.R;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemVisuals;
+import org.chromium.ui.modelutil.PropertyModel;
 
 /**
  * Helper that supports all typical actions for OfflineItems.
@@ -37,6 +39,10 @@ class OfflineItemViewHolder extends ListItemViewHolder implements ListMenuButton
     // Persisted 'More' button properties.
     private Runnable mShareCallback;
     private Runnable mDeleteCallback;
+    private Runnable mRenameCallback;
+
+    // flag to hide rename list menu option for offline pages
+    private boolean mCanRename;
 
     /**
      * Creates a new instance of a {@link MoreButtonViewHolder}.
@@ -77,6 +83,10 @@ class OfflineItemViewHolder extends ListItemViewHolder implements ListMenuButton
             mDeleteCallback =
                     () -> properties.get(ListProperties.CALLBACK_REMOVE).onResult(offlineItem);
 
+            if (properties.get(ListProperties.CALLBACK_RENAME) != null) {
+                mRenameCallback =
+                        () -> properties.get(ListProperties.CALLBACK_RENAME).onResult(offlineItem);
+            }
             mMore.setClickable(!properties.get(ListProperties.SELECTION_MODE_ACTIVE));
         }
 
@@ -89,7 +99,8 @@ class OfflineItemViewHolder extends ListItemViewHolder implements ListMenuButton
 
         // Push 'thumbnail' state.
         if (mThumbnail != null) {
-            mThumbnail.setImageResizer(new BitmapResizer(mThumbnail));
+            mThumbnail.setImageResizer(
+                    new BitmapResizer(mThumbnail, Filters.fromOfflineItem(offlineItem)));
             mThumbnail.setAsyncImageDrawable((consumer, width, height) -> {
                 return properties.get(ListProperties.PROVIDER_VISUALS)
                         .getVisuals(offlineItem, width, height, (id, visuals) -> {
@@ -97,6 +108,8 @@ class OfflineItemViewHolder extends ListItemViewHolder implements ListMenuButton
                         });
             }, offlineItem.id);
         }
+
+        mCanRename = mRenameCallback != null && offlineItem.canRename;
     }
 
     @Override
@@ -123,9 +136,16 @@ class OfflineItemViewHolder extends ListItemViewHolder implements ListMenuButton
     // ListMenuButton.Delegate implementation.
     @Override
     public ListMenuButton.Item[] getItems() {
-        return new ListMenuButton.Item[] {
-                new ListMenuButton.Item(itemView.getContext(), R.string.share, true),
-                new ListMenuButton.Item(itemView.getContext(), R.string.delete, true)};
+        if (mCanRename) {
+            return new ListMenuButton.Item[] {
+                    new ListMenuButton.Item(itemView.getContext(), R.string.share, true),
+                    new ListMenuButton.Item(itemView.getContext(), R.string.rename, true),
+                    new ListMenuButton.Item(itemView.getContext(), R.string.delete, true)};
+        } else {
+            return new ListMenuButton.Item[] {
+                    new ListMenuButton.Item(itemView.getContext(), R.string.share, true),
+                    new ListMenuButton.Item(itemView.getContext(), R.string.delete, true)};
+        }
     }
 
     @Override
@@ -134,6 +154,8 @@ class OfflineItemViewHolder extends ListItemViewHolder implements ListMenuButton
             if (mShareCallback != null) mShareCallback.run();
         } else if (item.getTextId() == R.string.delete) {
             if (mDeleteCallback != null) mDeleteCallback.run();
+        } else if (item.getTextId() == R.string.rename) {
+            if (mRenameCallback != null) mRenameCallback.run();
         }
     }
 
@@ -154,9 +176,12 @@ class OfflineItemViewHolder extends ListItemViewHolder implements ListMenuButton
 
         private ImageView mImageView;
 
+        private @Filters.FilterType int mFilter;
+
         /** Constructor. */
-        public BitmapResizer(ImageView imageView) {
+        public BitmapResizer(ImageView imageView, @Filters.FilterType int filter) {
             mImageView = imageView;
+            mFilter = filter;
         }
 
         @Override
@@ -192,6 +217,7 @@ class OfflineItemViewHolder extends ListItemViewHolder implements ListMenuButton
             float widthRatio = (float) mImageView.getWidth() / bitmap.getWidth();
             float heightRatio = (float) mImageView.getHeight() / bitmap.getHeight();
 
+            UmaUtils.recordImageViewRequiredStretch(widthRatio, heightRatio, mFilter);
             if (Math.max(widthRatio, heightRatio) < IMAGE_VIEW_MAX_SCALE_FACTOR) return 1.f;
 
             float minRequiredScale = Math.min(widthRatio, heightRatio);

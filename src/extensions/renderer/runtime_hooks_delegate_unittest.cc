@@ -431,15 +431,14 @@ TEST_F(RuntimeHooksDelegateNativeMessagingTest, SendNativeMessage) {
                                        expected_target, kEmptyExpectedChannel,
                                        kExpectedIncludeTlsChannelId));
     Message message(expected_message, false);
-    EXPECT_CALL(
-        *ipc_message_sender(),
-        SendPostMessageToPort(MSG_ROUTING_NONE, expected_port_id, message));
+    EXPECT_CALL(*ipc_message_sender(),
+                SendPostMessageToPort(expected_port_id, message));
     // Note: we don't close native message ports immediately. See comment in
     // OneTimeMessageSender.
     // if (expected_port_status == CLOSED) {
     //   EXPECT_CALL(
     //       *ipc_message_sender(),
-    //       SendCloseMessagePort(MSG_ROUTING_NONE, expected_port_id, true));
+    //       SendCloseMessagePort(expected_port_id, true));
     // }
     v8::Local<v8::Function> send_message = FunctionFromString(
         context, base::StringPrintf(kSendMessageTemplate, args));

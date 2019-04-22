@@ -95,10 +95,9 @@ class VIZ_HOST_EXPORT HostGpuMemoryBufferManager
     gpu::SurfaceHandle surface_handle;
     base::OnceCallback<void(gfx::GpuMemoryBufferHandle)> callback;
   };
-  using PendingBuffers =
-      std::unordered_map<gfx::GpuMemoryBufferId,
-                         PendingBufferInfo,
-                         BASE_HASH_NAMESPACE::hash<gfx::GpuMemoryBufferId>>;
+  using PendingBuffers = std::unordered_map<gfx::GpuMemoryBufferId,
+                                            PendingBufferInfo,
+                                            std::hash<gfx::GpuMemoryBufferId>>;
 
   struct AllocatedBufferInfo {
     AllocatedBufferInfo();
@@ -111,7 +110,7 @@ class VIZ_HOST_EXPORT HostGpuMemoryBufferManager
   using AllocatedBuffers =
       std::unordered_map<gfx::GpuMemoryBufferId,
                          AllocatedBufferInfo,
-                         BASE_HASH_NAMESPACE::hash<gfx::GpuMemoryBufferId>>;
+                         std::hash<gfx::GpuMemoryBufferId>>;
 
   mojom::GpuService* GetGpuService();
 

@@ -7,7 +7,7 @@
   await TestRunner.loadModule('network_test_runner');
   await TestRunner.showPanel('network');
 
-  const dataUrl = `data:text/html,<body><p>hello world!<p>%3Cp%3EURI%20encoded%20tag!%3C%2Fp%3E</body>`;
+  const dataUrl = `data:text/html,<body><p>octothorp: #</p><p>hello world!<p>%3Cp%3EURI%20encoded%20tag!%3C%2Fp%3E</body>`;
   const requestHtmlView = new Network.RequestHTMLView(dataUrl);
   requestHtmlView.wasShown();
   const iframe = requestHtmlView.contentElement.firstChild;

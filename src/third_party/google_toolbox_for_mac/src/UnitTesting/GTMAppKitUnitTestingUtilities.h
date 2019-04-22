@@ -71,8 +71,10 @@
 // Return YES if the runloop was stopped because [context shouldStop] returned
 // YES.
 - (BOOL)gtm_runUntilDate:(NSDate *)date
-                 context:(id<GTMUnitTestingRunLoopContext>)context;
+                 context:(id<GTMUnitTestingRunLoopContext>)context
+    NS_DEPRECATED(10_4, 10_8, 1_0, 7_0, "Please move to XCTestExpectations");
 
 // Calls -gtm_runUntilDate:context: with the timeout date set to 60 seconds.
-- (BOOL)gtm_runUpToSixtySecondsWithContext:(id<GTMUnitTestingRunLoopContext>)context;
+- (BOOL)gtm_runUpToSixtySecondsWithContext:(id<GTMUnitTestingRunLoopContext>)context
+    NS_DEPRECATED(10_4, 10_8, 1_0, 7_0, "Please move to XCTestExpectations");
 @end

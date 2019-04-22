@@ -20,7 +20,6 @@ namespace blink {
 class ComputedStyle;
 class NGInlineBreakToken;
 class NGPhysicalFragment;
-struct NGPositionedFloat;
 
 class CORE_EXPORT NGLineBoxFragmentBuilder final
     : public NGContainerFragmentBuilder {
@@ -29,10 +28,14 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
  public:
   NGLineBoxFragmentBuilder(NGInlineNode node,
                            scoped_refptr<const ComputedStyle> style,
+                           const NGConstraintSpace* space,
                            WritingMode writing_mode,
                            TextDirection)
-      : NGContainerFragmentBuilder(style, writing_mode, TextDirection::kLtr),
-        node_(node),
+      : NGContainerFragmentBuilder(node,
+                                   style,
+                                   space,
+                                   writing_mode,
+                                   TextDirection::kLtr),
         line_box_type_(NGPhysicalLineBoxFragment::kNormalLineBox),
         base_direction_(TextDirection::kLtr) {}
 
@@ -52,10 +55,6 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
     base_direction_ = direction;
   }
 
-  void SwapPositionedFloats(Vector<NGPositionedFloat>* positioned_floats) {
-    positioned_floats_.swap(*positioned_floats);
-  }
-
   // Set the break token for the fragment to build.
   // A finished break token will be attached if not set.
   void SetBreakToken(scoped_refptr<NGInlineBreakToken> break_token) {
@@ -67,13 +66,16 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
   struct Child {
     DISALLOW_NEW();
 
-    scoped_refptr<NGLayoutResult> layout_result;
+    scoped_refptr<const NGLayoutResult> layout_result;
     scoped_refptr<const NGPhysicalFragment> fragment;
     LayoutObject* out_of_flow_positioned_box = nullptr;
-    LayoutObject* out_of_flow_containing_box = nullptr;
+    LayoutObject* unpositioned_float = nullptr;
     // The offset of the border box, initially in this child coordinate system.
     // |ComputeInlinePositions()| converts it to the offset within the line box.
     NGLogicalOffset offset;
+    // The offset of a positioned float wrt. the root BFC. This should only be
+    // set for positioned floats.
+    NGBfcOffset bfc_offset;
     // The inline size of the margin box.
     LayoutUnit inline_size;
     LayoutUnit margin_line_left;
@@ -81,6 +83,8 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
     // |UpdateAfterReorder()| to track children of boxes across BiDi reorder.
     unsigned box_data_index = 0;
     UBiDiLevel bidi_level = 0xff;
+    // The current text direction for OOF positioned items.
+    TextDirection container_direction = TextDirection::kLtr;
 
     // Empty constructor needed for |resize()|.
     Child() = default;
@@ -91,7 +95,7 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
     // bidi level and affects bidi reordering.
     Child(UBiDiLevel bidi_level) : bidi_level(bidi_level) {}
     // Create an in-flow |NGLayoutResult|.
-    Child(scoped_refptr<NGLayoutResult> layout_result,
+    Child(scoped_refptr<const NGLayoutResult> layout_result,
           NGLogicalOffset offset,
           LayoutUnit inline_size,
           UBiDiLevel bidi_level)
@@ -118,13 +122,31 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
           bidi_level(bidi_level) {}
     // Create an out-of-flow positioned object.
     Child(LayoutObject* out_of_flow_positioned_box,
-          LayoutObject* out_of_flow_containing_box,
-          UBiDiLevel bidi_level)
+          UBiDiLevel bidi_level,
+          TextDirection container_direction)
         : out_of_flow_positioned_box(out_of_flow_positioned_box),
-          out_of_flow_containing_box(out_of_flow_containing_box),
+          bidi_level(bidi_level),
+          container_direction(container_direction) {}
+    // Create an unpositioned float.
+    Child(LayoutObject* unpositioned_float, UBiDiLevel bidi_level)
+        : unpositioned_float(unpositioned_float), bidi_level(bidi_level) {}
+    // Create a positioned float.
+    Child(scoped_refptr<const NGLayoutResult> layout_result,
+          NGBfcOffset bfc_offset,
+          UBiDiLevel bidi_level)
+        : layout_result(std::move(layout_result)),
+          bfc_offset(bfc_offset),
           bidi_level(bidi_level) {}
 
-    bool HasInFlowFragment() const { return layout_result || fragment; }
+    bool HasInFlowFragment() const {
+      if (fragment)
+        return true;
+
+      if (layout_result && !layout_result->PhysicalFragment()->IsFloating())
+        return true;
+
+      return false;
+    }
     bool HasOutOfFlowFragment() const { return out_of_flow_positioned_box; }
     bool HasFragment() const {
       return HasInFlowFragment() || HasOutOfFlowFragment();
@@ -181,7 +203,7 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
       children_.emplace_back(std::forward<Args>(args)...);
     }
     void InsertChild(unsigned index,
-                     scoped_refptr<NGLayoutResult> layout_result,
+                     scoped_refptr<const NGLayoutResult> layout_result,
                      const NGLogicalOffset& offset,
                      LayoutUnit inline_size,
                      UBiDiLevel bidi_level) {
@@ -201,14 +223,10 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
   void AddChildren(ChildList&);
 
   // Creates the fragment. Can only be called once.
-  scoped_refptr<NGLayoutResult> ToLineBoxFragment();
+  scoped_refptr<const NGLayoutResult> ToLineBoxFragment();
 
  private:
-  NGInlineNode node_;
-
   NGLineHeightMetrics metrics_;
-  Vector<NGPositionedFloat> positioned_floats_;
-
   NGPhysicalLineBoxFragment::NGLineBoxType line_box_type_;
   TextDirection base_direction_;
 
@@ -221,6 +239,6 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
 }  // namespace blink
 
 WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(
-    blink::NGLineBoxFragmentBuilder::Child);
+    blink::NGLineBoxFragmentBuilder::Child)
 
 #endif  // NGLineBoxFragmentBuilder

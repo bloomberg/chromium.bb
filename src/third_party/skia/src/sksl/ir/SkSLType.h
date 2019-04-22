@@ -45,6 +45,7 @@ public:
         kArray_Kind,
         kEnum_Kind,
         kGeneric_Kind,
+        kNullable_Kind,
         kMatrix_Kind,
         kOther_Kind,
         kSampler_Kind,
@@ -115,14 +116,15 @@ public:
     }
 
     // Create a scalar type.
-    Type(const char* name, NumberKind numberKind, int priority)
+    Type(const char* name, NumberKind numberKind, int priority, bool highPrecision = false)
     : INHERITED(-1, kType_Kind, StringFragment())
     , fNameString(name)
     , fTypeKind(kScalar_Kind)
     , fNumberKind(numberKind)
     , fPriority(priority)
     , fColumns(1)
-    , fRows(1) {
+    , fRows(1)
+    , fHighPrecision(highPrecision) {
         fName.fChars = fNameString.c_str();
         fName.fLength = fNameString.size();
     }
@@ -140,6 +142,20 @@ public:
     , fCoercibleTypes(std::move(coercibleTypes))
     , fColumns(1)
     , fRows(1) {
+        fName.fChars = fNameString.c_str();
+        fName.fLength = fNameString.size();
+    }
+
+    // Create a nullable type.
+    Type(String name, Kind kind, const Type& componentType)
+    : INHERITED(-1, kType_Kind, StringFragment())
+    , fNameString(std::move(name))
+    , fTypeKind(kind)
+    , fNumberKind(kNonnumeric_NumberKind)
+    , fComponentType(&componentType)
+    , fColumns(1)
+    , fRows(1)
+    , fDimensions(SpvDim1D) {
         fName.fChars = fNameString.c_str();
         fName.fLength = fNameString.size();
     }
@@ -197,6 +213,12 @@ public:
     }
 
     String description() const override {
+        if (fNameString == "$floatLiteral") {
+            return "float";
+        }
+        if (fNameString == "$intLiteral") {
+            return "int";
+        }
         return fNameString;
     }
 
@@ -283,13 +305,23 @@ public:
     }
 
     /**
+     * For nullable types, returns the base type, otherwise returns the type itself.
+     */
+    const Type& nonnullable() const {
+        if (fTypeKind == kNullable_Kind) {
+            return this->componentType();
+        }
+        return *this;
+    }
+
+    /**
      * For matrices and vectors, returns the number of columns (e.g. both mat3 and float3return 3).
      * For scalars, returns 1. For arrays, returns either the size of the array (if known) or -1.
      * For all other types, causes an SkASSERTion failure.
      */
     int columns() const {
         SkASSERT(fTypeKind == kScalar_Kind || fTypeKind == kVector_Kind ||
-               fTypeKind == kMatrix_Kind || fTypeKind == kArray_Kind);
+                 fTypeKind == kMatrix_Kind || fTypeKind == kArray_Kind);
         return fColumns;
     }
 
@@ -341,6 +373,13 @@ public:
         return fIsSampled;
     }
 
+    bool highPrecision() const {
+        if (fComponentType) {
+            return fComponentType->highPrecision();
+        }
+        return fHighPrecision;
+    }
+
     /**
      * Returns the corresponding vector or matrix type with the specified number of columns and
      * rows.
@@ -365,6 +404,7 @@ private:
     bool fIsArrayed = false;
     bool fIsMultisampled = false;
     bool fIsSampled = false;
+    bool fHighPrecision = false;
 };
 
 } // namespace

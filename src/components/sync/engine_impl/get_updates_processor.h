@@ -43,9 +43,7 @@ class GetUpdatesProcessor {
   // Returns SYNCER_OK if the download succeeds, SERVER_MORE_TO_DOWNLOAD if the
   // download succeeded but there are still some updates left to fetch on the
   // server, or an appropriate error value in case of failure.
-  SyncerError DownloadUpdates(ModelTypeSet* request_types,
-                              SyncCycle* cycle,
-                              bool create_mobile_bookmarks_folder);
+  SyncerError DownloadUpdates(ModelTypeSet* request_types, SyncCycle* cycle);
 
   // Applies any downloaded and processed updates.
   void ApplyUpdates(const ModelTypeSet& gu_types,

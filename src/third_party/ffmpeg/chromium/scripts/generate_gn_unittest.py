@@ -14,6 +14,7 @@ import generate_gn as gg
 from generate_gn import SourceSet, SourceListCondition
 import string
 import unittest
+from os import path
 
 
 class ModuleUnittest(unittest.TestCase):
@@ -374,7 +375,7 @@ class SourceSetUnittest(unittest.TestCase):
             SourceListCondition('arm64', 'Chromium', 'linux'),
             SourceListCondition('arm-neon', 'Chromium', 'linux'),
             SourceListCondition('mipsel', 'Chromium', 'linux'),
-            SourceListCondition('mips64el', 'Chromium', 'linux')
+            SourceListCondition('mips64el', 'Chromium', 'linux'),
         ]))
     gg.ReduceConditionalLogic(a)
 
@@ -387,7 +388,8 @@ class SourceSetUnittest(unittest.TestCase):
         set(['foo.c']),
         set([
             SourceListCondition('ia32', 'Chromium', 'win'),
-            SourceListCondition('x64', 'Chromium', 'win')
+            SourceListCondition('x64', 'Chromium', 'win'),
+            SourceListCondition('arm64', 'Chromium', 'win'),
         ]))
     gg.ReduceConditionalLogic(b)
 
@@ -401,8 +403,10 @@ class SourceSetUnittest(unittest.TestCase):
         set([
             SourceListCondition('ia32', 'Chromium', 'win'),
             SourceListCondition('x64', 'Chromium', 'win'),
+            SourceListCondition('arm64', 'Chromium', 'win'),
             SourceListCondition('ia32', 'Chrome', 'win'),
-            SourceListCondition('x64', 'Chrome', 'win')
+            SourceListCondition('x64', 'Chrome', 'win'),
+            SourceListCondition('arm64', 'Chrome', 'win'),
         ]))
     gg.ReduceConditionalLogic(b)
     expected = set([SourceListCondition('*', '*', 'win')])
@@ -415,7 +419,7 @@ class SourceSetUnittest(unittest.TestCase):
             SourceListCondition('x64', 'Chromium', 'win'),
             SourceListCondition('x64', 'Chromium', 'mac'),
             SourceListCondition('x64', 'Chromium', 'linux'),
-            SourceListCondition('x64', 'Chromium', 'android')
+            SourceListCondition('x64', 'Chromium', 'android'),
         ]))
     gg.ReduceConditionalLogic(c)
     expected = set([SourceListCondition('x64', 'Chromium', '*')])
@@ -425,14 +429,15 @@ class SourceSetUnittest(unittest.TestCase):
     d = SourceSet(
         set(['foo.c']),
         set([
+            SourceListCondition('arm64', 'Chromium', 'win'),
             SourceListCondition('x64', 'Chromium', 'win'),
             SourceListCondition('ia32', 'Chromium', 'win'),
-            SourceListCondition('ia32', 'Chrome', 'win')
+            SourceListCondition('ia32', 'Chrome', 'win'),
         ]))
     gg.ReduceConditionalLogic(d)
     expected = set([
         SourceListCondition('*', 'Chromium', 'win'),
-        SourceListCondition('ia32', '*', 'win')
+        SourceListCondition('ia32', '*', 'win'),
     ])
     self.assertEqualSets(expected, d.conditions)
 
@@ -467,9 +472,12 @@ class SourceSetUnittest(unittest.TestCase):
     # Verify basic rename case - same basename in different directories.
     a = SourceSet(set(['foo.c']), set([SourceListCondition('*', '*', '*')]))
     b = SourceSet(
-        set(['a/foo.c', 'b/foo.c']), set([SourceListCondition('*', '*', '*')]))
-    expected_renames = set([('a/foo.c', 'a/autorename_a_foo.c'),
-                            ('b/foo.c', 'b/autorename_b_foo.c')])
+        set([path.join('a','foo.c'), path.join('b', 'foo.c')]),
+        set([SourceListCondition('*', '*', '*')]))
+    expected_renames = set([(path.join('a', 'foo.c'),
+                             path.join('a', 'autorename_a_foo.c')),
+                            (path.join('b', 'foo.c'),
+                             path.join('b', 'autorename_b_foo.c'))])
     gg.FixObjectBasenameCollisions([a, b], [], do_rename_cb, log_renames=False)
     self.assertEqual(expected_renames, observed_renames)
 
@@ -477,12 +485,13 @@ class SourceSetUnittest(unittest.TestCase):
     observed_renames = set()
     a = SourceSet(set(['foo.c']), set([SourceListCondition('*', '*', '*')]))
     b = SourceSet(set(['foo.asm']), set([SourceListCondition('*', '*', '*')]))
-    c = SourceSet(
-        set(['a/foo.S', 'b/foo.asm']), set([SourceListCondition('*', '*',
-                                                                '*')]))
+    c = SourceSet(set([path.join('a', 'foo.S'), path.join('b', 'foo.asm')]),
+                  set([SourceListCondition('*', '*', '*')]))
     expected_renames = set([('foo.asm', 'autorename_foo.asm'),
-                            ('a/foo.S', 'a/autorename_a_foo.S'),
-                            ('b/foo.asm', 'b/autorename_b_foo.asm')])
+                            (path.join('a', 'foo.S'),
+                             path.join('a', 'autorename_a_foo.S')),
+                            (path.join('b', 'foo.asm'),
+                             path.join('b', 'autorename_b_foo.asm'))])
     gg.FixObjectBasenameCollisions(
         [a, b, c], [], do_rename_cb, log_renames=False)
     self.assertEqual(expected_renames, observed_renames)

@@ -51,17 +51,21 @@ const base::Feature kWebViewConnectionlessSafeBrowsing{
 // Kill switch for feature to call onPageFinished for browser-initiated
 // navigations when the navigation commits.
 const base::Feature kWebViewPageStartedOnCommit{
-    "WebViewPageStartedOnCommit", base::FEATURE_DISABLED_BY_DEFAULT};
+    "WebViewPageStartedOnCommit", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Whether the application package name is logged in UMA.
 const base::Feature kWebViewUmaLogAppPackageName{
     "WebViewUmaLogAppPackageName", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enable raster in wide color gamut for apps that use webview in a wide color
+// gamut activity.
+const base::Feature kWebViewWideColorGamutSupport{
+    "WebViewWideColorGamutSupport", base::FEATURE_ENABLED_BY_DEFAULT};
+
 }  // namespace features
 
 static jboolean JNI_AwFeatureList_IsEnabled(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& jfeature_name) {
   const base::Feature* feature =
       FindFeatureExposedToJava(ConvertJavaStringToUTF8(env, jfeature_name));

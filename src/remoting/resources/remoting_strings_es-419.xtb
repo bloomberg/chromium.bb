@@ -24,6 +24,7 @@ Para obtener más información sobre la privacidad, consulta la política de pri
 <translation id="1520828917794284345">Ajustar el tamaño del escritorio</translation>
 <translation id="154040539590487450">No se pudo iniciar el servicio de acceso remoto.</translation>
 <translation id="1546934824884762070">Se produjo un error inesperado. Informa este problema a los programadores.</translation>
+<translation id="1624185583382384493">Escritorio remoto de Chrome ahora está disponible en la Web. Prueba nuestra <ph name="LINK_BEGIN" />aplicación web<ph name="LINK_END" />; es rápida y gratuita, con más funciones, como la capacidad mejorada de conectarse a varios monitores.</translation>
 <translation id="1643640058022401035">Al abandonar esta página, se cerrará tu sesión en Chromoting.</translation>
 <translation id="1654128982815600832">Habilitando conexiones remotas para esta computadora…</translation>
 <translation id="170207782578677537">No se pudo registrar esta computadora.</translation>
@@ -138,6 +139,7 @@ Para obtener más información sobre la privacidad, consulta la política de pri
 <translation id="3989511127559254552">Para continuar, primero debes extender los permisos de acceso a tu computadora. Solo tienes que hacerlo una vez.</translation>
 <translation id="4006787130661126000">Debes habilitar las conexiones remotas si deseas usar Escritorio remoto de Chrome para acceder a esta computadora.</translation>
 <translation id="405887016757208221">La computadora remota no pudo inicializar la sesión. Si el problema persiste, intenta volver a configurar el host.</translation>
+<translation id="4060747889721220580">Descargar archivo</translation>
 <translation id="4068946408131579958">Todas las conexiones</translation>
 <translation id="409800995205263688">NOTA: La configuración de la política solo permite conexiones entre computadoras que estén dentro de tu red.</translation>
 <translation id="4126409073460786861">Después de completar la configuración, actualiza esta página. Luego, para acceder a la computadora, deberás elegir tu dispositivo y escribir el PIN.</translation>
@@ -242,6 +244,7 @@ Para habilitar esta funcionalidad, selecciona "<ph name="BUTTON_NAME" />". Se mo
 <translation id="6198252989419008588">Cambiar PIN</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (desactualizado)</translation>
 <translation id="6221358653751391898">No accediste a Chrome. Accede y vuelve a intentarlo.</translation>
+<translation id="6227369581881558336">Escritorio remoto de Chrome ahora está disponible en la Web, con nuevas funciones, como la transferencia de archivos. Échale un vistazo a nuestra <ph name="LINK_BEGIN" />aplicación web<ph name="LINK_END" />.</translation>
 <translation id="6284412385303060032">Se cerró el host que se ejecuta en la pantalla de acceso de la consola para poder admitir el modo de cortina. Por lo tanto, se cambió a un host que se ejecuta en una sesión específica de usuario.</translation>
 <translation id="629730747756840877">Cuenta</translation>
 <translation id="6304318647555713317">Cliente</translation>
@@ -289,7 +292,6 @@ Para habilitar esta funcionalidad, selecciona "<ph name="BUTTON_NAME" />". Se mo
 <translation id="7434397035092923453">Acceso rechazado para cliente: <ph name="CLIENT_USERNAME" /></translation>
 <translation id="7444276978508498879">Cliente conectado: <ph name="CLIENT_USERNAME" /></translation>
 <translation id="7526139040829362392">Cambiar cuenta</translation>
-<translation id="7589941250119944644">Escritorio remoto de Chrome llega a la Web. Prueba nuestra <ph name="LINK_BEGIN" />app web<ph name="LINK_END" />. Es rápida y gratuita, y cuenta con las mismas funciones que antes.</translation>
 <translation id="7606912958770842224">Habilitar conexiones remotas</translation>
 <translation id="7628469622942688817">Recordar mi PIN en este dispositivo</translation>
 <translation id="7649070708921625228">Ayuda</translation>

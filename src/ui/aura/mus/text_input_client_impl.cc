@@ -20,19 +20,22 @@ namespace {
 // event was handled.
 void OnKeyEventProcessed(
     ws::mojom::TextInputClient::DispatchKeyEventPostIMECallback callback,
-    bool handled) {
+    bool handled,
+    bool stopped_propagation) {
   if (callback)
-    std::move(callback).Run(handled);
+    std::move(callback).Run(handled, stopped_propagation);
 }
 
 }  // namespace
 
 TextInputClientImpl::TextInputClientImpl(
     ui::TextInputClient* text_input_client,
-    ui::internal::InputMethodDelegate* delegate)
+    ui::internal::InputMethodDelegate* delegate,
+    OnClientDataChangedCallback on_client_data_changed)
     : text_input_client_(text_input_client),
       binding_(this),
-      delegate_(delegate) {}
+      delegate_(delegate),
+      on_client_data_changed_(std::move(on_client_data_changed)) {}
 
 TextInputClientImpl::~TextInputClientImpl() = default;
 
@@ -42,34 +45,48 @@ ws::mojom::TextInputClientPtr TextInputClientImpl::CreateInterfacePtrAndBind() {
   return ptr;
 }
 
+void TextInputClientImpl::NotifyClientDataChanged() {
+  if (!on_client_data_changed_)
+    return;
+
+  on_client_data_changed_.Run(text_input_client_);
+}
+
 void TextInputClientImpl::SetCompositionText(
     const ui::CompositionText& composition) {
   text_input_client_->SetCompositionText(composition);
+  NotifyClientDataChanged();
 }
 
 void TextInputClientImpl::ConfirmCompositionText() {
   text_input_client_->ConfirmCompositionText();
+  NotifyClientDataChanged();
 }
 
 void TextInputClientImpl::ClearCompositionText() {
   text_input_client_->ClearCompositionText();
+  NotifyClientDataChanged();
 }
 
 void TextInputClientImpl::InsertText(const base::string16& text) {
   text_input_client_->InsertText(text);
+  NotifyClientDataChanged();
 }
 
 void TextInputClientImpl::InsertChar(std::unique_ptr<ui::Event> event) {
   DCHECK(event->IsKeyEvent());
   text_input_client_->InsertChar(*event->AsKeyEvent());
+  NotifyClientDataChanged();
 }
 
 void TextInputClientImpl::DispatchKeyEventPostIME(
     std::unique_ptr<ui::Event> event,
     DispatchKeyEventPostIMECallback callback) {
   if (!delegate_) {
-    if (callback)
-      std::move(callback).Run(false);
+    if (callback) {
+      std::move(callback).Run(/* handled */ false,
+                              /* stopped_propagation */ false);
+    }
     return;
   }
   ui::KeyEvent* key_event = event->AsKeyEvent();
@@ -86,8 +103,37 @@ void TextInputClientImpl::DispatchKeyEventPostIME(
     return;  // Event is being processed async.
 
   // The delegate finished processing the event. Run the ack now.
-  const bool handled = key_event->handled();
-  key_event->WillHandleAsync().Run(handled);
+  key_event->WillHandleAsync().Run(key_event->handled(),
+                                   key_event->stopped_propagation());
+}
+
+void TextInputClientImpl::EnsureCaretNotInRect(const gfx::Rect& rect) {
+  text_input_client_->EnsureCaretNotInRect(rect);
+}
+
+void TextInputClientImpl::SetEditableSelectionRange(const gfx::Range& range) {
+  if (text_input_client_->SetEditableSelectionRange(range))
+    NotifyClientDataChanged();
+}
+
+void TextInputClientImpl::DeleteRange(const gfx::Range& range) {
+  if (text_input_client_->DeleteRange(range))
+    NotifyClientDataChanged();
+}
+
+void TextInputClientImpl::OnInputMethodChanged() {
+  text_input_client_->OnInputMethodChanged();
+}
+
+void TextInputClientImpl::ChangeTextDirectionAndLayoutAlignment(
+    base::i18n::TextDirection direction) {
+  text_input_client_->ChangeTextDirectionAndLayoutAlignment(direction);
+}
+
+void TextInputClientImpl::ExtendSelectionAndDelete(uint32_t before,
+                                                   uint32_t after) {
+  text_input_client_->ExtendSelectionAndDelete(before, after);
+  NotifyClientDataChanged();
 }
 
 }  // namespace aura

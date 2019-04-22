@@ -12,6 +12,11 @@
 #include "components/search_engines/template_url_service.h"
 #include "components/sync/driver/async_directory_type_controller.h"
 
+namespace syncer {
+class SyncClient;
+class SyncService;
+}  // namespace syncer
+
 namespace browser_sync {
 
 // Controller for the SEARCH_ENGINES sync data type. This class tells sync
@@ -22,6 +27,7 @@ class SearchEngineDataTypeController
  public:
   // |dump_stack| is called when an unrecoverable error occurs.
   SearchEngineDataTypeController(const base::Closure& dump_stack,
+                                 syncer::SyncService* sync_service,
                                  syncer::SyncClient* sync_client,
                                  TemplateURLService* template_url_service);
   ~SearchEngineDataTypeController() override;

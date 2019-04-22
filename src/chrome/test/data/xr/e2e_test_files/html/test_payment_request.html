@@ -11,8 +11,6 @@ Browser.
     <script src="../../../../../../third_party/blink/web_tests/resources/testharness.js"></script>
     <script src="../resources/webxr_e2e.js"></script>
     <script>
-      var t = async_test("Payment Request API disabled while in VR Browser");
-
       // Arbitrary but valid data to pass to PaymentRequest to trigger the
       // native Payment Request UI.
       var methods = [
@@ -62,15 +60,11 @@ Browser.
 
       function stepRequestPayment() {
         request.show().then(() => {
-          t.step(() => {
-            assert_unreached("Payment request was shown and accepted");
-          });
+          assert_unreached("Payment request was shown and accepted");
         }, (err) => {
-          t.step(() => {
-            assert_true(err instanceof DOMException,
-                        "Payment request denied, but not for expected reason");
-          });
-          t.done();
+          assert_true(err instanceof DOMException,
+                      "Payment request denied, but not for expected reason");
+          done();
         });
       }
     </script>

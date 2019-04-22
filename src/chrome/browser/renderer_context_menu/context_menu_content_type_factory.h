@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_RENDERER_CONTEXT_MENU_CONTEXT_MENU_CONTENT_TYPE_FACTORY_H_
 #define CHROME_BROWSER_RENDERER_CONTEXT_MENU_CONTEXT_MENU_CONTENT_TYPE_FACTORY_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "content/public/common/context_menu_params.h"
 
@@ -16,20 +18,20 @@ class WebContents;
 
 class ContextMenuContentTypeFactory {
  public:
-  static ContextMenuContentType* Create(
+  static std::unique_ptr<ContextMenuContentType> Create(
       content::WebContents* web_contents,
       const content::ContextMenuParams& params);
 
   // Sets the chrome specific url checker for internal resources.
   // This is exposed for tests.
-  static ContextMenuContentType* SetInternalResourcesURLChecker(
+  static void SetInternalResourcesURLChecker(
       ContextMenuContentType* content_type);
 
  private:
   ContextMenuContentTypeFactory();
   virtual ~ContextMenuContentTypeFactory();
 
-  static ContextMenuContentType* CreateInternal(
+  static std::unique_ptr<ContextMenuContentType> CreateInternal(
       content::WebContents* web_contents,
       const content::ContextMenuParams& params);
 

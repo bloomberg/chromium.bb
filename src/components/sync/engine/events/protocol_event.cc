@@ -12,14 +12,17 @@ ProtocolEvent::ProtocolEvent() {}
 ProtocolEvent::~ProtocolEvent() {}
 
 std::unique_ptr<base::DictionaryValue> ProtocolEvent::ToValue(
-    const ProtocolEvent& event,
-    bool include_specifics) {
+    bool include_specifics) const {
   auto dict = std::make_unique<base::DictionaryValue>();
-  dict->SetDouble("time", event.GetTimestamp().ToJsTime());
-  dict->SetString("type", event.GetType());
-  dict->SetString("details", event.GetDetails());
-  dict->Set("proto", event.GetProtoMessage(include_specifics));
+  dict->SetDouble("time", GetTimestamp().ToJsTime());
+  dict->SetString("type", GetType());
+  dict->SetString("details", GetDetails());
+  dict->Set("proto", GetProtoMessage(include_specifics));
   return dict;
+}
+
+base::Time ProtocolEvent::GetTimestampForTesting() const {
+  return GetTimestamp();
 }
 
 }  // namespace syncer

@@ -5,11 +5,11 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_SERVICE_VIDEO_CAPTURE_DEVICE_LAUNCHER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_MEDIA_SERVICE_VIDEO_CAPTURE_DEVICE_LAUNCHER_H_
 
-#include "content/browser/renderer_host/media/video_capture_factory_delegate.h"
+#include "content/browser/renderer_host/media/ref_counted_video_source_provider.h"
 #include "content/browser/renderer_host/media/video_capture_provider.h"
 #include "content/public/browser/video_capture_device_launcher.h"
-#include "content/public/common/media_stream_request.h"
 #include "services/video_capture/public/mojom/device_factory.mojom.h"
+#include "third_party/blink/public/common/mediastream/media_stream_request.h"
 
 namespace content {
 
@@ -18,17 +18,17 @@ namespace content {
 class CONTENT_EXPORT ServiceVideoCaptureDeviceLauncher
     : public VideoCaptureDeviceLauncher {
  public:
-  // Receives an instance via output parameter |factory|.
+  // Receives an instance via output parameter |out_provider|.
   using ConnectToDeviceFactoryCB = base::RepeatingCallback<void(
-      std::unique_ptr<VideoCaptureFactoryDelegate>* factory)>;
+      scoped_refptr<RefCountedVideoSourceProvider>* out_provider)>;
 
   explicit ServiceVideoCaptureDeviceLauncher(
-      ConnectToDeviceFactoryCB connect_to_device_factory_cb);
+      ConnectToDeviceFactoryCB connect_to_source_provider_cb);
   ~ServiceVideoCaptureDeviceLauncher() override;
 
   // VideoCaptureDeviceLauncher implementation.
   void LaunchDeviceAsync(const std::string& device_id,
-                         MediaStreamType stream_type,
+                         blink::MediaStreamType stream_type,
                          const media::VideoCaptureParams& params,
                          base::WeakPtr<media::VideoFrameReceiver> receiver,
                          base::OnceClosure connection_lost_cb,
@@ -45,17 +45,17 @@ class CONTENT_EXPORT ServiceVideoCaptureDeviceLauncher
     DEVICE_START_ABORTING
   };
 
-  void OnCreateDeviceCallback(
-      const media::VideoCaptureParams& params,
-      video_capture::mojom::DevicePtr device,
-      base::WeakPtr<media::VideoFrameReceiver> receiver,
+  void OnCreatePushSubscriptionCallback(
+      video_capture::mojom::VideoSourcePtr source,
+      video_capture::mojom::PushVideoStreamSubscriptionPtr subscription,
       base::OnceClosure connection_lost_cb,
-      video_capture::mojom::DeviceAccessResultCode result_code);
+      video_capture::mojom::CreatePushSubscriptionResultCode result_code,
+      const media::VideoCaptureParams& params);
 
   void OnConnectionLostWhileWaitingForCallback();
 
-  ConnectToDeviceFactoryCB connect_to_device_factory_cb_;
-  std::unique_ptr<VideoCaptureFactoryDelegate> device_factory_;
+  ConnectToDeviceFactoryCB connect_to_source_provider_cb_;
+  scoped_refptr<RefCountedVideoSourceProvider> service_connection_;
   State state_;
   base::SequenceChecker sequence_checker_;
   base::OnceClosure done_cb_;

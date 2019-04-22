@@ -21,6 +21,7 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import parallel_unittest
+from chromite.lib.buildstore import FakeBuildStore
 
 
 # pylint: disable=too-many-ancestors
@@ -30,12 +31,14 @@ class SimpleChromeArtifactsStage(cbuildbot_unittest.SimpleBuilderTestCase,
                                  generic_stages_unittest.AbstractStageTestCase,
                                  cros_test_lib.LoggingTestCase):
   """Verify stage that creates the chrome-sdk and builds chrome with it."""
-  BOT_ID = 'link-paladin'
+  BOT_ID = 'grunt-paladin'
   RELEASE_TAG = ''
 
   # pylint: disable=protected-access
 
   def setUp(self):
+    self.CreateMockOverlay('grunt')
+
     self.StartPatcher(parallel_unittest.ParallelMock())
 
     # Set up a general purpose cidb mock. Tests with more specific
@@ -54,7 +57,9 @@ class SimpleChromeArtifactsStage(cbuildbot_unittest.SimpleBuilderTestCase,
 
   def ConstructStage(self):
     self._run.GetArchive().SetupArchivePath()
+    bs = FakeBuildStore()
     return chrome_stages.SimpleChromeArtifactsStage(self._run,
+                                                    bs,
                                                     self._current_board)
 
   def testIt(self):
@@ -104,7 +109,8 @@ class SyncChromeStageTest(generic_stages_unittest.AbstractStageTestCase,
     self.PatchObject(commands, 'SyncChrome')
 
   def ConstructStage(self):
-    return chrome_stages.SyncChromeStage(self._run)
+    bs = FakeBuildStore()
+    return chrome_stages.SyncChromeStage(self._run, bs)
 
   def testBasic(self):
     """Basic syntax sanity test."""

@@ -6,6 +6,7 @@
 
 #include <windows.h>
 
+#include "base/bind.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -56,7 +57,7 @@ MemoryPressureMonitor::MemoryPressureMonitor()
           MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE),
       moderate_pressure_repeat_count_(0),
       dispatch_callback_(
-          base::Bind(&MemoryPressureListener::NotifyMemoryPressure)),
+          base::BindRepeating(&MemoryPressureListener::NotifyMemoryPressure)),
       weak_ptr_factory_(this) {
   InferThresholds();
   StartObserving();
@@ -70,7 +71,7 @@ MemoryPressureMonitor::MemoryPressureMonitor(int moderate_threshold_mb,
           MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE),
       moderate_pressure_repeat_count_(0),
       dispatch_callback_(
-          base::Bind(&MemoryPressureListener::NotifyMemoryPressure)),
+          base::BindRepeating(&MemoryPressureListener::NotifyMemoryPressure)),
       weak_ptr_factory_(this) {
   DCHECK_GE(moderate_threshold_mb_, critical_threshold_mb_);
   DCHECK_LE(0, critical_threshold_mb_);
@@ -85,8 +86,8 @@ void MemoryPressureMonitor::CheckMemoryPressureSoon() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, Bind(&MemoryPressureMonitor::CheckMemoryPressure,
-                      weak_ptr_factory_.GetWeakPtr()));
+      FROM_HERE, BindOnce(&MemoryPressureMonitor::CheckMemoryPressure,
+                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 MemoryPressureListener::MemoryPressureLevel
@@ -117,11 +118,11 @@ void MemoryPressureMonitor::InferThresholds() {
 void MemoryPressureMonitor::StartObserving() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  timer_.Start(FROM_HERE,
-               TimeDelta::FromMilliseconds(kPollingIntervalMs),
-               Bind(&MemoryPressureMonitor::
-                        CheckMemoryPressureAndRecordStatistics,
-                    weak_ptr_factory_.GetWeakPtr()));
+  timer_.Start(
+      FROM_HERE, TimeDelta::FromMilliseconds(kPollingIntervalMs),
+      BindRepeating(
+          &MemoryPressureMonitor::CheckMemoryPressureAndRecordStatistics,
+          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void MemoryPressureMonitor::StopObserving() {

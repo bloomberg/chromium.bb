@@ -11,8 +11,9 @@
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "components/viz/common/resources/single_release_callback.h"
+#include "services/viz/public/interfaces/hit_test/hit_test_region_list.mojom-blink.h"
+#include "third_party/blink/public/mojom/frame_sinks/embedded_frame_sink.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_provider.h"
-#include "third_party/blink/public/platform/modules/frame_sinks/embedded_frame_sink.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
@@ -22,6 +23,7 @@
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
+#include "ui/gfx/mojo/presentation_feedback.mojom-blink.h"
 
 namespace blink {
 
@@ -60,7 +62,7 @@ CanvasResourceDispatcher::CanvasResourceDispatcher(
       num_unreclaimed_frames_posted_(0),
       client_(client),
       enable_surface_synchronization_(
-          features::IsSurfaceSynchronizationEnabled()),
+          ::features::IsSurfaceSynchronizationEnabled()),
       weak_ptr_factory_(this) {
   // Frameless canvas pass an invalid |frame_sink_id_|; don't create mojo
   // channel for this special case.
@@ -75,8 +77,9 @@ CanvasResourceDispatcher::CanvasResourceDispatcher(
   DCHECK(provider);
   binding_.Bind(mojo::MakeRequest(&client_ptr_));
   provider->CreateCompositorFrameSink(frame_sink_id_, std::move(client_ptr_),
-                                      mojo::MakeRequest(&sink_),
-                                      mojo::MakeRequest(&surface_embedder_));
+                                      mojo::MakeRequest(&sink_));
+  provider->ConnectToEmbedder(frame_sink_id_,
+                              mojo::MakeRequest(&surface_embedder_));
 }
 
 CanvasResourceDispatcher::~CanvasResourceDispatcher() = default;
@@ -218,6 +221,8 @@ bool CanvasResourceDispatcher::PrepareFrame(
   }
   frame->metadata.begin_frame_ack = current_begin_frame_ack_;
 
+  frame->metadata.frame_token = ++next_frame_token_;
+
   const gfx::Rect bounds(size_.Width(), size_.Height());
   constexpr int kRenderPassId = 1;
   constexpr bool is_clipped = false;
@@ -228,8 +233,8 @@ bool CanvasResourceDispatcher::PrepareFrame(
                gfx::Transform());
 
   viz::SharedQuadState* sqs = pass->CreateAndAppendSharedQuadState();
-  sqs->SetAll(gfx::Transform(), bounds, bounds, bounds, is_clipped, is_opaque,
-              1.f, SkBlendMode::kSrcOver, 0);
+  sqs->SetAll(gfx::Transform(), bounds, bounds, gfx::RRectF(), bounds,
+              is_clipped, is_opaque, 1.f, SkBlendMode::kSrcOver, 0);
 
   viz::TransferableResource resource;
   auto frame_resource = std::make_unique<FrameResource>();

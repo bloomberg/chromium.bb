@@ -31,8 +31,8 @@ public class ContactsPickerToolbar extends SelectableListToolbar<ContactDetails>
 
         TextView up = (TextView) mNumberRollView.findViewById(R.id.up);
         TextView down = (TextView) mNumberRollView.findViewById(R.id.down);
-        ApiCompatibilityUtils.setTextAppearance(up, R.style.BlackHeadline);
-        ApiCompatibilityUtils.setTextAppearance(down, R.style.BlackHeadline);
+        ApiCompatibilityUtils.setTextAppearance(up, R.style.TextAppearance_BlackHeadline);
+        ApiCompatibilityUtils.setTextAppearance(down, R.style.TextAppearance_BlackHeadline);
     }
 
     /**
@@ -42,6 +42,9 @@ public class ContactsPickerToolbar extends SelectableListToolbar<ContactDetails>
         setNavigationIcon(R.drawable.btn_close);
         setNavigationContentDescription(R.string.close);
     }
+
+    @Override
+    protected void setNavigationButton(int navigationButton) {}
 
     @Override
     protected void showSelectionView(

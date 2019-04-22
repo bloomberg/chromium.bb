@@ -6,6 +6,9 @@
 
 #include <stddef.h>
 
+#include <string>
+#include <vector>
+
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/strings/utf_string_conversions.h"
@@ -20,10 +23,12 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/render_text.h"
+#include "ui/gfx/text_constants.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/link.h"
+#include "ui/views/style/typography.h"
 #include "ui/views/test/focus_manager_test.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
@@ -111,7 +116,7 @@ base::string16 ToRTL(const char* ascii) {
 
 class LabelTest : public ViewsTestBase {
  public:
-  LabelTest() {}
+  LabelTest() = default;
 
   // ViewsTestBase:
   void SetUp() override {
@@ -159,7 +164,7 @@ class LabelSelectionTest : public LabelTest {
   // below the label in either visual direction.
   enum { NW, NORTH, NE, SE, SOUTH, SW };
 
-  LabelSelectionTest() {}
+  LabelSelectionTest() = default;
 
   // LabelTest overrides:
   void SetUp() override {
@@ -449,77 +454,71 @@ TEST_F(LabelTest, TooltipProperty) {
 
   // Initially, label has no bounds, its text does not fit, and therefore its
   // text should be returned as the tooltip text.
-  base::string16 tooltip;
-  EXPECT_TRUE(label()->GetTooltipText(gfx::Point(), &tooltip));
-  EXPECT_EQ(label()->text(), tooltip);
+  EXPECT_EQ(label()->text(), label()->GetTooltipText(gfx::Point()));
 
   // While tooltip handling is disabled, GetTooltipText() should fail.
   label()->SetHandlesTooltips(false);
-  EXPECT_FALSE(label()->GetTooltipText(gfx::Point(), &tooltip));
+  EXPECT_TRUE(label()->GetTooltipText(gfx::Point()).empty());
   label()->SetHandlesTooltips(true);
 
   // When set, custom tooltip text should be returned instead of the label's
   // text.
   base::string16 tooltip_text(ASCIIToUTF16("The tooltip!"));
   label()->SetTooltipText(tooltip_text);
-  EXPECT_TRUE(label()->GetTooltipText(gfx::Point(), &tooltip));
-  EXPECT_EQ(tooltip_text, tooltip);
+  EXPECT_EQ(tooltip_text, label()->GetTooltipText(gfx::Point()));
 
   // While tooltip handling is disabled, GetTooltipText() should fail.
   label()->SetHandlesTooltips(false);
-  EXPECT_FALSE(label()->GetTooltipText(gfx::Point(), &tooltip));
+  EXPECT_TRUE(label()->GetTooltipText(gfx::Point()).empty());
   label()->SetHandlesTooltips(true);
 
   // When the tooltip text is set to an empty string, the original behavior is
   // restored.
   label()->SetTooltipText(base::string16());
-  EXPECT_TRUE(label()->GetTooltipText(gfx::Point(), &tooltip));
-  EXPECT_EQ(label()->text(), tooltip);
+  EXPECT_EQ(label()->text(), label()->GetTooltipText(gfx::Point()));
 
   // While tooltip handling is disabled, GetTooltipText() should fail.
   label()->SetHandlesTooltips(false);
-  EXPECT_FALSE(label()->GetTooltipText(gfx::Point(), &tooltip));
+  EXPECT_TRUE(label()->GetTooltipText(gfx::Point()).empty());
   label()->SetHandlesTooltips(true);
 
   // Make the label big enough to hold the text
   // and expect there to be no tooltip.
   label()->SetBounds(0, 0, 1000, 40);
-  EXPECT_FALSE(label()->GetTooltipText(gfx::Point(), &tooltip));
+  EXPECT_TRUE(label()->GetTooltipText(gfx::Point()).empty());
 
   // Shrinking the single-line label's height shouldn't trigger a tooltip.
   label()->SetBounds(0, 0, 1000, label()->GetPreferredSize().height() / 2);
-  EXPECT_FALSE(label()->GetTooltipText(gfx::Point(), &tooltip));
+  EXPECT_TRUE(label()->GetTooltipText(gfx::Point()).empty());
 
   // Verify that explicitly set tooltip text is shown, regardless of size.
   label()->SetTooltipText(tooltip_text);
-  EXPECT_TRUE(label()->GetTooltipText(gfx::Point(), &tooltip));
-  EXPECT_EQ(tooltip_text, tooltip);
+  EXPECT_EQ(tooltip_text, label()->GetTooltipText(gfx::Point()));
   // Clear out the explicitly set tooltip text.
   label()->SetTooltipText(base::string16());
 
   // Shrink the bounds and the tooltip should come back.
   label()->SetBounds(0, 0, 10, 10);
-  EXPECT_TRUE(label()->GetTooltipText(gfx::Point(), &tooltip));
+  EXPECT_FALSE(label()->GetTooltipText(gfx::Point()).empty());
 
   // Make the label obscured and there is no tooltip.
   label()->SetObscured(true);
-  EXPECT_FALSE(label()->GetTooltipText(gfx::Point(), &tooltip));
+  EXPECT_TRUE(label()->GetTooltipText(gfx::Point()).empty());
 
   // Obscuring the text shouldn't permanently clobber the tooltip.
   label()->SetObscured(false);
-  EXPECT_TRUE(label()->GetTooltipText(gfx::Point(), &tooltip));
+  EXPECT_FALSE(label()->GetTooltipText(gfx::Point()).empty());
 
   // Making the label multiline shouldn't eliminate the tooltip.
   label()->SetMultiLine(true);
-  EXPECT_TRUE(label()->GetTooltipText(gfx::Point(), &tooltip));
+  EXPECT_FALSE(label()->GetTooltipText(gfx::Point()).empty());
   // Expanding the multiline label bounds should eliminate the tooltip.
   label()->SetBounds(0, 0, 1000, 1000);
-  EXPECT_FALSE(label()->GetTooltipText(gfx::Point(), &tooltip));
+  EXPECT_TRUE(label()->GetTooltipText(gfx::Point()).empty());
 
   // Verify that setting the tooltip still shows it.
   label()->SetTooltipText(tooltip_text);
-  EXPECT_TRUE(label()->GetTooltipText(gfx::Point(), &tooltip));
-  EXPECT_EQ(tooltip_text, tooltip);
+  EXPECT_EQ(tooltip_text, label()->GetTooltipText(gfx::Point()));
   // Clear out the tooltip.
   label()->SetTooltipText(base::string16());
 }
@@ -891,84 +890,56 @@ TEST_F(LabelTest, NoSchedulePaintInOnPaint) {
   EXPECT_EQ(count, label.schedule_paint_count());  // Unchanged.
 }
 
-TEST_F(LabelTest, FocusBounds) {
-  label()->SetText(ASCIIToUTF16("Example"));
-  Link concrete_link(ASCIIToUTF16("Example"));
-  Label* link = &concrete_link;  // Allow LabelTest to call methods as friend.
-  link->SetFocusBehavior(View::FocusBehavior::NEVER);
-
-  label()->SizeToPreferredSize();
-  link->SizeToPreferredSize();
-
-  // A regular label never draws a focus ring, so it should exactly match the
-  // font height (assuming no glyphs came from fallback fonts).
-  EXPECT_EQ(label()->font_list().GetHeight(),
-            label()->GetFocusRingBounds().height());
-
-  // The test starts by setting the link unfocusable, so it should also match.
-  EXPECT_EQ(link->font_list().GetHeight(), link->GetFocusRingBounds().height());
-
-  // Labels are not focusable unless they are links, so don't change size when
-  // the focus behavior changes.
-  gfx::Size normal_label_size = label()->GetPreferredSize();
-  label()->SetFocusBehavior(View::FocusBehavior::ALWAYS);
-  EXPECT_EQ(normal_label_size, label()->GetPreferredSize());
-
-  gfx::Size normal_link_size = link->GetPreferredSize();
-  link->SetFocusBehavior(View::FocusBehavior::ALWAYS);
-  gfx::Size focusable_link_size = link->GetPreferredSize();
-
-  // Everything should match since underlines indicates focus.
-  EXPECT_EQ(normal_label_size, normal_link_size);
-  EXPECT_EQ(normal_link_size, focusable_link_size);
-
-  // Requesting focus doesn't change the preferred size since that would mess up
-  // layout.
-  label()->RequestFocus();
-  EXPECT_EQ(focusable_link_size, link->GetPreferredSize());
-
-  label()->SizeToPreferredSize();
-  gfx::Rect focus_bounds = label()->GetFocusRingBounds();
-  EXPECT_EQ(label()->GetLocalBounds(), focus_bounds);
-
-  gfx::Size focusable_size = normal_label_size;
-  label()->SetBounds(
-      0, 0, focusable_size.width() * 2, focusable_size.height() * 2);
-  label()->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  focus_bounds = label()->GetFocusRingBounds();
-  EXPECT_EQ(0, focus_bounds.x());
-  EXPECT_LT(0, focus_bounds.y());
-  EXPECT_GT(label()->bounds().bottom(), focus_bounds.bottom());
-  EXPECT_EQ(focusable_size, focus_bounds.size());
-
-  label()->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
-  focus_bounds = label()->GetFocusRingBounds();
-  EXPECT_LT(0, focus_bounds.x());
-  EXPECT_EQ(label()->bounds().right(), focus_bounds.right());
-  EXPECT_LT(0, focus_bounds.y());
-  EXPECT_GT(label()->bounds().bottom(), focus_bounds.bottom());
-  EXPECT_EQ(focusable_size, focus_bounds.size());
-
-  label()->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  label()->SetElideBehavior(gfx::FADE_TAIL);
-  label()->SetBounds(0, 0, focusable_size.width() / 2, focusable_size.height());
-  focus_bounds = label()->GetFocusRingBounds();
-  EXPECT_EQ(0, focus_bounds.x());
-  EXPECT_EQ(focusable_size.width() / 2, focus_bounds.width());
-}
-
 TEST_F(LabelTest, EmptyLabel) {
   label()->SetFocusBehavior(View::FocusBehavior::ALWAYS);
   label()->RequestFocus();
   label()->SizeToPreferredSize();
+  EXPECT_TRUE(label()->size().IsEmpty());
 
+  // With no text, neither links nor labels have a size in any dimension.
   Link concrete_link((base::string16()));
-  Label* link = &concrete_link;  // Allow LabelTest to call methods as friend.
+  EXPECT_TRUE(concrete_link.GetPreferredSize().IsEmpty());
+}
 
-  // With no text, neither links nor labels are focusable, and have no size in
-  // any dimension.
-  EXPECT_EQ(gfx::Rect(), label()->GetFocusRingBounds());
-  EXPECT_EQ(gfx::Rect(), link->GetFocusRingBounds());
+TEST_F(LabelTest, CanForceDirectionality) {
+  Label bidi_text_force_url(ToRTL("0123456") + base::ASCIIToUTF16(".com"), 0,
+                            style::STYLE_PRIMARY,
+                            gfx::DirectionalityMode::DIRECTIONALITY_AS_URL);
+  EXPECT_EQ(base::i18n::TextDirection::LEFT_TO_RIGHT,
+            bidi_text_force_url.GetTextDirectionForTesting());
+
+  Label rtl_text_force_ltr(ToRTL("0123456"), 0, style::STYLE_PRIMARY,
+                           gfx::DirectionalityMode::DIRECTIONALITY_FORCE_LTR);
+  EXPECT_EQ(base::i18n::TextDirection::LEFT_TO_RIGHT,
+            rtl_text_force_ltr.GetTextDirectionForTesting());
+
+  Label ltr_text_force_rtl(base::ASCIIToUTF16("0123456"), 0,
+                           style::STYLE_PRIMARY,
+                           gfx::DirectionalityMode::DIRECTIONALITY_FORCE_RTL);
+  EXPECT_EQ(base::i18n::TextDirection::RIGHT_TO_LEFT,
+            ltr_text_force_rtl.GetTextDirectionForTesting());
+
+  SetRTL(true);
+  Label ltr_use_ui(base::ASCIIToUTF16("0123456"), 0, style::STYLE_PRIMARY,
+                   gfx::DirectionalityMode::DIRECTIONALITY_FROM_UI);
+  EXPECT_EQ(base::i18n::TextDirection::RIGHT_TO_LEFT,
+            ltr_use_ui.GetTextDirectionForTesting());
+
+  SetRTL(false);
+  Label rtl_use_ui(ToRTL("0123456"), 0, style::STYLE_PRIMARY,
+                   gfx::DirectionalityMode::DIRECTIONALITY_FROM_UI);
+  EXPECT_EQ(base::i18n::TextDirection::LEFT_TO_RIGHT,
+            rtl_use_ui.GetTextDirectionForTesting());
+}
+
+TEST_F(LabelTest, DefaultDirectionalityIsFromText) {
+  Label ltr(base::ASCIIToUTF16("Foo"));
+  EXPECT_EQ(base::i18n::TextDirection::LEFT_TO_RIGHT,
+            ltr.GetTextDirectionForTesting());
+
+  Label rtl(ToRTL("0123456"));
+  EXPECT_EQ(base::i18n::TextDirection::RIGHT_TO_LEFT,
+            rtl.GetTextDirectionForTesting());
 }
 
 TEST_F(LabelSelectionTest, Selectable) {

@@ -5,13 +5,14 @@
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 
 #include <algorithm>
+#include <unordered_set>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/i18n/number_formatting.h"
 #include "base/i18n/string_compare.h"
-#include "base/rand_util.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -57,7 +58,8 @@ const int kDefaultNames[] = {
 // from disk the then |out_image| will contain the bitmap image, otherwise it
 // will be NULL.
 void ReadBitmap(const base::FilePath& image_path, gfx::Image** out_image) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   *out_image = nullptr;
 
   // If the path doesn't exist, don't even try reading it.
@@ -85,7 +87,8 @@ void ReadBitmap(const base::FilePath& image_path, gfx::Image** out_image) {
 void SaveBitmap(std::unique_ptr<ImageData> data,
                 const base::FilePath& image_path,
                 const base::Closure& callback) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   // Make sure the destination directory exists.
   base::FilePath dir = image_path.DirName();
@@ -105,7 +108,8 @@ void SaveBitmap(std::unique_ptr<ImageData> data,
 
 void RunCallbackIfFileMissing(const base::FilePath& file_path,
                               const base::Closure& callback) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   if (!base::PathExists(file_path))
     base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI}, callback);
 }
@@ -134,29 +138,6 @@ bool ProfileAttributesSortComparator::operator()(
 
   // If the names are the same, then compare the paths, which must be unique.
   return a->GetPath().value() < b->GetPath().value();
-}
-
-// Tries to find an random icon index that satisfies all the given conditions.
-// Returns true if an icon was found, false otherwise.
-bool GetRandomAvatarIconIndex(
-    bool allow_generic_icon,
-    bool must_be_unused,
-    const std::unordered_set<size_t>& used_icon_indices,
-    size_t* out_icon_index) {
-  size_t start = allow_generic_icon ? 0 : profiles::GetGenericAvatarIconCount();
-  size_t end = profiles::GetDefaultAvatarIconCount();
-  size_t count = end - start;
-
-  int rand = base::RandInt(0, count);
-  for (size_t i = 0; i < count; ++i) {
-    size_t icon_index = start + (rand + i) % count;
-    if (!must_be_unused || used_icon_indices.count(icon_index) == 0u) {
-      *out_icon_index = icon_index;
-      return true;
-    }
-  }
-
-  return false;
 }
 
 }  // namespace
@@ -212,9 +193,11 @@ base::string16 ProfileAttributesStorage::ChooseNameForNewProfile(
     // it uses sscanf.
     // TODO(jshin): fix IsDefaultProfileName to handle native digits.
     name = l10n_util::GetStringFUTF16(IDS_NEW_NUMBERED_PROFILE_NAME,
-                                      base::IntToString16(name_index));
+                                      base::NumberToString16(name_index));
 #else
-    if (icon_index < profiles::GetGenericAvatarIconCount()) {
+    // TODO(crbug.com/937834): Clean up this code.
+    if (icon_index < profiles::GetGenericAvatarIconCount() ||
+        profiles::IsModernAvatarIconIndex(icon_index)) {
       name = l10n_util::GetStringFUTF16Int(IDS_NUMBERED_PROFILE_NAME,
                                            name_index);
     } else {
@@ -248,7 +231,7 @@ bool ProfileAttributesStorage::IsDefaultProfileName(
     return true;
 
   // Check if it's one of the old-style profile names.
-  for (size_t i = 0; i < arraysize(kDefaultNames); ++i) {
+  for (size_t i = 0; i < base::size(kDefaultNames); ++i) {
     if (name == l10n_util::GetStringUTF16(kDefaultNames[i]))
       return true;
   }
@@ -273,23 +256,7 @@ size_t ProfileAttributesStorage::ChooseAvatarIconIndexForNewProfile() const {
   for (const ProfileAttributesEntry* entry : entries)
     used_icon_indices.insert(entry->GetAvatarIconIndex());
 
-  size_t icon_index = 0;
-#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
-  // For ChromeOS and Android, try to find a unique, non-generic icon.
-  if (GetRandomAvatarIconIndex(false, true, used_icon_indices, &icon_index))
-    return icon_index;
-#endif
-
-  // Try to find any unique icon.
-  if (GetRandomAvatarIconIndex(true, true, used_icon_indices, &icon_index))
-    return icon_index;
-
-  // Settle for any random icon, even if it's not already used.
-  if (GetRandomAvatarIconIndex(true, false, used_icon_indices, &icon_index))
-    return icon_index;
-
-  NOTREACHED();
-  return 0;
+  return profiles::GetRandomAvatarIconIndex(used_icon_indices);
 }
 
 const gfx::Image* ProfileAttributesStorage::LoadAvatarPictureFromPath(

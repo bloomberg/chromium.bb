@@ -7,11 +7,14 @@
 
 #include "src/base/compiler-specific.h"
 #include "src/globals.h"
-#include "src/macro-assembler.h"
+#include "src/register-arch.h"
+#include "src/v8memory.h"
 #include "src/zone/zone-containers.h"
 
 namespace v8 {
 namespace internal {
+
+class CodeDesc;
 
 class V8_EXPORT_PRIVATE EhFrameConstants final
     : public NON_EXPORTED_BASE(AllStatic) {

@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/modules/webaudio/audio_node_input.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_options.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_output.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_node_wiring.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_param.h"
 #include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
@@ -46,6 +47,7 @@ AudioHandler::AudioHandler(NodeType node_type,
       node_type_(kNodeTypeUnknown),
       node_(&node),
       context_(node.context()),
+      deferred_task_handler_(&context_->GetDeferredTaskHandler()),
       last_processing_time_(-1),
       last_non_silent_time_(0),
       connection_ref_count_(0),
@@ -71,6 +73,7 @@ AudioHandler::AudioHandler(NodeType node_type,
       node_count_[GetNodeType()],
       InstanceCounters::CounterValue(InstanceCounters::kAudioHandlerCounter));
 #endif
+  node.context()->WarnIfContextClosed(this);
 }
 
 AudioHandler::~AudioHandler() {
@@ -101,11 +104,11 @@ void AudioHandler::Uninitialize() {
 
 void AudioHandler::Dispose() {
   DCHECK(IsMainThread());
-  Context()->AssertGraphOwner();
+  deferred_task_handler_->AssertGraphOwner();
 
-  Context()->GetDeferredTaskHandler().RemoveChangedChannelCountMode(this);
-  Context()->GetDeferredTaskHandler().RemoveChangedChannelInterpretation(this);
-  Context()->GetDeferredTaskHandler().RemoveAutomaticPullNode(this);
+  deferred_task_handler_->RemoveChangedChannelCountMode(this);
+  deferred_task_handler_->RemoveChangedChannelInterpretation(this);
+  deferred_task_handler_->RemoveAutomaticPullNode(this);
   for (auto& output : outputs_)
     output->Dispose();
 }
@@ -157,6 +160,12 @@ String AudioHandler::NodeTypeName() const {
       return "DynamicsCompressorNode";
     case kNodeTypeWaveShaper:
       return "WaveShaperNode";
+    case kNodeTypeIIRFilter:
+      return "IIRFilterNode";
+    case kNodeTypeConstantSource:
+      return "ConstantSourceNode";
+    case kNodeTypeAudioWorklet:
+      return "AudioWorkletNode";
     case kNodeTypeUnknown:
     case kNodeTypeEnd:
     default:
@@ -182,12 +191,13 @@ void AudioHandler::SetNodeType(NodeType type) {
 }
 
 void AudioHandler::AddInput() {
-  inputs_.push_back(AudioNodeInput::Create(*this));
+  inputs_.push_back(std::make_unique<AudioNodeInput>(*this));
 }
 
 void AudioHandler::AddOutput(unsigned number_of_channels) {
   DCHECK(IsMainThread());
-  outputs_.push_back(AudioNodeOutput::Create(this, number_of_channels));
+  outputs_.push_back(
+      std::make_unique<AudioNodeOutput>(this, number_of_channels));
   GetNode()->DidAddOutput(NumberOfOutputs());
 }
 
@@ -229,7 +239,7 @@ void AudioHandler::SetChannelCount(unsigned channel_count,
   } else {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotSupportedError,
-        ExceptionMessages::IndexOutsideRange<unsigned long>(
+        ExceptionMessages::IndexOutsideRange<uint32_t>(
             "channel count", channel_count, 1,
             ExceptionMessages::kInclusiveBound,
             BaseAudioContext::MaxNumberOfChannels(),
@@ -360,7 +370,7 @@ void AudioHandler::ProcessIfNecessary(uint32_t frames_to_process) {
 
 void AudioHandler::CheckNumberOfChannelsForInput(AudioNodeInput* input) {
   DCHECK(Context()->IsAudioThread());
-  Context()->AssertGraphOwner();
+  deferred_task_handler_->AssertGraphOwner();
 
   DCHECK(inputs_.Contains(input));
   if (!inputs_.Contains(input))
@@ -402,7 +412,7 @@ void AudioHandler::UnsilenceOutputs() {
 
 void AudioHandler::EnableOutputsIfNecessary() {
   DCHECK(IsMainThread());
-  Context()->AssertGraphOwner();
+  deferred_task_handler_->AssertGraphOwner();
 
   // We're enabling outputs for this handler.  Remove this from the tail
   // processing list (if it's there) so that we don't inadvertently disable the
@@ -427,7 +437,7 @@ void AudioHandler::EnableOutputsIfNecessary() {
 void AudioHandler::DisableOutputsIfNecessary() {
   // This function calls other functions that require graph ownership,
   // so assert that this needs graph ownership too.
-  Context()->AssertGraphOwner();
+  deferred_task_handler_->AssertGraphOwner();
 
   // Disable outputs if appropriate. We do this if the number of connections is
   // 0 or 1. The case of 0 is from deref() where there are no connections left.
@@ -449,9 +459,8 @@ void AudioHandler::DisableOutputsIfNecessary() {
     // the outputs so that the tail for the node can be output.
     // Otherwise, we can disable the outputs right away.
     if (RequiresTailProcessing()) {
-      auto& deferred_task_handler = Context()->GetDeferredTaskHandler();
-      if (deferred_task_handler.AcceptsTailProcessing())
-        deferred_task_handler.AddTailProcessingHandler(this);
+      if (deferred_task_handler_->AcceptsTailProcessing())
+        deferred_task_handler_->AddTailProcessingHandler(this);
     } else {
       DisableOutputs();
     }
@@ -465,7 +474,7 @@ void AudioHandler::DisableOutputs() {
 }
 
 void AudioHandler::MakeConnection() {
-  Context()->AssertGraphOwner();
+  deferred_task_handler_->AssertGraphOwner();
   connection_ref_count_++;
 
 #if DEBUG_AUDIONODE_REFERENCES
@@ -507,7 +516,7 @@ void AudioHandler::BreakConnection() {
 }
 
 void AudioHandler::BreakConnectionWithLock() {
-  Context()->AssertGraphOwner();
+  deferred_task_handler_->AssertGraphOwner();
   connection_ref_count_--;
 
 #if DEBUG_AUDIONODE_REFERENCES
@@ -643,6 +652,10 @@ void AudioNode::SetHandler(scoped_refptr<AudioHandler> handler) {
 #endif
 }
 
+bool AudioNode::ContainsHandler() const {
+  return handler_.get();
+}
+
 AudioHandler& AudioNode::Handler() const {
   return *handler_;
 }
@@ -677,12 +690,7 @@ AudioNode* AudioNode::connect(AudioNode* destination,
   DCHECK(IsMainThread());
   BaseAudioContext::GraphAutoLocker locker(context());
 
-  if (context()->IsContextClosed()) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidStateError,
-        "Cannot connect after the context has been closed.");
-    return nullptr;
-  }
+  context()->WarnForConnectionIfContextClosed();
 
   if (!destination) {
     exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
@@ -729,9 +737,8 @@ AudioNode* AudioNode::connect(AudioNode* destination,
     return nullptr;
   }
 
-  destination->Handler()
-      .Input(input_index)
-      .Connect(Handler().Output(output_index));
+  AudioNodeWiring::Connect(Handler().Output(output_index),
+                           destination->Handler().Input(input_index));
   if (!connected_nodes_[output_index]) {
     connected_nodes_[output_index] =
         MakeGarbageCollected<HeapHashSet<Member<AudioNode>>>();
@@ -749,12 +756,7 @@ void AudioNode::connect(AudioParam* param,
   DCHECK(IsMainThread());
   BaseAudioContext::GraphAutoLocker locker(context());
 
-  if (context()->IsContextClosed()) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidStateError,
-        "Cannot connect after the context has been closed.");
-    return;
-  }
+  context()->WarnForConnectionIfContextClosed();
 
   if (!param) {
     exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
@@ -779,7 +781,7 @@ void AudioNode::connect(AudioParam* param,
     return;
   }
 
-  param->Handler().Connect(Handler().Output(output_index));
+  AudioNodeWiring::Connect(Handler().Output(output_index), param->Handler());
   if (!connected_params_[output_index]) {
     connected_params_[output_index] =
         MakeGarbageCollected<HeapHashSet<Member<AudioParam>>>();
@@ -802,9 +804,9 @@ bool AudioNode::DisconnectFromOutputIfConnected(
   AudioNodeOutput& output = Handler().Output(output_index);
   AudioNodeInput& input =
       destination.Handler().Input(input_index_of_destination);
-  if (!output.IsConnectedToInput(input))
+  if (!AudioNodeWiring::IsConnected(output, input))
     return false;
-  output.DisconnectInput(input);
+  AudioNodeWiring::Disconnect(output, input);
   connected_nodes_[output_index]->erase(&destination);
   return true;
 }
@@ -812,9 +814,9 @@ bool AudioNode::DisconnectFromOutputIfConnected(
 bool AudioNode::DisconnectFromOutputIfConnected(unsigned output_index,
                                                 AudioParam& param) {
   AudioNodeOutput& output = Handler().Output(output_index);
-  if (!output.IsConnectedToAudioParam(param.Handler()))
+  if (!AudioNodeWiring::IsConnected(output, param.Handler()))
     return false;
-  output.DisconnectAudioParam(param.Handler());
+  AudioNodeWiring::Disconnect(output, param.Handler());
   connected_params_[output_index]->erase(&param);
   return true;
 }

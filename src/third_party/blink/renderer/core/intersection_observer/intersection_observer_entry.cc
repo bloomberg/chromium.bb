@@ -5,35 +5,32 @@
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_entry.h"
 
 #include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/geometry/dom_rect_read_only.h"
 
 namespace blink {
 
 IntersectionObserverEntry::IntersectionObserverEntry(
+    const IntersectionGeometry& geometry,
     DOMHighResTimeStamp time,
-    double intersection_ratio,
-    const FloatRect& bounding_client_rect,
-    const FloatRect* root_bounds,
-    const FloatRect& intersection_rect,
-    bool is_intersecting,
-    bool is_visible,
     Element* target)
-    : time_(time),
-      intersection_ratio_(intersection_ratio),
-      bounding_client_rect_(
-          DOMRectReadOnly::FromFloatRect(bounding_client_rect)),
-      root_bounds_(root_bounds ? DOMRectReadOnly::FromFloatRect(*root_bounds)
-                               : nullptr),
-      intersection_rect_(DOMRectReadOnly::FromFloatRect(intersection_rect)),
-      target_(target),
-      is_intersecting_(is_intersecting),
-      is_visible_(is_visible)
+    : geometry_(geometry), time_(time), target_(target) {}
 
-{}
+DOMRectReadOnly* IntersectionObserverEntry::boundingClientRect() const {
+  return DOMRectReadOnly::FromFloatRect(FloatRect(geometry_.TargetRect()));
+}
+
+DOMRectReadOnly* IntersectionObserverEntry::rootBounds() const {
+  if (geometry_.ShouldReportRootBounds())
+    return DOMRectReadOnly::FromFloatRect(FloatRect(geometry_.RootRect()));
+  return nullptr;
+}
+
+DOMRectReadOnly* IntersectionObserverEntry::intersectionRect() const {
+  return DOMRectReadOnly::FromFloatRect(
+      FloatRect(geometry_.IntersectionRect()));
+}
 
 void IntersectionObserverEntry::Trace(blink::Visitor* visitor) {
-  visitor->Trace(bounding_client_rect_);
-  visitor->Trace(root_bounds_);
-  visitor->Trace(intersection_rect_);
   visitor->Trace(target_);
   ScriptWrappable::Trace(visitor);
 }

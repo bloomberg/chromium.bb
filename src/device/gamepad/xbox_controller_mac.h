@@ -16,6 +16,7 @@
 #include "base/mac/scoped_ioplugininterface.h"
 #include "base/macros.h"
 #include "base/sequenced_task_runner.h"
+#include "device/gamepad/abstract_haptic_gamepad.h"
 #include "device/gamepad/public/mojom/gamepad.mojom.h"
 
 struct IOUSBDeviceStruct320;
@@ -23,7 +24,7 @@ struct IOUSBInterfaceStruct300;
 
 namespace device {
 
-class XboxControllerMac {
+class XboxControllerMac : public AbstractHapticGamepad {
  public:
   static const uint16_t kVendorMicrosoft = 0x045e;
   static const uint16_t kProductXbox360Controller = 0x028e;
@@ -99,19 +100,16 @@ class XboxControllerMac {
   };
 
   explicit XboxControllerMac(Delegate* delegate);
-  virtual ~XboxControllerMac();
+  ~XboxControllerMac() override;
 
   OpenDeviceResult OpenDevice(io_service_t service);
 
   void SetLEDPattern(LEDPattern pattern);
 
-  void PlayEffect(
-      mojom::GamepadHapticEffectType type,
-      mojom::GamepadEffectParametersPtr params,
-      mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback callback);
-
-  void ResetVibration(
-      mojom::GamepadHapticsManager::ResetVibrationActuatorCallback callback);
+  // AbstractHapticGamepad implementation.
+  void DoShutdown() override;
+  double GetMaxEffectDurationMillis() override;
+  void SetVibration(double strong_magnitude, double weak_magnitude) override;
 
   UInt32 location_id() { return location_id_; }
   uint16_t GetVendorId() const;
@@ -123,29 +121,12 @@ class XboxControllerMac {
  private:
   static void WriteComplete(void* context, IOReturn result, void* arg0);
   static void GotData(void* context, IOReturn result, void* arg0);
-  static void DoRunCallback(
-      mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback callback,
-      mojom::GamepadHapticsResult result);
 
   void ProcessXbox360Packet(size_t length);
   void ProcessXboxOnePacket(size_t length);
   void QueueRead();
 
   void IOError();
-
-  void PlayDualRumbleEffect(int sequence_id,
-                            double duration,
-                            double start_delay,
-                            double strong_magnitude,
-                            double weak_magnitude);
-  void StartVibration(int sequence_id,
-                      double duration,
-                      double strong_magnitude,
-                      double weak_magnitude);
-  void StopVibration(int sequence_id);
-  void SetVibration(double strong_magnitude, double weak_magnitude);
-
-  void RunCallbackOnMojoThread(mojom::GamepadHapticsResult result);
 
   void WriteXbox360Rumble(uint8_t strong_magnitude, uint8_t weak_magnitude);
   void WriteXboxOneInit();
@@ -187,11 +168,6 @@ class XboxControllerMac {
   int control_endpoint_ = 0;
 
   uint8_t counter_ = 0;
-
-  int sequence_id_ = 0;
-  scoped_refptr<base::SequencedTaskRunner> playing_effect_task_runner_;
-  mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback
-      playing_effect_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(XboxControllerMac);
 };

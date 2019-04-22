@@ -22,6 +22,7 @@ namespace extensions {
 
 struct EntryInfo;
 struct FileHandlerInfo;
+struct FileHandlerMatch;
 struct GrantedFileEntry;
 
 // TODO(michaelpg,benwells): move this to an app-specific namespace and
@@ -36,10 +37,11 @@ extern const char kSecurityError[];
 const FileHandlerInfo* FileHandlerForId(const Extension& app,
                                         const std::string& handler_id);
 
-// Returns the handlers that can handle all files in |entries|.
-std::vector<const FileHandlerInfo*> FindFileHandlersForEntries(
+// Returns the handlers that can handle all files in |entries|
+// along with metadata about how the handler matched (MIME or file extension)
+std::vector<FileHandlerMatch> FindFileHandlerMatchesForEntries(
     const Extension& extension,
-    const std::vector<EntryInfo> entries);
+    const std::vector<EntryInfo>& entries);
 
 bool FileHandlerCanHandleEntry(const FileHandlerInfo& handler,
                                const EntryInfo& entry);

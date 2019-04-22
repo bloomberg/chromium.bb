@@ -41,18 +41,16 @@ namespace dawn_native { namespace vulkan {
         void TransitionUsageNow(VkCommandBuffer commands, dawn::BufferUsageBit usage);
 
       private:
-        void SetSubDataImpl(uint32_t start, uint32_t count, const uint8_t* data) override;
-        void MapReadAsyncImpl(uint32_t serial, uint32_t start, uint32_t count) override;
-        void MapWriteAsyncImpl(uint32_t serial, uint32_t start, uint32_t count) override;
+        void MapReadAsyncImpl(uint32_t serial) override;
+        void MapWriteAsyncImpl(uint32_t serial) override;
         void UnmapImpl() override;
+        void DestroyImpl() override;
 
         VkBuffer mHandle = VK_NULL_HANDLE;
         DeviceMemoryAllocation mMemoryAllocation;
 
         dawn::BufferUsageBit mLastUsage = dawn::BufferUsageBit::None;
     };
-
-    using BufferView = BufferViewBase;
 
     class MapRequestTracker {
       public:

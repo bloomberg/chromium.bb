@@ -4,23 +4,25 @@
 
 package org.chromium.chrome.browser.sync;
 
-import android.app.Notification;
-import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.util.Log;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.notifications.ChromeNotification;
 import org.chromium.chrome.browser.notifications.ChromeNotificationBuilder;
 import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.chrome.browser.notifications.NotificationManagerProxy;
 import org.chromium.chrome.browser.notifications.NotificationManagerProxyImpl;
+import org.chromium.chrome.browser.notifications.NotificationMetadata;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
+import org.chromium.chrome.browser.notifications.PendingIntentProvider;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.SyncAndServicesPreferences;
@@ -28,6 +30,7 @@ import org.chromium.chrome.browser.signin.AccountManagementFragment;
 import org.chromium.chrome.browser.sync.GoogleServiceAuthError.State;
 import org.chromium.chrome.browser.sync.ui.PassphraseActivity;
 import org.chromium.components.sync.AndroidSyncSettings;
+import org.chromium.components.sync.Passphrase;
 
 /**
  * {@link SyncNotificationController} provides functionality for displaying Android notifications
@@ -67,12 +70,12 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
                 return;
             }
             switch (mProfileSyncService.getPassphraseType()) {
-                case IMPLICIT_PASSPHRASE: // Falling through intentionally.
-                case FROZEN_IMPLICIT_PASSPHRASE: // Falling through intentionally.
-                case CUSTOM_PASSPHRASE:
+                case Passphrase.Type.IMPLICIT: // Falling through intentionally.
+                case Passphrase.Type.FROZEN_IMPLICIT: // Falling through intentionally.
+                case Passphrase.Type.CUSTOM:
                     showSyncNotification(R.string.sync_need_passphrase, createPasswordIntent());
                     break;
-                case KEYSTORE_PASSPHRASE: // Falling through intentionally.
+                case Passphrase.Type.KEYSTORE: // Falling through intentionally.
                 default:
                     mNotificationManager.cancel(NotificationConstants.NOTIFICATION_ID_SYNC);
                     return;
@@ -95,14 +98,18 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
         String text = applicationContext.getString(R.string.sign_in_sync) + ": "
                 + applicationContext.getString(message);
 
-        PendingIntent contentIntent = PendingIntent.getActivity(applicationContext, 0, intent, 0);
+        PendingIntentProvider contentIntent =
+                PendingIntentProvider.getActivity(applicationContext, 0, intent, 0);
 
         // There is no need to provide a group summary notification because the NOTIFICATION_ID_SYNC
         // notification id ensures there's only one sync notification at a time.
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory
-                        .createChromeNotificationBuilder(
-                                true /* preferCompat */, ChannelDefinitions.ChannelId.BROWSER)
+                        .createChromeNotificationBuilder(true /* preferCompat */,
+                                ChannelDefinitions.ChannelId.BROWSER, null /*remoteAppPackageName*/,
+                                new NotificationMetadata(
+                                        NotificationUmaTracker.SystemNotificationType.SYNC, null,
+                                        NotificationConstants.NOTIFICATION_ID_SYNC))
                         .setAutoCancel(true)
                         .setContentIntent(contentIntent)
                         .setContentTitle(title)
@@ -112,11 +119,11 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
                         .setLocalOnly(true)
                         .setGroup(NotificationConstants.GROUP_SYNC);
 
-        Notification notification = builder.buildWithBigTextStyle(text);
+        ChromeNotification notification = builder.buildWithBigTextStyle(text);
 
-        mNotificationManager.notify(NotificationConstants.NOTIFICATION_ID_SYNC, notification);
+        mNotificationManager.notify(notification);
         NotificationUmaTracker.getInstance().onNotificationShown(
-                NotificationUmaTracker.SystemNotificationType.SYNC, notification);
+                NotificationUmaTracker.SystemNotificationType.SYNC, notification.getNotification());
     }
 
     private boolean shouldSyncAuthErrorBeShown() {
@@ -147,13 +154,16 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
      */
     private Intent createSettingsIntent() {
         final String fragmentName;
+        final Bundle fragmentArguments;
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.UNIFIED_CONSENT)) {
             fragmentName = SyncAndServicesPreferences.class.getName();
+            fragmentArguments = SyncAndServicesPreferences.createArguments(false);
         } else {
             fragmentName = AccountManagementFragment.class.getName();
+            fragmentArguments = null;
         }
         return PreferencesLauncher.createIntentForSettingsPage(
-                ContextUtils.getApplicationContext(), fragmentName);
+                ContextUtils.getApplicationContext(), fragmentName, fragmentArguments);
     }
 
     /**

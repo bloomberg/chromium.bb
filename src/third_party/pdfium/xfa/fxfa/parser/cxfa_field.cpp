@@ -20,7 +20,9 @@ const CXFA_Node::PropertyData kFieldPropertyData[] = {
     {XFA_Element::Bind, 1, 0},      {XFA_Element::Desc, 1, 0},
     {XFA_Element::Font, 1, 0},      {XFA_Element::Value, 1, 0},
     {XFA_Element::Calculate, 1, 0}, {XFA_Element::Extras, 1, 0},
-    {XFA_Element::Items, 2, 0},     {XFA_Element::Unknown, 0, 0}};
+    {XFA_Element::Items, 2, 0},
+};
+
 const CXFA_Node::AttributeData kFieldAttributeData[] = {
     {XFA_Attribute::H, XFA_AttributeType::Measure, (void*)L"0in"},
     {XFA_Attribute::W, XFA_AttributeType::Measure, (void*)L"0in"},
@@ -28,16 +30,16 @@ const CXFA_Node::AttributeData kFieldAttributeData[] = {
     {XFA_Attribute::Y, XFA_AttributeType::Measure, (void*)L"0in"},
     {XFA_Attribute::Id, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::HAlign, XFA_AttributeType::Enum,
-     (void*)XFA_AttributeEnum::Left},
+     (void*)XFA_AttributeValue::Left},
     {XFA_Attribute::Name, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Use, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Access, XFA_AttributeType::Enum,
-     (void*)XFA_AttributeEnum::Open},
+     (void*)XFA_AttributeValue::Open},
     {XFA_Attribute::Rotate, XFA_AttributeType::Integer, (void*)0},
     {XFA_Attribute::Presence, XFA_AttributeType::Enum,
-     (void*)XFA_AttributeEnum::Visible},
+     (void*)XFA_AttributeValue::Visible},
     {XFA_Attribute::VAlign, XFA_AttributeType::Enum,
-     (void*)XFA_AttributeEnum::Top},
+     (void*)XFA_AttributeValue::Top},
     {XFA_Attribute::MaxH, XFA_AttributeType::Measure, (void*)L"0in"},
     {XFA_Attribute::MaxW, XFA_AttributeType::Measure, (void*)L"0in"},
     {XFA_Attribute::MinH, XFA_AttributeType::Measure, (void*)L"0in"},
@@ -47,11 +49,9 @@ const CXFA_Node::AttributeData kFieldAttributeData[] = {
     {XFA_Attribute::Usehref, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Locale, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::AnchorType, XFA_AttributeType::Enum,
-     (void*)XFA_AttributeEnum::TopLeft},
+     (void*)XFA_AttributeValue::TopLeft},
     {XFA_Attribute::AccessKey, XFA_AttributeType::CData, nullptr},
-    {XFA_Attribute::Unknown, XFA_AttributeType::Integer, nullptr}};
-
-constexpr wchar_t kFieldName[] = L"field";
+};
 
 }  // namespace
 
@@ -63,7 +63,6 @@ CXFA_Field::CXFA_Field(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_Element::Field,
                 kFieldPropertyData,
                 kFieldAttributeData,
-                kFieldName,
                 pdfium::MakeUnique<CJX_Field>(this)) {}
 
-CXFA_Field::~CXFA_Field() {}
+CXFA_Field::~CXFA_Field() = default;

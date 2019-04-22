@@ -71,13 +71,12 @@ class GpuMemoryBufferImplGbm : public gfx::GpuMemoryBuffer {
     handle_.type = gfx::NATIVE_PIXMAP;
     // Set a dummy id since this is for testing only.
     handle_.id = gfx::GpuMemoryBufferId(0);
-    handle_.native_pixmap_handle.fds.push_back(
-        base::FileDescriptor(gbm_bo_get_fd(buffer_object), false));
-    for (size_t i = 0; i < gbm_bo_get_num_planes(buffer_object); ++i) {
-      handle_.native_pixmap_handle.planes.push_back(
-          gfx::NativePixmapPlane(gbm_bo_get_plane_stride(buffer_object, i),
-                                 gbm_bo_get_plane_offset(buffer_object, i),
-                                 gbm_bo_get_plane_size(buffer_object, i)));
+    for (size_t i = 0; i < gbm_bo_get_plane_count(buffer_object); ++i) {
+      handle_.native_pixmap_handle.planes.push_back(gfx::NativePixmapPlane(
+          gbm_bo_get_stride_for_plane(buffer_object, i),
+          gbm_bo_get_offset(buffer_object, i),
+          gbm_bo_get_plane_size(buffer_object, i),
+          base::ScopedFD(gbm_bo_get_plane_fd(buffer_object, i))));
     }
   }
 
@@ -85,7 +84,7 @@ class GpuMemoryBufferImplGbm : public gfx::GpuMemoryBuffer {
     if (mapped_) {
       Unmap();
     }
-    close(gbm_bo_get_fd(buffer_object_));
+
     gbm_bo_destroy(buffer_object_);
   }
 
@@ -93,7 +92,7 @@ class GpuMemoryBufferImplGbm : public gfx::GpuMemoryBuffer {
     if (mapped_) {
       return true;
     }
-    size_t num_planes = gbm_bo_get_num_planes(buffer_object_);
+    size_t num_planes = gbm_bo_get_plane_count(buffer_object_);
     uint32_t stride;
     mapped_planes_.resize(num_planes);
     for (size_t i = 0; i < num_planes; ++i) {
@@ -112,7 +111,7 @@ class GpuMemoryBufferImplGbm : public gfx::GpuMemoryBuffer {
     }
     mapped_ = true;
     return true;
-  };
+  }
 
   void* memory(size_t plane) override {
     if (!mapped_) {
@@ -146,7 +145,7 @@ class GpuMemoryBufferImplGbm : public gfx::GpuMemoryBuffer {
   gfx::BufferFormat GetFormat() const override { return format_; }
 
   int stride(size_t plane) const override {
-    return gbm_bo_get_plane_stride(buffer_object_, plane);
+    return gbm_bo_get_stride_for_plane(buffer_object_, plane);
   }
 
   void SetColorSpace(const gfx::ColorSpace& color_space) override {}

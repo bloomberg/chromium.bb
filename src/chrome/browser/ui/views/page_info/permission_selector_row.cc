@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/page_info/permission_selector_row.h"
 
+#include "base/bind.h"
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
@@ -32,27 +33,6 @@ namespace {
 // The text context / style of the |PermissionSelectorRow| combobox and label.
 constexpr int kPermissionRowTextContext = views::style::CONTEXT_LABEL;
 constexpr int kPermissionRowTextStyle = views::style::STYLE_PRIMARY;
-
-// Calculates the amount of padding to add beneath a |PermissionSelectorRow|
-// depending on whether it has an accompanying permission decision reason.
-int CalculatePaddingBeneathPermissionRow(bool has_reason) {
-  const int list_item_padding = ChromeLayoutProvider::Get()->GetDistanceMetric(
-                                    DISTANCE_CONTROL_LIST_VERTICAL) /
-                                2;
-  if (!has_reason)
-    return list_item_padding;
-
-  const int combobox_height =
-      PermissionSelectorRow::MinHeightForPermissionRow();
-  // Match the amount of padding above the |PermissionSelectorRow| title text
-  // here by calculating its full height of this |PermissionSelectorRow| and
-  // subtracting the line height, then dividing everything by two. Note it is
-  // assumed the combobox is the tallest part of the row.
-  return (list_item_padding * 2 + combobox_height -
-          views::style::GetLineHeight(kPermissionRowTextContext,
-                                      kPermissionRowTextStyle)) /
-         2;
-}
 
 }  // namespace
 
@@ -256,11 +236,29 @@ PermissionSelectorRow::~PermissionSelectorRow() {
   delete combobox_;
 }
 
-// static
+int PermissionSelectorRow::CalculatePaddingBeneathPermissionRow(
+    bool has_reason) {
+  const int list_item_padding = ChromeLayoutProvider::Get()->GetDistanceMetric(
+                                    DISTANCE_CONTROL_LIST_VERTICAL) /
+                                2;
+  if (!has_reason)
+    return list_item_padding;
+
+  const int combobox_height = MinHeightForPermissionRow();
+  // Match the amount of padding above the |PermissionSelectorRow| title text
+  // here by calculating its full height of this |PermissionSelectorRow| and
+  // subtracting the line height, then dividing everything by two. Note it is
+  // assumed the combobox is the tallest part of the row.
+  return (list_item_padding * 2 + combobox_height -
+          views::style::GetLineHeight(kPermissionRowTextContext,
+                                      kPermissionRowTextStyle)) /
+         2;
+}
+
 int PermissionSelectorRow::MinHeightForPermissionRow() {
   return ChromeLayoutProvider::Get()->GetControlHeightForFont(
       kPermissionRowTextContext, kPermissionRowTextStyle,
-      views::Combobox::GetFontList());
+      combobox_->GetFontList());
 }
 
 void PermissionSelectorRow::AddObserver(

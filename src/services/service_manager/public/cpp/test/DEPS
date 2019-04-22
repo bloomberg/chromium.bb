@@ -1,5 +1,0 @@
-specific_include_rules = {
-  "run_all_service_tests.cc": [
-    "+services/catalog",
-  ]
-}

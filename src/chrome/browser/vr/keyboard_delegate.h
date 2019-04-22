@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_VR_KEYBOARD_DELEGATE_H_
 
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/vr/vr_export.h"
+#include "chrome/browser/vr/vr_base_export.h"
 
 namespace gfx {
 class Point3F;
@@ -20,7 +20,7 @@ class KeyboardUiInterface;
 struct CameraModel;
 struct TextInputInfo;
 
-class VR_EXPORT KeyboardDelegate {
+class VR_BASE_EXPORT KeyboardDelegate {
  public:
   virtual ~KeyboardDelegate() {}
 

@@ -15,7 +15,7 @@
 #include "content/browser/loader/resource_controller.h"
 #include "content/common/content_export.h"
 #include "ppapi/buildflags/buildflags.h"
-#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 
 namespace net {
 class URLRequest;

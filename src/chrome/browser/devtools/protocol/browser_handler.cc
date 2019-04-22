@@ -7,6 +7,7 @@
 #include <set>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/devtools/chrome_devtools_manager_delegate.h"
@@ -156,8 +157,9 @@ Response BrowserHandler::GetWindowBounds(
 }
 
 Response BrowserHandler::Close() {
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                           base::BindOnce([]() { chrome::AttemptExit(); }));
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
+      base::BindOnce([]() { chrome::ExitIgnoreUnloadHandlers(); }));
   return Response::OK();
 }
 
@@ -227,8 +229,8 @@ Response BrowserHandler::Disable() {
   for (auto& browser_context_id : contexts_with_overridden_permissions_) {
     Profile* profile = nullptr;
     Maybe<std::string> context_id =
-        browser_context_id == "" ? Maybe<std::string>()
-                                 : Maybe<std::string>(browser_context_id);
+        browser_context_id.empty() ? Maybe<std::string>()
+                                   : Maybe<std::string>(browser_context_id);
     FindProfile(context_id, &profile);
     if (profile) {
       PermissionManager* permission_manager = PermissionManager::Get(profile);
@@ -287,7 +289,7 @@ protocol::Response BrowserHandler::SetDockTile(
   if (image.isJust())
     reps.emplace_back(image.fromJust().bytes(), 1);
   DevToolsDockTile::Update(label.fromMaybe(std::string()),
-                           reps.size() ? gfx::Image(reps) : gfx::Image());
+                           !reps.empty() ? gfx::Image(reps) : gfx::Image());
   return Response::OK();
 }
 

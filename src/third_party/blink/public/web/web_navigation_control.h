@@ -14,12 +14,10 @@
 
 namespace blink {
 
-class WebData;
-class WebString;
 class WebURL;
 struct WebURLError;
-class WebURLRequest;
 class WebHistoryItem;
+struct WebNavigationInfo;
 struct WebNavigationParams;
 
 // This interface gives control to navigation-related functionality of
@@ -36,15 +34,10 @@ class WebNavigationControl : public WebLocalFrame {
   // Note: this may lead to the destruction of the frame.
   virtual bool DispatchBeforeUnloadEvent(bool is_reload) = 0;
 
-  // Commits a cross-document navigation in the frame. For history navigations,
-  // a valid WebHistoryItem should be provided.
+  // Commits a cross-document navigation in the frame. See WebNavigationParams
+  // for details.
   // TODO(dgozman): return mojom::CommitResult.
   virtual void CommitNavigation(
-      const WebURLRequest&,
-      WebFrameLoadType,
-      const WebHistoryItem&,
-      bool is_client_redirect,
-      const base::UnguessableToken& devtools_navigation_token,
       std::unique_ptr<WebNavigationParams> navigation_params,
       std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) = 0;
 
@@ -62,36 +55,6 @@ class WebNavigationControl : public WebLocalFrame {
   // TODO(dgozman): this may replace the document, so perhaps we should
   // return something meaningful?
   virtual void LoadJavaScriptURL(const WebURL&) = 0;
-
-  // This method is short-hand for calling CommitDataNavigation, where mime_type
-  // is "text/html" and text_encoding is "UTF-8".
-  // TODO(dgozman): rename to CommitHTMLStringNavigation.
-  virtual void LoadHTMLString(const WebData& html,
-                              const WebURL& base_url,
-                              const WebURL& unreachable_url = WebURL()) = 0;
-
-  // Navigates to the given |data| with specified |mime_type| and optional
-  // |text_encoding|.
-  //
-  // If specified, |unreachable_url| is reported via
-  // WebDocumentLoader::UnreachableURL.
-  //
-  // If |replace| is false, then this data will be loaded as a normal
-  // navigation.  Otherwise, the current history item will be replaced.
-  //
-  // Request's url indicates the security origin and is used as a base
-  // url to resolve links in the committed document.
-  virtual void CommitDataNavigation(
-      const WebURLRequest&,
-      const WebData&,
-      const WebString& mime_type,
-      const WebString& text_encoding,
-      const WebURL& unreachable_url,
-      WebFrameLoadType,
-      const WebHistoryItem&,
-      bool is_client_redirect,
-      std::unique_ptr<WebNavigationParams> navigation_params,
-      std::unique_ptr<WebDocumentLoader::ExtraData> navigation_data) = 0;
 
   enum FallbackContentResult {
     // An error page should be shown instead of fallback.
@@ -114,6 +77,7 @@ class WebNavigationControl : public WebLocalFrame {
   // in this frame. Used to propagate state when this frame has navigated
   // cross process.
   virtual void SetCommittedFirstRealLoad() = 0;
+  virtual bool HasCommittedFirstRealLoad() = 0;
 
   // Informs the frame that the navigation it asked the client to do was
   // dropped.
@@ -129,12 +93,7 @@ class WebNavigationControl : public WebLocalFrame {
   // is actually being handled by the client.
   // TODO(dgozman): remove this together with placeholder document loader.
   virtual bool CreatePlaceholderDocumentLoader(
-      const WebURLRequest&,
-      WebFrameLoadType,
-      WebNavigationType,
-      bool is_client_redirect,
-      const base::UnguessableToken& devtools_navigation_token,
-      std::unique_ptr<WebNavigationParams>,
+      const WebNavigationInfo&,
       std::unique_ptr<WebDocumentLoader::ExtraData>) = 0;
 
  protected:

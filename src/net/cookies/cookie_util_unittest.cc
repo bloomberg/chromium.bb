@@ -5,7 +5,9 @@
 #include <string>
 #include <utility>
 
+#include "base/callback.h"
 #include "base/strings/string_split.h"
+#include "base/test/bind_test_util.h"
 #include "net/cookies/cookie_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -18,27 +20,16 @@ struct RequestCookieParsingTest {
   base::StringPairs parsed;
 };
 
-cookie_util::ParsedRequestCookies MakeParsedRequestCookies(
-    const base::StringPairs& data) {
-  cookie_util::ParsedRequestCookies parsed;
-  for (size_t i = 0; i < data.size(); i++) {
-    parsed.push_back(std::make_pair(base::StringPiece(data[i].first),
-                                    base::StringPiece(data[i].second)));
-  }
-  return parsed;
-}
-
 void CheckParse(const std::string& str,
                 const base::StringPairs& parsed_expected) {
   cookie_util::ParsedRequestCookies parsed;
   cookie_util::ParseRequestCookieLine(str, &parsed);
-  EXPECT_EQ(MakeParsedRequestCookies(parsed_expected), parsed);
+  EXPECT_EQ(parsed_expected, parsed);
 }
 
 void CheckSerialize(const base::StringPairs& parsed,
                     const std::string& str_expected) {
-  cookie_util::ParsedRequestCookies prc = MakeParsedRequestCookies(parsed);
-  EXPECT_EQ(str_expected, cookie_util::SerializeRequestCookieLine(prc));
+  EXPECT_EQ(str_expected, cookie_util::SerializeRequestCookieLine(parsed));
 }
 
 TEST(CookieUtilTest, TestDomainIsHostOnly) {
@@ -260,6 +251,176 @@ TEST(CookieUtilTest, TestIsDomainMatch) {
   EXPECT_FALSE(cookie_util::IsDomainMatch("example.com", "example.de"));
   EXPECT_FALSE(cookie_util::IsDomainMatch(".example.com", "example.de"));
   EXPECT_FALSE(cookie_util::IsDomainMatch(".example.de", "example.de.vu"));
+}
+
+TEST(CookieUtilTest, TestComputeSameSiteContext) {
+  // |site_for_cookies| not matching the URL -> it's cross-site.
+  EXPECT_EQ(CookieOptions::SameSiteCookieContext::CROSS_SITE,
+            cookie_util::ComputeSameSiteContext(GURL("http://example.com"),
+                                                GURL("http://notexample.com"),
+                                                base::nullopt /*initiator*/));
+
+  EXPECT_EQ(CookieOptions::SameSiteCookieContext::CROSS_SITE,
+            cookie_util::ComputeSameSiteContext(
+                GURL("http://example.com"), GURL("http://notexample.com"),
+                url::Origin::Create(GURL("http://example.com"))));
+
+  EXPECT_EQ(CookieOptions::SameSiteCookieContext::CROSS_SITE,
+            cookie_util::ComputeSameSiteContext(
+                GURL("http://a.com"), GURL("http://b.com"),
+                url::Origin::Create(GURL("http://from-elsewhere.com"))));
+
+  // Same |site_for_cookies|, but not |initiator| -> it's same-site lax.
+  EXPECT_EQ(CookieOptions::SameSiteCookieContext::SAME_SITE_LAX,
+            cookie_util::ComputeSameSiteContext(
+                GURL("http://example.com"), GURL("http://example.com"),
+                url::Origin::Create(GURL("http://from-elsewhere.com"))));
+
+  // This isn't a full on origin check --- subdomains and different schema are
+  // accepted.
+  EXPECT_EQ(CookieOptions::SameSiteCookieContext::SAME_SITE_LAX,
+            cookie_util::ComputeSameSiteContext(
+                GURL("https://example.com"), GURL("http://example.com"),
+                url::Origin::Create(GURL("http://from-elsewhere.com"))));
+
+  EXPECT_EQ(CookieOptions::SameSiteCookieContext::SAME_SITE_LAX,
+            cookie_util::ComputeSameSiteContext(
+                GURL("http://sub.example.com"), GURL("http://sub2.example.com"),
+                url::Origin::Create(GURL("http://from-elsewhere.com"))));
+
+  EXPECT_EQ(
+      CookieOptions::SameSiteCookieContext::SAME_SITE_LAX,
+      cookie_util::ComputeSameSiteContext(
+          GURL("http://sub.example.com"), GURL("http://sub.example.com:8080"),
+          url::Origin::Create(GURL("http://from-elsewhere.com"))));
+
+  // nullopt |initiator| is trusted for purposes of strict, an opaque one isn't.
+  EXPECT_EQ(CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT,
+            cookie_util::ComputeSameSiteContext(
+                GURL("http://example.com"), GURL("http://example.com"),
+                url::Origin::Create(GURL("http://example.com"))));
+
+  EXPECT_EQ(CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT,
+            cookie_util::ComputeSameSiteContext(GURL("http://example.com"),
+                                                GURL("http://example.com"),
+                                                base::nullopt /*initiator*/));
+
+  EXPECT_EQ(CookieOptions::SameSiteCookieContext::SAME_SITE_LAX,
+            cookie_util::ComputeSameSiteContext(GURL("http://example.com"),
+                                                GURL("http://example.com"),
+                                                url::Origin()));
+}
+
+TEST(CookieUtilTest, ComputeSameSiteContextForRequest) {
+  EXPECT_EQ(
+      CookieOptions::SameSiteCookieContext::CROSS_SITE,
+      cookie_util::ComputeSameSiteContextForRequest(
+          "GET", GURL("http://example.com"), GURL("http://notexample.com"),
+          base::nullopt /*initiator*/, false /*attach_same_site_cookies*/));
+
+  // |attach_same_site_cookies| = true bypasses method and initiator
+  // checks, but not the |site_for_cookies| one.
+  EXPECT_EQ(CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT,
+            cookie_util::ComputeSameSiteContextForRequest(
+                "GET", GURL("http://example.com"), GURL("http://example.com"),
+                url::Origin::Create(GURL("http://from-elsewhere.com")),
+                true /*attach_same_site_cookies*/));
+
+  EXPECT_EQ(CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT,
+            cookie_util::ComputeSameSiteContextForRequest(
+                "POST", GURL("http://example.com"), GURL("http://example.com"),
+                url::Origin::Create(GURL("http://from-elsewhere.com")),
+                true /*attach_same_site_cookies*/));
+
+  EXPECT_EQ(CookieOptions::SameSiteCookieContext::CROSS_SITE,
+            cookie_util::ComputeSameSiteContextForRequest(
+                "GET", GURL("http://example.com"), GURL("http://question.com"),
+                url::Origin::Create(GURL("http://from-elsewhere.com")),
+                true /*attach_same_site_cookies*/));
+
+  // Normally, lax requests also require a safe method.
+  EXPECT_EQ(CookieOptions::SameSiteCookieContext::SAME_SITE_LAX,
+            cookie_util::ComputeSameSiteContextForRequest(
+                "GET", GURL("http://example.com"), GURL("http://example.com"),
+                url::Origin::Create(GURL("http://from-elsewhere.com")),
+                false /*attach_same_site_cookies*/));
+
+  EXPECT_EQ(CookieOptions::SameSiteCookieContext::SAME_SITE_LAX,
+            cookie_util::ComputeSameSiteContextForRequest(
+                "HEAD", GURL("http://example.com"), GURL("http://example.com"),
+                url::Origin::Create(GURL("http://from-elsewhere.com")),
+                false /*attach_same_site_cookies*/));
+
+  EXPECT_EQ(CookieOptions::SameSiteCookieContext::CROSS_SITE,
+            cookie_util::ComputeSameSiteContextForRequest(
+                "POST", GURL("http://example.com"), GURL("http://example.com"),
+                url::Origin::Create(GURL("http://from-elsewhere.com")),
+                false /*attach_same_site_cookies*/));
+}
+
+TEST(CookieUtilTest, IgnoreCookieStatusList) {
+  CookieList cookie_list_out;
+  base::OnceCallback<void(const CookieList&)> callback =
+      base::BindLambdaForTesting(
+          [&cookie_list_out](const CookieList& cookie_list) {
+            cookie_list_out = cookie_list;
+          });
+  base::OnceCallback<void(const CookieList&, const CookieStatusList&)>
+      adapted_callback =
+          cookie_util::IgnoreCookieStatusList(std::move(callback));
+
+  CookieList cookie_list_in = {CanonicalCookie()};
+  std::move(adapted_callback).Run(cookie_list_in, CookieStatusList());
+
+  EXPECT_EQ(1u, cookie_list_out.size());
+}
+
+TEST(CookieUtilTest, AddCookieStatusList) {
+  CookieList cookie_list_out;
+  CookieStatusList excluded_cookies_out = {CookieWithStatus()};
+  base::OnceCallback<void(const CookieList&, const CookieStatusList&)>
+      callback = base::BindLambdaForTesting(
+          [&cookie_list_out, &excluded_cookies_out](
+              const CookieList& cookie_list,
+              const CookieStatusList& excluded_cookies) {
+            cookie_list_out = cookie_list;
+            excluded_cookies_out = excluded_cookies;
+          });
+  base::OnceCallback<void(const CookieList&)> adapted_callback =
+      cookie_util::AddCookieStatusList(std::move(callback));
+
+  CookieList cookie_list_in = {CanonicalCookie()};
+  std::move(adapted_callback).Run(cookie_list_in);
+
+  EXPECT_EQ(1u, cookie_list_out.size());
+  EXPECT_EQ(0u, excluded_cookies_out.size());
+}
+
+TEST(CookieUtilTest, AdaptCookieInclusionStatusToBool) {
+  bool result_out = true;
+  base::OnceCallback<void(bool)> callback = base::BindLambdaForTesting(
+      [&result_out](bool result) { result_out = result; });
+
+  base::OnceCallback<void(CanonicalCookie::CookieInclusionStatus)>
+      adapted_callback =
+          cookie_util::AdaptCookieInclusionStatusToBool(std::move(callback));
+
+  std::move(adapted_callback)
+      .Run(CanonicalCookie::CookieInclusionStatus::EXCLUDE_UNKNOWN_ERROR);
+
+  EXPECT_FALSE(result_out);
+
+  result_out = false;
+  callback = base::BindLambdaForTesting(
+      [&result_out](bool result) { result_out = result; });
+
+  adapted_callback =
+      cookie_util::AdaptCookieInclusionStatusToBool(std::move(callback));
+
+  std::move(adapted_callback)
+      .Run(CanonicalCookie::CookieInclusionStatus::INCLUDE);
+
+  EXPECT_TRUE(result_out);
 }
 
 }  // namespace

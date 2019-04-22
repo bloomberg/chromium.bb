@@ -427,20 +427,6 @@ html[dir=rtl] .main-pane {
   width: 27px;
 }
 
-.launch-app-button-container {
-  display: block;
-  flex: auto;
-  text-align: center;
-}
-
-.launch-app-button {
-  display: inline;
-  margin-top: 6px !important;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 .pod[auth-type='onlineSignIn'] .reauth-hint-container {
   display: flex;
   justify-content: center;
@@ -514,12 +500,12 @@ html[dir=rtl] .action-box-area {
 }
 
 .action-box-area .action-box-icon {
-  /* overriden in chrome/browser/resources/md_user_manager/user_manager.css */
+  /* overriden in chrome/browser/resources/user_manager/user_manager.css */
   display: none;
 }
 
 .user-image-gradient-area {
-  /* overriden in chrome/browser/resources/md_user_manager/user_manager.css */
+  /* overriden in chrome/browser/resources/user_manager/user_manager.css */
   display: none;
 }
 

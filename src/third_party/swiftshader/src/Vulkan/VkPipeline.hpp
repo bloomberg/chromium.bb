@@ -16,25 +16,48 @@
 #define VK_PIPELINE_HPP_
 
 #include "VkObject.hpp"
+#include "Vulkan/VkDescriptorSet.hpp"
+#include "Device/Renderer.hpp"
+
+namespace sw { class SpirvShader; }
 
 namespace vk
 {
 
+class PipelineLayout;
+
 class Pipeline
 {
 public:
-	virtual void destroy(const VkAllocationCallbacks* pAllocator) = 0;
+	Pipeline(PipelineLayout const *layout);
+
+	operator VkPipeline()
+	{
+		return reinterpret_cast<VkPipeline>(this);
+	}
+
+	void destroy(const VkAllocationCallbacks* pAllocator)
+	{
+		destroyPipeline(pAllocator);
+	}
+
+	virtual void destroyPipeline(const VkAllocationCallbacks* pAllocator) = 0;
 #ifndef NDEBUG
 	virtual VkPipelineBindPoint bindPoint() const = 0;
 #endif
+
+	PipelineLayout const * getLayout() const { return layout; }
+
+protected:
+	PipelineLayout const *layout = nullptr;
 };
 
-class GraphicsPipeline : public Pipeline, public Object<GraphicsPipeline, VkPipeline>
+class GraphicsPipeline : public Pipeline, public ObjectBase<GraphicsPipeline, VkPipeline>
 {
 public:
 	GraphicsPipeline(const VkGraphicsPipelineCreateInfo* pCreateInfo, void* mem);
 	~GraphicsPipeline() = delete;
-	void destroy(const VkAllocationCallbacks* pAllocator) override;
+	void destroyPipeline(const VkAllocationCallbacks* pAllocator) override;
 
 #ifndef NDEBUG
 	VkPipelineBindPoint bindPoint() const override
@@ -44,14 +67,33 @@ public:
 #endif
 
 	static size_t ComputeRequiredAllocationSize(const VkGraphicsPipelineCreateInfo* pCreateInfo);
+
+	void compileShaders(const VkAllocationCallbacks* pAllocator, const VkGraphicsPipelineCreateInfo* pCreateInfo);
+
+	uint32_t computePrimitiveCount(uint32_t vertexCount) const;
+	const sw::Context& getContext() const;
+	const VkRect2D& getScissor() const;
+	const VkViewport& getViewport() const;
+	const sw::Color<float>& getBlendConstants() const;
+	bool hasDynamicState(VkDynamicState dynamicState) const;
+
+private:
+	sw::SpirvShader *vertexShader = nullptr;
+	sw::SpirvShader *fragmentShader = nullptr;
+
+	uint32_t dynamicStateFlags = 0;
+	sw::Context context;
+	VkRect2D scissor;
+	VkViewport viewport;
+	sw::Color<float> blendConstants;
 };
 
-class ComputePipeline : public Pipeline, public Object<ComputePipeline, VkPipeline>
+class ComputePipeline : public Pipeline, public ObjectBase<ComputePipeline, VkPipeline>
 {
 public:
 	ComputePipeline(const VkComputePipelineCreateInfo* pCreateInfo, void* mem);
 	~ComputePipeline() = delete;
-	void destroy(const VkAllocationCallbacks* pAllocator) override;
+	void destroyPipeline(const VkAllocationCallbacks* pAllocator) override;
 
 #ifndef NDEBUG
 	VkPipelineBindPoint bindPoint() const override
@@ -61,6 +103,17 @@ public:
 #endif
 
 	static size_t ComputeRequiredAllocationSize(const VkComputePipelineCreateInfo* pCreateInfo);
+
+	void compileShaders(const VkAllocationCallbacks* pAllocator, const VkComputePipelineCreateInfo* pCreateInfo);
+
+	void run(uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ,
+		vk::DescriptorSet::Bindings const &descriptorSets,
+		vk::DescriptorSet::DynamicOffsets const &descriptorDynamicOffsets,
+		sw::PushConstantStorage const &pushConstants);
+
+protected:
+	sw::SpirvShader *shader = nullptr;
+	rr::Routine *routine = nullptr;
 };
 
 static inline Pipeline* Cast(VkPipeline object)

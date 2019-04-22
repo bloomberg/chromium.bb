@@ -19,10 +19,12 @@
 namespace v8 {
 namespace internal {
 
-TransitionArray* TransitionsAccessor::transitions() {
+TransitionArray TransitionsAccessor::transitions() {
   DCHECK_EQ(kFullTransitionArray, encoding());
   return TransitionArray::cast(raw_transitions_->GetHeapObjectAssumeStrong());
 }
+
+OBJECT_CONSTRUCTORS_IMPL(TransitionArray, WeakFixedArray)
 
 CAST_ACCESSOR(TransitionArray)
 
@@ -30,9 +32,9 @@ bool TransitionArray::HasPrototypeTransitions() {
   return Get(kPrototypeTransitionsIndex) != MaybeObject::FromSmi(Smi::zero());
 }
 
-WeakFixedArray* TransitionArray::GetPrototypeTransitions() {
+WeakFixedArray TransitionArray::GetPrototypeTransitions() {
   DCHECK(HasPrototypeTransitions());  // Callers must check first.
-  Object* prototype_transitions =
+  Object prototype_transitions =
       Get(kPrototypeTransitionsIndex)->GetHeapObjectAssumeStrong();
   return WeakFixedArray::cast(prototype_transitions);
 }
@@ -42,14 +44,14 @@ HeapObjectSlot TransitionArray::GetKeySlot(int transition_number) {
   return HeapObjectSlot(RawFieldOfElementAt(ToKeyIndex(transition_number)));
 }
 
-void TransitionArray::SetPrototypeTransitions(WeakFixedArray* transitions) {
+void TransitionArray::SetPrototypeTransitions(WeakFixedArray transitions) {
   DCHECK(transitions->IsWeakFixedArray());
   WeakFixedArray::Set(kPrototypeTransitionsIndex,
                       HeapObjectReference::Strong(transitions));
 }
 
 int TransitionArray::NumberOfPrototypeTransitions(
-    WeakFixedArray* proto_transitions) {
+    WeakFixedArray proto_transitions) {
   if (proto_transitions->length() == 0) return 0;
   MaybeObject raw =
       proto_transitions->Get(kProtoTransitionNumberOfEntriesOffset);
@@ -94,7 +96,7 @@ HeapObjectSlot TransitionArray::GetTargetSlot(int transition_number) {
 PropertyDetails TransitionsAccessor::GetTargetDetails(Name name, Map target) {
   DCHECK(!IsSpecialTransition(name->GetReadOnlyRoots(), name));
   int descriptor = target->LastAdded();
-  DescriptorArray* descriptors = target->instance_descriptors();
+  DescriptorArray descriptors = target->instance_descriptors();
   // Transitions are allowed only for the last added property.
   DCHECK(descriptors->GetKey(descriptor)->Equals(name));
   return descriptors->GetDetails(descriptor);
@@ -151,7 +153,7 @@ void TransitionArray::SetRawTarget(int transition_number, MaybeObject value) {
 bool TransitionArray::GetTargetIfExists(int transition_number, Isolate* isolate,
                                         Map* target) {
   MaybeObject raw = GetRawTarget(transition_number);
-  HeapObject* heap_object;
+  HeapObject heap_object;
   if (raw->GetHeapObjectIfStrong(&heap_object) &&
       heap_object->IsUndefined(isolate)) {
     return false;

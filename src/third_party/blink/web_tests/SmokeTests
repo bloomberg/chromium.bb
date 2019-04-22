@@ -11,7 +11,6 @@ compositing/animation/animated-composited-inside-hidden.html
 compositing/animation/animation-compositing.html
 compositing/animation/computed-style-during-delay.html
 compositing/backing/no-backing-foreground-layer.html
-compositing/columns/geometry-map-paginated-assert.html
 compositing/contents-opaque/body-background-painted.html
 compositing/contents-opaque/layer-transform.html
 compositing/contents-opaque/visibility-hidden.html
@@ -23,7 +22,6 @@ compositing/filters/sw-shadow-overlaps-hw-shadow.html
 compositing/force-compositing-mode/force-composite-empty.html
 compositing/geometry/bounds-ignores-hidden.html
 compositing/geometry/limit-layer-bounds-positioned-transition.html
-compositing/gestures/gesture-tapHighlight-no-graphics-layer-region-based-multicol.html
 compositing/iframes/visibility-hidden-transformed-content.html
 compositing/images/clip-on-directly-composited-image.html
 compositing/layer-creation/fixed-position-out-of-view-dynamic.html
@@ -316,7 +314,7 @@ external/wpt/web-animations/interfaces/KeyframeEffect/composite.html
 external/wpt/web-animations/interfaces/KeyframeEffect/spacing.html
 external/wpt/web-animations/timing-model/animation-effects/active-time.html
 external/wpt/web-animations/timing-model/animations/finishing-an-animation.html
-external/wpt/web-animations/timing-model/animations/set-the-animation-start-time.html
+external/wpt/web-animations/timing-model/animations/setting-the-start-time-of-an-animation.html
 external/wpt/web-animations/timing-model/time-transformations/transformed-progress.html
 external/wpt/webaudio/the-audio-api/the-audiobuffersourcenode-interface/audiobuffersource-ended.html
 external/wpt/webaudio/the-audio-api/the-audiobuffersourcenode-interface/audiobuffersource-playbackrate-zero.html
@@ -364,6 +362,7 @@ external/wpt/workers/semantics/reporting-errors/002.html
 external/wpt/workers/semantics/run-a-worker/001.html
 external/wpt/workers/semantics/xhr/002.html
 external/wpt/workers/Worker_dispatchEvent_ErrorEvent.htm
+external/wpt/workers/Worker-terminate-forever.html
 external/wpt/XMLHttpRequest/event-load.htm
 external/wpt/XMLHttpRequest/open-after-abort.htm
 fast/alignment/new-alignment-values.html
@@ -440,6 +439,7 @@ fast/css/first-letter-hover.html
 fast/css/first-letter-visibility.html
 fast/css/first-letter-wbr.html
 fast/css/focus-ring-multiline.html
+fast/css/font-face-default-font.html
 fast/css-generated-content/bug-106384.html
 fast/css-generated-content/table-with-scrollbar-corner.html
 fast/css/getComputedStyle/getComputedStyle-margin-percentage.html
@@ -619,7 +619,6 @@ fast/innerHTML/innerHTML-case.html
 fast/innerHTML/innerHTML-iframe.html
 fast/innerHTML/innerHTML-nbsp.xhtml
 fast/innerHTML/innerHTML-script-tag-crash.xhtml
-fast/innerHTML/javascript-url.html
 fast/input/input-device-constructor.html
 fast/inspector-support/cssURLQuotes.html
 fast/inspector-support/uncaught-dom1-exception.html
@@ -704,8 +703,6 @@ fast/overflow/generated-content-crash.html
 fast/overflow/position-fixed-transform-clipping.html
 fast/overflow/scroll-vertical-not-horizontal.html
 fast/overflow/setting-scrollTop-after-hide-show.html
-fast/pagination/first-letter-inherit-all-crash.html
-fast/pagination/very-tall-auto-height-crash.html
 fast/parser/broken-comment-4.html
 fast/peerconnection/RTCIceCandidate.html
 fast/plugins/keypress-event.html
@@ -766,11 +763,9 @@ fast/url/invalid-urls-utf8.html
 fast/url/mailto.html
 fast/webgl/canvas-getContext-crash.html
 fast/workers/worker-sharedarraybuffer-transfer.html
-fast/workers/worker-terminate-forever.html
 fast/writing-mode/english-lr-text.html
 fast/writing-mode/flipped-blocks-outline-crash.html
 fast/writing-mode/percentage-padding.html
-fast/xmlhttprequest/xmlhttprequest-missing-file-exception.html
 fast/xmlhttprequest/xmlhttprequest-responseXML-invalid-xml.html
 fast/xmlhttprequest/xmlhttprequest-responseXML-xml-text-responsetype.html
 fast/xpath/nodeset-duplicates.html

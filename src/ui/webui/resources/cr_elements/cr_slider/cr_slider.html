@@ -11,10 +11,40 @@
   <template>
     <style include="cr-hidden-style">
       :host {
+        --cr-slider-active-color: var(--google-blue-600);
         --cr-slider-bar-height: 2px;
+        --cr-slider-container-color: rgba(var(--google-blue-600-rgb), .24);
+        --cr-slider-container-disabled-color:
+            rgba(var(--google-grey-600-rgb), .24);
+        --cr-slider-disabled-color: var(--google-grey-600);
+        --cr-slider-knob-color: var(--google-blue-600);
+        --cr-slider-knob-disabled-color: white;
+        --cr-slider-marker-active-color: rgba(255, 255, 255, 0.54);
+        --cr-slider-marker-color: rgba(26, 115, 232, 0.54);
+        --cr-slider-marker-disabled-color: rgba(128, 134, 139, 0.54);
+        --cr-slider-position-transition: 80ms ease;
+        /* --cr-slider-ripple-opacity is left at default in light mode. */
+
         -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
         cursor: default;
+        outline: none;
         user-select: none;
+      }
+
+      :host-context([dark]) {
+        --cr-slider-active-color: var(--google-blue-refresh-300);
+        --cr-slider-container-color:
+            rgba(var(--google-blue-refresh-500-rgb, .48));
+        --cr-slider-container-disabled-color:
+            rgba(var(--google-grey-800-rgb), .4);
+        --cr-slider-disabled-color: var(--google-grey-800);
+        --cr-slider-knob-color: var(--google-blue-refresh-300);
+        /* --google-grey-900 + 4% white blended together. */
+        --cr-slider-knob-disabled-color: #28292c;
+        --cr-slider-marker-active-color: var(--google-blue-refresh-300);
+        --cr-slider-marker-color: var(--google-blue-refresh-300);
+        --cr-slider-marker-disabled-color: rgba(255, 255, 255, .54);
+        --cr-slider-ripple-opacity: .4;
       }
 
       :host([dragging]) {
@@ -36,7 +66,7 @@
       }
 
       #barContainer {
-        border-top-color: var(--google-blue-600-opacity-24);
+        border-top-color: var(--cr-slider-container-color);
         height: var(--cr-slider-bar-height);
         margin: 0 16px;
         position: absolute;
@@ -49,16 +79,13 @@
       }
 
       #bar {
-        border-top-color: var(--cr-slider-active-color, var(--google-blue-600));
-        left: 0;
+        border-top-color: var(--cr-slider-active-color);
         position: absolute;
-        transition: width 80ms ease;
         width: 0;
       }
 
-      :host([is-rtl_]) #bar {
-        left: initial;
-        right: 0;
+      :host([transiting_]) #bar {
+        transition: width var(--cr-slider-position-transition);
       }
 
       #knobContainer {
@@ -69,7 +96,7 @@
       }
 
       #knob {
-        background-color: var(--cr-slider-knob-color, var(--google-blue-600));
+        background-color: var(--cr-slider-knob-color);
         border: 0;
         border-radius: 50%;
         box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.4);
@@ -77,12 +104,16 @@
         margin-inline-start: 0;
         outline: none;
         position: absolute;
-        transition: margin-inline-start 80ms ease;
         width: 10px;
       }
 
+      :host([transiting_]) #knob {
+        transition: margin-inline-start var(--cr-slider-position-transition);
+      }
+
       paper-ripple {
-        color: var(--google-blue-600);
+        --paper-ripple-opacity: var(--cr-slider-ripple-opacity);
+        color: var(--cr-slider-knob-color);
         height: 32px;
         left: -11px;
         pointer-events: none;
@@ -122,12 +153,12 @@
 
       #markers::before,
       .active-marker::after {
-        background-color: rgba(255, 255, 255, 0.54);
+        background-color: var(--cr-slider-marker-active-color);
       }
 
       #markers::after,
       .inactive-marker::after {
-        background-color: rgba(26, 115, 232, 0.54);
+        background-color: var(--cr-slider-marker-color);
       }
 
       #labelContainer {
@@ -146,16 +177,19 @@
       }
 
       #label {
-        background: var(--google-blue-600);
+        background: var(--cr-slider-knob-color);
         border-radius: 14px;
         bottom: 28px;
-        color: white;
+        color: white;  /* Same for dark and light mode. */
         font-size: 12px;
         line-height: 1.5em;
         padding: 0 8px;
         position: absolute;
-        transition: margin-inline-start 80ms ease;
         white-space: nowrap;
+      }
+
+      :host([transiting_]) #label {
+        transition: margin-inline-start var(--cr-slider-position-transition);
       }
 
       :host([disabled_]) {
@@ -163,16 +197,16 @@
       }
 
       :host([disabled_]) #barContainer {
-        border-top-color: var(--google-grey-600-opacity-24);
+        border-top-color: var(--cr-slider-container-disabled-color);
       }
 
       :host([disabled_]) #bar {
-        border-top-color: var(--google-grey-600);
+        border-top-color: var(--cr-slider-disabled-color);
       }
 
       :host([disabled_]) .inactive-marker::after,
       :host([disabled_]) #markers::after {
-        background-color: rgba(128, 134, 139, 0.54);
+        background-color: var(--cr-slider-marker-disabled-color);
       }
 
       :host([disabled_]) #knobContainer {
@@ -180,8 +214,8 @@
         top: 9px;
       }
       :host([disabled_]) #knob {
-        background-color: var(--google-grey-600);
-        border: 2px solid white;
+        background-color: var(--cr-slider-disabled-color);
+        border: 2px solid var(--cr-slider-knob-disabled-color);
         box-shadow: unset;
       }
     </style>
@@ -190,13 +224,14 @@
         <div id="bar"></div>
         <div id="markers" hidden$="[[!markerCount]]">
           <template is="dom-repeat" items="[[getMarkers_(markerCount)]]">
-            <div class$="[[getMarkerClass_(index, immediateValue_, min, max,
+            <div class$="[[getMarkerClass_(index, value, min, max,
                                            markerCount)]]"></div>
           </template>
         </div>
       </div>
       <div id="knobContainer">
-        <div id="knob" tabindex="0"></div>
+        <div id="knob" on-transitionend="onKnobTransitionEnd_"
+            on-keydown="onKnobKeydown_"></div>
       </div>
       <div id="labelContainer" aria-label="[[label_]]">
         <div id="label">[[label_]]</div>

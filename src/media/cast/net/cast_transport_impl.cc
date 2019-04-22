@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "media/cast/net/cast_transport_defines.h"
@@ -290,7 +291,8 @@ void CastTransportImpl::SendRawEvents() {
 
   transport_task_runner_->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&CastTransportImpl::SendRawEvents, weak_factory_.GetWeakPtr()),
+      base::BindOnce(&CastTransportImpl::SendRawEvents,
+                     weak_factory_.GetWeakPtr()),
       logging_flush_interval_);
 }
 

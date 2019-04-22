@@ -11,6 +11,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/common/extension.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/upload_data_stream.h"
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request_context.h"
@@ -23,7 +24,7 @@ namespace {
 
 class UploadDataStreamRedirect : public net::UploadDataStream {
  public:
-  UploadDataStreamRedirect(net::UploadDataStream* parent);
+  explicit UploadDataStreamRedirect(net::UploadDataStream* parent);
   ~UploadDataStreamRedirect() override;
 
  private:
@@ -105,7 +106,7 @@ class CastExtensionURLRequestJob : public net::URLRequestJob,
       net::ResponseHeadersCallback callback) override;
   bool GetMimeType(std::string* mime_type) const override;
   int GetResponseCode() const override;
-  net::HostPortPair GetSocketAddress() const override;
+  net::IPEndPoint GetResponseRemoteEndpoint() const override;
   void StopCaching() override;
   bool GetFullRequestHeaders(net::HttpRequestHeaders* headers) const override;
   int64_t GetTotalReceivedBytes() const override;
@@ -114,7 +115,7 @@ class CastExtensionURLRequestJob : public net::URLRequestJob,
   bool GetCharset(std::string* charset) override;
   void GetResponseInfo(net::HttpResponseInfo* info) override;
   void GetLoadTimingInfo(net::LoadTimingInfo* load_timing_info) const override;
-  bool GetRemoteEndpoint(net::IPEndPoint* endpoint) const override;
+  bool GetTransactionRemoteEndpoint(net::IPEndPoint* endpoint) const override;
   void PopulateNetErrorDetails(net::NetErrorDetails* details) const override;
   bool IsRedirectResponse(GURL* location,
                           int* http_status_code,
@@ -122,8 +123,7 @@ class CastExtensionURLRequestJob : public net::URLRequestJob,
   bool CopyFragmentOnRedirect(const GURL& location) const override;
   bool IsSafeRedirect(const GURL& location) override;
   bool NeedsAuth() override;
-  void GetAuthChallengeInfo(
-      scoped_refptr<net::AuthChallengeInfo>* auth_info) override;
+  std::unique_ptr<net::AuthChallengeInfo> GetAuthChallengeInfo() override;
   void SetAuth(const net::AuthCredentials& credentials) override;
   void CancelAuth() override;
   void ContinueWithCertificate(
@@ -136,7 +136,7 @@ class CastExtensionURLRequestJob : public net::URLRequestJob,
                           const net::RedirectInfo& redirect_info,
                           bool* defer_redirect) override;
   void OnAuthRequired(net::URLRequest* request,
-                      net::AuthChallengeInfo* auth_info) override;
+                      const net::AuthChallengeInfo& auth_info) override;
   void OnCertificateRequested(
       net::URLRequest* request,
       net::SSLCertRequestInfo* cert_request_info) override;
@@ -218,8 +218,8 @@ int CastExtensionURLRequestJob::GetResponseCode() const {
   return sub_request_->GetResponseCode();
 }
 
-net::HostPortPair CastExtensionURLRequestJob::GetSocketAddress() const {
-  return sub_request_->GetSocketAddress();
+net::IPEndPoint CastExtensionURLRequestJob::GetResponseRemoteEndpoint() const {
+  return sub_request_->GetResponseRemoteEndpoint();
 }
 
 void CastExtensionURLRequestJob::StopCaching() {
@@ -257,9 +257,9 @@ void CastExtensionURLRequestJob::GetLoadTimingInfo(
   sub_request_->GetLoadTimingInfo(load_timing_info);
 }
 
-bool CastExtensionURLRequestJob::GetRemoteEndpoint(
+bool CastExtensionURLRequestJob::GetTransactionRemoteEndpoint(
     net::IPEndPoint* endpoint) const {
-  return sub_request_->GetRemoteEndpoint(endpoint);
+  return sub_request_->GetTransactionRemoteEndpoint(endpoint);
 }
 
 void CastExtensionURLRequestJob::PopulateNetErrorDetails(
@@ -280,8 +280,10 @@ bool CastExtensionURLRequestJob::NeedsAuth() {
   return false;
 }
 
-void CastExtensionURLRequestJob::GetAuthChallengeInfo(
-    scoped_refptr<net::AuthChallengeInfo>* auth_info) {}
+std::unique_ptr<net::AuthChallengeInfo>
+CastExtensionURLRequestJob::GetAuthChallengeInfo() {
+  return nullptr;
+}
 
 void CastExtensionURLRequestJob::SetAuth(
     const net::AuthCredentials& credentials) {
@@ -312,7 +314,7 @@ void CastExtensionURLRequestJob::OnReceivedRedirect(
 
 void CastExtensionURLRequestJob::OnAuthRequired(
     net::URLRequest* request,
-    net::AuthChallengeInfo* auth_info) {
+    const net::AuthChallengeInfo& auth_info) {
   net::URLRequest::Delegate::OnAuthRequired(request, auth_info);
 }
 

@@ -39,11 +39,11 @@ class GpuMemoryBufferImplTest : public testing::Test {
       gfx::BufferUsage usage,
       gfx::GpuMemoryBufferHandle* handle,
       bool* destroyed) {
-    return base::Bind(&GpuMemoryBufferImplTest::FreeGpuMemoryBuffer,
-                      base::Unretained(this),
-                      GpuMemoryBufferImplType::AllocateForTesting(
-                          size, format, usage, handle),
-                      base::Unretained(destroyed));
+    return base::BindOnce(&GpuMemoryBufferImplTest::FreeGpuMemoryBuffer,
+                          base::Unretained(this),
+                          GpuMemoryBufferImplType::AllocateForTesting(
+                              size, format, usage, handle),
+                          base::Unretained(destroyed));
   }
 
   GpuMemoryBufferSupport* gpu_memory_buffer_support() {
@@ -59,10 +59,10 @@ class GpuMemoryBufferImplTest : public testing::Test {
  private:
   GpuMemoryBufferSupport gpu_memory_buffer_support_;
 
-  void FreeGpuMemoryBuffer(const base::Closure& free_callback,
+  void FreeGpuMemoryBuffer(base::OnceClosure free_callback,
                            bool* destroyed,
                            const gpu::SyncToken& sync_token) {
-    free_callback.Run();
+    std::move(free_callback).Run();
     if (destroyed)
       *destroyed = true;
   }
@@ -81,21 +81,19 @@ class GpuMemoryBufferImplCreateTest : public testing::Test {
   GpuMemoryBufferSupport gpu_memory_buffer_support_;
 };
 
-TYPED_TEST_CASE_P(GpuMemoryBufferImplTest);
+TYPED_TEST_SUITE_P(GpuMemoryBufferImplTest);
 
 TYPED_TEST_P(GpuMemoryBufferImplTest, CreateFromHandle) {
   const gfx::Size kBufferSize(8, 8);
 
   for (auto format : gfx::GetBufferFormatsForTesting()) {
-    gfx::BufferUsage usages[] = {
-        gfx::BufferUsage::GPU_READ,
-        gfx::BufferUsage::SCANOUT,
-        gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE,
-        gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE,
-        gfx::BufferUsage::SCANOUT_CPU_READ_WRITE,
-        gfx::BufferUsage::SCANOUT_VDA_WRITE,
-        gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
-        gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT};
+    gfx::BufferUsage usages[] = {gfx::BufferUsage::GPU_READ,
+                                 gfx::BufferUsage::SCANOUT,
+                                 gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE,
+                                 gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE,
+                                 gfx::BufferUsage::SCANOUT_CPU_READ_WRITE,
+                                 gfx::BufferUsage::SCANOUT_VDA_WRITE,
+                                 gfx::BufferUsage::GPU_READ_CPU_READ_WRITE};
     for (auto usage : usages) {
       if (!TestFixture::gpu_memory_buffer_support()->IsConfigurationSupported(
               TypeParam::kBufferType, format, usage))
@@ -108,9 +106,9 @@ TYPED_TEST_P(GpuMemoryBufferImplTest, CreateFromHandle) {
                                              &handle, &destroyed);
       std::unique_ptr<GpuMemoryBufferImpl> buffer(
           TestFixture::gpu_memory_buffer_support()
-              ->CreateGpuMemoryBufferImplFromHandle(std::move(handle),
-                                                    kBufferSize, format, usage,
-                                                    destroy_callback));
+              ->CreateGpuMemoryBufferImplFromHandle(
+                  std::move(handle), kBufferSize, format, usage,
+                  std::move(destroy_callback)));
       ASSERT_TRUE(buffer);
       EXPECT_EQ(buffer->GetFormat(), format);
 
@@ -141,7 +139,8 @@ TYPED_TEST_P(GpuMemoryBufferImplTest, Map) {
         TestFixture::gpu_memory_buffer_support()
             ->CreateGpuMemoryBufferImplFromHandle(
                 std::move(handle), kBufferSize, format,
-                gfx::BufferUsage::GPU_READ_CPU_READ_WRITE, destroy_callback));
+                gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
+                std::move(destroy_callback)));
     ASSERT_TRUE(buffer);
 
     const size_t num_planes = gfx::NumberOfPlanesForBufferFormat(format);
@@ -181,22 +180,21 @@ TYPED_TEST_P(GpuMemoryBufferImplTest, PersistentMap) {
   for (auto format : gfx::GetBufferFormatsForTesting()) {
     if (!TestFixture::gpu_memory_buffer_support()->IsConfigurationSupported(
             TypeParam::kBufferType, format,
-            gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT)) {
+            gfx::BufferUsage::GPU_READ_CPU_READ_WRITE)) {
       continue;
     }
 
     gfx::GpuMemoryBufferHandle handle;
     GpuMemoryBufferImpl::DestructionCallback destroy_callback =
         TestFixture::CreateGpuMemoryBuffer(
-            kBufferSize, format,
-            gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT, &handle,
-            nullptr);
+            kBufferSize, format, gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
+            &handle, nullptr);
     std::unique_ptr<GpuMemoryBufferImpl> buffer(
         TestFixture::gpu_memory_buffer_support()
             ->CreateGpuMemoryBufferImplFromHandle(
                 std::move(handle), kBufferSize, format,
-                gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT,
-                destroy_callback));
+                gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
+                std::move(destroy_callback)));
     ASSERT_TRUE(buffer);
 
     // Map buffer into user space.
@@ -255,15 +253,13 @@ TYPED_TEST_P(GpuMemoryBufferImplTest, SerializeAndDeserialize) {
   const gfx::GpuMemoryBufferType kBufferType = TypeParam::kBufferType;
 
   for (auto format : gfx::GetBufferFormatsForTesting()) {
-    gfx::BufferUsage usages[] = {
-        gfx::BufferUsage::GPU_READ,
-        gfx::BufferUsage::SCANOUT,
-        gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE,
-        gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE,
-        gfx::BufferUsage::SCANOUT_CPU_READ_WRITE,
-        gfx::BufferUsage::SCANOUT_VDA_WRITE,
-        gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
-        gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT};
+    gfx::BufferUsage usages[] = {gfx::BufferUsage::GPU_READ,
+                                 gfx::BufferUsage::SCANOUT,
+                                 gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE,
+                                 gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE,
+                                 gfx::BufferUsage::SCANOUT_CPU_READ_WRITE,
+                                 gfx::BufferUsage::SCANOUT_VDA_WRITE,
+                                 gfx::BufferUsage::GPU_READ_CPU_READ_WRITE};
     for (auto usage : usages) {
       if (!TestFixture::gpu_memory_buffer_support()->IsConfigurationSupported(
               TypeParam::kBufferType, format, usage))
@@ -282,9 +278,9 @@ TYPED_TEST_P(GpuMemoryBufferImplTest, SerializeAndDeserialize) {
 
       std::unique_ptr<GpuMemoryBufferImpl> buffer(
           TestFixture::gpu_memory_buffer_support()
-              ->CreateGpuMemoryBufferImplFromHandle(std::move(output_handle),
-                                                    kBufferSize, format, usage,
-                                                    destroy_callback));
+              ->CreateGpuMemoryBufferImplFromHandle(
+                  std::move(output_handle), kBufferSize, format, usage,
+                  std::move(destroy_callback)));
       ASSERT_TRUE(buffer);
       EXPECT_EQ(buffer->GetFormat(), format);
 
@@ -297,13 +293,13 @@ TYPED_TEST_P(GpuMemoryBufferImplTest, SerializeAndDeserialize) {
 
 // The GpuMemoryBufferImplTest test case verifies behavior that is expected
 // from a GpuMemoryBuffer implementation in order to be conformant.
-REGISTER_TYPED_TEST_CASE_P(GpuMemoryBufferImplTest,
-                           CreateFromHandle,
-                           Map,
-                           PersistentMap,
-                           SerializeAndDeserialize);
+REGISTER_TYPED_TEST_SUITE_P(GpuMemoryBufferImplTest,
+                            CreateFromHandle,
+                            Map,
+                            PersistentMap,
+                            SerializeAndDeserialize);
 
-TYPED_TEST_CASE_P(GpuMemoryBufferImplCreateTest);
+TYPED_TEST_SUITE_P(GpuMemoryBufferImplCreateTest);
 
 TYPED_TEST_P(GpuMemoryBufferImplCreateTest, Create) {
   const gfx::GpuMemoryBufferId kBufferId(1);
@@ -317,7 +313,7 @@ TYPED_TEST_P(GpuMemoryBufferImplCreateTest, Create) {
     bool destroyed = false;
     std::unique_ptr<TypeParam> buffer(TypeParam::Create(
         kBufferId, kBufferSize, format, usage,
-        base::Bind(
+        base::BindOnce(
             [](bool* destroyed, const gpu::SyncToken&) { *destroyed = true; },
             base::Unretained(&destroyed))));
     ASSERT_TRUE(buffer);
@@ -331,7 +327,7 @@ TYPED_TEST_P(GpuMemoryBufferImplCreateTest, Create) {
 // The GpuMemoryBufferImplCreateTest test case verifies behavior that is
 // expected from a GpuMemoryBuffer Create() implementation in order to be
 // conformant.
-REGISTER_TYPED_TEST_CASE_P(GpuMemoryBufferImplCreateTest, Create);
+REGISTER_TYPED_TEST_SUITE_P(GpuMemoryBufferImplCreateTest, Create);
 
 }  // namespace gpu
 

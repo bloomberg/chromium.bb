@@ -19,6 +19,7 @@ static_library("jingle_glue") {
     "glue/utils.h",
   ]
   public_deps = [
+    "//services/network/public/mojom",
     "//third_party/webrtc_overrides",
   ]
   deps = [
@@ -26,7 +27,6 @@ static_library("jingle_glue") {
     "//base",
     "//base/third_party/dynamic_annotations",
     "//net",
-    "//services/network/public/mojom",
     "//third_party/libjingle_xmpp:rtc_task_runner",
   ]
 
@@ -37,7 +37,7 @@ static_library("jingle_glue") {
       "glue/network_service_async_socket.cc",
       "glue/network_service_config.cc",
     ]
-    deps -= [ "//services/network/public/mojom" ]
+    public_deps -= [ "//services/network/public/mojom" ]
   }
 }
 

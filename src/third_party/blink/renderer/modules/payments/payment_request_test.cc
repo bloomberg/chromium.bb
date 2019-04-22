@@ -370,6 +370,8 @@ TEST(PaymentRequestTest, RejectShowPromiseOnUpdateDetailsFailure) {
   request->show(scope.GetScriptState())
       .Then(funcs.ExpectNoCall(), funcs.ExpectCall(&error_message));
 
+  static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
+      ->OnShippingAddressChange(BuildPaymentAddressForTest());
   request->OnUpdatePaymentDetailsFailure("oops");
 
   v8::MicrotasksScope::PerformCheckpoint(scope.GetScriptState()->GetIsolate());
@@ -390,7 +392,6 @@ TEST(PaymentRequestTest, IgnoreUpdatePaymentDetailsAfterShowPromiseResolved) {
       ->OnPaymentResponse(BuildPaymentResponseForTest());
 
   request->OnUpdatePaymentDetails(
-      event_type_names::kShippingaddresschange,
       ScriptValue::From(scope.GetScriptState(), "foo"));
 }
 
@@ -406,8 +407,9 @@ TEST(PaymentRequestTest, RejectShowPromiseOnNonPaymentDetailsUpdate) {
   request->show(scope.GetScriptState())
       .Then(funcs.ExpectNoCall(), funcs.ExpectCall());
 
+  static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
+      ->OnShippingAddressChange(BuildPaymentAddressForTest());
   request->OnUpdatePaymentDetails(
-      event_type_names::kShippingaddresschange,
       ScriptValue::From(scope.GetScriptState(), "NotPaymentDetails"));
 }
 
@@ -423,8 +425,9 @@ TEST(PaymentRequestTest, RejectShowPromiseOnInvalidPaymentDetailsUpdate) {
   request->show(scope.GetScriptState())
       .Then(funcs.ExpectNoCall(), funcs.ExpectCall());
 
+  static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
+      ->OnShippingAddressChange(BuildPaymentAddressForTest());
   request->OnUpdatePaymentDetails(
-      event_type_names::kShippingaddresschange,
       ScriptValue::From(
           scope.GetScriptState(),
           FromJSONString(scope.GetScriptState()->GetIsolate(),
@@ -449,6 +452,8 @@ TEST(PaymentRequestTest,
   EXPECT_TRUE(request->shippingOption().IsNull());
   request->show(scope.GetScriptState())
       .Then(funcs.ExpectNoCall(), funcs.ExpectNoCall());
+  static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
+      ->OnShippingAddressChange(BuildPaymentAddressForTest());
   String detail_with_shipping_options =
       "{\"total\": {\"label\": \"Total\", \"amount\": {\"currency\": \"USD\", "
       "\"value\": \"5.00\"}},"
@@ -456,7 +461,6 @@ TEST(PaymentRequestTest,
       "\"Standard shipping\", \"amount\": {\"currency\": \"USD\", \"value\": "
       "\"5.00\"}, \"selected\": true}]}";
   request->OnUpdatePaymentDetails(
-      event_type_names::kShippingaddresschange,
       ScriptValue::From(scope.GetScriptState(),
                         FromJSONString(scope.GetScriptState()->GetIsolate(),
                                        scope.GetScriptState()->GetContext(),
@@ -464,12 +468,13 @@ TEST(PaymentRequestTest,
                                        scope.GetExceptionState())));
   EXPECT_FALSE(scope.GetExceptionState().HadException());
   EXPECT_EQ("standardShippingOption", request->shippingOption());
+  static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
+      ->OnShippingAddressChange(BuildPaymentAddressForTest());
   String detail_without_shipping_options =
       "{\"total\": {\"label\": \"Total\", \"amount\": {\"currency\": \"USD\", "
       "\"value\": \"5.00\"}}}";
 
   request->OnUpdatePaymentDetails(
-      event_type_names::kShippingaddresschange,
       ScriptValue::From(scope.GetScriptState(),
                         FromJSONString(scope.GetScriptState()->GetIsolate(),
                                        scope.GetScriptState()->GetContext(),
@@ -503,7 +508,6 @@ TEST(
       "\"USD\", \"value\": \"50.00\"}}]}";
 
   request->OnUpdatePaymentDetails(
-      event_type_names::kShippingaddresschange,
       ScriptValue::From(scope.GetScriptState(),
                         FromJSONString(scope.GetScriptState()->GetIsolate(),
                                        scope.GetScriptState()->GetContext(),
@@ -525,6 +529,8 @@ TEST(PaymentRequestTest, UseTheSelectedShippingOptionFromPaymentDetailsUpdate) {
   EXPECT_FALSE(scope.GetExceptionState().HadException());
   request->show(scope.GetScriptState())
       .Then(funcs.ExpectNoCall(), funcs.ExpectNoCall());
+  static_cast<payments::mojom::blink::PaymentRequestClient*>(request)
+      ->OnShippingAddressChange(BuildPaymentAddressForTest());
   String detail =
       "{\"total\": {\"label\": \"Total\", \"amount\": {\"currency\": \"USD\", "
       "\"value\": \"5.00\"}},"
@@ -534,7 +540,6 @@ TEST(PaymentRequestTest, UseTheSelectedShippingOptionFromPaymentDetailsUpdate) {
       "\"USD\", \"value\": \"50.00\"}, \"selected\": true}]}";
 
   request->OnUpdatePaymentDetails(
-      event_type_names::kShippingaddresschange,
       ScriptValue::From(scope.GetScriptState(),
                         FromJSONString(scope.GetScriptState()->GetIsolate(),
                                        scope.GetScriptState()->GetContext(),
@@ -561,7 +566,6 @@ TEST(PaymentRequestTest, NoExceptionWithErrorMessageInUpdate) {
       "\"error\": \"This is an error message.\"}";
 
   request->OnUpdatePaymentDetails(
-      event_type_names::kShippingaddresschange,
       ScriptValue::From(
           scope.GetScriptState(),
           FromJSONString(scope.GetScriptState()->GetIsolate(),

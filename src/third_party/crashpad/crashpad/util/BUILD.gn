@@ -86,7 +86,7 @@ static_library("util") {
     "file/string_file.h",
     "misc/address_sanitizer.h",
     "misc/address_types.h",
-    "misc/arraysize_unsafe.h",
+    "misc/arraysize.h",
     "misc/as_underlying_type.h",
     "misc/capture_context.h",
     "misc/clock.h",
@@ -137,6 +137,11 @@ static_library("util") {
     "numeric/in_range_cast.h",
     "numeric/int128.h",
     "numeric/safe_assignment.h",
+    "process/process_memory.cc",
+    "process/process_memory.h",
+    "process/process_memory_native.h",
+    "process/process_memory_range.cc",
+    "process/process_memory_range.h",
     "stdlib/aligned_allocator.cc",
     "stdlib/aligned_allocator.h",
     "stdlib/map_insert.h",
@@ -239,13 +244,13 @@ static_library("util") {
       "mach/symbolic_constants_mach.h",
       "mach/task_for_pid.cc",
       "mach/task_for_pid.h",
-      "mach/task_memory.cc",
-      "mach/task_memory.h",
       "misc/capture_context_mac.S",
       "misc/clock_mac.cc",
       "misc/paths_mac.cc",
       "net/http_transport_mac.mm",
       "posix/process_info_mac.cc",
+      "process/process_memory_mac.cc",
+      "process/process_memory_mac.h",
       "synchronization/semaphore_mac.cc",
     ]
     sources += get_target_outputs(":mig")
@@ -296,6 +301,8 @@ static_library("util") {
       "linux/ptrace_connection.h",
       "linux/ptracer.cc",
       "linux/ptracer.h",
+      "linux/scoped_pr_set_dumpable.cc",
+      "linux/scoped_pr_set_dumpable.h",
       "linux/scoped_pr_set_ptracer.cc",
       "linux/scoped_pr_set_ptracer.h",
       "linux/scoped_ptrace_attach.cc",
@@ -308,19 +315,6 @@ static_library("util") {
       "posix/process_info_linux.cc",
       "process/process_memory_linux.cc",
       "process/process_memory_linux.h",
-    ]
-  }
-
-  if (crashpad_is_linux || crashpad_is_android || crashpad_is_fuchsia ||
-      crashpad_is_win) {
-    sources += [
-      "process/process_memory.cc",
-      "process/process_memory.h",
-      "process/process_memory_native.h",
-
-      # TODO: Port to all platforms.
-      "process/process_memory_range.cc",
-      "process/process_memory_range.h",
     ]
   }
 
@@ -341,6 +335,7 @@ static_library("util") {
       "win/checked_win_address_range.h",
       "win/command_line.cc",
       "win/command_line.h",
+      "win/context_wrappers.h",
       "win/critical_section_with_debug_info.cc",
       "win/critical_section_with_debug_info.h",
       "win/exception_handler_server.cc",
@@ -390,10 +385,15 @@ static_library("util") {
     # TODO(thakis): Use the .asm file in cross builds somehow,
     # https://crbug.com/762167.
     if (host_os == "win") {
-      sources += [
-        "misc/capture_context_win.asm",
-        "win/safe_terminate_process.asm",
-      ]
+      if (current_cpu != "arm64") {
+        sources += [
+          "misc/capture_context_win.asm",
+          "win/safe_terminate_process.asm",
+        ]
+      } else {
+        # TODO: Add assembly code of CaptureContext for Windows ARM64.
+        sources += [ "misc/capture_context_broken.cc" ]
+      }
     } else {
       sources += [
         "misc/capture_context_broken.cc",
@@ -441,7 +441,10 @@ static_library("util") {
       "Foundation.framework",
       "IOKit.framework",
     ]
-    deps += [ ":mig" ]
+    deps += [
+      ":mig",
+      "../third_party/apple_cf:apple_cf",
+    ]
     include_dirs += [ "$root_build_dir/gen" ]
   }
 
@@ -464,7 +467,7 @@ static_library("util") {
   }
 
   if (crashpad_is_fuchsia) {
-    public_deps += [ "../third_party/fuchsia:zx" ]
+    public_deps += [ "../third_party/fuchsia" ]
   }
 }
 
@@ -530,7 +533,7 @@ source_set("util_test") {
     "file/file_reader_test.cc",
     "file/filesystem_test.cc",
     "file/string_file_test.cc",
-    "misc/arraysize_unsafe_test.cc",
+    "misc/arraysize_test.cc",
     "misc/capture_context_test.cc",
     "misc/capture_context_test_util.h",
     "misc/clock_test.cc",
@@ -554,6 +557,8 @@ source_set("util_test") {
     "numeric/checked_range_test.cc",
     "numeric/in_range_cast_test.cc",
     "numeric/int128_test.cc",
+    "process/process_memory_range_test.cc",
+    "process/process_memory_test.cc",
     "stdlib/aligned_allocator_test.cc",
     "stdlib/map_insert_test.cc",
     "stdlib/string_number_conversion_test.cc",
@@ -603,8 +608,8 @@ source_set("util_test") {
       "mach/notify_server_test.cc",
       "mach/scoped_task_suspend_test.cc",
       "mach/symbolic_constants_mach_test.cc",
-      "mach/task_memory_test.cc",
       "misc/capture_context_test_util_mac.cc",
+      "process/process_memory_mac_test.cc",
     ]
   }
 
@@ -623,15 +628,6 @@ source_set("util_test") {
 
   if (crashpad_is_fuchsia) {
     sources += [ "misc/capture_context_test_util_fuchsia.cc" ]
-  }
-
-  if (crashpad_is_linux || crashpad_is_android || crashpad_is_fuchsia ||
-      crashpad_is_win) {
-    sources += [
-      # TODO: Port to all platforms.
-      "process/process_memory_range_test.cc",
-      "process/process_memory_test.cc",
-    ]
   }
 
   if (crashpad_is_win) {

@@ -278,13 +278,19 @@ bool InferLabelForElementForTesting(const blink::WebFormControlElement& element,
                                     const std::vector<base::char16>& stop_words,
                                     base::string16* label,
                                     FormFieldData::LabelSource* label_source);
-base::string16 InferButtonTitleForTesting(
-    const blink::WebFormElement& form_element);
+ButtonTitleList InferButtonTitlesForTesting(
+    const blink::WebElement& form_element);
 
 // Returns form by unique renderer id. Return null element if there is no form
 // with given form renderer id.
 blink::WebFormElement FindFormByUniqueRendererId(blink::WebDocument doc,
                                                  uint32_t form_renderer_id);
+
+// Returns form control element by unique renderer id. Return null element if
+// there is no element with given renderer id.
+blink::WebFormControlElement FindFormControlElementsByUniqueRendererId(
+    blink::WebDocument doc,
+    uint32_t form_control_renderer_id);
 
 // Note: The vector-based API of the following two functions is a tax for limiting
 // the frequency and duration of retrieving a lot of DOM elements. Alternative

@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/time/clock.h"
 #include "base/time/time.h"
 #include "components/offline_pages/core/offline_clock.h"
 #include "components/offline_pages/core/offline_store_utils.h"
@@ -178,8 +177,11 @@ void ReportAndFinalizeStuckItems(base::Time now, sql::Database* db) {
     statement.BindInt64(2, static_cast<int>(PrefetchItemState::ZOMBIE));
 
     while (statement.Step()) {
-      base::UmaHistogramSparse("OfflinePages.Prefetching.StuckItemState",
-                               statement.ColumnInt(0));
+      int state_int = statement.ColumnInt(0);
+      if (ToPrefetchItemState(state_int)) {  // Only report valid enum values.
+        base::UmaHistogramSparse("OfflinePages.Prefetching.StuckItemState",
+                                 state_int);
+      }
     }
   }
   // Finalize.
@@ -215,7 +217,7 @@ Result FinalizeStaleEntriesSync(sql::Database* db) {
       // Bucket 3.
       PrefetchItemState::DOWNLOADING, PrefetchItemState::IMPORTING,
   }};
-  base::Time now = OfflineClock()->Now();
+  base::Time now = OfflineTimeNow();
   for (PrefetchItemState state : expirable_states) {
     if (!FinalizeStaleItems(state, now, db))
       return Result::NO_MORE_WORK;

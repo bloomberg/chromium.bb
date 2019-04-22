@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.webapps;
 
-import static org.chromium.webapk.lib.common.WebApkConstants.WEBAPK_PACKAGE_PREFIX;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.SystemClock;
@@ -13,13 +11,12 @@ import android.os.SystemClock;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.metrics.WebApkSplashscreenMetrics;
 import org.chromium.chrome.browser.metrics.WebApkUma;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.webapk.lib.common.WebApkConstants;
-
-import java.util.concurrent.TimeUnit;
 
 /**
  * An Activity is designed for WebAPKs (native Android apps) and displays a webapp in a nearly
@@ -39,25 +36,6 @@ public class WebApkActivity extends WebappActivity {
     @VisibleForTesting
     public static final String STARTUP_UMA_HISTOGRAM_SUFFIX = ".WebApk";
 
-    /**
-     * Tries extracting the WebAPK short name from the passed in intent. Returns null if the intent
-     * does not launch a WebApkActivity. This method is slow. It makes several PackageManager calls.
-     */
-    public static String slowExtractNameFromIntentIfTargetIsWebApk(Intent intent) {
-        // Check for intents targetted at WebApkActivity and WebApkActivity0-9.
-        if (!intent.getComponent().getClassName().startsWith(WebApkActivity.class.getName())) {
-            return null;
-        }
-
-        WebApkInfo info = WebApkInfo.create(intent);
-        return (info != null) ? info.shortName() : null;
-    }
-
-    @Override
-    public int getActivityType() {
-        return ActivityType.WEBAPK;
-    }
-
     @Override
     public @WebappScopePolicy.Type int scopePolicy() {
         return WebappScopePolicy.Type.STRICT;
@@ -76,17 +54,18 @@ public class WebApkActivity extends WebappActivity {
 
     @Override
     public boolean shouldPreferLightweightFre(Intent intent) {
-        // We cannot use getWebApkPackageName() because {@link WebappActivity#preInflationStartup()}
-        // may not have been called yet.
+        // We cannot use getWebApkPackageName() because
+        // {@link WebappActivity#performPreInflationStartup()} may not have been called yet.
         String webApkPackageName =
                 IntentUtils.safeGetStringExtra(intent, WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME);
 
         // Use the lightweight FRE for unbound WebAPKs.
-        return webApkPackageName != null && !webApkPackageName.startsWith(WEBAPK_PACKAGE_PREFIX);
+        return webApkPackageName != null
+                && !webApkPackageName.startsWith(WebApkConstants.WEBAPK_PACKAGE_PREFIX);
     }
 
     @Override
-    public String getNativeClientPackageName() {
+    public String getWebApkPackageName() {
         return getWebappInfo().webApkPackageName();
     }
 
@@ -97,11 +76,16 @@ public class WebApkActivity extends WebappActivity {
     }
 
     @Override
+    public void onResumeWithNative() {
+        super.onResumeWithNative();
+        AppHooks.get().setDisplayModeForActivity(getWebappInfo().displayMode(), this);
+    }
+
+    @Override
     protected void recordIntentToCreationTime(long timeMs) {
         super.recordIntentToCreationTime(timeMs);
 
-        RecordHistogram.recordTimesHistogram(
-                "MobileStartup.IntentToCreationTime.WebApk", timeMs, TimeUnit.MILLISECONDS);
+        RecordHistogram.recordTimesHistogram("MobileStartup.IntentToCreationTime.WebApk", timeMs);
     }
 
     @Override
@@ -139,13 +123,36 @@ public class WebApkActivity extends WebappActivity {
         if (mWebApkSplashscreenMetrics != null) {
             mWebApkSplashscreenMetrics = null;
         }
+
+        // The common case is to be connected to just one WebAPK's services. For the sake of
+        // simplicity disconnect from the services of all WebAPKs.
+        ChromeWebApkHost.disconnectFromAllServices(true /* waitForPendingWork */);
+
         super.onDestroyInternal();
     }
 
     @Override
-    public void preInflationStartup() {
+    protected boolean handleBackPressed() {
+        if (super.handleBackPressed()) return true;
+
+        if (getWebappInfo().isSplashProvidedByWebApk()) {
+            // When the WebAPK provides the splash screen, the splash screen activity is stacked
+            // underneath the WebAPK. The splash screen finishes itself in
+            // {@link Activity#onResume()}. When finishing the WebApkActivity, there is sometimes a
+            // frame of the splash screen drawn prior to the splash screen activity finishing
+            // itself. There are no glitches when the activity stack is finished via
+            // {@link ActivityManager.AppTask#finishAndRemoveTask()}.
+            WebApkServiceClient.getInstance().finishAndRemoveTaskSdk23(this);
+            return true;
+        }
+
+        return false;
+    }
+
+    @Override
+    public void performPreInflationStartup() {
         // Decide whether to record startup UMA histograms. This is a similar check to the one done
-        // in ChromeTabbedActivity.preInflationStartup refer to the comment there for why.
+        // in ChromeTabbedActivity.performPreInflationStartup refer to the comment there for why.
         if (!LibraryLoader.getInstance().isInitialized()) {
             getActivityTabStartupMetricsTracker().trackStartupMetrics(STARTUP_UMA_HISTOGRAM_SUFFIX);
             // If there is a saved instance state, then the intent (and its stored timestamp) might
@@ -156,7 +163,7 @@ public class WebApkActivity extends WebappActivity {
                 mWebApkSplashscreenMetrics.trackSplashscreenMetrics(shellLaunchTimestampMs);
             }
         }
-        super.preInflationStartup();
+        super.performPreInflationStartup();
     }
 
     @Override

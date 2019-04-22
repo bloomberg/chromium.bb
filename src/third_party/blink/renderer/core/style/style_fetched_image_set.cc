@@ -55,7 +55,7 @@ void StyleFetchedImageSet::Dispose() {
 bool StyleFetchedImageSet::IsEqual(const StyleImage& other) const {
   if (!other.IsImageResourceSet())
     return false;
-  const auto& other_image = ToStyleFetchedImageSet(other);
+  const auto& other_image = To<StyleFetchedImageSet>(other);
   if (best_fit_image_ != other_image.best_fit_image_)
     return false;
   return url_ == other_image.url_;
@@ -110,12 +110,8 @@ FloatSize StyleFetchedImageSet::ImageSize(
   return scaled_image_size;
 }
 
-bool StyleFetchedImageSet::ImageHasRelativeSize() const {
-  return best_fit_image_->GetImage()->HasRelativeSize();
-}
-
-bool StyleFetchedImageSet::UsesImageContainerSize() const {
-  return best_fit_image_->GetImage()->UsesContainerSize();
+bool StyleFetchedImageSet::HasIntrinsicSize() const {
+  return best_fit_image_->GetImage()->HasIntrinsicSize();
 }
 
 void StyleFetchedImageSet::AddClient(ImageResourceObserver* observer) {

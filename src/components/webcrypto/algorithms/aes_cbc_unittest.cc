@@ -9,7 +9,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/values.h"
 #include "components/webcrypto/algorithm_dispatch.h"
 #include "components/webcrypto/algorithms/test_helpers.h"
@@ -30,7 +30,7 @@ blink::WebCryptoAlgorithm CreateAesCbcAlgorithm(
 }
 
 blink::WebCryptoAlgorithm CreateAesCbcKeyGenAlgorithm(
-    unsigned short key_length_bits) {
+    uint16_t key_length_bits) {
   return CreateAesKeyGenAlgorithm(blink::kWebCryptoAlgorithmIdAesCbc,
                                   key_length_bits);
 }
@@ -90,13 +90,13 @@ TEST_F(WebCryptoAesCbcTest, ExportKeyUnsupportedFormat) {
 // Tests importing of keys (in a variety of formats), errors during import,
 // encryption, and decryption, using known answers.
 TEST_F(WebCryptoAesCbcTest, KnownAnswerEncryptDecrypt) {
-  std::unique_ptr<base::ListValue> tests;
+  base::ListValue tests;
   ASSERT_TRUE(ReadJsonTestFileToList("aes_cbc.json", &tests));
 
-  for (size_t test_index = 0; test_index < tests->GetSize(); ++test_index) {
+  for (size_t test_index = 0; test_index < tests.GetSize(); ++test_index) {
     SCOPED_TRACE(test_index);
     base::DictionaryValue* test;
-    ASSERT_TRUE(tests->GetDictionary(test_index, &test));
+    ASSERT_TRUE(tests.GetDictionary(test_index, &test));
 
     blink::WebCryptoKeyFormat key_format = GetKeyFormatFromJsonTestCase(test);
     std::vector<uint8_t> key_data =
@@ -167,8 +167,8 @@ TEST_F(WebCryptoAesCbcTest, KnownAnswerEncryptDecrypt) {
 TEST_F(WebCryptoAesCbcTest, GenerateKeyIsRandom) {
   // Check key generation for each allowed key length.
   std::vector<blink::WebCryptoAlgorithm> algorithm;
-  const unsigned short kKeyLength[] = {128, 256};
-  for (size_t key_length_i = 0; key_length_i < arraysize(kKeyLength);
+  const uint16_t kKeyLength[] = {128, 256};
+  for (size_t key_length_i = 0; key_length_i < base::size(kKeyLength);
        ++key_length_i) {
     blink::WebCryptoKey key;
 
@@ -196,9 +196,9 @@ TEST_F(WebCryptoAesCbcTest, GenerateKeyIsRandom) {
 }
 
 TEST_F(WebCryptoAesCbcTest, GenerateKeyBadLength) {
-  const unsigned short kKeyLen[] = {0, 127, 257};
+  const uint16_t kKeyLen[] = {0, 127, 257};
   blink::WebCryptoKey key;
-  for (size_t i = 0; i < arraysize(kKeyLen); ++i) {
+  for (size_t i = 0; i < base::size(kKeyLen); ++i) {
     SCOPED_TRACE(i);
     EXPECT_EQ(Status::ErrorGenerateAesKeyLength(),
               GenerateSecretKey(CreateAesCbcKeyGenAlgorithm(kKeyLen[i]), true,
@@ -440,7 +440,7 @@ TEST_F(WebCryptoAesCbcTest, ImportKeyBadUsage_Raw) {
 
   std::vector<uint8_t> key_bytes(16);
 
-  for (size_t i = 0; i < arraysize(bad_usages); ++i) {
+  for (size_t i = 0; i < base::size(bad_usages); ++i) {
     SCOPED_TRACE(i);
 
     blink::WebCryptoKey key;
@@ -458,7 +458,7 @@ TEST_F(WebCryptoAesCbcTest, GenerateKeyBadUsages) {
       blink::kWebCryptoKeyUsageDecrypt | blink::kWebCryptoKeyUsageVerify,
   };
 
-  for (size_t i = 0; i < arraysize(bad_usages); ++i) {
+  for (size_t i = 0; i < base::size(bad_usages); ++i) {
     SCOPED_TRACE(i);
 
     blink::WebCryptoKey key;

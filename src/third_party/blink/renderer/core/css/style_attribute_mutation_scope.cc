@@ -101,7 +101,7 @@ StyleAttributeMutationScope::~StyleAttributeMutationScope() {
     if (CustomElementDefinition* definition =
             DefinitionIfStyleChangedCallback(element)) {
       definition->EnqueueAttributeChangedCallback(
-          element, html_names::kStyleAttr, old_value_,
+          *element, html_names::kStyleAttr, old_value_,
           element->getAttribute(html_names::kStyleAttr));
     }
 
@@ -117,7 +117,7 @@ StyleAttributeMutationScope::~StyleAttributeMutationScope() {
 
   should_notify_inspector_ = false;
   if (local_copy_style_decl->ParentElement())
-    probe::didInvalidateStyleAttr(local_copy_style_decl->ParentElement());
+    probe::DidInvalidateStyleAttr(local_copy_style_decl->ParentElement());
 }
 
 }  // namespace blink

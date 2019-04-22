@@ -1,5 +1,7 @@
 #include "rar.hpp"
 
+namespace third_party_unrar {
+
 ScanTree::ScanTree(StringList *FileMasks,RECURSE_MODE Recurse,bool GetLinks,SCAN_DIRS GetDirs)
 {
   ScanTree::FileMasks=FileMasks;
@@ -226,7 +228,7 @@ bool ScanTree::GetNextMask()
   SpecPathLength=Name-CurMask;
   Depth=0;
 
-  wcscpy(OrigCurMask,CurMask);
+  wcsncpyz(OrigCurMask,CurMask,ASIZE(OrigCurMask));
 
   return true;
 }
@@ -350,16 +352,19 @@ SCAN_CODE ScanTree::FindProc(FindData *FD)
     if (Slash!=NULL)
     {
       wchar Mask[NM];
-      wcscpy(Mask,Slash);
+      wcsncpyz(Mask,Slash,ASIZE(Mask));
       if (Depth<SetAllMaskDepth)
-        wcscpy(Mask+1,PointToName(OrigCurMask));
+        wcsncpyz(Mask+1,PointToName(OrigCurMask),ASIZE(Mask)-1);
       *Slash=0;
-      wcscpy(DirName,CurMask);
+      wcsncpyz(DirName,CurMask,ASIZE(DirName));
       wchar *PrevSlash=wcsrchr(CurMask,CPATHDIVIDER);
       if (PrevSlash==NULL)
-        wcscpy(CurMask,Mask+1);
+        wcsncpyz(CurMask,Mask+1,ASIZE(CurMask));
       else
-        wcscpy(PrevSlash,Mask);
+      {
+        *(PrevSlash+1)=0;
+        wcsncatz(CurMask,Mask,ASIZE(CurMask));
+      }
     }
     if (GetDirs==SCAN_GETDIRSTWICE &&
         FindFile::FastFind(DirName,FD,GetLinks) && FD->IsDir)
@@ -397,8 +402,8 @@ SCAN_CODE ScanTree::FindProc(FindData *FD)
     
     wchar Mask[NM];
 
-    wcscpy(Mask,FastFindFile ? MASKALL:PointToName(CurMask));
-    wcscpy(CurMask,FD->Name);
+    wcsncpyz(Mask,FastFindFile ? MASKALL:PointToName(CurMask),ASIZE(Mask));
+    wcsncpyz(CurMask,FD->Name,ASIZE(CurMask));
 
     if (wcslen(CurMask)+wcslen(Mask)+1>=NM || Depth>=MAXSCANDEPTH-1)
     {
@@ -484,3 +489,5 @@ void ScanTree::ScanError(bool &Error)
     ErrHandler.SysErrMsg();
   }
 }
+
+}  // namespace third_party_unrar

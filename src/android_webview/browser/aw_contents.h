@@ -12,14 +12,13 @@
 
 #include "android_webview/browser/aw_browser_permission_request_delegate.h"
 #include "android_webview/browser/aw_render_process_gone_delegate.h"
-#include "android_webview/browser/aw_safe_browsing_ui_manager.h"
-#include "android_webview/browser/browser_view_renderer.h"
-#include "android_webview/browser/browser_view_renderer_client.h"
 #include "android_webview/browser/find_helper.h"
-#include "android_webview/browser/gl_view_renderer_manager.h"
+#include "android_webview/browser/gfx/browser_view_renderer.h"
+#include "android_webview/browser/gfx/browser_view_renderer_client.h"
 #include "android_webview/browser/icon_helper.h"
 #include "android_webview/browser/permission/permission_request_handler_client.h"
 #include "android_webview/browser/renderer_host/aw_render_view_host_ext.h"
+#include "android_webview/browser/safe_browsing/aw_safe_browsing_ui_manager.h"
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/callback_forward.h"
@@ -218,6 +217,8 @@ class AwContents : public FindHelper::Listener,
   jint GetEffectivePriority(JNIEnv* env,
                             const base::android::JavaParamRef<jobject>& obj);
 
+  bool GetViewTreeForceDarkState() { return view_tree_force_dark_state_; }
+
   // PermissionRequestHandlerClient implementation.
   void OnPermissionRequest(base::android::ScopedJavaLocalRef<jobject> j_request,
                            AwPermissionRequest* request) override;
@@ -280,6 +281,8 @@ class AwContents : public FindHelper::Listener,
   void PostInvalidate() override;
   void OnNewPicture() override;
   gfx::Point GetLocationOnScreen() override;
+  void OnViewTreeForceDarkStateChanged(
+      bool view_tree_force_dark_state) override;
 
   // |new_value| is in physical pixel scale.
   void ScrollContainerViewTo(const gfx::Vector2d& new_value) override;
@@ -307,6 +310,11 @@ class AwContents : public FindHelper::Listener,
                 const base::android::JavaParamRef<jobject>& obj,
                 jint x,
                 jint y);
+  void RestoreScrollAfterTransition(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jint x,
+      jint y);
   void SmoothScroll(JNIEnv* env,
                     const base::android::JavaParamRef<jobject>& obj,
                     jint target_x,
@@ -387,14 +395,14 @@ class AwContents : public FindHelper::Listener,
   std::unique_ptr<PermissionRequestHandler> permission_request_handler_;
   std::unique_ptr<autofill::AutofillProvider> autofill_provider_;
 
+  bool view_tree_force_dark_state_ = false;
+
   // GURL is supplied by the content layer as requesting frame.
   // Callback is supplied by the content layer, and is invoked with the result
   // from the permission prompt.
   typedef std::pair<const GURL, base::OnceCallback<void(bool)>> OriginCallback;
   // The first element in the list is always the currently pending request.
   std::list<OriginCallback> pending_geolocation_prompts_;
-
-  GLViewRendererManager::Key renderer_manager_key_;
 
   DISALLOW_COPY_AND_ASSIGN(AwContents);
 };

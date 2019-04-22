@@ -12,10 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import {search, searchEq} from '../../base/binary_search';
 import {assertTrue} from '../../base/logging';
 import {Actions} from '../../common/actions';
+import {cropText, drawDoubleHeadedArrow} from '../../common/canvas_utils';
 import {TrackState} from '../../common/state';
+import {timeToString} from '../../common/time';
 import {checkerboardExcept} from '../../frontend/checkerboard';
+import {colorForThread, hueForCpu} from '../../frontend/colorizer';
 import {globals} from '../../frontend/globals';
 import {Track} from '../../frontend/track';
 import {trackRegistry} from '../../frontend/track_registry';
@@ -28,67 +32,9 @@ import {
   SummaryData
 } from './common';
 
+
 const MARGIN_TOP = 5;
 const RECT_HEIGHT = 30;
-
-interface Color {
-  c: string;
-  h: number;
-  s: number;
-  l: number;
-}
-const MD_PALETTE: Color[] = [
-  {c: 'red', h: 4, s: 90, l: 58},
-  {c: 'pink', h: 340, s: 82, l: 52},
-  {c: 'purple', h: 291, s: 64, l: 42},
-  {c: 'deep purple', h: 262, s: 52, l: 47},
-  {c: 'indigo', h: 231, s: 48, l: 48},
-  {c: 'blue', h: 207, s: 90, l: 54},
-  {c: 'light blue', h: 199, s: 98, l: 48},
-  {c: 'cyan', h: 187, s: 100, l: 42},
-  {c: 'teal', h: 174, s: 100, l: 29},
-  {c: 'green', h: 122, s: 39, l: 49},
-  {c: 'light green', h: 88, s: 50, l: 53},
-  {c: 'lime', h: 66, s: 70, l: 54},
-  {c: 'yellow', h: 54, s: 100, l: 62},
-  {c: 'amber', h: 45, s: 100, l: 51},
-  {c: 'orange', h: 36, s: 100, l: 50},
-  {c: 'deep organge', h: 14, s: 100, l: 57},
-  {c: 'brown', h: 16, s: 25, l: 38},
-  {c: 'grey', h: 0, s: 0, l: 62},
-  {c: 'blue gray', h: 200, s: 18, l: 46},
-];
-
-function hash(s: string, max: number): number {
-  let hash = 0x811c9dc5 & 0xfffffff;
-  for (let i = 0; i < s.length; i++) {
-    hash ^= s.charCodeAt(i);
-    hash = (hash * 16777619) & 0xffffffff;
-  }
-  return Math.abs(hash) % max;
-}
-
-function cropText(str: string, charWidth: number, rectWidth: number) {
-  const maxTextWidth = rectWidth - 4;
-  let displayText = '';
-  const nameLength = str.length * charWidth;
-  if (nameLength < maxTextWidth) {
-    displayText = str;
-  } else {
-    // -3 for the 3 ellipsis.
-    const displayedChars = Math.floor(maxTextWidth / charWidth) - 3;
-    if (displayedChars > 3) {
-      displayText = str.substring(0, displayedChars) + '...';
-    }
-  }
-  return displayText;
-}
-
-function getCurResolution() {
-  // Truncate the resolution to the closest power of 10.
-  const resolution = globals.frontendLocalState.timeScale.deltaPxToDuration(1);
-  return Math.pow(10, Math.floor(Math.log10(resolution)));
-}
 
 class CpuSliceTrack extends Track<Config, Data> {
   static readonly kind = CPU_SLICE_TRACK_KIND;
@@ -97,29 +43,12 @@ class CpuSliceTrack extends Track<Config, Data> {
   }
 
   private mouseXpos?: number;
-  private reqPending = false;
   private hue: number;
   private utidHoveredInThisTrack = -1;
 
   constructor(trackState: TrackState) {
     super(trackState);
-    // TODO: this needs to be kept in sync with the hue generation algorithm
-    // of overview_timeline_panel.ts
-    this.hue = (128 + (32 * this.config.cpu)) % 256;
-  }
-
-  reqDataDeferred() {
-    const {visibleWindowTime} = globals.frontendLocalState;
-    const reqStart = visibleWindowTime.start - visibleWindowTime.duration;
-    const reqEnd = visibleWindowTime.end + visibleWindowTime.duration;
-    const reqRes = getCurResolution();
-    this.reqPending = false;
-    globals.dispatch(Actions.reqTrackData({
-      trackId: this.trackState.id,
-      start: reqStart,
-      end: reqEnd,
-      resolution: reqRes
-    }));
+    this.hue = hueForCpu(this.config.cpu);
   }
 
   renderCanvas(ctx: CanvasRenderingContext2D): void {
@@ -133,11 +62,8 @@ class CpuSliceTrack extends Track<Config, Data> {
         (visibleWindowTime.start >= data.start &&
          visibleWindowTime.end <= data.end);
     if (!inRange || data === undefined ||
-        data.resolution !== getCurResolution()) {
-      if (!this.reqPending) {
-        this.reqPending = true;
-        setTimeout(() => this.reqDataDeferred(), 50);
-      }
+        data.resolution !== globals.getCurResolution()) {
+      globals.requestTrackData(this.trackState.id);
     }
     if (data === undefined) return;  // Can't possibly draw anything.
 
@@ -202,35 +128,42 @@ class CpuSliceTrack extends Track<Config, Data> {
       const rectStart = timeScale.timeToPx(tStart);
       const rectEnd = timeScale.timeToPx(tEnd);
       const rectWidth = rectEnd - rectStart;
-      if (rectWidth < 0.1) continue;
+      if (rectWidth < 0.3) continue;
 
+      const threadInfo = globals.threads.get(utid);
 
       // TODO: consider de-duplicating this code with the copied one from
       // chrome_slices/frontend.ts.
       let title = `[utid:${utid}]`;
       let subTitle = '';
-      const color = Object.assign({}, MD_PALETTE[14]);
-
-      const threadInfo = globals.threads.get(utid);
-      if (threadInfo !== undefined) {
-        const hasProc = !!threadInfo.pid;
-        const procName = threadInfo.procName || '';
-        let hashKey = threadInfo.tid;
-        if (hasProc) {
+      let pid = -1;
+      if (threadInfo) {
+        if (threadInfo.pid) {
+          pid = threadInfo.pid;
+          const procName = threadInfo.procName || '';
           title = `${procName} [${threadInfo.pid}]`;
           subTitle = `${threadInfo.threadName} [${threadInfo.tid}]`;
-          hashKey = threadInfo.pid!;
         } else {
           title = `${threadInfo.threadName} [${threadInfo.tid}]`;
         }
-        const colorIdx = hash(hashKey.toString(), 16);
-        Object.assign(color, MD_PALETTE[colorIdx]);
       }
 
-      const hovered = globals.frontendLocalState.highlightedUtid === utid;
-      color.l =
-          hovered ? Math.max(color.l - 40, 20) : Math.min(color.l + 10, 80);
-      color.s -= 20;
+      const isHovering = globals.frontendLocalState.hoveredUtid !== -1;
+      const isThreadHovered = globals.frontendLocalState.hoveredUtid === utid;
+      const isProcessHovered = globals.frontendLocalState.hoveredPid === pid;
+      const color = colorForThread(threadInfo);
+      if (isHovering && !isThreadHovered) {
+        if (!isProcessHovered) {
+          color.l = 90;
+          color.s = 0;
+        } else {
+          color.l = Math.min(color.l + 30, 80);
+          color.s -= 20;
+        }
+      } else {
+        color.l = Math.min(color.l + 10, 60);
+        color.s -= 20;
+      }
       ctx.fillStyle = `hsl(${color.h}, ${color.s}%, ${color.l}%)`;
       ctx.fillRect(rectStart, MARGIN_TOP, rectEnd - rectStart, RECT_HEIGHT);
 
@@ -246,6 +179,68 @@ class CpuSliceTrack extends Track<Config, Data> {
       ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
       ctx.font = '10px Google Sans';
       ctx.fillText(subTitle, rectXCenter, MARGIN_TOP + RECT_HEIGHT / 2 + 11);
+    }
+
+    const selection = globals.state.currentSelection;
+    const details = globals.sliceDetails;
+    if (selection !== null && selection.kind === 'SLICE') {
+      const [startIndex, endIndex] = searchEq(data.ids, selection.id);
+      if (startIndex !== endIndex) {
+        const tStart = data.starts[startIndex];
+        const tEnd = data.ends[startIndex];
+        const utid = data.utids[startIndex];
+        const color = colorForThread(globals.threads.get(utid));
+        const rectStart = timeScale.timeToPx(tStart);
+        const rectEnd = timeScale.timeToPx(tEnd);
+        // Draw a rectangle around the slice that is currently selected.
+        ctx.strokeStyle = `hsl(${color.h}, ${color.s}%, 30%)`;
+        ctx.beginPath();
+        ctx.lineWidth = 3;
+        ctx.strokeRect(
+            rectStart, MARGIN_TOP - 1.5, rectEnd - rectStart, RECT_HEIGHT + 3);
+        ctx.closePath();
+        // Draw arrow from wakeup time of current slice.
+        if (details.wakeupTs) {
+          const wakeupPos = timeScale.timeToPx(details.wakeupTs);
+          const latencyWidth = rectStart - wakeupPos;
+          drawDoubleHeadedArrow(
+              ctx,
+              wakeupPos,
+              MARGIN_TOP + RECT_HEIGHT,
+              latencyWidth,
+              latencyWidth >= 20);
+          // Latency time with a white semi-transparent background.
+          const displayText = timeToString(tStart - details.wakeupTs);
+          const measured = ctx.measureText(displayText);
+          if (latencyWidth >= measured.width + 2) {
+            ctx.fillStyle = 'rgba(255,255,255,0.7)';
+            ctx.fillRect(
+                wakeupPos + latencyWidth / 2 - measured.width / 2 - 1,
+                MARGIN_TOP + RECT_HEIGHT - 12,
+                measured.width + 2,
+                11);
+            ctx.textBaseline = 'bottom';
+            ctx.fillStyle = 'black';
+            ctx.fillText(
+                displayText,
+                wakeupPos + (latencyWidth) / 2,
+                MARGIN_TOP + RECT_HEIGHT - 1);
+          }
+        }
+      }
+
+      // Draw diamond if the track being drawn is the cpu of the waker.
+      if (this.config.cpu === details.wakerCpu && details.wakeupTs) {
+        const wakeupPos = timeScale.timeToPx(details.wakeupTs);
+        ctx.beginPath();
+        ctx.moveTo(wakeupPos, MARGIN_TOP + RECT_HEIGHT / 2 + 8);
+        ctx.fillStyle = 'black';
+        ctx.lineTo(wakeupPos + 6, MARGIN_TOP + RECT_HEIGHT / 2);
+        ctx.lineTo(wakeupPos, MARGIN_TOP + RECT_HEIGHT / 2 - 8);
+        ctx.lineTo(wakeupPos - 6, MARGIN_TOP + RECT_HEIGHT / 2);
+        ctx.fill();
+        ctx.closePath();
+      }
     }
 
     const hoveredThread = globals.threads.get(this.utidHoveredInThisTrack);
@@ -280,7 +275,7 @@ class CpuSliceTrack extends Track<Config, Data> {
     const {timeScale} = globals.frontendLocalState;
     if (y < MARGIN_TOP || y > MARGIN_TOP + RECT_HEIGHT) {
       this.utidHoveredInThisTrack = -1;
-      globals.frontendLocalState.setHighlightedUtid(-1);
+      globals.frontendLocalState.setHoveredUtidAndPid(-1, -1);
       return;
     }
     const t = timeScale.pxToTime(x);
@@ -296,13 +291,30 @@ class CpuSliceTrack extends Track<Config, Data> {
       }
     }
     this.utidHoveredInThisTrack = hoveredUtid;
-    globals.frontendLocalState.setHighlightedUtid(hoveredUtid);
+    const threadInfo = globals.threads.get(hoveredUtid);
+    const hoveredPid = threadInfo ? (threadInfo.pid ? threadInfo.pid : -1) : -1;
+    globals.frontendLocalState.setHoveredUtidAndPid(hoveredUtid, hoveredPid);
   }
 
   onMouseOut() {
     this.utidHoveredInThisTrack = -1;
-    globals.frontendLocalState.setHighlightedUtid(-1);
+    globals.frontendLocalState.setHoveredUtidAndPid(-1, -1);
     this.mouseXpos = 0;
+  }
+
+  onMouseClick({x}: {x: number}) {
+    const data = this.data();
+    if (data === undefined || data.kind === 'summary') return false;
+    const {timeScale} = globals.frontendLocalState;
+    const time = timeScale.pxToTime(x);
+    const index = search(data.starts, time);
+    const id = index === -1 ? undefined : data.ids[index];
+    if (id && this.utidHoveredInThisTrack !== -1) {
+      globals.dispatch(Actions.selectSlice(
+        {utid: this.utidHoveredInThisTrack, id}));
+      return true;
+    }
+    return false;
   }
 }
 

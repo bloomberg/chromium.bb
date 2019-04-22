@@ -1,9 +1,10 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
 <html>
 <head>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
 </head>
 <body id="body">
-<p id="description">This tests that if aria-labelledby is used, then aria-label attributes are not used.</p>
 
 <button id="using-none">Alpha</button>
 <button id="using-label" aria-label="Gamma">Beta</button>
@@ -12,41 +13,20 @@
 <span id="epsilon">Epsilon</span>
 <span id="theta">Theta</span>
 
-<ul id="results"></ul>
-<div id="console"></div>
-
 <script>
-    function getAccessibilityObject(id) {
-        var element = document.getElementById(id);
-        element.focus();
-        return accessibilityController.focusedElement;
-    }
+test((t) => {
+    var usingNone = accessibilityController.accessibleElementById("using-none");
+    assert_equals(usingNone.name, "Alpha");
 
-    function output(str) {
-        var results = document.getElementById("results");
-        var li = document.createElement("li");
-        li.appendChild(document.createTextNode(str));
-        results.appendChild(li);
-    }
+    var usingLabel = accessibilityController.accessibleElementById("using-label");
+    assert_equals(usingLabel.name, "Gamma");
 
-    if (window.testRunner)
-        testRunner.dumpAsText();
+    var usingLabelledby = accessibilityController.accessibleElementById("using-labelledby");
+    assert_equals(usingLabelledby.name, "Epsilon");
 
-    if (window.accessibilityController) {
-        var usingNone = getAccessibilityObject("using-none");
-        output("usingNone.name: [" + usingNone.name + "]");
-
-        var usingLabel = getAccessibilityObject("using-label");
-        output("usingLabel.name: [" + usingLabel.name + "]");
-
-        var usingLabelledby = getAccessibilityObject("using-labelledby");
-        output("usingLabelledby.name: [" + usingLabelledby.name + "]");
-
-        var usingLabeledby = getAccessibilityObject("using-labeledby");
-        output("usingLabeledby.name: [" + usingLabeledby.name + "]");
-    }
-
-    successfullyParsed = true;
+    var usingLabeledby = accessibilityController.accessibleElementById("using-labeledby");
+    assert_equals(usingLabeledby.name, "Theta");
+}, "This tests that if aria-labelledby is used, then aria-label attributes are not used.");
 </script>
 
 </body>

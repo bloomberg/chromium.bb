@@ -157,20 +157,20 @@ bool CPDF_PSProc::Execute(CPDF_PSEngine* pEngine) {
   return true;
 }
 
-void CPDF_PSProc::AddOperatorForTesting(const ByteStringView& word) {
+void CPDF_PSProc::AddOperatorForTesting(ByteStringView word) {
   AddOperator(word);
 }
 
-void CPDF_PSProc::AddOperator(const ByteStringView& word) {
-  const auto* pFound = std::lower_bound(
-      std::begin(kPsOpNames), std::end(kPsOpNames), word,
-      [](const PDF_PSOpName& name, const ByteStringView& word) {
-        return name.name < word;
-      });
+void CPDF_PSProc::AddOperator(ByteStringView word) {
+  const auto* pFound =
+      std::lower_bound(std::begin(kPsOpNames), std::end(kPsOpNames), word,
+                       [](const PDF_PSOpName& name, ByteStringView word) {
+                         return name.name < word;
+                       });
   if (pFound != std::end(kPsOpNames) && pFound->name == word)
     m_Operators.push_back(pdfium::MakeUnique<CPDF_PSOP>(pFound->op));
   else
-    m_Operators.push_back(pdfium::MakeUnique<CPDF_PSOP>(FX_atof(word)));
+    m_Operators.push_back(pdfium::MakeUnique<CPDF_PSOP>(StringToFloat(word)));
 }
 
 CPDF_PSEngine::CPDF_PSEngine() = default;

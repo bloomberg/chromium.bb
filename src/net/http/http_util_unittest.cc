@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <limits>
 
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "net/http/http_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -47,7 +48,7 @@ TEST(HttpUtilTest, IsSafeHeader) {
     "user-agent",
     "via",
   };
-  for (size_t i = 0; i < arraysize(unsafe_headers); ++i) {
+  for (size_t i = 0; i < base::size(unsafe_headers); ++i) {
     EXPECT_FALSE(HttpUtil::IsSafeHeader(unsafe_headers[i]))
       << unsafe_headers[i];
     EXPECT_FALSE(HttpUtil::IsSafeHeader(base::ToUpperASCII(unsafe_headers[i])))
@@ -93,7 +94,7 @@ TEST(HttpUtilTest, IsSafeHeader) {
     "user_agent",
     "viaa",
   };
-  for (size_t i = 0; i < arraysize(safe_headers); ++i) {
+  for (size_t i = 0; i < base::size(safe_headers); ++i) {
     EXPECT_TRUE(HttpUtil::IsSafeHeader(safe_headers[i])) << safe_headers[i];
     EXPECT_TRUE(HttpUtil::IsSafeHeader(base::ToUpperASCII(safe_headers[i])))
         << safe_headers[i];
@@ -326,12 +327,12 @@ TEST(HttpUtilTest, Quote) {
 TEST(HttpUtilTest, LocateEndOfHeaders) {
   struct {
     const char* const input;
-    int expected_result;
+    size_t expected_result;
   } tests[] = {
-      {"\r\n", -1},
-      {"\n", -1},
-      {"\r", -1},
-      {"foo", -1},
+      {"\r\n", std::string::npos},
+      {"\n", std::string::npos},
+      {"\r", std::string::npos},
+      {"foo", std::string::npos},
       {"\r\n\r\n", 4},
       {"foo\r\nbar\r\n\r\n", 12},
       {"foo\nbar\n\n", 9},
@@ -340,9 +341,9 @@ TEST(HttpUtilTest, LocateEndOfHeaders) {
       {"foo\nbar\n\r\njunk", 10},
       {"foo\nbar\r\n\njunk", 10},
   };
-  for (size_t i = 0; i < arraysize(tests); ++i) {
-    int input_len = static_cast<int>(strlen(tests[i].input));
-    int eoh = HttpUtil::LocateEndOfHeaders(tests[i].input, input_len);
+  for (size_t i = 0; i < base::size(tests); ++i) {
+    size_t input_len = strlen(tests[i].input);
+    size_t eoh = HttpUtil::LocateEndOfHeaders(tests[i].input, input_len);
     EXPECT_EQ(tests[i].expected_result, eoh);
   }
 }
@@ -350,12 +351,12 @@ TEST(HttpUtilTest, LocateEndOfHeaders) {
 TEST(HttpUtilTest, LocateEndOfAdditionalHeaders) {
   struct {
     const char* const input;
-    int expected_result;
+    size_t expected_result;
   } tests[] = {
       {"\r\n", 2},
       {"\n", 1},
-      {"\r", -1},
-      {"foo", -1},
+      {"\r", std::string::npos},
+      {"foo", std::string::npos},
       {"\r\n\r\n", 2},
       {"foo\r\nbar\r\n\r\n", 12},
       {"foo\nbar\n\n", 9},
@@ -364,9 +365,10 @@ TEST(HttpUtilTest, LocateEndOfAdditionalHeaders) {
       {"foo\nbar\n\r\njunk", 10},
       {"foo\nbar\r\n\njunk", 10},
   };
-  for (size_t i = 0; i < arraysize(tests); ++i) {
-    int input_len = static_cast<int>(strlen(tests[i].input));
-    int eoh = HttpUtil::LocateEndOfAdditionalHeaders(tests[i].input, input_len);
+  for (size_t i = 0; i < base::size(tests); ++i) {
+    size_t input_len = strlen(tests[i].input);
+    size_t eoh =
+        HttpUtil::LocateEndOfAdditionalHeaders(tests[i].input, input_len);
     EXPECT_EQ(tests[i].expected_result, eoh);
   }
 }
@@ -686,7 +688,7 @@ TEST(HttpUtilTest, AssembleRawHeaders) {
     },
   };
   // clang-format on
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     std::string input = tests[i].input;
     std::replace(input.begin(), input.end(), '|', '\0');
     std::string raw = HttpUtil::AssembleRawHeaders(input.data(), input.size());
@@ -726,7 +728,7 @@ TEST(HttpUtilTest, RequestUrlSanitize) {
       "wss://www.google.com:78/foobar?query=1",
     }
   };
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     SCOPED_TRACE(i);
 
     GURL url(GURL(tests[i].url));
@@ -986,7 +988,7 @@ TEST(HttpUtilTest, ParseContentType) {
     // TODO(abarth): Add more interesting test cases.
   };
   // clang-format on
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     std::string mime_type;
     std::string charset;
     bool had_charset = false;
@@ -1094,7 +1096,7 @@ TEST(HttpUtilTest, ParseRetryAfterHeader) {
     { "Mon, 1 Jan 1900 12:34:56 GMT", false, base::TimeDelta() }
   };
 
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     base::TimeDelta retry_after;
     bool return_value = HttpUtil::ParseRetryAfterHeader(
         tests[i].retry_after_string, now, &retry_after);
@@ -1572,7 +1574,7 @@ TEST(HttpUtilTest, ParseAcceptEncoding) {
       {"foo,\"bar\"", "INVALID"},
   };
 
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     std::string value(tests[i].value);
     std::string reformatted;
     std::set<std::string> allowed_encodings;
@@ -1602,7 +1604,7 @@ TEST(HttpUtilTest, ParseContentEncoding) {
       {"foo,\"bar\"", "INVALID"},
   };
 
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     std::string value(tests[i].value);
     std::string reformatted;
     std::set<std::string> used_encodings;

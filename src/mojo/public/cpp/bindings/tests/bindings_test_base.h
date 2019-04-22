@@ -40,8 +40,8 @@ class BindingsTestBase
 
 }  // namespace mojo
 
-#define INSTANTIATE_MOJO_BINDINGS_TEST_CASE_P(fixture)                   \
-  INSTANTIATE_TEST_CASE_P(                                               \
+#define INSTANTIATE_MOJO_BINDINGS_TEST_SUITE_P(fixture)                  \
+  INSTANTIATE_TEST_SUITE_P(                                              \
       , fixture,                                                         \
       testing::Values(                                                   \
           mojo::BindingsTestSerializationMode::kSerializeBeforeSend,     \

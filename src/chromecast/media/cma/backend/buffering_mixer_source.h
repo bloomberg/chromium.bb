@@ -110,6 +110,10 @@ class BufferingMixerSource : public MixerInput::Source,
   // (supposedly) imperceptible.
   float SetAvSyncPlaybackRate(float rate);
 
+  // Returns the rendering delay from the mixer (ie, ignores any buffering in
+  // this class).
+  RenderingDelay GetMixerRenderingDelay();
+
  private:
   enum class State {
     kUninitialized,   // Not initialized by the mixer yet.
@@ -223,7 +227,6 @@ class BufferingMixerSource : public MixerInput::Source,
   void PostEos();
   void PostError(MixerError error);
   void PostAudioReadyForPlayback();
-  int64_t GetCurrentBufferedDataInUs();
   void DropAudio(int64_t frames);
   bool CanDropFrames(int64_t frames_to_drop);
   int64_t DataToFrames(int64_t size);
@@ -238,7 +241,6 @@ class BufferingMixerSource : public MixerInput::Source,
   const int playout_channel_;
   StreamMixer* const mixer_;
   const scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner_;
-  const scoped_refptr<base::SingleThreadTaskRunner> shim_task_runner_;
   const int max_queued_frames_;
   // Minimum number of frames buffered before starting to fill data.
   const int start_threshold_frames_;

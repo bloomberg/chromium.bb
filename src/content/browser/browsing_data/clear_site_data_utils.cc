@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/browsing_data/clear_site_data_throttle.h"
+#include "content/public/browser/clear_site_data_utils.h"
 
 #include "base/scoped_observer.h"
 #include "content/public/browser/browser_context.h"
@@ -13,7 +13,6 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
 namespace content {
-namespace clear_site_data_utils {
 
 namespace {
 
@@ -30,11 +29,13 @@ class SiteDataClearer : public BrowsingDataRemover::Observer {
                   bool clear_cookies,
                   bool clear_storage,
                   bool clear_cache,
+                  bool avoid_closing_connections,
                   base::OnceClosure callback)
       : origin_(origin),
         clear_cookies_(clear_cookies),
         clear_storage_(clear_storage),
         clear_cache_(clear_cache),
+        avoid_closing_connections_(avoid_closing_connections),
         callback_(std::move(callback)),
         pending_task_count_(0),
         remover_(nullptr),
@@ -44,7 +45,13 @@ class SiteDataClearer : public BrowsingDataRemover::Observer {
     scoped_observer_.Add(remover_);
   }
 
-  ~SiteDataClearer() override {}
+  ~SiteDataClearer() override {
+    // This SiteDataClearer class is self-owned, and the only way for it to be
+    // destroyed should be the "delete this" part in
+    // OnBrowsingDataRemoverDone() function, and it invokes the |callback_|. So
+    // when this destructor is called, the |callback_| should be null.
+    DCHECK(!callback_);
+  }
 
   void RunAndDestroySelfWhenDone() {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -68,11 +75,12 @@ class SiteDataClearer : public BrowsingDataRemover::Observer {
       domain_filter_builder->AddRegisterableDomain(domain);
 
       pending_task_count_++;
+      int remove_mask = BrowsingDataRemover::DATA_TYPE_COOKIES;
+      if (avoid_closing_connections_) {
+        remove_mask |= BrowsingDataRemover::DATA_TYPE_AVOID_CLOSING_CONNECTIONS;
+      }
       remover_->RemoveWithFilterAndReply(
-          base::Time(), base::Time::Max(),
-          BrowsingDataRemover::DATA_TYPE_COOKIES |
-              BrowsingDataRemover::DATA_TYPE_CHANNEL_IDS |
-              BrowsingDataRemover::DATA_TYPE_AVOID_CLOSING_CONNECTIONS,
+          base::Time(), base::Time::Max(), remove_mask,
           BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB |
               BrowsingDataRemover::ORIGIN_TYPE_PROTECTED_WEB,
           std::move(domain_filter_builder), this);
@@ -117,6 +125,7 @@ class SiteDataClearer : public BrowsingDataRemover::Observer {
   bool clear_cookies_;
   bool clear_storage_;
   bool clear_cache_;
+  bool avoid_closing_connections_;
   base::OnceClosure callback_;
   int pending_task_count_;
   BrowsingDataRemover* remover_;
@@ -132,6 +141,7 @@ void ClearSiteData(
     bool clear_cookies,
     bool clear_storage,
     bool clear_cache,
+    bool avoid_closing_connections,
     base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserContext* browser_context = browser_context_getter.Run();
@@ -140,10 +150,9 @@ void ClearSiteData(
     return;
   }
   (new SiteDataClearer(browser_context, origin, clear_cookies, clear_storage,
-                       clear_cache, std::move(callback)))
-
+                       clear_cache, avoid_closing_connections,
+                       std::move(callback)))
       ->RunAndDestroySelfWhenDone();
 }
 
-}  // namespace clear_site_data_utils
 }  // namespace content

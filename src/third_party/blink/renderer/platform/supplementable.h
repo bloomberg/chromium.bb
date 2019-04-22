@@ -26,11 +26,10 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SUPPLEMENTABLE_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SUPPLEMENTABLE_H_
 
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
+#include "base/macros.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 #if DCHECK_IS_ON()
 #include "third_party/blink/renderer/platform/wtf/threading.h"
@@ -46,9 +45,10 @@ namespace blink {
 // Most commonly, this is used to attach data to a central object, such as
 // LocalFrame, so that it can be easily accessed. This is similar to adding a
 // member to that class (e.g. it is kept alive while the supplementable is),
-// except that it occupies less memory if not used, and can be done in cases
-// that would otherwise be a layering violation. For example, it is common for
-// features implemented in modules/ to supplement classes in core/.
+// except that a Supplement is constructed lazily and therefore occupies less
+// memory if not used. It can also be used in cases that would otherwise be
+// layering violation. For example, it is common for features implemented in
+// modules/ to supplement classes in core/.
 //
 // Supplementable and Supplement instances are meant to be thread local. They
 // should only be accessed from within the thread that created them. The
@@ -124,9 +124,9 @@ class Supplement : public GarbageCollectedMixin {
 
   explicit Supplement(T& supplementable) : supplementable_(&supplementable) {}
 
-  // Supplementable and its supplements live and die together.
-  // Thus supplementable() should never return null (if the default constructor
-  // is completely removed).
+  // Supplements are constructed lazily on first access and are destroyed with
+  // their Supplementable, so GetSupplementable() should never return null (if
+  // the default constructor is completely removed).
   T* GetSupplementable() const { return supplementable_; }
 
   template <typename SupplementType>
@@ -157,8 +157,6 @@ class Supplement : public GarbageCollectedMixin {
 
 template <typename T>
 class Supplementable : public GarbageCollectedMixin {
-  WTF_MAKE_NONCOPYABLE(Supplementable);
-
  public:
   template <typename SupplementType>
   void ProvideSupplement(SupplementType* supplement) {
@@ -206,9 +204,8 @@ class Supplementable : public GarbageCollectedMixin {
   void Trace(blink::Visitor* visitor) override { visitor->Trace(supplements_); }
 
  protected:
-  using SupplementMap = HeapHashMap<const char*,
-                                    TraceWrapperMember<Supplement<T>>,
-                                    PtrHash<const char>>;
+  using SupplementMap =
+      HeapHashMap<const char*, Member<Supplement<T>>, PtrHash<const char>>;
   SupplementMap supplements_;
 
   Supplementable()
@@ -221,9 +218,11 @@ class Supplementable : public GarbageCollectedMixin {
 
 #if DCHECK_IS_ON()
  private:
-  ThreadIdentifier attached_thread_id_;
-  ThreadIdentifier creation_thread_id_;
+  base::PlatformThreadId attached_thread_id_;
+  base::PlatformThreadId creation_thread_id_;
 #endif
+
+  DISALLOW_COPY_AND_ASSIGN(Supplementable);
 };
 
 template <typename T>

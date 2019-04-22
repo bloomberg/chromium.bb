@@ -6,9 +6,8 @@
 
 #include <stddef.h>
 
-#include "base/containers/hash_tables.h"
 #include "base/lazy_instance.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "net/base/mime_util.h"
@@ -113,7 +112,7 @@ class MimeUtil {
  private:
   friend struct base::LazyInstanceTraitsBase<MimeUtil>;
 
-  using MimeTypes = base::hash_set<std::string>;
+  using MimeTypes = std::unordered_set<std::string>;
 
   MimeUtil();
 
@@ -126,13 +125,13 @@ class MimeUtil {
 };
 
 MimeUtil::MimeUtil() {
-  for (size_t i = 0; i < arraysize(kSupportedNonImageTypes); ++i)
+  for (size_t i = 0; i < base::size(kSupportedNonImageTypes); ++i)
     non_image_types_.insert(kSupportedNonImageTypes[i]);
-  for (size_t i = 0; i < arraysize(kSupportedImageTypes); ++i)
+  for (size_t i = 0; i < base::size(kSupportedImageTypes); ++i)
     image_types_.insert(kSupportedImageTypes[i]);
-  for (size_t i = 0; i < arraysize(kUnsupportedTextTypes); ++i)
+  for (size_t i = 0; i < base::size(kUnsupportedTextTypes); ++i)
     unsupported_text_types_.insert(kUnsupportedTextTypes[i]);
-  for (size_t i = 0; i < arraysize(kSupportedJavascriptTypes); ++i) {
+  for (size_t i = 0; i < base::size(kSupportedJavascriptTypes); ++i) {
     javascript_types_.insert(kSupportedJavascriptTypes[i]);
     non_image_types_.insert(kSupportedJavascriptTypes[i]);
   }

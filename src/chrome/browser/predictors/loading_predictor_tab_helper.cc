@@ -133,4 +133,6 @@ void LoadingPredictorTabHelper::DocumentOnLoadCompletedInMainFrame() {
       navigation_id);
 }
 
+WEB_CONTENTS_USER_DATA_KEY_IMPL(LoadingPredictorTabHelper)
+
 }  // namespace predictors

@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 #include "base/time/time.h"
-#include "net/base/host_port_pair.h"
+#include "net/base/ip_endpoint.h"
 
 namespace net {
 
@@ -37,7 +37,7 @@ class FtpResponseInfo {
   bool is_directory_listing;
 
   // Remote address of the socket which fetched this resource.
-  HostPortPair socket_address;
+  IPEndPoint remote_endpoint;
 };
 
 }  // namespace net

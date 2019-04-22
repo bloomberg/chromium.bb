@@ -33,7 +33,7 @@ void AppendUint32Header(const std::string& header_name,
                         uint32_t header_value,
                         std::string* output) {
   if (header_value != 0) {
-    *output += (header_name + ": " + base::UintToString(header_value) + "\n");
+    *output += (header_name + ": " + base::NumberToString(header_value) + "\n");
   }
 }
 
@@ -94,7 +94,7 @@ std::string Message::ToStringInternal(const std::string& indent,
         uint8_t value = 0;
         if (!reader->PopByte(&value))
           return kBrokenMessage;
-        output += indent + "byte " + base::UintToString(value) + "\n";
+        output += indent + "byte " + base::NumberToString(value) + "\n";
         break;
       }
       case BOOL: {
@@ -108,35 +108,35 @@ std::string Message::ToStringInternal(const std::string& indent,
         int16_t value = 0;
         if (!reader->PopInt16(&value))
           return kBrokenMessage;
-        output += indent + "int16_t " + base::IntToString(value) + "\n";
+        output += indent + "int16_t " + base::NumberToString(value) + "\n";
         break;
       }
       case UINT16: {
         uint16_t value = 0;
         if (!reader->PopUint16(&value))
           return kBrokenMessage;
-        output += indent + "uint16_t " + base::UintToString(value) + "\n";
+        output += indent + "uint16_t " + base::NumberToString(value) + "\n";
         break;
       }
       case INT32: {
         int32_t value = 0;
         if (!reader->PopInt32(&value))
           return kBrokenMessage;
-        output += indent + "int32_t " + base::IntToString(value) + "\n";
+        output += indent + "int32_t " + base::NumberToString(value) + "\n";
         break;
       }
       case UINT32: {
         uint32_t value = 0;
         if (!reader->PopUint32(&value))
           return kBrokenMessage;
-        output += indent + "uint32_t " + base::UintToString(value) + "\n";
+        output += indent + "uint32_t " + base::NumberToString(value) + "\n";
         break;
       }
       case INT64: {
         int64_t value = 0;
         if (!reader->PopInt64(&value))
           return kBrokenMessage;
-        output += (indent + "int64_t " + base::Int64ToString(value) + "\n");
+        output += (indent + "int64_t " + base::NumberToString(value) + "\n");
         break;
       }
       case UINT64: {
@@ -219,7 +219,7 @@ std::string Message::ToStringInternal(const std::string& indent,
         if (!reader->PopFileDescriptor(&file_descriptor))
           return kBrokenMessage;
         output +=
-            indent + "fd#" + base::IntToString(file_descriptor.get()) + "\n";
+            indent + "fd#" + base::NumberToString(file_descriptor.get()) + "\n";
         break;
       }
       default:
@@ -263,26 +263,50 @@ std::string Message::ToString() {
 }
 
 bool Message::SetDestination(const std::string& destination) {
+  if (!dbus_validate_bus_name(destination.c_str(), nullptr)) {
+    LOG(ERROR) << "Invalid bus name: " << destination;
+    return false;
+  }
   return dbus_message_set_destination(raw_message_, destination.c_str());
 }
 
 bool Message::SetPath(const ObjectPath& path) {
+  if (!path.IsValid()) {
+    LOG(ERROR) << "Invalid path: " << path.value();
+    return false;
+  }
   return dbus_message_set_path(raw_message_, path.value().c_str());
 }
 
 bool Message::SetInterface(const std::string& interface) {
+  if (!dbus_validate_interface(interface.c_str(), nullptr)) {
+    LOG(ERROR) << "Invalid interface: " << interface;
+    return false;
+  }
   return dbus_message_set_interface(raw_message_, interface.c_str());
 }
 
 bool Message::SetMember(const std::string& member) {
+  if (!dbus_validate_member(member.c_str(), nullptr)) {
+    LOG(ERROR) << "Invalid member: " << member;
+    return false;
+  }
   return dbus_message_set_member(raw_message_, member.c_str());
 }
 
 bool Message::SetErrorName(const std::string& error_name) {
+  if (!dbus_validate_error_name(error_name.c_str(), nullptr)) {
+    LOG(ERROR) << "Invalid error name: " << error_name;
+    return false;
+  }
   return dbus_message_set_error_name(raw_message_, error_name.c_str());
 }
 
 bool Message::SetSender(const std::string& sender) {
+  if (!dbus_validate_bus_name(sender.c_str(), nullptr)) {
+    LOG(ERROR) << "Invalid bus name: " << sender;
+    return false;
+  }
   return dbus_message_set_sender(raw_message_, sender.c_str());
 }
 

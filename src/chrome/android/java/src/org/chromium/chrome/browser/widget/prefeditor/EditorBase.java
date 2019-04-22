@@ -5,10 +5,9 @@
 package org.chromium.chrome.browser.widget.prefeditor;
 
 import android.content.Context;
+import android.support.annotation.Nullable;
 
 import org.chromium.base.Callback;
-
-import javax.annotation.Nullable;
 
 /**
  * The base class for an editor controller.

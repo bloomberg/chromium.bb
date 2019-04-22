@@ -8,11 +8,11 @@
  *   - Has a button to close idle sockets.
  *   - Has a button to flush socket pools.
  */
-var SocketsView = (function() {
+const SocketsView = (function() {
   'use strict';
 
   // We inherit from DivView.
-  var superClass = DivView;
+  const superClass = DivView;
 
   /**
    * @constructor
@@ -23,10 +23,10 @@ var SocketsView = (function() {
     // Call superclass's constructor.
     superClass.call(this, SocketsView.MAIN_BOX_ID);
 
-    var closeIdleButton = $(SocketsView.CLOSE_IDLE_SOCKETS_BUTTON_ID);
+    const closeIdleButton = $(SocketsView.CLOSE_IDLE_SOCKETS_BUTTON_ID);
     closeIdleButton.onclick = this.closeIdleSockets.bind(this);
 
-    var flushSocketsButton = $(SocketsView.SOCKET_POOL_FLUSH_BUTTON_ID);
+    const flushSocketsButton = $(SocketsView.SOCKET_POOL_FLUSH_BUTTON_ID);
     flushSocketsButton.onclick = this.flushSocketPools.bind(this);
   }
 

@@ -5,9 +5,10 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PRESENTATION_PRESENTATION_CONNECTION_CALLBACKS_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PRESENTATION_PRESENTATION_CONNECTION_CALLBACKS_H_
 
+#include "base/macros.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom-blink.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -22,6 +23,8 @@ class ScriptPromiseResolver;
 // take an existing connection object with which the promise will be resolved
 // on success.
 class PresentationConnectionCallbacks final {
+  USING_FAST_MALLOC(PresentationConnectionCallbacks);
+
  public:
   PresentationConnectionCallbacks(ScriptPromiseResolver*, PresentationRequest*);
   PresentationConnectionCallbacks(ScriptPromiseResolver*,
@@ -42,7 +45,7 @@ class PresentationConnectionCallbacks final {
   Persistent<PresentationRequest> request_;
   WeakPersistent<ControllerPresentationConnection> connection_;
 
-  WTF_MAKE_NONCOPYABLE(PresentationConnectionCallbacks);
+  DISALLOW_COPY_AND_ASSIGN(PresentationConnectionCallbacks);
 };
 
 }  // namespace blink

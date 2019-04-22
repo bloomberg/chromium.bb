@@ -52,7 +52,7 @@ sync_pb::NigoriSpecifics CreateCustomPassphraseNigori(
 // available on the server.
 class ServerNigoriChecker : public SingleClientStatusChangeChecker {
  public:
-  ServerNigoriChecker(browser_sync::ProfileSyncService* service,
+  ServerNigoriChecker(syncer::ProfileSyncService* service,
                       fake_server::FakeServer* fake_server,
                       syncer::PassphraseType expected_passphrase_type);
 
@@ -67,7 +67,7 @@ class ServerNigoriChecker : public SingleClientStatusChangeChecker {
 // Checker used to block until Sync requires or stops requiring a passphrase.
 class PassphraseRequiredStateChecker : public SingleClientStatusChangeChecker {
  public:
-  PassphraseRequiredStateChecker(browser_sync::ProfileSyncService* service,
+  PassphraseRequiredStateChecker(syncer::ProfileSyncService* service,
                                  bool desired_state);
 
   bool IsExitConditionSatisfied() override;
@@ -77,6 +77,10 @@ class PassphraseRequiredStateChecker : public SingleClientStatusChangeChecker {
   bool desired_state_;
 };
 
+// Helper for setting scrypt-related feature flags.
+// NOTE: DO NOT INSTANTIATE THIS CLASS IN THE TEST BODY FOR INTEGRATION TESTS!
+// That causes data races, see crbug.com/915219. Instead, instantiate it in the
+// test fixture class.
 class ScopedScryptFeatureToggler {
  public:
   ScopedScryptFeatureToggler(bool force_disabled, bool use_for_new_passphrases);

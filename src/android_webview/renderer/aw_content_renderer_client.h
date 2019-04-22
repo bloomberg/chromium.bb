@@ -37,13 +37,15 @@ class AwContentRendererClient : public content::ContentRendererClient,
   void RenderFrameCreated(content::RenderFrame* render_frame) override;
   void RenderViewCreated(content::RenderView* render_view) override;
   bool HasErrorPage(int http_status_code) override;
+  bool ShouldSuppressErrorPage(content::RenderFrame* render_frame,
+                               const GURL& url) override;
   void PrepareErrorPage(content::RenderFrame* render_frame,
-                        const blink::WebURLRequest& failed_request,
                         const blink::WebURLError& error,
+                        const std::string& http_method,
+                        bool ignoring_cache,
                         std::string* error_html) override;
-  unsigned long long VisitedLinkHash(const char* canonical_url,
-                                     size_t length) override;
-  bool IsLinkVisited(unsigned long long link_hash) override;
+  uint64_t VisitedLinkHash(const char* canonical_url, size_t length) override;
+  bool IsLinkVisited(uint64_t link_hash) override;
   void AddSupportedKeySystems(
       std::vector<std::unique_ptr<::media::KeySystemProperties>>* key_systems)
       override;

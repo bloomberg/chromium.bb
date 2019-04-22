@@ -5,17 +5,21 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_TIMING_DETECTOR_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_TIMING_DETECTOR_H_
 
+#include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
 
 namespace blink {
 
+class Image;
+class ImagePaintTimingDetector;
+class ImageResourceContent;
 class LayoutObject;
 class LocalFrameView;
-class PaintLayer;
-class LayoutRect;
+class PropertyTreeState;
+class StyleImage;
 class TextPaintTimingDetector;
-class ImagePaintTimingDetector;
 
 // PaintTimingDetector contains some of paint metric detectors,
 // providing common infrastructure for these detectors.
@@ -28,13 +32,34 @@ class CORE_EXPORT PaintTimingDetector
     : public GarbageCollected<PaintTimingDetector> {
  public:
   PaintTimingDetector(LocalFrameView*);
-  void NotifyObjectPrePaint(const LayoutObject& object,
-                            const PaintLayer& painting_layer);
-  void NotifyNodeRemoved(const LayoutObject& object);
-  void NotifyPrePaintFinished();
+
+  // TODO(crbug/936124): the detector no longer need to look for background
+  // images in each layer.
+  // Notify the paint of background image.
+  static void NotifyBackgroundImagePaint(
+      const Node*,
+      const Image*,
+      const StyleImage* cached_image,
+      const PropertyTreeState& current_paint_chunk_properties);
+  static void NotifyImagePaint(
+      const LayoutObject&,
+      const IntSize& intrinsic_size,
+      const ImageResourceContent* cached_image,
+      const PropertyTreeState& current_paint_chunk_properties);
+
+  static void NotifyTextPaint(const LayoutObject& object,
+                              const PropertyTreeState&);
+  void NotifyNodeRemoved(const LayoutObject&);
+  void NotifyPaintFinished();
+  void NotifyInputEvent(WebInputEvent::Type);
+  bool NeedToNotifyInputOrScroll();
+  void NotifyScroll(ScrollType scroll_type);
   void DidChangePerformanceTiming();
-  uint64_t CalculateVisualSize(const LayoutRect& invalidated_rect,
-                               const PaintLayer& painting_layer) const;
+
+  // |visual_rect| should be an object's bounding rect in the space of
+  // PropertyTreeState.
+  uint64_t CalculateVisualSize(const IntRect& visual_rect,
+                               const PropertyTreeState&) const;
   void Dispose();
 
   TextPaintTimingDetector& GetTextPaintTimingDetector() {

@@ -43,9 +43,24 @@ bool ProcessSnapshotLinux::Initialize(PtraceConnection* connection) {
 
   InitializeThreads();
   InitializeModules();
+  InitializeAnnotations();
 
   INITIALIZATION_STATE_SET_VALID(initialized_);
   return true;
+}
+
+pid_t ProcessSnapshotLinux::FindThreadWithStackAddress(
+    VMAddress stack_address) {
+  INITIALIZATION_STATE_DCHECK_VALID(initialized_);
+
+  for (const auto& thread : process_reader_.Threads()) {
+    if (stack_address >= thread.stack_region_address &&
+        stack_address <
+            thread.stack_region_address + thread.stack_region_size) {
+      return thread.tid;
+    }
+  }
+  return -1;
 }
 
 bool ProcessSnapshotLinux::InitializeException(
@@ -263,6 +278,15 @@ void ProcessSnapshotLinux::InitializeModules() {
       modules_.push_back(std::move(module));
     }
   }
+}
+
+void ProcessSnapshotLinux::InitializeAnnotations() {
+#if defined(OS_ANDROID)
+  const std::string& abort_message = process_reader_.AbortMessage();
+  if (!abort_message.empty()) {
+    annotations_simple_map_["abort_message"] = abort_message;
+  }
+#endif
 }
 
 }  // namespace crashpad

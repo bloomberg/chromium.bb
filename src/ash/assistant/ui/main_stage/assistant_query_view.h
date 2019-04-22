@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/view.h"
@@ -17,7 +18,7 @@ class AssistantQuery;
 
 // AssistantQueryView is the visual representation of an AssistantQuery. It is a
 // child view of UiElementContainerView.
-class AssistantQueryView : public views::View {
+class COMPONENT_EXPORT(ASSISTANT_UI) AssistantQueryView : public views::View {
  public:
   AssistantQueryView();
   ~AssistantQueryView() override;

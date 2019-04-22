@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
@@ -55,7 +56,7 @@ std::unique_ptr<base::Value> NetworkSpecificNetLogCallback(
   for (NetworkChangeNotifier::NetworkHandle active_network : networks) {
     dict->SetString(
         "current_active_networks." +
-            base::IntToString(HumanReadableNetworkHandle(active_network)),
+            base::NumberToString(HumanReadableNetworkHandle(active_network)),
         NetworkChangeNotifier::ConnectionTypeToString(
             NetworkChangeNotifier::GetNetworkConnectionType(active_network)));
   }

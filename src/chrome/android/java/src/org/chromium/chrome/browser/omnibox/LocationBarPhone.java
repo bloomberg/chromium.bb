@@ -84,6 +84,7 @@ public class LocationBarPhone extends LocationBarLayout {
             setFocusableInTouchMode(false);
         }
         setUrlFocusChangeInProgress(true);
+        updateShouldAnimateIconChanges();
         super.onUrlFocusChange(hasFocus);
     }
 
@@ -136,6 +137,7 @@ public class LocationBarPhone extends LocationBarLayout {
             getWindowAndroid().getKeyboardDelegate().showKeyboard(mUrlBar);
         }
         setUrlFocusChangeInProgress(false);
+        updateShouldAnimateIconChanges();
     }
 
     @Override
@@ -145,8 +147,8 @@ public class LocationBarPhone extends LocationBarLayout {
     }
 
     @Override
-    public boolean shouldAnimateIconChanges() {
-        return super.shouldAnimateIconChanges() || isUrlFocusChangeInProgress();
+    public void updateShouldAnimateIconChanges() {
+        notifyShouldAnimateIconChanges(isUrlBarFocused() || isUrlFocusChangeInProgress());
     }
 
     /**

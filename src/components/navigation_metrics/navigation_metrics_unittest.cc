@@ -5,6 +5,7 @@
 #include "components/navigation_metrics/navigation_metrics.h"
 
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/metrics/user_action_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -16,13 +17,15 @@ const char* const kMainFrameSchemeDifferentPage =
 const char* const kMainFrameSchemeOTR = "Navigation.MainFrameSchemeOTR";
 const char* const kMainFrameSchemeDifferentPageOTR =
     "Navigation.MainFrameSchemeDifferentPageOTR";
-
+const char* const kPageLoad = "PageLoad";
+const char* const kPageLoadInIncognito = "PageLoadInIncognito";
 }  // namespace
 
 namespace navigation_metrics {
 
 TEST(NavigationMetrics, MainFrameSchemeDifferentDocument) {
   base::HistogramTester test;
+  base::UserActionTester user_action_tester;
 
   RecordMainFrameNavigation(GURL(kTestUrl), false, false);
 
@@ -32,10 +35,12 @@ TEST(NavigationMetrics, MainFrameSchemeDifferentDocument) {
   test.ExpectUniqueSample(kMainFrameSchemeDifferentPage, 1 /* http */, 1);
   test.ExpectTotalCount(kMainFrameSchemeOTR, 0);
   test.ExpectTotalCount(kMainFrameSchemeDifferentPageOTR, 0);
+  EXPECT_EQ(1, user_action_tester.GetActionCount(kPageLoad));
 }
 
 TEST(NavigationMetrics, MainFrameSchemeSameDocument) {
   base::HistogramTester test;
+  base::UserActionTester user_action_tester;
 
   RecordMainFrameNavigation(GURL(kTestUrl), true, false);
 
@@ -44,10 +49,12 @@ TEST(NavigationMetrics, MainFrameSchemeSameDocument) {
   test.ExpectTotalCount(kMainFrameSchemeDifferentPage, 0);
   test.ExpectTotalCount(kMainFrameSchemeOTR, 0);
   test.ExpectTotalCount(kMainFrameSchemeDifferentPageOTR, 0);
+  EXPECT_EQ(1, user_action_tester.GetActionCount(kPageLoad));
 }
 
 TEST(NavigationMetrics, MainFrameSchemeDifferentDocumentOTR) {
   base::HistogramTester test;
+  base::UserActionTester user_action_tester;
 
   RecordMainFrameNavigation(GURL(kTestUrl), false, true);
 
@@ -59,10 +66,12 @@ TEST(NavigationMetrics, MainFrameSchemeDifferentDocumentOTR) {
   test.ExpectUniqueSample(kMainFrameSchemeOTR, 1 /* http */, 1);
   test.ExpectTotalCount(kMainFrameSchemeDifferentPageOTR, 1);
   test.ExpectUniqueSample(kMainFrameSchemeDifferentPageOTR, 1 /* http */, 1);
+  EXPECT_EQ(1, user_action_tester.GetActionCount(kPageLoadInIncognito));
 }
 
 TEST(NavigationMetrics, MainFrameSchemeSameDocumentOTR) {
   base::HistogramTester test;
+  base::UserActionTester user_action_tester;
 
   RecordMainFrameNavigation(GURL(kTestUrl), true, true);
 
@@ -72,6 +81,7 @@ TEST(NavigationMetrics, MainFrameSchemeSameDocumentOTR) {
   test.ExpectTotalCount(kMainFrameSchemeOTR, 1);
   test.ExpectUniqueSample(kMainFrameSchemeOTR, 1 /* http */, 1);
   test.ExpectTotalCount(kMainFrameSchemeDifferentPageOTR, 0);
+  EXPECT_EQ(1, user_action_tester.GetActionCount(kPageLoadInIncognito));
 }
 
 }  // namespace navigation_metrics

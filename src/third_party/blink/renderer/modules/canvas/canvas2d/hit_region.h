@@ -5,21 +5,17 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_CANVAS2D_HIT_REGION_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_CANVAS2D_HIT_REGION_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/hit_region_options.h"
 #include "third_party/blink/renderer/platform/graphics/path.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
 class HitRegion final : public GarbageCollectedFinalized<HitRegion> {
  public:
-  static HitRegion* Create(const Path& path, const HitRegionOptions* options) {
-    return MakeGarbageCollected<HitRegion>(path, options);
-  }
-
   HitRegion(const Path&, const HitRegionOptions*);
   virtual ~HitRegion() = default;
 
@@ -41,13 +37,7 @@ class HitRegion final : public GarbageCollectedFinalized<HitRegion> {
 };
 
 class HitRegionManager final : public GarbageCollected<HitRegionManager> {
-  WTF_MAKE_NONCOPYABLE(HitRegionManager);
-
  public:
-  static HitRegionManager* Create() {
-    return MakeGarbageCollected<HitRegionManager>();
-  }
-
   HitRegionManager() = default;
 
   void AddHitRegion(HitRegion*);
@@ -76,6 +66,8 @@ class HitRegionManager final : public GarbageCollected<HitRegionManager> {
   HitRegionList hit_region_list_;
   HitRegionIdMap hit_region_id_map_;
   HitRegionControlMap hit_region_control_map_;
+
+  DISALLOW_COPY_AND_ASSIGN(HitRegionManager);
 };
 
 }  // namespace blink

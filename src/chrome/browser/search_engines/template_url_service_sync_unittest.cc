@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -587,7 +588,7 @@ TEST_F(TemplateURLServiceSyncTest, IsLocalTemplateURLBetter) {
     {100, 100, false, false, false},
   };
 
-  for (size_t i = 0; i < arraysize(test_cases); ++i) {
+  for (size_t i = 0; i < base::size(test_cases); ++i) {
     TemplateURL* local_turl = model()->Add(CreateTestTemplateURL(
         ASCIIToUTF16("localkey"), "www.local.com", "localguid",
         test_cases[i].local_time, true, test_cases[i].local_created_by_policy));
@@ -2183,7 +2184,7 @@ TEST_F(TemplateURLServiceSyncTest, MergeInSyncTemplateURL) {
     {NEITHER, SYNC, NEITHER, NEITHER, BOTH, false, {1, 0, 0}},
   };
 
-  for (size_t i = 0; i < arraysize(test_cases); ++i) {
+  for (size_t i = 0; i < base::size(test_cases); ++i) {
     // Assert all the valid states of ExpectedTemplateURLs.
     ASSERT_FALSE(test_cases[i].conflict_winner == BOTH);
     ASSERT_FALSE(test_cases[i].synced_at_start == NEITHER);

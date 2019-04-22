@@ -43,7 +43,7 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/keepalive_statistics_recorder.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
-#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -77,7 +77,6 @@ class ResourceHandler;
 class ResourceMessageDelegate;
 class ResourceRequesterInfo;
 class ResourceRequestInfoImpl;
-class ServiceWorkerNavigationHandleCore;
 struct NavigationRequestInfo;
 struct Referrer;
 struct ResourceRequest;
@@ -153,11 +152,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
 
   // Called when a RenderViewHost is deleted.
   static void OnRenderViewHostDeleted(int child_id, int route_id);
-
-  // Called when a RenderViewHost starts or stops loading.
-  static void OnRenderViewHostSetIsLoading(int child_id,
-                                           int route_id,
-                                           bool is_loading);
 
   // Force cancels any pending requests for the given process.
   void CancelRequestsForProcess(int child_id);
@@ -240,7 +234,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       std::unique_ptr<NavigationUIData> navigation_ui_data,
       network::mojom::URLLoaderClientPtr url_loader_client,
       network::mojom::URLLoaderRequest url_loader_request,
-      ServiceWorkerNavigationHandleCore* service_worker_handle_core,
       AppCacheNavigationHandleCore* appcache_handle_core,
       uint32_t url_loader_options,
       net::RequestPriority net_priority,
@@ -278,6 +271,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
                             int render_process_host_id,
                             int render_view_routing_id,
                             int render_frame_routing_id,
+                            int frame_tree_node_id,
                             PreviewsState previews_state,
                             ResourceContext* context);
 
@@ -397,9 +391,9 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   typedef std::map<std::string, HeaderInterceptorInfo> HeaderInterceptorMap;
 
   // ResourceLoaderDelegate implementation:
-  scoped_refptr<LoginDelegate> CreateLoginDelegate(
+  std::unique_ptr<LoginDelegate> CreateLoginDelegate(
       ResourceLoader* loader,
-      net::AuthChallengeInfo* auth_info) override;
+      const net::AuthChallengeInfo& auth_info) override;
   bool HandleExternalProtocol(ResourceLoader* loader, const GURL& url) override;
   void DidStartRequest(ResourceLoader* loader) override;
   void DidReceiveRedirect(ResourceLoader* loader,
@@ -436,18 +430,18 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // Returns the OustandingRequestsStats for |info|'s renderer, or an empty
   // struct if that renderer has no outstanding requests.
   OustandingRequestsStats GetOutstandingRequestsStats(
-      const ResourceRequestInfoImpl& info);
+      ResourceRequestInfoImpl* info);
 
   // Updates |outstanding_requests_stats_map_| with the specified |stats| for
   // the renderer that made the request in |info|.
-  void UpdateOutstandingRequestsStats(const ResourceRequestInfoImpl& info,
+  void UpdateOutstandingRequestsStats(ResourceRequestInfoImpl* info,
                                       const OustandingRequestsStats& stats);
 
   // Called every time an outstanding request is created or deleted. |count|
   // indicates whether the request is new or deleted. |count| must be 1 or -1.
   OustandingRequestsStats IncrementOutstandingRequestsMemory(
       int count,
-      const ResourceRequestInfoImpl& info);
+      ResourceRequestInfoImpl* info);
 
   // Called when an in flight request allocates or releases a shared memory
   // buffer. |count| indicates whether the request is issuing or finishing.
@@ -606,13 +600,13 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
 
   // Creates ResourceRequestInfoImpl for a download or page save.
   // |download| should be true if the request is a file download.
-  ResourceRequestInfoImpl* CreateRequestInfo(
-      int child_id,
-      int render_view_route_id,
-      int render_frame_route_id,
-      PreviewsState previews_state,
-      bool download,
-      ResourceContext* context);
+  ResourceRequestInfoImpl* CreateRequestInfo(int child_id,
+                                             int render_view_route_id,
+                                             int render_frame_route_id,
+                                             int frame_tree_node_id,
+                                             PreviewsState previews_state,
+                                             bool download,
+                                             ResourceContext* context);
 
   // Relationship of resource being authenticated with the top level page.
   enum HttpAuthRelationType {

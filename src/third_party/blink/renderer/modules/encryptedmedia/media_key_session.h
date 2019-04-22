@@ -31,7 +31,7 @@
 #include "third_party/blink/public/platform/web_encrypted_media_types.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_property.h"
-#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_piece.h"
 #include "third_party/blink/renderer/modules/encryptedmedia/media_key_status_map.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
@@ -71,10 +71,6 @@ class MediaKeySession final
   USING_PRE_FINALIZER(MediaKeySession, Dispose);
 
  public:
-  static MediaKeySession* Create(ScriptState*,
-                                 MediaKeys*,
-                                 WebEncryptedMediaSessionType);
-
   MediaKeySession(ScriptState*, MediaKeys*, WebEncryptedMediaSessionType);
   ~MediaKeySession() override;
 
@@ -82,8 +78,8 @@ class MediaKeySession final
   double expiration() const { return expiration_; }
   ScriptPromise closed(ScriptState*);
   MediaKeyStatusMap* keyStatuses();
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(keystatuseschange, kKeystatuseschange);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(message, kMessage);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(keystatuseschange, kKeystatuseschange)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(message, kMessage)
 
   ScriptPromise generateRequest(ScriptState*,
                                 const String& init_data_type,
@@ -142,6 +138,7 @@ class MediaKeySession final
   WeakMember<MediaKeys> media_keys_;
 
   // Session properties.
+  String session_id_;
   WebEncryptedMediaSessionType session_type_;
   double expiration_;
   Member<MediaKeyStatusMap> key_statuses_map_;

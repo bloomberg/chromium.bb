@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/android/android_hardware_buffer_compat.h"
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
@@ -16,7 +17,6 @@
 #include "device/vr/android/gvr/gvr_delegate_provider.h"
 #include "device/vr/android/gvr/gvr_delegate_provider_factory.h"
 #include "device/vr/android/gvr/gvr_device_provider.h"
-#include "device/vr/android/gvr/vr_module_delegate.h"
 #include "device/vr/vr_display_impl.h"
 #include "jni/NonPresentingGvrContext_jni.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr.h"
@@ -151,6 +151,10 @@ GvrDevice::~GvrDevice() {
     StopPresenting();
   }
 
+  if (pending_request_session_callback_) {
+    std::move(pending_request_session_callback_).Run(nullptr, nullptr);
+  }
+
   GvrDelegateProviderFactory::SetDevice(nullptr);
   if (!non_presenting_context_.obj())
     return;
@@ -161,20 +165,30 @@ GvrDevice::~GvrDevice() {
 void GvrDevice::RequestSession(
     mojom::XRRuntimeSessionOptionsPtr options,
     mojom::XRRuntime::RequestSessionCallback callback) {
-  if (!gvr_api_) {
-    Init(base::BindOnce(&GvrDevice::OnInitRequestSessionFinished,
-                        base::Unretained(this), std::move(options),
-                        std::move(callback)));
+  // We can only process one request at a time.
+  if (pending_request_session_callback_) {
+    std::move(callback).Run(nullptr, nullptr);
     return;
   }
-  OnInitRequestSessionFinished(std::move(options), std::move(callback), true);
+  pending_request_session_callback_ = std::move(callback);
+
+  if (!gvr_api_) {
+    int render_process_id = options->render_process_id;
+    int render_frame_id = options->render_frame_id;
+    Init(render_process_id, render_frame_id,
+         base::BindOnce(&GvrDevice::OnInitRequestSessionFinished,
+                        base::Unretained(this), std::move(options)));
+    return;
+  }
+  OnInitRequestSessionFinished(std::move(options), true);
 }
 
 void GvrDevice::OnStartPresentResult(
-    mojom::XRRuntime::RequestSessionCallback callback,
     mojom::XRSessionPtr session) {
+  DCHECK(pending_request_session_callback_);
+
   if (!session) {
-    std::move(callback).Run(nullptr, nullptr);
+    std::move(pending_request_session_callback_).Run(nullptr, nullptr);
     return;
   }
 
@@ -191,8 +205,8 @@ void GvrDevice::OnStartPresentResult(
   exclusive_controller_binding_.set_connection_error_handler(
       base::BindOnce(&GvrDevice::OnPresentingControllerMojoConnectionError,
                      base::Unretained(this)));
-
-  std::move(callback).Run(std::move(session), std::move(session_controller));
+  std::move(pending_request_session_callback_)
+      .Run(std::move(session), std::move(session_controller));
 }
 
 // XRSessionController
@@ -211,18 +225,6 @@ void GvrDevice::StopPresenting() {
     delegate_provider->ExitWebVRPresent();
   OnExitPresent();
   exclusive_controller_binding_.Close();
-}
-
-void GvrDevice::OnGetInlineFrameData(
-    mojom::XRFrameDataProvider::GetFrameDataCallback callback) {
-  if (!gvr_api_) {
-    std::move(callback).Run(nullptr);
-    return;
-  }
-  mojom::XRFrameDataPtr frame_data = mojom::XRFrameData::New();
-  frame_data->pose =
-      GvrDelegate::GetVRPosePtrWithNeckModel(gvr_api_.get(), nullptr);
-  std::move(callback).Run(std::move(frame_data));
 }
 
 void GvrDevice::OnListeningForActivate(bool listening) {
@@ -250,8 +252,11 @@ void GvrDevice::ResumeTracking() {
   }
 }
 
-void GvrDevice::EnsureInitialized(EnsureInitializedCallback callback) {
-  Init(base::BindOnce([](EnsureInitializedCallback callback,
+void GvrDevice::EnsureInitialized(int render_process_id,
+                                  int render_frame_id,
+                                  EnsureInitializedCallback callback) {
+  Init(render_process_id, render_frame_id,
+       base::BindOnce([](EnsureInitializedCallback callback,
                          bool success) { std::move(callback).Run(); },
                       std::move(callback)));
 }
@@ -273,16 +278,25 @@ void GvrDevice::Activate(mojom::VRDisplayEventReason reason,
   OnActivate(reason, std::move(on_handled));
 }
 
-void GvrDevice::Init(base::OnceCallback<void(bool)> on_finished) {
-  VrModuleDelegate* module_delegate = VrModuleDelegate::Get();
-  if (!module_delegate) {
+void GvrDevice::Init(int render_process_id,
+                     int render_frame_id,
+                     base::OnceCallback<void(bool)> on_finished) {
+  if (!module_delegate_) {
+    VrModuleDelegateFactory* factory = VrModuleDelegateFactory::Get();
+    if (factory) {
+      module_delegate_ =
+          factory->CreateDelegate(render_process_id, render_frame_id);
+    }
+  }
+
+  if (!module_delegate_) {
     std::move(on_finished).Run(false);
     return;
   }
-  if (!module_delegate->ModuleInstalled()) {
-    module_delegate->InstallModule(
-        base::BindOnce(&GvrDevice::OnVrModuleInstalled, base::Unretained(this),
-                       std::move(on_finished)));
+  if (!module_delegate_->ModuleInstalled()) {
+    module_delegate_->InstallModule(
+        base::BindOnce(&GvrDevice::OnVrModuleInstalled,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(on_finished)));
     return;
   }
   OnVrModuleInstalled(std::move(on_finished), true);
@@ -325,33 +339,28 @@ void GvrDevice::CreateNonPresentingContext() {
 
 void GvrDevice::OnInitRequestSessionFinished(
     mojom::XRRuntimeSessionOptionsPtr options,
-    mojom::XRRuntime::RequestSessionCallback callback,
     bool success) {
+  DCHECK(pending_request_session_callback_);
+
   if (!success) {
-    std::move(callback).Run(nullptr, nullptr);
+    std::move(pending_request_session_callback_).Run(nullptr, nullptr);
     return;
   }
 
   GvrDelegateProvider* delegate_provider = GetGvrDelegateProvider();
   if (!delegate_provider) {
-    std::move(callback).Run(nullptr, nullptr);
+    std::move(pending_request_session_callback_).Run(nullptr, nullptr);
     return;
   }
 
-  if (!options->immersive) {
-    // TODO(https://crbug.com/695937): This should be NOTREACHED() once we no
-    // longer need the hacked GVR non-immersive mode.  This should now only be
-    // hit if orientation devices are disabled by flag.
-    ReturnNonImmersiveSession(std::move(callback));
-    return;
-  }
+  DCHECK(options->immersive);
 
   // StartWebXRPresentation is async as we may trigger a DON (Device ON) flow
   // that pauses Chrome.
   delegate_provider->StartWebXRPresentation(
       GetVRDisplayInfo(), std::move(options),
       base::BindOnce(&GvrDevice::OnStartPresentResult,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 }  // namespace device

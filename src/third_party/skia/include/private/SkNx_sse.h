@@ -21,7 +21,7 @@
 // This file may assume <= SSE2, but must check SK_CPU_SSE_LEVEL for anything more recent.
 // If you do, make sure this is in a static inline function... anywhere else risks violating ODR.
 
-namespace {
+namespace {  // NOLINT(google-build-namespaces)
 
 // Emulate _mm_floor_ps() with SSE2:
 //   - roundtrip through integers via truncation
@@ -668,6 +668,7 @@ public:
 
     AI SkNx operator + (const SkNx& o) const { return _mm_add_epi8(fVec, o.fVec); }
     AI SkNx operator - (const SkNx& o) const { return _mm_sub_epi8(fVec, o.fVec); }
+    AI SkNx operator & (const SkNx& o) const { return _mm_and_si128(fVec, o.fVec); }
 
     AI static SkNx Min(const SkNx& a, const SkNx& b) { return _mm_min_epu8(a.fVec, b.fVec); }
     AI SkNx operator < (const SkNx& o) const {

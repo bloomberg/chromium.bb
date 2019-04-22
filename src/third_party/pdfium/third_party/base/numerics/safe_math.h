@@ -178,7 +178,7 @@ class CheckedNumeric {
   }
 
   // This friend method is available solely for providing more detailed logging
-  // in the the tests. Do not implement it in production code, because the
+  // in the tests. Do not implement it in production code, because the
   // underlying values may change at any time.
   template <typename U>
   friend U GetNumericValueForTest(const CheckedNumeric<U>& src);
@@ -300,7 +300,7 @@ class CheckedNumeric {
         Wrapper<L>::is_valid(lhs) && Wrapper<R>::is_valid(rhs) &&
         Math::Do(Wrapper<L>::value(lhs), Wrapper<R>::value(rhs), &result);
     return CheckedNumeric<T>(result, is_valid);
-  };
+  }
 
   // Assignment arithmetic operations.
   template <template <typename, typename, typename> class M, typename R>
@@ -311,7 +311,7 @@ class CheckedNumeric {
                     Math::Do(state_.value(), Wrapper<R>::value(rhs), &result);
     *this = CheckedNumeric<T>(result, is_valid);
     return *this;
-  };
+  }
 
  private:
   CheckedNumericState<T> state_;

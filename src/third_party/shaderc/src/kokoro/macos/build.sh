@@ -23,6 +23,7 @@ set -x
 
 BUILD_ROOT=$PWD
 SRC=$PWD/github/shaderc
+INSTALL_DIR="$SRC/install"
 BUILD_TYPE=$1
 
 # Get NINJA.
@@ -31,22 +32,16 @@ unzip -q ninja-mac.zip
 chmod +x ninja
 export PATH="$PWD:$PATH"
 
-cd $SRC/third_party
-git clone https://github.com/google/googletest.git
-git clone https://github.com/google/glslang.git
-git clone https://github.com/KhronosGroup/SPIRV-Tools.git spirv-tools
-git clone https://github.com/KhronosGroup/SPIRV-Headers.git spirv-headers
-git clone https://github.com/google/re2 spirv-tools/external/re2
-git clone https://github.com/google/effcee spirv-tools/external/effcee
+cd $SRC
+./utils/git-sync-deps
 
-cd $SRC/
 mkdir build
 cd $SRC/build
 
 # Invoke the build.
 BUILD_SHA=${KOKORO_GITHUB_COMMIT:-$KOKORO_GITHUB_PULL_REQUEST_COMMIT}
 echo $(date): Starting build...
-cmake -GNinja -DRE2_BUILD_TESTING=OFF -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=$BUILD_TYPE ..
+cmake -GNinja -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR -DSHADERC_ENABLE_SPVC=ON -DRE2_BUILD_TESTING=OFF -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=$BUILD_TYPE ..
 
 echo $(date): Build glslang...
 ninja glslangValidator
@@ -63,3 +58,7 @@ echo $(date): Starting ctest...
 ctest --output-on-failure -j4
 echo $(date): ctest completed.
 
+# Package the build.
+ninja install
+cd $(dirname $INSTALL_DIR)
+tar czf $KOKORO_ARTIFACTS_DIR/install.tgz $(basename $INSTALL_DIR)

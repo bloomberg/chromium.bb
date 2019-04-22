@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/focus/focus_search.h"
@@ -21,7 +22,8 @@ class AssistantContainerView;
 // belonging to AssistantContainerViewFocusTraversable. When there is no
 // currently focused view, it delegates to AssistantContainerView to find the
 // first focusable view for the given UI state.
-class AssistantContainerViewFocusSearch : public views::FocusSearch {
+class COMPONENT_EXPORT(ASSISTANT_UI) AssistantContainerViewFocusSearch
+    : public views::FocusSearch {
  public:
   explicit AssistantContainerViewFocusSearch(
       AssistantContainerView* assistant_container_view);

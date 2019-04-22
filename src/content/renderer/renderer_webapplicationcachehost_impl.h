@@ -7,6 +7,10 @@
 
 #include "content/renderer/appcache/web_application_cache_host_impl.h"
 
+#include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
+#include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
+
 namespace content {
 class RenderViewImpl;
 
@@ -15,15 +19,13 @@ class RendererWebApplicationCacheHostImpl : public WebApplicationCacheHostImpl {
   RendererWebApplicationCacheHostImpl(
       RenderViewImpl* render_view,
       blink::WebApplicationCacheHostClient* client,
-      AppCacheBackend* backend,
       int appcache_host_id,
-      int frame_routing_id);
+      int frame_routing_id,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
-  // WebApplicationCacheHostImpl:
-  void OnLogMessage(AppCacheLogLevel log_level,
-                    const std::string& message) override;
-  void OnContentBlocked(const GURL& manifest_url) override;
-  void OnCacheSelected(const AppCacheInfo& info) override;
+  // blink::mojom::AppCacheHostFrontend:
+  void LogMessage(blink::mojom::ConsoleMessageLevel log_level,
+                  const std::string& message) override;
 
   void SetSubresourceFactory(
       network::mojom::URLLoaderFactoryPtr url_loader_factory) override;

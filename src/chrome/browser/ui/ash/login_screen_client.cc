@@ -7,6 +7,8 @@
 #include <utility>
 
 #include "ash/public/interfaces/constants.mojom.h"
+#include "base/bind.h"
+#include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/login_auth_recorder.h"
@@ -17,6 +19,7 @@
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
 #include "components/user_manager/remove_user_delegate.h"
+#include "components/user_manager/user_names.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -26,6 +29,8 @@ LoginScreenClient* g_login_screen_client_instance = nullptr;
 
 LoginScreenClient::Delegate::Delegate() = default;
 LoginScreenClient::Delegate::~Delegate() = default;
+
+LoginScreenClient::ParentAccessDelegate::~ParentAccessDelegate() = default;
 
 LoginScreenClient::LoginScreenClient()
     : binding_(this),
@@ -63,6 +68,21 @@ void LoginScreenClient::SetDelegate(Delegate* delegate) {
   delegate_ = delegate;
 }
 
+void LoginScreenClient::SetParentAccessDelegate(
+    ParentAccessDelegate* delegate) {
+  parent_access_delegate_ = delegate;
+}
+
+void LoginScreenClient::AddSystemTrayFocusObserver(
+    ash::SystemTrayFocusObserver* observer) {
+  system_tray_focus_observers_.AddObserver(observer);
+}
+
+void LoginScreenClient::RemoveSystemTrayFocusObserver(
+    ash::SystemTrayFocusObserver* observer) {
+  system_tray_focus_observers_.RemoveObserver(observer);
+}
+
 ash::mojom::LoginScreenPtr& LoginScreenClient::login_screen() {
   return login_screen_;
 }
@@ -88,6 +108,7 @@ void LoginScreenClient::AuthenticateUserWithPasswordOrPin(
     std::move(callback).Run(false);
   }
 }
+
 void LoginScreenClient::AuthenticateUserWithExternalBinary(
     const AccountId& account_id,
     AuthenticateUserWithExternalBinaryCallback callback) {
@@ -118,6 +139,19 @@ void LoginScreenClient::AuthenticateUserWithEasyUnlock(
     auth_recorder_->RecordAuthMethod(
         chromeos::LoginAuthRecorder::AuthMethod::kSmartlock);
   }
+}
+
+void LoginScreenClient::ValidateParentAccessCode(
+    const AccountId& account_id,
+    const std::string& access_code,
+    ValidateParentAccessCodeCallback callback) {
+  if (!parent_access_delegate_) {
+    LOG(ERROR) << "Cannot validate parent access code - no delegate";
+    std::move(callback).Run(false);
+    return;
+  }
+  parent_access_delegate_->ValidateParentAccessCode(access_code,
+                                                    std::move(callback));
 }
 
 void LoginScreenClient::HardlockPod(const AccountId& account_id) {
@@ -211,6 +245,11 @@ void LoginScreenClient::ShowAccountAccessHelpApp() {
       ->ShowHelpTopic(chromeos::HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);
 }
 
+void LoginScreenClient::OnFocusLeavingSystemTray(bool reverse) {
+  for (ash::SystemTrayFocusObserver& observer : system_tray_focus_observers_)
+    observer.OnFocusLeavingSystemTray(reverse);
+}
+
 void LoginScreenClient::LoadWallpaper(const AccountId& account_id) {
   WallpaperControllerClient::Get()->ShowUserWallpaper(account_id);
 }
@@ -224,8 +263,14 @@ void LoginScreenClient::CancelAddUser() {
 }
 
 void LoginScreenClient::LoginAsGuest() {
-  if (delegate_)
-    delegate_->HandleLoginAsGuest();
+  DCHECK(!chromeos::ScreenLocker::default_screen_locker());
+  if (chromeos::LoginDisplayHost::default_host()) {
+    chromeos::LoginDisplayHost::default_host()
+        ->GetExistingUserController()
+        ->Login(chromeos::UserContext(user_manager::USER_TYPE_GUEST,
+                                      user_manager::GuestAccountId()),
+                chromeos::SigninSpecifics());
+  }
 }
 
 void LoginScreenClient::OnMaxIncorrectPasswordAttempted(
@@ -262,4 +307,12 @@ void LoginScreenClient::SetPublicSessionKeyboardLayout(
   }
   login_screen_->SetPublicSessionKeyboardLayouts(account_id, locale,
                                                  std::move(result));
+}
+
+void LoginScreenClient::OnUserActivity() {
+  if (chromeos::LoginDisplayHost::default_host()) {
+    chromeos::LoginDisplayHost::default_host()
+        ->GetExistingUserController()
+        ->ResetAutoLoginTimer();
+  }
 }

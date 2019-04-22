@@ -9,10 +9,11 @@
 
 #include "base/bind.h"
 #include "base/sequenced_task_runner.h"
+#include "base/system/sys_info.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "components/image_fetcher/core/cache/proto/cached_image_metadata.pb.h"
-#include "components/leveldb_proto/proto_database_impl.h"
+#include "components/leveldb_proto/public/proto_database_provider.h"
 
 using image_fetcher::CachedImageMetadataProto;
 
@@ -22,22 +23,23 @@ namespace image_fetcher {
 
 namespace {
 
+leveldb::ReadOptions CreateReadOptions() {
+  leveldb::ReadOptions opts;
+  opts.fill_cache = false;
+  return opts;
+}
+
 int64_t ToDatabaseTime(base::Time time) {
   return time.since_origin().InMicroseconds();
 }
-
-// Statistics are logged to UMA with this string as part of histogram name. They
-// can all be found under LevelDB.*.ImageDatabase. Changing this needs to
-// synchronize with histograms.xml, AND will also become incompatible with older
-// browsers still reporting the previous values.
-const char kImageDatabaseUMAClientName[] = "CachedImageFetcherDatabase";
 
 // The folder where the data will be stored on disk.
 const char kImageDatabaseFolder[] = "cached_image_fetcher_images";
 
 // The amount of data to build up in memory before converting to a sorted on-
 // disk file.
-const size_t kDatabaseWriteBufferSizeBytes = 128 * 1024;
+const size_t kDatabaseWriteBufferSizeBytes = 64 * 1024;                 // 64KB
+const size_t kDatabaseWriteBufferSizeBytesForLowEndDevice = 32 * 1024;  // 32KB
 
 bool KeyMatcherFilter(std::string key, const std::string& other_key) {
   return key.compare(other_key) == 0;
@@ -54,24 +56,23 @@ using MetadataKeyEntryVector =
     leveldb_proto::ProtoDatabase<CachedImageMetadataProto>::KeyEntryVector;
 
 ImageMetadataStoreLevelDB::ImageMetadataStoreLevelDB(
+    leveldb_proto::ProtoDatabaseProvider* proto_database_provider,
     const base::FilePath& database_dir,
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     base::Clock* clock)
     : ImageMetadataStoreLevelDB(
-          database_dir,
-          std::make_unique<
-              leveldb_proto::ProtoDatabaseImpl<CachedImageMetadataProto>>(
+          proto_database_provider->GetDB<CachedImageMetadataProto>(
+              leveldb_proto::ProtoDbType::CACHED_IMAGE_METADATA_STORE,
+              database_dir.AppendASCII(kImageDatabaseFolder),
               task_runner),
           clock) {}
 
 ImageMetadataStoreLevelDB::ImageMetadataStoreLevelDB(
-    const base::FilePath& database_dir,
     std::unique_ptr<leveldb_proto::ProtoDatabase<CachedImageMetadataProto>>
         database,
     base::Clock* clock)
     : estimated_size_(0),
       initialization_status_(InitializationStatus::UNINITIALIZED),
-      database_dir_(database_dir),
       database_(std::move(database)),
       clock_(clock),
       weak_ptr_factory_(this) {}
@@ -80,10 +81,14 @@ ImageMetadataStoreLevelDB::~ImageMetadataStoreLevelDB() = default;
 
 void ImageMetadataStoreLevelDB::Initialize(base::OnceClosure callback) {
   leveldb_env::Options options = leveldb_proto::CreateSimpleOptions();
-  options.write_buffer_size = kDatabaseWriteBufferSizeBytes;
-  base::FilePath image_dir = database_dir_.AppendASCII(kImageDatabaseFolder);
+  if (base::SysInfo::IsLowEndDevice()) {
+    options.write_buffer_size = kDatabaseWriteBufferSizeBytesForLowEndDevice;
+  } else {
+    options.write_buffer_size = kDatabaseWriteBufferSizeBytes;
+  }
+
   database_->Init(
-      kImageDatabaseUMAClientName, image_dir, options,
+      options,
       base::BindOnce(&ImageMetadataStoreLevelDB::OnDatabaseInitialized,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
@@ -137,7 +142,8 @@ void ImageMetadataStoreLevelDB::UpdateImageMetadata(const std::string& key) {
   }
 
   database_->LoadEntriesWithFilter(
-      base::BindRepeating(&KeyMatcherFilter, key),
+      base::BindRepeating(&KeyMatcherFilter, key), CreateReadOptions(),
+      /* target_prefix */ "",
       base::BindOnce(&ImageMetadataStoreLevelDB::UpdateImageMetadataImpl,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -175,9 +181,10 @@ void ImageMetadataStoreLevelDB::EvictImageMetadata(base::Time expiration_time,
 
 void ImageMetadataStoreLevelDB::OnDatabaseInitialized(
     base::OnceClosure callback,
-    bool success) {
-  initialization_status_ = success ? InitializationStatus::INITIALIZED
-                                   : InitializationStatus::INIT_FAILURE;
+    leveldb_proto::Enums::InitStatus status) {
+  initialization_status_ = status == leveldb_proto::Enums::InitStatus::kOK
+                               ? InitializationStatus::INITIALIZED
+                               : InitializationStatus::INIT_FAILURE;
   std::move(callback).Run();
 }
 

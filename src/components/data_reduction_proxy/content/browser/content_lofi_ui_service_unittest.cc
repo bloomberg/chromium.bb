@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
+#include "build/build_config.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -31,10 +32,7 @@ namespace data_reduction_proxy {
 
 class ContentLoFiUIServiceTest : public content::RenderViewHostTestHarness {
  public:
-  ContentLoFiUIServiceTest()
-      : content::RenderViewHostTestHarness(
-            content::TestBrowserThreadBundle::DEFAULT),
-        callback_called_(false) {}
+  ContentLoFiUIServiceTest() : callback_called_(false) {}
 
   void RunTestOnIOThread(base::RunLoop* ui_run_loop) {
     ASSERT_TRUE(ui_run_loop);
@@ -77,8 +75,7 @@ class ContentLoFiUIServiceTest : public content::RenderViewHostTestHarness {
         request.get(), content::RESOURCE_TYPE_SUB_FRAME, nullptr,
         web_contents()->GetMainFrame()->GetProcess()->GetID(), -1,
         web_contents()->GetMainFrame()->GetRoutingID(),
-        /*is_main_frame=*/false,
-        /*allow_download=*/false,
+        /*is_main_frame=*/false, content::ResourceInterceptPolicy::kAllowNone,
         /*is_async=*/false, content::SERVER_LOFI_ON,
         /*navigation_ui_data*/ nullptr);
 
@@ -102,6 +99,7 @@ class ContentLoFiUIServiceTest : public content::RenderViewHostTestHarness {
   bool callback_called_;
 };
 
+#if !defined(OS_ANDROID)
 TEST_F(ContentLoFiUIServiceTest, OnLoFiResponseReceived) {
   base::RunLoop ui_run_loop;
   base::PostTaskWithTraits(
@@ -112,5 +110,6 @@ TEST_F(ContentLoFiUIServiceTest, OnLoFiResponseReceived) {
   base::RunLoop().RunUntilIdle();
   VerifyOnLoFiResponseReceivedCallback();
 }
+#endif
 
 }  // namespace data_reduction_proxy

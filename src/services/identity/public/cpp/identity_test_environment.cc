@@ -4,19 +4,37 @@
 
 #include "services/identity/public/cpp/identity_test_environment.h"
 
-#include "build/build_config.h"
-
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/signin/core/browser/account_consistency_method.h"
+#include "build/build_config.h"
+#include "components/image_fetcher/core/fake_image_decoder.h"
+#include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
+#include "components/signin/core/browser/gaia_cookie_manager_service.h"
+#include "components/signin/core/browser/identity_manager_wrapper.h"
+#include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
+#include "services/identity/public/cpp/accounts_cookie_mutator.h"
+#include "services/identity/public/cpp/accounts_cookie_mutator_impl.h"
+#include "services/identity/public/cpp/accounts_mutator.h"
+#include "services/identity/public/cpp/diagnostics_provider_impl.h"
 #include "services/identity/public/cpp/identity_test_utils.h"
 #include "services/identity/public/cpp/primary_account_mutator.h"
+#include "services/identity/public/cpp/test_identity_manager_observer.h"
 
 #if !defined(OS_CHROMEOS)
 #include "services/identity/public/cpp/primary_account_mutator_impl.h"
+#endif
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#include "services/identity/public/cpp/accounts_mutator_impl.h"
+#endif
+
+#if defined(OS_ANDROID)
+#include "components/signin/core/browser/child_account_info_fetcher_android.h"
 #endif
 
 namespace identity {
@@ -24,19 +42,13 @@ namespace identity {
 class IdentityManagerDependenciesOwner {
  public:
   IdentityManagerDependenciesOwner(
-      bool use_fake_url_loader_for_gaia_cookie_manager,
-      sync_preferences::TestingPrefServiceSyncable* pref_service);
+      sync_preferences::TestingPrefServiceSyncable* pref_service,
+      TestSigninClient* test_signin_client);
   ~IdentityManagerDependenciesOwner();
 
-  AccountTrackerService* account_tracker_service();
-
-  SigninManagerForTest* signin_manager();
-
-  FakeProfileOAuth2TokenService* token_service();
-
-  FakeGaiaCookieManagerService* gaia_cookie_manager_service();
-
   sync_preferences::TestingPrefServiceSyncable* pref_service();
+
+  TestSigninClient* signin_client();
 
  private:
   // Depending on whether a |pref_service| instance is passed in
@@ -45,76 +57,29 @@ class IdentityManagerDependenciesOwner {
       owned_pref_service_;
   sync_preferences::TestingPrefServiceSyncable* raw_pref_service_ = nullptr;
 
-  AccountTrackerService account_tracker_;
-  TestSigninClient signin_client_;
-  FakeProfileOAuth2TokenService token_service_;
-  SigninManagerForTest signin_manager_;
-  FakeGaiaCookieManagerService gaia_cookie_manager_service_;
+  std::unique_ptr<TestSigninClient> owned_signin_client_;
+  TestSigninClient* raw_signin_client_ = nullptr;
+
 
   DISALLOW_COPY_AND_ASSIGN(IdentityManagerDependenciesOwner);
 };
 
 IdentityManagerDependenciesOwner::IdentityManagerDependenciesOwner(
-    bool use_fake_url_loader_for_gaia_cookie_manager,
-    sync_preferences::TestingPrefServiceSyncable* pref_service_param)
+    sync_preferences::TestingPrefServiceSyncable* pref_service_param,
+    TestSigninClient* signin_client_param)
     : owned_pref_service_(
           pref_service_param
               ? nullptr
               : std::make_unique<
                     sync_preferences::TestingPrefServiceSyncable>()),
       raw_pref_service_(pref_service_param),
-      signin_client_(pref_service()),
-      token_service_(pref_service()),
-#if defined(OS_CHROMEOS)
-      signin_manager_(&signin_client_, &account_tracker_),
-#else
-      signin_manager_(&signin_client_,
-                      &token_service_,
-                      &account_tracker_,
-                      nullptr),
-#endif
-      // NOTE: Some unittests set up their own TestURLFetcherFactory. In these
-      // contexts FakeGaiaCookieManagerService can't set up its own
-      // FakeURLFetcherFactory, as {Test, Fake}URLFetcherFactory allow only one
-      // instance to be alive at a time. If some users require that
-      // GaiaCookieManagerService have a FakeURLFetcherFactory while *also*
-      // having their own FakeURLFetcherFactory, we'll need to pass the actual
-      // object in and have GaiaCookieManagerService have a reference to the
-      // object (or figure out the sharing some other way). Contact
-      // blundell@chromium.org if you come up against this issue.
-      gaia_cookie_manager_service_(
-          &token_service_,
-          &signin_client_,
-          use_fake_url_loader_for_gaia_cookie_manager) {
-  AccountTrackerService::RegisterPrefs(pref_service()->registry());
-  ProfileOAuth2TokenService::RegisterProfilePrefs(pref_service()->registry());
-  SigninManagerBase::RegisterProfilePrefs(pref_service()->registry());
-  SigninManagerBase::RegisterPrefs(pref_service()->registry());
+      owned_signin_client_(
+          signin_client_param
+              ? nullptr
+              : std::make_unique<TestSigninClient>(pref_service())),
+      raw_signin_client_(signin_client_param) {}
 
-  account_tracker_.Initialize(pref_service(), base::FilePath());
-  signin_manager_.Initialize(pref_service());
-}
-
-IdentityManagerDependenciesOwner::~IdentityManagerDependenciesOwner() {}
-
-AccountTrackerService*
-IdentityManagerDependenciesOwner::account_tracker_service() {
-  return &account_tracker_;
-}
-
-SigninManagerForTest* IdentityManagerDependenciesOwner::signin_manager() {
-  return &signin_manager_;
-}
-
-FakeProfileOAuth2TokenService*
-IdentityManagerDependenciesOwner::token_service() {
-  return &token_service_;
-}
-
-FakeGaiaCookieManagerService*
-IdentityManagerDependenciesOwner::gaia_cookie_manager_service() {
-  return &gaia_cookie_manager_service_;
-}
+IdentityManagerDependenciesOwner::~IdentityManagerDependenciesOwner() = default;
 
 sync_preferences::TestingPrefServiceSyncable*
 IdentityManagerDependenciesOwner::pref_service() {
@@ -124,102 +89,159 @@ IdentityManagerDependenciesOwner::pref_service() {
   return raw_pref_service_ ? raw_pref_service_ : owned_pref_service_.get();
 }
 
+TestSigninClient* IdentityManagerDependenciesOwner::signin_client() {
+  DCHECK(raw_signin_client_ || owned_signin_client_);
+  DCHECK(!(raw_signin_client_ && owned_signin_client_));
+
+  return raw_signin_client_ ? raw_signin_client_ : owned_signin_client_.get();
+}
+
 IdentityTestEnvironment::IdentityTestEnvironment(
-    bool use_fake_url_loader_for_gaia_cookie_manager,
-    sync_preferences::TestingPrefServiceSyncable* pref_service)
+    network::TestURLLoaderFactory* test_url_loader_factory,
+    sync_preferences::TestingPrefServiceSyncable* pref_service,
+    signin::AccountConsistencyMethod account_consistency,
+    TestSigninClient* test_signin_client)
     : IdentityTestEnvironment(
-          /*account_tracker_service=*/nullptr,
-          /*token_service=*/nullptr,
-          /*signin_manager=*/nullptr,
-          /*gaia_cookie_manager_service=*/nullptr,
           std::make_unique<IdentityManagerDependenciesOwner>(
-              use_fake_url_loader_for_gaia_cookie_manager,
-              pref_service),
-          /*identity_manager=*/nullptr) {}
+              pref_service,
+              test_signin_client),
+          test_url_loader_factory,
+          account_consistency) {}
 
 IdentityTestEnvironment::IdentityTestEnvironment(
-    AccountTrackerService* account_tracker_service,
-    FakeProfileOAuth2TokenService* token_service,
-    SigninManagerForTest* signin_manager,
-    FakeGaiaCookieManagerService* gaia_cookie_manager_service)
-    : IdentityTestEnvironment(account_tracker_service,
-                              token_service,
-                              signin_manager,
-                              gaia_cookie_manager_service,
-                              /*dependency_owner=*/nullptr,
-                              /*identity_manager=*/nullptr) {}
-
-IdentityTestEnvironment::IdentityTestEnvironment(
-    AccountTrackerService* account_tracker_service,
-    FakeProfileOAuth2TokenService* token_service,
-    SigninManagerForTest* signin_manager,
-    FakeGaiaCookieManagerService* gaia_cookie_manager_service,
-    IdentityManager* identity_manager)
-    : IdentityTestEnvironment(account_tracker_service,
-                              token_service,
-                              signin_manager,
-                              gaia_cookie_manager_service,
-                              /*dependency_owner=*/nullptr,
-                              identity_manager) {}
-
-IdentityTestEnvironment::IdentityTestEnvironment(
-    AccountTrackerService* account_tracker_service,
-    FakeProfileOAuth2TokenService* token_service,
-    SigninManagerForTest* signin_manager,
-    FakeGaiaCookieManagerService* gaia_cookie_manager_service,
-    std::unique_ptr<IdentityManagerDependenciesOwner> dependencies_owner,
     IdentityManager* identity_manager)
     : weak_ptr_factory_(this) {
+  DCHECK(identity_manager);
+  raw_identity_manager_ = identity_manager;
+  Initialize();
+}
+
+void IdentityTestEnvironment::Initialize() {
   DCHECK(base::ThreadTaskRunnerHandle::Get())
-      << "IdentityTestEnvironment requires a properly set up task environment. "
+      << "IdentityTestEnvironment requires a properly set up task "
+         "environment. "
          "If your test has an existing one, move it to be initialized before "
          "IdentityTestEnvironment. Otherwise, use "
          "base::test::ScopedTaskEnvironment.";
-
-  if (dependencies_owner) {
-    DCHECK(!(account_tracker_service || token_service || signin_manager ||
-             gaia_cookie_manager_service || identity_manager));
-
-    dependencies_owner_ = std::move(dependencies_owner);
-
-    account_tracker_service_ = dependencies_owner_->account_tracker_service();
-    token_service_ = dependencies_owner_->token_service();
-    signin_manager_ = dependencies_owner_->signin_manager();
-    gaia_cookie_manager_service_ =
-        dependencies_owner_->gaia_cookie_manager_service();
-
-  } else {
-    DCHECK(account_tracker_service && token_service && signin_manager &&
-           gaia_cookie_manager_service);
-
-    account_tracker_service_ = account_tracker_service;
-    token_service_ = token_service;
-    signin_manager_ = signin_manager;
-    gaia_cookie_manager_service_ = gaia_cookie_manager_service;
-  }
-
-  if (identity_manager) {
-    raw_identity_manager_ = identity_manager;
-  } else {
-#if !defined(OS_CHROMEOS)
-    std::unique_ptr<PrimaryAccountMutator> account_mutator =
-        std::make_unique<PrimaryAccountMutatorImpl>(
-            account_tracker_service_,
-            static_cast<SigninManager*>(signin_manager_));
-#else
-    std::unique_ptr<PrimaryAccountMutator> account_mutator;
-#endif
-
-    owned_identity_manager_ = std::make_unique<IdentityManager>(
-        signin_manager_, token_service_, account_tracker_service_,
-        gaia_cookie_manager_service_, std::move(account_mutator));
-  }
-
+  test_identity_manager_observer_ =
+      std::make_unique<TestIdentityManagerObserver>(this->identity_manager());
   this->identity_manager()->AddDiagnosticsObserver(this);
 }
 
+IdentityTestEnvironment::IdentityTestEnvironment(
+    std::unique_ptr<IdentityManagerDependenciesOwner> dependencies_owner,
+    network::TestURLLoaderFactory* test_url_loader_factory,
+    signin::AccountConsistencyMethod account_consistency)
+    : test_url_loader_factory_(test_url_loader_factory),
+      weak_ptr_factory_(this) {
+  dependencies_owner_ = std::move(dependencies_owner);
+  TestSigninClient* test_signin_client = dependencies_owner_->signin_client();
+  sync_preferences::TestingPrefServiceSyncable* test_pref_service =
+      dependencies_owner_->pref_service();
+
+  AccountTrackerService::RegisterPrefs(test_pref_service->registry());
+
+  auto token_service =
+      std::make_unique<FakeProfileOAuth2TokenService>(test_pref_service);
+
+  owned_account_tracker_service_ = std::make_unique<AccountTrackerService>();
+  owned_account_tracker_service_->Initialize(test_pref_service,
+                                             base::FilePath());
+
+  IdentityManager::RegisterProfilePrefs(test_pref_service->registry());
+  IdentityManager::RegisterLocalStatePrefs(test_pref_service->registry());
+  owned_identity_manager_ = BuildIdentityManagerForTests(
+      test_signin_client, test_pref_service, std::move(token_service),
+      owned_account_tracker_service_.get(), account_consistency,
+      test_url_loader_factory);
+
+  Initialize();
+}
+
+// static
+std::unique_ptr<IdentityManagerWrapper>
+IdentityTestEnvironment::BuildIdentityManagerForTests(
+    SigninClient* signin_client,
+    PrefService* pref_service,
+    std::unique_ptr<FakeProfileOAuth2TokenService> token_service,
+    AccountTrackerService* account_tracker_service,
+    signin::AccountConsistencyMethod account_consistency,
+    network::TestURLLoaderFactory* test_url_loader_factory) {
+  auto account_fetcher_service = std::make_unique<AccountFetcherService>();
+  account_fetcher_service->Initialize(
+      signin_client, token_service.get(), account_tracker_service,
+      std::make_unique<image_fetcher::FakeImageDecoder>());
+
+#if defined(OS_CHROMEOS)
+  std::unique_ptr<SigninManagerBase> signin_manager =
+      std::make_unique<SigninManagerBase>(signin_client, token_service.get(),
+                                          account_tracker_service);
+#else
+  std::unique_ptr<SigninManagerBase> signin_manager =
+      std::make_unique<SigninManager>(signin_client, token_service.get(),
+                                      account_tracker_service, nullptr,
+                                      account_consistency);
+#endif
+  signin_manager->Initialize(pref_service);
+
+  std::unique_ptr<GaiaCookieManagerService> gaia_cookie_manager_service;
+  if (test_url_loader_factory != nullptr) {
+    gaia_cookie_manager_service = std::make_unique<GaiaCookieManagerService>(
+        token_service.get(), signin_client,
+        base::BindRepeating(
+            [](network::TestURLLoaderFactory* test_url_loader_factory)
+                -> scoped_refptr<network::SharedURLLoaderFactory> {
+              return test_url_loader_factory->GetSafeWeakWrapper();
+            },
+            test_url_loader_factory));
+  } else {
+    gaia_cookie_manager_service = std::make_unique<GaiaCookieManagerService>(
+        token_service.get(), signin_client);
+  }
+
+  std::unique_ptr<PrimaryAccountMutator> primary_account_mutator;
+  std::unique_ptr<AccountsMutator> accounts_mutator;
+
+#if !defined(OS_CHROMEOS)
+  primary_account_mutator = std::make_unique<PrimaryAccountMutatorImpl>(
+      account_tracker_service,
+      static_cast<SigninManager*>(signin_manager.get()));
+#endif
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  accounts_mutator = std::make_unique<AccountsMutatorImpl>(
+      token_service.get(), account_tracker_service, signin_manager.get(),
+      pref_service);
+#endif
+
+  auto diagnostics_provider = std::make_unique<DiagnosticsProviderImpl>(
+      token_service.get(), gaia_cookie_manager_service.get());
+
+  auto accounts_cookie_mutator = std::make_unique<AccountsCookieMutatorImpl>(
+      gaia_cookie_manager_service.get());
+
+  return std::make_unique<IdentityManagerWrapper>(
+      account_tracker_service, std::move(token_service),
+      std::move(gaia_cookie_manager_service), std::move(signin_manager),
+      std::move(account_fetcher_service), std::move(primary_account_mutator),
+      std::move(accounts_mutator), std::move(accounts_cookie_mutator),
+      std::move(diagnostics_provider));
+}
+
 IdentityTestEnvironment::~IdentityTestEnvironment() {
+  // Remove the Observer that IdentityTestEnvironment added during its
+  // initialization.
   identity_manager()->RemoveDiagnosticsObserver(this);
+
+  if (owned_account_tracker_service_) {
+    owned_account_tracker_service_->Shutdown();
+  }
+
+  // Call shutdown only if we own the IdentityManager.
+  // It is the owner's responsibility to call Shutdown.
+  if (owned_identity_manager_) {
+    owned_identity_manager_->Shutdown();
+  }
 }
 
 IdentityManager* IdentityTestEnvironment::identity_manager() {
@@ -230,7 +252,12 @@ IdentityManager* IdentityTestEnvironment::identity_manager() {
                                : owned_identity_manager_.get();
 }
 
-AccountInfo IdentityTestEnvironment::SetPrimaryAccount(
+TestIdentityManagerObserver*
+IdentityTestEnvironment::identity_manager_observer() {
+  return test_identity_manager_observer_.get();
+}
+
+CoreAccountInfo IdentityTestEnvironment::SetPrimaryAccount(
     const std::string& email) {
   return identity::SetPrimaryAccount(identity_manager(), email);
 }
@@ -278,14 +305,24 @@ void IdentityTestEnvironment::RemoveRefreshTokenForAccount(
   return identity::RemoveRefreshTokenForAccount(identity_manager(), account_id);
 }
 
+void IdentityTestEnvironment::UpdatePersistentErrorOfRefreshTokenForAccount(
+    const std::string& account_id,
+    const GoogleServiceAuthError& auth_error) {
+  return identity::UpdatePersistentErrorOfRefreshTokenForAccount(
+      identity_manager(), account_id, auth_error);
+}
+
 void IdentityTestEnvironment::SetCookieAccounts(
     const std::vector<CookieParams>& cookie_accounts) {
-  identity::SetCookieAccounts(gaia_cookie_manager_service_, identity_manager(),
+  DCHECK(test_url_loader_factory_)
+      << "IdentityTestEnvironment constructor must have been passed a "
+         "test_url_loader_factory in order to use this method.";
+  identity::SetCookieAccounts(identity_manager(), test_url_loader_factory_,
                               cookie_accounts);
 }
 
 void IdentityTestEnvironment::SetAutomaticIssueOfAccessTokens(bool grant) {
-  token_service_->set_auto_post_fetch_response_on_message_loop(grant);
+  fake_token_service()->set_auto_post_fetch_response_on_message_loop(grant);
 }
 
 void IdentityTestEnvironment::
@@ -294,7 +331,7 @@ void IdentityTestEnvironment::
         const base::Time& expiration,
         const std::string& id_token) {
   WaitForAccessTokenRequestIfNecessary(base::nullopt);
-  token_service_->IssueTokenForAllPendingRequests(
+  fake_token_service()->IssueTokenForAllPendingRequests(
       OAuth2AccessTokenConsumer::TokenResponse(token, expiration, id_token));
 }
 
@@ -305,7 +342,7 @@ void IdentityTestEnvironment::
         const base::Time& expiration,
         const std::string& id_token) {
   WaitForAccessTokenRequestIfNecessary(account_id);
-  token_service_->IssueAllTokensForAccount(
+  fake_token_service()->IssueAllTokensForAccount(
       account_id,
       OAuth2AccessTokenConsumer::TokenResponse(token, expiration, id_token));
 }
@@ -317,7 +354,7 @@ void IdentityTestEnvironment::
         const std::string& id_token,
         const identity::ScopeSet& scopes) {
   WaitForAccessTokenRequestIfNecessary(base::nullopt);
-  token_service_->IssueTokenForScope(
+  fake_token_service()->IssueTokenForScope(
       scopes,
       OAuth2AccessTokenConsumer::TokenResponse(token, expiration, id_token));
 }
@@ -326,7 +363,7 @@ void IdentityTestEnvironment::
     WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
         const GoogleServiceAuthError& error) {
   WaitForAccessTokenRequestIfNecessary(base::nullopt);
-  token_service_->IssueErrorForAllPendingRequests(error);
+  fake_token_service()->IssueErrorForAllPendingRequests(error);
 }
 
 void IdentityTestEnvironment::
@@ -334,7 +371,8 @@ void IdentityTestEnvironment::
         const std::string& account_id,
         const GoogleServiceAuthError& error) {
   WaitForAccessTokenRequestIfNecessary(account_id);
-  token_service_->IssueErrorForAllPendingRequestsForAccount(account_id, error);
+  fake_token_service()->IssueErrorForAllPendingRequestsForAccount(account_id,
+                                                                  error);
 }
 
 void IdentityTestEnvironment::SetCallbackForNextAccessTokenRequest(
@@ -385,8 +423,8 @@ void IdentityTestEnvironment::HandleOnAccessTokenRequested(
     }
   }
 
-  // A requests came in for a request for which we are not waiting. Record that
-  // it's available.
+  // A requests came in for a request for which we are not waiting. Record
+  // that it's available.
   requesters_.emplace_back();
   requesters_.back().state = AccessTokenRequestState::kAvailable;
   requesters_.back().account_id = account_id;
@@ -422,9 +460,63 @@ void IdentityTestEnvironment::WaitForAccessTokenRequestIfNecessary(
   run_loop.Run();
 }
 
+FakeProfileOAuth2TokenService* IdentityTestEnvironment::fake_token_service() {
+  // We can't absolutely guarantee that IdentityTestEnvironment was not given an
+  // IdentityManager that uses a non-fake FakeProfileOAuth2TokenService. If that
+  // ever happens, this will blow up. There doesn't seem to be a better option.
+  return static_cast<FakeProfileOAuth2TokenService*>(
+      identity_manager()->GetTokenService());
+}
+
 void IdentityTestEnvironment::UpdateAccountInfoForAccount(
     AccountInfo account_info) {
   identity::UpdateAccountInfoForAccount(identity_manager(), account_info);
+}
+
+void IdentityTestEnvironment::ResetToAccountsNotYetLoadedFromDiskState() {
+  fake_token_service()->set_all_credentials_loaded_for_testing(false);
+}
+
+void IdentityTestEnvironment::ReloadAccountsFromDisk() {
+  fake_token_service()->LoadCredentials("");
+}
+
+bool IdentityTestEnvironment::IsAccessTokenRequestPending() {
+  return fake_token_service()->GetPendingRequests().size();
+}
+
+void IdentityTestEnvironment::SetFreshnessOfAccountsInGaiaCookie(
+    bool accounts_are_fresh) {
+  identity::SetFreshnessOfAccountsInGaiaCookie(identity_manager(),
+                                               accounts_are_fresh);
+}
+
+void IdentityTestEnvironment::EnableRemovalOfExtendedAccountInfo() {
+  identity_manager()->GetAccountFetcherService()->EnableAccountRemovalForTest();
+}
+
+void IdentityTestEnvironment::SimulateSuccessfulFetchOfAccountInfo(
+    const std::string& account_id,
+    const std::string& email,
+    const std::string& gaia,
+    const std::string& hosted_domain,
+    const std::string& full_name,
+    const std::string& given_name,
+    const std::string& locale,
+    const std::string& picture_url) {
+  identity::SimulateSuccessfulFetchOfAccountInfo(
+      identity_manager(), account_id, email, gaia, hosted_domain, full_name,
+      given_name, locale, picture_url);
+}
+
+void IdentityTestEnvironment::SimulateMergeSessionFailure(
+    const GoogleServiceAuthError& auth_error) {
+  // GaiaCookieManagerService changes the visibility of inherited method
+  // OnMergeSessionFailure from public to private. Cast to a base class
+  // pointer to call the method.
+  static_cast<GaiaAuthConsumer*>(
+      identity_manager()->GetGaiaCookieManagerService())
+      ->OnMergeSessionFailure(auth_error);
 }
 
 }  // namespace identity

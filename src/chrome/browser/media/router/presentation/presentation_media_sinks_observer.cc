@@ -31,7 +31,7 @@ void PresentationMediaSinksObserver::OnSinksReceived(
                      : blink::mojom::ScreenAvailability::AVAILABLE;
 
   DVLOG(1) << "PresentationMediaSinksObserver::OnSinksReceived: "
-           << source().ToString() << " "
+           << (source() ? source()->id() : "Any source") << " "
            << (result.empty() ? "unavailable" : "available");
 
   // Don't send if new result is same as previous.

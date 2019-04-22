@@ -32,8 +32,8 @@ import java.util.Locale;
  * show a progress indicator over the same space. See {@link State}.
  */
 public class ActionItem extends OptionalLeaf {
-    @Retention(RetentionPolicy.SOURCE)
     @IntDef({State.HIDDEN, State.BUTTON, State.LOADING})
+    @Retention(RetentionPolicy.SOURCE)
     public @interface State {
         int HIDDEN = 0;
         int BUTTON = 1;
@@ -144,11 +144,6 @@ public class ActionItem extends OptionalLeaf {
         uiDelegate.getEventReporter().onMoreButtonClicked(this);
 
         switch (mCategoryInfo.getAdditionalAction()) {
-            case ContentSuggestionsAdditionalAction.VIEW_ALL:
-                // The action does not reach the backend, so we record it here.
-                SuggestionsMetrics.recordActionViewAll();
-                mCategoryInfo.performViewAllAction(uiDelegate.getNavigationDelegate());
-                return;
             case ContentSuggestionsAdditionalAction.FETCH:
                 mParentSection.fetchSuggestions(onFailure, onNoNewSuggestions);
                 return;

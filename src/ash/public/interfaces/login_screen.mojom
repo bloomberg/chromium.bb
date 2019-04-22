@@ -24,7 +24,7 @@ enum OobeDialogState {
   // Showing gaia signin screen.
   GAIA_SIGNIN = 1,
 
-  // AccountPicker = 2, not currently used
+  // 2 is unused to keep in sync with display_manager.js
 
   // Showing wrong hardware identification screen.
   WRONG_HWID_WARNING = 3,
@@ -49,6 +49,32 @@ enum OobeDialogState {
 
   // Oobe UI dialog is currently hidden.
   HIDDEN = 10,
+};
+
+// Reason why the auth is disabled. This is used to personalize the UI.
+enum AuthDisabledReason {
+  // Auth is disabled because the device is locked by a time limit override.
+  TIME_LIMIT_OVERRIDE,
+
+  // Auth is disabled because the user has reached their daily usage limit on
+  // the device.
+  TIME_USAGE_LIMIT,
+
+  // Auth is disabled because the device is within a locked time window.
+  TIME_WINDOW_LIMIT,
+};
+
+// The data needed to customize the lock screen when auth is disabled.
+struct AuthDisabledData {
+  // Reason why auth is disabled.
+  AuthDisabledReason reason;
+
+  // A future time when auth will be enabled. This value is for display purpose
+  // only, auth won't be automatically enabled when this time is reached.
+  mojo_base.mojom.Time auth_reenabled_time;
+
+  // The amount of time that the user used this device.
+  mojo_base.mojom.TimeDelta device_used_time;
 };
 
 // Allows clients (e.g. the browser process) to send messages to the ash
@@ -134,19 +160,17 @@ interface LoginScreen {
   // login screen may already be visible.
   SetAvatarForUser(signin.mojom.AccountId account_id, UserAvatar avatar);
 
-  // Called when auth should be enabled or disabled for the given user. When
-  // auth is disabled, the user cannot unlock the device. Auth is enabled by
-  // default.
+  // Called when auth should be enabled for the given user. When auth is
+  // disabled, the user cannot unlock the device. Auth is enabled by default.
   // |account_id|:            The account id of the user in the user pod.
-  // |is_enabled|:            True if auth is enabled.
-  // |auth_reenabled_time|:   A future time when auth will be enabled. Must be
-  //                          non-null if |is_enabled| is false. This value is
-  //                          for display purpose only and the client should be
-  //                          responsible for calling this method again with
-  //                          is_enabled == true when the time reaches.
-  SetAuthEnabledForUser(signin.mojom.AccountId account_id,
-                        bool is_enabled,
-                        mojo_base.mojom.Time? auth_reenabled_time);
+  EnableAuthForUser(signin.mojom.AccountId account_id);
+
+  // Called when auth should be disabled for the given user. When auth is
+  // disabled, the user cannot unlock the device. Auth is enabled by default.
+  // |account_id|:            The account id of the user in the user pod.
+  // |auth_disabled_data|:    The data needed to customize the lock screen UI.
+  DisableAuthForUser(signin.mojom.AccountId account_id,
+                      AuthDisabledData auth_disabled_data);
 
   // Called when focus is reported to be leaving a lock screen app window.
   // Requests focus to be handed off to the next suitable widget.
@@ -195,7 +219,8 @@ interface LoginScreen {
       bool show_full_management_disclosure);
 
   // Update the kiosk app data for the login screen.
-  SetKioskApps(array<KioskAppInfo> kiosk_apps);
+  // Returns true on success.
+  SetKioskApps(array<KioskAppInfo> kiosk_apps) => (bool success);
 
   // Display a toast describing the latest kiosk app launch error.
   ShowKioskAppError(string message);
@@ -208,13 +233,21 @@ interface LoginScreen {
   // Sets whether users can be added from the login screen.
   SetAddUserButtonEnabled(bool enable);
 
+  // Sets whether shutdown button is enabled in the login screen.
+  SetShutdownButtonEnabled(bool enable);
+
   // Sets if the guest button on the login shelf can be shown. Even if set to
   // true the button may still not be visible.
   SetAllowLoginAsGuest(bool allow_guest);
 
-  // Sets if the guest button on the login shelf can be shown during gaia
-  // signin screen.
-  SetShowGuestButtonForGaiaScreen(bool can_show);
+  // Sets if the guest button on the login shelf can be shown during OOBE.
+  SetShowGuestButtonInOobe(bool show);
+
+  // Sets whether parent access button can be shown on the login shelf.
+  SetShowParentAccessButton(bool show);
+
+  // Sets whether parent access code input dialog is shown on the lock screen.
+  SetShowParentAccessDialog(bool show);
 
   // Transitions focus to the shelf area. If |reverse|, focuses the status area.
   FocusLoginShelf(bool reverse);
@@ -256,6 +289,13 @@ interface LoginScreenClient {
   // TODO(jdufault): Refactor this method to return an auth_success, similar to
   // the other auth methods above.
   AuthenticateUserWithEasyUnlock(signin.mojom.AccountId account_id);
+
+  // Validates parent access code for the user identified by |account_id|.
+  // Passes validation result in the callback.
+  // Note: This should only be used for child user.
+  ValidateParentAccessCode(
+    signin.mojom.AccountId account_id,
+    string access_code) => (bool access_code_valid);
 
   // Request to hard lock the user pod.
   // |account_id|:    The account id of the user in the user pod.
@@ -336,4 +376,12 @@ interface LoginScreenClient {
 
   // Show the help app for when users have trouble signing in to their account.
   ShowAccountAccessHelpApp();
+
+  // Called when the keyboard focus is about to leave from the sytem tray in
+  // the login screen / OOBE. |reverse| is true when the focus moves in the
+  // reversed direction.
+  OnFocusLeavingSystemTray(bool reverse);
+
+  // Used by Ash to signal that user activity occurred on the login screen.
+  OnUserActivity();
 };

@@ -7,11 +7,16 @@
 
 #include <stdint.h>
 
+#include <memory>
+#include <string>
+
 #include "base/files/scoped_file.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/common/bind_interface_helpers.h"
 #include "ipc/ipc_channel_proxy.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace base {
 class FilePath;
@@ -37,7 +42,8 @@ class CONTENT_EXPORT ChildProcessHost : public IPC::Sender {
   enum : int { kInvalidUniqueID = -1 };
 
   // Used to create a child process host. The delegate must outlive this object.
-  static ChildProcessHost* Create(ChildProcessHostDelegate* delegate);
+  static std::unique_ptr<ChildProcessHost> Create(
+      ChildProcessHostDelegate* delegate);
 
   // These flags may be passed to GetChildPath in order to alter its behavior,
   // causing it to return a child path more suited to a specific task.
@@ -84,8 +90,13 @@ class CONTENT_EXPORT ChildProcessHost : public IPC::Sender {
   // Bind an interface exposed by the child process.
   virtual void BindInterface(const std::string& interface_name,
                              mojo::ScopedMessagePipeHandle interface_pipe) = 0;
+
+  // Instructs the child process to run an instance of the named service.
+  virtual void RunService(
+      const std::string& service_name,
+      mojo::PendingReceiver<service_manager::mojom::Service> receiver) = 0;
 };
 
-};  // namespace content
+}  // namespace content
 
 #endif  // CONTENT_PUBLIC_COMMON_CHILD_PROCESS_HOST_H_

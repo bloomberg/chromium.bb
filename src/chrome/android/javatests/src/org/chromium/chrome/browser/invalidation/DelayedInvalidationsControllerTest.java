@@ -12,6 +12,7 @@ import android.support.test.annotation.UiThreadTest;
 import android.support.test.filters.SmallTest;
 import android.support.test.rule.UiThreadTestRule;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -73,6 +74,11 @@ public class DelayedInvalidationsControllerTest {
         mPlaceholderActivity = new Activity();
         setApplicationState(ActivityState.CREATED);
         setApplicationState(ActivityState.RESUMED);
+    }
+
+    @After
+    public void tearDown() {
+        setApplicationState(ActivityState.DESTROYED);
     }
 
     private void setApplicationState(int newState) {

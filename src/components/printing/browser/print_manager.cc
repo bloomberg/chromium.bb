@@ -10,13 +10,9 @@
 namespace printing {
 
 PrintManager::PrintManager(content::WebContents* contents)
-    : content::WebContentsObserver(contents),
-      number_pages_(0),
-      cookie_(0) {
-}
+    : content::WebContentsObserver(contents) {}
 
-PrintManager::~PrintManager() {
-}
+PrintManager::~PrintManager() = default;
 
 bool PrintManager::OnMessageReceived(
     const IPC::Message& message,
@@ -59,14 +55,5 @@ void PrintManager::PrintingRenderFrameDeleted() {
   PdfWritingDone(0);
 #endif
 }
-
-#if defined(OS_ANDROID)
-void PrintManager::PdfWritingDone(int page_count) {
-  if (!pdf_writing_done_callback_.is_null())
-    pdf_writing_done_callback_.Run(page_count);
-  // Invalidate the file descriptor so it doesn't get reused.
-  file_descriptor_ = base::FileDescriptor(-1, false);
-}
-#endif
 
 }  // namespace printing

@@ -19,7 +19,7 @@
 #include "ios/web/public/navigation_item.h"
 #include "ios/web/public/navigation_manager.h"
 #include "ios/web/public/ssl_status.h"
-#include "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state/web_state.h"
 #include "net/base/mac/url_conversions.h"
 #include "net/base/url_util.h"
 #include "net/cert/x509_certificate.h"
@@ -69,50 +69,49 @@ bool IOSPaymentInstrumentLauncher::LaunchIOSPaymentInstrument(
 
   delegate_ = delegate;
 
-  std::unique_ptr<base::DictionaryValue> params_to_payment_app =
-      std::make_unique<base::DictionaryValue>();
-
   // TODO(crbug.com/748556): Filter the following list to only show method names
   // that we know the payment app supports. For now, sending all the requested
   // method names i.e., 'basic-card' and 'https://alice-pay.com" to the payment
   // app works as the payment app provider can then decide what to do with that
   // information, but this is not ideal nor is this consistent with Android
   // implementation.
-  std::unique_ptr<base::ListValue> method_names =
-      std::make_unique<base::ListValue>();
-  for (auto const& it : payment_request->stringified_method_data())
-    method_names->GetList().emplace_back(it.first);
-  params_to_payment_app->SetList(kMethodNames, std::move(method_names));
+  base::Value method_names(base::Value::Type::LIST);
+  for (auto const& pair : payment_request->stringified_method_data())
+    method_names.GetList().emplace_back(pair.first);
 
-  params_to_payment_app->SetDictionary(
+  base::Value params_to_payment_app(base::Value::Type::DICTIONARY);
+  params_to_payment_app.SetKey(kMethodNames, std::move(method_names));
+
+  params_to_payment_app.SetKey(
       kMethodData,
       SerializeMethodData(payment_request->stringified_method_data()));
 
-  params_to_payment_app->SetString(
-      kMerchantName, base::UTF16ToASCII(active_web_state->GetTitle()));
+  params_to_payment_app.SetKey(kMerchantName,
+                               base::Value(active_web_state->GetTitle()));
 
-  params_to_payment_app->SetKey(
+  params_to_payment_app.SetKey(
       kTopLevelOrigin,
       base::Value(active_web_state->GetLastCommittedURL().host()));
 
-  params_to_payment_app->SetList(
+  params_to_payment_app.SetKey(
       kTopLevelCertificateChain,
       SerializeCertificateChain(
           active_web_state->GetNavigationManager()->GetVisibleItem()));
 
   DCHECK(payment_request->web_payment_request().details.total);
-  params_to_payment_app->SetDictionary(
+  params_to_payment_app.SetKey(
       kTotal,
-      PaymentCurrencyAmountToDictionaryValue(
-          *(payment_request->web_payment_request().details.total->amount)));
+      base::Value::FromUniquePtrValue(PaymentCurrencyAmountToDictionaryValue(
+          *(payment_request->web_payment_request().details.total->amount))));
 
-  params_to_payment_app->SetList(
+  params_to_payment_app.SetKey(
       kModifiers,
       SerializeModifiers(payment_request->web_payment_request().details));
 
   // JSON stringify the object so that it can be encoded in base-64.
   std::string stringified_parameters;
-  base::JSONWriter::Write(*params_to_payment_app, &stringified_parameters);
+  base::JSONWriter::Write(params_to_payment_app, &stringified_parameters);
+
   std::string base_64_params;
   base::Base64Encode(stringified_parameters, &base_64_params);
 
@@ -131,7 +130,7 @@ bool IOSPaymentInstrumentLauncher::LaunchIOSPaymentInstrument(
       }
       completionHandler:^(BOOL success) {
         if (!success) {
-          CompleteLaunchRequest("", "");
+          CompleteLaunchRequest(std::string(), std::string());
         }
       }];
 
@@ -145,70 +144,59 @@ void IOSPaymentInstrumentLauncher::ReceiveResponseFromIOSPaymentInstrument(
   std::string stringified_parameters;
   base::Base64Decode(base_64_response, &stringified_parameters);
 
-  std::unique_ptr<base::Value> value =
+  base::Optional<base::Value> value =
       base::JSONReader::Read(stringified_parameters);
   if (!value) {
-    CompleteLaunchRequest("", "");
+    CompleteLaunchRequest(std::string(), std::string());
     return;
   }
 
-  std::unique_ptr<base::DictionaryValue> dict =
-      base::DictionaryValue::From(std::move(value));
-  if (!dict) {
-    CompleteLaunchRequest("", "");
+  if (!value->is_dict()) {
+    CompleteLaunchRequest(std::string(), std::string());
     return;
   }
 
-  int success;
-  if (!dict->GetInteger(kSuccess, &success) || success == 0) {
-    CompleteLaunchRequest("", "");
+  base::Optional<int> success = value->FindIntKey(kSuccess);
+  if (!success || *success == 0) {
+    CompleteLaunchRequest(std::string(), std::string());
     return;
   }
 
-  std::string method_name;
-  if (!dict->GetString(kMethodName, &method_name) || method_name.empty()) {
-    CompleteLaunchRequest("", "");
+  const std::string* method_name = value->FindStringKey(kMethodName);
+  if (!method_name || method_name->empty()) {
+    CompleteLaunchRequest(std::string(), std::string());
     return;
   }
 
-  std::string stringified_details;
-  if (!dict->GetString(kDetails, &stringified_details) ||
-      stringified_details.empty()) {
-    CompleteLaunchRequest("", "");
+  const std::string* stringified_details = value->FindStringKey(kDetails);
+  if (!stringified_details || stringified_details->empty()) {
+    CompleteLaunchRequest(std::string(), std::string());
     return;
   }
 
-  CompleteLaunchRequest(method_name, stringified_details);
+  CompleteLaunchRequest(*method_name, *stringified_details);
 }
 
-std::unique_ptr<base::DictionaryValue>
-IOSPaymentInstrumentLauncher::SerializeMethodData(
+base::Value IOSPaymentInstrumentLauncher::SerializeMethodData(
     const std::map<std::string, std::set<std::string>>&
         stringified_method_data) {
-  std::unique_ptr<base::DictionaryValue> method_data =
-      std::make_unique<base::DictionaryValue>();
-
+  base::Value method_data(base::Value::Type::DICTIONARY);
   for (auto const& map_it : stringified_method_data) {
-    base::ListValue data_list;
+    base::Value data_list(base::Value::Type::LIST);
     for (auto const& data_it : map_it.second) {
       // We insert the stringified data, not the JSON object and only if the
       // corresponding JSON object is valid.
-      if (base::JSONReader().ReadToValue(data_it))
+      if (base::JSONReader::Read(data_it))
         data_list.GetList().emplace_back(data_it);
     }
-
-    method_data->SetKey(map_it.first, std::move(data_list));
+    method_data.SetKey(map_it.first, std::move(data_list));
   }
-
   return method_data;
 }
 
-std::unique_ptr<base::ListValue>
-IOSPaymentInstrumentLauncher::SerializeCertificateChain(
+base::Value IOSPaymentInstrumentLauncher::SerializeCertificateChain(
     web::NavigationItem* item) {
-  std::unique_ptr<base::ListValue> cert_chain_list =
-      std::make_unique<base::ListValue>();
-
+  base::Value cert_chain_list(base::Value::Type::LIST);
   if (!item)
     return cert_chain_list;
 
@@ -223,32 +211,28 @@ IOSPaymentInstrumentLauncher::SerializeCertificateChain(
         net::x509_util::CryptoBufferAsStringPiece(handle.get()));
   }
 
-  std::unique_ptr<base::ListValue> byte_array;
   for (const auto& cert_string : cert_chain) {
-    base::ListValue byte_array;
+    base::Value byte_array(base::Value::Type::LIST);
     byte_array.GetList().reserve(cert_string.size());
     for (const char byte : cert_string)
       byte_array.GetList().emplace_back(byte);
 
-    base::DictionaryValue cert_chain_dict;
+    base::Value cert_chain_dict(base::Value::Type::DICTIONARY);
     cert_chain_dict.SetKey(kCertificate, std::move(byte_array));
-    cert_chain_list->GetList().push_back(std::move(cert_chain_dict));
+    cert_chain_list.GetList().push_back(std::move(cert_chain_dict));
   }
 
   return cert_chain_list;
 }
 
-std::unique_ptr<base::ListValue>
-IOSPaymentInstrumentLauncher::SerializeModifiers(PaymentDetails details) {
-  std::unique_ptr<base::ListValue> modifiers =
-      std::make_unique<base::ListValue>();
+base::Value IOSPaymentInstrumentLauncher::SerializeModifiers(
+    PaymentDetails details) {
+  base::Value modifiers(base::Value::Type::LIST);
   size_t numModifiers = details.modifiers.size();
   for (size_t i = 0; i < numModifiers; ++i) {
-    std::unique_ptr<base::DictionaryValue> modifier =
-        details.modifiers[i].ToDictionaryValue();
-    modifiers->GetList().push_back(std::move(*modifier));
+    modifiers.GetList().push_back(base::Value::FromUniquePtrValue(
+        details.modifiers[i].ToDictionaryValue()));
   }
-
   return modifiers;
 }
 

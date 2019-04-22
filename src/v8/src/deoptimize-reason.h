@@ -11,7 +11,7 @@ namespace v8 {
 namespace internal {
 
 #define DEOPTIMIZE_REASON_LIST(V)                                              \
-  V(ArrayBufferWasNeutered, "array buffer was neutered")                       \
+  V(ArrayBufferWasDetached, "array buffer was detached")                       \
   V(CowArrayElementsChanged, "copy-on-write array's elements changed")         \
   V(CouldNotGrowElements, "failed to grow elements store")                     \
   V(DeoptimizeNow, "%_DeoptimizeNow")                                          \
@@ -54,6 +54,7 @@ namespace internal {
   V(WrongCallTarget, "wrong call target")                                      \
   V(WrongEnumIndices, "wrong enum indices")                                    \
   V(WrongInstanceType, "wrong instance type")                                  \
+  V(WrongLength, "wrong length")                                               \
   V(WrongMap, "wrong map")                                                     \
   V(WrongName, "wrong name")                                                   \
   V(WrongValue, "wrong value")                                                 \
@@ -65,11 +66,11 @@ enum class DeoptimizeReason : uint8_t {
 #undef DEOPTIMIZE_REASON
 };
 
-std::ostream& operator<<(std::ostream&, DeoptimizeReason);
+V8_EXPORT_PRIVATE std::ostream& operator<<(std::ostream&, DeoptimizeReason);
 
 size_t hash_value(DeoptimizeReason reason);
 
-char const* DeoptimizeReasonToString(DeoptimizeReason reason);
+V8_EXPORT_PRIVATE char const* DeoptimizeReasonToString(DeoptimizeReason reason);
 
 }  // namespace internal
 }  // namespace v8

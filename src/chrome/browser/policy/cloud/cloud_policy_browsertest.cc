@@ -39,7 +39,6 @@
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_refresh_scheduler.h"
-#include "components/policy/core/common/cloud/dm_auth.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/policy_map.h"
@@ -63,9 +62,9 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/user_policy_manager_factory_chromeos.h"
-#include "chromeos/chromeos_paths.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
-#include "chromeos/dbus/cryptohome_client.h"
+#include "chromeos/dbus/constants/dbus_paths.h"
+#include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/user_names.h"
 #else
@@ -266,8 +265,9 @@ class CloudPolicyTest : public InProcessBrowserTest,
     policy_manager->core()->client()->Register(
         registration_type, em::DeviceRegisterRequest::FLAVOR_USER_REGISTRATION,
         em::DeviceRegisterRequest::LIFETIME_INDEFINITE,
-        em::LicenseType::UNDEFINED, DMAuth::FromOAuthToken("bogus"),
-        std::string(), std::string(), std::string());
+        em::LicenseType::UNDEFINED, "oauth_token_unused" /* oauth_token */,
+        std::string() /* client_id */, std::string() /* requisition */,
+        std::string() /* current_state_key */);
     run_loop.Run();
     Mock::VerifyAndClearExpectations(&observer);
     policy_manager->core()->client()->RemoveObserver(&observer);
@@ -281,8 +281,8 @@ class CloudPolicyTest : public InProcessBrowserTest,
 #if defined(OS_CHROMEOS)
     // Get the path to the user policy key file.
     base::FilePath user_policy_key_dir;
-    ASSERT_TRUE(base::PathService::Get(chromeos::DIR_USER_POLICY_KEYS,
-                                       &user_policy_key_dir));
+    ASSERT_TRUE(base::PathService::Get(
+        chromeos::dbus_paths::DIR_USER_POLICY_KEYS, &user_policy_key_dir));
     std::string sanitized_username =
         chromeos::CryptohomeClient::GetStubSanitizedUsername(
             cryptohome::CreateAccountIdentifierFromAccountId(

@@ -30,26 +30,6 @@ tr.exportTo('tr.metrics.sh', function() {
   const EventFinderUtils = tr.e.chrome.EventFinderUtils;
 
   /**
-   * @param  {!tr.model.Process} process
-   * @param  {!tr.b.math.Range} range
-   * @return {Array.<tr.model.Event>} An array of network events of a process
-   * and that are intersecting a range.
-   */
-  function getNetworkEventsInRange(process, range) {
-    const networkEvents = [];
-    for (const thread of Object.values(process.threads)) {
-      const threadHelper = new tr.model.helpers.ChromeThreadHelper(thread);
-      const events = threadHelper.getNetworkEvents();
-      for (const event of events) {
-        if (range.intersectsExplicitRangeInclusive(event.start, event.end)) {
-          networkEvents.push(event);
-        }
-      }
-    }
-    return networkEvents;
-  }
-
-  /**
    * @param {!Object.<string, Object>} breakdownTree
    * @return {tr.v.d.Breakdown} A breakdown with categories and the total time
    * (ms) spent under each category.
@@ -112,6 +92,79 @@ tr.exportTo('tr.metrics.sh', function() {
     return targetEvents;
   }
 
+  function getMostRecentValidEvent(rendererHelper, category, title) {
+    const targetEvents = findAllEvents(rendererHelper, category, title);
+    // Want to keep the event with the most recent timestamp
+    let validEvent;
+    for (const targetEvent of targetEvents) {
+      if (rendererHelper.isTelemetryInternalEvent(targetEvent)) continue;
+      if (validEvent === undefined) {
+        validEvent = targetEvent;
+      } else {
+        // Want to keep the event with the most recent timestamp
+        if (validEvent.start < targetEvent.start) {
+          validEvent = targetEvent;
+        }
+      }
+    }
+    return validEvent;
+  }
+
+  function getFirstViewportReadySamples(rendererHelper,
+      navIdToNavStartEvents) {
+    const samples = [];
+    // Want to measure the time from when navigation starts to when the load
+    // event fired for all non-ad resources.  This done with the associated
+    // navigation start event to the pc mark in the amp code, correlated by
+    // navigation id.
+    const pcEvent = getMostRecentValidEvent(
+        rendererHelper, 'blink.user_timing', 'pc');
+    if (pcEvent === undefined) return samples;
+
+    if (rendererHelper.isTelemetryInternalEvent(pcEvent)) return samples;
+    const navigationStartEvent = navIdToNavStartEvents.get(
+        pcEvent.args.data.navigationId);
+    if (navigationStartEvent === undefined) return samples;
+    const navStartToEventRange = tr.b.math.Range.fromExplicitRange(
+        navigationStartEvent.start, pcEvent.start);
+    const networkEvents = EventFinderUtils.getNetworkEventsInRange(
+        rendererHelper.process, navStartToEventRange);
+    const breakdownTree = tr.metrics.sh.generateWallClockTimeBreakdownTree(
+        rendererHelper.mainThread, networkEvents, navStartToEventRange);
+    samples.push({
+      value: navStartToEventRange.duration,
+      breakdownTree,
+      diagnostics: {
+        breakdown: createBreakdownDiagnostic(breakdownTree),
+        Start: new RelatedEventSet(navigationStartEvent),
+        End: new RelatedEventSet(pcEvent)
+      }
+    });
+
+    return samples;
+  }
+
+  function getAboveTheFoldLoadedToVisibleSamples(rendererHelper) {
+    const samples = [];
+    // Want to measure the time from when the document is visible to the time
+    // when the load event fired for all non-ad resources.  This is done with
+    // two marks in the amp code: pc and visible.
+    const pcEvent = getMostRecentValidEvent(
+        rendererHelper, 'blink.user_timing', 'pc');
+    const visibleEvent = getMostRecentValidEvent(
+        rendererHelper, 'blink.user_timing', 'visible');
+    if (pcEvent !== undefined && visibleEvent !== undefined) {
+      samples.push({
+        value: Math.max(0.0, pcEvent.start - visibleEvent.start),
+        diagnostics: {
+          Start: new RelatedEventSet(visibleEvent),
+          End: new RelatedEventSet(pcEvent)
+        }
+      });
+    }
+    return samples;
+  }
+
   function findTimeToXEntries(
       category, eventName, rendererHelper, frameToNavStartEvents,
       navIdToNavStartEvents) {
@@ -153,7 +206,7 @@ tr.exportTo('tr.metrics.sh', function() {
     for (const { targetEvent, navigationStartEvent, url } of timeToXEntries) {
       const navStartToEventRange = tr.b.math.Range.fromExplicitRange(
           navigationStartEvent.start, targetEvent.start);
-      const networkEvents = getNetworkEventsInRange(
+      const networkEvents = EventFinderUtils.getNetworkEventsInRange(
           rendererHelper.process, navStartToEventRange);
       const breakdownTree = tr.metrics.sh.generateWallClockTimeBreakdownTree(
           rendererHelper.mainThread, networkEvents, navStartToEventRange);
@@ -204,7 +257,7 @@ tr.exportTo('tr.metrics.sh', function() {
       navigationStart, fmpMarkerEvent, url) {
     const navStartToFMPRange = tr.b.math.Range.fromExplicitRange(
         navigationStart.start, fmpMarkerEvent.start);
-    const networkEvents = getNetworkEventsInRange(
+    const networkEvents = EventFinderUtils.getNetworkEventsInRange(
         rendererHelper.process, navStartToFMPRange);
     const timeToFirstMeaningfulPaint = navStartToFMPRange.duration;
     const breakdownTree = tr.metrics.sh.generateWallClockTimeBreakdownTree(
@@ -280,7 +333,7 @@ tr.exportTo('tr.metrics.sh', function() {
     const navStartToEventTimeRange =
         tr.b.math.Range.fromExplicitRange(
             navigationStartTime, eventTimestamp);
-    const networkEvents = getNetworkEventsInRange(
+    const networkEvents = EventFinderUtils.getNetworkEventsInRange(
         rendererHelper.process, navStartToEventTimeRange);
     const breakdownTree = tr.metrics.sh.generateWallClockTimeBreakdownTree(
         rendererHelper.mainThread, networkEvents,
@@ -325,6 +378,10 @@ tr.exportTo('tr.metrics.sh', function() {
     const onLoadSamples = collectTimeToEvent(rendererHelper, findTimeToXEntries(
         'blink.user_timing', 'loadEventStart', rendererHelper,
         frameToNavStartEvents, navIdToNavStartEvents));
+    const aboveTheFoldLoadedToVisibleSamples =
+        getAboveTheFoldLoadedToVisibleSamples(rendererHelper);
+    const firstViewportReadySamples = getFirstViewportReadySamples(
+        rendererHelper, navIdToNavStartEvents);
 
     return {
       frameToNavStartEvents,
@@ -332,6 +389,8 @@ tr.exportTo('tr.metrics.sh', function() {
       firstContentfulPaintSamples,
       firstContentfulPaintCpuTimeSamples,
       onLoadSamples,
+      aboveTheFoldLoadedToVisibleSamples,
+      firstViewportReadySamples,
     };
   }
 
@@ -470,6 +529,18 @@ tr.exportTo('tr.metrics.sh', function() {
           description: 'Time to First CPU Idle',
           summaryOptions: SUMMARY_OPTIONS,
         });
+    const aboveTheFoldLoadedToVisibleHistogram = histograms.createHistogram(
+        'aboveTheFoldLoadedToVisible', timeDurationInMs_smallerIsBetter, [], {
+          binBoundaries: TIME_TO_INTERACTIVE_BOUNDARIES,
+          description: 'Time from first visible to load for AMP pages only.',
+          summaryOptions: SUMMARY_OPTIONS,
+        });
+    const firstViewportReadyHistogram = histograms.createHistogram(
+        'timeToFirstViewportReady', timeDurationInMs_smallerIsBetter, [], {
+          binBoundaries: TIME_TO_INTERACTIVE_BOUNDARIES,
+          description: 'Time from navigation to load for AMP pages only. ',
+          summaryOptions: SUMMARY_OPTIONS,
+        });
 
     const chromeHelper = model.getOrCreateHelper(
         tr.model.helpers.ChromeModelHelper);
@@ -492,6 +563,14 @@ tr.exportTo('tr.metrics.sh', function() {
           histograms);
       addSamplesToHistogram(
           samplesSet.onLoadSamples, onLoadHistogram, histograms);
+      addSamplesToHistogram(
+          samplesSet.aboveTheFoldLoadedToVisibleSamples,
+          aboveTheFoldLoadedToVisibleHistogram,
+          histograms);
+      addSamplesToHistogram(
+          samplesSet.firstViewportReadySamples,
+          firstViewportReadyHistogram,
+          histograms);
     }
 
     const samplesSet = collectMetricsFromLoadExpectations(model, chromeHelper);
@@ -517,7 +596,7 @@ tr.exportTo('tr.metrics.sh', function() {
 
   return {
     loadingMetric,
-    getNetworkEventsInRange,
+    createBreakdownDiagnostic
   };
 });
 </script>

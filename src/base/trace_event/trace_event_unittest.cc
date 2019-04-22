@@ -33,7 +33,6 @@
 #include "base/trace_event/event_name_filter.h"
 #include "base/trace_event/heap_profiler_event_filter.h"
 #include "base/trace_event/trace_buffer.h"
-#include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_filter.h"
 #include "base/trace_event/trace_event_filter_test_utils.h"
 #include "base/values.h"
@@ -193,8 +192,8 @@ void TraceEventTestFixture::OnTraceDataCollected(
   trace_buffer_.AddFragment(events_str->data());
   trace_buffer_.Finish();
 
-  std::unique_ptr<Value> root =
-      base::JSONReader::Read(json_output_.json_output, JSON_PARSE_RFC);
+  std::unique_ptr<Value> root = base::JSONReader::ReadDeprecated(
+      json_output_.json_output, JSON_PARSE_RFC);
 
   if (!root.get()) {
     LOG(ERROR) << json_output_.json_output;
@@ -507,22 +506,6 @@ void TraceWithAllMacroVariants(WaitableEvent* task_complete_event) {
                               TRACE_ID_WITH_SCOPE("scope", context_id));
     TRACE_EVENT_LEAVE_CONTEXT("all", "TRACE_EVENT_LEAVE_CONTEXT call",
                               TRACE_ID_WITH_SCOPE("scope", context_id));
-    TRACE_EVENT_SCOPED_CONTEXT("disabled-by-default-cat",
-                               "TRACE_EVENT_SCOPED_CONTEXT disabled call",
-                               context_id);
-    TRACE_EVENT_SCOPED_CONTEXT("all", "TRACE_EVENT_SCOPED_CONTEXT call",
-                               context_id);
-
-    TRACE_LINK_IDS("all", "TRACE_LINK_IDS simple call", 0x1000, 0x2000);
-    TRACE_LINK_IDS("all", "TRACE_LINK_IDS scoped call",
-                   TRACE_ID_WITH_SCOPE("scope 1", 0x1000),
-                   TRACE_ID_WITH_SCOPE("scope 2", 0x2000));
-    TRACE_LINK_IDS("all", "TRACE_LINK_IDS to a local ID", 0x1000,
-                   TRACE_ID_LOCAL(0x2000));
-    TRACE_LINK_IDS("all", "TRACE_LINK_IDS to a global ID", 0x1000,
-                   TRACE_ID_GLOBAL(0x2000));
-    TRACE_LINK_IDS("all", "TRACE_LINK_IDS to a composite ID", 0x1000,
-                   TRACE_ID_WITH_SCOPE("scope 1", 0x2000, 0x3000));
 
     TRACE_EVENT_ASYNC_BEGIN0("all", "async default process scope", 0x1000);
     TRACE_EVENT_ASYNC_BEGIN0("all", "async local id", TRACE_ID_LOCAL(0x2000));
@@ -944,124 +927,6 @@ void ValidateAllTraceMacrosCreatedData(const ListValue& trace_parsed) {
     EXPECT_EQ("0x20151021", id);
   }
 
-  std::vector<const DictionaryValue*> scoped_context_calls =
-      FindTraceEntries(trace_parsed, "TRACE_EVENT_SCOPED_CONTEXT call");
-  EXPECT_EQ(2u, scoped_context_calls.size());
-  {
-    item = scoped_context_calls[0];
-    std::string ph;
-    EXPECT_TRUE((item && item->GetString("ph", &ph)));
-    EXPECT_EQ("(", ph);
-
-    std::string id;
-    EXPECT_FALSE((item && item->HasKey("scope")));
-    EXPECT_TRUE((item && item->GetString("id", &id)));
-    EXPECT_EQ("0x20151021", id);
-  }
-
-  {
-    item = scoped_context_calls[1];
-    std::string ph;
-    EXPECT_TRUE((item && item->GetString("ph", &ph)));
-    EXPECT_EQ(")", ph);
-
-    std::string id;
-    EXPECT_FALSE((item && item->HasKey("scope")));
-    EXPECT_TRUE((item && item->GetString("id", &id)));
-    EXPECT_EQ("0x20151021", id);
-  }
-
-  EXPECT_FIND_("TRACE_LINK_IDS simple call");
-  {
-    std::string ph;
-    EXPECT_TRUE((item && item->GetString("ph", &ph)));
-    EXPECT_EQ("=", ph);
-
-    EXPECT_FALSE((item && item->HasKey("scope")));
-    std::string id1;
-    EXPECT_TRUE((item && item->GetString("id", &id1)));
-    EXPECT_EQ("0x1000", id1);
-
-    EXPECT_FALSE((item && item->HasKey("args.linked_id.scope")));
-    std::string id2;
-    EXPECT_TRUE((item && item->GetString("args.linked_id.id", &id2)));
-    EXPECT_EQ("0x2000", id2);
-  }
-
-  EXPECT_FIND_("TRACE_LINK_IDS scoped call");
-  {
-    std::string ph;
-    EXPECT_TRUE((item && item->GetString("ph", &ph)));
-    EXPECT_EQ("=", ph);
-
-    std::string scope1;
-    EXPECT_TRUE((item && item->GetString("scope", &scope1)));
-    EXPECT_EQ("scope 1", scope1);
-    std::string id1;
-    EXPECT_TRUE((item && item->GetString("id", &id1)));
-    EXPECT_EQ("0x1000", id1);
-
-    std::string scope2;
-    EXPECT_TRUE((item && item->GetString("args.linked_id.scope", &scope2)));
-    EXPECT_EQ("scope 2", scope2);
-    std::string id2;
-    EXPECT_TRUE((item && item->GetString("args.linked_id.id", &id2)));
-    EXPECT_EQ("0x2000", id2);
-  }
-
-  EXPECT_FIND_("TRACE_LINK_IDS to a local ID");
-  {
-    std::string ph;
-    EXPECT_TRUE((item && item->GetString("ph", &ph)));
-    EXPECT_EQ("=", ph);
-
-    EXPECT_FALSE((item && item->HasKey("scope")));
-    std::string id1;
-    EXPECT_TRUE((item && item->GetString("id", &id1)));
-    EXPECT_EQ("0x1000", id1);
-
-    EXPECT_FALSE((item && item->HasKey("args.linked_id.scope")));
-    std::string id2;
-    EXPECT_TRUE((item && item->GetString("args.linked_id.id2.local", &id2)));
-    EXPECT_EQ("0x2000", id2);
-  }
-
-  EXPECT_FIND_("TRACE_LINK_IDS to a global ID");
-  {
-    std::string ph;
-    EXPECT_TRUE((item && item->GetString("ph", &ph)));
-    EXPECT_EQ("=", ph);
-
-    EXPECT_FALSE((item && item->HasKey("scope")));
-    std::string id1;
-    EXPECT_TRUE((item && item->GetString("id", &id1)));
-    EXPECT_EQ("0x1000", id1);
-
-    EXPECT_FALSE((item && item->HasKey("args.linked_id.scope")));
-    std::string id2;
-    EXPECT_TRUE((item && item->GetString("args.linked_id.id2.global", &id2)));
-    EXPECT_EQ("0x2000", id2);
-  }
-
-  EXPECT_FIND_("TRACE_LINK_IDS to a composite ID");
-  {
-    std::string ph;
-    EXPECT_TRUE((item && item->GetString("ph", &ph)));
-    EXPECT_EQ("=", ph);
-
-    EXPECT_FALSE(item->HasKey("scope"));
-    std::string id1;
-    EXPECT_TRUE(item->GetString("id", &id1));
-    EXPECT_EQ("0x1000", id1);
-
-    std::string scope;
-    EXPECT_TRUE(item->GetString("args.linked_id.scope", &scope));
-    EXPECT_EQ("scope 1", scope);
-    std::string id2;
-    EXPECT_TRUE(item->GetString("args.linked_id.id", &id2));
-    EXPECT_EQ(id2, "0x2000/0x3000");
-  }
-
   EXPECT_FIND_("async default process scope");
   {
     std::string ph;
@@ -1463,32 +1328,6 @@ TEST_F(TraceEventTestFixture, AddMetadataEvent) {
 
 // Test that categories work.
 TEST_F(TraceEventTestFixture, Categories) {
-  // Test that categories that are used can be retrieved whether trace was
-  // enabled or disabled when the trace event was encountered.
-  TRACE_EVENT_INSTANT0("c1", "name", TRACE_EVENT_SCOPE_THREAD);
-  TRACE_EVENT_INSTANT0("c2", "name", TRACE_EVENT_SCOPE_THREAD);
-  BeginTrace();
-  TRACE_EVENT_INSTANT0("c3", "name", TRACE_EVENT_SCOPE_THREAD);
-  TRACE_EVENT_INSTANT0("c4", "name", TRACE_EVENT_SCOPE_THREAD);
-  // Category groups containing more than one category.
-  TRACE_EVENT_INSTANT0("c5,c6", "name", TRACE_EVENT_SCOPE_THREAD);
-  TRACE_EVENT_INSTANT0("c7,c8", "name", TRACE_EVENT_SCOPE_THREAD);
-  TRACE_EVENT_INSTANT0(TRACE_DISABLED_BY_DEFAULT("c9"), "name",
-                       TRACE_EVENT_SCOPE_THREAD);
-
-  EndTraceAndFlush();
-  std::vector<std::string> cat_groups;
-  TraceLog::GetInstance()->GetKnownCategoryGroups(&cat_groups);
-  EXPECT_TRUE(ContainsValue(cat_groups, "c1"));
-  EXPECT_TRUE(ContainsValue(cat_groups, "c2"));
-  EXPECT_TRUE(ContainsValue(cat_groups, "c3"));
-  EXPECT_TRUE(ContainsValue(cat_groups, "c4"));
-  EXPECT_TRUE(ContainsValue(cat_groups, "c5,c6"));
-  EXPECT_TRUE(ContainsValue(cat_groups, "c7,c8"));
-  EXPECT_TRUE(ContainsValue(cat_groups, "disabled-by-default-c9"));
-  // Make sure metadata isn't returned.
-  EXPECT_FALSE(ContainsValue(cat_groups, "__metadata"));
-
   const std::vector<std::string> empty_categories;
   std::vector<std::string> included_categories;
   std::vector<std::string> excluded_categories;
@@ -1698,10 +1537,10 @@ TEST_F(TraceEventTestFixture, StaticStringVsString) {
     ASSERT_TRUE(event2);
     EXPECT_STREQ("name1", event1->name());
     EXPECT_STREQ("name2", event2->name());
-    EXPECT_TRUE(event1->parameter_copy_storage() != nullptr);
-    EXPECT_TRUE(event2->parameter_copy_storage() != nullptr);
-    EXPECT_GT(event1->parameter_copy_storage()->size(), 0u);
-    EXPECT_GT(event2->parameter_copy_storage()->size(), 0u);
+    EXPECT_FALSE(event1->parameter_copy_storage().empty());
+    EXPECT_FALSE(event2->parameter_copy_storage().empty());
+    EXPECT_GT(event1->parameter_copy_storage().size(), 0u);
+    EXPECT_GT(event2->parameter_copy_storage().size(), 0u);
     EndTraceAndFlush();
   }
 
@@ -1731,8 +1570,8 @@ TEST_F(TraceEventTestFixture, StaticStringVsString) {
     ASSERT_TRUE(event2);
     EXPECT_STREQ("name1", event1->name());
     EXPECT_STREQ("name2", event2->name());
-    EXPECT_TRUE(event1->parameter_copy_storage() == nullptr);
-    EXPECT_TRUE(event2->parameter_copy_storage() == nullptr);
+    EXPECT_TRUE(event1->parameter_copy_storage().empty());
+    EXPECT_TRUE(event2->parameter_copy_storage().empty());
     EndTraceAndFlush();
   }
 }

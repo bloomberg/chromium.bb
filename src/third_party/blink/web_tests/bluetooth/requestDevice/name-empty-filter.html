@@ -9,12 +9,11 @@
 'use strict';
 bluetooth_test(t => {
   return setBluetoothFakeAdapter('HeartRateAdapter')
-  .then(() => promise_rejects(
-    t, 'NotFoundError', requestDeviceWithTrustedClick({
-      filters: [{
-        name: '',
-        services: ['heart_rate']
-      }]})));
+      .then(
+          () => promise_rejects(
+              t, 'NotFoundError',
+              requestDeviceWithTrustedClick(
+                  {filters: [{name: '', services: ['heart_rate']}]})));
 }, 'A named device is not matched by a filter with an empty name.');
 </script>
 

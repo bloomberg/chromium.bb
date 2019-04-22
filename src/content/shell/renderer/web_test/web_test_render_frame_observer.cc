@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/shell/renderer/web_test/blink_test_runner.h"
 #include "content/shell/renderer/web_test/web_test_render_thread_observer.h"
@@ -38,7 +39,7 @@ WebTestRenderFrameObserver::WebTestRenderFrameObserver(
 WebTestRenderFrameObserver::~WebTestRenderFrameObserver() = default;
 
 void WebTestRenderFrameObserver::BindRequest(
-    mojom::LayoutTestControlAssociatedRequest request) {
+    mojom::WebTestControlAssociatedRequest request) {
   binding_.Bind(std::move(request),
                 blink::scheduler::GetSingleThreadTaskRunnerForTesting());
 }
@@ -54,12 +55,9 @@ void WebTestRenderFrameObserver::CaptureDump(CaptureDumpCallback callback) {
 
 void WebTestRenderFrameObserver::CompositeWithRaster(
     CompositeWithRasterCallback callback) {
-  blink::WebWidget* widget = render_frame()->GetWebFrame()->FrameWidget();
-  if (widget) {
-    widget->UpdateAllLifecyclePhasesAndCompositeForTesting(/*do_raster=*/true);
-    if (blink::WebPagePopup* popup = widget->GetPagePopup())
-      popup->UpdateAllLifecyclePhasesAndCompositeForTesting(/*do_raster=*/true);
-  }
+  // When the TestFinished() occurred, if the browser is capturing pixels, it
+  // asks each composited RenderFrame to submit a new frame via here.
+  render_frame()->UpdateAllLifecyclePhasesAndCompositeForTesting();
   std::move(callback).Run();
 }
 

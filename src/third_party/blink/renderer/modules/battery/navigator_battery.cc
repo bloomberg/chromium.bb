@@ -28,7 +28,7 @@ ScriptPromise NavigatorBattery::getBattery(ScriptState* script_state) {
     LocalFrame* frame = document->GetFrame();
     if (frame) {
       if (!context->IsSecureContext())
-        UseCounter::Count(frame, WebFeature::kBatteryStatusInsecureOrigin);
+        UseCounter::Count(document, WebFeature::kBatteryStatusInsecureOrigin);
       UseCounter::CountIfFeatureWouldBeBlockedByFeaturePolicy(
           *frame, WebFeature::kBatteryStatusCrossOrigin,
           WebFeature::kBatteryStatusSameOriginABA);

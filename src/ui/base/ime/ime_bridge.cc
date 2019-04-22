@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
+#include "base/observer_list.h"
 #include "build/build_config.h"
 
 namespace ui {
@@ -18,28 +19,12 @@ static IMEBridge* g_ime_bridge = nullptr;
 // An implementation of IMEBridge.
 class IMEBridgeImpl : public IMEBridge {
  public:
-#if defined(OS_CHROMEOS)
   IMEBridgeImpl()
-      : input_context_handler_(nullptr),
-        engine_handler_(nullptr),
-        observer_(nullptr),
-        current_input_context_(ui::TEXT_INPUT_TYPE_NONE,
-                               ui::TEXT_INPUT_MODE_DEFAULT,
-                               0,
-                               ui::TextInputClient::FOCUS_REASON_NONE,
-                               false /* should_do_learning */),
-        candidate_window_handler_(nullptr) {}
-#else
-  IMEBridgeImpl()
-      : input_context_handler_(nullptr),
-        engine_handler_(nullptr),
-        observer_(nullptr),
-        current_input_context_(ui::TEXT_INPUT_TYPE_NONE,
+      : current_input_context_(ui::TEXT_INPUT_TYPE_NONE,
                                ui::TEXT_INPUT_MODE_DEFAULT,
                                0,
                                ui::TextInputClient::FOCUS_REASON_NONE,
                                false /* should_do_learning */) {}
-#endif
 
   ~IMEBridgeImpl() override {}
 
@@ -52,6 +37,8 @@ class IMEBridgeImpl : public IMEBridge {
   void SetInputContextHandler(
       IMEInputContextHandlerInterface* handler) override {
     input_context_handler_ = handler;
+    for (auto& observer : observers_)
+      observer.OnInputContextHandlerChanged();
   }
 
   // IMEBridge override.
@@ -77,14 +64,19 @@ class IMEBridgeImpl : public IMEBridge {
   }
 
   // IMEBridge override.
-  void SetObserver(ui::IMEBridgeObserver* observer) override {
-    observer_ = observer;
+  void AddObserver(ui::IMEBridgeObserver* observer) override {
+    observers_.AddObserver(observer);
+  }
+
+  // IMEBridge override.
+  void RemoveObserver(ui::IMEBridgeObserver* observer) override {
+    observers_.RemoveObserver(observer);
   }
 
   // IMEBridge override.
   void MaybeSwitchEngine() override {
-    if (observer_)
-      observer_->OnRequestSwitchEngine();
+    for (auto& observer : observers_)
+      observer.OnRequestSwitchEngine();
   }
 
 #if defined(OS_CHROMEOS)
@@ -102,13 +94,14 @@ class IMEBridgeImpl : public IMEBridge {
 #endif
 
  private:
-  IMEInputContextHandlerInterface* input_context_handler_;
-  IMEEngineHandlerInterface* engine_handler_;
-  IMEBridgeObserver* observer_;
+  IMEInputContextHandlerInterface* input_context_handler_ = nullptr;
+  IMEEngineHandlerInterface* engine_handler_ = nullptr;
+  base::ObserverList<IMEBridgeObserver> observers_;
   IMEEngineHandlerInterface::InputContext current_input_context_;
 
 #if defined(OS_CHROMEOS)
-  chromeos::IMECandidateWindowHandlerInterface* candidate_window_handler_;
+  chromeos::IMECandidateWindowHandlerInterface* candidate_window_handler_ =
+      nullptr;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(IMEBridgeImpl);

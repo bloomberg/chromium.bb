@@ -4,6 +4,9 @@
 
 #include "ppapi/tests/test_flash_fullscreen_for_browser_ui.h"
 
+#include <GLES2/gl2.h>
+
+#include "ppapi/c/ppb_opengles2.h"
 #include "ppapi/cpp/input_event.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/rect.h"
@@ -16,8 +19,6 @@ TestFlashFullscreenForBrowserUI::
     : TestCase(instance),
       screen_mode_(instance),
       view_change_event_(instance->pp_instance()),
-      num_trigger_events_(0),
-      request_fullscreen_(false),
       callback_factory_(this) {
   // This plugin should not be removed after this TestCase passes because
   // browser UI testing requires it to remain and to be interactive.
@@ -28,7 +29,9 @@ TestFlashFullscreenForBrowserUI::~TestFlashFullscreenForBrowserUI() {
 }
 
 bool TestFlashFullscreenForBrowserUI::Init() {
-  return CheckTestingInterface();
+  opengl_es2_ = static_cast<const PPB_OpenGLES2*>(
+      pp::Module::Get()->GetBrowserInterface(PPB_OPENGLES2_INTERFACE));
+  return opengl_es2_ && CheckTestingInterface();
 }
 
 void TestFlashFullscreenForBrowserUI::RunTests(const std::string& filter) {
@@ -42,6 +45,18 @@ std::string TestFlashFullscreenForBrowserUI::TestEnterFullscreen() {
   // This is only allowed within a contet of a user gesture (e.g. mouse click).
   if (screen_mode_.SetFullscreen(true))
     return ReportError("SetFullscreen(true) outside of user gesture", true);
+
+  int32_t attribs[] = {PP_GRAPHICS3DATTRIB_RED_SIZE,     8,
+                       PP_GRAPHICS3DATTRIB_GREEN_SIZE,   8,
+                       PP_GRAPHICS3DATTRIB_BLUE_SIZE,    8,
+                       PP_GRAPHICS3DATTRIB_ALPHA_SIZE,   8,
+                       PP_GRAPHICS3DATTRIB_DEPTH_SIZE,   0,
+                       PP_GRAPHICS3DATTRIB_STENCIL_SIZE, 0,
+                       PP_GRAPHICS3DATTRIB_WIDTH,        layer_size_.width(),
+                       PP_GRAPHICS3DATTRIB_HEIGHT,       layer_size_.height(),
+                       PP_GRAPHICS3DATTRIB_NONE};
+  graphics_3d_ = pp::Graphics3D(instance_, attribs);
+  instance_->BindGraphics(graphics_3d_);
 
   // Trigger another call to SetFullscreen(true) from HandleInputEvent().
   // The transition is asynchronous and ends at the next DidChangeView().
@@ -57,10 +72,6 @@ std::string TestFlashFullscreenForBrowserUI::TestEnterFullscreen() {
   if (!screen_mode_.IsFullscreen())
     return ReportError("IsFullscreen() in fullscreen", false);
 
-  compositor_ = pp::Compositor(instance_);
-  instance_->BindGraphics(compositor_);
-  color_layer_ = compositor_.AddLayer();
-
   const int32_t result =
       instance_->RequestFilteringInputEvents(PP_INPUTEVENT_CLASS_MOUSE |
                                              PP_INPUTEVENT_CLASS_KEYBOARD);
@@ -75,8 +86,10 @@ void TestFlashFullscreenForBrowserUI::DidChangeView(const pp::View& view) {
   if (normal_position_.IsEmpty())
     normal_position_ = view.GetRect();
 
-  if (!compositor_.is_null())
-    Paint(PP_OK);
+  if (!graphics_3d_.is_null()) {
+    graphics_3d_.ResizeBuffers(layer_size_.width(), layer_size_.height());
+    RequestPaint();
+  }
 
   view_change_event_.Signal();
 }
@@ -142,18 +155,36 @@ bool TestFlashFullscreenForBrowserUI::HandleInputEvent(
   }
 
   ++num_trigger_events_;
+  RequestPaint();
 
   return true;
 }
 
-void TestFlashFullscreenForBrowserUI::Paint(int32_t last_compositor_result) {
-  if (num_trigger_events_ == 0)
-    color_layer_.SetColor(0.0f, 1.0f, 0.0f, 1.0f, layer_size_);
-  else if (num_trigger_events_ % 2)
-    color_layer_.SetColor(1.0f, 0.0f, 0.0f, 1.0f, layer_size_);
+void TestFlashFullscreenForBrowserUI::RequestPaint() {
+  if (swap_pending_)
+    needs_paint_ = true;
   else
-    color_layer_.SetColor(0.0f, 0.0f, 1.0f, 1.0f, layer_size_);
+    DoPaint();
+}
 
-  compositor_.CommitLayers(
-      callback_factory_.NewCallback(&TestFlashFullscreenForBrowserUI::Paint));
+void TestFlashFullscreenForBrowserUI::DoPaint() {
+  if (num_trigger_events_ == 0)
+    opengl_es2_->ClearColor(graphics_3d_.pp_resource(), 0.0f, 1.0f, 0.0f, 1.0f);
+  else if (num_trigger_events_ % 2)
+    opengl_es2_->ClearColor(graphics_3d_.pp_resource(), 1.0f, 0.0f, 0.0f, 1.0f);
+  else
+    opengl_es2_->ClearColor(graphics_3d_.pp_resource(), 0.0f, 0.0f, 1.0f, 1.0f);
+
+  opengl_es2_->Clear(graphics_3d_.pp_resource(), GL_COLOR_BUFFER_BIT);
+  swap_pending_ = true;
+  graphics_3d_.SwapBuffers(
+      callback_factory_.NewCallback(&TestFlashFullscreenForBrowserUI::DidSwap));
+}
+
+void TestFlashFullscreenForBrowserUI::DidSwap(int32_t last_compositor_result) {
+  swap_pending_ = false;
+  if (needs_paint_) {
+    needs_paint_ = false;
+    DoPaint();
+  }
 }

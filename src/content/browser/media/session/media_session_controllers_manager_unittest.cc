@@ -5,13 +5,15 @@
 #include "content/browser/media/session/media_session_controllers_manager.h"
 
 #include "base/command_line.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "content/browser/media/session/media_session_controller.h"
 #include "content/public/test/test_service_manager_context.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
 #include "media/base/media_content_type.h"
-#include "services/media_session/public/cpp/switches.h"
+#include "media/base/media_switches.h"
+#include "services/media_session/public/cpp/features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -24,7 +26,7 @@ namespace {
 class MockMediaSessionController : public MediaSessionController {
  public:
   MockMediaSessionController(
-      const WebContentsObserver::MediaPlayerId& id,
+      const MediaPlayerId& id,
       MediaWebContentsObserver* media_web_contents_observer)
       : MediaSessionController(id, media_web_contents_observer) {}
 
@@ -44,21 +46,32 @@ class MediaSessionControllersManagerTest
   void SetUp() override {
     RenderViewHostImplTestHarness::SetUp();
 
-#if !defined(OS_ANDROID)
+    std::vector<base::Feature> enabled_features;
+    std::vector<base::Feature> disabled_features;
+
+    // Based on the parameters, switch them on.
     if (IsInternalMediaSessionEnabled()) {
-      base::CommandLine::ForCurrentProcess()->AppendSwitch(
-          media_session::switches::kEnableInternalMediaSession);
+      enabled_features.push_back(media::kInternalMediaSession);
+    } else {
+      disabled_features.push_back(media::kInternalMediaSession);
     }
+
     if (IsAudioFocusEnabled()) {
-      base::CommandLine::ForCurrentProcess()->AppendSwitch(
-          media_session::switches::kEnableAudioFocus);
+      enabled_features.push_back(media_session::features::kMediaSessionService);
+      enabled_features.push_back(
+          media_session::features::kAudioFocusEnforcement);
+    } else {
+      disabled_features.push_back(
+          media_session::features::kMediaSessionService);
+      disabled_features.push_back(
+          media_session::features::kAudioFocusEnforcement);
     }
-#endif
+
+    scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
 
     service_manager_context_ = std::make_unique<TestServiceManagerContext>();
 
-    media_player_id_ = MediaSessionControllersManager::MediaPlayerId(
-        contents()->GetMainFrame(), 1);
+    media_player_id_ = MediaPlayerId(contents()->GetMainFrame(), 1);
     mock_media_session_controller_ =
         std::make_unique<StrictMock<MockMediaSessionController>>(
             media_player_id_, contents()->media_web_contents_observer());
@@ -76,11 +89,7 @@ class MediaSessionControllersManagerTest
   }
 
   bool IsMediaSessionEnabled() const {
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
-    return true;
-#else
     return IsInternalMediaSessionEnabled() || IsAudioFocusEnabled();
-#endif
   }
 
   MediaSessionControllersManager::ControllersMap* GetControllersMap() {
@@ -94,15 +103,16 @@ class MediaSessionControllersManagerTest
   }
 
  protected:
-  MediaSessionControllersManager::MediaPlayerId media_player_id_ =
-      MediaSessionControllersManager::MediaPlayerId::
-          createMediaPlayerIdForTests();
+  MediaPlayerId media_player_id_ = MediaPlayerId::CreateMediaPlayerIdForTests();
   std::unique_ptr<StrictMock<MockMediaSessionController>>
       mock_media_session_controller_;
   StrictMock<MockMediaSessionController>* mock_media_session_controller_ptr_ =
       nullptr;
   std::unique_ptr<MediaSessionControllersManager> manager_;
   std::unique_ptr<TestServiceManagerContext> service_manager_context_;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 TEST_P(MediaSessionControllersManagerTest, RequestPlayAddsSessionsToMap) {
@@ -115,8 +125,7 @@ TEST_P(MediaSessionControllersManagerTest, RequestPlayAddsSessionsToMap) {
   } else {
     EXPECT_EQ(1U, GetControllersMap()->size());
     EXPECT_TRUE(
-        manager_->RequestPlay(MediaSessionControllersManager::MediaPlayerId(
-                                  contents()->GetMainFrame(), 2),
+        manager_->RequestPlay(MediaPlayerId(contents()->GetMainFrame(), 2),
                               true, false, media::MediaContentType::Transient));
     EXPECT_EQ(2U, GetControllersMap()->size());
   }
@@ -179,9 +188,7 @@ TEST_P(MediaSessionControllersManagerTest, OnPauseIdNotFound) {
   GetControllersMap()->insert(std::make_pair(
       media_player_id_, std::move(mock_media_session_controller_)));
 
-  MediaSessionControllersManager::MediaPlayerId id2 =
-      MediaSessionControllersManager::MediaPlayerId(contents()->GetMainFrame(),
-                                                    2);
+  MediaPlayerId id2 = MediaPlayerId(contents()->GetMainFrame(), 2);
   manager_->OnPause(id2);
 }
 
@@ -209,8 +216,8 @@ TEST_P(MediaSessionControllersManagerTest, OnEndRemovesMediaPlayerId) {
 
 // First bool is to indicate whether InternalMediaSession is enabled.
 // Second bool is to indicate whether AudioFocus is enabled.
-INSTANTIATE_TEST_CASE_P(MediaSessionEnabledTestInstances,
-                        MediaSessionControllersManagerTest,
-                        ::testing::Combine(::testing::Bool(),
-                                           ::testing::Bool()));
+INSTANTIATE_TEST_SUITE_P(MediaSessionEnabledTestInstances,
+                         MediaSessionControllersManagerTest,
+                         ::testing::Combine(::testing::Bool(),
+                                            ::testing::Bool()));
 }  // namespace content

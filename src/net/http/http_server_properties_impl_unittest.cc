@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
@@ -1184,7 +1185,7 @@ TEST_F(AlternateProtocolServerPropertiesTest, RemoveExpiredBrokenAltSvc2) {
     FastForwardBy(BROKEN_ALT_SVC_EXPIRE_DELAYS[i]);
 
     // Ensure brokenness of |alternative_service1| has expired.
-    EXPECT_FALSE(MainThreadHasPendingTask());
+    EXPECT_EQ(0u, GetPendingMainThreadTaskCount());
     EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service1));
   }
 

@@ -13,8 +13,10 @@
 #include <utility>
 
 #include "base/base_switches.h"
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/enterprise_util.h"
 #include "base/environment.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
@@ -25,10 +27,12 @@
 #include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/scoped_native_library.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "base/trace_event/trace_event.h"
 #include "base/version.h"
 #include "base/win/pe_image.h"
 #include "base/win/registry.h"
@@ -84,8 +88,8 @@
 #include "ui/base/win/hidden_window.h"
 #include "ui/base/win/message_box_win.h"
 #include "ui/display/win/dpi.h"
-#include "ui/gfx/platform_font_win.h"
 #include "ui/gfx/switches.h"
+#include "ui/gfx/system_fonts_win.h"
 #include "ui/strings/grit/app_locale_settings.h"
 
 #if defined(GOOGLE_CHROME_BUILD)
@@ -111,7 +115,7 @@ void DumpHungRendererProcessImpl(const base::Process& renderer) {
 }
 
 // gfx::Font callbacks
-void AdjustUIFont(gfx::PlatformFontWin::FontAdjustment* font_adjustment) {
+void AdjustUIFont(gfx::win::FontAdjustment* font_adjustment) {
   l10n_util::NeedOverrideDefaultUIFont(&font_adjustment->font_family_override,
                                        &font_adjustment->font_scale);
   font_adjustment->font_scale *= display::win::GetAccessibilityFontScale();
@@ -188,6 +192,31 @@ void DetectFaultTolerantHeap() {
   UMA_HISTOGRAM_ENUMERATION("FaultTolerantHeap", detected, FTH_FLAGS_COUNT);
 }
 
+// Initializes the ModuleDatabase on its owning sequence. Also starts the
+// enumeration of registered modules in the Windows Registry.
+void InitializeModuleDatabase(bool is_third_party_blocking_policy_enabled) {
+  DCHECK(ModuleDatabase::GetTaskRunner()->RunsTasksInCurrentSequence());
+
+  ModuleDatabase::SetInstance(
+      std::make_unique<ModuleDatabase>(is_third_party_blocking_policy_enabled));
+
+  auto* module_database = ModuleDatabase::GetInstance();
+  module_database->StartDrainingModuleLoadAttemptsLog();
+
+  // Enumerate shell extensions and input method editors. It is safe to use
+  // base::Unretained() here because the ModuleDatabase is never freed.
+  EnumerateShellExtensions(
+      base::BindRepeating(&ModuleDatabase::OnShellExtensionEnumerated,
+                          base::Unretained(module_database)),
+      base::BindOnce(&ModuleDatabase::OnShellExtensionEnumerationFinished,
+                     base::Unretained(module_database)));
+  EnumerateInputMethodEditors(
+      base::BindRepeating(&ModuleDatabase::OnImeEnumerated,
+                          base::Unretained(module_database)),
+      base::BindOnce(&ModuleDatabase::OnImeEnumerationFinished,
+                     base::Unretained(module_database)));
+}
+
 // Notes on the OnModuleEvent() callback.
 //
 // The ModuleDatabase uses the TimeDateStamp value of the DLL to uniquely
@@ -247,7 +276,7 @@ void HandleModuleLoadEventWithoutTimeDateStamp(
   if (!got_time_date_stamp)
     return;
 
-  ModuleDatabase::GetInstance()->OnModuleLoad(
+  ModuleDatabase::HandleModuleLoadEvent(
       content::PROCESS_TYPE_BROWSER, module_path, module_size, time_date_stamp);
 }
 
@@ -317,7 +346,7 @@ bool TryGetModuleTimeDateStamp(void* module_load_address,
       return false;
 
     *time_date_stamp = GetModuleTimeDateStamp(module_load_address);
-  } __except (FilterAccessViolation(GetExceptionCode(),
+  } __except(FilterAccessViolation(GetExceptionCode(),
                                     GetExceptionInformation(),
                                     module_load_address, size_of_image)) {
     return false;
@@ -327,20 +356,24 @@ bool TryGetModuleTimeDateStamp(void* module_load_address,
 
 // Used as the callback for ModuleWatcher events in this process. Dispatches
 // them to the ModuleDatabase.
+// Note: This callback may be invoked on any thread, even those not owned by the
+//       task scheduler, under the loader lock, directly on the thread where the
+//       DLL is currently loading.
 void OnModuleEvent(const ModuleWatcher::ModuleEvent& event) {
-  auto* module_database = ModuleDatabase::GetInstance();
+  TRACE_EVENT1("browser", "OnModuleEvent", "module_path",
+               event.module_path.BaseName().AsUTF8Unsafe());
 
   switch (event.event_type) {
-    case mojom::ModuleEventType::MODULE_ALREADY_LOADED: {
-      // MODULE_ALREADY_LOADED comes from the enumeration of loaded modules
+    case ModuleWatcher::ModuleEventType::kModuleAlreadyLoaded: {
+      // kModuleAlreadyLoaded comes from the enumeration of loaded modules
       // using CreateToolhelp32Snapshot().
       uint32_t time_date_stamp = 0;
       if (TryGetModuleTimeDateStamp(event.module_load_address,
                                     event.module_path, event.module_size,
                                     &time_date_stamp)) {
-        module_database->OnModuleLoad(content::PROCESS_TYPE_BROWSER,
-                                      event.module_path, event.module_size,
-                                      time_date_stamp);
+        ModuleDatabase::HandleModuleLoadEvent(
+            content::PROCESS_TYPE_BROWSER, event.module_path, event.module_size,
+            time_date_stamp);
       } else {
         // Failed to get the TimeDateStamp directly from memory. The next step
         // to try is to read the file on disk. This must be done in a blocking
@@ -349,45 +382,38 @@ void OnModuleEvent(const ModuleWatcher::ModuleEvent& event) {
             FROM_HERE,
             {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-            base::Bind(&HandleModuleLoadEventWithoutTimeDateStamp,
-                       event.module_path, event.module_size));
+            base::BindOnce(&HandleModuleLoadEventWithoutTimeDateStamp,
+                           event.module_path, event.module_size));
       }
-      return;
+      break;
     }
-    case mojom::ModuleEventType::MODULE_LOADED: {
-      module_database->OnModuleLoad(
+    case ModuleWatcher::ModuleEventType::kModuleLoaded: {
+      ModuleDatabase::HandleModuleLoadEvent(
           content::PROCESS_TYPE_BROWSER, event.module_path, event.module_size,
           GetModuleTimeDateStamp(event.module_load_address));
-      return;
+      break;
     }
   }
 }
 
-// Helper function for initializing the module database subsystem. Populates
-// the provided |module_watcher|, and starts the enumeration of registered
-// modules in the Windows Registry.
+// Helper function for initializing the module database subsystem and populating
+// the provided |module_watcher|.
 void SetupModuleDatabase(std::unique_ptr<ModuleWatcher>* module_watcher) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(module_watcher);
 
-  ModuleDatabase::SetInstance(
-      std::make_unique<ModuleDatabase>(base::SequencedTaskRunnerHandle::Get()));
-  auto* module_database = ModuleDatabase::GetInstance();
-  module_database->StartDrainingModuleLoadAttemptsLog();
+  bool third_party_blocking_policy_enabled =
+#if defined(GOOGLE_CHROME_BUILD)
+      ModuleDatabase::IsThirdPartyBlockingPolicyEnabled();
+#else
+      false;
+#endif
+
+  ModuleDatabase::GetTaskRunner()->PostTask(
+      FROM_HERE, base::BindOnce(&InitializeModuleDatabase,
+                                third_party_blocking_policy_enabled));
 
   *module_watcher = ModuleWatcher::Create(base::BindRepeating(&OnModuleEvent));
-
-  // Enumerate shell extensions and input method editors. It is safe to use
-  // base::Unretained() here because the ModuleDatabase is never freed.
-  EnumerateShellExtensions(
-      base::BindRepeating(&ModuleDatabase::OnShellExtensionEnumerated,
-                          base::Unretained(module_database)),
-      base::BindOnce(&ModuleDatabase::OnShellExtensionEnumerationFinished,
-                     base::Unretained(module_database)));
-  EnumerateInputMethodEditors(
-      base::BindRepeating(&ModuleDatabase::OnImeEnumerated,
-                          base::Unretained(module_database)),
-      base::BindOnce(&ModuleDatabase::OnImeEnumerationFinished,
-                     base::Unretained(module_database)));
 }
 
 void ShowCloseBrowserFirstMessageBox() {
@@ -405,6 +431,14 @@ void MaybePostSettingsResetPrompt() {
         base::Bind(safe_browsing::MaybeShowSettingsResetPromptWithDelay));
   }
 }
+
+// This error message is not localized because we failed to load the
+// localization data files.
+const char kMissingLocaleDataTitle[] = "Missing File Error";
+
+// TODO(http://crbug.com/338969): This should be used on Linux Aura as well.
+const char kMissingLocaleDataMessage[] =
+    "Unable to find locale data files. Please reinstall.";
 
 }  // namespace
 
@@ -437,7 +471,7 @@ int DoUninstallTasks(bool chrome_still_running) {
           ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR_DEPRECATED,
           ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_APPS_DIR,
       };
-      for (size_t i = 0; i < arraysize(user_shortcut_locations); ++i) {
+      for (size_t i = 0; i < base::size(user_shortcut_locations); ++i) {
         if (!ShellUtil::RemoveShortcuts(user_shortcut_locations[i],
                                         ShellUtil::CURRENT_USER, chrome_exe)) {
           VLOG(1) << "Failed to delete shortcut at location "
@@ -464,8 +498,8 @@ ChromeBrowserMainPartsWin::~ChromeBrowserMainPartsWin() {
 
 void ChromeBrowserMainPartsWin::ToolkitInitialized() {
   ChromeBrowserMainParts::ToolkitInitialized();
-  gfx::PlatformFontWin::SetAdjustFontCallback(&AdjustUIFont);
-  gfx::PlatformFontWin::SetGetMinimumFontSizeCallback(&GetMinimumFontSize);
+  gfx::win::SetAdjustFontCallback(&AdjustUIFont);
+  gfx::win::SetGetMinimumFontSizeCallback(&GetMinimumFontSize);
   ui::CursorLoaderWin::SetCursorResourceModule(chrome::kBrowserResourcesDll);
 }
 
@@ -486,7 +520,7 @@ int ChromeBrowserMainPartsWin::PreCreateThreads() {
   // be used to better identify whether crashes are from enterprise users.
   static crash_reporter::CrashKeyString<4> is_enterprise_managed(
       "is-enterprise-managed");
-  is_enterprise_managed.Set(base::win::IsEnterpriseManaged() ? "yes" : "no");
+  is_enterprise_managed.Set(base::IsMachineExternallyManaged() ? "yes" : "no");
 
   // Set crash keys containing the registry values used to determine Chrome's
   // update channel at process startup; see https://crbug.com/579504.
@@ -507,9 +541,8 @@ int ChromeBrowserMainPartsWin::PreCreateThreads() {
 }
 
 void ChromeBrowserMainPartsWin::ShowMissingLocaleMessageBox() {
-  ui::MessageBox(NULL,
-                 base::ASCIIToUTF16(chrome_browser::kMissingLocaleDataMessage),
-                 base::ASCIIToUTF16(chrome_browser::kMissingLocaleDataTitle),
+  ui::MessageBox(NULL, base::ASCIIToUTF16(kMissingLocaleDataMessage),
+                 base::ASCIIToUTF16(kMissingLocaleDataTitle),
                  MB_OK | MB_ICONERROR | MB_TOPMOST);
 }
 
@@ -526,9 +559,9 @@ void ChromeBrowserMainPartsWin::PostProfileInit() {
   // What truly controls if the blocking is enabled is the presence of the
   // module blacklist cache file. This means that to disable the feature, the
   // cache must be deleted and the browser relaunched.
-  if (base::win::IsEnterpriseManaged() ||
+  if (base::IsMachineExternallyManaged() ||
       !ModuleDatabase::IsThirdPartyBlockingPolicyEnabled() ||
-      !base::FeatureList::IsEnabled(features::kThirdPartyModulesBlocking))
+      !ModuleBlacklistCacheUpdater::IsBlockingEnabled())
     ThirdPartyConflictsManager::DisableThirdPartyModuleBlocking(
         base::CreateTaskRunnerWithTraits(
             {base::TaskPriority::BEST_EFFORT,
@@ -571,7 +604,7 @@ void ChromeBrowserMainPartsWin::PostBrowserStart() {
   // Record UMA data about whether the fault-tolerant heap is enabled.
   // Use a delayed task to minimize the impact on startup time.
   base::PostDelayedTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                                  base::Bind(&DetectFaultTolerantHeap),
+                                  base::BindOnce(&DetectFaultTolerantHeap),
                                   base::TimeDelta::FromMinutes(1));
 
   // Start the swap thrashing monitor if it's enabled.
@@ -724,13 +757,13 @@ base::string16 TranslationDelegate::GetLocalizedString(
     int installer_string_id) {
   int resource_id = 0;
   switch (installer_string_id) {
-  // HANDLE_STRING is used by the DO_INSTALLER_STRING_MAPPING macro which is in
-  // the generated header installer_util_strings.h.
+    // HANDLE_STRING is used by the DO_STRING_MAPPING macro which is in the
+    // generated header installer_util_strings.h.
 #define HANDLE_STRING(base_id, chrome_id) \
   case base_id: \
     resource_id = chrome_id; \
     break;
-  DO_INSTALLER_STRING_MAPPING
+    DO_STRING_MAPPING
 #undef HANDLE_STRING
   default:
     NOTREACHED();

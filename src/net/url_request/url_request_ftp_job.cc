@@ -4,6 +4,7 @@
 
 #include "net/url_request/url_request_ftp_job.h"
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
@@ -46,7 +47,7 @@ URLRequestFtpJob::URLRequestFtpJob(
       priority_(DEFAULT_PRIORITY),
       proxy_resolution_service_(
           request_->context()->proxy_resolution_service()),
-      http_response_info_(NULL),
+      http_response_info_(nullptr),
       read_in_progress_(false),
       ftp_transaction_factory_(ftp_transaction_factory),
       ftp_auth_cache_(ftp_auth_cache),
@@ -91,15 +92,15 @@ void URLRequestFtpJob::GetResponseInfo(HttpResponseInfo* info) {
     *info = *http_response_info_;
 }
 
-HostPortPair URLRequestFtpJob::GetSocketAddress() const {
+IPEndPoint URLRequestFtpJob::GetResponseRemoteEndpoint() const {
   if (proxy_info_.is_direct()) {
     if (!ftp_transaction_)
-      return HostPortPair();
-    return ftp_transaction_->GetResponseInfo()->socket_address;
+      return IPEndPoint();
+    return ftp_transaction_->GetResponseInfo()->remote_endpoint;
   } else {
     if (!http_transaction_)
-      return HostPortPair();
-    return http_transaction_->GetResponseInfo()->socket_address;
+      return IPEndPoint();
+    return http_transaction_->GetResponseInfo()->remote_endpoint;
   }
 }
 
@@ -145,7 +146,7 @@ void URLRequestFtpJob::Kill() {
 }
 
 void URLRequestFtpJob::OnResolveProxyComplete(int result) {
-  proxy_resolve_request_ = NULL;
+  proxy_resolve_request_ = nullptr;
 
   if (result != OK) {
     OnStartCompletedAsync(result);
@@ -254,8 +255,8 @@ void URLRequestFtpJob::OnStartCompleted(int result) {
 
 void URLRequestFtpJob::OnStartCompletedAsync(int result) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&URLRequestFtpJob::OnStartCompleted,
-                            weak_factory_.GetWeakPtr(), result));
+      FROM_HERE, base::BindOnce(&URLRequestFtpJob::OnStartCompleted,
+                                weak_factory_.GetWeakPtr(), result));
 }
 
 void URLRequestFtpJob::OnReadCompleted(int result) {
@@ -300,22 +301,24 @@ bool URLRequestFtpJob::NeedsAuth() {
   return auth_data_.get() && auth_data_->state == AUTH_STATE_NEED_AUTH;
 }
 
-void URLRequestFtpJob::GetAuthChallengeInfo(
-    scoped_refptr<AuthChallengeInfo>* result) {
+std::unique_ptr<AuthChallengeInfo> URLRequestFtpJob::GetAuthChallengeInfo() {
   DCHECK(NeedsAuth());
 
   if (http_response_info_) {
-    *result = http_response_info_->auth_challenge;
-    return;
+    if (!http_response_info_->auth_challenge.has_value())
+      return nullptr;
+    return std::make_unique<AuthChallengeInfo>(
+        http_response_info_->auth_challenge.value());
   }
 
-  scoped_refptr<AuthChallengeInfo> auth_info(new AuthChallengeInfo);
-  auth_info->is_proxy = false;
-  auth_info->challenger = url::Origin::Create(request_->url());
+  std::unique_ptr<AuthChallengeInfo> result =
+      std::make_unique<AuthChallengeInfo>();
+  result->is_proxy = false;
+  result->challenger = url::Origin::Create(request_->url());
   // scheme and realm are kept empty.
-  DCHECK(auth_info->scheme.empty());
-  DCHECK(auth_info->realm.empty());
-  result->swap(auth_info);
+  DCHECK(result->scheme.empty());
+  DCHECK(result->realm.empty());
+  return result;
 }
 
 void URLRequestFtpJob::SetAuth(const AuthCredentials& credentials) {
@@ -382,7 +385,7 @@ void URLRequestFtpJob::HandleAuthNeededResponse() {
   }
   auth_data_->state = AUTH_STATE_NEED_AUTH;
 
-  FtpAuthCache::Entry* cached_auth = NULL;
+  FtpAuthCache::Entry* cached_auth = nullptr;
   if (ftp_transaction_ && ftp_transaction_->GetResponseInfo()->needs_auth)
     cached_auth = ftp_auth_cache_->Lookup(origin);
   if (cached_auth) {

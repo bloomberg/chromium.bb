@@ -54,7 +54,6 @@ class AutofillDriverIOS : public AutofillDriver {
   void RendererShouldClearPreviewedForm() override;
   void RendererShouldAcceptDataListSuggestion(
       const base::string16& value) override;
-  void DidInteractWithCreditCardForm() override;
 
   AutofillManager* autofill_manager() { return &autofill_manager_; }
 
@@ -66,7 +65,7 @@ class AutofillDriverIOS : public AutofillDriver {
       const gfx::RectF& bounding_box) override;
 
   bool is_processed() const { return processed_; }
-  void set_processed(bool processed) { processed_ = processed; };
+  void set_processed(bool processed) { processed_ = processed; }
 
  protected:
   AutofillDriverIOS(
@@ -81,9 +80,9 @@ class AutofillDriverIOS : public AutofillDriver {
   // The WebState with which this object is associated.
   web::WebState* web_state_ = nullptr;
 
-  // The WebState with which this object is associated.
-  // nullptr if frame messaging is disabled.
-  web::WebFrame* web_frame_ = nullptr;
+  // The id of the WebFrame with which this object is associated.
+  // "" if frame messaging is disabled.
+  std::string web_frame_id_;
 
   // AutofillDriverIOSBridge instance that is passed in.
   __unsafe_unretained id<AutofillDriverIOSBridge> bridge_;

@@ -10,6 +10,7 @@
 #include <memory>
 #include <string>
 
+#include "base/bind.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/location.h"

@@ -46,13 +46,15 @@ class InstrumentationTestInstanceTest(unittest.TestCase):
         'command_line_flags',
         'device_flags_file',
         'strict_mode',
+        'use_apk_under_test_flags_file'
       ])
 
   def createFlagAttributesArgs(
       self, command_line_flags=None, device_flags_file=None,
-      strict_mode=None):
+      strict_mode=None, use_apk_under_test_flags_file=False):
     return self._FlagAttributesArgs(
-        command_line_flags, device_flags_file, strict_mode)
+        command_line_flags, device_flags_file, strict_mode,
+        use_apk_under_test_flags_file)
 
   def test_initializeFlagAttributes_commandLineFlags(self):
     o = self.createTestInstance()
@@ -652,7 +654,7 @@ class InstrumentationTestInstanceTest(unittest.TestCase):
     self.assertEquals(
         instrumentation_test_instance.GetUniqueTestName(
             test, sep='.'),
-        'org.chromium.TestA.testSimple with enable_features=abc')
+        'org.chromium.TestA.testSimple_with_enable_features=abc')
 
   def testGetTestNameWithoutParameterPostfix(self):
     test = {

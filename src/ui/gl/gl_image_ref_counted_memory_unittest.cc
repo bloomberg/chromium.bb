@@ -45,13 +45,13 @@ using GLImageTestTypes = testing::Types<
     GLImageRefCountedMemoryTestDelegate<gfx::BufferFormat::BGRX_8888>,
     GLImageRefCountedMemoryTestDelegate<gfx::BufferFormat::BGRA_8888>>;
 
-INSTANTIATE_TYPED_TEST_CASE_P(GLImageRefCountedMemory,
-                              GLImageTest,
-                              GLImageTestTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(GLImageRefCountedMemory,
+                               GLImageTest,
+                               GLImageTestTypes);
 
-INSTANTIATE_TYPED_TEST_CASE_P(GLImageRefCountedMemory,
-                              GLImageCopyTest,
-                              GLImageTestTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(GLImageRefCountedMemory,
+                               GLImageCopyTest,
+                               GLImageTestTypes);
 
 }  // namespace
 }  // namespace gl

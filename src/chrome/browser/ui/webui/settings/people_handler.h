@@ -22,17 +22,10 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/signin/core/browser/signin_buildflags.h"
 #include "components/sync/driver/sync_service_observer.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "services/identity/public/cpp/identity_manager.h"
 
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-#include "components/signin/core/browser/account_tracker_service.h"
-#endif
-
 class LoginUIService;
-
-namespace browser_sync {
-class ProfileSyncService;
-}  // namespace browser_sync
 
 namespace content {
 class WebUI;
@@ -43,6 +36,7 @@ enum class AccessPoint;
 }  // namespace signin_metrics
 
 namespace syncer {
+class SyncService;
 class SyncSetupInProgressHandle;
 }  // namespace syncer
 
@@ -51,11 +45,9 @@ namespace settings {
 class PeopleHandler : public SettingsPageUIHandler,
                       public identity::IdentityManager::Observer,
                       public SyncStartupTracker::Observer,
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-                      public AccountTrackerService::Observer,
-#endif
                       public LoginUIService::LoginUI,
-                      public syncer::SyncServiceObserver {
+                      public syncer::SyncServiceObserver,
+                      public content::WebContentsObserver {
  public:
   // TODO(tommycli): Remove these strings and instead use WebUIListener events.
   // These string constants are used from JavaScript (sync_browser_proxy.js).
@@ -68,25 +60,32 @@ class PeopleHandler : public SettingsPageUIHandler,
   explicit PeopleHandler(Profile* profile);
   ~PeopleHandler() override;
 
+ protected:
   // Terminates the sync setup flow.
   void CloseSyncSetup();
 
- protected:
   bool is_configuring_sync() const { return configuring_sync_; }
 
  private:
   friend class PeopleHandlerTest;
+  friend class PeopleHandlerTest_UnifiedConsentDisabled;
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest,
+                           DisplayConfigureWithEngineDisabledAndCancel);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest_UnifiedConsentDisabled,
                            DisplayConfigureWithEngineDisabledAndCancel);
   FRIEND_TEST_ALL_PREFIXES(
       PeopleHandlerTest,
       DisplayConfigureWithEngineDisabledAndCancelAfterSigninSuccess);
-  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest,
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest_UnifiedConsentDisabled,
                            DisplayConfigureWithEngineDisabledAndSigninFailed);
   FRIEND_TEST_ALL_PREFIXES(
       PeopleHandlerTest,
       DisplayConfigureWithEngineDisabledAndSyncStartupCompleted);
-  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, HandleSetupUIWhenSyncDisabled);
+  FRIEND_TEST_ALL_PREFIXES(
+      PeopleHandlerTest_UnifiedConsentDisabled,
+      DisplayConfigureWithEngineDisabledAndSyncStartupCompleted);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest_UnifiedConsentDisabled,
+                           HandleSetupUIWhenSyncDisabled);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest,
                            ShowSetupCustomPassphraseRequired);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, ShowSetupEncryptAll);
@@ -97,9 +96,11 @@ class PeopleHandler : public SettingsPageUIHandler,
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, ShowSetupSyncEverything);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest,
                            ShowSetupSyncForAllTypesIndividually);
-  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, ShowSigninOnAuthError);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest_UnifiedConsentDisabled,
+                           ShowSigninOnAuthError);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, ShowSyncSetup);
-  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, ShowSyncSetupWhenNotSignedIn);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest_UnifiedConsentDisabled,
+                           DontShowSyncSetupWhenNotSignedIn);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, TestSyncEverything);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, TestSyncAllManually);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, TestPassphraseStillRequired);
@@ -117,9 +118,15 @@ class PeopleHandler : public SettingsPageUIHandler,
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest,
                            AcquireSyncBlockerWhenLoadingSyncSettingsSubpage);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest, RestartSyncAfterDashboardClear);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest_UnifiedConsentDisabled,
+                           RestartSyncAfterDashboardClear);
   FRIEND_TEST_ALL_PREFIXES(
       PeopleHandlerTest,
       RestartSyncAfterDashboardClearWithStandaloneTransport);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest,
+                           DashboardClearWhileSettingsOpen_ConfirmSoon);
+  FRIEND_TEST_ALL_PREFIXES(PeopleHandlerTest,
+                           DashboardClearWhileSettingsOpen_ConfirmLater);
   FRIEND_TEST_ALL_PREFIXES(PeopleHandlerDiceUnifiedConsentTest,
                            StoredAccountsList);
 
@@ -136,28 +143,28 @@ class PeopleHandler : public SettingsPageUIHandler,
   void FocusUI() override;
 
   // IdentityManager::Observer implementation.
-  void OnPrimaryAccountSet(const AccountInfo& primary_account_info) override;
+  void OnPrimaryAccountSet(
+      const CoreAccountInfo& primary_account_info) override;
   void OnPrimaryAccountCleared(
-      const AccountInfo& previous_primary_account_info) override;
+      const CoreAccountInfo& previous_primary_account_info) override;
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+  void OnExtendedAccountInfoUpdated(const AccountInfo& info) override;
+  void OnExtendedAccountInfoRemoved(const AccountInfo& info) override;
+#endif
 
   // syncer::SyncServiceObserver implementation.
   void OnStateChanged(syncer::SyncService* sync) override;
 
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-  // AccountTrackerService::Observer implementation.
-  void OnAccountUpdated(const AccountInfo& info) override;
-  void OnAccountImageUpdated(const std::string& account_id,
-                             const gfx::Image& image) override;
-  void OnAccountRemoved(const AccountInfo& info) override;
-#endif
+  // content::WebContentsObserver implementation
+  void BeforeUnloadDialogCancelled() override;
 
   // Returns a newly created dictionary with a number of properties that
   // correspond to the status of sync.
-  std::unique_ptr<base::DictionaryValue> GetSyncStatusDictionary();
+  std::unique_ptr<base::DictionaryValue> GetSyncStatusDictionary() const;
 
-  // Helper routine that gets the ProfileSyncService associated with the parent
+  // Helper routine that gets the SyncService associated with the parent
   // profile.
-  browser_sync::ProfileSyncService* GetSyncService() const;
+  syncer::SyncService* GetSyncService() const;
 
   // Returns the LoginUIService for the parent profile.
   LoginUIService* GetLoginUIService() const;
@@ -196,7 +203,7 @@ class PeopleHandler : public SettingsPageUIHandler,
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   void HandleGetStoredAccounts(const base::ListValue* args);
   void HandleStartSyncingWithEmail(const base::ListValue* args);
-  std::unique_ptr<base::ListValue> GetStoredAccountsList();
+  base::Value GetStoredAccountsList();
 #endif
 
   // Displays spinner-only UI indicating that something is going on in the
@@ -224,12 +231,12 @@ class PeopleHandler : public SettingsPageUIHandler,
   bool IsProfileAuthNeededOrHasErrors();
 
   // If we're directly loading the sync setup page, we acquire a
-  // SetupInProgressHandle early in order to prevent a lapse in
-  // ProfileSyncService's "SetupInProgress" status. This lapse previously
-  // occured between when the sync confirmation dialog was closed and when the
-  // sync setup page hadn't yet fired the SyncSetupShowSetupUI event.
-  // InitializeSyncBlocker is responsible for checking if we're navigating to
-  // the setup page and acquiring the sync_blocker.
+  // SetupInProgressHandle early in order to prevent a lapse in SyncService's
+  // "SetupInProgress" status. This lapse previously occurred between when the
+  // sync confirmation dialog was closed and when the sync setup page hadn't yet
+  // fired the SyncSetupShowSetupUI event. InitializeSyncBlocker is responsible
+  // for checking if we're navigating to the setup page and acquiring the
+  // |sync_blocker_|.
   void InitializeSyncBlocker();
 
   // Weak pointer.
@@ -256,13 +263,7 @@ class PeopleHandler : public SettingsPageUIHandler,
   // Manages observer lifetimes.
   ScopedObserver<identity::IdentityManager, PeopleHandler>
       identity_manager_observer_;
-  ScopedObserver<browser_sync::ProfileSyncService, PeopleHandler>
-      sync_service_observer_;
-
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-  ScopedObserver<AccountTrackerService, PeopleHandler>
-      account_tracker_observer_;
-#endif
+  ScopedObserver<syncer::SyncService, PeopleHandler> sync_service_observer_;
 
 #if defined(OS_CHROMEOS)
   base::WeakPtrFactory<PeopleHandler> weak_factory_{this};

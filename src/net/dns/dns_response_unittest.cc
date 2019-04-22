@@ -4,8 +4,11 @@
 
 #include "net/dns/dns_response.h"
 
+#include <memory>
+
 #include "base/big_endian.h"
 #include "base/optional.h"
+#include "base/stl_util.h"
 #include "base/time/time.h"
 #include "net/base/address_list.h"
 #include "net/base/io_buffer.h"
@@ -65,14 +68,14 @@ TEST(DnsRecordParserTest, ReadName) {
   EXPECT_EQ("bar.example.com", out);
 
   // Parse name without storing it.
-  EXPECT_EQ(0x11u, parser.ReadName(data + 0x00, NULL));
-  EXPECT_EQ(0x1u, parser.ReadName(data + 0x10, NULL));
-  EXPECT_EQ(0x6u, parser.ReadName(data + 0x11, NULL));
-  EXPECT_EQ(0x2u, parser.ReadName(data + 0x17, NULL));
+  EXPECT_EQ(0x11u, parser.ReadName(data + 0x00, nullptr));
+  EXPECT_EQ(0x1u, parser.ReadName(data + 0x10, nullptr));
+  EXPECT_EQ(0x6u, parser.ReadName(data + 0x11, nullptr));
+  EXPECT_EQ(0x2u, parser.ReadName(data + 0x17, nullptr));
 
   // Check that it works even if initial position is different.
   parser = DnsRecordParser(data, sizeof(data), 0x12);
-  EXPECT_EQ(0x6u, parser.ReadName(data + 0x11, NULL));
+  EXPECT_EQ(0x6u, parser.ReadName(data + 0x11, nullptr));
 }
 
 TEST(DnsRecordParserTest, ReadNameFail) {
@@ -99,6 +102,93 @@ TEST(DnsRecordParserTest, ReadNameFail) {
   EXPECT_EQ(0u, parser.ReadName(data + 0x0a, &out));
   EXPECT_EQ(0u, parser.ReadName(data + 0x0c, &out));
   EXPECT_EQ(0u, parser.ReadName(data + 0x0e, &out));
+}
+
+// Returns an RFC 1034 style domain name with a length of |name_len|.
+// Also writes the expected dotted string representation into |dotted_str|,
+// which must be non-null.
+std::vector<uint8_t> BuildRfc1034Name(const size_t name_len,
+                                      std::string* dotted_str) {
+  CHECK(dotted_str != nullptr);
+  auto ChoosePrintableCharLambda = [](uint8_t n) { return n % 26 + 'A'; };
+  const size_t max_label_len = 63;
+  std::vector<uint8_t> data;
+
+  dotted_str->clear();
+  while (data.size() < name_len) {
+    // Write the null label representing the root node.
+    if (data.size() == name_len - 1) {
+      data.push_back(0);
+      break;
+    }
+
+    // Compute the size of the next label.
+    //
+    // Suppose |name_len| is 8 and |data.size()| is 4. We want |label_len| to be
+    // 2 so that we are correctly aligned to put 0 in the final position.
+    //
+    //    3  'A' 'B' 'C'  _   _   _   _
+    //    0   1   2   3   4   5   6   7
+    const size_t label_len =
+        std::min(name_len - data.size() - 2, max_label_len);
+    // Write the length octet
+    data.push_back(label_len);
+
+    // Write |label_len| bytes of label data
+    const size_t size_with_label = data.size() + label_len;
+    while (data.size() < size_with_label) {
+      const uint8_t chr = ChoosePrintableCharLambda(data.size());
+      data.push_back(chr);
+      dotted_str->push_back(chr);
+
+      CHECK(data.size() <= name_len);
+    }
+
+    // Write a trailing dot after every label
+    dotted_str->push_back('.');
+  }
+
+  // Omit the final dot
+  if (!dotted_str->empty())
+    dotted_str->pop_back();
+
+  CHECK(data.size() == name_len);
+  return data;
+}
+
+TEST(DnsRecordParserTest, ReadNameGoodLength) {
+  const size_t name_len_cases[] = {1, 10, 40, 250, 254, 255};
+
+  for (auto name_len : name_len_cases) {
+    std::string expected_name;
+    const std::vector<uint8_t> data_vector =
+        BuildRfc1034Name(name_len, &expected_name);
+    const uint8_t* data = data_vector.data();
+
+    DnsRecordParser parser(data, name_len, 0);
+    ASSERT_TRUE(parser.IsValid());
+
+    std::string out;
+    EXPECT_EQ(name_len, parser.ReadName(data, &out));
+    EXPECT_EQ(expected_name, out);
+  }
+}
+
+TEST(DnsRecordParserTest, ReadNameTooLongFail) {
+  const size_t name_len_cases[] = {256, 257, 258, 300, 10000};
+
+  for (auto name_len : name_len_cases) {
+    std::string expected_name;
+    const std::vector<uint8_t> data_vector =
+        BuildRfc1034Name(name_len, &expected_name);
+    const uint8_t* data = data_vector.data();
+
+    DnsRecordParser parser(data, name_len, 0);
+    ASSERT_TRUE(parser.IsValid());
+
+    std::string out;
+    EXPECT_EQ(0u, parser.ReadName(data, &out));
+  }
 }
 
 TEST(DnsRecordParserTest, ReadRecord) {
@@ -484,36 +574,44 @@ TEST(DnsResponseTest, ParseToAddressList) {
     int expected_ttl_sec;
   } cases[] = {
       {
-        kT0QuerySize,
-        kT0ResponseDatagram, arraysize(kT0ResponseDatagram),
-        kT0IpAddresses, arraysize(kT0IpAddresses),
-        kT0CanonName,
-        kT0TTL,
+          kT0QuerySize,
+          kT0ResponseDatagram,
+          base::size(kT0ResponseDatagram),
+          kT0IpAddresses,
+          base::size(kT0IpAddresses),
+          kT0CanonName,
+          kT0TTL,
       },
       {
-        kT1QuerySize,
-        kT1ResponseDatagram, arraysize(kT1ResponseDatagram),
-        kT1IpAddresses, arraysize(kT1IpAddresses),
-        kT1CanonName,
-        kT1TTL,
+          kT1QuerySize,
+          kT1ResponseDatagram,
+          base::size(kT1ResponseDatagram),
+          kT1IpAddresses,
+          base::size(kT1IpAddresses),
+          kT1CanonName,
+          kT1TTL,
       },
       {
-        kT2QuerySize,
-        kT2ResponseDatagram, arraysize(kT2ResponseDatagram),
-        kT2IpAddresses, arraysize(kT2IpAddresses),
-        kT2CanonName,
-        kT2TTL,
+          kT2QuerySize,
+          kT2ResponseDatagram,
+          base::size(kT2ResponseDatagram),
+          kT2IpAddresses,
+          base::size(kT2IpAddresses),
+          kT2CanonName,
+          kT2TTL,
       },
       {
-        kT3QuerySize,
-        kT3ResponseDatagram, arraysize(kT3ResponseDatagram),
-        kT3IpAddresses, arraysize(kT3IpAddresses),
-        kT3CanonName,
-        kT3TTL,
+          kT3QuerySize,
+          kT3ResponseDatagram,
+          base::size(kT3ResponseDatagram),
+          kT3IpAddresses,
+          base::size(kT3IpAddresses),
+          kT3CanonName,
+          kT3TTL,
       },
   };
 
-  for (size_t i = 0; i < arraysize(cases); ++i) {
+  for (size_t i = 0; i < base::size(cases); ++i) {
     const TestCase& t = cases[i];
     DnsResponse response(t.response_data, t.response_size, t.query_size);
     AddressList addr_list;
@@ -618,26 +716,26 @@ TEST(DnsResponseTest, ParseToAddressListFail) {
     size_t size;
     DnsResponse::Result expected_result;
   } cases[] = {
-    { kResponseTruncatedRecord, arraysize(kResponseTruncatedRecord),
-      DnsResponse::DNS_MALFORMED_RESPONSE },
-    { kResponseTruncatedCNAME, arraysize(kResponseTruncatedCNAME),
-      DnsResponse::DNS_MALFORMED_CNAME },
-    { kResponseNameMismatch, arraysize(kResponseNameMismatch),
-      DnsResponse::DNS_NAME_MISMATCH },
-    { kResponseNameMismatchInChain, arraysize(kResponseNameMismatchInChain),
-      DnsResponse::DNS_NAME_MISMATCH },
-    { kResponseSizeMismatch, arraysize(kResponseSizeMismatch),
-      DnsResponse::DNS_SIZE_MISMATCH },
-    { kResponseCNAMEAfterAddress, arraysize(kResponseCNAMEAfterAddress),
-      DnsResponse::DNS_CNAME_AFTER_ADDRESS },
-    // Not actually a failure, just an empty result.
-    { kResponseNoAddresses, arraysize(kResponseNoAddresses),
-      DnsResponse::DNS_PARSE_OK },
+      {kResponseTruncatedRecord, base::size(kResponseTruncatedRecord),
+       DnsResponse::DNS_MALFORMED_RESPONSE},
+      {kResponseTruncatedCNAME, base::size(kResponseTruncatedCNAME),
+       DnsResponse::DNS_MALFORMED_CNAME},
+      {kResponseNameMismatch, base::size(kResponseNameMismatch),
+       DnsResponse::DNS_NAME_MISMATCH},
+      {kResponseNameMismatchInChain, base::size(kResponseNameMismatchInChain),
+       DnsResponse::DNS_NAME_MISMATCH},
+      {kResponseSizeMismatch, base::size(kResponseSizeMismatch),
+       DnsResponse::DNS_SIZE_MISMATCH},
+      {kResponseCNAMEAfterAddress, base::size(kResponseCNAMEAfterAddress),
+       DnsResponse::DNS_CNAME_AFTER_ADDRESS},
+      // Not actually a failure, just an empty result.
+      {kResponseNoAddresses, base::size(kResponseNoAddresses),
+       DnsResponse::DNS_PARSE_OK},
   };
 
   const size_t kQuerySize = 12 + 7;
 
-  for (size_t i = 0; i < arraysize(cases); ++i) {
+  for (size_t i = 0; i < base::size(cases); ++i) {
     const TestCase& t = cases[i];
 
     DnsResponse response(t.data, t.size, kQuerySize);
@@ -673,7 +771,8 @@ TEST(DnsResponseWriteTest, SingleARecordAnswer) {
   answer.SetOwnedRdata(std::string("\xc0\xa8\x00\x01", 4));
   std::vector<DnsResourceRecord> answers(1, answer);
   DnsResponse response(0x1234 /* response_id */, true /* is_authoritative*/,
-                       answers, {} /* additional records */, base::nullopt);
+                       answers, {} /* authority_records */,
+                       {} /* additional records */, base::nullopt);
   ASSERT_NE(nullptr, response.io_buffer());
   EXPECT_TRUE(response.IsValid());
   std::string expected_response(response_data, sizeof(response_data));
@@ -707,7 +806,8 @@ TEST(DnsResponseWriteTest, SingleARecordAnswerWithFinalDotInName) {
   answer.SetOwnedRdata(std::string("\xc0\xa8\x00\x01", 4));
   std::vector<DnsResourceRecord> answers(1, answer);
   DnsResponse response(0x1234 /* response_id */, true /* is_authoritative*/,
-                       answers, {} /* additional records */, base::nullopt);
+                       answers, {} /* authority_records */,
+                       {} /* additional records */, base::nullopt);
   ASSERT_NE(nullptr, response.io_buffer());
   EXPECT_TRUE(response.IsValid());
   std::string expected_response(response_data, sizeof(response_data));
@@ -753,7 +853,8 @@ TEST(DnsResponseWriteTest, SingleARecordAnswerWithQuestion) {
   answer.SetOwnedRdata(std::string("\xc0\xa8\x00\x01", 4));
   std::vector<DnsResourceRecord> answers(1, answer);
   DnsResponse response(0x1234 /* id */, true /* is_authoritative*/, answers,
-                       {} /* additional records */, query);
+                       {} /* authority_records */, {} /* additional records */,
+                       query);
   ASSERT_NE(nullptr, response.io_buffer());
   EXPECT_TRUE(response.IsValid());
   std::string expected_response(response_data, sizeof(response_data));
@@ -816,7 +917,8 @@ TEST(DnsResponseWriteTest,
   answer.SetOwnedRdata(std::string("\xc0\xa8\x00\x01", 4));
   std::vector<DnsResourceRecord> answers(1, answer);
   DnsResponse response(0x1234 /* id */, true /* is_authoritative*/, answers,
-                       {} /* additional records */, query);
+                       {} /* authority_records */, {} /* additional records */,
+                       query);
   ASSERT_NE(nullptr, response.io_buffer());
   EXPECT_TRUE(response.IsValid());
   std::string expected_response(response_data, sizeof(response_data));
@@ -852,7 +954,8 @@ TEST(DnsResponseWriteTest, SingleQuadARecordAnswer) {
       "\xfd\x12\x34\x56\x78\x9a\x00\x01\x00\x00\x00\x00\x00\x00\x00\x01", 16));
   std::vector<DnsResourceRecord> answers(1, answer);
   DnsResponse response(0x1234 /* id */, true /* is_authoritative*/, answers,
-                       {} /* additional records */, base::nullopt);
+                       {} /* authority_records */, {} /* additional records */,
+                       base::nullopt);
   ASSERT_NE(nullptr, response.io_buffer());
   EXPECT_TRUE(response.IsValid());
   std::string expected_response(response_data, sizeof(response_data));
@@ -915,7 +1018,7 @@ TEST(DnsResponseWriteTest,
   additional_record.SetOwnedRdata(std::string("\xc0\x0c\x00\x01\x40", 5));
   std::vector<DnsResourceRecord> additional_records(1, additional_record);
   DnsResponse response(0x1234 /* id */, true /* is_authoritative*/, answers,
-                       additional_records, query);
+                       {} /* authority_records */, additional_records, query);
   ASSERT_NE(nullptr, response.io_buffer());
   EXPECT_TRUE(response.IsValid());
   std::string expected_response(response_data, sizeof(response_data));
@@ -966,6 +1069,42 @@ TEST(DnsResponseWriteTest, TwoAnswersWithAAndQuadARecords) {
   answers[0] = answer1;
   answers[1] = answer2;
   DnsResponse response(0x1234 /* id */, true /* is_authoritative*/, answers,
+                       {} /* authority_records */, {} /* additional records */,
+                       base::nullopt);
+  ASSERT_NE(nullptr, response.io_buffer());
+  EXPECT_TRUE(response.IsValid());
+  std::string expected_response(response_data, sizeof(response_data));
+  std::string actual_response(response.io_buffer()->data(),
+                              response.io_buffer_size());
+  EXPECT_EQ(expected_response, actual_response);
+}
+
+TEST(DnsResponseWriteTest, AnswerWithAuthorityRecord) {
+  const char response_data[] = {
+      0x12, 0x35,  // ID
+      0x84, 0x00,  // flags, response with authoritative answer
+      0x00, 0x00,  // number of questions
+      0x00, 0x00,  // number of answer rr
+      0x00, 0x01,  // number of name server rr
+      0x00, 0x00,  // number of additional rr
+      0x03, 'w',  'w',  'w',  0x07, 'e', 'x', 'a',
+      'm',  'p',  'l',  'e',  0x03, 'c', 'o', 'm',
+      0x00,                    // null label
+      0x00, 0x01,              // type A Record
+      0x00, 0x01,              // class IN
+      0x00, 0x00, 0x00, 0x78,  // TTL, 120 seconds
+      0x00, 0x04,              // rdlength, 32 bits
+      0xc0, 0xa8, 0x00, 0x01,  // 192.168.0.1
+  };
+  DnsResourceRecord record;
+  record.name = "www.example.com";
+  record.type = dns_protocol::kTypeA;
+  record.klass = dns_protocol::kClassIN;
+  record.ttl = 120;  // 120 seconds.
+  record.SetOwnedRdata(std::string("\xc0\xa8\x00\x01", 4));
+  std::vector<DnsResourceRecord> authority_records(1, record);
+  DnsResponse response(0x1235 /* response_id */, true /* is_authoritative*/,
+                       {} /* answers */, authority_records,
                        {} /* additional records */, base::nullopt);
   ASSERT_NE(nullptr, response.io_buffer());
   EXPECT_TRUE(response.IsValid());
@@ -973,6 +1112,52 @@ TEST(DnsResponseWriteTest, TwoAnswersWithAAndQuadARecords) {
   std::string actual_response(response.io_buffer()->data(),
                               response.io_buffer_size());
   EXPECT_EQ(expected_response, actual_response);
+}
+
+TEST(DnsResponseWriteTest, AnswerWithRcode) {
+  const char response_data[] = {
+      0x12, 0x12,  // ID
+      0x80, 0x03,  // flags (response with non-existent domain)
+      0x00, 0x00,  // number of questions
+      0x00, 0x00,  // number of answer rr
+      0x00, 0x00,  // number of name server rr
+      0x00, 0x00,  // number of additional rr
+  };
+  DnsResponse response(0x1212 /* response_id */, false /* is_authoritative*/,
+                       {} /* answers */, {} /* authority_records */,
+                       {} /* additional records */, base::nullopt,
+                       dns_protocol::kRcodeNXDOMAIN);
+  ASSERT_NE(nullptr, response.io_buffer());
+  EXPECT_TRUE(response.IsValid());
+  std::string expected_response(response_data, sizeof(response_data));
+  std::string actual_response(response.io_buffer()->data(),
+                              response.io_buffer_size());
+  EXPECT_EQ(expected_response, actual_response);
+  EXPECT_EQ(dns_protocol::kRcodeNXDOMAIN, response.rcode());
+}
+
+// CNAME answers are always allowed for any question.
+TEST(DnsResponseWriteTest, AAAAQuestionAndCnameAnswer) {
+  const std::string kName = "www.example.com";
+  std::string dns_name;
+  ASSERT_TRUE(DNSDomainFromDot(kName, &dns_name));
+
+  DnsResourceRecord answer;
+  answer.name = kName;
+  answer.type = dns_protocol::kTypeCNAME;
+  answer.klass = dns_protocol::kClassIN;
+  answer.ttl = 120;  // 120 seconds.
+  answer.SetOwnedRdata(dns_name);
+  std::vector<DnsResourceRecord> answers(1, answer);
+
+  base::Optional<DnsQuery> query(base::in_place, 114 /* id */, dns_name,
+                                 dns_protocol::kTypeAAAA);
+
+  DnsResponse response(114 /* response_id */, true /* is_authoritative*/,
+                       answers, {} /* authority_records */,
+                       {} /* additional records */, query);
+
+  EXPECT_TRUE(response.IsValid());
 }
 
 TEST(DnsResponseWriteTest, WrittenResponseCanBeParsed) {
@@ -992,7 +1177,8 @@ TEST(DnsResponseWriteTest, WrittenResponseCanBeParsed) {
   additional_record.SetOwnedRdata(std::string("\xc0\x0c\x00\x01\x04", 5));
   std::vector<DnsResourceRecord> additional_records(1, additional_record);
   DnsResponse response(0x1234 /* response_id */, true /* is_authoritative*/,
-                       answers, additional_records, base::nullopt);
+                       answers, {} /* authority_records */, additional_records,
+                       base::nullopt);
   ASSERT_NE(nullptr, response.io_buffer());
   EXPECT_TRUE(response.IsValid());
   EXPECT_EQ(1u, response.answer_count());

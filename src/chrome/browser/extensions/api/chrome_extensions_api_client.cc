@@ -33,9 +33,12 @@
 #include "chrome/browser/guest_view/mime_handler_view/chrome_mime_handler_view_guest_delegate.h"
 #include "chrome/browser/guest_view/web_view/chrome_web_view_guest_delegate.h"
 #include "chrome/browser/guest_view/web_view/chrome_web_view_permission_helper_delegate.h"
+#include "chrome/browser/performance_manager/performance_manager.h"
+#include "chrome/browser/performance_manager/performance_manager_tab_helper.h"
 #include "chrome/browser/search/instant_io_context.h"
 #include "chrome/browser/ui/pdf/chrome_pdf_web_contents_helper_client.h"
 #include "chrome/browser/ui/webui/devtools_ui.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/pdf/browser/pdf_web_contents_helper.h"
 #include "components/signin/core/browser/signin_header_helper.h"
@@ -93,13 +96,16 @@ void ChromeExtensionsAPIClient::AttachWebContentsHelpers(
   printing::InitializePrinting(web_contents);
 #endif
   pdf::PDFWebContentsHelper::CreateForWebContentsWithClient(
-      web_contents, std::unique_ptr<pdf::PDFWebContentsHelperClient>(
-                        new ChromePDFWebContentsHelperClient()));
+      web_contents, std::make_unique<ChromePDFWebContentsHelperClient>());
 
   data_use_measurement::DataUseWebContentsObserver::CreateForWebContents(
       web_contents);
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       web_contents);
+  if (performance_manager::PerformanceManager::GetInstance()) {
+    performance_manager::PerformanceManagerTabHelper::CreateForWebContents(
+        web_contents);
+  }
 }
 
 bool ChromeExtensionsAPIClient::ShouldHideResponseHeader(
@@ -120,10 +126,9 @@ bool ChromeExtensionsAPIClient::ShouldHideBrowserNetworkRequest(
     const WebRequestInfo& request) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  // TODO(crbug.com/890006): Determine if the code here can be cleaned up
-  // since browser initiated non-navigation requests are now hidden from
-  // extensions.
-
+  // Note: browser initiated non-navigation requests are hidden from extensions.
+  // But we do still need to protect some sensitive sub-frame navigation
+  // requests.
   // Exclude main frame navigation requests.
   bool is_browser_request = request.render_process_id == -1 &&
                             request.type != content::RESOURCE_TYPE_MAIN_FRAME;
@@ -137,6 +142,12 @@ bool ChromeExtensionsAPIClient::ShouldHideBrowserNetworkRequest(
       (is_browser_request &&
        request.initiator ==
            url::Origin::Create(GURL(chrome::kChromeUINewTabURL)));
+
+  // Hide requests made by the browser on behalf of the local NTP.
+  is_sensitive_request |=
+      (is_browser_request &&
+       request.initiator ==
+           url::Origin::Create(GURL(chrome::kChromeSearchLocalNtpUrl)));
 
   // Hide requests made by the NTP Instant renderer.
   is_sensitive_request |= InstantIOContext::IsInstantProcess(

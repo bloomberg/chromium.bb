@@ -29,8 +29,8 @@ function getLog() {
 }
 
 // The following functions are based on
-// WebKit/LayoutTests/fast/js/resources/js-test-pre.js
-// so that the tests will look similar to the existing layout tests.
+// blink/web_tests/resources/js-test.js
+// so that the tests will look similar to the existing web tests.
 function stringify(v) {
   if (v === 0 && 1/v < 0)
     return "-0";

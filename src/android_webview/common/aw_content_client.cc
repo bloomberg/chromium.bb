@@ -8,6 +8,7 @@
 #include "android_webview/common/aw_resource.h"
 #include "android_webview/common/crash_reporter/crash_keys.h"
 #include "android_webview/common/url_constants.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/crash_logging.h"
 #include "base/no_destructor.h"
@@ -16,7 +17,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/simple_connection_filter.h"
-#include "content/public/common/user_agent.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/config/gpu_util.h"
 #include "ipc/ipc_message.h"
@@ -26,34 +26,11 @@
 
 namespace android_webview {
 
-std::string GetProduct() {
-  return version_info::GetProductNameAndVersionForUserAgent();
-}
-
-std::string GetUserAgent() {
-  // "Version/4.0" had been hardcoded in the legacy WebView.
-  std::string product = "Version/4.0 " + GetProduct();
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kUseMobileUserAgent)) {
-    product += " Mobile";
-  }
-  return content::BuildUserAgentFromProductAndExtraOSInfo(
-      product, "; wv", true /* include_android_build_number */);
-}
-
 void AwContentClient::AddAdditionalSchemes(Schemes* schemes) {
   schemes->local_schemes.push_back(url::kContentScheme);
   schemes->secure_schemes.push_back(
       android_webview::kAndroidWebViewVideoPosterScheme);
   schemes->allow_non_standard_schemes_in_origins = true;
-}
-
-std::string AwContentClient::GetProduct() const {
-  return android_webview::GetProduct();
-}
-
-std::string AwContentClient::GetUserAgent() const {
-  return android_webview::GetUserAgent();
 }
 
 base::string16 AwContentClient::GetLocalizedString(int message_id) const {
@@ -69,6 +46,12 @@ base::StringPiece AwContentClient::GetDataResource(
   // Android WebView.
   return ui::ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(
       resource_id, scale_factor);
+}
+
+base::RefCountedMemory* AwContentClient::GetDataResourceBytes(
+    int resource_id) const {
+  return ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
+      resource_id);
 }
 
 bool AwContentClient::CanSendWhileSwappedOut(const IPC::Message* message) {

@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/clock.h"
@@ -153,7 +154,7 @@ const MockTransaction* FindMockTransaction(const GURL& url) {
     return it->second;
 
   // look for builtins:
-  for (size_t i = 0; i < arraysize(kBuiltinMockTransactions); ++i) {
+  for (size_t i = 0; i < base::size(kBuiltinMockTransactions); ++i) {
     if (url == GURL(kBuiltinMockTransactions[i]->url))
       return kBuiltinMockTransactions[i];
   }
@@ -586,11 +587,11 @@ int MockNetworkLayer::CreateTransaction(
 }
 
 HttpCache* MockNetworkLayer::GetCache() {
-  return NULL;
+  return nullptr;
 }
 
 HttpNetworkSession* MockNetworkLayer::GetSession() {
-  return NULL;
+  return nullptr;
 }
 
 void MockNetworkLayer::SetClock(base::Clock* clock) {
@@ -610,10 +611,9 @@ base::Time MockNetworkLayer::Now() {
 int ReadTransaction(HttpTransaction* trans, std::string* result) {
   int rv;
 
-  TestCompletionCallback callback;
-
   std::string content;
   do {
+    TestCompletionCallback callback;
     scoped_refptr<IOBuffer> buf = base::MakeRefCounted<IOBuffer>(256);
     rv = trans->Read(buf.get(), 256, callback.callback());
     if (rv == ERR_IO_PENDING) {

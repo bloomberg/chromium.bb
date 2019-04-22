@@ -44,7 +44,7 @@ ClearButtonElement* ClearButtonElement::Create(
     Document& document,
     ClearButtonOwner& clear_button_owner) {
   ClearButtonElement* element =
-      new ClearButtonElement(document, clear_button_owner);
+      MakeGarbageCollected<ClearButtonElement>(document, clear_button_owner);
   element->SetShadowPseudoId(AtomicString("-webkit-clear-button"));
   element->setAttribute(kIdAttr, shadow_element_names::ClearButton());
   return element;
@@ -83,7 +83,7 @@ bool ClearButtonElement::IsClearButtonElement() const {
   return true;
 }
 
-void ClearButtonElement::Trace(blink::Visitor* visitor) {
+void ClearButtonElement::Trace(Visitor* visitor) {
   visitor->Trace(clear_button_owner_);
   HTMLDivElement::Trace(visitor);
 }

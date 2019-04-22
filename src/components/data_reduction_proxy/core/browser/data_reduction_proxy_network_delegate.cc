@@ -412,7 +412,6 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendHeadersInternal(
   }
 
   DCHECK(data);
-  MaybeAddBrotliToAcceptEncodingHeader(proxy_info, headers, *request);
 
   data_reduction_proxy_request_options_->AddRequestHeader(headers, page_id);
 
@@ -512,7 +511,11 @@ void DataReductionProxyNetworkDelegate::OnHeadersReceivedInternal(
 
   if (request->was_cached() && request->url().SchemeIsHTTPOrHTTPS() &&
       !request->url().SchemeIsCryptographic() &&
-      original_response_headers->HasHeader(chrome_proxy_header())) {
+      (original_response_headers->HasHeader(chrome_proxy_header()) ||
+       // Check for via header since Chrome-Proxy header maybe missing in
+       // streamed responses.
+       data_reduction_proxy::HasDataReductionProxyViaHeader(
+           *original_response_headers, nullptr))) {
     DataReductionProxyData* data =
         DataReductionProxyData::GetDataAndCreateIfNecessary(request);
     data->set_was_cached_data_reduction_proxy_response(true);
@@ -572,8 +575,7 @@ void DataReductionProxyNetworkDelegate::CalculateAndRecordDataUsage(
           request),
       request.traffic_annotation().unique_id_hash_code);
 
-  if (params::IsDataSaverSiteBreakdownUsingPLMEnabled() &&
-      data_reduction_proxy_io_data_ &&
+  if (data_reduction_proxy_io_data_ &&
       data_reduction_proxy_io_data_->resource_type_provider() &&
       data_reduction_proxy_io_data_->resource_type_provider()
           ->IsNonContentInitiatedRequest(request)) {
@@ -664,63 +666,6 @@ bool DataReductionProxyNetworkDelegate::WasEligibleWithoutHoldback(
   return util::ApplyProxyConfigToProxyInfo(proxy_config, proxy_retry_info,
                                            request.url(),
                                            &data_reduction_proxy_info);
-}
-
-void DataReductionProxyNetworkDelegate::MaybeAddBrotliToAcceptEncodingHeader(
-    const net::ProxyInfo& proxy_info,
-    net::HttpRequestHeaders* request_headers,
-    const net::URLRequest& request) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  if (base::FeatureList::IsEnabled(
-          features::kDataReductionProxyBrotliHoldback)) {
-    return;
-  }
-
-  // This method should be called only when the resolved proxy was a data
-  // saver proxy.
-  DCHECK(data_reduction_proxy_config_->FindConfiguredDataReductionProxy(
-      proxy_info.proxy_server()));
-  DCHECK(request.url().is_valid());
-  DCHECK(!request.url().SchemeIsCryptographic());
-  DCHECK(request.url().SchemeIsHTTPOrHTTPS());
-
-  static const char kBrotli[] = "br";
-
-  if (!request.context()->enable_brotli()) {
-    // Verify that Brotli is enabled globally.
-    return;
-  }
-
-  if (!params::IsBrotliAcceptEncodingEnabled()) {
-    // Verify that Brotli is enabled for data reduction proxy.
-    return;
-  }
-
-  if (!proxy_info.proxy_server().is_https() &&
-      !proxy_info.proxy_server().is_quic()) {
-    // Brotli encoding can be used only when the proxy server is a secure proxy
-    // server.
-    return;
-  }
-
-  if (!request_headers->HasHeader(net::HttpRequestHeaders::kAcceptEncoding))
-    return;
-
-  std::string header_value;
-  request_headers->GetHeader(net::HttpRequestHeaders::kAcceptEncoding,
-                             &header_value);
-
-  // Only add Brotli to the header if it is not already present.
-  std::set<std::string> header_entry_set;
-  if (net::HttpUtil::ParseAcceptEncoding(header_value, &header_entry_set) &&
-      header_entry_set.find(kBrotli) == header_entry_set.end()) {
-    if (!header_value.empty())
-      header_value += ", ";
-    header_value += kBrotli;
-    request_headers->SetHeader(net::HttpRequestHeaders::kAcceptEncoding,
-                               header_value);
-  }
 }
 
 void DataReductionProxyNetworkDelegate::MaybeAddChromeProxyECTHeader(

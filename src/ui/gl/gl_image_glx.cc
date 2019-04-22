@@ -146,6 +146,10 @@ gfx::Size GLImageGLX::GetSize() {
 
 unsigned GLImageGLX::GetInternalFormat() { return internalformat_; }
 
+GLImageGLX::BindOrCopy GLImageGLX::ShouldBindOrCopy() {
+  return BIND;
+}
+
 bool GLImageGLX::BindTexImage(unsigned target) {
   if (!glx_pixmap_)
     return false;
@@ -166,6 +170,7 @@ void GLImageGLX::ReleaseTexImage(unsigned target) {
 }
 
 bool GLImageGLX::CopyTexImage(unsigned target) {
+  NOTREACHED();
   return false;
 }
 

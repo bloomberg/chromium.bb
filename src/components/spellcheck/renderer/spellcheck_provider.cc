@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
+#include "build/build_config.h"
 #include "components/spellcheck/common/spellcheck.mojom.h"
 #include "components/spellcheck/common/spellcheck_result.h"
 #include "components/spellcheck/renderer/spellcheck.h"
@@ -144,15 +145,18 @@ void SpellCheckProvider::RequestTextChecking(
 }
 
 void SpellCheckProvider::FocusedNodeChanged(const blink::WebNode& unused) {
-#if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+#if defined(OS_ANDROID)
+  if (!spell_check_host_.is_bound())
+    return;
+
   WebLocalFrame* frame = render_frame()->GetWebFrame();
   WebElement element = frame->GetDocument().IsNull()
                            ? WebElement()
                            : frame->GetDocument().FocusedElement();
   bool enabled = !element.IsNull() && element.IsEditable();
-  bool checked = enabled && IsSpellCheckingEnabled();
-  GetSpellCheckHost().ToggleSpellCheck(enabled, checked);
-#endif  // USE_BROWSER_SPELLCHECKER
+  if (!enabled)
+    GetSpellCheckHost().DisconnectSessionBridge();
+#endif  // defined(OS_ANDROID)
 }
 
 bool SpellCheckProvider::IsSpellCheckingEnabled() const {
@@ -161,8 +165,8 @@ bool SpellCheckProvider::IsSpellCheckingEnabled() const {
 
 void SpellCheckProvider::CheckSpelling(
     const WebString& text,
-    int& offset,
-    int& length,
+    size_t& offset,
+    size_t& length,
     WebVector<WebString>* optional_suggestions) {
   base::string16 word = text.Utf16();
   std::vector<base::string16> suggestions;
@@ -176,9 +180,11 @@ void SpellCheckProvider::CheckSpelling(
         suggestions.begin(), suggestions.end(), web_suggestions.begin(),
         [](const base::string16& s) { return WebString::FromUTF16(s); });
     *optional_suggestions = web_suggestions;
-    UMA_HISTOGRAM_COUNTS_1M("SpellCheck.api.check.suggestions", word.size());
+    UMA_HISTOGRAM_COUNTS_1M("SpellCheck.api.check.suggestions",
+                            base::saturated_cast<int>(word.size()));
   } else {
-    UMA_HISTOGRAM_COUNTS_1M("SpellCheck.api.check", word.size());
+    UMA_HISTOGRAM_COUNTS_1M("SpellCheck.api.check",
+                            base::saturated_cast<int>(word.size()));
     // If optional_suggestions is not requested, the API is called
     // for marking.  So we use this for counting markable words.
     GetSpellCheckHost().NotifyChecked(word, 0 < length);
@@ -189,15 +195,8 @@ void SpellCheckProvider::RequestCheckingOfText(
     const WebString& text,
     WebTextCheckingCompletion* completion) {
   RequestTextChecking(text.Utf16(), completion);
-  UMA_HISTOGRAM_COUNTS_1M("SpellCheck.api.async", text.length());
-}
-
-void SpellCheckProvider::CancelAllPendingRequests() {
-  for (WebTextCheckCompletions::iterator iter(&text_check_completions_);
-       !iter.IsAtEnd(); iter.Advance()) {
-    iter.GetCurrentValue()->DidCancelCheckingText();
-  }
-  text_check_completions_.Clear();
+  UMA_HISTOGRAM_COUNTS_1M("SpellCheck.api.async",
+                          base::saturated_cast<int>(text.length()));
 }
 
 #if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
@@ -234,11 +233,10 @@ void SpellCheckProvider::OnRespondSpellingService(
 }
 #endif
 
-bool SpellCheckProvider::HasWordCharacters(
-    const base::string16& text,
-    int index) const {
+bool SpellCheckProvider::HasWordCharacters(const base::string16& text,
+                                           size_t index) const {
   const base::char16* data = text.data();
-  int length = text.length();
+  size_t length = text.length();
   while (index < length) {
     uint32_t code = 0;
     U16_NEXT(data, index, length, code);

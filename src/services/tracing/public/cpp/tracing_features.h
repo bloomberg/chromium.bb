@@ -18,6 +18,9 @@ namespace features {
 extern const COMPONENT_EXPORT(TRACING_CPP) base::Feature
     kTracingPerfettoBackend;
 
+extern const COMPONENT_EXPORT(TRACING_CPP) base::Feature
+    kTracingServiceInProcess;
+
 }  // namespace features
 
 namespace tracing {

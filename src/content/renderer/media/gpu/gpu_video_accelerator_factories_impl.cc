@@ -136,9 +136,9 @@ void GpuVideoAcceleratorFactoriesImpl::BindOnTaskRunner(
 }
 
 void GpuVideoAcceleratorFactoriesImpl::OnSupportedDecoderConfigs(
-    std::vector<media::mojom::SupportedVideoDecoderConfigPtr>
-        supported_configs) {
-  supported_decoder_configs_ = std::move(supported_configs);
+    const std::vector<media::SupportedVideoDecoderConfig>& supported_configs) {
+  base::AutoLock lock(supported_decoder_configs_lock_);
+  supported_decoder_configs_ = supported_configs;
   video_decoder_.reset();
 }
 
@@ -191,24 +191,17 @@ int32_t GpuVideoAcceleratorFactoriesImpl::GetCommandBufferRouteId() {
 
 bool GpuVideoAcceleratorFactoriesImpl::IsDecoderConfigSupported(
     const media::VideoDecoderConfig& config) {
+  base::AutoLock lock(supported_decoder_configs_lock_);
+
   // If GetSupportedConfigs() has not completed (or was never started), report
   // that all configs are supported. Clients will find out that configs are not
   // supported when VideoDecoder::Initialize() fails.
   if (!supported_decoder_configs_)
     return true;
 
-  for (const media::mojom::SupportedVideoDecoderConfigPtr& supported :
-       *supported_decoder_configs_) {
-    if (config.profile() >= supported->profile_min &&
-        config.profile() <= supported->profile_max &&
-        config.coded_size().width() >= supported->coded_size_min.width() &&
-        config.coded_size().width() <= supported->coded_size_max.width() &&
-        config.coded_size().height() >= supported->coded_size_min.height() &&
-        config.coded_size().height() <= supported->coded_size_max.height() &&
-        (config.is_encrypted() ? supported->allow_encrypted
-                               : !supported->require_encrypted)) {
+  for (const auto& supported : *supported_decoder_configs_) {
+    if (supported.Matches(config))
       return true;
-    }
   }
   return false;
 }
@@ -216,8 +209,7 @@ bool GpuVideoAcceleratorFactoriesImpl::IsDecoderConfigSupported(
 std::unique_ptr<media::VideoDecoder>
 GpuVideoAcceleratorFactoriesImpl::CreateVideoDecoder(
     media::MediaLog* media_log,
-    const media::RequestOverlayInfoCB& request_overlay_info_cb,
-    const gfx::ColorSpace& target_color_space) {
+    const media::RequestOverlayInfoCB& request_overlay_info_cb) {
   DCHECK(video_accelerator_enabled_);
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(interface_factory_.is_bound());
@@ -230,12 +222,12 @@ GpuVideoAcceleratorFactoriesImpl::CreateVideoDecoder(
     interface_factory_->CreateVideoDecoder(mojo::MakeRequest(&video_decoder));
     return std::make_unique<media::MojoVideoDecoder>(
         task_runner_, this, media_log, std::move(video_decoder),
-        request_overlay_info_cb, target_color_space);
+        request_overlay_info_cb, rendering_color_space_);
   }
 #endif  // BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)
 
   return std::make_unique<media::GpuVideoDecoder>(
-      this, request_overlay_info_cb, target_color_space, media_log);
+      this, request_overlay_info_cb, rendering_color_space_, media_log);
 }
 
 std::unique_ptr<media::VideoDecodeAccelerator>
@@ -378,7 +370,7 @@ bool GpuVideoAcceleratorFactoriesImpl::ShouldUseGpuMemoryBuffersForVideoFrames(
 unsigned GpuVideoAcceleratorFactoriesImpl::ImageTextureTarget(
     gfx::BufferFormat format) {
   DCHECK(context_provider_);
-  return gpu::GetBufferTextureTarget(gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
+  return gpu::GetBufferTextureTarget(gfx::BufferUsage::SCANOUT_CPU_READ_WRITE,
                                      format,
                                      context_provider_->ContextCapabilities());
 }
@@ -449,6 +441,17 @@ gpu::gles2::GLES2Interface* GpuVideoAcceleratorFactoriesImpl::ContextGL() {
   return CheckContextLost() ? nullptr : context_provider_->ContextGL();
 }
 
+gpu::SharedImageInterface*
+GpuVideoAcceleratorFactoriesImpl::SharedImageInterface() {
+  return CheckContextLost() ? nullptr
+                            : context_provider_->SharedImageInterface();
+}
+
+gpu::GpuMemoryBufferManager*
+GpuVideoAcceleratorFactoriesImpl::GpuMemoryBufferManager() {
+  return gpu_memory_buffer_manager_;
+}
+
 std::unique_ptr<base::SharedMemory>
 GpuVideoAcceleratorFactoriesImpl::CreateSharedMemory(size_t size) {
   std::unique_ptr<base::SharedMemory> mem(
@@ -479,6 +482,12 @@ GpuVideoAcceleratorFactoriesImpl::GetVideoEncodeAcceleratorSupportedProfiles() {
 scoped_refptr<ws::ContextProviderCommandBuffer>
 GpuVideoAcceleratorFactoriesImpl::GetMediaContextProvider() {
   return CheckContextLost() ? nullptr : context_provider_;
+}
+
+gpu::ContextSupport*
+GpuVideoAcceleratorFactoriesImpl::GetMediaContextProviderContextSupport() {
+  auto context_provider = GetMediaContextProvider();
+  return context_provider ? context_provider->ContextSupport() : nullptr;
 }
 
 void GpuVideoAcceleratorFactoriesImpl::SetRenderingColorSpace(

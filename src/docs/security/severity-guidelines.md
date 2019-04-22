@@ -16,8 +16,7 @@ in a controlled manner (e.g., with a ```__debugBreak```) when memory is
 exhausted or in other exceptional circumstances.
 
 
-<a name="TOC-Critical-severity"></a>
-## Critical severity
+## Critical severity {#TOC-Critical-severity}
 
 Critical severity issues allow an attacker run arbitrary code on the underlying
 platform with the user's privileges.
@@ -44,8 +43,7 @@ Note that the individual bugs that make up the chain will have lower severity
 ratings.
 
 
-<a name="TOC-High-severity"></a>
-## High severity
+## High severity {#TOC-High-severity}
 
 High severity vulnerabilities allow an attacker to execute code in the context
 of, or otherwise impersonate other origins. Bugs which would normally be
@@ -81,8 +79,7 @@ compromised renderer ([377392](https://crbug.com/377392)).
 interaction, such as granting a permission ([455735](https://crbug.com/455735)).
 
 
-<a name="TOC-Medium-severity"></a>
-## Medium severity
+## Medium severity {#TOC-Medium-severity}
 
 Medium severity bugs allow attackers to read or modify limited amounts of
 information, or are not harmful on their own but potentially harmful when
@@ -122,8 +119,7 @@ mitigating factors ([265221](https://crbug.com/265221)).
 interaction, such as dragging an object ([303772](https://crbug.com/303772)).
 
 
-<a name="TOC-Low-severity"></a>
-## Low severity
+## Low severity {#TOC-Low-severity}
 
 Low severity vulnerabilities are usually bugs that would normally be a higher
 severity, but which have extreme mitigating factors or highly limited scope.

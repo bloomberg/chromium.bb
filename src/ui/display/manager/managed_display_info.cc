@@ -17,6 +17,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "ui/display/display.h"
+#include "ui/display/display_features.h"
 #include "ui/display/display_switches.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/geometry/size_f.h"
@@ -118,9 +119,20 @@ gfx::Size ManagedDisplayMode::GetSizeInDIP(bool is_internal) const {
 }
 
 bool ManagedDisplayMode::IsEquivalent(const ManagedDisplayMode& other) const {
+  if (display::features::IsListAllDisplayModesEnabled())
+    return *this == other;
+
   const float kEpsilon = 0.0001f;
   return size_ == other.size_ &&
          std::abs(device_scale_factor_ - other.device_scale_factor_) < kEpsilon;
+}
+
+std::string ManagedDisplayMode::ToString() const {
+  return base::StringPrintf(
+      "DisplayMode{size: %s, refresh_rate: %f, interlaced:"
+      " %d, native: %d, device_scale_factor: %f}",
+      size_.ToString().c_str(), refresh_rate_, is_interlaced_, native_,
+      device_scale_factor_);
 }
 
 // static
@@ -272,6 +284,8 @@ ManagedDisplayInfo::ManagedDisplayInfo()
       device_dpi_(kDpi96),
       overscan_insets_in_dip_(0, 0, 0, 0),
       zoom_factor_(1.f),
+      refresh_rate_(60.f),
+      is_interlaced_(false),
       is_zoom_factor_from_ui_scale_(false),
       native_(false),
       is_aspect_preserving_scaling_(false),
@@ -290,6 +304,8 @@ ManagedDisplayInfo::ManagedDisplayInfo(int64_t id,
       device_dpi_(kDpi96),
       overscan_insets_in_dip_(0, 0, 0, 0),
       zoom_factor_(1.f),
+      refresh_rate_(60.f),
+      is_interlaced_(false),
       is_zoom_factor_from_ui_scale_(false),
       native_(false),
       is_aspect_preserving_scaling_(false),
@@ -337,6 +353,8 @@ void ManagedDisplayInfo::Copy(const ManagedDisplayInfo& native_info) {
   display_modes_ = native_info.display_modes_;
   maximum_cursor_size_ = native_info.maximum_cursor_size_;
   color_space_ = native_info.color_space_;
+  refresh_rate_ = native_info.refresh_rate_;
+  is_interlaced_ = native_info.is_interlaced_;
 
   // Rotation, color_profile and overscan are given by preference,
   // or unit tests. Don't copy if this native_info came from

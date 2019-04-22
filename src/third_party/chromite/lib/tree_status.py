@@ -29,6 +29,10 @@ _LEGOLAND_BUILD_URL = ('https://cros-goldeneye.corp.google.com/chromeos/'
                        'healthmonitoring/buildDetails?buildbucketId='
                        '%(buildbucket_id)s')
 
+_LOGDOG_URL = ('https://luci-logdog.appspot.com/v/'
+               '?s=chromeos/buildbucket/cr-buildbucket.appspot.com/'
+               '%s/%%2B/steps/%s/0/stdout')
+
 # The tree status json file contains the following keywords.
 TREE_STATUS_STATE = 'general_state'
 TREE_STATUS_USERNAME = 'username'
@@ -224,42 +228,19 @@ def GetExperimentalBuilders(status_url=None, timeout=1):
   return retry_util.GenericRetry(lambda _: True, 3, _get_status_dict, sleep=1)
 
 
-def _OpenSheriffURL(sheriff_url):
-  """Returns the content of |sheriff_url| or None if failed to open it."""
-  try:
-    response = urllib.urlopen(sheriff_url)
-    if response.getcode() == 200:
-      return response.read()
-  except IOError as e:
-    logging.error('Could not reach %s: %r', sheriff_url, e)
-
-
-def GetSheriffEmailAddresses(sheriff_type):
-  """Get the email addresses of the sheriffs or deputy.
-
-  Args:
-    sheriff_type: Type of the sheriff to look for. See the keys in
-    constants.SHERIFF_TYPE_TO_URL.
-      - 'tree': tree sheriffs
-      - 'chrome': chrome gardener
+def GetGardenerEmailAddresses():
+  """Get the email addresses of the gardeners.
 
   Returns:
-    A list of email addresses.
+    Gardener email addresses.
   """
-  if sheriff_type not in constants.SHERIFF_TYPE_TO_URL:
-    raise ValueError('Unknown sheriff type: %s' % sheriff_type)
-
-  urls = constants.SHERIFF_TYPE_TO_URL.get(sheriff_type)
-  sheriffs = []
-  for url in urls:
-    # The URL displays a line: document.write('taco, burrito')
-    raw_line = _OpenSheriffURL(url)
-    if raw_line is not None:
-      match = re.search(r'\'(.*)\'', raw_line)
-      if match and match.group(1) != 'None (channel is sheriff)':
-        sheriffs.extend(x.strip() for x in match.group(1).split(','))
-
-  return ['%s%s' % (x, constants.GOOGLE_EMAIL) for x in sheriffs]
+  try:
+    response = urllib.urlopen(constants.CHROME_GARDENER_URL)
+    if response.getcode() == 200:
+      return json.load(response)['emails']
+  except (IOError, ValueError, KeyError) as e:
+    logging.error('Could not get gardener emails: %r', e)
+  return None
 
 
 def GetHealthAlertRecipients(builder_run):
@@ -269,9 +250,9 @@ def GetHealthAlertRecipients(builder_run):
     if '@' in entry:
       # If the entry is an email address, add it to the list.
       recipients.append(entry)
-    else:
-      # Perform address lookup for a non-email entry.
-      recipients.extend(GetSheriffEmailAddresses(entry))
+    elif entry == constants.CHROME_GARDENER:
+      # Add gardener email address.
+      recipients.extend(GetGardenerEmailAddresses())
 
   return recipients
 
@@ -309,6 +290,9 @@ def ConstructLegolandBuildURL(buildbucket_id):
   Returns:
     The fully formed URL.
   """
+  # Only local tryjobs will not have a buildbucket_id but they also do not have
+  # a web UI to point at. Generate a fake URL.
+  buildbucket_id = buildbucket_id or 'fake_bb_id'
   return _LEGOLAND_BUILD_URL % {'buildbucket_id': buildbucket_id}
 
 
@@ -328,28 +312,8 @@ def ConstructDashboardURL(buildbot_master_name, builder_name, build_number):
   return os.path.join(
       _LUCI_MILO_BUILDBOT_URL, buildbot_master_name, url_suffix)
 
-
-# TODO(akeshet): This method still produces links to stage logs as hosted on
-# buildbot (rather then the newer replacement, LogDog). We will transition these
-# links to point at LogDog at a later date.
-def ConstructBuildStageURL(buildbot_url, builder_name, build_number,
-                           stage=None):
-  """Return the dashboard (buildbot) URL for this run
-
-  Args:
-    buildbot_url: Base URL for the waterfall.
-    builder_name: Builder name on buildbot dashboard.
-    build_number: Build number for this validation attempt.
-    stage: Link directly to a stage log, else use the general landing page.
-
-  Returns:
-    The fully formed URL.
-  """
-  url_suffix = 'builders/%s/builds/%s' % (builder_name, str(build_number))
-  if stage:
-    url_suffix += '/steps/%s/logs/stdio' % (stage,)
-  url_suffix = urllib.quote(url_suffix)
-  return os.path.join(buildbot_url, url_suffix)
+def ConstructLogDogURL(build_number, stage):
+  return _LOGDOG_URL % (str(build_number), stage)
 
 
 def ConstructViceroyBuildDetailsURL(build_id):

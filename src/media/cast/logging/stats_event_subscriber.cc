@@ -332,30 +332,22 @@ const int kLargeMaxLatencyBucketMs = 1200;
 const int kLargeBucketWidthMs = 50;
 
 void StatsEventSubscriber::InitHistograms() {
-  histograms_[E2E_LATENCY_MS_HISTO].reset(
-      new SimpleHistogram(0, kLargeMaxLatencyBucketMs,
-                          kLargeBucketWidthMs));
-  histograms_[QUEUEING_LATENCY_MS_HISTO].reset(
-      new SimpleHistogram(0, kDefaultMaxLatencyBucketMs,
-                          kDefaultBucketWidthMs));
-  histograms_[NETWORK_LATENCY_MS_HISTO].reset(
-      new SimpleHistogram(0, kDefaultMaxLatencyBucketMs,
-                          kDefaultBucketWidthMs));
-  histograms_[PACKET_LATENCY_MS_HISTO].reset(
-      new SimpleHistogram(0, kDefaultMaxLatencyBucketMs,
-                          kDefaultBucketWidthMs));
-  histograms_[FRAME_LATENCY_MS_HISTO].reset(
-      new SimpleHistogram(0, kDefaultMaxLatencyBucketMs,
-                          kDefaultBucketWidthMs));
-  histograms_[LATE_FRAME_MS_HISTO].reset(
-      new SimpleHistogram(0, kDefaultMaxLatencyBucketMs,
-                          kDefaultBucketWidthMs));
-  histograms_[CAPTURE_LATENCY_MS_HISTO].reset(
-      new SimpleHistogram(0, kSmallMaxLatencyBucketMs,
-                          kSmallBucketWidthMs));
-  histograms_[ENCODE_TIME_MS_HISTO].reset(
-      new SimpleHistogram(0, kSmallMaxLatencyBucketMs,
-                          kSmallBucketWidthMs));
+  histograms_[E2E_LATENCY_MS_HISTO] = std::make_unique<SimpleHistogram>(
+      0, kLargeMaxLatencyBucketMs, kLargeBucketWidthMs);
+  histograms_[QUEUEING_LATENCY_MS_HISTO] = std::make_unique<SimpleHistogram>(
+      0, kDefaultMaxLatencyBucketMs, kDefaultBucketWidthMs);
+  histograms_[NETWORK_LATENCY_MS_HISTO] = std::make_unique<SimpleHistogram>(
+      0, kDefaultMaxLatencyBucketMs, kDefaultBucketWidthMs);
+  histograms_[PACKET_LATENCY_MS_HISTO] = std::make_unique<SimpleHistogram>(
+      0, kDefaultMaxLatencyBucketMs, kDefaultBucketWidthMs);
+  histograms_[FRAME_LATENCY_MS_HISTO] = std::make_unique<SimpleHistogram>(
+      0, kDefaultMaxLatencyBucketMs, kDefaultBucketWidthMs);
+  histograms_[LATE_FRAME_MS_HISTO] = std::make_unique<SimpleHistogram>(
+      0, kDefaultMaxLatencyBucketMs, kDefaultBucketWidthMs);
+  histograms_[CAPTURE_LATENCY_MS_HISTO] = std::make_unique<SimpleHistogram>(
+      0, kSmallMaxLatencyBucketMs, kSmallBucketWidthMs);
+  histograms_[ENCODE_TIME_MS_HISTO] = std::make_unique<SimpleHistogram>(
+      0, kSmallMaxLatencyBucketMs, kSmallBucketWidthMs);
 }
 
 void StatsEventSubscriber::GetStatsInternal(StatsMap* stats_map) const {

@@ -20,13 +20,14 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/completion_once_callback.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "net/http/http_request_headers.h"
@@ -38,7 +39,6 @@
 #include "net/websockets/websocket_event_interface.h"
 #include "net/websockets/websocket_handshake_request_info.h"
 #include "net/websockets/websocket_handshake_response_info.h"
-#include "net/websockets/websocket_handshake_stream_create_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -129,7 +129,7 @@ const char kBinaryBlob[] = {'\n',   '\r',    // BACKWARDS CRNL
                             '\b',            // backspace
                             '\'',            // single-quote, special in PHP
 };
-const size_t kBinaryBlobSize = arraysize(kBinaryBlob);
+const size_t kBinaryBlobSize = base::size(kBinaryBlob);
 
 // The amount of quota a new connection gets by default.
 // TODO(ricea): If kDefaultSendQuotaHighWaterMark changes, then this value will
@@ -202,13 +202,13 @@ class MockWebSocketEventInterface : public WebSocketEventInterface {
     OnSSLCertificateErrorCalled(
         ssl_error_callbacks.get(), url, ssl_info, fatal);
   }
-  int OnAuthRequired(scoped_refptr<AuthChallengeInfo> auth_info,
+  int OnAuthRequired(const AuthChallengeInfo& auth_info,
                      scoped_refptr<HttpResponseHeaders> response_headers,
-                     const HostPortPair& host_port_pair,
+                     const IPEndPoint& remote_endpoint,
                      base::OnceCallback<void(const AuthCredentials*)> callback,
                      base::Optional<AuthCredentials>* credentials) override {
     return OnAuthRequiredCalled(std::move(auth_info),
-                                std::move(response_headers), host_port_pair,
+                                std::move(response_headers), remote_endpoint,
                                 credentials);
   }
 
@@ -218,9 +218,9 @@ class MockWebSocketEventInterface : public WebSocketEventInterface {
       OnSSLCertificateErrorCalled,
       void(SSLErrorCallbacks*, const GURL&, const SSLInfo&, bool));  // NOLINT
   MOCK_METHOD4(OnAuthRequiredCalled,
-               int(scoped_refptr<AuthChallengeInfo>,
+               int(const AuthChallengeInfo&,
                    scoped_refptr<HttpResponseHeaders>,
-                   const HostPortPair&,
+                   const IPEndPoint&,
                    base::Optional<AuthCredentials>*));
 };
 
@@ -249,9 +249,9 @@ class FakeWebSocketEventInterface : public WebSocketEventInterface {
       const GURL& url,
       const SSLInfo& ssl_info,
       bool fatal) override {}
-  int OnAuthRequired(scoped_refptr<AuthChallengeInfo> auth_info,
+  int OnAuthRequired(const AuthChallengeInfo& auth_info,
                      scoped_refptr<HttpResponseHeaders> response_headers,
-                     const HostPortPair& host_port_pair,
+                     const IPEndPoint& remote_endpoint,
                      base::OnceCallback<void(const AuthCredentials*)> callback,
                      base::Optional<AuthCredentials>* credentials) override {
     *credentials = base::nullopt;
@@ -612,8 +612,8 @@ class EchoeyFakeWebSocketStream : public FakeWebSocketStream {
  private:
   void PostCallback() {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&EchoeyFakeWebSocketStream::DoCallback,
-                              base::Unretained(this)));
+        FROM_HERE, base::BindOnce(&EchoeyFakeWebSocketStream::DoCallback,
+                                  base::Unretained(this)));
   }
 
   void DoCallback() {
@@ -743,7 +743,7 @@ class MockWebSocketStreamRequest : public WebSocketStreamRequest {
 struct WebSocketStreamCreationCallbackArgumentSaver {
   std::unique_ptr<WebSocketStreamRequest> Create(
       const GURL& socket_url,
-      std::unique_ptr<WebSocketHandshakeStreamCreateHelper> create_helper,
+      const std::vector<std::string>& requested_subprotocols,
       const url::Origin& origin,
       const GURL& site_for_cookies,
       const HttpRequestHeaders& additional_headers,
@@ -751,21 +751,17 @@ struct WebSocketStreamCreationCallbackArgumentSaver {
       const NetLogWithSource& net_log,
       std::unique_ptr<WebSocketStream::ConnectDelegate> connect_delegate) {
     this->socket_url = socket_url;
-    this->create_helper = std::move(create_helper);
     this->origin = origin;
     this->site_for_cookies = site_for_cookies;
     this->url_request_context = url_request_context;
-    this->net_log = net_log;
     this->connect_delegate = std::move(connect_delegate);
     return std::make_unique<MockWebSocketStreamRequest>();
   }
 
   GURL socket_url;
-  std::unique_ptr<WebSocketHandshakeStreamCreateHelper> create_helper;
   url::Origin origin;
   GURL site_for_cookies;
   URLRequestContext* url_request_context;
-  NetLogWithSource net_log;
   std::unique_ptr<WebSocketStream::ConnectDelegate> connect_delegate;
 };
 
@@ -1625,7 +1621,7 @@ TEST_F(WebSocketChannelEventInterfaceTest, FinishHandshakeRequest) {
   auto response_headers =
       base::MakeRefCounted<HttpResponseHeaders>("HTTP/1.1 200 OK");
   auto response_info = std::make_unique<WebSocketHandshakeResponseInfo>(
-      GURL("ws://www.example.com/"), response_headers, HostPortPair(),
+      GURL("ws://www.example.com/"), response_headers, IPEndPoint(),
       base::Time());
   connect_data_.argument_saver.connect_delegate->OnFinishOpeningHandshake(
       std::move(response_info));
@@ -1650,7 +1646,7 @@ TEST_F(WebSocketChannelEventInterfaceTest, FailJustAfterHandshake) {
   auto response_headers =
       base::MakeRefCounted<HttpResponseHeaders>("HTTP/1.1 200 OK");
   auto response_info = std::make_unique<WebSocketHandshakeResponseInfo>(
-      url, response_headers, HostPortPair(), base::Time());
+      url, response_headers, IPEndPoint(), base::Time());
   connect_delegate->OnStartOpeningHandshake(std::move(request_info));
   connect_delegate->OnFinishOpeningHandshake(std::move(response_info));
 
@@ -2969,12 +2965,11 @@ TEST_F(WebSocketChannelEventInterfaceTest, OnSSLCertificateErrorCalled) {
 TEST_F(WebSocketChannelEventInterfaceTest, OnAuthRequiredCalled) {
   const GURL wss_url("wss://example.com/on_auth_required");
   connect_data_.socket_url = wss_url;
-  scoped_refptr<AuthChallengeInfo> auth_info =
-      base::MakeRefCounted<AuthChallengeInfo>();
+  AuthChallengeInfo auth_info;
   base::Optional<AuthCredentials> credentials;
   scoped_refptr<HttpResponseHeaders> response_headers =
       base::MakeRefCounted<HttpResponseHeaders>("HTTP/1.1 200 OK");
-  HostPortPair socket_address("127.0.0.1", 80);
+  IPEndPoint remote_endpoint(net::IPAddress(127, 0, 0, 1), 80);
 
   EXPECT_CALL(
       *event_interface_,
@@ -2983,7 +2978,7 @@ TEST_F(WebSocketChannelEventInterfaceTest, OnAuthRequiredCalled) {
 
   CreateChannelAndConnect();
   connect_data_.argument_saver.connect_delegate->OnAuthRequired(
-      auth_info, response_headers, socket_address, {}, &credentials);
+      auth_info, response_headers, remote_endpoint, {}, &credentials);
 }
 
 // If we receive another frame after Close, it is not valid. It is not

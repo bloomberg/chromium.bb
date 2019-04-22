@@ -23,6 +23,7 @@
 #include <bitset>
 #include <numeric>
 
+#include "src/trace_processor/sqlite_utils.h"
 #include "src/trace_processor/trace_storage.h"
 
 namespace perfetto {
@@ -35,10 +36,10 @@ void StringTable::RegisterTable(sqlite3* db, const TraceStorage* storage) {
   Table::Register<StringTable>(db, storage, "strings");
 }
 
-Table::Schema StringTable::CreateSchema(int, const char* const*) {
+base::Optional<Table::Schema> StringTable::Init(int, const char* const*) {
   return Schema(
       {
-          Table::Column(Column::kStringId, "id", ColumnType::kUlong),
+          Table::Column(Column::kStringId, "id", ColumnType::kUint),
           Table::Column(Column::kString, "str", ColumnType::kString),
       },
       {Column::kStringId});
@@ -79,7 +80,7 @@ int StringTable::Cursor::Column(sqlite3_context* context, int col) {
       break;
     case Column::kString:
       sqlite3_result_text(context, storage_->GetString(string_id).c_str(), -1,
-                          nullptr);
+                          sqlite_utils::kSqliteStatic);
       break;
   }
   return SQLITE_OK;

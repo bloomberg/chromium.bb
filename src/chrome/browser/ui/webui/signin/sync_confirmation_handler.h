@@ -12,15 +12,19 @@
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "components/consent_auditor/consent_auditor.h"
-#include "components/signin/core/browser/account_tracker_service.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 namespace base {
 class ListValue;
 }
 
+namespace identity {
+class IdentityManager;
+}
+
 class SyncConfirmationHandler : public content::WebUIMessageHandler,
-                                public AccountTrackerService::Observer,
+                                public identity::IdentityManager::Observer,
                                 public BrowserListObserver {
  public:
   // Creates a SyncConfirmationHandler for the |browser|. All strings in the
@@ -35,8 +39,8 @@ class SyncConfirmationHandler : public content::WebUIMessageHandler,
   // content::WebUIMessageHandler:
   void RegisterMessages() override;
 
-  // AccountTrackerService::Observer:
-  void OnAccountUpdated(const AccountInfo& info) override;
+  // identity::IdentityManager::Observer:
+  void OnExtendedAccountInfoUpdated(const AccountInfo& info) override;
 
   // BrowserListObserver:
   void OnBrowserRemoved(Browser* browser) override;
@@ -102,6 +106,8 @@ class SyncConfirmationHandler : public content::WebUIMessageHandler,
 
   // Contains the features to use when the user consent decision is recorded.
   consent_auditor::Feature consent_feature_;
+
+  identity::IdentityManager* identity_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncConfirmationHandler);
 };

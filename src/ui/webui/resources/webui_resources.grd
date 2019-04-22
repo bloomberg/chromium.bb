@@ -13,7 +13,9 @@ without changes to the corresponding grd file. -->
   </outputs>
   <release seq="1">
     <includes>
-      <include name="IDR_WEBUI_I18N_TEMPLATE_JS" file="js/i18n_template.js" flattenhtml="true" type="BINDATA" />
+      <if expr="chromeos">
+        <include name="IDR_WEBUI_I18N_TEMPLATE_JS" file="js/i18n_template.js" flattenhtml="true" type="BINDATA" />
+      </if>
       <include name="IDR_WEBUI_JSTEMPLATE_JS" file="js/jstemplate_compiled.js" flattenhtml="true" type="BINDATA" />
       <!-- Roboto Font. Roboto-Regular and Roboto-Light is already available on
            Android, and Roboto-Medium is not used on Android. All 6 weights of
@@ -175,6 +177,8 @@ without changes to the corresponding grd file. -->
                file="images/2x/apps/button_butter_bar_close_pressed.png" type="BINDATA" />
 
       <!-- Non-apps images -->
+      <include name="IDR_WEBUI_IMAGES_ADD"
+               file="images/add.svg" type="BINDATA" compress="gzip" />
       <include name="IDR_WEBUI_IMAGES_CHECK"
                file="images/check.png" type="BINDATA" />
       <include name="IDR_WEBUI_IMAGES_CHECKBOX_BLACK"
@@ -185,6 +189,9 @@ without changes to the corresponding grd file. -->
                file="images/disabled_select.png" type="BINDATA" />
       <include name="IDR_WEBUI_IMAGES_ERROR"
                file="images/error.svg" type="BINDATA" compress="gzip" />
+      <!-- Similar to IDR_WEBUI_IMAGES_ERROR except that it is white-filled instead of transparent-filled. Useful for badging images where the background may be red. -->
+      <include name="IDR_WEBUI_IMAGES_ERROR_BADGE"
+               file="images/error_badge.svg" type="BINDATA" compress="gzip" />
       <include name="IDR_WEBUI_IMAGES_GOOGLE_LOGO"
                file="images/google_logo.svg" type="BINDATA" compress="gzip" />
       <include name="IDR_WEBUI_IMAGES_SELECT"
@@ -287,9 +294,6 @@ without changes to the corresponding grd file. -->
       <structure name="IDR_WEBUI_HTML_CR_UI_COMMAND"
                  file="html/cr/ui/command.html" type="chrome_html"
                  compress="gzip" />
-      <structure name="IDR_WEBUI_HTML_CR_UI_CONTEXT_MENU_BUTTON"
-                 file="html/cr/ui/context_menu_button.html"
-                 type="chrome_html" compress="gzip" />
       <structure name="IDR_WEBUI_HTML_CR_UI_CONTEXT_MENU_HANDLER"
                  file="html/cr/ui/context_menu_handler.html"
                  type="chrome_html" compress="gzip" />
@@ -344,14 +348,19 @@ without changes to the corresponding grd file. -->
       <structure name="IDR_WEBUI_HTML_CR_UI_SPLITTER"
                  file="html/cr/ui/splitter.html" type="chrome_html"
                  compress="gzip" />
+      <structure name="IDR_WEBUI_HTML_CR_UI_STORE"
+                 file="html/cr/ui/store.html"
+                 type="chrome_html" compress="gzip" />
+      <structure name="IDR_WEBUI_HTML_CR_UI_STORE_CLIENT"
+                 file="html/cr/ui/store_client.html"
+                 type="chrome_html" compress="gzip" />
+      <structure name="IDR_WEBUI_HTML_DARK_MODE"
+                 file="html/dark_mode.html" type="chrome_html" compress="gzip" />
       <structure name="IDR_WEBUI_HTML_EVENT_TRACKER"
                  file="html/event_tracker.html" type="chrome_html"
                  compress="gzip" />
       <structure name="IDR_WEBUI_HTML_ICON"
                  file="html/icon.html" type="chrome_html" compress="gzip" />
-      <structure name="IDR_WEBUI_HTML_I18N_TEMPLATE"
-                 file="html/i18n_template.html" type="chrome_html"
-                 compress="gzip" />
       <structure name="IDR_WEBUI_HTML_LOAD_TIME_DATA"
                  file="html/load_time_data.html" type="chrome_html"
                  compress="gzip" />
@@ -360,9 +369,6 @@ without changes to the corresponding grd file. -->
                  compress="gzip" />
       <structure name="IDR_WEBUI_HTML_UTIL"
                  file="html/util.html" type="chrome_html" compress="gzip" />
-      <structure name="IDR_WEBUI_HTML_WEBUI_LISTENER_TRACKER"
-                 file="html/webui_listener_tracker.html" type="chrome_html"
-                 compress="gzip" />
 
       <structure name="IDR_WEBUI_JS_ACTION_LINK"
                  file="js/action_link.js" type="chrome_html" compress="gzip" />
@@ -375,9 +381,6 @@ without changes to the corresponding grd file. -->
                  file="js/cr.js" type="chrome_html" compress="gzip" />
       <structure name="IDR_WEBUI_JS_CR_EVENT_TARGET"
                  file="js/cr/event_target.js" type="chrome_html"
-                 compress="gzip" />
-      <structure name="IDR_WEBUI_JS_CR_LINK_CONTROLLER"
-                 file="js/cr/link_controller.js" type="chrome_html"
                  compress="gzip" />
       <structure name="IDR_WEBUI_JS_CR_UI"
                  file="js/cr/ui.js" type="chrome_html" compress="gzip" />
@@ -399,9 +402,6 @@ without changes to the corresponding grd file. -->
       <structure name="IDR_WEBUI_JS_CR_UI_COMMAND"
                  file="js/cr/ui/command.js" type="chrome_html"
                  compress="gzip" />
-      <structure name="IDR_WEBUI_JS_CR_UI_CONTEXT_MENU_BUTTON"
-                 file="js/cr/ui/context_menu_button.js"
-                 type="chrome_html" compress="gzip" />
       <structure name="IDR_WEBUI_JS_CR_UI_CONTEXT_MENU_HANDLER"
                  file="js/cr/ui/context_menu_handler.js"
                  type="chrome_html" compress="gzip" />
@@ -466,11 +466,14 @@ without changes to the corresponding grd file. -->
       <structure name="IDR_WEBUI_JS_CR_UI_SPLITTER"
                  file="js/cr/ui/splitter.js" type="chrome_html"
                  compress="gzip" />
+      <structure name="IDR_WEBUI_JS_CR_UI_STORE"
+                 file="js/cr/ui/store.js"
+                 type="chrome_html" compress="gzip" />
+      <structure name="IDR_WEBUI_JS_CR_UI_STORE_CLENT"
+                 file="js/cr/ui/store_client.js"
+                 type="chrome_html" compress="gzip" />
       <structure name="IDR_WEBUI_JS_CR_UI_GRID"
                  file="js/cr/ui/grid.js" type="chrome_html" compress="gzip" />
-      <structure name="IDR_WEBUI_JS_CR_UI_REPEATING_BUTTON"
-                 file="js/cr/ui/repeating_button.js"
-                 type="chrome_html" compress="gzip" />
       <structure name="IDR_WEBUI_JS_CR_UI_TABLE"
                  file="js/cr/ui/table.js" type="chrome_html" compress="gzip" />
       <structure name="IDR_WEBUI_JS_CR_UI_TABLE_COLUMN"
@@ -495,20 +498,17 @@ without changes to the corresponding grd file. -->
       <structure name="IDR_WEBUI_JS_CR_UI_TOUCH_HANDLER"
                  file="js/cr/ui/touch_handler.js" type="chrome_html"
                  compress="gzip" />
+      <structure name="IDR_WEBUI_JS_DARK_MODE"
+                 file="js/dark_mode.js" type="chrome_html"
+                 compress="gzip" />
       <structure name="IDR_WEBUI_JS_EVENT_TRACKER"
                  file="js/event_tracker.js" type="chrome_html"
-                 compress="gzip" />
-      <structure name="IDR_WEBUI_JS_WEBUI_LISTENER_TRACKER"
-                 file="js/webui_listener_tracker.js" type="chrome_html"
                  compress="gzip" />
       <structure name="IDR_WEBUI_JS_ICON"
                  file="js/icon.js" type="chrome_html" compress="gzip"
                  flattenhtml="true" />
       <structure name="IDR_WEBUI_JS_I18N_TEMPLATE_NO_PROCESS"
                  file="js/i18n_template_no_process.js"
-                 type="chrome_html" compress="gzip" />
-      <structure name="IDR_WEBUI_JS_I18N_TEMPLATE_PROCESS"
-                 file="js/i18n_template_process.js"
                  type="chrome_html" compress="gzip" />
       <structure name="IDR_WEBUI_JS_LOAD_TIME_DATA"
                  file="js/load_time_data.js" type="chrome_html" />
@@ -521,6 +521,15 @@ without changes to the corresponding grd file. -->
       <structure name="IDR_WEBUI_JS_WEBUI_RESOURCE_TEST"
                  file="js/webui_resource_test.js" type="chrome_html"
                  compress="gzip" />
+
+      <if expr="is_ios">
+        <structure name="IDR_WEBUI_JS_IOS_WEB_UI"
+                   file="js/ios/web_ui.js" type="chrome_html"
+                   compress="gzip" />
+        <structure name="IDR_WEBUI_JS_IOS_MOJO_API"
+                   file="js/ios/mojo_api.js" type="chrome_html"
+                   compress="gzip" />
+      </if>
 
       <if expr="not is_android and not is_ios">
         <part file="cr_components/cr_components_resources.grdp" />

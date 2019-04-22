@@ -5,6 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_UI_TAB_GRID_TAB_GRID_PAGE_CONTROL_H_
 #define IOS_CHROME_BROWSER_UI_TAB_GRID_TAB_GRID_PAGE_CONTROL_H_
 
+#include <CoreGraphics/CoreGraphics.h>
 #import <UIKit/UIKit.h>
 
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_paging.h"
@@ -35,7 +36,8 @@
 // trailing side of the control. Setting this property will update the position
 // of the slider without animation. Setting a value below 0.0 or above 1.0 will
 // set 0.0 or 1.0 instead.
-// Setting this property will *not* update the selected page.
+// Setting this property may change the |selectedPage| property of the reciever,
+// but will not cause any UIControl actions to be sent.
 @property(nonatomic, assign) CGFloat sliderPosition;
 
 // The numbers that the control should display in the appropriate sections.

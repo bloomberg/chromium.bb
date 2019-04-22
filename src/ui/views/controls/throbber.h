@@ -40,7 +40,7 @@ class VIEWS_EXPORT Throbber : public View {
   base::RepeatingTimer timer_;  // Used to schedule Run calls.
 
   // Whether or not we should display a checkmark.
-  bool checked_;
+  bool checked_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(Throbber);
 };

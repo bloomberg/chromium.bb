@@ -1,9 +1,8 @@
 <!DOCTYPE html>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <script>
-if (window.testRunner) {
-    testRunner.keepWebHistory();
+if (window.testRunner)
     testRunner.waitUntilDone();
-}
 </script>
 <style>
 a { -webkit-text-emphasis-style: filled }
@@ -15,11 +14,8 @@ a, a:hover {  -webkit-text-emphasis-color: green; color: initial; text-decoratio
     <a id="anchor" href="">Emphasis should be green when hovered</a>
 </div>
 <script>
-if (window.testRunner) {
-    testRunner.layoutAndPaintAsyncThen(function(){
+    runAfterLayoutAndPaint(function(){
         if (window.eventSender);
             eventSender.mouseMoveTo(anchor.offsetLeft + 1, anchor.offsetTop + 1);
-        testRunner.notifyDone();
-    });
-}
+    }, true);
 </script>

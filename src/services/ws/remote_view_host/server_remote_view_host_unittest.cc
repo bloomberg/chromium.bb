@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "services/ws/window_service_test_setup.h"
 #include "services/ws/window_tree.h"
 #include "services/ws/window_tree_test_helper.h"
@@ -16,7 +17,7 @@
 namespace ws {
 
 TEST(ServerRemoteViewHostTest, EmbedUsingToken) {
-  // Use |test_setup| to configure aura and other state.
+  // Use |setup| to configure aura and other state.
   WindowServiceTestSetup setup;
   views::TestViewsDelegate views_delegate;
 

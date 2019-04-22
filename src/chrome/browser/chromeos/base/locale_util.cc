@@ -7,11 +7,13 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/language/core/common/locale_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/translate/core/browser/translate_prefs.h"
@@ -105,11 +107,11 @@ void FinishSwitchLanguage(std::unique_ptr<SwitchLanguageData> data) {
     data->callback.Run(data->result);
 }
 
-// Get parsed list of preferred languages from the 'kLanguagePreferredLanguages'
+// Get parsed list of preferred languages from the 'kPreferredLanguages'
 // setting.
 std::vector<std::string> GetPreferredLanguagesList(const PrefService* prefs) {
   std::string preferred_languages_string =
-      prefs->GetString(prefs::kLanguagePreferredLanguages);
+      prefs->GetString(language::prefs::kPreferredLanguages);
   return base::SplitString(preferred_languages_string, ",",
                            base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
 }
@@ -191,7 +193,7 @@ void RemoveDisallowedLanguagesFromPreferred(PrefService* prefs) {
 
   // Do not set setting if it did not change to not cause the update callback
   if (preferred_languages != updated_preferred_languages) {
-    prefs->SetString(prefs::kLanguagePreferredLanguages,
+    prefs->SetString(language::prefs::kPreferredLanguages,
                      base::JoinString(updated_preferred_languages, ","));
   }
 }
@@ -200,7 +202,7 @@ std::string GetAllowedFallbackUILanguage(const PrefService* prefs) {
   // Check the user's preferred languages if one of them is an allowed UI
   // locale.
   std::string preferred_languages_string =
-      prefs->GetString(prefs::kLanguagePreferredLanguages);
+      prefs->GetString(language::prefs::kPreferredLanguages);
   std::vector<std::string> preferred_languages =
       GetPreferredLanguagesList(prefs);
   for (const std::string& language : preferred_languages) {
@@ -224,13 +226,13 @@ std::string GetAllowedFallbackUILanguage(const PrefService* prefs) {
 bool AddLocaleToPreferredLanguages(const std::string& locale,
                                    PrefService* prefs) {
   std::string preferred_languages_string =
-      prefs->GetString(prefs::kLanguagePreferredLanguages);
+      prefs->GetString(language::prefs::kPreferredLanguages);
   std::vector<std::string> preferred_languages =
       base::SplitString(preferred_languages_string, ",", base::TRIM_WHITESPACE,
                         base::SPLIT_WANT_NONEMPTY);
   if (!base::ContainsValue(preferred_languages, locale)) {
     preferred_languages.push_back(locale);
-    prefs->SetString(prefs::kLanguagePreferredLanguages,
+    prefs->SetString(language::prefs::kPreferredLanguages,
                      base::JoinString(preferred_languages, ","));
     return true;
   }

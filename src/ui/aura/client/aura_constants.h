@@ -6,6 +6,7 @@
 #define UI_AURA_CLIENT_AURA_CONSTANTS_H_
 
 #include <string>
+#include <vector>
 
 #include "base/strings/string16.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -48,7 +49,18 @@ AURA_EXPORT extern const WindowProperty<bool>* const kAlwaysOnTopKey;
 AURA_EXPORT extern const WindowProperty<bool>* const kAnimationsDisabledKey;
 
 // A property key to store the app icon, typically larger for shelf icons, etc.
+// This is not transported to the window service.
 AURA_EXPORT extern const WindowProperty<gfx::ImageSkia*>* const kAppIconKey;
+
+// A property key to store a large version of the app icon, which is
+// transported to the window service.
+AURA_EXPORT extern const WindowProperty<gfx::ImageSkia*>* const
+    kAppIconLargeKey;
+
+// A property key to store a smaller version of the app icon, which is
+// transported to the window service.
+AURA_EXPORT extern const WindowProperty<gfx::ImageSkia*>* const
+    kAppIconSmallKey;
 
 // A property key to store the type of window that will be used to record
 // pointer metrics. See AppType in ash/public/cpp/app_types.h for more details.
@@ -61,12 +73,10 @@ AURA_EXPORT extern const WindowProperty<gfx::SizeF*>* const kAspectRatio;
 // frame to indicate the owner of the window when needed.
 AURA_EXPORT extern const WindowProperty<gfx::ImageSkia*>* const kAvatarIconKey;
 
-// A property key to indicate if a client window has content. The value is
-// based on whether the window has a drawn layer (i.e. layer type !=
-// LAYER_NOT_DRAWN) and is opaque. It is passed to the Window Service side for
-// the occlusion tracker to process since the info is only available at the
-// client side.
-AURA_EXPORT extern const WindowProperty<bool>* const kClientWindowHasContent;
+// A property key to indicate if a client window's layer is drawn.
+// It is passed to the Window Service side for the occlusion tracker to process
+// since the info is only available at the client side.
+AURA_EXPORT extern const WindowProperty<bool>* const kWindowLayerDrawn;
 
 // A property key to store if a window is a constrained window or not.
 AURA_EXPORT extern const WindowProperty<bool>* const kConstrainedWindowKey;
@@ -78,19 +88,30 @@ AURA_EXPORT extern const WindowProperty<bool>* const kCreatedByUserGesture;
 // attention.
 AURA_EXPORT extern const WindowProperty<bool>* const kDrawAttentionKey;
 
+// A property key to store a bounds in screen coordinates that an embedded
+// window wants to be moved out of. This is only used in MUS to move the
+// embedding top-level window at the other side.
+AURA_EXPORT extern const WindowProperty<gfx::Rect*>* const
+    kEmbeddedWindowEnsureNotInRect;
+
 // A property key to store the focus client on the window.
 AURA_EXPORT extern const WindowProperty<FocusClient*>* const kFocusClientKey;
+
+// Should be set to true for fullscreen/maximized windows that want to be
+// drag-moved in response to gesture events in the top of the client
+// area/screen.
+AURA_EXPORT extern const WindowProperty<bool>* const
+    kGestureDragFromClientAreaTopMovesWindow;
 
 // A property key to store the host window of a window. This lets
 // WebContentsViews find the windows that should constrain NPAPI plugins.
 AURA_EXPORT extern const WindowProperty<Window*>* const kHostWindowKey;
 
+// A property key to store the maximum size of the window.
+AURA_EXPORT extern const WindowProperty<gfx::Size*>* const kMaximumSize;
+
 // A property key to store the minimum size of the window.
 AURA_EXPORT extern const WindowProperty<gfx::Size*>* const kMinimumSize;
-
-// A property key to indicate that a window is being "mirrored" and its contents
-// should render regardless of its actual visibility state.
-AURA_EXPORT extern const WindowProperty<bool>* const kMirroringEnabledKey;
 
 // The modal parent of a child modal window.
 AURA_EXPORT extern const WindowProperty<Window*>* const kChildModalParentKey;
@@ -100,6 +121,12 @@ AURA_EXPORT extern const WindowProperty<ui::ModalType>* const kModalKey;
 
 // A property key to store the name of the window; mostly used for debugging.
 AURA_EXPORT extern const WindowProperty<std::string*>* const kNameKey;
+
+// A property key to store the accessible parent of a native view. This is
+// used to allow WebContents to access their accessible parents for use in
+// walking up the accessibility tree via platform APIs.
+AURA_EXPORT extern const aura::WindowProperty<gfx::NativeViewAccessible>* const
+    kParentNativeViewAccessibleKey;
 
 // A property key to store the preferred size of the window.
 AURA_EXPORT extern const WindowProperty<gfx::Size*>* const kPreferredSize;

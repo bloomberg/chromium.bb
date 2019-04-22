@@ -194,11 +194,11 @@ base::string16 ComposeUrl(const base::string16& host,
   if (secure) {
     if (port == 443)
       return L"https://" + host + path;
-    return L"https://" + host + L':' + base::UintToString16(port) + path;
+    return L"https://" + host + L':' + base::NumberToString16(port) + path;
   }
   if (port == 80)
     return L"http://" + host + path;
-  return L"http://" + host + L':' + base::UintToString16(port) + path;
+  return L"http://" + host + L':' + base::NumberToString16(port) + path;
 }
 
 base::string16 GenerateMultipartHttpRequestBoundary() {

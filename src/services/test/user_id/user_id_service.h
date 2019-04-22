@@ -8,20 +8,19 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 #include "services/test/user_id/public/mojom/user_id.mojom.h"
 
 namespace user_id {
 
-std::unique_ptr<service_manager::Service> CreateUserIdService();
-
 class UserIdService : public service_manager::Service, public mojom::UserId {
  public:
-  UserIdService();
+  explicit UserIdService(service_manager::mojom::ServiceRequest request);
   ~UserIdService() override;
 
  private:
   // service_manager::Service:
-  void OnStart() override;
   void OnBindInterface(const service_manager::BindSourceInfo& source_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
@@ -31,6 +30,7 @@ class UserIdService : public service_manager::Service, public mojom::UserId {
 
   void BindUserIdRequest(mojom::UserIdRequest request);
 
+  service_manager::ServiceBinding service_binding_;
   service_manager::BinderRegistry registry_;
   mojo::BindingSet<mojom::UserId> bindings_;
 

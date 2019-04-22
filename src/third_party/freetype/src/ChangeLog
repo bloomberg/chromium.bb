@@ -1,3 +1,145 @@
+2019-03-05  Werner Lemberg  <wl@gnu.org>
+
+	[base] Handle numeric overflow (#55827).
+
+	* src/base/ftglyph.c (FT_Glyph_Get_CBox): Use `FT_PIX_CEIL_LONG'.
+
+2019-03-05  Sebastian Rasmussen  <sebras@gmail.com>
+
+	[psaux] Fix use of uninitialized memory (#55832).
+
+	* src/psaux/psintrp.c (cf2_interpT2CharString): The call to
+	`cf2_arrstack_setCount' may fail because the allocator ran out of
+	memory.  When this happens the stack is still written to before the
+	error condition is checked.  This means that FreeType writes outside
+	of allocated memory.  This commit moves the error check prior to the
+	stack assignment, hence the function now properly returns with an
+	error condition.
+
+2019-02-23  Werner Lemberg  <wl@gnu.org>
+
+	* src/base/ftbitmap.c (FT_Bitmap_Blend): No fractional offsets.
+
+	The function only provided a framework without an actual
+	implementation, which this commit removes.
+
+2019-02-23  Werner Lemberg  <wl@gnu.org>
+
+	* src/tools/update-copyright-year: Insert `(C)'.
+
+2019-02-21  Armin Hasitzka  <prince.cherusker@gmail.com>
+
+	[truetype] Mask numeric overflows.
+
+	* src/truetype/ttinterp.c (Move_CVT, Move_CVT_Stretched, Ins_MIRP):
+	Mask numeric overflows.
+
+	Reported as
+
+	  https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=11681
+	  https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=11734
+
+2019-02-21  Armin Hasitzka  <prince.cherusker@gmail.com>
+
+	[psaux] Mask numeric overflow.
+
+	* src/psaux/cffdecode.c (cff_decoder_parse_charstrings): Mask numeric
+	overflow.
+
+	Reported as
+
+	  https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=13041
+
+2019-02-16  Wink Saville  <wink@saville.com>
+
+	* src/autofit/afwarp.h (af_warper_compute): Fix declaration.
+
+2019-02-02  Nikolaus Waxweiler  <madigens@gmail.com>
+
+	[truetype] Apply MVAR hasc, hdsc and hlgp metrics to current FT_Face metrics.
+
+	Instead of setting typo or win metrics as the new `FT_Face' metrics
+	indiscriminately, apply only typo deltas to the currently active
+	`FT_Face' metrics.  This prevents line height differences when the
+	default outlines were used as the regular face and instances for
+	everything else, for example.
+
+	* src/truetype/ttgxvar.c (tt_apply_mvar): Implement.
+
+2019-02-02  Nikolaus Waxweiler  <madigens@gmail.com>
+
+	[sfnt] Use typo metrics if OS/2 fsSelection USE_TYPO_METRICS bit is set.
+
+	If the `OS/2' table exists and `fsSelection' bit 7
+	(USE_TYPO_METRICS) is set, use the `sTypo*' set of values to compute
+	the `FT_Face's ascender, descender, and height.  Otherwise, fall
+	back to old behavior.
+
+	* src/sfnt/sfobjs.c (sfnt_load_face): Implement.
+
+2019-01-18  John Tytgat  <John.Tytgat@esko.com>
+
+	[sfnt] Handle TT fonts having two PostScript font names (#55471).
+
+	* src/sfnt/sfdriver.c (sfnt_get_name_id): Prefer English over any
+	other language found for PostScript font names.
+
+2019-01-08  Chris Liddell <chris.liddell@artifex.com>
+
+	[psaux] Fix closepath (#55414).
+
+	All of the Type 1 path building is done with code common to the
+	revised CFF engine, with the exception of closepath, which was still
+	calling ps_builder_close_contour(), thus previously cached segments
+	were not always written to the path, and glyph corruption, or even
+	invalid outlines were possible.
+
+	* src/psauc/psinterp.c (cf2_interpT2CharString) <cf2_cmdCLOSEPATH>:
+	Switch to calling `cf2_glyphpath_closeOpenPath'.
+
+2018-12-29  Werner Lemberg  <wl@gnu.org>
+
+	* src/autofit/aflatin2.c: Some fixes from `aflatin.c' (#55310).
+
+2018-12-25  Werner Lemberg  <wl@gnu.org>
+
+	* src/psaux/cffdecode.c (cff_operaor_seac): Fix numeric overflow.
+
+	Reported as
+
+	  https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=11915
+
+2018-12-12  Werner Lemberg  <wl@gnu.org>
+
+	[gxvalid] Fix compiler warnings.
+
+	* src/gxvalid/gxvjust.c (gxv_just_check_max_gid),
+	src/gxvalid/gxvmort.c (gxv_mort_coverage_validate): Use `FT_UNUSED'.
+
+2018-12-11  Werner Lemberg  <wl@gnu.org>
+
+	* src/truetype/ttgload.c (TT_Hint_Glyph): Remove useless test.
+
+	`control_len' only gets its value from `n_ins' (and vice versa),
+	which is always read as `unsigned short' and thus can't be larger
+	than 0xFFFF.
+
+2018-12-04  Werner Lemberg  <wl@gnu.org>
+
+	[bdf] Ignore data after `ENDFONT'.
+
+	Reported as
+
+	  https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=10798
+
+	* src/bdf/bdflib.c (_bdf_parse_end): New function.
+	(_bdf_parse_glyphs): Switch to `_bdf_parse_end' after `ENDFONT' has
+	been encountered.
+
+2018-12-02  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	* builds/windows/visualc/freetype.dsp: Dust off.
+
 2018-11-27  Alexei Podtelezhnikov  <apodtele@gmail.com>
 
 	* builds/windows/vc2010/freetype.vcxproj: Simplify.
@@ -357,7 +499,7 @@
 	* src/base/ftobjs.c (ft_glyphslot_preset_bimap): Another tweak.
 
 	This one should be clearer. When the rounded monochrome bbox collapses
-	we add a pixel that covers most if not all original cbox. 
+	we add a pixel that covers most if not all original cbox.
 
 2018-09-21  Alexei Podtelezhnikov  <apodtele@gmail.com>
 
@@ -543,7 +685,7 @@
 
 	Reported as
 
-	  http://lists.nongnu.org/archive/html/freetype-devel/2018-08/msg00124.html
+	  https://lists.nongnu.org/archive/html/freetype-devel/2018-08/msg00124.html
 
 	* docs/reference/markdown/stylesheets/extra.css (.md-typeset code):
 	Add rule `white-space'.
@@ -696,7 +838,7 @@
 
 	Reported as
 
-	  http://lists.nongnu.org/archive/html/freetype-devel/2018-08/msg00083.html
+	  https://lists.nongnu.org/archive/html/freetype-devel/2018-08/msg00083.html
 
 2018-08-26  Werner Lemberg  <wl@gnu.org>
 
@@ -4663,7 +4805,7 @@
 
 ----------------------------------------------------------------------------
 
-Copyright 2017-2018 by
+Copyright (C) 2017-2019 by
 David Turner, Robert Wilhelm, and Werner Lemberg.
 
 This file is part of the FreeType project, and may only be used, modified,

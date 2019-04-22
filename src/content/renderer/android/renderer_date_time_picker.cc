@@ -83,8 +83,7 @@ bool RendererDateTimePicker::Open() {
     message.suggestions.push_back(
         ToDateTimeSuggestion(chooser_params_.suggestions[i]));
   }
-  Send(new ViewHostMsg_OpenDateTimeDialog(routing_id(), message));
-  return true;
+  return Send(new ViewHostMsg_OpenDateTimeDialog(routing_id(), message));
 }
 
 bool RendererDateTimePicker::OnMessageReceived(

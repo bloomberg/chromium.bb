@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/stl_util.h"
 #include "gpu/command_buffer/tests/gl_manager.h"
 #include "gpu/command_buffer/tests/gl_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -64,9 +65,9 @@ class GLCubeMapTextureTest : public testing::TestWithParam<GLenum> {
   GLuint framebuffer_id_;
 };
 
-INSTANTIATE_TEST_CASE_P(GLCubeMapTextureTests,
-                        GLCubeMapTextureTest,
-                        ::testing::ValuesIn(kCubeMapTextureTargets));
+INSTANTIATE_TEST_SUITE_P(GLCubeMapTextureTests,
+                         GLCubeMapTextureTest,
+                         ::testing::ValuesIn(kCubeMapTextureTargets));
 
 TEST_P(GLCubeMapTextureTest, TexImage2DAfterFBOBinding) {
   GLenum cube_map_target = GetParam();
@@ -91,7 +92,7 @@ TEST_P(GLCubeMapTextureTest, ReadPixels) {
   EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
 
   // Make a cube texture complete
-  for (unsigned i = 0; i < arraysize(kCubeMapTextureTargets); i++) {
+  for (unsigned i = 0; i < base::size(kCubeMapTextureTargets); i++) {
     glTexImage2D(kCubeMapTextureTargets[i], 0, GL_RGBA, width_, width_, 0,
                  GL_RGBA, GL_UNSIGNED_BYTE, pixels_);
     EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());

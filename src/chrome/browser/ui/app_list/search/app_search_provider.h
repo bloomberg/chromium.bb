@@ -23,6 +23,10 @@ namespace base {
 class Clock;
 }
 
+namespace sync_sessions {
+class OpenTabsUIDelegate;
+}  // namespace sync_sessions
+
 namespace app_list {
 
 class AppSearchResultRanker;
@@ -40,34 +44,58 @@ class AppSearchProvider : public SearchProvider {
   AppSearchProvider(Profile* profile,
                     AppListControllerDelegate* list_controller,
                     base::Clock* clock,
-                    AppListModelUpdater* model_updater);
+                    AppListModelUpdater* model_updater,
+                    AppSearchResultRanker* ranker);
   ~AppSearchProvider() override;
 
   // SearchProvider overrides:
   void Start(const base::string16& query) override;
-  void Train(const std::string& id) override;
+  void ViewClosing() override;
+  void Train(const std::string& id, RankingItemType type) override;
 
-  // Refresh indexed app data and update search results. When |force_inline| is
-  // set to true, search results is updated before returning from the function.
-  // Otherwise, search results would be grouped, i.e. multiple calls would only
-  // update search results once.
-  void RefreshAppsAndUpdateResults(bool force_inline);
+  // Refreshes apps and updates results inline
+  void RefreshAppsAndUpdateResults();
+
+  // Refreshes apps deferred to prevent multiple redundant refreshes in case of
+  // batch update events from app providers. Used in case when no removed app is
+  // detected.
+  void RefreshAppsAndUpdateResultsDeferred();
+
+  void set_open_tabs_ui_delegate_for_testing(
+      sync_sessions::OpenTabsUIDelegate* delegate) {
+    open_tabs_ui_delegate_for_testing_ = delegate;
+  }
+  sync_sessions::OpenTabsUIDelegate* open_tabs_ui_delegate_for_testing() {
+    return open_tabs_ui_delegate_for_testing_;
+  }
+
+  static std::string NormalizeIDForTest(const std::string& id);
 
  private:
-  void RefreshApps();
   void UpdateResults();
   void UpdateRecommendedResults(
       const base::flat_map<std::string, uint16_t>& id_to_app_list_index);
   void UpdateQueriedResults();
 
+  // Records the app search provider's latency when user initiates a search or
+  // gets the zero state suggestions.
+  // If |is_queried_search| is true, record query latency; otherwise, record
+  // zero state recommendation latency.
+  void MaybeRecordQueryLatencyHistogram(bool is_queried_search);
+
   Profile* profile_;
   AppListControllerDelegate* const list_controller_;
   base::string16 query_;
+  base::TimeTicks query_start_time_;
+  bool record_query_uma_ = false;
   Apps apps_;
   AppListModelUpdater* const model_updater_;
   base::Clock* clock_;
   std::vector<std::unique_ptr<DataSource>> data_sources_;
-  std::unique_ptr<AppSearchResultRanker> ranker_;
+  AppSearchResultRanker* ranker_;
+  sync_sessions::OpenTabsUIDelegate* open_tabs_ui_delegate_for_testing_ =
+      nullptr;
+  base::WeakPtrFactory<AppSearchProvider> refresh_apps_factory_;
   base::WeakPtrFactory<AppSearchProvider> update_results_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AppSearchProvider);

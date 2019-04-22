@@ -38,15 +38,6 @@ void WebStateObserverBridge::NavigationItemsPruned(web::WebState* web_state,
   }
 }
 
-void WebStateObserverBridge::NavigationItemCommitted(
-    web::WebState* web_state,
-    const web::LoadCommittedDetails& load_detatils) {
-  SEL selector = @selector(webState:didCommitNavigationWithDetails:);
-  if ([observer_ respondsToSelector:selector]) {
-    [observer_ webState:web_state didCommitNavigationWithDetails:load_detatils];
-  }
-}
-
 void WebStateObserverBridge::DidStartNavigation(
     web::WebState* web_state,
     web::NavigationContext* navigation_context) {

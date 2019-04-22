@@ -16,7 +16,7 @@
 #include "extensions/common/permissions/base_set_operators.h"
 
 namespace base {
-class ListValue;
+class Value;
 }  // namespace base
 
 namespace extensions {
@@ -54,12 +54,11 @@ class APIPermissionSet : public BaseSetOperators<APIPermissionSet> {
   // next permission if invalid data is detected. If |error| is not NULL, it
   // will be set to an error message and false is returned when an invalid
   // permission is found.
-  static bool ParseFromJSON(
-      const base::ListValue* permissions,
-      ParseSource source,
-      APIPermissionSet* api_permissions,
-      base::string16* error,
-      std::vector<std::string>* unhandled_permissions);
+  static bool ParseFromJSON(const base::Value* permissions,
+                            ParseSource source,
+                            APIPermissionSet* api_permissions,
+                            base::string16* error,
+                            std::vector<std::string>* unhandled_permissions);
 };
 
 // An ID representing a single permission that belongs to an app or extension.

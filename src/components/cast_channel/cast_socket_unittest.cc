@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
@@ -36,7 +37,6 @@
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
 #include "net/cert/pem_tokenizer.h"
-#include "net/socket/client_socket_handle.h"
 #include "net/socket/socket_test_util.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/ssl_server_socket.h"
@@ -233,6 +233,7 @@ class MockTestCastSocket : public TestCastSocketBase {
   DISALLOW_COPY_AND_ASSIGN(MockTestCastSocket);
 };
 
+// TODO(https://crbug.com/928467):  Remove this class.
 class TestSocketFactory : public net::ClientSocketFactory {
  public:
   explicit TestSocketFactory(net::IPEndPoint ip) : ip_(ip) {}
@@ -314,42 +315,41 @@ class TestSocketFactory : public net::ClientSocketFactory {
     }
   }
   std::unique_ptr<net::SSLClientSocket> CreateSSLClientSocket(
-      std::unique_ptr<net::ClientSocketHandle> client_handle,
+      std::unique_ptr<net::StreamSocket> nested_socket,
       const net::HostPortPair& host_and_port,
       const net::SSLConfig& ssl_config,
       const net::SSLClientSocketContext& context) override {
     if (!ssl_connect_data_) {
       // Test isn't overriding SSL socket creation.
       return net::ClientSocketFactory::GetDefaultFactory()
-          ->CreateSSLClientSocket(std::move(client_handle), host_and_port,
+          ->CreateSSLClientSocket(std::move(nested_socket), host_and_port,
                                   ssl_config, context);
     }
     ssl_socket_data_provider_ = std::make_unique<net::SSLSocketDataProvider>(
         ssl_connect_data_->mode, ssl_connect_data_->result);
-    //  auto client_handle = std::make_unique<net::ClientSocketHandle>();
 
     if (tls_socket_created_)
       std::move(tls_socket_created_).Run();
 
-    // client_handle->SetSocket(std::move(tcp_socket));
     return std::make_unique<net::MockSSLClientSocket>(
-        std::move(client_handle), net::HostPortPair(), net::SSLConfig(),
+        std::move(nested_socket), net::HostPortPair(), net::SSLConfig(),
         ssl_socket_data_provider_.get());
   }
   std::unique_ptr<net::ProxyClientSocket> CreateProxyClientSocket(
-      std::unique_ptr<net::ClientSocketHandle> transport_socket,
+      std::unique_ptr<net::StreamSocket> stream_socket,
       const std::string& user_agent,
       const net::HostPortPair& endpoint,
+      const net::ProxyServer& proxy_server,
       net::HttpAuthController* http_auth_controller,
       bool tunnel,
       bool using_spdy,
       net::NextProto negotiated_protocol,
+      net::ProxyDelegate* proxy_delegate,
       bool is_https_proxy,
       const net::NetworkTrafficAnnotationTag& traffic_annotation) override {
     NOTIMPLEMENTED();
     return nullptr;
   }
-  void ClearSSLSessionCache() override { NOTIMPLEMENTED(); }
 
   net::IPEndPoint ip_;
   // Simulated connect data
@@ -389,7 +389,8 @@ class CastSocketTestBase : public testing::Test {
     url_request_context_.Init();
     network_context_ = std::make_unique<network::NetworkContext>(
         nullptr, mojo::MakeRequest(&network_context_ptr_),
-        &url_request_context_);
+        &url_request_context_,
+        /*cors_exempt_header_list=*/std::vector<std::string>());
   }
 
   // Runs all pending tasks in the message loop.
@@ -421,8 +422,8 @@ class MockCastSocketTest : public CastSocketTestBase {
   void TearDown() override {
     if (socket_) {
       EXPECT_CALL(handler_, OnCloseComplete(net::OK));
-      socket_->Close(base::Bind(&CompleteHandler::OnCloseComplete,
-                                base::Unretained(&handler_)));
+      socket_->Close(base::BindOnce(&CompleteHandler::OnCloseComplete,
+                                    base::Unretained(&handler_)));
     }
   }
 
@@ -461,8 +462,8 @@ class SslCastSocketTest : public CastSocketTestBase {
   void TearDown() override {
     if (socket_) {
       EXPECT_CALL(handler_, OnCloseComplete(net::OK));
-      socket_->Close(base::Bind(&CompleteHandler::OnCloseComplete,
-                                base::Unretained(&handler_)));
+      socket_->Close(base::BindOnce(&CompleteHandler::OnCloseComplete,
+                                    base::Unretained(&handler_)));
     }
   }
 
@@ -490,8 +491,8 @@ class SslCastSocketTest : public CastSocketTestBase {
 
     std::unique_ptr<net::StreamSocket> accepted_socket;
     accept_result_ = tcp_server_socket_->Accept(
-        &accepted_socket, base::Bind(&SslCastSocketTest::TcpAcceptCallback,
-                                     base::Unretained(this)));
+        &accepted_socket, base::BindOnce(&SslCastSocketTest::TcpAcceptCallback,
+                                         base::Unretained(this)));
     connect_result_ = tcp_client_socket_->Connect(base::BindOnce(
         &SslCastSocketTest::TcpConnectCallback, base::Unretained(this)));
     while (accept_result_ == net::ERR_IO_PENDING ||
@@ -938,8 +939,8 @@ TEST_F(MockCastSocketTest, TestConnectEndToEndWithRealTransportAsync) {
   // Send the test message through a real transport object.
   EXPECT_CALL(handler_, OnWriteComplete(net::OK));
   socket_->transport()->SendMessage(
-      test_message, base::Bind(&CompleteHandler::OnWriteComplete,
-                               base::Unretained(&handler_)));
+      test_message, base::BindOnce(&CompleteHandler::OnWriteComplete,
+                                   base::Unretained(&handler_)));
   RunPendingTasks();
 
   EXPECT_EQ(ReadyState::OPEN, socket_->ready_state());
@@ -986,8 +987,8 @@ TEST_F(MockCastSocketTest, TestConnectEndToEndWithRealTransportSync) {
   // Send the test message through a real transport object.
   EXPECT_CALL(handler_, OnWriteComplete(net::OK));
   socket_->transport()->SendMessage(
-      test_message, base::Bind(&CompleteHandler::OnWriteComplete,
-                               base::Unretained(&handler_)));
+      test_message, base::BindOnce(&CompleteHandler::OnWriteComplete,
+                                   base::Unretained(&handler_)));
   RunPendingTasks();
 
   EXPECT_EQ(ReadyState::OPEN, socket_->ready_state());
@@ -1146,8 +1147,8 @@ TEST_F(SslCastSocketTest, DISABLED_TestMessageEndToEndWithRealSSL) {
 
   EXPECT_CALL(handler_, OnWriteComplete(net::OK));
   socket_->transport()->SendMessage(
-      test_message, base::Bind(&CompleteHandler::OnWriteComplete,
-                               base::Unretained(&handler_)));
+      test_message, base::BindOnce(&CompleteHandler::OnWriteComplete,
+                                   base::Unretained(&handler_)));
   RunPendingTasks();
 
   read = ReadExactLength(test_message_buffer.get(), test_message_length,

@@ -49,10 +49,6 @@ class GraphicsLayerTest : public testing::Test, public PaintTestConfigurations {
   ~GraphicsLayerTest() = default;
 
  protected:
-  bool PaintWithoutCommit(GraphicsLayer& layer, const IntRect* interest_rect) {
-    return layer.PaintWithoutCommit(interest_rect);
-  }
-
   void CommitAndFinishCycle(GraphicsLayer& layer) {
     layer.GetPaintController().CommitNewDisplayItems();
     layer.GetPaintController().FinishCycle();
@@ -75,32 +71,32 @@ class GraphicsLayerTest : public testing::Test, public PaintTestConfigurations {
   ViewportLayersSetup layers_;
 };
 
-INSTANTIATE_TEST_CASE_P(All,
-                        GraphicsLayerTest,
-                        testing::Values(0,
-                                        kBlinkGenPropertyTrees));
+INSTANTIATE_TEST_SUITE_P(All,
+                         GraphicsLayerTest,
+                         testing::Values(0, kBlinkGenPropertyTrees));
 
 TEST_P(GraphicsLayerTest, Paint) {
   IntRect interest_rect(1, 2, 3, 4);
-  EXPECT_TRUE(PaintWithoutCommit(layers_.graphics_layer(), &interest_rect));
-  CommitAndFinishCycle(layers_.graphics_layer());
+  auto& layer = layers_.graphics_layer();
+  EXPECT_TRUE(layer.PaintWithoutCommitForTesting(interest_rect));
+  CommitAndFinishCycle(layer);
 
   layers_.graphics_layer_client().SetNeedsRepaint(true);
-  EXPECT_TRUE(PaintWithoutCommit(layers_.graphics_layer(), &interest_rect));
-  CommitAndFinishCycle(layers_.graphics_layer());
+  EXPECT_TRUE(layer.PaintWithoutCommitForTesting(interest_rect));
+  CommitAndFinishCycle(layer);
 
   layers_.graphics_layer_client().SetNeedsRepaint(false);
-  EXPECT_FALSE(PaintWithoutCommit(layers_.graphics_layer(), &interest_rect));
+  EXPECT_FALSE(layer.PaintWithoutCommitForTesting(interest_rect));
 
   interest_rect.Move(IntSize(10, 20));
-  EXPECT_TRUE(PaintWithoutCommit(layers_.graphics_layer(), &interest_rect));
-  CommitAndFinishCycle(layers_.graphics_layer());
-  EXPECT_FALSE(PaintWithoutCommit(layers_.graphics_layer(), &interest_rect));
+  EXPECT_TRUE(layer.PaintWithoutCommitForTesting(interest_rect));
+  CommitAndFinishCycle(layer);
+  EXPECT_FALSE(layer.PaintWithoutCommitForTesting(interest_rect));
 
   layers_.graphics_layer().SetNeedsDisplay();
-  EXPECT_TRUE(PaintWithoutCommit(layers_.graphics_layer(), &interest_rect));
-  CommitAndFinishCycle(layers_.graphics_layer());
-  EXPECT_FALSE(PaintWithoutCommit(layers_.graphics_layer(), &interest_rect));
+  EXPECT_TRUE(layer.PaintWithoutCommitForTesting(interest_rect));
+  CommitAndFinishCycle(layer);
+  EXPECT_FALSE(layer.PaintWithoutCommitForTesting(interest_rect));
 }
 
 TEST_P(GraphicsLayerTest, PaintRecursively) {
@@ -111,38 +107,40 @@ TEST_P(GraphicsLayerTest, PaintRecursively) {
   auto transform2 =
       CreateTransform(*transform1, TransformationMatrix().Scale(2));
 
-  layers_.graphics_layer_client().SetPainter([&](const GraphicsLayer* layer,
-                                                 GraphicsContext& context,
-                                                 GraphicsLayerPaintingPhase,
-                                                 const IntRect&) {
-    {
-      ScopedPaintChunkProperties properties(context.GetPaintController(),
-                                            transform1.get(), *layer,
-                                            kBackgroundType);
-      PaintControllerTestBase::DrawRect(context, *layer, kBackgroundType,
-                                        interest_rect);
-    }
-    {
-      ScopedPaintChunkProperties properties(context.GetPaintController(),
-                                            transform2.get(), *layer,
-                                            kForegroundType);
-      PaintControllerTestBase::DrawRect(context, *layer, kForegroundType,
-                                        interest_rect);
-    }
-  });
+  layers_.graphics_layer_client().SetPainter(
+      [&](const GraphicsLayer* layer, GraphicsContext& context,
+          GraphicsLayerPaintingPhase, const IntRect&) {
+        {
+          ScopedPaintChunkProperties properties(context.GetPaintController(),
+                                                *transform1, *layer,
+                                                kBackgroundType);
+          PaintControllerTestBase::DrawRect(context, *layer, kBackgroundType,
+                                            interest_rect);
+        }
+        {
+          ScopedPaintChunkProperties properties(context.GetPaintController(),
+                                                *transform2, *layer,
+                                                kForegroundType);
+          PaintControllerTestBase::DrawRect(context, *layer, kForegroundType,
+                                            interest_rect);
+        }
+      });
 
   transform1->Update(transform_root,
-                     TransformPaintPropertyNode::State{
-                         TransformationMatrix().Translate(20, 30)});
-  EXPECT_TRUE(transform1->Changed(transform_root));
-  EXPECT_TRUE(transform2->Changed(transform_root));
+                     TransformPaintPropertyNode::State{FloatSize(20, 30)});
+  EXPECT_TRUE(transform1->Changed(PaintPropertyChangeType::kChangedOnlyValues,
+                                  transform_root));
+  EXPECT_TRUE(transform2->Changed(PaintPropertyChangeType::kChangedOnlyValues,
+                                  transform_root));
   layers_.graphics_layer_client().SetNeedsRepaint(true);
   layers_.graphics_layer().PaintRecursively();
 
   // With BlinkGenPropertyTrees, these are not cleared until after paint.
   if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-    EXPECT_FALSE(transform1->Changed(transform_root));
-    EXPECT_FALSE(transform2->Changed(transform_root));
+    EXPECT_FALSE(transform1->Changed(
+        PaintPropertyChangeType::kChangedOnlyCompositedValues, transform_root));
+    EXPECT_FALSE(transform2->Changed(
+        PaintPropertyChangeType::kChangedOnlyCompositedValues, transform_root));
   }
 }
 
@@ -156,6 +154,23 @@ TEST_P(GraphicsLayerTest, SetDrawsContentFalse) {
   layers_.graphics_layer().SetDrawsContent(false);
   EXPECT_EQ(nullptr, GetInternalPaintController(layers_.graphics_layer()));
   EXPECT_EQ(nullptr, GetInternalRasterInvalidator(layers_.graphics_layer()));
+}
+
+TEST_P(GraphicsLayerTest, CcLayerClient) {
+  auto graphics_layer =
+      std::make_unique<FakeGraphicsLayer>(layers_.graphics_layer_client());
+  graphics_layer->SetDrawsContent(true);
+  scoped_refptr<cc::PictureLayer> cc_layer = graphics_layer->CcLayer();
+  ASSERT_TRUE(cc_layer);
+  EXPECT_TRUE(cc_layer->DrawsContent());
+  EXPECT_TRUE(cc_layer->client());
+  EXPECT_TRUE(cc_layer->GetLayerClientForTesting());
+
+  graphics_layer.reset();
+  EXPECT_FALSE(cc_layer->DrawsContent());
+  EXPECT_FALSE(cc_layer->client());
+  EXPECT_FALSE(cc_layer->GetLayerClientForTesting());
+  EXPECT_FALSE(cc_layer->GetPicture());
 }
 
 }  // namespace blink

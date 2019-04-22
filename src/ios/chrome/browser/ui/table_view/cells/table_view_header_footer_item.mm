@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/table_view/cells/table_view_header_footer_item.h"
 
-#import "base/logging.h"
+#include "base/logging.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -37,22 +37,6 @@
     backgroundView.backgroundColor = styler.tableViewBackgroundColor;
     headerFooter.backgroundView = backgroundView;
   }
-}
-
-- (CGFloat)headerHeightForWidth:(CGFloat)width {
-  static UITableViewHeaderFooterView* header;
-  static dispatch_once_t onceToken;
-  dispatch_once(&onceToken, ^{
-    header = [[UITableViewHeaderFooterView alloc] init];
-  });
-
-  [self configureHeaderFooterView:header
-                       withStyler:[[ChromeTableViewStyler alloc] init]];
-  header.frame = CGRectMake(0, 0, width, 0);
-  [header setNeedsLayout];
-  [header layoutIfNeeded];
-  return
-      [header systemLayoutSizeFittingSize:UILayoutFittingCompressedSize].height;
 }
 
 @end

@@ -2,7 +2,6 @@ This test checks that Web Timing reports redirectCount correctly and has reasona
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS timing.redirectStart is >= timing.navigationStart
 PASS timing.redirectEnd is >= timing.redirectStart
 PASS navigation.redirectCount is 1

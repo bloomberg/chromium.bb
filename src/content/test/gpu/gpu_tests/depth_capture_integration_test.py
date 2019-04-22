@@ -6,7 +6,6 @@ import os
 import sys
 
 from gpu_tests import gpu_integration_test
-from gpu_tests import depth_capture_expectations
 from gpu_tests import path_util
 
 data_path = os.path.join(
@@ -72,7 +71,7 @@ class DepthCaptureIntegrationTest(gpu_integration_test.GpuIntegrationTest):
 
   @classmethod
   def _CreateExpectations(cls):
-    return depth_capture_expectations.DepthCaptureExpectations()
+    raise NotImplementedError
 
   @classmethod
   def SetUpProcess(cls):
@@ -86,6 +85,13 @@ class DepthCaptureIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       '--enable-gpu-benchmarking'])
     cls.StartBrowser()
     cls.SetStaticServerDirs([data_path])
+
+  @classmethod
+  def ExpectationsFiles(cls):
+    return [
+        os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                     'test_expectations',
+                     'depth_capture_expectations.txt')]
 
 def load_tests(loader, tests, pattern):
   del loader, tests, pattern  # Unused.

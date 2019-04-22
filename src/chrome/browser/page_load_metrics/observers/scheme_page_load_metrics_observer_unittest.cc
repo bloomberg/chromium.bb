@@ -104,6 +104,11 @@ class SchemePageLoadMetricsObserverTest
         prefix + ".ParseTiming.NavigationToParseStart", 1);
     histogram_tester().ExpectTotalCount(fcp_histogram_name, 1);
     histogram_tester().ExpectTotalCount(
+        prefix + ".PaintTiming.ParseStartToFirstContentfulPaint", 1);
+    histogram_tester().ExpectUniqueSample(
+        prefix + ".PaintTiming.ParseStartToFirstContentfulPaint",
+        static_cast<base::HistogramBase::Sample>(200), 1);
+    histogram_tester().ExpectTotalCount(
         prefix + ".Experimental.PaintTiming.NavigationToFirstMeaningfulPaint",
         1);
 
@@ -140,12 +145,12 @@ class SchemePageLoadMetricsObserverTest
 
 TEST_F(SchemePageLoadMetricsObserverTest, HTTPNavigation) {
   SimulateNavigation(url::kHttpScheme);
-  CheckHistograms(5, url::kHttpScheme);
+  CheckHistograms(6, url::kHttpScheme);
 }
 
 TEST_F(SchemePageLoadMetricsObserverTest, HTTPSNavigation) {
   SimulateNavigation(url::kHttpsScheme);
-  CheckHistograms(5, url::kHttpsScheme);
+  CheckHistograms(6, url::kHttpsScheme);
 }
 
 // Make sure no metrics are recorded for an unobserved scheme.

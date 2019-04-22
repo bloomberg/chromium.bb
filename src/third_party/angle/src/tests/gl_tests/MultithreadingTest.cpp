@@ -8,6 +8,7 @@
 #include "test_utils/ANGLETest.h"
 
 #include "test_utils/gl_raii.h"
+#include "util/EGLWindow.h"
 
 #include <mutex>
 #include <thread>
@@ -160,7 +161,6 @@ ANGLE_INSTANTIATE_TEST(MultithreadingTest,
                        ES2_OPENGL(),
                        ES3_OPENGL(),
                        ES2_OPENGLES(),
-                       ES3_OPENGLES(),
-                       ES2_VULKAN());
+                       ES3_OPENGLES());
 
 }  // namespace angle

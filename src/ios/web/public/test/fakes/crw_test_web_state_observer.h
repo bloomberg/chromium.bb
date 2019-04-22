@@ -24,9 +24,6 @@
 // Arguments passed to |webState:didFinishNavigation:|.
 @property(nonatomic, readonly)
     web::TestDidFinishNavigationInfo* didFinishNavigationInfo;
-// Arguments passed to |webState:didCommitNavigationWithDetails:|.
-@property(nonatomic, readonly)
-    web::TestCommitNavigationInfo* commitNavigationInfo;
 // Arguments passed to |webState:didLoadPageWithSuccess:|.
 @property(nonatomic, readonly) web::TestLoadPageInfo* loadPageInfo;
 // Arguments passed to |webState:didChangeLoadingProgress:|.

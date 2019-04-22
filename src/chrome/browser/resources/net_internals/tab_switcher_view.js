@@ -11,13 +11,13 @@
  * The controller part of TabSwitcherView hooks up a dropdown menu (i.e. HTML
  * SELECT) to control switching between tabs.
  */
-var TabSwitcherView = (function() {
+const TabSwitcherView = (function() {
   'use strict';
 
   // We inherit from View.
-  var superClass = View;
+  const superClass = View;
 
-  var TAB_LIST_ID = 'tab-list';
+  const TAB_LIST_ID = 'tab-list';
 
   /**
    * @constructor
@@ -56,20 +56,21 @@ var TabSwitcherView = (function() {
     setGeometry: function(left, top, width, height) {
       superClass.prototype.setGeometry.call(this, left, top, width, height);
 
-      var tabListNode = $(TAB_LIST_ID);
+      const tabListNode = $(TAB_LIST_ID);
 
       // Set position of the tab list.  Can't use DivView because DivView sets
       // a fixed width at creation time, and need to set the width of the tab
       // list only after its been populated.
-      var tabListWidth = this.tabListWidth_;
-      if (tabListWidth > width)
+      let tabListWidth = this.tabListWidth_;
+      if (tabListWidth > width) {
         tabListWidth = width;
+      }
       tabListNode.style.position = 'absolute';
       setNodePosition(tabListNode, left, top, tabListWidth, height);
 
       // Position each of the tab's content areas.
-      for (var tabId in this.tabIdToView_) {
-        var view = this.tabIdToView_[tabId];
+      for (const tabId in this.tabIdToView_) {
+        const view = this.tabIdToView_[tabId];
         view.setGeometry(
             left + tabListWidth, top, width - tabListWidth, height);
       }
@@ -77,9 +78,10 @@ var TabSwitcherView = (function() {
 
     show: function(isVisible) {
       superClass.prototype.show.call(this, isVisible);
-      var activeView = this.getActiveTabView();
-      if (activeView)
+      const activeView = this.getActiveTabView();
+      if (activeView) {
         activeView.show(isVisible);
+      }
     },
 
     // ---------------------------------------------
@@ -100,7 +102,7 @@ var TabSwitcherView = (function() {
       this.tabIdToView_[tabId] = view;
       this.tabIdsLinkVisibility_.set(tabId, true);
 
-      var node = addNodeWithText($(TAB_LIST_ID), 'a', name);
+      const node = addNodeWithText($(TAB_LIST_ID), 'a', name);
       node.href = hash;
       this.tabIdToLink_[tabId] = node;
       addNode($(TAB_LIST_ID), 'br');
@@ -112,7 +114,7 @@ var TabSwitcherView = (function() {
     },
 
     showTabLink: function(tabId, isVisible) {
-      var wasActive = this.activeTabId_ == tabId;
+      const wasActive = this.activeTabId_ == tabId;
 
       setNodeDisplay(this.tabIdToLink_[tabId], isVisible);
       this.tabIdsLinkVisibility_.set(tabId, isVisible);
@@ -120,7 +122,7 @@ var TabSwitcherView = (function() {
       if (wasActive && !isVisible) {
         // If the link for active tab is being hidden, then switch to the first
         // tab which is still visible.
-        for (var [localTabId, enabled] of this.tabIdsLinkVisibility_) {
+        for (const [localTabId, enabled] of this.tabIdsLinkVisibility_) {
           if (enabled) {
             this.switchToTab(localTabId);
             break;
@@ -152,13 +154,13 @@ var TabSwitcherView = (function() {
      *   (3) Invoke the optional onTabSwitched callback.
      */
     switchToTab: function(tabId) {
-      var newView = this.getTabView(tabId);
+      const newView = this.getTabView(tabId);
 
       if (!newView) {
         throw Error('Invalid tabId');
       }
 
-      var oldTabId = this.activeTabId_;
+      const oldTabId = this.activeTabId_;
       this.activeTabId_ = tabId;
 
       if (oldTabId) {
@@ -171,8 +173,9 @@ var TabSwitcherView = (function() {
 
       newView.show(this.isVisible());
 
-      if (this.onTabSwitched_)
+      if (this.onTabSwitched_) {
         this.onTabSwitched_(oldTabId, tabId);
+      }
     },
   };
 

@@ -23,11 +23,14 @@ class AudioParameters;
 class UserInputMonitor;
 }  // namespace media
 
+namespace blink {
+struct MediaStreamDevice;
+}  // namespace blink
+
 namespace content {
 
 class AudioInputDeviceManager;
 class AudioMirroringManager;
-struct MediaStreamDevice;
 
 // This class is operated on the IO thread.
 class CONTENT_EXPORT AudioInputDelegateImpl : public media::AudioInputDelegate {
@@ -73,7 +76,7 @@ class CONTENT_EXPORT AudioInputDelegateImpl : public media::AudioInputDelegate {
       int stream_id,
       bool automatic_gain_control,
       EventHandler* subscriber,
-      const MediaStreamDevice* device,
+      const blink::MediaStreamDevice* device,
       std::unique_ptr<media::AudioInputSyncWriter> writer,
       std::unique_ptr<base::CancelableSyncSocket> foreign_socket);
 

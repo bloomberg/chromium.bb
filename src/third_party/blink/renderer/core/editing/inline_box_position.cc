@@ -45,7 +45,7 @@ namespace blink {
 
 namespace {
 
-const int kBlockFlowAdjustmentMaxRecursionDepth = 1024;
+const int kBlockFlowAdjustmentMaxRecursionDepth = 256;
 
 bool IsNonTextLeafChild(LayoutObject* object) {
   if (object->SlowFirstChild())
@@ -141,8 +141,9 @@ InlineBoxPosition ComputeInlineBoxPositionForTextNode(
     int caret_max_offset = box->CaretMaxOffset();
 
     if (caret_offset < caret_min_offset || caret_offset > caret_max_offset ||
-        (caret_offset == caret_max_offset && box->IsLineBreak()))
-      continue;
+        (caret_offset == caret_max_offset && box->IsLineBreak())) {
+        continue;
+    }
 
     if (caret_offset > caret_min_offset && caret_offset < caret_max_offset)
       return InlineBoxPosition(box, caret_offset);
@@ -216,8 +217,7 @@ PositionWithAffinityTemplate<Strategy> AdjustBlockFlowPositionToInline(
   }
   const PositionTemplate<Strategy>& upstream_equivalent =
       UpstreamIgnoringEditingBoundaries(position);
-  if (upstream_equivalent == position ||
-      DownstreamIgnoringEditingBoundaries(upstream_equivalent) == position)
+  if (upstream_equivalent == position)
     return PositionWithAffinityTemplate<Strategy>();
 
   return ComputeInlineAdjustedPositionAlgorithm(

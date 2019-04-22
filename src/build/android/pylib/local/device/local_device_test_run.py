@@ -52,6 +52,7 @@ class LocalDeviceTestRun(test_run.TestRun):
   def __init__(self, env, test_instance):
     super(LocalDeviceTestRun, self).__init__(env, test_instance)
     self._tools = {}
+    env.SetPreferredAbis(test_instance.GetPreferredAbis())
 
   #override
   def RunTests(self, results):

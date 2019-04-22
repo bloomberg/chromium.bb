@@ -18,6 +18,7 @@
 #include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/offline_pages/core/offline_page_item.h"
 #include "components/offline_pages/core/offline_page_types.h"
+#include "components/offline_pages/core/page_criteria.h"
 #include "components/offline_pages/core/prefetch/stub_prefetch_service.h"
 #include "components/offline_pages/core/stub_offline_page_model.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -28,11 +29,12 @@ namespace feed {
 
 namespace {
 
+using offline_pages::MultipleOfflinePageItemCallback;
 using offline_pages::OfflinePageItem;
 using offline_pages::OfflinePageModel;
-using offline_pages::StubOfflinePageModel;
-using offline_pages::MultipleOfflinePageItemCallback;
+using offline_pages::PageCriteria;
 using offline_pages::PrefetchSuggestion;
+using offline_pages::StubOfflinePageModel;
 using offline_pages::StubPrefetchService;
 using offline_pages::SuggestionsProvider;
 
@@ -57,7 +59,7 @@ class TestOfflinePageModel : public StubOfflinePageModel {
                        std::string name_space) {
     OfflinePageItem item;
     item.url = GURL(url);
-    item.original_url = GURL(original_url);
+    item.original_url_if_different = GURL(original_url);
     item.offline_id = offline_id;
     item.creation_time = creation_time;
     item.client_id = offline_pages::ClientId(name_space, "");
@@ -75,9 +77,12 @@ class TestOfflinePageModel : public StubOfflinePageModel {
   MOCK_METHOD1(RemoveObserver, void(Observer*));
 
  private:
-  void GetPagesByURL(const GURL& url,
-                     MultipleOfflinePageItemCallback callback) override {
-    auto iter = url_to_offline_page_item_.equal_range(url.spec());
+  void GetPagesWithCriteria(const PageCriteria& criteria,
+                            MultipleOfflinePageItemCallback callback) override {
+    // Feed should ignore tab-bound pages.
+    EXPECT_TRUE(criteria.exclude_tab_bound_pages);
+
+    auto iter = url_to_offline_page_item_.equal_range(criteria.url.spec());
     std::vector<OfflinePageItem> ret;
     ret.resize(std::distance(iter.first, iter.second));
     std::transform(iter.first, iter.second, ret.begin(),
@@ -373,7 +378,7 @@ TEST_F(FeedOfflineHostTest, GetCurrentArticleSuggestionsMultiple) {
 TEST_F(FeedOfflineHostTest, OfflinePageAdded) {
   OfflinePageItem added_page;
   added_page.url = GURL(kUrl1);
-  added_page.original_url = GURL(kUrl2);
+  added_page.original_url_if_different = GURL(kUrl2);
   added_page.offline_id = 4;
 
   host()->OfflinePageAdded(nullptr, added_page);

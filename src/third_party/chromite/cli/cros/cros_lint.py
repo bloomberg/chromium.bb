@@ -325,6 +325,26 @@ def _BreakoutFilesByLinter(files):
   return map_to_return
 
 
+def _FilterFiles(files):
+  """Filter out ignored files.
+
+  Note: This is currently just a special case for generated protobuf files. If
+  there are more use cases, then a better configuration scheme should at least
+  be incorporated. This can also be removed in favor of built in ignore
+  functionality as we update our pylint versions.
+
+  Pylint --ignore-patterns did not get introduced until pylint 1.6 and the
+  --ignore functionality wasn't correctly applied to directories through
+  asteroid 1.6, at least when given a file directly (as we do):
+  http://pylint.pycqa.org/en/latest/whatsnew/changelog.html#what-s-new-in-pylint-1-6-0
+  https://github.com/PyCQA/pylint/issues/1700
+
+  TODO(saklein) Check the builtin ignore functionality as we upgrade pylint and
+  remove this function if/when possible.
+  """
+  return [f for f in files if not f.endswith('_pb2.py')]
+
+
 def _Dispatcher(errors, output_format, debug, linter, path):
   """Call |linter| on |path| and take care of coalescing exit codes/output."""
   result = linter(path, output_format, debug)
@@ -365,7 +385,7 @@ run other checks (e.g. pyflakes, etc.)
       logging.warning('No files provided to lint.  Doing nothing.')
 
     errors = multiprocessing.Value('i')
-    linter_map = _BreakoutFilesByLinter(files)
+    linter_map = _BreakoutFilesByLinter(_FilterFiles(files))
     dispatcher = functools.partial(_Dispatcher, errors,
                                    self.options.output, self.options.debug)
 

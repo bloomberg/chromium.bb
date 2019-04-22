@@ -4,11 +4,13 @@
 
 #include "third_party/blink/renderer/modules/notifications/notification_data.h"
 
+#include "third_party/blink/public/common/notifications/notification_constants.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value_factory.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/notifications/notification.h"
 #include "third_party/blink/renderer/modules/notifications/notification_options.h"
+#include "third_party/blink/renderer/modules/notifications/timestamp_trigger.h"
 #include "third_party/blink/renderer/modules/vibration/vibration_controller.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
@@ -90,11 +92,11 @@ mojom::blink::NotificationDataPtr CreateNotificationData(
     const ScriptValue& data = options->data();
     v8::Isolate* isolate = data.GetIsolate();
     DCHECK(isolate->InContext());
-    SerializedScriptValue::SerializeOptions options;
-    options.for_storage = SerializedScriptValue::kForStorage;
+    SerializedScriptValue::SerializeOptions serialize_options;
+    serialize_options.for_storage = SerializedScriptValue::kForStorage;
     scoped_refptr<SerializedScriptValue> serialized_script_value =
-        SerializedScriptValue::Serialize(isolate, data.V8Value(), options,
-                                         exception_state);
+        SerializedScriptValue::Serialize(isolate, data.V8Value(),
+                                         serialize_options, exception_state);
     if (exception_state.HadException())
       return nullptr;
 
@@ -139,6 +141,19 @@ mojom::blink::NotificationDataPtr CreateNotificationData(
   }
 
   notification_data->actions = std::move(actions);
+
+  if (options->hasShowTrigger()) {
+    auto* timestamp_trigger = options->showTrigger();
+    auto timestamp = base::Time::FromJsTime(timestamp_trigger->timestamp());
+
+    if (timestamp - base::Time::Now() > kMaxNotificationShowTriggerDelay) {
+      exception_state.ThrowTypeError(
+          "Notification trigger timestamp too far ahead in the future.");
+      return nullptr;
+    }
+
+    notification_data->show_trigger_timestamp = timestamp;
+  }
 
   return notification_data;
 }

@@ -42,7 +42,7 @@ struct ColorTypeFilter_565 {
         return (x & ~SK_G16_MASK_IN_PLACE) | ((x & SK_G16_MASK_IN_PLACE) << 16);
     }
     static uint16_t Compact(uint32_t x) {
-        return (x & ~SK_G16_MASK_IN_PLACE) | ((x >> 16) & SK_G16_MASK_IN_PLACE);
+        return ((x & ~SK_G16_MASK_IN_PLACE) & 0xFFFF) | ((x >> 16) & SK_G16_MASK_IN_PLACE);
     }
 };
 
@@ -369,6 +369,7 @@ SkMipMap* SkMipMap::Build(const SkPixmap& src, SkDiscardableFactoryProc fact) {
             proc_3_2 = downsample_3_2<ColorTypeFilter_8>;
             proc_3_3 = downsample_3_3<ColorTypeFilter_8>;
             break;
+        case kRGBA_F16Norm_SkColorType:
         case kRGBA_F16_SkColorType:
             proc_1_2 = downsample_1_2<ColorTypeFilter_F16>;
             proc_1_3 = downsample_1_3<ColorTypeFilter_F16>;
@@ -423,6 +424,10 @@ SkMipMap* SkMipMap::Build(const SkPixmap& src, SkDiscardableFactoryProc fact) {
     int         height = src.height();
     uint32_t    rowBytes;
     SkPixmap    srcPM(src);
+
+    // Depending on architecture and other factors, the pixel data alignment may need to be as
+    // large as 8 (for F16 pixels). See the comment on SkMipMap::Level.
+    SkASSERT(SkIsAlign8((uintptr_t)addr));
 
     for (int i = 0; i < countLevels; ++i) {
         FilterProc* proc;

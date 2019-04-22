@@ -20,9 +20,6 @@
 
 namespace content {
 class BrowserContext;
-class NavigationHandle;
-class NavigationThrottle;
-class RenderFrameHost;
 class WebContents;
 }
 
@@ -35,8 +32,6 @@ class GuestViewManager;
 }
 
 namespace extensions {
-class MimeHandlerViewGuest;
-
 // This class filters out incoming extensions GuestView-specific IPC messages
 // from thw renderer process. It is created on the UI thread. Messages may be
 // handled on the IO thread or the UI thread.
@@ -45,20 +40,12 @@ class ExtensionsGuestViewMessageFilter
       public content::BrowserAssociatedInterface<mojom::GuestView>,
       public mojom::GuestView {
  public:
-  // During attaching guest to embedder WebContentses the corresponding plugin
-  // frame might be navigated to "about:blank" first. During this time all
-  // navigations for the same FrameTreeNode must be canceled.
-  static std::unique_ptr<content::NavigationThrottle> MaybeCreateThrottle(
-      content::NavigationHandle* navigation_handle);
-
   ExtensionsGuestViewMessageFilter(int render_process_id,
                                    content::BrowserContext* context);
 
  private:
-  class FrameNavigationHelper;
   friend class content::BrowserThread;
   friend class base::DeleteHelper<ExtensionsGuestViewMessageFilter>;
-  friend class ExtensionsGuestViewMessageFilter::FrameNavigationHelper;
 
   ~ExtensionsGuestViewMessageFilter() override;
 
@@ -116,16 +103,6 @@ class ExtensionsGuestViewMessageFilter
       mime_handler::BeforeUnloadControlPtrInfo before_unload_control,
       bool is_full_page_plugin,
       content::WebContents* web_contents);
-
-  // Called by a FrameNavigationHelper on UI thread to notify the message filter
-  // whether or not it should proceed with attaching a guest. if |plugin_rfh| is
-  // nullptr, the MimeHandlerViewGuest associated with |element_instance_id|
-  // will be destroyed and deleted.
-  void ResumeAttachOrDestroy(int32_t element_instance_id,
-                             content::RenderFrameHost* plugin_rfh);
-
-  std::map<int32_t, std::unique_ptr<FrameNavigationHelper>>
-      frame_navigation_helpers_;
 
   static const uint32_t kFilteredMessageClasses[];
 

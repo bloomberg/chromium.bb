@@ -50,9 +50,8 @@ function GearMenu(element) {
    * @const
    * @private
    */
-  this.volumeSpaceOuterBar_ = assertInstanceof(
-      this.volumeSpaceInnerBar_.parentElement,
-      HTMLElement);
+  this.volumeSpaceOuterBar_ =
+      assertInstanceof(this.volumeSpaceInnerBar_.parentElement, HTMLElement);
 
   /**
    * @type {!HTMLElement}
@@ -110,15 +109,16 @@ GearMenu.prototype.setSpaceInfo = function(
     this.volumeSpaceInnerBar_.style.width = '100%';
   }
 
-  spaceInfoPromise.then(function(spaceInfo) {
-    if (this.spaceInfoPromise_ != spaceInfoPromise)
+  spaceInfoPromise.then(spaceInfo => {
+    if (this.spaceInfoPromise_ != spaceInfoPromise) {
       return;
+    }
     this.volumeSpaceInnerBar_.removeAttribute('pending');
     if (spaceInfo) {
-      var sizeStr = util.bytesToString(spaceInfo.remainingSize);
+      const sizeStr = util.bytesToString(spaceInfo.remainingSize);
       this.volumeSpaceInfoLabel_.textContent = strf('SPACE_AVAILABLE', sizeStr);
 
-      var usedSpace = spaceInfo.totalSize - spaceInfo.remainingSize;
+      const usedSpace = spaceInfo.totalSize - spaceInfo.remainingSize;
       this.volumeSpaceInnerBar_.style.width =
           (100 * usedSpace / spaceInfo.totalSize) + '%';
 
@@ -127,5 +127,5 @@ GearMenu.prototype.setSpaceInfo = function(
       this.volumeSpaceOuterBar_.hidden = true;
       this.volumeSpaceInfoLabel_.textContent = str('FAILED_SPACE_INFO');
     }
-  }.bind(this));
+  });
 };

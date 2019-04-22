@@ -26,7 +26,6 @@ cr.define('link_container_test', function() {
       const fooDestination = new print_preview.Destination(
           'FooPrinter', print_preview.DestinationType.LOCAL,
           print_preview.DestinationOrigin.LOCAL, 'Foo Printer',
-          false /* isRecent */,
           print_preview.DestinationConnectionStatus.ONLINE);
       fooDestination.capabilities =
           print_preview_test_utils.getCddTemplate(fooDestination.id)
@@ -73,19 +72,21 @@ cr.define('link_container_test', function() {
       const validateLinkState = (link, disabled) => {
         assertFalse(link.hidden);
         assertEquals(!disabled, link.hasAttribute('actionable'));
-        assertEquals(disabled, link.querySelector('button').disabled);
+        assertEquals(disabled, link.querySelector('cr-icon-button').disabled);
       };
 
       validateLinkState(systemDialogLink, false);
-      if (cr.isMac)
+      if (cr.isMac) {
         validateLinkState(openInPreviewLink, false);
+      }
 
       // Set disabled to true, indicating that there is a validation error or
       // printer error.
       linkContainer.disabled = true;
       validateLinkState(systemDialogLink, cr.isWindows);
-      if (cr.isMac)
+      if (cr.isMac) {
         validateLinkState(openInPreviewLink, true);
+      }
     });
 
     /**

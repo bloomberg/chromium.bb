@@ -24,6 +24,7 @@
 <translation id="1520828917794284345">将桌面调整为合适大小</translation>
 <translation id="154040539590487450">无法启动远程访问服务。</translation>
 <translation id="1546934824884762070">发生意外错误。请将此问题报告给开发者。</translation>
+<translation id="1624185583382384493">Chrome 远程桌面现已推出网页版。欢迎试用我们的这款<ph name="LINK_BEGIN" />网络应用<ph name="LINK_END" />，它既快捷又免费，而且添加了更多功能，包括更好地支持同时使用多个显示器。</translation>
 <translation id="1643640058022401035">如果您离开此页，那么您的 Chrome 远程访问会话就会结束。</translation>
 <translation id="1654128982815600832">正在对此计算机启用远程连接…</translation>
 <translation id="170207782578677537">无法注册此计算机。</translation>
@@ -138,6 +139,7 @@
 <translation id="3989511127559254552">要继续，您必须先为该应用授予对您的计算机的扩展访问权限（该操作只需执行一次）。</translation>
 <translation id="4006787130661126000">如果您想使用 Chrome 远程桌面来访问此计算机，就必须启用远程连接。</translation>
 <translation id="405887016757208221">远程计算机未能将该会话初始化。如果问题仍然存在，请尝试重新配置主机。</translation>
+<translation id="4060747889721220580">下载文件</translation>
 <translation id="4068946408131579958">所有连接</translation>
 <translation id="409800995205263688">注意：策略设置仅允许您网络内的计算机之间建立连接。</translation>
 <translation id="4126409073460786861">请在设置完毕后刷新此页面，然后您只需选择设备并输入相应的 PIN 码，便可访问这台计算机</translation>
@@ -242,6 +244,7 @@ PC</translation>
 <translation id="6198252989419008588">更改 PIN</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" />（已过期）</translation>
 <translation id="6221358653751391898">您尚未登录 Chrome。请登录，然后重试。</translation>
+<translation id="6227369581881558336">Chrome 远程桌面现已推出网页版，这款应用包含一些新功能（包括文件传输）！查看我们的这款<ph name="LINK_BEGIN" />网络应用<ph name="LINK_END" />。</translation>
 <translation id="6284412385303060032">在控制台逻辑屏幕运行的主机已关闭。这是为了切换到在用户特定会话中运行的主机，以便为 Curtain 模式提供支持。</translation>
 <translation id="629730747756840877">帐号</translation>
 <translation id="6304318647555713317">客户端</translation>
@@ -289,7 +292,6 @@ PC</translation>
 <translation id="7434397035092923453"><ph name="CLIENT_USERNAME" /> 访问客户端的请求遭拒。</translation>
 <translation id="7444276978508498879">已连接客户端：<ph name="CLIENT_USERNAME" />。</translation>
 <translation id="7526139040829362392">更改帐号</translation>
-<translation id="7589941250119944644">新版“Chrome 远程桌面”现已上线！欢迎试用我们的这款<ph name="LINK_BEGIN" />网络应用<ph name="LINK_END" />：它既快速又免费，而且所具备的功能和之前完全相同。</translation>
 <translation id="7606912958770842224">启用远程连接</translation>
 <translation id="7628469622942688817">在此设备上记住我的 PIN 码。</translation>
 <translation id="7649070708921625228">帮助</translation>

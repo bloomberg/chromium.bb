@@ -7,18 +7,14 @@ Tests that permissions granted in 2D Chrome persist in the VR Browser.
     <script src="../../../../../../third_party/blink/web_tests/resources/testharness.js"></script>
     <script src="../resources/webxr_e2e.js"></script>
     <script>
-      var t = async_test("Permissions granted in 2D persist in VR Browser");
-
       function stepRequestPermission() {
         navigator.getUserMedia(
           {audio: true, video: true},
           () => {
-            t.done();
+            done();
           },
           (err) => {
-            t.step(() => {
-              assert_unreached("Permission request rejected: " + err);
-            });
+            assert_unreached("Permission request rejected: " + err);
           });
       }
     </script>

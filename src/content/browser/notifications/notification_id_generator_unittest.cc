@@ -80,7 +80,7 @@ TEST_F(NotificationIdGeneratorTest, GenerateForPersistent_DifferentIds) {
 TEST_F(NotificationIdGeneratorTest, GenerateForPersistent_NumericTagAmbiguity) {
   EXPECT_NE(
       generator_.GenerateForPersistentNotification(
-          origin_.GetURL(), base::Int64ToString(kPersistentNotificationId),
+          origin_.GetURL(), base::NumberToString(kPersistentNotificationId),
           kPersistentNotificationId),
       generator_.GenerateForPersistentNotification(
           origin_.GetURL(), "" /* tag */, kPersistentNotificationId));

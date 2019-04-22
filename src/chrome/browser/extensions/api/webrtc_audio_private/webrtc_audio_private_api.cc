@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -168,7 +169,7 @@ WebrtcAudioPrivateFunction::GetRenderProcessHostFromRequest(
                                     nullptr, &contents, nullptr)) {
     error_ = extensions::ErrorUtils::FormatErrorMessage(
         extensions::tabs_constants::kTabNotFoundError,
-        base::IntToString(tab_id));
+        base::NumberToString(tab_id));
     return nullptr;
   }
   GURL expected_origin = contents->GetLastCommittedURL().GetOrigin();

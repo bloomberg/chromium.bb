@@ -5,7 +5,7 @@
 /**
  * InstallLinuxPackageDialog is used as the handler for .deb files.
  */
-cr.define('cr.filebrowser', function() {
+cr.define('cr.filebrowser', () => {
   /**
    * Creates dialog in DOM tree.
    *
@@ -29,7 +29,7 @@ cr.define('cr.filebrowser', function() {
 
     // The OK button normally dismisses the dialog, so add a button we can
     // customize.
-    this.installButton_ = this.okButton_.cloneNode();
+    this.installButton_ = this.okButton_.cloneNode(false /* deep */);
     this.installButton_.textContent =
         str('INSTALL_LINUX_PACKAGE_INSTALL_BUTTON');
     this.installButton_.addEventListener(
@@ -121,8 +121,9 @@ cr.define('cr.filebrowser', function() {
     // where they're missing gracefully.
     let description = linux_package_info.summary;
     if (linux_package_info.description) {
-      if (description)
+      if (description) {
         description += '\n\n';
+      }
       description += linux_package_info.description;
     }
     if (description) {

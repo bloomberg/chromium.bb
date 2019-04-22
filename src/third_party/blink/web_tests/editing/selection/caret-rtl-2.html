@@ -11,6 +11,11 @@ To test manually, click the right of the text. The caret should be on the right 
 
 var clickOn = 'right';
 var expectedOffset = 7;
+if (window.internals && internals.runtimeFlags.bidiCaretAffinityEnabled) {
+  // When bidi caret affinity is enabled, carets are shown at different visual
+  // locations. Use the changed test expectations in this case.
+  expectedOffset = 0;
+}
 
 runTest();
 

@@ -5,12 +5,13 @@
 #include <string>
 
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/prefs/pref_registry_simple.h"
-#include "components/prefs/testing_pref_service.h"
 #include "components/signin/core/browser/signin_investigator.h"
-#include "components/signin/core/browser/signin_manager_base.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/browser/signin_pref_names.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "services/identity/public/cpp/identity_test_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using signin_metrics::AccountEquality;
@@ -24,13 +25,17 @@ const char kEmptyId[] = "";
 
 class FakeProvider : public SigninInvestigator::DependencyProvider {
  public:
-  FakeProvider(const std::string& last_email, const std::string& last_id) {
-    SigninManagerBase::RegisterProfilePrefs(prefs_.registry());
+  FakeProvider(const std::string& last_email, const std::string& last_id)
+      : identity_test_env_(/*test_url_loader_factory=*/nullptr, &prefs_) {
     prefs_.SetString(prefs::kGoogleServicesLastUsername, last_email);
     prefs_.SetString(prefs::kGoogleServicesLastAccountId, last_id);
   }
   PrefService* GetPrefs() override { return &prefs_; }
-  TestingPrefServiceSimple prefs_;
+
+ private:
+  base::test::ScopedTaskEnvironment task_environment_;
+  sync_preferences::TestingPrefServiceSyncable prefs_;
+  identity::IdentityTestEnvironment identity_test_env_;
 };
 }  // namespace
 

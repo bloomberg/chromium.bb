@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
@@ -14,7 +16,6 @@
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/browser/service_worker/service_worker_register_job.h"
 #include "content/public/browser/browser_thread.h"
-#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 
 namespace content {
@@ -214,8 +215,7 @@ void ServiceWorkerRegistration::ActivateWaitingVersionWhenReady() {
   }
 
   if (IsLameDuckActiveVersion()) {
-    if (blink::ServiceWorkerUtils::IsServicificationEnabled() &&
-        active_version()->running_status() == EmbeddedWorkerStatus::RUNNING) {
+    if (active_version()->running_status() == EmbeddedWorkerStatus::RUNNING) {
       // If the waiting worker is ready and the active worker needs to be
       // swapped out, ask the active worker to trigger idle timer as soon as
       // possible.
@@ -296,8 +296,7 @@ void ServiceWorkerRegistration::OnNoControllees(ServiceWorkerVersion* version) {
   }
 
   if (IsLameDuckActiveVersion()) {
-    if (blink::ServiceWorkerUtils::IsServicificationEnabled() &&
-        should_activate_when_ready_ &&
+    if (should_activate_when_ready_ &&
         active_version()->running_status() == EmbeddedWorkerStatus::RUNNING) {
       // If the waiting worker is ready and the active worker needs to be
       // swapped out, ask the active worker to trigger idle timer as soon as
@@ -348,8 +347,9 @@ void ServiceWorkerRegistration::StartLameDuckTimer() {
 
   lame_duck_timer_.Start(
       FROM_HERE, kMaxLameDuckTime,
-      base::Bind(&ServiceWorkerRegistration::RemoveLameDuckIfNeeded,
-                 Unretained(this) /* OK because |this| owns the timer */));
+      base::BindRepeating(
+          &ServiceWorkerRegistration::RemoveLameDuckIfNeeded,
+          Unretained(this) /* OK because |this| owns the timer */));
 }
 
 void ServiceWorkerRegistration::RemoveLameDuckIfNeeded() {

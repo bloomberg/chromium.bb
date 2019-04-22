@@ -111,12 +111,22 @@ constexpr uint8_t FXSYS_GetBValue(uint32_t bgr) {
 #define FXSYS_GetYValue(cmyk) ((uint8_t)((cmyk) >> 8) & 0xff)
 #define FXSYS_GetKValue(cmyk) ((uint8_t)(cmyk)&0xff)
 
+// Bits per pixel, not bytes.
 inline int GetBppFromFormat(FXDIB_Format format) {
   return format & 0xff;
 }
 
+// AKA bytes per pixel, assuming 8-bits per component.
 inline int GetCompsFromFormat(FXDIB_Format format) {
   return (format & 0xff) / 8;
+}
+
+inline bool GetIsAlphaFromFormat(FXDIB_Format format) {
+  return format & 0x200;
+}
+
+inline bool GetIsCmykFromFormat(FXDIB_Format format) {
+  return format & 0x400;
 }
 
 inline FX_CMYK CmykEncode(int c, int m, int y, int k) {
@@ -138,7 +148,7 @@ constexpr FX_ARGB ArgbEncode(int a, int r, int g, int b) {
 
 FX_ARGB AlphaAndColorRefToArgb(int a, FX_COLORREF colorref);
 
-FX_ARGB StringToFXARGB(const WideStringView& view);
+FX_ARGB StringToFXARGB(WideStringView view);
 
 #define FXARGB_A(argb) ((uint8_t)((argb) >> 24))
 #define FXARGB_R(argb) ((uint8_t)((argb) >> 16))

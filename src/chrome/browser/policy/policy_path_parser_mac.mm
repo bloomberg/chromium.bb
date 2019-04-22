@@ -91,6 +91,8 @@ base::FilePath::StringType ExpandPathVariables(
       int error = SCError();
       LOG(ERROR) << "Machine name variable can not be resolved. Error: "
                  << error << " - " << SCErrorString(error);
+      // Revert to a safe default if it is impossible to fetch the real name.
+      result.replace(position, strlen(kMachineNamePolicyVarName), "localhost");
     }
   }
   return result;

@@ -42,10 +42,14 @@ class PLATFORM_EXPORT UnifiedHeapController final
   void RegisterV8References(const std::vector<std::pair<void*, void*>>&) final;
   bool AdvanceTracing(double) final;
   bool IsTracingDone() final;
+  bool IsRootForNonTracingGC(const v8::TracedGlobal<v8::Value>&) final;
 
   ThreadState* thread_state() const { return thread_state_; }
 
  private:
+  static bool IsRootForNonTracingGCInternal(
+      const v8::TracedGlobal<v8::Value>& handle);
+
   ThreadState* const thread_state_;
 
   // Returns whether the Blink heap has been fully processed.

@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_state.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
+#include "third_party/blink/renderer/platform/graphics/scroll_types.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
@@ -252,7 +253,7 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
   // (which is responsible for painting the tickmarks).
   void InvalidatePaintForTickmarks();
 
-  bool RecalcOverflow() override;
+  bool RecalcLayoutOverflow() final;
 
   // The visible background area, in the local coordinates. The view background
   // will be painted in this rect. It's also the positioning area of fixed-
@@ -283,8 +284,6 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
   void MapAncestorToLocal(const LayoutBoxModelObject*,
                           TransformState&,
                           MapCoordinatesFlags) const override;
-  void ComputeSelfHitTestRects(Vector<LayoutRect>&,
-                               const LayoutPoint& layer_offset) const override;
 
   bool CanHaveChildren() const override;
 

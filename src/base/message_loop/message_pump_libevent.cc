@@ -33,13 +33,6 @@
 // StopWatchingFileDescriptor().
 // It is moved into and out of lists in struct event_base by
 // the libevent functions event_add() and event_del().
-//
-// TODO(dkegel):
-// At the moment bad things happen if a FdWatchController
-// is active after its MessagePumpLibevent has been destroyed.
-// See MessageLoopTest.FdWatchControllerOutlivesMessageLoop
-// Not clear yet whether that situation occurs in practice,
-// but if it does, we need to fix it.
 
 namespace base {
 
@@ -49,7 +42,7 @@ MessagePumpLibevent::FdWatchController::FdWatchController(
 
 MessagePumpLibevent::FdWatchController::~FdWatchController() {
   if (event_) {
-    StopWatchingFileDescriptor();
+    CHECK(StopWatchingFileDescriptor());
   }
   if (was_destroyed_) {
     DCHECK(!*was_destroyed_);
@@ -137,6 +130,11 @@ bool MessagePumpLibevent::WatchFileDescriptor(int fd,
   // threadsafe, and your watcher may never be registered.
   DCHECK(watch_file_descriptor_caller_checker_.CalledOnValidThread());
 
+  TRACE_EVENT_WITH_FLOW1(TRACE_DISABLED_BY_DEFAULT("toplevel.flow"),
+                         "MessagePumpLibevent::WatchFileDescriptor",
+                         reinterpret_cast<uintptr_t>(controller) ^ fd,
+                         TRACE_EVENT_FLAG_FLOW_OUT, "fd", fd);
+
   int event_mask = persistent ? EV_PERSIST : 0;
   if (mode & WATCH_READ) {
     event_mask |= EV_READ;
@@ -207,36 +205,33 @@ void MessagePumpLibevent::Run(Delegate* delegate) {
     mac::ScopedNSAutoreleasePool autorelease_pool;
 #endif
 
-    bool did_work = delegate->DoWork();
+    Delegate::NextWorkInfo next_work_info = delegate->DoSomeWork();
+    bool more_work_is_plausible = next_work_info.is_immediate();
     if (!keep_running_)
       break;
 
     event_base_loop(event_base_, EVLOOP_NONBLOCK);
-    did_work |= processed_io_events_;
+    more_work_is_plausible |= processed_io_events_;
     processed_io_events_ = false;
     if (!keep_running_)
       break;
 
-    did_work |= delegate->DoDelayedWork(&delayed_work_time_);
-    if (!keep_running_)
-      break;
-
-    if (did_work)
+    if (more_work_is_plausible)
       continue;
 
-    did_work = delegate->DoIdleWork();
+    more_work_is_plausible = delegate->DoIdleWork();
     if (!keep_running_)
       break;
 
-    if (did_work)
+    if (more_work_is_plausible)
       continue;
 
     // EVLOOP_ONCE tells libevent to only block once,
     // but to service all pending events when it wakes up.
-    if (delayed_work_time_.is_null()) {
+    if (next_work_info.delayed_run_time.is_max()) {
       event_base_loop(event_base_, EVLOOP_ONCE);
     } else {
-      TimeDelta delay = delayed_work_time_ - TimeTicks::Now();
+      const TimeDelta delay = next_work_info.remaining_delay();
       if (delay > TimeDelta()) {
         struct timeval poll_tv;
         poll_tv.tv_sec = delay.InSeconds();
@@ -246,10 +241,6 @@ void MessagePumpLibevent::Run(Delegate* delegate) {
         event_add(timer_event.get(), &poll_tv);
         event_base_loop(event_base_, EVLOOP_ONCE);
         event_del(timer_event.get());
-      } else {
-        // It looks like delayed_work_time_ indicates a time in the past, so we
-        // need to call DoDelayedWork now.
-        delayed_work_time_ = TimeTicks();
       }
     }
 
@@ -269,16 +260,15 @@ void MessagePumpLibevent::ScheduleWork() {
   // Tell libevent (in a threadsafe way) that it should break out of its loop.
   char buf = 0;
   int nwrite = HANDLE_EINTR(write(wakeup_pipe_in_, &buf, 1));
-  DCHECK(nwrite == 1 || errno == EAGAIN)
-      << "[nwrite:" << nwrite << "] [errno:" << errno << "]";
+  DPCHECK(nwrite == 1 || errno == EAGAIN) << "nwrite:" << nwrite;
 }
 
 void MessagePumpLibevent::ScheduleDelayedWork(
     const TimeTicks& delayed_work_time) {
-  // We know that we can't be blocked on Wait right now since this method can
-  // only be called on the same thread as Run, so we only need to update our
-  // record of how long to sleep when we do sleep.
-  delayed_work_time_ = delayed_work_time;
+  // We know that we can't be blocked on Run()'s |timer_event| right now since
+  // this method can only be called on the same thread as Run(). Hence we have
+  // nothing to do here, this thread will sleep in Run() with the correct
+  // timeout when it's out of immediate tasks.
 }
 
 bool MessagePumpLibevent::Init() {
@@ -307,6 +297,12 @@ void MessagePumpLibevent::OnLibeventNotification(int fd,
   FdWatchController* controller = static_cast<FdWatchController*>(context);
   DCHECK(controller);
   TRACE_EVENT0("toplevel", "OnLibevent");
+  TRACE_EVENT_WITH_FLOW1(TRACE_DISABLED_BY_DEFAULT("toplevel.flow"),
+                         "MessagePumpLibevent::OnLibeventNotification",
+                         reinterpret_cast<uintptr_t>(controller) ^ fd,
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
+                         "fd", fd);
+
   TRACE_HEAP_PROFILER_API_SCOPED_TASK_EXECUTION heap_profiler_scope(
       controller->created_from_location().file_name());
 

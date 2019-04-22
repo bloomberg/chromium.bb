@@ -34,6 +34,7 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/gestures/gesture_recognizer.h"
 #include "ui/events/gestures/gesture_types.h"
+#include "ui/events/platform/platform_event_source.h"
 
 typedef ui::EventDispatchDetails DispatchDetails;
 
@@ -696,6 +697,12 @@ void WindowEventDispatcher::OnWindowDestroyed(Window* window) {
   // We observe all windows regardless of what root Window (if any) they're
   // attached to.
   observer_manager_.Remove(window);
+
+  // In theory this should be cleaned up by other checks, but we are getting
+  // crashes that seem to indicate otherwise. See https://crbug.com/942552 for
+  // one case.
+  if (window == mouse_moved_handler_)
+    mouse_moved_handler_ = nullptr;
 }
 
 void WindowEventDispatcher::OnWindowAddedToRootWindow(Window* attached) {
@@ -866,6 +873,11 @@ ui::EventDispatchDetails WindowEventDispatcher::DispatchHeldEvents() {
 }
 
 void WindowEventDispatcher::PostSynthesizeMouseMove() {
+  // No one should care where the real mouse is when this flag is on. So there
+  // is no need to send a synthetic mouse move here.
+  if (ui::PlatformEventSource::ShouldIgnoreNativePlatformEvents())
+    return;
+
   if (synthesize_mouse_move_ || in_shutdown_)
     return;
   synthesize_mouse_move_ = true;
@@ -1074,9 +1086,10 @@ DispatchDetails WindowEventDispatcher::PreDispatchTouchEvent(
 
   host_->window()->env()->env_controller()->UpdateStateForTouchEvent(*event);
 
-  ui::TouchEvent orig_event(*event, target, window());
-  if (!env_->gesture_recognizer()->ProcessTouchEventPreDispatch(&orig_event,
-                                                                target)) {
+  ui::TouchEvent root_relative_event(*event);
+  root_relative_event.set_location_f(event->root_location_f());
+  if (!env_->gesture_recognizer()->ProcessTouchEventPreDispatch(
+          &root_relative_event, target)) {
     // The event is invalid - ignore it.
     event->StopPropagation();
     event->DisableSynchronousHandling();
@@ -1087,7 +1100,7 @@ DispatchDetails WindowEventDispatcher::PreDispatchTouchEvent(
 
   // This flag is set depending on the gestures recognized in the call above,
   // and needs to propagate with the forwarded event.
-  event->set_may_cause_scrolling(orig_event.may_cause_scrolling());
+  event->set_may_cause_scrolling(root_relative_event.may_cause_scrolling());
 
   return PreDispatchLocatedEvent(target, event);
 }

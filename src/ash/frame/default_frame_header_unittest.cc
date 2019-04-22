@@ -9,9 +9,12 @@
 #include "ash/public/cpp/caption_buttons/frame_back_button.h"
 #include "ash/public/cpp/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/desks/desks_util.h"
 #include "base/i18n/rtl.h"
 #include "base/test/icu_test_util.h"
+#include "ui/aura/window.h"
 #include "ui/gfx/animation/animation_test_api.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/views/test/test_views.h"
@@ -28,7 +31,7 @@ using DefaultFrameHeaderTest = AshTestBase;
 // Ensure the title text is vertically aligned with the window icon.
 TEST_F(DefaultFrameHeaderTest, TitleIconAlignment) {
   std::unique_ptr<Widget> widget = CreateTestWidget(
-      nullptr, kShellWindowId_DefaultContainer, gfx::Rect(1, 2, 3, 4));
+      nullptr, desks_util::GetActiveDeskContainerId(), gfx::Rect(1, 2, 3, 4));
   FrameCaptionButtonContainerView container(widget.get(), nullptr);
   views::StaticSizedView window_icon(gfx::Size(16, 16));
   window_icon.SetBounds(0, 0, 16, 16);
@@ -46,7 +49,7 @@ TEST_F(DefaultFrameHeaderTest, TitleIconAlignment) {
 
 TEST_F(DefaultFrameHeaderTest, BackButtonAlignment) {
   std::unique_ptr<Widget> widget = CreateTestWidget(
-      nullptr, kShellWindowId_DefaultContainer, gfx::Rect(1, 2, 3, 4));
+      nullptr, desks_util::GetActiveDeskContainerId(), gfx::Rect(1, 2, 3, 4));
   FrameCaptionButtonContainerView container(widget.get(), nullptr);
   FrameBackButton back;
 
@@ -64,7 +67,7 @@ TEST_F(DefaultFrameHeaderTest, BackButtonAlignment) {
 TEST_F(DefaultFrameHeaderTest, MinimumHeaderWidthRTL) {
   base::test::ScopedRestoreICUDefaultLocale restore_locale;
   std::unique_ptr<Widget> widget = CreateTestWidget(
-      nullptr, kShellWindowId_DefaultContainer, gfx::Rect(1, 2, 3, 4));
+      nullptr, desks_util::GetActiveDeskContainerId(), gfx::Rect(1, 2, 3, 4));
   FrameCaptionButtonContainerView container(widget.get(), nullptr);
 
   DefaultFrameHeader frame_header(
@@ -80,7 +83,7 @@ TEST_F(DefaultFrameHeaderTest, MinimumHeaderWidthRTL) {
 // Ensure the right frame colors are used.
 TEST_F(DefaultFrameHeaderTest, FrameColors) {
   std::unique_ptr<Widget> widget = CreateTestWidget(
-      nullptr, kShellWindowId_DefaultContainer, gfx::Rect(1, 2, 3, 4));
+      nullptr, desks_util::GetActiveDeskContainerId(), gfx::Rect(1, 2, 3, 4));
   FrameCaptionButtonContainerView container(widget.get(), nullptr);
   views::StaticSizedView window_icon(gfx::Size(16, 16));
   window_icon.SetBounds(0, 0, 16, 16);
@@ -92,7 +95,9 @@ TEST_F(DefaultFrameHeaderTest, FrameColors) {
   // Check frame color is sensitive to mode.
   SkColor active = SkColorSetRGB(70, 70, 70);
   SkColor inactive = SkColorSetRGB(200, 200, 200);
-  frame_header.SetFrameColors(active, inactive);
+  widget->GetNativeWindow()->SetProperty(kFrameActiveColorKey, active);
+  widget->GetNativeWindow()->SetProperty(kFrameInactiveColorKey, inactive);
+  frame_header.UpdateFrameColors();
   frame_header.mode_ = FrameHeader::MODE_ACTIVE;
   EXPECT_EQ(active, frame_header.GetCurrentFrameColor());
   frame_header.mode_ = FrameHeader::MODE_INACTIVE;
@@ -102,7 +107,8 @@ TEST_F(DefaultFrameHeaderTest, FrameColors) {
   // Update to the new value which has no blue, which should animate.
   frame_header.mode_ = FrameHeader::MODE_ACTIVE;
   SkColor new_active = SkColorSetRGB(70, 70, 0);
-  frame_header.SetFrameColors(new_active, SK_ColorBLACK);
+  widget->GetNativeWindow()->SetProperty(kFrameActiveColorKey, new_active);
+  frame_header.UpdateFrameColors();
 
   gfx::SlideAnimation* animation =
       frame_header.GetAnimationForActiveFrameColorForTest();
@@ -124,7 +130,8 @@ TEST_F(DefaultFrameHeaderTest, FrameColors) {
 
   // Now update to the new value which is full blue.
   SkColor new_new_active = SkColorSetRGB(70, 70, 255);
-  frame_header.SetFrameColors(new_new_active, SK_ColorBLACK);
+  widget->GetNativeWindow()->SetProperty(kFrameActiveColorKey, new_new_active);
+  frame_header.UpdateFrameColors();
 
   now = base::TimeTicks::Now();
   test_api.SetStartTime(now);

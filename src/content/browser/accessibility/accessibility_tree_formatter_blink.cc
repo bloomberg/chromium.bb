@@ -4,11 +4,12 @@
 
 #include "content/browser/accessibility/accessibility_tree_formatter_blink.h"
 
-#include <math.h>
-#include <stddef.h>
+#include <cmath>
+#include <cstddef>
 
 #include <utility>
 
+#include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -16,82 +17,44 @@
 #include "base/values.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "ui/accessibility/ax_enums.mojom.h"
-#include "ui/accessibility/ax_node.h"
+#include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/platform/ax_platform_node_delegate.h"
+#include "ui/accessibility/platform/compute_attributes.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/transform.h"
 
 namespace content {
 namespace {
 
-// Compute the attribute value instead of returning the "raw" attribute value
-// for those attributes that have computation methods.
-int32_t GetIntAttribute(const BrowserAccessibility& node,
-                        ax::mojom::IntAttribute attr) {
-  ui::AXNode* ax_node = node.node();
-  if (ax_node == nullptr) {
-    return node.GetIntAttribute(attr);
+base::Optional<std::string> GetStringAttribute(
+    const BrowserAccessibility& node,
+    ax::mojom::StringAttribute attr) {
+  // Language is different from other string attributes as it inherits and has
+  // a method to compute it.
+  if (attr == ax::mojom::StringAttribute::kLanguage) {
+    std::string value = node.node()->GetLanguage();
+    if (value.empty()) {
+      return base::nullopt;
+    }
+    return value;
   }
 
-  // If the current node is not a cell, then trying to compute cell-related
-  // attributes will return incorrect results. We should fall back to the raw
-  // attribute value when that happens.
-  bool is_cell = ax_node->IsTableCellOrHeader();
-
-  switch (attr) {
-    case ax::mojom::IntAttribute::kAriaCellColumnIndex:
-      if (is_cell) {
-        return ax_node->GetTableCellAriaColIndex();
-      }
-      break;
-
-    case ax::mojom::IntAttribute::kAriaCellRowIndex:
-      if (is_cell) {
-        return ax_node->GetTableCellAriaRowIndex();
-      }
-      break;
-
-    case ax::mojom::IntAttribute::kAriaColumnCount:
-      return ax_node->GetTableAriaColCount();
-    case ax::mojom::IntAttribute::kAriaRowCount:
-      return ax_node->GetTableAriaRowCount();
-
-    case ax::mojom::IntAttribute::kTableCellColumnIndex:
-      if (is_cell) {
-        return ax_node->GetTableCellColIndex();
-      }
-      break;
-
-    case ax::mojom::IntAttribute::kTableCellRowIndex:
-      if (is_cell) {
-        return ax_node->GetTableCellRowIndex();
-      }
-      break;
-
-    case ax::mojom::IntAttribute::kTableCellColumnSpan:
-      if (is_cell) {
-        return ax_node->GetTableCellColSpan();
-      }
-      break;
-
-    case ax::mojom::IntAttribute::kTableCellRowSpan:
-      if (is_cell) {
-        return ax_node->GetTableCellRowSpan();
-      }
-      break;
-
-    case ax::mojom::IntAttribute::kTableColumnCount:
-      return ax_node->GetTableColCount();
-    case ax::mojom::IntAttribute::kTableRowCount:
-      return ax_node->GetTableRowCount();
-
-    case ax::mojom::IntAttribute::kTableRowIndex:
-      return ax_node->GetTableRowRowIndex();
-
-    default:
-      break;
+  // Font Family is different from other string attributes as it inherits.
+  if (attr == ax::mojom::StringAttribute::kFontFamily) {
+    std::string value = node.GetInheritedStringAttribute(attr);
+    if (value.empty()) {
+      return base::nullopt;
+    }
+    return value;
   }
 
-  return node.GetIntAttribute(attr);
+  // Always return the attribute if the node has it, even if the value is an
+  // empty string.
+  std::string value;
+  if (node.GetStringAttribute(attr, &value)) {
+    return value;
+  }
+  return base::nullopt;
 }
 
 std::string IntAttrToString(const BrowserAccessibility& node,
@@ -116,16 +79,24 @@ std::string IntAttrToString(const BrowserAccessibility& node,
       return ui::ToString(static_cast<ax::mojom::HasPopup>(value));
     case ax::mojom::IntAttribute::kInvalidState:
       return ui::ToString(static_cast<ax::mojom::InvalidState>(value));
+    case ax::mojom::IntAttribute::kListStyle:
+      return ui::ToString(static_cast<ax::mojom::ListStyle>(value));
     case ax::mojom::IntAttribute::kNameFrom:
       return ui::ToString(static_cast<ax::mojom::NameFrom>(value));
     case ax::mojom::IntAttribute::kRestriction:
       return ui::ToString(static_cast<ax::mojom::Restriction>(value));
     case ax::mojom::IntAttribute::kSortDirection:
       return ui::ToString(static_cast<ax::mojom::SortDirection>(value));
+    case ax::mojom::IntAttribute::kTextOverlineStyle:
+    case ax::mojom::IntAttribute::kTextStrikethroughStyle:
+    case ax::mojom::IntAttribute::kTextUnderlineStyle:
+      return ui::ToString(static_cast<ax::mojom::TextDecorationStyle>(value));
     case ax::mojom::IntAttribute::kTextDirection:
       return ui::ToString(static_cast<ax::mojom::TextDirection>(value));
     case ax::mojom::IntAttribute::kTextPosition:
       return ui::ToString(static_cast<ax::mojom::TextPosition>(value));
+    case ax::mojom::IntAttribute::kImageAnnotationStatus:
+      return ui::ToString(static_cast<ax::mojom::ImageAnnotationStatus>(value));
     // No pretty printing necessary for these:
     case ax::mojom::IntAttribute::kActivedescendantId:
     case ax::mojom::IntAttribute::kAriaCellColumnIndex:
@@ -181,6 +152,45 @@ AccessibilityTreeFormatterBlink::AccessibilityTreeFormatterBlink()
 
 AccessibilityTreeFormatterBlink::~AccessibilityTreeFormatterBlink() {}
 
+void AccessibilityTreeFormatterBlink::AddDefaultFilters(
+    std::vector<PropertyFilter>* property_filters) {
+  // Noisy, perhaps add later:
+  //   editable, focus*, horizontal, linked, richlyEditable, vertical
+  // Too flaky: hovered, offscreen
+  // States
+  AddPropertyFilter(property_filters, "collapsed");
+  AddPropertyFilter(property_filters, "haspopup");
+  AddPropertyFilter(property_filters, "invisible");
+  AddPropertyFilter(property_filters, "multiline");
+  AddPropertyFilter(property_filters, "protected");
+  AddPropertyFilter(property_filters, "required");
+  AddPropertyFilter(property_filters, "select*");
+  AddPropertyFilter(property_filters, "visited");
+  // Other attributes
+  AddPropertyFilter(property_filters, "busy=true");
+  AddPropertyFilter(property_filters, "valueForRange*");
+  AddPropertyFilter(property_filters, "minValueForRange*");
+  AddPropertyFilter(property_filters, "maxValueForRange*");
+  AddPropertyFilter(property_filters, "hierarchicalLevel*");
+  AddPropertyFilter(property_filters, "autoComplete*");
+  AddPropertyFilter(property_filters, "restriction*");
+  AddPropertyFilter(property_filters, "keyShortcuts*");
+  AddPropertyFilter(property_filters, "activedescendantId*");
+  AddPropertyFilter(property_filters, "controlsIds*");
+  AddPropertyFilter(property_filters, "flowtoIds*");
+  AddPropertyFilter(property_filters, "detailsIds*");
+  AddPropertyFilter(property_filters, "invalidState=*");
+  AddPropertyFilter(property_filters, "invalidState=false",
+                    PropertyFilter::DENY);  // Don't show false value
+  AddPropertyFilter(property_filters, "roleDescription=*");
+  AddPropertyFilter(property_filters, "errormessageId=*");
+}
+// static
+std::unique_ptr<AccessibilityTreeFormatter>
+AccessibilityTreeFormatterBlink::CreateBlink() {
+  return std::make_unique<AccessibilityTreeFormatterBlink>();
+}
+
 const char* const TREE_DATA_ATTRIBUTES[] = {"TreeData.textSelStartOffset",
                                             "TreeData.textSelEndOffset"};
 
@@ -219,8 +229,8 @@ void AccessibilityTreeFormatterBlink::AddProperties(
   dict->SetInteger("boundsWidth", bounds.width());
   dict->SetInteger("boundsHeight", bounds.height());
 
-  bool offscreen = false;
-  gfx::Rect page_bounds = node.GetPageBoundsRect(&offscreen);
+  ui::AXOffscreenResult offscreen_result = ui::AXOffscreenResult::kOnscreen;
+  gfx::Rect page_bounds = node.GetClippedRootFrameBoundsRect(&offscreen_result);
   dict->SetInteger("pageBoundsX", page_bounds.x());
   dict->SetInteger("pageBoundsY", page_bounds.y());
   dict->SetInteger("pageBoundsWidth", page_bounds.width());
@@ -230,22 +240,12 @@ void AccessibilityTreeFormatterBlink::AddProperties(
                    node.GetData().relative_bounds.transform &&
                        !node.GetData().relative_bounds.transform->IsIdentity());
 
-  gfx::Rect unclipped_bounds = node.GetPageBoundsRect(&offscreen, false);
+  gfx::Rect unclipped_bounds =
+      node.GetUnclippedRootFrameBoundsRect(&offscreen_result);
   dict->SetInteger("unclippedBoundsX", unclipped_bounds.x());
   dict->SetInteger("unclippedBoundsY", unclipped_bounds.y());
   dict->SetInteger("unclippedBoundsWidth", unclipped_bounds.width());
   dict->SetInteger("unclippedBoundsHeight", unclipped_bounds.height());
-
-  // Language and Font Family are different from other string attributes
-  // in that they inherit.
-  std::string font_family =
-      node.GetInheritedStringAttribute(ax::mojom::StringAttribute::kFontFamily);
-  if (!font_family.empty())
-    dict->SetString("fontFamily", font_family);
-  std::string language =
-      node.GetInheritedStringAttribute(ax::mojom::StringAttribute::kLanguage);
-  if (!language.empty())
-    dict->SetString("language", language);
 
   for (int32_t state_index = static_cast<int32_t>(ax::mojom::State::kNone);
        state_index <= static_cast<int32_t>(ax::mojom::State::kMaxValue);
@@ -255,7 +255,7 @@ void AccessibilityTreeFormatterBlink::AddProperties(
       dict->SetBoolean(ui::ToString(state), true);
   }
 
-  if (offscreen)
+  if (offscreen_result == ui::AXOffscreenResult::kOffscreen)
     dict->SetBoolean(STATE_OFFSCREEN, true);
 
   for (int32_t attr_index =
@@ -264,11 +264,9 @@ void AccessibilityTreeFormatterBlink::AddProperties(
        static_cast<int32_t>(ax::mojom::StringAttribute::kMaxValue);
        ++attr_index) {
     auto attr = static_cast<ax::mojom::StringAttribute>(attr_index);
-    if (attr != ax::mojom::StringAttribute::kFontFamily &&
-        attr != ax::mojom::StringAttribute::kLanguage) {
-      if (node.HasStringAttribute(attr))
-        dict->SetString(ui::ToString(attr), node.GetStringAttribute(attr));
-    }
+    auto maybe_value = GetStringAttribute(node, attr);
+    if (maybe_value.has_value())
+      dict->SetString(ui::ToString(attr), maybe_value.value());
   }
 
   for (int32_t attr_index =
@@ -276,9 +274,10 @@ void AccessibilityTreeFormatterBlink::AddProperties(
        attr_index <= static_cast<int32_t>(ax::mojom::IntAttribute::kMaxValue);
        ++attr_index) {
     auto attr = static_cast<ax::mojom::IntAttribute>(attr_index);
-    if (node.HasIntAttribute(attr)) {
-      int32_t value = GetIntAttribute(node, attr);
-      dict->SetString(ui::ToString(attr), IntAttrToString(node, attr, value));
+    auto maybe_value = ui::ComputeAttribute(&node, attr);
+    if (maybe_value.has_value()) {
+      dict->SetString(ui::ToString(attr),
+                      IntAttrToString(node, attr, maybe_value.value()));
     }
   }
 
@@ -363,7 +362,7 @@ base::string16 AccessibilityTreeFormatterBlink::ProcessTreeForOutput(
   if (show_ids()) {
     int id_value;
     dict.GetInteger("id", &id_value);
-    WriteAttribute(true, base::IntToString16(id_value), &line);
+    WriteAttribute(true, base::NumberToString16(id_value), &line);
   }
 
   base::string16 role_value;
@@ -491,7 +490,7 @@ base::string16 AccessibilityTreeFormatterBlink::ProcessTreeForOutput(
       } else {
         int int_value;
         value->GetInteger(i, &int_value);
-        attr_string += base::IntToString(int_value);
+        attr_string += base::NumberToString(int_value);
       }
     }
     WriteAttribute(false, attr_string, &line);
@@ -559,6 +558,10 @@ const std::string AccessibilityTreeFormatterBlink::GetAllowString() {
 
 const std::string AccessibilityTreeFormatterBlink::GetDenyString() {
   return "@BLINK-DENY:";
+}
+
+const std::string AccessibilityTreeFormatterBlink::GetDenyNodeString() {
+  return "@BLINK-DENY-NODE:";
 }
 
 }  // namespace content

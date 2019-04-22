@@ -15,14 +15,9 @@
 namespace views {
 namespace examples {
 
-SliderExample::SliderExample()
-    : ExampleBase("Slider"),
-      slider_(NULL),
-      label_(NULL) {
-}
+SliderExample::SliderExample() : ExampleBase("Slider") {}
 
-SliderExample::~SliderExample() {
-}
+SliderExample::~SliderExample() = default;
 
 void SliderExample::CreateExampleView(View* container) {
   label_ = new Label();

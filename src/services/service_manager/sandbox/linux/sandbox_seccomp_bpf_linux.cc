@@ -49,6 +49,10 @@
 #include "services/service_manager/sandbox/chromecast_sandbox_whitelist_buildflags.h"
 #endif  // !defined(OS_NACL_NONSFI)
 
+#if defined(OS_CHROMEOS)
+#include "services/service_manager/sandbox/linux/bpf_ime_policy_linux.h"
+#endif  // defined(OS_CHROMEOS)
+
 using sandbox::BaselinePolicy;
 using sandbox::SandboxBPF;
 using sandbox::SyscallSets;
@@ -169,6 +173,10 @@ std::unique_ptr<BPFBasePolicy> SandboxSeccompBPF::PolicyForSandboxType(
       return std::make_unique<NetworkProcessPolicy>();
     case SANDBOX_TYPE_AUDIO:
       return std::make_unique<AudioProcessPolicy>();
+#if defined(OS_CHROMEOS)
+    case SANDBOX_TYPE_IME:
+      return std::make_unique<ImeProcessPolicy>();
+#endif  // defined(OS_CHROMEOS)
     case SANDBOX_TYPE_NO_SANDBOX:
     default:
       NOTREACHED();

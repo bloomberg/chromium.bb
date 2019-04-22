@@ -88,10 +88,10 @@ TEST_P(CharTest, Identified)
     mPreprocessor.lex(&token);
     EXPECT_EQ(expectedType, token.type);
     EXPECT_EQ(expectedValue, token.text);
-};
+}
 
 // Note +1 for the max-value in range. It is there because the max-value
 // not included in the range.
-INSTANTIATE_TEST_CASE_P(All, CharTest, testing::Range(CHAR_MIN, CHAR_MAX + 1));
+INSTANTIATE_TEST_SUITE_P(All, CharTest, testing::Range(CHAR_MIN, CHAR_MAX + 1));
 
 }  // namespace angle

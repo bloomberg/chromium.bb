@@ -5,6 +5,7 @@
 #include "services/preferences/public/cpp/pref_service_factory.h"
 
 #include "base/barrier_closure.h"
+#include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -18,18 +19,18 @@
 #include "components/prefs/pref_service_factory.h"
 #include "components/prefs/value_map_pref_store.h"
 #include "components/prefs/writeable_pref_store.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/preferences/pref_store_impl.h"
 #include "services/preferences/public/cpp/dictionary_value_update.h"
 #include "services/preferences/public/cpp/in_process_service_factory.h"
+#include "services/preferences/public/cpp/manifest.h"
 #include "services/preferences/public/cpp/pref_service_main.h"
 #include "services/preferences/public/cpp/scoped_pref_update.h"
 #include "services/preferences/public/mojom/preferences.mojom.h"
-#include "services/preferences/tests_catalog_source.h"
 #include "services/preferences/unittest_common.h"
+#include "services/service_manager/public/cpp/manifest_builder.h"
 #include "services/service_manager/public/cpp/service_binding.h"
 #include "services/service_manager/public/cpp/test/test_service_manager.h"
-#include "services/service_manager/public/mojom/service_factory.mojom.h"
+#include "services/service_manager/public/mojom/constants.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace prefs {
@@ -38,8 +39,7 @@ namespace {
 const char kTestServiceName[] = "prefs_unittests";
 const char kTestHelperServiceName[] = "prefs_unittest_helper";
 
-class TestService : public service_manager::Service,
-                    public service_manager::mojom::ServiceFactory {
+class TestService : public service_manager::Service {
  public:
   TestService(
       service_manager::mojom::ServiceRequest test_service_request,
@@ -56,34 +56,23 @@ class TestService : public service_manager::Service,
 
  protected:
   // service_manager::Service:
-  void OnBindInterface(const service_manager::BindSourceInfo& source_info,
-                       const std::string& interface_name,
-                       mojo::ScopedMessagePipeHandle interface_pipe) override {
-    CHECK_EQ(interface_name, service_manager::mojom::ServiceFactory::Name_);
-    service_factory_bindings_.AddBinding(
-        this, service_manager::mojom::ServiceFactoryRequest(
-                  std::move(interface_pipe)));
-  }
-
-  // service_manager::mojom::ServiceFactory:
-  void CreateService(
-      service_manager::mojom::ServiceRequest request,
-      const std::string& name,
-      service_manager::mojom::PIDReceiverPtr pid_receiver) override {
-    if (name == prefs::mojom::kServiceName) {
+  void CreatePackagedServiceInstance(
+      const std::string& service_name,
+      mojo::PendingReceiver<service_manager::mojom::Service> receiver,
+      CreatePackagedServiceInstanceCallback callback) override {
+    if (service_name == prefs::mojom::kServiceName) {
       pref_service_impl_ =
-          service_factory_->CreatePrefService(std::move(request));
-    } else if (name == kTestHelperServiceName) {
-      helper_service_binding_.Bind(std::move(request));
+          service_factory_->CreatePrefService(std::move(receiver));
+    } else if (service_name == kTestHelperServiceName) {
+      helper_service_binding_.Bind(std::move(receiver));
       std::move(connector_callback_)
           .Run(helper_service_binding_.GetConnector());
     }
+    std::move(callback).Run(base::GetCurrentProcId());
   }
 
  private:
   service_manager::ServiceBinding test_service_binding_;
-  mojo::BindingSet<service_manager::mojom::ServiceFactory>
-      service_factory_bindings_;
   InProcessPrefServiceFactory* const service_factory_;
   base::OnceCallback<void(service_manager::Connector*)> connector_callback_;
 
@@ -102,7 +91,18 @@ constexpr int kUpdatedValue = 2;
 class PrefServiceFactoryTest : public testing::Test {
  public:
   PrefServiceFactoryTest()
-      : test_service_manager_(CreateServiceTestCatalog()) {}
+      : test_service_manager_(
+            {service_manager::ManifestBuilder()
+                 .WithServiceName(kTestServiceName)
+                 .RequireCapability(mojom::kServiceName, "pref_client")
+                 .RequireCapability(kTestHelperServiceName, "")
+                 .PackageService(GetManifest())
+                 .PackageService(
+                     service_manager::ManifestBuilder()
+                         .WithServiceName(kTestHelperServiceName)
+                         .RequireCapability(mojom::kServiceName, "pref_client")
+                         .Build())
+                 .Build()}) {}
 
  protected:
   void SetUp() override {
@@ -671,9 +671,9 @@ TEST_P(IncognitoPrefServiceFactoryTest, MultipleClients) {
   EXPECT_EQ(kUpdatedValue, pref_service2->GetInteger(kKey));
 }
 
-INSTANTIATE_TEST_CASE_P(UnderlayOrOverlayPref,
-                        IncognitoPrefServiceFactoryTest,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(UnderlayOrOverlayPref,
+                         IncognitoPrefServiceFactoryTest,
+                         testing::Bool());
 
 }  // namespace
 }  // namespace prefs

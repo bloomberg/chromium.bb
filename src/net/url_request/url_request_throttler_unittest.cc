@@ -121,7 +121,7 @@ class MockURLRequestThrottlerManager : public URLRequestThrottlerManager {
           MockURLRequestThrottlerEntry::kDefaultEntryLifetimeMs + 1000);
     }
     std::string fake_url_string("http://www.fakeurl.com/");
-    fake_url_string.append(base::IntToString(create_entry_index_++));
+    fake_url_string.append(base::NumberToString(create_entry_index_++));
     GURL fake_url(fake_url_string);
     OverrideEntryForTests(
         fake_url,
@@ -164,7 +164,7 @@ class URLRequestThrottlerEntryTest : public TestWithScopedTaskEnvironment {
   URLRequestThrottlerEntryTest()
       : request_(context_.CreateRequest(GURL(),
                                         DEFAULT_PRIORITY,
-                                        NULL,
+                                        nullptr,
                                         TRAFFIC_ANNOTATION_FOR_TESTS)) {}
 
   void SetUp() override;
@@ -247,7 +247,7 @@ TEST_F(URLRequestThrottlerEntryTest, IsEntryReallyOutdated) {
       TimeAndBool(now_ - lifetime, true, __LINE__),
       TimeAndBool(now_ - (lifetime + kFiveMs), true, __LINE__)};
 
-  for (unsigned int i = 0; i < arraysize(test_values); ++i) {
+  for (unsigned int i = 0; i < base::size(test_values); ++i) {
     entry_->set_exponential_backoff_release_time(test_values[i].time);
     EXPECT_EQ(entry_->IsEntryOutdated(), test_values[i].result) <<
         "Test case #" << i << " line " << test_values[i].line << " failed";
@@ -315,7 +315,7 @@ class URLRequestThrottlerManagerTest : public TestWithScopedTaskEnvironment {
   URLRequestThrottlerManagerTest()
       : request_(context_.CreateRequest(GURL(),
                                         DEFAULT_PRIORITY,
-                                        NULL,
+                                        nullptr,
                                         TRAFFIC_ANNOTATION_FOR_TESTS)) {}
 
   void SetUp() override { request_->SetLoadFlags(0); }
@@ -353,7 +353,7 @@ TEST_F(URLRequestThrottlerManagerTest, IsUrlStandardised) {
                     std::string("http://www.example.com:1234/"),
                     __LINE__)};
 
-  for (unsigned int i = 0; i < arraysize(test_values); ++i) {
+  for (unsigned int i = 0; i < base::size(test_values); ++i) {
     std::string temp = manager.DoGetUrlIdFromUrl(test_values[i].url);
     EXPECT_EQ(temp, test_values[i].result) <<
         "Test case #" << i << " line " << test_values[i].line << " failed";

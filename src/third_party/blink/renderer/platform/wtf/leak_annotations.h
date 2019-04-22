@@ -37,7 +37,7 @@
 
 #include "base/macros.h"
 #if defined(LEAK_SANITIZER)
-#include "third_party/blink/renderer/platform/wtf/address_sanitizer.h"
+#include "third_party/blink/renderer/platform/wtf/sanitizers.h"
 #include "third_party/blink/renderer/platform/wtf/type_traits.h"
 #endif
 

@@ -424,14 +424,6 @@ bool PepperWebPluginImpl::SupportsPaginatedPrint() {
   return instance_->SupportsPrintInterface();
 }
 
-bool PepperWebPluginImpl::IsPrintScalingDisabled() {
-  // Re-entrancy may cause JS to try to execute script on the plugin before it
-  // is fully initialized. See: crbug.com/715747.
-  if (!instance_)
-    return false;
-  return instance_->IsPrintScalingDisabled();
-}
-
 int PepperWebPluginImpl::PrintBegin(const WebPrintParams& print_params) {
   // Re-entrancy may cause JS to try to execute script on the plugin before it
   // is fully initialized. See: crbug.com/715747.

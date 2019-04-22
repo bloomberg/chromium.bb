@@ -24,6 +24,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/system/sys_info.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/crash/content/app/crash_reporter_client.h"
 #include "third_party/crashpad/crashpad/client/annotation.h"
@@ -114,7 +116,8 @@ void InitializeCrashpadImpl(bool initial_client,
     // "relauncher" is hard-coded because it's a Chrome --type, but this
     // component can't see Chrome's switches. This is only used for argument
     // sanitization.
-    DCHECK(browser_process || process_type == "relauncher");
+    DCHECK(browser_process || process_type == "relauncher" ||
+           process_type == "app_shim");
 #elif defined(OS_WIN)
     // "Chrome Installer" is the name historically used for installer binaries
     // as processed by the backend.
@@ -163,10 +166,13 @@ void InitializeCrashpadImpl(bool initial_client,
 
   static crashpad::StringAnnotation<12> pid_key("pid");
 #if defined(OS_POSIX)
-  pid_key.Set(base::IntToString(getpid()));
+  pid_key.Set(base::NumberToString(getpid()));
 #elif defined(OS_WIN)
-  pid_key.Set(base::IntToString(::GetCurrentProcessId()));
+  pid_key.Set(base::NumberToString(::GetCurrentProcessId()));
 #endif
+
+  static crashpad::StringAnnotation<24> osarch_key("osarch");
+  osarch_key.Set(base::SysInfo::OperatingSystemArchitecture());
 
   logging::SetLogMessageHandler(LogMessageHandler);
 
@@ -264,9 +270,17 @@ bool GetUploadsEnabled() {
   return false;
 }
 
+#if !defined(OS_ANDROID)
 void DumpWithoutCrashing() {
   CRASHPAD_SIMULATE_CRASH();
 }
+#endif
+
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+void CrashWithoutDumping(const std::string& message) {
+  crashpad::CrashpadClient::CrashWithoutDump(message);
+}
+#endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
 void GetReports(std::vector<Report>* reports) {
 #if defined(OS_WIN)
@@ -313,6 +327,14 @@ base::FilePath GetCrashpadDatabasePath() {
   return base::FilePath(GetCrashpadDatabasePath_ExportThunk());
 #else
   return base::FilePath(GetCrashpadDatabasePathImpl());
+#endif
+}
+
+void ClearReportsBetween(const base::Time& begin, const base::Time& end) {
+#if defined(OS_WIN)
+  ClearReportsBetween_ExportThunk(begin.ToTimeT(), end.ToTimeT());
+#else
+  ClearReportsBetweenImpl(begin.ToTimeT(), end.ToTimeT());
 #endif
 }
 
@@ -389,6 +411,21 @@ base::FilePath::StringType::const_pointer GetCrashpadDatabasePathImpl() {
     return nullptr;
 
   return g_database_path->value().c_str();
+}
+
+void ClearReportsBetweenImpl(time_t begin, time_t end) {
+  std::vector<Report> reports;
+  GetReports(&reports);
+  for (const Report& report : reports) {
+    // Delete if either time lies in the range, as they both reveal that the
+    // browser was open.
+    if ((begin <= report.capture_time && report.capture_time <= end) ||
+        (begin <= report.upload_time && report.upload_time <= end)) {
+      crashpad::UUID uuid;
+      uuid.InitializeFromString(report.local_id);
+      g_database->DeleteReport(uuid);
+    }
+  }
 }
 
 namespace internal {

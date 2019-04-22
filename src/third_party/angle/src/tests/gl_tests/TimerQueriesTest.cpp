@@ -7,9 +7,10 @@
 //   Various tests for EXT_disjoint_timer_query functionality and validation
 //
 
-#include "random_utils.h"
-#include "system_utils.h"
 #include "test_utils/ANGLETest.h"
+#include "util/EGLWindow.h"
+#include "util/random_utils.h"
+#include "util/system_utils.h"
 
 using namespace angle;
 
@@ -31,14 +32,14 @@ class TimerQueriesTest : public ANGLETest
     {
         ANGLETest::SetUp();
 
-        const std::string costlyVS =
+        constexpr char kCostlyVS[] =
             "attribute highp vec4 position; varying highp vec4 testPos; void main(void)\n"
             "{\n"
             "    testPos     = position;\n"
             "    gl_Position = position;\n"
             "}\n";
 
-        const std::string costlyPS =
+        constexpr char kCostlyFS[] =
             "precision highp float; varying highp vec4 testPos; void main(void)\n"
             "{\n"
             "    vec4 test = testPos;\n"
@@ -52,7 +53,7 @@ class TimerQueriesTest : public ANGLETest
         mProgram = CompileProgram(essl1_shaders::vs::Simple(), essl1_shaders::fs::Red());
         ASSERT_NE(0u, mProgram) << "shader compilation failed.";
 
-        mProgramCostly = CompileProgram(costlyVS, costlyPS);
+        mProgramCostly = CompileProgram(kCostlyVS, kCostlyFS);
         ASSERT_NE(0u, mProgramCostly) << "shader compilation failed.";
     }
 
@@ -185,7 +186,7 @@ TEST_P(TimerQueriesTest, TimeElapsedTextureTest)
     // Skip test if the number of bits is 0
     ANGLE_SKIP_TEST_IF(!queryTimeElapsedBits);
 
-    GLubyte pixels[] = {0, 0, 0, 255, 255, 255, 255, 255, 255, 0, 0, 0};
+    std::vector<GLColor> texData{GLColor::black, GLColor::white, GLColor::white, GLColor::black};
 
     // Query and texture initialization
     GLuint texture;
@@ -197,7 +198,7 @@ TEST_P(TimerQueriesTest, TimeElapsedTextureTest)
     glBeginQueryEXT(GL_TIME_ELAPSED_EXT, query);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     glBindTexture(GL_TEXTURE_2D, texture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 2, 2, 0, GL_RGB, GL_UNSIGNED_BYTE, pixels);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 2, 2, 0, GL_RGB, GL_UNSIGNED_BYTE, texData.data());
     glGenerateMipmap(GL_TEXTURE_2D);
     glFinish();
     glEndQueryEXT(GL_TIME_ELAPSED_EXT);
@@ -330,14 +331,14 @@ TEST_P(TimerQueriesTest, TimeElapsedMulticontextTest)
     };
     ContextInfo contexts[2];
 
-    const std::string costlyVS =
+    constexpr char kCostlyVS[] =
         "attribute highp vec4 position; varying highp vec4 testPos; void main(void)\n"
         "{\n"
         "    testPos     = position;\n"
         "    gl_Position = position;\n"
         "}\n";
 
-    const std::string costlyPS =
+    constexpr char kCostlyFS[] =
         "precision highp float; varying highp vec4 testPos; void main(void)\n"
         "{\n"
         "    vec4 test = testPos;\n"
@@ -362,7 +363,7 @@ TEST_P(TimerQueriesTest, TimeElapsedMulticontextTest)
     contexts[1].display = display;
     ASSERT_NE(contexts[1].context, EGL_NO_CONTEXT);
     eglMakeCurrent(display, surface, surface, contexts[1].context);
-    contexts[1].program = CompileProgram(costlyVS, costlyPS);
+    contexts[1].program = CompileProgram(kCostlyVS, kCostlyFS);
     glGenQueriesEXT(1, &contexts[1].query);
     ASSERT_GL_NO_ERROR();
 

@@ -75,4 +75,14 @@ public final class PreviewsUma {
     public static void recordLitePageAtLoadFinish(final String previewType) {
         recordHistogram(previewType, ACTION_LITE_PAGE_AT_FINISH);
     }
+
+    /**
+     * Records whether the "Lite" verbose status string is shown when the
+     * Previews icon is shown.
+     *
+     * @param shown Whether the Lite string was shown.
+     */
+    public static void recordVerboseStatusTextShown(final boolean shown) {
+        RecordHistogram.recordBooleanHistogram("Previews.OmniboxLiteStringShown", shown);
+    }
 }

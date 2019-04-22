@@ -55,9 +55,6 @@ ChromeAppWindowClient::CreateAppWindowForLockScreenAction(
     const extensions::Extension* extension,
     extensions::api::app_runtime::ActionType action) {
 #if defined(OS_CHROMEOS)
-  if (!lock_screen_apps::StateController::IsEnabled())
-    return nullptr;
-
   auto app_delegate = std::make_unique<ChromeAppDelegate>(true /*keep_alive*/);
   app_delegate->set_for_lock_screen_app(true);
 

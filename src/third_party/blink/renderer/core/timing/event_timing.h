@@ -9,6 +9,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -19,17 +20,26 @@ class Event;
 // input latency.
 // See also: https://github.com/wicg/event-timing
 class CORE_EXPORT EventTiming final {
- public:
-  explicit EventTiming(LocalDOMWindow*);
+  USING_FAST_MALLOC(EventTiming);
 
-  void WillDispatchEvent(const Event&);
+ public:
+  // Processes an event that will be dispatched. Notifies the
+  // InteractiveDetector if it needs to be logged into input delay histograms.
+  // Returns an object only if the event is relevant for the EventTiming API.
+  static std::unique_ptr<EventTiming> Create(LocalDOMWindow*, const Event&);
+
+  explicit EventTiming(TimeTicks processing_start,
+                       TimeTicks event_timestamp,
+                       WindowPerformance* performance);
+
+  // Notifies the Performance object that the event has been dispatched.
   void DidDispatchEvent(const Event&);
 
  private:
-  bool ShouldReportForEventTiming(const Event& event) const;
   // The time the first event handler or default action started to execute.
   TimeTicks processing_start_;
-  bool finished_will_dispatch_event_ = false;
+  // The event timestamp to be used in EventTiming and in histograms.
+  TimeTicks event_timestamp_;
 
   Persistent<WindowPerformance> performance_;
   DISALLOW_COPY_AND_ASSIGN(EventTiming);

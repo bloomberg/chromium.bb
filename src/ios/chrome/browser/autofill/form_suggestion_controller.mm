@@ -62,7 +62,7 @@ AutofillSuggestionState::AutofillSuggestionState(
 
 }  // namespace
 
-@interface FormSuggestionController ()<FormInputSuggestionsProvider> {
+@interface FormSuggestionController () {
   // Callback to update the accessory view.
   FormSuggestionsReadyCompletion accessoryViewUpdateBlock_;
 
@@ -76,6 +76,9 @@ AutofillSuggestionState::AutofillSuggestionState(
   // Access to WebView from the CRWWebController.
   id<CRWWebViewProxy> _webViewProxy;
 }
+
+// Unique id of the last request.
+@property(nonatomic, assign) NSUInteger requestIdentifier;
 
 // Updates keyboard for |suggestionState|.
 - (void)updateKeyboard:(AutofillSuggestionState*)suggestionState;
@@ -174,6 +177,9 @@ AutofillSuggestionState::AutofillSuggestionState(
 
 - (void)retrieveSuggestionsForForm:(const autofill::FormActivityParams&)params
                           webState:(web::WebState*)webState {
+  self.requestIdentifier += 1;
+  NSUInteger requestIdentifier = self.requestIdentifier;
+
   __weak FormSuggestionController* weakSelf = self;
   NSString* strongFormName = base::SysUTF8ToNSString(params.form_name);
   NSString* strongFieldIdentifier =
@@ -225,6 +231,10 @@ AutofillSuggestionState::AutofillSuggestionState(
 
   // Once a provider is found, use it to retrieve suggestions.
   passwords::PipelineCompletionBlock completion = ^(NSUInteger providerIndex) {
+    // Ignore outdated results.
+    if (weakSelf.requestIdentifier != requestIdentifier) {
+      return;
+    }
     if (providerIndex == NSNotFound) {
       [weakSelf onNoSuggestionsAvailable];
       return;

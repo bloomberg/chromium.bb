@@ -127,18 +127,6 @@ Try tapping the mic to ask me anything.
       <message name="IDS_ASSISTANT_SCREEN_CONTEXT_QUERY_FALLBACK_CARD" desc="Message shown in Assistant UI when a query for content related to the screen context returns no results.">
         Nothing found on screen
       </message>
-      <message name="IDS_ASSISTANT_TIMER_NOTIFICATION_TITLE" desc="Title for assistant timer notification.">
-        Time's up
-      </message>
-      <message name="IDS_ASSISTANT_TIMER_NOTIFICATION_CONTENT" desc="Content for assistant timer notification.">
-        00:00s
-      </message>
-      <message name="IDS_ASSISTANT_STOP_TIMER_QUERY" desc="Query for stopping assistant timer.">
-        Stop timer
-      </message>
-      <message name="IDS_ASSISTANT_STOP_BUTTON_TEXT" desc="Text shown on stop button in Assistant timer notification.">
-        STOP
-      </message>
 
       <!-- The following strings are located here for accessibility from both //ash and //chrome -->
       <message name="IDS_ENABLE_BLUETOOTH" desc="The message to display in the network list when Tether is enabled but Bluetooth is disabled.">
@@ -177,6 +165,9 @@ Try tapping the mic to ask me anything.
       </message>
       <message name="IDS_ASH_ADD_USER_BUTTON" desc="Text shown on an add user button on login/locker screen">
         Add Person
+      </message>
+      <message name="IDS_ASH_PARENT_ACCESS_BUTTON" desc="Text shown on an parent access button on login/lock screen">
+        Parent access
       </message>
       <message name="IDS_ASH_SHELF_APPS_BUTTON" desc="Text shown on apps button on login screen.">
         Apps

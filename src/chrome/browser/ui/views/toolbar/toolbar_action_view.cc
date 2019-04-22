@@ -53,13 +53,8 @@ ToolbarActionView::ToolbarActionView(
     ToolbarActionView::Delegate* delegate)
     : MenuButton(base::string16(), this),
       view_controller_(view_controller),
-      delegate_(delegate),
-      called_register_command_(false),
-      wants_to_run_(false),
-      menu_(nullptr),
-      weak_factory_(this) {
+      delegate_(delegate) {
   SetInkDropMode(InkDropMode::ON);
-  SetFocusPainter(nullptr);
   set_has_ink_drop_action_on_click(true);
   set_id(VIEW_ID_BROWSER_ACTION);
   view_controller_->SetDelegate(this);
@@ -105,15 +100,19 @@ std::unique_ptr<LabelButtonBorder> ToolbarActionView::CreateDefaultBorder()
     const {
   std::unique_ptr<LabelButtonBorder> border =
       LabelButton::CreateDefaultBorder();
-  border->set_insets(gfx::Insets(kBorderInset, kBorderInset,
-                                 kBorderInset, kBorderInset));
+  border->set_insets(
+      gfx::Insets(kBorderInset, kBorderInset, kBorderInset, kBorderInset));
   return border;
 }
 
 bool ToolbarActionView::IsTriggerableEvent(const ui::Event& event) {
-  return views::MenuButton::IsTriggerableEvent(event) &&
-         (base::TimeTicks::Now() - popup_closed_time_).InMilliseconds() >
-             views::kMinimumMsBetweenButtonClicks;
+  // By default MenuButton checks the time since the menu closure, but that
+  // prevents left clicks from showing the extension popup when the context menu
+  // is showing.  The time check is to prevent reshowing on the same click that
+  // closed the menu, when this class handles via |suppress_next_release_|, so
+  // it's not necessary.  Bypass it by calling IsTriggerableEventType() instead
+  // of IsTriggerableEvent().
+  return views::MenuButton::IsTriggerableEventType(event);
 }
 
 SkColor ToolbarActionView::GetInkDropBaseColor() const {
@@ -125,14 +124,9 @@ SkColor ToolbarActionView::GetInkDropBaseColor() const {
   return GetToolbarInkDropBaseColor(this);
 }
 
-bool ToolbarActionView::ShouldUseFloodFillInkDrop() const {
-  return delegate_->ShownInsideMenu();
-}
-
 std::unique_ptr<views::InkDrop> ToolbarActionView::CreateInkDrop() {
-  auto ink_drop = CreateToolbarInkDrop(this);
+  auto ink_drop = MenuButton::CreateInkDrop();
   ink_drop->SetShowHighlightOnHover(!delegate_->ShownInsideMenu());
-  ink_drop->SetShowHighlightOnFocus(!focus_ring());
   return ink_drop;
 }
 
@@ -143,7 +137,7 @@ ToolbarActionView::CreateInkDropHighlight() const {
 
 bool ToolbarActionView::OnKeyPressed(const ui::KeyEvent& event) {
   if (event.key_code() == ui::VKEY_DOWN) {
-    ShowContextMenuForView(this, gfx::Point(), ui::MENU_SOURCE_KEYBOARD);
+    ShowContextMenuForViewImpl(this, gfx::Point(), ui::MENU_SOURCE_KEYBOARD);
     return true;
   }
   return MenuButton::OnKeyPressed(event);
@@ -181,7 +175,7 @@ void ToolbarActionView::UpdateState() {
   SchedulePaint();
 }
 
-void ToolbarActionView::OnMenuButtonClicked(views::MenuButton* sender,
+void ToolbarActionView::OnMenuButtonClicked(views::Button* sender,
                                             const gfx::Point& point,
                                             const ui::Event* event) {
   if (!view_controller_->IsEnabled(GetCurrentWebContents())) {
@@ -215,14 +209,37 @@ gfx::Size ToolbarActionView::CalculatePreferredSize() const {
 }
 
 bool ToolbarActionView::OnMousePressed(const ui::MouseEvent& event) {
-  // views::MenuButton actions are only triggered by left mouse clicks.
-  if (event.IsOnlyLeftMouseButton() && !pressed_lock_) {
-    // TODO(bruthig): The ACTION_PENDING triggering logic should be in
-    // MenuButton::OnPressed() however there is a bug with the pressed state
-    // logic in MenuButton. See http://crbug.com/567252.
-    AnimateInkDrop(views::InkDropState::ACTION_PENDING, &event);
+  if (event.IsOnlyLeftMouseButton()) {
+    if (view_controller()->IsShowingPopup()) {
+      // Left-clicking the button should always hide the popup.  In most cases,
+      // this would have happened automatically anyway due to the popup losing
+      // activation, but if the popup is currently being inspected, the
+      // activation loss will not automatically close it, so force-hide here.
+      view_controller_->HidePopup();
+
+      // Since we just hid the popup, don't allow the mouse release for this
+      // click to re-show it.
+      suppress_next_release_ = true;
+    } else {
+      // This event is likely to trigger the MenuButton action.
+      // TODO(bruthig): The ACTION_PENDING triggering logic should be in
+      // MenuButton::OnPressed() however there is a bug with the pressed state
+      // logic in MenuButton. See http://crbug.com/567252.
+      AnimateInkDrop(views::InkDropState::ACTION_PENDING, &event);
+    }
   }
+
   return MenuButton::OnMousePressed(event);
+}
+
+void ToolbarActionView::OnMouseReleased(const ui::MouseEvent& event) {
+  // MenuButton::OnMouseReleased() may synchronously delete |this|, so writing
+  // member variables after that point is unsafe.  Instead, copy the old value
+  // of |suppress_next_release_| so it can be updated now.
+  const bool suppress_next_release = suppress_next_release_;
+  suppress_next_release_ = false;
+  if (!suppress_next_release)
+    MenuButton::OnMouseReleased(event);
 }
 
 void ToolbarActionView::OnGestureEvent(ui::GestureEvent* event) {
@@ -235,11 +252,18 @@ void ToolbarActionView::OnGestureEvent(ui::GestureEvent* event) {
 
 void ToolbarActionView::OnDragDone() {
   views::MenuButton::OnDragDone();
+
+  // The mouse release that ends a drag does not generate a mouse release event,
+  // so OnMouseReleased() doesn't get called.  Thus if the click that started
+  // the drag set |suppress_next_release_|, it must be reset here or the next
+  // mouse release after the drag will be erroneously discarded.
+  suppress_next_release_ = false;
+
   delegate_->OnToolbarActionViewDragDone();
 }
 
 void ToolbarActionView::ViewHierarchyChanged(
-    const ViewHierarchyChangedDetails& details) {
+    const views::ViewHierarchyChangedDetails& details) {
   if (details.is_add && !called_register_command_ && GetFocusManager()) {
     view_controller_->RegisterCommand();
     called_register_command_ = true;
@@ -276,16 +300,15 @@ void ToolbarActionView::OnPopupShown(bool by_user) {
     // or delegate_->GetOverflowReferenceView(), which returns a MenuButton.
     views::MenuButton* reference_view =
         static_cast<views::MenuButton*>(GetReferenceViewForPopup());
-    pressed_lock_ = reference_view->menu_button_event_handler()->TakeLock();
+    pressed_lock_ = reference_view->button_controller()->TakeLock();
   }
 }
 
 void ToolbarActionView::OnPopupClosed() {
-  popup_closed_time_ = base::TimeTicks::Now();
   pressed_lock_.reset();  // Unpress the menu button if it was pressed.
 }
 
-void ToolbarActionView::ShowContextMenuForView(
+void ToolbarActionView::ShowContextMenuForViewImpl(
     views::View* source,
     const gfx::Point& point,
     ui::MenuSourceType source_type) {
@@ -296,8 +319,7 @@ void ToolbarActionView::ShowContextMenuForView(
   DoShowContextMenu(source_type);
 }
 
-void ToolbarActionView::DoShowContextMenu(
-    ui::MenuSourceType source_type) {
+void ToolbarActionView::DoShowContextMenu(ui::MenuSourceType source_type) {
   ui::MenuModel* context_menu_model = view_controller_->GetContextMenu();
   // It's possible the action doesn't have a context menu.
   if (!context_menu_model)
@@ -312,21 +334,22 @@ void ToolbarActionView::DoShowContextMenu(
 
   // RunMenuAt expects a nested menu to be parented by the same widget as the
   // already visible menu, in this case the Chrome menu.
-  views::Widget* parent = delegate_->ShownInsideMenu() ?
-      delegate_->GetOverflowReferenceView()->GetWidget() :
-      GetWidget();
+  views::Widget* parent =
+      delegate_->ShownInsideMenu()
+          ? delegate_->GetOverflowReferenceView()->GetWidget()
+          : GetWidget();
 
   // Unretained() is safe here as ToolbarActionView will always outlive the
   // menu. Any action that would lead to the deletion of |this| first triggers
   // the closing of the menu through lost capture.
   menu_adapter_.reset(new views::MenuModelAdapter(
-      context_menu_model,
-      base::Bind(&ToolbarActionView::OnMenuClosed, base::Unretained(this))));
+      context_menu_model, base::BindRepeating(&ToolbarActionView::OnMenuClosed,
+                                              base::Unretained(this))));
   menu_ = menu_adapter_->CreateMenu();
   menu_runner_.reset(new views::MenuRunner(menu_, run_types));
 
   menu_runner_->RunMenuAt(parent, this, GetAnchorBoundsInScreen(),
-                          views::MENU_ANCHOR_TOPLEFT, source_type);
+                          views::MenuAnchorPosition::kTopLeft, source_type);
 }
 
 bool ToolbarActionView::CloseActiveMenuIfNeeded() {

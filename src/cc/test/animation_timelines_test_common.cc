@@ -126,18 +126,17 @@ void TestHostClient::SetElementScrollOffsetMutated(
 }
 
 void TestHostClient::ElementIsAnimatingChanged(
-    ElementId element_id,
+    const PropertyToElementIdMap& element_id_map,
     ElementListType list_type,
     const PropertyAnimationState& mask,
     const PropertyAnimationState& state) {
-  TestLayer* layer = FindTestLayer(element_id, list_type);
-  if (!layer)
-    return;
+  for (const auto& it : element_id_map) {
+    TestLayer* layer = FindTestLayer(it.second, list_type);
+    if (!layer)
+      continue;
 
-  for (int property = TargetProperty::FIRST_TARGET_PROPERTY;
-       property <= TargetProperty::LAST_TARGET_PROPERTY; ++property) {
-    TargetProperty::Type target_property =
-        static_cast<TargetProperty::Type>(property);
+    TargetProperty::Type target_property = it.first;
+    int property = static_cast<int>(target_property);
     if (mask.potentially_animating[property])
       layer->set_has_potential_animation(target_property,
                                          state.potentially_animating[property]);
@@ -146,6 +145,11 @@ void TestHostClient::ElementIsAnimatingChanged(
                                         state.currently_running[property]);
   }
 }
+
+void TestHostClient::AnimationScalesChanged(ElementId element_id,
+                                            ElementListType list_type,
+                                            float maximum_scale,
+                                            float starting_scale) {}
 
 void TestHostClient::SetScrollOffsetForAnimation(
     const gfx::ScrollOffset& scroll_offset) {
@@ -449,7 +453,7 @@ KeyframeEffect* AnimationTimelinesTest::GetKeyframeEffectForElementId(
   const scoped_refptr<ElementAnimations> element_animations =
       host_->GetElementAnimationsForElementId(element_id);
   return element_animations
-             ? &*element_animations->keyframe_effects_list().begin()
+             ? element_animations->FirstKeyframeEffectForTesting()
              : nullptr;
 }
 
@@ -458,7 +462,7 @@ KeyframeEffect* AnimationTimelinesTest::GetImplKeyframeEffectForLayerId(
   const scoped_refptr<ElementAnimations> element_animations =
       host_impl_->GetElementAnimationsForElementId(element_id);
   return element_animations
-             ? &*element_animations->keyframe_effects_list().begin()
+             ? element_animations->FirstKeyframeEffectForTesting()
              : nullptr;
 }
 

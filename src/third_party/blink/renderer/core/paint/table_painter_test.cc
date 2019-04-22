@@ -16,7 +16,7 @@ using testing::ElementsAre;
 namespace blink {
 
 using TablePainterTest = PaintControllerPaintTest;
-INSTANTIATE_PAINT_TEST_CASE_P(TablePainterTest);
+INSTANTIATE_PAINT_TEST_SUITE_P(TablePainterTest);
 
 TEST_P(TablePainterTest, Background) {
   SetBodyInnerHTML(R"HTML(
@@ -36,8 +36,7 @@ TEST_P(TablePainterTest, Background) {
 
   InvalidateAll(RootPaintController());
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
-  IntRect interest_rect(0, 0, 200, 200);
-  Paint(&interest_rect);
+  Paint(IntRect(0, 0, 200, 200));
 
   EXPECT_THAT(
       RootPaintController().GetDisplayItemList(),
@@ -46,8 +45,7 @@ TEST_P(TablePainterTest, Background) {
                   IsSameId(&row1, DisplayItem::kBoxDecorationBackground)));
 
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
-  interest_rect = IntRect(0, 300, 200, 1000);
-  Paint(&interest_rect);
+  Paint(IntRect(0, 300, 200, 1000));
 
   EXPECT_THAT(
       RootPaintController().GetDisplayItemList(),
@@ -81,8 +79,7 @@ TEST_P(TablePainterTest, BackgroundWithCellSpacing) {
   InvalidateAll(RootPaintController());
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
   // Intersects cell1 and the spacing between cell1 and cell2.
-  IntRect interest_rect(0, 200, 200, 150);
-  Paint(&interest_rect);
+  Paint(IntRect(0, 200, 200, 150));
 
   EXPECT_THAT(
       RootPaintController().GetDisplayItemList(),
@@ -93,8 +90,7 @@ TEST_P(TablePainterTest, BackgroundWithCellSpacing) {
 
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
   // Intersects the spacing only.
-  interest_rect = IntRect(0, 250, 100, 100);
-  Paint(&interest_rect);
+  Paint(IntRect(0, 250, 100, 100));
 
   EXPECT_THAT(
       RootPaintController().GetDisplayItemList(),
@@ -104,8 +100,7 @@ TEST_P(TablePainterTest, BackgroundWithCellSpacing) {
 
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
   // Intersects cell2 only.
-  interest_rect = IntRect(0, 350, 200, 150);
-  Paint(&interest_rect);
+  Paint(IntRect(0, 350, 200, 150));
 
   EXPECT_THAT(
       RootPaintController().GetDisplayItemList(),
@@ -137,8 +132,7 @@ TEST_P(TablePainterTest, BackgroundInSelfPaintingRow) {
   InvalidateAll(RootPaintController());
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
   // Intersects cell1 and the spacing between cell1 and cell2.
-  IntRect interest_rect(200, 0, 200, 200);
-  Paint(&interest_rect);
+  Paint(IntRect(200, 0, 200, 200));
 
   EXPECT_THAT(
       RootPaintController().GetDisplayItemList(),
@@ -149,8 +143,7 @@ TEST_P(TablePainterTest, BackgroundInSelfPaintingRow) {
 
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
   // Intersects the spacing only.
-  interest_rect = IntRect(300, 0, 100, 100);
-  Paint(&interest_rect);
+  Paint(IntRect(300, 0, 100, 100));
 
   EXPECT_THAT(RootPaintController().GetDisplayItemList(),
               ElementsAre(IsSameId(&ViewScrollingBackgroundClient(),
@@ -158,8 +151,7 @@ TEST_P(TablePainterTest, BackgroundInSelfPaintingRow) {
 
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
   // Intersects cell2 only.
-  interest_rect = IntRect(450, 0, 200, 200);
-  Paint(&interest_rect);
+  Paint(IntRect(450, 0, 200, 200));
 
   EXPECT_THAT(
       RootPaintController().GetDisplayItemList(),
@@ -183,12 +175,10 @@ TEST_P(TablePainterTest, CollapsedBorderAndOverflow) {
   )HTML");
 
   auto& cell = *ToLayoutTableCell(GetLayoutObjectByElementId("cell"));
-
   InvalidateAll(RootPaintController());
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
   // Intersects the overflowing part of cell but not border box.
-  IntRect interest_rect(0, 0, 100, 100);
-  Paint(&interest_rect);
+  Paint(IntRect(0, 0, 100, 100));
 
   // We should paint all display items of cell.
   EXPECT_THAT(
@@ -199,6 +189,33 @@ TEST_P(TablePainterTest, CollapsedBorderAndOverflow) {
                   IsSameId(cell.Row(), DisplayItem::kTableCollapsedBorders),
                   IsSameId(&cell, DisplayItem::PaintPhaseToDrawingType(
                                       PaintPhase::kSelfOutlineOnly))));
+}
+
+TEST_P(TablePainterTest, DontPaintEmptyDecorationBackground) {
+  SetBodyInnerHTML(R"HTML(
+    <table id="table1" style="border: 1px solid yellow">
+      <tr>
+        <td style="width: 100px; height: 100px; border: 2px solid blue"></td>
+      </tr>
+    </tr>
+    <table id="table2"
+           style="border-collapse: collapse; border: 1px solid yellow">
+      <tr>
+        <td style="width: 100px; height: 100px; border: 2px solid blue"></td>
+      </tr>
+    </tr>
+  )HTML");
+
+  auto* table1 = ToLayoutTable(GetLayoutObjectByElementId("table1"));
+  auto* table2 = ToLayoutTable(GetLayoutObjectByElementId("table2"));
+  EXPECT_THAT(RootPaintController().GetDisplayItemList(),
+              ElementsAre(IsSameId(&ViewScrollingBackgroundClient(),
+                                   kDocumentBackgroundType),
+                          IsSameId(table1, kBackgroundType),
+                          IsSameId(table1->FirstBody()->FirstRow()->FirstCell(),
+                                   kBackgroundType),
+                          IsSameId(table2->FirstBody()->FirstRow(),
+                                   DisplayItem::kTableCollapsedBorders)));
 }
 
 }  // namespace blink

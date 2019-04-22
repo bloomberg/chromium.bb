@@ -10,7 +10,7 @@
 
 #include "third_party/libjingle_xmpp/xmllite/qname.h"
 
-namespace buzz {
+namespace jingle_xmpp {
 
 QName::QName() {
 }
@@ -75,4 +75,4 @@ int QName::Compare(const QName& other) const {
   return namespace_.compare(other.namespace_);
 }
 
-}  // namespace buzz
+}  // namespace jingle_xmpp

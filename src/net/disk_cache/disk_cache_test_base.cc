@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -73,9 +74,9 @@ int DiskCacheTestWithCache::TestIterator::OpenNextEntry(
 }
 
 DiskCacheTestWithCache::DiskCacheTestWithCache()
-    : cache_impl_(NULL),
-      simple_cache_impl_(NULL),
-      mem_cache_(NULL),
+    : cache_impl_(nullptr),
+      simple_cache_impl_(nullptr),
+      mem_cache_(nullptr),
       mask_(0),
       size_(0),
       type_(net::DISK_CACHE),
@@ -96,7 +97,7 @@ void DiskCacheTestWithCache::InitCache() {
   else
     InitDiskCache();
 
-  ASSERT_TRUE(NULL != cache_);
+  ASSERT_TRUE(nullptr != cache_);
   if (first_cleanup_)
     ASSERT_EQ(0, cache_->GetEntryCount());
 }
@@ -130,6 +131,22 @@ void DiskCacheTestWithCache::SetMaxSize(int64_t size, bool should_succeed) {
 
   if (mem_cache_)
     EXPECT_EQ(should_succeed, mem_cache_->SetMaxSize(size));
+}
+
+int DiskCacheTestWithCache::OpenOrCreateEntry(
+    const std::string& key,
+    disk_cache::EntryWithOpened* entry_struct) {
+  return OpenOrCreateEntryWithPriority(key, net::HIGHEST, entry_struct);
+}
+
+int DiskCacheTestWithCache::OpenOrCreateEntryWithPriority(
+    const std::string& key,
+    net::RequestPriority request_priority,
+    disk_cache::EntryWithOpened* entry_struct) {
+  net::TestCompletionCallback cb;
+  int rv = cache_->OpenOrCreateEntry(key, request_priority, entry_struct,
+                                     cb.callback());
+  return cb.GetResult(rv);
 }
 
 int DiskCacheTestWithCache::OpenEntry(const std::string& key,
@@ -226,15 +243,21 @@ void DiskCacheTestWithCache::RunTaskForTest(const base::Closure& closure) {
   EXPECT_THAT(cb.GetResult(rv), IsOk());
 }
 
-int DiskCacheTestWithCache::ReadData(disk_cache::Entry* entry, int index,
-                                     int offset, net::IOBuffer* buf, int len) {
+int DiskCacheTestWithCache::ReadData(disk_cache::Entry* entry,
+                                     int index,
+                                     int offset,
+                                     net::IOBuffer* buf,
+                                     int len) {
   net::TestCompletionCallback cb;
   int rv = entry->ReadData(index, offset, buf, len, cb.callback());
   return cb.GetResult(rv);
 }
 
-int DiskCacheTestWithCache::WriteData(disk_cache::Entry* entry, int index,
-                                      int offset, net::IOBuffer* buf, int len,
+int DiskCacheTestWithCache::WriteData(disk_cache::Entry* entry,
+                                      int index,
+                                      int offset,
+                                      net::IOBuffer* buf,
+                                      int len,
                                       bool truncate) {
   net::TestCompletionCallback cb;
   int rv = entry->WriteData(index, offset, buf, len, cb.callback(), truncate);
@@ -259,16 +282,29 @@ int DiskCacheTestWithCache::WriteSparseData(disk_cache::Entry* entry,
   return cb.GetResult(rv);
 }
 
+int DiskCacheTestWithCache::GetAvailableRange(disk_cache::Entry* entry,
+                                              int64_t offset,
+                                              int len,
+                                              int64_t* start) {
+  net::TestCompletionCallback cb;
+  int rv = entry->GetAvailableRange(offset, len, start, cb.callback());
+  return cb.GetResult(rv);
+}
+
 void DiskCacheTestWithCache::TrimForTest(bool empty) {
+  if (memory_only_ || !cache_impl_)
+    return;
+
   RunTaskForTest(base::Bind(&disk_cache::BackendImpl::TrimForTest,
-                            base::Unretained(cache_impl_),
-                            empty));
+                            base::Unretained(cache_impl_), empty));
 }
 
 void DiskCacheTestWithCache::TrimDeletedListForTest(bool empty) {
+  if (memory_only_ || !cache_impl_)
+    return;
+
   RunTaskForTest(base::Bind(&disk_cache::BackendImpl::TrimDeletedListForTest,
-                            base::Unretained(cache_impl_),
-                            empty));
+                            base::Unretained(cache_impl_), empty));
 }
 
 void DiskCacheTestWithCache::AddDelay() {
@@ -279,14 +315,18 @@ void DiskCacheTestWithCache::AddDelay() {
     const base::Time initial_time = base::Time::Now();
     do {
       base::PlatformThread::YieldCurrentThread();
-    } while (base::Time::Now() -
-             initial_time < base::TimeDelta::FromSeconds(1));
+    } while (base::Time::Now() - initial_time <
+             base::TimeDelta::FromSeconds(1));
   }
 
   base::Time initial = base::Time::Now();
   while (base::Time::Now() <= initial) {
     base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(1));
   };
+}
+
+void DiskCacheTestWithCache::OnExternalCacheHit(const std::string& key) {
+  cache_->OnExternalCacheHit(key);
 }
 
 void DiskCacheTestWithCache::TearDown() {
@@ -304,7 +344,7 @@ void DiskCacheTestWithCache::TearDown() {
 }
 
 void DiskCacheTestWithCache::InitMemoryCache() {
-  mem_cache_ = new disk_cache::MemBackendImpl(NULL);
+  mem_cache_ = new disk_cache::MemBackendImpl(nullptr);
   cache_.reset(mem_cache_);
   ASSERT_TRUE(cache_);
 
@@ -355,19 +395,18 @@ void DiskCacheTestWithCache::CreateBackend(uint32_t flags) {
   }
 
   if (mask_)
-    cache_impl_ = new disk_cache::BackendImpl(cache_path_, mask_, runner,
+    cache_impl_ = new disk_cache::BackendImpl(cache_path_, mask_, runner, type_,
                                               /* net_log = */ nullptr);
   else
-    cache_impl_ = new disk_cache::BackendImpl(cache_path_,
-                                              /* cleanup_tracker = */ nullptr,
-                                              runner, /* net_log = */ nullptr);
+    cache_impl_ = new disk_cache::BackendImpl(
+        cache_path_, /* cleanup_tracker = */ nullptr, runner, type_,
+        /* net_log = */ nullptr);
   cache_.reset(cache_impl_);
   ASSERT_TRUE(cache_);
   if (size_)
     EXPECT_TRUE(cache_impl_->SetMaxSize(size_));
   if (new_eviction_)
     cache_impl_->SetNewEviction();
-  cache_impl_->SetType(type_);
   cache_impl_->SetFlags(flags);
   net::TestCompletionCallback cb;
   int rv = cache_impl_->Init(cb.callback());

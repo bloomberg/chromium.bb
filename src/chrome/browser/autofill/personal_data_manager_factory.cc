@@ -5,12 +5,10 @@
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 
 #include "base/memory/singleton.h"
-#include "chrome/browser/autofill/autofill_profile_validator_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
@@ -39,14 +37,14 @@ PersonalDataManagerFactory::PersonalDataManagerFactory()
   DependsOn(IdentityManagerFactory::GetInstance());
   DependsOn(HistoryServiceFactory::GetInstance());
   DependsOn(WebDataServiceFactory::GetInstance());
-  DependsOn(GaiaCookieManagerServiceFactory::GetInstance());
 }
 
 PersonalDataManagerFactory::~PersonalDataManagerFactory() {
 }
 
-KeyedService* PersonalDataManagerFactory::BuildServiceInstanceFor(
-    content::BrowserContext* context) const {
+KeyedService* PersonalDataManagerFactory::BuildPersonalDataManager(
+    autofill::AutofillProfileValidator* autofill_validator,
+    content::BrowserContext* context) {
   Profile* profile = Profile::FromBrowserContext(context);
   PersonalDataManager* service =
       new PersonalDataManager(g_browser_process->GetApplicationLocale());
@@ -58,10 +56,15 @@ KeyedService* PersonalDataManagerFactory::BuildServiceInstanceFor(
       profile, ServiceAccessType::EXPLICIT_ACCESS);
   service->Init(local_storage, account_storage, profile->GetPrefs(),
                 IdentityManagerFactory::GetForProfile(profile),
-                AutofillProfileValidatorFactory::GetInstance(), history_service,
-                GaiaCookieManagerServiceFactory::GetForProfile(profile),
+                autofill_validator, history_service,
                 profile->IsOffTheRecord());
   return service;
+}
+
+KeyedService* PersonalDataManagerFactory::BuildServiceInstanceFor(
+    content::BrowserContext* context) const {
+  return BuildPersonalDataManager(
+      AutofillProfileValidatorFactory::GetInstance(), context);
 }
 
 content::BrowserContext* PersonalDataManagerFactory::GetBrowserContextToUse(

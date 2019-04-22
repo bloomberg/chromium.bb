@@ -420,13 +420,14 @@ TEST_F(FrameSinkManagerTest,
 // Verifies that the SurfaceIds passed to EvictSurfaces will be destroyed in the
 // next garbage collection.
 TEST_F(FrameSinkManagerTest, EvictSurfaces) {
-  ParentLocalSurfaceIdAllocator allocator;
-  allocator.GenerateId();
+  ParentLocalSurfaceIdAllocator allocator1;
+  ParentLocalSurfaceIdAllocator allocator2;
+  allocator1.GenerateId();
   LocalSurfaceId local_surface_id1 =
-      allocator.GetCurrentLocalSurfaceIdAllocation().local_surface_id();
-  allocator.GenerateId();
+      allocator1.GetCurrentLocalSurfaceIdAllocation().local_surface_id();
+  allocator2.GenerateId();
   LocalSurfaceId local_surface_id2 =
-      allocator.GetCurrentLocalSurfaceIdAllocation().local_surface_id();
+      allocator2.GetCurrentLocalSurfaceIdAllocation().local_surface_id();
   SurfaceId surface_id1(kFrameSinkIdA, local_surface_id1);
   SurfaceId surface_id2(kFrameSinkIdB, local_surface_id2);
 
@@ -646,7 +647,7 @@ TEST_P(FrameSinkManagerOrderingParamTest, Ordering) {
     UnregisterBFS();
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     FrameSinkManagerOrderingParamTestInstantiation,
     FrameSinkManagerOrderingParamTest,
     ::testing::Combine(::testing::ValuesIn(kRegisterOrderList),

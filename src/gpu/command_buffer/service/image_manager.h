@@ -7,7 +7,8 @@
 
 #include <stdint.h>
 
-#include "base/containers/hash_tables.h"
+#include <unordered_map>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "gpu/gpu_export.h"
@@ -30,7 +31,7 @@ class GPU_EXPORT ImageManager {
   gl::GLImage* LookupImage(int32_t service_id);
 
  private:
-  typedef base::hash_map<int32_t, scoped_refptr<gl::GLImage>> GLImageMap;
+  typedef std::unordered_map<int32_t, scoped_refptr<gl::GLImage>> GLImageMap;
   GLImageMap images_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageManager);

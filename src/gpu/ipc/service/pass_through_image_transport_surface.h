@@ -10,6 +10,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "gpu/ipc/service/image_transport_surface.h"
@@ -29,30 +30,26 @@ class PassThroughImageTransportSurface : public gl::GLSurfaceAdapter {
 
   // GLSurface implementation.
   bool Initialize(gl::GLSurfaceFormat format) override;
-  gfx::SwapResult SwapBuffers(const PresentationCallback& callback) override;
-  void SwapBuffersAsync(
-      const SwapCompletionCallback& completion_callback,
-      const PresentationCallback& presentation_callback) override;
-  gfx::SwapResult SwapBuffersWithBounds(
-      const std::vector<gfx::Rect>& rects,
-      const PresentationCallback& callback) override;
+  gfx::SwapResult SwapBuffers(PresentationCallback callback) override;
+  void SwapBuffersAsync(SwapCompletionCallback completion_callback,
+                        PresentationCallback presentation_callback) override;
+  gfx::SwapResult SwapBuffersWithBounds(const std::vector<gfx::Rect>& rects,
+                                        PresentationCallback callback) override;
   gfx::SwapResult PostSubBuffer(int x,
                                 int y,
                                 int width,
                                 int height,
-                                const PresentationCallback& callback) override;
-  void PostSubBufferAsync(
-      int x,
-      int y,
-      int width,
-      int height,
-      const SwapCompletionCallback& completion_callback,
-      const PresentationCallback& presentation_callback) override;
-  gfx::SwapResult CommitOverlayPlanes(
-      const PresentationCallback& callback) override;
+                                PresentationCallback callback) override;
+  void PostSubBufferAsync(int x,
+                          int y,
+                          int width,
+                          int height,
+                          SwapCompletionCallback completion_callback,
+                          PresentationCallback presentation_callback) override;
+  gfx::SwapResult CommitOverlayPlanes(PresentationCallback callback) override;
   void CommitOverlayPlanesAsync(
-      const SwapCompletionCallback& completion_callback,
-      const PresentationCallback& presentation_callback) override;
+      SwapCompletionCallback completion_callback,
+      PresentationCallback presentation_callback) override;
   void SetVSyncEnabled(bool enabled) override;
 
  private:
@@ -61,13 +58,15 @@ class PassThroughImageTransportSurface : public gl::GLSurfaceAdapter {
   void UpdateVSyncEnabled();
 
   void StartSwapBuffers(gfx::SwapResponse* response);
-  void FinishSwapBuffers(gfx::SwapResponse response);
-  void FinishSwapBuffersAsync(GLSurface::SwapCompletionCallback callback,
+  void FinishSwapBuffers(gfx::SwapResponse response, uint64_t local_swap_id);
+  void FinishSwapBuffersAsync(SwapCompletionCallback callback,
                               gfx::SwapResponse response,
+                              uint64_t local_swap_id,
                               gfx::SwapResult result,
                               std::unique_ptr<gfx::GpuFence> gpu_fence);
 
-  void BufferPresented(const GLSurface::PresentationCallback& callback,
+  void BufferPresented(PresentationCallback callback,
+                       uint64_t local_swap_id,
                        const gfx::PresentationFeedback& feedback);
 
   const bool is_gpu_vsync_disabled_;
@@ -75,7 +74,15 @@ class PassThroughImageTransportSurface : public gl::GLSurfaceAdapter {
   base::WeakPtr<ImageTransportSurfaceDelegate> delegate_;
   int swap_generation_ = 0;
   bool vsync_enabled_ = true;
-  bool allow_running_presentation_callback_ = true;
+
+  // Local swap ids, which are used to make sure the swap order is correct and
+  // the presentation callbacks are not called earlier than the swap ack of the
+  // same swap request. Checked only when DCHECK is on.
+  uint64_t local_swap_id_ = 0;
+
+#if DCHECK_IS_ON()
+  base::queue<uint64_t> pending_local_swap_ids_;
+#endif
 
   base::WeakPtrFactory<PassThroughImageTransportSurface> weak_ptr_factory_;
 

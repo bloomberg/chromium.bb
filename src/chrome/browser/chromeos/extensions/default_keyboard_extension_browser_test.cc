@@ -8,7 +8,9 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/run_loop.h"
 #include "base/threading/thread_restrictions.h"
+#include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -90,6 +92,12 @@ void DefaultKeyboardExtensionBrowserTest::RunTest(
 content::WebContents*
 DefaultKeyboardExtensionBrowserTest::GetKeyboardWebContents(
     const std::string& id) {
+  // Ensure the keyboard is shown.
+  auto* client = ChromeKeyboardControllerClient::Get();
+  client->SetEnableFlag(keyboard::mojom::KeyboardEnableFlag::kExtensionEnabled);
+  client->ShowKeyboard();
+  client->FlushForTesting();
+
   GURL url = extensions::Extension::GetBaseURLFromExtensionId(id);
   std::unique_ptr<content::RenderWidgetHostIterator> widgets(
       content::RenderWidgetHost::GetRenderWidgetHosts());

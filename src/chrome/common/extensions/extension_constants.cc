@@ -23,7 +23,7 @@ const char kCalendarAppId[] = "ejjicmeblgpmajnghnpcppodonldlgfn";
 const char kChromeRemoteDesktopAppId[] = "gbchcmhmhahfdphkhkmpfmihenigjmpp";
 const char kCloudPrintAppId[] = "mfehgcgbbipciphmccgaenjidiccnmng";
 const char kDataSaverExtensionId[] = "pfmgfdlgomnbgkofeojodiodmgpgmkac";
-const char kDriveExtensionId[] = "ghbmnnjooekpmoecnnnilnnbdlolhkhi";
+const char kDocsOfflineExtensionId[] = "ghbmnnjooekpmoecnnnilnnbdlolhkhi";
 const char kDriveHostedAppId[] = "apdfllckaahabafndbhieahigkjlhalf";
 const char kEnterpriseWebStoreAppId[] = "afchcafgojfnemjkcbhfekplkmjaldaa";
 const char kGmailAppId[] = "pjkljhegncpnkpknbcohdijeoejaedia";
@@ -70,6 +70,10 @@ const char kGoogleSpeechSynthesisExtensionId[] =
 const char kWallpaperManagerId[] = "obklkkbkpaoaejdabbfldmcfplpdgolj";
 const char kZipArchiverExtensionId[] = "dmboannefpncccogfdikhmhpmdnddgoe";
 const char kZipArchiverExtensionPath[] = "chromeos/zip_archiver";
+const char kChromeCameraAppId[] = "hfhhnacclhffhdffklopdkcgdhifgngh";
+const char kChromeCameraAppDevId[] = "flgnmkgjffmkephdokeeliiopbjaafpm";
+const char kChromeCameraAppPath[] = "chromeos/camera";
+const char kKioskNextHomeAppId[] = "nbaolgedfgoedkjbfmpediclncanmpbc";
 #endif
 
 const char kAppStateNotInstalled[] = "not_installed";

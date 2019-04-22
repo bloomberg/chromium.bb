@@ -13,16 +13,20 @@
 #include <GLES3/gl31.h>
 #include <stddef.h>
 #include <stdint.h>
+
 #include <algorithm>
 #include <map>
 #include <set>
 #include <sstream>
 #include <string>
+
 #include "base/atomic_sequence_num.h"
+#include "base/bind.h"
 #include "base/bits.h"
 #include "base/compiler_specific.h"
 #include "base/containers/span.h"
 #include "base/numerics/safe_math.h"
+#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
@@ -40,6 +44,7 @@
 #include "gpu/command_buffer/client/readback_buffer_shadow_tracker.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/client/transfer_buffer.h"
+#include "gpu/command_buffer/client/transfer_buffer_cmd_copy_helpers.h"
 #include "gpu/command_buffer/client/vertex_array_object_manager.h"
 #include "gpu/command_buffer/common/context_creation_attribs.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
@@ -274,7 +279,7 @@ gpu::ContextResult GLES2Implementation::Initialize(
 
   if (support_client_side_arrays_) {
     GetIdHandler(SharedIdNamespaces::kBuffers)
-        ->MakeIds(this, kClientSideArrayId, arraysize(reserved_ids_),
+        ->MakeIds(this, kClientSideArrayId, base::size(reserved_ids_),
                   &reserved_ids_[0]);
   }
 
@@ -308,7 +313,7 @@ GLES2Implementation::~GLES2Implementation() {
   // GLES2Implementation::Initialize() could fail before allocating
   // reserved_ids_, so we need delete them carefully.
   if (support_client_side_arrays_ && reserved_ids_[0]) {
-    DeleteBuffers(arraysize(reserved_ids_), &reserved_ids_[0]);
+    DeleteBuffers(base::size(reserved_ids_), &reserved_ids_[0]);
   }
 
   // Release remaining BufferRange mem; This is when a MapBufferRange() is
@@ -413,6 +418,11 @@ void GLES2Implementation::OnSwapBufferPresented(
     return;
   std::move(found->second).Run(feedback);
   pending_presentation_callbacks_.erase(found);
+}
+
+void GLES2Implementation::OnGpuControlReturnData(
+    base::span<const uint8_t> data) {
+  NOTIMPLEMENTED();
 }
 
 void GLES2Implementation::FreeSharedMemory(void* mem) {
@@ -1345,6 +1355,22 @@ void GLES2Implementation::Flush() {
   FlushHelper();
 }
 
+// InterfaceBase implementation.
+void GLES2Implementation::GenSyncTokenCHROMIUM(GLbyte* sync_token) {
+  ImplementationBase::GenSyncToken(sync_token);
+}
+void GLES2Implementation::GenUnverifiedSyncTokenCHROMIUM(GLbyte* sync_token) {
+  ImplementationBase::GenUnverifiedSyncToken(sync_token);
+}
+void GLES2Implementation::VerifySyncTokensCHROMIUM(GLbyte** sync_tokens,
+                                                   GLsizei count) {
+  ImplementationBase::VerifySyncTokens(sync_tokens, count);
+}
+void GLES2Implementation::WaitSyncTokenCHROMIUM(const GLbyte* sync_token) {
+  ImplementationBase::WaitSyncToken(sync_token);
+}
+
+// ImplementationBase implementation.
 void GLES2Implementation::IssueShallowFlush() {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glShallowFlushCHROMIUM()");
@@ -1804,6 +1830,231 @@ GLuint GLES2Implementation::GetUniformBlockIndex(GLuint program,
   return index;
 }
 
+bool GLES2Implementation::GetProgramInterfaceivHelper(GLuint program,
+                                                      GLenum program_interface,
+                                                      GLenum pname,
+                                                      GLint* params) {
+  bool success = share_group_->program_info_manager()->GetProgramInterfaceiv(
+      this, program, program_interface, pname, params);
+  GPU_CLIENT_LOG_CODE_BLOCK({
+    if (success) {
+      GPU_CLIENT_LOG("  0: " << *params);
+    }
+  });
+  return success;
+}
+
+GLuint GLES2Implementation::GetProgramResourceIndexHelper(
+    GLuint program,
+    GLenum program_interface,
+    const char* name) {
+  typedef cmds::GetProgramResourceIndex::Result Result;
+  SetBucketAsCString(kResultBucketId, name);
+  auto result = GetResultAs<Result>();
+  if (!result) {
+    return GL_INVALID_INDEX;
+  }
+  *result = GL_INVALID_INDEX;
+  helper_->GetProgramResourceIndex(program, program_interface, kResultBucketId,
+                                   GetResultShmId(), result.offset());
+  WaitForCmd();
+  helper_->SetBucketSize(kResultBucketId, 0);
+  return *result;
+}
+
+GLuint GLES2Implementation::GetProgramResourceIndex(
+    GLuint program,
+    GLenum program_interface,
+    const char* name) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glGetProgramResourceIndex("
+                     << program << ", " << program_interface << ", " << name
+                     << ")");
+  TRACE_EVENT0("gpu", "GLES2::GetProgramResourceIndex");
+  GLuint index = share_group_->program_info_manager()->GetProgramResourceIndex(
+      this, program, program_interface, name);
+  GPU_CLIENT_LOG("returned " << index);
+  CheckGLError();
+  return index;
+}
+
+bool GLES2Implementation::GetProgramResourceNameHelper(GLuint program,
+                                                       GLenum program_interface,
+                                                       GLuint index,
+                                                       GLsizei bufsize,
+                                                       GLsizei* length,
+                                                       char* name) {
+  DCHECK_LE(0, bufsize);
+  // Clear the bucket so if the command fails nothing will be in it.
+  helper_->SetBucketSize(kResultBucketId, 0);
+  bool success = false;
+  {
+    // The Result pointer must be scoped to this block because it can be
+    // invalidated below if getting result name causes the transfer buffer to be
+    // reallocated.
+    typedef cmds::GetProgramResourceName::Result Result;
+    auto result = GetResultAs<Result>();
+    if (!result) {
+      return false;
+    }
+    // Set as failed so if the command fails we'll recover.
+    *result = 0;
+    helper_->GetProgramResourceName(program, program_interface, index,
+                                    kResultBucketId, GetResultShmId(),
+                                    result.offset());
+    WaitForCmd();
+    success = !!*result;
+  }
+  if (success) {
+    GetResultNameHelper(bufsize, length, name);
+  }
+  return success;
+}
+
+void GLES2Implementation::GetProgramResourceName(GLuint program,
+                                                 GLenum program_interface,
+                                                 GLuint index,
+                                                 GLsizei bufsize,
+                                                 GLsizei* length,
+                                                 char* name) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glGetProgramResourceName("
+                     << program << ", " << program_interface << ", " << index
+                     << ", " << bufsize << ", " << static_cast<void*>(length)
+                     << ", " << static_cast<void*>(name) << ")");
+  if (bufsize < 0) {
+    SetGLError(GL_INVALID_VALUE, "glGetProgramResourceName", "bufsize < 0");
+    return;
+  }
+  TRACE_EVENT0("gpu", "GLES2::GetProgramResourceName");
+  bool success = share_group_->program_info_manager()->GetProgramResourceName(
+      this, program, program_interface, index, bufsize, length, name);
+  if (success && name) {
+    GPU_CLIENT_LOG("  name: " << name);
+  }
+  CheckGLError();
+}
+
+bool GLES2Implementation::GetProgramResourceivHelper(GLuint program,
+                                                     GLenum program_interface,
+                                                     GLuint index,
+                                                     GLsizei prop_count,
+                                                     const GLenum* props,
+                                                     GLsizei bufsize,
+                                                     GLsizei* length,
+                                                     GLint* params) {
+  DCHECK_LE(0, prop_count);
+  DCHECK_LE(0, bufsize);
+  base::CheckedNumeric<uint32_t> bytes = prop_count;
+  bytes *= sizeof(GLenum);
+  if (!bytes.IsValid()) {
+    SetGLError(GL_INVALID_VALUE, "glGetProgramResourceiv", "count overflow");
+    return false;
+  }
+  SetBucketContents(kResultBucketId, props, bytes.ValueOrDefault(0));
+  typedef cmds::GetProgramResourceiv::Result Result;
+  auto result = GetResultAs<Result>();
+  if (!result) {
+    return false;
+  }
+  result->SetNumResults(0);
+  helper_->GetProgramResourceiv(program, program_interface, index,
+                                kResultBucketId, GetResultShmId(),
+                                result.offset());
+  WaitForCmd();
+  if (length) {
+    *length = result->GetNumResults();
+  }
+  if (result->GetNumResults() > 0) {
+    if (params) {
+      result->CopyResult(params);
+    }
+    GPU_CLIENT_LOG_CODE_BLOCK({
+      for (int32_t i = 0; i < result->GetNumResults(); ++i) {
+        GPU_CLIENT_LOG("  " << i << ": " << result->GetData()[i]);
+      }
+    });
+    return true;
+  }
+  return false;
+}
+
+void GLES2Implementation::GetProgramResourceiv(GLuint program,
+                                               GLenum program_interface,
+                                               GLuint index,
+                                               GLsizei prop_count,
+                                               const GLenum* props,
+                                               GLsizei bufsize,
+                                               GLsizei* length,
+                                               GLint* params) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glGetProgramResourceiv(" << program
+                     << ", " << program_interface << ", " << index << ", "
+                     << prop_count << ", " << static_cast<const void*>(props)
+                     << ", " << bufsize << ", " << static_cast<void*>(length)
+                     << ", " << static_cast<void*>(params) << ")");
+  if (prop_count < 0) {
+    SetGLError(GL_INVALID_VALUE, "glGetProgramResourceiv", "prop_count < 0");
+    return;
+  }
+  if (bufsize < 0) {
+    SetGLError(GL_INVALID_VALUE, "glGetProgramResourceiv", "bufsize < 0");
+    return;
+  }
+  TRACE_EVENT0("gpu", "GLES2::GetProgramResourceiv");
+  GLsizei param_count = 0;
+  bool success = share_group_->program_info_manager()->GetProgramResourceiv(
+      this, program, program_interface, index, prop_count, props, bufsize,
+      &param_count, params);
+  if (length) {
+    *length = param_count;
+  }
+  if (success && params) {
+    GPU_CLIENT_LOG_CODE_BLOCK({
+      for (GLsizei ii = 0; ii < param_count; ++ii) {
+        GPU_CLIENT_LOG("  " << ii << ": " << params[ii]);
+      }
+    });
+  }
+  CheckGLError();
+}
+
+GLint GLES2Implementation::GetProgramResourceLocationHelper(
+    GLuint program,
+    GLenum program_interface,
+    const char* name) {
+  typedef cmds::GetProgramResourceLocation::Result Result;
+  SetBucketAsCString(kResultBucketId, name);
+  auto result = GetResultAs<Result>();
+  if (!result) {
+    return -1;
+  }
+  *result = -1;
+  helper_->GetProgramResourceLocation(program, program_interface,
+                                      kResultBucketId, GetResultShmId(),
+                                      result.offset());
+  WaitForCmd();
+  helper_->SetBucketSize(kResultBucketId, 0);
+  return *result;
+}
+
+GLint GLES2Implementation::GetProgramResourceLocation(
+    GLuint program,
+    GLenum program_interface,
+    const char* name) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glGetProgramResourceLocation("
+                     << program << ", " << program_interface << ", " << name
+                     << ")");
+  TRACE_EVENT0("gpu", "GLES2::GetProgramResourceLocation");
+  GLint location =
+      share_group_->program_info_manager()->GetProgramResourceLocation(
+          this, program, program_interface, name);
+  GPU_CLIENT_LOG("returned " << location);
+  CheckGLError();
+  return location;
+}
+
 void GLES2Implementation::LinkProgram(GLuint program) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glLinkProgram(" << program << ")");
@@ -2113,7 +2364,8 @@ void GLES2Implementation::BufferSubDataHelper(GLenum target,
 
     int32_t end = 0;
     int32_t buffer_size = buffer->size();
-    if (!SafeAddInt32(offset, size, &end) || end > buffer_size) {
+    if (!base::CheckAdd(offset, size).AssignIfValid(&end) ||
+        end > buffer_size) {
       SetGLError(GL_INVALID_VALUE, "glBufferSubData", "out of range");
       return;
     }
@@ -2136,22 +2388,16 @@ void GLES2Implementation::BufferSubDataHelperImpl(
   DCHECK(buffer);
   DCHECK_GT(size, 0);
 
-  const int8_t* source = static_cast<const int8_t*>(data);
-  while (size) {
-    if (!buffer->valid() || buffer->size() == 0) {
-      buffer->Reset(size);
-      if (!buffer->valid()) {
-        return;
-      }
-    }
-    memcpy(buffer->address(), source, buffer->size());
-    helper_->BufferSubData(target, offset, buffer->size(), buffer->shm_id(),
-                           buffer->offset());
+  auto DoBufferSubData = [&](const std::array<uint32_t, 1>&,
+                             uint32_t copy_offset, uint32_t) {
+    helper_->BufferSubData(target, offset + copy_offset, buffer->size(),
+                           buffer->shm_id(), buffer->offset());
     InvalidateReadbackBufferShadowDataCHROMIUM(GetBoundBufferHelper(target));
-    offset += buffer->size();
-    source += buffer->size();
-    size -= buffer->size();
-    buffer->Release();
+  };
+
+  if (!TransferArraysAndExecute(size, buffer, DoBufferSubData,
+                                static_cast<const int8_t*>(data))) {
+    SetGLError(GL_OUT_OF_MEMORY, "glBufferSubData", "out of memory");
   }
 }
 
@@ -2165,6 +2411,234 @@ void GLES2Implementation::BufferSubData(GLenum target,
                      << offset << ", " << size << ", "
                      << static_cast<const void*>(data) << ")");
   BufferSubDataHelper(target, offset, size, data);
+  CheckGLError();
+}
+
+void GLES2Implementation::MultiDrawArraysWEBGLHelper(GLenum mode,
+                                                     const GLint* firsts,
+                                                     const GLsizei* counts,
+                                                     GLsizei drawcount) {
+  DCHECK_GT(drawcount, 0);
+
+  uint32_t buffer_size = ComputeCombinedCopySize(drawcount, firsts, counts);
+  ScopedTransferBufferPtr buffer(buffer_size, helper_, transfer_buffer_);
+
+  helper_->MultiDrawBeginCHROMIUM(drawcount);
+  auto DoMultiDraw = [&](const std::array<uint32_t, 2>& offsets, uint32_t,
+                         uint32_t copy_count) {
+    helper_->MultiDrawArraysCHROMIUM(
+        mode, buffer.shm_id(), buffer.offset() + offsets[0], buffer.shm_id(),
+        buffer.offset() + offsets[1], copy_count);
+  };
+  if (!TransferArraysAndExecute(drawcount, &buffer, DoMultiDraw, firsts,
+                                counts)) {
+    SetGLError(GL_OUT_OF_MEMORY, "glMultiDrawArraysWEBGL", "out of memory");
+  }
+  helper_->MultiDrawEndCHROMIUM();
+}
+
+void GLES2Implementation::MultiDrawArraysInstancedWEBGLHelper(
+    GLenum mode,
+    const GLint* firsts,
+    const GLsizei* counts,
+    const GLsizei* instance_counts,
+    GLsizei drawcount) {
+  DCHECK_GT(drawcount, 0);
+
+  uint32_t buffer_size =
+      ComputeCombinedCopySize(drawcount, firsts, counts, instance_counts);
+  ScopedTransferBufferPtr buffer(buffer_size, helper_, transfer_buffer_);
+
+  helper_->MultiDrawBeginCHROMIUM(drawcount);
+  auto DoMultiDraw = [&](const std::array<uint32_t, 3>& offsets, uint32_t,
+                         uint32_t copy_count) {
+    helper_->MultiDrawArraysInstancedCHROMIUM(
+        mode, buffer.shm_id(), buffer.offset() + offsets[0], buffer.shm_id(),
+        buffer.offset() + offsets[1], buffer.shm_id(),
+        buffer.offset() + offsets[2], copy_count);
+  };
+  if (!TransferArraysAndExecute(drawcount, &buffer, DoMultiDraw, firsts, counts,
+                                instance_counts)) {
+    SetGLError(GL_OUT_OF_MEMORY, "glMultiDrawArraysInstancedWEBGL",
+               "out of memory");
+  }
+  helper_->MultiDrawEndCHROMIUM();
+}
+
+void GLES2Implementation::MultiDrawElementsWEBGLHelper(GLenum mode,
+                                                       const GLsizei* counts,
+                                                       GLenum type,
+                                                       const GLsizei* offsets,
+                                                       GLsizei drawcount) {
+  DCHECK_GT(drawcount, 0);
+
+  uint32_t buffer_size = ComputeCombinedCopySize(drawcount, counts, offsets);
+  ScopedTransferBufferPtr buffer(buffer_size, helper_, transfer_buffer_);
+
+  helper_->MultiDrawBeginCHROMIUM(drawcount);
+  auto DoMultiDraw = [&](const std::array<uint32_t, 2>& offsets, uint32_t,
+                         uint32_t copy_count) {
+    helper_->MultiDrawElementsCHROMIUM(
+        mode, buffer.shm_id(), buffer.offset() + offsets[0], type,
+        buffer.shm_id(), buffer.offset() + offsets[1], copy_count);
+  };
+  if (!TransferArraysAndExecute(drawcount, &buffer, DoMultiDraw, counts,
+                                offsets)) {
+    SetGLError(GL_OUT_OF_MEMORY, "glMultiDrawElementsWEBGL", "out of memory");
+  }
+  helper_->MultiDrawEndCHROMIUM();
+}
+
+void GLES2Implementation::MultiDrawElementsInstancedWEBGLHelper(
+    GLenum mode,
+    const GLsizei* counts,
+    GLenum type,
+    const GLsizei* offsets,
+    const GLsizei* instance_counts,
+    GLsizei drawcount) {
+  DCHECK_GT(drawcount, 0);
+
+  uint32_t buffer_size =
+      ComputeCombinedCopySize(drawcount, counts, offsets, instance_counts);
+  ScopedTransferBufferPtr buffer(buffer_size, helper_, transfer_buffer_);
+
+  helper_->MultiDrawBeginCHROMIUM(drawcount);
+  auto DoMultiDraw = [&](const std::array<uint32_t, 3>& offsets, uint32_t,
+                         uint32_t copy_count) {
+    helper_->MultiDrawElementsInstancedCHROMIUM(
+        mode, buffer.shm_id(), buffer.offset() + offsets[0], type,
+        buffer.shm_id(), buffer.offset() + offsets[1], buffer.shm_id(),
+        buffer.offset() + offsets[2], copy_count);
+  };
+  if (!TransferArraysAndExecute(drawcount, &buffer, DoMultiDraw, counts,
+                                offsets, instance_counts)) {
+    SetGLError(GL_OUT_OF_MEMORY, "glMultiDrawElementsInstancedWEBGL",
+               "out of memory");
+  }
+  helper_->MultiDrawEndCHROMIUM();
+}
+
+void GLES2Implementation::MultiDrawArraysWEBGL(GLenum mode,
+                                               const GLint* firsts,
+                                               const GLsizei* counts,
+                                               GLsizei drawcount) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glMultiDrawArraysWEBGL("
+                     << GLES2Util::GetStringDrawMode(mode) << ", " << firsts
+                     << ", " << counts << ", " << drawcount << ")");
+  if (drawcount < 0) {
+    SetGLError(GL_INVALID_VALUE, "glMultiDrawArraysWEBGL", "drawcount < 0");
+    return;
+  }
+  if (drawcount == 0) {
+    return;
+  }
+  // This is for an extension for WebGL which doesn't support client side arrays
+  if (vertex_array_object_manager_->SupportsClientSideBuffers()) {
+    SetGLError(GL_INVALID_OPERATION, "glMultiDrawArraysWEBGL",
+               "Missing array buffer for vertex attribute");
+    return;
+  }
+  MultiDrawArraysWEBGLHelper(mode, firsts, counts, drawcount);
+  CheckGLError();
+}
+
+void GLES2Implementation::MultiDrawArraysInstancedWEBGL(
+    GLenum mode,
+    const GLint* firsts,
+    const GLsizei* counts,
+    const GLsizei* instance_counts,
+    GLsizei drawcount) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glMultiDrawArraysInstancedWEBGL("
+                     << GLES2Util::GetStringDrawMode(mode) << ", " << firsts
+                     << ", " << counts << ", " << instance_counts << ", "
+                     << drawcount << ")");
+  if (drawcount < 0) {
+    SetGLError(GL_INVALID_VALUE, "glMultiDrawArraysWEBGLInstanced",
+               "drawcount < 0");
+    return;
+  }
+  if (drawcount == 0) {
+    return;
+  }
+  // This is for an extension for WebGL which doesn't support client side arrays
+  if (vertex_array_object_manager_->SupportsClientSideBuffers()) {
+    SetGLError(GL_INVALID_OPERATION, "glMultiDrawArraysWEBGLInstanced",
+               "Missing array buffer for vertex attribute");
+    return;
+  }
+  MultiDrawArraysInstancedWEBGLHelper(mode, firsts, counts, instance_counts,
+                                      drawcount);
+  CheckGLError();
+}
+
+void GLES2Implementation::MultiDrawElementsWEBGL(GLenum mode,
+                                                 const GLsizei* counts,
+                                                 GLenum type,
+                                                 const GLsizei* offsets,
+                                                 GLsizei drawcount) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glMultiDrawElementsWEBGL("
+                     << GLES2Util::GetStringDrawMode(mode) << ", " << counts
+                     << ", " << GLES2Util::GetStringIndexType(type) << ", "
+                     << offsets << ", " << drawcount << ")");
+  if (drawcount < 0) {
+    SetGLError(GL_INVALID_VALUE, "glMultiDrawElementsWEBGL", "drawcount < 0");
+    return;
+  }
+  if (drawcount == 0) {
+    return;
+  }
+  // This is for an extension for WebGL which doesn't support client side arrays
+  if (vertex_array_object_manager_->bound_element_array_buffer() == 0) {
+    SetGLError(GL_INVALID_OPERATION, "glMultiDrawElementsWEBGL",
+               "No element array buffer");
+    return;
+  }
+  if (vertex_array_object_manager_->SupportsClientSideBuffers()) {
+    SetGLError(GL_INVALID_OPERATION, "glMultiDrawElementsWEBGL",
+               "Missing array buffer for vertex attribute");
+    return;
+  }
+  MultiDrawElementsWEBGLHelper(mode, counts, type, offsets, drawcount);
+  CheckGLError();
+}
+
+void GLES2Implementation::MultiDrawElementsInstancedWEBGL(
+    GLenum mode,
+    const GLsizei* counts,
+    GLenum type,
+    const GLsizei* offsets,
+    const GLsizei* instance_counts,
+    GLsizei drawcount) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glMultiDrawElementsInstancedWEBGL("
+                     << GLES2Util::GetStringDrawMode(mode) << ", " << counts
+                     << ", " << GLES2Util::GetStringIndexType(type) << ", "
+                     << offsets << ", " << instance_counts << ", " << drawcount
+                     << ")");
+  if (drawcount < 0) {
+    SetGLError(GL_INVALID_VALUE, "glMultiDrawElementsInstancedWEBGL",
+               "drawcount < 0");
+    return;
+  }
+  if (drawcount == 0) {
+    return;
+  }
+  // This is for an extension for WebGL which doesn't support client side arrays
+  if (vertex_array_object_manager_->bound_element_array_buffer() == 0) {
+    SetGLError(GL_INVALID_OPERATION, "glMultiDrawElementsInstancedWEBGL",
+               "No element array buffer");
+    return;
+  }
+  if (vertex_array_object_manager_->SupportsClientSideBuffers()) {
+    SetGLError(GL_INVALID_OPERATION, "glMultiDrawElementsInstancedWEBGL",
+               "Missing array buffer for vertex attribute");
+    return;
+  }
+  MultiDrawElementsInstancedWEBGLHelper(mode, counts, type, offsets,
+                                        instance_counts, drawcount);
   CheckGLError();
 }
 
@@ -3266,6 +3740,27 @@ void GLES2Implementation::TexSubImage3DImpl(GLenum target,
   }
 }
 
+void GLES2Implementation::GetResultNameHelper(GLsizei bufsize,
+                                              GLsizei* length,
+                                              char* name) {
+  // Length of string (without final \0) that we will write to the buffer.
+  GLsizei max_length = 0;
+  if (name && (bufsize > 0)) {
+    std::vector<int8_t> str;
+    GetBucketContents(kResultBucketId, &str);
+    if (!str.empty()) {
+      DCHECK_LE(str.size(), static_cast<size_t>(INT_MAX));
+      // Note: both bufsize and str.size() count/include the terminating \0.
+      max_length = std::min(bufsize, static_cast<GLsizei>(str.size())) - 1;
+    }
+    memcpy(name, str.data(), max_length);
+    name[max_length] = '\0';
+  }
+  if (length) {
+    *length = max_length;
+  }
+}
+
 bool GLES2Implementation::GetActiveAttribHelper(GLuint program,
                                                 GLuint index,
                                                 GLsizei bufsize,
@@ -3293,21 +3788,8 @@ bool GLES2Implementation::GetActiveAttribHelper(GLuint program,
     if (type) {
       *type = result->type;
     }
-    if (length || name) {
-      std::vector<int8_t> str;
-      // Note: this can invalidate |result|.
-      GetBucketContents(kResultBucketId, &str);
-      GLsizei max_size =
-          std::min(static_cast<size_t>(bufsize) - 1,
-                   std::max(static_cast<size_t>(0), str.size() - 1));
-      if (length) {
-        *length = max_size;
-      }
-      if (name && bufsize > 0) {
-        memcpy(name, &str[0], max_size);
-        name[max_size] = '\0';
-      }
-    }
+    // Note: this can invalidate |result|.
+    GetResultNameHelper(bufsize, length, name);
   }
   return success;
 }
@@ -3366,29 +3848,18 @@ bool GLES2Implementation::GetActiveUniformHelper(GLuint program,
   helper_->GetActiveUniform(program, index, kResultBucketId, GetResultShmId(),
                             result.offset());
   WaitForCmd();
-  if (result->success) {
+  bool success = !!result->success;
+  if (success) {
     if (size) {
       *size = result->size;
     }
     if (type) {
       *type = result->type;
     }
-    if (length || name) {
-      std::vector<int8_t> str;
-      GetBucketContents(kResultBucketId, &str);
-      GLsizei max_size =
-          std::min(static_cast<size_t>(bufsize) - 1,
-                   std::max(static_cast<size_t>(0), str.size() - 1));
-      if (length) {
-        *length = max_size;
-      }
-      if (name && bufsize > 0) {
-        memcpy(name, &str[0], max_size);
-        name[max_size] = '\0';
-      }
-    }
+    // Note: this can invalidate |result|.
+    GetResultNameHelper(bufsize, length, name);
   }
-  return result->success != 0;
+  return success;
 }
 
 void GLES2Implementation::GetActiveUniform(GLuint program,
@@ -3444,27 +3915,12 @@ bool GLES2Implementation::GetActiveUniformBlockNameHelper(GLuint program,
   helper_->GetActiveUniformBlockName(program, index, kResultBucketId,
                                      GetResultShmId(), result.offset());
   WaitForCmd();
-  if (*result) {
-    if (bufsize == 0) {
-      if (length) {
-        *length = 0;
-      }
-    } else if (length || name) {
-      std::vector<int8_t> str;
-      GetBucketContents(kResultBucketId, &str);
-      DCHECK_GT(str.size(), 0u);
-      GLsizei max_size =
-          std::min(bufsize, static_cast<GLsizei>(str.size())) - 1;
-      if (length) {
-        *length = max_size;
-      }
-      if (name) {
-        memcpy(name, &str[0], max_size);
-        name[max_size] = '\0';
-      }
-    }
+  bool success = !!result;
+  if (success) {
+    // Note: this can invalidate |result|.
+    GetResultNameHelper(bufsize, length, name);
   }
-  return *result != 0;
+  return success;
 }
 
 void GLES2Implementation::GetActiveUniformBlockName(GLuint program,
@@ -3799,25 +4255,8 @@ bool GLES2Implementation::GetTransformFeedbackVaryingHelper(GLuint program,
     if (type) {
       *type = result->type;
     }
-    if (length || name) {
-      std::vector<int8_t> str;
-      GetBucketContents(kResultBucketId, &str);
-      GLsizei max_size = std::min(bufsize, static_cast<GLsizei>(str.size()));
-      if (max_size > 0) {
-        --max_size;
-      }
-      if (length) {
-        *length = max_size;
-      }
-      if (name) {
-        if (max_size > 0) {
-          memcpy(name, &str[0], max_size);
-          name[max_size] = '\0';
-        } else if (bufsize > 0) {
-          name[0] = '\0';
-        }
-      }
-    }
+    // Note: this can invalidate |result|.
+    GetResultNameHelper(bufsize, length, name);
   }
   return result->success != 0;
 }
@@ -4706,7 +5145,10 @@ void GLES2Implementation::DrawArrays(GLenum mode, GLint first, GLsizei count) {
   bool simulated = false;
   if (vertex_array_object_manager_->SupportsClientSideBuffers()) {
     GLsizei num_elements;
-    SafeAddInt32(first, count, &num_elements);
+    if (!base::CheckAdd(first, count).AssignIfValid(&num_elements)) {
+      SetGLError(GL_INVALID_VALUE, "glDrawArrays", "first+count overflow");
+      return;
+    }
     if (!vertex_array_object_manager_->SetupSimulatedClientSideBuffers(
             "glDrawArrays", this, helper_, num_elements, 0, &simulated)) {
       return;
@@ -4936,7 +5378,7 @@ void GLES2Implementation::ScheduleCALayerSharedStateCHROMIUM(
     const GLfloat* clip_rect,
     GLint sorting_context_id,
     const GLfloat* transform) {
-  size_t shm_size = 20 * sizeof(GLfloat);
+  uint32_t shm_size = 20 * sizeof(GLfloat);
   ScopedTransferBufferPtr buffer(shm_size, helper_, transfer_buffer_);
   if (!buffer.valid() || buffer.size() < shm_size) {
     SetGLError(GL_OUT_OF_MEMORY, "GLES2::ScheduleCALayerSharedStateCHROMIUM",
@@ -4957,7 +5399,7 @@ void GLES2Implementation::ScheduleCALayerCHROMIUM(GLuint contents_texture_id,
                                                   GLuint edge_aa_mask,
                                                   const GLfloat* bounds_rect,
                                                   GLuint filter) {
-  size_t shm_size = 8 * sizeof(GLfloat);
+  uint32_t shm_size = 8 * sizeof(GLfloat);
   ScopedTransferBufferPtr buffer(shm_size, helper_, transfer_buffer_);
   if (!buffer.valid() || buffer.size() < shm_size) {
     SetGLError(GL_OUT_OF_MEMORY, "GLES2::ScheduleCALayerCHROMIUM",
@@ -4970,26 +5412,6 @@ void GLES2Implementation::ScheduleCALayerCHROMIUM(GLuint contents_texture_id,
   helper_->ScheduleCALayerCHROMIUM(contents_texture_id, background_color,
                                    edge_aa_mask, filter, buffer.shm_id(),
                                    buffer.offset());
-}
-
-void GLES2Implementation::ScheduleDCLayerSharedStateCHROMIUM(
-    GLfloat opacity,
-    GLboolean is_clipped,
-    const GLfloat* clip_rect,
-    GLint z_order,
-    const GLfloat* transform) {
-  size_t shm_size = 20 * sizeof(GLfloat);
-  ScopedTransferBufferPtr buffer(shm_size, helper_, transfer_buffer_);
-  if (!buffer.valid() || buffer.size() < shm_size) {
-    SetGLError(GL_OUT_OF_MEMORY, "GLES2::ScheduleDCLayerSharedStateCHROMIUM",
-               "out of memory");
-    return;
-  }
-  GLfloat* mem = static_cast<GLfloat*>(buffer.address());
-  memcpy(mem + 0, clip_rect, 4 * sizeof(GLfloat));
-  memcpy(mem + 4, transform, 16 * sizeof(GLfloat));
-  helper_->ScheduleDCLayerSharedStateCHROMIUM(opacity, is_clipped, z_order,
-                                              buffer.shm_id(), buffer.offset());
 }
 
 void GLES2Implementation::SetColorSpaceMetadataCHROMIUM(
@@ -5017,34 +5439,6 @@ void GLES2Implementation::SetColorSpaceMetadataCHROMIUM(
   helper_->SetColorSpaceMetadataCHROMIUM(
       texture_id, buffer.shm_id(), buffer.offset(), color_space_data.size());
 #endif
-}
-
-void GLES2Implementation::ScheduleDCLayerCHROMIUM(
-    GLsizei num_textures,
-    const GLuint* contents_texture_ids,
-    const GLfloat* contents_rect,
-    GLuint background_color,
-    GLuint edge_aa_mask,
-    const GLfloat* bounds_rect,
-    GLuint filter,
-    GLuint protected_video_type) {
-  const size_t kRectsSize = 8 * sizeof(GLfloat);
-  size_t textures_size = num_textures * sizeof(GLuint);
-  size_t shm_size = kRectsSize + textures_size;
-  ScopedTransferBufferPtr buffer(shm_size, helper_, transfer_buffer_);
-  if (!buffer.valid() || buffer.size() < shm_size) {
-    SetGLError(GL_OUT_OF_MEMORY, "GLES2::ScheduleDCLayerCHROMIUM",
-               "out of memory");
-    return;
-  }
-  GLfloat* mem = static_cast<GLfloat*>(buffer.address());
-  memcpy(mem + 0, contents_rect, 4 * sizeof(GLfloat));
-  memcpy(mem + 4, bounds_rect, 4 * sizeof(GLfloat));
-  memcpy(static_cast<char*>(buffer.address()) + kRectsSize,
-         contents_texture_ids, textures_size);
-  helper_->ScheduleDCLayerCHROMIUM(num_textures, background_color, edge_aa_mask,
-                                   filter, buffer.shm_id(), buffer.offset(),
-                                   protected_video_type);
 }
 
 void GLES2Implementation::CommitOverlayPlanesCHROMIUM(uint64_t swap_id,
@@ -5956,7 +6350,11 @@ void GLES2Implementation::DrawArraysInstancedANGLE(GLenum mode,
   bool simulated = false;
   if (vertex_array_object_manager_->SupportsClientSideBuffers()) {
     GLsizei num_elements;
-    SafeAddInt32(first, count, &num_elements);
+    if (!base::CheckAdd(first, count).AssignIfValid(&num_elements)) {
+      SetGLError(GL_INVALID_VALUE, "glDrawArraysInstancedANGLE",
+                 "first+count overflow");
+      return;
+    }
     if (!vertex_array_object_manager_->SetupSimulatedClientSideBuffers(
             "glDrawArraysInstancedANGLE", this, helper_, num_elements,
             primcount, &simulated)) {
@@ -5984,28 +6382,24 @@ void GLES2Implementation::DrawElementsInstancedANGLE(GLenum mode,
                "count less than 0.");
     return;
   }
-  if (count == 0) {
-    return;
-  }
   if (primcount < 0) {
     SetGLError(GL_INVALID_VALUE, "glDrawElementsInstancedANGLE",
                "primcount < 0");
     return;
   }
-  if (primcount == 0) {
-    return;
-  }
-  if (vertex_array_object_manager_->bound_element_array_buffer() != 0 &&
-      !ValidateOffset("glDrawElementsInstancedANGLE",
-                      reinterpret_cast<GLintptr>(indices))) {
-    return;
-  }
   GLuint offset = 0;
   bool simulated = false;
-  if (!vertex_array_object_manager_->SetupSimulatedIndexAndClientSideBuffers(
-          "glDrawElementsInstancedANGLE", this, helper_, count, type, primcount,
-          indices, &offset, &simulated)) {
-    return;
+  if (count > 0 && primcount > 0) {
+    if (vertex_array_object_manager_->bound_element_array_buffer() != 0 &&
+        !ValidateOffset("glDrawElementsInstancedANGLE",
+                        reinterpret_cast<GLintptr>(indices))) {
+      return;
+    }
+    if (!vertex_array_object_manager_->SetupSimulatedIndexAndClientSideBuffers(
+            "glDrawElementsInstancedANGLE", this, helper_, count, type,
+            primcount, indices, &offset, &simulated)) {
+      return;
+    }
   }
   helper_->DrawElementsInstancedANGLE(mode, count, type, offset, primcount);
   RestoreElementAndArrayBuffers(simulated);
@@ -6044,20 +6438,42 @@ GLuint GLES2Implementation::CreateAndConsumeTextureCHROMIUM(
 }
 
 GLuint GLES2Implementation::CreateAndTexStorage2DSharedImageCHROMIUM(
-    GLenum internal_format,
-    const GLbyte* data) {
+    const GLbyte* mailbox_data) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix()
                      << "] CreateAndTexStorage2DSharedImageCHROMIUM("
-                     << GLES2Util::GetStringImageInternalFormat(internal_format)
-                     << ", " << static_cast<const void*>(data) << ")");
-  const Mailbox& mailbox = *reinterpret_cast<const Mailbox*>(data);
+                     << static_cast<const void*>(mailbox_data) << ")");
+  const Mailbox& mailbox = *reinterpret_cast<const Mailbox*>(mailbox_data);
   DCHECK(mailbox.Verify()) << "CreateAndTexStorage2DSharedImageCHROMIUM was "
                               "passed an invalid mailbox.";
   GLuint client_id;
   GetIdHandler(SharedIdNamespaces::kTextures)->MakeIds(this, 0, 1, &client_id);
+  helper_->CreateAndTexStorage2DSharedImageINTERNALImmediate(client_id, GL_NONE,
+                                                             mailbox_data);
+  if (share_group_->bind_generates_resource())
+    helper_->CommandBufferHelper::OrderingBarrier();
+  CheckGLError();
+  return client_id;
+}
+
+GLuint
+GLES2Implementation::CreateAndTexStorage2DSharedImageWithInternalFormatCHROMIUM(
+    const GLbyte* mailbox_data,
+    GLenum internalformat) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG(
+      "[" << GetLogPrefix()
+          << "] CreateAndTexStorage2DSharedImageWithInternalFormatCHROMIUM("
+          << static_cast<const void*>(mailbox_data) << ", " << internalformat
+          << ")");
+  const Mailbox& mailbox = *reinterpret_cast<const Mailbox*>(mailbox_data);
+  DCHECK(mailbox.Verify())
+      << "CreateAndTexStorage2DSharedImageWithInternalFormatCHROMIUM was "
+         "passed an invalid mailbox.";
+  GLuint client_id;
+  GetIdHandler(SharedIdNamespaces::kTextures)->MakeIds(this, 0, 1, &client_id);
   helper_->CreateAndTexStorage2DSharedImageINTERNALImmediate(
-      client_id, internal_format, data);
+      client_id, internalformat, mailbox_data);
   if (share_group_->bind_generates_resource())
     helper_->CommandBufferHelper::OrderingBarrier();
   CheckGLError();
@@ -6227,7 +6643,7 @@ bool GLES2Implementation::ThreadsafeDiscardableTextureIsDeletedForTracing(
   return manager->TextureIsDeletedForTracing(texture_id);
 }
 
-void* GLES2Implementation::MapTransferCacheEntry(size_t serialized_size) {
+void* GLES2Implementation::MapTransferCacheEntry(uint32_t serialized_size) {
   NOTREACHED();
   return nullptr;
 }
@@ -6257,96 +6673,10 @@ unsigned int GLES2Implementation::GetTransferBufferFreeSize() const {
   return 0;
 }
 
-void GLES2Implementation::GenSyncTokenCHROMIUM(GLbyte* sync_token) {
-  if (!sync_token) {
-    SetGLError(GL_INVALID_VALUE, "glGenSyncTokenCHROMIUM", "empty sync_token");
-    return;
-  }
-
-  uint64_t fence_sync = gpu_control_->GenerateFenceSyncRelease();
-  helper_->InsertFenceSyncCHROMIUM(fence_sync);
-  helper_->CommandBufferHelper::OrderingBarrier();
-  gpu_control_->EnsureWorkVisible();
-
-  // Copy the data over after setting the data to ensure alignment.
-  SyncToken sync_token_data(gpu_control_->GetNamespaceID(),
-                            gpu_control_->GetCommandBufferID(), fence_sync);
-  sync_token_data.SetVerifyFlush();
-  memcpy(sync_token, &sync_token_data, sizeof(sync_token_data));
-}
-
-void GLES2Implementation::GenUnverifiedSyncTokenCHROMIUM(GLbyte* sync_token) {
-  if (!sync_token) {
-    SetGLError(GL_INVALID_VALUE, "glGenUnverifiedSyncTokenCHROMIUM",
-               "empty sync_token");
-    return;
-  }
-
-  uint64_t fence_sync = gpu_control_->GenerateFenceSyncRelease();
-  helper_->InsertFenceSyncCHROMIUM(fence_sync);
-  helper_->CommandBufferHelper::OrderingBarrier();
-
-  // Copy the data over after setting the data to ensure alignment.
-  SyncToken sync_token_data(gpu_control_->GetNamespaceID(),
-                            gpu_control_->GetCommandBufferID(), fence_sync);
-  memcpy(sync_token, &sync_token_data, sizeof(sync_token_data));
-}
-
-void GLES2Implementation::VerifySyncTokensCHROMIUM(GLbyte** sync_tokens,
-                                                   GLsizei count) {
-  bool requires_synchronization = false;
-  for (GLsizei i = 0; i < count; ++i) {
-    if (sync_tokens[i]) {
-      SyncToken sync_token;
-      memcpy(&sync_token, sync_tokens[i], sizeof(sync_token));
-
-      if (sync_token.HasData() && !sync_token.verified_flush()) {
-        if (!GetVerifiedSyncTokenForIPC(sync_token, &sync_token)) {
-          SetGLError(GL_INVALID_VALUE, "glVerifySyncTokensCHROMIUM",
-                     "Cannot verify sync token using this context.");
-          return;
-        }
-        requires_synchronization = true;
-        DCHECK(sync_token.verified_flush());
-      }
-
-      // Set verify bit on empty sync tokens too.
-      sync_token.SetVerifyFlush();
-
-      memcpy(sync_tokens[i], &sync_token, sizeof(sync_token));
-    }
-  }
-
-  // Ensure all the fence syncs are visible on GPU service.
-  if (requires_synchronization)
-    gpu_control_->EnsureWorkVisible();
-}
-
-void GLES2Implementation::WaitSyncTokenCHROMIUM(const GLbyte* sync_token_data) {
-  if (!sync_token_data)
-    return;
-
-  // Copy the data over before data access to ensure alignment.
-  SyncToken sync_token, verified_sync_token;
-  memcpy(&sync_token, sync_token_data, sizeof(SyncToken));
-
-  if (!sync_token.HasData())
-    return;
-
-  if (!GetVerifiedSyncTokenForIPC(sync_token, &verified_sync_token)) {
-    SetGLError(GL_INVALID_VALUE, "glWaitSyncTokenCHROMIUM",
-               "Cannot wait on sync_token which has not been verified");
-    return;
-  }
-
-  helper_->WaitSyncTokenCHROMIUM(
-      static_cast<GLint>(sync_token.namespace_id()),
-      sync_token.command_buffer_id().GetUnsafeValue(),
-      sync_token.release_count());
-
-  // Enqueue sync token in flush after inserting command so that it's not
-  // included in an automatic flush.
-  gpu_control_->WaitSyncTokenHint(verified_sync_token);
+bool GLES2Implementation::CanDecodeWithHardwareAcceleration(
+    base::span<const uint8_t> encoded_data) const {
+  NOTREACHED();
+  return false;
 }
 
 namespace {
@@ -6482,11 +6812,11 @@ bool GLES2Implementation::PackStringsToBucket(GLsizei count,
   base::CheckedNumeric<uint32_t> total_size = count;
   total_size += 1;
   total_size *= sizeof(GLint);
-  if (!total_size.IsValid()) {
+  uint32_t header_size = 0;
+  if (!total_size.AssignIfValid(&header_size)) {
     SetGLError(GL_INVALID_VALUE, func_name, "overflow");
     return false;
   }
-  size_t header_size = total_size.ValueOrDefault(0);
   std::vector<GLint> header(count + 1);
   header[0] = static_cast<GLint>(count);
   for (GLsizei ii = 0; ii < count; ++ii) {
@@ -6498,35 +6828,30 @@ bool GLES2Implementation::PackStringsToBucket(GLsizei count,
     }
     total_size += len;
     total_size += 1;  // NULL at the end of each char array.
-    if (!total_size.IsValid()) {
-      SetGLError(GL_INVALID_VALUE, func_name, "overflow");
-      return false;
-    }
     header[ii + 1] = len;
   }
   // Pack data into a bucket on the service.
-  helper_->SetBucketSize(kResultBucketId, total_size.ValueOrDefault(0));
-  size_t offset = 0;
+  uint32_t validated_size = 0;
+  if (!total_size.AssignIfValid(&validated_size)) {
+    SetGLError(GL_INVALID_VALUE, func_name, "overflow");
+    return false;
+  }
+  helper_->SetBucketSize(kResultBucketId, validated_size);
+  uint32_t offset = 0;
   for (GLsizei ii = 0; ii <= count; ++ii) {
     const char* src =
         (ii == 0) ? reinterpret_cast<const char*>(&header[0]) : str[ii - 1];
-    base::CheckedNumeric<size_t> checked_size =
-        (ii == 0) ? header_size : static_cast<size_t>(header[ii]);
+    uint32_t size = (ii == 0) ? header_size : header[ii];
     if (ii > 0) {
-      checked_size += 1;  // NULL in the end.
+      size += 1;  // NULL in the end.
     }
-    if (!checked_size.IsValid()) {
-      SetGLError(GL_INVALID_VALUE, func_name, "overflow");
-      return false;
-    }
-    size_t size = checked_size.ValueOrDefault(0);
     while (size) {
       ScopedTransferBufferPtr buffer(size, helper_, transfer_buffer_);
       if (!buffer.valid() || buffer.size() == 0) {
         SetGLError(GL_OUT_OF_MEMORY, func_name, "too large");
         return false;
       }
-      size_t copy_size = buffer.size();
+      uint32_t copy_size = buffer.size();
       if (ii > 0 && buffer.size() == size)
         --copy_size;
       if (copy_size)
@@ -6722,7 +7047,8 @@ void GLES2Implementation::DeletePathsCHROMIUM(GLuint first_client_id,
     return;
 
   GLuint last_client_id;
-  if (!SafeAddUint32(first_client_id, range - 1, &last_client_id)) {
+  if (!base::CheckAdd(first_client_id, range - 1)
+           .AssignIfValid(&last_client_id)) {
     SetGLError(GL_INVALID_OPERATION, kFunctionName, "overflow");
     return;
   }
@@ -6787,13 +7113,15 @@ void GLES2Implementation::PathCommandsCHROMIUM(GLuint path,
   }
 
   uint32_t coords_size;
-  if (!SafeMultiplyUint32(num_coords, coord_type_size, &coords_size)) {
+  if (!base::CheckMul(num_coords, coord_type_size)
+           .AssignIfValid(&coords_size)) {
     SetGLError(GL_INVALID_OPERATION, kFunctionName, "overflow");
     return;
   }
 
   uint32_t required_buffer_size;
-  if (!SafeAddUint32(coords_size, num_commands, &required_buffer_size)) {
+  if (!base::CheckAdd(coords_size, num_commands)
+           .AssignIfValid(&required_buffer_size)) {
     SetGLError(GL_INVALID_OPERATION, kFunctionName, "overflow");
     return;
   }
@@ -6835,9 +7163,9 @@ bool GLES2Implementation::PrepareInstancedPathCommand(
     const GLfloat* transform_values,
     ScopedTransferBufferPtr* buffer,
     uint32_t* out_paths_shm_id,
-    size_t* out_paths_offset,
+    uint32_t* out_paths_offset,
     uint32_t* out_transforms_shm_id,
-    size_t* out_transforms_offset) {
+    uint32_t* out_transforms_offset) {
   if (num_paths < 0) {
     SetGLError(GL_INVALID_VALUE, function_name, "numPaths < 0");
     return false;
@@ -6883,7 +7211,7 @@ bool GLES2Implementation::PrepareInstancedPathCommand(
   }
 
   uint32_t paths_size;
-  if (!SafeMultiplyUint32(path_name_size, num_paths, &paths_size)) {
+  if (!base::CheckMul(path_name_size, num_paths).AssignIfValid(&paths_size)) {
     SetGLError(GL_INVALID_OPERATION, function_name, "overflow");
     return false;
   }
@@ -6893,13 +7221,15 @@ bool GLES2Implementation::PrepareInstancedPathCommand(
   uint32_t one_transform_size = sizeof(GLfloat) * transforms_component_count;
 
   uint32_t transforms_size;
-  if (!SafeMultiplyUint32(one_transform_size, num_paths, &transforms_size)) {
+  if (!base::CheckMul(one_transform_size, num_paths)
+           .AssignIfValid(&transforms_size)) {
     SetGLError(GL_INVALID_OPERATION, function_name, "overflow");
     return false;
   }
 
   uint32_t required_buffer_size;
-  if (!SafeAddUint32(transforms_size, paths_size, &required_buffer_size)) {
+  if (!base::CheckAdd(transforms_size, paths_size)
+           .AssignIfValid(&required_buffer_size)) {
     SetGLError(GL_INVALID_OPERATION, function_name, "overflow");
     return false;
   }
@@ -6951,9 +7281,9 @@ void GLES2Implementation::StencilFillPathInstancedCHROMIUM(
 
   ScopedTransferBufferPtr buffer(helper_, transfer_buffer_);
   uint32_t paths_shm_id = 0;
-  size_t paths_offset = 0;
+  uint32_t paths_offset = 0;
   uint32_t transforms_shm_id = 0;
-  size_t transforms_offset = 0;
+  uint32_t transforms_offset = 0;
   if (!PrepareInstancedPathCommand(
           "glStencilFillPathInstancedCHROMIUM", num_paths, path_name_type,
           paths, transform_type, transform_values, &buffer, &paths_shm_id,
@@ -6986,9 +7316,9 @@ void GLES2Implementation::StencilStrokePathInstancedCHROMIUM(
 
   ScopedTransferBufferPtr buffer(helper_, transfer_buffer_);
   uint32_t paths_shm_id = 0;
-  size_t paths_offset = 0;
+  uint32_t paths_offset = 0;
   uint32_t transforms_shm_id = 0;
-  size_t transforms_offset = 0;
+  uint32_t transforms_offset = 0;
   if (!PrepareInstancedPathCommand(
           "glStencilStrokePathInstancedCHROMIUM", num_paths, path_name_type,
           paths, transform_type, transform_values, &buffer, &paths_shm_id,
@@ -7019,9 +7349,9 @@ void GLES2Implementation::CoverFillPathInstancedCHROMIUM(
 
   ScopedTransferBufferPtr buffer(helper_, transfer_buffer_);
   uint32_t paths_shm_id = 0;
-  size_t paths_offset = 0;
+  uint32_t paths_offset = 0;
   uint32_t transforms_shm_id = 0;
-  size_t transforms_offset = 0;
+  uint32_t transforms_offset = 0;
   if (!PrepareInstancedPathCommand(
           "glCoverFillPathInstancedCHROMIUM", num_paths, path_name_type, paths,
           transform_type, transform_values, &buffer, &paths_shm_id,
@@ -7053,9 +7383,9 @@ void GLES2Implementation::CoverStrokePathInstancedCHROMIUM(
 
   ScopedTransferBufferPtr buffer(helper_, transfer_buffer_);
   uint32_t paths_shm_id = 0;
-  size_t paths_offset = 0;
+  uint32_t paths_offset = 0;
   uint32_t transforms_shm_id = 0;
-  size_t transforms_offset = 0;
+  uint32_t transforms_offset = 0;
   if (!PrepareInstancedPathCommand(
           "glCoverStrokePathInstancedCHROMIUM", num_paths, path_name_type,
           paths, transform_type, transform_values, &buffer, &paths_shm_id,
@@ -7089,9 +7419,9 @@ void GLES2Implementation::StencilThenCoverFillPathInstancedCHROMIUM(
 
   ScopedTransferBufferPtr buffer(helper_, transfer_buffer_);
   uint32_t paths_shm_id = 0;
-  size_t paths_offset = 0;
+  uint32_t paths_offset = 0;
   uint32_t transforms_shm_id = 0;
-  size_t transforms_offset = 0;
+  uint32_t transforms_offset = 0;
   if (!PrepareInstancedPathCommand(
           "glStencilThenCoverFillPathInstancedCHROMIUM", num_paths,
           path_name_type, paths, transform_type, transform_values, &buffer,
@@ -7128,9 +7458,9 @@ void GLES2Implementation::StencilThenCoverStrokePathInstancedCHROMIUM(
 
   ScopedTransferBufferPtr buffer(helper_, transfer_buffer_);
   uint32_t paths_shm_id = 0;
-  size_t paths_offset = 0;
+  uint32_t paths_offset = 0;
   uint32_t transforms_shm_id = 0;
-  size_t transforms_offset = 0;
+  uint32_t transforms_offset = 0;
   if (!PrepareInstancedPathCommand(
           "glStencilThenCoverStrokePathInstancedCHROMIUM", num_paths,
           path_name_type, paths, transform_type, transform_values, &buffer,

@@ -11,8 +11,9 @@
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
 #include "components/sync_preferences/pref_service_syncable.h"
+#include "components/variations/net/variations_http_headers.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
-#include "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state/web_state.h"
 #include "ios/web/public/web_thread.h"
 #include "ios/web/public/webui/web_ui_ios.h"
 #include "ios/web/webui/url_data_manager_ios_backend.h"
@@ -83,13 +84,16 @@ net::URLRequestContextGetter* ChromeBrowserState::GetRequestContext() {
   if (!request_context_getter_) {
     ProtocolHandlerMap protocol_handlers;
     protocol_handlers[kChromeUIScheme] =
-        linked_ptr<net::URLRequestJobFactory::ProtocolHandler>(
-            web::URLDataManagerIOSBackend::CreateProtocolHandler(this)
-                .release());
+        web::URLDataManagerIOSBackend::CreateProtocolHandler(this);
     request_context_getter_ =
         base::WrapRefCounted(CreateRequestContext(&protocol_handlers));
   }
   return request_context_getter_.get();
+}
+
+void ChromeBrowserState::UpdateCorsExemptHeader(
+    network::mojom::NetworkContextParams* params) {
+  variations::UpdateCorsExemptHeaderForVariations(params);
 }
 
 }  // namespace ios

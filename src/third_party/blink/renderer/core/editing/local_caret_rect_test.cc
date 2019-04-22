@@ -38,7 +38,7 @@ class ParameterizedLocalCaretRectTest
   bool LayoutNGEnabled() const { return GetParam(); }
 };
 
-INSTANTIATE_TEST_CASE_P(All, ParameterizedLocalCaretRectTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, ParameterizedLocalCaretRectTest, testing::Bool());
 
 TEST_P(ParameterizedLocalCaretRectTest, DOMAndFlatTrees) {
   const char* body_content =
@@ -852,7 +852,7 @@ TEST_P(ParameterizedLocalCaretRectTest, AfterLineBreakInPreBlockLTRLineLTR) {
   std::tie(position_rect, visible_position_rect) = GetLayoutRects(caret);
   EXPECT_EQ(LayoutRect(0, 10, 1, 10), position_rect);
   EXPECT_EQ(LayoutRect(0, 10, 1, 10), visible_position_rect);
-};
+}
 
 TEST_P(ParameterizedLocalCaretRectTest, AfterLineBreakInPreBlockLTRLineRTL) {
   LoadAhem();
@@ -863,7 +863,7 @@ TEST_P(ParameterizedLocalCaretRectTest, AfterLineBreakInPreBlockLTRLineRTL) {
   std::tie(position_rect, visible_position_rect) = GetLayoutRects(caret);
   EXPECT_EQ(LayoutRect(0, 10, 1, 10), position_rect);
   EXPECT_EQ(LayoutRect(0, 10, 1, 10), visible_position_rect);
-};
+}
 
 TEST_P(ParameterizedLocalCaretRectTest, AfterLineBreakInPreBlockRTLLineLTR) {
   LoadAhem();
@@ -874,7 +874,7 @@ TEST_P(ParameterizedLocalCaretRectTest, AfterLineBreakInPreBlockRTLLineLTR) {
   std::tie(position_rect, visible_position_rect) = GetLayoutRects(caret);
   EXPECT_EQ(LayoutRect(299, 10, 1, 10), position_rect);
   EXPECT_EQ(LayoutRect(299, 10, 1, 10), visible_position_rect);
-};
+}
 
 TEST_P(ParameterizedLocalCaretRectTest, AfterLineBreakInPreBlockRTLLineRTL) {
   LoadAhem();
@@ -885,7 +885,7 @@ TEST_P(ParameterizedLocalCaretRectTest, AfterLineBreakInPreBlockRTLLineRTL) {
   std::tie(position_rect, visible_position_rect) = GetLayoutRects(caret);
   EXPECT_EQ(LayoutRect(299, 10, 1, 10), position_rect);
   EXPECT_EQ(LayoutRect(299, 10, 1, 10), visible_position_rect);
-};
+}
 
 // crbug.com/834686
 TEST_P(ParameterizedLocalCaretRectTest, AfterTrimedLineBreak) {
@@ -896,7 +896,7 @@ TEST_P(ParameterizedLocalCaretRectTest, AfterTrimedLineBreak) {
   std::tie(position_rect, visible_position_rect) = GetLayoutRects(caret);
   EXPECT_EQ(LayoutRect(30, 0, 1, 10), position_rect);
   EXPECT_EQ(LayoutRect(30, 0, 1, 10), visible_position_rect);
-};
+}
 
 TEST_P(ParameterizedLocalCaretRectTest,
        UnicodeBidiPlaintextWithDifferentBlockDirection) {
@@ -970,6 +970,23 @@ TEST_P(ParameterizedLocalCaretRectTest, AfterCollapsedWhiteSpaceInRTLText) {
   EXPECT_EQ(LocalCaretRect(text->GetLayoutObject(), LayoutRect(60, 0, 1, 10)),
             LocalCaretRectOfPosition(
                 PositionWithAffinity(position, TextAffinity::kDownstream)));
+}
+
+// https://crbug.com/936988
+TEST_P(ParameterizedLocalCaretRectTest, AfterIneditableInline) {
+  // For LayoutNG, we also enable EditingNG to test NG caret rendering.
+  ScopedEditingNGForTest editing_ng(LayoutNGEnabled());
+
+  LoadAhem();
+  InsertStyleElement("div { font: 10px/10px Ahem }");
+  SetBodyContent(
+      "<div contenteditable><span contenteditable=\"false\">foo</span></div>");
+  const Element* div = GetDocument().QuerySelector("div");
+  const Node* text = div->firstChild()->firstChild();
+
+  const Position position = Position::LastPositionInNode(*div);
+  EXPECT_EQ(LocalCaretRect(text->GetLayoutObject(), LayoutRect(30, 0, 1, 10)),
+            LocalCaretRectOfPosition(PositionWithAffinity(position)));
 }
 
 }  // namespace blink

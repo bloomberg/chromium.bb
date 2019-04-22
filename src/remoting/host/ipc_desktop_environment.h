@@ -17,6 +17,7 @@
 #include "ipc/ipc_channel_handle.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/desktop_session_connector.h"
+#include "remoting/host/file_transfer/ipc_file_operations.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -56,7 +57,7 @@ class IpcDesktopEnvironment : public DesktopEnvironment {
   std::unique_ptr<webrtc::DesktopCapturer> CreateVideoCapturer() override;
   std::unique_ptr<webrtc::MouseCursorMonitor> CreateMouseCursorMonitor()
       override;
-  std::unique_ptr<FileProxyWrapper> CreateFileProxyWrapper() override;
+  std::unique_ptr<FileOperations> CreateFileOperations() override;
   std::string GetCapabilities() const override;
   void SetCapabilities(const std::string& capabilities) override;
   uint32_t GetDesktopSessionId() const override;

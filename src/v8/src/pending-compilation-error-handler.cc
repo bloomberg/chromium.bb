@@ -118,20 +118,23 @@ void PendingCompilationErrorHandler::ThrowPendingError(Isolate* isolate,
   Handle<JSObject> jserror = Handle<JSObject>::cast(error);
 
   Handle<Name> key_start_pos = factory->error_start_pos_symbol();
-  JSObject::SetProperty(isolate, jserror, key_start_pos,
-                        handle(Smi::FromInt(location.start_pos()), isolate),
-                        LanguageMode::kSloppy)
+  Object::SetProperty(isolate, jserror, key_start_pos,
+                      handle(Smi::FromInt(location.start_pos()), isolate),
+                      StoreOrigin::kMaybeKeyed,
+                      Just(ShouldThrow::kThrowOnError))
       .Check();
 
   Handle<Name> key_end_pos = factory->error_end_pos_symbol();
-  JSObject::SetProperty(isolate, jserror, key_end_pos,
-                        handle(Smi::FromInt(location.end_pos()), isolate),
-                        LanguageMode::kSloppy)
+  Object::SetProperty(isolate, jserror, key_end_pos,
+                      handle(Smi::FromInt(location.end_pos()), isolate),
+                      StoreOrigin::kMaybeKeyed,
+                      Just(ShouldThrow::kThrowOnError))
       .Check();
 
   Handle<Name> key_script = factory->error_script_symbol();
-  JSObject::SetProperty(isolate, jserror, key_script, script,
-                        LanguageMode::kSloppy)
+  Object::SetProperty(isolate, jserror, key_script, script,
+                      StoreOrigin::kMaybeKeyed,
+                      Just(ShouldThrow::kThrowOnError))
       .Check();
 
   isolate->Throw(*error, &location);
@@ -139,9 +142,8 @@ void PendingCompilationErrorHandler::ThrowPendingError(Isolate* isolate,
 
 Handle<String> PendingCompilationErrorHandler::FormatErrorMessageForTest(
     Isolate* isolate) const {
-  return MessageFormatter::FormatMessage(
-      isolate, error_details_.message(),
-      error_details_.ArgumentString(isolate));
+  return MessageFormatter::Format(isolate, error_details_.message(),
+                                  error_details_.ArgumentString(isolate));
 }
 
 }  // namespace internal

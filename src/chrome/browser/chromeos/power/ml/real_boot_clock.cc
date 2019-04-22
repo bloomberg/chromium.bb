@@ -19,8 +19,7 @@ base::TimeDelta RealBootClock::GetTimeSinceBoot() {
   struct timespec ts = {0};
   const int ret = clock_gettime(CLOCK_BOOTTIME, &ts);
   DCHECK_EQ(ret, 0);
-  return base::TimeDelta::FromSeconds(ts.tv_sec) +
-         base::TimeDelta::FromNanoseconds(ts.tv_nsec);
+  return base::TimeDelta::FromTimeSpec(ts);
 }
 
 }  // namespace ml

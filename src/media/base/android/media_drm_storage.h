@@ -14,6 +14,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "media/base/android/media_drm_key_type.h"
 #include "media/base/media_export.h"
 #include "url/origin.h"
@@ -29,6 +30,10 @@ namespace media {
 class MEDIA_EXPORT MediaDrmStorage
     : public base::SupportsWeakPtr<MediaDrmStorage> {
  public:
+  // When using per-origin provisioning, this is the ID for the origin.
+  // If not specified, the device specific origin ID is to be used.
+  using MediaDrmOriginId = base::Optional<base::UnguessableToken>;
+
   struct SessionData {
     SessionData(std::vector<uint8_t> key_set_id,
                 std::string mime_type,
@@ -49,7 +54,7 @@ class MEDIA_EXPORT MediaDrmStorage
 
   // Callback for storage initialization.
   using InitCB =
-      base::OnceCallback<void(const base::UnguessableToken& origin_id)>;
+      base::OnceCallback<void(bool success, const MediaDrmOriginId& origin_id)>;
 
   // Callback to return the result of LoadPersistentSession. |key_set_id| and
   // |mime_type| must be non-empty if |success| is true, and vice versa.

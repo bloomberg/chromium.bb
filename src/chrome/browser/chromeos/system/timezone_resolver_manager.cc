@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/system/timezone_resolver_manager.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
@@ -11,7 +12,7 @@
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/prefs/pref_service.h"
 
@@ -32,11 +33,6 @@ enum ServiceConfiguration {
 // SystemTimezoneAutomaticDetectionPolicy.
 // Returns SHOULD_* if timezone resolver status is controlled by this policy.
 ServiceConfiguration GetServiceConfigurationFromAutomaticDetectionPolicy() {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kDisableSystemTimezoneAutomaticDetectionPolicy)) {
-    return UNSPECIFIED;
-  }
-
   PrefService* local_state = g_browser_process->local_state();
   const bool is_managed = local_state->IsManagedPreference(
       prefs::kSystemTimezoneAutomaticDetectionPolicy);

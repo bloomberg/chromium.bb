@@ -20,10 +20,23 @@ class RenderViewHost;
 class RenderWidgetHostImpl;
 class WebContentsImpl;
 class WebDragDestDelegate;
-}
+namespace mojom {
+class DraggingInfo;
+}  // namespace mojom
+}  // namespace content
 
 // A typedef for a RenderViewHost used for comparison purposes only.
 typedef content::RenderViewHost* RenderViewHostIdentifier;
+
+namespace content {
+
+// Given |data|, which should not be nil, fill it in using the contents of the
+// given pasteboard. The types handled by this method should be kept in sync
+// with [WebContentsViewCocoa registerDragTypes].
+void CONTENT_EXPORT PopulateDropDataFromPasteboard(content::DropData* data,
+                                                   NSPasteboard* pboard);
+
+}  // namespace content
 
 // A class that handles tracking and event processing for a drag and drop
 // over the content area. Assumes something else initiates the drag, this is
@@ -57,8 +70,12 @@ CONTENT_EXPORT
   int dragStartProcessID_;
   content::GlobalRoutingID dragStartViewID_;
 
-  // The data for the current drag, or NULL if none is in progress.
-  std::unique_ptr<content::DropData> dropData_;
+  // The unfiltered data for the current drag, or nullptr if none is in
+  // progress.
+  std::unique_ptr<content::DropData> dropDataUnfiltered_;
+
+  // The data for the current drag, filtered by |currentRWHForDrag_|.
+  std::unique_ptr<content::DropData> dropDataFiltered_;
 
   // True if the drag has been canceled.
   bool canceled_;
@@ -80,17 +97,16 @@ CONTENT_EXPORT
 
 // Messages to send during the tracking of a drag, ususally upon receiving
 // calls from the view system. Communicates the drag messages to WebCore.
-- (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)info
-                              view:(NSView*)view;
-- (void)draggingExited:(id<NSDraggingInfo>)info;
-- (NSDragOperation)draggingUpdated:(id<NSDraggingInfo>)info
-                              view:(NSView*)view;
-- (BOOL)performDragOperation:(id<NSDraggingInfo>)info view:(NSView*)view;
+- (void)setDropData:(const content::DropData&)dropData;
+- (NSDragOperation)draggingEntered:(const content::mojom::DraggingInfo*)info;
+- (void)draggingExited;
+- (NSDragOperation)draggingUpdated:(const content::mojom::DraggingInfo*)info;
+- (BOOL)performDragOperation:(const content::mojom::DraggingInfo*)info;
 
 // Helper to call WebWidgetHostInputEventRouter::GetRenderWidgetHostAtPoint().
 - (content::RenderWidgetHostImpl*)
-GetRenderWidgetHostAtPoint:(const NSPoint&)viewPoint
-             transformedPt:(gfx::PointF*)transformedPt;
+    GetRenderWidgetHostAtPoint:(const gfx::PointF&)viewPoint
+                 transformedPt:(gfx::PointF*)transformedPt;
 
 // Sets |dragStartProcessID_| and |dragStartViewID_|.
 - (void)setDragStartTrackersForProcess:(int)processID;
@@ -104,10 +120,6 @@ GetRenderWidgetHostAtPoint:(const NSPoint&)viewPoint
 
 // Public use only for unit tests.
 @interface WebDragDest(Testing)
-// Given |data|, which should not be nil, fill it in using the contents of the
-// given pasteboard.
-- (void)populateDropData:(content::DropData*)data
-             fromPasteboard:(NSPasteboard*)pboard;
 // Given a point in window coordinates and a view in that window, return a
 // flipped point in the coordinate system of |view|.
 - (NSPoint)flipWindowPointToView:(const NSPoint&)windowPoint

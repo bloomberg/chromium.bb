@@ -54,7 +54,7 @@ void CSSVariableAnimator::ApplyAll() {
   while (!pending_properties_.IsEmpty()) {
     PropertyHandle property = *pending_properties_.begin();
     Apply(property);
-    DCHECK_EQ(pending_properties_.find(property), pending_properties_.end());
+    DCHECK(!pending_properties_.Contains(property));
   }
 }
 

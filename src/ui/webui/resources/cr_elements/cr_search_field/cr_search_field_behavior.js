@@ -64,8 +64,9 @@ const CrSearchFieldBehavior = {
 
   /** @private */
   scheduleSearch_: function() {
-    if (this.searchDelayTimer_ >= 0)
+    if (this.searchDelayTimer_ >= 0) {
       clearTimeout(this.searchDelayTimer_);
+    }
     // Dispatch 'search' event after:
     //    0ms if the value is empty
     //  500ms if the value length is 1
@@ -105,13 +106,18 @@ const CrSearchFieldBehavior = {
    * @private
    */
   onValueChanged_: function(newValue, noEvent) {
-    const effectiveValue = newValue.replace(/\s+/g, ' ');
-    if (effectiveValue == this.lastValue_)
+    // Trim leading whitespace and replace consecutive whitespace with single
+    // space. This will prevent empty string searches and searches for
+    // effectively the same query.
+    const effectiveValue = newValue.replace(/\s+/g, ' ').replace(/^\s/, '');
+    if (effectiveValue == this.lastValue_) {
       return;
+    }
 
     this.lastValue_ = effectiveValue;
 
-    if (!noEvent)
+    if (!noEvent) {
       this.fire('search-changed', effectiveValue);
+    }
   },
 };

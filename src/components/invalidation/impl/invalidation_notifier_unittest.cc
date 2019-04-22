@@ -79,9 +79,9 @@ class InvalidationNotifierTestDelegate {
   std::unique_ptr<InvalidationNotifier> invalidator_;
 };
 
-INSTANTIATE_TYPED_TEST_CASE_P(
-    InvalidationNotifierTest, InvalidatorTest,
-    InvalidationNotifierTestDelegate);
+INSTANTIATE_TYPED_TEST_SUITE_P(InvalidationNotifierTest,
+                               InvalidatorTest,
+                               InvalidationNotifierTestDelegate);
 
 }  // namespace
 

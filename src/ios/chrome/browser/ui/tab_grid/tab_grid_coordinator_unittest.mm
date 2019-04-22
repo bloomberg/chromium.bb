@@ -103,7 +103,7 @@ TEST_F(TabGridCoordinatorTest, TabViewControllerBeforeTabSwitcher) {
   EXPECT_EQ(normal_tab_view_controller_, coordinator_.activeViewController);
 
   // Now setting a TabSwitcher will make the switcher active.
-  [coordinator_ showTabSwitcher:coordinator_.tabSwitcher completion:nil];
+  [coordinator_ showTabSwitcher:coordinator_.tabSwitcher];
   EXPECT_EQ([coordinator_.tabSwitcher viewController],
             coordinator_.activeViewController);
 }
@@ -111,7 +111,7 @@ TEST_F(TabGridCoordinatorTest, TabViewControllerBeforeTabSwitcher) {
 // Tests that it is possible to set a TabViewController after setting a
 // TabSwitcher.
 TEST_F(TabGridCoordinatorTest, TabViewControllerAfterTabSwitcher) {
-  [coordinator_ showTabSwitcher:coordinator_.tabSwitcher completion:nil];
+  [coordinator_ showTabSwitcher:coordinator_.tabSwitcher];
   EXPECT_EQ([coordinator_.tabSwitcher viewController],
             coordinator_.activeViewController);
 
@@ -120,7 +120,7 @@ TEST_F(TabGridCoordinatorTest, TabViewControllerAfterTabSwitcher) {
   EXPECT_EQ(normal_tab_view_controller_, coordinator_.activeViewController);
 
   // Showing the TabSwitcher again will make it active.
-  [coordinator_ showTabSwitcher:coordinator_.tabSwitcher completion:nil];
+  [coordinator_ showTabSwitcher:coordinator_.tabSwitcher];
   EXPECT_EQ([coordinator_.tabSwitcher viewController],
             coordinator_.activeViewController);
 }
@@ -138,11 +138,11 @@ TEST_F(TabGridCoordinatorTest, SwapTabViewControllers) {
 
 // Tests calling showTabSwitcher twice in a row with the same VC.
 TEST_F(TabGridCoordinatorTest, ShowTabSwitcherTwice) {
-  [coordinator_ showTabSwitcher:coordinator_.tabSwitcher completion:nil];
+  [coordinator_ showTabSwitcher:coordinator_.tabSwitcher];
   EXPECT_EQ([coordinator_.tabSwitcher viewController],
             coordinator_.activeViewController);
 
-  [coordinator_ showTabSwitcher:coordinator_.tabSwitcher completion:nil];
+  [coordinator_ showTabSwitcher:coordinator_.tabSwitcher];
   EXPECT_EQ([coordinator_.tabSwitcher viewController],
             coordinator_.activeViewController);
 }
@@ -161,21 +161,13 @@ TEST_F(TabGridCoordinatorTest, ShowTabViewControllerTwice) {
 // Tests that setting the active view controller work and that completion
 // handlers are called properly after the new view controller is made active.
 TEST_F(TabGridCoordinatorTest, CompletionHandlers) {
-  // Tests that the completion handler is called when showing the switcher.
-  __block BOOL completion_handler_was_called = false;
-  [coordinator_ showTabSwitcher:coordinator_.tabSwitcher
-                     completion:^{
-                       completion_handler_was_called = YES;
-                     }];
-  base::test::ios::WaitUntilCondition(^bool() {
-    return completion_handler_was_called;
-  });
-  ASSERT_TRUE(completion_handler_was_called);
+  // Setup: show the switcher.
+  [coordinator_ showTabSwitcher:coordinator_.tabSwitcher];
 
   // Tests that the completion handler is called when showing a tab view
   // controller. Tests that the delegate 'didEnd' method is also called.
   delegate_.didEndCalled = NO;
-  completion_handler_was_called = NO;
+  __block BOOL completion_handler_was_called = NO;
   [coordinator_ showTabViewController:normal_tab_view_controller_
                            completion:^{
                              completion_handler_was_called = YES;
@@ -189,7 +181,6 @@ TEST_F(TabGridCoordinatorTest, CompletionHandlers) {
   // Tests that the completion handler is called when replacing an existing tab
   // view controller. Tests that the delegate 'didEnd' method is *not* called.
   delegate_.didEndCalled = NO;
-  completion_handler_was_called = NO;
   [coordinator_ showTabViewController:incognito_tab_view_controller_
                            completion:^{
                              completion_handler_was_called = YES;

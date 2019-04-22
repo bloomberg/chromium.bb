@@ -5,6 +5,8 @@
 #include "ui/ozone/platform/drm/gpu/gbm_pixmap.h"
 
 #include <gbm.h>
+#include <memory>
+#include <utility>
 
 #include "base/logging.h"
 #include "ui/gfx/gpu_fence.h"
@@ -28,10 +30,6 @@ gfx::NativePixmapHandle GbmPixmap::ExportHandle() {
 
 bool GbmPixmap::AreDmaBufFdsValid() const {
   return buffer_->AreFdsValid();
-}
-
-size_t GbmPixmap::GetDmaBufFdCount() const {
-  return buffer_->GetFdCount();
 }
 
 int GbmPixmap::GetDmaBufFd(size_t plane) const {

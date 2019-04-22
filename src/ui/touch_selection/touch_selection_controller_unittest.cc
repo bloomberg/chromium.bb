@@ -65,6 +65,9 @@ class TouchSelectionControllerTest : public testing::Test,
 
   void SetUp() override {
     controller_.reset(new TouchSelectionController(this, DefaultConfig()));
+    // Simulate start of a TouchEvent sequence.
+    controller_->WillHandleTouchEvent(
+        MockMotionEvent(MotionEvent::Action::DOWN));
   }
 
   void TearDown() override { controller_.reset(); }
@@ -121,6 +124,9 @@ class TouchSelectionControllerTest : public testing::Test,
     TouchSelectionController::Config config = DefaultConfig();
     config.hide_active_handle = hide;
     controller_.reset(new TouchSelectionController(this, config));
+    // Simulate start of a TouchEvent sequence.
+    controller_->WillHandleTouchEvent(
+        MockMotionEvent(MotionEvent::Action::DOWN));
   }
 
   void SetAnimationEnabled(bool enabled) { animation_enabled_ = enabled; }

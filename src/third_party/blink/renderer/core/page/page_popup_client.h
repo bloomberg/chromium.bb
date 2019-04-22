@@ -72,7 +72,7 @@ class CORE_EXPORT PagePopupClient {
   virtual void SetValue(const String&) = 0;
 
   // This is called by the content HTML of a PagePopup.
-  virtual void ClosePopup() = 0;
+  virtual void CancelPopup() = 0;
 
   // This is called whenever a PagePopup was closed.
   virtual void DidClosePopup() = 0;
@@ -82,7 +82,6 @@ class CORE_EXPORT PagePopupClient {
   // Helper functions to be used in PagePopupClient::writeDocument().
   static void AddString(const String&, SharedBuffer*);
   static void AddJavaScriptString(const String&, SharedBuffer*);
-  static void AddHTMLString(const String&, SharedBuffer*);
   static void AddProperty(const char* name, const String& value, SharedBuffer*);
   static void AddProperty(const char* name, int value, SharedBuffer*);
   static void AddProperty(const char* name, unsigned value, SharedBuffer*);

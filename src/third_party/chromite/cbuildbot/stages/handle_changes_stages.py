@@ -32,9 +32,11 @@ class CommitQueueHandleChangesStage(generic_stages.BuilderStage):
 
   category = constants.CI_INFRA_STAGE
 
-  def __init__(self, builder_run, sync_stage, completion_stage, **kwargs):
+  def __init__(self, builder_run, buildstore, sync_stage, completion_stage,
+               **kwargs):
     """Initialize CommitQueueHandleChangesStage."""
-    super(CommitQueueHandleChangesStage, self).__init__(builder_run, **kwargs)
+    super(CommitQueueHandleChangesStage, self).__init__(builder_run, buildstore,
+                                                        **kwargs)
     assert config_lib.IsMasterCQ(self._run.config)
     self.sync_stage = sync_stage
     self.completion_stage = completion_stage
@@ -45,15 +47,19 @@ class CommitQueueHandleChangesStage(generic_stages.BuilderStage):
     Args:
       success: bool indicating whether the CQ was a success.
     """
-    build_id, db = self._run.GetCIDBHandle()
-    if db:
+    build_identifier, db = self._run.GetCIDBHandle()
+    build_id = build_identifier.cidb_id
+    buildbucket_id = build_identifier.buildbucket_id
+    if self.buildstore.AreClientsReady():
       my_actions = db.GetActionsForBuild(build_id)
-      my_submit_actions = [m for m in my_actions
-                           if m.action == constants.CL_ACTION_SUBMITTED]
+      my_submit_actions = [
+          m for m in my_actions if m.action == constants.CL_ACTION_SUBMITTED
+      ]
       # A dictionary mapping from every change that was submitted to the
       # submission reason.
-      submitted_change_strategies = {m.patch : m.reason
-                                     for m in my_submit_actions}
+      submitted_change_strategies = {
+          m.patch: m.reason for m in my_submit_actions
+      }
       submitted_changes_all_actions = db.GetActionsForChanges(
           submitted_change_strategies.keys())
 
@@ -65,41 +71,43 @@ class CommitQueueHandleChangesStage(generic_stages.BuilderStage):
 
       # Record CQ wall-clock metric.
       submitted_any = len(submitted_change_strategies) > 0
-      bi = db.GetBuildStatus(build_id)
+      bi = self.buildstore.GetBuildStatuses(buildbucket_ids=[buildbucket_id])[0]
       current_time = db.GetTime()
       elapsed_seconds = int((current_time - bi['start_time']).total_seconds())
       self_destructed = self._run.attrs.metadata.GetValueWithDefault(
           constants.SELF_DESTRUCTED_BUILD, False)
-      fields = {'success': success,
-                'submitted_any': submitted_any,
-                'self_destructed': self_destructed}
+      fields = {
+          'success': success,
+          'submitted_any': submitted_any,
+          'self_destructed': self_destructed
+      }
 
       m = metrics.Counter(constants.MON_CQ_WALL_CLOCK_SECS)
       m.increment_by(elapsed_seconds, fields=fields)
 
-  def _GetBuildsPassedSyncStage(self, build_id, db, slave_buildbucket_ids):
+  def _GetBuildsPassedSyncStage(self, buildbucket_id, slave_buildbucket_ids):
     """Get builds which passed the sync stages.
 
     Args:
-      build_id: The build id of the master build.
-      db: An instance of cidb.CIDBConnection.
+      buildbucket_id: The buildbucket id of the master build.
       slave_buildbucket_ids: A list of buildbucket_ids of the slave builds.
 
     Returns:
       A list of the builds (master + slaves) which passed the sync stage (See
       relevant_changes.TriageRelevantChanges.STAGE_SYNC)
     """
-    assert db, 'No database connection to use.'
+    assert self.buildstore.AreClientsReady(), 'No database connection to use.'
     build_stages_dict = {}
 
     # Get slave stages.
-    slave_stages = db.GetSlaveStages(
-        build_id, buildbucket_ids=slave_buildbucket_ids)
-    for stage in slave_stages:
+    child_stages = self.buildstore.GetBuildsStages(
+        buildbucket_ids=slave_buildbucket_ids)
+    for stage in child_stages:
       build_stages_dict.setdefault(stage['build_config'], []).append(stage)
 
     # Get master stages.
-    master_stages = db.GetBuildStages(build_id)
+    master_stages = self.buildstore.GetBuildsStages(
+        buildbucket_ids=[buildbucket_id])
     for stage in master_stages:
       build_stages_dict.setdefault(self._run.config.name, []).append(stage)
 
@@ -163,18 +171,26 @@ class CommitQueueHandleChangesStage(generic_stages.BuilderStage):
         self.completion_stage.GetSlaveStatuses(), failing)
     changes = self.sync_stage.pool.applied
 
-    build_id, db = self._run.GetCIDBHandle()
+    build_identifier, db = self._run.GetCIDBHandle()
 
+    # TODO(buildstore): some unittests only pass because db is None here.
+    # Figure out if that's correct, or if the test is bad, then change 'if db'
+    # to 'if self.buildstore.AreClientsReady()'.
     if db:
+      buildbucket_id = build_identifier.buildbucket_id
       builds_passed_sync_stage = self._GetBuildsPassedSyncStage(
-          build_id, db, slave_buildbucket_ids)
+          buildbucket_id, slave_buildbucket_ids)
       builds_not_passed_sync_stage = failing.union(inflight).union(
           no_stat).difference(builds_passed_sync_stage)
       changes_by_config = (
           relevant_changes.RelevantChanges.GetRelevantChangesForSlaves(
-              build_id, db, self._run.config, changes,
+              build_identifier,
+              self.buildstore,
+              self._run.config,
+              changes,
               builds_not_passed_sync_stage,
-              slave_buildbucket_ids, include_master=True))
+              slave_buildbucket_ids,
+              include_master=True))
 
       changes_by_slaves = changes_by_config.copy()
       # Exclude master build
@@ -182,7 +198,7 @@ class CommitQueueHandleChangesStage(generic_stages.BuilderStage):
       slaves_by_change = cros_collections.InvertDictionary(changes_by_slaves)
       passed_in_history_slaves_by_change = (
           relevant_changes.RelevantChanges.GetPreviouslyPassedSlavesForChanges(
-              build_id, db, changes, slaves_by_change))
+              build_identifier, self.buildstore, changes, slaves_by_change))
 
       # Even if some slaves didn't pass the critical stages, we can still submit
       # some changes based on CQ history.
@@ -198,24 +214,33 @@ class CommitQueueHandleChangesStage(generic_stages.BuilderStage):
       # The master didn't destruct itself and some slave(s) timed out due to
       # unknown causes, so only reject infra changes (probably just chromite
       # changes).
-      self.sync_stage.pool.HandleValidationTimeout(sanity=tot_sanity,
-                                                   changes=changes)
+      self.sync_stage.pool.HandleValidationTimeout(
+          sanity=tot_sanity, changes=changes)
       return
 
     failed_hwtests = None
+    # TODO(buildstore): some unittests only pass because db is None here.
+    # Figure out if that's correct, or if the test is bad, then change 'if db'
+    # to 'if self.buildstore.AreClientsReady()'.
     if db:
-      slave_statuses = db.GetSlaveStatuses(
-          build_id, buildbucket_ids=slave_buildbucket_ids)
+      if slave_buildbucket_ids:
+        slave_statuses = self.buildstore.GetBuildStatuses(
+            buildbucket_ids=slave_buildbucket_ids)
+      else:
+        slave_statuses = self.buildstore.GetSlaveStatuses(build_identifier)
       slave_build_ids = [x['id'] for x in slave_statuses]
       failed_hwtests = (
           hwtest_results.HWTestResultManager.GetFailedHWTestsFromCIDB(
-              db, slave_build_ids))
+              self.buildstore.GetCIDBHandle(), slave_build_ids))
 
     # Some builders failed, or some builders did not report stats, or
     # the intersection of both. Let HandleValidationFailure decide
     # what changes to reject.
     self.sync_stage.pool.HandleValidationFailure(
-        messages, sanity=tot_sanity, changes=changes, no_stat=no_stat,
+        messages,
+        sanity=tot_sanity,
+        changes=changes,
+        no_stat=no_stat,
         failed_hwtests=failed_hwtests)
 
   def HandleCompletionFailure(self):

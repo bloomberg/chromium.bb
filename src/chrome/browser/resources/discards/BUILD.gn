@@ -31,14 +31,9 @@ js_library("database_tab") {
   deps = [
     ":discards",
     ":sorted_table_behavior",
+    "//chrome/browser/ui/webui/discards:mojo_bindings_js_library_for_compile",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:cr",
-  ]
-  extra_deps = [ "//chrome/browser/ui/webui/discards:mojo_bindings_js" ]
-  externs_list = [
-    "$root_gen_dir/chrome/browser/ui/webui/discards/discards.mojom.externs.js",
-    "$root_gen_dir/chrome/browser/resource_coordinator/lifecycle_unit_state.mojom.externs.js",
-    "$externs_path/mojo.js",
   ]
 }
 
@@ -46,47 +41,28 @@ js_library("discards_tab") {
   deps = [
     ":discards",
     ":sorted_table_behavior",
+    "//chrome/browser/ui/webui/discards:mojo_bindings_js_library_for_compile",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:icon",
     "//ui/webui/resources/js:util",
-  ]
-  extra_deps = [ "//chrome/browser/ui/webui/discards:mojo_bindings_js" ]
-  externs_list = [
-    "$externs_path/mojo.js",
-    "$root_gen_dir/chrome/browser/resource_coordinator/lifecycle_unit_state.mojom.externs.js",
-    "$root_gen_dir/chrome/browser/ui/webui/discards/discards.mojom.externs.js",
   ]
 }
 
 js_library("graph_tab") {
   deps = [
+    "//chrome/browser/ui/webui/discards:mojo_bindings_js_library_for_compile",
+    "//services/resource_coordinator/public/mojom:mojom_js_library_for_compile",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:cr",
-  ]
-  extra_deps = [
-    "//chrome/browser/ui/webui/discards:mojo_bindings_js",
-    "//mojo/public/mojom/base:base_js",
-    "//services/resource_coordinator/public/mojom:mojom_js",
-  ]
-  externs_list = [
-    "$externs_path/mojo.js",
-    "$root_gen_dir/chrome/browser/resource_coordinator/lifecycle_unit_state.mojom.externs.js",
-    "$root_gen_dir/chrome/browser/ui/webui/discards/discards.mojom.externs.js",
-    "$root_gen_dir/mojo/public/mojom/base/process_id.mojom.externs.js",
-    "$root_gen_dir/mojo/public/mojom/base/time.mojom.externs.js",
-    "$root_gen_dir/services/resource_coordinator/public/mojom/webui_graph_dump.mojom.externs.js",
   ]
 }
 
 js_library("graph_doc") {
-  extra_deps = [ "//services/resource_coordinator/public/mojom:mojom_js" ]
-
-  externs_list = [
-    "../../../../third_party/d3/src/externs.js",
-    "$root_gen_dir/mojo/public/mojom/base/process_id.mojom.externs.js",
-    "$root_gen_dir/mojo/public/mojom/base/time.mojom.externs.js",
-    "$root_gen_dir/services/resource_coordinator/public/mojom/webui_graph_dump.mojom.externs.js",
+  deps = [
+    "//services/resource_coordinator/public/mojom:mojom_js_library_for_compile",
   ]
+
+  externs_list = [ "../../../../third_party/d3/src/externs.js" ]
 }
 
 # This action merges the graph tab script into the graph_doc HTML template.

@@ -9,6 +9,8 @@ source_set("app_group") {
   sources = [
     "app_group_constants.h",
     "app_group_constants.mm",
+    "app_group_field_trial_version.h",
+    "app_group_field_trial_version.mm",
     "app_group_metrics.h",
     "app_group_metrics.mm",
     "app_group_utils.h",

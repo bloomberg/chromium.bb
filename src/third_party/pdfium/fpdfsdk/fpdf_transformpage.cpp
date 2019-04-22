@@ -30,8 +30,11 @@ namespace {
 void SetBoundingBox(CPDF_Page* page,
                     const ByteString& key,
                     const CFX_FloatRect& rect) {
-  if (page)
-    page->GetDict()->SetRectFor(key, rect);
+  if (!page)
+    return;
+
+  page->GetDict()->SetRectFor(key, rect);
+  page->UpdateDimensions();
 }
 
 bool GetBoundingBox(CPDF_Page* page,
@@ -158,8 +161,8 @@ FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDFPage_GetArtBox(FPDF_PAGE page,
 
 FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV
 FPDFPage_TransFormWithClip(FPDF_PAGE page,
-                           FS_MATRIX* matrix,
-                           FS_RECTF* clipRect) {
+                           const FS_MATRIX* matrix,
+                           const FS_RECTF* clipRect) {
   if (!matrix && !clipRect)
     return false;
 
@@ -197,7 +200,7 @@ FPDFPage_TransFormWithClip(FPDF_PAGE page,
 
   CPDF_Stream* pEndStream =
       pDoc->NewIndirect<CPDF_Stream>(nullptr, 0, pDoc->New<CPDF_Dictionary>());
-  pEndStream->SetData(ByteStringView(" Q").span());
+  pEndStream->SetData(ByteStringView(" Q").raw_span());
 
   if (CPDF_Array* pContentArray = ToArray(pContentObj)) {
     pContentArray->InsertAt(0, pStream->MakeReference(pDoc));
@@ -235,10 +238,10 @@ FPDFPage_TransFormWithClip(FPDF_PAGE page,
     else
       continue;
 
-    CFX_Matrix m = pDict->GetMatrixFor("Matrix");
-    m.Concat(CFX_Matrix(matrix->a, matrix->b, matrix->c, matrix->d, matrix->e,
-                        matrix->f));
-    pDict->SetMatrixFor("Matrix", m);
+    if (matrix) {
+      CFX_Matrix m = CFXMatrixFromFSMatrix(*matrix);
+      pDict->SetMatrixFor("Matrix", pDict->GetMatrixFor("Matrix") * m);
+    }
   }
 
   return true;

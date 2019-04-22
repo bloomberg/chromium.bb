@@ -37,6 +37,8 @@ class ClientControlDispatcher : public ChannelDispatcherBase,
   void SetCapabilities(const Capabilities& capabilities) override;
   void RequestPairing(const PairingRequest& pairing_request) override;
   void DeliverClientMessage(const ExtensionMessage& message) override;
+  void SelectDesktopDisplay(
+      const SelectDesktopDisplayRequest& select_display) override;
 
   // Sets the ClientStub that will be called for each incoming control
   // message. |client_stub| must outlive this object.

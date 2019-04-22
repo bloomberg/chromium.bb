@@ -126,6 +126,16 @@ enum ContentSettingsType {
   // intent picker UI without explicitly choosing an option.
   CONTENT_SETTINGS_TYPE_INTENT_PICKER_DISPLAY,
 
+  // Used to store whether to allow a website to detect user active/idle state.
+  CONTENT_SETTINGS_TYPE_IDLE_DETECTION,
+
+  // Content settings for access to serial ports. The "guard" content setting
+  // stores whether to allow sites to ask for permission to access a port. The
+  // permissions granted to access particular ports are stored in the "chooser
+  // data" website setting.
+  CONTENT_SETTINGS_TYPE_SERIAL_GUARD,
+  CONTENT_SETTINGS_TYPE_SERIAL_CHOOSER_DATA,
+
   CONTENT_SETTINGS_NUM_TYPES,
 };
 

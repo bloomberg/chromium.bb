@@ -48,6 +48,10 @@ class SearchIPCRouterPolicyImpl : public SearchIPCRouter::Policy {
   bool ShouldProcessSetCustomBackgroundURL() override;
   bool ShouldProcessSetCustomBackgroundURLWithAttributions() override;
   bool ShouldProcessSelectLocalBackgroundImage() override;
+  bool ShouldProcessBlocklistSearchSuggestion() override;
+  bool ShouldProcessBlocklistSearchSuggestionWithHash() override;
+  bool ShouldProcessSearchSuggestionSelected() override;
+  bool ShouldProcessOptOutOfSearchSuggestions() override;
 
   // Used by unit tests.
   void set_is_incognito(bool is_incognito) {

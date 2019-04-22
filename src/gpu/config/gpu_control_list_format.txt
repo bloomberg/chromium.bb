@@ -73,6 +73,10 @@
 //     "intel_haswell", "intel_cherryview", "intel_broadwell",
 //     "intel_apollolake", "intel_skylake", "intel_geminilake",
 //     "intel_kabylake", "intel_coffeelake".
+// 30. "hardware_overlay" is either "supported" or "unsupported". Currently it
+//     only applies on Windows where hardware overlays may be supported on
+//     certain Intel GPUs. By default it's "dont_care" and there is no need to
+//     specify that.
 //
 // VERSION includes "op", "style", "value", and "value2".  "op" can be any of
 // the following values: "=", "<", "<=", ">", ">=", "any", "between".  "style"

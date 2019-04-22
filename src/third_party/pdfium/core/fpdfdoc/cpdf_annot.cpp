@@ -9,6 +9,8 @@
 #include <algorithm>
 #include <utility>
 
+#include "constants/annotation_common.h"
+#include "constants/annotation_flags.h"
 #include "core/fpdfapi/page/cpdf_form.h"
 #include "core/fpdfapi/page/cpdf_page.h"
 #include "core/fpdfapi/parser/cpdf_array.h"
@@ -18,7 +20,6 @@
 #include "core/fpdfapi/render/cpdf_rendercontext.h"
 #include "core/fpdfapi/render/cpdf_renderoptions.h"
 #include "core/fpdfdoc/cpvt_generateap.h"
-#include "core/fxcrt/fx_memory.h"
 #include "core/fxge/cfx_graphstatedata.h"
 #include "core/fxge/cfx_pathdata.h"
 #include "core/fxge/cfx_renderdevice.h"
@@ -33,16 +34,6 @@ bool IsTextMarkupAnnotation(CPDF_Annot::Subtype type) {
          type == CPDF_Annot::Subtype::SQUIGGLY ||
          type == CPDF_Annot::Subtype::STRIKEOUT ||
          type == CPDF_Annot::Subtype::UNDERLINE;
-}
-
-bool ShouldGenerateAPForAnnotation(CPDF_Dictionary* pAnnotDict) {
-  // If AP dictionary exists and defines an appearance for normal mode, we use
-  // the appearance defined in the existing AP dictionary.
-  CPDF_Dictionary* pAP = pAnnotDict->GetDictFor("AP");
-  if (pAP && pAP->GetDictFor("N"))
-    return false;
-
-  return !CPDF_Annot::IsAnnotationHidden(pAnnotDict);
 }
 
 CPDF_Form* AnnotGetMatrix(const CPDF_Page* pPage,
@@ -65,7 +56,7 @@ CPDF_Form* AnnotGetMatrix(const CPDF_Page* pPage,
 CPDF_Stream* GetAnnotAPInternal(CPDF_Dictionary* pAnnotDict,
                                 CPDF_Annot::AppearanceMode eMode,
                                 bool bFallbackToNormal) {
-  CPDF_Dictionary* pAP = pAnnotDict->GetDictFor("AP");
+  CPDF_Dictionary* pAP = pAnnotDict->GetDictFor(pdfium::annotation::kAP);
   if (!pAP)
     return nullptr;
 
@@ -87,7 +78,7 @@ CPDF_Stream* GetAnnotAPInternal(CPDF_Dictionary* pAnnotDict,
   if (!pDict)
     return nullptr;
 
-  ByteString as = pAnnotDict->GetStringFor("AS");
+  ByteString as = pAnnotDict->GetStringFor(pdfium::annotation::kAS);
   if (as.IsEmpty()) {
     ByteString value = pAnnotDict->GetStringFor("V");
     if (value.IsEmpty()) {
@@ -117,7 +108,8 @@ CPDF_Annot::~CPDF_Annot() {
 }
 
 void CPDF_Annot::Init() {
-  m_nSubtype = StringToAnnotSubtype(m_pAnnotDict->GetStringFor("Subtype"));
+  m_nSubtype = StringToAnnotSubtype(
+      m_pAnnotDict->GetStringFor(pdfium::annotation::kSubtype));
   m_bIsTextMarkupAnnotation = IsTextMarkupAnnotation(m_nSubtype);
   m_bHasGeneratedAP =
       m_pAnnotDict->GetBooleanFor(kPDFiumKey_HasGeneratedAP, false);
@@ -125,10 +117,10 @@ void CPDF_Annot::Init() {
 }
 
 void CPDF_Annot::GenerateAPIfNeeded() {
-  if (!ShouldGenerateAPForAnnotation(m_pAnnotDict.Get()))
+  if (!ShouldGenerateAP())
     return;
-  if (!CPVT_GenerateAP::GenerateAnnotAP(m_nSubtype, m_pDocument.Get(),
-                                        m_pAnnotDict.Get())) {
+  if (!CPVT_GenerateAP::GenerateAnnotAP(m_pDocument.Get(), m_pAnnotDict.Get(),
+                                        m_nSubtype)) {
     return;
   }
 
@@ -136,14 +128,21 @@ void CPDF_Annot::GenerateAPIfNeeded() {
   m_bHasGeneratedAP = true;
 }
 
-bool CPDF_Annot::ShouldDrawAnnotation() {
-  if (IsAnnotationHidden(m_pAnnotDict.Get()))
+bool CPDF_Annot::ShouldGenerateAP() const {
+  // If AP dictionary exists and defines an appearance for normal mode, we use
+  // the appearance defined in the existing AP dictionary.
+  const CPDF_Dictionary* pAP =
+      m_pAnnotDict->GetDictFor(pdfium::annotation::kAP);
+  if (pAP && pAP->GetDictFor("N"))
     return false;
 
-  if (m_nSubtype == CPDF_Annot::Subtype::POPUP && !m_bOpenState)
-    return false;
+  return !IsHidden();
+}
 
-  return true;
+bool CPDF_Annot::ShouldDrawAnnotation() const {
+  if (IsHidden())
+    return false;
+  return m_bOpenState || m_nSubtype != CPDF_Annot::Subtype::POPUP;
 }
 
 void CPDF_Annot::ClearCachedAP() {
@@ -155,37 +154,36 @@ CPDF_Annot::Subtype CPDF_Annot::GetSubtype() const {
 }
 
 CFX_FloatRect CPDF_Annot::RectForDrawing() const {
-  if (!m_pAnnotDict)
-    return CFX_FloatRect();
-
   bool bShouldUseQuadPointsCoords =
       m_bIsTextMarkupAnnotation && m_bHasGeneratedAP;
   if (bShouldUseQuadPointsCoords)
     return BoundingRectFromQuadPoints(m_pAnnotDict.Get());
-
-  return m_pAnnotDict->GetRectFor("Rect");
+  return m_pAnnotDict->GetRectFor(pdfium::annotation::kRect);
 }
 
 CFX_FloatRect CPDF_Annot::GetRect() const {
-  if (!m_pAnnotDict)
-    return CFX_FloatRect();
-
   CFX_FloatRect rect = RectForDrawing();
   rect.Normalize();
   return rect;
 }
 
 uint32_t CPDF_Annot::GetFlags() const {
-  return m_pAnnotDict->GetIntegerFor("F");
+  return m_pAnnotDict->GetIntegerFor(pdfium::annotation::kF);
+}
+
+bool CPDF_Annot::IsHidden() const {
+  return !!(GetFlags() & pdfium::annotation_flags::kHidden);
 }
 
 CPDF_Stream* GetAnnotAP(CPDF_Dictionary* pAnnotDict,
                         CPDF_Annot::AppearanceMode eMode) {
+  ASSERT(pAnnotDict);
   return GetAnnotAPInternal(pAnnotDict, eMode, true);
 }
 
 CPDF_Stream* GetAnnotAPNoFallback(CPDF_Dictionary* pAnnotDict,
                                   CPDF_Annot::AppearanceMode eMode) {
+  ASSERT(pAnnotDict);
   return GetAnnotAPInternal(pAnnotDict, eMode, false);
 }
 
@@ -234,11 +232,11 @@ CFX_FloatRect CPDF_Annot::BoundingRectFromQuadPoints(
     const CPDF_Dictionary* pAnnotDict) {
   CFX_FloatRect ret;
   const CPDF_Array* pArray = pAnnotDict->GetArrayFor("QuadPoints");
-  if (!pArray)
+  size_t nQuadPointCount = pArray ? QuadPointCount(pArray) : 0;
+  if (nQuadPointCount == 0)
     return ret;
 
   ret = RectFromQuadPointsArray(pArray, 0);
-  size_t nQuadPointCount = QuadPointCount(pArray);
   for (size_t i = 1; i < nQuadPointCount; ++i) {
     CFX_FloatRect rect = RectFromQuadPointsArray(pArray, i);
     ret.Union(rect);
@@ -247,17 +245,13 @@ CFX_FloatRect CPDF_Annot::BoundingRectFromQuadPoints(
 }
 
 // static
-CFX_FloatRect CPDF_Annot::RectFromQuadPoints(CPDF_Dictionary* pAnnotDict,
+CFX_FloatRect CPDF_Annot::RectFromQuadPoints(const CPDF_Dictionary* pAnnotDict,
                                              size_t nIndex) {
-  CPDF_Array* pArray = pAnnotDict->GetArrayFor("QuadPoints");
-  if (!pArray)
+  const CPDF_Array* pArray = pAnnotDict->GetArrayFor("QuadPoints");
+  size_t nQuadPointCount = pArray ? QuadPointCount(pArray) : 0;
+  if (nIndex >= nQuadPointCount)
     return CFX_FloatRect();
   return RectFromQuadPointsArray(pArray, nIndex);
-}
-
-// static
-bool CPDF_Annot::IsAnnotationHidden(CPDF_Dictionary* pAnnotDict) {
-  return !!(pAnnotDict->GetIntegerFor("F") & ANNOTFLAG_HIDDEN);
 }
 
 // static
@@ -376,7 +370,7 @@ ByteString CPDF_Annot::AnnotSubtypeToString(CPDF_Annot::Subtype nSubtype) {
     return "RichMedia";
   if (nSubtype == CPDF_Annot::Subtype::XFAWIDGET)
     return "XFAWidget";
-  return "";
+  return ByteString();
 }
 
 // static
@@ -440,15 +434,15 @@ void CPDF_Annot::DrawBorder(CFX_RenderDevice* pDevice,
     return;
 
   uint32_t annot_flags = GetFlags();
-  if (annot_flags & ANNOTFLAG_HIDDEN) {
+  if (annot_flags & pdfium::annotation_flags::kHidden)
     return;
-  }
+
   bool bPrinting = pDevice->GetDeviceClass() == FXDC_PRINTER ||
                    (pOptions && pOptions->GetOptions().bPrintPreview);
-  if (bPrinting && (annot_flags & ANNOTFLAG_PRINT) == 0) {
+  if (bPrinting && (annot_flags & pdfium::annotation_flags::kPrint) == 0) {
     return;
   }
-  if (!bPrinting && (annot_flags & ANNOTFLAG_NOVIEW)) {
+  if (!bPrinting && (annot_flags & pdfium::annotation_flags::kNoView)) {
     return;
   }
   CPDF_Dictionary* pBS = m_pAnnotDict->GetDictFor("BS");
@@ -456,7 +450,8 @@ void CPDF_Annot::DrawBorder(CFX_RenderDevice* pDevice,
   float width;
   CPDF_Array* pDashArray = nullptr;
   if (!pBS) {
-    CPDF_Array* pBorderArray = m_pAnnotDict->GetArrayFor("Border");
+    CPDF_Array* pBorderArray =
+        m_pAnnotDict->GetArrayFor(pdfium::annotation::kBorder);
     style_char = 'S';
     if (pBorderArray) {
       width = pBorderArray->GetNumberAt(2);
@@ -490,7 +485,7 @@ void CPDF_Annot::DrawBorder(CFX_RenderDevice* pDevice,
   if (width <= 0) {
     return;
   }
-  CPDF_Array* pColor = m_pAnnotDict->GetArrayFor("C");
+  CPDF_Array* pColor = m_pAnnotDict->GetArrayFor(pdfium::annotation::kC);
   uint32_t argb = 0xff000000;
   if (pColor) {
     int R = (int32_t)(pColor->GetNumberAt(0) * 255);

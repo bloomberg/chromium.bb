@@ -15,7 +15,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "chrome/browser/ui/autofill/autofill_dialog_models.h"
+#include "chrome/browser/ui/autofill/payments/autofill_dialog_models.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -308,7 +308,7 @@ CreditCardEditorViewController::CreateCustomFieldView(
     constexpr int kInputFieldHeight = 28;
     EditorField tmp_month{
         autofill::CREDIT_CARD_EXP_MONTH,
-        l10n_util::GetStringUTF16(IDS_AUTOFILL_FIELD_LABEL_EXPIRATION_MONTH),
+        l10n_util::GetStringUTF16(IDS_SETTINGS_CREDIT_CARD_EXPIRATION_MONTH),
         EditorField::LengthHint::HINT_SHORT,
         /*required=*/true, EditorField::ControlType::COMBOBOX};
     std::unique_ptr<ValidatingCombobox> month_combobox =
@@ -320,7 +320,7 @@ CreditCardEditorViewController::CreateCustomFieldView(
 
     EditorField tmp_year{
         autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR,
-        l10n_util::GetStringUTF16(IDS_AUTOFILL_FIELD_LABEL_EXPIRATION_YEAR),
+        l10n_util::GetStringUTF16(IDS_SETTINGS_CREDIT_CARD_EXPIRATION_YEAR),
         EditorField::LengthHint::HINT_SHORT,
         /*required=*/true, EditorField::ControlType::COMBOBOX};
     std::unique_ptr<ValidatingCombobox> year_combobox =
@@ -367,17 +367,17 @@ std::vector<EditorField> CreditCardEditorViewController::GetFieldDefinitions() {
   bool is_server_card = IsEditingServerCard();
   return std::vector<EditorField>{
       {autofill::CREDIT_CARD_NUMBER,
-       l10n_util::GetStringUTF16(IDS_AUTOFILL_FIELD_LABEL_CREDIT_CARD_NUMBER),
+       l10n_util::GetStringUTF16(IDS_SETTINGS_CREDIT_CARD_NUMBER),
        EditorField::LengthHint::HINT_SHORT, /*required=*/true,
        is_server_card ? EditorField::ControlType::READONLY_LABEL
                       : EditorField::ControlType::TEXTFIELD_NUMBER},
       {autofill::CREDIT_CARD_NAME_FULL,
-       l10n_util::GetStringUTF16(IDS_AUTOFILL_FIELD_LABEL_NAME_ON_CARD),
+       l10n_util::GetStringUTF16(IDS_SETTINGS_NAME_ON_CREDIT_CARD),
        EditorField::LengthHint::HINT_SHORT, /*required=*/true,
        is_server_card ? EditorField::ControlType::READONLY_LABEL
                       : EditorField::ControlType::TEXTFIELD},
       {autofill::CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR,
-       l10n_util::GetStringUTF16(IDS_AUTOFILL_FIELD_LABEL_EXPIRATION_DATE),
+       l10n_util::GetStringUTF16(IDS_SETTINGS_CREDIT_CARD_EXPIRATION_DATE),
        EditorField::LengthHint::HINT_SHORT, /*required=*/true,
        EditorField::ControlType::CUSTOMFIELD},
       {kBillingAddressType,
@@ -548,7 +548,7 @@ void CreditCardEditorViewController::StyledLabelLinkClicked(
   // link for a server card.
   chrome::ScopedTabbedBrowserDisplayer displayer(dialog()->GetProfile());
   ShowSingletonTab(displayer.browser(),
-                   autofill::payments::GetManageAddressesUrl(0));
+                   autofill::payments::GetManageAddressesUrl());
 }
 
 void CreditCardEditorViewController::SelectBasicCardNetworkIcon(

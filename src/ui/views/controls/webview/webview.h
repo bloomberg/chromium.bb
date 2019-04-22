@@ -81,10 +81,6 @@ class WEBVIEW_EXPORT WebView : public View,
   void EnableSizingFromWebContents(const gfx::Size& min_size,
                                    const gfx::Size& max_size);
 
-  // Set the background color to use while resizing with a clip. This is white
-  // by default.
-  void SetResizeBackgroundColor(SkColor resize_background_color);
-
   // If provided, this View will be shown in place of the web contents
   // when the web contents is in a crashed state. This is cleared automatically
   // if the web contents is changed.

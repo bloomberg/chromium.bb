@@ -6,14 +6,15 @@
 
 #include "xfa/fxfa/parser/cxfa_level.h"
 
+#include "fxjs/xfa/cjx_node.h"
+#include "third_party/base/ptr_util.h"
+
 namespace {
 
 const CXFA_Node::AttributeData kLevelAttributeData[] = {
     {XFA_Attribute::Desc, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Lock, XFA_AttributeType::Integer, (void*)0},
-    {XFA_Attribute::Unknown, XFA_AttributeType::Integer, nullptr}};
-
-constexpr wchar_t kLevelName[] = L"level";
+};
 
 }  // namespace
 
@@ -23,8 +24,8 @@ CXFA_Level::CXFA_Level(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_XDPPACKET_Config,
                 XFA_ObjectType::ContentNode,
                 XFA_Element::Level,
-                nullptr,
+                {},
                 kLevelAttributeData,
-                kLevelName) {}
+                pdfium::MakeUnique<CJX_Node>(this)) {}
 
-CXFA_Level::~CXFA_Level() {}
+CXFA_Level::~CXFA_Level() = default;

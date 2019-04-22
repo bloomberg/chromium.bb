@@ -27,7 +27,7 @@
     {
       "name": "LayoutListItem (floating) LI id='watches'",
       "position": [31, 42],
-      "bounds": [24, 18]
+      "bounds": [7, 18]
     },
     {
       "name": "LayoutInline (relative positioned) SPAN id='placeholder'",
@@ -38,7 +38,7 @@
     {
       "name": "LayoutListItem (relative positioned) (floating) LI id='menu'",
       "position": [31, 42],
-      "bounds": [17, 18],
+      "bounds": [7, 18],
       "paintInvalidations": [
         {
           "object": "LayoutListMarker (anonymous)",

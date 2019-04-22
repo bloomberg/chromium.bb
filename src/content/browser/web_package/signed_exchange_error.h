@@ -41,7 +41,17 @@ enum class SignedExchangeLoadResult {
   // Certificate Requirements aren't met.
   // https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#cross-origin-cert-req
   kCertRequirementsNotMet,
-  kMaxValue = kCertRequirementsNotMet
+  // SXG was served without "X-Content-Type-Options: nosniff" header.
+  kSXGServedWithoutNosniff,
+  // Merkle integrity error.
+  kMerkleIntegrityError,
+  // Invalid integrity header error.
+  kInvalidIntegrityHeader,
+  // SXG has Variants / Variant-Key headers that don't match the request.
+  kVariantMismatch,
+  // Certificate's validity period is too long.
+  kCertValidityPeriodTooLong,
+  kMaxValue = kCertValidityPeriodTooLong
 };
 
 struct SignedExchangeError {

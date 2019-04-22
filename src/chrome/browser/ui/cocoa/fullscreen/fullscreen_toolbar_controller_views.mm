@@ -29,13 +29,11 @@
 - (BOOL)isFullscreenTransitionInProgress {
   views::BridgedNativeWidgetHostImpl* bridge_host =
       views::BridgedNativeWidgetHostImpl::GetFromNativeWindow([self window]);
-  if (bridge_host) {
-    if (bridge_host->bridge_impl())
-      return bridge_host->bridge_impl()->in_fullscreen_transition();
-    else
-      DLOG(ERROR) << "Cannot query remote NSWindow fullscreen status.";
-  }
-  return bridge_host->bridge_impl()->in_fullscreen_transition();
+  if (bridge_host->bridge_impl())
+    return bridge_host->bridge_impl()->in_fullscreen_transition();
+  DLOG(ERROR) << "TODO(https://crbug.com/915110): Support fullscreen "
+                 "transitions for RemoteMacViews PWA windows.";
+  return false;
 }
 
 - (NSWindow*)window {

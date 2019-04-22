@@ -4,6 +4,7 @@
 
 #include "content/browser/media/capture/web_contents_tracker.h"
 
+#include "base/bind.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/browser/browser_task_traits.h"

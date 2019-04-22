@@ -15,6 +15,7 @@
 #include "tests/DawnTest.h"
 
 #include "common/Assert.h"
+#include "utils/ComboRenderPipelineDescriptor.h"
 #include "utils/DawnHelpers.h"
 
 // Primitive topology tests work by drawing the following vertices with all the different primitive topology states:
@@ -164,11 +165,6 @@ class PrimitiveTopologyTest : public DawnTest {
                     fragColor = vec4(0.0, 1.0, 0.0, 1.0);
                 })");
 
-            inputState = device.CreateInputStateBuilder()
-                .SetAttribute(0, 0, dawn::VertexFormat::FloatR32G32B32A32, 0)
-                .SetInput(0, 4 * sizeof(float), dawn::InputStepMode::Vertex)
-                .GetResult();
-
             vertexBuffer = utils::CreateBufferFromData(device, kVertices, sizeof(kVertices), dawn::BufferUsageBit::Vertex);
         }
 
@@ -185,25 +181,30 @@ class PrimitiveTopologyTest : public DawnTest {
 
         // Draw the vertices with the given primitive topology and check the pixel values of the test locations
         void DoTest(dawn::PrimitiveTopology primitiveTopology, const std::vector<LocationSpec> &locationSpecs) {
-            dawn::RenderPipeline pipeline = device.CreateRenderPipelineBuilder()
-                .SetColorAttachmentFormat(0, renderPass.colorFormat)
-                .SetStage(dawn::ShaderStage::Vertex, vsModule, "main")
-                .SetStage(dawn::ShaderStage::Fragment, fsModule, "main")
-                .SetInputState(inputState)
-                .SetPrimitiveTopology(primitiveTopology)
-                .GetResult();
+            utils::ComboRenderPipelineDescriptor descriptor(device);
+            descriptor.cVertexStage.module = vsModule;
+            descriptor.cFragmentStage.module = fsModule;
+            descriptor.primitiveTopology = primitiveTopology;
+            descriptor.cInputState.numInputs = 1;
+            descriptor.cInputState.cInputs[0].stride = 4 * sizeof(float);
+            descriptor.cInputState.numAttributes = 1;
+            descriptor.cInputState.cAttributes[0].format = dawn::VertexFormat::Float4;
+            descriptor.cColorStates[0]->format = renderPass.colorFormat;
 
-            static const uint32_t zeroOffset = 0;
-            dawn::CommandBufferBuilder builder = device.CreateCommandBufferBuilder();
+            dawn::RenderPipeline pipeline = device.CreateRenderPipeline(&descriptor);
+
+            static const uint64_t zeroOffset = 0;
+            dawn::CommandEncoder encoder = device.CreateCommandEncoder();
             {
-                dawn::RenderPassEncoder pass = builder.BeginRenderPass(renderPass.renderPassInfo);
-                pass.SetRenderPipeline(pipeline);
+                dawn::RenderPassEncoder pass = encoder.BeginRenderPass(
+                    &renderPass.renderPassInfo);
+                pass.SetPipeline(pipeline);
                 pass.SetVertexBuffers(0, 1, &vertexBuffer, &zeroOffset);
-                pass.DrawArrays(6, 1, 0, 0);
+                pass.Draw(6, 1, 0, 0);
                 pass.EndPass();
             }
 
-            dawn::CommandBuffer commands = builder.GetResult();
+            dawn::CommandBuffer commands = encoder.Finish();
             queue.Submit(1, &commands);
 
             for (auto& locationSpec : locationSpecs) {
@@ -219,7 +220,6 @@ class PrimitiveTopologyTest : public DawnTest {
         utils::BasicRenderPass renderPass;
         dawn::ShaderModule vsModule;
         dawn::ShaderModule fsModule;
-        dawn::InputState inputState;
         dawn::Buffer vertexBuffer;
 };
 
@@ -282,4 +282,4 @@ TEST_P(PrimitiveTopologyTest, TriangleStrip) {
     });
 }
 
-DAWN_INSTANTIATE_TEST(PrimitiveTopologyTest, D3D12Backend, MetalBackend, OpenGLBackend, VulkanBackend)
+DAWN_INSTANTIATE_TEST(PrimitiveTopologyTest, D3D12Backend, MetalBackend, OpenGLBackend, VulkanBackend);

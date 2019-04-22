@@ -7,9 +7,9 @@
 
 #include "src/objects/debug-objects.h"
 
-#include "src/heap/heap-inl.h"
-#include "src/heap/heap-write-barrier.h"
+#include "src/heap/heap-write-barrier-inl.h"
 #include "src/objects-inl.h"
+#include "src/objects/code-inl.h"
 #include "src/objects/shared-function-info.h"
 
 // Has to be the last include (doesn't have include guards):
@@ -18,11 +18,16 @@
 namespace v8 {
 namespace internal {
 
+OBJECT_CONSTRUCTORS_IMPL(BreakPoint, Tuple2)
+OBJECT_CONSTRUCTORS_IMPL(BreakPointInfo, Tuple2)
 OBJECT_CONSTRUCTORS_IMPL(CoverageInfo, FixedArray)
+OBJECT_CONSTRUCTORS_IMPL(DebugInfo, Struct)
+
+NEVER_READ_ONLY_SPACE_IMPL(DebugInfo)
 
 CAST_ACCESSOR(BreakPointInfo)
 CAST_ACCESSOR(DebugInfo)
-CAST_ACCESSOR2(CoverageInfo)
+CAST_ACCESSOR(CoverageInfo)
 CAST_ACCESSOR(BreakPoint)
 
 SMI_ACCESSORS(DebugInfo, flags, kFlagsOffset)
@@ -32,7 +37,7 @@ ACCESSORS(DebugInfo, script, Object, kScriptOffset)
 ACCESSORS(DebugInfo, original_bytecode_array, Object,
           kOriginalBytecodeArrayOffset)
 ACCESSORS(DebugInfo, debug_bytecode_array, Object, kDebugBytecodeArrayOffset)
-ACCESSORS2(DebugInfo, break_points, FixedArray, kBreakPointsStateOffset)
+ACCESSORS(DebugInfo, break_points, FixedArray, kBreakPointsStateOffset)
 ACCESSORS(DebugInfo, coverage_info, Object, kCoverageInfoOffset)
 
 BIT_FIELD_ACCESSORS(DebugInfo, debugger_hints, side_effect_state,
@@ -48,7 +53,7 @@ SMI_ACCESSORS(BreakPointInfo, source_position, kSourcePositionOffset)
 ACCESSORS(BreakPointInfo, break_points, Object, kBreakPointsOffset)
 
 SMI_ACCESSORS(BreakPoint, id, kIdOffset)
-ACCESSORS2(BreakPoint, condition, String, kConditionOffset)
+ACCESSORS(BreakPoint, condition, String, kConditionOffset)
 
 bool DebugInfo::HasInstrumentedBytecodeArray() {
   DCHECK_EQ(debug_bytecode_array()->IsBytecodeArray(),

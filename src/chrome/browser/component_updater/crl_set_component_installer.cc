@@ -38,7 +38,8 @@ const base::FilePath::CharType kCRLSetFile[] = FILE_PATH_LITERAL("crl-set");
 
 // Returns the contents of the file at |crl_path|.
 std::string LoadCRLSet(const base::FilePath& crl_path) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::WILL_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::WILL_BLOCK);
   std::string crl_set_bytes;
   base::ReadFileToString(crl_path, &crl_set_bytes);
   return crl_set_bytes;

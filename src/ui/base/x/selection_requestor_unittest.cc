@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <memory>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/message_loop/message_loop.h"
@@ -66,11 +67,11 @@ class SelectionRequestorTest : public testing::Test {
                               InputOnly,
                               CopyFromParent,  // visual
                               0,
-                              NULL);
+                              nullptr);
 
     event_source_ = PlatformEventSource::CreateDefault();
     CHECK(PlatformEventSource::GetInstance());
-    requestor_.reset(new SelectionRequestor(x_display_, x_window_, NULL));
+    requestor_.reset(new SelectionRequestor(x_display_, x_window_, nullptr));
   }
 
   void TearDown() override {
@@ -125,17 +126,17 @@ TEST_F(SelectionRequestorTest, NestedRequests) {
   XAtom target2 = gfx::GetAtom("TARGET2");
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&PerformBlockingConvertSelection,
-                            base::Unretained(requestor_.get()), selection,
-                            target2, "Data2"));
+      FROM_HERE, base::BindOnce(&PerformBlockingConvertSelection,
+                                base::Unretained(requestor_.get()), selection,
+                                target2, "Data2"));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&SelectionRequestorTest::SendSelectionNotify,
-                 base::Unretained(this), selection, target1, "Data1"));
+      base::BindOnce(&SelectionRequestorTest::SendSelectionNotify,
+                     base::Unretained(this), selection, target1, "Data1"));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&SelectionRequestorTest::SendSelectionNotify,
-                 base::Unretained(this), selection, target2, "Data2"));
+      base::BindOnce(&SelectionRequestorTest::SendSelectionNotify,
+                     base::Unretained(this), selection, target2, "Data2"));
   PerformBlockingConvertSelection(requestor_.get(), selection, target1,
                                   "Data1");
 }

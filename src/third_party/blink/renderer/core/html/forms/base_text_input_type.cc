@@ -89,7 +89,8 @@ bool BaseTextInputType::PatternMismatch(const String& value) const {
                          ScriptRegexp::UTF16));
     if (!raw_regexp->IsValid()) {
       GetElement().GetDocument().AddConsoleMessage(
-          ConsoleMessage::Create(kRenderingMessageSource, kErrorMessageLevel,
+          ConsoleMessage::Create(mojom::ConsoleMessageSource::kRendering,
+                                 mojom::ConsoleMessageLevel::kError,
                                  "Pattern attribute value " + raw_pattern +
                                      " is not a valid regular expression: " +
                                      raw_regexp->ExceptionMessage()));

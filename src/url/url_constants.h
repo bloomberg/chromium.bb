@@ -7,36 +7,36 @@
 
 #include <stddef.h>
 
-#include "url/url_export.h"
+#include "base/component_export.h"
 
 namespace url {
 
-URL_EXPORT extern const char kAboutBlankURL[];
+COMPONENT_EXPORT(URL) extern const char kAboutBlankURL[];
 
-URL_EXPORT extern const char kAboutBlankPath[];
-URL_EXPORT extern const char kAboutBlankWithHashPath[];
+COMPONENT_EXPORT(URL) extern const char kAboutBlankPath[];
+COMPONENT_EXPORT(URL) extern const char kAboutBlankWithHashPath[];
 
-URL_EXPORT extern const char kAboutScheme[];
-URL_EXPORT extern const char kBlobScheme[];
+COMPONENT_EXPORT(URL) extern const char kAboutScheme[];
+COMPONENT_EXPORT(URL) extern const char kBlobScheme[];
 // The content scheme is specific to Android for identifying a stored file.
-URL_EXPORT extern const char kContentScheme[];
-URL_EXPORT extern const char kContentIDScheme[];
-URL_EXPORT extern const char kDataScheme[];
-URL_EXPORT extern const char kFileScheme[];
-URL_EXPORT extern const char kFileSystemScheme[];
-URL_EXPORT extern const char kFtpScheme[];
-URL_EXPORT extern const char kGopherScheme[];
-URL_EXPORT extern const char kHttpScheme[];
-URL_EXPORT extern const char kHttpsScheme[];
-URL_EXPORT extern const char kJavaScriptScheme[];
-URL_EXPORT extern const char kMailToScheme[];
-URL_EXPORT extern const char kWsScheme[];
-URL_EXPORT extern const char kWssScheme[];
+COMPONENT_EXPORT(URL) extern const char kContentScheme[];
+COMPONENT_EXPORT(URL) extern const char kContentIDScheme[];
+COMPONENT_EXPORT(URL) extern const char kDataScheme[];
+COMPONENT_EXPORT(URL) extern const char kFileScheme[];
+COMPONENT_EXPORT(URL) extern const char kFileSystemScheme[];
+COMPONENT_EXPORT(URL) extern const char kFtpScheme[];
+COMPONENT_EXPORT(URL) extern const char kGopherScheme[];
+COMPONENT_EXPORT(URL) extern const char kHttpScheme[];
+COMPONENT_EXPORT(URL) extern const char kHttpsScheme[];
+COMPONENT_EXPORT(URL) extern const char kJavaScriptScheme[];
+COMPONENT_EXPORT(URL) extern const char kMailToScheme[];
+COMPONENT_EXPORT(URL) extern const char kWsScheme[];
+COMPONENT_EXPORT(URL) extern const char kWssScheme[];
 
 // Used to separate a standard scheme and the hostname: "://".
-URL_EXPORT extern const char kStandardSchemeSeparator[];
+COMPONENT_EXPORT(URL) extern const char kStandardSchemeSeparator[];
 
-URL_EXPORT extern const size_t kMaxURLChars;
+COMPONENT_EXPORT(URL) extern const size_t kMaxURLChars;
 
 }  // namespace url
 

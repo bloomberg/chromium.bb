@@ -17,6 +17,8 @@
 #include <assert.h>
 #include <string.h>
 
+#include <tuple>
+
 #include <openssl/aead.h>
 #include <openssl/bytestring.h>
 #include <openssl/digest.h>
@@ -95,46 +97,73 @@ static int ssl_ext_supported_versions_add_serverhello(SSL_HANDSHAKE *hs,
   return 1;
 }
 
+// CipherScorer produces a "score" for each possible cipher suite offered by
+// the client.
+class CipherScorer {
+ public:
+  CipherScorer(uint16_t group_id)
+      : aes_is_fine_(EVP_has_aes_hardware()),
+        security_128_is_fine_(group_id != SSL_CURVE_CECPQ2) {}
+
+  typedef std::tuple<bool, bool, bool> Score;
+
+  // MinScore returns a |Score| that will compare less than the score of all
+  // cipher suites.
+  Score MinScore() const {
+    return Score(false, false, false);
+  }
+
+  Score Evaluate(const SSL_CIPHER *a) const {
+    return Score(
+        // Something is always preferable to nothing.
+        true,
+        // Either 128-bit is fine, or 256-bit is preferred.
+        security_128_is_fine_ || a->algorithm_enc != SSL_AES128GCM,
+        // Either AES is fine, or else ChaCha20 is preferred.
+        aes_is_fine_ || a->algorithm_enc == SSL_CHACHA20POLY1305);
+  }
+
+ private:
+  const bool aes_is_fine_;
+  const bool security_128_is_fine_;
+};
+
 static const SSL_CIPHER *choose_tls13_cipher(
-    const SSL *ssl, const SSL_CLIENT_HELLO *client_hello) {
+    const SSL *ssl, const SSL_CLIENT_HELLO *client_hello, uint16_t group_id) {
   if (client_hello->cipher_suites_len % 2 != 0) {
-    return NULL;
+    return nullptr;
   }
 
   CBS cipher_suites;
   CBS_init(&cipher_suites, client_hello->cipher_suites,
            client_hello->cipher_suites_len);
 
-  const int aes_is_fine = EVP_has_aes_hardware();
   const uint16_t version = ssl_protocol_version(ssl);
 
-  const SSL_CIPHER *best = NULL;
+  const SSL_CIPHER *best = nullptr;
+  CipherScorer scorer(group_id);
+  CipherScorer::Score best_score = scorer.MinScore();
+
   while (CBS_len(&cipher_suites) > 0) {
     uint16_t cipher_suite;
     if (!CBS_get_u16(&cipher_suites, &cipher_suite)) {
-      return NULL;
+      return nullptr;
     }
 
     // Limit to TLS 1.3 ciphers we know about.
     const SSL_CIPHER *candidate = SSL_get_cipher_by_value(cipher_suite);
-    if (candidate == NULL ||
+    if (candidate == nullptr ||
         SSL_CIPHER_get_min_version(candidate) > version ||
         SSL_CIPHER_get_max_version(candidate) < version) {
       continue;
     }
 
-    // TLS 1.3 removes legacy ciphers, so honor the client order, but prefer
-    // ChaCha20 if we do not have AES hardware.
-    if (aes_is_fine) {
-      return candidate;
-    }
-
-    if (candidate->algorithm_enc == SSL_CHACHA20POLY1305) {
-      return candidate;
-    }
-
-    if (best == NULL) {
+    const CipherScorer::Score candidate_score = scorer.Evaluate(candidate);
+    // |candidate_score| must be larger to displace the current choice. That way
+    // the client's order controls between ciphers with an equal score.
+    if (candidate_score > best_score) {
       best = candidate;
+      best_score = candidate_score;
     }
   }
 
@@ -188,8 +217,7 @@ static bool add_new_session_tickets(SSL_HANDSHAKE *hs, bool *out_sent_tickets) {
         !CBB_add_u8_length_prefixed(&body, &nonce_cbb) ||
         !CBB_add_bytes(&nonce_cbb, nonce, sizeof(nonce)) ||
         !CBB_add_u16_length_prefixed(&body, &ticket) ||
-        !tls13_derive_session_psk(session.get(), nonce,
-                                  ssl->ctx->quic_method != nullptr) ||
+        !tls13_derive_session_psk(session.get(), nonce) ||
         !ssl_encrypt_ticket(hs, &ticket, session.get()) ||
         !CBB_add_u16_length_prefixed(&body, &extensions)) {
       return false;
@@ -240,8 +268,15 @@ static enum ssl_hs_wait_t do_select_parameters(SSL_HANDSHAKE *hs) {
                  client_hello.session_id_len);
   hs->session_id_len = client_hello.session_id_len;
 
+  uint16_t group_id;
+  if (!tls1_get_shared_group(hs, &group_id)) {
+    OPENSSL_PUT_ERROR(SSL, SSL_R_NO_SHARED_GROUP);
+    ssl_send_alert(ssl, SSL3_AL_FATAL, SSL_AD_HANDSHAKE_FAILURE);
+    return ssl_hs_error;
+  }
+
   // Negotiate the cipher suite.
-  hs->new_cipher = choose_tls13_cipher(ssl, &client_hello);
+  hs->new_cipher = choose_tls13_cipher(ssl, &client_hello, group_id);
   if (hs->new_cipher == NULL) {
     OPENSSL_PUT_ERROR(SSL, SSL_R_NO_SHARED_CIPHER);
     ssl_send_alert(ssl, SSL3_AL_FATAL, SSL_AD_HANDSHAKE_FAILURE);
@@ -650,7 +685,7 @@ static enum ssl_hs_wait_t do_send_server_hello(SSL_HANDSHAKE *hs) {
 
   // Send the server Certificate message, if necessary.
   if (!ssl->s3->session_reused) {
-    if (!ssl_has_certificate(hs->config)) {
+    if (!ssl_has_certificate(hs)) {
       OPENSSL_PUT_ERROR(SSL, SSL_R_NO_CERTIFICATE_SET);
       return ssl_hs_error;
     }

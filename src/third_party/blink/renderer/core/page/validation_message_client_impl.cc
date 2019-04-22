@@ -29,8 +29,10 @@
 #include <memory>
 #include <utility>
 
+#include "cc/layers/picture_layer.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/web/web_text_direction.h"
+#include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -42,10 +44,6 @@ namespace blink {
 
 ValidationMessageClientImpl::ValidationMessageClientImpl(Page& page)
     : page_(&page), current_anchor_(nullptr) {}
-
-ValidationMessageClientImpl* ValidationMessageClientImpl::Create(Page& page) {
-  return MakeGarbageCollected<ValidationMessageClientImpl>(page);
-}
 
 ValidationMessageClientImpl::~ValidationMessageClientImpl() = default;
 
@@ -63,7 +61,7 @@ void ValidationMessageClientImpl::ShowValidationMessage(
     HideValidationMessage(anchor);
     return;
   }
-  if (!anchor.GetLayoutBox())
+  if (!anchor.GetLayoutObject())
     return;
   if (current_anchor_)
     HideValidationMessageImmediately(*current_anchor_);
@@ -78,15 +76,20 @@ void ValidationMessageClientImpl::ShowValidationMessage(
       std::max(kMinimumTimeToShowValidationMessage,
                (message.length() + sub_message.length()) * kTimePerCharacter);
 
-  auto* target_frame = page_->MainFrame() && page_->MainFrame()->IsLocalFrame()
-                           ? ToLocalFrame(page_->MainFrame())
-                           : anchor.GetDocument().GetFrame();
-  auto delegate = ValidationMessageOverlayDelegate::Create(
+  auto* target_frame = DynamicTo<LocalFrame>(page_->MainFrame());
+  if (!target_frame)
+    target_frame = &anchor.GetDocument().GetFrame()->LocalFrameRoot();
+
+  allow_initial_empty_anchor_ = !target_frame->IsMainFrame();
+  auto delegate = std::make_unique<ValidationMessageOverlayDelegate>(
       *page_, anchor, message_, message_dir, sub_message, sub_message_dir);
   overlay_delegate_ = delegate.get();
-  overlay_ = PageOverlay::Create(target_frame, std::move(delegate));
+  overlay_ = std::make_unique<FrameOverlay>(target_frame, std::move(delegate));
+  overlay_delegate_->CreatePage(*overlay_);
   bool success =
       target_frame->View()->UpdateLifecycleToCompositingCleanPlusScrolling();
+  ValidationMessageVisibilityChanged(anchor);
+
   // The lifecycle update should always succeed, because this is not inside
   // of a throttling scope.
   DCHECK(success);
@@ -98,8 +101,12 @@ void ValidationMessageClientImpl::HideValidationMessage(const Element& anchor) {
     HideValidationMessageImmediately(anchor);
     return;
   }
-  if (!current_anchor_ || !IsValidationMessageVisible(anchor))
+  if (!current_anchor_ || !IsValidationMessageVisible(anchor) ||
+      overlay_delegate_->IsHiding()) {
+    // Do not continue if already hiding, otherwise timer will never complete
+    // and Reset() is never called.
     return;
+  }
   DCHECK(overlay_);
   overlay_delegate_->StartToHide();
   timer_ = std::make_unique<TaskRunnerTimer<ValidationMessageClientImpl>>(
@@ -119,6 +126,8 @@ void ValidationMessageClientImpl::HideValidationMessageImmediately(
 }
 
 void ValidationMessageClientImpl::Reset(TimerBase*) {
+  const Element& anchor = *current_anchor_;
+
   timer_ = nullptr;
   current_anchor_ = nullptr;
   message_ = String();
@@ -126,6 +135,14 @@ void ValidationMessageClientImpl::Reset(TimerBase*) {
   overlay_ = nullptr;
   overlay_delegate_ = nullptr;
   page_->GetChromeClient().UnregisterPopupOpeningObserver(this);
+  ValidationMessageVisibilityChanged(anchor);
+}
+
+void ValidationMessageClientImpl::ValidationMessageVisibilityChanged(
+    const Element& element) {
+  Document& document = element.GetDocument();
+  if (AXObjectCache* cache = document.ExistingAXObjectCache())
+    cache->HandleValidationMessageVisibilityChanged(&element);
 }
 
 bool ValidationMessageClientImpl::IsValidationMessageVisible(
@@ -150,8 +167,15 @@ void ValidationMessageClientImpl::CheckAnchorStatus(TimerBase*) {
   IntRect new_anchor_rect_in_viewport =
       current_anchor_->VisibleBoundsInVisualViewport();
   if (new_anchor_rect_in_viewport.IsEmpty()) {
-    HideValidationMessage(*current_anchor_);
-    return;
+    // In a remote frame, VisibleBoundsInVisualViewport() returns an empty
+    // rectangle for a while after initial load or scrolling.  So we don't
+    // hide the validation bubble until we see a non-empty rectable.
+    if (!allow_initial_empty_anchor_) {
+      HideValidationMessage(*current_anchor_);
+      return;
+    }
+  } else {
+    allow_initial_empty_anchor_ = false;
   }
 }
 
@@ -166,16 +190,19 @@ void ValidationMessageClientImpl::WillOpenPopup() {
 }
 
 void ValidationMessageClientImpl::LayoutOverlay() {
-  if (!overlay_)
-    return;
-  CheckAnchorStatus(nullptr);
   if (overlay_)
-    overlay_->Update();
+    CheckAnchorStatus(nullptr);
 }
 
-void ValidationMessageClientImpl::PaintOverlay() {
+void ValidationMessageClientImpl::UpdatePrePaint() {
   if (overlay_)
-    overlay_->GetGraphicsLayer()->Paint(nullptr);
+    overlay_->UpdatePrePaint();
+}
+
+void ValidationMessageClientImpl::PaintOverlay(GraphicsContext& context) {
+  DCHECK(RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
+  if (overlay_)
+    overlay_->Paint(context);
 }
 
 void ValidationMessageClientImpl::Trace(blink::Visitor* visitor) {

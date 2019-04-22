@@ -39,13 +39,17 @@ TabRestorePageLoadMetricsObserver::OnStart(
   return IsTabRestore(navigation_handle) ? CONTINUE_OBSERVING : STOP_OBSERVING;
 }
 
-void TabRestorePageLoadMetricsObserver::OnLoadedResource(
-    const page_load_metrics::ExtraRequestCompleteInfo&
-        extra_request_complete_info) {
-  if (extra_request_complete_info.was_cached) {
-    cache_bytes_ += extra_request_complete_info.raw_body_bytes;
-  } else {
-    network_bytes_ += extra_request_complete_info.raw_body_bytes;
+void TabRestorePageLoadMetricsObserver::OnResourceDataUseObserved(
+    content::RenderFrameHost* rfh,
+    const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
+        resources) {
+  for (auto const& resource : resources) {
+    if (resource->is_complete) {
+      if (!resource->was_fetched_via_cache)
+        network_bytes_ += resource->encoded_body_length;
+      else
+        cache_bytes_ += resource->encoded_body_length;
+    }
   }
 }
 

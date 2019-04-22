@@ -271,7 +271,7 @@ class ExtensionAction {
   // those up to be called in the right order.
 
   // Maps tab_id to the number of active (applied-but-not-reverted)
-  // declarativeContent.ShowPageAction actions.
+  // declarativeContent.ShowAction actions.
   std::map<int, int> declarative_show_count_;
 
   // declarative_icon_[tab_id][declarative_rule_priority] is a vector of icon

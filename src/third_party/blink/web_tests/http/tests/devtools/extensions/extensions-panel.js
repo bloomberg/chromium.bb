@@ -28,7 +28,7 @@
     TestRunner.addResult("Status bar buttons state:");
     for (var i = 0; i < items.length; ++i) {
       var item = items[i];
-      if (item instanceof HTMLContentElement)
+      if (item instanceof HTMLSlotElement)
         continue;
       if (!(item instanceof HTMLButtonElement)) {
         TestRunner.addResult("status bar item " + i + " is not a button: " + item);

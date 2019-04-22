@@ -22,8 +22,8 @@ PushNotificationsListenTask::Delegate::~Delegate() {
 }
 
 PushNotificationsListenTask::PushNotificationsListenTask(
-    buzz::XmppTaskParentInterface* parent, Delegate* delegate)
-        : buzz::XmppTask(parent, buzz::XmppEngine::HL_TYPE),
+    jingle_xmpp::XmppTaskParentInterface* parent, Delegate* delegate)
+        : jingle_xmpp::XmppTask(parent, jingle_xmpp::XmppEngine::HL_TYPE),
           delegate_(delegate) {
   DCHECK(delegate_);
 }
@@ -36,7 +36,7 @@ int PushNotificationsListenTask::ProcessStart() {
 }
 
 int PushNotificationsListenTask::ProcessResponse() {
-  const buzz::XmlElement* stanza = NextStanza();
+  const jingle_xmpp::XmlElement* stanza = NextStanza();
   if (stanza == NULL) {
     return STATE_BLOCKED;
   }
@@ -57,15 +57,15 @@ int PushNotificationsListenTask::ProcessResponse() {
   //  </push>
   // </message>
 
-  const buzz::QName kQnPush(kPushNotificationsNamespace, "push");
-  const buzz::QName kQnChannel(buzz::STR_EMPTY, "channel");
-  const buzz::QName kQnData(kPushNotificationsNamespace, "data");
+  const jingle_xmpp::QName kQnPush(kPushNotificationsNamespace, "push");
+  const jingle_xmpp::QName kQnChannel(jingle_xmpp::STR_EMPTY, "channel");
+  const jingle_xmpp::QName kQnData(kPushNotificationsNamespace, "data");
 
-  const buzz::XmlElement* push_element = stanza->FirstNamed(kQnPush);
+  const jingle_xmpp::XmlElement* push_element = stanza->FirstNamed(kQnPush);
   if (push_element) {
     Notification notification;
     notification.channel = push_element->Attr(kQnChannel);
-    const buzz::XmlElement* data_element = push_element->FirstNamed(kQnData);
+    const jingle_xmpp::XmlElement* data_element = push_element->FirstNamed(kQnData);
     if (data_element) {
       const std::string& base64_encoded_data = data_element->BodyText();
       if (!base::Base64Decode(base64_encoded_data, &notification.data)) {
@@ -84,7 +84,7 @@ int PushNotificationsListenTask::ProcessResponse() {
   return STATE_RESPONSE;
 }
 
-bool PushNotificationsListenTask::HandleStanza(const buzz::XmlElement* stanza) {
+bool PushNotificationsListenTask::HandleStanza(const jingle_xmpp::XmlElement* stanza) {
   if (IsValidNotification(stanza)) {
     QueueStanza(stanza);
     return true;
@@ -93,10 +93,10 @@ bool PushNotificationsListenTask::HandleStanza(const buzz::XmlElement* stanza) {
 }
 
 bool PushNotificationsListenTask::IsValidNotification(
-    const buzz::XmlElement* stanza) {
+    const jingle_xmpp::XmlElement* stanza) {
   // We don't do much validation here, just check if the stanza is a message
   // stanza.
-  return (stanza->Name() == buzz::QN_MESSAGE);
+  return (stanza->Name() == jingle_xmpp::QN_MESSAGE);
 }
 
 }  // namespace notifier

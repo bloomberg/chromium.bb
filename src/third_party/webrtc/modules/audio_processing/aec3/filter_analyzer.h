@@ -19,7 +19,7 @@
 #include "api/array_view.h"
 #include "api/audio/echo_canceller3_config.h"
 #include "modules/audio_processing/aec3/aec3_common.h"
-#include "rtc_base/constructormagic.h"
+#include "rtc_base/constructor_magic.h"
 
 namespace webrtc {
 
@@ -55,6 +55,9 @@ class FilterAnalyzer {
   // Returns the preprocessed filter.
   rtc::ArrayView<const float> GetAdjustedFilter() const { return h_highpass_; }
 
+  // Public for testing purposes only.
+  void SetRegionToAnalyze(rtc::ArrayView<const float> filter_time_domain);
+
  private:
   void AnalyzeRegion(rtc::ArrayView<const float> filter_time_domain,
                      const RenderBuffer& render_buffer);
@@ -64,8 +67,6 @@ class FilterAnalyzer {
   void PreProcessFilter(rtc::ArrayView<const float> filter_time_domain);
 
   void ResetRegion();
-
-  void SetRegionToAnalyze(rtc::ArrayView<const float> filter_time_domain);
 
   struct FilterRegion {
     size_t start_sample_;
@@ -97,10 +98,8 @@ class FilterAnalyzer {
 
   static int instance_count_;
   std::unique_ptr<ApmDataDumper> data_dumper_;
-  const bool use_preprocessed_filter_;
   const bool bounded_erl_;
   const float default_gain_;
-  const bool use_incremental_analysis_;
   std::vector<float> h_highpass_;
   int delay_blocks_ = 0;
   size_t blocks_since_reset_ = 0;

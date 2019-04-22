@@ -14,6 +14,9 @@
           height: 2000px;
           background-color: grey;
       }
+      .outer {
+          transform: rotate(-90deg) translate(-200px, -900px);
+      }
       .grid {
           width: 1000px;
           display: grid;
@@ -41,20 +44,22 @@
           left: 0;
       }
       </style>
-      <div id="paddedGrid" class="grid padded fixed">
-          <div>c1</div>
-          <div>c2</div>
-          <div>c3</div>
-      </div>
-      <div id="parentGrid" class="parent fixed">
-          <div>Parent Cell 1</div>
-          <div>Parent Cell 2</div>
-          <div>Parent Cell 3</div>
-          <div id="nestedGrid" class="grid">
-              <div>c1</div>
-              <div>c2</div>
-              <div>c3</div>
-          </div>
+      <div class="outer">
+        <div id="paddedGrid" class="grid padded fixed">
+            <div>c1</div>
+            <div>c2</div>
+            <div>c3</div>
+        </div>
+        <div id="parentGrid" class="parent fixed">
+            <div>Parent Cell 1</div>
+            <div>Parent Cell 2</div>
+            <div>Parent Cell 3</div>
+            <div id="nestedGrid" class="grid">
+                <div>c1</div>
+                <div>c2</div>
+                <div>c3</div>
+            </div>
+        </div>
       </div>
 
       <p id="description">This test verifies the position and size of the highlight rectangles overlayed on an inspected CSS grid div.</p>

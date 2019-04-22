@@ -144,6 +144,13 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
 
   int RepetitionCount();
 
+  DarkModeClassification ClassifyImageForDarkMode(
+      const FloatRect& src_rect) override;
+
+  // Whether we are ready to record UMAs related to the number of bytes in
+  // images.
+  bool ShouldReportByteSizeUMAs(bool data_now_completely_received);
+
   std::unique_ptr<DeferredImageDecoder> decoder_;
   mutable IntSize size_;  // The size to use for the overall image (will just
                           // be the size of the first image).

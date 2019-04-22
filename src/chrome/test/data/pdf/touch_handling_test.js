@@ -15,7 +15,8 @@ function sendTouchStart(touches) {
     return new window.Touch(touchInit);
   });
 
-  viewer.plugin_.dispatchEvent(new TouchEvent('touchstart', {
+  const target = document.getElementById('content');
+  target.dispatchEvent(new TouchEvent('touchstart', {
     touches: touchList,
     targetTouches: touchList,
     changedtouches: touchList

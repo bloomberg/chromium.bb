@@ -10,33 +10,11 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
-#include "media/gpu/fake_command_buffer_helper.h"
+#include "media/base/simple_sync_token_client.h"
+#include "media/gpu/test/fake_command_buffer_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
-
-namespace {
-
-// TODO(sandersd): Should be part of //media, as it is used by
-// MojoVideoDecoderService (production code) as well.
-class StaticSyncTokenClient : public VideoFrame::SyncTokenClient {
- public:
-  explicit StaticSyncTokenClient(const gpu::SyncToken& sync_token)
-      : sync_token_(sync_token) {}
-
-  void GenerateSyncToken(gpu::SyncToken* sync_token) final {
-    *sync_token = sync_token_;
-  }
-
-  void WaitSyncToken(const gpu::SyncToken& sync_token) final {}
-
- private:
-  gpu::SyncToken sync_token_;
-
-  DISALLOW_COPY_AND_ASSIGN(StaticSyncTokenClient);
-};
-
-}  // namespace
 
 class PictureBufferManagerImplTest : public testing::Test {
  public:
@@ -88,7 +66,7 @@ class PictureBufferManagerImplTest : public testing::Test {
     gpu::SyncToken sync_token(gpu::GPU_IO,
                               gpu::CommandBufferId::FromUnsafeValue(1),
                               next_release_count_++);
-    StaticSyncTokenClient sync_token_client(sync_token);
+    SimpleSyncTokenClient sync_token_client(sync_token);
     video_frame->UpdateReleaseSyncToken(&sync_token_client);
     return sync_token;
   }
@@ -128,9 +106,9 @@ TEST_F(PictureBufferManagerImplTest, ReusePictureBuffer) {
   Initialize();
   PictureBuffer pb = CreateARGBPictureBuffer();
   scoped_refptr<VideoFrame> frame = CreateVideoFrame(pb.id());
+  gpu::SyncToken sync_token = GenerateSyncToken(frame);
 
   // Dropping the frame does not immediately trigger reuse.
-  gpu::SyncToken sync_token = GenerateSyncToken(frame);
   frame = nullptr;
   environment_.RunUntilIdle();
 
@@ -140,28 +118,28 @@ TEST_F(PictureBufferManagerImplTest, ReusePictureBuffer) {
   environment_.RunUntilIdle();
 }
 
-TEST_F(PictureBufferManagerImplTest, ReusePictureBuffer_MultipleTime) {
-  constexpr size_t kFrameNum = 3;
+TEST_F(PictureBufferManagerImplTest, ReusePictureBuffer_MultipleOutputs) {
+  constexpr size_t kOutputCountPerPictureBuffer = 3;
+
   Initialize();
   PictureBuffer pb = CreateARGBPictureBuffer();
   std::vector<scoped_refptr<VideoFrame>> frames;
-  for (size_t i = 0; i < kFrameNum; ++i) {
-    frames.push_back(CreateVideoFrame(pb.id()));
-  }
-
-  // Dropping the frame does not immediately trigger reuse.
   std::vector<gpu::SyncToken> sync_tokens;
-  for (auto& frame : frames) {
+  for (size_t i = 0; i < kOutputCountPerPictureBuffer; i++) {
+    scoped_refptr<VideoFrame> frame = CreateVideoFrame(pb.id());
+    frames.push_back(frame);
     sync_tokens.push_back(GenerateSyncToken(frame));
   }
+
+  // Dropping the frames does not immediately trigger reuse.
   frames.clear();
   environment_.RunUntilIdle();
 
-  // Completing the SyncToken wait does.
-  EXPECT_CALL(reuse_cb_, Run(pb.id())).Times(kFrameNum);
-  for (auto& sync_token : sync_tokens) {
+  // Completing the SyncToken waits does. (Clients are expected to wait for the
+  // output count to reach zero before actually reusing the picture buffer.)
+  EXPECT_CALL(reuse_cb_, Run(pb.id())).Times(kOutputCountPerPictureBuffer);
+  for (const auto& sync_token : sync_tokens)
     cbh_->ReleaseSyncToken(sync_token);
-  }
   environment_.RunUntilIdle();
 }
 
@@ -179,6 +157,7 @@ TEST_F(PictureBufferManagerImplTest, DismissPictureBuffer_Output) {
   Initialize();
   PictureBuffer pb = CreateARGBPictureBuffer();
   scoped_refptr<VideoFrame> frame = CreateVideoFrame(pb.id());
+  gpu::SyncToken sync_token = GenerateSyncToken(frame);
   pbm_->DismissPictureBuffer(pb.id());
 
   // Allocated textures should not be deleted while the VideoFrame exists.
@@ -186,16 +165,50 @@ TEST_F(PictureBufferManagerImplTest, DismissPictureBuffer_Output) {
   EXPECT_TRUE(cbh_->HasTexture(pb.client_texture_ids()[0]));
 
   // Or after it has been returned.
-  gpu::SyncToken sync_token = GenerateSyncToken(frame);
   frame = nullptr;
   environment_.RunUntilIdle();
   EXPECT_TRUE(cbh_->HasTexture(pb.client_texture_ids()[0]));
 
-  // Until the SyncToken has been waited for. (Reuse callback should not be
-  // called for a dismissed picture buffer.)
+  // The textures should be deleted once the the wait has completed. The reuse
+  // callback should not be called for a dismissed picture buffer.
   cbh_->ReleaseSyncToken(sync_token);
   environment_.RunUntilIdle();
   EXPECT_FALSE(cbh_->HasTexture(pb.client_texture_ids()[0]));
+}
+
+TEST_F(PictureBufferManagerImplTest, DismissPictureBuffer_MultipleOutputs) {
+  constexpr size_t kOutputCountPerPictureBuffer = 3;
+
+  Initialize();
+  PictureBuffer pb = CreateARGBPictureBuffer();
+  std::vector<scoped_refptr<VideoFrame>> frames;
+  std::vector<gpu::SyncToken> sync_tokens;
+  for (size_t i = 0; i < kOutputCountPerPictureBuffer; i++) {
+    scoped_refptr<VideoFrame> frame = CreateVideoFrame(pb.id());
+    frames.push_back(frame);
+    sync_tokens.push_back(GenerateSyncToken(frame));
+  }
+  pbm_->DismissPictureBuffer(pb.id());
+
+  // Allocated textures should not be deleted while the VideoFrames exists.
+  environment_.RunUntilIdle();
+  EXPECT_TRUE(cbh_->HasTexture(pb.client_texture_ids()[0]));
+
+  // Or after they have been returned.
+  frames.clear();
+  environment_.RunUntilIdle();
+  EXPECT_TRUE(cbh_->HasTexture(pb.client_texture_ids()[0]));
+
+  // The textures should be deleted only once all of the waits have completed.
+  for (size_t i = 0; i < kOutputCountPerPictureBuffer; i++) {
+    cbh_->ReleaseSyncToken(sync_tokens[i]);
+    environment_.RunUntilIdle();
+    if (i < kOutputCountPerPictureBuffer - 1) {
+      EXPECT_TRUE(cbh_->HasTexture(pb.client_texture_ids()[0]));
+    } else {
+      EXPECT_FALSE(cbh_->HasTexture(pb.client_texture_ids()[0]));
+    }
+  }
 }
 
 TEST_F(PictureBufferManagerImplTest, CanReadWithoutStalling) {

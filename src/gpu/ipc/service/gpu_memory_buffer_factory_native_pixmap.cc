@@ -105,32 +105,24 @@ GpuMemoryBufferFactoryNativePixmap::CreateImageForGpuMemoryBuffer(
 #if defined(USE_OZONE)
     pixmap = ui::OzonePlatform::GetInstance()
                  ->GetSurfaceFactoryOzone()
-                 ->CreateNativePixmapFromHandle(surface_handle, size, format,
-                                                handle.native_pixmap_handle);
+                 ->CreateNativePixmapFromHandle(
+                     surface_handle, size, format,
+                     std::move(handle.native_pixmap_handle));
 #else
     DCHECK_EQ(surface_handle, gpu::kNullSurfaceHandle);
-    pixmap = base::WrapRefCounted(
-        new gfx::NativePixmapDmaBuf(size, format, handle.native_pixmap_handle));
+    pixmap = base::WrapRefCounted(new gfx::NativePixmapDmaBuf(
+        size, format, std::move(handle.native_pixmap_handle)));
 #endif
     if (!pixmap.get()) {
       DLOG(ERROR) << "Failed to create pixmap from handle";
       return nullptr;
     }
-  } else {
-    for (const auto& fd : handle.native_pixmap_handle.fds) {
-      // Close the fd by wrapping it in a ScopedFD and letting it fall
-      // out of scope.
-      base::ScopedFD scoped_fd(fd.fd);
-    }
   }
 
-  unsigned internalformat = gpu::InternalFormatForGpuMemoryBufferFormat(format);
-  scoped_refptr<gl::GLImageNativePixmap> image(
-      new gl::GLImageNativePixmap(size, internalformat));
-  if (!image->Initialize(pixmap.get(), format)) {
+  auto image = base::MakeRefCounted<gl::GLImageNativePixmap>(size, format);
+  if (!image->Initialize(std::move(pixmap))) {
     LOG(ERROR) << "Failed to create GLImage " << size.ToString() << ", "
-               << gfx::BufferFormatToString(format) << ", |internalformat|: "
-               << gl::GLEnums::GetStringEnum(internalformat);
+               << gfx::BufferFormatToString(format);
     return nullptr;
   }
   return image;
@@ -164,13 +156,10 @@ GpuMemoryBufferFactoryNativePixmap::CreateAnonymousImage(
                << gfx::BufferFormatToString(format);
     return nullptr;
   }
-  unsigned internalformat = gpu::InternalFormatForGpuMemoryBufferFormat(format);
-  scoped_refptr<gl::GLImageNativePixmap> image(
-      new gl::GLImageNativePixmap(size, internalformat));
-  if (!image->Initialize(pixmap.get(), format)) {
+  auto image = base::MakeRefCounted<gl::GLImageNativePixmap>(size, format);
+  if (!image->Initialize(std::move(pixmap))) {
     LOG(ERROR) << "Failed to create GLImage " << size.ToString() << ", "
-               << gfx::BufferFormatToString(format) << ", |internalformat|: "
-               << gl::GLEnums::GetStringEnum(internalformat);
+               << gfx::BufferFormatToString(format);
     return nullptr;
   }
   *is_cleared = true;

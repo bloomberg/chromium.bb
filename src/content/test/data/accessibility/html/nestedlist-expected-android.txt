@@ -1,6 +1,6 @@
 android.webkit.WebView focusable focused scrollable
 ++android.view.View name='This is a multi-leveled list'
-++android.widget.ListView collection hierarchical item_count=4 row_count=4
+++android.widget.ListView collection hierarchical item_count=3 row_count=3
 ++++android.view.View collection_item
 ++++++android.view.View name='1. '
 ++++++android.view.View name='Sports'

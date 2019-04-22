@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="180dp"
+    android:layout_height="32dp"
+    android:layout_marginTop="11dp">
+
+    <ProgressBar
+        android:id="@+id/notouch_progress_bar_view"
+        style="@android:style/Widget.ProgressBar.Horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:progressDrawable="@drawable/notouch_progress_bar_drawable" />
+
+    <TextView
+        android:id="@+id/notouch_url_text_view"
+        style="@style/TextAppearance.NoTouchProgressBar"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:ellipsize="start"
+        android:gravity="center"
+        android:paddingEnd="16dp"
+        android:paddingStart="16dp"
+        android:singleLine="true" />
+
+</RelativeLayout>

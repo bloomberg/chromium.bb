@@ -50,9 +50,9 @@ class ParameterizedCharacterIteratorTest
   bool LayoutNGEnabled() const { return GetParam(); }
 };
 
-INSTANTIATE_TEST_CASE_P(All,
-                        ParameterizedCharacterIteratorTest,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All,
+                         ParameterizedCharacterIteratorTest,
+                         testing::Bool());
 
 TEST_P(ParameterizedCharacterIteratorTest, SubrangeWithReplacedElements) {
   static const char* body_content =

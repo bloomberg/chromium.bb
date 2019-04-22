@@ -10,16 +10,17 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "components/prefs/pref_service.h"
 
 namespace chromeos {
 
 MarketingOptInScreen::MarketingOptInScreen(
-    BaseScreenDelegate* base_screen_delegate,
-    MarketingOptInScreenView* view)
-    : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_MARKETING_OPT_IN),
-      view_(view) {
+    MarketingOptInScreenView* view,
+    const base::RepeatingClosure& exit_callback)
+    : BaseScreen(OobeScreen::SCREEN_MARKETING_OPT_IN),
+      view_(view),
+      exit_callback_(exit_callback) {
   DCHECK(view_);
   view_->Bind(this);
 }
@@ -38,7 +39,7 @@ void MarketingOptInScreen::Show() {
           chromeos::switches::kEnableMarketingOptInScreen) ||
       prefs->GetBoolean(prefs::kOobeMarketingOptInScreenFinished) ||
       chrome_user_manager_util::IsPublicSessionOrEphemeralLogin()) {
-    Finish(ScreenExitCode::MARKETING_OPT_IN_FINISHED);
+    exit_callback_.Run();
     return;
   }
   view_->Show();
@@ -51,7 +52,7 @@ void MarketingOptInScreen::Hide() {
 void MarketingOptInScreen::OnAllSet(bool play_communications_opt_in,
                                     bool tips_communications_opt_in) {
   // TODO(https://crbug.com/852557)
-  Finish(ScreenExitCode::MARKETING_OPT_IN_FINISHED);
+  exit_callback_.Run();
 }
 
 }  // namespace chromeos

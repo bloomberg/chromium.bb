@@ -2,12 +2,6 @@
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 
-<style>
-.hideAllContainers .container {
-    display: none;
-}
-</style>
-
 <div class="container">
     <input id="text1" type="text">
 </div>
@@ -211,9 +205,4 @@ test(function(t) {
     assert_equals(axTextInput16.name, "");
     assert_equals(axTextInput16.nameFrom, "");
 }, "Div without textbox role and aria-placeholder");
-</script>
-
-<script>
-if (window.testRunner)
-    document.body.className = "hideAllContainers";
 </script>

@@ -6,14 +6,17 @@ var ClientRenderer = (function() {
   var ClientRenderer = function() {
     this.playerListElement = $('player-list');
     var audioTableElement = $('audio-property-table');
-    if (audioTableElement)
+    if (audioTableElement) {
       this.audioPropertiesTable = audioTableElement.querySelector('tbody');
+    }
     var playerTableElement = $('player-property-table');
-    if (playerTableElement)
+    if (playerTableElement) {
       this.playerPropertiesTable = playerTableElement.querySelector('tbody');
+    }
     var logElement = $('log');
-    if (logElement)
+    if (logElement) {
       this.logTable = logElement.querySelector('tbody');
+    }
     this.graphElement = $('graphs');
     this.audioPropertyName = $('audio-property-name');
     this.audioFocusSessionListElement_ = $('audio-focus-session-list');
@@ -35,13 +38,15 @@ var ClientRenderer = (function() {
       return true;
     };
     this.filterText = $('filter-text');
-    if (this.filterText)
+    if (this.filterText) {
       this.filterText.onkeyup = this.onTextChange_.bind(this);
+    }
     this.clipboardDialog = $('clipboard-dialog');
 
     this.clipboardTextarea = $('clipboard-textarea');
-    if (this.clipboardTextarea)
+    if (this.clipboardTextarea) {
       this.clipboardTextarea.onblur = this.hideClipboard_.bind(this);
+    }
     var clipboardButtons = document.getElementsByClassName('copy-button');
     if (clipboardButtons) {
       for (var i = 0; i < clipboardButtons.length; i++) {
@@ -50,8 +55,9 @@ var ClientRenderer = (function() {
     }
 
     this.saveLogButton = $('save-log-button');
-    if (this.saveLogButton)
+    if (this.saveLogButton) {
       this.saveLogButton.onclick = this.saveLog_.bind(this);
+    }
 
     this.hiddenKeys = ['component_id', 'component_type', 'owner_id'];
 
@@ -87,8 +93,9 @@ var ClientRenderer = (function() {
     radioButton.name = groupName;
 
     buttonLabel.classList.add(ClientRenderer.Css_.SELECTABLE_BUTTON);
-    if (isDestructed)
+    if (isDestructed) {
       buttonLabel.classList.add(ClientRenderer.Css_.DESTRUCTED_PLAYER);
+    }
     buttonLabel.setAttribute('for', radioButton.id);
 
     var fragment = document.createDocumentFragment();
@@ -213,8 +220,9 @@ var ClientRenderer = (function() {
         this.drawProperties_(player.properties, this.playerPropertiesTable);
         this.drawLog_();
       }
-      if (key === 'event' && value === 'WEBMEDIAPLAYER_DESTROYED')
+      if (key === 'event' && value === 'WEBMEDIAPLAYER_DESTROYED') {
         player.destructed = true;
+      }
       if ([
             'url', 'frame_url', 'frame_title', 'audio_codec_name',
             'video_codec_name', 'width', 'height', 'event'
@@ -224,8 +232,9 @@ var ClientRenderer = (function() {
     },
 
     createVideoCaptureFormatTable: function(formats) {
-      if (!formats || formats.length == 0)
+      if (!formats || formats.length == 0) {
         return document.createTextNode('No formats');
+      }
 
       var table = document.createElement('table');
       var thead = document.createElement('thead');
@@ -390,10 +399,12 @@ var ClientRenderer = (function() {
         label.appendChild(nameNode);
 
         var frame = [];
-        if (p.frame_title)
+        if (p.frame_title) {
           frame.push(p.frame_title);
-        if (p.frame_url)
+        }
+        if (p.frame_url) {
           frame.push(p.frame_url);
+        }
         var frameText = frame.join(' - ');
         if (frameText) {
           var frameNode = document.createElement('div');
@@ -403,16 +414,21 @@ var ClientRenderer = (function() {
         }
 
         var desc = [];
-        if (p.width && p.height)
+        if (p.width && p.height) {
           desc.push(p.width + 'x' + p.height);
-        if (p.video_codec_name)
+        }
+        if (p.video_codec_name) {
           desc.push(p.video_codec_name);
-        if (p.video_codec_name && p.audio_codec_name)
+        }
+        if (p.video_codec_name && p.audio_codec_name) {
           desc.push('+');
-        if (p.audio_codec_name)
+        }
+        if (p.audio_codec_name) {
           desc.push(p.audio_codec_name);
-        if (p.event)
+        }
+        if (p.event) {
           desc.push('(' + p.event + ')');
+        }
         var descText = desc.join(' ');
         if (descText) {
           var descNode = document.createElement('div');
@@ -458,8 +474,9 @@ var ClientRenderer = (function() {
       var sortedKeys = Object.keys(propertyMap).sort();
       for (var i = 0; i < sortedKeys.length; ++i) {
         var key = sortedKeys[i];
-        if (this.hiddenKeys.indexOf(key) >= 0)
+        if (this.hiddenKeys.indexOf(key) >= 0) {
           continue;
+        }
 
         var value = propertyMap[key];
         var row = propertiesTable.insertRow(-1);
@@ -508,8 +525,9 @@ var ClientRenderer = (function() {
     },
 
     hideClipboard_: function() {
-      if (this.clipboardDialog.open)
+      if (this.clipboardDialog.open) {
         this.clipboardDialog.close();
+      }
     },
 
     copyToClipboard_: function() {

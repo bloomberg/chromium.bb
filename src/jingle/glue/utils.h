@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "third_party/webrtc/rtc_base/ipaddress.h"
+#include "third_party/webrtc/rtc_base/ip_address.h"
 
 namespace net {
 class IPAddress;

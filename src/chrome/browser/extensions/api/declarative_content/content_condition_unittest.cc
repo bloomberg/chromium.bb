@@ -81,7 +81,7 @@ TEST(DeclarativeContentConditionTest, UnknownPredicateName) {
   std::string error;
   std::unique_ptr<ContentCondition> condition = CreateContentCondition(
       nullptr, std::map<std::string, ContentPredicateFactory*>(),
-      *base::test::ParseJson(
+      *base::test::ParseJsonDeprecated(
           "{\n"
           "  \"invalid\": \"foobar\",\n"
           "  \"instanceType\": \"declarativeContent.PageStateMatcher\",\n"
@@ -99,7 +99,7 @@ TEST(DeclarativeContentConditionTest,
   std::string error;
   std::unique_ptr<ContentCondition> condition = CreateContentCondition(
       nullptr, predicate_factories,
-      *base::test::ParseJson(
+      *base::test::ParseJsonDeprecated(
           "{\n"
           "  \"test_predicate\": \"\",\n"
           "  \"instanceType\": \"declarativeContent.PageStateMatcher\",\n"
@@ -117,7 +117,7 @@ TEST(DeclarativeContentConditionTest, AllSpecifiedPredicatesCreated) {
   std::string error;
   std::unique_ptr<ContentCondition> condition = CreateContentCondition(
       nullptr, predicate_factories,
-      *base::test::ParseJson(
+      *base::test::ParseJsonDeprecated(
           "{\n"
           "  \"test_predicate1\": {},\n"
           "  \"test_predicate2\": [],\n"

@@ -6,29 +6,15 @@
 
 #include "fxjs/xfa/cjx_script.h"
 
-#include "fxjs/cfxjse_value.h"
+#include "fxjs/xfa/cfxjse_value.h"
 #include "xfa/fxfa/parser/cxfa_script.h"
 
 CJX_Script::CJX_Script(CXFA_Script* node) : CJX_Node(node) {}
 
 CJX_Script::~CJX_Script() = default;
 
-void CJX_Script::use(CFXJSE_Value* pValue,
-                     bool bSetting,
-                     XFA_Attribute eAttribute) {
-  Script_Attribute_String(pValue, bSetting, eAttribute);
-}
-
-void CJX_Script::contentType(CFXJSE_Value* pValue,
-                             bool bSetting,
-                             XFA_Attribute eAttribute) {
-  Script_Attribute_String(pValue, bSetting, eAttribute);
-}
-
-void CJX_Script::runAt(CFXJSE_Value* pValue,
-                       bool bSetting,
-                       XFA_Attribute eAttribute) {
-  Script_Attribute_String(pValue, bSetting, eAttribute);
+bool CJX_Script::DynamicTypeIs(TypeTag eType) const {
+  return eType == static_type__ || ParentType__::DynamicTypeIs(eType);
 }
 
 void CJX_Script::stateless(CFXJSE_Value* pValue,
@@ -39,28 +25,4 @@ void CJX_Script::stateless(CFXJSE_Value* pValue,
     return;
   }
   pValue->SetString(FX_UTF8Encode(WideStringView(L"0", 1)).AsStringView());
-}
-
-void CJX_Script::defaultValue(CFXJSE_Value* pValue,
-                              bool bSetting,
-                              XFA_Attribute eAttribute) {
-  Script_Som_DefaultValue(pValue, bSetting, eAttribute);
-}
-
-void CJX_Script::binding(CFXJSE_Value* pValue,
-                         bool bSetting,
-                         XFA_Attribute eAttribute) {
-  Script_Attribute_String(pValue, bSetting, eAttribute);
-}
-
-void CJX_Script::usehref(CFXJSE_Value* pValue,
-                         bool bSetting,
-                         XFA_Attribute eAttribute) {
-  Script_Attribute_String(pValue, bSetting, eAttribute);
-}
-
-void CJX_Script::value(CFXJSE_Value* pValue,
-                       bool bSetting,
-                       XFA_Attribute eAttribute) {
-  defaultValue(pValue, bSetting, eAttribute);
 }

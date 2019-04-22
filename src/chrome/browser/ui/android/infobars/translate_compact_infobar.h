@@ -38,9 +38,6 @@ class TranslateCompactInfoBar
                                 int option,
                                 jboolean value);
 
-  // Check whether we should automatically trigger "Always Translate".
-  bool ShouldAutoAlwaysTranslate();
-
   // Check whether we should automatically trigger "Never Translate Language".
   jboolean ShouldAutoNeverTranslate(
       JNIEnv* env,
@@ -58,6 +55,8 @@ class TranslateCompactInfoBar
   // The function will be called when the translate infobar is dismissed.
   // If it's true, we will record a declined event.
   bool IsDeclinedByUser() override;
+  void OnTranslateInfoBarDelegateDestroyed(
+      translate::TranslateInfoBarDelegate* delegate) override;
 
  private:
   // InfoBarAndroid:
@@ -70,22 +69,6 @@ class TranslateCompactInfoBar
   // Get the value of a specified finch parameter in TranslateCompactUI.  If the
   // finch parameter does not exist, default_value will be returned.
   int GetParam(const std::string& paramName, int default_value);
-  // Get the value of the finch parameter: translate_auto_always_threshold.
-  // If the number of times a user consecutively translates is equal to this
-  // number, infobar will automatically trigger "Always Translate".
-  int AutoAlwaysThreshold();
-  // Get the value of the finch parameter: translate_auto_never_threshold.
-  // If the number of times a user consecutively denies the translate infobar is
-  // equal to this number, infobar will automatically trigger "Never Translate".
-  int AutoNeverThreshold();
-  // Get the value of the finch parameter: translate_max_number_of_auto_always.
-  // This is the maximum number of times to trigger "Always Translate"
-  // automatically.
-  int MaxNumberOfAutoAlways();
-  // Get the value of the finch parameter: translate_max_number_of_auto_never.
-  // This is the maximum number of times to trigger "Never Translate"
-  // automatically.
-  int MaxNumberOfAutoNever();
   // Get the value of the finch parameter: translate_tab_default_text_color.
   // Default value is 0, which means using TabLayout default color.
   // If it's not 0, we will set the text color manually based on the value.

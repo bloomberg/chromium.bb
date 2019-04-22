@@ -82,7 +82,6 @@ base::android::ScopedJavaLocalRef<jobject> DownloadProgressInfoBar::GetTab(
 }
 
 void JNI_DownloadProgressInfoBar_Create(JNIEnv* env,
-                                        const JavaParamRef<jclass>& j_caller,
                                         const JavaParamRef<jobject>& j_client,
                                         const JavaParamRef<jobject>& j_tab,
                                         const JavaParamRef<jobject>& j_data) {

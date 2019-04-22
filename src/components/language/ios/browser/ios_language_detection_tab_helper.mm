@@ -7,29 +7,36 @@
 #include "components/language/core/browser/url_language_histogram.h"
 #include "components/translate/core/common/language_detection_details.h"
 
-DEFINE_WEB_STATE_USER_DATA_KEY(language::IOSLanguageDetectionTabHelper);
-
 namespace language {
 
 IOSLanguageDetectionTabHelper::IOSLanguageDetectionTabHelper(
-    const Callback& translate_callback,
     UrlLanguageHistogram* const url_language_histogram)
-    : translate_callback_(translate_callback),
-      url_language_histogram_(url_language_histogram) {}
+    : url_language_histogram_(url_language_histogram) {}
 
-IOSLanguageDetectionTabHelper::~IOSLanguageDetectionTabHelper() = default;
+IOSLanguageDetectionTabHelper::~IOSLanguageDetectionTabHelper() {
+  for (auto& observer : observer_list_) {
+    observer.IOSLanguageDetectionTabHelperWasDestroyed(this);
+  }
+}
 
 // static
 void IOSLanguageDetectionTabHelper::CreateForWebState(
     web::WebState* web_state,
-    const Callback& translate_callback,
     UrlLanguageHistogram* const url_language_histogram) {
   DCHECK(web_state);
   if (!FromWebState(web_state)) {
     web_state->SetUserData(UserDataKey(),
                            base::WrapUnique(new IOSLanguageDetectionTabHelper(
-                               translate_callback, url_language_histogram)));
+                               url_language_histogram)));
   }
+}
+
+void IOSLanguageDetectionTabHelper::AddObserver(Observer* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void IOSLanguageDetectionTabHelper::RemoveObserver(Observer* observer) {
+  observer_list_.RemoveObserver(observer);
 }
 
 void IOSLanguageDetectionTabHelper::OnLanguageDetermined(
@@ -39,18 +46,11 @@ void IOSLanguageDetectionTabHelper::OnLanguageDetermined(
     url_language_histogram_->OnPageVisited(details.cld_language);
   }
 
-  // Update translate.
-  translate_callback_.Run(details);
-
-  // Optionally update testing callback.
-  if (extra_callback_for_testing_) {
-    extra_callback_for_testing_.Run(details);
+  for (auto& observer : observer_list_) {
+    observer.OnLanguageDetermined(details);
   }
 }
 
-void IOSLanguageDetectionTabHelper::SetExtraCallbackForTesting(
-    const Callback& callback) {
-  extra_callback_for_testing_ = callback;
-}
+WEB_STATE_USER_DATA_KEY_IMPL(IOSLanguageDetectionTabHelper)
 
 }  // namespace language

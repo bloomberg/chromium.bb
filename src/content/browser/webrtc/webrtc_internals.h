@@ -7,8 +7,8 @@
 
 #include <memory>
 #include <string>
+#include <unordered_set>
 
-#include "base/containers/hash_tables.h"
 #include "base/containers/queue.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
@@ -245,7 +245,7 @@ class CONTENT_EXPORT WebRTCInternals : public RenderProcessHostObserver,
   const bool should_block_power_saving_;
 
   // Set of render process hosts that |this| is registered as an observer on.
-  base::hash_set<int> render_process_id_set_;
+  std::unordered_set<int> render_process_id_set_;
 
   // Used to bulk up updates that we send to javascript.
   // The class owns the value/dictionary and command name of an update.

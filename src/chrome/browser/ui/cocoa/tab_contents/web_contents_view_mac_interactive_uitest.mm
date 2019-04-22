@@ -6,6 +6,7 @@
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -41,20 +42,17 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewMacInteractiveTest, SelectMenuLifetime) {
               usingBlock:^(NSNotification* notification) {
                 first_item.reset(
                     [[[[notification object] itemAtIndex:0] title] copy]);
-                // The nested run loop runs next. Ensure the outer run loop
-                // exits once the inner run loop quits.
-                outer_run_loop_for_block->Quit();
-
                 // We can't cancel tracking until after
                 // NSMenuDidBeginTrackingNotification is processed (i.e. after
                 // this block returns). So post a task to run on the inner run
                 // loop which will close the tab (and cancel tracking in
-                // ~PopupMenuHelper()).
+                // ~PopupMenuHelper()) and quit the outer run loop to continue
+                // the test.
                 base::ThreadTaskRunnerHandle::Get()->PostTask(
-                    FROM_HERE,
-                    base::Bind(
-                        base::IgnoreResult(&TabStripModel::CloseWebContentsAt),
-                        base::Unretained(browser()->tab_strip_model()), 1, 0));
+                    FROM_HERE, base::BindLambdaForTesting([&] {
+                      browser()->tab_strip_model()->CloseWebContentsAt(1, 0);
+                      outer_run_loop_for_block->Quit();
+                    }));
               }];
 
   // Send a space key to open the <select>.

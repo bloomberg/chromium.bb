@@ -21,6 +21,10 @@
 #include <windows.h>
 #endif
 
+namespace base {
+class Time;
+}
+
 namespace crashpad {
 class CrashpadClient;
 class CrashReportDatabase;
@@ -130,8 +134,17 @@ void RequestSingleCrashUpload(const std::string& local_id);
 
 void DumpWithoutCrashing();
 
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+// Logs message and immediately crashes the current process without triggering a
+// crash dump.
+void CrashWithoutDumping(const std::string& message);
+#endif  // defined(OS_LINUX) || defined(OS_ANDROID)
+
 // Returns the Crashpad database path, only valid in the browser.
 base::FilePath GetCrashpadDatabasePath();
+
+// Deletes any reports that were recorded or uploaded within the time range.
+void ClearReportsBetween(const base::Time& begin, const base::Time& end);
 
 // The implementation function for GetReports.
 void GetReportsImpl(std::vector<Report>* reports);
@@ -142,11 +155,22 @@ void RequestSingleCrashUploadImpl(const std::string& local_id);
 // The implementation function for GetCrashpadDatabasePath.
 base::FilePath::StringType::const_pointer GetCrashpadDatabasePathImpl();
 
+// The implementation function for ClearReportsBetween.
+void ClearReportsBetweenImpl(time_t begin, time_t end);
+
 #if defined(OS_MACOSX)
 // Captures a minidump for the process named by its |task_port| and stores it
 // in the current crash report database.
 void DumpProcessWithoutCrashing(task_t task_port);
 #endif
+
+#if defined(OS_ANDROID)
+// This is used by WebView to generate a dump on behalf of the embedding app.
+// This function can only be called from the browser process. Returns `true` on
+// success.
+class CrashReporterClient;
+bool DumpWithoutCrashingForClient(CrashReporterClient* client);
+#endif  // OS_ANDROID
 
 namespace internal {
 
@@ -159,12 +183,6 @@ void GetPlatformCrashpadAnnotations(
 // The thread functions that implement the InjectDumpForHungInput in the
 // target process.
 DWORD WINAPI DumpProcessForHungInputThread(void* param);
-
-#if defined(ARCH_CPU_X86_64)
-// V8 support functions.
-void RegisterNonABICompliantCodeRangeImpl(void* start, size_t size_in_bytes);
-void UnregisterNonABICompliantCodeRangeImpl(void* start);
-#endif  // defined(ARCH_CPU_X86_64)
 
 #endif  // defined(OS_WIN)
 

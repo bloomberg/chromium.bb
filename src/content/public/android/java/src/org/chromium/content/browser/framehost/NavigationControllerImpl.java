@@ -246,6 +246,12 @@ import org.chromium.content_public.common.ResourceRequestBody;
         nativeSetEntryExtraData(mNativeNavigationControllerAndroid, index, key, value);
     }
 
+    @Override
+    public boolean isEntryMarkedToBeSkipped(int index) {
+        if (mNativeNavigationControllerAndroid == 0) return false;
+        return nativeIsEntryMarkedToBeSkipped(mNativeNavigationControllerAndroid, index);
+    }
+
     @CalledByNative
     private static void addToNavigationHistory(Object history, Object navigationEntry) {
         ((NavigationHistory) history).addEntry((NavigationEntry) navigationEntry);
@@ -253,9 +259,10 @@ import org.chromium.content_public.common.ResourceRequestBody;
 
     @CalledByNative
     private static NavigationEntry createNavigationEntry(int index, String url, String virtualUrl,
-            String originalUrl, String referrerUrl, String title, Bitmap favicon, int transition) {
-        return new NavigationEntry(
-                index, url, virtualUrl, originalUrl, referrerUrl, title, favicon, transition);
+            String originalUrl, String referrerUrl, String title, Bitmap favicon, int transition,
+            long timestamp) {
+        return new NavigationEntry(index, url, virtualUrl, originalUrl, referrerUrl, title, favicon,
+                transition, timestamp);
     }
 
     private native boolean nativeCanGoBack(long nativeNavigationControllerAndroid);
@@ -302,4 +309,6 @@ import org.chromium.content_public.common.ResourceRequestBody;
             long nativeNavigationControllerAndroid, int index, String key);
     private native void nativeSetEntryExtraData(
             long nativeNavigationControllerAndroid, int index, String key, String value);
+    private native boolean nativeIsEntryMarkedToBeSkipped(
+            long nativeNavigationControllerAndroid, int index);
 }

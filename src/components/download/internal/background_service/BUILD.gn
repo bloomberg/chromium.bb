@@ -38,8 +38,6 @@ static_library("internal") {
     "driver_entry.h",
     "empty_file_monitor.cc",
     "empty_file_monitor.h",
-    "empty_task_scheduler.cc",
-    "empty_task_scheduler.h",
     "entry.cc",
     "entry.h",
     "entry_utils.cc",
@@ -72,10 +70,6 @@ static_library("internal") {
     "scheduler/device_status.h",
     "scheduler/device_status_listener.cc",
     "scheduler/device_status_listener.h",
-    "scheduler/network_status_listener.cc",
-    "scheduler/network_status_listener.h",
-    "scheduler/network_status_listener_impl.cc",
-    "scheduler/network_status_listener_impl.h",
     "scheduler/scheduler.h",
     "scheduler/scheduler_impl.cc",
     "scheduler/scheduler_impl.h",
@@ -91,6 +85,7 @@ static_library("internal") {
   deps = [
     "//base",
     "//components/download/internal/background_service/proto",
+    "//components/download/network",
     "//components/download/public/background_service:public",
     "//components/leveldb_proto",
     "//net",
@@ -102,8 +97,6 @@ static_library("internal") {
     sources += [
       "android/battery_status_listener_android.cc",
       "android/battery_status_listener_android.h",
-      "android/network_status_listener_android.cc",
-      "android/network_status_listener_android.h",
     ]
 
     deps += [ ":jni_headers" ]
@@ -113,18 +106,13 @@ static_library("internal") {
     sources += [
       "scheduler/battery_status_listener_mac.cc",
       "scheduler/battery_status_listener_mac.h",
-      "scheduler/network_status_listener_mac.cc",
-      "scheduler/network_status_listener_mac.h",
     ]
   }
 }
 
 if (is_android) {
   android_library("internal_java") {
-    java_files = [
-      "android/java/src/org/chromium/components/download/internal/BatteryStatusListenerAndroid.java",
-      "android/java/src/org/chromium/components/download/internal/NetworkStatusListenerAndroid.java",
-    ]
+    java_files = [ "android/java/src/org/chromium/components/download/internal/BatteryStatusListenerAndroid.java" ]
 
     deps = [
       "//base:base_java",
@@ -136,7 +124,6 @@ if (is_android) {
     visibility = [ ":*" ]
     sources = [
       "android/java/src/org/chromium/components/download/internal/BatteryStatusListenerAndroid.java",
-      "android/java/src/org/chromium/components/download/internal/NetworkStatusListenerAndroid.java",
     ]
     jni_package = "components/download/internal/background_service"
   }
@@ -167,6 +154,7 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//components/download/internal/background_service/proto",
     "//components/download/internal/background_service/test:test_support",
+    "//components/download/network",
     "//components/download/public/background_service/test:test_support",
     "//components/leveldb_proto:test_support",
     "//services/network:test_support",

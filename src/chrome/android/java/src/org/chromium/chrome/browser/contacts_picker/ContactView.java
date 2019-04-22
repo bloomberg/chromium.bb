@@ -7,18 +7,19 @@ package org.chromium.chrome.browser.contacts_picker;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.util.AttributeSet;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.TextView;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.selection.SelectableItemView;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
+import org.chromium.ui.modaldialog.ModalDialogManager;
+import org.chromium.ui.modaldialog.ModalDialogProperties;
+import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.List;
 
@@ -26,9 +27,6 @@ import java.util.List;
  * A container class for a view showing a contact in the Contacts Picker.
  */
 public class ContactView extends SelectableItemView<ContactDetails> {
-    // The length of the fade in animation (in ms).
-    private static final int IMAGE_FADE_IN_DURATION = 150;
-
     // Our context.
     private Context mContext;
 
@@ -41,18 +39,17 @@ public class ContactView extends SelectableItemView<ContactDetails> {
     // The details of the contact shown.
     private ContactDetails mContactDetails;
 
-    // The image view containing the profile image of the contact, or the abbreviated letters of the
-    // contact's name.
-    private ImageView mImage;
-
-    // The control that signifies the contact has been selected.
-    private ImageView mSelectedView;
-
     // The display name of the contact.
     public TextView mDisplayName;
 
     // The contact details for the contact.
     public TextView mDetailsView;
+
+    // The dialog manager to use to show contact details.
+    private ModalDialogManager mManager;
+
+    // The property model listing the contents of the contact details dialog.
+    private PropertyModel mModel;
 
     /**
      * Constructor for inflating from XML.
@@ -60,32 +57,50 @@ public class ContactView extends SelectableItemView<ContactDetails> {
     public ContactView(Context context, AttributeSet attrs) {
         super(context, attrs);
         mContext = context;
+
+        setSelectionOnLongClick(false);
     }
 
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
 
-        mImage = (ImageView) findViewById(R.id.image);
-        mDisplayName = (TextView) findViewById(R.id.name);
-        mDetailsView = (TextView) findViewById(R.id.details);
-        mSelectedView = (ImageView) findViewById(R.id.selected);
+        mDisplayName = findViewById(R.id.title);
+        mDetailsView = findViewById(R.id.description);
+        mDetailsView.setMaxLines(2);
     }
 
     @Override
     public void onClick() {
-        // Clicks are disabled until initialize() has been called.
-        if (mContactDetails == null) return;
-
-        // The SelectableItemView expects long press to be the selection event, but this class wants
-        // that to happen on click instead.
-        onLongClick(this);
+        // Selection is handled in onClick for the parent class.
+        assert false;
     }
 
     @Override
-    public void setChecked(boolean checked) {
-        super.setChecked(checked);
-        updateSelectionState();
+    public boolean onLongClick(View view) {
+        mManager = mCategoryView.getActivity().getModalDialogManager();
+        ModalDialogProperties.Controller controller = new ModalDialogProperties.Controller() {
+            @Override
+            public void onClick(PropertyModel model, int buttonType) {
+                mManager.dismissDialog(model, buttonType);
+                mModel = null;
+                mManager = null;
+            }
+
+            @Override
+            public void onDismiss(PropertyModel model, int dismissalCause) {}
+        };
+        mModel = new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
+                         .with(ModalDialogProperties.CONTROLLER, controller)
+                         .with(ModalDialogProperties.TITLE, mContactDetails.getDisplayName())
+                         .with(ModalDialogProperties.MESSAGE,
+                                 mContactDetails.getContactDetailsAsString(true, null))
+                         .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, mContext.getResources(),
+                                 R.string.close)
+                         .build();
+        mModel.set(ModalDialogProperties.TITLE_ICON, getIconDrawable());
+        mManager.showDialog(mModel, ModalDialogManager.ModalDialogType.APP);
+        return true;
     }
 
     @Override
@@ -100,8 +115,6 @@ public class ContactView extends SelectableItemView<ContactDetails> {
         boolean selected = selectedItems.contains(mContactDetails);
         boolean checked = super.isChecked();
         if (selected != checked) super.toggle();
-
-        updateSelectionState();
     }
 
     /**
@@ -129,16 +142,19 @@ public class ContactView extends SelectableItemView<ContactDetails> {
 
         String displayName = contactDetails.getDisplayName();
         mDisplayName.setText(displayName);
-        mDetailsView.setText(contactDetails.getContactDetailsAsString());
+
+        String details = contactDetails.getContactDetailsAsString(
+                /*longVersion=*/false, mContext.getResources());
+        mDetailsView.setText(details);
+        mDetailsView.setVisibility(details.isEmpty() ? View.GONE : View.VISIBLE);
+
         if (icon == null) {
             icon = mCategoryView.getIconGenerator().generateIconForText(
                     contactDetails.getDisplayNameAbbreviation());
-            mImage.setImageBitmap(icon);
+            setIconDrawable(new BitmapDrawable(getResources(), icon));
         } else {
             setIconBitmap(icon);
         }
-
-        updateSelectionState();
     }
 
     /**
@@ -149,9 +165,7 @@ public class ContactView extends SelectableItemView<ContactDetails> {
         Resources resources = mContext.getResources();
         RoundedBitmapDrawable drawable = RoundedBitmapDrawableFactory.create(resources, icon);
         drawable.setCircular(true);
-        mImage.setImageDrawable(drawable);
-        mImage.setAlpha(0.0f);
-        mImage.animate().alpha(1.0f).setDuration(IMAGE_FADE_IN_DURATION).start();
+        setIconDrawable(drawable);
     }
 
     /**
@@ -159,26 +173,8 @@ public class ContactView extends SelectableItemView<ContactDetails> {
      * re-used.
      */
     private void resetTile() {
-        mImage.setImageBitmap(null);
+        setIconDrawable(null);
         mDisplayName.setText("");
         mDetailsView.setText("");
-        mSelectedView.setVisibility(View.GONE);
-    }
-
-    /**
-     * Updates the selection controls for this view.
-     */
-    private void updateSelectionState() {
-        boolean checked = super.isChecked();
-
-        if (checked) {
-            Resources resources = mContext.getResources();
-            setBackgroundColor(ApiCompatibilityUtils.getColor(
-                    resources, R.color.selectable_list_item_highlight_color));
-        } else {
-            setBackgroundColor(Color.TRANSPARENT);
-        }
-
-        mSelectedView.setVisibility(checked ? View.VISIBLE : View.GONE);
     }
 }

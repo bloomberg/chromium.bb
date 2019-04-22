@@ -3,6 +3,9 @@
 <script src=/resources/testharness.js></script>
 <script src=/resources/testharnessreport.js></script>
 <script src=../resources/feature-policy-permissions-test.js></script>
+<script src="/gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="/gen/media/midi/midi_service.mojom.js"></script>
+<script src="mock-midiservice.js"></script>
 <script>
 'use strict';
 
@@ -10,7 +13,10 @@ run_permission_default_header_policy_tests(
   location.protocol + '//localhost:' + location.port,
   'midi',
   'SecurityError',
-  function() { return navigator.requestMIDIAccess(); });
+  function() {
+    return navigator.requestMIDIAccess();
+  }
+);
 
 </script>
 </body>

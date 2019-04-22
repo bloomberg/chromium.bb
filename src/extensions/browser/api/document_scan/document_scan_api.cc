@@ -4,6 +4,7 @@
 
 #include "extensions/browser/api/document_scan/document_scan_api.h"
 
+#include "base/bind.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_thread.h"

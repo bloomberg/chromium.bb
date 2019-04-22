@@ -23,7 +23,6 @@
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_auth_scheme.h"
 #include "net/log/test_net_log.h"
-#include "net/socket/client_socket_handle.h"
 #include "net/socket/fuzzed_socket.h"
 #include "net/socket/next_proto.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -44,10 +43,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
       new net::FuzzedSocket(&data_provider, &test_net_log));
   CHECK_EQ(net::OK, fuzzed_socket->Connect(callback.callback()));
 
-  std::unique_ptr<net::ClientSocketHandle> socket_handle(
-      new net::ClientSocketHandle());
-  socket_handle->SetSocket(std::move(fuzzed_socket));
-
   // Create auth handler supporting basic and digest schemes.  Other schemes can
   // make system calls, which doesn't seem like a great idea.
   net::HttpAuthCache auth_cache;
@@ -60,14 +55,17 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   scoped_refptr<net::HttpAuthController> auth_controller(
       new net::HttpAuthController(net::HttpAuth::AUTH_PROXY,
                                   GURL("http://proxy:42/"), &auth_cache,
-                                  &auth_handler_factory));
+                                  &auth_handler_factory, nullptr));
   // Determine if the HttpProxyClientSocket should be told the underlying socket
   // is HTTPS.
   bool is_https_proxy = data_provider.ConsumeBool();
   net::HttpProxyClientSocket socket(
-      std::move(socket_handle), "Bond/007", net::HostPortPair("foo", 80),
+      std::move(fuzzed_socket), "Bond/007", net::HostPortPair("foo", 80),
+      net::ProxyServer(net::ProxyServer::SCHEME_HTTP,
+                       net::HostPortPair("proxy", 42)),
       auth_controller.get(), true /* tunnel */, false /* using_spdy */,
-      net::kProtoUnknown, is_https_proxy, TRAFFIC_ANNOTATION_FOR_TESTS);
+      net::kProtoUnknown, nullptr /* proxy_delegate */, is_https_proxy,
+      TRAFFIC_ANNOTATION_FOR_TESTS);
   int result = socket.Connect(callback.callback());
   result = callback.GetResult(result);
 

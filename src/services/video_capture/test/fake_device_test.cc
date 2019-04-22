@@ -4,6 +4,7 @@
 
 #include "services/video_capture/test/fake_device_test.h"
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 
 using testing::_;

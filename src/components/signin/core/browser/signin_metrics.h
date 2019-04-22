@@ -159,6 +159,7 @@ enum class AccessPoint : int {
   ACCESS_POINT_SAVE_CARD_BUBBLE = 24,
   ACCESS_POINT_MANAGE_CARDS_BUBBLE = 25,
   ACCESS_POINT_MACHINE_LOGON = 26,
+  ACCESS_POINT_GOOGLE_SERVICES_SETTINGS = 27,
   ACCESS_POINT_MAX,  // This must be last.
 };
 
@@ -208,43 +209,6 @@ enum AccountReauth {
   HISTOGRAM_REAUTH_MAX
 };
 
-// Enum values used for "Signin.XDevicePromo.Eligible" histogram, which tracks
-// the reasons for which a profile is or is not eligible for the promo.
-enum CrossDevicePromoEligibility {
-  // The user is eligible for the promo.
-  ELIGIBLE,
-  // The profile has previously opted out of the promo.
-  OPTED_OUT,
-  // The profile is already signed in.
-  SIGNED_IN,
-  // The profile does not have a single, peristent GAIA cookie.
-  NOT_SINGLE_GAIA_ACCOUNT,
-  // Yet to determine how many devices the user has.
-  UNKNOWN_COUNT_DEVICES,
-  // An error was returned trying to determine the account's devices.
-  ERROR_FETCHING_DEVICE_ACTIVITY,
-  // The call to get device activity was throttled, and never executed.
-  THROTTLED_FETCHING_DEVICE_ACTIVITY,
-  // The user has no devices.
-  ZERO_DEVICES,
-  // The user has no device that was recently active.
-  NO_ACTIVE_DEVICES,
-  // Always last enumerated type.
-  NUM_CROSS_DEVICE_PROMO_ELIGIBILITY_METRICS
-};
-
-// Enum reasons the CrossDevicePromo couldn't initialize, or that it succeeded.
-enum CrossDevicePromoInitialized {
-  // The promo was initialized successfully.
-  INITIALIZED,
-  // The profile is opted out, so the promo didn't initialize.
-  UNINITIALIZED_OPTED_OUT,
-  // Unable to read the variations configuration.
-  NO_VARIATIONS_CONFIG,
-  // Always the last enumerated type.
-  NUM_CROSS_DEVICE_PROMO_INITIALIZED_METRICS
-};
-
 // Enum values used for "Signin.AccountReconcilorState.OnGaiaResponse"
 // histogram, which records the state of the AccountReconcilor when GAIA returns
 // a specific response.
@@ -255,6 +219,8 @@ enum AccountReconcilorState {
   ACCOUNT_RECONCILOR_RUNNING,
   // The AccountReconcilor encountered an error and stopped.
   ACCOUNT_RECONCILOR_ERROR,
+  // The account reconcilor will start running soon.
+  ACCOUNT_RECONCILOR_SCHEDULED,
   // Always the last enumerated type.
   ACCOUNT_RECONCILOR_HISTOGRAM_COUNT,
 };
@@ -342,7 +308,10 @@ enum class SourceForRefreshTokenOperation {
   kDiceResponseHandler_Signin,
   kDiceResponseHandler_Signout,
   kDiceTurnOnSyncHelper_Abort,
-  kMaxValue = kDiceTurnOnSyncHelper_Abort
+  kMachineLogon_CredentialProvider,
+  kTokenService_ExtractCredentials,
+
+  kMaxValue = kTokenService_ExtractCredentials
 };
 
 // Different types of reporting. This is used as a histogram suffix.
@@ -412,12 +381,6 @@ void LogExternalCcResultFetches(
 void LogAuthError(const GoogleServiceAuthError& auth_error);
 
 void LogSigninConfirmHistogramValue(ConfirmationUsage action);
-
-void LogXDevicePromoEligible(CrossDevicePromoEligibility metric);
-
-void LogXDevicePromoInitialized(CrossDevicePromoInitialized metric);
-
-void LogBrowsingSessionDuration(const base::Time& previous_activity_time);
 
 // Records the AccountReconcilor |state| when GAIA returns a specific response.
 // If |state| is different than ACCOUNT_RECONCILOR_OK it means the user will

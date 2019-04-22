@@ -9,6 +9,7 @@
 
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/shell.h"
+#include "base/bind.h"
 #include "base/process/launch.h"
 #include "base/task/post_task.h"
 #include "base/time/clock.h"
@@ -26,9 +27,9 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chromeos/constants/devicetype.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager/backlight.pb.h"
-#include "chromeos/system/devicetype.h"
 #include "components/prefs/pref_service.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "components/viz/host/host_frame_sink_manager.h"
@@ -169,7 +170,7 @@ AdaptiveScreenBrightnessManager::CreateInstance() {
   }
 
   chromeos::PowerManagerClient* const power_manager_client =
-      chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
+      chromeos::PowerManagerClient::Get();
   DCHECK(power_manager_client);
   ui::UserActivityDetector* const detector = ui::UserActivityDetector::Get();
   DCHECK(detector);

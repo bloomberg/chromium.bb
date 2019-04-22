@@ -17,27 +17,33 @@ cr.define('ntp', function() {
    * NewTabView instance.
    * @type {!Object|undefined}
    */
-  var newTabView;
+  let newTabView;
 
   /**
    * If non-null, an bubble confirming that the user has signed into sync. It
    * points at the login status at the top of the page.
    * @type {!cr.ui.Bubble|undefined}
    */
-  var loginBubble;
+  let loginBubble;
 
   /**
    * true if |loginBubble| should be shown.
    * @type {boolean}
    */
-  var shouldShowLoginBubble = false;
+  let shouldShowLoginBubble = false;
 
   /**
    * The time when all sections are ready.
    * @type {number|undefined}
    * @private
    */
-  var startTime;
+  let startTime;
+
+  /**
+   * The number of sections to wait on.
+   * @type {number}
+   */
+  let sectionsToWaitFor = -1;
 
   /**
    * The time in milliseconds for most transitions.  This should match what's
@@ -46,7 +52,7 @@ cr.define('ntp', function() {
    * @type {number}
    * @const
    */
-  var DEFAULT_TRANSITION_TIME = 500;
+  const DEFAULT_TRANSITION_TIME = 500;
 
   /**
    * Creates a NewTabView object. NewTabView extends PageListView with
@@ -55,11 +61,9 @@ cr.define('ntp', function() {
    * @extends {ntp.PageListView}
    */
   function NewTabView() {
-    var pageSwitcherStart;
-    var pageSwitcherEnd;
-    pageSwitcherStart = /** @type {!ntp.PageSwitcher} */ (
+    const pageSwitcherStart = /** @type {!ntp.PageSwitcher} */ (
         getRequiredElement('page-switcher-start'));
-    pageSwitcherEnd = /** @type {!ntp.PageSwitcher} */ (
+    const pageSwitcherEnd = /** @type {!ntp.PageSwitcher} */ (
         getRequiredElement('page-switcher-end'));
     this.initialize(
         getRequiredElement('page-list'), getRequiredElement('dot-list'),
@@ -81,13 +85,15 @@ cr.define('ntp', function() {
     newTabView = new NewTabView();
 
     if (!loadTimeData.getBoolean('showWebStoreIcon')) {
-      var webStoreIcon = $('chrome-web-store-link');
+      const webStoreIcon = $('chrome-web-store-link');
       // Not all versions of the NTP have a footer, so this may not exist.
-      if (webStoreIcon)
+      if (webStoreIcon) {
         webStoreIcon.hidden = true;
+      }
     } else {
-      var webStoreLink = loadTimeData.getString('webStoreLink');
-      var url = appendParam(webStoreLink, 'utm_source', 'chrome-ntp-launcher');
+      const webStoreLink = loadTimeData.getString('webStoreLink');
+      const url =
+          appendParam(webStoreLink, 'utm_source', 'chrome-ntp-launcher');
       $('chrome-web-store-link').href = url;
       $('chrome-web-store-link')
           .addEventListener('auxclick', onChromeWebStoreButtonClick);
@@ -113,7 +119,7 @@ cr.define('ntp', function() {
       };
       $('login-status-dismiss').onclick = loginBubble.hide.bind(loginBubble);
 
-      var bubbleContent = $('login-status-bubble-contents');
+      const bubbleContent = $('login-status-bubble-contents');
       loginBubble.content = bubbleContent;
 
       // The anchor node won't be updated until updateLogin is called so don't
@@ -122,8 +128,9 @@ cr.define('ntp', function() {
     }
 
     $('login-container').addEventListener('click', showSyncLoginUI);
-    if (loadTimeData.getBoolean('shouldShowSyncLogin'))
+    if (loadTimeData.getBoolean('shouldShowSyncLogin')) {
       chrome.send('initializeSyncLogin');
+    }
 
     doWhenAllSectionsReady(function() {
       // Tell the slider about the pages.
@@ -132,10 +139,11 @@ cr.define('ntp', function() {
       newTabView.cardSlider.currentCardValue.navigationDot.classList.add(
           'selected');
 
-      cr.dispatchSimpleEvent(document, 'ntpLoaded', true, true);
       document.documentElement.classList.remove('starting-up');
 
       startTime = Date.now();
+
+      chrome.send('observeThemeChanges');
     });
   }
 
@@ -145,24 +153,19 @@ cr.define('ntp', function() {
    * @param {Event} e The click/auxclick event.
    */
   function onChromeWebStoreButtonClick(e) {
-    if (e.button > 1)
-      return;  // Ignore buttons other than left and middle.
+    if (e.button > 1) {
+      return;
+    }  // Ignore buttons other than left and middle.
     chrome.send(
         'recordAppLaunchByURL',
         [encodeURIComponent(this.href), ntp.APP_LAUNCH.NTP_WEBSTORE_FOOTER]);
   }
 
   /**
-   * The number of sections to wait on.
-   * @type {number}
-   */
-  var sectionsToWaitFor = -1;
-
-  /**
    * Queued callbacks which lie in wait for all sections to be ready.
    * @type {Array}
    */
-  var readyCallbacks = [];
+  const readyCallbacks = [];
 
   /**
    * Fired as each section of pages becomes ready.
@@ -184,10 +187,11 @@ cr.define('ntp', function() {
    */
   function doWhenAllSectionsReady(callback) {
     assert(typeof callback == 'function');
-    if (sectionsToWaitFor > 0)
+    if (sectionsToWaitFor > 0) {
       readyCallbacks.push(callback);
-    else
-      window.setTimeout(callback, 0);  // Do soon after, but asynchronously.
+    } else {
+      window.setTimeout(callback, 0);
+    }  // Do soon after, but asynchronously.
   }
 
   /**
@@ -196,7 +200,7 @@ cr.define('ntp', function() {
    * @return {number} The width of the nav dot.
    */
   function measureNavDot(id) {
-    var measuringDiv = $('fontMeasuringDiv');
+    const measuringDiv = $('fontMeasuringDiv');
     measuringDiv.textContent = loadTimeData.getString(id);
     // The 4 is for border and padding.
     return Math.max(measuringDiv.clientWidth * 1.15 + 4, 80);
@@ -207,11 +211,11 @@ cr.define('ntp', function() {
    * its length may be measured and the nav dots sized accordingly.
    */
   function measureNavDots() {
-    var styleElement = document.createElement('style');
+    const styleElement = document.createElement('style');
     styleElement.type = 'text/css';
     // max-width is used because if we run out of space, the nav dots will be
     // shrunk.
-    var pxWidth = measureNavDot('appDefaultPageName');
+    const pxWidth = measureNavDot('appDefaultPageName');
     styleElement.textContent = '.dot { max-width: ' + pxWidth + 'px; }';
     document.querySelector('head').appendChild(styleElement);
   }
@@ -221,8 +225,8 @@ cr.define('ntp', function() {
    */
   function layoutFooter() {
     // We need the image to be loaded.
-    let logo = $('logo-img');
-    let logoImg = logo.querySelector('img');
+    const logo = $('logo-img');
+    const logoImg = logo.querySelector('img');
 
     // Only compare the width after the footer image successfully loaded.
     if (!logoImg.complete || logoImg.width === 0) {
@@ -230,11 +234,12 @@ cr.define('ntp', function() {
       return;
     }
 
-    let menu = $('footer-menu-container');
-    if (menu.clientWidth > logoImg.width)
+    const menu = $('footer-menu-container');
+    if (menu.clientWidth > logoImg.width) {
       logo.style.WebkitFlex = '0 1 ' + menu.clientWidth + 'px';
-    else
+    } else {
       menu.style.WebkitFlex = '0 1 ' + logoImg.width + 'px';
+    }
   }
 
   /**
@@ -258,9 +263,10 @@ cr.define('ntp', function() {
    * @param {string} color The color represented as a CSS string.
    */
   function setFaviconDominantColor(id, color) {
-    var node = $(id);
-    if (node)
+    const node = $(id);
+    if (node) {
       node.stripeColor = color;
+    }
   }
 
   /**
@@ -273,7 +279,7 @@ cr.define('ntp', function() {
    * @param {boolean} isUserSignedIn Indicates if the user is signed in or not.
    */
   function updateLogin(loginHeader, loginSubHeader, iconURL, isUserSignedIn) {
-    /** @const */ var showLogin = loginHeader || loginSubHeader;
+    /** @const */ const showLogin = loginHeader || loginSubHeader;
 
     $('login-container').hidden = !showLogin;
     $('login-container').classList.toggle('signed-in', isUserSignedIn);
@@ -284,7 +290,7 @@ cr.define('ntp', function() {
       $('login-status-header').innerHTML = loginHeader;
       $('login-status-sub-header').innerHTML = loginSubHeader;
 
-      var headerContainer = $('login-status-header-container');
+      const headerContainer = $('login-status-header-container');
       headerContainer.classList.toggle('login-status-icon', !!iconURL);
       headerContainer.style.backgroundImage =
           iconURL ? getUrlForCss(iconURL) : 'none';
@@ -304,7 +310,7 @@ cr.define('ntp', function() {
    * @param {Event} e The click event.
    */
   function showSyncLoginUI(e) {
-    var rect = e.currentTarget.getBoundingClientRect();
+    const rect = e.currentTarget.getBoundingClientRect();
     chrome.send(
         'showSyncLoginUI', [rect.left, rect.top, rect.width, rect.height]);
   }
@@ -443,4 +449,4 @@ cr.define('ntp', function() {
 
 document.addEventListener('DOMContentLoaded', ntp.onLoad);
 
-var toCssPx = cr.ui.toCssPx;
+const toCssPx = cr.ui.toCssPx;

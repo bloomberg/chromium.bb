@@ -5,12 +5,12 @@
 #include "ash/accelerators/pre_target_accelerator_handler.h"
 
 #include "ash/accelerators/accelerator_controller.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/shell.h"
 #include "ash/wm/window_state.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
+#include "media/base/media_switches.h"
 #include "ui/aura/window.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/events/event.h"
@@ -38,7 +38,7 @@ bool IsSystemKey(ui::KeyboardCode key_code) {
     case ui::VKEY_MEDIA_NEXT_TRACK:
     case ui::VKEY_MEDIA_PLAY_PAUSE:
     case ui::VKEY_MEDIA_PREV_TRACK:
-      return base::FeatureList::IsEnabled(features::kMediaSessionAccelerators);
+      return base::FeatureList::IsEnabled(media::kHardwareMediaKeyHandling);
     default:
       return false;
   }

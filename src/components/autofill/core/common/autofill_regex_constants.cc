@@ -21,15 +21,15 @@ const char kRegionIgnoredRe[] =
 const char kAddressNameIgnoredRe[] = "address.*nickname|address.*label";
 const char kCompanyRe[] =
     "company|business|organization|organisation"
-    "|firma|firmenname"    // de-DE
-    "|empresa"             // es
-    "|societe|société"     // fr-FR
-    "|ragione.?sociale"    // it-IT
-    "|会社"                // ja-JP
-    "|название.?компании"  // ru
-    "|单位|公司"           // zh-CN
-    "|شرکت"                // fa
-    "|회사|직장";          // ko-KR
+    "|(?<!con)firma|firmenname"  // de-DE
+    "|empresa"                   // es
+    "|societe|société"           // fr-FR
+    "|ragione.?sociale"          // it-IT
+    "|会社"                      // ja-JP
+    "|название.?компании"        // ru
+    "|单位|公司"                 // zh-CN
+    "|شرکت"                      // fa
+    "|회사|직장";                // ko-KR
 const char kAddressLine1Re[] =
     "^address$|address[_-]?line(one)?|address1|addr1|street"
     "|(?:shipping|billing)address$"
@@ -79,11 +79,11 @@ const char kAddressLinesExtraRe[] =
 const char kAddressLookupRe[] = "lookup";
 const char kCountryRe[] =
     "country|countries"
-    "|país|pais"  // es
-    "|国"         // ja-JP
-    "|国家"       // zh-CN
-    "|국가|나라"  // ko-KR
-    "|کشور";      // fa
+    "|país|pais"       // es
+    "|(?<!(入|出))国"  // ja-JP
+    "|国家"            // zh-CN
+    "|국가|나라"       // ko-KR
+    "|کشور";           // fa
 const char kCountryLocationRe[] = "location";
 const char kZipCodeRe[] =
     "zip|postal|post.*code|pcode"
@@ -142,6 +142,15 @@ const char kSearchTermRe[] =
     "|busca"                // pt-BR, pt-PT
     "|جستجو"                // fa
     "|искать|найти|поиск";  // ru
+
+/////////////////////////////////////////////////////////////////////////////
+// field_price.cc
+/////////////////////////////////////////////////////////////////////////////
+const char kPriceRe[] =
+    "\\bprice\\b|\\brate\\b|\\bcost\\b"
+    "قیمة‎|سعر‎"                           // ar
+    "قیمت"                                            // fa
+    "|\\bprix\\b|\\bcoût\\b|\\bcout\\b|\\btarif\\b";  // fr-CA
 
 /////////////////////////////////////////////////////////////////////////////
 // credit_card_field.cc
@@ -243,6 +252,7 @@ const char kDebitCardRe[] = "debit.*card";
 const char kEmailRe[] =
     "e.?mail"
     "|courriel"                                    // fr
+    "|correo.*electr(o|ó)nico"                     // es-ES
     "|メールアドレス"                              // ja-JP
     "|Электронной.?Почты"                          // ru
     "|邮件|邮箱"                                   // zh-CN
@@ -262,7 +272,7 @@ const char kNameRe[] =
     "^name|full.?name|your.?name|customer.?name|bill.?name|ship.?name"
     "|name.*first.*last|firstandlastname"
     "|nombre.*y.*apellidos"  // es
-    "|^nom"                  // fr-FR
+    "|^nom(?!bre)"           // fr-FR
     "|お名前|氏名"           // ja-JP
     "|^nome"                 // pt-BR, pt-PT
     "|نام.*نام.*خانوادگی"    // fa
@@ -286,11 +296,15 @@ const char kMiddleInitialRe[] = "middle.*initial|m\\.i\\.|mi$|\\bmi\\b";
 const char kMiddleNameRe[] =
     "middle.*name|mname|middle$"
     "|apellido.?materno|lastlastname";  // es
+
+// TODO(crbug.com/928851): Revisit "morada" from pt-PT as it means address and
+// not "last name", and "surename" in pt-PT as it's not Portuguese (or any
+// language?).
 const char kLastNameRe[] =
     "last.*name|lname|surname|last$|secondname|family.*name"
     "|nachname"                            // de-DE
-    "|apellido"                            // es
-    "|famille|^nom"                        // fr-FR
+    "|apellidos?"                          // es
+    "|famille|^nom(?!bre)"                 // fr-FR
     "|cognome"                             // it-IT
     "|姓"                                  // ja-JP
     "|morada|apelidos|surename|sobrenome"  // pt-BR, pt-PT
@@ -327,6 +341,28 @@ const char kPhoneSuffixRe[] = "suffix";
 const char kPhoneExtensionRe[] =
     "\\bext|ext\\b|extension"
     "|ramal";  // pt-BR, pt-PT
+
+/////////////////////////////////////////////////////////////////////////////
+// travel_field.cc
+/////////////////////////////////////////////////////////////////////////////
+
+const char kPassportRe[] =
+    "document.*number|passport"     // en-US
+    "|passeport"                    // fr-FR
+    "|numero.*documento|pasaporte"  // es-ES
+    "|書類";                        // ja-JP
+const char kTravelOriginRe[] =
+    "point.*of.*entry|arrival"                // en-US
+    "|punto.*internaci(o|ó)n|fecha.*llegada"  // es-ES
+    "|入国";                                  // ja-JP
+const char kTravelDestinationRe[] =
+    "departure"               // en-US
+    "|fecha.*salida|destino"  // es-ES
+    "|出国";                  // ja-JP
+const char kFlightRe[] =
+    "airline|flight"                    // en-US
+    "|aerol(i|í)nea|n(u|ú)mero.*vuelo"  // es-ES
+    "|便名|航空会社";                   // ja-JP
 
 /////////////////////////////////////////////////////////////////////////////
 // validation.cc

@@ -21,11 +21,14 @@ class PLATFORM_EXPORT CompositorMutatorClient : public cc::LayerTreeMutator,
       std::unique_ptr<AnimationWorkletMutatorDispatcherImpl>);
   ~CompositorMutatorClient() override;
 
+  void SynchronizeAnimatorName(const String& animator_name) override {}
   void SetMutationUpdate(std::unique_ptr<cc::MutatorOutputState>) override;
 
   // cc::LayerTreeMutator
   void SetClient(cc::LayerTreeMutatorClient*) override;
-  void Mutate(std::unique_ptr<cc::MutatorInputState>) override;
+  bool Mutate(std::unique_ptr<cc::MutatorInputState>,
+              MutateQueuingStrategy,
+              DoneCallback) override;
   bool HasMutators() override;
 
  private:

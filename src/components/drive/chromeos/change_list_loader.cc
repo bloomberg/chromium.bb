@@ -10,6 +10,8 @@
 #include <set>
 #include <utility>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/macros.h"
@@ -495,7 +497,7 @@ void ChangeListLoader::LoadChangeListFromServerAfterUpdate(
   logger_->Log(logging::LOG_INFO,
                "Change lists applied (%s) (elapsed time: %sms)",
                team_drive_msg_.c_str(),
-               base::Int64ToString(elapsed.InMilliseconds()).c_str());
+               base::NumberToString(elapsed.InMilliseconds()).c_str());
 
   if (should_notify_changed_directories) {
     for (auto& observer : observers_)

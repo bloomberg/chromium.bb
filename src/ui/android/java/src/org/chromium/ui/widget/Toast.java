@@ -29,6 +29,8 @@ public class Toast {
     public static final int LENGTH_SHORT = android.widget.Toast.LENGTH_SHORT;
     public static final int LENGTH_LONG = android.widget.Toast.LENGTH_LONG;
 
+    private static int sExtraYOffset;
+
     private android.widget.Toast mToast;
     private ViewGroup mSWLayout;
 
@@ -61,6 +63,8 @@ public class Toast {
 
             setView(toast.getView());
         }
+        mToast.setGravity(
+                mToast.getGravity(), mToast.getXOffset(), mToast.getYOffset() + sExtraYOffset);
     }
 
     public android.widget.Toast getAndroidToast() {
@@ -154,5 +158,14 @@ public class Toast {
     public static Toast makeText(Context context, int resId, int duration)
             throws Resources.NotFoundException {
         return makeText(context, context.getResources().getText(resId), duration);
+    }
+
+    /**
+     * Set extra Y offset for toasts all toasts created with this class. This can be overridden by
+     * calling {@link Toast#setGravity(int, int, int)} on an individual toast.
+     * @param yOffsetPx The Y offset from the normal toast position in px.
+     */
+    public static void setGlobalExtraYOffset(int yOffsetPx) {
+        sExtraYOffset = yOffsetPx;
     }
 }

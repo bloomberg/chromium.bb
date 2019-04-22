@@ -139,8 +139,7 @@ void PowerHandler::RegisterMessages() {
 }
 
 void PowerHandler::OnJavascriptAllowed() {
-  PowerManagerClient* power_manager_client =
-      DBusThreadManager::Get()->GetPowerManagerClient();
+  PowerManagerClient* power_manager_client = PowerManagerClient::Get();
   power_manager_client_observer_.Add(power_manager_client);
   power_manager_client->GetSwitchStates(base::Bind(
       &PowerHandler::OnGotSwitchStates, weak_ptr_factory_.GetWeakPtr()));
@@ -176,9 +175,8 @@ void PowerHandler::PowerChanged(
 }
 
 void PowerHandler::PowerManagerRestarted() {
-  DBusThreadManager::Get()->GetPowerManagerClient()->GetSwitchStates(
-      base::BindOnce(&PowerHandler::OnGotSwitchStates,
-                     weak_ptr_factory_.GetWeakPtr()));
+  PowerManagerClient::Get()->GetSwitchStates(base::BindOnce(
+      &PowerHandler::OnGotSwitchStates, weak_ptr_factory_.GetWeakPtr()));
 }
 
 void PowerHandler::LidEventReceived(PowerManagerClient::LidState state,
@@ -189,9 +187,7 @@ void PowerHandler::LidEventReceived(PowerManagerClient::LidState state,
 
 void PowerHandler::HandleUpdatePowerStatus(const base::ListValue* args) {
   AllowJavascript();
-  chromeos::DBusThreadManager::Get()
-      ->GetPowerManagerClient()
-      ->RequestStatusUpdate();
+  chromeos::PowerManagerClient::Get()->RequestStatusUpdate();
 }
 
 void PowerHandler::HandleSetPowerSource(const base::ListValue* args) {
@@ -199,8 +195,7 @@ void PowerHandler::HandleSetPowerSource(const base::ListValue* args) {
 
   std::string id;
   CHECK(args->GetString(0, &id));
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->SetPowerSource(
-      id);
+  chromeos::PowerManagerClient::Get()->SetPowerSource(id);
 }
 
 void PowerHandler::HandleRequestPowerManagementSettings(
@@ -280,7 +275,7 @@ void PowerHandler::HandleSetLidClosedBehavior(const base::ListValue* args) {
 
 void PowerHandler::SendBatteryStatus() {
   const base::Optional<power_manager::PowerSupplyProperties>& proto =
-      DBusThreadManager::Get()->GetPowerManagerClient()->GetLastStatus();
+      PowerManagerClient::Get()->GetLastStatus();
   DCHECK(proto);
   bool charging = proto->battery_state() ==
                   power_manager::PowerSupplyProperties_BatteryState_CHARGING;
@@ -302,10 +297,10 @@ void PowerHandler::SendBatteryStatus() {
     status_text = l10n_util::GetStringFUTF16(
         charging ? IDS_SETTINGS_BATTERY_STATUS_CHARGING
                  : IDS_SETTINGS_BATTERY_STATUS,
-        base::IntToString16(percent), GetBatteryTimeText(time_left));
+        base::NumberToString16(percent), GetBatteryTimeText(time_left));
   } else {
     status_text = l10n_util::GetStringFUTF16(IDS_SETTINGS_BATTERY_STATUS_SHORT,
-                                             base::IntToString16(percent));
+                                             base::NumberToString16(percent));
   }
 
   base::DictionaryValue battery_dict;
@@ -323,7 +318,7 @@ void PowerHandler::SendBatteryStatus() {
 
 void PowerHandler::SendPowerSources() {
   const base::Optional<power_manager::PowerSupplyProperties>& proto =
-      DBusThreadManager::Get()->GetPowerManagerClient()->GetLastStatus();
+      PowerManagerClient::Get()->GetLastStatus();
   DCHECK(proto);
   base::ListValue sources_list;
   for (int i = 0; i < proto->available_external_power_source_size(); i++) {
@@ -392,9 +387,7 @@ void PowerHandler::SendPowerManagementSettings(bool force) {
   dict.SetInteger(kLidClosedBehaviorKey, lid_closed_behavior);
   dict.SetBoolean(kLidClosedControlledKey, lid_closed_controlled);
   dict.SetBoolean(kHasLidKey, has_lid);
-  CallJavascriptFunction("cr.webUIListenerCallback",
-                         base::Value(kPowerManagementSettingsChangedName),
-                         dict);
+  FireWebUIListener(kPowerManagementSettingsChangedName, dict);
 
   last_idle_behavior_ = idle_behavior;
   last_idle_controlled_ = idle_controlled;

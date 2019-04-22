@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/public/cpp/app_list/internal_app_id_constants.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/window_properties.h"
@@ -13,8 +14,8 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
 #include "chrome/browser/ui/ash/launcher/extension_app_window_launcher_item_controller.h"
-#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/common/extension.h"
@@ -30,6 +31,9 @@ namespace {
 
 // Get the ShelfID for a given |app_window|.
 ash::ShelfID GetShelfId(AppWindow* app_window) {
+  if (IsCameraApp(app_window->extension_id()))
+    return ash::ShelfID(app_list::kInternalAppIdCamera);
+
   // Set launch_id default value to an empty string. If showInShelf parameter
   // is true and the window key is not empty, its value is appended to the
   // launch_id. Otherwise, if the window key is empty, the session_id is used.

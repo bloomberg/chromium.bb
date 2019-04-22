@@ -59,7 +59,6 @@ PowerButtonMenuItemView::PowerButtonMenuItemView(
   AddChildView(icon_view_);
 
   title_->SetBackgroundColor(SK_ColorTRANSPARENT);
-  title_->SetAutoColorReadabilityEnabled(false);
   title_->SetEnabledColor(kItemTitleColor);
   title_->SetText(title_text);
   AddChildView(title_);

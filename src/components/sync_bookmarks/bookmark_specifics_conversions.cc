@@ -7,11 +7,13 @@
 #include <string>
 #include <unordered_set>
 #include <utility>
+#include <vector>
 
 #include "base/strings/utf_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/favicon/core/favicon_service.h"
+#include "components/sync/engine/engine_util.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "ui/gfx/favicon_size.h"
 #include "url/gurl.h"
@@ -19,6 +21,27 @@
 namespace sync_bookmarks {
 
 namespace {
+
+// Maximum number of bytes to allow in a title (must match sync's internal
+// limits; see write_node.cc).
+const int kTitleLimitBytes = 255;
+
+base::string16 NodeTitleFromSpecificsTitle(const std::string& specifics_title) {
+  // Adjust the title for backward compatibility with legacy clients.
+  std::string node_title;
+  syncer::ServerNameToSyncAPIName(specifics_title, &node_title);
+  return base::UTF8ToUTF16(node_title);
+}
+
+std::string SpecificsTitleFromNodeTitle(const base::string16& node_title) {
+  // Adjust the title for backward compatibility with legacy clients.
+  std::string specifics_title;
+  syncer::SyncAPINameToServerName(base::UTF16ToUTF8(node_title),
+                                  &specifics_title);
+  base::TruncateUTF8ToByteSize(specifics_title, kTitleLimitBytes,
+                               &specifics_title);
+  return specifics_title;
+}
 
 void UpdateBookmarkSpecificsMetaInfo(
     const bookmarks::BookmarkNode::MetaInfoMap* metainfo_map,
@@ -96,7 +119,7 @@ sync_pb::EntitySpecifics CreateSpecificsFromBookmarkNode(
   if (!node->is_folder()) {
     bm_specifics->set_url(node->url().spec());
   }
-  bm_specifics->set_title(base::UTF16ToUTF8(node->GetTitle()));
+  bm_specifics->set_title(SpecificsTitleFromNodeTitle(node->GetTitle()));
   bm_specifics->set_creation_time_us(
       node->date_added().ToDeltaSinceWindowsEpoch().InMicroseconds());
 
@@ -150,7 +173,8 @@ const bookmarks::BookmarkNode* CreateBookmarkNodeFromSpecifics(
   const bookmarks::BookmarkNode* node;
   if (is_folder) {
     node = model->AddFolderWithMetaInfo(
-        parent, index, base::UTF8ToUTF16(specifics.title()), &metainfo);
+        parent, index, NodeTitleFromSpecificsTitle(specifics.title()),
+        &metainfo);
   } else {
     const int64_t create_time_us = specifics.creation_time_us();
     base::Time create_time = base::Time::FromDeltaSinceWindowsEpoch(
@@ -158,7 +182,7 @@ const bookmarks::BookmarkNode* CreateBookmarkNodeFromSpecifics(
         // always used the Windows epoch.
         base::TimeDelta::FromMicroseconds(create_time_us));
     node = model->AddURLWithCreationTimeAndMetaInfo(
-        parent, index, base::UTF8ToUTF16(specifics.title()),
+        parent, index, NodeTitleFromSpecificsTitle(specifics.title()),
         GURL(specifics.url()), create_time, &metainfo);
   }
   if (node) {
@@ -180,7 +204,7 @@ void UpdateBookmarkNodeFromSpecifics(
     model->SetURL(node, GURL(specifics.url()));
   }
 
-  model->SetTitle(node, base::UTF8ToUTF16(specifics.title()));
+  model->SetTitle(node, NodeTitleFromSpecificsTitle(specifics.title()));
   model->SetNodeMetaInfoMap(node, GetBookmarkMetaInfo(specifics));
   SetBookmarkFaviconFromSpecifics(specifics, node, favicon_service);
 }

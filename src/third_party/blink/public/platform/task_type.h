@@ -12,8 +12,9 @@ namespace blink {
 //
 // For the task type usage guideline, see https://bit.ly/2vMAsQ4
 //
-// When a new task type is created, use kCount value as a new value.
-enum class TaskType : unsigned {
+// When a new task type is created, use kCount value as a new value,
+// the tools/metrics/histograms/enums.xml shall also be updated.
+enum class TaskType : unsigned char {
   ///////////////////////////////////////
   // Speced tasks should use one of the following task types
   ///////////////////////////////////////
@@ -131,6 +132,21 @@ enum class TaskType : unsigned {
   kExperimentalWebSchedulingUserInteraction = 53,
   kExperimentalWebSchedulingBestEffort = 54,
 
+  // https://drafts.csswg.org/css-font-loading/#task-source
+  kFontLoading = 56,
+
+  // https://w3c.github.io/manifest/#dfn-application-life-cycle-task-source
+  kApplicationLifeCycle = 57,
+
+  // https://wicg.github.io/background-fetch/#infrastructure
+  kBackgroundFetch = 58,
+
+  // https://www.w3.org/TR/permissions/
+  kPermission = 59,
+
+  // https://w3c.github.io/ServiceWorker/#dfn-client-message-queue
+  kServiceWorkerClientMessage = 60,
+
   ///////////////////////////////////////
   // Not-speced tasks should use one of the following task types
   ///////////////////////////////////////
@@ -149,10 +165,6 @@ enum class TaskType : unsigned {
   // this type are posted by:
   // * //components/webcrypto
   kInternalWebCrypto = 27,
-
-  // Tasks to execute IndexedDB's callbacks. Tasks with this type are posted by:
-  // * //content/renderer/indexed_db
-  kInternalIndexedDB = 28,
 
   // Tasks to execute media-related things like logging or playback. Tasks with
   // this type are mainly posted by:
@@ -187,6 +199,12 @@ enum class TaskType : unsigned {
   // Tasks used at IntersectionObserver.
   kInternalIntersectionObserver = 44,
 
+  // Task used for ContentCapture.
+  kInternalContentCapture = 61,
+
+  // Task used for Navigations.
+  kInternalNavigation = 63,
+
   ///////////////////////////////////////
   // The following task types are only for thread-local queues.
   ///////////////////////////////////////
@@ -199,13 +217,14 @@ enum class TaskType : unsigned {
   kMainThreadTaskQueueIPC = 42,
   kMainThreadTaskQueueControl = 43,
   kMainThreadTaskQueueCleanup = 52,
+  kMainThreadTaskQueueMemoryPurge = 62,
   kCompositorThreadTaskQueueDefault = 45,
   kCompositorThreadTaskQueueInput = 49,
   kWorkerThreadTaskQueueDefault = 46,
   kWorkerThreadTaskQueueV8 = 47,
   kWorkerThreadTaskQueueCompositor = 48,
 
-  kCount = 56,
+  kCount = 64,
 };
 
 }  // namespace blink

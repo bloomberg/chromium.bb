@@ -10,6 +10,8 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace metrics {
+
 TEST(CpuIdentityTest, CpuUarchTableIsSorted) {
   EXPECT_TRUE(std::is_sorted(
       internal::kCpuUarchTable,
@@ -74,3 +76,5 @@ TEST(CpuIdentityTest, SimplifyCPUModelName) {
   EXPECT_EQ("armv7-processor-rev-3-(v7l)",
             SimplifyCPUModelName("ARMv7 Processor rev 3 (v7l)"));
 }
+
+}  // namespace metrics

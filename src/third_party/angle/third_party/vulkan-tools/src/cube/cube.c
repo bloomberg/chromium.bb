@@ -44,10 +44,6 @@
 #define APP_NAME_STR_LEN 80
 #endif  // _WIN32
 
-#if defined(VK_USE_PLATFORM_MIR_KHR)
-#warning "Cube does not have code for Mir at this time"
-#endif
-
 #ifdef ANDROID
 #include "vulkan_wrapper.h"
 #else
@@ -64,8 +60,8 @@
 #define BILLION 1000000000L
 
 #define DEMO_TEXTURE_COUNT 1
-#define APP_SHORT_NAME "cube"
-#define APP_LONG_NAME "The Vulkan Cube Demo Program"
+#define APP_SHORT_NAME "vkcube"
+#define APP_LONG_NAME "Vulkan Cube"
 
 // Allow a maximum of two outstanding presentation operations.
 #define FRAME_LAG 2
@@ -103,20 +99,20 @@ void DbgMsg(char *fmt, ...) {
 #include <android/log.h>
 #define ERR_EXIT(err_msg, err_class)                                    \
     do {                                                                \
-        ((void)__android_log_print(ANDROID_LOG_INFO, "Cube", err_msg)); \
+        ((void)__android_log_print(ANDROID_LOG_INFO, "Vulkan Cube", err_msg)); \
         exit(1);                                                        \
     } while (0)
 #ifdef VARARGS_WORKS_ON_ANDROID
 void DbgMsg(const char *fmt, ...) {
     va_list va;
     va_start(va, fmt);
-    __android_log_print(ANDROID_LOG_INFO, "Cube", fmt, va);
+    __android_log_print(ANDROID_LOG_INFO, "Vulkan Cube", fmt, va);
     va_end(va);
 }
 #else  // VARARGS_WORKS_ON_ANDROID
 #define DbgMsg(fmt, ...)                                                           \
     do {                                                                           \
-        ((void)__android_log_print(ANDROID_LOG_INFO, "Cube", fmt, ##__VA_ARGS__)); \
+        ((void)__android_log_print(ANDROID_LOG_INFO, "Vulkan Cube", fmt, ##__VA_ARGS__)); \
     } while (0)
 #endif  // VARARGS_WORKS_ON_ANDROID
 #else
@@ -330,7 +326,6 @@ struct demo {
     struct wl_seat *seat;
     struct wl_pointer *pointer;
     struct wl_keyboard *keyboard;
-#elif defined(VK_USE_PLATFORM_MIR_KHR)
 #elif defined(VK_USE_PLATFORM_ANDROID_KHR)
     struct ANativeWindow *window;
 #elif (defined(VK_USE_PLATFORM_IOS_MVK) || defined(VK_USE_PLATFORM_MACOS_MVK))
@@ -2331,7 +2326,6 @@ static void demo_cleanup(struct demo *demo) {
     wl_compositor_destroy(demo->compositor);
     wl_registry_destroy(demo->registry);
     wl_display_disconnect(demo->display);
-#elif defined(VK_USE_PLATFORM_MIR_KHR)
 #endif
 
     vkDestroyInstance(demo->inst, NULL);
@@ -2403,7 +2397,7 @@ static void demo_run(struct demo *demo) {
 
     demo_draw(demo);
     demo->curFrame++;
-    if (demo->frameCount != INT_MAX && demo->curFrame == demo->frameCount) {
+    if (demo->frameCount != INT32_MAX && demo->curFrame == demo->frameCount) {
         PostQuitMessage(validation_error);
     }
 }
@@ -2437,6 +2431,22 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
                 demo_resize(&demo);
             }
             break;
+        case WM_KEYDOWN:
+            switch (wParam) {
+                case VK_ESCAPE:
+                    PostQuitMessage(validation_error);
+                    break;
+                case VK_LEFT:
+                    demo.spin_angle -= demo.spin_increment;
+                    break;
+                case VK_RIGHT:
+                    demo.spin_angle += demo.spin_increment;
+                    break;
+                case VK_SPACE:
+                    demo.pause = !demo.pause;
+                    break;
+            }
+            return 0;
         default:
             break;
     }
@@ -2732,7 +2742,6 @@ static void demo_run(struct demo *demo) {
         demo->quit = TRUE;
     }
 }
-#elif defined(VK_USE_PLATFORM_MIR_KHR)
 #elif defined(VK_USE_PLATFORM_DISPLAY_KHR)
 static VkResult demo_create_display_surface(struct demo *demo) {
     VkResult U_ASSERT_ONLY err;
@@ -2999,7 +3008,6 @@ static void demo_init_vk(struct demo *demo) {
                 platformSurfaceExtFound = 1;
                 demo->extension_names[demo->enabled_extension_count++] = VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME;
             }
-#elif defined(VK_USE_PLATFORM_MIR_KHR)
 #elif defined(VK_USE_PLATFORM_DISPLAY_KHR)
             if (!strcmp(VK_KHR_DISPLAY_EXTENSION_NAME, instance_extensions[i].extensionName)) {
                 platformSurfaceExtFound = 1;
@@ -3070,7 +3078,6 @@ static void demo_init_vk(struct demo *demo) {
                  "Do you have a compatible Vulkan installable client driver (ICD) installed?\n"
                  "Please look at the Getting Started guide for additional information.\n",
                  "vkCreateInstance Failure");
-#elif defined(VK_USE_PLATFORM_MIR_KHR)
 #elif defined(VK_USE_PLATFORM_DISPLAY_KHR)
         ERR_EXIT("vkEnumerateInstanceExtensionProperties failed to find the " VK_KHR_DISPLAY_EXTENSION_NAME
                  " extension.\n\n"
@@ -3356,7 +3363,6 @@ static void demo_init_vk_swapchain(struct demo *demo) {
     createInfo.surface = demo->window;
 
     err = vkCreateWaylandSurfaceKHR(demo->inst, &createInfo, NULL, &demo->surface);
-#elif defined(VK_USE_PLATFORM_MIR_KHR)
 #elif defined(VK_USE_PLATFORM_ANDROID_KHR)
     VkAndroidSurfaceCreateInfoKHR createInfo;
     createInfo.sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR;
@@ -3620,7 +3626,6 @@ static void registry_handle_global(void *data, struct wl_registry *registry, uin
 static void registry_handle_global_remove(void *data UNUSED, struct wl_registry *registry UNUSED, uint32_t name UNUSED) {}
 
 static const struct wl_registry_listener registry_listener = {registry_handle_global, registry_handle_global_remove};
-#elif defined(VK_USE_PLATFORM_MIR_KHR)
 #endif
 
 static void demo_init_connection(struct demo *demo) {
@@ -3660,7 +3665,6 @@ static void demo_init_connection(struct demo *demo) {
     demo->registry = wl_display_get_registry(demo->display);
     wl_registry_add_listener(demo->registry, &registry_listener, demo);
     wl_display_dispatch(demo->display);
-#elif defined(VK_USE_PLATFORM_MIR_KHR)
 #endif
 }
 
@@ -3719,7 +3723,7 @@ static void demo_init(struct demo *demo, int argc, char **argv) {
         }
 
 #if defined(ANDROID)
-        ERR_EXIT("Usage: cube [--validate]\n", "Usage");
+        ERR_EXIT("Usage: vkcube [--validate]\n", "Usage");
 #else
         fprintf(stderr,
                 "Usage:\n  %s\t[--use_staging] [--validate] [--validate-checks-disabled] [--break]\n"
@@ -3810,7 +3814,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
     }
 
     demo.connection = hInstance;
-    strncpy(demo.name, "cube", APP_NAME_STR_LEN);
+    strncpy(demo.name, "Vulkan Cube", APP_NAME_STR_LEN);
     demo_create_window(&demo);
     demo_init_vk_swapchain(&demo);
 
@@ -3820,6 +3824,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
 
     // main message loop
     while (!done) {
+        if (demo.pause) {
+            const BOOL succ = WaitMessage();
+
+            if (!succ) {
+                struct demo *tmp = &demo;
+                struct demo *demo = tmp;
+                ERR_EXIT("WaitMessage() failed on paused demo", "event loop error");
+            }
+        }
         PeekMessage(&msg, NULL, 0, 0, PM_REMOVE);
         if (msg.message == WM_QUIT)  // check for a quit message
         {
@@ -3950,7 +3963,6 @@ int main(int argc, char **argv) {
     demo_create_xlib_window(&demo);
 #elif defined(VK_USE_PLATFORM_WAYLAND_KHR)
     demo_create_window(&demo);
-#elif defined(VK_USE_PLATFORM_MIR_KHR)
 #endif
 
     demo_init_vk_swapchain(&demo);
@@ -3963,7 +3975,6 @@ int main(int argc, char **argv) {
     demo_run_xlib(&demo);
 #elif defined(VK_USE_PLATFORM_WAYLAND_KHR)
     demo_run(&demo);
-#elif defined(VK_USE_PLATFORM_MIR_KHR)
 #elif defined(VK_USE_PLATFORM_DISPLAY_KHR)
     demo_run_display(&demo);
 #endif

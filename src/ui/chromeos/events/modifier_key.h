@@ -16,6 +16,7 @@ enum class ModifierKey : int {
   kCapsLockKey,   // Customizable.
   kEscapeKey,     // Customizable.
   kBackspaceKey,  // Customizable.
+  kAssistantKey,  // Customizable,
   // IMPORTANT: Add new keys to the end, because the keys may have been stored
   // in user preferences.
   kNumModifierKeys,

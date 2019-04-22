@@ -1,7 +1,7 @@
 # layout-test-tidy
 
 This tool, a Node.js CLI utility, performs a set of clean-up tasks for layout
-test files in LayoutTests/webaudio. (Potentially it can be applied to any kind
+test files in web_tests/webaudio. (Potentially it can be applied to any kind
 of layout test files in HTML or JS format.)
 
 The clean-up tasks includes:
@@ -48,5 +48,5 @@ The result will be written to stdout, and only HTML and JS files with proper fil
 node layout-test-tidy -v ${TARGET_PATH} > result.txt
 
 # Apply in-place tidy to the entire layout test files for WebAudio.
-node layout-test-tidy -i -R ${CHROME_SRC}/third_party/WebKit/LayoutTests/webaudio
+node layout-test-tidy -i -R ${CHROME_SRC}/third_party/blink/web_tests/webaudio
 ```

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/users/affiliation.h"
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "chrome/browser/browser_process.h"

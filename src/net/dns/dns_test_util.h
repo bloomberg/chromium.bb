@@ -10,10 +10,14 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
+#include "base/stl_util.h"
 #include "net/dns/dns_client.h"
 #include "net/dns/dns_config.h"
+#include "net/dns/dns_response.h"
+#include "net/dns/dns_util.h"
 #include "net/dns/public/dns_protocol.h"
 
 namespace net {
@@ -50,7 +54,7 @@ static const char* const kT0IpAddresses[] = {
 static const char kT0CanonName[] = "www.l.google.com";
 static const int kT0TTL = 0x000000e4;
 // +1 for the CNAME record.
-static const unsigned kT0RecordCount = arraysize(kT0IpAddresses) + 1;
+static const unsigned kT0RecordCount = base::size(kT0IpAddresses) + 1;
 
 //-----------------------------------------------------------------------------
 // Query/response set for codereview.chromium.org, ID is fixed to 1.
@@ -80,7 +84,7 @@ static const char* const kT1IpAddresses[] = {
 static const char kT1CanonName[] = "ghs.l.google.com";
 static const int kT1TTL = 0x0000010b;
 // +1 for the CNAME record.
-static const unsigned kT1RecordCount = arraysize(kT1IpAddresses) + 1;
+static const unsigned kT1RecordCount = base::size(kT1IpAddresses) + 1;
 
 //-----------------------------------------------------------------------------
 // Query/response set for www.ccs.neu.edu, ID is fixed to 2.
@@ -109,7 +113,7 @@ static const char* const kT2IpAddresses[] = {
 static const char kT2CanonName[] = "vulcan.ccs.neu.edu";
 static const int kT2TTL = 0x0000012c;
 // +1 for the CNAME record.
-static const unsigned kT2RecordCount = arraysize(kT2IpAddresses) + 1;
+static const unsigned kT2RecordCount = base::size(kT2IpAddresses) + 1;
 
 //-----------------------------------------------------------------------------
 // Query/response set for www.google.az, ID is fixed to 3.
@@ -151,48 +155,90 @@ static const char* const kT3IpAddresses[] = {
 static const char kT3CanonName[] = "www.l.google.com";
 static const int kT3TTL = 0x00000015;
 // +2 for the CNAME records, +1 for TXT record.
-static const unsigned kT3RecordCount = arraysize(kT3IpAddresses) + 3;
+static const unsigned kT3RecordCount = base::size(kT3IpAddresses) + 3;
 
 class AddressSorter;
 class DnsClient;
-class MockTransactionFactory;
+class IPAddress;
+class URLRequestContext;
+
+// Build a DNS response that includes address records.
+std::unique_ptr<DnsResponse> BuildTestDnsResponse(std::string name,
+                                                  const IPAddress& ip);
+std::unique_ptr<DnsResponse> BuildTestDnsResponseWithCname(
+    std::string name,
+    const IPAddress& ip,
+    std::string cannonname);
+
+// If |answer_name| is empty, |name| will be used for all answer records, as is
+// the normal behavior.
+std::unique_ptr<DnsResponse> BuildTestDnsTextResponse(
+    std::string name,
+    std::vector<std::vector<std::string>> text_records,
+    std::string answer_name = "");
+std::unique_ptr<DnsResponse> BuildTestDnsPointerResponse(
+    std::string name,
+    std::vector<std::string> pointer_names,
+    std::string answer_name = "");
+
+struct TestServiceRecord {
+  uint16_t priority;
+  uint16_t weight;
+  uint16_t port;
+  std::string target;
+};
+
+std::unique_ptr<DnsResponse> BuildTestDnsServiceResponse(
+    std::string name,
+    std::vector<TestServiceRecord> service_records,
+    std::string answer_name = "");
 
 struct MockDnsClientRule {
   enum ResultType {
-    NODOMAIN,  // Fail asynchronously with ERR_NAME_NOT_RESOLVED and NXDOMAIN.
-    FAIL,      // Fail asynchronously with ERR_NAME_NOT_RESOLVED.
-    TIMEOUT,   // Fail asynchronously with ERR_DNS_TIMEOUT.
-    EMPTY,     // Return an empty response.
-    OK,  // Return an IP address (the accompanying IP is an argument in the
-         // Result structure, or understood as localhost when unspecified).
+    NODOMAIN,   // Fail asynchronously with ERR_NAME_NOT_RESOLVED and NXDOMAIN.
+    FAIL,       // Fail asynchronously with ERR_NAME_NOT_RESOLVED.
+    TIMEOUT,    // Fail asynchronously with ERR_DNS_TIMED_OUT.
+    EMPTY,      // Return an empty response.
+    MALFORMED,  // "Succeed" but with an unparsable response.
+
+    // Results in the response in |Result::response| or, if null, results in a
+    // localhost IP response.
+    OK,
   };
 
   struct Result {
-    explicit Result(const IPAddress& ip) : type(OK), ip(ip) {}
-    explicit Result(ResultType type) : type(type) {}
-    Result(const IPAddress& ip, const std::string& name)
-        : type(OK), ip(ip), canonical_name(name) {}
+    explicit Result(ResultType type);
+    explicit Result(std::unique_ptr<DnsResponse> response);
+    Result(Result&& result);
+    ~Result();
+
+    Result& operator=(Result&& result);
 
     ResultType type;
-    IPAddress ip;
-    std::string canonical_name;
+    std::unique_ptr<DnsResponse> response;
+    // Whether the mock result was obtained securely or not.
+    bool secure = false;
   };
 
+  static Result CreateSecureResult(std::unique_ptr<DnsResponse> response);
+
   // If |delay| is true, matching transactions will be delayed until triggered
-  // by the consumer.
-  MockDnsClientRule(const std::string& prefix_arg,
-                    uint16_t qtype_arg,
-                    const Result& result_arg,
-                    bool delay)
-      : result(result_arg),
-        prefix(prefix_arg),
-        qtype(qtype_arg),
-        delay(delay) {}
+  // by the consumer. If |context| is non-null, it will only match transactions
+  // with the same context.
+  MockDnsClientRule(const std::string& prefix,
+                    uint16_t qtype,
+                    SecureDnsMode secure_dns_mode,
+                    Result result,
+                    bool delay,
+                    URLRequestContext* context = nullptr);
+  MockDnsClientRule(MockDnsClientRule&& rule);
 
   Result result;
   std::string prefix;
   uint16_t qtype;
+  SecureDnsMode secure_dns_mode;
   bool delay;
+  URLRequestContext* context;
 };
 
 typedef std::vector<MockDnsClientRule> MockDnsClientRuleList;
@@ -200,7 +246,7 @@ typedef std::vector<MockDnsClientRule> MockDnsClientRuleList;
 // MockDnsClient provides MockTransactionFactory.
 class MockDnsClient : public DnsClient {
  public:
-  MockDnsClient(const DnsConfig& config, const MockDnsClientRuleList& rules);
+  MockDnsClient(const DnsConfig& config, MockDnsClientRuleList rules);
   ~MockDnsClient() override;
 
   // DnsClient interface:
@@ -213,6 +259,8 @@ class MockDnsClient : public DnsClient {
   void CompleteDelayedTransactions();
 
  private:
+  class MockTransactionFactory;
+
   DnsConfig config_;
   std::unique_ptr<MockTransactionFactory> factory_;
   std::unique_ptr<AddressSorter> address_sorter_;

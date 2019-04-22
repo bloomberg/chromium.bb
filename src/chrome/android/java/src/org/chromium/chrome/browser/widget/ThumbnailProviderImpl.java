@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.widget;
 
 import android.graphics.Bitmap;
+import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.util.LruCache;
@@ -12,9 +13,14 @@ import android.text.TextUtils;
 
 import org.chromium.base.DiscardableReferencePool;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.BitmapCache;
 import org.chromium.chrome.browser.util.ConversionUtils;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Locale;
@@ -31,6 +37,13 @@ import java.util.Locale;
  *                    duplicating work to decode the same image for two different requests.
  */
 public class ThumbnailProviderImpl implements ThumbnailProvider, ThumbnailStorageDelegate {
+    @IntDef({ClientType.DOWNLOAD_HOME, ClientType.NTP_SUGGESTIONS})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface ClientType {
+        int DOWNLOAD_HOME = 0;
+        int NTP_SUGGESTIONS = 1;
+    }
+
     /** Default in-memory thumbnail cache size. */
     private static final int DEFAULT_MAX_CACHE_BYTES = 5 * ConversionUtils.BYTES_PER_MEGABYTE;
 
@@ -44,6 +57,9 @@ public class ThumbnailProviderImpl implements ThumbnailProvider, ThumbnailStorag
      * the view is recycled and needs a new thumbnail.
      */
     private BitmapCache mBitmapCache;
+
+    /** The client type of the client using this provider. */
+    private final @ClientType int mClient;
 
     /**
      * Tracks a set of Content Ids where thumbnail generation or retrieval failed.  This should
@@ -61,29 +77,41 @@ public class ThumbnailProviderImpl implements ThumbnailProvider, ThumbnailStorag
 
     private ThumbnailDiskStorage mStorage;
 
+    private int mCacheSizeMaxBytesUma;
+
     /**
      * Constructor to build the thumbnail provider with default thumbnail cache size.
      * @param referencePool The application's reference pool.
+     * @param client The associated client type.
      */
-    public ThumbnailProviderImpl(DiscardableReferencePool referencePool) {
-        this(referencePool, DEFAULT_MAX_CACHE_BYTES);
+    public ThumbnailProviderImpl(DiscardableReferencePool referencePool, @ClientType int client) {
+        this(referencePool, DEFAULT_MAX_CACHE_BYTES, client);
     }
 
     /**
      * Constructor to build the thumbnail provider.
      * @param referencePool The application's reference pool.
      * @param bitmapCacheSizeByte The size in bytes of the in-memory LRU bitmap cache.
+     * @param client The associated client type.
      */
-    public ThumbnailProviderImpl(DiscardableReferencePool referencePool, int bitmapCacheSizeByte) {
+    public ThumbnailProviderImpl(DiscardableReferencePool referencePool, int bitmapCacheSizeByte,
+            @ClientType int client) {
         ThreadUtils.assertOnUiThread();
         mBitmapCache = new BitmapCache(referencePool, bitmapCacheSizeByte);
         mStorage = ThumbnailDiskStorage.create(this);
+        mClient = client;
     }
 
     @Override
     public void destroy() {
+        // Drop any references to any current requests.
+        mCurrentRequest = null;
+        mRequestQueue.clear();
+
         ThreadUtils.assertOnUiThread();
+        recordBitmapCacheSize();
         mStorage.destroy();
+        mBitmapCache.destroy();
     }
 
     /**
@@ -133,7 +161,7 @@ public class ThumbnailProviderImpl implements ThumbnailProvider, ThumbnailStorag
     }
 
     private void processQueue() {
-        ThreadUtils.postOnUiThread(this::processNextRequest);
+        PostTask.postTask(UiThreadTaskTraits.DEFAULT, this::processNextRequest);
     }
 
     private String getKey(String contentId, int bitmapSizePx) {
@@ -144,6 +172,10 @@ public class ThumbnailProviderImpl implements ThumbnailProvider, ThumbnailStorag
         String key = getKey(contentId, bitmapSizePx);
         Bitmap cachedBitmap = mBitmapCache.getBitmap(key);
         assert cachedBitmap == null || !cachedBitmap.isRecycled();
+
+        RecordHistogram.recordBooleanHistogram(
+                "Android.ThumbnailProvider.CachedBitmap.Found." + getClientTypeUmaSuffix(mClient),
+                cachedBitmap != null);
         return cachedBitmap;
     }
 
@@ -192,6 +224,9 @@ public class ThumbnailProviderImpl implements ThumbnailProvider, ThumbnailStorag
      */
     @Override
     public void onThumbnailRetrieved(@NonNull String contentId, @Nullable Bitmap bitmap) {
+        // Early-out if we have no actual current request.
+        if (mCurrentRequest == null) return;
+
         if (bitmap != null) {
             // The bitmap returned here is retrieved from the native side. The image decoder there
             // scales down the image (if it is too big) so that one of its sides is smaller than or
@@ -207,6 +242,8 @@ public class ThumbnailProviderImpl implements ThumbnailProvider, ThumbnailStorag
             mBitmapCache.putBitmap(key, bitmap);
             mNoBitmapCache.remove(contentId);
             mCurrentRequest.onThumbnailRetrieved(contentId, bitmap);
+
+            mCacheSizeMaxBytesUma = Math.max(mCacheSizeMaxBytesUma, mBitmapCache.size());
         } else {
             mNoBitmapCache.put(contentId, NO_BITMAP_PLACEHOLDER);
             mCurrentRequest.onThumbnailRetrieved(contentId, null);
@@ -214,5 +251,23 @@ public class ThumbnailProviderImpl implements ThumbnailProvider, ThumbnailStorag
 
         mCurrentRequest = null;
         processQueue();
+    }
+
+    private void recordBitmapCacheSize() {
+        RecordHistogram.recordMemoryKBHistogram(
+                "Android.ThumbnailProvider.BitmapCache.Size." + getClientTypeUmaSuffix(mClient),
+                mCacheSizeMaxBytesUma / ConversionUtils.BYTES_PER_KILOBYTE);
+    }
+
+    private static String getClientTypeUmaSuffix(@ClientType int clientType) {
+        switch (clientType) {
+            case ClientType.DOWNLOAD_HOME:
+                return "DownloadHome";
+            case ClientType.NTP_SUGGESTIONS:
+                return "NTPSnippets";
+            default:
+                assert false;
+                return "Other";
+        }
     }
 }

@@ -27,6 +27,7 @@ class CrostiniAppContextMenu : public app_list::AppContextMenu {
   void BuildMenu(ui::SimpleMenuModel* menu_model) override;
 
  private:
+  bool IsUninstallable() const;
   DISALLOW_COPY_AND_ASSIGN(CrostiniAppContextMenu);
 };
 

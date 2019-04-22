@@ -17,6 +17,7 @@ extern const char kMetricsClientID[];
 extern const char kMetricsDefaultOptIn[];
 extern const char kMetricsInitialLogs[];
 extern const char kMetricsLowEntropySource[];
+extern const char kMetricsOldLowEntropySource[];
 extern const char kMetricsMachineId[];
 extern const char kMetricsOngoingLogs[];
 extern const char kMetricsResetIds[];

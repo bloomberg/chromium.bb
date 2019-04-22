@@ -30,10 +30,6 @@ namespace favicon_base {
 struct FaviconImageResult;
 }
 
-namespace gfx {
-class Image;
-}
-
 namespace sessions {
 struct SessionTab;
 }
@@ -56,8 +52,8 @@ class RecentTabsSubMenuModel : public ui::SimpleMenuModel,
  public:
   // Command Id for recently closed items header or disabled item to which the
   // accelerator string will be appended.
-  static const int kRecentlyClosedHeaderCommandId;
-  static const int kDisabledRecentlyClosedHeaderCommandId;
+  static constexpr int kRecentlyClosedHeaderCommandId = 1120;
+  static constexpr int kDisabledRecentlyClosedHeaderCommandId = 1121;
 
   // Exposed for tests only: return the Command Id for the first entry in the
   // recently closed window items list.
@@ -82,9 +78,12 @@ class RecentTabsSubMenuModel : public ui::SimpleMenuModel,
 
  private:
   struct TabNavigationItem;
-  typedef std::vector<TabNavigationItem> TabNavigationItems;
+  using TabNavigationItems = std::vector<TabNavigationItem>;
+  using WindowItems = std::vector<SessionID>;
 
-  typedef std::vector<SessionID> WindowItems;
+  // Index of the separator that follows the history menu item. Used as a
+  // reference position for inserting local entries.
+  static constexpr int kHistorySeparatorIndex = 1;
 
   // Build the menu items by populating the menumodel.
   void Build();
@@ -174,9 +173,7 @@ class RecentTabsSubMenuModel : public ui::SimpleMenuModel,
 
   // Index of the last local entry (recently closed tab or window) in the
   // menumodel.
-  int last_local_model_index_;
-
-  gfx::Image default_favicon_;
+  int last_local_model_index_ = kHistorySeparatorIndex;
 
   base::CancelableTaskTracker local_tab_cancelable_task_tracker_;
   base::CancelableTaskTracker other_devices_tab_cancelable_task_tracker_;
@@ -184,16 +181,13 @@ class RecentTabsSubMenuModel : public ui::SimpleMenuModel,
   // Time the menu is open for until a recent tab is selected.
   base::ElapsedTimer menu_opened_timer_;
 
-// Mac doesn't support the dynamic menu.
-#if !defined(OS_MACOSX)
   ScopedObserver<sessions::TabRestoreService, RecentTabsSubMenuModel>
-      tab_restore_service_observer_;
-#endif
+      tab_restore_service_observer_{this};
 
   std::unique_ptr<base::CallbackList<void()>::Subscription>
       foreign_session_updated_subscription_;
 
-  base::WeakPtrFactory<RecentTabsSubMenuModel> weak_ptr_factory_;
+  base::WeakPtrFactory<RecentTabsSubMenuModel> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RecentTabsSubMenuModel);
 };

@@ -6,11 +6,10 @@
 
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/public/cpp/ash_features.h"
+#include "ash/session/session_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "ash/system/date/date_view.h"
-#include "ash/system/date/tray_system_info.h"
 #include "ash/system/message_center/ash_popup_alignment_delegate.h"
 #include "ash/system/message_center/message_center_ui_controller.h"
 #include "ash/system/message_center/message_center_ui_delegate.h"
@@ -20,8 +19,11 @@
 #include "ash/system/network/network_tray_view.h"
 #include "ash/system/power/tray_power.h"
 #include "ash/system/status_area_widget.h"
+#include "ash/system/time/time_tray_item_view.h"
+#include "ash/system/time/time_view.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_container.h"
+#include "ash/system/unified/current_locale_view.h"
 #include "ash/system/unified/ime_mode_view.h"
 #include "ash/system/unified/managed_device_view.h"
 #include "ash/system/unified/notification_counter_view.h"
@@ -122,12 +124,14 @@ UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
       slider_bubble_controller_(
           std::make_unique<UnifiedSliderBubbleController>(this)),
       network_icon_purger_(std::make_unique<NetworkIconPurger>()),
+      current_locale_view_(new CurrentLocaleView(shelf)),
       ime_mode_view_(new ImeModeView(shelf)),
       managed_device_view_(new ManagedDeviceView(shelf)),
       notification_counter_item_(new NotificationCounterView(shelf)),
       quiet_mode_view_(new QuietModeView(shelf)),
       time_view_(new tray::TimeTrayItemView(shelf)) {
   tray_container()->SetMargin(kUnifiedTrayContentPadding, 0);
+  tray_container()->AddChildView(current_locale_view_);
   tray_container()->AddChildView(ime_mode_view_);
   tray_container()->AddChildView(managed_device_view_);
   tray_container()->AddChildView(notification_counter_item_);
@@ -206,7 +210,7 @@ void UnifiedSystemTray::UpdateAfterLoginStatusChange() {
 }
 
 bool UnifiedSystemTray::ShouldEnableExtraKeyboardAccessibility() {
-  return Shell::Get()->accessibility_controller()->IsSpokenFeedbackEnabled();
+  return Shell::Get()->accessibility_controller()->spoken_feedback_enabled();
 }
 
 void UnifiedSystemTray::AddInkDropLayer(ui::Layer* ink_drop_layer) {
@@ -238,6 +242,11 @@ void UnifiedSystemTray::SetTrayEnabled(bool enabled) {
     CloseBubble();
 
   SetEnabled(enabled);
+}
+
+void UnifiedSystemTray::SetTargetNotification(
+    const std::string& notification_id) {
+  model_->SetTargetNotification(notification_id);
 }
 
 bool UnifiedSystemTray::PerformAction(const ui::Event& event) {

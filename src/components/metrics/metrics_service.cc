@@ -182,7 +182,6 @@ const int kUpdateAliveTimestampSeconds = 15 * 60;
 void MarkAppCleanShutdownAndCommit(CleanExitBeacon* clean_exit_beacon,
                                    PrefService* local_state) {
   clean_exit_beacon->WriteBeaconValue(true);
-  ExecutionPhaseManager(local_state).OnAppEnterBackground();
   // Start writing right away (write happens on a different thread).
   local_state->CommitPendingWrite();
 }
@@ -200,7 +199,6 @@ void MetricsService::RegisterPrefs(PrefRegistrySimple* registry) {
   MetricsStateManager::RegisterPrefs(registry);
   MetricsLog::RegisterPrefs(registry);
   StabilityMetricsProvider::RegisterPrefs(registry);
-  ExecutionPhaseManager::RegisterPrefs(registry);
   MetricsReportingService::RegisterPrefs(registry);
 
   registry->RegisterIntegerPref(prefs::kMetricsSessionID, -1);
@@ -418,7 +416,6 @@ void MetricsService::OnAppEnterBackground() {
 
 void MetricsService::OnAppEnterForeground() {
   state_manager_->clean_exit_beacon()->WriteBeaconValue(false);
-  ExecutionPhaseManager(local_state_).OnAppEnterForeground();
   StartSchedulerIfNecessary();
 }
 #else
@@ -428,12 +425,6 @@ void MetricsService::LogNeedForCleanShutdown() {
   clean_shutdown_status_ = NEED_TO_SHUTDOWN;
 }
 #endif  // defined(OS_ANDROID) || defined(OS_IOS)
-
-// static
-void MetricsService::SetExecutionPhase(ExecutionPhase execution_phase,
-                                       PrefService* local_state) {
-  ExecutionPhaseManager(local_state).SetExecutionPhase(execution_phase);
-}
 
 void MetricsService::RecordBreakpadRegistration(bool success) {
   StabilityMetricsProvider(local_state_).RecordBreakpadRegistration(success);
@@ -482,10 +473,6 @@ void MetricsService::InitializeMetricsState() {
     // Reset flag, and wait until we call LogNeedForCleanShutdown() before
     // monitoring.
     state_manager_->clean_exit_beacon()->WriteBeaconValue(true);
-    ExecutionPhaseManager manager(local_state_);
-    base::UmaHistogramSparse("Chrome.Browser.CrashedExecutionPhase",
-                             static_cast<int>(manager.GetExecutionPhase()));
-    manager.SetExecutionPhase(ExecutionPhase::UNINITIALIZED_PHASE);
   }
 
   // HasPreviousSessionData is called first to ensure it is never bypassed.
@@ -531,7 +518,6 @@ void MetricsService::InitializeMetricsState() {
 
   // Notify stability metrics providers about the launch.
   provider.LogLaunch();
-  SetExecutionPhase(ExecutionPhase::START_METRICS_RECORDING, local_state_);
   provider.CheckLastSessionEndCompleted();
 
   // Call GetUptimes() for the first time, thus allowing all later calls
@@ -939,7 +925,6 @@ void MetricsService::LogCleanShutdown(bool end_completed) {
   clean_shutdown_status_ = CLEANLY_SHUTDOWN;
   client_->OnLogCleanShutdown();
   state_manager_->clean_exit_beacon()->WriteBeaconValue(true);
-  SetExecutionPhase(ExecutionPhase::SHUTDOWN_COMPLETE, local_state_);
   StabilityMetricsProvider(local_state_).MarkSessionEndCompleted(end_completed);
 }
 

@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/time/clock.h"
 #include "components/offline_pages/core/background/change_requests_state_task.h"
 #include "components/offline_pages/core/background/mark_attempt_started_task.h"
 #include "components/offline_pages/core/background/request_queue_store.h"
@@ -40,16 +39,16 @@ class MarkAttemptAbortedTaskTest : public RequestQueueTaskTestBase {
 
  protected:
   void InitializeStoreDone(bool success);
-  void AddRequestDone(ItemActionStatus status);
+  void AddRequestDone(AddRequestResult result);
 
   std::unique_ptr<UpdateRequestsResult> result_;
 };
 
 void MarkAttemptAbortedTaskTest::AddItemToStore(RequestQueueStore* store) {
-  base::Time creation_time = OfflineClock()->Now();
+  base::Time creation_time = OfflineTimeNow();
   SavePageRequest request_1(kRequestId1, kUrl1, kClientId1, creation_time,
                             true);
-  store->AddRequest(request_1,
+  store->AddRequest(request_1, RequestQueue::AddOptions(),
                     base::BindOnce(&MarkAttemptAbortedTaskTest::AddRequestDone,
                                    base::Unretained(this)));
   PumpLoop();
@@ -68,8 +67,8 @@ void MarkAttemptAbortedTaskTest::InitializeStoreDone(bool success) {
   ASSERT_TRUE(success);
 }
 
-void MarkAttemptAbortedTaskTest::AddRequestDone(ItemActionStatus status) {
-  ASSERT_EQ(ItemActionStatus::SUCCESS, status);
+void MarkAttemptAbortedTaskTest::AddRequestDone(AddRequestResult result) {
+  ASSERT_EQ(AddRequestResult::SUCCESS, result);
 }
 
 TEST_F(MarkAttemptAbortedTaskTest, MarkAttemptAbortedWhenStoreEmpty) {

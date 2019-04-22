@@ -7,7 +7,12 @@
 # https://github.com/KhronosGroup/Vulkan-Tools
 
 import("../../gni/angle.gni")
+
 import("$angle_root/third_party/vulkan-headers/vulkan_headers_script_deps.gni")
+
+# Vulkan-tools isn't ported to Fuchsia yet.
+# TODO(spang): Port mock ICD to Fuchsia.
+assert(!is_fuchsia)
 
 vulkan_undefine_configs = []
 if (is_win) {
@@ -103,28 +108,6 @@ group("vulkan_generate_helper_files") {
   }
 }
 
-config("vulkan_config") {
-  if (is_win) {
-    defines = [
-      "VK_USE_PLATFORM_WIN32_KHR",
-      "VK_USE_PLATFORM_WIN32_KHX",
-    ]
-  }
-  if (is_linux) {
-    defines = [
-      "VK_USE_PLATFORM_XCB_KHR",
-      "VK_USE_PLATFORM_XCB_KHX",
-    ]
-  }
-  if (is_android) {
-    defines = [
-      "VK_USE_PLATFORM_ANDROID_KHR",
-      "VK_USE_PLATFORM_ANDROID_KHX",
-    ]
-    libs = [ "vulkan" ]
-  }
-}
-
 config("vulkan_internal_config") {
   defines = [ "VULKAN_NON_CMAKE_BUILD" ]
   if (is_clang || !is_win) {
@@ -168,7 +151,7 @@ if (!is_android) {
 
   shared_library("VkICD_mock_icd") {
     configs -= vulkan_undefine_configs
-    public_configs = [ ":vulkan_config" ]
+    public_configs = [ "$angle_root:vulkan_config" ]
     deps = [
       ":vulkan_generate_mock_icd_files",
     ]
@@ -185,26 +168,25 @@ if (!is_android) {
 
   action("vulkan_gen_icd_json_file") {
     script = "$angle_root/scripts/generate_vulkan_layers_json.py"
+    sources = [
+      "../vulkan-headers/src/include/vulkan/vulkan_core.h",
+    ]
+    args = [ "--icd" ]
     if (is_win) {
-      sources = [
-        "src/icd/windows/VkICD_mock_icd.json",
-      ]
-      args = [ "$raw_vulkan_icd_dir/icd/windows" ]
+      sources += [ "src/icd/windows/VkICD_mock_icd.json" ]
+      args += [ "$raw_vulkan_icd_dir/icd/windows" ]
     }
     if (is_linux) {
-      sources = [
-        "src/icd/linux/VkICD_mock_icd.json",
-      ]
-      args = [ "$raw_vulkan_icd_dir/icd/linux" ]
+      sources += [ "src/icd/linux/VkICD_mock_icd.json" ]
+      args += [ "$raw_vulkan_icd_dir/icd/linux" ]
     }
 
     # The layer JSON files are part of the necessary data deps.
     outputs = [
       "$root_out_dir/$data_dir/VkICD_mock_icd.json",
     ]
-    data = [
-      "$root_out_dir/$data_dir/VkICD_mock_icd.json",
-    ]
-    args += [ rebase_path("$root_out_dir/$data_dir", root_build_dir) ]
+    data = outputs
+    args += [ rebase_path("$root_out_dir/$data_dir", root_build_dir) ] +
+            rebase_path(sources, root_build_dir)
   }
 }

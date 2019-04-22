@@ -38,7 +38,10 @@ source_set("probes_src") {
     "../../base",
     "../../tracing:ipc",
     "../../tracing:tracing",
+    "android_log",
     "filesystem",
+    "packages_list",
+    "power",
     "ps",
     "sys_stats",
   ]
@@ -68,7 +71,9 @@ source_set("unittests") {
     "../../../gn:default_deps",
     "../../../gn:gtest_deps",
     "../../tracing:test_support",
+    "android_log:unittests",
     "filesystem:unittests",
+    "packages_list:unittests",
     "ps:unittests",
     "sys_stats:unittests",
   ]

@@ -26,7 +26,7 @@ class ExtensionPrefsHidingBrowserActions : public ExtensionPrefsTest {
 
     // Install 5 extensions.
     for (int i = 0; i < 5; i++) {
-      std::string name = "test" + base::IntToString(i);
+      std::string name = "test" + base::NumberToString(i);
       extensions_.push_back(prefs_.AddExtension(name));
     }
 

@@ -132,6 +132,11 @@ class DiskCacheTestWithCache : public DiskCacheTest {
   }
 
   // Utility methods to access the cache and wait for each operation to finish.
+  int OpenOrCreateEntry(const std::string& key,
+                        disk_cache::EntryWithOpened* entry_struct);
+  int OpenOrCreateEntryWithPriority(const std::string& key,
+                                    net::RequestPriority request_priority,
+                                    disk_cache::EntryWithOpened* entry_struct);
   int OpenEntry(const std::string& key, disk_cache::Entry** entry);
   int OpenEntryWithPriority(const std::string& key,
                             net::RequestPriority request_priority,
@@ -163,6 +168,10 @@ class DiskCacheTestWithCache : public DiskCacheTest {
                       int64_t offset,
                       net::IOBuffer* buf,
                       int len);
+  int GetAvailableRange(disk_cache::Entry* entry,
+                        int64_t offset,
+                        int len,
+                        int64_t* start);
 
   // Asks the cache to trim an entry. If |empty| is true, the whole cache is
   // deleted.
@@ -175,6 +184,8 @@ class DiskCacheTestWithCache : public DiskCacheTest {
   // Makes sure that some time passes before continuing the test. Time::Now()
   // before and after this method will not be the same.
   void AddDelay();
+
+  void OnExternalCacheHit(const std::string& key);
 
   void TearDown() override;
 

@@ -14,6 +14,7 @@
 
 class Browser;
 class ExtensionAction;
+class GURL;
 class Profile;
 
 namespace content {
@@ -35,6 +36,7 @@ class ExtensionContextMenuModel : public ui::SimpleMenuModel,
     UNINSTALL,
     MANAGE_EXTENSIONS,
     INSPECT_POPUP,
+    PAGE_ACCESS_CANT_ACCESS,
     PAGE_ACCESS_SUBMENU,
     PAGE_ACCESS_RUN_ON_CLICK,
     PAGE_ACCESS_RUN_ON_SITE,
@@ -122,6 +124,11 @@ class ExtensionContextMenuModel : public ui::SimpleMenuModel,
 
   MenuEntries GetCurrentPageAccess(const Extension* extension,
                                    content::WebContents* web_contents) const;
+
+  // Returns true if the given page access command is enabled in the menu.
+  bool IsPageAccessCommandEnabled(const Extension& extension,
+                                  const GURL& url,
+                                  int command_id) const;
 
   void HandlePageAccessCommand(int command_id,
                                const Extension* extension) const;

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <title>Test that player will jump forwards 10 seconds if double tapped.</title>
+<script src="../../../resources/gesture-util.js"></script>
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
 <script src="../../media-controls.js"></script>
@@ -10,11 +11,13 @@ async_test(t => {
   const video = document.querySelector('video');
   let time = 0;
 
+  let double_tap_gesture;
+
   video.addEventListener('playing', t.step_func(() => {
     // Double tap on the right side.
     time = Math.round(video.currentTime);
     const coordinates = videoRightEdgeCoordinates(video);
-    doubleTouchAtCoordinates(coordinates[0], coordinates[1]);
+    double_tap_gesture = doubleTapAt(coordinates[0], coordinates[1]);
   }), { once: true });
 
   video.ontimeupdate = t.step_func(() => {
@@ -22,10 +25,11 @@ async_test(t => {
     assert_not_equals(Math.round(video.currentTime), 5);
   });
 
-  video.addEventListener('seeked', t.step_func_done(() => {
+  video.addEventListener('seeked', () => {
     // Check the video advanced 10 seconds
     assert_equals(Math.round(video.currentTime), time + 10);
-  }), { once: true });
+    double_tap_gesture.then(t.step_func_done());
+  }, { once: true });
 
   video.play();
 });

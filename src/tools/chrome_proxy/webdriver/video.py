@@ -31,7 +31,7 @@ class Video(IntegrationTest):
       responses = t.GetHTTPResponses()
       self.assertEquals(2, len(responses))
       for response in responses:
-        self.assertHasChromeProxyViaHeader(response)
+        self.assertHasProxyHeaders(response)
 
   # Videos fetched via an XHR request should not be proxied.
   def testNoCompressionOnXHR(self):
@@ -52,7 +52,7 @@ class Video(IntegrationTest):
           self.assertNotHasChromeProxyViaHeader(response)
           saw_video_response = True
         else:
-          self.assertHasChromeProxyViaHeader(response)
+          self.assertHasProxyHeaders(response)
       self.assertTrue(saw_video_response, 'No video request seen in test!')
 
   @ChromeVersionEqualOrAfterM(64)
@@ -61,39 +61,37 @@ class Video(IntegrationTest):
       t.AddChromeArg('--enable-spdy-proxy-auth')
       t.LoadURL('http://check.googlezip.net/connect')
       time.sleep(2) # wait for page load
-      initial_ocl_histogram_count = t.GetHistogram(
-        'Net.HttpOriginalContentLengthWithValidOCL')['count']
-      initial_ocl_histogram_sum = t.GetHistogram(
-        'Net.HttpOriginalContentLengthWithValidOCL')['sum']
       t.ExecuteJavascript(
         'var xhr = new XMLHttpRequest();'
         'xhr.open("GET", "/metrics/local.png", false);'
-        'xhr.setRequestHeader("Range", "bytes=0-200");'
+        'xhr.setRequestHeader("Range", "bytes=0-2048");'
         'xhr.send();'
         'return;'
       )
       saw_range_response = False
       for response in t.GetHTTPResponses():
-        self.assertHasChromeProxyViaHeader(response)
+        self.assertHasProxyHeaders(response)
         if response.response_headers['status']=='206':
           saw_range_response = True
           content_range = response.response_headers['content-range']
-          self.assertTrue(content_range.startswith('bytes 0-200/'))
+          self.assertTrue(content_range.startswith('bytes 0-2048/'))
           compressed_full_content_length = int(content_range.split('/')[1])
           ofcl = int(self.getChromeProxyOFCL(response))
           # ofcl should be same as compressed full content length, since no
           # compression for XHR.
           self.assertEqual(ofcl, compressed_full_content_length)
-      # One new entry should be added to HttpOriginalContentLengthWithValidOCL
-      # histogram and that should match expected OCL which is
-      # compression_ratio * 201 bytes.
-      self.assertEqual(1, t.GetHistogram(
-        'Net.HttpOriginalContentLengthWithValidOCL')['count']
-                       - initial_ocl_histogram_count)
-      self.assertEqual(t.GetHistogram(
-        'Net.HttpOriginalContentLengthWithValidOCL')['sum']
-                       - initial_ocl_histogram_sum,
-                       ofcl/compressed_full_content_length*201)
+      # Navigate away to trigger the metrics recording for previous page load.
+      t.LoadURL('about:blank')
+      original_kb_histogram = t.GetHistogram('PageLoad.Clients.'
+        'DataReductionProxy.Experimental.Bytes.Network.Original2')
+      compression_percent_histogram = t.GetHistogram('PageLoad.Clients.'
+        'DataReductionProxy.Experimental.Bytes.Network.CompressionRatio2')
+      self.assertEqual(1, original_kb_histogram['count'])
+      self.assertEqual(1, compression_percent_histogram['count'])
+      # Verify the total page size is 3 KB, and compression ratio.
+      self.assertEqual(3, original_kb_histogram['sum'])
+      self.assertEqual(compression_percent_histogram['sum'],
+                       compressed_full_content_length/ofcl*100)
       self.assertTrue(saw_range_response, 'No range request was seen in test!')
 
   @ChromeVersionEqualOrAfterM(64)
@@ -107,7 +105,7 @@ class Video(IntegrationTest):
       responses = t.GetHTTPResponses()
       saw_range_response = False
       for response in responses:
-        self.assertHasChromeProxyViaHeader(response)
+        self.assertHasProxyHeaders(response)
         if response.response_headers['status']=='206':
           saw_range_response = True
           content_range = response.response_headers['content-range']
@@ -133,7 +131,7 @@ class Video(IntegrationTest):
           'http://check.googlezip.net/cacheable/video/buck_bunny_tiny.html')
       # Check request was proxied and we got a compressed video back.
       for response in t.GetHTTPResponses():
-        self.assertHasChromeProxyViaHeader(response)
+        self.assertHasProxyHeaders(response)
         if ('content-type' in response.response_headers
             and 'video' in response.response_headers['content-type']):
           self.assertEqual('video/webm',
@@ -195,7 +193,7 @@ class Video(IntegrationTest):
       video_etag = None
       num_partial_requests = 0
       for response in t.GetHTTPResponses():
-        self.assertHasChromeProxyViaHeader(response)
+        self.assertHasProxyHeaders(response)
         rh = response.response_headers
         if ('content-type' in rh and 'video' in rh['content-type']):
           self.assertTrue('etag' in rh),
@@ -204,8 +202,9 @@ class Video(IntegrationTest):
             video_etag = rh['etag']
           else:
             self.assertEqual(video_etag, rh['etag'])
-          if ('range' in response.request_headers and
-              response.request_headers['range'] != 'bytes=0-'):
+          if ('status' in rh and rh['status']=='206' and 'content-range' in rh
+              and rh['content-range'].startswith('bytes ') and
+              not rh['content-range'].startswith('bytes 0-')):
             num_partial_requests += 1
       # Also make sure that we had at least one partial Range request.
       self.assertGreaterEqual(num_partial_requests, 1)
@@ -255,7 +254,7 @@ class Video(IntegrationTest):
           if ('content-type' in resp.response_headers
               and resp.response_headers['content-type'] == 'video/webm'):
             loaded_compressed_video = True
-            self.assertHasChromeProxyViaHeader(resp)
+            self.assertHasProxyHeaders(resp)
           else:
             # Take a breath before requesting again.
             time.sleep(1)
@@ -293,7 +292,7 @@ class Video(IntegrationTest):
         'window.playerState == YT.PlayerState.PLAYING', 30)
       for response in t.GetHTTPResponses():
         if not response.url.startswith('https'):
-          self.assertHasChromeProxyViaHeader(response)
+          self.assertHasProxyHeaders(response)
 
 if __name__ == '__main__':
   IntegrationTest.RunAllTests()

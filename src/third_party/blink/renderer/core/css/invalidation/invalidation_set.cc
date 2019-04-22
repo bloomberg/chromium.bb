@@ -37,7 +37,6 @@
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
-#include "third_party/blink/renderer/platform/wtf/compiler.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
@@ -61,7 +60,7 @@ void InvalidationSet::CacheTracingFlag() {
 }
 
 InvalidationSet::InvalidationSet(InvalidationType type)
-    : type_(type),
+    : type_(static_cast<unsigned>(type)),
       invalidates_self_(false),
       is_alive_(true) {}
 
@@ -69,40 +68,33 @@ bool InvalidationSet::InvalidatesElement(Element& element) const {
   if (invalidation_flags_.WholeSubtreeInvalid())
     return true;
 
-  if (tag_names_ &&
-      tag_names_->Contains(element.LocalNameForSelectorMatching())) {
+  if (HasTagNames() && HasTagName(element.LocalNameForSelectorMatching())) {
     TRACE_STYLE_INVALIDATOR_INVALIDATION_SELECTORPART_IF_ENABLED(
         element, kInvalidationSetMatchedTagName, *this,
         element.LocalNameForSelectorMatching());
     return true;
   }
 
-  if (element.HasID() && ids_ &&
-      ids_->Contains(element.IdForStyleResolution())) {
+  if (element.HasID() && HasIds() && HasId(element.IdForStyleResolution())) {
     TRACE_STYLE_INVALIDATOR_INVALIDATION_SELECTORPART_IF_ENABLED(
         element, kInvalidationSetMatchedId, *this,
         element.IdForStyleResolution());
     return true;
   }
 
-  if (element.HasClass() && classes_) {
-    const SpaceSplitString& class_names = element.ClassNames();
-    for (const auto& class_name : *classes_) {
-      if (class_names.Contains(class_name)) {
-        TRACE_STYLE_INVALIDATOR_INVALIDATION_SELECTORPART_IF_ENABLED(
-            element, kInvalidationSetMatchedClass, *this, class_name);
-        return true;
-      }
+  if (element.HasClass() && HasClasses()) {
+    if (StringImpl* class_name = FindAnyClass(element)) {
+      TRACE_STYLE_INVALIDATOR_INVALIDATION_SELECTORPART_IF_ENABLED(
+          element, kInvalidationSetMatchedClass, *this, String(class_name));
+      return true;
     }
   }
 
-  if (element.hasAttributes() && attributes_) {
-    for (const auto& attribute : *attributes_) {
-      if (element.hasAttribute(attribute)) {
-        TRACE_STYLE_INVALIDATOR_INVALIDATION_SELECTORPART_IF_ENABLED(
-            element, kInvalidationSetMatchedAttribute, *this, attribute);
-        return true;
-      }
+  if (element.hasAttributes() && HasAttributes()) {
+    if (StringImpl* attribute = FindAnyAttribute(element)) {
+      TRACE_STYLE_INVALIDATOR_INVALIDATION_SELECTORPART_IF_ENABLED(
+          element, kInvalidationSetMatchedAttribute, *this, String(attribute));
+      return true;
     }
   }
 
@@ -116,8 +108,7 @@ bool InvalidationSet::InvalidatesElement(Element& element) const {
 }
 
 bool InvalidationSet::InvalidatesTagName(Element& element) const {
-  if (tag_names_ &&
-      tag_names_->Contains(element.LocalNameForSelectorMatching())) {
+  if (HasTagNames() && HasTagName(element.LocalNameForSelectorMatching())) {
     TRACE_STYLE_INVALIDATOR_INVALIDATION_SELECTORPART_IF_ENABLED(
         element, kInvalidationSetMatchedTagName, *this,
         element.LocalNameForSelectorMatching());
@@ -144,10 +135,10 @@ void InvalidationSet::Combine(const InvalidationSet& other) {
 
   CHECK_NE(&other, this);
 
-  if (GetType() == kInvalidateSiblings) {
-    SiblingInvalidationSet& siblings = ToSiblingInvalidationSet(*this);
+  if (auto* invalidation_set = DynamicTo<SiblingInvalidationSet>(this)) {
+    SiblingInvalidationSet& siblings = *invalidation_set;
     const SiblingInvalidationSet& other_siblings =
-        ToSiblingInvalidationSet(other);
+        To<SiblingInvalidationSet>(other);
 
     siblings.UpdateMaxDirectAdjacentSelectors(
         other_siblings.MaxDirectAdjacentSelectors());
@@ -189,84 +180,99 @@ void InvalidationSet::Combine(const InvalidationSet& other) {
   if (other.InvalidatesParts())
     SetInvalidatesParts();
 
-  if (other.classes_) {
-    for (const auto& class_name : *other.classes_)
-      AddClass(class_name);
-  }
+  for (const auto& class_name : other.Classes())
+    AddClass(class_name);
 
-  if (other.ids_) {
-    for (const auto& id : *other.ids_)
-      AddId(id);
-  }
+  for (const auto& id : other.Ids())
+    AddId(id);
 
-  if (other.tag_names_) {
-    for (const auto& tag_name : *other.tag_names_)
-      AddTagName(tag_name);
-  }
+  for (const auto& tag_name : other.TagNames())
+    AddTagName(tag_name);
 
-  if (other.attributes_) {
-    for (const auto& attribute : *other.attributes_)
-      AddAttribute(attribute);
-  }
+  for (const auto& attribute : other.Attributes())
+    AddAttribute(attribute);
 }
 
 void InvalidationSet::Destroy() const {
-  if (IsDescendantInvalidationSet())
-    delete ToDescendantInvalidationSet(this);
+  if (auto* invalidation_set = DynamicTo<DescendantInvalidationSet>(this))
+    delete invalidation_set;
   else
-    delete ToSiblingInvalidationSet(this);
+    delete To<SiblingInvalidationSet>(this);
 }
 
-HashSet<AtomicString>& InvalidationSet::EnsureClassSet() {
-  if (!classes_)
-    classes_ = std::make_unique<HashSet<AtomicString>>();
-  return *classes_;
+void InvalidationSet::ClearAllBackings() {
+  classes_.Clear(backing_flags_);
+  ids_.Clear(backing_flags_);
+  tag_names_.Clear(backing_flags_);
+  attributes_.Clear(backing_flags_);
 }
 
-HashSet<AtomicString>& InvalidationSet::EnsureIdSet() {
-  if (!ids_)
-    ids_ = std::make_unique<HashSet<AtomicString>>();
-  return *ids_;
+bool InvalidationSet::HasEmptyBackings() const {
+  return classes_.IsEmpty(backing_flags_) && ids_.IsEmpty(backing_flags_) &&
+         tag_names_.IsEmpty(backing_flags_) &&
+         attributes_.IsEmpty(backing_flags_);
 }
 
-HashSet<AtomicString>& InvalidationSet::EnsureTagNameSet() {
-  if (!tag_names_)
-    tag_names_ = std::make_unique<HashSet<AtomicString>>();
-  return *tag_names_;
+StringImpl* InvalidationSet::FindAnyClass(Element& element) const {
+  const SpaceSplitString& class_names = element.ClassNames();
+  wtf_size_t size = class_names.size();
+  if (StringImpl* string_impl = classes_.GetStringImpl(backing_flags_)) {
+    for (wtf_size_t i = 0; i < size; ++i) {
+      if (Equal(string_impl, class_names[i].Impl()))
+        return string_impl;
+    }
+  }
+  if (const HashSet<AtomicString>* set = classes_.GetHashSet(backing_flags_)) {
+    for (wtf_size_t i = 0; i < size; ++i) {
+      auto item = set->find(class_names[i]);
+      if (item != set->end())
+        return item->Impl();
+    }
+  }
+  return nullptr;
 }
 
-HashSet<AtomicString>& InvalidationSet::EnsureAttributeSet() {
-  if (!attributes_)
-    attributes_ = std::make_unique<HashSet<AtomicString>>();
-  return *attributes_;
+StringImpl* InvalidationSet::FindAnyAttribute(Element& element) const {
+  if (StringImpl* string_impl = attributes_.GetStringImpl(backing_flags_)) {
+    if (element.HasAttributeIgnoringNamespace(AtomicString(string_impl)))
+      return string_impl;
+  }
+  if (const HashSet<AtomicString>* set =
+          attributes_.GetHashSet(backing_flags_)) {
+    for (const auto& attribute : *set) {
+      if (element.HasAttributeIgnoringNamespace(attribute))
+        return attribute.Impl();
+    }
+  }
+  return nullptr;
 }
 
 void InvalidationSet::AddClass(const AtomicString& class_name) {
   if (WholeSubtreeInvalid())
     return;
   CHECK(!class_name.IsEmpty());
-  EnsureClassSet().insert(class_name);
+  classes_.Add(backing_flags_, class_name);
 }
 
 void InvalidationSet::AddId(const AtomicString& id) {
   if (WholeSubtreeInvalid())
     return;
   CHECK(!id.IsEmpty());
-  EnsureIdSet().insert(id);
+  ids_.Add(backing_flags_, id);
 }
 
 void InvalidationSet::AddTagName(const AtomicString& tag_name) {
   if (WholeSubtreeInvalid())
     return;
   CHECK(!tag_name.IsEmpty());
-  EnsureTagNameSet().insert(tag_name);
+  tag_names_.Add(backing_flags_, tag_name);
 }
 
 void InvalidationSet::AddAttribute(const AtomicString& attribute) {
   if (WholeSubtreeInvalid())
     return;
   CHECK(!attribute.IsEmpty());
-  EnsureAttributeSet().insert(attribute);
+  attributes_.Add(backing_flags_, attribute);
 }
 
 void InvalidationSet::SetWholeSubtreeInvalid() {
@@ -279,10 +285,7 @@ void InvalidationSet::SetWholeSubtreeInvalid() {
   invalidation_flags_.SetInsertionPointCrossing(false);
   invalidation_flags_.SetInvalidatesSlotted(false);
   invalidation_flags_.SetInvalidatesParts(false);
-  classes_ = nullptr;
-  ids_ = nullptr;
-  tag_names_ = nullptr;
-  attributes_ = nullptr;
+  ClearAllBackings();
 }
 
 namespace {
@@ -330,30 +333,30 @@ void InvalidationSet::ToTracedValue(TracedValue* value) const {
   if (invalidation_flags_.InvalidatesParts())
     value->SetBoolean("invalidatesParts", true);
 
-  if (ids_) {
+  if (HasIds()) {
     value->BeginArray("ids");
-    for (const auto& id : *ids_)
+    for (const auto& id : Ids())
       value->PushString(id);
     value->EndArray();
   }
 
-  if (classes_) {
+  if (HasClasses()) {
     value->BeginArray("classes");
-    for (const auto& class_name : *classes_)
+    for (const auto& class_name : Classes())
       value->PushString(class_name);
     value->EndArray();
   }
 
-  if (tag_names_) {
+  if (HasTagNames()) {
     value->BeginArray("tagNames");
-    for (const auto& tag_name : *tag_names_)
+    for (const auto& tag_name : TagNames())
       value->PushString(tag_name);
     value->EndArray();
   }
 
-  if (attributes_) {
+  if (HasAttributes()) {
     value->BeginArray("attributes");
-    for (const auto& attribute : *attributes_)
+    for (const auto& attribute : Attributes())
       value->PushString(attribute);
     value->EndArray();
   }
@@ -363,7 +366,7 @@ void InvalidationSet::ToTracedValue(TracedValue* value) const {
 
 #ifndef NDEBUG
 void InvalidationSet::Show() const {
-  std::unique_ptr<TracedValue> value = TracedValue::Create();
+  auto value = std::make_unique<TracedValue>();
   value->BeginArray("InvalidationSet");
   ToTracedValue(value.get());
   value->EndArray();
@@ -373,7 +376,7 @@ void InvalidationSet::Show() const {
 
 SiblingInvalidationSet::SiblingInvalidationSet(
     scoped_refptr<DescendantInvalidationSet> descendants)
-    : InvalidationSet(kInvalidateSiblings),
+    : InvalidationSet(InvalidationType::kInvalidateSiblings),
       max_direct_adjacent_selectors_(1),
       descendant_invalidation_set_(std::move(descendants)) {}
 

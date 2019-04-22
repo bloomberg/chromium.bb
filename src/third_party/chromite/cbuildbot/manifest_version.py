@@ -129,6 +129,8 @@ def RefreshManifestCheckout(manifest_dir, manifest_repo):
   If a repository is already present, it will be cleansed of any local
   changes and restored to its pristine state, checking out the origin.
   """
+  logging.info('Refreshing %s from %s', manifest_dir, manifest_repo)
+
   reinitialize = True
   if os.path.exists(manifest_dir):
     result = git.RunGit(manifest_dir, ['config', 'remote.origin.url'],
@@ -618,7 +620,8 @@ class BuildSpecsManager(object):
 
   def __init__(self, source_repo, manifest_repo, build_names, incr_type, force,
                branch, manifest=constants.DEFAULT_MANIFEST, dry_run=True,
-               config=None, metadata=None, db=None, buildbucket_client=None):
+               config=None, metadata=None, buildstore=None,
+               buildbucket_client=None):
     """Initializes a build specs manager.
 
     Args:
@@ -635,7 +638,7 @@ class BuildSpecsManager(object):
       config: Instance of config_lib.BuildConfig. Config dict of this builder.
       metadata: Instance of metadata_lib.CBuildbotMetadata. Metadata of this
                 builder.
-      db: Instance of cidb.CIDBConnection.
+      buildstore: BuildStore object to make DB calls.
       buildbucket_client: Instance of buildbucket_lib.buildbucket_client.
     """
     self.cros_source = source_repo
@@ -655,7 +658,7 @@ class BuildSpecsManager(object):
     self.config = config
     self.master = False if config is None else config.master
     self.metadata = metadata
-    self.db = db
+    self.buildstore = buildstore
     self.buildbucket_client = buildbucket_client
 
     # Directories and specifications are set once we load the specs.
@@ -747,8 +750,8 @@ class BuildSpecsManager(object):
       self.latest = self._LatestSpecFromDir(version_info, self.all_specs_dir)
       if self.latest is not None:
         latest_builds = None
-        if self.db is not None:
-          latest_builds = self.db.GetBuildHistory(
+        if self.buildstore.AreClientsReady():
+          latest_builds = self.buildstore.GetBuildHistory(
               self.build_names[0], 1, platform_version=self.latest)
         if not latest_builds:
           self.latest_unprocessed = self.latest
@@ -780,11 +783,17 @@ class BuildSpecsManager(object):
         self._latest_build['status'] == constants.BUILDER_STATUS_PASSED):
       latest_spec_file = '%s.xml' % os.path.join(
           self.all_specs_dir, self.latest)
+      logging.info('Found previous successful build manifest: %s',
+                   latest_spec_file)
       # We've built this checkout before if the manifest isn't different than
       # the last one we've built.
-      return not self.cros_source.IsManifestDifferent(latest_spec_file)
+      to_return = not self.cros_source.IsManifestDifferent(latest_spec_file)
+      logging.info('Is this checkout the same as the last build: %s',
+                   to_return)
+      return to_return
     else:
       # We've never built this manifest before so this checkout is always new.
+      logging.info('No successful build on this branch before')
       return False
 
   def CreateManifest(self):
@@ -804,6 +813,12 @@ class BuildSpecsManager(object):
       version_info.UpdateVersionFile(message, dry_run=self.dry_run)
       assert version != self.latest
       logging.info('Incremented version number to  %s', version)
+    else:
+      # See https://crbug.com/927911
+      logging.info(
+          'Version file does not match, not updating. Latest from buildspec'
+          ' is %s but chromeos_version.sh has %s.',
+          self.latest, version)
 
     return version
 
@@ -842,7 +857,7 @@ class BuildSpecsManager(object):
     return (self._latest_build and
             self._latest_build['status'] == constants.BUILDER_STATUS_FAILED)
 
-  def WaitForSlavesToComplete(self, master_build_id, db, builders_array,
+  def WaitForSlavesToComplete(self, master_build_identifier, builders_array,
                               pool=None, timeout=3 * 60,
                               ignore_timeout_exception=True):
     """Wait for all slaves to complete or timeout.
@@ -853,8 +868,7 @@ class BuildSpecsManager(object):
     in deciding whether to wait.
 
     Args:
-      master_build_id: Master build id to check.
-      db: An instance of cidb.CIDBConnection.
+      master_build_identifier: Master build identifier to check.
       builders_array: The name list of the build configs to check.
       pool: An instance of ValidationPool.validation_pool used by sync stage
             to apply changes.
@@ -876,7 +890,8 @@ class BuildSpecsManager(object):
       logging.info('%s until timeout...', remaining)
 
     slave_status = build_status.SlaveStatus(
-        start_time, builders_array, master_build_id, db,
+        start_time, builders_array, master_build_identifier,
+        buildstore=self.buildstore,
         config=self.config,
         metadata=self.metadata,
         buildbucket_client=self.buildbucket_client,
@@ -961,21 +976,27 @@ class BuildSpecsManager(object):
         self.InitializeManifestVariables(version_info)
 
         if not self.force and self.HasCheckoutBeenBuilt():
+          logging.info('Build is not forced and this checkout already built')
           return None
 
         # If we're the master, always create a new build spec. Otherwise,
         # only create a new build spec if we've already built the existing
         # spec.
         if self.master or not self.latest_unprocessed:
+          logging.info('Build is master or build latest unprocessed is None')
           git.CreatePushBranch(PUSH_BRANCH, self.manifest_dir, sync=False)
           version = self.GetNextVersion(version_info)
           new_manifest = self.CreateManifest()
+          logging.info('Publishing the new manifest version')
           self.PublishManifest(new_manifest, version, build_id=build_id)
         else:
           version = self.latest_unprocessed
 
         self.current_version = version
-        return self.GetLocalManifest(version)
+        logging.info('current_version: %s', self.current_version)
+        to_return = self.GetLocalManifest(version)
+        logging.info('Local manifest for version: %s', to_return)
+        return to_return
       except cros_build_lib.RunCommandError as e:
         last_error = 'Failed to generate buildspec. error: %s' % e
         logging.error(last_error)
@@ -1005,8 +1026,22 @@ class BuildSpecsManager(object):
       CreateSymlink(src_file, dest_file)
 
   def PushSpecChanges(self, commit_message):
-    """Pushes any changes you have in the manifest directory."""
-    _PushGitChanges(self.manifest_dir, commit_message, dry_run=self.dry_run)
+    """Pushes any changes you have in the manifest directory.
+
+    Args:
+      commit_message: Message that the git commit will contain.
+    """
+    # %submit enables Gerrit automerge feature to manage contention on the
+    # high traffic manifest_versions repository.
+    push_to_git = git.GetTrackingBranch(
+        self.manifest_dir, for_checkout=False, for_push=False)
+    push_to = git.RemoteRef(push_to_git.remote, 'refs/for/master%submit',
+                            push_to_git.project_name)
+    _PushGitChanges(
+        self.manifest_dir,
+        commit_message,
+        dry_run=self.dry_run,
+        push_to=push_to)
 
   def UpdateStatus(self, success_map, message=None, retries=NUM_RETRIES):
     """Updates the status of the build for the current build spec.
@@ -1027,8 +1062,7 @@ class BuildSpecsManager(object):
         commit_message = (
             'Automatic checkin: status=%s build_version %s for %s' %
             (builder_status_lib.BuilderStatus.GetCompletedStatus(success),
-             self.current_version,
-             self.build_names[0]))
+             self.current_version, self.build_names[0]))
 
         self._SetPassSymlinks(success_map)
 

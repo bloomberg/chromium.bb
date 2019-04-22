@@ -6,11 +6,13 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/sync_socket.h"
 #include "media/audio/audio_output_controller.h"
+#include "media/mojo/interfaces/audio_data_pipe.mojom.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"

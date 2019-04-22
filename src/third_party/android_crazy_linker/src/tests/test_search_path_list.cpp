@@ -107,25 +107,25 @@ int main() {
   // Reset search paths to a non-existing directory. Check that the library
   // can't be loaded.
   setenv("LD_LIBRARY_PATH", "/this-directory-does-not-exist", 1);
-  crazy_context_reset_search_paths(context);
+  crazy_reset_search_paths();
   CheckLibraryCantLoad(LIB_NAME, context);
 
   // Add the search path to the current executable, this should load the
   // original
   // libfoo.so.
-  crazy_context_add_search_path_for_address(context, (void*)&main);
+  crazy_add_search_path_for_address((void*)&main);
   CheckLibrary(LIB_NAME, kFooSymbols, kFoo2Symbols, context);
 
   // Reset search paths to use $TMPDIR2 then $TMPDIR1
   setenv("LD_LIBRARY_PATH", temp_dir_1.path(), 1);
-  crazy_context_reset_search_paths(context);
-  crazy_context_add_search_path(context, temp_dir_2.path());
+  crazy_reset_search_paths();
+  crazy_add_search_path(temp_dir_2.path());
 
   // Check that the copy of libfoo2.so is loaded.
   CheckLibrary(LIB_NAME, kFoo2Symbols, kFooSymbols, context);
 
   // Reset search paths to use only $TMPDIR1
-  crazy_context_reset_search_paths(context);
+  crazy_reset_search_paths();
 
   // Check that the copy of libfoo.so is loaded.
   CheckLibrary(LIB_NAME, kFooSymbols, kFoo2Symbols, context);

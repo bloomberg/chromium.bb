@@ -8,6 +8,7 @@
 #include <wayland-server-core.h>
 #include <wayland-server-protocol-core.h>
 
+#include "base/bind.h"
 #include "components/exo/fullscreen_shell_surface.h"
 #include "components/exo/surface.h"
 #include "components/exo/wayland/server_util.h"

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/media/router/providers/wired_display/wired_display_media_route_provider.h"
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "chrome/browser/media/router/providers/wired_display/wired_display_presentation_receiver.h"
 #include "chrome/browser/media/router/providers/wired_display/wired_display_presentation_receiver_factory.h"
@@ -48,8 +49,7 @@ class MockPresentationReceiver : public WiredDisplayPresentationReceiver {
  public:
   MOCK_METHOD2(Start,
                void(const std::string& presentation_id, const GURL& start_url));
-  void Terminate() override { TerminateInternal(); }
-  MOCK_METHOD0(TerminateInternal, void());
+  MOCK_METHOD0(Terminate, void());
   MOCK_METHOD0(ExitFullscreen, void());
 
   void SetTerminationCallback(base::OnceClosure termination_callback) {
@@ -340,7 +340,7 @@ TEST_F(WiredDisplayMediaRouteProviderTest, CreateAndTerminateRoute) {
   // Terminate the route.
   EXPECT_CALL(callback, TerminateRoute(base::Optional<std::string>(),
                                        RouteRequestResult::OK));
-  EXPECT_CALL(*receiver_creator_.receiver(), TerminateInternal());
+  EXPECT_CALL(*receiver_creator_.receiver(), Terminate());
   EXPECT_CALL(router_,
               OnPresentationConnectionStateChanged(
                   presentation_id,

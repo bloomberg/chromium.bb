@@ -26,7 +26,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -237,11 +237,11 @@ SimpleBackendImpl::SimpleBackendImpl(
     int64_t max_bytes,
     net::CacheType cache_type,
     net::NetLog* net_log)
-    : cleanup_tracker_(std::move(cleanup_tracker)),
+    : Backend(cache_type),
+      cleanup_tracker_(std::move(cleanup_tracker)),
       file_tracker_(file_tracker ? file_tracker
                                  : g_simple_file_tracker.Pointer()),
       path_(path),
-      cache_type_(cache_type),
       cache_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
            base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
@@ -282,16 +282,16 @@ net::Error SimpleBackendImpl::Init(CompletionOnceCallback completion_callback) {
 
   index_ = std::make_unique<SimpleIndex>(
       base::ThreadTaskRunnerHandle::Get(), cleanup_tracker_.get(), this,
-      cache_type_,
+      GetCacheType(),
       std::make_unique<SimpleIndexFile>(cache_runner_, worker_pool.get(),
-                                        cache_type_, path_));
+                                        GetCacheType(), path_));
   index_->ExecuteWhenReady(
-      base::BindOnce(&RecordIndexLoad, cache_type_, base::TimeTicks::Now()));
+      base::BindOnce(&RecordIndexLoad, GetCacheType(), base::TimeTicks::Now()));
 
   PostTaskAndReplyWithResult(
       cache_runner_.get(), FROM_HERE,
       base::BindOnce(&SimpleBackendImpl::InitCacheStructureOnDisk, path_,
-                     orig_max_size_, cache_type_),
+                     orig_max_size_, GetCacheType()),
       base::BindOnce(&SimpleBackendImpl::InitializeIndex, AsWeakPtr(),
                      std::move(completion_callback)));
   return net::ERR_IO_PENDING;
@@ -324,11 +324,11 @@ void SimpleBackendImpl::OnDoomComplete(uint64_t entry_hash) {
   to_handle_waiters.swap(it->second);
   entries_pending_doom_.erase(it);
 
-  SIMPLE_CACHE_UMA(COUNTS_1000, "NumOpsBlockedByPendingDoom", cache_type_,
+  SIMPLE_CACHE_UMA(COUNTS_1000, "NumOpsBlockedByPendingDoom", GetCacheType(),
                    to_handle_waiters.size());
 
   for (PostDoomWaiter& post_doom : to_handle_waiters) {
-    SIMPLE_CACHE_UMA(TIMES, "QueueLatency.PendingDoom", cache_type_,
+    SIMPLE_CACHE_UMA(TIMES, "QueueLatency.PendingDoom", GetCacheType(),
                      (base::TimeTicks::Now() - post_doom.time_queued));
     std::move(post_doom.run_post_doom).Run();
   }
@@ -394,10 +394,6 @@ void SimpleBackendImpl::DoomEntries(std::vector<uint64_t>* entry_hashes,
                      base::Passed(&mass_doom_entry_hashes), barrier_callback));
 }
 
-net::CacheType SimpleBackendImpl::GetCacheType() const {
-  return net::DISK_CACHE;
-}
-
 int32_t SimpleBackendImpl::GetEntryCount() const {
   // TODO(pasko): Use directory file count when index is not ready.
   return index_->GetEntryCount();
@@ -447,37 +443,90 @@ net::Error SimpleBackendImpl::CreateEntry(const std::string& key,
   scoped_refptr<SimpleEntryImpl> simple_entry = CreateOrFindActiveOrDoomedEntry(
       entry_hash, key, request_priority, &post_doom);
 
+  // If couldn't grab an entry object due to pending doom, see if circumstances
+  // are right for an optimistic create.
   if (!simple_entry) {
-    // We would like to optimistically have create go ahead, for benefit of
-    // HTTP cache use. This can only be sanely done if we are the only op
-    // serialized after doom's completion.
-    if (post_doom->empty() &&
-        entry_operations_mode_ == SimpleEntryImpl::OPTIMISTIC_OPERATIONS) {
-      simple_entry = new SimpleEntryImpl(
-          cache_type_, path_, cleanup_tracker_.get(), entry_hash,
-          entry_operations_mode_, this, file_tracker_, net_log_,
-          GetNewEntryPriority(request_priority));
-      simple_entry->SetKey(key);
-      simple_entry->SetActiveEntryProxy(
-          ActiveEntryProxy::Create(entry_hash, this));
-      simple_entry->SetCreatePendingDoom();
-      std::pair<EntryMap::iterator, bool> insert_result =
-          active_entries_.insert(
-              EntryMap::value_type(entry_hash, simple_entry.get()));
-      post_doom->emplace_back(base::BindOnce(
-          &SimpleEntryImpl::NotifyDoomBeforeCreateComplete, simple_entry));
-      DCHECK(insert_result.second);
+    simple_entry = MaybeOptimisticCreateForPostDoom(
+        entry_hash, key, request_priority, post_doom);
+  }
+
+  // If that doesn't work either, retry this once doom is done.
+  if (!simple_entry) {
+    base::OnceCallback<net::Error(CompletionOnceCallback)> operation =
+        base::BindOnce(&SimpleBackendImpl::CreateEntry, base::Unretained(this),
+                       key, request_priority, entry);
+    post_doom->emplace_back(base::BindOnce(
+        &RunOperationAndCallback, std::move(operation), std::move(callback)));
+    return net::ERR_IO_PENDING;
+  }
+
+  return simple_entry->CreateEntry(entry, std::move(callback));
+}
+
+net::Error SimpleBackendImpl::OpenOrCreateEntry(
+    const std::string& key,
+    net::RequestPriority request_priority,
+    EntryWithOpened* entry_struct,
+    CompletionOnceCallback callback) {
+  DCHECK_LT(0u, key.size());
+  const uint64_t entry_hash = simple_util::GetEntryHashKey(key);
+
+  std::vector<PostDoomWaiter>* post_doom = nullptr;
+  scoped_refptr<SimpleEntryImpl> simple_entry = CreateOrFindActiveOrDoomedEntry(
+      entry_hash, key, request_priority, &post_doom);
+
+  // If couldn't grab an entry object due to pending doom, see if circumstances
+  // are right for an optimistic create.
+  if (!simple_entry) {
+    simple_entry = MaybeOptimisticCreateForPostDoom(
+        entry_hash, key, request_priority, post_doom);
+    if (simple_entry) {
+      entry_struct->opened = false;
+      return simple_entry->CreateEntry(&entry_struct->entry,
+                                       std::move(callback));
     } else {
+      // If that doesn't work either, retry this once doom is done.
       base::OnceCallback<net::Error(CompletionOnceCallback)> operation =
-          base::BindOnce(&SimpleBackendImpl::CreateEntry,
-                         base::Unretained(this), key, request_priority, entry);
+          base::BindOnce(&SimpleBackendImpl::OpenOrCreateEntry,
+                         base::Unretained(this), key, request_priority,
+                         entry_struct);
       post_doom->emplace_back(base::BindOnce(
           &RunOperationAndCallback, std::move(operation), std::move(callback)));
       return net::ERR_IO_PENDING;
     }
   }
 
-  return simple_entry->CreateEntry(entry, std::move(callback));
+  return simple_entry->OpenOrCreateEntry(entry_struct, std::move(callback));
+}
+
+scoped_refptr<SimpleEntryImpl>
+SimpleBackendImpl::MaybeOptimisticCreateForPostDoom(
+    uint64_t entry_hash,
+    const std::string& key,
+    net::RequestPriority request_priority,
+    std::vector<PostDoomWaiter>* post_doom) {
+  scoped_refptr<SimpleEntryImpl> simple_entry;
+  // We would like to optimistically have create go ahead, for benefit of
+  // HTTP cache use. This can only be sanely done if we are the only op
+  // serialized after doom's completion.
+  if (post_doom->empty() &&
+      entry_operations_mode_ == SimpleEntryImpl::OPTIMISTIC_OPERATIONS) {
+    simple_entry = new SimpleEntryImpl(
+        GetCacheType(), path_, cleanup_tracker_.get(), entry_hash,
+        entry_operations_mode_, this, file_tracker_, net_log_,
+        GetNewEntryPriority(request_priority));
+    simple_entry->SetKey(key);
+    simple_entry->SetActiveEntryProxy(
+        ActiveEntryProxy::Create(entry_hash, this));
+    simple_entry->SetCreatePendingDoom();
+    std::pair<EntryMap::iterator, bool> insert_result = active_entries_.insert(
+        EntryMap::value_type(entry_hash, simple_entry.get()));
+    post_doom->emplace_back(base::BindOnce(
+        &SimpleEntryImpl::NotifyDoomBeforeCreateComplete, simple_entry));
+    DCHECK(insert_result.second);
+  }
+
+  return simple_entry;
 }
 
 net::Error SimpleBackendImpl::DoomEntry(const std::string& key,
@@ -549,6 +598,8 @@ class SimpleBackendImpl::SimpleIterator final : public Iterator {
   // From Backend::Iterator:
   net::Error OpenNextEntry(Entry** next_entry,
                            CompletionOnceCallback callback) override {
+    if (!backend_)
+      return net::ERR_FAILED;
     CompletionOnceCallback open_next_entry_impl = base::BindOnce(
         &SimpleIterator::OpenNextEntryImpl, weak_factory_.GetWeakPtr(),
         next_entry, std::move(callback));
@@ -576,7 +627,7 @@ class SimpleBackendImpl::SimpleIterator final : public Iterator {
       uint64_t entry_hash = hashes_to_enumerate_->back();
       hashes_to_enumerate_->pop_back();
       if (backend_->index()->Has(entry_hash)) {
-        *next_entry = NULL;
+        *next_entry = nullptr;
         CompletionOnceCallback continue_iteration = base::BindOnce(
             &SimpleIterator::CheckIterationReturnValue,
             weak_factory_.GetWeakPtr(), next_entry, copyable_callback);
@@ -724,6 +775,34 @@ SimpleBackendImpl::DiskStatResult SimpleBackendImpl::InitCacheStructureOnDisk(
   result.net_error = net::OK;
   SimpleCacheConsistencyResult consistency = FileStructureConsistent(path);
   SIMPLE_CACHE_UMA(ENUMERATION, "ConsistencyResult", cache_type, consistency);
+
+  // If the cache structure is inconsistent make a single attempt at
+  // recovering it.  Previously there were bugs that could cause a partially
+  // written fake index file to be left in an otherwise empty cache.  In
+  // that case we can delete the index files and start over.  Also, some
+  // consistency failures may leave an empty directory directly and we can
+  // retry those cases as well.
+  if (consistency != SimpleCacheConsistencyResult::kOK) {
+    bool deleted_files = disk_cache::DeleteIndexFilesIfCacheIsEmpty(path);
+    SIMPLE_CACHE_UMA(BOOLEAN, "DidDeleteIndexFilesAfterFailedConsistency",
+                     cache_type, deleted_files);
+    if (base::IsDirectoryEmpty(path)) {
+      SimpleCacheConsistencyResult orig_consistency = consistency;
+      consistency = FileStructureConsistent(path);
+      SIMPLE_CACHE_UMA(ENUMERATION, "RetryConsistencyResult", cache_type,
+                       consistency);
+      if (consistency == SimpleCacheConsistencyResult::kOK) {
+        SIMPLE_CACHE_UMA(ENUMERATION,
+                         "OriginalConsistencyResultBeforeSuccessfulRetry",
+                         cache_type, orig_consistency);
+      }
+    }
+    if (deleted_files) {
+      SIMPLE_CACHE_UMA(ENUMERATION, "ConsistencyResultAfterIndexFilesDeleted",
+                       cache_type, consistency);
+    }
+  }
+
   if (consistency != SimpleCacheConsistencyResult::kOK) {
     LOG(ERROR) << "Simple Cache Backend: wrong file structure on disk: "
                << static_cast<int>(consistency)
@@ -763,7 +842,7 @@ SimpleBackendImpl::CreateOrFindActiveOrDoomedEntry(
   const bool did_insert = insert_result.second;
   if (did_insert) {
     SimpleEntryImpl* entry = it->second = new SimpleEntryImpl(
-        cache_type_, path_, cleanup_tracker_.get(), entry_hash,
+        GetCacheType(), path_, cleanup_tracker_.get(), entry_hash,
         entry_operations_mode_, this, file_tracker_, net_log_,
         GetNewEntryPriority(request_priority));
     entry->SetKey(key);
@@ -806,7 +885,7 @@ net::Error SimpleBackendImpl::OpenEntryFromHash(
   }
 
   scoped_refptr<SimpleEntryImpl> simple_entry = new SimpleEntryImpl(
-      cache_type_, path_, cleanup_tracker_.get(), entry_hash,
+      GetCacheType(), path_, cleanup_tracker_.get(), entry_hash,
       entry_operations_mode_, this, file_tracker_, net_log_,
       GetNewEntryPriority(net::HIGHEST));
   CompletionOnceCallback backend_callback =
@@ -885,7 +964,7 @@ void SimpleBackendImpl::DoomEntriesComplete(
 // static
 void SimpleBackendImpl::FlushWorkerPoolForTesting() {
   // TODO(morlovich): Remove this, move everything over to disk_cache:: use.
-  base::TaskScheduler::GetInstance()->FlushForTesting();
+  base::ThreadPool::GetInstance()->FlushForTesting();
 }
 
 uint32_t SimpleBackendImpl::GetNewEntryPriority(

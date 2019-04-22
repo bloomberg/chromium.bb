@@ -50,9 +50,7 @@ class MockObserver : public StorageObserver {
     return events_.back();
   }
 
-  int EventCount() const {
-    return events_.size();
-  }
+  size_t EventCount() const { return events_.size(); }
 
   // StorageObserver implementation:
   void OnStorageEvent(const StorageObserver::Event& event) override {
@@ -157,7 +155,7 @@ class StorageMonitorTestBase : public testing::Test {
     SetLastNotificationTime(host_observers.observers_, observer);
   }
 
-  int GetObserverCount(const HostStorageObservers& host_observers) {
+  size_t GetObserverCount(const HostStorageObservers& host_observers) {
     return host_observers.observers_.ObserverCount();
   }
 
@@ -202,7 +200,7 @@ TEST_F(StorageObserverListTest, DispatchEventToSingleObserver) {
   event.quota = 1;
   event.usage = 1;
   observer_list.OnStorageChange(event);
-  EXPECT_EQ(1, mock_observer.EventCount());
+  EXPECT_EQ(1u, mock_observer.EventCount());
   EXPECT_EQ(event, mock_observer.LastEvent());
   EXPECT_EQ(nullptr, GetPendingEvent(observer_list));
   EXPECT_EQ(0, GetRequiredUpdatesCount(observer_list));
@@ -211,7 +209,7 @@ TEST_F(StorageObserverListTest, DispatchEventToSingleObserver) {
   event.quota = 2;
   event.usage = 2;
   observer_list.OnStorageChange(event);
-  EXPECT_EQ(1, mock_observer.EventCount());
+  EXPECT_EQ(1u, mock_observer.EventCount());
   ASSERT_TRUE(GetPendingEvent(observer_list));
   EXPECT_EQ(event, *GetPendingEvent(observer_list));
   EXPECT_EQ(1, GetRequiredUpdatesCount(observer_list));
@@ -221,7 +219,7 @@ TEST_F(StorageObserverListTest, DispatchEventToSingleObserver) {
   event.quota = 3;
   event.usage = 3;
   observer_list.OnStorageChange(event);
-  EXPECT_EQ(2, mock_observer.EventCount());
+  EXPECT_EQ(2u, mock_observer.EventCount());
   EXPECT_EQ(event, mock_observer.LastEvent());
   EXPECT_EQ(nullptr, GetPendingEvent(observer_list));
   EXPECT_EQ(0, GetRequiredUpdatesCount(observer_list));
@@ -231,7 +229,7 @@ TEST_F(StorageObserverListTest, DispatchEventToSingleObserver) {
   event.usage = 4;
   observer_list.RemoveObserver(&mock_observer);
   observer_list.OnStorageChange(event);
-  EXPECT_EQ(2, mock_observer.EventCount());
+  EXPECT_EQ(2u, mock_observer.EventCount());
   EXPECT_EQ(nullptr, GetPendingEvent(observer_list));
 }
 
@@ -257,8 +255,8 @@ TEST_F(StorageObserverListTest, DispatchEventToMultipleObservers) {
   event.quota = 1;
   event.usage = 1;
   observer_list.OnStorageChange(event);
-  EXPECT_EQ(1, mock_observer1.EventCount());
-  EXPECT_EQ(1, mock_observer2.EventCount());
+  EXPECT_EQ(1u, mock_observer1.EventCount());
+  EXPECT_EQ(1u, mock_observer2.EventCount());
   EXPECT_EQ(event, mock_observer1.LastEvent());
   EXPECT_EQ(event, mock_observer2.LastEvent());
   EXPECT_EQ(nullptr, GetPendingEvent(observer_list));
@@ -270,8 +268,8 @@ TEST_F(StorageObserverListTest, DispatchEventToMultipleObservers) {
   event.quota = 2;
   event.usage = 2;
   observer_list.OnStorageChange(event);
-  EXPECT_EQ(2, mock_observer1.EventCount());
-  EXPECT_EQ(1, mock_observer2.EventCount());
+  EXPECT_EQ(2u, mock_observer1.EventCount());
+  EXPECT_EQ(1u, mock_observer2.EventCount());
   EXPECT_EQ(event, mock_observer1.LastEvent());
   ASSERT_TRUE(GetPendingEvent(observer_list));
   EXPECT_EQ(event, *GetPendingEvent(observer_list));
@@ -280,8 +278,8 @@ TEST_F(StorageObserverListTest, DispatchEventToMultipleObservers) {
   // Now dispatch the pending event to observer2.
   SetLastNotificationTime(observer_list, &mock_observer2);
   DispatchPendingEvents(observer_list);
-  EXPECT_EQ(2, mock_observer1.EventCount());
-  EXPECT_EQ(2, mock_observer2.EventCount());
+  EXPECT_EQ(2u, mock_observer1.EventCount());
+  EXPECT_EQ(2u, mock_observer2.EventCount());
   EXPECT_EQ(event, mock_observer1.LastEvent());
   EXPECT_EQ(event, mock_observer2.LastEvent());
   EXPECT_EQ(nullptr, GetPendingEvent(observer_list));
@@ -327,7 +325,7 @@ TEST_F(HostStorageObserversTest, InitializeOnUsageChange) {
   // Verify that HostStorageObservers dispatches the first event correctly.
   StorageObserver::Event expected_event(params.filter, kUsage, kQuota);
   host_observers.NotifyUsageChange(params.filter, 87324);
-  EXPECT_EQ(1, mock_observer.EventCount());
+  EXPECT_EQ(1u, mock_observer.EventCount());
   EXPECT_EQ(expected_event, mock_observer.LastEvent());
   EXPECT_TRUE(host_observers.is_initialized());
 
@@ -337,7 +335,7 @@ TEST_F(HostStorageObserversTest, InitializeOnUsageChange) {
   expected_event.usage += kDelta;
   SetLastNotificationTime(host_observers, &mock_observer);
   host_observers.NotifyUsageChange(params.filter, kDelta);
-  EXPECT_EQ(2, mock_observer.EventCount());
+  EXPECT_EQ(2u, mock_observer.EventCount());
   EXPECT_EQ(expected_event, mock_observer.LastEvent());
 }
 
@@ -357,7 +355,7 @@ TEST_F(HostStorageObserversTest, InitializeOnObserver) {
   MockObserver mock_observer1;
   host_observers.AddObserver(&mock_observer1, params);
   EXPECT_FALSE(host_observers.is_initialized());
-  EXPECT_EQ(0, mock_observer1.EventCount());
+  EXPECT_EQ(0u, mock_observer1.EventCount());
 
   // |host_observers| should be initialized after the second observer is
   // added.
@@ -365,8 +363,8 @@ TEST_F(HostStorageObserversTest, InitializeOnObserver) {
   params.dispatch_initial_state = true;
   host_observers.AddObserver(&mock_observer2, params);
   StorageObserver::Event expected_event(params.filter, kUsage, kQuota);
-  EXPECT_EQ(0, mock_observer1.EventCount());
-  EXPECT_EQ(1, mock_observer2.EventCount());
+  EXPECT_EQ(0u, mock_observer1.EventCount());
+  EXPECT_EQ(1u, mock_observer2.EventCount());
   EXPECT_EQ(expected_event, mock_observer2.LastEvent());
   EXPECT_TRUE(host_observers.is_initialized());
   EXPECT_EQ(nullptr, GetPendingEvent(host_observers));
@@ -377,8 +375,8 @@ TEST_F(HostStorageObserversTest, InitializeOnObserver) {
   expected_event.usage += kDelta;
   SetLastNotificationTime(host_observers, &mock_observer2);
   host_observers.NotifyUsageChange(params.filter, kDelta);
-  EXPECT_EQ(1, mock_observer1.EventCount());
-  EXPECT_EQ(2, mock_observer2.EventCount());
+  EXPECT_EQ(1u, mock_observer1.EventCount());
+  EXPECT_EQ(2u, mock_observer2.EventCount());
   EXPECT_EQ(expected_event, mock_observer1.LastEvent());
   EXPECT_EQ(expected_event, mock_observer2.LastEvent());
   EXPECT_EQ(nullptr, GetPendingEvent(host_observers));
@@ -389,9 +387,9 @@ TEST_F(HostStorageObserversTest, InitializeOnObserver) {
   MockObserver mock_observer3;
   params.dispatch_initial_state = true;
   host_observers.AddObserver(&mock_observer3, params);
-  EXPECT_EQ(1, mock_observer1.EventCount());
-  EXPECT_EQ(2, mock_observer2.EventCount());
-  EXPECT_EQ(1, mock_observer3.EventCount());
+  EXPECT_EQ(1u, mock_observer1.EventCount());
+  EXPECT_EQ(2u, mock_observer2.EventCount());
+  EXPECT_EQ(1u, mock_observer3.EventCount());
   EXPECT_EQ(expected_event, mock_observer3.LastEvent());
 }
 
@@ -431,7 +429,7 @@ TEST_F(HostStorageObserversTest, RecoverFromBadUsageInit) {
   // Verify that |host_observers| is not initialized and an event has not been
   // dispatched.
   host_observers.NotifyUsageChange(params.filter, 9438);
-  EXPECT_EQ(0, mock_observer.EventCount());
+  EXPECT_EQ(0u, mock_observer.EventCount());
   EXPECT_FALSE(host_observers.is_initialized());
   EXPECT_EQ(nullptr, GetPendingEvent(host_observers));
   EXPECT_EQ(0, GetRequiredUpdatesCount(host_observers));
@@ -440,7 +438,7 @@ TEST_F(HostStorageObserversTest, RecoverFromBadUsageInit) {
   quota_manager_->SetCallbackParams(kUsage, kQuota, QuotaStatusCode::kOk);
   host_observers.NotifyUsageChange(params.filter, 9048543);
   StorageObserver::Event expected_event(params.filter, kUsage, kQuota);
-  EXPECT_EQ(1, mock_observer.EventCount());
+  EXPECT_EQ(1u, mock_observer.EventCount());
   EXPECT_EQ(expected_event, mock_observer.LastEvent());
   EXPECT_TRUE(host_observers.is_initialized());
 }
@@ -458,7 +456,7 @@ TEST_F(HostStorageObserversTest, AsyncInitialization) {
   // Trigger initialization. Leave the mock quota manager uninitialized so that
   // the callback is not invoked.
   host_observers.NotifyUsageChange(params.filter, 7645);
-  EXPECT_EQ(0, mock_observer.EventCount());
+  EXPECT_EQ(0u, mock_observer.EventCount());
   EXPECT_FALSE(host_observers.is_initialized());
   EXPECT_EQ(nullptr, GetPendingEvent(host_observers));
   EXPECT_EQ(0, GetRequiredUpdatesCount(host_observers));
@@ -469,7 +467,7 @@ TEST_F(HostStorageObserversTest, AsyncInitialization) {
   const int64_t kQuota = 99585556;
   const int64_t kDelta = 327643;
   host_observers.NotifyUsageChange(params.filter, kDelta);
-  EXPECT_EQ(0, mock_observer.EventCount());
+  EXPECT_EQ(0u, mock_observer.EventCount());
   EXPECT_FALSE(host_observers.is_initialized());
   EXPECT_EQ(nullptr, GetPendingEvent(host_observers));
   EXPECT_EQ(0, GetRequiredUpdatesCount(host_observers));
@@ -478,7 +476,7 @@ TEST_F(HostStorageObserversTest, AsyncInitialization) {
   quota_manager_->SetCallbackParams(kUsage, kQuota, QuotaStatusCode::kOk);
   quota_manager_->InvokeCallback();
   StorageObserver::Event expected_event(params.filter, kUsage + kDelta, kQuota);
-  EXPECT_EQ(1, mock_observer.EventCount());
+  EXPECT_EQ(1u, mock_observer.EventCount());
   EXPECT_EQ(expected_event, mock_observer.LastEvent());
   EXPECT_TRUE(host_observers.is_initialized());
   EXPECT_EQ(nullptr, GetPendingEvent(host_observers));
@@ -515,20 +513,20 @@ TEST_F(StorageTypeObserversTest, AddRemoveObservers) {
   // Verify that the observers have been removed correctly.
   ASSERT_TRUE(type_observers.GetHostObservers(host1));
   ASSERT_TRUE(type_observers.GetHostObservers(host2));
-  EXPECT_EQ(2, GetObserverCount(*type_observers.GetHostObservers(host1)));
-  EXPECT_EQ(3, GetObserverCount(*type_observers.GetHostObservers(host2)));
+  EXPECT_EQ(2u, GetObserverCount(*type_observers.GetHostObservers(host1)));
+  EXPECT_EQ(3u, GetObserverCount(*type_observers.GetHostObservers(host2)));
 
   // Remove all instances of observer1.
   type_observers.RemoveObserver(&mock_observer1);
   ASSERT_TRUE(type_observers.GetHostObservers(host1));
   ASSERT_TRUE(type_observers.GetHostObservers(host2));
-  EXPECT_EQ(1, GetObserverCount(*type_observers.GetHostObservers(host1)));
-  EXPECT_EQ(2, GetObserverCount(*type_observers.GetHostObservers(host2)));
+  EXPECT_EQ(1u, GetObserverCount(*type_observers.GetHostObservers(host1)));
+  EXPECT_EQ(2u, GetObserverCount(*type_observers.GetHostObservers(host2)));
 
   // Remove all instances of observer2.
   type_observers.RemoveObserver(&mock_observer2);
   ASSERT_TRUE(type_observers.GetHostObservers(host2));
-  EXPECT_EQ(1, GetObserverCount(*type_observers.GetHostObservers(host2)));
+  EXPECT_EQ(1u, GetObserverCount(*type_observers.GetHostObservers(host2)));
   // Observers of host1 has been deleted as it is empty.
   EXPECT_FALSE(type_observers.GetHostObservers(host1));
 }
@@ -563,14 +561,15 @@ class StorageMonitorTest : public StorageTestWithManagerBase {
     storage_monitor_->AddObserver(&mock_observer3_, params2_);
   }
 
-  int GetObserverCount(StorageType storage_type) {
+  size_t GetObserverCount(StorageType storage_type) {
     const StorageTypeObservers* type_observers =
         storage_monitor_->GetStorageTypeObservers(storage_type);
     return StorageMonitorTestBase::GetObserverCount(
                 *type_observers->GetHostObservers(host_));
   }
 
-  void CheckObserverCount(int expected_temporary, int expected_persistent) {
+  void CheckObserverCount(size_t expected_temporary,
+                          size_t expected_persistent) {
     ASSERT_TRUE(
         storage_monitor_->GetStorageTypeObservers(StorageType::kTemporary));
     ASSERT_TRUE(
@@ -610,9 +609,9 @@ TEST_F(StorageMonitorTest, EventDispatch) {
   storage_monitor_->NotifyUsageChange(params1_.filter, 9048543);
 
   StorageObserver::Event expected_event(params1_.filter, kUsage, kQuota);
-  EXPECT_EQ(1, mock_observer1_.EventCount());
-  EXPECT_EQ(1, mock_observer2_.EventCount());
-  EXPECT_EQ(0, mock_observer3_.EventCount());
+  EXPECT_EQ(1u, mock_observer1_.EventCount());
+  EXPECT_EQ(1u, mock_observer2_.EventCount());
+  EXPECT_EQ(0u, mock_observer3_.EventCount());
   EXPECT_EQ(expected_event, mock_observer1_.LastEvent());
   EXPECT_EQ(expected_event, mock_observer2_.LastEvent());
 }
@@ -671,7 +670,7 @@ TEST_F(StorageMonitorIntegrationTest, NotifyUsageEvent) {
   scoped_task_environment_.RunUntilIdle();
 
   // Verify that the observer receives it.
-  ASSERT_EQ(1, mock_observer.EventCount());
+  ASSERT_EQ(1u, mock_observer.EventCount());
   const StorageObserver::Event& event = mock_observer.LastEvent();
   EXPECT_EQ(params.filter, event.filter);
   EXPECT_EQ(kTestUsage, event.usage);

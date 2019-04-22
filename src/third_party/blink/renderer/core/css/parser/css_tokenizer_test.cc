@@ -139,25 +139,27 @@ static CSSParserToken Percentage(NumericValueType type, double value) {
   }
 
 DEFINE_TOKEN(Whitespace, (kWhitespaceToken))
-DEFINE_TOKEN(Colon, (kColonToken));
-DEFINE_TOKEN(Semicolon, (kSemicolonToken));
-DEFINE_TOKEN(Comma, (kCommaToken));
-DEFINE_TOKEN(IncludeMatch, (kIncludeMatchToken));
-DEFINE_TOKEN(DashMatch, (kDashMatchToken));
-DEFINE_TOKEN(PrefixMatch, (kPrefixMatchToken));
-DEFINE_TOKEN(SuffixMatch, (kSuffixMatchToken));
-DEFINE_TOKEN(SubstringMatch, (kSubstringMatchToken));
-DEFINE_TOKEN(Column, (kColumnToken));
-DEFINE_TOKEN(Cdo, (kCDOToken));
-DEFINE_TOKEN(Cdc, (kCDCToken));
-DEFINE_TOKEN(LeftParenthesis, (kLeftParenthesisToken));
-DEFINE_TOKEN(RightParenthesis, (kRightParenthesisToken));
-DEFINE_TOKEN(LeftBracket, (kLeftBracketToken));
-DEFINE_TOKEN(RightBracket, (kRightBracketToken));
-DEFINE_TOKEN(LeftBrace, (kLeftBraceToken));
-DEFINE_TOKEN(RightBrace, (kRightBraceToken));
-DEFINE_TOKEN(BadString, (kBadStringToken));
-DEFINE_TOKEN(BadUrl, (kBadUrlToken));
+DEFINE_TOKEN(Colon, (kColonToken))
+DEFINE_TOKEN(Semicolon, (kSemicolonToken))
+DEFINE_TOKEN(Comma, (kCommaToken))
+DEFINE_TOKEN(IncludeMatch, (kIncludeMatchToken))
+DEFINE_TOKEN(DashMatch, (kDashMatchToken))
+DEFINE_TOKEN(PrefixMatch, (kPrefixMatchToken))
+DEFINE_TOKEN(SuffixMatch, (kSuffixMatchToken))
+DEFINE_TOKEN(SubstringMatch, (kSubstringMatchToken))
+DEFINE_TOKEN(Column, (kColumnToken))
+DEFINE_TOKEN(Cdo, (kCDOToken))
+DEFINE_TOKEN(Cdc, (kCDCToken))
+DEFINE_TOKEN(LeftParenthesis, (kLeftParenthesisToken))
+DEFINE_TOKEN(RightParenthesis, (kRightParenthesisToken))
+DEFINE_TOKEN(LeftBracket, (kLeftBracketToken))
+DEFINE_TOKEN(RightBracket, (kRightBracketToken))
+DEFINE_TOKEN(LeftBrace, (kLeftBraceToken))
+DEFINE_TOKEN(RightBrace, (kRightBraceToken))
+DEFINE_TOKEN(BadString, (kBadStringToken))
+DEFINE_TOKEN(BadUrl, (kBadUrlToken))
+
+#undef DEFINE_TOKEN
 
 String FromUChar32(UChar32 c) {
   StringBuilder input;

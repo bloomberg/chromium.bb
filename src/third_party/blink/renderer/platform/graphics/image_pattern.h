@@ -20,11 +20,9 @@ class PLATFORM_EXPORT ImagePattern final : public Pattern {
 
  protected:
   sk_sp<PaintShader> CreateShader(const SkMatrix&) override;
-  bool IsLocalMatrixChanged(const SkMatrix&) const override;
 
  private:
   ImagePattern(scoped_refptr<Image>, RepeatMode);
-  SkMatrix previous_local_matrix_;
 
   PaintImage tile_image_;
 };

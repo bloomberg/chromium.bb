@@ -33,6 +33,7 @@ extern const char kProcessTypeDesktop[];
 extern const char kProcessTypeHost[];
 extern const char kProcessTypeRdpDesktopSession[];
 extern const char kProcessTypeEvaluateCapability[];
+extern const char kProcessTypeFileChooser[];
 
 extern const char kEvaluateCapabilitySwitchName[];
 

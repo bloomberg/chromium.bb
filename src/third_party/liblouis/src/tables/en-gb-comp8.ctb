@@ -1,12 +1,29 @@
 # liblouis: U.K. English 8 dot Computer braille table
 #
+# -----------
+#-display-name: U.K. English computer braille
+#
+#+locale:en-GB
+#+type:computer
+#+dots:8
+#
+# TODO: Please correct the metadata above. It is not meant to be
+# accurate nor complete. It hasn't been verified by the table
+# author yet. It is merely an attempt by the liblouis maintainers
+# to get some sensible initial values in place.
+#
+# TODO: Please add a reference to official documentation about
+# the implemented braille code. Preferably submit the documents
+# to https://github.com/liblouis/braille-specs.
+# -----------
+#
 #  Copyright (C) 2013 David Reynolds <dkreynolds@ntlworld.com>
 #
 #  This file is part of liblouis.
 #
 #  liblouis is free software: you can redistribute it and/or modify it
 #  under the terms of the GNU Lesser General Public License as
-#  published by the Free Software Foundation, either version 3 of the
+#  published by the Free Software Foundation, either version 2.1 of the
 #  License, or (at your option) any later version.
 #
 #  liblouis is distributed in the hope that it will be useful, but
@@ -59,3 +76,4 @@ math / 34
 sign * 35
 digit 0 123456
 include digits6DotsPlusDot6.uti
+noback sign \X25CF 35	# 9679 black circle

@@ -222,8 +222,7 @@ def CleanupChroot(chroot_path):
 
 
 def EnterChroot(chroot_path, cache_dir, chrome_root, chrome_root_mount,
-                workspace, goma_dir, goma_client_json, working_dir,
-                additional_args):
+                goma_dir, goma_client_json, working_dir, additional_args):
   """Enters an existing SDK chroot"""
   st = os.statvfs(os.path.join(chroot_path, 'usr', 'bin', 'sudo'))
   # The os.ST_NOSUID constant wasn't added until python-3.2.
@@ -235,8 +234,6 @@ def EnterChroot(chroot_path, cache_dir, chrome_root, chrome_root_mount,
     cmd.extend(['--chrome_root', chrome_root])
   if chrome_root_mount:
     cmd.extend(['--chrome_root_mount', chrome_root_mount])
-  if workspace:
-    cmd.extend(['--workspace_root', workspace])
   if goma_dir:
     cmd.extend(['--goma_dir', goma_dir])
   if goma_client_json:
@@ -703,12 +700,13 @@ def _CreateParser(sdk_latest_version, bootstrap_latest_version):
   parser.add_argument('-u', '--url', dest='sdk_url',
                       help='Use sdk tarball located at this url. Use file:// '
                            'for local files.')
+  parser.add_argument('--self-bootstrap', dest='self_bootstrap', action='store_true',
+                      default=False,
+                      help=('Use previously build sdk for bootstrapping.'))
   parser.add_argument('--sdk-version',
                       help=('Use this sdk version.  For prebuilt, current is %r'
                             ', for bootstrapping it is %r.'
                             % (sdk_latest_version, bootstrap_latest_version)))
-  parser.add_argument('--workspace',
-                      help='Workspace directory to mount into the chroot.')
   parser.add_argument('--goma_dir', type='path',
                       help='Goma installed directory to mount into the chroot.')
   parser.add_argument('--goma_client_json', type='path',
@@ -820,6 +818,10 @@ def main(argv):
   if options.proxy_sim:
     _ReportMissing(osutils.FindMissingBinaries(PROXY_NEEDED_TOOLS))
   missing_image_tools = osutils.FindMissingBinaries(IMAGE_NEEDED_TOOLS)
+
+  # Use latest SDK for bootstrapping if requested.
+  if options.self_bootstrap:
+    bootstrap_latest_version = sdk_latest_version
 
   if (sdk_latest_version == '<unknown>' or
       bootstrap_latest_version == '<unknown>'):
@@ -1044,6 +1046,8 @@ snapshots will be unavailable).''' % ', '.join(missing_image_tools))
       urls = [options.sdk_url]
     elif options.bootstrap:
       urls = GetStage3Urls(sdk_version)
+      if options.self_bootstrap:
+        urls = GetArchStageTarballs(sdk_version)
     else:
       urls = GetArchStageTarballs(sdk_version)
 
@@ -1106,6 +1110,6 @@ snapshots will be unavailable).''' % ', '.join(missing_image_tools))
       if options.enter:
         lock.read_lock()
         EnterChroot(options.chroot, options.cache_dir, options.chrome_root,
-                    options.chrome_root_mount, options.workspace,
-                    options.goma_dir, options.goma_client_json,
-                    options.working_dir, chroot_command)
+                    options.chrome_root_mount, options.goma_dir,
+                    options.goma_client_json, options.working_dir,
+                    chroot_command)

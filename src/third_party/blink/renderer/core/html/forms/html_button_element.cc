@@ -46,11 +46,19 @@ HTMLButtonElement* HTMLButtonElement::Create(Document& document) {
   return MakeGarbageCollected<HTMLButtonElement>(document);
 }
 
+const AttrNameToTrustedType& HTMLButtonElement::GetCheckedAttributeTypes()
+    const {
+  DEFINE_STATIC_LOCAL(AttrNameToTrustedType, attribute_map,
+                      ({{"formaction", SpecificTrustedType::kTrustedURL}}));
+  return attribute_map;
+}
+
 void HTMLButtonElement::setType(const AtomicString& type) {
   setAttribute(kTypeAttr, type);
 }
 
-LayoutObject* HTMLButtonElement::CreateLayoutObject(const ComputedStyle&) {
+LayoutObject* HTMLButtonElement::CreateLayoutObject(const ComputedStyle&,
+                                                    LegacyLayout) {
   return new LayoutButton(this);
 }
 
@@ -94,7 +102,7 @@ void HTMLButtonElement::ParseAttribute(
       type_ = BUTTON;
     else
       type_ = SUBMIT;
-    SetNeedsWillValidateCheck();
+    UpdateWillValidateCache();
     if (formOwner() && isConnected())
       formOwner()->InvalidateDefaultButtonStyle();
   } else {

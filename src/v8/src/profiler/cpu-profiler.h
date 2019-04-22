@@ -10,6 +10,8 @@
 #include "src/allocation.h"
 #include "src/base/atomic-utils.h"
 #include "src/base/atomicops.h"
+#include "src/base/platform/condition-variable.h"
+#include "src/base/platform/mutex.h"
 #include "src/base/platform/time.h"
 #include "src/isolate.h"
 #include "src/libsampler/sampler.h"
@@ -130,7 +132,8 @@ class CodeEventsContainer {
 
 // This class implements both the profile events processor thread and
 // methods called by event producers: VM and stack sampler threads.
-class ProfilerEventsProcessor : public base::Thread, public CodeEventObserver {
+class V8_EXPORT_PRIVATE ProfilerEventsProcessor : public base::Thread,
+                                                  public CodeEventObserver {
  public:
   virtual ~ProfilerEventsProcessor();
 
@@ -163,6 +166,8 @@ class ProfilerEventsProcessor : public base::Thread, public CodeEventObserver {
 
   ProfileGenerator* generator_;
   base::Atomic32 running_;
+  base::ConditionVariable running_cond_;
+  base::Mutex running_mutex_;
   LockedQueue<CodeEventsContainer> events_buffer_;
   LockedQueue<TickSampleEventRecord> ticks_from_vm_buffer_;
   std::atomic<unsigned> last_code_event_id_;
@@ -170,10 +175,11 @@ class ProfilerEventsProcessor : public base::Thread, public CodeEventObserver {
   Isolate* isolate_;
 };
 
-class SamplingEventsProcessor : public ProfilerEventsProcessor {
+class V8_EXPORT_PRIVATE SamplingEventsProcessor
+    : public ProfilerEventsProcessor {
  public:
   SamplingEventsProcessor(Isolate* isolate, ProfileGenerator* generator,
-                          base::TimeDelta period);
+                          base::TimeDelta period, bool use_precise_sampling);
   ~SamplingEventsProcessor() override;
 
   // SamplingCircularQueue has stricter alignment requirements than a normal new
@@ -197,16 +203,18 @@ class SamplingEventsProcessor : public ProfilerEventsProcessor {
  private:
   SampleProcessingResult ProcessOneSample() override;
 
-  static const size_t kTickSampleBufferSize = 1 * MB;
+  static const size_t kTickSampleBufferSize = 512 * KB;
   static const size_t kTickSampleQueueLength =
       kTickSampleBufferSize / sizeof(TickSampleEventRecord);
   SamplingCircularQueue<TickSampleEventRecord,
                         kTickSampleQueueLength> ticks_buffer_;
   std::unique_ptr<sampler::Sampler> sampler_;
   const base::TimeDelta period_;  // Samples & code events processing period.
+  const bool use_precise_sampling_;  // Whether or not busy-waiting is used for
+                                     // low sampling intervals on Windows.
 };
 
-class CpuProfiler {
+class V8_EXPORT_PRIVATE CpuProfiler {
  public:
   explicit CpuProfiler(Isolate* isolate);
 
@@ -221,6 +229,7 @@ class CpuProfiler {
   typedef v8::CpuProfilingMode ProfilingMode;
 
   void set_sampling_interval(base::TimeDelta value);
+  void set_use_precise_sampling(bool);
   void CollectSample();
   void StartProfiling(const char* title, bool record_samples = false,
                       ProfilingMode mode = ProfilingMode::kLeafNodeLineNumbers);
@@ -252,6 +261,7 @@ class CpuProfiler {
 
   Isolate* const isolate_;
   base::TimeDelta sampling_interval_;
+  bool use_precise_sampling_ = true;
   std::unique_ptr<CpuProfilesCollection> profiles_;
   std::unique_ptr<ProfileGenerator> generator_;
   std::unique_ptr<ProfilerEventsProcessor> processor_;

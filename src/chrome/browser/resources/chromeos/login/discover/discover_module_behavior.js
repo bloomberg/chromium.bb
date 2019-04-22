@@ -30,7 +30,7 @@ var DiscoverModuleBehaviorImpl = {
   discoverCall: function(message, parameters) {
     assert(this.module.length > 0);
     assert(message.startsWith('discover.' + this.module + '.'));
-    window.discoverSendImpl(message, null, parameters);
+    window.discoverSendImpl(message, undefined, parameters);
   },
 
   /**

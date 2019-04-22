@@ -30,7 +30,7 @@ TEST(IdentityApiTest, DiceAllAccountsExtensions) {
   }
 
   {
-    ScopedAccountConsistencyDiceFixAuthErrors scoped_dice_fix_errors;
+    ScopedAccountConsistencyDiceMigration scoped_dice_migration;
     TestingProfile profile;
     IdentityAPI api(&profile);
     EXPECT_TRUE(api.AreExtensionsRestrictedToPrimaryAccount());

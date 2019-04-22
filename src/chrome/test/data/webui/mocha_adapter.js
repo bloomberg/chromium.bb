@@ -38,8 +38,9 @@ function BrowserTestReporter(runner) {
     if (err.stack) {
       var stack = err.stack.split('\n');
       for (var i = 0; i < stack.length; i++) {
-        if (stack[i].indexOf('mocha.js:') == -1)
+        if (stack[i].indexOf('mocha.js:') == -1) {
           message += stack[i] + '\n';
+        }
       }
     } else {
       message += err.toString();
@@ -51,10 +52,11 @@ function BrowserTestReporter(runner) {
   // Report the results to the test API.
   runner.on('end', function() {
     if (failures == 0) {
-      if (passes > 0)
+      if (passes > 0) {
         testDone();
-      else
+      } else {
         testDone([false, 'Failure: Mocha ran, but no mocha tests were run!']);
+      }
       return;
     }
     testDone([

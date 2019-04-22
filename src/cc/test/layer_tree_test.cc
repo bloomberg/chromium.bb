@@ -4,6 +4,7 @@
 
 #include "cc/test/layer_tree_test.h"
 
+#include "base/bind.h"
 #include "base/cfi_buildflags.h"
 #include "base/command_line.h"
 #include "base/location.h"
@@ -22,7 +23,9 @@
 #include "cc/input/input_handler.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"
+#include "cc/scheduler/compositor_timing_history.h"
 #include "cc/test/animation_test_common.h"
+#include "cc/test/fake_compositor_frame_reporting_controller.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/test_ukm_recorder_factory.h"
 #include "cc/trees/layer_tree_host_client.h"
@@ -33,8 +36,10 @@
 #include "cc/trees/proxy_main.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "components/ukm/test_ukm_recorder.h"
+#include "components/viz/service/display/skia_output_surface.h"
 #include "components/viz/test/begin_frame_args_test.h"
 #include "components/viz/test/fake_output_surface.h"
+#include "components/viz/test/fake_skia_output_surface.h"
 #include "components/viz/test/test_context_provider.h"
 #include "components/viz/test/test_layer_tree_frame_sink.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -88,10 +93,11 @@ class SynchronousLayerTreeFrameSink : public viz::TestLayerTreeFrameSink {
     InvalidateIfPossible();
   }
   void SubmitCompositorFrame(viz::CompositorFrame frame,
+                             bool hit_test_data_changed,
                              bool show_hit_test_borders) override {
     frame_ack_pending_ = true;
-    viz::TestLayerTreeFrameSink::SubmitCompositorFrame(std::move(frame),
-                                                       show_hit_test_borders);
+    viz::TestLayerTreeFrameSink::SubmitCompositorFrame(
+        std::move(frame), hit_test_data_changed, show_hit_test_borders);
   }
   void DidReceiveCompositorFrameAck(
       const std::vector<viz::ReturnedResource>& resources) override {
@@ -107,8 +113,8 @@ class SynchronousLayerTreeFrameSink : public viz::TestLayerTreeFrameSink {
       return;
     task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&SynchronousLayerTreeFrameSink::DispatchInvalidation,
-                   weak_factory_.GetWeakPtr()));
+        base::BindOnce(&SynchronousLayerTreeFrameSink::DispatchInvalidation,
+                       weak_factory_.GetWeakPtr()));
   }
   void DispatchInvalidation() {
     frame_request_pending_ = false;
@@ -154,13 +160,15 @@ void CreateVirtualViewportLayers(Layer* root_layer,
 
   inner_viewport_container_layer->SetBounds(inner_bounds);
   inner_viewport_scroll_layer->SetScrollable(inner_bounds);
+  inner_viewport_scroll_layer->SetHitTestable(true);
   inner_viewport_scroll_layer->SetBounds(outer_bounds);
   outer_viewport_container_layer->SetBounds(outer_bounds);
   outer_scroll_layer->SetScrollable(outer_bounds);
+  outer_scroll_layer->SetHitTestable(true);
 
   inner_viewport_scroll_layer->SetIsContainerForFixedPositionLayers(true);
   outer_scroll_layer->SetIsContainerForFixedPositionLayers(true);
-  LayerTreeHost::ViewportLayers viewport_layers;
+  ViewportLayers viewport_layers;
   viewport_layers.overscroll_elasticity_element_id =
       overscroll_elasticity_layer->element_id();
   viewport_layers.page_scale = page_scale_layer;
@@ -180,6 +188,7 @@ void CreateVirtualViewportLayers(Layer* root_layer,
 
   outer_viewport_scroll_layer->SetBounds(scroll_bounds);
   outer_viewport_scroll_layer->SetIsDrawable(true);
+  outer_viewport_scroll_layer->SetHitTestable(true);
   CreateVirtualViewportLayers(root_layer, outer_viewport_scroll_layer,
                               inner_bounds, outer_bounds, host);
 }
@@ -218,7 +227,10 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
                           AnimationHost::CreateForTesting(ThreadInstance::IMPL),
                           0,
                           std::move(image_worker_task_runner)),
-        test_hooks_(test_hooks) {}
+        test_hooks_(test_hooks) {
+    compositor_frame_reporting_controller_ =
+        std::make_unique<FakeCompositorFrameReportingController>();
+  }
 
   std::unique_ptr<RasterBufferProvider> CreateRasterBufferProvider() override {
     return test_hooks_->CreateRasterBufferProvider(this);
@@ -433,15 +445,17 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient,
 
   void DidBeginMainFrame() override { test_hooks_->DidBeginMainFrame(); }
 
+  void WillUpdateLayers() override {}
+  void DidUpdateLayers() override {}
+
   void BeginMainFrame(const viz::BeginFrameArgs& args) override {
     test_hooks_->BeginMainFrame(args);
   }
 
+  void RecordStartOfFrameMetrics() override {}
   void RecordEndOfFrameMetrics(base::TimeTicks) override {}
 
-  void UpdateLayerTreeHost(bool record_main_frame_metrics) override {
-    test_hooks_->UpdateLayerTreeHost();
-  }
+  void UpdateLayerTreeHost() override { test_hooks_->UpdateLayerTreeHost(); }
 
   void ApplyViewportChanges(const ApplyViewportChangesArgs& args) override {
     test_hooks_->ApplyViewportChanges(args);
@@ -449,6 +463,13 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient,
 
   void RecordWheelAndTouchScrollingCount(bool has_scrolled_by_wheel,
                                          bool has_scrolled_by_touch) override {}
+
+  void SendOverscrollEventFromImplSide(
+      const gfx::Vector2dF& overscroll_delta,
+      ElementId scroll_latched_element_id) override {}
+
+  void SendScrollEndEventFromImplSide(
+      ElementId scroll_latched_element_id) override {}
 
   void RequestNewLayerTreeFrameSink() override {
     test_hooks_->RequestNewLayerTreeFrameSink();
@@ -486,6 +507,8 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient,
   void DidPresentCompositorFrame(
       uint32_t frame_token,
       const gfx::PresentationFeedback& feedback) override {}
+  void DidGenerateLocalSurfaceIdAllocation(
+      const viz::LocalSurfaceIdAllocation& allocation) override {}
 
  private:
   explicit LayerTreeHostClientForTesting(TestHooks* test_hooks)
@@ -582,6 +605,11 @@ class LayerTreeTestLayerTreeFrameSinkClient
       : hooks_(hooks) {}
 
   // viz::TestLayerTreeFrameSinkClient implementation.
+  std::unique_ptr<viz::SkiaOutputSurface> CreateDisplaySkiaOutputSurface()
+      override {
+    return hooks_->CreateDisplaySkiaOutputSurfaceOnThread();
+  }
+
   std::unique_ptr<viz::OutputSurface> CreateDisplayOutputSurface(
       scoped_refptr<viz::ContextProvider> compositor_context_provider)
       override {
@@ -848,7 +876,8 @@ void LayerTreeTest::DoBeginTest() {
   }
 
   if (timeout_seconds_) {
-    timeout_.Reset(base::Bind(&LayerTreeTest::Timeout, base::Unretained(this)));
+    timeout_.Reset(
+        base::BindOnce(&LayerTreeTest::Timeout, base::Unretained(this)));
     main_task_runner_->PostDelayedTask(
         FROM_HERE, timeout_.callback(),
         base::TimeDelta::FromSeconds(timeout_seconds_));
@@ -885,6 +914,7 @@ void LayerTreeTest::SetupTree() {
                                              initial_device_scale_factor_,
                                              viz::LocalSurfaceIdAllocation());
   layer_tree_host()->root_layer()->SetIsDrawable(true);
+  layer_tree_host()->root_layer()->SetHitTestable(true);
   layer_tree_host()->SetElementIdsForTesting();
 }
 
@@ -1098,6 +1128,11 @@ LayerTreeTest::CreateLayerTreeFrameSink(
       gpu_memory_buffer_manager(), renderer_settings, impl_task_runner_,
       synchronous_composite, disable_display_vsync, refresh_rate,
       begin_frame_source_);
+}
+
+std::unique_ptr<viz::SkiaOutputSurface>
+LayerTreeTest::CreateDisplaySkiaOutputSurfaceOnThread() {
+  return viz::FakeSkiaOutputSurface::Create3d();
 }
 
 std::unique_ptr<viz::OutputSurface>

@@ -18,12 +18,12 @@
 
 namespace gpu {
 
-CommandBufferService::CommandBufferService(
-    CommandBufferServiceClient* client,
-    TransferBufferManager* transfer_buffer_manager)
-    : client_(client), transfer_buffer_manager_(transfer_buffer_manager) {
+CommandBufferService::CommandBufferService(CommandBufferServiceClient* client,
+                                           MemoryTracker* memory_tracker)
+    : client_(client),
+      transfer_buffer_manager_(
+          std::make_unique<TransferBufferManager>(memory_tracker)) {
   DCHECK(client_);
-  DCHECK(transfer_buffer_manager_);
   state_.token = 0;
 }
 
@@ -106,7 +106,7 @@ void CommandBufferService::SetGetBuffer(int32_t transfer_buffer_id) {
   // This means ring_buffer_ can be nullptr.
   ring_buffer_ = GetTransferBuffer(transfer_buffer_id);
   if (ring_buffer_) {
-    int32_t size = ring_buffer_->size();
+    uint32_t size = ring_buffer_->size();
     volatile void* memory = ring_buffer_->memory();
     // check proper alignments.
     DCHECK_EQ(
@@ -145,10 +145,9 @@ void CommandBufferService::SetReleaseCount(uint64_t release_count) {
   UpdateState();
 }
 
-scoped_refptr<Buffer> CommandBufferService::CreateTransferBuffer(size_t size,
+scoped_refptr<Buffer> CommandBufferService::CreateTransferBuffer(uint32_t size,
                                                                  int32_t* id) {
-  static int32_t next_id = 1;
-  *id = next_id++;
+  *id = GetNextBufferId();
   auto result = CreateTransferBufferWithId(size, *id);
   if (!result)
     *id = -1;
@@ -171,7 +170,7 @@ bool CommandBufferService::RegisterTransferBuffer(
 }
 
 scoped_refptr<Buffer> CommandBufferService::CreateTransferBufferWithId(
-    size_t size,
+    uint32_t size,
     int32_t id) {
   scoped_refptr<Buffer> buffer = MakeMemoryBuffer(size);
   if (!RegisterTransferBuffer(id, buffer)) {
@@ -203,6 +202,10 @@ void CommandBufferService::SetScheduled(bool scheduled) {
   TRACE_EVENT2("gpu", "CommandBufferService:SetScheduled", "this", this,
                "scheduled", scheduled);
   scheduled_ = scheduled;
+}
+
+size_t CommandBufferService::GetSharedMemoryBytesAllocated() const {
+  return transfer_buffer_manager_->shared_memory_bytes_allocated();
 }
 
 }  // namespace gpu

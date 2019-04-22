@@ -9,6 +9,10 @@
 
 #include "ios/web/public/web_state/session_certificate_policy_cache.h"
 
+namespace net {
+class X509Certificate;
+}
+
 namespace web {
 
 // Concrete implementation of SessionCertificatePolicyCache.
@@ -18,13 +22,15 @@ class SessionCertificatePolicyCacheImpl : public SessionCertificatePolicyCache {
   ~SessionCertificatePolicyCacheImpl() override;
 
   // SessionCertificatePolicyCache:
+  void UpdateCertificatePolicyCache(
+      const scoped_refptr<web::CertificatePolicyCache>& cache) const override;
+
+  // Stores certificate information that a user has indicated should be allowed
+  // for this session.
   void RegisterAllowedCertificate(
       const scoped_refptr<net::X509Certificate> certificate,
       const std::string& host,
-      net::CertStatus status) override;
-  void ClearAllowedCertificates() override;
-  void UpdateCertificatePolicyCache(
-      const scoped_refptr<web::CertificatePolicyCache>& cache) const override;
+      net::CertStatus status);
 
   // Allows for batch updating the allowed certificate storages.
   void SetAllowedCerts(NSSet* allowed_certs);

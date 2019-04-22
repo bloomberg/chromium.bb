@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,15 +7,15 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
-#import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_item.h"
 
-@interface SyncSwitchItem : CollectionViewItem
+// SyncSwitchItem is a model class that uses SettingsSwitchCell.
+@interface SyncSwitchItem : TableViewItem
 
-// The title text to display.
+// The text to display.
 @property(nonatomic, copy) NSString* text;
 
-// The detail text to display.
+// The detail text string.
 @property(nonatomic, copy) NSString* detailText;
 
 // The current state of the switch.
@@ -27,26 +27,6 @@
 
 // SyncSetupService::SyncableDatatype value for the item.
 @property(nonatomic, assign) NSInteger dataType;
-
-// Command to trigger when the switch is toggled. The default value is 0.
-@property(nonatomic, assign) NSInteger commandID;
-
-@end
-
-// Cell representation for AccountSignInItem.
-@interface SyncSwitchCell : MDCCollectionViewCell
-
-// Cell title.
-@property(nonatomic, readonly, strong) UILabel* textLabel;
-
-// Cell subtitle.
-@property(nonatomic, readonly, strong) UILabel* detailTextLabel;
-
-// The switch view.
-@property(nonatomic, readonly, strong) UISwitch* switchView;
-
-// Returns the default text color used for the given |state|.
-+ (UIColor*)defaultTextColorForState:(UIControlState)state;
 
 @end
 

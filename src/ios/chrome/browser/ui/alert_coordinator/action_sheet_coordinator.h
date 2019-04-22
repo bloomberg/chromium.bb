@@ -28,10 +28,20 @@
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                                      title:(NSString*)title
                                    message:(NSString*)message NS_UNAVAILABLE;
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                                     title:(NSString*)title
+                                   message:(NSString*)message
+                              browserState:
+                                  (ios::ChromeBrowserState*)browserState
+    NS_UNAVAILABLE;
 
 // Configures the underlying UIAlertController's popover arrow direction.
 // Default is UIPopoverArrowDirectionAny.
 @property(nonatomic, assign) UIPopoverArrowDirection popoverArrowDirection;
+
+// Configures the underlying UIAlertController's style. Defaults to
+// UIAlertControllerStyleActionSheet.
+@property(nonatomic, assign) UIAlertControllerStyle alertStyle;
 
 @end
 

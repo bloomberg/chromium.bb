@@ -21,7 +21,10 @@ namespace payments {
 class PaymentRequestCanMakePaymentQueryTest
     : public PaymentRequestBrowserTestBase {
  protected:
-  PaymentRequestCanMakePaymentQueryTest() {}
+  PaymentRequestCanMakePaymentQueryTest() {
+    feature_list_.InitAndDisableFeature(
+        ::features::kPaymentRequestHasEnrolledInstrument);
+  }
 
   void SetUpOnMainThread() override {
     PaymentRequestBrowserTestBase::SetUpOnMainThread();
@@ -39,6 +42,8 @@ class PaymentRequestCanMakePaymentQueryTest
   }
 
  private:
+  base::test::ScopedFeatureList feature_list_;
+
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestCanMakePaymentQueryTest);
 };
 
@@ -72,8 +77,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryTest,
 // in basic-card is disabled.
 IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryTest,
                        CanMakePayment_Supported_GooglePayCardsDisabled) {
-  base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_feature_list_.InitAndDisableFeature(
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
       payments::features::kReturnGooglePayInBasicCard);
   NavigateTo("/payment_request_can_make_payment_query_test.html");
   autofill::CreditCard card = autofill::test::GetMaskedServerCard();
@@ -93,8 +98,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryTest,
 // in basic-card is enabled.
 IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryTest,
                        CanMakePayment_Supported_GooglePayCardsEnabled) {
-  base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_feature_list_.InitAndEnableFeature(
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
       payments::features::kReturnGooglePayInBasicCard);
   NavigateTo("/payment_request_can_make_payment_query_test.html");
   autofill::CreditCard card = autofill::test::GetMaskedServerCard();
@@ -171,7 +176,10 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryTest,
 class PaymentRequestCanMakePaymentQueryCCTest
     : public PaymentRequestBrowserTestBase {
  protected:
-  PaymentRequestCanMakePaymentQueryCCTest() {}
+  PaymentRequestCanMakePaymentQueryCCTest() {
+    feature_list_.InitAndDisableFeature(
+        ::features::kPaymentRequestHasEnrolledInstrument);
+  }
 
   // If |visa| is true, then the method data is:
   //
@@ -189,6 +197,8 @@ class PaymentRequestCanMakePaymentQueryCCTest
   }
 
  private:
+  base::test::ScopedFeatureList feature_list_;
+
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestCanMakePaymentQueryCCTest);
 };
 
@@ -271,6 +281,9 @@ class PaymentRequestCanMakePaymentQueryPMITest
     script_[CheckFor::BOB_PAY] = "checkBobPay();";
     script_[CheckFor::BOB_PAY_AND_BASIC_CARD] = "checkBobPayAndBasicCard();";
     script_[CheckFor::BOB_PAY_AND_VISA] = "checkBobPayAndVisa();";
+
+    feature_list_.InitAndDisableFeature(
+        ::features::kPaymentRequestHasEnrolledInstrument);
   }
 
   void CallCanMakePayment(CheckFor check_for) {
@@ -283,6 +296,8 @@ class PaymentRequestCanMakePaymentQueryPMITest
 
  private:
   std::map<CheckFor, std::string> script_;
+  base::test::ScopedFeatureList feature_list_;
+
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestCanMakePaymentQueryPMITest);
 };
 

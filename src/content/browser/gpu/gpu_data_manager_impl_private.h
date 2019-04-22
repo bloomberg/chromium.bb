@@ -30,7 +30,6 @@ class CommandLine;
 
 namespace gpu {
 struct GpuPreferences;
-struct VideoMemoryUsageStats;
 }
 
 namespace content {
@@ -51,8 +50,7 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   bool IsGpuFeatureInfoAvailable() const;
   gpu::GpuFeatureStatus GetFeatureStatus(gpu::GpuFeatureType feature) const;
   void RequestVideoMemoryUsageStatsUpdate(
-      const base::Callback<void(const gpu::VideoMemoryUsageStats& stats)>&
-          callback) const;
+      GpuDataManager::VideoMemoryUsageStatsCallback callback) const;
   void AddObserver(GpuDataManagerObserver* observer);
   void RemoveObserver(GpuDataManagerObserver* observer);
   void UnblockDomainFrom3DAPIs(const GURL& url);
@@ -210,9 +208,6 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   bool domain_blocking_enabled_ = true;
 
   bool application_is_visible_ = true;
-
-  // True if --single-process or --in-process-gpu is passed in.
-  bool in_process_gpu_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(GpuDataManagerImplPrivate);
 };

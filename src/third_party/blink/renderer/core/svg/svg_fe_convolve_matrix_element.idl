@@ -45,11 +45,7 @@
     [MeasureAs=SVG1DOMFilter] readonly attribute SVGAnimatedEnumeration edgeMode;
     [MeasureAs=SVG1DOMFilter] readonly attribute SVGAnimatedNumber kernelUnitLengthX;
     [MeasureAs=SVG1DOMFilter] readonly attribute SVGAnimatedNumber kernelUnitLengthY;
-
-    // TODO(foolip): The following was part of SVG 1.1. https://crbug.com/695977
-    // http://www.w3.org/TR/SVG11/filters.html#InterfaceSVGFEConvolveMatrixElement
-    // https://github.com/w3c/fxtf-drafts/issues/114
     [Measure] readonly attribute SVGAnimatedBoolean preserveAlpha;
 };
 
-SVGFEConvolveMatrixElement implements SVGFilterPrimitiveStandardAttributes;
+SVGFEConvolveMatrixElement includes SVGFilterPrimitiveStandardAttributes;

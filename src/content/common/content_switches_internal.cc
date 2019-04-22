@@ -36,9 +36,6 @@ namespace content {
 
 namespace {
 
-const base::Feature kSavePreviousDocumentResources{
-    "SavePreviousDocumentResources", base::FEATURE_DISABLED_BY_DEFAULT};
-
 #if defined(OS_WIN)
 
 base::string16 ToNativeString(base::StringPiece string) {
@@ -71,7 +68,7 @@ bool IsPinchToZoomEnabled() {
   return !command_line.HasSwitch(switches::kDisablePinch);
 }
 
-V8CacheOptions GetV8CacheOptions() {
+blink::mojom::V8CacheOptions GetV8CacheOptions() {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   std::string v8_cache_options =
@@ -79,35 +76,12 @@ V8CacheOptions GetV8CacheOptions() {
   if (v8_cache_options.empty())
     v8_cache_options = base::FieldTrialList::FindFullName("V8CacheOptions");
   if (v8_cache_options == "none") {
-    return V8_CACHE_OPTIONS_NONE;
+    return blink::mojom::V8CacheOptions::kNone;
   } else if (v8_cache_options == "code") {
-    return V8_CACHE_OPTIONS_CODE;
+    return blink::mojom::V8CacheOptions::kCode;
   } else {
-    return V8_CACHE_OPTIONS_DEFAULT;
+    return blink::mojom::V8CacheOptions::kDefault;
   }
-}
-
-SavePreviousDocumentResources GetSavePreviousDocumentResources() {
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  std::string save_previous_document_resources =
-      command_line.GetSwitchValueASCII(
-          switches::kSavePreviousDocumentResources);
-  if (save_previous_document_resources == "never")
-    return SavePreviousDocumentResources::NEVER;
-  if (save_previous_document_resources == "onDOMContentLoaded")
-    return SavePreviousDocumentResources::UNTIL_ON_DOM_CONTENT_LOADED;
-  if (save_previous_document_resources == "onload")
-    return SavePreviousDocumentResources::UNTIL_ON_LOAD;
-  // The command line, which is set by the user, takes priority. Otherwise,
-  // fall back to the field trial.
-  std::string until = base::GetFieldTrialParamValueByFeature(
-      kSavePreviousDocumentResources, "until");
-  if (until == "onDOMContentLoaded")
-    return SavePreviousDocumentResources::UNTIL_ON_DOM_CONTENT_LOADED;
-  if (until == "onload")
-    return SavePreviousDocumentResources::UNTIL_ON_LOAD;
-  return SavePreviousDocumentResources::NEVER;
 }
 
 void WaitForDebugger(const std::string& label) {
@@ -121,7 +95,7 @@ void WaitForDebugger(const std::string& label) {
   title += label;  // makes attaching to process easier
   std::string message = label;
   message += " starting with pid: ";
-  message += base::IntToString(base::GetCurrentProcId());
+  message += base::NumberToString(base::GetCurrentProcId());
   ::MessageBox(NULL, base::UTF8ToWide(message).c_str(),
                base::UTF8ToWide(title).c_str(), MB_OK | MB_SETFOREGROUND);
 #elif defined(OS_POSIX)

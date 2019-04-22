@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
@@ -32,7 +33,6 @@
 #include "content/renderer/accessibility/render_accessibility_impl.h"
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"
 #include "content/renderer/child_frame_compositing_helper.h"
-#include "content/renderer/cursor_utils.h"
 #include "content/renderer/drop_data_builder.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/sad_plugin.h"
@@ -213,9 +213,10 @@ void BrowserPlugin::Detach() {
       new BrowserPluginHostMsg_Detach(browser_plugin_instance_id_));
 }
 
-const viz::LocalSurfaceId& BrowserPlugin::GetLocalSurfaceId() const {
-  return parent_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
-      .local_surface_id();
+const viz::LocalSurfaceIdAllocation&
+BrowserPlugin::GetLocalSurfaceIdAllocation() const {
+  return parent_local_surface_id_allocator_
+      .GetCurrentLocalSurfaceIdAllocation();
 }
 
 #if defined(USE_AURA)
@@ -229,12 +230,12 @@ void BrowserPlugin::CreateMusWindowAndEmbed(
   }
   RendererWindowTreeClient* renderer_window_tree_client =
       RendererWindowTreeClient::Get(
-          render_frame->GetRenderWidget()->routing_id());
+          render_frame->GetLocalRootRenderWidget()->routing_id());
   DCHECK(renderer_window_tree_client);
   mus_embedded_frame_ =
       renderer_window_tree_client->CreateMusEmbeddedFrame(this, embed_token);
-  if (attached() && GetLocalSurfaceId().is_valid()) {
-    mus_embedded_frame_->SetWindowBounds(GetLocalSurfaceId(),
+  if (attached() && GetLocalSurfaceIdAllocation().IsValid()) {
+    mus_embedded_frame_->SetWindowBounds(GetLocalSurfaceIdAllocation(),
                                          FrameRectInPixels());
   }
 }
@@ -286,7 +287,8 @@ void BrowserPlugin::SynchronizeVisualProperties() {
             ? cc::DeadlinePolicy::UseInfiniteDeadline()
             : cc::DeadlinePolicy::UseDefaultDeadline();
     compositing_helper_->SetSurfaceId(
-        viz::SurfaceId(frame_sink_id_, GetLocalSurfaceId()),
+        viz::SurfaceId(frame_sink_id_,
+                       GetLocalSurfaceIdAllocation().local_surface_id()),
         screen_space_rect().size(), deadline);
   }
 
@@ -312,7 +314,7 @@ void BrowserPlugin::SynchronizeVisualProperties() {
 
 #if defined(USE_AURA)
   if (features::IsMultiProcessMash() && mus_embedded_frame_) {
-    mus_embedded_frame_->SetWindowBounds(GetLocalSurfaceId(),
+    mus_embedded_frame_->SetWindowBounds(GetLocalSurfaceIdAllocation(),
                                          FrameRectInPixels());
   }
 #endif
@@ -454,7 +456,7 @@ void BrowserPlugin::UpdateInternalInstanceId() {
   // by firing an event from there.
   UpdateDOMAttribute(
       "internalinstanceid",
-      base::UTF8ToUTF16(base::IntToString(browser_plugin_instance_id_)));
+      base::UTF8ToUTF16(base::NumberToString(browser_plugin_instance_id_)));
 }
 
 void BrowserPlugin::UpdateGuestFocusState(blink::WebFocusType focus_type) {
@@ -523,7 +525,7 @@ bool BrowserPlugin::Initialize(WebPluginContainer* container) {
 
   embedding_render_widget_ =
       RenderFrameImpl::FromWebFrame(container_->GetDocument().GetFrame())
-          ->GetRenderWidget()
+          ->GetLocalRootRenderWidget()
           ->AsWeakPtr();
   embedding_render_widget_->RegisterBrowserPlugin(this);
 
@@ -681,7 +683,7 @@ blink::WebInputEventResult BrowserPlugin::HandleInputEvent(
   BrowserPluginManager::Get()->Send(
       new BrowserPluginHostMsg_HandleInputEvent(browser_plugin_instance_id_,
                                                 &event));
-  GetWebCursorInfo(cursor_, &cursor_info);
+  cursor_info = cursor_.info().GetWebCursorInfo();
 
   // Although we forward this event to the guest, we don't report it as consumed
   // since other targets of this event in Blink never get that chance either.

@@ -184,4 +184,25 @@ TEST_F(VariationsHttpHeaderProviderTest, GetVariationsString) {
   EXPECT_EQ(" 100 123 124 200 ", provider.GetVariationsString());
 }
 
+TEST_F(VariationsHttpHeaderProviderTest, GetVariationsVector) {
+  base::test::ScopedTaskEnvironment task_environment;
+  base::FieldTrialList field_trial_list(nullptr);
+
+  CreateTrialAndAssociateId("t1", "g1", GOOGLE_WEB_PROPERTIES, 121);
+  CreateTrialAndAssociateId("t2", "g2", GOOGLE_WEB_PROPERTIES, 122);
+  CreateTrialAndAssociateId("t3", "g3", GOOGLE_WEB_PROPERTIES_TRIGGER, 123);
+  CreateTrialAndAssociateId("t4", "g4", GOOGLE_WEB_PROPERTIES_TRIGGER, 124);
+  CreateTrialAndAssociateId("t5", "g5", GOOGLE_WEB_PROPERTIES_SIGNED_IN, 125);
+
+  VariationsHttpHeaderProvider provider;
+  provider.ForceVariationIds({"100", "200", "t101"}, "");
+
+  EXPECT_EQ((std::vector<VariationID>{100, 121, 122, 200}),
+            provider.GetVariationsVector(GOOGLE_WEB_PROPERTIES));
+  EXPECT_EQ((std::vector<VariationID>{101, 123, 124}),
+            provider.GetVariationsVector(GOOGLE_WEB_PROPERTIES_TRIGGER));
+  EXPECT_EQ((std::vector<VariationID>{125}),
+            provider.GetVariationsVector(GOOGLE_WEB_PROPERTIES_SIGNED_IN));
+}
+
 }  // namespace variations

@@ -53,8 +53,11 @@ class CORE_EXPORT CSSStyleSheetResource final : public TextResource {
   CSSStyleSheetResource(const ResourceRequest&,
                         const ResourceLoaderOptions&,
                         const TextResourceDecoderOptions&);
+
   ~CSSStyleSheetResource() override;
   void Trace(blink::Visitor*) override;
+  void OnMemoryDump(WebMemoryDumpLevelOfDetail,
+                    WebProcessMemoryDump*) const override;
 
   const String SheetText(const CSSParserContext*,
                          MIMETypeCheck = MIMETypeCheck::kStrict) const;

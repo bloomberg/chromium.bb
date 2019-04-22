@@ -51,7 +51,7 @@ unity_launcher_entry_set_progress_func entry_set_progress = nullptr;
 unity_launcher_entry_set_progress_visible_func entry_set_progress_visible =
     nullptr;
 
-void EnsureMethodsLoaded() {
+void EnsureLibUnityLoaded() {
   using base::nix::GetDesktopEnvironment;
 
   if (attempted_load)
@@ -119,7 +119,7 @@ void EnsureMethodsLoaded() {
 namespace unity {
 
 bool IsRunning() {
-  EnsureMethodsLoaded();
+  EnsureLibUnityLoaded();
   if (inspector && get_unity_running)
     return get_unity_running(inspector);
 
@@ -127,7 +127,7 @@ bool IsRunning() {
 }
 
 void SetDownloadCount(int count) {
-  EnsureMethodsLoaded();
+  EnsureLibUnityLoaded();
   if (chrome_entry && entry_set_count && entry_set_count_visible) {
     entry_set_count(chrome_entry, count);
     entry_set_count_visible(chrome_entry, count != 0);
@@ -135,7 +135,7 @@ void SetDownloadCount(int count) {
 }
 
 void SetProgressFraction(float percentage) {
-  EnsureMethodsLoaded();
+  EnsureLibUnityLoaded();
   if (chrome_entry && entry_set_progress && entry_set_progress_visible) {
     entry_set_progress(chrome_entry, percentage);
     entry_set_progress_visible(chrome_entry,

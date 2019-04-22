@@ -6,19 +6,21 @@
 
 #include "xfa/fxfa/parser/cxfa_encryption.h"
 
+#include "fxjs/xfa/cjx_node.h"
+#include "third_party/base/ptr_util.h"
+
 namespace {
 
 const CXFA_Node::PropertyData kEncryptionPropertyData[] = {
     {XFA_Element::EncryptionLevel, 1, 0},
     {XFA_Element::Encrypt, 1, 0},
     {XFA_Element::Permissions, 1, 0},
-    {XFA_Element::Unknown, 0, 0}};
+};
+
 const CXFA_Node::AttributeData kEncryptionAttributeData[] = {
     {XFA_Attribute::Desc, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Lock, XFA_AttributeType::Integer, (void*)0},
-    {XFA_Attribute::Unknown, XFA_AttributeType::Integer, nullptr}};
-
-constexpr wchar_t kEncryptionName[] = L"encryption";
+};
 
 }  // namespace
 
@@ -30,6 +32,6 @@ CXFA_Encryption::CXFA_Encryption(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_Element::Encryption,
                 kEncryptionPropertyData,
                 kEncryptionAttributeData,
-                kEncryptionName) {}
+                pdfium::MakeUnique<CJX_Node>(this)) {}
 
-CXFA_Encryption::~CXFA_Encryption() {}
+CXFA_Encryption::~CXFA_Encryption() = default;

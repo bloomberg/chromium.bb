@@ -7,11 +7,17 @@
 
 #include <memory>
 
+#include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/web_applications/bookmark_apps/test_web_app_provider.h"
 #include "chrome/test/base/in_process_browser_test.h"
+
+class Browser;
+class KeyedService;
 
 namespace web_app {
 
+class TestSystemWebAppManager;
 class TestWebUIControllerFactory;
 
 class SystemWebAppManagerBrowserTest : public InProcessBrowserTest {
@@ -19,15 +25,16 @@ class SystemWebAppManagerBrowserTest : public InProcessBrowserTest {
   SystemWebAppManagerBrowserTest();
   ~SystemWebAppManagerBrowserTest() override;
 
-  // Overridden from InProcessBrowserTest:
-  void SetUpOnMainThread() override;
-
  protected:
-  Browser* InstallAndLaunchSystemApp();
+  Browser* WaitForSystemAppInstallAndLaunch();
 
  private:
+  std::unique_ptr<KeyedService> CreateWebAppProvider(Profile* profile);
+
   base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<TestWebUIControllerFactory> factory_;
+  TestWebAppProviderCreator test_web_app_provider_creator_;
+  TestSystemWebAppManager* test_system_web_app_manager_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(SystemWebAppManagerBrowserTest);
 };

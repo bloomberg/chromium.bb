@@ -12,7 +12,6 @@
 #include "base/strings/string_util.h"
 #include "google_apis/google_api_keys.h"
 #include "remoting/base/logging.h"
-#include "remoting/base/oauth_helper.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace remoting {
@@ -148,11 +147,11 @@ void OAuthTokenGetterImpl::NotifyTokenCallbacks(
     const std::string& user_email,
     const std::string& access_token) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  base::queue<TokenCallback> callbacks(pending_callbacks_);
-  pending_callbacks_ = base::queue<TokenCallback>();
+  base::queue<TokenCallback> callbacks;
+  callbacks.swap(pending_callbacks_);
 
   while (!callbacks.empty()) {
-    callbacks.front().Run(status, user_email, access_token);
+    std::move(callbacks.front()).Run(status, user_email, access_token);
     callbacks.pop();
   }
 }
@@ -189,10 +188,10 @@ void OAuthTokenGetterImpl::OnNetworkError(int response_code) {
                        std::string());
 }
 
-void OAuthTokenGetterImpl::CallWithToken(const TokenCallback& on_access_token) {
+void OAuthTokenGetterImpl::CallWithToken(TokenCallback on_access_token) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (intermediate_credentials_) {
-    pending_callbacks_.push(on_access_token);
+    pending_callbacks_.push(std::move(on_access_token));
     if (!response_pending_) {
       GetOauthTokensFromAuthCode();
     }
@@ -203,13 +202,13 @@ void OAuthTokenGetterImpl::CallWithToken(const TokenCallback& on_access_token) {
         (!authorization_credentials_->is_service_account && !email_verified_);
 
     if (need_new_auth_token) {
-      pending_callbacks_.push(on_access_token);
+      pending_callbacks_.push(std::move(on_access_token));
       if (!response_pending_) {
         RefreshAccessToken();
       }
     } else {
-      on_access_token.Run(SUCCESS, authorization_credentials_->login,
-                          oauth_access_token_);
+      std::move(on_access_token)
+          .Run(SUCCESS, authorization_credentials_->login, oauth_access_token_);
     }
   }
 }
@@ -230,16 +229,10 @@ void OAuthTokenGetterImpl::GetOauthTokensFromAuthCode() {
           ? google_apis::CLIENT_REMOTING_HOST
           : google_apis::CLIENT_REMOTING;
 
-  std::string redirect_uri;
-  if (intermediate_credentials_->oauth_redirect_uri.empty()) {
-    if (intermediate_credentials_->is_service_account) {
-      redirect_uri = "oob";
-    } else {
-      redirect_uri = GetDefaultOauthRedirectUrl();
-    }
-  } else {
-    redirect_uri = intermediate_credentials_->oauth_redirect_uri;
-  }
+  // For the case of fetching an OAuth token from a one-time-use code, the
+  // caller should provide a redirect URI.
+  std::string redirect_uri = intermediate_credentials_->oauth_redirect_uri;
+  DCHECK(!redirect_uri.empty());
 
   gaia::OAuthClientInfo client_info = {
       google_apis::GetOAuth2ClientID(oauth2_client),

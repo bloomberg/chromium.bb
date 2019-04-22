@@ -7,7 +7,7 @@
 #include "test_utils/ANGLETest.h"
 #include "test_utils/gl_raii.h"
 
-#include "random_utils.h"
+#include "util/random_utils.h"
 
 #include <stdint.h>
 
@@ -35,28 +35,26 @@ class BufferDataTest : public ANGLETest
     {
         ANGLETest::SetUp();
 
-        const char *vsSource =
-            R"(attribute vec4 position;
-            attribute float in_attrib;
-            varying float v_attrib;
-            void main()
-            {
-                v_attrib = in_attrib;
-                gl_Position = position;
-            })";
+        constexpr char kVS[] = R"(attribute vec4 position;
+attribute float in_attrib;
+varying float v_attrib;
+void main()
+{
+    v_attrib = in_attrib;
+    gl_Position = position;
+})";
 
-        const char *fsSource =
-            R"(precision mediump float;
-            varying float v_attrib;
-            void main()
-            {
-                gl_FragColor = vec4(v_attrib, 0, 0, 1);
-            })";
+        constexpr char kFS[] = R"(precision mediump float;
+varying float v_attrib;
+void main()
+{
+    gl_FragColor = vec4(v_attrib, 0, 0, 1);
+})";
 
         glGenBuffers(1, &mBuffer);
         ASSERT_NE(mBuffer, 0U);
 
-        mProgram = CompileProgram(vsSource, fsSource);
+        mProgram = CompileProgram(kVS, kFS);
         ASSERT_NE(mProgram, 0U);
 
         mAttribLocation = glGetAttribLocation(mProgram, "in_attrib");
@@ -210,7 +208,7 @@ TEST_P(BufferDataTest, RepeatedDrawDynamicBug)
     EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::red);
 
     // Set up color value so black is drawn
-    std::fill(data.begin(), data.end(), 0);
+    std::fill(data.begin(), data.end(), 0.0f);
 
     // Update the data, changing back to DYNAMIC mode.
     glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * data.size(), data.data(), GL_DYNAMIC_DRAW);
@@ -239,23 +237,21 @@ class IndexedBufferCopyTest : public ANGLETest
     {
         ANGLETest::SetUp();
 
-        const char *vsSource =
-            R"(attribute vec3 in_attrib;
-            varying vec3 v_attrib;
-            void main()
-            {
-                v_attrib = in_attrib;
-                gl_Position = vec4(0.0, 0.0, 0.5, 1.0);
-                gl_PointSize = 100.0;
-            })";
+        constexpr char kVS[] = R"(attribute vec3 in_attrib;
+varying vec3 v_attrib;
+void main()
+{
+    v_attrib = in_attrib;
+    gl_Position = vec4(0.0, 0.0, 0.5, 1.0);
+    gl_PointSize = 100.0;
+})";
 
-        const char *fsSource =
-            R"(precision mediump float;
-            varying vec3 v_attrib;
-            void main()
-            {
-                gl_FragColor = vec4(v_attrib, 1);
-            })";
+        constexpr char kFS[] = R"(precision mediump float;
+varying vec3 v_attrib;
+void main()
+{
+    gl_FragColor = vec4(v_attrib, 1);
+})";
 
         glGenBuffers(2, mBuffers);
         ASSERT_NE(mBuffers[0], 0U);
@@ -264,7 +260,7 @@ class IndexedBufferCopyTest : public ANGLETest
         glGenBuffers(1, &mElementBuffer);
         ASSERT_NE(mElementBuffer, 0U);
 
-        mProgram = CompileProgram(vsSource, fsSource);
+        mProgram = CompileProgram(kVS, kFS);
         ASSERT_NE(mProgram, 0U);
 
         mAttribLocation = glGetAttribLocation(mProgram, "in_attrib");
@@ -531,13 +527,13 @@ TEST_P(BufferDataOverflowTest, VertexBufferIntegerOverflow)
 
     vertexShaderStr << "}";
 
-    const std::string &fragmentShader =
+    constexpr char kFS[] =
         "varying highp float v_attrib;\n"
         "void main() {\n"
         "  gl_FragColor = vec4(v_attrib, 0, 0, 1);\n"
         "}";
 
-    ANGLE_GL_PROGRAM(program, vertexShaderStr.str(), fragmentShader);
+    ANGLE_GL_PROGRAM(program, vertexShaderStr.str().c_str(), kFS);
     glUseProgram(program.get());
 
     std::vector<GLfloat> data(numItems, 1.0f);
@@ -565,6 +561,19 @@ TEST_P(BufferDataOverflowTest, VertexBufferIntegerOverflow)
     EXPECT_GL_NO_ERROR();
     glDrawArrays(GL_TRIANGLES, 0, numItems);
     EXPECT_GL_ERROR(GL_OUT_OF_MEMORY);
+
+    // Test that a small draw still works.
+    for (GLsizei bufferIndex = 0; bufferIndex < bufferCnt; ++bufferIndex)
+    {
+        std::stringstream attribNameStr;
+        attribNameStr << "attrib" << bufferIndex;
+        GLint attribLocation = glGetAttribLocation(program.get(), attribNameStr.str().c_str());
+        ASSERT_NE(-1, attribLocation);
+        glDisableVertexAttribArray(attribLocation);
+    }
+
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+    EXPECT_GL_ERROR(GL_NO_ERROR);
 }
 
 // Tests a security bug in our CopyBufferSubData validation (integer overflow).

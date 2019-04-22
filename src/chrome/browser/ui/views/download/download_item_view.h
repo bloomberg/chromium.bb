@@ -101,12 +101,10 @@ class DownloadItemView : public views::InkDropHostView,
   void OnMouseReleased(const ui::MouseEvent& event) override;
   void OnMouseCaptureLost() override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
-  bool GetTooltipText(const gfx::Point& p,
-                      base::string16* tooltip) const override;
+  base::string16 GetTooltipText(const gfx::Point& p) const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // view::InkDropHostView:
-  std::unique_ptr<views::InkDrop> CreateInkDrop() override;
   void OnInkDropCreated() override;
   SkColor GetInkDropBaseColor() const override;
 
@@ -114,9 +112,9 @@ class DownloadItemView : public views::InkDropHostView,
   void OnGestureEvent(ui::GestureEvent* event) override;
 
   // views::ContextMenuController.
-  void ShowContextMenuForView(View* source,
-                              const gfx::Point& point,
-                              ui::MenuSourceType source_type) override;
+  void ShowContextMenuForViewImpl(View* source,
+                                  const gfx::Point& point,
+                                  ui::MenuSourceType source_type) override;
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;

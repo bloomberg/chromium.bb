@@ -95,7 +95,7 @@ bool DeadBranchElimPass::MarkLiveBlocks(
     Function* func, std::unordered_set<BasicBlock*>* live_blocks) {
   StructuredCFGAnalysis* cfgAnalysis = context()->GetStructuredCFGAnalysis();
 
-  std::unordered_set<BasicBlock*> continues;
+  std::unordered_set<BasicBlock*> blocks_with_backedge;
   std::vector<BasicBlock*> stack;
   stack.push_back(&*func->begin());
   bool modified = false;
@@ -107,7 +107,10 @@ bool DeadBranchElimPass::MarkLiveBlocks(
     if (!live_blocks->insert(block).second) continue;
 
     uint32_t cont_id = block->ContinueBlockIdIfAny();
-    if (cont_id != 0) continues.insert(GetParentBlock(cont_id));
+    if (cont_id != 0) {
+      AddBlocksWithBackEdge(cont_id, block->id(), block->MergeBlockIdIfAny(),
+                            &blocks_with_backedge);
+    }
 
     Instruction* terminator = block->terminator();
     uint32_t live_lab_id = 0;
@@ -146,13 +149,23 @@ bool DeadBranchElimPass::MarkLiveBlocks(
       }
     }
 
-    // Don't simplify branches of continue blocks. A path from the continue to
-    // the header is required.
-    // TODO(alan-baker): They can be simplified iff there remains a path to the
-    // backedge. Structured control flow should guarantee one path hits the
-    // backedge, but I've removed the requirement for structured control flow
-    // from this pass.
-    bool simplify = live_lab_id != 0 && !continues.count(block);
+    // Don't simplify back edges unless it becomes a branch to the header. Every
+    // loop must have exactly one back edge to the loop header, so we cannot
+    // remove it.
+    bool simplify = false;
+    if (live_lab_id != 0) {
+      if (!blocks_with_backedge.count(block)) {
+        // This is not a back edge.
+        simplify = true;
+      } else {
+        const auto& struct_cfg_analysis = context()->GetStructuredCFGAnalysis();
+        uint32_t header_id = struct_cfg_analysis->ContainingLoop(block->id());
+        if (live_lab_id == header_id) {
+          // The new branch will be a branch to the header.
+          simplify = true;
+        }
+      }
+    }
 
     if (simplify) {
       modified = true;
@@ -323,21 +336,7 @@ bool DeadBranchElimPass::EraseDeadBlocks(
     const std::unordered_map<BasicBlock*, BasicBlock*>& unreachable_continues) {
   bool modified = false;
   for (auto ebi = func->begin(); ebi != func->end();) {
-    if (unreachable_merges.count(&*ebi)) {
-      if (ebi->begin() != ebi->tail() ||
-          ebi->terminator()->opcode() != SpvOpUnreachable) {
-        // Make unreachable, but leave the label.
-        KillAllInsts(&*ebi, false);
-        // Add unreachable terminator.
-        ebi->AddInstruction(
-            MakeUnique<Instruction>(context(), SpvOpUnreachable, 0, 0,
-                                    std::initializer_list<Operand>{}));
-        context()->AnalyzeUses(ebi->terminator());
-        context()->set_instr_block(ebi->terminator(), &*ebi);
-        modified = true;
-      }
-      ++ebi;
-    } else if (unreachable_continues.count(&*ebi)) {
+    if (unreachable_continues.count(&*ebi)) {
       uint32_t cont_id = unreachable_continues.find(&*ebi)->second->id();
       if (ebi->begin() != ebi->tail() ||
           ebi->terminator()->opcode() != SpvOpBranch ||
@@ -351,6 +350,20 @@ bool DeadBranchElimPass::EraseDeadBlocks(
             std::initializer_list<Operand>{{SPV_OPERAND_TYPE_ID, {cont_id}}}));
         get_def_use_mgr()->AnalyzeInstUse(&*ebi->tail());
         context()->set_instr_block(&*ebi->tail(), &*ebi);
+        modified = true;
+      }
+      ++ebi;
+    } else if (unreachable_merges.count(&*ebi)) {
+      if (ebi->begin() != ebi->tail() ||
+          ebi->terminator()->opcode() != SpvOpUnreachable) {
+        // Make unreachable, but leave the label.
+        KillAllInsts(&*ebi, false);
+        // Add unreachable terminator.
+        ebi->AddInstruction(
+            MakeUnique<Instruction>(context(), SpvOpUnreachable, 0, 0,
+                                    std::initializer_list<Operand>{}));
+        context()->AnalyzeUses(ebi->terminator());
+        context()->set_instr_block(ebi->terminator(), &*ebi);
         modified = true;
       }
       ++ebi;
@@ -419,9 +432,9 @@ void DeadBranchElimPass::FixBlockOrder() {
 
   // Structured order is more intuitive so use it where possible.
   if (context()->get_feature_mgr()->HasCapability(SpvCapabilityShader)) {
-    ProcessReachableCallTree(reorder_structured, context());
+    context()->ProcessReachableCallTree(reorder_structured);
   } else {
-    ProcessReachableCallTree(reorder_dominators, context());
+    context()->ProcessReachableCallTree(reorder_dominators);
   }
 }
 
@@ -435,7 +448,7 @@ Pass::Status DeadBranchElimPass::Process() {
   ProcessFunction pfn = [this](Function* fp) {
     return EliminateDeadBranches(fp);
   };
-  bool modified = ProcessReachableCallTree(pfn, context());
+  bool modified = context()->ProcessReachableCallTree(pfn);
   if (modified) FixBlockOrder();
   return modified ? Status::SuccessWithChange : Status::SuccessWithoutChange;
 }
@@ -536,6 +549,40 @@ Instruction* DeadBranchElimPass::FindFirstExitFromSelectionMerge(
     start_block_id = next_block_id;
   }
   return nullptr;
+}
+
+void DeadBranchElimPass::AddBlocksWithBackEdge(
+    uint32_t cont_id, uint32_t header_id, uint32_t merge_id,
+    std::unordered_set<BasicBlock*>* blocks_with_back_edges) {
+  std::unordered_set<uint32_t> visited;
+  visited.insert(cont_id);
+  visited.insert(header_id);
+  visited.insert(merge_id);
+
+  std::vector<uint32_t> work_list;
+  work_list.push_back(cont_id);
+
+  while (!work_list.empty()) {
+    uint32_t bb_id = work_list.back();
+    work_list.pop_back();
+
+    BasicBlock* bb = context()->get_instr_block(bb_id);
+
+    bool has_back_edge = false;
+    bb->ForEachSuccessorLabel([header_id, &visited, &work_list,
+                               &has_back_edge](uint32_t* succ_label_id) {
+      if (visited.insert(*succ_label_id).second) {
+        work_list.push_back(*succ_label_id);
+      }
+      if (*succ_label_id == header_id) {
+        has_back_edge = true;
+      }
+    });
+
+    if (has_back_edge) {
+      blocks_with_back_edges->insert(bb);
+    }
+  }
 }
 
 }  // namespace opt

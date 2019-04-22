@@ -44,6 +44,11 @@ public class DownloadResumptionBackgroundTask extends NativeBackgroundTask {
     }
 
     @Override
+    protected boolean supportsServiceManagerOnly() {
+        return DownloadUtils.shouldStartServiceManagerOnly();
+    }
+
+    @Override
     public void reschedule(Context context) {
         DownloadResumptionScheduler.getDownloadResumptionScheduler().scheduleIfNecessary();
     }

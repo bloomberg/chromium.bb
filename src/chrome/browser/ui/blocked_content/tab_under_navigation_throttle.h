@@ -96,10 +96,6 @@ class TabUnderNavigationThrottle : public content::NavigationThrottle {
       override;
   const char* GetNameForLogging() override;
 
-  // Store whether we're off the record as a member to avoid looking it up all
-  // the time.
-  const bool off_the_record_ = false;
-
   // True if the experiment is turned on and the class should actually attempt
   // to block tab-unders.
   const bool block_ = false;

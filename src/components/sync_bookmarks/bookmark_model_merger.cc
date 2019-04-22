@@ -5,16 +5,19 @@
 #include "components/sync_bookmarks/bookmark_model_merger.h"
 
 #include <algorithm>
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
 
 #include "base/guid.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/sync/base/hash_util.h"
 #include "components/sync/base/unique_position.h"
+#include "components/sync/engine/engine_util.h"
 #include "components/sync_bookmarks/bookmark_specifics_conversions.h"
 #include "components/sync_bookmarks/synced_bookmark_tracker.h"
 
@@ -27,6 +30,10 @@ namespace sync_bookmarks {
 namespace {
 
 static const size_t kInvalidIndex = -1;
+
+// Maximum number of bytes to allow in a title (must match sync's internal
+// limits; see write_node.cc).
+const int kTitleLimitBytes = 255;
 
 // The sync protocol identifies top-level entities by means of well-known tags,
 // (aka server defined tags) which should not be confused with titles or client
@@ -47,6 +54,16 @@ const char kBookmarkBarTag[] = "bookmark_bar";
 const char kMobileBookmarksTag[] = "synced_bookmarks";
 const char kOtherBookmarksTag[] = "other_bookmarks";
 
+// Canonicalize |title| similar to legacy client's implementation by truncating
+// up to |kTitleLimitBytes| and the appending ' ' in some cases.
+std::string CanonicalizeTitle(const std::string& title) {
+  std::string canonical_title;
+  syncer::SyncAPINameToServerName(title, &canonical_title);
+  base::TruncateUTF8ToByteSize(canonical_title, kTitleLimitBytes,
+                               &canonical_title);
+  return canonical_title;
+}
+
 // Heuristic to consider two nodes (local and remote) a match for the purpose of
 // merging. Two folders match if they have the same title, two bookmarks match
 // if they have the same title and url. A folder and a bookmark never match.
@@ -57,7 +74,14 @@ bool NodesMatch(const bookmarks::BookmarkNode* local_node,
   }
   const sync_pb::BookmarkSpecifics& specifics =
       remote_node.specifics.bookmark();
-  if (local_node->GetTitle() != base::UTF8ToUTF16(specifics.title())) {
+  const std::string local_title = base::UTF16ToUTF8(local_node->GetTitle());
+  const std::string remote_title = specifics.title();
+  // Titles match if they are identical or the remote one is the canonical form
+  // of the local one. The latter is the case when a legacy client has
+  // canonicalized the same local title before committing it. Modern clients
+  // don't canonicalize titles anymore.
+  if (local_title != remote_title &&
+      CanonicalizeTitle(local_title) != remote_title) {
     return false;
   }
   if (remote_node.is_folder) {
@@ -74,7 +98,7 @@ bool NodesMatch(const bookmarks::BookmarkNode* local_node,
 size_t FindMatchingChildFor(const UpdateResponseData* remote_node,
                             const bookmarks::BookmarkNode* local_parent,
                             size_t search_starting_child_index) {
-  const EntityData& remote_node_update_entity = remote_node->entity.value();
+  const EntityData& remote_node_update_entity = *remote_node->entity;
   for (int i = search_starting_child_index; i < local_parent->child_count();
        ++i) {
     const bookmarks::BookmarkNode* local_child = local_parent->GetChild(i);
@@ -88,9 +112,9 @@ size_t FindMatchingChildFor(const UpdateResponseData* remote_node,
 bool UniquePositionLessThan(const UpdateResponseData* a,
                             const UpdateResponseData* b) {
   const syncer::UniquePosition a_pos =
-      syncer::UniquePosition::FromProto(a->entity.value().unique_position);
+      syncer::UniquePosition::FromProto(a->entity->unique_position);
   const syncer::UniquePosition b_pos =
-      syncer::UniquePosition::FromProto(b->entity.value().unique_position);
+      syncer::UniquePosition::FromProto(b->entity->unique_position);
   return a_pos.LessThan(b_pos);
 }
 
@@ -113,16 +137,18 @@ BuildUpdatesTreeWithoutTombstonesWithSortedChildren(
       id_to_updates;
   // Tombstones carry only the sync id and cannot be merged with the local
   // model. Hence, we ignore tombstones.
-  for (const UpdateResponseData& update : *updates) {
-    const EntityData& update_entity = update.entity.value();
+  for (const std::unique_ptr<syncer::UpdateResponseData>& update : *updates) {
+    DCHECK(update);
+    const EntityData& update_entity = *update->entity;
     if (update_entity.is_deleted()) {
       continue;
     }
-    id_to_updates[update_entity.id] = &update;
+    id_to_updates[update_entity.id] = update.get();
   }
 
-  for (const UpdateResponseData& update : *updates) {
-    const EntityData& update_entity = update.entity.value();
+  for (const std::unique_ptr<UpdateResponseData>& update : *updates) {
+    DCHECK(update);
+    const EntityData& update_entity = *update->entity;
     if (update_entity.is_deleted()) {
       continue;
     }
@@ -146,7 +172,7 @@ BuildUpdatesTreeWithoutTombstonesWithSortedChildren(
     }
     const UpdateResponseData* parent_update =
         id_to_updates[update_entity.parent_id];
-    updates_tree[parent_update].push_back(&update);
+    updates_tree[parent_update].push_back(update.get());
   }
 
   // Sort all child updates.
@@ -192,14 +218,15 @@ void BookmarkModelMerger::Merge() {
   // perform the primary match. If there are multiple match candidates it
   // selects the first one.
   // Associate permanent folders.
-  for (const UpdateResponseData& update : *updates_) {
-    const EntityData& update_entity = update.entity.value();
+  for (const std::unique_ptr<UpdateResponseData>& update : *updates_) {
+    DCHECK(update);
+    const EntityData& update_entity = *update->entity;
     const bookmarks::BookmarkNode* permanent_folder =
         GetPermanentFolder(update_entity);
     if (!permanent_folder) {
       continue;
     }
-    MergeSubtree(permanent_folder, &update);
+    MergeSubtree(permanent_folder, update.get());
   }
   // TODO(crbug.com/516866): Check that both models match now.
 
@@ -210,7 +237,7 @@ void BookmarkModelMerger::Merge() {
 void BookmarkModelMerger::MergeSubtree(
     const bookmarks::BookmarkNode* local_node,
     const UpdateResponseData* remote_update) {
-  const EntityData& remote_update_entity = remote_update->entity.value();
+  const EntityData& remote_update_entity = *remote_update->entity;
   bookmark_tracker_->Add(
       remote_update_entity.id, local_node, remote_update->response_version,
       remote_update_entity.creation_time, remote_update_entity.unique_position,
@@ -263,7 +290,7 @@ void BookmarkModelMerger::ProcessRemoteCreation(
     const UpdateResponseData* remote_update,
     const bookmarks::BookmarkNode* local_parent,
     int index) {
-  const EntityData& remote_update_entity = remote_update->entity.value();
+  const EntityData& remote_update_entity = *remote_update->entity;
   const bookmarks::BookmarkNode* bookmark_node =
       CreateBookmarkNodeFromSpecifics(
           remote_update_entity.specifics.bookmark(), local_parent, index,

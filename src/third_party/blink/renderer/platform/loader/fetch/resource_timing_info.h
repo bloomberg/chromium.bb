@@ -32,11 +32,12 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_RESOURCE_TIMING_INFO_H_
 
 #include <memory>
+
+#include "base/macros.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
@@ -45,29 +46,18 @@ namespace blink {
 class PLATFORM_EXPORT ResourceTimingInfo
     : public RefCounted<ResourceTimingInfo> {
   USING_FAST_MALLOC(ResourceTimingInfo);
-  WTF_MAKE_NONCOPYABLE(ResourceTimingInfo);
 
  public:
   static scoped_refptr<ResourceTimingInfo> Create(const AtomicString& type,
-                                                  const TimeTicks time,
-                                                  bool is_main_resource) {
-    return base::AdoptRef(new ResourceTimingInfo(type, time, is_main_resource));
+                                                  const TimeTicks time) {
+    return base::AdoptRef(new ResourceTimingInfo(type, time));
   }
   TimeTicks InitialTime() const { return initial_time_; }
-  bool IsMainResource() const { return is_main_resource_; }
 
   const AtomicString& InitiatorType() const { return type_; }
 
-  void SetOriginalTimingAllowOrigin(
-      const AtomicString& original_timing_allow_origin) {
-    original_timing_allow_origin_ = original_timing_allow_origin;
-  }
-  const AtomicString& OriginalTimingAllowOrigin() const {
-    return original_timing_allow_origin_;
-  }
-
-  void SetLoadFinishTime(TimeTicks time) { load_finish_time_ = time; }
-  TimeTicks LoadFinishTime() const { return load_finish_time_; }
+  void SetLoadResponseEnd(TimeTicks time) { load_response_end_ = time; }
+  TimeTicks LoadResponseEnd() const { return load_response_end_; }
 
   void SetInitialURL(const KURL& url) { initial_url_ = url; }
   const KURL& InitialURL() const { return initial_url_; }
@@ -78,21 +68,15 @@ class PLATFORM_EXPORT ResourceTimingInfo
   const ResourceResponse& FinalResponse() const { return final_response_; }
 
   void AddRedirect(const ResourceResponse& redirect_response,
-                   bool cross_origin);
+                   const KURL& new_url);
   const Vector<ResourceResponse>& RedirectChain() const {
     return redirect_chain_;
   }
 
-  void AddFinalTransferSize(long long encoded_data_length) {
+  void AddFinalTransferSize(uint64_t encoded_data_length) {
     transfer_size_ += encoded_data_length;
   }
-  long long TransferSize() const { return transfer_size_; }
-
-  void ClearLoadTimings() {
-    final_response_.SetResourceLoadTiming(nullptr);
-    for (ResourceResponse& redirect : redirect_chain_)
-      redirect.SetResourceLoadTiming(nullptr);
-  }
+  uint64_t TransferSize() const { return transfer_size_; }
 
   // The timestamps in PerformanceResourceTiming are measured relative from the
   // time origin. In most cases these timestamps must be positive value, so we
@@ -106,22 +90,20 @@ class PLATFORM_EXPORT ResourceTimingInfo
   bool NegativeAllowed() const { return negative_allowed_; }
 
  private:
-  ResourceTimingInfo(const AtomicString& type,
-                     const TimeTicks time,
-                     bool is_main_resource)
-      : type_(type), initial_time_(time), is_main_resource_(is_main_resource) {}
+  ResourceTimingInfo(const AtomicString& type, const TimeTicks time)
+      : type_(type), initial_time_(time) {}
 
   AtomicString type_;
-  AtomicString original_timing_allow_origin_;
   TimeTicks initial_time_;
-  TimeTicks load_finish_time_;
+  TimeTicks load_response_end_;
   KURL initial_url_;
   ResourceResponse final_response_;
   Vector<ResourceResponse> redirect_chain_;
-  long long transfer_size_ = 0;
-  bool is_main_resource_;
+  uint64_t transfer_size_ = 0;
   bool has_cross_origin_redirect_ = false;
   bool negative_allowed_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(ResourceTimingInfo);
 };
 
 }  // namespace blink

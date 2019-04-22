@@ -92,7 +92,10 @@ if (!is_android) {
       ]
     }
     if (is_chromeos) {
-      deps += [ "//chromeos" ]
+      deps += [
+        "//chromeos/dbus",
+        "//chromeos/system",
+      ]
     }
 
     if (is_mac) {
@@ -127,7 +130,7 @@ if (!is_android) {
       "//testing/gtest",
     ]
     if (is_chromeos) {
-      deps += [ "//chromeos" ]
+      deps += [ "//chromeos/system" ]
     }
   }
 
@@ -160,7 +163,10 @@ if (!is_android) {
       "//third_party/zlib",
     ]
     if (is_chromeos) {
-      deps += [ "//chromeos" ]
+      deps += [
+        "//chromeos/dbus:test_support",
+        "//chromeos/system",
+      ]
     }
   }
 }

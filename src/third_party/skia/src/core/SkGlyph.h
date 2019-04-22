@@ -11,12 +11,12 @@
 #include "SkChecksum.h"
 #include "SkFixed.h"
 #include "SkMask.h"
+#include "SkPath.h"
 #include "SkTo.h"
 #include "SkTypes.h"
 
 class SkArenaAlloc;
-class SkPath;
-class SkGlyphCache;
+class SkStrike;
 class SkScalerContext;
 
 // needs to be != to any valid SkMask::Format
@@ -124,20 +124,11 @@ struct SkPackedGlyphID : public SkPackedID {
     }
 };
 
-struct SkPackedUnicharID : public SkPackedID {
-    SkPackedUnicharID(SkUnichar code) : SkPackedID(code) { }
-    SkPackedUnicharID(SkUnichar code, SkFixed x, SkFixed y) : SkPackedID(code, x, y) { }
-    constexpr SkPackedUnicharID() = default;
-    SkUnichar code() const {
-        return SkTo<SkUnichar>(SkPackedID::code());
-    }
-};
-
 class SkGlyph {
     struct PathData;
 
 public:
-    constexpr SkGlyph() = default;
+    constexpr explicit SkGlyph(SkPackedGlyphID id) : fID{id} {}
     static constexpr SkFixed kSubpixelRound = SK_FixedHalf >> SkPackedID::kSubBits;
 
     bool isEmpty() const { return fWidth == 0 || fHeight == 0; }
@@ -148,7 +139,6 @@ public:
     SkFixed getSubXFixed() const { return fID.getSubXFixed(); }
     SkFixed getSubYFixed() const { return fID.getSubYFixed(); }
 
-    void initWithGlyphID(SkPackedGlyphID glyph_id);
     size_t formatAlignment() const;
     size_t allocImage(SkArenaAlloc* alloc);
     size_t rowBytes() const;
@@ -160,22 +150,40 @@ public:
     // fImage, fPath, fID, fMaskFormat fields.
     void zeroMetrics();
 
-    void toMask(SkMask* mask) const;
+    bool hasImage() const {
+        SkASSERT(fMaskFormat != MASK_FORMAT_UNKNOWN);
+        return fImage != nullptr;
+    }
+
+    SkMask mask() const;
+
+    SkMask mask(SkPoint position) const;
 
     SkPath* addPath(SkScalerContext*, SkArenaAlloc*);
 
+    SkPath* path() const {
+        return fPathData != nullptr && fPathData->fHasPath ? &fPathData->fPath : nullptr;
+    }
+
+    bool hasPath() const {
+        // Need to have called getMetrics before calling findPath.
+        SkASSERT(fMaskFormat != MASK_FORMAT_UNKNOWN);
+
+        // Find path must have been called to use this call.
+        SkASSERT(fPathData != nullptr);
+
+        return fPathData != nullptr && fPathData->fHasPath;
+    }
+
+    int maxDimension() const {
+        // width and height are only defined if a metrics call was made.
+        SkASSERT(fMaskFormat != MASK_FORMAT_UNKNOWN);
+
+        return std::max(fWidth, fHeight);
+    }
+
     // Returns the size allocated on the arena.
     size_t copyImageData(const SkGlyph& from, SkArenaAlloc* alloc);
-
-    class HashTraits {
-    public:
-        static SkPackedGlyphID GetKey(const SkGlyph& glyph) {
-            return glyph.fID;
-        }
-        static uint32_t Hash(SkPackedGlyphID glyphId) {
-            return glyphId.hash();
-        }
-    };
 
     void*     fImage    = nullptr;
 
@@ -202,9 +210,10 @@ public:
     // This is a combination of SkMask::Format and SkGlyph state. The SkGlyph can be in one of two
     // states, just the advances have been calculated, and all the metrics are available. The
     // illegal mask format is used to signal that only the advances are available.
-    uint8_t   fMaskFormat = 0;
+    uint8_t   fMaskFormat = MASK_FORMAT_UNKNOWN;
 
 private:
+
     // Support horizontal and vertical skipping strike-through / underlines.
     // The caller walks the linked list looking for a match. For a horizontal underline,
     // the fBounds contains the top and bottom of the underline. The fInterval pair contains the
@@ -217,12 +226,13 @@ private:
     };
 
     struct PathData {
-        Intercept* fIntercept;
-        SkPath*    fPath;
+        Intercept* fIntercept{nullptr};
+        SkPath     fPath;
+        bool       fHasPath{false};
     };
 
-    // TODO(herb) remove friend statement after SkGlyphCache cleanup.
-    friend class SkGlyphCache;
+    // TODO(herb) remove friend statement after SkStrike cleanup.
+    friend class SkStrike;
     SkPackedGlyphID fID;
 };
 

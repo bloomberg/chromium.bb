@@ -30,5 +30,5 @@ gattServer.CALLS([
 
 Run
 
-$ python //third_party/WebKit/LayoutTests/bluetooth/generate.py
+$ python //third_party/blink/web_tests/bluetooth/generate.py
 to generate these files from templates in script-tests/*.js

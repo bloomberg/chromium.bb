@@ -54,7 +54,7 @@ class LazyLoadFrameObserver
 
   void LoadImmediately();
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   struct LazyLoadRequestInfo;

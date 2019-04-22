@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "base/command_line.h"
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
@@ -17,7 +17,7 @@
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/browser/background_sync/background_sync_context.h"
+#include "content/browser/background_sync/background_sync_context_impl.h"
 #include "content/browser/background_sync/background_sync_manager.h"
 #include "content/browser/background_sync/background_sync_network_observer.h"
 #include "content/browser/background_sync/background_sync_status.h"
@@ -92,7 +92,7 @@ void RegistrationPendingDidGetSyncRegistration(
 }
 
 void RegistrationPendingDidGetSWRegistration(
-    const scoped_refptr<BackgroundSyncContext> sync_context,
+    const scoped_refptr<BackgroundSyncContextImpl> sync_context,
     const std::string& tag,
     base::OnceCallback<void(bool)> callback,
     blink::ServiceWorkerStatusCode status,
@@ -107,7 +107,7 @@ void RegistrationPendingDidGetSWRegistration(
 }
 
 void RegistrationPendingOnIOThread(
-    const scoped_refptr<BackgroundSyncContext> sync_context,
+    const scoped_refptr<BackgroundSyncContextImpl> sync_context,
     const scoped_refptr<ServiceWorkerContextWrapper> sw_context,
     const std::string& tag,
     const GURL& url,
@@ -118,7 +118,7 @@ void RegistrationPendingOnIOThread(
 }
 
 void SetMaxSyncAttemptsOnIOThread(
-    const scoped_refptr<BackgroundSyncContext>& sync_context,
+    const scoped_refptr<BackgroundSyncContextImpl>& sync_context,
     int max_sync_attempts) {
   BackgroundSyncManager* background_sync_manager =
       sync_context->background_sync_manager();
@@ -151,23 +151,16 @@ class BackgroundSyncBrowserTest : public ContentBrowserTest {
                                             web_contents->GetSiteInstance()));
   }
 
-  BackgroundSyncContext* GetSyncContext() {
+  BackgroundSyncContextImpl* GetSyncContext() {
     return GetStorage()->GetBackgroundSyncContext();
   }
 
   WebContents* web_contents() { return shell_->web_contents(); }
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    // TODO(jkarlin): Remove this once background sync is no longer
-    // experimental.
-    command_line->AppendSwitch(
-        switches::kEnableExperimentalWebPlatformFeatures);
-  }
-
   void SetUpOnMainThread() override {
-    https_server_.reset(
-        new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
-    https_server_->ServeFilesFromSourceDirectory("content/test/data");
+    https_server_ = std::make_unique<net::EmbeddedTestServer>(
+        net::EmbeddedTestServer::TYPE_HTTPS);
+    https_server_->ServeFilesFromSourceDirectory(GetTestDataFilePath());
     ASSERT_TRUE(https_server_->Start());
 
     SetIncognitoMode(false);
@@ -228,7 +221,7 @@ bool BackgroundSyncBrowserTest::RegistrationPending(const std::string& tag) {
   base::RunLoop run_loop;
 
   StoragePartitionImpl* storage = GetStorage();
-  BackgroundSyncContext* sync_context = storage->GetBackgroundSyncContext();
+  BackgroundSyncContextImpl* sync_context = storage->GetBackgroundSyncContext();
   ServiceWorkerContextWrapper* service_worker_context =
       static_cast<ServiceWorkerContextWrapper*>(
           storage->GetServiceWorkerContext());
@@ -253,7 +246,7 @@ void BackgroundSyncBrowserTest::SetMaxSyncAttempts(int max_sync_attempts) {
   base::RunLoop run_loop;
 
   StoragePartitionImpl* storage = GetStorage();
-  BackgroundSyncContext* sync_context = storage->GetBackgroundSyncContext();
+  BackgroundSyncContextImpl* sync_context = storage->GetBackgroundSyncContext();
 
   base::PostTaskWithTraitsAndReply(
       FROM_HERE, {BrowserThread::IO},
@@ -321,7 +314,7 @@ bool BackgroundSyncBrowserTest::RegisterFromCrossOriginFrame(
     std::string* script_result) {
   // Start a second https server to use as a second origin.
   net::EmbeddedTestServer alt_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  alt_server.ServeFilesFromSourceDirectory("content/test/data");
+  alt_server.ServeFilesFromSourceDirectory(GetTestDataFilePath());
   EXPECT_TRUE(alt_server.Start());
 
   GURL url = alt_server.GetURL(frame_url);

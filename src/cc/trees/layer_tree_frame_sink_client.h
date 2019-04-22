@@ -48,8 +48,8 @@ class CC_EXPORT LayerTreeFrameSinkClient {
   // If set, |callback| will be called subsequent to each new tree activation,
   // regardless of the compositor visibility or damage. |callback| must remain
   // valid for the lifetime of the LayerTreeFrameSinkClient or until
-  // unregistered by giving a null base::Closure.
-  virtual void SetTreeActivationCallback(const base::Closure& callback) = 0;
+  // unregistered by giving a null callback.
+  virtual void SetTreeActivationCallback(base::RepeatingClosure callback) = 0;
 
   // Notification that the previous CompositorFrame given to
   // SubmitCompositorFrame() has been processed and that another frame
@@ -85,6 +85,8 @@ class CC_EXPORT LayerTreeFrameSinkClient {
   // For SynchronousCompositor (WebView) to change which tiles should be
   // included in submitted CompositorFrames independently of what the viewport
   // is.
+  // |viewport_rect| is in device viewport space.
+  // |transform| transforms from from device viewport space to screen space.
   virtual void SetExternalTilePriorityConstraints(
       const gfx::Rect& viewport_rect,
       const gfx::Transform& transform) = 0;

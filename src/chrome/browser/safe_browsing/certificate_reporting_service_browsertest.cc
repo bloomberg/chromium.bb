@@ -4,6 +4,7 @@
 
 #include "chrome/browser/safe_browsing/certificate_reporting_service.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
@@ -87,7 +88,7 @@ class CertificateReportingServiceBrowserTest
     host_resolver()->AddRule("*", "127.0.0.1");
 
     https_server_.SetSSLConfig(net::EmbeddedTestServer::CERT_MISMATCHED_NAME);
-    https_server_.ServeFilesFromSourceDirectory("chrome/test/data");
+    https_server_.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
     ASSERT_TRUE(https_server_.Start());
 
     test_helper_ =
@@ -262,9 +263,9 @@ class CertificateReportingServiceBrowserTest
   DISALLOW_COPY_AND_ASSIGN(CertificateReportingServiceBrowserTest);
 };
 
-INSTANTIATE_TEST_CASE_P(,
-                        CertificateReportingServiceBrowserTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(,
+                         CertificateReportingServiceBrowserTest,
+                         ::testing::Values(false, true));
 
 // Tests that report send attempt should be cancelled when extended
 // reporting is not opted in.

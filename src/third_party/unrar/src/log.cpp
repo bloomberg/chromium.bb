@@ -1,5 +1,6 @@
 #include "rar.hpp"
 
+namespace third_party_unrar {
 
 static wchar LogName[NM];
 static RAR_CHARSET LogCharset=RCH_DEFAULT;
@@ -34,4 +35,5 @@ void Log(const wchar *ArcName,const wchar *fmt,...)
 }
 #endif
 
+}  // namespace third_party_unrar
 

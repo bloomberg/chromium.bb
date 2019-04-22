@@ -204,6 +204,9 @@
       <message desc="The description of the showOptionsPage key. Displayed in the Options page." name="IDS_CHROMEVOX_SHOW_OPTIONS_PAGE">
         Open options page
       </message>
+      <message desc="The description of the showLogPage key. Displayed in the ChromeVox panel." name="IDS_CHROMEVOX_SHOW_LOG_PAGE">
+        Open developer log page
+      </message>
       <message desc="The description of the showKbExplorerPage key; this allows users to learn about their keyboard. Displayed in the Options page." name="IDS_CHROMEVOX_SHOW_KB_EXPLORER_PAGE">
         Open learn mode
       </message>
@@ -456,6 +459,9 @@
       <message desc="The title of the extension's options page." name="IDS_CHROMEVOX_OPTIONS_PAGE_TITLE">
         ChromeVox Options
       </message>
+      <message name="IDS_CHROMEVOX_OPTIONS_BRAILLE_SETTINGS">
+        Braille Settings
+      </message>
       <message desc="An options page section header for options about the ChromeVox virtual display. This section lets users change the rows, columns, and display style of the virtual braille display." name="IDS_CHROMEVOX_OPTIONS_VIRTUAL_BRAILLE_DISPLAY">
         Virtual Braille Display
       </message>
@@ -468,6 +474,12 @@
       </message>
       <message desc="The label for a numberic input field where the user can choose the number of cells in each line of a grid." name="IDS_CHROMEVOX_OPTIONS_VIRTUAL_BRAILLE_DISPLAY_COLUMNS">
         Cells in each line:
+      </message>
+      <message desc="A description that tells the user that the current display style of the virtual display interleaves braille and regular text, one on top of the other." name="IDS_CHROMEVOX_OPTIONS_DISPLAY_STYLE_INTERLEAVE">
+        Interleave
+      </message>
+      <message desc="A description that tells the user that the current display style of the virtual display is side by side, where regular text is on the left and braille is on the right." name="IDS_CHROMEVOX_OPTIONS_DISPLAY_STYLE_SIDE_BY_SIDE">
+        Side by side
       </message>
       <message desc="A description that tells the user that the current display style of the virtual display interleaves braille and regular text, one on top of the other." name="IDS_CHROMEVOX_OPTIONS_CURRENT_DISPLAY_STYLE_INTERLEAVE">
         Current display style is interleave.
@@ -568,8 +580,8 @@
       <message desc="An option for setting the key combination that will be used as the ChromeVox modifier key (aka, the 'Cvox' key)." name="IDS_CHROMEVOX_OPTIONS_CVOX_MODIFIER_KEY">
         ChromeVox modifier key
       </message>
-      <message desc="List of chromevox developer options." name="IDS_CHROMEVOX_OPTIONS_DEVELOPER_OPTIONS">
-        Developer Options
+      <message desc="Labels the checkbox that enables developer options for ChromeVox." name="IDS_CHROMEVOX_OPTIONS_DEVELOPER_OPTIONS">
+        Enable Developer Options
       </message>
       <message desc="Enable chromevox earcon logging." name="IDS_CHROMEVOX_OPTIONS_DEVELOPER_EARCON_LOGGING">
         Enable earcon logging
@@ -579,6 +591,15 @@
       </message>
       <message desc="Enable event stream logging in chromevox for developer options." name="IDS_CHROMEVOX_OPTIONS_EVENT_STREAM_LOGGING">
         Enable event stream logging
+      </message>
+      <message desc="Display" name="IDS_CHROMEVOX_OPTIONS_DISPLAY_STYLE">
+        Display Style
+      </message>
+      <message desc="Show ChromeVox Event Log." name="IDS_CHROMEVOX_OPTIONS_SHOW_LOG">
+        Show Log
+      </message>
+      <message desc="Keyboard shortcut to show the ChromeVox log." name="IDS_CHROMEVOX_OPTIONS_SHOW_LOG_KEY">
+        Search + O + W
       </message>
       <message desc="Show event stream filters options for event stream logging." name="IDS_CHROMEVOX_OPTIONS_SHOW_EVENT_STREAM_FILTERS">
         Show event stream filters
@@ -821,10 +842,10 @@
         tbl <ph name="tableName">$1</ph> <ph name="tableRows">$2</ph>x<ph name="tableCols">$3</ph>
       </message>
       <message desc="summarizes a table cell." name="IDS_CHROMEVOX_CELL_SUMMARY">
-        row $1 column $2
+        row <ph name="tableCellRowIndex">$1</ph> column <ph name="tableCellColumnIndex">$2</ph>
       </message>
       <message desc="summarizes a table cell for braille; for example, r1c2 means row 1, column 2. Try to localize the 'r' and 'c' to the first letter of something that would be recognizable." name="IDS_CHROMEVOX_CELL_SUMMARY_BRL">
-        r$1c$2
+        r<ph name="tableCellRowIndex">$1</ph>c<ph name="tableCellColumnIndex">$2</ph>
       </message>
       <message desc="Spoken if the user attempts to jump to the next checkbox when none exists." name="IDS_CHROMEVOX_NO_NEXT_CHECKBOX">
         No next checkbox.
@@ -1486,6 +1507,12 @@
       <message desc="This is the name of an ARIA document structure role shown on a braille display. When translating, try to find a contracted form of the translation for 'list' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_LIST_BRL">
         lst
       </message>
+      <message desc="Describes an element with the internal role of listGrid. This is similar to an ARIA grid." name="IDS_CHROMEVOX_ROLE_LIST_GRID">
+        List grid
+      </message>
+      <message desc="This is the name of an internal role shown on a braille display. When translating, try to find a contracted form of the translation for 'list grid' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_LIST_GRID_BRL">
+        lstgrd
+      </message>
       <message desc="Describes an element with the ARIA role listitem." name="IDS_CHROMEVOX_ROLE_LISTITEM">
         List item
       </message>
@@ -2105,13 +2132,13 @@
         Start or end selection.
       </message>
       <message desc="Spoken when the browser's copy command is invoked." name="IDS_CHROMEVOX_COPY">
-        copy $1.
+        copy <ph name="TEXT">$1</ph>.
       </message>
       <message desc="Spoken when the browser's cut command is invoked." name="IDS_CHROMEVOX_CUT">
-        cut $1.
+        cut <ph name="TEXT">$1</ph>.
       </message>
       <message desc="Spoken when the browser's paste command is invoked." name="IDS_CHROMEVOX_PASTE">
-        paste $1.
+        paste <ph name="TEXT">$1</ph>.
       </message>
       <message desc="Spoken when additional characters are selected in editable text." name="IDS_CHROMEVOX_SELECTED">
         selected
@@ -2519,7 +2546,7 @@
         {COUNT, plural, =1 {bullet}other {# bullets}}
       </message>
       <message desc="Describes the braille click command. Displayed in the options page." name="IDS_CHROMEVOX_BRAILLE_ROUTING">
-        Click the item under routing key $1
+        Click the item under routing key <ph name="ROUTING_KEY_NUMBER">$1</ph>
       </message>
       <message desc="Describes the braille pan backward command. Displayed in the options page." name="IDS_CHROMEVOX_BRAILLE_PAN_LEFT">
         Pan backward
@@ -2546,7 +2573,7 @@
         dots <ph name="dot">$1</ph>
       </message>
       <message desc="Describes dots on a refreshable braille display pressed with the space key. For example, dots 1 2 3 4 8 chord" name="IDS_CHROMEVOX_BRAILLE_CHORD">
-        $1 chord
+        <ph name="dot">$1</ph> chord
       </message>
       <message desc="The description of the command that allows the user to view a graphic as a dot pattern on a refreshable braille display." name="IDS_CHROMEVOX_VIEW_GRAPHIC_AS_BRAILLE">
         View Graphic As Braille
@@ -2559,44 +2586,85 @@
       </message>
       <message desc="A dictionary mapping locale identifiers to their corresponding language names. The format is the following: { ..., 'en_US': 'English (United States)', ...}. Translation only needed for the language and country names (e.g. English (United States)). All other strings must be kept as is." name="IDS_CHROMEVOX_LOCALE_DICT">
         {"ar": "Arabic",
+        "as": "Assamese",
+        "aw": "Awadhi",
+        "be": "Bengali",
         "bg": "Bulgarian",
+        "bh": "Bihari",
+        "bo": "Tibetan",
+        "br": "Braj",
         "ca": "Catalan",
+        "ckb": "Sorani",
         "cs": "Czech",
+        "cy": "Welsh",
         "da": "Danish",
         "de": "German",
         "de_CH": "German (Switzerland)",
         "de_DE": "German (Germany)",
+        "dra": "Dravidian",
         "el": "Greek",
         "en": "English",
         "en_CA": "English (Canada)",
         "en_GB": "English (United Kingdom)",
         "en_US": "English (United States)",
+        "eo": "Esperanto",
         "es": "Spanish",
         "et": "Estonian",
+        "fa": "Persian",
         "fr": "French",
         "fr_CA": "French (Canada)",
         "fr_FR": "French (France)",
         "fi": "Finnish",
+        "ga": "Irish",
+        "gd": "Gaelic",
+        "gon": "Gondi",
+        "gu": "Gujarati",
         "he": "Hebrew",
         "hi": "Hindi",
         "hr": "Croatian",
         "hu": "Hungarian",
+        "hy": "Armenian",
         "is": "Icelandic",
         "it": "Italian",
+        "iu": "Inuktitut",
+        "ka": "Kannada",
+        "kh": "Khasi",
         "ko": "Korean",
+        "kok": "Konkani",
+        "kru": "Kurukh",
+        "ks": "Kashmiri",
         "lt": "Lithuanian",
         "lv": "Latvian",
+        "mao": "Maori",
+        "ml": "Malayalam",
+        "mt": "Maltese",
+        "mwr": "Marwari",
+        "mn": "Mongolian",
+        "mun": "Munda",
         "nb": "Norwegian Bokmål",
+        "ne": "Nepali",
         "nl": "Dutch",
+        "no": "Norwegian",
+        "or": "Oriya",
+        "pi": "Pali",
         "pl": "Polish",
         "pt": "Portuguese",
+        "pu": "Punjabi",
         "ro": "Romanian",
         "ru": "Russian",
+        "sa": "Sanskrit",
+        "si": "Sindhi",
+        "sin": "Sinhala",
         "sk": "Slovak",
         "sl": "Slovenian",
         "sr": "Serbian",
         "sv": "Swedish",
+        "ta": "Tamil",
+        "te": "Telugu",
         "tr": "Turkish",
+        "tsn": "Afrikaans",
+        "uk": "Ukrainian",
+        "ur": "Urdu",
         "vi": "Vietnamese",
         "zh": "Chinese",
         "zh_TW": "Chinese (Traditional Han)"}
@@ -2668,6 +2736,9 @@
       </message>
       <message desc="Describes the volume up key in the ChromeVox keyboard explorer." name="IDS_CHROMEVOX_VOLUME_UP_KEY">
         volume up
+      </message>
+      <message desc="Describes the Assistant key in the ChromeVox keyboard explorer." name="IDS_CHROMEVOX_ASSISTANT_KEY">
+        Google Assistant
       </message>
 
       <!-- Panel -->
@@ -2930,47 +3001,57 @@ If you're done with the tutorial, use ChromeVox to navigate to the Close button 
       <message desc="Spoken when a user navigates to the end of a text match from a find in page." name="IDS_CHROMEVOX_TEXT_MATCH_END">
         Text match end
       </message>
-      <message desc="Spoken when a user navigates to the beginning of subscript text." name="IDS_CHROMEVOX_SUBSCRIPT_START">
-        Subscript start
+
+      <message desc="Spoken to describe text that is superscript." name="IDS_CHROMEVOX_SUPERSCRIPT">
+        Superscript
       </message>
-      <message desc="Spoken when a user navigates to the end of subscript text." name="IDS_CHROMEVOX_SUBSCRIPT_END">
-        Subscript end
+      <message desc="Spoken to describe text that is not superscript." name="IDS_CHROMEVOX_NOT_SUPERSCRIPT">
+        Not superscript
       </message>
-      <message desc="Spoken when a user navigates to the beginning of superscript text." name="IDS_CHROMEVOX_SUPERSCRIPT_START">
-        Superscript start
+      <message desc="Spoken to describe text that is subscript." name="IDS_CHROMEVOX_SUBSCRIPT">
+        Subscript
       </message>
-      <message desc="Spoken when a user navigates to the end of superscript text." name="IDS_CHROMEVOX_SUPERSCRIPT_END">
-        Superscript end
+      <message desc="Spoken to describe text that is not subscript." name="IDS_CHROMEVOX_NOT_SUBSCRIPT">
+        Not subscript
       </message>
-      <message desc="Spoken when a user navigates to the beginning of bolded text." name="IDS_CHROMEVOX_BOLD_START">
-        Bold start
+      <message desc="Spoken to describe bolded text." name="IDS_CHROMEVOX_BOLD">
+        Bold
       </message>
-      <message desc="Spoken when a user navigates to the end of bolded text." name="IDS_CHROMEVOX_BOLD_END">
-        Bold end
+      <message desc="Spoken to describe non bolded text." name="IDS_CHROMEVOX_NOT_BOLD">
+        Not bold
       </message>
-      <message desc="Spoken when a user navigates to the beginning of italic text." name="IDS_CHROMEVOX_ITALIC_START">
-        Italic start
+      <message desc="Spoken to describe italicized text." name="IDS_CHROMEVOX_ITALIC">
+        Italic
       </message>
-      <message desc="Spoken when a user navigates to the end of italic text." name="IDS_CHROMEVOX_ITALIC_END">
-        Italic end
+      <message desc="Spoken to describe non italicized text." name="IDS_CHROMEVOX_NOT_ITALIC">
+        Not italic
       </message>
-      <message desc="Spoken when a user navigates to the beginning of underline text." name="IDS_CHROMEVOX_UNDERLINE_START">
-        Underline start
+      <message desc="Spoken to describe underlined text." name="IDS_CHROMEVOX_UNDERLINE">
+        Underline
       </message>
-      <message desc="Spoken when a user navigates to the end of underline text." name="IDS_CHROMEVOX_UNDERLINE_END">
-        Underline end
+      <message desc="Spoken to describe non underlined text." name="IDS_CHROMEVOX_NOT_UNDERLINE">
+        Not underline
       </message>
-      <message desc="Spoken when a user navigates to the beginning of strike through text." name="IDS_CHROMEVOX_LINE_THROUGH_START">
-        Strike through start
+      <message desc="Spoken to describe line-through text." name="IDS_CHROMEVOX_LINETHROUGH">
+        Line through
       </message>
-      <message desc="Spoken when a user navigates to the end of strike through text." name="IDS_CHROMEVOX_LINE_THROUGH_END">
-        Strike through end
+      <message desc="Spoken to describe non line-through text." name="IDS_CHROMEVOX_NOT_LINETHROUGH">
+        Not line through
       </message>
-      <message desc="Spoken when a user navigates to the beginning of a link's text." name="IDS_CHROMEVOX_LINK_START">
-        Link start
+      <message desc="Spoken when a user navigates to text and the link state changes" name="IDS_CHROMEVOX_LINK">
+        Link
       </message>
-      <message desc="Spoken when a user navigates to the end of a link's text." name="IDS_CHROMEVOX_LINK_END">
-        Link end
+      <message desc="Spoken to describe non-linked text." name="IDS_CHROMEVOX_NOT_LINK">
+        Not link
+      </message>
+      <message desc="Spoken when a user navigates to text and the font family changes, e.g. 'Font Arial'" name="IDS_CHROMEVOX_FONT_FAMILY">
+        Font <ph name="font_family">$1<ex>Arial</ex></ph>
+      </message>
+      <message desc="Spoken when a user navigates to text and the font size changes, e.g. 'Size 12'" name="IDS_CHROMEVOX_FONT_SIZE">
+        Size <ph name="font_size">$1<ex>12</ex></ph>
+      </message>
+      <message desc="Spoken when a user navigates to text and the font color changes, e.g. 'Red, 100% opacity'" name="IDS_CHROMEVOX_FONT_COLOR">
+        <ph name="font_color">$1<ex>Red, 100% opacity</ex></ph>
       </message>
       <message desc="Shown to a user when they press a braille keyboard command that requires on screen keyboard to be enabled." name="IDS_CHROMEVOX_ENABLE_VIRTUAL_KEYBOARD">
         Please enable the on screen keyboard under status tray, accessibility to use extended braille commands.
@@ -3125,6 +3206,521 @@ If you're done with the tutorial, use ChromeVox to navigate to the Close button 
       </message>
       <message desc="Part of the ChromeVox touch tutorial page. Concludes this page." name="IDS_CHROMEVOX_TUTORIAL_TOUCH_LEARN_MORE">
         Explore more gestures in Learn Mode and the Chromebook Help Center
+      </message>
+      <message desc="Title of the bluetooth braille display section in ChromeVox options." name="IDS_CHROMEVOX_OPTIONS_BLUETOOTH_BRAILLE_DISPLAY_TITLE">
+        Bluetooth Braille Display
+      </message>
+      <message desc="Labels a button which when pressed, connects to a selected braille display." name="IDS_CHROMEVOX_OPTIONS_BLUETOOTH_BRAILLE_DISPLAY_CONNECT">
+        Connect
+      </message>
+      <message desc="Labels a button which when pressed, disconnects from a selected braille display." name="IDS_CHROMEVOX_OPTIONS_BLUETOOTH_BRAILLE_DISPLAY_DISCONNECT">
+        Disconnect
+      </message>
+      <message desc="Labels a button which is disabled and indicates the system is connecting to a braille display." name="IDS_CHROMEVOX_OPTIONS_BLUETOOTH_BRAILLE_DISPLAY_CONNECTING">
+        Connecting
+      </message>
+      <message desc="Labels a button which when pressed, forgets the selected braille display." name="IDS_CHROMEVOX_OPTIONS_BLUETOOTH_BRAILLE_DISPLAY_FORGET">
+        Forget
+      </message>
+      <message desc="Labels a text field which prompts the user for a pincode when pairing a braille display." name="IDS_CHROMEVOX_OPTIONS_BLUETOOTH_BRAILLE_DISPLAY_PINCODE_LABEL">
+        Please enter a pin
+      </message>
+      <message desc="Labels a select control which lists all bluetooth braille displays." name="IDS_CHROMEVOX_OPTIONS_BLUETOOTH_BRAILLE_DISPLAY_SELECT_LABEL">
+        Select a bluetooth braille display
+      </message>
+      <message desc="Describes web content that has no title." name="IDS_CHROMEVOX_WEB_CONTENT">
+        Web Content
+      </message>
+      <message desc="The text label for ChromeVox language switching checkbox."
+        name="IDS_CHROMEVOX_OPTIONS_LANG_SWITCHING_CHECKBOX_LABEL">
+        Automatically detect and switch ChromeVox language.
+      </message>
+      <message desc="Spoken to describe all rich text attributes of a node." name="IDS_CHROMEVOX_RICH_TEXT_ATTRIBUTES">
+        Text formatting.
+        <ph name="font_size_string">$1<ex>Size 12</ex></ph>
+        <ph name="color_string">$2<ex>Red, 100% opacity.</ex></ph>
+        <ph name="bold_string">$3<ex>Bold</ex></ph>
+        <ph name="italic_string">$4<ex>Italic</ex></ph>
+        <ph name="underline_string">$5<ex>Unerline</ex></ph>
+        <ph name="line_through_string">$6<ex>Line through</ex></ph>
+        <ph name="font_family_string">$7<ex>Arial</ex></ph>
+      </message>
+
+      <!-- Colors -->
+      <message desc="Spoken to describe color and opacity of text" name="IDS_CHROMEVOX_COLOR_DESCRIPTION">
+        <ph name="color">$1<ex>Red</ex></ph>, <ph name="opacity_percentage">$2<ex>50</ex></ph>% opacity.
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_BLACK">
+        Black
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_DARK_GREEN">
+        Dark Green
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_GREEN">
+        Green
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_PURPLE">
+        Purple
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_DARK_GOLDEN_ROD">
+        Dark Golden Rod
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_LEMON_CHIFFON">
+        Lemon Chiffon
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_SIENNA">
+        Sienna
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_ORANGE">
+        Orange
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_SADDLE_BROWN">
+        Saddle Brown
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_CYAN">
+        Cyan
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_GREEN_YELLOW">
+        Green Yellow
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_CHOCOLATE">
+        Chocolate
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_MAROON">
+        Maroon
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_GOLDEN_ROD">
+        Golden Rod
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_FOREST_GREEN">
+        Forest Green
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_OLIVE_DRAB">
+        Olive Drab
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_IVORY">
+        Ivory
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_BEIGE">
+        Beige
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_BROWN">
+        Brown
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_YELLOW_GREEN">
+        Yellow Green
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_ORANGE_RED">
+        Orange Red
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_DARK_OLIVE_GREEN">
+        Dark Olive Green
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_LIME_GREEN">
+        Lime Green
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_LIME">
+        Lime
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_PALE_GOLDEN_ROD">
+        Pale Golden Rod
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_HOT_PINK">
+        Hot Pink
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_CRIMSON">
+        Crimson
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_POWDER_BLUE">
+        Powder Blue
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_OLIVE">
+        Olive
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_LIGHT_YELLOW">
+        Light Yellow
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_LINEN">
+        Linen
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_DARK_BLUE">
+        Dark Blue
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_GHOST_WHITE">
+        Ghost White
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_TOMATO">
+        Tomato
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_KHAKI">
+        Khaki
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_DARK_SLATE_GREY">
+        Dark Slate Grey
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_CORAL">
+        Coral
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_MINT_CREAM">
+        Mint Cream
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_TEAL">
+        Teal
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_DARK_MAGENTA">
+        Dark Magenta
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_LIGHT_SALMON">
+        Light Salmon
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_SEA_GREEN">
+        Sea Green
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_RED">
+        Red
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_ROSY_BROWN">
+        Rosy Brown
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_INDIAN_RED">
+        Indian Red
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_LIGHT_GREY">
+        Light Grey
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_SANDY_BROWN">
+        Sandy Brown
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_LIGHT_GREEN">
+        Light Green
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_LIGHT_BLUE">
+        Light Blue
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_DARK_ORANGE">
+        Dark Orange
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_DIM_GREY">
+        Dim Grey
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_BLANCHED_ALMOND">
+        Blanched Almond
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_DARK_KHAKI">
+        Dark Khaki
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_MAGENTA">
+        Magenta
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_MIDNIGHT_BLUE">
+        Midnight Blue
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_MEDIUM_SEA_GREEN">
+        Medium Sea Green
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_SALMON">
+        Salmon
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_DEEP_PINK">
+        Deep Pink
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_DARK_SALMON">
+        Dark Salmon
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_PERU">
+        Peru
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_SPRING_GREEN">
+        Spring Green
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_NAVY">
+        Navy
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_LIGHT_CORAL">
+        Light Coral
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_INDIGO">
+        Indigo
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_WHITE">
+        White
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_MEDIUM_VIOLET_RED">
+        Medium Violet Red
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_BURLY_WOOD">
+        Burly Wood
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_LAVENDER">
+        Lavender
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_DARK_SLATE_BLUE">
+        Dark Slate Blue
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_TAN">
+        Tan
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_DARK_SEA_GREEN">
+        Dark Sea Green
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_SLATE_GREY">
+        Slate Grey
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_PALE_VIOLET_RED">
+        Pale Violet Red
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_CORNSILK">
+        Cornsilk
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_PALE_TURQUOISE">
+        Pale Turquoise
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_LIGHT_SLATE_GREY">
+        Light Slate Grey
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_PALE_GREEN">
+        Pale Green
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_REBECCA_PURPLE">
+        Rebecca Purple
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_MEDIUM_SPRING_GREEN">
+        Medium Spring Green
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_PINK">
+        Pink
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_CADET_BLUE">
+        Cadet Blue
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_GREY">
+        Grey
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_VIOLET">
+        Violet
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_DARK_GREY">
+        Dark Grey
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_LIGHT_SEA_GREEN">
+        Light Sea Green
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_DARK_CYAN">
+        Dark Cyan
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_NAVAJO_WHITE">
+        Navajo White
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_ALICE_BLUE">
+        Alice Blue
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_FLORAL_WHITE">
+        Floral White
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_MISTY_ROSE">
+        Misty Rose
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_WHEAT">
+        Wheat
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_STEEL_BLUE">
+        Steel Blue
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_MOCCASIN">
+        Moccasin
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_PEACH_PUFF">
+        Peach Puff
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_GOLD">
+        Gold
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_LAVENDER_BLUSH">
+        Lavender Blush
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_SILVER">
+        Silver
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_LIGHT_PINK">
+        Light Pink
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_AZURE">
+        Azure
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_BISQUE">
+        Bisque
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_DARK_ORCHID">
+        Dark Orchid
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_OLD_LACE">
+        Old Lace
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_MEDIUM_TURQUOISE">
+        Medium Turquoise
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_SLATE_BLUE">
+        Slate Blue
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_MEDIUM_BLUE">
+        Medium Blue
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_TURQUOISE">
+        Turquoise
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_DARK_TURQUOISE">
+        Dark Turquoise
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_LIGHT_GOLDEN_ROD_YELLOW">
+        Light Golden Rod Yellow
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_DARK_VIOLET">
+        Dark Violet
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_AQUAMARINE">
+        Aquamarine
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_PAPAYA_WHIP">
+        Papaya Whip
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_ORCHID">
+        Orchid
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_ANTIQUE_WHITE">
+        Antique White
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_THISTLE">
+        Thistle
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_MEDIUM_PURPLE">
+        Medium Purple
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_GAINSBORO">
+        Gainsboro
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_PLUM">
+        Plum
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_LIGHT_STEEL_BLUE">
+        Light Steel Blue
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_DARK_RED">
+        Dark Red
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_SEA_SHELL">
+        Sea Shell
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_ROYAL_BLUE">
+        Royal Blue
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_BLUE_VIOLET">
+        Blue Violet
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_LAWN_GREEN">
+        Lawn Green
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_LIGHT_CYAN">
+        Light Cyan
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_FIRE_BRICK">
+        Fire Brick
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_SKY_BLUE">
+        Sky Blue
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_CORNFLOWER_BLUE">
+        Cornflower Blue
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_MEDIUM_SLATE_BLUE">
+        Medium Slate Blue
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_BLUE">
+        Blue
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_HONEYDEW">
+        HoneyDew
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_MEDIUM_ORCHID">
+        Medium Orchid
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_WHITE_SMOKE">
+        White Smoke
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_YELLOW">
+        Yellow
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_LIGHT_SKY_BLUE">
+        Light Sky Blue
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_DEEP_SKY_BLUE">
+        Deep Sky Blue
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_SNOW">
+        Snow
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_MEDIUM_AQUA_MARINE">
+        Medium Aqua Marine
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_CHARTREUSE">
+        Chartreuse
+      </message>
+      <message desc="Spoken to describe color of text" name="IDS_CHROMEVOX_COLOR_DODGER_BLUE">
+        Dodger Blue
+      </message>
+      <message desc="An options page section header for options about ChromeVox rich text behavior. This section lets users set preferences on how rich text attributes should be indicated." name="IDS_CHROMEVOX_OPTIONS_RICH_TEXT_HEADER">
+        Rich Text Attributes
+      </message>
+      <message desc="The text label for ChromeVox automatic rich text indication checkbox." name="IDS_CHROMEVOX_OPTIONS_RICH_TEXT_CHECKBOX_LABEL">
+        Customize rich text indication
+      </message>
+      <message desc="Labels the misspell list box." name="IDS_CHROMEVOX_OPTIONS_MISSPELL_DESCRIPTION">
+        Indicate misspell:
+      </message>
+      <message desc="Labels the bold list box." name="IDS_CHROMEVOX_OPTIONS_BOLD_DESCRIPTION">
+        Indicate bold:
+      </message>
+      <message desc="Labels the italic list box." name="IDS_CHROMEVOX_OPTIONS_ITALIC_DESCRIPTION">
+        Indicate italic:
+      </message>
+      <message desc="Labels the underline list box." name="IDS_CHROMEVOX_OPTIONS_UNDERLINE_DESCRIPTION">
+        Indicate underline:
+      </message>
+      <message desc="A menulist option in ChromeVox rich text settings to do nothing to indicate rich text" name="IDS_CHROMEVOX_RICH_TEXT_DO_NOTHING">
+        Do nothing
+      </message>
+      <message desc="A menulist option in ChromeVox rich text settings to announce rich text" name="IDS_CHROMEVOX_RICH_TEXT_ANNOUNCE">
+        Announce
+      </message>
+
+      <message desc="An option to announce download notifications." name="IDS_CHROMEVOX_OPTIONS_ANNOUNCE_DOWNLOAD">
+        Announce download notifications
+      </message>
+      <message desc="Spoken when a download is started" name="IDS_CHROMEVOX_DOWNLOAD_STARTED">
+        Download started <ph name="file_name">$1<ex>test.pdf</ex></ph>
+      </message>
+      <message desc="Spoken when a download is completed" name="IDS_CHROMEVOX_DOWNLOAD_COMPLETED">
+        Download completed <ph name="file_name">$1<ex>test.pdf</ex></ph>
+      </message>
+      <message desc="Spoken when a download is stopped" name="IDS_CHROMEVOX_DOWNLOAD_STOPPED">
+        Download stopped <ph name="file_name">$1<ex>test.pdf</ex></ph>
+      </message>
+      <message desc="Spoken when a download is paused" name="IDS_CHROMEVOX_DOWNLOAD_PAUSED">
+        Download paused <ph name="file_name">$1<ex>test.pdf</ex></ph>
+      </message>
+      <message desc="Spoken when a download is resumed" name="IDS_CHROMEVOX_DOWNLOAD_RESUMED">
+        Download resumed <ph name="file_name">$1<ex>test.pdf</ex></ph>
+      </message>
+      <message desc="Spoken to give progress on a current download, specifying percent complete and time remaining." name="IDS_CHROMEVOX_DOWNLOAD_PROGRESS">
+        Download <ph name="progress">$1<ex>50</ex></ph>% complete <ph name="file_name">$2<ex>test.pdf</ex></ph>. About <ph name="time">$3<ex>30</ex></ph> <ph name="units">$4<ex>minutes</ex></ph> remaining.
+      </message>
+      <message desc="A string to specify time units in seconds." name="IDS_CHROMEVOX_SECONDS">
+        {COUNT, plural, =1 {second}other {seconds}}
+      </message>
+      <message desc="A string to specify time units in minutes." name="IDS_CHROMEVOX_MINUTES">
+        {COUNT, plural, =1 {minute}other {minutes}}
+      </message>
+      <message desc="A string to specify time units in hours." name="IDS_CHROMEVOX_HOURS">
+        {COUNT, plural, =1 {hour}other {hours}}
       </message>
     </messages>
   </release>

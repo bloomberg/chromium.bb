@@ -6,7 +6,6 @@ import os
 import sys
 
 from gpu_tests import gpu_integration_test
-from gpu_tests import gpu_process_expectations
 from gpu_tests import path_util
 
 data_path = os.path.join(
@@ -61,7 +60,7 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
 
   @classmethod
   def _CreateExpectations(cls):
-    return gpu_process_expectations.GpuProcessExpectations()
+    raise NotImplementedError
 
   @classmethod
   def GenerateGpuTests(cls, options):
@@ -486,6 +485,13 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       '--gpu-driver-bug-list-test-group=2',
     ])
     self._NavigateAndWait(test_path)
+
+  @classmethod
+  def ExpectationsFiles(cls):
+    return [
+        os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                     'test_expectations',
+                     'gpu_process_expectations.txt')]
 
 def load_tests(loader, tests, pattern):
   del loader, tests, pattern  # Unused.

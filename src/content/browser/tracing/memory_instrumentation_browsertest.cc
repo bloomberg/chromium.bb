@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "build/build_config.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
@@ -15,6 +16,15 @@
 #include "content/shell/browser/shell.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
 #include "testing/gmock/include/gmock/gmock.h"
+
+#if defined(OS_ANDROID)
+#include "base/android/build_info.h"
+
+// TODO: Remove these definitions when upgrading to an NDK that includes them.
+// They were copied from <malloc.h> in Bionic master.
+extern "C" int mallopt(int __option, int __value) __attribute__((weak));
+#define M_PURGE -101
+#endif
 
 using testing::Le;
 using testing::Ge;
@@ -80,6 +90,23 @@ std::unique_ptr<GlobalMemoryDump> DoGlobalDump() {
 // TODO(hjd): Move this once we have a resource_coordinator folder in browser.
 IN_PROC_BROWSER_TEST_F(MemoryInstrumentationTest,
                        MAYBE_PrivateFootprintComputation) {
+#if defined(OS_ANDROID)
+  // The allocator in Android N and above will defer madvising large allocations
+  // until the purge interval, which is set at 1 second. If we are on N or
+  // above, check whether we can use mallopt(M_PURGE) to trigger an immediate
+  // purge. If we can't, skip the test.
+  if (base::android::BuildInfo::GetInstance()->sdk_int() >=
+      base::android::SDK_VERSION_NOUGAT) {
+    // M_PURGE is supported on most devices running P, but not all of them. So
+    // we can't check the API level but must instead attempt to trigger a purge
+    // and check whether or not it succeeded.
+    if (!mallopt || mallopt(M_PURGE, 0) == 0) {
+      DVLOG(0) << "Skipping test - unable to trigger a purge.";
+      return;
+    }
+  }
+#endif
+
   Navigate(shell());
 
   // We have to pick a big size (>=64mb) to avoid an implementation detail of
@@ -106,6 +133,11 @@ IN_PROC_BROWSER_TEST_F(MemoryInstrumentationTest,
   std::unique_ptr<GlobalMemoryDump> during_ptr = DoGlobalDump();
 
   buffer.reset();
+
+#if defined(OS_ANDROID)
+  if (mallopt)
+    mallopt(M_PURGE, 0);
+#endif
 
   std::unique_ptr<GlobalMemoryDump> after_ptr = DoGlobalDump();
 

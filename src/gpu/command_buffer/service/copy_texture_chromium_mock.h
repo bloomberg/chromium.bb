@@ -54,7 +54,7 @@ class MockCopyTexImageResourceManager : public CopyTexImageResourceManager {
       GLsizei width,
       GLsizei height,
       GLuint source_framebuffer,
-      GLenum source_framebuffer_internal_format) override{};
+      GLenum source_framebuffer_internal_format) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockCopyTexImageResourceManager);
@@ -73,7 +73,7 @@ class MockCopyTextureResourceManager
 
   // Cannot MOCK_METHOD more than 10 args.
   void DoCopyTexture(
-      const DecoderContext* decoder,
+      DecoderContext* decoder,
       GLenum source_target,
       GLuint source_id,
       GLint source_level,
@@ -91,7 +91,7 @@ class MockCopyTextureResourceManager
       CopyTextureMethod method,
       CopyTexImageResourceManager* luma_emulation_blitter) override {}
   void DoCopySubTexture(
-      const DecoderContext* decoder,
+      DecoderContext* decoder,
       GLenum source_target,
       GLuint source_id,
       GLint source_level,
@@ -117,7 +117,7 @@ class MockCopyTextureResourceManager
       CopyTextureMethod method,
       CopyTexImageResourceManager* luma_emulation_blitter) override {}
   void DoCopySubTextureWithTransform(
-      const DecoderContext* decoder,
+      DecoderContext* decoder,
       GLenum source_target,
       GLuint source_id,
       GLint source_level,
@@ -141,9 +141,9 @@ class MockCopyTextureResourceManager
       bool unpremultiply_alpha,
       bool dither,
       const GLfloat transform_matrix[16],
-      CopyTexImageResourceManager* luma_emulation_blitter) override{};
+      CopyTexImageResourceManager* luma_emulation_blitter) override {}
   void DoCopyTextureWithTransform(
-      const DecoderContext* decoder,
+      DecoderContext* decoder,
       GLenum source_target,
       GLuint source_id,
       GLint source_level,
@@ -160,7 +160,7 @@ class MockCopyTextureResourceManager
       bool dither,
       const GLfloat transform_matrix[16],
       CopyTextureMethod method,
-      CopyTexImageResourceManager* luma_emulation_blitter) override{};
+      CopyTexImageResourceManager* luma_emulation_blitter) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockCopyTextureResourceManager);

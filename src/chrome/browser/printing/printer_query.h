@@ -9,15 +9,14 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/ref_counted_delete_on_sequence.h"
+#include "base/values.h"
 #include "printing/print_job_constants.h"
 #include "printing/print_settings.h"
 #include "printing/printing_context.h"
 
 namespace base {
-class DictionaryValue;
 class Location;
-class SequencedTaskRunner;
 }
 
 namespace printing {
@@ -25,7 +24,7 @@ namespace printing {
 class PrintJobWorker;
 
 // Query the printer for settings.
-class PrinterQuery : public base::RefCountedThreadSafe<PrinterQuery> {
+class PrinterQuery : public base::RefCountedDeleteOnSequence<PrinterQuery> {
  public:
   // GetSettings() UI parameter.
   enum class GetSettingsAskParam {
@@ -42,6 +41,8 @@ class PrinterQuery : public base::RefCountedThreadSafe<PrinterQuery> {
 
   // Detach the PrintJobWorker associated to this object. Virtual so that tests
   // can override.
+  // Called on the UI thread.
+  // TODO(thestig): Do |worker_| and |callback_| need locks?
   virtual std::unique_ptr<PrintJobWorker> DetachWorker();
 
   // Virtual so that tests can override.
@@ -60,12 +61,12 @@ class PrinterQuery : public base::RefCountedThreadSafe<PrinterQuery> {
                    base::OnceClosure callback);
 
   // Updates the current settings with |new_settings| dictionary values.
-  virtual void SetSettings(std::unique_ptr<base::DictionaryValue> new_settings,
+  virtual void SetSettings(base::Value new_settings,
                            base::OnceClosure callback);
 
 #if defined(OS_CHROMEOS)
   // Updates the current settings with |new_settings|.
-  void SetSettingsFromPOD(std::unique_ptr<printing::PrintSettings> new_settings,
+  void SetSettingsFromPOD(std::unique_ptr<PrintSettings> new_settings,
                           base::OnceClosure callback);
 #endif
 
@@ -81,16 +82,13 @@ class PrinterQuery : public base::RefCountedThreadSafe<PrinterQuery> {
   // Returns if a worker thread is still associated to this instance.
   bool is_valid() const;
 
-  // Returns true if tasks posted to this TaskRunner are sequenced
-  // with this call.
-  bool RunsTasksInCurrentSequence() const;
-
   // Posts the given task to be run.
   bool PostTask(const base::Location& from_here, base::OnceClosure task);
 
  protected:
-  // Refcounted class.
-  friend class base::RefCountedThreadSafe<PrinterQuery>;
+  // RefCountedDeleteOnSequence class.
+  friend class base::RefCountedDeleteOnSequence<PrinterQuery>;
+  friend class base::DeleteHelper<PrinterQuery>;
 
   virtual ~PrinterQuery();
 
@@ -115,10 +113,6 @@ class PrinterQuery : public base::RefCountedThreadSafe<PrinterQuery> {
 
   // Callback waiting to be run.
   base::OnceClosure callback_;
-
-  // Task runner reference. Used to send notifications in the right
-  // thread.
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   // All the UI is done in a worker thread because many Win32 print functions
   // are blocking and enters a message loop without your consent. There is one

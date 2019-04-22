@@ -20,6 +20,7 @@
 #include "content/public/common/service_manager_connection.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
+#include "services/service_manager/public/mojom/service_manager.mojom.h"
 
 namespace {
 
@@ -144,7 +145,8 @@ class DumbProxyResolverFactoryRequestClient
   void Alert(const std::string& error) override {}
   void OnError(int32_t line_number, const std::string& error) override {}
   void ResolveDns(
-      std::unique_ptr<net::HostResolver::RequestInfo> request_info,
+      const std::string& hostname,
+      net::ProxyResolveDnsOperation operation,
       proxy_resolver::mojom::HostResolverRequestClientPtr client) override {}
 
   proxy_resolver::mojom::ProxyResolverPtr resolver_;

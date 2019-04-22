@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
@@ -14,6 +15,7 @@
 #include "base/trace_event/trace_event.h"
 #include "components/crash/core/common/crash_key.h"
 #include "media/audio/audio_manager.h"
+#include "media/base/bind_to_current_loop.h"
 #include "services/audio/debug_recording.h"
 #include "services/audio/device_notifier.h"
 #include "services/audio/log_factory_manager.h"
@@ -201,6 +203,7 @@ void Service::BindLogFactoryManagerRequest(
 
 void Service::InitializeDeviceMonitor() {
   CHECK_EQ(magic_bytes_, 0x600DC0DEu);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 #if defined(OS_MACOSX)
   if (audio_device_listener_mac_)
     return;
@@ -208,12 +211,12 @@ void Service::InitializeDeviceMonitor() {
   TRACE_EVENT0("audio", "audio::Service::InitializeDeviceMonitor");
 
   audio_device_listener_mac_ = std::make_unique<media::AudioDeviceListenerMac>(
-      base::BindRepeating([] {
+      media::BindToCurrentLoop(base::BindRepeating([] {
         if (base::SystemMonitor::Get()) {
           base::SystemMonitor::Get()->ProcessDevicesChanged(
               base::SystemMonitor::DEVTYPE_AUDIO);
         }
-      }),
+      })),
       true /* monitor_default_input */, true /* monitor_addition_removal */,
       true /* monitor_sources */);
 #endif

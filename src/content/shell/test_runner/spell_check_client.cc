@@ -44,14 +44,14 @@ void SpellCheckClient::Reset() {
 
 // blink::WebSpellCheckClient
 bool SpellCheckClient::IsSpellCheckingEnabled() const {
-  // Ensure that the spellchecker code paths are always tested in layout tests.
+  // Ensure that the spellchecker code paths are always tested in web tests.
   return true;
 }
 
 void SpellCheckClient::CheckSpelling(
     const blink::WebString& text,
-    int& misspelled_offset,
-    int& misspelled_length,
+    size_t& misspelled_offset,
+    size_t& misspelled_length,
     blink::WebVector<blink::WebString>* optional_suggestions) {
   if (!enabled_) {
     misspelled_offset = 0;
@@ -90,24 +90,17 @@ void SpellCheckClient::RequestCheckingOfText(
   }
 }
 
-void SpellCheckClient::CancelAllPendingRequests() {
-  if (!last_requested_text_checking_completion_)
-    return;
-  last_requested_text_checking_completion_->DidCancelCheckingText();
-  last_requested_text_checking_completion_ = nullptr;
-}
-
 void SpellCheckClient::FinishLastTextCheck() {
   if (!last_requested_text_checking_completion_)
     return;
   std::vector<blink::WebTextCheckingResult> results;
-  int offset = 0;
+  size_t offset = 0;
   if (!spell_check_.IsMultiWordMisspelling(last_requested_text_check_string_,
                                            &results)) {
     base::string16 text = last_requested_text_check_string_.Utf16();
     while (text.length()) {
-      int misspelled_position = 0;
-      int misspelled_length = 0;
+      size_t misspelled_position = 0;
+      size_t misspelled_length = 0;
       spell_check_.SpellCheckWord(blink::WebString::FromUTF16(text),
                                   &misspelled_position, &misspelled_length);
       if (!misspelled_length)

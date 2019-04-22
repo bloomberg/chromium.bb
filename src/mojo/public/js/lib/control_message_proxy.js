@@ -54,7 +54,7 @@
   * Accepts the response message from the receiver and decodes the message
   * struct to RunResponseMessageParams.
   *
-  * @param  {Router} receiver.
+  * @param  {Router} receiver
   * @param  {RunMessageParams} runMessageParams to be sent via a message.
   * @return {Promise} that resolves to a RunResponseMessageParams.
   */

@@ -15,11 +15,16 @@
 #ifndef DAWNNATIVE_OPENGLBACKEND_H_
 #define DAWNNATIVE_OPENGLBACKEND_H_
 
-#include <dawn/dawn.h>
-#include <dawn_native/dawn_native_export.h>
+#include <dawn_native/DawnNative.h>
 
 namespace dawn_native { namespace opengl {
-    DAWN_NATIVE_EXPORT dawnDevice CreateDevice(void* (*getProc)(const char*));
+
+    struct DAWN_NATIVE_EXPORT AdapterDiscoveryOptions : public AdapterDiscoveryOptionsBase {
+        AdapterDiscoveryOptions();
+
+        void* (*getProc)(const char*);
+    };
+
 }}  // namespace dawn_native::opengl
 
 #endif  // DAWNNATIVE_OPENGLBACKEND_H_

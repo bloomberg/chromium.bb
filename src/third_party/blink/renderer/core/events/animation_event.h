@@ -35,19 +35,27 @@ class AnimationEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static AnimationEvent* Create() { return new AnimationEvent; }
+  static AnimationEvent* Create() {
+    return (MakeGarbageCollected<AnimationEvent>());
+  }
   static AnimationEvent* Create(const AtomicString& type,
                                 const String& animation_name,
                                 double elapsed_time,
                                 const String& pseudo_element) {
-    return new AnimationEvent(type, animation_name, elapsed_time,
-                              pseudo_element);
+    return MakeGarbageCollected<AnimationEvent>(type, animation_name,
+                                                elapsed_time, pseudo_element);
   }
   static AnimationEvent* Create(const AtomicString& type,
                                 const AnimationEventInit* initializer) {
-    return new AnimationEvent(type, initializer);
+    return MakeGarbageCollected<AnimationEvent>(type, initializer);
   }
 
+  AnimationEvent();
+  AnimationEvent(const AtomicString& type,
+                 const String& animation_name,
+                 double elapsed_time,
+                 const String& pseudo_element);
+  AnimationEvent(const AtomicString&, const AnimationEventInit*);
   ~AnimationEvent() override;
 
   const String& animationName() const;
@@ -59,13 +67,6 @@ class AnimationEvent final : public Event {
   void Trace(blink::Visitor*) override;
 
  private:
-  AnimationEvent();
-  AnimationEvent(const AtomicString& type,
-                 const String& animation_name,
-                 double elapsed_time,
-                 const String& pseudo_element);
-  AnimationEvent(const AtomicString&, const AnimationEventInit*);
-
   String animation_name_;
   double elapsed_time_;
   String pseudo_element_;

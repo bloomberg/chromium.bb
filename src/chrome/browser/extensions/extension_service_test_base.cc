@@ -28,6 +28,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/crx_file/crx_verifier.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/sync_preferences/pref_service_mock_factory.h"
 #include "components/sync_preferences/pref_service_syncable.h"
@@ -45,9 +46,6 @@
 namespace extensions {
 
 namespace {
-
-// By default, we run on the IO loop.
-const int kThreadOptions = content::TestBrowserThreadBundle::IO_MAINLOOP;
 
 // Create a testing profile according to |params|.
 std::unique_ptr<TestingProfile> BuildTestingProfile(
@@ -85,10 +83,11 @@ ExtensionServiceTestBase::ExtensionServiceInitParams::
         default;
 
 ExtensionServiceTestBase::ExtensionServiceTestBase()
-    : thread_bundle_(kThreadOptions),
+    : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
       service_(nullptr),
       testing_local_state_(TestingBrowserProcess::GetGlobal()),
-      registry_(nullptr) {
+      registry_(nullptr),
+      verifier_format_override_(crx_file::VerifierFormat::CRX3) {
   base::FilePath test_data_dir;
   if (!base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir)) {
     ADD_FAILURE();
@@ -245,9 +244,9 @@ void ExtensionServiceTestBase::ValidateIntegerPref(
     const std::string& extension_id,
     const std::string& pref_path,
     int expected_val) {
-  std::string msg = base::StringPrintf("while checking: %s %s == %s",
-                                       extension_id.c_str(), pref_path.c_str(),
-                                       base::IntToString(expected_val).c_str());
+  std::string msg = base::StringPrintf(
+      "while checking: %s %s == %s", extension_id.c_str(), pref_path.c_str(),
+      base::NumberToString(expected_val).c_str());
 
   PrefService* prefs = profile()->GetPrefs();
   const base::DictionaryValue* dict =

@@ -46,7 +46,6 @@ BlePinEntryView::BlePinEntryView(Delegate* delegate) : delegate_(delegate) {
   AddChildView(textfield_label_ptr);
 
   pin_text_field_ = new views::Textfield();
-  pin_text_field_->SetBackgroundColor(gfx::kGoogleGrey100);
   pin_text_field_->SetMinimumWidthInChars(kExpectedPincodeCharLength);
   pin_text_field_->SetDefaultWidthInChars(kPreferredTextfieldCharLength);
   pin_text_field_->SetBorder(views::CreateSolidSidedBorder(

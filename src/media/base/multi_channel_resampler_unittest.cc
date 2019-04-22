@@ -134,8 +134,8 @@ TEST_P(MultiChannelResamplerTest, LowLatency) {
 }
 
 // Test common channel layouts: mono, stereo, 5.1, 7.1.
-INSTANTIATE_TEST_CASE_P(
-    MultiChannelResamplerTest, MultiChannelResamplerTest,
-    testing::Values(1, 2, 6, 8));
+INSTANTIATE_TEST_SUITE_P(MultiChannelResamplerTest,
+                         MultiChannelResamplerTest,
+                         testing::Values(1, 2, 6, 8));
 
 }  // namespace media

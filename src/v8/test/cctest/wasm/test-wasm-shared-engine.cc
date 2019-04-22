@@ -4,6 +4,7 @@
 
 #include <memory>
 
+#include "src/microtask-queue.h"
 #include "src/objects-inl.h"
 #include "src/wasm/function-compiler.h"
 #include "src/wasm/wasm-engine.h"
@@ -94,7 +95,7 @@ class SharedEngineIsolate {
   }
 
   SharedModule ExportInstance(Handle<WasmInstanceObject> instance) {
-    return instance->module_object()->managed_native_module()->get();
+    return instance->module_object()->shared_native_module();
   }
 
   int32_t Run(Handle<WasmInstanceObject> instance) {
@@ -180,7 +181,8 @@ void PumpMessageLoop(SharedEngineIsolate& isolate) {
   v8::platform::PumpMessageLoop(i::V8::GetCurrentPlatform(),
                                 isolate.v8_isolate(),
                                 platform::MessageLoopBehavior::kWaitForWork);
-  isolate.isolate()->RunMicrotasks();
+  isolate.isolate()->default_microtask_queue()->RunMicrotasks(
+      isolate.isolate());
 }
 
 Handle<WasmInstanceObject> CompileAndInstantiateAsync(
@@ -244,17 +246,13 @@ TEST(SharedEngineRunImported) {
     Handle<WasmInstanceObject> instance = isolate.CompileAndInstantiate(buffer);
     module = isolate.ExportInstance(instance);
     CHECK_EQ(23, isolate.Run(instance));
-    CHECK_EQ(2, module.use_count());
   }
-  CHECK_EQ(1, module.use_count());
   {
     SharedEngineIsolate isolate(&engine);
     HandleScope scope(isolate.isolate());
     Handle<WasmInstanceObject> instance = isolate.ImportInstance(module);
     CHECK_EQ(23, isolate.Run(instance));
-    CHECK_EQ(2, module.use_count());
   }
-  CHECK_EQ(1, module.use_count());
 }
 
 TEST(SharedEngineRunThreadedBuildingSync) {
@@ -353,7 +351,7 @@ TEST(SharedEngineRunThreadedTierUp) {
     WasmFeatures detected = kNoWasmFeatures;
     WasmCompilationUnit::CompileWasmFunction(
         isolate.isolate(), module.get(), &detected,
-        &module->module()->functions[0], ExecutionTier::kOptimized);
+        &module->module()->functions[0], ExecutionTier::kTurbofan);
     CHECK_EQ(23, isolate.Run(instance));
   });
   for (auto& thread : threads) thread.Start();

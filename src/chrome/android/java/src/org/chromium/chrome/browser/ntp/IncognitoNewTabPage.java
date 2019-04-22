@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -38,6 +39,8 @@ public class IncognitoNewTabPage
 
     private IncognitoNewTabPageManager mIncognitoNewTabPageManager;
 
+    private final int mIncognitoNTPBackgroundColor;
+
     private void showIncognitoLearnMore() {
         HelpAndFeedback.getInstance(mActivity).show(mActivity,
                 mActivity.getString(R.string.help_context_incognito_learn_more),
@@ -49,7 +52,10 @@ public class IncognitoNewTabPage
      * @param activity The activity used to create the new tab page's View.
      */
     public IncognitoNewTabPage(ChromeActivity activity, NativePageHost host) {
-        super(activity, host, true);
+        super(activity, host);
+
+        mIncognitoNTPBackgroundColor =
+                ApiCompatibilityUtils.getColor(activity.getResources(), R.color.ntp_bg_incognito);
     }
 
     @Override
@@ -80,38 +86,16 @@ public class IncognitoNewTabPage
 
         LayoutInflater inflater = LayoutInflater.from(activity);
         mIncognitoNewTabPageView =
-                (IncognitoNewTabPageView) inflater.inflate(getLayoutResource(), null);
+                (IncognitoNewTabPageView) inflater.inflate(R.layout.new_tab_page_incognito, null);
         mIncognitoNewTabPageView.initialize(mIncognitoNewTabPageManager);
+        mIncognitoNewTabPageView.setTab(host.getActiveTab());
 
         boolean useAlternateIncognitoStrings =
                 ChromeFeatureList.isEnabled(ChromeFeatureList.INCOGNITO_STRINGS);
-        if (useMDIncognitoNTP()) {
-            TextView newTabIncognitoHeader =
-                    (TextView) mIncognitoNewTabPageView.findViewById(R.id.new_tab_incognito_title);
-            newTabIncognitoHeader.setText(useAlternateIncognitoStrings
-                            ? R.string.new_tab_private_title
-                            : R.string.new_tab_otr_title);
-        } else {
-            TextView newTabIncognitoHeader =
-                    (TextView) mIncognitoNewTabPageView.findViewById(R.id.ntp_incognito_header);
-            newTabIncognitoHeader.setText(useAlternateIncognitoStrings
-                            ? R.string.new_tab_private_header
-                            : R.string.new_tab_incognito_header);
-            TextView newTabIncognitoMessage = (TextView) mIncognitoNewTabPageView.findViewById(
-                    R.id.new_tab_incognito_message);
-            newTabIncognitoMessage.setText(useAlternateIncognitoStrings
-                            ? R.string.new_tab_private_message
-                            : R.string.new_tab_incognito_message);
-        }
-    }
-
-    protected int getLayoutResource() {
-        return useMDIncognitoNTP() ? R.layout.new_tab_page_incognito_md
-                                   : R.layout.new_tab_page_incognito;
-    }
-
-    protected static boolean useMDIncognitoNTP() {
-        return ChromeFeatureList.isEnabled(ChromeFeatureList.MATERIAL_DESIGN_INCOGNITO_NTP);
+        TextView newTabIncognitoHeader =
+                (TextView) mIncognitoNewTabPageView.findViewById(R.id.new_tab_incognito_title);
+        newTabIncognitoHeader.setText(useAlternateIncognitoStrings ? R.string.new_tab_private_title
+                                                                   : R.string.new_tab_otr_title);
     }
 
     /**
@@ -133,6 +117,11 @@ public class IncognitoNewTabPage
     @Override
     public String getUrl() {
         return UrlConstants.NTP_URL;
+    }
+
+    @Override
+    public int getBackgroundColor() {
+        return mIncognitoNTPBackgroundColor;
     }
 
     @Override

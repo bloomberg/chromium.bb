@@ -54,8 +54,9 @@ KeystonePromotionInfoBarDelegate::KeystonePromotionInfoBarDelegate(
   const base::TimeDelta kCanExpireOnNavigationAfterDelay =
       base::TimeDelta::FromSeconds(8);
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&KeystonePromotionInfoBarDelegate::SetCanExpire,
-                            weak_ptr_factory_.GetWeakPtr()),
+      FROM_HERE,
+      base::BindOnce(&KeystonePromotionInfoBarDelegate::SetCanExpire,
+                     weak_ptr_factory_.GetWeakPtr()),
       kCanExpireOnNavigationAfterDelay);
 }
 

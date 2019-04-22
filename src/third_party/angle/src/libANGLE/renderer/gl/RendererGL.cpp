@@ -13,8 +13,8 @@
 #include "common/debug.h"
 #include "libANGLE/AttributeMap.h"
 #include "libANGLE/Context.h"
-#include "libANGLE/ContextState.h"
 #include "libANGLE/Path.h"
+#include "libANGLE/State.h"
 #include "libANGLE/Surface.h"
 #include "libANGLE/renderer/gl/BlitGL.h"
 #include "libANGLE/renderer/gl/BufferGL.h"
@@ -53,6 +53,19 @@ std::vector<GLuint> GatherPaths(const std::vector<gl::Path *> &paths)
         ret.push_back(pathObj->getPathID());
     }
     return ret;
+}
+
+void SetMaxShaderCompilerThreads(const rx::FunctionsGL *functions, GLuint count)
+{
+    if (functions->maxShaderCompilerThreadsKHR != nullptr)
+    {
+        functions->maxShaderCompilerThreadsKHR(count);
+    }
+    else
+    {
+        ASSERT(functions->maxShaderCompilerThreadsARB != nullptr);
+        functions->maxShaderCompilerThreadsARB(count);
+    }
 }
 
 }  // namespace
@@ -175,7 +188,8 @@ RendererGL::RendererGL(std::unique_ptr<FunctionsGL> functions, const egl::Attrib
       mMultiviewClearer(nullptr),
       mUseDebugOutput(false),
       mCapsInitialized(false),
-      mMultiviewImplementationType(MultiviewImplementationTypeGL::UNSPECIFIED)
+      mMultiviewImplementationType(MultiviewImplementationTypeGL::UNSPECIFIED),
+      mNativeParallelCompileEnabled(false)
 {
     ASSERT(mFunctions);
     nativegl_gl::GenerateWorkarounds(mFunctions.get(), &mWorkarounds);
@@ -215,6 +229,12 @@ RendererGL::RendererGL(std::unique_ptr<FunctionsGL> functions, const egl::Attrib
             mFunctions->vertexAttrib4f(i, 0.0f, 0.0f, 0.0f, 1.0f);
         }
     }
+
+    if (hasNativeParallelCompile() && !mNativeParallelCompileEnabled)
+    {
+        SetMaxShaderCompilerThreads(mFunctions.get(), 0xffffffff);
+        mNativeParallelCompileEnabled = true;
+    }
 }
 
 RendererGL::~RendererGL()
@@ -222,12 +242,17 @@ RendererGL::~RendererGL()
     SafeDelete(mBlitter);
     SafeDelete(mMultiviewClearer);
     SafeDelete(mStateManager);
+
+    std::lock_guard<std::mutex> lock(mWorkerMutex);
+
+    ASSERT(mCurrentWorkerContexts.empty());
+    mWorkerContextPool.clear();
 }
 
 angle::Result RendererGL::flush()
 {
     mFunctions->flush();
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result RendererGL::finish()
@@ -244,10 +269,10 @@ angle::Result RendererGL::finish()
         mFunctions->disable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
     }
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
-void RendererGL::stencilFillPath(const gl::ContextState &state,
+void RendererGL::stencilFillPath(const gl::State &state,
                                  const gl::Path *path,
                                  GLenum fillMode,
                                  GLuint mask)
@@ -259,7 +284,7 @@ void RendererGL::stencilFillPath(const gl::ContextState &state,
     ASSERT(mFunctions->getError() == GL_NO_ERROR);
 }
 
-void RendererGL::stencilStrokePath(const gl::ContextState &state,
+void RendererGL::stencilStrokePath(const gl::State &state,
                                    const gl::Path *path,
                                    GLint reference,
                                    GLuint mask)
@@ -271,9 +296,7 @@ void RendererGL::stencilStrokePath(const gl::ContextState &state,
     ASSERT(mFunctions->getError() == GL_NO_ERROR);
 }
 
-void RendererGL::coverFillPath(const gl::ContextState &state,
-                               const gl::Path *path,
-                               GLenum coverMode)
+void RendererGL::coverFillPath(const gl::State &state, const gl::Path *path, GLenum coverMode)
 {
 
     const auto *pathObj = GetImplAs<PathGL>(path);
@@ -282,9 +305,7 @@ void RendererGL::coverFillPath(const gl::ContextState &state,
     ASSERT(mFunctions->getError() == GL_NO_ERROR);
 }
 
-void RendererGL::coverStrokePath(const gl::ContextState &state,
-                                 const gl::Path *path,
-                                 GLenum coverMode)
+void RendererGL::coverStrokePath(const gl::State &state, const gl::Path *path, GLenum coverMode)
 {
     const auto *pathObj = GetImplAs<PathGL>(path);
     mFunctions->coverStrokePathNV(pathObj->getPathID(), coverMode);
@@ -292,7 +313,7 @@ void RendererGL::coverStrokePath(const gl::ContextState &state,
     ASSERT(mFunctions->getError() == GL_NO_ERROR);
 }
 
-void RendererGL::stencilThenCoverFillPath(const gl::ContextState &state,
+void RendererGL::stencilThenCoverFillPath(const gl::State &state,
                                           const gl::Path *path,
                                           GLenum fillMode,
                                           GLuint mask,
@@ -305,7 +326,7 @@ void RendererGL::stencilThenCoverFillPath(const gl::ContextState &state,
     ASSERT(mFunctions->getError() == GL_NO_ERROR);
 }
 
-void RendererGL::stencilThenCoverStrokePath(const gl::ContextState &state,
+void RendererGL::stencilThenCoverStrokePath(const gl::State &state,
                                             const gl::Path *path,
                                             GLint reference,
                                             GLuint mask,
@@ -318,7 +339,7 @@ void RendererGL::stencilThenCoverStrokePath(const gl::ContextState &state,
     ASSERT(mFunctions->getError() == GL_NO_ERROR);
 }
 
-void RendererGL::coverFillPathInstanced(const gl::ContextState &state,
+void RendererGL::coverFillPathInstanced(const gl::State &state,
                                         const std::vector<gl::Path *> &paths,
                                         GLenum coverMode,
                                         GLenum transformType,
@@ -332,7 +353,7 @@ void RendererGL::coverFillPathInstanced(const gl::ContextState &state,
 
     ASSERT(mFunctions->getError() == GL_NO_ERROR);
 }
-void RendererGL::coverStrokePathInstanced(const gl::ContextState &state,
+void RendererGL::coverStrokePathInstanced(const gl::State &state,
                                           const std::vector<gl::Path *> &paths,
                                           GLenum coverMode,
                                           GLenum transformType,
@@ -346,7 +367,7 @@ void RendererGL::coverStrokePathInstanced(const gl::ContextState &state,
 
     ASSERT(mFunctions->getError() == GL_NO_ERROR);
 }
-void RendererGL::stencilFillPathInstanced(const gl::ContextState &state,
+void RendererGL::stencilFillPathInstanced(const gl::State &state,
                                           const std::vector<gl::Path *> &paths,
                                           GLenum fillMode,
                                           GLuint mask,
@@ -361,7 +382,7 @@ void RendererGL::stencilFillPathInstanced(const gl::ContextState &state,
 
     ASSERT(mFunctions->getError() == GL_NO_ERROR);
 }
-void RendererGL::stencilStrokePathInstanced(const gl::ContextState &state,
+void RendererGL::stencilStrokePathInstanced(const gl::State &state,
                                             const std::vector<gl::Path *> &paths,
                                             GLint reference,
                                             GLuint mask,
@@ -377,7 +398,7 @@ void RendererGL::stencilStrokePathInstanced(const gl::ContextState &state,
     ASSERT(mFunctions->getError() == GL_NO_ERROR);
 }
 
-void RendererGL::stencilThenCoverFillPathInstanced(const gl::ContextState &state,
+void RendererGL::stencilThenCoverFillPathInstanced(const gl::State &state,
                                                    const std::vector<gl::Path *> &paths,
                                                    GLenum coverMode,
                                                    GLenum fillMode,
@@ -393,7 +414,7 @@ void RendererGL::stencilThenCoverFillPathInstanced(const gl::ContextState &state
 
     ASSERT(mFunctions->getError() == GL_NO_ERROR);
 }
-void RendererGL::stencilThenCoverStrokePathInstanced(const gl::ContextState &state,
+void RendererGL::stencilThenCoverStrokePathInstanced(const gl::State &state,
                                                      const std::vector<gl::Path *> &paths,
                                                      GLenum coverMode,
                                                      GLint reference,
@@ -410,9 +431,9 @@ void RendererGL::stencilThenCoverStrokePathInstanced(const gl::ContextState &sta
     ASSERT(mFunctions->getError() == GL_NO_ERROR);
 }
 
-GLenum RendererGL::getResetStatus()
+gl::GraphicsResetStatus RendererGL::getResetStatus()
 {
-    return mFunctions->getGraphicsResetStatus();
+    return gl::FromGLenum<gl::GraphicsResetStatus>(mFunctions->getGraphicsResetStatus());
 }
 
 void RendererGL::insertEventMarker(GLsizei length, const char *marker) {}
@@ -421,7 +442,7 @@ void RendererGL::pushGroupMarker(GLsizei length, const char *marker) {}
 
 void RendererGL::popGroupMarker() {}
 
-void RendererGL::pushDebugGroup(GLenum source, GLuint id, GLsizei length, const char *message) {}
+void RendererGL::pushDebugGroup(GLenum source, GLuint id, const std::string &message) {}
 
 void RendererGL::popDebugGroup() {}
 
@@ -543,24 +564,110 @@ angle::Result RendererGL::dispatchCompute(const gl::Context *context,
                                           GLuint numGroupsZ)
 {
     mFunctions->dispatchCompute(numGroupsX, numGroupsY, numGroupsZ);
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result RendererGL::dispatchComputeIndirect(const gl::Context *context, GLintptr indirect)
 {
     mFunctions->dispatchComputeIndirect(indirect);
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result RendererGL::memoryBarrier(GLbitfield barriers)
 {
     mFunctions->memoryBarrier(barriers);
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 angle::Result RendererGL::memoryBarrierByRegion(GLbitfield barriers)
 {
     mFunctions->memoryBarrierByRegion(barriers);
-    return angle::Result::Continue();
+    return angle::Result::Continue;
+}
+
+bool RendererGL::bindWorkerContext(std::string *infoLog)
+{
+    if (mWorkarounds.disableWorkerContexts)
+    {
+        return false;
+    }
+
+    std::thread::id threadID = std::this_thread::get_id();
+    std::lock_guard<std::mutex> lock(mWorkerMutex);
+    std::unique_ptr<WorkerContext> workerContext;
+    if (!mWorkerContextPool.empty())
+    {
+        auto it       = mWorkerContextPool.begin();
+        workerContext = std::move(*it);
+        mWorkerContextPool.erase(it);
+    }
+    else
+    {
+        WorkerContext *newContext = createWorkerContext(infoLog);
+        if (newContext == nullptr)
+        {
+            return false;
+        }
+        workerContext.reset(newContext);
+    }
+
+    if (!workerContext->makeCurrent())
+    {
+        mWorkerContextPool.push_back(std::move(workerContext));
+        return false;
+    }
+    mCurrentWorkerContexts[threadID] = std::move(workerContext);
+    return true;
+}
+
+void RendererGL::unbindWorkerContext()
+{
+    std::thread::id threadID = std::this_thread::get_id();
+    std::lock_guard<std::mutex> lock(mWorkerMutex);
+
+    auto it = mCurrentWorkerContexts.find(threadID);
+    ASSERT(it != mCurrentWorkerContexts.end());
+    (*it).second->unmakeCurrent();
+    mWorkerContextPool.push_back(std::move((*it).second));
+    mCurrentWorkerContexts.erase(it);
+}
+
+unsigned int RendererGL::getMaxWorkerContexts()
+{
+    // No more than 16 worker contexts.
+    return std::min(16u, std::thread::hardware_concurrency());
+}
+
+bool RendererGL::hasNativeParallelCompile()
+{
+    return mFunctions->maxShaderCompilerThreadsKHR != nullptr ||
+           mFunctions->maxShaderCompilerThreadsARB != nullptr;
+}
+
+void RendererGL::setMaxShaderCompilerThreads(GLuint count)
+{
+    if (hasNativeParallelCompile())
+    {
+        SetMaxShaderCompilerThreads(mFunctions.get(), count);
+    }
+}
+
+ScopedWorkerContextGL::ScopedWorkerContextGL(RendererGL *renderer, std::string *infoLog)
+    : mRenderer(renderer)
+{
+    mValid = mRenderer->bindWorkerContext(infoLog);
+}
+
+ScopedWorkerContextGL::~ScopedWorkerContextGL()
+{
+    if (mValid)
+    {
+        mRenderer->unbindWorkerContext();
+    }
+}
+
+bool ScopedWorkerContextGL::operator()() const
+{
+    return mValid;
 }
 
 }  // namespace rx

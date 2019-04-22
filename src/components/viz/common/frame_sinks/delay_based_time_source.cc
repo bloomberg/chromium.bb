@@ -155,8 +155,8 @@ void DelayBasedTimeSource::PostNextTickTask(base::TimeTicks now) {
       next_tick_time_ += interval_;
     DCHECK_GT(next_tick_time_, now);
   }
-  tick_closure_.Reset(base::Bind(&DelayBasedTimeSource::OnTimerTick,
-                                 weak_factory_.GetWeakPtr()));
+  tick_closure_.Reset(base::BindOnce(&DelayBasedTimeSource::OnTimerTick,
+                                     weak_factory_.GetWeakPtr()));
   task_runner_->PostDelayedTask(FROM_HERE, tick_closure_.callback(),
                                 next_tick_time_ - now);
 }

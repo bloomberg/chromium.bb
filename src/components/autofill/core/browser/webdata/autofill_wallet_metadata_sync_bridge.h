@@ -74,23 +74,31 @@ class AutofillWalletMetadataSyncBridge
   void GetAllDataForDebugging(DataCallback callback) override;
   std::string GetClientTag(const syncer::EntityData& entity_data) override;
   std::string GetStorageKey(const syncer::EntityData& entity_data) override;
+  void ApplyStopSyncChanges(std::unique_ptr<syncer::MetadataChangeList>
+                                delete_metadata_change_list) override;
 
   // AutofillWebDataServiceObserverOnDBSequence implementation.
   void AutofillProfileChanged(const AutofillProfileChange& change) override;
   void CreditCardChanged(const CreditCardChange& change) override;
-  void AutofillMultipleChanged() override;
 
  private:
-  // Syncs up an updated entity |entity_after_change| (if needed).
-  void SyncUpUpdatedEntity(
-      std::unique_ptr<syncer::EntityData> entity_after_change);
-
   // Returns the table associated with the |web_data_backend_|.
   AutofillTable* GetAutofillTable();
 
-  // Synchronously load |cache_| and sync metadata from the autofill table
-  // and pass the latter to the processor so that it can start tracking changes.
+  // Synchronously load the sync data into |cache_| and sync metadata from the
+  // autofill table and pass the latter to the processor so that it can start
+  // tracking changes.
   void LoadDataCacheAndMetadata();
+
+  // Deletes old metadata entities that have no corresponding data entities.
+  // This routine is here to help with really corner-case scenarios, e.g.
+  //  - having one client create a metadata entity M for new data D while other
+  //  clients are off;
+  //  - switch off this client forever and remove the entity D from Wallet;
+  //  - turn on other clients so that they receive M from sync;
+  //  - these other clients never knew about D and thus they have no reason to
+  //  delete M when they receive an update from the Walllet server.
+  void DeleteOldOrphanMetadata();
 
   // Reads local wallet metadata from the database and passes them into
   // |callback|. If |storage_keys_set| is not set, it returns all data entries.
@@ -99,6 +107,23 @@ class AutofillWalletMetadataSyncBridge
       base::Optional<std::unordered_set<std::string>> storage_keys_set,
       DataCallback callback);
 
+  // Uploads local data that is not part of |entity_data| sent from the server
+  // during initial MergeSyncData().
+  void UploadInitialLocalData(syncer::MetadataChangeList* metadata_change_list,
+                              const syncer::EntityChangeList& entity_data);
+
+  // Merges remote changes, specified in |entity_data|, with the local DB and,
+  // potentially, writes changes to the local DB and/or commits updates of
+  // entities from |entity_data| up to sync.
+  base::Optional<syncer::ModelError> MergeRemoteChanges(
+      std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
+      syncer::EntityChangeList entity_data);
+
+  // Reacts to a local |change| of an entry of type |type|.
+  template <class DataType>
+  void LocalMetadataChanged(sync_pb::WalletMetadataSpecifics::Type type,
+                            AutofillDataModelChange<DataType> change);
+
   // AutofillWalletMetadataSyncBridge is owned by |web_data_backend_| through
   // SupportsUserData, so it's guaranteed to outlive |this|.
   AutofillWebDataBackend* const web_data_backend_;
@@ -106,10 +131,9 @@ class AutofillWalletMetadataSyncBridge
   ScopedObserver<AutofillWebDataBackend, AutofillWalletMetadataSyncBridge>
       scoped_observer_;
 
-  // Cache of the data (local data + data that hasn't synced down yet); keyed by
-  // storage keys. Needed for figuring out what to sync up when larger changes
-  // happen in the local database.
-  std::unordered_map<std::string, sync_pb::WalletMetadataSpecifics> cache_;
+  // Cache of the local data that allows figuring out the diff for local
+  // changes; keyed by storage keys.
+  std::map<std::string, AutofillMetadata> cache_;
 
   // Indicates whether we should rely on wallet data being actively synced. If
   // true, the bridge will prune metadata entries without corresponding wallet

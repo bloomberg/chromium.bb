@@ -6,9 +6,10 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_TEST_MOCK_COMPOSITOR_FRAME_SINK_H_
 
 #include "components/viz/common/quads/compositor_frame.h"
+#include "gpu/ipc/common/mailbox.mojom-blink.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom-blink.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/blink/public/platform/modules/frame_sinks/embedded_frame_sink.mojom-blink.h"
+#include "third_party/blink/public/mojom/frame_sinks/embedded_frame_sink.mojom-blink.h"
 
 namespace blink {
 
@@ -23,6 +24,8 @@ class MockCompositorFrameSink : public viz::mojom::blink::CompositorFrameSink {
       : binding_(this, std::move(request)) {
     EXPECT_CALL(*this, SetNeedsBeginFrame(true))
         .Times(num_expected_set_needs_begin_frame_on_construction);
+    if (!num_expected_set_needs_begin_frame_on_construction)
+      EXPECT_CALL(*this, SetNeedsBeginFrame(false)).Times(testing::AtLeast(0));
   }
 
   // viz::mojom::blink::CompositorFrameSink implementation

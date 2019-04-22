@@ -10,15 +10,15 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Build;
 import android.os.Environment;
-import android.os.Handler;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.PathUtils;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.download.DirectoryOption.DownloadLocationDirectoryType;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -48,8 +48,7 @@ public class DownloadDirectoryProvider {
             ArrayList<DirectoryOption> dirs = new ArrayList<>();
 
             // Retrieve default directory.
-            File defaultDirectory =
-                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+            File defaultDirectory = DownloadUtils.getPrimaryDownloadDirectory();
 
             // If no default directory, return an error option.
             if (defaultDirectory == null) {
@@ -161,9 +160,6 @@ public class DownloadDirectoryProvider {
     private String mExternalStorageDirectory;
     private ArrayList < Callback < ArrayList<DirectoryOption>>> mCallbacks = new ArrayList<>();
 
-    // Should be bounded to UI thread.
-    protected final Handler mHandler = new Handler(ThreadUtils.getUiThreadLooper());
-
     protected DownloadDirectoryProvider() {
         registerSDCardReceiver();
     }
@@ -175,7 +171,8 @@ public class DownloadDirectoryProvider {
     public void getAllDirectoriesOptions(Callback<ArrayList<DirectoryOption>> callback) {
         // Use cache value.
         if (!mNeedsUpdate && mDirectoriesReady) {
-            mHandler.post(() -> callback.onResult(mDirectoryOptions));
+            PostTask.postTask(
+                    UiThreadTaskTraits.DEFAULT, () -> callback.onResult(mDirectoryOptions));
             return;
         }
 

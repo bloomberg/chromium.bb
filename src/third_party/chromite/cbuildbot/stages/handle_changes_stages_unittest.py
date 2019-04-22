@@ -20,11 +20,10 @@ from chromite.lib import cidb
 from chromite.lib import clactions
 from chromite.lib import config_lib
 from chromite.lib import constants
-from chromite.lib import fake_cidb
 from chromite.lib import hwtest_results
 from chromite.lib import timeout_util
 from chromite.lib import tree_status
-from chromite.lib.const import waterfall
+from chromite.lib.buildstore import FakeBuildStore
 
 
 # pylint: disable=protected-access
@@ -38,6 +37,8 @@ class CommitQueueHandleChangesStageTests(
 
   def setUp(self):
     self._Prepare()
+    self.buildstore = FakeBuildStore()
+    self.mock_cidb = self.buildstore.GetCIDBHandle()
 
     self.partial_submit_changes = ['A', 'B']
     self.other_changes = ['C', 'D']
@@ -62,7 +63,7 @@ class CommitQueueHandleChangesStageTests(
     cidb.CIDBConnectionFactory.ClearMock()
 
   def _MockSyncStage(self, tree_was_open=True):
-    sync_stage = sync_stages.CommitQueueSyncStage(self._run)
+    sync_stage = sync_stages.CommitQueueSyncStage(self._run, self.buildstore)
     sync_stage.pool = mock.MagicMock()
     sync_stage.pool.applied = self.changes
     sync_stage.pool.tree_was_open = tree_was_open
@@ -80,23 +81,21 @@ class CommitQueueHandleChangesStageTests(
   def ConstructStage(self, sync_stage=None, completion_stage=None):
     sync_stage = sync_stage or self.sync_stage
     completion_stage = completion_stage or self.completion_stage
-
     return handle_changes_stages.CommitQueueHandleChangesStage(
-        self._run, sync_stage, completion_stage)
+        self._run, self.buildstore, sync_stage, completion_stage)
 
   def test_GetBuildsPassedSyncStage(self):
     """Test _GetBuildsPassedSyncStage."""
     stage = self.ConstructStage()
-    mock_cidb = mock.Mock()
-    mock_cidb.GetSlaveStages.return_value = [
+    self.PatchObject(FakeBuildStore, 'GetBuildsStages', return_value=[
         {'build_config': 's_1', 'status': 'pass', 'name': 'CommitQueueSync'},
         {'build_config': 's_2', 'status': 'pass', 'name': 'CommitQueueSync'},
-        {'build_config': 's_3', 'status': 'fail', 'name': 'CommitQueueSync'}]
-    mock_cidb.GetBuildStages.return_value = [
-        {'status': 'pass', 'name': 'CommitQueueSync'}]
+        {'build_config': 's_3', 'status': 'fail', 'name': 'CommitQueueSync'},
+        {'build_config': 'master-paladin', 'status': 'pass',
+         'name': 'CommitQueueSync'}])
 
     builds = stage._GetBuildsPassedSyncStage(
-        'build_id', mock_cidb, ['id_1', 'id_2'])
+        'build_id', ['id_1', 'id_2'])
     self.assertItemsEqual(builds, ['s_1', 's_2', 'master-paladin'])
 
   def _MockPartialSubmit(self, stage):
@@ -154,9 +153,9 @@ class CommitQueueHandleChangesStageTests(
     stage = self.ConstructStage()
     self._MockPartialSubmit(stage)
     master_build_id = stage._run.attrs.metadata.GetValue('build_id')
-    db = fake_cidb.FakeCIDBConnection()
+    db = self.mock_cidb
     slave_build_id = db.InsertBuild(
-        'slave_1', waterfall.WATERFALL_INTERNAL, 1, 'slave_1', 'bot_hostname',
+        'slave_1', 1, 'slave_1', 'bot_hostname',
         master_build_id=master_build_id, buildbucket_id='123')
     cidb.CIDBConnectionFactory.SetupMockCidb(db)
     mock_failed_hwtests = mock.Mock()
@@ -232,7 +231,9 @@ class CommitQueueHandleChangesStageTests(
         slave_stages.append({'name': stage_name,
                              'build_config': slave,
                              'status': constants.BUILDER_STATUS_PASSED})
-    self.PatchObject(mock_cidb, 'GetSlaveStages', return_value=slave_stages)
+    self.PatchObject(self.buildstore, 'GetBuildStatuses', return_value=[])
+    self.PatchObject(self.buildstore, 'GetBuildsStages',
+                     return_value=slave_stages)
 
     # Set up SubmitPartialPool to provide a list of changes to look at.
     self.PatchObject(stage.sync_stage.pool, 'SubmitPartialPool',

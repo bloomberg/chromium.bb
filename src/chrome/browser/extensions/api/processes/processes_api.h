@@ -116,7 +116,7 @@ class ProcessesGetProcessIdForTabFunction : public UIThreadExtensionFunction {
   ExtensionFunction::ResponseAction Run() override;
 
   DECLARE_EXTENSION_FUNCTION("processes.getProcessIdForTab",
-                             PROCESSES_GETPROCESSIDFORTAB);
+                             PROCESSES_GETPROCESSIDFORTAB)
 
  private:
   ~ProcessesGetProcessIdForTabFunction() override {}
@@ -133,7 +133,7 @@ class ProcessesTerminateFunction : public UIThreadExtensionFunction {
   // UIThreadExtensionFunction:
   ExtensionFunction::ResponseAction Run() override;
 
-  DECLARE_EXTENSION_FUNCTION("processes.terminate", PROCESSES_TERMINATE);
+  DECLARE_EXTENSION_FUNCTION("processes.terminate", PROCESSES_TERMINATE)
 
  private:
   ~ProcessesTerminateFunction() override {}
@@ -174,7 +174,7 @@ class ProcessesGetProcessInfoFunction :
       const task_manager::TaskIdList& task_ids) override;
 
   DECLARE_EXTENSION_FUNCTION("processes.getProcessInfo",
-                             PROCESSES_GETPROCESSINFO);
+                             PROCESSES_GETPROCESSINFO)
 
  private:
   ~ProcessesGetProcessInfoFunction() override;

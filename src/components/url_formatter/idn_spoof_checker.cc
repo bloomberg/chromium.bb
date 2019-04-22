@@ -35,24 +35,22 @@ class TopDomainPreloadDecoder : public net::extras::PreloadDecoder {
     if (!reader->Next(&is_same_skeleton))
       return false;
 
-    if (is_same_skeleton) {
-      *out_found = true;
-      result_ = search;
-      return true;
-    }
-
-    bool has_com_suffix = false;
-    if (!reader->Next(&has_com_suffix))
-      return false;
-
     std::string top_domain;
-    for (char c;; top_domain += c) {
-      huffman_decoder().Decode(reader, &c);
-      if (c == net::extras::PreloadDecoder::kEndOfTable)
-        break;
+    if (is_same_skeleton) {
+      top_domain = search;
+    } else {
+      bool has_com_suffix = false;
+      if (!reader->Next(&has_com_suffix))
+        return false;
+
+      for (char c;; top_domain += c) {
+        huffman_decoder().Decode(reader, &c);
+        if (c == net::extras::PreloadDecoder::kEndOfTable)
+          break;
+      }
+      if (has_com_suffix)
+        top_domain += ".com";
     }
-    if (has_com_suffix)
-      top_domain += ".com";
 
     if (current_search_offset == 0) {
       *out_found = true;
@@ -86,38 +84,6 @@ const size_t kNumberOfLabelsToCheck = 3;
 IDNSpoofChecker::HuffmanTrieParams g_trie_params{
     kTopDomainsHuffmanTree, sizeof(kTopDomainsHuffmanTree), kTopDomainsTrie,
     kTopDomainsTrieBits, kTopDomainsRootPosition};
-
-std::string LookupMatchInTopDomains(const std::string& skeleton) {
-  DCHECK(!skeleton.empty());
-  // There are no other guarantees about a skeleton string such as not including
-  // a dot. Skeleton of certain characters are dots (e.g. "۰" (U+06F0)).
-  TopDomainPreloadDecoder preload_decoder(
-      g_trie_params.huffman_tree, g_trie_params.huffman_tree_size,
-      g_trie_params.trie, g_trie_params.trie_bits,
-      g_trie_params.trie_root_position);
-  auto labels = base::SplitStringPiece(skeleton, ".", base::KEEP_WHITESPACE,
-                                       base::SPLIT_WANT_ALL);
-
-  if (labels.size() > kNumberOfLabelsToCheck) {
-    labels.erase(labels.begin(),
-                 labels.begin() + labels.size() - kNumberOfLabelsToCheck);
-  }
-
-  while (labels.size() > 1) {
-    std::string partial_skeleton = base::JoinString(labels, ".");
-    bool match = false;
-    bool decoded = preload_decoder.Decode(partial_skeleton, &match);
-    DCHECK(decoded);
-    if (!decoded)
-      return std::string();
-
-    if (match)
-      return preload_decoder.matching_top_domain();
-
-    labels.erase(labels.begin());
-  }
-  return std::string();
-}
 
 }  // namespace
 
@@ -388,7 +354,7 @@ std::string IDNSpoofChecker::GetSimilarTopDomain(base::StringPiece16 hostname) {
   DCHECK(!hostname.empty());
   for (const std::string& skeleton : GetSkeletons(hostname)) {
     DCHECK(!skeleton.empty());
-    std::string matching_top_domain = LookupMatchInTopDomains(skeleton);
+    std::string matching_top_domain = LookupSkeletonInTopDomains(skeleton);
     if (!matching_top_domain.empty())
       return matching_top_domain;
   }
@@ -439,23 +405,37 @@ Skeletons IDNSpoofChecker::GetSkeletons(base::StringPiece16 hostname) {
   return skeletons;
 }
 
-bool IDNSpoofChecker::IsMadeOfLatinAlikeCyrillic(
-    const icu::UnicodeString& label) {
-  // Collect all the Cyrillic letters in |label_string| and see if they're
-  // a subset of |cyrillic_letters_latin_alike_|.
-  // A shortcut of defining cyrillic_letters_latin_alike_ to include [0-9] and
-  // [_-] and checking if the set contains all letters of |label|
-  // would work in most cases, but not if a label has non-letters outside
-  // ASCII.
-  icu::UnicodeSet cyrillic_in_label;
-  icu::StringCharacterIterator it(label);
-  for (it.setToStart(); it.hasNext();) {
-    const UChar32 c = it.next32PostInc();
-    if (cyrillic_letters_.contains(c))
-      cyrillic_in_label.add(c);
+std::string IDNSpoofChecker::LookupSkeletonInTopDomains(
+    const std::string& skeleton) {
+  DCHECK(!skeleton.empty());
+  // There are no other guarantees about a skeleton string such as not including
+  // a dot. Skeleton of certain characters are dots (e.g. "۰" (U+06F0)).
+  TopDomainPreloadDecoder preload_decoder(
+      g_trie_params.huffman_tree, g_trie_params.huffman_tree_size,
+      g_trie_params.trie, g_trie_params.trie_bits,
+      g_trie_params.trie_root_position);
+  auto labels = base::SplitStringPiece(skeleton, ".", base::KEEP_WHITESPACE,
+                                       base::SPLIT_WANT_ALL);
+
+  if (labels.size() > kNumberOfLabelsToCheck) {
+    labels.erase(labels.begin(),
+                 labels.begin() + labels.size() - kNumberOfLabelsToCheck);
   }
-  return !cyrillic_in_label.isEmpty() &&
-         cyrillic_letters_latin_alike_.containsAll(cyrillic_in_label);
+
+  while (labels.size() > 1) {
+    std::string partial_skeleton = base::JoinString(labels, ".");
+    bool match = false;
+    bool decoded = preload_decoder.Decode(partial_skeleton, &match);
+    DCHECK(decoded);
+    if (!decoded)
+      return std::string();
+
+    if (match)
+      return preload_decoder.matching_top_domain();
+
+    labels.erase(labels.begin());
+  }
+  return std::string();
 }
 
 void IDNSpoofChecker::SetAllowedUnicodeSet(UErrorCode* status) {
@@ -538,6 +518,25 @@ void IDNSpoofChecker::SetAllowedUnicodeSet(UErrorCode* status) {
   allowed_set.remove(0xA720u, 0xA7FFu);  // Latin Extended-D
 
   uspoof_setAllowedUnicodeSet(checker_, &allowed_set, status);
+}
+
+bool IDNSpoofChecker::IsMadeOfLatinAlikeCyrillic(
+    const icu::UnicodeString& label) {
+  // Collect all the Cyrillic letters in |label_string| and see if they're
+  // a subset of |cyrillic_letters_latin_alike_|.
+  // A shortcut of defining cyrillic_letters_latin_alike_ to include [0-9] and
+  // [_-] and checking if the set contains all letters of |label|
+  // would work in most cases, but not if a label has non-letters outside
+  // ASCII.
+  icu::UnicodeSet cyrillic_in_label;
+  icu::StringCharacterIterator it(label);
+  for (it.setToStart(); it.hasNext();) {
+    const UChar32 c = it.next32PostInc();
+    if (cyrillic_letters_.contains(c))
+      cyrillic_in_label.add(c);
+  }
+  return !cyrillic_in_label.isEmpty() &&
+         cyrillic_letters_latin_alike_.containsAll(cyrillic_in_label);
 }
 
 // static

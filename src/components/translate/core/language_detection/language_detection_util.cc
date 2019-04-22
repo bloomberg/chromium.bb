@@ -7,17 +7,17 @@
 #include <stddef.h>
 
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/metrics_hashes.h"
+#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/language/core/common/language_util.h"
 #include "components/translate/core/common/translate_constants.h"
 #include "components/translate/core/common/translate_metrics.h"
-#include "components/translate/core/common/translate_util.h"
 #include "components/translate/core/language_detection/chinese_script_classifier.h"
 #include "third_party/cld_3/src/src/nnet_language_identifier.h"
 
@@ -39,7 +39,7 @@ const SimilarLanguageCode kSimilarLanguageCodes[] = {
 
 // Checks |kSimilarLanguageCodes| and returns group code.
 int GetSimilarLanguageGroupCode(const std::string& language) {
-  for (size_t i = 0; i < arraysize(kSimilarLanguageCodes); ++i) {
+  for (size_t i = 0; i < base::size(kSimilarLanguageCodes); ++i) {
     if (language.find(kSimilarLanguageCodes[i].code) != 0)
       continue;
     return kSimilarLanguageCodes[i].group;
@@ -63,7 +63,7 @@ void ApplyLanguageCodeCorrection(std::string* code) {
     return;
   }
 
-  translate::ToTranslateLanguageSynonym(code);
+  language::ToTranslateLanguageSynonym(code);
 }
 
 // Returns the ISO 639 language code of the specified |text|, or 'unknown' if it
@@ -175,7 +175,7 @@ std::string DeterminePageLanguage(const std::string& code,
     *cld_language_p = cld_language;
   if (is_cld_reliable_p != nullptr)
     *is_cld_reliable_p = is_cld_reliable;
-  translate::ToTranslateLanguageSynonym(&cld_language);
+  language::ToTranslateLanguageSynonym(&cld_language);
 
   // Adopt |modified_html_lang| if it is valid. Otherwise, adopt
   // |modified_code|.
@@ -323,7 +323,7 @@ bool IsSameOrSimilarLanguages(const std::string& page_language,
 }
 
 bool IsServerWrongConfigurationLanguage(const std::string& language_code) {
-  for (size_t i = 0; i < arraysize(kWellKnownCodesOnWrongConfiguration); ++i) {
+  for (size_t i = 0; i < base::size(kWellKnownCodesOnWrongConfiguration); ++i) {
     if (language_code == kWellKnownCodesOnWrongConfiguration[i])
       return true;
   }

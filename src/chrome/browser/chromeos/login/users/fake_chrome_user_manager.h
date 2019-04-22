@@ -73,7 +73,6 @@ class FakeChromeUserManager : public ChromeUserManager {
   void SwitchActiveUser(const AccountId& account_id) override;
   void SwitchToLastActiveUser() override;
   void OnSessionStarted() override;
-  void OnProfileInitialized(user_manager::User* user) override;
   void RemoveUser(const AccountId& account_id,
                   user_manager::RemoveUserDelegate* delegate) override;
   void RemoveUserFromList(const AccountId& account_id) override;
@@ -165,8 +164,6 @@ class FakeChromeUserManager : public ChromeUserManager {
   UserFlow* GetCurrentUserFlow() const override;
   UserFlow* GetUserFlow(const AccountId& account_id) const override;
   void ResetUserFlow(const AccountId& account_id) override;
-  user_manager::UserList GetUsersAllowedForSupervisedUsersCreation()
-      const override;
 
   // ChromeUserManager override.
   void SetUserAffiliation(

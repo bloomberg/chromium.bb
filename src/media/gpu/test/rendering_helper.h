@@ -35,6 +35,9 @@ namespace test {
 class TextureRef;
 }  // namespace test
 
+// TODO(dstaessens@) Most functionality can be removed from this file when the
+// video_decode_accelerator_unittests are deprecated in favor of the new
+// video_decode_accelerator_test.
 class VideoFrameTexture : public base::RefCounted<VideoFrameTexture> {
  public:
   uint32_t texture_id() const { return texture_id_; }
@@ -120,9 +123,25 @@ class RenderingHelper {
   void GetThumbnailsAsRGBA(std::vector<unsigned char>* rgba,
                            base::WaitableEvent* done);
 
+  // Delete the texture with specified |texture_id|.
+  static void DeleteTexture(uint32_t texture_id);
+
+  // Set the GL viewport to the specified |area|.
+  static void GLSetViewPort(const gfx::Rect& area);
+
+  // Create a shader with specified |program| id and |type| by compiling the
+  // shader |source| code with length |size|.
+  static void CreateShader(GLuint program,
+                           GLenum type,
+                           const char* source,
+                           int size);
+
+  // Render |texture_id| to the current view port of the screen using target
+  // |texture_target|.
+  static void RenderTexture(uint32_t texture_target, uint32_t texture_id);
+
  private:
   struct RenderedVideo {
-
     // True if there won't be any new video frames comming.
     bool is_flushing = false;
 
@@ -156,10 +175,6 @@ class RenderingHelper {
   void RenderContent();
   void DropOneFrameForAllVideos();
   void ScheduleNextRenderContent();
-
-  // Render |texture_id| to the current view port of the screen using target
-  // |texture_target|.
-  void RenderTexture(uint32_t texture_target, uint32_t texture_id);
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 

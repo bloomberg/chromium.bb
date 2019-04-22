@@ -12,14 +12,21 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/command.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/media_keys_listener_manager.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_constants.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/ash/media_client.h"
+#endif
+
 namespace {
+
 const char kOnCommandEventName[] = "commands.onCommand";
+
 }  // namespace
 
 namespace extensions {
@@ -57,6 +64,7 @@ void ExtensionKeybindingRegistry::SetShortcutHandlingSuspended(bool suspended) {
 void ExtensionKeybindingRegistry::RemoveExtensionKeybinding(
     const Extension* extension,
     const std::string& command_name) {
+  bool any_media_keys_removed = false;
   auto it = event_targets_.begin();
   while (it != event_targets_.end()) {
     TargetList& target_list = it->second;
@@ -73,16 +81,36 @@ void ExtensionKeybindingRegistry::RemoveExtensionKeybinding(
     if (target_list.empty()) {
       // Let each platform-specific implementation get a chance to clean up.
       RemoveExtensionKeybindingImpl(old->first, command_name);
-      event_targets_.erase(old);
 
-      if (media_keys_listener_ && !IsAnyMediaKeyRegistered()) {
-        media_keys_listener_->StopWatchingMediaKeys();
+      if (Command::IsMediaKey(old->first)) {
+        any_media_keys_removed = true;
+        if (media_keys_listener_)
+          media_keys_listener_->StopWatchingMediaKey(old->first.key_code());
       }
+
+      event_targets_.erase(old);
 
       // If a specific command_name was requested, it has now been deleted so no
       // further work is required.
       if (!command_name.empty())
         break;
+    }
+  }
+
+  // If we're no longer listening to any media keys, tell the browser that
+  // it can start handling media keys.
+  if (any_media_keys_removed && !IsListeningToAnyMediaKeys()) {
+    if (content::MediaKeysListenerManager::
+            IsMediaKeysListenerManagerEnabled()) {
+      content::MediaKeysListenerManager* media_keys_listener_manager =
+          content::MediaKeysListenerManager::GetInstance();
+      DCHECK(media_keys_listener_manager);
+
+      media_keys_listener_manager->EnableInternalMediaKeyHandling();
+    } else {
+#if defined(OS_CHROMEOS)
+      MediaClient::Get()->DisableCustomMediaKeyHandler(browser_context_, this);
+#endif
     }
   }
 }
@@ -152,14 +180,24 @@ void ExtensionKeybindingRegistry::AddEventTarget(
   // about |event_targets_|.
   if (!Command::IsMediaKey(accelerator)) {
     DCHECK_EQ(1u, event_targets_[accelerator].size());
-  }
+  } else {
+    if (media_keys_listener_)
+      media_keys_listener_->StartWatchingMediaKey(accelerator.key_code());
 
-  if (media_keys_listener_ && !media_keys_listener_->IsWatchingMediaKeys() &&
-      IsAnyMediaKeyRegistered()) {
-    // If media keys were not already being watched, this must have been the
-    // first.
-    DCHECK(Command::IsMediaKey(accelerator));
-    media_keys_listener_->StartWatchingMediaKeys();
+    // Tell the browser that it should not handle media keys, since we're going
+    // to handle them.
+    if (content::MediaKeysListenerManager::
+            IsMediaKeysListenerManagerEnabled()) {
+      content::MediaKeysListenerManager* media_keys_listener_manager =
+          content::MediaKeysListenerManager::GetInstance();
+      DCHECK(media_keys_listener_manager);
+
+      media_keys_listener_manager->DisableInternalMediaKeyHandling();
+    } else {
+#if defined(OS_CHROMEOS)
+      MediaClient::Get()->EnableCustomMediaKeyHandler(browser_context_, this);
+#endif
+    }
   }
 }
 
@@ -242,13 +280,9 @@ void ExtensionKeybindingRegistry::Observe(
   }
 }
 
-ui::MediaKeysListener::MediaKeysHandleResult
-ExtensionKeybindingRegistry::OnMediaKeysAccelerator(
+void ExtensionKeybindingRegistry::OnMediaKeysAccelerator(
     const ui::Accelerator& accelerator) {
-  return NotifyEventTargets(accelerator)
-             ? ui::MediaKeysListener::MediaKeysHandleResult::
-                   kSuppressPropagation
-             : ui::MediaKeysListener::MediaKeysHandleResult::kIgnore;
+  NotifyEventTargets(accelerator);
 }
 
 bool ExtensionKeybindingRegistry::ExtensionMatchesFilter(
@@ -288,11 +322,10 @@ bool ExtensionKeybindingRegistry::ExecuteCommands(
   return executed;
 }
 
-bool ExtensionKeybindingRegistry::IsAnyMediaKeyRegistered() const {
-  for (const auto& iter : event_targets_) {
-    if (Command::IsMediaKey(iter.first)) {
+bool ExtensionKeybindingRegistry::IsListeningToAnyMediaKeys() const {
+  for (const auto& accelerator_target : event_targets_) {
+    if (Command::IsMediaKey(accelerator_target.first))
       return true;
-    }
   }
   return false;
 }

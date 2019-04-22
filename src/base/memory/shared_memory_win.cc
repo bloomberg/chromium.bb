@@ -14,6 +14,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/unguessable_token.h"
@@ -197,8 +198,8 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
   }
 
   size_t rounded_size = (options.size + kSectionMask) & ~kSectionMask;
-  name_ = options.name_deprecated ?
-      ASCIIToUTF16(*options.name_deprecated) : L"";
+  name_ = options.name_deprecated ? ASCIIToUTF16(*options.name_deprecated)
+                                  : string16();
   SECURITY_ATTRIBUTES sa = {sizeof(sa), nullptr, FALSE};
   SECURITY_DESCRIPTOR sd;
   ACL dacl;
@@ -219,22 +220,22 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
       return false;
     }
 
-    if (base::win::GetVersion() < base::win::VERSION_WIN8_1) {
+    if (win::GetVersion() < win::VERSION_WIN8_1) {
       // Windows < 8.1 ignores DACLs on certain unnamed objects (like shared
       // sections). So, we generate a random name when we need to enforce
       // read-only.
       uint64_t rand_values[4];
       RandBytes(&rand_values, sizeof(rand_values));
-      name_ = StringPrintf(L"CrSharedMem_%016llx%016llx%016llx%016llx",
-                           rand_values[0], rand_values[1], rand_values[2],
-                           rand_values[3]);
+      name_ = ASCIIToUTF16(StringPrintf(
+          "CrSharedMem_%016llx%016llx%016llx%016llx", rand_values[0],
+          rand_values[1], rand_values[2], rand_values[3]));
       DCHECK(!name_.empty());
     }
   }
 
   shm_ = SharedMemoryHandle(
       CreateFileMappingWithReducedPermissions(
-          &sa, rounded_size, name_.empty() ? nullptr : name_.c_str()),
+          &sa, rounded_size, name_.empty() ? nullptr : as_wcstr(name_)),
       rounded_size, UnguessableToken::Create());
   if (!shm_.IsValid()) {
     // The error is logged within CreateFileMappingWithReducedPermissions().
@@ -285,7 +286,7 @@ bool SharedMemory::Open(const std::string& name, bool read_only) {
   // We pass the size |0|, which is a dummy size and wrong, but otherwise
   // harmless.
   shm_ = SharedMemoryHandle(
-      OpenFileMapping(access, false, name_.empty() ? nullptr : name_.c_str()),
+      OpenFileMapping(access, false, name_.empty() ? nullptr : as_wcstr(name_)),
       0u, UnguessableToken::Create());
   if (!shm_.IsValid())
     return false;

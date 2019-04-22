@@ -4,9 +4,11 @@
 
 #include "chrome/browser/ui/app_list/arc/arc_app_dialog.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
@@ -48,7 +50,7 @@ class ArcAppUninstallDialogViewBrowserTest : public InProcessBrowserTest {
     DCHECK(arc_app_list_pref_);
 
     base::RunLoop run_loop;
-    arc_app_list_pref_->SetDefaltAppsReadyCallback(run_loop.QuitClosure());
+    arc_app_list_pref_->SetDefaultAppsReadyCallback(run_loop.QuitClosure());
     run_loop.Run();
 
     app_instance_.reset(new arc::FakeAppInstance(arc_app_list_pref_));

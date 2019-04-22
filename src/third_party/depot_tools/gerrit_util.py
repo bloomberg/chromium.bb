@@ -140,6 +140,10 @@ class CookiesAuthenticator(Authenticator):
 
   @classmethod
   def get_new_password_message(cls, host):
+    if host is None:
+      return ('Git host for gerrit upload is unknown. Check your remote '
+              'and the branch your branch is tracking. This tool assumes '
+              'that you are using a git server at *.googlesource.com.')
     assert not host.startswith('http')
     # Assume *.googlesource.com pattern.
     parts = host.split('.')
@@ -613,6 +617,18 @@ def GetGerritFetchUrl(host):
   return '%s://%s/' % (GERRIT_PROTOCOL, host)
 
 
+def GetCodeReviewTbrScore(host, project):
+  """Given a gerrit host name and project, return the Code-Review score for TBR.
+  """
+  conn = CreateHttpConn(host, '/projects/%s' % urllib.quote(project, safe=''))
+  project = ReadHttpJsonResponse(conn)
+  if ('labels' not in project
+      or 'Code-Review' not in project['labels']
+      or 'values' not in project['labels']['Code-Review']):
+    return 1
+  return max([int(x) for x in project['labels']['Code-Review']['values']])
+
+
 def GetChangePageUrl(host, change_number):
   """Given a gerrit host name and change number, return change page url."""
   return '%s://%s/#/c/%d/' % (GERRIT_PROTOCOL, host, change_number)
@@ -669,6 +685,12 @@ def GetChangeReview(host, change, revision=None):
 def GetChangeComments(host, change):
   """Get the line- and file-level comments on a change."""
   path = 'changes/%s/comments' % change
+  return ReadHttpJsonResponse(CreateHttpConn(host, path))
+
+
+def GetChangeRobotComments(host, change):
+  """Get the line- and file-level robot comments on a change."""
+  path = 'changes/%s/robotcomments' % change
   return ReadHttpJsonResponse(CreateHttpConn(host, path))
 
 
@@ -976,7 +998,7 @@ def tempdir():
 
 
 def ChangeIdentifier(project, change_number):
-  """Returns change identifier "project~number" suitable for |chagne| arg of
+  """Returns change identifier "project~number" suitable for |change| arg of
   this module API.
 
   Such format is allows for more efficient Gerrit routing of HTTP requests,

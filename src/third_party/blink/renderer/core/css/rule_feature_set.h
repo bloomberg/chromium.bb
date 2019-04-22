@@ -202,6 +202,42 @@ class CORE_EXPORT RuleFeatureSet {
     bool HasFeatures() const;
     bool HasIdClassOrAttribute() const;
 
+    void NarrowToClass(const AtomicString& class_name) {
+      if (Size() == 1 && (!ids.IsEmpty() || !classes.IsEmpty()))
+        return;
+      ClearFeatures();
+      classes.push_back(class_name);
+    }
+    void NarrowToAttribute(const AtomicString& attribute) {
+      if (Size() == 1 &&
+          (!ids.IsEmpty() || !classes.IsEmpty() || !attributes.IsEmpty()))
+        return;
+      ClearFeatures();
+      attributes.push_back(attribute);
+    }
+    void NarrowToId(const AtomicString& id) {
+      if (Size() == 1 && !ids.IsEmpty())
+        return;
+      ClearFeatures();
+      ids.push_back(id);
+    }
+    void NarrowToTag(const AtomicString& tag_name) {
+      if (Size() == 1)
+        return;
+      ClearFeatures();
+      tag_names.push_back(tag_name);
+    }
+    void NarrowToFeatures(const InvalidationSetFeatures&);
+    void ClearFeatures() {
+      classes.clear();
+      attributes.clear();
+      ids.clear();
+      tag_names.clear();
+    }
+    unsigned Size() const {
+      return classes.size() + attributes.size() + ids.size() + tag_names.size();
+    }
+
     Vector<AtomicString> classes;
     Vector<AtomicString> attributes;
     Vector<AtomicString> ids;
@@ -264,22 +300,33 @@ class CORE_EXPORT RuleFeatureSet {
 
   void UpdateRuleSetInvalidation(const InvalidationSetFeatures&);
 
-  static InvalidationSet& StoredInvalidationSet(scoped_refptr<InvalidationSet>&,
-                                                InvalidationType,
-                                                PositionType);
-  static InvalidationSet& EnsureInvalidationSet(
-      HashMap<AtomicString, scoped_refptr<InvalidationSet>>&,
-      const AtomicString& key,
+  static InvalidationSet& EnsureMutableInvalidationSet(
+      scoped_refptr<InvalidationSet>&,
       InvalidationType,
       PositionType);
-  static InvalidationSet& EnsureInvalidationSet(
-      HashMap<CSSSelector::PseudoType,
-              scoped_refptr<InvalidationSet>,
-              WTF::IntHash<unsigned>,
-              WTF::UnsignedWithZeroKeyHashTraits<unsigned>>&,
-      CSSSelector::PseudoType key,
-      InvalidationType,
-      PositionType);
+
+  InvalidationSet& EnsureInvalidationSet(InvalidationSetMap&,
+                                         const AtomicString& key,
+                                         InvalidationType,
+                                         PositionType);
+  InvalidationSet& EnsureInvalidationSet(PseudoTypeInvalidationSetMap&,
+                                         CSSSelector::PseudoType key,
+                                         InvalidationType,
+                                         PositionType);
+
+  // Adds an InvalidationSet to this RuleFeatureSet.
+  //
+  // A copy-on-write mechanism is used: if we don't already have an invalidation
+  // set for |key|, we simply retain the incoming invalidation set without
+  // copying any data. If another AddInvalidationSet call takes place with the
+  // same key, we copy the existing InvalidationSet (if necessary) before
+  // combining it with the incoming InvalidationSet.
+  void AddInvalidationSet(InvalidationSetMap&,
+                          const AtomicString& key,
+                          scoped_refptr<InvalidationSet>);
+  void AddInvalidationSet(PseudoTypeInvalidationSetMap&,
+                          CSSSelector::PseudoType key,
+                          scoped_refptr<InvalidationSet>);
 
   FeatureMetadata metadata_;
   InvalidationSetMap class_invalidation_sets_;

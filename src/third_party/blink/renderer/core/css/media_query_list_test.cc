@@ -23,9 +23,10 @@ class TestListener : public MediaQueryListListener {
 
 TEST(MediaQueryListTest, CrashInStop) {
   Document* document = Document::CreateForTest();
-  MediaQueryList* list = MediaQueryList::Create(
-      document, MediaQueryMatcher::Create(*document), MediaQuerySet::Create());
-  list->AddListener(new TestListener());
+  auto* list = MakeGarbageCollected<MediaQueryList>(
+      document, MakeGarbageCollected<MediaQueryMatcher>(*document),
+      MediaQuerySet::Create());
+  list->AddListener(MakeGarbageCollected<TestListener>());
   list->ContextDestroyed(document);
   // This test passes if it's not crashed.
 }

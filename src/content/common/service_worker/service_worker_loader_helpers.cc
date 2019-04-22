@@ -15,6 +15,7 @@
 #include "content/public/common/resource_type.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/http/http_util.h"
+#include "net/url_request/redirect_util.h"
 #include "services/network/loader_util.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_request_body.h"
@@ -98,7 +99,9 @@ void ServiceWorkerLoaderHelpers::SaveResponseInfo(
   out_head->url_list_via_service_worker = response.url_list;
   out_head->response_type = response.response_type;
   out_head->response_time = response.response_time;
-  out_head->is_in_cache_storage = response.is_in_cache_storage;
+  out_head->is_in_cache_storage =
+      response.response_source ==
+      network::mojom::FetchResponseSource::kCacheStorage;
   if (response.cache_storage_cache_name)
     out_head->cache_storage_cache_name = *(response.cache_storage_cache_name);
   else
@@ -124,11 +127,13 @@ ServiceWorkerLoaderHelpers::ComputeRedirectInfo(
           : net::URLRequest::NEVER_CHANGE_FIRST_PARTY_URL;
   return net::RedirectInfo::ComputeRedirectInfo(
       original_request.method, original_request.url,
-      original_request.site_for_cookies, first_party_url_policy,
-      original_request.referrer_policy,
+      original_request.site_for_cookies, original_request.top_frame_origin,
+      first_party_url_policy, original_request.referrer_policy,
       network::ComputeReferrer(original_request.referrer),
-      response_head.headers.get(), response_head.headers->response_code(),
-      original_request.url.Resolve(new_location), false);
+      response_head.headers->response_code(),
+      original_request.url.Resolve(new_location),
+      net::RedirectUtil::GetReferrerPolicyHeader(response_head.headers.get()),
+      false /* insecure_scheme_was_upgraded */);
 }
 
 int ServiceWorkerLoaderHelpers::ReadBlobResponseBody(

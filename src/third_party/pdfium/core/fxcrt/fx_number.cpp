@@ -23,7 +23,7 @@ FX_Number::FX_Number(int32_t value)
 FX_Number::FX_Number(float value)
     : m_bInteger(false), m_bSigned(true), m_FloatValue(value) {}
 
-FX_Number::FX_Number(const ByteStringView& strc)
+FX_Number::FX_Number(ByteStringView strc)
     : m_bInteger(true), m_bSigned(false), m_UnsignedValue(0) {
   if (strc.IsEmpty())
     return;
@@ -31,7 +31,7 @@ FX_Number::FX_Number(const ByteStringView& strc)
   if (strc.Contains('.')) {
     m_bInteger = false;
     m_bSigned = true;
-    m_FloatValue = FX_atof(strc);
+    m_FloatValue = StringToFloat(strc);
     return;
   }
 

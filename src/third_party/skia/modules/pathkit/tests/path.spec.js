@@ -1,19 +1,4 @@
-
 describe('PathKit\'s Path Behavior', function() {
-    // Note, don't try to print the PathKit object - it can cause Karma/Jasmine to lock up.
-    var PathKit = null;
-    const LoadPathKit = new Promise(function(resolve, reject) {
-        if (PathKit) {
-            resolve();
-        } else {
-            PathKitInit({
-                locateFile: (file) => '/pathkit/'+file,
-            }).then((_PathKit) => {
-                PathKit = _PathKit;
-                resolve();
-            });
-        }
-    });
 
     describe('Basic Path Features', function() {
         function drawSimplePath() {
@@ -158,7 +143,7 @@ describe('PathKit\'s Path Behavior', function() {
     }
 
     describe('Command arrays', function(){
-        it('does NOT approximates conics when dumping as toCmds', function(done){
+        it('does NOT approximates conics when dumping as toCmds', function(done) {
             LoadPathKit.then(catchException(done, () => {
                 let path = PathKit.NewPath();
                 path.moveTo(20, 120);

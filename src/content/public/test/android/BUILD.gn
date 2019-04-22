@@ -8,7 +8,7 @@ generate_jni("test_support_content_jni_headers") {
   ]
 }
 
-android_library("layouttest_java_support") {
+android_library("web_test_java_support") {
   testonly = true
   deps = [
     "//base:base_java",
@@ -19,7 +19,7 @@ android_library("layouttest_java_support") {
 android_library("content_java_test_support") {
   testonly = true
   deps = [
-    ":layouttest_java_support",
+    ":web_test_java_support",
     "//base:base_java",
     "//base:base_java_test_support",
     "//content/public/android:content_java",
@@ -51,9 +51,11 @@ android_library("content_java_test_support") {
     "javatests/src/org/chromium/content_public/browser/test/util/TestCallbackHelperContainer.java",
     "javatests/src/org/chromium/content_public/browser/test/util/TestInputMethodManagerWrapper.java",
     "javatests/src/org/chromium/content_public/browser/test/util/TestSelectionPopupController.java",
+    "javatests/src/org/chromium/content_public/browser/test/util/TestThreadUtils.java",
     "javatests/src/org/chromium/content_public/browser/test/util/TestTouchUtils.java",
     "javatests/src/org/chromium/content_public/browser/test/util/TestWebContentsObserver.java",
     "javatests/src/org/chromium/content_public/browser/test/util/TouchCommon.java",
+    "javatests/src/org/chromium/content_public/browser/test/util/UiThreadSchedulerTestUtils.java",
     "javatests/src/org/chromium/content_public/browser/test/util/UiUtils.java",
     "javatests/src/org/chromium/content_public/browser/test/util/WebContentsUtils.java",
   ]
@@ -66,6 +68,7 @@ generate_jni("content_test_jni") {
     "javatests/src/org/chromium/content_public/browser/test/InterstitialPageDelegateAndroid.java",
     "javatests/src/org/chromium/content_public/browser/test/RenderFrameHostTestExt.java",
     "javatests/src/org/chromium/content_public/browser/test/util/DOMUtils.java",
+    "javatests/src/org/chromium/content_public/browser/test/util/UiThreadSchedulerTestUtils.java",
     "javatests/src/org/chromium/content_public/browser/test/util/WebContentsUtils.java",
   ]
 }
@@ -85,6 +88,7 @@ static_library("content_native_test_support") {
     "interstitial_page_delegate_android.h",
     "render_frame_host_test_ext.cc",
     "render_frame_host_test_ext.h",
+    "ui_thread_scheduler_test_utils.cc",
     "web_contents_utils.cc",
   ]
   deps = [

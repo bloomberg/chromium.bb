@@ -217,7 +217,7 @@ TEST(MediaQueryEvaluatorTest, Cached) {
 
   // Default values.
   {
-    MediaValues* media_values = MediaValuesCached::Create(data);
+    auto* media_values = MakeGarbageCollected<MediaValuesCached>(data);
     MediaQueryEvaluator media_query_evaluator(*media_values);
     TestMQEvaluator(g_screen_test_cases, media_query_evaluator);
     TestMQEvaluator(g_viewport_test_cases, media_query_evaluator);
@@ -229,7 +229,7 @@ TEST(MediaQueryEvaluatorTest, Cached) {
   // Print values.
   {
     data.media_type = media_type_names::kPrint;
-    MediaValues* media_values = MediaValuesCached::Create(data);
+    auto* media_values = MakeGarbageCollected<MediaValuesCached>(data);
     MediaQueryEvaluator media_query_evaluator(*media_values);
     TestMQEvaluator(g_print_test_cases, media_query_evaluator);
     data.media_type = media_type_names::kScreen;
@@ -239,7 +239,7 @@ TEST(MediaQueryEvaluatorTest, Cached) {
   {
     data.color_bits_per_component = 0;
     data.monochrome_bits_per_component = 8;
-    MediaValues* media_values = MediaValuesCached::Create(data);
+    auto* media_values = MakeGarbageCollected<MediaValuesCached>(data);
     MediaQueryEvaluator media_query_evaluator(*media_values);
     TestMQEvaluator(g_monochrome_test_cases, media_query_evaluator);
     data.color_bits_per_component = 24;
@@ -249,7 +249,7 @@ TEST(MediaQueryEvaluatorTest, Cached) {
   // Immersive values.
   {
     data.immersive_mode = true;
-    MediaValues* media_values = MediaValuesCached::Create(data);
+    auto* media_values = MakeGarbageCollected<MediaValuesCached>(data);
     MediaQueryEvaluator media_query_evaluator(*media_values);
     TestMQEvaluator(g_immersive_test_cases, media_query_evaluator,
                     kUASheetMode);
@@ -259,8 +259,7 @@ TEST(MediaQueryEvaluatorTest, Cached) {
 }
 
 TEST(MediaQueryEvaluatorTest, Dynamic) {
-  std::unique_ptr<DummyPageHolder> page_holder =
-      DummyPageHolder::Create(IntSize(500, 500));
+  auto page_holder = std::make_unique<DummyPageHolder>(IntSize(500, 500));
   page_holder->GetFrameView().SetMediaType(media_type_names::kScreen);
 
   MediaQueryEvaluator media_query_evaluator(&page_holder->GetFrame());
@@ -270,8 +269,7 @@ TEST(MediaQueryEvaluatorTest, Dynamic) {
 }
 
 TEST(MediaQueryEvaluatorTest, DynamicNoView) {
-  std::unique_ptr<DummyPageHolder> page_holder =
-      DummyPageHolder::Create(IntSize(500, 500));
+  auto page_holder = std::make_unique<DummyPageHolder>(IntSize(500, 500));
   LocalFrame* frame = &page_holder->GetFrame();
   page_holder.reset();
   ASSERT_EQ(nullptr, frame->View());
@@ -284,7 +282,7 @@ TEST(MediaQueryEvaluatorTest, CachedFloatViewport) {
   MediaValuesCached::MediaValuesCachedData data;
   data.viewport_width = 600.5;
   data.viewport_height = 700.125;
-  MediaValues* media_values = MediaValuesCached::Create(data);
+  auto* media_values = MakeGarbageCollected<MediaValuesCached>(data);
 
   MediaQueryEvaluator media_query_evaluator(*media_values);
   TestMQEvaluator(g_float_viewport_test_cases, media_query_evaluator);
@@ -294,7 +292,7 @@ TEST(MediaQueryEvaluatorTest, CachedFloatViewportNonFloatFriendly) {
   MediaValuesCached::MediaValuesCachedData data;
   data.viewport_width = 821;
   data.viewport_height = 821;
-  MediaValues* media_values = MediaValuesCached::Create(data);
+  auto* media_values = MakeGarbageCollected<MediaValuesCached>(data);
 
   MediaQueryEvaluator media_query_evaluator(*media_values);
   TestMQEvaluator(g_float_non_friendly_viewport_test_cases,
@@ -302,8 +300,7 @@ TEST(MediaQueryEvaluatorTest, CachedFloatViewportNonFloatFriendly) {
 }
 
 TEST(MediaQueryEvaluatorTest, InitialViewport) {
-  std::unique_ptr<DummyPageHolder> page_holder =
-      DummyPageHolder::Create(IntSize(500, 500));
+  auto page_holder = std::make_unique<DummyPageHolder>(IntSize(500, 500));
   page_holder->GetFrameView().SetMediaType(media_type_names::kScreen);
   page_holder->GetFrameView().SetLayoutSizeFixedToFrameSize(false);
   page_holder->GetFrameView().SetInitialViewportSize(IntSize(500, 500));
@@ -311,13 +308,13 @@ TEST(MediaQueryEvaluatorTest, InitialViewport) {
   page_holder->GetFrameView().SetFrameRect(IntRect(0, 0, 800, 800));
 
   MediaQueryEvaluator media_query_evaluator(
-      MediaValuesInitialViewport::Create(page_holder->GetFrame()));
+      MakeGarbageCollected<MediaValuesInitialViewport>(
+          page_holder->GetFrame()));
   TestMQEvaluator(g_viewport_test_cases, media_query_evaluator);
 }
 
 TEST(MediaQueryEvaluatorTest, DynamicImmersive) {
-  std::unique_ptr<DummyPageHolder> page_holder =
-      DummyPageHolder::Create(IntSize(500, 500));
+  auto page_holder = std::make_unique<DummyPageHolder>(IntSize(500, 500));
   page_holder->GetFrameView().SetMediaType(media_type_names::kScreen);
 
   MediaQueryEvaluator media_query_evaluator(&page_holder->GetFrame());

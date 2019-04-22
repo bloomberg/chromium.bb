@@ -10,7 +10,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_helper.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
-#include "chromeos/dbus/authpolicy/active_directory_info.pb.h"
+#include "chromeos/dbus/auth_policy/active_directory_info.pb.h"
 
 class GoogleServiceAuthError;
 
@@ -52,8 +52,8 @@ class EnrollmentScreenView {
   virtual ~EnrollmentScreenView() {}
 
   // Initializes the view with parameters.
-  virtual void SetParameters(Controller* controller,
-                             const policy::EnrollmentConfig& config) = 0;
+  virtual void SetEnrollmentConfig(Controller* controller,
+                                   const policy::EnrollmentConfig& config) = 0;
 
   // Shows the contents of the screen.
   virtual void Show() = 0;

@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.payments;
 
 import android.os.Handler;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
 import org.chromium.chrome.R;
@@ -22,8 +23,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import javax.annotation.Nullable;
 
 /**
  * Provides access to locally stored user credit cards.

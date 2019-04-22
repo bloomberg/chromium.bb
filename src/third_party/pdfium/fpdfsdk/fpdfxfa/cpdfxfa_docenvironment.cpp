@@ -11,6 +11,7 @@
 
 #include "core/fpdfapi/parser/cpdf_array.h"
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
+#include "core/fpdfapi/parser/cpdf_stream.h"
 #include "core/fpdfapi/parser/cpdf_stream_acc.h"
 #include "core/fpdfapi/parser/cpdf_string.h"
 #include "core/fxcrt/retain_ptr.h"
@@ -125,9 +126,7 @@ bool CPDFXFA_DocEnvironment::GetPopupPos(CXFA_FFWidget* hWidget,
   if (!pFormFillEnv)
     return false;
 
-  FS_RECTF page_view_rect = {0.0f, 0.0f, 0.0f, 0.0f};
-  pFormFillEnv->GetPageViewRect(pPage.Get(), page_view_rect);
-
+  FS_RECTF page_view_rect = pFormFillEnv->GetPageViewRect(pPage.Get());
   int nRotate = hWidget->GetNode()->GetRotate();
 
   int space_available_below_anchor;
@@ -298,7 +297,7 @@ void CPDFXFA_DocEnvironment::PageViewEvent(CXFA_FFPageView* pPageView,
       continue;
 
     m_pContext->GetFormFillEnv()->RemovePageView(pPage.Get());
-    pPage->SetXFAPageView(pXFADocView->GetPageView(iPageIter));
+    pPage->SetXFAPageViewIndex(iPageIter);
   }
 
   int flag = (nNewCount < m_pContext->GetOriginalPageCount())
@@ -645,7 +644,7 @@ bool CPDFXFA_DocEnvironment::OnBeforeNotifySubmit() {
         return false;
 
       pFormFillEnv->JS_appAlert(WideString::FromDefANSI(IDS_XFA_Validate_Input),
-                                L"", JSPLATFORM_ALERT_BUTTON_OK,
+                                WideString(), JSPLATFORM_ALERT_BUTTON_OK,
                                 JSPLATFORM_ALERT_ICON_WARNING);
       return false;
     }
@@ -880,9 +879,9 @@ bool CPDFXFA_DocEnvironment::MailToInfo(WideString& csURL,
       tmp = tmp.Right(tmp.GetLength() - 5);
       csMsg += tmp;
     }
-    srcURL = !pos.has_value()
-                 ? L""
-                 : srcURL.Right(csURL.GetLength() - (pos.value() + 1));
+    srcURL = pos.has_value()
+                 ? srcURL.Right(csURL.GetLength() - (pos.value() + 1))
+                 : WideString();
   }
   csToAddress.Replace(L",", L";");
   csCCAddress.Replace(L",", L";");
@@ -899,8 +898,8 @@ bool CPDFXFA_DocEnvironment::SubmitInternal(CXFA_FFDoc* hDoc,
 
   WideString csURL = submit->GetSubmitTarget();
   if (csURL.IsEmpty()) {
-    pFormFillEnv->JS_appAlert(WideString::FromDefANSI("Submit cancelled."), L"",
-                              JSPLATFORM_ALERT_BUTTON_OK,
+    pFormFillEnv->JS_appAlert(WideString::FromDefANSI("Submit cancelled."),
+                              WideString(), JSPLATFORM_ALERT_BUTTON_OK,
                               JSPLATFORM_ALERT_ICON_ASTERISK);
     return false;
   }
@@ -908,7 +907,7 @@ bool CPDFXFA_DocEnvironment::SubmitInternal(CXFA_FFDoc* hDoc,
   FPDF_FILEHANDLER* pFileHandler = nullptr;
   int fileFlag = -1;
   switch (submit->GetSubmitFormat()) {
-    case XFA_AttributeEnum::Xdp: {
+    case XFA_AttributeValue::Xdp: {
       WideString csContent = submit->GetSubmitXDPContent();
       csContent.Trim();
 
@@ -924,14 +923,14 @@ bool CPDFXFA_DocEnvironment::SubmitInternal(CXFA_FFDoc* hDoc,
       ExportSubmitFile(pFileHandler, FXFA_SAVEAS_XDP, 0, flag);
       break;
     }
-    case XFA_AttributeEnum::Xml:
+    case XFA_AttributeValue::Xml:
       pFileHandler = pFormFillEnv->OpenFile(FXFA_SAVEAS_XML, nullptr, "wb");
       fileFlag = FXFA_SAVEAS_XML;
       ExportSubmitFile(pFileHandler, FXFA_SAVEAS_XML, 0, FXFA_XFA_ALL);
       break;
-    case XFA_AttributeEnum::Pdf:
+    case XFA_AttributeValue::Pdf:
       break;
-    case XFA_AttributeEnum::Urlencoded:
+    case XFA_AttributeValue::Urlencoded:
       pFileHandler = pFormFillEnv->OpenFile(FXFA_SAVEAS_XML, nullptr, "wb");
       fileFlag = FXFA_SAVEAS_XML;
       ExportSubmitFile(pFileHandler, FXFA_SAVEAS_XML, 0, FXFA_XFA_ALL);
@@ -972,7 +971,7 @@ bool CPDFXFA_DocEnvironment::SubmitInternal(CXFA_FFDoc* hDoc,
 
 bool CPDFXFA_DocEnvironment::SetPropertyInNonXFAGlobalObject(
     CXFA_FFDoc* hDoc,
-    const ByteStringView& szPropName,
+    ByteStringView szPropName,
     CFXJSE_Value* pValue) {
   if (hDoc != m_pContext->GetXFADoc())
     return false;
@@ -982,16 +981,13 @@ bool CPDFXFA_DocEnvironment::SetPropertyInNonXFAGlobalObject(
     return false;
 
   IJS_Runtime* pIJSRuntime = pFormFillEnv->GetIJSRuntime();
-  if (!pIJSRuntime)
-    return false;
-
   IJS_Runtime::ScopedEventContext pContext(pIJSRuntime);
   return pIJSRuntime->SetValueByNameInGlobalObject(szPropName, pValue);
 }
 
 bool CPDFXFA_DocEnvironment::GetPropertyFromNonXFAGlobalObject(
     CXFA_FFDoc* hDoc,
-    const ByteStringView& szPropName,
+    ByteStringView szPropName,
     CFXJSE_Value* pValue) {
   if (hDoc != m_pContext->GetXFADoc())
     return false;
@@ -1001,9 +997,6 @@ bool CPDFXFA_DocEnvironment::GetPropertyFromNonXFAGlobalObject(
     return false;
 
   IJS_Runtime* pIJSRuntime = pFormFillEnv->GetIJSRuntime();
-  if (!pIJSRuntime)
-    return false;
-
   IJS_Runtime::ScopedEventContext pContext(pIJSRuntime);
   return pIJSRuntime->GetValueByNameFromGlobalObject(szPropName, pValue);
 }

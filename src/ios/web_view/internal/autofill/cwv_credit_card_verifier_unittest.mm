@@ -17,9 +17,11 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
 #import "base/test/ios/wait_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
-#include "components/autofill/core/browser/card_unmask_delegate.h"
 #include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/payments/card_unmask_delegate.h"
+#include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
@@ -139,7 +141,6 @@ class CWVCreditCardVerifierTest : public PlatformTest {
 // Tests CWVCreditCardVerifier properties.
 TEST_F(CWVCreditCardVerifierTest, Properties) {
   EXPECT_TRUE(credit_card_verifier_.creditCard);
-  EXPECT_TRUE(credit_card_verifier_.canStoreLocally);
   EXPECT_FALSE(credit_card_verifier_.lastStoreLocallyValue);
   EXPECT_TRUE(credit_card_verifier_.navigationTitle);
   EXPECT_TRUE(credit_card_verifier_.instructionMessage);
@@ -154,6 +155,22 @@ TEST_F(CWVCreditCardVerifierTest, Properties) {
   EXPECT_FALSE(credit_card_verifier_.shouldRequestUpdateForExpirationDate);
   [credit_card_verifier_ requestUpdateForExpirationDate];
   EXPECT_TRUE(credit_card_verifier_.shouldRequestUpdateForExpirationDate);
+}
+
+// Tests CWVCreditCardVerifier's |canStoreLocally| property.
+TEST_F(CWVCreditCardVerifierTest, CanStoreLocallyProperty) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      autofill::features::kAutofillNoLocalSaveOnUnmaskSuccess);
+  EXPECT_FALSE(credit_card_verifier_.canStoreLocally);
+}
+
+// Tests CWVCreditCardVerifier's |canStoreLocally| property.
+TEST_F(CWVCreditCardVerifierTest, CanStoreLocallyPropertyFlagOff) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(
+      autofill::features::kAutofillNoLocalSaveOnUnmaskSuccess);
+  EXPECT_TRUE(credit_card_verifier_.canStoreLocally);
 }
 
 // Tests CWVCreditCardVerifier's |isCVCValid| method.

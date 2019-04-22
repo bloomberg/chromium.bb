@@ -11,6 +11,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop_current.h"
@@ -668,7 +669,7 @@ TEST_F(DesktopCaptureDeviceThrottledTest, Throttled80) {
 
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       "--webrtc-max-cpu-consumption-percentage",
-      base::IntToString(max_cpu_consumption_percentage));
+      base::NumberToString(max_cpu_consumption_percentage));
 
   const double actual_framerate = CaptureFrames();
 

@@ -7,4 +7,4 @@
 
 from blinkpy.common import multiprocessing_bootstrap
 
-multiprocessing_bootstrap.run('blinkpy', 'web_tests', 'run_webkit_tests.py')
+multiprocessing_bootstrap.run('blinkpy', 'web_tests', 'run_web_tests.py')

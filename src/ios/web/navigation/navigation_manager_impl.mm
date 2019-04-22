@@ -31,6 +31,7 @@ NavigationManager::WebLoadParams::~WebLoadParams() {}
 
 NavigationManager::WebLoadParams::WebLoadParams(const WebLoadParams& other)
     : url(other.url),
+      virtual_url(other.virtual_url),
       referrer(other.referrer),
       transition_type(other.transition_type),
       user_agent_override_option(other.user_agent_override_option),
@@ -41,6 +42,7 @@ NavigationManager::WebLoadParams::WebLoadParams(const WebLoadParams& other)
 NavigationManager::WebLoadParams& NavigationManager::WebLoadParams::operator=(
     const WebLoadParams& other) {
   url = other.url;
+  virtual_url = other.virtual_url;
   referrer = other.referrer;
   is_renderer_initiated = other.is_renderer_initiated;
   transition_type = other.transition_type;
@@ -67,18 +69,6 @@ NavigationItem* NavigationManagerImpl::GetLastCommittedNonRedirectedItem(
   }
 
   return nullptr;
-}
-
-/* static */
-bool NavigationManagerImpl::IsFragmentChangeNavigationBetweenUrls(
-    const GURL& existing_url,
-    const GURL& new_url) {
-  // TODO(crbug.com/749542): Current implementation incorrectly returns false
-  // if URL changes from http://google.com#foo to http://google.com.
-  if (existing_url == new_url || !new_url.has_ref())
-    return false;
-
-  return existing_url.EqualsIgnoringRef(new_url);
 }
 
 /* static */
@@ -137,6 +127,10 @@ void NavigationManagerImpl::SetBrowserState(BrowserState* browser_state) {
 
 void NavigationManagerImpl::DetachFromWebView() {}
 
+void NavigationManagerImpl::ApplyWKWebViewForwardHistoryClobberWorkaround() {
+  NOTREACHED();
+}
+
 void NavigationManagerImpl::RemoveTransientURLRewriters() {
   transient_url_rewriters_.clear();
 }
@@ -158,7 +152,7 @@ std::unique_ptr<NavigationItemImpl> NavigationManagerImpl::CreateNavigationItem(
 void NavigationManagerImpl::UpdatePendingItemUrl(const GURL& url) const {
   // If there is no pending item, navigation is probably happening within the
   // back forward history. Don't modify the item list.
-  NavigationItemImpl* pending_item = GetPendingItemImpl();
+  NavigationItemImpl* pending_item = GetPendingItemInCurrentOrRestoredSession();
   if (!pending_item || url == pending_item->GetURL())
     return;
 
@@ -178,11 +172,30 @@ NavigationItemImpl* NavigationManagerImpl::GetCurrentItemImpl() const {
   if (transient_item)
     return transient_item;
 
-  NavigationItemImpl* pending_item = GetPendingItemImpl();
+  NavigationItemImpl* pending_item = GetPendingItemInCurrentOrRestoredSession();
   if (pending_item)
     return pending_item;
 
-  return GetLastCommittedItemImpl();
+  return GetLastCommittedItemInCurrentOrRestoredSession();
+}
+
+NavigationItemImpl* NavigationManagerImpl::GetLastCommittedItemImpl() const {
+  // GetLastCommittedItemImpl() should return null while session restoration is
+  // in progress and real item after the first post-restore navigation is
+  // finished. IsRestoreSessionInProgress(), will return true until the first
+  // post-restore is started.
+  if (IsRestoreSessionInProgress())
+    return nullptr;
+
+  NavigationItemImpl* result = GetLastCommittedItemInCurrentOrRestoredSession();
+  if (!result || wk_navigation_util::IsRestoreSessionUrl(result->GetURL())) {
+    // Session restoration has completed, but the first post-restore navigation
+    // has not finished yet, so there is no committed URLs in the navigation
+    // stack.
+    return nullptr;
+  }
+
+  return result;
 }
 
 void NavigationManagerImpl::UpdateCurrentItemForReplaceState(
@@ -194,10 +207,6 @@ void NavigationManagerImpl::UpdateCurrentItemForReplaceState(
   current_item->SetSerializedStateObject(state_object);
   current_item->SetHasStateBeenReplaced(true);
   current_item->SetPostData(nil);
-  // If the change is to a committed item, notify interested parties.
-  if (current_item != GetPendingItem()) {
-    OnNavigationItemChanged();
-  }
 }
 
 void NavigationManagerImpl::GoToIndex(int index,
@@ -239,8 +248,29 @@ NavigationItem* NavigationManagerImpl::GetLastCommittedItem() const {
   return GetLastCommittedItemImpl();
 }
 
+int NavigationManagerImpl::GetLastCommittedItemIndex() const {
+  // GetLastCommittedItemIndex() should return -1 while session restoration is
+  // in progress and real item after the first post-restore navigation is
+  // finished. IsRestoreSessionInProgress(), will return true until the first
+  // post-restore is started.
+  if (IsRestoreSessionInProgress())
+    return -1;
+
+  NavigationItem* item = GetLastCommittedItemInCurrentOrRestoredSession();
+  if (!item || wk_navigation_util::IsRestoreSessionUrl(item->GetURL())) {
+    // Session restoration has completed, but the first post-restore
+    // navigation has not finished yet, so there is no committed URLs in the
+    // navigation stack.
+    return -1;
+  }
+
+  return GetLastCommittedItemIndexInCurrentOrRestoredSession();
+}
+
 NavigationItem* NavigationManagerImpl::GetPendingItem() const {
-  return GetPendingItemImpl();
+  if (IsRestoreSessionInProgress())
+    return nullptr;
+  return GetPendingItemInCurrentOrRestoredSession();
 }
 
 NavigationItem* NavigationManagerImpl::GetTransientItem() const {
@@ -262,9 +292,10 @@ void NavigationManagerImpl::LoadURLWithParams(
 
   // Mark pending item as created from hash change if necessary. This is needed
   // because window.hashchange message may not arrive on time.
-  NavigationItemImpl* pending_item = GetPendingItemImpl();
+  NavigationItemImpl* pending_item = GetPendingItemInCurrentOrRestoredSession();
   if (pending_item) {
-    NavigationItem* last_committed_item = GetLastCommittedItem();
+    NavigationItem* last_committed_item =
+        GetLastCommittedItemInCurrentOrRestoredSession();
     GURL last_committed_url = last_committed_item
                                   ? last_committed_item->GetVirtualURL()
                                   : GURL::EmptyGURL();
@@ -286,7 +317,8 @@ void NavigationManagerImpl::LoadURLWithParams(
   // cleared.
   DCHECK(!GetTransientItem());
   NavigationItemImpl* added_item =
-      pending_item ? pending_item : GetLastCommittedItemImpl();
+      pending_item ? pending_item
+                   : GetLastCommittedItemInCurrentOrRestoredSession();
   DCHECK(added_item);
   if (params.extra_headers)
     added_item->AddHttpRequestHeaders(params.extra_headers);
@@ -297,7 +329,7 @@ void NavigationManagerImpl::LoadURLWithParams(
     added_item->SetShouldSkipRepostFormConfirmation(true);
   }
 
-  FinishLoadURLWithParams();
+  FinishLoadURLWithParams(initiation_type);
 }
 
 void NavigationManagerImpl::AddTransientURLRewriter(
@@ -415,6 +447,18 @@ void NavigationManagerImpl::WillRestore(size_t item_count) {
   UMA_HISTOGRAM_COUNTS_100(kRestoreNavigationItemCount, item_count);
 }
 
+void NavigationManagerImpl::RewriteItemURLIfNecessary(
+    NavigationItem* item) const {
+  GURL url = item->GetURL();
+  if (web::BrowserURLRewriter::GetInstance()->RewriteURLIfNecessary(
+          &url, browser_state_)) {
+    // |url| must be set first for -SetVirtualURL to not no-op.
+    GURL virtual_url = item->GetURL();
+    item->SetURL(url);
+    item->SetVirtualURL(virtual_url);
+  }
+}
+
 std::unique_ptr<NavigationItemImpl>
 NavigationManagerImpl::CreateNavigationItemWithRewriters(
     const GURL& url,
@@ -467,7 +511,8 @@ NavigationManagerImpl::CreateNavigationItemWithRewriters(
 
 NavigationItem* NavigationManagerImpl::GetLastCommittedItemWithUserAgentType()
     const {
-  for (int index = GetLastCommittedItemIndex(); index >= 0; index--) {
+  for (int index = GetLastCommittedItemIndexInCurrentOrRestoredSession();
+       index >= 0; index--) {
     NavigationItem* item = GetItemAtIndex(index);
     if (wk_navigation_util::URLNeedsUserAgentType(item->GetURL()))
       return item;
@@ -479,8 +524,9 @@ void NavigationManagerImpl::FinishReload() {
   delegate_->Reload();
 }
 
-void NavigationManagerImpl::FinishLoadURLWithParams() {
-  delegate_->LoadCurrentItem();
+void NavigationManagerImpl::FinishLoadURLWithParams(
+    NavigationInitiationType initiation_type) {
+  delegate_->LoadCurrentItem(initiation_type);
 }
 
 bool NavigationManagerImpl::IsPlaceholderUrl(const GURL& url) const {

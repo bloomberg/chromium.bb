@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "base/bind.h"
+#include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -100,11 +102,11 @@ void PasswordsPrivateDelegateImpl::SendSavedPasswordsList() {
 }
 
 void PasswordsPrivateDelegateImpl::GetSavedPasswordsList(
-    const UiEntriesCallback& callback) {
+    UiEntriesCallback callback) {
   if (current_entries_initialized_)
-    callback.Run(current_entries_);
+    std::move(callback).Run(current_entries_);
   else
-    get_saved_passwords_list_callbacks_.push_back(callback);
+    get_saved_passwords_list_callbacks_.push_back(std::move(callback));
 }
 
 void PasswordsPrivateDelegateImpl::SendPasswordExceptionsList() {
@@ -120,6 +122,16 @@ void PasswordsPrivateDelegateImpl::GetPasswordExceptionsList(
     callback.Run(current_exceptions_);
   else
     get_password_exception_list_callbacks_.push_back(callback);
+}
+
+void PasswordsPrivateDelegateImpl::ChangeSavedPassword(
+    int id,
+    base::string16 new_username,
+    base::Optional<base::string16> new_password) {
+  const std::string* sort_key = password_id_generator_.TryGetSortKey(id);
+  DCHECK(sort_key);
+  password_manager_presenter_->ChangeSavedPassword(
+      *sort_key, std::move(new_username), std::move(new_password));
 }
 
 void PasswordsPrivateDelegateImpl::RemoveSavedPassword(int id) {
@@ -159,38 +171,37 @@ void PasswordsPrivateDelegateImpl::
 
 void PasswordsPrivateDelegateImpl::RequestShowPassword(
     int id,
+    PlaintextPasswordCallback callback,
     content::WebContents* web_contents) {
-  ExecuteFunction(
-      base::Bind(&PasswordsPrivateDelegateImpl::RequestShowPasswordInternal,
-                 base::Unretained(this), id, web_contents));
-}
-
-void PasswordsPrivateDelegateImpl::RequestShowPasswordInternal(
-    int id,
-    content::WebContents* web_contents) {
-  // Save |web_contents| so that the call to RequestShowPassword() below
-  // can use this value by calling GetNativeWindow(). Note: This is safe because
-  // GetNativeWindow() will only be called immediately from
-  // RequestShowPassword().
-  // TODO(stevenjb): Pass this directly to RequestShowPassword(); see
-  // crbug.com/495290.
+  // Save |web_contents| so that it can be used later when OsReauthCall() is
+  // called. Note: This is safe because the |web_contents| is used before
+  // exiting this method.
+  // TODO(crbug.com/495290): Pass the native window directly to the
+  // reauth-handling code.
   web_contents_ = web_contents;
   if (!password_access_authenticator_.EnsureUserIsAuthenticated(
           password_manager::ReauthPurpose::VIEW_PASSWORD)) {
+    std::move(callback).Run(base::nullopt);
     return;
   }
 
   // Request the password. When it is retrieved, ShowPassword() will be called.
   const std::string* sort_key = password_id_generator_.TryGetSortKey(id);
-  if (sort_key)
-    password_manager_presenter_->RequestShowPassword(*sort_key);
+  if (!sort_key) {
+    std::move(callback).Run(base::nullopt);
+    return;
+  }
+
+  password_manager_presenter_->RequestShowPassword(*sort_key,
+                                                   std::move(callback));
 }
 
 bool PasswordsPrivateDelegateImpl::OsReauthCall(
     password_manager::ReauthPurpose purpose) {
 #if defined(OS_WIN)
-  return password_manager_util_win::AuthenticateUser(GetNativeWindow(),
-                                                     purpose);
+  DCHECK(web_contents_);
+  return password_manager_util_win::AuthenticateUser(
+      web_contents_->GetTopLevelNativeWindow(), purpose);
 #elif defined(OS_MACOSX)
   return password_manager_util_mac::AuthenticateUser(purpose);
 #else
@@ -202,17 +213,6 @@ Profile* PasswordsPrivateDelegateImpl::GetProfile() {
   return profile_;
 }
 
-void PasswordsPrivateDelegateImpl::ShowPassword(
-    const std::string& sort_key,
-    const base::string16& password_value) {
-  auto* router = PasswordsPrivateEventRouterFactory::GetForProfile(profile_);
-  if (router) {
-    router->OnPlaintextPasswordFetched(
-        password_id_generator_.GenerateId(sort_key),
-        base::UTF16ToUTF8(password_value));
-  }
-}
-
 void PasswordsPrivateDelegateImpl::SetPasswordList(
     const std::vector<std::unique_ptr<autofill::PasswordForm>>& password_list) {
   // Create a list of PasswordUiEntry objects to send to observers.
@@ -220,16 +220,15 @@ void PasswordsPrivateDelegateImpl::SetPasswordList(
 
   for (const auto& form : password_list) {
     api::passwords_private::PasswordUiEntry entry;
-    entry.login_pair.urls = CreateUrlCollectionFromForm(*form);
-    entry.login_pair.username = base::UTF16ToUTF8(form->username_value);
+    entry.urls = CreateUrlCollectionFromForm(*form);
+    entry.username = base::UTF16ToUTF8(form->username_value);
     entry.id = password_id_generator_.GenerateId(
         password_manager::CreateSortKey(*form));
     entry.num_characters_in_password = form->password_value.length();
 
     if (!form->federation_origin.opaque()) {
       entry.federation_text.reset(new std::string(l10n_util::GetStringFUTF8(
-          IDS_PASSWORDS_VIA_FEDERATION,
-          base::UTF8ToUTF16(form->federation_origin.host()))));
+          IDS_PASSWORDS_VIA_FEDERATION, GetDisplayFederation(*form))));
     }
 
     current_entries_.push_back(std::move(entry));
@@ -243,8 +242,8 @@ void PasswordsPrivateDelegateImpl::SetPasswordList(
   current_entries_initialized_ = true;
   InitializeIfNecessary();
 
-  for (const auto& callback : get_saved_passwords_list_callbacks_)
-    callback.Run(current_entries_);
+  for (auto& callback : get_saved_passwords_list_callbacks_)
+    std::move(callback).Run(current_entries_);
   get_saved_passwords_list_callbacks_.clear();
 }
 
@@ -284,10 +283,11 @@ void PasswordsPrivateDelegateImpl::ImportPasswords(
 void PasswordsPrivateDelegateImpl::ExportPasswords(
     base::OnceCallback<void(const std::string&)> callback,
     content::WebContents* web_contents) {
-  // Save |web_contents| so that it can be used later when GetNativeWindow() is
+  // Save |web_contents| so that it can be used later when OsReauthCall() is
   // called. Note: This is safe because the |web_contents| is used before
-  // exiting this method. TODO(crbug.com/495290): Pass the native window
-  // directly to the reauth-handling code.
+  // exiting this method.
+  // TODO(crbug.com/495290): Pass the native window directly to the
+  // reauth-handling code.
   web_contents_ = web_contents;
   if (!password_access_authenticator_.ForceUserReauthentication(
           password_manager::ReauthPurpose::EXPORT)) {
@@ -309,13 +309,6 @@ PasswordsPrivateDelegateImpl::GetExportProgressStatus() {
   return ConvertStatus(password_manager_porter_->GetExportProgressStatus());
 }
 
-#if !defined(OS_ANDROID)
-gfx::NativeWindow PasswordsPrivateDelegateImpl::GetNativeWindow() const {
-  DCHECK(web_contents_);
-  return web_contents_->GetTopLevelNativeWindow();
-}
-#endif
-
 void PasswordsPrivateDelegateImpl::OnPasswordsExportProgress(
     password_manager::ExportProgressStatus status,
     const std::string& folder_name) {
@@ -329,6 +322,11 @@ void PasswordsPrivateDelegateImpl::OnPasswordsExportProgress(
 void PasswordsPrivateDelegateImpl::Shutdown() {
   password_manager_presenter_.reset();
   password_manager_porter_.reset();
+}
+
+SortKeyIdGenerator&
+PasswordsPrivateDelegateImpl::GetPasswordIdGeneratorForTesting() {
+  return password_id_generator_;
 }
 
 void PasswordsPrivateDelegateImpl::SetOsReauthCallForTesting(

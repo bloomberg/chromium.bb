@@ -2,12 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//services/catalog/public/tools/catalog.gni")
-import("//services/service_manager/public/cpp/service.gni")
-import("//services/service_manager/public/service_manifest.gni")
+import("//services/service_manager/public/cpp/service_executable.gni")
 import("//testing/test.gni")
 
-service("video_capture") {
+service_executable("video_capture") {
   sources = [
     "service_main.cc",
   ]
@@ -20,19 +18,18 @@ service("video_capture") {
   ]
 }
 
-service_manifest("manifest") {
-  name = "video_capture"
-  source = "service_manifest.json"
-}
-
 source_set("lib") {
   sources = [
+    "broadcasting_receiver.cc",
+    "broadcasting_receiver.h",
     "device_factory_media_to_mojo_adapter.cc",
     "device_factory_media_to_mojo_adapter.h",
     "device_factory_provider_impl.cc",
     "device_factory_provider_impl.h",
     "device_media_to_mojo_adapter.cc",
     "device_media_to_mojo_adapter.h",
+    "push_video_stream_subscription_impl.cc",
+    "push_video_stream_subscription_impl.h",
     "receiver_mojo_to_media_adapter.cc",
     "receiver_mojo_to_media_adapter.h",
     "scoped_access_permission_media_to_mojo_adapter.cc",
@@ -45,6 +42,10 @@ source_set("lib") {
     "testing_controls_impl.h",
     "texture_virtual_device_mojo_adapter.cc",
     "texture_virtual_device_mojo_adapter.h",
+    "video_source_impl.cc",
+    "video_source_impl.h",
+    "video_source_provider_impl.cc",
+    "video_source_provider_impl.h",
     "virtual_device_enabled_device_factory.cc",
     "virtual_device_enabled_device_factory.h",
   ]
@@ -65,12 +66,17 @@ source_set("lib") {
     "//services/video_capture/public/uma",
     "//services/ws/public/cpp/gpu:gpu",
   ]
+
+  if (is_chromeos) {
+    public_deps += [ "//media/capture/video/chromeos/mojo:cros_camera" ]
+  }
 }
 
 source_set("tests") {
   testonly = true
 
   sources = [
+    "broadcasting_receiver_unittest.cc",
     "device_media_to_mojo_adapter_unittest.cc",
     "test/device_factory_provider_connectortest.cc",
     "test/device_factory_provider_test.cc",
@@ -82,6 +88,7 @@ source_set("tests") {
     "test/fake_device_test.cc",
     "test/fake_device_test.h",
     "test/fake_device_unittest.cc",
+    "test/mock_device_shared_access_unittest.cc",
     "test/mock_device_test.cc",
     "test/mock_device_test.h",
     "test/mock_device_unittest.cc",
@@ -93,13 +100,13 @@ source_set("tests") {
 
   deps = [
     ":lib",
-    ":tests_catalog_source",
     ":video_capture",
     "//base/test:test_support",
     "//media/capture:test_support",
     "//media/capture/mojom:video_capture",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp/test:test_support",
+    "//services/video_capture/public/cpp:manifest",
     "//services/video_capture/public/cpp:mocks",
     "//testing/gmock",
     "//testing/gtest",
@@ -109,21 +116,4 @@ source_set("tests") {
   data_deps = [
     ":video_capture",
   ]
-}
-
-service_manifest("unittest_manifest") {
-  name = "video_capture_unittests"
-  source = "test/service_unittest_manifest.json"
-}
-
-catalog("tests_catalog") {
-  testonly = true
-  embedded_services = [ ":unittest_manifest" ]
-  standalone_services = [ ":manifest" ]
-}
-
-catalog_cpp_source("tests_catalog_source") {
-  testonly = true
-  catalog = ":tests_catalog"
-  generated_function_name = "video_capture::CreateTestCatalog"
 }

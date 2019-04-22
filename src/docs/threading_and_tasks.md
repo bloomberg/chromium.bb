@@ -15,6 +15,37 @@ objects. Instead, objects live on only one thread, we pass messages between
 threads for communication, and we use callback interfaces (implemented by
 message passing) for most cross-thread requests.
 
+### Nomenclature
+ * **Thread-unsafe**: The vast majority of types in Chromium are thread-unsafe
+   by design. Access to such types/methods must be synchronized, typically by
+   sequencing access through a single `base::SequencedTaskRunner` (this should
+   be enforced by a `SEQUENCE_CHECKER`) or via low-level synchronization (e.g.
+   locks -- but [prefer sequences](#Using-Sequences-Instead-of-Locks)).
+ * **Thread-affine**: Such types/methods need to be always accessed from the
+   same physical thread (i.e. from the same `base::SingleThreadTaskRunner`) and
+   should use `THREAD_CHECKER` to verify that they are. Short of using a
+   third-party API or having a leaf dependency which is thread-affine: there's
+   pretty much no reason for a type to be thread-affine in Chromium. Note that
+   `base::SingleThreadTaskRunner` is-a `base::SequencedTaskRunner` so
+   thread-affine is a subset of thread-unsafe. Thread-affine is also sometimes
+   referred to as **thread-hostile**.
+ * **Thread-safe**: Such types/methods can be safely accessed concurrently.
+ * **Thread-compatible**: Such types provide safe concurrent access to const
+   methods but require synchronization for non-const (or mixed const/non-const
+   access). Chromium doesn't expose reader-writer locks; as such, the only use
+   case for this is objects (typically globals) which are initialized once in a
+   thread-safe manner (either in the single-threaded phase of startup or lazily
+   through a thread-safe static-local-initialization paradigm a la
+   `base::NoDestructor`) and forever after immutable.
+ * **Immutable**: A subset of thread-compatible types which cannot be modified
+   after construction.
+ * **Sequence-friendly**: Such types/methods are thread-unsafe types which
+   support being invoked from a `base::SequencedTaskRunner`. Ideally this would
+   be the case for all thread-unsafe types but legacy code sometimes has
+   overzealous checks that enforce thread-affinity in mere thread-unsafe
+   scenarios. See [Prefer Sequences to Threads](#prefer-sequences-to-threads)
+   below for more details.
+
 ### Threads
 
 Every Chrome process has
@@ -70,9 +101,10 @@ availability (increased parallelism on bigger machines, avoids trashing
 resources on smaller machines).
 
 Many core APIs were recently made sequence-friendly (classes are rarely
-thread-affine -- i.e. only when using thread-local-storage or third-party APIs
-that do). But the codebase has long evolved assuming single-threaded contexts...
-If your class could run on a sequence but is blocked by an overzealous use of
+thread-affine -- i.e. only when using third-party APIs that are thread-affine;
+even ThreadLocalStorage has a SequenceLocalStorage equivalent). But the codebase
+has long evolved assuming single-threaded contexts... If your class could run on
+a sequence but is blocked by an overzealous use of
 ThreadChecker/ThreadTaskRunnerHandle/SingleThreadTaskRunner in a leaf
 dependency, consider fixing that dependency for everyone's benefit (or at the
 very least file a blocking bug against https://crbug.com/675631 and flag your
@@ -86,7 +118,7 @@ The discussion below covers all of these ways to execute tasks in details.
 
 ## Posting a Parallel Task
 
-### Direct Posting to the Task Scheduler
+### Direct Posting to the Thread Pool
 
 A task that can run on any thread and doesn’t have ordering or mutual exclusion
 requirements with other tasks should be posted using one of the
@@ -241,8 +273,7 @@ accessed on multiple threads.  If one thread updates it based on expensive
 computation or through disk access, then that slow work should be done without
 holding on to the lock.  Only when the result is available should the lock be
 used to swap in the new data.  An example of this is in PluginList::LoadPlugins
-([`content/common/plugin_list.cc`](https://cs.chromium.org/chromium/src/content/
-common/plugin_list.cc). If you must use locks,
+([`content/browser/plugin_list.cc`](https://cs.chromium.org/chromium/src/content/browser/plugin_list.cc)). If you must use locks,
 [here](https://www.chromium.org/developers/lock-and-condition-variable) are some
 best practices and pitfalls to avoid.
 
@@ -310,7 +341,9 @@ using is incorrectly thread-affine (i.e. using
 [`base::ThreadChecker`](https://cs.chromium.org/chromium/src/base/threading/thread_checker.h)
 when it’s merely thread-unsafe and should use
 [`base::SequenceChecker`](https://cs.chromium.org/chromium/src/base/sequence_checker.h)),
-please consider fixing it instead of making things worse by also making your API thread-affine.
+please consider
+[`fixing it`](threading_and_tasks_faq.md#How-to-migrate-from-SingleThreadTaskRunner-to-SequencedTaskRunner)
+instead of making things worse by also making your API thread-affine.
 ***
 
 ### Posting to the Current Thread
@@ -370,7 +403,7 @@ com_sta_task_runner->PostTask(FROM_HERE, base::BindOnce(&TaskBUsingCOMSTA));
 ## Annotating Tasks with TaskTraits
 
 [`TaskTraits`](https://cs.chromium.org/chromium/src/base/task/task_traits.h)
-encapsulate information about a task that helps the task scheduler make better
+encapsulate information about a task that helps the thread pool make better
 scheduling decisions.
 
 All `PostTask*()` functions in
@@ -380,7 +413,8 @@ overload that doesn’t take `TaskTraits` as argument is appropriate for tasks
 that:
 - Don’t block (ref. MayBlock and WithBaseSyncPrimitives).
 - Prefer inheriting the current priority to specifying their own.
-- Can either block shutdown or be skipped on shutdown (task scheduler is free to choose a fitting default).
+- Can either block shutdown or be skipped on shutdown (thread pool is free to
+  choose a fitting default).
 Tasks that don’t match this description must be posted with explicit TaskTraits.
 
 [`base/task/task_traits.h`](https://cs.chromium.org/chromium/src/base/task/task_traits.h)
@@ -398,7 +432,7 @@ Below are some examples of how to specify `TaskTraits`.
 // block shutdown or be skipped on shutdown.
 base::PostTask(FROM_HERE, base::BindOnce(...));
 
-// This task has the highest priority. The task scheduler will try to
+// This task has the highest priority. The thread pool will try to
 // run it before USER_VISIBLE and BEST_EFFORT tasks.
 base::PostTaskWithTraits(
     FROM_HERE, {base::TaskPriority::USER_BLOCKING},
@@ -563,6 +597,15 @@ To test code that uses `base::ThreadTaskRunnerHandle`,
 [`base::test::ScopedTaskEnvironment`](https://cs.chromium.org/chromium/src/base/test/scoped_task_environment.h)
 for the scope of the test.
 
+Tests can run the ScopedTaskEnvironment's message pump using a RunLoop, which
+can be made to run until Quit, or to execute ready-to-run tasks and immediately
+return.
+
+ScopedTaskEnvironment configures RunLoop::Run() to LOG(FATAL) if it hasn't been
+explicitly quit after TestTimeouts::action_timeout(). This is preferable to
+having the test hang if the code under test fails to trigger the RunLoop to
+quit. The timeout can be overridden with ScopedRunTimeoutForTest.
+
 ```cpp
 class MyTest : public testing::Test {
  public:
@@ -593,14 +636,14 @@ TEST(MyTest, MyTest) {
   run_loop.Run();
   // D and run_loop.QuitClosure() have been executed. E is still in the queue.
 
-  // Tasks posted to task scheduler run asynchronously as they are posted.
+  // Tasks posted to thread pool run asynchronously as they are posted.
   base::PostTaskWithTraits(FROM_HERE, base::TaskTraits(), base::BindOnce(&F));
   auto task_runner =
       base::CreateSequencedTaskRunnerWithTraits(base::TaskTraits());
   task_runner->PostTask(FROM_HERE, base::BindOnce(&G));
 
-  // To block until all tasks posted to task scheduler are done running:
-  base::TaskScheduler::GetInstance()->FlushForTesting();
+  // To block until all tasks posted to thread pool are done running:
+  base::ThreadPool::GetInstance()->FlushForTesting();
   // F and G have been executed.
 
   base::PostTaskWithTraitsAndReplyWithResult(
@@ -615,33 +658,33 @@ TEST(MyTest, MyTest) {
 }
 ```
 
-## Using TaskScheduler in a New Process
+## Using ThreadPool in a New Process
 
-TaskScheduler needs to be initialized in a process before the functions in
+ThreadPool needs to be initialized in a process before the functions in
 [`base/task/post_task.h`](https://cs.chromium.org/chromium/src/base/task/post_task.h)
-can be used. Initialization of TaskScheduler in the Chrome browser process and
+can be used. Initialization of ThreadPool in the Chrome browser process and
 child processes (renderer, GPU, utility) has already been taken care of. To use
-TaskScheduler in another process, initialize TaskScheduler early in the main
+ThreadPool in another process, initialize ThreadPool early in the main
 function:
 
 ```cpp
-// This initializes and starts TaskScheduler with default params.
-base::TaskScheduler::CreateAndStartWithDefaultParams(“process_name”);
+// This initializes and starts ThreadPool with default params.
+base::ThreadPool::CreateAndStartWithDefaultParams(“process_name”);
 // The base/task/post_task.h API can now be used. Tasks will be // scheduled as
 // they are posted.
 
-// This initializes TaskScheduler.
-base::TaskScheduler::Create(“process_name”);
+// This initializes ThreadPool.
+base::ThreadPool::Create(“process_name”);
 // The base/task/post_task.h API can now be used. No threads // will be created
 // and no tasks will be scheduled until after Start() is called.
-base::TaskScheduler::GetInstance()->Start(params);
-// TaskScheduler can now create threads and schedule tasks.
+base::ThreadPool::GetInstance()->Start(params);
+// ThreadPool can now create threads and schedule tasks.
 ```
 
-And shutdown TaskScheduler late in the main function:
+And shutdown ThreadPool late in the main function:
 
 ```cpp
-base::TaskScheduler::GetInstance()->Shutdown();
+base::ThreadPool::GetInstance()->Shutdown();
 // Tasks posted with TaskShutdownBehavior::BLOCK_SHUTDOWN and
 // tasks posted with TaskShutdownBehavior::SKIP_ON_SHUTDOWN that
 // have started to run before the Shutdown() call have now completed their

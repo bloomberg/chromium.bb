@@ -5,19 +5,24 @@
 #include "third_party/blink/renderer/core/page/spatial_navigation.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/web_keyboard_event.h"
 #include "third_party/blink/renderer/core/exported/web_remote_frame_impl.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
+#include "ui/events/keycodes/dom/dom_key.h"
 
 namespace blink {
 
 class SpatialNavigationTest : public RenderingTest {
  public:
   SpatialNavigationTest()
-      : RenderingTest(SingleChildLocalFrameClient::Create()) {}
+      : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()) {}
 
   LayoutRect TopOfVisualViewport() {
     LayoutRect visual_viewport = RootViewport(&GetFrame());
@@ -46,18 +51,18 @@ class SpatialNavigationTest : public RenderingTest {
   }
 
   void AssertUseSidesOfVisualViewport(Node* focus_node) {
-    EXPECT_EQ(
-        SearchOrigin(RootViewport(&GetFrame()), focus_node, kWebFocusTypeUp),
-        BottomOfVisualViewport());
-    EXPECT_EQ(
-        SearchOrigin(RootViewport(&GetFrame()), focus_node, kWebFocusTypeDown),
-        TopOfVisualViewport());
-    EXPECT_EQ(
-        SearchOrigin(RootViewport(&GetFrame()), focus_node, kWebFocusTypeLeft),
-        RightSideOfVisualViewport());
-    EXPECT_EQ(
-        SearchOrigin(RootViewport(&GetFrame()), focus_node, kWebFocusTypeRight),
-        LeftSideOfVisualViewport());
+    EXPECT_EQ(SearchOrigin(RootViewport(&GetFrame()), focus_node,
+                           SpatialNavigationDirection::kUp),
+              BottomOfVisualViewport());
+    EXPECT_EQ(SearchOrigin(RootViewport(&GetFrame()), focus_node,
+                           SpatialNavigationDirection::kDown),
+              TopOfVisualViewport());
+    EXPECT_EQ(SearchOrigin(RootViewport(&GetFrame()), focus_node,
+                           SpatialNavigationDirection::kLeft),
+              RightSideOfVisualViewport());
+    EXPECT_EQ(SearchOrigin(RootViewport(&GetFrame()), focus_node,
+                           SpatialNavigationDirection::kRight),
+              LeftSideOfVisualViewport());
   }
 
   void UpdateAllLifecyclePhases(LocalFrameView* frame_view) {
@@ -191,7 +196,8 @@ TEST_F(SpatialNavigationTest, StartAtVisibleFocusedElement) {
   SetBodyInnerHTML("<button id='b'>hello</button>");
   Element* b = GetDocument().getElementById("b");
 
-  EXPECT_EQ(SearchOrigin(RootViewport(&GetFrame()), b, kWebFocusTypeDown),
+  EXPECT_EQ(SearchOrigin(RootViewport(&GetFrame()), b,
+                         SpatialNavigationDirection::kDown),
             NodeRectInRootFrame(b, true));
 }
 
@@ -212,9 +218,9 @@ TEST_F(SpatialNavigationTest, StartAtVisibleFocusedScroller) {
       "</div>");
 
   Element* scroller = GetDocument().getElementById("scroller");
-  EXPECT_EQ(
-      SearchOrigin(RootViewport(&GetFrame()), scroller, kWebFocusTypeDown),
-      NodeRectInRootFrame(scroller, true));
+  EXPECT_EQ(SearchOrigin(RootViewport(&GetFrame()), scroller,
+                         SpatialNavigationDirection::kDown),
+            NodeRectInRootFrame(scroller, true));
 }
 
 TEST_F(SpatialNavigationTest, StartAtVisibleFocusedIframe) {
@@ -233,40 +239,48 @@ TEST_F(SpatialNavigationTest, StartAtVisibleFocusedIframe) {
       "<div>some text here</div>");
 
   Element* iframe = GetDocument().getElementById("iframe");
-  EXPECT_EQ(SearchOrigin(RootViewport(&GetFrame()), iframe, kWebFocusTypeDown),
+  EXPECT_EQ(SearchOrigin(RootViewport(&GetFrame()), iframe,
+                         SpatialNavigationDirection::kDown),
             NodeRectInRootFrame(iframe, true));
 }
 
 TEST_F(SpatialNavigationTest, StartAtTopWhenGoingDownwardsWithoutFocus) {
   EXPECT_EQ(LayoutRect(0, 0, 111, 0),
-            SearchOrigin({0, 0, 111, 222}, nullptr, kWebFocusTypeDown));
+            SearchOrigin({0, 0, 111, 222}, nullptr,
+                         SpatialNavigationDirection::kDown));
 
-  EXPECT_EQ(SearchOrigin(RootViewport(&GetFrame()), nullptr, kWebFocusTypeDown),
+  EXPECT_EQ(SearchOrigin(RootViewport(&GetFrame()), nullptr,
+                         SpatialNavigationDirection::kDown),
             TopOfVisualViewport());
 }
 
 TEST_F(SpatialNavigationTest, StartAtBottomWhenGoingUpwardsWithoutFocus) {
-  EXPECT_EQ(LayoutRect(0, 222, 111, 0),
-            SearchOrigin({0, 0, 111, 222}, nullptr, kWebFocusTypeUp));
+  EXPECT_EQ(
+      LayoutRect(0, 222, 111, 0),
+      SearchOrigin({0, 0, 111, 222}, nullptr, SpatialNavigationDirection::kUp));
 
-  EXPECT_EQ(SearchOrigin(RootViewport(&GetFrame()), nullptr, kWebFocusTypeUp),
+  EXPECT_EQ(SearchOrigin(RootViewport(&GetFrame()), nullptr,
+                         SpatialNavigationDirection::kUp),
             BottomOfVisualViewport());
 }
 
 TEST_F(SpatialNavigationTest, StartAtLeftSideWhenGoingEastWithoutFocus) {
   EXPECT_EQ(LayoutRect(0, 0, 0, 222),
-            SearchOrigin({0, 0, 111, 222}, nullptr, kWebFocusTypeRight));
+            SearchOrigin({0, 0, 111, 222}, nullptr,
+                         SpatialNavigationDirection::kRight));
 
-  EXPECT_EQ(
-      SearchOrigin(RootViewport(&GetFrame()), nullptr, kWebFocusTypeRight),
-      LeftSideOfVisualViewport());
+  EXPECT_EQ(SearchOrigin(RootViewport(&GetFrame()), nullptr,
+                         SpatialNavigationDirection::kRight),
+            LeftSideOfVisualViewport());
 }
 
 TEST_F(SpatialNavigationTest, StartAtRightSideWhenGoingWestWithoutFocus) {
   EXPECT_EQ(LayoutRect(111, 0, 0, 222),
-            SearchOrigin({0, 0, 111, 222}, nullptr, kWebFocusTypeLeft));
+            SearchOrigin({0, 0, 111, 222}, nullptr,
+                         SpatialNavigationDirection::kLeft));
 
-  EXPECT_EQ(SearchOrigin(RootViewport(&GetFrame()), nullptr, kWebFocusTypeLeft),
+  EXPECT_EQ(SearchOrigin(RootViewport(&GetFrame()), nullptr,
+                         SpatialNavigationDirection::kLeft),
             RightSideOfVisualViewport());
 }
 
@@ -279,7 +293,8 @@ TEST_F(SpatialNavigationTest,
   Element* b = GetDocument().getElementById("b");
   EXPECT_TRUE(IsOffscreen(b));
 
-  EXPECT_EQ(SearchOrigin(RootViewport(&GetFrame()), b, kWebFocusTypeUp),
+  EXPECT_EQ(SearchOrigin(RootViewport(&GetFrame()), b,
+                         SpatialNavigationDirection::kUp),
             BottomOfVisualViewport());
 }
 
@@ -315,27 +330,31 @@ TEST_F(SpatialNavigationTest, StartAtContainersEdge) {
   // Go down.
   LayoutRect container_top_edge = container_box;
   container_top_edge.SetHeight(LayoutUnit(0));
-  EXPECT_EQ(SearchOrigin(RootViewport(&GetFrame()), b, kWebFocusTypeDown),
+  EXPECT_EQ(SearchOrigin(RootViewport(&GetFrame()), b,
+                         SpatialNavigationDirection::kDown),
             container_top_edge);
 
   // Go up.
   LayoutRect container_bottom_edge = container_box;
   container_bottom_edge.SetY(container_bottom_edge.MaxX());
   container_bottom_edge.SetHeight(LayoutUnit(0));
-  EXPECT_EQ(SearchOrigin(RootViewport(&GetFrame()), b, kWebFocusTypeUp),
+  EXPECT_EQ(SearchOrigin(RootViewport(&GetFrame()), b,
+                         SpatialNavigationDirection::kUp),
             container_bottom_edge);
 
   // Go right.
   LayoutRect container_leftmost_edge = container_box;
   container_leftmost_edge.SetWidth(LayoutUnit(0));
-  EXPECT_EQ(SearchOrigin(RootViewport(&GetFrame()), b, kWebFocusTypeRight),
+  EXPECT_EQ(SearchOrigin(RootViewport(&GetFrame()), b,
+                         SpatialNavigationDirection::kRight),
             container_leftmost_edge);
 
   // Go left.
   LayoutRect container_rightmost_edge = container_box;
   container_rightmost_edge.SetX(container_bottom_edge.MaxX());
   container_rightmost_edge.SetWidth(LayoutUnit(0));
-  EXPECT_EQ(SearchOrigin(RootViewport(&GetFrame()), b, kWebFocusTypeLeft),
+  EXPECT_EQ(SearchOrigin(RootViewport(&GetFrame()), b,
+                         SpatialNavigationDirection::kLeft),
             container_rightmost_edge);
 }
 
@@ -364,9 +383,11 @@ TEST_F(SpatialNavigationTest,
   EXPECT_TRUE(IsOffscreen(scroller));
   EXPECT_TRUE(IsOffscreen(b));
 
-  EXPECT_EQ(SearchOrigin(RootViewport(&GetFrame()), b, kWebFocusTypeUp),
+  EXPECT_EQ(SearchOrigin(RootViewport(&GetFrame()), b,
+                         SpatialNavigationDirection::kUp),
             BottomOfVisualViewport());
-  EXPECT_EQ(SearchOrigin(RootViewport(&GetFrame()), b, kWebFocusTypeDown),
+  EXPECT_EQ(SearchOrigin(RootViewport(&GetFrame()), b,
+                         SpatialNavigationDirection::kDown),
             TopOfVisualViewport());
 }
 
@@ -414,7 +435,8 @@ TEST_F(SpatialNavigationTest, PartiallyVisible) {
 
   LayoutRect button_in_root_frame = NodeRectInRootFrame(b, true);
 
-  EXPECT_EQ(SearchOrigin(RootViewport(&GetFrame()), b, kWebFocusTypeUp),
+  EXPECT_EQ(SearchOrigin(RootViewport(&GetFrame()), b,
+                         SpatialNavigationDirection::kUp),
             Intersection(button_in_root_frame, RootViewport(&GetFrame())));
 
   // Do some scrolling.
@@ -428,7 +450,8 @@ TEST_F(SpatialNavigationTest, PartiallyVisible) {
 
   // <button>'s top is clipped.
   EXPECT_FALSE(IsOffscreen(b));  // <button> is not completely offscreen.
-  EXPECT_EQ(SearchOrigin(RootViewport(&GetFrame()), b, kWebFocusTypeUp),
+  EXPECT_EQ(SearchOrigin(RootViewport(&GetFrame()), b,
+                         SpatialNavigationDirection::kUp),
             Intersection(button_after_scroll, RootViewport(&GetFrame())));
 }
 
@@ -540,36 +563,36 @@ TEST_F(SpatialNavigationTest, PartiallyVisibleIFrame) {
 
   // When searching downwards we start at activeElement's
   // container's (here: the iframe's) topmost visible edge.
-  EXPECT_EQ(
-      SearchOrigin(RootViewport(&GetFrame()), child_element, kWebFocusTypeDown),
-      OppositeEdge(kWebFocusTypeDown,
-                   Intersection(iframe, RootViewport(&GetFrame()))));
+  EXPECT_EQ(SearchOrigin(RootViewport(&GetFrame()), child_element,
+                         SpatialNavigationDirection::kDown),
+            OppositeEdge(SpatialNavigationDirection::kDown,
+                         Intersection(iframe, RootViewport(&GetFrame()))));
 
   // When searching upwards we start at activeElement's
   // container's (here: the iframe's) bottommost visible edge.
-  EXPECT_EQ(
-      SearchOrigin(RootViewport(&GetFrame()), child_element, kWebFocusTypeUp),
-      OppositeEdge(kWebFocusTypeUp,
-                   Intersection(iframe, RootViewport(&GetFrame()))));
+  EXPECT_EQ(SearchOrigin(RootViewport(&GetFrame()), child_element,
+                         SpatialNavigationDirection::kUp),
+            OppositeEdge(SpatialNavigationDirection::kUp,
+                         Intersection(iframe, RootViewport(&GetFrame()))));
 
   // When searching eastwards, "to the right", we start at activeElement's
   // container's (here: the iframe's) leftmost visible edge.
   EXPECT_EQ(SearchOrigin(RootViewport(&GetFrame()), child_element,
-                         kWebFocusTypeRight),
-            OppositeEdge(kWebFocusTypeRight,
+                         SpatialNavigationDirection::kRight),
+            OppositeEdge(SpatialNavigationDirection::kRight,
                          Intersection(iframe, RootViewport(&GetFrame()))));
 
   // When searching westwards, "to the left", we start at activeElement's
   // container's (here: the iframe's) rightmost visible edge.
-  EXPECT_EQ(
-      SearchOrigin(RootViewport(&GetFrame()), child_element, kWebFocusTypeLeft),
-      OppositeEdge(kWebFocusTypeLeft,
-                   Intersection(iframe, RootViewport(&GetFrame()))));
+  EXPECT_EQ(SearchOrigin(RootViewport(&GetFrame()), child_element,
+                         SpatialNavigationDirection::kLeft),
+            OppositeEdge(SpatialNavigationDirection::kLeft,
+                         Intersection(iframe, RootViewport(&GetFrame()))));
 }
 
 TEST_F(SpatialNavigationTest, BottomOfPinchedViewport) {
-  LayoutRect origin =
-      SearchOrigin(RootViewport(&GetFrame()), nullptr, kWebFocusTypeUp);
+  LayoutRect origin = SearchOrigin(RootViewport(&GetFrame()), nullptr,
+                                   SpatialNavigationDirection::kUp);
   EXPECT_EQ(origin.Height(), 0);
   EXPECT_EQ(origin.Width(), GetFrame().View()->Width());
   EXPECT_EQ(origin.X(), 0);
@@ -580,7 +603,8 @@ TEST_F(SpatialNavigationTest, BottomOfPinchedViewport) {
   VisualViewport& visual_viewport = GetFrame().GetPage()->GetVisualViewport();
   visual_viewport.SetScale(2);
   visual_viewport.SetLocation(FloatPoint(200, 200));
-  origin = SearchOrigin(RootViewport(&GetFrame()), nullptr, kWebFocusTypeUp);
+  origin = SearchOrigin(RootViewport(&GetFrame()), nullptr,
+                        SpatialNavigationDirection::kUp);
   EXPECT_EQ(origin.Height(), 0);
   EXPECT_LT(origin.Width(), GetFrame().View()->Width());
   EXPECT_GT(origin.X(), 0);
@@ -589,8 +613,8 @@ TEST_F(SpatialNavigationTest, BottomOfPinchedViewport) {
 }
 
 TEST_F(SpatialNavigationTest, TopOfPinchedViewport) {
-  LayoutRect origin =
-      SearchOrigin(RootViewport(&GetFrame()), nullptr, kWebFocusTypeDown);
+  LayoutRect origin = SearchOrigin(RootViewport(&GetFrame()), nullptr,
+                                   SpatialNavigationDirection::kDown);
   EXPECT_EQ(origin.Height(), 0);
   EXPECT_EQ(origin.Width(), GetFrame().View()->Width());
   EXPECT_EQ(origin.X(), 0);
@@ -601,7 +625,8 @@ TEST_F(SpatialNavigationTest, TopOfPinchedViewport) {
   VisualViewport& visual_viewport = GetFrame().GetPage()->GetVisualViewport();
   visual_viewport.SetScale(2);
   visual_viewport.SetLocation(FloatPoint(200, 200));
-  origin = SearchOrigin(RootViewport(&GetFrame()), nullptr, kWebFocusTypeDown);
+  origin = SearchOrigin(RootViewport(&GetFrame()), nullptr,
+                        SpatialNavigationDirection::kDown);
   EXPECT_EQ(origin.Height(), 0);
   EXPECT_LT(origin.Width(), GetFrame().View()->Width());
   EXPECT_GT(origin.X(), 0);
@@ -611,7 +636,7 @@ TEST_F(SpatialNavigationTest, TopOfPinchedViewport) {
 
 TEST_F(SpatialNavigationTest, HasRemoteFrame) {
   frame_test_helpers::WebViewHelper helper;
-  helper.InitializeAndLoad("about:blank", nullptr, nullptr, nullptr, nullptr);
+  helper.InitializeAndLoad("about:blank");
 
   WebViewImpl* webview = helper.GetWebView();
   WebURL base_url = url_test_helpers::ToKURL("http://www.test.com/");
@@ -631,6 +656,56 @@ TEST_F(SpatialNavigationTest, HasRemoteFrame) {
   webview->MainFrameImpl()->FirstChild()->Swap(
       frame_test_helpers::CreateRemote());
   EXPECT_TRUE(HasRemoteFrame(iframe));
+}
+
+class SpatialNavigationWithFocuslessModeTest
+    : public SpatialNavigationTest,
+      public ::testing::WithParamInterface<bool> {
+ public:
+  SpatialNavigationWithFocuslessModeTest() : use_focusless_mode_(GetParam()) {}
+
+  void SetUp() override {
+    SpatialNavigationTest::SetUp();
+    GetDocument().GetSettings()->SetSpatialNavigationEnabled(true);
+  }
+
+ private:
+  ScopedFocuslessSpatialNavigationForTest use_focusless_mode_;
+};
+
+INSTANTIATE_TEST_SUITE_P(,
+                         SpatialNavigationWithFocuslessModeTest,
+                         ::testing::Bool());
+
+TEST_P(SpatialNavigationWithFocuslessModeTest, PressEnterKeyActiveElement) {
+  SetBodyInnerHTML("<button id='b'>hello</button>");
+
+  Element* b = GetDocument().getElementById("b");
+
+  // Move interest to button.
+  WebKeyboardEvent arrow_down{WebInputEvent::kRawKeyDown,
+                              WebInputEvent::kNoModifiers,
+                              WebInputEvent::GetStaticTimeStampForTests()};
+  arrow_down.dom_key = ui::DomKey::ARROW_DOWN;
+  GetDocument().GetFrame()->GetEventHandler().KeyEvent(arrow_down);
+
+  arrow_down.SetType(WebInputEvent::kKeyUp);
+  GetDocument().GetFrame()->GetEventHandler().KeyEvent(arrow_down);
+
+  EXPECT_FALSE(b->IsActive());
+
+  // Enter key down add :active state to element.
+  WebKeyboardEvent enter{WebInputEvent::kRawKeyDown,
+                         WebInputEvent::kNoModifiers,
+                         WebInputEvent::GetStaticTimeStampForTests()};
+  enter.dom_key = ui::DomKey::ENTER;
+  GetDocument().GetFrame()->GetEventHandler().KeyEvent(enter);
+  EXPECT_TRUE(b->IsActive());
+
+  // Enter key up remove :active state to element.
+  enter.SetType(WebInputEvent::kKeyUp);
+  GetDocument().GetFrame()->GetEventHandler().KeyEvent(enter);
+  EXPECT_FALSE(b->IsActive());
 }
 
 }  // namespace blink

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<title>This tests that a mouse click event will not cause a media element to gain focus.</title>
+<title>This tests that a mouse click event will cause a media element to gain focus.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <script src="media-controls.js"></script>
@@ -14,10 +14,10 @@ test(function() {
     eventSender.mouseMoveTo(x, y);
     eventSender.mouseDown();
     eventSender.mouseUp();
-    assert_not_equals(document.activeElement, video);
+    assert_equals(document.activeElement, video);
 
     // Click on the play button.
     mediaControlsButton(video, "play-button").click();
-    assert_not_equals(document.activeElement, video);
+    assert_equals(document.activeElement, video);
 });
 </script>

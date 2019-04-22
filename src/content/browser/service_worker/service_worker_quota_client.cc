@@ -22,7 +22,7 @@ void ReportOrigins(QuotaClient::GetOriginsCallback callback,
     if (restrict_on_host && info.origin.host() != host) {
       continue;
     }
-    origins.insert(url::Origin::Create(info.origin));
+    origins.insert(info.origin);
   }
   std::move(callback).Run(origins);
 }
@@ -36,7 +36,7 @@ void FindUsageForOrigin(QuotaClient::GetUsageCallback callback,
                         const GURL& origin,
                         const std::vector<StorageUsageInfo>& usage_info) {
   for (const auto& info : usage_info) {
-    if (info.origin == origin) {
+    if (info.origin.GetURL() == origin) {
       std::move(callback).Run(info.total_size_bytes);
       return;
     }
@@ -103,6 +103,16 @@ void ServiceWorkerQuotaClient::DeleteOriginData(const url::Origin& origin,
   context_->DeleteForOrigin(
       origin.GetURL(),
       base::BindOnce(&ReportToQuotaStatus, std::move(callback)));
+}
+
+void ServiceWorkerQuotaClient::PerformStorageCleanup(
+    blink::mojom::StorageType type,
+    base::OnceClosure callback) {
+  if (type != StorageType::kTemporary) {
+    std::move(callback).Run();
+    return;
+  }
+  context_->PerformStorageCleanup(std::move(callback));
 }
 
 bool ServiceWorkerQuotaClient::DoesSupport(StorageType type) const {

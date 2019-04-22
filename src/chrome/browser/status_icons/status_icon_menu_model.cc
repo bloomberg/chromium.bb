@@ -25,12 +25,6 @@ struct StatusIconMenuModel::ItemState {
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// StatusIconMenuModel::Delegate, public:
-
-void StatusIconMenuModel::Delegate::CommandIdHighlighted(int command_id) {
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // StatusIconMenuModel, public:
 
 StatusIconMenuModel::StatusIconMenuModel(Delegate* delegate)
@@ -168,11 +162,6 @@ void StatusIconMenuModel::NotifyMenuStateChanged() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // StatusIconMenuModel, private:
-
-void StatusIconMenuModel::CommandIdHighlighted(int command_id) {
-  if (delegate_)
-    delegate_->CommandIdHighlighted(command_id);
-}
 
 void StatusIconMenuModel::ExecuteCommand(int command_id, int event_flags) {
   if (delegate_)

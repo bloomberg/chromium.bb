@@ -11,6 +11,7 @@
 #include "base/time/time.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/test/fuzzer/proto/sequence_manager_test_description.pb.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace base {
 namespace sequence_manager {
@@ -25,6 +26,8 @@ class ThreadPoolManager;
 // by the |thread_pool_manager_| should live for the scope of the main thread
 // entry function i.e RunTest.
 class PLATFORM_EXPORT SequenceManagerFuzzerProcessor {
+  USING_FAST_MALLOC(SequenceManagerFuzzerProcessor);
+
  public:
   // Public interface used to parse the fuzzer's test description and
   // run the relevant APIs.

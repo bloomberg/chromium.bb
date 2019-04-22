@@ -133,7 +133,7 @@ public class ConfirmManagedSyncDataDialog extends DialogFragment
         String positiveButton = getArguments().getString(KEY_POSITIVE_BUTTON);
         String negativeButton = getArguments().getString(KEY_NEGATIVE_BUTTON);
 
-        return new AlertDialog.Builder(getActivity(), R.style.SigninAlertDialogTheme)
+        return new AlertDialog.Builder(getActivity(), R.style.Theme_Chromium_AlertDialog)
                 .setTitle(title)
                 .setMessage(description)
                 .setPositiveButton(positiveButton, this)

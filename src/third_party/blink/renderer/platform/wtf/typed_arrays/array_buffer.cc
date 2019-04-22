@@ -82,6 +82,19 @@ bool ArrayBuffer::ShareContentsWith(ArrayBufferContents& result) {
   return true;
 }
 
+bool ArrayBuffer::ShareNonSharedForInternalUse(ArrayBufferContents& result) {
+  DCHECK(!IsShared());
+  scoped_refptr<ArrayBuffer> keep_alive(this);
+
+  if (!contents_.Data()) {
+    result.Neuter();
+    return false;
+  }
+
+  contents_.ShareNonSharedForInternalUse(result);
+  return true;
+}
+
 void ArrayBuffer::AddView(ArrayBufferView* view) {
   view->buffer_ = this;
   view->prev_view_ = nullptr;

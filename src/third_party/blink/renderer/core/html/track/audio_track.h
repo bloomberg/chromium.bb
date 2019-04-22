@@ -21,12 +21,18 @@ class CORE_EXPORT AudioTrack final : public ScriptWrappable, public TrackBase {
                             const AtomicString& label,
                             const AtomicString& language,
                             bool enabled) {
-    return new AudioTrack(id, IsValidKindKeyword(kind) ? kind : g_empty_atom,
-                          label, language, enabled);
+    return MakeGarbageCollected<AudioTrack>(
+        id, IsValidKindKeyword(kind) ? kind : g_empty_atom, label, language,
+        enabled);
   }
 
+  AudioTrack(const String& id,
+             const AtomicString& kind,
+             const AtomicString& label,
+             const AtomicString& language,
+             bool enabled);
   ~AudioTrack() override;
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   bool enabled() const { return enabled_; }
   void setEnabled(bool);
@@ -42,12 +48,6 @@ class CORE_EXPORT AudioTrack final : public ScriptWrappable, public TrackBase {
   static bool IsValidKindKeyword(const String&);
 
  private:
-  AudioTrack(const String& id,
-             const AtomicString& kind,
-             const AtomicString& label,
-             const AtomicString& language,
-             bool enabled);
-
   bool enabled_;
 };
 

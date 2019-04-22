@@ -13,19 +13,25 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
-#include "chrome/browser/ui/aura/accessibility/ax_tree_source_aura.h"
-#include "ui/accessibility/ax_host_delegate.h"
+#include "ui/accessibility/ax_action_handler.h"
 #include "ui/accessibility/ax_tree_serializer.h"
 #include "ui/views/accessibility/ax_aura_obj_cache.h"
 #include "ui/views/accessibility/ax_event_observer.h"
+#include "ui/views/accessibility/ax_tree_source_views.h"
+
+class AXRootObjWrapper;
 
 namespace base {
 template <typename T>
-struct DefaultSingletonTraits;
+class NoDestructor;
 }  // namespace base
 
+namespace ui {
+class AXEventBundleSink;
+}
+
 namespace views {
+class AccessibilityAlertWindow;
 class AXAuraObjWrapper;
 class View;
 }  // namespace views
@@ -33,10 +39,8 @@ class View;
 using AuraAXTreeSerializer = ui::
     AXTreeSerializer<views::AXAuraObjWrapper*, ui::AXNodeData, ui::AXTreeData>;
 
-struct ExtensionMsg_AccessibilityEventBundleParams;
-
 // Manages a tree of automation nodes.
-class AutomationManagerAura : public ui::AXHostDelegate,
+class AutomationManagerAura : public ui::AXActionHandler,
                               public views::AXAuraObjCache::Delegate,
                               public views::AXEventObserver {
  public:
@@ -54,7 +58,7 @@ class AutomationManagerAura : public ui::AXHostDelegate,
 
   void HandleAlert(const std::string& text);
 
-  // AXHostDelegate implementation.
+  // AXActionHandler implementation.
   void PerformAction(const ui::AXActionData& data) override;
 
   // views::AXAuraObjCache::Delegate implementation.
@@ -65,20 +69,22 @@ class AutomationManagerAura : public ui::AXHostDelegate,
   // views::AXEventObserver:
   void OnViewEvent(views::View* view, ax::mojom::Event event_type) override;
 
-  void set_event_bundle_callback_for_testing(
-      base::RepeatingCallback<void(ExtensionMsg_AccessibilityEventBundleParams)>
-          callback) {
-    event_bundle_callback_for_testing_ = callback;
+  void set_event_bundle_sink(ui::AXEventBundleSink* sink) {
+    event_bundle_sink_ = sink;
   }
 
- protected:
-  AutomationManagerAura();
-  ~AutomationManagerAura() override;
+  void set_ax_aura_obj_cache_for_testing(
+      std::unique_ptr<views::AXAuraObjCache> cache) {
+    cache_ = std::move(cache);
+  }
 
  private:
-  friend struct base::DefaultSingletonTraits<AutomationManagerAura>;
+  friend class base::NoDestructor<AutomationManagerAura>;
 
   FRIEND_TEST_ALL_PREFIXES(AutomationManagerAuraBrowserTest, WebAppearsOnce);
+
+  AutomationManagerAura();
+  ~AutomationManagerAura() override;
 
   void SendEventOnObjectById(int32_t id, ax::mojom::Event event_type);
 
@@ -91,13 +97,20 @@ class AutomationManagerAura : public ui::AXHostDelegate,
 
   void PerformHitTest(const ui::AXActionData& data);
 
+  // Logs an error with details about a serialization failure.
+  void OnSerializeFailure(ax::mojom::Event event_type,
+                          const ui::AXTreeUpdate& update);
+
   // Whether automation support for views is enabled.
   bool enabled_;
+
+  // Root object representing the entire desktop. Must outlive |current_tree_|.
+  std::unique_ptr<AXRootObjWrapper> desktop_root_;
 
   // Holds the active views-based accessibility tree. A tree currently consists
   // of all views descendant to a |Widget| (see |AXTreeSourceViews|).
   // A tree becomes active when an event is fired on a descendant view.
-  std::unique_ptr<AXTreeSourceAura> current_tree_;
+  std::unique_ptr<views::AXTreeSourceViews> current_tree_;
 
   // Serializes incremental updates on the currently active tree
   // |current_tree_|.
@@ -108,10 +121,13 @@ class AutomationManagerAura : public ui::AXHostDelegate,
   std::vector<std::pair<views::AXAuraObjWrapper*, ax::mojom::Event>>
       pending_events_;
 
-  base::RepeatingCallback<void(ExtensionMsg_AccessibilityEventBundleParams)>
-      event_bundle_callback_for_testing_;
+  // The handler for AXEvents (e.g. the extensions subsystem in production, or
+  // a fake for tests).
+  ui::AXEventBundleSink* event_bundle_sink_ = nullptr;
 
-  base::WeakPtrFactory<AutomationManagerAura> weak_ptr_factory_;
+  std::unique_ptr<views::AccessibilityAlertWindow> alert_window_;
+
+  std::unique_ptr<views::AXAuraObjCache> cache_;
 
   DISALLOW_COPY_AND_ASSIGN(AutomationManagerAura);
 };

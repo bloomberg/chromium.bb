@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
@@ -18,7 +19,7 @@
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/chrome_url_util.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
-#import "ios/chrome/browser/tabs/legacy_tab_helper.h"
+#import "ios/chrome/browser/u2f/u2f_tab_helper.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
@@ -111,6 +112,7 @@ class AppLauncherTabHelperTest : public PlatformTest {
         delegate_([[FakeAppLauncherTabHelperDelegate alloc] init]) {
     AppLauncherTabHelper::CreateForWebState(&web_state_, abuse_detector_,
                                             delegate_);
+    U2FTabHelper::CreateForWebState(&web_state_);
     // Allow is the default policy for this test.
     abuse_detector_.policy = ExternalAppLaunchPolicyAllow;
     auto navigation_manager = std::make_unique<FakeNavigationManager>();
@@ -140,7 +142,6 @@ class AppLauncherTabHelperTest : public PlatformTest {
         chrome_browser_state_.get(),
         base::BindRepeating(&BuildReadingListModel));
     TabIdTabHelper::CreateForWebState(&web_state_);
-    LegacyTabHelper::CreateForWebState(&web_state_);
     is_reading_list_initialized_ = true;
   }
 
@@ -309,7 +310,6 @@ TEST_F(AppLauncherTabHelperTest, InsecureUrls) {
 TEST_F(AppLauncherTabHelperTest, U2FUrls) {
   // Add required tab helpers for the U2F check.
   TabIdTabHelper::CreateForWebState(&web_state_);
-  LegacyTabHelper::CreateForWebState(&web_state_);
   std::unique_ptr<web::NavigationItem> item = web::NavigationItem::Create();
 
   // "u2f-x-callback" scheme should only be created by the browser. External

@@ -10,14 +10,21 @@
 
 #include "call/rampup_tests.h"
 
+#include <memory>
+
+#include "absl/memory/memory.h"
+#include "api/task_queue/default_task_queue_factory.h"
+#include "api/task_queue/task_queue_factory.h"
 #include "call/fake_network_pipe.h"
 #include "logging/rtc_event_log/output/rtc_event_log_output_file.h"
+#include "logging/rtc_event_log/rtc_event_log_factory.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/flags.h"
 #include "rtc_base/logging.h"
 #include "rtc_base/platform_thread.h"
-#include "rtc_base/stringencode.h"
+#include "rtc_base/string_encode.h"
 #include "test/encoder_settings.h"
+#include "test/field_trial.h"
 #include "test/gtest.h"
 #include "test/testsupport/perf_test.h"
 
@@ -440,7 +447,7 @@ void RampUpDownUpTester::PollStats() {
     bool suspended = false;
     if (num_video_streams_ > 0) {
       webrtc::VideoSendStream::Stats stats = send_stream_->GetStats();
-      for (auto it : stats.substreams) {
+      for (const auto& it : stats.substreams) {
         transmit_bitrate_bps += it.second.total_bitrate_bps;
       }
       suspended = stats.suspended;
@@ -573,11 +580,15 @@ void RampUpDownUpTester::EvolveTestState(int bitrate_bps, bool suspended) {
 
 class RampUpTest : public test::CallTest {
  public:
-  RampUpTest() {
+  RampUpTest()
+      : task_queue_factory_(CreateDefaultTaskQueueFactory()),
+        rtc_event_log_factory_(task_queue_factory_.get()) {
     std::string dump_name(FLAG_ramp_dump_name);
     if (!dump_name.empty()) {
-      send_event_log_ = RtcEventLog::Create(RtcEventLog::EncodingType::Legacy);
-      recv_event_log_ = RtcEventLog::Create(RtcEventLog::EncodingType::Legacy);
+      send_event_log_ = rtc_event_log_factory_.CreateRtcEventLog(
+          RtcEventLog::EncodingType::Legacy);
+      recv_event_log_ = rtc_event_log_factory_.CreateRtcEventLog(
+          RtcEventLog::EncodingType::Legacy);
       bool event_log_started =
           send_event_log_->StartLogging(
               absl::make_unique<RtcEventLogOutputFile>(
@@ -590,6 +601,10 @@ class RampUpTest : public test::CallTest {
       RTC_DCHECK(event_log_started);
     }
   }
+
+ private:
+  const std::unique_ptr<TaskQueueFactory> task_queue_factory_;
+  RtcEventLogFactory rtc_event_log_factory_;
 };
 
 static const uint32_t kStartBitrateBps = 60000;
@@ -639,6 +654,7 @@ TEST_F(RampUpTest, DISABLED_UpDownUpTransportSequenceNumberPacketLoss) {
   UpDownUpAudioVideoTransportSequenceNumberRtx
 #endif
 TEST_F(RampUpTest, MAYBE_UpDownUpAudioVideoTransportSequenceNumberRtx) {
+  test::ScopedFieldTrials field_trials("WebRTC-Audio-SendSideBwe/Enabled/");
   std::vector<int> loss_rates = {0, 0, 0, 0};
   RampUpDownUpTester test(3, 1, 0, kStartBitrateBps,
                           RtpExtension::kTransportSequenceNumberUri, true,
@@ -647,6 +663,7 @@ TEST_F(RampUpTest, MAYBE_UpDownUpAudioVideoTransportSequenceNumberRtx) {
 }
 
 TEST_F(RampUpTest, UpDownUpAudioTransportSequenceNumberRtx) {
+  test::ScopedFieldTrials field_trials("WebRTC-Audio-SendSideBwe/Enabled/");
   std::vector<int> loss_rates = {0, 0, 0, 0};
   RampUpDownUpTester test(0, 1, 0, kStartBitrateBps,
                           RtpExtension::kTransportSequenceNumberUri, true,

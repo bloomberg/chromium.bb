@@ -15,7 +15,7 @@
 #include "base/strings/stringprintf.h"
 #include "remoting/test/access_token_fetcher.h"
 #include "remoting/test/host_list_fetcher.h"
-#include "remoting/test/refresh_token_store.h"
+#include "remoting/test/test_token_storage.h"
 
 namespace remoting {
 namespace test {
@@ -52,18 +52,18 @@ bool ChromotingTestDriverEnvironment::Initialize(
     message_loop_.reset(new base::MessageLoopForIO);
   }
 
-  // If a unit test has set |test_refresh_token_store_| then we should use it
+  // If a unit test has set |test_test_token_storage_| then we should use it
   // below.  Note that we do not want to destroy the test object.
-  std::unique_ptr<RefreshTokenStore> temporary_refresh_token_store;
-  RefreshTokenStore* refresh_token_store = test_refresh_token_store_;
-  if (!refresh_token_store) {
-    temporary_refresh_token_store =
-        RefreshTokenStore::OnDisk(user_name_, refresh_token_file_path_);
-    refresh_token_store = temporary_refresh_token_store.get();
+  std::unique_ptr<TestTokenStorage> temporary_test_token_storage;
+  TestTokenStorage* test_token_storage = test_test_token_storage_;
+  if (!test_token_storage) {
+    temporary_test_token_storage =
+        TestTokenStorage::OnDisk(user_name_, refresh_token_file_path_);
+    test_token_storage = temporary_test_token_storage.get();
   }
 
   // Check to see if we have a refresh token stored for this user.
-  refresh_token_ = refresh_token_store->FetchRefreshToken();
+  refresh_token_ = test_token_storage->FetchRefreshToken();
   if (refresh_token_.empty()) {
     // This isn't necessarily an error as this might be a first run scenario.
     VLOG(2) << "No refresh token stored for " << user_name_;
@@ -169,11 +169,11 @@ void ChromotingTestDriverEnvironment::SetAccessTokenFetcherForTest(
   test_access_token_fetcher_ = access_token_fetcher;
 }
 
-void ChromotingTestDriverEnvironment::SetRefreshTokenStoreForTest(
-    RefreshTokenStore* refresh_token_store) {
-  DCHECK(refresh_token_store);
+void ChromotingTestDriverEnvironment::SetTestTokenStorageForTest(
+    TestTokenStorage* test_token_storage) {
+  DCHECK(test_token_storage);
 
-  test_refresh_token_store_ = refresh_token_store;
+  test_test_token_storage_ = test_token_storage;
 }
 
 void ChromotingTestDriverEnvironment::SetHostListFetcherForTest(
@@ -241,17 +241,17 @@ bool ChromotingTestDriverEnvironment::RetrieveAccessToken(
   // receive a refresh token, then we should let the user know and exit.
   if (!auth_code.empty()) {
     if (!refresh_token_.empty()) {
-      // If a unit test has set |test_refresh_token_store_| then we should use
+      // If a unit test has set |test_test_token_storage_| then we should use
       // it below.  Note that we do not want to destroy the test object.
-      std::unique_ptr<RefreshTokenStore> temporary_refresh_token_store;
-      RefreshTokenStore* refresh_token_store = test_refresh_token_store_;
-      if (!refresh_token_store) {
-        temporary_refresh_token_store =
-            RefreshTokenStore::OnDisk(user_name_, refresh_token_file_path_);
-        refresh_token_store = temporary_refresh_token_store.get();
+      std::unique_ptr<TestTokenStorage> temporary_test_token_storage;
+      TestTokenStorage* test_token_storage = test_test_token_storage_;
+      if (!test_token_storage) {
+        temporary_test_token_storage =
+            TestTokenStorage::OnDisk(user_name_, refresh_token_file_path_);
+        test_token_storage = temporary_test_token_storage.get();
       }
 
-      if (!refresh_token_store->StoreRefreshToken(refresh_token_)) {
+      if (!test_token_storage->StoreRefreshToken(refresh_token_)) {
         // If we failed to persist the refresh token, then we should let the
         // user sort out the issue before continuing.
         return false;

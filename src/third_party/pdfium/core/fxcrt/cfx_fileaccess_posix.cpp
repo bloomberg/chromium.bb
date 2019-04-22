@@ -51,8 +51,7 @@ CFX_FileAccess_Posix::~CFX_FileAccess_Posix() {
   Close();
 }
 
-bool CFX_FileAccess_Posix::Open(const ByteStringView& fileName,
-                                uint32_t dwMode) {
+bool CFX_FileAccess_Posix::Open(ByteStringView fileName, uint32_t dwMode) {
   if (m_nFD > -1)
     return false;
 
@@ -65,8 +64,7 @@ bool CFX_FileAccess_Posix::Open(const ByteStringView& fileName,
   return m_nFD > -1;
 }
 
-bool CFX_FileAccess_Posix::Open(const WideStringView& fileName,
-                                uint32_t dwMode) {
+bool CFX_FileAccess_Posix::Open(WideStringView fileName, uint32_t dwMode) {
   return Open(FX_UTF8Encode(fileName).AsStringView(), dwMode);
 }
 

@@ -5,7 +5,7 @@
 #include <windows.h>
 
 #include "chrome/browser/platform_util.h"
-#include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/color_chooser.h"
 #include "chrome/browser/ui/views/color_chooser_dialog.h"
 #include "content/public/browser/color_chooser.h"
 #include "content/public/browser/render_view_host.h"
@@ -61,9 +61,8 @@ ColorChooserWin::ColorChooserWin(content::WebContents* web_contents,
                                      ->GetWidget()
                                      ->GetView()
                                      ->GetNativeView());
-  color_chooser_dialog_ = new ColorChooserDialog(this,
-                                                 initial_color,
-                                                 owning_window);
+  color_chooser_dialog_ = new ColorChooserDialog(this);
+  color_chooser_dialog_->Open(initial_color, owning_window);
 }
 
 ColorChooserWin::~ColorChooserWin() {
@@ -90,11 +89,11 @@ void ColorChooserWin::OnColorChooserDialogClosed() {
   if (color_chooser_dialog_.get()) {
     color_chooser_dialog_->ListenerDestroyed();
     color_chooser_dialog_ = NULL;
+    DCHECK(current_color_chooser_ == this);
+    current_color_chooser_ = NULL;
+    if (web_contents_)
+      web_contents_->DidEndColorChooser();
   }
-  DCHECK(current_color_chooser_ == this);
-  current_color_chooser_ = NULL;
-  if (web_contents_)
-    web_contents_->DidEndColorChooser();
 }
 
 namespace chrome {

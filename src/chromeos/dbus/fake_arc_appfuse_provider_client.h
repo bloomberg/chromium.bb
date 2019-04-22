@@ -10,7 +10,7 @@
 namespace chromeos {
 
 // A fake implementation of ArcAppfuseProviderClient.
-class CHROMEOS_EXPORT FakeArcAppfuseProviderClient
+class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeArcAppfuseProviderClient
     : public ArcAppfuseProviderClient {
  public:
   FakeArcAppfuseProviderClient();

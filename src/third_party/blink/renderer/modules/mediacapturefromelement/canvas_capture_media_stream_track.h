@@ -20,18 +20,6 @@ class CanvasCaptureMediaStreamTrack final : public MediaStreamTrack {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static CanvasCaptureMediaStreamTrack* Create(
-      MediaStreamComponent*,
-      HTMLCanvasElement*,
-      ExecutionContext*,
-      std::unique_ptr<WebCanvasCaptureHandler>);
-  static CanvasCaptureMediaStreamTrack* Create(
-      MediaStreamComponent*,
-      HTMLCanvasElement*,
-      ExecutionContext*,
-      std::unique_ptr<WebCanvasCaptureHandler>,
-      double frame_rate);
-
   CanvasCaptureMediaStreamTrack(const CanvasCaptureMediaStreamTrack&,
                                 MediaStreamComponent*);
   CanvasCaptureMediaStreamTrack(MediaStreamComponent*,

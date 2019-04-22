@@ -6,15 +6,14 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_MEDIA_CONTROLS_MEDIA_EVENT_LISTENER_H_
 
 #include "base/optional.h"
-#include "third_party/blink/renderer/core/dom/events/event_listener.h"
+#include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 
 namespace blink {
 
 class HTMLMediaElement;
 class MediaControlsImpl;
-class RemotePlayback;
 
-class MediaControlsMediaEventListener final : public EventListener {
+class MediaControlsMediaEventListener final : public NativeEventListener {
  public:
   explicit MediaControlsMediaEventListener(MediaControlsImpl*);
 
@@ -27,15 +26,12 @@ class MediaControlsMediaEventListener final : public EventListener {
   // object to be garbage collected.
   void Detach();
 
-  bool operator==(const EventListener&) const override;
-
   void Trace(blink::Visitor*) override;
+
+  void Invoke(ExecutionContext*, Event*) override;
 
  private:
   HTMLMediaElement& GetMediaElement();
-  RemotePlayback* GetRemotePlayback();
-
-  void Invoke(ExecutionContext*, Event*) override;
 
   void OnRemotePlaybackAvailabilityChanged();
 

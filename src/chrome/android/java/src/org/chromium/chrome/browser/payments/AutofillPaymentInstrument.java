@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.payments;
 
 import android.content.Context;
+import android.support.annotation.Nullable;
 import android.support.v7.content.res.AppCompatResources;
 import android.text.TextUtils;
 import android.util.JsonWriter;
@@ -28,8 +29,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import javax.annotation.Nullable;
 
 /**
  * The locally stored credit card payment instrument.
@@ -260,6 +259,7 @@ public class AutofillPaymentInstrument extends PaymentInstrument
         }
 
         mCallback.onInstrumentDetailsReady(mMethodName, stringWriter.toString());
+        mCallback = null;
     }
 
     private static String ensureNotNull(@Nullable String value) {

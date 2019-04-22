@@ -18,6 +18,7 @@ function buy() {  // eslint-disable-line no-unused-vars
   getPaymentResponse(options)
       .then(function(response) {
         gPaymentResponse = response;
+        print(JSON.stringify(gPaymentResponse, undefined, 2));
       });
 }
 
@@ -30,6 +31,10 @@ function retry(validationErrors) {  // eslint-disable-line no-unused-vars
   if (gPaymentResponse == null) {
     return;
   }
+
+  gPaymentResponse.addEventListener('payerdetailchange', function(e) {
+    print(JSON.stringify(gPaymentResponse, undefined, 2));
+  });
 
   gPaymentResponse.retry(validationErrors);
 }

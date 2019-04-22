@@ -2,7 +2,6 @@ Test to ensure that global constructors have the right attributes
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS Object.getOwnPropertyDescriptor(global, 'CSSRuleList').value is CSSRuleList
 PASS Object.getOwnPropertyDescriptor(global, 'CSSRuleList').hasOwnProperty('get') is false
 PASS Object.getOwnPropertyDescriptor(global, 'CSSRuleList').hasOwnProperty('set') is false

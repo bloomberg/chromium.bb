@@ -30,6 +30,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_test_helper.h"
@@ -217,6 +218,8 @@ TEST(HashMaptest, RemoveAdd) {
 }
 
 class SimpleClass {
+  USING_FAST_MALLOC(SimpleClass);
+
  public:
   explicit SimpleClass(int v) : v_(v) {}
   int V() { return v_; }
@@ -266,6 +269,8 @@ TEST(HashMapTest, AddResultVectorValue) {
 }
 
 class InstanceCounter {
+  USING_FAST_MALLOC(InstanceCounter);
+
  public:
   InstanceCounter() { ++counter_; }
   InstanceCounter(const InstanceCounter& another) { ++counter_; }
@@ -565,11 +570,11 @@ bool IsOneTwoThreeMap(const HashMap<int, int>& map) {
   return map.size() == 3 && map.Contains(1) && map.Contains(2) &&
          map.Contains(3) && map.at(1) == 11 && map.at(2) == 22 &&
          map.at(3) == 33;
-};
+}
 
 HashMap<int, int> ReturnOneTwoThreeMap() {
   return {{1, 11}, {2, 22}, {3, 33}};
-};
+}
 
 TEST(HashMapTest, InitializerList) {
   HashMap<int, int> empty({});
@@ -615,6 +620,21 @@ TEST(HashMapTest, InitializerList) {
   // statement.
   EXPECT_TRUE(IsOneTwoThreeMap({{1, 11}, {2, 22}, {3, 33}}));
   EXPECT_TRUE(IsOneTwoThreeMap(ReturnOneTwoThreeMap()));
+}
+
+TEST(HashMapTest, IsValidKey) {
+  bool is_deleted;
+  EXPECT_FALSE((HashMap<int, int>::IsValidKey(0)));
+  EXPECT_FALSE((HashMap<int, int>::IsValidKey(-1)));
+  EXPECT_TRUE((HashMap<int, int>::IsValidKey(-2)));
+
+  EXPECT_FALSE((HashMap<int*, int>::IsValidKey(nullptr)));
+  EXPECT_TRUE((HashMap<int*, int>::IsValidKey(std::make_unique<int>().get())));
+
+  auto p = base::MakeRefCounted<DummyRefCounted>(is_deleted);
+  EXPECT_TRUE((HashMap<scoped_refptr<DummyRefCounted>, int>::IsValidKey(p)));
+  EXPECT_FALSE(
+      (HashMap<scoped_refptr<DummyRefCounted>, int>::IsValidKey(nullptr)));
 }
 
 static_assert(!IsTraceable<HashMap<int, int>>::value,

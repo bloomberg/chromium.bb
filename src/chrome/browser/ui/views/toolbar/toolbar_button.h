@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
+#include "ui/base/theme_provider.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
@@ -25,14 +26,15 @@ class MenuModel;
 }
 
 namespace views {
+class InstallableInkDrop;
 class MenuModelAdapter;
 class MenuRunner;
 }
 
 // This class provides basic drawing and mouse-over behavior for buttons
 // appearing in the toolbar.
-// TODO: Consider making ToolbarButton and AppMenuButton share a common base
-// class https://crbug.com/819854.
+// TODO(cyan): Consider making ToolbarButton and AppMenuButton share a common
+// base class https://crbug.com/819854.
 class ToolbarButton : public views::LabelButton,
                       public views::ContextMenuController {
  public:
@@ -67,6 +69,7 @@ class ToolbarButton : public views::LabelButton,
   bool IsMenuShowing() const;
 
   // views::LabelButton:
+  void SetText(const base::string16& text) override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   gfx::Rect GetAnchorBoundsInScreen() const override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
@@ -80,14 +83,29 @@ class ToolbarButton : public views::LabelButton,
   std::unique_ptr<views::InkDrop> CreateInkDrop() override;
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override;
+  views::InkDrop* GetInkDrop() override;
   SkColor GetInkDropBaseColor() const override;
 
   // views::ContextMenuController:
-  void ShowContextMenuForView(View* source,
-                              const gfx::Point& point,
-                              ui::MenuSourceType source_type) override;
+  void ShowContextMenuForViewImpl(View* source,
+                                  const gfx::Point& point,
+                                  ui::MenuSourceType source_type) override;
 
   ui::MenuModel* menu_model_for_test() { return model_.get(); }
+
+  // Chooses from |desired_dark_color| and |desired_light_color| based on
+  // whether the toolbar background is dark or light.
+  //
+  // If the resulting color will achieve sufficient contrast,
+  // returns it. Otherwise, blends it towards |dark_extreme| if it's light, or
+  // |dark_extreme| if it's dark until minimum contrast is achieved, and returns
+  // the result.
+  static SkColor AdjustHighlightColorForContrast(
+      const ui::ThemeProvider* theme_provider,
+      SkColor desired_dark_color,
+      SkColor desired_light_color,
+      SkColor dark_extreme,
+      SkColor light_extreme);
 
  protected:
   // Returns if menu should be shown. Override this to change default behavior.
@@ -98,6 +116,9 @@ class ToolbarButton : public views::LabelButton,
 
   // Sets |layout_inset_delta_|, see comment there.
   void SetLayoutInsetDelta(const gfx::Insets& insets);
+
+  static constexpr int kDefaultIconSize = 16;
+  static constexpr int kDefaultTouchableIconSize = 24;
 
  private:
   friend test::ToolbarButtonTestApi;
@@ -131,10 +152,6 @@ class ToolbarButton : public views::LabelButton,
   // Menu runner to display drop down menu.
   std::unique_ptr<views::MenuRunner> menu_runner_;
 
-  // Leading margin to be applied. Used when the browser is in a maximized state
-  // to extend to the full window width.
-  int leading_margin_ = 0;
-
   // Delta from regular toolbar-button insets. This is necessary for buttons
   // that use smaller or larger icons than regular ToolbarButton instances.
   // AvatarToolbarButton for instance uses smaller insets to accommodate for a
@@ -145,6 +162,10 @@ class ToolbarButton : public views::LabelButton,
   // used as a base for background, text and ink drops. When not set, uses the
   // default ToolbarButton ink drop.
   base::Optional<SkColor> highlight_color_;
+
+  // Used instead of the standard InkDrop implementation when
+  // |views::kInstallableInkDropFeature| is enabled.
+  std::unique_ptr<views::InstallableInkDrop> installable_ink_drop_;
 
   // A factory for tasks that show the dropdown context menu for the button.
   base::WeakPtrFactory<ToolbarButton> show_menu_factory_;

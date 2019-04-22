@@ -6,11 +6,11 @@ package org.chromium.chromoting;
 
 /** The parameter for an InputModeChanged event. */
 public final class InputModeChangedEventParameter {
-    public final Desktop.InputMode inputMode;
-    public final CapabilityManager.HostCapability hostCapability;
+    public final @Desktop.InputMode int inputMode;
+    public final @CapabilityManager.HostCapability int hostCapability;
 
-    public InputModeChangedEventParameter(Desktop.InputMode inputMode,
-                                          CapabilityManager.HostCapability hostCapability) {
+    public InputModeChangedEventParameter(@Desktop.InputMode int inputMode,
+            @CapabilityManager.HostCapability int hostCapability) {
         this.inputMode = inputMode;
         this.hostCapability = hostCapability;
     }

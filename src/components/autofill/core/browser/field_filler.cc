@@ -624,6 +624,7 @@ bool FieldFiller::FillFormField(const AutofillField& field,
                                 FormFieldData* field_data,
                                 const base::string16& cvc) {
   const AutofillType type = field.Type();
+
   // Don't fill if autocomplete=off is set on |field| on desktop for non credit
   // card related fields.
   if (!base::FeatureList::IsEnabled(features::kAutofillAlwaysFillAddresses) &&
@@ -631,6 +632,9 @@ bool FieldFiller::FillFormField(const AutofillField& field,
       (type.group() != CREDIT_CARD)) {
     return false;
   }
+
+  if (data_model.ShouldSkipFillingOrSuggesting(type.GetStorableType()))
+    return false;
 
   base::string16 value = data_model.GetInfo(type, app_locale_);
   if (type.GetStorableType() == CREDIT_CARD_VERIFICATION_CODE)

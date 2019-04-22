@@ -12,6 +12,7 @@ platforms is planned.
 import collections
 import errno
 import glob
+import multiprocessing
 import optparse
 import os
 import Queue
@@ -22,7 +23,7 @@ import sys
 import threading
 
 
-CONCURRENT_TASKS=4
+CONCURRENT_TASKS=multiprocessing.cpu_count()
 
 # The BINARY_INFO tuple describes a binary as dump_syms identifies it.
 BINARY_INFO = collections.namedtuple('BINARY_INFO',
@@ -60,7 +61,7 @@ def Resolve(path, exe_path, loader_path, rpaths):
 
 
 def GetSharedLibraryDependenciesLinux(binary):
-  """Return absolute paths to all shared library dependecies of the binary.
+  """Return absolute paths to all shared library dependencies of the binary.
 
   This implementation assumes that we're running on a Linux system."""
   # TODO(thakis): Figure out how to make this work for android
@@ -72,7 +73,7 @@ def GetSharedLibraryDependenciesLinux(binary):
   for line in ldd.splitlines():
     m = lib_re.match(line)
     if m:
-      result.append(m.group(1))
+      result.append(os.path.abspath(m.group(1)))
   return result
 
 
@@ -106,7 +107,7 @@ def GetDeveloperDirMac():
 
 
 def GetSharedLibraryDependenciesMac(binary, exe_path):
-  """Return absolute paths to all shared library dependecies of the binary.
+  """Return absolute paths to all shared library dependencies of the binary.
 
   This implementation assumes that we're running on a Mac system."""
   # realpath() serves two purposes:
@@ -164,7 +165,7 @@ def GetSharedLibraryDependenciesMac(binary, exe_path):
 
 
 def GetSharedLibraryDependencies(options, binary, exe_path):
-  """Return absolute paths to all shared library dependecies of the binary."""
+  """Return absolute paths to all shared library dependencies of the binary."""
   deps = []
   if sys.platform.startswith('linux'):
     deps = GetSharedLibraryDependenciesLinux(binary)
@@ -181,6 +182,29 @@ def GetSharedLibraryDependencies(options, binary, exe_path):
         os.path.abspath(os.path.dirname(dep)).startswith(build_dir)):
       result.append(dep)
   return result
+
+
+def GetTransitiveDependencies(options):
+  """Return absolute paths to the transitive closure of all shared library
+     dependencies of the binary, along with the binary itself."""
+  binary = os.path.abspath(options.binary)
+  exe_path = os.path.dirname(binary)
+  if sys.platform.startswith('linux'):
+    # 'ldd' returns all transitive dependencies for us.
+    deps = set(GetSharedLibraryDependencies(options, binary, exe_path))
+    deps.add(binary)
+    return list(deps)
+  if sys.platform == 'darwin':
+    binaries = set([binary])
+    queue = [binary]
+    while queue:
+      deps = GetSharedLibraryDependencies(options, queue.pop(0), exe_path)
+      new_deps = set(deps) - binaries
+      binaries |= new_deps
+      queue.extend(list(new_deps))
+    return binaries
+  print "Platform not supported."
+  sys.exit(1)
 
 
 def mkdir_p(path):
@@ -328,14 +352,7 @@ def main():
     return 1
 
   # Build the transitive closure of all dependencies.
-  binaries = set([options.binary])
-  queue = [options.binary]
-  exe_path = os.path.dirname(options.binary)
-  while queue:
-    deps = GetSharedLibraryDependencies(options, queue.pop(0), exe_path)
-    new_deps = set(deps) - binaries
-    binaries |= new_deps
-    queue.extend(list(new_deps))
+  binaries = GetTransitiveDependencies(options)
 
   GenerateSymbols(options, binaries)
 

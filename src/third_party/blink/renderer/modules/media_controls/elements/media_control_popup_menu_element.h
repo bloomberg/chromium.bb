@@ -31,8 +31,15 @@ class MediaControlPopupMenuElement : public MediaControlDivElement {
 
   void Trace(blink::Visitor*) override;
 
+  // When clicking the scroll bar, chrome will find its first focusable parent
+  // and focus on it. In order to prevent popup menu from losing focus (which
+  // will close the menu), we are setting the popup menu support focus and mouse
+  // focusable.
+  bool IsMouseFocusable() const override { return true; }
+  bool SupportsFocus() const override { return true; }
+
  protected:
-  MediaControlPopupMenuElement(MediaControlsImpl&, MediaControlElementType);
+  MediaControlPopupMenuElement(MediaControlsImpl&);
 
   void SetPosition();
 
@@ -43,6 +50,7 @@ class MediaControlPopupMenuElement : public MediaControlDivElement {
 
   void HideIfNotFocused();
 
+  bool FocusListItemIfDisplayed(Node* node);
   void SelectFirstItem();
 
   // Actions called by the EventListener object when specific evenst are
@@ -52,6 +60,7 @@ class MediaControlPopupMenuElement : public MediaControlDivElement {
   void CloseFromKeyboard();
 
   Member<EventListener> event_listener_;
+  Member<Element> last_focused_element_;
 };
 
 }  // namespace blink

@@ -138,7 +138,7 @@ class MEDIA_EXPORT PipelineImpl : public Pipeline {
   void OnMetadata(PipelineMetadata metadata);
   void OnBufferingStateChange(BufferingState state);
   void OnDurationChange(base::TimeDelta duration);
-  void OnWaitingForDecryptionKey();
+  void OnWaiting(WaitingReason reason);
   void OnAudioConfigChange(const AudioDecoderConfig& config);
   void OnVideoConfigChange(const VideoDecoderConfig& config);
   void OnVideoNaturalSizeChange(const gfx::Size& size);
@@ -146,6 +146,7 @@ class MEDIA_EXPORT PipelineImpl : public Pipeline {
   void OnVideoAverageKeyframeDistanceUpdate();
   void OnAudioDecoderChange(const std::string& name);
   void OnVideoDecoderChange(const std::string& name);
+  void OnRemotePlayStateChange(MediaStatus::State state);
 
   // Task completion callbacks from RendererWrapper.
   void OnSeekDone(bool is_suspended);

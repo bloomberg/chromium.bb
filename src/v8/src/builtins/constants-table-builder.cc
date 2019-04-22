@@ -6,6 +6,7 @@
 
 #include "src/heap/heap-inl.h"
 #include "src/isolate.h"
+#include "src/objects/oddball-inl.h"
 #include "src/roots-inl.h"
 
 namespace v8 {
@@ -35,10 +36,14 @@ uint32_t BuiltinsConstantsTableBuilder::AddObject(Handle<Object> object) {
             isolate_->heap()->builtins_constants_table());
 
   // Must be on the main thread.
-  DCHECK(ThreadId::Current().Equals(isolate_->thread_id()));
+  DCHECK_EQ(ThreadId::Current(), isolate_->thread_id());
 
   // Must be generating embedded builtin code.
-  DCHECK(isolate_->ShouldLoadConstantsFromRootList());
+  DCHECK(isolate_->IsGeneratingEmbeddedBuiltins());
+
+  // All code objects should be loaded through the root register or use
+  // pc-relative addressing.
+  DCHECK(!object->IsCode());
 #endif
 
   uint32_t* maybe_key = map_.Find(object);
@@ -64,16 +69,11 @@ void BuiltinsConstantsTableBuilder::PatchSelfReference(
   DCHECK_EQ(ReadOnlyRoots(isolate_).empty_fixed_array(),
             isolate_->heap()->builtins_constants_table());
 
-  DCHECK(isolate_->ShouldLoadConstantsFromRootList());
+  DCHECK(isolate_->IsGeneratingEmbeddedBuiltins());
 
   DCHECK(self_reference->IsOddball());
   DCHECK(Oddball::cast(*self_reference)->kind() ==
          Oddball::kSelfReferenceMarker);
-
-  // During indirection generation, we always create a distinct marker for each
-  // macro assembler. The canonical marker is only used when not generating a
-  // snapshot.
-  DCHECK(*self_reference != ReadOnlyRoots(isolate_).self_reference_marker());
 #endif
 
   uint32_t key;
@@ -88,19 +88,19 @@ void BuiltinsConstantsTableBuilder::Finalize() {
 
   DCHECK_EQ(ReadOnlyRoots(isolate_).empty_fixed_array(),
             isolate_->heap()->builtins_constants_table());
-  DCHECK(isolate_->ShouldLoadConstantsFromRootList());
+  DCHECK(isolate_->IsGeneratingEmbeddedBuiltins());
 
   // An empty map means there's nothing to do.
   if (map_.size() == 0) return;
 
   Handle<FixedArray> table =
-      isolate_->factory()->NewFixedArray(map_.size(), TENURED);
+      isolate_->factory()->NewFixedArray(map_.size(), AllocationType::kOld);
 
   Builtins* builtins = isolate_->builtins();
   ConstantsMap::IteratableScope it_scope(&map_);
   for (auto it = it_scope.begin(); it != it_scope.end(); ++it) {
     uint32_t index = *it.entry();
-    Object* value = it.key();
+    Object value = it.key();
     if (value->IsCode() && Code::cast(value)->kind() == Code::BUILTIN) {
       // Replace placeholder code objects with the real builtin.
       // See also: SetupIsolateDelegate::PopulateWithPlaceholders.

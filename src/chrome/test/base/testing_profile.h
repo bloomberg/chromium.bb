@@ -18,16 +18,19 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/domain_reliability/clear_mode.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
+#include "components/keyed_service/core/simple_factory_key.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/buildflags/buildflags.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #endif
 
 class BrowserContextDependencyManager;
+class SimpleDependencyManager;
 class ExtensionSpecialStoragePolicy;
 class HostContentSettingsMap;
 
@@ -37,7 +40,7 @@ class SSLHostStateDelegate;
 #if !defined(OS_ANDROID)
 class ZoomLevelDelegate;
 #endif  // !defined(OS_ANDROID)
-}
+}  // namespace content
 
 namespace net {
 class URLRequestContextGetter;
@@ -47,6 +50,10 @@ namespace policy {
 class PolicyService;
 class ProfilePolicyConnector;
 class SchemaRegistryService;
+}  // namespace policy
+
+namespace service_manager {
+class Service;
 }
 
 namespace storage {
@@ -56,7 +63,7 @@ class SpecialStoragePolicy;
 namespace sync_preferences {
 class PrefServiceSyncable;
 class TestingPrefServiceSyncable;
-}
+}  // namespace sync_preferences
 
 class TestingProfile : public Profile {
  public:
@@ -114,6 +121,9 @@ class TestingProfile : public Profile {
     // Makes the Profile being built a guest profile.
     void SetGuestSession();
 
+    // Makes Profile::AllowsBrowserWindows() return false.
+    void DisallowBrowserWindows();
+
     // Override the default behavior of is_new_profile to return the provided
     // value.
     void OverrideIsNewProfile(bool is_new_profile);
@@ -149,6 +159,7 @@ class TestingProfile : public Profile {
     base::FilePath path_;
     Delegate* delegate_;
     bool guest_session_;
+    bool allows_browser_windows_;
     base::Optional<bool> is_new_profile_;
     std::string supervised_user_id_;
     std::unique_ptr<policy::PolicyService> policy_service_;
@@ -181,6 +192,7 @@ class TestingProfile : public Profile {
                  std::unique_ptr<sync_preferences::PrefServiceSyncable> prefs,
                  TestingProfile* parent,
                  bool guest_session,
+                 bool allows_browser_windows,
                  base::Optional<bool> is_new_profile,
                  const std::string& supervised_user_id,
                  std::unique_ptr<policy::PolicyService> policy_service,
@@ -246,7 +258,9 @@ class TestingProfile : public Profile {
       const base::FilePath& partition_path) override;
 #endif  // !defined(OS_ANDROID)
   scoped_refptr<base::SequencedTaskRunner> GetIOTaskRunner() override;
-  bool IsOffTheRecord() const override;
+  // Do not override IsOffTheRecord to turn a normal profile into an incognito
+  // profile dynamically.
+  bool IsOffTheRecord() const final;
   content::DownloadManagerDelegate* GetDownloadManagerDelegate() override;
   content::ResourceContext* GetResourceContext() override;
   content::BrowserPluginGuestManager* GetGuestManager() override;
@@ -254,6 +268,8 @@ class TestingProfile : public Profile {
   content::PushMessagingService* GetPushMessagingService() override;
   content::SSLHostStateDelegate* GetSSLHostStateDelegate() override;
   content::PermissionControllerDelegate* GetPermissionControllerDelegate()
+      override;
+  content::ClientHintsControllerDelegate* GetClientHintsControllerDelegate()
       override;
   content::BackgroundFetchDelegate* GetBackgroundFetchDelegate() override;
   content::BackgroundSyncController* GetBackgroundSyncController() override;
@@ -271,29 +287,20 @@ class TestingProfile : public Profile {
   net::URLRequestContextGetter* CreateMediaRequestContextForStoragePartition(
       const base::FilePath& partition_path,
       bool in_memory) override;
+  void SetCorsOriginAccessListForOrigin(
+      const url::Origin& source_origin,
+      std::vector<network::mojom::CorsOriginPatternPtr> allow_patterns,
+      std::vector<network::mojom::CorsOriginPatternPtr> block_patterns,
+      base::OnceClosure closure) override;
+  std::unique_ptr<service_manager::Service> HandleServiceRequest(
+      const std::string& service_name,
+      service_manager::mojom::ServiceRequest request) override;
 
   TestingProfile* AsTestingProfile() override;
 
   // Profile
   std::string GetProfileUserName() const override;
   ProfileType GetProfileType() const override;
-
-  // DEPRECATED, because it's fragile to change a profile from non-incognito
-  // to incognito after the ProfileKeyedServices have been created (some
-  // ProfileKeyedServices either should not exist in incognito mode, or will
-  // crash when they try to get references to other services they depend on,
-  // but do not exist in incognito mode).
-  // TODO(atwilson): Remove this API (http://crbug.com/277296).
-  //
-  // Changes a profile's to/from incognito mode temporarily - profile will be
-  // returned to non-incognito before destruction to allow services to
-  // properly shutdown. This is only supported for legacy tests - new tests
-  // should create a true incognito profile using Builder::SetIncognito() or
-  // by using the TestingProfile constructor that allows setting the incognito
-  // flag.
-  void ForceIncognito(bool force_incognito) {
-    force_incognito_ = force_incognito;
-  }
 
   Profile* GetOffTheRecordProfile() override;
   void DestroyOffTheRecordProfile() override {}
@@ -303,6 +310,7 @@ class TestingProfile : public Profile {
   bool IsSupervised() const override;
   bool IsChild() const override;
   bool IsLegacySupervised() const override;
+  bool AllowsBrowserWindows() const override;
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   void SetExtensionSpecialStoragePolicy(
       ExtensionSpecialStoragePolicy* extension_special_storage_policy);
@@ -324,6 +332,8 @@ class TestingProfile : public Profile {
   }
   bool IsSameProfile(Profile* profile) override;
   base::Time GetStartTime() const override;
+  ProfileKey* GetProfileKey() const override;
+  policy::SchemaRegistryService* GetPolicySchemaRegistryService() override;
   base::FilePath last_selected_directory() override;
   void set_last_selected_directory(const base::FilePath& path) override;
   bool WasCreatedByVersionOrLater(const std::string& version) override;
@@ -367,6 +377,11 @@ class TestingProfile : public Profile {
 
  protected:
   base::Time start_time_;
+
+  // The key to index KeyedService instances created by
+  // SimpleKeyedServiceFactory.
+  std::unique_ptr<ProfileKey> key_;
+
   std::unique_ptr<sync_preferences::PrefServiceSyncable> prefs_;
   // ref only for right type, lifecycle is managed by prefs_
   sync_preferences::TestingPrefServiceSyncable* testing_prefs_;
@@ -403,11 +418,12 @@ class TestingProfile : public Profile {
   // handler.
   network::mojom::NetworkContextRequest network_context_request_;
 
-  bool force_incognito_;
   std::unique_ptr<Profile> incognito_profile_;
   TestingProfile* original_profile_;
 
   bool guest_session_;
+
+  bool allows_browser_windows_;
 
   base::Optional<bool> is_new_profile_;
 
@@ -434,6 +450,7 @@ class TestingProfile : public Profile {
   // We keep a weak pointer to the dependency manager we want to notify on our
   // death. Defaults to the Singleton implementation but overridable for
   // testing.
+  SimpleDependencyManager* simple_dependency_manager_;
   BrowserContextDependencyManager* browser_context_dependency_manager_;
 
   // Owned, but must be deleted on the IO thread so not placing in a

@@ -47,11 +47,6 @@ elseif(UNIX AND NOT APPLE) # i.e. Linux
     if(BUILD_WSI_WAYLAND_SUPPORT)
         add_definitions(-DVK_USE_PLATFORM_WAYLAND_KHR -DVK_USE_PLATFORM_WAYLAND_KHX)
     endif()
-
-    if(BUILD_WSI_MIR_SUPPORT)
-        add_definitions(-DVK_USE_PLATFORM_MIR_KHR -DVK_USE_PLATFORM_MIR_KHX)
-        include_directories(${MIR_INCLUDE_DIR})
-    endif()
 else()
     message(FATAL_ERROR "Unsupported Platform!")
 endif()
@@ -163,6 +158,7 @@ endif()
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}
                     ${VulkanHeaders_INCLUDE_DIR}
+                    ${WAYLAND_CLIENT_INCLUDE_DIR}
                     ${CMAKE_CURRENT_BINARY_DIR}
                     ${PROJECT_BINARY_DIR}
                     ${CMAKE_BINARY_DIR})

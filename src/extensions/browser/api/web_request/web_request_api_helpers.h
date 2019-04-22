@@ -15,8 +15,8 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "extensions/browser/api/web_request/web_request_info.h"
 #include "extensions/common/api/web_request.h"
@@ -37,8 +37,8 @@ class Extension;
 
 namespace extension_web_request_api_helpers {
 
-typedef std::pair<std::string, std::string> ResponseHeader;
-typedef std::vector<ResponseHeader> ResponseHeaders;
+using ResponseHeader = std::pair<std::string, std::string>;
+using ResponseHeaders = std::vector<ResponseHeader>;
 
 struct IgnoredAction {
   IgnoredAction(extensions::ExtensionId extension_id,
@@ -87,51 +87,62 @@ struct ExtraInfoSpec {
 // API definition.
 struct RequestCookie {
   RequestCookie();
+  RequestCookie(RequestCookie&& other);
+  RequestCookie& operator=(RequestCookie&& other);
   ~RequestCookie();
-  std::unique_ptr<std::string> name;
-  std::unique_ptr<std::string> value;
 
- private:
+  bool operator==(const RequestCookie& other) const;
+
+  RequestCookie Clone() const;
+
+  base::Optional<std::string> name;
+  base::Optional<std::string> value;
+
   DISALLOW_COPY_AND_ASSIGN(RequestCookie);
 };
-
-bool NullableEquals(const RequestCookie* a, const RequestCookie* b);
 
 // Data container for ResponseCookies as defined in the declarative WebRequest
 // API definition.
 struct ResponseCookie {
   ResponseCookie();
+  ResponseCookie(ResponseCookie&& other);
+  ResponseCookie& operator=(ResponseCookie&& other);
   ~ResponseCookie();
-  std::unique_ptr<std::string> name;
-  std::unique_ptr<std::string> value;
-  std::unique_ptr<std::string> expires;
-  std::unique_ptr<int> max_age;
-  std::unique_ptr<std::string> domain;
-  std::unique_ptr<std::string> path;
-  std::unique_ptr<bool> secure;
-  std::unique_ptr<bool> http_only;
 
- private:
+  bool operator==(const ResponseCookie& other) const;
+
+  ResponseCookie Clone() const;
+
+  base::Optional<std::string> name;
+  base::Optional<std::string> value;
+  base::Optional<std::string> expires;
+  base::Optional<int> max_age;
+  base::Optional<std::string> domain;
+  base::Optional<std::string> path;
+  base::Optional<bool> secure;
+  base::Optional<bool> http_only;
+
   DISALLOW_COPY_AND_ASSIGN(ResponseCookie);
 };
-
-bool NullableEquals(const ResponseCookie* a, const ResponseCookie* b);
 
 // Data container for FilterResponseCookies as defined in the declarative
 // WebRequest API definition.
 struct FilterResponseCookie : ResponseCookie {
   FilterResponseCookie();
+  FilterResponseCookie(FilterResponseCookie&& other);
+  FilterResponseCookie& operator=(FilterResponseCookie&& other);
   ~FilterResponseCookie();
-  std::unique_ptr<int> age_lower_bound;
-  std::unique_ptr<int> age_upper_bound;
-  std::unique_ptr<bool> session_cookie;
 
- private:
+  FilterResponseCookie Clone() const;
+
+  bool operator==(const FilterResponseCookie& other) const;
+
+  base::Optional<int> age_lower_bound;
+  base::Optional<int> age_upper_bound;
+  base::Optional<bool> session_cookie;
+
   DISALLOW_COPY_AND_ASSIGN(FilterResponseCookie);
 };
-
-bool NullableEquals(const FilterResponseCookie* a,
-                    const FilterResponseCookie* b);
 
 enum CookieModificationType {
   ADD,
@@ -141,45 +152,51 @@ enum CookieModificationType {
 
 struct RequestCookieModification {
   RequestCookieModification();
+  RequestCookieModification(RequestCookieModification&& other);
+  RequestCookieModification& operator=(RequestCookieModification&& other);
   ~RequestCookieModification();
-  CookieModificationType type;
-  // Used for EDIT and REMOVE. NULL for ADD.
-  std::unique_ptr<RequestCookie> filter;
-  // Used for ADD and EDIT. NULL for REMOVE.
-  std::unique_ptr<RequestCookie> modification;
 
- private:
+  bool operator==(const RequestCookieModification& other) const;
+
+  RequestCookieModification Clone() const;
+
+  CookieModificationType type;
+  // Used for EDIT and REMOVE, nullopt otherwise.
+  base::Optional<RequestCookie> filter;
+  // Used for ADD and EDIT, nullopt otherwise.
+  base::Optional<RequestCookie> modification;
+
   DISALLOW_COPY_AND_ASSIGN(RequestCookieModification);
 };
 
-bool NullableEquals(const RequestCookieModification* a,
-                    const RequestCookieModification* b);
-
 struct ResponseCookieModification {
   ResponseCookieModification();
+  ResponseCookieModification(ResponseCookieModification&& other);
+  ResponseCookieModification& operator=(ResponseCookieModification&& other);
   ~ResponseCookieModification();
-  CookieModificationType type;
-  // Used for EDIT and REMOVE.
-  std::unique_ptr<FilterResponseCookie> filter;
-  // Used for ADD and EDIT.
-  std::unique_ptr<ResponseCookie> modification;
 
- private:
+  bool operator==(const ResponseCookieModification& other) const;
+
+  ResponseCookieModification Clone() const;
+
+  CookieModificationType type;
+  // Used for EDIT and REMOVE, nullopt otherwise.
+  base::Optional<FilterResponseCookie> filter;
+  // Used for ADD and EDIT, nullopt otherwise.
+  base::Optional<ResponseCookie> modification;
+
   DISALLOW_COPY_AND_ASSIGN(ResponseCookieModification);
 };
 
-bool NullableEquals(const ResponseCookieModification* a,
-                    const ResponseCookieModification* b);
-
-typedef std::vector<linked_ptr<RequestCookieModification> >
-    RequestCookieModifications;
-typedef std::vector<linked_ptr<ResponseCookieModification> >
-    ResponseCookieModifications;
+using RequestCookieModifications = std::vector<RequestCookieModification>;
+using ResponseCookieModifications = std::vector<ResponseCookieModification>;
 
 // Contains the modification an extension wants to perform on an event.
 struct EventResponseDelta {
   EventResponseDelta(const std::string& extension_id,
                      const base::Time& extension_install_time);
+  EventResponseDelta(EventResponseDelta&& other);
+  EventResponseDelta& operator=(EventResponseDelta&& other);
   ~EventResponseDelta();
 
   // ID of the extension that sent this response.
@@ -208,7 +225,7 @@ struct EventResponseDelta {
   ResponseHeaders deleted_response_headers;
 
   // Authentication Credentials to use.
-  std::unique_ptr<net::AuthCredentials> auth_credentials;
+  base::Optional<net::AuthCredentials> auth_credentials;
 
   // Modifications to cookies in request headers.
   RequestCookieModifications request_cookie_modifications;
@@ -223,13 +240,12 @@ struct EventResponseDelta {
   DISALLOW_COPY_AND_ASSIGN(EventResponseDelta);
 };
 
-typedef std::list<linked_ptr<EventResponseDelta> > EventResponseDeltas;
+using EventResponseDeltas = std::list<EventResponseDelta>;
 
 // Comparison operator that returns true if the extension that caused
 // |a| was installed after the extension that caused |b|.
-bool InDecreasingExtensionInstallationTimeOrder(
-    const linked_ptr<EventResponseDelta>& a,
-    const linked_ptr<EventResponseDelta>& b);
+bool InDecreasingExtensionInstallationTimeOrder(const EventResponseDelta& a,
+                                                const EventResponseDelta& b);
 
 // Converts a string to a list of integers, each in 0..255.
 std::unique_ptr<base::ListValue> StringToCharList(const std::string& s);
@@ -243,21 +259,21 @@ bool CharListToString(const base::ListValue* list, std::string* out);
 // that commanded a modification, the installation time of this extension (used
 // for defining a precedence in conflicting modifications) and whether the
 // extension requested to |cancel| the request. Other parameters depend on a
-// the signal handler. Ownership of the returned object is passed to the caller.
+// the signal handler.
 
-EventResponseDelta* CalculateOnBeforeRequestDelta(
+EventResponseDelta CalculateOnBeforeRequestDelta(
     const std::string& extension_id,
     const base::Time& extension_install_time,
     bool cancel,
     const GURL& new_url);
-EventResponseDelta* CalculateOnBeforeSendHeadersDelta(
+EventResponseDelta CalculateOnBeforeSendHeadersDelta(
     const std::string& extension_id,
     const base::Time& extension_install_time,
     bool cancel,
     net::HttpRequestHeaders* old_headers,
     net::HttpRequestHeaders* new_headers,
     int extra_info_spec);
-EventResponseDelta* CalculateOnHeadersReceivedDelta(
+EventResponseDelta CalculateOnHeadersReceivedDelta(
     const std::string& extension_id,
     const base::Time& extension_install_time,
     bool cancel,
@@ -266,13 +282,11 @@ EventResponseDelta* CalculateOnHeadersReceivedDelta(
     const net::HttpResponseHeaders* old_response_headers,
     ResponseHeaders* new_response_headers,
     int extra_info_spec);
-// Destructively moves the auth credentials from |auth_credentials| to the
-// returned EventResponseDelta.
-EventResponseDelta* CalculateOnAuthRequiredDelta(
+EventResponseDelta CalculateOnAuthRequiredDelta(
     const std::string& extension_id,
     const base::Time& extension_install_time,
     bool cancel,
-    std::unique_ptr<net::AuthCredentials>* auth_credentials);
+    base::Optional<net::AuthCredentials> auth_credentials);
 
 // These functions merge the responses (the |deltas|) of request handlers.
 // The |deltas| need to be sorted in decreasing order of precedence of
@@ -318,6 +332,8 @@ void MergeOnBeforeSendHeadersResponses(
     net::HttpRequestHeaders* request_headers,
     IgnoredActions* ignored_actions,
     extensions::WebRequestInfo::Logger* logger,
+    std::set<std::string>* removed_headers,
+    std::set<std::string>* set_headers,
     bool* request_headers_modified);
 // Modifies the "Set-Cookie" headers in |override_response_headers| according to
 // |deltas.response_cookie_modifications|. If |override_response_headers| is

@@ -4,18 +4,35 @@
 
 import("///build/config/sanitizers/sanitizers.gni")
 
+config("ignore_unused_result_warning") {
+  if (is_clang) {
+    cflags = [
+      # See crbug.com/932188, libFuzzer does not check the result of write()
+      # when it does raw printing.
+      "-Wno-unused-result",
+    ]
+  }
+}
+
 # Engine should be compiled without coverage (infinite loop in trace_cmp).
 fuzzing_engine_remove_configs = [
   "//build/config/coverage:default_coverage",
   "//build/config/sanitizers:default_sanitizer_flags",
 ]
 
-fuzzing_engine_add_configs = []
-
-if (is_msan) {
-  fuzzing_engine_add_configs +=
-      [ "//build/config/sanitizers:default_sanitizer_flags_but_coverage" ]
-}
+# Add any sanitizer flags back. In MSAN builds, instrumenting libfuzzer with
+# MSAN is necessary since all parts of the binary need to be instrumented for it
+# to work. ASAN builds are more subtle: libfuzzer depends on features from the
+# C++ STL. If it were not instrumented, templates would be insantiated without
+# ASAN from libfuzzer and with ASAN in other TUs. The linker might merge
+# instrumented template instantiations with non-instrumented ones (which could
+# have a different ABI) in the final binary, which is problematic for TUs
+# expecting one particular ABI (https://crbug.com/915422). The other sanitizers
+# are added back for the same reason.
+fuzzing_engine_add_configs = [
+  "//build/config/sanitizers:default_sanitizer_flags_but_coverage",
+  ":ignore_unused_result_warning",
+]
 
 source_set("libfuzzer") {
   sources = [
@@ -24,8 +41,9 @@ source_set("libfuzzer") {
     "src/FuzzerDriver.cpp",
     "src/FuzzerExtFunctionsDlsym.cpp",
     "src/FuzzerExtFunctionsWeak.cpp",
-    "src/FuzzerExtFunctionsWeakAlias.cpp",
+    "src/FuzzerExtFunctionsWindows.cpp",
     "src/FuzzerExtraCounters.cpp",
+    "src/FuzzerFork.cpp",
     "src/FuzzerIO.cpp",
     "src/FuzzerIOPosix.cpp",
     "src/FuzzerIOWindows.cpp",
@@ -34,9 +52,6 @@ source_set("libfuzzer") {
     "src/FuzzerMerge.cpp",
     "src/FuzzerMutate.cpp",
     "src/FuzzerSHA1.cpp",
-    "src/FuzzerShmemFuchsia.cpp",
-    "src/FuzzerShmemPosix.cpp",
-    "src/FuzzerShmemWindows.cpp",
     "src/FuzzerTracePC.cpp",
     "src/FuzzerUtil.cpp",
     "src/FuzzerUtilDarwin.cpp",

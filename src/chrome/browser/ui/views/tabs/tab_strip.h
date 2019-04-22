@@ -17,13 +17,13 @@
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
 #include "base/timer/timer.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/views/frame/browser_root_view.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "ui/base/material_design/material_design_controller_observer.h"
-#include "ui/gfx/animation/animation_container.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
@@ -34,13 +34,18 @@
 #include "ui/views/view.h"
 #include "ui/views/view_model.h"
 #include "ui/views/view_targeter_delegate.h"
+#include "ui/views/widget/widget_observer.h"
 
 class NewTabButton;
 class StackedTabStripLayout;
 class Tab;
 class TabDragController;
+class TabGroupData;
+class TabGroupHeader;
+class TabHoverCardBubbleView;
 class TabStripController;
 class TabStripObserver;
+class ViewObserver;
 
 namespace gfx {
 class Rect;
@@ -66,7 +71,9 @@ class ImageView;
 class TabStrip : public views::AccessiblePaneView,
                  public views::ButtonListener,
                  public views::MouseWatcherListener,
+                 public views::ViewObserver,
                  public views::ViewTargeterDelegate,
+                 public views::WidgetObserver,
                  public TabController,
                  public BrowserRootView::DropTarget,
                  public ui::MaterialDesignControllerObserver {
@@ -80,9 +87,6 @@ class TabStrip : public views::AccessiblePaneView,
 
   // Called when the colors of the frame change.
   void FrameColorsChanged();
-
-  // Returns the trailing edge of the last tab.
-  int GetTabsMaxX() const;
 
   // Set the background offset used by inactive tabs to match the frame image.
   void SetBackgroundOffset(int offset);
@@ -114,8 +118,6 @@ class TabStrip : public views::AccessiblePaneView,
   // keep the throbbers in sync.
   void UpdateLoadingAnimations(const base::TimeDelta& elapsed_time);
 
-  bool IsAnyIconAnimating() const;
-
   // If |adjust_layout| is true the stacked layout changes based on whether the
   // user uses a mouse or a touch device with the tabstrip.
   void set_adjust_layout(bool adjust_layout) { adjust_layout_ = adjust_layout; }
@@ -131,17 +133,8 @@ class TabStrip : public views::AccessiblePaneView,
   // Sets |stacked_layout_| and animates if necessary.
   void SetStackedLayout(bool stacked_layout);
 
-  // Called when the value of SingleTabMode() changes.
-  void SingleTabModeChanged();
-
   // Returns the bounds of the new tab button.
   gfx::Rect new_tab_button_bounds() const { return new_tab_button_bounds_; }
-
-  // Starts highlighting the tab at the specified index.
-  void StartHighlight(int model_index);
-
-  // Stops all tab higlighting.
-  void StopAllHighlighting();
 
   // Adds a tab at the specified index.
   void AddTabAt(int model_index, TabRendererData data, bool is_active);
@@ -157,6 +150,12 @@ class TabStrip : public views::AccessiblePaneView,
 
   // Sets the tab data at the specified model index.
   void SetTabData(int model_index, TabRendererData data);
+
+  // Changes the group affiliation of the tab at |model_index| from
+  // |old_group_data| to |new_group_data|.
+  void ChangeTabGroup(int model_index,
+                      const TabGroupData* old_group_data,
+                      const TabGroupData* new_group_data);
 
   // Returns true if the tab is not partly or fully clipped (due to overflow),
   // and the tab couldn't become partly clipped due to changing the selected tab
@@ -232,12 +231,6 @@ class TabStrip : public views::AccessiblePaneView,
   // Returns true if a tab is being dragged into this tab strip.
   bool IsActiveDropTarget() const;
 
-  // Returns the alpha that inactive tabs and the new tab button should use to
-  // blend against the frame background.  Inactive tabs and the new tab button
-  // differ in whether they change alpha when tab multiselection is occurring;
-  // |for_new_tab_button| toggles between the two calculations.
-  SkAlpha GetInactiveAlpha(bool for_new_tab_button) const;
-
   // Returns true if Tabs in this TabStrip are currently changing size or
   // position.
   bool IsAnimating() const;
@@ -249,11 +242,9 @@ class TabStrip : public views::AccessiblePaneView,
   // TabController:
   const ui::ListSelectionModel& GetSelectionModel() const override;
   bool SupportsMultipleSelection() override;
-  NewTabButtonPosition GetNewTabButtonPosition() const override;
   bool ShouldHideCloseButtonForTab(Tab* tab) const override;
-  bool ShouldShowCloseButtonOnHover() override;
   bool MaySetClip() override;
-  void SelectTab(Tab* tab) override;
+  void SelectTab(Tab* tab, const ui::Event& event) override;
   void ExtendSelectionTo(Tab* tab) override;
   void ToggleSelected(Tab* tab) override;
   void AddSelectionFromAnchorTo(Tab* tab) override;
@@ -266,7 +257,6 @@ class TabStrip : public views::AccessiblePaneView,
   bool IsTabPinned(const Tab* tab) const override;
   bool IsFirstVisibleTab(const Tab* tab) const override;
   bool IsLastVisibleTab(const Tab* tab) const override;
-  bool SingleTabMode() const override;
   void MaybeStartDrag(
       Tab* tab,
       const ui::LocatedEvent& event,
@@ -277,7 +267,8 @@ class TabStrip : public views::AccessiblePaneView,
   const Tab* GetAdjacentTab(const Tab* tab, int offset) override;
   void OnMouseEventInTab(views::View* source,
                          const ui::MouseEvent& event) override;
-  bool ShouldPaintTab(const Tab* tab, float scale, gfx::Path* clip) override;
+  void UpdateHoverCard(Tab* tab, bool should_show) override;
+  bool ShouldPaintTab(const Tab* tab, float scale, SkPath* clip) override;
   int GetStrokeThickness() const override;
   bool CanPaintThrobberToLayer() const override;
   bool HasVisibleBackgroundTabShapes() const override;
@@ -288,7 +279,8 @@ class TabStrip : public views::AccessiblePaneView,
       TabState tab_state,
       BrowserNonClientFrameView::ActiveState active_state =
           BrowserNonClientFrameView::kUseCurrent) const override;
-  SkColor GetTabForegroundColor(TabState tab_state) const override;
+  SkColor GetTabForegroundColor(TabState tab_state,
+                                SkColor background_color) const override;
   base::string16 GetAccessibleTabName(const Tab* tab) const override;
   int GetBackgroundResourceId(
       bool* has_custom_image,
@@ -301,10 +293,10 @@ class TabStrip : public views::AccessiblePaneView,
   // MouseWatcherListener:
   void MouseMovedOutOfHost() override;
 
-  // views::View:
+  // views::AccessiblePaneView:
   void Layout() override;
+  bool OnMouseWheel(const ui::MouseWheelEvent& event) override;
   void PaintChildren(const views::PaintInfo& paint_info) override;
-  void OnPaint(gfx::Canvas* canvas) override;
   const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
@@ -329,6 +321,8 @@ class TabStrip : public views::AccessiblePaneView,
 
   friend class TabDragController;
   friend class TabDragControllerTest;
+  friend class TabHoverCardBubbleViewBrowserTest;
+  friend class TabHoverCardBubbleViewInteractiveUiTest;
   friend class TabStripTest;
 
   // Used during a drop session of a url. Tracks the position of the drop as
@@ -372,18 +366,13 @@ class TabStrip : public views::AccessiblePaneView,
   // Returns whether the close button should be highlighted after a remove.
   bool ShouldHighlightCloseButtonAfterRemove();
 
-  // If the new tab button position is AFTER_TABS, returns the spacing to use
-  // between the trailing edge of the tabs and the leading edge of the new tab
-  // button.  For other button positions, returns 0.
-  int TabToFollowingNewTabButtonSpacing() const;
+  // Returns the spacing between the trailing edge of the tabs and the leading
+  // edge of the new tab button.
+  int TabToNewTabButtonSpacing() const;
 
-  // Returns whether dragging tabs should ever result in the new tab button
-  // being hidden.
-  bool MayHideNewTabButtonWhileDragging() const;
-
-  // Returns the space to reserve after the tabs, if any, to guarantee the user
-  // can grab part of the window frame (to move the window with).
-  int GetFrameGrabWidth() const;
+  // Returns the space to reserve after the tabs to guarantee the user can grab
+  // part of the window frame (to move the window with).
+  int FrameGrabWidth() const;
 
   // Returns whether the window background behind the tabstrip is transparent.
   bool TitlebarBackgroundIsTransparent() const;
@@ -393,6 +382,10 @@ class TabStrip : public views::AccessiblePaneView,
 
   // Sets the visibility state of all tabs based on ShouldTabBeVisible().
   void SetTabVisibility();
+
+  // Updates the indexes and count for AX data on all tabs. Used by some screen
+  // readers (e.g. ChromeVox).
+  void UpdateAccessibleTabIndices();
 
   // Drags the active tab by |delta|. |initial_positions| is the x-coordinates
   // of the tabs when the drag started.  This is only called when
@@ -433,9 +426,6 @@ class TabStrip : public views::AccessiblePaneView,
   // beginning of the strip.
   int GetInsertionIndexFromReversed(const gfx::Rect& dragged_bounds,
                                     int start) const;
-
-  // Returns the X coordinate the first tab should start at.
-  int TabStartX() const;
 
   // Returns where the drag region ends; tabs dragged past this should detach.
   int TabDragAreaEndX() const;
@@ -612,6 +602,9 @@ class TabStrip : public views::AccessiblePaneView,
   // whenever any input of the computation of the border's sizing changes.
   void UpdateNewTabButtonBorder();
 
+  // Returns true if the hover card is showing for the given tab.
+  bool HoverCardIsShowingForTab(Tab* tab);
+
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
@@ -623,12 +616,21 @@ class TabStrip : public views::AccessiblePaneView,
   void OnMouseCaptureLost() override;
   void OnMouseMoved(const ui::MouseEvent& event) override;
   void OnMouseEntered(const ui::MouseEvent& event) override;
+  void OnMouseExited(const ui::MouseEvent& event) override;
+  void AddedToWidget() override;
+  void RemovedFromWidget() override;
 
   // ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override;
 
   // views::ViewTargeterDelegate:
   views::View* TargetForRect(views::View* root, const gfx::Rect& rect) override;
+
+  // views::ViewObserver:
+  void OnViewIsDeleting(views::View* observed_view) override;
+
+  // views::WidgetObserver:
+  void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
 
   // ui::MaterialDesignControllerObserver:
   void OnTouchUiChanged() override;
@@ -646,6 +648,13 @@ class TabStrip : public views::AccessiblePaneView,
   // painted, and the event handling code ensures only tabs in |tabs_| are used.
   views::ViewModelT<Tab> tabs_;
   TabsClosingMap tabs_closing_map_;
+
+  std::map<const TabGroupData*, TabGroupHeader*> group_headers_;
+
+  // The view tracker is used to keep track of if the hover card has been
+  // destroyed by its widget.
+  TabHoverCardBubbleView* hover_card_ = nullptr;
+  std::unique_ptr<ui::EventHandler> hover_card_event_sniffer_;
 
   std::unique_ptr<TabStripController> controller_;
 
@@ -675,11 +684,6 @@ class TabStrip : public views::AccessiblePaneView,
 
   // Valid for the lifetime of a drag over us.
   std::unique_ptr<DropArrow> drop_arrow_;
-
-  // To ensure all tabs pulse at the same time they share the same animation
-  // container. This is that animation container.
-  scoped_refptr<gfx::AnimationContainer> animation_container_{
-      new gfx::AnimationContainer()};
 
   // MouseWatcher is used for two things:
   // . When a tab is closed to reset the layout.
@@ -717,6 +721,10 @@ class TabStrip : public views::AccessiblePaneView,
 
   // Number of mouse moves.
   int mouse_move_count_ = 0;
+
+  // Accumulatated offsets from thumb wheel. Used to throttle horizontal
+  // scroll from thumb wheel.
+  int accumulated_horizontal_scroll_ = 0;
 
   // Timer used when a tab is closed and we need to relayout. Only used when a
   // tab close comes from a touch device.

@@ -7,6 +7,7 @@
 #include "crypt3.cpp"
 #include "crypt5.cpp"
 
+namespace third_party_unrar {
 
 CryptData::CryptData()
 {
@@ -136,3 +137,5 @@ void GetRnd(byte *RndBuf,size_t BufSize)
   if (!Success)
     TimeRandomize(RndBuf,BufSize);
 }
+
+}  // namespace third_party_unrar

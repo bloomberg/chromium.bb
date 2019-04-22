@@ -4,6 +4,8 @@
 
 """Common helper module for working with Chrome's processes and windows."""
 
+import logging
+import os
 import psutil
 import re
 import win32gui
@@ -36,15 +38,22 @@ def GetProcessIDs(process_path):
           path == process_path]
 
 
-def WaitForChromeExit():
-  """Waits for all chrome.exe processes to exit."""
-  def GetChromeProcesses():
-    """Returns a dict of all chrome.exe processes indexed by pid."""
+def WaitForChromeExit(chrome_path):
+  """Waits for all |chrome_path| processes to exit.
+
+  Args:
+    chrome_path: The path to the chrome.exe on which to wait.
+  """
+  def GetChromeProcesses(chrome_path):
+    """Returns a dict of all |chrome_path| processes indexed by pid."""
     chrome_processes = dict()
     for process in psutil.process_iter():
       try:
-        if process.name == 'chrome.exe':
+        if process.exe == chrome_path:
           chrome_processes[process.pid] = process
+          logging.info('Found chrome process %s' % process.exe)
+        elif process.name == os.path.basename(chrome_path):
+          raise Exception('Found other chrome process %s' % process.exe)
       except psutil.Error:
         pass
     return chrome_processes
@@ -61,16 +70,20 @@ def WaitForChromeExit():
         pass
     return None
 
-  chrome_processes = GetChromeProcesses()
+  chrome_processes = GetChromeProcesses(chrome_path)
   while chrome_processes:
     # Prefer waiting on the browser process.
     process = GetBrowserProcess(chrome_processes)
     if not process:
       # Pick any process to wait on if no top-level parent was found.
       process = next(chrome_processes.itervalues())
-    process.wait()
+    if process.is_running():
+      logging.info(
+        'Waiting on PID %s for %s %s processes to exit' %
+        (process.pid, len(chrome_processes), process.exe))
+      process.wait()
     # Check for stragglers and keep waiting until all are gone.
-    chrome_processes = GetChromeProcesses()
+    chrome_processes = GetChromeProcesses(chrome_path)
 
 
 def GetWindowHandles(process_ids):

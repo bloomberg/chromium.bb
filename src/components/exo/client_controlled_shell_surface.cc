@@ -203,14 +203,14 @@ class CaptionButtonModel : public ash::CaptionButtonModel {
         enabled_button_mask_(enabled_button_mask) {}
 
   // Overridden from ash::CaptionButtonModel:
-  bool IsVisible(ash::CaptionButtonIcon icon) const override {
+  bool IsVisible(views::CaptionButtonIcon icon) const override {
     return visible_button_mask_ & (1 << icon);
   }
-  bool IsEnabled(ash::CaptionButtonIcon icon) const override {
+  bool IsEnabled(views::CaptionButtonIcon icon) const override {
     return enabled_button_mask_ & (1 << icon);
   }
   bool InZoomMode() const override {
-    return visible_button_mask_ & (1 << ash::CAPTION_BUTTON_ICON_ZOOM);
+    return visible_button_mask_ & (1 << views::CAPTION_BUTTON_ICON_ZOOM);
   }
 
  private:
@@ -308,6 +308,10 @@ ClientControlledShellSurface::ClientControlledShellSurface(Surface* surface,
 }
 
 ClientControlledShellSurface::~ClientControlledShellSurface() {
+  // Reset the window delegate here so that we won't try to do any dragging
+  // operation on a to-be-destroyed window. |widget_| can be nullptr in tests.
+  if (GetWidget())
+    GetWindowState()->SetDelegate(nullptr);
   wide_frame_.reset();
   display::Screen::GetScreen()->RemoveObserver(this);
 }
@@ -518,6 +522,10 @@ void ClientControlledShellSurface::SetExtraTitle(
 
   GetFrameView()->GetHeaderView()->GetFrameHeader()->SetFrameTextOverride(
       extra_title);
+  if (wide_frame_) {
+    wide_frame_->header_view()->GetFrameHeader()->SetFrameTextOverride(
+        extra_title);
+  }
 }
 
 void ClientControlledShellSurface::SetOrientationLock(
@@ -542,10 +550,13 @@ void ClientControlledShellSurface::OnBoundsChangeEvent(
     const gfx::Rect& window_bounds,
     int bounds_change) {
   // 1) Do no update the bounds unless we have geometry from client.
-  // 2) Do not update the bounds if window is minimized.
+  // 2) Do not update the bounds if window is minimized unless it
+  // exiting the minimzied state.
   // The bounds will be provided by client when unminimized.
   if (!geometry().IsEmpty() && !window_bounds.IsEmpty() &&
-      !widget_->IsMinimized() && bounds_changed_callback_) {
+      (!widget_->IsMinimized() ||
+       requested_state != ash::mojom::WindowStateType::MINIMIZED) &&
+      bounds_changed_callback_) {
     // Sends the client bounds, which matches the geometry
     // when frame is enabled.
     ash::NonClientFrameViewAsh* frame_view = GetFrameView();
@@ -553,8 +564,15 @@ void ClientControlledShellSurface::OnBoundsChangeEvent(
     // The client's geometry uses fullscreen in client controlled,
     // (but the surface is placed under the frame), so just use
     // the window bounds instead for maximixed state.
+    // Snapped window states in tablet mode also do not include the caption
+    // height.
+    const bool becoming_snapped =
+        requested_state == ash::mojom::WindowStateType::LEFT_SNAPPED ||
+        requested_state == ash::mojom::WindowStateType::RIGHT_SNAPPED;
+    const bool is_tablet_mode =
+        WMHelper::GetInstance()->IsTabletModeWindowManagerEnabled();
     gfx::Rect client_bounds =
-        widget_->IsMaximized()
+        widget_->IsMaximized() || (becoming_snapped && is_tablet_mode)
             ? window_bounds
             : frame_view->GetClientBoundsForWindowBounds(window_bounds);
     gfx::Size current_size = frame_view->GetBoundsForClientView().size();
@@ -682,13 +700,15 @@ bool ClientControlledShellSurface::GetSavedWindowPlacement(
 // views::View overrides:
 
 gfx::Size ClientControlledShellSurface::GetMaximumSize() const {
-  // On ChromeOS, a window with non empty maximum size is non-maximizable,
-  // even if CanMaximize() returns true. ClientControlledShellSurface
-  // sololy depends on |can_maximize_| to determine if it is maximizable,
-  // so just return empty size because the maximum size in
-  // ClientControlledShellSurface is used only to tell the resizability,
-  // but not real maximum size.
-  return gfx::Size();
+  if (can_maximize_) {
+    // On ChromeOS, a window with non empty maximum size is non-maximizable,
+    // even if CanMaximize() returns true. ClientControlledShellSurface
+    // sololy depends on |can_maximize_| to determine if it is maximizable,
+    // so just return empty size.
+    return gfx::Size();
+  } else {
+    return ShellSurfaceBase::GetMaximumSize();
+  }
 }
 
 void ClientControlledShellSurface::OnDeviceScaleFactorChanged(float old_dsf,
@@ -902,14 +922,14 @@ bool ClientControlledShellSurface::OnPreWidgetCommit() {
 
     case ash::mojom::WindowStateType::MAXIMIZED:
     case ash::mojom::WindowStateType::FULLSCREEN:
-      animation_type = ash::wm::ClientControlledState::kAnimationCrossFade;
+      if (!window_state->IsPip())
+        animation_type = ash::wm::ClientControlledState::kAnimationCrossFade;
       break;
 
     default:
       break;
   }
 
-  // PIP windows should not be able to be active.
   if (pending_window_state_ == ash::mojom::WindowStateType::PIP) {
     if (ash::features::IsPipRoundedCornersEnabled()) {
       decorator_ = std::make_unique<ash::RoundedCornerDecorator>(
@@ -920,10 +940,22 @@ bool ClientControlledShellSurface::OnPreWidgetCommit() {
     decorator_.reset();  // Remove rounded corners.
   }
 
+  bool wasPip = window_state->IsPip();
+
   if (client_controlled_state_->EnterNextState(window_state,
                                                pending_window_state_)) {
     client_controlled_state_->set_next_bounds_change_animation_type(
         animation_type);
+  }
+
+  if (wasPip && !window_state->IsMinimized()) {
+    // Expanding PIP should end split-view. See crbug.com/941788.
+    ash::Shell::Get()->split_view_controller()->EndSplitView(
+        ash::SplitViewController::EndReason::kPipExpanded);
+    // As Android doesn't activate PIP tasks after they are expanded, we need
+    // to do it here explicitly.
+    // TODO(937738): Investigate if we can activate PIP windows inside commit.
+    window_state->Activate();
   }
 
   return true;
@@ -980,7 +1012,13 @@ void ClientControlledShellSurface::UpdateFrame() {
       wide_frame_ = std::make_unique<ash::WideFrameView>(widget_);
       ash::ImmersiveFullscreenController::EnableForWidget(widget_, false);
       wide_frame_->Init(immersive_fullscreen_controller_.get());
+      wide_frame_->header_view()->GetFrameHeader()->SetFrameTextOverride(
+          GetFrameView()
+              ->GetHeaderView()
+              ->GetFrameHeader()
+              ->frame_text_override());
       wide_frame_->GetWidget()->Show();
+
       // Restoring window targeter replaced by ImmersiveFullscreenController.
       InstallCustomWindowTargeter();
 

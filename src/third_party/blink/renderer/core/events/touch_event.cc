@@ -147,7 +147,7 @@ enum TouchTargetAndDispatchResultType {
 };
 
 void LogTouchTargetHistogram(EventTarget* event_target,
-                             unsigned short phase,
+                             uint8_t phase,
                              bool default_prevented_before_current_target,
                              bool default_prevented) {
   int result = 0;
@@ -295,28 +295,30 @@ void TouchEvent::preventDefault() {
       break;
   }
 
-  if (!message.IsEmpty() && view() && view()->IsLocalDOMWindow() &&
-      view()->GetFrame()) {
-    Intervention::GenerateReport(ToLocalDOMWindow(view())->GetFrame(), id,
-                                 message);
+  auto* local_dom_window = DynamicTo<LocalDOMWindow>(view());
+  if (!message.IsEmpty() && local_dom_window && local_dom_window->GetFrame()) {
+    Intervention::GenerateReport(local_dom_window->GetFrame(), id, message);
   }
 
   if ((type() == event_type_names::kTouchstart ||
        type() == event_type_names::kTouchmove) &&
-      view() && view()->IsLocalDOMWindow() && view()->GetFrame() &&
-      current_touch_action_ == TouchAction::kTouchActionAuto) {
-    switch (HandlingPassive()) {
-      case PassiveMode::kNotPassiveDefault:
-        UseCounter::Count(ToLocalFrame(view()->GetFrame()),
-                          WebFeature::kTouchEventPreventedNoTouchAction);
-        break;
-      case PassiveMode::kPassiveForcedDocumentLevel:
-        UseCounter::Count(
-            ToLocalFrame(view()->GetFrame()),
-            WebFeature::kTouchEventPreventedForcedDocumentPassiveNoTouchAction);
-        break;
-      default:
-        break;
+      local_dom_window) {
+    auto* local_frame = DynamicTo<LocalFrame>(view()->GetFrame());
+    if (local_frame && current_touch_action_ == TouchAction::kTouchActionAuto) {
+      switch (HandlingPassive()) {
+        case PassiveMode::kNotPassiveDefault:
+          UseCounter::Count(local_dom_window->document(),
+                            WebFeature::kTouchEventPreventedNoTouchAction);
+          break;
+        case PassiveMode::kPassiveForcedDocumentLevel:
+          UseCounter::Count(
+              local_dom_window->document(),
+              WebFeature::
+                  kTouchEventPreventedForcedDocumentPassiveNoTouchAction);
+          break;
+        default:
+          break;
+      }
     }
   }
 }

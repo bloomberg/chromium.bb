@@ -68,12 +68,10 @@ namespace blink {
 
 PaintLayerCompositor::PaintLayerCompositor(LayoutView& layout_view)
     : layout_view_(layout_view),
-      compositing_reason_finder_(layout_view),
       pending_update_type_(kCompositingUpdateNone),
       has_accelerated_compositing_(true),
       compositing_(false),
       root_should_always_composite_dirty_(true),
-      in_overlay_fullscreen_video_(false),
       root_layer_attachment_(kRootLayerUnattached) {
   UpdateAcceleratedCompositingSettings();
 }
@@ -132,11 +130,11 @@ bool PaintLayerCompositor::RootShouldAlwaysComposite() const {
   if (!has_accelerated_compositing_)
     return false;
   return layout_view_.GetFrame()->IsLocalRoot() ||
-         compositing_reason_finder_.RequiresCompositingForScrollableFrame();
+         CompositingReasonFinder::RequiresCompositingForScrollableFrame(
+             layout_view_);
 }
 
 void PaintLayerCompositor::UpdateAcceleratedCompositingSettings() {
-  compositing_reason_finder_.UpdateTriggers();
   has_accelerated_compositing_ = layout_view_.GetDocument()
                                      .GetSettings()
                                      ->GetAcceleratedCompositingEnabled();
@@ -155,9 +153,9 @@ static LayoutVideo* FindFullscreenVideoLayoutObject(Document& document) {
   // Recursively find the document that is in fullscreen.
   Element* fullscreen_element = Fullscreen::FullscreenElementFrom(document);
   Document* content_document = &document;
-  while (fullscreen_element && fullscreen_element->IsFrameOwnerElement()) {
-    content_document =
-        ToHTMLFrameOwnerElement(fullscreen_element)->contentDocument();
+  while (auto* frame_owner =
+             DynamicTo<HTMLFrameOwnerElement>(fullscreen_element)) {
+    content_document = frame_owner->contentDocument();
     if (!content_document)
       return nullptr;
     fullscreen_element = Fullscreen::FullscreenElementFrom(*content_document);
@@ -182,10 +180,10 @@ void PaintLayerCompositor::UpdateIfNeededRecursive(
       compositing_reasons_stats.active_animation_layers, 1, 100, 5);
   UMA_HISTOGRAM_CUSTOM_COUNTS(
       "Blink.Compositing.LayerPromotionCount.AssumedOverlap",
-      compositing_reasons_stats.assumed_overlap_layers, 1, 100, 5);
+      compositing_reasons_stats.assumed_overlap_layers, 1, 1000, 5);
   UMA_HISTOGRAM_CUSTOM_COUNTS(
       "Blink.Compositing.LayerPromotionCount.IndirectComposited",
-      compositing_reasons_stats.indirect_composited_layers, 1, 100, 5);
+      compositing_reasons_stats.indirect_composited_layers, 1, 1000, 5);
   UMA_HISTOGRAM_CUSTOM_COUNTS(
       "Blink.Compositing.LayerPromotionCount.TotalComposited",
       compositing_reasons_stats.total_composited_layers, 1, 1000, 10);
@@ -205,9 +203,9 @@ void PaintLayerCompositor::UpdateIfNeededRecursiveInternal(
   for (Frame* child =
            layout_view_.GetFrameView()->GetFrame().Tree().FirstChild();
        child; child = child->Tree().NextSibling()) {
-    if (!child->IsLocalFrame())
+    auto* local_frame = DynamicTo<LocalFrame>(child);
+    if (!local_frame)
       continue;
-    LocalFrame* local_frame = ToLocalFrame(child);
     // It's possible for trusted Pepper plugins to force hit testing in
     // situations where the frame tree is in an inconsistent state, such as in
     // the middle of frame detach.
@@ -233,7 +231,13 @@ void PaintLayerCompositor::UpdateIfNeededRecursiveInternal(
   // InCompositingUpdate.
   EnableCompositingModeIfNeeded();
 
+#if DCHECK_IS_ON()
+  view->SetIsUpdatingDescendantDependentFlags(true);
+#endif
   RootLayer()->UpdateDescendantDependentFlags();
+#if DCHECK_IS_ON()
+  view->SetIsUpdatingDescendantDependentFlags(false);
+#endif
 
   layout_view_.CommitPendingSelection();
 
@@ -252,9 +256,9 @@ void PaintLayerCompositor::UpdateIfNeededRecursiveInternal(
   if (!layout_view_.GetDocument().Printing() ||
       RuntimeEnabledFeatures::PrintBrowserEnabled()) {
     // Although BlinkGenPropertyTreesEnabled still uses PaintLayerCompositor to
-    // generate the composited layer tree/list, it also has the SPv2 behavior of
+    // generate the composited layer tree/list, it also has the CAP behavior of
     // removing layers that do not draw content. As such, we use the same path
-    // as SPv2 for updating composited animations once we know the final set of
+    // as CAP for updating composited animations once we know the final set of
     // composited elements (see LocalFrameView::UpdateLifecyclePhasesInternal,
     // during kPaintClean).
     if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
@@ -282,9 +286,9 @@ void PaintLayerCompositor::UpdateIfNeededRecursiveInternal(
   for (Frame* child =
            layout_view_.GetFrameView()->GetFrame().Tree().FirstChild();
        child; child = child->Tree().NextSibling()) {
-    if (!child->IsLocalFrame())
+    auto* local_frame = DynamicTo<LocalFrame>(child);
+    if (!local_frame)
       continue;
-    LocalFrame* local_frame = ToLocalFrame(child);
     if (local_frame->ShouldThrottleRendering() ||
         !local_frame->ContentLayoutObject())
       continue;
@@ -301,6 +305,10 @@ void PaintLayerCompositor::SetNeedsCompositingUpdate(
   pending_update_type_ = std::max(pending_update_type_, update_type);
   if (Page* page = GetPage())
     page->Animator().ScheduleVisualUpdate(layout_view_.GetFrame());
+
+  if (layout_view_.DocumentBeingDestroyed())
+    return;
+
   Lifecycle().EnsureStateAtMost(DocumentLifecycle::kLayoutClean);
 }
 
@@ -332,7 +340,6 @@ GraphicsLayer* PaintLayerCompositor::OverlayFullscreenVideoGraphicsLayer() {
 }
 
 void PaintLayerCompositor::ApplyOverlayFullscreenVideoAdjustmentIfNeeded() {
-  in_overlay_fullscreen_video_ = false;
   GraphicsLayer* content_parent = ParentForContentLayers();
   if (!content_parent)
     return;
@@ -348,7 +355,6 @@ void PaintLayerCompositor::ApplyOverlayFullscreenVideoAdjustmentIfNeeded() {
 
   content_parent->RemoveAllChildren();
   content_parent->AddChild(video_layer);
-  in_overlay_fullscreen_video_ = true;
 }
 
 void PaintLayerCompositor::AdjustOverlayFullscreenVideoPosition(
@@ -366,8 +372,9 @@ void PaintLayerCompositor::UpdateWithoutAcceleratedCompositing(
     CompositingUpdateType update_type) {
   DCHECK(!HasAcceleratedCompositing());
 
-  if (update_type >= kCompositingUpdateAfterCompositingInputChange)
-    CompositingInputsUpdater(RootLayer(), compositing_reason_finder_).Update();
+  if (update_type >= kCompositingUpdateAfterCompositingInputChange) {
+    CompositingInputsUpdater(RootLayer(), GetCompositingInputsRoot()).Update();
+  }
 
 #if DCHECK_IS_ON()
   CompositingInputsUpdater::AssertNeedsCompositingInputsUpdateBitsCleared(
@@ -453,7 +460,7 @@ void PaintLayerCompositor::UpdateIfNeeded(
   Vector<PaintLayer*> layers_needing_paint_invalidation;
 
   if (update_type >= kCompositingUpdateAfterCompositingInputChange) {
-    CompositingInputsUpdater(update_root, compositing_reason_finder_).Update();
+    CompositingInputsUpdater(RootLayer(), GetCompositingInputsRoot()).Update();
 
 #if DCHECK_IS_ON()
     // FIXME: Move this check to the end of the compositing update.
@@ -471,7 +478,7 @@ void PaintLayerCompositor::UpdateIfNeeded(
       return;
     }
 
-    CompositingRequirementsUpdater(layout_view_, compositing_reason_finder_)
+    CompositingRequirementsUpdater(layout_view_)
         .Update(update_root, compositing_reasons_stats);
 
     CompositingLayerAssigner layer_assigner(this);
@@ -545,19 +552,26 @@ void PaintLayerCompositor::UpdateIfNeeded(
         layers_needing_paint_invalidation[i]->GetLayoutObject());
   }
 
+  // When BlinkGenPropertyTrees is enabled, layer attachment, including the root
+  // layer, must occur in the paint lifecycle step.
+  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
+    AttachRootLayerViaChromeClient();
+
+  // Inform the inspector that the layer tree has changed.
+  if (IsMainFrame() && !RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
+    probe::LayerTreeDidChange(layout_view_.GetFrame());
+
+  Lifecycle().AdvanceTo(DocumentLifecycle::kCompositingClean);
+}
+
+void PaintLayerCompositor::AttachRootLayerViaChromeClient() {
   if (root_layer_attachment_ == kRootLayerPendingAttachViaChromeClient) {
     if (Page* page = layout_view_.GetFrame()->GetPage()) {
       page->GetChromeClient().AttachRootGraphicsLayer(RootGraphicsLayer(),
                                                       layout_view_.GetFrame());
-      root_layer_attachment_ = kRootLayerAttachedViaChromeClient;
     }
+    root_layer_attachment_ = kRootLayerAttachedViaChromeClient;
   }
-
-  // Inform the inspector that the layer tree has changed.
-  if (IsMainFrame())
-    probe::layerTreeDidChange(layout_view_.GetFrame());
-
-  Lifecycle().AdvanceTo(DocumentLifecycle::kCompositingClean);
 }
 
 static void RestartAnimationOnCompositor(const LayoutObject& layout_object) {
@@ -674,11 +688,10 @@ void PaintLayerCompositor::PaintInvalidationOnCompositingChange(
 
 PaintLayerCompositor* PaintLayerCompositor::FrameContentsCompositor(
     LayoutEmbeddedContent& layout_object) {
-  if (!layout_object.GetNode()->IsFrameOwnerElement())
+  auto* element = DynamicTo<HTMLFrameOwnerElement>(layout_object.GetNode());
+  if (!element)
     return nullptr;
 
-  HTMLFrameOwnerElement* element =
-      ToHTMLFrameOwnerElement(layout_object.GetNode());
   if (Document* content_document = element->contentDocument()) {
     if (auto* view = content_document->GetLayoutView())
       return view->Compositor();
@@ -735,22 +748,13 @@ GraphicsLayer* PaintLayerCompositor::RootGraphicsLayer() const {
 }
 
 GraphicsLayer* PaintLayerCompositor::PaintRootGraphicsLayer() const {
-  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-    if (layout_view_.GetDocument().GetPage()->GetChromeClient().IsPopup())
-      return RootGraphicsLayer();
-
-    // Start painting at the inner viewport container layer which is an ancestor
-    // of both the main contents layers and the scrollbar layers.
-    if (IsMainFrame() && GetVisualViewport().ContainerLayer())
-      return GetVisualViewport().ContainerLayer();
-
+  if (layout_view_.GetDocument().GetPage()->GetChromeClient().IsPopup())
     return RootGraphicsLayer();
-  }
 
-  if (ParentForContentLayers() && ParentForContentLayers()->Children().size()) {
-    DCHECK_EQ(ParentForContentLayers()->Children().size(), 1U);
-    return ParentForContentLayers()->Children()[0];
-  }
+  // Start painting at the inner viewport container layer which is an ancestor
+  // of both the main contents layers and the scrollbar layers.
+  if (IsMainFrame() && GetVisualViewport().ContainerLayer())
+    return GetVisualViewport().ContainerLayer();
 
   return RootGraphicsLayer();
 }
@@ -783,9 +787,9 @@ void PaintLayerCompositor::SetIsInWindow(bool is_in_window) {
 
 void PaintLayerCompositor::UpdatePotentialCompositingReasonsFromStyle(
     PaintLayer& layer) {
-  layer.SetPotentialCompositingReasonsFromStyle(
-      compositing_reason_finder_.PotentialCompositingReasonsFromStyle(
-          layer.GetLayoutObject()));
+  auto reasons = CompositingReasonFinder::PotentialCompositingReasonsFromStyle(
+      layer.GetLayoutObject());
+  layer.SetPotentialCompositingReasonsFromStyle(reasons);
 }
 
 bool PaintLayerCompositor::CanBeComposited(const PaintLayer* layer) const {
@@ -796,7 +800,7 @@ bool PaintLayerCompositor::CanBeComposited(const PaintLayer* layer) const {
     return false;
 
   const bool has_compositor_animation =
-      compositing_reason_finder_.CompositingReasonsForAnimation(
+      CompositingReasonFinder::CompositingReasonsForAnimation(
           *layer->GetLayoutObject().Style()) != CompositingReason::kNone;
   return has_accelerated_compositing_ &&
          (has_compositor_animation || !layer->SubtreeIsInvisible()) &&
@@ -877,9 +881,9 @@ void PaintLayerCompositor::DestroyRootLayer() {
 }
 
 void PaintLayerCompositor::AttachRootLayer() {
-  // In Slimming Paint v2, PaintArtifactCompositor is responsible for the root
-  // layer.
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  // With CompositeAfterPaint, PaintArtifactCompositor is responsible for the
+  // root layer.
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
   if (layout_view_.GetFrame()->IsLocalRoot()) {
@@ -990,9 +994,9 @@ bool PaintLayerCompositor::IsRootScrollerAncestor() const {
   if (root_scroller_layer) {
     Frame* frame = root_scroller_layer->GetLayoutObject().GetFrame();
     while (frame) {
-      if (frame->IsLocalFrame()) {
+      if (auto* local_frame = DynamicTo<LocalFrame>(frame)) {
         PaintLayerCompositor* plc =
-            ToLocalFrame(frame)->View()->GetLayoutView()->Compositor();
+            local_frame->View()->GetLayoutView()->Compositor();
         if (plc == this)
           return true;
       }

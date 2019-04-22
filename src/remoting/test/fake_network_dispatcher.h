@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
-#include "third_party/webrtc/p2p/base/packetsocketfactory.h"
+#include "third_party/webrtc/p2p/base/packet_socket_factory.h"
 
 namespace base {
 class SingleThreadTaskRunner;

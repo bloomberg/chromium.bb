@@ -1023,7 +1023,13 @@ void vpx_highbd_10_get16x16var_c(const uint8_t* src_ptr,
                                  int ref_stride,
                                  unsigned int* sse,
                                  int* sum);
-#define vpx_highbd_10_get16x16var vpx_highbd_10_get16x16var_c
+void vpx_highbd_10_get16x16var_sse2(const uint8_t* src_ptr,
+                                    int src_stride,
+                                    const uint8_t* ref_ptr,
+                                    int ref_stride,
+                                    unsigned int* sse,
+                                    int* sum);
+#define vpx_highbd_10_get16x16var vpx_highbd_10_get16x16var_sse2
 
 void vpx_highbd_10_get8x8var_c(const uint8_t* src_ptr,
                                int src_stride,
@@ -1031,7 +1037,13 @@ void vpx_highbd_10_get8x8var_c(const uint8_t* src_ptr,
                                int ref_stride,
                                unsigned int* sse,
                                int* sum);
-#define vpx_highbd_10_get8x8var vpx_highbd_10_get8x8var_c
+void vpx_highbd_10_get8x8var_sse2(const uint8_t* src_ptr,
+                                  int src_stride,
+                                  const uint8_t* ref_ptr,
+                                  int ref_stride,
+                                  unsigned int* sse,
+                                  int* sum);
+#define vpx_highbd_10_get8x8var vpx_highbd_10_get8x8var_sse2
 
 unsigned int vpx_highbd_10_mse16x16_c(const uint8_t* src_ptr,
                                       int src_stride,
@@ -1674,7 +1686,13 @@ void vpx_highbd_12_get16x16var_c(const uint8_t* src_ptr,
                                  int ref_stride,
                                  unsigned int* sse,
                                  int* sum);
-#define vpx_highbd_12_get16x16var vpx_highbd_12_get16x16var_c
+void vpx_highbd_12_get16x16var_sse2(const uint8_t* src_ptr,
+                                    int src_stride,
+                                    const uint8_t* ref_ptr,
+                                    int ref_stride,
+                                    unsigned int* sse,
+                                    int* sum);
+#define vpx_highbd_12_get16x16var vpx_highbd_12_get16x16var_sse2
 
 void vpx_highbd_12_get8x8var_c(const uint8_t* src_ptr,
                                int src_stride,
@@ -1682,7 +1700,13 @@ void vpx_highbd_12_get8x8var_c(const uint8_t* src_ptr,
                                int ref_stride,
                                unsigned int* sse,
                                int* sum);
-#define vpx_highbd_12_get8x8var vpx_highbd_12_get8x8var_c
+void vpx_highbd_12_get8x8var_sse2(const uint8_t* src_ptr,
+                                  int src_stride,
+                                  const uint8_t* ref_ptr,
+                                  int ref_stride,
+                                  unsigned int* sse,
+                                  int* sum);
+#define vpx_highbd_12_get8x8var vpx_highbd_12_get8x8var_sse2
 
 unsigned int vpx_highbd_12_mse16x16_c(const uint8_t* src_ptr,
                                       int src_stride,
@@ -2325,7 +2349,13 @@ void vpx_highbd_8_get16x16var_c(const uint8_t* src_ptr,
                                 int ref_stride,
                                 unsigned int* sse,
                                 int* sum);
-#define vpx_highbd_8_get16x16var vpx_highbd_8_get16x16var_c
+void vpx_highbd_8_get16x16var_sse2(const uint8_t* src_ptr,
+                                   int src_stride,
+                                   const uint8_t* ref_ptr,
+                                   int ref_stride,
+                                   unsigned int* sse,
+                                   int* sum);
+#define vpx_highbd_8_get16x16var vpx_highbd_8_get16x16var_sse2
 
 void vpx_highbd_8_get8x8var_c(const uint8_t* src_ptr,
                               int src_stride,
@@ -2333,7 +2363,13 @@ void vpx_highbd_8_get8x8var_c(const uint8_t* src_ptr,
                               int ref_stride,
                               unsigned int* sse,
                               int* sum);
-#define vpx_highbd_8_get8x8var vpx_highbd_8_get8x8var_c
+void vpx_highbd_8_get8x8var_sse2(const uint8_t* src_ptr,
+                                 int src_stride,
+                                 const uint8_t* ref_ptr,
+                                 int ref_stride,
+                                 unsigned int* sse,
+                                 int* sum);
+#define vpx_highbd_8_get8x8var vpx_highbd_8_get8x8var_sse2
 
 unsigned int vpx_highbd_8_mse16x16_c(const uint8_t* src_ptr,
                                      int src_stride,
@@ -4029,17 +4065,32 @@ void vpx_highbd_h_predictor_8x8_sse2(uint16_t* dst,
 void vpx_highbd_hadamard_16x16_c(const int16_t* src_diff,
                                  ptrdiff_t src_stride,
                                  tran_low_t* coeff);
-#define vpx_highbd_hadamard_16x16 vpx_highbd_hadamard_16x16_c
+void vpx_highbd_hadamard_16x16_avx2(const int16_t* src_diff,
+                                    ptrdiff_t src_stride,
+                                    tran_low_t* coeff);
+RTCD_EXTERN void (*vpx_highbd_hadamard_16x16)(const int16_t* src_diff,
+                                              ptrdiff_t src_stride,
+                                              tran_low_t* coeff);
 
 void vpx_highbd_hadamard_32x32_c(const int16_t* src_diff,
                                  ptrdiff_t src_stride,
                                  tran_low_t* coeff);
-#define vpx_highbd_hadamard_32x32 vpx_highbd_hadamard_32x32_c
+void vpx_highbd_hadamard_32x32_avx2(const int16_t* src_diff,
+                                    ptrdiff_t src_stride,
+                                    tran_low_t* coeff);
+RTCD_EXTERN void (*vpx_highbd_hadamard_32x32)(const int16_t* src_diff,
+                                              ptrdiff_t src_stride,
+                                              tran_low_t* coeff);
 
 void vpx_highbd_hadamard_8x8_c(const int16_t* src_diff,
                                ptrdiff_t src_stride,
                                tran_low_t* coeff);
-#define vpx_highbd_hadamard_8x8 vpx_highbd_hadamard_8x8_c
+void vpx_highbd_hadamard_8x8_avx2(const int16_t* src_diff,
+                                  ptrdiff_t src_stride,
+                                  tran_low_t* coeff);
+RTCD_EXTERN void (*vpx_highbd_hadamard_8x8)(const int16_t* src_diff,
+                                            ptrdiff_t src_stride,
+                                            tran_low_t* coeff);
 
 void vpx_highbd_idct16x16_10_add_c(const tran_low_t* input,
                                    uint16_t* dest,
@@ -4925,6 +4976,10 @@ void vpx_highbd_sad8x8x4d_sse2(const uint8_t* src_ptr,
                                int ref_stride,
                                uint32_t* sad_array);
 #define vpx_highbd_sad8x8x4d vpx_highbd_sad8x8x4d_sse2
+
+int vpx_highbd_satd_c(const tran_low_t* coeff, int length);
+int vpx_highbd_satd_avx2(const tran_low_t* coeff, int length);
+RTCD_EXTERN int (*vpx_highbd_satd)(const tran_low_t* coeff, int length);
 
 void vpx_highbd_subtract_block_c(int rows,
                                  int cols,
@@ -7767,6 +7822,15 @@ static void setup_rtcd_internal(void) {
   vpx_highbd_d63_predictor_8x8 = vpx_highbd_d63_predictor_8x8_c;
   if (flags & HAS_SSSE3)
     vpx_highbd_d63_predictor_8x8 = vpx_highbd_d63_predictor_8x8_ssse3;
+  vpx_highbd_hadamard_16x16 = vpx_highbd_hadamard_16x16_c;
+  if (flags & HAS_AVX2)
+    vpx_highbd_hadamard_16x16 = vpx_highbd_hadamard_16x16_avx2;
+  vpx_highbd_hadamard_32x32 = vpx_highbd_hadamard_32x32_c;
+  if (flags & HAS_AVX2)
+    vpx_highbd_hadamard_32x32 = vpx_highbd_hadamard_32x32_avx2;
+  vpx_highbd_hadamard_8x8 = vpx_highbd_hadamard_8x8_c;
+  if (flags & HAS_AVX2)
+    vpx_highbd_hadamard_8x8 = vpx_highbd_hadamard_8x8_avx2;
   vpx_highbd_idct16x16_10_add = vpx_highbd_idct16x16_10_add_sse2;
   if (flags & HAS_SSE4_1)
     vpx_highbd_idct16x16_10_add = vpx_highbd_idct16x16_10_add_sse4_1;
@@ -7794,6 +7858,9 @@ static void setup_rtcd_internal(void) {
   vpx_highbd_idct8x8_64_add = vpx_highbd_idct8x8_64_add_sse2;
   if (flags & HAS_SSE4_1)
     vpx_highbd_idct8x8_64_add = vpx_highbd_idct8x8_64_add_sse4_1;
+  vpx_highbd_satd = vpx_highbd_satd_c;
+  if (flags & HAS_AVX2)
+    vpx_highbd_satd = vpx_highbd_satd_avx2;
   vpx_idct32x32_135_add = vpx_idct32x32_135_add_sse2;
   if (flags & HAS_SSSE3)
     vpx_idct32x32_135_add = vpx_idct32x32_135_add_ssse3;

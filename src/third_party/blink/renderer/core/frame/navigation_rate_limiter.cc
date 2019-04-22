@@ -47,9 +47,10 @@ bool NavigationRateLimiter::CanProceed() {
   // the browser process with the FrameHostMsg_DidAddMessageToConsole IPC.
   if (!error_message_sent_) {
     error_message_sent_ = true;
-    if (frame_->IsLocalFrame()) {
-      ToLocalFrame(frame_)->Console().AddMessage(ConsoleMessage::Create(
-          kJSMessageSource, kWarningMessageLevel,
+    if (auto* local_frame = DynamicTo<LocalFrame>(frame_.Get())) {
+      local_frame->Console().AddMessage(ConsoleMessage::Create(
+          mojom::ConsoleMessageSource::kJavaScript,
+          mojom::ConsoleMessageLevel::kWarning,
           "Throttling navigation to prevent the browser from hanging. See "
           "https://crbug.com/882238. Command line switch "
           "--disable-ipc-flooding-protection can be used to bypass the "

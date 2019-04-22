@@ -20,8 +20,8 @@
 #include "base/bind_helpers.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -64,6 +64,7 @@
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkSurface.h"
+#include "third_party/skia/include/core/SkTypes.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
@@ -73,6 +74,7 @@
 #include "ui/gfx/geometry/quad_f.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
+#include "ui/gfx/rrect_f.h"
 #include "ui/gfx/skia_util.h"
 
 using gpu::gles2::GLES2Interface;
@@ -107,13 +109,14 @@ Float4 UVClampRect(gfx::RectF uv_visible_rect,
 }
 
 Float4 PremultipliedColor(SkColor color, float opacity) {
-  const float factor = 1.0f / 255.0f;
-  const float alpha = opacity * SkColorGetA(color) * factor;
-
-  Float4 result = {{SkColorGetR(color) * factor * alpha,
-                    SkColorGetG(color) * factor * alpha,
-                    SkColorGetB(color) * factor * alpha, alpha}};
-  return result;
+  const U8CPU alpha255 = SkColorGetA(color);
+  const unsigned int alpha256 = alpha255 + 1;
+  const unsigned int premultiplied_red = (SkColorGetR(color) * alpha256) >> 8;
+  const unsigned int premultiplied_green = (SkColorGetG(color) * alpha256) >> 8;
+  const unsigned int premultiplied_blue = (SkColorGetB(color) * alpha256) >> 8;
+  const float factor = opacity / 255.0f;
+  return {{premultiplied_red * factor, premultiplied_green * factor,
+           premultiplied_blue * factor, alpha255 * factor}};
 }
 
 SamplerType SamplerTypeFromTextureTarget(GLenum target) {
@@ -205,11 +208,21 @@ struct GLRenderer::DrawRenderPassDrawQuadParams {
 
   const gfx::QuadF* clip_region = nullptr;
   bool flip_texture = false;
+
+  // |window_matrix| maps from [-1,-1]-[1,1] unit square coordinates to window
+  // pixel coordinates.
   gfx::Transform window_matrix;
+  // |projection_matrix| maps texture coordinates (in pixels) to the 2D plane in
+  // [-1,-1]-[1,1] unit square coordinates. If FlippedFrameBuffer() is true,
+  // |projection_matrix| includes this flip.
   gfx::Transform projection_matrix;
+  // |quad_to_target_transform| transforms from local quad pixel coordinates to
+  // target content space pixel coordinates, including scale, offset,
+  // perspective, and rotation.
   gfx::Transform quad_to_target_transform;
   const cc::FilterOperations* filters = nullptr;
   const cc::FilterOperations* backdrop_filters = nullptr;
+  const gfx::RRectF* backdrop_filter_bounds = nullptr;
 
   // Whether the texture to be sampled from needs to be flipped.
   bool source_needs_flip = false;
@@ -243,6 +256,18 @@ struct GLRenderer::DrawRenderPassDrawQuadParams {
 
   gfx::QuadF surface_quad;
 
+  // |contents_device_transform| transforms from vertex geometry, which is often
+  // the unit quad [-0.5, 0.5], all the way to 2D window pixel coordinates,
+  // including 3D effects, frame buffer orientation, and window offset. The
+  // definition of the incoming vertex geometry comes from either
+  // shared_geometry_ or clipped_geometry_, which are initialized from
+  // DirectRenderer::QuadVertexRect or DynamicGeometryBinding, respectively.
+  // |contents_device_transform| is typically calculated as
+  //    |window_matrix| * |projection_matrix| * |quad_rect_matrix|
+  // and then flattened with FlattenTo2d(). Here, |quad_rect_matrix| is a
+  // combination of the geometry->quad transform as well as the quad->target
+  // space transform. The geometry->quad is the mapping from the bound geometry,
+  // often [-0.5, 0.5], to the quad, which is quad->rect.
   gfx::Transform contents_device_transform;
 
   gfx::RectF tex_coord_rect;
@@ -312,10 +337,7 @@ GLRenderer::GLRenderer(
       gl_(output_surface->context_provider()->ContextGL()),
       context_support_(output_surface->context_provider()->ContextSupport()),
       texture_deleter_(current_task_runner),
-      copier_(output_surface->context_provider(),
-              &texture_deleter_,
-              base::BindRepeating(&GLRenderer::MoveFromDrawToWindowSpace,
-                                  base::Unretained(this))),
+      copier_(output_surface->context_provider(), &texture_deleter_),
       sync_queries_(gl_),
       bound_geometry_(NO_BINDING),
       color_lut_cache_(gl_,
@@ -348,7 +370,8 @@ GLRenderer::~GLRenderer() {
   if (context_visibility_) {
     auto* context_provider = output_surface_->context_provider();
     auto* cache_controller = context_provider->CacheController();
-    cache_controller->ClientBecameNotVisible(std::move(context_visibility_));
+    cache_controller->ClientBecameNotVisibleDuringShutdown(
+        std::move(context_visibility_));
   }
 }
 
@@ -394,7 +417,7 @@ void GLRenderer::DiscardPixels() {
       output_surface_->capabilities().uses_default_gl_framebuffer;
   GLenum attachments[] = {static_cast<GLenum>(
       using_default_framebuffer ? GL_COLOR_EXT : GL_COLOR_ATTACHMENT0_EXT)};
-  gl_->DiscardFramebufferEXT(GL_FRAMEBUFFER, arraysize(attachments),
+  gl_->DiscardFramebufferEXT(GL_FRAMEBUFFER, base::size(attachments),
                              attachments);
 }
 
@@ -509,6 +532,14 @@ void GLRenderer::DoDrawQuad(const DrawQuad* quad,
       break;
     case DrawQuad::YUV_VIDEO_CONTENT:
       DrawYUVVideoQuad(YUVVideoDrawQuad::MaterialCast(quad), clip_region);
+      break;
+    case DrawQuad::VIDEO_HOLE:
+      // VideoHoleDrawQuad should only be used by Cast, and should
+      // have been replaced by cast-specific OverlayProcessor before
+      // reach here. In non-cast build, an untrusted render could send such
+      // Quad and the quad would then reach here unexpectedly. Therefore
+      // we should skip NOTREACHED() so an untrusted render is not capable
+      // of causing a crash.
       break;
   }
 }
@@ -659,16 +690,11 @@ void GLRenderer::RestoreBlendFuncToDefault(SkBlendMode blend_mode) {
   }
 }
 
-bool GLRenderer::ShouldApplyBackgroundFilters(
-    const RenderPassDrawQuad* quad,
+bool GLRenderer::ShouldApplyBackdropFilters(
     const cc::FilterOperations* backdrop_filters) {
   if (!backdrop_filters)
     return false;
   DCHECK(!backdrop_filters->IsEmpty());
-
-  // TODO(hendrikw): Look into allowing background filters to see pixels from
-  // other render targets.  See crbug.com/314867.
-
   return true;
 }
 
@@ -712,28 +738,55 @@ bool GetScaledUVs(const gfx::Rect& rect, const gfx::QuadF* clip, float uvs[8]) {
 gfx::Rect GLRenderer::GetBackdropBoundingBoxForRenderPassQuad(
     const RenderPassDrawQuad* quad,
     const gfx::Transform& contents_device_transform,
-    const cc::FilterOperations* filters,
+    const cc::FilterOperations* regular_filters,
     const cc::FilterOperations* backdrop_filters,
     const gfx::QuadF* clip_region,
+    const gfx::RRectF* backdrop_filter_bounds_input,
     bool use_aa,
+    gfx::RRectF* backdrop_filter_bounds,
     gfx::Rect* unclipped_rect) {
+  DCHECK(backdrop_filter_bounds);
+  DCHECK(unclipped_rect);
   gfx::QuadF scaled_region;
+  // |scaled_region| is a quad in [-0.5,0.5] space that represents |clip_region|
+  // as a fraction of the space defined by |quad->rect|. If |clip_region| is
+  // nullptr, then scaled_region is [-0.5,0.5].
   if (!GetScaledRegion(quad->rect, clip_region, &scaled_region)) {
     scaled_region = SharedGeometryQuad().BoundingBox();
   }
 
+  // |backdrop_rect| is now the bounding box of clip_region, in window pixel
+  // coordinates, and with flip applied.
   gfx::Rect backdrop_rect = gfx::ToEnclosingRect(cc::MathUtil::MapClippedRect(
       contents_device_transform, scaled_region.BoundingBox()));
+  gfx::Rect orig_backdrop_rect = backdrop_rect;
 
-  if (ShouldApplyBackgroundFilters(quad, backdrop_filters)) {
+  // |backdrop_filter_bounds_input| can (rarely) be nullptr, if the render pass
+  // was not found. For example, some GLRenderer tests can trigger this case,
+  // e.g. GLRendererShaderTest.DrawRenderPassQuadShaderPermutations.
+  if (backdrop_filter_bounds_input) {
+    *backdrop_filter_bounds = *backdrop_filter_bounds_input;
+  } else {
+    *backdrop_filter_bounds = gfx::RRectF();
+  }
+
+  if (ShouldApplyBackdropFilters(backdrop_filters)) {
     SkMatrix matrix;
+    // |filters_scale| is the ratio of render pass physical pixels to root layer
+    // layer space, including content-to-target-space scale and device pixel
+    // ratio.
     matrix.setScale(quad->filters_scale.x(), quad->filters_scale.y());
     if (FlippedFramebuffer()) {
       // TODO(jbroman): This probably isn't the right way to account for this.
       // Probably some combination of current_frame()->projection_matrix,
       // current_frame()->window_matrix and contents_device_transform?
+      // Likely this should be window_matrix*projection_matrix.
       matrix.postScale(1, -1);
     }
+    // |backdrop_rect| is now expanded for pixel moving backdrop_filters, offset
+    // by any backdrop-filter drop-shadow offset (flipped if
+    // FlippedFramebuffer()). Note that scale is not applied to the
+    // backdrop_rect itself, only the sigma or x/y offset of filters.
     backdrop_rect = backdrop_filters->MapRectReverse(backdrop_rect, matrix);
   }
 
@@ -742,8 +795,8 @@ gfx::Rect GLRenderer::GetBackdropBoundingBoxForRenderPassQuad(
     backdrop_rect.Inset(-kOutsetForAntialiasing, -kOutsetForAntialiasing);
   }
 
-  if (filters) {
-    DCHECK(!filters->IsEmpty());
+  if (regular_filters) {
+    DCHECK(!regular_filters->IsEmpty());
     // If we have filters, grab an extra one-pixel border around the
     // background, so texture edge clamping gives us a transparent border
     // in case the filter expands the result.
@@ -753,6 +806,8 @@ gfx::Rect GLRenderer::GetBackdropBoundingBoxForRenderPassQuad(
   *unclipped_rect = backdrop_rect;
   backdrop_rect.Intersect(MoveFromDrawToWindowSpace(
       current_frame()->current_render_pass->output_rect));
+  backdrop_filter_bounds->Offset(orig_backdrop_rect.origin() -
+                                 backdrop_rect.origin());
   return backdrop_rect;
 }
 
@@ -810,21 +865,36 @@ uint32_t GLRenderer::GetBackdropTexture(const gfx::Rect& window_rect) {
   return texture_id;
 }
 
-sk_sp<SkImage> GLRenderer::ApplyBackgroundFilters(
+sk_sp<SkImage> GLRenderer::ApplyBackdropFilters(
     const RenderPassDrawQuad* quad,
-    const cc::FilterOperations& backdrop_filters,
+    const cc::FilterOperations* backdrop_filters,
+    const cc::FilterOperations* regular_filters,
     uint32_t background_texture,
-    const gfx::Rect& rect,
+    const gfx::Rect& background_rect,
     const gfx::Rect& unclipped_rect,
-    const float backdrop_filter_quality) {
-  DCHECK(ShouldApplyBackgroundFilters(quad, &backdrop_filters));
+    const float backdrop_filter_quality,
+    const gfx::RRectF& backdrop_filter_bounds) {
+  DCHECK(ShouldApplyBackdropFilters(backdrop_filters));
   auto use_gr_context = ScopedUseGrContext::Create(this);
 
   gfx::Vector2d clipping_offset =
-      (rect.top_right() - unclipped_rect.top_right()) +
-      (rect.bottom_left() - unclipped_rect.bottom_left());
+      (background_rect.top_right() - unclipped_rect.top_right()) +
+      (background_rect.bottom_left() - unclipped_rect.bottom_left());
+
+  // Update the backdrop filter to include "regular" filters and opacity.
+  cc::FilterOperations backdrop_filters_plus_effects = *backdrop_filters;
+  if (regular_filters) {
+    for (const auto& filter_op : regular_filters->operations())
+      backdrop_filters_plus_effects.Append(filter_op);
+  }
+  if (quad->shared_quad_state->opacity < 1.0) {
+    backdrop_filters_plus_effects.Append(
+        cc::FilterOperation::CreateOpacityFilter(
+            quad->shared_quad_state->opacity));
+  }
+
   auto paint_filter = cc::RenderSurfaceFilters::BuildImageFilter(
-      backdrop_filters, gfx::SizeF(rect.size()),
+      backdrop_filters_plus_effects, gfx::SizeF(background_rect.size()),
       gfx::Vector2dF(clipping_offset));
 
   // TODO(senorblanco): background filters should be moved to the
@@ -836,17 +906,17 @@ sk_sp<SkImage> GLRenderer::ApplyBackgroundFilters(
   auto filter = paint_filter->cached_sk_filter_;
   bool flip_texture = true;
   sk_sp<SkImage> src_image =
-      WrapTexture(background_texture, GL_TEXTURE_2D, rect.size(),
+      WrapTexture(background_texture, GL_TEXTURE_2D, background_rect.size(),
                   use_gr_context->context(), flip_texture);
   if (!src_image) {
-    TRACE_EVENT_INSTANT0(
-        "cc", "ApplyBackgroundFilters wrap background texture failed",
-        TRACE_EVENT_SCOPE_THREAD);
+    TRACE_EVENT_INSTANT0("cc",
+                         "ApplyBackdropFilters wrap background texture failed",
+                         TRACE_EVENT_SCOPE_THREAD);
     return nullptr;
   }
 
   gfx::Rect quality_adjusted_rect =
-      ScaleToEnclosingRect(rect, backdrop_filter_quality);
+      ScaleToEnclosingRect(background_rect, backdrop_filter_quality);
 
   // Create surface to draw into.
   SkImageInfo dst_info = SkImageInfo::MakeN32Premul(
@@ -855,7 +925,7 @@ sk_sp<SkImage> GLRenderer::ApplyBackgroundFilters(
       use_gr_context->context(), SkBudgeted::kYes, dst_info);
   if (!surface) {
     TRACE_EVENT_INSTANT0("viz",
-                         "ApplyBackgroundFilters surface allocation failed",
+                         "ApplyBackdropFilters surface allocation failed",
                          TRACE_EVENT_SCOPE_THREAD);
     return nullptr;
   }
@@ -863,17 +933,45 @@ sk_sp<SkImage> GLRenderer::ApplyBackgroundFilters(
   // Big filters can sometimes fallback to CPU. Therefore, we need
   // to disable subnormal floats for performance and security reasons.
   cc::ScopedSubnormalFloatDisabler disabler;
-  SkMatrix local_matrix;
-  local_matrix.setScale(quad->filters_scale.x() * backdrop_filter_quality,
-                        quad->filters_scale.y() * backdrop_filter_quality);
 
-  SkPaint paint;
-  paint.setImageFilter(filter->makeWithLocalMatrix(local_matrix));
-  surface->getCanvas()->translate(-quality_adjusted_rect.x(),
-                                  -quality_adjusted_rect.y());
-  surface->getCanvas()->drawImageRect(
-      src_image, SkRect::MakeWH(rect.width(), rect.height()),
-      RectToSkRect(quality_adjusted_rect), &paint);
+  // First paint the backdrop at full opacity. The backdrop-filtered content
+  // will not be blended with the backdrop later, it will be rastered over the
+  // top. So we need to paint it here, unfiltered.
+  gfx::RectF src_image_rect =
+      gfx::RectF(background_rect.width(), background_rect.height());
+  SkRect dest_rect = RectToSkRect(gfx::Rect(quality_adjusted_rect.size()));
+  surface->getCanvas()->drawImageRect(src_image, RectFToSkRect(src_image_rect),
+                                      dest_rect, nullptr);
+
+  // Can't crop here, because the crop rect is applied prior to filtering, and
+  // some filters move pixels and need to process the full image.
+  // TODO(916314): this could probably be put back to just using
+  // drawImageRect on the unfiltered image, with &paint last argument to handle
+  // filters and opacity. Would be cleaner.
+  SkIPoint offset;
+  SkIRect subset;
+  sk_sp<SkImage> filtered_image = SkiaHelper::ApplyImageFilter(
+      use_gr_context->context(), src_image, src_image_rect, src_image_rect,
+      gfx::Vector2dF(1, 1), std::move(filter), &offset, &subset,
+      quad->filters_origin, true);
+
+  if (!backdrop_filter_bounds.IsEmpty()) {
+    // Clip the filtered image to the (rounded) bounding box of the element.
+    surface->getCanvas()->save();
+    gfx::RRectF clip_rect(backdrop_filter_bounds);
+    DCHECK(backdrop_filter_quality);
+    clip_rect.Scale(backdrop_filter_quality);
+    surface->getCanvas()->clipRRect(SkRRect(clip_rect), SkClipOp::kIntersect,
+                                    true /* antialias */);
+  }
+
+  // Now paint the pre-filtered image onto the canvas.
+  surface->getCanvas()->drawImageRect(filtered_image, subset, dest_rect,
+                                      nullptr);
+
+  if (!backdrop_filter_bounds.IsEmpty()) {
+    surface->getCanvas()->restore();
+  }
 
   // Flush the drawing before source texture read lock goes out of scope.
   // Skia API does not guarantee that when the SkImage goes out of scope,
@@ -889,8 +987,7 @@ sk_sp<SkImage> GLRenderer::ApplyBackgroundFilters(
 }
 
 const TileDrawQuad* GLRenderer::CanPassBeDrawnDirectly(const RenderPass* pass) {
-  return DirectRenderer::CanPassBeDrawnDirectly(pass, false,
-                                                resource_provider_);
+  return DirectRenderer::CanPassBeDrawnDirectly(pass, resource_provider_);
 }
 
 void GLRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad,
@@ -902,7 +999,6 @@ void GLRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad,
   params.window_matrix = current_frame()->window_matrix;
   params.projection_matrix = current_frame()->projection_matrix;
   params.tex_coord_rect = quad->tex_coord_rect;
-  params.backdrop_filter_quality = quad->backdrop_filter_quality;
   if (bypass != render_pass_bypass_quads_.end()) {
     TileDrawQuad* tile_quad = &bypass->second;
     // The projection matrix used by GLRenderer has a flip.  As tile texture
@@ -957,12 +1053,16 @@ void GLRenderer::DrawRenderPassQuadInternal(
 
 bool GLRenderer::InitializeRPDQParameters(
     DrawRenderPassDrawQuadParams* params) {
+  DCHECK(params);
   const RenderPassDrawQuad* quad = params->quad;
   SkMatrix local_matrix;
   local_matrix.setTranslate(quad->filters_origin.x(), quad->filters_origin.y());
   local_matrix.postScale(quad->filters_scale.x(), quad->filters_scale.y());
   params->filters = FiltersForPass(quad->render_pass_id);
-  params->backdrop_filters = BackgroundFiltersForPass(quad->render_pass_id);
+  params->backdrop_filters = BackdropFiltersForPass(quad->render_pass_id);
+  params->backdrop_filter_bounds =
+      BackdropFilterBoundsForPass(quad->render_pass_id);
+  params->backdrop_filter_quality = quad->backdrop_filter_quality;
   gfx::Rect dst_rect = params->filters
                            ? params->filters->MapRect(quad->rect, local_matrix)
                            : quad->rect;
@@ -1025,17 +1125,19 @@ void GLRenderer::UpdateRPDQShadersForBlending(
   SkBlendMode blend_mode = quad->shared_quad_state->blend_mode;
   params->use_shaders_for_blending =
       !CanApplyBlendModeUsingBlendFunc(blend_mode) ||
-      ShouldApplyBackgroundFilters(quad, params->backdrop_filters) ||
+      ShouldApplyBackdropFilters(params->backdrop_filters) ||
       settings_->force_blending_with_shaders;
 
   if (params->use_shaders_for_blending) {
     // Compute a bounding box around the pixels that will be visible through
     // the quad.
+    gfx::RRectF backdrop_filter_bounds_rect;
     gfx::Rect unclipped_rect;
     params->background_rect = GetBackdropBoundingBoxForRenderPassQuad(
         quad, params->contents_device_transform, params->filters,
-        params->backdrop_filters, params->clip_region, params->use_aa,
-        &unclipped_rect);
+        params->backdrop_filters, params->clip_region,
+        params->backdrop_filter_bounds, params->use_aa,
+        &backdrop_filter_bounds_rect, &unclipped_rect);
 
     if (!params->background_rect.IsEmpty()) {
       // The pixels from the filtered background should completely replace the
@@ -1049,13 +1151,13 @@ void GLRenderer::UpdateRPDQShadersForBlending(
       // LayerTreeHost::CalculateMemoryForRenderSurfaces.
       params->background_texture = GetBackdropTexture(params->background_rect);
 
-      if (ShouldApplyBackgroundFilters(quad, params->backdrop_filters)) {
+      if (ShouldApplyBackdropFilters(params->backdrop_filters)) {
         // Apply the background filters to R, so that it is applied in the
         // pixels' coordinate space.
-        params->background_image = ApplyBackgroundFilters(
-            quad, *params->backdrop_filters, params->background_texture,
-            params->background_rect, unclipped_rect,
-            params->backdrop_filter_quality);
+        params->background_image = ApplyBackdropFilters(
+            quad, params->backdrop_filters, params->filters,
+            params->background_texture, params->background_rect, unclipped_rect,
+            params->backdrop_filter_quality, backdrop_filter_bounds_rect);
         if (params->background_image) {
           params->background_image_id =
               GetGLTextureIDFromSkImage(params->background_image.get());
@@ -1069,8 +1171,8 @@ void GLRenderer::UpdateRPDQShadersForBlending(
           params->background_texture = 0;
         }
       } else if (CanApplyBlendModeUsingBlendFunc(blend_mode) &&
-                 ShouldApplyBackgroundFilters(quad, params->backdrop_filters)) {
-        // Something went wrong with applying background filters to the
+                 ShouldApplyBackdropFilters(params->backdrop_filters)) {
+        // Something went wrong with applying backdrop filters to the
         // backdrop.
         params->use_shaders_for_blending = false;
         gl_->DeleteTextures(1, &params->background_texture);
@@ -1154,8 +1256,9 @@ bool GLRenderer::UpdateRPDQWithSkiaFilters(
                           params->contents_texture->size(),
                           use_gr_context->context(), params->flip_texture);
           params->filter_image = SkiaHelper::ApplyImageFilter(
-              src_image, src_rect, params->dst_rect, quad->filters_scale,
-              std::move(filter), &offset, &subset, quad->filters_origin, true);
+              use_gr_context->context(), src_image, src_rect, params->dst_rect,
+              quad->filters_scale, std::move(filter), &offset, &subset,
+              quad->filters_origin, true);
         } else {
           DisplayResourceProvider::ScopedReadLockGL
               prefilter_bypass_quad_texture_lock(
@@ -1168,8 +1271,9 @@ bool GLRenderer::UpdateRPDQWithSkiaFilters(
                           prefilter_bypass_quad_texture_lock.size(),
                           use_gr_context->context(), params->flip_texture);
           params->filter_image = SkiaHelper::ApplyImageFilter(
-              src_image, src_rect, params->dst_rect, quad->filters_scale,
-              std::move(filter), &offset, &subset, quad->filters_origin, true);
+              use_gr_context->context(), src_image, src_rect, params->dst_rect,
+              quad->filters_scale, std::move(filter), &offset, &subset,
+              quad->filters_origin, true);
         }
 
         if (!params->filter_image)
@@ -1227,9 +1331,10 @@ void GLRenderer::UpdateRPDQTexturesForSampling(
 
 void GLRenderer::UpdateRPDQBlendMode(DrawRenderPassDrawQuadParams* params) {
   SkBlendMode blend_mode = params->quad->shared_quad_state->blend_mode;
-  SetBlendEnabled(!params->use_shaders_for_blending &&
-                  (params->quad->ShouldDrawWithBlending() ||
-                   !IsDefaultBlendMode(blend_mode)));
+  SetBlendEnabled((!params->use_shaders_for_blending &&
+                   (params->quad->ShouldDrawWithBlending() ||
+                    !IsDefaultBlendMode(blend_mode))) ||
+                  ShouldApplyRoundedCorner(params->quad));
   if (!params->use_shaders_for_blending) {
     if (!use_blend_equation_advanced_coherent_ && use_blend_equation_advanced_)
       gl_->BlendBarrierKHR();
@@ -1261,7 +1366,8 @@ void GLRenderer::ChooseRPDQProgram(DrawRenderPassDrawQuadParams* params,
       ProgramKey::RenderPass(
           tex_coord_precision, sampler_type, shader_blend_mode,
           params->use_aa ? USE_AA : NO_AA, mask_mode, mask_for_background,
-          params->use_color_matrix, tint_gl_composited_content_),
+          params->use_color_matrix, tint_gl_composited_content_,
+          ShouldApplyRoundedCorner(params->quad)),
       params->contents_and_bypass_color_space, target_color_space);
 }
 
@@ -1398,6 +1504,11 @@ void GLRenderer::UpdateRPDQUniforms(DrawRenderPassDrawQuadParams* params) {
   }
 
   SetShaderOpacity(params->quad->shared_quad_state->opacity);
+  if (current_program_->rounded_corner_rect_location() != -1) {
+    SetShaderRoundedCorner(
+        params->quad->shared_quad_state->rounded_corner_bounds,
+        params->window_matrix * params->projection_matrix);
+  }
   SetShaderQuadF(params->surface_quad);
 }
 
@@ -1684,13 +1795,16 @@ void GLRenderer::DrawSolidColorQuad(const SolidColorDrawQuad* quad,
 
   SkColor color = quad->color;
   float opacity = quad->shared_quad_state->opacity;
-  float alpha = (SkColorGetA(color) * (1.0f / 255.0f)) * opacity;
 
-  // Early out if alpha is small enough that quad doesn't contribute to output.
-  if (alpha < std::numeric_limits<float>::epsilon() &&
-      quad->ShouldDrawWithBlending() &&
-      quad->shared_quad_state->blend_mode == SkBlendMode::kSrcOver)
-    return;
+  // Early out if alpha is small enough that quad doesn't contribute to output,
+  // for kSrcOver blend mode.
+  if (quad->shared_quad_state->blend_mode == SkBlendMode::kSrcOver) {
+    float alpha = (SkColorGetA(color) * (1.0f / 255.0f)) * opacity;
+    if (alpha < std::numeric_limits<float>::epsilon() &&
+        quad->ShouldDrawWithBlending() &&
+        quad->shared_quad_state->blend_mode == SkBlendMode::kSrcOver)
+      return;
+  }
 
   gfx::Transform device_transform =
       current_frame()->window_matrix * current_frame()->projection_matrix *
@@ -1724,10 +1838,16 @@ void GLRenderer::DrawSolidColorQuad(const SolidColorDrawQuad* quad,
 
   gfx::ColorSpace quad_color_space = gfx::ColorSpace::CreateSRGB();
   SetUseProgram(ProgramKey::SolidColor(use_aa ? USE_AA : NO_AA,
-                                       tint_gl_composited_content_),
+                                       tint_gl_composited_content_,
+                                       ShouldApplyRoundedCorner(quad)),
                 quad_color_space,
                 current_frame()->current_render_pass->color_space);
   SetShaderColor(color, opacity);
+  if (current_program_->rounded_corner_rect_location() != -1) {
+    SetShaderRoundedCorner(
+        quad->shared_quad_state->rounded_corner_bounds,
+        current_frame()->window_matrix * current_frame()->projection_matrix);
+  }
 
   if (current_program_->tint_color_matrix_location() != -1) {
     auto matrix = cc::DebugColors::TintCompositedContentColorTransformMatrix();
@@ -1875,7 +1995,8 @@ void GLRenderer::DrawContentQuadAA(const ContentDrawQuadBase* quad,
                        quad->swizzle_contents ? DO_SWIZZLE : NO_SWIZZLE,
                        quad->is_premultiplied ? PREMULTIPLIED_ALPHA
                                               : NON_PREMULTIPLIED_ALPHA,
-                       false, false, tint_gl_composited_content_),
+                       false, false, tint_gl_composited_content_,
+                       ShouldApplyRoundedCorner(quad)),
       quad_resource_lock.color_space(),
       current_frame()->current_render_pass->color_space);
 
@@ -1897,9 +2018,17 @@ void GLRenderer::DrawContentQuadAA(const ContentDrawQuadBase* quad,
   // Blending is required for antialiasing.
   SetBlendEnabled(true);
   SetShaderOpacity(quad->shared_quad_state->opacity);
+  if (current_program_->rounded_corner_rect_location() != -1) {
+    SetShaderRoundedCorner(
+        quad->shared_quad_state->rounded_corner_bounds,
+        current_frame()->window_matrix * current_frame()->projection_matrix);
+  }
+  DCHECK(CanApplyBlendModeUsingBlendFunc(quad->shared_quad_state->blend_mode));
+  ApplyBlendModeUsingBlendFunc(quad->shared_quad_state->blend_mode);
 
   // Draw the quad with antialiasing.
   DrawQuadGeometryWithAA(quad, &local_quad, tile_rect);
+  RestoreBlendFuncToDefault(quad->shared_quad_state->blend_mode);
 }
 
 void GLRenderer::DrawContentQuadNoAA(const ContentDrawQuadBase* quad,
@@ -1964,7 +2093,8 @@ void GLRenderer::DrawContentQuadNoAA(const ContentDrawQuadBase* quad,
                        quad->is_premultiplied ? PREMULTIPLIED_ALPHA
                                               : NON_PREMULTIPLIED_ALPHA,
                        !quad->ShouldDrawWithBlending(), has_tex_clamp_rect,
-                       tint_gl_composited_content_),
+                       tint_gl_composited_content_,
+                       ShouldApplyRoundedCorner(quad)),
       quad_resource_lock.color_space(),
       current_frame()->current_render_pass->color_space);
 
@@ -1982,9 +2112,16 @@ void GLRenderer::DrawContentQuadNoAA(const ContentDrawQuadBase* quad,
                  tex_coord_rect.x(), tex_coord_rect.y(), tex_coord_rect.width(),
                  tex_coord_rect.height());
 
+  DCHECK(CanApplyBlendModeUsingBlendFunc(quad->shared_quad_state->blend_mode));
   SetBlendEnabled(quad->ShouldDrawWithBlending());
+  ApplyBlendModeUsingBlendFunc(quad->shared_quad_state->blend_mode);
 
   SetShaderOpacity(quad->shared_quad_state->opacity);
+  if (current_program_->rounded_corner_rect_location() != -1) {
+    SetShaderRoundedCorner(
+        quad->shared_quad_state->rounded_corner_bounds,
+        current_frame()->window_matrix * current_frame()->projection_matrix);
+  }
 
   // Pass quad coordinates to the uniform in the same order as GeometryBinding
   // does, then vertices will match the texture mapping in the vertex buffer.
@@ -2024,6 +2161,7 @@ void GLRenderer::DrawContentQuadNoAA(const ContentDrawQuadBase* quad,
 
   gl_->DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, nullptr);
   num_triangles_drawn_ += 2;
+  RestoreBlendFuncToDefault(quad->shared_quad_state->blend_mode);
 }
 
 void GLRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
@@ -2093,13 +2231,20 @@ void GLRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
 
   SetUseProgram(
       ProgramKey::YUVVideo(tex_coord_precision, sampler, alpha_texture_mode,
-                           uv_texture_mode, tint_gl_composited_content_),
+                           uv_texture_mode, tint_gl_composited_content_,
+                           ShouldApplyRoundedCorner(quad)),
       src_color_space, dst_color_space);
 
   if (current_program_->tint_color_matrix_location() != -1) {
     auto matrix = cc::DebugColors::TintCompositedContentColorTransformMatrix();
     gl_->UniformMatrix4fv(current_program_->tint_color_matrix_location(), 1,
                           false, matrix.data());
+  }
+
+  if (current_program_->rounded_corner_rect_location() != -1) {
+    SetShaderRoundedCorner(
+        quad->shared_quad_state->rounded_corner_bounds,
+        current_frame()->window_matrix * current_frame()->projection_matrix);
   }
 
   gfx::SizeF ya_tex_scale(1.0f, 1.0f);
@@ -2208,7 +2353,8 @@ void GLRenderer::DrawStreamVideoQuad(const StreamVideoDrawQuad* quad,
   DisplayResourceProvider::ScopedReadLockGL lock(resource_provider_,
                                                  quad->resource_id());
 
-  SetUseProgram(ProgramKey::VideoStream(tex_coord_precision),
+  SetUseProgram(ProgramKey::VideoStream(tex_coord_precision,
+                                        ShouldApplyRoundedCorner(quad)),
                 lock.color_space(),
                 current_frame()->current_render_pass->color_space);
 
@@ -2216,14 +2362,19 @@ void GLRenderer::DrawStreamVideoQuad(const StreamVideoDrawQuad* quad,
   gl_->BindTexture(GL_TEXTURE_EXTERNAL_OES, lock.texture_id());
 
   static float gl_matrix[16];
-  ToGLMatrix(&gl_matrix[0], quad->matrix);
+  gfx::Transform matrix;
+  matrix.Scale(quad->uv_bottom_right.x() - quad->uv_top_left.x(),
+               quad->uv_bottom_right.y() - quad->uv_top_left.y());
+  matrix.Translate(quad->uv_top_left.x(), quad->uv_top_left.y());
+  ToGLMatrix(&gl_matrix[0], matrix);
   gl_->UniformMatrix4fvStreamTextureMatrixCHROMIUM(
       current_program_->tex_matrix_location(), false, gl_matrix);
 
   SetShaderOpacity(quad->shared_quad_state->opacity);
   gfx::Size texture_size = lock.size();
-  gfx::Vector2dF uv = quad->matrix.Scale2d();
-  gfx::RectF uv_visible_rect(0, 0, uv.x(), uv.y());
+  gfx::RectF uv_visible_rect(quad->uv_top_left.x(), quad->uv_top_left.y(),
+                             quad->uv_bottom_right.x() - quad->uv_top_left.x(),
+                             quad->uv_bottom_right.y() - quad->uv_top_left.y());
   const SamplerType sampler = SamplerTypeFromTextureTarget(lock.target());
   Float4 tex_clamp_rect = UVClampRect(uv_visible_rect, texture_size, sampler);
   gl_->Uniform4f(current_program_->tex_clamp_rect_location(),
@@ -2264,6 +2415,12 @@ void GLRenderer::FlushTextureQuadCache(BoundGeometry flush_binding) {
   // Bind the program to the GL state.
   SetUseProgram(draw_cache_.program_key, locked_quad.color_space(),
                 current_frame()->current_render_pass->color_space);
+
+  if (current_program_->rounded_corner_rect_location() != -1) {
+    SetShaderRoundedCorner(
+        draw_cache_.rounded_corner_bounds,
+        current_frame()->window_matrix * current_frame()->projection_matrix);
+  }
 
   DCHECK_EQ(GL_TEXTURE0, GetActiveTextureUnit(gl_));
   gl_->BindTexture(locked_quad.target(), locked_quad.texture_id());
@@ -2358,11 +2515,12 @@ void GLRenderer::EnqueueTextureQuad(const TextureDrawQuad* quad,
   bool need_tex_clamp_rect = !quad->resource_size_in_pixels().IsEmpty() &&
                              (quad->uv_top_left != gfx::PointF(0, 0) ||
                               quad->uv_bottom_right != gfx::PointF(1, 1));
+
   ProgramKey program_key = ProgramKey::Texture(
       tex_coord_precision, sampler,
       quad->premultiplied_alpha ? PREMULTIPLIED_ALPHA : NON_PREMULTIPLIED_ALPHA,
       quad->background_color != SK_ColorTRANSPARENT, need_tex_clamp_rect,
-      tint_gl_composited_content_);
+      tint_gl_composited_content_, ShouldApplyRoundedCorner(quad));
   int resource_id = quad->resource_id();
 
   size_t max_quads = StaticGeometryBinding::NUM_QUADS;
@@ -2371,6 +2529,8 @@ void GLRenderer::EnqueueTextureQuad(const TextureDrawQuad* quad,
       draw_cache_.needs_blending != quad->ShouldDrawWithBlending() ||
       draw_cache_.nearest_neighbor != quad->nearest_neighbor ||
       draw_cache_.background_color != quad->background_color ||
+      draw_cache_.rounded_corner_bounds !=
+          quad->shared_quad_state->rounded_corner_bounds ||
       draw_cache_.matrix_data.size() >= max_quads) {
     FlushTextureQuadCache(SHARED_BINDING);
     draw_cache_.is_empty = false;
@@ -2379,6 +2539,8 @@ void GLRenderer::EnqueueTextureQuad(const TextureDrawQuad* quad,
     draw_cache_.needs_blending = quad->ShouldDrawWithBlending();
     draw_cache_.nearest_neighbor = quad->nearest_neighbor;
     draw_cache_.background_color = quad->background_color;
+    draw_cache_.rounded_corner_bounds =
+        quad->shared_quad_state->rounded_corner_bounds;
   }
 
   // Generate the uv-transform
@@ -2519,6 +2681,7 @@ void GLRenderer::EnsureScissorTestDisabled() {
 }
 
 void GLRenderer::CopyDrawnRenderPass(
+    const copy_output::RenderPassGeometry& geometry,
     std::unique_ptr<CopyOutputRequest> request) {
   TRACE_EVENT0("viz", "GLRenderer::CopyDrawnRenderPass");
 
@@ -2532,14 +2695,22 @@ void GLRenderer::CopyDrawnRenderPass(
     framebuffer_texture_size = current_framebuffer_texture_->size();
   }
   copier_.CopyFromTextureOrFramebuffer(
-      std::move(request), current_frame()->current_render_pass->output_rect,
-      GetFramebufferCopyTextureFormat(), framebuffer_texture,
-      framebuffer_texture_size, FlippedFramebuffer(),
+      std::move(request), geometry, GetFramebufferCopyTextureFormat(),
+      framebuffer_texture, framebuffer_texture_size, FlippedFramebuffer(),
       current_frame()->current_render_pass->color_space);
 
   // The copier modified texture/framebuffer bindings, shader programs, and
   // other GL state; and so this must be restored before continuing.
   RestoreGLState();
+
+  // CopyDrawnRenderPass() can change the binding of the framebuffer target as
+  // a part of its usual scaling and readback operations. It will break next
+  // CopyDrawnRenderPass() call for the root render pass. Therefore, make sure
+  // to restore the correct framebuffer between readbacks. (Even if it did
+  // not, a Mac-specific bug requires this workaround: http://crbug.com/99393)
+  const auto* render_pass = current_frame()->current_render_pass;
+  if (render_pass == current_frame()->root_render_pass)
+    BindFramebufferToOutputSurface();
 }
 
 void GLRenderer::ToGLMatrix(float* gl_matrix, const gfx::Transform& transform) {
@@ -2605,6 +2776,33 @@ void GLRenderer::SetBlendEnabled(bool enabled) {
   blend_shadow_ = enabled;
 }
 
+void GLRenderer::SetShaderRoundedCorner(
+    const gfx::RRectF& rounded_corner_bounds,
+    const gfx::Transform& screen_transform) {
+  DCHECK(current_program_);
+  DCHECK(!rounded_corner_bounds.IsEmpty());
+  DCHECK_NE(current_program_->rounded_corner_rect_location(), -1);
+  DCHECK_NE(current_program_->rounded_corner_radius_location(), -1);
+  DCHECK(screen_transform.IsScaleOrTranslation());
+
+  const gfx::Vector2dF& translate = screen_transform.To2dTranslation();
+  const gfx::Vector2dF& scale = screen_transform.Scale2d();
+  gfx::RRectF bounds_in_screen = rounded_corner_bounds;
+  bounds_in_screen.Scale(scale.x(), scale.y());
+  bounds_in_screen.Offset(translate.x(), translate.y());
+
+  gfx::RectF rect = bounds_in_screen.rect();
+
+  gl_->Uniform4f(current_program_->rounded_corner_rect_location(), rect.x(),
+                 rect.y(), rect.width(), rect.height());
+  gl_->Uniform4f(
+      current_program_->rounded_corner_radius_location(),
+      bounds_in_screen.GetCornerRadii(gfx::RRectF::Corner::kUpperLeft).x(),
+      bounds_in_screen.GetCornerRadii(gfx::RRectF::Corner::kUpperRight).x(),
+      bounds_in_screen.GetCornerRadii(gfx::RRectF::Corner::kLowerRight).x(),
+      bounds_in_screen.GetCornerRadii(gfx::RRectF::Corner::kLowerLeft).x());
+}
+
 void GLRenderer::DrawQuadGeometryClippedByQuadF(
     const gfx::Transform& draw_transform,
     const gfx::RectF& quad_rect,
@@ -2655,8 +2853,7 @@ void GLRenderer::DrawQuadGeometryWithAA(const DrawQuad* quad,
                    CenteredRect(tile_rect));
 }
 
-void GLRenderer::SwapBuffers(std::vector<ui::LatencyInfo> latency_info,
-                             bool need_presentation_feedback) {
+void GLRenderer::SwapBuffers(std::vector<ui::LatencyInfo> latency_info) {
   DCHECK(visible_);
 
   TRACE_EVENT0("viz", "GLRenderer::SwapBuffers");
@@ -2667,7 +2864,6 @@ void GLRenderer::SwapBuffers(std::vector<ui::LatencyInfo> latency_info,
   OutputSurfaceFrame output_frame;
   output_frame.latency_info = std::move(latency_info);
   output_frame.size = surface_size;
-  output_frame.need_presentation_feedback = need_presentation_feedback;
   if (use_swap_with_bounds_) {
     output_frame.content_bounds = std::move(swap_content_bounds_);
   } else if (use_partial_swap_) {
@@ -3123,62 +3319,46 @@ void GLRenderer::ScheduleCALayers() {
 }
 
 void GLRenderer::ScheduleDCLayers() {
-  scoped_refptr<DCLayerOverlaySharedState> shared_state;
   for (DCLayerOverlay& dc_layer_overlay :
        current_frame()->dc_layer_overlay_list) {
-    DCHECK(!dc_layer_overlay.rpdq);
-
-    int i = 0;
-    unsigned texture_ids[DrawQuad::Resources::kMaxResourceIdCount] = {};
-    int ids_to_send = 0;
-
-    for (const auto& contents_resource_id : dc_layer_overlay.resources) {
-      if (contents_resource_id) {
-        pending_overlay_resources_.push_back(
-            std::make_unique<DisplayResourceProvider::ScopedReadLockGL>(
-                resource_provider_, contents_resource_id));
-        texture_ids[i] = pending_overlay_resources_.back()->texture_id();
-        ids_to_send = i + 1;
-      }
-      i++;
+    ResourceId resource_ids[] = {dc_layer_overlay.y_resource_id,
+                                 dc_layer_overlay.uv_resource_id};
+    GLuint texture_ids[2] = {};
+    size_t i = 0;
+    for (ResourceId resource_id : resource_ids) {
+      DCHECK(resource_id);
+      pending_overlay_resources_.push_back(
+          std::make_unique<DisplayResourceProvider::ScopedReadLockGL>(
+              resource_provider_, resource_id));
+      texture_ids[i++] = pending_overlay_resources_.back()->texture_id();
     }
-    GLfloat contents_rect[4] = {
-        dc_layer_overlay.contents_rect.x(), dc_layer_overlay.contents_rect.y(),
-        dc_layer_overlay.contents_rect.width(),
-        dc_layer_overlay.contents_rect.height(),
-    };
-    GLfloat bounds_rect[4] = {
-        dc_layer_overlay.bounds_rect.x(), dc_layer_overlay.bounds_rect.y(),
-        dc_layer_overlay.bounds_rect.width(),
-        dc_layer_overlay.bounds_rect.height(),
-    };
-    GLboolean is_clipped = dc_layer_overlay.shared_state->is_clipped;
-    GLfloat clip_rect[4] = {dc_layer_overlay.shared_state->clip_rect.x(),
-                            dc_layer_overlay.shared_state->clip_rect.y(),
-                            dc_layer_overlay.shared_state->clip_rect.width(),
-                            dc_layer_overlay.shared_state->clip_rect.height()};
-    GLint z_order = dc_layer_overlay.shared_state->z_order;
-    GLfloat transform[16];
-    dc_layer_overlay.shared_state->transform.asColMajorf(transform);
-    unsigned filter = dc_layer_overlay.filter;
+    GLuint y_texture_id = texture_ids[0];
+    GLuint uv_texture_id = texture_ids[1];
+    DCHECK(y_texture_id && uv_texture_id);
+
+    // TODO(sunnyps): Set color space in renderer like we do for tiles.
+    gl_->SetColorSpaceMetadataCHROMIUM(
+        y_texture_id,
+        reinterpret_cast<GLColorSpace>(&dc_layer_overlay.color_space));
+
+    int z_order = dc_layer_overlay.z_order;
+    const gfx::Rect& content_rect = dc_layer_overlay.content_rect;
+    const gfx::Rect& quad_rect = dc_layer_overlay.quad_rect;
+    DCHECK(dc_layer_overlay.transform.IsFlat());
+    const SkMatrix44& transform = dc_layer_overlay.transform.matrix();
+    bool is_clipped = dc_layer_overlay.is_clipped;
+    const gfx::Rect& clip_rect = dc_layer_overlay.clip_rect;
     unsigned protected_video_type =
         static_cast<unsigned>(dc_layer_overlay.protected_video_type);
 
-    if (dc_layer_overlay.shared_state != shared_state) {
-      shared_state = dc_layer_overlay.shared_state;
-      gl_->ScheduleDCLayerSharedStateCHROMIUM(
-          dc_layer_overlay.shared_state->opacity, is_clipped, clip_rect,
-          z_order, transform);
-    }
-    if (ids_to_send > 0) {
-      gl_->SetColorSpaceMetadataCHROMIUM(
-          texture_ids[0],
-          reinterpret_cast<GLColorSpace>(&dc_layer_overlay.color_space));
-    }
-    gl_->ScheduleDCLayerCHROMIUM(ids_to_send, texture_ids, contents_rect,
-                                 dc_layer_overlay.background_color,
-                                 dc_layer_overlay.edge_aa_mask, bounds_rect,
-                                 filter, protected_video_type);
+    gl_->ScheduleDCLayerCHROMIUM(
+        y_texture_id, uv_texture_id, z_order, content_rect.x(),
+        content_rect.y(), content_rect.width(), content_rect.height(),
+        quad_rect.x(), quad_rect.y(), quad_rect.width(), quad_rect.height(),
+        transform.get(0, 0), transform.get(0, 1), transform.get(1, 0),
+        transform.get(1, 1), transform.get(0, 3), transform.get(1, 3),
+        is_clipped, clip_rect.x(), clip_rect.y(), clip_rect.width(),
+        clip_rect.height(), protected_video_type);
   }
 }
 
@@ -3528,9 +3708,10 @@ void GLRenderer::FlushOverdrawFeedback(const gfx::Rect& output_rect) {
   int max_result = current_surface_size_.GetArea();
   DCHECK_GT(max_result, 0);
 
-  OverdrawFeedbackCallback overdraw_feedback_callback = base::Bind(
+  // Callback is repeating to allow sharing the owned vector<int>.
+  auto overdraw_feedback_callback = base::BindRepeating(
       &GLRenderer::ProcessOverdrawFeedback, weak_ptr_factory_.GetWeakPtr(),
-      base::Owned(new std::vector<int>), arraysize(stencil_tests), max_result);
+      base::Owned(new std::vector<int>), base::size(stencil_tests), max_result);
 
   for (const auto& test : stencil_tests) {
     GLuint query = 0;
@@ -3595,7 +3776,7 @@ void GLRenderer::UpdateRenderPassTextures(
     bool size_appropriate =
         texture.size().width() >= requirements.size.width() &&
         texture.size().height() >= requirements.size.height();
-    bool mipmap_appropriate = !requirements.mipmap || texture.mipmap();
+    bool mipmap_appropriate = !requirements.generate_mipmap || texture.mipmap();
     if (!size_appropriate || !mipmap_appropriate)
       passes_to_delete.push_back(pair.first);
   }
@@ -3627,7 +3808,7 @@ void GLRenderer::AllocateRenderPassResourceIfNeeded(
   ScopedRenderPassTexture contents_texture(
       output_surface_->context_provider(), requirements.size,
       BackbufferFormat(), current_frame()->current_render_pass->color_space,
-      requirements.mipmap);
+      requirements.generate_mipmap);
   render_pass_textures_[render_pass_id] = std::move(contents_texture);
 }
 

@@ -155,7 +155,7 @@ TEST_F(DownloadCommandsTest, DoPause) {
 
 TEST_F(DownloadCommandsTest, DoResume) {
   // Resume.
-  EXPECT_CALL(item(), Resume()).Times(1);
+  EXPECT_CALL(item(), Resume(true)).Times(1);
   commands().ExecuteCommand(DownloadCommands::RESUME);
 }
 

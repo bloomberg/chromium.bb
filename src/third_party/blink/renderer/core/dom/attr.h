@@ -29,7 +29,6 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/dom/qualified_name.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 
 namespace blink {
 
@@ -37,10 +36,8 @@ class CORE_EXPORT Attr final : public Node {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static Attr* Create(Element&, const QualifiedName&);
-  static Attr* Create(Document&,
-                      const QualifiedName&,
-                      const AtomicString& value);
+  Attr(Element&, const QualifiedName&);
+  Attr(Document&, const QualifiedName&, const AtomicString& value);
   ~Attr() override;
 
   String name() const { return name_.ToString(); }
@@ -59,12 +56,9 @@ class CORE_EXPORT Attr final : public Node {
   const AtomicString& namespaceURI() const { return name_.NamespaceURI(); }
   const AtomicString& prefix() const { return name_.Prefix(); }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
-  Attr(Element&, const QualifiedName&);
-  Attr(Document&, const QualifiedName&, const AtomicString& value);
-
   bool IsElementNode() const =
       delete;  // This will catch anyone doing an unnecessary check.
 
@@ -81,7 +75,7 @@ class CORE_EXPORT Attr final : public Node {
   // standalone Node.)
   // Note that name_ is always set, but element_ /
   // standalone_value_or_attached_local_name_ may be null.
-  TraceWrapperMember<Element> element_;
+  Member<Element> element_;
   QualifiedName name_;
   // Holds the value if it is a standalone Node, or the local name of the
   // attribute it is attached to on an Element. The latter may (letter case)

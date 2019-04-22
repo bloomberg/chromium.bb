@@ -16,9 +16,10 @@ TestFeaturesNativeHandler::TestFeaturesNativeHandler(ScriptContext* context)
     : ObjectBackedNativeHandler(context) {}
 
 void TestFeaturesNativeHandler::AddRoutes() {
-  RouteHandlerFunction("GetAPIFeatures", "test",
-                       base::Bind(&TestFeaturesNativeHandler::GetAPIFeatures,
-                                  base::Unretained(this)));
+  RouteHandlerFunction(
+      "GetAPIFeatures", "test",
+      base::BindRepeating(&TestFeaturesNativeHandler::GetAPIFeatures,
+                          base::Unretained(this)));
 }
 
 void TestFeaturesNativeHandler::GetAPIFeatures(

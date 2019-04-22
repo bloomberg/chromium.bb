@@ -32,6 +32,8 @@
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_util.h"
 #include "net/test/ct_test_util.h"
+#include "net/url_request/url_request_filter.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using net::ct::SignedCertificateTimestamp;
@@ -174,10 +176,12 @@ void FillVectorWithValidAuditProofForTreeOfSize2(
 
 void AddCacheEntry(net::HostCache* cache,
                    const std::string& hostname,
+                   bool secure,
                    net::HostCache::Entry::Source source,
                    base::TimeDelta ttl) {
-  cache->Set(net::HostCache::Key(hostname, net::ADDRESS_FAMILY_UNSPECIFIED, 0),
-             net::HostCache::Entry(net::OK, net::AddressList(), source),
+  auto key = net::HostCache::Key(hostname, net::ADDRESS_FAMILY_UNSPECIFIED, 0);
+  key.secure = secure;
+  cache->Set(key, net::HostCache::Entry(net::OK, net::AddressList(), source),
              base::TimeTicks::Now(), ttl);
 }
 
@@ -201,12 +205,23 @@ class SingleTreeTrackerTest : public ::testing::Test {
     net_change_notifier_ =
         base::WrapUnique(net::NetworkChangeNotifier::CreateMock());
     mock_dns_.InitializeDnsConfig();
+
+    net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
+    filter->AddHostnameInterceptor(
+        "https", "mock.http",
+        std::make_unique<MockLogDnsTraffic::DohJobInterceptor>());
+  }
+
+  void TearDown() override {
+    net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
+    filter->ClearHandlers();
   }
 
  protected:
   void CreateTreeTracker() {
     log_dns_client_ = std::make_unique<LogDnsClient>(
-        mock_dns_.CreateDnsClient(), net_log_with_source_, 1);
+        mock_dns_.CreateDnsClient(), new net::TestURLRequestContext(),
+        net_log_with_source_, 1);
 
     tree_tracker_ = std::make_unique<SingleTreeTracker>(
         log_, log_dns_client_.get(), &host_resolver_, &net_log_);
@@ -285,7 +300,7 @@ class SingleTreeTrackerTest : public ::testing::Test {
 // the user had visited that host.
 TEST_F(SingleTreeTrackerTest, DiscardsSCTWhenHostnameNotLookedUpUsingDNS) {
   CreateTreeTrackerWithDefaultDnsExpectation();
-  AddCacheEntry(host_resolver_.GetHostCache(), kHostname,
+  AddCacheEntry(host_resolver_.GetHostCache(), kHostname, false /* secure */,
                 net::HostCache::Entry::SOURCE_UNKNOWN, kZeroTTL);
 
   base::HistogramTester histograms;
@@ -295,16 +310,16 @@ TEST_F(SingleTreeTrackerTest, DiscardsSCTWhenHostnameNotLookedUpUsingDNS) {
   tree_tracker_->NewSTHObserved(sth);
 
   // Make sure the SCT status is the same as if there's no STH for this log.
-  EXPECT_EQ(
-      SingleTreeTracker::SCT_NOT_OBSERVED,
-      tree_tracker_->GetLogEntryInclusionStatus(chain_.get(), cert_sct_.get()));
+  EXPECT_EQ(SingleTreeTracker::SCT_NOT_OBSERVED,
+            tree_tracker_->GetLogEntryInclusionStatusForTesting(
+                chain_.get(), cert_sct_.get()));
 
   tree_tracker_->OnSCTVerified(kHostname, chain_.get(), cert_sct_.get());
 
   // The status for this SCT should still be 'not observed'.
-  EXPECT_EQ(
-      SingleTreeTracker::SCT_NOT_OBSERVED,
-      tree_tracker_->GetLogEntryInclusionStatus(chain_.get(), cert_sct_.get()));
+  EXPECT_EQ(SingleTreeTracker::SCT_NOT_OBSERVED,
+            tree_tracker_->GetLogEntryInclusionStatusForTesting(
+                chain_.get(), cert_sct_.get()));
 
   // Exactly one value should be logged, indicating that the SCT could not be
   // checked for inclusion because of no prior DNS lookup for this hostname.
@@ -329,16 +344,16 @@ TEST_F(SingleTreeTrackerTest, DiscardsSCTWhenHostnameIsIPLiteral) {
   tree_tracker_->NewSTHObserved(sth);
 
   // Make sure the SCT status is the same as if there's no STH for this log.
-  EXPECT_EQ(
-      SingleTreeTracker::SCT_NOT_OBSERVED,
-      tree_tracker_->GetLogEntryInclusionStatus(chain_.get(), cert_sct_.get()));
+  EXPECT_EQ(SingleTreeTracker::SCT_NOT_OBSERVED,
+            tree_tracker_->GetLogEntryInclusionStatusForTesting(
+                chain_.get(), cert_sct_.get()));
 
   tree_tracker_->OnSCTVerified("::1", chain_.get(), cert_sct_.get());
 
   // The status for this SCT should still be 'not observed'.
-  EXPECT_EQ(
-      SingleTreeTracker::SCT_NOT_OBSERVED,
-      tree_tracker_->GetLogEntryInclusionStatus(chain_.get(), cert_sct_.get()));
+  EXPECT_EQ(SingleTreeTracker::SCT_NOT_OBSERVED,
+            tree_tracker_->GetLogEntryInclusionStatusForTesting(
+                chain_.get(), cert_sct_.get()));
 
   // Exactly one value should be logged, indicating that the SCT could not be
   // checked for inclusion because of no prior DNS lookup for this hostname
@@ -360,7 +375,7 @@ TEST_F(SingleTreeTrackerTest, DiscardsSCTWhenHostnameIsIPLiteral) {
 TEST_F(SingleTreeTrackerTest,
        DiscardsSCTWhenHostnameLookedUpUsingDNSOnDiffNetwork) {
   CreateTreeTrackerWithDefaultDnsExpectation();
-  AddCacheEntry(host_resolver_.GetHostCache(), kHostname,
+  AddCacheEntry(host_resolver_.GetHostCache(), kHostname, false /* secure */,
                 net::HostCache::Entry::SOURCE_DNS, kZeroTTL);
 
   // Simulate network change.
@@ -373,16 +388,16 @@ TEST_F(SingleTreeTrackerTest,
   tree_tracker_->NewSTHObserved(sth);
 
   // Make sure the SCT status is the same as if there's no STH for this log.
-  EXPECT_EQ(
-      SingleTreeTracker::SCT_NOT_OBSERVED,
-      tree_tracker_->GetLogEntryInclusionStatus(chain_.get(), cert_sct_.get()));
+  EXPECT_EQ(SingleTreeTracker::SCT_NOT_OBSERVED,
+            tree_tracker_->GetLogEntryInclusionStatusForTesting(
+                chain_.get(), cert_sct_.get()));
 
   tree_tracker_->OnSCTVerified(kHostname, chain_.get(), cert_sct_.get());
 
   // The status for this SCT should still be 'not observed'.
-  EXPECT_EQ(
-      SingleTreeTracker::SCT_NOT_OBSERVED,
-      tree_tracker_->GetLogEntryInclusionStatus(chain_.get(), cert_sct_.get()));
+  EXPECT_EQ(SingleTreeTracker::SCT_NOT_OBSERVED,
+            tree_tracker_->GetLogEntryInclusionStatusForTesting(
+                chain_.get(), cert_sct_.get()));
 
   // Exactly one value should be logged, indicating that the SCT could not be
   // checked for inclusion because of no prior DNS lookup for this hostname on
@@ -395,26 +410,83 @@ TEST_F(SingleTreeTrackerTest,
   EXPECT_EQ(0u, net_log_.GetSize());
 }
 
+TEST_F(SingleTreeTrackerTest, EntriesIndistinguishedBySecurity) {
+  CreateTreeTrackerWithDefaultDnsExpectation();
+  AddCacheEntry(host_resolver_.GetHostCache(), kHostname, false /* secure */,
+                net::HostCache::Entry::SOURCE_DNS, kZeroTTL);
+  AddCacheEntry(host_resolver_.GetHostCache(), kHostname, true /* secure */,
+                net::HostCache::Entry::SOURCE_DNS, kZeroTTL);
+
+  base::HistogramTester histograms;
+  // Provide an STH to the tree_tracker_.
+  SignedTreeHead sth;
+  GetSampleSignedTreeHead(&sth);
+  tree_tracker_->NewSTHObserved(sth);
+
+  // Make sure the SCT status is the same as if there's no STH for this log.
+  EXPECT_EQ(SingleTreeTracker::SCT_NOT_OBSERVED,
+            tree_tracker_->GetLogEntryInclusionStatusForTesting(
+                chain_.get(), cert_sct_.get()));
+
+  tree_tracker_->OnSCTVerified(kHostname, chain_.get(), cert_sct_.get());
+
+  // The status for this SCT should be 'pending inclusion check' with
+  // |pending_lookup_securely| set to true since the cache check will return the
+  // secure key.
+  bool pending_lookup_securely;
+  EXPECT_EQ(SingleTreeTracker::SCT_PENDING_INCLUSION_CHECK,
+            tree_tracker_->GetLogEntryInclusionStatusForTesting(
+                chain_.get(), cert_sct_.get(), &pending_lookup_securely));
+  EXPECT_TRUE(pending_lookup_securely);
+
+  // Exactly one value should be logged, indicating the SCT can be checked for
+  // inclusion, as |tree_tracker_| did have a valid STH when it was notified
+  // of a new SCT.
+  histograms.ExpectUniqueSample(kCanCheckForInclusionHistogramName, 2, 1);
+
+  // Simulate network change.
+  host_resolver_.GetHostCache()->OnNetworkChange();
+  AddCacheEntry(host_resolver_.GetHostCache(), kHostname, false /* secure */,
+                net::HostCache::Entry::SOURCE_DNS, kZeroTTL);
+
+  tree_tracker_->OnSCTVerified(kHostname, chain_.get(), cert_sct_.get());
+
+  // The status for this SCT should still be 'pending inclusion check' with
+  // |pending_lookup_securely| set to true.
+  EXPECT_EQ(SingleTreeTracker::SCT_PENDING_INCLUSION_CHECK,
+            tree_tracker_->GetLogEntryInclusionStatusForTesting(
+                chain_.get(), cert_sct_.get(), &pending_lookup_securely));
+  EXPECT_TRUE(pending_lookup_securely);
+
+  // Another value should be logged, indicating that there is already a
+  // pending audit check for this SCT.
+  histograms.ExpectBucketCount(kCanCheckForInclusionHistogramName, 6, 1);
+  // Nothing should be logged in the result histogram or net log since an
+  // inclusion check wasn't performed.
+  histograms.ExpectTotalCount(kInclusionCheckResultHistogramName, 0);
+  EXPECT_EQ(0u, net_log_.GetSize());
+}
+
 // Test that an SCT is classified as pending for a newer STH if the
 // SingleTreeTracker has not seen any STHs so far.
 TEST_F(SingleTreeTrackerTest, CorrectlyClassifiesUnobservedSCTNoSTH) {
   CreateTreeTrackerWithDefaultDnsExpectation();
-  AddCacheEntry(host_resolver_.GetHostCache(), kHostname,
+  AddCacheEntry(host_resolver_.GetHostCache(), kHostname, false /* secure */,
                 net::HostCache::Entry::SOURCE_DNS, kZeroTTL);
 
   base::HistogramTester histograms;
   // First make sure the SCT has not been observed at all.
-  EXPECT_EQ(
-      SingleTreeTracker::SCT_NOT_OBSERVED,
-      tree_tracker_->GetLogEntryInclusionStatus(chain_.get(), cert_sct_.get()));
+  EXPECT_EQ(SingleTreeTracker::SCT_NOT_OBSERVED,
+            tree_tracker_->GetLogEntryInclusionStatusForTesting(
+                chain_.get(), cert_sct_.get()));
 
   tree_tracker_->OnSCTVerified(kHostname, chain_.get(), cert_sct_.get());
 
   // Since no STH was provided to the tree_tracker_ the status should be that
   // the SCT is pending a newer STH.
-  EXPECT_EQ(
-      SingleTreeTracker::SCT_PENDING_NEWER_STH,
-      tree_tracker_->GetLogEntryInclusionStatus(chain_.get(), cert_sct_.get()));
+  EXPECT_EQ(SingleTreeTracker::SCT_PENDING_NEWER_STH,
+            tree_tracker_->GetLogEntryInclusionStatusForTesting(
+                chain_.get(), cert_sct_.get()));
 
   // Expect logging of a value indicating a valid STH is required.
   histograms.ExpectUniqueSample(kCanCheckForInclusionHistogramName, 0, 1);
@@ -425,7 +497,7 @@ TEST_F(SingleTreeTrackerTest, CorrectlyClassifiesUnobservedSCTNoSTH) {
 // SingleTreeTracker has a fresh-enough STH to check inclusion against.
 TEST_F(SingleTreeTrackerTest, CorrectlyClassifiesUnobservedSCTWithRecentSTH) {
   CreateTreeTrackerWithDefaultDnsExpectation();
-  AddCacheEntry(host_resolver_.GetHostCache(), kHostname,
+  AddCacheEntry(host_resolver_.GetHostCache(), kHostname, false /* secure */,
                 net::HostCache::Entry::SOURCE_DNS, kZeroTTL);
 
   base::HistogramTester histograms;
@@ -436,17 +508,17 @@ TEST_F(SingleTreeTrackerTest, CorrectlyClassifiesUnobservedSCTWithRecentSTH) {
 
   // Make sure the SCT status is the same as if there's no STH for
   // this log.
-  EXPECT_EQ(
-      SingleTreeTracker::SCT_NOT_OBSERVED,
-      tree_tracker_->GetLogEntryInclusionStatus(chain_.get(), cert_sct_.get()));
+  EXPECT_EQ(SingleTreeTracker::SCT_NOT_OBSERVED,
+            tree_tracker_->GetLogEntryInclusionStatusForTesting(
+                chain_.get(), cert_sct_.get()));
 
   tree_tracker_->OnSCTVerified(kHostname, chain_.get(), cert_sct_.get());
 
   // The status for this SCT should be 'pending inclusion check' since the STH
   // provided at the beginning of the test is newer than the SCT.
-  EXPECT_EQ(
-      SingleTreeTracker::SCT_PENDING_INCLUSION_CHECK,
-      tree_tracker_->GetLogEntryInclusionStatus(chain_.get(), cert_sct_.get()));
+  EXPECT_EQ(SingleTreeTracker::SCT_PENDING_INCLUSION_CHECK,
+            tree_tracker_->GetLogEntryInclusionStatusForTesting(
+                chain_.get(), cert_sct_.get()));
 
   // Exactly one value should be logged, indicating the SCT can be checked for
   // inclusion, as |tree_tracker_| did have a valid STH when it was notified
@@ -463,16 +535,16 @@ TEST_F(SingleTreeTrackerTest, CorrectlyClassifiesUnobservedSCTWithRecentSTH) {
 // from pending newer STH to pending inclusion check.
 TEST_F(SingleTreeTrackerTest, CorrectlyUpdatesSCTStatusOnNewSTH) {
   CreateTreeTrackerWithDefaultDnsExpectation();
-  AddCacheEntry(host_resolver_.GetHostCache(), kHostname,
+  AddCacheEntry(host_resolver_.GetHostCache(), kHostname, false /* secure */,
                 net::HostCache::Entry::SOURCE_DNS, kZeroTTL);
 
   base::HistogramTester histograms;
   // Report an observed SCT and make sure it's in the pending newer STH
   // state.
   tree_tracker_->OnSCTVerified(kHostname, chain_.get(), cert_sct_.get());
-  EXPECT_EQ(
-      SingleTreeTracker::SCT_PENDING_NEWER_STH,
-      tree_tracker_->GetLogEntryInclusionStatus(chain_.get(), cert_sct_.get()));
+  EXPECT_EQ(SingleTreeTracker::SCT_PENDING_NEWER_STH,
+            tree_tracker_->GetLogEntryInclusionStatusForTesting(
+                chain_.get(), cert_sct_.get()));
   histograms.ExpectTotalCount(kCanCheckForInclusionHistogramName, 1);
 
   // Provide with a fresh STH
@@ -481,9 +553,9 @@ TEST_F(SingleTreeTrackerTest, CorrectlyUpdatesSCTStatusOnNewSTH) {
   tree_tracker_->NewSTHObserved(sth);
 
   // Test that its status has changed.
-  EXPECT_EQ(
-      SingleTreeTracker::SCT_PENDING_INCLUSION_CHECK,
-      tree_tracker_->GetLogEntryInclusionStatus(chain_.get(), cert_sct_.get()));
+  EXPECT_EQ(SingleTreeTracker::SCT_PENDING_INCLUSION_CHECK,
+            tree_tracker_->GetLogEntryInclusionStatusForTesting(
+                chain_.get(), cert_sct_.get()));
   // Check that no additional UMA was logged for this case as the histogram is
   // only supposed to measure the state of newly-observed SCTs, not pending
   // ones.
@@ -496,14 +568,14 @@ TEST_F(SingleTreeTrackerTest, CorrectlyUpdatesSCTStatusOnNewSTH) {
 // inclusion against.
 TEST_F(SingleTreeTrackerTest, DoesNotUpdatesSCTStatusOnOldSTH) {
   CreateTreeTrackerWithDefaultDnsExpectation();
-  AddCacheEntry(host_resolver_.GetHostCache(), kHostname,
+  AddCacheEntry(host_resolver_.GetHostCache(), kHostname, false /* secure */,
                 net::HostCache::Entry::SOURCE_DNS, kZeroTTL);
 
   // Notify of an SCT and make sure it's in the 'pending newer STH' state.
   tree_tracker_->OnSCTVerified(kHostname, chain_.get(), cert_sct_.get());
-  EXPECT_EQ(
-      SingleTreeTracker::SCT_PENDING_NEWER_STH,
-      tree_tracker_->GetLogEntryInclusionStatus(chain_.get(), cert_sct_.get()));
+  EXPECT_EQ(SingleTreeTracker::SCT_PENDING_NEWER_STH,
+            tree_tracker_->GetLogEntryInclusionStatusForTesting(
+                chain_.get(), cert_sct_.get()));
 
   // Provide an old STH for the same log.
   SignedTreeHead sth;
@@ -511,9 +583,9 @@ TEST_F(SingleTreeTrackerTest, DoesNotUpdatesSCTStatusOnOldSTH) {
   tree_tracker_->NewSTHObserved(sth);
 
   // Make sure the SCT's state hasn't changed.
-  EXPECT_EQ(
-      SingleTreeTracker::SCT_PENDING_NEWER_STH,
-      tree_tracker_->GetLogEntryInclusionStatus(chain_.get(), cert_sct_.get()));
+  EXPECT_EQ(SingleTreeTracker::SCT_PENDING_NEWER_STH,
+            tree_tracker_->GetLogEntryInclusionStatusForTesting(
+                chain_.get(), cert_sct_.get()));
   EXPECT_EQ(0u, net_log_.GetSize());
 }
 
@@ -522,7 +594,7 @@ TEST_F(SingleTreeTrackerTest, DoesNotUpdatesSCTStatusOnOldSTH) {
 // STH.
 TEST_F(SingleTreeTrackerTest, LogsUMAForNewSCTAndOldSTH) {
   CreateTreeTrackerWithDefaultDnsExpectation();
-  AddCacheEntry(host_resolver_.GetHostCache(), kHostname,
+  AddCacheEntry(host_resolver_.GetHostCache(), kHostname, false /* secure */,
                 net::HostCache::Entry::SOURCE_DNS, kZeroTTL);
 
   base::HistogramTester histograms;
@@ -551,13 +623,13 @@ TEST_F(SingleTreeTrackerTest, TestEntryNotPendingAfterLeafIndexFetchFailure) {
       net::Error::ERR_FAILED));
 
   CreateTreeTracker();
-  AddCacheEntry(host_resolver_.GetHostCache(), kHostname,
+  AddCacheEntry(host_resolver_.GetHostCache(), kHostname, false /* secure */,
                 net::HostCache::Entry::SOURCE_DNS, kZeroTTL);
 
   tree_tracker_->OnSCTVerified(kHostname, chain_.get(), cert_sct_.get());
-  EXPECT_EQ(
-      SingleTreeTracker::SCT_PENDING_NEWER_STH,
-      tree_tracker_->GetLogEntryInclusionStatus(chain_.get(), cert_sct_.get()));
+  EXPECT_EQ(SingleTreeTracker::SCT_PENDING_NEWER_STH,
+            tree_tracker_->GetLogEntryInclusionStatusForTesting(
+                chain_.get(), cert_sct_.get()));
 
   // Provide with a fresh STH
   SignedTreeHead sth;
@@ -565,9 +637,9 @@ TEST_F(SingleTreeTrackerTest, TestEntryNotPendingAfterLeafIndexFetchFailure) {
   tree_tracker_->NewSTHObserved(sth);
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(
-      SingleTreeTracker::SCT_NOT_OBSERVED,
-      tree_tracker_->GetLogEntryInclusionStatus(chain_.get(), cert_sct_.get()));
+  EXPECT_EQ(SingleTreeTracker::SCT_NOT_OBSERVED,
+            tree_tracker_->GetLogEntryInclusionStatusForTesting(
+                chain_.get(), cert_sct_.get()));
   // There should have been one NetLog event, logged with failure.
   EXPECT_TRUE(MatchAuditingResultInNetLog(
       net_log_, LeafHash(chain_.get(), cert_sct_.get()), false));
@@ -589,13 +661,13 @@ TEST_F(SingleTreeTrackerTest, TestEntryNotPendingAfterInclusionCheckFailure) {
       net::Error::ERR_FAILED));
 
   CreateTreeTracker();
-  AddCacheEntry(host_resolver_.GetHostCache(), kHostname,
+  AddCacheEntry(host_resolver_.GetHostCache(), kHostname, false /* secure */,
                 net::HostCache::Entry::SOURCE_DNS, kZeroTTL);
 
   tree_tracker_->OnSCTVerified(kHostname, chain_.get(), cert_sct_.get());
-  EXPECT_EQ(
-      SingleTreeTracker::SCT_PENDING_NEWER_STH,
-      tree_tracker_->GetLogEntryInclusionStatus(chain_.get(), cert_sct_.get()));
+  EXPECT_EQ(SingleTreeTracker::SCT_PENDING_NEWER_STH,
+            tree_tracker_->GetLogEntryInclusionStatusForTesting(
+                chain_.get(), cert_sct_.get()));
 
   // Provide with a fresh STH
   SignedTreeHead sth;
@@ -603,9 +675,9 @@ TEST_F(SingleTreeTrackerTest, TestEntryNotPendingAfterInclusionCheckFailure) {
   tree_tracker_->NewSTHObserved(sth);
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(
-      SingleTreeTracker::SCT_NOT_OBSERVED,
-      tree_tracker_->GetLogEntryInclusionStatus(chain_.get(), cert_sct_.get()));
+  EXPECT_EQ(SingleTreeTracker::SCT_NOT_OBSERVED,
+            tree_tracker_->GetLogEntryInclusionStatusForTesting(
+                chain_.get(), cert_sct_.get()));
   // There should have been one NetLog event, logged with failure.
   EXPECT_TRUE(MatchAuditingResultInNetLog(
       net_log_, LeafHash(chain_.get(), cert_sct_.get()), false));
@@ -631,13 +703,13 @@ TEST_F(SingleTreeTrackerTest, TestEntryIncludedAfterInclusionCheckSuccess) {
       audit_proof.begin() + 1));
 
   CreateTreeTracker();
-  AddCacheEntry(host_resolver_.GetHostCache(), kHostname,
+  AddCacheEntry(host_resolver_.GetHostCache(), kHostname, false /* secure */,
                 net::HostCache::Entry::SOURCE_DNS, kZeroTTL);
 
   tree_tracker_->OnSCTVerified(kHostname, chain_.get(), cert_sct_.get());
-  EXPECT_EQ(
-      SingleTreeTracker::SCT_PENDING_NEWER_STH,
-      tree_tracker_->GetLogEntryInclusionStatus(chain_.get(), cert_sct_.get()));
+  EXPECT_EQ(SingleTreeTracker::SCT_PENDING_NEWER_STH,
+            tree_tracker_->GetLogEntryInclusionStatusForTesting(
+                chain_.get(), cert_sct_.get()));
 
   // Provide with a fresh STH, which is for a tree of size 2.
   SignedTreeHead sth;
@@ -647,9 +719,9 @@ TEST_F(SingleTreeTrackerTest, TestEntryIncludedAfterInclusionCheckSuccess) {
   tree_tracker_->NewSTHObserved(sth);
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(
-      SingleTreeTracker::SCT_INCLUDED_IN_LOG,
-      tree_tracker_->GetLogEntryInclusionStatus(chain_.get(), cert_sct_.get()));
+  EXPECT_EQ(SingleTreeTracker::SCT_INCLUDED_IN_LOG,
+            tree_tracker_->GetLogEntryInclusionStatusForTesting(
+                chain_.get(), cert_sct_.get()));
   // There should have been one NetLog event, with success logged.
   EXPECT_TRUE(MatchAuditingResultInNetLog(
       net_log_, LeafHash(chain_.get(), cert_sct_.get()), true));
@@ -660,13 +732,13 @@ TEST_F(SingleTreeTrackerTest, TestEntryIncludedAfterInclusionCheckSuccess) {
 TEST_F(SingleTreeTrackerTest,
        TestInclusionCheckCancelledIfUnderMemoryPressure) {
   CreateTreeTracker();
-  AddCacheEntry(host_resolver_.GetHostCache(), kHostname,
+  AddCacheEntry(host_resolver_.GetHostCache(), kHostname, false /* secure */,
                 net::HostCache::Entry::SOURCE_DNS, kZeroTTL);
 
   tree_tracker_->OnSCTVerified(kHostname, chain_.get(), cert_sct_.get());
-  EXPECT_EQ(
-      SingleTreeTracker::SCT_PENDING_NEWER_STH,
-      tree_tracker_->GetLogEntryInclusionStatus(chain_.get(), cert_sct_.get()));
+  EXPECT_EQ(SingleTreeTracker::SCT_PENDING_NEWER_STH,
+            tree_tracker_->GetLogEntryInclusionStatusForTesting(
+                chain_.get(), cert_sct_.get()));
 
   // Provide with a fresh STH, which is for a tree of size 2.
   SignedTreeHead sth;
@@ -689,9 +761,9 @@ TEST_F(SingleTreeTrackerTest,
   base::RunLoop().RunUntilIdle();
 
   // Expect the SCT to have been discarded.
-  EXPECT_EQ(
-      SingleTreeTracker::SCT_NOT_OBSERVED,
-      tree_tracker_->GetLogEntryInclusionStatus(chain_.get(), cert_sct_.get()));
+  EXPECT_EQ(SingleTreeTracker::SCT_NOT_OBSERVED,
+            tree_tracker_->GetLogEntryInclusionStatusForTesting(
+                chain_.get(), cert_sct_.get()));
 }
 
 // Test that pending entries transition states correctly according to the
@@ -751,7 +823,7 @@ TEST_F(SingleTreeTrackerTest, TestMultipleEntriesTransitionStateCorrectly) {
   ASSERT_TRUE(
       ExpectLeafIndexRequestAndThrottle(chain_, newer_than_old_sth_sct));
   CreateTreeTracker();
-  AddCacheEntry(host_resolver_.GetHostCache(), kHostname,
+  AddCacheEntry(host_resolver_.GetHostCache(), kHostname, false /* secure */,
                 net::HostCache::Entry::SOURCE_DNS, kZeroTTL);
 
   // Add SCTs in mixed order.
@@ -769,9 +841,9 @@ TEST_F(SingleTreeTrackerTest, TestMultipleEntriesTransitionStateCorrectly) {
   for (const auto& sct :
        {oldest_sct, not_auditable_by_old_sth_sct, newer_than_old_sth_sct,
         not_auditable_by_new_sth_sct, newer_than_new_sth_sct}) {
-    ASSERT_EQ(
-        SingleTreeTracker::SCT_PENDING_NEWER_STH,
-        tree_tracker_->GetLogEntryInclusionStatus(chain_.get(), sct.get()))
+    ASSERT_EQ(SingleTreeTracker::SCT_PENDING_NEWER_STH,
+              tree_tracker_->GetLogEntryInclusionStatusForTesting(chain_.get(),
+                                                                  sct.get()))
         << "SCT age: " << sct->timestamp;
   }
 
@@ -779,15 +851,15 @@ TEST_F(SingleTreeTrackerTest, TestMultipleEntriesTransitionStateCorrectly) {
   tree_tracker_->NewSTHObserved(old_sth);
   // Ensure all but the oldest are in the PENDING_NEWER_STH state.
   ASSERT_EQ(SingleTreeTracker::SCT_PENDING_INCLUSION_CHECK,
-            tree_tracker_->GetLogEntryInclusionStatus(chain_.get(),
-                                                      oldest_sct.get()));
+            tree_tracker_->GetLogEntryInclusionStatusForTesting(
+                chain_.get(), oldest_sct.get()));
 
   for (const auto& sct :
        {not_auditable_by_old_sth_sct, newer_than_old_sth_sct,
         not_auditable_by_new_sth_sct, newer_than_new_sth_sct}) {
-    ASSERT_EQ(
-        SingleTreeTracker::SCT_PENDING_NEWER_STH,
-        tree_tracker_->GetLogEntryInclusionStatus(chain_.get(), sct.get()))
+    ASSERT_EQ(SingleTreeTracker::SCT_PENDING_NEWER_STH,
+              tree_tracker_->GetLogEntryInclusionStatusForTesting(chain_.get(),
+                                                                  sct.get()))
         << "SCT age: " << sct->timestamp;
   }
 
@@ -797,17 +869,17 @@ TEST_F(SingleTreeTrackerTest, TestMultipleEntriesTransitionStateCorrectly) {
 
   for (const auto& sct :
        {not_auditable_by_old_sth_sct, newer_than_old_sth_sct}) {
-    ASSERT_EQ(
-        SingleTreeTracker::SCT_PENDING_INCLUSION_CHECK,
-        tree_tracker_->GetLogEntryInclusionStatus(chain_.get(), sct.get()))
+    ASSERT_EQ(SingleTreeTracker::SCT_PENDING_INCLUSION_CHECK,
+              tree_tracker_->GetLogEntryInclusionStatusForTesting(chain_.get(),
+                                                                  sct.get()))
         << "SCT age: " << sct->timestamp;
   }
 
   for (const auto& sct :
        {not_auditable_by_new_sth_sct, newer_than_new_sth_sct}) {
-    ASSERT_EQ(
-        SingleTreeTracker::SCT_PENDING_NEWER_STH,
-        tree_tracker_->GetLogEntryInclusionStatus(chain_.get(), sct.get()))
+    ASSERT_EQ(SingleTreeTracker::SCT_PENDING_NEWER_STH,
+              tree_tracker_->GetLogEntryInclusionStatusForTesting(chain_.get(),
+                                                                  sct.get()))
         << "SCT age: " << sct->timestamp;
   }
 }
@@ -842,7 +914,7 @@ TEST_F(SingleTreeTrackerTest, TestThrottledEntryGetsHandledAfterUnthrottling) {
       audit_proof.begin() + 1));
 
   CreateTreeTracker();
-  AddCacheEntry(host_resolver_.GetHostCache(), kHostname,
+  AddCacheEntry(host_resolver_.GetHostCache(), kHostname, false /* secure */,
                 net::HostCache::Entry::SOURCE_DNS, kZeroTTL);
 
   SignedTreeHead sth;
@@ -855,27 +927,27 @@ TEST_F(SingleTreeTrackerTest, TestThrottledEntryGetsHandledAfterUnthrottling) {
   // Both entries should be in the pending state, the first because the
   // LogDnsClient did not invoke the callback yet, the second one because
   // the LogDnsClient is "busy" with the first entry and so would throttle.
-  ASSERT_EQ(
-      SingleTreeTracker::SCT_PENDING_INCLUSION_CHECK,
-      tree_tracker_->GetLogEntryInclusionStatus(chain_.get(), cert_sct_.get()));
   ASSERT_EQ(SingleTreeTracker::SCT_PENDING_INCLUSION_CHECK,
-            tree_tracker_->GetLogEntryInclusionStatus(chain_.get(),
-                                                      second_sct.get()));
+            tree_tracker_->GetLogEntryInclusionStatusForTesting(
+                chain_.get(), cert_sct_.get()));
+  ASSERT_EQ(SingleTreeTracker::SCT_PENDING_INCLUSION_CHECK,
+            tree_tracker_->GetLogEntryInclusionStatusForTesting(
+                chain_.get(), second_sct.get()));
 
   // Process pending DNS queries so later assertions are on handling
   // of the entries based on replies received.
   base::RunLoop().RunUntilIdle();
 
   // Check that the first sct is included in the log.
-  ASSERT_EQ(
-      SingleTreeTracker::SCT_INCLUDED_IN_LOG,
-      tree_tracker_->GetLogEntryInclusionStatus(chain_.get(), cert_sct_.get()));
+  ASSERT_EQ(SingleTreeTracker::SCT_INCLUDED_IN_LOG,
+            tree_tracker_->GetLogEntryInclusionStatusForTesting(
+                chain_.get(), cert_sct_.get()));
 
   // Check that the second SCT got an invalid proof and is not included, rather
   // than being in the pending state.
   ASSERT_EQ(SingleTreeTracker::SCT_NOT_OBSERVED,
-            tree_tracker_->GetLogEntryInclusionStatus(chain_.get(),
-                                                      second_sct.get()));
+            tree_tracker_->GetLogEntryInclusionStatusForTesting(
+                chain_.get(), second_sct.get()));
 }
 
 // Test that proof fetching failure due to DNS config errors is handled
@@ -895,7 +967,7 @@ TEST_F(SingleTreeTrackerTest,
   net_change_notifier_ =
       base::WrapUnique(net::NetworkChangeNotifier::CreateMock());
   CreateTreeTracker();
-  AddCacheEntry(host_resolver_.GetHostCache(), kHostname,
+  AddCacheEntry(host_resolver_.GetHostCache(), kHostname, false /* secure */,
                 net::HostCache::Entry::SOURCE_DNS, kZeroTTL);
 
   tree_tracker_->NewSTHObserved(sth);
@@ -904,9 +976,9 @@ TEST_F(SingleTreeTrackerTest,
   // Make sure the SCT status indicates the entry has been removed from
   // the SingleTreeTracker's internal queue as the DNS lookup failed
   // synchronously.
-  EXPECT_EQ(
-      SingleTreeTracker::SCT_NOT_OBSERVED,
-      tree_tracker_->GetLogEntryInclusionStatus(chain_.get(), cert_sct_.get()));
+  EXPECT_EQ(SingleTreeTracker::SCT_NOT_OBSERVED,
+            tree_tracker_->GetLogEntryInclusionStatusForTesting(
+                chain_.get(), cert_sct_.get()));
 
   // Exactly one value should be logged, indicating the SCT can be checked for
   // inclusion, as |tree_tracker_| did have a valid STH when it was notified
@@ -946,7 +1018,7 @@ TEST_F(SingleTreeTrackerTest, DiscardsPendingEntriesAfterNetworkChange) {
       audit_proof.begin() + 1));
 
   CreateTreeTracker();
-  AddCacheEntry(host_resolver_.GetHostCache(), kHostname,
+  AddCacheEntry(host_resolver_.GetHostCache(), kHostname, false /* secure */,
                 net::HostCache::Entry::SOURCE_DNS, kZeroTTL);
 
   // Provide an STH to the tree_tracker_.
@@ -958,9 +1030,9 @@ TEST_F(SingleTreeTrackerTest, DiscardsPendingEntriesAfterNetworkChange) {
   tree_tracker_->OnSCTVerified(kHostname, chain_.get(), second_sct.get());
 
   for (auto sct : {cert_sct_, second_sct}) {
-    EXPECT_EQ(
-        SingleTreeTracker::SCT_PENDING_INCLUSION_CHECK,
-        tree_tracker_->GetLogEntryInclusionStatus(chain_.get(), sct.get()));
+    EXPECT_EQ(SingleTreeTracker::SCT_PENDING_INCLUSION_CHECK,
+              tree_tracker_->GetLogEntryInclusionStatusForTesting(chain_.get(),
+                                                                  sct.get()));
   }
 
   net_change_notifier_->NotifyObserversOfNetworkChangeForTests(
@@ -968,9 +1040,9 @@ TEST_F(SingleTreeTrackerTest, DiscardsPendingEntriesAfterNetworkChange) {
   base::RunLoop().RunUntilIdle();
 
   for (auto sct : {cert_sct_, second_sct}) {
-    EXPECT_EQ(
-        SingleTreeTracker::SCT_NOT_OBSERVED,
-        tree_tracker_->GetLogEntryInclusionStatus(chain_.get(), sct.get()));
+    EXPECT_EQ(SingleTreeTracker::SCT_NOT_OBSERVED,
+              tree_tracker_->GetLogEntryInclusionStatusForTesting(chain_.get(),
+                                                                  sct.get()));
   }
 }
 

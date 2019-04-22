@@ -58,11 +58,9 @@ RequestQuery ParseQuery(const GURL& url);
 // with the corresponding values. The path is returned in |replacement_path|.
 // The result path is only usable by HandleFileRequest which will perform the
 // actual replacements of the file contents.
-// TODO(svaldez): Modify to return |replacement_path| instead of passing by
-// reference.
-void GetFilePathWithReplacements(const std::string& original_path,
-                                 const base::StringPairs& text_to_replace,
-                                 std::string* replacement_path);
+std::string GetFilePathWithReplacements(
+    const std::string& original_path,
+    const base::StringPairs& text_to_replace);
 
 // Handles |request| by serving a file from under |server_root|.
 std::unique_ptr<HttpResponse> HandleFileRequest(

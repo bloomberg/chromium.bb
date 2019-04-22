@@ -15,24 +15,16 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/components/proximity_auth/screenlock_bridge.h"
+#include "chromeos/services/device_sync/proto/cryptauth_api.pb.h"
 #include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
 #include "chromeos/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
-#include "components/cryptauth/cryptauth_device_manager.h"
-#include "components/cryptauth/network_request_error.h"
-#include "components/cryptauth/remote_device_ref.h"
 #include "components/prefs/pref_change_registrar.h"
 
 namespace base {
 class ListValue;
 }  // namespace base
-
-namespace cryptauth {
-class CryptAuthDeviceManager;
-class CryptAuthEnrollmentManager;
-class LocalDeviceDataProvider;
-class RemoteDeviceLoader;
-}  // namespace cryptauth
 
 namespace proximity_auth {
 class ProximityAuthProfilePrefManager;
@@ -53,7 +45,6 @@ class EasyUnlockNotificationController;
 class EasyUnlockServiceRegular
     : public EasyUnlockService,
       public proximity_auth::ScreenlockBridge::Observer,
-      public cryptauth::CryptAuthDeviceManager::Observer,
       public device_sync::DeviceSyncClient::Observer,
       public multidevice_setup::MultiDeviceSetupClient::Observer {
  public:
@@ -78,11 +69,8 @@ class EasyUnlockServiceRegular
   // ProximityAuthSystem.
   void LoadRemoteDevices();
 
-  // Called when |remote_device_loader_| completes.
-  void OnRemoteDevicesLoaded(const cryptauth::RemoteDeviceList& remote_devices);
-
   void UseLoadedRemoteDevices(
-      const cryptauth::RemoteDeviceRefList& remote_devices);
+      const multidevice::RemoteDeviceRefList& remote_devices);
 
   // EasyUnlockService implementation:
   proximity_auth::ProximityAuthPrefManager* GetProximityAuthPrefManager()
@@ -102,20 +90,8 @@ class EasyUnlockServiceRegular
   bool IsAllowedInternal() const override;
   bool IsEnabled() const override;
   bool IsChromeOSLoginEnabled() const override;
-  // Returns true if there is no BETTER_TOGETHER_HOST supported or enabled, but
-  // there *are* EASY_UNLOCK_HOSTs supported or enabled. This can only happen if
-  // the user's phone has not yet fully updated to the new multidevice world.
-  // TODO(crbug.com/894585): Remove this legacy special case after M71.
-  bool IsInLegacyHostMode() const override;
 
-  void OnWillFinalizeUnlock(bool success) override;
   void OnSuspendDoneInternal() override;
-
-  // CryptAuthDeviceManager::Observer:
-  void OnSyncStarted() override;
-  void OnSyncFinished(cryptauth::CryptAuthDeviceManager::SyncResult sync_result,
-                      cryptauth::CryptAuthDeviceManager::DeviceChangeResult
-                          device_change_result) override;
 
   // device_sync::DeviceSyncClient::Observer:
   void OnReady() override;
@@ -149,27 +125,11 @@ class EasyUnlockServiceRegular
       EasyUnlockScreenlockStateHandler::HardlockState state_on_success,
       bool success);
 
-  // Returns the CryptAuthEnrollmentManager, which manages the profile's
-  // CryptAuth enrollment.
-  cryptauth::CryptAuthEnrollmentManager* GetCryptAuthEnrollmentManager();
-
-  // Returns the CryptAuthEnrollmentManager, which manages the profile's
-  // synced devices from CryptAuth.
-  cryptauth::CryptAuthDeviceManager* GetCryptAuthDeviceManager();
-
   // Refreshes the ChromeOS cryptohome keys if the user has reauthed recently.
   // Otherwise, hardlock the device.
   void RefreshCryptohomeKeysIfPossible();
 
-  cryptauth::RemoteDeviceRefList GetUnlockKeys();
-
-  ScopedObserver<cryptauth::CryptAuthDeviceManager, EasyUnlockServiceRegular>
-      scoped_crypt_auth_device_manager_observer_;
-
-  // True if the user just unlocked the screen using Easy Unlock. Reset once
-  // the screen unlocks. Used to distinguish Easy Unlock-powered unlocks from
-  // password-based unlocks for metrics.
-  bool will_unlock_using_easy_unlock_;
+  multidevice::RemoteDeviceRefList GetUnlockKeys();
 
   // The timestamp for the most recent time when the lock screen was shown. The
   // lock screen is typically shown when the user awakens their computer from
@@ -181,18 +141,11 @@ class EasyUnlockServiceRegular
   std::unique_ptr<proximity_auth::ProximityAuthProfilePrefManager>
       pref_manager_;
 
-  // Loads the RemoteDevice instances from CryptAuth and local data.
-  std::unique_ptr<cryptauth::RemoteDeviceLoader> remote_device_loader_;
-
-  // Provides local device information from CryptAuth.
-  std::unique_ptr<cryptauth::LocalDeviceDataProvider>
-      local_device_data_provider_;
-
   // If a new RemoteDevice was synced while the screen is locked, we defer
   // loading the RemoteDevice until the screen is unlocked. For security,
   // this deferment prevents the lock screen from being changed by a network
   // event.
-  bool deferring_device_load_;
+  bool deferring_device_load_ = false;
 
   // Responsible for showing all the notifications used for EasyUnlock.
   std::unique_ptr<EasyUnlockNotificationController> notification_controller_;
@@ -206,26 +159,23 @@ class EasyUnlockServiceRegular
   // Stores the unlock keys for EasyUnlock before the current device sync, so we
   // can compare it to the unlock keys after syncing.
   std::vector<cryptauth::ExternalDeviceInfo> unlock_keys_before_sync_;
-  cryptauth::RemoteDeviceRefList remote_device_unlock_keys_before_sync_;
+  multidevice::RemoteDeviceRefList remote_device_unlock_keys_before_sync_;
 
   // Caches feature state of Smart Lock. This service should only actively be
   // running if its value is kEnabledByUser. Populated by using
   // |multidevice_setup_client_|.
-  // Note: In the legacy case--see https://crbug.com/894585--the service can be
-  // active if its value is kUnavailableNoVerifiedHost as long as
-  // IsInLegacyHostMode() is true and there is a valid unlock key.
   multidevice_setup::mojom::FeatureState feature_state_ =
       multidevice_setup::mojom::FeatureState::kUnavailableNoVerifiedHost;
 
   // True if the pairing changed notification was shown, so that the next time
   // the Chromebook is unlocked, we can show the subsequent 'pairing applied'
   // notification.
-  bool shown_pairing_changed_notification_;
+  bool shown_pairing_changed_notification_ = false;
 
   // Listens to pref changes.
   PrefChangeRegistrar registrar_;
 
-  base::WeakPtrFactory<EasyUnlockServiceRegular> weak_ptr_factory_;
+  base::WeakPtrFactory<EasyUnlockServiceRegular> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockServiceRegular);
 };

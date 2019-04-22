@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/page/chrome_client_impl.h"
 #include "cc/trees/layer_tree_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
@@ -53,21 +54,6 @@
 
 namespace blink {
 
-namespace {
-
-class TestWebViewClient : public frame_test_helpers::TestWebViewClient {
- public:
-  explicit TestWebViewClient(WebNavigationPolicy* target) : target_(target) {}
-  ~TestWebViewClient() override = default;
-
-  void Show(WebNavigationPolicy policy) override { *target_ = policy; }
-
- private:
-  WebNavigationPolicy* target_;
-};
-
-}  // anonymous namespace
-
 class ViewCreatingClient : public frame_test_helpers::TestWebViewClient {
  public:
   WebView* CreateView(WebLocalFrame* opener,
@@ -75,8 +61,8 @@ class ViewCreatingClient : public frame_test_helpers::TestWebViewClient {
                       const WebWindowFeatures&,
                       const WebString& name,
                       WebNavigationPolicy,
-                      bool,
                       WebSandboxFlags,
+                      const FeaturePolicy::FeatureState&,
                       const SessionStorageNamespaceId&) override {
     return web_view_helper_.InitializeWithOpener(opener);
   }
@@ -103,12 +89,13 @@ class CreateWindowTest : public testing::Test {
 
 TEST_F(CreateWindowTest, CreateWindowFromPausedPage) {
   ScopedPagePauser pauser;
-  LocalFrame* frame = ToWebLocalFrameImpl(main_frame_)->GetFrame();
+  LocalFrame* frame = To<WebLocalFrameImpl>(main_frame_)->GetFrame();
   FrameLoadRequest request(frame->GetDocument());
+  request.SetNavigationPolicy(kNavigationPolicyNewForegroundTab);
   WebWindowFeatures features;
   EXPECT_EQ(nullptr, chrome_client_impl_->CreateWindow(
-                         frame, request, features,
-                         kNavigationPolicyNewForegroundTab, kSandboxNone, ""));
+                         frame, request, features, WebSandboxFlags::kNone,
+                         FeaturePolicy::FeatureState(), ""));
 }
 
 class FakeColorChooserClient
@@ -124,7 +111,7 @@ class FakeColorChooserClient
     ColorChooserClient::Trace(visitor);
   }
 
-  USING_GARBAGE_COLLECTED_MIXIN(FakeColorChooserClient)
+  USING_GARBAGE_COLLECTED_MIXIN(FakeColorChooserClient);
 
   // ColorChooserClient
   void DidChooseColor(const Color& color) override {}
@@ -154,7 +141,7 @@ class FakeDateTimeChooserClient
     DateTimeChooserClient::Trace(visitor);
   }
 
-  USING_GARBAGE_COLLECTED_MIXIN(FakeDateTimeChooserClient)
+  USING_GARBAGE_COLLECTED_MIXIN(FakeDateTimeChooserClient);
 
   // DateTimeChooserClient
   Element& OwnerElement() const override { return *owner_element_; }

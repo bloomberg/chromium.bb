@@ -5,7 +5,11 @@
 #ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_SOFTWARE_OUTPUT_SURFACE_H_
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_SOFTWARE_OUTPUT_SURFACE_H_
 
+#include <memory>
+
 #include "base/memory/weak_ptr.h"
+#include "components/viz/common/display/update_vsync_parameters_callback.h"
+#include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/viz_service_export.h"
 #include "ui/latency/latency_info.h"
@@ -16,8 +20,8 @@ class SoftwareOutputDevice;
 
 class VIZ_SERVICE_EXPORT SoftwareOutputSurface : public OutputSurface {
  public:
-  explicit SoftwareOutputSurface(
-      std::unique_ptr<SoftwareOutputDevice> software_device);
+  SoftwareOutputSurface(std::unique_ptr<SoftwareOutputDevice> software_device,
+                        UpdateVSyncParametersCallback update_vsync_callback);
   ~SoftwareOutputSurface() override;
 
   // OutputSurface implementation.
@@ -39,19 +43,23 @@ class VIZ_SERVICE_EXPORT SoftwareOutputSurface : public OutputSurface {
   bool HasExternalStencilTest() const override;
   void ApplyExternalStencil() override;
   uint32_t GetFramebufferCopyTextureFormat() override;
-#if BUILDFLAG(ENABLE_VULKAN)
-  gpu::VulkanSurface* GetVulkanSurface() override;
-#endif
   unsigned UpdateGpuFence() override;
 
  private:
-  void SwapBuffersCallback(bool need_presentation_feedback);
+  void SwapBuffersCallback();
+  void UpdateVSyncParameters(base::TimeTicks timebase,
+                             base::TimeDelta interval);
 
   OutputSurfaceClient* client_ = nullptr;
-  base::TimeDelta refresh_interval_;
+
+  UpdateVSyncParametersCallback update_vsync_callback_;
+  base::TimeTicks refresh_timebase_;
+  base::TimeDelta refresh_interval_ = BeginFrameArgs::DefaultInterval();
+
   std::vector<ui::LatencyInfo> stored_latency_info_;
   ui::LatencyTracker latency_tracker_;
-  base::WeakPtrFactory<SoftwareOutputSurface> weak_factory_;
+
+  base::WeakPtrFactory<SoftwareOutputSurface> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SoftwareOutputSurface);
 };

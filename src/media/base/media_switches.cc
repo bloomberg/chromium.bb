@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "build/build_config.h"
+#include "ui/base/mpris/buildflags/buildflags.h"
 
 namespace switches {
 
@@ -81,13 +82,6 @@ const char kUseCras[] = "use-cras";
 const char kUnsafelyAllowProtectedMediaIdentifierForDomain[] =
     "unsafely-allow-protected-media-identifier-for-domain";
 
-#if BUILDFLAG(ENABLE_RUNTIME_MEDIA_RENDERER_SELECTION)
-// Rather than use the renderer hosted remotely in the media service, fall back
-// to the default renderer within content_renderer. Does not change the behavior
-// of the media service.
-const char kDisableMojoRenderer[] = "disable-mojo-renderer";
-#endif  // BUILDFLAG(ENABLE_RUNTIME_MEDIA_RENDERER_SELECTION)
-
 // Use fake device for Media Stream to replace actual camera and microphone.
 const char kUseFakeDeviceForMediaStream[] = "use-fake-device-for-media-stream";
 
@@ -103,10 +97,11 @@ const char kUseFileForFakeVideoCapture[] = "use-file-for-fake-video-capture";
 // or <path>%noloop to stop after playing the file to completion.
 const char kUseFileForFakeAudioCapture[] = "use-file-for-fake-audio-capture";
 
-// Use fake device for accelerated decoding of JPEG. This allows, for example,
-// testing of the communication to the GPU service without requiring actual
-// accelerator hardware to be present.
-const char kUseFakeJpegDecodeAccelerator[] = "use-fake-jpeg-decode-accelerator";
+// Use a fake device for accelerated decoding of MJPEG. This allows, for
+// example, testing of the communication to the GPU service without requiring
+// actual accelerator hardware to be present.
+const char kUseFakeMjpegDecodeAccelerator[] =
+    "use-fake-mjpeg-decode-accelerator";
 
 // Disable hardware acceleration of mjpeg decode for captured frame, where
 // available.
@@ -184,11 +179,6 @@ const char kNoUserGestureRequiredPolicy[] = "no-user-gesture-required";
 // Autoplay policy to require a user gesture in order to play.
 const char kUserGestureRequiredPolicy[] = "user-gesture-required";
 
-// Autoplay policy to require a user gesture in order to play for cross origin
-// iframes.
-const char kUserGestureRequiredForCrossOriginPolicy[] =
-    "user-gesture-required-for-cross-origin";
-
 }  // namespace autoplay
 
 }  // namespace switches
@@ -243,7 +233,7 @@ const base::Feature kUseAndroidOverlayAggressively{
 
 // Let video track be unselected when video is playing in the background.
 const base::Feature kBackgroundSrcVideoTrackOptimization{
-    "BackgroundSrcVideoTrackOptimization", base::FEATURE_DISABLED_BY_DEFAULT};
+    "BackgroundSrcVideoTrackOptimization", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Let video without audio be paused when it is playing in the background.
 const base::Feature kBackgroundVideoPauseOptimization{
@@ -256,30 +246,18 @@ const base::Feature kMemoryPressureBasedSourceBufferGC{
     "MemoryPressureBasedSourceBufferGC", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable MojoVideoDecoder, replacing GpuVideoDecoder.
-const base::Feature kMojoVideoDecoder {
-  "MojoVideoDecoder",
-#if defined(OS_CHROMEOS)
-      // TODO(posciak): Re-enable once the feature is verified on CrOS.
-      // https://crbug.com/902968.
-      base::FEATURE_DISABLED_BY_DEFAULT
-#else
-      base::FEATURE_ENABLED_BY_DEFAULT
-#endif
-};
+const base::Feature kMojoVideoDecoder{"MojoVideoDecoder",
+                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable The D3D11 Video decoder. Must also enable MojoVideoDecoder for
 // this to have any effect.
 const base::Feature kD3D11VideoDecoder{"D3D11VideoDecoder",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Allow playback of encrypted media through the D3D11 decoder.  Requires
-// D3D11VideoDecoder to be enabled also.
-const base::Feature kD3D11EncryptedMedia{"D3D11EncryptedMedia",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enable VP9 decoding in the D3D11VideoDecoder.
-const base::Feature kD3D11VP9Decoder{"D3D11VP9Decoder",
-                                     base::FEATURE_DISABLED_BY_DEFAULT};
+// Tell D3D11VideoDecoder to ignore workarounds for zero copy.  Requires that
+// kD3D11VideoDecoder is enabled.
+const base::Feature kD3D11VideoDecoderIgnoreWorkarounds{
+    "D3D11VideoDecoderIgnoreWorkarounds", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Falls back to other decoders after audio/video decode error happens. The
 // implementation may choose different strategies on when to fallback. See
@@ -291,7 +269,7 @@ const base::Feature kFallbackAfterDecodeError{"FallbackAfterDecodeError",
 
 // Manage and report MSE buffered ranges by PTS intervals, not DTS intervals.
 const base::Feature kMseBufferByPts{"MseBufferByPts",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
+                                    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable new cpu load estimator. Intended for evaluation in local
 // testing and origin-trial.
@@ -300,13 +278,9 @@ const base::Feature kMseBufferByPts{"MseBufferByPts",
 const base::Feature kNewEncodeCpuLoadEstimator{
     "NewEncodeCpuLoadEstimator", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Use the new Remote Playback / media flinging pipeline.
-const base::Feature kNewRemotePlaybackPipeline{
-    "NewRemotePlaybackPipeline", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Use the new RTC hardware decode path via RTCVideoDecoderAdapter.
 const base::Feature kRTCVideoDecoderAdapter{"RTCVideoDecoderAdapter",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 // CanPlayThrough issued according to standard.
 const base::Feature kSpecCompliantCanPlayThrough{
@@ -328,17 +302,19 @@ const base::Feature kUnifiedAutoplay{"UnifiedAutoplay",
 // If enabled, use SurfaceLayer instead of VideoLayer for all playbacks that
 // aren't MediaStream.
 const base::Feature kUseSurfaceLayerForVideo{"UseSurfaceLayerForVideo",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Use SurfaceLayer instead of VideoLayer when entering Picture-in-Picture mode.
-// Does nothing if UseSurfaceLayerForVideo is enabled.  Does not affect
-// MediaStream playbacks.
-const base::Feature kUseSurfaceLayerForVideoPIP{
-    "UseSurfaceLayerForVideoPIP", base::FEATURE_ENABLED_BY_DEFAULT};
+// Enable VA-API hardware low power encoder for all codecs.
+const base::Feature kVaapiLowPowerEncoder{"VaapiLowPowerEncoder",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable VA-API hardware encode acceleration for VP8.
 const base::Feature kVaapiVP8Encoder{"VaapiVP8Encoder",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enable VA-API hardware encode acceleration for VP9.
+const base::Feature kVaapiVP9Encoder{"VaapiVP9Encoder",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Inform video blitter of video color space.
 const base::Feature kVideoBlitColorAccuracy{"video-blit-color-accuracy",
@@ -359,12 +335,14 @@ const base::Feature kHardwareSecureDecryption{
 
 // Enables handling of hardware media keys for controlling media.
 const base::Feature kHardwareMediaKeyHandling{
-    "HardwareMediaKeyHandling", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Limits number of media tags loading in parallel to 6. This speeds up
-// preloading of any media that requires multiple requests to preload.
-const base::Feature kLimitParallelMediaPreloading{
-    "LimitParallelMediaPreloading", base::FEATURE_DISABLED_BY_DEFAULT};
+  "HardwareMediaKeyHandling",
+#if defined(OS_CHROMEOS) || defined(OS_WIN) || defined(OS_MACOSX) || \
+    BUILDFLAG(USE_MPRIS)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 // Enables low-delay video rendering in media pipeline on "live" stream.
 const base::Feature kLowDelayVideoRenderingOnLiveStream{
@@ -387,16 +365,9 @@ const base::Feature kAutoplayWhitelistSettings{
 
 #if defined(OS_ANDROID)
 // Enable a gesture to make the media controls expaned into the display cutout.
+// TODO(beccahughes): Remove this.
 const base::Feature kMediaControlsExpandGesture{
     "MediaControlsExpandGesture", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Lock the screen orientation when a video goes fullscreen.
-const base::Feature kVideoFullscreenOrientationLock{
-    "VideoFullscreenOrientationLock", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enter/exit fullscreen when device is rotated to/from the video orientation.
-const base::Feature kVideoRotateToFullscreen{"VideoRotateToFullscreen",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 // An experimental feature to enable persistent-license type support in MediaDrm
 // when using Encrypted Media Extensions (EME) API.
@@ -404,14 +375,29 @@ const base::Feature kVideoRotateToFullscreen{"VideoRotateToFullscreen",
 const base::Feature kMediaDrmPersistentLicense{
     "MediaDrmPersistentLicense", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables the Android MediaRouter implementation using CAF (Cast v3).
-const base::Feature kCafMediaRouterImpl{"CafMediaRouterImpl",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
+// Enables MediaDrmOriginIdManager to provide preprovisioned origin IDs for
+// MediaDrmBridge. If disabled, MediaDrmBridge will get unprovisioned origin IDs
+// which will trigger provisioning process after MediaDrmBridge is created.
+const base::Feature kMediaDrmPreprovisioning{"MediaDrmPreprovisioning",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Determines if MediaDrmOriginIdManager should attempt to pre-provision origin
+// IDs at startup (whenever a profile is loaded). Also used by tests that
+// disable it so that the tests can setup before pre-provisioning is done.
+// Note: Have no effect if kMediaDrmPreprovisioning feature is disabled.
+const base::Feature kMediaDrmPreprovisioningAtStartup{
+    "MediaDrmPreprovisioningAtStartup", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables the Android Image Reader path for Video decoding(for AVDA and MCVD)
 const base::Feature kAImageReaderVideoOutput{"AImageReaderVideoOutput",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
+
+// Prevents using SurfaceLayer for videos. This is meant to be used by embedders
+// that cannot support SurfaceLayer at the moment.
+const base::Feature kDisableSurfaceLayerForVideo{
+    "DisableSurfaceLayerForVideo", base::FEATURE_DISABLED_BY_DEFAULT};
+
+#endif  // defined(OS_ANDROID)
 
 #if defined(OS_WIN)
 // Does NV12->NV12 video copy on the main thread right before the texture's
@@ -425,7 +411,7 @@ const base::Feature kMediaFoundationH264Encoding{
 
 // Enables MediaFoundation based video capture
 const base::Feature kMediaFoundationVideoCapture{
-    "MediaFoundationVideoCapture", base::FEATURE_DISABLED_BY_DEFAULT};
+    "MediaFoundationVideoCapture", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables DirectShow GetPhotoState implementation
 // Created to act as a kill switch by disabling it, in the case of the
@@ -452,10 +438,12 @@ std::string GetEffectiveAutoplayPolicy(const base::CommandLine& command_line) {
 }
 
 // Adds icons to the overflow menu on the native media controls.
+// TODO(steimel): Remove this.
 const base::Feature kOverflowIconsForMediaControls{
     "OverflowIconsForMediaControls", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables the new redesigned media controls.
+// TODO(steimel): Remove this.
 const base::Feature kUseModernMediaControls{"UseModernMediaControls",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -487,13 +475,40 @@ const base::Feature kPreloadMediaEngagementData{
     "PreloadMediaEngagementData", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
+// Enables experimental local learning for media.  Adds reporting only; does not
+// change media behavior.
+const base::Feature kMediaLearningExperiment{"MediaLearningExperiment",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables flash to be ducked by audio focus. This is enabled on Chrome OS which
+// has audio focus enabled.
+const base::Feature kAudioFocusDuckFlash {
+  "AudioFocusDuckFlash",
+#if defined(OS_CHROMEOS)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
+
+// Enables the internal Media Session logic without enabling the Media Session
+// service.
+const base::Feature kInternalMediaSession {
+  "InternalMediaSession",
+#if defined(OS_ANDROID)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
+
 bool IsVideoCaptureAcceleratedJpegDecodingEnabled() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableAcceleratedMjpegDecode)) {
     return false;
   }
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kUseFakeJpegDecodeAccelerator)) {
+          switches::kUseFakeMjpegDecodeAccelerator)) {
     return true;
   }
 #if defined(OS_CHROMEOS)

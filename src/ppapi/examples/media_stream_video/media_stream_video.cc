@@ -244,8 +244,10 @@ void MediaStreamVideoDemoInstance::DrawYUV() {
   glEnableVertexAttribArray(pos_location);
   glVertexAttribPointer(pos_location, 2, GL_FLOAT, GL_FALSE, 0, 0);
   glEnableVertexAttribArray(tc_location);
-  glVertexAttribPointer(tc_location, 2, GL_FLOAT, GL_FALSE, 0,
-      static_cast<float*>(0) + 16);  // Skip position coordinates.
+  glVertexAttribPointer(
+      tc_location, 2, GL_FLOAT, GL_FALSE, 0,
+      reinterpret_cast<void*>(16 *
+                              sizeof(GLfloat)));  // Skip position coordinates.
   AssertNoGLError();
 
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
@@ -263,8 +265,10 @@ void MediaStreamVideoDemoInstance::DrawRGB() {
   glEnableVertexAttribArray(pos_location);
   glVertexAttribPointer(pos_location, 2, GL_FLOAT, GL_FALSE, 0, 0);
   glEnableVertexAttribArray(tc_location);
-  glVertexAttribPointer(tc_location, 2, GL_FLOAT, GL_FALSE, 0,
-      static_cast<float*>(0) + 16);  // Skip position coordinates.
+  glVertexAttribPointer(
+      tc_location, 2, GL_FLOAT, GL_FALSE, 0,
+      reinterpret_cast<void*>(16 *
+                              sizeof(GLfloat)));  // Skip position coordinates.
   AssertNoGLError();
 
   glDrawArrays(GL_TRIANGLE_STRIP, 4, 4);

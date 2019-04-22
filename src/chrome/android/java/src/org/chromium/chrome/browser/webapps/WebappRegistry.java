@@ -7,12 +7,15 @@ package org.chromium.chrome.browser.webapps;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.text.TextUtils;
+import android.text.format.DateUtils;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.PackageUtils;
+import org.chromium.base.StrictModeContext;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.task.AsyncTask;
+import org.chromium.chrome.browser.browserservices.permissiondelegation.TrustedWebActivityPermissionStore;
 import org.chromium.chrome.browser.browsing_data.UrlFilter;
 import org.chromium.chrome.browser.browsing_data.UrlFilterBridge;
 import org.chromium.webapk.lib.common.WebApkConstants;
@@ -23,7 +26,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Singleton class which tracks web apps backed by a SharedPreferences file (abstracted by the
@@ -47,10 +49,10 @@ public class WebappRegistry {
     static final String KEY_LAST_CLEANUP = "last_cleanup";
 
     /** Represents a period of 4 weeks in milliseconds */
-    static final long FULL_CLEANUP_DURATION = TimeUnit.DAYS.toMillis(4L * 7L);
+    static final long FULL_CLEANUP_DURATION = DateUtils.WEEK_IN_MILLIS * 4;
 
     /** Represents a period of 13 weeks in milliseconds */
-    static final long WEBAPP_UNOPENED_CLEANUP_DURATION = TimeUnit.DAYS.toMillis(13L * 7L);
+    static final long WEBAPP_UNOPENED_CLEANUP_DURATION = DateUtils.WEEK_IN_MILLIS * 13;
 
     /** Initialization-on-demand holder. This exists for thread-safe lazy initialization. */
     private static class Holder {
@@ -60,6 +62,7 @@ public class WebappRegistry {
 
     private HashMap<String, WebappDataStorage> mStorages;
     private SharedPreferences mPreferences;
+    private TrustedWebActivityPermissionStore mTrustedWebActivityPermissionStore;
 
     /**
      * Callback run when a WebappDataStorage object is registered for the first time. The storage
@@ -72,6 +75,7 @@ public class WebappRegistry {
     private WebappRegistry() {
         mPreferences = openSharedPreferences();
         mStorages = new HashMap<>();
+        mTrustedWebActivityPermissionStore = new TrustedWebActivityPermissionStore();
     }
 
     /**
@@ -194,8 +198,8 @@ public class WebappRegistry {
     @VisibleForTesting
     public static Set<String> getRegisteredWebappIdsForTesting() {
         // Wrap with unmodifiableSet to ensure it's never modified. See crbug.com/568369.
-        return Collections.unmodifiableSet(openSharedPreferences().getStringSet(
-                KEY_WEBAPP_SET, Collections.<String>emptySet()));
+        return Collections.unmodifiableSet(
+                openSharedPreferences().getStringSet(KEY_WEBAPP_SET, Collections.emptySet()));
     }
 
     @VisibleForTesting
@@ -249,6 +253,10 @@ public class WebappRegistry {
                 .apply();
     }
 
+    public TrustedWebActivityPermissionStore getTrustedWebActivityPermissionStore() {
+        return mTrustedWebActivityPermissionStore;
+    }
+
     /**
      * Deletes the data of all web apps whose url matches |urlFilter|.
      * @param urlFilter The filter object to check URLs.
@@ -300,13 +308,17 @@ public class WebappRegistry {
     }
 
     private static SharedPreferences openSharedPreferences() {
-        return ContextUtils.getApplicationContext().getSharedPreferences(
-                REGISTRY_FILE_NAME, Context.MODE_PRIVATE);
+        // TODO(peconn): Don't open general WebappRegistry preferences when we just need the
+        // TrustedWebActivityPermissionStore.
+        // This is required to fix https://crbug.com/952841.
+        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+            return ContextUtils.getApplicationContext().getSharedPreferences(
+                    REGISTRY_FILE_NAME, Context.MODE_PRIVATE);
+        }
     }
 
     private void initStorages(String idToInitialize, boolean replaceExisting) {
-        Set<String> webapps =
-                mPreferences.getStringSet(KEY_WEBAPP_SET, Collections.<String>emptySet());
+        Set<String> webapps = mPreferences.getStringSet(KEY_WEBAPP_SET, Collections.emptySet());
         boolean initAll = (idToInitialize == null || idToInitialize.isEmpty());
 
         // Don't overwrite any entry in mStorages unless replaceExisting is set to true.
@@ -316,6 +328,8 @@ public class WebappRegistry {
                     mStorages.put(id, WebappDataStorage.open(id));
                 }
             }
+
+            mTrustedWebActivityPermissionStore.initStorage();
         } else {
             if (webapps.contains(idToInitialize)
                     && (replaceExisting || !mStorages.containsKey(idToInitialize))) {

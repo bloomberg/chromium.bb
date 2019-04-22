@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-window.onload = function() {
-  var FILES_APP_ORIGIN = 'chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj';
-  var messageSource;
+window.onload = () => {
+  const FILES_APP_ORIGIN =
+      'chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj';
+  let messageSource;
 
-  var content = document.querySelector('#content');
+  const content = document.querySelector('#content');
 
-  window.addEventListener('message', function(event) {
+  window.addEventListener('message', event => {
     if (event.origin !== FILES_APP_ORIGIN) {
       console.error('Unknown origin: ' + event.origin);
       return;
@@ -19,12 +20,14 @@ window.onload = function() {
       case 'html':
         content.textContent = '';
         contentChanged(null);
-        fetch(event.data.src).then((response) => {
-          return response.text();
-        }).then((text) => {
-          content.textContent = text;
-          contentChanged(text);
-        });
+        fetch(event.data.src)
+            .then((response) => {
+              return response.text();
+            })
+            .then((text) => {
+              content.textContent = text;
+              contentChanged(text);
+            });
         break;
       case 'audio':
       case 'video':
@@ -35,13 +38,15 @@ window.onload = function() {
         content.remove();
         content.onload = (e) => contentChanged(e.target.src);
         content.src = event.data.src;
-        content.decode().then(() => {
-            content.removeAttribute('generic-thumbnail');
-            document.body.appendChild(content);
-        }).catch(() => {
-            content.setAttribute('generic-thumbnail', 'image');
-            document.body.appendChild(content);
-        });
+        content.decode()
+            .then(() => {
+              content.removeAttribute('generic-thumbnail');
+              document.body.appendChild(content);
+            })
+            .catch(() => {
+              content.setAttribute('generic-thumbnail', 'image');
+              document.body.appendChild(content);
+            });
         break;
       default:
         content.onload = (e) => contentChanged(e.target.src);
@@ -50,12 +55,12 @@ window.onload = function() {
     }
   });
 
-  document.addEventListener('contextmenu', function(e) {
+  document.addEventListener('contextmenu', e => {
     e.preventDefault();
     return false;
   });
 
-  document.addEventListener('click', function(e) {
+  document.addEventListener('click', e => {
     sendMessage((e.target === content) ? 'tap-inside' : 'tap-outside');
   });
 
@@ -72,7 +77,7 @@ window.onload = function() {
   // TODO(oka): This is a workaround to fix FOUC problem, where sometimes
   // immature view with smaller window size than outer window is rendered for a
   // moment. Remove this after the root cause is fixed. http://crbug.com/640525
-  window.addEventListener('resize', function() {
+  window.addEventListener('resize', () => {
     // Remove hidden attribute on event of resize to avoid FOUC. The window's
     // initial size is 100 x 100 and it's fit into the outer window size after a
     // moment. Due to Files App's window size constraint, resized window must be
@@ -81,7 +86,7 @@ window.onload = function() {
   });
   // Fallback for the case of webview bug is fixed and above code is not
   // executed.
-  setTimeout(function() {
+  setTimeout(() => {
     content.removeAttribute('hidden');
   }, 500);
 };

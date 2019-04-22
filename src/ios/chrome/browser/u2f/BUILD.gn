@@ -4,6 +4,23 @@
 
 source_set("u2f") {
   sources = [
+    "u2f_tab_helper.h",
+    "u2f_tab_helper.mm",
+  ]
+  deps = [
+    ":u2f_internal",
+    "//base",
+    "//ios/chrome/browser/web:tab_id_tab_helper",
+    "//ios/web",
+    "//net",
+    "//url",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("u2f_internal") {
+  sources = [
     "u2f_controller.h",
     "u2f_controller.mm",
   ]
@@ -17,7 +34,6 @@ source_set("u2f") {
     "//net",
     "//url",
   ]
-
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 
@@ -25,13 +41,17 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "u2f_controller_unittest.mm",
+    "u2f_tab_helper_unittest.mm",
   ]
   deps = [
     ":u2f",
+    ":u2f_internal",
     "//base",
     "//ios/chrome/browser",
+    "//ios/chrome/browser/web:tab_id_tab_helper",
     "//ios/web",
     "//ios/web/public/test/fakes",
+    "//net",
     "//testing/gmock",
     "//testing/gtest",
     "//url",

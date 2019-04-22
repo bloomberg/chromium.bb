@@ -10,7 +10,6 @@
 #include "base/base_export.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/process/process.h"
 
 namespace base {
 namespace mac {
@@ -19,11 +18,11 @@ namespace mac {
 // |command_line| as command line arguments if the app isn't already running.
 // |launch_options| are passed directly to
 // -[NSWorkspace launchApplicationAtURL:options:configuration:error:].
-// Returns a valid process if the app was successfully launched.
-BASE_EXPORT Process
-OpenApplicationWithPath(const FilePath& bundle_path,
-                        const CommandLine& command_line,
-                        NSWorkspaceLaunchOptions launch_options);
+// Returns a non-nil NSRunningApplication if the app was successfully launched.
+BASE_EXPORT NSRunningApplication* OpenApplicationWithPath(
+    const FilePath& bundle_path,
+    const CommandLine& command_line,
+    NSWorkspaceLaunchOptions launch_options);
 
 }  // namespace mac
 }  // namespace base

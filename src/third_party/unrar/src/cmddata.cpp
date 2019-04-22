@@ -1,5 +1,7 @@
 #include "rar.hpp"
 
+namespace third_party_unrar {
+
 CommandData::CommandData()
 {
   Init();
@@ -239,7 +241,7 @@ void CommandData::ReadConfig()
         if (C0=='R' && (C1=='R' || C1=='V'))
           Cmd[2]=0;
         wchar SwName[16+ASIZE(Cmd)];
-        swprintf(SwName,ASIZE(SwName),L"switches_%s=",Cmd);
+        swprintf(SwName,ASIZE(SwName),L"switches_%ls=",Cmd);
         size_t Length=wcslen(SwName);
         if (wcsnicomp(Str,SwName,Length)==0)
           ProcessSwitchesString(Str+Length);
@@ -470,6 +472,9 @@ void CommandData::ProcessSwitch(const wchar *Switch)
             break;
           case '3':
             Shutdown=POWERMODE_SLEEP;
+            break;
+          case '4':
+            Shutdown=POWERMODE_RESTART;
             break;
         }
         break;
@@ -1252,7 +1257,7 @@ void CommandData::ProcessCommand()
       wcsncpyz(ArcName,Name,ASIZE(ArcName));
   }
 
-  if (wcschr(L"AFUMD",*Command)==NULL && !ArcInMem)
+  if (wcschr(L"AFUMD",*Command)==NULL)
   {
     if (GenerateArcName)
       GenerateArchiveName(ArcName,ASIZE(ArcName),GenerateMask,false);
@@ -1405,3 +1410,5 @@ void CommandData::ReportWrongSwitches(RARFORMAT Format)
   }
 }
 #endif
+
+}  // namespace third_party_unrar

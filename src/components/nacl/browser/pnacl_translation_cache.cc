@@ -7,7 +7,9 @@
 #include <string.h>
 
 #include <string>
+#include <utility>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
@@ -22,7 +24,7 @@
 #include "net/base/net_errors.h"
 #include "net/disk_cache/disk_cache.h"
 
-using base::IntToString;
+using base::NumberToString;
 using content::BrowserThread;
 
 namespace {
@@ -54,7 +56,7 @@ class PnaclTranslationCacheEntry
       base::WeakPtr<PnaclTranslationCache> cache,
       const std::string& key,
       net::DrainableIOBuffer* write_nexe,
-      const CompletionCallback& callback);
+      CompletionOnceCallback callback);
 
   void Start();
 
@@ -107,7 +109,7 @@ class PnaclTranslationCacheEntry
   CacheStep step_;
   bool is_read_;
   GetNexeCallback read_callback_;
-  CompletionCallback write_callback_;
+  CompletionOnceCallback write_callback_;
   scoped_refptr<net::DrainableIOBuffer> io_buf_;
   base::ThreadChecker thread_checker_;
   DISALLOW_COPY_AND_ASSIGN(PnaclTranslationCacheEntry);
@@ -129,11 +131,11 @@ PnaclTranslationCacheEntry* PnaclTranslationCacheEntry::GetWriteEntry(
     base::WeakPtr<PnaclTranslationCache> cache,
     const std::string& key,
     net::DrainableIOBuffer* write_nexe,
-    const CompletionCallback& callback) {
+    CompletionOnceCallback callback) {
   PnaclTranslationCacheEntry* entry(
       new PnaclTranslationCacheEntry(cache, key, false));
   entry->io_buf_ = write_nexe;
-  entry->write_callback_ = callback;
+  entry->write_callback_ = std::move(callback);
   return entry;
 }
 
@@ -159,7 +161,7 @@ PnaclTranslationCacheEntry::~PnaclTranslationCacheEntry() {
     if (!write_callback_.is_null()) {
       base::PostTaskWithTraits(
           FROM_HERE, {BrowserThread::IO},
-          base::BindOnce(write_callback_, net::ERR_ABORTED));
+          base::BindOnce(std::move(write_callback_), net::ERR_ABORTED));
     }
   }
 }
@@ -226,7 +228,7 @@ void PnaclTranslationCacheEntry::Finish(int rv) {
   } else {
     if (!write_callback_.is_null()) {
       base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                               base::BindOnce(write_callback_, rv));
+                               base::BindOnce(std::move(write_callback_), rv));
     }
   }
   cache_->OpComplete(this);
@@ -327,7 +329,7 @@ PnaclTranslationCache::~PnaclTranslationCache() {}
 int PnaclTranslationCache::Init(net::CacheType cache_type,
                                 const base::FilePath& cache_dir,
                                 int cache_size,
-                                const CompletionCallback& callback) {
+                                CompletionOnceCallback callback) {
   int rv = disk_cache::CreateCacheBackend(
       cache_type, net::CACHE_BACKEND_DEFAULT, cache_dir, cache_size,
       true /* force_initialize */, NULL, /* dummy net log */
@@ -335,7 +337,7 @@ int PnaclTranslationCache::Init(net::CacheType cache_type,
       base::BindOnce(&PnaclTranslationCache::OnCreateBackendComplete,
                      AsWeakPtr()));
   if (rv == net::ERR_IO_PENDING) {
-    init_callback_ = callback;
+    init_callback_ = std::move(callback);
   }
   return rv;
 }
@@ -347,7 +349,7 @@ void PnaclTranslationCache::OnCreateBackendComplete(int rv) {
   // Invoke our client's callback function.
   if (!init_callback_.is_null()) {
     base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                             base::BindOnce(init_callback_, rv));
+                             base::BindOnce(std::move(init_callback_), rv));
   }
 }
 
@@ -356,9 +358,9 @@ void PnaclTranslationCache::OnCreateBackendComplete(int rv) {
 
 void PnaclTranslationCache::StoreNexe(const std::string& key,
                                       net::DrainableIOBuffer* nexe_data,
-                                      const CompletionCallback& callback) {
+                                      CompletionOnceCallback callback) {
   PnaclTranslationCacheEntry* entry = PnaclTranslationCacheEntry::GetWriteEntry(
-      AsWeakPtr(), key, nexe_data, callback);
+      AsWeakPtr(), key, nexe_data, std::move(callback));
   open_entries_[entry] = entry;
   entry->Start();
 }
@@ -372,14 +374,16 @@ void PnaclTranslationCache::GetNexe(const std::string& key,
 }
 
 int PnaclTranslationCache::InitOnDisk(const base::FilePath& cache_directory,
-                                      const CompletionCallback& callback) {
+                                      CompletionOnceCallback callback) {
   in_memory_ = false;
-  return Init(net::PNACL_CACHE, cache_directory, 0 /* auto size */, callback);
+  return Init(net::PNACL_CACHE, cache_directory, 0 /* auto size */,
+              std::move(callback));
 }
 
-int PnaclTranslationCache::InitInMemory(const CompletionCallback& callback) {
+int PnaclTranslationCache::InitInMemory(CompletionOnceCallback callback) {
   in_memory_ = true;
-  return Init(net::MEMORY_CACHE, base::FilePath(), kMaxMemCacheSize, callback);
+  return Init(net::MEMORY_CACHE, base::FilePath(), kMaxMemCacheSize,
+              std::move(callback));
 }
 
 int PnaclTranslationCache::Size() {
@@ -397,8 +401,8 @@ std::string PnaclTranslationCache::GetKey(const nacl::PnaclCacheInfo& info) {
       info.extra_flags.size() > 512)
     return std::string();
   std::string retval("ABI:");
-  retval += IntToString(info.abi_version) + ";" + "opt:" +
-            IntToString(info.opt_level) +
+  retval += NumberToString(info.abi_version) + ";" +
+            "opt:" + NumberToString(info.opt_level) +
             (info.use_subzero ? "subzero;" : ";") + "URL:";
   // Filter the username, password, and ref components from the URL
   GURL::Replacements replacements;
@@ -415,23 +419,23 @@ std::string PnaclTranslationCache::GetKey(const nacl::PnaclCacheInfo& info) {
   if (info.last_modified.is_null() || !exploded.HasValidValues()) {
     memset(&exploded, 0, sizeof(exploded));
   }
-  retval += "modified:" + IntToString(exploded.year) + ":" +
-            IntToString(exploded.month) + ":" +
-            IntToString(exploded.day_of_month) + ":" +
-            IntToString(exploded.hour) + ":" + IntToString(exploded.minute) +
-            ":" + IntToString(exploded.second) + ":" +
-            IntToString(exploded.millisecond) + ":UTC;";
+  retval += "modified:" + NumberToString(exploded.year) + ":" +
+            NumberToString(exploded.month) + ":" +
+            NumberToString(exploded.day_of_month) + ":" +
+            NumberToString(exploded.hour) + ":" +
+            NumberToString(exploded.minute) + ":" +
+            NumberToString(exploded.second) + ":" +
+            NumberToString(exploded.millisecond) + ":UTC;";
   retval += "etag:" + info.etag + ";";
   retval += "sandbox:" + info.sandbox_isa + ";";
   retval += "extra_flags:" + info.extra_flags + ";";
   return retval;
 }
 
-int PnaclTranslationCache::DoomEntriesBetween(
-    base::Time initial,
-    base::Time end,
-    const CompletionCallback& callback) {
-  return disk_cache_->DoomEntriesBetween(initial, end, callback);
+int PnaclTranslationCache::DoomEntriesBetween(base::Time initial,
+                                              base::Time end,
+                                              CompletionOnceCallback callback) {
+  return disk_cache_->DoomEntriesBetween(initial, end, std::move(callback));
 }
 
 }  // namespace pnacl

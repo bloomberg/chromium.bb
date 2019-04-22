@@ -6,4 +6,4 @@
 
 #include "ui/base/class_property.h"
 
-DEFINE_UI_CLASS_PROPERTY_KEY(int, kOverrideWindowIconResourceIdKey, -1);
+DEFINE_UI_CLASS_PROPERTY_KEY(int, kOverrideWindowIconResourceIdKey, -1)

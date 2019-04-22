@@ -20,45 +20,34 @@
  * limitations under the License.
  */
 
-#include "fxbarcode/BC_TwoDimWriter.h"
+#include "fxbarcode/qrcode/BC_QRCodeWriter.h"
+
 #include "fxbarcode/common/BC_CommonByteMatrix.h"
 #include "fxbarcode/common/reedsolomon/BC_ReedSolomonGF256.h"
-#include "fxbarcode/qrcode/BC_QRCodeWriter.h"
 #include "fxbarcode/qrcode/BC_QRCoder.h"
 #include "fxbarcode/qrcode/BC_QRCoderEncoder.h"
 #include "fxbarcode/qrcode/BC_QRCoderErrorCorrectionLevel.h"
 #include "fxbarcode/qrcode/BC_QRCoderMode.h"
 #include "fxbarcode/qrcode/BC_QRCoderVersion.h"
+#include "third_party/base/stl_util.h"
 
-CBC_QRCodeWriter::CBC_QRCodeWriter() {
-  m_bFixedSize = true;
-  m_iCorrectLevel = 1;
-}
+CBC_QRCodeWriter::CBC_QRCodeWriter() : CBC_TwoDimWriter(true) {}
 
-CBC_QRCodeWriter::~CBC_QRCodeWriter() {}
-
-void CBC_QRCodeWriter::ReleaseAll() {
-  delete CBC_ReedSolomonGF256::QRCodeField;
-  CBC_ReedSolomonGF256::QRCodeField = nullptr;
-  delete CBC_ReedSolomonGF256::DataMatrixField;
-  CBC_ReedSolomonGF256::DataMatrixField = nullptr;
-  CBC_QRCoderMode::Destroy();
-  CBC_QRCoderErrorCorrectionLevel::Destroy();
-  CBC_QRCoderVersion::Destroy();
-}
+CBC_QRCodeWriter::~CBC_QRCodeWriter() = default;
 
 bool CBC_QRCodeWriter::SetErrorCorrectionLevel(int32_t level) {
   if (level < 0 || level > 3) {
     return false;
   }
-  m_iCorrectLevel = level;
+  set_error_correction_level(level);
   return true;
 }
 
-uint8_t* CBC_QRCodeWriter::Encode(const WideString& contents,
-                                  int32_t ecLevel,
-                                  int32_t& outWidth,
-                                  int32_t& outHeight) {
+std::vector<uint8_t> CBC_QRCodeWriter::Encode(WideStringView contents,
+                                              int32_t ecLevel,
+                                              int32_t* pOutWidth,
+                                              int32_t* pOutHeight) {
+  std::vector<uint8_t> results;
   CBC_QRCoderErrorCorrectionLevel* ec = nullptr;
   switch (ecLevel) {
     case 0:
@@ -74,15 +63,16 @@ uint8_t* CBC_QRCodeWriter::Encode(const WideString& contents,
       ec = CBC_QRCoderErrorCorrectionLevel::H;
       break;
     default:
-      return nullptr;
+      return results;
   }
   CBC_QRCoder qr;
   if (!CBC_QRCoderEncoder::Encode(contents, ec, &qr))
-    return nullptr;
+    return results;
 
-  outWidth = qr.GetMatrixWidth();
-  outHeight = qr.GetMatrixWidth();
-  uint8_t* result = FX_Alloc2D(uint8_t, outWidth, outHeight);
-  memcpy(result, qr.GetMatrix()->GetArray().data(), outWidth * outHeight);
-  return result;
+  *pOutWidth = qr.GetMatrixWidth();
+  *pOutHeight = qr.GetMatrixWidth();
+  results = pdfium::Vector2D<uint8_t>(*pOutWidth, *pOutHeight);
+  memcpy(results.data(), qr.GetMatrix()->GetArray().data(),
+         *pOutWidth * *pOutHeight);
+  return results;
 }

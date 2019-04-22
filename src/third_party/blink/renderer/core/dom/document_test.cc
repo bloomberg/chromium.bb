@@ -32,6 +32,7 @@
 
 #include <memory>
 
+#include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -45,6 +46,7 @@
 #include "third_party/blink/renderer/core/dom/range.h"
 #include "third_party/blink/renderer/core/dom/synchronous_mutation_observer.h"
 #include "third_party/blink/renderer/core/dom/text.h"
+#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/viewport_data.h"
@@ -57,6 +59,8 @@
 #include "third_party/blink/renderer/core/page/validation_message_client.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/mojo/interface_invalidator.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
@@ -66,7 +70,9 @@ namespace blink {
 
 class DocumentTest : public PageTestBase {
  protected:
-  void TearDown() override { ThreadState::Current()->CollectAllGarbage(); }
+  void TearDown() override {
+    ThreadState::Current()->CollectAllGarbageForTesting();
+  }
 
   void SetHtmlInnerHTML(const char*);
 };
@@ -97,7 +103,7 @@ class TestSynchronousMutationObserver
           node_to_be_removed_(node_with_index.GetNode()),
           offset_(offset) {}
 
-    void Trace(blink::Visitor* visitor) {
+    void Trace(Visitor* visitor) {
       visitor->Trace(node_);
       visitor->Trace(node_to_be_removed_);
     }
@@ -119,7 +125,7 @@ class TestSynchronousMutationObserver
           old_length_(old_length),
           new_length_(new_length) {}
 
-    void Trace(blink::Visitor* visitor) { visitor->Trace(node_); }
+    void Trace(Visitor* visitor) { visitor->Trace(node_); }
   };
 
   TestSynchronousMutationObserver(Document&);
@@ -159,7 +165,7 @@ class TestSynchronousMutationObserver
     return updated_character_data_records_;
   }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   // Implement |SynchronousMutationObserver| member functions.
@@ -206,7 +212,8 @@ void TestSynchronousMutationObserver::DidMergeTextNodes(
     const NodeWithIndex& node_with_index,
     unsigned offset) {
   merge_text_nodes_records_.push_back(
-      new MergeTextNodesRecord(&node, node_with_index, offset));
+      MakeGarbageCollected<MergeTextNodesRecord>(&node, node_with_index,
+                                                 offset));
 }
 
 void TestSynchronousMutationObserver::DidMoveTreeToNewDocument(
@@ -223,8 +230,9 @@ void TestSynchronousMutationObserver::DidUpdateCharacterData(
     unsigned offset,
     unsigned old_length,
     unsigned new_length) {
-  updated_character_data_records_.push_back(new UpdateCharacterDataRecord(
-      character_data, offset, old_length, new_length));
+  updated_character_data_records_.push_back(
+      MakeGarbageCollected<UpdateCharacterDataRecord>(character_data, offset,
+                                                      old_length, new_length));
 }
 
 void TestSynchronousMutationObserver::NodeChildrenWillBeRemoved(
@@ -236,7 +244,7 @@ void TestSynchronousMutationObserver::NodeWillBeRemoved(Node& node) {
   removed_nodes_.push_back(&node);
 }
 
-void TestSynchronousMutationObserver::Trace(blink::Visitor* visitor) {
+void TestSynchronousMutationObserver::Trace(Visitor* visitor) {
   visitor->Trace(children_changed_nodes_);
   visitor->Trace(merge_text_nodes_records_);
   visitor->Trace(move_tree_to_new_document_nodes_);
@@ -260,7 +268,7 @@ class TestDocumentShutdownObserver
     return context_destroyed_called_counter_;
   }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   // Implement |DocumentShutdownObserver| member functions.
@@ -279,7 +287,7 @@ void TestDocumentShutdownObserver::ContextDestroyed(Document*) {
   ++context_destroyed_called_counter_;
 }
 
-void TestDocumentShutdownObserver::Trace(blink::Visitor* visitor) {
+void TestDocumentShutdownObserver::Trace(Visitor* visitor) {
   DocumentShutdownObserver::Trace(visitor);
 }
 
@@ -314,7 +322,7 @@ class MockDocumentValidationMessageClient
   }
   void WillBeDestroyed() override {}
 
-  // virtual void Trace(blink::Visitor* visitor) {
+  // virtual void Trace(Visitor* visitor) {
   // ValidationMessageClient::trace(visitor); }
 };
 
@@ -417,13 +425,15 @@ TEST_F(DocumentTest, LinkManifest) {
   EXPECT_EQ(nullptr, GetDocument().LinkManifest());
 
   // Check that we use the first manifest with <link rel=manifest>
-  auto* link = HTMLLinkElement::Create(GetDocument(), CreateElementFlags());
+  auto* link = MakeGarbageCollected<HTMLLinkElement>(GetDocument(),
+                                                     CreateElementFlags());
   link->setAttribute(blink::html_names::kRelAttr, "manifest");
   link->setAttribute(blink::html_names::kHrefAttr, "foo.json");
   GetDocument().head()->AppendChild(link);
   EXPECT_EQ(link, GetDocument().LinkManifest());
 
-  auto* link2 = HTMLLinkElement::Create(GetDocument(), CreateElementFlags());
+  auto* link2 = MakeGarbageCollected<HTMLLinkElement>(GetDocument(),
+                                                      CreateElementFlags());
   link2->setAttribute(blink::html_names::kRelAttr, "manifest");
   link2->setAttribute(blink::html_names::kHrefAttr, "bar.json");
   GetDocument().head()->InsertBefore(link2, link);
@@ -589,12 +599,12 @@ TEST_F(DocumentTest, EnforceSandboxFlags) {
   scoped_refptr<SecurityOrigin> origin =
       SecurityOrigin::CreateFromString("http://example.test");
   GetDocument().SetSecurityOrigin(origin);
-  SandboxFlags mask = kSandboxNavigation;
+  SandboxFlags mask = WebSandboxFlags::kNavigation;
   GetDocument().EnforceSandboxFlags(mask);
   EXPECT_EQ(origin, GetDocument().GetSecurityOrigin());
   EXPECT_FALSE(GetDocument().GetSecurityOrigin()->IsPotentiallyTrustworthy());
 
-  mask |= kSandboxOrigin;
+  mask |= WebSandboxFlags::kOrigin;
   GetDocument().EnforceSandboxFlags(mask);
   EXPECT_TRUE(GetDocument().GetSecurityOrigin()->IsOpaque());
   EXPECT_FALSE(GetDocument().GetSecurityOrigin()->IsPotentiallyTrustworthy());
@@ -626,7 +636,8 @@ TEST_F(DocumentTest, EnforceSandboxFlags) {
 }
 
 TEST_F(DocumentTest, SynchronousMutationNotifier) {
-  auto& observer = *new TestSynchronousMutationObserver(GetDocument());
+  auto& observer =
+      *MakeGarbageCollected<TestSynchronousMutationObserver>(GetDocument());
 
   EXPECT_EQ(GetDocument(), observer.LifecycleContext());
   EXPECT_EQ(0, observer.CountContextDestroyedCalled());
@@ -660,14 +671,16 @@ TEST_F(DocumentTest, SynchronousMutationNotifier) {
 }
 
 TEST_F(DocumentTest, SynchronousMutationNotifieAppendChild) {
-  auto& observer = *new TestSynchronousMutationObserver(GetDocument());
+  auto& observer =
+      *MakeGarbageCollected<TestSynchronousMutationObserver>(GetDocument());
   GetDocument().body()->AppendChild(GetDocument().createTextNode("a123456789"));
   ASSERT_EQ(1u, observer.ChildrenChangedNodes().size());
   EXPECT_EQ(GetDocument().body(), observer.ChildrenChangedNodes()[0]);
 }
 
 TEST_F(DocumentTest, SynchronousMutationNotifieInsertBefore) {
-  auto& observer = *new TestSynchronousMutationObserver(GetDocument());
+  auto& observer =
+      *MakeGarbageCollected<TestSynchronousMutationObserver>(GetDocument());
   GetDocument().documentElement()->InsertBefore(
       GetDocument().createTextNode("a123456789"), GetDocument().body());
   ASSERT_EQ(1u, observer.ChildrenChangedNodes().size());
@@ -676,7 +689,8 @@ TEST_F(DocumentTest, SynchronousMutationNotifieInsertBefore) {
 }
 
 TEST_F(DocumentTest, SynchronousMutationNotifierMergeTextNodes) {
-  auto& observer = *new TestSynchronousMutationObserver(GetDocument());
+  auto& observer =
+      *MakeGarbageCollected<TestSynchronousMutationObserver>(GetDocument());
 
   Text* merge_sample_a = GetDocument().createTextNode("a123456789");
   GetDocument().body()->AppendChild(merge_sample_a);
@@ -695,7 +709,8 @@ TEST_F(DocumentTest, SynchronousMutationNotifierMergeTextNodes) {
 }
 
 TEST_F(DocumentTest, SynchronousMutationNotifierMoveTreeToNewDocument) {
-  auto& observer = *new TestSynchronousMutationObserver(GetDocument());
+  auto& observer =
+      *MakeGarbageCollected<TestSynchronousMutationObserver>(GetDocument());
 
   Node* move_sample = GetDocument().CreateRawElement(html_names::kDivTag);
   move_sample->appendChild(GetDocument().createTextNode("a123"));
@@ -710,7 +725,8 @@ TEST_F(DocumentTest, SynchronousMutationNotifierMoveTreeToNewDocument) {
 }
 
 TEST_F(DocumentTest, SynchronousMutationNotifieRemoveChild) {
-  auto& observer = *new TestSynchronousMutationObserver(GetDocument());
+  auto& observer =
+      *MakeGarbageCollected<TestSynchronousMutationObserver>(GetDocument());
   GetDocument().documentElement()->RemoveChild(GetDocument().body());
   ASSERT_EQ(1u, observer.ChildrenChangedNodes().size());
   EXPECT_EQ(GetDocument().documentElement(),
@@ -718,7 +734,8 @@ TEST_F(DocumentTest, SynchronousMutationNotifieRemoveChild) {
 }
 
 TEST_F(DocumentTest, SynchronousMutationNotifieReplaceChild) {
-  auto& observer = *new TestSynchronousMutationObserver(GetDocument());
+  auto& observer =
+      *MakeGarbageCollected<TestSynchronousMutationObserver>(GetDocument());
   Element* const replaced_node = GetDocument().body();
   GetDocument().documentElement()->ReplaceChild(
       GetDocument().CreateRawElement(html_names::kDivTag),
@@ -735,7 +752,8 @@ TEST_F(DocumentTest, SynchronousMutationNotifieReplaceChild) {
 
 TEST_F(DocumentTest, SynchronousMutationNotifierSplitTextNode) {
   V8TestingScope scope;
-  auto& observer = *new TestSynchronousMutationObserver(GetDocument());
+  auto& observer =
+      *MakeGarbageCollected<TestSynchronousMutationObserver>(GetDocument());
 
   Text* split_sample = GetDocument().createTextNode("0123456789");
   GetDocument().body()->AppendChild(split_sample);
@@ -746,7 +764,8 @@ TEST_F(DocumentTest, SynchronousMutationNotifierSplitTextNode) {
 }
 
 TEST_F(DocumentTest, SynchronousMutationNotifierUpdateCharacterData) {
-  auto& observer = *new TestSynchronousMutationObserver(GetDocument());
+  auto& observer =
+      *MakeGarbageCollected<TestSynchronousMutationObserver>(GetDocument());
 
   Text* append_sample = GetDocument().createTextNode("a123456789");
   GetDocument().body()->AppendChild(append_sample);
@@ -792,7 +811,8 @@ TEST_F(DocumentTest, SynchronousMutationNotifierUpdateCharacterData) {
 }
 
 TEST_F(DocumentTest, DocumentShutdownNotifier) {
-  auto& observer = *new TestDocumentShutdownObserver(GetDocument());
+  auto& observer =
+      *MakeGarbageCollected<TestDocumentShutdownObserver>(GetDocument());
 
   EXPECT_EQ(GetDocument(), observer.LifecycleContext());
   EXPECT_EQ(0, observer.CountContextDestroyedCalled());
@@ -825,7 +845,7 @@ TEST_F(DocumentTest, ValidationMessageCleanup) {
   ValidationMessageClient* original_client =
       &GetPage().GetValidationMessageClient();
   MockDocumentValidationMessageClient* mock_client =
-      new MockDocumentValidationMessageClient();
+      MakeGarbageCollected<MockDocumentValidationMessageClient>();
   GetDocument().GetSettings()->SetScriptEnabled(true);
   GetPage().SetValidationMessageClientForTesting(mock_client);
   // ImplicitOpen()-CancelParsing() makes Document.loadEventFinished()
@@ -862,7 +882,7 @@ TEST_F(DocumentTest, SandboxDisablesAppCache) {
   scoped_refptr<SecurityOrigin> origin =
       SecurityOrigin::CreateFromString("https://test.com");
   GetDocument().SetSecurityOrigin(origin);
-  SandboxFlags mask = kSandboxOrigin;
+  SandboxFlags mask = WebSandboxFlags::kOrigin;
   GetDocument().EnforceSandboxFlags(mask);
   GetDocument().SetURL(KURL("https://test.com/foobar/document"));
 
@@ -966,9 +986,107 @@ TEST_F(DocumentTest, InterfaceInvalidatorDestruction) {
   EXPECT_EQ(1, obs.CountInvalidateCalled());
 }
 
+// Test fixture parameterized on whether the "IsolatedWorldCSP" feature is
+// enabled.
+class IsolatedWorldCSPTest : public DocumentTest,
+                             public testing::WithParamInterface<bool> {
+ public:
+  IsolatedWorldCSPTest() {
+    RuntimeEnabledFeatures::SetIsolatedWorldCSPEnabled(GetParam());
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(IsolatedWorldCSPTest);
+};
+
+// Tests ExecutionContext::GetContentSecurityPolicyForWorld().
+TEST_P(IsolatedWorldCSPTest, CSPForWorld) {
+  using ::testing::ElementsAre;
+
+  // Set a CSP for the main world.
+  const char* kMainWorldCSP = "connect-src https://google.com;";
+  GetDocument().GetContentSecurityPolicy()->DidReceiveHeader(
+      kMainWorldCSP, kContentSecurityPolicyHeaderTypeEnforce,
+      kContentSecurityPolicyHeaderSourceHTTP);
+
+  LocalFrame* frame = GetDocument().GetFrame();
+  ScriptState* main_world_script_state = ToScriptStateForMainWorld(frame);
+  v8::Isolate* isolate = main_world_script_state->GetIsolate();
+
+  constexpr int kIsolatedWorldWithoutCSPId = 1;
+  scoped_refptr<DOMWrapperWorld> world_without_csp =
+      DOMWrapperWorld::EnsureIsolatedWorld(isolate, kIsolatedWorldWithoutCSPId);
+  ASSERT_TRUE(world_without_csp->IsIsolatedWorld());
+  ScriptState* isolated_world_without_csp_script_state =
+      ToScriptState(frame, *world_without_csp);
+
+  const char* kIsolatedWorldCSP = "script-src 'none';";
+  constexpr int kIsolatedWorldWithCSPId = 2;
+  scoped_refptr<DOMWrapperWorld> world_with_csp =
+      DOMWrapperWorld::EnsureIsolatedWorld(isolate, kIsolatedWorldWithCSPId);
+  ASSERT_TRUE(world_with_csp->IsIsolatedWorld());
+  ScriptState* isolated_world_with_csp_script_state =
+      ToScriptState(frame, *world_with_csp);
+  IsolatedWorldCSP::Get().SetContentSecurityPolicy(
+      kIsolatedWorldWithCSPId, kIsolatedWorldCSP,
+      SecurityOrigin::Create(KURL("chrome-extension://123")));
+
+  // Returns the csp headers being used for the current world.
+  auto get_csp_headers = [this]() {
+    return GetDocument().GetContentSecurityPolicyForWorld()->Headers();
+  };
+
+  {
+    SCOPED_TRACE("In main world.");
+    ScriptState::Scope scope(main_world_script_state);
+    EXPECT_THAT(get_csp_headers(),
+                ElementsAre(CSPHeaderAndType(
+                    {kMainWorldCSP, kContentSecurityPolicyHeaderTypeEnforce})));
+  }
+
+  {
+    SCOPED_TRACE("In isolated world without csp.");
+    ScriptState::Scope scope(isolated_world_without_csp_script_state);
+
+    // If we are in an isolated world with no CSP defined, we use the main world
+    // CSP.
+    EXPECT_THAT(get_csp_headers(),
+                ElementsAre(CSPHeaderAndType(
+                    {kMainWorldCSP, kContentSecurityPolicyHeaderTypeEnforce})));
+  }
+
+  {
+    bool is_isolated_world_csp_enabled = GetParam();
+    SCOPED_TRACE(base::StringPrintf(
+        "In isolated world with csp and 'IsolatedWorldCSP' %s",
+        is_isolated_world_csp_enabled ? "enabled" : "disabled"));
+    ScriptState::Scope scope(isolated_world_with_csp_script_state);
+
+    if (!is_isolated_world_csp_enabled) {
+      // With 'IsolatedWorldCSP' feature disabled, we should just bypass the
+      // main world CSP by using an empty CSP.
+      EXPECT_TRUE(get_csp_headers().IsEmpty());
+    } else {
+      // With 'IsolatedWorldCSP' feature enabled, we use the isolated world's
+      // CSP if it specified one.
+      EXPECT_THAT(
+          get_csp_headers(),
+          ElementsAre(CSPHeaderAndType(
+              {kIsolatedWorldCSP, kContentSecurityPolicyHeaderTypeEnforce})));
+    }
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(, IsolatedWorldCSPTest, testing::Values(true, false));
+
 TEST_F(DocumentTest, CanExecuteScriptsWithSandboxAndIsolatedWorld) {
-  constexpr SandboxFlags kSandboxMask = kSandboxScripts;
+  constexpr SandboxFlags kSandboxMask = WebSandboxFlags::kScripts;
   GetDocument().EnforceSandboxFlags(kSandboxMask);
+  // With FeaturePolicyForSandbox, all the sandbox flags must be explicitly
+  // converted to equivalent feature policies. Since sandbox is enforced above,
+  // the feature policies have to be reset; setting an empty header policy will
+  // internally convert the newly set sandbox flags to policies.
+  GetDocument().ApplyFeaturePolicyFromHeader("");
 
   LocalFrame* frame = GetDocument().GetFrame();
   frame->GetSettings()->SetScriptEnabled(true);
@@ -988,7 +1106,8 @@ TEST_F(DocumentTest, CanExecuteScriptsWithSandboxAndIsolatedWorld) {
   scoped_refptr<DOMWrapperWorld> world_with_csp =
       DOMWrapperWorld::EnsureIsolatedWorld(isolate, kIsolatedWorldWithCSPId);
   IsolatedWorldCSP::Get().SetContentSecurityPolicy(
-      kIsolatedWorldWithCSPId, String::FromUTF8("script-src *"));
+      kIsolatedWorldWithCSPId, String::FromUTF8("script-src *"),
+      SecurityOrigin::Create(KURL("chrome-extension://123")));
   ScriptState* isolated_world_with_csp_script_state =
       ToScriptState(frame, *world_with_csp);
   ASSERT_TRUE(world_with_csp->IsIsolatedWorld());
@@ -1167,7 +1286,7 @@ TEST_P(ParameterizedViewportFitDocumentTest, EffectiveViewportFit) {
   EXPECT_EQ(std::get<2>(GetParam()), GetViewportFit());
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     All,
     ParameterizedViewportFitDocumentTest,
     testing::Values(

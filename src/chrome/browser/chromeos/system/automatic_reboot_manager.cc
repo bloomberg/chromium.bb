@@ -30,8 +30,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/chromeos_paths.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_paths.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -53,7 +53,8 @@ const int kGracePeriodMs = 24 * 60 * 60 * 1000;    // 24 hours.
 const int kOneKilobyte = 1 << 10;                  // 1 kB in bytes.
 
 base::TimeDelta ReadTimeDeltaFromFile(const base::FilePath& path) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   base::ScopedFD fd(
       HANDLE_EINTR(open(path.value().c_str(), O_RDONLY | O_NOFOLLOW)));
   if (!fd.is_valid())
@@ -85,7 +86,8 @@ AutomaticRebootManager::SystemEventTimes GetSystemEventTimes() {
 }
 
 void SaveUpdateRebootNeededUptime() {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   const base::TimeDelta kZeroTimeDelta;
 
   base::FilePath update_reboot_needed_uptime_file;
@@ -159,9 +161,8 @@ AutomaticRebootManager::AutomaticRebootManager(const base::TickClock* clock)
   notification_registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
       content::NotificationService::AllSources());
 
-  DBusThreadManager* dbus_thread_manager = DBusThreadManager::Get();
-  dbus_thread_manager->GetPowerManagerClient()->AddObserver(this);
-  dbus_thread_manager->GetUpdateEngineClient()->AddObserver(this);
+  PowerManagerClient::Get()->AddObserver(this);
+  DBusThreadManager::Get()->GetUpdateEngineClient()->AddObserver(this);
 
   // If no user is logged in, a reboot may be performed whenever the user is
   // idle. Start listening for user activity to determine whether the user is
@@ -187,9 +188,8 @@ AutomaticRebootManager::~AutomaticRebootManager() {
   for (auto& observer : observers_)
     observer.WillDestroyAutomaticRebootManager();
 
-  DBusThreadManager* dbus_thread_manager = DBusThreadManager::Get();
-  dbus_thread_manager->GetPowerManagerClient()->RemoveObserver(this);
-  dbus_thread_manager->GetUpdateEngineClient()->RemoveObserver(this);
+  PowerManagerClient::Get()->RemoveObserver(this);
+  DBusThreadManager::Get()->GetUpdateEngineClient()->RemoveObserver(this);
   if (ui::UserActivityDetector::Get())
     ui::UserActivityDetector::Get()->RemoveObserver(this);
 }
@@ -227,7 +227,7 @@ void AutomaticRebootManager::UpdateStatusChanged(
   base::PostTaskWithTraits(FROM_HERE,
                            {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
                             base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
-                           base::Bind(&SaveUpdateRebootNeededUptime));
+                           base::BindOnce(&SaveUpdateRebootNeededUptime));
 
   update_reboot_needed_time_ = clock_->NowTicks();
   have_update_reboot_needed_time_ = true;
@@ -413,7 +413,7 @@ void AutomaticRebootManager::Reboot() {
   grace_start_timer_.reset();
   grace_end_timer_.reset();
   VLOG(1) << "Rebooting immediately.";
-  DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart(
+  PowerManagerClient::Get()->RequestRestart(
       power_manager::REQUEST_RESTART_OTHER, "automatic reboot manager");
 }
 

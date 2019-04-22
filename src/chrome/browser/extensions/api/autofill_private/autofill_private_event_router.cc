@@ -50,6 +50,7 @@ void AutofillPrivateEventRouter::Shutdown() {
     personal_data_->RemoveObserver(this);
 }
 
+// TODO(crbug.com/923868): Change the 2 calls to a single OnPersonalDataChanged.
 void AutofillPrivateEventRouter::OnPersonalDataChanged() {
   // Ignore any updates before data is loaded. This can happen in tests.
   if (!(personal_data_ && personal_data_->IsDataLoaded()))

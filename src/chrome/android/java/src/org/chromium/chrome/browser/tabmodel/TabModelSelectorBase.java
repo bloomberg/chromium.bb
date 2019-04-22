@@ -5,9 +5,8 @@
 package org.chromium.chrome.browser.tabmodel;
 
 import org.chromium.base.ObserverList;
+import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
-import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -23,6 +22,13 @@ public abstract class TabModelSelectorBase implements TabModelSelector {
     private static TabModelSelectorObserver sObserver;
 
     private List<TabModel> mTabModels = Collections.emptyList();
+
+    /**
+     * This is a dummy implementation intended to stub out TabModelFilterProvider before native is
+     * ready.
+     */
+    private TabModelFilterProvider mTabModelFilterProvider = new TabModelFilterProvider();
+
     private int mActiveModelIndex = NORMAL_TAB_MODEL_INDEX;
     private final ObserverList<TabModelSelectorObserver> mObservers =
             new ObserverList<TabModelSelectorObserver>();
@@ -42,6 +48,7 @@ public abstract class TabModelSelectorBase implements TabModelSelector {
         }
         mActiveModelIndex = startIncognito ? INCOGNITO_TAB_MODEL_INDEX : NORMAL_TAB_MODEL_INDEX;
         mTabModels = Collections.unmodifiableList(tabModels);
+        mTabModelFilterProvider = new TabModelFilterProvider(mTabModels);
 
         TabModelObserver tabModelObserver = new EmptyTabModelObserver() {
             @Override
@@ -134,6 +141,11 @@ public abstract class TabModelSelectorBase implements TabModelSelector {
     }
 
     @Override
+    public TabModelFilterProvider getTabModelFilterProvider() {
+        return mTabModelFilterProvider;
+    }
+
+    @Override
     public boolean isIncognitoSelected() {
         return mActiveModelIndex == INCOGNITO_TAB_MODEL_INDEX;
     }
@@ -219,7 +231,11 @@ public abstract class TabModelSelectorBase implements TabModelSelector {
     }
 
     @Override
+    public void setOverviewModeBehavior(OverviewModeBehavior overviewModeBehavior) {}
+
+    @Override
     public void destroy() {
+        mTabModelFilterProvider.destroy();
         for (int i = 0; i < getModels().size(); i++) getModelAt(i).destroy();
     }
 

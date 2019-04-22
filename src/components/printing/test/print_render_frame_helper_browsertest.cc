@@ -51,6 +51,18 @@ namespace {
 // A simple web page.
 const char kHelloWorldHTML[] = "<body><p>Hello World!</p></body>";
 
+// Web page used for testing onbeforeprint/onafterprint.
+const char kBeforeAfterPrintHtml[] =
+    "<body>"
+    "<script>"
+    "var beforePrintCount = 0;"
+    "var afterPrintCount = 0;"
+    "window.onbeforeprint = () => { ++beforePrintCount; };"
+    "window.onafterprint = () => { ++afterPrintCount; };"
+    "</script>"
+    "<button id=\"print\" onclick=\"window.print();\">Hello World!</button>"
+    "</body>";
+
 #if !defined(OS_CHROMEOS)
 // A simple webpage with a button to print itself with.
 const char kPrintOnUserAction[] =
@@ -147,8 +159,8 @@ class DidPreviewPageListener : public IPC::Listener {
 
 class PrintRenderFrameHelperTestBase : public content::RenderViewTest {
  public:
-  PrintRenderFrameHelperTestBase() : print_render_thread_(nullptr) {}
-  ~PrintRenderFrameHelperTestBase() override {}
+  PrintRenderFrameHelperTestBase() = default;
+  ~PrintRenderFrameHelperTestBase() override = default;
 
  protected:
   // content::RenderViewTest:
@@ -157,8 +169,9 @@ class PrintRenderFrameHelperTestBase : public content::RenderViewTest {
   }
 
   void SetUp() override {
-    print_render_thread_ = new PrintMockRenderThread();
-    render_thread_.reset(print_render_thread_);
+    render_thread_ = std::make_unique<PrintMockRenderThread>();
+    print_render_thread_ =
+        static_cast<PrintMockRenderThread*>(render_thread_.get());
 
     content::RenderViewTest::SetUp();
   }
@@ -255,6 +268,10 @@ class PrintRenderFrameHelperTestBase : public content::RenderViewTest {
     run_loop.Run();
     render_thread_->sink().RemoveFilter(&filter);
   }
+
+  void OnClosePrintPreviewDialog() {
+    GetPrintRenderFrameHelper()->OnClosePrintPreviewDialog();
+  }
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
   PrintRenderFrameHelper* GetPrintRenderFrameHelper() {
@@ -272,10 +289,58 @@ class PrintRenderFrameHelperTestBase : public content::RenderViewTest {
         content::RenderFrame::FromWebFrame(frame->ToWebLocalFrame()));
   }
 
-  // Naked pointer as ownership is with content::RenderViewTest::render_thread_.
-  PrintMockRenderThread* print_render_thread_;
+  void ClickMouseButton(const gfx::Rect& bounds) {
+    EXPECT_FALSE(bounds.IsEmpty());
+
+    blink::WebMouseEvent mouse_event(
+        blink::WebInputEvent::kMouseDown, blink::WebInputEvent::kNoModifiers,
+        blink::WebInputEvent::GetStaticTimeStampForTests());
+    mouse_event.button = blink::WebMouseEvent::Button::kLeft;
+    mouse_event.SetPositionInWidget(bounds.CenterPoint().x(),
+                                    bounds.CenterPoint().y());
+    mouse_event.click_count = 1;
+    SendWebMouseEvent(mouse_event);
+    mouse_event.SetType(blink::WebInputEvent::kMouseUp);
+    SendWebMouseEvent(mouse_event);
+  }
+
+  void ExpectNoBeforeNoAfterPrintEvent() {
+    int result;
+    ASSERT_TRUE(ExecuteJavaScriptAndReturnIntValue(
+        base::ASCIIToUTF16("beforePrintCount"), &result));
+    EXPECT_EQ(0, result) << "beforeprint event should not be dispatched.";
+    ASSERT_TRUE(ExecuteJavaScriptAndReturnIntValue(
+        base::ASCIIToUTF16("afterPrintCount"), &result));
+    EXPECT_EQ(0, result) << "afterprint event should not be dispatched.";
+  }
+
+  void ExpectOneBeforeNoAfterPrintEvent() {
+    int result;
+    ASSERT_TRUE(ExecuteJavaScriptAndReturnIntValue(
+        base::ASCIIToUTF16("beforePrintCount"), &result));
+    EXPECT_EQ(1, result) << "beforeprint event should be dispatched once.";
+    ASSERT_TRUE(ExecuteJavaScriptAndReturnIntValue(
+        base::ASCIIToUTF16("afterPrintCount"), &result));
+    EXPECT_EQ(0, result) << "afterprint event should not be dispatched.";
+  }
+
+  void ExpectOneBeforeOneAfterPrintEvent() {
+    int result;
+    ASSERT_TRUE(ExecuteJavaScriptAndReturnIntValue(
+        base::ASCIIToUTF16("beforePrintCount"), &result));
+    EXPECT_EQ(1, result) << "beforeprint event should be dispatched once.";
+    ASSERT_TRUE(ExecuteJavaScriptAndReturnIntValue(
+        base::ASCIIToUTF16("afterPrintCount"), &result));
+    EXPECT_EQ(1, result) << "afterprint event should be dispatched once.";
+  }
+
+  PrintMockRenderThread* print_render_thread() { return print_render_thread_; }
 
  private:
+  // Naked pointer as ownership is with
+  // |content::RenderViewTest::render_thread_|.
+  PrintMockRenderThread* print_render_thread_ = nullptr;
+
   DISALLOW_COPY_AND_ASSIGN(PrintRenderFrameHelperTestBase);
 };
 
@@ -289,8 +354,8 @@ class PrintRenderFrameHelperTestBase : public content::RenderViewTest {
 
 class MAYBE_PrintRenderFrameHelperTest : public PrintRenderFrameHelperTestBase {
  public:
-  MAYBE_PrintRenderFrameHelperTest() {}
-  ~MAYBE_PrintRenderFrameHelperTest() override {}
+  MAYBE_PrintRenderFrameHelperTest() = default;
+  ~MAYBE_PrintRenderFrameHelperTest() override = default;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MAYBE_PrintRenderFrameHelperTest);
@@ -302,7 +367,7 @@ class MAYBE_PrintRenderFrameHelperTest : public PrintRenderFrameHelperTestBase {
 // frequently.
 TEST_F(MAYBE_PrintRenderFrameHelperTest, BlockScriptInitiatedPrinting) {
   // Pretend user will cancel printing.
-  print_render_thread_->set_print_dialog_user_response(false);
+  print_render_thread()->set_print_dialog_user_response(false);
   // Try to print with window.print() a few times.
   PrintWithJavaScript();
   PrintWithJavaScript();
@@ -310,13 +375,13 @@ TEST_F(MAYBE_PrintRenderFrameHelperTest, BlockScriptInitiatedPrinting) {
   VerifyPagesPrinted(false);
 
   // Pretend user will print. (but printing is blocked.)
-  print_render_thread_->set_print_dialog_user_response(true);
+  print_render_thread()->set_print_dialog_user_response(true);
   PrintWithJavaScript();
   VerifyPagesPrinted(false);
 
   // Unblock script initiated printing and verify printing works.
   GetPrintRenderFrameHelper()->scripting_throttler_.Reset();
-  print_render_thread_->printer()->ResetPrinter();
+  print_render_thread()->printer()->ResetPrinter();
   PrintWithJavaScript();
   VerifyPageCount(1);
   VerifyPagesPrinted(true);
@@ -326,7 +391,7 @@ TEST_F(MAYBE_PrintRenderFrameHelperTest, BlockScriptInitiatedPrinting) {
 // initiated.
 TEST_F(MAYBE_PrintRenderFrameHelperTest, AllowUserOriginatedPrinting) {
   // Pretend user will cancel printing.
-  print_render_thread_->set_print_dialog_user_response(false);
+  print_render_thread()->set_print_dialog_user_response(false);
   // Try to print with window.print() a few times.
   PrintWithJavaScript();
   PrintWithJavaScript();
@@ -334,28 +399,18 @@ TEST_F(MAYBE_PrintRenderFrameHelperTest, AllowUserOriginatedPrinting) {
   VerifyPagesPrinted(false);
 
   // Pretend user will print. (but printing is blocked.)
-  print_render_thread_->set_print_dialog_user_response(true);
+  print_render_thread()->set_print_dialog_user_response(true);
   PrintWithJavaScript();
   VerifyPagesPrinted(false);
 
   // Try again as if user initiated, without resetting the print count.
-  print_render_thread_->printer()->ResetPrinter();
+  print_render_thread()->printer()->ResetPrinter();
   LoadHTML(kPrintOnUserAction);
   gfx::Size new_size(200, 100);
   Resize(new_size, false);
 
   gfx::Rect bounds = GetElementBounds("print");
-  EXPECT_FALSE(bounds.IsEmpty());
-  blink::WebMouseEvent mouse_event(
-      blink::WebInputEvent::kMouseDown, blink::WebInputEvent::kNoModifiers,
-      blink::WebInputEvent::GetStaticTimeStampForTests());
-  mouse_event.button = blink::WebMouseEvent::Button::kLeft;
-  mouse_event.SetPositionInWidget(bounds.CenterPoint().x(),
-                                  bounds.CenterPoint().y());
-  mouse_event.click_count = 1;
-  SendWebMouseEvent(mouse_event);
-  mouse_event.SetType(blink::WebInputEvent::kMouseUp);
-  SendWebMouseEvent(mouse_event);
+  ClickMouseButton(bounds);
   base::RunLoop().RunUntilIdle();
 
   VerifyPageCount(1);
@@ -368,6 +423,18 @@ TEST_F(MAYBE_PrintRenderFrameHelperTest, PrintWithJavascript) {
 
   VerifyPageCount(1);
   VerifyPagesPrinted(true);
+}
+
+// Regression test for https://crbug.com/912966
+TEST_F(MAYBE_PrintRenderFrameHelperTest, WindowPrintBeforePrintAfterPrint) {
+  LoadHTML(kBeforeAfterPrintHtml);
+  ExpectNoBeforeNoAfterPrintEvent();
+
+  PrintWithJavaScript();
+
+  VerifyPageCount(1);
+  VerifyPagesPrinted(true);
+  ExpectOneBeforeOneAfterPrintEvent();
 }
 #endif  // !BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
@@ -382,31 +449,18 @@ TEST_F(MAYBE_PrintRenderFrameHelperTest, OnPrintPages) {
 }
 
 TEST_F(MAYBE_PrintRenderFrameHelperTest, BasicBeforePrintAfterPrint) {
-  const char kHtml[] =
-      "<body>Hello"
-      "<script>"
-      "var beforePrintCount = 0;"
-      "var afterPrintCount = 0;"
-      "window.onbeforeprint = () => { ++beforePrintCount; };"
-      "window.onafterprint = () => { ++afterPrintCount; };"
-      "</script>"
-      "</body>";
+  LoadHTML(kBeforeAfterPrintHtml);
+  ExpectNoBeforeNoAfterPrintEvent();
 
-  LoadHTML(kHtml);
   OnPrintPages();
 
+  VerifyPageCount(1);
   VerifyPagesPrinted(true);
-  int result;
-  ASSERT_TRUE(ExecuteJavaScriptAndReturnIntValue(
-      base::ASCIIToUTF16("beforePrintCount"), &result));
-  EXPECT_EQ(1, result) << "beforeprint event should be dispatched once.";
-  ASSERT_TRUE(ExecuteJavaScriptAndReturnIntValue(
-      base::ASCIIToUTF16("afterPrintCount"), &result));
-  EXPECT_EQ(1, result) << "afterprint event should be dispatched once.";
+  ExpectOneBeforeOneAfterPrintEvent();
 }
 
 TEST_F(MAYBE_PrintRenderFrameHelperTest, BasicBeforePrintAfterPrintSubFrame) {
-  const char kCloseOnBeforeHtml[] =
+  static const char kCloseOnBeforeHtml[] =
       "<body>Hello"
       "<iframe name=sub srcdoc='<script>"
       "window.onbeforeprint = () => { window.frameElement.remove(); };"
@@ -418,7 +472,7 @@ TEST_F(MAYBE_PrintRenderFrameHelperTest, BasicBeforePrintAfterPrintSubFrame) {
   EXPECT_EQ(nullptr, GetMainFrame()->FindFrameByName("sub"));
   VerifyPagesPrinted(false);
 
-  const char kCloseOnAfterHtml[] =
+  static const char kCloseOnAfterHtml[] =
       "<body>Hello"
       "<iframe name=sub srcdoc='<script>"
       "window.onafterprint = () => { window.frameElement.remove(); };"
@@ -438,7 +492,7 @@ TEST_F(MAYBE_PrintRenderFrameHelperTest, BasicBeforePrintAfterPrintSubFrame) {
 // for us anyway.
 TEST_F(MAYBE_PrintRenderFrameHelperTest, PrintWithIframe) {
   // Document that populates an iframe.
-  const char html[] =
+  static const char html[] =
       "<html><body>Lorem Ipsum:"
       "<iframe name=\"sub1\" id=\"sub1\"></iframe><script>"
       "  document.write(frames['sub1'].name);"
@@ -464,7 +518,7 @@ TEST_F(MAYBE_PrintRenderFrameHelperTest, PrintWithIframe) {
   VerifyPagesPrinted(true);
 
   // Verify output through MockPrinter.
-  const MockPrinter* printer(print_render_thread_->printer());
+  const MockPrinter* printer(print_render_thread()->printer());
   ASSERT_EQ(1, printer->GetPrintedPages());
   const Image& image1(printer->GetPrintedPage(0)->image());
 
@@ -521,7 +575,7 @@ const TestPageData kTestPages[] = {
 TEST_F(MAYBE_PrintRenderFrameHelperTest, PrintLayoutTest) {
   bool baseline = false;
 
-  EXPECT_TRUE(print_render_thread_->printer());
+  EXPECT_TRUE(print_render_thread()->printer());
   for (size_t i = 0; i < base::size(kTestPages); ++i) {
     // Load an HTML page and print it.
     LoadHTML(kTestPages[i].page);
@@ -534,12 +588,12 @@ TEST_F(MAYBE_PrintRenderFrameHelperTest, PrintLayoutTest) {
     // has been already finished.
     // So, we can start checking the output pages of this printing job.
     // Retrieve the number of pages actually printed.
-    size_t pages = print_render_thread_->printer()->GetPrintedPages();
+    size_t pages = print_render_thread()->printer()->GetPrintedPages();
     EXPECT_EQ(kTestPages[i].printed_pages, pages);
 
     // Retrieve the width and height of the output page.
-    int width = print_render_thread_->printer()->GetWidth(0);
-    int height = print_render_thread_->printer()->GetHeight(0);
+    int width = print_render_thread()->printer()->GetWidth(0);
+    int height = print_render_thread()->printer()->GetHeight(0);
 
     // Check with margin for error.  This has been failing with a one pixel
     // offset on our buildbot.
@@ -553,7 +607,7 @@ TEST_F(MAYBE_PrintRenderFrameHelperTest, PrintLayoutTest) {
     // compare it with the expected result.
     std::string bitmap_actual;
     EXPECT_TRUE(
-        print_render_thread_->printer()->GetBitmapChecksum(0, &bitmap_actual));
+        print_render_thread()->printer()->GetBitmapChecksum(0, &bitmap_actual));
     if (kTestPages[i].checksum)
       EXPECT_EQ(kTestPages[i].checksum, bitmap_actual);
 
@@ -562,11 +616,11 @@ TEST_F(MAYBE_PrintRenderFrameHelperTest, PrintLayoutTest) {
       // create base-line results.
       base::FilePath source_path;
       base::CreateTemporaryFile(&source_path);
-      print_render_thread_->printer()->SaveSource(0, source_path);
+      print_render_thread()->printer()->SaveSource(0, source_path);
 
       base::FilePath bitmap_path;
       base::CreateTemporaryFile(&bitmap_path);
-      print_render_thread_->printer()->SaveBitmap(0, bitmap_path);
+      print_render_thread()->printer()->SaveBitmap(0, bitmap_path);
     }
   }
 }
@@ -589,8 +643,8 @@ TEST_F(MAYBE_PrintRenderFrameHelperTest, PrintLayoutTest) {
 class MAYBE_PrintRenderFrameHelperPreviewTest
     : public PrintRenderFrameHelperTestBase {
  public:
-  MAYBE_PrintRenderFrameHelperPreviewTest() {}
-  ~MAYBE_PrintRenderFrameHelperPreviewTest() override {}
+  MAYBE_PrintRenderFrameHelperPreviewTest() = default;
+  ~MAYBE_PrintRenderFrameHelperPreviewTest() override = default;
 
  protected:
   void VerifyPrintPreviewCancelled(bool expect_cancel) {
@@ -640,7 +694,7 @@ class MAYBE_PrintRenderFrameHelperPreviewTest
   void VerifyDidPreviewPage(bool expect_generated, int page_number) {
     bool msg_found = false;
     uint32_t data_size = 0;
-    for (const auto& preview : print_render_thread_->print_preview_pages()) {
+    for (const auto& preview : print_render_thread()->print_preview_pages()) {
       if (preview.first == page_number) {
         msg_found = true;
         data_size = preview.second;
@@ -701,17 +755,7 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, PrintWithJavaScript) {
   Resize(new_size, false);
 
   gfx::Rect bounds = GetElementBounds("print");
-  EXPECT_FALSE(bounds.IsEmpty());
-  blink::WebMouseEvent mouse_event(
-      blink::WebInputEvent::kMouseDown, blink::WebInputEvent::kNoModifiers,
-      blink::WebInputEvent::GetStaticTimeStampForTests());
-  mouse_event.button = blink::WebMouseEvent::Button::kLeft;
-  mouse_event.SetPositionInWidget(bounds.CenterPoint().x(),
-                                  bounds.CenterPoint().y());
-  mouse_event.click_count = 1;
-  SendWebMouseEvent(mouse_event);
-  mouse_event.SetType(blink::WebInputEvent::kMouseUp);
-  SendWebMouseEvent(mouse_event);
+  ClickMouseButton(bounds);
 
   VerifyPreviewRequest(true);
 }
@@ -726,7 +770,7 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, OnPrintPreview) {
   CreatePrintSettingsDictionary(&dict);
   OnPrintPreview(dict);
 
-  EXPECT_EQ(0, print_render_thread_->print_preview_pages_remaining());
+  EXPECT_EQ(0, print_render_thread()->print_preview_pages_remaining());
   VerifyDidPreviewPage(true, 0);
   VerifyPreviewPageCount(1);
   VerifyDefaultPageLayout(540, 720, 36, 36, 36, 36, false);
@@ -739,7 +783,7 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, OnPrintPreview) {
 TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
        PrintPreviewHTMLWithPageMarginsCss) {
   // A simple web page with print margins css.
-  const char kHTMLWithPageMarginsCss[] =
+  static const char kHTMLWithPageMarginsCss[] =
       "<html><head><style>"
       "@media print {"
       "  @page {"
@@ -758,7 +802,7 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
   dict.SetInteger(kSettingMarginsType, DEFAULT_MARGINS);
   OnPrintPreview(dict);
 
-  EXPECT_EQ(0, print_render_thread_->print_preview_pages_remaining());
+  EXPECT_EQ(0, print_render_thread()->print_preview_pages_remaining());
   VerifyDefaultPageLayout(519, 432, 216, 144, 21, 72, false);
   VerifyDidPreviewPage(true, 0);
   VerifyPreviewPageCount(1);
@@ -781,7 +825,7 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
   dict.SetInteger(kSettingMarginsType, NO_MARGINS);
   OnPrintPreview(dict);
 
-  EXPECT_EQ(0, print_render_thread_->print_preview_pages_remaining());
+  EXPECT_EQ(0, print_render_thread()->print_preview_pages_remaining());
   VerifyDefaultPageLayout(612, 792, 0, 0, 0, 0, true);
   VerifyDidPreviewPage(true, 0);
   VerifyPreviewPageCount(1);
@@ -804,7 +848,7 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
   dict.SetInteger(kSettingMarginsType, PRINTABLE_AREA_MARGINS);
   OnPrintPreview(dict);
 
-  EXPECT_EQ(0, print_render_thread_->print_preview_pages_remaining());
+  EXPECT_EQ(0, print_render_thread()->print_preview_pages_remaining());
   // Since PRINT_TO_PDF is selected, pdf page size is equal to print media page
   // size.
   VerifyDefaultPageLayout(252, 252, 18, 18, 18, 18, true);
@@ -819,7 +863,7 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
 TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
        PreviewLayoutTriggeredByResize) {
   // A simple web page with print margins css.
-  const char kHTMLWithPageCss[] =
+  static const char kHTMLWithPageCss[] =
       "<!DOCTYPE html>"
       "<style>"
       "@media (min-width: 540px) {"
@@ -929,7 +973,7 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
   dict.SetInteger(kSettingMarginsType, DEFAULT_MARGINS);
   OnPrintPreview(dict);
 
-  EXPECT_EQ(0, print_render_thread_->print_preview_pages_remaining());
+  EXPECT_EQ(0, print_render_thread()->print_preview_pages_remaining());
   VerifyDidPreviewPage(true, 0);
   VerifyDidPreviewPage(true, 1);
   VerifyPreviewPageCount(2);
@@ -944,7 +988,7 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
 TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
        PrintToPDFSelectedHonorPageMarginsCss) {
   // A simple web page with print margins css.
-  const char kHTMLWithPageCss[] =
+  static const char kHTMLWithPageCss[] =
       "<html><head><style>"
       "@media print {"
       "  @page {"
@@ -964,7 +1008,7 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
   dict.SetInteger(kSettingMarginsType, DEFAULT_MARGINS);
   OnPrintPreview(dict);
 
-  EXPECT_EQ(0, print_render_thread_->print_preview_pages_remaining());
+  EXPECT_EQ(0, print_render_thread()->print_preview_pages_remaining());
   // Since PRINT_TO_PDF is selected, pdf page size is equal to print media page
   // size.
   VerifyDefaultPageLayout(915, 648, 216, 144, 21, 72, true);
@@ -988,7 +1032,7 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, PrintPreviewCenterToFitPage) {
   dict.SetInteger(kSettingMarginsType, DEFAULT_MARGINS);
   OnPrintPreview(dict);
 
-  EXPECT_EQ(0, print_render_thread_->print_preview_pages_remaining());
+  EXPECT_EQ(0, print_render_thread()->print_preview_pages_remaining());
   VerifyDefaultPageLayout(216, 216, 288, 288, 198, 198, true);
   VerifyDidPreviewPage(true, 0);
   VerifyPreviewPageCount(1);
@@ -1002,7 +1046,7 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, PrintPreviewCenterToFitPage) {
 // fit the page size.
 TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, PrintPreviewShrinkToFitPage) {
   // A simple web page with print margins css.
-  const char kHTMLWithPageCss[] =
+  static const char kHTMLWithPageCss[] =
       "<html><head><style>"
       "@media print {"
       "  @page {"
@@ -1021,7 +1065,7 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, PrintPreviewShrinkToFitPage) {
   dict.SetInteger(kSettingMarginsType, DEFAULT_MARGINS);
   OnPrintPreview(dict);
 
-  EXPECT_EQ(0, print_render_thread_->print_preview_pages_remaining());
+  EXPECT_EQ(0, print_render_thread()->print_preview_pages_remaining());
   VerifyDefaultPageLayout(571, 652, 69, 71, 20, 21, true);
   VerifyDidPreviewPage(true, 0);
   VerifyPreviewPageCount(1);
@@ -1044,7 +1088,7 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
   dict.SetInteger(kSettingMarginsType, NO_MARGINS);
   OnPrintPreview(dict);
 
-  EXPECT_EQ(0, print_render_thread_->print_preview_pages_remaining());
+  EXPECT_EQ(0, print_render_thread()->print_preview_pages_remaining());
   VerifyDefaultPageLayout(792, 612, 0, 0, 0, 0, true);
   VerifyDidPreviewPage(true, 0);
   VerifyPreviewPageCount(1);
@@ -1067,7 +1111,7 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
   dict.SetInteger(kSettingMarginsType, CUSTOM_MARGINS);
   OnPrintPreview(dict);
 
-  EXPECT_EQ(0, print_render_thread_->print_preview_pages_remaining());
+  EXPECT_EQ(0, print_render_thread()->print_preview_pages_remaining());
   VerifyDefaultPageLayout(748, 568, 21, 23, 21, 23, true);
   VerifyDidPreviewPage(true, 0);
   VerifyPreviewPageCount(1);
@@ -1086,7 +1130,7 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, PrintPreviewForMultiplePages) {
 
   OnPrintPreview(dict);
 
-  EXPECT_EQ(0, print_render_thread_->print_preview_pages_remaining());
+  EXPECT_EQ(0, print_render_thread()->print_preview_pages_remaining());
   VerifyDidPreviewPage(true, 0);
   VerifyDidPreviewPage(true, 1);
   VerifyDidPreviewPage(true, 2);
@@ -1121,7 +1165,7 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, PrintPreviewForSelectedPages) {
   // generated, the print_preview_pages_remaining() result is 1.
   // TODO(thestig): Fix this on the browser side to accept the number of actual
   // pages generated instead, or to take both page counts.
-  EXPECT_EQ(1, print_render_thread_->print_preview_pages_remaining());
+  EXPECT_EQ(1, print_render_thread()->print_preview_pages_remaining());
   VerifyDidPreviewPage(false, 0);
   VerifyDidPreviewPage(true, 1);
   VerifyDidPreviewPage(true, 2);
@@ -1146,7 +1190,7 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, PrintPreviewForSelectedText) {
 
   OnPrintPreview(dict);
 
-  EXPECT_EQ(0, print_render_thread_->print_preview_pages_remaining());
+  EXPECT_EQ(0, print_render_thread()->print_preview_pages_remaining());
   VerifyDidPreviewPage(true, 0);
   VerifyPreviewPageCount(1);
   VerifyPrintPreviewCancelled(false);
@@ -1169,7 +1213,7 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, PrintPreviewForSelectedText2) {
 
   OnPrintPreview(dict);
 
-  EXPECT_EQ(0, print_render_thread_->print_preview_pages_remaining());
+  EXPECT_EQ(0, print_render_thread()->print_preview_pages_remaining());
   VerifyDidPreviewPage(true, 0);
   VerifyPreviewPageCount(2);
   VerifyPrintPreviewCancelled(false);
@@ -1178,34 +1222,19 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, PrintPreviewForSelectedText2) {
   VerifyPagesPrinted(false);
 }
 
-// Tests that print preview fails and receiving error messages through
-// that channel all works.
-TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, PrintPreviewFail) {
-  LoadHTML(kHelloWorldHTML);
-
-  // An empty dictionary should fail.
-  base::DictionaryValue empty_dict;
-  OnPrintPreview(empty_dict);
-
-  EXPECT_EQ(0, print_render_thread_->print_preview_pages_remaining());
-  VerifyPrintPreviewCancelled(false);
-  VerifyPrintPreviewFailed(true);
-  VerifyPrintPreviewGenerated(false);
-  VerifyPagesPrinted(false);
-}
-
 // Tests that cancelling print preview works.
 TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, PrintPreviewCancel) {
   LoadHTML(kLongPageHTML);
 
   const int kCancelPage = 3;
-  print_render_thread_->set_print_preview_cancel_page_number(kCancelPage);
+  print_render_thread()->set_print_preview_cancel_page_number(kCancelPage);
   // Fill in some dummy values.
   base::DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
   OnPrintPreview(dict);
 
-  EXPECT_EQ(kCancelPage, print_render_thread_->print_preview_pages_remaining());
+  EXPECT_EQ(kCancelPage,
+            print_render_thread()->print_preview_pages_remaining());
   VerifyPrintPreviewCancelled(true);
   VerifyPrintPreviewFailed(false);
   VerifyPrintPreviewGenerated(false);
@@ -1219,7 +1248,7 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
   LoadHTML(kPrintPreviewHTML);
 
   // Set mock printer to provide invalid settings.
-  print_render_thread_->printer()->UseInvalidSettings();
+  print_render_thread()->printer()->UseInvalidSettings();
 
   // Fill in some dummy values.
   base::DictionaryValue dict;
@@ -1228,7 +1257,7 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
 
   // We should have received invalid printer settings from |printer_|.
   VerifyPrintPreviewInvalidPrinterSettings(true);
-  EXPECT_EQ(0, print_render_thread_->print_preview_pages_remaining());
+  EXPECT_EQ(0, print_render_thread()->print_preview_pages_remaining());
 
   // It should receive the invalid printer settings message only.
   VerifyPrintPreviewFailed(false);
@@ -1241,14 +1270,14 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
        OnPrintPreviewUsingInvalidPageSize) {
   LoadHTML(kPrintPreviewHTML);
 
-  print_render_thread_->printer()->UseInvalidPageSize();
+  print_render_thread()->printer()->UseInvalidPageSize();
 
   base::DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
   OnPrintPreview(dict);
 
   VerifyPrintPreviewInvalidPrinterSettings(true);
-  EXPECT_EQ(0, print_render_thread_->print_preview_pages_remaining());
+  EXPECT_EQ(0, print_render_thread()->print_preview_pages_remaining());
 
   // It should receive the invalid printer settings message only.
   VerifyPrintPreviewFailed(false);
@@ -1261,18 +1290,58 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
        OnPrintPreviewUsingInvalidContentSize) {
   LoadHTML(kPrintPreviewHTML);
 
-  print_render_thread_->printer()->UseInvalidContentSize();
+  print_render_thread()->printer()->UseInvalidContentSize();
 
   base::DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
   OnPrintPreview(dict);
 
   VerifyPrintPreviewInvalidPrinterSettings(true);
-  EXPECT_EQ(0, print_render_thread_->print_preview_pages_remaining());
+  EXPECT_EQ(0, print_render_thread()->print_preview_pages_remaining());
 
   // It should receive the invalid printer settings message only.
   VerifyPrintPreviewFailed(false);
   VerifyPrintPreviewGenerated(false);
+}
+
+TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, BasicBeforePrintAfterPrint) {
+  LoadHTML(kBeforeAfterPrintHtml);
+  ExpectNoBeforeNoAfterPrintEvent();
+
+  base::DictionaryValue dict;
+  CreatePrintSettingsDictionary(&dict);
+  OnPrintPreview(dict);
+
+  EXPECT_EQ(0, print_render_thread()->print_preview_pages_remaining());
+  VerifyDidPreviewPage(true, 0);
+  VerifyPreviewPageCount(1);
+  VerifyDefaultPageLayout(540, 720, 36, 36, 36, 36, false);
+  VerifyPrintPreviewCancelled(false);
+  VerifyPrintPreviewFailed(false);
+  VerifyPrintPreviewGenerated(true);
+  VerifyPagesPrinted(false);
+  ExpectOneBeforeNoAfterPrintEvent();
+
+  OnClosePrintPreviewDialog();
+  ExpectOneBeforeOneAfterPrintEvent();
+}
+
+// Regression test for https://crbug.com/912966
+TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
+       WindowPrintBeforePrintAfterPrint) {
+  LoadHTML(kBeforeAfterPrintHtml);
+  gfx::Size new_size(200, 100);
+  Resize(new_size, false);
+  ExpectNoBeforeNoAfterPrintEvent();
+
+  gfx::Rect bounds = GetElementBounds("print");
+  ClickMouseButton(bounds);
+
+  VerifyPreviewRequest(true);
+  ExpectOneBeforeNoAfterPrintEvent();
+
+  OnClosePrintPreviewDialog();
+  ExpectOneBeforeOneAfterPrintEvent();
 }
 
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)

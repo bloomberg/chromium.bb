@@ -5,6 +5,8 @@
 #ifndef EXTENSIONS_BROWSER_LAZY_CONTEXT_ID_H_
 #define EXTENSIONS_BROWSER_LAZY_CONTEXT_ID_H_
 
+#include <tuple>
+
 #include "extensions/common/extension_id.h"
 #include "url/gurl.h"
 
@@ -31,6 +33,13 @@ class LazyContextId {
                 const ExtensionId& extension_id,
                 const GURL& service_worker_scope);
 
+  // Copy and move constructors.
+  LazyContextId(const LazyContextId& other) = default;
+  LazyContextId(LazyContextId&& other) = default;
+
+  LazyContextId& operator=(const LazyContextId&) noexcept = default;
+  LazyContextId& operator=(LazyContextId&&) noexcept = default;
+
   bool is_for_event_page() const { return type_ == Type::kEventPage; }
   bool is_for_service_worker() const { return type_ == Type::kServiceWorker; }
 
@@ -46,15 +55,20 @@ class LazyContextId {
     return service_worker_scope_;
   }
 
-  LazyContextTaskQueue* GetTaskQueue();
+  LazyContextTaskQueue* GetTaskQueue() const;
+
+  bool operator<(const LazyContextId& rhs) const {
+    return std::make_tuple(type_, context_, extension_id_,
+                           service_worker_scope_) <
+           std::make_tuple(rhs.type_, rhs.context_, rhs.extension_id_,
+                           rhs.service_worker_scope_);
+  }
 
  private:
-  const Type type_;
+  Type type_;
   content::BrowserContext* context_;
-  const ExtensionId extension_id_;
-  const GURL service_worker_scope_;
-
-  DISALLOW_COPY_AND_ASSIGN(LazyContextId);
+  ExtensionId extension_id_;
+  GURL service_worker_scope_;
 };
 
 }  // namespace extensions

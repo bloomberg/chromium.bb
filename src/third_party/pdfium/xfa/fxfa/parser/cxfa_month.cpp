@@ -6,11 +6,8 @@
 
 #include "xfa/fxfa/parser/cxfa_month.h"
 
-namespace {
-
-constexpr wchar_t kMonthName[] = L"month";
-
-}  // namespace
+#include "fxjs/xfa/cjx_node.h"
+#include "third_party/base/ptr_util.h"
 
 CXFA_Month::CXFA_Month(CXFA_Document* doc, XFA_PacketType packet)
     : CXFA_Node(doc,
@@ -18,8 +15,8 @@ CXFA_Month::CXFA_Month(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_XDPPACKET_LocaleSet,
                 XFA_ObjectType::ContentNode,
                 XFA_Element::Month,
-                nullptr,
-                nullptr,
-                kMonthName) {}
+                {},
+                {},
+                pdfium::MakeUnique<CJX_Node>(this)) {}
 
-CXFA_Month::~CXFA_Month() {}
+CXFA_Month::~CXFA_Month() = default;

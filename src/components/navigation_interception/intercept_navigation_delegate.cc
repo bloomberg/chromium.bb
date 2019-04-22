@@ -8,8 +8,8 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "base/bind.h"
 #include "base/callback.h"
-#include "components/navigation_interception/intercept_navigation_throttle.h"
 #include "components/navigation_interception/navigation_params_android.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_throttle.h"
@@ -69,9 +69,10 @@ InterceptNavigationDelegate* InterceptNavigationDelegate::Get(
 // static
 std::unique_ptr<content::NavigationThrottle>
 InterceptNavigationDelegate::CreateThrottleFor(
-    content::NavigationHandle* handle) {
+    content::NavigationHandle* handle,
+    navigation_interception::SynchronyMode mode) {
   return std::make_unique<InterceptNavigationThrottle>(
-      handle, base::Bind(&CheckIfShouldIgnoreNavigationOnUIThread));
+      handle, base::Bind(&CheckIfShouldIgnoreNavigationOnUIThread), mode);
 }
 
 InterceptNavigationDelegate::InterceptNavigationDelegate(

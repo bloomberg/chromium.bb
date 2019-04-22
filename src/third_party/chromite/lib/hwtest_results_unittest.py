@@ -9,7 +9,6 @@ from __future__ import print_function
 
 import mock
 
-from chromite.lib.const import waterfall
 from chromite.lib import constants
 from chromite.lib import cros_test_lib
 from chromite.lib import fake_cidb
@@ -40,9 +39,9 @@ class HWTestResultManagerTest(cros_test_lib.MockTestCase):
     self._patch_factory = patch_unittest.MockPatchFactory()
 
   def _ReportHWTestResults(self):
-    build_1 = self.db.InsertBuild('build_1', waterfall.WATERFALL_INTERNAL, 1,
+    build_1 = self.db.InsertBuild('build_1', 1,
                                   'build_1', 'bot_hostname')
-    build_2 = self.db.InsertBuild('build_2', waterfall.WATERFALL_INTERNAL, 2,
+    build_2 = self.db.InsertBuild('build_2', 2,
                                   'build_2', 'bot_hostname')
     r1 = hwtest_results.HWTestResult.FromReport(
         build_1, 'Suite job', 'pass')

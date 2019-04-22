@@ -29,6 +29,17 @@ class InfoBarManager;
 
 namespace translate {
 
+// The number of times user should consecutively translate for "Always
+// Translate" to automatically trigger.
+extern const int kAutoAlwaysThreshold;
+// The number of times user should consecutively dismiss the translate infobar
+// for "Never Translate" to automatically trigger.
+extern const int kAutoNeverThreshold;
+// The maximum number of times "Always Translate" is automatically triggered.
+extern const int kMaxNumberOfAutoAlways;
+// The maximum number of times "Never Translate" is automatically triggered.
+extern const int kMaxNumberOfAutoNever;
+
 // Feature flag for "Translate Compact Infobar UI" project.
 extern const base::Feature kTranslateCompactUI;
 
@@ -45,6 +56,9 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
                                         TranslateErrors::Type error_type) = 0;
     // Return whether user declined translate service.
     virtual bool IsDeclinedByUser() = 0;
+    // Called when the TranslateInfoBarDelegate instance is destroyed.
+    virtual void OnTranslateInfoBarDelegateDestroyed(
+        TranslateInfoBarDelegate* delegate) = 0;
 
    protected:
     virtual ~Observer() {}
@@ -77,17 +91,13 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
                      bool triggered_from_menu);
 
   // Returns the number of languages supported.
-  size_t num_languages() const { return ui_delegate_.GetNumberOfLanguages(); }
+  virtual size_t num_languages() const;
 
   // Returns the ISO code for the language at |index|.
-  std::string language_code_at(size_t index) const {
-    return ui_delegate_.GetLanguageCodeAt(index);
-  }
+  virtual std::string language_code_at(size_t index) const;
 
   // Returns the displayable name for the language at |index|.
-  base::string16 language_name_at(size_t index) const {
-    return ui_delegate_.GetLanguageNameAt(index);
-  }
+  virtual base::string16 language_name_at(size_t index) const;
 
   translate::TranslateStep translate_step() const { return step_; }
 
@@ -99,9 +109,7 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
     return ui_delegate_.GetOriginalLanguageCode();
   }
 
-  base::string16 original_language_name() const {
-    return language_name_at(ui_delegate_.GetOriginalLanguageIndex());
-  }
+  virtual base::string16 original_language_name() const;
 
   void UpdateOriginalLanguage(const std::string& language_code);
 
@@ -137,11 +145,11 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
   virtual void TranslationDeclined();
 
   // Methods called by the Options menu delegate.
-  virtual bool IsTranslatableLanguageByPrefs();
+  virtual bool IsTranslatableLanguageByPrefs() const;
   virtual void ToggleTranslatableLanguageByPrefs();
-  virtual bool IsSiteBlacklisted();
+  virtual bool IsSiteBlacklisted() const;
   virtual void ToggleSiteBlacklist();
-  virtual bool ShouldAlwaysTranslate();
+  virtual bool ShouldAlwaysTranslate() const;
   virtual void ToggleAlwaysTranslate();
 
   // Methods called by the extra-buttons that can appear on the "before
@@ -156,13 +164,18 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
   void ResetTranslationAcceptedCount();
   void ResetTranslationDeniedCount();
 
-#if defined(OS_ANDROID)
+  // Returns whether "Always Translate Language" should automatically trigger.
+  // If true, this method has the side effect of mutating some prefs.
+  bool ShouldAutoAlwaysTranslate();
+  // Returns whether "Never Translate Language" should automatically trigger.
+  // If true, this method has the side effect of mutating some prefs.
+  bool ShouldAutoNeverTranslate();
+
   int GetTranslationAutoAlwaysCount();
   int GetTranslationAutoNeverCount();
 
   void IncrementTranslationAutoAlwaysCount();
   void IncrementTranslationAutoNeverCount();
-#endif
 
   // The following methods are called by the infobar that displays the status
   // while translating and also the one displaying the error message.
@@ -203,7 +216,7 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
   TranslateDriver* GetTranslateDriver();
 
   // Set a observer.
-  void SetObserver(Observer* observer);
+  virtual void SetObserver(Observer* observer);
 
   // InfoBarDelegate:
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;

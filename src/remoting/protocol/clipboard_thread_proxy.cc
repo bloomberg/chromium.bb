@@ -20,10 +20,10 @@ ClipboardThreadProxy::ClipboardThreadProxy(
 }
 
 void ClipboardThreadProxy::InjectClipboardEvent(const ClipboardEvent& event) {
-  clipboard_stub_task_runner_->PostTask(FROM_HERE, base::Bind(
-      &ClipboardThreadProxy::InjectClipboardEventStatic,
-      clipboard_stub_,
-      event));
+  clipboard_stub_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&ClipboardThreadProxy::InjectClipboardEventStatic,
+                     clipboard_stub_, event));
 }
 
 void ClipboardThreadProxy::InjectClipboardEventStatic(

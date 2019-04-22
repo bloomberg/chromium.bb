@@ -11,6 +11,10 @@ namespace cryptohome {
 
 // Cleanup is trigerred if the amount of free disk space goes below this value.
 const int64_t kMinFreeSpaceInBytes = 512 * 1LL << 20;
+// Flag file in temporary storage. The presence of the file means the device
+// is locked to be able to access only a single user data, until reboot.
+constexpr char kLockedToSingleUserFile[] =
+    "/run/cryptohome/locked_to_single_user";
 
 }  // namespace cryptohome
 

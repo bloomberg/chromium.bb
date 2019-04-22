@@ -20,11 +20,11 @@
 #include "Renderer.hpp"
 #include "Pipeline/SetupRoutine.hpp"
 #include "Pipeline/Constants.hpp"
-#include "System/Debug.hpp"
+#include "Vulkan/VkDebug.hpp"
+#include "Pipeline/SpirvShader.hpp"
 
 namespace sw
 {
-	extern bool complementaryDepthBuffer;
 	extern bool fullPixelPositionRegister;
 
 	bool precacheSetup = false;
@@ -73,7 +73,7 @@ namespace sw
 	{
 		State state;
 
-		bool vPosZW = (context->pixelShader && context->pixelShader->isVPosDeclared() && fullPixelPositionRegister);
+		bool vPosZW = (context->pixelShader && context->pixelShader->hasBuiltinInput(spv::BuiltInPosition));
 
 		state.isDrawPoint = context->isDrawPoint();
 		state.isDrawLine = context->isDrawLine();
@@ -81,62 +81,18 @@ namespace sw
 		state.interpolateZ = context->depthBufferActive() || vPosZW;
 		state.interpolateW = context->perspectiveActive() || vPosZW;
 		state.perspective = context->perspectiveActive();
+		state.frontFacingCCW = context->frontFacingCCW;
 		state.cullMode = context->cullMode;
 		state.twoSidedStencil = context->stencilActive() && context->twoSidedStencil;
 		state.slopeDepthBias = context->slopeDepthBias != 0.0f;
-		state.vFace = context->pixelShader && context->pixelShader->isVFaceDeclared();
+		state.vFace = context->pixelShader && context->pixelShader->hasBuiltinInput(spv::BuiltInFrontFacing);
 
-		state.positionRegister = Pos;
-		state.pointSizeRegister = Unused;
-
-		state.multiSample = context->getMultiSampleCount();
+		state.multiSample = context->sampleCount;
 		state.rasterizerDiscard = context->rasterizerDiscard;
 
-		state.positionRegister = context->vertexShader->getPositionRegister();
-		state.pointSizeRegister = context->vertexShader->getPointSizeRegister();
-
-		for(int interpolant = 0; interpolant < MAX_FRAGMENT_INPUTS; interpolant++)
+		for (int interpolant = 0; interpolant < MAX_INTERFACE_COMPONENTS; interpolant++)
 		{
-			for(int component = 0; component < 4; component++)
-			{
-				state.gradient[interpolant][component].attribute = Unused;
-				state.gradient[interpolant][component].flat = false;
-				state.gradient[interpolant][component].wrap = false;
-			}
-		}
-
-		const bool point = context->isDrawPoint();
-
-		for(int interpolant = 0; interpolant < MAX_FRAGMENT_INPUTS; interpolant++)
-		{
-			for(int component = 0; component < 4; component++)
-			{
-				const Shader::Semantic& semantic = context->pixelShader->getInput(interpolant, component);
-
-				if(semantic.active())
-				{
-					int input = interpolant;
-					for(int i = 0; i < MAX_VERTEX_OUTPUTS; i++)
-					{
-						if(semantic == context->vertexShader->getOutput(i, component))
-						{
-							input = i;
-							break;
-						}
-					}
-
-					bool flat = point;
-
-					switch(semantic.usage)
-					{
-					case Shader::USAGE_TEXCOORD: flat = false;                  break;
-					case Shader::USAGE_COLOR:    flat = semantic.flat || point; break;
-					}
-
-					state.gradient[interpolant][component].attribute = input;
-					state.gradient[interpolant][component].flat = flat;
-				}
-			}
+			state.gradient[interpolant] = context->pixelShader->inputs[interpolant];
 		}
 
 		state.hash = state.computeHash();
@@ -164,6 +120,6 @@ namespace sw
 	void SetupProcessor::setRoutineCacheSize(int cacheSize)
 	{
 		delete routineCache;
-		routineCache = new RoutineCache<State>(clamp(cacheSize, 1, 65536), precacheSetup ? "sw-setup" : 0);
+		routineCache = new RoutineCache<State>(clamp(cacheSize, 1, 65536));
 	}
 }

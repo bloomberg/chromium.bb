@@ -29,7 +29,7 @@ Security overview
     </DIV>
 </DIV>
 Panel on origin view before interstitial:
-<DIV class=widget vbox security-origin-view insertion-point-main >
+<DIV class=widget vbox security-origin-view slot=insertion-point-main >
     <STYLE type=text/css >
     </STYLE>
     <STYLE type=text/css >
@@ -39,11 +39,11 @@ Panel on origin view before interstitial:
 Origin
         </DIV>
         <DIV class=origin-display >
-            <SPAN class=security-property security-property-secure >
+            <SPAN class=security-property security-property-insecure >
             </SPAN>
-            <SPAN is=url-text >
-                <SPAN class=url-scheme-secure >
-https
+            <SPAN >
+                <SPAN class=url-scheme-insecure >
+http
                 </SPAN>
                 <SPAN class=url-scheme-separator >
 ://
@@ -54,18 +54,8 @@ foo.test
             </SPAN>
         </DIV>
         <DIV class=view-network-button >
-            <BUTTON is=text-button type=button class=origin-button >
+            <BUTTON class=origin-button text-button type=button >
 View requests in Network Panel
-                <#document-fragment >
-                    <STYLE type=text/css >
-                    </STYLE>
-                    <STYLE type=text/css >
-                    </STYLE>
-                    <STYLE type=text/css >
-                    </STYLE>
-                    <CONTENT >
-                    </CONTENT>
-                </#document-fragment>
             </BUTTON>
         </DIV>
     </DIV>

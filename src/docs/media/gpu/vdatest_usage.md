@@ -95,6 +95,43 @@ a verbose H264 decoding test:
 
     ./video_decode_accelerator_unittest --single-process-tests --disable_rendering --gtest_filter="*TestDecodeTimeMedian*" --vmodule=*/media/gpu/*=4 --test_video_data=test-25fps.h264:320:240:250:258:35:150:1
 
+## Import mode
+
+There are two modes in which VDA runs, ALLOCATE and IMPORT. In ALLOCATE mode,
+the video decoder is responsible for allocating the buffers containing the
+decoded frames itself. In IMPORT mode, the buffers are allocated by the client
+and provided to the decoder during decoding. ALLOCATE mode is used during
+playback within Chrome (e.g. HTML5 videos), while IMPORT mode is used by ARC++
+when Android applications require accelerated decoding.\\
+VDAtest runs VDA in ALLOCATE mode by default. Use `--test_import` to run VDA in
+IMPORT mode. VDA cannot run in IMPORT mode on platforms too old for ARC++ to be
+enabled.
+
+## (Recommended) Frame validator
+
+Use `--frame_validator=check` to verify the correctness of frames decoded by
+VideoDecodeAccelerator in all test cases. This validator is based on the fact
+that a decoded content is deterministic in H.264, VP8 and VP9. It reads the
+expected md5 value of each frame from `*.frames.md5`, for example, `test-25fps.h264.frames.md5`
+for `test-25fps.h264`.\\
+VDATest is able to read the memory of a decoded frame only if VDA runs in IMPORT
+mode. Therefore, if `--frame_validator=check` is specified, VDATest runs as if
+`--test_import` is specified. See [Import mode](#import-mode) about IMPORT mode.
+
+### Dump mode
+
+Use `--frame_validator=dump` to write down all the decoded frames. The output
+format will be I420 and the saved file name will be `frame_%{frame-num}_%{width}x%{height}_I420.yuv`
+in the specified directory or a directory whose name is the test file + `.frames`
+if unspecified. Here, width and height are visible width and height. For
+instance, they will be `test-25fps.h264.frames/frame_%{frame-num}_320x180_I420.yuv.`
+
+### How to generate md5 values of decoded frames for a new video stream
+
+It is necessary to generate md5 values of decoded frames for new test streams.
+ffmpeg with `-f framemd5` can be used for this purpose. For instance,
+`ffmpeg -i test-25fps.h264 -f framemd5 test-25fps.frames.md5`
+
 ## Basic VEA usage
 
 The VEA works in a similar fashion to the VDA, taking raw YUV files in I420

@@ -12,11 +12,11 @@
  *   https://tools.ietf.org/html/draft-ietf-httpbis-expect-ct-01
  */
 
-var DomainSecurityPolicyView = (function() {
+const DomainSecurityPolicyView = (function() {
   'use strict';
 
   // We inherit from DivView.
-  var superClass = DivView;
+  const superClass = DivView;
 
   /**
    * @constructor
@@ -47,7 +47,7 @@ var DomainSecurityPolicyView = (function() {
     this.testExpectCTOutputDiv_ =
         $(DomainSecurityPolicyView.TEST_REPORT_EXPECT_CT_OUTPUT_DIV_ID);
 
-    var form = $(DomainSecurityPolicyView.DELETE_FORM_ID);
+    let form = $(DomainSecurityPolicyView.DELETE_FORM_ID);
     form.addEventListener('submit', this.onSubmitDelete_.bind(this), false);
 
     form = $(DomainSecurityPolicyView.ADD_HSTS_FORM_ID);
@@ -153,7 +153,7 @@ var DomainSecurityPolicyView = (function() {
     onHSTSQueryResult: function(result) {
       if (result.error != undefined) {
         this.queryStsOutputDiv_.innerHTML = '';
-        var s = addNode(this.queryStsOutputDiv_, 'span');
+        const s = addNode(this.queryStsOutputDiv_, 'span');
         s.textContent = result.error;
         s.style.color = '#e00';
         yellowFade(this.queryStsOutputDiv_);
@@ -168,10 +168,10 @@ var DomainSecurityPolicyView = (function() {
 
       this.queryStsOutputDiv_.innerHTML = '';
 
-      var s = addNode(this.queryStsOutputDiv_, 'span');
+      const s = addNode(this.queryStsOutputDiv_, 'span');
       s.innerHTML = '<b>Found:</b><br/>';
 
-      var keys = [
+      const keys = [
         'static_sts_domain',
         'static_upgrade_mode',
         'static_sts_include_subdomains',
@@ -187,19 +187,20 @@ var DomainSecurityPolicyView = (function() {
         'dynamic_sts_expiry',
       ];
 
-      var kStaticHashKeys =
+      const kStaticHashKeys =
           ['public_key_hashes', 'preloaded_spki_hashes', 'static_spki_hashes'];
 
-      var staticHashes = [];
-      for (var i = 0; i < kStaticHashKeys.length; ++i) {
-        var staticHashValue = result[kStaticHashKeys[i]];
-        if (staticHashValue != undefined && staticHashValue != '')
+      const staticHashes = [];
+      for (let i = 0; i < kStaticHashKeys.length; ++i) {
+        const staticHashValue = result[kStaticHashKeys[i]];
+        if (staticHashValue != undefined && staticHashValue != '') {
           staticHashes.push(staticHashValue);
+        }
       }
 
-      for (var i = 0; i < keys.length; ++i) {
-        var key = keys[i];
-        var value = result[key];
+      for (let i = 0; i < keys.length; ++i) {
+        const key = keys[i];
+        const value = result[key];
         addTextNode(this.queryStsOutputDiv_, ' ' + key + ': ');
 
         // If there are no static_hashes, do not make it seem like there is a
@@ -244,7 +245,7 @@ var DomainSecurityPolicyView = (function() {
     onExpectCTQueryResult: function(result) {
       if (result.error != undefined) {
         this.queryExpectCTOutputDiv_.innerHTML = '';
-        var s = addNode(this.queryExpectCTOutputDiv_, 'span');
+        const s = addNode(this.queryExpectCTOutputDiv_, 'span');
         s.textContent = result.error;
         s.style.color = '#e00';
         yellowFade(this.queryExpectCTOutputDiv_);
@@ -259,10 +260,10 @@ var DomainSecurityPolicyView = (function() {
 
       this.queryExpectCTOutputDiv_.innerHTML = '';
 
-      var s = addNode(this.queryExpectCTOutputDiv_, 'span');
+      const s = addNode(this.queryExpectCTOutputDiv_, 'span');
       s.innerHTML = '<b>Found:</b><br/>';
 
-      var keys = [
+      const keys = [
         'dynamic_expect_ct_domain',
         'dynamic_expect_ct_observed',
         'dynamic_expect_ct_expiry',
@@ -270,9 +271,9 @@ var DomainSecurityPolicyView = (function() {
         'dynamic_expect_ct_report_uri',
       ];
 
-      for (var i in keys) {
-        var key = keys[i];
-        var value = result[key];
+      for (const i in keys) {
+        const key = keys[i];
+        const value = result[key];
         addTextNode(this.queryExpectCTOutputDiv_, ' ' + key + ': ');
         addNodeWithText(
             this.queryExpectCTOutputDiv_, 'tt',

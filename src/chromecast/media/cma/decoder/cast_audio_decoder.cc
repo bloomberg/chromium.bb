@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/containers/queue.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -27,6 +28,7 @@
 #include "media/base/channel_layout.h"
 #include "media/base/channel_mixer.h"
 #include "media/base/decoder_buffer.h"
+#include "media/base/media_util.h"
 #include "media/base/sample_format.h"
 #include "media/filters/ffmpeg_audio_decoder.h"
 
@@ -67,7 +69,7 @@ class CastAudioDecoderImpl : public CastAudioDecoder {
       // TODO(kmackay) Should call OnInitialized(false) here, but that generally
       // causes the browsertests to crash since it happens during the render
       // pipeline initialization.
-      input_config.encryption_scheme = Unencrypted();
+      input_config.encryption_scheme = EncryptionScheme::kUnencrypted;
     }
     config_ = input_config;
 
@@ -84,7 +86,7 @@ class CastAudioDecoderImpl : public CastAudioDecoder {
         nullptr,
         base::BindRepeating(&CastAudioDecoderImpl::OnInitialized, weak_this_),
         base::BindRepeating(&CastAudioDecoderImpl::OnDecoderOutput, weak_this_),
-        ::media::AudioDecoder::WaitingForDecryptionKeyCB());
+        base::NullCallback());
     // Unfortunately there is no result from decoder_->Initialize() until later
     // (the pipeline status callback is posted to the task runner).
   }
@@ -291,7 +293,7 @@ class CastAudioDecoderImpl : public CastAudioDecoder {
                                                              result);
   }
 
-  ::media::MediaLog media_log_;
+  ::media::NullMediaLog media_log_;
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   InitializedCallback initialized_callback_;
   OutputFormat output_format_;

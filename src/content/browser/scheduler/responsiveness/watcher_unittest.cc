@@ -4,6 +4,7 @@
 
 #include "content/browser/scheduler/responsiveness/watcher.h"
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/pending_task.h"
 #include "base/run_loop.h"
@@ -88,7 +89,7 @@ class FakeWatcher : public Watcher {
   int NumTasksOnIOThread() { return calculator_->NumTasksOnIOThread(); }
 
  private:
-  ~FakeWatcher() override{};
+  ~FakeWatcher() override {}
   FakeCalculator* calculator_ = nullptr;
   bool register_message_loop_observer_ = false;
 };

@@ -53,11 +53,7 @@ VideoCodecH264 VideoEncoder::GetDefaultH264Settings() {
 
   h264_settings.frameDroppingOn = true;
   h264_settings.keyFrameInterval = 3000;
-  h264_settings.spsData = nullptr;
-  h264_settings.spsLen = 0;
-  h264_settings.ppsData = nullptr;
-  h264_settings.ppsLen = 0;
-  h264_settings.profile = H264::kProfileConstrainedBaseline;
+  h264_settings.numberOfTemporalLayers = 1;
 
   return h264_settings;
 }
@@ -82,14 +78,45 @@ VideoEncoder::ScalingSettings::~ScalingSettings() {}
 // static
 constexpr VideoEncoder::ScalingSettings::KOff
     VideoEncoder::ScalingSettings::kOff;
+// static
+constexpr uint8_t VideoEncoder::EncoderInfo::kMaxFramerateFraction;
 
 VideoEncoder::EncoderInfo::EncoderInfo()
     : scaling_settings(VideoEncoder::ScalingSettings::kOff),
       supports_native_handle(false),
       implementation_name("unknown"),
-      has_trusted_rate_controller(false) {}
+      has_trusted_rate_controller(false),
+      is_hardware_accelerated(true),
+      has_internal_source(false),
+      fps_allocation{absl::InlinedVector<uint8_t, kMaxTemporalStreams>(
+          1,
+          kMaxFramerateFraction)} {}
+
+VideoEncoder::EncoderInfo::EncoderInfo(const EncoderInfo&) = default;
 
 VideoEncoder::EncoderInfo::~EncoderInfo() = default;
+
+VideoEncoder::RateControlParameters::RateControlParameters()
+    : bitrate(VideoBitrateAllocation()),
+      framerate_fps(0.0),
+      bandwidth_allocation(DataRate::Zero()) {}
+
+VideoEncoder::RateControlParameters::RateControlParameters(
+    const VideoBitrateAllocation& bitrate,
+    double framerate_fps)
+    : bitrate(bitrate),
+      framerate_fps(framerate_fps),
+      bandwidth_allocation(DataRate::bps(bitrate.get_sum_bps())) {}
+
+VideoEncoder::RateControlParameters::RateControlParameters(
+    const VideoBitrateAllocation& bitrate,
+    double framerate_fps,
+    DataRate bandwidth_allocation)
+    : bitrate(bitrate),
+      framerate_fps(framerate_fps),
+      bandwidth_allocation(bandwidth_allocation) {}
+
+VideoEncoder::RateControlParameters::~RateControlParameters() = default;
 
 int32_t VideoEncoder::SetRates(uint32_t bitrate, uint32_t framerate) {
   RTC_NOTREACHED() << "SetRate(uint32_t, uint32_t) is deprecated.";
@@ -102,25 +129,21 @@ int32_t VideoEncoder::SetRateAllocation(
   return SetRates(allocation.get_sum_kbps(), framerate);
 }
 
-VideoEncoder::ScalingSettings VideoEncoder::GetScalingSettings() const {
-  return ScalingSettings::kOff;
+void VideoEncoder::SetRates(const RateControlParameters& parameters) {
+  SetRateAllocation(parameters.bitrate,
+                    static_cast<uint32_t>(parameters.framerate_fps + 0.5));
 }
 
-bool VideoEncoder::SupportsNativeHandle() const {
-  return false;
-}
+void VideoEncoder::OnPacketLossRateUpdate(float packet_loss_rate) {}
 
-const char* VideoEncoder::ImplementationName() const {
-  return "unknown";
-}
+void VideoEncoder::OnRttUpdate(int64_t rtt_ms) {}
 
-// TODO(webrtc:9722): Remove and make pure virtual when the three legacy
-// methods called here are gone.
+void VideoEncoder::OnLossNotification(
+    const LossNotification& loss_notification) {}
+
+// TODO(webrtc:9722): Remove and make pure virtual.
 VideoEncoder::EncoderInfo VideoEncoder::GetEncoderInfo() const {
-  EncoderInfo info;
-  info.scaling_settings = GetScalingSettings();
-  info.supports_native_handle = SupportsNativeHandle();
-  info.implementation_name = ImplementationName();
-  return info;
+  return EncoderInfo();
 }
+
 }  // namespace webrtc

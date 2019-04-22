@@ -161,7 +161,7 @@ class TestBluetoothAdapterWinrt : public BluetoothAdapterWinrt {
       IBluetoothAdapterStatics** statics) const override {
     auto adapter_statics = Make<FakeBluetoothAdapterStaticsWinrt>(adapter_);
     return adapter_statics.CopyTo(statics);
-  };
+  }
 
   HRESULT
   GetDeviceInformationStaticsActivationFactory(
@@ -169,7 +169,7 @@ class TestBluetoothAdapterWinrt : public BluetoothAdapterWinrt {
     auto device_information_statics =
         Make<FakeDeviceInformationStaticsWinrt>(device_information_);
     return device_information_statics.CopyTo(statics);
-  };
+  }
 
   HRESULT ActivateBluetoothAdvertisementLEWatcherInstance(
       IBluetoothLEAdvertisementWatcher** instance) const override {
@@ -655,7 +655,11 @@ BluetoothTestWinrt::BluetoothTestWinrt() {
   }
 }
 
-BluetoothTestWinrt::~BluetoothTestWinrt() = default;
+BluetoothTestWinrt::~BluetoothTestWinrt() {
+  // The callbacks run by |notify_sessions_| may end up calling back into
+  // |this|, so run them early to prevent a use-after-free.
+  notify_sessions_.clear();
+}
 
 bool BluetoothTestWinrt::PlatformSupportsLowEnergy() {
   return GetParam() ? base::win::GetVersion() >= base::win::VERSION_WIN10

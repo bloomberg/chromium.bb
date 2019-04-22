@@ -45,7 +45,7 @@ class PictureInPictureInterstitial::VideoElementResizeObserverDelegate final
     interstitial_->NotifyElementSizeChanged(*entries[0]->contentRect());
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(interstitial_);
     ResizeObserver::Delegate::Trace(visitor);
   }
@@ -67,7 +67,7 @@ PictureInPictureInterstitial::PictureInPictureInterstitial(
       video_element_(&videoElement) {
   SetShadowPseudoId(AtomicString("-internal-media-interstitial"));
 
-  background_image_ = HTMLImageElement::Create(GetDocument());
+  background_image_ = MakeGarbageCollected<HTMLImageElement>(GetDocument());
   background_image_->SetShadowPseudoId(
       AtomicString("-internal-media-interstitial-background-image"));
   background_image_->SetSrc(videoElement.getAttribute(html_names::kPosterAttr));
@@ -92,12 +92,13 @@ void PictureInPictureInterstitial::Show() {
   if (interstitial_timer_.IsActive())
     interstitial_timer_.Stop();
   should_be_visible_ = true;
-  RemoveInlineStyleProperty(CSSPropertyDisplay);
+  RemoveInlineStyleProperty(CSSPropertyID::kDisplay);
   interstitial_timer_.StartOneShot(
       kPictureInPictureStyleChangeTransitionDuration, FROM_HERE);
 
   DCHECK(GetVideoElement().CcLayer());
   GetVideoElement().CcLayer()->SetIsDrawable(false);
+  GetVideoElement().CcLayer()->SetHitTestable(false);
 }
 
 void PictureInPictureInterstitial::Hide() {
@@ -107,13 +108,15 @@ void PictureInPictureInterstitial::Hide() {
   if (interstitial_timer_.IsActive())
     interstitial_timer_.Stop();
   should_be_visible_ = false;
-  SetInlineStyleProperty(CSSPropertyOpacity, 0,
+  SetInlineStyleProperty(CSSPropertyID::kOpacity, 0,
                          CSSPrimitiveValue::UnitType::kNumber);
   interstitial_timer_.StartOneShot(kPictureInPictureHiddenAnimationSeconds,
                                    FROM_HERE);
 
-  if (GetVideoElement().CcLayer())
+  if (GetVideoElement().CcLayer()) {
     GetVideoElement().CcLayer()->SetIsDrawable(true);
+    GetVideoElement().CcLayer()->SetHitTestable(true);
+  }
 }
 
 Node::InsertionNotificationRequest PictureInPictureInterstitial::InsertedInto(
@@ -147,11 +150,11 @@ void PictureInPictureInterstitial::NotifyElementSizeChanged(
 void PictureInPictureInterstitial::ToggleInterstitialTimerFired(TimerBase*) {
   interstitial_timer_.Stop();
   if (should_be_visible_) {
-    SetInlineStyleProperty(CSSPropertyBackgroundColor, CSSValueBlack);
-    SetInlineStyleProperty(CSSPropertyOpacity, 1,
+    SetInlineStyleProperty(CSSPropertyID::kBackgroundColor, CSSValueID::kBlack);
+    SetInlineStyleProperty(CSSPropertyID::kOpacity, 1,
                            CSSPrimitiveValue::UnitType::kNumber);
   } else {
-    SetInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
+    SetInlineStyleProperty(CSSPropertyID::kDisplay, CSSValueID::kNone);
   }
 }
 
@@ -160,7 +163,7 @@ void PictureInPictureInterstitial::OnPosterImageChanged() {
       GetVideoElement().getAttribute(html_names::kPosterAttr));
 }
 
-void PictureInPictureInterstitial::Trace(blink::Visitor* visitor) {
+void PictureInPictureInterstitial::Trace(Visitor* visitor) {
   visitor->Trace(resize_observer_);
   visitor->Trace(video_element_);
   visitor->Trace(background_image_);

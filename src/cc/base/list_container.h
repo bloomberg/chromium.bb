@@ -10,7 +10,6 @@
 #include <memory>
 
 #include "base/logging.h"
-#include "base/macros.h"
 #include "cc/base/list_container_helper.h"
 
 namespace cc {
@@ -35,12 +34,15 @@ class ListContainer {
       : helper_(max_alignment,
                 max_size_for_derived_class,
                 num_of_elements_to_reserve_for) {}
+  ListContainer(const ListContainer&) = delete;
 
   ~ListContainer() {
     for (Iterator i = begin(); i != end(); ++i) {
       i->~BaseElementType();
     }
   }
+
+  ListContainer& operator=(const ListContainer&) = delete;
 
   class Iterator;
   class ConstIterator;
@@ -202,6 +204,13 @@ class ListContainer {
       return *this;
     }
 
+    // STL compatibility.
+    using iterator_category = std::forward_iterator_tag;
+    using value_type = BaseElementType*;
+    using reference = value_type&;
+    using pointer = value_type*;
+    using difference_type = ptrdiff_t;
+
    private:
     explicit Iterator(const ListContainerHelper::Iterator& base_iterator)
         : ListContainerHelper::Iterator(base_iterator) {}
@@ -242,6 +251,13 @@ class ListContainer {
       return *this;
     }
 
+    // STL compatibility.
+    using iterator_category = std::forward_iterator_tag;
+    using value_type = const BaseElementType*;
+    using reference = value_type&;
+    using pointer = value_type*;
+    using difference_type = ptrdiff_t;
+
    private:
     explicit ConstIterator(
         const ListContainerHelper::ConstIterator& base_iterator)
@@ -280,6 +296,13 @@ class ListContainer {
       ++index_;
       return *this;
     }
+
+    // STL compatibility.
+    using iterator_category = std::forward_iterator_tag;
+    using value_type = BaseElementType*;
+    using reference = value_type&;
+    using pointer = value_type*;
+    using difference_type = ptrdiff_t;
 
    private:
     explicit ReverseIterator(ListContainerHelper::ReverseIterator base_iterator)
@@ -320,6 +343,13 @@ class ListContainer {
       return *this;
     }
 
+    // STL compatibility.
+    using iterator_category = std::forward_iterator_tag;
+    using value_type = const BaseElementType*;
+    using reference = value_type&;
+    using pointer = value_type*;
+    using difference_type = ptrdiff_t;
+
    private:
     explicit ConstReverseIterator(
         ListContainerHelper::ConstReverseIterator base_iterator)
@@ -330,8 +360,6 @@ class ListContainer {
 
  private:
   ListContainerHelper helper_;
-
-  DISALLOW_COPY_AND_ASSIGN(ListContainer);
 };
 
 }  // namespace cc

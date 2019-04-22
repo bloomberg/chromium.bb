@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/task/post_task.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"

@@ -37,7 +37,7 @@ base::FilePath GetAudioDebugRecordingsPrefixPath(
     uint64_t audio_debug_recordings_id) {
   static const char kAudioDebugRecordingsFilePrefix[] = "AudioDebugRecordings.";
   return directory.AppendASCII(kAudioDebugRecordingsFilePrefix +
-                               base::Int64ToString(audio_debug_recordings_id));
+                               base::NumberToString(audio_debug_recordings_id));
 }
 
 base::FilePath GetLogDirectoryAndEnsureExists(

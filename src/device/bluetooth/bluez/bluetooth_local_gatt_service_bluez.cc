@@ -86,7 +86,7 @@ BluetoothLocalGattServiceBlueZ::GetCharacteristic(
     const std::string& identifier) {
   const auto& service = characteristics_.find(dbus::ObjectPath(identifier));
   return service == characteristics_.end() ? nullptr : service->second.get();
-};
+}
 
 const std::map<dbus::ObjectPath,
                std::unique_ptr<BluetoothLocalGattCharacteristicBlueZ>>&

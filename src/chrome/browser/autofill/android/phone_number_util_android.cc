@@ -57,7 +57,6 @@ std::string FormatPhoneNumber(
 // by using i18n::phonenumbers::PhoneNumberUtil::Format.
 ScopedJavaLocalRef<jstring> JNI_PhoneNumberUtil_FormatForDisplay(
     JNIEnv* env,
-    const base::android::JavaParamRef<jclass>& jcaller,
     const JavaParamRef<jstring>& jphone_number,
     const JavaParamRef<jstring>& jcountry_code) {
   return ConvertUTF8ToJavaString(
@@ -79,7 +78,6 @@ ScopedJavaLocalRef<jstring> JNI_PhoneNumberUtil_FormatForDisplay(
 // (https://w3c.github.io/browser-payment-api/#paymentrequest-updated-algorithm)
 ScopedJavaLocalRef<jstring> JNI_PhoneNumberUtil_FormatForResponse(
     JNIEnv* env,
-    const base::android::JavaParamRef<jclass>& jcaller,
     const JavaParamRef<jstring>& jphone_number) {
   return ConvertUTF8ToJavaString(
       env, FormatPhoneNumber(
@@ -92,7 +90,6 @@ ScopedJavaLocalRef<jstring> JNI_PhoneNumberUtil_FormatForResponse(
 // i18n::phonenumbers::PhoneNumberUtil::IsPossibleNumberForString.
 jboolean JNI_PhoneNumberUtil_IsPossibleNumber(
     JNIEnv* env,
-    const base::android::JavaParamRef<jclass>& jcaller,
     const JavaParamRef<jstring>& jphone_number,
     const JavaParamRef<jstring>& jcountry_code) {
   const std::string phone_number = ConvertJavaStringToUTF8(env, jphone_number);

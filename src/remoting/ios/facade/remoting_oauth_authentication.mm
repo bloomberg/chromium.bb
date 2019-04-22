@@ -170,7 +170,7 @@ RemotingAuthenticationStatus oauthStatusToRemotingAuthenticationStatus(
   // Be careful here since a failure to reset onAccessToken will end up with
   // retain cycle and memory leakage.
   if (_tokenGetter) {
-    _tokenGetter->CallWithToken(base::BindRepeating(
+    _tokenGetter->CallWithToken(base::BindOnce(
         ^(remoting::OAuthTokenGetter::Status status,
           const std::string& user_email, const std::string& access_token) {
           onAccessToken(oauthStatusToRemotingAuthenticationStatus(status),
@@ -183,6 +183,10 @@ RemotingAuthenticationStatus oauthStatusToRemotingAuthenticationStatus(
 - (void)logout {
   [self storeUserInfo:nil];
   [self setUser:nil];
+}
+
+- (void)invalidateCache {
+  _tokenGetter->InvalidateCache();
 }
 
 #pragma mark - Persistence

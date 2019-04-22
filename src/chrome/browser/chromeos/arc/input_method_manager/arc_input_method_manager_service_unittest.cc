@@ -10,23 +10,23 @@
 #include <vector>
 
 #include "ash/public/cpp/ash_pref_names.h"
-#include "ash/test/ash_test_base.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_command_line.h"
 #include "base/test/scoped_feature_list.h"
-#include "chrome/browser/ui/ash/chrome_keyboard_controller_client_test_helper.h"
+#include "chrome/browser/chromeos/arc/input_method_manager/test_input_method_manager_bridge.h"
+#include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client_test_helper.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/base/chrome_ash_test_base.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/arc/arc_features.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/test/test_browser_context.h"
 #include "components/crx_file/id_util.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/mock_input_method_manager.h"
@@ -34,6 +34,7 @@
 #include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ime/mock_ime_input_context_handler.h"
 #include "ui/base/ime/mock_input_method.h"
+#include "ui/keyboard/public/keyboard_switches.h"
 
 namespace arc {
 namespace {
@@ -160,72 +161,15 @@ class TestIMEInputContextHandler : public ui::MockIMEInputContextHandler {
 
   ui::InputMethod* GetInputMethod() override { return input_method_; }
 
-  void SendKeyEvent(ui::KeyEvent* event) override {
-    ui::MockIMEInputContextHandler::SendKeyEvent(event);
-    ++send_key_event_call_count_;
-  }
-
-  void Reset() {
-    ui::MockIMEInputContextHandler::Reset();
-    send_key_event_call_count_ = 0;
-  }
-
-  int send_key_event_call_count() const { return send_key_event_call_count_; }
-
  private:
   ui::InputMethod* const input_method_;
-
-  int send_key_event_call_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TestIMEInputContextHandler);
 };
 
-class TestInputMethodManagerBridge : public ArcInputMethodManagerBridge {
- public:
-  TestInputMethodManagerBridge() = default;
-  ~TestInputMethodManagerBridge() override = default;
-
-  void SendEnableIme(const std::string& ime_id,
-                     bool enable,
-                     EnableImeCallback callback) override {
-    enable_ime_calls_.push_back(std::make_tuple(ime_id, enable));
-    std::move(callback).Run(true);
-  }
-  void SendSwitchImeTo(const std::string& ime_id,
-                       SwitchImeToCallback callback) override {
-    switch_ime_to_calls_.push_back(ime_id);
-    std::move(callback).Run(true);
-  }
-
-  void SendFocus(mojom::InputConnectionPtr connection,
-                 mojom::TextInputStatePtr state) override {
-    ++focus_calls_count_;
-  }
-
-  void SendUpdateTextInputState(mojom::TextInputStatePtr state) override {
-    ++update_text_input_state_calls_count_;
-    last_text_input_state = state.Clone();
-  }
-
-  void SendShowVirtualKeyboard() override {
-    ++show_virtual_keyboard_calls_count_;
-  }
-  void SendHideVirtualKeyboard() override {}
-
-  std::vector<std::tuple<std::string, bool>> enable_ime_calls_;
-  std::vector<std::string> switch_ime_to_calls_;
-  int focus_calls_count_ = 0;
-  int update_text_input_state_calls_count_ = 0;
-  mojom::TextInputStatePtr last_text_input_state;
-  int show_virtual_keyboard_calls_count_ = 0;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestInputMethodManagerBridge);
-};
-
-// TODO(crbug.com/890677): Stop inheriting ash::AshTestBase once ash::Shell
+// TODO(crbug.com/890677): Stop inheriting ChromeAshTestBase once ash::Shell
 // dependency is removed from ArcInputMethodManagerService.
-class ArcInputMethodManagerServiceTest : public ash::AshTestBase {
+class ArcInputMethodManagerServiceTest : public ChromeAshTestBase {
  protected:
   ArcInputMethodManagerServiceTest()
       : arc_service_manager_(std::make_unique<ArcServiceManager>()) {}
@@ -244,7 +188,7 @@ class ArcInputMethodManagerServiceTest : public ash::AshTestBase {
   }
 
   void SetUp() override {
-    ash::AshTestBase::SetUp();
+    ChromeAshTestBase::SetUp();
     SetRunningOutsideAsh();
     ui::IMEBridge::Initialize();
     input_method_manager_ = new TestInputMethodManager();
@@ -272,7 +216,7 @@ class ArcInputMethodManagerServiceTest : public ash::AshTestBase {
     tablet_mode_client_.reset(nullptr);
     chromeos::input_method::InputMethodManager::Shutdown();
     ui::IMEBridge::Shutdown();
-    ash::AshTestBase::TearDown();
+    ChromeAshTestBase::TearDown();
   }
 
  private:
@@ -294,8 +238,6 @@ TEST_F(ArcInputMethodManagerServiceTest, EnableIme) {
   namespace ceiu = chromeos::extension_ime_util;
   using crx_file::id_util::GenerateId;
 
-  base::test::ScopedFeatureList feature;
-  feature.InitAndEnableFeature(kEnableInputMethodFeature);
   ToggleTabletMode(true);
 
   ASSERT_EQ(0u, bridge()->enable_ime_calls_.size());
@@ -343,8 +285,6 @@ TEST_F(ArcInputMethodManagerServiceTest, EnableIme_WithPrefs) {
   namespace ceiu = chromeos::extension_ime_util;
   using crx_file::id_util::GenerateId;
 
-  base::test::ScopedFeatureList feature;
-  feature.InitAndEnableFeature(kEnableInputMethodFeature);
   ToggleTabletMode(true);
 
   ASSERT_EQ(0u, bridge()->enable_ime_calls_.size());
@@ -383,8 +323,6 @@ TEST_F(ArcInputMethodManagerServiceTest, SwitchImeTo) {
   const std::string arc_ime_service_id =
       "org.chromium.arc.ime/.ArcInputMethodService";
 
-  base::test::ScopedFeatureList feature;
-  feature.InitAndEnableFeature(kEnableInputMethodFeature);
   ToggleTabletMode(true);
 
   ASSERT_EQ(0u, bridge()->switch_ime_to_calls_.size());
@@ -420,9 +358,6 @@ TEST_F(ArcInputMethodManagerServiceTest, SwitchImeTo) {
 
 TEST_F(ArcInputMethodManagerServiceTest, OnImeDisabled) {
   namespace ceiu = chromeos::extension_ime_util;
-
-  base::test::ScopedFeatureList feature;
-  feature.InitAndEnableFeature(kEnableInputMethodFeature);
 
   constexpr char kNonArcIme[] = "ime_a";
   constexpr char kArcImeX[] = "arc_ime_x";
@@ -469,8 +404,6 @@ TEST_F(ArcInputMethodManagerServiceTest, OnImeDisabled) {
 TEST_F(ArcInputMethodManagerServiceTest, OnImeInfoChanged) {
   namespace ceiu = chromeos::extension_ime_util;
 
-  base::test::ScopedFeatureList feature;
-  feature.InitAndEnableFeature(kEnableInputMethodFeature);
   ToggleTabletMode(true);
 
   // Preparing 2 ImeInfo.
@@ -561,9 +494,6 @@ TEST_F(ArcInputMethodManagerServiceTest, OnImeInfoChanged) {
 TEST_F(ArcInputMethodManagerServiceTest, AllowArcIMEsOnlyInTabletMode) {
   namespace ceiu = chromeos::extension_ime_util;
   using crx_file::id_util::GenerateId;
-
-  base::test::ScopedFeatureList feature;
-  feature.InitAndEnableFeature(kEnableInputMethodFeature);
 
   const std::string extension_ime_id =
       ceiu::GetInputMethodID(GenerateId("test.extension.ime"), "us");
@@ -656,9 +586,6 @@ TEST_F(ArcInputMethodManagerServiceTest,
   namespace ceiu = chromeos::extension_ime_util;
   using crx_file::id_util::GenerateId;
 
-  base::test::ScopedFeatureList feature;
-  feature.InitAndEnableFeature(kEnableInputMethodFeature);
-
   const std::string extension_ime_id =
       ceiu::GetInputMethodID(GenerateId("test.extension.ime"), "us");
   const std::string component_extension_ime_id =
@@ -712,9 +639,47 @@ TEST_F(ArcInputMethodManagerServiceTest,
   EXPECT_TRUE(imm()->state()->IsInputMethodAllowed(arc_ime_id));
 }
 
+TEST_F(ArcInputMethodManagerServiceTest,
+       AllowArcIMEsWhileCommandLineFlagIsSet) {
+  namespace ceiu = chromeos::extension_ime_util;
+  using crx_file::id_util::GenerateId;
+
+  const std::string extension_ime_id =
+      ceiu::GetInputMethodID(GenerateId("test.extension.ime"), "us");
+  const std::string component_extension_ime_id =
+      ceiu::GetComponentInputMethodID(
+          GenerateId("test.component.extension.ime"), "us");
+  const std::string arc_ime_id =
+      ceiu::GetArcInputMethodID(GenerateId("test.arc.ime"), "us");
+
+  // Add '--enable-virtual-keyboard' flag.
+  base::test::ScopedCommandLine scoped_command_line;
+  base::CommandLine* command_line = scoped_command_line.GetProcessCommandLine();
+  command_line->AppendSwitch(keyboard::switches::kEnableVirtualKeyboard);
+
+  // Start from tablet mode.
+  ToggleTabletMode(true);
+
+  // Activate 3 IMEs.
+  imm()->state()->AddActiveInputMethodId(extension_ime_id);
+  imm()->state()->AddActiveInputMethodId(component_extension_ime_id);
+  imm()->state()->AddActiveInputMethodId(arc_ime_id);
+
+  // All IMEs are allowed to use.
+  EXPECT_TRUE(imm()->state()->IsInputMethodAllowed(extension_ime_id));
+  EXPECT_TRUE(imm()->state()->IsInputMethodAllowed(component_extension_ime_id));
+  EXPECT_TRUE(imm()->state()->IsInputMethodAllowed(arc_ime_id));
+
+  // Change to laptop mode.
+  ToggleTabletMode(false);
+
+  // All IMEs are allowed to use even in laptop mode if the flag is set.
+  EXPECT_TRUE(imm()->state()->IsInputMethodAllowed(extension_ime_id));
+  EXPECT_TRUE(imm()->state()->IsInputMethodAllowed(component_extension_ime_id));
+  EXPECT_TRUE(imm()->state()->IsInputMethodAllowed(arc_ime_id));
+}
+
 TEST_F(ArcInputMethodManagerServiceTest, FocusAndBlur) {
-  base::test::ScopedFeatureList feature;
-  feature.InitAndEnableFeature(kEnableInputMethodFeature);
   ToggleTabletMode(true);
 
   // Adding one ARC IME.
@@ -765,147 +730,14 @@ TEST_F(ArcInputMethodManagerServiceTest, FocusAndBlur) {
   engine_handler->FocusIn(test_context);
   EXPECT_EQ(1, bridge()->focus_calls_count_);
 
-  bridge()->update_text_input_state_calls_count_ = 0;
-
-  engine_handler->SetCompositionBounds({});
-  EXPECT_EQ(0, bridge()->update_text_input_state_calls_count_);
-
-  engine_handler->SetSurroundingText("", 0, 0, 0);
-  EXPECT_EQ(1, bridge()->update_text_input_state_calls_count_);
-  EXPECT_FALSE(bridge()->last_text_input_state->first_update_after_operation);
-
   engine_handler->FocusOut();
   EXPECT_EQ(1, bridge()->focus_calls_count_);
-
-  mock_input_method.DetachTextInputClient(&dummy_text_input_client);
-  ui::IMEBridge::Get()->SetInputContextHandler(nullptr);
-}
-
-TEST_F(ArcInputMethodManagerServiceTest, IMEOperations) {
-  base::test::ScopedFeatureList feature;
-  feature.InitAndEnableFeature(kEnableInputMethodFeature);
-  ToggleTabletMode(true);
-
-  // Adding one ARC IME.
-  {
-    const std::string android_ime_id = "test.arc.ime";
-    const std::string display_name = "DisplayName";
-    const std::string settings_url = "url_to_settings";
-    mojom::ImeInfoPtr info = mojom::ImeInfo::New();
-    info->ime_id = android_ime_id;
-    info->display_name = display_name;
-    info->enabled = false;
-    info->settings_url = settings_url;
-
-    std::vector<mojom::ImeInfoPtr> info_array;
-    info_array.emplace_back(std::move(info));
-    service()->OnImeInfoChanged(std::move(info_array));
-  }
-  // The proxy IME engine should be added.
-  ASSERT_EQ(1u, imm()->state()->added_input_method_extensions_.size());
-  ui::IMEEngineHandlerInterface* engine_handler =
-      std::get<2>(imm()->state()->added_input_method_extensions_.at(0));
-
-  // Set up mock input context.
-  constexpr int test_context_id = 0;
-  const ui::IMEEngineHandlerInterface::InputContext test_context{
-      test_context_id,
-      ui::TEXT_INPUT_TYPE_TEXT,
-      ui::TEXT_INPUT_MODE_DEFAULT,
-      0 /* flags */,
-      ui::TextInputClient::FOCUS_REASON_MOUSE,
-      true /* should_do_learning */};
-  ui::MockInputMethod mock_input_method(nullptr);
-  TestIMEInputContextHandler test_context_handler(&mock_input_method);
-  ui::DummyTextInputClient dummy_text_input_client(ui::TEXT_INPUT_TYPE_TEXT);
-  ui::IMEBridge::Get()->SetInputContextHandler(&test_context_handler);
-
-  // Enable the ARC IME.
-  ui::IMEBridge::Get()->SetCurrentEngineHandler(engine_handler);
-  engine_handler->Enable(
-      chromeos::extension_ime_util::GetComponentIDByInputMethodID(
-          std::get<1>(imm()->state()->added_input_method_extensions_.at(0))
-              .at(0)
-              .id()));
-  mock_input_method.SetFocusedTextInputClient(&dummy_text_input_client);
-
-  engine_handler->FocusIn(test_context);
-  bridge()->update_text_input_state_calls_count_ = 0;
-
-  InputConnectionImpl* connection = service()->GetInputConnectionForTesting();
-  ASSERT_NE(nullptr, connection);
-  connection->CommitText(base::ASCIIToUTF16("text"), 0);
-  EXPECT_EQ(1, test_context_handler.commit_text_call_count());
-  // Trigger an observer method to trigger text input state updating.
-  engine_handler->SetSurroundingText("", 0, 0, 0);
-  EXPECT_EQ(1, bridge()->update_text_input_state_calls_count_);
-  EXPECT_TRUE(bridge()->last_text_input_state->first_update_after_operation);
-
-  // Calling CommitText() with '\n' doesn't invoke
-  // InputMethodEngine::CommitText.
-  EXPECT_EQ(0, test_context_handler.send_key_event_call_count());
-  connection->CommitText(base::ASCIIToUTF16("\n"), 0);
-  EXPECT_EQ(1, test_context_handler.commit_text_call_count());
-  EXPECT_EQ(2, test_context_handler.send_key_event_call_count());
-
-  test_context_handler.Reset();
-  connection->DeleteSurroundingText(1, 1);
-  EXPECT_EQ(1, test_context_handler.delete_surrounding_text_call_count());
-
-  // If there is no composing text, FinishComposingText() does nothing.
-  test_context_handler.Reset();
-  connection->FinishComposingText();
-  EXPECT_EQ(0, test_context_handler.commit_text_call_count());
-
-  // If there is composing text, FinishComposingText() calls CommitText() with
-  // the text.
-  connection->SetComposingText(base::ASCIIToUTF16("composing"), 0,
-                               base::nullopt);
-  EXPECT_EQ(0, test_context_handler.commit_text_call_count());
-  connection->FinishComposingText();
-  EXPECT_EQ(1, test_context_handler.commit_text_call_count());
-
-  base::string16 text = base::ASCIIToUTF16("text");
-  test_context_handler.Reset();
-  connection->SetComposingText(text, 0, base::nullopt);
-  EXPECT_EQ(1, test_context_handler.update_preedit_text_call_count());
-  EXPECT_EQ(
-      text,
-      test_context_handler.last_update_composition_arg().composition_text.text);
-  EXPECT_EQ(3u, test_context_handler.last_update_composition_arg()
-                    .composition_text.selection.start());
-  // Committing the composing text calls ClearComposition() and CommitText().
-  connection->CommitText(base::ASCIIToUTF16("text"), 0);
-  EXPECT_EQ(2, test_context_handler.update_preedit_text_call_count());
-  EXPECT_EQ(
-      base::ASCIIToUTF16(""),
-      test_context_handler.last_update_composition_arg().composition_text.text);
-  EXPECT_EQ(1, test_context_handler.commit_text_call_count());
-
-  // CommitText should clear the composing text.
-  connection->FinishComposingText();
-  // commit_text_call_count() doesn't change.
-  EXPECT_EQ(1, test_context_handler.commit_text_call_count());
-
-  test_context_handler.Reset();
-  connection->SetComposingText(text, 0, base::make_optional<gfx::Range>(1, 3));
-  EXPECT_EQ(1u, test_context_handler.last_update_composition_arg()
-                    .composition_text.selection.start());
-  EXPECT_EQ(3u, test_context_handler.last_update_composition_arg()
-                    .composition_text.selection.end());
-
-  engine_handler->FocusOut();
-
-  mock_input_method.DetachTextInputClient(&dummy_text_input_client);
-  ui::IMEBridge::Get()->SetInputContextHandler(nullptr);
 }
 
 TEST_F(ArcInputMethodManagerServiceTest, DisableFallbackVirtualKeyboard) {
   namespace ceiu = chromeos::extension_ime_util;
   using crx_file::id_util::GenerateId;
 
-  base::test::ScopedFeatureList feature;
-  feature.InitAndEnableFeature(kEnableInputMethodFeature);
   ToggleTabletMode(true);
 
   const std::string extension_ime_id =
@@ -927,24 +759,25 @@ TEST_F(ArcInputMethodManagerServiceTest, DisableFallbackVirtualKeyboard) {
   client->SetEnableFlag(keyboard::mojom::KeyboardEnableFlag::kTouchEnabled);
   client->FlushForTesting();
   base::RunLoop().RunUntilIdle();  // Allow observers to fire and process.
-  ASSERT_TRUE(client->is_keyboard_enabled());
+  ASSERT_FALSE(client->IsEnableFlagSet(
+      keyboard::mojom::KeyboardEnableFlag::kAndroidDisabled));
 
   // It's disabled when the ARC IME is activated.
   imm()->state()->SetActiveInputMethod(arc_ime_id);
   service()->InputMethodChanged(imm(), profile(), false);
   client->FlushForTesting();
-  EXPECT_FALSE(client->is_keyboard_enabled());
+  EXPECT_TRUE(client->IsEnableFlagSet(
+      keyboard::mojom::KeyboardEnableFlag::kAndroidDisabled));
 
   // It's re-enabled when the ARC IME is deactivated.
   imm()->state()->SetActiveInputMethod(component_extension_ime_id);
   service()->InputMethodChanged(imm(), profile(), false);
   client->FlushForTesting();
-  EXPECT_TRUE(client->is_keyboard_enabled());
+  EXPECT_FALSE(client->IsEnableFlagSet(
+      keyboard::mojom::KeyboardEnableFlag::kAndroidDisabled));
 }
 
 TEST_F(ArcInputMethodManagerServiceTest, ShowVirtualKeyboard) {
-  base::test::ScopedFeatureList feature;
-  feature.InitAndEnableFeature(kEnableInputMethodFeature);
   ToggleTabletMode(true);
 
   // Adding one ARC IME.

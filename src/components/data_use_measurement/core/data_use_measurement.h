@@ -110,6 +110,11 @@ class DataUseMeasurement
   void AddServicesDataUseObserver(ServicesDataUseObserver* observer);
   void RemoveServicesDataUseObserver(ServicesDataUseObserver* observer);
 
+  void RecordTrafficSizeMetric(bool is_user_traffic,
+                               bool is_downstream,
+                               bool is_tab_visible,
+                               int64_t bytes);
+
  protected:
   // Specifies that data is received or sent, respectively.
   enum TrafficDirection { DOWNSTREAM, UPSTREAM };

@@ -7,6 +7,8 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/webui/usb_internals/usb_internals.mojom.h"
+#include "device/usb/public/mojom/device_manager.mojom.h"
+#include "device/usb/public/mojom/device_manager_test.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 class UsbInternalsPageHandler : public mojom::UsbInternalsPageHandler {
@@ -15,14 +17,11 @@ class UsbInternalsPageHandler : public mojom::UsbInternalsPageHandler {
       mojom::UsbInternalsPageHandlerRequest request);
   ~UsbInternalsPageHandler() override;
 
-  // mojom::UsbInternalsPageHandler overrides:
-  void AddDeviceForTesting(const std::string& name,
-                           const std::string& serial_number,
-                           const std::string& landing_page,
-                           AddDeviceForTestingCallback callback) override;
-  void RemoveDeviceForTesting(const std::string& guid,
-                              RemoveDeviceForTestingCallback callback) override;
-  void GetTestDevices(GetTestDevicesCallback callback) override;
+  void BindUsbDeviceManagerInterface(
+      device::mojom::UsbDeviceManagerRequest request) override;
+
+  void BindTestInterface(
+      device::mojom::UsbDeviceManagerTestRequest request) override;
 
  private:
   mojo::Binding<mojom::UsbInternalsPageHandler> binding_;

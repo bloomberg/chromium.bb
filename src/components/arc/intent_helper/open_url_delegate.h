@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_ARC_INTENT_HELPER_OPEN_URL_DELEGATE_H_
 #define COMPONENTS_ARC_INTENT_HELPER_OPEN_URL_DELEGATE_H_
 
+#include "components/arc/common/intent_helper.mojom.h"
+
 class GURL;
 
 namespace arc {
@@ -19,6 +21,14 @@ class OpenUrlDelegate {
   // Opens the given URL as a web app in the Chrome browser, falling back to
   // opening as a tab if no installed web app is found.
   virtual void OpenWebAppFromArc(const GURL& url) = 0;
+
+  // Opens the given URL in a custom tab.
+  virtual void OpenArcCustomTab(
+      const GURL& url,
+      int32_t task_id,
+      int32_t surface_id,
+      int32_t top_margin,
+      mojom::IntentHelperHost::OnOpenCustomTabCallback callback) = 0;
 };
 
 }  // namespace arc

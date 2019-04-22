@@ -19,7 +19,8 @@ class CoreOobeView;
 class NetworkScreenHandler : public NetworkScreenView,
                              public BaseScreenHandler {
  public:
-  explicit NetworkScreenHandler(CoreOobeView* core_oobe_view);
+  NetworkScreenHandler(JSCallsContainer* js_calls_container,
+                       CoreOobeView* core_oobe_view);
   ~NetworkScreenHandler() override;
 
  private:
@@ -32,6 +33,7 @@ class NetworkScreenHandler : public NetworkScreenView,
   void ClearErrors() override;
   void ShowConnectingStatus(bool connecting,
                             const base::string16& network_id) override;
+  void SetOfflineDemoModeEnabled(bool enabled) override;
 
   // BaseScreenHandler:
   void DeclareLocalizedValues(

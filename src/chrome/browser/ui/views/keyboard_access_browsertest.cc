@@ -7,11 +7,11 @@
 // on the Mac, and it's not yet implemented on Linux.
 
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -20,7 +20,9 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/views/frame/app_menu_button_observer.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/toolbar/app_menu.h"
 #include "chrome/browser/ui/views/toolbar/browser_app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -29,7 +31,6 @@
 #include "ui/base/test/ui_controls.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_codes.h"
-#include "ui/views/controls/menu/menu_listener.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -67,7 +68,7 @@ class ViewFocusChangeWaiter : public views::FocusChangeListener {
   }
 
  private:
-  // Inherited from FocusChangeListener
+  // views::FocusChangeListener:
   void OnWillChangeFocus(views::View* focused_before,
                          views::View* focused_now) override {}
 
@@ -86,51 +87,46 @@ class ViewFocusChangeWaiter : public views::FocusChangeListener {
   DISALLOW_COPY_AND_ASSIGN(ViewFocusChangeWaiter);
 };
 
-class SendKeysMenuListener : public views::MenuListener {
+class SendKeysMenuListener : public AppMenuButtonObserver {
  public:
   SendKeysMenuListener(AppMenuButton* app_menu_button,
                        Browser* browser,
                        bool test_dismiss_menu)
-      : app_menu_button_(app_menu_button),
-        browser_(browser),
+      : browser_(browser),
         menu_open_count_(0),
         test_dismiss_menu_(test_dismiss_menu) {
-    app_menu_button_->AddMenuListener(this);
+    observer_.Add(app_menu_button);
   }
 
-  ~SendKeysMenuListener() override {
-    if (test_dismiss_menu_)
-      app_menu_button_->RemoveMenuListener(this);
-  }
+  ~SendKeysMenuListener() override = default;
 
-  int menu_open_count() const {
-    return menu_open_count_;
-  }
-
- private:
-  // Overridden from views::MenuListener:
-  void OnMenuOpened() override {
+  // AppMenuButtonObserver:
+  void AppMenuShown() override {
     menu_open_count_++;
-    if (!test_dismiss_menu_) {
-      app_menu_button_->RemoveMenuListener(this);
-      // Press DOWN to select the first item, then RETURN to select it.
-      SendKeyPress(browser_, ui::VKEY_DOWN);
-      SendKeyPress(browser_, ui::VKEY_RETURN);
-    } else {
+    if (test_dismiss_menu_) {
       SendKeyPress(browser_, ui::VKEY_ESCAPE);
       base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
           base::TimeDelta::FromMilliseconds(200));
+    } else {
+      observer_.RemoveAll();
+      // Press DOWN to select the first item, then RETURN to select it.
+      SendKeyPress(browser_, ui::VKEY_DOWN);
+      SendKeyPress(browser_, ui::VKEY_RETURN);
     }
   }
 
-  AppMenuButton* app_menu_button_;
+  int menu_open_count() const { return menu_open_count_; }
+
+ private:
   Browser* browser_;
   // Keeps track of the number of times the menu was opened.
   int menu_open_count_;
   // If this is set then on receiving a notification that the menu was opened
   // we dismiss it by sending the ESC key.
   bool test_dismiss_menu_;
+
+  ScopedObserver<AppMenuButton, AppMenuButtonObserver> observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SendKeysMenuListener);
 };
@@ -174,6 +170,7 @@ class KeyboardAccessTest : public InProcessBrowserTest {
   // Opens the system menu on Windows with the Alt Space combination and selects
   // the New Tab option from the menu.
   void TestSystemMenuWithKeyboard();
+  void TestSystemMenuReopenClosedTabWithKeyboard();
 #endif
 
   // Uses the keyboard to select the app menu i.e. with the F10 key.
@@ -207,8 +204,9 @@ void KeyboardAccessTest::TestMenuKeyboardAccess(bool alternate_key_sequence,
 
   BrowserView* browser_view = reinterpret_cast<BrowserView*>(
       browser()->window());
-  SendKeysMenuListener menu_listener(browser_view->toolbar()->app_menu_button(),
-                                     browser(), false);
+  SendKeysMenuListener menu_listener(
+      browser_view->toolbar_button_provider()->GetAppMenuButton(), browser(),
+      false);
 
   if (focus_omnibox)
     browser()->window()->GetLocationBar()->FocusLocation(false);
@@ -262,9 +260,8 @@ LRESULT CALLBACK SystemMenuTestCBTHook(int n_code,
   // then select the New Tab option from the menu.
   if (n_code == HCBT_ACTIVATE || n_code == HCBT_CREATEWND) {
     wchar_t class_name[MAX_PATH] = {0};
-    GetClassName(reinterpret_cast<HWND>(w_param),
-                 class_name,
-                 arraysize(class_name));
+    GetClassName(reinterpret_cast<HWND>(w_param), class_name,
+                 base::size(class_name));
     if (base::LowerCaseEqualsASCII(class_name, "#32768")) {
       // Select the New Tab option and then send the enter key to execute it.
       ::PostMessage(reinterpret_cast<HWND>(w_param), WM_CHAR, 'T', 0);
@@ -292,7 +289,7 @@ void KeyboardAccessTest::TestSystemMenuWithKeyboard() {
                                       SystemMenuTestCBTHook,
                                       NULL,
                                       ::GetCurrentThreadId());
-  ASSERT_TRUE(cbt_hook != NULL);
+  ASSERT_TRUE(cbt_hook);
 
   bool ret = ui_test_utils::SendKeyPressSync(
       browser(), ui::VKEY_SPACE, false, false, true, false);
@@ -302,8 +299,72 @@ void KeyboardAccessTest::TestSystemMenuWithKeyboard() {
     // Wait for the new tab to appear.
     new_tab_observer.Wait();
     // Make sure that the new tab index is 1.
-    ASSERT_EQ(1, browser()->tab_strip_model()->active_index());
+    EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
   }
+  ::UnhookWindowsHookEx(cbt_hook);
+}
+
+// This CBT hook is set for the duration of the
+// TestSystemMenuReopenClosedTabWithKeyboard test
+LRESULT CALLBACK SystemMenuReopenClosedTabTestCBTHook(int n_code,
+                                                      WPARAM w_param,
+                                                      LPARAM l_param) {
+  // Look for the system menu window getting created or becoming visible and
+  // then select the New Tab option from the menu.
+  if (n_code == HCBT_ACTIVATE || n_code == HCBT_CREATEWND) {
+    wchar_t class_name[MAX_PATH] = {0};
+    GetClassName(reinterpret_cast<HWND>(w_param), class_name,
+                 base::size(class_name));
+    if (base::LowerCaseEqualsASCII(class_name, "#32768")) {
+      // Send 'E' for the Reopen closed tab option.
+      ::PostMessage(reinterpret_cast<HWND>(w_param), WM_CHAR, 'E', 0);
+    }
+  }
+  return ::CallNextHookEx(0, n_code, w_param, l_param);
+}
+
+void KeyboardAccessTest::TestSystemMenuReopenClosedTabWithKeyboard() {
+  // Navigate to a page in the first tab, which makes sure that focus is
+  // set to the browser window.
+  ui_test_utils::NavigateToURL(browser(), GURL("about:"));
+
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL("about:"), WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  ASSERT_EQ(1, browser()->tab_strip_model()->active_index());
+  content::WebContents* tab_to_close =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::WebContentsDestroyedWatcher destroyed_watcher(tab_to_close);
+  browser()->tab_strip_model()->CloseSelectedTabs();
+  destroyed_watcher.Wait();
+  ASSERT_EQ(1, browser()->tab_strip_model()->count());
+  ASSERT_EQ(0, browser()->tab_strip_model()->active_index());
+
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+
+  content::WindowedNotificationObserver new_tab_observer(
+      chrome::NOTIFICATION_TAB_PARENTED,
+      content::NotificationService::AllSources());
+  // Sending the Alt space keys to the browser will bring up the system menu
+  // which runs a model loop. We set a CBT hook to look for the menu and send
+  // keystrokes to it.
+  HHOOK cbt_hook =
+      ::SetWindowsHookEx(WH_CBT, SystemMenuReopenClosedTabTestCBTHook, NULL,
+                         ::GetCurrentThreadId());
+  ASSERT_TRUE(cbt_hook);
+
+  bool ret = ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_SPACE, false,
+                                             false, true, false);
+  EXPECT_TRUE(ret);
+
+  if (ret) {
+    // Wait for the new tab to appear.
+    new_tab_observer.Wait();
+    // Make sure that the new tab index is 1.
+    EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
+  }
+
   ::UnhookWindowsHookEx(cbt_hook);
 }
 #endif
@@ -319,8 +380,9 @@ void KeyboardAccessTest::TestMenuKeyboardAccessAndDismiss() {
 
   BrowserView* browser_view = reinterpret_cast<BrowserView*>(
       browser()->window());
-  SendKeysMenuListener menu_listener(browser_view->toolbar()->app_menu_button(),
-                                     browser(), true);
+  SendKeysMenuListener menu_listener(
+      browser_view->toolbar_button_provider()->GetAppMenuButton(), browser(),
+      true);
 
   browser()->window()->GetLocationBar()->FocusLocation(false);
 
@@ -380,6 +442,11 @@ IN_PROC_BROWSER_TEST_F(KeyboardAccessTest,
 
 IN_PROC_BROWSER_TEST_F(KeyboardAccessTest, TestSystemMenuWithKeyboard) {
   TestSystemMenuWithKeyboard();
+}
+
+IN_PROC_BROWSER_TEST_F(KeyboardAccessTest,
+                       TestSystemMenuReopenClosedTabWithKeyboard) {
+  TestSystemMenuReopenClosedTabWithKeyboard();
 }
 #endif
 

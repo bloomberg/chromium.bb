@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/arc/arc_play_store_enabled_preference_handler.h"
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -17,7 +19,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_util.h"
 #include "components/consent_auditor/consent_auditor.h"
@@ -63,15 +65,13 @@ void ArcPlayStoreEnabledPreferenceHandler::Start() {
     arc_session_manager_->RequestArcDataRemoval();
   }
 
-  // If the OOBE or Assistant Wizard screen is shown, don't kill the
-  // mini-container. We'll do it if and when the user declines the TOS. We need
-  // to check |is_play_store_enabled| to handle the case where |kArcEnabled| is
-  // managed but some of the preferences still need to be set by the user.
+  // If the OOBE is shown, don't kill the mini-container. We'll do it if and
+  // when the user declines the TOS. We need to check |is_play_store_enabled| to
+  // handle the case where |kArcEnabled| is managed but some of the preferences
+  // still need to be set by the user.
   // TODO(cmtm): This feature isn't covered by unittests. Add a unittest for it.
-  if (!(IsArcOobeOptInActive() || IsArcOptInWizardForAssistantActive()) ||
-      is_play_store_enabled) {
+  if (!IsArcOobeOptInActive() || is_play_store_enabled)
     UpdateArcSessionManager();
-  }
   if (is_play_store_enabled)
     return;
 
@@ -163,10 +163,14 @@ void ArcPlayStoreEnabledPreferenceHandler::UpdateArcSessionManager() {
         IsArcPlayStoreEnabledPreferenceManagedForProfile(profile_));
   }
 
-  if (ShouldArcAlwaysStart() || IsArcPlayStoreEnabledForProfile(profile_))
+  if (ShouldArcAlwaysStart() || IsArcPlayStoreEnabledForProfile(profile_)) {
     arc_session_manager_->RequestEnable();
-  else
+  } else {
+    const bool enable_requested = arc_session_manager_->enable_requested();
     arc_session_manager_->RequestDisable();
+    if (enable_requested)
+      arc_session_manager_->RequestArcDataRemoval();
+  }
 }
 
 }  // namespace arc

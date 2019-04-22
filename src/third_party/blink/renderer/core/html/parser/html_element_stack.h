@@ -61,7 +61,7 @@ class HTMLElementStack {
 
     ElementRecord* Next() const { return next_.Get(); }
 
-    void Trace(blink::Visitor*);
+    void Trace(Visitor*);
 
    private:
     friend class HTMLElementStack;
@@ -165,7 +165,7 @@ class HTMLElementStack {
 
   ContainerNode* RootNode() const;
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
 #ifndef NDEBUG
   void Show();
@@ -191,8 +191,6 @@ class HTMLElementStack {
 
   DISALLOW_COPY_AND_ASSIGN(HTMLElementStack);
 };
-
-WILL_NOT_BE_EAGERLY_TRACED_CLASS(HTMLElementStack::ElementRecord);
 
 }  // namespace blink
 

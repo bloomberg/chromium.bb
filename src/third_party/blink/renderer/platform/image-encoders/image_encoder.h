@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/skia/include/core/SkStream.h"
 #include "third_party/skia/include/encode/SkJpegEncoder.h"
@@ -23,7 +24,8 @@ class VectorWStream : public SkWStream {
   }
 
   bool write(const void* buffer, size_t size) override {
-    dst_->Append((const unsigned char*)buffer, size);
+    DCHECK_LE(size, std::numeric_limits<wtf_size_t>::max());
+    dst_->Append((const unsigned char*)buffer, static_cast<wtf_size_t>(size));
     return true;
   }
 
@@ -35,6 +37,8 @@ class VectorWStream : public SkWStream {
 };
 
 class PLATFORM_EXPORT ImageEncoder {
+  USING_FAST_MALLOC(ImageEncoder);
+
  public:
   static bool Encode(Vector<unsigned char>* dst,
                      const SkPixmap& src,
@@ -87,6 +91,6 @@ class PLATFORM_EXPORT ImageEncoder {
   VectorWStream dst_;
   std::unique_ptr<SkEncoder> encoder_;
 };
-};
+}  // namespace blink
 
 #endif

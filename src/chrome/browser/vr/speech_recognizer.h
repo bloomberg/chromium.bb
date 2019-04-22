@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/vr/vr_export.h"
+#include "chrome/browser/vr/vr_base_export.h"
 
 namespace content {
 class SpeechRecognitionManager;
@@ -90,7 +90,7 @@ class IOBrowserUIInterface {
 // SpeechRecognizer is a wrapper around the speech recognition engine that
 // simplifies its use from the UI thread. This class handles all setup/shutdown,
 // collection of results, error cases, and threading.
-class VR_EXPORT SpeechRecognizer : public IOBrowserUIInterface {
+class VR_BASE_EXPORT SpeechRecognizer : public IOBrowserUIInterface {
  public:
   // |shared_url_loader_factory_info| must be for a creating a
   // SharedURLLoaderFactory that can be used on the IO Thread.

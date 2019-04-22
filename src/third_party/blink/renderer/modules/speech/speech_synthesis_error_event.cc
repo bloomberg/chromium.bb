@@ -10,7 +10,7 @@ namespace blink {
 SpeechSynthesisErrorEvent* SpeechSynthesisErrorEvent::Create(
     const AtomicString& type,
     const SpeechSynthesisErrorEventInit* init) {
-  return new SpeechSynthesisErrorEvent(type, init);
+  return MakeGarbageCollected<SpeechSynthesisErrorEvent>(type, init);
 }
 
 SpeechSynthesisErrorEvent::SpeechSynthesisErrorEvent(
@@ -19,6 +19,7 @@ SpeechSynthesisErrorEvent::SpeechSynthesisErrorEvent(
     : SpeechSynthesisEvent(type,
                            init->utterance(),
                            init->charIndex(),
+                           init->charLength(),
                            init->elapsedTime(),
                            init->name()),
       error_(init->error()) {}

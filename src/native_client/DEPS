@@ -9,18 +9,18 @@ vars = {
   # revisions at latest revision up to a high watermark from each slice.
   # Document the high watermark here:
   # chrome_rev: 428228
-  "build_rev": "f671d3baeb64d9dba628ad582e867cf1aebc0207", # from cr commit position 472940
+  "build_rev": "9c85c83678b37be4c31aa324f1206a19cb48040a", # from cr commit position 613723
   "binutils_rev": "8d77853bc9415bcb7bb4206fa2901de7603387db", # from cr commit position 392828
   # NOTE: be sure to update clang_lib_version in SConstruct whenever
   # updating this clang_rev (e.g., if LLVM changes from version 3.7 to 3.8).
-  "clang_rev": "05f306039aa5029fa88768690e5c512097419f9d", # from cr commit position 473087
+  "clang_rev": "0dea619c94ca902c75dfaa3c0805f9b21a98793a", # from cr commit position 613723
 
   # Rolls of build_overrides_rev should done at the same time as a roll
   # of build_rev as build_overrides/ is tightly coupled with build/.
   # build_overrides/ is forked from chromium/src/build_overrides/ and
   # needs to be manually updated to keep in sync before a build_rev
   # update can be done.
-  "build_overrides_rev": "6b368c7b14c2f573e15d8e1386f162e9cafca58f",
+  "build_overrides_rev": "d56d0aa73300038348206b7503934d3706131d09",
 
   # NOTE!  These five should be kept up to date with their counterparts in
   # chromium/src/DEPS.
@@ -28,18 +28,18 @@ vars = {
   # (This is not essential for Breakpad, because we do not use its code
   # in the build that goes into Chromium.  But we might as well update it too.)
   # You should now use the roll-dep script in depot_tools to do this update.
-  "gtest_rev": "6f8a66431cb592dad629028a50b3dd418a408c87",
+  "gtest_rev": "2d3543f81d6d4583332f8b60768ade18e0f96220",
   "gyp_rev": "e7079f0e0e14108ab0dba58728ff219637458563",
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling build tools
   # and whatever else without interference from each other.
-  'buildtools_revision': '39b1db2ab4aa4b2ccaa263c29bdf63e7c1ee28aa',
+  'buildtools_revision': '04161ec8d7c781e4498c699254c69ba0dd959fde',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling lss
   # and whatever else without interference from each other.
   'lss_revision': '3f6478ac95edf86cd3da300c2c0d34a438f5dbeb',
 
-  "breakpad_rev": "5f638d532312685548d5033618c8a36f73302d0a",
+  "breakpad_rev": "54fa71efbe50fb2b58096d871575b59e12edba6d",
 
   # Separately pinned repositories, update with roll-dep individually.
   "third_party_rev": "d4e38e5faf600b39649025e5605d6e7f94518ea7",
@@ -131,7 +131,7 @@ hooks = [
     'name': 'sysroot',
     'pattern': '.',
     'action': ['python', 'build/linux/sysroot_scripts/install-sysroot.py',
-               '--running-as-hook'],
+               '--all'],
   },
   {
     # Update the Windows toolchain if necessary.
@@ -156,9 +156,15 @@ hooks = [
     # Note: On Win, this should run after win_toolchain, as it may use it.
     'name': 'clang',
     'pattern': '.',
-    'action': ['python', 'tools/clang/scripts/update.py', '--if-needed'],
+    'action': ['python', 'tools/clang/scripts/update.py'],
   },
-
+  {
+    # Update LASTCHANGE.
+    'name': 'lastchange',
+    'pattern': '.',
+    'action': ['python', 'build/util/lastchange.py',
+               '-o', 'build/util/LASTCHANGE'],
+  },
   # Pull GN binaries. This needs to be before running GYP below.
   {
     'name': 'gn_win',

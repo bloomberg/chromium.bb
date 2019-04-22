@@ -11,7 +11,6 @@
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
-#include "third_party/blink/renderer/platform/loader/fetch/substitute_data.h"
 #include "third_party/blink/renderer/platform/network/encoded_form_data.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
@@ -23,6 +22,10 @@ namespace {
 
 class PingLocalFrameClient : public EmptyLocalFrameClient {
  public:
+  std::unique_ptr<WebURLLoaderFactory> CreateURLLoaderFactory() override {
+    return Platform::Current()->CreateDefaultURLLoaderFactory();
+  }
+
   void DispatchWillSendRequest(ResourceRequest& request) override {
     if (request.GetKeepalive())
       ping_request_ = request;
@@ -37,7 +40,7 @@ class PingLocalFrameClient : public EmptyLocalFrameClient {
 class PingLoaderTest : public PageTestBase {
  public:
   void SetUp() override {
-    client_ = new PingLocalFrameClient;
+    client_ = MakeGarbageCollected<PingLocalFrameClient>();
     PageTestBase::SetupPageWithClients(nullptr, client_);
   }
 
@@ -49,9 +52,8 @@ class PingLoaderTest : public PageTestBase {
 
   void SetDocumentURL(const KURL& url) {
     GetFrame().Loader().CommitNavigation(
-        ResourceRequest(url), SubstituteData(SharedBuffer::Create()),
-        ClientRedirectPolicy::kNotClientRedirect,
-        base::UnguessableToken::Create());
+        WebNavigationParams::CreateWithHTMLBuffer(SharedBuffer::Create(), url),
+        nullptr /* extra_data */);
     blink::test::RunPendingTasks();
     ASSERT_EQ(url.GetString(), GetDocument().Url().GetString());
   }

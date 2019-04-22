@@ -13,9 +13,6 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.util.IntentUtils;
 
-import java.lang.ref.WeakReference;
-import java.util.List;
-
 /**
  * {@code ShareActivity} is the base class for share options, which
  * are activities that are shown in the share chooser. Activities subclassing
@@ -47,12 +44,7 @@ public abstract class ShareActivity extends AppCompatActivity {
     private ChromeActivity getTriggeringActivity() {
         int triggeringTaskId =
                 IntentUtils.safeGetIntExtra(getIntent(), ShareHelper.EXTRA_TASK_ID, 0);
-        List<WeakReference<Activity>> activities = ApplicationStatus.getRunningActivities();
-        ChromeActivity triggeringActivity = null;
-        for (int i = 0; i < activities.size(); i++) {
-            Activity activity = activities.get(i).get();
-            if (activity == null) continue;
-
+        for (Activity activity : ApplicationStatus.getRunningActivities()) {
             if (activity.getTaskId() == triggeringTaskId && activity instanceof ChromeActivity) {
                 return (ChromeActivity) activity;
             }

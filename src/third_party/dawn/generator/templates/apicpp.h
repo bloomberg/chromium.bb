@@ -97,6 +97,15 @@ namespace dawn {
                 return static_cast<Derived&>(*this);
             }
 
+            ObjectBase(std::nullptr_t) {}
+            Derived& operator=(std::nullptr_t) {
+                if (mHandle != nullptr) {
+                    Derived::DawnRelease(mHandle);
+                    mHandle = nullptr;
+                }
+                return static_cast<Derived&>(*this);
+            }
+
             explicit operator bool() const {
                 return mHandle != nullptr;
             }
@@ -120,12 +129,7 @@ namespace dawn {
 
     {% macro render_cpp_method_declaration(type, method) %}
         {% set CppType = as_cppType(type.name) %}
-        {% if method.return_type.name.concatcase() == "void" and type.is_builder -%}
-            {{CppType}} const&
-        {%- else -%}
-            {{as_cppType(method.return_type.name)}}
-        {%- endif -%}
-        {{" "}}{{method.name.CamelCase()}}(
+        DAWN_EXPORT {{as_cppType(method.return_type.name)}} {{method.name.CamelCase()}}(
             {%- for arg in method.arguments -%}
                 {%- if not loop.first %}, {% endif -%}
                 {%- if arg.type.category == "object" and arg.annotation == "value" -%}
@@ -140,7 +144,7 @@ namespace dawn {
     {% for type in by_category["object"] %}
         {% set CppType = as_cppType(type.name) %}
         {% set CType = as_cType(type.name) %}
-        class DAWN_EXPORT {{CppType}} : public ObjectBase<{{CppType}}, {{CType}}> {
+        class {{CppType}} : public ObjectBase<{{CppType}}, {{CType}}> {
             public:
                 using ObjectBase::ObjectBase;
                 using ObjectBase::operator=;
@@ -151,8 +155,8 @@ namespace dawn {
 
             private:
                 friend ObjectBase<{{CppType}}, {{CType}}>;
-                static void DawnReference({{CType}} handle);
-                static void DawnRelease({{CType}} handle);
+                static DAWN_EXPORT void DawnReference({{CType}} handle);
+                static DAWN_EXPORT void DawnRelease({{CType}} handle);
         };
 
     {% endfor %}

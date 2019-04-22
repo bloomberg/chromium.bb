@@ -32,7 +32,6 @@
 
 namespace blink {
 
-class Document;
 class FillLayer;
 class CSSValue;
 class StyleResolverState;
@@ -78,12 +77,8 @@ class CSSToStyleMap {
   static CSSTransitionData::TransitionProperty MapAnimationProperty(
       const CSSValue&);
 
-  // Pass a Document* if allow_step_middle is true so that the usage can be
-  // counted.
   static scoped_refptr<TimingFunction> MapAnimationTimingFunction(
-      const CSSValue&,
-      bool allow_step_middle = false,
-      Document* = nullptr);
+      const CSSValue&);
 
   static void MapNinePieceImage(StyleResolverState&,
                                 CSSPropertyID,

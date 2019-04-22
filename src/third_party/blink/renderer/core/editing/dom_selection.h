@@ -30,8 +30,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_DOM_SELECTION_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_DOM_SELECTION_H_
 
-#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -51,10 +51,6 @@ class CORE_EXPORT DOMSelection final : public ScriptWrappable,
   USING_GARBAGE_COLLECTED_MIXIN(DOMSelection);
 
  public:
-  static DOMSelection* Create(const TreeScope* tree_scope) {
-    return MakeGarbageCollected<DOMSelection>(tree_scope);
-  }
-
   explicit DOMSelection(const TreeScope*);
 
   void ClearTreeScope();
@@ -104,7 +100,7 @@ class CORE_EXPORT DOMSelection final : public ScriptWrappable,
   // Microsoft Selection Object API
   void empty();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   bool IsAvailable() const;

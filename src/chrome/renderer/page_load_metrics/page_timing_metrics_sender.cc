@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
@@ -33,9 +34,11 @@ PageTimingMetricsSender::PageTimingMetricsSender(
     : sender_(std::move(sender)),
       timer_(std::move(timer)),
       last_timing_(std::move(initial_timing)),
+      last_cpu_timing_(mojom::CpuTiming::New()),
       metadata_(mojom::PageLoadMetadata::New()),
       new_features_(mojom::PageLoadFeatures::New()),
       render_data_(),
+      new_deferred_resource_data_(mojom::DeferredResourceCounts::New()),
       buffer_timer_delay_ms_(kBufferTimerDelayMillis) {
   page_resource_data_use_.emplace(
       std::piecewise_construct,
@@ -93,21 +96,41 @@ void PageTimingMetricsSender::DidObserveNewCssPropertyUsage(int css_property,
 
 void PageTimingMetricsSender::DidObserveLayoutJank(double jank_fraction) {
   DCHECK(jank_fraction > 0);
-  render_data_.layout_jank_score += jank_fraction;
+  render_data_.layout_jank_delta += jank_fraction;
   EnsureSendTimer();
+}
+
+void PageTimingMetricsSender::DidObserveLazyLoadBehavior(
+    blink::WebLocalFrameClient::LazyLoadBehavior lazy_load_behavior) {
+  switch (lazy_load_behavior) {
+    case blink::WebLocalFrameClient::LazyLoadBehavior::kDeferredFrame:
+      ++new_deferred_resource_data_->deferred_frames;
+      break;
+    case blink::WebLocalFrameClient::LazyLoadBehavior::kDeferredImage:
+      ++new_deferred_resource_data_->deferred_images;
+      break;
+    case blink::WebLocalFrameClient::LazyLoadBehavior::kLazyLoadedFrame:
+      ++new_deferred_resource_data_->frames_loaded_after_deferral;
+      break;
+    case blink::WebLocalFrameClient::LazyLoadBehavior::kLazyLoadedImage:
+      ++new_deferred_resource_data_->images_loaded_after_deferral;
+      break;
+  }
 }
 
 void PageTimingMetricsSender::DidStartResponse(
     const GURL& response_url,
     int resource_id,
-    const network::ResourceResponseHead& response_head) {
+    const network::ResourceResponseHead& response_head,
+    content::ResourceType resource_type,
+    content::PreviewsState previews_state) {
   DCHECK(!base::ContainsKey(page_resource_data_use_, resource_id));
 
   auto resource_it = page_resource_data_use_.emplace(
       std::piecewise_construct, std::forward_as_tuple(resource_id),
       std::forward_as_tuple(std::make_unique<PageResourceDataUse>()));
-  resource_it.first->second->DidStartResponse(response_url, resource_id,
-                                              response_head);
+  resource_it.first->second->DidStartResponse(
+      response_url, resource_id, response_head, resource_type, previews_state);
 }
 
 void PageTimingMetricsSender::DidReceiveTransferSizeUpdate(
@@ -187,6 +210,11 @@ void PageTimingMetricsSender::Send(mojom::PageLoadTimingPtr timing) {
   EnsureSendTimer();
 }
 
+void PageTimingMetricsSender::UpdateCpuTiming(base::TimeDelta task_time) {
+  last_cpu_timing_->task_time += task_time;
+  EnsureSendTimer();
+}
+
 void PageTimingMetricsSender::EnsureSendTimer() {
   if (!timer_->IsRunning()) {
     // Send the first IPC eagerly to make sure the receiving side knows we're
@@ -209,9 +237,13 @@ void PageTimingMetricsSender::SendNow() {
     }
   }
   sender_->SendTiming(last_timing_, metadata_, std::move(new_features_),
-                      std::move(resources), render_data_);
+                      std::move(resources), render_data_, last_cpu_timing_,
+                      std::move(new_deferred_resource_data_));
+  new_deferred_resource_data_ = mojom::DeferredResourceCounts::New();
   new_features_ = mojom::PageLoadFeatures::New();
+  last_cpu_timing_->task_time = base::TimeDelta();
   modified_resources_.clear();
+  render_data_.layout_jank_delta = 0;
 }
 
 }  // namespace page_load_metrics

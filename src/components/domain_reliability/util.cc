@@ -8,8 +8,8 @@
 
 #include "base/callback.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/stl_util.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "net/base/net_errors.h"
@@ -91,7 +91,7 @@ bool GetDomainReliabilityBeaconStatus(
   }
 
   // TODO(juliatuttle): Consider sorting and using binary search?
-  for (size_t i = 0; i < arraysize(net_error_map); i++) {
+  for (size_t i = 0; i < base::size(net_error_map); i++) {
     if (net_error_map[i].net_error == net_error) {
       *beacon_status_out = net_error_map[i].beacon_status;
       return true;
@@ -134,6 +134,7 @@ std::string GetDomainReliabilityProtocol(
     case net::HttpResponseInfo::CONNECTION_INFO_QUIC_44:
     case net::HttpResponseInfo::CONNECTION_INFO_QUIC_45:
     case net::HttpResponseInfo::CONNECTION_INFO_QUIC_46:
+    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_47:
     case net::HttpResponseInfo::CONNECTION_INFO_QUIC_99:
       return "QUIC";
     case net::HttpResponseInfo::NUM_OF_CONNECTION_INFOS:

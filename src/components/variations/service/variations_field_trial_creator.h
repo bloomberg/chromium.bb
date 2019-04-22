@@ -8,10 +8,10 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "components/variations/client_filterable_state.h"
@@ -174,7 +174,7 @@ class VariationsFieldTrialCreator {
 
   // Caches the UI strings which need to be overridden in the resource bundle.
   // These strings are cached before the resource bundle is initialized.
-  base::hash_map<int, base::string16> overridden_strings_map_;
+  std::unordered_map<int, base::string16> overridden_strings_map_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

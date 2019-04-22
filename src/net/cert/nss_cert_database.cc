@@ -110,6 +110,15 @@ void NSSCertDatabase::ListCertsInSlot(ListCertsCallback callback,
 crypto::ScopedPK11Slot NSSCertDatabase::GetSystemSlot() const {
   return crypto::ScopedPK11Slot();
 }
+
+bool NSSCertDatabase::IsCertificateOnSystemSlot(CERTCertificate* cert) const {
+  crypto::ScopedPK11Slot system_slot = GetSystemSlot();
+  if (!system_slot)
+    return false;
+
+  return PK11_FindCertInSlot(system_slot.get(), cert, nullptr) !=
+         CK_INVALID_HANDLE;
+}
 #endif
 
 crypto::ScopedPK11Slot NSSCertDatabase::GetPublicSlot() const {
@@ -403,9 +412,6 @@ bool NSSCertDatabase::IsHardwareBacked(const CERTCertificate* cert) const {
   return slot && PK11_IsHW(slot);
 }
 
-void NSSCertDatabase::LogUserCertificates(const std::string& log_reason) const {
-}
-
 void NSSCertDatabase::AddObserver(Observer* observer) {
   observer_list_->AddObserver(observer);
 }
@@ -421,7 +427,8 @@ ScopedCERTCertificateList NSSCertDatabase::ListCertsImpl(
   // hooks (such as smart card UI). To ensure threads are not starved or
   // deadlocked, the base::ScopedBlockingCall below increments the thread pool
   // capacity if this method takes too much time to run.
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   ScopedCERTCertificateList certs;
   CERTCertList* cert_list = nullptr;
@@ -447,22 +454,7 @@ void NSSCertDatabase::NotifyCertRemovalAndCallBack(DeleteCertCallback callback,
 }
 
 void NSSCertDatabase::NotifyObserversCertDBChanged() {
-  LogUserCertificates("DBChanged");
-
   observer_list_->Notify(FROM_HERE, &Observer::OnCertDBChanged);
-}
-
-// static
-std::string NSSCertDatabase::GetCertIssuerCommonName(
-    const CERTCertificate* cert) {
-  char* nss_issuer_name = CERT_GetCommonName(&cert->issuer);
-  if (!nss_issuer_name)
-    return std::string();
-
-  std::string issuer_name = nss_issuer_name;
-  PORT_Free(nss_issuer_name);
-
-  return issuer_name;
 }
 
 // static
@@ -471,15 +463,8 @@ bool NSSCertDatabase::DeleteCertAndKeyImpl(CERTCertificate* cert) {
   // hooks (such as smart card UI). To ensure threads are not starved or
   // deadlocked, the base::ScopedBlockingCall below increments the thread pool
   // capacity if this method takes too much time to run.
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
-
-#if defined(OS_CHROMEOS)
-  // TODO(https://crbug.com/844537): Remove this after we've collected logs that
-  // show device-wide certificates disappearing.
-  std::string issuer_name = GetCertIssuerCommonName(cert);
-  VLOG(0) << "UserCertLogging: Deleting a certificate with issuer_name="
-          << issuer_name;
-#endif  // defined(OS_CHROMEOS)
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   // For some reason, PK11_DeleteTokenCertAndKey only calls
   // SEC_DeletePermCertificate if the private key is found.  So, we check

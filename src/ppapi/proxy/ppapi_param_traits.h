@@ -15,7 +15,6 @@
 #include "ppapi/c/pp_rect.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
-#include "ppapi/shared_impl/compositor_layer_data.h"
 #include "ppapi/shared_impl/file_path.h"
 #include "ppapi/shared_impl/file_ref_create_info.h"
 #include "ppapi/shared_impl/media_stream_video_track_shared.h"

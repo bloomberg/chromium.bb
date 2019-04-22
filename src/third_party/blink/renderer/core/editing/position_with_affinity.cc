@@ -28,7 +28,7 @@ PositionWithAffinityTemplate<Strategy>::~PositionWithAffinityTemplate() =
     default;
 
 template <typename Strategy>
-void PositionWithAffinityTemplate<Strategy>::Trace(blink::Visitor* visitor) {
+void PositionWithAffinityTemplate<Strategy>::Trace(Visitor* visitor) {
   visitor->Trace(position_);
 }
 

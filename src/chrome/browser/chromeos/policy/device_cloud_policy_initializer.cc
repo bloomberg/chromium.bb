@@ -17,21 +17,21 @@
 #include "chrome/browser/chromeos/attestation/attestation_ca_client.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
-#include "chrome/browser/chromeos/policy/device_status_collector.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
 #include "chrome/browser/chromeos/policy/enrollment_handler_chromeos.h"
 #include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
 #include "chrome/browser/chromeos/policy/server_backed_device_state.h"
+#include "chrome/browser/chromeos/policy/status_collector/device_status_collector.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/attestation/attestation_flow.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/attestation/attestation.pb.h"
-#include "chromeos/settings/install_attributes.h"
 #include "chromeos/system/statistics_provider.h"
+#include "chromeos/tpm/install_attributes.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/policy/core/common/cloud/dm_auth.h"
@@ -77,6 +77,11 @@ void DeviceCloudPolicyInitializer::SetSystemURLLoaderFactoryForTesting(
   system_url_loader_factory_for_testing_ = system_url_loader_factory;
 }
 
+void DeviceCloudPolicyInitializer::SetAttestationFlowForTesting(
+    std::unique_ptr<chromeos::attestation::AttestationFlow> attestation_flow) {
+  attestation_flow_ = std::move(attestation_flow);
+}
+
 DeviceCloudPolicyInitializer::~DeviceCloudPolicyInitializer() {
   DCHECK(!is_initialized_);
 }
@@ -118,7 +123,7 @@ void DeviceCloudPolicyInitializer::PrepareEnrollment(
       attestation_flow_.get(), CreateClient(device_management_service),
       background_task_runner_, ad_join_delegate, enrollment_config,
       std::move(dm_auth), install_attributes_->GetDeviceId(),
-      manager_->GetDeviceRequisition(),
+      manager_->GetDeviceRequisition(), manager_->GetSubOrganization(),
       base::Bind(&DeviceCloudPolicyInitializer::EnrollmentCompleted,
                  base::Unretained(this), enrollment_callback)));
 }
@@ -317,10 +322,8 @@ std::unique_ptr<CloudPolicyClient> DeviceCloudPolicyInitializer::CreateClient(
 }
 
 void DeviceCloudPolicyInitializer::TryToCreateClient() {
-  if (!device_store_->is_initialized() ||
-      !device_store_->has_policy() ||
-      state_keys_broker_->pending() ||
-      enrollment_handler_ ||
+  if (!device_store_->is_initialized() || !device_store_->has_policy() ||
+      !state_keys_broker_->available() || enrollment_handler_ ||
       install_attributes_->IsActiveDirectoryManaged()) {
     return;
   }

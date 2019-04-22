@@ -93,8 +93,7 @@ class MEDIA_EXPORT CdmAdapter : public ContentDecryptionModule,
   CdmContext* GetCdmContext() final;
 
   // CdmContext implementation.
-  std::unique_ptr<CallbackRegistration> RegisterNewKeyCB(
-      base::RepeatingClosure new_key_cb) final;
+  std::unique_ptr<CallbackRegistration> RegisterEventCB(EventCB event_cb) final;
   Decryptor* GetDecryptor() final;
   int GetCdmId() const final;
 

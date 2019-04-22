@@ -18,6 +18,11 @@ struct iovec;  // Declared in <sys/uio.h>
 
 namespace mojo {
 
+// There is an upper bound of number of handles on what is supported across
+// various OS implementations of sendmsg(). This value was chosen because it
+// should be safe across all supported platforms.
+constexpr size_t kMaxSendmsgHandles = 128;
+
 // NOTE: Functions declared here really don't belong in Mojo, but they exist to
 // support code which used to rely on internal parts of the Mojo implementation
 // and there wasn't a much better home for them. Consider moving them to

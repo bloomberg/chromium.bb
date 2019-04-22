@@ -14,7 +14,7 @@ class AppViewGuestInternalAttachFrameFunction
     : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("appViewGuestInternal.attachFrame",
-                             APPVIEWINTERNAL_ATTACHFRAME);
+                             APPVIEWINTERNAL_ATTACHFRAME)
   AppViewGuestInternalAttachFrameFunction();
 
  protected:
@@ -29,7 +29,7 @@ class AppViewGuestInternalDenyRequestFunction
     : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("appViewGuestInternal.denyRequest",
-                             APPVIEWINTERNAL_DENYREQUEST);
+                             APPVIEWINTERNAL_DENYREQUEST)
   AppViewGuestInternalDenyRequestFunction();
 
  protected:

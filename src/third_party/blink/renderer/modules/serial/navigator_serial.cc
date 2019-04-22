@@ -16,7 +16,7 @@ NavigatorSerial& NavigatorSerial::From(Navigator& navigator) {
   NavigatorSerial* supplement =
       Supplement<Navigator>::From<NavigatorSerial>(navigator);
   if (!supplement) {
-    supplement = new NavigatorSerial(navigator);
+    supplement = MakeGarbageCollected<NavigatorSerial>(navigator);
     ProvideTo(navigator, supplement);
   }
   return *supplement;
@@ -35,7 +35,8 @@ NavigatorSerial::NavigatorSerial(Navigator& navigator)
     : Supplement<Navigator>(navigator) {
   if (navigator.GetFrame()) {
     DCHECK(navigator.GetFrame()->GetDocument());
-    serial_ = Serial::Create(*navigator.GetFrame()->GetDocument());
+    serial_ =
+        MakeGarbageCollected<Serial>(*navigator.GetFrame()->GetDocument());
   }
 }
 

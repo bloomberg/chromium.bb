@@ -15,6 +15,7 @@
 #ifndef sw_Types_hpp
 #define sw_Types_hpp
 
+#include <assert.h>
 #include <limits>
 #include <type_traits>
 

@@ -14,6 +14,7 @@ namespace ash {
 class FeaturePodButton;
 class FeaturePodsContainerView;
 class TopShortcutsView;
+class NotificationHiddenView;
 class UnifiedMessageCenterView;
 class UnifiedSystemInfoView;
 class UnifiedSystemTrayController;
@@ -47,6 +48,12 @@ class UnifiedSlidersContainerView : public views::View {
 };
 
 // View class of the main bubble in UnifiedSystemTray.
+//
+// The UnifiedSystemTray contains two sub components:
+//    1. MessageCenter: contains the list of notifications
+//    2. SystemTray: contains quick settings controls
+// Note that the term "UnifiedSystemTray" refers to entire bubble containing
+// both (1) and (2).
 class ASH_EXPORT UnifiedSystemTrayView : public views::View,
                                          public views::FocusTraversable {
  public:
@@ -78,10 +85,19 @@ class ASH_EXPORT UnifiedSystemTrayView : public views::View,
   // Otherwise, it shows intermediate state.
   void SetExpandedAmount(double expanded_amount);
 
-  // Get height of the view when |expanded_amount| is set to 1.0.
-  int GetExpandedHeight() const;
+  // Get height of the system tray (excluding the message center) when
+  // |expanded_amount| is set to 1.0.
+  //
+  // Note that this function is used to calculate the transform-based
+  // collapse/expand animation, which is currently only enabled when there are
+  // no notifications.
+  int GetExpandedSystemTrayHeight() const;
 
-  // Get current height of the view.
+  // Get height of the system menu (excluding the message center) when
+  // |expanded_amount| is set to 0.0.
+  int GetCollapsedSystemTrayHeight() const;
+
+  // Get current height of the view (including the message center).
   int GetCurrentHeight() const;
 
   // Return true if layer transform can be used against the view. During
@@ -91,8 +107,10 @@ class ASH_EXPORT UnifiedSystemTrayView : public views::View,
   bool IsTransformEnabled() const;
 
   // Update the top of the SystemTray part to imitate notification list
-  // scrolling under SystemTray. |height_below_scroll| should not be negative.
-  void SetNotificationHeightBelowScroll(int height_below_scroll);
+  // scrolling under SystemTray. |rect_below_scroll| is the region of
+  // notifications covered by SystemTray part, and its coordinate is relative to
+  // UnifiedSystemTrayView. It can be empty.
+  void SetNotificationRectBelowScroll(const gfx::Rect& rect_below_scroll);
 
   // Create background of UnifiedSystemTray that is semi-transparent and has
   // rounded corners.
@@ -108,6 +126,10 @@ class ASH_EXPORT UnifiedSystemTrayView : public views::View,
   views::FocusTraversable* GetFocusTraversableParent() override;
   views::View* GetFocusTraversableParentView() override;
 
+  NotificationHiddenView* notification_hidden_view_for_testing() {
+    return notification_hidden_view_;
+  }
+
  private:
   class FocusSearch;
 
@@ -117,7 +139,7 @@ class ASH_EXPORT UnifiedSystemTrayView : public views::View,
   UnifiedSystemTrayController* const controller_;
 
   // Owned by views hierarchy.
-  views::View* const notification_hidden_view_;
+  NotificationHiddenView* const notification_hidden_view_;
   TopShortcutsView* const top_shortcuts_view_;
   FeaturePodsContainerView* const feature_pods_container_;
   UnifiedSlidersContainerView* const sliders_container_;
@@ -125,6 +147,9 @@ class ASH_EXPORT UnifiedSystemTrayView : public views::View,
   views::View* const system_tray_container_;
   views::View* const detailed_view_container_;
   UnifiedMessageCenterView* const message_center_view_;
+
+  // The maximum height available to the view.
+  int max_height_ = 0;
 
   const std::unique_ptr<FocusSearch> focus_search_;
   const std::unique_ptr<ui::EventHandler> interacted_by_tap_recorder_;

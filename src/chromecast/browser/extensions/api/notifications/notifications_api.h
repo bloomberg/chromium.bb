@@ -19,12 +19,12 @@ class NotificationsApiFunction : public ExtensionFunction {
   void Destruct() const override;
 
  protected:
-  ~NotificationsApiFunction() override {};
+  ~NotificationsApiFunction() override {}
 };
 
 class NotificationsCreateFunction : public NotificationsApiFunction {
  protected:
-  ~NotificationsCreateFunction() override {};
+  ~NotificationsCreateFunction() override {}
 
   ResponseAction Run() override;
 
@@ -34,7 +34,7 @@ class NotificationsCreateFunction : public NotificationsApiFunction {
 
 class NotificationsUpdateFunction : public NotificationsApiFunction {
  protected:
-  ~NotificationsUpdateFunction() override {};
+  ~NotificationsUpdateFunction() override {}
 
   ResponseAction Run() override;
 
@@ -44,7 +44,7 @@ class NotificationsUpdateFunction : public NotificationsApiFunction {
 
 class NotificationsClearFunction : public NotificationsApiFunction {
  protected:
-  ~NotificationsClearFunction() override {};
+  ~NotificationsClearFunction() override {}
 
   ResponseAction Run() override;
 
@@ -54,7 +54,7 @@ class NotificationsClearFunction : public NotificationsApiFunction {
 
 class NotificationsGetAllFunction : public NotificationsApiFunction {
  protected:
-  ~NotificationsGetAllFunction() override {};
+  ~NotificationsGetAllFunction() override {}
 
   ResponseAction Run() override;
 
@@ -65,7 +65,7 @@ class NotificationsGetAllFunction : public NotificationsApiFunction {
 class NotificationsGetPermissionLevelFunction
     : public NotificationsApiFunction {
  protected:
-  ~NotificationsGetPermissionLevelFunction() override {};
+  ~NotificationsGetPermissionLevelFunction() override {}
 
   ResponseAction Run() override;
 

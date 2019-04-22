@@ -19,6 +19,7 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
 
 namespace {
@@ -37,10 +38,10 @@ bool ShouldExcludePage(content::WebContents* contents) {
 
   const GURL& url = entry->GetURL();
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
-  if (profile && search::IsNTPURL(url, profile))
+  if (profile && search::IsNTPOrRelatedURL(url, profile))
     return true;
 
-  return url.SchemeIs("chrome");
+  return url.SchemeIs(content::kChromeUIScheme);
 }
 
 }  // namespace

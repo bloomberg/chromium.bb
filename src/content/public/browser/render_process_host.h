@@ -14,6 +14,7 @@
 
 #include "base/callback_list.h"
 #include "base/containers/id_map.h"
+#include "base/optional.h"
 #include "base/process/kill.h"
 #include "base/process/process.h"
 #include "base/supports_user_data.h"
@@ -23,9 +24,10 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_sender.h"
 #include "media/media_buildflags.h"
-#include "services/network/public/mojom/network_context.mojom.h"
-#include "services/network/public/mojom/url_loader_factory.mojom.h"
-#include "third_party/blink/public/platform/modules/cache_storage/cache_storage.mojom.h"
+#include "services/network/public/mojom/network_context.mojom-forward.h"
+#include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
+#include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom-forward.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-forward.h"
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(OS_ANDROID)
@@ -35,7 +37,7 @@
 class GURL;
 
 namespace base {
-class SharedPersistentMemoryAllocator;
+class PersistentMemoryAllocator;
 class TimeDelta;
 class Token;
 }
@@ -44,13 +46,14 @@ namespace service_manager {
 class Identity;
 }
 
-namespace resource_coordinator {
-class ProcessResourceCoordinator;
+namespace url {
+class Origin;
 }
 
 namespace content {
 class BrowserContext;
 class BrowserMessageFilter;
+class IsolationContext;
 class RenderProcessHostObserver;
 class RendererAudioOutputStreamFactoryContext;
 class StoragePartition;
@@ -147,13 +150,13 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   virtual void UpdateClientPriority(PriorityClient* client) = 0;
 
   // Number of visible (ie |!is_hidden|) PriorityClients.
-  virtual int VisibleClientCount() const = 0;
+  virtual int VisibleClientCount() = 0;
 
   // Get computed frame depth from PriorityClients.
-  virtual unsigned int GetFrameDepth() const = 0;
+  virtual unsigned int GetFrameDepth() = 0;
 
   // Get computed viewport intersection state from PriorityClients.
-  virtual bool GetIntersectsViewport() const = 0;
+  virtual bool GetIntersectsViewport() = 0;
 
   virtual RendererAudioOutputStreamFactoryContext*
   GetRendererAudioOutputStreamFactoryContext() = 0;
@@ -163,14 +166,20 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   virtual void OnMediaStreamAdded() = 0;
   virtual void OnMediaStreamRemoved() = 0;
 
+  // Called when a service worker is executing in the process and may need
+  // to respond to events from other processes in a timely manner.  This is
+  // used to determine if the process should be backgrounded or not.
+  virtual void OnForegroundServiceWorkerAdded() = 0;
+  virtual void OnForegroundServiceWorkerRemoved() = 0;
+
   // Indicates whether the current RenderProcessHost is exclusively hosting
   // guest RenderFrames. Not all guest RenderFrames are created equal.  A guest,
   // as indicated by BrowserPluginGuest::IsGuest, may coexist with other
   // non-guest RenderFrames in the same process if IsForGuestsOnly() is false.
-  virtual bool IsForGuestsOnly() const = 0;
+  virtual bool IsForGuestsOnly() = 0;
 
   // Returns the storage partition associated with this process.
-  virtual StoragePartition* GetStoragePartition() const = 0;
+  virtual StoragePartition* GetStoragePartition() = 0;
 
   // Try to shut down the associated renderer process without running unload
   // handlers, etc, giving it the specified exit code.  Returns true
@@ -190,7 +199,7 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
                                       bool skip_unload_handlers = false) = 0;
 
   // Returns true if fast shutdown was started for the renderer.
-  virtual bool FastShutdownStarted() const = 0;
+  virtual bool FastShutdownStarted() = 0;
 
   // Returns the process object associated with the child process.  In certain
   // tests or single-process mode, this will actually represent the current
@@ -200,7 +209,7 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // Init starts the process asynchronously.  It's guaranteed to be valid after
   // the first IPC arrives or RenderProcessReady was called on a
   // RenderProcessHostObserver for this. At that point, IsReady() returns true.
-  virtual const base::Process& GetProcess() const = 0;
+  virtual const base::Process& GetProcess() = 0;
 
   // Returns whether the process is ready. The process is ready once both
   // conditions (which can happen in arbitrary order) are true:
@@ -209,14 +218,14 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   //
   // After that point, GetHandle() is valid, and deferred messages have been
   // sent.
-  virtual bool IsReady() const = 0;
+  virtual bool IsReady() = 0;
 
   // Returns the user browser context associated with this renderer process.
-  virtual content::BrowserContext* GetBrowserContext() const = 0;
+  virtual content::BrowserContext* GetBrowserContext() = 0;
 
   // Returns whether this process is using the same StoragePartition as
   // |partition|.
-  virtual bool InSameStoragePartition(StoragePartition* partition) const = 0;
+  virtual bool InSameStoragePartition(StoragePartition* partition) = 0;
 
   // Returns the unique ID for this child process host. This can be used later
   // in a call to FromID() to get back to this object (this is used to avoid
@@ -226,7 +235,7 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // plugins, etc.
   //
   // This will never return ChildProcessHost::kInvalidUniqueID.
-  virtual int GetID() const = 0;
+  virtual int GetID() = 0;
 
   // Returns true iff the Init() was called and the process hasn't died yet.
   //
@@ -234,7 +243,7 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // duration after calling Init()) the process might not be fully spawned
   // *yet*.  For example - IsReady() might return false and GetProcess() might
   // still return an invalid process with a null handle.
-  virtual bool IsInitializedAndNotDead() const = 0;
+  virtual bool IsInitializedAndNotDead() = 0;
 
   // Returns the renderer channel.
   virtual IPC::ChannelProxy* GetChannel() = 0;
@@ -245,7 +254,7 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // Sets whether this render process is blocked. This means that input events
   // should not be sent to it, nor other timely signs of life expected from it.
   virtual void SetBlocked(bool blocked) = 0;
-  virtual bool IsBlocked() const = 0;
+  virtual bool IsBlocked() = 0;
 
   virtual std::unique_ptr<base::CallbackList<void(bool)>::Subscription>
   RegisterBlockStateChangedCallback(
@@ -267,18 +276,21 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
 #if defined(OS_ANDROID)
   // Return the highest importance of all widgets in this process.
   virtual ChildProcessImportance GetEffectiveImportance() = 0;
+
+  // Dumps the stack of this render process without crashing it.
+  virtual void DumpProcessStack() = 0;
 #endif
 
   // Sets a flag indicating that the process can be abnormally terminated.
   virtual void SetSuddenTerminationAllowed(bool allowed) = 0;
   // Returns true if the process can be abnormally terminated.
-  virtual bool SuddenTerminationAllowed() const = 0;
+  virtual bool SuddenTerminationAllowed() = 0;
 
   // Returns how long the child has been idle. The definition of idle
   // depends on when a derived class calls mark_child_process_activity_time().
   // This is a rough indicator and its resolution should not be better than
   // 10 milliseconds.
-  virtual base::TimeDelta GetChildProcessIdleTime() const = 0;
+  virtual base::TimeDelta GetChildProcessIdleTime() = 0;
 
   // Checks that the given renderer can request |url|, if not it sets it to
   // about:blank.
@@ -325,14 +337,14 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   virtual void BindInterface(const std::string& interface_name,
                              mojo::ScopedMessagePipeHandle interface_pipe) = 0;
 
-  virtual const service_manager::Identity& GetChildIdentity() const = 0;
+  virtual const service_manager::Identity& GetChildIdentity() = 0;
 
   // Extracts any persistent-memory-allocator used for renderer metrics.
   // Ownership is passed to the caller. To support sharing of histogram data
   // between the Renderer and the Browser, the allocator is created when the
   // process is created and later retrieved by the SubprocessMetricsProvider
   // for management.
-  virtual std::unique_ptr<base::SharedPersistentMemoryAllocator>
+  virtual std::unique_ptr<base::PersistentMemoryAllocator>
   TakeMetricsAllocator() = 0;
 
   // PlzNavigate
@@ -340,10 +352,10 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // renderer process was created); further calls to Init won't change this
   // value.
   // Note: Do not use! Will disappear after PlzNavitate is completed.
-  virtual const base::TimeTicks& GetInitTimeForNavigationMetrics() const = 0;
+  virtual const base::TimeTicks& GetInitTimeForNavigationMetrics() = 0;
 
   // Returns true if this process currently has backgrounded priority.
-  virtual bool IsProcessBackgrounded() const = 0;
+  virtual bool IsProcessBackgrounded() = 0;
 
   enum class KeepAliveClientType {
     kServiceWorker = 0,
@@ -389,9 +401,6 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // Returns true if DisableKeepAliveRefCount() was called.
   virtual bool IsKeepAliveRefCountDisabled() = 0;
 
-  // Purges and suspends the renderer process.
-  virtual void PurgeAndSuspend() = 0;
-
   // Resumes the renderer process.
   virtual void Resume() = 0;
 
@@ -399,10 +408,6 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // internal use only, and is only exposed here to support
   // MockRenderProcessHost usage in tests.
   virtual mojom::Renderer* GetRendererInterface() = 0;
-
-  // Acquires the interface to the Global Resource Coordinator for this process.
-  virtual resource_coordinator::ProcessResourceCoordinator*
-  GetProcessResourceCoordinator() = 0;
 
   // Create an URLLoaderFactory that can be used by |origin| being hosted in
   // |this| process.
@@ -416,8 +421,10 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   //
   // |header_client| will be used in URLLoaderFactoryParams when creating the
   // factory.
+  //
+  // TODO(lukasza, nasko): https://crbug.com/888079: Make |origin| mandatory.
   virtual void CreateURLLoaderFactory(
-      const url::Origin& origin,
+      const base::Optional<url::Origin>& origin,
       network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client,
       network::mojom::URLLoaderFactoryRequest request) = 0;
 
@@ -453,13 +460,20 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // MockRenderProcessHost. It isn't meant to be called outside of content.
   // TODO(creis): Rename LockToOrigin to LockToPrincipal. See
   // https://crbug.com/846155.
-  virtual void LockToOrigin(const GURL& lock_url) = 0;
+  virtual void LockToOrigin(const IsolationContext& isolation_context,
+                            const GURL& lock_url) = 0;
 
   // Binds |request| to the CacheStorageDispatcherHost instance. The binding is
   // sent to the IO thread. This is for internal use only, and is only exposed
   // here to support MockRenderProcessHost usage in tests.
   virtual void BindCacheStorage(blink::mojom::CacheStorageRequest request,
                                 const url::Origin& origin) = 0;
+
+  // Binds |request| to the IndexedDBDispatcherHost instance. The binding is
+  // sent to the IO thread. This is for internal use only, and is only exposed
+  // here to support MockRenderProcessHost usage in tests.
+  virtual void BindIndexedDB(blink::mojom::IDBFactoryRequest request,
+                             const url::Origin& origin) = 0;
 
   // Returns the current number of active views in this process.  Excludes
   // any RenderViewHosts that are swapped out.
@@ -471,6 +485,9 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // function can only be called on the browser's UI thread (and the |task| will
   // be posted back on the UI thread).
   void PostTaskWhenProcessIsReady(base::OnceClosure task);
+
+  // Forces the renderer process to crash ASAP.
+  virtual void ForceCrash() {}
 
   // Controls whether the destructor of RenderProcessHost*Impl* will end up
   // cleaning the memory used by the exception added via

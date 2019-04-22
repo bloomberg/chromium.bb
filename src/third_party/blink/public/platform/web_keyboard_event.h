@@ -21,31 +21,31 @@ class WebKeyboardEvent : public WebInputEvent {
   static const size_t kTextLengthCap = 4;
 
   // |windows_key_code| is the Windows key code associated with this key
-  // event.  Sometimes it's direct from the event (i.e. on Windows),
-  // sometimes it's via a mapping function.  If you want a list, see
-  // WebCore/platform/chromium/KeyboardCodes* . Note that this should
+  // event. Sometimes it's direct from the event (i.e. on Windows),
+  // sometimes it's via a mapping function. If you want a list, see
+  // ui/events/keycodes/keyboard_codes_* . Note that this should
   // ALWAYS store the non-locational version of a keycode as this is
   // what is returned by the Windows API. For example, it should
   // store VK_SHIFT instead of VK_RSHIFT. The location information
   // should be stored in |modifiers|.
   int windows_key_code;
 
-  // The actual key code genenerated by the platform.  The DOM spec runs
+  // The actual key code genenerated by the platform. The DOM spec runs
   // on Windows-equivalent codes (thus |windows_key_code| above) but it
   // doesn't hurt to have this one around.
   int native_key_code;
 
-  // The DOM code enum of the key pressed as passed by the embedder. DOM
-  // code enum are defined in ui/events/keycodes/dom4/keycode_converter_data.h.
+  // The DOM code enum of the key pressed as passed by the embedder. DOM code
+  // enums are defined in ui/events/keycodes/dom/keycode_converter_data.inc.
   int dom_code;
 
   // The DOM key enum of the key pressed as passed by the embedder. DOM
-  // key enum are defined in ui/events/keycodes/dom3/dom_key_data.h
+  // key enums are defined in ui/events/keycodes/dom/dom_key_data.inc.
   int dom_key;
 
-  // This identifies whether this event was tagged by the system as being
-  // a "system key" event (see
-  // http://msdn.microsoft.com/en-us/library/ms646286(VS.85).aspx for
+  // This identifies whether this event was tagged by the system as being a
+  // "system key" event (see
+  // https://docs.microsoft.com/en-us/windows/desktop/inputdev/wm-syskeydown for
   // details). Other platforms don't have this concept, but it's just
   // easier to leave it always false than ifdef.
   bool is_system_key;

@@ -11,6 +11,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/bits.h"
 #include "base/macros.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "gpu/command_buffer/client/fenced_allocator.h"
@@ -30,25 +31,21 @@ class GPU_EXPORT MemoryChunk {
   ~MemoryChunk();
 
   // Gets the size of the largest free block that is available without waiting.
-  unsigned int GetLargestFreeSizeWithoutWaiting() {
+  uint32_t GetLargestFreeSizeWithoutWaiting() {
     return allocator_.GetLargestFreeSize();
   }
 
   // Gets the size of the largest free block that can be allocated if the
   // caller can wait.
-  unsigned int GetLargestFreeSizeWithWaiting() {
+  uint32_t GetLargestFreeSizeWithWaiting() {
     return allocator_.GetLargestFreeOrPendingSize();
   }
 
   // Gets the size of the chunk.
-  unsigned int GetSize() const {
-    return static_cast<unsigned int>(shm_->size());
-  }
+  uint32_t GetSize() const { return shm_->size(); }
 
   // The shared memory id for this chunk.
-  int32_t shm_id() const {
-    return shm_id_;
-  }
+  int32_t shm_id() const { return shm_id_; }
 
   gpu::Buffer* shared_memory() const { return shm_.get(); }
 
@@ -62,15 +59,11 @@ class GPU_EXPORT MemoryChunk {
   // Returns:
   //   the pointer to the allocated memory block, or nullptr if out of
   //   memory.
-  void* Alloc(unsigned int size) {
-    return allocator_.Alloc(size);
-  }
+  void* Alloc(uint32_t size) { return allocator_.Alloc(size); }
 
   // Gets the offset to a memory block given the base memory and the address.
   // It translates nullptr to FencedAllocator::kInvalidOffset.
-  unsigned int GetOffset(void* pointer) {
-    return allocator_.GetOffset(pointer);
-  }
+  uint32_t GetOffset(void* pointer) { return allocator_.GetOffset(pointer); }
 
   // Frees a block of memory.
   //
@@ -86,7 +79,7 @@ class GPU_EXPORT MemoryChunk {
   // Parameters:
   //   pointer: the pointer to the memory block to free.
   //   token: the token value to wait for before re-using the memory.
-  void FreePendingToken(void* pointer, unsigned int token) {
+  void FreePendingToken(void* pointer, uint32_t token) {
     allocator_.FreePendingToken(pointer, token);
   }
 
@@ -96,7 +89,7 @@ class GPU_EXPORT MemoryChunk {
   }
 
   // Gets the free size of the chunk.
-  unsigned int GetFreeSize() { return allocator_.GetFreeSize(); }
+  uint32_t GetFreeSize() { return allocator_.GetFreeSize(); }
 
   // Returns true if pointer is in the range of this block.
   bool IsInChunk(void* pointer) const {
@@ -107,9 +100,7 @@ class GPU_EXPORT MemoryChunk {
   // Returns true of any memory in this chunk is in use or free pending token.
   bool InUseOrFreePending() { return allocator_.InUseOrFreePending(); }
 
-  size_t bytes_in_use() const {
-    return allocator_.bytes_in_use();
-  }
+  uint32_t bytes_in_use() const { return allocator_.bytes_in_use(); }
 
   FencedAllocator::State GetPointerStatusForTest(void* pointer,
                                                  int32_t* token_if_pending) {
@@ -138,12 +129,11 @@ class GPU_EXPORT MappedMemoryManager {
 
   ~MappedMemoryManager();
 
-  unsigned int chunk_size_multiple() const {
-    return chunk_size_multiple_;
-  }
+  uint32_t chunk_size_multiple() const { return chunk_size_multiple_; }
 
-  void set_chunk_size_multiple(unsigned int multiple) {
-    DCHECK(multiple % FencedAllocator::kAllocAlignment == 0);
+  void set_chunk_size_multiple(uint32_t multiple) {
+    DCHECK(base::bits::IsPowerOfTwo(multiple));
+    DCHECK_GE(multiple, FencedAllocator::kAllocAlignment);
     chunk_size_multiple_ = multiple;
   }
 
@@ -162,8 +152,7 @@ class GPU_EXPORT MappedMemoryManager {
   //   shm_offset: pointer to variable to receive the shared memory offset.
   // Returns:
   //   pointer to allocated block of memory. nullptr if failure.
-  void* Alloc(
-      unsigned int size, int32_t* shm_id, unsigned int* shm_offset);
+  void* Alloc(uint32_t size, int32_t* shm_id, uint32_t* shm_offset);
 
   // Frees a block of memory.
   //
@@ -213,7 +202,7 @@ class GPU_EXPORT MappedMemoryManager {
   typedef std::vector<std::unique_ptr<MemoryChunk>> MemoryChunkVector;
 
   // size a chunk is rounded up to.
-  unsigned int chunk_size_multiple_;
+  uint32_t chunk_size_multiple_;
   CommandBufferHelper* helper_;
   MemoryChunkVector chunks_;
   size_t allocated_memory_;

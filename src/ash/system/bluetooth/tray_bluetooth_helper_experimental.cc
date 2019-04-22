@@ -9,6 +9,7 @@
 
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_notifier.h"
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -57,7 +58,7 @@ void TrayBluetoothHelperExperimental::StopBluetoothDiscovering() {
 }
 
 void TrayBluetoothHelperExperimental::ConnectToBluetoothDevice(
-    const std::string& address) {
+    const BluetoothAddress& address) {
   NOTIMPLEMENTED();
 }
 
@@ -77,9 +78,7 @@ bool TrayBluetoothHelperExperimental::HasBluetoothDiscoverySession() {
 
 void TrayBluetoothHelperExperimental::GetBluetoothDevices(
     GetBluetoothDevicesCallback callback) const {
-  NOTIMPLEMENTED();
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), BluetoothDeviceList()));
+  bluetooth_system_ptr_->GetAvailableDevices(std::move(callback));
 }
 
 void TrayBluetoothHelperExperimental::OnStateChanged(

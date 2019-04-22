@@ -29,7 +29,10 @@ ScopedVariant::ScopedVariant(const wchar_t* str, UINT length) {
 
 ScopedVariant::ScopedVariant(int value, VARTYPE vt) {
   var_.vt = vt;
-  var_.lVal = value;
+  if (vt == VT_BOOL)
+    var_.boolVal = value ? VARIANT_TRUE : VARIANT_FALSE;
+  else
+    var_.lVal = value;
 }
 
 ScopedVariant::ScopedVariant(double value, VARTYPE vt) {

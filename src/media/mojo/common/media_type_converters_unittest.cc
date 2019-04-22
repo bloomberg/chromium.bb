@@ -9,7 +9,7 @@
 #include <string.h>
 #include <memory>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/decoder_buffer.h"
@@ -61,8 +61,8 @@ void CompareAudioBuffers(SampleFormat sample_format,
 TEST(MediaTypeConvertersTest, ConvertDecoderBuffer_Normal) {
   const uint8_t kData[] = "hello, world";
   const uint8_t kSideData[] = "sideshow bob";
-  const size_t kDataSize = arraysize(kData);
-  const size_t kSideDataSize = arraysize(kSideData);
+  const size_t kDataSize = base::size(kData);
+  const size_t kSideDataSize = base::size(kSideData);
 
   // Original.
   scoped_refptr<DecoderBuffer> buffer(DecoderBuffer::CopyFrom(
@@ -108,7 +108,7 @@ TEST(MediaTypeConvertersTest, ConvertDecoderBuffer_EOS) {
 
 TEST(MediaTypeConvertersTest, ConvertDecoderBuffer_KeyFrame) {
   const uint8_t kData[] = "hello, world";
-  const size_t kDataSize = arraysize(kData);
+  const size_t kDataSize = base::size(kData);
 
   // Original.
   scoped_refptr<DecoderBuffer> buffer(DecoderBuffer::CopyFrom(
@@ -129,7 +129,7 @@ TEST(MediaTypeConvertersTest, ConvertDecoderBuffer_KeyFrame) {
 
 TEST(MediaTypeConvertersTest, ConvertDecoderBuffer_CencEncryptedBuffer) {
   const uint8_t kData[] = "hello, world";
-  const size_t kDataSize = arraysize(kData);
+  const size_t kDataSize = base::size(kData);
   const char kKeyId[] = "00112233445566778899aabbccddeeff";
   const char kIv[] = "0123456789abcdef";
 
@@ -165,7 +165,7 @@ TEST(MediaTypeConvertersTest, ConvertDecoderBuffer_CencEncryptedBuffer) {
 
 TEST(MediaTypeConvertersTest, ConvertDecoderBuffer_CbcsEncryptedBuffer) {
   const uint8_t kData[] = "hello, world";
-  const size_t kDataSize = arraysize(kData);
+  const size_t kDataSize = base::size(kData);
   const char kKeyId[] = "00112233445566778899aabbccddeeff";
   const char kIv[] = "0123456789abcdef";
 

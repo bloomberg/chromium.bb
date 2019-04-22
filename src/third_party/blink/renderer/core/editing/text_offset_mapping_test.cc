@@ -81,9 +81,9 @@ class ParameterizedTextOffsetMappingTest
   }
 };
 
-INSTANTIATE_TEST_CASE_P(All,
-                        ParameterizedTextOffsetMappingTest,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All,
+                         ParameterizedTextOffsetMappingTest,
+                         ::testing::Bool());
 
 TEST_P(ParameterizedTextOffsetMappingTest, ComputeTextOffsetBasic) {
   EXPECT_EQ("|(1) abc def", ComputeTextOffset("<p>| (1) abc def</p>"));

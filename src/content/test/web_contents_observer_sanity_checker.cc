@@ -16,6 +16,7 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/navigation_policy.h"
 #include "net/base/net_errors.h"
 
 namespace content {
@@ -54,12 +55,14 @@ void WebContentsObserverSanityChecker::RenderFrameCreated(
                  << Format(render_frame_host);
   }
 
+  CHECK(render_frame_host->IsRenderFrameCreated())
+      << "RenderFrameCreated was called for a RenderFrameHost that has not been"
+         "marked created.";
   CHECK(render_frame_host->GetProcess()->IsInitializedAndNotDead())
       << "RenderFrameCreated was called for a RenderFrameHost whose render "
          "process is not currently live, so there's no way for the RenderFrame "
          "to have been created.";
-  CHECK(
-      static_cast<RenderFrameHostImpl*>(render_frame_host)->IsRenderFrameLive())
+  CHECK(render_frame_host->IsRenderFrameLive())
       << "RenderFrameCreated called on for a RenderFrameHost that thinks it is "
          "not alive.";
 
@@ -80,6 +83,13 @@ void WebContentsObserverSanityChecker::RenderFrameCreated(
 void WebContentsObserverSanityChecker::RenderFrameDeleted(
     RenderFrameHost* render_frame_host) {
   CHECK(!web_contents_destroyed_);
+  CHECK(!render_frame_host->IsRenderFrameCreated())
+      << "RenderFrameDeleted was called for a RenderFrameHost that is"
+         "(still) marked as created.";
+  CHECK(!render_frame_host->IsRenderFrameLive())
+      << "RenderFrameDeleted was called for a RenderFrameHost that is"
+         "still live.";
+
   GlobalRoutingID routing_pair = GetRoutingPair(render_frame_host);
   bool was_live = !!live_routes_.erase(routing_pair);
   bool was_dead_already = !deleted_routes_.insert(routing_pair).second;
@@ -140,8 +150,14 @@ void WebContentsObserverSanityChecker::RenderFrameHostChanged(
         << "RenderFrameHostChanged called more than once for routing pair:"
         << Format(new_host);
   }
-  CHECK(!HasAnyChildren(new_host))
-      << "A frame should not have children before it is committed.";
+
+  // If |new_host| is restored from the BackForwardCache, it can contain
+  // iframes, otherwise it has just been created and can't contain iframes for
+  // the moment.
+  if (!IsBackForwardCacheEnabled()) {
+    CHECK(!HasAnyChildren(new_host))
+        << "A frame should not have children before it is committed.";
+  }
 }
 
 void WebContentsObserverSanityChecker::FrameDeleted(
@@ -309,7 +325,8 @@ void WebContentsObserverSanityChecker::DidStartLoading() {
 }
 
 void WebContentsObserverSanityChecker::DidStopLoading() {
-  CHECK(is_loading_);
+  // TODO(crbug.com/466089): Add back CHECK(is_loading_). The CHECK was removed
+  // because of flaky failures during browser_test shutdown.
   CHECK(!web_contents()->IsLoading());
   is_loading_ = false;
 }

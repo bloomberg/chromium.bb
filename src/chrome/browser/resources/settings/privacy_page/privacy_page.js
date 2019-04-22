@@ -17,6 +17,17 @@ let BlockAutoplayStatus;
  */
 (function() {
 
+/**
+ * Must be kept in sync with the C++ enum of the same name.
+ * @enum {number}
+ */
+const NetworkPredictionOptions = {
+  ALWAYS: 0,
+  WIFI_ONLY: 1,
+  NEVER: 2,
+  DEFAULT: 1,
+};
+
 Polymer({
   is: 'settings-privacy-page',
 
@@ -64,19 +75,22 @@ Polymer({
       value: false,
     },
 
+    /**
+     * Used for HTML bindings. This is defined as a property rather than within
+     * the ready callback, because the value needs to be available before
+     * local DOM initialization - otherwise, the toggle has unexpected behavior.
+     * @private
+     */
+    networkPredictionUncheckedValue_: {
+      type: Number,
+      value: NetworkPredictionOptions.NEVER,
+    },
+
     /** @private */
     enableSafeBrowsingSubresourceFilter_: {
       type: Boolean,
       value: function() {
         return loadTimeData.getBoolean('enableSafeBrowsingSubresourceFilter');
-      }
-    },
-
-    /** @private */
-    enableSoundContentSetting_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('enableSoundContentSetting');
       }
     },
 
@@ -97,14 +111,6 @@ Polymer({
     },
 
     /** @private */
-    enableClipboardContentSetting_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('enableClipboardContentSetting');
-      }
-    },
-
-    /** @private */
     enablePaymentHandlerContentSetting_: {
       type: Boolean,
       value: function() {
@@ -121,6 +127,23 @@ Polymer({
       }
     },
 
+    /** @private */
+    enableExperimentalWebPlatformFeatures_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('enableExperimentalWebPlatformFeatures');
+      },
+    },
+
+    /** @private */
+    enableSecurityKeysSubpage_: {
+      type: Boolean,
+      readOnly: true,
+      value: function() {
+        return loadTimeData.getBoolean('enableSecurityKeysSubpage');
+      }
+    },
+
     /** @private {!Map<string, string>} */
     focusConfig_: {
       type: Object,
@@ -128,21 +151,25 @@ Polymer({
         const map = new Map();
         // <if expr="use_nss_certs">
         if (settings.routes.CERTIFICATES) {
-          map.set(
-              settings.routes.CERTIFICATES.path,
-              '#manageCertificates .subpage-arrow button');
+          map.set(settings.routes.CERTIFICATES.path, '#manageCertificates');
         }
         // </if>
         if (settings.routes.SITE_SETTINGS) {
           map.set(
               settings.routes.SITE_SETTINGS.path,
-              '#site-settings-subpage-trigger .subpage-arrow button');
+              '#site-settings-subpage-trigger');
         }
 
         if (settings.routes.SITE_SETTINGS_SITE_DATA) {
           map.set(
               settings.routes.SITE_SETTINGS_SITE_DATA.path,
-              '#site-data-trigger .subpage-arrow button');
+              '#site-data-trigger');
+        }
+
+        if (settings.routes.SECURITY_KEYS) {
+          map.set(
+              settings.routes.SECURITY_KEYS.path,
+              '#security-keys-subpage-trigger');
         }
         return map;
       },
@@ -151,7 +178,7 @@ Polymer({
     /**
      * This flag is used to conditionally show a set of sync UIs to the
      * profiles that have been migrated to have a unified consent flow.
-     * TODO(scottchen): In the future when all profiles are completely migrated,
+     * TODO(tangltom): In the future when all profiles are completely migrated,
      * this should be removed, and UIs hidden behind it should become default.
      * @private
      */
@@ -169,11 +196,15 @@ Polymer({
 
     /** @private */
     showSignoutDialog_: Boolean,
+
+    /** @private */
+    searchFilter_: String,
   },
 
   /** @override */
   ready: function() {
     this.ContentSettingsTypes = settings.ContentSettingsTypes;
+    this.ChooserType = settings.ChooserType;
 
     this.browserProxy_ = settings.PrivacyPageBrowserProxyImpl.getInstance();
 
@@ -212,8 +243,9 @@ Polymer({
    * @private
    */
   onDoNotTrackDomChange_: function(event) {
-    if (this.showDoNotTrackDialog_)
+    if (this.showDoNotTrackDialog_) {
       this.maybeShowDoNotTrackDialog_();
+    }
   },
 
   /**
@@ -257,8 +289,9 @@ Polymer({
   /** @private */
   maybeShowDoNotTrackDialog_: function() {
     const dialog = this.$$('#confirmDoNotTrackDialog');
-    if (dialog && !dialog.open)
+    if (dialog && !dialog.open) {
       dialog.showModal();
+    }
   },
 
   /** @private */
@@ -303,17 +336,11 @@ Polymer({
     // </if>
   },
 
-  /**
-   * @param {!Event} e
-   * @private
-   */
-  onMoreSettingsBoxClicked_: function(e) {
-    if (e.target.tagName === 'A') {
-      e.preventDefault();
-      // Navigate to sync page, and remove (privacy related) search text to
-      // avoid the sync page from being hidden.
-      settings.navigateTo(settings.routes.SYNC, null, true);
-    }
+  /** @private */
+  onSyncAndGoogleServicesClick_: function() {
+    // Navigate to sync page, and remove (privacy related) search text to
+    // avoid the sync page from being hidden.
+    settings.navigateTo(settings.routes.SYNC, null, true);
   },
 
   /**
@@ -323,8 +350,9 @@ Polymer({
   onRemoveAllCookiesFromSite_: function() {
     const node = /** @type {?SiteDataDetailsSubpageElement} */ (
         this.$$('site-data-details-subpage'));
-    if (node)
+    if (node) {
       node.removeAll();
+    }
   },
 
   /** @private */
@@ -345,7 +373,12 @@ Polymer({
   /** @private */
   onDialogClosed_: function() {
     settings.navigateTo(settings.routes.CLEAR_BROWSER_DATA.parent);
-    cr.ui.focusWithoutInk(assert(this.$.clearBrowsingDataTrigger));
+    cr.ui.focusWithoutInk(assert(this.$.clearBrowsingData));
+  },
+
+  /** @private */
+  onSecurityKeysTap_: function() {
+    settings.navigateTo(settings.routes.SECURITY_KEYS);
   },
 
   /**

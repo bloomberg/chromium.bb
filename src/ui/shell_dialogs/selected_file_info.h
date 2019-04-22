@@ -8,8 +8,10 @@
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "ui/shell_dialogs/shell_dialogs_export.h"
+#include "url/gurl.h"
 
 namespace ui {
 
@@ -31,10 +33,20 @@ struct SHELL_DIALOGS_EXPORT SelectedFileInfo {
   // |path| is used for displaying.
   base::FilePath::StringType display_name;
 
+  // If set, this URL may be used to access the file. If the user is capable of
+  // using a URL to access the file, it should be used in preference to
+  // |local_path|.
+  base::Optional<GURL> url;
+
   SelectedFileInfo();
   SelectedFileInfo(const base::FilePath& in_file_path,
                    const base::FilePath& in_local_path);
+  SelectedFileInfo(const SelectedFileInfo& other);
+  SelectedFileInfo(SelectedFileInfo&& other);
   ~SelectedFileInfo();
+
+  SelectedFileInfo& operator=(const SelectedFileInfo& other);
+  SelectedFileInfo& operator=(SelectedFileInfo&& other);
 };
 
 }  // namespace ui

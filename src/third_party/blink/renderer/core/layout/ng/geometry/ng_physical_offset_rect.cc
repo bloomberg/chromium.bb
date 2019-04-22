@@ -73,6 +73,17 @@ void NGPhysicalOffsetRect::Expand(const NGPhysicalBoxStrut& strut) {
   }
 }
 
+void NGPhysicalOffsetRect::ExpandEdgesToPixelBoundaries() {
+  int left = FloorToInt(offset.left);
+  int top = FloorToInt(offset.top);
+  int max_right = (offset.left + size.width).Ceil();
+  int max_bottom = (offset.top + size.height).Ceil();
+  offset.left = LayoutUnit(left);
+  offset.top = LayoutUnit(top);
+  size.width = LayoutUnit(max_right - left);
+  size.height = LayoutUnit(max_bottom - top);
+}
+
 NGPhysicalOffsetRect::NGPhysicalOffsetRect(const LayoutRect& source)
     : NGPhysicalOffsetRect({source.X(), source.Y()},
                            {source.Width(), source.Height()}) {}

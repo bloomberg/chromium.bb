@@ -4,11 +4,12 @@
 
 #include "chromeos/cryptohome/system_salt_getter.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_cryptohome_client.h"
+#include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -27,9 +28,7 @@ class SystemSaltGetterTest : public testing::Test {
             base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
 
   void SetUp() override {
-    fake_cryptohome_client_ = new FakeCryptohomeClient;
-    DBusThreadManager::GetSetterForTesting()->SetCryptohomeClient(
-        std::unique_ptr<CryptohomeClient>(fake_cryptohome_client_));
+    CryptohomeClient::InitializeFake();
 
     EXPECT_FALSE(SystemSaltGetter::IsInitialized());
     SystemSaltGetter::Initialize();
@@ -39,16 +38,15 @@ class SystemSaltGetterTest : public testing::Test {
 
   void TearDown() override {
     SystemSaltGetter::Shutdown();
-    DBusThreadManager::Shutdown();
+    CryptohomeClient::Shutdown();
   }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  FakeCryptohomeClient* fake_cryptohome_client_ = nullptr;
 };
 
 TEST_F(SystemSaltGetterTest, GetSystemSalt) {
   // Try to get system salt before the service becomes available.
-  fake_cryptohome_client_->SetServiceIsAvailable(false);
+  FakeCryptohomeClient::Get()->SetServiceIsAvailable(false);
   std::string system_salt;
   SystemSaltGetter::Get()->GetSystemSalt(
       base::Bind(&CopySystemSalt, &system_salt));
@@ -56,7 +54,7 @@ TEST_F(SystemSaltGetterTest, GetSystemSalt) {
   EXPECT_TRUE(system_salt.empty());  // System salt is not returned yet.
 
   // Service becomes available.
-  fake_cryptohome_client_->SetServiceIsAvailable(true);
+  FakeCryptohomeClient::Get()->SetServiceIsAvailable(true);
   base::RunLoop().RunUntilIdle();
   const std::string expected_system_salt =
       SystemSaltGetter::ConvertRawSaltToHexString(

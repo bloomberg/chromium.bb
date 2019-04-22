@@ -19,10 +19,6 @@
 #include "base/stl_util.h"
 #include "components/cloud_devices/common/cloud_device_description.h"
 
-namespace base {
-class DictionaryValue;
-}
-
 namespace cloud_devices {
 
 // All traits below specify how to serialize and validate capabilities and
@@ -35,10 +31,10 @@ namespace cloud_devices {
 //   static std::string GetItemPath();
 //
 //   // Loads ticket item. Returns false if failed.
-//   static bool Load(const base::DictionaryValue& dict, ContentType* option);
+//   static bool Load(const base::Value& dict, ContentType* option);
 //
 //   // Saves ticket item.
-//   static void Save(ContentType option, base::DictionaryValue* dict);
+//   static void Save(ContentType option, base::Value* dict);
 
 // Represents a CDD capability that is stored as a JSON list
 // Ex: "<CAPABILITY_NAME>": [ {<VALUE>}, {<VALUE>}, {<VALUE>} ]
@@ -67,7 +63,7 @@ class ListCapability {
     return base::ContainsValue(options_, option);
   }
 
-  void AddOption(const Option& option) { options_.push_back(option); }
+  void AddOption(Option&& option) { options_.emplace_back(std::move(option)); }
 
  private:
   typedef std::vector<Option> OptionVector;
@@ -85,10 +81,18 @@ template <class Option, class Traits>
 class SelectionCapability {
  public:
   SelectionCapability();
+  SelectionCapability(SelectionCapability&& other);
   ~SelectionCapability();
+
+  SelectionCapability& operator=(SelectionCapability&& other);
+
+  bool operator==(const SelectionCapability& other) const;
 
   bool LoadFrom(const CloudDeviceDescription& description);
   void SaveTo(CloudDeviceDescription* description) const;
+
+  bool LoadFrom(const base::Value& dict);
+  void SaveTo(base::Value* dict) const;
 
   void Reset() {
     options_.clear();
@@ -162,8 +166,8 @@ class BooleanCapability {
 template <class Traits>
 class EmptyCapability {
  public:
-  EmptyCapability() {};
-  ~EmptyCapability() {};
+  EmptyCapability() {}
+  ~EmptyCapability() {}
 
   bool LoadFrom(const CloudDeviceDescription& description);
   void SaveTo(CloudDeviceDescription* description) const;

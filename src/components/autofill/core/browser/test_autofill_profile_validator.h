@@ -8,6 +8,7 @@
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "components/autofill/core/browser/autofill_profile_validator.h"
+#include "components/autofill/core/browser/test_autofill_profile_validator_delayed.h"
 
 namespace autofill {
 
@@ -15,6 +16,7 @@ namespace autofill {
 class TestAutofillProfileValidator {
  public:
   static AutofillProfileValidator* GetInstance();
+  static TestAutofillProfileValidatorDelayed* GetDelayedInstance();
 
  private:
   friend struct base::LazyInstanceTraitsBase<TestAutofillProfileValidator>;
@@ -22,8 +24,9 @@ class TestAutofillProfileValidator {
   TestAutofillProfileValidator();
   ~TestAutofillProfileValidator();
 
-  // The only instance that exists.
+  // The only instance that exists of normal and delayed validators.
   AutofillProfileValidator autofill_profile_validator_;
+  TestAutofillProfileValidatorDelayed autofill_profile_validator_delayed_;
 
   DISALLOW_COPY_AND_ASSIGN(TestAutofillProfileValidator);
 };

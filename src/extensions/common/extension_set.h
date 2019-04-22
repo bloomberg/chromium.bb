@@ -85,7 +85,7 @@ class ExtensionSet {
   bool InsertAll(const ExtensionSet& extensions);
 
   // Removes the specified extension.
-  // Returns true if the set contained the specified extnesion.
+  // Returns true if the set contained the specified extension.
   bool Remove(const std::string& id);
 
   // Removes all extensions.

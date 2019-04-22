@@ -115,7 +115,6 @@ TEST(LayerImplTest, VerifyPendingLayerChangesAreTrackedProperly) {
   EXPECT_FALSE(child->LayerPropertyChanged());
   EXPECT_FALSE(grand_child->LayerPropertyChanged());
 
-  gfx::PointF arbitrary_point_f = gfx::PointF(0.125f, 0.25f);
   float arbitrary_number = 0.352f;
   gfx::Size arbitrary_size = gfx::Size(111, 222);
   gfx::Point arbitrary_point = gfx::Point(333, 444);
@@ -159,8 +158,6 @@ TEST(LayerImplTest, VerifyPendingLayerChangesAreTrackedProperly) {
   // After setting all these properties already, setting to the exact same
   // values again should not cause any change.
   EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->SetMasksToBounds(true));
-  EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(
-      root->SetPosition(arbitrary_point_f));
   EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->SetContentsOpaque(true));
   EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->SetDrawsContent(true));
   EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->SetBounds(root->bounds()));
@@ -266,7 +263,6 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   host_impl.active_tree()->BuildLayerListAndPropertyTreesForTesting();
   DCHECK(host_impl.CanDraw());
 
-  gfx::PointF arbitrary_point_f = gfx::PointF(0.125f, 0.25f);
   float arbitrary_number = 0.352f;
   gfx::Size arbitrary_size = gfx::Size(111, 222);
   gfx::Vector2d arbitrary_vector2d = gfx::Vector2d(111, 222);
@@ -325,8 +321,6 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
                                       layer->NoteLayerPropertyChanged());
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetContentsOpaque(true);
                                       layer->NoteLayerPropertyChanged());
-  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer2->SetPosition(arbitrary_point_f);
-                                      layer->NoteLayerPropertyChanged());
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
       layer->SetBackgroundColor(arbitrary_color));
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
@@ -346,8 +340,6 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
                                                 arbitrary_filters));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetMasksToBounds(true));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetContentsOpaque(true));
-  VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(
-      layer2->SetPosition(arbitrary_point_f));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetDrawsContent(true));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(
       layer->SetBackgroundColor(arbitrary_color));

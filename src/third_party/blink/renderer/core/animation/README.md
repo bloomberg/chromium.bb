@@ -61,20 +61,20 @@ The Blink animation engine interacts with Blink/Chrome in the following ways:
 
     A subset of style properties (currently transform, opacity, filter, and
     backdrop-filter) can be mutated on the compositor thread. Animations that
-    mutates only these properties are a candidate for being accelerated and run
-    on compositor thread which ensures they are isolated from Blink's main
+    mutate only these properties are candidates for being accelerated and run
+    on the compositor thread which ensures they are isolated from Blink's main
     thread work.
 
     Whether or not an animation can be accelerated is determined by
     [CheckCanStartAnimationOnCompositor()][] which looks at several aspects
     such as the composite mode, other animations affecting same property, and
-    whether the target element can be promoted and mutated in compositor.  
+    whether the target element can be promoted and mutated in compositor.
     Reasons for not compositing animations are captured in [FailureCodes][].
 
     #### Lifetime of a compositor animation
 
     Animations that can be accelerated get added to the [PendingAnimations][]
-    list. The pending list is updates as part of document lifecycle and ensures
+    list. The pending list is updated as part of document lifecycle and ensures
     each pending animation gets a corresponding [cc::AnimationPlayer][]
     representing the animation on the compositor. The player is initialized with
     appropriate timing values and corresponding effects.
@@ -89,22 +89,30 @@ The Blink animation engine interacts with Blink/Chrome in the following ways:
     animation updates the visuals the main thread animation updates the computed
     style. There is a special case logic to ensure updates from such accelerated
     animations do not cause spurious commits from main to compositor (See
-    [CompositedLayerMapping::UpdateGraphicsLayerGeometry()][])
+    [CompositedLayerMapping::UpdateGraphicsLayerGeometry()][], or
+    [FragmentPaintPropertyTreeBuilder::UpdateTransform()][],
+    [FragmentPaintPropertyTreeBuilder::UpdateEffect()][], and
+    [FragmentPaintPropertyTreeBuilder::UpdateFilter()][] for
+    [BlinkGenPropertyTrees mode][])
 
-    A compositor animation provide updates on its playback state changes (e.g.,
+    A compositor animation provides updates on its playback state changes (e.g.,
     on start, finish, abort) to its blink counterpart via
     [CompositorAnimationDelegate][] interface. Blink animation uses the start
     event callback to obtain an accurate start time for the animation which is
     important to ensure its output accurately reflects the compositor animation
     output.
 
-[CheckCanStartAnimationOnCompositor()]: https://cs.chromium.org/search/?q=file:Animation.h+function:CheckCanStartAnimationOnCompositor
+[CheckCanStartAnimationOnCompositor()]: https://cs.chromium.org/search/?q=file:animation.h+function:CheckCanStartAnimationOnCompositor
 [FailureCodes]: https://cs.chromium.org/search/?q=return%5Cs%2B(CompositorAnimations::)?FailureCode
 [cc::AnimationPlayer]: https://cs.chromium.org/search/?q=file:src/cc/animation/animation_player.h+class:AnimationPlayer
-[PendingAnimations]: https://cs.chromium.org/search/?q=file:PendingAnimations.h+class:PendingAnimations
-[Animation::PreCommit()]: https://cs.chromium.org/search/?q=file:Animation.h+function:PreCommit
-[CompositorAnimationDelegate]: https://cs.chromium.org/search/?q=file:CompositorAnimationDelegate.h
-[CompositedLayerMapping::UpdateGraphicsLayerGeometry()]: https://cs.chromium.org/search/?q=file:CompositedLayerMapping.h+function:UpdateGraphicsLayerGeometry
+[PendingAnimations]: https://cs.chromium.org/search/?q=file:pending_animations.h+class:PendingAnimations
+[Animation::PreCommit()]: https://cs.chromium.org/search/?q=file:animation.h+function:PreCommit
+[CompositorAnimationDelegate]: https://cs.chromium.org/search/?q=file:compositor_animation_delegate.h
+[CompositedLayerMapping::UpdateGraphicsLayerGeometry()]: https://cs.chromium.org/search/?q=file:composited_layer_mapping.h+function:UpdateGraphicsLayerGeometry
+[FragmentPaintPropertyTreeBuilder::UpdateTransform()]: https://cs.chromium.org/search/?q=class:FragmentPaintPropertyTreeBuilder+function:UpdateTransform
+[FragmentPaintPropertyTreeBuilder::UpdateEffect()]: https://cs.chromium.org/search/?q=class:FragmentPaintPropertyTreeBuilder+function:UpdateEffect
+[FragmentPaintPropertyTreeBuilder::UpdateFilter()]: https://cs.chromium.org/search/?q=class:FragmentPaintPropertyTreeBuilder+function:UpdateFilter
+[BlinkGenPropertyTrees mode]: https://chromium.googlesource.com/chromium/src/+/HEAD/third_party/blink/renderer/core/paint/README.md
 
 *   ### Javascript
 
@@ -238,8 +246,8 @@ other specs (for example Javascript callback based effects).
 *   __[KeyframeEffect][]__ represents the effect an animation has (without any
     details of when it started or whether it's playing) and is comprised of
     three things:
-    *   Some __[Timing][]__ information (inherited from [AnimationEffect][]).  
-        [Example](http://jsbin.com/nuyohulojo/edit?js,output):  
+    *   Some __[Timing][]__ information (inherited from [AnimationEffect][]).
+        [Example](http://jsbin.com/nuyohulojo/edit?js,output):
         ```javascript
         {
           duration: 4000,
@@ -256,8 +264,8 @@ other specs (for example Javascript callback based effects).
 
     *   A __[KeyframeEffectModel][]__ that holds a sequence of keyframes to
         specify the properties being animated and what values they pass
-        through.  
-        [Example](http://jsbin.com/wiyefaxiru/1/edit?js,output):  
+        through.
+        [Example](http://jsbin.com/wiyefaxiru/1/edit?js,output):
         ```javascript
         [
           {backgroundColor: 'red', transform: 'rotate(0deg)'},
@@ -275,7 +283,7 @@ other specs (for example Javascript callback based effects).
         *   An __[InterpolationEffect][]__ which holds a set of
             [Interpolation][]s, each one representing the animated values
             between adjacent pairs of [PropertySpecificKeyframe][]s, and where
-            in the percentage progress they are active.  
+            in the percentage progress they are active.
             In the example keyframes above the [Interpolations][] generated
             would include, among the 5 different property specific keyframe
             pairs, one for `backgroundColor: 'red'` to
@@ -358,9 +366,9 @@ manually construct an instance of your object to [extending RenderingTest][]
 where you can load HTML, [enable compositing][] if necessary, and run assertions
 about the state.
 
-[extending Test]: https://cs.chromium.org/search/?q=public%5C+testing::Test+file:core%5C/Animation&sq=package:chromium&type=cs
+[extending Test]: https://cs.chromium.org/search/?q=public%5C+testing::Test+file:core%5C/animation&sq=package:chromium&type=cs
 [extending RenderingTest]: https://cs.chromium.org/search/?q=public%5C+RenderingTest+file:core%5C/animation&type=cs
-[enable compositing]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/animation/compositor_animations_test.cc?type=cs&sq=package:chromium&q=file:core%5C/animation%5C/.*Test%5C.cpp+EnableCompositing
+[enable compositing]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/animation/compositor_animations_test.cc?type=cs&sq=package:chromium&q=file:core%5C/animation%5C/.*test%5C.cpp+EnableCompositing
 
 ## Ongoing work
 
@@ -384,4 +392,4 @@ web animation but it allows the animation itself to be highly customized in
 Javascript by providing an `animate` callback. These animations run inside an
 isolated worklet global scope.
 
-[WorkletAnimation]: https://cs.chromium.org/search/?q=file:animationworklet/WorkletAnimation.h+class:WorkletAnimation
+[WorkletAnimation]: https://cs.chromium.org/search/?q=file:animationworklet/worklet_animation.h+class:WorkletAnimation

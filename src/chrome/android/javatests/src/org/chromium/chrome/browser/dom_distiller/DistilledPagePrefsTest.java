@@ -16,7 +16,6 @@ import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
@@ -26,6 +25,7 @@ import org.chromium.components.dom_distiller.core.DistilledPagePrefs;
 import org.chromium.components.dom_distiller.core.DomDistillerService;
 import org.chromium.components.dom_distiller.core.FontFamily;
 import org.chromium.components.dom_distiller.core.Theme;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.UiUtils;
 
 /**
@@ -47,13 +47,10 @@ public class DistilledPagePrefsTest {
     }
 
     private void getDistilledPagePrefs() {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                DomDistillerService domDistillerService = DomDistillerServiceFactory
-                        .getForProfile(Profile.getLastUsedProfile());
-                mDistilledPagePrefs = domDistillerService.getDistilledPagePrefs();
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            DomDistillerService domDistillerService =
+                    DomDistillerServiceFactory.getForProfile(Profile.getLastUsedProfile());
+            mDistilledPagePrefs = domDistillerService.getDistilledPagePrefs();
         });
     }
 
@@ -254,27 +251,27 @@ public class DistilledPagePrefsTest {
     }
 
     private static class TestingObserver implements DistilledPagePrefs.Observer {
-        private FontFamily mFontFamily;
-        private Theme mTheme;
+        private @FontFamily int mFontFamily;
+        private @Theme int mTheme;
         private float mFontScaling;
 
         public TestingObserver() {}
 
-        public FontFamily getFontFamily() {
+        public @FontFamily int getFontFamily() {
             return mFontFamily;
         }
 
         @Override
-        public void onChangeFontFamily(FontFamily font) {
+        public void onChangeFontFamily(@FontFamily int font) {
             mFontFamily = font;
         }
 
-        public Theme getTheme() {
+        public @Theme int getTheme() {
             return mTheme;
         }
 
         @Override
-        public void onChangeTheme(Theme theme) {
+        public void onChangeTheme(@Theme int theme) {
             mTheme = theme;
         }
 
@@ -288,30 +285,15 @@ public class DistilledPagePrefsTest {
         }
     }
 
-    private void setFontFamily(final FontFamily font) {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mDistilledPagePrefs.setFontFamily(font);
-            }
-        });
+    private void setFontFamily(final @FontFamily int font) {
+        TestThreadUtils.runOnUiThreadBlocking(() -> mDistilledPagePrefs.setFontFamily(font));
     }
 
-    private void setTheme(final Theme theme) {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mDistilledPagePrefs.setTheme(theme);
-            }
-        });
+    private void setTheme(final @Theme int theme) {
+        TestThreadUtils.runOnUiThreadBlocking(() -> mDistilledPagePrefs.setTheme(theme));
     }
 
     private void setFontScaling(final float scaling) {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mDistilledPagePrefs.setFontScaling(scaling);
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(() -> mDistilledPagePrefs.setFontScaling(scaling));
     }
 }

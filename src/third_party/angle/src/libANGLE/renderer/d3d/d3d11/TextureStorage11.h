@@ -92,6 +92,7 @@ class TextureStorage11 : public TextureStorage
                           GLenum type,
                           const gl::PixelUnpackState &unpack,
                           const uint8_t *pixelData) override;
+    void invalidateTextures() override;
 
     virtual angle::Result getSRVForSampler(const gl::Context *context,
                                            const gl::TextureState &textureState,
@@ -103,7 +104,9 @@ class TextureStorage11 : public TextureStorage
     angle::Result getUAVForImage(const gl::Context *context,
                                  const gl::ImageUnit &imageUnit,
                                  const d3d11::SharedUAV **outUAV);
-    virtual UINT getSubresourceIndex(const gl::ImageIndex &index) const;
+    virtual angle::Result getSubresourceIndex(const gl::Context *context,
+                                              const gl::ImageIndex &index,
+                                              UINT *outSubresourceIndex) const;
     virtual angle::Result getResource(const gl::Context *context,
                                       const TextureHelper11 **outResource)              = 0;
     virtual void associateImage(Image11 *image, const gl::ImageIndex &index)            = 0;
@@ -419,6 +422,9 @@ class TextureStorage11_EGLImage final : public TextureStorage11ImmutableBase
                               RenderTarget11 *renderTarget11);
     ~TextureStorage11_EGLImage() override;
 
+    angle::Result getSubresourceIndex(const gl::Context *context,
+                                      const gl::ImageIndex &index,
+                                      UINT *outSubresourceIndex) const override;
     angle::Result getResource(const gl::Context *context,
                               const TextureHelper11 **outResource) override;
     angle::Result getSRVForSampler(const gl::Context *context,
@@ -478,7 +484,9 @@ class TextureStorage11_Cube : public TextureStorage11
 
     angle::Result onDestroy(const gl::Context *context) override;
 
-    UINT getSubresourceIndex(const gl::ImageIndex &index) const override;
+    angle::Result getSubresourceIndex(const gl::Context *context,
+                                      const gl::ImageIndex &index,
+                                      UINT *outSubresourceIndex) const override;
 
     angle::Result getResource(const gl::Context *context,
                               const TextureHelper11 **outResource) override;

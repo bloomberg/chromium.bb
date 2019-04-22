@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "ash/public/cpp/app_list/app_list_config.h"
+#include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
@@ -19,7 +20,7 @@
 ChromeAppListModelUpdater::ChromeAppListModelUpdater(Profile* profile)
     : profile_(profile), weak_ptr_factory_(this) {}
 
-ChromeAppListModelUpdater::~ChromeAppListModelUpdater() {}
+ChromeAppListModelUpdater::~ChromeAppListModelUpdater() = default;
 
 void ChromeAppListModelUpdater::SetActive(bool active) {
   const bool was_active = !!app_list_controller_;
@@ -36,7 +37,9 @@ void ChromeAppListModelUpdater::SetActive(bool active) {
   std::vector<ash::mojom::AppListItemMetadataPtr> items_to_sync;
   for (auto const& item : items_)
     items_to_sync.push_back(item.second->CloneMetadata());
-  app_list_controller_->SetModelData(std::move(items_to_sync),
+
+  DCHECK(profile_);
+  app_list_controller_->SetModelData(model_id(), std::move(items_to_sync),
                                      search_engine_is_google_);
 }
 
@@ -67,15 +70,13 @@ void ChromeAppListModelUpdater::AddItemToFolder(
 void ChromeAppListModelUpdater::RemoveItem(const std::string& id) {
   if (app_list_controller_)
     app_list_controller_->RemoveItem(id);
-  else
-    RemoveChromeItem(id);
+  RemoveChromeItem(id);
 }
 
 void ChromeAppListModelUpdater::RemoveUninstalledItem(const std::string& id) {
   if (app_list_controller_)
     app_list_controller_->RemoveUninstalledItem(id);
-  else
-    RemoveChromeItem(id);
+  RemoveChromeItem(id);
 }
 
 void ChromeAppListModelUpdater::MoveItemToFolder(const std::string& id,
@@ -225,6 +226,18 @@ void ChromeAppListModelUpdater::SetItemPosition(
     return;
   ash::mojom::AppListItemMetadataPtr data = item->CloneMetadata();
   data->position = new_position;
+  app_list_controller_->SetItemMetadata(id, std::move(data));
+}
+
+void ChromeAppListModelUpdater::SetItemIsPersistent(const std::string& id,
+                                                    bool is_persistent) {
+  if (!app_list_controller_)
+    return;
+  ChromeAppListItem* item = FindItem(id);
+  if (!item)
+    return;
+  ash::mojom::AppListItemMetadataPtr data = item->CloneMetadata();
+  data->is_persistent = is_persistent;
   app_list_controller_->SetItemMetadata(id, std::move(data));
 }
 
@@ -482,9 +495,14 @@ void ChromeAppListModelUpdater::UpdateAppItemFromSyncItem(
   }
 }
 
-void ChromeAppListModelUpdater::SetDelegate(
-    AppListModelUpdaterDelegate* delegate) {
-  delegate_ = delegate;
+void ChromeAppListModelUpdater::AddObserver(
+    AppListModelUpdaterObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void ChromeAppListModelUpdater::RemoveObserver(
+    AppListModelUpdaterObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -504,18 +522,22 @@ void ChromeAppListModelUpdater::OnFolderCreated(
   chrome_item = AddChromeItem(std::move(new_item));
   chrome_item->SetMetadata(std::move(item));
 
-  if (delegate_)
-    delegate_->OnAppListItemAdded(chrome_item);
+  for (AppListModelUpdaterObserver& observer : observers_)
+    observer.OnAppListItemAdded(chrome_item);
 }
 
 void ChromeAppListModelUpdater::OnFolderDeleted(
     ash::mojom::AppListItemMetadataPtr item) {
   DCHECK(item->is_folder);
+
+  ChromeAppListItem* chrome_item = FindItem(item->id);
+  if (!chrome_item)
+    return;
+
+  for (AppListModelUpdaterObserver& observer : observers_)
+    observer.OnAppListItemWillBeDeleted(chrome_item);
+
   items_.erase(item->id);
-  // We don't need to notify |delegate_| here. Currently |delegate_| sends this
-  // event to AppListSyncableService only, and AppListSyncableService doesn't
-  // do anything when a folder is deleted. For more details, refer to
-  // AppListSyncableService::ModelUpdaterDelegate::OnAppListItemWillBeDeleted.
 }
 
 void ChromeAppListModelUpdater::OnItemUpdated(
@@ -532,8 +554,8 @@ void ChromeAppListModelUpdater::OnItemUpdated(
   item->icon = chrome_item->icon();
 
   chrome_item->SetMetadata(std::move(item));
-  if (delegate_)
-    delegate_->OnAppListItemUpdated(chrome_item);
+  for (AppListModelUpdaterObserver& observer : observers_)
+    observer.OnAppListItemUpdated(chrome_item);
 }
 
 void ChromeAppListModelUpdater::OnPageBreakItemAdded(
@@ -551,8 +573,8 @@ void ChromeAppListModelUpdater::OnPageBreakItemAdded(
   new_item->SetIsPageBreak(true);
   chrome_item = AddChromeItem(std::move(new_item));
 
-  if (delegate_)
-    delegate_->OnAppListItemAdded(chrome_item);
+  for (AppListModelUpdaterObserver& observer : observers_)
+    observer.OnAppListItemAdded(chrome_item);
 }
 
 void ChromeAppListModelUpdater::OnPageBreakItemDeleted(const std::string& id) {
@@ -564,7 +586,7 @@ void ChromeAppListModelUpdater::OnPageBreakItemDeleted(const std::string& id) {
   }
 
   DCHECK(chrome_item->is_page_break());
-  if (delegate_)
-    delegate_->OnAppListItemWillBeDeleted(chrome_item);
+  for (AppListModelUpdaterObserver& observer : observers_)
+    observer.OnAppListItemWillBeDeleted(chrome_item);
   items_.erase(id);
 }

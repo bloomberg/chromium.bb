@@ -18,6 +18,6 @@ var metrics = metrics || metricsBase;
  * @override
  * @private
  */
-metrics.convertName_ = function(name) {
+metrics.convertName_ = name => {
   return 'FileBrowser.' + name;
 };

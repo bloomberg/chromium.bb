@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_UI_KIOSK_APP_MENU_UPDATER_H_
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
@@ -33,8 +34,13 @@ class KioskAppMenuUpdater
   void OnArcKioskAppsChanged() override;
 
  private:
+  // Mojo SendKioskApps() callback.
+  void OnKioskAppsSet(bool success);
+
   ScopedObserver<KioskAppManager, KioskAppMenuUpdater> kiosk_observer_;
   ScopedObserver<ArcKioskAppManager, KioskAppMenuUpdater> arc_kiosk_observer_;
+
+  base::WeakPtrFactory<KioskAppMenuUpdater> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(KioskAppMenuUpdater);
 };

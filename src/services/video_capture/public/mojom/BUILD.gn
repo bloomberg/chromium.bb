@@ -9,10 +9,13 @@ mojom("mojom") {
     "device.mojom",
     "device_factory.mojom",
     "device_factory_provider.mojom",
+    "devices_changed_observer.mojom",
     "producer.mojom",
     "receiver.mojom",
     "scoped_access_permission.mojom",
     "testing_controls.mojom",
+    "video_source.mojom",
+    "video_source_provider.mojom",
     "virtual_device.mojom",
   ]
 

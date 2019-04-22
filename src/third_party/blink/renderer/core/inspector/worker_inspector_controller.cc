@@ -53,41 +53,41 @@ namespace blink {
 // static
 WorkerInspectorController* WorkerInspectorController::Create(
     WorkerThread* thread,
+    const KURL& url,
     scoped_refptr<InspectorTaskRunner> inspector_task_runner,
     std::unique_ptr<WorkerDevToolsParams> devtools_params) {
   WorkerThreadDebugger* debugger =
       WorkerThreadDebugger::From(thread->GetIsolate());
   return debugger ? MakeGarbageCollected<WorkerInspectorController>(
-                        thread, debugger, std::move(inspector_task_runner),
+                        thread, url, debugger, std::move(inspector_task_runner),
                         std::move(devtools_params))
                   : nullptr;
 }
 
 WorkerInspectorController::WorkerInspectorController(
     WorkerThread* thread,
+    const KURL& url,
     WorkerThreadDebugger* debugger,
     scoped_refptr<InspectorTaskRunner> inspector_task_runner,
     std::unique_ptr<WorkerDevToolsParams> devtools_params)
     : debugger_(debugger),
       thread_(thread),
       inspected_frames_(nullptr),
-      probe_sink_(new CoreProbeSink()) {
-  probe_sink_->addInspectorTraceEvents(
+      probe_sink_(MakeGarbageCollected<CoreProbeSink>()) {
+  probe_sink_->AddInspectorTraceEvents(
       MakeGarbageCollected<InspectorTraceEvents>());
-  if (auto* scope = DynamicTo<WorkerGlobalScope>(thread->GlobalScope())) {
-    worker_devtools_token_ = devtools_params->devtools_worker_token;
-    parent_devtools_token_ = scope->GetParentDevToolsToken();
-    url_ = scope->Url();
-    worker_thread_id_ = thread->GetPlatformThreadId();
-  }
+  worker_devtools_token_ = devtools_params->devtools_worker_token;
+  parent_devtools_token_ = thread->GlobalScope()->GetParentDevToolsToken();
+  url_ = url;
+  worker_thread_id_ = thread->GetPlatformThreadId();
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
       Platform::Current()->GetIOTaskRunner();
   if (!parent_devtools_token_.is_empty() && io_task_runner) {
     // There may be no io task runner in unit tests.
     wait_for_debugger_ = devtools_params->wait_for_debugger;
-    agent_ = new DevToolsAgent(this, inspected_frames_.Get(), probe_sink_.Get(),
-                               std::move(inspector_task_runner),
-                               std::move(io_task_runner));
+    agent_ = MakeGarbageCollected<DevToolsAgent>(
+        this, inspected_frames_.Get(), probe_sink_.Get(),
+        std::move(inspector_task_runner), std::move(io_task_runner));
     agent_->BindRequest(std::move(devtools_params->agent_host_ptr_info),
                         std::move(devtools_params->agent_request),
                         thread->GetTaskRunner(TaskType::kInternalInspector));
@@ -110,7 +110,6 @@ void WorkerInspectorController::AttachSession(DevToolsSession* session,
   session->Append(MakeGarbageCollected<InspectorLogAgent>(
       thread_->GetConsoleMessageStorage(), nullptr, session->V8Session()));
   if (auto* scope = DynamicTo<WorkerGlobalScope>(thread_->GlobalScope())) {
-    DCHECK(scope->EnsureFetcher());
     session->Append(MakeGarbageCollected<InspectorNetworkAgent>(
         inspected_frames_.Get(), scope, session->V8Session()));
     session->Append(MakeGarbageCollected<InspectorEmulationAgent>(nullptr));

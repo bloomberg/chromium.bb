@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/containers/flat_set.h"
+#include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -92,13 +93,6 @@ class TestFileHelper : public FileHelper {
 
   DISALLOW_COPY_AND_ASSIGN(TestFileHelper);
 };
-
-void CreatePipe(base::ScopedFD* read_pipe, base::ScopedFD* write_pipe) {
-  int raw_pipe[2];
-  PCHECK(0 == pipe(raw_pipe));
-  read_pipe->reset(raw_pipe[0]);
-  write_pipe->reset(raw_pipe[1]);
-}
 
 bool ReadString(base::ScopedFD fd, std::string* out) {
   std::array<char, 128> buffer;
@@ -184,7 +178,7 @@ TEST_F(DataOfferTest, SetPickleDropData) {
   pickle.WriteInt64(1000);   // file size
   pickle.WriteString("id");  // filesystem id
   data.SetPickledData(
-      ui::Clipboard::GetFormatType("chromium/x-file-system-files"), pickle);
+      ui::ClipboardFormatType::GetType("chromium/x-file-system-files"), pickle);
   data_offer.SetDropData(&file_helper, data);
 
   EXPECT_EQ(1u, delegate.mime_types().size());
@@ -202,7 +196,7 @@ TEST_F(DataOfferTest, ReceiveString) {
 
   base::ScopedFD read_pipe;
   base::ScopedFD write_pipe;
-  CreatePipe(&read_pipe, &write_pipe);
+  ASSERT_TRUE(base::CreatePipe(&read_pipe, &write_pipe));
 
   data_offer.Receive("text/plain", std::move(write_pipe));
   base::string16 result;
@@ -221,7 +215,7 @@ TEST_F(DataOfferTest, ReceiveUriList) {
 
   base::ScopedFD read_pipe;
   base::ScopedFD write_pipe;
-  CreatePipe(&read_pipe, &write_pipe);
+  ASSERT_TRUE(base::CreatePipe(&read_pipe, &write_pipe));
 
   data_offer.Receive("text/uri-list", std::move(write_pipe));
   base::string16 result;
@@ -242,7 +236,7 @@ TEST_F(DataOfferTest, ReceiveUriListFromPickle_ReceiveAfterUrlIsResolved) {
   pickle.WriteInt64(1000);   // file size
   pickle.WriteString("id");  // filesystem id
   data.SetPickledData(
-      ui::Clipboard::GetFormatType("chromium/x-file-system-files"), pickle);
+      ui::ClipboardFormatType::GetType("chromium/x-file-system-files"), pickle);
   data_offer.SetDropData(&file_helper, data);
 
   // Run callback with a resolved URL.
@@ -253,7 +247,7 @@ TEST_F(DataOfferTest, ReceiveUriListFromPickle_ReceiveAfterUrlIsResolved) {
 
   base::ScopedFD read_pipe;
   base::ScopedFD write_pipe;
-  CreatePipe(&read_pipe, &write_pipe);
+  ASSERT_TRUE(base::CreatePipe(&read_pipe, &write_pipe));
 
   // Receive is called after UrlsCallback runs.
   data_offer.Receive("text/uri-list", std::move(write_pipe));
@@ -278,15 +272,15 @@ TEST_F(DataOfferTest, ReceiveUriListFromPickle_ReceiveBeforeUrlIsResolved) {
   pickle.WriteInt64(1000);   // file size
   pickle.WriteString("id");  // filesystem id
   data.SetPickledData(
-      ui::Clipboard::GetFormatType("chromium/x-file-system-files"), pickle);
+      ui::ClipboardFormatType::GetType("chromium/x-file-system-files"), pickle);
   data_offer.SetDropData(&file_helper, data);
 
   base::ScopedFD read_pipe1;
   base::ScopedFD write_pipe1;
-  CreatePipe(&read_pipe1, &write_pipe1);
+  ASSERT_TRUE(base::CreatePipe(&read_pipe1, &write_pipe1));
   base::ScopedFD read_pipe2;
   base::ScopedFD write_pipe2;
-  CreatePipe(&read_pipe2, &write_pipe2);
+  ASSERT_TRUE(base::CreatePipe(&read_pipe2, &write_pipe2));
 
   // Receive is called (twice) before UrlsFromPickleCallback runs.
   data_offer.Receive("text/uri-list", std::move(write_pipe1));
@@ -326,12 +320,12 @@ TEST_F(DataOfferTest,
   pickle.WriteInt64(1000);   // file size
   pickle.WriteString("id");  // filesystem id
   data.SetPickledData(
-      ui::Clipboard::GetFormatType("chromium/x-file-system-files"), pickle);
+      ui::ClipboardFormatType::GetType("chromium/x-file-system-files"), pickle);
   data_offer.SetDropData(&file_helper, data);
 
   base::ScopedFD read_pipe;
   base::ScopedFD write_pipe;
-  CreatePipe(&read_pipe, &write_pipe);
+  ASSERT_TRUE(base::CreatePipe(&read_pipe, &write_pipe));
 
   // Receive is called before UrlsCallback runs.
   data_offer.Receive("text/uri-list", std::move(write_pipe));
@@ -364,12 +358,18 @@ TEST_F(DataOfferTest, SetClipboardData) {
 
   base::ScopedFD read_pipe;
   base::ScopedFD write_pipe;
-  CreatePipe(&read_pipe, &write_pipe);
+  ASSERT_TRUE(base::CreatePipe(&read_pipe, &write_pipe));
 
   data_offer.Receive("text/plain;charset=utf-8", std::move(write_pipe));
   std::string result;
   ASSERT_TRUE(ReadString(std::move(read_pipe), &result));
   EXPECT_EQ(std::string("Test data"), result);
+}
+
+TEST_F(DataOfferTest, AcceptWithNull) {
+  TestDataOfferDelegate delegate;
+  DataOffer data_offer(&delegate);
+  data_offer.Accept(nullptr);
 }
 
 }  // namespace

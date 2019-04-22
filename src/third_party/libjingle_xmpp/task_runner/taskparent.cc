@@ -12,16 +12,16 @@
 
 #include "third_party/libjingle_xmpp/task_runner/taskparent.h"
 
+#include "base/logging.h"
 #include "third_party/libjingle_xmpp/task_runner/taskrunner.h"
 #include "third_party/libjingle_xmpp/task_runner/task.h"
-#include "third_party/webrtc/rtc_base/checks.h"
 
-namespace rtc {
+namespace jingle_xmpp {
 
 TaskParent::TaskParent(Task* derived_instance, TaskParent *parent)
     : parent_(parent) {
-  RTC_DCHECK(derived_instance != NULL);
-  RTC_DCHECK(parent != NULL);
+  DCHECK(derived_instance != NULL);
+  DCHECK(parent != NULL);
   runner_ = parent->GetRunner();
   parent_->AddChild(derived_instance);
   Initialize();
@@ -30,7 +30,7 @@ TaskParent::TaskParent(Task* derived_instance, TaskParent *parent)
 TaskParent::TaskParent(TaskRunner *derived_instance)
     : parent_(NULL),
       runner_(derived_instance) {
-  RTC_DCHECK(derived_instance != NULL);
+  DCHECK(derived_instance != NULL);
   Initialize();
 }
 
@@ -46,9 +46,9 @@ void TaskParent::AddChild(Task *child) {
   children_->insert(child);
 }
 
-#if RTC_DCHECK_IS_ON
+#if DCHECK_IS_ON
 bool TaskParent::IsChildTask(Task *task) {
-  RTC_DCHECK(task != NULL);
+  DCHECK(task != NULL);
   return task->parent_ == this && children_->find(task) != children_->end();
 }
 #endif
@@ -69,7 +69,7 @@ bool TaskParent::AnyChildError() {
 
 void TaskParent::AbortAllChildren() {
   if (children_->size() > 0) {
-#if RTC_DCHECK_IS_ON
+#if DCHECK_IS_ON
     runner_->IncrementAbortCount();
 #endif
 
@@ -78,7 +78,7 @@ void TaskParent::AbortAllChildren() {
       (*it)->Abort(true);  // Note we do not wake
     }
 
-#if RTC_DCHECK_IS_ON
+#if DCHECK_IS_ON
     runner_->DecrementAbortCount();
 #endif
   }
@@ -95,4 +95,4 @@ void TaskParent::OnChildStopped(Task *child) {
   children_->erase(child);
 }
 
-} // namespace rtc
+} // namespace jingle_xmpp

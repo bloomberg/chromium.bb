@@ -79,7 +79,7 @@ var tests = [
         Polymer.Base.create('viewer-page-selector', {docLength: 1234});
     document.body.appendChild(selector);
     chrome.test.assertEq('1234', selector.$.pagelength.textContent);
-    chrome.test.assertEq('4ch', selector.pageSelector.style.width);
+    chrome.test.assertEq('calc(4ch + 1px)', selector.pageSelector.style.width);
     chrome.test.succeed();
   },
 
@@ -97,12 +97,12 @@ var tests = [
     chrome.test.assertFalse(dropdown.dropdownOpen);
     chrome.test.assertEq('closedIcon', dropdown.dropdownIcon);
 
-    MockInteractions.tap(dropdown.$.icon);
+    MockInteractions.tap(dropdown.$.button);
 
     chrome.test.assertTrue(dropdown.dropdownOpen);
     chrome.test.assertEq('openIcon', dropdown.dropdownIcon);
 
-    MockInteractions.tap(dropdown.$.icon);
+    MockInteractions.tap(dropdown.$.button);
 
     chrome.test.assertFalse(dropdown.dropdownOpen);
 

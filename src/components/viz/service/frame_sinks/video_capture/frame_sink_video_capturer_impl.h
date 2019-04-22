@@ -74,7 +74,8 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
   // Mojo message pipe endpoint in |request|, but |request| may be empty for
   // unit testing.
   FrameSinkVideoCapturerImpl(FrameSinkVideoCapturerManager* frame_sink_manager,
-                             mojom::FrameSinkVideoCapturerRequest request);
+                             mojom::FrameSinkVideoCapturerRequest request,
+                             std::unique_ptr<media::VideoCaptureOracle> oracle);
 
   ~FrameSinkVideoCapturerImpl() final;
 
@@ -173,6 +174,8 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
   void InvalidateRect(const gfx::Rect& rect) final;
   void OnOverlayConnectionLost(VideoCaptureOverlay* overlay) final;
 
+  void InvalidateEntireSource();
+
   // Returns a list of the overlays in rendering order.
   std::vector<VideoCaptureOverlay*> GetOverlaysInOrder() const;
 
@@ -186,8 +189,9 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
 
   // Extracts the image data from the copy output |result|, populating the
   // |content_rect| region of a [possibly letterboxed] video |frame|.
-  void DidCopyFrame(int64_t frame_number,
+  void DidCopyFrame(int64_t capture_frame_number,
                     OracleFrameNumber oracle_frame_number,
+                    int64_t content_version,
                     const gfx::Rect& content_rect,
                     VideoCaptureOverlay::OnceRenderer overlay_renderer,
                     scoped_refptr<media::VideoFrame> frame,
@@ -196,10 +200,10 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
   // Places the frame in the |delivery_queue_| and calls MaybeDeliverFrame(),
   // one frame at a time, in-order. |frame| may be null to indicate a
   // completed, but unsuccessful capture.
-  void DidCaptureFrame(int64_t frame_number,
-                       OracleFrameNumber oracle_frame_number,
-                       const gfx::Rect& content_rect,
-                       scoped_refptr<media::VideoFrame> frame);
+  void OnFrameReadyForDelivery(int64_t capture_frame_number,
+                               OracleFrameNumber oracle_frame_number,
+                               const gfx::Rect& content_rect,
+                               scoped_refptr<media::VideoFrame> frame);
 
   // Delivers a |frame| to the consumer, if the VideoCaptureOracle allows
   // it. |frame| can be null to indicate a completed, but unsuccessful capture.
@@ -212,6 +216,10 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
   // For ARGB format, ensures that every dimension of |size| is positive. For
   // I420 format, ensures that every dimension is even and at least 2.
   gfx::Size AdjustSizeForPixelFormat(const gfx::Size& size);
+
+  // Expands |rect| such that its x, y, right, and bottom values are even
+  // numbers.
+  static gfx::Rect ExpandRectToI420SubsampleBoundaries(const gfx::Rect& rect);
 
   // Owner/Manager of this instance.
   FrameSinkVideoCapturerManager* const frame_sink_manager_;
@@ -235,7 +243,7 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
 
   // Models current content change/draw behavior and proposes when to capture
   // frames, and at what size and frame rate.
-  media::VideoCaptureOracle oracle_;
+  const std::unique_ptr<media::VideoCaptureOracle> oracle_;
 
   // The target requested by the client, as provided in the last call to
   // ChangeTarget().
@@ -252,6 +260,10 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
   // The portion of the source content that has changed, but has not yet been
   // captured.
   gfx::Rect dirty_rect_;
+
+  // Allows determining whether or not the frame size has changed since the last
+  // captured frame.
+  gfx::Rect last_frame_visible_rect_;
 
   // These are sequence counters used to ensure that the frames are being
   // delivered in the same order they are captured.
@@ -272,14 +284,20 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
   // frames in-flight at any one time.
   InterprocessFramePool frame_pool_;
 
+  // Increased every time the source content changes or a forced refresh is
+  // requested.
+  int64_t content_version_ = 0;
+
+  int64_t content_version_in_marked_frame_ = -1;
+
   // A queue of captured frames pending delivery. This queue is used to re-order
   // frames, if they should happen to be captured out-of-order.
   struct CapturedFrame {
-    int64_t frame_number;
+    int64_t capture_frame_number;
     OracleFrameNumber oracle_frame_number;
     gfx::Rect content_rect;
     scoped_refptr<media::VideoFrame> frame;
-    CapturedFrame(int64_t frame_number,
+    CapturedFrame(int64_t capture_frame_number,
                   OracleFrameNumber oracle_frame_number,
                   const gfx::Rect& content_rect,
                   scoped_refptr<media::VideoFrame> frame);

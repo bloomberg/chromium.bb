@@ -16,6 +16,7 @@ import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.feature_engagement.ScreenshotTabObserver;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.printing.PrintShareActivity;
+import org.chromium.chrome.browser.send_tab_to_self.SendTabToSelfShareActivity;
 import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.ChromeFileProvider;
@@ -72,6 +73,10 @@ public class ShareMenuActionHandler {
 
         if (PrintShareActivity.featureIsAvailable(currentTab)) {
             classesToEnable.add(PrintShareActivity.class);
+        }
+
+        if (SendTabToSelfShareActivity.featureIsAvailable(currentTab)) {
+           classesToEnable.add(SendTabToSelfShareActivity.class);
         }
 
         if (!classesToEnable.isEmpty()) {

@@ -282,7 +282,7 @@ bool ProtocolParserJSON::DoParse(const std::string& response_json,
     ParseError("Missing secure JSON prefix.");
     return false;
   }
-  const auto doc = base::JSONReader().Read(
+  const auto doc = base::JSONReader::Read(
       {response_json.begin() + std::char_traits<char>::length(kJSONPrefix),
        response_json.end()});
   if (!doc) {
@@ -299,12 +299,13 @@ bool ProtocolParserJSON::DoParse(const std::string& response_json,
     return false;
   }
   const auto* protocol = response_node->FindKey("protocol");
-  if (!protocol || !protocol->is_string() ||
-      protocol->GetString() != kProtocolVersion) {
-    ParseError(
-        "Missing/incorrect protocol."
-        "(expected '%s', found '%s')",
-        kProtocolVersion, protocol->GetString().c_str());
+  if (!protocol || !protocol->is_string()) {
+    ParseError("Missing/non-string protocol.");
+    return false;
+  }
+  if (protocol->GetString() != kProtocolVersion) {
+    ParseError("Incorrect protocol. (expected '%s', found '%s')",
+               kProtocolVersion, protocol->GetString().c_str());
     return false;
   }
 

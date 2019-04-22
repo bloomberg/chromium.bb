@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "build/build_config.h"
 #include "ui/events/event.h"
 #include "ui/gfx/render_text.h"
 #include "ui/views/metrics.h"
@@ -39,6 +40,7 @@ bool SelectionController::OnMousePressed(
     return true;
 
   if (event.IsOnlyLeftMouseButton()) {
+    first_drag_location_ = event.location();
     if (delegate_->SupportsDrag())
       delegate_->SetTextBeingDragged(false);
 
@@ -206,7 +208,10 @@ void SelectionController::SelectThroughLastDragLocation() {
 
   delegate_->OnBeforePointerAction();
 
-  render_text->MoveCursorToPoint(last_drag_location_, true);
+  // Note that |first_drag_location_| is only used when
+  // RenderText::kDragToEndIfOutsideVerticalBounds, which is platform-specific.
+  render_text->MoveCursorToPoint(last_drag_location_, true,
+                                 first_drag_location_);
 
   if (aggregated_clicks_ == 1) {
     render_text->SelectWord();

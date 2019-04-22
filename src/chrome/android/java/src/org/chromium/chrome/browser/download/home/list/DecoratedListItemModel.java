@@ -7,11 +7,11 @@ package org.chromium.chrome.browser.download.home.list;
 import android.support.annotation.Nullable;
 
 import org.chromium.chrome.browser.download.home.list.ListItem.ViewListItem;
-import org.chromium.chrome.browser.modelutil.ListObservable;
-import org.chromium.chrome.browser.modelutil.ListObservable.ListObserver;
-import org.chromium.chrome.browser.modelutil.ListObservableImpl;
-import org.chromium.chrome.browser.modelutil.PropertyModel;
-import org.chromium.chrome.browser.modelutil.SimpleList;
+import org.chromium.ui.modelutil.ListObservable;
+import org.chromium.ui.modelutil.ListObservable.ListObserver;
+import org.chromium.ui.modelutil.ListObservableImpl;
+import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.modelutil.SimpleList;
 
 import java.util.ArrayList;
 import java.util.List;

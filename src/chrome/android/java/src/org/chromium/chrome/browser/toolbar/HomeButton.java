@@ -19,26 +19,30 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ActivityTabProvider.ActivityTabTabObserver;
+import org.chromium.chrome.browser.ThemeColorProvider;
+import org.chromium.chrome.browser.ThemeColorProvider.TintObserver;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.toolbar.ThemeColorProvider.ThemeColorObserver;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.ui.widget.ChromeImageButton;
 
 /**
  * The home button.
  */
-public class HomeButton extends ChromeImageButton implements ThemeColorObserver,
-                                                             OnCreateContextMenuListener,
-                                                             MenuItem.OnMenuItemClickListener {
+public class HomeButton extends ChromeImageButton
+        implements TintObserver, OnCreateContextMenuListener, MenuItem.OnMenuItemClickListener,
+                   HomepageManager.HomepageStateListener {
     private static final int ID_REMOVE = 0;
 
     /** A provider that notifies components when the theme color changes.*/
     private ThemeColorProvider mThemeColorProvider;
 
-    /** The {@link sActivityTabTabObserver} used to know when the active page changed. */
+    /** The {@link ActivityTabTabObserver} used to know when the active page changed. */
     private ActivityTabTabObserver mActivityTabTabObserver;
+
+    /** The {@link ActivityTabProvider} used to know if the active tab is on the NTP. */
+    private ActivityTabProvider mActivityTabProvider;
 
     public HomeButton(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -51,26 +55,31 @@ public class HomeButton extends ChromeImageButton implements ThemeColorObserver,
                 && !FeatureUtilities.isBottomToolbarEnabled()) {
             setOnCreateContextMenuListener(this);
         }
+
+        HomepageManager.getInstance().addListener(this);
     }
 
     public void destroy() {
         if (mThemeColorProvider != null) {
-            mThemeColorProvider.removeObserver(this);
+            mThemeColorProvider.removeTintObserver(this);
             mThemeColorProvider = null;
         }
+
         if (mActivityTabTabObserver != null) {
             mActivityTabTabObserver.destroy();
             mActivityTabTabObserver = null;
         }
+
+        HomepageManager.getInstance().removeListener(this);
     }
 
     public void setThemeColorProvider(ThemeColorProvider themeColorProvider) {
         mThemeColorProvider = themeColorProvider;
-        mThemeColorProvider.addObserver(this);
+        mThemeColorProvider.addTintObserver(this);
     }
 
     @Override
-    public void onThemeColorChanged(ColorStateList tint, int primaryColor) {
+    public void onTintChanged(ColorStateList tint, boolean useLight) {
         ApiCompatibilityUtils.setImageTintList(this, tint);
     }
 
@@ -86,23 +95,44 @@ public class HomeButton extends ChromeImageButton implements ThemeColorObserver,
         return true;
     }
 
+    @Override
+    public void onHomepageStateUpdated() {
+        updateButtonEnabledState();
+    }
+
     public void setActivityTabProvider(ActivityTabProvider activityTabProvider) {
+        mActivityTabProvider = activityTabProvider;
         mActivityTabTabObserver = new ActivityTabTabObserver(activityTabProvider) {
             @Override
             public void onObservingDifferentTab(Tab tab) {
-                if (tab == null) return;
-                setEnabled(shouldEnableHome(tab.getUrl()));
+                updateButtonEnabledState();
             }
 
             @Override
             public void onUpdateUrl(Tab tab, String url) {
-                setEnabled(shouldEnableHome(url));
+                updateButtonEnabledState();
             }
         };
     }
 
-    private static boolean shouldEnableHome(String url) {
-        if (!FeatureUtilities.isBottomToolbarEnabled()) return true;
-        return !NewTabPage.isNTPUrl(url);
+    /**
+     * Menu button is enabled when not in NTP or if in NTP and homepage is enabled and set to
+     * somewhere other than the NTP.
+     */
+    private void updateButtonEnabledState() {
+        // New tab page button takes precedence over homepage.
+        final boolean isHomepageEnabled = !FeatureUtilities.isNewTabPageButtonEnabled()
+                && HomepageManager.isHomepageEnabled();
+        setEnabled(!isActiveTabNTP()
+                || (isHomepageEnabled && !NewTabPage.isNTPUrl(HomepageManager.getHomepageUri())));
+    }
+
+    private boolean isActiveTabNTP() {
+        if (mActivityTabProvider == null) return false;
+
+        final Tab tab = mActivityTabProvider.get();
+        if (tab == null) return false;
+
+        return NewTabPage.isNTPUrl(tab.getUrl());
     }
 }

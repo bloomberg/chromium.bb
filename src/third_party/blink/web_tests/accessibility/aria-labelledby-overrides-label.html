@@ -1,7 +1,8 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
 <html>
 <head>
-<script src="../resources/js-test.js"></script>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
 </head>
 <body id="body">
 
@@ -13,18 +14,12 @@
 
 <input id="target" aria-labelledby="a b c" value="10">
 
-<p id="description"></p>
-<div id="console"></div>
-
 <script>
-
-    description("This tests that if aria-labelledby is used, then label elements are not used");
-
-    if (window.accessibilityController) {
-          var axTarget = accessibilityController.accessibleElementById("target");
-          shouldBe("axTarget.name", "'A B C'");
-          shouldBe("axTarget.nameElementCount()", "3");
-    }
+test((t) => {
+    var axTarget = accessibilityController.accessibleElementById("target");
+    assert_equals(axTarget.name, "A B C");
+    assert_equals(axTarget.nameElementCount(), 3);
+}, "This tests that if aria-labelledby is used, then label elements are not used");
 
 </script>
 

@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
@@ -95,10 +96,10 @@ void URLLoaderFactory::CreateLoaderAndStart(
         context_->network_service()->network_usage_accumulator()->AsWeakPtr();
   }
 
+  bool exhausted = false;
   if (url_request.keepalive && keepalive_statistics_recorder) {
     // This logic comes from
     // content::ResourceDispatcherHostImpl::BeginRequestInternal.
-    bool exhausted = false;
     // This is needed because we want to know whether the request is initiated
     // by fetch() or not. We hope that we can unify these restrictions and
     // remove the reference to fetch_request_context_type in the future.
@@ -117,16 +118,18 @@ void URLLoaderFactory::CreateLoaderAndStart(
             kMaxKeepaliveConnectionsPerProcessForFetchAPI) {
       exhausted = true;
     }
-    if (exhausted) {
-      if (client) {
-        URLLoaderCompletionStatus status;
-        status.error_code = net::ERR_INSUFFICIENT_RESOURCES;
-        status.exists_in_cache = false;
-        status.completion_time = base::TimeTicks::Now();
-        client->OnComplete(status);
-      }
-      return;
-    }
+  }
+
+  if (!context_->CanCreateLoader(params_->process_id))
+    exhausted = true;
+
+  if (exhausted) {
+    URLLoaderCompletionStatus status;
+    status.error_code = net::ERR_INSUFFICIENT_RESOURCES;
+    status.exists_in_cache = false;
+    status.completion_time = base::TimeTicks::Now();
+    client->OnComplete(status);
+    return;
   }
 
   auto loader = std::make_unique<URLLoader>(

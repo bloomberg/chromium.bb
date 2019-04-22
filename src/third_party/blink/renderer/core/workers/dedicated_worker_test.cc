@@ -32,17 +32,15 @@ class DedicatedWorkerThreadForTest final : public DedicatedWorkerThread {
  public:
   DedicatedWorkerThreadForTest(ExecutionContext* parent_execution_context,
                                DedicatedWorkerObjectProxy& worker_object_proxy)
-      : DedicatedWorkerThread("fake worker name",
-                              parent_execution_context,
-                              worker_object_proxy) {
-    worker_backing_thread_ = WorkerBackingThread::Create(
+      : DedicatedWorkerThread(parent_execution_context, worker_object_proxy) {
+    worker_backing_thread_ = std::make_unique<WorkerBackingThread>(
         ThreadCreationParams(WebThreadType::kTestThread));
   }
 
   WorkerOrWorkletGlobalScope* CreateWorkerGlobalScope(
       std::unique_ptr<GlobalScopeCreationParams> creation_params) override {
     auto* global_scope = MakeGarbageCollected<DedicatedWorkerGlobalScope>(
-        "fake worker name", std::move(creation_params), this, time_origin_);
+        std::move(creation_params), this, time_origin_);
     // Initializing a global scope with a dummy creation params may emit warning
     // messages (e.g., invalid CSP directives). Clear them here for tests that
     // check console messages (i.e., UseCounter tests).
@@ -134,7 +132,9 @@ class DedicatedWorkerMessagingProxyForTest
         To<Document>(GetExecutionContext())->GetSettings());
     InitializeWorkerThread(
         std::make_unique<GlobalScopeCreationParams>(
-            script_url, mojom::ScriptType::kClassic, "fake user agent",
+            script_url, mojom::ScriptType::kClassic,
+            OffMainThreadWorkerScriptFetchOption::kDisabled,
+            "fake global scope name", "fake user agent",
             nullptr /* web_worker_fetch_context */, headers,
             network::mojom::ReferrerPolicy::kDefault, security_origin_.get(),
             false /* starter_secure_context */,

@@ -70,9 +70,19 @@ AX_EXPORT const char* ToString(
 AX_EXPORT ax::mojom::StringListAttribute ParseStringListAttribute(
     const char* string_list_attribute);
 
+// ax::mojom::ListStyle
+AX_EXPORT const char* ToString(ax::mojom::ListStyle list_style);
+AX_EXPORT ax::mojom::ListStyle ParseListStyle(const char* list_style);
+
 // ax::mojom::MarkerType
 AX_EXPORT const char* ToString(ax::mojom::MarkerType marker_type);
 AX_EXPORT ax::mojom::MarkerType ParseMarkerType(const char* marker_type);
+
+// ax:mojom::TextDecorationStyle
+AX_EXPORT const char* ToString(
+    ax::mojom::TextDecorationStyle text_decoration_style);
+AX_EXPORT ax::mojom::TextDecorationStyle ParseTextDecorationStyle(
+    const char* text_decoration_style);
 
 // ax::mojom::TextDirection
 AX_EXPORT const char* ToString(ax::mojom::TextDirection text_direction);
@@ -137,6 +147,11 @@ AX_EXPORT ax::mojom::TextAffinity ParseTextAffinity(const char* text_affinity);
 // ax::mojom::TreeOrder
 AX_EXPORT const char* ToString(ax::mojom::TreeOrder tree_order);
 AX_EXPORT ax::mojom::TreeOrder ParseTreeOrder(const char* tree_order);
+
+// ax::mojom::ImageAnnotationStatus
+AX_EXPORT const char* ToString(ax::mojom::ImageAnnotationStatus status);
+AX_EXPORT ax::mojom::ImageAnnotationStatus ParseImageAnnotationStatus(
+    const char* status);
 
 }  // namespace ui
 

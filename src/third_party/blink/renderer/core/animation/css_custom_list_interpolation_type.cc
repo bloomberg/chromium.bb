@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/animation/underlying_length_checker.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
@@ -17,7 +18,7 @@ InterpolationValue CSSCustomListInterpolationType::MaybeConvertNeutral(
   size_t underlying_length =
       UnderlyingLengthChecker::GetUnderlyingLength(underlying);
   conversion_checkers.push_back(
-      UnderlyingLengthChecker::Create(underlying_length));
+      std::make_unique<UnderlyingLengthChecker>(underlying_length));
 
   if (underlying_length == 0)
     return nullptr;
@@ -38,16 +39,16 @@ InterpolationValue CSSCustomListInterpolationType::MaybeConvertValue(
     const CSSValue& value,
     const StyleResolverState* state,
     ConversionCheckers&) const {
-  if (!value.IsValueList())
+  const auto* list = DynamicTo<CSSValueList>(value);
+  if (!list)
     return nullptr;
 
   ConversionCheckers null_checkers;
 
-  const CSSValueList& list = ToCSSValueList(value);
   return ListInterpolationFunctions::CreateList(
-      list.length(), [this, &list, state, &null_checkers](size_t index) {
+      list->length(), [this, list, state, &null_checkers](size_t index) {
         return this->inner_interpolation_type_->MaybeConvertValue(
-            list.Item(index), state, null_checkers);
+            list->Item(index), state, null_checkers);
       });
 }
 

@@ -31,6 +31,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBDATABASE_DATABASE_CLIENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBDATABASE_DATABASE_CLIENT_H_
 
+#include "base/macros.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -47,7 +48,6 @@ class Page;
 class MODULES_EXPORT DatabaseClient : public GarbageCollected<DatabaseClient>,
                                       public Supplement<Page> {
   USING_GARBAGE_COLLECTED_MIXIN(DatabaseClient);
-  WTF_MAKE_NONCOPYABLE(DatabaseClient);
 
  public:
   static const char kSupplementName[];
@@ -56,10 +56,7 @@ class MODULES_EXPORT DatabaseClient : public GarbageCollected<DatabaseClient>,
 
   void Trace(blink::Visitor*) override;
 
-  bool AllowDatabase(ExecutionContext*,
-                     const String& name,
-                     const String& display_name,
-                     unsigned estimated_size);
+  bool AllowDatabase(ExecutionContext*);
 
   void DidOpenDatabase(Database*,
                        const String& domain,
@@ -73,6 +70,8 @@ class MODULES_EXPORT DatabaseClient : public GarbageCollected<DatabaseClient>,
 
  private:
   Member<InspectorDatabaseAgent> inspector_agent_;
+
+  DISALLOW_COPY_AND_ASSIGN(DatabaseClient);
 };
 
 MODULES_EXPORT void ProvideDatabaseClientTo(Page&, DatabaseClient*);

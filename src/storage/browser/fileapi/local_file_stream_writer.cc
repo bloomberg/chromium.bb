@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "net/base/file_stream.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -23,13 +25,13 @@ const int kCreateFlagsForWrite = base::File::FLAG_CREATE |
 
 }  // namespace
 
-FileStreamWriter* FileStreamWriter::CreateForLocalFile(
+std::unique_ptr<FileStreamWriter> FileStreamWriter::CreateForLocalFile(
     base::TaskRunner* task_runner,
     const base::FilePath& file_path,
     int64_t initial_offset,
     OpenOrCreate open_or_create) {
-  return new LocalFileStreamWriter(
-      task_runner, file_path, initial_offset, open_or_create);
+  return base::WrapUnique(new LocalFileStreamWriter(
+      task_runner, file_path, initial_offset, open_or_create));
 }
 
 LocalFileStreamWriter::~LocalFileStreamWriter() {

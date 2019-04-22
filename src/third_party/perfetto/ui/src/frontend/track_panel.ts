@@ -19,13 +19,12 @@ import {TrackState} from '../common/state';
 
 import {globals} from './globals';
 import {drawGridLines} from './gridline_helper';
+import {drawVerticalSelection,
+        drawVerticalLineAtTime} from './vertical_line_helper';
 import {Panel, PanelSize} from './panel';
 import {Track} from './track';
+import {TRACK_SHELL_WIDTH} from './track_constants';
 import {trackRegistry} from './track_registry';
-
-// TODO(hjd): We should remove the constant where possible.
-// If any uses can't be removed we should read this constant from CSS.
-export const TRACK_SHELL_WIDTH = 250;
 
 function isPinned(id: string) {
   return globals.state.pinnedTracks.indexOf(id) !== -1;
@@ -58,7 +57,12 @@ class TrackShell implements m.ClassComponent<TrackShellAttrs> {
           ondragleave: this.ondragleave.bind(this),
           ondrop: this.ondrop.bind(this),
         },
-        m('h1', attrs.trackState.name),
+        m('h1',
+          {
+            title: attrs.trackState.name,
+          },
+          attrs.trackState.name,
+          m.trust('&#x200E;')),
         m(TrackButton, {
           action: Actions.toggleTrackPinned({trackId: attrs.trackState.id}),
           i: isPinned(attrs.trackState.id) ? 'star' : 'star_border',
@@ -72,10 +76,12 @@ class TrackShell implements m.ClassComponent<TrackShellAttrs> {
   }
 
   ondragstart(e: DragEvent) {
+    const dataTransfer = e.dataTransfer;
+    if (dataTransfer === null) return;
     this.dragging = true;
     globals.rafScheduler.scheduleFullRedraw();
-    e.dataTransfer.setData('perfetto/track', `${this.attrs!.trackState.id}`);
-    e.dataTransfer.setDragImage(new Image(), 0, 0);
+    dataTransfer.setData('perfetto/track', `${this.attrs!.trackState.id}`);
+    dataTransfer.setDragImage(new Image(), 0, 0);
     e.stopImmediatePropagation();
   }
 
@@ -87,8 +93,10 @@ class TrackShell implements m.ClassComponent<TrackShellAttrs> {
   ondragover(e: DragEvent) {
     if (this.dragging) return;
     if (!(e.target instanceof HTMLElement)) return;
-    if (!e.dataTransfer.types.includes('perfetto/track')) return;
-    e.dataTransfer.dropEffect = 'move';
+    const dataTransfer = e.dataTransfer;
+    if (dataTransfer === null) return;
+    if (!dataTransfer.types.includes('perfetto/track')) return;
+    dataTransfer.dropEffect = 'move';
     e.preventDefault();
 
     // Apply some hysteresis to the drop logic so that the lightened border
@@ -108,18 +116,18 @@ class TrackShell implements m.ClassComponent<TrackShellAttrs> {
 
   ondrop(e: DragEvent) {
     if (this.dropping === undefined) return;
+    const dataTransfer = e.dataTransfer;
+    if (dataTransfer === null) return;
     globals.rafScheduler.scheduleFullRedraw();
-    const srcId = e.dataTransfer.getData('perfetto/track');
+    const srcId = dataTransfer.getData('perfetto/track');
     const dstId = this.attrs!.trackState.id;
     globals.dispatch(Actions.moveTrack({srcId, op: this.dropping, dstId}));
     this.dropping = undefined;
   }
 }
 
-interface TrackContentAttrs {
-  track: Track;
-}
-class TrackContent implements m.ClassComponent<TrackContentAttrs> {
+export interface TrackContentAttrs { track: Track; }
+export class TrackContent implements m.ClassComponent<TrackContentAttrs> {
   view({attrs}: m.CVnode<TrackContentAttrs>) {
     return m('.track-content', {
       onmousemove: (e: MouseEvent) => {
@@ -130,7 +138,17 @@ class TrackContent implements m.ClassComponent<TrackContentAttrs> {
         attrs.track.onMouseOut();
         globals.rafScheduler.scheduleRedraw();
       },
-    }, );
+      onclick: (e:MouseEvent) => {
+        // If we are selecting a timespan - do not pass the click to the track.
+        const selection = globals.state.currentSelection;
+        if (selection && selection.kind === 'TIMESPAN') return;
+
+        if (attrs.track.onMouseClick({x: e.layerX, y: e.layerY})) {
+          e.stopPropagation();
+        }
+        globals.rafScheduler.scheduleRedraw();
+      }
+    });
   }
 }
 
@@ -193,14 +211,63 @@ export class TrackPanel extends Panel<TrackPanelAttrs> {
 
   renderCanvas(ctx: CanvasRenderingContext2D, size: PanelSize) {
     ctx.save();
-    ctx.translate(TRACK_SHELL_WIDTH, 0);
     drawGridLines(
         ctx,
         globals.frontendLocalState.timeScale,
         globals.frontendLocalState.visibleWindowTime,
+        size.width,
         size.height);
 
+    ctx.translate(TRACK_SHELL_WIDTH, 0);
+
     this.track.renderCanvas(ctx);
+
     ctx.restore();
+
+    const localState = globals.frontendLocalState;
+    // Draw vertical line when hovering on the the notes panel.
+    if (localState.showNotePreview) {
+      drawVerticalLineAtTime(ctx,
+                             localState.timeScale,
+                             localState.hoveredTimestamp,
+                             size.height,
+                             `#aaa`);
+    }
+    // Draw vertical line when shift is pressed.
+    if (localState.showTimeSelectPreview) {
+      drawVerticalLineAtTime(ctx,
+                             localState.timeScale,
+                             localState.hoveredTimestamp,
+                             size.height,
+                             `rgb(52,69,150)`);
+    }
+
+    if (globals.state.currentSelection !== null) {
+      if (globals.state.currentSelection.kind === 'NOTE') {
+        const note = globals.state.notes[globals.state.currentSelection.id];
+        drawVerticalLineAtTime(ctx,
+                               localState.timeScale,
+                               note.timestamp,
+                               size.height,
+                               note.color);
+      }
+      if (globals.state.currentSelection.kind === 'TIMESPAN') {
+        drawVerticalSelection(ctx,
+                              localState.timeScale,
+                              globals.state.currentSelection.startTs,
+                              globals.state.currentSelection.endTs,
+                              size.height,
+                              `rgba(52,69,150,0.3)`);
+      }
+      if (globals.state.currentSelection.kind === 'SLICE' &&
+          globals.sliceDetails.wakeupTs !== undefined) {
+        drawVerticalLineAtTime(
+            ctx,
+            localState.timeScale,
+            globals.sliceDetails.wakeupTs,
+            size.height,
+            `black`);
+      }
+    }
   }
 }

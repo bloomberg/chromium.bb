@@ -8,17 +8,11 @@
 #include <string>
 #include <vector>
 
-#include "gpu/vulkan/buildflags.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "ui/gfx/geometry/quad_f.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry_skia_export.h"
-
-#if BUILDFLAG(ENABLE_VULKAN)
-#include "third_party/skia/include/core/SkImageInfo.h"
-#include "third_party/vulkan/include/vulkan/vulkan.h"
-#endif
 
 class SkBitmap;
 class SkMatrix;
@@ -69,11 +63,6 @@ GEOMETRY_SKIA_EXPORT SkScalar HarfBuzzUnitsToSkiaScalar(int value);
 
 // Converts an hb_position_t to a float.
 GEOMETRY_SKIA_EXPORT float HarfBuzzUnitsToFloat(int value);
-
-#if BUILDFLAG(ENABLE_VULKAN)
-// Converts a Skia color type to a compitable VkFormat
-GEOMETRY_SKIA_EXPORT VkFormat SkColorTypeToVkFormat(SkColorType color_type);
-#endif
 
 }  // namespace gfx
 

@@ -6,8 +6,8 @@
 
 #include <memory>
 
+#include "base/hash/sha1.h"
 #include "base/logging.h"
-#include "base/sha1.h"
 #include "build/build_config.h"
 #include "media/base/test_data_util.h"
 #include "media/filters/file_data_source.h"

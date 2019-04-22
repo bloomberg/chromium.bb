@@ -10,12 +10,13 @@
 #include "base/macros.h"
 
 namespace service_manager {
-class ServiceContextRef;
+class ServiceKeepaliveRef;
 }
 
 namespace audio {
 
-// Wraps a service_manager::ServiceContextRef, and provides tracing information.
+// Wraps a service_manager::ServiceKeepaliveRef, and provides tracing
+// information.
 class TracedServiceRef final {
  public:
   TracedServiceRef();
@@ -23,7 +24,7 @@ class TracedServiceRef final {
   // By convention, "audio::InterfaceName Binding" is used, e.g.
   // "audio::StreamFactory Binding".
   TracedServiceRef(
-      std::unique_ptr<service_manager::ServiceContextRef> context_ref,
+      std::unique_ptr<service_manager::ServiceKeepaliveRef> keepalive_ref,
       const char* trace_name);
   TracedServiceRef(TracedServiceRef&& other);
   TracedServiceRef& operator=(TracedServiceRef&& other);
@@ -32,10 +33,10 @@ class TracedServiceRef final {
 
   // This id can be used to add TRACE_EVENT_NESTABLE_ASYNC traces to the scope
   // of the TracedServiceRef.
-  const void* id_for_trace() const { return context_ref_.get(); }
+  const void* id_for_trace() const { return keepalive_ref_.get(); }
 
  private:
-  std::unique_ptr<service_manager::ServiceContextRef> context_ref_;
+  std::unique_ptr<service_manager::ServiceKeepaliveRef> keepalive_ref_;
   const char* trace_name_;
 
   DISALLOW_COPY_AND_ASSIGN(TracedServiceRef);

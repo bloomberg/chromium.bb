@@ -5,6 +5,7 @@
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_pattern_parser.h"
 
+#include "base/strings/string_piece.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -148,6 +149,16 @@ TEST(ContentSettingsPatternParserTest, ParsePatterns) {
   EXPECT_CALL(builder, Invalid()).Times(1).WillOnce(
       ::testing::Return(&builder));
   content_settings::PatternParser::Parse("www.youtube.com*", &builder);
+  ::testing::Mock::VerifyAndClear(&builder);
+
+  // Test for kDomainWildcardWithSuperfluousDot
+  EXPECT_CALL(builder, WithSchemeWildcard())
+      .Times(1)
+      .WillOnce(::testing::Return(&builder));
+  EXPECT_CALL(builder, Invalid())
+      .Times(1)
+      .WillOnce(::testing::Return(&builder));
+  content_settings::PatternParser::Parse("[*.].youtube.com", &builder);
   ::testing::Mock::VerifyAndClear(&builder);
 }
 

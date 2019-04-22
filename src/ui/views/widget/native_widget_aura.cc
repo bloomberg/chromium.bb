@@ -60,7 +60,7 @@
 
 #if defined(OS_WIN)
 #include "base/win/scoped_gdi_object.h"
-#include "ui/gfx/platform_font_win.h"
+#include "ui/gfx/system_fonts_win.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_win.h"
 #endif
 
@@ -81,8 +81,8 @@ namespace views {
 namespace {
 
 DEFINE_UI_CLASS_PROPERTY_KEY(internal::NativeWidgetPrivate*,
-                           kNativeWidgetPrivateKey,
-                           nullptr);
+                             kNativeWidgetPrivateKey,
+                             nullptr)
 
 void SetRestoreBounds(aura::Window* window, const gfx::Rect& bounds) {
   window->SetProperty(aura::client::kRestoreBoundsKey, new gfx::Rect(bounds));
@@ -179,7 +179,7 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
   if (params.type == Widget::InitParams::TYPE_CONTROL)
     window_->Show();
 
-  delegate_->OnNativeWidgetCreated(false);
+  delegate_->OnNativeWidgetCreated();
 
   gfx::Rect window_bounds = params.bounds;
   gfx::NativeView parent = params.parent;
@@ -228,7 +228,6 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
         window_, context->GetRootWindow(), window_bounds);
   }
 
-  // Start observing property changes.
   window_->AddObserver(this);
 
   // Wait to set the bounds until we have a parent. That way we can know our
@@ -244,9 +243,9 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
           : ws::mojom::EventTargetingPolicy::NONE);
   DCHECK(GetWidget()->GetRootView());
   if (params.type != Widget::InitParams::TYPE_TOOLTIP)
-    tooltip_manager_.reset(new views::TooltipManagerAura(GetWidget()));
+    tooltip_manager_ = std::make_unique<views::TooltipManagerAura>(GetWidget());
 
-  drop_helper_.reset(new DropHelper(GetWidget()->GetRootView()));
+  drop_helper_ = std::make_unique<DropHelper>(GetWidget()->GetRootView());
   if (params.type != Widget::InitParams::TYPE_TOOLTIP &&
       params.type != Widget::InitParams::TYPE_POPUP) {
     aura::client::SetDragDropDelegate(window_, this);
@@ -259,14 +258,14 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
 
   wm::SetActivationDelegate(window_, this);
 
-  window_reorderer_.reset(new WindowReorderer(window_,
-      GetWidget()->GetRootView()));
+  window_reorderer_ =
+      std::make_unique<WindowReorderer>(window_, GetWidget()->GetRootView());
 }
 
 void NativeWidgetAura::OnWidgetInitDone() {}
 
 NonClientFrameView* NativeWidgetAura::CreateNonClientFrameView() {
-  return NULL;
+  return nullptr;
 }
 
 bool NativeWidgetAura::ShouldUseNativeFrame() const {
@@ -303,15 +302,15 @@ gfx::NativeWindow NativeWidgetAura::GetNativeWindow() const {
 
 Widget* NativeWidgetAura::GetTopLevelWidget() {
   NativeWidgetPrivate* native_widget = GetTopLevelNativeWidget(GetNativeView());
-  return native_widget ? native_widget->GetWidget() : NULL;
+  return native_widget ? native_widget->GetWidget() : nullptr;
 }
 
 const ui::Compositor* NativeWidgetAura::GetCompositor() const {
-  return window_ ? window_->layer()->GetCompositor() : NULL;
+  return window_ ? window_->layer()->GetCompositor() : nullptr;
 }
 
 const ui::Layer* NativeWidgetAura::GetLayer() const {
-  return window_ ? window_->layer() : NULL;
+  return window_ ? window_->layer() : nullptr;
 }
 
 void NativeWidgetAura::ReorderNativeViews() {
@@ -319,7 +318,7 @@ void NativeWidgetAura::ReorderNativeViews() {
 }
 
 void NativeWidgetAura::ViewRemoved(View* view) {
-  DCHECK(drop_helper_.get() != NULL);
+  DCHECK(drop_helper_.get() != nullptr);
   drop_helper_->ResetTargetViewIfEquals(view);
 }
 
@@ -329,7 +328,7 @@ void NativeWidgetAura::SetNativeWindowProperty(const char* name, void* value) {
 }
 
 void* NativeWidgetAura::GetNativeWindowProperty(const char* name) const {
-  return window_ ? window_->GetNativeWindowProperty(name) : NULL;
+  return window_ ? window_->GetNativeWindowProperty(name) : nullptr;
 }
 
 TooltipManager* NativeWidgetAura::GetTooltipManager() const {
@@ -664,6 +663,9 @@ bool NativeWidgetAura::IsFullscreen() const {
       ui::SHOW_STATE_FULLSCREEN;
 }
 
+void NativeWidgetAura::SetCanAppearInExistingFullscreenSpaces(
+    bool can_appear_in_existing_fullscreen_spaces) {}
+
 void NativeWidgetAura::SetOpacity(float opacity) {
   if (window_)
     window_->layer()->SetOpacity(opacity);
@@ -696,6 +698,12 @@ void NativeWidgetAura::RunShellDrag(View* view,
 void NativeWidgetAura::SchedulePaintInRect(const gfx::Rect& rect) {
   if (window_)
     window_->SchedulePaintInRect(rect);
+}
+
+void NativeWidgetAura::ScheduleLayout() {
+  // ScheduleDraw() triggers a callback to WindowDelegate::UpdateVisualState().
+  if (window_)
+    window_->ScheduleDraw();
 }
 
 void NativeWidgetAura::SetCursor(gfx::NativeCursor cursor) {
@@ -814,10 +822,6 @@ void NativeWidgetAura::OnSizeConstraintsChanged() {
   window_->SetProperty(aura::client::kResizeBehaviorKey, behavior);
 }
 
-void NativeWidgetAura::RepostNativeEvent(gfx::NativeEvent native_event) {
-  OnEvent(native_event);
-}
-
 std::string NativeWidgetAura::GetName() const {
   return window_ ? window_->GetName() : std::string();
 }
@@ -895,7 +899,7 @@ void NativeWidgetAura::OnWindowDestroying(aura::Window* window) {
 }
 
 void NativeWidgetAura::OnWindowDestroyed(aura::Window* window) {
-  window_ = NULL;
+  window_ = nullptr;
   // |OnNativeWidgetDestroyed| may delete |this| if the object does not own
   // itself.
   bool should_delete_this =
@@ -913,9 +917,13 @@ bool NativeWidgetAura::HasHitTestMask() const {
   return delegate_->HasHitTestMask();
 }
 
-void NativeWidgetAura::GetHitTestMask(gfx::Path* mask) const {
+void NativeWidgetAura::GetHitTestMask(SkPath* mask) const {
   DCHECK(mask);
   delegate_->GetHitTestMask(mask);
+}
+
+void NativeWidgetAura::UpdateVisualState() {
+  delegate_->LayoutRootViewIfNecessary();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -926,6 +934,14 @@ void NativeWidgetAura::OnWindowPropertyChanged(aura::Window* window,
                                                intptr_t old) {
   if (key == aura::client::kShowStateKey)
     delegate_->OnNativeWidgetWindowShowStateChanged();
+}
+
+void NativeWidgetAura::OnResizeLoopStarted(aura::Window* window) {
+  delegate_->OnNativeWidgetBeginUserBoundsChange();
+}
+
+void NativeWidgetAura::OnResizeLoopEnded(aura::Window* window) {
+  delegate_->OnNativeWidgetEndUserBoundsChange();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1004,25 +1020,25 @@ void NativeWidgetAura::OnWindowFocused(aura::Window* gained_focus,
 // NativeWidgetAura, aura::WindowDragDropDelegate implementation:
 
 void NativeWidgetAura::OnDragEntered(const ui::DropTargetEvent& event) {
-  DCHECK(drop_helper_.get() != NULL);
+  DCHECK(drop_helper_.get() != nullptr);
   last_drop_operation_ = drop_helper_->OnDragOver(event.data(),
       event.location(), event.source_operations());
 }
 
 int NativeWidgetAura::OnDragUpdated(const ui::DropTargetEvent& event) {
-  DCHECK(drop_helper_.get() != NULL);
+  DCHECK(drop_helper_.get() != nullptr);
   last_drop_operation_ = drop_helper_->OnDragOver(event.data(),
       event.location(), event.source_operations());
   return last_drop_operation_;
 }
 
 void NativeWidgetAura::OnDragExited() {
-  DCHECK(drop_helper_.get() != NULL);
+  DCHECK(drop_helper_.get() != nullptr);
   drop_helper_->OnDragExit();
 }
 
 int NativeWidgetAura::OnPerformDrop(const ui::DropTargetEvent& event) {
-  DCHECK(drop_helper_.get() != NULL);
+  DCHECK(drop_helper_.get() != nullptr);
   return drop_helper_->OnDrop(event.data(), event.location(),
       last_drop_operation_);
 }
@@ -1134,7 +1150,7 @@ NativeWidgetPrivate* NativeWidgetPrivate::GetNativeWidgetForNativeWindow(
 NativeWidgetPrivate* NativeWidgetPrivate::GetTopLevelNativeWidget(
     gfx::NativeView native_view) {
   aura::Window* window = native_view;
-  NativeWidgetPrivate* top_level_native_widget = NULL;
+  NativeWidgetPrivate* top_level_native_widget = nullptr;
   while (window) {
     NativeWidgetPrivate* native_widget = GetNativeWidgetForNativeView(window);
     if (native_widget)
@@ -1224,8 +1240,7 @@ void NativeWidgetPrivate::ReparentNativeView(gfx::NativeView native_view,
 // static
 gfx::FontList NativeWidgetPrivate::GetWindowTitleFontList() {
 #if defined(OS_WIN)
-  return gfx::FontList(gfx::PlatformFontWin::GetSystemFont(
-      gfx::PlatformFontWin::SystemFont::kCaption));
+  return gfx::FontList(gfx::win::GetSystemFont(gfx::win::SystemFont::kCaption));
 #else
   return gfx::FontList();
 #endif

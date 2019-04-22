@@ -6,11 +6,11 @@
 
 #include <algorithm>
 #include <iterator>
+#include <unordered_set>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/containers/hash_tables.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -281,18 +281,18 @@ bool BluetoothLowEnergyEventRouter::IsBluetoothSupported() const {
 }
 
 bool BluetoothLowEnergyEventRouter::InitializeAdapterAndInvokeCallback(
-    const base::Closure& callback) {
+    base::OnceClosure callback) {
   if (!IsBluetoothSupported())
     return false;
 
   if (adapter_.get()) {
-    callback.Run();
+    std::move(callback).Run();
     return true;
   }
 
   BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&BluetoothLowEnergyEventRouter::OnGetAdapter,
-                 weak_ptr_factory_.GetWeakPtr(), callback));
+      base::BindOnce(&BluetoothLowEnergyEventRouter::OnGetAdapter,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   return true;
 }
 
@@ -1391,7 +1391,7 @@ void BluetoothLowEnergyEventRouter::HandleRequestResponse(
 }
 
 void BluetoothLowEnergyEventRouter::OnGetAdapter(
-    const base::Closure& callback,
+    base::OnceClosure callback,
     scoped_refptr<device::BluetoothAdapter> adapter) {
   adapter_ = adapter;
 
@@ -1400,7 +1400,7 @@ void BluetoothLowEnergyEventRouter::OnGetAdapter(
   InitializeIdentifierMappings();
   adapter_->AddObserver(this);
 
-  callback.Run();
+  std::move(callback).Run();
 }
 
 void BluetoothLowEnergyEventRouter::InitializeIdentifierMappings() {
@@ -1781,7 +1781,8 @@ BluetoothLowEnergyConnection* BluetoothLowEnergyEventRouter::FindConnection(
   ConnectionResourceManager* manager =
       GetConnectionResourceManager(browser_context_);
 
-  base::hash_set<int>* connection_ids = manager->GetResourceIds(extension_id);
+  std::unordered_set<int>* connection_ids =
+      manager->GetResourceIds(extension_id);
   if (!connection_ids)
     return NULL;
 
@@ -1805,7 +1806,8 @@ bool BluetoothLowEnergyEventRouter::RemoveConnection(
   ConnectionResourceManager* manager =
       GetConnectionResourceManager(browser_context_);
 
-  base::hash_set<int>* connection_ids = manager->GetResourceIds(extension_id);
+  std::unordered_set<int>* connection_ids =
+      manager->GetResourceIds(extension_id);
   if (!connection_ids)
     return false;
 
@@ -1830,7 +1832,7 @@ BluetoothLowEnergyEventRouter::FindNotifySession(
   NotifySessionResourceManager* manager =
       GetNotifySessionResourceManager(browser_context_);
 
-  base::hash_set<int>* ids = manager->GetResourceIds(extension_id);
+  std::unordered_set<int>* ids = manager->GetResourceIds(extension_id);
   if (!ids)
     return NULL;
 
@@ -1854,7 +1856,7 @@ bool BluetoothLowEnergyEventRouter::RemoveNotifySession(
   NotifySessionResourceManager* manager =
       GetNotifySessionResourceManager(browser_context_);
 
-  base::hash_set<int>* ids = manager->GetResourceIds(extension_id);
+  std::unordered_set<int>* ids = manager->GetResourceIds(extension_id);
   if (!ids)
     return false;
 

@@ -3,6 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 LICENSE = (
   "/*",
   " * Copyright (c) 2011 The Native Client Authors. All rights reserved.",
@@ -71,8 +73,8 @@ def GenerateTypeInfo(settings):
   settings.va_arg_types = [ t for t in settings.all_types
                             if t.id not in va_arg_exclude ]
   # See also the generated comments in the generated .c files for the settings.
-  print 'Generating with normal arg types: %s' % str(settings.all_types)
-  print 'Generating with var arg types: %s' % str(settings.va_arg_types)
+  print('Generating with normal arg types: %s' % str(settings.all_types))
+  print('Generating with var arg types: %s' % str(settings.va_arg_types))
 
 
 
@@ -119,19 +121,19 @@ class Settings(object):
     return True
 
 def Usage():
-  print "Usage: %s <options> --" % sys.argv[0],
-  print "<golden_output_filename> <module0_filename> <module1_filename> ..."
-  print
-  print "Valid options are:"
-  print "  --seed=<64-bit-random-seed>"
-  print "  --num_functions=<num_functions>"
-  print "  --calls_per_func=<calls_per_function>"
-  print "  --max_args_per_func=<max_args_per_function>"
-  print "  --num_modules=<num_modules>"
-  print "  --allow_struct=<0|1>         Test struct arguments (by value)"
-  print "  --allow_double=<0|1>         Test double arguments (by value)"
-  print "  --allow_float=<0|1>          Test float arguments (by value)"
-  print "  --allow_struct_va_arg=<0|1>  Test va_arg on struct arguments"
+  print("Usage: %s <options> --" % sys.argv[0], end=' ')
+  print("<golden_output_filename> <module0_filename> <module1_filename> ...")
+  print()
+  print("Valid options are:")
+  print("  --seed=<64-bit-random-seed>")
+  print("  --num_functions=<num_functions>")
+  print("  --calls_per_func=<calls_per_function>")
+  print("  --max_args_per_func=<max_args_per_function>")
+  print("  --num_modules=<num_modules>")
+  print("  --allow_struct=<0|1>         Test struct arguments (by value)")
+  print("  --allow_double=<0|1>         Test double arguments (by value)")
+  print("  --allow_float=<0|1>          Test float arguments (by value)")
+  print("  --allow_struct_va_arg=<0|1>  Test va_arg on struct arguments")
   sys.exit(1)
 
 def main(argv):
@@ -173,7 +175,7 @@ def main(argv):
     m.emit(fp)
     fp.close()
 
-  print "callingconv seed: %d" % settings.seed
+  print("callingconv seed: %d" % settings.seed)
   fp = open(output_golden_file, 'w')
   fp.write("generate.py arguments: %s\n" % settings._script_argv)
   fp.write("SUCCESS: %d calls OK.\n" % num_asserts)
@@ -184,7 +186,7 @@ def main(argv):
 def Fatal(m, *args):
   if len(args) > 0:
     m = m % args
-  print m
+  print(m)
   sys.exit(2)
 
 class WriteBuffer(object):
@@ -282,12 +284,12 @@ class Module(object):
     # va_list passing.
     out.write("void vcheck%d(va_list ap, int i, char type) {\n" % self.id)
     for t in self.settings.va_arg_types:
-        va_arg_val = "va_arg(ap, %s)" % t.id
-        expected_val = "v_%s[i]" % t.id
-        comparison = t.compare_expr % (va_arg_val, expected_val)
-        out.write("  if (type == '%s')\n" % t.format)
-        out.write("    ASSERT(%s);\n" % comparison)
-        out.write("")
+      va_arg_val = "va_arg(ap, %s)" % t.id
+      expected_val = "v_%s[i]" % t.id
+      comparison = t.compare_expr % (va_arg_val, expected_val)
+      out.write("  if (type == '%s')\n" % t.format)
+      out.write("    ASSERT(%s);\n" % comparison)
+      out.write("")
     out.write("}\n\n")
 
     # Emit the function definitions in this module
@@ -346,14 +348,14 @@ class TestCall(object):
     args = []
     fmtstr = ''
     for i in xrange(self.num_args):
-        if i < self.f.num_fixed_args:
-            t = self.f.fixed_arg_types[i]
-        else:
-            t = random.choice(settings.va_arg_types)
-        if i == self.f.num_fixed_args:
-            fmtstr += '" "'
-        fmtstr += str(t.format)
-        args.append((i, t, t.maker()))
+      if i < self.f.num_fixed_args:
+        t = self.f.fixed_arg_types[i]
+      else:
+        t = random.choice(settings.va_arg_types)
+      if i == self.f.num_fixed_args:
+        fmtstr += '" "'
+      fmtstr += str(t.format)
+      args.append((i, t, t.maker()))
     self.args = args
     self.fmtstr = fmtstr
 
@@ -401,17 +403,17 @@ def prettycode(str):
   indent = len(ret)
   firstarg = True
   for arg in args:
-      if firstarg:
-          s = arg.strip()
-          firstarg = False
-      elif pos + len(arg) < 75:
-          s = ", " + arg.strip()
-      else:
-          ret += ",\n" + (' '*indent)
-          pos = indent
-          s = arg.strip()
-      ret += s
-      pos += len(s)
+    if firstarg:
+      s = arg.strip()
+      firstarg = False
+    elif pos + len(arg) < 75:
+      s = ", " + arg.strip()
+    else:
+      ret += ",\n" + (' ' * indent)
+      pos = indent
+      s = arg.strip()
+    ret += s
+    pos += len(s)
   ret += ")" + tail
   return ret
 
@@ -476,16 +478,16 @@ class TestFunction(object):
     out.write("    switch (fmt[i]) {\n")
 
     for t in self.settings.va_arg_types:
-        arg_val   = "va_arg(ap, %s)" % t.id
-        check_val = "v_%s[i]" % t.id
-        comp_expr = t.compare_expr % (arg_val, check_val)
-        out.write("    case '%s':\n" % t.format)
-        for module_id in xrange(self.settings.num_modules):
-          out.write("      va_copy(ap2, ap);\n")
-          out.write("      vcheck%d(ap2, i, fmt[i]);\n" % module_id)
-          out.write("      va_end(ap2);\n");
-        out.write("      ASSERT(%s);\n" % comp_expr)
-        out.write("      break;\n")
+      arg_val = "va_arg(ap, %s)" % t.id
+      check_val = "v_%s[i]" % t.id
+      comp_expr = t.compare_expr % (arg_val, check_val)
+      out.write("    case '%s':\n" % t.format)
+      for module_id in xrange(self.settings.num_modules):
+        out.write("      va_copy(ap2, ap);\n")
+        out.write("      vcheck%d(ap2, i, fmt[i]);\n" % module_id)
+        out.write("      va_end(ap2);\n")
+      out.write("      ASSERT(%s);\n" % comp_expr)
+      out.write("      break;\n")
     out.write("    default:\n")
     out.write('      printf("Unexpected type code\\n");\n')
     out.write("      exit(1);\n")

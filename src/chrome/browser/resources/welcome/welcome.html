@@ -1,5 +1,5 @@
 <!doctype html>
-<html>
+<html dir="$i18n{textdirection}" lang="$i18n{language}" $i18n{dark}>
 <head>
   <meta charset="utf-8">
   <title>$i18n{headerText}</title>
@@ -7,13 +7,20 @@
   <link rel="import" href="chrome://resources/html/polymer.html">
 
   <link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
+  <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
   <link rel="import" href="chrome://resources/html/cr.html">
   <link rel="import" href="chrome://resources/html/util.html">
   <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-  <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
 
+  <link rel="stylesheet" href="chrome://resources/css/md_colors.css">
   <link rel="stylesheet" href="chrome://resources/css/text_defaults_md.css">
   <link rel="stylesheet" href="chrome://welcome/welcome.css">
+
+  <style>
+    html[dark] {
+      background-color: var(--md-background-color);
+    }
+  </style>
 
   <dom-module id="welcome-app">
     <template>
@@ -128,11 +135,15 @@
 
         .subheading {
           animation: fadeInAndSlideUp 600ms 1.9s cubic-bezier(.4, .2, 0, 1) both;
-          color: #939393;
+          color: rgb(95, 99, 104);
           font-size: 1em;
           font-weight: 500;
           margin-top: .25em;
           text-align: center;
+        }
+
+        :host-context([dark]) .subheading {
+          color: var(--cr-secondary-text-color);
         }
 
         .logo {
@@ -167,7 +178,6 @@
         .signin {
           animation: fadeInAndSlideUp 600ms 2s cubic-bezier(.4, .2, 0, 1) both;
           margin-top: 3em;
-          text-align: left;
         }
 
         .signin-description {
@@ -227,5 +237,6 @@
 <body>
   <welcome-app></welcome-app>
   <div class="watermark"></div>
+  <link rel="import" href="chrome://resources/html/dark_mode.html">
 </body>
 </html>

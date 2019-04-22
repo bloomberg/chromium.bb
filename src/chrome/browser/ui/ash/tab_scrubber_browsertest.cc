@@ -21,7 +21,7 @@
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/test_utils.h"
@@ -353,7 +353,7 @@ IN_PROC_BROWSER_TEST_F(TabScrubberTest, FullScreenBrowser) {
   ASSERT_TRUE(ui_test_utils::SendMouseMoveSync(
       gfx::Point(0, browser()->window()->GetBounds().height())));
   AddTabs(browser(), 6);
-  browser()->tab_strip_model()->ActivateTabAt(4, false);
+  browser()->tab_strip_model()->ActivateTabAt(4);
 
   chrome::ToggleFullscreenMode(browser());
   BrowserView* browser_view = BrowserView::GetBrowserViewForNativeWindow(

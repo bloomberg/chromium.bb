@@ -12,13 +12,20 @@
 #include "ui/aura/client/drag_drop_delegate.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 
+namespace gfx {
+class PointF;
+}
+
 namespace ws {
+
+class WindowTree;
 
 // A delegate to forward drag and drop events to a remote client window via
 // mojom::WindowTreeClient.
 class DragDropDelegate : public aura::client::DragDropDelegate {
  public:
-  DragDropDelegate(mojom::WindowTreeClient* window_tree_client,
+  DragDropDelegate(WindowTree* window_tree,
+                   mojom::WindowTreeClient* window_tree_client,
                    aura::Window* window,
                    Id transport_window_id);
   ~DragDropDelegate() override;
@@ -36,6 +43,10 @@ class DragDropDelegate : public aura::client::DragDropDelegate {
   // Callback invoked to update |last_drag_operations_|.
   void UpdateDragOperations(uint32_t drag_operations);
 
+  // Returns the location to use as the root_location for the client.
+  gfx::PointF GetRootLocation(const ui::DropTargetEvent& event);
+
+  WindowTree* window_tree_;
   mojom::WindowTreeClient* const tree_client_;
   aura::Window* const window_;
   const Id transport_window_id_;

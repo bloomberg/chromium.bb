@@ -12,8 +12,9 @@ DEFINE_UI_CLASS_PROPERTY_TYPE(aura::client::FocusChangeObserver*)
 namespace aura {
 namespace client {
 
-DEFINE_LOCAL_UI_CLASS_PROPERTY_KEY(
-    FocusChangeObserver*, kFocusChangeObserverKey, NULL);
+DEFINE_UI_CLASS_PROPERTY_KEY(FocusChangeObserver*,
+                             kFocusChangeObserverKey,
+                             nullptr)
 
 FocusChangeObserver* GetFocusChangeObserver(Window* window) {
   return window ? window->GetProperty(kFocusChangeObserverKey) : NULL;

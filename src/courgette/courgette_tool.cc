@@ -246,7 +246,7 @@ void DisassembleAdjustDiff(const base::FilePath& old_file,
   for (int i = 0;; ++i) {
     courgette::SinkStream* old_stream = flow.data(flow.OLD)->sinks.stream(i);
     courgette::SinkStream* new_stream = flow.data(flow.NEW)->sinks.stream(i);
-    if (old_stream == NULL && new_stream == NULL)
+    if (old_stream == nullptr && new_stream == nullptr)
       break;
 
     courgette::SourceStream old_source;
@@ -259,7 +259,7 @@ void DisassembleAdjustDiff(const base::FilePath& old_file,
     if (status != bsdiff::OK)
       Problem("-xxx failed.");
 
-    std::string append = std::string("-") + base::IntToString(i);
+    std::string append = std::string("-") + base::NumberToString(i);
 
     WriteSinkToFile(&patch_stream,
                     output_file_root.InsertBeforeExtensionASCII(append));

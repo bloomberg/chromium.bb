@@ -26,7 +26,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SPEECH_SPEECH_SYNTHESIS_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_SPEECH_SPEECH_SYNTHESIS_H_
 
-#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/speech/speech_synthesis_utterance.h"
@@ -65,7 +65,7 @@ class MODULES_EXPORT SpeechSynthesis final
   // Used in testing to use a mock platform synthesizer
   void SetPlatformSynthesizer(PlatformSpeechSynthesizer*);
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(voiceschanged, kVoiceschanged);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(voiceschanged, kVoiceschanged)
 
   ExecutionContext* GetExecutionContext() const override {
     return ContextClient::GetExecutionContext();
@@ -83,13 +83,15 @@ class MODULES_EXPORT SpeechSynthesis final
   void SpeakingErrorOccurred(PlatformSpeechSynthesisUtterance*) override;
   void BoundaryEventOccurred(PlatformSpeechSynthesisUtterance*,
                              SpeechBoundary,
-                             unsigned char_index) override;
+                             unsigned char_index,
+                             unsigned char_length) override;
 
   void StartSpeakingImmediately();
   void HandleSpeakingCompleted(SpeechSynthesisUtterance*, bool error_occurred);
   void FireEvent(const AtomicString& type,
                  SpeechSynthesisUtterance*,
                  uint32_t char_index,
+                 uint32_t char_length,
                  const String& name);
 
   void FireErrorEvent(SpeechSynthesisUtterance*,

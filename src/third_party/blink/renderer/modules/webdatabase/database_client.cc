@@ -56,14 +56,11 @@ DatabaseClient* DatabaseClient::From(ExecutionContext* context) {
 
 const char DatabaseClient::kSupplementName[] = "DatabaseClient";
 
-bool DatabaseClient::AllowDatabase(ExecutionContext* context,
-                                   const String& name,
-                                   const String& display_name,
-                                   unsigned estimated_size) {
+bool DatabaseClient::AllowDatabase(ExecutionContext* context) {
   DCHECK(context->IsContextThread());
   Document* document = To<Document>(context);
   if (auto* client = document->GetFrame()->GetContentSettingsClient())
-    return client->AllowDatabase(name, display_name, estimated_size);
+    return client->AllowDatabase();
   return true;
 }
 

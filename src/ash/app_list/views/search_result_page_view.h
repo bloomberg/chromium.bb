@@ -34,6 +34,9 @@ class APP_LIST_EXPORT SearchResultPageView
     return result_container_views_;
   }
 
+  bool IsFirstResultTile() const;
+  bool IsFirstResultHighlighted() const;
+
   // Overridden from views::View:
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   const char* GetClassName() const override;
@@ -41,6 +44,8 @@ class APP_LIST_EXPORT SearchResultPageView
 
   // AppListPage overrides:
   void OnHidden() override;
+  void OnShown() override;
+
   gfx::Rect GetPageBoundsForState(ash::AppListState state) const override;
   void OnAnimationUpdated(double progress,
                           ash::AppListState from_state,
@@ -51,10 +56,16 @@ class APP_LIST_EXPORT SearchResultPageView
 
   // Overridden from SearchResultContainerView::Delegate :
   void OnSearchResultContainerResultsChanged() override;
+  void OnSearchResultContainerResultFocused(
+      SearchResultBaseView* focused_result_view) override;
 
   views::View* contents_view() { return contents_view_; }
 
   SearchResultBaseView* first_result_view() const { return first_result_view_; }
+
+  // Offset/add the size of the shadow border to the bounds
+  // for proper sizing/placement with shadow included.
+  gfx::Rect AddShadowBorderToBounds(const gfx::Rect& bounds) const;
 
  private:
   // Separator between SearchResultContainerView.

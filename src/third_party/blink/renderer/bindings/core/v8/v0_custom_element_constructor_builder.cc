@@ -91,7 +91,7 @@ bool V0CustomElementConstructorBuilder::ValidateOptions(
     prototype_ = v8::Object::New(script_state_->GetIsolate());
     v8::Local<v8::Object> base_prototype =
         script_state_->PerContextData()->PrototypeForType(
-            &V8HTMLElement::wrapper_type_info);
+            V8HTMLElement::GetWrapperTypeInfo());
     if (!base_prototype.IsEmpty()) {
       bool set_prototype;
       if (!prototype_->SetPrototype(script_state_->GetContext(), base_prototype)
@@ -103,7 +103,7 @@ bool V0CustomElementConstructorBuilder::ValidateOptions(
   }
 
   AtomicString namespace_uri = html_names::xhtmlNamespaceURI;
-  if (HasValidPrototypeChainFor(&V8SVGElement::wrapper_type_info))
+  if (HasValidPrototypeChainFor(V8SVGElement::GetWrapperTypeInfo()))
     namespace_uri = svg_names::kNamespaceURI;
 
   DCHECK(!try_catch.HasCaught());
@@ -312,8 +312,8 @@ bool V0CustomElementConstructorBuilder::PrototypeIsValid(
 bool V0CustomElementConstructorBuilder::DidRegisterDefinition() const {
   DCHECK(!constructor_.IsEmpty());
 
-  return callbacks_->SetBinding(
-      V0CustomElementBinding::Create(script_state_->GetIsolate(), prototype_));
+  return callbacks_->SetBinding(std::make_unique<V0CustomElementBinding>(
+      script_state_->GetIsolate(), prototype_));
 }
 
 ScriptValue V0CustomElementConstructorBuilder::BindingsReturnValue() const {

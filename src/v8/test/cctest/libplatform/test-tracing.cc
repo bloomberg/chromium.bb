@@ -4,6 +4,7 @@
 #include <limits>
 
 #include "include/libplatform/v8-tracing.h"
+#include "src/base/platform/platform.h"
 #include "src/libplatform/default-platform.h"
 #include "src/tracing/trace-event.h"
 #include "test/cctest/cctest.h"
@@ -148,13 +149,14 @@ void PopulateJSONWriter(TraceWriter* writer) {
   TraceObject trace_object;
   trace_object.InitializeForTesting(
       'X', tracing_controller->GetCategoryGroupEnabled("v8-cat"), "Test0",
-      v8::internal::tracing::kGlobalScope, 42, 123, 0, nullptr, nullptr,
+      v8::internal::tracing::kGlobalScope, 42, 0x1234, 0, nullptr, nullptr,
       nullptr, nullptr, TRACE_EVENT_FLAG_HAS_ID, 11, 22, 100, 50, 33, 44);
   writer->AppendTraceEvent(&trace_object);
   trace_object.InitializeForTesting(
       'Y', tracing_controller->GetCategoryGroupEnabled("v8-cat"), "Test1",
-      v8::internal::tracing::kGlobalScope, 43, 456, 0, nullptr, nullptr,
-      nullptr, nullptr, 0, 55, 66, 110, 55, 77, 88);
+      v8::internal::tracing::kGlobalScope, 43, 0x5678, 0, nullptr, nullptr,
+      nullptr, nullptr, TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
+      55, 66, 110, 55, 77, 88);
   writer->AppendTraceEvent(&trace_object);
   tracing_controller->StopTracing();
   i::V8::SetPlatformForTesting(old_platform);
@@ -170,7 +172,8 @@ TEST(TestJSONTraceWriter) {
       "\"ph\":\"X\",\"cat\":\"v8-cat\",\"name\":\"Test0\",\"dur\":33,"
       "\"tdur\":44,\"id\":\"0x2a\",\"args\":{}},{\"pid\":55,\"tid\":66,"
       "\"ts\":110,\"tts\":55,\"ph\":\"Y\",\"cat\":\"v8-cat\",\"name\":"
-      "\"Test1\",\"dur\":77,\"tdur\":88,\"args\":{}}]}";
+      "\"Test1\",\"dur\":77,\"tdur\":88,\"bind_id\":\"0x5678\","
+      "\"flow_in\":true,\"flow_out\":true,\"args\":{}}]}";
 
   CHECK_EQ(expected_trace_str, trace_str);
 }
@@ -185,7 +188,8 @@ TEST(TestJSONTraceWriterWithCustomtag) {
       "\"ph\":\"X\",\"cat\":\"v8-cat\",\"name\":\"Test0\",\"dur\":33,"
       "\"tdur\":44,\"id\":\"0x2a\",\"args\":{}},{\"pid\":55,\"tid\":66,"
       "\"ts\":110,\"tts\":55,\"ph\":\"Y\",\"cat\":\"v8-cat\",\"name\":"
-      "\"Test1\",\"dur\":77,\"tdur\":88,\"args\":{}}]}";
+      "\"Test1\",\"dur\":77,\"tdur\":88,\"bind_id\":\"0x5678\","
+      "\"flow_in\":true,\"flow_out\":true,\"args\":{}}]}";
 
   CHECK_EQ(expected_trace_str, trace_str);
 }
@@ -435,6 +439,59 @@ TEST(TracingObservers) {
 
   CHECK_EQ(1, observer.enabled_count);
   CHECK_EQ(1, observer.disabled_count);
+
+  i::V8::SetPlatformForTesting(old_platform);
+}
+
+class TraceWritingThread : public base::Thread {
+ public:
+  TraceWritingThread(
+      v8::platform::tracing::TracingController* tracing_controller)
+      : base::Thread(base::Thread::Options("TraceWritingThread")),
+        tracing_controller_(tracing_controller) {}
+
+  void Run() override {
+    for (int i = 0; i < 1000; i++) {
+      TRACE_EVENT0("v8", "v8.Test");
+      tracing_controller_->AddTraceEvent('A', nullptr, "v8", "", 1, 1, 0,
+                                         nullptr, nullptr, nullptr, nullptr, 0);
+      tracing_controller_->AddTraceEventWithTimestamp('A', nullptr, "v8", "", 1,
+                                                      1, 0, nullptr, nullptr,
+                                                      nullptr, nullptr, 0, 0);
+      base::OS::Sleep(base::TimeDelta::FromMilliseconds(1));
+    }
+  }
+
+ private:
+  v8::platform::tracing::TracingController* tracing_controller_;
+};
+
+TEST(AddTraceEventMultiThreaded) {
+  v8::Platform* old_platform = i::V8::GetCurrentPlatform();
+  std::unique_ptr<v8::Platform> default_platform(
+      v8::platform::NewDefaultPlatform());
+  i::V8::SetPlatformForTesting(default_platform.get());
+
+  auto tracing = base::make_unique<v8::platform::tracing::TracingController>();
+  v8::platform::tracing::TracingController* tracing_controller = tracing.get();
+  static_cast<v8::platform::DefaultPlatform*>(default_platform.get())
+      ->SetTracingController(std::move(tracing));
+
+  MockTraceWriter* writer = new MockTraceWriter();
+  TraceBuffer* ring_buffer =
+      TraceBuffer::CreateTraceBufferRingBuffer(1, writer);
+  tracing_controller->Initialize(ring_buffer);
+  TraceConfig* trace_config = new TraceConfig();
+  trace_config->AddIncludedCategory("v8");
+  tracing_controller->StartTracing(trace_config);
+
+  TraceWritingThread thread(tracing_controller);
+  thread.StartSynchronously();
+
+  base::OS::Sleep(base::TimeDelta::FromMilliseconds(100));
+  tracing_controller->StopTracing();
+
+  thread.Join();
 
   i::V8::SetPlatformForTesting(old_platform);
 }

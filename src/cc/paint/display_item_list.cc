@@ -31,6 +31,31 @@ bool GetCanvasClipBounds(SkCanvas* canvas, gfx::Rect* clip_bounds) {
   return true;
 }
 
+void FillTextContent(const PaintOpBuffer* buffer,
+                     std::vector<NodeHolder>* content) {
+  for (auto* op : PaintOpBuffer::Iterator(buffer)) {
+    if (op->GetType() == PaintOpType::DrawTextBlob) {
+      content->push_back(static_cast<DrawTextBlobOp*>(op)->node_holder);
+    } else if (op->GetType() == PaintOpType::DrawRecord) {
+      FillTextContent(static_cast<DrawRecordOp*>(op)->record.get(), content);
+    }
+  }
+}
+
+void FillTextContentByOffsets(const PaintOpBuffer* buffer,
+                              const std::vector<size_t>& offsets,
+                              std::vector<NodeHolder>* content) {
+  if (!buffer)
+    return;
+  for (auto* op : PaintOpBuffer::OffsetIterator(buffer, &offsets)) {
+    if (op->GetType() == PaintOpType::DrawTextBlob) {
+      content->push_back(static_cast<DrawTextBlobOp*>(op)->node_holder);
+    } else if (op->GetType() == PaintOpType::DrawRecord) {
+      FillTextContent(static_cast<DrawRecordOp*>(op)->record.get(), content);
+    }
+  }
+}
+
 }  // namespace
 
 DisplayItemList::DisplayItemList(UsageHint usage_hint)
@@ -54,6 +79,13 @@ void DisplayItemList::Raster(SkCanvas* canvas,
   std::vector<size_t> offsets;
   rtree_.Search(canvas_playback_rect, &offsets);
   paint_op_buffer_.Playback(canvas, PlaybackParams(image_provider), &offsets);
+}
+
+void DisplayItemList::CaptureContent(const gfx::Rect& rect,
+                                     std::vector<NodeHolder>* content) const {
+  std::vector<size_t> offsets;
+  rtree_.Search(rect, &offsets);
+  FillTextContentByOffsets(&paint_op_buffer_, offsets, content);
 }
 
 void DisplayItemList::Finalize() {
@@ -116,12 +148,15 @@ DisplayItemList::CreateTracedValue(bool include_items) const {
     state->BeginArray("items");
 
     PlaybackParams params(nullptr, SkMatrix::I());
-    const auto& bounds = rtree_.GetAllBoundsForTracing();
-    size_t i = 0;
+    std::map<size_t, gfx::Rect> visual_rects = rtree_.GetAllBoundsForTracing();
     for (const PaintOp* op : PaintOpBuffer::Iterator(&paint_op_buffer_)) {
       state->BeginDictionary();
       state->SetString("name", PaintOpTypeToString(op->GetType()));
-      MathUtil::AddToTracedValue("visual_rect", bounds[i++], state.get());
+
+      MathUtil::AddToTracedValue(
+          "visual_rect",
+          visual_rects[paint_op_buffer_.GetOpOffsetForTracing(op)],
+          state.get());
 
       SkPictureRecorder recorder;
       SkCanvas* canvas =

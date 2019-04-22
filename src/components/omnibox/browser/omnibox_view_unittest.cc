@@ -5,7 +5,8 @@
 #include <stddef.h>
 #include <utility>
 
-#include "base/macros.h"
+#include "base/bind_helpers.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -94,7 +95,7 @@ TEST_F(OmniboxViewTest, TestStripSchemasUnsafeForPaste) {
       "alert(5)"   // Embedded control characters unsafe.
   };
 
-  for (size_t i = 0; i < arraysize(urls); i++) {
+  for (size_t i = 0; i < base::size(urls); i++) {
     EXPECT_EQ(ASCIIToUTF16(expecteds[i]),
               OmniboxView::StripJavascriptSchemas(base::UTF8ToUTF16(urls[i])));
   }
@@ -144,8 +145,9 @@ TEST_F(OmniboxViewTest, GetIcon_Default) {
   gfx::ImageSkia expected_icon = gfx::CreateVectorIcon(
       vector_icons::kSearchIcon, gfx::kFaviconSize, gfx::kPlaceholderColor);
 
-  gfx::ImageSkia icon = view()->GetIcon(
-      gfx::kFaviconSize, gfx::kPlaceholderColor, base::DoNothing());
+  gfx::ImageSkia icon =
+      view()->GetIcon(gfx::kFaviconSize, gfx::kPlaceholderColor,
+                      gfx::kPlaceholderColor, base::DoNothing());
 
   EXPECT_EQ(icon.bitmap(), expected_icon.bitmap());
 }
@@ -164,8 +166,9 @@ TEST_F(OmniboxViewTest, GetIcon_BookmarkIcon) {
   gfx::ImageSkia expected_icon = gfx::CreateVectorIcon(
       omnibox::kBookmarkIcon, gfx::kFaviconSize, gfx::kPlaceholderColor);
 
-  gfx::ImageSkia icon = view()->GetIcon(
-      gfx::kFaviconSize, gfx::kPlaceholderColor, base::DoNothing());
+  gfx::ImageSkia icon =
+      view()->GetIcon(gfx::kFaviconSize, gfx::kPlaceholderColor,
+                      gfx::kPlaceholderColor, base::DoNothing());
 
   EXPECT_EQ(icon.bitmap(), expected_icon.bitmap());
 }
@@ -179,7 +182,8 @@ TEST_F(OmniboxViewTest, GetIcon_Favicon) {
   match.destination_url = kUrl;
   model()->SetCurrentMatchForTest(match);
 
-  view()->GetIcon(gfx::kFaviconSize, gfx::kPlaceholderColor, base::DoNothing());
+  view()->GetIcon(gfx::kFaviconSize, gfx::kPlaceholderColor,
+                  gfx::kPlaceholderColor, base::DoNothing());
 
   EXPECT_EQ(client()->GetPageUrlForLastFaviconRequest(), kUrl);
 }

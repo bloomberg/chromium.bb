@@ -5,8 +5,8 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/stl_util.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/mojom/url_test.mojom.h"
@@ -42,7 +42,7 @@ TEST(MojoGURLStructTraitsTest, Basic) {
       "http://www.google.com/", "http://user:pass@host.com:888/foo;bar?baz#nop",
   };
 
-  for (size_t i = 0; i < arraysize(serialize_cases); i++) {
+  for (size_t i = 0; i < base::size(serialize_cases); i++) {
     GURL input(serialize_cases[i]);
     GURL output;
     EXPECT_TRUE(proxy->BounceUrl(input, &output));

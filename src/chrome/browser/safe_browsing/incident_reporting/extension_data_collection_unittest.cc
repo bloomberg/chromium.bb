@@ -100,7 +100,7 @@ void ExtensionTestingProfile::AddExtension(std::string extension_id,
   extension_prefs_->UpdateExtensionPref(
       extension_id, "install_time",
       std::make_unique<base::Value>(
-          base::Int64ToString(install_time.ToInternalValue())));
+          base::NumberToString(install_time.ToInternalValue())));
   extension_prefs_->UpdateExtensionPref(
       extension_id, "state", std::make_unique<base::Value>(state_value));
 }
@@ -144,6 +144,8 @@ class ExtensionDataCollectionTest : public testing::Test {
     // UserManager should be destroyed before TestingBrowserProcess as it
     // uses it in destructor.
     test_user_manager_.reset();
+    // Finish any pending tasks before deleting the TestingBrowserProcess.
+    browser_thread_bundle_.RunUntilIdle();
 #endif
     profile_manager_.reset();
     TestingBrowserProcess::DeleteInstance();
@@ -153,7 +155,7 @@ class ExtensionDataCollectionTest : public testing::Test {
   std::unique_ptr<ExtensionTestingProfile> CreateProfile(
       SafeBrowsingDisposition safe_browsing_opt_in) {
     std::string profile_name("profile");
-    profile_name.append(base::IntToString(++profile_number_));
+    profile_name.append(base::NumberToString(++profile_number_));
 
     // Create prefs for the profile and safe browsing preferences accordingly.
     std::unique_ptr<sync_preferences::TestingPrefServiceSyncable> prefs(

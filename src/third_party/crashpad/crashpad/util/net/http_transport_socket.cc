@@ -24,6 +24,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/scoped_generic.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "util/file/file_io.h"
@@ -365,7 +366,7 @@ bool WriteRequest(Stream* stream,
 
   FileOperationResult data_bytes;
   do {
-    constexpr size_t kCRLFSize = arraysize(kCRLFTerminator) - 1;
+    constexpr size_t kCRLFSize = base::size(kCRLFTerminator) - 1;
     struct __attribute__((packed)) {
       char size[8];
       char crlf[2];
@@ -393,11 +394,13 @@ bool WriteRequest(Stream* stream,
       // placed immediately following the used portion of buf.data, even if
       // buf.data is not full.
 
-      // Not snprintf because non-null terminated is desired.
-      int rv = sprintf(
-          buf.size, "%08x", base::checked_cast<unsigned int>(data_bytes));
-      DCHECK_GE(rv, 0);
+      char tmp[9];
+      int rv = snprintf(tmp,
+                        sizeof(tmp),
+                        "%08x",
+                        base::checked_cast<unsigned int>(data_bytes));
       DCHECK_EQ(static_cast<size_t>(rv), sizeof(buf.size));
+      strncpy(buf.size, tmp, sizeof(buf.size));
       DCHECK_NE(buf.size[sizeof(buf.size) - 1], '\0');
 
       memcpy(&buf.crlf[0], kCRLFTerminator, kCRLFSize);

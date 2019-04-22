@@ -24,6 +24,7 @@ import org.chromium.components.embedder_support.view.ContentView;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
 import org.chromium.components.navigation_interception.NavigationParams;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.RenderCoordinates;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
@@ -95,6 +96,9 @@ public class OverlayPanelContent {
     // java layer. Otherwise, the instance could be garbage-collected unexpectedly.
     private InterceptNavigationDelegate mInterceptNavigationDelegate;
 
+    /** Set to {@code True} if opened for an incognito tab. */
+    private boolean mIsIncognito;
+
     /** The desired size of the {@link ContentView} associated with this panel content. */
     private int mContentViewWidth;
     private int mContentViewHeight;
@@ -160,15 +164,17 @@ public class OverlayPanelContent {
      *                        for this parameter, the default one will be used.
      * @param progressObserver An observer for progress related events.
      * @param activity The ChromeActivity that contains this object.
+     * @param isIncognito {@True} if opened for an incognito tab
      * @param barHeight The height of the bar at the top of the OverlayPanel in dp.
      */
     public OverlayPanelContent(OverlayContentDelegate contentDelegate,
             OverlayContentProgressObserver progressObserver, ChromeActivity activity,
-            float barHeight) {
+            boolean isIncognito, float barHeight) {
         mNativeOverlayPanelContentPtr = nativeInit();
         mContentDelegate = contentDelegate;
         mProgressObserver = progressObserver;
         mActivity = activity;
+        mIsIncognito = isIncognito;
         mBarHeightPx = (int) (barHeight * mActivity.getResources().getDisplayMetrics().density);
 
         mWebContentsDelegate = new WebContentsDelegateAndroid() {
@@ -296,7 +302,7 @@ public class OverlayPanelContent {
         }
 
         // Creates an initially hidden WebContents which gets shown when the panel is opened.
-        mWebContents = WebContentsFactory.createWebContents(false, true);
+        mWebContents = WebContentsFactory.createWebContents(mIsIncognito, true);
 
         ContentView cv = ContentView.createContentView(mActivity, mWebContents);
         if (mContentViewWidth != 0 || mContentViewHeight != 0) {
@@ -328,25 +334,21 @@ public class OverlayPanelContent {
                     }
 
                     @Override
-                    public void didStartNavigation(String url, boolean isInMainFrame,
-                            boolean isSameDocument, boolean isErrorPage) {
-                        if (isInMainFrame && !isSameDocument) {
+                    public void didStartNavigation(NavigationHandle navigation) {
+                        if (navigation.isInMainFrame() && !navigation.isSameDocument()) {
+                            String url = navigation.getUrl();
                             mContentDelegate.onMainFrameLoadStarted(
                                     url, !TextUtils.equals(url, mLoadedUrl));
                         }
                     }
 
                     @Override
-                    public void didFinishNavigation(String url, boolean isInMainFrame,
-                            boolean isErrorPage, boolean hasCommitted, boolean isSameDocument,
-                            boolean isFragmentNavigation, boolean isRendererInitiated,
-                            boolean isDownload, Integer pageTransition, int errorCode,
-                            String errorDescription, int httpStatusCode) {
-                        if (hasCommitted && isInMainFrame) {
+                    public void didFinishNavigation(NavigationHandle navigation) {
+                        if (navigation.hasCommitted() && navigation.isInMainFrame()) {
                             mIsProcessingPendingNavigation = false;
-                            mContentDelegate.onMainFrameNavigation(url,
-                                    !TextUtils.equals(url, mLoadedUrl),
-                                    isHttpFailureCode(httpStatusCode));
+                            mContentDelegate.onMainFrameNavigation(navigation.getUrl(),
+                                    !TextUtils.equals(navigation.getUrl(), mLoadedUrl),
+                                    isHttpFailureCode(navigation.httpStatusCode()));
                         }
                     }
                 };

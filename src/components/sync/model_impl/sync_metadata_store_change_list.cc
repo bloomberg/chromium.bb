@@ -74,4 +74,9 @@ Optional<ModelError> SyncMetadataStoreChangeList::TakeError() {
   return temp;
 }
 
+const SyncMetadataStore*
+SyncMetadataStoreChangeList::GetMetadataStoreForTesting() const {
+  return store_;
+}
+
 }  // namespace syncer

@@ -52,7 +52,6 @@ schema_sources_ = [
   "page_capture.json",
   "passwords_private.idl",
   "permissions.json",
-  "preferences_private.json",
   "resources_private.idl",
   "safe_browsing_private.idl",
   "sessions.json",
@@ -85,7 +84,6 @@ if (is_chromeos || is_mac || is_win) {
 
 if (is_chromeos) {
   schema_sources_ += [
-    "arc_apps_private.idl",
     "certificate_provider.idl",
     "certificate_provider_internal.idl",
     "echo_private.json",

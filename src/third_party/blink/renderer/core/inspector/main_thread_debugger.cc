@@ -103,11 +103,12 @@ MainThreadDebugger::~MainThreadDebugger() {
   instance_ = nullptr;
 }
 
-void MainThreadDebugger::ReportConsoleMessage(ExecutionContext* context,
-                                              MessageSource source,
-                                              MessageLevel level,
-                                              const String& message,
-                                              SourceLocation* location) {
+void MainThreadDebugger::ReportConsoleMessage(
+    ExecutionContext* context,
+    mojom::ConsoleMessageSource source,
+    mojom::ConsoleMessageLevel level,
+    const String& message,
+    SourceLocation* location) {
   if (LocalFrame* frame = ToFrame(context))
     frame->Console().ReportMessageToClient(source, level, message, location);
 }
@@ -188,9 +189,10 @@ void MainThreadDebugger::ExceptionThrown(ExecutionContext* context,
     NOTREACHED();
   }
 
-  frame->Console().ReportMessageToClient(kJSMessageSource, kErrorMessageLevel,
-                                         event->MessageForConsole(),
-                                         event->Location());
+  frame->Console().ReportMessageToClient(
+      mojom::ConsoleMessageSource::kJavaScript,
+      mojom::ConsoleMessageLevel::kError, event->MessageForConsole(),
+      event->Location());
 
   const String default_message = "Uncaught";
   if (script_state && script_state->ContextIsValid()) {
@@ -282,8 +284,20 @@ void MainThreadDebugger::unmuteMetrics(int context_group_id) {
 v8::Local<v8::Context> MainThreadDebugger::ensureDefaultContextInGroup(
     int context_group_id) {
   LocalFrame* frame = WeakIdentifierMap<LocalFrame>::Lookup(context_group_id);
-  ScriptState* script_state =
-      frame ? ToScriptStateForMainWorld(frame) : nullptr;
+  if (!frame)
+    return v8::Local<v8::Context>();
+
+  // This is a workaround code with a bailout to avoid crashing in
+  // LocalWindowProxy::Initialize().
+  // We cannot request a ScriptState on a provisional frame as it would lead
+  // to a context creation on it, which is not allowed. Remove this extra check
+  // when provisional frames concept gets eliminated. See crbug.com/897816
+  // The DCHECK is kept to catch additional regressions earlier.
+  DCHECK(!frame->IsProvisional());
+  if (frame->IsProvisional())
+    return v8::Local<v8::Context>();
+
+  ScriptState* script_state = ToScriptStateForMainWorld(frame);
   return script_state ? script_state->GetContext() : v8::Local<v8::Context>();
 }
 
@@ -321,12 +335,13 @@ void MainThreadDebugger::consoleAPIMessage(
     return;
   // TODO(dgozman): we can save a copy of message and url here by making
   // FrameConsole work with StringView.
-  std::unique_ptr<SourceLocation> location =
-      SourceLocation::Create(ToCoreString(url), line_number, column_number,
-                             stack_trace ? stack_trace->clone() : nullptr, 0);
-  frame->Console().ReportMessageToClient(kConsoleAPIMessageSource,
-                                         V8MessageLevelToMessageLevel(level),
-                                         ToCoreString(message), location.get());
+  std::unique_ptr<SourceLocation> location = std::make_unique<SourceLocation>(
+      ToCoreString(url), line_number, column_number,
+      stack_trace ? stack_trace->clone() : nullptr, 0);
+  frame->Console().ReportMessageToClient(
+      mojom::ConsoleMessageSource::kConsoleApi,
+      V8MessageLevelToMessageLevel(level), ToCoreString(message),
+      location.get());
 }
 
 void MainThreadDebugger::consoleClear(int context_group_id) {
@@ -343,8 +358,9 @@ v8::MaybeLocal<v8::Value> MainThreadDebugger::memoryInfo(
   ExecutionContext* execution_context = ToExecutionContext(context);
   DCHECK(execution_context);
   DCHECK(execution_context->IsDocument());
-  return ToV8(MemoryInfo::Create(MemoryInfo::Precision::Bucketized),
-              context->Global(), isolate);
+  return ToV8(
+      MakeGarbageCollected<MemoryInfo>(MemoryInfo::Precision::Bucketized),
+      context->Global(), isolate);
 }
 
 void MainThreadDebugger::installAdditionalCommandLineAPI(

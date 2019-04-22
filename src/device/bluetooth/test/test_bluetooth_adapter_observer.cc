@@ -37,6 +37,12 @@ void TestBluetoothAdapterObserver::Reset() {
   device_added_count_ = 0;
   device_changed_count_ = 0;
   device_address_changed_count_ = 0;
+  device_advertisement_raw_received_count_ = 0;
+  last_device_name_ = "";
+  last_advertisement_name_ = "";
+  last_rssi_ = 128;
+  last_tx_power_ = 128;
+  last_appearance_ = 128;
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
   device_paired_changed_count_ = 0;
   device_new_paired_status_ = false;
@@ -135,6 +141,27 @@ void TestBluetoothAdapterObserver::DeviceAddressChanged(
   ++device_address_changed_count_;
   last_device_ = device;
   last_device_address_ = device->GetAddress();
+
+  QuitMessageLoop();
+}
+
+void TestBluetoothAdapterObserver::DeviceAdvertisementReceived(
+    const std::string& device_address,
+    const base::Optional<std::string>& device_name,
+    const base::Optional<std::string>& advertisement_name,
+    base::Optional<int8_t> rssi,
+    base::Optional<int8_t> tx_power,
+    base::Optional<uint16_t> appearance,
+    const device::BluetoothDevice::UUIDList& advertised_uuids,
+    const device::BluetoothDevice::ServiceDataMap& service_data_map,
+    const device::BluetoothDevice::ManufacturerDataMap& manufacturer_data_map) {
+  ++device_advertisement_raw_received_count_;
+  last_device_name_ = device_address;
+  last_advertisement_name_ = device_name;
+  last_rssi_ = rssi;
+  last_tx_power_ = tx_power;
+  last_appearance_ = appearance;
+  // TODO(dougt): Test advertised_uuids, service_data_map, manufacturer_data_map
 
   QuitMessageLoop();
 }

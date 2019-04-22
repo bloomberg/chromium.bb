@@ -21,9 +21,7 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.CallbackHelper;
-import org.chromium.chrome.browser.compositor.layouts.Layout;
-import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
-import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
+import org.chromium.chrome.browser.compositor.layouts.MockLayoutUpdateHost;
 import org.chromium.chrome.browser.util.MathUtils;
 
 import java.util.ArrayList;
@@ -38,46 +36,12 @@ import java.util.ArrayList;
         sdk = Build.VERSION_CODES.N_MR1)
 public final class CompositorAnimatorTest {
     /** A mock implementation of {@link LayoutUpdateHost} that tracks update requests. */
-    private static class MockLayoutUpdateHost implements LayoutUpdateHost {
+    private static class MockLayoutUpdateHostWithCallback extends MockLayoutUpdateHost {
         private final CallbackHelper mUpdateCallbackHelper = new CallbackHelper();
 
         @Override
         public void requestUpdate() {
             mUpdateCallbackHelper.notifyCalled();
-        }
-
-        @Override
-        public void startHiding(int nextTabId, boolean hintAtTabSelection) {}
-
-        @Override
-        public void doneHiding() {}
-
-        @Override
-        public void doneShowing() {}
-
-        @Override
-        public boolean isActiveLayout(Layout layout) {
-            return true;
-        }
-
-        @Override
-        public void initLayoutTabFromHost(final int tabId) {}
-
-        @Override
-        public LayoutTab createLayoutTab(int id, boolean incognito, boolean showCloseButton,
-                boolean isTitleNeeded, float maxContentWidth, float maxContentHeight) {
-            return null;
-        }
-
-        @Override
-        public void releaseTabLayout(int id) {}
-
-        @Override
-        public void releaseResourcesForTab(int tabId) {}
-
-        @Override
-        public CompositorAnimationHandler getAnimationHandler() {
-            return null;
         }
     }
 
@@ -116,7 +80,7 @@ public final class CompositorAnimatorTest {
     }
 
     /** A mock {@link LayoutUpdateHost} to track update requests. */
-    private MockLayoutUpdateHost mHost;
+    private MockLayoutUpdateHostWithCallback mHost;
 
     /** The handler that is responsible for managing all {@link CompositorAnimator}s. */
     private CompositorAnimationHandler mHandler;
@@ -130,7 +94,7 @@ public final class CompositorAnimatorTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        mHost = new MockLayoutUpdateHost();
+        mHost = new MockLayoutUpdateHostWithCallback();
 
         mHandler = new CompositorAnimationHandler(mHost);
 

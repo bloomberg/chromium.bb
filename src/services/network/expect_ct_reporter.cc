@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/base64.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/json/json_writer.h"
@@ -78,7 +79,7 @@ std::string SCTOriginToString(
   return "";
 }
 
-void AddSCT(const net::SignedCertificateTimestampAndStatus& sct,
+bool AddSCT(const net::SignedCertificateTimestampAndStatus& sct,
             base::ListValue* list) {
   std::unique_ptr<base::DictionaryValue> list_item(new base::DictionaryValue());
   // Chrome implements RFC6962, not 6962-bis, so the reports contain v1 SCTs.
@@ -101,11 +102,13 @@ void AddSCT(const net::SignedCertificateTimestampAndStatus& sct,
   list_item->SetString("status", status);
   list_item->SetString("source", SCTOriginToString(sct.sct->origin));
   std::string serialized_sct;
-  net::ct::EncodeSignedCertificateTimestamp(sct.sct, &serialized_sct);
+  if (!net::ct::EncodeSignedCertificateTimestamp(sct.sct, &serialized_sct))
+    return false;
   std::string encoded_serialized_sct;
   base::Base64Encode(serialized_sct, &encoded_serialized_sct);
   list_item->SetString("serialized_sct", encoded_serialized_sct);
   list->Append(std::move(list_item));
+  return true;
 }
 
 constexpr net::NetworkTrafficAnnotationTag kExpectCTReporterTrafficAnnotation =
@@ -175,7 +178,8 @@ void ExpectCTReporter::OnExpectCTFailed(
 
   std::unique_ptr<base::ListValue> scts(new base::ListValue());
   for (const auto& sct_and_status : signed_certificate_timestamps) {
-    AddSCT(sct_and_status, scts.get());
+    if (!AddSCT(sct_and_status, scts.get()))
+      LOG(ERROR) << "Failed to add signed certificate timestamp to list";
   }
   report->Set("scts", std::move(scts));
 

@@ -11,7 +11,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
-#include "third_party/blink/renderer/core/page/page_visibility_state.h"
+#include "third_party/blink/renderer/core/page/page_hidden_state.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_location.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_error.h"
@@ -55,23 +55,23 @@ ServiceWorkerWindowClient* ServiceWorkerWindowClient::Create(
 ServiceWorkerWindowClient::ServiceWorkerWindowClient(
     const WebServiceWorkerClientInfo& info)
     : ServiceWorkerClient(info),
-      page_visibility_state_(info.page_visibility_state),
+      page_hidden_(info.page_hidden),
       is_focused_(info.is_focused) {}
 
 ServiceWorkerWindowClient::ServiceWorkerWindowClient(
     const mojom::blink::ServiceWorkerClientInfo& info)
     : ServiceWorkerClient(info),
-      page_visibility_state_(info.page_visibility_state),
+      page_hidden_(info.page_hidden),
       is_focused_(info.is_focused) {}
 
 ServiceWorkerWindowClient::~ServiceWorkerWindowClient() = default;
 
 String ServiceWorkerWindowClient::visibilityState() const {
-  return PageVisibilityStateString(page_visibility_state_);
+  return PageHiddenStateString(page_hidden_);
 }
 
 ScriptPromise ServiceWorkerWindowClient::focus(ScriptState* script_state) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   if (!ExecutionContext::From(script_state)->IsWindowInteractionAllowed()) {
@@ -88,7 +88,7 @@ ScriptPromise ServiceWorkerWindowClient::focus(ScriptState* script_state) {
 
 ScriptPromise ServiceWorkerWindowClient::navigate(ScriptState* script_state,
                                                   const String& url) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
   ExecutionContext* context = ExecutionContext::From(script_state);
 

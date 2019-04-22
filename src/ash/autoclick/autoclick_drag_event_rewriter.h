@@ -21,16 +21,11 @@ class ASH_EXPORT AutoclickDragEventRewriter : public ui::EventRewriter {
   bool IsEnabled() const;
 
   // ui::EventRewriter (visible for testing):
-  ui::EventRewriteStatus RewriteEvent(
+  ui::EventDispatchDetails RewriteEvent(
       const ui::Event& event,
-      std::unique_ptr<ui::Event>* new_event) override;
+      const Continuation continuation) override;
 
  private:
-  // ui::EventRewriter:
-  ui::EventRewriteStatus NextDispatchEvent(
-      const ui::Event& last_event,
-      std::unique_ptr<ui::Event>* new_event) override;
-
   bool enabled_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(AutoclickDragEventRewriter);

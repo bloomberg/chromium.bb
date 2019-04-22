@@ -14,12 +14,12 @@
 
 import {assertExists} from '../base/logging';
 import {Actions} from '../common/actions';
+import {Engine} from '../common/engine';
 import {Registry} from '../common/registry';
 import {TrackState} from '../common/state';
 
 import {Controller} from './controller';
 import {ControllerFactory} from './controller';
-import {Engine} from './engine';
 import {globals} from './globals';
 
 // TrackController is a base class overridden by track implementations (e.g.,
@@ -61,6 +61,12 @@ export abstract class TrackController<Config = {}, Data = {}> extends
     // Track ID can be UUID but '-' is not valid for sql table name.
     const idSuffix = this.trackId.split('-').join('_');
     return `${prefix}_${idSuffix}`;
+  }
+
+  shouldSummarize(resolution: number): boolean {
+    // |resolution| is in s/px (to nearest power of 10) assuming a display
+    // of ~1000px 0.0008 is 0.8s.
+    return resolution >= 0.0008;
   }
 
   run() {

@@ -17,6 +17,8 @@ libangle_common_sources = [
   "src/common/PackedEnums.h",
   "src/common/PackedGLEnums_autogen.cpp",
   "src/common/PackedGLEnums_autogen.h",
+  "src/common/PoolAlloc.cpp",
+  "src/common/PoolAlloc.h",
   "src/common/aligned_memory.cpp",
   "src/common/aligned_memory.h",
   "src/common/angleutils.cpp",
@@ -32,8 +34,6 @@ libangle_common_sources = [
   "src/common/platform.h",
   "src/common/string_utils.cpp",
   "src/common/string_utils.h",
-  "src/common/system_utils.cpp",
-  "src/common/system_utils.h",
   "src/common/third_party/base/anglebase/base_export.h",
   "src/common/third_party/base/anglebase/containers/mru_cache.h",
   "src/common/third_party/base/anglebase/logging.h",
@@ -47,19 +47,52 @@ libangle_common_sources = [
   "src/common/third_party/base/anglebase/sys_byteorder.h",
   "src/common/third_party/smhasher/src/PMurHash.cpp",
   "src/common/third_party/smhasher/src/PMurHash.h",
-  "src/common/third_party/xxhash/xxhash.c",
-  "src/common/third_party/xxhash/xxhash.h",
   "src/common/tls.cpp",
   "src/common/tls.h",
   "src/common/uniform_type_info_autogen.cpp",
   "src/common/utilities.cpp",
   "src/common/utilities.h",
   "src/common/vector_utils.h",
-  "src/common/version.h",
 ]
-libangle_common_linux_sources = [ "src/common/system_utils_linux.cpp" ]
-libangle_common_mac_sources = [ "src/common/system_utils_mac.cpp" ]
-libangle_common_win_sources = [ "src/common/system_utils_win.cpp" ]
+
+xxhash_sources = [
+  "src/common/third_party/xxhash/xxhash.c",
+  "src/common/third_party/xxhash/xxhash.h",
+]
+
+angle_system_utils_sources = [
+  "src/common/Optional.h",
+  "src/common/angleutils.h",
+  "src/common/platform.h",
+  "src/common/system_utils.cpp",
+  "src/common/system_utils.h",
+]
+
+if (is_linux || is_android || is_fuchsia) {
+  angle_system_utils_sources += [
+    "src/common/system_utils_linux.cpp",
+    "src/common/system_utils_posix.cpp",
+  ]
+}
+
+if (is_mac) {
+  angle_system_utils_sources += [
+    "src/common/system_utils_mac.cpp",
+    "src/common/system_utils_posix.cpp",
+  ]
+}
+
+if (is_win) {
+  angle_system_utils_sources += [ "src/common/system_utils_win.cpp" ]
+}
+
+if (is_android) {
+  angle_system_utils_sources += [
+    "src/common/android_util.cpp",
+    "src/common/android_util.h",
+  ]
+}
+
 libangle_image_util_sources = [
   "src/image_util/copyimage.cpp",
   "src/image_util/copyimage.h",
@@ -73,18 +106,25 @@ libangle_image_util_sources = [
   "src/image_util/loadimage.inl",
   "src/image_util/loadimage_etc.cpp",
 ]
+
 libangle_gpu_info_util_sources = [
   "src/gpu_info_util/SystemInfo.cpp",
   "src/gpu_info_util/SystemInfo.h",
   "src/gpu_info_util/SystemInfo_internal.h",
 ]
+
 libangle_gpu_info_util_win_sources = [ "src/gpu_info_util/SystemInfo_win.cpp" ]
+
 libangle_gpu_info_util_linux_sources =
     [ "src/gpu_info_util/SystemInfo_linux.cpp" ]
+
 libangle_gpu_info_util_libpci_sources =
     [ "src/gpu_info_util/SystemInfo_libpci.cpp" ]
+
 libangle_gpu_info_util_x11_sources = [ "src/gpu_info_util/SystemInfo_x11.cpp" ]
+
 libangle_gpu_info_util_mac_sources = [ "src/gpu_info_util/SystemInfo_mac.mm" ]
+
 libangle_includes = [
   "include/angle_gl.h",
   "include/export.h",
@@ -111,10 +151,12 @@ libangle_includes = [
   "include/GLSLANG/ShaderLang.h",
   "include/GLSLANG/ShaderVars.h",
   "include/KHR/khrplatform.h",
+  "include/WGL/wgl.h",
   "include/platform/FeaturesVk.h",
   "include/platform/Platform.h",
   "include/platform/WorkaroundsD3D.h",
 ]
+
 libangle_sources = [
   "src/common/event_tracer.cpp",
   "src/common/event_tracer.h",
@@ -136,14 +178,14 @@ libangle_sources = [
   "src/libANGLE/Context_gles_1_0.cpp",
   "src/libANGLE/Context_gles_1_0_autogen.h",
   "src/libANGLE/Context.h",
-  "src/libANGLE/ContextState.cpp",
-  "src/libANGLE/ContextState.h",
   "src/libANGLE/Debug.cpp",
   "src/libANGLE/Debug.h",
   "src/libANGLE/Device.cpp",
   "src/libANGLE/Device.h",
   "src/libANGLE/Display.cpp",
   "src/libANGLE/Display.h",
+  "src/libANGLE/EGLSync.cpp",
+  "src/libANGLE/EGLSync.h",
   "src/libANGLE/Error.cpp",
   "src/libANGLE/Error.h",
   "src/libANGLE/Error.inl",
@@ -171,6 +213,8 @@ libangle_sources = [
   "src/libANGLE/IndexRangeCache.h",
   "src/libANGLE/LoggingAnnotator.cpp",
   "src/libANGLE/LoggingAnnotator.h",
+  "src/libANGLE/MemoryObject.cpp",
+  "src/libANGLE/MemoryObject.h",
   "src/libANGLE/MemoryProgramCache.cpp",
   "src/libANGLE/MemoryProgramCache.h",
   "src/libANGLE/Observer.cpp",
@@ -247,14 +291,16 @@ libangle_sources = [
   "src/libANGLE/renderer/DisplayImpl.cpp",
   "src/libANGLE/renderer/DisplayImpl.h",
   "src/libANGLE/renderer/EGLImplFactory.h",
+  "src/libANGLE/renderer/EGLSyncImpl.h",
   "src/libANGLE/renderer/FenceNVImpl.h",
-  "src/libANGLE/renderer/FormatID_autogen.inc",
+  "src/libANGLE/renderer/FormatID_autogen.h",
   "src/libANGLE/renderer/Format_table_autogen.cpp",
   "src/libANGLE/renderer/Format.h",
   "src/libANGLE/renderer/FramebufferAttachmentObjectImpl.h",
   "src/libANGLE/renderer/FramebufferImpl.h",
   "src/libANGLE/renderer/GLImplFactory.h",
   "src/libANGLE/renderer/ImageImpl.h",
+  "src/libANGLE/renderer/MemoryObjectImpl.h",
   "src/libANGLE/renderer/PathImpl.h",
   "src/libANGLE/renderer/ProgramImpl.h",
   "src/libANGLE/renderer/ProgramPipelineImpl.h",
@@ -263,6 +309,7 @@ libangle_sources = [
   "src/libANGLE/renderer/RenderbufferImpl.h",
   "src/libANGLE/renderer/RenderTargetCache.h",
   "src/libANGLE/renderer/SamplerImpl.h",
+  "src/libANGLE/renderer/ShaderImpl.cpp",
   "src/libANGLE/renderer/ShaderImpl.h",
   "src/libANGLE/renderer/StreamProducerImpl.h",
   "src/libANGLE/renderer/SurfaceImpl.cpp",
@@ -273,7 +320,7 @@ libangle_sources = [
   "src/libANGLE/renderer/TransformFeedbackImpl.h",
   "src/libANGLE/renderer/VertexArrayImpl.h",
   "src/libANGLE/renderer/copyvertex.h",
-  "src/libANGLE/renderer/copyvertex.inc",
+  "src/libANGLE/renderer/copyvertex.inc.h",
   "src/libANGLE/renderer/load_functions_table.h",
   "src/libANGLE/renderer/load_functions_table_autogen.cpp",
   "src/libANGLE/renderer/renderer_utils.cpp",
@@ -298,6 +345,7 @@ libangle_sources = [
   "src/libANGLE/validationESEXT.h",
   "src/third_party/trace_event/trace_event.h",
 ]
+
 libangle_d3d_shared_sources = [
   "src/libANGLE/renderer/d3d/BufferD3D.cpp",
   "src/libANGLE/renderer/d3d/BufferD3D.h",
@@ -310,6 +358,8 @@ libangle_d3d_shared_sources = [
   "src/libANGLE/renderer/d3d/DisplayD3D.h",
   "src/libANGLE/renderer/d3d/DynamicHLSL.cpp",
   "src/libANGLE/renderer/d3d/DynamicHLSL.h",
+  "src/libANGLE/renderer/d3d/DynamicImage2DHLSL.cpp",
+  "src/libANGLE/renderer/d3d/DynamicImage2DHLSL.h",
   "src/libANGLE/renderer/d3d/EGLImageD3D.cpp",
   "src/libANGLE/renderer/d3d/EGLImageD3D.h",
   "src/libANGLE/renderer/d3d/formatutilsD3D.h",
@@ -350,6 +400,7 @@ libangle_d3d_shared_sources = [
   "src/libANGLE/renderer/d3d/VertexDataManager.cpp",
   "src/libANGLE/renderer/d3d/VertexDataManager.h",
 ]
+
 libangle_d3d9_sources = [
   "src/libANGLE/renderer/d3d/d3d9/Blit9.cpp",
   "src/libANGLE/renderer/d3d/d3d9/Blit9.h",
@@ -403,6 +454,7 @@ libangle_d3d9_sources = [
   "src/libANGLE/renderer/d3d/d3d9/VertexDeclarationCache.cpp",
   "src/libANGLE/renderer/d3d/d3d9/VertexDeclarationCache.h",
 ]
+
 libangle_d3d11_sources = [
   "src/libANGLE/renderer/d3d/d3d11/Blit11.cpp",
   "src/libANGLE/renderer/d3d/d3d11/Blit11.h",
@@ -416,7 +468,7 @@ libangle_d3d11_sources = [
   "src/libANGLE/renderer/d3d/d3d11/DebugAnnotator11.cpp",
   "src/libANGLE/renderer/d3d/d3d11/DebugAnnotator11.h",
   "src/libANGLE/renderer/d3d/d3d11/dxgi_format_map_autogen.cpp",
-  "src/libANGLE/renderer/d3d/d3d11/dxgi_support_table.cpp",
+  "src/libANGLE/renderer/d3d/d3d11/dxgi_support_table_autogen.cpp",
   "src/libANGLE/renderer/d3d/d3d11/dxgi_support_table.h",
   "src/libANGLE/renderer/d3d/d3d11/Fence11.cpp",
   "src/libANGLE/renderer/d3d/d3d11/Fence11.h",
@@ -525,6 +577,7 @@ libangle_d3d11_sources = [
   "src/libANGLE/renderer/d3d/d3d11/VertexBuffer11.cpp",
   "src/libANGLE/renderer/d3d/d3d11/VertexBuffer11.h",
 ]
+
 libangle_d3d11_win32_sources = [
   "src/libANGLE/renderer/d3d/d3d11/win32/NativeWindow11Win32.cpp",
   "src/libANGLE/renderer/d3d/d3d11/win32/NativeWindow11Win32.h",
@@ -533,6 +586,7 @@ libangle_d3d11_win32_sources = [
   "src/third_party/systeminfo/SystemInfo.cpp",
   "src/third_party/systeminfo/SystemInfo.h",
 ]
+
 libangle_d3d11_winrt_sources = [
   "src/libANGLE/renderer/d3d/d3d11/winrt/CoreWindowNativeWindow.cpp",
   "src/libANGLE/renderer/d3d/d3d11/winrt/CoreWindowNativeWindow.h",
@@ -543,6 +597,7 @@ libangle_d3d11_winrt_sources = [
   "src/libANGLE/renderer/d3d/d3d11/winrt/SwapChainPanelNativeWindow.cpp",
   "src/libANGLE/renderer/d3d/d3d11/winrt/SwapChainPanelNativeWindow.h",
 ]
+
 libangle_gl_sources = [
   "src/libANGLE/renderer/gl/BlitGL.cpp",
   "src/libANGLE/renderer/gl/BlitGL.h",
@@ -602,10 +657,12 @@ libangle_gl_sources = [
   "src/libANGLE/renderer/gl/renderergl_utils.cpp",
   "src/libANGLE/renderer/gl/renderergl_utils.h",
 ]
+
 libangle_gl_null_sources = [
   "src/libANGLE/renderer/gl/null_functions.cpp",
   "src/libANGLE/renderer/gl/null_functions.h",
 ]
+
 libangle_gl_wgl_sources = [
   "src/libANGLE/renderer/gl/wgl/ContextWGL.cpp",
   "src/libANGLE/renderer/gl/wgl/ContextWGL.h",
@@ -629,11 +686,14 @@ libangle_gl_wgl_sources = [
   "src/libANGLE/renderer/gl/wgl/wgl_utils.h",
   "src/third_party/khronos/GL/wglext.h",
 ]
+
 libangle_gl_glx_sources = [
   "src/libANGLE/renderer/gl/glx/DisplayGLX.cpp",
   "src/libANGLE/renderer/gl/glx/DisplayGLX.h",
   "src/libANGLE/renderer/gl/glx/FunctionsGLX.cpp",
   "src/libANGLE/renderer/gl/glx/FunctionsGLX.h",
+  "src/libANGLE/renderer/gl/glx/RendererGLX.h",
+  "src/libANGLE/renderer/gl/glx/RendererGLX.cpp",
   "src/libANGLE/renderer/gl/glx/PbufferSurfaceGLX.cpp",
   "src/libANGLE/renderer/gl/glx/PbufferSurfaceGLX.h",
   "src/libANGLE/renderer/gl/glx/SurfaceGLX.h",
@@ -642,6 +702,7 @@ libangle_gl_glx_sources = [
   "src/libANGLE/renderer/gl/glx/functionsglx_typedefs.h",
   "src/libANGLE/renderer/gl/glx/platform_glx.h",
 ]
+
 libangle_gl_egl_sources = [
   "src/libANGLE/renderer/gl/egl/ContextEGL.cpp",
   "src/libANGLE/renderer/gl/egl/ContextEGL.h",
@@ -661,6 +722,8 @@ libangle_gl_egl_sources = [
   "src/libANGLE/renderer/gl/egl/RendererEGL.h",
   "src/libANGLE/renderer/gl/egl/SurfaceEGL.cpp",
   "src/libANGLE/renderer/gl/egl/SurfaceEGL.h",
+  "src/libANGLE/renderer/gl/egl/SyncEGL.cpp",
+  "src/libANGLE/renderer/gl/egl/SyncEGL.h",
   "src/libANGLE/renderer/gl/egl/WindowSurfaceEGL.cpp",
   "src/libANGLE/renderer/gl/egl/WindowSurfaceEGL.h",
 ]
@@ -668,30 +731,34 @@ libangle_gl_egl_dl_sources = [
   "src/libANGLE/renderer/gl/egl/FunctionsEGLDL.cpp",
   "src/libANGLE/renderer/gl/egl/FunctionsEGLDL.h",
 ]
+
 libangle_gl_ozone_sources = [
   "src/libANGLE/renderer/gl/egl/ozone/DisplayOzone.cpp",
   "src/libANGLE/renderer/gl/egl/ozone/DisplayOzone.h",
   "src/libANGLE/renderer/gl/egl/ozone/SurfaceOzone.cpp",
   "src/libANGLE/renderer/gl/egl/ozone/SurfaceOzone.h",
 ]
+
 libangle_gl_egl_android_sources = [
-  "src/libANGLE/renderer/gl/egl/android/android_util.cpp",
-  "src/libANGLE/renderer/gl/egl/android/android_util.h",
   "src/libANGLE/renderer/gl/egl/android/DisplayAndroid.cpp",
   "src/libANGLE/renderer/gl/egl/android/DisplayAndroid.h",
   "src/libANGLE/renderer/gl/egl/android/NativeBufferImageSiblingAndroid.cpp",
   "src/libANGLE/renderer/gl/egl/android/NativeBufferImageSiblingAndroid.h",
 ]
+
 libangle_gl_cgl_sources = [
   "src/libANGLE/renderer/gl/cgl/DisplayCGL.mm",
   "src/libANGLE/renderer/gl/cgl/DisplayCGL.h",
   "src/libANGLE/renderer/gl/cgl/IOSurfaceSurfaceCGL.mm",
   "src/libANGLE/renderer/gl/cgl/IOSurfaceSurfaceCGL.h",
+  "src/libANGLE/renderer/gl/cgl/RendererCGL.mm",
+  "src/libANGLE/renderer/gl/cgl/RendererCGL.h",
   "src/libANGLE/renderer/gl/cgl/PbufferSurfaceCGL.mm",
   "src/libANGLE/renderer/gl/cgl/PbufferSurfaceCGL.h",
   "src/libANGLE/renderer/gl/cgl/WindowSurfaceCGL.mm",
   "src/libANGLE/renderer/gl/cgl/WindowSurfaceCGL.h",
 ]
+
 libangle_vulkan_sources = [
   "src/libANGLE/renderer/vulkan/BufferVk.cpp",
   "src/libANGLE/renderer/vulkan/BufferVk.h",
@@ -713,6 +780,8 @@ libangle_vulkan_sources = [
   "src/libANGLE/renderer/vulkan/GlslangWrapper.h",
   "src/libANGLE/renderer/vulkan/ImageVk.cpp",
   "src/libANGLE/renderer/vulkan/ImageVk.h",
+  "src/libANGLE/renderer/vulkan/MemoryObjectVk.cpp",
+  "src/libANGLE/renderer/vulkan/MemoryObjectVk.h",
   "src/libANGLE/renderer/vulkan/ProgramVk.cpp",
   "src/libANGLE/renderer/vulkan/ProgramVk.h",
   "src/libANGLE/renderer/vulkan/ProgramPipelineVk.cpp",
@@ -727,6 +796,8 @@ libangle_vulkan_sources = [
   "src/libANGLE/renderer/vulkan/RenderTargetVk.h",
   "src/libANGLE/renderer/vulkan/SamplerVk.cpp",
   "src/libANGLE/renderer/vulkan/SamplerVk.h",
+  "src/libANGLE/renderer/vulkan/SecondaryCommandBuffer.cpp",
+  "src/libANGLE/renderer/vulkan/SecondaryCommandBuffer.h",
   "src/libANGLE/renderer/vulkan/ShaderVk.cpp",
   "src/libANGLE/renderer/vulkan/ShaderVk.h",
   "src/libANGLE/renderer/vulkan/SurfaceVk.cpp",
@@ -737,6 +808,8 @@ libangle_vulkan_sources = [
   "src/libANGLE/renderer/vulkan/TextureVk.h",
   "src/libANGLE/renderer/vulkan/TransformFeedbackVk.cpp",
   "src/libANGLE/renderer/vulkan/TransformFeedbackVk.h",
+  "src/libANGLE/renderer/vulkan/UtilsVk.cpp",
+  "src/libANGLE/renderer/vulkan/UtilsVk.h",
   "src/libANGLE/renderer/vulkan/VertexArrayVk.cpp",
   "src/libANGLE/renderer/vulkan/VertexArrayVk.h",
   "src/libANGLE/renderer/vulkan/vk_cache_utils.cpp",
@@ -753,25 +826,39 @@ libangle_vulkan_sources = [
   "src/libANGLE/renderer/vulkan/vk_mandatory_format_support_table_autogen.cpp",
   "src/libANGLE/renderer/vulkan/vk_utils.cpp",
   "src/libANGLE/renderer/vulkan/vk_utils.h",
+  "src/libANGLE/renderer/vulkan/vk_wrapper.h",
 ]
+
 libangle_vulkan_android_sources = [
   "src/libANGLE/renderer/vulkan/android/DisplayVkAndroid.cpp",
   "src/libANGLE/renderer/vulkan/android/DisplayVkAndroid.h",
+  "src/libANGLE/renderer/vulkan/android/HardwareBufferImageSiblingVkAndroid.cpp",
+  "src/libANGLE/renderer/vulkan/android/HardwareBufferImageSiblingVkAndroid.h",
   "src/libANGLE/renderer/vulkan/android/WindowSurfaceVkAndroid.cpp",
   "src/libANGLE/renderer/vulkan/android/WindowSurfaceVkAndroid.h",
 ]
+
 libangle_vulkan_win32_sources = [
   "src/libANGLE/renderer/vulkan/win32/DisplayVkWin32.cpp",
   "src/libANGLE/renderer/vulkan/win32/DisplayVkWin32.h",
   "src/libANGLE/renderer/vulkan/win32/WindowSurfaceVkWin32.cpp",
   "src/libANGLE/renderer/vulkan/win32/WindowSurfaceVkWin32.h",
 ]
+
 libangle_vulkan_xcb_sources = [
   "src/libANGLE/renderer/vulkan/xcb/DisplayVkXcb.cpp",
   "src/libANGLE/renderer/vulkan/xcb/DisplayVkXcb.h",
   "src/libANGLE/renderer/vulkan/xcb/WindowSurfaceVkXcb.cpp",
   "src/libANGLE/renderer/vulkan/xcb/WindowSurfaceVkXcb.h",
 ]
+
+libangle_vulkan_fuchsia_sources = [
+  "src/libANGLE/renderer/vulkan/fuchsia/DisplayVkFuchsia.cpp",
+  "src/libANGLE/renderer/vulkan/fuchsia/DisplayVkFuchsia.h",
+  "src/libANGLE/renderer/vulkan/fuchsia/WindowSurfaceVkFuchsia.cpp",
+  "src/libANGLE/renderer/vulkan/fuchsia/WindowSurfaceVkFuchsia.h",
+]
+
 libangle_null_sources = [
   "src/libANGLE/renderer/null/BufferNULL.cpp",
   "src/libANGLE/renderer/null/BufferNULL.h",
@@ -814,6 +901,7 @@ libangle_null_sources = [
   "src/libANGLE/renderer/null/VertexArrayNULL.cpp",
   "src/libANGLE/renderer/null/VertexArrayNULL.h",
 ]
+
 libglesv2_sources = [
   "src/common/angleutils.h",
   "src/common/debug.h",
@@ -841,12 +929,14 @@ libglesv2_sources = [
   "src/libGLESv2/proc_table_autogen.cpp",
   "src/libGLESv2/resource.h",
 ]
+
 libglesv1_cm_sources = [
   "src/libGLESv1_CM/libGLESv1_CM.cpp",
   "src/libGLESv1_CM/libGLESv1_CM.def",
   "src/libGLESv1_CM/libGLESv1_CM.rc",
   "src/libGLESv1_CM/resource.h",
 ]
+
 libegl_sources = [
   "src/libEGL/libEGL.cpp",
   "src/libEGL/libEGL.rc",

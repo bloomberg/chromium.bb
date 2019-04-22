@@ -23,9 +23,10 @@
 
 #include "base/logging.h"
 #include "base/numerics/safe_math.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "snapshot/mac/process_types/internal.h"
-#include "util/mach/task_memory.h"
+#include "util/process/process_memory_mac.h"
 
 #if !DOXYGEN
 
@@ -36,13 +37,13 @@ namespace internal {
 namespace {
 
 template <typename T>
-bool ReadIntoAndZero(TaskMemory* task_memory,
+bool ReadIntoAndZero(const ProcessMemoryMac* process_memory,
                      mach_vm_address_t address,
                      mach_vm_size_t size,
                      T* specific) {
   DCHECK_LE(size, sizeof(*specific));
 
-  if (!task_memory->Read(address, size, specific)) {
+  if (!process_memory->Read(address, size, specific)) {
     return false;
   }
 
@@ -84,14 +85,14 @@ bool ReadIntoVersioned(ProcessReaderMac* process_reader,
     return false;
   }
 
-  TaskMemory* task_memory = process_reader->Memory();
+  const ProcessMemoryMac* process_memory = process_reader->Memory();
   decltype(specific->version) version;
-  if (!task_memory->Read(field_address, sizeof(version), &version)) {
+  if (!process_memory->Read(field_address, sizeof(version), &version)) {
     return false;
   }
 
   const size_t size = T::ExpectedSizeForVersion(version);
-  return ReadIntoAndZero(task_memory, address, size, specific);
+  return ReadIntoAndZero(process_memory, address, size, specific);
 }
 
 template <typename T>
@@ -103,9 +104,9 @@ bool ReadIntoSized(ProcessReaderMac* process_reader,
     return false;
   }
 
-  TaskMemory* task_memory = process_reader->Memory();
+  const ProcessMemoryMac* process_memory = process_reader->Memory();
   decltype(specific->size) size;
-  if (!task_memory->Read(address + offsetof(T, size), sizeof(size), &size)) {
+  if (!process_memory->Read(address + offsetof(T, size), sizeof(size), &size)) {
     return false;
   }
 
@@ -115,7 +116,7 @@ bool ReadIntoSized(ProcessReaderMac* process_reader,
   }
 
   size = std::min(static_cast<size_t>(size), sizeof(*specific));
-  return ReadIntoAndZero(task_memory, address, size, specific);
+  return ReadIntoAndZero(process_memory, address, size, specific);
 }
 
 }  // namespace
@@ -144,8 +145,8 @@ size_t dyld_all_image_infos<Traits>::ExpectedSizeForVersion(
       sizeof(dyld_all_image_infos<Traits>),  // 16
   };
 
-  if (version >= arraysize(kSizeForVersion)) {
-    return kSizeForVersion[arraysize(kSizeForVersion) - 1];
+  if (version >= base::size(kSizeForVersion)) {
+    return kSizeForVersion[base::size(kSizeForVersion) - 1];
   }
 
   static_assert(std::is_unsigned<decltype(version)>::value,

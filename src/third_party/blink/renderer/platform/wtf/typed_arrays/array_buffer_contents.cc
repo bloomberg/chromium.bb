@@ -100,6 +100,14 @@ void ArrayBufferContents::ShareWith(ArrayBufferContents& other) {
   other.holder_ = holder_;
 }
 
+void ArrayBufferContents::ShareNonSharedForInternalUse(
+    ArrayBufferContents& other) {
+  DCHECK(!IsShared());
+  DCHECK(!other.holder_->Data());
+  DCHECK(holder_->Data());
+  other.holder_ = holder_;
+}
+
 void ArrayBufferContents::CopyTo(ArrayBufferContents& other) {
   DCHECK(!holder_->IsShared() && !other.holder_->IsShared());
   other.holder_->CopyMemoryFrom(*holder_);

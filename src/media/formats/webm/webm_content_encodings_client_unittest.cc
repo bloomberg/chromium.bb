@@ -45,7 +45,7 @@ MATCHER(MissingContentEncryption, "") {
 
 MATCHER_P(UnexpectedContentEncAlgo, algo, "") {
   return CONTAINS_STRING(
-      arg, "Unexpected ContentEncAlgo " + base::IntToString(algo) + ".");
+      arg, "Unexpected ContentEncAlgo " + base::NumberToString(algo) + ".");
 }
 
 class WebMContentEncodingsClientTest : public testing::Test {

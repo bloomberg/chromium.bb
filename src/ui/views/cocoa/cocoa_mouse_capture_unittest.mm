@@ -62,7 +62,7 @@ class TestCaptureDelegate : public CocoaMouseCaptureDelegate {
 
 }  // namespace
 
-typedef ui::CocoaTest CocoaMouseCaptureTest;
+using CocoaMouseCaptureTest = ui::CocoaTest;
 
 // Test that a new capture properly "steals" capture from an existing one.
 TEST_F(CocoaMouseCaptureTest, OnCaptureLost) {

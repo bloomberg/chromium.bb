@@ -77,20 +77,20 @@ TEST_P(RnnVadTest, KissFftForwardReverseCheckIdentity) {
                  tolerance);
 }
 
-INSTANTIATE_TEST_CASE_P(FftPoints,
-                        RnnVadTest,
-                        ::testing::Values(std::make_tuple(1.f, 240, 3e-7f),
-                                          std::make_tuple(1.f, 256, 3e-7f),
-                                          std::make_tuple(1.f, 480, 3e-7f),
-                                          std::make_tuple(1.f, 512, 3e-7f),
-                                          std::make_tuple(1.f, 960, 4e-7f),
-                                          std::make_tuple(1.f, 1024, 3e-7f),
-                                          std::make_tuple(30.f, 240, 5e-6f),
-                                          std::make_tuple(30.f, 256, 5e-6f),
-                                          std::make_tuple(30.f, 480, 6e-6f),
-                                          std::make_tuple(30.f, 512, 6e-6f),
-                                          std::make_tuple(30.f, 960, 8e-6f),
-                                          std::make_tuple(30.f, 1024, 6e-6f)));
+INSTANTIATE_TEST_SUITE_P(FftPoints,
+                         RnnVadTest,
+                         ::testing::Values(std::make_tuple(1.f, 240, 3e-7f),
+                                           std::make_tuple(1.f, 256, 3e-7f),
+                                           std::make_tuple(1.f, 480, 3e-7f),
+                                           std::make_tuple(1.f, 512, 3e-7f),
+                                           std::make_tuple(1.f, 960, 4e-7f),
+                                           std::make_tuple(1.f, 1024, 3e-7f),
+                                           std::make_tuple(30.f, 240, 5e-6f),
+                                           std::make_tuple(30.f, 256, 5e-6f),
+                                           std::make_tuple(30.f, 480, 6e-6f),
+                                           std::make_tuple(30.f, 512, 6e-6f),
+                                           std::make_tuple(30.f, 960, 8e-6f),
+                                           std::make_tuple(30.f, 1024, 6e-6f)));
 
 TEST(RnnVadTest, KissFftBitExactness) {
   constexpr std::array<float, 32> samples = {

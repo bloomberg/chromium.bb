@@ -13,6 +13,17 @@
 
 namespace extensions {
 
+namespace api {
+namespace declarative_net_request {
+struct Rule;
+}  // namespace declarative_net_request
+}  // namespace api
+
+namespace declarative_net_request {
+enum class DynamicRuleUpdateAction;
+struct ReadJSONRulesResult;
+}  // namespace declarative_net_request
+
 // Helper base class to update the set of allowed pages.
 class DeclarativeNetRequestUpdateAllowedPagesFunction
     : public UIThreadExtensionFunction {
@@ -45,7 +56,7 @@ class DeclarativeNetRequestAddAllowedPagesFunction
  public:
   DeclarativeNetRequestAddAllowedPagesFunction();
   DECLARE_EXTENSION_FUNCTION("declarativeNetRequest.addAllowedPages",
-                             DECLARATIVENETREQUEST_ADDALLOWEDPAGES);
+                             DECLARATIVENETREQUEST_ADDALLOWEDPAGES)
 
  protected:
   ~DeclarativeNetRequestAddAllowedPagesFunction() override;
@@ -64,7 +75,7 @@ class DeclarativeNetRequestRemoveAllowedPagesFunction
  public:
   DeclarativeNetRequestRemoveAllowedPagesFunction();
   DECLARE_EXTENSION_FUNCTION("declarativeNetRequest.removeAllowedPages",
-                             DECLARATIVENETREQUEST_REMOVEALLOWEDPAGES);
+                             DECLARATIVENETREQUEST_REMOVEALLOWEDPAGES)
 
  protected:
   ~DeclarativeNetRequestRemoveAllowedPagesFunction() override;
@@ -83,7 +94,7 @@ class DeclarativeNetRequestGetAllowedPagesFunction
  public:
   DeclarativeNetRequestGetAllowedPagesFunction();
   DECLARE_EXTENSION_FUNCTION("declarativeNetRequest.getAllowedPages",
-                             DECLARATIVENETREQUEST_GETALLOWEDPAGES);
+                             DECLARATIVENETREQUEST_GETALLOWEDPAGES)
 
  protected:
   ~DeclarativeNetRequestGetAllowedPagesFunction() override;
@@ -94,6 +105,79 @@ class DeclarativeNetRequestGetAllowedPagesFunction
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DeclarativeNetRequestGetAllowedPagesFunction);
+};
+
+class DeclarativeNetRequestUpdateDynamicRulesFunction
+    : public UIThreadExtensionFunction {
+ protected:
+  DeclarativeNetRequestUpdateDynamicRulesFunction();
+  ~DeclarativeNetRequestUpdateDynamicRulesFunction() override;
+
+  ExtensionFunction::ResponseAction UpdateDynamicRules(
+      std::vector<api::declarative_net_request::Rule> rules,
+      declarative_net_request::DynamicRuleUpdateAction action);
+
+ private:
+  // ExtensionFunction override:
+  bool PreRunValidation(std::string* error) override;
+
+  void OnDynamicRulesUpdated(base::Optional<std::string> error);
+
+  DISALLOW_COPY_AND_ASSIGN(DeclarativeNetRequestUpdateDynamicRulesFunction);
+};
+
+class DeclarativeNetRequestAddDynamicRulesFunction
+    : public DeclarativeNetRequestUpdateDynamicRulesFunction {
+ public:
+  DeclarativeNetRequestAddDynamicRulesFunction();
+  DECLARE_EXTENSION_FUNCTION("declarativeNetRequest.addDynamicRules",
+                             DECLARATIVENETREQUEST_ADDDYNAMICRULES)
+
+ protected:
+  ~DeclarativeNetRequestAddDynamicRulesFunction() override;
+
+  ExtensionFunction::ResponseAction Run() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DeclarativeNetRequestAddDynamicRulesFunction);
+};
+
+class DeclarativeNetRequestRemoveDynamicRulesFunction
+    : public DeclarativeNetRequestUpdateDynamicRulesFunction {
+ public:
+  DeclarativeNetRequestRemoveDynamicRulesFunction();
+  DECLARE_EXTENSION_FUNCTION("declarativeNetRequest.removeDynamicRules",
+                             DECLARATIVENETREQUEST_REMOVEDYNAMICRULES)
+
+ protected:
+  ~DeclarativeNetRequestRemoveDynamicRulesFunction() override;
+
+  // ExtensionFunction override:
+  ExtensionFunction::ResponseAction Run() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DeclarativeNetRequestRemoveDynamicRulesFunction);
+};
+
+class DeclarativeNetRequestGetDynamicRulesFunction
+    : public UIThreadExtensionFunction {
+ public:
+  DeclarativeNetRequestGetDynamicRulesFunction();
+  DECLARE_EXTENSION_FUNCTION("declarativeNetRequest.getDynamicRules",
+                             DECLARATIVENETREQUEST_GETDYNAMICRULES)
+
+ protected:
+  ~DeclarativeNetRequestGetDynamicRulesFunction() override;
+
+  // ExtensionFunction override:
+  bool PreRunValidation(std::string* error) override;
+  ExtensionFunction::ResponseAction Run() override;
+
+ private:
+  void OnDynamicRulesFetched(
+      declarative_net_request::ReadJSONRulesResult read_json_result);
+
+  DISALLOW_COPY_AND_ASSIGN(DeclarativeNetRequestGetDynamicRulesFunction);
 };
 
 }  // namespace extensions

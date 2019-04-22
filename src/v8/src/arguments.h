@@ -22,7 +22,7 @@ namespace internal {
 // that inside the C++ function, the parameters passed can
 // be accessed conveniently:
 //
-//   Object* Runtime_function(Arguments args) {
+//   Object Runtime_function(Arguments args) {
 //     ... use args[i] here ...
 //   }
 //
@@ -36,9 +36,7 @@ class Arguments {
     DCHECK_GE(length_, 0);
   }
 
-  ObjectPtr operator[](int index) {
-    return ObjectPtr(*address_of_arg_at(index));
-  }
+  Object operator[](int index) { return Object(*address_of_arg_at(index)); }
 
   template <class S = Object>
   inline Handle<S> at(int index);
@@ -47,27 +45,26 @@ class Arguments {
 
   inline double number_at(int index);
 
-  inline void set_at(int index, Object* value) {
+  inline void set_at(int index, Object value) {
     *address_of_arg_at(index) = value->ptr();
   }
 
-  inline ObjectSlot slot_at(int index) {
-    return ObjectSlot(address_of_arg_at(index));
+  inline FullObjectSlot slot_at(int index) {
+    return FullObjectSlot(address_of_arg_at(index));
   }
 
   inline Address* address_of_arg_at(int index) {
-    DCHECK_GE(index, 0);
     DCHECK_LT(static_cast<uint32_t>(index), static_cast<uint32_t>(length_));
     return reinterpret_cast<Address*>(reinterpret_cast<Address>(arguments_) -
-                                      index * kPointerSize);
+                                      index * kSystemPointerSize);
   }
 
   // Get the total number of arguments including the receiver.
   int length() const { return static_cast<int>(length_); }
 
   // Arguments on the stack are in reverse order (compared to an array).
-  ObjectSlot first_slot() { return slot_at(length() - 1); }
-  ObjectSlot last_slot() { return slot_at(0); }
+  FullObjectSlot first_slot() { return slot_at(length() - 1); }
+  FullObjectSlot last_slot() { return slot_at(0); }
 
  private:
   intptr_t length_;
@@ -89,8 +86,9 @@ double ClobberDoubleRegisters(double x1, double x2, double x3, double x4);
 
 // TODO(cbruni): add global flag to check whether any tracing events have been
 // enabled.
-#define RUNTIME_FUNCTION_RETURNS_TYPE(Type, Name)                             \
-  static V8_INLINE Type __RT_impl_##Name(Arguments args, Isolate* isolate);   \
+#define RUNTIME_FUNCTION_RETURNS_TYPE(Type, InternalType, Convert, Name)      \
+  static V8_INLINE InternalType __RT_impl_##Name(Arguments args,              \
+                                                 Isolate* isolate);           \
                                                                               \
   V8_NOINLINE static Type Stats_##Name(int args_length, Address* args_object, \
                                        Isolate* isolate) {                    \
@@ -98,24 +96,30 @@ double ClobberDoubleRegisters(double x1, double x2, double x3, double x4);
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("v8.runtime"),                     \
                  "V8.Runtime_" #Name);                                        \
     Arguments args(args_length, args_object);                                 \
-    return __RT_impl_##Name(args, isolate);                                   \
+    return Convert(__RT_impl_##Name(args, isolate));                          \
   }                                                                           \
                                                                               \
   Type Name(int args_length, Address* args_object, Isolate* isolate) {        \
     DCHECK(isolate->context().is_null() || isolate->context()->IsContext());  \
     CLOBBER_DOUBLE_REGISTERS();                                               \
-    if (V8_UNLIKELY(FLAG_runtime_stats)) {                                    \
+    if (V8_UNLIKELY(TracingFlags::is_runtime_stats_enabled())) {              \
       return Stats_##Name(args_length, args_object, isolate);                 \
     }                                                                         \
     Arguments args(args_length, args_object);                                 \
-    return __RT_impl_##Name(args, isolate);                                   \
+    return Convert(__RT_impl_##Name(args, isolate));                          \
   }                                                                           \
                                                                               \
-  static Type __RT_impl_##Name(Arguments args, Isolate* isolate)
+  static InternalType __RT_impl_##Name(Arguments args, Isolate* isolate)
 
-#define RUNTIME_FUNCTION(Name) RUNTIME_FUNCTION_RETURNS_TYPE(Object*, Name)
-#define RUNTIME_FUNCTION_RETURN_PAIR(Name) \
-    RUNTIME_FUNCTION_RETURNS_TYPE(ObjectPair, Name)
+#define CONVERT_OBJECT(x) (x)->ptr()
+#define CONVERT_OBJECTPAIR(x) (x)
+
+#define RUNTIME_FUNCTION(Name) \
+  RUNTIME_FUNCTION_RETURNS_TYPE(Address, Object, CONVERT_OBJECT, Name)
+
+#define RUNTIME_FUNCTION_RETURN_PAIR(Name)                                  \
+  RUNTIME_FUNCTION_RETURNS_TYPE(ObjectPair, ObjectPair, CONVERT_OBJECTPAIR, \
+                                Name)
 
 }  // namespace internal
 }  // namespace v8

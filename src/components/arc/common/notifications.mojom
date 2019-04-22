@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 23
+// Next MinVersion: 24
 
 module arc.mojom;
 
@@ -158,6 +158,8 @@ struct ArcNotificationData {
   bool hidden_on_lock_screen;
   [MinVersion=21]
   ArcBitmap? snapshot_image_public;
+  [MinVersion=23]
+  bool is_media_notification;
 };
 
 [MinVersion=18]

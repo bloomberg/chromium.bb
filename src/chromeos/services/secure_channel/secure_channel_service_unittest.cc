@@ -12,6 +12,8 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_simple_task_runner.h"
+#include "chromeos/components/multidevice/remote_device_cache.h"
+#include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/services/secure_channel/active_connection_manager_impl.h"
 #include "chromeos/services/secure_channel/ble_connection_manager_impl.h"
 #include "chromeos/services/secure_channel/ble_service_data_helper_impl.h"
@@ -31,8 +33,6 @@
 #include "chromeos/services/secure_channel/secure_channel_initializer.h"
 #include "chromeos/services/secure_channel/secure_channel_service.h"
 #include "chromeos/services/secure_channel/timer_factory_impl.h"
-#include "components/cryptauth/remote_device_cache.h"
-#include "components/cryptauth/remote_device_test_util.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
@@ -68,23 +68,23 @@ class FakeTimerFactoryFactory : public TimerFactoryImpl::Factory {
 };
 
 class TestRemoteDeviceCacheFactory
-    : public cryptauth::RemoteDeviceCache::Factory {
+    : public multidevice::RemoteDeviceCache::Factory {
  public:
   TestRemoteDeviceCacheFactory() = default;
   ~TestRemoteDeviceCacheFactory() override = default;
 
-  cryptauth::RemoteDeviceCache* instance() { return instance_; }
+  multidevice::RemoteDeviceCache* instance() { return instance_; }
 
  private:
-  // cryptauth::RemoteDeviceCache::Factory:
-  std::unique_ptr<cryptauth::RemoteDeviceCache> BuildInstance() override {
+  // multidevice::RemoteDeviceCache::Factory:
+  std::unique_ptr<multidevice::RemoteDeviceCache> BuildInstance() override {
     EXPECT_FALSE(instance_);
-    auto instance = cryptauth::RemoteDeviceCache::Factory::BuildInstance();
+    auto instance = multidevice::RemoteDeviceCache::Factory::BuildInstance();
     instance_ = instance.get();
     return instance;
   }
 
-  cryptauth::RemoteDeviceCache* instance_ = nullptr;
+  multidevice::RemoteDeviceCache* instance_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(TestRemoteDeviceCacheFactory);
 };
@@ -103,7 +103,7 @@ class FakeBleServiceDataHelperFactory
  private:
   // BleServiceDataHelperImpl::Factory:
   std::unique_ptr<BleServiceDataHelper> BuildInstance(
-      cryptauth::RemoteDeviceCache* remote_device_cache) override {
+      multidevice::RemoteDeviceCache* remote_device_cache) override {
     EXPECT_FALSE(instance_);
     EXPECT_EQ(test_remote_device_cache_factory_->instance(),
               remote_device_cache);
@@ -316,7 +316,7 @@ class SecureChannelServiceTest : public testing::Test {
  protected:
   SecureChannelServiceTest()
       : test_devices_(
-            cryptauth::CreateRemoteDeviceListForTest(kNumTestDevices)) {}
+            multidevice::CreateRemoteDeviceListForTest(kNumTestDevices)) {}
   ~SecureChannelServiceTest() override = default;
 
   // testing::Test:
@@ -341,7 +341,7 @@ class SecureChannelServiceTest : public testing::Test {
 
     test_remote_device_cache_factory_ =
         std::make_unique<TestRemoteDeviceCacheFactory>();
-    cryptauth::RemoteDeviceCache::Factory::SetFactoryForTesting(
+    multidevice::RemoteDeviceCache::Factory::SetFactoryForTesting(
         test_remote_device_cache_factory_.get());
 
     fake_ble_service_data_helper_factory_ =
@@ -379,18 +379,17 @@ class SecureChannelServiceTest : public testing::Test {
     ClientConnectionParametersImpl::Factory::SetFactoryForTesting(
         fake_client_connection_parameters_factory_.get());
 
-    connector_factory_ =
-        service_manager::TestConnectorFactory::CreateForUniqueService(
-            std::make_unique<SecureChannelService>());
+    service_ = std::make_unique<SecureChannelService>(
+        connector_factory_.RegisterInstance(mojom::kServiceName));
 
-    auto connector = connector_factory_->CreateConnector();
-    connector->BindInterface(mojom::kServiceName, &secure_channel_ptr_);
+    connector_factory_.GetDefaultConnector()->BindInterface(
+        mojom::kServiceName, &secure_channel_ptr_);
     secure_channel_ptr_.FlushForTesting();
   }
 
   void TearDown() override {
     TimerFactoryImpl::Factory::SetFactoryForTesting(nullptr);
-    cryptauth::RemoteDeviceCache::Factory::SetFactoryForTesting(nullptr);
+    multidevice::RemoteDeviceCache::Factory::SetFactoryForTesting(nullptr);
     BleServiceDataHelperImpl::Factory::SetFactoryForTesting(nullptr);
     BleConnectionManagerImpl::Factory::SetFactoryForTesting(nullptr);
     PendingConnectionManagerImpl::Factory::SetFactoryForTesting(nullptr);
@@ -400,8 +399,8 @@ class SecureChannelServiceTest : public testing::Test {
   }
 
   void CallListenForConnectionFromDeviceAndVerifyInitializationNotComplete(
-      const cryptauth::RemoteDevice& device_to_connect,
-      const cryptauth::RemoteDevice& local_device,
+      const multidevice::RemoteDevice& device_to_connect,
+      const multidevice::RemoteDevice& local_device,
       const std::string& feature,
       ConnectionPriority connection_priority) {
     AttemptConnectionPreInitialization(device_to_connect, local_device, feature,
@@ -410,8 +409,8 @@ class SecureChannelServiceTest : public testing::Test {
   }
 
   void CallInitiateConnectionToDeviceAndVerifyInitializationNotComplete(
-      const cryptauth::RemoteDevice& device_to_connect,
-      const cryptauth::RemoteDevice& local_device,
+      const multidevice::RemoteDevice& device_to_connect,
+      const multidevice::RemoteDevice& local_device,
       const std::string& feature,
       ConnectionPriority connection_priority) {
     AttemptConnectionPreInitialization(device_to_connect, local_device, feature,
@@ -420,8 +419,8 @@ class SecureChannelServiceTest : public testing::Test {
   }
 
   void CallListenForConnectionFromDeviceAndVerifyRejection(
-      const cryptauth::RemoteDevice& device_to_connect,
-      const cryptauth::RemoteDevice& local_device,
+      const multidevice::RemoteDevice& device_to_connect,
+      const multidevice::RemoteDevice& local_device,
       const std::string& feature,
       ConnectionPriority connection_priority,
       mojom::ConnectionAttemptFailureReason expected_failure_reason) {
@@ -431,8 +430,8 @@ class SecureChannelServiceTest : public testing::Test {
   }
 
   void CallInitiateConnectionToDeviceAndVerifyRejection(
-      const cryptauth::RemoteDevice& device_to_connect,
-      const cryptauth::RemoteDevice& local_device,
+      const multidevice::RemoteDevice& device_to_connect,
+      const multidevice::RemoteDevice& local_device,
       const std::string& feature,
       ConnectionPriority connection_priority,
       mojom::ConnectionAttemptFailureReason expected_failure_reason) {
@@ -442,8 +441,8 @@ class SecureChannelServiceTest : public testing::Test {
   }
 
   void CallListenForConnectionFromDeviceAndVerifyPendingConnection(
-      const cryptauth::RemoteDevice& device_to_connect,
-      const cryptauth::RemoteDevice& local_device,
+      const multidevice::RemoteDevice& device_to_connect,
+      const multidevice::RemoteDevice& local_device,
       const std::string& feature,
       ConnectionPriority connection_priority) {
     AttemptConnectionAndVerifyPendingConnection(device_to_connect, local_device,
@@ -452,8 +451,8 @@ class SecureChannelServiceTest : public testing::Test {
   }
 
   void CallInitiateConnectionToDeviceAndVerifyPendingConnection(
-      const cryptauth::RemoteDevice& device_to_connect,
-      const cryptauth::RemoteDevice& local_device,
+      const multidevice::RemoteDevice& device_to_connect,
+      const multidevice::RemoteDevice& local_device,
       const std::string& feature,
       ConnectionPriority connection_priority) {
     AttemptConnectionAndVerifyPendingConnection(device_to_connect, local_device,
@@ -462,8 +461,8 @@ class SecureChannelServiceTest : public testing::Test {
   }
 
   void CallListenForConnectionFromDeviceAndVerifyActiveConnection(
-      const cryptauth::RemoteDevice& device_to_connect,
-      const cryptauth::RemoteDevice& local_device,
+      const multidevice::RemoteDevice& device_to_connect,
+      const multidevice::RemoteDevice& local_device,
       const std::string& feature,
       ConnectionPriority connection_priority) {
     AttemptConnectionAndVerifyActiveConnection(device_to_connect, local_device,
@@ -472,8 +471,8 @@ class SecureChannelServiceTest : public testing::Test {
   }
 
   void CallInitiateConnectionToDeviceAndVerifyActiveConnection(
-      const cryptauth::RemoteDevice& device_to_connect,
-      const cryptauth::RemoteDevice& local_device,
+      const multidevice::RemoteDevice& device_to_connect,
+      const multidevice::RemoteDevice& local_device,
       const std::string& feature,
       ConnectionPriority connection_priority) {
     AttemptConnectionAndVerifyActiveConnection(device_to_connect, local_device,
@@ -483,8 +482,8 @@ class SecureChannelServiceTest : public testing::Test {
 
   base::UnguessableToken
   CallListenForConnectionFromDeviceAndVerifyStillDisconnecting(
-      const cryptauth::RemoteDevice& device_to_connect,
-      const cryptauth::RemoteDevice& local_device,
+      const multidevice::RemoteDevice& device_to_connect,
+      const multidevice::RemoteDevice& local_device,
       const std::string& feature,
       ConnectionPriority connection_priority) {
     return AttemptConnectionAndVerifyStillDisconnecting(
@@ -494,8 +493,8 @@ class SecureChannelServiceTest : public testing::Test {
 
   base::UnguessableToken
   CallInitiateConnectionToDeviceAndVerifyStillDisconnecting(
-      const cryptauth::RemoteDevice& device_to_connect,
-      const cryptauth::RemoteDevice& local_device,
+      const multidevice::RemoteDevice& device_to_connect,
+      const multidevice::RemoteDevice& local_device,
       const std::string& feature,
       ConnectionPriority connection_priority) {
     return AttemptConnectionAndVerifyStillDisconnecting(
@@ -592,7 +591,7 @@ class SecureChannelServiceTest : public testing::Test {
               fake_pending_connection_manager()->handled_requests().size());
   }
 
-  const cryptauth::RemoteDeviceList& test_devices() { return test_devices_; }
+  const multidevice::RemoteDeviceList& test_devices() { return test_devices_; }
 
   bool is_adapter_present() { return is_adapter_present_; }
   void set_is_adapter_present(bool present) { is_adapter_present_ = present; }
@@ -602,8 +601,8 @@ class SecureChannelServiceTest : public testing::Test {
 
  private:
   void AttemptConnectionAndVerifyPendingConnection(
-      const cryptauth::RemoteDevice& device_to_connect,
-      const cryptauth::RemoteDevice& local_device,
+      const multidevice::RemoteDevice& device_to_connect,
+      const multidevice::RemoteDevice& local_device,
       const std::string& feature,
       ConnectionPriority connection_priority,
       bool is_listener) {
@@ -634,8 +633,8 @@ class SecureChannelServiceTest : public testing::Test {
   }
 
   void AttemptConnectionAndVerifyActiveConnection(
-      const cryptauth::RemoteDevice& device_to_connect,
-      const cryptauth::RemoteDevice& local_device,
+      const multidevice::RemoteDevice& device_to_connect,
+      const multidevice::RemoteDevice& local_device,
       const std::string& feature,
       ConnectionPriority connection_priority,
       bool is_listener) {
@@ -660,8 +659,8 @@ class SecureChannelServiceTest : public testing::Test {
   }
 
   base::UnguessableToken AttemptConnectionAndVerifyStillDisconnecting(
-      const cryptauth::RemoteDevice& device_to_connect,
-      const cryptauth::RemoteDevice& local_device,
+      const multidevice::RemoteDevice& device_to_connect,
+      const multidevice::RemoteDevice& local_device,
       const std::string& feature,
       ConnectionPriority connection_priority,
       bool is_listener) {
@@ -712,8 +711,8 @@ class SecureChannelServiceTest : public testing::Test {
   }
 
   void AttemptConnectionAndVerifyRejection(
-      const cryptauth::RemoteDevice& device_to_connect,
-      const cryptauth::RemoteDevice& local_device,
+      const multidevice::RemoteDevice& device_to_connect,
+      const multidevice::RemoteDevice& local_device,
       const std::string& feature,
       ConnectionPriority connection_priority,
       mojom::ConnectionAttemptFailureReason expected_failure_reason,
@@ -735,8 +734,8 @@ class SecureChannelServiceTest : public testing::Test {
   // verifies that devices were correctly set in the RemoteDeviceCache after the
   // request completed.
   base::UnguessableToken AttemptConnectionWithoutRejection(
-      const cryptauth::RemoteDevice& device_to_connect,
-      const cryptauth::RemoteDevice& local_device,
+      const multidevice::RemoteDevice& device_to_connect,
+      const multidevice::RemoteDevice& local_device,
       const std::string& feature,
       ConnectionPriority connection_priority,
       bool is_listener) {
@@ -745,12 +744,12 @@ class SecureChannelServiceTest : public testing::Test {
         is_listener);
 
     // |device_to_connect| should be in the cache.
-    EXPECT_TRUE(cryptauth::IsSameDevice(device_to_connect,
-                                        *remote_device_cache()->GetRemoteDevice(
-                                            device_to_connect.GetDeviceId())));
+    EXPECT_TRUE(multidevice::IsSameDevice(
+        device_to_connect, *remote_device_cache()->GetRemoteDevice(
+                               device_to_connect.GetDeviceId())));
 
     // |local_device| should also be in the cache.
-    EXPECT_TRUE(cryptauth::IsSameDevice(
+    EXPECT_TRUE(multidevice::IsSameDevice(
         local_device,
         *remote_device_cache()->GetRemoteDevice(local_device.GetDeviceId())));
 
@@ -758,8 +757,8 @@ class SecureChannelServiceTest : public testing::Test {
   }
 
   base::UnguessableToken AttemptConnectionPostInitialization(
-      const cryptauth::RemoteDevice& device_to_connect,
-      const cryptauth::RemoteDevice& local_device,
+      const multidevice::RemoteDevice& device_to_connect,
+      const multidevice::RemoteDevice& local_device,
       const std::string& feature,
       ConnectionPriority connection_priority,
       bool is_listener) {
@@ -780,8 +779,8 @@ class SecureChannelServiceTest : public testing::Test {
   }
 
   void AttemptConnectionPreInitialization(
-      const cryptauth::RemoteDevice& device_to_connect,
-      const cryptauth::RemoteDevice& local_device,
+      const multidevice::RemoteDevice& device_to_connect,
+      const multidevice::RemoteDevice& local_device,
       const std::string& feature,
       ConnectionPriority connection_priority,
       bool is_listener) {
@@ -801,8 +800,8 @@ class SecureChannelServiceTest : public testing::Test {
     ++num_queued_requests_before_initialization_;
   }
 
-  void AttemptConnection(const cryptauth::RemoteDevice& device_to_connect,
-                         const cryptauth::RemoteDevice& local_device,
+  void AttemptConnection(const multidevice::RemoteDevice& device_to_connect,
+                         const multidevice::RemoteDevice& local_device,
                          const std::string& feature,
                          ConnectionPriority connection_priority,
                          bool is_listener) {
@@ -829,12 +828,12 @@ class SecureChannelServiceTest : public testing::Test {
     return fake_pending_connection_manager_factory_->instance();
   }
 
-  cryptauth::RemoteDeviceCache* remote_device_cache() {
+  multidevice::RemoteDeviceCache* remote_device_cache() {
     return test_remote_device_cache_factory_->instance();
   }
 
-  const base::test::ScopedTaskEnvironment scoped_task_environment_;
-  const cryptauth::RemoteDeviceList test_devices_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  const multidevice::RemoteDeviceList test_devices_;
 
   scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>> mock_adapter_;
   scoped_refptr<base::TestSimpleTaskRunner> test_task_runner_;
@@ -866,8 +865,8 @@ class SecureChannelServiceTest : public testing::Test {
 
   size_t num_queued_requests_before_initialization_ = 0u;
 
-  std::unique_ptr<service_manager::TestConnectorFactory> connector_factory_;
-  std::unique_ptr<service_manager::Connector> connector_;
+  service_manager::TestConnectorFactory connector_factory_;
+  std::unique_ptr<SecureChannelService> service_;
 
   bool is_adapter_powered_;
   bool is_adapter_present_;
@@ -880,7 +879,7 @@ class SecureChannelServiceTest : public testing::Test {
 TEST_F(SecureChannelServiceTest, ListenForConnection_MissingPublicKey) {
   FinishInitialization();
 
-  cryptauth::RemoteDevice device_to_connect = test_devices()[0];
+  multidevice::RemoteDevice device_to_connect = test_devices()[0];
   device_to_connect.public_key.clear();
 
   CallListenForConnectionFromDeviceAndVerifyRejection(
@@ -891,7 +890,7 @@ TEST_F(SecureChannelServiceTest, ListenForConnection_MissingPublicKey) {
 TEST_F(SecureChannelServiceTest, InitiateConnection_MissingPublicKey) {
   FinishInitialization();
 
-  cryptauth::RemoteDevice device_to_connect = test_devices()[0];
+  multidevice::RemoteDevice device_to_connect = test_devices()[0];
   device_to_connect.public_key.clear();
 
   CallInitiateConnectionToDeviceAndVerifyRejection(
@@ -902,7 +901,7 @@ TEST_F(SecureChannelServiceTest, InitiateConnection_MissingPublicKey) {
 TEST_F(SecureChannelServiceTest, ListenForConnection_MissingPsk) {
   FinishInitialization();
 
-  cryptauth::RemoteDevice device_to_connect = test_devices()[0];
+  multidevice::RemoteDevice device_to_connect = test_devices()[0];
   device_to_connect.persistent_symmetric_key.clear();
 
   CallListenForConnectionFromDeviceAndVerifyRejection(
@@ -913,7 +912,7 @@ TEST_F(SecureChannelServiceTest, ListenForConnection_MissingPsk) {
 TEST_F(SecureChannelServiceTest, InitiateConnection_MissingPsk) {
   FinishInitialization();
 
-  cryptauth::RemoteDevice device_to_connect = test_devices()[0];
+  multidevice::RemoteDevice device_to_connect = test_devices()[0];
   device_to_connect.persistent_symmetric_key.clear();
 
   CallInitiateConnectionToDeviceAndVerifyRejection(
@@ -925,7 +924,7 @@ TEST_F(SecureChannelServiceTest,
        ListenForConnection_MissingLocalDevicePublicKey) {
   FinishInitialization();
 
-  cryptauth::RemoteDevice local_device = test_devices()[1];
+  multidevice::RemoteDevice local_device = test_devices()[1];
   local_device.public_key.clear();
 
   CallListenForConnectionFromDeviceAndVerifyRejection(
@@ -937,7 +936,7 @@ TEST_F(SecureChannelServiceTest,
        InitiateConnection_MissingLocalDevicePublicKey) {
   FinishInitialization();
 
-  cryptauth::RemoteDevice local_device = test_devices()[1];
+  multidevice::RemoteDevice local_device = test_devices()[1];
   local_device.public_key.clear();
 
   CallInitiateConnectionToDeviceAndVerifyRejection(
@@ -948,7 +947,7 @@ TEST_F(SecureChannelServiceTest,
 TEST_F(SecureChannelServiceTest, ListenForConnection_MissingLocalDevicePsk) {
   FinishInitialization();
 
-  cryptauth::RemoteDevice local_device = test_devices()[1];
+  multidevice::RemoteDevice local_device = test_devices()[1];
   local_device.persistent_symmetric_key.clear();
 
   CallListenForConnectionFromDeviceAndVerifyRejection(
@@ -959,7 +958,7 @@ TEST_F(SecureChannelServiceTest, ListenForConnection_MissingLocalDevicePsk) {
 TEST_F(SecureChannelServiceTest, InitiateConnection_MissingLocalDevicePsk) {
   FinishInitialization();
 
-  cryptauth::RemoteDevice local_device = test_devices()[1];
+  multidevice::RemoteDevice local_device = test_devices()[1];
   local_device.persistent_symmetric_key.clear();
 
   CallInitiateConnectionToDeviceAndVerifyRejection(

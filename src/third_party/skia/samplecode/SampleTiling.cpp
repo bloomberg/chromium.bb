@@ -37,13 +37,12 @@ static void makebm(SkBitmap* bm, SkColorType ct, int w, int h) {
 
     paint.setDither(true);
     paint.setShader(SkGradientShader::MakeLinear(pts, colors, pos,
-                SK_ARRAY_COUNT(colors), SkShader::kClamp_TileMode));
+                SK_ARRAY_COUNT(colors), SkTileMode::kClamp));
     canvas.drawPaint(paint);
 }
 
-static void setup(SkPaint* paint, const SkBitmap& bm, bool filter,
-                  SkShader::TileMode tmx, SkShader::TileMode tmy) {
-    paint->setShader(SkShader::MakeBitmapShader(bm, tmx, tmy));
+static void setup(SkPaint* paint, const SkBitmap& bm, bool filter, SkTileMode tmx, SkTileMode tmy) {
+    paint->setShader(bm.makeShader(tmx, tmy));
     paint->setFilterQuality(filter ? kLow_SkFilterQuality : kNone_SkFilterQuality);
 }
 
@@ -89,8 +88,8 @@ protected:
         static const bool           gFilters[] = { false, true };
         static const char*          gFilterNames[] = {     "point",                     "bilinear" };
 
-        static const SkShader::TileMode gModes[] = { SkShader::kClamp_TileMode, SkShader::kRepeat_TileMode, SkShader::kMirror_TileMode };
-        static const char*          gModeNames[] = {    "C",                    "R",                   "M" };
+        static const SkTileMode gModes[] = { SkTileMode::kClamp, SkTileMode::kRepeat, SkTileMode::kMirror };
+        static const char*  gModeNames[] = {    "C",                    "R",                   "M" };
 
         SkScalar y = SkIntToScalar(24);
         SkScalar x = SkIntToScalar(10);
@@ -106,12 +105,11 @@ protected:
                 for (size_t ky = 0; ky < SK_ARRAY_COUNT(gModes); ky++) {
                     SkPaint p;
                     SkString str;
-                    p.setAntiAlias(true);
                     p.setDither(true);
                     p.setLooper(fLooper);
                     str.printf("[%s,%s]", gModeNames[kx], gModeNames[ky]);
 
-                    SkTextUtils::DrawString(textCanvas, str, x + r.width()/2, y, p,
+                    SkTextUtils::DrawString(textCanvas, str.c_str(), x + r.width()/2, y, SkFont(), p,
                                             SkTextUtils::kCenter_Align);
 
                     x += r.width() * 4 / 3;
@@ -140,11 +138,10 @@ protected:
                 }
                 if (textCanvas) {
                     SkPaint p;
-                    SkString str;
-                    p.setAntiAlias(true);
                     p.setLooper(fLooper);
-                    str.printf("%s, %s", gConfigNames[i], gFilterNames[j]);
-                    textCanvas->drawString(str, x, y + r.height() * 2 / 3, p);
+                    textCanvas->drawString(
+                            SkStringPrintf("%s, %s", gConfigNames[i], gFilterNames[j]),
+                            x, y + r.height() * 2 / 3, SkFont(), p);
                 }
 
                 y += r.height() * 4 / 3;

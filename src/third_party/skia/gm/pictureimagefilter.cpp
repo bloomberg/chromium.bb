@@ -5,8 +5,8 @@
  * found in the LICENSE file.
  */
 
+#include "ToolUtils.h"
 #include "gm.h"
-#include "sk_tool_utils.h"
 
 #include "SkPictureImageFilter.h"
 #include "SkPictureRecorder.h"
@@ -31,12 +31,9 @@ static sk_sp<SkPicture> make_picture() {
     SkPictureRecorder recorder;
     SkCanvas* canvas = recorder.beginRecording(100, 100, nullptr, 0);
     SkPaint paint;
-    paint.setAntiAlias(true);
-    sk_tool_utils::set_portable_typeface(&paint);
     paint.setColor(0xFFFFFFFF);
-    paint.setTextSize(SkIntToScalar(96));
-    const char* str = "e";
-    canvas->drawString(str, SkIntToScalar(20), SkIntToScalar(70), paint);
+    SkFont font(ToolUtils::create_portable_typeface(), 96.0f);
+    canvas->drawString("e", 20.0f, 70.0f, font, paint);
     return recorder.finishRecordingAsPicture();
 }
 
@@ -46,14 +43,11 @@ static sk_sp<SkPicture> make_LCD_picture() {
     SkCanvas* canvas = recorder.beginRecording(100, 100, nullptr, 0);
     canvas->clear(SK_ColorTRANSPARENT);
     SkPaint paint;
-    paint.setLCDRenderText(true);   // want LCD
-    paint.setAntiAlias(true);       // need AA for LCD
-    sk_tool_utils::set_portable_typeface(&paint);
     paint.setColor(0xFFFFFFFF);
     // this has to be small enough that it doesn't become a path
-    paint.setTextSize(SkIntToScalar(36));
-    const char* str = "e";
-    canvas->drawString(str, SkIntToScalar(20), SkIntToScalar(70), paint);
+    SkFont font(ToolUtils::create_portable_typeface(), 36.0f);
+    font.setEdging(SkFont::Edging::kSubpixelAntiAlias);
+    canvas->drawString("e", 20.0f, 70.0f, font, paint);
     return recorder.finishRecordingAsPicture();
 }
 
@@ -123,7 +117,7 @@ protected:
                 canvas->scale(4, 4);
                 canvas->translate(-0.9f*srcRect.fLeft, -2.45f*srcRect.fTop);
 
-                canvas->saveLayerPreserveLCDTextRequests(&bounds, &paint);
+                canvas->saveLayer(&bounds, &paint);
                 canvas->restore();
             }
 

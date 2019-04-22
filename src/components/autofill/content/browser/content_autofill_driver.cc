@@ -182,19 +182,6 @@ gfx::RectF ContentAutofillDriver::TransformBoundingBoxToViewportCoordinates(
                     bounding_box.width(), bounding_box.height());
 }
 
-void ContentAutofillDriver::DidInteractWithCreditCardForm() {
-  // If there is an autofill manager, notify its client about credit card
-  // inputs on non-secure pages.
-  if (!autofill_manager_)
-    return;
-  if (content::IsOriginSecure(
-          content::WebContents::FromRenderFrameHost(render_frame_host_)
-              ->GetVisibleURL())) {
-    return;
-  }
-  autofill_manager_->client()->DidInteractWithNonsecureCreditCardInput();
-}
-
 void ContentAutofillDriver::FormsSeen(const std::vector<FormData>& forms,
                                       base::TimeTicks timestamp) {
   autofill_handler_->OnFormsSeen(forms, timestamp);
@@ -202,9 +189,8 @@ void ContentAutofillDriver::FormsSeen(const std::vector<FormData>& forms,
 
 void ContentAutofillDriver::FormSubmitted(const FormData& form,
                                           bool known_success,
-                                          SubmissionSource source,
-                                          base::TimeTicks timestamp) {
-  autofill_handler_->OnFormSubmitted(form, known_success, source, timestamp);
+                                          SubmissionSource source) {
+  autofill_handler_->OnFormSubmitted(form, known_success, source);
 }
 
 void ContentAutofillDriver::TextFieldDidChange(const FormData& form,

@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -19,7 +20,6 @@
 
 namespace chromeos {
 
-class BaseScreenDelegate;
 class ErrorScreensHistogramHelper;
 class ScreenManager;
 
@@ -33,8 +33,9 @@ class AutoEnrollmentCheckScreen
       public BaseScreen,
       public NetworkPortalDetector::Observer {
  public:
-  AutoEnrollmentCheckScreen(BaseScreenDelegate* base_screen_delegate,
-                            AutoEnrollmentCheckScreenView* view);
+  AutoEnrollmentCheckScreen(AutoEnrollmentCheckScreenView* view,
+                            ErrorScreen* error_screen,
+                            const base::RepeatingClosure& exit_callback);
   ~AutoEnrollmentCheckScreen() override;
 
   static AutoEnrollmentCheckScreen* Get(ScreenManager* manager);
@@ -45,6 +46,10 @@ class AutoEnrollmentCheckScreen
   void set_auto_enrollment_controller(
       AutoEnrollmentController* auto_enrollment_controller) {
     auto_enrollment_controller_ = auto_enrollment_controller;
+  }
+
+  void set_exit_callback_for_testing(const base::RepeatingClosure& callback) {
+    exit_callback_ = callback;
   }
 
   // BaseScreen implementation:
@@ -58,6 +63,12 @@ class AutoEnrollmentCheckScreen
   void OnPortalDetectionCompleted(
       const NetworkState* network,
       const NetworkPortalDetector::CaptivePortalState& state) override;
+
+ protected:
+  // Runs |exit_callback_| - used to prevent |exit_callback_| from running after
+  // |this| has been destroyed (by wrapping it with a callback bound to a weak
+  // ptr).
+  void RunExitCallback() { exit_callback_.Run(); }
 
  private:
   // Handles update notifications regarding the auto-enrollment check.
@@ -79,6 +90,10 @@ class AutoEnrollmentCheckScreen
   // Configures the error screen.
   void ShowErrorScreen(NetworkError::ErrorState error_state);
 
+  // Passed as a callback to the error screen when it's shown. Called when the
+  // error screen gets hidden.
+  void OnErrorScreenHidden();
+
   // Asynchronously signals completion. The owner might destroy |this| in
   // response, so no code should be run after the completion of a message loop
   // task, in which this function was called.
@@ -97,6 +112,8 @@ class AutoEnrollmentCheckScreen
   bool ShouldBlockOnServerError() const;
 
   AutoEnrollmentCheckScreenView* view_;
+  ErrorScreen* error_screen_;
+  base::RepeatingClosure exit_callback_;
   AutoEnrollmentController* auto_enrollment_controller_;
 
   std::unique_ptr<AutoEnrollmentController::ProgressCallbackList::Subscription>

@@ -14,6 +14,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -40,8 +41,8 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/url_constants.h"
-#include "media/audio/sounds/sounds_manager.h"
 #include "net/base/data_url.h"
+#include "services/audio/public/cpp/sounds/sounds_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -87,7 +88,7 @@ ChangePictureHandler::ChangePictureHandler()
       user_manager_observer_(this),
       camera_observer_(this) {
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-  media::SoundsManager* manager = media::SoundsManager::Get();
+  audio::SoundsManager* manager = audio::SoundsManager::Get();
   manager->Initialize(SOUND_OBJECT_DELETE,
                       bundle.GetRawDataResource(IDR_SOUND_OBJECT_DELETE_WAV));
   manager->Initialize(SOUND_CAMERA_SNAP,
@@ -184,7 +185,7 @@ void ChangePictureHandler::HandlePhotoTaken(const base::ListValue* args) {
   std::string raw_data;
   base::StringPiece url(image_url);
   const char kDataUrlPrefix[] = "data:image/png;base64,";
-  const size_t kDataUrlPrefixLength = arraysize(kDataUrlPrefix) - 1;
+  const size_t kDataUrlPrefixLength = base::size(kDataUrlPrefix) - 1;
   if (!url.starts_with(kDataUrlPrefix) ||
       !base::Base64Decode(url.substr(kDataUrlPrefixLength), &raw_data)) {
     LOG(WARNING) << "Invalid image URL";

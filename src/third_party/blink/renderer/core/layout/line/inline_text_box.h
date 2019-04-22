@@ -39,7 +39,7 @@ class TextMatchMarker;
 
 class CORE_EXPORT InlineTextBox : public InlineBox {
  public:
-  InlineTextBox(LineLayoutItem item, int start, unsigned short length)
+  InlineTextBox(LineLayoutItem item, int start, uint16_t length)
       : InlineBox(item),
         prev_text_box_(nullptr),
         next_text_box_(nullptr),
@@ -71,7 +71,7 @@ class CORE_EXPORT InlineTextBox : public InlineBox {
 
   void OffsetRun(int delta);
 
-  unsigned short Truncation() const { return truncation_; }
+  uint16_t Truncation() const { return truncation_; }
 
   void MarkDirty() final;
 
@@ -176,7 +176,7 @@ class CORE_EXPORT InlineTextBox : public InlineBox {
 
  private:
   bool IsBoxEndIncludedInSelection() const;
-  void SetTruncation(unsigned);
+  void SetTruncation(uint16_t);
 
   void ClearTruncation() final;
   LayoutUnit PlaceEllipsisBox(bool flow_is_ltr,
@@ -224,12 +224,12 @@ class CORE_EXPORT InlineTextBox : public InlineBox {
   InlineTextBox* next_text_box_;
 
   int start_;
-  unsigned short len_;
+  uint16_t len_;
 
   // Where to truncate when text overflow is applied.  We use special constants
   // to denote no truncation (the whole run paints) and full truncation (nothing
   // paints at all).
-  unsigned short truncation_;
+  uint16_t truncation_;
 
  private:
   TextRun::ExpansionBehavior GetExpansionBehavior() const {

@@ -111,7 +111,8 @@ chrome.test.runTests([
   function testGetRules() {
     var callback = function(rules) {
       chrome.test.assertNoLastError();
-      // We are not given any gurantee on the order in which rules are returned.
+      // We are not given any guarantee on the order in which rules are
+      // returned.
       chrome.test.assertTrue(
           chrome.test.checkDeepEq([outputRule0, outputRule1], rules) ||
           chrome.test.checkDeepEq([outputRule1, outputRule0], rules));
@@ -123,7 +124,8 @@ chrome.test.runTests([
   function testGetRules2() {
     var callback = function(rules) {
       chrome.test.assertNoLastError();
-      // We are not given any gurantee on the order in which rules are returned.
+      // We are not given any guarantee on the order in which rules are
+      // returned.
       chrome.test.assertTrue(
           chrome.test.checkDeepEq([outputRule0, outputRule1], rules) ||
           chrome.test.checkDeepEq([outputRule1, outputRule0], rules));
@@ -147,7 +149,7 @@ chrome.test.runTests([
   // function testGetRules4() {
   //   var callback = function(rules) {
   //     chrome.test.assertNoLastError();
-  //     // We are not given any gurantee on the order in which rules are
+  //     // We are not given any guarantee on the order in which rules are
   //     // returned.
   //     chrome.test.assertTrue(
   //         chrome.test.checkDeepEq([outputRule0, outputRule1], rules) ||

@@ -51,7 +51,7 @@ std::string GetHostFromProcessView(int render_process_id, int render_view_id) {
 
 }  // namespace
 
-GURL HostZoomMap::GetURLFromEntry(const NavigationEntry* entry) {
+GURL HostZoomMap::GetURLFromEntry(NavigationEntry* entry) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   switch (entry->GetPageType()) {
     case PAGE_TYPE_ERROR:

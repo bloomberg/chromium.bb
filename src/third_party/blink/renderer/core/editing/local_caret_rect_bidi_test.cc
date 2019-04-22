@@ -25,9 +25,9 @@ class ParameterizedLocalCaretRectBidiTest
   bool LayoutNGEnabled() const { return GetParam(); }
 };
 
-INSTANTIATE_TEST_CASE_P(All,
-                        ParameterizedLocalCaretRectBidiTest,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All,
+                         ParameterizedLocalCaretRectBidiTest,
+                         testing::Bool());
 
 // This file contains script-generated tests for LocalCaretRectOfPosition()
 // that are related to Bidirectional text. The test cases are only for

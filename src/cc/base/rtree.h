@@ -10,6 +10,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <map>
 #include <vector>
 
 #include "base/logging.h"
@@ -42,7 +43,10 @@ template <typename T>
 class RTree {
  public:
   RTree();
+  RTree(const RTree&) = delete;
   ~RTree();
+
+  RTree& operator=(const RTree&) = delete;
 
   // Constructs the rtree from a given container of gfx::Rects. Queries using
   // Search will then return indices into this container.
@@ -73,7 +77,7 @@ class RTree {
 
   // Returns respective bounds of all items in this rtree in the order of items.
   // Production code except tracing should not use this method.
-  std::vector<gfx::Rect> GetAllBoundsForTracing() const;
+  std::map<T, gfx::Rect> GetAllBoundsForTracing() const;
 
   void Reset();
 
@@ -123,14 +127,12 @@ class RTree {
   Node<T>* AllocateNodeAtLevel(int level);
 
   void GetAllBoundsRecursive(Node<T>* root,
-                             std::vector<gfx::Rect>* results) const;
+                             std::map<T, gfx::Rect>* results) const;
 
   // This is the count of data elements (rather than total nodes in the tree)
   size_t num_data_elements_ = 0u;
   Branch<T> root_;
   std::vector<Node<T>> nodes_;
-
-  DISALLOW_COPY_AND_ASSIGN(RTree);
 };
 
 template <typename T>
@@ -336,8 +338,8 @@ gfx::Rect RTree<T>::GetBounds() const {
 }
 
 template <typename T>
-std::vector<gfx::Rect> RTree<T>::GetAllBoundsForTracing() const {
-  std::vector<gfx::Rect> results;
+std::map<T, gfx::Rect> RTree<T>::GetAllBoundsForTracing() const {
+  std::map<T, gfx::Rect> results;
   if (num_data_elements_ > 0)
     GetAllBoundsRecursive(root_.subtree, &results);
   return results;
@@ -345,10 +347,10 @@ std::vector<gfx::Rect> RTree<T>::GetAllBoundsForTracing() const {
 
 template <typename T>
 void RTree<T>::GetAllBoundsRecursive(Node<T>* node,
-                                     std::vector<gfx::Rect>* results) const {
+                                     std::map<T, gfx::Rect>* results) const {
   for (uint16_t i = 0; i < node->num_children; ++i) {
     if (node->level == 0)
-      results->push_back(node->children[i].bounds);
+      (*results)[node->children[i].payload] = node->children[i].bounds;
     else
       GetAllBoundsRecursive(node->children[i].subtree, results);
   }

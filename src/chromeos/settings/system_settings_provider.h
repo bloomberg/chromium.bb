@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "chromeos/settings/cros_settings_provider.h"
 #include "chromeos/settings/timezone_settings.h"
@@ -20,10 +21,11 @@ class Value;
 
 namespace chromeos {
 
-class CHROMEOS_EXPORT SystemSettingsProvider
+class COMPONENT_EXPORT(CHROMEOS_SETTINGS) SystemSettingsProvider
     : public CrosSettingsProvider,
       public system::TimezoneSettings::Observer {
  public:
+  SystemSettingsProvider();
   explicit SystemSettingsProvider(const NotifyObserversCallback& notify_cb);
   ~SystemSettingsProvider() override;
 
@@ -36,8 +38,8 @@ class CHROMEOS_EXPORT SystemSettingsProvider
   void TimezoneChanged(const icu::TimeZone& timezone) override;
 
  private:
-  // CrosSettingsProvider implementation.
-  void DoSet(const std::string& path, const base::Value& in_value) override;
+  // Code common to both constructors.
+  void Init();
 
   std::unique_ptr<base::Value> timezone_value_;
   std::unique_ptr<base::Value> per_user_timezone_enabled_value_;

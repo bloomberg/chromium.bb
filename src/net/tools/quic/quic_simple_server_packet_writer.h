@@ -10,9 +10,9 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "net/third_party/quic/core/quic_connection.h"
-#include "net/third_party/quic/core/quic_packet_writer.h"
-#include "net/third_party/quic/core/quic_packets.h"
+#include "net/third_party/quiche/src/quic/core/quic_connection.h"
+#include "net/third_party/quiche/src/quic/core/quic_packet_writer.h"
+#include "net/third_party/quiche/src/quic/core/quic_packets.h"
 
 namespace quic {
 class QuicDispatcher;
@@ -35,15 +35,6 @@ class QuicSimpleServerPacketWriter : public quic::QuicPacketWriter {
                                quic::QuicDispatcher* dispatcher);
   ~QuicSimpleServerPacketWriter() override;
 
-  // Wraps WritePacket, and ensures that |callback| is run on successful write.
-  quic::WriteResult WritePacketWithCallback(
-      const char* buffer,
-      size_t buf_len,
-      const quic::QuicIpAddress& self_address,
-      const quic::QuicSocketAddress& peer_address,
-      quic::PerPacketOptions* options,
-      WriteCallback callback);
-
   quic::WriteResult WritePacket(const char* buffer,
                                 size_t buf_len,
                                 const quic::QuicIpAddress& self_address,
@@ -53,7 +44,6 @@ class QuicSimpleServerPacketWriter : public quic::QuicPacketWriter {
   void OnWriteComplete(int rv);
 
   // quic::QuicPacketWriter implementation:
-  bool IsWriteBlockedDataBuffered() const override;
   bool IsWriteBlocked() const override;
   void SetWritable() override;
   quic::QuicByteCount GetMaxPacketSize(

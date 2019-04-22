@@ -27,7 +27,7 @@ PerfTestRunner.measureTime({
       firstChild.shadowRoot.querySelector('slot').assignedNodes();
     }
   },
-  done: () => {
+  teardown: () => {
     host.remove();
   }
 });

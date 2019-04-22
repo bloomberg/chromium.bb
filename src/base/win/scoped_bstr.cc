@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/process/memory.h"
+#include "base/strings/string_util.h"
 
 namespace base {
 namespace win {
@@ -16,7 +17,8 @@ namespace win {
 namespace {
 
 BSTR AllocBstrOrDie(StringPiece16 non_bstr) {
-  BSTR result = ::SysAllocStringLen(non_bstr.data(), non_bstr.length());
+  BSTR result = ::SysAllocStringLen(as_wcstr(non_bstr),
+                                    checked_cast<UINT>(non_bstr.length()));
   if (!result) {
     base::TerminateBecauseOutOfMemory((non_bstr.length() + 1) *
                                       sizeof(wchar_t));

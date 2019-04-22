@@ -25,8 +25,9 @@ except IOError:
 
 
 _EXCLUDED_PATHS = (
-    # This directory is created and updated via a script.
+    # These directories are created and updated via a script.
     r'^third_party[\\\/]blink[\\\/]tools[\\\/]blinkpy[\\\/]third_party[\\\/]wpt[\\\/]wpt[\\\/].*',
+    r'^third_party[\\\/]blink[\\\/]web_tests[\\\/]external[\\\/]wpt[\\\/]tools[\\\/].*',
 )
 
 
@@ -58,8 +59,8 @@ def _CheckForWrongMojomIncludes(input_api, output_api):
                     if f.LocalPath().startswith(public_folder) and \
                             not f.LocalPath() in allow_blink_files:
                         error_list = public_blink_mojom_errors
-                    elif match.group(1) != '-blink':
-                        # Neither -shared.h, nor -blink.h.
+                    elif match.group(1) not in ('-blink', '-blink-forward', '-blink-test-utils'):
+                        # Neither -shared.h, -blink.h, -blink-forward.h nor -blink-test-utils.h.
                         error_list = non_blink_mojom_errors
 
             if error_list is not None:

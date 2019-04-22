@@ -10,6 +10,8 @@
 // clang-format off
 #include "third_party/blink/renderer/bindings/tests/results/core/v8_test_interface_event_target.h"
 
+#include <algorithm>
+
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_dom_configuration.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -20,6 +22,7 @@
 #include "third_party/blink/renderer/platform/bindings/v8_object_constructor.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_context_data.h"
 #include "third_party/blink/renderer/platform/bindings/v8_private_property.h"
+#include "third_party/blink/renderer/platform/scheduler/public/cooperative_scheduling_manager.h"
 #include "third_party/blink/renderer/platform/wtf/get_ptr.h"
 
 namespace blink {
@@ -30,12 +33,12 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8TestInterfaceEventTarget::wrapper_type_info = {
+const WrapperTypeInfo v8_test_interface_event_target_wrapper_type_info = {
     gin::kEmbedderBlink,
     V8TestInterfaceEventTarget::DomTemplate,
     nullptr,
     "TestInterfaceEventTarget",
-    &V8EventTarget::wrapper_type_info,
+    V8EventTarget::GetWrapperTypeInfo(),
     WrapperTypeInfo::kWrapperTypeObjectPrototype,
     WrapperTypeInfo::kObjectClassId,
     WrapperTypeInfo::kNotInheritFromActiveScriptWrappable,
@@ -47,7 +50,7 @@ const WrapperTypeInfo V8TestInterfaceEventTarget::wrapper_type_info = {
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in TestInterfaceEventTarget.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
 // platform/bindings/ScriptWrappable.h.
-const WrapperTypeInfo& TestInterfaceEventTarget::wrapper_type_info_ = V8TestInterfaceEventTarget::wrapper_type_info;
+const WrapperTypeInfo& TestInterfaceEventTarget::wrapper_type_info_ = v8_test_interface_event_target_wrapper_type_info;
 
 // not [ActiveScriptWrappable]
 static_assert(
@@ -72,7 +75,7 @@ namespace test_interface_event_target_v8_internal {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8TestInterfaceEventTargetConstructor::wrapper_type_info = {
+const WrapperTypeInfo v8_test_interface_event_target_constructor_wrapper_type_info = {
     gin::kEmbedderBlink,
     V8TestInterfaceEventTargetConstructor::DomTemplate,
     nullptr,
@@ -103,7 +106,7 @@ static void V8TestInterfaceEventTargetConstructorCallback(const v8::FunctionCall
       info.NewTarget().As<v8::Object>()->CreationContext()));
   TestInterfaceEventTarget* impl = TestInterfaceEventTarget::CreateForJSConstructor(document);
   v8::Local<v8::Object> wrapper = info.Holder();
-  wrapper = impl->AssociateWithWrapper(info.GetIsolate(), &V8TestInterfaceEventTargetConstructor::wrapper_type_info, wrapper);
+  wrapper = impl->AssociateWithWrapper(info.GetIsolate(), V8TestInterfaceEventTargetConstructor::GetWrapperTypeInfo(), wrapper);
   V8SetReturnValue(info, wrapper);
 }
 
@@ -136,7 +139,7 @@ void V8TestInterfaceEventTargetConstructor::NamedConstructorAttributeGetter(
   }
 
   v8::Local<v8::Function> named_constructor =
-      per_context_data->ConstructorForType(&V8TestInterfaceEventTargetConstructor::wrapper_type_info);
+      per_context_data->ConstructorForType(V8TestInterfaceEventTargetConstructor::GetWrapperTypeInfo());
 
   // Set the prototype of named constructors to the regular constructor.
   auto private_property =
@@ -147,15 +150,21 @@ void V8TestInterfaceEventTargetConstructor::NamedConstructorAttributeGetter(
   if (!private_property.GetOrUndefined(named_constructor).ToLocal(&private_value) ||
       private_value->IsUndefined()) {
     v8::Local<v8::Function> interface =
-        per_context_data->ConstructorForType(&V8TestInterfaceEventTarget::wrapper_type_info);
-    v8::Local<v8::Value> interfacePrototype =
+        per_context_data->ConstructorForType(V8TestInterfaceEventTarget::GetWrapperTypeInfo());
+    v8::Local<v8::Value> interface_prototype =
         interface->Get(current_context, V8AtomicString(info.GetIsolate(), "prototype"))
         .ToLocalChecked();
-    bool result = named_constructor->Set(
+    // https://heycam.github.io/webidl/#named-constructors
+    // 8. Perform ! DefinePropertyOrThrow(F, "prototype",
+    //        PropertyDescriptor{[[Value]]: proto, [[Writable]]: false,
+    //                           [[Enumerable]]: false,
+    //                           [Configurable]]: false}).
+    const v8::PropertyAttribute prototype_attributes =
+        static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontEnum | v8::DontDelete);
+    bool result = named_constructor->DefineOwnProperty(
         current_context, V8AtomicString(info.GetIsolate(), "prototype"),
-        interfacePrototype).ToChecked();
-    if (!result)
-      return;
+        interface_prototype, prototype_attributes).ToChecked();
+    CHECK(result);
     private_property.Set(named_constructor, v8::True(info.GetIsolate()));
   }
 
@@ -167,7 +176,7 @@ static void InstallV8TestInterfaceEventTargetTemplate(
     const DOMWrapperWorld& world,
     v8::Local<v8::FunctionTemplate> interface_template) {
   // Initialize the interface object's template.
-  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interface_template, V8TestInterfaceEventTarget::wrapper_type_info.interface_name, V8EventTarget::DomTemplate(isolate, world), V8TestInterfaceEventTarget::kInternalFieldCount);
+  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interface_template, V8TestInterfaceEventTarget::GetWrapperTypeInfo()->interface_name, V8EventTarget::DomTemplate(isolate, world), V8TestInterfaceEventTarget::kInternalFieldCount);
 
   v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interface_template);
   ALLOW_UNUSED_LOCAL(signature);
@@ -203,18 +212,18 @@ void V8TestInterfaceEventTarget::InstallRuntimeEnabledFeaturesOnTemplate(
 v8::Local<v8::FunctionTemplate> V8TestInterfaceEventTarget::DomTemplate(
     v8::Isolate* isolate, const DOMWrapperWorld& world) {
   return V8DOMConfiguration::DomClassTemplate(
-      isolate, world, const_cast<WrapperTypeInfo*>(&wrapper_type_info),
+      isolate, world, const_cast<WrapperTypeInfo*>(V8TestInterfaceEventTarget::GetWrapperTypeInfo()),
       InstallV8TestInterfaceEventTargetTemplate);
 }
 
 bool V8TestInterfaceEventTarget::HasInstance(v8::Local<v8::Value> v8_value, v8::Isolate* isolate) {
-  return V8PerIsolateData::From(isolate)->HasInstance(&wrapper_type_info, v8_value);
+  return V8PerIsolateData::From(isolate)->HasInstance(V8TestInterfaceEventTarget::GetWrapperTypeInfo(), v8_value);
 }
 
 v8::Local<v8::Object> V8TestInterfaceEventTarget::FindInstanceInPrototypeChain(
     v8::Local<v8::Value> v8_value, v8::Isolate* isolate) {
   return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(
-      &wrapper_type_info, v8_value);
+      V8TestInterfaceEventTarget::GetWrapperTypeInfo(), v8_value);
 }
 
 TestInterfaceEventTarget* V8TestInterfaceEventTarget::ToImplWithTypeCheck(

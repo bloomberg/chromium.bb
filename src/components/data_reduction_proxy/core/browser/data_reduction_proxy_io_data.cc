@@ -31,8 +31,6 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_throttle_manager.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
-#include "net/url_request/http_user_agent_settings.h"
-#include "net/url_request/static_http_user_agent_settings.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -227,10 +225,12 @@ DataReductionProxyIOData::CreateNetworkDelegate(
 }
 
 std::unique_ptr<DataReductionProxyDelegate>
-DataReductionProxyIOData::CreateProxyDelegate() const {
+DataReductionProxyIOData::CreateProxyDelegate() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  return std::make_unique<DataReductionProxyDelegate>(
+  auto proxy_delegate = std::make_unique<DataReductionProxyDelegate>(
       config_.get(), configurator_.get(), bypass_stats_.get());
+  proxy_delegate->InitializeOnIOThread(this);
+  return proxy_delegate;
 }
 
 // TODO(kundaji): Rename this method to something more descriptive.
@@ -387,15 +387,6 @@ DataReductionProxyIOData::CreateCustomProxyConfig(
                               proxies_for_http)
           .proxy_rules();
 
-  // Set an alternate proxy list to be used for media requests which only
-  // contains proxies supporting the media resource type.
-  net::ProxyList media_proxies;
-  for (const auto& proxy : proxies_for_http) {
-    if (proxy.SupportsResourceType(ResourceTypeProvider::CONTENT_TYPE_MEDIA))
-      media_proxies.AddProxyServer(proxy.proxy_server());
-  }
-  config->alternate_proxy_list = media_proxies;
-
   net::EffectiveConnectionType type = GetEffectiveConnectionType();
   if (type > net::EFFECTIVE_CONNECTION_TYPE_OFFLINE) {
     DCHECK_NE(net::EFFECTIVE_CONNECTION_TYPE_LAST, type);
@@ -406,6 +397,10 @@ DataReductionProxyIOData::CreateCustomProxyConfig(
 
   request_options_->AddRequestHeader(&config->post_cache_headers,
                                      base::nullopt);
+
+  config->assume_https_proxies_support_quic = true;
+  config->can_use_proxy_on_http_url_redirect_cycles = false;
+
   return config;
 }
 
@@ -476,12 +471,32 @@ void DataReductionProxyIOData::MarkProxiesAsBad(
     base::TimeDelta bypass_duration,
     const net::ProxyList& bad_proxies,
     mojom::DataReductionProxy::MarkProxiesAsBadCallback callback) {
-  // TODO(https://crbug.com/721403): Do sanity checks on |bypass_duration| and
-  // |bad_proxies|.
-  //
-  // In particular need to enforce that only data reduction
-  // proxies are permitted to be marked as bad. Allowing renderers to
-  // arbitrarily bypass *any* proxy would be a more powerful capability.
+  // Sanity check the inputs, as this data may originate from a lower-privilege
+  // process (renderer).
+
+  if (bypass_duration < base::TimeDelta()) {
+    LOG(ERROR) << "Received bad MarkProxiesAsBad() -- invalid bypass_duration: "
+               << bypass_duration;
+    std::move(callback).Run();
+    return;
+  }
+
+  // Limit maximum bypass duration to a day.
+  if (bypass_duration > base::TimeDelta::FromDays(1))
+    bypass_duration = base::TimeDelta::FromDays(1);
+
+  // |bad_proxies| should be DRP servers or this API allows marking arbitrary
+  // proxies as bad. It is possible that proxies from an older config are
+  // received (FindConfiguredDataReductionProxy() searches recent proxies too).
+  for (const auto& proxy : bad_proxies.GetAll()) {
+    if (!config_->FindConfiguredDataReductionProxy(proxy)) {
+      LOG(ERROR) << "Received bad MarkProxiesAsBad() -- not a DRP server: "
+                 << proxy.ToURI();
+      std::move(callback).Run();
+      return;
+    }
+  }
+
   proxy_config_client_->MarkProxiesAsBad(bypass_duration, bad_proxies,
                                          std::move(callback));
 }

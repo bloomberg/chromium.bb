@@ -28,46 +28,46 @@ ppapi::host::PpapiHost* MockRendererPpapiHost::GetPpapiHost() {
   return &ppapi_host_;
 }
 
-bool MockRendererPpapiHost::IsValidInstance(PP_Instance instance) const {
+bool MockRendererPpapiHost::IsValidInstance(PP_Instance instance) {
   return instance == pp_instance_;
 }
 
 PepperPluginInstance* MockRendererPpapiHost::GetPluginInstance(
-    PP_Instance instance) const {
+    PP_Instance instance) {
   return plugin_instance_.get();
 }
 
 RenderFrame* MockRendererPpapiHost::GetRenderFrameForInstance(
-    PP_Instance instance) const {
+    PP_Instance instance) {
   if (instance == pp_instance_)
     return render_frame_;
   return nullptr;
 }
 
 RenderView* MockRendererPpapiHost::GetRenderViewForInstance(
-    PP_Instance instance) const {
+    PP_Instance instance) {
   if (instance == pp_instance_)
     return render_view_;
   return nullptr;
 }
 
 blink::WebPluginContainer* MockRendererPpapiHost::GetContainerForInstance(
-    PP_Instance instance) const {
+    PP_Instance instance) {
   NOTIMPLEMENTED();
   return nullptr;
 }
 
-bool MockRendererPpapiHost::HasUserGesture(PP_Instance instance) const {
+bool MockRendererPpapiHost::HasUserGesture(PP_Instance instance) {
   return has_user_gesture_;
 }
 
-int MockRendererPpapiHost::GetRoutingIDForWidget(PP_Instance instance) const {
+int MockRendererPpapiHost::GetRoutingIDForWidget(PP_Instance instance) {
   return 0;
 }
 
 gfx::Point MockRendererPpapiHost::PluginPointToRenderFrame(
     PP_Instance instance,
-    const gfx::Point& pt) const {
+    const gfx::Point& pt) {
   return gfx::Point();
 }
 
@@ -99,9 +99,11 @@ MockRendererPpapiHost::ShareReadOnlySharedMemoryRegionWithRemote(
   return base::ReadOnlySharedMemoryRegion();
 }
 
-bool MockRendererPpapiHost::IsRunningInProcess() const { return false; }
+bool MockRendererPpapiHost::IsRunningInProcess() {
+  return false;
+}
 
-std::string MockRendererPpapiHost::GetPluginName() const {
+std::string MockRendererPpapiHost::GetPluginName() {
   return std::string();
 }
 
@@ -112,12 +114,12 @@ void MockRendererPpapiHost::SetToExternalPluginHost() {
 void MockRendererPpapiHost::CreateBrowserResourceHosts(
     PP_Instance instance,
     const std::vector<IPC::Message>& nested_msgs,
-    const base::Callback<void(const std::vector<int>&)>& callback) const {
-  callback.Run(std::vector<int>(nested_msgs.size(), 0));
+    base::OnceCallback<void(const std::vector<int>&)> callback) {
+  std::move(callback).Run(std::vector<int>(nested_msgs.size(), 0));
   return;
 }
 
-GURL MockRendererPpapiHost::GetDocumentURL(PP_Instance instance) const {
+GURL MockRendererPpapiHost::GetDocumentURL(PP_Instance instance) {
   NOTIMPLEMENTED();
   return GURL();
 }

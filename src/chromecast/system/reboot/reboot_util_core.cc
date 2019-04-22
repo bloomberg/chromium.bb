@@ -39,6 +39,7 @@ bool RebootUtil::IsValidRebootSource(RebootShlib::RebootSource reboot_source) {
     case RebootShlib::RebootSource::FDR:
     case RebootShlib::RebootSource::HW_WATCHDOG:
     case RebootShlib::RebootSource::SW_OTHER:
+    case RebootShlib::RebootSource::OVERHEAT:
       return true;
     default:
       return false;

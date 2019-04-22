@@ -6,6 +6,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "base/bind.h"
 #include "build/build_config.h"
 #include "chrome/browser/android/contextualsearch/unhandled_tap_web_contents_observer.h"
 #include "chrome/browser/profiles/profile.h"

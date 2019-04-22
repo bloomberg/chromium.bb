@@ -12,7 +12,6 @@
 
 namespace app_list {
 
-class AppListViewDelegate;
 class ContentsView;
 class SearchResultSuggestionChipView;
 
@@ -42,7 +41,6 @@ class SuggestionChipContainerView : public SearchResultContainerView {
   bool IgnoreUpdateAndLayout() const;
 
   ContentsView* contents_view_ = nullptr;  // Not owned
-  AppListViewDelegate* view_delegate_ = nullptr;
 
   std::vector<SearchResultSuggestionChipView*> suggestion_chip_views_;  // Owned
 

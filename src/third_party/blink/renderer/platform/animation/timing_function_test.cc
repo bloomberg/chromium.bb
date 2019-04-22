@@ -101,10 +101,6 @@ TEST_F(TimingFunctionTest, StepToString) {
       StepsTimingFunction::Preset(StepsTimingFunction::StepPosition::START);
   EXPECT_EQ("steps(1, start)", step_timing_start->ToString());
 
-  scoped_refptr<TimingFunction> step_timing_middle =
-      StepsTimingFunction::Preset(StepsTimingFunction::StepPosition::MIDDLE);
-  EXPECT_EQ("steps(1, middle)", step_timing_middle->ToString());
-
   scoped_refptr<TimingFunction> step_timing_end =
       StepsTimingFunction::Preset(StepsTimingFunction::StepPosition::END);
   EXPECT_EQ("steps(1)", step_timing_end->ToString());
@@ -112,10 +108,6 @@ TEST_F(TimingFunctionTest, StepToString) {
   scoped_refptr<TimingFunction> step_timing_custom_start =
       StepsTimingFunction::Create(3, StepsTimingFunction::StepPosition::START);
   EXPECT_EQ("steps(3, start)", step_timing_custom_start->ToString());
-
-  scoped_refptr<TimingFunction> step_timing_custom_middle =
-      StepsTimingFunction::Create(4, StepsTimingFunction::StepPosition::MIDDLE);
-  EXPECT_EQ("steps(4, middle)", step_timing_custom_middle->ToString());
 
   scoped_refptr<TimingFunction> step_timing_custom_end =
       StepsTimingFunction::Create(5, StepsTimingFunction::StepPosition::END);
@@ -468,15 +460,6 @@ TEST_F(TimingFunctionTest, StepsEvaluate) {
   EXPECT_EQ(1.00, steps_timing_start->Evaluate(1.00, 0));
   EXPECT_EQ(3.00, steps_timing_start->Evaluate(2.00, 0));
 
-  scoped_refptr<TimingFunction> steps_timing_middle =
-      StepsTimingFunction::Preset(StepsTimingFunction::StepPosition::MIDDLE);
-  EXPECT_EQ(-2.00, steps_timing_middle->Evaluate(-2.50, 0));
-  EXPECT_EQ(0.00, steps_timing_middle->Evaluate(0.00, 0));
-  EXPECT_EQ(0.00, steps_timing_middle->Evaluate(0.49, 0));
-  EXPECT_EQ(1.00, steps_timing_middle->Evaluate(0.50, 0));
-  EXPECT_EQ(1.00, steps_timing_middle->Evaluate(1.00, 0));
-  EXPECT_EQ(3.00, steps_timing_middle->Evaluate(2.50, 0));
-
   scoped_refptr<TimingFunction> steps_timing_end =
       StepsTimingFunction::Preset(StepsTimingFunction::StepPosition::END);
   EXPECT_EQ(-2.00, steps_timing_end->Evaluate(-2.00, 0));
@@ -498,21 +481,6 @@ TEST_F(TimingFunctionTest, StepsEvaluate) {
   EXPECT_EQ(1.00, steps_timing_custom_start->Evaluate(0.75, 0));
   EXPECT_EQ(1.00, steps_timing_custom_start->Evaluate(1.00, 0));
   EXPECT_EQ(1.75, steps_timing_custom_start->Evaluate(1.50, 0));
-
-  scoped_refptr<TimingFunction> steps_timing_custom_middle =
-      StepsTimingFunction::Create(4, StepsTimingFunction::StepPosition::MIDDLE);
-  EXPECT_EQ(-2.00, steps_timing_custom_middle->Evaluate(-2.00, 0));
-  EXPECT_EQ(0.00, steps_timing_custom_middle->Evaluate(0.00, 0));
-  EXPECT_EQ(0.00, steps_timing_custom_middle->Evaluate(0.12, 0));
-  EXPECT_EQ(0.25, steps_timing_custom_middle->Evaluate(0.13, 0));
-  EXPECT_EQ(0.25, steps_timing_custom_middle->Evaluate(0.37, 0));
-  EXPECT_EQ(0.50, steps_timing_custom_middle->Evaluate(0.38, 0));
-  EXPECT_EQ(0.50, steps_timing_custom_middle->Evaluate(0.62, 0));
-  EXPECT_EQ(0.75, steps_timing_custom_middle->Evaluate(0.63, 0));
-  EXPECT_EQ(0.75, steps_timing_custom_middle->Evaluate(0.87, 0));
-  EXPECT_EQ(1.00, steps_timing_custom_middle->Evaluate(0.88, 0));
-  EXPECT_EQ(1.00, steps_timing_custom_middle->Evaluate(1.00, 0));
-  EXPECT_EQ(3.00, steps_timing_custom_middle->Evaluate(3.00, 0));
 
   scoped_refptr<TimingFunction> steps_timing_custom_end =
       StepsTimingFunction::Create(4, StepsTimingFunction::StepPosition::END);

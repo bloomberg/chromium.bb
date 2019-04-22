@@ -12,18 +12,18 @@
 #include "xfa/fxfa/cxfa_eventparam.h"
 #include "xfa/fxfa/parser/cxfa_document.h"
 
-class CXFA_FFWidgetHandler;
-class CXFA_ContainerLayoutItem;
 class CXFA_ContentLayoutItem;
+class CXFA_FFWidgetHandler;
 class CXFA_LayoutItem;
 class CXFA_Script;
+class CXFA_ViewLayoutItem;
 
 class CXFA_FFNotify {
  public:
   explicit CXFA_FFNotify(CXFA_FFDoc* pDoc);
   ~CXFA_FFNotify();
 
-  void OnPageEvent(CXFA_ContainerLayoutItem* pSender, uint32_t dwEvent);
+  void OnPageEvent(CXFA_ViewLayoutItem* pSender, uint32_t dwEvent);
 
   void OnWidgetListItemAdded(CXFA_Node* pSender,
                              const wchar_t* pLabel,
@@ -38,13 +38,12 @@ class CXFA_FFNotify {
                       XFA_Attribute eAttr,
                       CXFA_Node* pParentNode,
                       CXFA_Node* pWidgetNode);
+  void OnContainerChanged(CXFA_Node* pNode);
   void OnChildAdded(CXFA_Node* pSender);
   void OnChildRemoved();
 
-  std::unique_ptr<CXFA_ContainerLayoutItem> OnCreateContainerLayoutItem(
-      CXFA_Node* pNode);
-  std::unique_ptr<CXFA_ContentLayoutItem> OnCreateContentLayoutItem(
-      CXFA_Node* pNode);
+  std::unique_ptr<CXFA_ViewLayoutItem> OnCreateViewLayoutItem(CXFA_Node* pNode);
+  std::unique_ptr<CXFA_FFWidget> OnCreateContentLayoutItem(CXFA_Node* pNode);
 
   void OnLayoutItemAdded(CXFA_LayoutProcessor* pLayout,
                          CXFA_LayoutItem* pSender,

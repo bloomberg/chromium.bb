@@ -15,10 +15,12 @@
 namespace v8 {
 namespace internal {
 
+OBJECT_CONSTRUCTORS_IMPL(JSRegExpStringIterator, JSObject)
+
 ACCESSORS(JSRegExpStringIterator, iterating_regexp, Object,
           kIteratingRegExpOffset)
-ACCESSORS2(JSRegExpStringIterator, iterating_string, String,
-           kIteratedStringOffset)
+ACCESSORS(JSRegExpStringIterator, iterating_string, String,
+          kIteratedStringOffset)
 
 SMI_ACCESSORS(JSRegExpStringIterator, flags, kFlagsOffset)
 BOOL_ACCESSORS(JSRegExpStringIterator, flags, done, kDoneBit)

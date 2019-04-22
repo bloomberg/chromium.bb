@@ -34,15 +34,6 @@ class TabManagerFeaturesTest : public testing::Test {
         "DummyTrial", params_, features);
   }
 
-  // Enables the site characteristics database feature, and sets up the
-  // associated variations parameter values.
-  void EnableInfiniteSessionRestore() {
-    std::set<std::string> features;
-    features.insert(features::kInfiniteSessionRestore.name);
-    variations_manager_.SetVariationParamsWithFeatureAssociations(
-        "DummyTrial", params_, features);
-  }
-
   void SetParam(base::StringPiece key, base::StringPiece value) {
     params_[key.as_string()] = value.as_string();
   }
@@ -114,30 +105,6 @@ class TabManagerFeaturesTest : public testing::Test {
     EXPECT_EQ(audio_usage_grace_period, params.audio_usage_grace_period);
   }
 
-  void ExpectInfiniteSessionRestoreParams(
-      uint32_t min_simultaneous_tab_loads,
-      uint32_t max_simultaneous_tab_loads,
-      uint32_t cores_per_simultaneous_tab_load,
-      uint32_t min_tabs_to_restore,
-      uint32_t max_tabs_to_restore,
-      uint32_t mb_free_memory_per_tab_to_restore,
-      base::TimeDelta max_time_since_last_use_to_restore,
-      uint32_t min_site_engagement_to_restore) {
-    InfiniteSessionRestoreParams params = GetInfiniteSessionRestoreParams();
-    EXPECT_EQ(min_simultaneous_tab_loads, params.min_simultaneous_tab_loads);
-    EXPECT_EQ(max_simultaneous_tab_loads, params.max_simultaneous_tab_loads);
-    EXPECT_EQ(cores_per_simultaneous_tab_load,
-              params.cores_per_simultaneous_tab_load);
-    EXPECT_EQ(min_tabs_to_restore, params.min_tabs_to_restore);
-    EXPECT_EQ(max_tabs_to_restore, params.max_tabs_to_restore);
-    EXPECT_EQ(mb_free_memory_per_tab_to_restore,
-              params.mb_free_memory_per_tab_to_restore);
-    EXPECT_EQ(max_time_since_last_use_to_restore,
-              params.max_time_since_last_use_to_restore);
-    EXPECT_EQ(min_site_engagement_to_restore,
-              params.min_site_engagement_to_restore);
-  }
-
   void ExpectDefaultProactiveTabFreezeAndDiscardParams() {
     int memory_in_gb = 4;
     ExpectProactiveTabFreezeAndDiscardParams(
@@ -192,23 +159,6 @@ class TabManagerFeaturesTest : public testing::Test {
         base::TimeDelta::FromSeconds(
             SiteCharacteristicsDatabaseParams::kAudioUsageGracePeriod
                 .default_value));
-  }
-
-  void ExpectDefaultInfiniteSessionRestoreParams() {
-    ExpectInfiniteSessionRestoreParams(
-        InfiniteSessionRestoreParams::kMinSimultaneousTabLoads.default_value,
-        InfiniteSessionRestoreParams::kMaxSimultaneousTabLoads.default_value,
-        InfiniteSessionRestoreParams::kCoresPerSimultaneousTabLoad
-            .default_value,
-        InfiniteSessionRestoreParams::kMinTabsToRestore.default_value,
-        InfiniteSessionRestoreParams::kMaxTabsToRestore.default_value,
-        InfiniteSessionRestoreParams::kMbFreeMemoryPerTabToRestore
-            .default_value,
-        base::TimeDelta::FromSeconds(
-            InfiniteSessionRestoreParams::kMaxTimeSinceLastUseToRestore
-                .default_value),
-        InfiniteSessionRestoreParams::kMinSiteEngagementToRestore
-            .default_value);
   }
 
  private:
@@ -373,41 +323,6 @@ TEST_F(TabManagerFeaturesTest, GetSiteCharacteristicsDatabaseParams) {
       base::TimeDelta::FromSeconds(360000),
       base::TimeDelta::FromSeconds(3600000), base::TimeDelta::FromSeconds(42),
       base::TimeDelta::FromSeconds(43));
-}
-
-TEST_F(TabManagerFeaturesTest,
-       GetInfiniteSessionRestoreParamsInvalidGoesToDefault) {
-  SetParam(InfiniteSessionRestoreParams::kMinSimultaneousTabLoads.name, "  ");
-  SetParam(InfiniteSessionRestoreParams::kMaxSimultaneousTabLoads.name, "a.b");
-  SetParam(InfiniteSessionRestoreParams::kCoresPerSimultaneousTabLoad.name,
-           "-- ");
-  SetParam(InfiniteSessionRestoreParams::kMinTabsToRestore.name, "hey");
-  SetParam(InfiniteSessionRestoreParams::kMaxTabsToRestore.name, ".");
-  SetParam(InfiniteSessionRestoreParams::kMbFreeMemoryPerTabToRestore.name,
-           "0x0");
-  SetParam(InfiniteSessionRestoreParams::kMaxTimeSinceLastUseToRestore.name,
-           "foo");
-  SetParam(InfiniteSessionRestoreParams::kMinSiteEngagementToRestore.name,
-           "bar");
-  EnableInfiniteSessionRestore();
-  ExpectDefaultInfiniteSessionRestoreParams();
-}
-
-TEST_F(TabManagerFeaturesTest, GetInfiniteSessionRestoreParams) {
-  SetParam(InfiniteSessionRestoreParams::kMinSimultaneousTabLoads.name, "10");
-  SetParam(InfiniteSessionRestoreParams::kMaxSimultaneousTabLoads.name, "20");
-  SetParam(InfiniteSessionRestoreParams::kCoresPerSimultaneousTabLoad.name,
-           "2");
-  SetParam(InfiniteSessionRestoreParams::kMinTabsToRestore.name, "13");
-  SetParam(InfiniteSessionRestoreParams::kMaxTabsToRestore.name, "27");
-  SetParam(InfiniteSessionRestoreParams::kMbFreeMemoryPerTabToRestore.name,
-           "1337");
-  SetParam(InfiniteSessionRestoreParams::kMaxTimeSinceLastUseToRestore.name,
-           "60");
-  SetParam(InfiniteSessionRestoreParams::kMinSiteEngagementToRestore.name, "9");
-  EnableInfiniteSessionRestore();
-  ExpectInfiniteSessionRestoreParams(10, 20, 2, 13, 27, 1337,
-                                     base::TimeDelta::FromMinutes(1), 9);
 }
 
 }  // namespace resource_coordinator

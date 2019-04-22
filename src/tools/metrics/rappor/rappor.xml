@@ -277,6 +277,9 @@ components/rappor/rappor_parameters.h.
 </rappor-metric>
 
 <rappor-metric name="BackgroundSync.Register.Origin" type="UMA_RAPPOR_TYPE">
+  <obsolete>
+    No longer being logged.
+  </obsolete>
   <owner>jkarlin@chromium.org</owner>
   <summary>
     The eTLD+1 of a URL which registered a Background Sync event.
@@ -1292,6 +1295,9 @@ components/rappor/rappor_parameters.h.
 
 <rappor-metric name="Media.Autoplay.CrossOrigin.Allowed.ChildFrame"
     type="ETLD_PLUS_ONE">
+  <obsolete>
+    Deprecated January 2019, metric no longer needed.
+  </obsolete>
   <owner>avayvod@chromium.org</owner>
   <owner>mlamouri@chromium.org</owner>
   <owner>zqzhang@chromium.org</owner>
@@ -1303,6 +1309,9 @@ components/rappor/rappor_parameters.h.
 
 <rappor-metric name="Media.Autoplay.CrossOrigin.Allowed.TopLevelFrame"
     type="ETLD_PLUS_ONE">
+  <obsolete>
+    Deprecated January 2019, metric no longer needed.
+  </obsolete>
   <owner>avayvod@chromium.org</owner>
   <owner>mlamouri@chromium.org</owner>
   <owner>zqzhang@chromium.org</owner>
@@ -1314,6 +1323,9 @@ components/rappor/rappor_parameters.h.
 
 <rappor-metric name="Media.Autoplay.CrossOrigin.Blocked.ChildFrame"
     type="ETLD_PLUS_ONE">
+  <obsolete>
+    Deprecated January 2019, metric no longer needed.
+  </obsolete>
   <owner>avayvod@chromium.org</owner>
   <owner>mlamouri@chromium.org</owner>
   <owner>zqzhang@chromium.org</owner>
@@ -1325,6 +1337,9 @@ components/rappor/rappor_parameters.h.
 
 <rappor-metric name="Media.Autoplay.CrossOrigin.Blocked.TopLevelFrame"
     type="ETLD_PLUS_ONE">
+  <obsolete>
+    Deprecated January 2019, metric no longer needed.
+  </obsolete>
   <owner>avayvod@chromium.org</owner>
   <owner>mlamouri@chromium.org</owner>
   <owner>zqzhang@chromium.org</owner>
@@ -1337,6 +1352,9 @@ components/rappor/rappor_parameters.h.
 <rappor-metric
     name="Media.Autoplay.CrossOrigin.PlayedWithGestureAfterBlock.ChildFrame"
     type="ETLD_PLUS_ONE">
+  <obsolete>
+    Deprecated January 2019, metric no longer needed.
+  </obsolete>
   <owner>avayvod@chromium.org</owner>
   <owner>mlamouri@chromium.org</owner>
   <owner>zqzhang@chromium.org</owner>
@@ -1349,6 +1367,9 @@ components/rappor/rappor_parameters.h.
 <rappor-metric
     name="Media.Autoplay.CrossOrigin.PlayedWithGestureAfterBlock.TopLevelFrame"
     type="ETLD_PLUS_ONE">
+  <obsolete>
+    Deprecated January 2019, metric no longer needed.
+  </obsolete>
   <owner>avayvod@chromium.org</owner>
   <owner>mlamouri@chromium.org</owner>
   <owner>zqzhang@chromium.org</owner>
@@ -1362,6 +1383,9 @@ components/rappor/rappor_parameters.h.
 <rappor-metric
     name="Media.Autoplay.CrossOrigin.UserPausedAutoplayingVideo.ChildFrame"
     type="ETLD_PLUS_ONE">
+  <obsolete>
+    Deprecated January 2019, metric no longer needed.
+  </obsolete>
   <owner>avayvod@chromium.org</owner>
   <owner>mlamouri@chromium.org</owner>
   <owner>zqzhang@chromium.org</owner>
@@ -1374,6 +1398,9 @@ components/rappor/rappor_parameters.h.
 <rappor-metric
     name="Media.Autoplay.CrossOrigin.UserPausedAutoplayingVideo.TopLevelFrame"
     type="ETLD_PLUS_ONE">
+  <obsolete>
+    Deprecated January 2019, metric no longer needed.
+  </obsolete>
   <owner>avayvod@chromium.org</owner>
   <owner>mlamouri@chromium.org</owner>
   <owner>zqzhang@chromium.org</owner>

@@ -104,8 +104,9 @@ ImageUtil.ImageLoader.prototype.load = function(item, callback, opt_delay) {
   onError = onError.bind(this);
 
   var loadImage = function(url) {
-    if (generation !== this.generation_)
+    if (generation !== this.generation_) {
       return;
+    }
 
     metrics.startInterval(ImageUtil.getMetricName('LoadTime'));
     this.timeout_ = 0;
@@ -113,8 +114,9 @@ ImageUtil.ImageLoader.prototype.load = function(item, callback, opt_delay) {
     targetImage.onload = function() {
       targetImage.onerror = null;
       targetImage.onload = null;
-      if (generation !== this.generation_)
+      if (generation !== this.generation_) {
         return;
+      }
       this.metadataModel_.get([entry], ['contentImageTransform']).then(
           function(metadataItems) {
             onTransform(targetImage, metadataItems[0].contentImageTransform);
@@ -129,8 +131,9 @@ ImageUtil.ImageLoader.prototype.load = function(item, callback, opt_delay) {
   }.bind(this);
 
   var loadVideo = function(url) {
-    if (generation !== this.generation_)
+    if (generation !== this.generation_) {
       return;
+    }
 
     metrics.startInterval(ImageUtil.getMetricName('LoadTime'));
     this.timeout_ = 0;
@@ -149,8 +152,9 @@ ImageUtil.ImageLoader.prototype.load = function(item, callback, opt_delay) {
     // poster just won't be set. If the video load also fails, the standard
     // controls show a broken play icon.
     var thumbnailMetadata = item.getThumbnailMetadataItem();
-    if (!thumbnailMetadata)
+    if (!thumbnailMetadata) {
       return;
+    }
 
     var posterLoader = new ThumbnailLoader(
         entry, undefined /* opt_loaderType */, thumbnailMetadata);
@@ -163,8 +167,9 @@ ImageUtil.ImageLoader.prototype.load = function(item, callback, opt_delay) {
 
   // Loads the media. If already loaded, then forces a reload.
   var startLoad = function() {
-    if (generation !== this.generation_)
+    if (generation !== this.generation_) {
       return;
+    }
 
     if (FileType.isVideo(entry)) {
       loadVideo(entry.toURL() + '?nocache=' + Date.now());
@@ -184,12 +189,14 @@ ImageUtil.ImageLoader.prototype.load = function(item, callback, opt_delay) {
         priority: 0  // Use highest priority to show main image.
       });
       ImageLoaderClient.getInstance().load(request, function(result) {
-        if (generation !== this.generation_)
+        if (generation !== this.generation_) {
           return;
-        if (result.status === 'success')
+        }
+        if (result.status === 'success') {
           loadImage(result.data);
-        else
+        } else {
           onError('GALLERY_IMAGE_ERROR');
+        }
       }.bind(this));
       return;
     }
@@ -233,8 +240,9 @@ ImageUtil.ImageLoader.prototype.setCallback = function(callback) {
  * Stops loading image.
  */
 ImageUtil.ImageLoader.prototype.cancel = function() {
-  if (!this.callback_)
+  if (!this.callback_) {
     return;
+  }
   this.callback_ = null;
   if (this.timeout_) {
     clearTimeout(this.timeout_);

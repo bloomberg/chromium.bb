@@ -56,6 +56,7 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   const char* GetClassName() const override;
 
   // WidgetObserver:
+  void OnWidgetClosing(Widget* widget) override;
   void OnWidgetDestroying(Widget* widget) override;
   void OnWidgetVisibilityChanging(Widget* widget, bool visible) override;
   void OnWidgetVisibilityChanged(Widget* widget, bool visible) override;
@@ -104,6 +105,10 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   bool adjust_if_offscreen() const { return adjust_if_offscreen_; }
   void set_adjust_if_offscreen(bool adjust) { adjust_if_offscreen_ = adjust; }
 
+  void set_highlight_button_when_shown(bool highlight) {
+    highlight_button_when_shown_ = highlight;
+  }
+
   // Get the arrow's anchor rect in screen space.
   virtual gfx::Rect GetAnchorRect() const;
 
@@ -133,7 +138,7 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   virtual gfx::Rect GetBubbleBounds();
 
   // DialogDelegateView:
-  ax::mojom::Role GetAccessibleWindowRole() const override;
+  ax::mojom::Role GetAccessibleWindowRole() override;
 
   // Disallow overrides of GetMinimumSize and GetMaximumSize(). These would only
   // be called by the FrameView, but the BubbleFrameView ignores these. Bubbles
@@ -191,6 +196,10 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   // it from there. It will make sure that the view is still valid.
   std::unique_ptr<ViewTracker> anchor_view_tracker_;
   Widget* anchor_widget_;
+
+  // Whether the |anchor_widget_| (or the |highlighted_button_tracker_|, when
+  // provided) should be highlighted when this bubble is shown.
+  bool highlight_button_when_shown_ = true;
 
   // If provided, this button should be highlighted while the bubble is visible.
   // If not provided, the anchor_view will attempt to be highlighted. A

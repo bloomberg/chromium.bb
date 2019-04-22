@@ -211,7 +211,7 @@ void DevToolsStreamBlob::OnReadComplete(int bytes_read) {
     }
   }
   base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(std::move(request->callback), std::move(data),
                      base64_encoded, status));
   if (!pending_reads_.empty())

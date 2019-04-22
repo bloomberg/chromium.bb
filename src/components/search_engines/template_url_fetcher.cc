@@ -4,6 +4,7 @@
 
 #include "components/search_engines/template_url_fetcher.h"
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -19,7 +20,7 @@
 namespace {
 
 // Traffic annotation for RequestDelegate.
-constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
+const net::NetworkTrafficAnnotationTag kTrafficAnnotation =
     net::DefineNetworkTrafficAnnotation("open_search", R"(
       semantics {
         sender: "Omnibox"

@@ -165,8 +165,8 @@ std::string JSONParser::StringBuilder::DestructiveAsString() {
 
 // JSONParser private //////////////////////////////////////////////////////////
 
-Optional<StringPiece> JSONParser::PeekChars(int count) {
-  if (static_cast<size_t>(index_) + count > input_.length())
+Optional<StringPiece> JSONParser::PeekChars(size_t count) {
+  if (index_ + count > input_.length())
     return nullopt;
   // Using StringPiece::substr() is significantly slower (according to
   // base_perftests) than constructing a substring manually.
@@ -180,7 +180,7 @@ Optional<char> JSONParser::PeekChar() {
   return nullopt;
 }
 
-Optional<StringPiece> JSONParser::ConsumeChars(int count) {
+Optional<StringPiece> JSONParser::ConsumeChars(size_t count) {
   Optional<StringPiece> chars = PeekChars(count);
   if (chars)
     index_ += count;

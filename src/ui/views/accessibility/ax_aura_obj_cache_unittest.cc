@@ -21,36 +21,36 @@ using WidgetAutoclosePtr = std::unique_ptr<Widget, WidgetCloser>;
 
 class AXAuraObjCacheTest : public WidgetTest {
  public:
-  AXAuraObjCacheTest() {}
-  ~AXAuraObjCacheTest() override {}
+  AXAuraObjCacheTest() = default;
+  ~AXAuraObjCacheTest() override = default;
 };
 
 TEST_F(AXAuraObjCacheTest, TestViewRemoval) {
+  AXAuraObjCache cache;
   WidgetAutoclosePtr widget(CreateTopLevelPlatformWidget());
   View* parent = new View();
   widget->GetRootView()->AddChildView(parent);
   View* child = new View();
   parent->AddChildView(child);
 
-  AXAuraObjCache* cache = AXAuraObjCache::GetInstance();
-  AXAuraObjWrapper* ax_widget = cache->GetOrCreate(widget.get());
+  AXAuraObjWrapper* ax_widget = cache.GetOrCreate(widget.get());
   ASSERT_NE(nullptr, ax_widget);
-  AXAuraObjWrapper* ax_parent = cache->GetOrCreate(parent);
+  AXAuraObjWrapper* ax_parent = cache.GetOrCreate(parent);
   ASSERT_NE(nullptr, ax_parent);
-  AXAuraObjWrapper* ax_child = cache->GetOrCreate(child);
+  AXAuraObjWrapper* ax_child = cache.GetOrCreate(child);
   ASSERT_NE(nullptr, ax_child);
 
   // Everything should have an ID, indicating it's in the cache.
-  ASSERT_GT(cache->GetID(widget.get()), 0);
-  ASSERT_GT(cache->GetID(parent), 0);
-  ASSERT_GT(cache->GetID(child), 0);
+  ASSERT_GT(cache.GetID(widget.get()), 0);
+  ASSERT_GT(cache.GetID(parent), 0);
+  ASSERT_GT(cache.GetID(child), 0);
 
   // Removing the parent view should remove both the parent and child
   // from the cache, but leave the widget.
   widget->GetRootView()->RemoveChildView(parent);
-  ASSERT_GT(cache->GetID(widget.get()), 0);
-  ASSERT_EQ(-1, cache->GetID(parent));
-  ASSERT_EQ(-1, cache->GetID(child));
+  ASSERT_GT(cache.GetID(widget.get()), 0);
+  ASSERT_EQ(-1, cache.GetID(parent));
+  ASSERT_EQ(-1, cache.GetID(child));
 
   // Explicitly delete |parent| to prevent a memory leak, since calling
   // RemoveChildView() doesn't delete it.

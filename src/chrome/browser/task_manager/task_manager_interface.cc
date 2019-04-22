@@ -4,6 +4,7 @@
 
 #include "chrome/browser/task_manager/task_manager_interface.h"
 
+#include "base/bind.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/task_manager/sampling/task_manager_impl.h"
 #include "chrome/browser/task_manager/sampling/task_manager_io_thread_helper.h"
@@ -25,7 +26,7 @@ namespace {
 BytesTransferredKey KeyForRequest(const net::URLRequest& request) {
   // Only net::URLRequestJob instances created by the ResourceDispatcherHost
   // have an associated ResourceRequestInfo and a render frame associated.
-  const content::ResourceRequestInfo* info =
+  content::ResourceRequestInfo* info =
       content::ResourceRequestInfo::ForRequest(&request);
 
   // Requests without ResourceRequestInfo are attributed to the browser process.

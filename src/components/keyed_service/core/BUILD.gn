@@ -24,6 +24,14 @@ component("core") {
     "refcounted_keyed_service_factory.cc",
     "refcounted_keyed_service_factory.h",
     "service_access_type.h",
+    "simple_dependency_manager.cc",
+    "simple_dependency_manager.h",
+    "simple_factory_key.cc",
+    "simple_factory_key.h",
+    "simple_key_map.cc",
+    "simple_key_map.h",
+    "simple_keyed_service_factory.cc",
+    "simple_keyed_service_factory.h",
   ]
 
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
@@ -34,7 +42,23 @@ component("core") {
     "//base",
     "//components/pref_registry",
     "//components/prefs",
-    "//components/user_prefs",
+  ]
+}
+
+component("test_support") {
+  testonly = true
+
+  output_name = "keyed_service_test_support"
+  sources = [
+    "test_simple_factory_key.cc",
+    "test_simple_factory_key.h",
+  ]
+
+  defines = [ "KEYED_SERVICE_IMPLEMENTATION" ]
+
+  deps = [
+    ":core",
+    "//base",
   ]
 }
 

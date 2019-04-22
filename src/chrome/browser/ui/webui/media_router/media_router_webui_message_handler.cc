@@ -25,9 +25,9 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/account_info.h"
+#include "components/sync/driver/sync_service.h"
 #include "content/public/browser/web_ui.h"
 #include "extensions/common/constants.h"
 #include "services/identity/public/cpp/identity_manager.h"
@@ -126,7 +126,7 @@ std::unique_ptr<base::DictionaryValue> SinksAndIdentityToValue(
       // Convert default domains to user domain
       if (domain == "default") {
         domain = user_domain;
-        if (domain == AccountTrackerService::kNoHostedDomainFound) {
+        if (domain == kNoHostedDomainFound) {
           // Default domain will be empty for non-dasher accounts.
           domain.clear();
         }
@@ -964,13 +964,13 @@ void MediaRouterWebUIMessageHandler::OnPlayCurrentMedia(
 void MediaRouterWebUIMessageHandler::OnSeekCurrentMedia(
     const base::ListValue* args) {
   const base::DictionaryValue* args_dict = nullptr;
-  int time;
+  double time;
   if (!args->GetDictionary(0, &args_dict) ||
-      !args_dict->GetInteger("time", &time)) {
+      !args_dict->GetDouble("time", &time)) {
     DVLOG(1) << "Unable to extract time";
     return;
   }
-  base::TimeDelta time_delta = base::TimeDelta::FromSeconds(time);
+  base::TimeDelta time_delta = base::TimeDelta::FromSecondsD(time);
   MediaRouteController* route_controller =
       media_router_ui_->GetMediaRouteController();
   if (route_controller && current_media_status_ &&
@@ -1119,8 +1119,12 @@ void MediaRouterWebUIMessageHandler::MaybeUpdateFirstRunFlowData() {
 AccountInfo MediaRouterWebUIMessageHandler::GetAccountInfo() {
   identity::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(Profile::FromWebUI(web_ui()));
-  return identity_manager ? identity_manager->GetPrimaryAccountInfo()
-                          : AccountInfo();
+  if (!identity_manager)
+    return AccountInfo();
+  base::Optional<AccountInfo> primary_account_info =
+      identity_manager->FindExtendedAccountInfoForAccount(
+          identity_manager->GetPrimaryAccountInfo());
+  return primary_account_info.value_or(AccountInfo{});
 }
 
 int MediaRouterWebUIMessageHandler::CurrentCastModeForRouteId(

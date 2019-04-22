@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "base/unguessable_token.h"
@@ -53,9 +54,9 @@ void StreamFactory::CreateInputStream(
   CHECK_EQ(magic_bytes_, 0x600DC0DEu);
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
   SetStateForCrashing("creating input stream");
-  TRACE_EVENT_NESTABLE_ASYNC_INSTANT1(
+  TRACE_EVENT_NESTABLE_ASYNC_INSTANT2(
       "audio", "CreateInputStream", bindings_.dispatch_context().id_for_trace(),
-      "device id", device_id);
+      "device id", device_id, "params", params.AsHumanReadableString());
 
   if (processing_config && processing_config->settings.requires_apm() &&
       params.GetBufferDuration() != base::TimeDelta::FromMilliseconds(10)) {
@@ -111,10 +112,10 @@ void StreamFactory::CreateOutputStream(
   CHECK_EQ(magic_bytes_, 0x600DC0DEu);
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
   SetStateForCrashing("creating output stream");
-  TRACE_EVENT_NESTABLE_ASYNC_INSTANT1(
+  TRACE_EVENT_NESTABLE_ASYNC_INSTANT2(
       "audio", "CreateOutputStream",
       bindings_.dispatch_context().id_for_trace(), "device id",
-      output_device_id);
+      output_device_id, "params", params.AsHumanReadableString());
 
   media::mojom::AudioOutputStreamObserverAssociatedPtr observer;
   observer.Bind(std::move(observer_info));
@@ -127,7 +128,7 @@ void StreamFactory::CreateOutputStream(
   // See //chromecast/media/cast_audio_manager.h for more information.
   const std::string device_id_or_group_id =
 #if defined(IS_CHROMECAST)
-      group_id.ToString();
+      (group_id.ToString().empty()) ? output_device_id : group_id.ToString();
 #else
       output_device_id;
 #endif
@@ -182,10 +183,11 @@ void StreamFactory::CreateLoopbackStream(
   CHECK_EQ(magic_bytes_, 0x600DC0DEu);
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
   SetStateForCrashing("creating loopback stream");
-  TRACE_EVENT_NESTABLE_ASYNC_INSTANT1(
+  TRACE_EVENT_NESTABLE_ASYNC_INSTANT2(
       "audio", "CreateLoopbackStream",
       bindings_.dispatch_context().id_for_trace(), "group id",
-      group_id.GetLowForSerialization());
+      group_id.GetLowForSerialization(), "params",
+      params.AsHumanReadableString());
 
   auto stream = std::make_unique<LoopbackStream>(
       std::move(created_callback),

@@ -9,6 +9,7 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebViewClient;
 
 import com.android.webview.chromium.SharedWebViewChromium;
+import com.android.webview.chromium.SharedWebViewRendererClientAdapter;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.support_lib_boundary.VisualStateCallbackBoundaryInterface;
@@ -20,6 +21,9 @@ import java.lang.reflect.InvocationHandler;
 
 /**
  * Support library glue version of WebViewChromium.
+ *
+ * A new instance of this class is created transiently for every shared library
+ * WebViewCompat call. Do not store state here.
  */
 class SupportLibWebViewChromium implements WebViewProviderBoundaryInterface {
     private final SharedWebViewChromium mSharedWebViewChromium;
@@ -75,5 +79,22 @@ class SupportLibWebViewChromium implements WebViewProviderBoundaryInterface {
     public /* WebViewRenderer */ InvocationHandler getWebViewRenderer() {
         return BoundaryInterfaceReflectionUtil.createInvocationHandlerFor(
                 new SupportLibWebViewRendererAdapter(mSharedWebViewChromium.getRenderProcess()));
+    }
+
+    @Override
+    public /* WebViewRendererClient */ InvocationHandler getWebViewRendererClient() {
+        SharedWebViewRendererClientAdapter webViewRendererClientAdapter =
+                mSharedWebViewChromium.getWebViewRendererClientAdapter();
+        return webViewRendererClientAdapter != null
+                ? webViewRendererClientAdapter.getSupportLibInvocationHandler()
+                : null;
+    }
+
+    @Override
+    public void setWebViewRendererClient(
+            /* WebViewRendererClient */ InvocationHandler webViewRendererClient) {
+        mSharedWebViewChromium.setWebViewRendererClientAdapter(webViewRendererClient != null
+                        ? new SupportLibWebViewRendererClientAdapter(webViewRendererClient)
+                        : null);
     }
 }

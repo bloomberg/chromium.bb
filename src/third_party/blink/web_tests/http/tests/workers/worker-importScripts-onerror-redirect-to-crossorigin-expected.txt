@@ -2,7 +2,6 @@ Ensure that scripts imported into a Worker from a redirect to a cross-origin hos
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS workerOnerror.message is "Script error."
 PASS workerOnerror.filename is ""
 PASS workerOnerror.lineno is 0

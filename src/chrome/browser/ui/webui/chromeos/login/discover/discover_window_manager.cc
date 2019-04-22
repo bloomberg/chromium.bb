@@ -93,7 +93,7 @@ void DiscoverWindowManager::ShowChromeDiscoverPageForProfile(Profile* profile) {
   gfx::Rect center_in_screen =
       display::Screen::GetScreen()->GetDisplayNearestWindow(window).work_area();
   center_in_screen.ClampToCenteredSize(window->bounds().size());
-  window->SetBounds(center_in_screen);
+  params.browser->window()->SetBounds(center_in_screen);
 
   for (DiscoverWindowManagerObserver& observer : observers_)
     observer.OnNewDiscoverWindow(params.browser);

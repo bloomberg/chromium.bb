@@ -1,7 +1,8 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-<script src="../resources/js-test.js"></script>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
 </head>
 <body id="static_eventTarget">
 
@@ -13,25 +14,27 @@
 
 <div id="console"></div>
 <script>
-description("Tests that a 'selected text changed' notification fires on a focusable element with role=textbox when the user moves the cursor within it.");
-window.jsTestIsAsync = true;
-
-function runTest() {
+async_test((t) => {
     // This forces building the accessibility tree, because selection change
     // events only fire on elements that already exist.
     accessibilityController.accessibleElementById('dummy');
 
     var element = document.getElementById('ariaTextbox');
-    var axElement = accessibilityController.accessibleElementById('ariaTextbox');
     element.focus();
 
-    axElement.addNotificationListener(function(notification) {
+    var axElement = accessibilityController.accessibleElementById('ariaTextbox');
+    axElement.addNotificationListener(t.step_func((notification) => {
+        // Focus notification will come asynchronously after layout
+        if (notification == 'Focus')
+            return;
+
         if (notification == 'SelectedTextChanged') {
-            debug('Got SelectedTextChanged notification on focusable element with role=textbox.');
             axElement.removeNotificationListener();
-            finishJSTest();
-        }
-    });
+            t.done();
+            return;
+        };
+        assert_unreached('Unexpected notification: ' + notification);
+    }));
 
     var p = document.getElementById('p');
     var range = document.createRange();
@@ -39,12 +42,7 @@ function runTest() {
     range.setEnd(p.firstChild, 1);
     window.getSelection().removeAllRanges();
     window.getSelection().addRange(range);
-}
-
-if (window.testRunner && window.accessibilityController) {
-    testRunner.dumpAsText();
-    window.onload = runTest();
-}
+}, "Tests that a 'selected text changed' notification fires on a focusable element with role=textbox when the user moves the cursor within it.");
 
 </script>
 

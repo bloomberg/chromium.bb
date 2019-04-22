@@ -1,7 +1,5 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="cloud_printers.html">
 <link rel="import" href="../route.html">
 <link rel="import" href="../settings_page/settings_animated_pages.html">
@@ -19,33 +17,19 @@
     <style include="settings-shared"></style>
     <settings-animated-pages id="pages" section="printing"
         focus-config="[[focusConfig_]]">
-      <neon-animatable route-path="default">
+      <div route-path="default">
 <if expr="chromeos">
-        <div id="cupsPrinters" class="settings-box first"
-            on-click="onTapCupsPrinters_" actionable>
-          <div class="start">$i18n{cupsPrintersTitle}</div>
-          <paper-icon-button-light class="subpage-arrow">
-            <button aria-label="$i18n{cupsPrintersTitle}"></button>
-          </paper-icon-button-light>
-        </div>
+        <cr-link-row id="cupsPrinters" label="$i18n{cupsPrintersTitle}"
+            on-click="onTapCupsPrinters_"></cr-link-row>
 </if>
 <if expr="not chromeos">
-        <div class="settings-box first"
-            on-click="onTapLocalPrinters_" actionable>
-          <div class="start">$i18n{localPrintersTitle}</div>
-          <paper-icon-button-light class="subpage-arrow">
-            <button aria-label="$i18n{localPrintersTitle}"></button>
-          </paper-icon-button-light>
-        </div>
+        <cr-link-row label="$i18n{localPrintersTitle}"
+            on-click="onTapLocalPrinters_"></cr-link-row>
 </if>
-        <div id="cloudPrinters" class="settings-box"
-            on-click="onTapCloudPrinters_" actionable>
-          <div class="start">$i18n{cloudPrintersTitle}</div>
-          <paper-icon-button-light class="subpage-arrow">
-            <button aria-label="$i18n{cloudPrintersTitle}"></button>
-          </paper-icon-button-light>
-        </div>
-      </neon-animatable>
+        <cr-link-row class="hr" id="cloudPrinters"
+            label="$i18n{cloudPrintersTitle}" on-click="onTapCloudPrinters_">
+        </cr-link-row>
+      </div>
 <if expr="chromeos">
       <template is="dom-if" route-path="/cupsPrinters">
         <settings-subpage

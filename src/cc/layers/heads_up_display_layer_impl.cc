@@ -32,7 +32,6 @@
 #include "cc/trees/layer_tree_impl.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/gpu/context_provider.h"
-#include "components/viz/common/gpu/texture_allocation.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/resources/bitmap_allocation.h"
@@ -78,10 +77,10 @@ class DummyImageProvider : public ImageProvider {
  public:
   DummyImageProvider() = default;
   ~DummyImageProvider() override = default;
-  ScopedDecodedDrawImage GetDecodedDrawImage(
+  ImageProvider::ScopedResult GetRasterContent(
       const DrawImage& draw_image) override {
     NOTREACHED();
-    return ScopedDecodedDrawImage();
+    return ScopedResult();
   }
 };
 
@@ -108,9 +107,7 @@ HeadsUpDisplayLayerImpl::HeadsUpDisplayLayerImpl(LayerTreeImpl* tree_impl,
       internal_contents_scale_(1.f),
       fps_graph_(60.0, 80.0),
       paint_time_graph_(16.0, 48.0),
-      fade_step_(0),
-      raster_color_space_(gfx::ColorSpace::CreateSRGB(),
-                          gfx::ColorSpace::GetNextId()) {}
+      fade_step_(0) {}
 
 HeadsUpDisplayLayerImpl::~HeadsUpDisplayLayerImpl() {
   ReleaseResources();
@@ -263,7 +260,8 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
                            ? raster_context_provider->ContextCapabilities()
                            : context_provider->ContextCapabilities();
     viz::ResourceFormat format =
-        viz::PlatformColor::BestSupportedRenderBufferFormat(caps);
+        gpu_raster ? viz::PlatformColor::BestSupportedRenderBufferFormat(caps)
+                   : viz::PlatformColor::BestSupportedTextureFormat(caps);
     pool_resource = pool_->AcquireResource(internal_content_bounds_, format,
                                            gfx::ColorSpace());
 
@@ -279,13 +277,13 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
               ->settings()
               .resource_settings.use_gpu_memory_buffer_resources);
 
-      uint32_t flags = 0;
+      uint32_t flags = gpu::SHARED_IMAGE_USAGE_DISPLAY;
       if (use_oopr) {
-        flags = gpu::SHARED_IMAGE_USAGE_RASTER |
-                gpu::SHARED_IMAGE_USAGE_OOP_RASTERIZATION;
+        flags |= gpu::SHARED_IMAGE_USAGE_RASTER |
+                 gpu::SHARED_IMAGE_USAGE_OOP_RASTERIZATION;
       } else if (gpu_raster) {
-        flags = gpu::SHARED_IMAGE_USAGE_GLES2 |
-                gpu::SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT;
+        flags |= gpu::SHARED_IMAGE_USAGE_GLES2 |
+                 gpu::SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT;
       }
       if (backing->overlay_candidate)
         flags |= gpu::SHARED_IMAGE_USAGE_SCANOUT;
@@ -358,16 +356,17 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
       constexpr GLuint background_color = SkColorSetARGB(0, 0, 0, 0);
       constexpr GLuint msaa_sample_count = -1;
       constexpr bool can_use_lcd_text = true;
-      const auto pixel_config = viz::ResourceFormatToClosestSkColorType(
-          true /* gpu_compositing */, pool_resource.format());
       ri->BeginRasterCHROMIUM(background_color, msaa_sample_count,
-                              can_use_lcd_text, pixel_config,
-                              raster_color_space_, backing->mailbox.name);
+                              can_use_lcd_text, gfx::ColorSpace::CreateSRGB(),
+                              backing->mailbox.name);
       gfx::Vector2dF post_translate(0.f, 0.f);
       DummyImageProvider image_provider;
+      size_t max_op_size_limit =
+          gpu::raster::RasterInterface::kDefaultMaxOpSizeHint;
       ri->RasterCHROMIUM(display_item_list.get(), &image_provider, size,
                          gfx::Rect(size), gfx::Rect(size), post_translate,
-                         1.f /* post_scale */, false /* requires_clear */);
+                         1.f /* post_scale */, false /* requires_clear */,
+                         &max_op_size_limit);
       ri->EndRasterCHROMIUM();
       backing->mailbox_sync_token =
           viz::ClientResourceProvider::GenerateSyncTokenHelper(ri);
@@ -379,7 +378,8 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
       {
         ScopedGpuRaster gpu_raster(context_provider);
         viz::ClientResourceProvider::ScopedSkSurface scoped_surface(
-            context_provider->GrContext(), mailbox_texture_id,
+            context_provider->GrContext(),
+            pool_resource.color_space().ToSkColorSpace(), mailbox_texture_id,
             backing->texture_target, pool_resource.size(),
             pool_resource.format(), false /* can_use_lcd_text */,
             0 /* msaa_sample_count */);
@@ -582,33 +582,32 @@ void HeadsUpDisplayLayerImpl::DrawHudContents(PaintCanvas* canvas) {
 }
 
 void HeadsUpDisplayLayerImpl::DrawText(PaintCanvas* canvas,
-                                       PaintFlags* flags,
+                                       const PaintFlags& flags,
                                        const std::string& text,
                                        TextAlign align,
                                        int size,
                                        int x,
                                        int y) const {
   DCHECK(typeface_.get());
-  flags->setAntiAlias(true);
-  flags->setTextSize(size);
-  flags->setTypeface(typeface_);
+  SkFont font(typeface_, size);
+  font.setEdging(SkFont::Edging::kAntiAlias);
+
   if (align == TextAlign::kCenter) {
-    auto width = flags->ToSkPaint().measureText(text.c_str(), text.length());
+    auto width =
+        font.measureText(text.c_str(), text.length(), kUTF8_SkTextEncoding);
     x -= width * 0.5f;
   } else if (align == TextAlign::kRight) {
-    auto width = flags->ToSkPaint().measureText(text.c_str(), text.length());
+    auto width =
+        font.measureText(text.c_str(), text.length(), kUTF8_SkTextEncoding);
     x -= width;
   }
-  auto sk_paint = flags->ToSkPaint();
 
-  auto text_blob = SkTextBlob::MakeFromText(
-      text.c_str(), text.length(),
-      SkFont(sk_paint.refTypeface(), sk_paint.getTextSize()));
-  canvas->drawTextBlob(std::move(text_blob), x, y, *flags);
+  canvas->drawTextBlob(
+      SkTextBlob::MakeFromText(text.c_str(), text.length(), font), x, y, flags);
 }
 
 void HeadsUpDisplayLayerImpl::DrawText(PaintCanvas* canvas,
-                                       PaintFlags* flags,
+                                       const PaintFlags& flags,
                                        const std::string& text,
                                        TextAlign align,
                                        int size,
@@ -665,7 +664,7 @@ SkRect HeadsUpDisplayLayerImpl::DrawFPSDisplay(
 
   int width = kGraphWidth + kHistogramWidth + 4 * kPadding;
   int height = kTitleFontHeight + kFontHeight + kGraphHeight + 6 * kPadding + 2;
-  int left = bounds().width() - width - right;
+  int left = 0;
   SkRect area = SkRect::MakeXYWH(left, top, width, height);
 
   PaintFlags flags;
@@ -693,13 +692,13 @@ SkRect HeadsUpDisplayLayerImpl::DrawFPSDisplay(
   VLOG(1) << value_text;
 
   flags.setColor(DebugColors::HUDTitleColor());
-  DrawText(canvas, &flags, title, TextAlign::kLeft, kTitleFontHeight,
+  DrawText(canvas, flags, title, TextAlign::kLeft, kTitleFontHeight,
            title_bounds.left(), title_bounds.bottom());
 
   flags.setColor(DebugColors::FPSDisplayTextAndGraphColor());
-  DrawText(canvas, &flags, value_text, TextAlign::kLeft, kFontHeight,
+  DrawText(canvas, flags, value_text, TextAlign::kLeft, kFontHeight,
            text_bounds.left(), text_bounds.bottom());
-  DrawText(canvas, &flags, min_max_text, TextAlign::kRight, kFontHeight,
+  DrawText(canvas, flags, min_max_text, TextAlign::kRight, kFontHeight,
            text_bounds.right(), text_bounds.bottom());
 
   DrawGraphLines(canvas, &flags, graph_bounds, fps_graph_);
@@ -786,7 +785,7 @@ SkRect HeadsUpDisplayLayerImpl::DrawMemoryDisplay(PaintCanvas* canvas,
   const int kFontHeight = 12;
 
   const int height = kTitleFontHeight + 2 * kFontHeight + 5 * kPadding;
-  const int left = bounds().width() - width - right;
+  const int left = 0;
   const SkRect area = SkRect::MakeXYWH(left, top, width, height);
 
   const double kMegabyte = 1024.0 * 1024.0;
@@ -802,20 +801,20 @@ SkRect HeadsUpDisplayLayerImpl::DrawMemoryDisplay(PaintCanvas* canvas,
                                     top + 2 * kPadding + 3 * kFontHeight);
 
   flags.setColor(DebugColors::HUDTitleColor());
-  DrawText(canvas, &flags, "GPU Memory", TextAlign::kLeft, kTitleFontHeight,
+  DrawText(canvas, flags, "GPU Memory", TextAlign::kLeft, kTitleFontHeight,
            title_pos);
 
   flags.setColor(DebugColors::MemoryDisplayTextColor());
   std::string text = base::StringPrintf(
       "%6.1f MB used", memory_entry_.total_bytes_used / kMegabyte);
-  DrawText(canvas, &flags, text, TextAlign::kRight, kFontHeight, stat1_pos);
+  DrawText(canvas, flags, text, TextAlign::kRight, kFontHeight, stat1_pos);
 
   if (!memory_entry_.had_enough_memory)
     flags.setColor(SK_ColorRED);
   text = base::StringPrintf("%6.1f MB max ",
                             memory_entry_.total_budget_in_bytes / kMegabyte);
 
-  DrawText(canvas, &flags, text, TextAlign::kRight, kFontHeight, stat2_pos);
+  DrawText(canvas, flags, text, TextAlign::kRight, kFontHeight, stat2_pos);
 
   // Draw memory graph.
   int length = 2 * kFontHeight + kPadding + 12;
@@ -840,8 +839,8 @@ SkRect HeadsUpDisplayLayerImpl::DrawMemoryDisplay(PaintCanvas* canvas,
   const SkScalar pos[] = {SkFloatToScalar(0.2f), SkFloatToScalar(0.4f),
                           SkFloatToScalar(0.6f), SkFloatToScalar(0.8f),
                           SkFloatToScalar(1.0f)};
-  flags.setShader(PaintShader::MakeSweepGradient(
-      cx, cy, colors, pos, 5, SkShader::kClamp_TileMode, 0, 360));
+  flags.setShader(PaintShader::MakeSweepGradient(cx, cy, colors, pos, 5,
+                                                 SkTileMode::kClamp, 0, 360));
   flags.setAntiAlias(true);
 
   // Draw current status.
@@ -895,7 +894,7 @@ SkRect HeadsUpDisplayLayerImpl::DrawGpuRasterizationStatus(PaintCanvas* canvas,
   const int kFontHeight = 12;
 
   const int height = kTitleFontHeight + kFontHeight + 3 * kPadding;
-  const int left = bounds().width() - width - right;
+  const int left = 0;
   const SkRect area = SkRect::MakeXYWH(left, top, width, height);
 
   PaintFlags flags;
@@ -904,10 +903,10 @@ SkRect HeadsUpDisplayLayerImpl::DrawGpuRasterizationStatus(PaintCanvas* canvas,
   SkPoint gpu_status_pos = SkPoint::Make(left + width - kPadding,
                                          top + 2 * kFontHeight + 2 * kPadding);
   flags.setColor(DebugColors::HUDTitleColor());
-  DrawText(canvas, &flags, "GPU Raster", TextAlign::kLeft, kTitleFontHeight,
+  DrawText(canvas, flags, "GPU Raster", TextAlign::kLeft, kTitleFontHeight,
            left + kPadding, top + kFontHeight + kPadding);
   flags.setColor(color);
-  DrawText(canvas, &flags, status, TextAlign::kRight, kFontHeight,
+  DrawText(canvas, flags, status, TextAlign::kRight, kFontHeight,
            gpu_status_pos);
 
   return area;
@@ -950,19 +949,17 @@ void HeadsUpDisplayLayerImpl::DrawDebugRect(
     canvas->translate(sk_clip_rect.x(), sk_clip_rect.y());
 
     PaintFlags label_flags;
-    label_flags.setTextSize(kFontHeight);
-    label_flags.setTypeface(typeface_);
     label_flags.setColor(stroke_color);
+    SkFont label_font(typeface_, kFontHeight);
 
-    const SkScalar label_text_width = label_flags.ToSkPaint().measureText(
-        label_text.c_str(), label_text.length());
+    const SkScalar label_text_width = label_font.measureText(
+        label_text.c_str(), label_text.length(), kUTF8_SkTextEncoding);
     canvas->drawRect(SkRect::MakeWH(label_text_width + 2 * kPadding,
                                     kFontHeight + 2 * kPadding),
                      label_flags);
 
-    label_flags.setAntiAlias(true);
     label_flags.setColor(SkColorSetARGB(255, 50, 50, 50));
-    DrawText(canvas, &label_flags, label_text, TextAlign::kLeft, kFontHeight,
+    DrawText(canvas, label_flags, label_text, TextAlign::kLeft, kFontHeight,
              kPadding, kFontHeight * 0.8f + kPadding);
     canvas->restore();
   }

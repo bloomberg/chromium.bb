@@ -11,15 +11,13 @@
 namespace blink {
 
 class PaintLayer;
-class CompositingReasonFinder;
 
 class CompositingInputsUpdater {
   STACK_ALLOCATED();
 
  public:
-  explicit CompositingInputsUpdater(
-      PaintLayer* root_layer,
-      CompositingReasonFinder& compositing_reason_finder);
+  explicit CompositingInputsUpdater(PaintLayer* root_layer,
+                                    PaintLayer* compositing_inputs_root);
   ~CompositingInputsUpdater();
 
   void Update();
@@ -35,7 +33,8 @@ class CompositingInputsUpdater {
   };
 
   struct AncestorInfo {
-    PaintLayer* enclosing_composited_layer = nullptr;
+    // The ancestor composited PaintLayer which is also a stacking context.
+    PaintLayer* enclosing_stacking_composited_layer = nullptr;
     // A "squashing composited layer" is a PaintLayer that owns a squashing
     // layer. This variable stores the squashing composited layer for the
     // nearest PaintLayer ancestor which is squashed.
@@ -63,15 +62,26 @@ class CompositingInputsUpdater {
     bool needs_reparent_scroll_for_fixed = false;
 
     bool is_under_video = false;
+    bool is_under_position_sticky = false;
   };
 
-  void UpdateRecursive(PaintLayer*, UpdateType, AncestorInfo);
+  void UpdateSelfAndDescendantsRecursively(PaintLayer*,
+                                           UpdateType,
+                                           AncestorInfo);
   void UpdateAncestorDependentCompositingInputs(PaintLayer*,
                                                 const AncestorInfo&);
+  // This is a recursive method to compute the geometry_map_ and AncestorInfo
+  // starting from the root layer down to the compositing_inputs_root_.
+  void ApplyAncestorInfoToSelfAndAncestorsRecursively(PaintLayer*,
+                                                      UpdateType&,
+                                                      AncestorInfo&);
+  // This method takes care of updating AncestorInfo taking into account the
+  // current value of AncestorInfo.
+  void UpdateAncestorInfo(PaintLayer*, UpdateType&, AncestorInfo&);
 
   LayoutGeometryMap geometry_map_;
   PaintLayer* root_layer_;
-  CompositingReasonFinder& compositing_reason_finder_;
+  PaintLayer* compositing_inputs_root_;
 };
 
 }  // namespace blink

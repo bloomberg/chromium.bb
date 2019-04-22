@@ -9,7 +9,9 @@
 
 namespace content {
 
-MimeSniffingThrottle::MimeSniffingThrottle() : weak_factory_(this) {}
+MimeSniffingThrottle::MimeSniffingThrottle(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    : task_runner_(std::move(task_runner)), weak_factory_(this) {}
 
 MimeSniffingThrottle::~MimeSniffingThrottle() = default;
 
@@ -42,7 +44,8 @@ void MimeSniffingThrottle::WillProcessResponse(
     MimeSniffingURLLoader* mime_sniffing_loader;
     std::tie(new_loader, new_loader_request, mime_sniffing_loader) =
         MimeSniffingURLLoader::CreateLoader(weak_factory_.GetWeakPtr(),
-                                            response_url, *response_head);
+                                            response_url, *response_head,
+                                            task_runner_);
     delegate_->InterceptResponse(std::move(new_loader),
                                  std::move(new_loader_request), &source_loader,
                                  &source_client_request);

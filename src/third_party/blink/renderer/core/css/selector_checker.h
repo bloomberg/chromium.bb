@@ -33,7 +33,7 @@
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/css/css_selector.h"
 #include "third_party/blink/renderer/core/dom/element.h"
-#include "third_party/blink/renderer/platform/scroll/scroll_types.h"
+#include "third_party/blink/renderer/core/scroll/scroll_types.h"
 
 namespace blink {
 
@@ -153,7 +153,7 @@ class SelectorChecker {
 
   static bool MatchesFocusPseudoClass(const Element&);
   static bool MatchesFocusVisiblePseudoClass(const Element&);
-  static bool MatchesSpatialNavigationFocusPseudoClass(const Element&);
+  static bool MatchesSpatialNavigationInterestPseudoClass(const Element&);
 
  private:
   // Does the work of checking whether the simple selector and element pointed

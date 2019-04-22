@@ -11,6 +11,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
@@ -147,7 +148,7 @@ class FormStructure {
 
   // Sets the field types to be those set for |cached_form|.
   void RetrieveFromCache(const FormStructure& cached_form,
-                         const bool apply_is_autofilled,
+                         const bool should_keep_cached_value,
                          const bool only_server_and_autofill_state);
 
   // Logs quality metrics for |this|, which should be a user-submitted form.
@@ -193,10 +194,6 @@ class FormStructure {
   // are accepted (e.g., <input type="text" autocomplete="region">).
   // All returned values are standardized to upper case.
   std::set<base::string16> PossibleValues(ServerFieldType type);
-
-  // Gets the form's current value for |type|. For example, it may return
-  // the contents of a text input or the currently selected <option>.
-  base::string16 GetUniqueValue(HtmlFieldType type) const;
 
   // Rationalize phone number fields in a given section, that is only fill
   // the fields that are considered composing a first complete phone number.
@@ -305,11 +302,26 @@ class FormStructure {
   }
 #endif
 
+  void set_password_symbol_vote(int noisified_symbol) {
+    DCHECK(password_attributes_vote_.has_value())
+        << "password_symbol_vote_| doesn't make sense if "
+           "|password_attributes_vote_| has no value.";
+    password_symbol_vote_ = noisified_symbol;
+  }
+
+#if defined(UNIT_TEST)
+  int get_password_symbol_vote_for_testing() {
+    DCHECK(password_attributes_vote_.has_value())
+        << "|password_symbol_vote_| doesn't make sense if "
+           "|password_attributes_vote_| has no value";
+    return password_symbol_vote_;
+  }
+#endif
+
   SubmissionSource submission_source() const { return submission_source_; }
   void set_submission_source(SubmissionSource submission_source) {
     submission_source_ = submission_source;
   }
-
   bool operator==(const FormData& form) const;
   bool operator!=(const FormData& form) const;
 
@@ -319,7 +331,7 @@ class FormStructure {
   // - Name for Autofill of first field
   base::string16 GetIdentifierForRefill() const;
 
-  int developer_engagement_metrics() { return developer_engagement_metrics_; };
+  int developer_engagement_metrics() { return developer_engagement_metrics_; }
 
   void set_randomized_encoder(std::unique_ptr<RandomizedEncoder> encoder);
 
@@ -329,6 +341,14 @@ class FormStructure {
 
   void set_page_language(std::string language) {
     page_language_ = std::move(language);
+  }
+
+  bool value_from_dynamic_change_form() const {
+    return value_from_dynamic_change_form_;
+  }
+
+  void set_value_from_dynamic_change_form(bool v) {
+    value_from_dynamic_change_form_ = v;
   }
 
  private:
@@ -348,7 +368,7 @@ class FormStructure {
       if (sectioned_indexes.empty())
         return (size_t)-1;  // Shouldn't happen.
       return sectioned_indexes.back().back();
-    };
+    }
 
     void AddFieldIndex(const size_t index, bool is_new_section) {
       if (is_new_section || Empty()) {
@@ -438,6 +458,10 @@ class FormStructure {
   // Tunes the fields with identical predictions.
   void RationalizeRepeatedFields(AutofillMetrics::FormInteractionsUkmLogger*);
 
+  // Filters out fields that don't meet the relationship ruleset for their type
+  // defined in |type_relationships_rules_|.
+  void RationalizeTypeRelationships();
+
   // A helper function to review the predictions and do appropriate adjustments
   // when it considers necessary.
   void RationalizeFieldTypePredictions();
@@ -488,8 +512,8 @@ class FormStructure {
   // The name of the form.
   base::string16 form_name_;
 
-  // The title of form submission button.
-  base::string16 button_title_;
+  // The titles of form's buttons.
+  ButtonTitleList button_titles_;
 
   // The type of the event that was taken as an indication that the form has
   // been successfully submitted.
@@ -568,6 +592,12 @@ class FormStructure {
   // character).
   base::Optional<std::pair<PasswordAttribute, bool>> password_attributes_vote_;
 
+  // If |password_attribute_vote_| contains (kHasSpecialSymbol, true), this
+  // field contains nosified information about a special symbol in a
+  // user-created password stored as ASCII code. The default value of 0
+  // indicates that no symbol was set.
+  int password_symbol_vote_;
+
   // Noisified password length for crowdsourcing. If |password_attributes_vote_|
   // has no value, |password_length_vote_| should be ignored.
   size_t password_length_vote_;
@@ -586,6 +616,8 @@ class FormStructure {
   // True iff queries encoded from this form structure should include rich
   // form/field metadata.
   bool is_rich_query_enabled_ = false;
+
+  bool value_from_dynamic_change_form_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(FormStructure);
 };

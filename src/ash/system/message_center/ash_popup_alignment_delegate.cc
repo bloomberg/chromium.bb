@@ -11,6 +11,7 @@
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "ash/system/tray/tray_constants.h"
+#include "ash/wm/work_area_insets.h"
 #include "base/i18n/rtl.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -84,8 +85,7 @@ int AshPopupAlignmentDelegate::GetToastOriginX(
 }
 
 int AshPopupAlignmentDelegate::GetBaseline() const {
-  return work_area_.bottom() - kUnifiedMenuVerticalPadding -
-         tray_bubble_height_;
+  return work_area_.bottom() - kUnifiedMenuPadding - tray_bubble_height_;
 }
 
 gfx::Rect AshPopupAlignmentDelegate::GetWorkArea() const {
@@ -134,7 +134,9 @@ display::Display AshPopupAlignmentDelegate::GetCurrentDisplay() const {
 }
 
 void AshPopupAlignmentDelegate::UpdateWorkArea() {
-  gfx::Rect new_work_area = shelf_->GetUserWorkAreaBounds();
+  gfx::Rect new_work_area =
+      WorkAreaInsets::ForWindow(shelf_->GetWindow()->GetRootWindow())
+          ->user_work_area_bounds();
   if (work_area_ == new_work_area)
     return;
 

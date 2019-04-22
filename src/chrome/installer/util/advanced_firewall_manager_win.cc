@@ -9,7 +9,7 @@
 
 #include "base/guid.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_bstr.h"
@@ -53,7 +53,7 @@ bool AdvancedFirewallManager::IsFirewallEnabled() {
     NET_FW_PROFILE2_PRIVATE,
     NET_FW_PROFILE2_DOMAIN
   };
-  for (size_t i = 0; i < arraysize(kProfileTypes); ++i) {
+  for (size_t i = 0; i < base::size(kProfileTypes); ++i) {
     if ((profile_types & kProfileTypes[i]) != 0) {
       VARIANT_BOOL enabled = VARIANT_TRUE;
       hr = firewall_policy_->get_FirewallEnabled(kProfileTypes[i], &enabled);

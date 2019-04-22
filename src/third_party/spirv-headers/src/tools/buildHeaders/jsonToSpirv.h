@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 The Khronos Group Inc.
+// Copyright (c) 2014-2019 The Khronos Group Inc.
 // 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and/or associated documentation files (the "Materials"),
@@ -38,7 +38,7 @@ namespace spv {
 std::pair<bool, std::string> ReadFile(const std::string& path);
 
 // Fill in all the parameters
-void jsonToSpirv(const std::string& jsonPath);
+void jsonToSpirv(const std::string& jsonPath, bool buildingHeaders);
 
 // For parameterizing operands.
 enum OperandClass {

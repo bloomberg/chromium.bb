@@ -105,7 +105,7 @@ class ChromotingClient : public SignalStrategy::Listener,
  private:
   // SignalStrategy::StatusObserver interface.
   void OnSignalStrategyStateChange(SignalStrategy::State state) override;
-  bool OnSignalStrategyIncomingStanza(const buzz::XmlElement* stanza) override;
+  bool OnSignalStrategyIncomingStanza(const jingle_xmpp::XmlElement* stanza) override;
 
   // Starts connection once |signal_strategy_| is connected.
   void StartConnection();

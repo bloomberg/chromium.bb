@@ -176,8 +176,9 @@ bool NavigatorImpl::StartHistoryNavigationInNewSubframe(
 void NavigatorImpl::DidNavigate(
     RenderFrameHostImpl* render_frame_host,
     const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
-    std::unique_ptr<NavigationHandleImpl> navigation_handle,
+    std::unique_ptr<NavigationRequest> navigation_request,
     bool was_within_same_document) {
+  DCHECK(navigation_request);
   FrameTreeNode* frame_tree_node = render_frame_host->frame_tree_node();
   FrameTree* frame_tree = frame_tree_node->frame_tree();
 
@@ -196,21 +197,6 @@ void NavigatorImpl::DidNavigate(
 
   if (ui::PageTransitionIsMainFrame(params.transition)) {
     if (delegate_) {
-      // When overscroll navigation gesture is enabled, a screenshot of the page
-      // in its current state is taken so that it can be used during the
-      // nav-gesture. It is necessary to take the screenshot here, before
-      // calling RenderFrameHostManager::DidNavigateMainFrame, because that can
-      // change WebContents::GetRenderViewHost to return the new host, instead
-      // of the one that may have just been swapped out.
-      if (delegate_->CanOverscrollContent()) {
-        // Don't take screenshots if we are staying on the same document. We
-        // want same-document navigations to be super fast, and taking a
-        // screenshot currently blocks GPU for a longer time than we are willing
-        // to tolerate in this use case.
-        if (!was_within_same_document)
-          controller_->TakeScreenshot();
-      }
-
       // Run tasks that must execute just before the commit.
       delegate_->DidNavigateMainFramePreCommit(is_same_document_navigation);
     }
@@ -232,6 +218,10 @@ void NavigatorImpl::DidNavigate(
       params.origin, params.has_potentially_trustworthy_unique_origin);
   frame_tree_node->SetInsecureRequestPolicy(params.insecure_request_policy);
   frame_tree_node->SetInsecureNavigationsSet(params.insecure_navigations_set);
+
+  // Save the activation status of the previous page here before it gets reset
+  // in FrameTreeNode::ResetForNavigation.
+  bool previous_document_was_activated = frame_tree->root()->HasBeenActivated();
 
   // Navigating to a new location means a new, fresh set of http headers and/or
   // <meta> elements - we need to reset CSP and Feature Policy.
@@ -268,7 +258,7 @@ void NavigatorImpl::DidNavigate(
   LoadCommittedDetails details;
   bool did_navigate = controller_->RendererDidNavigate(
       render_frame_host, params, &details, is_same_document_navigation,
-      navigation_handle.get());
+      previous_document_was_activated, navigation_request.get());
 
   // If the history length and/or offset changed, update other renderers in the
   // FrameTree.
@@ -290,10 +280,10 @@ void NavigatorImpl::DidNavigate(
   if (details.type != NAVIGATION_TYPE_NAV_IGNORE && delegate_) {
     DCHECK_EQ(!render_frame_host->GetParent(),
               did_navigate ? details.is_main_frame : false);
-    navigation_handle->DidCommitNavigation(
+    navigation_request->navigation_handle()->DidCommitNavigation(
         params, did_navigate, details.did_replace_entry, details.previous_url,
-        details.type, render_frame_host);
-    navigation_handle.reset();
+        details.type);
+    navigation_request.reset();
   }
 
   if (!did_navigate)
@@ -346,7 +336,7 @@ void NavigatorImpl::Navigate(std::unique_ptr<NavigationRequest> request,
   bool should_dispatch_beforeunload =
       !FrameMsg_Navigate_Type::IsSameDocument(
           request->common_params().navigation_type) &&
-      !request->request_params().is_history_navigation_in_new_child &&
+      !request->commit_params().is_history_navigation_in_new_child &&
       frame_tree_node->current_frame_host()->ShouldDispatchBeforeUnload(
           false /* check_subframes_only */);
 
@@ -384,6 +374,7 @@ void NavigatorImpl::Navigate(std::unique_ptr<NavigationRequest> request,
 void NavigatorImpl::RequestOpenURL(
     RenderFrameHostImpl* render_frame_host,
     const GURL& url,
+    const base::Optional<url::Origin>& initiator_origin,
     bool uses_post,
     const scoped_refptr<network::ResourceRequestBody>& body,
     const std::string& extra_headers,
@@ -442,6 +433,7 @@ void NavigatorImpl::RequestOpenURL(
   params.should_replace_current_entry = should_replace_current_entry;
   params.user_gesture = user_gesture;
   params.triggering_event_info = triggering_event_info;
+  params.initiator_origin = initiator_origin;
 
   // RequestOpenURL is used only for local frames, so we can get here only if
   // the navigation is initiated by a frame in the same SiteInstance as this
@@ -477,10 +469,12 @@ void NavigatorImpl::RequestOpenURL(
 void NavigatorImpl::NavigateFromFrameProxy(
     RenderFrameHostImpl* render_frame_host,
     const GURL& url,
+    const url::Origin& initiator_origin,
     SiteInstance* source_site_instance,
     const Referrer& referrer,
     ui::PageTransition page_transition,
     bool should_replace_current_entry,
+    NavigationDownloadPolicy download_policy,
     const std::string& method,
     scoped_refptr<network::ResourceRequestBody> post_body,
     const std::string& extra_headers,
@@ -530,9 +524,10 @@ void NavigatorImpl::NavigateFromFrameProxy(
       &referrer_to_use);
 
   controller_->NavigateFromFrameProxy(
-      render_frame_host, url, is_renderer_initiated, source_site_instance,
-      referrer_to_use, page_transition, should_replace_current_entry, method,
-      post_body, extra_headers, std::move(blob_url_loader_factory));
+      render_frame_host, url, initiator_origin, is_renderer_initiated,
+      source_site_instance, referrer_to_use, page_transition,
+      should_replace_current_entry, download_policy, method, post_body,
+      extra_headers, std::move(blob_url_loader_factory));
 }
 
 void NavigatorImpl::OnBeforeUnloadACK(FrameTreeNode* frame_tree_node,
@@ -600,7 +595,7 @@ void NavigatorImpl::OnBeginNavigation(
   // Client redirects during the initial history navigation of a child frame
   // should take precedence over the history navigation (despite being renderer-
   // initiated).  See https://crbug.com/348447 and https://crbug.com/691168.
-  if (ongoing_navigation_request && ongoing_navigation_request->request_params()
+  if (ongoing_navigation_request && ongoing_navigation_request->commit_params()
                                         .is_history_navigation_in_new_child) {
     // Preemptively clear this local pointer before deleting the request.
     ongoing_navigation_request = nullptr;

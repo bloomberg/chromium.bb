@@ -4,17 +4,18 @@
 
 #include "chrome/browser/chromeos/login/screens/mock_arc_terms_of_service_screen.h"
 
-using ::testing::AtLeast;
-using ::testing::NotNull;
-
 namespace chromeos {
 
 MockArcTermsOfServiceScreen::MockArcTermsOfServiceScreen(
-    BaseScreenDelegate* base_screen_delegate,
-    ArcTermsOfServiceScreenView* view)
-    : ArcTermsOfServiceScreen(base_screen_delegate, view) {}
+    ArcTermsOfServiceScreenView* view,
+    const ScreenExitCallback& exit_callback)
+    : ArcTermsOfServiceScreen(view, exit_callback) {}
 
 MockArcTermsOfServiceScreen::~MockArcTermsOfServiceScreen() = default;
+
+void MockArcTermsOfServiceScreen::ExitScreen(Result result) {
+  exit_callback()->Run(result);
+}
 
 MockArcTermsOfServiceScreenView::MockArcTermsOfServiceScreenView() = default;
 
@@ -27,6 +28,13 @@ void MockArcTermsOfServiceScreenView::AddObserver(
     ArcTermsOfServiceScreenViewObserver* observer) {
   observer_ = observer;
   MockAddObserver(observer);
+}
+
+void MockArcTermsOfServiceScreenView::RemoveObserver(
+    ArcTermsOfServiceScreenViewObserver* observer) {
+  if (observer_ == observer)
+    observer_ = nullptr;
+  MockRemoveObserver(observer);
 }
 
 }  // namespace chromeos

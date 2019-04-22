@@ -7,7 +7,7 @@
 #include <cmath>
 #include <limits>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/vector3d_f.h"
@@ -35,7 +35,7 @@ TEST(Vector3dTest, Add) {
     { gfx::Vector3dF(3.1f - 4.3f, 5.1f + 1.3f, 2.7f - 8.1f), f1 - f2 }
   };
 
-  for (size_t i = 0; i < arraysize(float_tests); ++i)
+  for (size_t i = 0; i < base::size(float_tests); ++i)
     EXPECT_EQ(float_tests[i].expected.ToString(),
               float_tests[i].actual.ToString());
 }
@@ -53,7 +53,7 @@ TEST(Vector3dTest, Negative) {
     { gfx::Vector3dF(-0.3f, -0.3f, 0.3f), -gfx::Vector3dF(0.3f, 0.3f, -0.3f) }
   };
 
-  for (size_t i = 0; i < arraysize(float_tests); ++i)
+  for (size_t i = 0; i < base::size(float_tests); ++i)
     EXPECT_EQ(float_tests[i].expected.ToString(),
               float_tests[i].actual.ToString());
 }
@@ -86,7 +86,7 @@ TEST(Vector3dTest, Scale) {
     { 0, 1.2f, 1.8f, 3.3f, 5.6f, 4.2f }
   };
 
-  for (size_t i = 0; i < arraysize(triple_values); ++i) {
+  for (size_t i = 0; i < base::size(triple_values); ++i) {
     gfx::Vector3dF v(triple_values[i][0],
                      triple_values[i][1],
                      triple_values[i][2]);
@@ -122,7 +122,7 @@ TEST(Vector3dTest, Scale) {
     { 4.5f, 1.2f, 0, 3.3f }
   };
 
-  for (size_t i = 0; i < arraysize(single_values); ++i) {
+  for (size_t i = 0; i < base::size(single_values); ++i) {
     gfx::Vector3dF v(single_values[i][0],
                      single_values[i][1],
                      single_values[i][2]);
@@ -164,7 +164,7 @@ TEST(Vector3dTest, Length) {
       27861786423846742743236423478236784678.236713617231f }
   };
 
-  for (size_t i = 0; i < arraysize(float_values); ++i) {
+  for (size_t i = 0; i < base::size(float_values); ++i) {
     double v0 = float_values[i][0];
     double v1 = float_values[i][1];
     double v2 = float_values[i][2];
@@ -198,7 +198,7 @@ TEST(Vector3dTest, DotProduct) {
       gfx::Vector3dF(1.1f, 2.2f, 3.3f), gfx::Vector3dF(4.4f, 5.5f, 6.6f) }
   };
 
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     float actual = gfx::DotProduct(tests[i].input1, tests[i].input2);
     EXPECT_EQ(tests[i].expected, actual);
   }
@@ -226,7 +226,7 @@ TEST(Vector3dTest, CrossProduct) {
     { Vector3dF(0, -1, 1), Vector3dF(1, 0, 0), Vector3dF(1, 1, 1) }
   };
 
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     SCOPED_TRACE(i);
     Vector3dF actual = gfx::CrossProduct(tests[i].input1, tests[i].input2);
     EXPECT_EQ(tests[i].expected.ToString(), actual.ToString());
@@ -270,16 +270,18 @@ TEST(Vector3dTest, AngleBetweenVectorsInDegress) {
     float expected;
     gfx::Vector3dF input1;
     gfx::Vector3dF input2;
-  } tests[] = {
-      {0, gfx::Vector3dF(0, 1, 0), gfx::Vector3dF(0, 1, 0)},
-      {90, gfx::Vector3dF(0, 1, 0), gfx::Vector3dF(0, 0, 1)},
-      {45,
-       gfx::Vector3dF(0, 1, 0),
-       gfx::Vector3dF(0, 0.70710678188f, 0.70710678188f)},
-      {180, gfx::Vector3dF(0, 1, 0), gfx::Vector3dF(0, -1, 0)},
-  };
+  } tests[] = {{0, gfx::Vector3dF(0, 1, 0), gfx::Vector3dF(0, 1, 0)},
+               {90, gfx::Vector3dF(0, 1, 0), gfx::Vector3dF(0, 0, 1)},
+               {45, gfx::Vector3dF(0, 1, 0),
+                gfx::Vector3dF(0, 0.70710678188f, 0.70710678188f)},
+               {180, gfx::Vector3dF(0, 1, 0), gfx::Vector3dF(0, -1, 0)},
+               // Two vectors that are sufficiently close enough together to
+               // trigger an issue that produces NANs if the value passed to
+               // acos is not clamped due to floating point precision.
+               {0, gfx::Vector3dF(0, -0.990842f, -0.003177f),
+                gfx::Vector3dF(0, -0.999995f, -0.003124f)}};
 
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     float actual =
         gfx::AngleBetweenVectorsInDegrees(tests[i].input1, tests[i].input2);
     EXPECT_FLOAT_EQ(tests[i].expected, actual);
@@ -306,7 +308,7 @@ TEST(Vector3dTest, ClockwiseAngleBetweenVectorsInDegress) {
 
   const gfx::Vector3dF normal_vector(1.0f, 0.0f, 0.0f);
 
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     float actual = gfx::ClockwiseAngleBetweenVectorsInDegrees(
         tests[i].input1, tests[i].input2, normal_vector);
     EXPECT_FLOAT_EQ(tests[i].expected, actual);
@@ -337,7 +339,7 @@ TEST(Vector3dTest, GetNormalized) {
        gfx::Vector3dF(1, 0, 0)},
   };
 
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     gfx::Vector3dF n;
     EXPECT_EQ(tests[i].expected, tests[i].v.GetNormalized(&n));
     EXPECT_EQ(tests[i].normalized.ToString(), n.ToString());

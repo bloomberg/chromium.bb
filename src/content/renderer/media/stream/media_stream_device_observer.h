@@ -16,11 +16,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
-#include "content/common/media/media_stream.mojom.h"
-#include "content/public/common/media_stream_request.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
+#include "third_party/blink/public/common/mediastream/media_stream_request.h"
+#include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
 
 namespace content {
 
@@ -30,7 +30,7 @@ class MediaStreamDispatcherEventHandler;
 // notifications and forwards them to MediaStreamDispatcherEventHandler.
 class CONTENT_EXPORT MediaStreamDeviceObserver
     : public RenderFrameObserver,
-      public mojom::MediaStreamDeviceObserver {
+      public blink::mojom::MediaStreamDeviceObserver {
  public:
   explicit MediaStreamDeviceObserver(RenderFrame* render_frame);
   ~MediaStreamDeviceObserver() override;
@@ -38,16 +38,17 @@ class CONTENT_EXPORT MediaStreamDeviceObserver
   // Get all the media devices of video capture, e.g. webcam. This is the set
   // of devices that should be suspended when the content frame is no longer
   // being shown to the user.
-  MediaStreamDevices GetNonScreenCaptureDevices();
+  blink::MediaStreamDevices GetNonScreenCaptureDevices();
 
   void AddStream(
       const std::string& label,
-      const MediaStreamDevices& audio_devices,
-      const MediaStreamDevices& video_devices,
+      const blink::MediaStreamDevices& audio_devices,
+      const blink::MediaStreamDevices& video_devices,
       const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler);
-  void AddStream(const std::string& label, const MediaStreamDevice& device);
+  void AddStream(const std::string& label,
+                 const blink::MediaStreamDevice& device);
   bool RemoveStream(const std::string& label);
-  void RemoveStreamDevice(const MediaStreamDevice& device);
+  void RemoveStreamDevice(const blink::MediaStreamDevice& device);
 
   // Get the video session_id given a label. The label identifies a stream.
   int video_session_id(const std::string& label);
@@ -72,20 +73,20 @@ class CONTENT_EXPORT MediaStreamDeviceObserver
 
   // mojom::MediaStreamDeviceObserver implementation.
   void OnDeviceStopped(const std::string& label,
-                       const MediaStreamDevice& device) override;
+                       const blink::MediaStreamDevice& device) override;
   void OnDeviceChanged(const std::string& label,
-                       const MediaStreamDevice& old_device,
-                       const MediaStreamDevice& new_device) override;
+                       const blink::MediaStreamDevice& old_device,
+                       const blink::MediaStreamDevice& new_device) override;
 
   void BindMediaStreamDeviceObserverRequest(
-      mojom::MediaStreamDeviceObserverRequest request);
+      blink::mojom::MediaStreamDeviceObserverRequest request);
 
-  mojo::Binding<mojom::MediaStreamDeviceObserver> binding_;
+  mojo::Binding<blink::mojom::MediaStreamDeviceObserver> binding_;
 
   // Used for DCHECKs so methods calls won't execute in the wrong thread.
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
 
-  typedef std::map<std::string, Stream> LabelStreamMap;
+  using LabelStreamMap = std::map<std::string, Stream>;
   LabelStreamMap label_stream_map_;
 
   service_manager::BinderRegistry registry_;

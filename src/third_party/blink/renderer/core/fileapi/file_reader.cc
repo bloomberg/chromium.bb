@@ -57,7 +57,7 @@ const CString Utf8BlobUUID(Blob* blob) {
 }
 
 const CString Utf8FilePath(Blob* blob) {
-  return blob->HasBackingFile() ? ToFile(blob)->GetPath().Utf8() : "";
+  return blob->HasBackingFile() ? To<File>(blob)->GetPath().Utf8() : "";
 }
 
 }  // namespace
@@ -316,7 +316,9 @@ void FileReader::ExecutePendingRead() {
   DCHECK_EQ(loading_state_, kLoadingStatePending);
   loading_state_ = kLoadingStateLoading;
 
-  loader_ = FileReaderLoader::Create(read_type_, this);
+  loader_ = std::make_unique<FileReaderLoader>(
+      read_type_, this,
+      GetExecutionContext()->GetTaskRunner(TaskType::kFileReading));
   loader_->SetEncoding(encoding_);
   loader_->SetDataType(blob_type_);
   loader_->Start(blob_data_handle_);

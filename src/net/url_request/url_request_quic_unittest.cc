@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -20,10 +22,10 @@
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
 #include "net/test/test_with_scoped_task_environment.h"
-#include "net/third_party/quic/core/quic_dispatcher.h"
-#include "net/third_party/quic/test_tools/crypto_test_utils.h"
-#include "net/third_party/quic/tools/quic_memory_cache_backend.h"
-#include "net/third_party/quic/tools/quic_simple_dispatcher.h"
+#include "net/third_party/quiche/src/quic/core/quic_dispatcher.h"
+#include "net/third_party/quiche/src/quic/test_tools/crypto_test_utils.h"
+#include "net/third_party/quiche/src/quic/tools/quic_memory_cache_backend.h"
+#include "net/third_party/quiche/src/quic/tools/quic_simple_dispatcher.h"
 #include "net/tools/quic/quic_simple_server.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
@@ -163,8 +165,9 @@ class URLRequestQuicTest : public TestWithScopedTaskEnvironment {
     host_resolver_.reset(new MappedHostResolver(std::move(resolver)));
     // Use a mapped host resolver so that request for test.example.com
     // reach the server running on localhost.
-    std::string map_rule = "MAP test.example.com test.example.com:" +
-                           base::IntToString(server_->server_address().port());
+    std::string map_rule =
+        "MAP test.example.com test.example.com:" +
+        base::NumberToString(server_->server_address().port());
     EXPECT_TRUE(host_resolver_->AddRuleFromString(map_rule));
   }
 

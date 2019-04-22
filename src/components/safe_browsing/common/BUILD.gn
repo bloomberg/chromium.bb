@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//chrome/common/features.gni")
+import("//build/config/features.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 
 source_set("common") {
@@ -20,6 +20,7 @@ source_set("common") {
     "//components/policy/core/browser:browser",
     "//components/prefs:prefs",
     "//components/safe_browsing:csd_proto",
+    "//components/safe_browsing:features",
     "//crypto:crypto",
     "//ipc",
     "//url/ipc:url_ipc",

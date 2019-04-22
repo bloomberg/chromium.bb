@@ -18,7 +18,6 @@ POLICY_EXPORT GURL Normalize(const GURL& url);
 // Helper function to extract the underlying URL wrapped by services such as
 // Google AMP or Google Translate. Returns an empty GURL if |url| doesn't match
 // a known format.
-// TODO(treib): Merge this with Normalize()? See also https://crbug.com/663678.
 POLICY_EXPORT GURL GetEmbeddedURL(const GURL& url);
 
 }  // namespace url_util

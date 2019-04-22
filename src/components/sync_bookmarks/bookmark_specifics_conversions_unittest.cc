@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
@@ -85,6 +86,26 @@ TEST(BookmarkSpecificsConversionsTest, ShouldCreateSpecificsFromBookmarkNode) {
     std::string value;
     node->GetMetaInfo(meta_info.key(), &value);
     EXPECT_THAT(meta_info.value(), Eq(value));
+  }
+}
+
+TEST(BookmarkSpecificsConversionsTest,
+     ShouldCreateSpecificsFromBookmarkNodeWithIllegalTitle) {
+  std::unique_ptr<bookmarks::BookmarkModel> model =
+      bookmarks::TestBookmarkClient::CreateModel();
+
+  const bookmarks::BookmarkNode* bookmark_bar_node = model->bookmark_bar_node();
+  const std::vector<std::string> illegal_titles = {"", ".", ".."};
+  int index = 0;
+  for (const std::string& illegal_title : illegal_titles) {
+    const bookmarks::BookmarkNode* node = model->AddURL(
+        /*parent=*/bookmark_bar_node, index++, base::UTF8ToUTF16(illegal_title),
+        GURL("http://www.url.com"));
+    ASSERT_THAT(node, NotNull());
+    sync_pb::EntitySpecifics specifics = CreateSpecificsFromBookmarkNode(
+        node, model.get(), /*force_favicon_load=*/false);
+    // Legacy clients append a space to illegal titles.
+    EXPECT_THAT(specifics.bookmark().title(), Eq(illegal_title + " "));
   }
 }
 
@@ -191,6 +212,31 @@ TEST(BookmarkSpecificsConversionsTest, ShouldCreateBookmarkNodeFromSpecifics) {
   std::string value2;
   node->GetMetaInfo(kKey2, &value2);
   EXPECT_THAT(value2, Eq(kValue2));
+}
+
+TEST(BookmarkSpecificsConversionsTest,
+     ShouldCreateBookmarkNodeFromSpecificsWithIllegalTitle) {
+  std::unique_ptr<bookmarks::BookmarkModel> model =
+      bookmarks::TestBookmarkClient::CreateModel();
+  testing::NiceMock<favicon::MockFaviconService> favicon_service;
+
+  const std::vector<std::string> illegal_titles = {"", ".", ".."};
+
+  int index = 0;
+  for (const std::string& illegal_title : illegal_titles) {
+    sync_pb::EntitySpecifics specifics;
+    sync_pb::BookmarkSpecifics* bm_specifics = specifics.mutable_bookmark();
+    bm_specifics->set_url("http://www.url.com");
+    // Legacy clients append an extra space to illegal clients.
+    bm_specifics->set_title(illegal_title + " ");
+    const bookmarks::BookmarkNode* node = CreateBookmarkNodeFromSpecifics(
+        *bm_specifics,
+        /*parent=*/model->bookmark_bar_node(), index++,
+        /*is_folder=*/false, model.get(), &favicon_service);
+    ASSERT_THAT(node, NotNull());
+    // The node should be created without the extra space.
+    EXPECT_THAT(node->GetTitle(), Eq(base::UTF8ToUTF16(illegal_title)));
+  }
 }
 
 TEST(BookmarkSpecificsConversionsTest,

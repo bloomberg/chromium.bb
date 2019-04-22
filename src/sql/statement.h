@@ -9,23 +9,23 @@
 #include <string>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
 #include "base/strings/string16.h"
 #include "sql/database.h"
-#include "sql/sql_export.h"
 
 namespace sql {
 
 // Possible return values from ColumnType in a statement. These should match
 // the values in sqlite3.h.
-enum ColType {
-  COLUMN_TYPE_INTEGER = 1,
-  COLUMN_TYPE_FLOAT = 2,
-  COLUMN_TYPE_TEXT = 3,
-  COLUMN_TYPE_BLOB = 4,
-  COLUMN_TYPE_NULL = 5,
+enum class ColumnType {
+  kInteger = 1,
+  kFloat = 2,
+  kText = 3,
+  kBlob = 4,
+  kNull = 5,
 };
 
 // Normal usage:
@@ -43,7 +43,7 @@ enum ColType {
 // Step() and Run() just return true to signal success. If you want to handle
 // specific errors such as database corruption, install an error handler in
 // in the connection object using set_error_delegate().
-class SQL_EXPORT Statement {
+class COMPONENT_EXPORT(SQL) Statement {
  public:
   // Creates an uninitialized statement. The statement will be invalid until
   // you initialize it via Assign.
@@ -124,7 +124,7 @@ class SQL_EXPORT Statement {
   // "type conversion." This means requesting the value of a column of a type
   // where that type is not the native type. For safety, call ColumnType only
   // on a column before getting the value out in any way.
-  ColType ColumnType(int col) const;
+  ColumnType GetColumnType(int col) const;
 
   // These all take a 0-based argument index.
   bool ColumnBool(int col) const;
@@ -176,15 +176,9 @@ class SQL_EXPORT Statement {
   // ensuring that contracts are honored in error edge cases.
   bool CheckValid() const;
 
-  // Helper for Run() and Step(), calls sqlite3_step() and then generates
-  // sql::Database histograms based on the results.  Timing and change count
-  // are only recorded if |timer_flag| is true.  The checked value from
-  // sqlite3_step() is returned.
-  int StepInternal(bool timer_flag);
-
-  // sql::Database uses cached statments for transactions, but tracks their
-  // runtime independently.
-  bool RunWithoutTimers();
+  // Helper for Run() and Step(), calls sqlite3_step() and returns the checked
+  // value from it.
+  int StepInternal();
 
   // The actual sqlite statement. This may be unique to us, or it may be cached
   // by the Database, which is why it's ref-counted. This pointer is

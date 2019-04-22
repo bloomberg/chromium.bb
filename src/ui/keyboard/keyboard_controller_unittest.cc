@@ -6,6 +6,8 @@
 
 #include <memory>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -18,8 +20,8 @@
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/base/ime/dummy_text_input_client.h"
+#include "ui/base/ime/init/input_method_factory.h"
 #include "ui/base/ime/input_method.h"
-#include "ui/base/ime/input_method_factory.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/compositor/compositor.h"
@@ -35,6 +37,8 @@
 #include "ui/keyboard/keyboard_ui.h"
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/keyboard/test/keyboard_test_util.h"
+#include "ui/keyboard/test/test_keyboard_layout_delegate.h"
+#include "ui/keyboard/test/test_keyboard_ui_factory.h"
 #include "ui/wm/core/default_activation_client.h"
 
 #if defined(USE_OZONE)
@@ -107,19 +111,6 @@ class KeyboardContainerObserver : public aura::WindowObserver {
   DISALLOW_COPY_AND_ASSIGN(KeyboardContainerObserver);
 };
 
-class TestKeyboardLayoutDelegate : public KeyboardLayoutDelegate {
- public:
-  TestKeyboardLayoutDelegate() {}
-  ~TestKeyboardLayoutDelegate() override {}
-
-  // Overridden from keyboard::KeyboardLayoutDelegate
-  void MoveKeyboardToDisplay(const display::Display& display) override {}
-  void MoveKeyboardToTouchableDisplay() override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestKeyboardLayoutDelegate);
-};
-
 class SetModeCallbackInvocationCounter {
  public:
   SetModeCallbackInvocationCounter() : weak_factory_invoke_(this) {}
@@ -164,21 +155,19 @@ class KeyboardControllerTest : public aura::test::AuraTestBase,
     aura::test::AuraTestBase::SetUp();
     new wm::DefaultActivationClient(root_window());
     focus_controller_.reset(new TestFocusController(root_window()));
-    layout_delegate_.reset(new TestKeyboardLayoutDelegate());
+    layout_delegate_.reset(new TestKeyboardLayoutDelegate(root_window()));
 
     // Force enable the virtual keyboard.
-    keyboard::SetTouchKeyboardEnabled(true);
-    controller_.EnableKeyboard(
-        std::make_unique<TestKeyboardUI>(host()->GetInputMethod()),
+    controller_.Initialize(
+        std::make_unique<TestKeyboardUIFactory>(host()->GetInputMethod()),
         layout_delegate_.get());
-    controller_.ActivateKeyboardInContainer(root_window());
+    keyboard::SetTouchKeyboardEnabled(true);
     controller_.AddObserver(this);
   }
 
   void TearDown() override {
     keyboard::SetTouchKeyboardEnabled(false);
     controller_.RemoveObserver(this);
-    controller_.DisableKeyboard();
     focus_controller_.reset();
     aura::test::AuraTestBase::TearDown();
   }
@@ -292,8 +281,6 @@ class KeyboardControllerTest : public aura::test::AuraTestBase,
 TEST_F(KeyboardControllerTest, KeyboardSize) {
   root_window()->SetLayoutManager(new KeyboardLayoutManager(&controller()));
 
-  controller().LoadKeyboardWindowInBackground();
-
   // The keyboard window should not be visible.
   aura::Window* keyboard_window = controller().GetKeyboardWindow();
   EXPECT_FALSE(keyboard_window->IsVisible());
@@ -327,7 +314,6 @@ TEST_F(KeyboardControllerTest, TransientBlurShortDelay) {
   ui::DummyTextInputClient no_input_client(ui::TEXT_INPUT_TYPE_NONE);
 
   base::RunLoop run_loop;
-  controller().LoadKeyboardWindowInBackground();
   aura::Window* keyboard_window = controller().GetKeyboardWindow();
   auto keyboard_container_observer =
       std::make_unique<KeyboardContainerObserver>(keyboard_window, &run_loop);
@@ -370,7 +356,6 @@ TEST_F(KeyboardControllerTest, TransientBlurLongDelay) {
   ui::DummyTextInputClient no_input_client(ui::TEXT_INPUT_TYPE_NONE);
 
   base::RunLoop run_loop;
-  controller().LoadKeyboardWindowInBackground();
   aura::Window* keyboard_window = controller().GetKeyboardWindow();
   auto keyboard_container_observer =
       std::make_unique<KeyboardContainerObserver>(keyboard_window, &run_loop);
@@ -408,7 +393,6 @@ TEST_F(KeyboardControllerTest, VisibilityChangeWithTextInputTypeChange) {
   ui::DummyTextInputClient no_input_client_1(ui::TEXT_INPUT_TYPE_NONE);
 
   base::RunLoop run_loop;
-  controller().LoadKeyboardWindowInBackground();
   aura::Window* keyboard_window = controller().GetKeyboardWindow();
   auto keyboard_container_observer =
       std::make_unique<KeyboardContainerObserver>(keyboard_window, &run_loop);
@@ -467,7 +451,6 @@ TEST_F(KeyboardControllerTest, AlwaysVisibleWhenLocked) {
   ui::DummyTextInputClient no_input_client_1(ui::TEXT_INPUT_TYPE_NONE);
 
   base::RunLoop run_loop;
-  controller().LoadKeyboardWindowInBackground();
   aura::Window* keyboard_window = controller().GetKeyboardWindow();
   auto keyboard_container_observer =
       std::make_unique<KeyboardContainerObserver>(keyboard_window, &run_loop);
@@ -506,19 +489,17 @@ TEST_F(KeyboardControllerTest, AlwaysVisibleWhenLocked) {
 
 // Tests that disabling the keyboard will get a corresponding event.
 TEST_F(KeyboardControllerTest, DisableKeyboard) {
-  controller().LoadKeyboardWindowInBackground();
   aura::Window* keyboard_window = controller().GetKeyboardWindow();
 
   ShowKeyboard();
   EXPECT_TRUE(keyboard_window->IsVisible());
   EXPECT_FALSE(IsKeyboardDisabled());
 
-  controller().DisableKeyboard();
+  keyboard::SetTouchKeyboardEnabled(false);
   EXPECT_TRUE(IsKeyboardDisabled());
 }
 
 TEST_F(KeyboardControllerTest, SetOccludedBoundsChangesFullscreenBounds) {
-  controller().LoadKeyboardWindowInBackground();
 
   // Keyboard is hidden, so SetContainerType should be synchronous.
   controller().SetContainerType(mojom::ContainerType::kFullscreen,
@@ -557,8 +538,6 @@ class KeyboardControllerAnimationTest : public KeyboardControllerTest {
 
     KeyboardControllerTest::SetUp();
 
-    // Preload the keyboard contents so that we can set its bounds.
-    controller().LoadKeyboardWindowInBackground();
     // Wait for the keyboard contents to load.
     base::RunLoop().RunUntilIdle();
     keyboard_window()->SetBounds(root_window()->bounds());
@@ -695,22 +674,6 @@ TEST_F(KeyboardControllerAnimationTest, ContainerShowWhileHide) {
   EXPECT_EQ(1.0, layer->opacity());
 }
 
-TEST_F(KeyboardControllerAnimationTest,
-       SetKeyboardWindowBoundsOnDeactivatedKeyboard) {
-  // Ensure keyboard ui is populated
-  ui::Layer* layer = keyboard_window()->layer();
-  ShowKeyboard();
-  RunAnimationForLayer(layer);
-
-  ASSERT_TRUE(keyboard_window());
-
-  controller().DeactivateKeyboard();
-
-  // lingering handle to the contents window is adjusted.
-  // container_window's LayoutManager should abort silently and not crash.
-  keyboard_window()->SetBounds(gfx::Rect());
-}
-
 TEST_F(KeyboardControllerTest, DisplayChangeShouldNotifyBoundsChange) {
   ui::DummyTextInputClient input_client(ui::TEXT_INPUT_TYPE_TEXT);
 
@@ -737,7 +700,6 @@ TEST_F(KeyboardControllerTest, TextInputMode) {
                                            ui::TEXT_INPUT_MODE_NONE);
 
   base::RunLoop run_loop;
-  controller().LoadKeyboardWindowInBackground();
   aura::Window* keyboard_window = controller().GetKeyboardWindow();
   auto keyboard_container_observer =
       std::make_unique<KeyboardContainerObserver>(keyboard_window, &run_loop);
@@ -799,16 +761,14 @@ TEST_F(KeyboardControllerTest, DontClearObserverList) {
   EXPECT_TRUE(keyboard_window->IsVisible());
   EXPECT_FALSE(IsKeyboardDisabled());
 
-  controller().DisableKeyboard();
+  keyboard::SetTouchKeyboardEnabled(false);
   EXPECT_TRUE(IsKeyboardDisabled());
 
-  controller().EnableKeyboard(
-      std::make_unique<TestKeyboardUI>(host()->GetInputMethod()),
-      layout_delegate());
+  keyboard::SetTouchKeyboardEnabled(true);
   ClearKeyboardDisabled();
   EXPECT_FALSE(IsKeyboardDisabled());
 
-  controller().DisableKeyboard();
+  keyboard::SetTouchKeyboardEnabled(false);
   EXPECT_TRUE(IsKeyboardDisabled());
 }
 

@@ -4,6 +4,7 @@
 
 package org.chromium.webapk.shell_apk;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 
@@ -26,7 +27,24 @@ public final class WebApkSharedPreferences {
     public static final String PREF_RUNTIME_DEX_VERSION =
             "org.chromium.webapk.shell_apk.dex_version";
 
+    /** Timestamp of when the WebAPK asked the host browser to relaunch the WebAPK. */
+    public static final String PREF_REQUEST_HOST_BROWSER_RELAUNCH_TIMESTAMP =
+            "org.chromium.webapk.shell_apk.request_host_browser_relaunch_timestamp";
+
     public static SharedPreferences getPrefs(Context context) {
         return context.getSharedPreferences(PREF_PACKAGE, Context.MODE_PRIVATE);
+    }
+
+    /** Deletes the SharedPreferences for the given context. */
+    public static void clear(Context context) {
+        SharedPreferences.Editor editor = getPrefs(context).edit();
+        editor.clear();
+        editor.apply();
+    }
+
+    /** Force any pending SharedPreference writes to occur. */
+    @SuppressLint({"ApplySharedPref"})
+    public static void flushPendingWrites(Context context) {
+        getPrefs(context).edit().commit();
     }
 }

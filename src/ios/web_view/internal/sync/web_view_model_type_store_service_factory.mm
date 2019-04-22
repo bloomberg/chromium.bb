@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/sync/model_impl/model_type_store_service_impl.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
@@ -20,7 +20,8 @@ namespace ios_web_view {
 // static
 WebViewModelTypeStoreServiceFactory*
 WebViewModelTypeStoreServiceFactory::GetInstance() {
-  return base::Singleton<WebViewModelTypeStoreServiceFactory>::get();
+  static base::NoDestructor<WebViewModelTypeStoreServiceFactory> instance;
+  return instance.get();
 }
 
 // static

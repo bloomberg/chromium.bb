@@ -29,10 +29,11 @@ const char kEvent1Name[] = "event1";
 const char kEvent2Name[] = "event2";
 const char kURL[] = "https://google.com/some/url";
 
-using EventListenerConstructor = base::Callback<std::unique_ptr<EventListener>(
-    const std::string& /* event_name */,
-    content::RenderProcessHost* /* process */,
-    std::unique_ptr<base::DictionaryValue> /* filter */)>;
+using EventListenerConstructor =
+    base::RepeatingCallback<std::unique_ptr<EventListener>(
+        const std::string& /* event_name */,
+        content::RenderProcessHost* /* process */,
+        std::unique_ptr<base::DictionaryValue> /* filter */)>;
 
 class EmptyDelegate : public EventListenerMap::Delegate {
   void OnListenerAdded(const EventListener* listener) override {}
@@ -121,12 +122,12 @@ void EventListenerMapTest::TestUnfilteredEventsGoToAllListeners(
 
 TEST_F(EventListenerMapTest, UnfilteredEventsGoToAllListenersForExtensions) {
   TestUnfilteredEventsGoToAllListeners(
-      base::Bind(&CreateEventListenerForExtension, kExt1Id));
+      base::BindRepeating(&CreateEventListenerForExtension, kExt1Id));
 }
 
 TEST_F(EventListenerMapTest, UnfilteredEventsGoToAllListenersForURLs) {
   TestUnfilteredEventsGoToAllListeners(
-      base::Bind(&CreateEventListenerForURL, GURL(kURL)));
+      base::BindRepeating(&CreateEventListenerForURL, GURL(kURL)));
 }
 
 TEST_F(EventListenerMapTest, FilteredEventsGoToAllMatchingListeners) {
@@ -182,11 +183,13 @@ void EventListenerMapTest::TestRemovingByProcess(
 }
 
 TEST_F(EventListenerMapTest, TestRemovingByProcessForExtension) {
-  TestRemovingByProcess(base::Bind(&CreateEventListenerForExtension, kExt1Id));
+  TestRemovingByProcess(
+      base::BindRepeating(&CreateEventListenerForExtension, kExt1Id));
 }
 
 TEST_F(EventListenerMapTest, TestRemovingByProcessForURL) {
-  TestRemovingByProcess(base::Bind(&CreateEventListenerForURL, GURL(kURL)));
+  TestRemovingByProcess(
+      base::BindRepeating(&CreateEventListenerForURL, GURL(kURL)));
 }
 
 void EventListenerMapTest::TestRemovingByListener(
@@ -207,11 +210,13 @@ void EventListenerMapTest::TestRemovingByListener(
 }
 
 TEST_F(EventListenerMapTest, TestRemovingByListenerForExtension) {
-  TestRemovingByListener(base::Bind(&CreateEventListenerForExtension, kExt1Id));
+  TestRemovingByListener(
+      base::BindRepeating(&CreateEventListenerForExtension, kExt1Id));
 }
 
 TEST_F(EventListenerMapTest, TestRemovingByListenerForURL) {
-  TestRemovingByListener(base::Bind(&CreateEventListenerForURL, GURL(kURL)));
+  TestRemovingByListener(
+      base::BindRepeating(&CreateEventListenerForURL, GURL(kURL)));
 }
 
 TEST_F(EventListenerMapTest, TestLazyDoubleAddIsUndoneByRemove) {
@@ -288,12 +293,12 @@ void EventListenerMapTest::TestAddExistingUnfilteredListener(
 
 TEST_F(EventListenerMapTest, AddExistingUnfilteredListenerForExtensions) {
   TestAddExistingUnfilteredListener(
-      base::Bind(&CreateEventListenerForExtension, kExt1Id));
+      base::BindRepeating(&CreateEventListenerForExtension, kExt1Id));
 }
 
 TEST_F(EventListenerMapTest, AddExistingUnfilteredListenerForURLs) {
   TestAddExistingUnfilteredListener(
-      base::Bind(&CreateEventListenerForURL, GURL(kURL)));
+      base::BindRepeating(&CreateEventListenerForURL, GURL(kURL)));
 }
 
 TEST_F(EventListenerMapTest, RemovingRouters) {
@@ -320,11 +325,12 @@ void EventListenerMapTest::TestHasListenerForEvent(
 
 TEST_F(EventListenerMapTest, HasListenerForEventForExtension) {
   TestHasListenerForEvent(
-      base::Bind(&CreateEventListenerForExtension, kExt1Id));
+      base::BindRepeating(&CreateEventListenerForExtension, kExt1Id));
 }
 
 TEST_F(EventListenerMapTest, HasListenerForEventForURL) {
-  TestHasListenerForEvent(base::Bind(&CreateEventListenerForURL, GURL(kURL)));
+  TestHasListenerForEvent(
+      base::BindRepeating(&CreateEventListenerForURL, GURL(kURL)));
 }
 
 TEST_F(EventListenerMapTest, HasListenerForExtension) {

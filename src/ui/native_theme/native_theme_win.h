@@ -19,6 +19,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/no_destructor.h"
+#include "base/win/registry.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/sys_color_change_listener.h"
@@ -80,6 +81,7 @@ class NATIVE_THEME_EXPORT NativeThemeWin : public NativeTheme,
   gfx::Size GetNinePatchCanvasSize(Part part) const override;
   gfx::Rect GetNinePatchAperture(Part part) const override;
   bool UsesHighContrastColors() const override;
+  bool SystemDarkModeEnabled() const override;
 
  protected:
   friend class NativeTheme;
@@ -260,6 +262,8 @@ class NATIVE_THEME_EXPORT NativeThemeWin : public NativeTheme,
   // Returns a handle to the theme data.
   HANDLE GetThemeHandle(ThemeName theme_name) const;
 
+  void RegisterThemeRegkeyObserver();
+
   typedef HRESULT (WINAPI* DrawThemeBackgroundPtr)(HANDLE theme,
                                                    HDC hdc,
                                                    int part_id,
@@ -313,6 +317,9 @@ class NATIVE_THEME_EXPORT NativeThemeWin : public NativeTheme,
 
   // Handle to uxtheme.dll.
   HMODULE theme_dll_;
+
+  // Dark Mode registry key.
+  base::win::RegKey hkcu_themes_regkey_;
 
   // A cache of open theme handles.
   mutable HANDLE theme_handles_[LAST];

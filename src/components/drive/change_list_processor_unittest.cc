@@ -11,8 +11,8 @@
 
 #include "base/command_line.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "components/drive/chromeos/drive_test_util.h"
@@ -205,7 +205,7 @@ TEST_F(ChangeListProcessorTest, ApplyFullResourceList) {
            "", FILE},
   };
 
-  for (size_t i = 0; i < arraysize(kExpected); ++i) {
+  for (size_t i = 0; i < base::size(kExpected); ++i) {
     std::unique_ptr<ResourceEntry> entry = GetResourceEntry(kExpected[i].path);
     ASSERT_TRUE(entry) << "for path: " << kExpected[i].path;
     EXPECT_EQ(kExpected[i].id, entry->resource_id());

@@ -42,7 +42,9 @@ class Crypto final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static Crypto* Create() { return new Crypto(); }
+  static Crypto* Create() { return MakeGarbageCollected<Crypto>(); }
+
+  Crypto() = default;
 
   NotShared<DOMArrayBufferView> getRandomValues(NotShared<DOMArrayBufferView>,
                                                 ExceptionState&);
@@ -52,8 +54,6 @@ class Crypto final : public ScriptWrappable {
   void Trace(blink::Visitor*) override;
 
  private:
-  Crypto() = default;
-
   Member<SubtleCrypto> subtle_crypto_;
 };
 

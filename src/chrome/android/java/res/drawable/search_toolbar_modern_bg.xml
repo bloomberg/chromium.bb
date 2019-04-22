@@ -6,7 +6,7 @@
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item>
         <shape android:shape="rectangle">
-            <solid android:color="@color/modern_primary_color" />
+            <solid android:color="@color/toolbar_background_primary" />
         </shape>
     </item>
     <item
@@ -14,5 +14,5 @@
         android:bottom="@dimen/search_toolbar_modern_bg_top_bottom_inset"
         android:left="@dimen/search_toolbar_modern_bg_lateral_inset"
         android:right="@dimen/search_toolbar_modern_bg_lateral_inset"
-        android:drawable="@drawable/modern_toolbar_background" />
+        android:drawable="@drawable/modern_toolbar_text_box_background" />
 </layer-list>

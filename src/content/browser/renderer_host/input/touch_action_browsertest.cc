@@ -230,6 +230,12 @@ class TouchActionBrowserTest : public ContentBrowserTest,
   // touching the same area and scroll along the same direction. We purposely
   // trigger touch ack timeout for the first finger touch. All we need to ensure
   // is that the second finger also scrolled.
+  // TODO(bokan): This test isn't doing what's described. For one thing, the
+  // JankMainThread function will block the caller as well as the main thread
+  // so we're actually waiting 1.8s before starting the second scroll, by which
+  // point the first scroll has finished. Additionally, we can only run one
+  // synthetic gesture at a time so queueing two gestures will produce
+  // back-to-back scrolls rather than one two fingered scroll.
   void DoTwoFingerTouchScroll(
       bool wait_until_scrolled,
       const gfx::Vector2d& expected_scroll_position_after_scroll) {
@@ -251,8 +257,7 @@ class TouchActionBrowserTest : public ContentBrowserTest,
         new SyntheticSmoothScrollGesture(params1));
     GetWidgetHost()->QueueSyntheticGesture(
         std::move(gesture1),
-        base::BindOnce(&TouchActionBrowserTest::OnSyntheticGestureCompleted,
-                       base::Unretained(this)));
+        base::BindOnce([](SyntheticGesture::Result result) {}));
 
     JankMainThread(kLongJankTime);
     GiveItSomeTime(800);
@@ -343,10 +348,10 @@ class TouchActionBrowserTest : public ContentBrowserTest,
         )HTML";
 
     base::JSONReader json_reader;
-    std::unique_ptr<base::Value> params =
+    base::Optional<base::Value> params =
         json_reader.ReadToValue(pointer_actions_json);
-    ASSERT_TRUE(params.get()) << json_reader.GetErrorMessage();
-    ActionsParser actions_parser(params.get());
+    ASSERT_TRUE(params.has_value()) << json_reader.GetErrorMessage();
+    ActionsParser actions_parser(std::move(params.value()));
 
     ASSERT_TRUE(actions_parser.ParsePointerActionSequence());
 
@@ -373,7 +378,7 @@ class TouchActionBrowserTest : public ContentBrowserTest,
           "actions": [
             { "name": "pointerDown", "x": 50, "y": 50 },
             { "name": "pointerUp" },
-            { "name": "pause", "duration": 0.05 },
+            { "name": "pause", "duration": 50 },
             { "name": "pointerDown", "x": 50, "y": 50 },
             { "name": "pointerMove", "x": 50, "y": 150 },
             { "name": "pointerUp" }
@@ -382,10 +387,10 @@ class TouchActionBrowserTest : public ContentBrowserTest,
         )HTML";
 
     base::JSONReader json_reader;
-    std::unique_ptr<base::Value> params =
+    base::Optional<base::Value> params =
         json_reader.ReadToValue(pointer_actions_json);
-    ASSERT_TRUE(params.get()) << json_reader.GetErrorMessage();
-    ActionsParser actions_parser(params.get());
+    ASSERT_TRUE(params.has_value()) << json_reader.GetErrorMessage();
+    ActionsParser actions_parser(std::move(params.value()));
 
     ASSERT_TRUE(actions_parser.ParsePointerActionSequence());
 
@@ -431,9 +436,14 @@ class TouchActionBrowserTest : public ContentBrowserTest,
       scroll_left = GetScrollLeft();
     }
 
-    // Expect it scrolled at least half of the expected distance.
-    EXPECT_LE(expected_scroll_position_after_scroll.y() / 2, scroll_top);
-    EXPECT_LE(expected_scroll_position_after_scroll.x() / 2, scroll_left);
+    // It seems that even if the compositor frame has scrolled half of the
+    // expected scroll offset, the Blink side scroll offset may not yet be
+    // updated, so here we expect it to at least have scrolled.
+    // TODO(crbug.com/902446): this can be resolved by fixing this bug.
+    if (expected_scroll_position_after_scroll.y() > 0)
+      EXPECT_GT(scroll_top, 0);
+    if (expected_scroll_position_after_scroll.x() > 0)
+      EXPECT_GT(scroll_left, 0);
   }
 
   const bool compositor_touch_action_enabled_;
@@ -446,7 +456,7 @@ class TouchActionBrowserTest : public ContentBrowserTest,
   DISALLOW_COPY_AND_ASSIGN(TouchActionBrowserTest);
 };
 
-INSTANTIATE_TEST_CASE_P(, TouchActionBrowserTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(, TouchActionBrowserTest, testing::Bool());
 
 #if !defined(NDEBUG) || defined(ADDRESS_SANITIZER) ||       \
     defined(MEMORY_SANITIZER) || defined(LEAK_SANITIZER) || \
@@ -674,13 +684,6 @@ IN_PROC_BROWSER_TEST_P(TouchActionBrowserTest, BlockDoubleTapDragZoom) {
   ASSERT_EQ(1, ExecuteScriptAndExtractDouble("window.visualViewport.scale"));
 
   DoDoubleTapDragZoom();
-
-  // Since we don't expect anything to change, we don't know how long to wait
-  // before we're sure the zoom was blocked.  Do a scroll so that we can wait
-  // until the offset changes. At that point, we know the zoom should have
-  // taken effect if it wasn't blocked by touch-action.
-  DoTouchScroll(gfx::Point(300, 300), gfx::Vector2d(0, 200), true, 10075,
-                gfx::Vector2d(0, 200), kNoJankTime);
 
   EXPECT_EQ(1, ExecuteScriptAndExtractDouble("window.visualViewport.scale"));
 }

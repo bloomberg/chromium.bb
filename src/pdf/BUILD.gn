@@ -21,11 +21,6 @@ if (enable_pdf) {
 
   config("pdf_common_config") {
     if (pdf_engine == 0) {
-      defines = [ "PDFIUM_PRINT_TEXT_WITH_GDI" ]
-      if (pdf_enable_xfa) {
-        defines += [ "PDF_ENABLE_XFA" ]
-      }
-
       include_dirs = [ "//third_party/pdfium" ]
     }
   }
@@ -35,12 +30,15 @@ if (enable_pdf) {
     deps = [
       ":features",
       "//base",
-      "//gin",
       "//net",
       "//ppapi/cpp:objects",
       "//ppapi/cpp/private:internal_module",
       "//ui/base",
       "//ui/gfx/range",
+    ]
+
+    public_deps = [
+      "//gin",
     ]
 
     public = [
@@ -49,6 +47,8 @@ if (enable_pdf) {
     ]
 
     sources = [
+      "accessibility.cc",
+      "accessibility.h",
       "chunk_stream.h",
       "document_loader.h",
       "document_loader_impl.cc",
@@ -173,7 +173,13 @@ if (enable_pdf) {
 
     if (pdf_engine == 0) {
       configs += [ "//v8:external_startup_data" ]
+      deps += [
+        # Explicitly depend on PDFium to pick up its public configs, which are
+        # not transitive, possibly because the "pdf" target is a static_library.
+        "//third_party/pdfium",
+      ]
       sources += [
+        "pdfium/accessibility_unittest.cc",
         "pdfium/findtext_unittest.cc",
         "pdfium/pdfium_engine_exports_unittest.cc",
         "pdfium/pdfium_print_unittest.cc",

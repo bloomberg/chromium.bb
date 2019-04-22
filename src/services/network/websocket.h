@@ -17,6 +17,7 @@
 #include "base/time/time.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/websockets/websocket_event_interface.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/websocket.mojom.h"
 #include "services/network/websocket_throttler.h"
 #include "url/origin.h"
@@ -64,10 +65,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
   WebSocket(std::unique_ptr<Delegate> delegate,
             mojom::WebSocketRequest request,
             mojom::AuthenticationHandlerPtr auth_handler,
+            mojom::TrustedHeaderClientPtr header_client,
             WebSocketThrottler::PendingConnection pending_connection_tracker,
             int child_id,
             int frame_id,
             url::Origin origin,
+            uint32_t options,
             base::TimeDelta delay);
   ~WebSocket() override;
 
@@ -89,8 +92,44 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
 
   bool handshake_succeeded() const { return handshake_succeeded_; }
 
+  // Whether to allow sending/setting cookies during WebSocket handshakes for
+  // |url|. This decision is based on the |options_| and |origin_| this
+  // WebSocket was created with.
+  bool AllowCookies(const GURL& url) const;
+
+  // These methods are called by the network delegate to forward these events to
+  // the |header_client_|.
+  int OnBeforeStartTransaction(net::CompletionOnceCallback callback,
+                               net::HttpRequestHeaders* headers);
+  int OnHeadersReceived(
+      net::CompletionOnceCallback callback,
+      const net::HttpResponseHeaders* original_response_headers,
+      scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
+      GURL* allowed_unsafe_redirect_url);
+
+  // Gets the WebSocket associated with this request.
+  static WebSocket* ForRequest(const net::URLRequest& request);
+
+  static const void* const kUserDataKey;
+
  protected:
   class WebSocketEventHandler;
+
+  // This class is used to set the WebSocket as user data on a URLRequest. This
+  // is used instead of WebSocket directly because SetUserData requires a
+  // std::unique_ptr. This is safe because WebSocket owns the URLRequest, so is
+  // guaranteed to outlive it.
+  class UnownedPointer : public base::SupportsUserData::Data {
+   public:
+    explicit UnownedPointer(WebSocket* pointer) : pointer_(pointer) {}
+
+    WebSocket* get() const { return pointer_; }
+
+   private:
+    WebSocket* const pointer_;
+
+    DISALLOW_COPY_AND_ASSIGN(UnownedPointer);
+  };
 
   void OnConnectionError();
   void AddChannel(const GURL& socket_url,
@@ -100,12 +139,25 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
   void OnAuthRequiredComplete(
       base::OnceCallback<void(const net::AuthCredentials*)> callback,
       const base::Optional<net::AuthCredentials>& credential);
+  void OnBeforeSendHeadersComplete(
+      net::CompletionOnceCallback callback,
+      net::HttpRequestHeaders* out_headers,
+      int result,
+      const base::Optional<net::HttpRequestHeaders>& headers);
+  void OnHeadersReceivedComplete(
+      net::CompletionOnceCallback callback,
+      scoped_refptr<net::HttpResponseHeaders>* out_headers,
+      GURL* out_allowed_unsafe_redirect_url,
+      int result,
+      const base::Optional<std::string>& headers,
+      const GURL& allowed_unsafe_redirect_url);
 
   std::unique_ptr<Delegate> delegate_;
   mojo::Binding<mojom::WebSocket> binding_;
 
   mojom::WebSocketClientPtr client_;
   mojom::AuthenticationHandlerPtr auth_handler_;
+  mojom::TrustedHeaderClientPtr header_client_;
 
   WebSocketThrottler::PendingConnection pending_connection_tracker_;
 
@@ -119,6 +171,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
   // AddChannel() is called.
   // Zero indicates there is no pending SendFlowControl().
   int64_t pending_flow_control_quota_;
+
+  uint32_t options_;
 
   int child_id_;
   int frame_id_;

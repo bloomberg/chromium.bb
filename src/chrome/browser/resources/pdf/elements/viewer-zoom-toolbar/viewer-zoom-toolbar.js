@@ -4,20 +4,53 @@
 
 (function() {
 
-var FIT_TO_PAGE_BUTTON_STATE = 0;
-var FIT_TO_WIDTH_BUTTON_STATE = 1;
+const FIT_TO_PAGE_BUTTON_STATE = 0;
+const FIT_TO_WIDTH_BUTTON_STATE = 1;
 
 Polymer({
   is: 'viewer-zoom-toolbar',
 
   properties: {
+    newPrintPreview: {
+      type: Boolean,
+      reflectToAttribute: true,
+    },
+
+    /** @private */
+    showOnLeft_: {
+      type: Boolean,
+      computed: 'computeShowOnLeft_(newPrintPreview)',
+      reflectToAttribute: true,
+    },
+
     strings: {type: Object, observer: 'updateTooltips_'},
 
     visible_: {type: Boolean, value: true}
   },
 
+  listeners: {
+    'focus': 'onFocus_',
+  },
+
   isVisible: function() {
     return this.visible_;
+  },
+
+  /** @private */
+  onFocus_: function() {
+    // This can only happen when the plugin is shown within Print Preview.
+    if (!this.visible_) {
+      this.show();
+    }
+  },
+
+  /**
+   * @return {boolean} Whether to show the zoom toolbar on the left side of the
+   *     viewport.
+   * @private
+   */
+  computeShowOnLeft_: function() {
+    return isRTL() !== this.newPrintPreview;
   },
 
   /**
@@ -49,7 +82,7 @@ Polymer({
     this.fitToggle();
 
     // Toggle the button state since there was no mouse click.
-    var button = this.$['fit-button'];
+    const button = this.$['fit-button'];
     button.activeIndex =
         (button.activeIndex == FIT_TO_WIDTH_BUTTON_STATE ?
              FIT_TO_PAGE_BUTTON_STATE :
@@ -64,7 +97,7 @@ Polymer({
     this.fireFitToChangedEvent_(fittingType, false);
 
     // Set the button state since there was no mouse click.
-    var nextButtonState =
+    const nextButtonState =
         (fittingType == FittingType.FIT_TO_WIDTH ? FIT_TO_PAGE_BUTTON_STATE :
                                                    FIT_TO_WIDTH_BUTTON_STATE);
     this.$['fit-button'].activeIndex = nextButtonState;
@@ -115,5 +148,4 @@ Polymer({
     }
   },
 });
-
 })();

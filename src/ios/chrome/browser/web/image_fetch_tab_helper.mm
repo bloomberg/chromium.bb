@@ -5,14 +5,15 @@
 #import "ios/chrome/browser/web/image_fetch_tab_helper.h"
 
 #include "base/base64.h"
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/values.h"
 #include "components/image_fetcher/ios/ios_image_data_fetcher_wrapper.h"
+#include "ios/web/common/referrer_util.h"
 #include "ios/web/public/browser_state.h"
-#include "ios/web/public/referrer_util.h"
 #import "ios/web/public/web_state/navigation_context.h"
 #include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
@@ -207,3 +208,5 @@ void ImageFetchTabHelper::OnJsTimeout(int call_id) {
     RecordGetImageDataByJsResult(ContextMenuGetImageDataByJsResult::kTimeout);
   }
 }
+
+WEB_STATE_USER_DATA_KEY_IMPL(ImageFetchTabHelper)

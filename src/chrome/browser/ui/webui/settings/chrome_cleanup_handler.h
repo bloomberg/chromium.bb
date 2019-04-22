@@ -10,7 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_controller_win.h"
-#include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_scanner_results.h"
+#include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_scanner_results_win.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "components/prefs/pref_change_registrar.h"
 
@@ -43,12 +43,8 @@ class ChromeCleanupHandler
                   const safe_browsing::ChromeCleanerScannerResults&
                       reported_results) override;
   void OnRebootRequired() override;
-  void OnLogsEnabledChanged(bool logs_enabled) override;
 
  private:
-  // Called when prefs::kSwReporterReportingEnabled changes.
-  void OnLogsEnabledPrefChanged();
-
   // Callback for the "registerChromeCleanerObserver" message. This registers
   // this object as an observer of the Chrome Cleanup global state and
   // and retrieves the current cleanup state.
@@ -61,10 +57,6 @@ class ChromeCleanupHandler
   // Callback for the "restartComputer" message to finalize the cleanup with a
   // system restart.
   void HandleRestartComputer(const base::ListValue* args);
-
-  // Callback for the "setLogsUploadPermission" message to keep track of
-  // whether the user opted-out of logs upload or not.
-  void HandleSetLogsUploadPermission(const base::ListValue* args);
 
   // Callback for the "startCleanup" message to start removing unwanted
   // software from the user's computer.
@@ -92,7 +84,6 @@ class ChromeCleanupHandler
   safe_browsing::ChromeCleanerController* controller_;
 
   Profile* profile_;
-  PrefChangeRegistrar logs_enabled_pref_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeCleanupHandler);
 };

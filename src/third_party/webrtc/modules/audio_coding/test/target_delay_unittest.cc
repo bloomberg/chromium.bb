@@ -12,13 +12,11 @@
 
 #include "api/audio/audio_frame.h"
 #include "api/audio_codecs/builtin_audio_decoder_factory.h"
-#include "common_types.h"  // NOLINT(build/include)
 #include "modules/audio_coding/codecs/pcm16b/pcm16b.h"
 #include "modules/audio_coding/include/audio_coding_module.h"
-#include "modules/audio_coding/test/utility.h"
 #include "modules/include/module_common_types.h"
 #include "test/gtest.h"
-#include "test/testsupport/fileutils.h"
+#include "test/testsupport/file_utils.h"
 
 namespace webrtc {
 
@@ -35,15 +33,15 @@ class TargetDelayTest : public ::testing::Test {
 
     ASSERT_EQ(0, acm_->InitializeReceiver());
     constexpr int pltype = 108;
-    ASSERT_EQ(true,
-              acm_->RegisterReceiveCodec(pltype, {"L16", kSampleRateHz, 1}));
+    std::map<int, SdpAudioFormat> receive_codecs =
+        {{pltype, {"L16", kSampleRateHz, 1}}};
+    acm_->SetReceiveCodecs(receive_codecs);
 
-    rtp_info_.header.payloadType = pltype;
-    rtp_info_.header.timestamp = 0;
-    rtp_info_.header.ssrc = 0x12345678;
-    rtp_info_.header.markerBit = false;
-    rtp_info_.header.sequenceNumber = 0;
-    rtp_info_.frameType = kAudioFrameSpeech;
+    rtp_header_.payloadType = pltype;
+    rtp_header_.timestamp = 0;
+    rtp_header_.ssrc = 0x12345678;
+    rtp_header_.markerBit = false;
+    rtp_header_.sequenceNumber = 0;
 
     int16_t audio[kFrameSizeSamples];
     const int kRange = 0x7FF;  // 2047, easy for masking.
@@ -99,10 +97,10 @@ class TargetDelayTest : public ::testing::Test {
   static const int kInterarrivalJitterPacket = 2;
 
   void Push() {
-    rtp_info_.header.timestamp += kFrameSizeSamples;
-    rtp_info_.header.sequenceNumber++;
-    ASSERT_EQ(0,
-              acm_->IncomingPacket(payload_, kFrameSizeSamples * 2, rtp_info_));
+    rtp_header_.timestamp += kFrameSizeSamples;
+    rtp_header_.sequenceNumber++;
+    ASSERT_EQ(
+        0, acm_->IncomingPacket(payload_, kFrameSizeSamples * 2, rtp_header_));
   }
 
   // Pull audio equivalent to the amount of audio in one RTP packet.
@@ -151,7 +149,7 @@ class TargetDelayTest : public ::testing::Test {
   }
 
   std::unique_ptr<AudioCodingModule> acm_;
-  WebRtcRTPHeader rtp_info_;
+  RTPHeader rtp_header_;
   uint8_t payload_[kPayloadLenBytes];
 };
 

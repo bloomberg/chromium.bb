@@ -22,7 +22,8 @@ class MockWebDocumentSubresourceFilter
     : public blink::WebDocumentSubresourceFilter {
  public:
   explicit MockWebDocumentSubresourceFilter(
-      const std::vector<std::string>& disallowed_path_suffixes);
+      const std::vector<std::string>& disallowed_path_suffixes,
+      bool block_resources);
   ~MockWebDocumentSubresourceFilter() override;
 
   // blink::WebDocumentSubresourceFilter:
@@ -36,6 +37,7 @@ class MockWebDocumentSubresourceFilter
  private:
   LoadPolicy getLoadPolicyImpl(const blink::WebURL& url);
   std::vector<std::string> disallowed_path_suffixes_;
+  bool block_subresources_;
 
   DISALLOW_COPY_AND_ASSIGN(MockWebDocumentSubresourceFilter);
 };

@@ -49,7 +49,7 @@ float FXSYS_wcstof(const wchar_t* pwsStr, int32_t iLength, int32_t* pUsedLen) {
   float fValue = 0.0f;
   while (iUsedLen < iLength) {
     wchar_t wch = pwsStr[iUsedLen];
-    if (!std::iswdigit(wch))
+    if (!FXSYS_IsDecimalDigit(wch))
       break;
 
     fValue = fValue * 10.0f + (wch - L'0');
@@ -60,7 +60,7 @@ float FXSYS_wcstof(const wchar_t* pwsStr, int32_t iLength, int32_t* pUsedLen) {
     float fPrecise = 0.1f;
     while (++iUsedLen < iLength) {
       wchar_t wch = pwsStr[iUsedLen];
-      if (!std::iswdigit(wch))
+      if (!FXSYS_IsDecimalDigit(wch))
         break;
 
       fValue += (wch - L'0') * fPrecise;
@@ -82,7 +82,7 @@ float FXSYS_wcstof(const wchar_t* pwsStr, int32_t iLength, int32_t* pUsedLen) {
     int32_t exp_value = 0;
     while (iUsedLen < iLength) {
       wchar_t wch = pwsStr[iUsedLen];
-      if (!std::iswdigit(wch))
+      if (!FXSYS_IsDecimalDigit(wch))
         break;
 
       exp_value = exp_value * 10.0f + (wch - L'0');
@@ -91,7 +91,8 @@ float FXSYS_wcstof(const wchar_t* pwsStr, int32_t iLength, int32_t* pUsedLen) {
            -exp_value < std::numeric_limits<float>::min_exponent10) ||
           (!negative_exponent &&
            exp_value > std::numeric_limits<float>::max_exponent10)) {
-        *pUsedLen = 0;
+        if (pUsedLen)
+          *pUsedLen = 0;
         return 0.0f;
       }
 
@@ -138,30 +139,6 @@ int32_t FXSYS_wcsnicmp(const wchar_t* s1, const wchar_t* s2, size_t count) {
       break;
   }
   return wch1 - wch2;
-}
-
-uint32_t FX_HashCode_GetA(const ByteStringView& str, bool bIgnoreCase) {
-  uint32_t dwHashCode = 0;
-  if (bIgnoreCase) {
-    for (const auto& c : str)
-      dwHashCode = 31 * dwHashCode + tolower(c);
-  } else {
-    for (const auto& c : str)
-      dwHashCode = 31 * dwHashCode + c;
-  }
-  return dwHashCode;
-}
-
-uint32_t FX_HashCode_GetW(const WideStringView& str, bool bIgnoreCase) {
-  uint32_t dwHashCode = 0;
-  if (bIgnoreCase) {
-    for (const auto& c : str)
-      dwHashCode = 1313 * dwHashCode + FXSYS_towlower(c);
-  } else {
-    for (const auto& c : str)
-      dwHashCode = 1313 * dwHashCode + c;
-  }
-  return dwHashCode;
 }
 
 void FXSYS_IntToTwoHexChars(uint8_t n, char* buf) {

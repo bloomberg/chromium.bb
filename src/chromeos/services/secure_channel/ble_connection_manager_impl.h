@@ -18,8 +18,8 @@
 #include "chromeos/services/secure_channel/connection_role.h"
 #include "chromeos/services/secure_channel/device_id_pair.h"
 #include "chromeos/services/secure_channel/public/cpp/shared/connection_priority.h"
+#include "chromeos/services/secure_channel/secure_channel.h"
 #include "chromeos/services/secure_channel/secure_channel_disconnector.h"
-#include "components/cryptauth/secure_channel.h"
 
 namespace device {
 class BluetoothAdapter;
@@ -37,12 +37,12 @@ class TimerFactory;
 // Concrete BleConnectionManager implementation. This class initializes
 // BleAdvertiser and BleScanner objects and utilizes them to bootstrap
 // connections. Once a connection is found, BleConnectionManagerImpl creates a
-// cryptauth::SecureChannel and waits for it to authenticate successfully. Once
+// SecureChannel and waits for it to authenticate successfully. Once
 // this process is complete, an AuthenticatedChannel is returned to the client.
 class BleConnectionManagerImpl : public BleConnectionManager,
                                  public BleAdvertiser::Delegate,
                                  public BleScanner::Delegate,
-                                 public cryptauth::SecureChannel::Observer {
+                                 public SecureChannel::Observer {
  public:
   class Factory {
    public:
@@ -126,15 +126,15 @@ class BleConnectionManagerImpl : public BleConnectionManager,
       const DeviceIdPair& device_id_pair) override;
 
   // BleScanner::Delegate:
-  void OnReceivedAdvertisement(cryptauth::RemoteDeviceRef remote_device,
+  void OnReceivedAdvertisement(multidevice::RemoteDeviceRef remote_device,
                                device::BluetoothDevice* bluetooth_device,
                                ConnectionRole connection_role) override;
 
-  // cryptauth::SecureChannel::Observer:
+  // SecureChannel::Observer:
   void OnSecureChannelStatusChanged(
-      cryptauth::SecureChannel* secure_channel,
-      const cryptauth::SecureChannel::Status& old_status,
-      const cryptauth::SecureChannel::Status& new_status) override;
+      SecureChannel* secure_channel,
+      const SecureChannel::Status& old_status,
+      const SecureChannel::Status& new_status) override;
 
   // Returns whether a channel exists connecting to |remote_device_id|,
   // regardless of the local device ID or the role used to create the
@@ -144,10 +144,9 @@ class BleConnectionManagerImpl : public BleConnectionManager,
   // Adds |secure_channel| to |remote_device_id_to_secure_channel_map_| and
   // pauses any ongoing attempts to |remote_device_id|, since a connection has
   // already been established to that device.
-  void SetAuthenticatingChannel(
-      const std::string& remote_device_id,
-      std::unique_ptr<cryptauth::SecureChannel> secure_channel,
-      ConnectionRole connection_role);
+  void SetAuthenticatingChannel(const std::string& remote_device_id,
+                                std::unique_ptr<SecureChannel> secure_channel,
+                                ConnectionRole connection_role);
 
   // Pauses pending connection attempts (scanning and/or advertising) to
   // |remote_device_id|.
@@ -165,8 +164,7 @@ class BleConnectionManagerImpl : public BleConnectionManager,
   // case that it finds one.
   void ProcessPotentialLingeringChannel(const std::string& remote_device_id);
 
-  std::string GetRemoteDeviceIdForSecureChannel(
-      cryptauth::SecureChannel* secure_channel);
+  std::string GetRemoteDeviceIdForSecureChannel(SecureChannel* secure_channel);
   void HandleSecureChannelDisconnection(const std::string& remote_device_id,
                                         bool was_authenticating);
   void HandleChannelAuthenticated(const std::string& remote_device_id);
@@ -201,7 +199,7 @@ class BleConnectionManagerImpl : public BleConnectionManager,
   std::unique_ptr<SecureChannelDisconnector> secure_channel_disconnector_;
 
   using SecureChannelWithRole =
-      std::pair<std::unique_ptr<cryptauth::SecureChannel>, ConnectionRole>;
+      std::pair<std::unique_ptr<SecureChannel>, ConnectionRole>;
   base::flat_map<std::string, SecureChannelWithRole>
       remote_device_id_to_secure_channel_map_;
   base::flat_map<std::string, std::unique_ptr<ConnectionAttemptTimestamps>>

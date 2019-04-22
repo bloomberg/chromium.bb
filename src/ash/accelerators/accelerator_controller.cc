@@ -23,13 +23,13 @@
 #include "ash/focus_cycler.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/ime/ime_switch_type.h"
+#include "ash/kiosk_next/kiosk_next_shell_controller.h"
 #include "ash/magnifier/docked_magnifier_controller.h"
 #include "ash/magnifier/magnification_controller.h"
-#include "ash/media_controller.h"
+#include "ash/media/media_controller.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/multi_profile_uma.h"
 #include "ash/new_window_controller.h"
-#include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/public/interfaces/accessibility_controller.mojom.h"
@@ -37,6 +37,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/rotator/window_rotation.h"
 #include "ash/session/session_controller.h"
+#include "ash/shelf/home_button_delegate.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -57,7 +58,7 @@
 #include "ash/utility/screenshot_controller.h"
 #include "ash/voice_interaction/voice_interaction_controller.h"
 #include "ash/wm/mru_window_tracker.h"
-#include "ash/wm/overview/window_selector_controller.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/window_cycle_controller.h"
 #include "ash/wm/window_positioning_utils.h"
@@ -65,6 +66,7 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "base/bind.h"
+#include "base/json/json_reader.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/optional.h"
@@ -72,9 +74,8 @@
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
-#include "chromeos/chromeos_switches.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "components/user_manager/user_type.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/accelerator_manager.h"
@@ -110,6 +111,10 @@ using message_center::SystemNotificationWarningLevel;
 // Toast id and duration for voice interaction shortcuts
 const char kVoiceInteractionErrorToastId[] = "voice_interaction_error";
 const int kToastDurationMs = 2500;
+
+// Path of the json file that contains side volume button location info.
+const char kSideVolumeButtonLocationFilePath[] =
+    "/usr/share/chromeos-assets/side_volume_button/location.json";
 
 // Ensures that there are no word breaks at the "+"s in the shortcut texts such
 // as "Ctrl+Shift+Space".
@@ -325,7 +330,7 @@ bool CanHandleCycleMru(const ui::Accelerator& accelerator) {
   return !keyboard::KeyboardController::Get()->IsKeyboardVisible();
 }
 
-void HandleNextIme() {
+void HandleSwitchToNextIme() {
   base::RecordAction(UserMetricsAction("Accel_Next_Ime"));
   RecordImeSwitchByAccelerator();
   Shell::Get()->ime_controller()->SwitchToNextIme();
@@ -336,11 +341,11 @@ void HandleOpenFeedbackPage() {
   Shell::Get()->new_window_controller()->OpenFeedbackPage();
 }
 
-void HandlePreviousIme(const ui::Accelerator& accelerator) {
+void HandleSwitchToLastUsedIme(const ui::Accelerator& accelerator) {
   base::RecordAction(UserMetricsAction("Accel_Previous_Ime"));
   if (accelerator.key_state() == ui::Accelerator::KeyState::PRESSED) {
     RecordImeSwitchByAccelerator();
-    Shell::Get()->ime_controller()->SwitchToPreviousIme();
+    Shell::Get()->ime_controller()->SwitchToLastUsedIme();
   }
   // Else: consume the Ctrl+Space ET_KEY_RELEASED event but do not do anything.
 }
@@ -504,21 +509,22 @@ bool CanHandleToggleAppList(const ui::Accelerator& accelerator,
     // When spoken feedback is enabled, we should neither toggle the list nor
     // consume the key since Search+Shift is one of the shortcuts the a11y
     // feature uses. crbug.com/132296
-    if (Shell::Get()->accessibility_controller()->IsSpokenFeedbackEnabled())
+    if (Shell::Get()->accessibility_controller()->spoken_feedback_enabled())
       return false;
   }
   return true;
 }
 
-void HandleToggleAppList(const ui::Accelerator& accelerator) {
+void HandleToggleAppList(const ui::Accelerator& accelerator,
+                         app_list::AppListShowSource show_source) {
   if (accelerator.key_code() == ui::VKEY_LWIN)
     base::RecordAction(UserMetricsAction("Accel_Search_LWin"));
 
-  Shell::Get()->app_list_controller()->OnAppListButtonPressed(
+  HomeButtonDelegate::PerformHomeButtonAction(
       display::Screen::GetScreen()
           ->GetDisplayNearestWindow(Shell::GetRootWindowForNewWindows())
           .id(),
-      app_list::kSearchKey, accelerator.time_stamp());
+      show_source, accelerator.time_stamp());
 }
 
 void HandleToggleFullscreen(const ui::Accelerator& accelerator) {
@@ -529,7 +535,7 @@ void HandleToggleFullscreen(const ui::Accelerator& accelerator) {
 
 void HandleToggleOverview() {
   base::RecordAction(base::UserMetricsAction("Accel_Overview_F5"));
-  Shell::Get()->window_selector_controller()->ToggleOverview();
+  Shell::Get()->overview_controller()->ToggleOverview();
 }
 
 void HandleToggleUnifiedDesktop() {
@@ -649,8 +655,7 @@ bool CanHandleShowStylusTools() {
 }
 
 bool CanHandleStartVoiceInteraction() {
-  return chromeos::switches::IsVoiceInteractionFlagsEnabled() ||
-         chromeos::switches::IsAssistantEnabled();
+  return chromeos::switches::IsAssistantEnabled();
 }
 
 void HandleToggleVoiceInteraction(const ui::Accelerator& accelerator) {
@@ -709,8 +714,8 @@ void HandleToggleVoiceInteraction(const ui::Accelerator& accelerator) {
     case mojom::AssistantAllowedState::DISALLOWED_BY_ARC_DISALLOWED:
     case mojom::AssistantAllowedState::DISALLOWED_BY_FLAG:
     case mojom::AssistantAllowedState::DISALLOWED_BY_SUPERVISED_USER:
-    case mojom::AssistantAllowedState::DISALLOWED_BY_CHILD_USER:
     case mojom::AssistantAllowedState::DISALLOWED_BY_INCOGNITO:
+    case mojom::AssistantAllowedState::DISALLOWED_BY_ACCOUNT_TYPE:
       // TODO(xiaohuic): show a specific toast.
       return;
     case mojom::AssistantAllowedState::ALLOWED:
@@ -718,18 +723,14 @@ void HandleToggleVoiceInteraction(const ui::Accelerator& accelerator) {
       break;
   }
 
-  if (!chromeos::switches::IsAssistantEnabled()) {
-    Shell::Get()->app_list_controller()->ToggleVoiceInteractionSession();
-  } else {
-    Shell::Get()->assistant_controller()->ui_controller()->ToggleUi(
-        /*entry_point=*/AssistantEntryPoint::kHotkey,
-        /*exit_point=*/AssistantExitPoint::kHotkey);
-  }
+  Shell::Get()->assistant_controller()->ui_controller()->ToggleUi(
+      /*entry_point=*/AssistantEntryPoint::kHotkey,
+      /*exit_point=*/AssistantExitPoint::kHotkey);
 }
 
 void HandleSuspend() {
   base::RecordAction(UserMetricsAction("Accel_Suspend"));
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RequestSuspend();
+  chromeos::PowerManagerClient::Get()->RequestSuspend();
 }
 
 bool CanHandleCycleUser() {
@@ -801,17 +802,13 @@ void HandleToggleCapsLock() {
 }
 
 bool CanHandleToggleDictation() {
-  return Shell::Get()->accessibility_controller()->IsDictationEnabled();
+  return Shell::Get()->accessibility_controller()->dictation_enabled();
 }
 
 void HandleToggleDictation() {
   base::RecordAction(UserMetricsAction("Accel_Toggle_Dictation"));
   Shell::Get()->accessibility_controller()->ToggleDictationFromSource(
       mojom::DictationToggleSource::kKeyboard);
-}
-
-bool CanHandleToggleDockedMagnifier() {
-  return features::IsDockedMagnifierEnabled();
 }
 
 bool CanHandleToggleOverview() {
@@ -858,7 +855,6 @@ void SetDockedMagnifierEnabled(bool enabled) {
 }
 
 void HandleToggleDockedMagnifier() {
-  DCHECK(features::IsDockedMagnifierEnabled());
   base::RecordAction(UserMetricsAction("Accel_Toggle_Docked_Magnifier"));
 
   DockedMagnifierController* docked_magnifier_controller =
@@ -917,7 +913,7 @@ void HandleToggleHighContrast() {
 
   AccessibilityController* controller =
       Shell::Get()->accessibility_controller();
-  const bool current_enabled = controller->IsHighContrastEnabled();
+  const bool current_enabled = controller->high_contrast_enabled();
   const bool dialog_ever_accepted =
       controller->HasHighContrastAcceleratorDialogBeenAccepted();
 
@@ -964,7 +960,7 @@ void HandleToggleSpokenFeedback() {
 
   AccessibilityController* controller =
       Shell::Get()->accessibility_controller();
-  controller->SetSpokenFeedbackEnabled(!controller->IsSpokenFeedbackEnabled(),
+  controller->SetSpokenFeedbackEnabled(!controller->spoken_feedback_enabled(),
                                        A11Y_NOTIFICATION_SHOW);
 }
 
@@ -997,8 +993,7 @@ void HandleVolumeUp(mojom::VolumeController* volume_controller,
 
 bool CanHandleActiveMagnifierZoom() {
   return Shell::Get()->magnification_controller()->IsEnabled() ||
-         (features::IsDockedMagnifierEnabled() &&
-          Shell::Get()->docked_magnifier_controller()->GetEnabled());
+         Shell::Get()->docked_magnifier_controller()->GetEnabled();
 }
 
 // Change the scale of the active magnifier.
@@ -1008,8 +1003,7 @@ void HandleActiveMagnifierZoom(int delta_index) {
     return;
   }
 
-  if (features::IsDockedMagnifierEnabled() &&
-      Shell::Get()->docked_magnifier_controller()->GetEnabled()) {
+  if (Shell::Get()->docked_magnifier_controller()->GetEnabled()) {
     Shell::Get()->docked_magnifier_controller()->StepToNextScaleValue(
         delta_index);
   }
@@ -1031,13 +1025,26 @@ void HandleTouchHudModeChange() {
 
 }  // namespace
 
+constexpr const char* AcceleratorController::kVolumeButtonRegion;
+constexpr const char* AcceleratorController::kVolumeButtonSide;
+constexpr const char* AcceleratorController::kVolumeButtonRegionKeyboard;
+constexpr const char* AcceleratorController::kVolumeButtonRegionScreen;
+constexpr const char* AcceleratorController::kVolumeButtonSideLeft;
+constexpr const char* AcceleratorController::kVolumeButtonSideRight;
+constexpr const char* AcceleratorController::kVolumeButtonSideTop;
+constexpr const char* AcceleratorController::kVolumeButtonSideBottom;
+
 ////////////////////////////////////////////////////////////////////////////////
 // AcceleratorController, public:
 
 AcceleratorController::AcceleratorController()
     : accelerator_manager_(std::make_unique<ui::AcceleratorManager>()),
-      accelerator_history_(std::make_unique<ui::AcceleratorHistory>()) {
+      accelerator_history_(std::make_unique<ui::AcceleratorHistory>()),
+      side_volume_button_location_file_path_(
+          base::FilePath(kSideVolumeButtonLocationFilePath)) {
   Init();
+
+  ParseSideVolumeButtonLocationInfo();
 }
 
 AcceleratorController::~AcceleratorController() = default;
@@ -1099,9 +1106,11 @@ bool AcceleratorController::IsDeprecated(
   return deprecated_accelerators_.count(accelerator) != 0;
 }
 
-bool AcceleratorController::PerformActionIfEnabled(AcceleratorAction action) {
-  if (CanPerformAction(action, ui::Accelerator())) {
-    PerformAction(action, ui::Accelerator());
+bool AcceleratorController::PerformActionIfEnabled(
+    AcceleratorAction action,
+    const ui::Accelerator& accelerator) {
+  if (CanPerformAction(action, accelerator)) {
+    PerformAction(action, accelerator);
     return true;
   }
   return false;
@@ -1186,6 +1195,10 @@ void AcceleratorController::Init() {
         kActionsAllowedInAppModeOrPinnedMode[i]);
     actions_allowed_in_pinned_mode_.insert(
         kActionsAllowedInAppModeOrPinnedMode[i]);
+  }
+  for (size_t i = 0; i < kActionsAllowedForKioskNextShellLength; i++) {
+    actions_allowed_for_kiosk_next_shell_.insert(
+        kActionsAllowedForKioskNextShell[i]);
   }
   for (size_t i = 0; i < kActionsAllowedInPinnedModeLength; ++i)
     actions_allowed_in_pinned_mode_.insert(kActionsAllowedInPinnedMode[i]);
@@ -1272,7 +1285,6 @@ bool AcceleratorController::CanPerformAction(
     case DEBUG_PRINT_LAYER_HIERARCHY:
     case DEBUG_PRINT_VIEW_HIERARCHY:
     case DEBUG_PRINT_WINDOW_HIERARCHY:
-    case DEBUG_SHOW_QUICK_LAUNCH:
     case DEBUG_SHOW_TOAST:
     case DEBUG_TOGGLE_DEVICE_SCALE_FACTOR:
     case DEBUG_TOGGLE_SHOW_DEBUG_BORDERS:
@@ -1299,10 +1311,6 @@ bool AcceleratorController::CanPerformAction(
           CanHandleMoveActiveWindowBetweenDisplays();
     case NEW_INCOGNITO_WINDOW:
       return CanHandleNewIncognitoWindow();
-    case NEXT_IME:
-      return CanCycleInputMethod();
-    case PREVIOUS_IME:
-      return CanCycleInputMethod();
     case ROTATE_SCREEN:
       return true;
     case SCALE_UI_DOWN:
@@ -1317,10 +1325,15 @@ bool AcceleratorController::CanPerformAction(
       return display::Screen::GetScreen()->GetNumDisplays() > 1;
     case SWITCH_IME:
       return CanHandleSwitchIme(accelerator);
+    case SWITCH_TO_NEXT_IME:
+      return CanCycleInputMethod();
+    case SWITCH_TO_LAST_USED_IME:
+      return CanCycleInputMethod();
     case SWITCH_TO_PREVIOUS_USER:
     case SWITCH_TO_NEXT_USER:
       return CanHandleCycleUser();
     case TOGGLE_APP_LIST:
+    case TOGGLE_APP_LIST_FULLSCREEN:
       return CanHandleToggleAppList(accelerator, previous_accelerator);
     case TOGGLE_CAPS_LOCK:
       return CanHandleToggleCapsLock(
@@ -1329,7 +1342,7 @@ bool AcceleratorController::CanPerformAction(
     case TOGGLE_DICTATION:
       return CanHandleToggleDictation();
     case TOGGLE_DOCKED_MAGNIFIER:
-      return CanHandleToggleDockedMagnifier();
+      return true;
     case TOGGLE_FULLSCREEN_MAGNIFIER:
       return true;
     case TOGGLE_MESSAGE_CENTER_BUBBLE:
@@ -1413,6 +1426,13 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
   if (restriction != RESTRICTION_NONE)
     return;
 
+  // TODO(minch): For VOLUME_DOWN and VOLUME_UP. Check whether the action is
+  // from side volume button based on accelerator.source_device_id() and
+  // ui::InputDeviceManager::GetInstance()->GetUncategorizedDevices(). Do the
+  // calculation whether we need to flip its action on
+  // SideVolumeButtonLocation and current screen orientation.
+  // http://crbug.com/937907.
+
   // If your accelerator invokes more than one line of code, please either
   // implement it in your module's controller code or pull it into a HandleFoo()
   // function above.
@@ -1440,7 +1460,6 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
     case DEBUG_PRINT_LAYER_HIERARCHY:
     case DEBUG_PRINT_VIEW_HIERARCHY:
     case DEBUG_PRINT_WINDOW_HIERARCHY:
-    case DEBUG_SHOW_QUICK_LAUNCH:
     case DEBUG_SHOW_TOAST:
     case DEBUG_TOGGLE_DEVICE_SCALE_FACTOR:
       debug::PerformDebugActionIfEnabled(action);
@@ -1562,9 +1581,6 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
     case NEW_WINDOW:
       HandleNewWindow();
       break;
-    case NEXT_IME:
-      HandleNextIme();
-      break;
     case OPEN_CROSH:
       HandleCrosh();
       break;
@@ -1589,9 +1605,6 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
       // (power button events are reported to us from powerm via
       // D-BUS), but we consume them to prevent them from getting
       // passed to apps -- see http://crbug.com/146609.
-      break;
-    case PREVIOUS_IME:
-      HandlePreviousIme(accelerator);
       break;
     case PRINT_UI_HIERARCHIES:
       debug::PrintUIHierarchies();
@@ -1638,6 +1651,12 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
     case SWITCH_IME:
       HandleSwitchIme(accelerator);
       break;
+    case SWITCH_TO_LAST_USED_IME:
+      HandleSwitchToLastUsedIme(accelerator);
+      break;
+    case SWITCH_TO_NEXT_IME:
+      HandleSwitchToNextIme();
+      break;
     case SWITCH_TO_NEXT_USER:
       HandleCycleUser(CycleUserDirection::NEXT);
       break;
@@ -1654,7 +1673,10 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
       HandleTakeWindowScreenshot();
       break;
     case TOGGLE_APP_LIST:
-      HandleToggleAppList(accelerator);
+      HandleToggleAppList(accelerator, app_list::kSearchKey);
+      break;
+    case TOGGLE_APP_LIST_FULLSCREEN:
+      HandleToggleAppList(accelerator, app_list::kSearchKeyFullscreen);
       break;
     case TOGGLE_CAPS_LOCK:
       HandleToggleCapsLock();
@@ -1734,6 +1756,10 @@ bool AcceleratorController::ShouldActionConsumeKeyEvent(
 
 AcceleratorController::AcceleratorProcessingRestriction
 AcceleratorController::GetAcceleratorProcessingRestriction(int action) const {
+  if (Shell::Get()->kiosk_next_shell_controller()->IsEnabled() &&
+      actions_allowed_for_kiosk_next_shell_.count(action) == 0) {
+    return RESTRICTION_PREVENT_PROCESSING_AND_PROPAGATION;
+  }
   if (Shell::Get()->screen_pinning_controller()->IsPinned() &&
       actions_allowed_in_pinned_mode_.find(action) ==
           actions_allowed_in_pinned_mode_.end()) {
@@ -1827,9 +1853,24 @@ void AcceleratorController::MaybeShowConfirmationDialog(
   confirmation_dialog_ = dialog->GetWeakPtr();
 }
 
-AcceleratorConfirmationDialog*
-AcceleratorController::confirmation_dialog_for_testing() {
-  return confirmation_dialog_.get();
+void AcceleratorController::ParseSideVolumeButtonLocationInfo() {
+  if (!base::PathExists(side_volume_button_location_file_path_))
+    return;
+
+  std::string location_info;
+  if (!base::ReadFileToString(side_volume_button_location_file_path_,
+                              &location_info) ||
+      location_info.empty()) {
+    return;
+  }
+
+  std::unique_ptr<base::DictionaryValue> info_in_dict =
+      base::DictionaryValue::From(
+          base::JSONReader::ReadDeprecated(location_info));
+  info_in_dict->GetString(kVolumeButtonRegion,
+                          &side_volume_button_location_.region);
+  info_in_dict->GetString(kVolumeButtonSide,
+                          &side_volume_button_location_.side);
 }
 
 }  // namespace ash

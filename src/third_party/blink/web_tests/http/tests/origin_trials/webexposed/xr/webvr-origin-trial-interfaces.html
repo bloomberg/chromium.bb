@@ -15,8 +15,10 @@ const properties_to_check = {
 }
 const token="AjBmNGyEfNhgv1i84o2MDXzBna5hynT2UdRWh24E6smvQuM6lTjdHiORSsixiR6wo8A4AZofrxgIT6RYIjwg2AMAAABTeyJvcmlnaW4iOiAiaHR0cDovLzEyNy4wLjAuMTo4MDAwIiwgImZlYXR1cmUiOiAiV2ViVlIxLjFNNjIiLCAiZXhwaXJ5IjogMjAwMDAwMDAwMH0=";
 
-// Skip this test if flags are not set properly.
-if(!self.internals.runtimeFlags.webVREnabled) {
+// Check that the interfaces and properties are not present without the token.
+// Experimental web platform features are always enabled when this test is run
+// normally, so do not check them in that case.
+if (!self.internals.runtimeFlags.webVREnabled) {
   test(t => {
     OriginTrialsHelper.check_properties_missing(this, properties_to_check);
   }, "WebVR properties are not available without a token.");

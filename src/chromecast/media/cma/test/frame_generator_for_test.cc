@@ -7,7 +7,7 @@
 #include <stdint.h>
 #include <utility>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "chromecast/media/cma/base/decoder_buffer_adapter.h"
 #include "chromecast/media/cma/base/decoder_buffer_base.h"
 #include "media/base/decoder_buffer.h"
@@ -99,8 +99,8 @@ scoped_refptr<DecoderBufferBase> FrameGeneratorForTest::Generate() {
 
     std::unique_ptr<::media::DecryptConfig> decrypt_config =
         ::media::DecryptConfig::CreateCencConfig(
-            std::string(key_id, arraysize(key_id)),
-            std::string(iv, arraysize(iv)), subsamples);
+            std::string(key_id, base::size(key_id)),
+            std::string(iv, base::size(iv)), subsamples);
     buffer->set_decrypt_config(std::move(decrypt_config));
   }
 

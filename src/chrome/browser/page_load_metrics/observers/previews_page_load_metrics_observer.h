@@ -34,14 +34,13 @@ class PreviewsPageLoadMetricsObserver
   ObservePolicy FlushMetricsOnAppEnterBackground(
       const page_load_metrics::mojom::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& info) override;
-  void OnLoadedResource(const page_load_metrics::ExtraRequestCompleteInfo&
-                            extra_request_complete_info) override;
   void OnComplete(const page_load_metrics::mojom::PageLoadTiming& timing,
                   const page_load_metrics::PageLoadExtraInfo& info) override;
   void OnLoadEventStart(
       const page_load_metrics::mojom::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& info) override;
   void OnResourceDataUseObserved(
+      content::RenderFrameHost* rfh,
       const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
           resources) override;
 
@@ -71,7 +70,6 @@ class PreviewsPageLoadMetricsObserver
   int data_savings_inflation_percent_ = 0;
 
   int64_t num_network_resources_ = 0;
-  int64_t network_bytes_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(PreviewsPageLoadMetricsObserver);
 };

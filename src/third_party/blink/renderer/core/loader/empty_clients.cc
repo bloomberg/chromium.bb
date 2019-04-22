@@ -46,7 +46,7 @@ namespace blink {
 
 void FillWithEmptyClients(Page::PageClients& page_clients) {
   DEFINE_STATIC_LOCAL(Persistent<ChromeClient>, dummy_chrome_client,
-                      (EmptyChromeClient::Create()));
+                      (MakeGarbageCollected<EmptyChromeClient>()));
   page_clients.chrome_client = dummy_chrome_client;
 }
 
@@ -96,6 +96,7 @@ String EmptyChromeClient::AcceptLanguages() {
 
 void EmptyLocalFrameClient::BeginNavigation(
     const ResourceRequest&,
+    network::mojom::RequestContextFrameType,
     Document* origin_document,
     DocumentLoader*,
     WebNavigationType,
@@ -109,30 +110,56 @@ void EmptyLocalFrameClient::BeginNavigation(
     mojom::blink::BlobURLTokenPtr,
     base::TimeTicks,
     const String&,
+    WebContentSecurityPolicyList,
     mojom::blink::NavigationInitiatorPtr) {}
 
 void EmptyLocalFrameClient::DispatchWillSendSubmitEvent(HTMLFormElement*) {}
 
 DocumentLoader* EmptyLocalFrameClient::CreateDocumentLoader(
     LocalFrame* frame,
-    const ResourceRequest& request,
-    const SubstituteData& substitute_data,
-    ClientRedirectPolicy client_redirect_policy,
-    const base::UnguessableToken& devtools_navigation_token,
-    WebFrameLoadType load_type,
     WebNavigationType navigation_type,
     std::unique_ptr<WebNavigationParams> navigation_params,
     std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) {
   DCHECK(frame);
+  return MakeGarbageCollected<DocumentLoader>(frame, navigation_type,
+                                              std::move(navigation_params));
+}
 
-  return MakeGarbageCollected<DocumentLoader>(
-      frame, request, substitute_data, client_redirect_policy,
-      devtools_navigation_token, load_type, navigation_type,
-      std::move(navigation_params));
+mojom::blink::DocumentInterfaceBroker*
+EmptyLocalFrameClient::GetDocumentInterfaceBroker() {
+  if (!document_interface_broker_.is_bound())
+    mojo::MakeRequest(&document_interface_broker_);
+  return document_interface_broker_.get();
+}
+
+mojo::ScopedMessagePipeHandle
+EmptyLocalFrameClient::SetDocumentInterfaceBrokerForTesting(
+    mojo::ScopedMessagePipeHandle blink_handle) {
+  mojom::blink::DocumentInterfaceBrokerPtr test_broker(
+      mojom::blink::DocumentInterfaceBrokerPtrInfo(
+          std::move(blink_handle),
+          mojom::blink::DocumentInterfaceBroker::Version_));
+
+  mojo::ScopedMessagePipeHandle real_handle =
+      document_interface_broker_.PassInterface().PassHandle();
+  document_interface_broker_ = std::move(test_broker);
+
+  return real_handle;
 }
 
 LocalFrame* EmptyLocalFrameClient::CreateFrame(const AtomicString&,
                                                HTMLFrameOwnerElement*) {
+  return nullptr;
+}
+
+std::pair<RemoteFrame*, base::UnguessableToken>
+EmptyLocalFrameClient::CreatePortal(HTMLPortalElement*,
+                                    mojom::blink::PortalAssociatedRequest) {
+  return std::pair<RemoteFrame*, base::UnguessableToken>(
+      nullptr, base::UnguessableToken());
+}
+
+RemoteFrame* EmptyLocalFrameClient::AdoptPortal(HTMLPortalElement*) {
   return nullptr;
 }
 
@@ -179,6 +206,7 @@ EmptyLocalFrameClient::CreateServiceWorkerProvider() {
 
 std::unique_ptr<WebApplicationCacheHost>
 EmptyLocalFrameClient::CreateApplicationCacheHost(
+    DocumentLoader*,
     WebApplicationCacheHostClient*) {
   return nullptr;
 }

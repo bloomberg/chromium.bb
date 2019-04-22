@@ -74,8 +74,9 @@ cr.define('cloudprint', function() {
    */
   function extractCertificateStatus(tags) {
     const certTag = tags.find(tag => tag.startsWith(CERT_TAG));
-    if (!certTag)
+    if (!certTag) {
       return print_preview.DestinationCertificateStatus.NONE;
+    }
     const value = /** @type {print_preview.DestinationCertificateStatus} */ (
         certTag.substring(CERT_TAG.length));
     // Only 2 valid values sent by GCP server.
@@ -110,7 +111,7 @@ cr.define('cloudprint', function() {
     const optionalParams = {
       account: account,
       tags: tags,
-      isOwned: arrayContains(tags, OWNED_TAG),
+      isOwned: tags.includes(OWNED_TAG),
       lastAccessTime:
           parseInt(json[CloudDestinationField.LAST_ACCESS], 10) || Date.now(),
       cloudID: id,
@@ -119,8 +120,7 @@ cr.define('cloudprint', function() {
     };
     const cloudDest = new print_preview.Destination(
         id, parseType(json[CloudDestinationField.TYPE]), origin,
-        json[CloudDestinationField.DISPLAY_NAME],
-        arrayContains(tags, RECENT_TAG) /*isRecent*/, connectionStatus,
+        json[CloudDestinationField.DISPLAY_NAME], connectionStatus,
         optionalParams);
     if (json.hasOwnProperty(CloudDestinationField.CAPABILITIES)) {
       cloudDest.capabilities = /** @type {!print_preview.Cdd} */ (

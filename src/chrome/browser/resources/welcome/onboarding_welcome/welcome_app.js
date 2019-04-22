@@ -16,8 +16,9 @@ let NuxOnboardingModules;
  * onboarding flow.
  * @const {!Set<string>}
  */
-const MODULES_WHITELIST = new Set(
-    ['nux-email', 'nux-google-apps', 'nux-set-as-default', 'signin-view']);
+const MODULES_WHITELIST = new Set([
+  'nux-google-apps', 'nux-ntp-background', 'nux-set-as-default', 'signin-view'
+]);
 
 /**
  * This list needs to be updated if new modules that need step-indicators are
@@ -25,7 +26,7 @@ const MODULES_WHITELIST = new Set(
  * @const {!Set<string>}
  */
 const MODULES_NEEDING_INDICATOR =
-    new Set(['nux-email', 'nux-google-apps', 'nux-set-as-default']);
+    new Set(['nux-google-apps', 'nux-ntp-background', 'nux-set-as-default']);
 
 Polymer({
   is: 'welcome-app',
@@ -34,9 +35,6 @@ Polymer({
 
   /** @private {?welcome.Routes} */
   currentRoute_: null,
-
-  /** @private {?PromiseResolver} */
-  defaultCheckPromise_: null,
 
   /** @private {NuxOnboardingModules} */
   modules_: {
@@ -53,28 +51,13 @@ Polymer({
     },
   },
 
-  /** @override */
-  ready: function() {
-    this.defaultCheckPromise_ = new PromiseResolver();
+  listeners: {
+    'default-browser-change': 'onDefaultBrowserChange_',
+  },
 
-    /** @param {!nux.DefaultBrowserInfo} status */
-    const defaultCheckCallback = status => {
-      if (status.isDefault || !status.canBeDefault) {
-        this.defaultCheckPromise_.resolve(false);
-      } else if (!status.isDisabledByPolicy && !status.isUnknownError) {
-        this.defaultCheckPromise_.resolve(true);
-      } else {  // Unknown error.
-        this.defaultCheckPromise_.resolve(false);
-      }
-
-      cr.removeWebUIListener(defaultCheckCallback);
-    };
-
-    cr.addWebUIListener('browser-default-state-changed', defaultCheckCallback);
-
-    // TODO(scottchen): convert the request to cr.sendWithPromise
-    // (see https://crbug.com/874520#c6).
-    nux.NuxSetAsDefaultProxyImpl.getInstance().requestDefaultBrowserState();
+  /** @private */
+  onDefaultBrowserChange_: function() {
+    this.$$('cr-toast').show();
   },
 
   /**
@@ -122,17 +105,41 @@ Polymer({
     let modules = this.modules_[route];
     assert(modules);  // Modules should be defined if on a valid route.
 
+    /** @type {!Promise} */
+    const defaultBrowserPromise =
+        nux.NuxSetAsDefaultProxyImpl.getInstance()
+            .requestDefaultBrowserState()
+            .then((status) => {
+              if (status.isDefault || !status.canBeDefault) {
+                return false;
+              } else if (!status.isDisabledByPolicy && !status.isUnknownError) {
+                return true;
+              } else {  // Unknown error.
+                return false;
+              }
+            });
+
     // Wait until the default-browser state and bookmark visibility are known
     // before anything initializes.
     return Promise
         .all([
-          this.defaultCheckPromise_.promise,
+          defaultBrowserPromise,
           nux.BookmarkBarManager.getInstance().initialized,
         ])
-        .then(args => {
-          const canSetDefault = args[0];
-          if (!canSetDefault)
-            modules = modules.filter(module => module != 'nux-set-as-default');
+        .then(([canSetDefault]) => {
+          modules = modules.filter(module => {
+            if (module == 'nux-set-as-default') {
+              return canSetDefault;
+            }
+
+            if (!MODULES_WHITELIST.has(module)) {
+              // Makes sure the module specified by the feature configuration is
+              // whitelisted.
+              return false;
+            }
+
+            return true;
+          });
 
           const indicatorElementCount = modules.reduce((count, module) => {
             return count += MODULES_NEEDING_INDICATOR.has(module) ? 1 : 0;
@@ -140,10 +147,6 @@ Polymer({
 
           let indicatorActiveCount = 0;
           modules.forEach((elementTagName, index) => {
-            // Makes sure the module specified by the feature configuration is
-            // whitelisted.
-            assert(MODULES_WHITELIST.has(elementTagName));
-
             const element = document.createElement(elementTagName);
             element.id = 'step-' + (index + 1);
             element.setAttribute('slot', 'view');

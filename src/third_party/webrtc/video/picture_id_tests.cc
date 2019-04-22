@@ -8,11 +8,12 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
+#include "absl/memory/memory.h"
 #include "api/test/simulated_network.h"
 #include "api/test/video/function_video_encoder_factory.h"
 #include "call/fake_network_pipe.h"
 #include "call/simulated_network.h"
-#include "media/engine/internalencoderfactory.h"
+#include "media/engine/internal_encoder_factory.h"
 #include "media/engine/simulcast_encoder_adapter.h"
 #include "modules/rtp_rtcp/source/rtp_format.h"
 #include "modules/video_coding/codecs/vp8/include/vp8.h"
@@ -71,7 +72,7 @@ class PictureIdObserver : public test::RtpRtcpObserver {
     int16_t picture_id;
     int16_t tl0_pic_idx;
     uint8_t temporal_idx;
-    FrameType frame_type;
+    VideoFrameType frame_type;
   };
 
   bool ParsePayload(const uint8_t* packet,
@@ -145,7 +146,7 @@ class PictureIdObserver : public test::RtpRtcpObserver {
     if (diff > 1) {
       // If the VideoSendStream is destroyed, any frames still in queue is lost.
       // Gaps only possible for first frame after a recreation, i.e. key frames.
-      EXPECT_EQ(kVideoFrameKey, current.frame_type);
+      EXPECT_EQ(VideoFrameType::kVideoFrameKey, current.frame_type);
       EXPECT_LE(diff - 1, max_expected_picture_id_gap_);
     }
   }
@@ -171,7 +172,7 @@ class PictureIdObserver : public test::RtpRtcpObserver {
     if (diff > 1) {
       // If the VideoSendStream is destroyed, any frames still in queue is lost.
       // Gaps only possible for first frame after a recreation, i.e. key frames.
-      EXPECT_EQ(kVideoFrameKey, current.frame_type);
+      EXPECT_EQ(VideoFrameType::kVideoFrameKey, current.frame_type);
       EXPECT_LE(diff - 1, max_expected_tl0_idx_gap_);
     }
   }
@@ -239,9 +240,9 @@ class PictureIdTest : public test::CallTest,
   std::unique_ptr<PictureIdObserver> observer_;
 };
 
-INSTANTIATE_TEST_CASE_P(TemporalLayers,
-                        PictureIdTest,
-                        ::testing::ValuesIn(kNumTemporalLayers));
+INSTANTIATE_TEST_SUITE_P(TemporalLayers,
+                         PictureIdTest,
+                         ::testing::ValuesIn(kNumTemporalLayers));
 
 // Use a special stream factory to ensure that all simulcast streams are being
 // sent.
@@ -259,14 +260,17 @@ class VideoStreamFactory
     std::vector<VideoStream> streams =
         test::CreateVideoStreams(width, height, encoder_config);
 
-    // Use the same total bitrates when sending a single stream to avoid
-    // lowering the bitrate estimate and requiring a subsequent rampup.
+    // Always divide the same total bitrate across all streams so that sending a
+    // single stream avoids lowering the bitrate estimate and requiring a
+    // subsequent rampup.
     const int encoder_stream_bps =
         kEncoderBitrateBps /
         rtc::checked_cast<int>(encoder_config.number_of_streams);
 
     for (size_t i = 0; i < encoder_config.number_of_streams; ++i) {
-      streams[i].min_bitrate_bps = encoder_stream_bps;
+      // Reduce the min bitrate by 10% to account for overhead that might
+      // otherwise cause streams to not be enabled.
+      streams[i].min_bitrate_bps = static_cast<int>(encoder_stream_bps * 0.9);
       streams[i].target_bitrate_bps = encoder_stream_bps;
       streams[i].max_bitrate_bps = encoder_stream_bps;
       streams[i].num_temporal_layers = num_of_temporal_layers_;
@@ -363,7 +367,6 @@ void PictureIdTest::TestPictureIdIncreaseAfterRecreateStreams(
   observer_->SetMaxExpectedPictureIdGap(kMaxFramesLost);
   for (int ssrc_count : ssrc_counts) {
     task_queue_.SendTask([this, &ssrc_count]() {
-      frame_generator_capturer_->Stop();
       DestroyVideoSendStreams();
 
       GetVideoEncoderConfig()->number_of_streams = ssrc_count;
@@ -373,7 +376,6 @@ void PictureIdTest::TestPictureIdIncreaseAfterRecreateStreams(
       CreateVideoSendStreams();
       GetVideoSendStream()->Start();
       CreateFrameGeneratorCapturer(kFrameRate, kFrameMaxWidth, kFrameMaxHeight);
-      frame_generator_capturer_->Start();
     });
 
     EXPECT_TRUE(observer_->Wait()) << "Timed out waiting for packets.";

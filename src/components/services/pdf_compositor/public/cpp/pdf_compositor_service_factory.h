@@ -14,7 +14,6 @@
 namespace printing {
 
 std::unique_ptr<service_manager::Service> CreatePdfCompositorService(
-    const std::string& creator,
     service_manager::mojom::ServiceRequest request);
 
 }  // namespace printing

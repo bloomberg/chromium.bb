@@ -26,11 +26,18 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request.h"
 
+class ChromeBrowserStateImplIOData;
+class ProfileImplIOData;
+
 namespace base {
 namespace trace_event {
 class ProcessMemoryDump;
 }
 }
+
+namespace safe_browsing {
+class SafeBrowsingURLRequestContextGetter;
+}  // namespace safe_browsing
 
 namespace net {
 class CertVerifier;
@@ -45,6 +52,7 @@ class HttpUserAgentSettings;
 class NetLog;
 class NetworkDelegate;
 class NetworkQualityEstimator;
+class ProxyDelegate;
 class ProxyResolutionService;
 class SSLConfigService;
 class URLRequest;
@@ -65,11 +73,10 @@ class ReportingService;
 class NET_EXPORT URLRequestContext
     : public base::trace_event::MemoryDumpProvider {
  public:
-  URLRequestContext();
+  // Contexts that are known to not currently be copied should set |allow_copy|
+  // to false to prevent added copying.
+  explicit URLRequestContext(bool allow_copy = true);
   ~URLRequestContext() override;
-
-  // Copies the state from |other| into this context.
-  void CopyFrom(const URLRequestContext* other);
 
   // May return nullptr if this context doesn't have an associated network
   // session.
@@ -138,6 +145,11 @@ class NET_EXPORT URLRequestContext
   void set_proxy_resolution_service(
       ProxyResolutionService* proxy_resolution_service) {
     proxy_resolution_service_ = proxy_resolution_service;
+  }
+
+  ProxyDelegate* proxy_delegate() const { return proxy_delegate_; }
+  void set_proxy_delegate(ProxyDelegate* proxy_delegate) {
+    proxy_delegate_ = proxy_delegate;
   }
 
   // Get the ssl config service for this context.
@@ -290,6 +302,20 @@ class NET_EXPORT URLRequestContext
   }
 
  private:
+  // Whitelist legacy usage of now-deprecated CopyFrom().
+  friend class ::ChromeBrowserStateImplIOData;
+  friend class ::ProfileImplIOData;
+  friend class safe_browsing::SafeBrowsingURLRequestContextGetter;
+
+  // Copies the state from |other| into this context.
+  //
+  // Due to complex interdependencies between various fields as well as fields
+  // that should be unique to each context, copy is fundamentally broken, and
+  // should not be done. If a modified context is needed (and that is not
+  // typical), a new context should always be fully created (via
+  // URLRequestContextBuilder) rather than copying from a previous one.
+  void CopyFrom(const URLRequestContext* other);
+
   // ---------------------------------------------------------------------------
   // Important: When adding any new members below, consider whether they need to
   // be added to CopyFrom.
@@ -303,6 +329,7 @@ class NET_EXPORT URLRequestContext
   ChannelIDService* channel_id_service_;
   HttpAuthHandlerFactory* http_auth_handler_factory_;
   ProxyResolutionService* proxy_resolution_service_;
+  ProxyDelegate* proxy_delegate_;
   SSLConfigService* ssl_config_service_;
   NetworkDelegate* network_delegate_;
   HttpServerProperties* http_server_properties_;
@@ -337,6 +364,8 @@ class NET_EXPORT URLRequestContext
   // Used in MemoryDumpProvier to annotate memory usage. The name does not need
   // to be unique.
   std::string name_;
+
+  const bool allow_copy_;
 
   THREAD_CHECKER(thread_checker_);
 

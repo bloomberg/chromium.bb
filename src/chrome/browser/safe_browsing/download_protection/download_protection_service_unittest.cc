@@ -23,11 +23,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/sha1.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/test/bind_test_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -339,7 +338,7 @@ class DownloadProtectionServiceTest : public ChromeRenderViewHostTestHarness {
 
   // Flushes any pending tasks in the message loops of all threads.
   void FlushThreadMessageLoops() {
-    base::TaskScheduler::GetInstance()->FlushForTesting();
+    base::ThreadPool::GetInstance()->FlushForTesting();
     FlushMessageLoop(BrowserThread::IO);
     RunLoop().RunUntilIdle();
   }
@@ -901,9 +900,9 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSampledFile) {
       // Add paths so we can check they are properly removed.
       {"http://referrer.com/1/2", "http://referrer.com/3/4",
        "http://download.com/path/a.foobar_unknown_type"},
-      "http://referrer.com/3/4",                    // Referrer
-      FILE_PATH_LITERAL("a.tmp"),                   // tmp_path
-      FILE_PATH_LITERAL("a.foobar_unknown_type"));  // final_path
+      "http://referrer.com/3/4",    // Referrer
+      FILE_PATH_LITERAL("a.tmp"),   // tmp_path
+      FILE_PATH_LITERAL("a.txt"));  // final_path, txt is set to SAMPLED_PING
   EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path_, _))
       .Times(1);
   EXPECT_CALL(*binary_feature_extractor_.get(),
@@ -2188,7 +2187,7 @@ TEST_F(DownloadProtectionServiceTest, TestDownloadItemDestroyed) {
 
   // When download is destroyed, no need to check for client download request
   // result.
-  EXPECT_FALSE(has_result_);
+  EXPECT_TRUE(has_result_);
   EXPECT_FALSE(HasClientDownloadRequest());
 }
 
@@ -2222,7 +2221,7 @@ TEST_F(DownloadProtectionServiceTest,
                           base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_FALSE(has_result_);
+  EXPECT_TRUE(has_result_);
   EXPECT_FALSE(HasClientDownloadRequest());
 }
 
@@ -2270,9 +2269,9 @@ TEST_F(DownloadProtectionServiceTest, GetAndSetDownloadPingToken) {
 }
 
 TEST_F(DownloadProtectionServiceTest, PPAPIDownloadRequest_Unsupported) {
-  base::FilePath default_file_path(FILE_PATH_LITERAL("/foo/bar/test.txt"));
+  base::FilePath default_file_path(FILE_PATH_LITERAL("/foo/bar/test.jpg"));
   std::vector<base::FilePath::StringType> alternate_extensions{
-      FILE_PATH_LITERAL(".tmp"), FILE_PATH_LITERAL(".asdfasdf")};
+      FILE_PATH_LITERAL(".jpeg")};
   download_service_->CheckPPAPIDownloadRequest(
       GURL("http://example.com/foo"), GURL(), nullptr, default_file_path,
       alternate_extensions, profile(),
@@ -2729,6 +2728,39 @@ TEST_F(DownloadProtectionServiceTest,
   referrer_chain_data = download_service_->IdentifyReferrerChain(item);
   // 3 entries means 2 interactions between entries.
   EXPECT_EQ(referrer_chain_data->referrer_chain_length(), 3u);
+}
+
+TEST_F(DownloadProtectionServiceTest, DoesNotSendPingForCancelledDownloads) {
+  PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK,
+                  net::URLRequestStatus::SUCCESS);
+
+  NiceMockDownloadItem item;
+  PrepareBasicDownloadItem(&item, {"http://www.evil.test/a.exe"},  // url_chain
+                           "http://www.google.com/",               // referrer
+                           FILE_PATH_LITERAL("a.tmp"),             // tmp_path
+                           FILE_PATH_LITERAL("a.exe"));            // final_path
+
+  // Mock a cancelled download.
+  EXPECT_CALL(item, GetState())
+      .WillRepeatedly(Return(download::DownloadItem::CANCELLED));
+
+  EXPECT_CALL(*sb_service_->mock_database_manager(),
+              MatchDownloadWhitelistUrl(_))
+      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path_, _));
+  EXPECT_CALL(*binary_feature_extractor_.get(),
+              ExtractImageFeatures(
+                  tmp_path_, BinaryFeatureExtractor::kDefaultOptions, _, _));
+
+  RunLoop run_loop;
+  download_service_->CheckClientDownload(
+      &item,
+      base::BindRepeating(&DownloadProtectionServiceTest::CheckDoneCallback,
+                          base::Unretained(this), run_loop.QuitClosure()));
+  run_loop.Run();
+
+  EXPECT_TRUE(has_result_);
+  EXPECT_FALSE(HasClientDownloadRequest());
 }
 
 }  // namespace safe_browsing

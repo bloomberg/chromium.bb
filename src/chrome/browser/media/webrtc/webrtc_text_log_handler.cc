@@ -27,6 +27,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/gpu_data_manager.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/webrtc_log.h"
 #include "content/public/common/content_features.h"
@@ -36,6 +37,7 @@
 #include "net/base/ip_address.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/network_interfaces.h"
+#include "services/network/public/mojom/network_service.mojom.h"
 #include "services/service_manager/sandbox/features.h"
 
 #if defined(OS_LINUX)
@@ -50,7 +52,7 @@
 #include "chromeos/system/statistics_provider.h"
 #endif
 
-using base::IntToString;
+using base::NumberToString;
 using content::BrowserThread;
 
 namespace {
@@ -98,13 +100,6 @@ std::string IPAddressToSensitiveString(const net::IPAddress& address) {
 #else
   return address.ToString();
 #endif
-}
-
-net::NetworkInterfaceList GetNetworkInterfaceList() {
-  net::NetworkInterfaceList network_list;
-  net::GetNetworkList(&network_list,
-                      net::EXCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES);
-  return network_list;
 }
 
 }  // namespace
@@ -224,11 +219,10 @@ bool WebRtcTextLogHandler::StartLogging(WebRtcLogUploader* log_uploader,
   if (!meta_data_)
     meta_data_.reset(new MetaDataMap());
 
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::BindOnce(&GetNetworkInterfaceList),
-      base::BindOnce(&WebRtcTextLogHandler::LogInitialInfoOnIOThread, this,
-                     callback));
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(&WebRtcTextLogHandler::GetNetworkInterfaceListOnUIThread,
+                     this, std::move(callback)));
   return true;
 }
 
@@ -420,6 +414,26 @@ void WebRtcTextLogHandler::SetWebAppId(int web_app_id) {
   web_app_id_ = web_app_id;
 }
 
+void WebRtcTextLogHandler::GetNetworkInterfaceListOnUIThread(
+    const GenericDoneCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  content::GetNetworkService()->GetNetworkList(
+      net::EXCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES,
+      base::BindOnce(&WebRtcTextLogHandler::OnGetNetworkInterfaceList, this,
+                     std::move(callback)));
+}
+
+void WebRtcTextLogHandler::OnGetNetworkInterfaceList(
+    const GenericDoneCallback& callback,
+    const base::Optional<net::NetworkInterfaceList>& networks) {
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(
+          &WebRtcTextLogHandler::LogInitialInfoOnIOThread, this,
+          std::move(callback),
+          networks.has_value() ? *networks : net::NetworkInterfaceList()));
+}
+
 void WebRtcTextLogHandler::LogInitialInfoOnIOThread(
     const GenericDoneCallback& callback,
     const net::NetworkInterfaceList& network_list) {
@@ -459,10 +473,10 @@ void WebRtcTextLogHandler::LogInitialInfoOnIOThread(
   // CPU
   base::CPU cpu;
   LogToCircularBuffer(
-      "Cpu: " + IntToString(cpu.family()) + "." + IntToString(cpu.model()) +
-      "." + IntToString(cpu.stepping()) + ", x" +
-      IntToString(base::SysInfo::NumberOfProcessors()) + ", " +
-      IntToString(base::SysInfo::AmountOfPhysicalMemoryMB()) + "MB");
+      "Cpu: " + NumberToString(cpu.family()) + "." +
+      NumberToString(cpu.model()) + "." + NumberToString(cpu.stepping()) +
+      ", x" + NumberToString(base::SysInfo::NumberOfProcessors()) + ", " +
+      NumberToString(base::SysInfo::AmountOfPhysicalMemoryMB()) + "MB");
   LogToCircularBuffer("Cpu brand: " + cpu.cpu_brand());
 
   // Computer model
@@ -481,8 +495,8 @@ void WebRtcTextLogHandler::LogInitialInfoOnIOThread(
   LogToCircularBuffer(
       "Gpu: machine-model-name=" + gpu_info.machine_model_name +
       ", machine-model-version=" + gpu_info.machine_model_version +
-      ", vendor-id=" + base::UintToString(active_gpu.vendor_id) +
-      ", device-id=" + base::UintToString(active_gpu.device_id) +
+      ", vendor-id=" + base::NumberToString(active_gpu.vendor_id) +
+      ", device-id=" + base::NumberToString(active_gpu.device_id) +
       ", driver-vendor=" + active_gpu.driver_vendor +
       ", driver-version=" + active_gpu.driver_version);
   LogToCircularBuffer("OpenGL: gl-vendor=" + gpu_info.gl_vendor +

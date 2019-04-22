@@ -40,7 +40,7 @@ public final class DomDistillerUIUtils {
         if (webContents != null && activity != null) {
             RecordUserAction.record("DomDistiller_DistilledPagePrefsOpened");
             AlertDialog.Builder builder =
-                    new AlertDialog.Builder(activity, R.style.AlertDialogTheme);
+                    new AlertDialog.Builder(activity, R.style.Theme_Chromium_AlertDialog);
             builder.setView(DistilledPagePrefsView.create(activity));
             builder.show();
         }

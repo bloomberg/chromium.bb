@@ -10,10 +10,10 @@
 #include <string>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/memory/ref_counted.h"
 #include "base/supports_user_data.h"
 #include "storage/browser/blob/blob_data_item.h"
-#include "storage/browser/storage_browser_export.h"
 
 namespace storage {
 class BlobDataBuilder;
@@ -25,7 +25,8 @@ class BlobDataBuilder;
 // guarantees that the resources stay alive, but it does not guarentee that
 // the blob stays alive.  Use the BlobDataHandle to keep a blob alive.
 // This class must be deleted on the IO thread.
-class STORAGE_EXPORT BlobDataSnapshot : public base::SupportsUserData::Data {
+class COMPONENT_EXPORT(STORAGE_BROWSER) BlobDataSnapshot
+    : public base::SupportsUserData::Data {
  public:
   BlobDataSnapshot(const BlobDataSnapshot& other);
   ~BlobDataSnapshot() override;
@@ -44,8 +45,9 @@ class STORAGE_EXPORT BlobDataSnapshot : public base::SupportsUserData::Data {
  private:
   friend class BlobDataBuilder;
   friend class BlobStorageContext;
-  friend STORAGE_EXPORT void PrintTo(const BlobDataSnapshot& x,
-                                     ::std::ostream* os);
+  friend COMPONENT_EXPORT(STORAGE_BROWSER) void PrintTo(
+      const BlobDataSnapshot& x,
+      ::std::ostream* os);
   BlobDataSnapshot(const std::string& uuid,
                    const std::string& content_type,
                    const std::string& content_disposition);

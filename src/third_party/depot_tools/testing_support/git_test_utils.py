@@ -355,7 +355,7 @@ class GitRepo(object):
 
   def get_git_commit_env(self, commit_data=None):
     commit_data = commit_data or {}
-    env = {}
+    env = os.environ.copy()
     for prefix in ('AUTHOR', 'COMMITTER'):
       for suffix in ('NAME', 'EMAIL', 'DATE'):
         singleton = '%s_%s' % (prefix, suffix)

@@ -14,9 +14,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "build/build_config.h"
-#include "components/signin/core/browser/signin_manager_base.h"
 #include "components/signin/core/browser/signin_status_metrics_provider_base.h"
 #include "components/signin/core/browser/signin_status_metrics_provider_delegate.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 namespace metrics {
 class ChromeUserMetricsExtension;
@@ -28,7 +28,7 @@ class SigninStatusMetricsProviderDelegate;
 // record the value into a histogram before UMA log is uploaded on platform
 // Windows, Linux, Mac and Android.
 class SigninStatusMetricsProvider : public SigninStatusMetricsProviderBase,
-                                    public SigninManagerBase::Observer {
+                                    public identity::IdentityManager::Observer {
  public:
   ~SigninStatusMetricsProvider() override;
 
@@ -40,11 +40,11 @@ class SigninStatusMetricsProvider : public SigninStatusMetricsProviderBase,
   static std::unique_ptr<SigninStatusMetricsProvider> CreateInstance(
       std::unique_ptr<SigninStatusMetricsProviderDelegate> delegate);
 
-  // Update the sign-in status when a SigninManager is created.
-  void OnSigninManagerCreated(SigninManagerBase* manager);
+  // Update the sign-in status when a IdentityManager is created.
+  void OnIdentityManagerCreated(identity::IdentityManager* identity_manager);
 
-  // Update the sign-in status when a SigninManager is shut down.
-  void OnSigninManagerShutdown(SigninManagerBase* manager);
+  // Update the sign-in status when a IdentityManager is shut down.
+  void OnIdentityManagerShutdown(identity::IdentityManager* identity_manager);
 
   // Updates the initial sign-in status. For testing purpose only.
   void UpdateInitialSigninStatusForTesting(size_t total_count,
@@ -57,8 +57,9 @@ class SigninStatusMetricsProvider : public SigninStatusMetricsProviderBase,
   FRIEND_TEST_ALL_PREFIXES(SigninStatusMetricsProviderTest,
                            UpdateInitialSigninStatus);
   FRIEND_TEST_ALL_PREFIXES(SigninStatusMetricsProviderTest,
-                           GoogleSigninSucceeded);
-  FRIEND_TEST_ALL_PREFIXES(SigninStatusMetricsProviderTest, GoogleSignedOut);
+                           OnPrimaryAccountSet);
+  FRIEND_TEST_ALL_PREFIXES(SigninStatusMetricsProviderTest,
+                           OnPrimaryAccountCleared);
 
   // The boolean |is_test| indicates whether or not this is an instance for
   // testing purpose. If so, skip the initialization. Except for testing
@@ -68,9 +69,9 @@ class SigninStatusMetricsProvider : public SigninStatusMetricsProviderBase,
       std::unique_ptr<SigninStatusMetricsProviderDelegate> delegate,
       bool is_test);
 
-  // SigninManagerBase::Observer:
-  void GoogleSigninSucceeded(const AccountInfo& account_info) override;
-  void GoogleSignedOut(const AccountInfo& account_info) override;
+  // IdentityManager::Observer:
+  void OnPrimaryAccountSet(const CoreAccountInfo& account_info) override;
+  void OnPrimaryAccountCleared(const CoreAccountInfo& account_info) override;
 
   // Obtain sign-in status and add observers.
   void Initialize();
@@ -87,9 +88,9 @@ class SigninStatusMetricsProvider : public SigninStatusMetricsProviderBase,
 
   std::unique_ptr<SigninStatusMetricsProviderDelegate> delegate_;
 
-  // Used to track the SigninManagers that this instance is observing so that
+  // Used to track the IdentityManagers that this instance is observing so that
   // this instance can be removed as an observer on its destruction.
-  ScopedObserver<SigninManagerBase, SigninManagerBase::Observer>
+  ScopedObserver<identity::IdentityManager, identity::IdentityManager::Observer>
       scoped_observer_;
 
   // Whether the instance is for testing or not.

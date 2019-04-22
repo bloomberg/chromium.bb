@@ -43,6 +43,7 @@ class LatencyInfo;
 namespace viz {
 
 class SurfaceClient;
+class SurfaceAllocationGroup;
 class SurfaceManager;
 
 // A Surface is a representation of a sequence of CompositorFrames with a
@@ -80,6 +81,7 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
 
   Surface(const SurfaceInfo& surface_info,
           SurfaceManager* surface_manager,
+          SurfaceAllocationGroup* allocation_group,
           base::WeakPtr<SurfaceClient> surface_client,
           bool needs_sync_tokens,
           bool block_activation_on_parent);
@@ -103,13 +105,6 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
   base::Optional<base::TimeTicks> deadline_for_testing() const {
     return deadline_->deadline_for_testing();
   }
-
-  // Inherits the same deadline as the one specified by |surface|. A deadline
-  // may be set further out in order to avoid doing unnecessary work while a
-  // parent surface is blocked on dependencies. A deadline may be shortened
-  // in order to minimize guttering (by unblocking children blocked on their
-  // grandchildren sooner).
-  void InheritActivationDeadlineFrom(Surface* surface);
 
   void SetPreviousFrameSurface(Surface* surface);
 
@@ -139,10 +134,6 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
   // Notifies the Surface that a blocking SurfaceId now has an active
   // frame.
   void NotifySurfaceIdAvailable(const SurfaceId& surface_id);
-
-  // Returns whether the Surface is blocked on the provided |surface_id| or a
-  // predecessor.
-  bool IsBlockedOn(const SurfaceId& surface_id) const;
 
   // Called if a deadline has been hit and this surface is not yet active but
   // it's marked as respecting deadlines.
@@ -179,9 +170,12 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
     return active_frame_data_ ? active_frame_data_->frame_index : 0;
   }
 
-  void TakeLatencyInfo(std::vector<ui::LatencyInfo>* latency_info);
+  void TakeActiveLatencyInfo(std::vector<ui::LatencyInfo>* latency_info);
+  void TakeActiveAndPendingLatencyInfo(
+      std::vector<ui::LatencyInfo>* latency_info);
   bool TakePresentedCallback(PresentedCallback* callback);
-  void RunDrawCallback();
+  void SendAckToClient();
+  void MarkAsDrawn();
   void NotifyAggregatedDamage(const gfx::Rect& damage_rect,
                               base::TimeTicks expected_display_time);
 
@@ -195,22 +189,24 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
     return activation_dependencies_;
   }
 
-  // Returns the set of activation dependencies that have been ignored because
-  // the last CompositorFrame was activated due to a deadline. Late
-  // dependencies activate immediately when they arrive.
-  const base::flat_set<SurfaceId>& late_activation_dependencies() const {
-    return late_activation_dependencies_;
-  }
-
   bool HasActiveFrame() const { return active_frame_data_.has_value(); }
   bool HasPendingFrame() const { return pending_frame_data_.has_value(); }
   bool HasUndrawnActiveFrame() const {
-    return HasActiveFrame() && !active_frame_data_->frame_processed;
+    return HasActiveFrame() && !active_frame_data_->frame_drawn;
+  }
+  bool HasUnackedActiveFrame() const {
+    return HasActiveFrame() && !active_frame_data_->frame_acked;
   }
 
   // Returns true if at any point, another Surface's CompositorFrame has
   // depended on this Surface.
   bool HasDependentFrame() const { return seen_first_surface_dependency_; }
+
+  bool seen_first_surface_embedding() const {
+    return seen_first_surface_embedding_;
+  }
+
+  SurfaceAllocationGroup* allocation_group() const { return allocation_group_; }
 
   // SurfaceDeadlineClient implementation:
   void OnDeadline(base::TimeDelta duration) override;
@@ -220,17 +216,36 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
 
   // Called when |surface_id| is activated for the first time and its part of a
   // referenced SurfaceRange.
-  void OnChildActivated(const SurfaceId& surface_id);
+  void OnChildActivatedForActiveFrame(const SurfaceId& surface_id);
 
   // Called when this surface is embedded by another Surface's CompositorFrame.
   void OnSurfaceDependencyAdded();
 
- private:
-  struct SequenceNumbers {
-    uint32_t parent_sequence_number = 0u;
-    uint32_t child_sequence_number = 0u;
-  };
+  // Called when the embedder of this surface has been activated and therefore
+  // this surface should activate too by deadline inheritance.
+  void ActivatePendingFrameForInheritedDeadline();
 
+  // Returns whether the LatencyInfo of the current pending and active frames
+  // is already taken.
+  bool is_latency_info_taken() { return is_latency_info_taken_; }
+
+  // Called by a blocking SurfaceAllocationGroup when |activation_dependency|
+  // is resolved. |this| will be automatically unregistered from |group|, the
+  // SurfaceAllocationGroup corresponding to |activation_dependency|.
+  void OnActivationDependencyResolved(const SurfaceId& activation_dependency,
+                                      SurfaceAllocationGroup* group);
+
+  // Called when this surface's activation no longer has to block on the parent.
+  void ResetBlockActivationOnParent();
+
+  // Notifies that this surface is no longer the primary surface of the
+  // embedder. All future CompositorFrames will activate as soon as they arrive
+  // and if a pending frame currently exists it will immediately activate as
+  // well. This allows the client to not wait for acks from the fallback
+  // surfaces and be able to submit to the primary surface.
+  void SetIsFallbackAndMaybeActivate();
+
+ private:
   struct FrameData {
     FrameData(CompositorFrame&& frame,
               uint64_t frame_index,
@@ -241,30 +256,23 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
 
     CompositorFrame frame;
     uint64_t frame_index;
-    // Whether the frame has been processed (displayed, or discarded), or not.
-    bool frame_processed = false;
+    // Whether the frame has been displayed or not.
+    bool frame_drawn = false;
+    bool frame_acked = false;
     // TODO(sad): This callback would ideally become part of SurfaceClient API.
     PresentedCallback presented_callback;
   };
-
-  // Rejects CompositorFrames submitted to surfaces referenced from this
-  // CompositorFrame as fallbacks. This saves some CPU cycles to allow
-  // children to catch up to the parent.
-  void RejectCompositorFramesToFallbackSurfaces();
 
   // Updates surface references of the surface using the referenced
   // surfaces from the most recent CompositorFrame.
   // Modifies surface references stored in SurfaceManager.
   void UpdateSurfaceReferences();
 
-  // Called to prevent additional CompositorFrames from being accepted into this
-  // surface. Once a Surface is closed, it cannot accept CompositorFrames again.
-  void Close();
-
-  // Updates the FrameSinkIds observed by this surface to be equal to
-  // |new_observed_sinks|.
-  void UpdateObservedSinks(
-      const base::flat_set<FrameSinkId>& new_observed_sinks);
+  // Updates the set of allocation groups referenced by the active frame. Calls
+  // RegisterEmbedder and UnregisterEmbedder on the allocation groups as
+  // appropriate.
+  void UpdateReferencedAllocationGroups(
+      std::vector<SurfaceAllocationGroup*> new_referenced_allocation_groups);
 
   // Recomputes active references for this surface when it activates. This
   // method will also update the observed sinks based on the referenced ranges
@@ -286,14 +294,10 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
   // dependencies will be added even if they're not yet available.
   void UpdateActivationDependencies(const CompositorFrame& current_frame);
 
-  void ComputeChangeInDependencies(
-      const base::flat_map<FrameSinkId, SequenceNumbers>& new_dependencies);
-
   void UnrefFrameResourcesAndRunCallbacks(base::Optional<FrameData> frame_data);
   void ClearCopyRequests();
 
-  void TakeLatencyInfoFromPendingFrame(
-      std::vector<ui::LatencyInfo>* latency_info);
+  void TakePendingLatencyInfo(std::vector<ui::LatencyInfo>* latency_info);
   static void TakeLatencyInfoFromFrame(
       CompositorFrame* frame,
       std::vector<ui::LatencyInfo>* latency_info);
@@ -308,24 +312,11 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
 
   base::Optional<FrameData> pending_frame_data_;
   base::Optional<FrameData> active_frame_data_;
-  bool closed_ = false;
   bool seen_first_frame_activation_ = false;
   bool seen_first_surface_embedding_ = false;
   bool seen_first_surface_dependency_ = false;
   const bool needs_sync_tokens_;
-  const bool block_activation_on_parent_;
-
-  base::flat_set<SurfaceId> activation_dependencies_;
-  base::flat_set<SurfaceId> late_activation_dependencies_;
-
-  // A map from FrameSinkIds of SurfaceIds that this surface depends on for
-  // activation to the latest local_id associated with the given FrameSinkId
-  // that this surface is dependent on. This map is used to determine which
-  // FrameSinkIds this surface would like to observe activations for. Once
-  // the latest activated SurfaceId associated with the given FrameSinkId
-  // passes the local_id in the map, then this surface is no longer interested
-  // in observing activations for that FrameSinkId.
-  base::flat_map<FrameSinkId, SequenceNumbers> frame_sink_id_dependencies_;
+  bool block_activation_on_parent_ = false;
 
   // A set of all valid SurfaceIds contained |last_surface_id_for_range_| to
   // avoid recompution.
@@ -337,8 +328,24 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
   // entry in this vector is an unvalid SurfaceId.
   std::vector<SurfaceId> last_surface_id_for_range_;
 
-  // Frame sinks that this surface observe for activation events.
-  base::flat_set<FrameSinkId> observed_sinks_;
+  // Allocation groups that this surface references by its active frame.
+  base::flat_set<SurfaceAllocationGroup*> referenced_allocation_groups_;
+
+  // The set of the SurfaceIds that are blocking the pending frame from being
+  // activated.
+  base::flat_set<SurfaceId> activation_dependencies_;
+
+  // The SurfaceAllocationGroups corresponding to the surfaces in
+  // |activation_dependencies_|. When an activation dependency is
+  // resolved, the corresponding SurfaceAllocationGroup will call back into this
+  // surface to let us know.
+  base::flat_set<SurfaceAllocationGroup*> blocking_allocation_groups_;
+
+  bool is_fallback_ = false;
+
+  bool is_latency_info_taken_ = false;
+
+  SurfaceAllocationGroup* const allocation_group_;
 
   DISALLOW_COPY_AND_ASSIGN(Surface);
 };

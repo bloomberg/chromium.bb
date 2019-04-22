@@ -33,11 +33,12 @@ namespace certificate_transparency {
 TreeStateTracker::TreeStateTracker(
     std::vector<scoped_refptr<const CTLogVerifier>> ct_logs,
     net::HostResolver* host_resolver,
+    net::URLRequestContext* url_request_context,
     net::NetLog* net_log) {
   std::unique_ptr<net::DnsClient> dns_client =
       net::DnsClient::CreateClient(net_log);
   dns_client_ = std::make_unique<LogDnsClient>(
-      std::move(dns_client),
+      std::move(dns_client), url_request_context,
       net::NetLogWithSource::Make(net_log,
                                   net::NetLogSourceType::CT_TREE_STATE_TRACKER),
       kMaxConcurrentDnsQueries);

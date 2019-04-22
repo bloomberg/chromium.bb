@@ -282,7 +282,8 @@ bool operator!=(PropertyAccess const& lhs, PropertyAccess const& rhs) {
 
 
 PropertyAccess const& PropertyAccessOf(const Operator* op) {
-  DCHECK(op->opcode() == IrOpcode::kJSLoadProperty ||
+  DCHECK(op->opcode() == IrOpcode::kJSHasProperty ||
+         op->opcode() == IrOpcode::kJSLoadProperty ||
          op->opcode() == IrOpcode::kJSStoreProperty);
   return OpParameter<PropertyAccess>(op);
 }
@@ -472,7 +473,7 @@ const CreateBoundFunctionParameters& CreateBoundFunctionParametersOf(
 
 bool operator==(CreateClosureParameters const& lhs,
                 CreateClosureParameters const& rhs) {
-  return lhs.pretenure() == rhs.pretenure() &&
+  return lhs.allocation() == rhs.allocation() &&
          lhs.code().location() == rhs.code().location() &&
          lhs.feedback_cell().location() == rhs.feedback_cell().location() &&
          lhs.shared_info().location() == rhs.shared_info().location();
@@ -486,13 +487,13 @@ bool operator!=(CreateClosureParameters const& lhs,
 
 
 size_t hash_value(CreateClosureParameters const& p) {
-  return base::hash_combine(p.pretenure(), p.shared_info().location(),
+  return base::hash_combine(p.allocation(), p.shared_info().location(),
                             p.feedback_cell().location());
 }
 
 
 std::ostream& operator<<(std::ostream& os, CreateClosureParameters const& p) {
-  return os << p.pretenure() << ", " << Brief(*p.shared_info()) << ", "
+  return os << p.allocation() << ", " << Brief(*p.shared_info()) << ", "
             << Brief(*p.feedback_cell()) << ", " << Brief(*p.code());
 }
 
@@ -624,7 +625,6 @@ CompareOperationHint CompareOperationHintOf(const Operator* op) {
   V(CreateTypedArray, Operator::kNoProperties, 5, 1)                     \
   V(CreateObject, Operator::kNoProperties, 1, 1)                         \
   V(ObjectIsArray, Operator::kNoProperties, 1, 1)                        \
-  V(HasProperty, Operator::kNoProperties, 2, 1)                          \
   V(HasInPrototypeChain, Operator::kNoProperties, 2, 1)                  \
   V(OrdinaryHasInstance, Operator::kNoProperties, 2, 1)                  \
   V(ForInEnumerate, Operator::kNoProperties, 1, 1)                       \
@@ -688,6 +688,12 @@ struct JSOperatorGlobalCache final {
   Name##Operator<BinaryOperationHint::kNumber> k##Name##NumberOperator;       \
   Name##Operator<BinaryOperationHint::kNumberOrOddball>                       \
       k##Name##NumberOrOddballOperator;                                       \
+  Name##Operator<BinaryOperationHint::kConsOneByteString>                     \
+      k##Name##ConsOneByteStringOperator;                                     \
+  Name##Operator<BinaryOperationHint::kConsTwoByteString>                     \
+      k##Name##ConsTwoByteStringOperator;                                     \
+  Name##Operator<BinaryOperationHint::kConsString>                            \
+      k##Name##ConsStringOperator;                                            \
   Name##Operator<BinaryOperationHint::kString> k##Name##StringOperator;       \
   Name##Operator<BinaryOperationHint::kBigInt> k##Name##BigIntOperator;       \
   Name##Operator<BinaryOperationHint::kAny> k##Name##AnyOperator;
@@ -721,11 +727,12 @@ struct JSOperatorGlobalCache final {
 #undef COMPARE_OP
 };
 
-static base::LazyInstance<JSOperatorGlobalCache>::type kJSOperatorGlobalCache =
-    LAZY_INSTANCE_INITIALIZER;
+namespace {
+DEFINE_LAZY_LEAKY_OBJECT_GETTER(JSOperatorGlobalCache, GetJSOperatorGlobalCache)
+}
 
 JSOperatorBuilder::JSOperatorBuilder(Zone* zone)
-    : cache_(kJSOperatorGlobalCache.Get()), zone_(zone) {}
+    : cache_(*GetJSOperatorGlobalCache()), zone_(zone) {}
 
 #define CACHED_OP(Name, properties, value_input_count, value_output_count) \
   const Operator* JSOperatorBuilder::Name() {                              \
@@ -749,6 +756,12 @@ CACHED_OP_LIST(CACHED_OP)
         return &cache_.k##Name##NumberOperator;                       \
       case BinaryOperationHint::kNumberOrOddball:                     \
         return &cache_.k##Name##NumberOrOddballOperator;              \
+      case BinaryOperationHint::kConsOneByteString:                   \
+        return &cache_.k##Name##ConsOneByteStringOperator;            \
+      case BinaryOperationHint::kConsTwoByteString:                   \
+        return &cache_.k##Name##ConsTwoByteStringOperator;            \
+      case BinaryOperationHint::kConsString:                          \
+        return &cache_.k##Name##ConsStringOperator;                   \
       case BinaryOperationHint::kString:                              \
         return &cache_.k##Name##StringOperator;                       \
       case BinaryOperationHint::kBigInt:                              \
@@ -812,7 +825,7 @@ const Operator* JSOperatorBuilder::StoreInArrayLiteral(
       IrOpcode::kJSStoreInArrayLiteral,
       Operator::kNoThrow,       // opcode
       "JSStoreInArrayLiteral",  // name
-      3, 1, 1, 0, 1, 0,         // counts
+      3, 1, 1, 0, 1, 1,         // counts
       parameters);              // parameter
 }
 
@@ -947,6 +960,15 @@ const Operator* JSOperatorBuilder::LoadProperty(
       "JSLoadProperty",                                    // name
       2, 1, 1, 1, 1, 2,                                    // counts
       access);                                             // parameter
+}
+
+const Operator* JSOperatorBuilder::HasProperty(VectorSlotPair const& feedback) {
+  PropertyAccess access(LanguageMode::kSloppy, feedback);
+  return new (zone()) Operator1<PropertyAccess>(          // --
+      IrOpcode::kJSHasProperty, Operator::kNoProperties,  // opcode
+      "JSHasProperty",                                    // name
+      2, 1, 1, 1, 1, 2,                                   // counts
+      access);                                            // parameter
 }
 
 const Operator* JSOperatorBuilder::InstanceOf(VectorSlotPair const& feedback) {
@@ -1178,9 +1200,9 @@ const Operator* JSOperatorBuilder::CreateBoundFunction(size_t arity,
 
 const Operator* JSOperatorBuilder::CreateClosure(
     Handle<SharedFunctionInfo> shared_info, Handle<FeedbackCell> feedback_cell,
-    Handle<Code> code, PretenureFlag pretenure) {
+    Handle<Code> code, AllocationType allocation) {
   CreateClosureParameters parameters(shared_info, feedback_cell, code,
-                                     pretenure);
+                                     allocation);
   return new (zone()) Operator1<CreateClosureParameters>(   // --
       IrOpcode::kJSCreateClosure, Operator::kEliminatable,  // opcode
       "JSCreateClosure",                                    // name

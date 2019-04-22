@@ -7,7 +7,9 @@
 #import <objc/runtime.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <cmath>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
@@ -19,7 +21,9 @@
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/cocoa/constrained_window/constrained_window_animation.h"
+#include "ui/base/cocoa/remote_accessibility_api.h"
 #import "ui/base/cocoa/window_size_constants.h"
+#include "ui/base/emoji/emoji_panel_helper.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/layout.h"
 #include "ui/base/ui_base_switches.h"
@@ -245,6 +249,17 @@ BridgedNativeWidgetImpl* BridgedNativeWidgetImpl::GetFromId(
 }
 
 // static
+BridgedNativeWidgetImpl* BridgedNativeWidgetImpl::GetFromNativeWindow(
+    gfx::NativeWindow native_window) {
+  NSWindow* window = native_window.GetNativeNSWindow();
+  if (NativeWidgetMacNSWindow* widget_window =
+          base::mac::ObjCCast<NativeWidgetMacNSWindow>(window)) {
+    return GetFromId([widget_window bridgedNativeWidgetId]);
+  }
+  return nullptr;
+}
+
+// static
 base::scoped_nsobject<NativeWidgetMacNSWindow>
 BridgedNativeWidgetImpl::CreateNSWindow(
     const views_bridge_mac::mojom::CreateWindowParams* params) {
@@ -287,10 +302,12 @@ BridgedNativeWidgetImpl::CreateNSWindow(
 BridgedNativeWidgetImpl::BridgedNativeWidgetImpl(
     uint64_t bridged_native_widget_id,
     BridgedNativeWidgetHost* host,
-    BridgedNativeWidgetHostHelper* host_helper)
+    BridgedNativeWidgetHostHelper* host_helper,
+    views_bridge_mac::mojom::TextInputHost* text_input_host)
     : id_(bridged_native_widget_id),
       host_(host),
       host_helper_(host_helper),
+      text_input_host_(text_input_host),
       bridge_mojo_binding_(this) {
   DCHECK(GetIdToWidgetImplMap().find(id_) == GetIdToWidgetImplMap().end());
   GetIdToWidgetImplMap().insert(std::make_pair(id_, this));
@@ -327,6 +344,14 @@ void BridgedNativeWidgetImpl::SetWindow(
   ui::CATransactionCoordinator::Get().AddPreCommitObserver(this);
 }
 
+void BridgedNativeWidgetImpl::SetCommandDispatcher(
+    NSObject<CommandDispatcherDelegate>* delegate,
+    id<UserInterfaceItemCommandHandler> command_handler) {
+  window_command_dispatcher_delegate_.reset([delegate retain]);
+  [window_ setCommandDispatcherDelegate:delegate];
+  [window_ setCommandHandler:command_handler];
+}
+
 void BridgedNativeWidgetImpl::SetParent(uint64_t new_parent_id) {
   // Remove from the old parent.
   if (parent_) {
@@ -360,6 +385,23 @@ void BridgedNativeWidgetImpl::SetParent(uint64_t new_parent_id) {
   // As in OnVisibilityChanged, do not set a parent for sheets.
   if (window_visible_ && ![window_ isSheet])
     [parent_->ns_window() addChildWindow:window_ ordered:NSWindowAbove];
+}
+
+void BridgedNativeWidgetImpl::StackAbove(uint64_t sibling_id) {
+  BridgedNativeWidgetImpl* sibling_bridge =
+      BridgedNativeWidgetImpl::GetFromId(sibling_id);
+  DCHECK(sibling_bridge);
+
+  NSInteger sibling = sibling_bridge->ns_window().windowNumber;
+  [window_ orderWindow:NSWindowAbove relativeTo:sibling];
+}
+
+void BridgedNativeWidgetImpl::StackAtTop() {
+  [window_ setOrderedIndex:0];
+}
+
+void BridgedNativeWidgetImpl::ShowEmojiPanel() {
+  ui::ShowEmojiPanel();
 }
 
 void BridgedNativeWidgetImpl::CreateWindow(
@@ -501,6 +543,11 @@ void BridgedNativeWidgetImpl::CreateContentView(uint64_t ns_view_id,
   // this should be treated as an error and caught early.
   CHECK(bridged_view_);
 
+  // Send the accessibility tokens for the NSView now that it exists.
+  host_->SetRemoteAccessibilityTokens(
+      ui::RemoteAccessibility::GetTokenForLocalElement(window_),
+      ui::RemoteAccessibility::GetTokenForLocalElement(bridged_view_));
+
   // Beware: This view was briefly removed (in favor of a bare CALayer) in
   // crrev/c/1236675. The ordering of unassociated layers relative to NSView
   // layers is undefined on macOS 10.12 and earlier, so the compositor layer
@@ -516,10 +563,14 @@ void BridgedNativeWidgetImpl::CreateContentView(uint64_t ns_view_id,
   [compositor_view setWantsLayer:YES];
   [bridged_view_ addSubview:compositor_view];
 
+  [bridged_view_ setWantsLayer:YES];
   [window_ setContentView:bridged_view_];
 }
 
 void BridgedNativeWidgetImpl::CloseWindow() {
+  if (has_deferred_window_close_)
+    return;
+
   // Keep |window| on the stack so that the ObjectiveC block below can capture
   // it and properly increment the reference count bound to the posted task.
   NSWindow* window = ns_window();
@@ -554,6 +605,12 @@ void BridgedNativeWidgetImpl::CloseWindow() {
   // like -performClose:, first remove the window from AppKit's display
   // list to avoid crashes like http://crbug.com/156101.
   [window orderOut:nil];
+
+  // Defer closing windows until after fullscreen transitions complete.
+  if (in_fullscreen_transition_) {
+    has_deferred_window_close_ = true;
+    return;
+  }
 
   // Many tests assume that base::RunLoop().RunUntilIdle() is always sufficient
   // to execute a close. However, in rare cases, -performSelector:..afterDelay:0
@@ -742,6 +799,17 @@ void BridgedNativeWidgetImpl::SetCursor(NSCursor* cursor) {
 }
 
 void BridgedNativeWidgetImpl::OnWindowWillClose() {
+  // If a window closes while in a fullscreen transition, then the window will
+  // hang in a zombie-like state.
+  // https://crbug.com/945237
+  if (in_fullscreen_transition_) {
+    DLOG(ERROR) << "-[NSWindow close] while in fullscreen transition will "
+                   "trigger zombie windows.";
+  }
+
+  [window_ setCommandHandler:nil];
+  [window_ setCommandDispatcherDelegate:nil];
+
   ui::CATransactionCoordinator::Get().RemovePreCommitObserver(this);
   host_->OnWindowWillClose();
 
@@ -778,10 +846,6 @@ void BridgedNativeWidgetImpl::OnWindowWillClose() {
 
 void BridgedNativeWidgetImpl::OnFullscreenTransitionStart(
     bool target_fullscreen_state) {
-  // Note: This can fail for fullscreen changes started externally, but a user
-  // shouldn't be able to do that if the window is invisible to begin with.
-  DCHECK(window_visible_);
-
   DCHECK_NE(target_fullscreen_state, target_fullscreen_state_);
   target_fullscreen_state_ = target_fullscreen_state;
   in_fullscreen_transition_ = true;
@@ -792,6 +856,11 @@ void BridgedNativeWidgetImpl::OnFullscreenTransitionStart(
 void BridgedNativeWidgetImpl::OnFullscreenTransitionComplete(
     bool actual_fullscreen_state) {
   in_fullscreen_transition_ = false;
+
+  if (has_deferred_window_close_) {
+    [ns_window() close];
+    return;
+  }
 
   if (target_fullscreen_state_ == actual_fullscreen_state) {
     host_->OnWindowFullscreenTransitionComplete(actual_fullscreen_state);
@@ -1015,12 +1084,11 @@ bool BridgedNativeWidgetImpl::ShouldRunCustomAnimationFor(
 }
 
 bool BridgedNativeWidgetImpl::RedispatchKeyEvent(NSEvent* event) {
-  NSWindow* window = ns_window();
-  DCHECK([window.class conformsToProtocol:@protocol(CommandDispatchingWindow)]);
-  NSObject<CommandDispatchingWindow>* command_dispatching_window =
-      base::mac::ObjCCastStrict<NSObject<CommandDispatchingWindow>>(window);
-  return
-      [[command_dispatching_window commandDispatcher] redispatchKeyEvent:event];
+  return [[window_ commandDispatcher] redispatchKeyEvent:event];
+}
+
+void BridgedNativeWidgetImpl::SaveKeyEventForRedispatch(NSEvent* event) {
+  saved_redispatch_event_.reset([event retain]);
 }
 
 NSWindow* BridgedNativeWidgetImpl::ns_window() {
@@ -1084,6 +1152,19 @@ void BridgedNativeWidgetImpl::SetFullscreen(bool fullscreen) {
   if (fullscreen == target_fullscreen_state_)
     return;
   ToggleDesiredFullscreenState();
+}
+
+void BridgedNativeWidgetImpl::SetCanAppearInExistingFullscreenSpaces(
+    bool can_appear_in_existing_fullscreen_spaces) {
+  NSWindow* window = window_.get();
+  NSWindowCollectionBehavior collectionBehavior = window.collectionBehavior;
+  if (can_appear_in_existing_fullscreen_spaces) {
+    collectionBehavior |= NSWindowCollectionBehaviorFullScreenAuxiliary;
+    collectionBehavior &= ~NSWindowCollectionBehaviorFullScreenPrimary;
+  } else {
+    collectionBehavior &= ~NSWindowCollectionBehaviorFullScreenAuxiliary;
+  }
+  window.collectionBehavior = collectionBehavior;
 }
 
 void BridgedNativeWidgetImpl::SetMiniaturized(bool miniaturized) {
@@ -1156,9 +1237,8 @@ void BridgedNativeWidgetImpl::UpdateTooltip() {
   [bridged_view_ updateTooltipIfRequiredAt:point];
 }
 
-void BridgedNativeWidgetImpl::SetTextInputClient(
-    ui::TextInputClient* text_input_client) {
-  [bridged_view_ setTextInputClient:text_input_client];
+bool BridgedNativeWidgetImpl::NeedsUpdateWindows() {
+  return [bridged_view_ needsUpdateWindows];
 }
 
 void BridgedNativeWidgetImpl::RedispatchKeyEvent(
@@ -1168,6 +1248,23 @@ void BridgedNativeWidgetImpl::RedispatchKeyEvent(
     const base::string16& characters,
     const base::string16& characters_ignoring_modifiers,
     uint32_t key_code) {
+  // If we saved an event for redispatch, and that event looks similar to the
+  // (potentially mangled) event parameters that we received, then use the saved
+  // event.
+  // https://crbug.com/942690
+  if (saved_redispatch_event_) {
+    // Consider two events to have the same timestamp if they are within 0.1 ms.
+    constexpr double kTimestampThreshold = 0.0001;
+    if ([saved_redispatch_event_ type] == type &&
+        base::SysNSStringToUTF16([saved_redispatch_event_ characters]) ==
+            characters &&
+        std::fabs([saved_redispatch_event_ timestamp] - timestamp) <
+            kTimestampThreshold) {
+      RedispatchKeyEvent(saved_redispatch_event_.autorelease());
+      return;
+    }
+    saved_redispatch_event_.reset();
+  }
   NSEvent* event =
       [NSEvent keyEventWithType:static_cast<NSEventType>(type)
                              location:NSZeroPoint
@@ -1308,11 +1405,16 @@ void BridgedNativeWidgetImpl::ShowAsModalSheet() {
   // Since |this| may destroy [window_ delegate], use |window_| itself as the
   // delegate, which will forward to ViewsNSWindowDelegate if |this| is still
   // alive (i.e. it has not set the window delegate to nil).
+  // TODO(crbug.com/841631): Migrate to `[NSWindow
+  // beginSheet:completionHandler:]` instead of this method.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
   [NSApp beginSheet:window_
       modalForWindow:parent_window
        modalDelegate:window_
       didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
          contextInfo:nullptr];
+#pragma clang diagnostic pop
 }
 
 }  // namespace views

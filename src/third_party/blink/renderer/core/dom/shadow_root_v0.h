@@ -80,7 +80,7 @@ class CORE_EXPORT ShadowRootV0 final
   void SetNeedsSelectFeatureSet() { needs_select_feature_set_ = true; }
   SelectRuleFeatureSet& SelectFeatures() { return select_features_; }
 
-  void Trace(blink::Visitor* visitor) {
+  void Trace(Visitor* visitor) {
     visitor->Trace(shadow_root_);
     visitor->Trace(descendant_insertion_points_);
     visitor->Trace(node_to_insertion_points_);
@@ -89,7 +89,7 @@ class CORE_EXPORT ShadowRootV0 final
  private:
   ShadowRoot& GetShadowRoot() const { return *shadow_root_; }
 
-  TraceWrapperMember<ShadowRoot> shadow_root_;
+  Member<ShadowRoot> shadow_root_;
   unsigned descendant_shadow_element_count_ = 0;
   unsigned descendant_content_element_count_ = 0;
   HeapVector<Member<V0InsertionPoint>> descendant_insertion_points_;

@@ -7,7 +7,10 @@
         document.body.innerHTML = ''
         var m = document.createElementNS('http://www.w3.org/1998/Math/MathML','free');
         document.body.appendChild(m);
-        location.reload();
+        if (!sessionStorage.started) {
+            sessionStorage.started = true;
+            location.reload();
+        }
         document.body.offsetTop;
         document.body.innerHTML='PASS if no crash or assert in debug';
         if (window.testRunner)

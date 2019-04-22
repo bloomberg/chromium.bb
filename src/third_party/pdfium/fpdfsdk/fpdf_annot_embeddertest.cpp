@@ -2,33 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
 #include <cwchar>
 #include <memory>
 #include <string>
 #include <vector>
 
+#include "constants/annotation_common.h"
 #include "core/fxcrt/fx_system.h"
 #include "public/cpp/fpdf_scopers.h"
 #include "public/fpdf_annot.h"
 #include "public/fpdf_edit.h"
 #include "public/fpdfview.h"
 #include "testing/embedder_test.h"
+#include "testing/fx_string_testhelpers.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/utils/hash.h"
 
-static constexpr char kContentsKey[] = "Contents";
+class FPDFAnnotEmbedderTest : public EmbedderTest {};
 
-class FPDFAnnotEmbeddertest : public EmbedderTest {};
-
-std::wstring BufferToWString(const std::vector<char>& buf) {
-  return GetPlatformWString(reinterpret_cast<FPDF_WIDESTRING>(buf.data()));
-}
-
-std::string BufferToString(const std::vector<char>& buf) {
-  return GetPlatformString(reinterpret_cast<FPDF_WIDESTRING>(buf.data()));
-}
-
-TEST_F(FPDFAnnotEmbeddertest, BadParams) {
+TEST_F(FPDFAnnotEmbedderTest, BadParams) {
   ASSERT_TRUE(OpenDocument("hello_world.pdf"));
   FPDF_PAGE page = LoadPage(0);
   ASSERT_TRUE(page);
@@ -51,12 +45,11 @@ TEST_F(FPDFAnnotEmbeddertest, BadParams) {
 
   EXPECT_FALSE(FPDFAnnot_HasKey(nullptr, "foo"));
 
-  static constexpr wchar_t kContents[] = L"Bar";
-  std::unique_ptr<unsigned short, pdfium::FreeDeleter> text =
-      GetFPDFWideString(kContents);
+  static const wchar_t kContents[] = L"Bar";
+  ScopedFPDFWideString text = GetFPDFWideString(kContents);
   EXPECT_FALSE(FPDFAnnot_SetStringValue(nullptr, "foo", text.get()));
 
-  char buffer[128];
+  FPDF_WCHAR buffer[64];
   EXPECT_EQ(0u, FPDFAnnot_GetStringValue(nullptr, "foo", nullptr, 0));
   EXPECT_EQ(0u, FPDFAnnot_GetStringValue(nullptr, "foo", buffer, 0));
   EXPECT_EQ(0u,
@@ -65,7 +58,18 @@ TEST_F(FPDFAnnotEmbeddertest, BadParams) {
   UnloadPage(page);
 }
 
-TEST_F(FPDFAnnotEmbeddertest, RenderAnnotWithOnlyRolloverAP) {
+TEST_F(FPDFAnnotEmbedderTest, BadAnnotsEntry) {
+  ASSERT_TRUE(OpenDocument("bad_annots_entry.pdf"));
+  FPDF_PAGE page = LoadPage(0);
+  ASSERT_TRUE(page);
+
+  EXPECT_EQ(1, FPDFPage_GetAnnotCount(page));
+  EXPECT_FALSE(FPDFPage_GetAnnot(page, 0));
+
+  UnloadPage(page);
+}
+
+TEST_F(FPDFAnnotEmbedderTest, RenderAnnotWithOnlyRolloverAP) {
   // Open a file with one annotation and load its first page.
   ASSERT_TRUE(OpenDocument("annotation_highlight_rollover_ap.pdf"));
   FPDF_PAGE page = LoadPage(0);
@@ -81,20 +85,20 @@ TEST_F(FPDFAnnotEmbeddertest, RenderAnnotWithOnlyRolloverAP) {
   UnloadPage(page);
 }
 
-TEST_F(FPDFAnnotEmbeddertest, RenderMultilineMarkupAnnotWithoutAP) {
-  const char md5_hash[] = "76512832d88017668d9acc7aacd13dae";
+TEST_F(FPDFAnnotEmbedderTest, RenderMultilineMarkupAnnotWithoutAP) {
+  static const char kMd5[] = "76512832d88017668d9acc7aacd13dae";
   // Open a file with multiline markup annotations.
   ASSERT_TRUE(OpenDocument("annotation_markup_multiline_no_ap.pdf"));
   FPDF_PAGE page = LoadPage(0);
   ASSERT_TRUE(page);
 
   ScopedFPDFBitmap bitmap = RenderLoadedPageWithFlags(page, FPDF_ANNOT);
-  CompareBitmap(bitmap.get(), 595, 842, md5_hash);
+  CompareBitmap(bitmap.get(), 595, 842, kMd5);
 
   UnloadPage(page);
 }
 
-TEST_F(FPDFAnnotEmbeddertest, ExtractHighlightLongContent) {
+TEST_F(FPDFAnnotEmbedderTest, ExtractHighlightLongContent) {
   // Open a file with one annotation and load its first page.
   ASSERT_TRUE(OpenDocument("annotation_highlight_long_content.pdf"));
   FPDF_PAGE page = LoadPageNoEvents(0);
@@ -122,25 +126,29 @@ TEST_F(FPDFAnnotEmbeddertest, ExtractHighlightLongContent) {
     EXPECT_EQ(255u, A);
 
     // Check that the author is correct.
-    static constexpr char kAuthorKey[] = "T";
+    static const char kAuthorKey[] = "T";
     EXPECT_EQ(FPDF_OBJECT_STRING,
               FPDFAnnot_GetValueType(annot.get(), kAuthorKey));
-    unsigned long len =
+    unsigned long length_bytes =
         FPDFAnnot_GetStringValue(annot.get(), kAuthorKey, nullptr, 0);
-    std::vector<char> buf(len);
+    ASSERT_EQ(28u, length_bytes);
+    std::vector<FPDF_WCHAR> buf = GetFPDFWideStringBuffer(length_bytes);
     EXPECT_EQ(28u, FPDFAnnot_GetStringValue(annot.get(), kAuthorKey, buf.data(),
-                                            len));
-    EXPECT_STREQ(L"Jae Hyun Park", BufferToWString(buf).c_str());
+                                            length_bytes));
+    EXPECT_EQ(L"Jae Hyun Park", GetPlatformWString(buf.data()));
 
     // Check that the content is correct.
-    EXPECT_EQ(FPDF_OBJECT_STRING,
-              FPDFAnnot_GetValueType(annot.get(), kContentsKey));
-    len = FPDFAnnot_GetStringValue(annot.get(), kContentsKey, nullptr, 0);
-    buf.clear();
-    buf.resize(len);
-    EXPECT_EQ(2690u, FPDFAnnot_GetStringValue(annot.get(), kContentsKey,
-                                              buf.data(), len));
-    const wchar_t contents[] =
+    EXPECT_EQ(
+        FPDF_OBJECT_STRING,
+        FPDFAnnot_GetValueType(annot.get(), pdfium::annotation::kContents));
+    length_bytes = FPDFAnnot_GetStringValue(
+        annot.get(), pdfium::annotation::kContents, nullptr, 0);
+    ASSERT_EQ(2690u, length_bytes);
+    buf = GetFPDFWideStringBuffer(length_bytes);
+    EXPECT_EQ(2690u, FPDFAnnot_GetStringValue(annot.get(),
+                                              pdfium::annotation::kContents,
+                                              buf.data(), length_bytes));
+    static const wchar_t kContents[] =
         L"This is a note for that highlight annotation. Very long highlight "
         "annotation. Long long long Long long longLong long longLong long "
         "longLong long longLong long longLong long longLong long longLong long "
@@ -161,7 +169,7 @@ TEST_F(FPDFAnnotEmbeddertest, ExtractHighlightLongContent) {
         "longLong long longLong long longLong long longLong long longLong long "
         "longLong long longLong long longLong long longLong long longLong long "
         "longLong long long. END";
-    EXPECT_STREQ(contents, BufferToWString(buf).c_str());
+    EXPECT_EQ(kContents, GetPlatformWString(buf.data()));
 
     // Check that the quadpoints are correct.
     FS_QUADPOINTSF quadpoints;
@@ -174,7 +182,7 @@ TEST_F(FPDFAnnotEmbeddertest, ExtractHighlightLongContent) {
   UnloadPageNoEvents(page);
 }
 
-TEST_F(FPDFAnnotEmbeddertest, ExtractInkMultiple) {
+TEST_F(FPDFAnnotEmbedderTest, ExtractInkMultiple) {
   // Open a file with three annotations and load its first page.
   ASSERT_TRUE(OpenDocument("annotation_ink_multiple.pdf"));
   FPDF_PAGE page = LoadPageNoEvents(0);
@@ -202,10 +210,10 @@ TEST_F(FPDFAnnotEmbeddertest, ExtractInkMultiple) {
     EXPECT_EQ(76u, A);
 
     // Check that there is no content.
-    EXPECT_EQ(2u,
-              FPDFAnnot_GetStringValue(annot.get(), kContentsKey, nullptr, 0));
+    EXPECT_EQ(2u, FPDFAnnot_GetStringValue(
+                      annot.get(), pdfium::annotation::kContents, nullptr, 0));
 
-    // Check that the rectange coordinates are correct.
+    // Check that the rectangle coordinates are correct.
     // Note that upon rendering, the rectangle coordinates will be adjusted.
     FS_RECTF rect;
     ASSERT_TRUE(FPDFAnnot_GetRect(annot.get(), &rect));
@@ -221,7 +229,7 @@ TEST_F(FPDFAnnotEmbeddertest, ExtractInkMultiple) {
   UnloadPageNoEvents(page);
 }
 
-TEST_F(FPDFAnnotEmbeddertest, AddIllegalSubtypeAnnotation) {
+TEST_F(FPDFAnnotEmbedderTest, AddIllegalSubtypeAnnotation) {
   // Open a file with one annotation and load its first page.
   ASSERT_TRUE(OpenDocument("annotation_highlight_long_content.pdf"));
   FPDF_PAGE page = LoadPage(0);
@@ -233,7 +241,7 @@ TEST_F(FPDFAnnotEmbeddertest, AddIllegalSubtypeAnnotation) {
   UnloadPage(page);
 }
 
-TEST_F(FPDFAnnotEmbeddertest, AddFirstTextAnnotation) {
+TEST_F(FPDFAnnotEmbedderTest, AddFirstTextAnnotation) {
   // Open a file with no annotation and load its first page.
   ASSERT_TRUE(OpenDocument("hello_world.pdf"));
   FPDF_PAGE page = LoadPage(0);
@@ -301,24 +309,24 @@ TEST_F(FPDFAnnotEmbeddertest, AddFirstTextAnnotation) {
     EXPECT_EQ(165.f, rect.top);
 
     // Set the content of the annotation.
-    static constexpr wchar_t kContents[] =
-        L"Hello! This is a customized content.";
-    std::unique_ptr<unsigned short, pdfium::FreeDeleter> text =
-        GetFPDFWideString(kContents);
-    ASSERT_TRUE(
-        FPDFAnnot_SetStringValue(annot.get(), kContentsKey, text.get()));
+    static const wchar_t kContents[] = L"Hello! This is a customized content.";
+    ScopedFPDFWideString text = GetFPDFWideString(kContents);
+    ASSERT_TRUE(FPDFAnnot_SetStringValue(
+        annot.get(), pdfium::annotation::kContents, text.get()));
     // Check that the content has been set correctly.
-    unsigned long len =
-        FPDFAnnot_GetStringValue(annot.get(), kContentsKey, nullptr, 0);
-    std::vector<char> buf(len);
-    EXPECT_EQ(74u, FPDFAnnot_GetStringValue(annot.get(), kContentsKey,
-                                            buf.data(), len));
-    EXPECT_STREQ(kContents, BufferToWString(buf).c_str());
+    unsigned long length_bytes = FPDFAnnot_GetStringValue(
+        annot.get(), pdfium::annotation::kContents, nullptr, 0);
+    ASSERT_EQ(74u, length_bytes);
+    std::vector<FPDF_WCHAR> buf = GetFPDFWideStringBuffer(length_bytes);
+    EXPECT_EQ(74u, FPDFAnnot_GetStringValue(annot.get(),
+                                            pdfium::annotation::kContents,
+                                            buf.data(), length_bytes));
+    EXPECT_EQ(kContents, GetPlatformWString(buf.data()));
   }
   UnloadPage(page);
 }
 
-TEST_F(FPDFAnnotEmbeddertest, AddAndSaveUnderlineAnnotation) {
+TEST_F(FPDFAnnotEmbedderTest, AddAndSaveUnderlineAnnotation) {
   // Open a file with one annotation and load its first page.
   ASSERT_TRUE(OpenDocument("annotation_highlight_long_content.pdf"));
   FPDF_PAGE page = LoadPage(0);
@@ -353,11 +361,11 @@ TEST_F(FPDFAnnotEmbeddertest, AddAndSaveUnderlineAnnotation) {
   UnloadPage(page);
 
   // Open the saved document.
-  const char md5[] = "dba153419f67b7c0c0e3d22d3e8910d5";
+  static const char kMd5[] = "dba153419f67b7c0c0e3d22d3e8910d5";
 
-  OpenSavedDocument(nullptr);
+  ASSERT_TRUE(OpenSavedDocument());
   page = LoadSavedPage(0);
-  VerifySavedRendering(page, 612, 792, md5);
+  VerifySavedRendering(page, 612, 792, kMd5);
 
   // Check that the saved document has 2 annotations on the first page
   EXPECT_EQ(2, FPDFPage_GetAnnotCount(page));
@@ -381,7 +389,7 @@ TEST_F(FPDFAnnotEmbeddertest, AddAndSaveUnderlineAnnotation) {
   CloseSavedDocument();
 }
 
-TEST_F(FPDFAnnotEmbeddertest, GetAndSetQuadPoints) {
+TEST_F(FPDFAnnotEmbedderTest, GetAndSetQuadPoints) {
   // Open a file with four annotations and load its first page.
   ASSERT_TRUE(OpenDocument("annotation_highlight_square_with_ap.pdf"));
   FPDF_PAGE page = LoadPage(0);
@@ -465,19 +473,22 @@ TEST_F(FPDFAnnotEmbeddertest, GetAndSetQuadPoints) {
   UnloadPage(page);
 }
 
-TEST_F(FPDFAnnotEmbeddertest, ModifyRectQuadpointsWithAP) {
+TEST_F(FPDFAnnotEmbedderTest, ModifyRectQuadpointsWithAP) {
 #if _FX_PLATFORM_ == _FX_PLATFORM_APPLE_
-  const char md5_original[] = "63af8432fab95a67cdebb7cd0e514941";
-  const char md5_modified_highlight[] = "aec26075011349dec9bace891856b5f2";
-  const char md5_modified_square[] = "057f57a32be95975775e5ec513fdcb56";
+  static const char kMd5Original[] = "63af8432fab95a67cdebb7cd0e514941";
+  static const char kMd5ModifiedHighlight[] =
+      "aec26075011349dec9bace891856b5f2";
+  static const char kMd5ModifiedSquare[] = "057f57a32be95975775e5ec513fdcb56";
 #elif _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
-  const char md5_original[] = "0e27376094f11490f74c65f3dc3a42c5";
-  const char md5_modified_highlight[] = "66f3caef3a7d488a4fa1ad37fc06310e";
-  const char md5_modified_square[] = "a456dad0bc6801ee2d6408a4394af563";
+  static const char kMd5Original[] = "0e27376094f11490f74c65f3dc3a42c5";
+  static const char kMd5ModifiedHighlight[] =
+      "66f3caef3a7d488a4fa1ad37fc06310e";
+  static const char kMd5ModifiedSquare[] = "a456dad0bc6801ee2d6408a4394af563";
 #else
-  const char md5_original[] = "0e27376094f11490f74c65f3dc3a42c5";
-  const char md5_modified_highlight[] = "66f3caef3a7d488a4fa1ad37fc06310e";
-  const char md5_modified_square[] = "a456dad0bc6801ee2d6408a4394af563";
+  static const char kMd5Original[] = "0e27376094f11490f74c65f3dc3a42c5";
+  static const char kMd5ModifiedHighlight[] =
+      "66f3caef3a7d488a4fa1ad37fc06310e";
+  static const char kMd5ModifiedSquare[] = "a456dad0bc6801ee2d6408a4394af563";
 #endif
 
   // Open a file with four annotations and load its first page.
@@ -489,7 +500,7 @@ TEST_F(FPDFAnnotEmbeddertest, ModifyRectQuadpointsWithAP) {
   // Check that the original file renders correctly.
   {
     ScopedFPDFBitmap bitmap = RenderLoadedPageWithFlags(page, FPDF_ANNOT);
-    CompareBitmap(bitmap.get(), 612, 792, md5_original);
+    CompareBitmap(bitmap.get(), 612, 792, kMd5Original);
   }
 
   FS_RECTF rect;
@@ -529,7 +540,7 @@ TEST_F(FPDFAnnotEmbeddertest, ModifyRectQuadpointsWithAP) {
     // Check that updating quadpoints does not change the annotation's position.
     {
       ScopedFPDFBitmap bitmap = RenderLoadedPageWithFlags(page, FPDF_ANNOT);
-      CompareBitmap(bitmap.get(), 612, 792, md5_original);
+      CompareBitmap(bitmap.get(), 612, 792, kMd5Original);
     }
 
     // Verify its annotation rectangle.
@@ -550,7 +561,7 @@ TEST_F(FPDFAnnotEmbeddertest, ModifyRectQuadpointsWithAP) {
   // Check that updating the rectangle changes the annotation's position.
   {
     ScopedFPDFBitmap bitmap = RenderLoadedPageWithFlags(page, FPDF_ANNOT);
-    CompareBitmap(bitmap.get(), 612, 792, md5_modified_highlight);
+    CompareBitmap(bitmap.get(), 612, 792, kMd5ModifiedHighlight);
   }
 
   {
@@ -570,13 +581,13 @@ TEST_F(FPDFAnnotEmbeddertest, ModifyRectQuadpointsWithAP) {
     // Check that updating the rectangle changes the square annotation's
     // position.
     ScopedFPDFBitmap bitmap = RenderLoadedPageWithFlags(page, FPDF_ANNOT);
-    CompareBitmap(bitmap.get(), 612, 792, md5_modified_square);
+    CompareBitmap(bitmap.get(), 612, 792, kMd5ModifiedSquare);
   }
 
   UnloadPage(page);
 }
 
-TEST_F(FPDFAnnotEmbeddertest, CountAttachmentPoints) {
+TEST_F(FPDFAnnotEmbedderTest, CountAttachmentPoints) {
   // Open a file with multiline markup annotations.
   ASSERT_TRUE(OpenDocument("annotation_markup_multiline_no_ap.pdf"));
   FPDF_PAGE page = LoadPage(0);
@@ -594,7 +605,7 @@ TEST_F(FPDFAnnotEmbeddertest, CountAttachmentPoints) {
   EXPECT_EQ(0u, FPDFAnnot_CountAttachmentPoints(nullptr));
 }
 
-TEST_F(FPDFAnnotEmbeddertest, RemoveAnnotation) {
+TEST_F(FPDFAnnotEmbedderTest, RemoveAnnotation) {
   // Open a file with 3 annotations on its first page.
   ASSERT_TRUE(OpenDocument("annotation_ink_multiple.pdf"));
   FPDF_PAGE page = LoadPageNoEvents(0);
@@ -670,22 +681,22 @@ TEST_F(FPDFAnnotEmbeddertest, RemoveAnnotation) {
   FPDF_CloseDocument(new_doc);
 }
 
-TEST_F(FPDFAnnotEmbeddertest, AddAndModifyPath) {
+TEST_F(FPDFAnnotEmbedderTest, AddAndModifyPath) {
 #if _FX_PLATFORM_ == _FX_PLATFORM_APPLE_
-  const char md5_original[] = "c35408717759562d1f8bf33d317483d2";
-  const char md5_modified_path[] = "873b92ea83ccf006e58415d866ce145b";
-  const char md5_two_paths[] = "6f1f1c91f50240e9cc9d7c87c48b93a7";
-  const char md5_new_annot[] = "078bf58f939645ac305854f31ee9a828";
+  static const char kMd5Original[] = "c35408717759562d1f8bf33d317483d2";
+  static const char kMd5ModifiedPath[] = "9059723a045e17478753d2f0eb33bc03";
+  static const char kMd5TwoPaths[] = "7eed0cfba780f1d4dd8068f717d3a6bf";
+  static const char kMd5NewAnnot[] = "1de8212d43b7066a6df042095c2aca61";
 #elif _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
-  const char md5_original[] = "6f3cc2dd37479ce7cc072bfb0c63c275";
-  const char md5_modified_path[] = "c66293426cbf1f568502d1f7c0728fc7";
-  const char md5_two_paths[] = "122ac4625393b1dfe4be8707b73cbb13";
-  const char md5_new_annot[] = "253c7fd739646ba2568e1e8bfc782336";
+  static const char kMd5Original[] = "6f3cc2dd37479ce7cc072bfb0c63c275";
+  static const char kMd5ModifiedPath[] = "c0c2eb2aba73ad15b3240e342fbe0d72";
+  static const char kMd5TwoPaths[] = "2306bf04915fe001b5f4726843d184c8";
+  static const char kMd5NewAnnot[] = "64a319f145768cb09944d2109efe394e";
 #else
-  const char md5_original[] = "964f89bbe8911e540a465cf1a64b7f7e";
-  const char md5_modified_path[] = "5a4a6091cff648a4ece3ce7e245e3e38";
-  const char md5_two_paths[] = "d6e4072a4415cfc6ec17201fb6be0ee0";
-  const char md5_new_annot[] = "fc338b97bf66a656916c6198697a8a28";
+  static const char kMd5Original[] = "964f89bbe8911e540a465cf1a64b7f7e";
+  static const char kMd5ModifiedPath[] = "9a38048fb3ac1b2c9a4b34139caa993c";
+  static const char kMd5TwoPaths[] = "ece3d4df54b3395d6a2bf7a29b17239c";
+  static const char kMd5NewAnnot[] = "4299493de84c249f42f220f30f2bbb67";
 #endif
 
   // Open a file with two annotations and load its first page.
@@ -697,7 +708,7 @@ TEST_F(FPDFAnnotEmbeddertest, AddAndModifyPath) {
   // Check that the page renders correctly.
   {
     ScopedFPDFBitmap bitmap = RenderLoadedPageWithFlags(page, FPDF_ANNOT);
-    CompareBitmap(bitmap.get(), 595, 842, md5_original);
+    CompareBitmap(bitmap.get(), 595, 842, kMd5Original);
   }
 
   {
@@ -721,7 +732,7 @@ TEST_F(FPDFAnnotEmbeddertest, AddAndModifyPath) {
     // Check that the page with the modified annotation renders correctly.
     {
       ScopedFPDFBitmap bitmap = RenderLoadedPageWithFlags(page, FPDF_ANNOT);
-      CompareBitmap(bitmap.get(), 595, 842, md5_modified_path);
+      CompareBitmap(bitmap.get(), 595, 842, kMd5ModifiedPath);
     }
 
     // Add a second path object to the same annotation.
@@ -740,7 +751,7 @@ TEST_F(FPDFAnnotEmbeddertest, AddAndModifyPath) {
     // Check that the page with an annotation with two paths renders correctly.
     {
       ScopedFPDFBitmap bitmap = RenderLoadedPageWithFlags(page, FPDF_ANNOT);
-      CompareBitmap(bitmap.get(), 595, 842, md5_two_paths);
+      CompareBitmap(bitmap.get(), 595, 842, kMd5TwoPaths);
     }
 
     // Delete the newly added path object.
@@ -752,7 +763,7 @@ TEST_F(FPDFAnnotEmbeddertest, AddAndModifyPath) {
   // Check that the page renders the same as before.
   {
     ScopedFPDFBitmap bitmap = RenderLoadedPageWithFlags(page, FPDF_ANNOT);
-    CompareBitmap(bitmap.get(), 595, 842, md5_modified_path);
+    CompareBitmap(bitmap.get(), 595, 842, kMd5ModifiedPath);
   }
 
   FS_RECTF rect;
@@ -793,9 +804,9 @@ TEST_F(FPDFAnnotEmbeddertest, AddAndModifyPath) {
   UnloadPage(page);
 
   // Open the saved document.
-  OpenSavedDocument(nullptr);
+  ASSERT_TRUE(OpenSavedDocument());
   page = LoadSavedPage(0);
-  VerifySavedRendering(page, 595, 842, md5_new_annot);
+  VerifySavedRendering(page, 595, 842, kMd5NewAnnot);
 
   // Check that the document has a correct count of annotations and objects.
   EXPECT_EQ(3, FPDFPage_GetAnnotCount(page));
@@ -818,7 +829,7 @@ TEST_F(FPDFAnnotEmbeddertest, AddAndModifyPath) {
   CloseSavedDocument();
 }
 
-TEST_F(FPDFAnnotEmbeddertest, ModifyAnnotationFlags) {
+TEST_F(FPDFAnnotEmbedderTest, ModifyAnnotationFlags) {
   // Open a file with an annotation and load its first page.
   ASSERT_TRUE(OpenDocument("annotation_highlight_rollover_ap.pdf"));
   FPDF_PAGE page = LoadPage(0);
@@ -872,19 +883,19 @@ TEST_F(FPDFAnnotEmbeddertest, ModifyAnnotationFlags) {
   UnloadPage(page);
 }
 
-TEST_F(FPDFAnnotEmbeddertest, AddAndModifyImage) {
+TEST_F(FPDFAnnotEmbedderTest, AddAndModifyImage) {
 #if _FX_PLATFORM_ == _FX_PLATFORM_APPLE_
-  const char md5_original[] = "c35408717759562d1f8bf33d317483d2";
-  const char md5_new_image[] = "ff012f5697436dfcaec25b32d1333596";
-  const char md5_modified_image[] = "86cf8cb2755a7a2046a543e66d9c1e61";
+  static const char kMd5Original[] = "c35408717759562d1f8bf33d317483d2";
+  static const char kMd5NewImage[] = "ff012f5697436dfcaec25b32d1333596";
+  static const char kMd5ModifiedImage[] = "86cf8cb2755a7a2046a543e66d9c1e61";
 #elif _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
-  const char md5_original[] = "6f3cc2dd37479ce7cc072bfb0c63c275";
-  const char md5_new_image[] = "d19c6fcfd9a170802fcfb9adfa13557e";
-  const char md5_modified_image[] = "1273cf2363570a50d1aa0c95b1318197";
+  static const char kMd5Original[] = "6f3cc2dd37479ce7cc072bfb0c63c275";
+  static const char kMd5NewImage[] = "d19c6fcfd9a170802fcfb9adfa13557e";
+  static const char kMd5ModifiedImage[] = "1273cf2363570a50d1aa0c95b1318197";
 #else
-  const char md5_original[] = "964f89bbe8911e540a465cf1a64b7f7e";
-  const char md5_new_image[] = "9ea8732dc9d579f68853f16892856208";
-  const char md5_modified_image[] = "74239d2a8c55c9de1dbb9cd8781895aa";
+  static const char kMd5Original[] = "964f89bbe8911e540a465cf1a64b7f7e";
+  static const char kMd5NewImage[] = "9ea8732dc9d579f68853f16892856208";
+  static const char kMd5ModifiedImage[] = "74239d2a8c55c9de1dbb9cd8781895aa";
 #endif
 
   // Open a file with two annotations and load its first page.
@@ -896,7 +907,7 @@ TEST_F(FPDFAnnotEmbeddertest, AddAndModifyImage) {
   // Check that the page renders correctly.
   {
     ScopedFPDFBitmap bitmap = RenderLoadedPageWithFlags(page, FPDF_ANNOT);
-    CompareBitmap(bitmap.get(), 595, 842, md5_original);
+    CompareBitmap(bitmap.get(), 595, 842, kMd5Original);
   }
 
   constexpr int kBitmapSize = 200;
@@ -930,7 +941,7 @@ TEST_F(FPDFAnnotEmbeddertest, AddAndModifyImage) {
   // Check that the page renders correctly with the new image object.
   {
     ScopedFPDFBitmap bitmap = RenderLoadedPageWithFlags(page, FPDF_ANNOT);
-    CompareBitmap(bitmap.get(), 595, 842, md5_new_image);
+    CompareBitmap(bitmap.get(), 595, 842, kMd5NewImage);
   }
 
   {
@@ -954,22 +965,22 @@ TEST_F(FPDFAnnotEmbeddertest, AddAndModifyImage) {
   FPDFBitmap_Destroy(image_bitmap);
 
   // Test that the saved document renders the modified image object correctly.
-  VerifySavedDocument(595, 842, md5_modified_image);
+  VerifySavedDocument(595, 842, kMd5ModifiedImage);
 }
 
-TEST_F(FPDFAnnotEmbeddertest, AddAndModifyText) {
+TEST_F(FPDFAnnotEmbedderTest, AddAndModifyText) {
 #if _FX_PLATFORM_ == _FX_PLATFORM_APPLE_
-  const char md5_original[] = "c35408717759562d1f8bf33d317483d2";
-  const char md5_new_text[] = "e5680ed048c2cfd9a1d27212cdf41286";
-  const char md5_modified_text[] = "79f5cfb0b07caaf936f65f6a7a57ce77";
+  static const char kMd5Original[] = "c35408717759562d1f8bf33d317483d2";
+  static const char kMd5NewText[] = "60031c1b0330cf1e1575f7d46687d429";
+  static const char kMd5ModifiedText[] = "79f5cfb0b07caaf936f65f6a7a57ce77";
 #elif _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
-  const char md5_original[] = "6f3cc2dd37479ce7cc072bfb0c63c275";
-  const char md5_new_text[] = "554d625b52144816aaabb0dd66962c55";
-  const char md5_modified_text[] = "26e94fbd3af4b1e65479327507600114";
+  static const char kMd5Original[] = "6f3cc2dd37479ce7cc072bfb0c63c275";
+  static const char kMd5NewText[] = "87d55e09f9096de7e6552f5ae79afd3b";
+  static const char kMd5ModifiedText[] = "26e94fbd3af4b1e65479327507600114";
 #else
-  const char md5_original[] = "964f89bbe8911e540a465cf1a64b7f7e";
-  const char md5_new_text[] = "00b14fa2dc1c90d1b0d034e1608efef5";
-  const char md5_modified_text[] = "076c8f24a09ddc0e49f7e758edead6f0";
+  static const char kMd5Original[] = "964f89bbe8911e540a465cf1a64b7f7e";
+  static const char kMd5NewText[] = "30f3f5b989612ca03827d95f184f0979";
+  static const char kMd5ModifiedText[] = "076c8f24a09ddc0e49f7e758edead6f0";
 #endif
 
   // Open a file with two annotations and load its first page.
@@ -981,7 +992,7 @@ TEST_F(FPDFAnnotEmbeddertest, AddAndModifyText) {
   // Check that the page renders correctly.
   {
     ScopedFPDFBitmap bitmap = RenderLoadedPageWithFlags(page, FPDF_ANNOT);
-    CompareBitmap(bitmap.get(), 595, 842, md5_original);
+    CompareBitmap(bitmap.get(), 595, 842, kMd5Original);
   }
 
   {
@@ -999,7 +1010,7 @@ TEST_F(FPDFAnnotEmbeddertest, AddAndModifyText) {
     FPDF_PAGEOBJECT text_object =
         FPDFPageObj_NewTextObj(document(), "Arial", 12.0f);
     EXPECT_TRUE(text_object);
-    std::unique_ptr<unsigned short, pdfium::FreeDeleter> text =
+    ScopedFPDFWideString text =
         GetFPDFWideString(L"I'm a translucent text laying on other text.");
     EXPECT_TRUE(FPDFText_SetText(text_object, text.get()));
     EXPECT_TRUE(FPDFText_SetFillColor(text_object, 0, 0, 255, 150));
@@ -1010,7 +1021,7 @@ TEST_F(FPDFAnnotEmbeddertest, AddAndModifyText) {
   // Check that the page renders correctly with the new text object.
   {
     ScopedFPDFBitmap bitmap = RenderLoadedPageWithFlags(page, FPDF_ANNOT);
-    CompareBitmap(bitmap.get(), 595, 842, md5_new_text);
+    CompareBitmap(bitmap.get(), 595, 842, kMd5NewText);
   }
 
   {
@@ -1022,8 +1033,7 @@ TEST_F(FPDFAnnotEmbeddertest, AddAndModifyText) {
     EXPECT_EQ(FPDF_PAGEOBJ_TEXT, FPDFPageObj_GetType(text_object));
 
     // Modify the text in the new annotation.
-    std::unique_ptr<unsigned short, pdfium::FreeDeleter> new_text =
-        GetFPDFWideString(L"New text!");
+    ScopedFPDFWideString new_text = GetFPDFWideString(L"New text!");
     EXPECT_TRUE(FPDFText_SetText(text_object, new_text.get()));
     EXPECT_TRUE(FPDFAnnot_UpdateObject(annot.get(), text_object));
   }
@@ -1031,27 +1041,26 @@ TEST_F(FPDFAnnotEmbeddertest, AddAndModifyText) {
   // Check that the page renders correctly with the modified text object.
   {
     ScopedFPDFBitmap bitmap = RenderLoadedPageWithFlags(page, FPDF_ANNOT);
-    CompareBitmap(bitmap.get(), 595, 842, md5_modified_text);
+    CompareBitmap(bitmap.get(), 595, 842, kMd5ModifiedText);
   }
 
   // Remove the new annotation, and check that the page renders as before.
   EXPECT_TRUE(FPDFPage_RemoveAnnot(page, 2));
   {
     ScopedFPDFBitmap bitmap = RenderLoadedPageWithFlags(page, FPDF_ANNOT);
-    CompareBitmap(bitmap.get(), 595, 842, md5_original);
+    CompareBitmap(bitmap.get(), 595, 842, kMd5Original);
   }
 
   UnloadPage(page);
 }
 
-TEST_F(FPDFAnnotEmbeddertest, GetSetStringValue) {
+TEST_F(FPDFAnnotEmbedderTest, GetSetStringValue) {
   // Open a file with four annotations and load its first page.
   ASSERT_TRUE(OpenDocument("annotation_stamp_with_ap.pdf"));
   FPDF_PAGE page = LoadPage(0);
   ASSERT_TRUE(page);
 
-  static constexpr char kDateKey[] = "M";
-  static constexpr wchar_t kNewDate[] = L"D:201706282359Z00'00'";
+  static const wchar_t kNewDate[] = L"D:201706282359Z00'00'";
 
   {
     // Retrieve the first annotation.
@@ -1062,36 +1071,38 @@ TEST_F(FPDFAnnotEmbeddertest, GetSetStringValue) {
     EXPECT_FALSE(FPDFAnnot_HasKey(annot.get(), "none"));
 
     // Check that the string value of a non-string dictionary entry is empty.
-    static constexpr char kApKey[] = "AP";
-    EXPECT_TRUE(FPDFAnnot_HasKey(annot.get(), kApKey));
+    EXPECT_TRUE(FPDFAnnot_HasKey(annot.get(), pdfium::annotation::kAP));
     EXPECT_EQ(FPDF_OBJECT_REFERENCE,
-              FPDFAnnot_GetValueType(annot.get(), kApKey));
-    EXPECT_EQ(2u, FPDFAnnot_GetStringValue(annot.get(), kApKey, nullptr, 0));
+              FPDFAnnot_GetValueType(annot.get(), pdfium::annotation::kAP));
+    EXPECT_EQ(2u, FPDFAnnot_GetStringValue(annot.get(), pdfium::annotation::kAP,
+                                           nullptr, 0));
 
     // Check that the string value of the hash is correct.
-    static constexpr char kHashKey[] = "AAPL:Hash";
+    static const char kHashKey[] = "AAPL:Hash";
     EXPECT_EQ(FPDF_OBJECT_NAME, FPDFAnnot_GetValueType(annot.get(), kHashKey));
-    unsigned long len =
+    unsigned long length_bytes =
         FPDFAnnot_GetStringValue(annot.get(), kHashKey, nullptr, 0);
-    std::vector<char> buf(len);
-    EXPECT_EQ(66u,
-              FPDFAnnot_GetStringValue(annot.get(), kHashKey, buf.data(), len));
-    EXPECT_STREQ(L"395fbcb98d558681742f30683a62a2ad",
-                 BufferToWString(buf).c_str());
+    ASSERT_EQ(66u, length_bytes);
+    std::vector<FPDF_WCHAR> buf = GetFPDFWideStringBuffer(length_bytes);
+    EXPECT_EQ(66u, FPDFAnnot_GetStringValue(annot.get(), kHashKey, buf.data(),
+                                            length_bytes));
+    EXPECT_EQ(L"395fbcb98d558681742f30683a62a2ad",
+              GetPlatformWString(buf.data()));
 
     // Check that the string value of the modified date is correct.
     EXPECT_EQ(FPDF_OBJECT_NAME, FPDFAnnot_GetValueType(annot.get(), kHashKey));
-    len = FPDFAnnot_GetStringValue(annot.get(), kDateKey, nullptr, 0);
-    buf.clear();
-    buf.resize(len);
-    EXPECT_EQ(44u,
-              FPDFAnnot_GetStringValue(annot.get(), kDateKey, buf.data(), len));
-    EXPECT_STREQ(L"D:201706071721Z00'00'", BufferToWString(buf).c_str());
+    length_bytes = FPDFAnnot_GetStringValue(annot.get(), pdfium::annotation::kM,
+                                            nullptr, 0);
+    ASSERT_EQ(44u, length_bytes);
+    buf = GetFPDFWideStringBuffer(length_bytes);
+    EXPECT_EQ(44u, FPDFAnnot_GetStringValue(annot.get(), pdfium::annotation::kM,
+                                            buf.data(), length_bytes));
+    EXPECT_EQ(L"D:201706071721Z00'00'", GetPlatformWString(buf.data()));
 
     // Update the date entry for the annotation.
-    std::unique_ptr<unsigned short, pdfium::FreeDeleter> text =
-        GetFPDFWideString(kNewDate);
-    EXPECT_TRUE(FPDFAnnot_SetStringValue(annot.get(), kDateKey, text.get()));
+    ScopedFPDFWideString text = GetFPDFWideString(kNewDate);
+    EXPECT_TRUE(FPDFAnnot_SetStringValue(annot.get(), pdfium::annotation::kM,
+                                         text.get()));
   }
 
   // Save the document, closing the page and document.
@@ -1099,151 +1110,189 @@ TEST_F(FPDFAnnotEmbeddertest, GetSetStringValue) {
   UnloadPage(page);
 
 #if _FX_PLATFORM_ == _FX_PLATFORM_APPLE_
-  const char md5[] = "4d64e61c9c0f8c60ab3cc3234bb73b1c";
+  static const char kMd5[] = "4d64e61c9c0f8c60ab3cc3234bb73b1c";
 #elif _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
-  const char md5[] = "9ee141f698c3fcb56c050dffd6c82624";
+  static const char kMd5[] = "9ee141f698c3fcb56c050dffd6c82624";
 #else
-  const char md5[] = "c96ee1f316d7f5a1b154de9f9d467f01";
+  static const char kMd5[] = "c96ee1f316d7f5a1b154de9f9d467f01";
 #endif
 
   // Open the saved annotation.
-  OpenSavedDocument(nullptr);
+  ASSERT_TRUE(OpenSavedDocument());
   page = LoadSavedPage(0);
-  VerifySavedRendering(page, 595, 842, md5);
+  VerifySavedRendering(page, 595, 842, kMd5);
   {
     ScopedFPDFAnnotation new_annot(FPDFPage_GetAnnot(page, 0));
 
     // Check that the string value of the modified date is the newly-set value.
     EXPECT_EQ(FPDF_OBJECT_STRING,
-              FPDFAnnot_GetValueType(new_annot.get(), kDateKey));
-    unsigned long len =
-        FPDFAnnot_GetStringValue(new_annot.get(), kDateKey, nullptr, 0);
-    std::vector<char> buf(len);
-    EXPECT_EQ(44u, FPDFAnnot_GetStringValue(new_annot.get(), kDateKey,
-                                            buf.data(), len));
-    EXPECT_STREQ(kNewDate, BufferToWString(buf).c_str());
+              FPDFAnnot_GetValueType(new_annot.get(), pdfium::annotation::kM));
+    unsigned long length_bytes = FPDFAnnot_GetStringValue(
+        new_annot.get(), pdfium::annotation::kM, nullptr, 0);
+    ASSERT_EQ(44u, length_bytes);
+    std::vector<FPDF_WCHAR> buf = GetFPDFWideStringBuffer(length_bytes);
+    EXPECT_EQ(44u,
+              FPDFAnnot_GetStringValue(new_annot.get(), pdfium::annotation::kM,
+                                       buf.data(), length_bytes));
+    EXPECT_EQ(kNewDate, GetPlatformWString(buf.data()));
   }
 
   CloseSavedPage(page);
   CloseSavedDocument();
 }
 
-TEST_F(FPDFAnnotEmbeddertest, GetSetAP) {
+TEST_F(FPDFAnnotEmbedderTest, GetNumberValue) {
+  // Open a file with three text annotations and load its first page.
+  ASSERT_TRUE(OpenDocument("text_form_multiple.pdf"));
+  FPDF_PAGE page = LoadPage(0);
+  ASSERT_TRUE(page);
+  {
+    // First two annotations do not have "MaxLen" attribute.
+    for (int i = 0; i < 2; i++) {
+      ScopedFPDFAnnotation annot(FPDFPage_GetAnnot(page, i));
+      ASSERT_TRUE(annot);
+
+      // Verify that no "MaxLen" key present.
+      EXPECT_FALSE(FPDFAnnot_HasKey(annot.get(), "MaxLen"));
+
+      float value;
+      EXPECT_FALSE(FPDFAnnot_GetNumberValue(annot.get(), "MaxLen", &value));
+    }
+
+    // Annotation in index 2 has "MaxLen" of 10.
+    ScopedFPDFAnnotation annot(FPDFPage_GetAnnot(page, 2));
+    ASSERT_TRUE(annot);
+
+    // Verify that "MaxLen" key present.
+    EXPECT_TRUE(FPDFAnnot_HasKey(annot.get(), "MaxLen"));
+
+    float value;
+    EXPECT_TRUE(FPDFAnnot_GetNumberValue(annot.get(), "MaxLen", &value));
+    EXPECT_FLOAT_EQ(10.0f, value);
+
+    // Check bad inputs.
+    EXPECT_FALSE(FPDFAnnot_GetNumberValue(nullptr, "MaxLen", &value));
+    EXPECT_FALSE(FPDFAnnot_GetNumberValue(annot.get(), nullptr, &value));
+    EXPECT_FALSE(FPDFAnnot_GetNumberValue(annot.get(), "MaxLen", nullptr));
+    // Ask for key that exists but is not a number.
+    EXPECT_FALSE(FPDFAnnot_GetNumberValue(annot.get(), "V", &value));
+  }
+
+  UnloadPage(page);
+}
+
+TEST_F(FPDFAnnotEmbedderTest, GetSetAP) {
   // Open a file with four annotations and load its first page.
   ASSERT_TRUE(OpenDocument("annotation_stamp_with_ap.pdf"));
   FPDF_PAGE page = LoadPage(0);
   ASSERT_TRUE(page);
 
   {
+    static const char kMd5NormalAP[] = "be903df0343fd774fadab9c8900cdf4a";
+    static constexpr size_t kExpectNormalAPLength = 73970;
+
     // Retrieve the first annotation.
     ScopedFPDFAnnotation annot(FPDFPage_GetAnnot(page, 0));
     ASSERT_TRUE(annot);
 
     // Check that the string value of an AP returns the expected length.
-    unsigned long normal_len = FPDFAnnot_GetAP(
+    unsigned long normal_length_bytes = FPDFAnnot_GetAP(
         annot.get(), FPDF_ANNOT_APPEARANCEMODE_NORMAL, nullptr, 0);
-    EXPECT_EQ(73970u, normal_len);
+    ASSERT_EQ(kExpectNormalAPLength, normal_length_bytes);
 
     // Check that the string value of an AP is not returned if the buffer is too
     // small. The result buffer should be overwritten with an empty string.
-    std::vector<char> buf(normal_len - 1);
-    // Write L"z" in the buffer to verify it's not overwritten.
-    wcscpy(reinterpret_cast<wchar_t*>(buf.data()), L"z");
-    EXPECT_EQ(73970u,
+    std::vector<FPDF_WCHAR> buf = GetFPDFWideStringBuffer(normal_length_bytes);
+    // Write in the buffer to verify it's not overwritten.
+    memcpy(buf.data(), "abcdefgh", 8);
+    EXPECT_EQ(kExpectNormalAPLength,
               FPDFAnnot_GetAP(annot.get(), FPDF_ANNOT_APPEARANCEMODE_NORMAL,
-                              buf.data(), buf.size()));
-    std::string ap = BufferToString(buf);
-    EXPECT_STREQ("z", ap.c_str());
+                              buf.data(), normal_length_bytes - 1));
+    EXPECT_EQ(0, memcmp(buf.data(), "abcdefgh", 8));
 
     // Check that the string value of an AP is returned through a buffer that is
     // the right size.
-    buf.clear();
-    buf.resize(normal_len);
-    EXPECT_EQ(73970u,
+    EXPECT_EQ(kExpectNormalAPLength,
               FPDFAnnot_GetAP(annot.get(), FPDF_ANNOT_APPEARANCEMODE_NORMAL,
-                              buf.data(), buf.size()));
-    ap = BufferToString(buf);
-    EXPECT_THAT(ap, testing::StartsWith("q Q q 7.442786 w 2 J"));
-    EXPECT_THAT(ap, testing::EndsWith("c 716.5381 327.7156 l S Q Q"));
+                              buf.data(), normal_length_bytes));
+    EXPECT_EQ(kMd5NormalAP,
+              GenerateMD5Base16(reinterpret_cast<uint8_t*>(buf.data()),
+                                normal_length_bytes));
 
     // Check that the string value of an AP is returned through a buffer that is
     // larger than necessary.
-    buf.clear();
-    buf.resize(normal_len + 1);
-    EXPECT_EQ(73970u,
+    buf = GetFPDFWideStringBuffer(normal_length_bytes + 2);
+    EXPECT_EQ(kExpectNormalAPLength,
               FPDFAnnot_GetAP(annot.get(), FPDF_ANNOT_APPEARANCEMODE_NORMAL,
-                              buf.data(), buf.size()));
-    ap = BufferToString(buf);
-    EXPECT_THAT(ap, testing::StartsWith("q Q q 7.442786 w 2 J"));
-    EXPECT_THAT(ap, testing::EndsWith("c 716.5381 327.7156 l S Q Q"));
+                              buf.data(), normal_length_bytes + 2));
+    EXPECT_EQ(kMd5NormalAP,
+              GenerateMD5Base16(reinterpret_cast<uint8_t*>(buf.data()),
+                                normal_length_bytes));
 
     // Check that getting an AP for a mode that does not have an AP returns an
     // empty string.
-    unsigned long rollover_len = FPDFAnnot_GetAP(
+    unsigned long rollover_length_bytes = FPDFAnnot_GetAP(
         annot.get(), FPDF_ANNOT_APPEARANCEMODE_ROLLOVER, nullptr, 0);
-    EXPECT_EQ(2u, rollover_len);
+    ASSERT_EQ(2u, rollover_length_bytes);
 
-    buf.clear();
-    buf.resize(1000);
+    buf = GetFPDFWideStringBuffer(1000);
     EXPECT_EQ(2u,
               FPDFAnnot_GetAP(annot.get(), FPDF_ANNOT_APPEARANCEMODE_ROLLOVER,
-                              buf.data(), buf.size()));
-    EXPECT_STREQ("", BufferToString(buf).c_str());
+                              buf.data(), 1000));
+    EXPECT_EQ(L"", GetPlatformWString(buf.data()));
 
     // Check that setting the AP for an invalid appearance mode fails.
-    std::unique_ptr<unsigned short, pdfium::FreeDeleter> apText =
-        GetFPDFWideString(L"new test ap");
-    EXPECT_FALSE(FPDFAnnot_SetAP(annot.get(), -1, apText.get()));
+    ScopedFPDFWideString ap_text = GetFPDFWideString(L"new test ap");
+    EXPECT_FALSE(FPDFAnnot_SetAP(annot.get(), -1, ap_text.get()));
     EXPECT_FALSE(FPDFAnnot_SetAP(annot.get(), FPDF_ANNOT_APPEARANCEMODE_COUNT,
-                                 apText.get()));
+                                 ap_text.get()));
     EXPECT_FALSE(FPDFAnnot_SetAP(
-        annot.get(), FPDF_ANNOT_APPEARANCEMODE_COUNT + 1, apText.get()));
+        annot.get(), FPDF_ANNOT_APPEARANCEMODE_COUNT + 1, ap_text.get()));
 
     // Set the AP correctly now.
     EXPECT_TRUE(FPDFAnnot_SetAP(annot.get(), FPDF_ANNOT_APPEARANCEMODE_ROLLOVER,
-                                apText.get()));
+                                ap_text.get()));
 
     // Check that the new annotation value is equal to the value we just set.
-    rollover_len = FPDFAnnot_GetAP(
+    rollover_length_bytes = FPDFAnnot_GetAP(
         annot.get(), FPDF_ANNOT_APPEARANCEMODE_ROLLOVER, nullptr, 0);
-    EXPECT_EQ(24u, rollover_len);
-    buf.clear();
-    buf.resize(rollover_len);
+    ASSERT_EQ(24u, rollover_length_bytes);
+    buf = GetFPDFWideStringBuffer(rollover_length_bytes);
     EXPECT_EQ(24u,
               FPDFAnnot_GetAP(annot.get(), FPDF_ANNOT_APPEARANCEMODE_ROLLOVER,
-                              buf.data(), buf.size()));
-    EXPECT_STREQ(L"new test ap", BufferToWString(buf).c_str());
+                              buf.data(), rollover_length_bytes));
+    EXPECT_EQ(L"new test ap", GetPlatformWString(buf.data()));
 
     // Check that the Normal AP was not touched when the Rollover AP was set.
-    buf.clear();
-    buf.resize(normal_len);
-    EXPECT_EQ(73970u,
+    buf = GetFPDFWideStringBuffer(normal_length_bytes);
+    EXPECT_EQ(kExpectNormalAPLength,
               FPDFAnnot_GetAP(annot.get(), FPDF_ANNOT_APPEARANCEMODE_NORMAL,
-                              buf.data(), buf.size()));
-    ap = BufferToString(buf);
-    EXPECT_THAT(ap, testing::StartsWith("q Q q 7.442786 w 2 J"));
-    EXPECT_THAT(ap, testing::EndsWith("c 716.5381 327.7156 l S Q Q"));
+                              buf.data(), normal_length_bytes));
+    EXPECT_EQ(kMd5NormalAP,
+              GenerateMD5Base16(reinterpret_cast<uint8_t*>(buf.data()),
+                                normal_length_bytes));
   }
 
   // Save the modified document, then reopen it.
   EXPECT_TRUE(FPDF_SaveAsCopy(document(), this, 0));
   UnloadPage(page);
 
-  OpenSavedDocument(nullptr);
+  ASSERT_TRUE(OpenSavedDocument());
   page = LoadSavedPage(0);
   {
     ScopedFPDFAnnotation new_annot(FPDFPage_GetAnnot(page, 0));
 
     // Check that the new annotation value is equal to the value we set before
     // saving.
-    unsigned long rollover_len = FPDFAnnot_GetAP(
+    unsigned long rollover_length_bytes = FPDFAnnot_GetAP(
         new_annot.get(), FPDF_ANNOT_APPEARANCEMODE_ROLLOVER, nullptr, 0);
-    EXPECT_EQ(24u, rollover_len);
-    std::vector<char> buf(rollover_len);
+    ASSERT_EQ(24u, rollover_length_bytes);
+    std::vector<FPDF_WCHAR> buf =
+        GetFPDFWideStringBuffer(rollover_length_bytes);
     EXPECT_EQ(24u, FPDFAnnot_GetAP(new_annot.get(),
                                    FPDF_ANNOT_APPEARANCEMODE_ROLLOVER,
-                                   buf.data(), buf.size()));
-    EXPECT_STREQ(L"new test ap", BufferToWString(buf).c_str());
+                                   buf.data(), rollover_length_bytes));
+    EXPECT_EQ(L"new test ap", GetPlatformWString(buf.data()));
   }
 
   // Close saved document.
@@ -1251,7 +1300,7 @@ TEST_F(FPDFAnnotEmbeddertest, GetSetAP) {
   CloseSavedDocument();
 }
 
-TEST_F(FPDFAnnotEmbeddertest, RemoveOptionalAP) {
+TEST_F(FPDFAnnotEmbedderTest, RemoveOptionalAP) {
   // Open a file with four annotations and load its first page.
   ASSERT_TRUE(OpenDocument("annotation_stamp_with_ap.pdf"));
   FPDF_PAGE page = LoadPage(0);
@@ -1263,10 +1312,9 @@ TEST_F(FPDFAnnotEmbeddertest, RemoveOptionalAP) {
     ASSERT_TRUE(annot);
 
     // Set Down AP. Normal AP is already set.
-    std::unique_ptr<unsigned short, pdfium::FreeDeleter> apText =
-        GetFPDFWideString(L"new test ap");
+    ScopedFPDFWideString ap_text = GetFPDFWideString(L"new test ap");
     EXPECT_TRUE(FPDFAnnot_SetAP(annot.get(), FPDF_ANNOT_APPEARANCEMODE_DOWN,
-                                apText.get()));
+                                ap_text.get()));
     EXPECT_EQ(73970u,
               FPDFAnnot_GetAP(annot.get(), FPDF_ANNOT_APPEARANCEMODE_NORMAL,
                               nullptr, 0));
@@ -1287,7 +1335,7 @@ TEST_F(FPDFAnnotEmbeddertest, RemoveOptionalAP) {
   UnloadPage(page);
 }
 
-TEST_F(FPDFAnnotEmbeddertest, RemoveRequiredAP) {
+TEST_F(FPDFAnnotEmbedderTest, RemoveRequiredAP) {
   // Open a file with four annotations and load its first page.
   ASSERT_TRUE(OpenDocument("annotation_stamp_with_ap.pdf"));
   FPDF_PAGE page = LoadPage(0);
@@ -1299,10 +1347,9 @@ TEST_F(FPDFAnnotEmbeddertest, RemoveRequiredAP) {
     ASSERT_TRUE(annot);
 
     // Set Down AP. Normal AP is already set.
-    std::unique_ptr<unsigned short, pdfium::FreeDeleter> apText =
-        GetFPDFWideString(L"new test ap");
+    ScopedFPDFWideString ap_text = GetFPDFWideString(L"new test ap");
     EXPECT_TRUE(FPDFAnnot_SetAP(annot.get(), FPDF_ANNOT_APPEARANCEMODE_DOWN,
-                                apText.get()));
+                                ap_text.get()));
     EXPECT_EQ(73970u,
               FPDFAnnot_GetAP(annot.get(), FPDF_ANNOT_APPEARANCEMODE_NORMAL,
                               nullptr, 0));
@@ -1321,7 +1368,7 @@ TEST_F(FPDFAnnotEmbeddertest, RemoveRequiredAP) {
   UnloadPage(page);
 }
 
-TEST_F(FPDFAnnotEmbeddertest, ExtractLinkedAnnotations) {
+TEST_F(FPDFAnnotEmbedderTest, ExtractLinkedAnnotations) {
   // Open a file with annotations and load its first page.
   ASSERT_TRUE(OpenDocument("annotation_highlight_square_with_ap.pdf"));
   FPDF_PAGE page = LoadPage(0);
@@ -1334,7 +1381,7 @@ TEST_F(FPDFAnnotEmbeddertest, ExtractLinkedAnnotations) {
     ASSERT_TRUE(annot);
     EXPECT_EQ(FPDF_ANNOT_HIGHLIGHT, FPDFAnnot_GetSubtype(annot.get()));
     EXPECT_EQ(0, FPDFPage_GetAnnotIndex(page, annot.get()));
-    static constexpr char kPopupKey[] = "Popup";
+    static const char kPopupKey[] = "Popup";
     ASSERT_TRUE(FPDFAnnot_HasKey(annot.get(), kPopupKey));
     ASSERT_EQ(FPDF_OBJECT_REFERENCE,
               FPDFAnnot_GetValueType(annot.get(), kPopupKey));
@@ -1352,23 +1399,22 @@ TEST_F(FPDFAnnotEmbeddertest, ExtractLinkedAnnotations) {
 
     // Attempting to retrieve |annot|'s "IRT"-linked annotation would fail,
     // since "IRT" is not a key in |annot|'s dictionary.
-    static constexpr char kIRTKey[] = "IRT";
+    static const char kIRTKey[] = "IRT";
     ASSERT_FALSE(FPDFAnnot_HasKey(annot.get(), kIRTKey));
     EXPECT_FALSE(FPDFAnnot_GetLinkedAnnot(annot.get(), kIRTKey));
 
     // Attempting to retrieve |annot|'s parent dictionary as an annotation
     // would fail, since its parent is not an annotation.
-    static constexpr char kPKey[] = "P";
-    ASSERT_TRUE(FPDFAnnot_HasKey(annot.get(), kPKey));
+    ASSERT_TRUE(FPDFAnnot_HasKey(annot.get(), pdfium::annotation::kP));
     EXPECT_EQ(FPDF_OBJECT_REFERENCE,
-              FPDFAnnot_GetValueType(annot.get(), kPKey));
-    EXPECT_FALSE(FPDFAnnot_GetLinkedAnnot(annot.get(), kPKey));
+              FPDFAnnot_GetValueType(annot.get(), pdfium::annotation::kP));
+    EXPECT_FALSE(FPDFAnnot_GetLinkedAnnot(annot.get(), pdfium::annotation::kP));
   }
 
   UnloadPage(page);
 }
 
-TEST_F(FPDFAnnotEmbeddertest, GetFormFieldFlagsTextField) {
+TEST_F(FPDFAnnotEmbedderTest, GetFormFieldFlagsTextField) {
   // Open file with form text fields.
   ASSERT_TRUE(OpenDocument("text_form_multiple.pdf"));
   FPDF_PAGE page = LoadPage(0);
@@ -1380,7 +1426,7 @@ TEST_F(FPDFAnnotEmbeddertest, GetFormFieldFlagsTextField) {
     ASSERT_TRUE(annot);
 
     // Check that the flag values are as expected.
-    int flags = FPDFAnnot_GetFormFieldFlags(page, annot.get());
+    int flags = FPDFAnnot_GetFormFieldFlags(form_handle(), page, annot.get());
     EXPECT_FALSE(flags & FPDF_FORMFLAG_READONLY);
   }
 
@@ -1390,14 +1436,14 @@ TEST_F(FPDFAnnotEmbeddertest, GetFormFieldFlagsTextField) {
     ASSERT_TRUE(annot);
 
     // Check that the flag values are as expected.
-    int flags = FPDFAnnot_GetFormFieldFlags(page, annot.get());
+    int flags = FPDFAnnot_GetFormFieldFlags(form_handle(), page, annot.get());
     EXPECT_TRUE(flags & FPDF_FORMFLAG_READONLY);
   }
 
   UnloadPage(page);
 }
 
-TEST_F(FPDFAnnotEmbeddertest, GetFormFieldFlagsComboBox) {
+TEST_F(FPDFAnnotEmbedderTest, GetFormFieldFlagsComboBox) {
   // Open file with form text fields.
   ASSERT_TRUE(OpenDocument("combobox_form.pdf"));
   FPDF_PAGE page = LoadPage(0);
@@ -1409,7 +1455,7 @@ TEST_F(FPDFAnnotEmbeddertest, GetFormFieldFlagsComboBox) {
     ASSERT_TRUE(annot);
 
     // Check that the flag values are as expected.
-    int flags = FPDFAnnot_GetFormFieldFlags(page, annot.get());
+    int flags = FPDFAnnot_GetFormFieldFlags(form_handle(), page, annot.get());
     EXPECT_FALSE(flags & FPDF_FORMFLAG_READONLY);
     EXPECT_TRUE(flags & FPDF_FORMFLAG_CHOICE_COMBO);
     EXPECT_TRUE(flags & FPDF_FORMFLAG_CHOICE_EDIT);
@@ -1421,7 +1467,7 @@ TEST_F(FPDFAnnotEmbeddertest, GetFormFieldFlagsComboBox) {
     ASSERT_TRUE(annot);
 
     // Check that the flag values are as expected.
-    int flags = FPDFAnnot_GetFormFieldFlags(page, annot.get());
+    int flags = FPDFAnnot_GetFormFieldFlags(form_handle(), page, annot.get());
     EXPECT_FALSE(flags & FPDF_FORMFLAG_READONLY);
     EXPECT_TRUE(flags & FPDF_FORMFLAG_CHOICE_COMBO);
     EXPECT_FALSE(flags & FPDF_FORMFLAG_CHOICE_EDIT);
@@ -1433,7 +1479,7 @@ TEST_F(FPDFAnnotEmbeddertest, GetFormFieldFlagsComboBox) {
     ASSERT_TRUE(annot);
 
     // Check that the flag values are as expected.
-    int flags = FPDFAnnot_GetFormFieldFlags(page, annot.get());
+    int flags = FPDFAnnot_GetFormFieldFlags(form_handle(), page, annot.get());
     EXPECT_TRUE(flags & FPDF_FORMFLAG_READONLY);
     EXPECT_TRUE(flags & FPDF_FORMFLAG_CHOICE_COMBO);
     EXPECT_FALSE(flags & FPDF_FORMFLAG_CHOICE_EDIT);
@@ -1442,7 +1488,7 @@ TEST_F(FPDFAnnotEmbeddertest, GetFormFieldFlagsComboBox) {
   UnloadPage(page);
 }
 
-TEST_F(FPDFAnnotEmbeddertest, GetFormAnnotNull) {
+TEST_F(FPDFAnnotEmbedderTest, GetFormAnnotNull) {
   // Open file with form text fields.
   EXPECT_TRUE(OpenDocument("text_form.pdf"));
   FPDF_PAGE page = LoadPage(0);
@@ -1466,7 +1512,7 @@ TEST_F(FPDFAnnotEmbeddertest, GetFormAnnotNull) {
   UnloadPage(page);
 }
 
-TEST_F(FPDFAnnotEmbeddertest, GetFormAnnotAndCheckFlagsTextField) {
+TEST_F(FPDFAnnotEmbedderTest, GetFormAnnotAndCheckFlagsTextField) {
   // Open file with form text fields.
   EXPECT_TRUE(OpenDocument("text_form_multiple.pdf"));
   FPDF_PAGE page = LoadPage(0);
@@ -1479,7 +1525,7 @@ TEST_F(FPDFAnnotEmbeddertest, GetFormAnnotAndCheckFlagsTextField) {
     ASSERT_TRUE(annot);
 
     // Check that interactive form annotation flag values are as expected.
-    int flags = FPDFAnnot_GetFormFieldFlags(page, annot.get());
+    int flags = FPDFAnnot_GetFormFieldFlags(form_handle(), page, annot.get());
     EXPECT_FALSE(flags & FPDF_FORMFLAG_READONLY);
   }
 
@@ -1490,14 +1536,14 @@ TEST_F(FPDFAnnotEmbeddertest, GetFormAnnotAndCheckFlagsTextField) {
     ASSERT_TRUE(annot);
 
     // Check that interactive form annotation flag values are as expected.
-    int flags = FPDFAnnot_GetFormFieldFlags(page, annot.get());
+    int flags = FPDFAnnot_GetFormFieldFlags(form_handle(), page, annot.get());
     EXPECT_TRUE(flags & FPDF_FORMFLAG_READONLY);
   }
 
   UnloadPage(page);
 }
 
-TEST_F(FPDFAnnotEmbeddertest, GetFormAnnotAndCheckFlagsComboBox) {
+TEST_F(FPDFAnnotEmbedderTest, GetFormAnnotAndCheckFlagsComboBox) {
   // Open file with form comboboxes.
   EXPECT_TRUE(OpenDocument("combobox_form.pdf"));
   FPDF_PAGE page = LoadPage(0);
@@ -1510,7 +1556,7 @@ TEST_F(FPDFAnnotEmbeddertest, GetFormAnnotAndCheckFlagsComboBox) {
     ASSERT_TRUE(annot);
 
     // Check that interactive form annotation flag values are as expected.
-    int flags = FPDFAnnot_GetFormFieldFlags(page, annot.get());
+    int flags = FPDFAnnot_GetFormFieldFlags(form_handle(), page, annot.get());
     EXPECT_FALSE(flags & FPDF_FORMFLAG_READONLY);
     EXPECT_TRUE(flags & FPDF_FORMFLAG_CHOICE_COMBO);
     EXPECT_TRUE(flags & FPDF_FORMFLAG_CHOICE_EDIT);
@@ -1523,7 +1569,7 @@ TEST_F(FPDFAnnotEmbeddertest, GetFormAnnotAndCheckFlagsComboBox) {
     ASSERT_TRUE(annot);
 
     // Check that interactive form annotation flag values are as expected.
-    int flags = FPDFAnnot_GetFormFieldFlags(page, annot.get());
+    int flags = FPDFAnnot_GetFormFieldFlags(form_handle(), page, annot.get());
     EXPECT_FALSE(flags & FPDF_FORMFLAG_READONLY);
     EXPECT_TRUE(flags & FPDF_FORMFLAG_CHOICE_COMBO);
     EXPECT_FALSE(flags & FPDF_FORMFLAG_CHOICE_EDIT);
@@ -1536,10 +1582,331 @@ TEST_F(FPDFAnnotEmbeddertest, GetFormAnnotAndCheckFlagsComboBox) {
     ASSERT_TRUE(annot);
 
     // Check that interactive form annotation flag values are as expected.
-    int flags = FPDFAnnot_GetFormFieldFlags(page, annot.get());
+    int flags = FPDFAnnot_GetFormFieldFlags(form_handle(), page, annot.get());
     EXPECT_TRUE(flags & FPDF_FORMFLAG_READONLY);
     EXPECT_TRUE(flags & FPDF_FORMFLAG_CHOICE_COMBO);
     EXPECT_FALSE(flags & FPDF_FORMFLAG_CHOICE_EDIT);
+  }
+
+  UnloadPage(page);
+}
+
+TEST_F(FPDFAnnotEmbedderTest, BUG_1206) {
+  static constexpr size_t kExpectedSize = 1609;
+  static const char kExpectedBitmap[] = "0d9fc05c6762fd788bd23fd87a4967bc";
+
+  ASSERT_TRUE(OpenDocument("bug_1206.pdf"));
+
+  FPDF_PAGE page = LoadPage(0);
+  ASSERT_TRUE(page);
+
+  ASSERT_TRUE(FPDF_SaveAsCopy(document(), this, 0));
+  EXPECT_EQ(kExpectedSize, GetString().size());
+  ClearString();
+
+  for (size_t i = 0; i < 10; ++i) {
+    ScopedFPDFBitmap bitmap = RenderLoadedPageWithFlags(page, FPDF_ANNOT);
+    CompareBitmap(bitmap.get(), 612, 792, kExpectedBitmap);
+
+    ASSERT_TRUE(FPDF_SaveAsCopy(document(), this, 0));
+    // TODO(https://crbug.com/pdfium/1206): This is wrong. The size should be
+    // equal, not bigger.
+    EXPECT_LT(kExpectedSize, GetString().size());
+    ClearString();
+  }
+
+  UnloadPage(page);
+}
+
+TEST_F(FPDFAnnotEmbedderTest, BUG_1212) {
+  ASSERT_TRUE(OpenDocument("hello_world.pdf"));
+  FPDF_PAGE page = LoadPage(0);
+  ASSERT_TRUE(page);
+  EXPECT_EQ(0, FPDFPage_GetAnnotCount(page));
+
+  static const char kTestKey[] = "test";
+  static const wchar_t kData[] = L"\xf6\xe4";
+  static const size_t kBufSize = 12;
+  std::vector<FPDF_WCHAR> buf = GetFPDFWideStringBuffer(kBufSize);
+
+  {
+    // Add a text annotation to the page.
+    ScopedFPDFAnnotation annot(FPDFPage_CreateAnnot(page, FPDF_ANNOT_TEXT));
+    ASSERT_TRUE(annot);
+    EXPECT_EQ(1, FPDFPage_GetAnnotCount(page));
+    EXPECT_EQ(FPDF_ANNOT_TEXT, FPDFAnnot_GetSubtype(annot.get()));
+
+    // Make sure there is no test key, add set a value there, and read it back.
+    std::fill(buf.begin(), buf.end(), 'x');
+    ASSERT_EQ(2u, FPDFAnnot_GetStringValue(annot.get(), kTestKey, buf.data(),
+                                           kBufSize));
+    EXPECT_EQ(L"", GetPlatformWString(buf.data()));
+
+    ScopedFPDFWideString text = GetFPDFWideString(kData);
+    EXPECT_TRUE(FPDFAnnot_SetStringValue(annot.get(), kTestKey, text.get()));
+
+    std::fill(buf.begin(), buf.end(), 'x');
+    ASSERT_EQ(6u, FPDFAnnot_GetStringValue(annot.get(), kTestKey, buf.data(),
+                                           kBufSize));
+    EXPECT_EQ(kData, GetPlatformWString(buf.data()));
+  }
+
+  {
+    ScopedFPDFAnnotation annot(FPDFPage_CreateAnnot(page, FPDF_ANNOT_STAMP));
+    ASSERT_TRUE(annot);
+    EXPECT_EQ(2, FPDFPage_GetAnnotCount(page));
+    EXPECT_EQ(FPDF_ANNOT_STAMP, FPDFAnnot_GetSubtype(annot.get()));
+    // Also do the same test for its appearance string.
+    std::fill(buf.begin(), buf.end(), 'x');
+    ASSERT_EQ(2u,
+              FPDFAnnot_GetAP(annot.get(), FPDF_ANNOT_APPEARANCEMODE_ROLLOVER,
+                              buf.data(), kBufSize));
+    EXPECT_EQ(L"", GetPlatformWString(buf.data()));
+
+    ScopedFPDFWideString text = GetFPDFWideString(kData);
+    EXPECT_TRUE(FPDFAnnot_SetAP(annot.get(), FPDF_ANNOT_APPEARANCEMODE_ROLLOVER,
+                                text.get()));
+
+    std::fill(buf.begin(), buf.end(), 'x');
+    ASSERT_EQ(6u,
+              FPDFAnnot_GetAP(annot.get(), FPDF_ANNOT_APPEARANCEMODE_ROLLOVER,
+                              buf.data(), kBufSize));
+    EXPECT_EQ(kData, GetPlatformWString(buf.data()));
+  }
+
+  UnloadPage(page);
+
+  {
+    // Save a copy, open the copy, and check the annotation again.
+    // Note that it renders the rotation.
+    EXPECT_TRUE(FPDF_SaveAsCopy(document(), this, 0));
+    ASSERT_TRUE(OpenSavedDocument());
+    FPDF_PAGE saved_page = LoadSavedPage(0);
+    ASSERT_TRUE(saved_page);
+
+    EXPECT_EQ(2, FPDFPage_GetAnnotCount(saved_page));
+    {
+      ScopedFPDFAnnotation annot(FPDFPage_GetAnnot(saved_page, 0));
+      ASSERT_TRUE(annot);
+      EXPECT_EQ(FPDF_ANNOT_TEXT, FPDFAnnot_GetSubtype(annot.get()));
+
+      std::fill(buf.begin(), buf.end(), 'x');
+      ASSERT_EQ(6u, FPDFAnnot_GetStringValue(annot.get(), kTestKey, buf.data(),
+                                             kBufSize));
+      EXPECT_EQ(kData, GetPlatformWString(buf.data()));
+    }
+
+    {
+      ScopedFPDFAnnotation annot(FPDFPage_GetAnnot(saved_page, 0));
+      ASSERT_TRUE(annot);
+      // TODO(thestig): This return FPDF_ANNOT_UNKNOWN for some reason.
+      // EXPECT_EQ(FPDF_ANNOT_TEXT, FPDFAnnot_GetSubtype(annot.get()));
+
+      std::fill(buf.begin(), buf.end(), 'x');
+      ASSERT_EQ(6u, FPDFAnnot_GetStringValue(annot.get(), kTestKey, buf.data(),
+                                             kBufSize));
+      EXPECT_EQ(kData, GetPlatformWString(buf.data()));
+    }
+
+    CloseSavedPage(saved_page);
+    CloseSavedDocument();
+  }
+}
+
+TEST_F(FPDFAnnotEmbedderTest, GetOptionCountCombobox) {
+  // Open a file with combobox widget annotations and load its first page.
+  ASSERT_TRUE(OpenDocument("combobox_form.pdf"));
+  FPDF_PAGE page = LoadPage(0);
+  ASSERT_TRUE(page);
+
+  {
+    ScopedFPDFAnnotation annot(FPDFPage_GetAnnot(page, 0));
+    ASSERT_TRUE(annot);
+
+    EXPECT_EQ(3, FPDFAnnot_GetOptionCount(form_handle(), annot.get()));
+
+    annot.reset(FPDFPage_GetAnnot(page, 1));
+    ASSERT_TRUE(annot);
+
+    EXPECT_EQ(26, FPDFAnnot_GetOptionCount(form_handle(), annot.get()));
+
+    // Check bad form handle / annot.
+    EXPECT_EQ(-1, FPDFAnnot_GetOptionCount(nullptr, nullptr));
+    EXPECT_EQ(-1, FPDFAnnot_GetOptionCount(form_handle(), nullptr));
+    EXPECT_EQ(-1, FPDFAnnot_GetOptionCount(nullptr, annot.get()));
+  }
+
+  UnloadPage(page);
+}
+
+TEST_F(FPDFAnnotEmbedderTest, GetOptionCountListbox) {
+  // Open a file with listbox widget annotations and load its first page.
+  ASSERT_TRUE(OpenDocument("listbox_form.pdf"));
+  FPDF_PAGE page = LoadPage(0);
+  ASSERT_TRUE(page);
+
+  {
+    ScopedFPDFAnnotation annot(FPDFPage_GetAnnot(page, 0));
+    ASSERT_TRUE(annot);
+
+    EXPECT_EQ(3, FPDFAnnot_GetOptionCount(form_handle(), annot.get()));
+
+    annot.reset(FPDFPage_GetAnnot(page, 1));
+    ASSERT_TRUE(annot);
+
+    EXPECT_EQ(26, FPDFAnnot_GetOptionCount(form_handle(), annot.get()));
+  }
+
+  UnloadPage(page);
+}
+
+TEST_F(FPDFAnnotEmbedderTest, GetOptionCountInvalidAnnotations) {
+  // Open a file with ink annotations and load its first page.
+  ASSERT_TRUE(OpenDocument("annotation_ink_multiple.pdf"));
+  FPDF_PAGE page = LoadPage(0);
+  ASSERT_TRUE(page);
+
+  {
+    // annotations do not have "Opt" array and will return -1
+    ScopedFPDFAnnotation annot(FPDFPage_GetAnnot(page, 0));
+    ASSERT_TRUE(annot);
+
+    EXPECT_EQ(-1, FPDFAnnot_GetOptionCount(form_handle(), annot.get()));
+
+    annot.reset(FPDFPage_GetAnnot(page, 1));
+    ASSERT_TRUE(annot);
+
+    EXPECT_EQ(-1, FPDFAnnot_GetOptionCount(form_handle(), annot.get()));
+  }
+
+  UnloadPage(page);
+}
+
+TEST_F(FPDFAnnotEmbedderTest, GetOptionLabelCombobox) {
+  // Open a file with combobox widget annotations and load its first page.
+  ASSERT_TRUE(OpenDocument("combobox_form.pdf"));
+  FPDF_PAGE page = LoadPage(0);
+  ASSERT_TRUE(page);
+
+  {
+    ScopedFPDFAnnotation annot(FPDFPage_GetAnnot(page, 0));
+    ASSERT_TRUE(annot);
+
+    int index = 0;
+    unsigned long length_bytes =
+        FPDFAnnot_GetOptionLabel(form_handle(), annot.get(), index, nullptr, 0);
+    ASSERT_EQ(8u, length_bytes);
+    std::vector<FPDF_WCHAR> buf = GetFPDFWideStringBuffer(length_bytes);
+    EXPECT_EQ(8u, FPDFAnnot_GetOptionLabel(form_handle(), annot.get(), index,
+                                           buf.data(), length_bytes));
+    EXPECT_EQ(L"Foo", GetPlatformWString(buf.data()));
+
+    annot.reset(FPDFPage_GetAnnot(page, 1));
+    ASSERT_TRUE(annot);
+
+    index = 0;
+    length_bytes =
+        FPDFAnnot_GetOptionLabel(form_handle(), annot.get(), index, nullptr, 0);
+    ASSERT_EQ(12u, length_bytes);
+    buf = GetFPDFWideStringBuffer(length_bytes);
+    EXPECT_EQ(12u, FPDFAnnot_GetOptionLabel(form_handle(), annot.get(), index,
+                                            buf.data(), length_bytes));
+    EXPECT_EQ(L"Apple", GetPlatformWString(buf.data()));
+
+    index = 25;
+    length_bytes =
+        FPDFAnnot_GetOptionLabel(form_handle(), annot.get(), index, nullptr, 0);
+    buf = GetFPDFWideStringBuffer(length_bytes);
+    EXPECT_EQ(18u, FPDFAnnot_GetOptionLabel(form_handle(), annot.get(), index,
+                                            buf.data(), length_bytes));
+    EXPECT_EQ(L"Zucchini", GetPlatformWString(buf.data()));
+
+    // Indices out of range
+    EXPECT_EQ(0u, FPDFAnnot_GetOptionLabel(form_handle(), annot.get(), -1,
+                                           nullptr, 0));
+    EXPECT_EQ(0u, FPDFAnnot_GetOptionLabel(form_handle(), annot.get(), 26,
+                                           nullptr, 0));
+
+    // Check bad form handle / annot.
+    EXPECT_EQ(0u, FPDFAnnot_GetOptionLabel(nullptr, nullptr, 0, nullptr, 0));
+    EXPECT_EQ(0u,
+              FPDFAnnot_GetOptionLabel(nullptr, annot.get(), 0, nullptr, 0));
+    EXPECT_EQ(0u,
+              FPDFAnnot_GetOptionLabel(form_handle(), nullptr, 0, nullptr, 0));
+  }
+
+  UnloadPage(page);
+}
+
+TEST_F(FPDFAnnotEmbedderTest, GetOptionLabelListbox) {
+  // Open a file with listbox widget annotations and load its first page.
+  ASSERT_TRUE(OpenDocument("listbox_form.pdf"));
+  FPDF_PAGE page = LoadPage(0);
+  ASSERT_TRUE(page);
+
+  {
+    ScopedFPDFAnnotation annot(FPDFPage_GetAnnot(page, 0));
+    ASSERT_TRUE(annot);
+
+    int index = 0;
+    unsigned long length_bytes =
+        FPDFAnnot_GetOptionLabel(form_handle(), annot.get(), index, nullptr, 0);
+    ASSERT_EQ(8u, length_bytes);
+    std::vector<FPDF_WCHAR> buf = GetFPDFWideStringBuffer(length_bytes);
+    EXPECT_EQ(8u, FPDFAnnot_GetOptionLabel(form_handle(), annot.get(), index,
+                                           buf.data(), length_bytes));
+    EXPECT_EQ(L"Foo", GetPlatformWString(buf.data()));
+
+    annot.reset(FPDFPage_GetAnnot(page, 1));
+    ASSERT_TRUE(annot);
+
+    index = 0;
+    length_bytes =
+        FPDFAnnot_GetOptionLabel(form_handle(), annot.get(), index, nullptr, 0);
+    ASSERT_EQ(12u, length_bytes);
+    buf = GetFPDFWideStringBuffer(length_bytes);
+    EXPECT_EQ(12u, FPDFAnnot_GetOptionLabel(form_handle(), annot.get(), index,
+                                            buf.data(), length_bytes));
+    EXPECT_EQ(L"Apple", GetPlatformWString(buf.data()));
+
+    index = 25;
+    length_bytes =
+        FPDFAnnot_GetOptionLabel(form_handle(), annot.get(), index, nullptr, 0);
+    ASSERT_EQ(18u, length_bytes);
+    buf = GetFPDFWideStringBuffer(length_bytes);
+    EXPECT_EQ(18u, FPDFAnnot_GetOptionLabel(form_handle(), annot.get(), index,
+                                            buf.data(), length_bytes));
+    EXPECT_EQ(L"Zucchini", GetPlatformWString(buf.data()));
+
+    // indices out of range
+    EXPECT_EQ(0u, FPDFAnnot_GetOptionLabel(form_handle(), annot.get(), -1,
+                                           nullptr, 0));
+    EXPECT_EQ(0u, FPDFAnnot_GetOptionLabel(form_handle(), annot.get(), 26,
+                                           nullptr, 0));
+  }
+
+  UnloadPage(page);
+}
+
+TEST_F(FPDFAnnotEmbedderTest, GetOptionLabelInvalidAnnotations) {
+  // Open a file with ink annotations and load its first page.
+  ASSERT_TRUE(OpenDocument("annotation_ink_multiple.pdf"));
+  FPDF_PAGE page = LoadPage(0);
+  ASSERT_TRUE(page);
+
+  {
+    // annotations do not have "Opt" array and will return 0
+    ScopedFPDFAnnotation annot(FPDFPage_GetAnnot(page, 0));
+    ASSERT_TRUE(annot);
+
+    EXPECT_EQ(0u, FPDFAnnot_GetOptionLabel(form_handle(), annot.get(), 0,
+                                           nullptr, 0));
+
+    annot.reset(FPDFPage_GetAnnot(page, 1));
+    ASSERT_TRUE(annot);
+
+    EXPECT_EQ(0u, FPDFAnnot_GetOptionLabel(form_handle(), annot.get(), 0,
+                                           nullptr, 0));
   }
 
   UnloadPage(page);

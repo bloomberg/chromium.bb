@@ -40,9 +40,9 @@ class LayerAnimationSequence;
 //      ui::LayerAnimator* animator_2 = layer_2->GetAnimator();
 //      CallbackLayerAnimationObserver* observer =
 //          new CallbackLayerAnimationObserver(
-//              base::Bind(&Foobar::AnimationStartedCallback),
+//              base::BindRepeating(&Foobar::AnimationStartedCallback),
 //              base::Unretained(this));
-//              base::Bind(&Foobar::AnimationEndedCallback),
+//              base::BindRepeating(&Foobar::AnimationEndedCallback),
 //              base::Unretained(this));
 //      animator_1->AddObserver(observer);
 //      animator_2->AddObserver(observer);
@@ -61,13 +61,13 @@ class COMPOSITOR_EXPORT CallbackLayerAnimationObserver
  public:
   // The Callback type that will be invoked when all animation sequences have
   // been started.
-  typedef base::Callback<void(const CallbackLayerAnimationObserver&)>
+  typedef base::RepeatingCallback<void(const CallbackLayerAnimationObserver&)>
       AnimationStartedCallback;
 
   // The Callback type that will be invoked when all animation sequences have
   // finished. |this| will be destroyed after invoking the Callback if it
   // returns true.
-  typedef base::Callback<bool(const CallbackLayerAnimationObserver&)>
+  typedef base::RepeatingCallback<bool(const CallbackLayerAnimationObserver&)>
       AnimationEndedCallback;
 
   // A dummy no-op AnimationStartedCallback.

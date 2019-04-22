@@ -8,15 +8,19 @@
 #include "src/objects/js-objects.h"
 
 #include "src/feedback-vector.h"
+#include "src/field-index-inl.h"
 #include "src/heap/heap-write-barrier.h"
 #include "src/keys.h"
 #include "src/lookup-inl.h"
 #include "src/objects/embedder-data-slot-inl.h"
+#include "src/objects/feedback-cell-inl.h"
+#include "src/objects/hash-table-inl.h"
+#include "src/objects/heap-number-inl.h"
 #include "src/objects/property-array-inl.h"
 #include "src/objects/shared-function-info.h"
 #include "src/objects/slots.h"
 #include "src/objects/smi-inl.h"
-#include "src/prototype.h"
+#include "src/prototype-inl.h"
 
 // Has to be the last include (doesn't have include guards):
 #include "src/objects/object-macros.h"
@@ -24,13 +28,28 @@
 namespace v8 {
 namespace internal {
 
+OBJECT_CONSTRUCTORS_IMPL(JSReceiver, HeapObject)
+OBJECT_CONSTRUCTORS_IMPL(JSObject, JSReceiver)
+OBJECT_CONSTRUCTORS_IMPL(JSAsyncFromSyncIterator, JSObject)
+OBJECT_CONSTRUCTORS_IMPL(JSBoundFunction, JSObject)
+OBJECT_CONSTRUCTORS_IMPL(JSDate, JSObject)
+OBJECT_CONSTRUCTORS_IMPL(JSFunction, JSObject)
+OBJECT_CONSTRUCTORS_IMPL(JSGlobalObject, JSObject)
+OBJECT_CONSTRUCTORS_IMPL(JSGlobalProxy, JSObject)
+JSIteratorResult::JSIteratorResult(Address ptr) : JSObject(ptr) {}
+OBJECT_CONSTRUCTORS_IMPL(JSMessageObject, JSObject)
+OBJECT_CONSTRUCTORS_IMPL(JSStringIterator, JSObject)
+OBJECT_CONSTRUCTORS_IMPL(JSValue, JSObject)
+
+NEVER_READ_ONLY_SPACE_IMPL(JSReceiver)
+
 CAST_ACCESSOR(JSAsyncFromSyncIterator)
 CAST_ACCESSOR(JSBoundFunction)
-CAST_ACCESSOR(JSDataView)
 CAST_ACCESSOR(JSDate)
 CAST_ACCESSOR(JSFunction)
 CAST_ACCESSOR(JSGlobalObject)
 CAST_ACCESSOR(JSGlobalProxy)
+CAST_ACCESSOR(JSIteratorResult)
 CAST_ACCESSOR(JSMessageObject)
 CAST_ACCESSOR(JSObject)
 CAST_ACCESSOR(JSReceiver)
@@ -61,14 +80,14 @@ Handle<Object> JSReceiver::GetDataProperty(Handle<JSReceiver> object,
   return GetDataProperty(&it);
 }
 
-MaybeHandle<Object> JSReceiver::GetPrototype(Isolate* isolate,
-                                             Handle<JSReceiver> receiver) {
+MaybeHandle<HeapObject> JSReceiver::GetPrototype(Isolate* isolate,
+                                                 Handle<JSReceiver> receiver) {
   // We don't expect access checks to be needed on JSProxy objects.
   DCHECK(!receiver->IsAccessCheckNeeded() || receiver->IsJSObject());
   PrototypeIterator iter(isolate, receiver, kStartAtReceiver,
                          PrototypeIterator::END_AT_NON_HIDDEN);
   do {
-    if (!iter.AdvanceFollowingProxies()) return MaybeHandle<Object>();
+    if (!iter.AdvanceFollowingProxies()) return MaybeHandle<HeapObject>();
   } while (!iter.IsAtEnd());
   return PrototypeIterator::GetCurrent(iter);
 }
@@ -88,11 +107,11 @@ V8_WARN_UNUSED_RESULT MaybeHandle<FixedArray> JSReceiver::OwnPropertyKeys(
                                  GetKeysConversion::kConvertToString);
 }
 
-bool JSObject::PrototypeHasNoElements(Isolate* isolate, JSObject* object) {
+bool JSObject::PrototypeHasNoElements(Isolate* isolate, JSObject object) {
   DisallowHeapAllocation no_gc;
-  HeapObject* prototype = HeapObject::cast(object->map()->prototype());
+  HeapObject prototype = HeapObject::cast(object->map()->prototype());
   ReadOnlyRoots roots(isolate);
-  HeapObject* null = roots.null_value();
+  HeapObject null = roots.null_value();
   FixedArrayBase empty_fixed_array = roots.empty_fixed_array();
   FixedArrayBase empty_slow_element_dictionary =
       roots.empty_slow_element_dictionary();
@@ -112,7 +131,7 @@ bool JSObject::PrototypeHasNoElements(Isolate* isolate, JSObject* object) {
 ACCESSORS(JSReceiver, raw_properties_or_hash, Object, kPropertiesOrHashOffset)
 
 FixedArrayBase JSObject::elements() const {
-  Object* array = READ_FIELD(this, kElementsOffset);
+  Object array = READ_FIELD(*this, kElementsOffset);
   return FixedArrayBase::cast(array);
 }
 
@@ -128,9 +147,13 @@ void JSObject::EnsureCanContainHeapObjectElements(Handle<JSObject> object) {
   }
 }
 
-void JSObject::EnsureCanContainElements(Handle<JSObject> object,
-                                        ObjectSlot objects, uint32_t count,
+template <typename TSlot>
+void JSObject::EnsureCanContainElements(Handle<JSObject> object, TSlot objects,
+                                        uint32_t count,
                                         EnsureElementsMode mode) {
+  static_assert(std::is_same<TSlot, FullObjectSlot>::value ||
+                    std::is_same<TSlot, ObjectSlot>::value,
+                "Only ObjectSlot and FullObjectSlot are expected here");
   ElementsKind current_kind = object->GetElementsKind();
   ElementsKind target_kind = current_kind;
   {
@@ -138,9 +161,9 @@ void JSObject::EnsureCanContainElements(Handle<JSObject> object,
     DCHECK(mode != ALLOW_COPIED_DOUBLE_ELEMENTS);
     bool is_holey = IsHoleyElementsKind(current_kind);
     if (current_kind == HOLEY_ELEMENTS) return;
-    Object* the_hole = object->GetReadOnlyRoots().the_hole_value();
+    Object the_hole = object->GetReadOnlyRoots().the_hole_value();
     for (uint32_t i = 0; i < count; ++i, ++objects) {
-      Object* current = *objects;
+      Object current = *objects;
       if (current == the_hole) {
         is_holey = true;
         target_kind = GetHoleyElementsKind(target_kind);
@@ -215,20 +238,20 @@ void JSObject::SetMapAndElements(Handle<JSObject> object, Handle<Map> new_map,
 }
 
 void JSObject::set_elements(FixedArrayBase value, WriteBarrierMode mode) {
-  WRITE_FIELD(this, kElementsOffset, value);
-  CONDITIONAL_WRITE_BARRIER(this, kElementsOffset, value, mode);
+  WRITE_FIELD(*this, kElementsOffset, value);
+  CONDITIONAL_WRITE_BARRIER(*this, kElementsOffset, value, mode);
 }
 
 void JSObject::initialize_elements() {
   FixedArrayBase elements = map()->GetInitialElements();
-  WRITE_FIELD(this, kElementsOffset, elements);
+  WRITE_FIELD(*this, kElementsOffset, elements);
 }
 
-InterceptorInfo* JSObject::GetIndexedInterceptor() {
+InterceptorInfo JSObject::GetIndexedInterceptor() {
   return map()->GetIndexedInterceptor();
 }
 
-InterceptorInfo* JSObject::GetNamedInterceptor() {
+InterceptorInfo JSObject::GetNamedInterceptor() {
   return map()->GetNamedInterceptor();
 }
 
@@ -245,13 +268,26 @@ int JSObject::GetHeaderSize(const Map map) {
 }
 
 // static
+int JSObject::GetEmbedderFieldsStartOffset(const Map map) {
+  // Embedder fields are located after the object header.
+  return GetHeaderSize(map);
+}
+
+int JSObject::GetEmbedderFieldsStartOffset() {
+  return GetEmbedderFieldsStartOffset(map());
+}
+
+// static
 int JSObject::GetEmbedderFieldCount(const Map map) {
   int instance_size = map->instance_size();
   if (instance_size == kVariableSizeSentinel) return 0;
-  // Internal objects do follow immediately after the header, whereas in-object
-  // properties are at the end of the object. Therefore there is no need
-  // to adjust the index here.
-  return (((instance_size - GetHeaderSize(map)) >> kTaggedSizeLog2) -
+  // Embedder fields are located after the object header, whereas in-object
+  // properties are located at the end of the object. We don't have to round up
+  // the header size here because division by kEmbedderDataSlotSizeInTaggedSlots
+  // will swallow potential padding in case of (kTaggedSize !=
+  // kSystemPointerSize) anyway.
+  return (((instance_size - GetEmbedderFieldsStartOffset(map)) >>
+           kTaggedSizeLog2) -
           map->GetInObjectProperties()) /
          kEmbedderDataSlotSizeInTaggedSlots;
 }
@@ -261,23 +297,21 @@ int JSObject::GetEmbedderFieldCount() const {
 }
 
 int JSObject::GetEmbedderFieldOffset(int index) {
-  DCHECK(index < GetEmbedderFieldCount() && index >= 0);
-  // Internal objects do follow immediately after the header, whereas in-object
-  // properties are at the end of the object. Therefore there is no need
-  // to adjust the index here.
-  return GetHeaderSize() + (kEmbedderDataSlotSize * index);
+  DCHECK_LT(static_cast<unsigned>(index),
+            static_cast<unsigned>(GetEmbedderFieldCount()));
+  return GetEmbedderFieldsStartOffset() + (kEmbedderDataSlotSize * index);
 }
 
-Object* JSObject::GetEmbedderField(int index) {
-  return EmbedderDataSlot(this, index).load_tagged();
+Object JSObject::GetEmbedderField(int index) {
+  return EmbedderDataSlot(*this, index).load_tagged();
 }
 
-void JSObject::SetEmbedderField(int index, Object* value) {
-  EmbedderDataSlot::store_tagged(this, index, value);
+void JSObject::SetEmbedderField(int index, Object value) {
+  EmbedderDataSlot::store_tagged(*this, index, value);
 }
 
 void JSObject::SetEmbedderField(int index, Smi value) {
-  EmbedderDataSlot(this, index).store_smi(value);
+  EmbedderDataSlot(*this, index).store_smi(value);
 }
 
 bool JSObject::IsUnboxedDoubleField(FieldIndex index) {
@@ -288,10 +322,10 @@ bool JSObject::IsUnboxedDoubleField(FieldIndex index) {
 // Access fast-case object properties at index. The use of these routines
 // is needed to correctly distinguish between properties stored in-object and
 // properties stored in the properties array.
-Object* JSObject::RawFastPropertyAt(FieldIndex index) {
+Object JSObject::RawFastPropertyAt(FieldIndex index) {
   DCHECK(!IsUnboxedDoubleField(index));
   if (index.is_inobject()) {
-    return READ_FIELD(this, index.offset());
+    return READ_FIELD(*this, index.offset());
   } else {
     return property_array()->get(index.outobject_array_index());
   }
@@ -299,19 +333,19 @@ Object* JSObject::RawFastPropertyAt(FieldIndex index) {
 
 double JSObject::RawFastDoublePropertyAt(FieldIndex index) {
   DCHECK(IsUnboxedDoubleField(index));
-  return READ_DOUBLE_FIELD(this, index.offset());
+  return READ_DOUBLE_FIELD(*this, index.offset());
 }
 
 uint64_t JSObject::RawFastDoublePropertyAsBitsAt(FieldIndex index) {
   DCHECK(IsUnboxedDoubleField(index));
-  return READ_UINT64_FIELD(this, index.offset());
+  return READ_UINT64_FIELD(*this, index.offset());
 }
 
-void JSObject::RawFastPropertyAtPut(FieldIndex index, Object* value) {
+void JSObject::RawFastPropertyAtPut(FieldIndex index, Object value) {
   if (index.is_inobject()) {
     int offset = index.offset();
-    WRITE_FIELD(this, offset, value);
-    WRITE_BARRIER(this, offset, value);
+    WRITE_FIELD(*this, offset, value);
+    WRITE_BARRIER(*this, offset, value);
   } else {
     property_array()->set(index.outobject_array_index(), value);
   }
@@ -322,12 +356,12 @@ void JSObject::RawFastDoublePropertyAsBitsAtPut(FieldIndex index,
   // Double unboxing is enabled only on 64-bit platforms without pointer
   // compression.
   DCHECK_EQ(kDoubleSize, kTaggedSize);
-  Address field_addr = FIELD_ADDR(this, index.offset());
+  Address field_addr = FIELD_ADDR(*this, index.offset());
   base::Relaxed_Store(reinterpret_cast<base::AtomicWord*>(field_addr),
                       static_cast<base::AtomicWord>(bits));
 }
 
-void JSObject::FastPropertyAtPut(FieldIndex index, Object* value) {
+void JSObject::FastPropertyAtPut(FieldIndex index, Object value) {
   if (IsUnboxedDoubleField(index)) {
     DCHECK(value->IsMutableHeapNumber());
     // Ensure that all bits of the double value are preserved.
@@ -339,7 +373,7 @@ void JSObject::FastPropertyAtPut(FieldIndex index, Object* value) {
 }
 
 void JSObject::WriteToField(int descriptor, PropertyDetails details,
-                            Object* value) {
+                            Object value) {
   DCHECK_EQ(kField, details.location());
   DCHECK_EQ(kData, details.kind());
   DisallowHeapAllocation no_gc;
@@ -375,26 +409,26 @@ int JSObject::GetInObjectPropertyOffset(int index) {
   return map()->GetInObjectPropertyOffset(index);
 }
 
-Object* JSObject::InObjectPropertyAt(int index) {
+Object JSObject::InObjectPropertyAt(int index) {
   int offset = GetInObjectPropertyOffset(index);
-  return READ_FIELD(this, offset);
+  return READ_FIELD(*this, offset);
 }
 
-Object* JSObject::InObjectPropertyAtPut(int index, Object* value,
-                                        WriteBarrierMode mode) {
+Object JSObject::InObjectPropertyAtPut(int index, Object value,
+                                       WriteBarrierMode mode) {
   // Adjust for the number of properties stored in the object.
   int offset = GetInObjectPropertyOffset(index);
-  WRITE_FIELD(this, offset, value);
-  CONDITIONAL_WRITE_BARRIER(this, offset, value, mode);
+  WRITE_FIELD(*this, offset, value);
+  CONDITIONAL_WRITE_BARRIER(*this, offset, value, mode);
   return value;
 }
 
 void JSObject::InitializeBody(Map map, int start_offset,
-                              Object* pre_allocated_value,
-                              Object* filler_value) {
-  DCHECK(!filler_value->IsHeapObject() || !Heap::InNewSpace(filler_value));
-  DCHECK(!pre_allocated_value->IsHeapObject() ||
-         !Heap::InNewSpace(pre_allocated_value));
+                              Object pre_allocated_value, Object filler_value) {
+  DCHECK_IMPLIES(filler_value->IsHeapObject(),
+                 !ObjectInYoungGeneration(filler_value));
+  DCHECK_IMPLIES(pre_allocated_value->IsHeapObject(),
+                 !ObjectInYoungGeneration(pre_allocated_value));
   int size = map->instance_size();
   int offset = start_offset;
   if (filler_value != pre_allocated_value) {
@@ -402,36 +436,40 @@ void JSObject::InitializeBody(Map map, int start_offset,
         size - (map->UnusedPropertyFields() * kTaggedSize);
     DCHECK_LE(kHeaderSize, end_of_pre_allocated_offset);
     while (offset < end_of_pre_allocated_offset) {
-      WRITE_FIELD(this, offset, pre_allocated_value);
+      WRITE_FIELD(*this, offset, pre_allocated_value);
       offset += kTaggedSize;
     }
   }
   while (offset < size) {
-    WRITE_FIELD(this, offset, filler_value);
+    WRITE_FIELD(*this, offset, filler_value);
     offset += kTaggedSize;
   }
 }
 
-Object* JSBoundFunction::raw_bound_target_function() const {
-  return READ_FIELD(this, kBoundTargetFunctionOffset);
+Object JSBoundFunction::raw_bound_target_function() const {
+  return READ_FIELD(*this, kBoundTargetFunctionOffset);
 }
 
 ACCESSORS(JSBoundFunction, bound_target_function, JSReceiver,
           kBoundTargetFunctionOffset)
 ACCESSORS(JSBoundFunction, bound_this, Object, kBoundThisOffset)
-ACCESSORS2(JSBoundFunction, bound_arguments, FixedArray, kBoundArgumentsOffset)
+ACCESSORS(JSBoundFunction, bound_arguments, FixedArray, kBoundArgumentsOffset)
 
-ACCESSORS(JSFunction, shared, SharedFunctionInfo, kSharedFunctionInfoOffset)
-ACCESSORS(JSFunction, feedback_cell, FeedbackCell, kFeedbackCellOffset)
+ACCESSORS(JSFunction, raw_feedback_cell, FeedbackCell, kFeedbackCellOffset)
 
-ACCESSORS2(JSGlobalObject, native_context, Context, kNativeContextOffset)
-ACCESSORS(JSGlobalObject, global_proxy, JSObject, kGlobalProxyOffset)
+ACCESSORS(JSGlobalObject, native_context, NativeContext, kNativeContextOffset)
+ACCESSORS(JSGlobalObject, global_proxy, JSGlobalProxy, kGlobalProxyOffset)
 
 ACCESSORS(JSGlobalProxy, native_context, Object, kNativeContextOffset)
 
-FeedbackVector* JSFunction::feedback_vector() const {
+FeedbackVector JSFunction::feedback_vector() const {
   DCHECK(has_feedback_vector());
-  return FeedbackVector::cast(feedback_cell()->value());
+  return FeedbackVector::cast(raw_feedback_cell()->value());
+}
+
+ClosureFeedbackCellArray JSFunction::closure_feedback_cell_array() const {
+  DCHECK(has_closure_feedback_cell_array());
+  return ClosureFeedbackCellArray::cast(raw_feedback_cell()->value());
 }
 
 // Code objects that are marked for deoptimization are not considered to be
@@ -441,7 +479,7 @@ FeedbackVector* JSFunction::feedback_vector() const {
 // TODO(jupvfranco): rename this function. Maybe RunOptimizedCode,
 // or IsValidOptimizedCode.
 bool JSFunction::IsOptimized() {
-  return code()->kind() == Code::OPTIMIZED_FUNCTION &&
+  return is_compiled() && code()->kind() == Code::OPTIMIZED_FUNCTION &&
          !code()->marked_for_deoptimization();
 }
 
@@ -463,9 +501,9 @@ void JSFunction::ClearOptimizationMarker() {
 // Optimized code marked for deoptimization will tier back down to running
 // interpreted on its next activation, and already doesn't count as IsOptimized.
 bool JSFunction::IsInterpreted() {
-  return code()->is_interpreter_trampoline_builtin() ||
-         (code()->kind() == Code::OPTIMIZED_FUNCTION &&
-          code()->marked_for_deoptimization());
+  return is_compiled() && (code()->is_interpreter_trampoline_builtin() ||
+                           (code()->kind() == Code::OPTIMIZED_FUNCTION &&
+                            code()->marked_for_deoptimization()));
 }
 
 bool JSFunction::ChecksOptimizationMarker() {
@@ -503,17 +541,32 @@ AbstractCode JSFunction::abstract_code() {
   }
 }
 
-Code JSFunction::code() { return Code::cast(READ_FIELD(this, kCodeOffset)); }
+int JSFunction::length() { return shared()->length(); }
+
+Code JSFunction::code() const {
+  return Code::cast(RELAXED_READ_FIELD(*this, kCodeOffset));
+}
 
 void JSFunction::set_code(Code value) {
-  DCHECK(!Heap::InNewSpace(value));
-  WRITE_FIELD(this, kCodeOffset, value);
-  MarkingBarrier(this, HeapObject::RawField(this, kCodeOffset), value);
+  DCHECK(!ObjectInYoungGeneration(value));
+  RELAXED_WRITE_FIELD(*this, kCodeOffset, value);
+  MarkingBarrier(*this, RawField(kCodeOffset), value);
 }
 
 void JSFunction::set_code_no_write_barrier(Code value) {
-  DCHECK(!Heap::InNewSpace(value));
-  WRITE_FIELD(this, kCodeOffset, value);
+  DCHECK(!ObjectInYoungGeneration(value));
+  RELAXED_WRITE_FIELD(*this, kCodeOffset, value);
+}
+
+SharedFunctionInfo JSFunction::shared() const {
+  return SharedFunctionInfo::cast(
+      RELAXED_READ_FIELD(*this, kSharedFunctionInfoOffset));
+}
+
+void JSFunction::set_shared(SharedFunctionInfo value, WriteBarrierMode mode) {
+  // Release semantics to support acquire read in NeedsResetDueToFlushedBytecode
+  RELEASE_WRITE_FIELD(*this, kSharedFunctionInfoOffset, value);
+  CONDITIONAL_WRITE_BARRIER(*this, kSharedFunctionInfoOffset, value, mode);
 }
 
 void JSFunction::ClearOptimizedCodeSlot(const char* reason) {
@@ -537,25 +590,33 @@ void JSFunction::SetOptimizationMarker(OptimizationMarker marker) {
 }
 
 bool JSFunction::has_feedback_vector() const {
-  return !feedback_cell()->value()->IsUndefined();
+  return shared()->is_compiled() &&
+         raw_feedback_cell()->value()->IsFeedbackVector();
+}
+
+bool JSFunction::has_closure_feedback_cell_array() const {
+  return shared()->is_compiled() &&
+         raw_feedback_cell()->value()->IsClosureFeedbackCellArray();
 }
 
 Context JSFunction::context() {
-  return Context::cast(READ_FIELD(this, kContextOffset));
+  return Context::cast(READ_FIELD(*this, kContextOffset));
 }
 
 bool JSFunction::has_context() const {
-  return READ_FIELD(this, kContextOffset)->IsContext();
+  return READ_FIELD(*this, kContextOffset)->IsContext();
 }
 
-JSGlobalProxy* JSFunction::global_proxy() { return context()->global_proxy(); }
+JSGlobalProxy JSFunction::global_proxy() { return context()->global_proxy(); }
 
-Context JSFunction::native_context() { return context()->native_context(); }
+NativeContext JSFunction::native_context() {
+  return context()->native_context();
+}
 
-void JSFunction::set_context(Object* value) {
+void JSFunction::set_context(Object value) {
   DCHECK(value->IsUndefined() || value->IsContext());
-  WRITE_FIELD(this, kContextOffset, value);
-  WRITE_BARRIER(this, kContextOffset, value);
+  WRITE_FIELD(*this, kContextOffset, value);
+  WRITE_BARRIER(*this, kContextOffset, value);
 }
 
 ACCESSORS_CHECKED(JSFunction, prototype_or_initial_map, Object,
@@ -591,20 +652,20 @@ bool JSFunction::PrototypeRequiresRuntimeLookup() {
   return !has_prototype_property() || map()->has_non_instance_prototype();
 }
 
-Object* JSFunction::instance_prototype() {
+HeapObject JSFunction::instance_prototype() {
   DCHECK(has_instance_prototype());
   if (has_initial_map()) return initial_map()->prototype();
   // When there is no initial map and the prototype is a JSReceiver, the
   // initial map field is used for the prototype field.
-  return prototype_or_initial_map();
+  return HeapObject::cast(prototype_or_initial_map());
 }
 
-Object* JSFunction::prototype() {
+Object JSFunction::prototype() {
   DCHECK(has_prototype());
   // If the function's prototype property has been set to a non-JSReceiver
   // value, that value is stored in the constructor field of the map.
   if (map()->has_non_instance_prototype()) {
-    Object* prototype = map()->GetConstructor();
+    Object prototype = map()->GetConstructor();
     // The map must have a prototype in that field, not a back pointer.
     DCHECK(!prototype->IsMap());
     DCHECK(!prototype->IsFunctionTemplateInfo());
@@ -613,8 +674,36 @@ Object* JSFunction::prototype() {
   return instance_prototype();
 }
 
-bool JSFunction::is_compiled() {
-  return code()->builtin_index() != Builtins::kCompileLazy;
+bool JSFunction::is_compiled() const {
+  return code()->builtin_index() != Builtins::kCompileLazy &&
+         shared()->is_compiled();
+}
+
+bool JSFunction::NeedsResetDueToFlushedBytecode() {
+  // Do a raw read for shared and code fields here since this function may be
+  // called on a concurrent thread and the JSFunction might not be fully
+  // initialized yet.
+  Object maybe_shared = ACQUIRE_READ_FIELD(*this, kSharedFunctionInfoOffset);
+  Object maybe_code = RELAXED_READ_FIELD(*this, kCodeOffset);
+
+  if (!maybe_shared->IsSharedFunctionInfo() || !maybe_code->IsCode()) {
+    return false;
+  }
+
+  SharedFunctionInfo shared = SharedFunctionInfo::cast(maybe_shared);
+  Code code = Code::cast(maybe_code);
+  return !shared->is_compiled() &&
+         code->builtin_index() != Builtins::kCompileLazy;
+}
+
+void JSFunction::ResetIfBytecodeFlushed() {
+  if (FLAG_flush_bytecode && NeedsResetDueToFlushedBytecode()) {
+    // Bytecode was flushed and function is now uncompiled, reset JSFunction
+    // by setting code to CompileLazy and clearing the feedback vector.
+    set_code(GetIsolate()->builtins()->builtin(i::Builtins::kCompileLazy));
+    raw_feedback_cell()->set_value(
+        ReadOnlyRoots(GetIsolate()).undefined_value());
+  }
 }
 
 ACCESSORS(JSValue, value, Object, kValueOffset)
@@ -630,11 +719,11 @@ ACCESSORS(JSDate, min, Object, kMinOffset)
 ACCESSORS(JSDate, sec, Object, kSecOffset)
 
 MessageTemplate JSMessageObject::type() const {
-  Object* value = READ_FIELD(this, kTypeOffset);
+  Object value = READ_FIELD(*this, kMessageTypeOffset);
   return MessageTemplateFromInt(Smi::ToInt(value));
 }
 void JSMessageObject::set_type(MessageTemplate value) {
-  WRITE_FIELD(this, kTypeOffset, Smi::FromInt(static_cast<int>(value)));
+  WRITE_FIELD(*this, kMessageTypeOffset, Smi::FromInt(static_cast<int>(value)));
 }
 ACCESSORS(JSMessageObject, argument, Object, kArgumentsOffset)
 ACCESSORS(JSMessageObject, script, Script, kScriptOffset)
@@ -647,7 +736,7 @@ ElementsKind JSObject::GetElementsKind() const {
   ElementsKind kind = map()->elements_kind();
 #if VERIFY_HEAP && DEBUG
   FixedArrayBase fixed_array =
-      FixedArrayBase::unchecked_cast(READ_FIELD(this, kElementsOffset));
+      FixedArrayBase::unchecked_cast(READ_FIELD(*this, kElementsOffset));
 
   // If a GC was caused while constructing this object, the elements
   // pointer may point to a one pointer filler map.
@@ -663,7 +752,8 @@ ElementsKind JSObject::GetElementsKind() const {
       DCHECK(fixed_array->IsFixedArray());
       DCHECK(fixed_array->IsDictionary());
     } else {
-      DCHECK(kind > DICTIONARY_ELEMENTS);
+      DCHECK(kind > DICTIONARY_ELEMENTS ||
+             IsPackedFrozenOrSealedElementsKind(kind));
     }
     DCHECK(!IsSloppyArgumentsElementsKind(kind) ||
            (elements()->IsFixedArray() && elements()->length() >= 2));
@@ -700,6 +790,14 @@ bool JSObject::HasFastPackedElements() {
 
 bool JSObject::HasDictionaryElements() {
   return GetElementsKind() == DICTIONARY_ELEMENTS;
+}
+
+bool JSObject::HasPackedElements() {
+  return GetElementsKind() == PACKED_ELEMENTS;
+}
+
+bool JSObject::HasFrozenOrSealedElements() {
+  return IsPackedFrozenOrSealedElementsKind(GetElementsKind());
 }
 
 bool JSObject::HasFastArgumentsElements() {
@@ -765,13 +863,13 @@ NumberDictionary JSObject::element_dictionary() {
 
 void JSReceiver::initialize_properties() {
   ReadOnlyRoots roots = GetReadOnlyRoots();
-  DCHECK(!Heap::InNewSpace(roots.empty_fixed_array()));
-  DCHECK(!Heap::InNewSpace(roots.empty_property_dictionary()));
+  DCHECK(!ObjectInYoungGeneration(roots.empty_fixed_array()));
+  DCHECK(!ObjectInYoungGeneration(roots.empty_property_dictionary()));
   if (map()->is_dictionary_map()) {
-    WRITE_FIELD(this, kPropertiesOrHashOffset,
+    WRITE_FIELD(*this, kPropertiesOrHashOffset,
                 roots.empty_property_dictionary());
   } else {
-    WRITE_FIELD(this, kPropertiesOrHashOffset, roots.empty_fixed_array());
+    WRITE_FIELD(*this, kPropertiesOrHashOffset, roots.empty_fixed_array());
   }
 }
 
@@ -786,7 +884,7 @@ NameDictionary JSReceiver::property_dictionary() const {
   DCHECK(!IsJSGlobalObject());
   DCHECK(!HasFastProperties());
 
-  Object* prop = raw_properties_or_hash();
+  Object prop = raw_properties_or_hash();
   if (prop->IsSmi()) {
     return GetReadOnlyRoots().empty_property_dictionary();
   }
@@ -799,7 +897,7 @@ NameDictionary JSReceiver::property_dictionary() const {
 PropertyArray JSReceiver::property_array() const {
   DCHECK(HasFastProperties());
 
-  Object* prop = raw_properties_or_hash();
+  Object prop = raw_properties_or_hash();
   if (prop->IsSmi() || prop == GetReadOnlyRoots().empty_fixed_array()) {
     return GetReadOnlyRoots().empty_property_array();
   }
@@ -871,12 +969,11 @@ Maybe<PropertyAttributes> JSReceiver::GetOwnElementAttributes(
 }
 
 bool JSGlobalObject::IsDetached() {
-  return JSGlobalProxy::cast(global_proxy())->IsDetachedFrom(this);
+  return global_proxy()->IsDetachedFrom(*this);
 }
 
-bool JSGlobalProxy::IsDetachedFrom(JSGlobalObject* global) const {
-  const PrototypeIterator iter(this->GetIsolate(),
-                               const_cast<JSGlobalProxy*>(this));
+bool JSGlobalProxy::IsDetachedFrom(JSGlobalObject global) const {
+  const PrototypeIterator iter(this->GetIsolate(), *this);
   return iter.GetCurrent() != global;
 }
 
@@ -892,8 +989,36 @@ ACCESSORS(JSAsyncFromSyncIterator, sync_iterator, JSReceiver,
           kSyncIteratorOffset)
 ACCESSORS(JSAsyncFromSyncIterator, next, Object, kNextOffset)
 
-ACCESSORS2(JSStringIterator, string, String, kStringOffset)
+ACCESSORS(JSStringIterator, string, String, kStringOffset)
 SMI_ACCESSORS(JSStringIterator, index, kNextIndexOffset)
+
+static inline bool ShouldConvertToSlowElements(JSObject object,
+                                               uint32_t capacity,
+                                               uint32_t index,
+                                               uint32_t* new_capacity) {
+  STATIC_ASSERT(JSObject::kMaxUncheckedOldFastElementsLength <=
+                JSObject::kMaxUncheckedFastElementsLength);
+  if (index < capacity) {
+    *new_capacity = capacity;
+    return false;
+  }
+  if (index - capacity >= JSObject::kMaxGap) return true;
+  *new_capacity = JSObject::NewElementsCapacity(index + 1);
+  DCHECK_LT(index, *new_capacity);
+  // TODO(ulan): Check if it works with young large objects.
+  if (*new_capacity <= JSObject::kMaxUncheckedOldFastElementsLength ||
+      (*new_capacity <= JSObject::kMaxUncheckedFastElementsLength &&
+       ObjectInYoungGeneration(object))) {
+    return false;
+  }
+  // If the fast-case backing storage takes up much more memory than a
+  // dictionary backing storage would, the object should have slow elements.
+  int used_elements = object->GetFastElementsUsage();
+  uint32_t size_threshold = NumberDictionary::kPreferFastElementsSizeFactor *
+                            NumberDictionary::ComputeCapacity(used_elements) *
+                            NumberDictionary::kEntrySize;
+  return size_threshold <= *new_capacity;
+}
 
 }  // namespace internal
 }  // namespace v8

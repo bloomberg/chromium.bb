@@ -339,8 +339,8 @@ TextureLayer::TransferableResourceHolder::GetCallbackForImplThread(
   DCHECK_GT(internal_references_, 0);
   InternalAddRef();
   return viz::SingleReleaseCallback::Create(
-      base::Bind(&TransferableResourceHolder::ReturnAndReleaseOnImplThread,
-                 this, std::move(main_thread_task_runner)));
+      base::BindOnce(&TransferableResourceHolder::ReturnAndReleaseOnImplThread,
+                     this, std::move(main_thread_task_runner)));
 }
 
 void TextureLayer::TransferableResourceHolder::InternalAddRef() {
@@ -375,7 +375,7 @@ void TextureLayer::TransferableResourceHolder::ReturnAndReleaseOnImplThread(
 #endif
   main_thread_task_runner->PostTask(
       FROM_HERE,
-      base::Bind(&TransferableResourceHolder::InternalRelease, this));
+      base::BindOnce(&TransferableResourceHolder::InternalRelease, this));
 }
 
 }  // namespace cc

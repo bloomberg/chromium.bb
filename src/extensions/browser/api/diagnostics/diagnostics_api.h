@@ -28,7 +28,7 @@ class DiagnosticsSendPacketFunction : public AsyncApiFunction {
     SEND_PACKET_FAILED,
   };
 
-  DECLARE_EXTENSION_FUNCTION("diagnostics.sendPacket", DIAGNOSTICS_SENDPACKET);
+  DECLARE_EXTENSION_FUNCTION("diagnostics.sendPacket", DIAGNOSTICS_SENDPACKET)
 
   DiagnosticsSendPacketFunction();
 

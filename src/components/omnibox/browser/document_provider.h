@@ -49,9 +49,17 @@ class DocumentProvider : public AutocompleteProvider {
   void Stop(bool clear_cached_results, bool due_to_user_inactivity) override;
   void DeleteMatch(const AutocompleteMatch& match) override;
   void AddProviderInfo(ProvidersInfo* provider_info) const override;
+  void ResetSession() override;
 
   // Registers a client-side preference to enable document suggestions.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+
+  // Builds a GURL to use for deduping against other document/history
+  // suggestions. Multiple URLs may refer to the same document.
+  // Returns an empty GURL if not a recognized Docs URL.
+  // The URL returned is not guaranteed to be navigable and should only be used
+  // as a deduping token.
+  static const GURL GetURLForDeduping(const GURL& url);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest, CheckFeatureBehindFlag);
@@ -67,6 +75,14 @@ class DocumentProvider : public AutocompleteProvider {
                            CheckFeaturePrerequisiteServerBackoff);
   FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest, IsInputLikelyURL);
   FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest, ParseDocumentSearchResults);
+  FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest,
+                           ProductDescriptionStringsAndAccessibleLabels);
+  FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest,
+                           ParseDocumentSearchResultsBreakTies);
+  FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest,
+                           ParseDocumentSearchResultsBreakTiesCascade);
+  FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest,
+                           ParseDocumentSearchResultsBreakTiesZeroLimit);
   FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest,
                            ParseDocumentSearchResultsWithBackoff);
   FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest,
@@ -112,6 +128,24 @@ class DocumentProvider : public AutocompleteProvider {
       const std::string& modified_timestamp_string,
       base::Time now);
 
+  // Returns a set of classifications that highlight all the occurrences of
+  // |input_text| at word breaks in |text|. E.g., given |input_text|
+  // "rain if you dare" and |text| "how to tell if your kitten is a rainbow",
+  // will return the classifications:
+  //             __ ___              ____
+  // how to tell if your kitten is a rainbow
+  // ^           ^ ^^   ^            ^  ^
+  // NONE        M |M   |            |  NONE
+  //               NONE NONE         MATCH
+  static ACMatchClassifications Classify(const base::string16& input_text,
+                                         const base::string16& text);
+
+  // Whether a field trial has triggered for this query and this session,
+  // respectively. Works similarly to BaseSearchProvider, though this class does
+  // not inherit from it.
+  bool field_trial_triggered_;
+  bool field_trial_triggered_in_session_;
+
   // Whether the server has instructed us to backoff for this session (in
   // cases where the corpus is uninteresting).
   bool backoff_for_session_;
@@ -121,6 +155,10 @@ class DocumentProvider : public AutocompleteProvider {
 
   // Listener to notify when results are available.
   AutocompleteProviderListener* listener_;
+
+  // Saved when starting a new autocomplete request so that it can be retrieved
+  // when responses return asynchronously.
+  AutocompleteInput input_;
 
   // Loader used to retrieve results.
   std::unique_ptr<network::SimpleURLLoader> loader_;

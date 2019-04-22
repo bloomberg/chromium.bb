@@ -56,21 +56,22 @@ void HTMLOListElement::CollectStyleForPresentationAttribute(
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
   if (name == kTypeAttr) {
-    if (value == "a")
-      AddPropertyToPresentationAttributeStyle(style, CSSPropertyListStyleType,
-                                              CSSValueLowerAlpha);
-    else if (value == "A")
-      AddPropertyToPresentationAttributeStyle(style, CSSPropertyListStyleType,
-                                              CSSValueUpperAlpha);
-    else if (value == "i")
-      AddPropertyToPresentationAttributeStyle(style, CSSPropertyListStyleType,
-                                              CSSValueLowerRoman);
-    else if (value == "I")
-      AddPropertyToPresentationAttributeStyle(style, CSSPropertyListStyleType,
-                                              CSSValueUpperRoman);
-    else if (value == "1")
-      AddPropertyToPresentationAttributeStyle(style, CSSPropertyListStyleType,
-                                              CSSValueDecimal);
+    if (value == "a") {
+      AddPropertyToPresentationAttributeStyle(
+          style, CSSPropertyID::kListStyleType, CSSValueID::kLowerAlpha);
+    } else if (value == "A") {
+      AddPropertyToPresentationAttributeStyle(
+          style, CSSPropertyID::kListStyleType, CSSValueID::kUpperAlpha);
+    } else if (value == "i") {
+      AddPropertyToPresentationAttributeStyle(
+          style, CSSPropertyID::kListStyleType, CSSValueID::kLowerRoman);
+    } else if (value == "I") {
+      AddPropertyToPresentationAttributeStyle(
+          style, CSSPropertyID::kListStyleType, CSSValueID::kUpperRoman);
+    } else if (value == "1") {
+      AddPropertyToPresentationAttributeStyle(
+          style, CSSPropertyID::kListStyleType, CSSValueID::kDecimal);
+    }
   } else {
     HTMLElement::CollectStyleForPresentationAttribute(name, value, style);
   }

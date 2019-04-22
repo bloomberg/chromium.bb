@@ -32,7 +32,7 @@
 // https://drafts.csswg.org/web-animations/#extensions-to-the-element-interface
 
 // TODO(dstockwell): This should be an Animatable interface, where Element
-// implements Animatable.
+// includes Animatable.
 
 [
     ImplementedAs=ElementAnimation

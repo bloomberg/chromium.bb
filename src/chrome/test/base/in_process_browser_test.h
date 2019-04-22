@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
+#include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
@@ -22,7 +23,6 @@
 
 #if defined(OS_MACOSX)
 #include "ui/base/test/scoped_fake_full_keyboard_access.h"
-#include "ui/base/test/scoped_fake_nswindow_fullscreen.h"
 #endif
 
 namespace base {
@@ -43,8 +43,10 @@ class ScopedCOMInitializer;
 }  // namespace base
 
 #if defined(TOOLKIT_VIEWS)
-class AccessibilityChecker;
-#endif
+namespace views {
+class ViewsDelegate;
+}
+#endif  // defined(TOOLKIT_VIEWS)
 
 class Browser;
 class Profile;
@@ -81,7 +83,7 @@ class ScopedBundleSwizzlerMac;
 // InProcessBrowserTest::SetUpCommandLine(). If a test needs to change the
 // default command line, it can override SetUpDefaultCommandLine(), where it
 // should invoke InProcessBrowserTest::SetUpDefaultCommandLine() to get the
-// default swtiches, and modify them as needed.
+// default switches, and modify them as needed.
 //
 // SetUpOnMainThread() is called just after creating the default browser object
 // and before executing the real test code. It's mainly for setting up things
@@ -114,6 +116,14 @@ class ScopedBundleSwizzlerMac;
 class InProcessBrowserTest : public content::BrowserTestBase {
  public:
   InProcessBrowserTest();
+#if defined(TOOLKIT_VIEWS)
+  using DelegateCallback =
+      base::OnceCallback<std::unique_ptr<views::ViewsDelegate>()>;
+  // |viewsDelegateCallback| is used for tests that want to use a derived class
+  // of ViewsDelegate to observe or modify things like window placement and
+  // Widget params.
+  explicit InProcessBrowserTest(DelegateCallback viewsDelegateCallback);
+#endif  // defined(TOOLKIT_VIEWS)
   ~InProcessBrowserTest() override;
 
   // Configures everything for an in process browser test, then invokes
@@ -232,6 +242,9 @@ class InProcessBrowserTest : public content::BrowserTestBase {
   }
 #endif  // OS_MACOSX
 
+  // Returns the test data path used by the embedded test server.
+  base::FilePath GetChromeTestDataDir() const;
+
   void set_exit_when_last_browser_closes(bool value) {
     exit_when_last_browser_closes_ = value;
   }
@@ -284,12 +297,6 @@ class InProcessBrowserTest : public content::BrowserTestBase {
   // more consistent with other platforms, where most views are focusable by
   // default.
   ui::test::ScopedFakeFullKeyboardAccess faked_full_keyboard_access_;
-
-  // Don't allow browser tests to enter real fullscreen - it might trigger races
-  // in WindowServer in test configurations. This is a temporary debugging hack.
-  // TODO(ellyjones): Remove this or make it permanent -
-  // https://crbug.com/828031.
-  ui::test::ScopedFakeNSWindowFullscreen faked_fullscreen_;
 #endif  // OS_MACOSX
 
 #if defined(OS_WIN)
@@ -297,7 +304,7 @@ class InProcessBrowserTest : public content::BrowserTestBase {
 #endif
 
 #if defined(TOOLKIT_VIEWS)
-  std::unique_ptr<AccessibilityChecker> accessibility_checker_;
+  std::unique_ptr<views::ViewsDelegate> views_delegate_;
 #endif
 };
 

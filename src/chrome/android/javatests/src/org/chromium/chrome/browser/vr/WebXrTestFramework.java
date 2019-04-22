@@ -37,12 +37,12 @@ public abstract class WebXrTestFramework extends XrTestFramework {
     }
 
     /**
-     * Helper function to run xrDeviceFound with the first tab's WebContents.
+     * Helper function to run xrDeviceFound with the current tab's WebContents.
      *
      * @return Whether an XRDevice was found.
      */
     public boolean xrDeviceFound() {
-        return xrDeviceFound(mFirstTabWebContents);
+        return xrDeviceFound(getCurrentWebContents());
     }
 
     /**
@@ -61,10 +61,10 @@ public abstract class WebXrTestFramework extends XrTestFramework {
     }
 
     /**
-     * Helper function to run enterSessionWithUserGesture using the first tab's WebContents.
+     * Helper function to run enterSessionWithUserGesture using the current tab's WebContents.
      */
     public void enterSessionWithUserGesture() {
-        enterSessionWithUserGesture(mFirstTabWebContents);
+        enterSessionWithUserGesture(getCurrentWebContents());
     }
 
     /**
@@ -80,10 +80,10 @@ public abstract class WebXrTestFramework extends XrTestFramework {
     }
 
     /**
-     * Helper function to run enterSessionWithUserGestureAndWait with the first tab's WebContents.
+     * Helper function to run enterSessionWithUserGestureAndWait with the current tab's WebContents.
      */
     public void enterSessionWithUserGestureAndWait() {
-        enterSessionWithUserGestureAndWait(mFirstTabWebContents);
+        enterSessionWithUserGestureAndWait(getCurrentWebContents());
     }
 
     /**
@@ -94,10 +94,10 @@ public abstract class WebXrTestFramework extends XrTestFramework {
     public abstract void enterSessionWithUserGestureOrFail(WebContents webContents);
 
     /**
-     * Helper function to run enterSessionWithUserGestureOrFail with the first tab's WebContents.
+     * Helper function to run enterSessionWithUserGestureOrFail with the current tab's WebContents.
      */
     public void enterSessionWithUserGestureOrFail() {
-        enterSessionWithUserGestureOrFail(mFirstTabWebContents);
+        enterSessionWithUserGestureOrFail(getCurrentWebContents());
     }
 
     /**
@@ -108,9 +108,9 @@ public abstract class WebXrTestFramework extends XrTestFramework {
     public abstract void endSession(WebContents webContents);
 
     /**
-     * Helper function to run endSession with the first tab's WebContents.
+     * Helper function to run endSession with the current tab's WebContents.
      */
     public void endSession() {
-        endSession(mFirstTabWebContents);
+        endSession(getCurrentWebContents());
     }
 }

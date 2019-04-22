@@ -20,16 +20,19 @@
 
 #include "third_party/blink/renderer/core/svg/svg_stop_element.h"
 
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/svg/svg_gradient_element.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
 inline SVGStopElement::SVGStopElement(Document& document)
     : SVGElement(svg_names::kStopTag, document),
-      offset_(SVGAnimatedNumber::Create(this,
-                                        svg_names::kOffsetAttr,
-                                        SVGNumberAcceptPercentage::Create())) {
+      offset_(MakeGarbageCollected<SVGAnimatedNumber>(
+          this,
+          svg_names::kOffsetAttr,
+          MakeGarbageCollected<SVGNumberAcceptPercentage>())) {
   AddToPropertyMap(offset_);
 
   // Since stop elements don't have corresponding layout objects, we rely on
@@ -65,23 +68,23 @@ void SVGStopElement::SvgAttributeChanged(const QualifiedName& attr_name) {
   SVGElement::SvgAttributeChanged(attr_name);
 }
 
-void SVGStopElement::DidRecalcStyle(StyleRecalcChange change) {
+void SVGStopElement::DidRecalcStyle(const StyleRecalcChange change) {
   SVGElement::DidRecalcStyle(change);
 
   InvalidateInstancesAndAncestorResources(this);
 }
 
 Color SVGStopElement::StopColorIncludingOpacity() const {
-  const ComputedStyle* style = NonLayoutObjectComputedStyle();
+  const ComputedStyle* style = GetComputedStyle();
 
-  // Normally, we should always have a computed non-layout style for <stop>
-  // elements.  But there are some odd corner cases (*cough* shadow DOM v0
-  // undistributed light tree *cough*) which leave it null.
+  // Normally, we should always have a computed style for <stop> elements. But
+  // there are some odd corner cases (*cough* shadow DOM v0 undistributed light
+  // tree *cough*) which leave it null.
   if (!style)
     return Color::kBlack;
 
-  const SVGComputedStyle& svg_style = style->SvgStyle();
-  return svg_style.StopColor().CombineWithAlpha(svg_style.StopOpacity());
+  Color base_color = style->VisitedDependentColor(GetCSSPropertyStopColor());
+  return base_color.CombineWithAlpha(style->SvgStyle().StopOpacity());
 }
 
 }  // namespace blink

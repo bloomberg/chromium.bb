@@ -34,6 +34,7 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/binding_security.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_file.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_node.h"
 #include "third_party/blink/renderer/core/dom/attr.h"
 #include "third_party/blink/renderer/core/dom/character_data.h"
@@ -310,9 +311,8 @@ void InspectorDOMAgent::Unbind(Node* node, NodeToIdMap* nodes_map) {
   if (IsA<Document>(node) && dom_listener_)
     dom_listener_->DidRemoveDocument(To<Document>(node));
 
-  if (node->IsFrameOwnerElement()) {
-    Document* content_document =
-        ToHTMLFrameOwnerElement(node)->contentDocument();
+  if (auto* frame_owner = DynamicTo<HTMLFrameOwnerElement>(node)) {
+    Document* content_document = frame_owner->contentDocument();
     if (content_document)
       Unbind(content_document, nodes_map);
   }
@@ -397,10 +397,10 @@ ShadowRoot* InspectorDOMAgent::UserAgentShadowRoot(Node* node) {
     return nullptr;
 
   Node* candidate = node;
-  while (candidate && !candidate->IsShadowRoot())
+  while (candidate && !IsA<ShadowRoot>(candidate))
     candidate = candidate->ParentOrShadowHostNode();
   DCHECK(candidate);
-  ShadowRoot* shadow_root = ToShadowRoot(candidate);
+  ShadowRoot* shadow_root = To<ShadowRoot>(candidate);
 
   return shadow_root->IsUserAgent() ? shadow_root : nullptr;
 }
@@ -411,7 +411,7 @@ Response InspectorDOMAgent::AssertEditableNode(int node_id, Node*& node) {
     return response;
 
   if (node->IsInShadowTree()) {
-    if (node->IsShadowRoot())
+    if (IsA<ShadowRoot>(node))
       return Response::Error("Cannot edit shadow roots");
     if (UserAgentShadowRoot(node))
       return Response::Error("Cannot edit nodes from user-agent shadow trees");
@@ -453,7 +453,7 @@ void InspectorDOMAgent::EnableAndReset() {
   history_ = MakeGarbageCollected<InspectorHistory>();
   dom_editor_ = MakeGarbageCollected<DOMEditor>(history_.Get());
   document_ = inspected_frames_->Root()->GetDocument();
-  instrumenting_agents_->addInspectorDOMAgent(this);
+  instrumenting_agents_->AddInspectorDOMAgent(this);
 }
 
 Response InspectorDOMAgent::enable() {
@@ -466,7 +466,7 @@ Response InspectorDOMAgent::disable() {
   if (!enabled_.Get())
     return Response::Error("DOM agent hasn't been enabled");
   enabled_.Clear();
-  instrumenting_agents_->removeInspectorDOMAgent(this);
+  instrumenting_agents_->RemoveInspectorDOMAgent(this);
   history_.Clear();
   dom_editor_.Clear();
   SetDocument(nullptr);
@@ -943,16 +943,15 @@ static Node* NextNodeWithShadowDOMInMind(const Node& current,
   do {
     if (node == stay_within)
       return nullptr;
-    if (node->IsShadowRoot()) {
-      const ShadowRoot* shadow_root = ToShadowRoot(node);
+    auto* shadow_root = DynamicTo<ShadowRoot>(node);
+    if (shadow_root) {
       Element& host = shadow_root->host();
       if (host.HasChildren())
         return host.firstChild();
     }
     if (node->nextSibling())
       return node->nextSibling();
-    node =
-        node->IsShadowRoot() ? &ToShadowRoot(node)->host() : node->parentNode();
+    node = shadow_root ? &shadow_root->host() : node->parentNode();
   } while (node);
 
   return nullptr;
@@ -1252,7 +1251,7 @@ Response InspectorDOMAgent::focus(Maybe<int> node_id,
   if (!node->IsElementNode())
     return Response::Error("Node is not an Element");
   Element* element = ToElement(node);
-  element->GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  element->GetDocument().UpdateStyleAndLayout();
   if (!element->IsFocusable())
     return Response::Error("Element is not focusable");
   element->focus();
@@ -1333,11 +1332,9 @@ Response InspectorDOMAgent::getNodeForLocation(
     node = node->parentNode();
   if (!node)
     return Response::Error("No node found at given location");
-  *backend_node_id = DOMNodeIds::IdForNode(node);
-  if (enabled_.Get()) {
-    Response response = PushDocumentUponHandlelessOperation();
-    if (!response.isSuccess())
-      return response;
+  *backend_node_id = IdentifiersFactory::IntIdForNode(node);
+  if (enabled_.Get() && document_ &&
+      document_node_to_id_map_->Contains(document_)) {
     *node_id = PushNodePathToFrontend(node);
   }
   return Response::OK();
@@ -1346,7 +1343,8 @@ Response InspectorDOMAgent::getNodeForLocation(
 Response InspectorDOMAgent::resolveNode(
     protocol::Maybe<int> node_id,
     protocol::Maybe<int> backend_node_id,
-    Maybe<String> object_group,
+    protocol::Maybe<String> object_group,
+    protocol::Maybe<int> execution_context_id,
     std::unique_ptr<v8_inspector::protocol::Runtime::API::RemoteObject>*
         result) {
   String object_group_name = object_group.fromMaybe("");
@@ -1362,7 +1360,8 @@ Response InspectorDOMAgent::resolveNode(
 
   if (!node)
     return Response::Error("No node with given id found");
-  *result = ResolveNode(v8_session_, node, object_group_name);
+  *result = ResolveNode(v8_session_, node, object_group_name,
+                        std::move(execution_context_id));
   if (!*result) {
     return Response::Error(
         "Node with given id does not belong to the document");
@@ -1465,8 +1464,7 @@ std::unique_ptr<protocol::DOM::Node> InspectorDOMAgent::BuildObjectForNode(
     Element* element = ToElement(node);
     value->setAttributes(BuildArrayForElementAttributes(element));
 
-    if (node->IsFrameOwnerElement()) {
-      HTMLFrameOwnerElement* frame_owner = ToHTMLFrameOwnerElement(node);
+    if (auto* frame_owner = DynamicTo<HTMLFrameOwnerElement>(node)) {
       if (frame_owner->ContentFrame()) {
         value->setFrameId(
             IdentifiersFactory::FrameId(frame_owner->ContentFrame()));
@@ -1546,8 +1544,8 @@ std::unique_ptr<protocol::DOM::Node> InspectorDOMAgent::BuildObjectForNode(
     Attr* attribute = ToAttr(node);
     value->setName(attribute->name());
     value->setValue(attribute->value());
-  } else if (node->IsShadowRoot()) {
-    value->setShadowRootType(GetShadowRootType(ToShadowRoot(node)));
+  } else if (auto* shadow_root = DynamicTo<ShadowRoot>(node)) {
+    value->setShadowRootType(GetShadowRootType(shadow_root));
   }
 
   if (node->IsContainerNode()) {
@@ -1764,8 +1762,7 @@ void InspectorDOMAgent::CollectNodes(
 
   if (pierce && node->IsElementNode()) {
     Element* element = ToElement(node);
-    if (node->IsFrameOwnerElement()) {
-      HTMLFrameOwnerElement* frame_owner = ToHTMLFrameOwnerElement(node);
+    if (auto* frame_owner = DynamicTo<HTMLFrameOwnerElement>(node)) {
       if (frame_owner->ContentFrame() &&
           frame_owner->ContentFrame()->IsLocalFrame()) {
         if (Document* doc = frame_owner->contentDocument())
@@ -1791,7 +1788,7 @@ void InspectorDOMAgent::CollectNodes(
   }
 }
 
-void InspectorDOMAgent::DOMContentLoadedEventFired(LocalFrame* frame) {
+void InspectorDOMAgent::DomContentLoadedEventFired(LocalFrame* frame) {
   if (frame != inspected_frames_->Root())
     return;
 
@@ -1952,11 +1949,11 @@ void InspectorDOMAgent::StyleAttributeInvalidated(
 }
 
 void InspectorDOMAgent::CharacterDataModified(CharacterData* character_data) {
-  if (IsWhitespace(character_data)) {
+  int id = document_node_to_id_map_->at(character_data);
+  if (IsWhitespace(character_data) && id) {
     DOMNodeRemoved(character_data);
     return;
   }
-  int id = document_node_to_id_map_->at(character_data);
   if (!id) {
     // Push text node if it is being created.
     DidInsertDOMNode(character_data);
@@ -2149,12 +2146,8 @@ Response InspectorDOMAgent::pushNodeByPathToFrontend(const String& path,
 Response InspectorDOMAgent::pushNodesByBackendIdsToFrontend(
     std::unique_ptr<protocol::Array<int>> backend_node_ids,
     std::unique_ptr<protocol::Array<int>>* result) {
-  if (!enabled_.Get())
-    return Response::Error("DOM agent is not enabled");
-
-  Response response = PushDocumentUponHandlelessOperation();
-  if (!response.isSuccess())
-    return response;
+  if (!document_ || !document_node_to_id_map_->Contains(document_))
+    return Response::Error("Document needs to be requested first");
 
   *result = protocol::Array<int>::create();
   for (size_t index = 0; index < backend_node_ids->length(); ++index) {
@@ -2239,27 +2232,41 @@ protocol::Response InspectorDOMAgent::getFrameOwner(
     if (IdentifiersFactory::FrameId(frame) == frame_id)
       break;
   }
-  if (!frame || !frame->Owner()->IsLocal())
-    return Response::Error("Frame with given id does not belong to target.");
-  HTMLFrameOwnerElement* frame_owner = ToHTMLFrameOwnerElement(frame->Owner());
-  if (!frame_owner)
-    return Response::Error("No iframe owner for given node");
+  if (!frame)
+    return Response::Error("Frame with the given id was not found.");
+  auto* frame_owner = DynamicTo<HTMLFrameOwnerElement>(frame->Owner());
+  if (!frame_owner) {
+    return Response::Error(
+        "Frame with the given id does not belong to the target.");
+  }
 
-  *backend_node_id = DOMNodeIds::IdForNode(frame_owner);
-  if (enabled_.Get()) {
-    Response response = PushDocumentUponHandlelessOperation();
-    if (!response.isSuccess())
-      return response;
+  *backend_node_id = IdentifiersFactory::IntIdForNode(frame_owner);
+
+  if (enabled_.Get() && document_ &&
+      document_node_to_id_map_->Contains(document_)) {
     *node_id = PushNodePathToFrontend(frame_owner);
   }
   return Response::OK();
 }
 
-Response InspectorDOMAgent::PushDocumentUponHandlelessOperation() {
-  if (!document_node_to_id_map_->Contains(document_)) {
-    std::unique_ptr<protocol::DOM::Node> root;
-    return getDocument(Maybe<int>(), Maybe<bool>(), &root);
+Response InspectorDOMAgent::getFileInfo(const String& object_id, String* path) {
+  v8::HandleScope handles(isolate_);
+  v8::Local<v8::Value> value;
+  v8::Local<v8::Context> context;
+  std::unique_ptr<v8_inspector::StringBuffer> error;
+  if (!v8_session_->unwrapObject(&error, ToV8InspectorStringView(object_id),
+                                 &value, &context, nullptr))
+    return Response::Error(ToCoreString(std::move(error)));
+
+  if (!V8File::HasInstance(value, isolate_))
+    return Response::Error("Object id doesn't reference a File");
+  File* file = V8File::ToImpl(v8::Local<v8::Object>::Cast(value));
+  if (!file) {
+    return Response::Error(
+        "Couldn't convert object with given objectId to File");
   }
+
+  *path = file->GetPath();
   return Response::OK();
 }
 

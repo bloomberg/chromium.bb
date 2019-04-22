@@ -4,7 +4,7 @@
 
 #include "components/subresource_filter/content/browser/subresource_filter_observer_manager.h"
 
-#include "components/subresource_filter/mojom/subresource_filter.mojom.h"
+#include "components/subresource_filter/core/mojom/subresource_filter.mojom.h"
 
 namespace subresource_filter {
 
@@ -56,5 +56,7 @@ void SubresourceFilterObserverManager::NotifyAdSubframeDetected(
   for (auto& observer : observers_)
     observer.OnAdSubframeDetected(render_frame_host);
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(SubresourceFilterObserverManager)
 
 }  // namespace subresource_filter

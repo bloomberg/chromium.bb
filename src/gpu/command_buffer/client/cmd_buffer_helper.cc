@@ -133,7 +133,7 @@ void CommandBufferHelper::FreeRingBuffer() {
   }
 }
 
-gpu::ContextResult CommandBufferHelper::Initialize(int32_t ring_buffer_size) {
+gpu::ContextResult CommandBufferHelper::Initialize(uint32_t ring_buffer_size) {
   ring_buffer_size_ = ring_buffer_size;
   if (!AllocateRingBuffer()) {
     // This would fail if CreateTransferBuffer fails, which will not fail for

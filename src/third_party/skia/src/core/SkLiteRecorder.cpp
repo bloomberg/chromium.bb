@@ -30,6 +30,10 @@ SkCanvas::SaveLayerStrategy SkLiteRecorder::getSaveLayerStrategy(const SaveLayer
                    rec.fSaveLayerFlags);
     return SkCanvas::kNoLayer_SaveLayerStrategy;
 }
+bool SkLiteRecorder::onDoSaveBehind(const SkRect* subset) {
+    fDL->saveBehind(subset);
+    return false;
+}
 void SkLiteRecorder::willRestore() { fDL->restore(); }
 
 void SkLiteRecorder::didConcat   (const SkMatrix& matrix)   { fDL->   concat(matrix); }
@@ -91,26 +95,6 @@ void SkLiteRecorder::onDrawAnnotation(const SkRect& rect, const char key[], SkDa
     fDL->drawAnnotation(rect, key, val);
 }
 
-void SkLiteRecorder::onDrawText(const void* text, size_t bytes,
-                                SkScalar x, SkScalar y,
-                                const SkPaint& paint) {
-    fDL->drawText(text, bytes, x, y, paint);
-}
-void SkLiteRecorder::onDrawPosText(const void* text, size_t bytes,
-                                   const SkPoint pos[],
-                                   const SkPaint& paint) {
-    fDL->drawPosText(text, bytes, pos, paint);
-}
-void SkLiteRecorder::onDrawPosTextH(const void* text, size_t bytes,
-                                    const SkScalar xs[], SkScalar y,
-                                    const SkPaint& paint) {
-    fDL->drawPosTextH(text, bytes, xs, y, paint);
-}
-void SkLiteRecorder::onDrawTextRSXform(const void* text, size_t bytes,
-                                       const SkRSXform xform[], const SkRect* cull,
-                                       const SkPaint& paint) {
-    fDL->drawTextRSXform(text, bytes, xform, cull, paint);
-}
 void SkLiteRecorder::onDrawTextBlob(const SkTextBlob* blob,
                                     SkScalar x, SkScalar y,
                                     const SkPaint& paint) {
@@ -159,11 +143,6 @@ void SkLiteRecorder::onDrawImageLattice(const SkImage* img,
     fDL->drawImageLattice(sk_ref_sp(img), lattice, dst, paint);
 }
 
-void SkLiteRecorder::onDrawImageSet(const ImageSetEntry set[], int count,
-                                    SkFilterQuality filterQuality, SkBlendMode mode) {
-    fDL->drawImageSet(set, count, filterQuality, mode);
-}
-
 void SkLiteRecorder::onDrawPatch(const SkPoint cubics[12],
                                  const SkColor colors[4], const SkPoint texCoords[4],
                                  SkBlendMode bmode, const SkPaint& paint) {
@@ -191,4 +170,15 @@ void SkLiteRecorder::onDrawAtlas(const SkImage* atlas,
 }
 void SkLiteRecorder::onDrawShadowRec(const SkPath& path, const SkDrawShadowRec& rec) {
     fDL->drawShadowRec(path, rec);
+}
+
+void SkLiteRecorder::onDrawEdgeAAQuad(const SkRect& rect, const SkPoint clip[4],
+                                      QuadAAFlags aaFlags, SkColor color, SkBlendMode mode) {
+  fDL->drawEdgeAAQuad(rect, clip, aaFlags, color, mode);
+}
+void SkLiteRecorder::onDrawEdgeAAImageSet(const ImageSetEntry set[], int count,
+                                          const SkPoint dstClips[],
+                                          const SkMatrix preViewMatrices[], const SkPaint* paint,
+                                          SkCanvas::SrcRectConstraint constraint) {
+  fDL->drawEdgeAAImageSet(set, count, dstClips, preViewMatrices, paint, constraint);
 }

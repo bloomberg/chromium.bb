@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/auto_reset.h"
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/trace_event/trace_event.h"
@@ -106,6 +107,12 @@ void Scheduler::SetBeginFrameSource(viz::BeginFrameSource* source) {
     return;
   if (observing_begin_frame_source_)
     begin_frame_source_->AddObserver(this);
+}
+
+void Scheduler::NotifyAnimationWorkletStateChange(AnimationWorkletState state,
+                                                  TreeType tree) {
+  state_machine_.NotifyAnimationWorkletStateChange(state, tree);
+  ProcessScheduledActions();
 }
 
 void Scheduler::SetNeedsBeginMainFrame() {
@@ -221,17 +228,12 @@ void Scheduler::BeginMainFrameNotExpectedUntil(base::TimeTicks time) {
   client_->ScheduledActionBeginMainFrameNotExpectedUntil(time);
 }
 
-void Scheduler::BeginImplFrameNotExpectedSoon() {
-  compositor_timing_history_->BeginImplFrameNotExpectedSoon();
+void Scheduler::BeginMainFrameNotExpectedSoon() {
+  TRACE_EVENT0("cc", "Scheduler::BeginMainFrameNotExpectedSoon");
 
-  // Tying this to SendBeginMainFrameNotExpectedSoon will have some
-  // false negatives, but we want to avoid running long idle tasks when
-  // we are actually active.
-  if (state_machine_.wants_begin_main_frame_not_expected_messages()) {
-    DCHECK(!inside_scheduled_action_);
-    base::AutoReset<bool> mark_inside(&inside_scheduled_action_, true);
-    client_->SendBeginMainFrameNotExpectedSoon();
-  }
+  DCHECK(!inside_scheduled_action_);
+  base::AutoReset<bool> mark_inside(&inside_scheduled_action_, true);
+  client_->SendBeginMainFrameNotExpectedSoon();
 }
 
 void Scheduler::StartOrStopBeginFrames() {
@@ -255,7 +257,7 @@ void Scheduler::StartOrStopBeginFrames() {
       begin_frame_source_->RemoveObserver(this);
     // We're going idle so drop pending begin frame.
     CancelPendingBeginFrameTask();
-    BeginImplFrameNotExpectedSoon();
+    compositor_timing_history_->BeginImplFrameNotExpectedSoon();
     devtools_instrumentation::NeedsBeginFrameChanged(layer_tree_host_id_,
                                                      false);
     client_->WillNotReceiveBeginFrame();
@@ -576,6 +578,7 @@ void Scheduler::SendDidNotProduceFrame(const viz::BeginFrameArgs& args) {
   if (last_begin_frame_ack_.source_id == args.source_id &&
       last_begin_frame_ack_.sequence_number == args.sequence_number)
     return;
+  compositor_timing_history_->DidNotProduceFrame();
   last_begin_frame_ack_ = viz::BeginFrameAck(args, false /* has_damage */);
   client_->DidNotProduceFrame(last_begin_frame_ack_);
 }
@@ -599,7 +602,7 @@ void Scheduler::BeginImplFrame(const viz::BeginFrameArgs& args,
                                     args.animate_only);
     devtools_instrumentation::DidBeginFrame(layer_tree_host_id_);
     compositor_timing_history_->WillBeginImplFrame(
-        state_machine_.NewActiveTreeLikely(), args.frame_time, args.type, now);
+        args, state_machine_.NewActiveTreeLikely(), now);
     bool has_damage =
         client_->WillBeginImplFrame(begin_impl_frame_tracker_.Current());
 
@@ -740,10 +743,10 @@ void Scheduler::DrawForced() {
       client_->CurrentFrameHadRAF(), client_->NextFrameHasPendingRAF());
 }
 
-void Scheduler::SetDeferMainFrameUpdate(bool defer_main_frame_update) {
-  TRACE_EVENT1("cc", "Scheduler::SetDeferMainFrameUpdate",
-               "defer_main_frame_update", defer_main_frame_update);
-  state_machine_.SetDeferMainFrameUpdate(defer_main_frame_update);
+void Scheduler::SetDeferBeginMainFrame(bool defer_begin_main_frame) {
+  TRACE_EVENT1("cc", "Scheduler::SetDeferBeginMainFrame",
+               "defer_begin_main_frame", defer_begin_main_frame);
+  state_machine_.SetDeferBeginMainFrame(defer_begin_main_frame);
   ProcessScheduledActions();
 }
 
@@ -782,17 +785,16 @@ void Scheduler::ProcessScheduledActions() {
         // TODO(brianderson): Pass begin_main_frame_args_ directly to client.
         client_->ScheduledActionSendBeginMainFrame(begin_main_frame_args_);
         break;
-      case SchedulerStateMachine::Action::NOTIFY_BEGIN_MAIN_FRAME_NOT_SENT:
-        state_machine_.WillNotifyBeginMainFrameNotSent();
-        // If SendBeginMainFrameNotExpectedSoon was not previously sent by
-        // BeginImplFrameNotExpectedSoon (because the messages were not required
-        // at that time), then send it now.
-        if (!observing_begin_frame_source_) {
-          client_->SendBeginMainFrameNotExpectedSoon();
-        } else {
-          BeginMainFrameNotExpectedUntil(begin_main_frame_args_.frame_time +
-                                         begin_main_frame_args_.interval);
-        }
+      case SchedulerStateMachine::Action::
+          NOTIFY_BEGIN_MAIN_FRAME_NOT_EXPECTED_UNTIL:
+        state_machine_.WillNotifyBeginMainFrameNotExpectedUntil();
+        BeginMainFrameNotExpectedUntil(begin_main_frame_args_.frame_time +
+                                       begin_main_frame_args_.interval);
+        break;
+      case SchedulerStateMachine::Action::
+          NOTIFY_BEGIN_MAIN_FRAME_NOT_EXPECTED_SOON:
+        state_machine_.WillNotifyBeginMainFrameNotExpectedSoon();
+        BeginMainFrameNotExpectedSoon();
         break;
       case SchedulerStateMachine::Action::COMMIT: {
         bool commit_has_no_updates = false;
@@ -930,6 +932,17 @@ bool Scheduler::ShouldDropBeginFrame(const viz::BeginFrameArgs& args) const {
       !settings_.enable_surface_synchronization) {
     return true;
   }
+
+  // We shouldn't be handling missed frames in the browser process (i.e. where
+  // commit_to_active_tree is set) since we don't know if we should create a
+  // frame at this time. Doing so leads to issues like crbug.com/882907. This
+  // early-out is a short term fix to keep fling animations smooth.
+  // TODO(bokan): In the long term, the display compositor should decide
+  // whether to issue a missed frame; it is tracked in
+  // https://crbug.com/930890.
+  if (args.type == viz::BeginFrameArgs::MISSED &&
+      settings_.commit_to_active_tree)
+    return true;
 
   return false;
 }

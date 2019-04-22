@@ -5,7 +5,9 @@
 #include "components/download/public/common/download_item_impl_delegate.h"
 
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "components/download/database/in_progress/download_entry.h"
+#include "components/download/public/common/auto_resumption_handler.h"
 #include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/download_item_impl.h"
 
@@ -91,6 +93,12 @@ base::Optional<DownloadEntry> DownloadItemImplDelegate::GetInProgressEntry(
 
 bool DownloadItemImplDelegate::IsOffTheRecord() const {
   return false;
+}
+
+bool DownloadItemImplDelegate::IsActiveNetworkMetered() const {
+  return download::AutoResumptionHandler::Get()
+             ? download::AutoResumptionHandler::Get()->IsActiveNetworkMetered()
+             : false;
 }
 
 void DownloadItemImplDelegate::ReportBytesWasted(DownloadItemImpl* download) {}

@@ -40,15 +40,15 @@ const Region& TouchActionRegion::GetRegionForTouchAction(
   return it->second;
 }
 
-TouchAction TouchActionRegion::GetWhiteListedTouchAction(
+TouchAction TouchActionRegion::GetAllowedTouchAction(
     const gfx::Point& point) const {
-  TouchAction white_listed_touch_action = kTouchActionAuto;
+  TouchAction allowed_touch_action = kTouchActionAuto;
   for (const auto& pair : map_) {
     if (!pair.second.Contains(point))
       continue;
-    white_listed_touch_action &= pair.first;
+    allowed_touch_action &= pair.first;
   }
-  return white_listed_touch_action;
+  return allowed_touch_action;
 }
 
 TouchActionRegion& TouchActionRegion::operator=(

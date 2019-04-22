@@ -130,8 +130,9 @@ cr.define('media_router.ui', function() {
     this.setSinkListAndIdentity(data['sinksAndIdentity']);
     container.routeList = data['routes'];
     container.maybeShowRouteDetailsOnOpen();
-    if (data['useTabMirroring'])
+    if (data['useTabMirroring']) {
       container.selectCastMode(media_router.CastModeType.TAB_MIRROR);
+    }
     media_router.browserApi.onInitialDataReceived();
   }
 

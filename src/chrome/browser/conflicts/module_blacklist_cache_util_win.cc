@@ -9,14 +9,15 @@
 #include <iterator>
 #include <string>
 #include <tuple>
+#include <type_traits>
 #include <utility>
 
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/important_file_writer.h"
+#include "base/hash/md5.h"
 #include "base/logging.h"
-#include "base/md5.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/conflicts/module_list_filter_win.h"
@@ -232,7 +233,7 @@ int64_t CalculateExpectedFileSize(
   return static_cast<int64_t>(sizeof(third_party_dlls::PackedListMetadata) +
                               packed_list_metadata.module_count *
                                   sizeof(third_party_dlls::PackedListModule) +
-                              arraysize(base::MD5Digest::a));
+                              std::extent<decltype(base::MD5Digest::a)>());
 }
 
 bool ModuleLess::operator()(

@@ -7,6 +7,8 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "extensions/common/extension_api.h"
@@ -91,7 +93,8 @@ class DeclarativeEventTest : public APIBindingTest {
     }
 
     request_handler_ = std::make_unique<APIRequestHandler>(
-        base::Bind(&DeclarativeEventTest::OnRequest, base::Unretained(this)),
+        base::BindRepeating(&DeclarativeEventTest::OnRequest,
+                            base::Unretained(this)),
         APILastError(APILastError::GetParent(), binding::AddConsoleError()),
         nullptr, base::BindRepeating(&GetTestUserActivationState));
   }
@@ -137,7 +140,7 @@ TEST_F(DeclarativeEventTest, TestRulesSchema) {
     v8::Local<v8::Function> function =
         FunctionFromString(context, base::StringPrintf(kAddRules, kGoodRules));
     v8::Local<v8::Value> args[] = {emitter_value};
-    RunFunctionOnGlobal(function, context, arraysize(args), args);
+    RunFunctionOnGlobal(function, context, base::size(args), args);
 
     EXPECT_TRUE(last_request());
     reset_last_request();
@@ -164,7 +167,7 @@ TEST_F(DeclarativeEventTest, TestRulesSchema) {
       v8::Local<v8::Function> function =
           FunctionFromString(context, base::StringPrintf(kAddRules, rules));
       v8::Local<v8::Value> args[] = {emitter_value};
-      RunFunctionAndExpectError(function, context, arraysize(args), args,
+      RunFunctionAndExpectError(function, context, base::size(args), args,
                                 "Uncaught TypeError: Invalid invocation");
       EXPECT_FALSE(last_request()) << rules;
       reset_last_request();
@@ -218,7 +221,7 @@ TEST_F(DeclarativeEventWithSchemaTest, TestAllMethods) {
                   }]);
              }))";
     v8::Local<v8::Function> add_rules = FunctionFromString(context, kAddRules);
-    RunFunctionOnGlobal(add_rules, context, arraysize(args), args);
+    RunFunctionOnGlobal(add_rules, context, base::size(args), args);
     ValidateLastRequest("events.addRules",
                         "['alpha.declarativeEvent',0,"
                         "[{'actions':['cat'],"
@@ -234,7 +237,7 @@ TEST_F(DeclarativeEventWithSchemaTest, TestAllMethods) {
         "})";
     v8::Local<v8::Function> remove_rules =
         FunctionFromString(context, kRemoveRules);
-    RunFunctionOnGlobal(remove_rules, context, arraysize(args), args);
+    RunFunctionOnGlobal(remove_rules, context, base::size(args), args);
     ValidateLastRequest("events.removeRules",
                         "['alpha.declarativeEvent',0,['rule']]");
     reset_last_request();
@@ -247,7 +250,7 @@ TEST_F(DeclarativeEventWithSchemaTest, TestAllMethods) {
         "})";
     v8::Local<v8::Function> remove_rules =
         FunctionFromString(context, kGetRules);
-    RunFunctionOnGlobal(remove_rules, context, arraysize(args), args);
+    RunFunctionOnGlobal(remove_rules, context, base::size(args), args);
     ValidateLastRequest("events.getRules", "['alpha.declarativeEvent',0,null]");
     reset_last_request();
   }

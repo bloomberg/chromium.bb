@@ -8,13 +8,18 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#if defined(OS_WIN)
+#include <vector>
+#endif
+
+#include "base/component_export.h"
 #include "base/i18n/rtl.h"
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
-#include "ui/base/ime/ui_base_ime_export.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/range/range.h"
 
@@ -28,7 +33,7 @@ class KeyEvent;
 enum class TextEditCommand;
 
 // An interface implemented by a View that needs text input support.
-class UI_BASE_IME_EXPORT TextInputClient {
+class COMPONENT_EXPORT(UI_BASE_IME) TextInputClient {
  public:
   // The reason the control was focused, used by the virtual keyboard to detect
   // pen input.
@@ -118,35 +123,37 @@ class UI_BASE_IME_EXPORT TextInputClient {
 
   // Document content operations ----------------------------------------------
 
-  // Retrieves the UTF-16 based character range containing accessible text in
+  // Retrieves the UTF-16 code unit range containing accessible text in
   // the View. It must cover the composition and selection range.
   // Returns false if the information cannot be retrieved right now.
   virtual bool GetTextRange(gfx::Range* range) const = 0;
 
-  // Retrieves the UTF-16 based character range of current composition text.
+  // Retrieves the UTF-16 code unit range of current composition text.
   // Returns false if the information cannot be retrieved right now.
   virtual bool GetCompositionTextRange(gfx::Range* range) const = 0;
 
-  // Retrieves the UTF-16 based character range of current selection.
-  // Returns false if the information cannot be retrieved right now.
-  virtual bool GetSelectionRange(gfx::Range* range) const = 0;
+  // Retrieves the UTF-16 code unit range of current selection in the text
+  // input. Returns false if the information cannot be retrieved right now.
+  // Returns false if the selected text is outside of the text input (== the
+  // text input is not focused)
+  virtual bool GetEditableSelectionRange(gfx::Range* range) const = 0;
 
-  // Selects the given UTF-16 based character range. Current composition text
+  // Selects the given UTF-16 code unit range. Current composition text
   // will be confirmed before selecting the range.
   // Returns false if the operation is not supported.
-  virtual bool SetSelectionRange(const gfx::Range& range) = 0;
+  virtual bool SetEditableSelectionRange(const gfx::Range& range) = 0;
 
-  // Deletes contents in the given UTF-16 based character range. Current
+  // Deletes contents in the given UTF-16 code unit range. Current
   // composition text will be confirmed before deleting the range.
   // The input caret will be moved to the place where the range gets deleted.
   // ExtendSelectionAndDelete should be used instead as far as you are deleting
   // characters around current caret. This function with the range based on
-  // GetSelectionRange has a race condition due to asynchronous IPCs between
-  // browser and renderer.
-  // Returns false if the operation is not supported.
+  // GetEditableSelectionRange has a race condition due to asynchronous IPCs
+  // between browser and renderer. Returns false if the operation is not
+  // supported.
   virtual bool DeleteRange(const gfx::Range& range) = 0;
 
-  // Retrieves the text content in a given UTF-16 based character range.
+  // Retrieves the text content in a given UTF-16 code unit range.
   // The result will be stored into |*text|.
   // Returns false if the operation is not supported or the specified range
   // is out of the text range returned by GetTextRange().
@@ -166,11 +173,11 @@ class UI_BASE_IME_EXPORT TextInputClient {
   virtual bool ChangeTextDirectionAndLayoutAlignment(
       base::i18n::TextDirection direction) = 0;
 
-  // Deletes the current selection plus the specified number of characters
+  // Deletes the current selection plus the specified number of char16 values
   // before and after the selection or caret. This function should be used
-  // instead of calling DeleteRange with GetSelectionRange, because
-  // GetSelectionRange may not be the latest value due to asynchronous of IPC
-  // between browser and renderer.
+  // instead of calling DeleteRange with GetEditableSelectionRange, because
+  // GetEditableSelectionRange may not be the latest value due to asynchronous
+  // of IPC between browser and renderer.
   virtual void ExtendSelectionAndDelete(size_t before, size_t after) = 0;
 
   // Ensure the caret is not in |rect|.  |rect| is in screen coordinates in
@@ -196,6 +203,25 @@ class UI_BASE_IME_EXPORT TextInputClient {
   // improve typing suggestions for the user. This should return false for text
   // fields that are considered 'private' (e.g. in incognito tabs).
   virtual bool ShouldDoLearning() = 0;
+
+#if defined(OS_WIN)
+  // Start composition over a given UTF-16 code range from existing text. This
+  // should only be used for composition scenario when IME wants to start
+  // composition on existing text.
+  virtual void SetCompositionFromExistingText(
+      const gfx::Range& range,
+      const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) = 0;
+  // Notifies accessibility about active composition. This API is currently
+  // only defined for TSF which is available only on Windows
+  // https://docs.microsoft.com/en-us/windows/desktop/api/UIAutomationCore/
+  // nf-uiautomationcore-itexteditprovider-getactivecomposition
+  // It notifies the composition range, composition text and whether the
+  // composition has been committed or not.
+  virtual void SetActiveCompositionForAccessibility(
+      const gfx::Range& range,
+      const base::string16& active_composition_text,
+      bool is_composition_committed) = 0;
+#endif
 };
 
 }  // namespace ui

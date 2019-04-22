@@ -23,6 +23,7 @@
 #include "media/cast/cast_environment.h"
 #include "media/cast/net/cast_transport_defines.h"
 #include "media/mojo/interfaces/video_encode_accelerator.mojom.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 
 namespace media {
 class AudioInputDevice;

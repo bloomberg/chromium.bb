@@ -6,6 +6,8 @@
 
 #include <stdlib.h>
 #include <cstdlib>
+#include <memory>
+#include <string>
 
 #include "base/allocator/allocator_shim.h"
 #include "base/allocator/buildflags.h"
@@ -26,6 +28,25 @@
 
 #if BUILDFLAG(USE_ALLOCATOR_SHIM)
 
+#if defined(OS_WIN)
+#include <malloc.h>
+static size_t GetAllocatedSize(void *mem) {
+  return _msize(mem);
+}
+#elif defined(OS_MACOSX)
+#include <malloc/malloc.h>
+static size_t GetAllocatedSize(void* mem) {
+  return malloc_size(mem);
+}
+#elif defined(OS_LINUX)
+#include <malloc.h>
+static size_t GetAllocatedSize(void* mem) {
+  return malloc_usable_size(mem);
+}
+#else
+#error "Needs to be implemented for platform."
+#endif
+
 namespace gwp_asan {
 namespace internal {
 
@@ -35,14 +56,24 @@ namespace {
 
 constexpr size_t kSamplingFrequency = 10;
 
-// The likelihood of iterating this many times and not getting a sampled
-// allocation is less than one in a trillion [1 / exp(32)].
-constexpr size_t kLoopIterations = kSamplingFrequency * 32;
+// Number of loop iterations required to definitely hit a sampled allocation.
+constexpr size_t kLoopIterations = kSamplingFrequency * 4;
 
 constexpr int kSuccess = 0;
 constexpr int kFailure = 1;
 
 class SamplingAllocatorShimsTest : public base::MultiProcessTest {
+ public:
+  static void multiprocessTestSetup() {
+#if defined(OS_MACOSX)
+    base::allocator::InitializeAllocatorShim();
+#endif  // defined(OS_MACOSX)
+    crash_reporter::InitializeCrashKeys();
+    InstallAllocatorHooks(AllocatorState::kMaxMetadata,
+                          AllocatorState::kMaxMetadata,
+                          AllocatorState::kMaxSlots, kSamplingFrequency);
+  }
+
  protected:
   void runTest(const char* name) {
     base::Process process = SpawnChild(name);
@@ -82,9 +113,9 @@ bool allocationCheck(std::function<void*(void)> allocate,
   return false;
 }
 
-MULTIPROCESS_TEST_MAIN(BasicFunctionality) {
-  InstallAllocatorHooks(AllocatorState::kGpaMaxPages, kSamplingFrequency);
-
+MULTIPROCESS_TEST_MAIN_WITH_SETUP(
+    BasicFunctionality,
+    SamplingAllocatorShimsTest::multiprocessTestSetup) {
   const size_t page_size = base::GetPageSize();
   int failures = 0;
 
@@ -95,12 +126,24 @@ MULTIPROCESS_TEST_MAIN(BasicFunctionality) {
   EXPECT_TRUE(allocationCheck([&] { return realloc(nullptr, page_size); },
                               &free, &failures));
 
-#if !defined(OS_WIN)
+#if defined(OS_WIN)
+  EXPECT_TRUE(allocationCheck([&] { return _aligned_malloc(123, 16); },
+                              &_aligned_free, &failures));
+  EXPECT_TRUE(
+      allocationCheck([&] { return _aligned_realloc(nullptr, 123, 16); },
+                      &_aligned_free, &failures));
+#endif  // defined(OS_WIN)
+
+#if defined(OS_POSIX)
   EXPECT_TRUE(allocationCheck(
-      [&] { return aligned_alloc(page_size, page_size); }, &free, &failures));
-  EXPECT_TRUE(allocationCheck([&] { return aligned_alloc(1, page_size); },
-                              &free, &failures));
-#endif
+      [&]() -> void* {
+        void* ptr;
+        if (posix_memalign(&ptr, page_size, page_size))
+          return nullptr;
+        return ptr;
+      },
+      &free, &failures));
+#endif  // defined(OS_POSIX)
 
   EXPECT_TRUE(allocationCheck([&] { return std::malloc(page_size); },
                               &std::free, &failures));
@@ -132,9 +175,9 @@ TEST_F(SamplingAllocatorShimsTest, BasicFunctionality) {
   runTest("BasicFunctionality");
 }
 
-MULTIPROCESS_TEST_MAIN(Realloc) {
-  InstallAllocatorHooks(AllocatorState::kGpaMaxPages, kSamplingFrequency);
-
+MULTIPROCESS_TEST_MAIN_WITH_SETUP(
+    Realloc,
+    SamplingAllocatorShimsTest::multiprocessTestSetup) {
   void* alloc = GetGpaForTesting().Allocate(base::GetPageSize());
   CHECK_NE(alloc, nullptr);
 
@@ -158,9 +201,9 @@ TEST_F(SamplingAllocatorShimsTest, Realloc) {
   runTest("Realloc");
 }
 
-MULTIPROCESS_TEST_MAIN(Calloc) {
-  InstallAllocatorHooks(AllocatorState::kGpaMaxPages, kSamplingFrequency);
-
+MULTIPROCESS_TEST_MAIN_WITH_SETUP(
+    Calloc,
+    SamplingAllocatorShimsTest::multiprocessTestSetup) {
   for (size_t i = 0; i < kLoopIterations; i++) {
     unsigned char* alloc =
         static_cast<unsigned char*>(calloc(base::GetPageSize(), 1));
@@ -183,9 +226,12 @@ TEST_F(SamplingAllocatorShimsTest, Calloc) {
   runTest("Calloc");
 }
 
-MULTIPROCESS_TEST_MAIN(CrashKey) {
-  InstallAllocatorHooks(AllocatorState::kGpaMaxPages, kSamplingFrequency);
-
+// GetCrashKeyValue() operates on a per-component basis, can't read the crash
+// key from the gwp_asan_client component in a component build.
+#if !defined(COMPONENT_BUILD)
+MULTIPROCESS_TEST_MAIN_WITH_SETUP(
+    CrashKey,
+    SamplingAllocatorShimsTest::multiprocessTestSetup) {
   std::string crash_key = crash_reporter::GetCrashKeyValue(kGpaCrashKey);
 
   uint64_t value;
@@ -201,6 +247,82 @@ MULTIPROCESS_TEST_MAIN(CrashKey) {
 TEST_F(SamplingAllocatorShimsTest, CrashKey) {
   runTest("CrashKey");
 }
+#endif  // !defined(COMPONENT_BUILD)
+
+MULTIPROCESS_TEST_MAIN_WITH_SETUP(
+    GetSizeEstimate,
+    SamplingAllocatorShimsTest::multiprocessTestSetup) {
+  constexpr size_t kAllocationSize = 123;
+  for (size_t i = 0; i < kLoopIterations; i++) {
+    std::unique_ptr<void, decltype(&free)> alloc(malloc(kAllocationSize), free);
+    CHECK_NE(alloc.get(), nullptr);
+
+    size_t alloc_sz = GetAllocatedSize(alloc.get());
+    if (GetGpaForTesting().PointerIsMine(alloc.get()))
+      CHECK_EQ(alloc_sz, kAllocationSize);
+    else
+      CHECK_GE(alloc_sz, kAllocationSize);
+  }
+
+  return kSuccess;
+}
+
+TEST_F(SamplingAllocatorShimsTest, GetSizeEstimate) {
+  runTest("GetSizeEstimate");
+}
+
+#if defined(OS_WIN)
+MULTIPROCESS_TEST_MAIN_WITH_SETUP(
+    AlignedRealloc,
+    SamplingAllocatorShimsTest::multiprocessTestSetup) {
+  // Exercise the _aligned_* shims and ensure that we handle them stably.
+  constexpr size_t kAllocationSize = 123;
+  constexpr size_t kAllocationAlignment = 64;
+  for (size_t i = 0; i < kLoopIterations; i++) {
+    void* ptr = _aligned_malloc(kAllocationSize, kAllocationAlignment);
+    CHECK(ptr);
+    ptr = _aligned_realloc(ptr, kAllocationSize * 2, kAllocationAlignment);
+    CHECK(ptr);
+    _aligned_free(ptr);
+  }
+
+  return kSuccess;
+}
+
+TEST_F(SamplingAllocatorShimsTest, AlignedRealloc) {
+  runTest("AlignedRealloc");
+}
+#endif  // defined(OS_WIN)
+
+#if defined(OS_MACOSX)
+MULTIPROCESS_TEST_MAIN_WITH_SETUP(
+    BatchFree,
+    SamplingAllocatorShimsTest::multiprocessTestSetup) {
+  void* ptrs[AllocatorState::kMaxMetadata + 1];
+  for (size_t i = 0; i < AllocatorState::kMaxMetadata; i++) {
+    ptrs[i] = GetGpaForTesting().Allocate(16);
+    CHECK(ptrs[i]);
+  }
+  // Check that all GPA allocations were consumed.
+  CHECK_EQ(GetGpaForTesting().Allocate(16), nullptr);
+
+  ptrs[AllocatorState::kMaxMetadata] =
+      malloc_zone_malloc(malloc_default_zone(), 16);
+  CHECK(ptrs[AllocatorState::kMaxMetadata]);
+
+  malloc_zone_batch_free(malloc_default_zone(), ptrs,
+                         AllocatorState::kMaxMetadata + 1);
+
+  // Check that GPA allocations were freed.
+  CHECK(GetGpaForTesting().Allocate(16));
+
+  return kSuccess;
+}
+
+TEST_F(SamplingAllocatorShimsTest, BatchFree) {
+  runTest("BatchFree");
+}
+#endif  // defined(OS_MACOSX)
 
 }  // namespace
 

@@ -10,7 +10,7 @@ window.addEventListener("message", function(message) {
 // This is needed because isolated worlds are not reset between test runs and a
 // previous test's CSP may interfere with this test. See
 // https://crbug.com/415845.
-testRunner.setIsolatedWorldContentSecurityPolicy(1, '');
+testRunner.setIsolatedWorldInfo(1, null, null);
 
 function test() {
     function setFontFace(num) {
@@ -21,7 +21,7 @@ function test() {
     }
 
     alert("Bypass main world's CSP with font-face.");
-    testRunner.setIsolatedWorldContentSecurityPolicy(1, "font-src 'self'");
+    testRunner.setIsolatedWorldInfo(1, "chrome-extension://123", "font-src 'self'");
     testRunner.evaluateScriptInIsolatedWorld(1, String(eval("setFontFace")) + "\nsetFontFace(1);");
 }
 

@@ -15,17 +15,13 @@
 namespace blink {
 
 // Entry struct represents a value in "module map" spec object.
-// https://html.spec.whatwg.org/multipage/webappapis.html#module-map
+// https://html.spec.whatwg.org/C/#module-map
 class ModuleMap::Entry final : public GarbageCollectedFinalized<Entry>,
                                public NameClient,
                                public ModuleScriptLoaderClient {
   USING_GARBAGE_COLLECTED_MIXIN(ModuleMap::Entry);
 
  public:
-  static Entry* Create(ModuleMap* map) {
-    return MakeGarbageCollected<Entry>(map);
-  }
-
   explicit Entry(ModuleMap*);
   ~Entry() override {}
 
@@ -35,7 +31,7 @@ class ModuleMap::Entry final : public GarbageCollectedFinalized<Entry>,
   // Notify fetched |m_moduleScript| to the client asynchronously.
   void AddClient(SingleModuleClient*);
 
-  // This is only to be used from ScriptModuleResolver implementations.
+  // This is only to be used from ModuleRecordResolver implementations.
   ModuleScript* GetModuleScript() const;
 
  private:
@@ -44,7 +40,7 @@ class ModuleMap::Entry final : public GarbageCollectedFinalized<Entry>,
   // Implements ModuleScriptLoaderClient
   void NotifyNewSingleModuleFinished(ModuleScript*) override;
 
-  TraceWrapperMember<ModuleScript> module_script_;
+  Member<ModuleScript> module_script_;
   Member<ModuleMap> map_;
 
   // Correspond to the HTML spec: "fetching" state.
@@ -100,7 +96,7 @@ ModuleScript* ModuleMap::Entry::GetModuleScript() const {
 
 ModuleMap::ModuleMap(Modulator* modulator)
     : modulator_(modulator),
-      loader_registry_(ModuleScriptLoaderRegistry::Create()) {
+      loader_registry_(MakeGarbageCollected<ModuleScriptLoaderRegistry>()) {
   DCHECK(modulator);
 }
 
@@ -110,10 +106,10 @@ void ModuleMap::Trace(blink::Visitor* visitor) {
   visitor->Trace(loader_registry_);
 }
 
-// <specdef href="https://html.spec.whatwg.org/#fetch-a-single-module-script">
+// <specdef href="https://html.spec.whatwg.org/C/#fetch-a-single-module-script">
 void ModuleMap::FetchSingleModuleScript(
     const ModuleScriptFetchRequest& request,
-    FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
+    ResourceFetcher* fetch_client_settings_object_fetcher,
     ModuleGraphLevel level,
     ModuleScriptCustomFetchType custom_fetch_type,
     SingleModuleClient* client) {
@@ -126,15 +122,15 @@ void ModuleMap::FetchSingleModuleScript(
   // entry's value changes, then queue a task on the networking task source to
   // proceed with running the following steps.</spec>
   MapImpl::AddResult result = map_.insert(request.Url(), nullptr);
-  TraceWrapperMember<Entry>& entry = result.stored_value->value;
+  Member<Entry>& entry = result.stored_value->value;
   if (result.is_new_entry) {
-    entry = Entry::Create(this);
+    entry = MakeGarbageCollected<Entry>(this);
 
     // Steps 4-9 loads a new single module script.
     // Delegates to ModuleScriptLoader via Modulator.
-    ModuleScriptLoader::Fetch(request, fetch_client_settings_object, level,
-                              modulator_, custom_fetch_type, loader_registry_,
-                              entry);
+    ModuleScriptLoader::Fetch(request, fetch_client_settings_object_fetcher,
+                              level, modulator_, custom_fetch_type,
+                              loader_registry_, entry);
   }
   DCHECK(entry);
 

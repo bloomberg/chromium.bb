@@ -13,25 +13,24 @@ size_t GetMaxFds() {
 }
 
 size_t GetSystemCommitCharge() {
-  // Not available, doesn't seem likely that it will be (for the whole system).
-  NOTIMPLEMENTED();
+  // TODO(https://crbug.com/926581): Fuchsia does not support this.
   return 0;
 }
 
 // static
 std::unique_ptr<ProcessMetrics> ProcessMetrics::CreateProcessMetrics(
     ProcessHandle process) {
-  NOTIMPLEMENTED();  // TODO(fuchsia): https://crbug.com/706592.
+  // TODO(https://crbug.com/926581).
   return nullptr;
 }
 
 TimeDelta ProcessMetrics::GetCumulativeCPUUsage() {
-  NOTIMPLEMENTED();  // TODO(fuchsia): https://crbug.com/706592.
+  // TODO(https://crbug.com/926581).
   return TimeDelta();
 }
 
 bool GetSystemMemoryInfo(SystemMemoryInfoKB* meminfo) {
-  NOTIMPLEMENTED();  // TODO(fuchsia): https://crbug.com/706592.
+  // TODO(https://crbug.com/926581).
   return false;
 }
 

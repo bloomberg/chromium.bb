@@ -7,8 +7,8 @@
 # As a result this file will only affect stand-alone ANGLE builds,
 # not chromium builds.
 
-import("//dotfile_settings.gni")
 import("//build/dotfile_settings.gni")
+import("//dotfile_settings.gni")
 
 # Location of the build configuration file.
 buildconfig = "//build/config/BUILDCONFIG.gn"
@@ -22,7 +22,7 @@ secondary_source = "//build/secondary/"
 # matching these patterns (see "gn help label_pattern" for format) will have
 # their includes checked for proper dependencies when you run either
 # "gn check" or "gn gen --check".
-check_targets = []
+check_targets = [ "*" ]
 
 # These are the list of GN files that run exec_script. This whitelist exists
 # to force additional review for new uses of exec_script, which is strongly
@@ -34,11 +34,12 @@ exec_script_whitelist = angle_dotfile_settings.exec_script_whitelist +
                           "//build/config/win/BUILD.gn",
                           "//build/config/win/visual_studio_version.gni",
                           "//build/gn_helpers.py",
+                          "//build_overrides/build.gni",
                         ]
 
 default_args = {
   use_custom_libcxx = false
-  clang_use_chrome_plugins = false
+  clang_use_chrome_plugins = true
   build_angle_deqp_tests = true
   use_sysroot = true
 }

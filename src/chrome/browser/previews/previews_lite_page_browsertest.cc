@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/metrics/field_trial_param_associator.h"
 #include "base/metrics/field_trial_params.h"
@@ -21,11 +22,11 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
+#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
+#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/infobars/mock_infobar_service.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
-#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
-#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/previews/previews_lite_page_decider.h"
 #include "chrome/browser/previews/previews_lite_page_navigation_throttle.h"
 #include "chrome/browser/previews/previews_service.h"
@@ -38,7 +39,10 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_service_client_test_utils.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_pingback_client.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/data_reduction_proxy/proto/data_store.pb.h"
 #include "components/history/core/browser/history_service.h"
@@ -49,6 +53,10 @@
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/optimization_guide/test_hints_component_creator.h"
 #include "components/prefs/pref_service.h"
+#include "components/previews/content/previews_decider_impl.h"
+#include "components/previews/content/previews_hints.h"
+#include "components/previews/content/previews_optimization_guide.h"
+#include "components/previews/content/previews_ui_service.h"
 #include "components/previews/content/previews_user_data.h"
 #include "components/previews/core/previews_constants.h"
 #include "components/previews/core/previews_experiments.h"
@@ -64,15 +72,25 @@
 #include "net/nqe/effective_connection_type.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/test/test_network_quality_tracker.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
 namespace {
 const int kTimeoutMs = 250;
+const int kRedirectLoopCount = 3;
+
+const char kOriginHost[] = "origin.com";
+
+// This should match the value in //components/google/core/common/google_util.cc
+// so that the X-Client-Data header is sent for subresources.
+const char kPreviewsHost[] = "litepages.googlezip.net";
 }
 
-class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
+class PreviewsLitePageServerBrowserTest
+    : public InProcessBrowserTest,
+      public testing::WithParamInterface<bool> {
  public:
   PreviewsLitePageServerBrowserTest() {}
 
@@ -106,6 +124,9 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
 
     // Previews server will respond with HTTP 307 to a preview page.
     kRedirectPreview = 7,
+
+    // Previews server will put Chrome into a redirect loop.
+    kRedirectLoop = 8,
   };
 
   void SetUpCommandLine(base::CommandLine* cmd) override {
@@ -118,12 +139,9 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
                            data_reduction_proxy::DummyBase64Config());
     cmd->AppendSwitchASCII("force-effective-connection-type", "Slow-2G");
     cmd->AppendSwitchASCII("force-variation-ids", "42");
-    // Resolve all localhost subdomains to plain localhost so that Chrome's Test
-    // DNS resolver doesn't get upset.
-    cmd->AppendSwitchASCII("host-rules",
-                           "MAP *.localhost 127.0.0.1,"
-                           "MAP *.127.0.0.1 127.0.0.1,"
-                           "MAP *.litepages.googlezip.net 127.0.0.1");
+    cmd->AppendSwitchASCII("host-rules", "MAP * 127.0.0.1");
+    cmd->AppendSwitch("enable-data-reduction-proxy-force-pingback");
+    cmd->AppendSwitch("ignore-litepage-redirect-optimization-blacklist");
   }
 
   void SetUp() override {
@@ -135,51 +153,63 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
   void SetUpLitePageTest(bool use_timeout, bool is_control) {
     https_server_ = std::make_unique<net::EmbeddedTestServer>(
         net::EmbeddedTestServer::TYPE_HTTPS);
-    https_server_->ServeFilesFromSourceDirectory("chrome/test/data");
+    https_server_->ServeFilesFromSourceDirectory(GetChromeTestDataDir());
     https_server_->RegisterRequestHandler(base::BindRepeating(
         &PreviewsLitePageServerBrowserTest::HandleRedirectRequest,
         base::Unretained(this)));
     ASSERT_TRUE(https_server_->Start());
 
-    https_url_ = https_server_->GetURL("/previews/noscript_test.html");
+    https_url_ =
+        https_server_->GetURL(kOriginHost, "/previews/noscript_test.html");
     ASSERT_TRUE(https_url_.SchemeIs(url::kHttpsScheme));
 
     https_to_https_redirect_url_ =
-        https_server_->GetURL("/previews/to_https_redirect.html");
+        https_server_->GetURL(kOriginHost, "/previews/to_https_redirect.html");
     ASSERT_TRUE(https_to_https_redirect_url_.SchemeIs(url::kHttpsScheme));
 
+    https_redirect_loop_url_ =
+        https_server_->GetURL(kOriginHost, "/previews/redirect_loop.html");
+    ASSERT_TRUE(https_redirect_loop_url_.SchemeIs(url::kHttpsScheme));
+
     base_https_lite_page_url_ =
-        https_server_->GetURL("/previews/lite_page_test.html");
+        https_server_->GetURL(kOriginHost, "/previews/lite_page_test.html");
     ASSERT_TRUE(base_https_lite_page_url_.SchemeIs(url::kHttpsScheme));
 
-    https_media_url_ = https_server_->GetURL("/image_decoding/droids.jpg");
+    https_media_url_ =
+        https_server_->GetURL(kOriginHost, "/image_decoding/droids.jpg");
     ASSERT_TRUE(https_media_url_.SchemeIs(url::kHttpsScheme));
 
     // Set up http server with resource monitor and redirect handler.
     http_server_ = std::make_unique<net::EmbeddedTestServer>(
         net::EmbeddedTestServer::TYPE_HTTP);
-    http_server_->ServeFilesFromSourceDirectory("chrome/test/data");
+    http_server_->ServeFilesFromSourceDirectory(GetChromeTestDataDir());
     http_server_->RegisterRequestHandler(base::BindRepeating(
         &PreviewsLitePageServerBrowserTest::HandleRedirectRequest,
         base::Unretained(this)));
     ASSERT_TRUE(http_server_->Start());
 
-    http_url_ = http_server_->GetURL("/previews/noscript_test.html");
+    http_url_ =
+        http_server_->GetURL(kOriginHost, "/previews/noscript_test.html");
     ASSERT_TRUE(http_url_.SchemeIs(url::kHttpScheme));
 
     base_http_lite_page_url_ =
-        http_server_->GetURL("/previews/lite_page_test.html");
+        http_server_->GetURL(kOriginHost, "/previews/lite_page_test.html");
     ASSERT_TRUE(base_http_lite_page_url_.SchemeIs(url::kHttpScheme));
 
-    subframe_url_ = http_server_->GetURL("/previews/iframe_blank.html");
+    subframe_url_ =
+        http_server_->GetURL(kOriginHost, "/previews/iframe_blank.html");
     ASSERT_TRUE(subframe_url_.SchemeIs(url::kHttpScheme));
 
     http_to_https_redirect_url_ =
-        http_server_->GetURL("/previews/to_https_redirect.html");
+        http_server_->GetURL(kOriginHost, "/previews/to_https_redirect.html");
     ASSERT_TRUE(http_to_https_redirect_url_.SchemeIs(url::kHttpScheme));
 
+    http_redirect_loop_url_ =
+        http_server_->GetURL(kOriginHost, "/previews/redirect_loop.html");
+    ASSERT_TRUE(http_redirect_loop_url_.SchemeIs(url::kHttpScheme));
+
     client_redirect_url_ =
-        http_server_->GetURL("/previews/client_redirect.html");
+        http_server_->GetURL(kOriginHost, "/previews/client_redirect.html");
     ASSERT_TRUE(client_redirect_url_.SchemeIs(url::kHttpScheme));
 
     // Set up previews server with resource handler.
@@ -190,6 +220,9 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
         base::Unretained(this)));
     ASSERT_TRUE(previews_server_->Start());
 
+    previews_server_url_ = previews_server_->GetURL(kPreviewsHost, "/");
+    ASSERT_TRUE(previews_server_url_.SchemeIs(url::kHttpsScheme));
+
     // Set up the slow HTTP server with delayed resource handler.
     slow_http_server_ = std::make_unique<net::EmbeddedTestServer>(
         net::EmbeddedTestServer::TYPE_HTTP);
@@ -198,45 +231,49 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
         base::Unretained(this)));
     ASSERT_TRUE(slow_http_server_->Start());
 
-    std::unique_ptr<base::FeatureList> feature_list =
-        std::make_unique<base::FeatureList>();
-    {
-      // The trial and group names are dummy values.
-      scoped_refptr<base::FieldTrial> trial =
-          base::FieldTrialList::CreateFieldTrial("TrialName1", "GroupName1");
-      std::map<std::string, std::string> feature_parameters = {
-          {"previews_host", previews_server().spec()},
-          {"blacklisted_path_suffixes", ".mp4,.jpg"},
-          {"trigger_on_localhost", "true"},
-          {"navigation_timeout_milliseconds",
-           use_timeout ? base::IntToString(kTimeoutMs) : "0"},
-          {"control_group", is_control ? "true" : "false"}};
-      base::FieldTrialParamAssociator::GetInstance()->AssociateFieldTrialParams(
-          "TrialName1", "GroupName1", feature_parameters);
+    slow_http_url_ = slow_http_server_->GetURL(kOriginHost, "/");
+    ASSERT_TRUE(slow_http_url_.SchemeIs(url::kHttpScheme));
 
-      feature_list->RegisterFieldTrialOverride(
-          previews::features::kLitePageServerPreviews.name,
-          base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());
+    pingback_server_ = std::make_unique<net::EmbeddedTestServer>(
+        net::EmbeddedTestServer::TYPE_HTTPS);
+
+    pingback_server_->RegisterRequestHandler(base::BindRepeating(
+        &PreviewsLitePageServerBrowserTest::HandlePingbackRequest,
+        base::Unretained(this)));
+    ASSERT_TRUE(pingback_server_->Start());
+
+    std::map<std::string, std::string> feature_parameters = {
+        {"previews_host", previews_server_url().spec()},
+        {"blacklisted_path_suffixes", ".mp4,.jpg"},
+        {"trigger_on_localhost", "true"},
+        {"max_navigation_restart", base::NumberToString(kRedirectLoopCount)},
+        {"navigation_timeout_milliseconds",
+         use_timeout ? base::NumberToString(kTimeoutMs) : "60000"},
+        {"control_group", is_control ? "true" : "false"}};
+
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        "data-reduction-proxy-pingback-url",
+        pingback_server_->GetURL("pingback.com", "/").spec());
+
+    scoped_parameterized_feature_list_.InitAndEnableFeatureWithParameters(
+        previews::features::kLitePageServerPreviews, feature_parameters);
+
+    scoped_feature_list_.InitWithFeatures(
+        {previews::features::kPreviews, previews::features::kOptimizationHints,
+         previews::features::kResourceLoadingHints,
+         data_reduction_proxy::features::
+             kDataReductionProxyEnabledWithNetworkService},
+        {});
+
+    if (GetParam()) {
+      url_loader_feature_list_.InitWithFeatures(
+          {previews::features::kHTTPSServerPreviewsUsingURLLoader}, {});
     }
-    {
-      // The trial and group names are dummy values.
-      scoped_refptr<base::FieldTrial> trial =
-          base::FieldTrialList::CreateFieldTrial("TrialName3", "GroupName3");
-      feature_list->RegisterFieldTrialOverride(
-          previews::features::kPreviews.name,
-          base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());
-      feature_list->RegisterFieldTrialOverride(
-          previews::features::kOptimizationHints.name,
-          base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());
-      feature_list->RegisterFieldTrialOverride(
-          previews::features::kResourceLoadingHints.name,
-          base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());
-    }
-    scoped_feature_list_.InitWithFeatureList(std::move(feature_list));
   }
 
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
+    InitializeOptimizationHints();
 
     g_browser_process->network_quality_tracker()
         ->ReportEffectiveConnectionTypeForTesting(
@@ -249,6 +286,22 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
     PreviewsLitePageDecider* decider =
         previews_service->previews_lite_page_decider();
     decider->SetUserHasSeenUINotification();
+  }
+
+  void InitializeOptimizationHints() {
+    std::unique_ptr<optimization_guide::proto::Configuration> config =
+        std::make_unique<optimization_guide::proto::Configuration>();
+    std::unique_ptr<previews::PreviewsHints> hints =
+        previews::PreviewsHints::CreateFromHintsConfiguration(std::move(config),
+                                                              nullptr);
+
+    PreviewsService* previews_service =
+        PreviewsServiceFactory::GetForProfile(browser()->profile());
+
+    previews_service->previews_ui_service()
+        ->previews_decider_impl()
+        ->previews_opt_guide()
+        ->UpdateHints(base::DoNothing(), std::move(hints));
   }
 
   content::WebContents* GetWebContents() const {
@@ -269,14 +322,28 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
     return GetWebContents()->GetController().GetVisibleEntry()->GetURL();
   }
 
-  void VerifyInfoStatus(previews::ServerLitePageStatus status) {
+  void VerifyInfoStatus(base::HistogramTester* histogram_tester,
+                        previews::ServerLitePageStatus status) {
     PreviewsUITabHelper* ui_tab_helper =
         PreviewsUITabHelper::FromWebContents(GetWebContents());
     previews::PreviewsUserData* previews_data =
         ui_tab_helper->previews_user_data();
+    if (!GetParam()) {
+      EXPECT_TRUE(previews_data->server_lite_page_info());
+      EXPECT_EQ(previews_data->server_lite_page_info()->status, status);
+    }
+    // This UMA is not recorded for an unknown or control group status
+    if (status == previews::ServerLitePageStatus::kUnknown ||
+        status == previews::ServerLitePageStatus::kControl) {
+      return;
+    }
 
-    EXPECT_TRUE(previews_data->server_lite_page_info());
-    EXPECT_EQ(previews_data->server_lite_page_info()->status, status);
+    if (!GetParam()) {
+      histogram_tester->ExpectTotalCount(
+          "Previews.ServerLitePage.Penalty." +
+              previews::ServerLitePageStatusToString(status),
+          1);
+    }
   }
 
   void VerifyPreviewLoaded() const {
@@ -299,37 +366,36 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
               previews::PreviewsType::LITE_PAGE_REDIRECT);
 
     const GURL loaded_url = GetLoadedURL();
-    const GURL previews_host = previews_server();
-    EXPECT_TRUE(loaded_url.DomainIs(previews_host.host()) &&
-                loaded_url.EffectiveIntPort() ==
-                    previews_host.EffectiveIntPort());
+    EXPECT_TRUE(loaded_url.DomainIs(previews_server_url().host()));
+    EXPECT_EQ(loaded_url.EffectiveIntPort(),
+              previews_server_url().EffectiveIntPort());
 
     content::NavigationEntry* entry =
         GetWebContents()->GetController().GetVisibleEntry();
 
-    // server_lite_page_info does not exist on forward/back navigations.
-    if (!(entry->GetTransitionType() & ui::PAGE_TRANSITION_FORWARD_BACK)) {
-      EXPECT_TRUE(previews_data->server_lite_page_info());
-      EXPECT_NE(
-          previews_data->server_lite_page_info()->original_navigation_start,
-          base::TimeTicks());
-      EXPECT_NE(previews_data->server_lite_page_info()->page_id, 0U);
-      EXPECT_NE(previews_data->server_lite_page_info()->drp_session_key, "");
+    if (!GetParam()) {
+      // server_lite_page_info does not exist on forward/back navigations.
+      if (!(entry->GetTransitionType() & ui::PAGE_TRANSITION_FORWARD_BACK)) {
+        EXPECT_TRUE(previews_data->server_lite_page_info());
+        EXPECT_NE(
+            previews_data->server_lite_page_info()->original_navigation_start,
+            base::TimeTicks());
+        EXPECT_NE(previews_data->server_lite_page_info()->page_id, 0U);
+        EXPECT_NE(previews_data->server_lite_page_info()->drp_session_key, "");
+      }
     }
 
     EXPECT_EQ(content::PAGE_TYPE_NORMAL, entry->GetPageType());
     const GURL virtual_url = entry->GetVirtualURL();
 
-    // The loaded url should be the previews version of the virtual url.
-    EXPECT_EQ(
-        loaded_url,
-        PreviewsLitePageNavigationThrottle::GetPreviewsURLForURL(virtual_url));
+      // The loaded url should be the previews version of the virtual url.
+      EXPECT_EQ(loaded_url,
+                PreviewsLitePageNavigationThrottle::GetPreviewsURLForURL(
+                    virtual_url));
 
-    // The Virtual URL should not be on the previews server.
-    // TODO(crbug.com/894854): Use a different hostname and check that here.
-    EXPECT_FALSE(virtual_url.DomainIs(previews_host.host()) &&
-                 virtual_url.EffectiveIntPort() ==
-                     previews_host.EffectiveIntPort());
+      EXPECT_FALSE(virtual_url.DomainIs(previews_server_url().host()) &&
+                   virtual_url.EffectiveIntPort() ==
+                       previews_server_url().EffectiveIntPort());
   }
 
   void VerifyPreviewNotLoaded() const {
@@ -352,10 +418,9 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
               previews::PreviewsType::LITE_PAGE_REDIRECT);
 
     const GURL loaded_url = GetLoadedURL();
-    const GURL previews_host = previews_server();
-    EXPECT_FALSE(loaded_url.DomainIs(previews_host.host()) &&
+    EXPECT_FALSE(loaded_url.DomainIs(previews_server_url().host()) &&
                  loaded_url.EffectiveIntPort() ==
-                     previews_host.EffectiveIntPort());
+                     previews_server_url().EffectiveIntPort());
 
     content::NavigationEntry* entry =
         GetWebContents()->GetController().GetVisibleEntry();
@@ -367,10 +432,9 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
 
   void VerifyErrorPageLoaded() const {
     const GURL loaded_url = GetLoadedURL();
-    const GURL previews_host = previews_server();
-    EXPECT_FALSE(loaded_url.DomainIs(previews_host.host()) &&
+    EXPECT_FALSE(loaded_url.DomainIs(previews_server_url().host()) &&
                  loaded_url.EffectiveIntPort() ==
-                     previews_host.EffectiveIntPort());
+                     previews_server_url().EffectiveIntPort());
 
     content::NavigationEntry* entry =
         GetWebContents()->GetController().GetVisibleEntry();
@@ -393,8 +457,7 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
             ->data_reduction_proxy_service()
             ->compression_stats()
             ->DataUsageMapForTesting();
-    const auto& it =
-        data_usage_map.find(https_server_->host_port_pair().host());
+    const auto& it = data_usage_map.find(kOriginHost);
     if (it != data_usage_map.end())
       return it->second->data_used();
     return 0;
@@ -425,9 +488,9 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
   GURL HttpLitePageURL(PreviewsServerAction action,
                        std::string* headers = nullptr,
                        int delay_ms = 0) const {
-    std::string query = "resp=" + base::IntToString(action);
+    std::string query = "resp=" + base::NumberToString(action);
     if (delay_ms != 0)
-      query += "&delay_ms=" + base::IntToString(delay_ms);
+      query += "&delay_ms=" + base::NumberToString(delay_ms);
     if (headers)
       query += "&headers=" + *headers;
     GURL::Replacements replacements;
@@ -442,9 +505,9 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
   GURL HttpsLitePageURL(PreviewsServerAction action,
                         std::string* headers = nullptr,
                         int delay_ms = 0) const {
-    std::string query = "resp=" + base::IntToString(action);
+    std::string query = "resp=" + base::NumberToString(action);
     if (delay_ms != 0)
-      query += "&delay_ms=" + base::IntToString(delay_ms);
+      query += "&delay_ms=" + base::NumberToString(delay_ms);
     if (headers)
       query += "&headers=" + *headers;
     GURL::Replacements replacements;
@@ -462,7 +525,7 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
     decider->ClearStateForTesting();
   }
 
-  virtual GURL previews_server() const { return previews_server_->base_url(); }
+  virtual GURL previews_server_url() const { return previews_server_url_; }
 
   const GURL& https_url() const { return https_url_; }
   const GURL& base_https_lite_page_url() const {
@@ -470,7 +533,7 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
   }
   const GURL& https_media_url() const { return https_media_url_; }
   const GURL& http_url() const { return http_url_; }
-  const GURL& slow_http_url() const { return slow_http_server_->base_url(); }
+  const GURL& slow_http_url() const { return slow_http_url_; }
   const GURL& base_http_lite_page_url() const {
     return base_http_lite_page_url_;
   }
@@ -480,9 +543,19 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
   const GURL& https_to_https_redirect_url() const {
     return https_to_https_redirect_url_;
   }
+  const GURL& http_redirect_loop_url() const { return http_redirect_loop_url_; }
+  const GURL& https_redirect_loop_url() const {
+    return https_redirect_loop_url_;
+  }
   const GURL& client_redirect_url() const { return client_redirect_url_; }
   const GURL& subframe_url() const { return subframe_url_; }
   int subresources_requested() const { return subresources_requested_; }
+
+  void WaitForPingback() {
+    base::RunLoop run_loop;
+    waiting_for_pingback_closure_ = run_loop.QuitClosure();
+    run_loop.Run();
+  }
 
  private:
   std::unique_ptr<net::test_server::HttpResponse> HandleRedirectRequest(
@@ -491,7 +564,8 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
         std::string::npos) {
       std::unique_ptr<net::test_server::BasicHttpResponse> response =
           std::make_unique<net::test_server::BasicHttpResponse>();
-      response->set_code(net::HTTP_FOUND);
+      response->set_code(net::HTTP_TEMPORARY_REDIRECT);
+      response->set_content_type("text/html");
       response->AddCustomHeader("Location", https_url().spec());
       return std::move(response);
     }
@@ -506,6 +580,30 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
                             "\";</script></body></html>");
       return std::move(response);
     }
+
+    if (request.GetURL().spec().find("redirect_loop") != std::string::npos) {
+      std::unique_ptr<net::test_server::BasicHttpResponse> response =
+          std::make_unique<net::test_server::BasicHttpResponse>();
+      response->set_code(net::HTTP_TEMPORARY_REDIRECT);
+      response->set_content_type("text/html");
+
+      if (request.GetURL().SchemeIsCryptographic()) {
+        response->AddCustomHeader("Location", http_redirect_loop_url().spec());
+      } else {
+        // Provide a way out. If this request wasn't forward by the previews
+        // server, end the loop.
+        if (request.GetURL().spec().find("from_previews_server") !=
+            std::string::npos) {
+          response->AddCustomHeader("Location",
+                                    https_redirect_loop_url().spec());
+        } else {
+          response->set_code(net::HttpStatusCode::HTTP_OK);
+        }
+      }
+
+      return std::move(response);
+    }
+
     return nullptr;
   }
 
@@ -516,6 +614,19 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
             base::TimeDelta::FromMilliseconds(500));
     response->set_code(net::HttpStatusCode::HTTP_OK);
     return std::move(response);
+  }
+
+  std::unique_ptr<net::test_server::HttpResponse> HandlePingbackRequest(
+      const net::test_server::HttpRequest& request) {
+    std::unique_ptr<net::test_server::BasicHttpResponse> response =
+        std::make_unique<net::test_server::BasicHttpResponse>();
+    response->set_code(net::HTTP_OK);
+
+    if (!waiting_for_pingback_closure_.is_null()) {
+      std::move(waiting_for_pingback_closure_).Run();
+    }
+
+    return response;
   }
 
   std::unique_ptr<net::test_server::HttpResponse> HandleResourceRequest(
@@ -533,11 +644,21 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
       return response;
     }
 
+    response->set_content_type("text/html");
+
     std::string original_url_str;
 
+    // EmbeddedTestServer's request URL is 127.0.0.1 which causes
+    // |ExtractOriginalURLFromLitePageRedirectURL| to fail. So, if the ports
+    // match, fix up the url to have the preview hostname for the call to
+    // |ExtractOriginalURLFromLitePageRedirectURL|.
+    GURL url = request.GetURL();
+    if (url.EffectiveIntPort() == previews_server_url().EffectiveIntPort()) {
+      url = GURL(previews_server_url().spec() + url.path() + "?" + url.query());
+    }
     // Ignore anything that's not a previews request with an unused status.
     if (!previews::ExtractOriginalURLFromLitePageRedirectURL(
-            request.GetURL(), &original_url_str)) {
+            url, &original_url_str)) {
       response->set_code(net::HttpStatusCode::HTTP_BAD_REQUEST);
       return response;
     }
@@ -553,12 +674,21 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
       }
     }
 
-    // The chrome-proxy header should have the pid option.
-    if (request.headers.find("chrome-proxy")->second.find(", pid=") ==
-        std::string::npos) {
+    // The chrome-proxy header should have the pid  or s option.
+    if (request.headers.find("chrome-proxy")->second.find("s=") ==
+            std::string::npos ||
+        request.headers.find("chrome-proxy")->second.find("pid=") ==
+            std::string::npos) {
       response->set_code(
           net::HttpStatusCode::HTTP_PROXY_AUTHENTICATION_REQUIRED);
       return response;
+    }
+
+    if (request.GetURL().spec().find("redirect_loop") != std::string::npos) {
+      response->set_code(net::HTTP_TEMPORARY_REDIRECT);
+      response->AddCustomHeader("Location", http_redirect_loop_url().spec() +
+                                                "?from_previews_server=true");
+      return std::move(response);
     }
 
     std::string delay_query_param;
@@ -576,6 +706,7 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
     if (delay_ms > 0) {
       response = std::make_unique<net::test_server::DelayedHttpResponse>(
           base::TimeDelta::FromMilliseconds(delay_ms));
+      response->set_content_type("text/html");
     }
 
     std::string code_query_param;
@@ -583,10 +714,8 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
     if (net::GetValueForKeyInQuery(original_url, "resp", &code_query_param))
       base::StringToInt(code_query_param, &return_code);
 
-    GURL subresource_url(
-        "https://foo.litepages.googlezip.net:" +
-        base::IntToString(previews_server().EffectiveIntPort()) +
-        "/subresource.png");
+    GURL subresource_url("https://foo." + std::string(kPreviewsHost) + ":" +
+                         previews_server_url().port() + "/subresource.png");
     std::string subresource_body = "<html><body><img src=\"" +
                                    subresource_url.spec() +
                                    "\"/></body></html>";
@@ -604,6 +733,10 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
         response->set_code(net::HTTP_TEMPORARY_REDIRECT);
         response->AddCustomHeader("Location",
                                   HttpsLitePageURL(kSuccess).spec());
+        break;
+      case kRedirectLoop:
+        response->set_code(net::HTTP_TEMPORARY_REDIRECT);
+        response->AddCustomHeader("Location", https_redirect_loop_url().spec());
         break;
       case kBypass:
         response->set_code(net::HTTP_TEMPORARY_REDIRECT);
@@ -628,7 +761,6 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
         response->set_code(net::HTTP_SERVICE_UNAVAILABLE);
         break;
       case kSubresources:
-        response->set_content_type("text/html");
         response->set_content(subresource_body);
         break;
       default:
@@ -648,34 +780,48 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
     return std::move(response);
   }
 
+  base::test::ScopedFeatureList scoped_parameterized_feature_list_;
   base::test::ScopedFeatureList scoped_feature_list_;
+  base::test::ScopedFeatureList url_loader_feature_list_;
   std::unique_ptr<net::EmbeddedTestServer> previews_server_;
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
   std::unique_ptr<net::EmbeddedTestServer> http_server_;
   std::unique_ptr<net::EmbeddedTestServer> slow_http_server_;
+  std::unique_ptr<net::EmbeddedTestServer> pingback_server_;
   GURL https_url_;
   GURL base_https_lite_page_url_;
   GURL https_media_url_;
   GURL http_url_;
   GURL base_http_lite_page_url_;
   GURL http_to_https_redirect_url_;
+  GURL http_redirect_loop_url_;
+  GURL https_redirect_loop_url_;
   GURL https_to_https_redirect_url_;
   GURL client_redirect_url_;
   GURL subframe_url_;
+  GURL previews_server_url_;
+  GURL slow_http_url_;
   int subresources_requested_ = 0;
+  base::OnceClosure waiting_for_pingback_closure_;
 };
+
+// True if testing using the URLLoader Interceptor implementation.
+INSTANTIATE_TEST_SUITE_P(URLLoaderImplementation,
+                         PreviewsLitePageServerBrowserTest,
+                         testing::Bool());
 
 // Previews InfoBar (which these tests trigger) does not work on Mac.
 // See https://crbug.com/782322 for detail.
 // Also occasional flakes on win7 (https://crbug.com/789542).
-#if defined(OS_WIN) || defined(OS_MACOSX)
-#define DISABLE_ON_WIN_MAC(x) DISABLED_##x
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#define DISABLE_ON_WIN_MAC_CHROMESOS(x) DISABLED_##x
 #else
-#define DISABLE_ON_WIN_MAC(x) x
+#define DISABLE_ON_WIN_MAC_CHROMESOS(x) x
 #endif
 
-IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
-                       DISABLE_ON_WIN_MAC(LitePagePreviewsTriggering)) {
+IN_PROC_BROWSER_TEST_P(
+    PreviewsLitePageServerBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsTriggering)) {
   // TODO(crbug.com/874150): Use ExpectUniqueSample in these tests.
   // The histograms in these tests can only be checked by the expected bucket,
   // and not by a unique sample. This is because each navigation to a preview
@@ -688,12 +834,6 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
     ui_test_utils::NavigateToURL(browser(), HttpLitePageURL(kSuccess));
     VerifyPreviewNotLoaded();
     ClearDeciderState();
-    histogram_tester.ExpectBucketCount(
-        "Previews.ServerLitePage.IneligibleReasons",
-        PreviewsLitePageNavigationThrottle::IneligibleReason::kNonHttpsScheme,
-        1);
-    histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
-                                       false, 1);
   }
 
   {
@@ -701,9 +841,8 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
     base::HistogramTester histogram_tester;
     ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
     VerifyPreviewLoaded();
-    VerifyInfoStatus(previews::ServerLitePageStatus::kSuccess);
-    histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
-                                       true, 1);
+    VerifyInfoStatus(&histogram_tester,
+                     previews::ServerLitePageStatus::kSuccess);
   }
 
   {
@@ -717,13 +856,10 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
         PreviewsLitePageNavigationThrottle::BlacklistReason::
             kPathSuffixBlacklisted,
         1);
-    histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
-                                       false, 1);
   }
 
   {
     // Verify the preview is not triggered for POST navigations.
-    base::HistogramTester histogram_tester;
     std::string post_data = "helloworld";
     NavigateParams params(browser(), https_url(), ui::PAGE_TRANSITION_LINK);
     params.window_action = NavigateParams::SHOW_WINDOW;
@@ -732,29 +868,32 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
     params.uses_post = true;
     params.post_data = network::ResourceRequestBody::CreateFromBytes(
         post_data.data(), post_data.size());
+
     ui_test_utils::NavigateToURL(&params);
-    VerifyPreviewNotLoaded();
+    base::RunLoop().RunUntilIdle();
+    content::WaitForLoadStop(GetWebContents());
+
+    PreviewsUITabHelper* ui_tab_helper =
+        PreviewsUITabHelper::FromWebContents(GetWebContents());
+    EXPECT_FALSE(ui_tab_helper->displayed_preview_ui());
+    EXPECT_FALSE(ui_tab_helper->previews_user_data());
+
     ClearDeciderState();
-    histogram_tester.ExpectBucketCount(
-        "Previews.ServerLitePage.IneligibleReasons",
-        PreviewsLitePageNavigationThrottle::IneligibleReason::kHttpPost, 1);
-    histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
-                                       false, 1);
   }
 
   {
     // Verify the preview is not triggered when navigating to the previews
     // server.
     base::HistogramTester histogram_tester;
-    ui_test_utils::NavigateToURL(browser(), previews_server());
-    EXPECT_EQ(GetLoadedURL(), previews_server());
-    histogram_tester.ExpectBucketCount(
-        "Previews.ServerLitePage.BlacklistReasons",
-        PreviewsLitePageNavigationThrottle::BlacklistReason::
-            kNavigationToPreviewsDomain,
-        1);
-    histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
-                                       false, 1);
+    ui_test_utils::NavigateToURL(
+        browser(), PreviewsLitePageNavigationThrottle::GetPreviewsURLForURL(
+                       HttpsLitePageURL(kSuccess)));
+    if (GetParam() &&
+        base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+      VerifyPreviewLoaded();
+    } else {
+      VerifyPreviewNotLoaded();
+    }
   }
 
   {
@@ -766,8 +905,6 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
         PreviewsLitePageNavigationThrottle::BlacklistReason::
             kNavigationToPrivateDomain,
         1);
-    histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
-                                       false, 1);
     VerifyErrorPageLoaded();
   }
 
@@ -782,8 +919,6 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
         PreviewsLitePageNavigationThrottle::BlacklistReason::
             kNavigationToPrivateDomain,
         1);
-    histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
-                                       false, 1);
   }
 
   {
@@ -793,21 +928,33 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
         ->ReportEffectiveConnectionTypeForTesting(
             net::EFFECTIVE_CONNECTION_TYPE_3G);
 
-    ui_test_utils::NavigateToURL(browser(), HttpLitePageURL(kSuccess));
+    ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
 
     VerifyPreviewNotLoaded();
     ClearDeciderState();
-    histogram_tester.ExpectBucketCount(
-        "Previews.ServerLitePage.IneligibleReasons",
-        PreviewsLitePageNavigationThrottle::IneligibleReason::kNetworkNotSlow,
-        1);
-    histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
-                                       false, 1);
 
     // Reset ECT for future tests.
     g_browser_process->network_quality_tracker()
         ->ReportEffectiveConnectionTypeForTesting(
             net::EFFECTIVE_CONNECTION_TYPE_2G);
+  }
+
+  {
+    // Verify a preview is not shown for an unknown ECT.
+    base::HistogramTester histogram_tester;
+    g_browser_process->network_quality_tracker()
+        ->ReportEffectiveConnectionTypeForTesting(
+            net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN);
+
+    ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
+
+    VerifyPreviewNotLoaded();
+    ClearDeciderState();
+
+    // Reset ECT for future tests.
+    g_browser_process->network_quality_tracker()
+        ->ReportEffectiveConnectionTypeForTesting(
+            net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
   }
 
   {
@@ -832,53 +979,135 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
     CookieSettingsFactory::GetForProfile(browser()->profile())
         ->SetDefaultCookieSetting(CONTENT_SETTING_ALLOW);
   }
+  {
+    // Verify a preview is not shown for a redirect loop.
+    base::HistogramTester histogram_tester;
+    ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kRedirectLoop));
+
+    // Make sure we're done with all the navigation restarts before running
+    // checks.
+    for (int i = 0; i < kRedirectLoopCount + 1; i++) {
+      base::RunLoop().RunUntilIdle();
+      content::WaitForLoadStop(GetWebContents());
+    }
+
+    VerifyPreviewNotLoaded();
+    ClearDeciderState();
+
+    if (!GetParam()) {
+      // It takes a few redirects to reach the end case. Just make sure at least
+      // one sample has been recorded in the correct bucket.
+      histogram_tester.ExpectBucketCount(
+          "Previews.ServerLitePage.IneligibleReasons",
+          static_cast<int>(
+              PreviewsLitePageNavigationThrottle::IneligibleReason::
+                  kExceededMaxNavigationRestarts),
+          1);
+    }
+  }
+
+  {
+    // Verify a subframe navigation does not trigger a preview.
+    const base::string16 kSubframeTitle = base::ASCIIToUTF16("Subframe");
+    base::HistogramTester histogram_tester;
+    ui_test_utils::NavigateToURL(browser(), subframe_url());
+
+    // Navigate in the subframe and wait for it to finish. The waiting is
+    // accomplished by |ExecuteScriptAndExtractString| which waits for
+    // |window.domAutomationController.send| in the HTML page.
+    std::string result;
+    EXPECT_TRUE(ExecuteScriptAndExtractString(
+        GetWebContents()->GetMainFrame(),
+        "window.open(\"" + HttpsLitePageURL(kSuccess).spec() +
+            "\", \"subframe\")",
+        &result));
+    EXPECT_EQ(kSubframeTitle, base::ASCIIToUTF16(result));
+  }
 }
 
-IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
-                       DISABLE_ON_WIN_MAC(LitePagePreviewsReload)) {
+IN_PROC_BROWSER_TEST_P(
+    PreviewsLitePageServerBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsReloadDisabled)) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {}, {previews::features::kPreviewsReloadsAreSoftOptOuts});
+
+  content::ReloadType tests[] = {
+      content::ReloadType::NORMAL,
+      content::ReloadType::BYPASSING_CACHE,
+      content::ReloadType::ORIGINAL_REQUEST_URL,
+  };
+  for (content::ReloadType type : tests) {
+    // Start with a non-preview load.
+    g_browser_process->network_quality_tracker()
+        ->ReportEffectiveConnectionTypeForTesting(
+            net::EFFECTIVE_CONNECTION_TYPE_3G);
+
+    ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
+    VerifyPreviewNotLoaded();
+
+    // Set the conditions so a Preview would trigger if not for the reload.
+    g_browser_process->network_quality_tracker()
+        ->ReportEffectiveConnectionTypeForTesting(
+            net::EFFECTIVE_CONNECTION_TYPE_2G);
+    GetWebContents()->GetController().Reload(type, false);
+    VerifyPreviewNotLoaded();
+
+    // Verify that a reload on a preview page triggers a redirect back to the
+    // original page.
+    ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
+    VerifyPreviewLoaded();
+
+    GetWebContents()->GetController().Reload(type, false);
+    VerifyPreviewNotLoaded();
+  }
+}
+
+IN_PROC_BROWSER_TEST_P(
+    PreviewsLitePageServerBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsReloadDisabled_SoftOptOut)) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {previews::features::kPreviewsReloadsAreSoftOptOuts}, {});
+
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
   VerifyPreviewLoaded();
-  VerifyInfoStatus(previews::ServerLitePageStatus::kSuccess);
-
-  GetWebContents()->GetController().Reload(content::ReloadType::NORMAL, false);
-  VerifyPreviewLoaded();
-  VerifyInfoStatus(previews::ServerLitePageStatus::kSuccess);
-
-  // Set the ECT so that a preview won't be triggered on the reload.
-  g_browser_process->network_quality_tracker()
-      ->ReportEffectiveConnectionTypeForTesting(
-          net::EFFECTIVE_CONNECTION_TYPE_4G);
 
   GetWebContents()->GetController().Reload(content::ReloadType::NORMAL, false);
   VerifyPreviewNotLoaded();
-
-  // Reset ECT for future tests.
-  g_browser_process->network_quality_tracker()
-      ->ReportEffectiveConnectionTypeForTesting(
-          net::EFFECTIVE_CONNECTION_TYPE_2G);
 }
 
-IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
-                       DISABLE_ON_WIN_MAC(LitePagePreviewsLoadOriginal)) {
+IN_PROC_BROWSER_TEST_P(
+    PreviewsLitePageServerBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsLoadOriginal)) {
+  base::HistogramTester histogram_tester;
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
   VerifyPreviewLoaded();
-  VerifyInfoStatus(previews::ServerLitePageStatus::kSuccess);
+  VerifyInfoStatus(&histogram_tester, previews::ServerLitePageStatus::kSuccess);
+
+  PreviewsServiceFactory::GetForProfile(
+      Profile::FromBrowserContext(browser()
+                                      ->tab_strip_model()
+                                      ->GetActiveWebContents()
+                                      ->GetBrowserContext()))
+      ->previews_ui_service()
+      ->previews_decider_impl()
+      ->SetIgnorePreviewsBlacklistDecision(false /* ignored */);
 
   PreviewsUITabHelper::FromWebContents(GetWebContents())
       ->ReloadWithoutPreviews();
   VerifyPreviewNotLoaded();
 }
 
-IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
-                       DISABLE_ON_WIN_MAC(LitePagePreviewsRedirect)) {
+IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
+                       DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsRedirect)) {
   {
     // Verify the preview is triggered when an HTTP page redirects to HTTPS.
     base::HistogramTester histogram_tester;
     ui_test_utils::NavigateToURL(browser(), http_to_https_redirect_url());
     VerifyPreviewLoaded();
-    VerifyInfoStatus(previews::ServerLitePageStatus::kSuccess);
-    histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
-                                       true, 1);
+    VerifyInfoStatus(&histogram_tester,
+                     previews::ServerLitePageStatus::kSuccess);
   }
 
   {
@@ -886,9 +1115,8 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
     base::HistogramTester histogram_tester;
     ui_test_utils::NavigateToURL(browser(), https_to_https_redirect_url());
     VerifyPreviewLoaded();
-    VerifyInfoStatus(previews::ServerLitePageStatus::kSuccess);
-    histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
-                                       true, 1);
+    VerifyInfoStatus(&histogram_tester,
+                     previews::ServerLitePageStatus::kSuccess);
   }
 
   {
@@ -898,10 +1126,9 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
     ui_test_utils::NavigateToURL(browser(),
                                  HttpsLitePageURL(kRedirectNonPreview));
     VerifyPreviewNotLoaded();
-    VerifyInfoStatus(previews::ServerLitePageStatus::kRedirect);
+    VerifyInfoStatus(&histogram_tester,
+                     previews::ServerLitePageStatus::kRedirect);
     ClearDeciderState();
-    histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
-                                       true, 1);
     histogram_tester.ExpectBucketCount(
         "Previews.ServerLitePage.ServerResponse",
         PreviewsLitePageNavigationThrottle::ServerResponse::kRedirect, 1);
@@ -913,39 +1140,38 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
     base::HistogramTester histogram_tester;
     ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kRedirectPreview));
     VerifyPreviewLoaded();
-    VerifyInfoStatus(previews::ServerLitePageStatus::kSuccess);
+    VerifyInfoStatus(&histogram_tester,
+                     previews::ServerLitePageStatus::kSuccess);
     ClearDeciderState();
-    histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
-                                       true, 2);
-    histogram_tester.ExpectBucketCount(
-        "Previews.ServerLitePage.ServerResponse",
-        PreviewsLitePageNavigationThrottle::ServerResponse::kRedirect, 1);
-    histogram_tester.ExpectBucketCount(
-        "Previews.ServerLitePage.ServerResponse",
-        PreviewsLitePageNavigationThrottle::ServerResponse::kOk, 1);
+
+      histogram_tester.ExpectBucketCount(
+          "Previews.ServerLitePage.ServerResponse",
+          PreviewsLitePageNavigationThrottle::ServerResponse::kRedirect, 1);
+      histogram_tester.ExpectBucketCount(
+          "Previews.ServerLitePage.ServerResponse",
+          PreviewsLitePageNavigationThrottle::ServerResponse::kOk, 1);
   }
 }
 
-IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
-                       DISABLE_ON_WIN_MAC(LitePagePreviewsResponse)) {
+IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
+                       DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsResponse)) {
   {
     // Verify the preview is not triggered when the server responds with bypass
     // 307.
     base::HistogramTester histogram_tester;
     ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kBypass));
     VerifyPreviewNotLoaded();
-    VerifyInfoStatus(previews::ServerLitePageStatus::kBypass);
+    VerifyInfoStatus(&histogram_tester,
+                     previews::ServerLitePageStatus::kBypass);
     ClearDeciderState();
-    histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
-                                       true, 1);
-    histogram_tester.ExpectTotalCount(
-        "Previews.ServerLitePage.HttpOnlyFallbackPenalty", 1);
-    histogram_tester.ExpectBucketCount(
-        "Previews.ServerLitePage.ServerResponse",
-        PreviewsLitePageNavigationThrottle::ServerResponse::kPreviewUnavailable,
-        1);
-    histogram_tester.ExpectBucketCount(
-        "Previews.ServerLitePage.HostBlacklistedOnBypass", false, 1);
+      histogram_tester.ExpectBucketCount(
+          "Previews.ServerLitePage.ServerResponse",
+          PreviewsLitePageNavigationThrottle::ServerResponse::
+              kPreviewUnavailable,
+          1);
+
+      histogram_tester.ExpectBucketCount(
+          "Previews.ServerLitePage.HostBlacklistedOnBypass", false, 1);
   }
 
   {
@@ -954,24 +1180,23 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
     base::HistogramTester histogram_tester;
     ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kHostBlacklist));
     VerifyPreviewNotLoaded();
-    VerifyInfoStatus(previews::ServerLitePageStatus::kBypass);
+    VerifyInfoStatus(&histogram_tester,
+                     previews::ServerLitePageStatus::kBypass);
 
-    histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
-                                       true, 1);
-    histogram_tester.ExpectTotalCount(
-        "Previews.ServerLitePage.HttpOnlyFallbackPenalty", 1);
-    histogram_tester.ExpectBucketCount(
-        "Previews.ServerLitePage.ServerResponse",
-        PreviewsLitePageNavigationThrottle::ServerResponse::kPreviewUnavailable,
-        1);
-    histogram_tester.ExpectBucketCount(
-        "Previews.ServerLitePage.HostBlacklistedOnBypass", true, 1);
+      histogram_tester.ExpectBucketCount(
+          "Previews.ServerLitePage.ServerResponse",
+          PreviewsLitePageNavigationThrottle::ServerResponse::
+              kPreviewUnavailable,
+          1);
+      histogram_tester.ExpectBucketCount(
+          "Previews.ServerLitePage.HostBlacklistedOnBypass", true, 1);
 
     ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
     VerifyPreviewNotLoaded();
     histogram_tester.ExpectBucketCount(
         "Previews.ServerLitePage.BlacklistReasons",
-        PreviewsLitePageNavigationThrottle::BlacklistReason::kHostBlacklisted,
+        PreviewsLitePageNavigationThrottle::BlacklistReason::
+            kHostBypassBlacklisted,
         1);
     ClearDeciderState();
 
@@ -984,15 +1209,12 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
     base::HistogramTester histogram_tester;
     ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kAuthFailure));
     VerifyPreviewNotLoaded();
-    VerifyInfoStatus(previews::ServerLitePageStatus::kFailure);
+    VerifyInfoStatus(&histogram_tester,
+                     previews::ServerLitePageStatus::kFailure);
     ClearDeciderState();
-    histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
-                                       true, 1);
-    histogram_tester.ExpectTotalCount(
-        "Previews.ServerLitePage.HttpOnlyFallbackPenalty", 1);
-    histogram_tester.ExpectBucketCount(
-        "Previews.ServerLitePage.ServerResponse",
-        PreviewsLitePageNavigationThrottle::ServerResponse::kAuthFailure, 1);
+      histogram_tester.ExpectBucketCount(
+          "Previews.ServerLitePage.ServerResponse",
+          PreviewsLitePageNavigationThrottle::ServerResponse::kAuthFailure, 1);
   }
 
   {
@@ -1000,21 +1222,19 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
     base::HistogramTester histogram_tester;
     ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kLoadshed));
     VerifyPreviewNotLoaded();
-    VerifyInfoStatus(previews::ServerLitePageStatus::kFailure);
+    VerifyInfoStatus(&histogram_tester,
+                     previews::ServerLitePageStatus::kFailure);
     ClearDeciderState();
-    histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
-                                       true, 1);
-    histogram_tester.ExpectTotalCount(
-        "Previews.ServerLitePage.HttpOnlyFallbackPenalty", 1);
-    histogram_tester.ExpectBucketCount(
-        "Previews.ServerLitePage.ServerResponse",
-        PreviewsLitePageNavigationThrottle::ServerResponse::kServiceUnavailable,
-        1);
+      histogram_tester.ExpectBucketCount(
+          "Previews.ServerLitePage.ServerResponse",
+          PreviewsLitePageNavigationThrottle::ServerResponse::
+              kServiceUnavailable,
+          1);
   }
 }
 
-IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
-                       DISABLE_ON_WIN_MAC(LitePagePreviewsLoadshed)) {
+IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
+                       DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsLoadshed)) {
   PreviewsService* previews_service =
       PreviewsServiceFactory::GetForProfile(browser()->profile());
   ASSERT_TRUE(previews_service);
@@ -1058,8 +1278,9 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
   VerifyPreviewLoaded();
 }
 
-IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
-                       DISABLE_ON_WIN_MAC(LitePageURLNotReportedToHistory)) {
+IN_PROC_BROWSER_TEST_P(
+    PreviewsLitePageServerBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMESOS(LitePageURLNotReportedToHistory)) {
   base::CancelableTaskTracker tracker_;
   history::HistoryService* history_service =
       HistoryServiceFactory::GetForProfile(browser()->profile(),
@@ -1106,6 +1327,7 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
     history_service->QueryRedirectsFrom(
         HttpsLitePageURL(kRedirectNonPreview),
         base::BindLambdaForTesting([&](const history::RedirectList* redirects) {
+          EXPECT_FALSE(redirects->empty());
           for (const GURL& url : *redirects) {
             EXPECT_FALSE(previews::IsLitePageRedirectPreviewURL(url));
           }
@@ -1117,8 +1339,9 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
   ClearDeciderState();
 }
 
-IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
-                       DISABLE_ON_WIN_MAC(LitePagePreviewsReportSavings)) {
+IN_PROC_BROWSER_TEST_P(
+    PreviewsLitePageServerBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsReportSavings)) {
   PrefService* prefs = browser()->profile()->GetPrefs();
   prefs->SetBoolean(data_reduction_proxy::prefs::kDataUsageReportingEnabled,
                     true);
@@ -1130,12 +1353,18 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
   VerifyPreviewLoaded();
 
+  base::RunLoop().RunUntilIdle();
+
+  // Navigate to an untracked (no preview) page before checking reported savings
+  // to reduce flakiness.
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+
   EXPECT_EQ(GetTotalOriginalContentLength() - GetTotalDataUsage(), 40U);
-  EXPECT_EQ(GetDataUsage(), 20U);
 }
 
-IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
-                       DISABLE_ON_WIN_MAC(LitePagePreviewsClientRedirect)) {
+IN_PROC_BROWSER_TEST_P(
+    PreviewsLitePageServerBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsClientRedirect)) {
   // Navigate to a non-preview first.
   ui_test_utils::NavigateToURL(browser(), https_media_url());
   VerifyPreviewNotLoaded();
@@ -1148,8 +1377,9 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
             https_media_url());
 }
 
-IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
-                       DISABLE_ON_WIN_MAC(LitePagePreviewsNavigation)) {
+IN_PROC_BROWSER_TEST_P(
+    PreviewsLitePageServerBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsNavigation)) {
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
   VerifyPreviewLoaded();
 
@@ -1175,6 +1405,84 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
   VerifyPreviewLoaded();
 }
 
+IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
+                       DISABLE_ON_WIN_MAC_CHROMESOS(LitePageCreatesPingback)) {
+  ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
+  VerifyPreviewLoaded();
+
+  // Starting a new page load will send a pingback for the previous page load.
+  GetWebContents()->GetController().Reload(content::ReloadType::NORMAL, false);
+  WaitForPingback();
+}
+
+class TestDataReductionProxyPingbackClient
+    : public data_reduction_proxy::DataReductionProxyPingbackClient {
+ public:
+  void WaitForPingback() {
+    base::RunLoop run_loop;
+    wait_for_pingback_closure_ = run_loop.QuitClosure();
+    run_loop.Run();
+  }
+
+  data_reduction_proxy::DataReductionProxyData* data() { return data_.get(); }
+
+ private:
+  void SendPingback(
+      const data_reduction_proxy::DataReductionProxyData& data,
+      const data_reduction_proxy::DataReductionProxyPageLoadTiming& timing)
+      override {
+    data_ = data.DeepCopy();
+    if (wait_for_pingback_closure_)
+      std::move(wait_for_pingback_closure_).Run();
+  }
+
+  void SetPingbackReportingFraction(
+      float pingback_reporting_fraction) override {}
+
+  base::OnceClosure wait_for_pingback_closure_;
+  std::unique_ptr<data_reduction_proxy::DataReductionProxyData> data_;
+};
+
+IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
+                       DISABLE_ON_WIN_MAC_CHROMESOS(PingbackContent)) {
+  TestDataReductionProxyPingbackClient* pingback_client =
+      new TestDataReductionProxyPingbackClient();
+  DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
+      browser()->profile())
+      ->data_reduction_proxy_service()
+      ->SetPingbackClientForTesting(pingback_client);
+
+  ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
+  VerifyPreviewLoaded();
+
+  PreviewsUITabHelper* ui_tab_helper =
+      PreviewsUITabHelper::FromWebContents(GetWebContents());
+  previews::PreviewsUserData* previews_data =
+      ui_tab_helper->previews_user_data();
+  // Grab the page id and session now because they may change after the reload.
+  uint64_t expected_page_id = previews_data->server_lite_page_info()->page_id;
+  std::string expected_session_key =
+      previews_data->server_lite_page_info()->drp_session_key;
+
+  // Starting a new page load will send a pingback for the previous page load.
+  GetWebContents()->GetController().Reload(content::ReloadType::NORMAL, false);
+  pingback_client->WaitForPingback();
+
+  data_reduction_proxy::DataReductionProxyData* data = pingback_client->data();
+  EXPECT_TRUE(data->used_data_reduction_proxy());
+  EXPECT_TRUE(data->lite_page_received());
+  EXPECT_FALSE(data->lofi_policy_received());
+  EXPECT_FALSE(data->lofi_received());
+  EXPECT_FALSE(data->was_cached_data_reduction_proxy_response());
+
+  // TODO(crbug.com/952523): Fix and remove this early return.
+  if (GetParam())
+    return;
+
+  EXPECT_EQ(data->session_key(), expected_session_key);
+  EXPECT_EQ(data->page_id().value(), expected_page_id);
+}
+
 class PreviewsLitePageServerTimeoutBrowserTest
     : public PreviewsLitePageServerBrowserTest {
  public:
@@ -1189,8 +1497,13 @@ class PreviewsLitePageServerTimeoutBrowserTest
   }
 };
 
-IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerTimeoutBrowserTest,
-                       DISABLE_ON_WIN_MAC(LitePagePreviewsTimeout)) {
+// True if testing using the URLLoader Interceptor implementation.
+INSTANTIATE_TEST_SUITE_P(URLLoaderImplementation,
+                         PreviewsLitePageServerTimeoutBrowserTest,
+                         testing::Bool());
+
+IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerTimeoutBrowserTest,
+                       DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsTimeout)) {
   {
     // Ensure that a hung previews navigation doesn't wind up at the previews
     // server.
@@ -1198,7 +1511,8 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerTimeoutBrowserTest,
     ui_test_utils::NavigateToURL(browser(),
                                  HttpsLitePageURL(kSuccess, nullptr, -1));
     VerifyPreviewNotLoaded();
-    VerifyInfoStatus(previews::ServerLitePageStatus::kFailure);
+    VerifyInfoStatus(&histogram_tester,
+                     previews::ServerLitePageStatus::kFailure);
     ClearDeciderState();
     histogram_tester.ExpectBucketCount(
         "Previews.ServerLitePage.ServerResponse",
@@ -1224,13 +1538,19 @@ class PreviewsLitePageServerBadServerBrowserTest
   ~PreviewsLitePageServerBadServerBrowserTest() override = default;
 
   // Override the previews_server URL so that a bad value will be configured.
-  GURL previews_server() const override {
+  GURL previews_server_url() const override {
     return GURL("https://bad-server.com");
   }
 };
 
-IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBadServerBrowserTest,
-                       DISABLE_ON_WIN_MAC(LitePagePreviewsBadServer)) {
+// True if testing using the URLLoader Interceptor implementation.
+INSTANTIATE_TEST_SUITE_P(URLLoaderImplementation,
+                         PreviewsLitePageServerBadServerBrowserTest,
+                         testing::Bool());
+
+IN_PROC_BROWSER_TEST_P(
+    PreviewsLitePageServerBadServerBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsBadServer)) {
   // TODO(crbug.com/874150): Use ExpectUniqueSample in this tests.
   // The histograms in this tests can only be checked by the expected bucket,
   // and not by a unique sample. This is because each navigation to a preview
@@ -1242,11 +1562,9 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBadServerBrowserTest,
     base::HistogramTester histogram_tester;
     ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
     VerifyPreviewNotLoaded();
-    VerifyInfoStatus(previews::ServerLitePageStatus::kFailure);
+    VerifyInfoStatus(&histogram_tester,
+                     previews::ServerLitePageStatus::kFailure);
     ClearDeciderState();
-
-    histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
-                                       true, 1);
     histogram_tester.ExpectBucketCount(
         "Previews.ServerLitePage.ServerResponse",
         PreviewsLitePageNavigationThrottle::ServerResponse::kFailed, 1);
@@ -1268,15 +1586,19 @@ class PreviewsLitePageServerDataSaverBrowserTest
     // triggering, and causing the test to flake.
     cmd->AppendSwitch(previews::switches::kIgnorePreviewsBlacklist);
     cmd->AppendSwitchASCII("force-effective-connection-type", "Slow-2G");
-    // Resolve all localhost subdomains to plain localhost so that Chrome's Test
-    // DNS resolver doesn't get upset.
-    cmd->AppendSwitchASCII(
-        "host-rules", "MAP *.localhost 127.0.0.1, MAP *.127.0.0.1 127.0.0.1");
+    cmd->AppendSwitchASCII("host-rules", "MAP * 127.0.0.1");
+    cmd->AppendSwitch("ignore-litepage-redirect-optimization-blacklist");
   }
 };
 
-IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerDataSaverBrowserTest,
-                       DISABLE_ON_WIN_MAC(LitePagePreviewsDSTriggering)) {
+// True if testing using the URLLoader Interceptor implementation.
+INSTANTIATE_TEST_SUITE_P(URLLoaderImplementation,
+                         PreviewsLitePageServerDataSaverBrowserTest,
+                         testing::Bool());
+
+IN_PROC_BROWSER_TEST_P(
+    PreviewsLitePageServerDataSaverBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsDSTriggering)) {
   // Verify the preview is not triggered on HTTPS pageloads without DataSaver.
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
   VerifyPreviewNotLoaded();
@@ -1299,16 +1621,19 @@ class PreviewsLitePageServerNoDataSaverHeaderBrowserTest
     cmd->AppendSwitch(previews::switches::kIgnorePreviewsBlacklist);
     cmd->AppendSwitch("enable-spdy-proxy-auth");
     cmd->AppendSwitchASCII("force-effective-connection-type", "Slow-2G");
-    // Resolve all localhost subdomains to plain localhost so that Chrome's Test
-    // DNS resolver doesn't get upset.
-    cmd->AppendSwitchASCII(
-        "host-rules", "MAP *.localhost 127.0.0.1, MAP *.127.0.0.1 127.0.0.1");
+    cmd->AppendSwitchASCII("host-rules", "MAP * 127.0.0.1");
+    cmd->AppendSwitch("ignore-litepage-redirect-optimization-blacklist");
   }
 };
 
-IN_PROC_BROWSER_TEST_F(
+// True if testing using the URLLoader Interceptor implementation.
+INSTANTIATE_TEST_SUITE_P(URLLoaderImplementation,
+                         PreviewsLitePageServerNoDataSaverHeaderBrowserTest,
+                         testing::Bool());
+
+IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageServerNoDataSaverHeaderBrowserTest,
-    DISABLE_ON_WIN_MAC(LitePagePreviewsDSNoHeaderTriggering)) {
+    DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsDSNoHeaderTriggering)) {
   // Verify the preview is not triggered on HTTPS pageloads without data saver.
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
   VerifyPreviewNotLoaded();
@@ -1330,6 +1655,7 @@ class PreviewsLitePageNotificationDSEnabledBrowserTest
 
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
+    InitializeOptimizationHints();
 
     g_browser_process->network_quality_tracker()
         ->ReportEffectiveConnectionTypeForTesting(
@@ -1337,9 +1663,14 @@ class PreviewsLitePageNotificationDSEnabledBrowserTest
   }
 };
 
-IN_PROC_BROWSER_TEST_F(
+// True if testing using the URLLoader Interceptor implementation.
+INSTANTIATE_TEST_SUITE_P(URLLoaderImplementation,
+                         PreviewsLitePageNotificationDSEnabledBrowserTest,
+                         testing::Bool());
+
+IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageNotificationDSEnabledBrowserTest,
-    DISABLE_ON_WIN_MAC(LitePagePreviewsInfoBarDataSaverUser)) {
+    DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsInfoBarDataSaverUser)) {
   // Ensure the preview is not shown the first time before the infobar is shown
   // for users who have DRP enabled.
   base::HistogramTester histogram_tester;
@@ -1395,16 +1726,19 @@ class PreviewsLitePageNotificationDSDisabledBrowserTest
     // triggering, and causing the test to flake.
     cmd->AppendSwitch(previews::switches::kIgnorePreviewsBlacklist);
     cmd->AppendSwitchASCII("force-effective-connection-type", "Slow-2G");
-    // Resolve all localhost subdomains to plain localhost so that Chrome's Test
-    // DNS resolver doesn't get upset.
-    cmd->AppendSwitchASCII(
-        "host-rules", "MAP *.localhost 127.0.0.1, MAP *.127.0.0.1 127.0.0.1");
+    cmd->AppendSwitchASCII("host-rules", "MAP * 127.0.0.1");
+    cmd->AppendSwitch("ignore-litepage-redirect-optimization-blacklist");
   }
 };
 
-IN_PROC_BROWSER_TEST_F(
+// True if testing using the URLLoader Interceptor implementation.
+INSTANTIATE_TEST_SUITE_P(URLLoaderImplementation,
+                         PreviewsLitePageNotificationDSDisabledBrowserTest,
+                         testing::Bool());
+
+IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageNotificationDSDisabledBrowserTest,
-    DISABLE_ON_WIN_MAC(LitePagePreviewsInfoBarNonDataSaverUser)) {
+    DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsInfoBarNonDataSaverUser)) {
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
   VerifyPreviewNotLoaded();
   ClearDeciderState();
@@ -1425,11 +1759,18 @@ class PreviewsLitePageControlBrowserTest
   }
 };
 
-IN_PROC_BROWSER_TEST_F(PreviewsLitePageControlBrowserTest,
-                       DISABLE_ON_WIN_MAC(LitePagePreviewsControlGroup)) {
+// True if testing using the URLLoader Interceptor implementation.
+INSTANTIATE_TEST_SUITE_P(URLLoaderImplementation,
+                         PreviewsLitePageControlBrowserTest,
+                         testing::Bool());
+
+IN_PROC_BROWSER_TEST_P(
+    PreviewsLitePageControlBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsControlGroup)) {
+  base::HistogramTester histogram_tester;
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
   VerifyPreviewNotLoaded();
-  VerifyInfoStatus(previews::ServerLitePageStatus::kControl);
+  VerifyInfoStatus(&histogram_tester, previews::ServerLitePageStatus::kControl);
   ClearDeciderState();
 }
 
@@ -1442,15 +1783,22 @@ class PreviewsLitePageAndPageHintsBrowserTest
 
   void ProcessHintsComponent(
       const optimization_guide::HintsComponentInfo& component_info) {
-    base::HistogramTester histogram_tester;
+    // Register a QuitClosure for when the next hint update is started below.
+    base::RunLoop run_loop;
+    PreviewsServiceFactory::GetForProfile(
+        Profile::FromBrowserContext(browser()
+                                        ->tab_strip_model()
+                                        ->GetActiveWebContents()
+                                        ->GetBrowserContext()))
+        ->previews_ui_service()
+        ->previews_decider_impl()
+        ->previews_opt_guide()
+        ->ListenForNextUpdateForTesting(run_loop.QuitClosure());
 
-    g_browser_process->optimization_guide_service()->MaybeUpdateHintsComponent(
-        component_info);
+    g_browser_process->optimization_guide_service()
+        ->MaybeUpdateHintsComponentOnUIThread(component_info);
 
-    RetryForHistogramUntilCountReached(
-        &histogram_tester,
-        previews::kPreviewsOptimizationGuideUpdateHintsResultHistogramString,
-        1);
+    run_loop.Run();
   }
 
   void SetResourceLoadingHints(const std::vector<std::string>& hints_sites) {
@@ -1465,39 +1813,28 @@ class PreviewsLitePageAndPageHintsBrowserTest
             resource_patterns));
   }
 
- private:
-  // Retries fetching |histogram_name| until it contains at least |count|
-  // samples.
-  void RetryForHistogramUntilCountReached(
-      base::HistogramTester* histogram_tester,
-      const std::string& histogram_name,
-      size_t count) {
-    while (true) {
-      base::TaskScheduler::GetInstance()->FlushForTesting();
-      base::RunLoop().RunUntilIdle();
-
-      content::FetchHistogramsFromChildProcesses();
-      SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
-
-      const std::vector<base::Bucket> buckets =
-          histogram_tester->GetAllSamples(histogram_name);
-      size_t total_count = 0;
-      for (const auto& bucket : buckets) {
-        total_count += bucket.count;
-      }
-      if (total_count >= count) {
-        break;
-      }
-    }
+  void SetUpCommandLine(base::CommandLine* cmd) override {
+    PreviewsLitePageServerBrowserTest::SetUpCommandLine(cmd);
+    cmd->AppendSwitch("optimization-guide-disable-installer");
+    cmd->AppendSwitch("purge_hint_cache_store");
   }
+
+ private:
 
   optimization_guide::testing::TestHintsComponentCreator
       test_hints_component_creator_;
 };
 
-IN_PROC_BROWSER_TEST_F(
+// True if testing using the URLLoader Interceptor implementation.
+INSTANTIATE_TEST_SUITE_P(URLLoaderImplementation,
+                         PreviewsLitePageAndPageHintsBrowserTest,
+                         testing::Bool());
+
+IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageAndPageHintsBrowserTest,
-    DISABLE_ON_WIN_MAC(LitePagePreviewsDoesNotOverridePageHints)) {
+    DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsDoesNotOverridePageHints)) {
+  base::HistogramTester histogram_tester;
+
   // Whitelist test URL for resource loading hints.
   GURL url = HttpsLitePageURL(kSuccess);
   SetResourceLoadingHints({url.host()});

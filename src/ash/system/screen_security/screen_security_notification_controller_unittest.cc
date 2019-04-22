@@ -7,6 +7,7 @@
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/test/ash_test_base.h"
+#include "base/bind_helpers.h"
 #include "ui/message_center/message_center.h"
 
 namespace ash {
@@ -24,7 +25,7 @@ message_center::Notification* FindNotification(const std::string& id) {
 TEST_F(ScreenSecurityNotificationControllerTest,
        ShowScreenCaptureNotification) {
   Shell::Get()->system_tray_notifier()->NotifyScreenCaptureStart(
-      base::DoNothing(), base::string16());
+      base::DoNothing(), base::RepeatingClosure(), base::string16());
   EXPECT_TRUE(FindNotification(kScreenCaptureNotificationId));
   Shell::Get()->system_tray_notifier()->NotifyScreenCaptureStop();
   EXPECT_FALSE(FindNotification(kScreenCaptureNotificationId));
@@ -42,7 +43,7 @@ TEST_F(ScreenSecurityNotificationControllerTest,
        DoNotShowScreenCaptureNotificationWhenCasting) {
   Shell::Get()->OnCastingSessionStartedOrStopped(true /* started */);
   Shell::Get()->system_tray_notifier()->NotifyScreenCaptureStart(
-      base::DoNothing(), base::string16());
+      base::DoNothing(), base::RepeatingClosure(), base::string16());
   EXPECT_FALSE(FindNotification(kScreenCaptureNotificationId));
   Shell::Get()->system_tray_notifier()->NotifyScreenCaptureStop();
   Shell::Get()->OnCastingSessionStartedOrStopped(false /* started */);

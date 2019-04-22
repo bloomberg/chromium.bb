@@ -35,7 +35,7 @@ std::unique_ptr<base::Value> BackoffEntrySerializer::SerializeToValue(
   serialized->AppendDouble(backoff_duration.InSecondsF());
   base::Time absolute_release_time = backoff_duration + time_now;
   serialized->AppendString(
-      base::Int64ToString(absolute_release_time.ToInternalValue()));
+      base::NumberToString(absolute_release_time.ToInternalValue()));
 
   return std::move(serialized);
 }

@@ -71,8 +71,7 @@ FileSystemURL CreateSyncableFileSystemURLForSync(
     storage::FileSystemContext* file_system_context,
     const FileSystemURL& syncable_url) {
   return ExternalMountPoints::GetSystemInstance()->CreateExternalFileSystemURL(
-      syncable_url.origin(),
-      kSyncableMountNameForInternalSync,
+      syncable_url.origin().GetURL(), kSyncableMountNameForInternalSync,
       syncable_url.path());
 }
 
@@ -80,9 +79,8 @@ bool SerializeSyncableFileSystemURL(const FileSystemURL& url,
                                     std::string* serialized_url) {
   if (!url.is_valid() || url.type() != storage::kFileSystemTypeSyncable)
     return false;
-  *serialized_url =
-      GetSyncableFileSystemRootURI(url.origin()).spec() +
-      url.path().AsUTF8Unsafe();
+  *serialized_url = GetSyncableFileSystemRootURI(url.origin().GetURL()).spec() +
+                    url.path().AsUTF8Unsafe();
   return true;
 }
 

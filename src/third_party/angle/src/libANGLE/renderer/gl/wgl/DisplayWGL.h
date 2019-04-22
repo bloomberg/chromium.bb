@@ -9,18 +9,19 @@
 #ifndef LIBANGLE_RENDERER_GL_WGL_DISPLAYWGL_H_
 #define LIBANGLE_RENDERER_GL_WGL_DISPLAYWGL_H_
 
+#include <thread>
+#include <unordered_map>
+
 #include "libANGLE/renderer/gl/DisplayGL.h"
 
 #include <GL/wglext.h>
-
-#include <thread>
-#include <unordered_map>
 
 namespace rx
 {
 
 class FunctionsWGL;
 class RendererWGL;
+class WorkerContext;
 
 class DisplayWGL : public DisplayGL
 {
@@ -45,7 +46,8 @@ class DisplayWGL : public DisplayGL
                                      NativePixmapType nativePixmap,
                                      const egl::AttributeMap &attribs) override;
 
-    ContextImpl *createContext(const gl::ContextState &state,
+    ContextImpl *createContext(const gl::State &state,
+                               gl::ErrorSet *errorSet,
                                const egl::Config *configuration,
                                const gl::Context *shareContext,
                                const egl::AttributeMap &attribs) override;
@@ -79,6 +81,10 @@ class DisplayWGL : public DisplayGL
 
     void destroyNativeContext(HGLRC context);
 
+    WorkerContext *createWorkerContext(std::string *infoLog,
+                                       HGLRC sharedContext,
+                                       const std::vector<int> &workerContextAttribs);
+
   private:
     egl::Error initializeImpl(egl::Display *display);
     void destroy();
@@ -90,8 +96,15 @@ class DisplayWGL : public DisplayGL
 
     egl::Error makeCurrentSurfaceless(gl::Context *context) override;
 
-    HGLRC initializeContextAttribs(const egl::AttributeMap &eglAttributes) const;
-    HGLRC createContextAttribs(const gl::Version &version, int profileMask) const;
+    HGLRC initializeContextAttribs(const egl::AttributeMap &eglAttributes,
+                                   HGLRC &sharedContext,
+                                   bool &useARBShare,
+                                   std::vector<int> &workerContextAttribs) const;
+    HGLRC createContextAttribs(const gl::Version &version,
+                               int profileMask,
+                               HGLRC &sharedContext,
+                               bool &useARBShare,
+                               std::vector<int> &workerContextAttribs) const;
 
     egl::Error createRenderer(std::shared_ptr<RendererWGL> *outRenderer);
 
@@ -131,6 +144,8 @@ class DisplayWGL : public DisplayGL
         size_t refCount;
     };
     std::map<IUnknown *, D3DObjectHandle> mRegisteredD3DDevices;
+
+    bool mUseARBShare;
 };
 
 }  // namespace rx

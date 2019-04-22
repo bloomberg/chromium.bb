@@ -16,7 +16,6 @@ import functools
 import getpass
 import hashlib
 import inspect
-import operator
 import os
 import pprint
 import re
@@ -50,6 +49,10 @@ _SHELL_QUOTABLE_CHARS = frozenset('[|&;()<> \t!{}[]=*?~$"\'\\#^')
 # The chars that, when used inside of double quotes, need escaping.
 # Order here matters as we need to escape backslashes first.
 _SHELL_ESCAPE_CHARS = r'\"`$'
+
+# The number of files is larger than this, we will use -T option
+# and files to be added may not show up to the command line.
+_THRESHOLD_TO_USE_T_FOR_TAR = 50
 
 
 def ShellQuote(s):
@@ -251,7 +254,7 @@ class TerminateRunCommandError(RunCommandError):
   """
 
 
-def SudoRunCommand(cmd, user='root', **kwargs):
+def SudoRunCommand(cmd, user='root', preserve_env=False, **kwargs):
   """Run a command via sudo.
 
   Client code must use this rather than coming up with their own RunCommand
@@ -262,6 +265,7 @@ def SudoRunCommand(cmd, user='root', **kwargs):
     cmd: The command to run.  See RunCommand for rules of this argument-
          SudoRunCommand purely prefixes it with sudo.
     user: The user to run the command as.
+    preserve_env (bool): Whether to preserve the environment.
     kwargs: See RunCommand options, it's a direct pass thru to it.
           Note that this supports a 'strict' keyword that defaults to True.
           If set to False, it'll suppress strict sudo behavior.
@@ -292,6 +296,9 @@ def SudoRunCommand(cmd, user='root', **kwargs):
 
   if user != 'root':
     sudo_cmd += ['-u', user]
+
+  if preserve_env:
+    sudo_cmd += ['--preserve-env']
 
   # Pass these values down into the sudo environment, since sudo will
   # just strip them normally.
@@ -555,7 +562,11 @@ def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
   # If we are using enter_chroot we need to use enterchroot pass env through
   # to the final command.
   env = env.copy() if env is not None else os.environ.copy()
+  # Looking at localized error messages may be unexpectedly dangerous, so we
+  # set LC_MESSAGES=C to make sure the output of commands is safe to inspect.
+  env['LC_MESSAGES'] = 'C'
   env.update(extra_env if extra_env else {})
+
   if enter_chroot and not IsInsideChroot():
     wrapper = ['cros_sdk']
     if cwd:
@@ -948,51 +959,6 @@ def UncompressFile(infile, outfile):
     RunCommand(cmd, log_stdout_to_file=outfile)
 
 
-def MonitorDirectories(dir_paths, cwd=None, timeout=0):
-  """Uses lsof to monitor directories.
-
-  This helps debug CreateTarballErrors when contentious processes change
-  files being tarred.
-
-  Args:
-    dir_paths: The list of directories to track/monitor.
-    cwd: Current working directory.
-    timeout: (Optional) Runtime cutoff in seconds for finding culprit
-      processes. If processes are found earlier, function will exit. If
-      not specified, loop through once and exit.
-  """
-  timed_out = False
-  start_time = time.time()
-  while not timed_out:
-    try:
-      lsof_result = RunCommand(['lsof', '-n', '-d', '0-999', '-F', 'pn'],
-                               cwd=cwd, mute_output=True)
-    except Exception:
-      lsof_result = ''
-      logging.info('Exception running lsof.', exc_info=True)
-      timeout = 0
-
-    if lsof_result:
-      logging.info('Potential competing programs:')
-      current_pid = 0
-      for line in lsof_result.output.splitlines():
-        if line.startswith('p'):
-          current_pid = line[1:]
-        elif line.startswith('n') and current_pid:
-          current_path = line[1:]
-          for input_path in dir_paths:
-            if input_path in current_path:
-              timeout = 0
-              try:
-                ps_result = RunCommand(['ps', '-f', current_pid],
-                                       mute_output=True)
-                logging.info('%s', ps_result.output)
-              except Exception:
-                logging.info('Exception running ps.', exc_info=True)
-
-    timed_out = (time.time() > start_time + timeout)
-
-
 class CreateTarballError(RunCommandError):
   """Error while running tar.
 
@@ -1002,7 +968,7 @@ class CreateTarballError(RunCommandError):
 
 
 def CreateTarball(target, cwd, sudo=False, compression=COMP_XZ, chroot=None,
-                  inputs=None, extra_args=None, **kwargs):
+                  inputs=None, timeout=300, extra_args=None, **kwargs):
   """Create a tarball.  Executes 'tar' on the commandline.
 
   Args:
@@ -1014,6 +980,7 @@ def CreateTarball(target, cwd, sudo=False, compression=COMP_XZ, chroot=None,
     chroot: See FindCompressor().
     inputs: A list of files or directories to add to the tarball.  If unset,
       defaults to ".".
+    timeout: The number of seconds to wait on soft failure.
     extra_args: A list of extra args to pass to "tar".
     kwargs: Any RunCommand options/overrides to use.
 
@@ -1033,30 +1000,33 @@ def CreateTarball(target, cwd, sudo=False, compression=COMP_XZ, chroot=None,
   comp = FindCompressor(compression, chroot=chroot)
   cmd = (['tar'] +
          extra_args +
-         ['--sparse', '-I', comp, '-cf', target] +
-         list(inputs))
-  rc_func = SudoRunCommand if sudo else RunCommand
-  input_abs_paths = [os.path.abspath(x) for x in inputs]
+         ['--sparse', '-I', comp, '-cf', target])
+  if len(inputs) > _THRESHOLD_TO_USE_T_FOR_TAR:
+    cmd += ['--null', '-T', '/dev/stdin']
+    rc_input = '\0'.join(inputs)
+  else:
+    cmd += list(inputs)
+    rc_input = None
 
-  # If tar fails with status 1, retry, but only once.  We think this is
-  # acceptable because we see directories being modified, but not files.  Our
-  # theory is that temporary files are created in those directories, but we
-  # haven't been able to prove it yet.
-  for try_count in range(2):
-    result = rc_func(cmd, cwd=cwd, **dict(kwargs, error_code_ok=True))
+  rc_func = SudoRunCommand if sudo else RunCommand
+
+  # If tar fails with status 1, retry twice. Once after timeout seconds and
+  # again 2*timeout seconds after that.
+  for try_count in range(3):
+    result = rc_func(cmd, cwd=cwd,
+                     **dict(kwargs, error_code_ok=True, input=rc_input))
     if result.returncode == 0:
       return result
-    if result.returncode != 1 or try_count > 0:
+    if result.returncode != 1 or try_count > 1:
       # Since the build is abandoned at this point, we will take 5
       # entire minutes to track down the competing process.
-      MonitorDirectories(input_abs_paths, cwd, 300)
       raise CreateTarballError('CreateTarball', result)
 
-    assert result.returncode == 1 and try_count == 0
+    assert result.returncode == 1
+    time.sleep(timeout * (try_count + 1))
     logging.warning('CreateTarball: tar: source modification time changed ' +
-                    '(see crbug.com/547055), retrying once')
+                    '(see crbug.com/547055), retrying')
     logging.PrintBuildbotStepWarnings()
-    MonitorDirectories(input_abs_paths, cwd)
 
 
 def GetInput(prompt):
@@ -1643,6 +1613,26 @@ def GetDefaultBoard():
   return default_board
 
 
+def SetDefaultBoard(board):
+  """Set the default board.
+
+  Args:
+    board (str): The name of the board to save as the default.
+
+  Returns:
+    bool - True if successfully wrote default, False otherwise.
+  """
+  config_path = os.path.join(constants.CROSUTILS_DIR, '.default_board')
+  try:
+    with open(config_path, 'w') as f:
+      f.write(board)
+  except IOError as e:
+    logging.error('Unable to write default board: %s', e.message)
+    return False
+
+  return True
+
+
 def GetBoard(device_board, override_board=None, force=False):
   """Gets the board name to use.
 
@@ -1802,7 +1792,7 @@ PartitionInfo = collections.namedtuple(
 )
 
 
-def _ParseParted(lines, unit='MB'):
+def _ParseParted(lines):
   """Returns partition information from `parted print` output."""
   ret = []
   # Sample output (partition #, start, end, size, file system, name, flags):
@@ -1828,12 +1818,12 @@ def _ParseParted(lines, unit='MB'):
       if d['number'].isdigit():
         d['number'] = int(d['number'])
         for key in ['start', 'end', 'size']:
-          d[key] = float(d[key][:-len(unit)])
+          d[key] = float(d[key][:-1])
         ret.append(PartitionInfo(**d))
   return ret
 
 
-def _ParseCgpt(lines, unit='MB'):
+def _ParseCgpt(lines):
   """Returns partition information from `cgpt show` output."""
   #   start        size    part  contents
   # 1921024     2097152       1  Label: "STATE"
@@ -1858,17 +1848,6 @@ def _ParseCgpt(lines, unit='MB'):
     start = int(start) * 512
     size = int(size) * 512
     end = start + size
-    # Parted uses 1000, not 1024.
-    divisors = {
-        'B': 1.0,
-        'KB': 1000.0,
-        'MB': 1000000.0,
-        'GB': 1000000000.0,
-    }
-    divisor = divisors[unit]
-    start = start / divisor
-    end = end / divisor
-    size = size / divisor
 
     ret.append(PartitionInfo(number=number, start=start, end=end, size=size,
                              name=label, file_system='', flags=''))
@@ -1876,18 +1855,14 @@ def _ParseCgpt(lines, unit='MB'):
   return ret
 
 
-def GetImageDiskPartitionInfo(image_path, unit='MB', key_selector='name'):
+def GetImageDiskPartitionInfo(image_path):
   """Returns the disk partition table of an image.
 
   Args:
     image_path: Path to the image file.
-    unit: The unit to display (e.g., 'B', 'KB', 'MB', 'GB').
-      See `parted` documentation for more info.
-    key_selector: The value of the partition that will be used as the key for
-      that partition in this function's returned dictionary.
 
   Returns:
-    A dictionary of ParitionInfo items keyed by |key_selector|.
+    A list of ParitionInfo items.
   """
 
   if IsInsideChroot():
@@ -1896,16 +1871,14 @@ def GetImageDiskPartitionInfo(image_path, unit='MB', key_selector='name'):
     func = _ParseCgpt
   else:
     # Outside chroot, use `parted`.
-    cmd = ['parted', '-m', image_path, 'unit', unit, 'print']
+    cmd = ['parted', '-m', image_path, 'unit', 'B', 'print']
     func = _ParseParted
 
   lines = RunCommand(
       cmd,
       extra_env={'PATH': '/sbin:%s' % os.environ['PATH'], 'LC_ALL': 'C'},
       capture_output=True).output.splitlines()
-  infos = func(lines, unit)
-  selector = operator.attrgetter(key_selector)
-  return dict((selector(x), x) for x in infos)
+  return func(lines)
 
 
 def GetRandomString(length=20):

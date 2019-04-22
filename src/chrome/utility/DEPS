@@ -8,6 +8,8 @@ include_rules = [
   "+chrome/services/isolated_xr_device",
   "+chrome/services/media_gallery_util/media_gallery_util_service.h",
   "+chrome/services/media_gallery_util/public/mojom",
+  "+chrome/services/noop/noop_service.h",
+  "+chrome/services/noop/public/cpp",
   # TODO(crbug.com/798782): remove dependency to pdf_to_emf_converter_factory.h
   # when Cloud print chrome/service is removed.
   "+chrome/services/printing/pdf_to_emf_converter_factory.h",
@@ -19,6 +21,8 @@ include_rules = [
   "+chrome/services/util_win/public/mojom",
   "+chrome/services/wifi_util_win/wifi_util_win_service.h",
   "+chrome/services/wifi_util_win/public/mojom",
+  "+chromeos/assistant/buildflags.h",
+  "+chromeos/services/assistant",
   "+chromeos/services/ime/ime_service.h",
   "+chromeos/services/ime/public/mojom",
   "+components/crash/core/common/crash_keys.h",
@@ -52,8 +56,6 @@ include_rules = [
 specific_include_rules = {
   "mash_service_factory.cc": [
     "+ash/ash_service.h",
-    "+ash/components/quick_launch/public",
-    "+ash/components/quick_launch/quick_launch_application.h",
     "+ash/components/shortcut_viewer/public",
     "+ash/components/shortcut_viewer/shortcut_viewer_application.h",
     "+ash/components/tap_visualizer/public",

@@ -278,6 +278,9 @@ function runAnimationTest(expected, callbacks, trigger, disablePauseAnimationAPI
     if (!expected)
         throw "Expected results are missing!";
 
+    if (!document.getAnimations)
+        throw "Animation tests require document.getAnimations";
+
     hasPauseAnimationAPI = 'internals' in window;
     if (disablePauseAnimationAPI)
         hasPauseAnimationAPI = false;

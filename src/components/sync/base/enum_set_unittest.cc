@@ -11,7 +11,7 @@
 namespace syncer {
 namespace {
 
-enum TestEnum {
+enum class TestEnum {
   TEST_0,
   TEST_MIN = TEST_0,
   TEST_1,
@@ -22,25 +22,26 @@ enum TestEnum {
   TEST_5
 };
 
-using TestEnumSet = EnumSet<TestEnum, TEST_MIN, TEST_MAX>;
+using TestEnumSet = EnumSet<TestEnum, TestEnum::TEST_MIN, TestEnum::TEST_MAX>;
 
 class EnumSetTest : public ::testing::Test {};
 
 TEST_F(EnumSetTest, ClassConstants) {
   TestEnumSet enums;
-  EXPECT_EQ(TEST_MIN, TestEnumSet::kMinValue);
-  EXPECT_EQ(TEST_MAX, TestEnumSet::kMaxValue);
+  EXPECT_EQ(TestEnum::TEST_MIN, TestEnumSet::kMinValue);
+  EXPECT_EQ(TestEnum::TEST_MAX, TestEnumSet::kMaxValue);
   EXPECT_EQ(static_cast<size_t>(5), TestEnumSet::kValueCount);
 }
 
 // Use static_assert to check that functions we expect to be compile time
 // evaluatable are really that way.
 TEST_F(EnumSetTest, ConstexprsAreValid) {
-  static_assert(TestEnumSet::All().Has(TEST_1),
+  static_assert(TestEnumSet::All().Has(TestEnum::TEST_1),
                 "expected All() to be integral constant expression");
-  static_assert(TestEnumSet::FromRange(TEST_1, TEST_3).Has(TEST_1),
+  static_assert(TestEnumSet::FromRange(TestEnum::TEST_1, TestEnum::TEST_3)
+                    .Has(TestEnum::TEST_1),
                 "expected FromRange() to be integral constant expression");
-  static_assert(TestEnumSet(TEST_1).Has(TEST_1),
+  static_assert(TestEnumSet(TestEnum::TEST_1).Has(TestEnum::TEST_1),
                 "expected TestEnumSet() to be integral constant expression");
 }
 
@@ -48,138 +49,146 @@ TEST_F(EnumSetTest, DefaultConstructor) {
   const TestEnumSet enums;
   EXPECT_TRUE(enums.Empty());
   EXPECT_EQ(static_cast<size_t>(0), enums.Size());
-  EXPECT_FALSE(enums.Has(TEST_0));
-  EXPECT_FALSE(enums.Has(TEST_1));
-  EXPECT_FALSE(enums.Has(TEST_2));
-  EXPECT_FALSE(enums.Has(TEST_3));
-  EXPECT_FALSE(enums.Has(TEST_4));
+  EXPECT_FALSE(enums.Has(TestEnum::TEST_0));
+  EXPECT_FALSE(enums.Has(TestEnum::TEST_1));
+  EXPECT_FALSE(enums.Has(TestEnum::TEST_2));
+  EXPECT_FALSE(enums.Has(TestEnum::TEST_3));
+  EXPECT_FALSE(enums.Has(TestEnum::TEST_4));
 }
 
 TEST_F(EnumSetTest, OneArgConstructor) {
-  const TestEnumSet enums(TEST_3);
+  const TestEnumSet enums(TestEnum::TEST_3);
   EXPECT_FALSE(enums.Empty());
   EXPECT_EQ(static_cast<size_t>(1), enums.Size());
-  EXPECT_FALSE(enums.Has(TEST_0));
-  EXPECT_FALSE(enums.Has(TEST_1));
-  EXPECT_FALSE(enums.Has(TEST_2));
-  EXPECT_TRUE(enums.Has(TEST_3));
-  EXPECT_FALSE(enums.Has(TEST_4));
+  EXPECT_FALSE(enums.Has(TestEnum::TEST_0));
+  EXPECT_FALSE(enums.Has(TestEnum::TEST_1));
+  EXPECT_FALSE(enums.Has(TestEnum::TEST_2));
+  EXPECT_TRUE(enums.Has(TestEnum::TEST_3));
+  EXPECT_FALSE(enums.Has(TestEnum::TEST_4));
 }
 
 TEST_F(EnumSetTest, TwoArgConstructor) {
-  const TestEnumSet enums(TEST_3, TEST_1);
+  const TestEnumSet enums(TestEnum::TEST_3, TestEnum::TEST_1);
   EXPECT_FALSE(enums.Empty());
   EXPECT_EQ(static_cast<size_t>(2), enums.Size());
-  EXPECT_FALSE(enums.Has(TEST_0));
-  EXPECT_TRUE(enums.Has(TEST_1));
-  EXPECT_FALSE(enums.Has(TEST_2));
-  EXPECT_TRUE(enums.Has(TEST_3));
-  EXPECT_FALSE(enums.Has(TEST_4));
+  EXPECT_FALSE(enums.Has(TestEnum::TEST_0));
+  EXPECT_TRUE(enums.Has(TestEnum::TEST_1));
+  EXPECT_FALSE(enums.Has(TestEnum::TEST_2));
+  EXPECT_TRUE(enums.Has(TestEnum::TEST_3));
+  EXPECT_FALSE(enums.Has(TestEnum::TEST_4));
 }
 
 TEST_F(EnumSetTest, ThreeArgConstructor) {
-  const TestEnumSet enums(TEST_3, TEST_1, TEST_0);
+  const TestEnumSet enums(TestEnum::TEST_3, TestEnum::TEST_1, TestEnum::TEST_0);
   EXPECT_FALSE(enums.Empty());
   EXPECT_EQ(static_cast<size_t>(3), enums.Size());
-  EXPECT_TRUE(enums.Has(TEST_0));
-  EXPECT_TRUE(enums.Has(TEST_1));
-  EXPECT_FALSE(enums.Has(TEST_2));
-  EXPECT_TRUE(enums.Has(TEST_3));
-  EXPECT_FALSE(enums.Has(TEST_4));
+  EXPECT_TRUE(enums.Has(TestEnum::TEST_0));
+  EXPECT_TRUE(enums.Has(TestEnum::TEST_1));
+  EXPECT_FALSE(enums.Has(TestEnum::TEST_2));
+  EXPECT_TRUE(enums.Has(TestEnum::TEST_3));
+  EXPECT_FALSE(enums.Has(TestEnum::TEST_4));
 }
 
 TEST_F(EnumSetTest, DuplicatesInConstructor) {
-  EXPECT_EQ(TestEnumSet(TEST_3, TEST_1, TEST_0, TEST_3, TEST_1, TEST_3),
-            TestEnumSet(TEST_0, TEST_1, TEST_3));
+  EXPECT_EQ(TestEnumSet(TestEnum::TEST_3, TestEnum::TEST_1, TestEnum::TEST_0,
+                        TestEnum::TEST_3, TestEnum::TEST_1, TestEnum::TEST_3),
+            TestEnumSet(TestEnum::TEST_0, TestEnum::TEST_1, TestEnum::TEST_3));
 }
 
 TEST_F(EnumSetTest, All) {
   const TestEnumSet enums(TestEnumSet::All());
   EXPECT_FALSE(enums.Empty());
   EXPECT_EQ(static_cast<size_t>(5), enums.Size());
-  EXPECT_TRUE(enums.Has(TEST_0));
-  EXPECT_TRUE(enums.Has(TEST_1));
-  EXPECT_TRUE(enums.Has(TEST_2));
-  EXPECT_TRUE(enums.Has(TEST_3));
-  EXPECT_TRUE(enums.Has(TEST_4));
+  EXPECT_TRUE(enums.Has(TestEnum::TEST_0));
+  EXPECT_TRUE(enums.Has(TestEnum::TEST_1));
+  EXPECT_TRUE(enums.Has(TestEnum::TEST_2));
+  EXPECT_TRUE(enums.Has(TestEnum::TEST_3));
+  EXPECT_TRUE(enums.Has(TestEnum::TEST_4));
 }
 
 TEST_F(EnumSetTest, FromRange) {
-  EXPECT_EQ(TestEnumSet(TEST_1, TEST_2, TEST_3),
-            TestEnumSet::FromRange(TEST_1, TEST_3));
-  EXPECT_EQ(TestEnumSet::All(), TestEnumSet::FromRange(TEST_0, TEST_4));
-  EXPECT_EQ(TestEnumSet(TEST_1), TestEnumSet::FromRange(TEST_1, TEST_1));
+  EXPECT_EQ(TestEnumSet(TestEnum::TEST_1, TestEnum::TEST_2, TestEnum::TEST_3),
+            TestEnumSet::FromRange(TestEnum::TEST_1, TestEnum::TEST_3));
+  EXPECT_EQ(TestEnumSet::All(),
+            TestEnumSet::FromRange(TestEnum::TEST_0, TestEnum::TEST_4));
+  EXPECT_EQ(TestEnumSet(TestEnum::TEST_1),
+            TestEnumSet::FromRange(TestEnum::TEST_1, TestEnum::TEST_1));
 
-  using RestrictedRangeSet = EnumSet<TestEnum, TEST_1, TEST_MAX>;
-  EXPECT_EQ(RestrictedRangeSet(TEST_1, TEST_2, TEST_3),
-            RestrictedRangeSet::FromRange(TEST_1, TEST_3));
+  using RestrictedRangeSet =
+      EnumSet<TestEnum, TestEnum::TEST_1, TestEnum::TEST_MAX>;
+  EXPECT_EQ(
+      RestrictedRangeSet(TestEnum::TEST_1, TestEnum::TEST_2, TestEnum::TEST_3),
+      RestrictedRangeSet::FromRange(TestEnum::TEST_1, TestEnum::TEST_3));
   EXPECT_EQ(RestrictedRangeSet::All(),
-            RestrictedRangeSet::FromRange(TEST_1, TEST_4));
+            RestrictedRangeSet::FromRange(TestEnum::TEST_1, TestEnum::TEST_4));
 }
 
 TEST_F(EnumSetTest, Put) {
-  TestEnumSet enums(TEST_3);
-  enums.Put(TEST_2);
-  EXPECT_EQ(TestEnumSet(TEST_2, TEST_3), enums);
-  enums.Put(TEST_4);
-  EXPECT_EQ(TestEnumSet(TEST_2, TEST_3, TEST_4), enums);
+  TestEnumSet enums(TestEnum::TEST_3);
+  enums.Put(TestEnum::TEST_2);
+  EXPECT_EQ(TestEnumSet(TestEnum::TEST_2, TestEnum::TEST_3), enums);
+  enums.Put(TestEnum::TEST_4);
+  EXPECT_EQ(TestEnumSet(TestEnum::TEST_2, TestEnum::TEST_3, TestEnum::TEST_4),
+            enums);
 }
 
 TEST_F(EnumSetTest, PutAll) {
-  TestEnumSet enums(TEST_3, TEST_4);
-  enums.PutAll(TestEnumSet(TEST_2, TEST_3));
-  EXPECT_EQ(TestEnumSet(TEST_2, TEST_3, TEST_4), enums);
+  TestEnumSet enums(TestEnum::TEST_3, TestEnum::TEST_4);
+  enums.PutAll(TestEnumSet(TestEnum::TEST_2, TestEnum::TEST_3));
+  EXPECT_EQ(TestEnumSet(TestEnum::TEST_2, TestEnum::TEST_3, TestEnum::TEST_4),
+            enums);
 }
 
 TEST_F(EnumSetTest, PutRange) {
   TestEnumSet enums;
-  enums.PutRange(TEST_1, TEST_3);
-  EXPECT_EQ(TestEnumSet(TEST_1, TEST_2, TEST_3), enums);
+  enums.PutRange(TestEnum::TEST_1, TestEnum::TEST_3);
+  EXPECT_EQ(TestEnumSet(TestEnum::TEST_1, TestEnum::TEST_2, TestEnum::TEST_3),
+            enums);
 }
 
 TEST_F(EnumSetTest, RetainAll) {
-  TestEnumSet enums(TEST_3, TEST_4);
-  enums.RetainAll(TestEnumSet(TEST_2, TEST_3));
-  EXPECT_EQ(TestEnumSet(TEST_3), enums);
+  TestEnumSet enums(TestEnum::TEST_3, TestEnum::TEST_4);
+  enums.RetainAll(TestEnumSet(TestEnum::TEST_2, TestEnum::TEST_3));
+  EXPECT_EQ(TestEnumSet(TestEnum::TEST_3), enums);
 }
 
 TEST_F(EnumSetTest, Remove) {
-  TestEnumSet enums(TEST_3, TEST_4);
-  enums.Remove(TEST_0);
-  enums.Remove(TEST_2);
-  EXPECT_EQ(TestEnumSet(TEST_3, TEST_4), enums);
-  enums.Remove(TEST_3);
-  EXPECT_EQ(TestEnumSet(TEST_4), enums);
-  enums.Remove(TEST_4);
-  enums.Remove(TEST_5);
+  TestEnumSet enums(TestEnum::TEST_3, TestEnum::TEST_4);
+  enums.Remove(TestEnum::TEST_0);
+  enums.Remove(TestEnum::TEST_2);
+  EXPECT_EQ(TestEnumSet(TestEnum::TEST_3, TestEnum::TEST_4), enums);
+  enums.Remove(TestEnum::TEST_3);
+  EXPECT_EQ(TestEnumSet(TestEnum::TEST_4), enums);
+  enums.Remove(TestEnum::TEST_4);
+  enums.Remove(TestEnum::TEST_5);
   EXPECT_TRUE(enums.Empty());
 }
 
 TEST_F(EnumSetTest, RemoveAll) {
-  TestEnumSet enums(TEST_3, TEST_4);
-  enums.RemoveAll(TestEnumSet(TEST_2, TEST_3));
-  EXPECT_EQ(TestEnumSet(TEST_4), enums);
+  TestEnumSet enums(TestEnum::TEST_3, TestEnum::TEST_4);
+  enums.RemoveAll(TestEnumSet(TestEnum::TEST_2, TestEnum::TEST_3));
+  EXPECT_EQ(TestEnumSet(TestEnum::TEST_4), enums);
 }
 
 TEST_F(EnumSetTest, Clear) {
-  TestEnumSet enums(TEST_3, TEST_4);
+  TestEnumSet enums(TestEnum::TEST_3, TestEnum::TEST_4);
   enums.Clear();
   EXPECT_TRUE(enums.Empty());
 }
 
 TEST_F(EnumSetTest, Has) {
-  const TestEnumSet enums(TEST_3, TEST_4);
-  EXPECT_FALSE(enums.Has(TEST_0));
-  EXPECT_FALSE(enums.Has(TEST_1));
-  EXPECT_FALSE(enums.Has(TEST_2));
-  EXPECT_TRUE(enums.Has(TEST_3));
-  EXPECT_TRUE(enums.Has(TEST_4));
-  EXPECT_FALSE(enums.Has(TEST_5));
+  const TestEnumSet enums(TestEnum::TEST_3, TestEnum::TEST_4);
+  EXPECT_FALSE(enums.Has(TestEnum::TEST_0));
+  EXPECT_FALSE(enums.Has(TestEnum::TEST_1));
+  EXPECT_FALSE(enums.Has(TestEnum::TEST_2));
+  EXPECT_TRUE(enums.Has(TestEnum::TEST_3));
+  EXPECT_TRUE(enums.Has(TestEnum::TEST_4));
+  EXPECT_FALSE(enums.Has(TestEnum::TEST_5));
 }
 
 TEST_F(EnumSetTest, HasAll) {
-  const TestEnumSet enums1(TEST_3, TEST_4);
-  const TestEnumSet enums2(TEST_2, TEST_3);
+  const TestEnumSet enums1(TestEnum::TEST_3, TestEnum::TEST_4);
+  const TestEnumSet enums2(TestEnum::TEST_2, TestEnum::TEST_3);
   const TestEnumSet enums3 = Union(enums1, enums2);
   EXPECT_TRUE(enums1.HasAll(enums1));
   EXPECT_FALSE(enums1.HasAll(enums2));
@@ -195,7 +204,7 @@ TEST_F(EnumSetTest, HasAll) {
 }
 
 TEST_F(EnumSetTest, Iterators) {
-  const TestEnumSet enums1(TEST_3, TEST_4);
+  const TestEnumSet enums1(TestEnum::TEST_3, TestEnum::TEST_4);
   TestEnumSet enums2;
   for (TestEnumSet::Iterator it = enums1.begin(); it != enums1.end(); it++) {
     enums2.Put(*it);
@@ -204,7 +213,8 @@ TEST_F(EnumSetTest, Iterators) {
 }
 
 TEST_F(EnumSetTest, RangeBasedForLoop) {
-  const TestEnumSet enums1(TEST_1, TEST_4, TEST_5);
+  const TestEnumSet enums1(TestEnum::TEST_1, TestEnum::TEST_4,
+                           TestEnum::TEST_5);
   TestEnumSet enums2;
   for (TestEnum e : enums1) {
     enums2.Put(e);
@@ -213,7 +223,7 @@ TEST_F(EnumSetTest, RangeBasedForLoop) {
 }
 
 TEST_F(EnumSetTest, IteratorComparisonOperators) {
-  const TestEnumSet enums(TEST_1, TEST_3, TEST_5);
+  const TestEnumSet enums(TestEnum::TEST_1, TestEnum::TEST_3, TestEnum::TEST_5);
   const auto first_it = enums.begin();
   const auto second_it = ++enums.begin();
 
@@ -234,7 +244,7 @@ TEST_F(EnumSetTest, IteratorComparisonOperators) {
 }
 
 TEST_F(EnumSetTest, IteratorIncrementOperators) {
-  const TestEnumSet enums(TEST_1, TEST_3, TEST_5);
+  const TestEnumSet enums(TestEnum::TEST_1, TestEnum::TEST_3, TestEnum::TEST_5);
   const auto begin = enums.begin();
 
   auto post_inc_it = begin;
@@ -265,27 +275,28 @@ TEST_F(EnumSetTest, IteratorIncrementOperators) {
 }
 
 TEST_F(EnumSetTest, Union) {
-  const TestEnumSet enums1(TEST_3, TEST_4);
-  const TestEnumSet enums2(TEST_2, TEST_3);
+  const TestEnumSet enums1(TestEnum::TEST_3, TestEnum::TEST_4);
+  const TestEnumSet enums2(TestEnum::TEST_2, TestEnum::TEST_3);
   const TestEnumSet enums3 = Union(enums1, enums2);
 
-  EXPECT_EQ(TestEnumSet(TEST_2, TEST_3, TEST_4), enums3);
+  EXPECT_EQ(TestEnumSet(TestEnum::TEST_2, TestEnum::TEST_3, TestEnum::TEST_4),
+            enums3);
 }
 
 TEST_F(EnumSetTest, Intersection) {
-  const TestEnumSet enums1(TEST_3, TEST_4);
-  const TestEnumSet enums2(TEST_2, TEST_3);
+  const TestEnumSet enums1(TestEnum::TEST_3, TestEnum::TEST_4);
+  const TestEnumSet enums2(TestEnum::TEST_2, TestEnum::TEST_3);
   const TestEnumSet enums3 = Intersection(enums1, enums2);
 
-  EXPECT_EQ(TestEnumSet(TEST_3), enums3);
+  EXPECT_EQ(TestEnumSet(TestEnum::TEST_3), enums3);
 }
 
 TEST_F(EnumSetTest, Difference) {
-  const TestEnumSet enums1(TEST_3, TEST_4);
-  const TestEnumSet enums2(TEST_2, TEST_3);
+  const TestEnumSet enums1(TestEnum::TEST_3, TestEnum::TEST_4);
+  const TestEnumSet enums2(TestEnum::TEST_2, TestEnum::TEST_3);
   const TestEnumSet enums3 = Difference(enums1, enums2);
 
-  EXPECT_EQ(TestEnumSet(TEST_4), enums3);
+  EXPECT_EQ(TestEnumSet(TestEnum::TEST_4), enums3);
 }
 
 }  // namespace

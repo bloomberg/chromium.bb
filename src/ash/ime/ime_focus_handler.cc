@@ -25,17 +25,17 @@ ImeFocusHandler::~ImeFocusHandler() {
 
 void ImeFocusHandler::OnWindowFocused(aura::Window* gained_focus,
                                       aura::Window* lost_focus) {
-  const bool client_window_gaining_focus =
-      ws::WindowService::HasRemoteClient(gained_focus);
-  const bool client_window_losing_focus =
-      ws::WindowService::HasRemoteClient(lost_focus);
+  const bool proxy_window_gaining_focus =
+      ws::WindowService::IsProxyWindow(gained_focus);
+  const bool proxy_window_losing_focus =
+      ws::WindowService::IsProxyWindow(lost_focus);
 
-  // Focus moves to a ClientWindow from an ash window.
-  if (client_window_gaining_focus && !client_window_losing_focus)
+  // Focus moves to a ProxyWindow from an ash window.
+  if (proxy_window_gaining_focus && !proxy_window_losing_focus)
     input_method_->OnBlur();
 
-  // Focus moves to an ash window from a ClientWindow.
-  if (!client_window_gaining_focus && client_window_losing_focus)
+  // Focus moves to an ash window from a ProxyWindow.
+  if (!proxy_window_gaining_focus && proxy_window_losing_focus)
     input_method_->OnFocus();
 }
 

@@ -42,7 +42,7 @@ Polymer({
      * @param {string} localizedMessageId
      * @return {string}
      */
-    var getString = localizedMessageId =>
+    const getString = localizedMessageId =>
         loadTimeData.getStringF(localizedMessageId, this.model.name);
 
     switch (this.certificateType) {
@@ -63,7 +63,7 @@ Polymer({
    * @return {string}
    */
   getDescriptionText_: function() {
-    var getString = loadTimeData.getString.bind(loadTimeData);
+    const getString = loadTimeData.getString.bind(loadTimeData);
     switch (this.certificateType) {
       case CertificateType.PERSONAL:
         return getString('certificateManagerDeleteUserDescription');

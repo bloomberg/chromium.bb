@@ -12,7 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chromeos/services/secure_channel/device_id_pair.h"
 #include "chromeos/services/secure_channel/error_tolerant_ble_advertisement.h"
-#include "components/cryptauth/foreground_eid_generator.h"
+#include "chromeos/services/secure_channel/foreground_eid_generator.h"
 #include "device/bluetooth/bluetooth_advertisement.h"
 
 namespace chromeos {
@@ -33,7 +33,7 @@ class ErrorTolerantBleAdvertisementImpl
     virtual ~Factory();
     virtual std::unique_ptr<ErrorTolerantBleAdvertisement> BuildInstance(
         const DeviceIdPair& device_id_pair,
-        std::unique_ptr<cryptauth::DataWithTimestamp> advertisement_data,
+        std::unique_ptr<DataWithTimestamp> advertisement_data,
         BleSynchronizerBase* ble_synchronizer);
 
    private:
@@ -47,7 +47,7 @@ class ErrorTolerantBleAdvertisementImpl
 
   ErrorTolerantBleAdvertisementImpl(
       const DeviceIdPair& device_id_pair,
-      std::unique_ptr<cryptauth::DataWithTimestamp> advertisement_data,
+      std::unique_ptr<DataWithTimestamp> advertisement_data,
       BleSynchronizerBase* ble_synchronizer);
 
   // ErrorTolerantBleAdvertisement:
@@ -76,11 +76,11 @@ class ErrorTolerantBleAdvertisementImpl
   void OnErrorUnregisteringAdvertisement(
       device::BluetoothAdvertisement::ErrorCode error_code);
 
-  const cryptauth::DataWithTimestamp& advertisement_data() const {
+  const DataWithTimestamp& advertisement_data() const {
     return *advertisement_data_;
   }
 
-  std::unique_ptr<cryptauth::DataWithTimestamp> advertisement_data_;
+  std::unique_ptr<DataWithTimestamp> advertisement_data_;
   BleSynchronizerBase* ble_synchronizer_;
 
   bool registration_in_progress_ = false;

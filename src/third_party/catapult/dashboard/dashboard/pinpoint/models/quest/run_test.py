@@ -18,37 +18,55 @@ from dashboard.pinpoint.models.quest import quest
 from dashboard.services import swarming
 
 
-_CACHE_NAME = 'pinpoint_cache'
-_CACHE_BASE = '.pinpoint_cache'
-_VPYTHON_VERSION = 'git_revision:b6cdec8586c9f8d3d728b1bc0bd4331330ba66fc'
+_CIPD_VERSION = 'git_revision:66410e06ff82b4e79e849977e4e58c0a261d9953'
+_CPYTHON_VERSION = 'version:2.7.14.chromium14'
+_LOGDOG_BUTLER_VERSION = 'git_revision:e1abc57be62d198b5c2f487bfb2fa2d2eb0e867c'
+_VPYTHON_VERSION = 'git_revision:00e2d8b49a4e7505d1c71f19d15c9e7c5b9245a5'
 _VPYTHON_PARAMS = {
     'caches': [
         {
-            'name': '_'.join((_CACHE_NAME, 'vpython')),
-            'path': '/'.join((_CACHE_BASE, 'vpython')),
+            'name': 'swarming_module_cache_vpython',
+            'path': '.swarming_module_cache/vpython',
         },
     ],
     'cipd_input': {
-        'client_package': None,
+        'client_package': {
+            'version': _CIPD_VERSION,
+            'package_name': 'infra/tools/cipd/${platform}',
+        },
         'packages': [
             {
+                'package_name': 'infra/python/cpython/${platform}',
+                'path': '.swarming_module',
+                'version': _CPYTHON_VERSION,
+            },
+            {
+                'package_name': 'infra/tools/luci/logdog/butler/${platform}',
+                'path': '.swarming_module',
+                'version': _LOGDOG_BUTLER_VERSION,
+            },
+            {
                 'package_name': 'infra/tools/luci/vpython/${platform}',
-                'path': '',
+                'path': '.swarming_module',
                 'version': _VPYTHON_VERSION,
             },
             {
                 'package_name': 'infra/tools/luci/vpython-native/${platform}',
-                'path': '',
+                'path': '.swarming_module',
                 'version': _VPYTHON_VERSION,
             },
         ],
-        'server': None,
+        'server': 'https://chrome-infra-packages.appspot.com',
     },
-    'env': [
+    'env_prefixes': [
+        {
+            'key': 'PATH',
+            'value': ['.swarming_module', '.swarming_module/bin'],
+        },
         {
             'key': 'VPYTHON_VIRTUALENV_ROOT',
-            'value': '/'.join((_CACHE_BASE, 'vpython')),
-        }
+            'value': ['.swarming_module_cache/vpython'],
+        },
     ],
 }
 
@@ -80,10 +98,11 @@ class SwarmingTestError(RunTestError):
 
 class RunTest(quest.Quest):
 
-  def __init__(self, swarming_server, dimensions, extra_args):
+  def __init__(self, swarming_server, dimensions, extra_args, swarming_tags):
     self._swarming_server = swarming_server
     self._dimensions = dimensions
     self._extra_args = extra_args
+    self._swarming_tags = swarming_tags
 
     # We want subsequent executions use the same bot as the first one.
     self._canonical_executions = []
@@ -101,24 +120,33 @@ class RunTest(quest.Quest):
   def __str__(self):
     return 'Test'
 
-  def Start(self, change, isolate_server, isolate_hash):
-    return self._Start(change, isolate_server, isolate_hash, self._extra_args)
+  def __setstate__(self, state):
+    self.__dict__ = state  # pylint: disable=attribute-defined-outside-init
+    if not hasattr(self, '_swarming_tags'):
+      self._swarming_tags = {}
 
-  def _Start(self, change, isolate_server, isolate_hash, extra_args):
+  def Start(self, change, isolate_server, isolate_hash):
+    return self._Start(change, isolate_server, isolate_hash, self._extra_args,
+                       {})
+
+  def _Start(self, change, isolate_server, isolate_hash, extra_args,
+             swarming_tags):
     index = self._execution_counts[change]
     self._execution_counts[change] += 1
 
-    if not hasattr(self, '_swarming_server'):
-      # TODO: Remove after data migration. crbug.com/822008
-      self._swarming_server = 'https://chromium-swarm.appspot.com'
+    if self._swarming_tags:
+      swarming_tags.update(self._swarming_tags)
+
     if len(self._canonical_executions) <= index:
       execution = _RunTestExecution(self._swarming_server, self._dimensions,
-                                    extra_args, isolate_server, isolate_hash)
+                                    extra_args, isolate_server, isolate_hash,
+                                    swarming_tags)
       self._canonical_executions.append(execution)
     else:
       execution = _RunTestExecution(
           self._swarming_server, self._dimensions, extra_args, isolate_server,
-          isolate_hash, previous_execution=self._canonical_executions[index])
+          isolate_hash, swarming_tags,
+          previous_execution=self._canonical_executions[index])
 
     return execution
 
@@ -133,10 +161,13 @@ class RunTest(quest.Quest):
       raise TypeError('Missing a "dimensions" argument.')
     if isinstance(dimensions, basestring):
       dimensions = json.loads(dimensions)
+    if not any(dimension['key'] == 'pool' for dimension in dimensions):
+      raise ValueError('Missing a "pool" dimension.')
 
     extra_test_args = cls._ExtraTestArgs(arguments)
+    swarming_tags = cls._GetSwarmingTags(arguments)
 
-    return cls(swarming_server, dimensions, extra_test_args)
+    return cls(swarming_server, dimensions, extra_test_args, swarming_tags)
 
   @classmethod
   def _ExtraTestArgs(cls, arguments):
@@ -154,11 +185,16 @@ class RunTest(quest.Quest):
       raise TypeError('extra_test_args must be a list: %s' % extra_test_args)
     return extra_test_args
 
+  @classmethod
+  def _GetSwarmingTags(cls, arguments):
+    pass
+
 
 class _RunTestExecution(execution_module.Execution):
 
   def __init__(self, swarming_server, dimensions, extra_args,
-               isolate_server, isolate_hash, previous_execution=None):
+               isolate_server, isolate_hash, swarming_tags,
+               previous_execution=None):
     super(_RunTestExecution, self).__init__()
     self._swarming_server = swarming_server
     self._dimensions = dimensions
@@ -166,9 +202,15 @@ class _RunTestExecution(execution_module.Execution):
     self._isolate_server = isolate_server
     self._isolate_hash = isolate_hash
     self._previous_execution = previous_execution
+    self._swarming_tags = swarming_tags
 
     self._bot_id = None
     self._task_id = None
+
+  def __setstate__(self, state):
+    self.__dict__ = state  # pylint: disable=attribute-defined-outside-init
+    if not hasattr(self, '_swarming_tags'):
+      self._swarming_tags = {}
 
   @property
   def bot_id(self):
@@ -176,9 +218,6 @@ class _RunTestExecution(execution_module.Execution):
 
   def _AsDict(self):
     details = []
-    if not hasattr(self, '_swarming_server'):
-      # TODO: Remove after data migration. crbug.com/822008
-      self._swarming_server = 'https://chromium-swarm.appspot.com'
     if self._bot_id:
       details.append({
           'key': 'bot',
@@ -192,10 +231,6 @@ class _RunTestExecution(execution_module.Execution):
           'url': self._swarming_server + '/task?id=' + self._task_id,
       })
     if self._result_arguments:
-      if 'isolate_server' not in self._result_arguments:
-        # TODO: Remove after data migration. crbug.com/822008
-        self._result_arguments['isolate_server'] = (
-            'https://isolateserver.appspot.com')
       details.append({
           'key': 'isolate',
           'value': self._result_arguments['isolate_hash'],
@@ -209,9 +244,6 @@ class _RunTestExecution(execution_module.Execution):
       self._StartTask()
       return
 
-    if not hasattr(self, '_swarming_server'):
-      # TODO: Remove after data migration. crbug.com/822008
-      self._swarming_server = 'https://chromium-swarm.appspot.com'
     swarming_task = swarming.Swarming(self._swarming_server).Task(self._task_id)
 
     result = swarming_task.Result()
@@ -266,19 +298,12 @@ class _RunTestExecution(execution_module.Execution):
 
     if self._previous_execution:
       dimensions = [
-          # TODO: Remove fallback after data migration. crbug.com/822008
-          pool_dimension or {'key': 'pool', 'value': 'Chrome-perf-pinpoint'},
+          pool_dimension,
           {'key': 'id', 'value': self._previous_execution.bot_id}
       ]
     else:
       dimensions = self._dimensions
-      if not pool_dimension:
-        # TODO: Remove after data migration. crbug.com/822008
-        dimensions.insert(0, {'key': 'pool', 'value': 'Chrome-perf-pinpoint'})
 
-    if not hasattr(self, '_isolate_server'):
-      # TODO: Remove after data migration. crbug.com/822008
-      self._isolate_server = 'https://isolateserver.appspot.com'
     properties = {
         'inputs_ref': {
             'isolatedserver': self._isolate_server,
@@ -297,9 +322,9 @@ class _RunTestExecution(execution_module.Execution):
         'expiration_secs': '86400',  # 1 day.
         'properties': properties,
     }
-    if not hasattr(self, '_swarming_server'):
-      # TODO: Remove after data migration. crbug.com/822008
-      self._swarming_server = 'https://chromium-swarm.appspot.com'
+    if self._swarming_tags:
+      body['tags'] = [
+          '%s:%s' % (k, self._swarming_tags[k]) for k in self._swarming_tags]
     response = swarming.Swarming(self._swarming_server).Tasks().New(body)
 
     self._task_id = response['task_id']

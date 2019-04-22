@@ -42,12 +42,10 @@ class MockSingleScrollbarAnimationControllerClient
   }
 
   MOCK_METHOD2(PostDelayedScrollbarAnimationTask,
-               void(const base::Closure& start_fade, base::TimeDelta delay));
+               void(base::OnceClosure start_fade, base::TimeDelta delay));
   MOCK_METHOD0(SetNeedsRedrawForScrollbarAnimation, void());
   MOCK_METHOD0(SetNeedsAnimateForScrollbarAnimation, void());
   MOCK_METHOD0(DidChangeScrollbarVisibility, void());
-  MOCK_METHOD0(start_fade, base::Closure());
-  MOCK_METHOD0(delay, base::TimeDelta());
 
  private:
   LayerTreeHostImpl* host_impl_;
@@ -90,7 +88,7 @@ class SingleScrollbarAnimationControllerThinningTest : public testing::Test {
     host_impl_.active_tree()->SetRootLayerForTesting(std::move(clip));
 
     scrollbar_layer_->SetBounds(gfx::Size(kThumbThickness, kTrackLength));
-    scrollbar_layer_->SetPosition(gfx::PointF(90, 0));
+    scrollbar_layer_->test_properties()->position = gfx::PointF(90, 0);
     scrollbar_layer_->SetScrollElementId(scroll_layer_ptr->element_id());
     scrollbar_layer_->test_properties()->opacity_can_animate = true;
     clip_layer_->SetBounds(gfx::Size(100, 100));

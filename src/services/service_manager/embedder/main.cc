@@ -19,7 +19,8 @@
 #include "base/process/memory.h"
 #include "base/process/process.h"
 #include "base/run_loop.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/stl_util.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/threading/thread.h"
 #include "base/trace_event/trace_config.h"
 #include "base/trace_event/trace_log.h"
@@ -35,11 +36,8 @@
 #include "services/service_manager/embedder/shared_file_util.h"
 #include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_context.h"
-#include "services/service_manager/public/cpp/standalone_service/standalone_service.h"
-#include "services/service_manager/runner/common/client_util.h"
-#include "services/service_manager/runner/common/switches.h"
-#include "services/service_manager/runner/init.h"
+#include "services/service_manager/public/cpp/service_executable/service_executable_environment.h"
+#include "services/service_manager/public/cpp/service_executable/switches.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
@@ -76,34 +74,6 @@ namespace {
 // service manager embedder process.
 constexpr size_t kMaximumMojoMessageSize = 128 * 1024 * 1024;
 
-class ServiceProcessLauncherDelegateImpl
-    : public service_manager::ServiceProcessLauncherDelegate {
- public:
-  explicit ServiceProcessLauncherDelegateImpl(MainDelegate* main_delegate)
-      : main_delegate_(main_delegate) {}
-  ~ServiceProcessLauncherDelegateImpl() override {}
-
- private:
-  // service_manager::ServiceProcessLauncherDelegate:
-  void AdjustCommandLineArgumentsForTarget(
-      const service_manager::Identity& target,
-      base::CommandLine* command_line) override {
-    if (main_delegate_->ShouldLaunchAsServiceProcess(target)) {
-      command_line->AppendSwitchASCII(switches::kProcessType,
-                                      switches::kProcessTypeService);
-#if defined(OS_WIN)
-      command_line->AppendArg(switches::kDefaultServicePrefetchArgument);
-#endif
-    }
-
-    main_delegate_->AdjustServiceProcessCommandLine(target, command_line);
-  }
-
-  MainDelegate* const main_delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(ServiceProcessLauncherDelegateImpl);
-};
-
 #if defined(OS_POSIX) && !defined(OS_ANDROID)
 
 // Setup signal-handling state: resanitize most signals, ignore SIGPIPE.
@@ -126,7 +96,7 @@ void SetupSignalHandlers() {
   static const int signals_to_reset[] = {
       SIGHUP,  SIGINT,  SIGQUIT, SIGILL, SIGABRT, SIGFPE, SIGSEGV,
       SIGALRM, SIGTERM, SIGCHLD, SIGBUS, SIGTRAP};  // SIGPIPE is set below.
-  for (unsigned i = 0; i < arraysize(signals_to_reset); i++) {
+  for (unsigned i = 0; i < base::size(signals_to_reset); i++) {
     CHECK_EQ(0, sigaction(signals_to_reset[i], &sigact, NULL));
   }
 
@@ -166,17 +136,6 @@ void CommonSubprocessInit() {
   MSG msg;
   PeekMessage(&msg, NULL, 0, 0, PM_REMOVE);
 #endif
-#if defined(OS_POSIX) && !defined(OS_ANDROID)
-  // Various things break when you're using a locale where the decimal
-  // separator isn't a period.  See e.g. bugs 22782 and 39964.  For
-  // all processes except the browser process (where we call system
-  // APIs that may rely on the correct locale for formatting numbers
-  // when presenting them to the user), reset the locale for numeric
-  // formatting.
-  // Note that this is not correct for plugin processes -- they can
-  // surface UI -- but it's likely they get this wrong too so why not.
-  setlocale(LC_NUMERIC, "C");
-#endif
 
 #if !defined(OFFICIAL_BUILD) && defined(OS_WIN)
   base::RouteStdioToConsole(false);
@@ -185,7 +144,14 @@ void CommonSubprocessInit() {
 }
 
 void NonEmbedderProcessInit() {
-  service_manager::InitializeLogging();
+  logging::LoggingSettings settings;
+  settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
+  logging::InitLogging(settings);
+  // To view log output with IDs and timestamps use "adb logcat -v threadtime".
+  logging::SetLogItems(true,   // Process ID
+                       true,   // Thread ID
+                       true,   // Timestamp
+                       true);  // Tick count
 
 #if !defined(OFFICIAL_BUILD)
   // Initialize stack dumping before initializing sandbox to make sure symbol
@@ -198,26 +164,7 @@ void NonEmbedderProcessInit() {
   }
 #endif
 
-  base::TaskScheduler::CreateAndStartWithDefaultParams("ServiceManagerProcess");
-}
-
-void WaitForDebuggerIfNecessary() {
-  if (!ServiceManagerIsRemote())
-    return;
-
-  const auto& command_line = *base::CommandLine::ForCurrentProcess();
-  const std::string service_name =
-      command_line.GetSwitchValueASCII(switches::kServiceName);
-  if (service_name !=
-      command_line.GetSwitchValueASCII(::switches::kWaitForDebugger)) {
-    return;
-  }
-
-  // Include the pid as logging may not have been initialized yet (the pid
-  // printed out by logging is wrong).
-  LOG(WARNING) << "waiting for debugger to attach for service " << service_name
-               << " pid=" << base::Process::Current().Pid();
-  base::debug::WaitForDebugger(120, true);
+  base::ThreadPool::CreateAndStartWithDefaultParams("ServiceManagerProcess");
 }
 
 int RunServiceManager(MainDelegate* delegate) {
@@ -232,10 +179,8 @@ int RunServiceManager(MainDelegate* delegate) {
       ipc_thread.task_runner(),
       mojo::core::ScopedIPCSupport::ShutdownPolicy::FAST);
 
-  ServiceProcessLauncherDelegateImpl service_process_launcher_delegate(
-      delegate);
   service_manager::BackgroundServiceManager background_service_manager(
-      &service_process_launcher_delegate, delegate->CreateServiceCatalog());
+      delegate->GetServiceManifests());
 
   base::RunLoop run_loop;
   delegate->OnServiceManagerInitialized(run_loop.QuitClosure(),
@@ -243,7 +188,7 @@ int RunServiceManager(MainDelegate* delegate) {
   run_loop.Run();
 
   ipc_thread.Stop();
-  base::TaskScheduler::GetInstance()->Shutdown();
+  base::ThreadPool::GetInstance()->Shutdown();
 
   return 0;
 }
@@ -260,44 +205,32 @@ void InitializeResources() {
 
 int RunService(MainDelegate* delegate) {
   NonEmbedderProcessInit();
-  WaitForDebuggerIfNecessary();
 
   InitializeResources();
 
-  int exit_code = 0;
-  RunStandaloneService(base::Bind(
-      [](MainDelegate* delegate, int* exit_code,
-         mojom::ServiceRequest request) {
-        // TODO(rockot): Make the default MessageLoop type overridable for
-        // services. This is TYPE_UI because at least one service (the "ui"
-        // service) needs it to be.
-        base::MessageLoop message_loop(base::MessageLoop::TYPE_UI);
-        base::RunLoop run_loop;
+  service_manager::ServiceExecutableEnvironment environment;
 
-        std::string service_name =
-            base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-                switches::kServiceName);
-        if (service_name.empty()) {
-          LOG(ERROR) << "Service process requires --service-name";
-          *exit_code = 1;
-          return;
-        }
+  base::MessageLoop message_loop(base::MessageLoop::TYPE_UI);
+  base::RunLoop run_loop;
 
-        std::unique_ptr<Service> service =
-            delegate->CreateEmbeddedService(service_name);
-        if (!service) {
-          LOG(ERROR) << "Failed to start embedded service: " << service_name;
-          *exit_code = 1;
-          return;
-        }
+  std::string service_name =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kServiceName);
+  if (service_name.empty()) {
+    LOG(ERROR) << "Service process requires --service-name";
+    return 1;
+  }
 
-        ServiceContext context(std::move(service), std::move(request));
-        context.SetQuitClosure(run_loop.QuitClosure());
-        run_loop.Run();
-      },
-      delegate, &exit_code));
+  std::unique_ptr<Service> service =
+      delegate->CreateEmbeddedService(service_name);
+  if (!service) {
+    LOG(ERROR) << "Failed to start embedded service: " << service_name;
+    return 1;
+  }
 
-  return exit_code;
+  service->set_termination_closure(run_loop.QuitClosure());
+  run_loop.Run();
+  return 0;
 }
 
 }  // namespace
@@ -375,9 +308,19 @@ int Main(const MainParams& params) {
 // On Android setlocale() is not supported, and we don't override the signal
 // handlers so we can get a stack trace when crashing.
 #if defined(OS_POSIX) && !defined(OS_ANDROID)
-    // Set C library locale to make sure CommandLine can parse argument values
-    // in the correct encoding.
+    // Set C library locale to make sure CommandLine can parse
+    // argument values in the correct encoding and to make sure
+    // generated file names (think downloads) are in the file system's
+    // encoding.
     setlocale(LC_ALL, "");
+    // For numbers we never want the C library's locale sensitive
+    // conversion from number to string because the only thing it
+    // changes is the decimal separator which is not good enough for
+    // the UI and can be harmful elsewhere. User interface number
+    // conversions need to go through ICU. Other conversions need to
+    // be locale insensitive so we force the number locale back to the
+    // default, "C", locale.
+    setlocale(LC_NUMERIC, "C");
 
     SetupSignalHandlers();
 #endif

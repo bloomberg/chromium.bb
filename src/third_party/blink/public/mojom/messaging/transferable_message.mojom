@@ -35,4 +35,7 @@ struct TransferableMessage {
   bool has_user_gesture;
   // The user activation state, null if the frame isn't providing it.
   UserActivationSnapshot? user_activation;
+  // Whether the state of user activation should be transferred to the
+  // destination frame.
+  bool transfer_user_activation;
 };

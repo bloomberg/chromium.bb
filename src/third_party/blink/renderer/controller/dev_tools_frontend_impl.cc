@@ -79,12 +79,16 @@ void DevToolsFrontendImpl::DidClearWindowObject() {
     ScriptState::Scope scope(script_state);
     if (devtools_host_)
       devtools_host_->DisconnectClient();
-    devtools_host_ = DevToolsHost::Create(this, GetSupplementable());
+    devtools_host_ =
+        MakeGarbageCollected<DevToolsHost>(this, GetSupplementable());
     v8::Local<v8::Object> global = script_state->GetContext()->Global();
     v8::Local<v8::Value> devtools_host_obj =
         ToV8(devtools_host_.Get(), global, script_state->GetIsolate());
     DCHECK(!devtools_host_obj.IsEmpty());
-    global->Set(V8AtomicString(isolate, "DevToolsHost"), devtools_host_obj);
+    global
+        ->Set(script_state->GetContext(),
+              V8AtomicString(isolate, "DevToolsHost"), devtools_host_obj)
+        .Check();
   }
 
   if (!api_script_.IsEmpty()) {

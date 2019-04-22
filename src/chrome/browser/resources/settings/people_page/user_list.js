@@ -83,10 +83,11 @@ Polymer({
   setUsers_: function(users) {
     this.users_ = users;
     this.users_.sort(function(a, b) {
-      if (a.isOwner != b.isOwner)
+      if (a.isOwner != b.isOwner) {
         return b.isOwner ? 1 : -1;
-      else
+      } else {
         return -1;
+      }
     });
     this.requestUpdateScroll();
   },

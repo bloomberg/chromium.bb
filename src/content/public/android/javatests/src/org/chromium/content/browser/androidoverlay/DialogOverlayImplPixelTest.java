@@ -20,13 +20,13 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.RenderCoordinatesImpl;
 import org.chromium.content.browser.androidoverlay.DialogOverlayImplTestRule.Client;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.concurrent.Callable;
 
@@ -232,7 +232,7 @@ public class DialogOverlayImplPixelTest {
         Assert.assertNotNull(overlay);
         final Client.Event event = mActivityTestRule.getClient().nextEvent();
         Assert.assertTrue(event.surfaceKey > 0);
-        return ThreadUtils.runOnUiThreadBlocking(new Callable<Surface>() {
+        return TestThreadUtils.runOnUiThreadBlocking(new Callable<Surface>() {
             @Override
             public Surface call() {
                 return DialogOverlayImpl.nativeLookupSurfaceForTesting((int) event.surfaceKey);
@@ -266,12 +266,7 @@ public class DialogOverlayImplPixelTest {
         rect.width = mDivWidthPx;
         rect.height = mDivHeightPx;
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                overlay.scheduleLayout(rect);
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(() -> { overlay.scheduleLayout(rect); });
 
         assertDivIsExactlyCovered(surface);
     }

@@ -34,4 +34,6 @@ void RendererUptimeWebContentsObserver::DocumentAvailableInMainFrame() {
       web_contents()->GetMainFrame()->GetProcess()->GetID());
 }
 
+WEB_CONTENTS_USER_DATA_KEY_IMPL(RendererUptimeWebContentsObserver)
+
 }  // namespace metrics

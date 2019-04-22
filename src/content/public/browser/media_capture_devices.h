@@ -5,8 +5,9 @@
 #ifndef CONTENT_PUBLIC_BROWSER_MEDIA_CAPTURE_DEVICES_H_
 #define CONTENT_PUBLIC_BROWSER_MEDIA_CAPTURE_DEVICES_H_
 
-#include "content/public/common/media_stream_request.h"
+#include "content/common/content_export.h"
 #include "media/base/video_facing.h"
+#include "third_party/blink/public/common/mediastream/media_stream_request.h"
 
 namespace content {
 
@@ -18,8 +19,8 @@ class CONTENT_EXPORT  MediaCaptureDevices {
   static MediaCaptureDevices* GetInstance();
 
   // Return all Audio/Video devices.
-  virtual const MediaStreamDevices& GetAudioCaptureDevices() = 0;
-  virtual const MediaStreamDevices& GetVideoCaptureDevices() = 0;
+  virtual const blink::MediaStreamDevices& GetAudioCaptureDevices() = 0;
+  virtual const blink::MediaStreamDevices& GetVideoCaptureDevices() = 0;
 
   virtual void AddVideoCaptureObserver(
       media::VideoCaptureObserver* observer) = 0;

@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.preferences.website;
 
 import android.support.annotation.IntDef;
+import android.support.annotation.Nullable;
 
 import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -41,7 +42,7 @@ public class ContentSettingException implements Serializable {
 
     private final int mContentSettingType;
     private final String mPattern;
-    private final ContentSetting mContentSetting;
+    private final @ContentSettingValues @Nullable Integer mContentSetting;
     private final String mSource;
 
     /**
@@ -51,8 +52,8 @@ public class ContentSettingException implements Serializable {
      * @param setting The setting for this exception, e.g. ALLOW or BLOCK.
      * @param source The source for this exception, e.g. "policy".
      */
-    public ContentSettingException(
-            int type, String pattern, ContentSetting setting, String source) {
+    public ContentSettingException(int type, String pattern,
+            @ContentSettingValues @Nullable Integer setting, String source) {
         mContentSettingType = type;
         mPattern = pattern;
         mContentSetting = setting;
@@ -63,20 +64,20 @@ public class ContentSettingException implements Serializable {
         return mPattern;
     }
 
-    public ContentSetting getContentSetting() {
-        return mContentSetting;
-    }
-
     public String getSource() {
         return mSource;
+    }
+
+    public @ContentSettingValues @Nullable Integer getContentSetting() {
+        return mContentSetting;
     }
 
     /**
      * Sets the content setting value for this exception.
      */
-    public void setContentSetting(ContentSetting value) {
-        PrefServiceBridge.getInstance().nativeSetContentSettingForPattern(mContentSettingType,
-                mPattern, value.toInt());
+    public void setContentSetting(@ContentSettingValues @Nullable Integer value) {
+        PrefServiceBridge.getInstance().nativeSetContentSettingForPattern(
+                mContentSettingType, mPattern, value);
     }
 
     public static @ContentSettingsType int getContentSettingsType(@Type int type) {

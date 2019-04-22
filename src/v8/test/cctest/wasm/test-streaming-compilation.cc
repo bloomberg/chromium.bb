@@ -59,14 +59,14 @@ class MockPlatform final : public TestPlatform {
 
     void PostDelayedTask(std::unique_ptr<Task> task,
                          double delay_in_seconds) override {
-      UNREACHABLE();
-    };
+      tasks_.push(std::move(task));
+    }
 
     void PostIdleTask(std::unique_ptr<IdleTask> task) override {
       UNREACHABLE();
     }
 
-    bool IdleTasksEnabled() override { return false; };
+    bool IdleTasksEnabled() override { return false; }
 
     void ExecuteTasks() {
       while (!tasks_.empty()) {
@@ -94,24 +94,30 @@ enum class CompilationState {
 
 class TestResolver : public CompilationResultResolver {
  public:
-  TestResolver(CompilationState* state,
+  TestResolver(CompilationState* state, std::string* error_message,
                std::shared_ptr<NativeModule>* native_module)
-      : state_(state), native_module_(native_module) {}
+      : state_(state),
+        error_message_(error_message),
+        native_module_(native_module) {}
 
   void OnCompilationSucceeded(i::Handle<i::WasmModuleObject> module) override {
     *state_ = CompilationState::kFinished;
     if (!module.is_null()) {
-      *native_module_ = module->managed_native_module()->get();
+      *native_module_ = module->shared_native_module();
     }
   }
 
   void OnCompilationFailed(i::Handle<i::Object> error_reason) override {
     *state_ = CompilationState::kFailed;
+    Handle<String> str =
+        Object::ToString(CcTest::i_isolate(), error_reason).ToHandleChecked();
+    error_message_->assign(str->ToCString().get());
   }
 
  private:
-  CompilationState* state_;
-  std::shared_ptr<NativeModule>* native_module_;
+  CompilationState* const state_;
+  std::string* const error_message_;
+  std::shared_ptr<NativeModule>* const native_module_;
 };
 
 class StreamTester {
@@ -126,7 +132,8 @@ class StreamTester {
 
     stream_ = i_isolate->wasm_engine()->StartStreamingCompilation(
         i_isolate, kAllWasmFeatures, v8::Utils::OpenHandle(*context),
-        std::make_shared<TestResolver>(&state_, &native_module_));
+        std::make_shared<TestResolver>(&state_, &error_message_,
+                                       &native_module_));
   }
 
   std::shared_ptr<StreamingDecoder> stream() { return stream_; }
@@ -157,11 +164,14 @@ class StreamTester {
 
   Zone* zone() { return &zone_; }
 
+  const std::string& error_message() const { return error_message_; }
+
  private:
   AccountingAllocator allocator_;
   Zone zone_;
   i::HandleScope internal_scope_;
   CompilationState state_ = CompilationState::kPending;
+  std::string error_message_;
   std::shared_ptr<NativeModule> native_module_;
   std::shared_ptr<StreamingDecoder> stream_;
 };
@@ -212,8 +222,7 @@ ZoneBuffer GetValidCompiledModuleBytes(Zone* zone, ZoneBuffer wire_bytes) {
   // Serialize the NativeModule.
   std::shared_ptr<NativeModule> native_module = tester.native_module();
   CHECK(native_module);
-  i::wasm::WasmSerializer serializer(
-      reinterpret_cast<i::Isolate*>(CcTest::i_isolate()), native_module.get());
+  i::wasm::WasmSerializer serializer(native_module.get());
   size_t size = serializer.GetSerializedNativeModuleSize();
   std::vector<byte> buffer(size);
   CHECK(serializer.SerializeNativeModule({buffer.data(), size}));
@@ -255,7 +264,7 @@ size_t GetFunctionOffset(i::Isolate* isolate, const uint8_t* buffer,
                          size_t size, size_t index) {
   ModuleResult result = DecodeWasmModule(
       kAllWasmFeatures, buffer, buffer + size, false, ModuleOrigin::kWasmOrigin,
-      isolate->counters(), isolate->allocator());
+      isolate->counters(), isolate->wasm_engine()->allocator());
   CHECK(result.ok());
   const WasmFunction* func = &result.value()->functions[1];
   return func->code.offset();
@@ -1084,6 +1093,128 @@ STREAM_TEST(TestDeserializationFails) {
   tester.RunCompilerTasks();
 
   CHECK(tester.IsPromiseFulfilled());
+}
+
+// Test that a non-empty function section with a missing code section fails.
+STREAM_TEST(TestFunctionSectionWithoutCodeSection) {
+  StreamTester tester;
+
+  const uint8_t bytes[] = {
+      WASM_MODULE_HEADER,                   // module header
+      kTypeSectionCode,                     // section code
+      U32V_1(1 + SIZEOF_SIG_ENTRY_x_x),     // section size
+      U32V_1(1),                            // type count
+      SIG_ENTRY_x_x(kLocalI32, kLocalI32),  // signature entry
+      kFunctionSectionCode,                 // section code
+      U32V_1(1 + 3),                        // section size
+      U32V_1(3),                            // functions count
+      0,                                    // signature index
+      0,                                    // signature index
+      0,                                    // signature index
+  };
+
+  tester.OnBytesReceived(bytes, arraysize(bytes));
+  tester.FinishStream();
+
+  tester.RunCompilerTasks();
+
+  CHECK(tester.IsPromiseRejected());
+}
+
+STREAM_TEST(TestSetModuleCompiledCallback) {
+  StreamTester tester;
+  bool callback_called = false;
+  tester.stream()->SetModuleCompiledCallback(
+      [&callback_called](const std::shared_ptr<NativeModule> module) {
+        callback_called = true;
+      });
+
+  uint8_t code[] = {
+      U32V_1(4),                  // body size
+      U32V_1(0),                  // locals count
+      kExprGetLocal, 0, kExprEnd  // body
+  };
+
+  const uint8_t bytes[] = {
+      WASM_MODULE_HEADER,                   // module header
+      kTypeSectionCode,                     // section code
+      U32V_1(1 + SIZEOF_SIG_ENTRY_x_x),     // section size
+      U32V_1(1),                            // type count
+      SIG_ENTRY_x_x(kLocalI32, kLocalI32),  // signature entry
+      kFunctionSectionCode,                 // section code
+      U32V_1(1 + 3),                        // section size
+      U32V_1(3),                            // functions count
+      0,                                    // signature index
+      0,                                    // signature index
+      0,                                    // signature index
+      kCodeSectionCode,                     // section code
+      U32V_1(1 + arraysize(code) * 3),      // section size
+      U32V_1(3),                            // functions count
+  };
+
+  tester.OnBytesReceived(bytes, arraysize(bytes));
+  tester.OnBytesReceived(code, arraysize(code));
+  tester.OnBytesReceived(code, arraysize(code));
+  tester.OnBytesReceived(code, arraysize(code));
+  tester.FinishStream();
+  tester.RunCompilerTasks();
+  CHECK(tester.IsPromiseFulfilled());
+  CHECK(callback_called);
+}
+
+// Test that a compile error contains the name of the function, even if the name
+// section is not present at the time the error is detected.
+STREAM_TEST(TestCompileErrorFunctionName) {
+  const uint8_t bytes_module_with_code[] = {
+      WASM_MODULE_HEADER,                   // module header
+      kTypeSectionCode,                     // section code
+      U32V_1(1 + SIZEOF_SIG_ENTRY_x_x),     // section size
+      U32V_1(1),                            // type count
+      SIG_ENTRY_x_x(kLocalI32, kLocalI32),  // signature entry
+      kFunctionSectionCode,                 // section code
+      U32V_1(2),                            // section size
+      U32V_1(1),                            // functions count
+      0,                                    // signature index
+      kCodeSectionCode,                     // section code
+      U32V_1(3),                            // section size
+      U32V_1(1),                            // functions count
+      1,                                    // body size
+      kExprNop,                             // body
+  };
+
+  const uint8_t bytes_names[] = {
+      kUnknownSectionCode,             // section code
+      U32V_1(11),                      // section size
+      4,                               // section name length
+      'n',                             // section name
+      'a',                             // section name
+      'm',                             // section name
+      'e',                             // section name
+      NameSectionKindCode::kFunction,  // name section kind
+      4,                               // name section kind length
+      1,                               // num function names
+      0,                               // function index
+      1,                               // function name length
+      'f',                             // function name
+  };
+
+  for (bool late_names : {false, true}) {
+    StreamTester tester;
+
+    tester.OnBytesReceived(bytes_module_with_code,
+                           arraysize(bytes_module_with_code));
+    if (late_names) tester.RunCompilerTasks();
+    tester.OnBytesReceived(bytes_names, arraysize(bytes_names));
+    tester.FinishStream();
+
+    tester.RunCompilerTasks();
+
+    CHECK(tester.IsPromiseRejected());
+    CHECK_EQ(
+        "CompileError: WebAssembly.compile(): Compiling function #0:\"f\" "
+        "failed: function body must end with \"end\" opcode @+25",
+        tester.error_message());
+  }
 }
 
 #undef STREAM_TEST

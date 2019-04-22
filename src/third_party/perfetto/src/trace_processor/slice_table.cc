@@ -16,8 +16,7 @@
 
 #include "src/trace_processor/slice_table.h"
 
-#include "src/trace_processor/storage_cursor.h"
-#include "src/trace_processor/table_utils.h"
+#include "src/trace_processor/storage_columns.h"
 
 namespace perfetto {
 namespace trace_processor {
@@ -29,37 +28,22 @@ void SliceTable::RegisterTable(sqlite3* db, const TraceStorage* storage) {
   Table::Register<SliceTable>(db, storage, "slices");
 }
 
-Table::Schema SliceTable::CreateSchema(int, const char* const*) {
+StorageSchema SliceTable::CreateStorageSchema() {
   const auto& slices = storage_->nestable_slices();
-  std::unique_ptr<StorageSchema::Column> cols[] = {
-      StorageSchema::NumericColumnPtr("ts", &slices.start_ns(),
-                                      false /* hidden */, true /* ordered */),
-      StorageSchema::NumericColumnPtr("dur", &slices.durations()),
-      StorageSchema::NumericColumnPtr("utid", &slices.utids()),
-      StorageSchema::StringColumnPtr("cat", &slices.cats(),
-                                     &storage_->string_pool()),
-      StorageSchema::StringColumnPtr("name", &slices.names(),
-                                     &storage_->string_pool()),
-      StorageSchema::NumericColumnPtr("depth", &slices.depths()),
-      StorageSchema::NumericColumnPtr("stack_id", &slices.stack_ids()),
-      StorageSchema::NumericColumnPtr("parent_stack_id",
-                                      &slices.parent_stack_ids())};
-  schema_ = StorageSchema({
-      std::make_move_iterator(std::begin(cols)),
-      std::make_move_iterator(std::end(cols)),
-  });
-  return schema_.ToTableSchema({"utid", "ts", "depth"});
+  return StorageSchema::Builder()
+      .AddOrderedNumericColumn("ts", &slices.start_ns())
+      .AddNumericColumn("dur", &slices.durations())
+      .AddNumericColumn("utid", &slices.utids())
+      .AddStringColumn("cat", &slices.cats(), &storage_->string_pool())
+      .AddStringColumn("name", &slices.names(), &storage_->string_pool())
+      .AddNumericColumn("depth", &slices.depths())
+      .AddNumericColumn("stack_id", &slices.stack_ids())
+      .AddNumericColumn("parent_stack_id", &slices.parent_stack_ids())
+      .Build({"utid", "ts", "depth"});
 }
 
-std::unique_ptr<Table::Cursor> SliceTable::CreateCursor(
-    const QueryConstraints& qc,
-    sqlite3_value** argv) {
-  uint32_t count =
-      static_cast<uint32_t>(storage_->nestable_slices().slice_count());
-  auto it = table_utils::CreateBestRowIteratorForGenericSchema(schema_, count,
-                                                               qc, argv);
-  return std::unique_ptr<Table::Cursor>(
-      new StorageCursor(std::move(it), schema_.ToColumnReporters()));
+uint32_t SliceTable::RowCount() {
+  return static_cast<uint32_t>(storage_->nestable_slices().slice_count());
 }
 
 int SliceTable::BestIndex(const QueryConstraints& qc, BestIndexInfo* info) {
@@ -68,8 +52,8 @@ int SliceTable::BestIndex(const QueryConstraints& qc, BestIndexInfo* info) {
 
   // Only the string columns are handled by SQLite
   info->order_by_consumed = true;
-  size_t name_index = schema_.ColumnIndexFromName("name");
-  size_t cat_index = schema_.ColumnIndexFromName("cat");
+  size_t name_index = schema().ColumnIndexFromName("name");
+  size_t cat_index = schema().ColumnIndexFromName("cat");
   for (size_t i = 0; i < qc.constraints().size(); i++) {
     info->omit[i] =
         qc.constraints()[i].iColumn != static_cast<int>(name_index) &&

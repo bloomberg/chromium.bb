@@ -15,10 +15,10 @@
 #include "base/containers/mru_cache.h"
 #include "base/macros.h"
 #include "base/memory/memory_pressure_monitor.h"
-#include "base/synchronization/lock.h"
-#include "base/threading/thread_checker.h"
 #include "base/time/time.h"
+#include "base/trace_event/memory_dump_provider.h"
 #include "net/base/net_export.h"
+#include "net/cert/cert_database.h"
 #include "third_party/boringssl/src/include/openssl/base.h"
 
 namespace base {
@@ -30,7 +30,7 @@ class ProcessMemoryDump;
 
 namespace net {
 
-class NET_EXPORT SSLClientSessionCache {
+class NET_EXPORT SSLClientSessionCache : public CertDatabase::Observer {
  public:
   struct Config {
     // The maximum number of entries in the cache.
@@ -40,7 +40,9 @@ class NET_EXPORT SSLClientSessionCache {
   };
 
   explicit SSLClientSessionCache(const Config& config);
-  ~SSLClientSessionCache();
+  ~SSLClientSessionCache() override;
+
+  void OnCertDBChanged() override;
 
   // Returns true if |entry| is expired as of |now|.
   static bool IsExpired(SSL_SESSION* session, time_t now);
@@ -58,7 +60,8 @@ class NET_EXPORT SSLClientSessionCache {
   // Inserts |session| into the cache at |cache_key|. If there is an existing
   // one, it is released. Every |expiration_check_count| calls, the cache is
   // checked for stale entries.
-  void Insert(const std::string& cache_key, SSL_SESSION* session);
+  void Insert(const std::string& cache_key,
+              bssl::UniquePtr<SSL_SESSION> session);
 
   // Removes all entries from the cache.
   void Flush();
@@ -67,7 +70,8 @@ class NET_EXPORT SSLClientSessionCache {
 
   // Dumps memory allocation stats. |pmd| is the ProcessMemoryDump of the
   // browser process.
-  void DumpMemoryStats(base::trace_event::ProcessMemoryDump* pmd);
+  void DumpMemoryStats(base::trace_event::ProcessMemoryDump* pmd,
+                       const std::string& parent_absolute_name) const;
 
  private:
   struct Entry {
@@ -87,7 +91,7 @@ class NET_EXPORT SSLClientSessionCache {
     // deleted.
     bool ExpireSessions(time_t now);
 
-    bssl::UniquePtr<SSL_SESSION> sessions[2] = {nullptr};
+    bssl::UniquePtr<SSL_SESSION> sessions[2];
   };
 
   // Removes all expired sessions from the cache.
@@ -101,12 +105,6 @@ class NET_EXPORT SSLClientSessionCache {
   Config config_;
   base::HashingMRUCache<std::string, Entry> cache_;
   size_t lookups_since_flush_;
-
-  // TODO(davidben): After https://crbug.com/458365 is fixed, replace this with
-  // a ThreadChecker. The session cache should be single-threaded like other
-  // classes in net.
-  base::Lock lock_;
-
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLClientSessionCache);

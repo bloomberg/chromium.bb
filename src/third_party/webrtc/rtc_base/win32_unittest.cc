@@ -11,7 +11,7 @@
 #include <string>
 
 #include "rtc_base/gunit.h"
-#include "rtc_base/nethelpers.h"
+#include "rtc_base/net_helpers.h"
 #include "rtc_base/win32.h"
 
 #if !defined(WEBRTC_WIN)
@@ -20,7 +20,7 @@
 
 namespace rtc {
 
-class Win32Test : public testing::Test {
+class Win32Test : public ::testing::Test {
  public:
   Win32Test() {}
 };

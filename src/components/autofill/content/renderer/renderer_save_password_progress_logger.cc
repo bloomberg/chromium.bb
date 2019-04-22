@@ -9,8 +9,6 @@
 #include "base/values.h"
 #include "third_party/blink/public/web/web_form_control_element.h"
 
-using base::UintToString;
-
 namespace autofill {
 
 RendererSavePasswordProgressLogger::RendererSavePasswordProgressLogger(
@@ -30,7 +28,8 @@ void RendererSavePasswordProgressLogger::LogElementName(
     const blink::WebFormControlElement& element) {
   std::string text =
       "name = " + ScrubElementID(element.NameForAutofill().Utf8()) +
-      ", renderer_id = " + UintToString(element.UniqueRendererFormControlId());
+      ", renderer_id = " +
+      base::NumberToString(element.UniqueRendererFormControlId());
   LogValue(label, base::Value(text));
 }
 

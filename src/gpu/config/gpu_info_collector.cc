@@ -14,6 +14,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -214,7 +215,7 @@ bool CollectGraphicsInfoGL(GPUInfo* gpu_info,
       gfx::HasExtension(extension_set, "GL_NV_framebuffer_multisample")) {
     glGetIntegerv(GL_MAX_SAMPLES, &max_samples);
   }
-  gpu_info->max_msaa_samples = base::IntToString(max_samples);
+  gpu_info->max_msaa_samples = base::NumberToString(max_samples);
   base::UmaHistogramSparse("GPU.MaxMSAASampleCount", max_samples);
 
 #if defined(OS_ANDROID)
@@ -225,11 +226,13 @@ bool CollectGraphicsInfoGL(GPUInfo* gpu_info,
       gfx::HasExtension(extension_set, "GL_OES_EGL_image");
 #else
   gl::GLWindowSystemBindingInfo window_system_binding_info;
-  if (gl::init::GetGLWindowSystemBindingInfo(&window_system_binding_info)) {
+  if (gl::init::GetGLWindowSystemBindingInfo(gl_info,
+                                             &window_system_binding_info)) {
     gpu_info->gl_ws_vendor = window_system_binding_info.vendor;
     gpu_info->gl_ws_version = window_system_binding_info.version;
     gpu_info->gl_ws_extensions = window_system_binding_info.extensions;
-    gpu_info->direct_rendering = window_system_binding_info.direct_rendering;
+    gpu_info->direct_rendering_version =
+        window_system_binding_info.direct_rendering_version;
   }
 #endif  // OS_ANDROID
 
@@ -294,16 +297,16 @@ void IdentifyActiveGPU(GPUInfo* gpu_info) {
   uint32_t active_vendor_id = 0;
   if (!gpu_info->gl_vendor.empty()) {
     std::string gl_vendor_lower = base::ToLowerASCII(gpu_info->gl_vendor);
-    int index = StringContainsName(
-        gl_vendor_lower, kVendorNames, arraysize(kVendorNames));
+    int index = StringContainsName(gl_vendor_lower, kVendorNames,
+                                   base::size(kVendorNames));
     if (index >= 0) {
       active_vendor_id = kVendorIDs[index];
     }
   }
   if (active_vendor_id == 0 && !gpu_info->gl_renderer.empty()) {
     std::string gl_renderer_lower = base::ToLowerASCII(gpu_info->gl_renderer);
-    int index = StringContainsName(
-        gl_renderer_lower, kVendorNames, arraysize(kVendorNames));
+    int index = StringContainsName(gl_renderer_lower, kVendorNames,
+                                   base::size(kVendorNames));
     if (index >= 0) {
       active_vendor_id = kVendorIDs[index];
     }

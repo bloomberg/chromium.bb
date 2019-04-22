@@ -64,7 +64,6 @@
     ],
     "name": "cipd describe public/package/linux-amd64",
     "~followup_annotations": [
-      "step returned non-zero exit code: 1",
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"error\": \"package \\\"public/package/linux-amd64-ubuntu14_04\\\" not registered\", @@@",
       "@@@STEP_LOG_LINE@json.output@  \"result\": null@@@",

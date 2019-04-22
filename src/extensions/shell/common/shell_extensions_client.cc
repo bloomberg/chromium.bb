@@ -143,9 +143,4 @@ bool ShellExtensionsClient::IsBlacklistUpdateURL(const GURL& url) const {
   return true;
 }
 
-std::string ShellExtensionsClient::GetUserAgent() const {
-  return content::BuildUserAgentFromProduct(
-      version_info::GetProductNameAndVersionForUserAgent());
-}
-
 }  // namespace extensions

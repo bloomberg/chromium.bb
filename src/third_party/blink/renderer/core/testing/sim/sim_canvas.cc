@@ -87,35 +87,6 @@ void SimCanvas::onDrawImageRect(const SkImage* image,
   SkCanvas::onDrawImageRect(image, src, dst, paint, constraint);
 }
 
-void SimCanvas::onDrawText(const void* text,
-                           size_t byte_length,
-                           SkScalar x,
-                           SkScalar y,
-                           const SkPaint& paint) {
-  DrawScope scope;
-  AddCommand(CommandType::kText, paint.getColor());
-  SkCanvas::onDrawText(text, byte_length, x, y, paint);
-}
-
-void SimCanvas::onDrawPosText(const void* text,
-                              size_t byte_length,
-                              const SkPoint pos[],
-                              const SkPaint& paint) {
-  DrawScope scope;
-  AddCommand(CommandType::kText, paint.getColor());
-  SkCanvas::onDrawPosText(text, byte_length, pos, paint);
-}
-
-void SimCanvas::onDrawPosTextH(const void* text,
-                               size_t byte_length,
-                               const SkScalar xpos[],
-                               SkScalar const_y,
-                               const SkPaint& paint) {
-  DrawScope scope;
-  AddCommand(CommandType::kText, paint.getColor());
-  SkCanvas::onDrawPosTextH(text, byte_length, xpos, const_y, paint);
-}
-
 void SimCanvas::onDrawTextBlob(const SkTextBlob* blob,
                                SkScalar x,
                                SkScalar y,

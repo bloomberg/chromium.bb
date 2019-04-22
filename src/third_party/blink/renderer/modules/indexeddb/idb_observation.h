@@ -18,7 +18,6 @@ namespace blink {
 class IDBAny;
 class IDBKeyRange;
 class ScriptState;
-struct WebIDBObservation;
 
 class IDBObservation final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
@@ -26,12 +25,13 @@ class IDBObservation final : public ScriptWrappable {
  public:
   static mojom::IDBOperationType StringToOperationType(const String&);
 
-  // Consumes the WebIDBObservation.
-  static IDBObservation* Create(WebIDBObservation, v8::Isolate*);
-
-  IDBObservation(WebIDBObservation, v8::Isolate*);
+  IDBObservation(int64_t object_store_id,
+                 mojom::IDBOperationType type,
+                 IDBKeyRange* key_range,
+                 std::unique_ptr<IDBValue> value);
   ~IDBObservation() override;
 
+  void SetIsolate(v8::Isolate* isolate);
   void Trace(blink::Visitor*) override;
 
   // Implement the IDL
@@ -39,10 +39,14 @@ class IDBObservation final : public ScriptWrappable {
   ScriptValue value(ScriptState*);
   const String& type() const;
 
+  // Helpers.
+  int64_t object_store_id() const { return object_store_id_; }
+
  private:
+  int64_t object_store_id_;
+  const mojom::IDBOperationType operation_type_;
   Member<IDBKeyRange> key_range_;
   Member<IDBAny> value_;
-  const mojom::IDBOperationType operation_type_;
 };
 
 }  // namespace blink

@@ -171,7 +171,7 @@ enum LaunchType {
 // histograms and preferences.
 enum LaunchContainer {
   LAUNCH_CONTAINER_WINDOW,
-  LAUNCH_CONTAINER_PANEL,
+  LAUNCH_CONTAINER_PANEL_DEPRECATED,
   LAUNCH_CONTAINER_TAB,
   // For platform apps, which don't actually have a container (they just get a
   // "onLaunched" event).

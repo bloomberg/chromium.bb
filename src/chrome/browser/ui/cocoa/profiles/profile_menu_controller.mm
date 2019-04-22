@@ -28,6 +28,8 @@
 
 namespace {
 
+constexpr int kMenuAvatarIconSize = 38;
+
 // Used in UMA histogram macros, shouldn't be reordered or renumbered
 enum ValidateMenuItemSelector {
   UNKNOWN_SELECTOR = 0,
@@ -153,14 +155,14 @@ class Observer : public BrowserListObserver, public AvatarMenuObserver {
       // Always use the low-res, small default avatars in the menu.
       AvatarMenu::GetImageForMenuButton(itemData.profile_path, &itemIcon);
 
-      // The image might be too large and need to be resized (i.e. if this is
-      // a signed-in user using the GAIA profile photo).
-      if (itemIcon.Width() > profiles::kAvatarIconWidth ||
-          itemIcon.Height() > profiles::kAvatarIconHeight) {
-        itemIcon = profiles::GetAvatarIconForWebUI(itemIcon, true);
+      // The image might be too large and need to be resized, e.g. if this is
+      // a signed-in user using the GAIA profile photo.
+      if (itemIcon.Width() > kMenuAvatarIconSize ||
+          itemIcon.Height() > kMenuAvatarIconSize) {
+        itemIcon = profiles::GetSizedAvatarIcon(itemIcon, /*is_rectangle=*/true,
+                                                kMenuAvatarIconSize,
+                                                kMenuAvatarIconSize);
       }
-      DCHECK(itemIcon.Width() <= profiles::kAvatarIconWidth);
-      DCHECK(itemIcon.Height() <= profiles::kAvatarIconHeight);
       [item setImage:itemIcon.ToNSImage()];
       [item setState:itemData.active ? NSOnState : NSOffState];
     }

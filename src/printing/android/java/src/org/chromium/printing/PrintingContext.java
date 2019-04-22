@@ -4,10 +4,13 @@
 
 package org.chromium.printing;
 
+import android.app.Activity;
+
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.ui.base.WindowAndroid;
 
 /**
  * This class is responsible for communicating with its native counterpart through JNI to handle
@@ -79,6 +82,17 @@ public class PrintingContext {
         } else {
             Log.d(TAG, "No PrintingController, can't notify print completion.");
         }
+    }
+
+    @CalledByNative
+    private static void setPendingPrint(
+            WindowAndroid window, Printable printable, int renderProcessId, int renderFrameId) {
+        PrintingController printingController = PrintingControllerImpl.getInstance();
+        Activity activity = window.getActivity().get();
+        if (printingController == null || activity == null) return;
+
+        printingController.setPendingPrint(
+                printable, new PrintManagerDelegateImpl(activity), renderProcessId, renderFrameId);
     }
 
     @CalledByNative

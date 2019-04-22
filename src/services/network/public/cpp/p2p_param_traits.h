@@ -17,42 +17,13 @@
 #include "net/base/network_interfaces.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/p2p_socket_type.h"
-#include "third_party/webrtc/rtc_base/asyncpacketsocket.h"
+#include "third_party/webrtc/rtc_base/async_packet_socket.h"
 
 #ifndef INTERNAL_SERVICES_NETWORK_PUBLIC_CPP_P2P_PARAM_TRAITS_H_
 #define INTERNAL_SERVICES_NETWORK_PUBLIC_CPP_P2P_PARAM_TRAITS_H_
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT COMPONENT_EXPORT(NETWORK_CPP_BASE)
-
-namespace net {
-class IPAddress;
-class IPEndPoint;
-}  // namespace net
-
-namespace IPC {
-
-template <>
-struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ParamTraits<net::IPEndPoint> {
-  typedef net::IPEndPoint param_type;
-  static void Write(base::Pickle* m, const param_type& p);
-  static bool Read(const base::Pickle* m,
-                   base::PickleIterator* iter,
-                   param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ParamTraits<net::IPAddress> {
-  typedef net::IPAddress param_type;
-  static void Write(base::Pickle* m, const param_type& p);
-  static bool Read(const base::Pickle* m,
-                   base::PickleIterator* iter,
-                   param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-}  // namespace IPC
 
 #endif  // INTERNAL_SERVICES_NETWORK_PUBLIC_CPP_P2P_PARAM_TRAITS_H_
 
@@ -64,14 +35,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(net::NetworkChangeNotifier::ConnectionType,
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(rtc::DiffServCodePoint,
                               rtc::DSCP_NO_CHANGE,
                               rtc::DSCP_CS7)
-
-IPC_STRUCT_TRAITS_BEGIN(net::NetworkInterface)
-  IPC_STRUCT_TRAITS_MEMBER(name)
-  IPC_STRUCT_TRAITS_MEMBER(type)
-  IPC_STRUCT_TRAITS_MEMBER(address)
-  IPC_STRUCT_TRAITS_MEMBER(prefix_length)
-  IPC_STRUCT_TRAITS_MEMBER(ip_address_attributes)
-IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(rtc::PacketTimeUpdateParams)
   IPC_STRUCT_TRAITS_MEMBER(rtp_sendtime_extension_id)
@@ -94,7 +57,7 @@ IPC_STRUCT_TRAITS_END()
 IPC_STRUCT_TRAITS_BEGIN(network::P2PSendPacketMetrics)
   IPC_STRUCT_TRAITS_MEMBER(packet_id)
   IPC_STRUCT_TRAITS_MEMBER(rtc_packet_id)
-  IPC_STRUCT_TRAITS_MEMBER(send_time)
+  IPC_STRUCT_TRAITS_MEMBER(send_time_ms)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(network::P2PPortRange)

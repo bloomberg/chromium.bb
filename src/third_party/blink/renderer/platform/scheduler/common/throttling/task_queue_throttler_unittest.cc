@@ -9,6 +9,7 @@
 #include <deque>
 #include <memory>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/task/sequence_manager/sequence_manager.h"
@@ -26,9 +27,9 @@ namespace scheduler {
 // To avoid symbol collisions in jumbo builds.
 namespace task_queue_throttler_unittest {
 
+using base::TestMockTimeTaskRunner;
 using base::TimeDelta;
 using base::TimeTicks;
-using base::TestMockTimeTaskRunner;
 using base::sequence_manager::LazyNow;
 using base::sequence_manager::TaskQueue;
 using testing::ElementsAre;
@@ -173,9 +174,9 @@ class TaskQueueThrottlerWithAutoAdvancingTimeTest
   DISALLOW_COPY_AND_ASSIGN(TaskQueueThrottlerWithAutoAdvancingTimeTest);
 };
 
-INSTANTIATE_TEST_CASE_P(,
-                        TaskQueueThrottlerWithAutoAdvancingTimeTest,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(,
+                         TaskQueueThrottlerWithAutoAdvancingTimeTest,
+                         testing::Bool());
 
 TEST_F(TaskQueueThrottlerTest, ThrottledTasksReportRealTime) {
   EXPECT_EQ(timer_queue_->GetTimeDomain()->Now(),
@@ -376,7 +377,7 @@ TEST_P(TaskQueueThrottlerWithAutoAdvancingTimeTest,
        OnTimeDomainHasImmediateWork_DisabledQueue) {
   std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
       timer_queue_->CreateQueueEnabledVoter();
-  voter->SetQueueEnabled(false);
+  voter->SetVoteToEnable(false);
 
   task_queue_throttler_->OnQueueNextWakeUpChanged(timer_queue_.get(),
                                                   TimeTicks());
@@ -390,13 +391,13 @@ TEST_P(TaskQueueThrottlerWithAutoAdvancingTimeTest,
 
   std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
       timer_queue_->CreateQueueEnabledVoter();
-  voter->SetQueueEnabled(false);
+  voter->SetVoteToEnable(false);
 
   task_queue_throttler_->IncreaseThrottleRefCount(timer_queue_.get());
   EXPECT_TRUE(scheduler_->ControlTaskQueue()->IsEmpty());
 
   // Enabling it should trigger a call to PostPumpThrottledTasksLocked.
-  voter->SetQueueEnabled(true);
+  voter->SetVoteToEnable(true);
   EXPECT_FALSE(scheduler_->ControlTaskQueue()->IsEmpty());
 }
 
@@ -407,13 +408,13 @@ TEST_P(TaskQueueThrottlerWithAutoAdvancingTimeTest,
 
   std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
       timer_queue_->CreateQueueEnabledVoter();
-  voter->SetQueueEnabled(false);
+  voter->SetVoteToEnable(false);
 
   task_queue_throttler_->IncreaseThrottleRefCount(timer_queue_.get());
   EXPECT_TRUE(scheduler_->ControlTaskQueue()->IsEmpty());
 
   // Enabling it should trigger a call to PostPumpThrottledTasksLocked.
-  voter->SetQueueEnabled(true);
+  voter->SetVoteToEnable(true);
   EXPECT_FALSE(scheduler_->ControlTaskQueue()->IsEmpty());
 }
 
@@ -531,7 +532,7 @@ TEST_P(TaskQueueThrottlerWithAutoAdvancingTimeTest, TaskQueueDisabledTillPump) {
   EXPECT_TRUE(IsQueueBlocked(timer_queue_.get()));
 
   test_task_runner_->FastForwardUntilNoTasksRemain();  // Wait until the pump.
-  EXPECT_EQ(1u, count);               // The task got run.
+  EXPECT_EQ(1u, count);                                // The task got run.
 }
 
 TEST_P(TaskQueueThrottlerWithAutoAdvancingTimeTest,
@@ -1078,7 +1079,7 @@ TEST_P(TaskQueueThrottlerWithAutoAdvancingTimeTest,
 
   std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
       timer_queue_->CreateQueueEnabledVoter();
-  voter->SetQueueEnabled(false);
+  voter->SetVoteToEnable(false);
 
   test_task_runner_->AdvanceMockTickClock(TimeDelta::FromMilliseconds(250));
 
@@ -1087,7 +1088,7 @@ TEST_P(TaskQueueThrottlerWithAutoAdvancingTimeTest,
   EXPECT_THAT(run_times,
               ElementsAre(TimeTicks() + TimeDelta::FromMilliseconds(1000)));
 
-  voter->SetQueueEnabled(true);
+  voter->SetVoteToEnable(true);
   test_task_runner_->FastForwardUntilNoTasksRemain();
 
   EXPECT_THAT(run_times,

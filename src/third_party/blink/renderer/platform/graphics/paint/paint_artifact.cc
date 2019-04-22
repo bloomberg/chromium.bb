@@ -18,6 +18,29 @@ namespace blink {
 
 namespace {
 
+static SkColor DisplayItemBackgroundColor(const DisplayItem& item) {
+  if (item.GetType() != DisplayItem::kBoxDecorationBackground &&
+      item.GetType() != DisplayItem::kDocumentBackground)
+    return SK_ColorTRANSPARENT;
+
+  const auto& drawing_item = static_cast<const DrawingDisplayItem&>(item);
+  const auto record = drawing_item.GetPaintRecord();
+  if (!record)
+    return SK_ColorTRANSPARENT;
+
+  for (cc::PaintOpBuffer::Iterator it(record.get()); it; ++it) {
+    const auto* op = *it;
+    if (op->GetType() == cc::PaintOpType::DrawRect ||
+        op->GetType() == cc::PaintOpType::DrawRRect) {
+      const auto& flags = static_cast<const cc::PaintOpWithFlags*>(op)->flags;
+      // Skip op with looper which may modify the color.
+      if (!flags.getLooper() && flags.getStyle() == cc::PaintFlags::kFill_Style)
+        return flags.getColor();
+    }
+  }
+  return SK_ColorTRANSPARENT;
+}
+
 void ComputeChunkDerivedData(const DisplayItemList& display_items,
                              PaintChunk& chunk) {
   // This happens in tests testing paint chunks without display items.
@@ -25,22 +48,22 @@ void ComputeChunkDerivedData(const DisplayItemList& display_items,
     return;
 
   SkRegion known_to_be_opaque_region;
-  for (const DisplayItem& item : display_items.ItemsInPaintChunk(chunk)) {
+  auto items = display_items.ItemsInPaintChunk(chunk);
+  for (const DisplayItem& item : items) {
     chunk.bounds.Unite(item.VisualRect());
     chunk.outset_for_raster_effects = std::max(chunk.outset_for_raster_effects,
                                                item.OutsetForRasterEffects());
 
-    if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() && item.IsDrawing()) {
+    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
+        item.IsDrawing()) {
       const auto& drawing = static_cast<const DrawingDisplayItem&>(item);
       if (drawing.GetPaintRecord() && drawing.KnownToBeOpaque()) {
-        known_to_be_opaque_region.op(
-            SkIRect(EnclosedIntRect(drawing.VisualRect())),
-            SkRegion::kUnion_Op);
+        known_to_be_opaque_region.op(SkIRect(drawing.VisualRect()),
+                                     SkRegion::kUnion_Op);
       }
     }
 
-    if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled() &&
-        item.IsHitTest()) {
+    if (item.IsHitTest()) {
       const auto& hit_test = static_cast<const HitTestDisplayItem&>(item);
       if (!chunk.hit_test_data)
         chunk.hit_test_data = std::make_unique<HitTestData>();
@@ -48,8 +71,13 @@ void ComputeChunkDerivedData(const DisplayItemList& display_items,
     }
   }
 
-  if (known_to_be_opaque_region.contains(EnclosingIntRect(chunk.bounds)))
+  if (known_to_be_opaque_region.contains(chunk.bounds))
     chunk.known_to_be_opaque = true;
+
+  if (items.begin() != items.end()) {
+    chunk.safe_opaque_background_color =
+        DisplayItemBackgroundColor(*items.begin());
+  }
 }
 
 // For PaintArtifact::AppendDebugDrawing().
@@ -57,9 +85,7 @@ class DebugDrawingClient final : public DisplayItemClient {
  public:
   DebugDrawingClient() { Invalidate(PaintInvalidationReason::kUncacheable); }
   String DebugName() const final { return "DebugDrawing"; }
-  LayoutRect VisualRect() const final {
-    return LayoutRect(LayoutRect::InfiniteIntRect());
-  }
+  IntRect VisualRect() const final { return LayoutRect::InfiniteIntRect(); }
 };
 
 }  // namespace
@@ -100,7 +126,7 @@ void PaintArtifact::AppendDebugDrawing(
     const PropertyTreeState& property_tree_state) {
   DEFINE_STATIC_LOCAL(DebugDrawingClient, debug_drawing_client, ());
 
-  DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
+  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
   auto& display_item =
       display_item_list_.AllocateAndConstruct<DrawingDisplayItem>(
           debug_drawing_client, DisplayItem::kDebugDrawing, std::move(record));
@@ -121,20 +147,17 @@ void PaintArtifact::Replay(cc::PaintCanvas& canvas,
                            const PropertyTreeState& replay_state,
                            const IntPoint& offset) const {
   TRACE_EVENT0("blink,benchmark", "PaintArtifact::replay");
-  scoped_refptr<cc::DisplayItemList> display_item_list =
-      PaintChunksToCcLayer::Convert(
-          PaintChunks(), replay_state, gfx::Vector2dF(offset.X(), offset.Y()),
-          GetDisplayItemList(),
-          cc::DisplayItemList::kToBeReleasedAsPaintOpBuffer);
-  canvas.drawPicture(display_item_list->ReleaseAsRecord());
+  canvas.drawPicture(GetPaintRecord(replay_state, offset));
 }
 
-DISABLE_CFI_PERF
-void PaintArtifact::AppendToDisplayItemList(const FloatSize& visual_rect_offset,
-                                            cc::DisplayItemList& list) const {
-  TRACE_EVENT0("blink,benchmark", "PaintArtifact::AppendToDisplayItemList");
-  for (const DisplayItem& item : display_item_list_)
-    item.AppendToDisplayItemList(visual_rect_offset, list);
+sk_sp<PaintRecord> PaintArtifact::GetPaintRecord(
+    const PropertyTreeState& replay_state,
+    const IntPoint& offset) const {
+  return PaintChunksToCcLayer::Convert(
+             PaintChunks(), replay_state,
+             gfx::Vector2dF(offset.X(), offset.Y()), GetDisplayItemList(),
+             cc::DisplayItemList::kToBeReleasedAsPaintOpBuffer)
+      ->ReleaseAsRecord();
 }
 
 void PaintArtifact::FinishCycle() {
@@ -142,7 +165,8 @@ void PaintArtifact::FinishCycle() {
   // for clearing the property tree changed state at the end of paint instead of
   // in FinishCycle. See: LocalFrameView::RunPaintLifecyclePhase.
   bool clear_property_tree_changed =
-      !RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled();
+      !RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
+      RuntimeEnabledFeatures::CompositeAfterPaintEnabled();
   for (auto& chunk : chunks_) {
     chunk.client_is_just_created = false;
     if (clear_property_tree_changed)

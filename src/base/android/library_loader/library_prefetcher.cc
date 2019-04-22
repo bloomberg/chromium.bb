@@ -328,7 +328,6 @@ void NativeLibraryPrefetcher::MadviseForOrderfile() {
     LOG(WARNING) << "Code not ordered, madvise optimization skipped";
     return;
   }
-  LOG(WARNING) << "Performing experimental madvise from orderfile information";
   // First MADV_RANDOM on all of text, then turn the ordered text range back to
   // normal. The ordered range may be placed anywhere within .text.
   MadviseOnRange(GetTextRange(), MADV_RANDOM);

@@ -15,7 +15,6 @@ var unsupportedMajorProtocolVersion = "100.0";
 var SILENT_FLAG_REQUIRED = "Cannot attach to this target unless " +
     "'silent-debugger-extension-api' flag is enabled.";
 var DETACHED_WHILE_HANDLING = "Detached while handling command.";
-var NOT_ALLOWED = "Not allowed.";
 
 chrome.test.getConfig(config => chrome.test.runTests([
 
@@ -299,28 +298,42 @@ chrome.test.getConfig(config => chrome.test.runTests([
     });
   },
 
-  // https://crbug.com/866426
-  function setDownloadBehavior() {
-    chrome.tabs.create({url: 'inspected.html'}, function(tab) {
-      var debuggee = {tabId: tab.id};
-      chrome.debugger.attach(debuggee, protocolVersion, function() {
-        chrome.test.assertNoLastError();
-        chrome.debugger.sendCommand(debuggee, 'Page.setDownloadBehavior',
-            {behavior: 'allow'}, onResponse);
+  // http://crbug.com/824174
+  function getResponseBodyInvalidChar() {
+    let requestId;
 
-        function onResponse() {
-          var message;
-          try {
-            message = JSON.parse(chrome.runtime.lastError.message).message;
-          } catch (e) {
-          }
-          chrome.debugger.detach(debuggee, () => {
-            if (message === NOT_ALLOWED)
+    function onEvent(debuggeeId, message, params) {
+      if (message === 'Network.responseReceived' &&
+          params.response.url.endsWith('invalid_char.html')) {
+        requestId = params.requestId;
+      } else if (message === 'Network.loadingFinished' &&
+                 params.requestId === requestId) {
+        chrome.debugger.sendCommand(
+            debuggeeId, 'Network.getResponseBody',
+            {requestId: params.requestId}, function(responseBody) {
+              chrome.debugger.onEvent.removeListener(onEvent);
+              chrome.debugger.detach(debuggeeId);
               chrome.test.succeed();
-            else
-              chrome.test.fail('' + message + ' instead of ' + NOT_ALLOWED);
-          });
-        }
+            });
+      }
+    }
+
+    chrome.debugger.onEvent.addListener(onEvent);
+    chrome.tabs.create({url: 'inspected.html'}, function(tab) {
+      const debuggee = {tabId: tab.id};
+      chrome.debugger.attach(debuggee, protocolVersion, function() {
+        chrome.debugger.sendCommand(
+            debuggee, 'Network.enable', null, function() {
+              chrome.debugger.sendCommand(
+                  debuggee, 'Page.enable', null, function() {
+                    // Navigate to a new page after attaching so we don't miss
+                    // any protocol events that we might have missed while
+                    // attaching to the first page.
+                    chrome.debugger.sendCommand(
+                        debuggee, 'Page.navigate',
+                        {url: window.location.origin + '/fetch.html'});
+                  });
+            });
       });
     });
   },

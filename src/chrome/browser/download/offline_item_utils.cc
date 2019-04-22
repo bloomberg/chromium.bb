@@ -4,12 +4,17 @@
 
 #include "chrome/browser/download/offline_item_utils.h"
 
+#include "build/build_config.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/download/public/common/download_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_item_utils.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/download/download_utils.h"
+#endif
 
 using DownloadItem = download::DownloadItem;
 using ContentId = offline_items_collection::ContentId;
@@ -60,9 +65,10 @@ OfflineItemFilter MimeTypeToOfflineItemFilter(const std::string& mime_type) {
 
 OfflineItem OfflineItemUtils::CreateOfflineItem(const std::string& name_space,
                                                 DownloadItem* download_item) {
+  auto* browser_context =
+      content::DownloadItemUtils::GetBrowserContext(download_item);
   bool off_the_record =
-      content::DownloadItemUtils::GetBrowserContext(download_item)
-          ->IsOffTheRecord();
+      browser_context ? browser_context->IsOffTheRecord() : false;
 
   OfflineItem item;
   item.id = ContentId(name_space, download_item->GetGuid());
@@ -77,16 +83,21 @@ OfflineItem OfflineItemUtils::CreateOfflineItem(const std::string& name_space,
   item.externally_removed = download_item->GetFileExternallyRemoved();
   item.creation_time = download_item->GetStartTime();
   item.last_accessed_time = download_item->GetLastAccessTime();
-  item.is_openable = download_item->CanOpenDownload() &&
-                     blink::IsSupportedMimeType(download_item->GetMimeType());
+  item.is_openable = download_item->CanOpenDownload();
   item.file_path = download_item->GetTargetFilePath();
   item.mime_type = download_item->GetMimeType();
+#if defined(OS_ANDROID)
+  item.mime_type = DownloadUtils::RemapGenericMimeType(
+      item.mime_type, download_item->GetOriginalUrl(),
+      download_item->GetTargetFilePath().value());
+#endif
 
   item.page_url = download_item->GetTabUrl();
   item.original_url = download_item->GetOriginalUrl();
   item.is_off_the_record = off_the_record;
 
   item.is_resumable = download_item->CanResume();
+  item.allow_metered = download_item->AllowMetered();
   item.received_bytes = download_item->GetReceivedBytes();
   item.is_dangerous = download_item->IsDangerous();
 
@@ -94,9 +105,9 @@ OfflineItem OfflineItemUtils::CreateOfflineItem(const std::string& name_space,
   bool time_remaining_known = download_item->TimeRemaining(&time_delta);
   item.time_remaining_ms = time_remaining_known ? time_delta.InMilliseconds()
                                                 : kUnknownRemainingTime;
-  // TODO(crbug.com/857549): Add allow_metered, fail_state, pending_state.
   item.fail_state =
       ConvertDownloadInterruptReasonToFailState(download_item->GetLastReason());
+  item.can_rename = download_item->GetState() == DownloadItem::COMPLETE;
   switch (download_item->GetState()) {
     case DownloadItem::IN_PROGRESS:
       item.state = download_item->IsPaused() ? OfflineItemState::PAUSED
@@ -110,14 +121,21 @@ OfflineItem OfflineItemUtils::CreateOfflineItem(const std::string& name_space,
     case DownloadItem::CANCELLED:
       item.state = OfflineItemState::CANCELLED;
       break;
-    case DownloadItem::INTERRUPTED:
-      item.state = download_item->CanResume() ? OfflineItemState::INTERRUPTED
-                                              : OfflineItemState::FAILED;
-      break;
+    case DownloadItem::INTERRUPTED: {
+      item.state =
+          download_item->IsPaused()
+              ? OfflineItemState::PAUSED
+              : (download_item->CanResume() ? OfflineItemState::INTERRUPTED
+                                            : OfflineItemState::FAILED);
+    } break;
     default:
       NOTREACHED();
   }
 
+  // TODO(crbug.com/857549): Set pending_state correctly.
+  item.pending_state = item.state == OfflineItemState::INTERRUPTED
+                           ? PendingState::PENDING_NETWORK
+                           : PendingState::NOT_PENDING;
   item.progress.value = download_item->GetReceivedBytes();
   if (download_item->PercentComplete() != -1)
     item.progress.max = download_item->GetTotalBytes();
@@ -267,4 +285,25 @@ base::string16 OfflineItemUtils::GetFailStateMessage(FailState fail_state) {
   }
 
   return l10n_util::GetStringUTF16(string_id);
+}
+
+// static
+RenameResult OfflineItemUtils::ConvertDownloadRenameResultToRenameResult(
+    DownloadRenameResult download_rename_result) {
+  assert(static_cast<int>(DownloadRenameResult::RESULT_MAX) ==
+         static_cast<int>(RenameResult::kMaxValue));
+  switch (download_rename_result) {
+    case DownloadRenameResult::SUCCESS:
+      return RenameResult::SUCCESS;
+    case DownloadRenameResult::FAILURE_NAME_CONFLICT:
+      return RenameResult::FAILURE_NAME_CONFLICT;
+    case DownloadRenameResult::FAILURE_NAME_TOO_LONG:
+      return RenameResult::FAILURE_NAME_TOO_LONG;
+    case DownloadRenameResult::FAILURE_NAME_INVALID:
+      return RenameResult::FAILURE_NAME_INVALID;
+    case DownloadRenameResult::FAILURE_UNAVAILABLE:
+      return RenameResult::FAILURE_UNAVAILABLE;
+    case DownloadRenameResult::FAILURE_UNKNOWN:
+      return RenameResult::FAILURE_UNKNOWN;
+  }
 }

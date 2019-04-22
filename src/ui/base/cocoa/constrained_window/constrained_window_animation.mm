@@ -10,8 +10,8 @@
 #include "base/files/file_path.h"
 #include "base/location.h"
 #import "base/mac/foundation_util.h"
-#include "base/macros.h"
 #include "base/native_library.h"
+#include "base/stl_util.h"
 #include "ui/gfx/animation/tween.h"
 
 // The window animations in this file use private APIs as described here:
@@ -325,7 +325,7 @@ bool AreWindowServerEffectsDisabled() {
   };
 
   CGFloat scale = 1;
-  for (int i = arraysize(frames) - 1; i >= 0; --i) {
+  for (int i = base::size(frames) - 1; i >= 0; --i) {
     if (value >= frames[i].value) {
       CGFloat delta = frames[i + 1].value - frames[i].value;
       CGFloat frame_progress = (value - frames[i].value) / delta;

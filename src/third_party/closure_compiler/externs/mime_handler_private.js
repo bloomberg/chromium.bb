@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,3 +47,9 @@ chrome.mimeHandlerPrivate.abortStream = function(callback) {};
  * @param {function():void=} callback
  */
 chrome.mimeHandlerPrivate.setShowBeforeUnloadDialog = function(showDialog, callback) {};
+
+/**
+ * Fired when the browser wants the listener to perform a save.
+ * @type {!ChromeEvent}
+ */
+chrome.mimeHandlerPrivate.onSave;

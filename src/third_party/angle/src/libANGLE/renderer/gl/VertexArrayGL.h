@@ -11,6 +11,10 @@
 
 #include "libANGLE/renderer/VertexArrayImpl.h"
 
+#include "common/mathutil.h"
+#include "libANGLE/Context.h"
+#include "libANGLE/renderer/gl/ContextGL.h"
+
 namespace rx
 {
 
@@ -35,7 +39,7 @@ class VertexArrayGL : public VertexArrayImpl
     angle::Result syncDrawElementsState(const gl::Context *context,
                                         const gl::AttributesMask &activeAttributesMask,
                                         GLsizei count,
-                                        GLenum type,
+                                        gl::DrawElementsType type,
                                         const void *indices,
                                         GLsizei instanceCount,
                                         bool primitiveRestartEnabled,
@@ -46,8 +50,8 @@ class VertexArrayGL : public VertexArrayImpl
 
     angle::Result syncState(const gl::Context *context,
                             const gl::VertexArray::DirtyBits &dirtyBits,
-                            const gl::VertexArray::DirtyAttribBitsArray &attribBits,
-                            const gl::VertexArray::DirtyBindingBitsArray &bindingBits) override;
+                            gl::VertexArray::DirtyAttribBitsArray *attribBits,
+                            gl::VertexArray::DirtyBindingBitsArray *bindingBits) override;
 
     void applyNumViewsToDivisor(int numViews);
     void applyActiveAttribLocationsMask(const gl::AttributesMask &activeMask);
@@ -57,7 +61,7 @@ class VertexArrayGL : public VertexArrayImpl
                                 const gl::AttributesMask &activeAttributesMask,
                                 GLint first,
                                 GLsizei count,
-                                GLenum type,
+                                gl::DrawElementsType type,
                                 const void *indices,
                                 GLsizei instanceCount,
                                 bool primitiveRestartEnabled,
@@ -66,7 +70,7 @@ class VertexArrayGL : public VertexArrayImpl
     // Apply index data, only sets outIndexRange if attributesNeedStreaming is true
     angle::Result syncIndexData(const gl::Context *context,
                                 GLsizei count,
-                                GLenum type,
+                                gl::DrawElementsType type,
                                 const void *indices,
                                 bool primitiveRestartEnabled,
                                 bool attributesNeedStreaming,
@@ -131,6 +135,21 @@ class VertexArrayGL : public VertexArrayImpl
     mutable size_t mStreamingArrayBufferSize;
     mutable GLuint mStreamingArrayBuffer;
 };
+
+ANGLE_INLINE angle::Result VertexArrayGL::syncDrawElementsState(
+    const gl::Context *context,
+    const gl::AttributesMask &activeAttributesMask,
+    GLsizei count,
+    gl::DrawElementsType type,
+    const void *indices,
+    GLsizei instanceCount,
+    bool primitiveRestartEnabled,
+    const void **outIndices) const
+{
+    return syncDrawState(context, activeAttributesMask, 0, count, type, indices, instanceCount,
+                         primitiveRestartEnabled, outIndices);
+}
+
 }  // namespace rx
 
 #endif  // LIBANGLE_RENDERER_GL_VERTEXARRAYGL_H_

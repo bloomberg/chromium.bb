@@ -115,12 +115,6 @@ CompositorFrameBuilder& CompositorFrameBuilder::SetReferencedSurfaces(
   return *this;
 }
 
-CompositorFrameBuilder& CompositorFrameBuilder::SetFrameToken(
-    uint32_t frame_token) {
-  frame_->metadata.frame_token = frame_token;
-  return *this;
-}
-
 CompositorFrameBuilder& CompositorFrameBuilder::SetContentSourceId(
     uint32_t content_source_id) {
   frame_->metadata.content_source_id = content_source_id;
@@ -134,18 +128,13 @@ CompositorFrameBuilder& CompositorFrameBuilder::SetSendFrameTokenToEmbedder(
   return *this;
 }
 
-CompositorFrameBuilder& CompositorFrameBuilder::SetRequestPresentationFeedback(
-    bool request) {
-  DCHECK(frame_->metadata.frame_token);
-  frame_->metadata.request_presentation_feedback = request;
-  return *this;
-}
-
 CompositorFrame CompositorFrameBuilder::MakeInitCompositorFrame() const {
+  static FrameTokenGenerator next_token;
   CompositorFrame frame;
   frame.metadata.begin_frame_ack = BeginFrameAck::CreateManualAckWithDamage();
   frame.metadata.device_scale_factor = 1.f;
   frame.metadata.local_surface_id_allocation_time = base::TimeTicks::Now();
+  frame.metadata.frame_token = ++next_token;
   return frame;
 }
 

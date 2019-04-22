@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/containers/flat_map.h"
 #include "base/memory/ref_counted.h"
 #include "components/update_client/update_client.h"
 
@@ -22,11 +21,6 @@ class DictionaryValue;
 class FilePath;
 }
 
-namespace network {
-class SharedURLLoaderFactory;
-class SimpleURLLoader;
-}  // namespace network
-
 namespace update_client {
 
 class Component;
@@ -36,20 +30,6 @@ struct CrxComponent;
 // Installer attributes are component-specific metadata, which may be serialized
 // in an update check request.
 using InstallerAttribute = std::pair<std::string, std::string>;
-
-using LoadCompleteCallback =
-    base::OnceCallback<void(std::unique_ptr<std::string> response_body)>;
-
-// Sends a protocol request to the the service endpoint specified by |url|.
-// The body of the request is provided by |protocol_request| and it is
-// expected to contain XML data. The caller owns the returned object.
-std::unique_ptr<network::SimpleURLLoader> SendProtocolRequest(
-    const GURL& url,
-    const base::flat_map<std::string, std::string>&
-        protocol_request_extra_headers,
-    const std::string& protocol_request,
-    LoadCompleteCallback callback,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
 
 // Returns true if the |component| contains a valid differential update url.
 bool HasDiffUpdate(const Component& component);

@@ -20,7 +20,7 @@ class V0CustomElementMicrotaskQueueBase
   bool IsEmpty() const { return queue_.IsEmpty(); }
   void Dispatch();
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
 #if !defined(NDEBUG)
   void Show(unsigned indent);

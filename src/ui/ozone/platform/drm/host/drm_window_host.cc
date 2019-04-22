@@ -11,11 +11,12 @@
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
 #include "ui/events/ozone/events_ozone.h"
 #include "ui/events/platform/platform_event_source.h"
+#include "ui/ozone/platform/drm/common/drm_overlay_manager.h"
 #include "ui/ozone/platform/drm/host/drm_cursor.h"
 #include "ui/ozone/platform/drm/host/drm_display_host.h"
 #include "ui/ozone/platform/drm/host/drm_display_host_manager.h"
-#include "ui/ozone/platform/drm/host/drm_overlay_manager.h"
 #include "ui/ozone/platform/drm/host/drm_window_host_manager.h"
+#include "ui/ozone/platform/drm/host/gpu_thread_adapter.h"
 #include "ui/platform_window/platform_window_delegate.h"
 
 namespace ui {
@@ -218,7 +219,8 @@ void DrmWindowHost::SendBoundsChange() {
   cursor_->CommitBoundsChange(widget_, bounds_, GetCursorConfinedBounds());
   sender_->GpuWindowBoundsChanged(widget_, bounds_);
 
-  overlay_manager_->ResetCache();
+  if (overlay_manager_)
+    overlay_manager_->ResetCache();
 }
 
 }  // namespace ui

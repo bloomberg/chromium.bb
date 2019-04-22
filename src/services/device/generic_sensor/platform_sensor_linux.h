@@ -7,10 +7,6 @@
 
 #include "services/device/generic_sensor/platform_sensor.h"
 
-namespace base {
-class SingleThreadTaskRunner;
-}
-
 namespace device {
 
 class SensorReader;
@@ -18,12 +14,10 @@ struct SensorInfoLinux;
 
 class PlatformSensorLinux : public PlatformSensor {
  public:
-  PlatformSensorLinux(
-      mojom::SensorType type,
-      SensorReadingSharedBuffer* reading_buffer,
-      PlatformSensorProvider* provider,
-      const SensorInfoLinux* sensor_device,
-      scoped_refptr<base::SingleThreadTaskRunner> polling_thread_task_runner);
+  PlatformSensorLinux(mojom::SensorType type,
+                      SensorReadingSharedBuffer* reading_buffer,
+                      PlatformSensorProvider* provider,
+                      const SensorInfoLinux* sensor_device);
 
   mojom::ReportingMode GetReportingMode() override;
 
@@ -44,8 +38,6 @@ class PlatformSensorLinux : public PlatformSensor {
  private:
   const PlatformSensorConfiguration default_configuration_;
   const mojom::ReportingMode reporting_mode_;
-
-  scoped_refptr<base::SingleThreadTaskRunner> polling_thread_task_runner_;
 
   // A sensor reader that reads values from sensor files
   // and stores them to a SensorReading structure.

@@ -9,6 +9,7 @@
 
 #include <vector>
 
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
@@ -132,8 +133,8 @@ class DownloadFeedbackServiceTest : public testing::Test {
   void TearDown() override { DownloadFeedback::RegisterFactory(nullptr); }
 
   base::FilePath CreateTestFile(int n) const {
-    base::FilePath upload_file_path(
-        temp_dir_.GetPath().AppendASCII("test file " + base::IntToString(n)));
+    base::FilePath upload_file_path(temp_dir_.GetPath().AppendASCII(
+        "test file " + base::NumberToString(n)));
     const std::string upload_file_data = "data";
     int wrote = base::WriteFile(upload_file_path, upload_file_data.data(),
                                 upload_file_data.size());

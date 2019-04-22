@@ -14,6 +14,7 @@
 #include "SkTemplates.h"
 #include "GrXferProcessor.h"
 
+struct GrUserStencilSettings;
 class GrAppliedClip;
 class GrXPFactory;
 
@@ -81,13 +82,10 @@ public:
         bool isInitialized() const { return fIsInitialized; }
         bool usesLocalCoords() const { return fUsesLocalCoords; }
         bool requiresDstTexture() const { return fRequiresDstTexture; }
-        bool canCombineOverlappedStencilAndCover() const {
-            return fCanCombineOverlappedStencilAndCover;
-        }
-        bool requiresBarrierBetweenOverlappingDraws() const {
-            return fRequiresBarrierBetweenOverlappingDraws;
-        }
+        bool requiresNonOverlappingDraws() const { return fRequiresNonOverlappingDraws; }
         bool isCompatibleWithCoverageAsAlpha() const { return fCompatibleWithCoverageAsAlpha; }
+        // Indicates whether all color fragment processors were eliminated in the analysis.
+        bool hasColorFragmentProcessor() const { return fHasColorFragmentProcessor; }
 
         bool inputColorIsIgnored() const { return fInputColorType == kIgnored_InputColorType; }
         bool inputColorIsOverridden() const {
@@ -99,8 +97,8 @@ public:
                 : fUsesLocalCoords(false)
                 , fCompatibleWithCoverageAsAlpha(true)
                 , fRequiresDstTexture(false)
-                , fCanCombineOverlappedStencilAndCover(true)
-                , fRequiresBarrierBetweenOverlappingDraws(false)
+                , fRequiresNonOverlappingDraws(false)
+                , fHasColorFragmentProcessor(false)
                 , fIsInitialized(true)
                 , fInputColorType(kOriginal_InputColorType) {}
         enum InputColorType : uint32_t {
@@ -116,8 +114,8 @@ public:
         PackedBool fUsesLocalCoords : 1;
         PackedBool fCompatibleWithCoverageAsAlpha : 1;
         PackedBool fRequiresDstTexture : 1;
-        PackedBool fCanCombineOverlappedStencilAndCover : 1;
-        PackedBool fRequiresBarrierBetweenOverlappingDraws : 1;
+        PackedBool fRequiresNonOverlappingDraws : 1;
+        PackedBool fHasColorFragmentProcessor : 1;
         PackedBool fIsInitialized : 1;
         PackedInputColorType fInputColorType : 2;
 
@@ -139,9 +137,9 @@ public:
      * that owns a processor set is recorded to ensure pending and writes are propagated to
      * resources referred to by the processors. Otherwise, data hazards may occur.
      */
-    Analysis finalize(const GrProcessorAnalysisColor& colorInput,
-                      const GrProcessorAnalysisCoverage coverageInput, const GrAppliedClip*,
-                      bool isMixedSamples, const GrCaps&, SkPMColor4f* inputColorOverride);
+    Analysis finalize(const GrProcessorAnalysisColor&, const GrProcessorAnalysisCoverage,
+                      const GrAppliedClip*, const GrUserStencilSettings*, GrFSAAType, const GrCaps&,
+                      GrClampType, SkPMColor4f* inputColorOverride);
 
     bool isFinalized() const { return SkToBool(kFinalized_Flag & fFlags); }
 

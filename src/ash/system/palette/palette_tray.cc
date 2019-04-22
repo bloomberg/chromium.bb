@@ -25,6 +25,7 @@
 #include "ash/system/tray/tray_container.h"
 #include "ash/system/tray/tray_popup_item_style.h"
 #include "ash/system/tray/tray_popup_utils.h"
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -314,8 +315,11 @@ void PaletteTray::HideBubbleWithView(const TrayBubbleView* bubble_view) {
     HidePalette();
 }
 
-void PaletteTray::OnTouchscreenDeviceConfigurationChanged() {
-  UpdateIconVisibility();
+void PaletteTray::OnInputDeviceConfigurationChanged(
+    uint8_t input_device_types) {
+  if (input_device_types & ui::InputDeviceEventObserver::kTouchscreen) {
+    UpdateIconVisibility();
+  }
 }
 
 void PaletteTray::OnStylusStateChanged(ui::StylusState stylus_state) {
@@ -364,7 +368,7 @@ base::string16 PaletteTray::GetAccessibleNameForBubble() {
 }
 
 bool PaletteTray::ShouldEnableExtraKeyboardAccessibility() {
-  return Shell::Get()->accessibility_controller()->IsSpokenFeedbackEnabled();
+  return Shell::Get()->accessibility_controller()->spoken_feedback_enabled();
 }
 
 void PaletteTray::HideBubble(const TrayBubbleView* bubble_view) {
@@ -478,7 +482,7 @@ void PaletteTray::ShowBubble(bool show_by_click) {
   init_params.delegate = this;
   init_params.parent_window = GetBubbleWindowContainer();
   init_params.anchor_view = GetBubbleAnchor();
-  init_params.anchor_alignment = GetAnchorAlignment();
+  init_params.shelf_alignment = shelf()->alignment();
   init_params.min_width = kPaletteWidth;
   init_params.max_width = kPaletteWidth;
   init_params.close_on_deactivate = true;

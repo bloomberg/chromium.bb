@@ -17,8 +17,6 @@ class PhotoCapabilities final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static PhotoCapabilities* Create();
-
   PhotoCapabilities() = default;
   ~PhotoCapabilities() override = default;
 

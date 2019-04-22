@@ -16,12 +16,11 @@
 
 #include "api/array_view.h"
 #include "api/rtp_headers.h"
-#include "api/video/hdr_metadata.h"
+#include "api/video/color_space.h"
 #include "api/video/video_content_type.h"
 #include "api/video/video_frame_marking.h"
 #include "api/video/video_rotation.h"
 #include "api/video/video_timing.h"
-#include "common_types.h"  // NOLINT(build/include)
 #include "modules/rtp_rtcp/include/rtp_rtcp_defines.h"
 
 namespace webrtc {
@@ -81,9 +80,38 @@ class TransportSequenceNumber {
   static constexpr const char kUri[] =
       "http://www.ietf.org/id/"
       "draft-holmer-rmcat-transport-wide-cc-extensions-01";
-  static bool Parse(rtc::ArrayView<const uint8_t> data, uint16_t* value);
-  static size_t ValueSize(uint16_t value) { return kValueSizeBytes; }
-  static bool Write(rtc::ArrayView<uint8_t> data, uint16_t value);
+  static bool Parse(rtc::ArrayView<const uint8_t> data,
+                    uint16_t* transport_sequence_number);
+  static size_t ValueSize(uint16_t /*transport_sequence_number*/) {
+    return kValueSizeBytes;
+  }
+  static bool Write(rtc::ArrayView<uint8_t> data,
+                    uint16_t transport_sequence_number);
+};
+
+class TransportSequenceNumberV2 {
+ public:
+  static constexpr RTPExtensionType kId =
+      kRtpExtensionTransportSequenceNumber02;
+  static constexpr uint8_t kValueSizeBytes = 4;
+  static constexpr uint8_t kValueSizeBytesWithoutFeedbackRequest = 2;
+  static constexpr const char kUri[] =
+      "http://www.webrtc.org/experiments/rtp-hdrext/transport-wide-cc-02";
+  static bool Parse(rtc::ArrayView<const uint8_t> data,
+                    uint16_t* transport_sequence_number,
+                    absl::optional<FeedbackRequest>* feedback_request);
+  static size_t ValueSize(
+      uint16_t /*transport_sequence_number*/,
+      const absl::optional<FeedbackRequest>& feedback_request) {
+    return feedback_request ? kValueSizeBytes
+                            : kValueSizeBytesWithoutFeedbackRequest;
+  }
+  static bool Write(rtc::ArrayView<uint8_t> data,
+                    uint16_t transport_sequence_number,
+                    const absl::optional<FeedbackRequest>& feedback_request);
+
+ private:
+  static constexpr uint16_t kIncludeTimestampsBit = 1 << 15;
 };
 
 class VideoOrientation {
@@ -182,27 +210,40 @@ class FrameMarkingExtension {
   static bool IsScalable(uint8_t temporal_id, uint8_t layer_id);
 };
 
-class HdrMetadataExtension {
+class ColorSpaceExtension {
  public:
-  using value_type = HdrMetadata;
-  static constexpr RTPExtensionType kId = kRtpExtensionHdrMetadata;
-  static constexpr uint8_t kValueSizeBytes = 30;
-  // TODO(webrtc:8651): Change to a valid uri.
-  static constexpr const char kUri[] = "rtp-hdr-metadata-uri-placeholder";
+  using value_type = ColorSpace;
+  static constexpr RTPExtensionType kId = kRtpExtensionColorSpace;
+  static constexpr uint8_t kValueSizeBytes = 28;
+  static constexpr uint8_t kValueSizeBytesWithoutHdrMetadata = 4;
+  static constexpr const char kUri[] =
+      "http://www.webrtc.org/experiments/rtp-hdrext/color-space";
 
   static bool Parse(rtc::ArrayView<const uint8_t> data,
-                    HdrMetadata* hdr_metadata);
-  static size_t ValueSize(const HdrMetadata&) { return kValueSizeBytes; }
+                    ColorSpace* color_space);
+  static size_t ValueSize(const ColorSpace& color_space) {
+    return color_space.hdr_metadata() ? kValueSizeBytes
+                                      : kValueSizeBytesWithoutHdrMetadata;
+  }
   static bool Write(rtc::ArrayView<uint8_t> data,
-                    const HdrMetadata& hdr_metadata);
+                    const ColorSpace& color_space);
 
  private:
-  static constexpr int kChromaticityDenominator = 10000;  // 0.0001 resolution.
-  static constexpr int kLuminanceMaxDenominator = 100;    // 0.01 resolution.
+  static constexpr int kChromaticityDenominator = 50000;  // 0.00002 resolution.
+  static constexpr int kLuminanceMaxDenominator = 1;      // 1 resolution.
   static constexpr int kLuminanceMinDenominator = 10000;  // 0.0001 resolution.
+
+  static uint8_t CombineRangeAndChromaSiting(
+      ColorSpace::RangeID range,
+      ColorSpace::ChromaSiting chroma_siting_horizontal,
+      ColorSpace::ChromaSiting chroma_siting_vertical);
+  static size_t ParseHdrMetadata(rtc::ArrayView<const uint8_t> data,
+                                 HdrMetadata* hdr_metadata);
   static size_t ParseChromaticity(const uint8_t* data,
                                   HdrMasteringMetadata::Chromaticity* p);
   static size_t ParseLuminance(const uint8_t* data, float* f, int denominator);
+  static size_t WriteHdrMetadata(rtc::ArrayView<uint8_t> data,
+                                 const HdrMetadata& hdr_metadata);
   static size_t WriteChromaticity(uint8_t* data,
                                   const HdrMasteringMetadata::Chromaticity& p);
   static size_t WriteLuminance(uint8_t* data, float f, int denominator);
@@ -216,14 +257,6 @@ class BaseRtpStringExtension {
   // String RTP header extensions are limited to 16 bytes because it is the
   // maximum length that can be encoded with one-byte header extensions.
   static constexpr uint8_t kMaxValueSizeBytes = 16;
-
-  static bool Parse(rtc::ArrayView<const uint8_t> data,
-                    StringRtpHeaderExtension* str);
-  static size_t ValueSize(const StringRtpHeaderExtension& str) {
-    return str.size();
-  }
-  static bool Write(rtc::ArrayView<uint8_t> data,
-                    const StringRtpHeaderExtension& str);
 
   static bool Parse(rtc::ArrayView<const uint8_t> data, std::string* str);
   static size_t ValueSize(const std::string& str) { return str.size(); }

@@ -125,11 +125,11 @@ TEST_F(GServicesSettingsTest, UpdateFromLoadResultWithSettingMissing) {
 TEST_F(GServicesSettingsTest, UpdateFromLoadResult) {
   GCMStore::LoadResult result;
   result.gservices_settings["checkin_interval"] =
-      base::Int64ToString(kAlternativeCheckinInterval);
+      base::NumberToString(kAlternativeCheckinInterval);
   result.gservices_settings["checkin_url"] = kAlternativeCheckinURL;
   result.gservices_settings["gcm_hostname"] = kAlternativeMCSHostname;
   result.gservices_settings["gcm_secure_port"] =
-      base::IntToString(kAlternativeMCSSecurePort);
+      base::NumberToString(kAlternativeMCSSecurePort);
   result.gservices_settings["gcm_registration_url"] =
       kAlternativeRegistrationURL;
   result.gservices_digest = kAlternativeSettingsDigest;

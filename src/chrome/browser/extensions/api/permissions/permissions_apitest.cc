@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/extension_with_management_policy_apitest.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "extensions/browser/extension_prefs.h"
@@ -82,15 +83,14 @@ IN_PROC_BROWSER_TEST_F(PermissionsApiTest, OptionalPermissionsGranted) {
   // Mark all the tested APIs as granted to bypass the confirmation UI.
   APIPermissionSet apis;
   apis.insert(APIPermission::kBookmark);
-  ManifestPermissionSet manifest_permissions;
   URLPatternSet explicit_hosts;
   AddPattern(&explicit_hosts, "http://*.c.com/*");
 
   ExtensionPrefs* prefs = ExtensionPrefs::Get(browser()->profile());
   prefs->AddRuntimeGrantedPermissions(
       "kjmkgkdkpedkejedfhmfcenooemhbpbo",
-      PermissionSet(apis, manifest_permissions, explicit_hosts,
-                    URLPatternSet()));
+      PermissionSet(std::move(apis), ManifestPermissionSet(),
+                    std::move(explicit_hosts), URLPatternSet()));
 
   PermissionsRequestFunction::SetIgnoreUserGestureForTests(true);
   ASSERT_TRUE(StartEmbeddedTestServer());
@@ -117,7 +117,7 @@ IN_PROC_BROWSER_TEST_F(PermissionsApiTest, OptionalPermissionsDeny) {
   ExtensionPrefs* prefs = ExtensionPrefs::Get(browser()->profile());
   prefs->AddRuntimeGrantedPermissions(
       "kjmkgkdkpedkejedfhmfcenooemhbpbo",
-      PermissionSet(apis, ManifestPermissionSet(), URLPatternSet(),
+      PermissionSet(std::move(apis), ManifestPermissionSet(), URLPatternSet(),
                     URLPatternSet()));
 
   PermissionsRequestFunction::SetAutoConfirmForTests(false);
@@ -183,6 +183,30 @@ IN_PROC_BROWSER_TEST_F(PermissionsApiTest, OptionalPermissionsFileAccess) {
   // that the extension actually has file access, since that'd be the bug
   // that this is supposed to be testing).
   // EXPECT_TRUE(prefs->AllowFileAccess("hlonmbgfjccgolnaboonlakjckinmhmd"));
+}
+
+// Tests loading of files or directory listings when an extension has file
+// access.
+IN_PROC_BROWSER_TEST_F(PermissionsApiTest, FileLoad) {
+  base::ScopedTempDir temp_dir;
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+    base::FilePath empty_file = temp_dir.GetPath().AppendASCII("empty.html");
+    base::FilePath original_empty_file = ui_test_utils::GetTestFilePath(
+        base::FilePath(), base::FilePath().AppendASCII("empty.html"));
+
+    EXPECT_TRUE(base::PathExists(original_empty_file));
+    EXPECT_TRUE(base::CopyFile(original_empty_file, empty_file));
+  }
+  EXPECT_TRUE(RunExtensionTestWithFlagsAndArg(
+      "permissions/file_load", temp_dir.GetPath().MaybeAsASCII().c_str(),
+      kFlagEnableFileAccess))
+      << message_;
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    ASSERT_TRUE(temp_dir.Delete());
+  }
 }
 
 // Test requesting, querying, and removing host permissions for host

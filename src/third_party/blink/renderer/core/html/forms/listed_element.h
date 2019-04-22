@@ -27,23 +27,31 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
 class ContainerNode;
 class Document;
+class Element;
 class FormAttributeTargetObserver;
+class FormControlState;
 class FormData;
 class HTMLElement;
 class HTMLFormElement;
 class Node;
+class ValidationMessageClient;
 class ValidityState;
 
-// https://html.spec.whatwg.org/multipage/forms.html#category-listed
+// https://html.spec.whatwg.org/C/#category-listed
 class CORE_EXPORT ListedElement : public GarbageCollectedMixin {
  public:
   virtual ~ListedElement();
+  // Returns a valid ListedElement pointer if the specified element is an
+  // instance of a ListedElement subclass, or a form-associated custom element.
+  // Returns nullptr otherwise.
+  static ListedElement* From(Element& element);
 
   static HTMLFormElement* FindAssociatedForm(const HTMLElement*,
                                              const AtomicString& form_id,
@@ -69,11 +77,14 @@ class CORE_EXPORT ListedElement : public GarbageCollectedMixin {
 
   void FormRemovedFromTree(const Node& form_root);
 
-  // ValidityState attribute implementations
-  bool CustomError() const;
+  bool WillValidate() const;
 
-  // Override functions for patterMismatch, rangeOverflow, rangerUnderflow,
-  // stepMismatch, tooLong, tooShort and valueMissing must call willValidate
+  // ValidityState attribute implementations
+  virtual bool CustomError() const;
+
+  // Functions for ValidityState interface methods.
+  // Override functions for PatterMismatch, RangeOverflow, RangerUnderflow,
+  // StepMismatch, TooLong, TooShort and ValueMissing must call WillValidate
   // method.
   virtual bool HasBadInput() const;
   virtual bool PatternMismatch() const;
@@ -84,23 +95,75 @@ class CORE_EXPORT ListedElement : public GarbageCollectedMixin {
   virtual bool TooShort() const;
   virtual bool TypeMismatch() const;
   virtual bool ValueMissing() const;
+  bool Valid() const;
+
+  using List = HeapVector<Member<ListedElement>>;
+
   virtual String validationMessage() const;
   virtual String ValidationSubMessage() const;
-  bool Valid() const;
   virtual void setCustomValidity(const String&);
+  void UpdateVisibleValidationMessage();
+  void HideVisibleValidationMessage();
+  bool checkValidity(List* unhandled_invalid_controls = nullptr);
+  bool reportValidity();
+  // This must be called only after the caller check the element is focusable.
+  void ShowValidationMessage();
+  bool IsValidationMessageVisible() const;
+  void FindCustomValidationMessageTextDirection(const String& message,
+                                                TextDirection& message_dir,
+                                                String& sub_message,
+                                                TextDirection& sub_message_dir);
 
+  // For Element::IsValidElement(), which is for :valid :invalid selectors.
+  bool IsValidElement();
+  // Returns true if
+  //  - this is not a candidate for constraint validation, or
+  //    https://html.spec.whatwg.org/C/#candidate-for-constraint-validation
+  //  - this satisfies its constraints
+  //    https://html.spec.whatwg.org/C/#concept-fv-valid
+  bool IsNotCandidateOrValid();
+
+  // This must be called when a validation constraint or control value is
+  // changed.
+  void SetNeedsValidityCheck();
+
+  // This should be called when |disabled| content attribute is changed.
+  virtual void DisabledAttributeChanged();
+  // Override this if you want to know 'disabled' state changes immediately.
+  virtual void DisabledStateMightBeChanged() {}
+  // This should be called when |form| content attribute is changed.
+  void FormAttributeChanged();
+  // This is for FormAttributeTargteObserver class.
   void FormAttributeTargetChanged();
+  // This should be called in Node::InsertedInto().
   void InsertedInto(ContainerNode&);
+  // This should be called in Node::RemovedFrom().
   void RemovedFrom(ContainerNode&);
+  // This should be called in Node::DidMoveToDocument().
   void DidMoveToNewDocument(Document& old_document);
+  // This is for HTMLFieldSetElement class.
   void AncestorDisabledStateWasChanged();
 
-  // https://html.spec.whatwg.org/multipage/semantics-other.html#concept-element-disabled
+  // https://html.spec.whatwg.org/C/#concept-element-disabled
   bool IsActuallyDisabled() const;
 
-  typedef HeapVector<Member<ListedElement>> List;
+  // Returns a static value of class-level support of the state restore
+  // feature.  If a sub-class of ListedElement supports the state restore
+  // feature, this function should return true.
+  virtual bool ClassSupportsStateRestore() const;
+  // Returns a flag to represent support of the state restore feature per
+  // instances.
+  virtual bool ShouldSaveAndRestoreFormControlState() const;
+  virtual FormControlState SaveFormControlState() const;
+  // The specified FormControlState must have at least one string value.
+  virtual void RestoreFormControlState(const FormControlState& state);
+  // This should be called whenever an element supports state restore changes
+  // its state.
+  void NotifyFormStateChanged();
+  // This should be called in Element::FinishParsingChildren() override.
+  void TakeStateAndRestore();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   ListedElement();
@@ -109,7 +172,6 @@ class CORE_EXPORT ListedElement : public GarbageCollectedMixin {
   // setForm is confusing.
   void SetForm(HTMLFormElement*);
   void AssociateByParser(HTMLFormElement*);
-  void FormAttributeChanged();
 
   // If you add an override of willChangeForm() or didChangeForm() to a class
   // derived from this one, you will need to add a call to setForm(0) to the
@@ -117,9 +179,13 @@ class CORE_EXPORT ListedElement : public GarbageCollectedMixin {
   virtual void WillChangeForm();
   virtual void DidChangeForm();
 
-  String CustomValidationMessage() const;
+  // This must be called any time the result of WillValidate() has changed.
+  void UpdateWillValidateCache();
+  virtual bool RecalcWillValidate() const;
 
-  virtual void DisabledAttributeChanged();
+  String CustomValidationMessage() const;
+  // This is just a setter. This doesn't set |customError| flag.
+  void SetCustomValidationMessage(const String& message);
 
   // False; There are no FIELDSET ancestors.
   // True; There might be a FIELDSET ancestor, and thre might be no
@@ -130,17 +196,42 @@ class CORE_EXPORT ListedElement : public GarbageCollectedMixin {
   void UpdateAncestorDisabledState() const;
   void SetFormAttributeTargetObserver(FormAttributeTargetObserver*);
   void ResetFormAttributeTargetObserver();
+  // Requests validity recalc for the form owner, if one exists.
+  void FormOwnerSetNeedsValidityCheck();
+  // Requests validity recalc for all ancestor fieldsets, if exist.
+  void FieldSetAncestorsSetNeedsValidityCheck(Node*);
+
+  ValidationMessageClient* GetValidationMessageClient() const;
 
   Member<FormAttributeTargetObserver> form_attribute_target_observer_;
   Member<HTMLFormElement> form_;
   Member<ValidityState> validity_state_;
   String custom_validation_message_;
+  bool has_validation_message_ : 1;
   // If form_was_set_by_parser_ is true, form_ is always non-null.
-  bool form_was_set_by_parser_;
+  bool form_was_set_by_parser_ : 1;
+
+  // The initial value of will_validate_ depends on the derived class. We can't
+  // initialize it with a virtual function in the constructor. will_validate_
+  // is not deterministic as long as will_validate_initialized_ is false.
+  mutable bool will_validate_initialized_ : 1;
+  mutable bool will_validate_ : 1;
+
+  // Cache of IsValidElement().
+  bool is_valid_ : 1;
+  bool validity_is_dirty_ : 1;
 
   enum class AncestorDisabledState { kUnknown, kEnabled, kDisabled };
   mutable AncestorDisabledState ancestor_disabled_state_ =
       AncestorDisabledState::kUnknown;
+
+  enum class DataListAncestorState {
+    kUnknown,
+    kInsideDataList,
+    kNotInsideDataList
+  };
+  mutable enum DataListAncestorState data_list_ancestor_state_ =
+      DataListAncestorState::kUnknown;
 };
 
 CORE_EXPORT HTMLElement* ToHTMLElement(ListedElement*);

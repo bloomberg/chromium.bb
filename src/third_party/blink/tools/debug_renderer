@@ -6,7 +6,7 @@
 # Runs Chrome / content_shell and attaches to the first renderer process in gdb.
 
 RENDERER_PID_RE='Renderer \(([0-9]+)\) paused waiting for debugger'
-TARGET_FLAGS="--no-sandbox --renderer-startup-dialog"
+DEFAULT_TARGET_FLAGS=(--no-sandbox --renderer-startup-dialog)
 TARGET=$1
 shift
 
@@ -14,6 +14,19 @@ if [ -z "$TARGET" ]; then
   echo "usage: $(basename $0) <path-to-content-shell> [more-args...]"
   exit 1
 fi
+
+SAW_DISABLE_FEATURES=false
+for TARGET_FLAG in "$@"; do
+  if [[ "$TARGET_FLAG" == "--disable-features="* ]]; then
+    TARGET_FLAG="$TARGET_FLAG,SpareRendererForSitePerProcess"
+    SAW_DISABLE_FEATURES=true
+  fi
+  TARGET_FLAGS+=("$TARGET_FLAG")
+done
+if [ $SAW_DISABLE_FEATURES != true ]; then
+  DEFAULT_TARGET_FLAGS+=(--disable-features=SpareRendererForSitePerProcess)
+fi
+TARGET_FLAGS=(${DEFAULT_TARGET_FLAGS[@]} ${TARGET_FLAGS[@]})
 
 if [ -z "$DEBUGGER" ]; then
   if which lldb > /dev/null; then
@@ -29,7 +42,8 @@ if [ -z "$DEBUGGER" ]; then
 fi
 
 OUTPUT=$(mktemp "${TMPDIR:-/tmp}"/"$(basename $0)".XXXXX)
-"$TARGET" $TARGET_FLAGS "$@" 2>&1 | tee $OUTPUT &
+echo "$TARGET" ${TARGET_FLAGS[@]} >&2
+"$TARGET" ${TARGET_FLAGS[@]} 2>&1 > >(tee $OUTPUT) &
 BROWSER_PID=$!
 
 wait_renderer_pid() {

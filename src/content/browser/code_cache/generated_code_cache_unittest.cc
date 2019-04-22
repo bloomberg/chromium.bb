@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/browser/code_cache/generated_code_cache.h"
+#include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/test/scoped_task_environment.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -73,13 +74,6 @@ class GeneratedCodeCacheTest : public testing::Test {
         &GeneratedCodeCacheTest::FetchEntryCallback, base::Unretained(this));
     generated_code_cache_->FetchEntry(url, origin_lock, callback);
   }
-
-  void ClearCache() {
-    generated_code_cache_->ClearCache(base::BindRepeating(
-        &GeneratedCodeCacheTest::ClearCacheComplete, base::Unretained(this)));
-  }
-
-  void ClearCacheComplete(int rv) {}
 
   void FetchEntryCallback(const base::Time& response_time,
                           const std::vector<uint8_t>& data) {
@@ -185,6 +179,24 @@ TEST_F(GeneratedCodeCacheTest, WriteEntryWithEmptyData) {
   ASSERT_TRUE(received_);
   ASSERT_TRUE(received_null_);
   EXPECT_EQ(response_time, received_response_time_);
+}
+
+TEST_F(GeneratedCodeCacheTest, WriteEntryFailure) {
+  GURL url(kInitialUrl);
+  GURL origin_lock = GURL(kInitialOrigin);
+
+  InitializeCache(GeneratedCodeCache::CodeCacheType::kJavaScript);
+  base::Time response_time = base::Time::Now();
+  std::string too_big_data(kMaxSizeInBytes * 8, 0);
+  WriteToCache(url, origin_lock, too_big_data, response_time);
+  scoped_task_environment_.RunUntilIdle();
+  FetchFromCache(url, origin_lock);
+  scoped_task_environment_.RunUntilIdle();
+
+  // Fetch should return empty data, with invalid response time.
+  ASSERT_TRUE(received_);
+  ASSERT_TRUE(received_null_);
+  EXPECT_EQ(base::Time(), received_response_time_);
 }
 
 TEST_F(GeneratedCodeCacheTest, FetchEntryPendingOp) {
@@ -302,20 +314,6 @@ TEST_F(GeneratedCodeCacheTest, FetchSucceedsFromDifferentOrigins) {
   scoped_task_environment_.RunUntilIdle();
   ASSERT_TRUE(received_);
   EXPECT_EQ(data_origin1, received_data_);
-}
-
-TEST_F(GeneratedCodeCacheTest, ClearCache) {
-  GURL url("http://example.com/script.js");
-  GURL origin_lock = GURL("http://example.com");
-
-  InitializeCache(GeneratedCodeCache::CodeCacheType::kJavaScript);
-  ClearCache();
-  scoped_task_environment_.RunUntilIdle();
-  FetchFromCache(url, origin_lock);
-  scoped_task_environment_.RunUntilIdle();
-
-  ASSERT_TRUE(received_);
-  ASSERT_TRUE(received_null_);
 }
 
 TEST_F(GeneratedCodeCacheTest, FetchSucceedsEmptyOriginLock) {

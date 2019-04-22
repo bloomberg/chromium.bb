@@ -17,8 +17,8 @@
 #include "remoting/client/plugin/pepper_address_resolver.h"
 #include "remoting/client/plugin/pepper_util.h"
 #include "remoting/protocol/socket_util.h"
-#include "third_party/webrtc/rtc_base/asyncpacketsocket.h"
-#include "third_party/webrtc/rtc_base/nethelpers.h"
+#include "third_party/webrtc/rtc_base/async_packet_socket.h"
+#include "third_party/webrtc/rtc_base/net_helpers.h"
 
 namespace remoting {
 

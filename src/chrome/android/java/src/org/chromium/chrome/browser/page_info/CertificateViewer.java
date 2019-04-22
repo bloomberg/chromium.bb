@@ -94,14 +94,14 @@ class CertificateViewer implements OnItemSelectedListener {
 
         TextView title = new TextView(mContext);
         title.setText(R.string.certtitle);
-        ApiCompatibilityUtils.setTextAlignment(title, View.TEXT_ALIGNMENT_VIEW_START);
+        title.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);
         ApiCompatibilityUtils.setTextAppearance(title, android.R.style.TextAppearance_Large);
         title.setTypeface(title.getTypeface(), Typeface.BOLD);
         title.setPadding(mPadding, mPadding, mPadding, mPadding / 2);
         dialogContainer.addView(title);
 
         Spinner spinner = new Spinner(mContext);
-        ApiCompatibilityUtils.setTextAlignment(spinner, View.TEXT_ALIGNMENT_VIEW_START);
+        spinner.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);
         spinner.setAdapter(arrayAdapter);
         spinner.setOnItemSelectedListener(this);
         spinner.setDropDownWidth(ViewGroup.LayoutParams.MATCH_PARENT);
@@ -207,23 +207,20 @@ class CertificateViewer implements OnItemSelectedListener {
 
     private TextView addLabel(LinearLayout certificateView, String label) {
         TextView t = new TextView(mContext);
-        ApiCompatibilityUtils.setTextAlignment(t, View.TEXT_ALIGNMENT_VIEW_START);
+        t.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);
         t.setPadding(mPadding, mPadding / 2, mPadding, 0);
         t.setText(label);
-        t.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-        t.setTextColor(ApiCompatibilityUtils.getColor(mContext.getResources(),
-                R.color.connection_info_popup_text));
+        ApiCompatibilityUtils.setTextAppearance(t, R.style.TextAppearance_BlackTitle2);
         certificateView.addView(t);
         return t;
     }
 
     private void addValue(LinearLayout certificateView, String value) {
         TextView t = new TextView(mContext);
-        ApiCompatibilityUtils.setTextAlignment(t, View.TEXT_ALIGNMENT_VIEW_START);
+        t.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);
         t.setText(value);
         t.setPadding(mPadding, 0, mPadding, mPadding / 2);
-        t.setTextColor(ApiCompatibilityUtils.getColor(mContext.getResources(),
-                R.color.connection_info_popup_text));
+        ApiCompatibilityUtils.setTextAppearance(t, R.style.TextAppearance_BlackBodyDefault);
         certificateView.addView(t);
     }
 

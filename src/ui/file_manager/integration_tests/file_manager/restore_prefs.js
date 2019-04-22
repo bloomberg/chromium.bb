@@ -7,8 +7,8 @@
 /**
  * Tests restoring the sorting order.
  */
-testcase.restoreSortColumn = async function() {
-  var EXPECTED_FILES = TestEntryInfo.getExpectedRows([
+testcase.restoreSortColumn = async () => {
+  const EXPECTED_FILES = TestEntryInfo.getExpectedRows([
     ENTRIES.photos,     // 'photos' (directory)
     ENTRIES.world,      // 'world.ogv', 59943 bytes
     ENTRIES.beautiful,  // 'Beautiful Song.ogg', 13410 bytes
@@ -17,7 +17,7 @@ testcase.restoreSortColumn = async function() {
   ]);
 
   // Set up Files app.
-  let {appId} = await setupAndWaitUntilReady(null, RootPath.DOWNLOADS);
+  let appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
 
   // Sort by name.
   await remoteCall.callRemoteTestUtil(
@@ -37,7 +37,7 @@ testcase.restoreSortColumn = async function() {
   await remoteCall.waitForFiles(appId, EXPECTED_FILES, {orderCheck: true});
 
   // Open another window, where the sorted column should be restored.
-  ({appId} = await setupAndWaitUntilReady(null, RootPath.DOWNLOADS));
+  appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
 
   // Check the sorted style of the header.
   await remoteCall.waitForElement(appId, '.table-header-sort-image-desc');
@@ -49,9 +49,9 @@ testcase.restoreSortColumn = async function() {
 /**
  * Tests restoring the current view (the file list or the thumbnail grid).
  */
-testcase.restoreCurrentView = async function() {
+testcase.restoreCurrentView = async () => {
   // Set up Files app.
-  const {appId} = await setupAndWaitUntilReady(null, RootPath.DOWNLOADS);
+  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
 
   // Check the initial view.
   await remoteCall.waitForElement(appId, '.thumbnail-grid[hidden]');
@@ -64,7 +64,7 @@ testcase.restoreCurrentView = async function() {
   await remoteCall.waitForElement(appId, '.detail-table[hidden]');
 
   // Open another window, where the current view is restored.
-  const appId2 = await openNewWindow(null, RootPath.DOWNLOADS);
+  const appId2 = await openNewWindow(RootPath.DOWNLOADS);
 
   // Check the current view.
   await remoteCall.waitForElement(appId2, '.detail-table[hidden]');

@@ -112,7 +112,7 @@
     if (!omitLog)
       this._testRunner.log('Dumping inherited rules: ');
     for (var inheritedEntry of result.inherited) {
-      this.dumpStyle(inheritedEntry.inlineStyle);
+      this.dumpStyle(inheritedEntry.inlineStyle, /*indent=*/0);
       dumpRuleMatches.call(this, inheritedEntry.matchedCSSRules);
     }
 

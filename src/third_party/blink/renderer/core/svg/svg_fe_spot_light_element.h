@@ -30,9 +30,9 @@ class SVGFESpotLightElement final : public SVGFELightElement {
  public:
   DECLARE_NODE_FACTORY(SVGFESpotLightElement);
 
- private:
   explicit SVGFESpotLightElement(Document&);
 
+ private:
   scoped_refptr<LightSource> GetLightSource(Filter*) const override;
 };
 

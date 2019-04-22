@@ -130,9 +130,7 @@ class RPHReferenceManager {
 
     void AddWebContentsObserver(WebContents* web_contents);
     void RemoveWebContentsObserver(WebContents* web_contents);
-    bool HasWebContentsObservers() {
-      return observed_web_contentses_.size() > 0;
-    }
+    bool HasWebContentsObservers() { return !observed_web_contentses_.empty(); }
 
    private:
     void RenderProcessHostDestroyed(RenderProcessHost* host) override;
@@ -419,7 +417,7 @@ class ExtensionGalleriesHost
       pref_id_map_[pref_id] = new_entry;
     }
 
-    if (result.size() == 0) {
+    if (result.empty()) {
       rph_refs_.Reset();
       CleanUp();
     }
@@ -668,9 +666,9 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::IO},
-        base::Bind(&MTPDeviceMapService::RevokeMTPFileSystem,
-                   base::Unretained(MTPDeviceMapService::GetInstance()),
-                   fs_name));
+        base::BindOnce(&MTPDeviceMapService::RevokeMTPFileSystem,
+                       base::Unretained(MTPDeviceMapService::GetInstance()),
+                       fs_name));
 #endif
   }
 
@@ -718,9 +716,9 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
     CHECK(result);
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::IO},
-        base::Bind(&MTPDeviceMapService::RegisterMTPFileSystem,
-                   base::Unretained(MTPDeviceMapService::GetInstance()),
-                   path.value(), fs_name, true /* read only */));
+        base::BindOnce(&MTPDeviceMapService::RegisterMTPFileSystem,
+                       base::Unretained(MTPDeviceMapService::GetInstance()),
+                       path.value(), fs_name, true /* read only */));
     return result;
 #else
     NOTREACHED();

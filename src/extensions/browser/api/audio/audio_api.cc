@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/values.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -90,7 +91,8 @@ void AudioAPI::OnDeviceChanged() {
   std::unique_ptr<Event> event(new Event(
       events::AUDIO_ON_DEVICE_CHANGED, audio::OnDeviceChanged::kEventName,
       std::unique_ptr<base::ListValue>(new base::ListValue())));
-  event->will_dispatch_callback = base::Bind(&CanReceiveDeprecatedAudioEvent);
+  event->will_dispatch_callback =
+      base::BindRepeating(&CanReceiveDeprecatedAudioEvent);
   event_router->BroadcastEvent(std::move(event));
 }
 

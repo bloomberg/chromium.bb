@@ -33,6 +33,12 @@ void WindowProxyManager::ClearForSwap() {
     entry.value->ClearForSwap();
 }
 
+void WindowProxyManager::ClearForV8MemoryPurge() {
+  window_proxy_->ClearForV8MemoryPurge();
+  for (auto& entry : isolated_worlds_)
+    entry.value->ClearForV8MemoryPurge();
+}
+
 void WindowProxyManager::ReleaseGlobalProxies(
     GlobalProxyVector& global_proxies) {
   DCHECK(global_proxies.IsEmpty());
@@ -72,10 +78,10 @@ WindowProxy* WindowProxyManager::CreateWindowProxy(DOMWrapperWorld& world) {
       // LocalFrame and at that time virtual member functions are not yet
       // available (we cannot use LocalFrame::isLocalFrame).  Ditto for
       // RemoteFrame.
-      return LocalWindowProxy::Create(
+      return MakeGarbageCollected<LocalWindowProxy>(
           isolate_, *static_cast<LocalFrame*>(frame_.Get()), &world);
     case FrameType::kRemote:
-      return RemoteWindowProxy::Create(
+      return MakeGarbageCollected<RemoteWindowProxy>(
           isolate_, *static_cast<RemoteFrame*>(frame_.Get()), &world);
   }
   NOTREACHED();

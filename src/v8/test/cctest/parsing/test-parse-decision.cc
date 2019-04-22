@@ -14,6 +14,7 @@
 #include "src/handles-inl.h"
 #include "src/isolate.h"
 #include "src/objects-inl.h"
+#include "src/objects/shared-function-info-inl.h"
 #include "src/utils.h"
 
 #include "test/cctest/cctest.h"
@@ -33,7 +34,8 @@ void GetTopLevelFunctionInfo(
   SharedFunctionInfo::ScriptIterator iterator(
       toplevel_fn->GetIsolate(), Script::cast(toplevel_fn->shared()->script()));
 
-  while (SharedFunctionInfo* shared = iterator.Next()) {
+  for (SharedFunctionInfo shared = iterator.Next(); !shared.is_null();
+       shared = iterator.Next()) {
     std::unique_ptr<char[]> name = String::cast(shared->Name())->ToCString();
     is_compiled->insert(std::make_pair(name.get(), shared->is_compiled()));
   }

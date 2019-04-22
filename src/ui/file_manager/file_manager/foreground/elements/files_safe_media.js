@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var FILES_APP_ORIGIN = 'chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj';
+const FILES_APP_ORIGIN = 'chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj';
 
 /**
  * Polymer element to render a media securely inside webview.
@@ -54,7 +54,7 @@ var FilesSafeMedia = Polymer({
       this.webview_ = null;
     } else if (this.src && !this.webview_) {
       // Create webview node only if src exists to save resources.
-      var webview =
+      const webview =
           /** @type {!HTMLElement} */ (document.createElement('webview'));
       this.webview_ = webview;
       webview.partition = 'trusted';
@@ -64,12 +64,12 @@ var FilesSafeMedia = Polymer({
           'contentload', this.onSrcChange_.bind(this));
       webview.src = this.sourceFile_();
     } else if (this.src && this.webview_.contentWindow) {
-      var data = {};
+      const data = {};
       data.type = this.type;
       data.src = this.src;
-      window.setTimeout(function() {
+      window.setTimeout(() => {
         this.webview_.contentWindow.postMessage(data, FILES_APP_ORIGIN);
-      }.bind(this));
+      });
     }
   },
 
@@ -82,13 +82,15 @@ var FilesSafeMedia = Polymer({
 
   ready: function() {
     this.addEventListener('focus', (event) => {
-      if (this.type === 'audio' || this.type === 'video')
+      if (this.type === 'audio' || this.type === 'video') {
         // Avoid setting the focus on the files-safe-media itself, rather sends
         // it down to its webview element.
-        if (this.webview_)
+        if (this.webview_) {
           this.webview_.focus();
+        }
+      }
     });
-    window.addEventListener('message', function(event) {
+    window.addEventListener('message', event => {
       if (event.origin !== FILES_APP_ORIGIN) {
         console.log('Unknown origin.');
         return;
@@ -98,12 +100,14 @@ var FilesSafeMedia = Polymer({
       } else if (event.data === 'tap-outside') {
         this.fire('files-safe-media-tap-outside');
       } else if (event.data === 'webview-loaded') {
-        if (this.webview_)
+        if (this.webview_) {
           this.webview_.setAttribute('loaded', '');
+        }
       } else if (event.data === 'webview-cleared') {
-        if (this.webview_)
+        if (this.webview_) {
           this.webview_.removeAttribute('loaded');
+        }
       }
-    }.bind(this));
+    });
   }
 });

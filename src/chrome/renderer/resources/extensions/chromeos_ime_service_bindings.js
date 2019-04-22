@@ -64,6 +64,7 @@ class ImeExtensionChannel {
   /**
    * Get a cached bound InterfacePtr for this InputChannel impl.
    * Create one the ptr if it's not bound yet.
+   *
    * @return {!chromeos.ime.mojom.InputChannelPtr}.
    */
   getChannelPtr() {
@@ -73,6 +74,7 @@ class ImeExtensionChannel {
   /**
    * Set a handler for processing text message. The handler must return a
    * nonnull string, otherwise it will lead to disconnection.
+   *
    * @param {function(string):string} handler.
    */
   onTextMessage(handler) {
@@ -83,6 +85,7 @@ class ImeExtensionChannel {
   /**
    * Set a handler for processing protobuf message. The handler must return a
    * nonnull Uint8Array, otherwise it will lead to disconnection.
+   *
    * @param {function(!Uint8Array):!Uint8Array} handler.
    */
   onProtobufMessage(handler) {
@@ -122,6 +125,7 @@ class ImeExtensionChannel {
 
   /**
    * Set the error handler when the channel Mojo pipe is disconnected.
+   *
    * @param {function():void} handler.
    */
   setConnectionErrorHandler(handler) {
@@ -178,6 +182,7 @@ class ImeService {
 
   /**
    * Set the error handler when the IME Mojo service is disconnected.
+   *
    * @param {function():void} callback.
    */
   setConnectionErrorHandler(callback) {
@@ -198,7 +203,31 @@ class ImeService {
   }
 
   /**
+   * Set a handler for the client delegate to process plain text messages.
+   *
+   * @param {!function(string):string} callback Callback on text message.
+   */
+  setDelegateTextHandler(callback) {
+    if (this.clientChannel_) {
+      this.clientChannel_.onTextMessage(callback);
+    }
+  }
+
+  /**
+   * Set a handler for the client delegate to process protobuf messages.
+   *
+   * @param {!function(!Uint8Array):!Uint8Array} callback Callback on protobuf
+   *     message.
+   */
+  setDelegateProtobufHandler(callback) {
+    if (this.clientChannel_) {
+      this.clientChannel_.onProtobufMessage(callback);
+    }
+  }
+
+  /**
    * Activates an input method based on its specification.
+   *
    * @param {string} imeSpec The specification of an IME (e.g. the engine ID).
    * @param {!Uint8Array} extra The extra data (e.g. initial tasks to run).
    * @param {function(boolean):void} onConnection The callback function to
@@ -226,7 +255,8 @@ class ImeService {
           .connectToImeEngine(
               imeSpec, mojo.makeRequest(this.activeEngine_),
               this.clientChannel_.getChannelPtr(), extra)
-          .then((bound) => {
+          .then((result) => {
+            const bound = result && result['success'];
             if (bound && onConnectionError) {
               this.activeEngine_.ptr.setConnectionErrorHandler(
                   onConnectionError);
@@ -244,6 +274,7 @@ class ImeService {
       this.activeEngine_.ptr.reset();
     }
     this.activeEngine_ = null;
+    // TODO(crbug.com/837156): Release client channel?
   }
 }
 

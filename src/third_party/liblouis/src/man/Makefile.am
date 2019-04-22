@@ -6,7 +6,9 @@ man_MANS =					\
 	lou_checktable.1			\
 	lou_debug.1				\
 	lou_translate.1				\
-	lou_trace.1
+	lou_trace.1				\
+	lou_checkyaml.1				\
+	lou_tableinfo.1
 endif
 
 CLEANFILES = $(man_MANS)
@@ -53,4 +55,14 @@ lou_translate.1: $(top_srcdir)/tools/lou_translate.c $(common_mandeps)
 lou_trace.1: $(top_srcdir)/tools/lou_trace.c $(common_mandeps)
 	$(HELP2MAN) ../tools/lou_trace$(EXEEXT) --info-page=$(PACKAGE) \
 	--name="A tool to list all the rules that were used for a Braille translation" \
+	--output=$@
+
+lou_checkyaml.1: $(top_srcdir)/tools/lou_checkyaml.c $(common_mandeps)
+	$(HELP2MAN) ../tools/lou_checkyaml$(EXEEXT) --info-page=$(PACKAGE) \
+	--name="A tool to check Braille tests defined in a YAML file" \
+	--output=$@
+
+lou_tableinfo.1: $(top_srcdir)/tools/lou_tableinfo.c $(common_mandeps)
+	$(HELP2MAN) ../tools/lou_tableinfo$(EXEEXT) --info-page=$(PACKAGE) \
+	--name="A tool to query meta data from a liblouis Braille translation table" \
 	--output=$@

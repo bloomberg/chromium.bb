@@ -22,16 +22,6 @@
 
 namespace content {
 
-#if defined(OS_ANDROID)
-// Mojo video capture is currently not supported on Android
-// TODO(chfremer): Enable as soon as https://crbug.com/720500 is resolved.
-#define MAYBE_RecoverFromCrashInVideoCaptureProcess \
-  DISABLED_RecoverFromCrashInVideoCaptureProcess
-#else
-#define MAYBE_RecoverFromCrashInVideoCaptureProcess \
-  RecoverFromCrashInVideoCaptureProcess
-#endif  // defined(OS_ANDROID)
-
 namespace {
 
 static const char kVideoCaptureHtmlFile[] = "/media/video_capture_test.html";
@@ -63,6 +53,7 @@ class WebRtcVideoCaptureBrowserTest : public ContentBrowserTest {
   void SetUp() override {
     ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
     EnablePixelOutput();
+    embedded_test_server()->StartAcceptingConnections();
     ContentBrowserTest::SetUp();
   }
 
@@ -73,8 +64,12 @@ class WebRtcVideoCaptureBrowserTest : public ContentBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(WebRtcVideoCaptureBrowserTest,
-                       MAYBE_RecoverFromCrashInVideoCaptureProcess) {
-  embedded_test_server()->StartAcceptingConnections();
+                       RecoverFromCrashInVideoCaptureProcess) {
+  // This test only makes sense if the video capture service runs in a
+  // separate process.
+  if (!features::IsVideoCaptureServiceEnabledForOutOfProcess())
+    return;
+
   GURL url(embedded_test_server()->GetURL(kVideoCaptureHtmlFile));
   NavigateToURL(shell(), url);
 

@@ -7,7 +7,7 @@
 [
     Constructor,
     Serializable,
-    OriginTrialEnabled=ShapeDetection
+    RuntimeEnabled=ShapeDetection
 ] interface DetectedText {
     [SameObject] readonly attribute DOMString rawValue;
     [SameObject] readonly attribute DOMRectReadOnly boundingBox;
@@ -15,5 +15,6 @@
     // possible perspective distortions, this is not necessarily a rectangle.
     [SameObject] readonly attribute FrozenArray<Point2D> cornerPoints;
 
-    serializer = { attribute };
+    // TODO(peria): toJSON is not in spec. https://crbug.com/736332
+    [CallWith=ScriptState, ImplementedAs=toJSONForBinding] object toJSON();
 };

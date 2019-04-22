@@ -14,11 +14,9 @@
 #include <utility>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/values.h"
 #include "cc/base/unique_notifier.h"
-#include "cc/paint/color_space_transfer_cache_entry.h"
 #include "cc/raster/raster_buffer_provider.h"
 #include "cc/raster/raster_source.h"
 #include "cc/resources/memory_history.h"
@@ -82,7 +80,7 @@ class CC_EXPORT TileManagerClient {
   virtual void SetIsLikelyToRequireADraw(bool is_likely_to_require_a_draw) = 0;
 
   // Requests the color space into which tiles should be rasterized.
-  virtual RasterColorSpace GetRasterColorSpace() const = 0;
+  virtual const gfx::ColorSpace& GetRasterColorSpace() const = 0;
 
   // Requests that a pending tree be scheduled to invalidate content on the
   // pending on active tree. This is currently used when tiles that are
@@ -136,7 +134,11 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
               scoped_refptr<base::SequencedTaskRunner> image_worker_task_runner,
               size_t scheduled_raster_task_limit,
               const TileManagerSettings& tile_manager_settings);
+
+  TileManager(const TileManager&) = delete;
   ~TileManager() override;
+
+  TileManager& operator=(const TileManager&) = delete;
 
   // Assigns tile memory and schedules work to prepare tiles for drawing.
   // This step occurs after Commit and at most once per BeginFrame. It can be
@@ -199,7 +201,7 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
           resource_pool_->AcquireResource(
               tiles[i]->desired_texture_size(),
               raster_buffer_provider_->GetResourceFormat(),
-              client_->GetRasterColorSpace().color_space);
+              client_->GetRasterColorSpace());
       raster_buffer_provider_->AcquireBufferForRaster(resource, 0, 0);
       // The raster here never really happened, cuz tests. So just add an
       // arbitrary sync token.
@@ -291,6 +293,9 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
   }
 
   void set_active_url(const GURL& url) { active_url_ = url; }
+
+  void SetPaintWorkletLayerPainter(
+      std::unique_ptr<PaintWorkletLayerPainter> painter);
 
  protected:
   friend class Tile;
@@ -459,7 +464,7 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
   // The callback scheduled to poll whether the GPU side work for pending tiles
   // has completed.
   bool has_pending_queries_ = false;
-  base::CancelableClosure check_pending_tile_queries_callback_;
+  base::CancelableOnceClosure check_pending_tile_queries_callback_;
 
   // We need two WeakPtrFactory objects as the invalidation pattern of each is
   // different. The |task_set_finished_weak_ptr_factory_| is invalidated any
@@ -468,8 +473,6 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
   base::WeakPtrFactory<TileManager> task_set_finished_weak_ptr_factory_;
   // The |ready_to_draw_callback_weak_ptr_factory_| is never invalidated.
   base::WeakPtrFactory<TileManager> ready_to_draw_callback_weak_ptr_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(TileManager);
 };
 
 }  // namespace cc

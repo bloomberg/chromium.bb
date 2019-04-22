@@ -47,7 +47,7 @@ void PaymentRequestRespondWithObserver::OnResponseFulfilled(
                                  interface_name, property_name);
   PaymentHandlerResponse* response =
       NativeValueTraits<PaymentHandlerResponse>::NativeValue(
-          ToIsolate(GetExecutionContext()), value.V8Value(), exception_state);
+          value.GetIsolate(), value.V8Value(), exception_state);
   if (exception_state.HadException()) {
     exception_state.ClearException();
     OnResponseRejected(mojom::ServiceWorkerResponseError::kNoV8Instance);
@@ -57,7 +57,8 @@ void PaymentRequestRespondWithObserver::OnResponseFulfilled(
   // Check payment response validity.
   if (!response->hasMethodName() || !response->hasDetails()) {
     GetExecutionContext()->AddConsoleMessage(
-        ConsoleMessage::Create(kJSMessageSource, kErrorMessageLevel,
+        ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
+                               mojom::ConsoleMessageLevel::kError,
                                "'PaymentHandlerResponse.methodName' and "
                                "'PaymentHandlerResponse.details' must not "
                                "be empty in payment response."));
@@ -73,7 +74,8 @@ void PaymentRequestRespondWithObserver::OnResponseFulfilled(
                            response->details().V8Value().As<v8::Object>())
            .ToLocal(&details_value)) {
     GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
-        kJSMessageSource, kErrorMessageLevel,
+        mojom::ConsoleMessageSource::kJavaScript,
+        mojom::ConsoleMessageLevel::kError,
         "Failed to stringify PaymentHandlerResponse.details in payment "
         "response."));
     OnResponseRejected(mojom::ServiceWorkerResponseError::kUnknown);

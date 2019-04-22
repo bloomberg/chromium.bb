@@ -13,8 +13,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/settings/device_settings_provider.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
-#include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/settings/system_settings_provider.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -23,8 +22,17 @@ namespace chromeos {
 
 static CrosSettings* g_cros_settings = nullptr;
 
+// Calling SetForTesting sets this flag. This flag means that the production
+// code which calls Initialize and Shutdown will have no effect - the test
+// install attributes will remain in place until ShutdownForTesting is called.
+bool g_using_cros_settings_for_testing = false;
+
 // static
 void CrosSettings::Initialize(PrefService* local_state) {
+  // Don't reinitialize if a specific instance has already been set for test.
+  if (g_using_cros_settings_for_testing)
+    return;
+
   CHECK(!g_cros_settings);
   g_cros_settings = new CrosSettings(DeviceSettingsService::Get(), local_state);
 }
@@ -36,6 +44,9 @@ bool CrosSettings::IsInitialized() {
 
 // static
 void CrosSettings::Shutdown() {
+  if (g_using_cros_settings_for_testing)
+    return;
+
   DCHECK(g_cros_settings);
   delete g_cros_settings;
   g_cros_settings = nullptr;
@@ -47,11 +58,26 @@ CrosSettings* CrosSettings::Get() {
   return g_cros_settings;
 }
 
+// static
+void CrosSettings::SetForTesting(CrosSettings* test_instance) {
+  DCHECK(!g_cros_settings);
+  DCHECK(!g_using_cros_settings_for_testing);
+  g_cros_settings = test_instance;
+  g_using_cros_settings_for_testing = true;
+}
+
+// static
+void CrosSettings::ShutdownForTesting() {
+  DCHECK(g_using_cros_settings_for_testing);
+  // Don't delete the test instance, we are not the owner.
+  g_cros_settings = nullptr;
+  g_using_cros_settings_for_testing = false;
+}
+
 bool CrosSettings::IsUserWhitelisted(const std::string& username,
                                      bool* wildcard_match) const {
   // Skip whitelist check for tests.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kOobeSkipPostLogin)) {
+  if (chromeos::switches::ShouldSkipOobePostLogin()) {
     return true;
   }
 
@@ -62,6 +88,8 @@ bool CrosSettings::IsUserWhitelisted(const std::string& username,
   return FindEmailInList(kAccountsPrefUsers, username, wildcard_match);
 }
 
+CrosSettings::CrosSettings() = default;
+
 CrosSettings::CrosSettings(DeviceSettingsService* device_settings_service,
                            PrefService* local_state) {
   CrosSettingsProvider::NotifyObserversCallback notify_cb(
@@ -69,25 +97,8 @@ CrosSettings::CrosSettings(DeviceSettingsService* device_settings_service,
                  // This is safe since |this| is never deleted.
                  base::Unretained(this)));
 
-  base::CommandLine* commandLine = base::CommandLine::ForCurrentProcess();
-  if (commandLine->HasSwitch(switches::kStubCrosSettings)) {
-    std::unique_ptr<StubCrosSettingsProvider> stubbed_provider =
-        std::make_unique<StubCrosSettingsProvider>(notify_cb);
-    stubbed_provider_ptr_ = stubbed_provider.get();
-    // When kStubCrosSettings is set, then kLoginUser is treated as the device
-    // owner (if it is also set):
-    if (commandLine->HasSwitch(switches::kLoginUser)) {
-      stubbed_provider->Set(
-          kDeviceOwner,
-          base::Value(commandLine->GetSwitchValueASCII(switches::kLoginUser)));
-    }
-    AddSettingsProvider(std::move(stubbed_provider));
-
-  } else {
-    AddSettingsProvider(std::make_unique<DeviceSettingsProvider>(
-        notify_cb, device_settings_service, local_state));
-  }
-  // System settings are not mocked currently.
+  AddSettingsProvider(std::make_unique<DeviceSettingsProvider>(
+      notify_cb, device_settings_service, local_state));
   AddSettingsProvider(std::make_unique<SystemSettingsProvider>(notify_cb));
 }
 
@@ -98,14 +109,6 @@ CrosSettings::~CrosSettings() {
 bool CrosSettings::IsCrosSettings(const std::string& path) {
   return base::StartsWith(path, kCrosSettingsPrefix,
                           base::CompareCase::SENSITIVE);
-}
-
-void CrosSettings::Set(const std::string& path, const base::Value& in_value) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  CrosSettingsProvider* provider;
-  provider = GetProvider(path);
-  if (provider)
-    provider->Set(path, in_value);
 }
 
 const base::Value* CrosSettings::GetPref(const std::string& path) const {
@@ -127,52 +130,6 @@ CrosSettingsProvider::TrustedStatus CrosSettings::PrepareTrustedValues(
       return status;
   }
   return CrosSettingsProvider::TRUSTED;
-}
-
-void CrosSettings::SetBoolean(const std::string& path, bool in_value) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  base::Value value(in_value);
-  Set(path, value);
-}
-
-void CrosSettings::SetInteger(const std::string& path, int in_value) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  base::Value value(in_value);
-  Set(path, value);
-}
-
-void CrosSettings::SetDouble(const std::string& path, double in_value) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  base::Value value(in_value);
-  Set(path, value);
-}
-
-void CrosSettings::SetString(const std::string& path,
-                             const std::string& in_value) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  base::Value value(in_value);
-  Set(path, value);
-}
-
-void CrosSettings::AppendToList(const std::string& path,
-                                const base::Value* value) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  const base::Value* old_value = GetPref(path);
-  std::unique_ptr<base::Value> new_value(old_value ? old_value->DeepCopy()
-                                                   : new base::ListValue());
-  static_cast<base::ListValue*>(new_value.get())
-      ->Append(value->CreateDeepCopy());
-  Set(path, *new_value);
-}
-
-void CrosSettings::RemoveFromList(const std::string& path,
-                                  const base::Value* value) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  const base::Value* old_value = GetPref(path);
-  std::unique_ptr<base::Value> new_value(old_value ? old_value->DeepCopy()
-                                                   : new base::ListValue());
-  static_cast<base::ListValue*>(new_value.get())->Remove(*value, nullptr);
-  Set(path, *new_value);
 }
 
 bool CrosSettings::GetBoolean(const std::string& path,

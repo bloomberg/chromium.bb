@@ -4,6 +4,7 @@
 
 #include "ash/public/cpp/default_scale_factor_retriever.h"
 #include "ash/public/interfaces/constants.mojom.h"
+#include "base/bind.h"
 
 namespace ash {
 

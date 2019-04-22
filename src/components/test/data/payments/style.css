@@ -10,6 +10,12 @@ button {
   width: 100%;
 }
 
+button.small {
+  font-size: 1em;
+  height: 2em;
+  width: 100%;
+}
+
 pre {
   font-size: 2em;
 }

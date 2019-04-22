@@ -82,7 +82,7 @@ enum XFA_FM_TOKEN {
 
 struct XFA_FMKeyword {
   XFA_FM_TOKEN m_type;
-  const wchar_t* m_keyword;  // Raw, POD struct.
+  const char* m_keyword;  // Raw, POD struct.
 };
 
 class CXFA_FMToken {
@@ -102,11 +102,11 @@ class CXFA_FMToken {
 
 class CXFA_FMLexer {
  public:
-  explicit CXFA_FMLexer(const WideStringView& wsFormcalc);
+  explicit CXFA_FMLexer(WideStringView wsFormcalc);
   ~CXFA_FMLexer();
 
   CXFA_FMToken NextToken();
-  bool IsComplete() const { return m_cursor >= m_end; }
+  bool IsComplete() const { return m_nCursor >= m_spInput.size(); }
 
  private:
   CXFA_FMToken AdvanceForNumber();
@@ -114,11 +114,11 @@ class CXFA_FMLexer {
   CXFA_FMToken AdvanceForIdentifier();
   void AdvanceForComment();
 
-  void RaiseError() { m_lexer_error = true; }
+  void RaiseError() { m_bLexerError = true; }
 
-  const wchar_t* m_cursor;
-  const wchar_t* const m_end;
-  bool m_lexer_error;
+  pdfium::span<const wchar_t> m_spInput;
+  size_t m_nCursor = 0;
+  bool m_bLexerError = false;
 };
 
 #endif  // XFA_FXFA_FM2JS_CXFA_FMLEXER_H_

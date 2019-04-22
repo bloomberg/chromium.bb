@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 
+#include "base/bind.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -50,7 +51,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_OptionsPage) {
   content::RenderFrameHost* frame = content::FrameMatchingPredicate(
       tab_strip->GetActiveWebContents(),
       base::Bind(&content::FrameHasSourceUrl,
-                 GURL(chrome::kChromeUIExtensionsFrameURL)));
+                 GURL(chrome::kChromeUIExtensionsURL)));
   EXPECT_TRUE(content::ExecuteScript(
       frame,
       kScriptClickOptionButton));

@@ -16,7 +16,6 @@
 <translation id="152892567002884378">Volum opp</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> og så <ph name="ESC" /></translation>
 <translation id="1652741121070700329">Gå til begynnelsen av forrige ord</translation>
-<translation id="1671169355475348905">Bytt til inndatametoden for forrige språk</translation>
 <translation id="1679841710523778799">Skru opp lysstyrken</translation>
 <translation id="168356808214100546">Trykk og hold på <ph name="ALT" />, trykk på <ph name="TAB" /> til du kommer til vinduet du vil åpne, og slipp tastene.</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -33,6 +32,7 @@
 <translation id="2181097965834437145">Vis eller skjul bokmerkeraden</translation>
 <translation id="2185166372312820725">Gå til forrige fane</translation>
 <translation id="2194790690264064655">Trykk på <ph name="CTRL" /> og klikk på en link</translation>
+<translation id="2246352309084894470">Åpne/lukk fullskjermvisningen av appoversikten</translation>
 <translation id="2382644247745281995">Støttes ikke med det gjeldende tastaturoppsettet</translation>
 <translation id="2397416548179033562">Vis Chrome-menyen</translation>
 <translation id="2424073332829844142">Slå Caps Lock av og på</translation>
@@ -44,7 +44,6 @@
 <translation id="2574014812750545982">Tilbakestill zoomnivået på siden</translation>
 <translation id="2596078834055697711">Ta en skjermdump av vinduet</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> og så <ph name="TAB" /> eller <ph name="RIGHT" /></translation>
-<translation id="2687057317448262550">Bytt til inndatametoden for neste språk</translation>
 <translation id="2699509451653686398">Lagre den aktive nettsiden som et bokmerke</translation>
 <translation id="2750942583782703988">Last inn den aktive siden på nytt</translation>
 <translation id="2764005613199379871">Plassér fokuset i søkeadressefeltet</translation>
@@ -147,6 +146,7 @@
 <translation id="671928215901716392">Lås skjerm</translation>
 <translation id="6727005317916125192">Forrige rute</translation>
 <translation id="6740781404993465795">Merk neste ord eller bokstav</translation>
+<translation id="6755851152783057058">Bytt til den sist brukte inndatametoden</translation>
 <translation id="6760706756348334449">Volum ned</translation>
 <translation id="6941333068993625698">Send tilbakemelding</translation>
 <translation id="6981982820502123353">Tilgjengelighet</translation>
@@ -157,6 +157,7 @@
 <translation id="7237562915163138771">Skriv inn en nettadresse i adressefeltet, og trykk på <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /></translation>
 <translation id="7254764037241667478">Aktivér hvilemodus på enheten</translation>
 <translation id="7379254767514753910"><ph name="ALT" /> eller <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
+<translation id="7422707470576323858">Bytt til neste tilgjengelige inndatametode</translation>
 <translation id="743754632698445141">Løsne en app</translation>
 <translation id="7439718573248533901">Slett neste bokstav (slett fremover)</translation>
 <translation id="7611271430932669992">Flytt fokus til forgrunnsvinduer og dialogbokser</translation>

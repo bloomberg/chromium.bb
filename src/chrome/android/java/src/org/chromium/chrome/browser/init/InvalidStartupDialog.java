@@ -67,7 +67,7 @@ public class InvalidStartupDialog extends DialogFragment {
         String message = arguments.getString(MESSAGE_KEY, "Failed to start");
 
         AlertDialog.Builder builder =
-                new AlertDialog.Builder(getActivity(), R.style.AlertDialogTheme);
+                new AlertDialog.Builder(getActivity(), R.style.Theme_Chromium_AlertDialog);
         builder.setMessage(message)
                 .setCancelable(true)
                 .setPositiveButton(getResources().getString(android.R.string.ok), null);

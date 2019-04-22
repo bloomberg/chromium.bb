@@ -7,8 +7,7 @@
 #include <utility>
 
 #include "build/build_config.h"
-#include "cc/layers/picture_image_layer.h"
-#include "cc/layers/solid_color_layer.h"
+#include "cc/layers/picture_layer.h"
 #include "cc/layers/surface_layer.h"
 #include "cc/paint/paint_image.h"
 #include "cc/paint/paint_image_builder.h"
@@ -28,46 +27,25 @@ ChildFrameCompositingHelper::ChildFrameCompositingHelper(
   DCHECK(child_frame_compositor_);
 }
 
-ChildFrameCompositingHelper::~ChildFrameCompositingHelper() = default;
+ChildFrameCompositingHelper::~ChildFrameCompositingHelper() {
+  if (crash_ui_layer_)
+    crash_ui_layer_->ClearClient();
+}
 
 void ChildFrameCompositingHelper::ChildFrameGone(
     const gfx::Size& frame_size_in_dip,
     float device_scale_factor) {
   surface_id_ = viz::SurfaceId();
+  device_scale_factor_ = device_scale_factor;
 
-  scoped_refptr<cc::SolidColorLayer> crashed_layer =
-      cc::SolidColorLayer::Create();
-  crashed_layer->SetMasksToBounds(true);
-  crashed_layer->SetBackgroundColor(SK_ColorGRAY);
-
-  if (child_frame_compositor_->GetLayer()) {
-    SkBitmap* sad_bitmap = child_frame_compositor_->GetSadPageBitmap();
-    if (sad_bitmap && frame_size_in_dip.width() > sad_bitmap->width() &&
-        frame_size_in_dip.height() > sad_bitmap->height()) {
-      scoped_refptr<cc::PictureImageLayer> sad_layer =
-          cc::PictureImageLayer::Create();
-      sad_layer->SetImage(cc::PaintImageBuilder::WithDefault()
-                              .set_id(cc::PaintImage::GetNextId())
-                              .set_image(SkImage::MakeFromBitmap(*sad_bitmap),
-                                         cc::PaintImage::GetNextContentId())
-                              .TakePaintImage(),
-                          SkMatrix::I(), false);
-      sad_layer->SetBounds(
-          gfx::Size(sad_bitmap->width() * device_scale_factor,
-                    sad_bitmap->height() * device_scale_factor));
-      sad_layer->SetPosition(
-          gfx::PointF((frame_size_in_dip.width() - sad_bitmap->width()) / 2,
-                      (frame_size_in_dip.height() - sad_bitmap->height()) / 2));
-      sad_layer->SetIsDrawable(true);
-
-      crashed_layer->AddChild(sad_layer);
-    }
-  }
+  crash_ui_layer_ = cc::PictureLayer::Create(this);
+  crash_ui_layer_->SetMasksToBounds(true);
+  crash_ui_layer_->SetIsDrawable(true);
 
   bool prevent_contents_opaque_changes = false;
-  child_frame_compositor_->SetLayer(std::move(crashed_layer),
-                                    prevent_contents_opaque_changes,
-                                    false /* is_surface_layer */);
+  bool is_surface_layer = false;
+  child_frame_compositor_->SetLayer(
+      crash_ui_layer_, prevent_contents_opaque_changes, is_surface_layer);
 }
 
 void ChildFrameCompositingHelper::SetSurfaceId(
@@ -100,8 +78,66 @@ void ChildFrameCompositingHelper::SetSurfaceId(
 
 void ChildFrameCompositingHelper::UpdateVisibility(bool visible) {
   cc::Layer* layer = child_frame_compositor_->GetLayer();
-  if (layer)
+  if (layer) {
     layer->SetIsDrawable(visible);
+    layer->SetHitTestable(visible);
+  }
+}
+
+gfx::Rect ChildFrameCompositingHelper::PaintableRegion() {
+  DCHECK(crash_ui_layer_);
+  return gfx::Rect(crash_ui_layer_->bounds());
+}
+
+scoped_refptr<cc::DisplayItemList>
+ChildFrameCompositingHelper::PaintContentsToDisplayList(
+    PaintingControlSetting) {
+  DCHECK(crash_ui_layer_);
+  auto layer_size = crash_ui_layer_->bounds();
+  auto display_list = base::MakeRefCounted<cc::DisplayItemList>();
+  display_list->StartPaint();
+  display_list->push<cc::DrawColorOp>(SK_ColorGRAY, SkBlendMode::kSrc);
+
+  SkBitmap* sad_bitmap = child_frame_compositor_->GetSadPageBitmap();
+  if (sad_bitmap) {
+    int paint_width = sad_bitmap->width() * device_scale_factor_;
+    int paint_height = sad_bitmap->height() * device_scale_factor_;
+    if (layer_size.width() >= paint_width &&
+        layer_size.height() >= paint_height) {
+      int x = (layer_size.width() - paint_width) / 2;
+      int y = (layer_size.height() - paint_height) / 2;
+      if (device_scale_factor_ != 1.f) {
+        display_list->push<cc::SaveOp>();
+        display_list->push<cc::TranslateOp>(x, y);
+        display_list->push<cc::ScaleOp>(device_scale_factor_,
+                                        device_scale_factor_);
+        x = 0;
+        y = 0;
+      }
+
+      auto image = cc::PaintImageBuilder::WithDefault()
+                       .set_id(cc::PaintImage::GetNextId())
+                       .set_image(SkImage::MakeFromBitmap(*sad_bitmap),
+                                  cc::PaintImage::GetNextContentId())
+                       .TakePaintImage();
+      display_list->push<cc::DrawImageOp>(image, x, y, nullptr);
+
+      if (device_scale_factor_ != 1.f)
+        display_list->push<cc::RestoreOp>();
+    }
+  }
+  display_list->EndPaintOfUnpaired(gfx::Rect(layer_size));
+  display_list->Finalize();
+  return display_list;
+}
+
+bool ChildFrameCompositingHelper::FillsBoundsCompletely() const {
+  // Because we paint a full opaque gray background.
+  return true;
+}
+
+size_t ChildFrameCompositingHelper::GetApproximateUnsharedMemoryUsage() const {
+  return sizeof(*this);
 }
 
 }  // namespace content

@@ -7,7 +7,7 @@
 #include "base/bit_cast.h"
 #include "third_party/blink/renderer/platform/crypto.h"
 #include "third_party/blink/renderer/platform/loader/fetch/cached_metadata.h"
-#include "third_party/blink/renderer/platform/wtf/string_hasher.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hasher.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -27,7 +27,7 @@ class SourceKeyedCachedMetadataHandler::SingleKeyHandler final
       : parent_(parent), key_(key) {}
 
   void SetCachedMetadata(uint32_t data_type_id,
-                         const char* data,
+                         const uint8_t* data,
                          size_t size,
                          CacheType cache_type) override {
     DCHECK(!parent_->cached_metadata_map_.Contains(key_));
@@ -58,12 +58,24 @@ class SourceKeyedCachedMetadataHandler::SingleKeyHandler final
     return parent_->IsServedFromCacheStorage();
   }
 
+  void OnMemoryDump(WebProcessMemoryDump* pmd,
+                    const String& dump_prefix) const override {
+    // No memory to report here because it is attributed to |parent_|.
+  }
+
+  size_t GetCodeCacheSize() const override {
+    // No need to implement this because it is attributed to |parent_|.
+    return 0;
+  }
+
  private:
   Member<SourceKeyedCachedMetadataHandler> parent_;
   Key key_;
 };
 
 class SourceKeyedCachedMetadataHandler::KeyHash {
+  STATIC_ONLY(KeyHash);
+
  public:
   static unsigned GetHash(const Key& key) {
     return StringHasher::ComputeHash(key.data(),
@@ -96,10 +108,27 @@ void SourceKeyedCachedMetadataHandler::ClearCachedMetadata(
   cached_metadata_map_.clear();
   if (cache_type == CachedMetadataHandler::kSendToPlatform)
     SendToPlatform();
-};
+}
 
 String SourceKeyedCachedMetadataHandler::Encoding() const {
   return String(encoding_.GetName());
+}
+
+void SourceKeyedCachedMetadataHandler::OnMemoryDump(
+    WebProcessMemoryDump* pmd,
+    const String& dump_prefix) const {
+  if (cached_metadata_map_.IsEmpty())
+    return;
+
+  const String dump_name = dump_prefix + "/inline";
+  uint64_t value = 0;
+  for (const auto& metadata : cached_metadata_map_.Values()) {
+    value += metadata->SerializedData().size();
+  }
+  auto* dump = pmd->CreateMemoryAllocatorDump(dump_name);
+  dump->AddScalar("size", "bytes", value);
+  pmd->AddSuballocation(dump->Guid(),
+                        String(WTF::Partitions::kAllocatedObjectPoolName));
 }
 
 // Encoding of keyed map:
@@ -120,7 +149,7 @@ namespace {
 // should inline and optimize to the same code as *reinterpret_cast<T>(data),
 // but without the risk of undefined behaviour.
 template <typename T>
-T ReadVal(const char* data) {
+T ReadVal(const uint8_t* data) {
   static_assert(base::is_trivially_copyable<T>::value,
                 "ReadVal requires the value type to be copyable");
   T ret;
@@ -130,7 +159,7 @@ T ReadVal(const char* data) {
 }  // namespace
 
 void SourceKeyedCachedMetadataHandler::SetSerializedCachedMetadata(
-    const char* data,
+    const uint8_t* data,
     size_t size) {
   // We only expect to receive cached metadata from the platform once. If this
   // triggers, it indicates an efficiency problem which is most likely
@@ -190,7 +219,7 @@ void SourceKeyedCachedMetadataHandler::SetSerializedCachedMetadata(
   if (size > 0) {
     cached_metadata_map_.clear();
   }
-};
+}
 
 void SourceKeyedCachedMetadataHandler::SendToPlatform() {
   if (!sender_)
@@ -199,16 +228,16 @@ void SourceKeyedCachedMetadataHandler::SendToPlatform() {
   if (cached_metadata_map_.IsEmpty()) {
     sender_->Send(nullptr, 0);
   } else {
-    Vector<char> serialized_data;
+    Vector<uint8_t> serialized_data;
     uint32_t marker = CachedMetadataHandler::kSourceKeyedMap;
-    serialized_data.Append(reinterpret_cast<char*>(&marker), sizeof(marker));
+    serialized_data.Append(reinterpret_cast<uint8_t*>(&marker), sizeof(marker));
     int num_entries = cached_metadata_map_.size();
-    serialized_data.Append(reinterpret_cast<char*>(&num_entries),
+    serialized_data.Append(reinterpret_cast<uint8_t*>(&num_entries),
                            sizeof(num_entries));
     for (const auto& metadata : cached_metadata_map_) {
       serialized_data.Append(metadata.key.data(), kKeySize);
       size_t entry_size = metadata.value->SerializedData().size();
-      serialized_data.Append(reinterpret_cast<const char*>(&entry_size),
+      serialized_data.Append(reinterpret_cast<const uint8_t*>(&entry_size),
                              sizeof(entry_size));
       serialized_data.AppendVector(metadata.value->SerializedData());
     }

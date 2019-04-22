@@ -66,15 +66,6 @@ TEST(DiceAccountReconcilorDelegateTest, OnReconcileFinished) {
   DiceTestSigninClient client(&pref_service);
 
   {
-    // Dice migration not enabled.
-    testing::InSequence mock_sequence;
-    EXPECT_CALL(client, SetReadyForDiceMigration(testing::_)).Times(0);
-    DiceAccountReconcilorDelegate delegate(
-        &client, AccountConsistencyMethod::kDiceFixAuthErrors);
-    delegate.OnReconcileFinished("account", true /* is_reconcile_noop */);
-  }
-
-  {
     // Dice migration enabled, but token service is not ready.
     testing::InSequence mock_sequence;
     EXPECT_CALL(client, SetReadyForDiceMigration(false)).Times(1);

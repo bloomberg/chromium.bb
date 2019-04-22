@@ -6,23 +6,30 @@
 
 #include "components/sync/engine/data_type_activation_response.h"
 #include "components/sync/engine/sync_engine_host.h"
+#include "components/sync/model/model_type_controller_delegate.h"
 
 namespace syncer {
 namespace {
 
 const char kTestCacheGuid[] = "test-guid";
-const char kTestSessionName[] = "test-session-name";
+const char kTestBirthday[] = "1";
 
 }  // namespace
 
-FakeSyncEngine::FakeSyncEngine() : fail_initial_download_(false) {}
+FakeSyncEngine::FakeSyncEngine() {}
 FakeSyncEngine::~FakeSyncEngine() {}
 
 void FakeSyncEngine::Initialize(InitParams params) {
+  bool success = !fail_initial_download_;
+  initialized_ = success;
   params.host->OnEngineInitialized(ModelTypeSet(), WeakHandle<JsBackend>(),
                                    WeakHandle<DataTypeDebugInfoListener>(),
-                                   kTestCacheGuid, kTestSessionName,
-                                   !fail_initial_download_);
+                                   kTestCacheGuid, kTestBirthday,
+                                   /*bag_of_chips=*/"", success);
+}
+
+bool FakeSyncEngine::IsInitialized() const {
+  return initialized_;
 }
 
 void FakeSyncEngine::TriggerRefresh(const ModelTypeSet& types) {}
@@ -68,8 +75,8 @@ UserShare* FakeSyncEngine::GetUserShare() const {
   return nullptr;
 }
 
-SyncEngine::Status FakeSyncEngine::GetDetailedStatus() {
-  return SyncEngine::Status();
+SyncStatus FakeSyncEngine::GetDetailedStatus() {
+  return SyncStatus();
 }
 
 void FakeSyncEngine::HasUnsyncedItemsForTest(
@@ -91,16 +98,17 @@ void FakeSyncEngine::set_fail_initial_download(bool should_fail) {
   fail_initial_download_ = should_fail;
 }
 
-void FakeSyncEngine::ClearServerData(const base::Closure& callback) {
-  callback.Run();
-}
-
 void FakeSyncEngine::OnCookieJarChanged(bool account_mismatch,
                                         bool empty_jar,
                                         const base::Closure& callback) {
   if (!callback.is_null()) {
     callback.Run();
   }
+}
+
+std::unique_ptr<ModelTypeControllerDelegate>
+FakeSyncEngine::GetNigoriControllerDelegate() {
+  return nullptr;
 }
 
 void FakeSyncEngine::SetInvalidationsForSessionsEnabled(bool enabled) {}

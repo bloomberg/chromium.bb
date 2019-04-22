@@ -8,9 +8,11 @@
 
 #include <map>
 #include <vector>
+
 #include "common/angleutils.h"
 #include "test_utils/ANGLETest.h"
 #include "test_utils/gl_raii.h"
+#include "util/EGLWindow.h"
 
 using namespace angle;
 
@@ -76,7 +78,11 @@ EGLsizeiANDROID GetBlob(const void *key,
 class EGLBlobCacheTest : public ANGLETest
 {
   protected:
-    EGLBlobCacheTest() : mHasBlobCache(false) {}
+    EGLBlobCacheTest() : mHasBlobCache(false)
+    {
+        // Force disply caching off. Blob cache functions require it.
+        forceNewDisplay();
+    }
 
     void SetUp() override
     {
@@ -85,8 +91,6 @@ class EGLBlobCacheTest : public ANGLETest
         EGLDisplay display = getEGLWindow()->getDisplay();
         mHasBlobCache      = eglDisplayExtensionEnabled(display, kEGLExtName);
     }
-
-    void TearDown() override { ANGLETest::TearDown(); }
 
     bool programBinaryAvailable()
     {
@@ -101,7 +105,7 @@ TEST_P(EGLBlobCacheTest, Functional)
 {
     EGLDisplay display = getEGLWindow()->getDisplay();
 
-    EXPECT_EQ(true, mHasBlobCache);
+    EXPECT_TRUE(mHasBlobCache);
     eglSetBlobCacheFuncsANDROID(display, SetBlob, GetBlob);
     ASSERT_EGL_SUCCESS();
 
@@ -170,7 +174,7 @@ void main()
 // Tests error conditions of the APIs.
 TEST_P(EGLBlobCacheTest, NegativeAPI)
 {
-    EXPECT_EQ(true, mHasBlobCache);
+    EXPECT_TRUE(mHasBlobCache);
 
     // Test bad display
     eglSetBlobCacheFuncsANDROID(EGL_NO_DISPLAY, nullptr, nullptr);

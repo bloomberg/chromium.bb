@@ -24,11 +24,11 @@
 #include <mutex>
 #include <vector>
 
-#include "perfetto/base/thread_checker.h"
 #include "perfetto/base/weak_ptr.h"
 #include "perfetto/tracing/core/basic_types.h"
 #include "perfetto/tracing/core/shared_memory_abi.h"
 #include "perfetto/tracing/core/shared_memory_arbiter.h"
+#include "perfetto/tracing/core/startup_trace_writer_registry.h"
 #include "src/tracing/core/id_allocator.h"
 
 namespace perfetto {
@@ -36,6 +36,7 @@ namespace perfetto {
 class CommitDataRequest;
 class PatchList;
 class TraceWriter;
+class TraceWriterImpl;
 
 namespace base {
 class TaskRunner;
@@ -56,6 +57,8 @@ class SharedMemoryArbiterImpl : public SharedMemoryArbiter {
   // |OnPagesCompleteCallback|: a callback that will be posted on the passed
   // |TaskRunner| when one or more pages are complete (and hence the Producer
   // should send a CommitData request to the Service).
+  // |TaskRunner|: Task runner for perfetto's main thread, which executes the
+  // OnPagesCompleteCallback and IPC calls to the |ProducerEndpoint|.
   SharedMemoryArbiterImpl(void* start,
                           size_t size,
                           size_t page_size,
@@ -81,6 +84,13 @@ class SharedMemoryArbiterImpl : public SharedMemoryArbiter {
                             BufferID target_buffer,
                             PatchList*);
 
+  // Send a request to the service to apply completed patches from |patch_list|.
+  // |writer_id| is the ID of the TraceWriter that calls this method,
+  // |target_buffer| is the global trace buffer ID of its target buffer.
+  void SendPatches(WriterID writer_id,
+                   BufferID target_buffer,
+                   PatchList* patch_list);
+
   // Forces a synchronous commit of the completed packets without waiting for
   // the next task.
   void FlushPendingCommitDataRequests(std::function<void()> callback = {});
@@ -94,24 +104,32 @@ class SharedMemoryArbiterImpl : public SharedMemoryArbiter {
   // SharedMemoryArbiter implementation.
   // See include/perfetto/tracing/core/shared_memory_arbiter.h for comments.
   std::unique_ptr<TraceWriter> CreateTraceWriter(
-      BufferID target_buffer = 0) override;
+      BufferID target_buffer) override;
+  void BindStartupTraceWriterRegistry(
+      std::unique_ptr<StartupTraceWriterRegistry>,
+      BufferID target_buffer) override;
 
   void NotifyFlushComplete(FlushRequestID) override;
 
  private:
   friend class TraceWriterImpl;
+  friend class StartupTraceWriterTest;
 
   static SharedMemoryABI::PageLayout default_page_layout;
 
   SharedMemoryArbiterImpl(const SharedMemoryArbiterImpl&) = delete;
   SharedMemoryArbiterImpl& operator=(const SharedMemoryArbiterImpl&) = delete;
 
+  void UpdateCommitDataRequest(SharedMemoryABI::Chunk chunk,
+                               WriterID writer_id,
+                               BufferID target_buffer,
+                               PatchList* patch_list);
+
   // Called by the TraceWriter destructor.
   void ReleaseWriterID(WriterID);
 
   base::TaskRunner* const task_runner_;
   TracingService::ProducerEndpoint* const producer_endpoint_;
-  PERFETTO_THREAD_CHECKER(thread_checker_)
 
   // --- Begin lock-protected members ---
   std::mutex lock_;
@@ -120,6 +138,10 @@ class SharedMemoryArbiterImpl : public SharedMemoryArbiter {
   std::unique_ptr<CommitDataRequest> commit_data_req_;
   size_t bytes_pending_commit_ = 0;  // SUM(chunk.size() : commit_data_req_).
   IdAllocator<WriterID> active_writer_ids_;
+  // Registries whose Bind() is in progress. We destroy each registry when their
+  // Bind() is complete or when the arbiter is destroyed itself.
+  std::vector<std::unique_ptr<StartupTraceWriterRegistry>>
+      startup_trace_writer_registries_;
   // --- End lock-protected members ---
 
   // Keep at the end.

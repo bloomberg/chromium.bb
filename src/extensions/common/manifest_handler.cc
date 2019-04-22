@@ -49,14 +49,6 @@ const std::vector<std::string> ManifestHandler::PrerequisiteKeys() const {
   return std::vector<std::string>();
 }
 
-void ManifestHandler::Register() {
-  linked_ptr<ManifestHandler> this_linked(this);
-
-  ManifestHandlerRegistry* registry = ManifestHandlerRegistry::Get();
-  for (const char* key : Keys())
-    registry->RegisterManifestHandler(key, this_linked);
-}
-
 ManifestPermission* ManifestHandler::CreatePermission() {
   return NULL;
 }
@@ -123,11 +115,18 @@ void ManifestHandlerRegistry::Finalize() {
   is_finalized_ = true;
 }
 
-void ManifestHandlerRegistry::RegisterManifestHandler(
-    const char* key,
-    linked_ptr<ManifestHandler> handler) {
+void ManifestHandlerRegistry::RegisterHandler(
+    std::unique_ptr<ManifestHandler> handler) {
   CHECK(!is_finalized_);
-  handlers_[key] = handler;
+
+  ManifestHandler* raw_handler = handler.get();
+  owned_manifest_handlers_.push_back(std::move(handler));
+
+  for (const char* key : raw_handler->Keys()) {
+    auto insertion = handlers_.emplace(key, raw_handler);
+    DCHECK(insertion.second)
+        << "A ManifestHandler was already registered for key: " << key;
+  }
 }
 
 bool ManifestHandlerRegistry::ParseExtension(Extension* extension,
@@ -135,7 +134,7 @@ bool ManifestHandlerRegistry::ParseExtension(Extension* extension,
   std::map<int, ManifestHandler*> handlers_by_priority;
   for (ManifestHandlerMap::iterator iter = handlers_.begin();
        iter != handlers_.end(); ++iter) {
-    ManifestHandler* handler = iter->second.get();
+    ManifestHandler* handler = iter->second;
     if (extension->manifest()->HasPath(iter->first) ||
         handler->AlwaysParseForType(extension->GetType())) {
       handlers_by_priority[priority_map_[handler]] = handler;
@@ -156,7 +155,7 @@ bool ManifestHandlerRegistry::ValidateExtension(
   std::set<ManifestHandler*> handlers;
   for (ManifestHandlerMap::iterator iter = handlers_.begin();
        iter != handlers_.end(); ++iter) {
-    ManifestHandler* handler = iter->second.get();
+    ManifestHandler* handler = iter->second;
     if (extension->manifest()->HasPath(iter->first) ||
         handler->AlwaysValidateForType(extension->GetType())) {
       handlers.insert(handler);
@@ -220,7 +219,7 @@ void ManifestHandlerRegistry::SortManifestHandlers() {
   std::vector<ManifestHandler*> unsorted_handlers;
   unsorted_handlers.reserve(handlers_.size());
   for (const auto& key_value : handlers_) {
-    unsorted_handlers.push_back(key_value.second.get());
+    unsorted_handlers.push_back(key_value.second);
   }
 
   int priority = 0;
@@ -237,7 +236,7 @@ void ManifestHandlerRegistry::SortManifestHandlers() {
         CHECK(prereq_iter != handlers_.end())
             << "Extension manifest handler depends on unrecognized key " << key;
         // Prerequisite is in our map.
-        if (base::ContainsKey(priority_map_, prereq_iter->second.get()))
+        if (base::ContainsKey(priority_map_, prereq_iter->second))
           unsatisfied--;
       }
       if (unsatisfied == 0) {

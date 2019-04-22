@@ -15,6 +15,7 @@ from chromite.lib import failure_message_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import fake_cidb
+from chromite.lib.buildstore import FakeBuildStore
 
 
 class StepFailureTests(cros_test_lib.TestCase):
@@ -117,6 +118,7 @@ class ReportStageFailureTest(cros_test_lib.TestCase):
   def testReportStageFailureOnCompoundFailure(self):
     """Tests ReportStageFailure on CompoundFailure."""
     fake_db = fake_cidb.FakeCIDBConnection()
+    buildstore = FakeBuildStore(fake_db)
     inner_exception_1 = failures_lib.TestLabFailure()
     inner_exception_2 = TypeError()
     exc_infos = failures_lib.CreateExceptInfo(inner_exception_1, None)
@@ -124,7 +126,7 @@ class ReportStageFailureTest(cros_test_lib.TestCase):
     outer_exception = failures_lib.GoBFailure(exc_infos=exc_infos)
     mock_build_stage_id = 9345
     outer_failure_id = failures_lib.ReportStageFailure(
-        fake_db, mock_build_stage_id, outer_exception)
+        buildstore, mock_build_stage_id, outer_exception)
 
     self.assertEqual(3, len(fake_db.failureTable))
     for failure_id, failure in fake_db.failureTable.iteritems():
@@ -147,13 +149,14 @@ class ReportStageFailureTest(cros_test_lib.TestCase):
   def testReportStageFailureOnBuildScriptFailure(self):
     """Test ReportStageFailure On BuildScriptFailure."""
     fake_db = fake_cidb.FakeCIDBConnection()
+    buildstore = FakeBuildStore(fake_db)
     msg = 'run command error'
     short_name = 'short name'
     error = cros_build_lib.RunCommandError(msg, cros_build_lib.CommandResult())
     build_failure = failures_lib.BuildScriptFailure(error, short_name)
     mock_build_stage_id = 1
     failure_id = failures_lib.ReportStageFailure(
-        fake_db, mock_build_stage_id, build_failure)
+        buildstore, mock_build_stage_id, build_failure)
 
     extra_info_json_string = json.dumps({'shortname': short_name})
     self.assertEqual(len(fake_db.failureTable), 1)
@@ -166,6 +169,7 @@ class ReportStageFailureTest(cros_test_lib.TestCase):
   def testReportStageFailureOnPackageBuildFailure(self):
     """Test ReportStageFailure On PackageBuildFailure."""
     fake_db = fake_cidb.FakeCIDBConnection()
+    buildstore = FakeBuildStore(fake_db)
     msg = 'run command error'
     short_name = 'short name'
     failed_packages = ['chromeos-base/autotest', 'chromeos-base/telemetry']
@@ -174,7 +178,7 @@ class ReportStageFailureTest(cros_test_lib.TestCase):
         error, short_name, failed_packages)
     mock_build_stage_id = 1
     failure_id = failures_lib.ReportStageFailure(
-        fake_db, mock_build_stage_id, build_failure)
+        buildstore, mock_build_stage_id, build_failure)
 
     extra_info_json_string = json.dumps({
         'shortname': short_name,
@@ -347,3 +351,26 @@ class GetStageFailureMessageFromExceptionTests(cros_test_lib.TestCase):
     self.assertEqual(msg.stage_prefix_name, 'CommitQueueSync')
     self.assertEqual(msg.exception_type, 'ValueError')
     self.assertEqual(msg.exception_category, 'unknown')
+
+
+class BuildFailuresForFindit(cros_test_lib.TestCase):
+  """Test cases for exporting build failures for Findit integration."""
+
+  def testBuildFailuresJson(self):
+    error = cros_build_lib.RunCommandError('run cmd error',
+                                           cros_build_lib.CommandResult())
+    failed_packages = ['sys-apps/mosys', 'chromeos-base/cryptohome']
+    build_failure = failures_lib.PackageBuildFailure(
+        error, './build_packages', failed_packages)
+    self.assertSetEqual(set(failed_packages), build_failure.failed_packages)
+    failure_json = build_failure.BuildCompileFailureOutputJson()
+    values = json.loads(failure_json)
+    failures = values['failures']
+    self.assertEqual(len(failures), 2)
+    # Verify both output targets are not equal, this makes sure the loop
+    # below is correct.
+    self.assertNotEqual(failures[0]['output_targets'],
+                        failures[1]['output_targets'])
+    for value in failures:
+      self.assertEqual(value['rule'], 'emerge')
+      self.assertIn(value['output_targets'], failed_packages)

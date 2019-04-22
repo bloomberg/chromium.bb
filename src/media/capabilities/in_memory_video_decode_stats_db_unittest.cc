@@ -25,7 +25,8 @@ namespace media {
 
 static VideoDecodeStatsDB::VideoDescKey kTestKey() {
   return VideoDecodeStatsDB::VideoDescKey::MakeBucketedKey(
-      VP9PROFILE_PROFILE3, gfx::Size(1024, 768), 60);
+      VP9PROFILE_PROFILE3, gfx::Size(1024, 768), 60, "com.widevine.alpha",
+      false);
 }
 
 static VideoDecodeStatsDB::DecodeStatsEntry kEmtpyEntry() {

@@ -1,7 +1,7 @@
 function selectRangeAfterLayoutAndPaint(startElement, startIndex, endElement, endIndex) {
     runAfterLayoutAndPaint(function() {
         selectRange(startElement, startIndex, endElement, endIndex);
-      }, true);
+    }, true);
 }
 
 function selectRange(startElement, startIndex, endElement, endIndex) {

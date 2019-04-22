@@ -967,10 +967,7 @@ bool Validators::SwapBuffersFlagsValidator::IsValid(
     const GLbitfield value) const {
   switch (value) {
     case 0:
-    case gpu::SwapBuffersFlags::kPresentationFeedback:
     case gpu::SwapBuffersFlags::kVSyncParams:
-    case gpu::SwapBuffersFlags::kPresentationFeedback |
-        gpu::SwapBuffersFlags::kVSyncParams:
       return true;
   }
   return false;

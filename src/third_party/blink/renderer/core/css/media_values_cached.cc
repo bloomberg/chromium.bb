@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/css/media_values_cached.h"
 
+#include "third_party/blink/public/common/css/preferred_color_scheme.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -30,7 +31,9 @@ MediaValuesCached::MediaValuesCachedData::MediaValuesCachedData()
       strict_mode(true),
       display_mode(kWebDisplayModeBrowser),
       display_shape(kDisplayShapeRect),
-      color_gamut(ColorSpaceGamut::kUnknown) {}
+      color_gamut(ColorSpaceGamut::kUnknown),
+      preferred_color_scheme(PreferredColorScheme::kNoPreference),
+      prefers_reduced_motion(false) {}
 
 MediaValuesCached::MediaValuesCachedData::MediaValuesCachedData(
     Document& document)
@@ -69,16 +72,9 @@ MediaValuesCached::MediaValuesCachedData::MediaValuesCachedData(
     media_type = MediaValues::CalculateMediaType(frame);
     display_shape = MediaValues::CalculateDisplayShape(frame);
     color_gamut = MediaValues::CalculateColorGamut(frame);
+    preferred_color_scheme = MediaValues::CalculatePreferredColorScheme(frame);
+    prefers_reduced_motion = MediaValues::CalculatePrefersReducedMotion(frame);
   }
-}
-
-MediaValuesCached* MediaValuesCached::Create() {
-  return MakeGarbageCollected<MediaValuesCached>();
-}
-
-MediaValuesCached* MediaValuesCached::Create(
-    const MediaValuesCachedData& data) {
-  return MakeGarbageCollected<MediaValuesCached>(data);
 }
 
 MediaValuesCached::MediaValuesCached() = default;
@@ -190,6 +186,14 @@ DisplayShape MediaValuesCached::GetDisplayShape() const {
 
 ColorSpaceGamut MediaValuesCached::ColorGamut() const {
   return data_.color_gamut;
+}
+
+PreferredColorScheme MediaValuesCached::GetPreferredColorScheme() const {
+  return data_.preferred_color_scheme;
+}
+
+bool MediaValuesCached::PrefersReducedMotion() const {
+  return data_.prefers_reduced_motion;
 }
 
 }  // namespace blink

@@ -12,7 +12,7 @@
 #include "services/metrics/public/cpp/ukm_recorder.h"
 
 namespace cc {
-
+class PaintWorkletLayerPainter;
 class FakeProxy : public Proxy {
  public:
   FakeProxy() : layer_tree_host_(nullptr) {}
@@ -31,12 +31,15 @@ class FakeProxy : public Proxy {
   void SetNeedsRedraw(const gfx::Rect& damage_rect) override {}
   void SetNextCommitWaitsForActivation() override {}
   bool RequestedAnimatePending() override;
-  void NotifyInputThrottledUntilCommit() override {}
   void SetDeferMainFrameUpdate(bool defer_main_frame_update) override {}
+  void StartDeferringCommits(base::TimeDelta timeout) override {}
+  void StopDeferringCommits() override {}
   bool CommitRequested() const override;
   void Start() override {}
   void Stop() override {}
   void SetMutator(std::unique_ptr<LayerTreeMutator> mutator) override;
+  void SetPaintWorkletLayerPainter(
+      std::unique_ptr<PaintWorkletLayerPainter> painter) override;
   bool SupportsImplScrolling() const override;
   bool MainFrameWillHappenForTesting() override;
   void UpdateBrowserControlsState(BrowserControlsState constraints,
@@ -47,6 +50,7 @@ class FakeProxy : public Proxy {
   void ClearHistory() override {}
   void SetRenderFrameObserver(
       std::unique_ptr<RenderFrameMetadataObserver> observer) override {}
+  uint32_t GenerateChildSurfaceSequenceNumberSync() override;
 
  private:
   LayerTreeHost* layer_tree_host_;

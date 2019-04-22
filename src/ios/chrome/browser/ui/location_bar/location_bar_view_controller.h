@@ -15,6 +15,7 @@
 @protocol ActivityServiceCommands;
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
+@protocol InfobarCommands;
 @protocol LocationBarOffsetProvider;
 @protocol LoadQueryCommands;
 
@@ -43,8 +44,9 @@
 
 // The dispatcher for the share button, voice search, and long press actions.
 @property(nonatomic, weak) id<ActivityServiceCommands,
-                              BrowserCommands,
                               ApplicationCommands,
+                              BrowserCommands,
+                              InfobarCommands,
                               LoadQueryCommands>
     dispatcher;
 
@@ -71,10 +73,28 @@
 - (void)updateForNTP:(BOOL)isNTP;
 // Sets |enabled| of the share button.
 - (void)setShareButtonEnabled:(BOOL)enabled;
+// Displays or hides the InfobarButton.
+// TODO(crbug.com/935804): This method is currently only being used in the
+// Infobar redesign.
+- (void)displayInfobarButton:(BOOL)display;
+// If |selected| is YES applies the selected styling to the InfobarButton, if NO
+// it removes it.
+// TODO(crbug.com/935804): This method is currently only being used in the
+// Infobar redesign.
+- (void)setInfobarButtonStyleSelected:(BOOL)selected;
+// If |active| is YES applies the active styling to the InfobarButton, if NO it
+// removes it.
+// TODO(crbug.com/935804): This method is currently only being used in the
+// Infobar redesign.
+- (void)setInfobarButtonStyleActive:(BOOL)active;
 
 // Displays the voice search button instead of the share button in steady state,
 // and adds the voice search button to the empty textfield.
 @property(nonatomic, assign) BOOL voiceSearchEnabled;
+
+// Whether the default search engine supports search-by-image. This controls the
+// edit menu option to do an image search.
+@property(nonatomic, assign) BOOL searchByImageEnabled;
 
 @end
 

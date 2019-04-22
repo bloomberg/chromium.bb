@@ -6,18 +6,18 @@
 /**
  * @type {!MockProgressCenter}
  */
-var progressCenter;
+let progressCenter;
 
 /**
  * @type {!DriveSyncHandlerImpl}
  */
-var driveSyncHandler;
+let driveSyncHandler;
 
 /**
  * Mock chrome APIs.
  * @type {Object}
  */
-var mockChrome = {};
+const mockChrome = {};
 
 mockChrome.fileManagerPrivate = {
   onFileTransfersUpdated: {
@@ -167,7 +167,7 @@ function testOffline() {
 
   // Check that this created one item.
   assertEquals(1, progressCenter.getItemCount());
-  var item = progressCenter.items['drive-sync'];
+  let item = progressCenter.items['drive-sync'];
   assertEquals(ProgressItemState.PROGRESSING, item.state);
   assertTrue(driveSyncHandler.syncing);
 

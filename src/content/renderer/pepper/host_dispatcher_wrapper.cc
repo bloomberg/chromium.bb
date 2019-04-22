@@ -33,10 +33,12 @@ HostDispatcherWrapper::HostDispatcherWrapper(
 
 HostDispatcherWrapper::~HostDispatcherWrapper() {}
 
-bool HostDispatcherWrapper::Init(const IPC::ChannelHandle& channel_handle,
-                                 PP_GetInterface_Func local_get_interface,
-                                 const ppapi::Preferences& preferences,
-                                 scoped_refptr<PepperHungPluginFilter> filter) {
+bool HostDispatcherWrapper::Init(
+    const IPC::ChannelHandle& channel_handle,
+    PP_GetInterface_Func local_get_interface,
+    const ppapi::Preferences& preferences,
+    scoped_refptr<PepperHungPluginFilter> filter,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   if (!channel_handle.is_mojo_channel_handle())
     return false;
 
@@ -50,11 +52,10 @@ bool HostDispatcherWrapper::Init(const IPC::ChannelHandle& channel_handle,
   // Guarantee the hung_plugin_filter_ outlives |dispatcher_|.
   hung_plugin_filter_ = filter;
 
-  if (!dispatcher_->InitHostWithChannel(dispatcher_delegate_.get(),
-                                        peer_pid_,
+  if (!dispatcher_->InitHostWithChannel(dispatcher_delegate_.get(), peer_pid_,
                                         channel_handle,
                                         true,  // Client.
-                                        preferences)) {
+                                        preferences, task_runner)) {
     dispatcher_.reset();
     dispatcher_delegate_.reset();
     return false;

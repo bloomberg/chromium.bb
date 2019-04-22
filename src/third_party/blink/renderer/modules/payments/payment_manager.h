@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PAYMENTS_PAYMENT_MANAGER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PAYMENTS_PAYMENT_MANAGER_H_
 
+#include "base/macros.h"
 #include "third_party/blink/public/mojom/payments/payment_app.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -18,7 +19,6 @@ class ServiceWorkerRegistration;
 
 class MODULES_EXPORT PaymentManager final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
-  WTF_MAKE_NONCOPYABLE(PaymentManager);
 
  public:
   static PaymentManager* Create(ServiceWorkerRegistration*);
@@ -39,6 +39,8 @@ class MODULES_EXPORT PaymentManager final : public ScriptWrappable {
   payments::mojom::blink::PaymentManagerPtr manager_;
   Member<PaymentInstruments> instruments_;
   String user_hint_;
+
+  DISALLOW_COPY_AND_ASSIGN(PaymentManager);
 };
 
 }  // namespace blink

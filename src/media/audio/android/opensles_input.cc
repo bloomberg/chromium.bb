@@ -5,7 +5,7 @@
 #include "media/audio/android/opensles_input.h"
 
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
 #include "media/audio/android/audio_manager_android.h"
 #include "media/base/audio_bus.h"
@@ -237,13 +237,9 @@ bool OpenSLESInputStream::CreateRecorder() {
 
   // Create AudioRecorder and specify SL_IID_ANDROIDCONFIGURATION.
   LOG_ON_FAILURE_AND_RETURN(
-      (*engine)->CreateAudioRecorder(engine,
-                                     recorder_object_.Receive(),
-                                     &audio_source,
-                                     &audio_sink,
-                                     arraysize(interface_id),
-                                     interface_id,
-                                     interface_required),
+      (*engine)->CreateAudioRecorder(
+          engine, recorder_object_.Receive(), &audio_source, &audio_sink,
+          base::size(interface_id), interface_id, interface_required),
       false);
 
   SLAndroidConfigurationItf recorder_config;

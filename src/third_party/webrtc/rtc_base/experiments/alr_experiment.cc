@@ -14,8 +14,8 @@
 #include <stdio.h>
 #include <string>
 
+#include "api/transport/field_trial_based_config.h"
 #include "rtc_base/logging.h"
-#include "system_wrappers/include/field_trial.h"
 
 namespace webrtc {
 
@@ -26,16 +26,29 @@ const char AlrExperimentSettings::kStrictPacingAndProbingExperimentName[] =
 const char kDefaultProbingScreenshareBweSettings[] = "1.0,2875,80,40,-60,3";
 
 bool AlrExperimentSettings::MaxOneFieldTrialEnabled() {
-  return field_trial::FindFullName(kStrictPacingAndProbingExperimentName)
+  return AlrExperimentSettings::MaxOneFieldTrialEnabled(
+      FieldTrialBasedConfig());
+}
+
+bool AlrExperimentSettings::MaxOneFieldTrialEnabled(
+    const WebRtcKeyValueConfig& key_value_config) {
+  return key_value_config.Lookup(kStrictPacingAndProbingExperimentName)
              .empty() ||
-         field_trial::FindFullName(kScreenshareProbingBweExperimentName)
-             .empty();
+         key_value_config.Lookup(kScreenshareProbingBweExperimentName).empty();
 }
 
 absl::optional<AlrExperimentSettings>
 AlrExperimentSettings::CreateFromFieldTrial(const char* experiment_name) {
+  return AlrExperimentSettings::CreateFromFieldTrial(FieldTrialBasedConfig(),
+                                                     experiment_name);
+}
+
+absl::optional<AlrExperimentSettings>
+AlrExperimentSettings::CreateFromFieldTrial(
+    const WebRtcKeyValueConfig& key_value_config,
+    const char* experiment_name) {
   absl::optional<AlrExperimentSettings> ret;
-  std::string group_name = field_trial::FindFullName(experiment_name);
+  std::string group_name = key_value_config.Lookup(experiment_name);
 
   const std::string kIgnoredSuffix = "_Dogfood";
   std::string::size_type suffix_pos = group_name.rfind(kIgnoredSuffix);
@@ -44,16 +57,15 @@ AlrExperimentSettings::CreateFromFieldTrial(const char* experiment_name) {
     group_name.resize(group_name.length() - kIgnoredSuffix.length());
   }
 
-  if (experiment_name == kScreenshareProbingBweExperimentName) {
-    // This experiment is now default-on with fixed settings.
-    // TODO(sprang): Remove this kill-switch and clean up experiment code.
-    if (group_name != "Disabled") {
+  if (group_name.empty()) {
+    if (experiment_name == kScreenshareProbingBweExperimentName) {
+      // This experiment is now default-on with fixed settings.
+      // TODO(sprang): Remove this kill-switch and clean up experiment code.
       group_name = kDefaultProbingScreenshareBweSettings;
+    } else {
+      return ret;
     }
   }
-
-  if (group_name.empty())
-    return ret;
 
   AlrExperimentSettings settings;
   if (sscanf(group_name.c_str(), "%f,%" PRId64 ",%d,%d,%d,%d",

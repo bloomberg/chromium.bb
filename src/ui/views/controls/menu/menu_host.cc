@@ -10,7 +10,6 @@
 #include "build/build_config.h"
 #include "ui/aura/window_observer.h"
 #include "ui/events/gestures/gesture_recognizer.h"
-#include "ui/gfx/path.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/controls/menu/menu_host_root_view.h"
@@ -140,8 +139,9 @@ void MenuHost::InitMenuHost(Widget* parent,
   Init(params);
 
 #if !defined(OS_MACOSX)
-  pre_dispatch_handler_.reset(new internal::PreMenuEventDispatchHandler(
-      menu_controller, submenu_, GetNativeView()));
+  pre_dispatch_handler_ =
+      std::make_unique<internal::PreMenuEventDispatchHandler>(
+          menu_controller, submenu_, GetNativeView());
 #endif
 
   DCHECK(!owner_);

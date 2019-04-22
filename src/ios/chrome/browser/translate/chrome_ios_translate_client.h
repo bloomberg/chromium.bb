@@ -15,27 +15,24 @@
 #include "components/translate/core/browser/translate_step.h"
 #include "components/translate/core/common/translate_errors.h"
 #include "components/translate/ios/browser/ios_translate_driver.h"
-#include "ios/chrome/browser/translate/language_selection_handler.h"
 #include "ios/web/public/web_state/web_state_observer.h"
-#include "ios/web/public/web_state/web_state_user_data.h"
+#import "ios/web/public/web_state/web_state_user_data.h"
 
 class PrefService;
-
-namespace metrics {
-class TranslateEventProto;
-}  // namespace metrics
 
 namespace translate {
 class TranslateAcceptLanguages;
 class TranslatePrefs;
 class TranslateManager;
-
-struct LanguageDetectionDetails;
 }  // namespace translate
 
 namespace web {
 class WebState;
 }  // namespace web
+
+@protocol LanguageSelectionHandler;
+@protocol TranslateNotificationHandler;
+@protocol TranslateOptionSelectionHandler;
 
 class ChromeIOSTranslateClient
     : public translate::TranslateClient,
@@ -44,12 +41,8 @@ class ChromeIOSTranslateClient
  public:
   ~ChromeIOSTranslateClient() override;
 
-  // Creates a translation client tab helper and attaches it to |web_state|. The
-  // |language_selection_handler| may not be nil, and is not retained by the
-  // ChromeIOSTranslateClient.
-  static void CreateForWebState(
-      web::WebState* web_state,
-      id<LanguageSelectionHandler> language_selection_handler);
+  // Creates a translation client tab helper and attaches it to |web_state|
+  static void CreateForWebState(web::WebState* web_state);
 
   // Helper method to return a new TranslatePrefs instance.
   static std::unique_ptr<translate::TranslatePrefs> CreateTranslatePrefs(
@@ -64,10 +57,6 @@ class ChromeIOSTranslateClient
   std::unique_ptr<translate::TranslatePrefs> GetTranslatePrefs() override;
   translate::TranslateAcceptLanguages* GetTranslateAcceptLanguages() override;
   int GetInfobarIconID() const override;
-  // Record language detection event.
-  void RecordLanguageDetectionEvent(
-      const translate::LanguageDetectionDetails& details) const override;
-  void RecordTranslateEvent(const metrics::TranslateEventProto&) override;
   std::unique_ptr<infobars::InfoBar> CreateInfoBar(
       std::unique_ptr<translate::TranslateInfoBarDelegate> delegate)
       const override;
@@ -79,13 +68,38 @@ class ChromeIOSTranslateClient
   bool IsTranslatableURL(const GURL& url) override;
   void ShowReportLanguageDetectionErrorUI(const GURL& report_url) override;
 
+  id<LanguageSelectionHandler> language_selection_handler() {
+    return language_selection_handler_;
+  }
+
+  void set_language_selection_handler(id<LanguageSelectionHandler> handler) {
+    language_selection_handler_ = handler;
+  }
+
+  id<TranslateOptionSelectionHandler> translate_option_selection_handler() {
+    return translate_option_selection_handler_;
+  }
+
+  void set_translate_option_selection_handler(
+      id<TranslateOptionSelectionHandler> handler) {
+    translate_option_selection_handler_ = handler;
+  }
+
+  id<TranslateNotificationHandler> translate_notification_handler() {
+    return translate_notification_handler_;
+  }
+
+  void set_translate_notification_handler(
+      id<TranslateNotificationHandler> handler) {
+    translate_notification_handler_ = handler;
+  }
+
  private:
-  ChromeIOSTranslateClient(
-      web::WebState* web_state,
-      id<LanguageSelectionHandler> language_selection_handler);
+  ChromeIOSTranslateClient(web::WebState* web_state);
   friend class web::WebStateUserData<ChromeIOSTranslateClient>;
 
   // web::WebStateObserver implementation.
+  void DidStartLoading(web::WebState* web_state) override;
   void WebStateDestroyed(web::WebState* web_state) override;
 
   // The WebState this instance is observing. Will be null after
@@ -95,6 +109,11 @@ class ChromeIOSTranslateClient
   std::unique_ptr<translate::TranslateManager> translate_manager_;
   translate::IOSTranslateDriver translate_driver_;
   __weak id<LanguageSelectionHandler> language_selection_handler_;
+  __weak id<TranslateOptionSelectionHandler>
+      translate_option_selection_handler_;
+  __weak id<TranslateNotificationHandler> translate_notification_handler_;
+
+  WEB_STATE_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(ChromeIOSTranslateClient);
 };

@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/devtools/device/usb/android_rsa.h"
@@ -81,15 +82,9 @@ void RunCommand(scoped_refptr<AndroidUsbDevice> device,
     callback.Run(result, std::string());
 }
 
-} // namespace
+}  // namespace
 
-// static
-void UsbDeviceProvider::CountDevices(
-    const base::Callback<void(int)>& callback) {
-  AndroidUsbDevice::CountDevices(callback);
-}
-
-UsbDeviceProvider::UsbDeviceProvider(Profile* profile){
+UsbDeviceProvider::UsbDeviceProvider(Profile* profile) {
   rsa_key_ = AndroidRSAPrivateKey(profile);
 }
 
@@ -151,4 +146,3 @@ void UsbDeviceProvider::EnumeratedDevices(const SerialsCallback& callback,
   }
   callback.Run(result);
 }
-

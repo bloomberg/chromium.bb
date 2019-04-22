@@ -19,12 +19,12 @@
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
-#include "chrome/browser/chromeos/settings/stub_install_attributes.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "chromeos/tpm/stub_install_attributes.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/user_manager/fake_user_manager.h"
@@ -72,14 +72,19 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
     provider_.reset(new DeviceSettingsProvider(
         base::Bind(&DeviceSettingsProviderTest::SettingChanged,
                    base::Unretained(this)),
-        &device_settings_service_, local_state_.Get()));
+        device_settings_service_.get(), local_state_.Get()));
     Mock::VerifyAndClearExpectations(this);
+  }
+
+  void TearDown() override {
+    provider_.reset();
+    DeviceSettingsTestBase::TearDown();
   }
 
   void BuildAndInstallDevicePolicy() {
     EXPECT_CALL(*this, SettingChanged(_)).Times(AtLeast(1));
-    device_policy_.Build();
-    session_manager_client_.set_device_policy(device_policy_.GetBlob());
+    device_policy_->Build();
+    session_manager_client_.set_device_policy(device_policy_->GetBlob());
     ReloadDeviceSettings();
     Mock::VerifyAndClearExpectations(this);
   }
@@ -87,7 +92,7 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
   // Helper routine to enable/disable all reporting settings in policy.
   void SetReportingSettings(bool enable_reporting, int frequency) {
     em::DeviceReportingProto* proto =
-        device_policy_.payload().mutable_device_reporting();
+        device_policy_->payload().mutable_device_reporting();
     proto->set_report_version_info(enable_reporting);
     proto->set_report_activity_times(enable_reporting);
     proto->set_report_boot_mode(enable_reporting);
@@ -98,6 +103,9 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
     proto->set_report_session_status(enable_reporting);
     proto->set_report_os_update_status(enable_reporting);
     proto->set_report_running_kiosk_app(enable_reporting);
+    proto->set_report_power_status(enable_reporting);
+    proto->set_report_storage_status(enable_reporting);
+    proto->set_report_board_status(enable_reporting);
     proto->set_device_status_frequency(frequency);
     BuildAndInstallDevicePolicy();
   }
@@ -105,7 +113,7 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
   // Helper routine to enable/disable all reporting settings in policy.
   void SetHeartbeatSettings(bool enable_heartbeat, int frequency) {
     em::DeviceHeartbeatSettingsProto* proto =
-        device_policy_.payload().mutable_device_heartbeat_settings();
+        device_policy_->payload().mutable_device_heartbeat_settings();
     proto->set_heartbeat_enabled(enable_heartbeat);
     proto->set_heartbeat_frequency(frequency);
     BuildAndInstallDevicePolicy();
@@ -114,7 +122,7 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
   // Helper routine to enable/disable log upload settings in policy.
   void SetLogUploadSettings(bool enable_system_log_upload) {
     em::DeviceLogUploadSettingsProto* proto =
-        device_policy_.payload().mutable_device_log_upload_settings();
+        device_policy_->payload().mutable_device_log_upload_settings();
     proto->set_system_log_upload_enabled(enable_system_log_upload);
     BuildAndInstallDevicePolicy();
   }
@@ -122,7 +130,7 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
   // Helper routine to set device wallpaper setting in policy.
   void SetWallpaperSettings(const std::string& wallpaper_settings) {
     em::DeviceWallpaperImageProto* proto =
-        device_policy_.payload().mutable_device_wallpaper_image();
+        device_policy_->payload().mutable_device_wallpaper_image();
     proto->set_device_wallpaper_image(wallpaper_settings);
     BuildAndInstallDevicePolicy();
   }
@@ -133,11 +141,11 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
   void SetMetricsReportingSettings(MetricsOption option) {
     if (option == REMOVE_METRICS_POLICY) {
       // Remove policy altogether
-      device_policy_.payload().clear_metrics_enabled();
+      device_policy_->payload().clear_metrics_enabled();
     } else {
       // Enable or disable policy
       em::MetricsEnabledProto* proto =
-          device_policy_.payload().mutable_metrics_enabled();
+          device_policy_->payload().mutable_metrics_enabled();
       proto->set_metrics_enabled(option == ENABLE_METRICS);
     }
     BuildAndInstallDevicePolicy();
@@ -159,18 +167,14 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
   void VerifyReportingSettings(bool expected_enable_state,
                                int expected_frequency) {
     const char* reporting_settings[] = {
-      kReportDeviceVersionInfo,
-      kReportDeviceActivityTimes,
-      kReportDeviceBootMode,
-      // Device location reporting is not currently supported.
-      // kReportDeviceLocation,
-      kReportDeviceNetworkInterfaces,
-      kReportDeviceUsers,
-      kReportDeviceHardwareStatus,
-      kReportDeviceSessionStatus,
-      kReportOsUpdateStatus,
-      kReportRunningKioskApp
-    };
+        kReportDeviceVersionInfo, kReportDeviceActivityTimes,
+        kReportDeviceBoardStatus, kReportDeviceBootMode,
+        // Device location reporting is not currently supported.
+        // kReportDeviceLocation,
+        kReportDeviceNetworkInterfaces, kReportDeviceUsers,
+        kReportDeviceHardwareStatus, kReportDevicePowerStatus,
+        kReportDeviceStorageStatus, kReportDeviceSessionStatus,
+        kReportOsUpdateStatus, kReportRunningKioskApp};
 
     const base::Value expected_enable_value(expected_enable_state);
     for (auto* setting : reporting_settings) {
@@ -201,7 +205,7 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
   // Helper routine to set LoginScreenDomainAutoComplete policy.
   void SetDomainAutoComplete(const std::string& domain) {
     em::LoginScreenDomainAutoCompleteProto* proto =
-        device_policy_.payload().mutable_login_screen_domain_auto_complete();
+        device_policy_->payload().mutable_login_screen_domain_auto_complete();
     proto->set_login_screen_domain_auto_complete(domain);
     BuildAndInstallDevicePolicy();
   }
@@ -216,7 +220,7 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
   // Helper routine to set AutoUpdates connection types policy.
   void SetAutoUpdateConnectionTypes(const std::vector<int>& values) {
     em::AutoUpdateSettingsProto* proto =
-        device_policy_.payload().mutable_auto_update_settings();
+        device_policy_->payload().mutable_auto_update_settings();
     proto->set_update_disabled(false);
     for (auto const& value : values) {
       proto->add_allowed_connection_types(kConnectionTypes[value]);
@@ -227,7 +231,7 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
   // Helper routine to set HostnameTemplate policy.
   void SetHostnameTemplate(const std::string& hostname_template) {
     em::NetworkHostnameProto* proto =
-        device_policy_.payload().mutable_network_hostname();
+        device_policy_->payload().mutable_network_hostname();
     proto->set_device_hostname_template(hostname_template);
     BuildAndInstallDevicePolicy();
   }
@@ -236,7 +240,7 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
   void SetSamlLoginAuthenticationType(
       em::SamlLoginAuthenticationTypeProto::Type value) {
     em::SamlLoginAuthenticationTypeProto* proto =
-        device_policy_.payload().mutable_saml_login_authentication_type();
+        device_policy_->payload().mutable_saml_login_authentication_type();
     proto->set_saml_login_authentication_type(value);
     BuildAndInstallDevicePolicy();
   }
@@ -244,8 +248,51 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
   // Helper routine that sets the device DeviceAutoUpdateTimeRestricitons policy
   void SetDeviceAutoUpdateTimeRestrictions(const std::string& json_string) {
     em::AutoUpdateSettingsProto* proto =
-        device_policy_.payload().mutable_auto_update_settings();
+        device_policy_->payload().mutable_auto_update_settings();
     proto->set_disallowed_time_intervals(json_string);
+    BuildAndInstallDevicePolicy();
+  }
+
+  void SetPluginVmAllowedSetting(bool plugin_vm_allowed) {
+    em::PluginVmAllowedProto* proto =
+        device_policy_->payload().mutable_plugin_vm_allowed();
+    proto->set_plugin_vm_allowed(plugin_vm_allowed);
+    BuildAndInstallDevicePolicy();
+  }
+
+  void SetPluginVmLicenseKeySetting(const std::string& plugin_vm_license_key) {
+    em::PluginVmLicenseKeyProto* proto =
+        device_policy_->payload().mutable_plugin_vm_license_key();
+    proto->set_plugin_vm_license_key(plugin_vm_license_key);
+    BuildAndInstallDevicePolicy();
+  }
+
+  void SetDeviceRebootOnUserSignout(
+      em::DeviceRebootOnUserSignoutProto::RebootOnSignoutMode value) {
+    EXPECT_CALL(*this, SettingChanged(_)).Times(AtLeast(1));
+    em::DeviceRebootOnUserSignoutProto* proto =
+        device_policy_->payload().mutable_device_reboot_on_user_signout();
+    proto->set_reboot_on_signout_mode(value);
+    device_policy_->Build();
+    session_manager_client_.set_device_policy(device_policy_->GetBlob());
+    ReloadDeviceSettings();
+    Mock::VerifyAndClearExpectations(this);
+  }
+
+  // Helper routine that sets the device DeviceWilcoDtcAllowed policy.
+  void SetDeviceWilcoDtcAllowedSetting(bool device_wilco_dtc_allowed) {
+    em::DeviceWilcoDtcAllowedProto* const proto =
+        device_policy_->payload().mutable_device_wilco_dtc_allowed();
+    proto->set_device_wilco_dtc_allowed(device_wilco_dtc_allowed);
+    BuildAndInstallDevicePolicy();
+  }
+
+  void SetDeviceDockMacAddressSourceSetting(
+      em::DeviceDockMacAddressSourceProto::Source
+          device_dock_mac_address_source) {
+    em::DeviceDockMacAddressSourceProto* const proto =
+        device_policy_->payload().mutable_device_dock_mac_address_source();
+    proto->set_source(device_dock_mac_address_source);
     BuildAndInstallDevicePolicy();
   }
 
@@ -306,7 +353,7 @@ TEST_F(DeviceSettingsProviderTest, InitializationTestUnowned) {
   EXPECT_CALL(*this, SettingChanged(_)).Times(AnyNumber());
   EXPECT_CALL(*this, SettingChanged(kReleaseChannel)).Times(1);
   base::Value new_value("stable-channel");
-  provider_->Set(kReleaseChannel, new_value);
+  provider_->DoSet(kReleaseChannel, new_value);
   Mock::VerifyAndClearExpectations(this);
 
   // This shouldn't trigger a write.
@@ -349,7 +396,7 @@ TEST_F(DeviceSettingsProviderTest, SetPrefFailed) {
   // If we are not the owner no sets should work.
   base::Value value(true);
   EXPECT_CALL(*this, SettingChanged(kStatsReportingPref)).Times(1);
-  provider_->Set(kStatsReportingPref, value);
+  provider_->DoSet(kStatsReportingPref, value);
   Mock::VerifyAndClearExpectations(this);
 
   // This shouldn't trigger a write.
@@ -366,15 +413,15 @@ TEST_F(DeviceSettingsProviderTest, SetPrefFailed) {
 }
 
 TEST_F(DeviceSettingsProviderTest, SetPrefSucceed) {
-  owner_key_util_->SetPrivateKey(device_policy_.GetSigningKey());
-  InitOwner(AccountId::FromUserEmail(device_policy_.policy_data().username()),
+  owner_key_util_->SetPrivateKey(device_policy_->GetSigningKey());
+  InitOwner(AccountId::FromUserEmail(device_policy_->policy_data().username()),
             true);
   FlushDeviceSettings();
 
   base::Value value(true);
   EXPECT_CALL(*this, SettingChanged(_)).Times(AnyNumber());
   EXPECT_CALL(*this, SettingChanged(kStatsReportingPref)).Times(1);
-  provider_->Set(kStatsReportingPref, value);
+  provider_->DoSet(kStatsReportingPref, value);
   Mock::VerifyAndClearExpectations(this);
 
   // Process the store.
@@ -382,9 +429,10 @@ TEST_F(DeviceSettingsProviderTest, SetPrefSucceed) {
   FlushDeviceSettings();
 
   // Verify that the device policy has been adjusted.
-  ASSERT_TRUE(device_settings_service_.device_settings());
-  EXPECT_TRUE(device_settings_service_.device_settings()->
-                  metrics_enabled().metrics_enabled());
+  ASSERT_TRUE(device_settings_service_->device_settings());
+  EXPECT_TRUE(device_settings_service_->device_settings()
+                  ->metrics_enabled()
+                  .metrics_enabled());
 
   // Verify the change has been applied.
   const base::Value* saved_value = provider_->Get(kStatsReportingPref);
@@ -395,17 +443,17 @@ TEST_F(DeviceSettingsProviderTest, SetPrefSucceed) {
 }
 
 TEST_F(DeviceSettingsProviderTest, SetPrefTwice) {
-  owner_key_util_->SetPrivateKey(device_policy_.GetSigningKey());
-  InitOwner(AccountId::FromUserEmail(device_policy_.policy_data().username()),
+  owner_key_util_->SetPrivateKey(device_policy_->GetSigningKey());
+  InitOwner(AccountId::FromUserEmail(device_policy_->policy_data().username()),
             true);
   FlushDeviceSettings();
 
   EXPECT_CALL(*this, SettingChanged(_)).Times(AnyNumber());
 
   base::Value value1("beta");
-  provider_->Set(kReleaseChannel, value1);
+  provider_->DoSet(kReleaseChannel, value1);
   base::Value value2("dev");
-  provider_->Set(kReleaseChannel, value2);
+  provider_->DoSet(kReleaseChannel, value2);
 
   // Let the changes propagate through the system.
   session_manager_client_.set_device_policy(std::string());
@@ -419,26 +467,26 @@ TEST_F(DeviceSettingsProviderTest, SetPrefTwice) {
 }
 
 TEST_F(DeviceSettingsProviderTest, PolicyRetrievalFailedBadSignature) {
-  owner_key_util_->SetPublicKeyFromPrivateKey(*device_policy_.GetSigningKey());
-  device_policy_.policy().set_policy_data_signature("bad signature");
-  session_manager_client_.set_device_policy(device_policy_.GetBlob());
+  owner_key_util_->SetPublicKeyFromPrivateKey(*device_policy_->GetSigningKey());
+  device_policy_->policy().set_policy_data_signature("bad signature");
+  session_manager_client_.set_device_policy(device_policy_->GetBlob());
   ReloadDeviceSettings();
 
   // Verify that the cached settings blob is not "trusted".
   EXPECT_EQ(DeviceSettingsService::STORE_VALIDATION_ERROR,
-            device_settings_service_.status());
+            device_settings_service_->status());
   EXPECT_EQ(CrosSettingsProvider::PERMANENTLY_UNTRUSTED,
             provider_->PrepareTrustedValues(base::Closure()));
 }
 
 TEST_F(DeviceSettingsProviderTest, PolicyRetrievalNoPolicy) {
-  owner_key_util_->SetPublicKeyFromPrivateKey(*device_policy_.GetSigningKey());
+  owner_key_util_->SetPublicKeyFromPrivateKey(*device_policy_->GetSigningKey());
   session_manager_client_.set_device_policy(std::string());
   ReloadDeviceSettings();
 
   // Verify that the cached settings blob is not "trusted".
   EXPECT_EQ(DeviceSettingsService::STORE_NO_POLICY,
-            device_settings_service_.status());
+            device_settings_service_->status());
   EXPECT_EQ(CrosSettingsProvider::PERMANENTLY_UNTRUSTED,
             provider_->PrepareTrustedValues(base::Closure()));
 }
@@ -473,7 +521,7 @@ TEST_F(DeviceSettingsProviderTest, PolicyLoadNotification) {
 
 TEST_F(DeviceSettingsProviderTest, LegacyDeviceLocalAccounts) {
   em::DeviceLocalAccountInfoProto* account =
-      device_policy_.payload().mutable_device_local_accounts()->add_account();
+      device_policy_->payload().mutable_device_local_accounts()->add_account();
   account->set_deprecated_public_session_id(
       policy::PolicyBuilder::kFakeUsername);
   BuildAndInstallDevicePolicy();
@@ -493,10 +541,12 @@ TEST_F(DeviceSettingsProviderTest, LegacyDeviceLocalAccounts) {
 }
 
 TEST_F(DeviceSettingsProviderTest, DecodeDeviceState) {
-  device_policy_.policy_data().mutable_device_state()->set_device_mode(
+  device_policy_->policy_data().mutable_device_state()->set_device_mode(
       em::DeviceState::DEVICE_MODE_DISABLED);
-  device_policy_.policy_data().mutable_device_state()->
-      mutable_disabled_state()->set_message(kDisabledMessage);
+  device_policy_->policy_data()
+      .mutable_device_state()
+      ->mutable_disabled_state()
+      ->set_message(kDisabledMessage);
   BuildAndInstallDevicePolicy();
   // Verify that the device state has been decoded correctly.
   const base::Value expected_disabled_value(true);
@@ -506,7 +556,7 @@ TEST_F(DeviceSettingsProviderTest, DecodeDeviceState) {
             *provider_->Get(kDeviceDisabledMessage));
 
   // Verify that a change to the device state triggers a notification.
-  device_policy_.policy_data().mutable_device_state()->clear_device_mode();
+  device_policy_->policy_data().mutable_device_state()->clear_device_mode();
   BuildAndInstallDevicePolicy();
 
   // Verify that the updated state has been decoded correctly.
@@ -594,20 +644,6 @@ TEST_F(DeviceSettingsProviderTest, DecodeLogUploadSettings) {
   VerifyLogUploadSettings(false);
 }
 
-TEST_F(DeviceSettingsProviderTest, SetWallpaperSettings) {
-  // Invalid format should be ignored.
-  const std::string invalid_format = "\\\\invalid\\format";
-  SetWallpaperSettings(invalid_format);
-  EXPECT_EQ(nullptr, provider_->Get(kDeviceWallpaperImage));
-
-  // Set with valid json format.
-  const std::string valid_format(R"({"url":"foo", "hash": "bar"})");
-  SetWallpaperSettings(valid_format);
-  std::unique_ptr<base::DictionaryValue> expected_value =
-      base::DictionaryValue::From(base::JSONReader::Read(valid_format));
-  EXPECT_EQ(*expected_value, *provider_->Get(kDeviceWallpaperImage));
-}
-
 TEST_F(DeviceSettingsProviderTest, SamlLoginAuthenticationType) {
   using PolicyProto = em::SamlLoginAuthenticationTypeProto;
 
@@ -666,6 +702,71 @@ TEST_F(DeviceSettingsProviderTest, DeviceAutoUpdateTimeRestrictionsExtra) {
   test_list.GetList().push_back(std::move(interval));
   SetDeviceAutoUpdateTimeRestrictions(extra_field);
   VerifyPolicyValue(kDeviceAutoUpdateTimeRestrictions, &test_list);
+}
+
+TEST_F(DeviceSettingsProviderTest, DecodePluginVmAllowedSetting) {
+  SetPluginVmAllowedSetting(true);
+  EXPECT_EQ(base::Value(true), *provider_->Get(kPluginVmAllowed));
+
+  SetPluginVmAllowedSetting(false);
+  EXPECT_EQ(base::Value(false), *provider_->Get(kPluginVmAllowed));
+}
+
+TEST_F(DeviceSettingsProviderTest, DecodePluginVmLicenseKeySetting) {
+  SetPluginVmLicenseKeySetting("LICENSE_KEY");
+  EXPECT_EQ(base::Value("LICENSE_KEY"), *provider_->Get(kPluginVmLicenseKey));
+}
+
+TEST_F(DeviceSettingsProviderTest, DeviceRebootAfterUserSignout) {
+  using PolicyProto = em::DeviceRebootOnUserSignoutProto;
+
+  VerifyPolicyValue(kDeviceRebootOnUserSignout, nullptr);
+
+  {
+    SetDeviceRebootOnUserSignout(PolicyProto::NEVER);
+    base::Value expected_value(PolicyProto::NEVER);
+    VerifyPolicyValue(kDeviceRebootOnUserSignout, &expected_value);
+  }
+
+  {
+    SetDeviceRebootOnUserSignout(PolicyProto::ARC_SESSION);
+    base::Value expected_value(PolicyProto::ARC_SESSION);
+    VerifyPolicyValue(kDeviceRebootOnUserSignout, &expected_value);
+  }
+
+  {
+    SetDeviceRebootOnUserSignout(PolicyProto::ALWAYS);
+    base::Value expected_value(PolicyProto::ALWAYS);
+    VerifyPolicyValue(kDeviceRebootOnUserSignout, &expected_value);
+  }
+}
+
+TEST_F(DeviceSettingsProviderTest, DeviceWilcoDtcAllowedSetting) {
+  // Policy should not be set by default
+  VerifyPolicyValue(kDeviceWilcoDtcAllowed, nullptr);
+
+  SetDeviceWilcoDtcAllowedSetting(true);
+  EXPECT_EQ(base::Value(true), *provider_->Get(kDeviceWilcoDtcAllowed));
+
+  SetDeviceWilcoDtcAllowedSetting(false);
+  EXPECT_EQ(base::Value(false), *provider_->Get(kDeviceWilcoDtcAllowed));
+}
+
+TEST_F(DeviceSettingsProviderTest, DeviceDockMacAddressSourceSetting) {
+  // Policy should not be set by default
+  VerifyPolicyValue(kDeviceDockMacAddressSource, nullptr);
+
+  SetDeviceDockMacAddressSourceSetting(
+      em::DeviceDockMacAddressSourceProto::DEVICE_DOCK_MAC_ADDRESS);
+  EXPECT_EQ(base::Value(1), *provider_->Get(kDeviceDockMacAddressSource));
+
+  SetDeviceDockMacAddressSourceSetting(
+      em::DeviceDockMacAddressSourceProto::DEVICE_NIC_MAC_ADDRESS);
+  EXPECT_EQ(base::Value(2), *provider_->Get(kDeviceDockMacAddressSource));
+
+  SetDeviceDockMacAddressSourceSetting(
+      em::DeviceDockMacAddressSourceProto::DOCK_NIC_MAC_ADDRESS);
+  EXPECT_EQ(base::Value(3), *provider_->Get(kDeviceDockMacAddressSource));
 }
 
 }  // namespace chromeos

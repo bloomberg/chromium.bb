@@ -12,6 +12,12 @@
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_consumer.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
 
+// The leading inset for the separator of UITableView without leading icons.
+extern const CGFloat kTableViewSeparatorInset;
+// The leading inset for the separator of UITableView with leading icons. This
+// is the default value for ChromeTableViewController.
+extern const CGFloat kTableViewSeparatorInsetWithIcon;
+
 @class ChromeTableViewStyler;
 @class TableViewItem;
 
@@ -22,8 +28,8 @@ typedef NS_ENUM(NSInteger, ChromeTableViewControllerStyle) {
 
 // Chrome-specific TableViewController.
 @interface ChromeTableViewController
-    : UITableViewController<AppBarViewControllerPresenting,
-                            ChromeTableViewConsumer>
+    : UITableViewController <AppBarViewControllerPresenting,
+                             ChromeTableViewConsumer>
 
 // The model of this controller.
 @property(nonatomic, readonly, strong)
@@ -124,6 +130,15 @@ typedef NS_ENUM(NSInteger, ChromeTableViewControllerStyle) {
                      withVelocity:(CGPoint)velocity
               targetContentOffset:(inout CGPoint*)targetContentOffset
     NS_REQUIRES_SUPER;
+
+#pragma mark - UITableViewDelegate
+
+// Prevents non-editable (i.e. returns NO in |tableView:canEditRowAtIndexPath:|)
+// items from being selected in editing mode, otherwise they will not have radio
+// buttons ahead but still be selectable, which may cause a crash when trying to
+// delete items based on |self.tableView.indexPathsForSelectedRows|.
+- (NSIndexPath*)tableView:(UITableView*)tableView
+    willSelectRowAtIndexPath:(NSIndexPath*)indexPath NS_REQUIRES_SUPER;
 
 @end
 

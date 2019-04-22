@@ -8,6 +8,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_path_watcher.h"
@@ -23,7 +24,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
@@ -73,7 +74,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #endif
 
 namespace {
@@ -217,7 +218,7 @@ void SpinThreads() {
 
   // This prevents HistoryBackend from accessing its databases after the
   // directory that contains them has been deleted.
-  base::TaskScheduler::GetInstance()->FlushForTesting();
+  base::ThreadPool::GetInstance()->FlushForTesting();
 }
 
 }  // namespace
@@ -345,13 +346,6 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, CreateNewProfileSynchronous) {
         temp_dir.GetPath(), &delegate, Profile::CREATE_MODE_SYNCHRONOUS));
     CheckChromeVersion(profile.get(), true);
 
-#if defined(OS_CHROMEOS)
-    // Make sure session is marked as initialized.
-    user_manager::User* user =
-        chromeos::ProfileHelper::Get()->GetUserByProfile(profile.get());
-    EXPECT_TRUE(user->profile_ever_initialized());
-#endif
-
     // Creating a profile causes an implicit connection attempt to a Mojo
     // service, which occurs as part of a new task. Before deleting |profile|,
     // ensure this task runs to prevent a crash.
@@ -409,12 +403,6 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
     // Wait for the profile to be created.
     observer.Wait();
     CheckChromeVersion(profile.get(), true);
-#if defined(OS_CHROMEOS)
-    // Make sure session is marked as initialized.
-    user_manager::User* user =
-        chromeos::ProfileHelper::Get()->GetUserByProfile(profile.get());
-    EXPECT_TRUE(user->profile_ever_initialized());
-#endif
   }
 
   FlushIoTaskRunnerAndSpinThreads();
@@ -561,7 +549,7 @@ std::string GetExitTypePreferenceFromDisk(Profile* profile) {
   if (!base::ReadFileToString(prefs_path, &prefs))
     return std::string();
 
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(prefs);
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(prefs);
   if (!value)
     return std::string();
 
@@ -719,6 +707,9 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, LastSelectedDirectory) {
 // Verifies that, by default, there's a separate disk cache for media files.
 // TODO(crbug.com/789657): remove once there is no separate on-disk media cache.
 IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, SeparateMediaCache) {
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;  // Network service doesn't use a separate media cache.
+
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // Do a normal load using the media URLRequestContext, populating the cache.
@@ -945,5 +936,41 @@ IN_PROC_BROWSER_TEST_F(ProfileWithoutMediaCacheBrowserTest,
       extension_partition->GetPath().Append(chrome::kMediaCacheDirname);
 
   FileDestructionWatcher destruction_watcher(extension_media_cache_path);
+  destruction_watcher.WaitForDestruction();
+}
+
+class ProfileWithNetworkServiceBrowserTest : public ProfileBrowserTest {
+ public:
+  ProfileWithNetworkServiceBrowserTest() {
+    feature_list_.InitAndEnableFeature(network::features::kNetworkService);
+  }
+
+  ~ProfileWithNetworkServiceBrowserTest() override {}
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// Create a media cache file, and make sure it's deleted by the time the next
+// test runs.
+IN_PROC_BROWSER_TEST_F(ProfileWithNetworkServiceBrowserTest,
+                       PRE_DeleteMediaCache) {
+  base::FilePath media_cache_path =
+      browser()->profile()->GetPath().Append(chrome::kMediaCacheDirname);
+
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  EXPECT_TRUE(base::CreateDirectory(media_cache_path));
+  std::string data = "foo";
+  base::WriteFile(media_cache_path.AppendASCII("foo"), data.c_str(),
+                  data.size());
+}
+
+IN_PROC_BROWSER_TEST_F(ProfileWithNetworkServiceBrowserTest, DeleteMediaCache) {
+  base::FilePath media_cache_path =
+      browser()->profile()->GetPath().Append(chrome::kMediaCacheDirname);
+
+  base::ScopedAllowBlockingForTesting allow_blocking;
+
+  FileDestructionWatcher destruction_watcher(media_cache_path);
   destruction_watcher.WaitForDestruction();
 }

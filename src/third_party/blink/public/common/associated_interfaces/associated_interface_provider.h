@@ -66,7 +66,7 @@ class BLINK_COMMON_EXPORT AssociatedInterfaceProvider {
 
   template <typename Interface>
   void GetInterface(mojo::AssociatedInterfacePtr<Interface>* proxy) {
-    GetInterface(mojo::MakeRequest(proxy));
+    GetInterface(mojo::MakeRequest(proxy, task_runner_));
   }
 
   void OverrideBinderForTesting(

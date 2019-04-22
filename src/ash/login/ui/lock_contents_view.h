@@ -16,14 +16,17 @@
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/login_data_dispatcher.h"
 #include "ash/login/ui/login_display_style.h"
+#include "ash/login/ui/login_error_bubble.h"
+#include "ash/login/ui/login_tooltip_view.h"
 #include "ash/login/ui/non_accessible_view.h"
+#include "ash/public/cpp/system_tray_focus_observer.h"
+#include "ash/public/interfaces/login_screen.mojom.h"
 #include "ash/session/session_observer.h"
-#include "ash/system/system_tray_focus_observer.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/scoped_observer.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
-#include "chromeos/dbus/power_manager_client.h"
 #include "ui/display/display_observer.h"
 #include "ui/display/screen.h"
 #include "ui/keyboard/keyboard_controller.h"
@@ -44,7 +47,6 @@ namespace ash {
 
 class LoginAuthUserView;
 class LoginBigUserView;
-class LoginBubble;
 class LoginDetachableBaseModel;
 class LoginExpandedPublicAccountView;
 class LoginUserView;
@@ -80,11 +82,11 @@ class ASH_EXPORT LockContentsView
     LoginBigUserView* opt_secondary_big_view() const;
     ScrollableUsersListView* users_list() const;
     views::View* note_action() const;
-    LoginBubble* tooltip_bubble() const;
-    LoginBubble* auth_error_bubble() const;
-    LoginBubble* detachable_base_error_bubble() const;
-    LoginBubble* warning_banner_bubble() const;
-    LoginBubble* supervised_user_deprecation_bubble() const;
+    LoginTooltipView* tooltip_bubble() const;
+    LoginErrorBubble* auth_error_bubble() const;
+    LoginErrorBubble* detachable_base_error_bubble() const;
+    LoginErrorBubble* warning_banner_bubble() const;
+    LoginErrorBubble* supervised_user_deprecation_bubble() const;
     views::View* system_info() const;
     LoginExpandedPublicAccountView* expanded_view() const;
     views::View* main_view() const;
@@ -147,10 +149,10 @@ class ASH_EXPORT LockContentsView
                                  mojom::FingerprintState state) override;
   void OnFingerprintAuthResult(const AccountId& account_id,
                                bool success) override;
-  void OnAuthEnabledForUserChanged(
+  void OnAuthEnabledForUser(const AccountId& user) override;
+  void OnAuthDisabledForUser(
       const AccountId& user,
-      bool enabled,
-      const base::Optional<base::Time>& auth_reenabled_time) override;
+      const ash::mojom::AuthDisabledDataPtr& auth_disabled_data) override;
   void OnLockScreenNoteStateChanged(mojom::TrayActionState state) override;
   void OnTapToUnlockEnabledForUserChanged(const AccountId& user,
                                           bool enabled) override;
@@ -180,6 +182,7 @@ class ASH_EXPORT LockContentsView
       bool show_full_management_disclosure) override;
   void OnDetachableBasePairingStatusChanged(
       DetachableBasePairingStatus pairing_status) override;
+  void OnSetShowParentAccessDialog(bool show) override;
 
   // SystemTrayFocusObserver:
   void OnFocusLeavingSystemTray(bool reverse) override;
@@ -191,7 +194,7 @@ class ASH_EXPORT LockContentsView
   // views::StyledLabelListener:
   void StyledLabelLinkClicked(views::StyledLabel* label,
                               const gfx::Range& range,
-                              int event_flags) override{};
+                              int event_flags) override {}
   // SessionObserver:
   void OnLockStateChanged(bool locked) override;
 
@@ -221,6 +224,8 @@ class ASH_EXPORT LockContentsView
    private:
     DISALLOW_COPY_AND_ASSIGN(UserState);
   };
+
+  class AutoLoginUserActivityHandler;
 
   using DisplayLayoutAction = base::RepeatingCallback<void(bool landscape)>;
 
@@ -302,6 +307,9 @@ class ASH_EXPORT LockContentsView
   // Called when the easy unlock icon is tapped.
   void OnEasyUnlockIconTapped();
 
+  // Called when parent access validation finished.
+  void OnParentAccessValidationFinished(bool access_granted);
+
   // Returns keyboard controller for the view. Returns nullptr if keyboard is
   // not activated, view has not been added to the widget yet or keyboard is not
   // displayed in this window.
@@ -331,10 +339,6 @@ class ASH_EXPORT LockContentsView
 
   // Change the visibility of child views based on the |style|.
   void SetDisplayStyle(DisplayStyle style);
-
-  // Set the lock screen note state to |mojom::TrayActionState::kNotAvailable|.
-  // All the subsequent calls of |OnLockScreenNoteStateChanged| will be ignored.
-  void DisableLockScreenNote();
 
   // Register accelerators used in login screen.
   void RegisterAccelerators();
@@ -376,25 +380,27 @@ class ASH_EXPORT LockContentsView
       this};
   ScopedSessionObserver session_observer_{this};
 
-  // Bubbles for displaying authentication error.
-  std::unique_ptr<LoginBubble> auth_error_bubble_;
-
-  // Bubble for displaying error when the user's detachable base changes.
-  std::unique_ptr<LoginBubble> detachable_base_error_bubble_;
-
-  std::unique_ptr<LoginBubble> tooltip_bubble_;
-
+  // All error bubbles and the tooltip view are child views of LockContentsView,
+  // and will be torn down when LockContentsView is torn down.
+  // Bubble for displaying authentication error.
+  LoginErrorBubble* auth_error_bubble_;
+  // Bubble for displaying detachable base errors.
+  LoginErrorBubble* detachable_base_error_bubble_;
+  // Bubble for displaying easy-unlock tooltips.
+  LoginTooltipView* tooltip_bubble_;
   // Bubble for displaying warning banner message.
-  std::unique_ptr<LoginBubble> warning_banner_bubble_;
-
+  LoginErrorBubble* warning_banner_bubble_;
   // Bubble for displaying supervised user deprecation message.
-  std::unique_ptr<LoginBubble> supervised_user_deprecation_bubble_;
+  LoginErrorBubble* supervised_user_deprecation_bubble_;
 
   int unlock_attempt_ = 0;
 
   // Whether a lock screen app is currently active (i.e. lock screen note action
   // state is reported as kActive by the data dispatcher).
   bool lock_screen_apps_active_ = false;
+
+  // Tracks the visibility of the OOBE dialog.
+  bool oobe_dialog_visible_ = false;
 
   // Whether the lock screen note is disabled. Used to override the actual lock
   // screen note state.
@@ -409,6 +415,11 @@ class ASH_EXPORT LockContentsView
 
   // Accelerators handled by login screen.
   std::map<ui::Accelerator, AcceleratorAction> accel_map_;
+
+  // Notifies Chrome when user activity is detected on the login screen so that
+  // the auto-login timer can be reset.
+  std::unique_ptr<AutoLoginUserActivityHandler>
+      auto_login_user_activity_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(LockContentsView);
 };

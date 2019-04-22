@@ -61,6 +61,9 @@ const char kAccessibilityAutoclickRevertToLeftClick[] =
 // a new autoclick.
 const char kAccessibilityAutoclickMovementThreshold[] =
     "settings.a11y.autoclick_movement_threshold";
+// The Autoclick menu position on the screen, an mojom::AutoclickMenuPosition.
+const char kAccessibilityAutoclickMenuPosition[] =
+    "settings.a11y.autoclick_menu_position";
 // A boolean pref which determines whether caret highlighting is enabled.
 const char kAccessibilityCaretHighlightEnabled[] =
     "settings.a11y.caret_highlight";
@@ -80,6 +83,10 @@ const char kAccessibilityDictationEnabled[] = "settings.a11y.dictation";
 // A boolean pref which determines whether the accessibility menu shows
 // regardless of the state of a11y features.
 const char kShouldAlwaysShowAccessibilityMenu[] = "settings.a11y.enable_menu";
+
+// A boolean pref that stores whether the Kiosk Next Shell is enabled. When it
+// is, we start it after sign in.
+const char kKioskNextShellEnabled[] = "ash.kiosk_next_shell.enabled";
 
 // A boolean pref storing the enabled status of the Docked Magnifier feature.
 const char kDockedMagnifierEnabled[] = "ash.docked_magnifier.enabled";
@@ -183,6 +190,12 @@ const char kNightLightScheduleType[] = "ash.night_light.schedule_type";
 const char kNightLightCustomStartTime[] = "ash.night_light.custom_start_time";
 const char kNightLightCustomEndTime[] = "ash.night_light.custom_end_time";
 
+// Double prefs storing the most recent valid geoposition, which is only used
+// when the device lacks connectivity and we're unable to retrieve a valid
+// geoposition to calculate the sunset / sunrise times.
+const char kNightLightCachedLatitude[] = "ash.night_light.cached_latitude";
+const char kNightLightCachedLongitude[] = "ash.night_light.cached_longitude";
+
 // Whether the Chrome OS lock screen is allowed.
 const char kAllowScreenLock[] = "allow_screen_lock";
 
@@ -271,6 +284,12 @@ const char kPowerWaitForInitialUserActivity[] =
 const char kPowerForceNonzeroBrightnessForUserActivity[] =
     "power.force_nonzero_brightness_for_user_activity";
 
+// Boolean controlling whether a shorter suspend delay should be used after the
+// user forces the display off by pressing the power button. Provided to allow
+// policy to control this behavior.
+const char kPowerFastSuspendWhenBacklightsForcedOff[] =
+    "power.fast_suspend_when_backlights_forced_off";
+
 // Boolean controlling whether smart dim model is enabled.
 const char kPowerSmartDimEnabled[] = "power.smart_dim_enabled";
 
@@ -329,6 +348,61 @@ const char kQuickUnlockPinSalt[] = "quick_unlock.pin.salt";
 // Dictionary prefs in local state that keeps information about detachable
 // bases - for exmaple the last used base per user.
 const char kDetachableBaseDevices[] = "ash.detachable_base.devices";
+
+// Integer pref storing the number of Assistant warmer welcome triggered times.
+const char kAssistantNumWarmerWelcomeTriggered[] =
+    "ash.assistant.num_warmer_welcome_triggered";
+
+// Whether the user is allowed to disconnect and configure VPN connections.
+const char kVpnConfigAllowed[] = "vpn_config_allowed";
+
+// A boolean pref that indicates whether power peak shift is enabled.
+const char kPowerPeakShiftEnabled[] = "ash.power.peak_shift_enabled";
+
+// An integer pref that specifies the power peak shift battery threshold in
+// percent.
+const char kPowerPeakShiftBatteryThreshold[] =
+    "ash.power.peak_shift_battery_threshold";
+
+// A dictionary pref that specifies the power peak shift day configs.
+// For details see "DevicePowerPeakShiftDayConfig" in policy_templates.json.
+const char kPowerPeakShiftDayConfig[] = "ash.power.peak_shift_day_config";
+
+// A boolean pref that indicates whether boot on AC is enabled.
+const char kBootOnAcEnabled[] = "ash.power.boot_on_ac_enabled";
+
+// A boolean pref that indicates whether advanced battery charge mode is
+// enabled.
+const char kAdvancedBatteryChargeModeEnabled[] =
+    "ash.power.advanced_battery_charge_mode_enabled";
+
+// A dictionary pref that specifies the advanced battery charge mode day config.
+// For details see "DeviceAdvancedBatteryChargeModeDayConfig" in
+// policy_templates.json.
+const char kAdvancedBatteryChargeModeDayConfig[] =
+    "ash.power.advanced_battery_charge_mode_day_config";
+
+// An integer pref that specifies the battery charge mode.
+// For details see "DeviceBatteryChargeMode" in policy_templates.json.
+const char kBatteryChargeMode[] = "ash.power.battery_charge_mode";
+
+// An integer pref that specifies the battery charge custom start charging in
+// percent.
+// For details see "DeviceBatteryChargeCustomStartCharging" in
+// policy_templates.json.
+const char kBatteryChargeCustomStartCharging[] =
+    "ash.power.battery_charge_custom_start_charging";
+
+// An integer pref that specifies the battery charge custom stop charging in
+// percent.
+// For details see "DeviceBatteryChargeCustomStopCharging" in
+// policy_templates.json.
+const char kBatteryChargeCustomStopCharging[] =
+    "ash.power.battery_charge_custom_stop_charging";
+
+// A boolean pref that indicates whether USB power share is enabled.
+// For details see "DeviceUsbPowerShareEnabled" in policy_templates.json.
+const char kUsbPowerShareEnabled[] = "ash.power.usb_power_share_enabled";
 
 // NOTE: New prefs should start with the "ash." prefix. Existing prefs moved
 // into this file should not be renamed, since they may be synced.

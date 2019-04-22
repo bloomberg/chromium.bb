@@ -20,13 +20,13 @@
 #include "content/renderer/media/webrtc/transceiver_state_surfacer.h"
 #include "content/renderer/media/webrtc/webrtc_media_stream_track_adapter_map.h"
 #include "third_party/webrtc/api/jsep.h"
-#include "third_party/webrtc/api/peerconnectioninterface.h"
-#include "third_party/webrtc/api/rtcerror.h"
-#include "third_party/webrtc/api/rtpreceiverinterface.h"
-#include "third_party/webrtc/api/setremotedescriptionobserverinterface.h"
-#include "third_party/webrtc/rtc_base/refcount.h"
-#include "third_party/webrtc/rtc_base/refcountedobject.h"
-#include "third_party/webrtc/rtc_base/scoped_ref_ptr.h"
+#include "third_party/webrtc/api/peer_connection_interface.h"
+#include "third_party/webrtc/api/rtc_error.h"
+#include "third_party/webrtc/api/rtp_receiver_interface.h"
+#include "third_party/webrtc/api/scoped_refptr.h"
+#include "third_party/webrtc/api/set_remote_description_observer_interface.h"
+#include "third_party/webrtc/rtc_base/ref_count.h"
+#include "third_party/webrtc/rtc_base/ref_counted_object.h"
 
 namespace content {
 
@@ -49,6 +49,7 @@ class CONTENT_EXPORT WebRtcSetDescriptionObserver
     States& operator=(States&& other);
 
     webrtc::PeerConnectionInterface::SignalingState signaling_state;
+    blink::WebRTCSctpTransportSnapshot sctp_transport_state;
     std::vector<RtpTransceiverState> transceiver_states;
 
     DISALLOW_COPY_AND_ASSIGN(States);

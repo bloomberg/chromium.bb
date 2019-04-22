@@ -7,8 +7,11 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/command_line.h"
+#include "base/containers/flat_map.h"
 #include "base/files/file_util.h"
+#include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -24,10 +27,10 @@
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/settings/install_attributes.h"
 #include "chromeos/system/statistics_provider.h"
+#include "chromeos/tpm/install_attributes.h"
 #include "components/arc/arc_util.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -43,35 +46,10 @@ using ErrorCode = DemoSetupController::DemoSetupError::ErrorCode;
 using RecoveryMethod = DemoSetupController::DemoSetupError::RecoveryMethod;
 
 constexpr char kDemoRequisition[] = "cros-demo-mode";
+constexpr char kOfflinePolicyDirectoryName[] = "policy";
 constexpr char kOfflineDevicePolicyFileName[] = "device_policy";
 constexpr char kOfflineDeviceLocalAccountPolicyFileName[] =
     "local_account_policy";
-
-// The policy blob data for offline demo-mode is embedded into the filesystem.
-// TODO(mukai, agawronska): fix this when switching to dm-verity image.
-constexpr const base::FilePath::CharType kOfflineDemoModeDir[] =
-    FILE_PATH_LITERAL("/usr/share/demo_mode_resources/policy");
-
-bool CheckOfflinePolicyFilesExist(const base::FilePath& policy_dir,
-                                  std::string* message) {
-  base::FilePath device_policy_path =
-      policy_dir.AppendASCII(kOfflineDevicePolicyFileName);
-  if (!base::PathExists(device_policy_path)) {
-    *message = base::StringPrintf("Path %s does not exist",
-                                  device_policy_path.AsUTF8Unsafe().c_str());
-    return false;
-  }
-  base::FilePath local_account_policy_path =
-      policy_dir.AppendASCII(kOfflineDeviceLocalAccountPolicyFileName);
-  if (!base::PathExists(local_account_policy_path)) {
-    *message =
-        base::StringPrintf("Path %s does not exist",
-                           local_account_policy_path.AsUTF8Unsafe().c_str());
-    return false;
-  }
-
-  return true;
-}
 
 // Get the DeviceLocalAccountPolicyStore for the account_id.
 policy::CloudPolicyStore* GetDeviceLocalAccountPolicyStore(
@@ -231,9 +209,6 @@ DemoSetupController::DemoSetupError CreateFromLockStatus(
 }  //  namespace
 
 // static
-constexpr char DemoSetupController::kDemoModeDomain[];
-
-// static
 DemoSetupController::DemoSetupError
 DemoSetupController::DemoSetupError::CreateFromEnrollmentStatus(
     const policy::EnrollmentStatus& status) {
@@ -349,9 +324,6 @@ DemoSetupController::DemoSetupError::~DemoSetupError() = default;
 base::string16 DemoSetupController::DemoSetupError::GetLocalizedErrorMessage()
     const {
   switch (error_code_) {
-    case ErrorCode::kNoOfflineResources:
-      return l10n_util::GetStringUTF16(
-          IDS_DEMO_SETUP_NO_OFFLINE_RESOURCES_ERROR);
     case ErrorCode::kOfflinePolicyError:
       return l10n_util::GetStringUTF16(IDS_DEMO_SETUP_OFFLINE_POLICY_ERROR);
     case ErrorCode::kOfflinePolicyStoreError:
@@ -467,6 +439,10 @@ void DemoSetupController::ClearDemoRequisition(
     policy::DeviceCloudPolicyManagerChromeOS* policy_manager) {
   if (policy_manager->GetDeviceRequisition() == kDemoRequisition) {
     policy_manager->SetDeviceRequisition(std::string());
+    // If device requisition is |kDemoRequisition|, it means the sub
+    // organization was also set by the demo setup controller, so remove it as
+    // well.
+    policy_manager->SetSubOrganization(std::string());
   }
 }
 
@@ -477,19 +453,26 @@ bool DemoSetupController::IsDemoModeAllowed() {
 }
 
 // static
-bool DemoSetupController::IsOfflineDemoModeAllowed() {
-  // Offline demo mode can be only enabled when demo mode feature is enabled.
-  return IsDemoModeAllowed() &&
-         base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kEnableOfflineDemoMode);
-}
-
-// static
 bool DemoSetupController::IsOobeDemoSetupFlowInProgress() {
   const WizardController* const wizard_controller =
       WizardController::default_controller();
   return wizard_controller &&
          wizard_controller->demo_setup_controller() != nullptr;
+}
+
+// static
+std::string DemoSetupController::GetSubOrganizationEmail() {
+  if (!base::FeatureList::IsEnabled(
+          switches::kSupportCountryCustomizationInDemoMode)) {
+    return std::string();
+  }
+  const std::string country =
+      g_browser_process->local_state()->GetString(prefs::kDemoModeCountry);
+  const base::flat_set<std::string> kCountriesWithCustomization(
+      {"dk", "fi", "fr", "nl", "no", "se"});
+  if (kCountriesWithCustomization.contains(country))
+    return "admin-" + country + "@" + policy::kDemoModeDomain;
+  return std::string();
 }
 
 DemoSetupController::DemoSetupController() : weak_ptr_factory_(this) {}
@@ -520,10 +503,7 @@ void DemoSetupController::Enroll(OnSetupSuccess on_setup_success,
       LoadDemoResourcesCrOSComponent();
       return;
     case DemoSession::DemoModeConfig::kOffline: {
-      const base::FilePath offline_data_dir =
-          policy_dir_for_tests_.empty() ? base::FilePath(kOfflineDemoModeDir)
-                                        : policy_dir_for_tests_;
-      EnrollOffline(offline_data_dir);
+      EnrollOffline();
       return;
     }
     case DemoSession::DemoModeConfig::kNone:
@@ -531,35 +511,58 @@ void DemoSetupController::Enroll(OnSetupSuccess on_setup_success,
   }
 }
 
+void DemoSetupController::TryMountPreinstalledDemoResources(
+    HasPreinstalledDemoResourcesCallback callback) {
+  if (!preinstalled_demo_resources_) {
+    preinstalled_demo_resources_ =
+        std::make_unique<DemoResources>(DemoSession::DemoModeConfig::kOffline);
+  }
+
+  if (DBusThreadManager::Get()->IsUsingFakes()) {
+    preinstalled_demo_resources_
+        ->SetPreinstalledOfflineResourcesLoadedForTesting(
+            preinstalled_offline_resources_path_for_tests_);
+  }
+  preinstalled_demo_resources_->EnsureLoaded(
+      base::BindOnce(&DemoSetupController::OnPreinstalledDemoResourcesLoaded,
+                     base::Unretained(this), std::move(callback)));
+}
+
+base::FilePath DemoSetupController::GetPreinstalledDemoResourcesPath(
+    const base::FilePath& relative_path) {
+  if (preinstalled_demo_resources_)
+    return preinstalled_demo_resources_->GetAbsolutePath(relative_path);
+  return base::FilePath();
+}
+
 void DemoSetupController::LoadDemoResourcesCrOSComponent() {
   VLOG(1) << "Loading demo resources component";
-  component_updater::CrOSComponentManager* cros_component_manager =
-      g_browser_process->platform_part()->cros_component_manager();
-  // In tests, use the desired error code.
-  if (!cros_component_manager || DBusThreadManager::Get()->IsUsingFakes()) {
+  if (!demo_resources_)
+    demo_resources_ = std::make_unique<DemoResources>(demo_config_);
+
+  if (DBusThreadManager::Get()->IsUsingFakes()) {
+    demo_resources_->SetCrOSComponentLoadedForTesting(
+        base::FilePath(), component_error_for_tests_);
+
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(&DemoSetupController::OnDemoResourcesCrOSComponentLoaded,
-                       weak_ptr_factory_.GetWeakPtr(),
-                       component_error_for_tests_, base::FilePath()));
+                       weak_ptr_factory_.GetWeakPtr()));
     return;
   }
 
-  cros_component_manager->Load(
-      DemoResources::kDemoModeResourcesComponentName,
-      component_updater::CrOSComponentManager::MountPolicy::kMount,
-      component_updater::CrOSComponentManager::UpdatePolicy::kDontForce,
+  demo_resources_->EnsureLoaded(
       base::BindOnce(&DemoSetupController::OnDemoResourcesCrOSComponentLoaded,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void DemoSetupController::OnDemoResourcesCrOSComponentLoaded(
-    component_updater::CrOSComponentManager::Error error,
-    const base::FilePath& path) {
+void DemoSetupController::OnDemoResourcesCrOSComponentLoaded() {
   DCHECK_EQ(demo_config_, DemoSession::DemoModeConfig::kOnline);
 
-  if (error != component_updater::CrOSComponentManager::Error::NONE) {
-    SetupFailed(DemoSetupError::CreateFromComponentError(error));
+  if (demo_resources_->component_error().value() !=
+      component_updater::CrOSComponentManager::Error::NONE) {
+    SetupFailed(DemoSetupError::CreateFromComponentError(
+        demo_resources_->component_error().value()));
     return;
   }
 
@@ -570,19 +573,28 @@ void DemoSetupController::OnDemoResourcesCrOSComponentLoaded(
           ->GetDeviceCloudPolicyManager();
   DCHECK(policy_manager->GetDeviceRequisition().empty());
   policy_manager->SetDeviceRequisition(kDemoRequisition);
+  policy_manager->SetSubOrganization(GetSubOrganizationEmail());
   policy::EnrollmentConfig config;
   config.mode = policy::EnrollmentConfig::MODE_ATTESTATION;
-  config.management_domain = DemoSetupController::kDemoModeDomain;
+  config.management_domain = policy::kDemoModeDomain;
 
   enrollment_helper_ = EnterpriseEnrollmentHelper::Create(
-      this, nullptr, config, DemoSetupController::kDemoModeDomain);
+      this, nullptr, config, policy::kDemoModeDomain);
   enrollment_helper_->EnrollUsingAttestation();
 }
 
-void DemoSetupController::EnrollOffline(const base::FilePath& policy_dir) {
+void DemoSetupController::OnPreinstalledDemoResourcesLoaded(
+    HasPreinstalledDemoResourcesCallback callback) {
+  std::move(callback).Run(!preinstalled_demo_resources_->path().empty());
+}
+
+void DemoSetupController::EnrollOffline() {
   DCHECK_EQ(demo_config_, DemoSession::DemoModeConfig::kOffline);
-  DCHECK(policy_dir_.empty());
-  policy_dir_ = policy_dir;
+  DCHECK(!preinstalled_demo_resources_->path().empty());
+
+  const base::FilePath policy_dir =
+      preinstalled_demo_resources_->GetAbsolutePath(
+          base::FilePath(kOfflinePolicyDirectoryName));
 
   if (IsOnlineFreCheckRequired()) {
     SetupFailed(
@@ -593,37 +605,14 @@ void DemoSetupController::EnrollOffline(const base::FilePath& policy_dir) {
     return;
   }
 
-  VLOG(1) << "Checking if offline policy exists";
-  std::string* message = new std::string();
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE,
-      {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-      base::BindOnce(&CheckOfflinePolicyFilesExist, policy_dir_, message),
-      base::BindOnce(&DemoSetupController::OnOfflinePolicyFilesExisted,
-                     weak_ptr_factory_.GetWeakPtr(), base::Owned(message)));
-}
-
-void DemoSetupController::OnOfflinePolicyFilesExisted(std::string* message,
-                                                      bool ok) {
-  DCHECK_EQ(demo_config_, DemoSession::DemoModeConfig::kOffline);
-  DCHECK(!policy_dir_.empty());
-
-  if (!ok) {
-    SetupFailed(DemoSetupError(DemoSetupError::ErrorCode::kNoOfflineResources,
-                               DemoSetupError::RecoveryMethod::kOnlineOnly,
-                               *message));
-    return;
-  }
-
   VLOG(1) << "Starting offline enrollment";
   policy::EnrollmentConfig config;
   config.mode = policy::EnrollmentConfig::MODE_OFFLINE_DEMO;
-  config.management_domain = DemoSetupController::kDemoModeDomain;
+  config.management_domain = policy::kDemoModeDomain;
   config.offline_policy_path =
-      policy_dir_.AppendASCII(kOfflineDevicePolicyFileName);
+      policy_dir.AppendASCII(kOfflineDevicePolicyFileName);
   enrollment_helper_ = EnterpriseEnrollmentHelper::Create(
-      this, nullptr /* ad_join_delegate */, config,
-      DemoSetupController::kDemoModeDomain);
+      this, nullptr /* ad_join_delegate */, config, policy::kDemoModeDomain);
   enrollment_helper_->EnrollForOfflineDemo();
 }
 
@@ -640,16 +629,18 @@ void DemoSetupController::OnOtherError(
   SetupFailed(DemoSetupError::CreateFromOtherEnrollmentError(error));
 }
 
-void DemoSetupController::OnDeviceEnrolled(
-    const std::string& additional_token) {
+void DemoSetupController::OnDeviceEnrolled() {
   DCHECK_NE(demo_config_, DemoSession::DemoModeConfig::kNone);
 
   // Try to load the policy for the device local account.
   if (demo_config_ == DemoSession::DemoModeConfig::kOffline) {
     VLOG(1) << "Loading offline policy";
-    DCHECK(!policy_dir_.empty());
+    DCHECK(!preinstalled_demo_resources_->path().empty());
+
     const base::FilePath file_path =
-        policy_dir_.AppendASCII(kOfflineDeviceLocalAccountPolicyFileName);
+        preinstalled_demo_resources_->GetAbsolutePath(
+            base::FilePath(kOfflinePolicyDirectoryName)
+                .AppendASCII(kOfflineDeviceLocalAccountPolicyFileName));
     base::PostTaskWithTraitsAndReplyWithResult(
         FROM_HERE,
         {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
@@ -686,14 +677,14 @@ void DemoSetupController::SetCrOSComponentLoadErrorForTest(
   component_error_for_tests_ = error;
 }
 
+void DemoSetupController::SetPreinstalledOfflineResourcesPathForTesting(
+    const base::FilePath& path) {
+  preinstalled_offline_resources_path_for_tests_ = path;
+}
+
 void DemoSetupController::SetDeviceLocalAccountPolicyStoreForTest(
     policy::CloudPolicyStore* store) {
   device_local_account_policy_store_ = store;
-}
-
-void DemoSetupController::SetOfflineDataDirForTest(
-    const base::FilePath& offline_dir) {
-  policy_dir_for_tests_ = offline_dir;
 }
 
 void DemoSetupController::OnDeviceLocalAccountPolicyLoaded(
@@ -764,12 +755,9 @@ void DemoSetupController::SetupFailed(const DemoSetupError& error) {
 
 void DemoSetupController::Reset() {
   DCHECK_NE(demo_config_, DemoSession::DemoModeConfig::kNone);
-  DCHECK_NE(demo_config_ == DemoSession::DemoModeConfig::kOffline,
-            policy_dir_.empty());
 
   // |demo_config_| is not reset here, because it is needed for retrying setup.
   enrollment_helper_.reset();
-  policy_dir_.clear();
   if (device_local_account_policy_store_) {
     device_local_account_policy_store_->RemoveObserver(this);
     device_local_account_policy_store_ = nullptr;

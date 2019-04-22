@@ -17,7 +17,7 @@
 #define HAVE_INTTYPES_H 1
 
 /* libxml-2.0 is available */
-#define HAVE_LIBXML 1
+/* #undef HAVE_LIBXML */
 
 /* Define to 1 if you have the <memory.h> header file. */
 #define HAVE_MEMORY_H 1
@@ -49,8 +49,7 @@
 /* Define to 1 if you have the <unistd.h> header file. */
 #define HAVE_UNISTD_H 1
 
-/* Define to the sub-directory in which libtool stores uninstalled libraries.
-   */
+/* Define to the sub-directory where libtool stores uninstalled libraries. */
 #define LT_OBJDIR ".libs/"
 
 /* Name of package */

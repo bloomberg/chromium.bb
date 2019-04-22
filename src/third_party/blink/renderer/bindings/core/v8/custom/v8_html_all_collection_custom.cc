@@ -34,7 +34,7 @@
 
 namespace blink {
 
-// https://html.spec.whatwg.org/#the-htmlallcollection-interface
+// https://html.spec.whatwg.org/C/#the-htmlallcollection-interface
 //
 // The only part of the spec expressed in terms of ECMAScript values instead of
 // IDL values is the [[Call]] internal method. However, the way the

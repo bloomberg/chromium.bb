@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_VR_NAVIGATOR_VR_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_VR_NAVIGATOR_VR_H_
 
+#include "base/macros.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/navigator.h"
@@ -14,7 +15,6 @@
 #include "third_party/blink/renderer/modules/vr/vr_display_event.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -29,10 +29,15 @@ class MODULES_EXPORT NavigatorVR final
       public LocalDOMWindow::EventListenerObserver,
       public FocusChangedObserver {
   USING_GARBAGE_COLLECTED_MIXIN(NavigatorVR);
-  WTF_MAKE_NONCOPYABLE(NavigatorVR);
 
  public:
   static const char kSupplementName[];
+
+  // Returns whether WebVR has beeen used in the document.
+  // If no supplement has been created, it returns false without creating one.
+  // This allows it to be used in cases where creating objects is not allowed,
+  // such as within NavigatorGamepad::DidAddEventListener().
+  static bool HasWebVrBeenUsed(Document&);
 
   static NavigatorVR* From(Document&);
   static NavigatorVR& From(Navigator&);
@@ -68,8 +73,7 @@ class MODULES_EXPORT NavigatorVR final
   void DidRemoveEventListener(LocalDOMWindow*, const AtomicString&) override;
   void DidRemoveAllEventListeners(LocalDOMWindow*) override;
 
-  void SetDidUseGamepad();
-  void MaybeLogDidUseGamepad();
+  bool HasWebVrBeenUsed() const { return did_use_webvr_; }
 
   int64_t GetSourceId() const;
 
@@ -88,13 +92,15 @@ class MODULES_EXPORT NavigatorVR final
   bool listening_for_activate_ = false;
   bool focused_ = false;
 
+  bool did_use_webvr_ = false;
+
   // Metrics data - indicates whether we've already measured this data so we
   // don't do it every frame.
   bool did_log_getVRDisplays_ = false;
   bool did_log_NavigatorXR_ = false;
-  bool did_log_did_use_gamepad_ = false;
-  bool did_use_gamepad_ = false;
   const int64_t ukm_source_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(NavigatorVR);
 };
 
 }  // namespace blink

@@ -32,6 +32,14 @@ Polymer({
   behaviors: [WebUIListenerBehavior],
 
   properties: {
+    hidden: {
+      type: Boolean,
+      value: false,
+      computed: 'syncControlsHidden_(' +
+          'syncStatus.signedIn, syncStatus.disabled, syncStatus.hasError)',
+      reflectToAttribute: true,
+    },
+
     /**
      * The current sync preferences, supplied by SyncBrowserProxy.
      * @type {settings.SyncPrefs|undefined}
@@ -68,8 +76,9 @@ Polymer({
     this.addWebUIListener(
         'sync-prefs-changed', this.handleSyncPrefsChanged_.bind(this));
 
-    if (settings.getCurrentRoute() == settings.routes.SYNC_ADVANCED)
+    if (settings.getCurrentRoute() == settings.routes.SYNC_ADVANCED) {
       this.browserProxy_.didNavigateToSyncPage();
+    }
   },
 
   /**
@@ -80,8 +89,9 @@ Polymer({
     this.syncPrefs = syncPrefs;
 
     // If autofill is not registered or synced, force Payments integration off.
-    if (!this.syncPrefs.autofillRegistered || !this.syncPrefs.autofillSynced)
+    if (!this.syncPrefs.autofillRegistered || !this.syncPrefs.autofillSynced) {
       this.set('syncPrefs.paymentsIntegrationEnabled', false);
+    }
   },
 
   /**
@@ -158,35 +168,30 @@ Polymer({
     return syncAllDataTypes || !autofillSynced;
   },
 
-  /**
-   * @private
-   * @return {boolean}
-   */
-  shouldShowSyncSetupToast_: function() {
-    return settings.getCurrentRoute() == settings.routes.SYNC_ADVANCED &&
-        this.syncStatus.setupInProgress;
-  },
-
   /** @private */
-  onCancelSyncClick_: function() {
-    this.fire('sync-setup-cancel');
-  },
-
-  /** @private */
-  syncStatusChanged_: function(syncStatus) {
-    // When the sync controls are embedded, the parent has to take care of
-    // showing/hiding them.
-    if (settings.getCurrentRoute() != settings.routes.SYNC_ADVANCED ||
-        !syncStatus)
-      return;
-
-    // Navigate to main sync page when the sync controls page should *not* be
-    // available.
-    if (!syncStatus.signedIn || !!syncStatus.disabled ||
-        (!!syncStatus.hasError &&
-         syncStatus.statusAction !== settings.StatusAction.ENTER_PASSPHRASE)) {
+  syncStatusChanged_: function() {
+    if (settings.getCurrentRoute() == settings.routes.SYNC_ADVANCED &&
+        this.syncControlsHidden_()) {
       settings.navigateTo(settings.routes.SYNC);
     }
+  },
+
+  /**
+   * @return {boolean} Whether the sync controls are hidden.
+   * @private
+   */
+  syncControlsHidden_: function() {
+    if (!this.syncStatus) {
+      // Show sync controls by default.
+      return false;
+    }
+
+    if (!this.syncStatus.signedIn || this.syncStatus.disabled) {
+      return true;
+    }
+
+    return !!this.syncStatus.hasError &&
+        this.syncStatus.statusAction !== settings.StatusAction.ENTER_PASSPHRASE;
   },
 });
 })();

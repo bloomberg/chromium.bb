@@ -16,164 +16,86 @@
 #include "components/omnibox/browser/vector_icons.h"  // nogncheck
 #endif
 
-// A small convenience wrapper for the common implementation pattern below.
-class OmniboxPedalCommon : public OmniboxPedal {
- public:
-  OmniboxPedalCommon(LabelStrings strings,
-                     GURL url,
-                     std::initializer_list<const char*> triggers)
-      : OmniboxPedal(strings) {
-    url_ = url;
-    for (const char* trigger : triggers) {
-      triggers_.insert(base::ASCIIToUTF16(trigger));
-    }
-  }
-};
-
 // =============================================================================
 
-class OmniboxPedalClearBrowsingData : public OmniboxPedalCommon {
- public:
-  OmniboxPedalClearBrowsingData()
-      : OmniboxPedalCommon(
-            LabelStrings(
-                IDS_OMNIBOX_PEDAL_CLEAR_BROWSING_DATA_HINT,
-                IDS_OMNIBOX_PEDAL_CLEAR_BROWSING_DATA_HINT_SHORT,
-                IDS_OMNIBOX_PEDAL_CLEAR_BROWSING_DATA_SUGGESTION_CONTENTS),
-            GURL("chrome://settings/clearBrowserData"),
-            {
-                "how to clear browsing data on chrome",
-                "how to clear history",
-                "how to clear history on google chrome",
-                "how to clear history on chrome",
-                "how to clear history in google chrome",
-                "how to clear google chrome history",
-                "how to clear history google chrome",
-                "how to clear browsing history in chrome",
-                "clear browsing data",
-                "clear history",
-                "clear browsing data on chrome",
-                "clear history on google chrome",
-                "clear history google chrome",
-                "clear browsing history in chrome",
-                "clear cookies chrome",
-                "clear chrome history",
-                "clear chrome cache",
-                "history clear",
-                "history clear chrome",
-            }) {}
+OmniboxPedalClearBrowsingData::OmniboxPedalClearBrowsingData()
+    : OmniboxPedal(
+          LabelStrings(
+              IDS_OMNIBOX_PEDAL_CLEAR_BROWSING_DATA_HINT,
+              IDS_OMNIBOX_PEDAL_CLEAR_BROWSING_DATA_HINT_SHORT,
+              IDS_OMNIBOX_PEDAL_CLEAR_BROWSING_DATA_SUGGESTION_CONTENTS),
+          GURL("chrome://settings/clearBrowserData")) {}
 
 #if (!defined(OS_ANDROID) || BUILDFLAG(ENABLE_VR)) && !defined(OS_IOS)
-  const gfx::VectorIcon& GetVectorIcon() const override {
-    return omnibox::kAnswerWhenIsIcon;
-  }
+const gfx::VectorIcon& OmniboxPedalClearBrowsingData::GetVectorIcon() const {
+  return omnibox::kAnswerWhenIsIcon;
+}
 #endif
-};
 
 // =============================================================================
 
-class OmniboxPedalChangeSearchEngine : public OmniboxPedalCommon {
+class OmniboxPedalChangeSearchEngine : public OmniboxPedal {
  public:
   OmniboxPedalChangeSearchEngine()
-      : OmniboxPedalCommon(
+      : OmniboxPedal(
             LabelStrings(
                 IDS_OMNIBOX_PEDAL_CHANGE_SEARCH_ENGINE_HINT,
                 IDS_OMNIBOX_PEDAL_CHANGE_SEARCH_ENGINE_HINT_SHORT,
                 IDS_OMNIBOX_PEDAL_CHANGE_SEARCH_ENGINE_SUGGESTION_CONTENTS),
-            GURL("chrome://settings/searchEngines"),
-            {
-                "how to change search engine",
-                "how to change default search engine",
-                "how to change default search engine in chrome",
-                "how to change search engine on chrome",
-                "how to set google as default search engine on chrome",
-                "how to set google as default search engine in chrome",
-                "how to make google default search engine",
-                "how to change default search engine in google chrome",
-                "change search engine", "change google search engine",
-                "change chrome searh engine",
-                "change default search engine in chrome",
-                "change search engine chrome", "change default search chrome",
-                "change search chrome", "switch chrome search engine",
-                "switch search engine",
-            }) {}
+            GURL("chrome://settings/searchEngines")) {}
 };
 
 // =============================================================================
 
-class OmniboxPedalManagePasswords : public OmniboxPedalCommon {
+class OmniboxPedalManagePasswords : public OmniboxPedal {
  public:
   OmniboxPedalManagePasswords()
-      : OmniboxPedalCommon(
+      : OmniboxPedal(
             LabelStrings(
                 IDS_OMNIBOX_PEDAL_MANAGE_PASSWORDS_HINT,
                 IDS_OMNIBOX_PEDAL_MANAGE_PASSWORDS_HINT_SHORT,
                 IDS_OMNIBOX_PEDAL_MANAGE_PASSWORDS_SUGGESTION_CONTENTS),
-            GURL("chrome://settings/passwords"),
-            {
-                "passwords", "find my passwords", "save passwords in chrome",
-                "view saved passwords", "delete passwords",
-                "find saved passwords", "where does chrome store passwords",
-                "how to see passwords in chrome",
-            }) {}
+            GURL("chrome://settings/passwords")) {}
 };
 
 // =============================================================================
 
 // TODO(orinj): Use better scoping for existing setting, or link to new UI.
-class OmniboxPedalChangeHomePage : public OmniboxPedalCommon {
+class OmniboxPedalChangeHomePage : public OmniboxPedal {
  public:
   OmniboxPedalChangeHomePage()
-      : OmniboxPedalCommon(
+      : OmniboxPedal(
             LabelStrings(
                 IDS_OMNIBOX_PEDAL_CHANGE_HOME_PAGE_HINT,
                 IDS_OMNIBOX_PEDAL_CHANGE_HOME_PAGE_HINT_SHORT,
                 IDS_OMNIBOX_PEDAL_CHANGE_HOME_PAGE_SUGGESTION_CONTENTS),
-            GURL("chrome://settings/?search=show+home+button"),
-            {
-                "how to change home page", "how to change your home page",
-                "how do i change my home page", "change home page google",
-                "home page chrome", "change home chrome",
-                "change chrome home page", "how to change home page on chrome",
-                "how to change home page in chrome", "change chrome home",
-            }) {}
+            GURL("chrome://settings/?search=show+home+button")) {}
 };
 
 // =============================================================================
 
-class OmniboxPedalUpdateCreditCard : public OmniboxPedalCommon {
+class OmniboxPedalUpdateCreditCard : public OmniboxPedal {
  public:
   OmniboxPedalUpdateCreditCard()
-      : OmniboxPedalCommon(
+      : OmniboxPedal(
             OmniboxPedal::LabelStrings(
                 IDS_OMNIBOX_PEDAL_UPDATE_CREDIT_CARD_HINT,
                 IDS_OMNIBOX_PEDAL_UPDATE_CREDIT_CARD_HINT_SHORT,
                 IDS_OMNIBOX_PEDAL_UPDATE_CREDIT_CARD_SUGGESTION_CONTENTS),
-            GURL("chrome://settings/autofill"),
-            {
-                "how to save credit card info on chrome",
-                "how to remove credit card from google chrome",
-                "remove google chrome credit cards",
-                "access google chrome credit cards",
-                "google chrome credit cards", "chrome credit cards",
-                "get to chrome credit cards", "chrome credit saved",
-            }) {}
+            GURL("chrome://settings/autofill")) {}
 };
 
 // =============================================================================
 
-class OmniboxPedalLaunchIncognito : public OmniboxPedalCommon {
+class OmniboxPedalLaunchIncognito : public OmniboxPedal {
  public:
   OmniboxPedalLaunchIncognito()
-      : OmniboxPedalCommon(
+      : OmniboxPedal(
             LabelStrings(
                 IDS_OMNIBOX_PEDAL_LAUNCH_INCOGNITO_HINT,
                 IDS_OMNIBOX_PEDAL_LAUNCH_INCOGNITO_HINT_SHORT,
                 IDS_OMNIBOX_PEDAL_LAUNCH_INCOGNITO_SUGGESTION_CONTENTS),
-            GURL(),
-            {
-                "what is incognito", "what's incognito mode",
-            }) {}
+            GURL()) {}
 
   void Execute(ExecutionContext& context) const override {
     context.client_.NewIncognitoWindow();
@@ -182,21 +104,14 @@ class OmniboxPedalLaunchIncognito : public OmniboxPedalCommon {
 
 // =============================================================================
 
-class OmniboxPedalTranslate : public OmniboxPedalCommon {
+class OmniboxPedalTranslate : public OmniboxPedal {
  public:
   OmniboxPedalTranslate()
-      : OmniboxPedalCommon(
+      : OmniboxPedal(
             LabelStrings(IDS_OMNIBOX_PEDAL_TRANSLATE_HINT,
                          IDS_OMNIBOX_PEDAL_TRANSLATE_HINT_SHORT,
                          IDS_OMNIBOX_PEDAL_TRANSLATE_SUGGESTION_CONTENTS),
-            GURL(),
-            {
-                "how to change language in google chrome",
-                "change language chrome", "change chrome language",
-                "change language in chrome", "switch chrome language",
-                "translate language", "translate in chrome",
-                "translate on page", "translate language chrome",
-            }) {}
+            GURL()) {}
 
   void Execute(ExecutionContext& context) const override {
     context.client_.PromptPageTranslation();
@@ -205,45 +120,38 @@ class OmniboxPedalTranslate : public OmniboxPedalCommon {
 
 // =============================================================================
 
-class OmniboxPedalUpdateChrome : public OmniboxPedalCommon {
- public:
-  OmniboxPedalUpdateChrome()
-      : OmniboxPedalCommon(
-            LabelStrings(IDS_OMNIBOX_PEDAL_UPDATE_CHROME_HINT,
-                         IDS_OMNIBOX_PEDAL_UPDATE_CHROME_HINT_SHORT,
-                         IDS_OMNIBOX_PEDAL_UPDATE_CHROME_SUGGESTION_CONTENTS),
-            GURL(),
-            {
-                "how to update google chrome", "how to update chrome",
-                "how do i update google chrome", "how to update chrome browser",
-                "update google chrome", "update chrome",
-                "update chrome browser",
-            }) {}
+OmniboxPedalUpdateChrome::OmniboxPedalUpdateChrome()
+    : OmniboxPedal(
+          LabelStrings(IDS_OMNIBOX_PEDAL_UPDATE_CHROME_HINT,
+                       IDS_OMNIBOX_PEDAL_UPDATE_CHROME_HINT_SHORT,
+                       IDS_OMNIBOX_PEDAL_UPDATE_CHROME_SUGGESTION_CONTENTS),
+          GURL()) {}
 
-  void Execute(ExecutionContext& context) const override {
-    context.client_.OpenUpdateChromeDialog();
-  }
+void OmniboxPedalUpdateChrome::Execute(ExecutionContext& context) const {
+  context.client_.OpenUpdateChromeDialog();
+}
 
-  bool IsReadyToTrigger(
-      const AutocompleteProviderClient& client) const override {
-    return client.IsBrowserUpdateAvailable();
-  }
-};
+bool OmniboxPedalUpdateChrome::IsReadyToTrigger(
+    const AutocompleteProviderClient& client) const {
+  return client.IsBrowserUpdateAvailable();
+}
 
 // =============================================================================
 
-std::vector<std::unique_ptr<OmniboxPedal>> GetPedalImplementations() {
-  std::vector<std::unique_ptr<OmniboxPedal>> pedals;
-  const auto add = [&](OmniboxPedal* pedal) {
-    pedals.push_back(std::unique_ptr<OmniboxPedal>(pedal));
+std::unordered_map<OmniboxPedalId, std::unique_ptr<OmniboxPedal>>
+GetPedalImplementations() {
+  std::unordered_map<OmniboxPedalId, std::unique_ptr<OmniboxPedal>> pedals;
+  const auto add = [&](OmniboxPedalId id, OmniboxPedal* pedal) {
+    pedals.insert({id, std::unique_ptr<OmniboxPedal>(pedal)});
   };
-  add(new OmniboxPedalClearBrowsingData());
-  add(new OmniboxPedalChangeSearchEngine());
-  add(new OmniboxPedalManagePasswords());
-  add(new OmniboxPedalChangeHomePage());
-  add(new OmniboxPedalUpdateCreditCard());
-  add(new OmniboxPedalLaunchIncognito());
-  add(new OmniboxPedalTranslate());
-  add(new OmniboxPedalUpdateChrome());
+  add(OmniboxPedalId::CLEAR_BROWSING_DATA, new OmniboxPedalClearBrowsingData());
+  add(OmniboxPedalId::CHANGE_SEARCH_ENGINE,
+      new OmniboxPedalChangeSearchEngine());
+  add(OmniboxPedalId::MANAGE_PASSWORDS, new OmniboxPedalManagePasswords());
+  add(OmniboxPedalId::CHANGE_HOME_PAGE, new OmniboxPedalChangeHomePage());
+  add(OmniboxPedalId::UPDATE_CREDIT_CARD, new OmniboxPedalUpdateCreditCard());
+  add(OmniboxPedalId::LAUNCH_INCOGNITO, new OmniboxPedalLaunchIncognito());
+  add(OmniboxPedalId::TRANSLATE, new OmniboxPedalTranslate());
+  add(OmniboxPedalId::UPDATE_CHROME, new OmniboxPedalUpdateChrome());
   return pedals;
 }

@@ -28,7 +28,7 @@ PermissionStatus* PermissionStatus::CreateAndListen(
     MojoPermissionDescriptor descriptor) {
   PermissionStatus* permission_status = MakeGarbageCollected<PermissionStatus>(
       execution_context, status, std::move(descriptor));
-  permission_status->PauseIfNeeded();
+  permission_status->UpdateStateIfNeeded();
   permission_status->StartListening();
   return permission_status;
 }
@@ -36,7 +36,7 @@ PermissionStatus* PermissionStatus::CreateAndListen(
 PermissionStatus::PermissionStatus(ExecutionContext* execution_context,
                                    MojoPermissionStatus status,
                                    MojoPermissionDescriptor descriptor)
-    : PausableObject(execution_context),
+    : ContextLifecycleStateObserver(execution_context),
       status_(status),
       descriptor_(std::move(descriptor)),
       binding_(this) {}
@@ -52,19 +52,19 @@ const AtomicString& PermissionStatus::InterfaceName() const {
 }
 
 ExecutionContext* PermissionStatus::GetExecutionContext() const {
-  return PausableObject::GetExecutionContext();
+  return ContextLifecycleStateObserver::GetExecutionContext();
 }
 
 bool PermissionStatus::HasPendingActivity() const {
   return binding_.is_bound();
 }
 
-void PermissionStatus::Unpause() {
-  StartListening();
-}
-
-void PermissionStatus::Pause() {
-  StopListening();
+void PermissionStatus::ContextLifecycleStateChanged(
+    mojom::FrameLifecycleState state) {
+  if (state == mojom::FrameLifecycleState::kRunning)
+    StartListening();
+  else
+    StopListening();
 }
 
 void PermissionStatus::ContextDestroyed(ExecutionContext*) {
@@ -88,11 +88,13 @@ String PermissionStatus::state() const {
 void PermissionStatus::StartListening() {
   DCHECK(!binding_.is_bound());
   mojom::blink::PermissionObserverPtr observer;
-  binding_.Bind(mojo::MakeRequest(&observer));
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      GetExecutionContext()->GetTaskRunner(TaskType::kPermission);
+  binding_.Bind(mojo::MakeRequest(&observer, task_runner), task_runner);
 
   mojom::blink::PermissionServicePtr service;
   ConnectToPermissionService(GetExecutionContext(),
-                             mojo::MakeRequest(&service));
+                             mojo::MakeRequest(&service, task_runner));
   service->AddPermissionObserver(descriptor_->Clone(), status_,
                                  std::move(observer));
 }
@@ -111,7 +113,7 @@ void PermissionStatus::OnPermissionStatusChange(MojoPermissionStatus status) {
 
 void PermissionStatus::Trace(blink::Visitor* visitor) {
   EventTargetWithInlineData::Trace(visitor);
-  PausableObject::Trace(visitor);
+  ContextLifecycleStateObserver::Trace(visitor);
 }
 
 }  // namespace blink

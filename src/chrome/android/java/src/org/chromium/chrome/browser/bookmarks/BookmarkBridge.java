@@ -21,7 +21,6 @@ import org.chromium.components.url_formatter.UrlFormatter;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Provides the communication channel for Android to fetch and manipulate the
@@ -311,8 +310,8 @@ public class BookmarkBridge {
             @Override
             public void bookmarkModelLoaded() {
                 removeObserver(this);
-                RecordHistogram.recordTimesHistogram("PartnerBookmark.LoadingTime",
-                        SystemClock.elapsedRealtime() - startTime, TimeUnit.MILLISECONDS);
+                RecordHistogram.recordTimesHistogram(
+                        "PartnerBookmark.LoadingTime", SystemClock.elapsedRealtime() - startTime);
                 runAfterModelLoaded.run();
             }
             @Override

@@ -120,7 +120,6 @@ void ExternalPrerenderHandlerAndroid::CancelCurrentPrerender(
 
 static jboolean JNI_ExternalPrerenderHandler_HasPrerenderedUrl(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& jprofile,
     const JavaParamRef<jstring>& jurl,
     const JavaParamRef<jobject>& jweb_contents) {
@@ -137,7 +136,6 @@ static jboolean JNI_ExternalPrerenderHandler_HasPrerenderedUrl(
 
 static jboolean JNI_ExternalPrerenderHandler_HasRecentlyPrefetchedUrlForTesting(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& jprofile,
     const JavaParamRef<jstring>& jurl) {
   if (!jurl)
@@ -157,7 +155,6 @@ static jboolean JNI_ExternalPrerenderHandler_HasRecentlyPrefetchedUrlForTesting(
 
 static void JNI_ExternalPrerenderHandler_ClearPrefetchInformationForTesting(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& jprofile) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
   PrerenderManager* prerender_manager =
@@ -171,9 +168,7 @@ ExternalPrerenderHandlerAndroid::ExternalPrerenderHandlerAndroid() {}
 
 ExternalPrerenderHandlerAndroid::~ExternalPrerenderHandlerAndroid() {}
 
-static jlong JNI_ExternalPrerenderHandler_Init(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& clazz) {
+static jlong JNI_ExternalPrerenderHandler_Init(JNIEnv* env) {
   ExternalPrerenderHandlerAndroid* external_handler =
       new ExternalPrerenderHandlerAndroid();
   return reinterpret_cast<intptr_t>(external_handler);

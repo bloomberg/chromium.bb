@@ -7,6 +7,7 @@
 #include <IOKit/IOKitLib.h>
 #include <libkern/OSByteOrder.h>
 
+#include "base/bind.h"
 #include "base/mac/scoped_ioobject.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_functions.h"

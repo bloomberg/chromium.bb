@@ -5,7 +5,7 @@
 cr.define('ntp', function() {
   'use strict';
 
-  var APP_LAUNCH = {
+  const APP_LAUNCH = {
     // The histogram buckets (keep in sync with extension_constants.h).
     NTP_APPS_MAXIMIZED: 0,
     NTP_APPS_COLLAPSED: 1,
@@ -17,14 +17,17 @@ cr.define('ntp', function() {
   };
 
   // Histogram buckets for UMA tracking of where a DnD drop came from.
-  var DRAG_SOURCE = {
+  const DRAG_SOURCE = {
     SAME_APPS_PANE: 0,
     OTHER_APPS_PANE: 1,
     MOST_VISITED_PANE: 2,  // Deprecated.
     BOOKMARKS_PANE: 3,     // Deprecated.
     OUTSIDE_NTP: 4
   };
-  var DRAG_SOURCE_LIMIT = DRAG_SOURCE.OUTSIDE_NTP + 1;
+  const DRAG_SOURCE_LIMIT = DRAG_SOURCE.OUTSIDE_NTP + 1;
+
+  // The fraction of the app tile size that the icon uses.
+  const APP_IMG_SIZE_FRACTION = 4 / 5;
 
   /**
    * App context menu. The class is designed to be used as a singleton with
@@ -39,7 +42,7 @@ cr.define('ntp', function() {
 
   AppContextMenu.prototype = {
     initialize: function() {
-      var menu = new cr.ui.Menu;
+      const menu = new cr.ui.Menu;
       cr.ui.decorate(menu, cr.ui.Menu);
       menu.classList.add('app-context-menu');
       this.menu = menu;
@@ -50,11 +53,10 @@ cr.define('ntp', function() {
       menu.appendChild(cr.ui.MenuItem.createSeparator());
       this.launchRegularTab_ = this.appendMenuItem_('applaunchtyperegular');
       this.launchPinnedTab_ = this.appendMenuItem_('applaunchtypepinned');
-      if (loadTimeData.getBoolean('canHostedAppsOpenInWindows'))
-        this.launchNewWindow_ = this.appendMenuItem_('applaunchtypewindow');
+      this.launchNewWindow_ = this.appendMenuItem_('applaunchtypewindow');
       this.launchFullscreen_ = this.appendMenuItem_('applaunchtypefullscreen');
 
-      var self = this;
+      const self = this;
       this.forAllLaunchTypes_(function(launchTypeButton, id) {
         launchTypeButton.addEventListener(
             'activate', self.onLaunchTypeChanged_.bind(self));
@@ -86,6 +88,12 @@ cr.define('ntp', function() {
       this.createShortcut_.addEventListener(
           'activate', this.onCreateShortcut_.bind(this));
 
+      this.installLocallySeparator_ =
+          menu.appendChild(cr.ui.MenuItem.createSeparator());
+      this.installLocally_ = this.appendMenuItem_('appinstalllocally');
+      this.installLocally_.addEventListener(
+          'activate', this.onInstallLocally_.bind(this));
+
       document.body.appendChild(menu);
     },
 
@@ -96,11 +104,12 @@ cr.define('ntp', function() {
      * @private
      */
     appendMenuItem_: function(opt_textId) {
-      var button = cr.doc.createElement('button');
+      const button = cr.doc.createElement('button');
       this.menu.appendChild(button);
       cr.ui.decorate(button, cr.ui.MenuItem);
-      if (opt_textId)
+      if (opt_textId) {
         button.textContent = loadTimeData.getString(opt_textId);
+      }
       return button;
     },
 
@@ -113,14 +122,15 @@ cr.define('ntp', function() {
      */
     forAllLaunchTypes_: function(f) {
       // Order matters: index matches launchType id.
-      var launchTypes = [
+      const launchTypes = [
         this.launchPinnedTab_, this.launchRegularTab_, this.launchFullscreen_,
         this.launchNewWindow_
       ];
 
-      for (var i = 0; i < launchTypes.length; ++i) {
-        if (!launchTypes[i])
+      for (let i = 0; i < launchTypes.length; ++i) {
+        if (!launchTypes[i]) {
           continue;
+        }
 
         f(launchTypes[i], i);
       }
@@ -135,37 +145,38 @@ cr.define('ntp', function() {
 
       this.launch_.textContent = app.appData.title;
 
-      var launchTypeWindow = this.launchNewWindow_;
-      var hasLaunchType = false;
+      const launchTypeWindow = this.launchNewWindow_;
+      let hasLaunchType = false;
       this.forAllLaunchTypes_(function(launchTypeButton, id) {
         launchTypeButton.disabled = false;
         launchTypeButton.checked = app.appData.launch_type == id;
-        // There are three cases when a launch type is hidden:
+        // There are two cases when a launch type is hidden:
         //  1. if the launch type can't be changed.
-        //  2. canHostedAppsOpenInWindows is false and type is launchTypeWindow
-        //  3. enableNewBookmarkApps is true and type is anything except
-        //     launchTypeWindow
+        //  2. type is anything except launchTypeWindow
         launchTypeButton.hidden = !app.appData.mayChangeLaunchType ||
-            (!loadTimeData.getBoolean('canHostedAppsOpenInWindows') &&
-             launchTypeButton == launchTypeWindow) ||
-            (loadTimeData.getBoolean('enableNewBookmarkApps') &&
-             launchTypeButton != launchTypeWindow);
-        if (!launchTypeButton.hidden)
+            launchTypeButton != launchTypeWindow;
+        if (!launchTypeButton.hidden) {
           hasLaunchType = true;
+        }
       });
 
       this.launchTypeMenuSeparator_.hidden =
           !app.appData.mayChangeLaunchType || !hasLaunchType;
 
       this.options_.disabled = !app.appData.optionsUrl || !app.appData.enabled;
-      if (this.details_)
+      if (this.details_) {
         this.details_.disabled = !app.appData.detailsUrl;
+      }
       this.uninstall_.disabled = !app.appData.mayDisable;
-      if (this.appinfo_)
+      if (this.appinfo_) {
         this.appinfo_.hidden = !app.appData.isLocallyInstalled;
+      }
 
       this.createShortcutSeparator_.hidden = this.createShortcut_.hidden =
           !app.appData.mayCreateShortcuts;
+
+      this.installLocallySeparator_.hidden = this.installLocally_.hidden =
+          app.appData.isLocallyInstalled;
     },
 
     /** @private */
@@ -178,16 +189,14 @@ cr.define('ntp', function() {
      * @private
      */
     onLaunchTypeChanged_: function(e) {
-      var pressed = e.currentTarget;
-      var app = this.app_;
-      var targetLaunchType = pressed;
+      const pressed = e.currentTarget;
+      const app = this.app_;
+      let targetLaunchType = pressed;
       // When bookmark apps are enabled, hosted apps can only toggle between
       // open as window and open as tab.
-      if (loadTimeData.getBoolean('enableNewBookmarkApps')) {
-        targetLaunchType = this.launchNewWindow_.checked ?
-            this.launchRegularTab_ :
-            this.launchNewWindow_;
-      }
+      targetLaunchType = this.launchNewWindow_.checked ?
+          this.launchRegularTab_ :
+          this.launchNewWindow_;
       this.forAllLaunchTypes_(function(launchTypeButton, id) {
         if (launchTypeButton == targetLaunchType) {
           chrome.send('setLaunchType', [app.appId, id]);
@@ -205,7 +214,7 @@ cr.define('ntp', function() {
 
     /** @private */
     onShowDetails_: function() {
-      var url = this.app_.appData.detailsUrl;
+      let url = this.app_.appData.detailsUrl;
       url = appendParam(url, 'utm_source', 'chrome-ntp-launcher');
       window.location = url;
     },
@@ -221,6 +230,11 @@ cr.define('ntp', function() {
     },
 
     /** @private */
+    onInstallLocally_: function() {
+      chrome.send('installAppLocally', [this.app_.appData.id]);
+    },
+
+    /** @private */
     onShowAppInfo_: function() {
       chrome.send('showAppInfo', [this.app_.appData.id]);
     }
@@ -233,7 +247,7 @@ cr.define('ntp', function() {
    * @extends {HTMLDivElement}
    */
   function App(appData) {
-    var el = cr.doc.createElement('div');
+    const el = cr.doc.createElement('div');
     el.__proto__ = App.prototype;
     el.initialize(appData);
 
@@ -255,8 +269,9 @@ cr.define('ntp', function() {
 
       this.className = 'app focusable';
 
-      if (!this.appData_.icon_big_exists && this.appData_.icon_small_exists)
+      if (!this.appData_.icon_big_exists && this.appData_.icon_small_exists) {
         this.useSmallIcon_ = true;
+      }
 
       this.appContents_ = (this.useSmallIcon_ ? $('app-small-icon-template') :
                                                 $('app-large-icon-template'))
@@ -282,7 +297,7 @@ cr.define('ntp', function() {
 
       // The app's full name is shown in the tooltip, whereas the short name
       // is used for the label.
-      var appSpan = /** @type {HTMLElement} */ (
+      const appSpan = /** @type {HTMLElement} */ (
           this.appContents_.querySelector('.title'));
       appSpan.textContent = this.appData_.title;
       appSpan.title = this.appData_.full_name;
@@ -293,7 +308,7 @@ cr.define('ntp', function() {
 
       // This hack is here so that appContents.contextMenu will be the same as
       // this.contextMenu.
-      var self = this;
+      const self = this;
       this.appContents_.__defineGetter__('contextMenu', function() {
         return self.contextMenu;
       });
@@ -338,7 +353,7 @@ cr.define('ntp', function() {
      * to load icons until we have to).
      */
     setIcon: function() {
-      var src = this.useSmallIcon_ ? this.appData_.icon_small :
+      let src = this.useSmallIcon_ ? this.appData_.icon_small :
                                      this.appData_.icon_big;
       if (!this.appData_.enabled || !this.appData_.isLocallyInstalled ||
           (!this.appData_.offlineEnabled && !navigator.onLine)) {
@@ -371,13 +386,13 @@ cr.define('ntp', function() {
      *     animate.
      */
     setBounds: function(size, x, y) {
-      var imgSize = size * APP_IMG_SIZE_FRACTION;
+      const imgSize = size * APP_IMG_SIZE_FRACTION;
       this.appImgContainer_.style.width = this.appImgContainer_.style.height =
           toCssPx(this.useSmallIcon_ ? 16 : imgSize);
       if (this.useSmallIcon_) {
         // 3/4 is the ratio of 96px to 128px (the used height and full height
         // of icons in apps).
-        var iconSize = imgSize * 3 / 4;
+        const iconSize = imgSize * 3 / 4;
         // The -2 is for the div border to improve the visual alignment for the
         // icon div.
         this.imgDiv_.style.width = this.imgDiv_.style.height =
@@ -405,8 +420,9 @@ cr.define('ntp', function() {
      * @private
      */
     onClick_: function(e) {
-      if (/** @type {MouseEvent} */ (e).button > 1)
+      if (/** @type {MouseEvent} */ (e).button > 1) {
         return;
+      }
 
       chrome.send('launchApp', [
         this.appId, APP_LAUNCH.NTP_APPS_MAXIMIZED, 'chrome-ntp-icon', e.button,
@@ -459,8 +475,9 @@ cr.define('ntp', function() {
     onMousedown_: function(e) {
       // If the current platform uses middle click to autoscroll and this
       // mousedown isn't handled, onClick_() will never fire. crbug.com/142939
-      if (e.button == 1)
+      if (e.button == 1) {
         e.preventDefault();
+      }
 
       if (e.button == 2 ||
           !findAncestorByClass(
@@ -508,7 +525,7 @@ cr.define('ntp', function() {
      * @type {cr.ui.Menu}
      */
     get contextMenu() {
-      var menu = AppContextMenu.getInstance();
+      const menu = AppContextMenu.getInstance();
       menu.setupForApp(this);
       return menu.menu;
     },
@@ -540,12 +557,9 @@ cr.define('ntp', function() {
     },
   };
 
-  var TilePage = ntp.TilePage;
+  const TilePage = ntp.TilePage;
 
-  // The fraction of the app tile size that the icon uses.
-  var APP_IMG_SIZE_FRACTION = 4 / 5;
-
-  var appsPageGridValues = {
+  const appsPageGridValues = {
     // The fewest tiles we will show in a row.
     minColCount: 3,
     // The most tiles we will show in a row.
@@ -567,7 +581,7 @@ cr.define('ntp', function() {
    * @extends {ntp.TilePage}
    */
   function AppsPage() {
-    var el = new TilePage(appsPageGridValues);
+    const el = new TilePage(appsPageGridValues);
     el.__proto__ = AppsPage.prototype;
     el.initialize();
 
@@ -604,8 +618,8 @@ cr.define('ntp', function() {
      * @param {boolean} animate Whether to animate the insertion.
      */
     insertApp: function(appData, animate) {
-      var index = this.tileElements_.length;
-      for (var i = 0; i < this.tileElements_.length; i++) {
+      let index = this.tileElements_.length;
+      for (let i = 0; i < this.tileElements_.length; i++) {
         if (appData.app_launch_ordinal <
             this.tileElements_[i].firstChild.appData.app_launch_ordinal) {
           index = i;
@@ -622,9 +636,9 @@ cr.define('ntp', function() {
      * @private
      */
     onCardSelected_: function() {
-      var apps = /** @type {NodeList<ntp.App>} */ (
+      const apps = /** @type {NodeList<ntp.App>} */ (
           this.querySelectorAll('.app.icon-loading'));
-      for (var i = 0; i < apps.length; i++) {
+      for (let i = 0; i < apps.length; i++) {
         apps[i].loadIcon();
       }
     },
@@ -637,8 +651,9 @@ cr.define('ntp', function() {
     onTileAdded_: function(e) {
       assert(e.currentTarget == this);
       assert(e.addedTile.firstChild instanceof App);
-      if (this.classList.contains('selected-card'))
+      if (this.classList.contains('selected-card')) {
         e.addedTile.firstChild.loadIcon();
+      }
     },
 
     /**
@@ -647,10 +662,11 @@ cr.define('ntp', function() {
      * @private
      */
     onScroll_: function() {
-      if (!this.selected)
+      if (!this.selected) {
         return;
-      for (var i = 0; i < this.tileElements_.length; i++) {
-        var app = this.tileElements_[i].firstChild;
+      }
+      for (let i = 0; i < this.tileElements_.length; i++) {
+        const app = this.tileElements_[i].firstChild;
         assert(app instanceof App);
       }
     },
@@ -658,7 +674,7 @@ cr.define('ntp', function() {
     /** @override */
     doDragOver: function(e) {
       // Only animatedly re-arrange if the user is currently dragging an app.
-      var tile = ntp.getCurrentlyDraggingTile();
+      const tile = ntp.getCurrentlyDraggingTile();
       if (tile && tile.querySelector('.app')) {
         TilePage.prototype.doDragOver.call(this, e);
       } else {
@@ -669,23 +685,25 @@ cr.define('ntp', function() {
 
     /** @override */
     shouldAcceptDrag: function(e) {
-      if (ntp.getCurrentlyDraggingTile())
+      if (ntp.getCurrentlyDraggingTile()) {
         return true;
-      if (!e.dataTransfer || !e.dataTransfer.types)
+      }
+      if (!e.dataTransfer || !e.dataTransfer.types) {
         return false;
+      }
       return Array.prototype.indexOf.call(
                  e.dataTransfer.types, 'text/uri-list') != -1;
     },
 
     /** @override */
     addDragData: function(dataTransfer, index) {
-      var sourceId = -1;
-      var currentlyDraggingTile = ntp.getCurrentlyDraggingTile();
+      let sourceId = -1;
+      const currentlyDraggingTile = ntp.getCurrentlyDraggingTile();
       if (currentlyDraggingTile) {
-        var tileContents = currentlyDraggingTile.firstChild;
+        const tileContents = currentlyDraggingTile.firstChild;
         if (tileContents.classList.contains('app')) {
-          var originalPage = currentlyDraggingTile.tilePage;
-          var samePageDrag = originalPage == this;
+          const originalPage = currentlyDraggingTile.tilePage;
+          const samePageDrag = originalPage == this;
           sourceId = samePageDrag ? DRAG_SOURCE.SAME_APPS_PANE :
                                     DRAG_SOURCE.OTHER_APPS_PANE;
           this.tileGrid_.insertBefore(
@@ -714,27 +732,29 @@ cr.define('ntp', function() {
      * @private
      */
     addOutsideData_: function(dataTransfer) {
-      var url = dataTransfer.getData('url');
+      const url = dataTransfer.getData('url');
       assert(url);
 
       // If the dataTransfer has html data, use that html's text contents as the
       // title of the new link.
-      var html = dataTransfer.getData('text/html');
-      var title;
+      const html = dataTransfer.getData('text/html');
+      let title;
       if (html) {
         // It's important that we don't attach this node to the document
         // because it might contain scripts.
-        var doc = document.implementation.createHTMLDocument();
+        const doc = document.implementation.createHTMLDocument();
         doc.body.innerHTML = html;
         title = doc.body.textContent;
       }
 
       // Make sure title is >=1 and <=45 characters for Chrome app limits.
-      if (!title)
+      if (!title) {
         title = url;
-      if (title.length > 45)
+      }
+      if (title.length > 45) {
         title = title.substring(0, 45);
-      var data = {url: url, title: title};
+      }
+      const data = {url: url, title: title};
 
       // Synthesize an app.
       this.generateAppForLink(data);
@@ -748,23 +768,25 @@ cr.define('ntp', function() {
     generateAppForLink: function(data) {
       assert(data.url != undefined);
       assert(data.title != undefined);
-      var pageIndex = ntp.getAppsPageIndex(this);
+      const pageIndex = ntp.getAppsPageIndex(this);
       chrome.send('generateAppForLink', [data.url, data.title, pageIndex]);
     },
 
     /** @override */
     tileMoved: function(draggedTile) {
-      if (!(draggedTile.firstChild instanceof App))
+      if (!(draggedTile.firstChild instanceof App)) {
         return;
+      }
 
-      var pageIndex = ntp.getAppsPageIndex(this);
+      const pageIndex = ntp.getAppsPageIndex(this);
       chrome.send('setPageIndex', [draggedTile.firstChild.appId, pageIndex]);
 
-      var appIds = [];
-      for (var i = 0; i < this.tileElements_.length; i++) {
-        var tileContents = this.tileElements_[i].firstChild;
-        if (tileContents instanceof App)
+      const appIds = [];
+      for (let i = 0; i < this.tileElements_.length; i++) {
+        const tileContents = this.tileElements_[i].firstChild;
+        if (tileContents instanceof App) {
           appIds.push(tileContents.appId);
+        }
       }
 
       chrome.send('reorderApps', [draggedTile.firstChild.appId, appIds]);
@@ -772,11 +794,12 @@ cr.define('ntp', function() {
 
     /** @override */
     setDropEffect: function(dataTransfer) {
-      var tile = ntp.getCurrentlyDraggingTile();
-      if (tile && tile.querySelector('.app'))
+      const tile = ntp.getCurrentlyDraggingTile();
+      if (tile && tile.querySelector('.app')) {
         ntp.setCurrentDropEffect(dataTransfer, 'move');
-      else
+      } else {
         ntp.setCurrentDropEffect(dataTransfer, 'copy');
+      }
     },
   };
 

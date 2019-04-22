@@ -7,7 +7,9 @@
 #include "ui/gfx/canvas.h"
 #include "ui/views/controls/focusable_border.h"
 #include "ui/views/style/platform_style.h"
-#include "ui/views/view_properties.h"
+#include "ui/views/view_class_properties.h"
+
+namespace views {
 
 namespace {
 
@@ -16,19 +18,21 @@ ui::NativeTheme::ColorId ColorIdForValidity(bool valid) {
                : ui::NativeTheme::kColorId_AlertSeverityHigh;
 }
 
-}  // namespace
+double GetCornerRadius() {
+  double thickness = PlatformStyle::kFocusHaloThickness / 2.f;
+  return FocusableBorder::kCornerRadiusDp + thickness;
+}
 
-namespace views {
+}  // namespace
 
 const char FocusRing::kViewClassName[] = "FocusRing";
 
 // static
 std::unique_ptr<FocusRing> FocusRing::Install(View* parent) {
-  auto ring = base::WrapUnique<FocusRing>(new FocusRing(parent));
+  auto ring = base::WrapUnique<FocusRing>(new FocusRing());
   ring->set_owned_by_client();
   parent->AddChildView(ring.get());
-  parent->AddObserver(ring.get());
-  ring->Layout();
+  ring->InvalidateLayout();
   ring->SchedulePaint();
   return ring;
 }
@@ -54,6 +58,11 @@ void FocusRing::SetHasFocusPredicate(const ViewPredicate& predicate) {
   SchedulePaint();
 }
 
+void FocusRing::SetColor(base::Optional<SkColor> color) {
+  color_ = color;
+  SchedulePaint();
+}
+
 const char* FocusRing::GetClassName() const {
   return kViewClassName;
 }
@@ -66,27 +75,36 @@ void FocusRing::Layout() {
   SetBoundsRect(focus_bounds);
 }
 
+void FocusRing::ViewHierarchyChanged(
+    const ViewHierarchyChangedDetails& details) {
+  if (details.child != this)
+    return;
+
+  if (details.is_add) {
+    // Need to start observing the parent.
+    details.parent->AddObserver(this);
+  } else {
+    // This view is being removed from its parent. It needs to remove itself
+    // from its parent's observer list. Otherwise, since its |parent_| will
+    // become a nullptr, it won't be able to do so in its destructor.
+    details.parent->RemoveObserver(this);
+  }
+}
+
 void FocusRing::OnPaint(gfx::Canvas* canvas) {
   if (!has_focus_predicate_(parent()))
     return;
 
-  SkColor base_color =
-      GetNativeTheme()->GetSystemColor(ColorIdForValidity(!invalid_));
-
   cc::PaintFlags paint;
   paint.setAntiAlias(true);
-  paint.setColor(SkColorSetA(base_color, 0x66));
+  paint.setColor(color_.value_or(SkColorSetA(
+      GetNativeTheme()->GetSystemColor(ColorIdForValidity(!invalid_)), 0x66)));
   paint.setStyle(cc::PaintFlags::kStroke_Style);
   paint.setStrokeWidth(PlatformStyle::kFocusHaloThickness);
 
   SkPath path = path_;
-  if (path.isEmpty()) {
-    SkPath* highlight_path = parent()->GetProperty(kHighlightPathKey);
-    if (highlight_path)
-      path = *highlight_path;
-  }
   if (path.isEmpty())
-    path.addRect(RectToSkRect(parent()->GetLocalBounds()));
+    path = GetHighlightPath(parent());
 
   DCHECK(IsPathUseable(path));
   SkRect bounds;
@@ -95,7 +113,7 @@ void FocusRing::OnPaint(gfx::Canvas* canvas) {
     canvas->sk_canvas()->drawRRect(RingRectFromPathRect(bounds), paint);
   } else if (path.isOval(&bounds)) {
     gfx::RectF rect = gfx::SkRectToRectF(bounds);
-    View::ConvertRectToTarget(view_, this, &rect);
+    View::ConvertRectToTarget(parent(), this, &rect);
     canvas->sk_canvas()->drawRRect(SkRRect::MakeOval(gfx::RectFToSkRect(rect)),
                                    paint);
   } else if (path.isRRect(&rbounds)) {
@@ -111,7 +129,7 @@ void FocusRing::OnViewBlurred(View* view) {
   SchedulePaint();
 }
 
-FocusRing::FocusRing(View* parent) : view_(parent) {
+FocusRing::FocusRing() {
   // A layer is necessary to paint beyond the parent's bounds.
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
@@ -127,8 +145,7 @@ FocusRing::~FocusRing() {
 }
 
 SkRRect FocusRing::RingRectFromPathRect(const SkRect& rect) const {
-  double thickness = PlatformStyle::kFocusHaloThickness / 2.f;
-  double corner_radius = FocusableBorder::kCornerRadiusDp + thickness;
+  const double corner_radius = GetCornerRadius();
   return RingRectFromPathRect(
       SkRRect::MakeRectXY(rect, corner_radius, corner_radius));
 }
@@ -136,7 +153,7 @@ SkRRect FocusRing::RingRectFromPathRect(const SkRect& rect) const {
 SkRRect FocusRing::RingRectFromPathRect(const SkRRect& rrect) const {
   double thickness = PlatformStyle::kFocusHaloThickness / 2.f;
   gfx::RectF r = gfx::SkRectToRectF(rrect.rect());
-  View::ConvertRectToTarget(view_, this, &r);
+  View::ConvertRectToTarget(parent(), this, &r);
 
   SkRRect skr =
       rrect.makeOffset(r.x() - rrect.rect().x(), r.y() - rrect.rect().y());
@@ -148,6 +165,18 @@ SkRRect FocusRing::RingRectFromPathRect(const SkRRect& rrect) const {
   skr.inset(thickness, thickness);
 
   return skr;
+}
+
+SkPath GetHighlightPath(const View* view) {
+  SkPath* highlight_path = view->GetProperty(kHighlightPathKey);
+  if (highlight_path)
+    return *highlight_path;
+
+  const double corner_radius = GetCornerRadius();
+  SkPath path;
+  path.addRRect(SkRRect::MakeRectXY(RectToSkRect(view->GetLocalBounds()),
+                                    corner_radius, corner_radius));
+  return path;
 }
 
 }  // namespace views

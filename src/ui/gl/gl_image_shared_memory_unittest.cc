@@ -60,20 +60,20 @@ using GLImageTestTypes = testing::Types<
 #endif
     GLImageSharedMemoryTestDelegate<gfx::BufferFormat::BGRA_8888>>;
 
-INSTANTIATE_TYPED_TEST_CASE_P(GLImageSharedMemory,
-                              GLImageTest,
-                              GLImageTestTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(GLImageSharedMemory,
+                               GLImageTest,
+                               GLImageTestTypes);
 
-INSTANTIATE_TYPED_TEST_CASE_P(GLImageSharedMemory,
-                              GLImageOddSizeTest,
-                              GLImageTestTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(GLImageSharedMemory,
+                               GLImageOddSizeTest,
+                               GLImageTestTypes);
 
 // https://crbug.com/830653
 #if !defined(ADDRESS_SANITIZER) && !defined(MEMORY_SANITIZER) && \
     !defined(THREAD_SANITIZER)
-INSTANTIATE_TYPED_TEST_CASE_P(GLImageSharedMemory,
-                              GLImageCopyTest,
-                              GLImageTestTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(GLImageSharedMemory,
+                               GLImageCopyTest,
+                               GLImageTestTypes);
 #endif
 
 class GLImageSharedMemoryPoolTestDelegate : public GLImageTestDelegateBase {
@@ -116,9 +116,9 @@ class GLImageSharedMemoryPoolTestDelegate : public GLImageTestDelegateBase {
 // https://crbug.com/830653
 #if !defined(ADDRESS_SANITIZER) && !defined(MEMORY_SANITIZER) && \
     !defined(THREAD_SANITIZER)
-INSTANTIATE_TYPED_TEST_CASE_P(GLImageSharedMemoryPool,
-                              GLImageCopyTest,
-                              GLImageSharedMemoryPoolTestDelegate);
+INSTANTIATE_TYPED_TEST_SUITE_P(GLImageSharedMemoryPool,
+                               GLImageCopyTest,
+                               GLImageSharedMemoryPoolTestDelegate);
 #endif
 
 }  // namespace

@@ -18,7 +18,7 @@ namespace rx
 {
 class FramebufferAttachmentRenderTarget;
 
-class FramebufferAttachmentObjectImpl : public angle::Subject
+class FramebufferAttachmentObjectImpl : angle::NonCopyable
 {
   public:
     FramebufferAttachmentObjectImpl() {}
@@ -40,7 +40,7 @@ inline angle::Result FramebufferAttachmentObjectImpl::getAttachmentRenderTarget(
     FramebufferAttachmentRenderTarget **rtOut)
 {
     UNIMPLEMENTED();
-    return angle::Result::Stop();
+    return angle::Result::Stop;
 }
 
 inline angle::Result FramebufferAttachmentObjectImpl::initializeContents(
@@ -48,7 +48,7 @@ inline angle::Result FramebufferAttachmentObjectImpl::initializeContents(
     const gl::ImageIndex &imageIndex)
 {
     UNIMPLEMENTED();
-    return angle::Result::Stop();
+    return angle::Result::Stop;
 }
 
 }  // namespace rx

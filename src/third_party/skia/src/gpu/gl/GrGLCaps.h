@@ -146,6 +146,9 @@ public:
                             GrGLenum* internalFormat, GrGLenum* externalFormat,
                             GrGLenum* externalType) const;
 
+    bool getCompressedTexImageFormats(GrPixelConfig surfaceConfig, GrGLenum* internalFormat) const;
+
+
     bool getReadPixelsFormat(GrPixelConfig surfaceConfig, GrPixelConfig externalConfig,
                              GrGLenum* externalFormat, GrGLenum* externalType) const;
 
@@ -264,9 +267,6 @@ public:
     /// Is there support for GL_UNPACK_ROW_LENGTH
     bool unpackRowLengthSupport() const { return fUnpackRowLengthSupport; }
 
-    /// Is there support for GL_UNPACK_FLIP_Y
-    bool unpackFlipYSupport() const { return fUnpackFlipYSupport; }
-
     /// Is there support for GL_PACK_ROW_LENGTH
     bool packRowLengthSupport() const { return fPackRowLengthSupport; }
 
@@ -311,7 +311,6 @@ public:
     /// Use indices or vertices in CPU arrays rather than VBOs for dynamic content.
     bool useNonVBOVertexAndIndexDynamicData() const { return fUseNonVBOVertexAndIndexDynamicData; }
 
-    bool surfaceSupportsWritePixels(const GrSurface*) const override;
     bool surfaceSupportsReadPixels(const GrSurface*) const override;
     GrColorType supportedReadPixelsColorType(GrPixelConfig, GrColorType) const override;
 
@@ -359,14 +358,6 @@ public:
     // https://bugs.chromium.org/p/skia/issues/detail?id=6650
     bool drawArraysBaseVertexIsBroken() const { return fDrawArraysBaseVertexIsBroken; }
 
-    // Many drivers have issues with color clears.
-    bool useDrawToClearColor() const { return fUseDrawToClearColor; }
-
-    /// Adreno 4xx devices experience an issue when there are a large number of stencil clip bit
-    /// clears. The minimal repro steps are not precisely known but drawing a rect with a stencil
-    /// op instead of using glClear seems to resolve the issue.
-    bool useDrawToClearStencilClip() const { return fUseDrawToClearStencilClip; }
-
     // If true then we must use an intermediate surface to perform partial updates to unorm textures
     // that have ever been bound to a FBO.
     bool disallowTexSubImageForUnormConfigTexturesEverBoundToFBO() const {
@@ -390,9 +381,11 @@ public:
         return fDetachStencilFromMSAABuffersBeforeReadPixels;
     }
 
-    // Older Android versions seem to have an issue with setting GL_TEXTURE_MAX_LEVEL to 0
-    // on EGLImage/GL_TEXTURE_EXTERNAL_OES textures.
-    bool clampMaxTextureLevelToOne() const { return fClampMaxTextureLevelToOne; }
+    // Older Android versions seem to have an issue with setting GL_TEXTURE_BASE_LEVEL or
+    // GL_TEXTURE_MAX_LEVEL for GL_TEXTURE_EXTERNAL_OES textures.
+    bool dontSetBaseOrMaxLevelForExternalTextures() const {
+        return fDontSetBaseOrMaxLevelForExternalTextures;
+    }
 
     // Returns the observed maximum number of instances the driver can handle in a single draw call
     // without crashing, or 'pendingInstanceCount' if this workaround is not necessary.
@@ -417,9 +410,6 @@ public:
                        const SkIRect& srcRect, const SkIPoint& dstPoint) const;
     bool canCopyAsDraw(GrPixelConfig dstConfig, bool srcIsTextureable) const;
 
-    bool canCopySurface(const GrSurfaceProxy* dst, const GrSurfaceProxy* src,
-                        const SkIRect& srcRect, const SkIPoint& dstPoint) const override;
-
     bool initDescForDstCopy(const GrRenderTargetProxy* src, GrSurfaceDesc* desc, GrSurfaceOrigin*,
                             bool* rectsMustMatch, bool* disallowSubrect) const override;
 
@@ -427,17 +417,13 @@ public:
 
     bool samplerObjectSupport() const { return fSamplerObjectSupport; }
 
-    bool validateBackendTexture(const GrBackendTexture&, SkColorType,
-                                GrPixelConfig*) const override;
-    bool validateBackendRenderTarget(const GrBackendRenderTarget&, SkColorType,
-                                     GrPixelConfig*) const override;
+    bool fbFetchRequiresEnablePerSample() const { return fFBFetchRequiresEnablePerSample; }
 
-    bool getConfigFromBackendFormat(const GrBackendFormat&, SkColorType,
-                                    GrPixelConfig*) const override;
-    bool getYUVAConfigFromBackendTexture(const GrBackendTexture&,
-                                         GrPixelConfig*) const override;
-    bool getYUVAConfigFromBackendFormat(const GrBackendFormat&,
-                                        GrPixelConfig*) const override;
+    GrPixelConfig validateBackendRenderTarget(const GrBackendRenderTarget&,
+                                              SkColorType) const override;
+
+    GrPixelConfig getConfigFromBackendFormat(const GrBackendFormat&, SkColorType) const override;
+    GrPixelConfig getYUVAConfigFromBackendFormat(const GrBackendFormat&) const override;
 
     GrBackendFormat getBackendFormatFromGrColorType(GrColorType ct,
                                                     GrSRGBEncoded srgbEncoded) const override;
@@ -467,8 +453,6 @@ private:
 
     void onApplyOptionsOverrides(const GrContextOptions& options) override;
 
-    GrBackendFormat onCreateFormatFromBackendTexture(const GrBackendTexture&) const override;
-
     bool onIsWindowRectanglesSupportedForRT(const GrBackendRenderTarget&) const override;
 
     void initFSAASupport(const GrContextOptions& contextOptions, const GrGLContextInfo&,
@@ -478,6 +462,10 @@ private:
     // This must be called after initFSAASupport().
     void initConfigTable(const GrContextOptions&, const GrGLContextInfo&, const GrGLInterface*,
                          GrShaderCaps*);
+    bool onSurfaceSupportsWritePixels(const GrSurface*) const override;
+    bool onCanCopySurface(const GrSurfaceProxy* dst, const GrSurfaceProxy* src,
+                          const SkIRect& srcRect, const SkIPoint& dstPoint) const override;
+    size_t onTransferFromOffsetAlignment(GrColorType bufferColorType) const override;
 
     GrGLStandard fStandard;
 
@@ -491,7 +479,6 @@ private:
     TransferBufferType  fTransferBufferType;
 
     bool fUnpackRowLengthSupport : 1;
-    bool fUnpackFlipYSupport : 1;
     bool fPackRowLengthSupport : 1;
     bool fPackFlipYSupport : 1;
     bool fTextureUsageSupport : 1;
@@ -519,18 +506,17 @@ private:
     bool fClearTextureSupport : 1;
     bool fProgramBinarySupport : 1;
     bool fSamplerObjectSupport : 1;
+    bool fFBFetchRequiresEnablePerSample : 1;
 
     // Driver workarounds
     bool fDoManualMipmapping : 1;
     bool fClearToBoundaryValuesIsBroken : 1;
     bool fDrawArraysBaseVertexIsBroken : 1;
-    bool fUseDrawToClearColor : 1;
-    bool fUseDrawToClearStencilClip : 1;
     bool fDisallowTexSubImageForUnormConfigTexturesEverBoundToFBO : 1;
     bool fUseDrawInsteadOfAllRenderTargetWrites : 1;
     bool fRequiresCullFaceEnableDisableWhenDrawingLinesAfterNonLines : 1;
     bool fDetachStencilFromMSAABuffersBeforeReadPixels : 1;
-    bool fClampMaxTextureLevelToOne : 1;
+    bool fDontSetBaseOrMaxLevelForExternalTextures : 1;
     int fMaxInstancesPerDrawWithoutCrashing;
 
     uint32_t fBlitFramebufferFlags;

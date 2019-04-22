@@ -13,11 +13,12 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -45,9 +46,6 @@
 #endif
 
 namespace {
-
-using OfflineContentOnNetErrorFeatureState =
-    error_page::LocalizedError::OfflineContentOnNetErrorFeatureState;
 
 const char kFailedUrl[] = "http://failed/";
 const char kFailedHttpsUrl[] = "https://failed/";
@@ -172,7 +170,6 @@ class NetErrorHelperCoreTest : public testing::Test,
         error_html_update_count_(0),
         reload_count_(0),
         reload_bypassing_cache_count_(0),
-        show_saved_copy_count_(0),
         diagnose_error_count_(0),
         download_count_(0),
         list_visible_by_prefs_(true),
@@ -210,10 +207,6 @@ class NetErrorHelperCoreTest : public testing::Test,
     return reload_bypassing_cache_count_;
   }
 
-  int show_saved_copy_count() const { return show_saved_copy_count_; }
-
-  const GURL& show_saved_copy_url() const { return show_saved_copy_url_; }
-
   int diagnose_error_count() const { return diagnose_error_count_; }
 
   const GURL& diagnose_error_url() const { return diagnose_error_url_; }
@@ -248,14 +241,18 @@ class NetErrorHelperCoreTest : public testing::Test,
   }
   int tracking_request_count() const { return tracking_request_count_; }
 
-  void set_offline_content_feature_state(
-      OfflineContentOnNetErrorFeatureState offline_content_feature_state) {
-    offline_content_feature_state_ = offline_content_feature_state;
+  void set_offline_content_feature_enabled(
+      bool offline_content_feature_enabled) {
+    offline_content_feature_enabled_ = offline_content_feature_enabled;
   }
 
   bool list_visible_by_prefs() const { return list_visible_by_prefs_; }
 
   void set_auto_fetch_allowed(bool allowed) { auto_fetch_allowed_ = allowed; }
+
+  void set_is_offline_error(bool is_offline_error) {
+    is_offline_error_ = is_offline_error;
+  }
 
   const std::string& offline_content_json() const {
     return offline_content_json_;
@@ -365,30 +362,27 @@ class NetErrorHelperCoreTest : public testing::Test,
     core()->OnSetNavigationCorrectionInfo(navigation_correction_url, kLanguage,
                                           kCountry, kApiKey, GURL(kSearchUrl));
   }
+  error_page::LocalizedError::PageState GetPageState() const {
+    error_page::LocalizedError::PageState result;
+    result.auto_fetch_allowed = auto_fetch_allowed_;
+    result.offline_content_feature_enabled = offline_content_feature_enabled_;
+    result.is_offline_error = is_offline_error_;
+    return result;
+  }
 
   // NetErrorHelperCore::Delegate implementation:
-  void GenerateLocalizedErrorPage(
+  error_page::LocalizedError::PageState GenerateLocalizedErrorPage(
       const error_page::Error& error,
       bool is_failed_post,
       bool can_show_network_diagnostics_dialog,
       std::unique_ptr<error_page::ErrorPageParams> params,
-      bool* reload_button_shown,
-      bool* show_saved_copy_button_shown,
-      bool* show_cached_copy_button_shown,
-      bool* download_button_shown,
-      OfflineContentOnNetErrorFeatureState* offline_content_feature_state,
-      bool* auto_fetch_allowed,
       std::string* html) const override {
     last_can_show_network_diagnostics_dialog_ =
         can_show_network_diagnostics_dialog;
     last_error_page_params_ = std::move(params);
-    *reload_button_shown = false;
-    *show_saved_copy_button_shown = false;
-    *show_cached_copy_button_shown = false;
-    *download_button_shown = false;
-    *offline_content_feature_state = offline_content_feature_state_;
-    *auto_fetch_allowed = auto_fetch_allowed_;
     *html = ErrorToString(error, is_failed_post);
+
+    return GetPageState();
   }
 
   void LoadErrorPage(const std::string& html, const GURL& failed_url) override {
@@ -396,18 +390,21 @@ class NetErrorHelperCoreTest : public testing::Test,
     last_error_html_ = html;
   }
 
-  void EnablePageHelperFunctions(net::Error net_error) override {
+  void EnablePageHelperFunctions() override {
     enable_page_helper_functions_count_++;
   }
 
-  void UpdateErrorPage(const error_page::Error& error,
-                       bool is_failed_post,
-                       bool can_show_network_diagnostics_dialog) override {
+  error_page::LocalizedError::PageState UpdateErrorPage(
+      const error_page::Error& error,
+      bool is_failed_post,
+      bool can_show_network_diagnostics_dialog) override {
     update_count_++;
     last_can_show_network_diagnostics_dialog_ =
         can_show_network_diagnostics_dialog;
     last_error_page_params_.reset(nullptr);
     last_error_html_ = ErrorToString(error, is_failed_post);
+
+    return GetPageState();
   }
 
   void InitializeErrorPageEasterEggHighScore(int high_score) override {}
@@ -427,7 +424,7 @@ class NetErrorHelperCoreTest : public testing::Test,
 
     base::JSONReader reader;
     std::unique_ptr<base::Value> parsed_body(
-        reader.Read(navigation_correction_request_body));
+        reader.ReadDeprecated(navigation_correction_request_body));
     ASSERT_TRUE(parsed_body);
     base::DictionaryValue* dict = NULL;
     ASSERT_TRUE(parsed_body->GetAsDictionary(&dict));
@@ -449,11 +446,6 @@ class NetErrorHelperCoreTest : public testing::Test,
       reload_bypassing_cache_count_++;
   }
 
-  void LoadPageFromCache(const GURL& page_url) override {
-    show_saved_copy_count_++;
-    show_saved_copy_url_ = page_url;
-  }
-
   void DiagnoseError(const GURL& page_url) override {
     diagnose_error_count_++;
     diagnose_error_url_ = page_url;
@@ -468,11 +460,6 @@ class NetErrorHelperCoreTest : public testing::Test,
       const std::string& offline_content_json) override {
     list_visible_by_prefs_ = list_visible_by_prefs;
     offline_content_json_ = offline_content_json;
-  }
-
-  void OfflineContentSummaryAvailable(
-      const std::string& offline_content_summary_json) override {
-    offline_content_summary_json_ = offline_content_summary_json;
   }
 
 #if defined(OS_ANDROID)
@@ -492,7 +479,7 @@ class NetErrorHelperCoreTest : public testing::Test,
 
     base::JSONReader reader;
     std::unique_ptr<base::Value> parsed_body(
-        reader.Read(tracking_request_body));
+        reader.ReadDeprecated(tracking_request_body));
     ASSERT_TRUE(parsed_body);
     base::DictionaryValue* dict = NULL;
     ASSERT_TRUE(parsed_body->GetAsDictionary(&dict));
@@ -534,8 +521,6 @@ class NetErrorHelperCoreTest : public testing::Test,
 
   int reload_count_;
   int reload_bypassing_cache_count_;
-  int show_saved_copy_count_;
-  GURL show_saved_copy_url_;
   int diagnose_error_count_;
   GURL diagnose_error_url_;
   int download_count_;
@@ -546,8 +531,8 @@ class NetErrorHelperCoreTest : public testing::Test,
   base::Optional<chrome::mojom::OfflinePageAutoFetcherScheduleResult>
       auto_fetch_state_;
 #endif
-  OfflineContentOnNetErrorFeatureState offline_content_feature_state_ =
-      OfflineContentOnNetErrorFeatureState::kDisabled;
+  bool offline_content_feature_enabled_ = false;
+  bool is_offline_error_ = false;
   bool auto_fetch_allowed_ = false;
 
   int enable_page_helper_functions_count_;
@@ -867,6 +852,8 @@ TEST_F(NetErrorHelperCoreTest, FinishedBeforeProbeInconclusive) {
 
 // Same as above, but the probe result is no internet.
 TEST_F(NetErrorHelperCoreTest, FinishedBeforeProbeNoInternet) {
+  base::HistogramTester histogram_tester_;
+
   // Original page starts loading.
   core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                       NetErrorHelperCore::NON_ERROR_PAGE);
@@ -890,17 +877,43 @@ TEST_F(NetErrorHelperCoreTest, FinishedBeforeProbeNoInternet) {
   EXPECT_EQ(1, update_count());
   EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_STARTED), last_error_html());
 
-  // When the inconclusive status arrives, the page should revert to the normal
-  // dns error page.
+  // The final status arrives, and should display the offline error page.
+  set_is_offline_error(true);
   core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NO_INTERNET);
   EXPECT_EQ(2, update_count());
   EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_FINISHED_NO_INTERNET),
             last_error_html());
+  histogram_tester_.ExpectBucketCount(
+      "Net.ErrorPageCounts", error_page::NETWORK_ERROR_PAGE_OFFLINE_ERROR_SHOWN,
+      1);
 
   // Any other probe updates should be ignored.
+  set_is_offline_error(false);
   core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NO_INTERNET);
   EXPECT_EQ(2, update_count());
   EXPECT_EQ(0, error_html_update_count());
+
+  // Perform a second error page load, and confirm that the previous load
+  // doesn't affect the result.
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+                      NetErrorHelperCore::NON_ERROR_PAGE);
+  core()->PrepareErrorPage(
+      NetErrorHelperCore::MAIN_FRAME, NetError(net::ERR_NAME_NOT_RESOLVED),
+      false /* is_failed_post */, false /* is_ignoring_cache */, &html);
+  EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_POSSIBLE), html);
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+                      NetErrorHelperCore::ERROR_PAGE);
+  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
+  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_STARTED);
+  EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_STARTED), last_error_html());
+  set_is_offline_error(true);
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NO_INTERNET);
+  EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_FINISHED_NO_INTERNET),
+            last_error_html());
+  histogram_tester_.ExpectBucketCount(
+      "Net.ErrorPageCounts", error_page::NETWORK_ERROR_PAGE_OFFLINE_ERROR_SHOWN,
+      2);
 }
 
 // Same as above, but the probe result is bad config.
@@ -1304,7 +1317,7 @@ TEST_F(NetErrorHelperCoreTest, CorrectionsReceivedBeforeProbe) {
 
   // Corrections are retrieved.
   NavigationCorrectionsLoadSuccess(kDefaultCorrections,
-                                   arraysize(kDefaultCorrections));
+                                   base::size(kDefaultCorrections));
   EXPECT_EQ(1, error_html_update_count());
   EXPECT_EQ(NetErrorString(net::ERR_NAME_NOT_RESOLVED), last_error_html());
   ExpectDefaultNavigationCorrections();
@@ -1357,7 +1370,7 @@ TEST_F(NetErrorHelperCoreTest, CorrectionsRetrievedAfterProbes) {
   // Corrections are retrieved.
   EXPECT_TRUE(is_url_being_fetched());
   NavigationCorrectionsLoadSuccess(kDefaultCorrections,
-                                   arraysize(kDefaultCorrections));
+                                   base::size(kDefaultCorrections));
   EXPECT_EQ(1, error_html_update_count());
   EXPECT_EQ(NetErrorString(net::ERR_NAME_NOT_RESOLVED), last_error_html());
   ExpectDefaultNavigationCorrections();
@@ -1634,7 +1647,7 @@ TEST_F(NetErrorHelperCoreTest, CorrectionsInterrupted) {
 
   // Corrections request succeeds.
   NavigationCorrectionsLoadSuccess(kDefaultCorrections,
-                                   arraysize(kDefaultCorrections));
+                                   base::size(kDefaultCorrections));
   EXPECT_EQ(1, error_html_update_count());
   EXPECT_EQ(NetErrorString(net::ERR_NAME_NOT_RESOLVED), last_error_html());
   ExpectDefaultNavigationCorrections();
@@ -1746,7 +1759,7 @@ TEST_F(NetErrorHelperCoreTest, CorrectionsDisabledBeforeFetch) {
 
   // Corrections are retrieved.
   NavigationCorrectionsLoadSuccess(kDefaultCorrections,
-                                   arraysize(kDefaultCorrections));
+                                   base::size(kDefaultCorrections));
   EXPECT_EQ(1, error_html_update_count());
   EXPECT_EQ(NetErrorString(net::ERR_NAME_NOT_RESOLVED), last_error_html());
   EXPECT_FALSE(is_url_being_fetched());
@@ -1789,7 +1802,7 @@ TEST_F(NetErrorHelperCoreTest, CorrectionsDisabledDuringFetch) {
 
   // Corrections are retrieved.
   NavigationCorrectionsLoadSuccess(kDefaultCorrections,
-                                   arraysize(kDefaultCorrections));
+                                   base::size(kDefaultCorrections));
   EXPECT_EQ(1, error_html_update_count());
   EXPECT_EQ(NetErrorString(net::ERR_NAME_NOT_RESOLVED), last_error_html());
   EXPECT_FALSE(is_url_being_fetched());
@@ -1831,7 +1844,7 @@ TEST_F(NetErrorHelperCoreTest, CorrectionsWithoutSearch) {
   EXPECT_FALSE(last_error_page_params());
 
   // Corrections are retrieved.
-  NavigationCorrectionsLoadSuccess(kCorrections, arraysize(kCorrections));
+  NavigationCorrectionsLoadSuccess(kCorrections, base::size(kCorrections));
   EXPECT_EQ(1, error_html_update_count());
   EXPECT_EQ(NetErrorString(net::ERR_NAME_NOT_RESOLVED), last_error_html());
   EXPECT_FALSE(is_url_being_fetched());
@@ -1879,7 +1892,7 @@ TEST_F(NetErrorHelperCoreTest, CorrectionsOnlySearchSuggestion) {
   EXPECT_FALSE(last_error_page_params());
 
   // Corrections are retrieved.
-  NavigationCorrectionsLoadSuccess(kCorrections, arraysize(kCorrections));
+  NavigationCorrectionsLoadSuccess(kCorrections, base::size(kCorrections));
   EXPECT_EQ(1, error_html_update_count());
   EXPECT_EQ(NetErrorString(net::ERR_NAME_NOT_RESOLVED), last_error_html());
   EXPECT_FALSE(is_url_being_fetched());
@@ -2004,7 +2017,7 @@ TEST_F(NetErrorHelperCoreTest, CorrectionClickTracking) {
 
   // Corrections are retrieved.
   NavigationCorrectionsLoadSuccess(kDefaultCorrections,
-                                   arraysize(kDefaultCorrections));
+                                   base::size(kDefaultCorrections));
   EXPECT_EQ(1, error_html_update_count());
   EXPECT_EQ(NetErrorString(net::ERR_NAME_NOT_RESOLVED), last_error_html());
   ExpectDefaultNavigationCorrections();
@@ -2020,10 +2033,10 @@ TEST_F(NetErrorHelperCoreTest, CorrectionClickTracking) {
 
   // Invalid clicks should be ignored.
   core()->TrackClick(-1);
-  core()->TrackClick(arraysize(kDefaultCorrections));
+  core()->TrackClick(base::size(kDefaultCorrections));
   EXPECT_EQ(0, tracking_request_count());
 
-  for (size_t i = 0; i < arraysize(kDefaultCorrections); ++i) {
+  for (size_t i = 0; i < base::size(kDefaultCorrections); ++i) {
     // Skip links that do not appear in the page.
     if (kDefaultCorrections[i].is_porn || kDefaultCorrections[i].is_soft_porn)
       continue;
@@ -2047,7 +2060,7 @@ TEST_F(NetErrorHelperCoreTest, CorrectionClickTracking) {
   }
 
   // Make sure duplicate tracking requests are ignored.
-  for (size_t i = 0; i < arraysize(kDefaultCorrections); ++i) {
+  for (size_t i = 0; i < base::size(kDefaultCorrections); ++i) {
     // Skip links that do not appear in the page.
     if (kDefaultCorrections[i].is_porn || kDefaultCorrections[i].is_soft_porn)
       continue;
@@ -2637,14 +2650,6 @@ TEST_F(NetErrorHelperCoreTest, ExplicitReloadDoNotBypassCache) {
   EXPECT_EQ(0, reload_bypassing_cache_count());
 }
 
-TEST_F(NetErrorHelperCoreTest, ExplicitShowSavedSucceeds) {
-  DoErrorLoad(net::ERR_CONNECTION_RESET);
-  EXPECT_EQ(0, show_saved_copy_count());
-  core()->ExecuteButtonPress(NetErrorHelperCore::SHOW_SAVED_COPY_BUTTON);
-  EXPECT_EQ(1, show_saved_copy_count());
-  EXPECT_EQ(GURL(kFailedUrl), show_saved_copy_url());
-}
-
 TEST_F(NetErrorHelperCoreTest, CanNotShowNetworkDiagnostics) {
   core()->OnSetCanShowNetworkDiagnosticsDialog(false);
   DoErrorLoad(net::ERR_CONNECTION_RESET);
@@ -2733,16 +2738,6 @@ class FakeAvailableOfflineContentProvider
     }
   }
 
-  void Summarize(SummarizeCallback callback) override {
-    auto summary = chrome::mojom::AvailableOfflineContentSummary::New();
-    if (return_content_) {
-      summary->total_items = 3;
-      summary->has_offline_page = true;
-      summary->has_prefetched_page = true;
-    }
-    std::move(callback).Run(std::move(summary));
-  }
-
   MOCK_METHOD2(LaunchItem,
                void(const std::string& item_ID, const std::string& name_space));
   MOCK_METHOD1(LaunchDownloadsPage, void(bool open_prefetched_articles_tab));
@@ -2790,8 +2785,7 @@ class NetErrorHelperCoreAvailableOfflineContentTest
 };
 
 TEST_F(NetErrorHelperCoreAvailableOfflineContentTest, ListAvailableContent) {
-  set_offline_content_feature_state(
-      OfflineContentOnNetErrorFeatureState::kEnabledList);
+  set_offline_content_feature_enabled(true);
   fake_provider_.set_return_content(true);
 
   DoErrorLoad(net::ERR_INTERNET_DISCONNECTED);
@@ -2829,8 +2823,7 @@ TEST_F(NetErrorHelperCoreAvailableOfflineContentTest, ListAvailableContent) {
 }
 
 TEST_F(NetErrorHelperCoreAvailableOfflineContentTest, ListHiddenByPrefs) {
-  set_offline_content_feature_state(
-      OfflineContentOnNetErrorFeatureState::kEnabledList);
+  set_offline_content_feature_enabled(true);
   fake_provider_.set_return_content(true);
   fake_provider_.set_list_visible_by_prefs(false);
 
@@ -2869,8 +2862,7 @@ TEST_F(NetErrorHelperCoreAvailableOfflineContentTest, ListHiddenByPrefs) {
 }
 
 TEST_F(NetErrorHelperCoreAvailableOfflineContentTest, ListNoAvailableContent) {
-  set_offline_content_feature_state(
-      OfflineContentOnNetErrorFeatureState::kEnabledList);
+  set_offline_content_feature_enabled(true);
   fake_provider_.set_return_content(false);
 
   DoErrorLoad(net::ERR_INTERNET_DISCONNECTED);
@@ -2886,44 +2878,8 @@ TEST_F(NetErrorHelperCoreAvailableOfflineContentTest, ListNoAvailableContent) {
       error_page::NETWORK_ERROR_PAGE_OFFLINE_SUGGESTIONS_SHOWN_COLLAPSED, 0);
 }
 
-TEST_F(NetErrorHelperCoreAvailableOfflineContentTest, SummaryAvailableContent) {
-  set_offline_content_feature_state(
-      OfflineContentOnNetErrorFeatureState::kEnabledSummary);
-  fake_provider_.set_return_content(true);
-
-  DoErrorLoad(net::ERR_INTERNET_DISCONNECTED);
-  task_environment()->RunUntilIdle();
-  std::string want_json = R"({
-    "has_audio": false,
-    "has_offline_page": true,
-    "has_prefetched_page": true,
-    "has_video": false,
-    "total_items": 3
-  })";
-  base::ReplaceChars(want_json, base::kWhitespaceASCII, "", &want_json);
-  EXPECT_EQ(want_json, offline_content_summary_json());
-
-  histogram_tester_.ExpectTotalCount("Net.ErrorPageCounts.SuggestionPresented",
-                                     0);
-  histogram_tester_.ExpectBucketCount(
-      "Net.ErrorPageCounts",
-      error_page::NETWORK_ERROR_PAGE_OFFLINE_SUGGESTIONS_SHOWN, 0);
-  histogram_tester_.ExpectBucketCount(
-      "Net.ErrorPageCounts",
-      error_page::NETWORK_ERROR_PAGE_OFFLINE_SUGGESTIONS_SHOWN_COLLAPSED, 0);
-  histogram_tester_.ExpectBucketCount(
-      "Net.ErrorPageCounts",
-      error_page::NETWORK_ERROR_PAGE_OFFLINE_CONTENT_SUMMARY_SHOWN, 1);
-
-  core()->LaunchDownloadsPage();
-  histogram_tester_.ExpectBucketCount(
-      "Net.ErrorPageCounts",
-      error_page::NETWORK_ERROR_PAGE_OFFLINE_DOWNLOADS_PAGE_CLICKED, 1);
-}
-
 TEST_F(NetErrorHelperCoreAvailableOfflineContentTest, NotAllowed) {
-  set_offline_content_feature_state(
-      OfflineContentOnNetErrorFeatureState::kDisabled);
+  set_offline_content_feature_enabled(false);
   fake_provider_.set_return_content(true);
 
   DoErrorLoad(net::ERR_INTERNET_DISCONNECTED);

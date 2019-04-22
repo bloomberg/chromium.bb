@@ -17,15 +17,20 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import gs
 from chromite.lib import gs_unittest
+from chromite.lib import osutils
+from chromite.lib import partial_mock
 
+from chromite.lib.paygen import filelib
 from chromite.lib.paygen import gslock
+from chromite.lib.paygen import gspaths
 from chromite.lib.paygen import signer_payloads_client
 
 
 # pylint: disable=protected-access
 
 
-class SignerPayloadsClientGoogleStorageTest(gs_unittest.AbstractGSContextTest):
+class SignerPayloadsClientGoogleStorageTest(gs_unittest.AbstractGSContextTest,
+                                            cros_test_lib.TempDirTestCase):
   """Test suite for the class SignerPayloadsClientGoogleStorage."""
 
   orig_timeout = (
@@ -54,10 +59,11 @@ class SignerPayloadsClientGoogleStorageTest(gs_unittest.AbstractGSContextTest):
     """Test helper method to create a client with standard arguments."""
 
     client = signer_payloads_client.SignerPayloadsClientGoogleStorage(
-        'foo-channel',
-        'foo-board',
-        'foo-version',
-        bucket='foo-bucket',
+        build=gspaths.Build(channel='foo-channel',
+                            board='foo-board',
+                            version='foo-version',
+                            bucket='foo-bucket'),
+        work_dir=self.tempdir,
         unique='foo-unique',
         ctx=self.ctx)
     return client
@@ -76,6 +82,15 @@ class SignerPayloadsClientGoogleStorageTest(gs_unittest.AbstractGSContextTest):
     self.assertEquals(
         client.archive_uri,
         expected_build_uri + '/payload.hash.tar.bz2')
+
+  def testWorkDir(self):
+    """Test that the work_dir is generated/passed correctly."""
+    client = self.createStandardClient()
+    self.assertIsNotNone(client._work_dir)
+
+    client = signer_payloads_client.SignerPayloadsClientGoogleStorage(
+        build=gspaths.Build(), work_dir='/foo-dir')
+    self.assertEqual(client._work_dir, '/foo-dir')
 
   def testCleanSignerFilesByKeyset(self):
     """Test the keyset specific cleanup works as expected."""
@@ -336,16 +351,18 @@ versionrev = foo-version
     # them all in this case.
 
 
-class SignerPayloadsClientIntegrationTest(cros_test_lib.TestCase):
+class SignerPayloadsClientIntegrationTest(cros_test_lib.TempDirTestCase):
   """Test suite integration with live signer servers."""
 
   def setUp(self):
     # This is in the real production chromeos-releases, but the listed
     # build has never, and will never exist.
     self.client = signer_payloads_client.SignerPayloadsClientGoogleStorage(
-        'test-channel',
-        'crostools-client',
-        'Rxx-Ryy')
+        gspaths.Build(channel='test-channel',
+                      board='crostools-client',
+                      version='Rxx-Ryy',
+                      bucket='chromeos-releases'),
+        work_dir=self.tempdir)
 
   @cros_test_lib.NetworkTest()
   def testDownloadSignatures(self):
@@ -414,3 +431,40 @@ class SignerPayloadsClientIntegrationTest(cros_test_lib.TestCase):
     finally:
       # Cleanup when we are over
       ctx.Remove(clean_uri, ignore_missing=True)
+
+
+class UnofficialPayloadSignerTest(cros_test_lib.RunCommandTempDirTestCase):
+  """Test suit for testing unofficial local payload signer."""
+  def setUp(self):
+    self._private_key = 'private.pem'
+    self._client = signer_payloads_client.UnofficialSignerPayloadsClient(
+        private_key=self._private_key, work_dir=self.tempdir)
+
+  def testExtractPublicKey(self):
+    """Tests the correct command is run to extract the public key."""
+    public_key = 'public.pem'
+    self._client.ExtractPublicKey(public_key)
+
+    self.assertCommandContains(['openssl', 'rsa', '-in', self._private_key,
+                                '-pubout', '-out', public_key])
+
+  def testGetHashSignatures(self):
+    """Tests we correclty sign given hashes."""
+    self.PatchObject(osutils, 'ReadFile', return_value='content')
+    file_copy_mock = self.PatchObject(filelib, 'Copy')
+
+    hashes = ('hash-1', 'hash-2')
+    keyset = 'foo-keys'
+    signatures = self._client.GetHashSignatures(hashes, keyset)
+
+    file_copy_mock.assert_called_with(
+        self._private_key, os.path.join(self.tempdir, 'update_key.pem'))
+
+    self.assertCommandCalled([partial_mock.HasString('sign_official_build.sh'),
+                              'update_payload',
+                              partial_mock.HasString('hash-'),
+                              self.tempdir,
+                              partial_mock.HasString('signature-')],
+                             enter_chroot=True)
+
+    self.assertEqual(signatures, [['content'], ['content']])

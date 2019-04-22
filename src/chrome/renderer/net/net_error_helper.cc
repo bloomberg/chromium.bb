@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/i18n/rtl.h"
@@ -15,6 +16,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/strcat.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -22,7 +24,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/chrome_render_thread_observer.h"
-#include "chrome/renderer/ssl/ssl_certificate_error_page_controller.h"
+#include "chrome/renderer/security_interstitials/security_interstitial_page_controller.h"
 #include "chrome/renderer/supervised_user/supervised_user_error_page_controller.h"
 #include "components/error_page/common/error.h"
 #include "components/error_page/common/error_page_params.h"
@@ -46,7 +48,7 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
-#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_url.h"
@@ -75,8 +77,6 @@ using error_page::DnsProbeStatus;
 using error_page::DnsProbeStatusToString;
 using error_page::ErrorPageParams;
 using error_page::LocalizedError;
-using OfflineContentOnNetErrorFeatureState =
-    LocalizedError::OfflineContentOnNetErrorFeatureState;
 
 namespace {
 
@@ -84,9 +84,7 @@ namespace {
 // suggestions.  If it takes too long, just use the local error page.
 const int kNavigationCorrectionFetchTimeoutSec = 3;
 
-NetErrorHelperCore::PageType GetLoadingPageType(
-    blink::WebDocumentLoader* document_loader) {
-  GURL url = document_loader->GetRequest().Url();
+NetErrorHelperCore::PageType GetLoadingPageType(const GURL& url) {
   if (!url.is_valid() || url.spec() != kUnreachableWebDataURL)
     return NetErrorHelperCore::NON_ERROR_PAGE;
   return NetErrorHelperCore::ERROR_PAGE;
@@ -99,20 +97,12 @@ NetErrorHelperCore::FrameType GetFrameType(RenderFrame* render_frame) {
 }
 
 #if defined(OS_ANDROID)
-OfflineContentOnNetErrorFeatureState GetOfflineContentOnNetErrorFeatureState() {
-  if (!base::FeatureList::IsEnabled(features::kNewNetErrorPageUI))
-    return OfflineContentOnNetErrorFeatureState::kDisabled;
-  const std::string alternate_ui_name = base::GetFieldTrialParamValueByFeature(
-      features::kNewNetErrorPageUI,
-      features::kNewNetErrorPageUIAlternateParameterName);
-  if (alternate_ui_name == features::kNewNetErrorPageUIAlternateContentList) {
-    return OfflineContentOnNetErrorFeatureState::kEnabledList;
-  }
-  return OfflineContentOnNetErrorFeatureState::kEnabledSummary;
+bool IsOfflineContentOnNetErrorFeatureEnabled() {
+  return base::FeatureList::IsEnabled(features::kNewNetErrorPageUI);
 }
 #else   // OS_ANDROID
-OfflineContentOnNetErrorFeatureState GetOfflineContentOnNetErrorFeatureState() {
-  return OfflineContentOnNetErrorFeatureState::kDisabled;
+bool IsOfflineContentOnNetErrorFeatureEnabled() {
+  return false;
 }
 #endif  // OS_ANDROID
 
@@ -120,8 +110,7 @@ OfflineContentOnNetErrorFeatureState GetOfflineContentOnNetErrorFeatureState() {
 bool IsAutoFetchFeatureEnabled() {
   // This feature is incompatible with OfflineContentOnNetError, so don't allow
   // both.
-  return GetOfflineContentOnNetErrorFeatureState() ==
-             OfflineContentOnNetErrorFeatureState::kDisabled &&
+  return !IsOfflineContentOnNetErrorFeatureEnabled() &&
          base::FeatureList::IsEnabled(features::kAutoFetchOnNetErrorPage);
 }
 #else   // OS_ANDROID
@@ -166,7 +155,7 @@ NetErrorHelper::NetErrorHelper(RenderFrame* render_frame)
     : RenderFrameObserver(render_frame),
       content::RenderFrameObserverTracker<NetErrorHelper>(render_frame),
       weak_controller_delegate_factory_(this),
-      weak_ssl_error_controller_delegate_factory_(this),
+      weak_security_interstitial_controller_delegate_factory_(this),
       weak_supervised_user_error_controller_delegate_factory_(this) {
   RenderThread::Get()->AddObserver(this);
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -306,11 +295,10 @@ void NetErrorHelper::Feedback() {
     supervised_user_interface_->Feedback();
 }
 
-void NetErrorHelper::DidStartProvisionalLoad(
-    blink::WebDocumentLoader* document_loader,
-    bool is_content_initiated) {
-  core_->OnStartLoad(GetFrameType(render_frame()),
-                     GetLoadingPageType(document_loader));
+void NetErrorHelper::DidStartNavigation(
+    const GURL& url,
+    base::Optional<blink::WebNavigationType> navigation_type) {
+  core_->OnStartLoad(GetFrameType(render_frame()), GetLoadingPageType(url));
 }
 
 void NetErrorHelper::DidCommitProvisionalLoad(bool is_same_document_navigation,
@@ -324,7 +312,7 @@ void NetErrorHelper::DidCommitProvisionalLoad(bool is_same_document_navigation,
   // error page, the controller has not yet been attached, so this won't affect
   // it.
   weak_controller_delegate_factory_.InvalidateWeakPtrs();
-  weak_ssl_error_controller_delegate_factory_.InvalidateWeakPtrs();
+  weak_security_interstitial_controller_delegate_factory_.InvalidateWeakPtrs();
   weak_supervised_user_error_controller_delegate_factory_.InvalidateWeakPtrs();
 
   core_->OnCommitLoad(GetFrameType(render_frame()),
@@ -384,50 +372,29 @@ chrome::mojom::NetworkEasterEgg* NetErrorHelper::GetRemoteNetworkEasterEgg() {
   return remote_network_easter_egg_.get();
 }
 
-void NetErrorHelper::GenerateLocalizedErrorPage(
+LocalizedError::PageState NetErrorHelper::GenerateLocalizedErrorPage(
     const error_page::Error& error,
     bool is_failed_post,
     bool can_show_network_diagnostics_dialog,
     std::unique_ptr<ErrorPageParams> params,
-    bool* reload_button_shown,
-    bool* show_saved_copy_button_shown,
-    bool* show_cached_copy_button_shown,
-    bool* download_button_shown,
-    OfflineContentOnNetErrorFeatureState* offline_content_feature_state,
-    bool* auto_fetch_allowed,
     std::string* error_html) const {
   error_html->clear();
 
   int resource_id = IDR_NET_ERROR_HTML;
   const base::StringPiece template_html(
       ui::ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id));
-  if (template_html.empty()) {
-    NOTREACHED() << "unable to load template.";
-  } else {
-    base::DictionaryValue error_strings;
-    *offline_content_feature_state = GetOfflineContentOnNetErrorFeatureState();
-    LocalizedError::GetStrings(
-        error.reason(), error.domain(), error.url(), is_failed_post,
-        error.stale_copy_in_cache(), can_show_network_diagnostics_dialog,
-        ChromeRenderThreadObserver::is_incognito_process(),
-        *offline_content_feature_state, IsAutoFetchFeatureEnabled(),
-        RenderThread::Get()->GetLocale(), std::move(params), &error_strings);
-    *reload_button_shown = error_strings.Get("reloadButton", nullptr);
-    *show_saved_copy_button_shown =
-        error_strings.Get("showSavedCopyButton", nullptr);
-    *show_cached_copy_button_shown =
-        error_strings.Get("cacheButton", nullptr);
-    *download_button_shown =
-        error_strings.Get("downloadButton", nullptr);
-    if (!error_strings.Get("suggestedOfflineContentPresentationMode",
-                           nullptr)) {
-      *offline_content_feature_state =
-          OfflineContentOnNetErrorFeatureState::kDisabled;
-    }
-    *auto_fetch_allowed = error_strings.FindKey("attemptAutoFetch") != nullptr;
-    // "t" is the id of the template's root node.
-    *error_html = webui::GetTemplatesHtml(template_html, &error_strings, "t");
-  }
+
+  LocalizedError::PageState page_state = LocalizedError::GetPageState(
+      error.reason(), error.domain(), error.url(), is_failed_post,
+      error.stale_copy_in_cache(), can_show_network_diagnostics_dialog,
+      ChromeRenderThreadObserver::is_incognito_process(),
+      IsOfflineContentOnNetErrorFeatureEnabled(), IsAutoFetchFeatureEnabled(),
+      RenderThread::Get()->GetLocale(), std::move(params));
+  DCHECK(!template_html.empty()) << "unable to load template.";
+  // "t" is the id of the template's root node.
+  *error_html =
+      webui::GetTemplatesHtml(template_html, &page_state.strings, "t");
+  return page_state;
 }
 
 void NetErrorHelper::LoadErrorPage(const std::string& html,
@@ -436,13 +403,10 @@ void NetErrorHelper::LoadErrorPage(const std::string& html,
                                  failed_url, true /* replace_current_item */);
 }
 
-void NetErrorHelper::EnablePageHelperFunctions(net::Error net_error) {
-  if (net::IsCertificateError(net_error)) {
-    SSLCertificateErrorPageController::Install(
-        render_frame(),
-        weak_ssl_error_controller_delegate_factory_.GetWeakPtr());
-    return;
-  }
+void NetErrorHelper::EnablePageHelperFunctions() {
+  SecurityInterstitialPageController::Install(
+      render_frame(),
+      weak_security_interstitial_controller_delegate_factory_.GetWeakPtr());
   NetErrorPageController::Install(
       render_frame(), weak_controller_delegate_factory_.GetWeakPtr());
 
@@ -453,30 +417,29 @@ void NetErrorHelper::EnablePageHelperFunctions(net::Error net_error) {
       weak_supervised_user_error_controller_delegate_factory_.GetWeakPtr());
 }
 
-void NetErrorHelper::UpdateErrorPage(const error_page::Error& error,
-                                     bool is_failed_post,
-                                     bool can_show_network_diagnostics_dialog) {
-  base::DictionaryValue error_strings;
-  LocalizedError::GetStrings(
+LocalizedError::PageState NetErrorHelper::UpdateErrorPage(
+    const error_page::Error& error,
+    bool is_failed_post,
+    bool can_show_network_diagnostics_dialog) {
+  LocalizedError::PageState page_state = LocalizedError::GetPageState(
       error.reason(), error.domain(), error.url(), is_failed_post,
       error.stale_copy_in_cache(), can_show_network_diagnostics_dialog,
       ChromeRenderThreadObserver::is_incognito_process(),
-      GetOfflineContentOnNetErrorFeatureState(), IsAutoFetchFeatureEnabled(),
-      RenderThread::Get()->GetLocale(), std::unique_ptr<ErrorPageParams>(),
-      &error_strings);
+      IsOfflineContentOnNetErrorFeatureEnabled(), IsAutoFetchFeatureEnabled(),
+      RenderThread::Get()->GetLocale(), std::unique_ptr<ErrorPageParams>());
 
   std::string json;
-  JSONWriter::Write(error_strings, &json);
+  JSONWriter::Write(page_state.strings, &json);
 
   std::string js = "if (window.updateForDnsProbe) "
                    "updateForDnsProbe(" + json + ");";
   base::string16 js16;
-  if (!base::UTF8ToUTF16(js.c_str(), js.length(), &js16)) {
+  if (base::UTF8ToUTF16(js.c_str(), js.length(), &js16)) {
+    render_frame()->ExecuteJavaScript(js16);
+  } else {
     NOTREACHED();
-    return;
   }
-
-  render_frame()->ExecuteJavaScript(js16);
+  return page_state;
 }
 
 void NetErrorHelper::InitializeErrorPageEasterEggHighScore(int high_score) {
@@ -505,6 +468,10 @@ void NetErrorHelper::UpdateEasterEggHighScore(int high_score) {
   GetRemoteNetworkEasterEgg()->UpdateHighScore(high_score);
 }
 
+void NetErrorHelper::ResetEasterEggHighScore() {
+  GetRemoteNetworkEasterEgg()->ResetHighScore();
+}
+
 void NetErrorHelper::FetchNavigationCorrections(
     const GURL& navigation_correction_url,
     const std::string& navigation_correction_request_body) {
@@ -515,6 +482,12 @@ void NetErrorHelper::FetchNavigationCorrections(
   correction_fetcher_->SetMethod("POST");
   correction_fetcher_->SetBody(navigation_correction_request_body);
   correction_fetcher_->SetHeader("Content-Type", "application/json");
+
+  // Since the page is trying to fetch cross-origin resources (which would
+  // be protected by CORB in no-cors mode), we need to ask for CORS.  See also
+  // https://crbug.com/932542.
+  correction_fetcher_->SetFetchRequestMode(
+      network::mojom::FetchRequestMode::kCors);
 
   // Prevent CORB from triggering on this request by setting an Origin header.
   correction_fetcher_->SetHeader("Origin", "null");
@@ -555,17 +528,6 @@ void NetErrorHelper::ReloadPage(bool bypass_cache) {
                    : blink::WebFrameLoadType::kReload);
 }
 
-void NetErrorHelper::LoadPageFromCache(const GURL& page_url) {
-  blink::WebLocalFrame* web_frame = render_frame()->GetWebFrame();
-  DCHECK_NE("POST",
-            web_frame->GetDocumentLoader()->GetRequest().HttpMethod().Ascii());
-
-  blink::WebURLRequest request(page_url);
-  request.SetCacheMode(blink::mojom::FetchCacheMode::kOnlyIfCached);
-  request.SetRequestorOrigin(blink::WebSecurityOrigin::Create(page_url));
-  web_frame->StartNavigation(request);
-}
-
 void NetErrorHelper::DiagnoseError(const GURL& page_url) {
   GetRemoteNetworkDiagnostics()->RunNetworkDiagnostics(page_url);
 }
@@ -596,17 +558,6 @@ void NetErrorHelper::OfflineContentAvailable(
                       offline_content_json, ");"})));
   }
 #endif
-}
-
-void NetErrorHelper::OfflineContentSummaryAvailable(
-    const std::string& offline_content_summary_json) {
-#if defined(OS_ANDROID)
-  if (!offline_content_summary_json.empty()) {
-    render_frame()->ExecuteJavaScript(
-        base::UTF8ToUTF16(base::StrCat({"offlineContentSummaryAvailable(",
-                                        offline_content_summary_json, ");"})));
-  }
-#endif  // defined(OS_ANDROID)
 }
 
 #if defined(OS_ANDROID)

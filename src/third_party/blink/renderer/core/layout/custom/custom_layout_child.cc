@@ -41,8 +41,8 @@ CustomLayoutFragmentRequest* CustomLayoutChild::layoutNextFragment(
       return nullptr;
   }
 
-  return new CustomLayoutFragmentRequest(this, options,
-                                         std::move(constraint_data));
+  return MakeGarbageCollected<CustomLayoutFragmentRequest>(
+      this, options, std::move(constraint_data));
 }
 
 void CustomLayoutChild::Trace(blink::Visitor* visitor) {

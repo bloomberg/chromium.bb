@@ -33,6 +33,7 @@
 
 #include "third_party/blink/renderer/core/svg/properties/svg_property.h"
 #include "third_party/blink/renderer/core/svg/svg_parsing_error.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -42,14 +43,14 @@ class SVGEnumerationBase : public SVGPropertyBase {
  public:
   // SVGEnumeration does not have a tear-off type.
   typedef void TearOffType;
-  typedef unsigned short PrimitiveType;
+  typedef uint16_t PrimitiveType;
 
   ~SVGEnumerationBase() override;
 
-  unsigned short Value() const {
+  uint16_t Value() const {
     return value_ <= MaxExposedEnumValue() ? value_ : 0;
   }
-  void SetValue(unsigned short);
+  void SetValue(uint16_t);
 
   // SVGPropertyBase:
   virtual SVGEnumerationBase* Clone() const = 0;
@@ -73,25 +74,23 @@ class SVGEnumerationBase : public SVGPropertyBase {
 
   // This is the maximum value that is exposed as an IDL constant on the
   // relevant interface.
-  unsigned short MaxExposedEnumValue() const;
+  uint16_t MaxExposedEnumValue() const;
 
-  void SetInitial(unsigned value) {
-    SetValue(static_cast<unsigned short>(value));
-  }
+  void SetInitial(unsigned value) { SetValue(static_cast<uint16_t>(value)); }
   static constexpr int kInitialValueBits = 3;
 
  protected:
-  SVGEnumerationBase(unsigned short value, const SVGEnumerationMap& map)
+  SVGEnumerationBase(uint16_t value, const SVGEnumerationMap& map)
       : value_(value), map_(map) {}
 
   // This is the maximum value of all the internal enumeration values.
   // This assumes that the map is sorted on the enumeration value.
-  unsigned short MaxInternalEnumValue() const;
+  uint16_t MaxInternalEnumValue() const;
 
   // Used by SVGMarkerOrientEnumeration.
   virtual void NotifyChange() {}
 
-  unsigned short value_;
+  uint16_t value_;
   const SVGEnumerationMap& map_;
 };
 
@@ -106,12 +105,16 @@ template <typename Enum>
 class SVGEnumeration : public SVGEnumerationBase {
  public:
   static SVGEnumeration<Enum>* Create(Enum new_value) {
-    return new SVGEnumeration<Enum>(new_value);
+    return MakeGarbageCollected<SVGEnumeration<Enum>>(new_value);
   }
 
+  explicit SVGEnumeration(Enum new_value)
+      : SVGEnumerationBase(new_value, GetEnumerationMap<Enum>()) {}
   ~SVGEnumeration() override = default;
 
-  SVGEnumerationBase* Clone() const override { return Create(EnumValue()); }
+  SVGEnumerationBase* Clone() const override {
+    return MakeGarbageCollected<SVGEnumeration>(EnumValue());
+  }
 
   Enum EnumValue() const {
     DCHECK_LE(value_, MaxInternalEnumValue());
@@ -122,10 +125,6 @@ class SVGEnumeration : public SVGEnumerationBase {
     value_ = value;
     NotifyChange();
   }
-
- protected:
-  explicit SVGEnumeration(Enum new_value)
-      : SVGEnumerationBase(new_value, GetEnumerationMap<Enum>()) {}
 };
 
 }  // namespace blink

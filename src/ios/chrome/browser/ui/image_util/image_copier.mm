@@ -6,6 +6,7 @@
 
 #include <MobileCoreServices/MobileCoreServices.h>
 
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #import "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"

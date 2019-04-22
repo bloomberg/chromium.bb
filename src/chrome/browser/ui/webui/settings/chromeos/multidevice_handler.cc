@@ -8,13 +8,14 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/android_sms/android_sms_pairing_state_tracker_impl.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_urls.h"
+#include "chrome/browser/chromeos/login/quick_unlock/auth_token.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_factory.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_storage.h"
-#include "chrome/browser/chromeos/multidevice_setup/android_sms_app_helper_delegate_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/multidevice_setup/multidevice_setup_dialog.h"
-#include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/proximity_auth/proximity_auth_pref_names.h"
 #include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
@@ -34,6 +35,7 @@ const char kPageContentDataBetterTogetherStateKey[] = "betterTogetherState";
 const char kPageContentDataInstantTetheringStateKey[] = "instantTetheringState";
 const char kPageContentDataMessagesStateKey[] = "messagesState";
 const char kPageContentDataSmartLockStateKey[] = "smartLockState";
+const char kIsAndroidSmsPairingComplete[] = "isAndroidSmsPairingComplete";
 
 constexpr char kAndroidSmsInfoOriginKey[] = "origin";
 constexpr char kAndroidSmsInfoEnabledKey[] = "enabled";
@@ -51,12 +53,16 @@ void OnRetrySetHostNowResult(bool success) {
 MultideviceHandler::MultideviceHandler(
     PrefService* prefs,
     multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client,
-    std::unique_ptr<multidevice_setup::AndroidSmsAppHelperDelegate>
-        android_sms_app_helper)
+    multidevice_setup::AndroidSmsPairingStateTracker*
+        android_sms_pairing_state_tracker,
+    android_sms::AndroidSmsAppManager* android_sms_app_manager)
     : prefs_(prefs),
       multidevice_setup_client_(multidevice_setup_client),
-      android_sms_app_helper_(std::move(android_sms_app_helper)),
+      android_sms_pairing_state_tracker_(android_sms_pairing_state_tracker),
+      android_sms_app_manager_(android_sms_app_manager),
       multidevice_setup_observer_(this),
+      android_sms_pairing_state_tracker_observer_(this),
+      android_sms_app_manager_observer_(this),
       callback_weak_ptr_factory_(this) {
   RegisterPrefChangeListeners();
 }
@@ -109,11 +115,27 @@ void MultideviceHandler::RegisterMessages() {
 void MultideviceHandler::OnJavascriptAllowed() {
   if (multidevice_setup_client_)
     multidevice_setup_observer_.Add(multidevice_setup_client_);
+
+  if (android_sms_pairing_state_tracker_) {
+    android_sms_pairing_state_tracker_observer_.Add(
+        android_sms_pairing_state_tracker_);
+  }
+
+  if (android_sms_app_manager_)
+    android_sms_app_manager_observer_.Add(android_sms_app_manager_);
 }
 
 void MultideviceHandler::OnJavascriptDisallowed() {
   if (multidevice_setup_client_)
     multidevice_setup_observer_.Remove(multidevice_setup_client_);
+
+  if (android_sms_pairing_state_tracker_) {
+    android_sms_pairing_state_tracker_observer_.Remove(
+        android_sms_pairing_state_tracker_);
+  }
+
+  if (android_sms_app_manager_)
+    android_sms_app_manager_observer_.Remove(android_sms_app_manager_);
 
   // Ensure that pending callbacks do not complete and cause JS to be evaluated.
   callback_weak_ptr_factory_.InvalidateWeakPtrs();
@@ -129,6 +151,16 @@ void MultideviceHandler::OnHostStatusChanged(
 void MultideviceHandler::OnFeatureStatesChanged(
     const multidevice_setup::MultiDeviceSetupClient::FeatureStatesMap&
         feature_states_map) {
+  UpdatePageContent();
+  NotifyAndroidSmsInfoChange();
+}
+
+void MultideviceHandler::OnPairingStateChanged() {
+  UpdatePageContent();
+  NotifyAndroidSmsInfoChange();
+}
+
+void MultideviceHandler::OnInstalledAppUrlChanged() {
   UpdatePageContent();
   NotifyAndroidSmsInfoChange();
 }
@@ -214,7 +246,7 @@ void MultideviceHandler::HandleRetryPendingHostSetup(
 
 void MultideviceHandler::HandleSetUpAndroidSms(const base::ListValue* args) {
   DCHECK(args->empty());
-  android_sms_app_helper_->SetUpAndLaunchAndroidSmsApp();
+  android_sms_app_manager_->SetUpAndLaunchAndroidSmsApp();
 }
 
 void MultideviceHandler::HandleGetSmartLockSignInEnabled(
@@ -261,12 +293,16 @@ void MultideviceHandler::HandleGetSmartLockSignInAllowed(
 
 std::unique_ptr<base::DictionaryValue>
 MultideviceHandler::GenerateAndroidSmsInfo() {
+  base::Optional<GURL> app_url;
+  if (android_sms_app_manager_)
+    app_url = android_sms_app_manager_->GetCurrentAppUrl();
+  if (!app_url)
+    app_url = android_sms::GetAndroidMessagesURL();
+
   auto android_sms_info = std::make_unique<base::DictionaryValue>();
   android_sms_info->SetString(
       kAndroidSmsInfoOriginKey,
-      ContentSettingsPattern::FromURLNoWildcard(
-          chromeos::android_sms::GetAndroidMessagesURL())
-          .ToString());
+      ContentSettingsPattern::FromURLNoWildcard(*app_url).ToString());
 
   chromeos::multidevice_setup::mojom::FeatureState messages_state =
       multidevice_setup_client_->GetFeatureState(
@@ -332,6 +368,12 @@ MultideviceHandler::GeneratePageContentDataDictionary() {
                                        host_status_with_device.second->name());
   }
 
+  page_content_dictionary->SetBoolean(
+      kIsAndroidSmsPairingComplete,
+      android_sms_pairing_state_tracker_
+          ? android_sms_pairing_state_tracker_->IsAndroidSmsPairingComplete()
+          : false);
+
   return page_content_dictionary;
 }
 
@@ -369,8 +411,8 @@ bool MultideviceHandler::IsAuthTokenValid(const std::string& auth_token) {
   Profile* profile = Profile::FromWebUI(web_ui());
   quick_unlock::QuickUnlockStorage* quick_unlock_storage =
       chromeos::quick_unlock::QuickUnlockFactory::GetForProfile(profile);
-  return !quick_unlock_storage->GetAuthTokenExpired() &&
-         auth_token == quick_unlock_storage->GetAuthToken();
+  return quick_unlock_storage->GetAuthToken() &&
+         auth_token == quick_unlock_storage->GetAuthToken()->Identifier();
 }
 
 multidevice_setup::MultiDeviceSetupClient::HostStatusWithDevice

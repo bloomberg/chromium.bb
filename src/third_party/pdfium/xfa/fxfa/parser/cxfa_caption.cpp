@@ -6,7 +6,7 @@
 
 #include "xfa/fxfa/parser/cxfa_caption.h"
 
-#include "fxjs/xfa/cjx_caption.h"
+#include "fxjs/xfa/cjx_node.h"
 #include "third_party/base/ptr_util.h"
 #include "xfa/fxfa/parser/cxfa_font.h"
 #include "xfa/fxfa/parser/cxfa_margin.h"
@@ -18,19 +18,19 @@ namespace {
 const CXFA_Node::PropertyData kCaptionPropertyData[] = {
     {XFA_Element::Margin, 1, 0}, {XFA_Element::Para, 1, 0},
     {XFA_Element::Font, 1, 0},   {XFA_Element::Value, 1, 0},
-    {XFA_Element::Extras, 1, 0}, {XFA_Element::Unknown, 0, 0}};
+    {XFA_Element::Extras, 1, 0},
+};
+
 const CXFA_Node::AttributeData kCaptionAttributeData[] = {
     {XFA_Attribute::Id, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Use, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Reserve, XFA_AttributeType::Measure, (void*)L"-1un"},
     {XFA_Attribute::Presence, XFA_AttributeType::Enum,
-     (void*)XFA_AttributeEnum::Visible},
+     (void*)XFA_AttributeValue::Visible},
     {XFA_Attribute::Usehref, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Placement, XFA_AttributeType::Enum,
-     (void*)XFA_AttributeEnum::Left},
-    {XFA_Attribute::Unknown, XFA_AttributeType::Integer, nullptr}};
-
-constexpr wchar_t kCaptionName[] = L"caption";
+     (void*)XFA_AttributeValue::Left},
+};
 
 }  // namespace
 
@@ -42,32 +42,27 @@ CXFA_Caption::CXFA_Caption(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_Element::Caption,
                 kCaptionPropertyData,
                 kCaptionAttributeData,
-                kCaptionName,
-                pdfium::MakeUnique<CJX_Caption>(this)) {}
+                pdfium::MakeUnique<CJX_Node>(this)) {}
 
-CXFA_Caption::~CXFA_Caption() {}
+CXFA_Caption::~CXFA_Caption() = default;
 
 bool CXFA_Caption::IsVisible() {
-  return JSObject()
-             ->TryEnum(XFA_Attribute::Presence, true)
-             .value_or(XFA_AttributeEnum::Visible) ==
-         XFA_AttributeEnum::Visible;
+  auto value = JSObject()->TryEnum(XFA_Attribute::Presence, true);
+  return !value.has_value() || value.value() == XFA_AttributeValue::Visible;
 }
 
 bool CXFA_Caption::IsHidden() {
-  return JSObject()
-             ->TryEnum(XFA_Attribute::Presence, true)
-             .value_or(XFA_AttributeEnum::Visible) == XFA_AttributeEnum::Hidden;
+  auto value = JSObject()->TryEnum(XFA_Attribute::Presence, true);
+  return !value.has_value() || value.value() == XFA_AttributeValue::Hidden;
 }
 
-XFA_AttributeEnum CXFA_Caption::GetPlacementType() {
-  return JSObject()
-      ->TryEnum(XFA_Attribute::Placement, true)
-      .value_or(XFA_AttributeEnum::Left);
+XFA_AttributeValue CXFA_Caption::GetPlacementType() {
+  auto value = JSObject()->TryEnum(XFA_Attribute::Placement, true);
+  return value.value_or(XFA_AttributeValue::Left);
 }
 
 float CXFA_Caption::GetReserve() const {
-  return JSObject()->GetMeasure(XFA_Attribute::Reserve).ToUnit(XFA_Unit::Pt);
+  return JSObject()->GetMeasureInUnit(XFA_Attribute::Reserve, XFA_Unit::Pt);
 }
 
 CXFA_Margin* CXFA_Caption::GetMarginIfExists() {

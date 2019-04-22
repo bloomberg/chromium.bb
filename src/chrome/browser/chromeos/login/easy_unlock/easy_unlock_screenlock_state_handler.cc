@@ -130,8 +130,9 @@ bool EasyUnlockScreenlockStateHandler::InStateValidOnRemoteAuthFailure() const {
   // Note that NO_PHONE is not valid in this case because the phone may close
   // the connection if the auth challenge sent to it is invalid. This case
   // should be handled as authentication failure.
-  return (state_ == ScreenlockState::NO_BLUETOOTH ||
-          state_ == ScreenlockState::PHONE_LOCKED);
+  return state_ == ScreenlockState::INACTIVE ||
+         state_ == ScreenlockState::NO_BLUETOOTH ||
+         state_ == ScreenlockState::PHONE_LOCKED;
 }
 
 void EasyUnlockScreenlockStateHandler::ChangeState(ScreenlockState new_state) {
@@ -282,26 +283,34 @@ void EasyUnlockScreenlockStateHandler::ShowHardlockUI() {
 
   base::string16 device_name = GetDeviceName();
   base::string16 tooltip;
-  if (hardlock_state_ == USER_HARDLOCK) {
-    tooltip = l10n_util::GetStringFUTF16(
-        IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_HARDLOCK_USER, device_name);
-  } else if (hardlock_state_ == PAIRING_CHANGED) {
-    tooltip = l10n_util::GetStringFUTF16(
-        IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_HARDLOCK_PAIRING_CHANGED,
-        device_name);
-  } else if (hardlock_state_ == PAIRING_ADDED) {
-    tooltip = l10n_util::GetStringFUTF16(
-        IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_HARDLOCK_PAIRING_ADDED, device_name);
-  } else if (hardlock_state_ == LOGIN_FAILED) {
-    tooltip = l10n_util::GetStringUTF16(
-        IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_LOGIN_FAILURE);
-  } else if (hardlock_state_ == PASSWORD_REQUIRED_FOR_LOGIN) {
-    tooltip = l10n_util::GetStringFUTF16(
-        IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_PASSWORD_REQUIRED_FOR_LOGIN,
-        device_name);
-  } else {
-    LOG(ERROR) << "Unknown hardlock state " << hardlock_state_;
+  switch (hardlock_state_) {
+    case USER_HARDLOCK:
+      tooltip = l10n_util::GetStringFUTF16(
+          IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_HARDLOCK_USER, device_name);
+      break;
+    case PAIRING_CHANGED:
+      tooltip = l10n_util::GetStringFUTF16(
+          IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_HARDLOCK_PAIRING_CHANGED,
+          device_name);
+      break;
+    case PAIRING_ADDED:
+      tooltip = l10n_util::GetStringFUTF16(
+          IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_HARDLOCK_PAIRING_ADDED,
+          device_name);
+      break;
+    case LOGIN_FAILED:
+      tooltip = l10n_util::GetStringUTF16(
+          IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_LOGIN_FAILURE);
+      break;
+    case LOGIN_DISABLED:
+      tooltip = l10n_util::GetStringUTF16(
+          IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_LOGIN_DISABLED);
+      break;
+    default:
+      LOG(ERROR) << "Unknown hardlock state: " << hardlock_state_;
+      NOTREACHED();
   }
+
   icon_options.SetTooltip(tooltip, true /* autoshow */);
 
   screenlock_bridge_->lock_handler()->ShowUserPodCustomIcon(account_id_,

@@ -52,7 +52,7 @@ constexpr uint8_t kMessageHeader[] =
     // draft-specific string beginning with "HTTP Exchange 1 " instead."
     // [spec text]
     // 5.3. "A single 0 byte which serves as a separator." [spec text]
-    "HTTP Exchange 1 b2";
+    "HTTP Exchange 1 b3";
 
 constexpr base::TimeDelta kOneWeek = base::TimeDelta::FromDays(7);
 constexpr base::TimeDelta kFourWeeks = base::TimeDelta::FromDays(4 * 7);
@@ -60,7 +60,7 @@ constexpr base::TimeDelta kFourWeeks = base::TimeDelta::FromDays(4 * 7);
 base::Optional<crypto::SignatureVerifier::SignatureAlgorithm>
 GetSignatureAlgorithm(scoped_refptr<net::X509Certificate> cert,
                       SignedExchangeDevToolsProxy* devtools_proxy) {
-  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"), "VerifySignature");
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"), "GetSignatureAlgorithm");
   base::StringPiece spki;
   if (!net::asn1::ExtractSPKIFromDERCert(
           net::x509_util::CryptoBufferAsStringPiece(cert->cert_buffer()),
@@ -106,6 +106,7 @@ bool VerifySignature(base::span<const uint8_t> sig,
                      scoped_refptr<net::X509Certificate> cert,
                      crypto::SignatureVerifier::SignatureAlgorithm algorithm,
                      SignedExchangeDevToolsProxy* devtools_proxy) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"), "VerifySignature");
   crypto::SignatureVerifier verifier;
   if (!net::x509_util::SignatureVerifierInitWithCertificate(
           &verifier, algorithm, sig, cert->cert_buffer())) {
@@ -136,7 +137,8 @@ void AppendToBuf8BytesBigEndian(std::vector<uint8_t>* buf, uint64_t n) {
   buf->insert(buf->end(), std::begin(encoded), std::end(encoded));
 }
 
-base::Optional<std::vector<uint8_t>> GenerateSignedMessage(
+std::vector<uint8_t> GenerateSignedMessage(
+    SignedExchangeVersion version,
     const SignedExchangeEnvelope& envelope) {
   TRACE_EVENT_BEGIN0(TRACE_DISABLED_BY_DEFAULT("loading"),
                      "GenerateSignedMessage");
@@ -161,10 +163,10 @@ base::Optional<std::vector<uint8_t>> GenerateSignedMessage(
 
   // Step 5.5. "The 8-byte big-endian encoding of the length in bytes of
   // validity-url, followed by the bytes of validity-url." [spec text]
-  const auto& validity_url_spec = signature.validity_url.spec();
-  AppendToBuf8BytesBigEndian(&message, validity_url_spec.size());
-  message.insert(message.end(), std::begin(validity_url_spec),
-                 std::end(validity_url_spec));
+  const auto& validity_url_bytes = signature.validity_url.raw_string;
+  AppendToBuf8BytesBigEndian(&message, validity_url_bytes.size());
+  message.insert(message.end(), std::begin(validity_url_bytes),
+                 std::end(validity_url_bytes));
 
   // Step 5.6. "The 8-byte big-endian encoding of date." [spec text]
   AppendToBuf8BytesBigEndian(&message, signature.date);
@@ -174,11 +176,11 @@ base::Optional<std::vector<uint8_t>> GenerateSignedMessage(
 
   // Step 5.8. "The 8-byte big-endian encoding of the length in bytes of
   // requestUrl, followed by the bytes of requestUrl." [spec text]
-  const auto& request_url_spec = envelope.request_url().spec();
+  const auto& request_url_bytes = envelope.request_url().raw_string;
 
-  AppendToBuf8BytesBigEndian(&message, request_url_spec.size());
-  message.insert(message.end(), std::begin(request_url_spec),
-                 std::end(request_url_spec));
+  AppendToBuf8BytesBigEndian(&message, request_url_bytes.size());
+  message.insert(message.end(), std::begin(request_url_bytes),
+                 std::end(request_url_bytes));
 
   // Step 5.9. "The 8-byte big-endian encoding of the length in bytes of
   // headers, followed by the bytes of headers." [spec text]
@@ -195,10 +197,8 @@ base::Time TimeFromSignedExchangeUnixTime(uint64_t t) {
   return base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(t);
 }
 
-// Implements steps 3-4 of
-// https://wicg.github.io/webpackage/draft-yasskin-httpbis-origin-signed-exchanges-impl.html#signature-validity
-bool VerifyTimestamps(const SignedExchangeEnvelope& envelope,
-                      const base::Time& verification_time) {
+SignedExchangeSignatureVerifier::Result VerifyValidityPeriod(
+    const SignedExchangeEnvelope& envelope) {
   base::Time expires_time =
       TimeFromSignedExchangeUnixTime(envelope.signature().expires);
   base::Time creation_time =
@@ -206,8 +206,21 @@ bool VerifyTimestamps(const SignedExchangeEnvelope& envelope,
 
   // 3. "If expires is more than 7 days (604800 seconds) after date, return
   // "invalid"." [spec text]
-  if ((expires_time - creation_time).InSeconds() > kOneWeek.InSeconds())
-    return false;
+  if ((expires_time - creation_time).InSeconds() > kOneWeek.InSeconds()) {
+    return SignedExchangeSignatureVerifier::Result::kErrValidityPeriodTooLong;
+  }
+  return SignedExchangeSignatureVerifier::Result::kSuccess;
+}
+
+// Implements "Signature validity" of
+// https://wicg.github.io/webpackage/draft-yasskin-httpbis-origin-signed-exchanges-impl.html#signature-validity
+SignedExchangeSignatureVerifier::Result VerifyTimestamps(
+    const SignedExchangeEnvelope& envelope,
+    const base::Time& verification_time) {
+  base::Time expires_time =
+      TimeFromSignedExchangeUnixTime(envelope.signature().expires);
+  base::Time creation_time =
+      TimeFromSignedExchangeUnixTime(envelope.signature().date);
 
   // 4. "If the current time is before date or after expires, return
   // "invalid"."
@@ -216,20 +229,20 @@ bool VerifyTimestamps(const SignedExchangeEnvelope& envelope,
         "SignedExchange.SignatureVerificationError.NotYetValid",
         (creation_time - verification_time).InSeconds(), 1,
         kFourWeeks.InSeconds(), 50);
-    return false;
+    return SignedExchangeSignatureVerifier::Result::kErrFutureDate;
   }
   if (expires_time < verification_time) {
     UMA_HISTOGRAM_CUSTOM_COUNTS(
         "SignedExchange.SignatureVerificationError.Expired",
         (verification_time - expires_time).InSeconds(), 1,
         kFourWeeks.InSeconds(), 50);
-    return false;
+    return SignedExchangeSignatureVerifier::Result::kErrExpired;
   }
 
   UMA_HISTOGRAM_CUSTOM_COUNTS("SignedExchange.TimeUntilExpiration",
                               (expires_time - verification_time).InSeconds(), 1,
                               kOneWeek.InSeconds(), 50);
-  return true;
+  return SignedExchangeSignatureVerifier::Result::kSuccess;
 }
 
 // Returns true if SPKI hash of |certificate| is included in the
@@ -246,6 +259,7 @@ bool ShouldIgnoreTimestampError(
 }  // namespace
 
 SignedExchangeSignatureVerifier::Result SignedExchangeSignatureVerifier::Verify(
+    SignedExchangeVersion version,
     const SignedExchangeEnvelope& envelope,
     scoped_refptr<net::X509Certificate> certificate,
     const base::Time& verification_time,
@@ -253,8 +267,20 @@ SignedExchangeSignatureVerifier::Result SignedExchangeSignatureVerifier::Verify(
   SCOPED_UMA_HISTOGRAM_TIMER("SignedExchange.Time.SignatureVerify");
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
                "SignedExchangeSignatureVerifier::Verify");
-
-  if (!VerifyTimestamps(envelope, verification_time) &&
+  DCHECK(certificate);
+  const auto validity_period_result = VerifyValidityPeriod(envelope);
+  if (validity_period_result != Result::kSuccess) {
+    signed_exchange_utils::ReportErrorAndTraceEvent(
+        devtools_proxy,
+        base::StringPrintf(
+            "Specified validity period too long. creation_time: %" PRIu64
+            ", expires_time: %" PRIu64 ", verification_time: %" PRIu64,
+            envelope.signature().date, envelope.signature().expires,
+            (verification_time - base::Time::UnixEpoch()).InSeconds()));
+    return validity_period_result;
+  }
+  const auto timestamp_result = VerifyTimestamps(envelope, verification_time);
+  if (timestamp_result != Result::kSuccess &&
       !ShouldIgnoreTimestampError(certificate)) {
     signed_exchange_utils::ReportErrorAndTraceEvent(
         devtools_proxy,
@@ -263,20 +289,10 @@ SignedExchangeSignatureVerifier::Result SignedExchangeSignatureVerifier::Verify(
             ", expires_time: %" PRIu64 ", verification_time: %" PRIu64,
             envelope.signature().date, envelope.signature().expires,
             (verification_time - base::Time::UnixEpoch()).InSeconds()));
-    return Result::kErrInvalidTimestamp;
+    return timestamp_result;
   }
-
-  if (!certificate) {
-    signed_exchange_utils::ReportErrorAndTraceEvent(devtools_proxy,
-                                                    "No certificate set.");
-    return Result::kErrNoCertificate;
-  }
-
-  if (!envelope.signature().cert_sha256.has_value()) {
-    signed_exchange_utils::ReportErrorAndTraceEvent(devtools_proxy,
-                                                    "No cert-sha256 set.");
-    return Result::kErrNoCertificateSHA256;
-  }
+  // Currently we don't support ed25519key. So |cert_sha256| must be set.
+  DCHECK(envelope.signature().cert_sha256.has_value());
 
   // The main-certificate is the first certificate in certificate-chain.
   if (*envelope.signature().cert_sha256 !=
@@ -287,12 +303,7 @@ SignedExchangeSignatureVerifier::Result SignedExchangeSignatureVerifier::Verify(
     return Result::kErrCertificateSHA256Mismatch;
   }
 
-  auto message = GenerateSignedMessage(envelope);
-  if (!message) {
-    signed_exchange_utils::ReportErrorAndTraceEvent(
-        devtools_proxy, "Failed to reconstruct signed message.");
-    return Result::kErrInvalidSignatureFormat;
-  }
+  auto message = GenerateSignedMessage(version, envelope);
 
   base::Optional<crypto::SignatureVerifier::SignatureAlgorithm> algorithm =
       GetSignatureAlgorithm(certificate, devtools_proxy);
@@ -303,19 +314,10 @@ SignedExchangeSignatureVerifier::Result SignedExchangeSignatureVerifier::Verify(
   if (!VerifySignature(
           base::make_span(reinterpret_cast<const uint8_t*>(sig.data()),
                           sig.size()),
-          *message, certificate, *algorithm, devtools_proxy)) {
+          message, certificate, *algorithm, devtools_proxy)) {
     signed_exchange_utils::ReportErrorAndTraceEvent(
         devtools_proxy, "Failed to verify signature \"sig\".");
     return Result::kErrSignatureVerificationFailed;
-  }
-
-  if (!base::EqualsCaseInsensitiveASCII(envelope.signature().integrity,
-                                        "digest/mi-sha256-03")) {
-    signed_exchange_utils::ReportErrorAndTraceEvent(
-        devtools_proxy,
-        "The current implemention only supports \"digest/mi-sha256-03\" "
-        "integrity scheme.");
-    return Result::kErrInvalidSignatureIntegrity;
   }
   return Result::kSuccess;
 }

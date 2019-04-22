@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/css/css_value.h"
 #include "third_party/blink/renderer/core/css/css_variable_data.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string_hash.h"
@@ -19,14 +20,15 @@
 namespace blink {
 
 class CORE_EXPORT StyleNonInheritedVariables {
- public:
-  static std::unique_ptr<StyleNonInheritedVariables> Create() {
-    return base::WrapUnique(new StyleNonInheritedVariables);
-  }
+  USING_FAST_MALLOC(StyleNonInheritedVariables);
 
+ public:
   std::unique_ptr<StyleNonInheritedVariables> Clone() {
     return base::WrapUnique(new StyleNonInheritedVariables(*this));
   }
+
+  StyleNonInheritedVariables();
+  explicit StyleNonInheritedVariables(StyleNonInheritedVariables&);
 
   bool operator==(const StyleNonInheritedVariables& other) const;
   bool operator!=(const StyleNonInheritedVariables& other) const {
@@ -36,8 +38,7 @@ class CORE_EXPORT StyleNonInheritedVariables {
   void SetVariable(const AtomicString& name,
                    scoped_refptr<CSSVariableData> value) {
     needs_resolution_ =
-        needs_resolution_ || (value && (value->NeedsVariableResolution() ||
-                                        value->NeedsUrlResolution()));
+        needs_resolution_ || (value && value->NeedsVariableResolution());
     data_.Set(name, std::move(value));
   }
   CSSVariableData* GetVariable(const AtomicString& name) const;
@@ -54,9 +55,6 @@ class CORE_EXPORT StyleNonInheritedVariables {
   void ClearNeedsResolution() { needs_resolution_ = false; }
 
  private:
-  StyleNonInheritedVariables();
-  StyleNonInheritedVariables(StyleNonInheritedVariables&);
-
   friend class CSSVariableResolver;
 
   HashMap<AtomicString, scoped_refptr<CSSVariableData>> data_;

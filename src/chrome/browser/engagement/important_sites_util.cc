@@ -8,13 +8,14 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <unordered_set>
 #include <utility>
 
-#include "base/containers/hash_tables.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -30,9 +31,14 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
-#include "third_party/blink/public/platform/site_engagement.mojom.h"
+#include "third_party/blink/public/mojom/site_engagement/site_engagement.mojom.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 #include "url/url_util.h"
+
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/search_permissions/search_permissions_service.h"
+#endif
 
 namespace {
 using bookmarks::BookmarkModel;
@@ -196,14 +202,15 @@ bool CompareDescendingImportantInfo(
   return a.second.engagement_score > b.second.engagement_score;
 }
 
-base::hash_set<std::string> GetBlacklistedImportantDomains(Profile* profile) {
+std::unordered_set<std::string> GetBlacklistedImportantDomains(
+    Profile* profile) {
   ContentSettingsForOneType content_settings_list;
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(profile);
   map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_IMPORTANT_SITE_INFO,
                              content_settings::ResourceIdentifier(),
                              &content_settings_list);
-  base::hash_set<std::string> ignoring_domains;
+  std::unordered_set<std::string> ignoring_domains;
   for (const ContentSettingPatternSource& site : content_settings_list) {
     GURL origin(site.primary_pattern.ToString());
     if (!origin.is_valid() ||
@@ -273,14 +280,28 @@ void PopulateInfoMapWithContentTypeAllowed(
   HostContentSettingsMapFactory::GetForProfile(profile)->GetSettingsForOneType(
       content_type, content_settings::ResourceIdentifier(),
       &content_settings_list);
+
   // Extract a set of urls, using the primary pattern. We don't handle
   // wildcard patterns.
   std::set<GURL> content_origins;
   for (const ContentSettingPatternSource& site : content_settings_list) {
     if (site.GetContentSetting() != CONTENT_SETTING_ALLOW)
       continue;
-    MaybePopulateImportantInfoForReason(GURL(site.primary_pattern.ToString()),
-                                        &content_origins, reason, output);
+    GURL url(site.primary_pattern.ToString());
+
+#if defined(OS_ANDROID)
+    SearchPermissionsService* search_permissions_service =
+        SearchPermissionsService::Factory::GetInstance()->GetForBrowserContext(
+            profile);
+    // If the permission is controlled by the Default Search Engine then don't
+    // consider it important. The DSE gets these permissions by default.
+    if (search_permissions_service->IsPermissionControlledByDSE(
+            content_type, url::Origin::Create(url))) {
+      continue;
+    }
+#endif
+
+    MaybePopulateImportantInfoForReason(url, &content_origins, reason, output);
   }
 }
 
@@ -378,7 +399,7 @@ ImportantSitesUtil::GetImportantRegisterableDomains(Profile* profile,
 
   PopulateInfoMapWithBookmarks(profile, engagement_map, &important_info);
 
-  base::hash_set<std::string> blacklisted_domains =
+  std::unordered_set<std::string> blacklisted_domains =
       GetBlacklistedImportantDomains(profile);
 
   std::vector<std::pair<std::string, ImportantDomainInfo>> items(

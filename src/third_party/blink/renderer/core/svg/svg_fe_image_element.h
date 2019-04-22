@@ -42,6 +42,7 @@ class SVGFEImageElement final : public SVGFilterPrimitiveStandardAttributes,
 
   bool CurrentFrameHasSingleSecurityOrigin() const;
 
+  explicit SVGFEImageElement(Document&);
   ~SVGFEImageElement() override;
   SVGAnimatedPreserveAspectRatio* preserveAspectRatio() {
     return preserve_aspect_ratio_.Get();
@@ -52,8 +53,6 @@ class SVGFEImageElement final : public SVGFilterPrimitiveStandardAttributes,
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit SVGFEImageElement(Document&);
-
   void SvgAttributeChanged(const QualifiedName&) override;
   void ImageNotifyFinished(ImageResourceContent*) override;
   String DebugName() const override { return "SVGFEImageElement"; }
@@ -67,7 +66,7 @@ class SVGFEImageElement final : public SVGFilterPrimitiveStandardAttributes,
   void BuildPendingResource() override;
   InsertionNotificationRequest InsertedInto(ContainerNode&) override;
   void RemovedFrom(ContainerNode&) override;
-  bool TaintsOrigin(bool inputs_taint_origin) const override;
+  bool TaintsOrigin() const override;
 
   Member<SVGAnimatedPreserveAspectRatio> preserve_aspect_ratio_;
 

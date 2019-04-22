@@ -27,6 +27,12 @@
 #include "{{export_header}}"
 {%- endif %}
 
+{% if enable_kythe_annotations -%}
+#ifdef KYTHE_IS_RUNNING
+#pragma kythe_inline_metadata "Metadata comment"
+#endif
+{%- endif %}
+
 namespace mojo {
 namespace internal {
 class ValidationContext;
@@ -76,18 +82,6 @@ using {{enum|get_name_for_kind(flatten_nested_kind=True)}}_Data =
 {%      include "struct_declaration.tmpl" %}
 {%      include "struct_unserialized_message_context.tmpl" %}
 {%-   endif %}
-{%- endfor %}
-
-{#--- Interface parameter definitions #}
-{%- for interface in interfaces %}
-{%-   for method in interface.methods %}
-{%-     set struct = method.param_struct %}
-{%      include "struct_declaration.tmpl" %}
-{%-     if method.response_parameters != None %}
-{%-       set struct = method.response_param_struct %}
-{%        include "struct_declaration.tmpl" %}
-{%-     endif %}
-{%-   endfor %}
 {%- endfor %}
 
 #pragma pack(pop)

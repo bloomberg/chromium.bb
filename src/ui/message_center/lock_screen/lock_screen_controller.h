@@ -24,9 +24,9 @@ class MESSAGE_CENTER_EXPORT LockScreenController {
   // the cancel callback is run. In other words, onlt one of the pending or
   // cancel callback must be run. The cancel callback may be run even when the
   // device is locked.
-  virtual void DismissLockScreenThenExecute(
-      base::OnceClosure pending_callback,
-      base::OnceClosure cancel_callback) = 0;
+  virtual void DismissLockScreenThenExecute(base::OnceClosure pending_callback,
+                                            base::OnceClosure cancel_callback,
+                                            int message_id = -1) = 0;
 
   // Returns the status of the device lock. True if locked, false otherwise.
   virtual bool IsScreenLocked() const = 0;

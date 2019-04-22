@@ -273,8 +273,7 @@ class ExceptionHandler {
   AppMemoryList app_memory_list_;
 };
 
-
-typedef bool (*FirstChanceHandler)(int, void*, void*);
+typedef bool (*FirstChanceHandler)(int, siginfo_t*, void*);
 void SetFirstChanceExceptionHandler(FirstChanceHandler callback);
 
 }  // namespace google_breakpad

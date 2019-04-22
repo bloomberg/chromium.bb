@@ -7,27 +7,34 @@
 
 #include <memory>
 #include <string>
+#include <tuple>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/containers/flat_map.h"
 #include "base/memory/ref_counted.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 class GURL;
 class PrefService;
 
 namespace base {
+class FilePath;
 class Version;
-}
-
-namespace service_manager {
-class Connector;
 }
 
 namespace update_client {
 
 class ActivityDataService;
+class NetworkFetcherFactory;
+class PatcherFactory;
 class ProtocolHandlerFactory;
+class UnzipperFactory;
+
+using RecoveryCRXElevator = base::OnceCallback<std::tuple<bool, int, int>(
+    const base::FilePath& crx_path,
+    const std::string& browser_appid,
+    const std::string& browser_version,
+    const std::string& session_id)>;
 
 // Controls the component updater behavior.
 // TODO(sorin): this class will be split soon in two. One class controls
@@ -94,13 +101,11 @@ class Configurator : public base::RefCountedThreadSafe<Configurator> {
   // Returns an empty string if no policy is in effect.
   virtual std::string GetDownloadPreference() const = 0;
 
-  virtual scoped_refptr<network::SharedURLLoaderFactory> URLLoaderFactory()
-      const = 0;
+  virtual scoped_refptr<NetworkFetcherFactory> GetNetworkFetcherFactory() = 0;
 
-  // Returns a new connector to the service manager. That connector is not bound
-  // to any thread yet.
-  virtual std::unique_ptr<service_manager::Connector>
-  CreateServiceManagerConnector() const = 0;
+  virtual scoped_refptr<UnzipperFactory> GetUnzipperFactory() = 0;
+
+  virtual scoped_refptr<PatcherFactory> GetPatcherFactory() = 0;
 
   // True means that this client can handle delta updates.
   virtual bool EnabledDeltas() const = 0;
@@ -155,6 +160,11 @@ class Configurator : public base::RefCountedThreadSafe<Configurator> {
   // serializer object instances.
   virtual std::unique_ptr<ProtocolHandlerFactory> GetProtocolHandlerFactory()
       const = 0;
+
+  // Returns a callback which can elevate and run the CRX payload associated
+  // with the improved recovery component. Running this payload repairs the
+  // Chrome update functionality.
+  virtual RecoveryCRXElevator GetRecoveryCRXElevator() const = 0;
 
  protected:
   friend class base::RefCountedThreadSafe<Configurator>;

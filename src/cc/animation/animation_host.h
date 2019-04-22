@@ -9,8 +9,8 @@
 #include <unordered_map>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "cc/animation/animation_export.h"
 #include "cc/animation/keyframe_model.h"
@@ -55,7 +55,11 @@ class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost,
   static std::unique_ptr<AnimationHost> CreateMainInstance();
   static std::unique_ptr<AnimationHost> CreateForTesting(
       ThreadInstance thread_instance);
+
+  AnimationHost(const AnimationHost&) = delete;
   ~AnimationHost() override;
+
+  AnimationHost& operator=(const AnimationHost&) = delete;
 
   void AddAnimationTimeline(scoped_refptr<AnimationTimeline> timeline);
   void RemoveAnimationTimeline(scoped_refptr<AnimationTimeline> timeline);
@@ -86,6 +90,8 @@ class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost,
       bool supports_impl_scrolling) const override;
   void ClearMutators() override;
 
+  void InitClientAnimationState() override;
+
   void RegisterElement(ElementId element_id,
                        ElementListType list_type) override;
   void UnregisterElement(ElementId element_id,
@@ -98,6 +104,7 @@ class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost,
   void PushPropertiesTo(MutatorHost* host_impl) override;
 
   void SetSupportsScrollAnimations(bool supports_scroll_animations) override;
+  void SetScrollAnimationDurationForTesting(base::TimeDelta duration) override;
   bool NeedsTickAnimations() const override;
 
   bool ActivateAnimations() override;
@@ -106,6 +113,7 @@ class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost,
                       bool is_active_tree) override;
   void TickScrollAnimations(base::TimeTicks monotonic_time,
                             const ScrollTree& scroll_tree) override;
+  void TickWorkletAnimations() override;
   bool UpdateAnimationState(bool start_ready_animations,
                             MutatorEvents* events) override;
   void PromoteScrollTimelinesPendingToActive() override;
@@ -140,12 +148,10 @@ class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost,
                                     ElementListType list_type) const override;
   bool AnimationsPreserveAxisAlignment(ElementId element_id) const override;
 
-  bool MaximumTargetScale(ElementId element_id,
-                          ElementListType list_type,
-                          float* max_scale) const override;
-  bool AnimationStartScale(ElementId element_id,
-                           ElementListType list_type,
-                           float* start_scale) const override;
+  float MaximumTargetScale(ElementId element_id,
+                           ElementListType list_type) const override;
+  float AnimationStartScale(ElementId element_id,
+                            ElementListType list_type) const override;
 
   bool IsElementAnimating(ElementId element_id) const override;
   bool HasTickingKeyframeModelForTesting(ElementId element_id) const override;
@@ -164,6 +170,8 @@ class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost,
       base::TimeDelta delayed_by) override;
 
   void ScrollAnimationAbort() override;
+
+  bool IsImplOnlyScrollAnimating() const override;
 
   // This should only be called from the main thread.
   ScrollOffsetAnimations& scroll_offset_animations() const;
@@ -201,7 +209,7 @@ class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost,
   void EraseTimeline(scoped_refptr<AnimationTimeline> timeline);
 
   // Return true if there are any animations that get mutated.
-  bool TickMutator(base::TimeTicks monotonic_time,
+  void TickMutator(base::TimeTicks monotonic_time,
                    const ScrollTree& scroll_tree,
                    bool is_active_tree);
 
@@ -221,6 +229,10 @@ class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost,
 
   MutatorHostClient* mutator_host_client_;
 
+  // Exactly one of scroll_offset_animations_ and scroll_offset_animations_impl_
+  // will be non-null for a given AnimationHost instance (the former if
+  // thread_instance_ == ThreadInstance::MAIN, the latter if thread_instance_ ==
+  // ThreadInstance::IMPL).
   std::unique_ptr<ScrollOffsetAnimations> scroll_offset_animations_;
   std::unique_ptr<ScrollOffsetAnimationsImpl> scroll_offset_animations_impl_;
 
@@ -235,7 +247,7 @@ class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost,
   bool current_frame_had_raf_ = false;
   bool next_frame_has_pending_raf_ = false;
 
-  DISALLOW_COPY_AND_ASSIGN(AnimationHost);
+  base::WeakPtrFactory<AnimationHost> weak_factory_;
 };
 
 }  // namespace cc

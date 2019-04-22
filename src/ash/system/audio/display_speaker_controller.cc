@@ -6,24 +6,22 @@
 
 #include "ash/shell.h"
 #include "chromeos/audio/cras_audio_handler.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"
 
 using chromeos::CrasAudioHandler;
-using chromeos::DBusThreadManager;
 
 namespace ash {
 
 DisplaySpeakerController::DisplaySpeakerController() {
   display::Screen::GetScreen()->AddObserver(this);
-  DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
+  chromeos::PowerManagerClient::Get()->AddObserver(this);
 }
 
 DisplaySpeakerController::~DisplaySpeakerController() {
-  DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
+  chromeos::PowerManagerClient::Get()->RemoveObserver(this);
   display::Screen::GetScreen()->RemoveObserver(this);
 }
 

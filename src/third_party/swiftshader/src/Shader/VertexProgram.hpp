@@ -22,6 +22,8 @@
 #include "Renderer/Stream.hpp"
 #include "Common/Types.hpp"
 
+#include <unordered_map>
+
 namespace sw
 {
 	struct Stream;
@@ -39,18 +41,18 @@ namespace sw
 
 		RegisterArray<NUM_TEMPORARY_REGISTERS> r;   // Temporary registers
 		Vector4f a0;
-		Array<Int, 4> aL;
+		Array<Int> aL; // loop counter register
 		Vector4f p0;
 
-		Array<Int, 4> increment;
-		Array<Int, 4> iteration;
+		Array<Int> increment;
+		Array<Int> iteration;
 
 		Int loopDepth;
 		Int stackIndex;   // FIXME: Inc/decrement callStack
-		Array<UInt, 16> callStack;
+		Array<UInt> callStack;
 
 		Int enableIndex;
-		Array<Int4, 1 + 24> enableStack;
+		Array<Int4, MAX_SHADER_ENABLE_STACK_SIZE> enableStack;
 		Int4 enableBreak;
 		Int4 enableContinue;
 		Int4 enableLeave;
@@ -127,13 +129,13 @@ namespace sw
 		int currentLabel = -1;
 		bool scalar = false;
 
-		BasicBlock *ifFalseBlock[24 + 24];
-		BasicBlock *loopRepTestBlock[4];
-		BasicBlock *loopRepEndBlock[4];
-		BasicBlock *labelBlock[2048];
-		std::vector<BasicBlock*> callRetBlock[2048];
+		std::vector<BasicBlock*> ifFalseBlock;
+		std::vector<BasicBlock*> loopRepTestBlock;
+		std::vector<BasicBlock*> loopRepEndBlock;
+		std::vector<BasicBlock*> labelBlock;
+		std::unordered_map<unsigned int, std::vector<BasicBlock*>> callRetBlock; // label -> list of call sites
 		BasicBlock *returnBlock;
-		bool isConditionalIf[24 + 24];
+		std::vector<bool> isConditionalIf;
 		std::vector<Int4> restoreContinue;
 	};
 }

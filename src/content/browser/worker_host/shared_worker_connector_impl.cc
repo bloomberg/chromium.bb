@@ -12,6 +12,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
+#include "third_party/blink/public/mojom/worker/shared_worker_info.mojom.h"
 
 namespace content {
 
@@ -19,7 +20,7 @@ namespace content {
 void SharedWorkerConnectorImpl::Create(
     int process_id,
     int frame_id,
-    mojom::SharedWorkerConnectorRequest request) {
+    blink::mojom::SharedWorkerConnectorRequest request) {
   mojo::MakeStrongBinding(
       base::WrapUnique(new SharedWorkerConnectorImpl(process_id, frame_id)),
       std::move(request));
@@ -30,8 +31,8 @@ SharedWorkerConnectorImpl::SharedWorkerConnectorImpl(int process_id,
     : process_id_(process_id), frame_id_(frame_id) {}
 
 void SharedWorkerConnectorImpl::Connect(
-    mojom::SharedWorkerInfoPtr info,
-    mojom::SharedWorkerClientPtr client,
+    blink::mojom::SharedWorkerInfoPtr info,
+    blink::mojom::SharedWorkerClientPtr client,
     blink::mojom::SharedWorkerCreationContextType creation_context_type,
     mojo::ScopedMessagePipeHandle message_port,
     blink::mojom::BlobURLTokenPtr blob_url_token) {

@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.sync;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
+import android.support.annotation.Nullable;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
@@ -15,6 +16,7 @@ import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGenerator;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
 import org.chromium.chrome.browser.invalidation.InvalidationController;
@@ -23,10 +25,9 @@ import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.components.sync.ModelType;
-import org.chromium.components.sync.PassphraseType;
+import org.chromium.components.sync.Passphrase;
 import org.chromium.components.sync.StopSource;
-
-import javax.annotation.Nullable;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 /**
  * SyncController handles the coordination of sync state between the invalidation controller,
@@ -143,7 +144,7 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
         // Note: |isChromeSyncEnabled| maps to SyncRequested, and
         // |isMasterSyncEnabled| maps to *both* SyncRequested and
         // SyncAllowedByPlatform.
-        // TODO(crbug.com/867901): Don't mix these two concepts.
+        // TODO(crbug.com/921025): Don't mix these two concepts.
 
         mProfileSyncService.setSyncAllowedByPlatform(
                 AndroidSyncSettings.get().isMasterSyncEnabled());
@@ -186,7 +187,6 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
                 invalidationController.ensureStartedAndUpdateRegisteredTypes();
             }
             if (!AndroidSyncSettings.get().isSyncEnabled()) {
-                assert AndroidSyncSettings.get().isMasterSyncEnabled();
                 AndroidSyncSettings.get().enableChromeSync();
             }
         } else {
@@ -198,6 +198,7 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
                 // the Chrome sync setting to match isSyncRequested. We have to be careful not to
                 // disable it when isSyncRequested becomes false due to master sync being disabled
                 // so that sync will turn back on if master sync is re-enabled.
+                // TODO(crbug.com/921025): Master sync shouldn't influence isSyncRequested.
                 AndroidSyncSettings.get().disableChromeSync();
             }
         }
@@ -208,12 +209,7 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
      */
     @Override
     public void androidSyncSettingsChanged() {
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                updateSyncStateFromAndroid();
-            }
-        });
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> { updateSyncStateFromAndroid(); });
     }
 
     /**
@@ -222,8 +218,7 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
     public boolean isSyncingUrlsWithKeystorePassphrase() {
         return mProfileSyncService.isEngineInitialized()
                 && mProfileSyncService.getPreferredDataTypes().contains(ModelType.TYPED_URLS)
-                && mProfileSyncService.getPassphraseType().equals(
-                           PassphraseType.KEYSTORE_PASSPHRASE);
+                && mProfileSyncService.getPassphraseType() == Passphrase.Type.KEYSTORE;
     }
 
     /**

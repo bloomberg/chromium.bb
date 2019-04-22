@@ -11,6 +11,7 @@
 #include "content/browser/web_package/signed_exchange_devtools_proxy.h"
 #include "content/browser/web_package/signed_exchange_loader.h"
 #include "content/browser/web_package/signed_exchange_prefetch_metric_recorder.h"
+#include "content/browser/web_package/signed_exchange_reporter.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/common/throttling_url_loader.h"
 #include "content/public/common/content_features.h"
@@ -30,28 +31,21 @@ bool SignedExchangeRequestHandler::IsSupportedMimeType(
 }
 
 SignedExchangeRequestHandler::SignedExchangeRequestHandler(
-    url::Origin request_initiator,
     uint32_t url_loader_options,
     int frame_tree_node_id,
     const base::UnguessableToken& devtools_navigation_token,
-    const base::Optional<base::UnguessableToken>& throttling_profile_id,
-    bool report_raw_headers,
-    int load_flags,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     URLLoaderThrottlesGetter url_loader_throttles_getter,
-    scoped_refptr<SignedExchangePrefetchMetricRecorder> metric_recorder)
-    : request_initiator_(std::move(request_initiator)),
-      url_loader_options_(url_loader_options),
+    scoped_refptr<SignedExchangePrefetchMetricRecorder> metric_recorder,
+    std::string accept_langs)
+    : url_loader_options_(url_loader_options),
       frame_tree_node_id_(frame_tree_node_id),
       devtools_navigation_token_(devtools_navigation_token),
-      throttling_profile_id_(throttling_profile_id),
-      report_raw_headers_(report_raw_headers),
-      load_flags_(load_flags),
       url_loader_factory_(url_loader_factory),
       url_loader_throttles_getter_(std::move(url_loader_throttles_getter)),
       metric_recorder_(std::move(metric_recorder)),
+      accept_langs_(std::move(accept_langs)),
       weak_factory_(this) {
-  DCHECK(signed_exchange_utils::IsSignedExchangeHandlingEnabled());
 }
 
 SignedExchangeRequestHandler::~SignedExchangeRequestHandler() = default;
@@ -83,14 +77,14 @@ void SignedExchangeRequestHandler::MaybeCreateLoader(
 }
 
 bool SignedExchangeRequestHandler::MaybeCreateLoaderForResponse(
-    const GURL& request_url,
+    const network::ResourceRequest& request,
     const network::ResourceResponseHead& response,
     network::mojom::URLLoaderPtr* loader,
     network::mojom::URLLoaderClientRequest* client_request,
     ThrottlingURLLoader* url_loader,
     bool* skip_other_interceptors) {
   DCHECK(!signed_exchange_loader_);
-  if (!signed_exchange_utils::ShouldHandleAsSignedHTTPExchange(request_url,
+  if (!signed_exchange_utils::ShouldHandleAsSignedHTTPExchange(request.url,
                                                                response)) {
     return false;
   }
@@ -98,22 +92,24 @@ bool SignedExchangeRequestHandler::MaybeCreateLoaderForResponse(
   network::mojom::URLLoaderClientPtr client;
   *client_request = mojo::MakeRequest(&client);
 
+  base::RepeatingCallback<int(void)> frame_tree_node_id_getter =
+      base::BindRepeating([](int id) { return id; }, frame_tree_node_id_);
+
   // This lets the SignedExchangeLoader directly returns an artificial redirect
   // to the downstream client without going through ThrottlingURLLoader, which
   // means some checks like SafeBrowsing may not see the redirect. Given that
   // the redirected request will be checked when it's restarted we suppose
   // this is fine.
   signed_exchange_loader_ = std::make_unique<SignedExchangeLoader>(
-      request_url, response, std::move(client), url_loader->Unbind(),
-      request_initiator_, url_loader_options_, load_flags_,
-      true /* should_redirect_to_fallback */, throttling_profile_id_,
+      request, response, std::move(client), url_loader->Unbind(),
+      url_loader_options_, true /* should_redirect_to_fallback */,
       std::make_unique<SignedExchangeDevToolsProxy>(
-          request_url, response,
-          base::BindRepeating([](int id) { return id; }, frame_tree_node_id_),
-          devtools_navigation_token_, report_raw_headers_),
+          request.url, response, frame_tree_node_id_getter,
+          devtools_navigation_token_, request.report_raw_headers),
+      SignedExchangeReporter::MaybeCreate(request.url, request.referrer.spec(),
+                                          response, frame_tree_node_id_getter),
       url_loader_factory_, url_loader_throttles_getter_,
-      base::BindRepeating([](int id) { return id; }, frame_tree_node_id_),
-      metric_recorder_);
+      frame_tree_node_id_getter, metric_recorder_, accept_langs_);
 
   *skip_other_interceptors = true;
   return true;

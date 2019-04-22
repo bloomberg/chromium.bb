@@ -249,8 +249,233 @@ TEST_F(CronetStructTest, TestCronet_UrlRequestParams) {
   EXPECT_EQ(Cronet_UrlRequestParams_allow_direct_executor_get(first),
             Cronet_UrlRequestParams_allow_direct_executor_get(second));
   // TODO(mef): Test array |annotations|.
+  Cronet_UrlRequestParams_request_finished_listener_set(
+      second, Cronet_UrlRequestParams_request_finished_listener_get(first));
+  EXPECT_EQ(Cronet_UrlRequestParams_request_finished_listener_get(first),
+            Cronet_UrlRequestParams_request_finished_listener_get(second));
+  Cronet_UrlRequestParams_request_finished_executor_set(
+      second, Cronet_UrlRequestParams_request_finished_executor_get(first));
+  EXPECT_EQ(Cronet_UrlRequestParams_request_finished_executor_get(first),
+            Cronet_UrlRequestParams_request_finished_executor_get(second));
   Cronet_UrlRequestParams_Destroy(first);
   Cronet_UrlRequestParams_Destroy(second);
+}
+
+// Test Struct Cronet_DateTime setters and getters.
+TEST_F(CronetStructTest, TestCronet_DateTime) {
+  Cronet_DateTimePtr first = Cronet_DateTime_Create();
+  Cronet_DateTimePtr second = Cronet_DateTime_Create();
+
+  // Copy values from |first| to |second|.
+  Cronet_DateTime_value_set(second, Cronet_DateTime_value_get(first));
+  EXPECT_EQ(Cronet_DateTime_value_get(first),
+            Cronet_DateTime_value_get(second));
+  Cronet_DateTime_Destroy(first);
+  Cronet_DateTime_Destroy(second);
+}
+
+// Test Struct Cronet_Metrics setters and getters.
+TEST_F(CronetStructTest, TestCronet_Metrics) {
+  Cronet_MetricsPtr first = Cronet_Metrics_Create();
+  Cronet_MetricsPtr second = Cronet_Metrics_Create();
+
+  // Copy values from |first| to |second|.
+  Cronet_DateTimePtr test_request_start = Cronet_DateTime_Create();
+  EXPECT_EQ(Cronet_Metrics_request_start_get(first), nullptr);
+
+  Cronet_Metrics_request_start_set(first, test_request_start);
+  EXPECT_NE(Cronet_Metrics_request_start_get(first), nullptr);
+  Cronet_Metrics_request_start_set(first, nullptr);
+  EXPECT_EQ(Cronet_Metrics_request_start_get(first), nullptr);
+
+  Cronet_Metrics_request_start_move(first, test_request_start);
+  EXPECT_NE(Cronet_Metrics_request_start_get(first), nullptr);
+  Cronet_Metrics_request_start_move(first, nullptr);
+  EXPECT_EQ(Cronet_Metrics_request_start_get(first), nullptr);
+
+  Cronet_DateTime_Destroy(test_request_start);
+  Cronet_DateTimePtr test_dns_start = Cronet_DateTime_Create();
+  EXPECT_EQ(Cronet_Metrics_dns_start_get(first), nullptr);
+
+  Cronet_Metrics_dns_start_set(first, test_dns_start);
+  EXPECT_NE(Cronet_Metrics_dns_start_get(first), nullptr);
+  Cronet_Metrics_dns_start_set(first, nullptr);
+  EXPECT_EQ(Cronet_Metrics_dns_start_get(first), nullptr);
+
+  Cronet_Metrics_dns_start_move(first, test_dns_start);
+  EXPECT_NE(Cronet_Metrics_dns_start_get(first), nullptr);
+  Cronet_Metrics_dns_start_move(first, nullptr);
+  EXPECT_EQ(Cronet_Metrics_dns_start_get(first), nullptr);
+
+  Cronet_DateTime_Destroy(test_dns_start);
+  Cronet_DateTimePtr test_dns_end = Cronet_DateTime_Create();
+  EXPECT_EQ(Cronet_Metrics_dns_end_get(first), nullptr);
+
+  Cronet_Metrics_dns_end_set(first, test_dns_end);
+  EXPECT_NE(Cronet_Metrics_dns_end_get(first), nullptr);
+  Cronet_Metrics_dns_end_set(first, nullptr);
+  EXPECT_EQ(Cronet_Metrics_dns_end_get(first), nullptr);
+
+  Cronet_Metrics_dns_end_move(first, test_dns_end);
+  EXPECT_NE(Cronet_Metrics_dns_end_get(first), nullptr);
+  Cronet_Metrics_dns_end_move(first, nullptr);
+  EXPECT_EQ(Cronet_Metrics_dns_end_get(first), nullptr);
+
+  Cronet_DateTime_Destroy(test_dns_end);
+  Cronet_DateTimePtr test_connect_start = Cronet_DateTime_Create();
+  EXPECT_EQ(Cronet_Metrics_connect_start_get(first), nullptr);
+
+  Cronet_Metrics_connect_start_set(first, test_connect_start);
+  EXPECT_NE(Cronet_Metrics_connect_start_get(first), nullptr);
+  Cronet_Metrics_connect_start_set(first, nullptr);
+  EXPECT_EQ(Cronet_Metrics_connect_start_get(first), nullptr);
+
+  Cronet_Metrics_connect_start_move(first, test_connect_start);
+  EXPECT_NE(Cronet_Metrics_connect_start_get(first), nullptr);
+  Cronet_Metrics_connect_start_move(first, nullptr);
+  EXPECT_EQ(Cronet_Metrics_connect_start_get(first), nullptr);
+
+  Cronet_DateTime_Destroy(test_connect_start);
+  Cronet_DateTimePtr test_connect_end = Cronet_DateTime_Create();
+  EXPECT_EQ(Cronet_Metrics_connect_end_get(first), nullptr);
+
+  Cronet_Metrics_connect_end_set(first, test_connect_end);
+  EXPECT_NE(Cronet_Metrics_connect_end_get(first), nullptr);
+  Cronet_Metrics_connect_end_set(first, nullptr);
+  EXPECT_EQ(Cronet_Metrics_connect_end_get(first), nullptr);
+
+  Cronet_Metrics_connect_end_move(first, test_connect_end);
+  EXPECT_NE(Cronet_Metrics_connect_end_get(first), nullptr);
+  Cronet_Metrics_connect_end_move(first, nullptr);
+  EXPECT_EQ(Cronet_Metrics_connect_end_get(first), nullptr);
+
+  Cronet_DateTime_Destroy(test_connect_end);
+  Cronet_DateTimePtr test_ssl_start = Cronet_DateTime_Create();
+  EXPECT_EQ(Cronet_Metrics_ssl_start_get(first), nullptr);
+
+  Cronet_Metrics_ssl_start_set(first, test_ssl_start);
+  EXPECT_NE(Cronet_Metrics_ssl_start_get(first), nullptr);
+  Cronet_Metrics_ssl_start_set(first, nullptr);
+  EXPECT_EQ(Cronet_Metrics_ssl_start_get(first), nullptr);
+
+  Cronet_Metrics_ssl_start_move(first, test_ssl_start);
+  EXPECT_NE(Cronet_Metrics_ssl_start_get(first), nullptr);
+  Cronet_Metrics_ssl_start_move(first, nullptr);
+  EXPECT_EQ(Cronet_Metrics_ssl_start_get(first), nullptr);
+
+  Cronet_DateTime_Destroy(test_ssl_start);
+  Cronet_DateTimePtr test_ssl_end = Cronet_DateTime_Create();
+  EXPECT_EQ(Cronet_Metrics_ssl_end_get(first), nullptr);
+
+  Cronet_Metrics_ssl_end_set(first, test_ssl_end);
+  EXPECT_NE(Cronet_Metrics_ssl_end_get(first), nullptr);
+  Cronet_Metrics_ssl_end_set(first, nullptr);
+  EXPECT_EQ(Cronet_Metrics_ssl_end_get(first), nullptr);
+
+  Cronet_Metrics_ssl_end_move(first, test_ssl_end);
+  EXPECT_NE(Cronet_Metrics_ssl_end_get(first), nullptr);
+  Cronet_Metrics_ssl_end_move(first, nullptr);
+  EXPECT_EQ(Cronet_Metrics_ssl_end_get(first), nullptr);
+
+  Cronet_DateTime_Destroy(test_ssl_end);
+  Cronet_DateTimePtr test_sending_start = Cronet_DateTime_Create();
+  EXPECT_EQ(Cronet_Metrics_sending_start_get(first), nullptr);
+
+  Cronet_Metrics_sending_start_set(first, test_sending_start);
+  EXPECT_NE(Cronet_Metrics_sending_start_get(first), nullptr);
+  Cronet_Metrics_sending_start_set(first, nullptr);
+  EXPECT_EQ(Cronet_Metrics_sending_start_get(first), nullptr);
+
+  Cronet_Metrics_sending_start_move(first, test_sending_start);
+  EXPECT_NE(Cronet_Metrics_sending_start_get(first), nullptr);
+  Cronet_Metrics_sending_start_move(first, nullptr);
+  EXPECT_EQ(Cronet_Metrics_sending_start_get(first), nullptr);
+
+  Cronet_DateTime_Destroy(test_sending_start);
+  Cronet_DateTimePtr test_sending_end = Cronet_DateTime_Create();
+  EXPECT_EQ(Cronet_Metrics_sending_end_get(first), nullptr);
+
+  Cronet_Metrics_sending_end_set(first, test_sending_end);
+  EXPECT_NE(Cronet_Metrics_sending_end_get(first), nullptr);
+  Cronet_Metrics_sending_end_set(first, nullptr);
+  EXPECT_EQ(Cronet_Metrics_sending_end_get(first), nullptr);
+
+  Cronet_Metrics_sending_end_move(first, test_sending_end);
+  EXPECT_NE(Cronet_Metrics_sending_end_get(first), nullptr);
+  Cronet_Metrics_sending_end_move(first, nullptr);
+  EXPECT_EQ(Cronet_Metrics_sending_end_get(first), nullptr);
+
+  Cronet_DateTime_Destroy(test_sending_end);
+  Cronet_DateTimePtr test_push_start = Cronet_DateTime_Create();
+  EXPECT_EQ(Cronet_Metrics_push_start_get(first), nullptr);
+
+  Cronet_Metrics_push_start_set(first, test_push_start);
+  EXPECT_NE(Cronet_Metrics_push_start_get(first), nullptr);
+  Cronet_Metrics_push_start_set(first, nullptr);
+  EXPECT_EQ(Cronet_Metrics_push_start_get(first), nullptr);
+
+  Cronet_Metrics_push_start_move(first, test_push_start);
+  EXPECT_NE(Cronet_Metrics_push_start_get(first), nullptr);
+  Cronet_Metrics_push_start_move(first, nullptr);
+  EXPECT_EQ(Cronet_Metrics_push_start_get(first), nullptr);
+
+  Cronet_DateTime_Destroy(test_push_start);
+  Cronet_DateTimePtr test_push_end = Cronet_DateTime_Create();
+  EXPECT_EQ(Cronet_Metrics_push_end_get(first), nullptr);
+
+  Cronet_Metrics_push_end_set(first, test_push_end);
+  EXPECT_NE(Cronet_Metrics_push_end_get(first), nullptr);
+  Cronet_Metrics_push_end_set(first, nullptr);
+  EXPECT_EQ(Cronet_Metrics_push_end_get(first), nullptr);
+
+  Cronet_Metrics_push_end_move(first, test_push_end);
+  EXPECT_NE(Cronet_Metrics_push_end_get(first), nullptr);
+  Cronet_Metrics_push_end_move(first, nullptr);
+  EXPECT_EQ(Cronet_Metrics_push_end_get(first), nullptr);
+
+  Cronet_DateTime_Destroy(test_push_end);
+  Cronet_DateTimePtr test_response_start = Cronet_DateTime_Create();
+  EXPECT_EQ(Cronet_Metrics_response_start_get(first), nullptr);
+
+  Cronet_Metrics_response_start_set(first, test_response_start);
+  EXPECT_NE(Cronet_Metrics_response_start_get(first), nullptr);
+  Cronet_Metrics_response_start_set(first, nullptr);
+  EXPECT_EQ(Cronet_Metrics_response_start_get(first), nullptr);
+
+  Cronet_Metrics_response_start_move(first, test_response_start);
+  EXPECT_NE(Cronet_Metrics_response_start_get(first), nullptr);
+  Cronet_Metrics_response_start_move(first, nullptr);
+  EXPECT_EQ(Cronet_Metrics_response_start_get(first), nullptr);
+
+  Cronet_DateTime_Destroy(test_response_start);
+  Cronet_DateTimePtr test_request_end = Cronet_DateTime_Create();
+  EXPECT_EQ(Cronet_Metrics_request_end_get(first), nullptr);
+
+  Cronet_Metrics_request_end_set(first, test_request_end);
+  EXPECT_NE(Cronet_Metrics_request_end_get(first), nullptr);
+  Cronet_Metrics_request_end_set(first, nullptr);
+  EXPECT_EQ(Cronet_Metrics_request_end_get(first), nullptr);
+
+  Cronet_Metrics_request_end_move(first, test_request_end);
+  EXPECT_NE(Cronet_Metrics_request_end_get(first), nullptr);
+  Cronet_Metrics_request_end_move(first, nullptr);
+  EXPECT_EQ(Cronet_Metrics_request_end_get(first), nullptr);
+
+  Cronet_DateTime_Destroy(test_request_end);
+  Cronet_Metrics_socket_reused_set(second,
+                                   Cronet_Metrics_socket_reused_get(first));
+  EXPECT_EQ(Cronet_Metrics_socket_reused_get(first),
+            Cronet_Metrics_socket_reused_get(second));
+  Cronet_Metrics_sent_byte_count_set(second,
+                                     Cronet_Metrics_sent_byte_count_get(first));
+  EXPECT_EQ(Cronet_Metrics_sent_byte_count_get(first),
+            Cronet_Metrics_sent_byte_count_get(second));
+  Cronet_Metrics_received_byte_count_set(
+      second, Cronet_Metrics_received_byte_count_get(first));
+  EXPECT_EQ(Cronet_Metrics_received_byte_count_get(first),
+            Cronet_Metrics_received_byte_count_get(second));
+  Cronet_Metrics_Destroy(first);
+  Cronet_Metrics_Destroy(second);
 }
 
 // Test Struct Cronet_RequestFinishedInfo setters and getters.
@@ -259,6 +484,54 @@ TEST_F(CronetStructTest, TestCronet_RequestFinishedInfo) {
   Cronet_RequestFinishedInfoPtr second = Cronet_RequestFinishedInfo_Create();
 
   // Copy values from |first| to |second|.
+  Cronet_MetricsPtr test_metrics = Cronet_Metrics_Create();
+  EXPECT_EQ(Cronet_RequestFinishedInfo_metrics_get(first), nullptr);
+
+  Cronet_RequestFinishedInfo_metrics_set(first, test_metrics);
+  EXPECT_NE(Cronet_RequestFinishedInfo_metrics_get(first), nullptr);
+  Cronet_RequestFinishedInfo_metrics_set(first, nullptr);
+  EXPECT_EQ(Cronet_RequestFinishedInfo_metrics_get(first), nullptr);
+
+  Cronet_RequestFinishedInfo_metrics_move(first, test_metrics);
+  EXPECT_NE(Cronet_RequestFinishedInfo_metrics_get(first), nullptr);
+  Cronet_RequestFinishedInfo_metrics_move(first, nullptr);
+  EXPECT_EQ(Cronet_RequestFinishedInfo_metrics_get(first), nullptr);
+
+  Cronet_Metrics_Destroy(test_metrics);
+  // TODO(mef): Test array |annotations|.
+  Cronet_RequestFinishedInfo_finished_reason_set(
+      second, Cronet_RequestFinishedInfo_finished_reason_get(first));
+  EXPECT_EQ(Cronet_RequestFinishedInfo_finished_reason_get(first),
+            Cronet_RequestFinishedInfo_finished_reason_get(second));
+  Cronet_UrlResponseInfoPtr test_response_info =
+      Cronet_UrlResponseInfo_Create();
+  EXPECT_EQ(Cronet_RequestFinishedInfo_response_info_get(first), nullptr);
+
+  Cronet_RequestFinishedInfo_response_info_set(first, test_response_info);
+  EXPECT_NE(Cronet_RequestFinishedInfo_response_info_get(first), nullptr);
+  Cronet_RequestFinishedInfo_response_info_set(first, nullptr);
+  EXPECT_EQ(Cronet_RequestFinishedInfo_response_info_get(first), nullptr);
+
+  Cronet_RequestFinishedInfo_response_info_move(first, test_response_info);
+  EXPECT_NE(Cronet_RequestFinishedInfo_response_info_get(first), nullptr);
+  Cronet_RequestFinishedInfo_response_info_move(first, nullptr);
+  EXPECT_EQ(Cronet_RequestFinishedInfo_response_info_get(first), nullptr);
+
+  Cronet_UrlResponseInfo_Destroy(test_response_info);
+  Cronet_ErrorPtr test_error = Cronet_Error_Create();
+  EXPECT_EQ(Cronet_RequestFinishedInfo_error_get(first), nullptr);
+
+  Cronet_RequestFinishedInfo_error_set(first, test_error);
+  EXPECT_NE(Cronet_RequestFinishedInfo_error_get(first), nullptr);
+  Cronet_RequestFinishedInfo_error_set(first, nullptr);
+  EXPECT_EQ(Cronet_RequestFinishedInfo_error_get(first), nullptr);
+
+  Cronet_RequestFinishedInfo_error_move(first, test_error);
+  EXPECT_NE(Cronet_RequestFinishedInfo_error_get(first), nullptr);
+  Cronet_RequestFinishedInfo_error_move(first, nullptr);
+  EXPECT_EQ(Cronet_RequestFinishedInfo_error_get(first), nullptr);
+
+  Cronet_Error_Destroy(test_error);
   Cronet_RequestFinishedInfo_Destroy(first);
   Cronet_RequestFinishedInfo_Destroy(second);
 }

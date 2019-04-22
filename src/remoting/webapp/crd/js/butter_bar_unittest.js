@@ -46,6 +46,7 @@ QUnit.module('ButterBar', {
     this.hash = 0;
     this.url = 'https://www.example.com';
     this.email = 'user@domain.com';
+    this.includeGooglers = undefined;
 
     this.fakeSinonXhr = sinon.useFakeXMLHttpRequest();
     this.fakeSinonXhr.onCreate =
@@ -54,11 +55,15 @@ QUnit.module('ButterBar', {
             if (this.currentMessage === undefined) {
               xhr.respond(500, {}, 'Internal server error');
             } else {
-              xhr.respond(200, {}, JSON.stringify({
+              var result = {
                 "index": this.currentMessage,
                 "url": this.url,
                 "percent": this.percent,
-              }));
+              };
+              if (this.includeGooglers !== undefined) {
+                result["includeGooglers"] = this.includeGooglers;
+              }
+              xhr.respond(200, {}, JSON.stringify(result));
             }
           }.bind(this));
         }.bind(this);
@@ -83,12 +88,36 @@ QUnit.module('ButterBar', {
   }
 });
 
-QUnit.test('should stay hidden for google.com addresses', function(assert) {
+QUnit.test('should stay hidden for google.com addresses by default',
+           function(assert) {
   this.currentMessage = 0;
   this.percent = 100;
   this.email = 'uSeR@gOoGlE.cOm';
   return this.butterBar.init().then(() => {
     assert.ok(this.butterBar.root_.hidden == true);
+  });
+});
+
+QUnit.test('should stay hidden for google.com addresses when disabled',
+           function(assert) {
+  this.currentMessage = 0;
+  this.percent = 100;
+  this.email = 'uSeR@gOoGlE.cOm';
+  this.includeGooglers = false;
+  return this.butterBar.init().then(() => {
+    assert.ok(this.butterBar.root_.hidden == true);
+  });
+});
+
+QUnit.test('should be shown for google.com addresses when enabled',
+           function(assert) {
+  this.currentMessage = 0;
+  this.percent = 100;
+  this.email = 'uSeR@gOoGlE.cOm';
+  this.includeGooglers = true;
+  chrome.storage.sync.get.callsArgWith(1, {});
+  return this.butterBar.init().then(() => {
+    assert.ok(this.butterBar.root_.hidden == false);
   });
 });
 
@@ -239,12 +268,34 @@ QUnit.test('should be shown if the index has increased', function(assert) {
   });
 });
 
+
+QUnit.test('should be shown if the index has decreased', function(assert) {
+  var MigrationPhase = remoting.ChromotingEvent.ChromotingDotComMigration.Phase;
+  var MigrationEvent = remoting.ChromotingEvent.ChromotingDotComMigration.Event;
+  this.currentMessage = 0;
+  chrome.storage.sync.get.callsArgWith(1, {
+    "message-state": {
+      "hidden": true,
+      "index": 1,
+      "timestamp": 0,
+    }
+  });
+  this.now = remoting.ButterBar.kTimeout_ + 1;
+  return this.butterBar.init().then(() => {
+    assert.ok(this.butterBar.root_.hidden == false);
+    verifyLog(
+        assert, 0, MigrationEvent.DEPRECATION_NOTICE_IMPRESSION,
+        MigrationPhase.BETA)
+  });
+});
+
+
 QUnit.test('should be red and not dismissable for the final message',
            function(assert) {
   var MigrationPhase = remoting.ChromotingEvent.ChromotingDotComMigration.Phase;
   var MigrationEvent = remoting.ChromotingEvent.ChromotingDotComMigration.Event;
 
-  this.currentMessage = 3;
+  this.currentMessage = 4;
   chrome.storage.sync.get.callsArgWith(1, {});
   return this.butterBar.init().then(() => {
     assert.ok(this.butterBar.root_.hidden == false);

@@ -36,11 +36,11 @@ const CFTimeInterval kTimeout = 4.0;
 // (non-incognito) mode.
 infobars::InfoBarManager* GetCurrentInfoBarManager() {
   MainController* main_controller = chrome_test_util::GetMainController();
-  web::WebState* webState =
-      [[[[main_controller browserViewInformation] mainTabModel] currentTab]
-          webState];
-  if (webState) {
-    return InfoBarManagerImpl::FromWebState(webState);
+  id<BrowserInterface> interface =
+      main_controller.interfaceProvider.mainInterface;
+  web::WebState* web_state = interface.tabModel.currentTab.webState;
+  if (web_state) {
+    return InfoBarManagerImpl::FromWebState(web_state);
   }
   return nullptr;
 }

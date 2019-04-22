@@ -6,9 +6,11 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/callback_forward.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/test/bind_test_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/aura/client/drag_drop_client_observer.h"
 #include "ui/aura/client/drag_drop_delegate.h"
@@ -16,12 +18,18 @@
 #include "ui/aura/mus/window_mus.h"
 #include "ui/aura/test/aura_mus_test_base.h"
 #include "ui/aura/test/mus/test_window_tree.h"
+#include "ui/aura/test/mus/window_tree_client_test_api.h"
 #include "ui/aura/window.h"
 #include "ui/base/dragdrop/drop_target_event.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/test/test_event_handler.h"
 
 namespace aura {
 namespace {
+
+ws::Id server_id(Window* window) {
+  return window ? WindowMus::Get(window)->server_id() : 0;
+}
 
 class DragDropControllerMusTest : public test::AuraMusClientTestBase {
  public:
@@ -30,15 +38,16 @@ class DragDropControllerMusTest : public test::AuraMusClientTestBase {
   // test::AuraMusClientTestBase:
   void SetUp() override {
     AuraMusClientTestBase::SetUp();
-    controller_ = std::make_unique<DragDropControllerMus>(&controller_host_,
-                                                          window_tree());
+    owned_controller_ = std::make_unique<DragDropControllerMus>(
+        &controller_host_, window_tree());
+    controller_ = owned_controller_.get();
     window_ =
         std::unique_ptr<Window>(CreateNormalWindow(0, root_window(), nullptr));
   }
 
   void TearDown() override {
     window_.reset();
-    controller_.reset();
+    owned_controller_.reset();
     AuraMusClientTestBase::TearDown();
   }
 
@@ -58,18 +67,25 @@ class DragDropControllerMusTest : public test::AuraMusClientTestBase {
         ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
   }
 
-  std::unique_ptr<DragDropControllerMus> controller_;
-  std::unique_ptr<Window> window_;
-
- private:
   void DragMoveAndDrop() {
     WindowMus* const window_mus = WindowMus::Get(window_.get());
-    controller_->OnDragEnter(window_mus, 0, gfx::Point(5, 20), 0);
-    controller_->OnDragOver(window_mus, 0, gfx::Point(5, 20), 0);
-    controller_->OnCompleteDrop(window_mus, 0, gfx::Point(5, 20), 0);
+    const gfx::PointF point(5, 20);
+    controller_->OnDragEnter(window_mus, 0, point, point, 0);
+    controller_->OnDragOver(window_mus, 0, point, point, 0);
+    controller_->OnCompleteDrop(window_mus, 0, point, point, 0);
     controller_->OnPerformDragDropCompleted(0);
   }
 
+  // Switches to using the DragDropController owned by window_tree_client().
+  void UseRealDragDropController() {
+    controller_ = WindowTreeClientTestApi(window_tree_client_impl())
+                      .GetDragDropController();
+  }
+
+  DragDropControllerMus* controller_ = nullptr;
+  std::unique_ptr<Window> window_;
+
+ private:
   class TestDragDropControllerHost : public DragDropControllerHost {
    public:
     TestDragDropControllerHost() : serial_(0u) {}
@@ -83,6 +99,8 @@ class DragDropControllerMusTest : public test::AuraMusClientTestBase {
     uint32_t serial_;
 
   } controller_host_;
+
+  std::unique_ptr<DragDropControllerMus> owned_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(DragDropControllerMusTest);
 };
@@ -164,6 +182,29 @@ TEST_F(DragDropControllerMusTest, EventTarget) {
   StartDragAndDrop();
   EXPECT_EQ(State::kPerformDropInvoked, delegate.state());
   client::SetDragDropDelegate(window_.get(), nullptr);
+}
+
+TEST_F(DragDropControllerMusTest, DontDispatchMouseEventWhenDragStarted) {
+  UseRealDragDropController();
+  // Use PostTask() for assertions as StartDragAndDrop() runs a nested message
+  // loop.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindLambdaForTesting([&]() {
+        // The client should ignore mouse events from the server while in a drag
+        // loop. To do otherwise may result in multiple nested drag loops.
+        std::unique_ptr<ui::Event> ui_event(
+            new ui::MouseEvent(ui::ET_MOUSE_MOVED, gfx::Point(), gfx::Point(),
+                               ui::EventTimeForNow(), ui::EF_NONE, 0));
+        ui::test::TestEventHandler event_handler;
+        root_window()->AddPreTargetHandler(&event_handler);
+        window_tree_client()->OnWindowInputEvent(
+            1, server_id(root_window()), window_->GetHost()->GetDisplayId(),
+            ui::Event::Clone(*ui_event.get()), 0);
+        EXPECT_EQ(0, event_handler.num_mouse_events());
+        root_window()->RemovePreTargetHandler(&event_handler);
+        DragMoveAndDrop();
+      }));
+  StartDragAndDrop();
 }
 
 }  // namespace

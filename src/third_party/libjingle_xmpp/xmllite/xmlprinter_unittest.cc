@@ -13,15 +13,15 @@
 #include <sstream>
 #include <string>
 
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libjingle_xmpp/xmllite/qname.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlnsstack.h"
-#include "third_party/webrtc/rtc_base/gunit.h"
 
-using buzz::QName;
-using buzz::XmlElement;
-using buzz::XmlnsStack;
-using buzz::XmlPrinter;
+using jingle_xmpp::QName;
+using jingle_xmpp::XmlElement;
+using jingle_xmpp::XmlnsStack;
+using jingle_xmpp::XmlPrinter;
 
 TEST(XmlPrinterTest, TestBasicPrinting) {
   XmlElement elt(QName("google:test", "first"));

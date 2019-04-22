@@ -3,12 +3,13 @@
 // found in the LICENSE file.
 
 #include "base/at_exit.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/i18n/icu_util.h"
 #include "base/no_destructor.h"
 #include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
-#include "content/browser/appcache/appcache_dispatcher_host.h"
+#include "base/test/test_timeouts.h"
 #include "content/browser/appcache/appcache_fuzzer.pb.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -19,6 +20,7 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
+#include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/libprotobuf-mutator/src/src/libfuzzer/libfuzzer_macro.h"
 
 namespace content {
@@ -27,10 +29,9 @@ namespace {
 
 struct Env {
   Env()
-      : scoped_task_environment(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO),
-        thread_bundle(TestBrowserThreadBundle::Options::IO_MAINLOOP) {
-    base::CommandLine::Init(0, nullptr);
+      : thread_bundle((base::CommandLine::Init(0, nullptr),
+                       TestTimeouts::Initialize(),
+                       base::test::ScopedTaskEnvironment::MainThreadType::IO)) {
     logging::SetMinLogLevel(logging::LOG_FATAL);
     mojo::core::Init();
     feature_list.InitWithFeatures({network::features::kNetworkService}, {});
@@ -47,7 +48,8 @@ struct Env {
 
     scoped_refptr<URLLoaderFactoryGetter> loader_factory_getter =
         base::MakeRefCounted<URLLoaderFactoryGetter>();
-    loader_factory_getter->SetNetworkFactoryForTesting(mock_url_loader_factory);
+    loader_factory_getter->SetNetworkFactoryForTesting(
+        mock_url_loader_factory, /* is_corb_enabled = */ true);
     appcache_service->set_url_loader_factory_getter(
         loader_factory_getter.get());
 
@@ -58,10 +60,9 @@ struct Env {
                        /*resource_context=*/nullptr,
                        /*request_context_getter=*/nullptr,
                        /*special_storage_policy=*/nullptr));
-    scoped_task_environment.RunUntilIdle();
+    thread_bundle.RunUntilIdle();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment;
   TestBrowserThreadBundle thread_bundle;
   base::test::ScopedFeatureList feature_list;
   scoped_refptr<ChromeAppCacheService> appcache_service;
@@ -147,73 +148,107 @@ DEFINE_BINARY_PROTO_FUZZER(const fuzzing::proto::Session& session) {
   auto dispatch_context =
         std::make_unique<mojo::internal::MessageDispatchContext>(&message);
 
-  mojom::AppCacheBackendPtr host;
-  AppCacheDispatcherHost::Create(SingletonEnv().appcache_service.get(),
-                                 /*process_id=*/1, mojo::MakeRequest(&host));
+  blink::mojom::AppCacheBackendPtr host;
+  SingletonEnv().appcache_service->CreateBackend(/*process_id=*/1,
+                                                 mojo::MakeRequest(&host));
 
+  std::map<int, blink::mojom::AppCacheHostPtr> registered_hosts;
   for (const fuzzing::proto::Command& command : session.commands()) {
     switch (command.command_case()) {
       case fuzzing::proto::Command::kRegisterHost: {
         int32_t host_id = command.register_host().host_id();
-        host->RegisterHost(host_id);
+        blink::mojom::AppCacheFrontendPtr frontend;
+        mojo::MakeRequest(&frontend);
+        host->RegisterHost(mojo::MakeRequest(&registered_hosts[host_id]),
+                           std::move(frontend), host_id, MSG_ROUTING_NONE);
         break;
       }
       case fuzzing::proto::Command::kUnregisterHost: {
         int32_t host_id = command.unregister_host().host_id();
-        host->UnregisterHost(host_id);
+        auto host_it = registered_hosts.find(host_id);
+        if (host_it == registered_hosts.end())
+          break;
+
+        registered_hosts.erase(host_it);
         break;
       }
       case fuzzing::proto::Command::kSelectCache: {
         int32_t host_id = command.select_cache().host_id();
+        auto host_it = registered_hosts.find(host_id);
+        if (host_it == registered_hosts.end())
+          break;
         int32_t from_id = command.select_cache().from_id();
         GURL document_url = GURL(GetUrl(command.select_cache().document_url()));
         GURL opt_manifest_url =
             GURL(GetUrl(command.select_cache().opt_manifest_url()));
-        host->SelectCache(host_id, document_url, from_id, opt_manifest_url);
+
+        host_it->second->SelectCache(document_url, from_id, opt_manifest_url);
         break;
       }
       case fuzzing::proto::Command::kSetSpawningHostId: {
         int32_t host_id = command.set_spawning_host_id().host_id();
+        auto host_it = registered_hosts.find(host_id);
+        if (host_it == registered_hosts.end())
+          break;
         int32_t spawning_host_id =
             command.set_spawning_host_id().spawning_host_id();
-        host->SetSpawningHostId(host_id, spawning_host_id);
+        host_it->second->SetSpawningHostId(spawning_host_id);
         break;
       }
       case fuzzing::proto::Command::kSelectCacheForSharedWorker: {
         int32_t host_id = command.select_cache_for_shared_worker().host_id();
+        auto host_it = registered_hosts.find(host_id);
+        if (host_it == registered_hosts.end())
+          break;
         int64_t cache_document_was_loaded_from =
             command.select_cache_for_shared_worker()
                 .cache_document_was_loaded_from();
-        host->SelectCacheForSharedWorker(host_id,
-                                         cache_document_was_loaded_from);
+        host_it->second->SelectCacheForSharedWorker(
+            cache_document_was_loaded_from);
         break;
       }
       case fuzzing::proto::Command::kMarkAsForeignEntry: {
         int32_t host_id = command.mark_as_foreign_entry().host_id();
+        auto host_it = registered_hosts.find(host_id);
+        if (host_it == registered_hosts.end())
+          break;
         GURL url(GetUrl(command.mark_as_foreign_entry().document_url()));
         int64_t cache_document_was_loaded_from =
             command.mark_as_foreign_entry().cache_document_was_loaded_from();
-        host->MarkAsForeignEntry(host_id, url, cache_document_was_loaded_from);
+        host_it->second->MarkAsForeignEntry(url,
+                                            cache_document_was_loaded_from);
         break;
       }
       case fuzzing::proto::Command::kGetStatus: {
         int32_t host_id = command.get_status().host_id();
-        host->GetStatus(host_id, base::DoNothing());
+        auto host_it = registered_hosts.find(host_id);
+        if (host_it == registered_hosts.end())
+          break;
+        host_it->second->GetStatus(base::DoNothing());
         break;
       }
       case fuzzing::proto::Command::kStartUpdate: {
         int32_t host_id = command.start_update().host_id();
-        host->StartUpdate(host_id, base::DoNothing());
+        auto host_it = registered_hosts.find(host_id);
+        if (host_it == registered_hosts.end())
+          break;
+        host_it->second->StartUpdate(base::DoNothing());
         break;
       }
       case fuzzing::proto::Command::kSwapCache: {
         int32_t host_id = command.swap_cache().host_id();
-        host->SwapCache(host_id, base::DoNothing());
+        auto host_it = registered_hosts.find(host_id);
+        if (host_it == registered_hosts.end())
+          break;
+        host_it->second->SwapCache(base::DoNothing());
         break;
       }
       case fuzzing::proto::Command::kGetResourceList: {
         int32_t host_id = command.get_resource_list().host_id();
-        host->GetResourceList(host_id, base::DoNothing());
+        auto host_it = registered_hosts.find(host_id);
+        if (host_it == registered_hosts.end())
+          break;
+        host_it->second->GetResourceList(base::DoNothing());
         break;
       }
       case fuzzing::proto::Command::kDoRequest: {
@@ -226,7 +261,7 @@ DEFINE_BINARY_PROTO_FUZZER(const fuzzing::proto::Session& session) {
         break;
       }
       case fuzzing::proto::Command::kRunUntilIdle: {
-        SingletonEnv().scoped_task_environment.RunUntilIdle();
+        SingletonEnv().thread_bundle.RunUntilIdle();
         break;
       }
       case fuzzing::proto::Command::COMMAND_NOT_SET: {
@@ -238,7 +273,7 @@ DEFINE_BINARY_PROTO_FUZZER(const fuzzing::proto::Session& session) {
   host.reset();
   // TODO(nedwilliamson): Investigate removing this or reinitializing
   // the appcache service as a fuzzer command.
-  SingletonEnv().scoped_task_environment.RunUntilIdle();
+  SingletonEnv().thread_bundle.RunUntilIdle();
 }
 
 }  // namespace content

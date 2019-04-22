@@ -135,12 +135,13 @@ Polymer({
   },
 
   /**
-   * @param {{detail: !Array<string>}} event
+   * @param {!CustomEvent<!Array<string>>} event
    * @private
    */
   updateActiveNetworks_: function(event) {
-    if (!this.activeNetworkIds_)
-      return;  // Initial list of networks not received yet.
+    if (!this.activeNetworkIds_) {
+      return;
+    }  // Initial list of networks not received yet.
     const networkIds = event.detail;
     networkIds.forEach(function(id) {
       if (this.activeNetworkIds_.has(id)) {
@@ -168,8 +169,9 @@ Polymer({
       }
     }
     // Async call, ensure id still exists.
-    if (!this.activeNetworkIds_.has(id))
+    if (!this.activeNetworkIds_.has(id)) {
       return;
+    }
     if (!state) {
       this.activeNetworkIds_.delete(id);
       return;
@@ -276,8 +278,9 @@ Polymer({
     ];
     for (const type of orderedDeviceTypes) {
       const device = newDeviceStates[type];
-      if (!device)
-        continue;  // The technology for this device type is unavailable.
+      if (!device) {
+        continue;
+      }  // The technology for this device type is unavailable.
 
       // If both 'Tether' and 'Cellular' technologies exist, merge the network
       // lists and do not add an active network for 'Tether' so that there is
@@ -318,8 +321,9 @@ Polymer({
    */
   getActiveStateForType_: function(activeStatesByType, type) {
     let activeState = activeStatesByType.get(type);
-    if (!activeState && type == CrOnc.Type.CELLULAR)
+    if (!activeState && type == CrOnc.Type.CELLULAR) {
       activeState = activeStatesByType.get(CrOnc.Type.TETHER);
+    }
     return activeState || {GUID: '', Type: type};
   },
 });

@@ -21,7 +21,9 @@ SettingsA11yPasswords.prototype = {
 
   // Include files that define the mocha tests.
   extraLibraries: SettingsAccessibilityTest.prototype.extraLibraries.concat([
+    '../../test_browser_proxy.js',
     '../passwords_and_autofill_fake_data.js',
+    '../test_password_manager_proxy.js',
   ]),
 };
 
@@ -58,7 +60,7 @@ AccessibilityTest.define('SettingsA11yPasswords', {
       window.history.pushState(
           'object or string', 'Test', settings.routes.PASSWORDS.path);
 
-      PasswordManagerImpl.instance_ = new TestPasswordManager();
+      PasswordManagerImpl.instance_ = new TestPasswordManagerProxy();
       this.passwordManager = PasswordManagerImpl.instance_;
 
       const settingsUi = document.createElement('settings-ui');

@@ -11,7 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
-#include "content/common/service_worker/service_worker_types.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 
 namespace content {
 
@@ -20,12 +20,10 @@ class ServiceWorkerNavigationHandle;
 class ServiceWorkerProviderHost;
 
 // PlzNavigate
-// This class is used to manage the lifetime of ServiceWorkerProviderHosts
-// created during navigations. This class is created on the UI thread, but
-// should only be accessed from the IO thread afterwards. It is the IO thread
-// pendant of ServiceWorkerNavigationHandle. See the
-// ServiceWorkerNavigationHandle header for more details about the lifetime of
-// both classes.
+// This class is created on the UI thread, but should only be accessed from the
+// IO thread afterwards. It is the IO thread pendant of
+// ServiceWorkerNavigationHandle. See the ServiceWorkerNavigationHandle header
+// for more details about the lifetime of both classes.
 class CONTENT_EXPORT ServiceWorkerNavigationHandleCore {
  public:
   ServiceWorkerNavigationHandleCore(
@@ -33,18 +31,23 @@ class CONTENT_EXPORT ServiceWorkerNavigationHandleCore {
       ServiceWorkerContextWrapper* context_wrapper);
   ~ServiceWorkerNavigationHandleCore();
 
-  // Called when a ServiceWorkerProviderHost was pre-created for the navigation
-  // tracked by this ServiceWorkerNavigationHandleCore.
-  void DidPreCreateProviderHost(int provider_id);
+  // Called when a ServiceWorkerProviderHost was created for the navigation.
+  void OnCreatedProviderHost(
+      base::WeakPtr<ServiceWorkerProviderHost> provider_host,
+      blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info);
+
+  // Called when the navigation is ready to commit, set the 2 IDs for the
+  // pre-created provider host.
+  void OnBeginNavigationCommit(int render_process_id, int render_frame_id);
 
   ServiceWorkerContextWrapper* context_wrapper() const {
     return context_wrapper_.get();
   }
 
  private:
-  int provider_id_ = kInvalidServiceWorkerProviderId;
   scoped_refptr<ServiceWorkerContextWrapper> context_wrapper_;
   base::WeakPtr<ServiceWorkerNavigationHandle> ui_handle_;
+  base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerNavigationHandleCore);
 };

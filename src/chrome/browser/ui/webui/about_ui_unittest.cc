@@ -9,6 +9,7 @@
 
 #include "base/base64.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -17,10 +18,13 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
-#include "base/test/scoped_task_environment.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_setup_controller.h"
+#include "chrome/browser/chromeos/login/ui/fake_login_display_host.h"
+#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/scoped_browser_locale.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "chromeos/system/statistics_provider.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -65,23 +69,20 @@ class TestDataReceiver {
 // Base class for ChromeOS offline terms tests.
 class ChromeOSTermsTest : public testing::Test {
  protected:
-  ChromeOSTermsTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+  ChromeOSTermsTest() {}
   ~ChromeOSTermsTest() override = default;
 
   void SetUp() override {
     // Create root tmp directory for fake ARC ToS data.
     base::FilePath root_path;
     base::CreateNewTempDirectory(FILE_PATH_LITERAL(""), &root_path);
-    ASSERT_TRUE(root_dir_.Set(root_path));
-    arc_tos_dir_ = root_dir_.GetPath().Append("arc_tos");
+    ASSERT_TRUE(preinstalled_offline_resources_dir_.Set(root_path));
+    arc_tos_dir_ =
+        preinstalled_offline_resources_dir_.GetPath().Append("arc_tos");
     ASSERT_TRUE(base::CreateDirectory(arc_tos_dir_));
 
     tested_html_source_ = std::make_unique<AboutUIHTMLSource>(
         chrome::kChromeUITermsHost, nullptr);
-    tested_html_source_->SetChromeOSAssetsDirForTests(
-        root_dir_.GetPath().value());
   }
 
   // Creates directory for the given |locale| that contains terms.html. Writes
@@ -126,14 +127,17 @@ class ChromeOSTermsTest : public testing::Test {
         request_url, std::move(wc_getter),
         base::BindRepeating(&TestDataReceiver::OnDataReceived,
                             base::Unretained(data_receiver)));
-    scoped_task_environment_.RunUntilIdle();
+    test_browser_thread_bundle_.RunUntilIdle();
+  }
+
+  const base::FilePath& PreinstalledOfflineResourcesPath() {
+    return preinstalled_offline_resources_dir_.GetPath();
   }
 
  private:
-  base::ScopedTempDir root_dir_;
+  base::ScopedTempDir preinstalled_offline_resources_dir_;
   base::FilePath arc_tos_dir_;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
 
   chromeos::system::ScopedFakeStatisticsProvider statistics_provider_;
@@ -169,7 +173,25 @@ class DemoModeChromeOSTermsTest : public ChromeOSTermsTest {
   void SetUp() override {
     ChromeOSTermsTest::SetUp();
     AddDemoModeLocale();
+
+    // Simulate Demo Mode setup.
+    chromeos::DBusThreadManager::Initialize();
+    fake_login_display_host_ =
+        std::make_unique<chromeos::FakeLoginDisplayHost>();
+    fake_login_display_host_->StartWizard(
+        chromeos::OobeScreen::SCREEN_OOBE_DEMO_PREFERENCES);
+    fake_login_display_host_->GetWizardController()
+        ->SimulateDemoModeSetupForTesting();
+    fake_login_display_host_->GetWizardController()
+        ->demo_setup_controller()
+        ->SetPreinstalledOfflineResourcesPathForTesting(
+            PreinstalledOfflineResourcesPath());
+    fake_login_display_host_->GetWizardController()
+        ->demo_setup_controller()
+        ->TryMountPreinstalledDemoResources(base::DoNothing());
   }
+
+  void TearDown() override { chromeos::DBusThreadManager::Shutdown(); }
 
   // Adds locales supported by demo mode.
   void AddDemoModeLocale() {
@@ -208,6 +230,8 @@ class DemoModeChromeOSTermsTest : public ChromeOSTermsTest {
   }
 
  private:
+  std::unique_ptr<chromeos::FakeLoginDisplayHost> fake_login_display_host_;
+
   DISALLOW_COPY_AND_ASSIGN(DemoModeChromeOSTermsTest);
 };
 

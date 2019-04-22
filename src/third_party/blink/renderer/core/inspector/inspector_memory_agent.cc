@@ -38,6 +38,8 @@
 #include "build/build_config.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/inspector/inspected_frames.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/instance_counters.h"
 
 namespace blink {
@@ -60,6 +62,21 @@ Response InspectorMemoryAgent::getDOMCounters(int* documents,
   *nodes = InstanceCounters::CounterValue(InstanceCounters::kNodeCounter);
   *js_event_listeners =
       InstanceCounters::CounterValue(InstanceCounters::kJSEventListenerCounter);
+  return Response::OK();
+}
+
+Response InspectorMemoryAgent::forciblyPurgeJavaScriptMemory() {
+  for (const auto& page : Page::OrdinaryPages()) {
+    for (Frame* frame = page->MainFrame(); frame;
+         frame = frame->Tree().TraverseNext()) {
+      LocalFrame* local_frame = DynamicTo<LocalFrame>(frame);
+      if (!local_frame)
+        continue;
+      local_frame->ForciblyPurgeV8Memory();
+    }
+  }
+  V8PerIsolateData::MainThreadIsolate()->MemoryPressureNotification(
+      v8::MemoryPressureLevel::kCritical);
   return Response::OK();
 }
 
@@ -154,13 +171,13 @@ InspectorMemoryAgent::GetSamplingProfileById(uint32_t id) {
   std::unique_ptr<protocol::Array<protocol::Memory::Module>> modules =
       protocol::Array<protocol::Memory::Module>::create();
   for (const auto* module : module_cache.GetModules()) {
-    modules->addItem(
-        protocol::Memory::Module::create()
-            .setName(module->filename.value().c_str())
-            .setUuid(module->id.c_str())
-            .setBaseAddress(String::Format("0x%" PRIxPTR, module->base_address))
-            .setSize(static_cast<double>(module->size))
-            .build());
+    modules->addItem(protocol::Memory::Module::create()
+                         .setName(module->GetDebugBasename().value().c_str())
+                         .setUuid(module->GetId().c_str())
+                         .setBaseAddress(String::Format(
+                             "0x%" PRIxPTR, module->GetBaseAddress()))
+                         .setSize(static_cast<double>(module->GetSize()))
+                         .build());
   }
 
   return protocol::Memory::SamplingProfile::create()

@@ -11,7 +11,7 @@ import android.app.Activity;
  */
 public class HelpAndFeedbackBasic implements HelpAndFeedback {
     @Override
-    public void launchHelp(Activity activity, HelpContext helpContext) {
+    public void launchHelp(Activity activity, @HelpContext int helpContext) {
         HelpActivity.launch(activity, urlFromHelpContext(helpContext));
     }
 
@@ -20,13 +20,13 @@ public class HelpAndFeedbackBasic implements HelpAndFeedback {
         FeedbackSender.sendFeedback(activity);
     }
 
-    private static String urlFromHelpContext(HelpContext helpContext) {
+    private static String urlFromHelpContext(@HelpContext int helpContext) {
         switch (helpContext) {
-            case HOST_LIST:
+            case HelpContext.HOST_LIST:
                 return "https://support.google.com/chrome/answer/6002441#hosts";
-            case HOST_SETUP:
+            case HelpContext.HOST_SETUP:
                 return "https://support.google.com/chrome/answer/1649523";
-            case DESKTOP:
+            case HelpContext.DESKTOP:
                 return "https://support.google.com/chrome/answer/6002441#gestures";
             default:
                 // Unreachable, but required by Java style.

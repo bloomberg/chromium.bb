@@ -9,6 +9,7 @@
 
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 
 #include "base/macros.h"
@@ -125,8 +126,6 @@ class TabSpecificContentSettings
   static void WebDatabaseAccessed(int render_process_id,
                                   int render_frame_id,
                                   const GURL& url,
-                                  const base::string16& name,
-                                  const base::string16& display_name,
                                   bool blocked_by_policy);
 
   // Called when a specific DOM storage area in the current page was
@@ -147,6 +146,15 @@ class TabSpecificContentSettings
                                 int render_frame_id,
                                 const GURL& url,
                                 bool blocked_by_policy);
+
+  // Called when CacheStorage::Open() is called in the current page.
+  // If access was blocked due to the user's content settings,
+  // |blocked_by_policy| should be true, and this function should invoke
+  // OnContentBlocked.
+  static void CacheStorageAccessed(int render_process_id,
+                                   int render_frame_id,
+                                   const GURL& url,
+                                   bool blocked_by_policy);
 
   // Called when a specific file system in the current page was accessed.
   // If access was blocked due to the user's content settings,
@@ -321,6 +329,7 @@ class TabSpecificContentSettings
   void OnFileSystemAccessed(const GURL& url,
                             bool blocked_by_policy);
   void OnIndexedDBAccessed(const GURL& url, bool blocked_by_policy);
+  void OnCacheStorageAccessed(const GURL& url, bool blocked_by_policy);
   void OnLocalStorageAccessed(const GURL& url,
                               bool local,
                               bool blocked_by_policy);
@@ -331,10 +340,7 @@ class TabSpecificContentSettings
                               const std::string& name,
                               const url::Origin& constructor_origin,
                               bool blocked_by_policy);
-  void OnWebDatabaseAccessed(const GURL& url,
-                             const base::string16& name,
-                             const base::string16& display_name,
-                             bool blocked_by_policy);
+  void OnWebDatabaseAccessed(const GURL& url, bool blocked_by_policy);
   void OnGeolocationPermissionSet(const GURL& requesting_frame,
                                   bool allowed);
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
@@ -482,6 +488,8 @@ class TabSpecificContentSettings
   // Stores content settings changed by the user via page info since the last
   // navigation. Used to determine whether to display the settings in page info.
   std::set<ContentSettingsType> content_settings_changed_via_page_info_;
+
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(TabSpecificContentSettings);
 };

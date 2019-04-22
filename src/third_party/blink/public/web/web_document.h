@@ -74,7 +74,7 @@ class WebDocument : public WebNode {
   BLINK_EXPORT WebString Encoding() const;
   BLINK_EXPORT WebString ContentLanguage() const;
   BLINK_EXPORT WebString GetReferrer() const;
-  BLINK_EXPORT SkColor ThemeColor() const;
+  BLINK_EXPORT base::Optional<SkColor> ThemeColor() const;
   // The url of the OpenSearch Desription Document (if any).
   BLINK_EXPORT WebURL OpenSearchDescriptionURL() const;
 
@@ -91,17 +91,12 @@ class WebDocument : public WebNode {
   // cookie blocking.
   BLINK_EXPORT WebURL SiteForCookies() const;
 
+  BLINK_EXPORT WebSecurityOrigin TopFrameOrigin() const;
   BLINK_EXPORT WebElement DocumentElement() const;
   BLINK_EXPORT WebElement Body() const;
   BLINK_EXPORT WebElement Head();
   BLINK_EXPORT WebString Title() const;
-
-  // |use_inner_text| controls which implementation to use for text dump,
-  // spec-conformant Element.innerText or legacy, to help progressive
-  // rebaseline of layout test text dumps.
-  // TODO(xiaochengh): Remove this flag when rebaseline is complete.
-  BLINK_EXPORT WebString ContentAsTextForTesting(bool use_inner_text) const;
-
+  BLINK_EXPORT WebString ContentAsTextForTesting() const;
   BLINK_EXPORT WebElementCollection All();
   BLINK_EXPORT void Forms(WebVector<WebFormElement>&) const;
   BLINK_EXPORT WebURL CompleteURL(const WebString&) const;
@@ -134,6 +129,8 @@ class WebDocument : public WebNode {
   BLINK_EXPORT WebURL CanonicalUrlForSharing() const;
 
   BLINK_EXPORT WebDistillabilityFeatures DistillabilityFeatures();
+
+  BLINK_EXPORT void SetShowBeforeUnloadDialog(bool show_dialog);
 
 #if INSIDE_BLINK
   BLINK_EXPORT WebDocument(Document*);

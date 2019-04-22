@@ -16,4 +16,4 @@ class Environment {
 };
 
 static Environment env;
-};  // namespace
+}  // namespace

@@ -75,7 +75,7 @@ Elements.DOMLinkifier.linkifyNodeReference = function(node, tooltipContent) {
   Elements.DOMLinkifier.decorateNodeLabel(node, link, tooltipContent);
 
   link.addEventListener('click', () => Common.Revealer.reveal(node, false) && false, false);
-  link.addEventListener('mouseover', node.highlight.bind(node, undefined, undefined), false);
+  link.addEventListener('mouseover', node.highlight.bind(node, undefined), false);
   link.addEventListener('mouseleave', () => SDK.OverlayModel.hideDOMNodeHighlight(), false);
 
   return root;
@@ -89,7 +89,7 @@ Elements.DOMLinkifier.linkifyDeferredNodeReference = function(deferredNode) {
   const root = createElement('div');
   const shadowRoot = UI.createShadowRootWithCoreStyles(root, 'elements/domLinkifier.css');
   const link = shadowRoot.createChild('div', 'node-link');
-  link.createChild('content');
+  link.createChild('slot');
   link.addEventListener('click', deferredNode.resolve.bind(deferredNode, onDeferredNodeResolved), false);
   link.addEventListener('mousedown', e => e.consume(), false);
 

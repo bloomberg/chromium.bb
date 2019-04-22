@@ -13,13 +13,13 @@
 #include <sstream>
 #include <string>
 
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 #include "third_party/libjingle_xmpp/xmpp/constants.h"
 #include "third_party/libjingle_xmpp/xmpp/plainsaslhandler.h"
 #include "third_party/libjingle_xmpp/xmpp/saslplainmechanism.h"
 #include "third_party/libjingle_xmpp/xmpp/util_unittest.h"
 #include "third_party/libjingle_xmpp/xmpp/xmppengine.h"
-#include "third_party/webrtc/rtc_base/gunit.h"
 
 // Macro to be used for switch-case fallthrough (required for enabling
 // -Wimplicit-fallthrough warning on Clang).
@@ -31,11 +31,11 @@
   } while (0)
 #endif
 
-using buzz::Jid;
-using buzz::QName;
-using buzz::XmlElement;
-using buzz::XmppEngine;
-using buzz::XmppTestHandler;
+using jingle_xmpp::Jid;
+using jingle_xmpp::QName;
+using jingle_xmpp::XmlElement;
+using jingle_xmpp::XmppEngine;
+using jingle_xmpp::XmppTestHandler;
 
 enum XlttStage {
   XLTT_STAGE_CONNECT = 0,
@@ -66,21 +66,21 @@ class XmppLoginTaskTest : public testing::Test {
     engine_->AddStanzaHandler(handler_.get());
     engine_->SetUser(jid);
     engine_->SetSaslHandler(
-        new buzz::PlainSaslHandler(jid, pass, true));
+        new jingle_xmpp::PlainSaslHandler(jid, pass, true));
   }
   virtual void TearDown() {
     handler_.reset();
     engine_.reset();
   }
   void RunPartialLogin(XlttStage startstage, XlttStage endstage);
-  void SetTlsOptions(buzz::TlsOptions option);
+  void SetTlsOptions(jingle_xmpp::TlsOptions option);
 
  private:
   std::unique_ptr<XmppEngine> engine_;
   std::unique_ptr<XmppTestHandler> handler_;
 };
 
-void XmppLoginTaskTest::SetTlsOptions(buzz::TlsOptions option) {
+void XmppLoginTaskTest::SetTlsOptions(jingle_xmpp::TlsOptions option) {
   engine_->SetTls(option);
 }
 void XmppLoginTaskTest::RunPartialLogin(XlttStage startstage,
@@ -328,7 +328,7 @@ TEST_F(XmppLoginTaskTest, TestTlsRequeiredAndPresent) {
 }
 
 TEST_F(XmppLoginTaskTest, TestTlsEnabledNotPresent) {
-  SetTlsOptions(buzz::TLS_ENABLED);
+  SetTlsOptions(jingle_xmpp::TLS_ENABLED);
   RunPartialLogin(XLTT_STAGE_CONNECT, XLTT_STAGE_STREAMSTART);
 
   std::string input = "<stream:features>"
@@ -349,7 +349,7 @@ TEST_F(XmppLoginTaskTest, TestTlsEnabledNotPresent) {
 }
 
 TEST_F(XmppLoginTaskTest, TestTlsEnabledAndPresent) {
-  SetTlsOptions(buzz::TLS_ENABLED);
+  SetTlsOptions(jingle_xmpp::TLS_ENABLED);
   RunPartialLogin(XLTT_STAGE_CONNECT, XLTT_STAGE_STREAMSTART);
 
   std::string input = "<stream:features>"
@@ -371,7 +371,7 @@ TEST_F(XmppLoginTaskTest, TestTlsEnabledAndPresent) {
 }
 
 TEST_F(XmppLoginTaskTest, TestTlsDisabledNotPresent) {
-  SetTlsOptions(buzz::TLS_DISABLED);
+  SetTlsOptions(jingle_xmpp::TLS_DISABLED);
   RunPartialLogin(XLTT_STAGE_CONNECT, XLTT_STAGE_STREAMSTART);
 
     std::string input = "<stream:features>"
@@ -392,7 +392,7 @@ TEST_F(XmppLoginTaskTest, TestTlsDisabledNotPresent) {
 }
 
 TEST_F(XmppLoginTaskTest, TestTlsDisabledAndPresent) {
-  SetTlsOptions(buzz::TLS_DISABLED);
+  SetTlsOptions(jingle_xmpp::TLS_DISABLED);
   RunPartialLogin(XLTT_STAGE_CONNECT, XLTT_STAGE_STREAMSTART);
 
   std::string input = "<stream:features>"

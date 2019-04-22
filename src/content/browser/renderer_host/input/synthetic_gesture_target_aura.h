@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target_base.h"
+#include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "content/common/input/synthetic_gesture_params.h"
 #include "ui/aura/event_injector.h"
 
@@ -47,6 +48,7 @@ class SyntheticGestureTargetAura : public SyntheticGestureTargetBase {
   float GetMinScalingSpanInDips() const override;
 
  private:
+  RenderWidgetHostViewAura* GetView() const;
   aura::Window* GetWindow() const;
 
   // Synthetic located event's location and touch event's radius are in DIP and

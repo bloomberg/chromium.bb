@@ -6,7 +6,7 @@
 
 #include "base/ios/ios_util.h"
 #include "base/test/scoped_feature_list.h"
-#include "ios/web/public/features.h"
+#include "ios/web/common/features.h"
 #import "ios/web/public/web_state/web_frame.h"
 #include "ios/web/public/web_state/web_frame_util.h"
 #import "ios/web/public/web_state/web_state.h"
@@ -153,9 +153,9 @@ TEST_P(WebFrameWebStateObserverInttest, TwoWebFrameHTTPS) {
   web_state()->RemoveObserver(&observer);
 }
 
-INSTANTIATE_TEST_CASE_P(ProgrammaticWebFrameWebStateObserverInttest,
-                        WebFrameWebStateObserverInttest,
-                        ::testing::Values(NavigationManagerChoice::LEGACY,
-                                          NavigationManagerChoice::WK_BASED));
+INSTANTIATE_TEST_SUITE_P(ProgrammaticWebFrameWebStateObserverInttest,
+                         WebFrameWebStateObserverInttest,
+                         ::testing::Values(NavigationManagerChoice::LEGACY,
+                                           NavigationManagerChoice::WK_BASED));
 
 }  // namespace web

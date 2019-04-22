@@ -14,8 +14,12 @@
 
 // Import all currently implemented tracks. After implemeting a new track, an
 // import statement for it needs to be added here.
-import './cpu_slices/controller';
+import './android_log/controller';
 import './chrome_slices/controller';
-import './vsync/controller';
-import './process_summary/controller';
 import './counter/controller';
+import './cpu_freq/controller';
+import './cpu_slices/controller';
+import './process_scheduling/controller';
+import './process_summary/controller';
+import './thread_state/controller';
+import './vsync/controller';

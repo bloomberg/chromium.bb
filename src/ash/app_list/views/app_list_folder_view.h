@@ -109,6 +109,15 @@ class APP_LIST_EXPORT AppListFolderView : public views::View,
   // Sets the layer mask's corner radius and insets in background.
   void UpdateBackgroundMask(int corner_radius, const gfx::Insets& insets);
 
+  // Called when tablet mode starts and ends.
+  void OnTabletModeChanged(bool started) {
+    folder_header_view()->set_tablet_mode(started);
+  }
+
+  // When transform in |contents_view_| is updated, notify accessibility to show
+  // ChromeVox focus in correct locations.
+  void NotifyAccessibilityLocationChanges();
+
  private:
   void CalculateIdealBounds();
 
@@ -141,10 +150,16 @@ class APP_LIST_EXPORT AppListFolderView : public views::View,
   bool IsPointOutsideOfFolderBoundary(const gfx::Point& point) override;
   bool IsOEMFolder() const override;
   void SetRootLevelDragViewVisible(bool visible) override;
+  void HandleKeyboardReparent(AppListItemView* reparented_view,
+                              ui::KeyboardCode key_code) override;
 
   // Returns the compositor associated to the widget containing this view.
   // Returns nullptr if there isn't one associated with this widget.
   ui::Compositor* GetCompositor();
+
+  // Creates accessibility event for opening folder if |open| is true.
+  // Otherwise, creates the event for closing folder.
+  void CreateOpenOrCloseFolderAccessibilityEvent(bool open);
 
   // Views below are not owned by views hierarchy.
   AppsContainerView* container_view_;
@@ -162,8 +177,8 @@ class APP_LIST_EXPORT AppListFolderView : public views::View,
 
   std::unique_ptr<views::ViewModel> view_model_;
 
-  AppListModel* model_;             // Not owned.
-  AppListFolderItem* folder_item_;  // Not owned.
+  AppListModel* model_;                       // Not owned.
+  AppListFolderItem* folder_item_ = nullptr;  // Not owned.
 
   // The bounds of the activated folder item icon relative to this view.
   gfx::Rect folder_item_icon_bounds_;
@@ -171,9 +186,7 @@ class APP_LIST_EXPORT AppListFolderView : public views::View,
   // The preferred bounds of this view relative to AppsContainerView.
   gfx::Rect preferred_bounds_;
 
-  bool hide_for_reparent_;
-
-  base::string16 accessible_name_;
+  bool hide_for_reparent_ = false;
 
   std::unique_ptr<gfx::SlideAnimation> background_animation_;
   std::unique_ptr<gfx::SlideAnimation> folder_item_title_animation_;
@@ -184,7 +197,7 @@ class APP_LIST_EXPORT AppListFolderView : public views::View,
   std::unique_ptr<ui::LayerOwner> background_mask_ = nullptr;
 
   // The compositor frame number when animation starts.
-  int animation_start_frame_number_;
+  int animation_start_frame_number_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(AppListFolderView);
 };

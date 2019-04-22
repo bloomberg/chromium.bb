@@ -23,6 +23,7 @@
 #include "base/time/time.h"
 #include "crypto/random.h"
 #include "net/base/io_buffer.h"
+#include "net/base/ip_endpoint.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_request_info.h"
 #include "net/http/http_response_body_drainer.h"
@@ -33,6 +34,8 @@
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/websocket_endpoint_lock_manager.h"
 #include "net/socket/websocket_transport_client_socket_pool.h"
+#include "net/ssl/ssl_cert_request_info.h"
+#include "net/ssl/ssl_info.h"
 #include "net/websockets/websocket_basic_stream.h"
 #include "net/websockets/websocket_basic_stream_adapters.h"
 #include "net/websockets/websocket_deflate_parameters.h"
@@ -159,10 +162,6 @@ bool ValidateConnection(const HttpResponseHeaders* headers,
 
 }  // namespace
 
-const base::Feature
-    WebSocketBasicHandshakeStream::kWebSocketHandshakeReuseConnection{
-        "WebSocketHandshakeReuseConnection", base::FEATURE_ENABLED_BY_DEFAULT};
-
 WebSocketBasicHandshakeStream::WebSocketBasicHandshakeStream(
     std::unique_ptr<ClientSocketHandle> connection,
     WebSocketStream::ConnectDelegate* connect_delegate,
@@ -180,7 +179,8 @@ WebSocketBasicHandshakeStream::WebSocketBasicHandshakeStream(
       requested_sub_protocols_(std::move(requested_sub_protocols)),
       requested_extensions_(std::move(requested_extensions)),
       stream_request_(request),
-      websocket_endpoint_lock_manager_(websocket_endpoint_lock_manager) {
+      websocket_endpoint_lock_manager_(websocket_endpoint_lock_manager),
+      weak_ptr_factory_(this) {
   DCHECK(connect_delegate);
   DCHECK(request);
 }
@@ -203,7 +203,17 @@ int WebSocketBasicHandshakeStream::InitializeStream(
     CompletionOnceCallback callback) {
   DCHECK(request_info->traffic_annotation.is_valid());
   url_ = request_info->url;
-  state_.Initialize(request_info, can_send_early, priority, net_log);
+  // The WebSocket may receive a socket in the early data state from
+  // HttpNetworkTransaction, which means it must call ConfirmHandshake() for
+  // requests that need replay protection. However, the first request on any
+  // WebSocket stream is a GET with an idempotent request
+  // (https://tools.ietf.org/html/rfc6455#section-1.3), so there is no need to
+  // call ConfirmHandshake().
+  //
+  // Data after the WebSockets handshake may not be replayable, but the
+  // handshake is guaranteed to be confirmed once the HTTP response is received.
+  DCHECK(can_send_early);
+  state_.Initialize(request_info, priority, net_log);
   return OK;
 }
 
@@ -281,8 +291,12 @@ int WebSocketBasicHandshakeStream::ReadResponseBody(
 void WebSocketBasicHandshakeStream::Close(bool not_reusable) {
   // This class ignores the value of |not_reusable| and never lets the socket be
   // re-used.
-  if (parser())
-    parser()->Close(true);
+  if (!parser())
+    return;
+  StreamSocket* socket = state_.connection()->socket();
+  if (socket)
+    socket->Disconnect();
+  state_.connection()->Reset();
 }
 
 bool WebSocketBasicHandshakeStream::IsResponseBodyComplete() const {
@@ -290,18 +304,16 @@ bool WebSocketBasicHandshakeStream::IsResponseBodyComplete() const {
 }
 
 bool WebSocketBasicHandshakeStream::IsConnectionReused() const {
-  return parser()->IsConnectionReused();
+  return state_.IsConnectionReused();
 }
 
 void WebSocketBasicHandshakeStream::SetConnectionReused() {
-  parser()->SetConnectionReused();
+  state_.connection()->set_reuse_type(ClientSocketHandle::REUSED_IDLE);
 }
 
 bool WebSocketBasicHandshakeStream::CanReuseConnection() const {
-  if (!base::FeatureList::IsEnabled(kWebSocketHandshakeReuseConnection))
-    return false;
-
-  return parser() && parser()->CanReuseConnection();
+  return parser() && state_.connection()->socket() &&
+         parser()->CanReuseConnection();
 }
 
 int64_t WebSocketBasicHandshakeStream::GetTotalReceivedBytes() const {
@@ -324,11 +336,19 @@ bool WebSocketBasicHandshakeStream::GetLoadTimingInfo(
 }
 
 void WebSocketBasicHandshakeStream::GetSSLInfo(SSLInfo* ssl_info) {
+  if (!state_.connection()->socket()) {
+    ssl_info->Reset();
+    return;
+  }
   parser()->GetSSLInfo(ssl_info);
 }
 
 void WebSocketBasicHandshakeStream::GetSSLCertRequestInfo(
     SSLCertRequestInfo* cert_request_info) {
+  if (!state_.connection()->socket()) {
+    cert_request_info->Reset();
+    return;
+  }
   parser()->GetSSLCertRequestInfo(cert_request_info);
 }
 
@@ -356,9 +376,6 @@ void WebSocketBasicHandshakeStream::SetPriority(RequestPriority priority) {
 }
 
 HttpStream* WebSocketBasicHandshakeStream::RenewStreamForAuth() {
-  if (!base::FeatureList::IsEnabled(kWebSocketHandshakeReuseConnection))
-    return nullptr;
-
   DCHECK(IsResponseBodyComplete());
   DCHECK(!parser()->IsMoreDataBuffered());
   // The HttpStreamParser object still has a pointer to the connection. Just to
@@ -400,6 +417,11 @@ std::unique_ptr<WebSocketStream> WebSocketBasicHandshakeStream::Upgrade() {
   }
 }
 
+base::WeakPtr<WebSocketHandshakeStreamBase>
+WebSocketBasicHandshakeStream::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
+
 void WebSocketBasicHandshakeStream::SetWebSocketKeyForTesting(
     const std::string& key) {
   handshake_challenge_for_testing_ = key;
@@ -415,7 +437,7 @@ void WebSocketBasicHandshakeStream::OnFinishOpeningHandshake() {
   DCHECK(http_response_info_);
   WebSocketDispatchOnFinishOpeningHandshake(
       connect_delegate_, url_, http_response_info_->headers,
-      http_response_info_->socket_address, http_response_info_->response_time);
+      http_response_info_->remote_endpoint, http_response_info_->response_time);
 }
 
 int WebSocketBasicHandshakeStream::ValidateResponse(int rv) {

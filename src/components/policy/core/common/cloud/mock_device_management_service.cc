@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "base/strings/string_util.h"
+#include "components/policy/core/common/cloud/dm_auth.h"
 #include "net/base/net_errors.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
@@ -32,9 +33,10 @@ class MockRequestJobBase : public DeviceManagementRequestJob {
  protected:
   void Run() override {
     service_->StartJob(ExtractParameter(dm_protocol::kParamRequest),
-                       auth_data_->gaia_token(),
+                       auth_data_ ? auth_data_->gaia_token() : "",
                        ExtractParameter(dm_protocol::kParamOAuthToken),
-                       auth_data_->dm_token(), auth_data_->enrollment_token(),
+                       auth_data_ ? auth_data_->dm_token() : "",
+                       auth_data_ ? auth_data_->enrollment_token() : "",
                        ExtractParameter(dm_protocol::kParamDeviceID), request_);
   }
 

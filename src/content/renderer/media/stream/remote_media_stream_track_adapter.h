@@ -14,7 +14,7 @@
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
-#include "third_party/webrtc/api/mediastreaminterface.h"
+#include "third_party/webrtc/api/media_stream_interface.h"
 
 namespace content {
 
@@ -130,7 +130,8 @@ class RemoteAudioTrackAdapter
   ~RemoteAudioTrackAdapter() override;
 
  private:
-  void InitializeWebAudioTrack();
+  void InitializeWebAudioTrack(
+      const scoped_refptr<base::SingleThreadTaskRunner>& main_thread);
 
   // webrtc::ObserverInterface implementation.
   void OnChanged() override;

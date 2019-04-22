@@ -10,9 +10,14 @@
 #ifndef MODULES_CONGESTION_CONTROLLER_GOOG_CC_TEST_GOOG_CC_PRINTER_H_
 #define MODULES_CONGESTION_CONTROLLER_GOOG_CC_TEST_GOOG_CC_PRINTER_H_
 
+#include <stdio.h>
 #include <memory>
 
 #include "api/transport/goog_cc_factory.h"
+#include "api/transport/network_control.h"
+#include "api/transport/network_types.h"
+#include "api/units/timestamp.h"
+#include "logging/rtc_event_log/rtc_event_log.h"
 #include "modules/congestion_controller/goog_cc/goog_cc_network_control.h"
 #include "modules/congestion_controller/test/controller_printer.h"
 
@@ -24,8 +29,8 @@ class GoogCcStatePrinter : public DebugStatePrinter {
   void Attach(GoogCcNetworkController*);
   bool Attached() const override;
 
-  void PrintHeaders(FILE* out) override;
-  void PrintValues(FILE* out) override;
+  void PrintHeaders(RtcEventLogOutput* out) override;
+  void PrintValues(RtcEventLogOutput* out) override;
 
   NetworkControlUpdate GetState(Timestamp at_time) const override;
 

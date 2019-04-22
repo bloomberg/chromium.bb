@@ -47,6 +47,9 @@ class RenderWidgetHostNSViewClientHelper {
   // Return the currently focused accessibility element.
   virtual id GetFocusedBrowserAccessibilityElement() = 0;
 
+  // Set the NSWindow that will be the accessibility parent of the NSView.
+  virtual void SetAccessibilityWindow(NSWindow* window) = 0;
+
   // Forward a keyboard event to the RenderWidgetHost that is currently handling
   // the key-down event.
   virtual void ForwardKeyboardEvent(const NativeWebKeyboardEvent& key_event,

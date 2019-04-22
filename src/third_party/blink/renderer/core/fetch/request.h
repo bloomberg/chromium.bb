@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_REQUEST_H_
 
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
-#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-blink.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
 #include "third_party/blink/renderer/bindings/core/v8/request_or_usv_string.h"
@@ -65,7 +65,7 @@ class CORE_EXPORT Request final : public Body {
 
   // From Request.idl:
   String method() const;
-  KURL url() const;
+  const KURL& url() const;
   Headers* getHeaders() const { return headers_; }
   String destination() const;
   String referrer() const;
@@ -104,7 +104,7 @@ class CORE_EXPORT Request final : public Body {
   String ContentType() const override;
   String MimeType() const override;
 
-  const TraceWrapperMember<FetchRequestData> request_;
+  const Member<FetchRequestData> request_;
   const Member<Headers> headers_;
   const Member<AbortSignal> signal_;
   DISALLOW_COPY_AND_ASSIGN(Request);

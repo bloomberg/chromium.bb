@@ -33,6 +33,8 @@ Profiling should always be done on a Release build, which has very similiar perf
     is_debug = false
     enable_profiling = true
     enable_callgrind = true
+    blink_symbol_level = 2
+    symbol_level = 2
     
 ### Preparing your environment
 
@@ -146,6 +148,39 @@ The `--profile-process` and `--profile-thread` arguments support most of the com
 
     $ src/out/Release/bin/chrome_public_apk help profile
 
+## Profiling on ChromeOS
+
+Follow the [simple chrome instructions](../simple_chrome_workflow.md), to build
+and deploy chrome to your chromeos device.  These instructions will set up a
+build directory for you, so be sure to `gn args out_${SDK_BOARD}/Release` to
+edit them and add the gn args listed above.
+
+The easiest way to get a profile is to ssh to your device, which here will
+be referred to as `chromeos-box`, but replace that with whatever ip or hostname
+your device is.  ssh to your device, create a folder in `/tmp` (which usually
+has more space than `/`) and record performance for the entire device.  When
+you're done, use scp to copy the perf.data back to your desk and use pprof
+as per normal on that perf.data file.
+
+Here's an example:
+
+    $ ssh root@chromeos-box
+    localhost ~ # export CPUPROFILE_FREQUENCY=3000
+    localhost ~ # mkdir -p /tmp/perf
+    localhost ~ # cd /tmp/perf
+    localhost /tmp/perf # perf record -g -a -e cycles
+    ^C
+    [ perf record: Woken up 402 times to write data ]
+    [ perf record: Captured and wrote 100.797 MB perf.data (489478 samples) ]
+    localhost /tmp/perf # exit
+    $ scp root@chromeos-box:/tmp/perf/perf.data .
+    $ pprof -web out_${SDK_BOARD}/Release/chrome perf.data
+
+Note: this will complain about missing chromeos symbols.  Even pointing
+PPROF\_BINARY\_PATH at the expanded `debug-board.tgz` file that came along with
+the chromeos image does not seem to work.  If you can make this work, please
+update this doc!
+
 ## Profiling during a perf benchmark run
 
 The perf benchmark runner can generate a CPU profile over the course of running a perf test. Currently, this is supported only on Linux and Android. To get info about the relevant options, run:
@@ -157,3 +192,10 @@ The perf benchmark runner can generate a CPU profile over the course of running 
     $ src/tools/perf/run_benchmark run <benchmark name> --interval-profiling-target=renderer:main --interval-profiling-period=interactions --interval-profiling-frequency=2000
 
 The profiling data will be written into the `artifacts/` sub-directory of your perf benchmark output directory (default is `src/tools/perf`), to files with the naming pattern `*.profile.pb`. You can use `pprof` to view the results, as described above.
+
+## Googlers Only
+
+If you use `pprof -proto chrome-profile-renderer-12345` to turn your perf data
+into a proto file, you can then use that resulting file with internal tools.
+See [http://go/cprof/user#fs-profiles](http://go/cprof/user#fs-profiles])
+for instructions on how to go about this.

@@ -45,6 +45,10 @@ import android.view.inputmethod.InputConnection;
 import android.view.textclassifier.TextClassifier;
 import android.webkit.JavascriptInterface;
 
+import org.chromium.android_webview.gfx.AwDrawFnImpl;
+import org.chromium.android_webview.gfx.AwFunctor;
+import org.chromium.android_webview.gfx.AwGLFunctor;
+import org.chromium.android_webview.gfx.AwPicture;
 import org.chromium.android_webview.permission.AwGeolocationCallback;
 import org.chromium.android_webview.permission.AwPermissionRequest;
 import org.chromium.android_webview.renderer_priority.RendererPriority;
@@ -60,7 +64,9 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
+import org.chromium.base.task.PostTask;
 import org.chromium.components.autofill.AutofillProvider;
+import org.chromium.components.content_capture.ContentCaptureConsumer;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
 import org.chromium.components.navigation_interception.NavigationParams;
 import org.chromium.content_public.browser.ChildProcessImportance;
@@ -78,6 +84,7 @@ import org.chromium.content_public.browser.NavigationHistory;
 import org.chromium.content_public.browser.SelectionClient;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.SmartClipProvider;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.ViewEventSink;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsAccessibility;
@@ -91,6 +98,7 @@ import org.chromium.device.gamepad.GamepadList;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.network.mojom.ReferrerPolicy;
 import org.chromium.ui.base.ActivityWindowAndroid;
+import org.chromium.ui.base.Clipboard;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
@@ -269,6 +277,12 @@ public class AwContents implements SmartClipProvider {
          * Create a GL functor associated with native context |context|.
          */
         NativeDrawGLFunctor createGLFunctor(long context);
+
+        /**
+         * Used for draw_fn functor. Only one of these methods need to return non-null.
+         * Prefer this over createGLFunctor.
+         */
+        AwDrawFnImpl.DrawFnAccess getDrawFnAccess();
     }
 
     /**
@@ -442,8 +456,6 @@ public class AwContents implements SmartClipProvider {
     // when in this state.
     private boolean mTemporarilyDetached;
 
-    private Handler mHandler;
-
     // True when this AwContents has been destroyed.
     // Do not use directly, call isDestroyed() instead.
     private boolean mIsDestroyed;
@@ -468,6 +480,8 @@ public class AwContents implements SmartClipProvider {
     private WebContentsInternals mWebContentsInternals;
 
     private JavascriptInjector mJavascriptInjector;
+
+    private ContentCaptureConsumer mContentCaptureConsumer;
 
     private static class WebContentsInternalsHolder implements WebContents.InternalsHolder {
         private final WeakReference<AwContents> mAwContentsRef;
@@ -524,6 +538,8 @@ public class AwContents implements SmartClipProvider {
         private FullScreenView mFullScreenView;
         /** Whether the initial container view was focused when we entered fullscreen */
         private boolean mWasInitialContainerViewFocused;
+        private int mScrollX;
+        private int mScrollY;
 
         private FullScreenTransitionsState(ViewGroup initialContainerView,
                 InternalAccessDelegate initialInternalAccessAdapter,
@@ -534,13 +550,23 @@ public class AwContents implements SmartClipProvider {
         }
 
         private void enterFullScreen(FullScreenView fullScreenView,
-                boolean wasInitialContainerViewFocused) {
+                boolean wasInitialContainerViewFocused, int scrollX, int scrollY) {
             mFullScreenView = fullScreenView;
             mWasInitialContainerViewFocused = wasInitialContainerViewFocused;
+            mScrollX = scrollX;
+            mScrollY = scrollY;
         }
 
         private boolean wasInitialContainerViewFocused() {
             return mWasInitialContainerViewFocused;
+        }
+
+        private int getScrollX() {
+            return mScrollX;
+        }
+
+        private int getScrollY() {
+            return mScrollY;
         }
 
         private void exitFullScreen() {
@@ -800,7 +826,6 @@ public class AwContents implements SmartClipProvider {
         @Override
         public void onConfigurationChanged(Configuration configuration) {
             updateDefaultLocale();
-            mSettings.updateAcceptLanguages();
         }
     };
 
@@ -852,18 +877,17 @@ public class AwContents implements SmartClipProvider {
             AwSettings settings, DependencyFactory dependencyFactory) {
         try (ScopedSysTraceEvent e1 = ScopedSysTraceEvent.scoped("AwContents.constructor")) {
             mRendererPriority = RendererPriority.HIGH;
+            mSettings = settings;
             updateDefaultLocale();
-            settings.updateAcceptLanguages();
 
             mBrowserContext = browserContext;
 
-            // setWillNotDraw(false) is required since WebView draws it's own contents using it's
+            // setWillNotDraw(false) is required since WebView draws its own contents using its
             // container view. If this is ever not the case we should remove this, as it removes
             // Android's gatherTransparentRegion optimization for the view.
             mContainerView = containerView;
             mContainerView.setWillNotDraw(false);
 
-            mHandler = new Handler();
             mContext = context;
             mAutofillProvider = dependencyFactory.createAutofillProvider(context, mContainerView);
             mAppTargetSdkVersion = mContext.getApplicationInfo().targetSdkVersion;
@@ -876,7 +900,6 @@ public class AwContents implements SmartClipProvider {
             mFullScreenTransitionsState = new FullScreenTransitionsState(
                     mContainerView, mInternalAccessAdapter, mAwViewMethods);
             mLayoutSizer = dependencyFactory.createLayoutSizer();
-            mSettings = settings;
             mLayoutSizer.setDelegate(new AwLayoutSizerDelegate());
             mWebContentsDelegate = new AwWebContentsDelegateAdapter(
                     this, contentsClient, settings, mContext, mContainerView);
@@ -977,7 +1000,8 @@ public class AwContents implements SmartClipProvider {
         if (wasInitialContainerViewFocused) {
             fullScreenView.requestFocus();
         }
-        mFullScreenTransitionsState.enterFullScreen(fullScreenView, wasInitialContainerViewFocused);
+        mFullScreenTransitionsState.enterFullScreen(fullScreenView, wasInitialContainerViewFocused,
+                mScrollOffsetManager.getScrollX(), mScrollOffsetManager.getScrollY());
         mAwViewMethods = new NullAwViewMethods(this, mInternalAccessAdapter, mContainerView);
 
         // Associate this AwContents with the FullScreenView.
@@ -1029,6 +1053,13 @@ public class AwContents implements SmartClipProvider {
         if (mFullScreenTransitionsState.wasInitialContainerViewFocused()) {
             mContainerView.requestFocus();
         }
+
+        if (!isDestroyedOrNoOperation(NO_WARN)) {
+            nativeRestoreScrollAfterTransition(mNativeAwContents,
+                    mFullScreenTransitionsState.getScrollX(),
+                    mFullScreenTransitionsState.getScrollY());
+        }
+
         mFullScreenTransitionsState.exitFullScreen();
     }
 
@@ -1038,7 +1069,7 @@ public class AwContents implements SmartClipProvider {
     }
 
     private void setContainerView(ViewGroup newContainerView) {
-        // setWillNotDraw(false) is required since WebView draws it's own contents using it's
+        // setWillNotDraw(false) is required since WebView draws its own contents using its
         // container view. If this is ever not the case we should remove this, as it removes
         // Android's gatherTransparentRegion optimization for the view.
         mContainerView = newContainerView;
@@ -1139,9 +1170,13 @@ public class AwContents implements SmartClipProvider {
         return wrapper;
     }
 
-    // Set current locales to native.
+    /**
+     * Set current locales to native. Propagates this information to the Accept-Language header for
+     * subsequent requests. Note that this will affect <b>all</b> AwContents, not just this
+     * instance, as all WebViews share the same NetworkContext/UrlRequestContextGetter.
+     */
     @VisibleForTesting
-    public static void updateDefaultLocale() {
+    public void updateDefaultLocale() {
         String locales = LocaleUtils.getDefaultLocaleListString();
         if (!sCurrentLocales.equals(locales)) {
             sCurrentLocales = locales;
@@ -1151,6 +1186,7 @@ public class AwContents implements SmartClipProvider {
             // it is not guaranteed to be listed at the first of sCurrentLocales. Therefore,
             // both values are passed to native.
             nativeUpdateDefaultLocale(LocaleUtils.getDefaultLocaleString(), sCurrentLocales);
+            mSettings.updateAcceptLanguages();
         }
     }
 
@@ -1182,6 +1218,9 @@ public class AwContents implements SmartClipProvider {
             TextClassifier textClassifier = mWebContents != null ? getTextClassifier() : null;
             setNewAwContentsPreO(newAwContentsPtr);
             if (textClassifier != null) setTextClassifier(textClassifier);
+        }
+        if (mContentCaptureConsumer != null) {
+            mContentCaptureConsumer.onWebContentsChanged(mWebContents);
         }
     }
 
@@ -1374,6 +1413,11 @@ public class AwContents implements SmartClipProvider {
         if (TRACE) Log.i(TAG, "%s destroy", this);
         if (isDestroyed(NO_WARN)) return;
 
+        if (mContentCaptureConsumer != null) {
+            mContentCaptureConsumer.destroy();
+            mContentCaptureConsumer = null;
+        }
+
         // Remove pending messages
         mContentsClient.getCallbackHelper().removeCallbacksAndMessages();
 
@@ -1384,7 +1428,7 @@ public class AwContents implements SmartClipProvider {
         }
         mIsNoOperation = true;
         mIsDestroyed = true;
-        mHandler.post(() -> destroyNatives());
+        PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> destroyNatives());
     }
 
     /**
@@ -1521,6 +1565,10 @@ public class AwContents implements SmartClipProvider {
         return sLocalGlobalVisibleRect;
     }
 
+    public void setContentCaptureConsumer(ContentCaptureConsumer consumer) {
+        mContentCaptureConsumer = consumer;
+    }
+
     //--------------------------------------------------------------------------------------------
     //  WebView[Provider] method implementations
     //--------------------------------------------------------------------------------------------
@@ -1620,7 +1668,7 @@ public class AwContents implements SmartClipProvider {
                 }
             }
 
-            ThreadUtils.runOnUiThread(() -> {
+            PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
                 if (!isDestroyedOrNoOperation(NO_WARN)) {
                     nativeAddVisitedLinks(mNativeAwContents, value);
                 }
@@ -1851,7 +1899,7 @@ public class AwContents implements SmartClipProvider {
         // This is a workaround for an issue with PlzNavigate and one of Samsung's OEM mail apps.
         // See http://crbug.com/781535.
         if (isSamsungMailApp() && SAMSUNG_WORKAROUND_BASE_URL.equals(loadUrlParams.getBaseUrl())) {
-            ThreadUtils.postOnUiThreadDelayed(
+            PostTask.postDelayedTask(UiThreadTaskTraits.DEFAULT,
                     () -> loadUrl(loadUrlParams), SAMSUNG_WORKAROUND_DELAY);
             return;
         }
@@ -2545,7 +2593,7 @@ public class AwContents implements SmartClipProvider {
                 // application callback is executed without any native code on the stack. This
                 // so that any exception thrown by the application callback won't have to be
                 // propagated through a native call stack.
-                mHandler.post(() -> callback.onResult(jsonResult));
+                PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> callback.onResult(jsonResult));
             };
         }
 
@@ -2788,7 +2836,7 @@ public class AwContents implements SmartClipProvider {
         // To prevent this flip of CVC visibility, post the task to update CVC
         // visibility during attach, detach and window visibility change.
         mIsUpdateVisibilityTaskPending = true;
-        mHandler.post(mUpdateVisibilityRunnable);
+        PostTask.postTask(UiThreadTaskTraits.DEFAULT, mUpdateVisibilityRunnable);
     }
 
     private void updateWebContentsVisibility() {
@@ -3124,7 +3172,7 @@ public class AwContents implements SmartClipProvider {
         if (isDestroyedOrNoOperation(NO_WARN)) return;
         // Posting avoids invoking the callback inside invoking_composite_
         // (see synchronous_compositor_impl.cc and crbug/452530).
-        mHandler.post(() -> callback.onComplete(requestId));
+        PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> callback.onComplete(requestId));
     }
 
     // Called as a result of nativeUpdateLastHitTestData.
@@ -3174,7 +3222,7 @@ public class AwContents implements SmartClipProvider {
 
     @CalledByNative
     private void updateScrollState(int maxContainerViewScrollOffsetX,
-            int maxContainerViewScrollOffsetY, int contentWidthDip, int contentHeightDip,
+            int maxContainerViewScrollOffsetY, float contentWidthDip, float contentHeightDip,
             float pageScaleFactor, float minPageScaleFactor, float maxPageScaleFactor) {
         mContentWidthDip = contentWidthDip;
         mContentHeightDip = contentHeightDip;
@@ -3329,7 +3377,7 @@ public class AwContents implements SmartClipProvider {
         if (path == null || isDestroyedOrNoOperation(WARN)) {
             if (callback == null) return;
 
-            ThreadUtils.runOnUiThread(() -> callback.onResult(null));
+            PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> callback.onResult(null));
         } else {
             nativeGenerateMHTML(mNativeAwContents, path, callback);
         }
@@ -3432,7 +3480,15 @@ public class AwContents implements SmartClipProvider {
             }
 
             if (canvas.isHardwareAccelerated() && mDrawFunctor == null) {
-                setFunctor(new AwGLFunctor(mNativeDrawFunctorFactory, mContainerView));
+                AwFunctor newFunctor;
+                AwDrawFnImpl.DrawFnAccess drawFnAccess =
+                        mNativeDrawFunctorFactory.getDrawFnAccess();
+                if (drawFnAccess != null) {
+                    newFunctor = new AwDrawFnImpl(drawFnAccess);
+                } else {
+                    newFunctor = new AwGLFunctor(mNativeDrawFunctorFactory, mContainerView);
+                }
+                setFunctor(newFunctor);
             }
 
             mScrollOffsetManager.syncScrollOffsetFromOnDraw();
@@ -3631,7 +3687,6 @@ public class AwContents implements SmartClipProvider {
             postUpdateWebContentsVisibility();
 
             updateDefaultLocale();
-            mSettings.updateAcceptLanguages();
 
             if (mComponentCallbacks != null) return;
             mComponentCallbacks = new AwComponentCallbacks();
@@ -3668,6 +3723,7 @@ public class AwContents implements SmartClipProvider {
             if (isDestroyedOrNoOperation(NO_WARN)) return;
             mWindowFocused = hasWindowFocus;
             mViewEventSink.onWindowFocusChanged(hasWindowFocus);
+            Clipboard.getInstance().onWindowFocusChanged(hasWindowFocus);
         }
 
         @Override
@@ -3843,6 +3899,7 @@ public class AwContents implements SmartClipProvider {
 
     private native void nativeOnSizeChanged(long nativeAwContents, int w, int h, int ow, int oh);
     private native void nativeScrollTo(long nativeAwContents, int x, int y);
+    private native void nativeRestoreScrollAfterTransition(long nativeAwContents, int x, int y);
     private native void nativeSmoothScroll(
             long nativeAwContents, int targetX, int targetY, long durationMs);
     private native void nativeSetViewVisibility(long nativeAwContents, boolean visible);

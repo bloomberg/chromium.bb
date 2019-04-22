@@ -188,13 +188,15 @@ unpacker.app = {
     if (chrome.extension.inIncognitoContext)
       return;
 
-    chrome.storage.local.get([unpacker.app.STORAGE_KEY], function(result) {
-      if (result[unpacker.app.STORAGE_KEY]) {
-        chrome.storage.local.clear(function() {
-          console.info('Cleaned up archive mount info from older versions.');
-        });
-      }
-    });
+    if (chrome.storage && chrome.storage.local) {
+      chrome.storage.local.get([unpacker.app.STORAGE_KEY], function(result) {
+        if (result[unpacker.app.STORAGE_KEY]) {
+          chrome.storage.local.clear(function() {
+            console.info('Cleaned up archive mount info from older versions.');
+          });
+        }
+      });
+    }
   },
 
   /**
@@ -348,6 +350,51 @@ unpacker.app = {
         unpacker.app.naclModule = document.querySelector('#' + moduleId);
         fulfill();
       }, true);
+      elementDiv.addEventListener('crash', () => {
+        // The title for notifications is usually the file name of the
+        // operation. Since there are potentially multiple operations in
+        // progress, use the first one as the notification title.
+        let crashTitle = '';
+
+        // Need to cancel and clean up any pending operations.
+        for (let fileSystemId in unpacker.app.volumes) {
+          if (crashTitle == '')
+            crashTitle = fileSystemId;
+          unpacker.app.unmountVolume(fileSystemId, true /* forceUnmount */);
+        }
+        // Force unmounting volumes doesn't remove them from the volumes map.
+        // Since all volumes have been forcably unmounted, explicitly clear this
+        // map.
+        unpacker.app.volumes = {};
+
+        for (let compressorId in unpacker.app.compressors) {
+          if (crashTitle == '')
+            crashTitle =
+                unpacker.app.compressors[compressorId].getArchiveName();
+          unpacker.app.cleanupCompressor(
+              compressorId, true /* hasError */, false /* canceled */);
+        }
+
+        // Reset the NaCl module state so that a future operation will load the
+        // module.
+        // TODO(crbug.com/907956): NaCl module state management is scattered
+        // throughout several different functions, making it difficult to
+        // reason. Refactor into a couple of functions that take care of all
+        // state management.
+        unpacker.app.unloadNaclModule();
+        unpacker.app.mountProcessCounter = 0;
+
+        unpacker.app.stringDataLoadedPromise.then((stringData) => {
+          chrome.notifications.create(
+              crashTitle, {
+                type: 'basic',
+                iconUrl: chrome.runtime.getManifest().icons[128],
+                title: crashTitle,
+                message: stringData['ZIP_ARCHIVER_CRASH_ERROR_MESSAGE'],
+              },
+              function() {});
+        });
+      }, true);
 
       elementDiv.addEventListener('message', unpacker.app.handleMessage_, true);
 
@@ -371,8 +418,10 @@ unpacker.app = {
    * Unloads the NaCl module.
    */
   unloadNaclModule: function() {
-    var naclModuleParentNode = unpacker.app.naclModule.parentNode;
-    naclModuleParentNode.parentNode.removeChild(naclModuleParentNode);
+    if (unpacker.app.naclModule) {
+      var naclModuleParentNode = unpacker.app.naclModule.parentNode;
+      naclModuleParentNode.parentNode.removeChild(naclModuleParentNode);
+    }
     unpacker.app.naclModule = null;
     unpacker.app.moduleLoadedPromise = null;
   },
@@ -390,7 +439,7 @@ unpacker.app = {
     if (Object.keys(unpacker.app.volumes).length === 0 &&
         unpacker.app.mountProcessCounter === 0) {
       unpacker.app.unloadNaclModule();
-    } else {
+    } else if (unpacker.app.naclModule) {
       unpacker.app.naclModule.postMessage(
           unpacker.request.createCloseVolumeRequest(fileSystemId));
     }

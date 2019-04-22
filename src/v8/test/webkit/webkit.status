@@ -43,7 +43,7 @@
   # Exceeds call stack on windows after MSVS2017 switch.
   'fast/js/excessive-comma-usage': [SKIP],
 }],  # system == windows
-['mode == debug or dcheck_always_on', {
+['mode == debug', {
   # Too slow in debug mode.
   'dfg-int-overflow-in-loop': [SKIP],
   'dfg-double-vote-fuzz': [SKIP],
@@ -51,7 +51,7 @@
   'sort-large-array': [SKIP],
   # Too slow with --enable-slow-asserts.
   'array-iterate-backwards': [SKIP],
-}],  # 'mode == debug or dcheck_always_on'
+}],  # 'mode == debug'
 ['simulator_run', {
   # Skip tests that timeout with turbofan.
   'array-iterate-backwards': [PASS, NO_VARIANTS],
@@ -109,10 +109,10 @@
 }],  # arch == arm64 and msan
 
 ##############################################################################
-['variant in [no_liftoff, nooptimization, stress, stress_background_compile] and (arch == arm or arch == arm64) and simulator_run', {
+['variant in [nooptimization, stress, stress_background_compile] and (arch == arm or arch == arm64) and simulator_run', {
   # Slow tests: https://crbug.com/v8/7783
   'dfg-double-vote-fuzz': [SKIP],
-}],  # variant in [no_liftoff, nooptimization, stress, stress_background_compile] and (arch == arm or arch == arm64) and simulator_run
+}],  # variant in [nooptimization, stress, stress_background_compile] and (arch == arm or arch == arm64) and simulator_run
 
 ##############################################################################
 ['gcov_coverage', {
@@ -130,6 +130,11 @@
 ['no_i18n == True', {
   'fast/js/string-capitalization': [FAIL],
 }],  # variant == no_wasm_traps
+
+##############################################################################
+['variant == jitless and not embedded_builtins', {
+  '*': [SKIP],
+}], # variant == jitless and not embedded_builtins
 
 ##############################################################################
 ]

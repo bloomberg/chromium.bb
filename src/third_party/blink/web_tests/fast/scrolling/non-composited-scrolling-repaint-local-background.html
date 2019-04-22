@@ -16,17 +16,9 @@
 <div id="container">
     <div id="bloat"></div>
 </div>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <script>
-    if (window.testRunner) {
-        testRunner.waitUntilDone();
-        testRunner.layoutAndPaintAsyncThen(function() {
-            document.getElementById('container').scrollTop = 1000;
-            testRunner.notifyDone();
-        });
-    } else {
-        // For manual test.
-        setTimeout(function() {
-            document.getElementById('container').scrollTop = 1000;
-        }, 500);
-    }
+runAfterLayoutAndPaint(function() {
+    document.getElementById('container').scrollTop = 1000;
+}, true);
 </script>

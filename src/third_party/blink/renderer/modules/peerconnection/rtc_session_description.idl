@@ -46,5 +46,5 @@ enum RTCSdpType {
     // https://crbug.com/662898
     [Measure] attribute RTCSdpType? type;
     [Measure] attribute DOMString? sdp;
-    serializer = {attribute};
+    [CallWith=ScriptState, ImplementedAs=toJSONForBinding] object toJSON();
 };

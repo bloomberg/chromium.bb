@@ -39,7 +39,6 @@
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/interpolated_transform.h"
-#include "ui/gfx/path.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/transform.h"
@@ -69,18 +68,18 @@ namespace views {
 namespace {
 
 #if defined(OS_WIN)
-const bool kContextMenuOnMousePress = false;
+constexpr bool kContextMenuOnMousePress = false;
 #else
-const bool kContextMenuOnMousePress = true;
+constexpr bool kContextMenuOnMousePress = true;
 #endif
 
 // Default horizontal drag threshold in pixels.
 // Same as what gtk uses.
-const int kDefaultHorizontalDragThreshold = 8;
+constexpr int kDefaultHorizontalDragThreshold = 8;
 
 // Default vertical drag threshold in pixels.
 // Same as what gtk uses.
-const int kDefaultVerticalDragThreshold = 8;
+constexpr int kDefaultVerticalDragThreshold = 8;
 
 // Returns the top view in |view|'s hierarchy.
 const View* GetHierarchyRoot(const View* view) {
@@ -99,7 +98,7 @@ class ScopedChildrenLock {
  public:
   explicit ScopedChildrenLock(const View* view)
       : reset_(&view->iterating_, true) {}
-  ~ScopedChildrenLock() {}
+  ~ScopedChildrenLock() = default;
 
  private:
   base::AutoReset<bool> reset_;
@@ -155,117 +154,42 @@ Widget* View::GetWidget() {
   return const_cast<Widget*>(const_cast<const View*>(this)->GetWidget());
 }
 
-void View::AddChildView(View* view) {
-  if (view->parent_ == this)
-    return;
-  AddChildViewAt(view, child_count());
-}
-
-void View::AddChildViewAt(View* view, int index) {
-  CHECK_NE(view, this) << "You cannot add a view as its own child";
-  DCHECK_GE(index, 0);
-  DCHECK_LE(index, child_count());
-
-  // If |view| has a parent, remove it from its parent.
-  View* parent = view->parent_;
-  ui::NativeTheme* old_theme = nullptr;
-  Widget* old_widget = nullptr;
-  if (parent) {
-    old_theme = view->GetNativeTheme();
-    old_widget = view->GetWidget();
-    if (parent == this) {
-      ReorderChildView(view, index);
-      return;
-    }
-    parent->DoRemoveChildView(view, true, true, false, this);
-  }
-
-  // Sets the prev/next focus views.
-  InitFocusSiblings(view, index);
-
-  view->parent_ = this;
-#if DCHECK_IS_ON()
-  DCHECK(!iterating_);
-#endif
-  children_.insert(children_.begin() + index, view);
-
-  // Ensure the layer tree matches the view tree before calling to any client
-  // code. This way if client code further modifies the view tree we are in a
-  // sane state.
-  const bool did_reparent_any_layers = view->UpdateParentLayers();
-  Widget* widget = GetWidget();
-  if (did_reparent_any_layers && widget)
-    widget->LayerTreeChanged();
-
-  ReorderLayers();
-
-  // Make sure the visibility of the child layers are correct.
-  // If any of the parent View is hidden, then the layers of the subtree
-  // rooted at |this| should be hidden. Otherwise, all the child layers should
-  // inherit the visibility of the owner View.
-  view->UpdateLayerVisibility();
-
-  if (widget) {
-    const ui::NativeTheme* new_theme = view->GetNativeTheme();
-    if (new_theme != old_theme)
-      view->PropagateNativeThemeChanged(new_theme);
-  }
-
-  ViewHierarchyChangedDetails details(true, this, view, parent);
-
-  for (View* v = this; v; v = v->parent_)
-    v->ViewHierarchyChangedImpl(false, details);
-
-  view->PropagateAddNotifications(details, widget && widget != old_widget);
-
-  UpdateTooltip();
-
-  if (widget) {
-    RegisterChildrenForVisibleBoundsNotification(view);
-
-    if (view->visible())
-      view->SchedulePaint();
-  }
-
-  if (layout_manager_.get())
-    layout_manager_->ViewAdded(this, view);
-
-  for (ViewObserver& observer : observers_)
-    observer.OnChildViewAdded(this, view);
-}
-
 void View::ReorderChildView(View* view, int index) {
   DCHECK_EQ(view->parent_, this);
-  if (index < 0)
-    index = child_count() - 1;
-  else if (index >= child_count())
-    return;
-  if (children_[index] == view)
+  const auto i = std::find(children_.begin(), children_.end(), view);
+  DCHECK(i != children_.end());
+
+  // If |view| is already at the desired position, there's nothing to do.
+  const bool move_to_end = (index < 0) || (size_t{index} >= children_.size());
+  const auto pos = move_to_end ? std::prev(children_.end())
+                               : std::next(children_.begin(), index);
+  if (i == pos)
     return;
 
-  const Views::iterator i(std::find(children_.begin(), children_.end(), view));
-  DCHECK(i != children_.end());
+    // Rotate |view| to be at the desired position.
 #if DCHECK_IS_ON()
   DCHECK(!iterating_);
 #endif
-  children_.erase(i);
+  if (pos < i)
+    std::rotate(pos, i, std::next(i));
+  else
+    std::rotate(i, std::next(i), std::next(pos));
 
-  // Unlink the view first
+  // Update focus siblings.  Unhook |view| from the focus cycle first so
+  // SetFocusSiblings() won't traverse through it.
   View* next_focusable = view->next_focusable_view_;
   View* prev_focusable = view->previous_focusable_view_;
   if (prev_focusable)
     prev_focusable->next_focusable_view_ = next_focusable;
   if (next_focusable)
     next_focusable->previous_focusable_view_ = prev_focusable;
-
-  // Add it in the specified index now.
-  InitFocusSiblings(view, index);
-  children_.insert(children_.begin() + index, view);
+  SetFocusSiblings(view, pos);
 
   for (ViewObserver& observer : observers_)
     observer.OnChildViewReordered(this, view);
 
   ReorderLayers();
+  InvalidateLayout();
 }
 
 void View::RemoveChildView(View* view) {
@@ -287,9 +211,15 @@ bool View::Contains(const View* view) const {
   return false;
 }
 
+View::Views::const_iterator View::FindChild(const View* view) const {
+  return std::find(children_.cbegin(), children_.cend(), view);
+}
+
 int View::GetIndexOf(const View* view) const {
-  auto i(std::find(children_.begin(), children_.end(), view));
-  return i != children_.end() ? static_cast<int>(i - children_.begin()) : -1;
+  const auto i = FindChild(view);
+  return i == children_.cend()
+             ? -1
+             : static_cast<int>(std::distance(children_.cbegin(), i));
 }
 
 // Size and disposition --------------------------------------------------------
@@ -309,16 +239,65 @@ void View::SetBoundsRect(const gfx::Rect& bounds) {
     return;
   }
 
-  if (visible_) {
-    // Paint where the view is currently.
-    SchedulePaintBoundsChanged(
-        bounds_.size() == bounds.size() ? SCHEDULE_PAINT_SIZE_SAME :
-        SCHEDULE_PAINT_SIZE_CHANGED);
-  }
+  bool is_size_changed = bounds_.size() != bounds.size();
+  // Paint where the view is currently.
+  SchedulePaintBoundsChanged(is_size_changed);
 
   gfx::Rect prev = bounds_;
   bounds_ = bounds;
-  BoundsChanged(prev);
+
+  // Paint the new bounds.
+  SchedulePaintBoundsChanged(is_size_changed);
+
+  if (layer()) {
+    if (parent_) {
+      LayerOffsetData offset_data(
+          parent_->CalculateOffsetToAncestorWithLayer(nullptr));
+      offset_data += GetMirroredPosition().OffsetFromOrigin();
+      SetLayerBounds(size(), offset_data);
+    } else {
+      SetLayerBounds(bounds_.size(),
+                     LayerOffsetData() + bounds_.OffsetFromOrigin());
+    }
+
+    // In RTL mode, if our width has changed, our children's mirrored bounds
+    // will have changed. Update the child's layer bounds, or if it is not a
+    // layer, the bounds of any layers inside the child.
+    if (base::i18n::IsRTL() && bounds_.width() != prev.width()) {
+      for (View* child : children_) {
+        child->UpdateChildLayerBounds(
+            LayerOffsetData(layer()->device_scale_factor(),
+                            child->GetMirroredPosition().OffsetFromOrigin()));
+      }
+    }
+  } else {
+    // If our bounds have changed, then any descendant layer bounds may have
+    // changed. Update them accordingly.
+    UpdateChildLayerBounds(CalculateOffsetToAncestorWithLayer(nullptr));
+  }
+
+  OnBoundsChanged(prev);
+  if (bounds_ != prev)
+    NotifyAccessibilityEvent(ax::mojom::Event::kLocationChanged, false);
+
+  if (needs_layout_ || is_size_changed) {
+    needs_layout_ = false;
+    TRACE_EVENT1("views", "View::Layout(bounds_changed)", "class",
+                 GetClassName());
+    Layout();
+  }
+
+  if (GetNeedsNotificationWhenVisibleBoundsChange())
+    OnVisibleBoundsChanged();
+
+  // Notify interested Views that visible bounds within the root view may have
+  // changed.
+  if (descendants_to_notify_) {
+    for (auto i(descendants_to_notify_->begin());
+         i != descendants_to_notify_->end(); ++i) {
+      (*i)->OnVisibleBoundsChanged();
+    }
+  }
 
   for (ViewObserver& observer : observers_)
     observer.OnViewBoundsChanged(this);
@@ -342,8 +321,7 @@ void View::SetY(int y) {
 
 gfx::Rect View::GetContentsBounds() const {
   gfx::Rect contents_bounds(GetLocalBounds());
-  if (border_.get())
-    contents_bounds.Inset(border_->GetInsets());
+  contents_bounds.Inset(GetInsets());
   return contents_bounds;
 }
 
@@ -352,7 +330,7 @@ gfx::Rect View::GetLocalBounds() const {
 }
 
 gfx::Insets View::GetInsets() const {
-  return border_.get() ? border_->GetInsets() : gfx::Insets();
+  return border_ ? border_->GetInsets() : gfx::Insets();
 }
 
 gfx::Rect View::GetVisibleBounds() const {
@@ -440,6 +418,12 @@ int View::GetHeightForWidth(int w) const {
 }
 
 void View::SetVisible(bool visible) {
+  if (parent_) {
+    LayoutManager* const layout_manager = parent_->GetLayoutManager();
+    if (layout_manager && layout_manager->view_setting_visibility_on_ != this)
+      layout_manager->ViewVisibilitySet(parent_, this, visible);
+  }
+
   if (visible != visible_) {
     // If the View is currently visible, schedule paint to refresh parent.
     // TODO(beng): not sure we should be doing this if we have a layer.
@@ -456,9 +440,6 @@ void View::SetVisible(bool visible) {
                                         false);
     }
 
-    for (ViewObserver& observer : observers_)
-      observer.OnViewVisibilityChanged(this);
-
     // This notifies all sub-views recursively.
     PropagateVisibilityNotifications(this, visible_);
     UpdateLayerVisibility();
@@ -473,20 +454,25 @@ bool View::IsDrawn() const {
   return visible_ && parent_ ? parent_->IsDrawn() : false;
 }
 
-void View::SetEnabled(bool enabled) {
-  if (enabled != enabled_) {
-    enabled_ = enabled;
-    AdvanceFocusIfNecessary();
+void View::SetEnabled(bool is_enabled) {
+  if (enabled_ == is_enabled)
+    return;
 
-    OnEnabledChanged();
+  enabled_ = is_enabled;
+  AdvanceFocusIfNecessary();
+  OnPropertyChanged(&enabled_, kPropertyEffectsPaint);
 
-    for (ViewObserver& observer : observers_)
-      observer.OnViewEnabledChanged(this);
-  }
+  // TODO(kylixrd): Remove this once all overridden instances are refactored
+  // to use property change callback.
+  OnEnabledChanged();
+}
+
+PropertyChangedSubscription View::AddEnabledChangedCallback(
+    PropertyChangedCallback callback) {
+  return AddPropertyChangedCallback(&enabled_, std::move(callback));
 }
 
 void View::OnEnabledChanged() {
-  SchedulePaint();
 }
 
 View::Views View::GetChildrenInZOrder() {
@@ -510,35 +496,41 @@ gfx::Transform View::GetTransform() const {
 
 void View::SetTransform(const gfx::Transform& transform) {
   if (transform.IsIdentity()) {
-    if (layer()) {
+    if (layer())
       layer()->SetTransform(transform);
-      if (!paint_to_layer_)
-        DestroyLayer();
-    } else {
-      // Nothing.
-    }
+    paint_to_layer_for_transform_ = false;
+    CreateOrDestroyLayer();
   } else {
-    if (!layer())
-      CreateLayer(ui::LAYER_TEXTURED);
+    paint_to_layer_for_transform_ = true;
+    CreateOrDestroyLayer();
+    DCHECK_NE(layer(), nullptr);
     layer()->SetTransform(transform);
     layer()->ScheduleDraw();
   }
 }
 
 void View::SetPaintToLayer(ui::LayerType layer_type) {
-  if (paint_to_layer_ && (layer()->type() == layer_type))
-    return;
+  // Avoid re-creating the layer if unnecessary.
+  if (paint_to_layer_explicitly_set_) {
+    DCHECK_NE(layer(), nullptr);
+    if (layer()->type() == layer_type)
+      return;
+  }
 
   DestroyLayerImpl(LayerChangeNotifyBehavior::DONT_NOTIFY);
+  paint_to_layer_explicitly_set_ = true;
+
+  // We directly call |CreateLayer()| here to pass |layer_type|. A call to
+  // |CreateOrDestroyLayer()| is therefore not necessary.
   CreateLayer(layer_type);
-  paint_to_layer_ = true;
 
   // Notify the parent chain about the layer change.
   NotifyParentsOfLayerChange();
 }
 
 void View::DestroyLayer() {
-  DestroyLayerImpl(LayerChangeNotifyBehavior::NOTIFY);
+  paint_to_layer_explicitly_set_ = false;
+  CreateOrDestroyLayer();
 }
 
 std::unique_ptr<ui::Layer> View::RecreateLayer() {
@@ -600,7 +592,7 @@ void View::Layout() {
   // the call can take appropriate action.
   internal::ScopedChildrenLock lock(this);
   for (auto* child : children_) {
-    if (child->needs_layout_ || !layout_manager_.get()) {
+    if (child->needs_layout_ || !layout_manager_) {
       TRACE_EVENT1("views", "View::Layout", "class", child->GetClassName());
       child->needs_layout_ = false;
       child->Layout();
@@ -615,8 +607,13 @@ void View::InvalidateLayout() {
   if (layout_manager_)
     layout_manager_->InvalidateLayout();
 
-  if (parent_)
+  if (parent_) {
     parent_->InvalidateLayout();
+  } else {
+    Widget* widget = GetWidget();
+    if (widget)
+      widget->ScheduleLayout();
+  }
 }
 
 LayoutManager* View::GetLayoutManager() const {
@@ -874,7 +871,7 @@ void View::Paint(const PaintInfo& parent_paint_info) {
       clip_recorder.ClipRect(gfx::Rect(paint_info.paint_recording_size()) +
                              paint_info.offset_from_parent());
     } else {
-      gfx::Path clip_path_in_parent = clip_path_;
+      SkPath clip_path_in_parent = clip_path_;
 
       // Transform |clip_path_| from local space to parent recording space.
       gfx::Transform to_parent_recording_space;
@@ -976,7 +973,7 @@ View* View::GetTooltipHandlerForPoint(const gfx::Point& point) {
   // Walk the child Views recursively looking for the View that most
   // tightly encloses the specified point.
   View::Views children = GetChildrenInZOrder();
-  DCHECK_EQ(child_count(), static_cast<int>(children.size()));
+  DCHECK_EQ(children_.size(), children.size());
   for (auto* child : base::Reversed(children)) {
     if (!child->visible())
       continue;
@@ -1089,8 +1086,7 @@ void View::OnMouseEvent(ui::MouseEvent* event) {
       }
       FALLTHROUGH;
     case ui::ET_MOUSE_DRAGGED:
-      if (ProcessMouseDragged(*event))
-        event->SetHandled();
+      ProcessMouseDragged(event);
       return;
 
     case ui::ET_MOUSE_RELEASED:
@@ -1169,9 +1165,9 @@ ui::EventTargeter* View::GetEventTargeter() {
   return targeter_.get();
 }
 
-void View::ConvertEventToTarget(ui::EventTarget* target,
-                                ui::LocatedEvent* event) {
-  event->ConvertLocationToTarget(this, static_cast<View*>(target));
+void View::ConvertEventToTarget(const ui::EventTarget* target,
+                                ui::LocatedEvent* event) const {
+  event->ConvertLocationToTarget(this, static_cast<const View*>(target));
 }
 
 gfx::PointF View::GetScreenLocationF(const ui::LocatedEvent& event) const {
@@ -1184,17 +1180,17 @@ gfx::PointF View::GetScreenLocationF(const ui::LocatedEvent& event) const {
 // Accelerators ----------------------------------------------------------------
 
 void View::AddAccelerator(const ui::Accelerator& accelerator) {
-  if (!accelerators_.get())
-    accelerators_.reset(new std::vector<ui::Accelerator>());
+  if (!accelerators_)
+    accelerators_ = std::make_unique<std::vector<ui::Accelerator>>();
 
-  if (!base::ContainsValue(*accelerators_.get(), accelerator))
+  if (!base::ContainsValue(*accelerators_, accelerator))
     accelerators_->push_back(accelerator);
 
   RegisterPendingAccelerators();
 }
 
 void View::RemoveAccelerator(const ui::Accelerator& accelerator) {
-  if (!accelerators_.get()) {
+  if (!accelerators_) {
     NOTREACHED() << "Removing non-existing accelerator";
     return;
   }
@@ -1220,7 +1216,7 @@ void View::RemoveAccelerator(const ui::Accelerator& accelerator) {
 }
 
 void View::ResetAccelerators() {
-  if (accelerators_.get())
+  if (accelerators_)
     UnregisterAccelerators(false);
 }
 
@@ -1230,7 +1226,7 @@ bool View::AcceleratorPressed(const ui::Accelerator& accelerator) {
 
 bool View::CanHandleAccelerators() const {
   const Widget* widget = GetWidget();
-  if (!enabled() || !IsDrawn() || !widget || !widget->IsVisible())
+  if (!GetEnabled() || !IsDrawn() || !widget || !widget->IsVisible())
     return false;
 #if defined(USE_AURA) && !defined(OS_CHROMEOS)
   // Non-ChromeOS aura windows have an associated FocusManagerEventHandler which
@@ -1284,11 +1280,11 @@ void View::SetFocusBehavior(FocusBehavior focus_behavior) {
 }
 
 bool View::IsFocusable() const {
-  return focus_behavior_ == FocusBehavior::ALWAYS && enabled_ && IsDrawn();
+  return focus_behavior_ == FocusBehavior::ALWAYS && GetEnabled() && IsDrawn();
 }
 
 bool View::IsAccessibilityFocusable() const {
-  return focus_behavior_ != FocusBehavior::NEVER && enabled_ && IsDrawn();
+  return focus_behavior_ != FocusBehavior::NEVER && GetEnabled() && IsDrawn();
 }
 
 FocusManager* View::GetFocusManager() {
@@ -1326,12 +1322,8 @@ FocusTraversable* View::GetPaneFocusTraversable() {
 
 // Tooltips --------------------------------------------------------------------
 
-bool View::GetTooltipText(const gfx::Point& p, base::string16* tooltip) const {
-  return false;
-}
-
-bool View::GetTooltipTextOrigin(const gfx::Point& p, gfx::Point* loc) const {
-  return false;
+base::string16 View::GetTooltipText(const gfx::Point& p) const {
+  return base::string16();
 }
 
 // Context menus ---------------------------------------------------------------
@@ -1360,7 +1352,7 @@ gfx::Point View::GetKeyboardContextMenuLocation() {
 // Drag and drop ---------------------------------------------------------------
 
 bool View::GetDropFormats(int* formats,
-                          std::set<ui::Clipboard::FormatType>* format_types) {
+                          std::set<ui::ClipboardFormatType>* format_types) {
   return false;
 }
 
@@ -1641,10 +1633,6 @@ void View::UpdateChildLayerVisibility(bool ancestor_visible) {
 }
 
 void View::DestroyLayerImpl(LayerChangeNotifyBehavior notify_parents) {
-  if (!paint_to_layer_)
-    return;
-
-  paint_to_layer_ = false;
   if (!layer())
     return;
 
@@ -1722,6 +1710,17 @@ void View::OnDeviceScaleFactorChanged(float old_device_scale_factor,
   }
 }
 
+void View::CreateOrDestroyLayer() {
+  if (paint_to_layer_explicitly_set_ || paint_to_layer_for_transform_) {
+    // If we need to paint to a layer, make sure we have one.
+    if (!layer())
+      CreateLayer(ui::LAYER_TEXTURED);
+  } else if (layer()) {
+    // If we don't, make sure we delete our layer.
+    DestroyLayerImpl(LayerChangeNotifyBehavior::NOTIFY);
+  }
+}
+
 void View::ReorderLayers() {
   View* v = this;
   while (v && !v->layer())
@@ -1757,7 +1756,7 @@ void View::ReorderChildLayers(ui::Layer* parent_layer) {
     // which is further to the back is stacked above one which is further to
     // the front.
     View::Views children = GetChildrenInZOrder();
-    DCHECK_EQ(child_count(), static_cast<int>(children.size()));
+    DCHECK_EQ(children_.size(), children.size());
     for (auto* child : base::Reversed(children))
       child->ReorderChildLayers(parent_layer);
   }
@@ -1852,6 +1851,40 @@ PaintInfo::ScaleType View::GetPaintScaleType() const {
   return PaintInfo::ScaleType::kScaleWithEdgeSnapping;
 }
 
+void View::HandlePropertyChangeEffects(PropertyEffects effects) {
+  if (effects & kPropertyEffectsLayout)
+    InvalidateLayout();
+  if (effects & kPropertyEffectsPaint)
+    SchedulePaint();
+}
+
+PropertyChangedSubscription View::AddPropertyChangedCallback(
+    PropertyKey property,
+    PropertyChangedCallback callback) {
+  auto entry = property_changed_vectors_.find(property);
+  if (entry == property_changed_vectors_.end()) {
+    entry = property_changed_vectors_
+                .emplace(property, std::make_unique<PropertyChangedCallbacks>())
+                .first;
+  }
+  PropertyChangedCallbacks* property_changed_callbacks = entry->second.get();
+
+  return property_changed_callbacks->Add(std::move(callback));
+}
+
+void View::OnPropertyChanged(PropertyKey property,
+                             PropertyEffects property_effects) {
+  if (property_effects != kPropertyEffectsNone)
+    HandlePropertyChangeEffects(property_effects);
+
+  auto entry = property_changed_vectors_.find(property);
+  if (entry == property_changed_vectors_.end())
+    return;
+
+  PropertyChangedCallbacks* property_changed_callbacks = entry->second.get();
+  property_changed_callbacks->Notify();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // View, private:
 
@@ -1869,15 +1902,18 @@ void View::DragInfo::PossibleDrag(const gfx::Point& p) {
 
 // Painting --------------------------------------------------------------------
 
-void View::SchedulePaintBoundsChanged(SchedulePaintType type) {
+void View::SchedulePaintBoundsChanged(bool size_changed) {
+  if (!visible_)
+    return;
+
   // If we have a layer and the View's size did not change, we do not need to
   // schedule any paints since the layer will be redrawn at its new location
   // during the next Draw() cycle in the compositor.
-  if (!layer() || type == SCHEDULE_PAINT_SIZE_CHANGED) {
+  if (!layer() || size_changed) {
     // Otherwise, if the size changes or we don't have a layer then we need to
     // use SchedulePaint to invalidate the area occupied by the View.
     SchedulePaint();
-  } else if (parent_ && type == SCHEDULE_PAINT_SIZE_SAME) {
+  } else {
     // The compositor doesn't Draw() until something on screen changes, so
     // if our position changes but nothing is being animated on screen, then
     // tell the compositor to redraw the scene. We know layer() exists due to
@@ -1917,7 +1953,7 @@ void View::SetUpTransformRecorderForPainting(
 void View::RecursivePaintHelper(void (View::*func)(const PaintInfo&),
                                 const PaintInfo& info) {
   View::Views children = GetChildrenInZOrder();
-  DCHECK_EQ(child_count(), static_cast<int>(children.size()));
+  DCHECK_EQ(children_.size(), children.size());
   for (auto* child : children) {
     if (!child->layer())
       (child->*func)(info);
@@ -1974,6 +2010,80 @@ void View::PaintDebugRects(const PaintInfo& parent_paint_info) {
 
 // Tree operations -------------------------------------------------------------
 
+void View::AddChildViewAtImpl(View* view, int index) {
+  CHECK_NE(view, this) << "You cannot add a view as its own child";
+  DCHECK_GE(index, 0);
+  DCHECK_LE(size_t{index}, children_.size());
+
+  // TODO(https://crbug.com/942298): Should just DCHECK(!view->parent_);.
+  View* parent = view->parent_;
+  if (parent == this) {
+    ReorderChildView(view, index);
+    return;
+  }
+
+  // Remove |view| from its parent, if any.
+  ui::NativeTheme* old_theme = nullptr;
+  Widget* old_widget = nullptr;
+  if (parent) {
+    old_theme = view->GetNativeTheme();
+    old_widget = view->GetWidget();
+    parent->DoRemoveChildView(view, true, true, false, this);
+  }
+
+  view->parent_ = this;
+#if DCHECK_IS_ON()
+  DCHECK(!iterating_);
+#endif
+  const auto pos = children_.insert(std::next(children_.cbegin(), index), view);
+
+  SetFocusSiblings(view, pos);
+
+  // Ensure the layer tree matches the view tree before calling to any client
+  // code. This way if client code further modifies the view tree we are in a
+  // sane state.
+  const bool did_reparent_any_layers = view->UpdateParentLayers();
+  Widget* widget = GetWidget();
+  if (did_reparent_any_layers && widget)
+    widget->LayerTreeChanged();
+
+  ReorderLayers();
+
+  // Make sure the visibility of the child layers are correct.
+  // If any of the parent View is hidden, then the layers of the subtree
+  // rooted at |this| should be hidden. Otherwise, all the child layers should
+  // inherit the visibility of the owner View.
+  view->UpdateLayerVisibility();
+
+  if (widget) {
+    const ui::NativeTheme* new_theme = view->GetNativeTheme();
+    if (new_theme != old_theme)
+      view->PropagateNativeThemeChanged(new_theme);
+  }
+
+  ViewHierarchyChangedDetails details(true, this, view, parent);
+
+  for (View* v = this; v; v = v->parent_)
+    v->ViewHierarchyChangedImpl(false, details);
+
+  view->PropagateAddNotifications(details, widget && widget != old_widget);
+
+  UpdateTooltip();
+
+  if (widget) {
+    RegisterChildrenForVisibleBoundsNotification(view);
+
+    if (view->visible())
+      view->SchedulePaint();
+  }
+
+  if (layout_manager_)
+    layout_manager_->ViewAdded(this, view);
+
+  for (ViewObserver& observer : observers_)
+    observer.OnChildViewAdded(this, view);
+}
+
 void View::DoRemoveChildView(View* view,
                              bool update_focus_cycle,
                              bool update_tool_tip,
@@ -1981,8 +2091,8 @@ void View::DoRemoveChildView(View* view,
                              View* new_parent) {
   DCHECK(view);
 
-  const Views::iterator i(std::find(children_.begin(), children_.end(), view));
-  if (i == children_.end())
+  const auto i = std::find(children_.cbegin(), children_.cend(), view);
+  if (i == children_.cend())
     return;
 
   std::unique_ptr<View> view_to_be_deleted;
@@ -2090,6 +2200,9 @@ void View::ViewHierarchyChangedImpl(
   }
 
   ViewHierarchyChanged(details);
+  for (ViewObserver& observer : observers_)
+    observer.OnViewHierarchyChanged(this, details);
+
   details.parent->needs_layout_ = true;
 }
 
@@ -2120,6 +2233,8 @@ void View::PropagateVisibilityNotifications(View* start, bool is_visible) {
 
 void View::VisibilityChangedImpl(View* starting_from, bool is_visible) {
   VisibilityChanged(starting_from, is_visible);
+  for (ViewObserver& observer : observers_)
+    observer.OnViewVisibilityChanged(this, starting_from);
 }
 
 void View::SnapLayerToPixelBoundary(const LayerOffsetData& offset_data) {
@@ -2139,80 +2254,20 @@ void View::SnapLayerToPixelBoundary(const LayerOffsetData& offset_data) {
   }
 }
 
-void View::BoundsChanged(const gfx::Rect& previous_bounds) {
-  if (visible_) {
-    // Paint the new bounds.
-    SchedulePaintBoundsChanged(
-        bounds_.size() == previous_bounds.size() ? SCHEDULE_PAINT_SIZE_SAME :
-        SCHEDULE_PAINT_SIZE_CHANGED);
-  }
-
-  if (layer()) {
-    if (parent_) {
-      LayerOffsetData offset_data(
-          parent_->CalculateOffsetToAncestorWithLayer(nullptr));
-      offset_data += GetMirroredPosition().OffsetFromOrigin();
-      SetLayerBounds(size(), offset_data);
-    } else {
-      SetLayerBounds(bounds_.size(),
-                     LayerOffsetData() + bounds_.OffsetFromOrigin());
-    }
-
-    // In RTL mode, if our width has changed, our children's mirrored bounds
-    // will have changed. Update the child's layer bounds, or if it is not a
-    // layer, the bounds of any layers inside the child.
-    if (base::i18n::IsRTL() && bounds_.width() != previous_bounds.width()) {
-      for (int i = 0; i < child_count(); ++i) {
-        View* child = child_at(i);
-        child->UpdateChildLayerBounds(
-            LayerOffsetData(layer()->device_scale_factor(),
-                            child->GetMirroredPosition().OffsetFromOrigin()));
-      }
-    }
-  } else {
-    // If our bounds have changed, then any descendant layer bounds may have
-    // changed. Update them accordingly.
-    UpdateChildLayerBounds(CalculateOffsetToAncestorWithLayer(nullptr));
-  }
-
-  OnBoundsChanged(previous_bounds);
-  if (bounds_ != previous_bounds)
-    NotifyAccessibilityEvent(ax::mojom::Event::kLocationChanged, false);
-
-  if (needs_layout_ || previous_bounds.size() != size()) {
-    needs_layout_ = false;
-    TRACE_EVENT1("views", "View::Layout(bounds_changed)", "class",
-                 GetClassName());
-    Layout();
-  }
-
-  if (GetNeedsNotificationWhenVisibleBoundsChange())
-    OnVisibleBoundsChanged();
-
-  // Notify interested Views that visible bounds within the root view may have
-  // changed.
-  if (descendants_to_notify_.get()) {
-    for (auto i(descendants_to_notify_->begin());
-         i != descendants_to_notify_->end(); ++i) {
-      (*i)->OnVisibleBoundsChanged();
-    }
-  }
-}
-
 // static
 void View::RegisterChildrenForVisibleBoundsNotification(View* view) {
   if (view->GetNeedsNotificationWhenVisibleBoundsChange())
     view->RegisterForVisibleBoundsNotification();
-  for (int i = 0; i < view->child_count(); ++i)
-    RegisterChildrenForVisibleBoundsNotification(view->child_at(i));
+  for (View* child : view->children_)
+    RegisterChildrenForVisibleBoundsNotification(child);
 }
 
 // static
 void View::UnregisterChildrenForVisibleBoundsNotification(View* view) {
   if (view->GetNeedsNotificationWhenVisibleBoundsChange())
     view->UnregisterForVisibleBoundsNotification();
-  for (int i = 0; i < view->child_count(); ++i)
-    UnregisterChildrenForVisibleBoundsNotification(view->child_at(i));
+  for (View* child : view->children_)
+    UnregisterChildrenForVisibleBoundsNotification(child);
 }
 
 void View::RegisterForVisibleBoundsNotification() {
@@ -2235,13 +2290,13 @@ void View::UnregisterForVisibleBoundsNotification() {
 
 void View::AddDescendantToNotify(View* view) {
   DCHECK(view);
-  if (!descendants_to_notify_.get())
-    descendants_to_notify_.reset(new Views);
+  if (!descendants_to_notify_)
+    descendants_to_notify_ = std::make_unique<Views>();
   descendants_to_notify_->push_back(view);
 }
 
 void View::RemoveDescendantToNotify(View* view) {
-  DCHECK(view && descendants_to_notify_.get());
+  DCHECK(view && descendants_to_notify_);
   auto i(std::find(descendants_to_notify_->begin(),
                    descendants_to_notify_->end(), view));
   DCHECK(i != descendants_to_notify_->end());
@@ -2255,7 +2310,7 @@ void View::SetLayoutManagerImpl(std::unique_ptr<LayoutManager> layout_manager) {
   // derived-class-specific-functions. It's an easy mistake to create a new
   // unique_ptr and re-set the layout manager with a new unique_ptr, which
   // will cause a crash. Re-setting to nullptr is OK.
-  CHECK(!layout_manager.get() || layout_manager_.get() != layout_manager.get());
+  CHECK(!layout_manager || layout_manager_ != layout_manager);
 
   layout_manager_ = std::move(layout_manager);
   if (layout_manager_)
@@ -2412,14 +2467,14 @@ bool View::ProcessMousePressed(const ui::MouseEvent& event) {
       (enabled_ && event.IsOnlyLeftMouseButton() &&
        HitTestPoint(event.location())) ?
        GetDragOperations(event.location()) : 0;
-  ContextMenuController* context_menu_controller = event.IsRightMouseButton() ?
-      context_menu_controller_ : 0;
+  ContextMenuController* context_menu_controller =
+      event.IsRightMouseButton() ? context_menu_controller_ : nullptr;
   View::DragInfo* drag_info = GetDragInfo();
 
-  const bool enabled = enabled_;
+  const bool was_enabled = GetEnabled();
   const bool result = OnMousePressed(event);
 
-  if (!enabled)
+  if (!was_enabled)
     return result;
 
   if (event.IsOnlyRightMouseButton() && context_menu_controller &&
@@ -2442,25 +2497,31 @@ bool View::ProcessMousePressed(const ui::MouseEvent& event) {
   return !!context_menu_controller || result;
 }
 
-bool View::ProcessMouseDragged(const ui::MouseEvent& event) {
+void View::ProcessMouseDragged(ui::MouseEvent* event) {
   // Copy the field, that way if we're deleted after drag and drop no harm is
   // done.
   ContextMenuController* context_menu_controller = context_menu_controller_;
   const bool possible_drag = GetDragInfo()->possible_drag;
   if (possible_drag &&
-      ExceededDragThreshold(GetDragInfo()->start_pt - event.location()) &&
+      ExceededDragThreshold(GetDragInfo()->start_pt - event->location()) &&
       (!drag_controller_ ||
-       drag_controller_->CanStartDragForView(
-           this, GetDragInfo()->start_pt, event.location()))) {
-    DoDrag(event, GetDragInfo()->start_pt,
-           ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
+       drag_controller_->CanStartDragForView(this, GetDragInfo()->start_pt,
+                                             event->location()))) {
+    if (DoDrag(*event, GetDragInfo()->start_pt,
+               ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE)) {
+      event->StopPropagation();
+      return;
+    }
   } else {
-    if (OnMouseDragged(event))
-      return true;
+    if (OnMouseDragged(*event)) {
+      event->SetHandled();
+      return;
+    }
     // Fall through to return value based on context menu controller.
   }
   // WARNING: we may have been deleted.
-  return (context_menu_controller != nullptr) || possible_drag;
+  if ((context_menu_controller != nullptr) || possible_drag)
+    event->SetHandled();
 }
 
 void View::ProcessMouseReleased(const ui::MouseEvent& event) {
@@ -2483,7 +2544,7 @@ void View::ProcessMouseReleased(const ui::MouseEvent& event) {
 // Accelerators ----------------------------------------------------------------
 
 void View::RegisterPendingAccelerators() {
-  if (!accelerators_.get() ||
+  if (!accelerators_ ||
       registered_accelerator_count_ == accelerators_->size()) {
     // No accelerators are waiting for registration.
     return;
@@ -2512,7 +2573,7 @@ void View::RegisterPendingAccelerators() {
 }
 
 void View::UnregisterAccelerators(bool leave_data_intact) {
-  if (!accelerators_.get())
+  if (!accelerators_)
     return;
 
   if (GetWidget()) {
@@ -2530,49 +2591,40 @@ void View::UnregisterAccelerators(bool leave_data_intact) {
 
 // Focus -----------------------------------------------------------------------
 
-void View::InitFocusSiblings(View* v, int index) {
-  int count = child_count();
+void View::SetFocusSiblings(View* view, Views::const_iterator pos) {
+  // |view| was just inserted at |pos|, so all of these conditions must hold.
+  DCHECK(!children_.empty());
+  DCHECK(pos != children_.cend());
+  DCHECK_EQ(view, *pos);
 
-  if (count == 0) {
-    v->next_focusable_view_ = nullptr;
-    v->previous_focusable_view_ = nullptr;
-  } else {
-    if (index == count) {
-      // We are inserting at the end, but the end of the child list may not be
-      // the last focusable element. Let's try to find an element with no next
-      // focusable element to link to.
-      View* last_focusable_view = nullptr;
-      {
-        internal::ScopedChildrenLock lock(this);
-        for (auto* child : children_) {
-          if (!child->next_focusable_view_) {
-            last_focusable_view = child;
-            break;
-          }
-        }
+  View* prev = nullptr;
+  View* next = nullptr;
+  if (children_.size() > 1) {
+    if (pos == std::prev(children_.cend())) {
+      // |view| was inserted at the end, but the end of the child list may not
+      // be the last focusable element. Try to hook in after the last focusable
+      // child.
+      prev = *std::find_if(children_.cbegin(), pos,
+                           [](View* v) { return !v->next_focusable_view_; });
+      if (prev == view) {
+        // There is a cycle in the focus list. Insert |view| after the last
+        // child.
+        prev = *std::prev(pos);
       }
-      if (last_focusable_view == nullptr) {
-        // Hum... there is a cycle in the focus list. Let's just insert ourself
-        // after the last child.
-        View* prev = children_[index - 1];
-        v->previous_focusable_view_ = prev;
-        v->next_focusable_view_ = prev->next_focusable_view_;
-        prev->next_focusable_view_->previous_focusable_view_ = v;
-        prev->next_focusable_view_ = v;
-      } else {
-        last_focusable_view->next_focusable_view_ = v;
-        v->next_focusable_view_ = nullptr;
-        v->previous_focusable_view_ = last_focusable_view;
-      }
+      next = prev->next_focusable_view_;
     } else {
-      View* prev = children_[index]->GetPreviousFocusableView();
-      v->previous_focusable_view_ = prev;
-      v->next_focusable_view_ = children_[index];
-      if (prev)
-        prev->next_focusable_view_ = v;
-      children_[index]->previous_focusable_view_ = v;
+      // |view| was inserted somewhere other than the end.  Hook in before the
+      // subsequent child.
+      next = *std::next(pos);
+      prev = next->GetPreviousFocusableView();
     }
   }
+  if (prev)
+    prev->next_focusable_view_ = view;
+  view->previous_focusable_view_ = prev;
+  view->next_focusable_view_ = next;
+  if (next)
+    next->previous_focusable_view_ = view;
 }
 
 void View::AdvanceFocusIfNecessary() {
@@ -2657,5 +2709,11 @@ bool View::DoDrag(const ui::LocatedEvent& event,
   // WARNING: we may have been deleted.
   return true;
 }
+
+// This block requires the existence of METADATA_HEADER(View) in the class
+// declaration for View.
+BEGIN_METADATA(View)
+ADD_PROPERTY_METADATA(View, bool, Enabled)
+END_METADATA()
 
 }  // namespace views

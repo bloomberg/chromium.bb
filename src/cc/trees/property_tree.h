@@ -35,7 +35,6 @@ class CopyOutputRequest;
 namespace cc {
 
 class LayerTreeImpl;
-class MutatorHost;
 class RenderSurfaceImpl;
 class ScrollState;
 struct ClipNode;
@@ -189,8 +188,7 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
 
   void SetRootTransformsAndScales(float device_scale_factor,
                                   float page_scale_factor_for_root,
-                                  const gfx::Transform& device_transform,
-                                  gfx::PointF root_position);
+                                  const gfx::Transform& device_transform);
   float device_transform_scale_factor() const {
     return device_transform_scale_factor_;
   }
@@ -373,8 +371,13 @@ class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
   // 2) There are no mask layers.
   bool ClippedHitTestRegionIsRectangle(int effect_node_id) const;
 
+  // This function checks if the associated layer can use its layer bounds to
+  // correctly hit test. It returns true if the layer bounds cannot be trusted.
+  bool HitTestMayBeAffectedByMask(int effect_node_id) const;
+
  private:
   void UpdateOpacities(EffectNode* node, EffectNode* parent_node);
+  void UpdateSubtreeHidden(EffectNode* node, EffectNode* parent_node);
   void UpdateIsDrawn(EffectNode* node, EffectNode* parent_node);
   void UpdateBackfaceVisibility(EffectNode* node, EffectNode* parent_node);
   void UpdateHasMaskingChild(EffectNode* node, EffectNode* parent_node);
@@ -511,14 +514,6 @@ struct AnimationScaleData {
   // updates.
   int update_number;
 
-  // Current animations, considering only scales at keyframes not including the
-  // starting keyframe of each animation.
-  float local_maximum_animation_target_scale;
-
-  // The maximum scale that this node's |local| transform will have during
-  // current animatons, considering only the starting scale of each animation.
-  float local_starting_animation_scale;
-
   // The maximum scale that this node's |to_target| transform will have during
   // current animations, considering only scales at keyframes not incuding the
   // starting keyframe of each animation.
@@ -532,8 +527,6 @@ struct AnimationScaleData {
 
   AnimationScaleData() {
     update_number = -1;
-    local_maximum_animation_target_scale = 0.f;
-    local_starting_animation_scale = 0.f;
     combined_maximum_animation_target_scale = 0.f;
     combined_starting_animation_scale = 0.f;
     to_screen_has_scale_animation = false;
@@ -625,8 +618,8 @@ class CC_EXPORT PropertyTrees final {
   // respective property node. This will eventually allow simplifying logic in
   // various places that today has to map from element id to layer id, and then
   // from layer id to the respective property node. Completing that work is
-  // pending the launch of Slimming Paint v2 and reworking UI compositor logic
-  // to produce cc property trees and these maps.
+  // pending the launch of BlinkGenPropertyTrees and reworking UI compositor
+  // logic to produce cc property trees and these maps.
   base::flat_map<ElementId, int> element_id_to_effect_node_index;
   base::flat_map<ElementId, int> element_id_to_scroll_node_index;
   base::flat_map<ElementId, int> element_id_to_transform_node_index;
@@ -657,12 +650,13 @@ class CC_EXPORT PropertyTrees final {
   // Applies an animation state change for a particular element in
   // this property tree. Returns whether a draw property update is
   // needed.
-  bool ElementIsAnimatingChanged(const MutatorHost* mutator_host,
-                                 ElementId element_id,
-                                 ElementListType list_type,
+  bool ElementIsAnimatingChanged(const PropertyToElementIdMap& element_id_map,
                                  const PropertyAnimationState& mask,
                                  const PropertyAnimationState& state,
                                  bool check_node_existence);
+  void AnimationScalesChanged(ElementId element_id,
+                              float maximum_scale,
+                              float starting_scale);
   void SetInnerViewportContainerBoundsDelta(gfx::Vector2dF bounds_delta);
   void SetOuterViewportContainerBoundsDelta(gfx::Vector2dF bounds_delta);
   void SetInnerViewportScrollBoundsDelta(gfx::Vector2dF bounds_delta);
@@ -683,6 +677,7 @@ class CC_EXPORT PropertyTrees final {
   }
 
   std::unique_ptr<base::trace_event::TracedValue> AsTracedValue() const;
+  std::string ToString() const;
 
   CombinedAnimationScale GetAnimationScales(int transform_node_id,
                                             LayerTreeImpl* layer_tree_impl);

@@ -304,7 +304,7 @@ void GraphicsDelegateWin::PrepareBufferForContentQuadLayer(
 }
 
 void GraphicsDelegateWin::PrepareBufferForBrowserUi() {
-  gl_->ClearColor(0, 1, 0, 1);
+  gl_->ClearColor(0, 0, 0, 0);
   gl_->Clear(GL_COLOR_BUFFER_BIT);
 
   DCHECK(prepared_drawing_buffer_ == DrawingBufferMode::kNone);

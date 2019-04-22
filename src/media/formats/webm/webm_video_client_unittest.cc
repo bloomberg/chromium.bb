@@ -67,8 +67,8 @@ TEST_P(WebMVideoClientTest, InitializeConfigVP9Profiles) {
       << expected_config.AsHumanReadableString() << ")";
 }
 
-INSTANTIATE_TEST_CASE_P(/* No prefix. */,
-                        WebMVideoClientTest,
-                        ::testing::ValuesIn(kCodecTestParams));
+INSTANTIATE_TEST_SUITE_P(/* No prefix. */,
+                         WebMVideoClientTest,
+                         ::testing::ValuesIn(kCodecTestParams));
 
 }  // namespace media

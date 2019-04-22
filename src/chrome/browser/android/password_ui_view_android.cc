@@ -13,6 +13,7 @@
 #include "base/android/jni_string.h"
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
@@ -23,10 +24,8 @@
 #include "base/task/post_task.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/common/password_form.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/password_manager/core/browser/export/password_csv_writer.h"
 #include "components/password_manager/core/browser/password_ui_utils.h"
 #include "components/password_manager/core/browser/ui/credential_provider_interface.h"
@@ -64,11 +63,6 @@ void PasswordUIViewAndroid::Destroy(JNIEnv*, const JavaRef<jobject>&) {
 
 Profile* PasswordUIViewAndroid::GetProfile() {
   return ProfileManager::GetLastUsedProfile();
-}
-
-void PasswordUIViewAndroid::ShowPassword(const std::string& sort_key,
-                                         const base::string16& password_value) {
-  NOTIMPLEMENTED();
 }
 
 void PasswordUIViewAndroid::SetPasswordList(
@@ -190,8 +184,7 @@ void PasswordUIViewAndroid::HandleSerializePasswords(
 }
 
 ScopedJavaLocalRef<jstring> JNI_PasswordUIView_GetAccountDashboardURL(
-    JNIEnv* env,
-    const JavaParamRef<jclass>&) {
+    JNIEnv* env) {
   return ConvertUTF16ToJavaString(
       env, l10n_util::GetStringUTF16(IDS_PASSWORDS_WEB_LINK));
 }
@@ -220,7 +213,8 @@ PasswordUIViewAndroid::ObtainAndSerializePasswords(
   DCHECK(!passwords.empty());
 
   // Creating a file will block the execution on I/O.
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::WILL_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::WILL_BLOCK);
 
   // Ensure that the target directory exists.
   base::File::Error error = base::File::FILE_OK;

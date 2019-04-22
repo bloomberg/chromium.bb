@@ -28,6 +28,7 @@
 
 #include "third_party/blink/renderer/modules/webaudio/audio_buffer.h"
 
+#include <memory>
 #include "third_party/blink/renderer/modules/webaudio/audio_buffer_options.h"
 #include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
 #include "third_party/blink/renderer/platform/audio/audio_bus.h"
@@ -47,8 +48,8 @@ AudioBuffer* AudioBuffer::Create(unsigned number_of_channels,
       !number_of_channels || !number_of_frames)
     return nullptr;
 
-  AudioBuffer* buffer =
-      new AudioBuffer(number_of_channels, number_of_frames, sample_rate);
+  AudioBuffer* buffer = MakeGarbageCollected<AudioBuffer>(
+      number_of_channels, number_of_frames, sample_rate);
 
   if (!buffer->CreatedSuccessfully(number_of_channels))
     return nullptr;
@@ -119,33 +120,18 @@ AudioBuffer* AudioBuffer::CreateUninitialized(unsigned number_of_channels,
       !number_of_channels || !number_of_frames)
     return nullptr;
 
-  AudioBuffer* buffer = new AudioBuffer(number_of_channels, number_of_frames,
-                                        sample_rate, kDontInitialize);
+  AudioBuffer* buffer = MakeGarbageCollected<AudioBuffer>(
+      number_of_channels, number_of_frames, sample_rate, kDontInitialize);
 
   if (!buffer->CreatedSuccessfully(number_of_channels))
     return nullptr;
   return buffer;
 }
 
-AudioBuffer* AudioBuffer::CreateFromAudioFileData(const void* data,
-                                                  size_t data_size,
-                                                  bool mix_to_mono,
-                                                  float sample_rate) {
-  scoped_refptr<AudioBus> bus =
-      CreateBusFromInMemoryAudioFile(data, data_size, mix_to_mono, sample_rate);
-  if (bus) {
-    AudioBuffer* buffer = new AudioBuffer(bus.get());
-    if (buffer->CreatedSuccessfully(bus->NumberOfChannels()))
-      return buffer;
-  }
-
-  return nullptr;
-}
-
 AudioBuffer* AudioBuffer::CreateFromAudioBus(AudioBus* bus) {
   if (!bus)
     return nullptr;
-  AudioBuffer* buffer = new AudioBuffer(bus);
+  AudioBuffer* buffer = MakeGarbageCollected<AudioBuffer>(bus);
   if (buffer->CreatedSuccessfully(bus->NumberOfChannels()))
     return buffer;
   return nullptr;
@@ -343,6 +329,26 @@ void AudioBuffer::Zero() {
       float* data = array.View()->Data();
       memset(data, 0, length() * sizeof(*data));
     }
+  }
+}
+
+std::unique_ptr<SharedAudioBuffer> AudioBuffer::CreateSharedAudioBuffer() {
+  return std::make_unique<SharedAudioBuffer>(this);
+}
+
+SharedAudioBuffer::SharedAudioBuffer(AudioBuffer* buffer)
+    : sample_rate_(buffer->sampleRate()), length_(buffer->length()) {
+  channels_.resize(buffer->numberOfChannels());
+  for (unsigned int i = 0; i < buffer->numberOfChannels(); ++i) {
+    buffer->getChannelData(i).View()->buffer()->ShareNonSharedForInternalUse(
+        channels_[i]);
+  }
+}
+
+void SharedAudioBuffer::Zero() {
+  for (unsigned i = 0; i < channels_.size(); ++i) {
+    float* data = static_cast<float*>(channels_[i].Data());
+    memset(data, 0, length() * sizeof(*data));
   }
 }
 

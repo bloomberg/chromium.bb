@@ -41,6 +41,7 @@ import v8_utilities
 
 CALLBACK_INTERFACE_H_INCLUDES = frozenset([
     'platform/bindings/callback_interface_base.h',
+    'platform/bindings/v8_value_or_script_wrappable_adapter.h',
 ])
 CALLBACK_INTERFACE_CPP_INCLUDES = frozenset([
     'bindings/core/v8/generated_code_helper.h',
@@ -74,7 +75,7 @@ def _cpp_type(idl_type):
 IdlTypeBase.callback_cpp_type = property(_cpp_type)
 
 
-def callback_interface_context(callback_interface, _):
+def callback_interface_context(callback_interface, _, component_info):
     is_legacy_callback_interface = len(callback_interface.constants) > 0
 
     includes.clear()
@@ -101,7 +102,7 @@ def callback_interface_context(callback_interface, _):
                 break
 
     return {
-        'constants': [constant_context(constant, callback_interface)
+        'constants': [constant_context(constant, callback_interface, component_info)
                       for constant in callback_interface.constants],
         'cpp_class': callback_interface.name,
         'do_not_check_constants': 'DoNotCheckConstants' in callback_interface.extended_attributes,
@@ -163,12 +164,11 @@ def arguments_context(arguments):
             'cpp_value_to_v8_value': argument.idl_type.cpp_value_to_v8_value(
                 argument.name, isolate='GetIsolate()',
                 creation_context='argument_creation_context'),
-            'handle': '%sHandle' % argument.name,
             'name': argument.name,
             'v8_name': 'v8_' + argument.name,
         }
 
-    argument_declarations = ['ScriptWrappable* callback_this_value']
+    argument_declarations = ['bindings::V8ValueOrScriptWrappableAdapter callback_this_value']
     argument_declarations.extend(
         '%s %s' % (argument.idl_type.callback_cpp_type, argument.name)
         for argument in arguments)

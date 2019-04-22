@@ -13,8 +13,11 @@
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/modules/mediasession/media_metadata.h"
 #include "third_party/blink/renderer/modules/mediasession/media_metadata_sanitizer.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -33,6 +36,7 @@ const AtomicString& MojomActionToActionName(MediaSessionAction action) {
                       ("seekbackward"));
   DEFINE_STATIC_LOCAL(const AtomicString, seek_forward_action_name,
                       ("seekforward"));
+  DEFINE_STATIC_LOCAL(const AtomicString, skip_ad_action_name, ("skipad"));
 
   switch (action) {
     case MediaSessionAction::kPlay:
@@ -47,6 +51,8 @@ const AtomicString& MojomActionToActionName(MediaSessionAction action) {
       return seek_backward_action_name;
     case MediaSessionAction::kSeekForward:
       return seek_forward_action_name;
+    case MediaSessionAction::kSkipAd:
+      return skip_ad_action_name;
     default:
       NOTREACHED();
   }
@@ -67,6 +73,8 @@ base::Optional<MediaSessionAction> ActionNameToMojomAction(
     return MediaSessionAction::kSeekBackward;
   if ("seekforward" == action_name)
     return MediaSessionAction::kSeekForward;
+  if ("skipad" == action_name)
+    return MediaSessionAction::kSkipAd;
 
   NOTREACHED();
   return base::nullopt;
@@ -106,10 +114,6 @@ MediaSession::MediaSession(ExecutionContext* execution_context)
     : ContextClient(execution_context),
       playback_state_(mojom::blink::MediaSessionPlaybackState::NONE),
       client_binding_(this) {}
-
-MediaSession* MediaSession::Create(ExecutionContext* execution_context) {
-  return MakeGarbageCollected<MediaSession>(execution_context);
-}
 
 void MediaSession::Dispose() {
   client_binding_.Close();
@@ -151,7 +155,19 @@ void MediaSession::OnMetadataChanged() {
 }
 
 void MediaSession::setActionHandler(const String& action,
-                                    V8MediaSessionActionHandler* handler) {
+                                    V8MediaSessionActionHandler* handler,
+                                    ExceptionState& exception_state) {
+  if (action == "skipad") {
+    if (!RuntimeEnabledFeatures::SkipAdEnabled(GetExecutionContext())) {
+      exception_state.ThrowTypeError(
+          "The provided value 'skipad' is not a valid enum "
+          "value of type MediaSessionAction.");
+      return;
+    }
+
+    UseCounter::Count(GetExecutionContext(), WebFeature::kMediaSessionSkipAd);
+  }
+
   if (handler) {
     auto add_result = action_handlers_.Set(action, handler);
 
@@ -199,13 +215,17 @@ mojom::blink::MediaSessionService* MediaSession::GetService() {
   if (!frame)
     return nullptr;
 
-  frame->GetInterfaceProvider().GetInterface(mojo::MakeRequest(&service_));
+  // See https://bit.ly/2S0zRAS for task types.
+  auto task_runner =
+      GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI);
+  frame->GetInterfaceProvider().GetInterface(
+      mojo::MakeRequest(&service_, task_runner));
   if (service_.get()) {
     // Record the eTLD+1 of the frame using the API.
     Platform::Current()->RecordRapporURL("Media.Session.APIUsage.Origin",
                                          document->Url());
     blink::mojom::blink::MediaSessionClientPtr client;
-    client_binding_.Bind(mojo::MakeRequest(&client));
+    client_binding_.Bind(mojo::MakeRequest(&client, task_runner), task_runner);
     service_->SetClient(std::move(client));
   }
 

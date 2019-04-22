@@ -4,6 +4,8 @@
 
 #include "services/shape_detection/face_detection_provider_impl.h"
 
+#include "services/shape_detection/public/mojom/facedetection.mojom.h"
+
 namespace shape_detection {
 
 void FaceDetectionProviderImpl::CreateFaceDetection(

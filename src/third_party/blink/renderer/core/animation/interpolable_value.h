@@ -53,18 +53,16 @@ class CORE_EXPORT InterpolableValue {
 
 class CORE_EXPORT InterpolableNumber final : public InterpolableValue {
  public:
-  static std::unique_ptr<InterpolableNumber> Create(double value) {
-    return base::WrapUnique(new InterpolableNumber(value));
-  }
+  explicit InterpolableNumber(double value) : value_(value) {}
 
   bool IsNumber() const final { return true; }
   double Value() const { return value_; }
   bool Equals(const InterpolableValue& other) const final;
   std::unique_ptr<InterpolableValue> Clone() const final {
-    return Create(value_);
+    return std::make_unique<InterpolableNumber>(value_);
   }
   std::unique_ptr<InterpolableValue> CloneAndZero() const final {
-    return Create(0);
+    return std::make_unique<InterpolableNumber>(0);
   }
   void Scale(double scale) final;
   void ScaleAndAdd(double scale, const InterpolableValue& other) final;
@@ -75,8 +73,6 @@ class CORE_EXPORT InterpolableNumber final : public InterpolableValue {
                    const double progress,
                    InterpolableValue& result) const final;
   double value_;
-
-  explicit InterpolableNumber(double value) : value_(value) {}
 };
 
 class CORE_EXPORT InterpolableList : public InterpolableValue {
@@ -89,13 +85,11 @@ class CORE_EXPORT InterpolableList : public InterpolableValue {
   // has its own copy constructor. So just delete operator= here.
   InterpolableList& operator=(const InterpolableList&) = delete;
 
-  static std::unique_ptr<InterpolableList> Create(
-      const InterpolableList& other) {
-    return base::WrapUnique(new InterpolableList(other));
-  }
+  explicit InterpolableList(wtf_size_t size) : values_(size) {}
 
-  static std::unique_ptr<InterpolableList> Create(wtf_size_t size) {
-    return base::WrapUnique(new InterpolableList(size));
+  InterpolableList(const InterpolableList& other) : values_(other.length()) {
+    for (wtf_size_t i = 0; i < length(); i++)
+      Set(i, other.values_[i]->Clone());
   }
 
   bool IsList() const final { return true; }
@@ -111,7 +105,7 @@ class CORE_EXPORT InterpolableList : public InterpolableValue {
   wtf_size_t length() const { return values_.size(); }
   bool Equals(const InterpolableValue& other) const final;
   std::unique_ptr<InterpolableValue> Clone() const final {
-    return Create(*this);
+    return std::make_unique<InterpolableList>(*this);
   }
   std::unique_ptr<InterpolableValue> CloneAndZero() const final;
   void Scale(double scale) final;
@@ -121,12 +115,6 @@ class CORE_EXPORT InterpolableList : public InterpolableValue {
   void Interpolate(const InterpolableValue& to,
                    const double progress,
                    InterpolableValue& result) const final;
-  explicit InterpolableList(wtf_size_t size) : values_(size) {}
-
-  InterpolableList(const InterpolableList& other) : values_(other.length()) {
-    for (wtf_size_t i = 0; i < length(); i++)
-      Set(i, other.values_[i]->Clone());
-  }
 
   Vector<std::unique_ptr<InterpolableValue>> values_;
 };

@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "ipc/ipc_message.h"
@@ -98,7 +99,7 @@ MessageHandler::~MessageHandler() {
     // The posted task won't have the proxy lock, but that's OK, it doesn't
     // touch any internal state; it's a direct call on the plugin's function.
     message_loop_->task_runner()->PostTask(
-        FROM_HERE, base::Bind(handler_if_->Destroy, instance_, user_data_));
+        FROM_HERE, base::BindOnce(handler_if_->Destroy, instance_, user_data_));
   }
 }
 

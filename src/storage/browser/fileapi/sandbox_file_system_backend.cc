@@ -19,6 +19,7 @@
 #include "storage/browser/fileapi/file_stream_reader.h"
 #include "storage/browser/fileapi/file_stream_writer.h"
 #include "storage/browser/fileapi/file_system_context.h"
+#include "storage/browser/fileapi/file_system_features.h"
 #include "storage/browser/fileapi/file_system_operation.h"
 #include "storage/browser/fileapi/file_system_operation_context.h"
 #include "storage/browser/fileapi/file_system_options.h"
@@ -38,8 +39,8 @@ namespace storage {
 SandboxFileSystemBackend::SandboxFileSystemBackend(
     SandboxFileSystemBackendDelegate* delegate)
     : delegate_(delegate),
-      enable_temporary_file_system_in_incognito_(false) {
-}
+      enable_temporary_file_system_in_incognito_(base::FeatureList::IsEnabled(
+          features::kEnableFilesystemInIncognito)) {}
 
 SandboxFileSystemBackend::~SandboxFileSystemBackend() = default;
 
@@ -75,8 +76,9 @@ void SandboxFileSystemBackend::ResolveURL(const FileSystemURL& url,
     return;
   }
 
-  delegate_->OpenFileSystem(url.origin(), url.type(), mode, std::move(callback),
-                            GetFileSystemRootURI(url.origin(), url.type()));
+  delegate_->OpenFileSystem(
+      url.origin().GetURL(), url.type(), mode, std::move(callback),
+      GetFileSystemRootURI(url.origin().GetURL(), url.type()));
 }
 
 AsyncFileUtil* SandboxFileSystemBackend::GetAsyncFileUtil(
@@ -113,7 +115,7 @@ FileSystemOperation* SandboxFileSystemBackend::CreateFileSystemOperation(
     return nullptr;
 
   SpecialStoragePolicy* policy = delegate_->special_storage_policy();
-  if (policy && policy->IsStorageUnlimited(url.origin()))
+  if (policy && policy->IsStorageUnlimited(url.origin().GetURL()))
     operation_context->set_quota_limit_type(storage::kQuotaLimitTypeUnlimited);
   else
     operation_context->set_quota_limit_type(storage::kQuotaLimitTypeLimited);
@@ -124,7 +126,9 @@ FileSystemOperation* SandboxFileSystemBackend::CreateFileSystemOperation(
 
 bool SandboxFileSystemBackend::SupportsStreaming(
     const storage::FileSystemURL& url) const {
-  return false;
+  // Streaming is required for in-memory implementation to access memory-backed
+  // files.
+  return delegate_->file_system_options().is_incognito();
 }
 
 bool SandboxFileSystemBackend::HasInplaceCopyImplementation(

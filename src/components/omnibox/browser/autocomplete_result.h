@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include <list>
 #include <map>
 
 #include "base/macros.h"
@@ -55,12 +56,11 @@ class AutocompleteResult {
   void SortAndCull(const AutocompleteInput& input,
                    TemplateURLService* template_url_service);
 
-  // Creates and adds any dedicated Pedal matches triggered by existing match.
+  // Creates and adds any dedicated Pedal matches triggered by existing matches.
+  // This should be the only place where new Pedal suggestions are introduced
+  // because it doesn't dedupe; it just carefully avoids adding duplicates.
   void AppendDedicatedPedalMatches(AutocompleteProviderClient* client,
                                    const AutocompleteInput& input);
-
-  // Sets |pedal| in matches that have Pedal-triggering text.
-  void ConvertInSuggestionPedalMatches(AutocompleteProviderClient* client);
 
   // Sets |has_tab_match| in matches whose URL matches an open tab's URL.
   // Also, fixes up the description if not using another UI element to
@@ -136,21 +136,6 @@ class AutocompleteResult {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(AutocompleteResultTest, ConvertsOpenTabsCorrectly);
-  FRIEND_TEST_ALL_PREFIXES(AutocompleteResultTest,
-                           IsBetterMatchEntityWithHigherRelevance);
-  FRIEND_TEST_ALL_PREFIXES(AutocompleteResultTest,
-                           IsBetterMatchEntityWithLowerRelevance);
-  FRIEND_TEST_ALL_PREFIXES(AutocompleteResultTest,
-                           IsBetterMatchEntityWithEqualRelevance);
-  FRIEND_TEST_ALL_PREFIXES(AutocompleteResultTest,
-                           IsBetterMatchNonEntityWithHigherRelevance);
-  FRIEND_TEST_ALL_PREFIXES(AutocompleteResultTest,
-                           IsBetterMatchNonEntityWithLowerRelevance);
-  FRIEND_TEST_ALL_PREFIXES(AutocompleteResultTest,
-                           IsBetterMatchNonEntityWithEqualRelevance);
-  FRIEND_TEST_ALL_PREFIXES(AutocompleteResultTest, IsBetterMatchBothEntities);
-  FRIEND_TEST_ALL_PREFIXES(AutocompleteResultTest,
-                           IsBetterMatchBothNonEntities);
 
   typedef std::map<AutocompleteProvider*, ACMatches> ProviderToMatches;
 
@@ -162,14 +147,13 @@ class AutocompleteResult {
   typedef ACMatches::iterator::difference_type matches_difference_type;
 #endif
 
-  // Returns true if |first| is preferred over |second| based on the type and
-  // relevance (as adjusted by the context of the match type and page type). If
-  // one candidate is preferred over another despite having lower type-adjusted
-  // relevance, copies the relevance from the higher relevance match into the
-  // lower.
-  static bool IsBetterMatch(
-      AutocompleteMatch& first,
-      AutocompleteMatch& second,
+  // Examines |first| and |second| and returns the one that is preferred based
+  // on the constraints we want to enforce when deduping. Note that this may
+  // modify the relevance, allowed_to_be_default_match, or inline_autocompletion
+  // values of the returned match.
+  static std::list<ACMatches::iterator>::iterator BetterMatch(
+      std::list<ACMatches::iterator>::iterator first,
+      std::list<ACMatches::iterator>::iterator second,
       metrics::OmniboxEventProto::PageClassification page_classification);
 
   // Returns true if |matches| contains a match with the same destination as

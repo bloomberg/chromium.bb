@@ -55,22 +55,27 @@ const ShowPasswordBehavior = {
    * @private
    */
   getPassword_: function() {
-    if (!this.item)
+    if (!this.item) {
       return '';
+    }
     return this.item.entry.federationText || this.item.password ||
         ' '.repeat(this.item.entry.numCharactersInPassword);
   },
 
   /**
-   * Handler for tapping the show/hide button. Will fire an event to request the
-   * password for this login pair.
+   * Handler for tapping the show/hide button.
    * @private
    */
   onShowPasswordButtonTap_: function() {
-    if (this.item.password)
+    if (this.item.password) {
       this.set('item.password', '');
-    else
-      this.fire('show-password', this);  // Request the password.
+    } else {
+      PasswordManagerImpl.getInstance()
+          .getPlaintextPassword(this.item.entry.id)
+          .then(password => {
+            this.set('item.password', password);
+          });
+    }
   },
 };
 

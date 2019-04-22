@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/stream/media_stream_constraints_util_sets.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util_sets.h"
 
 #include <cmath>
 #include <string>
@@ -15,8 +15,9 @@
 namespace content {
 namespace media_constraints {
 
+using blink::media_constraints::ResolutionSet;
 using Point = ResolutionSet::Point;
-using BoolSet = DiscreteSet<bool>;
+using BoolSet = blink::media_constraints::DiscreteSet<bool>;
 
 namespace {
 
@@ -1152,7 +1153,7 @@ TEST_F(MediaStreamConstraintsUtilSetsTest, ZeroExactResolution) {
 }
 
 TEST_F(MediaStreamConstraintsUtilSetsTest, NumericRangeSetDouble) {
-  using DoubleRangeSet = NumericRangeSet<double>;
+  using DoubleRangeSet = blink::media_constraints::NumericRangeSet<double>;
   // Open set.
   DoubleRangeSet set;
   EXPECT_FALSE(set.Min().has_value());
@@ -1217,9 +1218,155 @@ TEST_F(MediaStreamConstraintsUtilSetsTest, NumericRangeSetDouble) {
   EXPECT_TRUE(intersection.IsEmpty());
 }
 
+TEST_F(MediaStreamConstraintsUtilSetsTest, NumericRangeSetFromConstraint) {
+  // Exact value translates in a range with a single value.
+  blink::LongConstraint constraint = blink::LongConstraint("aConstraint");
+  constraint.SetExact(10);
+  blink::media_constraints::NumericRangeSet<int> range =
+      blink::media_constraints::NumericRangeSet<int>::FromConstraint(
+          constraint);
+  EXPECT_FALSE(range.IsEmpty());
+  EXPECT_TRUE(range.Min());
+  EXPECT_EQ(*range.Min(), 10);
+  EXPECT_TRUE(range.Max());
+  EXPECT_EQ(*range.Max(), 10);
+
+  // A constraint with min and max translates to range with same min and same
+  // max.
+  constraint = blink::LongConstraint("aConstraint");
+  constraint.SetMin(0);
+  constraint.SetMax(100);
+  range = blink::media_constraints::NumericRangeSet<int>::FromConstraint(
+      constraint);
+  EXPECT_FALSE(range.IsEmpty());
+  EXPECT_TRUE(range.Min());
+  EXPECT_EQ(*range.Min(), 0);
+  EXPECT_TRUE(range.Max());
+  EXPECT_EQ(*range.Max(), 100);
+
+  // A constraint with only a min or a max value translates to a half-bounded
+  // set in both cases.
+  constraint = blink::LongConstraint("aConstraint");
+  constraint.SetMin(0);
+  range = blink::media_constraints::NumericRangeSet<int>::FromConstraint(
+      constraint);
+  EXPECT_FALSE(range.IsEmpty());
+  EXPECT_TRUE(range.Min());
+  EXPECT_EQ(*range.Min(), 0);
+  EXPECT_FALSE(range.Max());
+
+  constraint = blink::LongConstraint("aConstraint");
+  constraint.SetMax(100);
+  range = blink::media_constraints::NumericRangeSet<int>::FromConstraint(
+      constraint);
+  EXPECT_FALSE(range.IsEmpty());
+  EXPECT_TRUE(range.Max());
+  EXPECT_EQ(*range.Max(), 100);
+  EXPECT_FALSE(range.Min());
+
+  // A constraint with no values specified maps to an unbounded range.
+  constraint = blink::LongConstraint("aConstraint");
+  range = blink::media_constraints::NumericRangeSet<int>::FromConstraint(
+      constraint);
+  EXPECT_FALSE(range.IsEmpty());
+  EXPECT_FALSE(range.Min());
+  EXPECT_FALSE(range.Max());
+}
+
+TEST_F(MediaStreamConstraintsUtilSetsTest,
+       NumericRangeSetFromConstraintWithBounds) {
+  int upper_bound = 25;
+  int lower_bound = 5;
+  // Exact value translates in a range with a single value.
+  blink::LongConstraint constraint = blink::LongConstraint("aConstraint");
+  constraint.SetExact(10);
+  blink::media_constraints::NumericRangeSet<int> range =
+      blink::media_constraints::NumericRangeSet<int>::FromConstraint(
+          constraint, lower_bound, upper_bound);
+  EXPECT_FALSE(range.IsEmpty());
+  EXPECT_TRUE(range.Min());
+  EXPECT_EQ(*range.Min(), 10);
+  EXPECT_TRUE(range.Max());
+  EXPECT_EQ(*range.Max(), 10);
+
+  // A constraint with min and max translates to range with same min and same
+  // max. If lower and upper bound do not permit that, will have unspecified
+  // min and max respectively.
+  constraint = blink::LongConstraint("aConstraint");
+  constraint.SetMin(0);
+  constraint.SetMax(100);
+  range = blink::media_constraints::NumericRangeSet<int>::FromConstraint(
+      constraint, 0, 100);
+  EXPECT_FALSE(range.IsEmpty());
+  EXPECT_TRUE(range.Min());
+  EXPECT_EQ(*range.Min(), 0);
+  EXPECT_TRUE(range.Max());
+  EXPECT_EQ(*range.Max(), 100);
+  range = blink::media_constraints::NumericRangeSet<int>::FromConstraint(
+      constraint, lower_bound, upper_bound);
+  EXPECT_FALSE(range.IsEmpty());
+  EXPECT_FALSE(range.Min());
+  EXPECT_FALSE(range.Max());
+
+  // A constraint with only a min or a max value translates to a half-bounded
+  // or unbounded range depending on the whether the lower and the upper bounds
+  // allow for it.
+  constraint = blink::LongConstraint("aConstraint");
+  constraint.SetMin(0);
+  range = blink::media_constraints::NumericRangeSet<int>::FromConstraint(
+      constraint, lower_bound, upper_bound);
+  EXPECT_FALSE(range.IsEmpty());
+  EXPECT_FALSE(range.Min());
+  EXPECT_FALSE(range.Max());
+
+  constraint = blink::LongConstraint("aConstraint");
+  constraint.SetMax(100);
+  range = blink::media_constraints::NumericRangeSet<int>::FromConstraint(
+      constraint, lower_bound, upper_bound);
+  EXPECT_FALSE(range.IsEmpty());
+  EXPECT_FALSE(range.Min());
+  EXPECT_FALSE(range.Max());
+
+  // A constraint with no values specified maps to an unbounded range
+  // independently of upper and lower bounds.
+  constraint = blink::LongConstraint("aConstraint");
+  range = blink::media_constraints::NumericRangeSet<int>::FromConstraint(
+      constraint, lower_bound, upper_bound);
+  EXPECT_FALSE(range.IsEmpty());
+  EXPECT_FALSE(range.Min());
+  EXPECT_FALSE(range.Max());
+
+  // If the constraint specifies a range that does not overlap with lower and
+  // upper bounds, the resulting range will be empty.
+  constraint = blink::LongConstraint("aConstraint");
+  constraint.SetMin(-5);
+  constraint.SetMax(0);
+  range = blink::media_constraints::NumericRangeSet<int>::FromConstraint(
+      constraint, lower_bound, upper_bound);
+  EXPECT_TRUE(range.IsEmpty());
+
+  constraint = blink::LongConstraint("aConstraint");
+  constraint.SetMin(105);
+  constraint.SetMax(110);
+  range = blink::media_constraints::NumericRangeSet<int>::FromConstraint(
+      constraint, lower_bound, upper_bound);
+  EXPECT_TRUE(range.IsEmpty());
+}
+
+TEST_F(MediaStreamConstraintsUtilSetsTest, NumericRangeSetFromValue) {
+  // Getting a range from a single value, will return a range with a single
+  // value set as both max and min.
+  auto range = blink::media_constraints::NumericRangeSet<int>::FromValue(0);
+  EXPECT_FALSE(range.IsEmpty());
+  EXPECT_TRUE(range.Min());
+  EXPECT_EQ(*range.Min(), 0);
+  EXPECT_TRUE(range.Max());
+  EXPECT_EQ(*range.Max(), 0);
+}
+
 TEST_F(MediaStreamConstraintsUtilSetsTest, DiscreteSetString) {
   // Universal set.
-  using StringSet = DiscreteSet<std::string>;
+  using StringSet = blink::media_constraints::DiscreteSet<std::string>;
   StringSet set = StringSet::UniversalSet();
   EXPECT_TRUE(set.Contains("arbitrary"));
   EXPECT_TRUE(set.Contains("strings"));
@@ -1368,27 +1515,31 @@ TEST_F(MediaStreamConstraintsUtilSetsTest, DiscreteSetBool) {
 TEST_F(MediaStreamConstraintsUtilSetsTest, RescaleSetFromConstraints) {
   factory_.Reset();
   factory_.CreateWebMediaConstraints();
-  BoolSet set = RescaleSetFromConstraint(factory_.basic().resize_mode);
+  BoolSet set = blink::media_constraints::RescaleSetFromConstraint(
+      factory_.basic().resize_mode);
   EXPECT_TRUE(set.is_universal());
   EXPECT_FALSE(set.HasExplicitElements());
 
   // Invalid exact value.
   factory_.basic().resize_mode.SetExact(
       {blink::WebString::FromASCII("invalid")});
-  set = RescaleSetFromConstraint(factory_.basic().resize_mode);
+  set = blink::media_constraints::RescaleSetFromConstraint(
+      factory_.basic().resize_mode);
   EXPECT_TRUE(set.IsEmpty());
 
   // No rescaling
   factory_.basic().resize_mode.SetExact(
       blink::WebString::FromASCII(blink::WebMediaStreamTrack::kResizeModeNone));
-  set = RescaleSetFromConstraint(factory_.basic().resize_mode);
+  set = blink::media_constraints::RescaleSetFromConstraint(
+      factory_.basic().resize_mode);
   EXPECT_TRUE(set.Contains(false));
   EXPECT_FALSE(set.Contains(true));
 
   // Rescaling
   factory_.basic().resize_mode.SetExact(blink::WebString::FromASCII(
       blink::WebMediaStreamTrack::kResizeModeRescale));
-  set = RescaleSetFromConstraint(factory_.basic().resize_mode);
+  set = blink::media_constraints::RescaleSetFromConstraint(
+      factory_.basic().resize_mode);
   EXPECT_TRUE(set.Contains(true));
   EXPECT_FALSE(set.Contains(false));
 
@@ -1399,7 +1550,8 @@ TEST_F(MediaStreamConstraintsUtilSetsTest, RescaleSetFromConstraints) {
       blink::WebString::FromASCII(blink::WebMediaStreamTrack::kResizeModeNone)};
   factory_.basic().resize_mode.SetExact(blink::WebVector<blink::WebString>(
       rescale_modes, base::size(rescale_modes)));
-  set = RescaleSetFromConstraint(factory_.basic().resize_mode);
+  set = blink::media_constraints::RescaleSetFromConstraint(
+      factory_.basic().resize_mode);
   EXPECT_TRUE(set.Contains(true));
   EXPECT_TRUE(set.Contains(false));
 
@@ -1407,7 +1559,8 @@ TEST_F(MediaStreamConstraintsUtilSetsTest, RescaleSetFromConstraints) {
   rescale_modes[0] = "invalid";
   factory_.basic().resize_mode.SetExact(blink::WebVector<blink::WebString>(
       rescale_modes, base::size(rescale_modes)));
-  set = RescaleSetFromConstraint(factory_.basic().resize_mode);
+  set = blink::media_constraints::RescaleSetFromConstraint(
+      factory_.basic().resize_mode);
   EXPECT_FALSE(set.Contains(true));
   EXPECT_TRUE(set.Contains(false));
 }

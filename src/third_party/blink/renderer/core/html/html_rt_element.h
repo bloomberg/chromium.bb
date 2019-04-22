@@ -15,10 +15,10 @@ class HTMLRTElement final : public HTMLElement {
  public:
   DECLARE_NODE_FACTORY(HTMLRTElement);
 
- private:
   explicit HTMLRTElement(Document&);
 
-  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
+ private:
+  LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout) override;
 };
 
 }  // namespace blink

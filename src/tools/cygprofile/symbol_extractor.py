@@ -13,11 +13,10 @@ import sys
 
 import cygprofile_utils
 
-sys.path.insert(
-    0, os.path.join(os.path.dirname(__file__), os.pardir, os.pardir,
-                    'build', 'android'))
+_SRC_PATH = os.path.abspath(os.path.join(
+    os.path.dirname(__file__), os.pardir, os.pardir))
 
-from pylib import constants
+sys.path.insert(0, os.path.join(_SRC_PATH, 'build', 'android'))
 from pylib.constants import host_paths
 
 _MAX_WARNINGS_TO_PRINT = 200
@@ -144,7 +143,7 @@ def _FromObjdumpLine(line):
   assert re.match('^[a-zA-Z0-9_.][a-zA-Z0-9_.$]*$', name), name
 
   return SymbolInfo(name=name, offset=offset, section=m.group('section'),
-      size=size)
+                    size=size)
 
 
 def _SymbolInfosFromStream(objdump_lines):
@@ -169,8 +168,11 @@ def _SymbolInfosFromStream(objdump_lines):
         name_to_offsets[symbol_info.name].append(symbol_info.offset)
       symbol_infos.append(symbol_info)
 
+  # Outlined functions are known to be repeated often, so ignore them in the
+  # repeated symbol count.
   repeated_symbols = filter(lambda s: len(name_to_offsets[s]) > 1,
-                            name_to_offsets.iterkeys())
+                            (k for k in name_to_offsets.keys()
+                             if not k.startswith('OUTLINED_FUNCTION_')))
   if repeated_symbols:
     # Log the first 5 repeated offsets of the first 10 repeated symbols.
     logging.warning('%d symbols repeated with multiple offsets:\n %s',
@@ -199,6 +201,65 @@ def SymbolInfosFromBinary(binary_filename):
   finally:
     p.stdout.close()
     p.wait()
+
+
+_LLVM_NM_LINE_RE = re.compile(
+    r'^[\-0-9a-f]{8,16}[ ](?P<symbol_type>.)[ ](?P<name>.*)$', re.VERBOSE)
+
+
+def _SymbolInfosFromLlvmNm(lines):
+  """Extracts all defined symbols names from llvm-nm output.
+
+  Only defined (weak and regular) symbols are extracted.
+
+  Args:
+    lines: Iterable of lines.
+
+  Returns:
+    [str] A list of symbol names, can be empty.
+  """
+  symbol_names = []
+  for line in lines:
+    m = _LLVM_NM_LINE_RE.match(line)
+    assert m is not None, line
+    if m.group('symbol_type') not in ['t', 'T', 'w', 'W']:
+      continue
+    symbol_names.append(m.group('name'))
+  return symbol_names
+
+
+_NM_PATH = os.path.join(_SRC_PATH, 'third_party', 'llvm-build',
+                        'Release+Asserts', 'bin', 'llvm-nm')
+
+
+def CheckLlvmNmExists():
+  assert os.path.exists(_NM_PATH), (
+      'llvm-nm not found. Please run //tools/clang/scripts/download_objdump.py'
+      ' to install it.')
+
+
+def SymbolNamesFromLlvmBitcodeFile(filename):
+  """Extracts all defined symbols names from an LLVM bitcode file.
+
+  Args:
+    filename: (str) File to parse.
+
+  Returns:
+    [str] A list of symbol names, can be empty.
+  """
+  command = (_NM_PATH, '-defined-only', filename)
+  p = subprocess.Popen(command, shell=False, stdout=subprocess.PIPE,
+                       stderr=subprocess.PIPE)
+  try:
+    result = _SymbolInfosFromLlvmNm(p.stdout)
+    if not result:
+      file_size = os.stat(filename).st_size
+      logging.warning('No symbols for %s (size %d)', filename, file_size)
+    return result
+  finally:
+    _, _ = p.communicate()
+    p.stdout.close()
+    assert p.wait() == 0
 
 
 def GroupSymbolInfosByOffset(symbol_infos):
@@ -252,7 +313,7 @@ def CreateNameToSymbolInfo(symbol_infos):
   symbol_infos_by_name = {}
   warnings = cygprofile_utils.WarningCollector(_MAX_WARNINGS_TO_PRINT)
   for infos in GroupSymbolInfosByName(symbol_infos).itervalues():
-    first_symbol_info = min(infos, key=lambda x:x.offset)
+    first_symbol_info = min(infos, key=lambda x: x.offset)
     symbol_infos_by_name[first_symbol_info.name] = first_symbol_info
     if len(infos) > 1:
       warnings.Write('Symbol %s appears at %d offsets: %s' %
@@ -265,7 +326,7 @@ def CreateNameToSymbolInfo(symbol_infos):
 
 def DemangleSymbol(mangled_symbol):
   """Return the demangled form of mangled_symbol."""
-  cmd = [host_paths.ToolPath("c++filt", _arch)]
+  cmd = [host_paths.ToolPath('c++filt', _arch)]
   process = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
   demangled_symbol, _ = process.communicate(mangled_symbol + '\n')
   return demangled_symbol

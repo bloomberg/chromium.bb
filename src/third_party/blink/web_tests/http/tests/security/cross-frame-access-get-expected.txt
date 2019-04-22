@@ -1,7 +1,6 @@
 This test checks cross-frame access security (rdar://problem/5251309).
 
 
-
 ----- tests for getting of allowed properties -----
 
 

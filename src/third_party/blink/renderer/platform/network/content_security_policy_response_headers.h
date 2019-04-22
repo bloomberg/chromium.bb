@@ -37,6 +37,8 @@ class ResourceResponse;
 class HTTPHeaderMap;
 
 class PLATFORM_EXPORT ContentSecurityPolicyResponseHeaders final {
+  STACK_ALLOCATED();
+
  public:
   ContentSecurityPolicyResponseHeaders() = default;
   explicit ContentSecurityPolicyResponseHeaders(const ResourceResponse&);

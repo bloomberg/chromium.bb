@@ -40,7 +40,8 @@ bool GetDiskSpaceInfo(const base::FilePath& path,
   ULARGE_INTEGER available;
   ULARGE_INTEGER total;
   ULARGE_INTEGER free;
-  if (!GetDiskFreeSpaceExW(path.value().c_str(), &available, &total, &free))
+  if (!GetDiskFreeSpaceExW(base::as_wcstr(path.value()), &available, &total,
+                           &free))
     return false;
 
   if (available_bytes) {
@@ -85,7 +86,8 @@ int64_t SysInfo::AmountOfVirtualMemory() {
 
 // static
 int64_t SysInfo::AmountOfFreeDiskSpace(const FilePath& path) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   int64_t available;
   if (!GetDiskSpaceInfo(path, &available, nullptr))
@@ -95,7 +97,8 @@ int64_t SysInfo::AmountOfFreeDiskSpace(const FilePath& path) {
 
 // static
 int64_t SysInfo::AmountOfTotalDiskSpace(const FilePath& path) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   int64_t total;
   if (!GetDiskSpaceInfo(path, nullptr, &total))
@@ -128,8 +131,7 @@ std::string SysInfo::OperatingSystemVersion() {
 
 // static
 std::string SysInfo::OperatingSystemArchitecture() {
-  win::OSInfo::WindowsArchitecture arch =
-      win::OSInfo::GetInstance()->architecture();
+  win::OSInfo::WindowsArchitecture arch = win::OSInfo::GetArchitecture();
   switch (arch) {
     case win::OSInfo::X86_ARCHITECTURE:
       return "x86";
@@ -137,6 +139,8 @@ std::string SysInfo::OperatingSystemArchitecture() {
       return "x86_64";
     case win::OSInfo::IA64_ARCHITECTURE:
       return "ia64";
+    case win::OSInfo::ARM64_ARCHITECTURE:
+      return "arm64";
     default:
       return "";
   }

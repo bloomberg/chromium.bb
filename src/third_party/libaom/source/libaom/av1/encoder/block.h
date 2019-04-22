@@ -54,10 +54,10 @@ typedef struct macroblock_plane {
 typedef struct {
   int txb_skip_cost[TXB_SKIP_CONTEXTS][2];
   int base_eob_cost[SIG_COEF_CONTEXTS_EOB][3];
-  int base_cost[SIG_COEF_CONTEXTS][4];
+  int base_cost[SIG_COEF_CONTEXTS][8];
   int eob_extra_cost[EOB_COEF_CONTEXTS][2];
   int dc_sign_cost[DC_SIGN_CONTEXTS][2];
-  int lps_cost[LEVEL_CONTEXTS][COEFF_BASE_RANGE + 1];
+  int lps_cost[LEVEL_CONTEXTS][COEFF_BASE_RANGE + 1 + COEFF_BASE_RANGE + 1];
 } LV_MAP_COEFF_COST;
 
 typedef struct {
@@ -74,16 +74,16 @@ typedef struct {
 } CB_COEFF_BUFFER;
 
 typedef struct {
-  int16_t mode_context[MODE_CTX_REF_FRAMES];
   // TODO(angiebird): Reduce the buffer size according to sb_type
   tran_low_t *tcoeff[MAX_MB_PLANE];
   uint16_t *eobs[MAX_MB_PLANE];
   uint8_t *txb_skip_ctx[MAX_MB_PLANE];
   int *dc_sign_ctx[MAX_MB_PLANE];
-  uint8_t ref_mv_count[MODE_CTX_REF_FRAMES];
   CANDIDATE_MV ref_mv_stack[MODE_CTX_REF_FRAMES][MAX_REF_MV_STACK_SIZE];
   int_mv global_mvs[REF_FRAMES];
   int16_t compound_mode_context[MODE_CTX_REF_FRAMES];
+  int16_t mode_context[MODE_CTX_REF_FRAMES];
+  uint8_t ref_mv_count[MODE_CTX_REF_FRAMES];
 } MB_MODE_INFO_EXT;
 
 typedef struct {
@@ -187,6 +187,18 @@ typedef struct {
   COMPOUND_TYPE comp_type;
 } INTERPOLATION_FILTER_STATS;
 
+#define MAX_COMP_RD_STATS 64
+typedef struct {
+  int32_t rate[COMPOUND_TYPES];
+  int64_t dist[COMPOUND_TYPES];
+  int_mv mv[2];
+  MV_REFERENCE_FRAME ref_frames[2];
+  PREDICTION_MODE mode;
+  InterpFilters filter;
+  int ref_mv_idx;
+  int is_global[2];
+} COMP_RD_STATS;
+
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
 struct inter_modes_info;
 #endif
@@ -251,6 +263,9 @@ struct macroblock {
   int *ex_search_count_ptr;
 
   unsigned int txb_split_count;
+#if CONFIG_SPEED_STATS
+  unsigned int tx_search_count;
+#endif  // CONFIG_SPEED_STATS
 
   // These are set to their default values at the beginning, and then adjusted
   // further in the encoding process.
@@ -277,7 +292,7 @@ struct macroblock {
   CONV_BUF_TYPE *tmp_conv_dst;
   uint8_t *tmp_obmc_bufs[2];
 
-  FRAME_CONTEXT *backup_tile_ctx;
+  FRAME_CONTEXT *row_ctx;
   // This context will be used to update color_map_cdf pointer which would be
   // used during pack bitstream. For single thread and tile-multithreading case
   // this ponter will be same as xd->tile_ctx, but for the case of row-mt:
@@ -401,6 +416,14 @@ struct macroblock {
   int tx_split_prune_flag;  // Flag to skip tx split RD search.
   int recalc_luma_mc_data;  // Flag to indicate recalculation of MC data during
                             // interpolation filter search
+  // The likelihood of an edge existing in the block (using partial Canny edge
+  // detection). For reference, 556 is the value returned for a solid
+  // vertical black/white edge.
+  uint16_t edge_strength;
+
+  // [Saved stat index]
+  COMP_RD_STATS comp_rd_stats[MAX_COMP_RD_STATS];
+  int comp_rd_stats_idx;
 };
 
 static INLINE int is_rect_tx_allowed_bsize(BLOCK_SIZE bsize) {

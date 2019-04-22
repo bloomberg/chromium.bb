@@ -12,7 +12,6 @@
 #include "ui/gfx/geometry/point.h"
 
 namespace views {
-class InkDrop;
 class InkDropHighlight;
 class InkDropHostView;
 class View;
@@ -29,11 +28,6 @@ gfx::Insets GetToolbarInkDropInsets(const views::View* host_view,
 // Set the highlight path to be used for inkdrops and focus rings.
 void SetToolbarButtonHighlightPath(views::View* host_view,
                                    const gfx::Insets& margin_insets);
-
-// Creates an ink drop that shows a highlight on hover that is kept and combined
-// with the ripple when the ripple is shown.
-std::unique_ptr<views::InkDrop> CreateToolbarInkDrop(
-    views::InkDropHostView* host_view);
 
 // Creates the default inkdrop highlight but using the toolbar visible opacity.
 std::unique_ptr<views::InkDropHighlight> CreateToolbarInkDropHighlight(

@@ -6,7 +6,6 @@
 
 #include "ash/focus_cycler.h"
 #include "ash/root_window_controller.h"
-#include "ash/session/session_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
@@ -20,8 +19,6 @@
 #include "ui/views/layout/grid_layout.h"
 
 namespace {
-
-using session_manager::SessionState;
 
 constexpr int kAnimationDurationMs = 250;
 
@@ -68,11 +65,6 @@ void StatusAreaWidgetDelegate::SetFocusCyclerForTesting(
 }
 
 bool StatusAreaWidgetDelegate::ShouldFocusOut(bool reverse) {
-  if (Shell::Get()->session_controller()->GetSessionState() ==
-      SessionState::ACTIVE) {
-    return false;
-  }
-
   views::View* focused_view = GetFocusManager()->GetFocusedView();
   return (reverse && focused_view == GetFirstFocusableChild()) ||
          (!reverse && focused_view == GetLastFocusableChild());
@@ -130,8 +122,7 @@ void StatusAreaWidgetDelegate::UpdateLayout() {
 
   // Update tray border based on layout.
   bool is_child_on_edge = true;
-  for (int c = 0; c < child_count(); ++c) {
-    views::View* child = child_at(c);
+  for (auto* child : children()) {
     if (!child->visible())
       continue;
     SetBorderOnChild(child, is_child_on_edge);
@@ -141,8 +132,7 @@ void StatusAreaWidgetDelegate::UpdateLayout() {
   views::ColumnSet* columns = layout->AddColumnSet(0);
 
   if (shelf_->IsHorizontalAlignment()) {
-    for (int c = child_count() - 1; c >= 0; --c) {
-      views::View* child = child_at(c);
+    for (auto* child : children()) {
       if (!child->visible())
         continue;
       columns->AddColumn(views::GridLayout::CENTER, views::GridLayout::FILL,
@@ -150,8 +140,7 @@ void StatusAreaWidgetDelegate::UpdateLayout() {
                          views::GridLayout::USE_PREF, 0, 0);
     }
     layout->StartRow(0, 0);
-    for (int c = child_count() - 1; c >= 0; --c) {
-      views::View* child = child_at(c);
+    for (auto* child : children()) {
       if (child->visible())
         layout->AddView(child);
     }
@@ -159,8 +148,7 @@ void StatusAreaWidgetDelegate::UpdateLayout() {
     columns->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
                        0, /* resize percent */
                        views::GridLayout::USE_PREF, 0, 0);
-    for (int c = child_count() - 1; c >= 0; --c) {
-      views::View* child = child_at(c);
+    for (auto* child : children()) {
       if (!child->visible())
         continue;
       layout->StartRow(0, 0);

@@ -51,7 +51,7 @@ FontPlatformData::FontPlatformData(WTF::HashTableDeletedValueType)
       is_hash_table_deleted_value_(true)
 #if defined(OS_WIN)
       ,
-      paint_text_flags_(0)
+      font_flags_(0)
 #endif
 {
 }
@@ -65,7 +65,7 @@ FontPlatformData::FontPlatformData()
       is_hash_table_deleted_value_(false)
 #if defined(OS_WIN)
       ,
-      paint_text_flags_(0)
+      font_flags_(0)
 #endif
 {
 }
@@ -82,14 +82,14 @@ FontPlatformData::FontPlatformData(float size,
       is_hash_table_deleted_value_(false)
 #if defined(OS_WIN)
       ,
-      paint_text_flags_(0)
+      font_flags_(0)
 #endif
 {
 }
 
 FontPlatformData::FontPlatformData(const FontPlatformData& source)
     : typeface_(source.typeface_),
-#if !defined(OS_WIN)
+#if !defined(OS_WIN) && !defined(OS_MACOSX)
       family_(source.family_),
 #endif
       text_size_(source.text_size_),
@@ -104,14 +104,14 @@ FontPlatformData::FontPlatformData(const FontPlatformData& source)
       is_hash_table_deleted_value_(false)
 #if defined(OS_WIN)
       ,
-      paint_text_flags_(source.paint_text_flags_)
+      font_flags_(source.font_flags_)
 #endif
 {
 }
 
 FontPlatformData::FontPlatformData(const FontPlatformData& src, float text_size)
     : FontPlatformData(src.typeface_,
-#if !defined(OS_WIN)
+#if !defined(OS_WIN) && !defined(OS_MACOSX)
                        src.family_.data(),
 #else
                        CString(),
@@ -129,7 +129,7 @@ FontPlatformData::FontPlatformData(sk_sp<SkTypeface> typeface,
                                    bool synthetic_italic,
                                    FontOrientation orientation)
     : typeface_(typeface),
-#if !defined(OS_WIN)
+#if !defined(OS_WIN) && !defined(OS_MACOSX)
       family_(family),
 #endif
       text_size_(text_size),
@@ -140,7 +140,7 @@ FontPlatformData::FontPlatformData(sk_sp<SkTypeface> typeface,
       is_hash_table_deleted_value_(false)
 #if defined(OS_WIN)
       ,
-      paint_text_flags_(0)
+      font_flags_(0)
 #endif
 {
 #if !defined(OS_WIN) && !defined(OS_MACOSX)
@@ -170,12 +170,6 @@ FontPlatformData::~FontPlatformData() = default;
 #if defined(OS_MACOSX)
 CTFontRef FontPlatformData::CtFont() const {
   return SkTypeface_GetCTFontRef(typeface_.get());
-};
-
-CGFontRef FontPlatformData::CgFont() const {
-  if (!CtFont())
-    return nullptr;
-  return CTFontCopyGraphicsFont(CtFont(), 0);
 }
 #endif
 
@@ -186,7 +180,7 @@ const FontPlatformData& FontPlatformData::operator=(
     return *this;
 
   typeface_ = other.typeface_;
-#if !defined(OS_WIN)
+#if !defined(OS_WIN) && !defined(OS_MACOSX)
   family_ = other.family_;
 #endif
   text_size_ = other.text_size_;
@@ -200,7 +194,7 @@ const FontPlatformData& FontPlatformData::operator=(
 #endif
 
 #if defined(OS_WIN)
-  paint_text_flags_ = 0;
+  font_flags_ = 0;
 #endif
 
   return *this;
@@ -309,20 +303,6 @@ WebFontRenderStyle FontPlatformData::QuerySystemRenderStyle(
 #endif
 
   return result;
-}
-
-void FontPlatformData::SetupSkPaint(SkPaint* font,
-                                    float device_scale_factor,
-                                    const Font*) const {
-  style_.ApplyToSkPaint(*font, device_scale_factor);
-
-  const float ts = text_size_ >= 0 ? text_size_ : 12;
-  font->setTextSize(SkFloatToScalar(ts));
-  font->setTypeface(typeface_);
-  font->setFakeBoldText(synthetic_bold_);
-  font->setTextSkewX(synthetic_italic_ ? -SK_Scalar1 / 4 : 0);
-
-  font->setEmbeddedBitmapText(!avoid_embedded_bitmaps_);
 }
 
 void FontPlatformData::SetupSkFont(SkFont* font,

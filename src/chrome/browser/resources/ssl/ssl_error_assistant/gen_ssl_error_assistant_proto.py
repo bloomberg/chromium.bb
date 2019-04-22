@@ -11,6 +11,10 @@ import base64
 import os
 import sys
 
+# Subdirectory to be copied to Google Cloud Storage. Contains a copy of the
+# generated proto under a versioned directory.
+GS_COPY_DIR = "gs_copy"
+
 # Import the binary proto generator. Walks up to the root of the source tree
 # which is six directories above, and finds the protobufs directory from there.
 proto_generator_path = os.path.normpath(os.path.join(os.path.abspath(__file__),
@@ -18,6 +22,11 @@ proto_generator_path = os.path.normpath(os.path.join(os.path.abspath(__file__),
 sys.path.insert(0, proto_generator_path)
 from binary_proto_generator import BinaryProtoGenerator
 
+def MakeSubDirs(outfile):
+  """ Make the subdirectories needed to create file |outfile| """
+  dirname = os.path.dirname(outfile)
+  if not os.path.exists(dirname):
+    os.makedirs(dirname)
 
 class SSLErrorAssistantProtoGenerator(BinaryProtoGenerator):
   def ImportProtoModule(self):
@@ -38,7 +47,21 @@ class SSLErrorAssistantProtoGenerator(BinaryProtoGenerator):
   def ProcessPb(self, opts, pb):
     binary_pb_str = pb.SerializeToString()
     outfile = os.path.join(opts.outdir, opts.outbasename)
-    open(outfile, 'wb').write(binary_pb_str)
+
+    # Write two copies of the proto:
+    # 1. Under the root of the gen directory for .grd files to refer to
+    #    (./ssl_error_assistant/ssl_error_assistant.pb)
+    # 2. Under a versioned directory for the proto pusher to refer to
+    #    (./ssl_error_assistant/gs_copy/<version>/all/ssl_error_assistant.pb)
+    outfile = os.path.join(opts.outdir, opts.outbasename)
+    with open(outfile, 'wb') as f:
+      f.write(binary_pb_str)
+
+    outfile_copy = os.path.join(opts.outdir, GS_COPY_DIR, str(pb.version_id),
+                                "all", opts.outbasename)
+    MakeSubDirs(outfile_copy)
+    with open(outfile_copy, 'wb') as f:
+      f.write(binary_pb_str)
 
 
 def main():

@@ -9,12 +9,8 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
-
-namespace base {
-template <typename T>
-struct DefaultSingletonTraits;
-}  // namespace base
 
 class KeywordWebDataService;
 class TokenWebData;
@@ -65,7 +61,7 @@ class WebDataServiceFactory : public BrowserStateKeyedServiceFactory {
   static WebDataServiceFactory* GetInstance();
 
  private:
-  friend struct base::DefaultSingletonTraits<WebDataServiceFactory>;
+  friend class base::NoDestructor<WebDataServiceFactory>;
 
   WebDataServiceFactory();
   ~WebDataServiceFactory() override;

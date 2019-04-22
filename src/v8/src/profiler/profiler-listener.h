@@ -23,7 +23,7 @@ class CodeEventObserver {
   virtual ~CodeEventObserver() = default;
 };
 
-class ProfilerListener : public CodeEventListener {
+class V8_EXPORT_PRIVATE ProfilerListener : public CodeEventListener {
  public:
   ProfilerListener(Isolate*, CodeEventObserver*);
   ~ProfilerListener() override;
@@ -34,10 +34,10 @@ class ProfilerListener : public CodeEventListener {
   void CodeCreateEvent(CodeEventListener::LogEventsAndTags tag,
                        AbstractCode code, Name name) override;
   void CodeCreateEvent(CodeEventListener::LogEventsAndTags tag,
-                       AbstractCode code, SharedFunctionInfo* shared,
+                       AbstractCode code, SharedFunctionInfo shared,
                        Name script_name) override;
   void CodeCreateEvent(CodeEventListener::LogEventsAndTags tag,
-                       AbstractCode code, SharedFunctionInfo* shared,
+                       AbstractCode code, SharedFunctionInfo shared,
                        Name script_name, int line, int column) override;
   void CodeCreateEvent(CodeEventListener::LogEventsAndTags tag,
                        const wasm::WasmCode* code,
@@ -46,21 +46,13 @@ class ProfilerListener : public CodeEventListener {
   void CodeMovingGCEvent() override {}
   void CodeMoveEvent(AbstractCode from, AbstractCode to) override;
   void CodeDisableOptEvent(AbstractCode code,
-                           SharedFunctionInfo* shared) override;
+                           SharedFunctionInfo shared) override;
   void CodeDeoptEvent(Code code, DeoptimizeKind kind, Address pc,
                       int fp_to_sp_delta) override;
   void GetterCallbackEvent(Name name, Address entry_point) override;
   void RegExpCodeCreateEvent(AbstractCode code, String source) override;
   void SetterCallbackEvent(Name name, Address entry_point) override;
   void SharedFunctionInfoMoveEvent(Address from, Address to) override {}
-
-  CodeEntry* NewCodeEntry(
-      CodeEventListener::LogEventsAndTags tag, const char* name,
-      const char* resource_name = CodeEntry::kEmptyResourceName,
-      int line_number = v8::CpuProfileNode::kNoLineNumberInfo,
-      int column_number = v8::CpuProfileNode::kNoColumnNumberInfo,
-      std::unique_ptr<SourcePositionTable> line_info = nullptr,
-      Address instruction_start = kNullAddress);
 
   const char* GetName(Name name) {
     return function_and_resource_names_.GetName(name);
@@ -75,10 +67,11 @@ class ProfilerListener : public CodeEventListener {
     return function_and_resource_names_.GetConsName(prefix, name);
   }
 
+  void set_observer(CodeEventObserver* observer) { observer_ = observer; }
+
  private:
-  void RecordInliningInfo(CodeEntry* entry, AbstractCode abstract_code);
   void AttachDeoptInlinedFrames(Code code, CodeDeoptEventRecord* rec);
-  Name InferScriptName(Name name, SharedFunctionInfo* info);
+  Name InferScriptName(Name name, SharedFunctionInfo info);
   V8_INLINE void DispatchCodeEvent(const CodeEventsContainer& evt_rec) {
     observer_->CodeEventHandler(evt_rec);
   }

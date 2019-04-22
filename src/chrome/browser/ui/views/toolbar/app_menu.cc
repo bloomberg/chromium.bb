@@ -10,6 +10,7 @@
 #include <cmath>
 #include <set>
 
+#include "base/bind.h"
 #include "base/i18n/number_formatting.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
@@ -28,7 +29,9 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_menu_delegate.h"
-#include "chrome/browser/ui/views/toolbar/app_menu_observer.h"
+#include "chrome/browser/ui/views/frame/app_menu_button.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
 #include "chrome/browser/ui/views/toolbar/extension_toolbar_menu_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
@@ -294,20 +297,12 @@ class InMenuButton : public LabelButton {
 };
 
 // AppMenuView is a view that can contain label buttons.
-class AppMenuView : public views::View,
-                    public views::ButtonListener,
-                    public AppMenuObserver {
+class AppMenuView : public views::View, public views::ButtonListener {
  public:
   AppMenuView(AppMenu* menu, ButtonMenuItemModel* menu_model)
-      : menu_(menu),
-        menu_model_(menu_model) {
-    menu_->AddObserver(this);
-  }
+      : menu_(menu->AsWeakPtr()), menu_model_(menu_model) {}
 
-  ~AppMenuView() override {
-    if (menu_)
-      menu_->RemoveObserver(this);
-  }
+  ~AppMenuView() override = default;
 
   // Overridden from views::View.
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
@@ -355,25 +350,21 @@ class AppMenuView : public views::View,
     return button;
   }
 
-  // Overridden from AppMenuObserver:
-  void AppMenuDestroyed() override {
-    menu_->RemoveObserver(this);
-    menu_ = nullptr;
-    menu_model_ = nullptr;
-  }
-
  protected:
-  AppMenu* menu() { return menu_; }
-  const AppMenu* menu() const { return menu_; }
-  ButtonMenuItemModel* menu_model() { return menu_model_; }
+  base::WeakPtr<AppMenu> menu() { return menu_; }
+  base::WeakPtr<const AppMenu> menu() const { return menu_; }
+  ButtonMenuItemModel* menu_model() {
+    // The menu and the items in the menu model have similar lifetimes; it's
+    // only safe to access model items if the menu is still alive.
+    DCHECK(menu_);
+    return menu_model_;
+  }
 
  private:
   // Hosting AppMenu.
-  // WARNING: this may be nullptr during shutdown.
-  AppMenu* menu_;
+  base::WeakPtr<AppMenu> menu_;
 
   // The menu model containing the increment/decrement/reset items.
-  // WARNING: this may be nullptr during shutdown.
   ButtonMenuItemModel* menu_model_;
 
   DISALLOW_COPY_AND_ASSIGN(AppMenuView);
@@ -749,9 +740,7 @@ class AppMenu::RecentTabsMenuModelDelegate : public ui::MenuModelDelegate {
   void OnMenuStructureChanged() override {
     if (menu_item_->HasSubmenu()) {
       // Remove all menu items from submenu.
-      views::SubmenuView* submenu = menu_item_->GetSubmenu();
-      while (submenu->child_count() > 0)
-        menu_item_->RemoveMenuItemAt(submenu->child_count() - 1);
+      menu_item_->RemoveAllMenuItems();
 
       // Remove all elements in |AppMenu::command_id_to_entry_| that map to
       // |model_|.
@@ -784,8 +773,10 @@ class AppMenu::RecentTabsMenuModelDelegate : public ui::MenuModelDelegate {
 
 // AppMenu ------------------------------------------------------------------
 
-AppMenu::AppMenu(Browser* browser, int run_flags)
-    : browser_(browser), run_flags_(run_flags) {
+AppMenu::AppMenu(Browser* browser, int run_types, bool alert_reopen_tab_items)
+    : browser_(browser),
+      run_types_(run_types),
+      alert_reopen_tab_items_(alert_reopen_tab_items) {
   registrar_.Add(this, chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED,
                  content::Source<Profile>(browser_->profile()));
 }
@@ -797,8 +788,6 @@ AppMenu::~AppMenu() {
     if (model)
       model->RemoveObserver(this);
   }
-  for (AppMenuObserver& observer : observer_list_)
-    observer.AppMenuDestroyed();
 }
 
 void AppMenu::Init(ui::MenuModel* model) {
@@ -815,14 +804,18 @@ void AppMenu::Init(ui::MenuModel* model) {
     // BrowserActionsContainer view.
     types |= views::MenuRunner::FOR_DROP | views::MenuRunner::NESTED_DRAG;
   }
+  if (run_types_ & views::MenuRunner::SHOULD_SHOW_MNEMONICS)
+    types |= views::MenuRunner::SHOULD_SHOW_MNEMONICS;
+
   menu_runner_.reset(new views::MenuRunner(root_, types));
 }
 
 void AppMenu::RunMenu(views::MenuButton* host) {
   base::RecordAction(UserMetricsAction("ShowAppMenu"));
-  menu_runner_->RunMenuAt(host->GetWidget(), host,
-                          host->GetAnchorBoundsInScreen(),
-                          views::MENU_ANCHOR_TOPRIGHT, ui::MENU_SOURCE_NONE);
+
+  menu_runner_->RunMenuAt(
+      host->GetWidget(), host, host->GetAnchorBoundsInScreen(),
+      views::MenuAnchorPosition::kTopRight, ui::MENU_SOURCE_NONE);
 }
 
 void AppMenu::CloseMenu() {
@@ -832,14 +825,6 @@ void AppMenu::CloseMenu() {
 
 bool AppMenu::IsShowing() const {
   return menu_runner_.get() && menu_runner_->IsRunning();
-}
-
-void AppMenu::AddObserver(AppMenuObserver* observer) {
-  observer_list_.AddObserver(observer);
-}
-
-void AppMenu::RemoveObserver(AppMenuObserver* observer) {
-  observer_list_.RemoveObserver(observer);
 }
 
 void AppMenu::GetLabelStyle(int command_id, LabelStyle* style) const {
@@ -871,10 +856,9 @@ bool AppMenu::IsTriggerableEvent(views::MenuItemView* menu,
       MenuDelegate::IsTriggerableEvent(menu, e);
 }
 
-bool AppMenu::GetDropFormats(
-    MenuItemView* menu,
-    int* formats,
-    std::set<ui::Clipboard::FormatType>* format_types) {
+bool AppMenu::GetDropFormats(MenuItemView* menu,
+                             int* formats,
+                             std::set<ui::ClipboardFormatType>* format_types) {
   CreateBookmarkMenu();
   return bookmark_menu_delegate_.get() &&
       bookmark_menu_delegate_->GetDropFormats(menu, formats, format_types);
@@ -1018,11 +1002,6 @@ bool AppMenu::GetAccelerator(int command_id,
 }
 
 void AppMenu::WillShowMenu(MenuItemView* menu) {
-  if (menu != root_) {
-    for (AppMenuObserver& observer : observer_list_)
-      observer.OnShowSubmenu();
-  }
-
   if (menu == bookmark_menu_)
     CreateBookmarkMenu();
   else if (bookmark_menu_delegate_)
@@ -1049,8 +1028,8 @@ bool AppMenu::ShouldCloseOnDragComplete() {
 }
 
 void AppMenu::OnMenuClosed(views::MenuItemView* menu) {
-  for (AppMenuObserver& observer : observer_list_)
-    observer.AppMenuClosed();
+  auto* browser_view = BrowserView::GetBrowserViewForBrowser(browser_);
+  browser_view->toolbar_button_provider()->GetAppMenuButton()->OnMenuClosed();
 
   if (bookmark_menu_delegate_.get()) {
     BookmarkModel* model =
@@ -1058,6 +1037,7 @@ void AppMenu::OnMenuClosed(views::MenuItemView* menu) {
     if (model)
       model->RemoveObserver(this);
   }
+
   if (selected_menu_model_)
     selected_menu_model_->ActivatedAt(selected_index_);
 }
@@ -1118,8 +1098,8 @@ void AppMenu::PopulateMenu(MenuItemView* parent, MenuModel* model) {
 
     switch (model->GetCommandIdAt(i)) {
       case IDC_EXTENSIONS_OVERFLOW_MENU: {
-        std::unique_ptr<ExtensionToolbarMenuView> extension_toolbar(
-            new ExtensionToolbarMenuView(browser_, this, item));
+        auto extension_toolbar =
+            std::make_unique<ExtensionToolbarMenuView>(browser_, item);
         for (int i = 0; i < extension_toolbar->contents()->child_count(); ++i) {
           View* action_view = extension_toolbar->contents()->child_at(i);
           action_view->SetBackground(std::make_unique<InMenuButtonBackground>(
@@ -1218,6 +1198,14 @@ MenuItemView* AppMenu::AddMenuItem(MenuItemView* parent,
       if (model->GetIconAt(model_index, &icon))
         menu_item->SetIcon(*icon.ToImageSkia());
     }
+
+    // If we want to show items relating to reopening the last-closed tab as
+    // alerted, we specifically need to show alerts on the recent tabs submenu
+    // and the last closed tab menu item.
+    if (alert_reopen_tab_items_ &&
+        ((command_id == IDC_RECENT_TABS_MENU) ||
+         (command_id == AppMenuModel::kMinRecentTabsCommandId)))
+      menu_item->SetAlerted();
   }
 
   return menu_item;

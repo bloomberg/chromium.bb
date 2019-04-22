@@ -70,20 +70,23 @@ const DragBehavior = {
       return;
     }
 
-    if (opt_container !== undefined)
+    if (opt_container !== undefined) {
       this.container_ = opt_container;
+    }
 
     this.addListeners_();
 
-    if (opt_callback !== undefined)
+    if (opt_callback !== undefined) {
       this.callback_ = opt_callback;
+    }
   },
 
   /** @private */
   addListeners_: function() {
     const container = this.container_;
-    if (!container || this.mouseDownListener_)
+    if (!container || this.mouseDownListener_) {
       return;
+    }
     this.mouseDownListener_ = this.onMouseDown_.bind(this);
     container.addEventListener('mousedown', this.mouseDownListener_);
 
@@ -104,8 +107,9 @@ const DragBehavior = {
   /** @private */
   removeListeners_: function() {
     const container = this.container_;
-    if (!container || !this.mouseDownListener_)
+    if (!container || !this.mouseDownListener_) {
       return;
+    }
     container.removeEventListener('mousedown', this.mouseDownListener_);
     this.mouseDownListener_ = null;
     container.removeEventListener('mousemove', this.mouseMoveListener_);
@@ -115,8 +119,9 @@ const DragBehavior = {
     container.removeEventListener('touchmove', this.touchMoveListener_);
     this.touchMoveListener_ = null;
     container.removeEventListener('touchend', this.endDragListener_);
-    if (this.endDragListener_)
+    if (this.endDragListener_) {
       window.removeEventListener('mouseup', this.endDragListener_);
+    }
     this.endDragListener_ = null;
   },
 
@@ -126,8 +131,9 @@ const DragBehavior = {
    * @private
    */
   onMouseDown_: function(e) {
-    if (e.button != 0 || !e.target.getAttribute('draggable'))
+    if (e.button != 0 || !e.target.getAttribute('draggable')) {
       return true;
+    }
     e.preventDefault();
     const target = assertInstanceof(e.target, HTMLElement);
     return this.startDrag_(target, {x: e.pageX, y: e.pageY});
@@ -149,8 +155,9 @@ const DragBehavior = {
    * @private
    */
   onTouchStart_: function(e) {
-    if (e.touches.length != 1)
+    if (e.touches.length != 1) {
       return false;
+    }
 
     e.preventDefault();
     const touch = e.touches[0];
@@ -165,8 +172,9 @@ const DragBehavior = {
    * @private
    */
   onTouchMove_: function(e) {
-    if (e.touches.length != 1)
+    if (e.touches.length != 1) {
       return true;
+    }
 
     const touchLocation = {x: e.touches[0].pageX, y: e.touches[0].pageY};
     // Touch move events can happen even if the touch location doesn't change
@@ -175,8 +183,10 @@ const DragBehavior = {
       const IGNORABLE_TOUCH_MOVE_PX = 1;
       const xDiff = Math.abs(touchLocation.x - this.lastTouchLocation_.x);
       const yDiff = Math.abs(touchLocation.y - this.lastTouchLocation_.y);
-      if (xDiff <= IGNORABLE_TOUCH_MOVE_PX && yDiff <= IGNORABLE_TOUCH_MOVE_PX)
+      if (xDiff <= IGNORABLE_TOUCH_MOVE_PX &&
+          yDiff <= IGNORABLE_TOUCH_MOVE_PX) {
         return true;
+      }
     }
     this.lastTouchLocation_ = touchLocation;
     e.preventDefault();
@@ -203,8 +213,9 @@ const DragBehavior = {
    */
   endDrag_: function(e) {
     assert(this.dragEnabled);
-    if (this.dragId && this.callback_)
+    if (this.dragId && this.callback_) {
       this.callback_(this.dragId, null);
+    }
     this.dragId = '';
     this.lastTouchLocation_ = null;
     return false;
@@ -218,8 +229,9 @@ const DragBehavior = {
    */
   processDrag_: function(e, eventLocation) {
     assert(this.dragEnabled);
-    if (!this.dragId)
+    if (!this.dragId) {
       return true;
+    }
     if (this.callback_) {
       const delta = {
         x: eventLocation.x - this.dragStartLocation_.x,

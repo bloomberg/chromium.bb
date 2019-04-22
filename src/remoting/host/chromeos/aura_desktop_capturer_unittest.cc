@@ -62,7 +62,8 @@ class AuraDesktopCapturerTest : public testing::Test,
   void SimulateFrameCapture() {
     SkBitmap bitmap;
     const SkImageInfo& info =
-        SkImageInfo::Make(3, 4, kBGRA_8888_SkColorType, kPremul_SkAlphaType);
+        SkImageInfo::Make(3, 4, kBGRA_8888_SkColorType, kPremul_SkAlphaType,
+                          SkColorSpace::MakeSRGB());
     bitmap.installPixels(info, const_cast<unsigned char*>(frame_data), 12);
 
     capturer_->OnFrameCaptured(std::make_unique<viz::CopyOutputSkBitmapResult>(

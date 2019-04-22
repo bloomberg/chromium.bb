@@ -18,7 +18,6 @@
 #include "media/base/test_data_util.h"
 #include "media/media_buildflags.h"
 #include "media/mojo/buildflags.h"
-#include "third_party/libaom/av1_buildflags.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
@@ -102,7 +101,7 @@ class EncryptedMediaTest
     query_params.emplace_back("keySystem", CurrentKeySystem());
     query_params.emplace_back(
         "configChangeType",
-        base::IntToString(static_cast<int>(config_change_type)));
+        base::NumberToString(static_cast<int>(config_change_type)));
     RunMediaTestPage("mse_config_change.html", query_params, media::kEnded,
                      true);
   }
@@ -176,26 +175,26 @@ class EncryptedMediaTest
 using ::testing::Combine;
 using ::testing::Values;
 
-INSTANTIATE_TEST_CASE_P(SRC_ClearKey,
-                        EncryptedMediaTest,
-                        Combine(Values(kClearKeyKeySystem),
-                                Values(SrcType::SRC)));
+INSTANTIATE_TEST_SUITE_P(SRC_ClearKey,
+                         EncryptedMediaTest,
+                         Combine(Values(kClearKeyKeySystem),
+                                 Values(SrcType::SRC)));
 
-INSTANTIATE_TEST_CASE_P(MSE_ClearKey,
-                        EncryptedMediaTest,
-                        Combine(Values(kClearKeyKeySystem),
-                                Values(SrcType::MSE)));
+INSTANTIATE_TEST_SUITE_P(MSE_ClearKey,
+                         EncryptedMediaTest,
+                         Combine(Values(kClearKeyKeySystem),
+                                 Values(SrcType::MSE)));
 
 #if defined(SUPPORTS_EXTERNAL_CLEAR_KEY_IN_CONTENT_SHELL)
-INSTANTIATE_TEST_CASE_P(SRC_ExternalClearKey,
-                        EncryptedMediaTest,
-                        Combine(Values(kExternalClearKeyKeySystem),
-                                Values(SrcType::SRC)));
+INSTANTIATE_TEST_SUITE_P(SRC_ExternalClearKey,
+                         EncryptedMediaTest,
+                         Combine(Values(kExternalClearKeyKeySystem),
+                                 Values(SrcType::SRC)));
 
-INSTANTIATE_TEST_CASE_P(MSE_ExternalClearKey,
-                        EncryptedMediaTest,
-                        Combine(Values(kExternalClearKeyKeySystem),
-                                Values(SrcType::MSE)));
+INSTANTIATE_TEST_SUITE_P(MSE_ExternalClearKey,
+                         EncryptedMediaTest,
+                         Combine(Values(kExternalClearKeyKeySystem),
+                                 Values(SrcType::MSE)));
 #endif
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_WebM) {
@@ -330,9 +329,10 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, FrameSizeChangeVideo) {
 #if defined(OS_ANDROID)
   // https://crbug.com/778245
-  if (base::android::BuildInfo::GetInstance()->sdk_int() <=
-      base::android::SDK_VERSION_KITKAT) {
-    DVLOG(0) << "Skipping test - FrameSizeChange is flaky on KitKat devices.";
+  if (base::android::BuildInfo::GetInstance()->sdk_int() <
+      base::android::SDK_VERSION_MARSHMALLOW) {
+    DVLOG(0) << "Skipping test - FrameSizeChange is flaky on KitKat and "
+                "Lollipop devices.";
     return;
   }
 #endif
@@ -356,8 +356,6 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_Encryption_CENS) {
                       media::kError);
 }
 
-#if !defined(OS_ANDROID)
-// TODO(crbug.com/813845): Enable CBCS support on Chrome for Android.
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_Encryption_CBCS) {
   std::string expected_result =
       BUILDFLAG(ENABLE_CBCS_ENCRYPTION_SCHEME) ? media::kEnded : media::kError;
@@ -380,7 +378,6 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
   RunMultipleFileTest("bear-640x360-v_frag-cenc.mp4",
                       "bear-640x360-a_frag-cbcs.mp4", expected_result);
 }
-#endif  // !defined(OS_ANDROID)
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 
 IN_PROC_BROWSER_TEST_F(EncryptedMediaTest, UnknownKeySystemThrowsException) {

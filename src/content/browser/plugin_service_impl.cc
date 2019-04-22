@@ -23,13 +23,13 @@
 #include "base/task_runner_util.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
+#include "content/browser/plugin_list.h"
 #include "content/browser/ppapi_plugin_process_host.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/pepper_plugin_list.h"
-#include "content/common/plugin_list.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -99,8 +99,6 @@ PluginServiceImpl* PluginServiceImpl::GetInstance() {
 }
 
 PluginServiceImpl::PluginServiceImpl() : filter_(nullptr) {
-  plugin_list_sequence_checker_.DetachFromSequence();
-
   // Collect the total number of browser processes (which create
   // PluginServiceImpl objects, to be precise). The number is used to normalize
   // the number of processes which start at least one NPAPI/PPAPI Flash process.
@@ -119,8 +117,11 @@ void PluginServiceImpl::Init() {
   plugin_list_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
       {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
-  PluginList::Singleton()->set_will_load_plugins_callback(
-      base::Bind(&WillLoadPluginsCallback, &plugin_list_sequence_checker_));
+
+  // Setup the sequence checker right after setting up the task runner.
+  plugin_list_sequence_checker_.DetachFromSequence();
+  PluginList::Singleton()->set_will_load_plugins_callback(base::BindRepeating(
+      &WillLoadPluginsCallback, &plugin_list_sequence_checker_));
 
   RegisterPepperPlugins();
 }
@@ -293,10 +294,8 @@ bool PluginServiceImpl::GetPluginInfoArray(
     bool allow_wildcard,
     std::vector<WebPluginInfo>* plugins,
     std::vector<std::string>* actual_mime_types) {
-  bool use_stale = false;
-  PluginList::Singleton()->GetPluginInfoArray(
-      url, mime_type, allow_wildcard, &use_stale, plugins, actual_mime_types);
-  return use_stale;
+  return PluginList::Singleton()->GetPluginInfoArray(
+      url, mime_type, allow_wildcard, plugins, actual_mime_types);
 }
 
 bool PluginServiceImpl::GetPluginInfo(int render_process_id,

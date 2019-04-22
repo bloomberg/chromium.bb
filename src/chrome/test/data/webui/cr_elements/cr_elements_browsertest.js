@@ -96,6 +96,29 @@ TEST_F('CrElementsProfileAvatarSelectorTest', 'All', function() {
  * @constructor
  * @extends {CrElementsBrowserTest}
  */
+function CrElementsSearchFieldTest() {}
+
+CrElementsSearchFieldTest.prototype = {
+  __proto__: CrElementsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload:
+      'chrome://resources/cr_elements/cr_search_field/cr_search_field.html',
+
+  /** @override */
+  extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
+    'cr_search_field_tests.js',
+  ]),
+};
+
+TEST_F('CrElementsSearchFieldTest', 'All', function() {
+  mocha.run();
+});
+
+/**
+ * @constructor
+ * @extends {CrElementsBrowserTest}
+ */
 function CrElementsToolbarSearchFieldTest() {}
 
 CrElementsToolbarSearchFieldTest.prototype = {
@@ -159,6 +182,29 @@ CrElementsScrollableBehaviorTest.prototype = {
 };
 
 TEST_F('CrElementsScrollableBehaviorTest', 'All', function() {
+  mocha.run();
+});
+
+/**
+ * @constructor
+ * @extends {CrElementsBrowserTest}
+ */
+function CrElementsContainerShadowBehaviorTest() {}
+
+CrElementsContainerShadowBehaviorTest.prototype = {
+  __proto__: CrElementsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload:
+      'chrome://resources/cr_elements/cr_container_shadow_behavior.html',
+
+  /** @override */
+  extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
+    'cr_container_shadow_behavior_test.js',
+  ]),
+};
+
+TEST_F('CrElementsContainerShadowBehaviorTest', 'All', function() {
   mocha.run();
 });
 
@@ -358,6 +404,30 @@ TEST_F('CrElementsToastTest', 'All', function() {
  * @constructor
  * @extends {CrElementsBrowserTest}
  */
+function CrElementsToastManagerTest() {}
+
+CrElementsToastManagerTest.prototype = {
+  __proto__: CrElementsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload:
+      'chrome://resources/cr_elements/cr_toast/cr_toast_manager.html',
+
+  /** @override */
+  extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
+    '../settings/test_util.js',
+    'cr_toast_manager_test.js',
+  ]),
+};
+
+TEST_F('CrElementsToastManagerTest', 'All', function() {
+  mocha.run();
+});
+
+/**
+ * @constructor
+ * @extends {CrElementsBrowserTest}
+ */
 function CrElementsRadioButtonTest() {}
 
 CrElementsRadioButtonTest.prototype = {
@@ -402,7 +472,31 @@ TEST_F('CrElementsRadioGroupTest', 'All', function() {
   mocha.run();
 });
 
+/**
+ * @constructor
+ * @extends {CrElementsBrowserTest}
+ */
+function CrElementsIconButtonTest() {}
 
+CrElementsIconButtonTest.prototype = {
+  __proto__: CrElementsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload:
+      'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html',
+
+  /** @override */
+  extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
+    '../settings/test_util.js',
+    'cr_icon_button_tests.js',
+  ]),
+};
+
+TEST_F('CrElementsIconButtonTest', 'All', function() {
+  mocha.run();
+});
+
+GEN('#if defined(OS_CHROMEOS)');
 /**
  * @constructor
  * @extends {CrElementsBrowserTest}
@@ -426,6 +520,7 @@ CrElementsSearchableDropDownTest.prototype = {
 TEST_F('CrElementsSearchableDropDownTest', 'All', function() {
   mocha.run();
 });
+GEN('#endif');
 
 ////////////////////////////////////////////////////////////////////////////////
 // View Manager Tests

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
+#include "components/policy/proto/device_management_backend.pb.h"
 
 namespace policy {
 namespace {
@@ -94,6 +95,10 @@ void MachineLevelUserCloudPolicyStore::SetupRegistration(
     const std::string& machine_client_id) {
   machine_dm_token_ = machine_dm_token;
   machine_client_id_ = machine_client_id;
+}
+
+void MachineLevelUserCloudPolicyStore::InitWithoutToken() {
+  NotifyStoreError();
 }
 
 void MachineLevelUserCloudPolicyStore::Validate(

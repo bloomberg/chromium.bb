@@ -1,49 +1,52 @@
-<div><a id="start" href="a">a</a></div>
+<div><a id="start" href="">a</a></div>
 
 <iframe id="frameA" src="data:text/html,
   <body id='frameAbody'>
-    <a id='1' href='a'>b</a><br>
-    <a id='2' href='a'>c</a><br>
-    <a id='3' href='a'>d</a><br>
+    <a id='b' href=''>b</a><br>
+    <a id='c' href=''>c</a><br>
+    <a id='d' href=''>d</a><br>
     <div style='margin-left:80px'>
-      <a id='7' href='a'>e</a>
+      <a id='e' href=''>e</a>
     </div>
   </body>
 "></iframe><br>
 
 <iframe id="frameB" src="data:text/html,
   <body id='frameBbody'>
-    <a id='4' href='a'>g</a>
-    <a id='5' href='a'>h</a>
-    <a id='6' href='a'>i</a>
+    <a id='g' href=''>g</a>
+    <a id='h' href=''>h</a>
+    <a id='i' href=''>i</a>
   </body>
 "></iframe><br>
 
-<a id="end" href="a">a</a>
+<a id="end" href="">a</a>
 
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 <script src="resources/snav-testharness.js"></script>
 <script>
   /*
-    Once crbug.com/801162 is fixed, the expectation will change:
     Spatnav must focus the iframe before it can search it.
   */
   var resultMap = [
-    ["Down", "frameA,1"],
-    ["Down", "frameA,2"],
-    ["Down", "frameA,3"],
-    ["Down", "frameA,7"],
-    ["Down", "frameB,6"],
+    ["Down", "frameA,frameAbody"],
+    ["Down", "frameA,b"],
+    ["Down", "frameA,c"],
+    ["Down", "frameA,d"],
+    ["Down", "frameA,e"],
+    ["Down", "frameB,frameBbody"],
+    ["Down", "frameB,g"],
+    ["Right", "frameB,h"],
+    ["Right", "frameB,i"],
     ["Down", "end"],
-    ["Up", "frameB,4"],
-    ["Right", "frameB,5"],
-    ["Right", "frameB,6"],
-    ["Up", "frameA,3"],
-    ["Right", "frameA,7"],
-    ["Up", "frameA,3"],
-    ["Up", "frameA,2"],
-    ["Up", "frameA,1"],
+    ["Up", "frameB,frameBbody"],
+    ["Up", "frameB,g"],
+    ["Up", "frameA,frameAbody"],
+    ["Up", "frameA,e"],
+    ["Up", "frameA,d"],
+    ["Up", "frameA,c"],
+    ["Up", "frameA,b"],
+    ["Up", "start"],
   ];
   // Start at a known place.
   document.getElementById("start").focus();

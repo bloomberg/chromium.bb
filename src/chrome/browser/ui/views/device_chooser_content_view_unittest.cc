@@ -102,7 +102,7 @@ class DeviceChooserContentViewTest : public ChromeViewsTestBase {
         GetUnpairedDeviceTextAtRow(row_index));
   }
 
-  bool IsDeviceSelected() { return table_view()->selection_model().size() > 0; }
+  bool IsDeviceSelected() { return !table_view()->selection_model().empty(); }
 
   void ExpectNoDevices() {
     EXPECT_TRUE(no_options_label()->visible());

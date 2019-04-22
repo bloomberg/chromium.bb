@@ -30,7 +30,11 @@ class StoreKitTabHelper : public web::WebStateUserData<StoreKitTabHelper> {
   void OpenAppStore(NSDictionary* product_params);
 
  private:
+  friend class web::WebStateUserData<StoreKitTabHelper>;
+
   __weak id<StoreKitLauncher> store_kit_launcher_ = nil;
+
+  WEB_STATE_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(StoreKitTabHelper);
 };

@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_switches.h"
@@ -128,7 +129,7 @@ void OriginTrialsComponentInstallerPolicy::GetHash(
   if (!hash)
     return;
   hash->assign(kOriginTrialSha2Hash,
-               kOriginTrialSha2Hash + arraysize(kOriginTrialSha2Hash));
+               kOriginTrialSha2Hash + base::size(kOriginTrialSha2Hash));
 }
 
 std::string OriginTrialsComponentInstallerPolicy::GetName() const {

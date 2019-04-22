@@ -113,9 +113,10 @@ void LastErrorSetter(v8::Local<v8::Name> property,
 
 }  // namespace
 
-APILastError::APILastError(const GetParent& get_parent,
-                           const binding::AddConsoleError& add_console_error)
-    : get_parent_(get_parent), add_console_error_(add_console_error) {}
+APILastError::APILastError(GetParent get_parent,
+                           binding::AddConsoleError add_console_error)
+    : get_parent_(std::move(get_parent)),
+      add_console_error_(std::move(add_console_error)) {}
 APILastError::APILastError(APILastError&& other) = default;
 APILastError::~APILastError() = default;
 

@@ -6,7 +6,7 @@
 [
     SecureContext,
     Exposed=Window,
-    OriginTrialEnabled=WebXR
+    RuntimeEnabled=WebXR
 ] interface XRPresentationContext {
     // back-reference to the canvas
     readonly attribute HTMLCanvasElement canvas;

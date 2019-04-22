@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_SSL_INSECURE_SENSITIVE_INPUT_DRIVER_H_
 
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "third_party/blink/public/platform/modules/insecure_input/insecure_input_service.mojom.h"
+#include "third_party/blink/public/mojom/insecure_input/insecure_input_service.mojom.h"
 
 namespace content {
 class RenderFrameHost;
@@ -28,8 +28,6 @@ class InsecureSensitiveInputDriver : public blink::mojom::InsecureInputService {
       blink::mojom::InsecureInputServiceRequest request);
 
   // blink::mojom::InsecureInputService:
-  void PasswordFieldVisibleInInsecureContext() override;
-  void AllPasswordFieldsInInsecureContextInvisible() override;
   void DidEditFieldInInsecureContext() override;
 
  private:

@@ -42,18 +42,10 @@ class CORE_EXPORT AnimatableValue
  public:
   virtual ~AnimatableValue() = default;
 
-  static AnimatableValue* Interpolate(const AnimatableValue*,
-                                      const AnimatableValue*,
-                                      double fraction);
   bool IsDouble() const { return GetType() == kTypeDouble; }
   bool IsFilterOperations() const { return GetType() == kTypeFilterOperations; }
   bool IsTransform() const { return GetType() == kTypeTransform; }
   bool IsUnknown() const { return GetType() == kTypeUnknown; }
-
-  bool IsSameType(const AnimatableValue* value) const {
-    DCHECK(value);
-    return value->GetType() == GetType();
-  }
 
   virtual void Trace(Visitor*) {}
 
@@ -65,22 +57,8 @@ class CORE_EXPORT AnimatableValue
     kTypeUnknown,
   };
 
-  virtual AnimatableValue* InterpolateTo(const AnimatableValue*,
-                                         double fraction) const {
-    NOTREACHED();
-    return nullptr;
-  }
-  static AnimatableValue* DefaultInterpolateTo(const AnimatableValue* left,
-                                               const AnimatableValue* right,
-                                               double fraction) {
-    return const_cast<AnimatableValue*>((fraction < 0.5) ? left : right);
-  }
-
  private:
   virtual AnimatableType GetType() const = 0;
-
-  template <class Keyframe>
-  friend class KeyframeEffectModel;
 };
 
 #define DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(thisType, predicate)         \

@@ -15,8 +15,8 @@ CXFA_FFRectangle::~CXFA_FFRectangle() {}
 
 void CXFA_FFRectangle::RenderWidget(CXFA_Graphics* pGS,
                                     const CFX_Matrix& matrix,
-                                    uint32_t dwStatus) {
-  if (!IsMatchVisibleStatus(dwStatus))
+                                    HighlightOption highlight) {
+  if (!HasVisibleStatus())
     return;
 
   CXFA_Value* value = m_pNode->GetFormValueIfExists();
@@ -29,6 +29,5 @@ void CXFA_FFRectangle::RenderWidget(CXFA_Graphics* pGS,
 
   CFX_Matrix mtRotate = GetRotateMatrix();
   mtRotate.Concat(matrix);
-
   DrawBorder(pGS, value->GetRectangleIfExists(), rect, mtRotate);
 }

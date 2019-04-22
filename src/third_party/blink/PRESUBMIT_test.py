@@ -126,7 +126,11 @@ class PresubmitTest(unittest.TestCase):
         """
 
         mock_input_api = MockInputApi()
-        potentially_bad_content = '#include "public/platform/modules/cache_storage.mojom-blink.h"'
+        potentially_bad_content = """
+        #include "public/platform/modules/cache_storage.mojom-blink.h"
+        #include "public/platform/modules/cache_storage.mojom-blink-forward.h"
+        #include "public/platform/modules/cache_storage.mojom-blink-test-utils.h"
+        """
         mock_input_api.files = [
             MockAffectedFile('third_party/blink/renderer/core/a_header.h',
                              [potentially_bad_content], None)

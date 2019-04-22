@@ -60,9 +60,7 @@ public:
 			return image[index];
 		}
 
-		static egl::Image* nullImage;
-		nullImage = nullptr;
-		return nullImage;
+		return getNullImage();
 	}
 
 	inline void release()
@@ -91,6 +89,7 @@ public:
 
 private:
 	egl::Image *image[IMPLEMENTATION_MAX_TEXTURE_LEVELS] = {};
+    static egl::Image*& getNullImage();
 };
 
 class Texture : public egl::Texture
@@ -149,6 +148,7 @@ public:
 	virtual int getTopLevel() const = 0;
 	virtual bool requiresSync() const = 0;
 
+	virtual bool isBaseLevelDefined() const = 0;
 	virtual bool isSamplerComplete(Sampler *sampler) const = 0;
 	virtual bool isCompressed(GLenum target, GLint level) const = 0;
 	virtual bool isDepth(GLenum target, GLint level) const = 0;
@@ -221,6 +221,7 @@ public:
 
 	void setSharedImage(egl::Image *image);
 
+	bool isBaseLevelDefined() const override;
 	bool isSamplerComplete(Sampler *sampler) const override;
 	bool isCompressed(GLenum target, GLint level) const override;
 	bool isDepth(GLenum target, GLint level) const override;
@@ -288,6 +289,7 @@ public:
 	void copyImage(GLenum target, GLint level, GLenum internalformat, GLint x, GLint y, GLsizei width, GLsizei height, Renderbuffer *source);
 	void copySubImage(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLint x, GLint y, GLsizei width, GLsizei height, Renderbuffer *source) override;
 
+	bool isBaseLevelDefined() const override;
 	bool isSamplerComplete(Sampler *sampler) const override;
 	bool isCompressed(GLenum target, GLint level) const override;
 	bool isDepth(GLenum target, GLint level) const override;
@@ -351,6 +353,7 @@ public:
 
 	void setSharedImage(egl::Image *image);
 
+	bool isBaseLevelDefined() const override;
 	bool isSamplerComplete(Sampler *sampler) const override;
 	bool isCompressed(GLenum target, GLint level) const override;
 	bool isDepth(GLenum target, GLint level) const override;

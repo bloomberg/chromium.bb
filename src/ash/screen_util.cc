@@ -7,9 +7,11 @@
 #include "ash/display/display_configuration_controller.h"
 #include "ash/display/mirror_window_controller.h"
 #include "ash/display/window_tree_host_manager.h"
-#include "ash/root_window_controller.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
+#include "ash/wm/desks/desks_util.h"
+#include "ash/wm/work_area_insets.h"
 #include "base/logging.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -37,6 +39,17 @@ gfx::Rect GetDisplayBoundsInParent(aura::Window* window) {
   return result;
 }
 
+gfx::Rect GetFullscreenWindowBoundsInParent(aura::Window* window) {
+  gfx::Rect result = GetDisplayBoundsInParent(window);
+  const WorkAreaInsets* const work_area_insets =
+      WorkAreaInsets::ForWindow(window->GetRootWindow());
+  result.Inset(0,
+               work_area_insets->accessibility_panel_height() +
+                   work_area_insets->docked_magnifier_height(),
+               0, 0);
+  return result;
+}
+
 gfx::Rect GetDisplayWorkAreaBoundsInParent(aura::Window* window) {
   gfx::Rect result =
       display::Screen::GetScreen()->GetDisplayNearestWindow(window).work_area();
@@ -45,8 +58,23 @@ gfx::Rect GetDisplayWorkAreaBoundsInParent(aura::Window* window) {
 }
 
 gfx::Rect GetDisplayWorkAreaBoundsInParentForLockScreen(aura::Window* window) {
-  gfx::Rect bounds = Shelf::ForWindow(window)->GetUserWorkAreaBounds();
+  gfx::Rect bounds = WorkAreaInsets::ForWindow(window)->user_work_area_bounds();
   ::wm::ConvertRectFromScreen(window->parent(), &bounds);
+  return bounds;
+}
+
+gfx::Rect GetDisplayWorkAreaBoundsInParentForActiveDeskContainer(
+    aura::Window* window) {
+  aura::Window* root_window = window->GetRootWindow();
+  return GetDisplayWorkAreaBoundsInParent(
+      desks_util::GetActiveDeskContainerForRoot(root_window));
+}
+
+gfx::Rect GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
+    aura::Window* window) {
+  gfx::Rect bounds =
+      GetDisplayWorkAreaBoundsInParentForActiveDeskContainer(window);
+  ::wm::ConvertRectToScreen(window->GetRootWindow(), &bounds);
   return bounds;
 }
 

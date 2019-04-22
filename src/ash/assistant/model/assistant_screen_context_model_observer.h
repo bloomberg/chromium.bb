@@ -5,6 +5,7 @@
 #ifndef ASH_ASSISTANT_MODEL_ASSISTANT_SCREEN_CONTEXT_MODEL_OBSERVER_H_
 #define ASH_ASSISTANT_MODEL_ASSISTANT_SCREEN_CONTEXT_MODEL_OBSERVER_H_
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/observer_list_types.h"
 
@@ -14,7 +15,8 @@ enum class ScreenContextRequestState;
 
 // A checked observer which receives notification of changes to the Assistant
 // screen context model state.
-class AssistantScreenContextModelObserver : public base::CheckedObserver {
+class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantScreenContextModelObserver
+    : public base::CheckedObserver {
  public:
   // Invoked when the screen context request state is changed.
   virtual void OnScreenContextRequestStateChanged(

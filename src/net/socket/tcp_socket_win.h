@@ -98,9 +98,6 @@ class NET_EXPORT TCPSocketWin : public base::win::ObjectWatcher::Delegate {
 
   void Close();
 
-  // NOOP since TCP FastOpen is not implemented in Windows.
-  void EnableTCPFastOpenIfSupported() {}
-
   bool IsValid() const { return socket_ != INVALID_SOCKET; }
 
   // Detachs from the current thread, to allow the socket to be transferred to

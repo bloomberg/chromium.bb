@@ -11,7 +11,8 @@
 namespace base {
 namespace sequence_manager {
 
-constexpr int kTaskTypeNone = 0;
+using TaskType = uint8_t;
+constexpr TaskType kTaskTypeNone = 0;
 
 namespace internal {
 
@@ -24,7 +25,7 @@ struct BASE_EXPORT PostedTask {
                       Location location = Location(),
                       TimeDelta delay = TimeDelta(),
                       Nestable nestable = Nestable::kNestable,
-                      int task_type = kTaskTypeNone);
+                      TaskType task_type = kTaskTypeNone);
   PostedTask(PostedTask&& move_from) noexcept;
   ~PostedTask();
 
@@ -32,7 +33,7 @@ struct BASE_EXPORT PostedTask {
   Location location;
   TimeDelta delay;
   Nestable nestable;
-  int task_type;
+  TaskType task_type;
   // The time at which the task was queued.
   TimeTicks queue_time;
 
@@ -94,7 +95,11 @@ struct BASE_EXPORT Task : public PendingTask {
 
   bool enqueue_order_set() const { return enqueue_order_; }
 
-  int task_type;
+  TaskType task_type;
+
+#if DCHECK_IS_ON()
+  bool cross_thread_;
+#endif
 
  private:
   // Similar to |sequence_num|, but ultimately the |enqueue_order| is what

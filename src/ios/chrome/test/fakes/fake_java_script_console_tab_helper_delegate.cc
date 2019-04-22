@@ -11,6 +11,8 @@ FakeJavaScriptConsoleTabHelperDelegate::
     ~FakeJavaScriptConsoleTabHelperDelegate() = default;
 
 void FakeJavaScriptConsoleTabHelperDelegate::DidReceiveConsoleMessage(
+    web::WebState* web_state,
+    web::WebFrame* sender_frame,
     const JavaScriptConsoleMessage& message) {
   last_received_message_ = std::make_unique<JavaScriptConsoleMessage>(message);
 }

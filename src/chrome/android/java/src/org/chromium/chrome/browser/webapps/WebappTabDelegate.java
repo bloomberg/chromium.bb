@@ -15,11 +15,12 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
+import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.LaunchSourceType;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabIdManager;
 import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
-import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
+import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.document.AsyncTabCreationParams;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 
@@ -34,14 +35,14 @@ import java.util.List;
  */
 public class WebappTabDelegate extends TabDelegate {
     private static final String TAG = "WebappTabDelegate";
-    private @WebappActivity.ActivityType int mActivityType;
     private String mApkPackageName;
+    private @LaunchSourceType int mLaunchSourceType;
 
-    public WebappTabDelegate(
-            boolean incognito, @WebappActivity.ActivityType int activityType, String packageName) {
+    public WebappTabDelegate(boolean incognito, WebappInfo webappInfo) {
         super(incognito);
-        mActivityType = activityType;
-        mApkPackageName = packageName;
+        mApkPackageName = webappInfo.webApkPackageName();
+        mLaunchSourceType =
+                webappInfo.isForWebApk() ? LaunchSourceType.WEBAPK : LaunchSourceType.WEBAPP;
     }
 
     @Override
@@ -58,7 +59,7 @@ public class WebappTabDelegate extends TabDelegate {
         intent.putExtra(CustomTabIntentDataProvider.EXTRA_SEND_TO_EXTERNAL_DEFAULT_HANDLER, true);
         intent.putExtra(CustomTabIntentDataProvider.EXTRA_IS_OPENED_BY_CHROME, true);
         intent.putExtra(CustomTabIntentDataProvider.EXTRA_IS_OPENED_BY_WEBAPK, true);
-        intent.putExtra(CustomTabIntentDataProvider.EXTRA_BROWSER_LAUNCH_SOURCE, mActivityType);
+        intent.putExtra(CustomTabIntentDataProvider.EXTRA_BROWSER_LAUNCH_SOURCE, mLaunchSourceType);
         intent.putExtra(Browser.EXTRA_APPLICATION_ID, mApkPackageName);
         addAsyncTabExtras(asyncParams, parentId, false /* isChromeUI */, assignedTabId, intent);
 
@@ -84,7 +85,7 @@ public class WebappTabDelegate extends TabDelegate {
             boolean foundSpecializedHandler = false;
 
             for (String result : ExternalNavigationDelegateImpl.getSpecializedHandlersWithFilter(
-                         handlers, null, null)) {
+                         handlers, null)) {
                 if (result.equals(mApkPackageName)) {
                     // Current WebAPK matches and this is a HTTP(s) link. Don't intercept so that we
                     // can launch a CCT. See http://crbug.com/831806 for more context.

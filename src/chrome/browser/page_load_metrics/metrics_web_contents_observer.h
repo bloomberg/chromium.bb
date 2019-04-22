@@ -24,6 +24,10 @@
 #include "content/public/common/resource_type.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 
+namespace net {
+class IPEndPoint;
+}  // namespace net
+
 namespace content {
 class NavigationHandle;
 class RenderFrameHost;
@@ -89,6 +93,8 @@ class MetricsWebContentsObserver
   void WebContentsWillSoonBeDestroyed();
 
   // content::WebContentsObserver implementation:
+  void ReadyToCommitNavigation(
+      content::NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
   void DidRedirectNavigation(
@@ -99,14 +105,21 @@ class MetricsWebContentsObserver
   void RenderProcessGone(base::TerminationStatus status) override;
   void RenderViewHostChanged(content::RenderViewHost* old_host,
                              content::RenderViewHost* new_host) override;
+  void FrameDeleted(content::RenderFrameHost* render_frame_host) override;
   void MediaStartedPlaying(
       const content::WebContentsObserver::MediaPlayerInfo& video_type,
-      const content::WebContentsObserver::MediaPlayerId& id) override;
+      const content::MediaPlayerId& id) override;
   void WebContentsDestroyed() override;
   void ResourceLoadComplete(
       content::RenderFrameHost* render_frame_host,
       const content::GlobalRequestID& request_id,
       const content::mojom::ResourceLoadInfo& resource_load_info) override;
+  void FrameReceivedFirstUserActivation(
+      content::RenderFrameHost* render_frame_host) override;
+  void FrameDisplayStateChanged(content::RenderFrameHost* render_frame_host,
+                                bool is_display_none) override;
+  void FrameSizeChanged(content::RenderFrameHost* render_frame_host,
+                        const gfx::Size& frame_size) override;
 
   // These methods are forwarded from the MetricsNavigationThrottle.
   void WillStartNavigationRequest(content::NavigationHandle* navigation_handle);
@@ -118,7 +131,7 @@ class MetricsWebContentsObserver
   // frame requests when browser-side navigation is enabled.
   void OnRequestComplete(
       const GURL& url,
-      const net::HostPortPair& host_port_pair,
+      const net::IPEndPoint& remote_endpoint,
       int frame_tree_node_id,
       const content::GlobalRequestID& request_id,
       content::RenderFrameHost* render_frame_host_or_null,
@@ -152,7 +165,9 @@ class MetricsWebContentsObserver
       mojom::PageLoadMetadataPtr metadata,
       mojom::PageLoadFeaturesPtr new_features,
       const std::vector<mojom::ResourceDataUpdatePtr>& resources,
-      mojom::PageRenderDataPtr render_data);
+      mojom::FrameRenderDataUpdatePtr render_data,
+      mojom::CpuTimingPtr cpu_timing,
+      mojom::DeferredResourceCountsPtr new_deferred_resource_data);
 
   // Informs the observers of the currently committed load that the event
   // corresponding to |event_key| has occurred. This should not be called within
@@ -164,11 +179,14 @@ class MetricsWebContentsObserver
   friend class content::WebContentsUserData<MetricsWebContentsObserver>;
 
   // page_load_metrics::mojom::PageLoadMetrics implementation.
-  void UpdateTiming(mojom::PageLoadTimingPtr timing,
-                    mojom::PageLoadMetadataPtr metadata,
-                    mojom::PageLoadFeaturesPtr new_features,
-                    std::vector<mojom::ResourceDataUpdatePtr> resources,
-                    mojom::PageRenderDataPtr render_data) override;
+  void UpdateTiming(
+      mojom::PageLoadTimingPtr timing,
+      mojom::PageLoadMetadataPtr metadata,
+      mojom::PageLoadFeaturesPtr new_features,
+      std::vector<mojom::ResourceDataUpdatePtr> resources,
+      mojom::FrameRenderDataUpdatePtr render_data,
+      mojom::CpuTimingPtr cpu_timing,
+      mojom::DeferredResourceCountsPtr new_deferred_resource_data) override;
 
   void HandleFailedNavigationForTrackedLoad(
       content::NavigationHandle* navigation_handle,
@@ -245,6 +263,8 @@ class MetricsWebContentsObserver
       page_load_metrics_binding_;
 
   bool web_contents_will_soon_be_destroyed_ = false;
+
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(MetricsWebContentsObserver);
 };

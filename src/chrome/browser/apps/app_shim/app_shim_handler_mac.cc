@@ -7,6 +7,7 @@
 #include <map>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -68,7 +69,7 @@ class AppShimHandlerRegistry : public content::NotificationObserver {
       // Post this to give AppWindows a chance to remove themselves from the
       // registry.
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(&TerminateIfNoAppWindows));
+          FROM_HERE, base::BindOnce(&TerminateIfNoAppWindows));
     }
   }
 

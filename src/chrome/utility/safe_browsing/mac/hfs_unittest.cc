@@ -9,7 +9,7 @@
 
 #include "base/files/file.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -47,14 +47,14 @@ class HFSIteratorTest : public testing::Test {
 
     const base::string16 dmg_name = base::ASCIIToUTF16("SafeBrowsingDMG/");
 
-    for (size_t i = 0; i < arraysize(kBaseFiles); ++i)
+    for (size_t i = 0; i < base::size(kBaseFiles); ++i)
       files->insert(dmg_name + base::ASCIIToUTF16(kBaseFiles[i]));
 
     files->insert(dmg_name + base::ASCIIToUTF16("first/second/") +
                   base::UTF8ToUTF16("Te\xCC\x86st\xCC\x88 \xF0\x9F\x90\x90 "));
 
     dirs->insert(dmg_name.substr(0, dmg_name.size() - 1));
-    for (size_t i = 0; i < arraysize(kBaseDirs); ++i)
+    for (size_t i = 0; i < base::size(kBaseDirs); ++i)
       dirs->insert(dmg_name + base::ASCIIToUTF16(kBaseDirs[i]));
 
     if (case_sensitive) {
@@ -221,11 +221,10 @@ TEST_P(HFSFileReadTest, DecmpfsFile) {
   EXPECT_EQ(0u, buffer.size());
 }
 
-INSTANTIATE_TEST_CASE_P(HFSIteratorTest,
-                        HFSFileReadTest,
-                        testing::Values(
-                            "hfs_plus.img",
-                            "hfsx_case_sensitive.img"));
+INSTANTIATE_TEST_SUITE_P(HFSIteratorTest,
+                         HFSFileReadTest,
+                         testing::Values("hfs_plus.img",
+                                         "hfsx_case_sensitive.img"));
 
 }  // namespace
 }  // namespace dmg

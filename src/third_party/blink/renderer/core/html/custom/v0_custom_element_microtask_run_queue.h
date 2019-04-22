@@ -17,10 +17,6 @@ class HTMLImportLoader;
 class V0CustomElementMicrotaskRunQueue
     : public GarbageCollected<V0CustomElementMicrotaskRunQueue> {
  public:
-  static V0CustomElementMicrotaskRunQueue* Create() {
-    return MakeGarbageCollected<V0CustomElementMicrotaskRunQueue>();
-  }
-
   V0CustomElementMicrotaskRunQueue();
 
   void Enqueue(HTMLImportLoader* parent_loader,
@@ -29,7 +25,7 @@ class V0CustomElementMicrotaskRunQueue
   void RequestDispatchIfNeeded();
   bool IsEmpty() const;
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   void Dispatch();

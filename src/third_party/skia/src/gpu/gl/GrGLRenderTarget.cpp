@@ -28,7 +28,7 @@ GrGLRenderTarget::GrGLRenderTarget(GrGLGpu* gpu,
     , INHERITED(gpu, desc, stencil) {
     this->setFlags(gpu->glCaps(), idDesc);
     this->init(desc, format, idDesc);
-    this->registerWithCacheWrapped();
+    this->registerWithCacheWrapped(GrWrapCacheable::kNo);
 }
 
 GrGLRenderTarget::GrGLRenderTarget(GrGLGpu* gpu, const GrSurfaceDesc& desc, GrGLenum format,
@@ -43,9 +43,6 @@ inline void GrGLRenderTarget::setFlags(const GrGLCaps& glCaps, const IDDesc& idD
     if (idDesc.fIsMixedSampled) {
         SkASSERT(glCaps.usesMixedSamples() && idDesc.fRTFBOID); // FBO 0 can't be mixed sampled.
         this->setHasMixedSamples();
-    }
-    if (glCaps.maxWindowRectangles() > 0 && idDesc.fRTFBOID) {
-        this->setSupportsWindowRects();
     }
     if (!idDesc.fRTFBOID) {
         this->setGLRTFBOIDIs0();
@@ -198,7 +195,7 @@ GrGLGpu* GrGLRenderTarget::getGLGpu() const {
 }
 
 bool GrGLRenderTarget::canAttemptStencilAttachment() const {
-    if (this->getGpu()->getContext()->contextPriv().caps()->avoidStencilBuffers()) {
+    if (this->getGpu()->getContext()->priv().caps()->avoidStencilBuffers()) {
         return false;
     }
 

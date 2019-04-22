@@ -44,10 +44,20 @@ class MODULES_EXPORT IDBKeyRange final : public ScriptWrappable {
   enum LowerBoundType { kLowerBoundOpen, kLowerBoundClosed };
   enum UpperBoundType { kUpperBoundOpen, kUpperBoundClosed };
 
+  static IDBKeyRange* Create(const IDBKey* key) {
+    std::unique_ptr<IDBKey> lower_key = IDBKey::Clone(key);
+    std::unique_ptr<IDBKey> upper_key = IDBKey::Clone(key);
+    return IDBKeyRange::Create(std::move(lower_key), std::move(upper_key),
+                               kLowerBoundClosed, kUpperBoundClosed);
+  }
+
   static IDBKeyRange* Create(std::unique_ptr<IDBKey> lower,
                              std::unique_ptr<IDBKey> upper,
                              LowerBoundType lower_type,
                              UpperBoundType upper_type) {
+    if ((!lower || !lower->IsValid()) && (!upper || !upper->IsValid()))
+      return nullptr;
+
     IDBKey* upper_compressed = upper.get();
     return MakeGarbageCollected<IDBKeyRange>(std::move(lower), upper_compressed,
                                              std::move(upper), lower_type,

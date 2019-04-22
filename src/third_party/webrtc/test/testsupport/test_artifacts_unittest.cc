@@ -11,14 +11,12 @@
 #include "test/testsupport/test_artifacts.h"
 
 #include <string.h>
-
 #include <string>
 
-#include "rtc_base/file.h"
 #include "rtc_base/flags.h"
-#include "rtc_base/platform_file.h"
+#include "rtc_base/system/file_wrapper.h"
 #include "test/gtest.h"
-#include "test/testsupport/fileutils.h"
+#include "test/testsupport/file_utils.h"
 
 WEBRTC_DECLARE_string(test_artifacts_dir);
 
@@ -43,9 +41,9 @@ TEST(IsolatedOutputTest, ShouldBeAbleToWriteContent) {
   const char* content = "some-contents";
   if (WriteToTestArtifactsDir(filename, content)) {
     std::string out_file = JoinFilename(FLAG_test_artifacts_dir, filename);
-    rtc::File input = rtc::File::Open(out_file);
-    EXPECT_TRUE(input.IsOpen());
-    EXPECT_TRUE(input.Seek(0));
+    FileWrapper input = FileWrapper::OpenReadOnly(out_file);
+    EXPECT_TRUE(input.is_open());
+    EXPECT_TRUE(input.Rewind());
     uint8_t buffer[32];
     EXPECT_EQ(input.Read(buffer, strlen(content)), strlen(content));
     buffer[strlen(content)] = 0;
@@ -53,7 +51,7 @@ TEST(IsolatedOutputTest, ShouldBeAbleToWriteContent) {
               std::string(reinterpret_cast<char*>(buffer)));
     input.Close();
 
-    EXPECT_TRUE(rtc::File::Remove(out_file));
+    EXPECT_TRUE(RemoveFile(out_file));
   }
 }
 

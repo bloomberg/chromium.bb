@@ -42,10 +42,10 @@
 #include "base/files/file_util.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/process/process_handle.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -146,19 +146,19 @@ class ChromeVersion {
 base::string16 ChromeVersion::ToString() const {
   base::char16 buffer[24];
   int string_len =
-      swprintf_s(&buffer[0], arraysize(buffer), L"%hu.%hu.%hu.%hu",
-                 major(), minor(), build(), patch());
+      swprintf_s(&buffer[0], base::size(buffer), L"%hu.%hu.%hu.%hu", major(),
+                 minor(), build(), patch());
   DCHECK_NE(-1, string_len);
-  DCHECK_GT(static_cast<int>(arraysize(buffer)), string_len);
+  DCHECK_GT(static_cast<int>(base::size(buffer)), string_len);
   return base::string16(&buffer[0], string_len);
 }
 
 std::string ChromeVersion::ToASCII() const {
   char buffer[24];
-  int string_len = sprintf_s(&buffer[0], arraysize(buffer), "%hu.%hu.%hu.%hu",
+  int string_len = sprintf_s(&buffer[0], base::size(buffer), "%hu.%hu.%hu.%hu",
                              major(), minor(), build(), patch());
   DCHECK_NE(-1, string_len);
-  DCHECK_GT(static_cast<int>(arraysize(buffer)), string_len);
+  DCHECK_GT(static_cast<int>(base::size(buffer)), string_len);
   return std::string(&buffer[0], string_len);
 }
 

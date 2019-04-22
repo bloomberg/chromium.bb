@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
@@ -15,7 +16,9 @@
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/autofill/core/browser/validation.h"
+#include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/grit/components_scaled_resources.h"
@@ -362,19 +365,19 @@ TEST_P(SetExpirationYearFromStringTest, SetExpirationYearFromString) {
       << test_case.expiration_year << " " << test_case.expected_year;
 }
 
-INSTANTIATE_TEST_CASE_P(CreditCardTest,
-                        SetExpirationYearFromStringTest,
-                        testing::Values(
-                            // Valid values.
-                            SetExpirationYearFromStringTestCase{"2040", 2040},
-                            SetExpirationYearFromStringTestCase{"45", 2045},
-                            SetExpirationYearFromStringTestCase{"045", 2045},
-                            SetExpirationYearFromStringTestCase{"9", 2009},
+INSTANTIATE_TEST_SUITE_P(CreditCardTest,
+                         SetExpirationYearFromStringTest,
+                         testing::Values(
+                             // Valid values.
+                             SetExpirationYearFromStringTestCase{"2040", 2040},
+                             SetExpirationYearFromStringTestCase{"45", 2045},
+                             SetExpirationYearFromStringTestCase{"045", 2045},
+                             SetExpirationYearFromStringTestCase{"9", 2009},
 
-                            // Unrecognized year values.
-                            SetExpirationYearFromStringTestCase{"052045", 0},
-                            SetExpirationYearFromStringTestCase{"123", 0},
-                            SetExpirationYearFromStringTestCase{"y2045", 0}));
+                             // Unrecognized year values.
+                             SetExpirationYearFromStringTestCase{"052045", 0},
+                             SetExpirationYearFromStringTestCase{"123", 0},
+                             SetExpirationYearFromStringTestCase{"y2045", 0}));
 
 struct SetExpirationDateFromStringTestCase {
   std::string expiration_date;
@@ -394,7 +397,7 @@ TEST_P(SetExpirationDateFromStringTest, SetExpirationDateFromString) {
   EXPECT_EQ(test_case.expected_year, card.expiration_year());
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CreditCardTest,
     SetExpirationDateFromStringTest,
     testing::Values(
@@ -484,7 +487,7 @@ TEST_P(IsLocalDuplicateOfServerCardTest, IsLocalDuplicateOfServerCard) {
       << " when comparing cards " << a.Label() << " and " << b.Label();
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CreditCardTest,
     IsLocalDuplicateOfServerCardTest,
     testing::Values(
@@ -515,9 +518,6 @@ INSTANTIATE_TEST_CASE_P(
             LOCAL_CARD, "", "423456789012", "", "", "1", MASKED_SERVER_CARD,
             "John Dillinger", "9012", "01", "2010", "1", kVisaCard, true},
         IsLocalDuplicateOfServerCardTestCase{
-            LOCAL_CARD, "", "423456789012", "", "", "1", MASKED_SERVER_CARD,
-            "John Dillinger", "9012", "01", "2010", "1", kMasterCard, false},
-        IsLocalDuplicateOfServerCardTestCase{
             LOCAL_CARD, "John Dillinger", "4234-5678-9012", "01", "2010", "1",
             FULL_SERVER_CARD, "John Dillinger", "423456789012", "01", "2010",
             "1", nullptr, true},
@@ -534,31 +534,123 @@ TEST(CreditCardTest, HasSameNumberAs) {
   EXPECT_TRUE(a.HasSameNumberAs(b));
   EXPECT_TRUE(b.HasSameNumberAs(a));
 
-  // Same number.
+  // Cards with the same number are the same.
   a.set_record_type(CreditCard::LOCAL_CARD);
   a.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("4111111111111111"));
-  a.set_record_type(CreditCard::LOCAL_CARD);
+  b.set_record_type(CreditCard::LOCAL_CARD);
   b.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("4111111111111111"));
   EXPECT_TRUE(a.HasSameNumberAs(b));
   EXPECT_TRUE(b.HasSameNumberAs(a));
 
-  // Local cards shouldn't match even if the last 4 are the same.
+  // Local cards with different overall numbers shouldn't match even if the last
+  // four digits are the same.
   a.set_record_type(CreditCard::LOCAL_CARD);
   a.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("4111111111111111"));
-  a.set_record_type(CreditCard::LOCAL_CARD);
+  b.set_record_type(CreditCard::LOCAL_CARD);
   b.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("4111222222221111"));
   EXPECT_FALSE(a.HasSameNumberAs(b));
   EXPECT_FALSE(b.HasSameNumberAs(a));
 
-  // Likewise if one is an unmasked server card.
+  // When one card is a full server card, the other is a local card, and the
+  // cards have different overall numbers but the same last four digits, they
+  // should not match.
   a.set_record_type(CreditCard::FULL_SERVER_CARD);
+  a.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("4111111111111111"));
+  b.set_record_type(CreditCard::LOCAL_CARD);
+  b.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("4111222222221111"));
   EXPECT_FALSE(a.HasSameNumberAs(b));
   EXPECT_FALSE(b.HasSameNumberAs(a));
 
-  // But if one is a masked card, then they should.
-  b.set_record_type(CreditCard::MASKED_SERVER_CARD);
+  // When one card is a masked server card, the other is a local card, and the
+  // cards have the same last four digits, they should match.
+  a.set_record_type(CreditCard::MASKED_SERVER_CARD);
+  a.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("4111111111111111"));
+  b.set_record_type(CreditCard::LOCAL_CARD);
+  b.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("4331111111111111"));
   EXPECT_TRUE(a.HasSameNumberAs(b));
   EXPECT_TRUE(b.HasSameNumberAs(a));
+
+  // When one card is a masked server card, the other is a full server card, and
+  // the cards have the same last four digits, they should match.
+  a.set_record_type(CreditCard::MASKED_SERVER_CARD);
+  a.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("4111111111111111"));
+  b.set_record_type(CreditCard::FULL_SERVER_CARD);
+  b.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("4331111111111111"));
+  EXPECT_TRUE(a.HasSameNumberAs(b));
+  EXPECT_TRUE(b.HasSameNumberAs(a));
+
+  // If one card is masked, then partial or missing expiration date information
+  // should not prevent the function from returning true.
+  a.set_record_type(CreditCard::MASKED_SERVER_CARD);
+  a.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("4111111111111111"));
+  a.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("01"));
+  a.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2025"));
+  b.set_record_type(CreditCard::LOCAL_CARD);
+  b.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("4111111111111111"));
+  b.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16(""));
+  b.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16(""));
+  EXPECT_TRUE(a.HasSameNumberAs(b));
+  EXPECT_TRUE(b.HasSameNumberAs(a));
+
+  // If one card is masked, then non-matching expiration months should cause the
+  // function to return false.
+  a.set_record_type(CreditCard::MASKED_SERVER_CARD);
+  a.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("4111111111111111"));
+  a.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("01"));
+  a.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16(""));
+  b.set_record_type(CreditCard::LOCAL_CARD);
+  b.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("4111111111111111"));
+  b.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("03"));
+  b.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16(""));
+  EXPECT_FALSE(a.HasSameNumberAs(b));
+  EXPECT_FALSE(b.HasSameNumberAs(a));
+
+  // If one card is masked, then non-matching expiration years should cause the
+  // function to return false.
+  a.set_record_type(CreditCard::MASKED_SERVER_CARD);
+  a.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("4111111111111111"));
+  a.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16(""));
+  a.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2025"));
+  b.set_record_type(CreditCard::LOCAL_CARD);
+  b.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("4111111111111111"));
+  b.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16(""));
+  b.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2026"));
+  EXPECT_FALSE(a.HasSameNumberAs(b));
+  EXPECT_FALSE(b.HasSameNumberAs(a));
+}
+
+TEST(CreditCardTest, HasSameNumberAs_LogMaskedCardComparisonNetworksMatch) {
+  CreditCard a(base::GenerateGUID(), std::string());
+  CreditCard b(base::GenerateGUID(), std::string());
+
+  a.set_record_type(CreditCard::MASKED_SERVER_CARD);
+  a.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("4111111111111111"));
+  a.SetNetworkForMaskedCard(kVisaCard);
+  // CreditCard b's network is set to kVisaCard because it starts with 4, so the
+  // two cards have the same network.
+  b.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("4111111111111111"));
+  base::HistogramTester histogram_tester;
+  EXPECT_TRUE(a.HasSameNumberAs(b));
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.MaskedCardComparisonNetworksMatch", true, 1);
+}
+
+TEST(CreditCardTest,
+     HasSameNumberAs_LogMaskedCardComparisonNetworksDoNotMatch) {
+  CreditCard a(base::GenerateGUID(), std::string());
+  CreditCard b(base::GenerateGUID(), std::string());
+
+  a.set_record_type(CreditCard::MASKED_SERVER_CARD);
+  a.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("4111111111111111"));
+  a.SetNetworkForMaskedCard(kDiscoverCard);
+  // CreditCard b's network is set to kVisaCard because it starts with 4. The
+  // two cards have the same last four digits, but their networks are different,
+  // so this discrepancy should be logged.
+  b.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("4111111111111111"));
+  base::HistogramTester histogram_tester;
+  EXPECT_TRUE(a.HasSameNumberAs(b));
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.MaskedCardComparisonNetworksMatch", false, 1);
 }
 
 TEST(CreditCardTest, Compare) {
@@ -577,6 +669,19 @@ TEST(CreditCardTest, Compare) {
   a.set_origin("apple");
   b.set_origin("banana");
   EXPECT_EQ(0, a.Compare(b));
+
+  // Different types of server cards don't count.
+  a.set_record_type(MASKED_SERVER_CARD);
+  b.set_record_type(FULL_SERVER_CARD);
+  EXPECT_EQ(0, a.Compare(b));
+
+  // Local is different from server.
+  a.set_record_type(LOCAL_CARD);
+  b.set_record_type(FULL_SERVER_CARD);
+  EXPECT_GT(0, a.Compare(b));
+  a.set_record_type(MASKED_SERVER_CARD);
+  b.set_record_type(LOCAL_CARD);
+  EXPECT_LT(0, a.Compare(b));
 
   // Different values produce non-zero results.
   test::SetCreditCardInfo(&a, "Jimmy", nullptr, nullptr, nullptr, "");
@@ -916,9 +1021,9 @@ TEST(CreditCardTest, IsValidCardNumberAndExpiryDate) {
   base::Time::Exploded now_exploded;
   now.LocalExplode(&now_exploded);
   card.SetRawInfo(CREDIT_CARD_EXP_MONTH,
-                  base::IntToString16(now_exploded.month));
+                  base::NumberToString16(now_exploded.month));
   card.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR,
-                  base::IntToString16(now_exploded.year - 1));
+                  base::NumberToString16(now_exploded.year - 1));
   card.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("4111111111111111"));
   EXPECT_FALSE(card.IsValid());
   EXPECT_FALSE(card.HasValidExpirationDate());
@@ -1007,6 +1112,41 @@ TEST(CreditCardTest, CreditCardVerificationCode) {
   // The verification code cannot be set, as Chrome does not store this data.
   card.SetRawInfo(CREDIT_CARD_VERIFICATION_CODE, ASCIIToUTF16("999"));
   EXPECT_EQ(base::string16(), card.GetRawInfo(CREDIT_CARD_VERIFICATION_CODE));
+}
+
+// Tests that the card in only deletable if it is expired before the threshold.
+TEST(CreditCardTest, IsDeletable) {
+  // Set up an arbitrary time, as setup the current time to just above the
+  // threshold later than that time. This sets the year to 2007. The code
+  // expects valid expiration years to be between 2000 and 2999. However,
+  // because of the year 2018 problem, we need to pick an earlier year.
+  const base::Time kArbitraryTime = base::Time::FromDoubleT(1000000000);
+  TestAutofillClock test_clock;
+  test_clock.SetNow(kArbitraryTime + kDisusedDataModelDeletionTimeDelta +
+                    base::TimeDelta::FromDays(1));
+
+  // Created a card that has not been used since over the deletion threshold.
+  CreditCard card(base::GenerateGUID(), "https://www.example.com/");
+  card.set_use_date(kArbitraryTime);
+
+  // Set the card to be expired before the threshold.
+  base::Time::Exploded now_exploded;
+  AutofillClock::Now().LocalExplode(&now_exploded);
+  card.SetExpirationYear(now_exploded.year - 5);
+  card.SetExpirationMonth(1);
+  ASSERT_TRUE(card.IsExpired(AutofillClock::Now() -
+                             kDisusedDataModelDeletionTimeDelta));
+
+  // Make sure the card is deletable.
+  EXPECT_TRUE(card.IsDeletable());
+
+  // Set the card to not be expired.
+  card.SetExpirationYear(now_exploded.year + 5);
+  ASSERT_FALSE(card.IsExpired(AutofillClock::Now() -
+                              kDisusedDataModelDeletionTimeDelta));
+
+  // Make sure the card is not deletable.
+  EXPECT_FALSE(card.IsDeletable());
 }
 
 struct CreditCardMatchingTypesCase {
@@ -1102,9 +1242,9 @@ const CreditCardMatchingTypesCase kCreditCardMatchingTypesTestCases[] = {
     {"2021", "01", "2019", LOCAL_CARD, ServerFieldTypeSet()},
 };
 
-INSTANTIATE_TEST_CASE_P(CreditCardTest,
-                        CreditCardMatchingTypesTest,
-                        testing::ValuesIn(kCreditCardMatchingTypesTestCases));
+INSTANTIATE_TEST_SUITE_P(CreditCardTest,
+                         CreditCardMatchingTypesTest,
+                         testing::ValuesIn(kCreditCardMatchingTypesTestCases));
 
 struct GetCardNetworkTestCase {
   const char* card_number;
@@ -1112,7 +1252,7 @@ struct GetCardNetworkTestCase {
   bool is_valid;
 };
 
-// We are doing batches here because INSTANTIATE_TEST_CASE_P has a
+// We are doing batches here because INSTANTIATE_TEST_SUITE_P has a
 // 50 upper limit.
 class GetCardNetworkTestBatch1
     : public testing::TestWithParam<GetCardNetworkTestCase> {};
@@ -1125,7 +1265,7 @@ TEST_P(GetCardNetworkTestBatch1, GetCardNetwork) {
   EXPECT_EQ(test_case.is_valid, IsValidCreditCardNumber(card_number));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CreditCardTest,
     GetCardNetworkTestBatch1,
     testing::Values(
@@ -1188,7 +1328,7 @@ TEST_P(GetCardNetworkTestBatch2, GetCardNetwork) {
   EXPECT_EQ(test_case.is_valid, IsValidCreditCardNumber(card_number));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CreditCardTest,
     GetCardNetworkTestBatch2,
     testing::Values(
@@ -1241,7 +1381,7 @@ TEST_P(GetCardNetworkTestBatch3, GetCardNetwork) {
   EXPECT_EQ(test_case.is_valid, IsValidCreditCardNumber(card_number));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CreditCardTest,
     GetCardNetworkTestBatch3,
     testing::Values(
@@ -1301,7 +1441,7 @@ TEST_P(GetCardNetworkTestBatch4, GetCardNetwork) {
   EXPECT_EQ(test_case.is_valid, IsValidCreditCardNumber(card_number));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CreditCardTest,
     GetCardNetworkTestBatch4,
     testing::Values(
@@ -1432,7 +1572,7 @@ TEST_P(ShouldUpdateExpirationTest, ShouldUpdateExpiration) {
             card.ShouldUpdateExpiration(testingTimes.now_));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CreditCardTest,
     ShouldUpdateExpirationTest,
     testing::Values(

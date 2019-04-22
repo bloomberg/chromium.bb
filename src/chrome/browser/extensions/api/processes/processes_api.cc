@@ -11,6 +11,7 @@
 #include <set>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/process/process.h"
@@ -92,6 +93,9 @@ api::processes::ProcessType GetProcessType(
 
     case task_manager::Task::NACL:
       return api::processes::PROCESS_TYPE_NACL;
+
+    case task_manager::Task::SERVICE_WORKER:
+      return api::processes::PROCESS_TYPE_SERVICE_WORKER;
 
     case task_manager::Task::UTILITY:
       return api::processes::PROCESS_TYPE_UTILITY;
@@ -289,7 +293,7 @@ void ProcessesEventRouter::OnTasksRefreshedWithBackgroundCalculations(
 
     // Store each process indexed by the string version of its ChildProcessHost
     // ID.
-    processes_dictionary.Set(base::IntToString(child_process_host_id),
+    processes_dictionary.Set(base::NumberToString(child_process_host_id),
                              process.ToValue());
   }
 
@@ -462,8 +466,8 @@ ExtensionFunction::ResponseAction ProcessesGetProcessIdForTabFunction::Run() {
           tab_id, Profile::FromBrowserContext(browser_context()),
           include_incognito_information(), nullptr, nullptr, &contents,
           &tab_index)) {
-    return RespondNow(Error(tabs_constants::kTabNotFoundError,
-                            base::IntToString(tab_id)));
+    return RespondNow(
+        Error(tabs_constants::kTabNotFoundError, base::NumberToString(tab_id)));
   }
 
   // TODO(https://crbug.com/767563): chrome.processes.getProcessIdForTab API
@@ -488,11 +492,11 @@ ExtensionFunction::ResponseAction ProcessesTerminateFunction::Run() {
   child_process_host_id_ = params->process_id;
   if (child_process_host_id_ < 0) {
     return RespondNow(Error(errors::kInvalidArgument,
-                            base::IntToString(child_process_host_id_)));
+                            base::NumberToString(child_process_host_id_)));
   } else if (child_process_host_id_ == 0) {
     // Cannot kill the browser process.
     return RespondNow(Error(errors::kNotAllowedToTerminate,
-                            base::IntToString(child_process_host_id_)));
+                            base::NumberToString(child_process_host_id_)));
   }
 
   // Check if it's a renderer.
@@ -537,19 +541,19 @@ ExtensionFunction::ResponseValue
 ProcessesTerminateFunction::TerminateIfAllowed(base::ProcessHandle handle) {
   if (handle == base::kNullProcessHandle) {
     return Error(errors::kProcessNotFound,
-                 base::IntToString(child_process_host_id_));
+                 base::NumberToString(child_process_host_id_));
   }
 
   if (handle == base::GetCurrentProcessHandle()) {
     // Cannot kill the browser process.
     return Error(errors::kNotAllowedToTerminate,
-                 base::IntToString(child_process_host_id_));
+                 base::NumberToString(child_process_host_id_));
   }
 
   base::Process process = base::Process::Open(base::GetProcId(handle));
   if (!process.IsValid()) {
     return Error(errors::kProcessNotFound,
-                 base::IntToString(child_process_host_id_));
+                 base::NumberToString(child_process_host_id_));
   }
 
   const bool did_terminate =
@@ -674,15 +678,15 @@ void ProcessesGetProcessInfoFunction::GatherDataAndRespond(
     // Store each process indexed by the string version of its
     // ChildProcessHost ID.
     processes.additional_properties.Set(
-        base::IntToString(child_process_host_id),
-        process.ToValue());
+        base::NumberToString(child_process_host_id), process.ToValue());
   }
 
   // Report the invalid host ids sent in the arguments.
   for (const auto& host_id : process_host_ids_) {
-    WriteToConsole(content::CONSOLE_MESSAGE_LEVEL_ERROR,
-                   ErrorUtils::FormatErrorMessage(errors::kProcessNotFound,
-                                                  base::IntToString(host_id)));
+    WriteToConsole(
+        blink::mojom::ConsoleMessageLevel::kError,
+        ErrorUtils::FormatErrorMessage(errors::kProcessNotFound,
+                                       base::NumberToString(host_id)));
   }
 
   // Send the response.

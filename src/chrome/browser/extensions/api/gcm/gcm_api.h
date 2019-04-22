@@ -35,7 +35,7 @@ class GcmApiFunction : public UIThreadExtensionFunction {
 
 class GcmRegisterFunction : public GcmApiFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("gcm.register", GCM_REGISTER);
+  DECLARE_EXTENSION_FUNCTION("gcm.register", GCM_REGISTER)
 
   GcmRegisterFunction();
 
@@ -52,7 +52,7 @@ class GcmRegisterFunction : public GcmApiFunction {
 
 class GcmUnregisterFunction : public GcmApiFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("gcm.unregister", GCM_UNREGISTER);
+  DECLARE_EXTENSION_FUNCTION("gcm.unregister", GCM_UNREGISTER)
 
   GcmUnregisterFunction();
 
@@ -68,7 +68,7 @@ class GcmUnregisterFunction : public GcmApiFunction {
 
 class GcmSendFunction : public GcmApiFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("gcm.send", GCM_SEND);
+  DECLARE_EXTENSION_FUNCTION("gcm.send", GCM_SEND)
 
   GcmSendFunction();
 

@@ -5,6 +5,8 @@
 import base64
 import json
 import mock
+import random
+import string
 import sys
 import webapp2
 import webtest
@@ -111,6 +113,43 @@ def _CreateHistogram(
   return histograms
 
 
+class BufferedFakeFile(object):
+  def __init__(self, data=str()):
+    self.data = data
+    self.position = 0
+
+  def read(self, size=None): # pylint: disable=invalid-name
+    if self.position == len(self.data):
+      return ''
+    if size is None or size < 0:
+      result = self.data[self.position:]
+      self.position = len(self.data)
+      return result
+    if size > len(self.data) + self.position:
+      result = self.data[self.position:]
+      self.position = len(self.data)
+      return result
+
+    current_position = self.position
+    self.position += size
+    result = self.data[current_position:self.position]
+    return result
+
+  def write(self, data): # pylint: disable=invalid-name
+    self.data += data
+    return len(data)
+
+  def close(self): # pylint: disable=invalid-name
+    pass
+
+  def __exit__(self, *args):
+    self.close()
+    return False
+
+  def __enter__(self):
+    return self
+
+
 class AddHistogramsBaseTest(testing_common.TestCase):
 
   def setUp(self):
@@ -142,20 +181,14 @@ class AddHistogramsBaseTest(testing_common.TestCase):
     self.addCleanup(patcher.stop)
 
   def PostAddHistogram(self, data, status=200):
-    mock_obj = mock.MagicMock()
-
-    def _PassToRead(data_out):
-      mock_obj.read.return_value = data_out
-
-    mock_obj.write.side_effect = _PassToRead
+    mock_obj = mock.MagicMock(wraps=BufferedFakeFile())
     self.mock_cloudstorage.open.return_value = mock_obj
 
     self.testapp.post('/add_histograms', data, status=status)
     self.ExecuteTaskQueueTasks('/add_histograms/process', 'default')
 
   def PostAddHistogramProcess(self, data):
-    mock_read = mock.MagicMock()
-    mock_read.read.return_value = zlib.compress(data)
+    mock_read = mock.MagicMock(wraps=BufferedFakeFile(zlib.compress(data)))
     self.mock_cloudstorage.open.return_value = mock_read
 
     # TODO(simonhatch): Should we surface the error somewhere that can be
@@ -716,15 +749,12 @@ class AddHistogramsTest(AddHistogramsBaseTest):
   def setUp(self):
     super(AddHistogramsTest, self).setUp()
 
-  def TaskParamsByGuid(self):
+  def TaskParams(self):
     tasks = self.GetTaskQueueTasks(add_histograms.TASK_QUEUE_NAME)
-    params_by_guid = {}
+    params = []
     for task in tasks:
-      params = base64.b64decode(task['body'])
-      histogram_dicts = json.loads(params)
-      for d in histogram_dicts:
-        params_by_guid[d['data']['guid']] = d
-    return params_by_guid
+      params.extend(json.loads(base64.b64decode(task['body'])))
+    return params
 
   @mock.patch.object(
       add_histograms, '_QueueHistogramTasks')
@@ -824,7 +854,6 @@ class AddHistogramsTest(AddHistogramsBaseTest):
                 reserved_infos.BENCHMARKS.name:
                     '0bc1021b-8107-4db7-bc8c-49d7cf53c5ae',
             },
-            'guid': '4989617a-14d6-4f80-8f75-dafda2ff13b0',
             'name': 'foo',
             'unit': 'count'
         }, {
@@ -841,27 +870,19 @@ class AddHistogramsTest(AddHistogramsBaseTest):
                 reserved_infos.STORIES.name:
                     'dc894bd9-0b73-4400-9d95-b21ee371031d',
             },
-            'guid': '2a714c36-f4ef-488d-8bee-93c7e3149388',
             'name': 'foo2',
             'unit': 'count'
         }
     ])
     self.PostAddHistogram({'data': data})
-    params_by_guid = self.TaskParamsByGuid()
+    params = self.TaskParams()
 
-    self.assertEqual(2, len(params_by_guid))
-    self.assertEqual(
-        'master/bot/benchmark/foo/story',
-        params_by_guid['4989617a-14d6-4f80-8f75-dafda2ff13b0']['test_path'])
-    self.assertEqual(
-        424242,
-        params_by_guid['4989617a-14d6-4f80-8f75-dafda2ff13b0']['revision'])
-    self.assertEqual(
-        'master/bot/benchmark/foo2/story',
-        params_by_guid['2a714c36-f4ef-488d-8bee-93c7e3149388']['test_path'])
-    self.assertEqual(
-        424242,
-        params_by_guid['2a714c36-f4ef-488d-8bee-93c7e3149388']['revision'])
+    self.assertEqual(2, len(params))
+    self.assertEqual(424242, params[0]['revision'])
+    self.assertEqual(424242, params[1]['revision'])
+    paths = set(p['test_path'] for p in params)
+    self.assertIn('master/bot/benchmark/foo/story', paths)
+    self.assertIn('master/bot/benchmark/foo2/story', paths)
 
   def testPostHistogramPassesHistogramLevelSparseDiagnostics(self):
     data = json.dumps([
@@ -897,7 +918,6 @@ class AddHistogramsTest(AddHistogramsBaseTest):
                 reserved_infos.BENCHMARKS.name:
                     '876d0fba-1d12-4c00-a7e9-5fed467e19e3',
             },
-            'guid': '4989617a-14d6-4f80-8f75-dafda2ff13b0',
             'name': 'foo',
             'unit': 'count'
         }, {
@@ -914,23 +934,20 @@ class AddHistogramsTest(AddHistogramsBaseTest):
                 reserved_infos.BENCHMARKS.name:
                     '876d0fba-1d12-4c00-a7e9-5fed467e19e3',
             },
-            'guid': '2a714c36-f4ef-488d-8bee-93c7e3149388',
             'name': 'foo2',
             'unit': 'count'
         }
     ])
     self.PostAddHistogram({'data': data})
-
-    params_by_guid = self.TaskParamsByGuid()
-    params = params_by_guid['2a714c36-f4ef-488d-8bee-93c7e3149388']
-    diagnostics = params['diagnostics']
-
-    self.assertEqual(1, len(diagnostics))
-    self.assertEqual(
-        ['test'], diagnostics[reserved_infos.DEVICE_IDS.name]['values'])
-    self.assertNotEqual(
-        '0bc1021b-8107-4db7-bc8c-49d7cf53c5ae',
-        diagnostics[reserved_infos.DEVICE_IDS.name]['guid'])
+    for params in self.TaskParams():
+      diagnostics = params['diagnostics']
+      if len(diagnostics) < 1:
+        continue
+      self.assertEqual(
+          ['test'], diagnostics[reserved_infos.DEVICE_IDS.name]['values'])
+      self.assertNotEqual(
+          '0bc1021b-8107-4db7-bc8c-49d7cf53c5ae',
+          diagnostics[reserved_infos.DEVICE_IDS.name]['guid'])
 
   def testPostHistogram_AddsNewSparseDiagnostic(self):
     diag_dict = {
@@ -971,15 +988,13 @@ class AddHistogramsTest(AddHistogramsBaseTest):
                 reserved_infos.BENCHMARKS.name:
                     '0bc1021b-8107-4db7-bc8c-49d7cf53c5ae',
             },
-            'guid': '4989617a-14d6-4f80-8f75-dafda2ff13b0',
             'name': 'foo',
             'unit': 'count'}
     ])
     self.PostAddHistogram({'data': data})
 
     diagnostics = histogram.SparseDiagnostic.query().fetch()
-    params_by_guid = self.TaskParamsByGuid()
-    params = params_by_guid['4989617a-14d6-4f80-8f75-dafda2ff13b0']
+    params = self.TaskParams()[0]
     hist = params['data']
 
     self.assertEqual(4, len(diagnostics))
@@ -1027,7 +1042,6 @@ class AddHistogramsTest(AddHistogramsBaseTest):
                 reserved_infos.BENCHMARKS.name:
                     '0bc1021b-8107-4db7-bc8c-49d7cf53c5ae',
             },
-            'guid': '4989617a-14d6-4f80-8f75-dafda2ff13b0',
             'name': 'foo',
             'unit': 'count'
         }
@@ -1035,9 +1049,7 @@ class AddHistogramsTest(AddHistogramsBaseTest):
     self.PostAddHistogram({'data': data})
 
     diagnostics = histogram.SparseDiagnostic.query().fetch()
-    params_by_guid = self.TaskParamsByGuid()
-    params = params_by_guid['4989617a-14d6-4f80-8f75-dafda2ff13b0']
-    hist = params['data']
+    hist = self.TaskParams()[0]['data']
 
     self.assertEqual(3, len(diagnostics))
     self.assertEqual(
@@ -1081,7 +1093,6 @@ class AddHistogramsTest(AddHistogramsBaseTest):
                 reserved_infos.BENCHMARKS.name:
                     '0bc1021b-8107-4db7-bc8c-49d7cf53c5ae',
             },
-            'guid': '4989617a-14d6-4f80-8f75-dafda2ff13b0',
             'name': 'foo',
             'unit': 'count'
         }
@@ -1113,7 +1124,6 @@ class AddHistogramsTest(AddHistogramsBaseTest):
                 reserved_infos.BENCHMARKS.name:
                     '0bc1021b-8107-4db7-bc8c-49d7cf53c5ae',
             },
-            'guid': '4989617a-14d6-4f80-8f75-dafda2ff13b0',
             'name': 'foo',
             'unit': 'count'}
     ])
@@ -1144,7 +1154,6 @@ class AddHistogramsTest(AddHistogramsBaseTest):
                 reserved_infos.CHROMIUM_COMMIT_POSITIONS.name:
                     '25f0a111-9bb4-4cea-b0c1-af2609623160'
             },
-            'guid': '4989617a-14d6-4f80-8f75-dafda2ff13b0',
             'name': 'foo',
             'unit': 'count'
         }
@@ -1189,7 +1198,6 @@ class AddHistogramsTest(AddHistogramsBaseTest):
                 reserved_infos.BENCHMARKS.name:
                     '0bc1021b-8107-4db7-bc8c-49d7cf53c5ae',
             },
-            'guid': '4989617a-14d6-4f80-8f75-dafda2ff13b0',
             'name': 'foo',
             'unit': 'count'}
         ])
@@ -1197,9 +1205,8 @@ class AddHistogramsTest(AddHistogramsBaseTest):
     self.PostAddHistogram({'data': data})
 
     diagnostics = histogram.SparseDiagnostic.query().fetch()
-    params_by_guid = self.TaskParamsByGuid()
 
-    params = params_by_guid['4989617a-14d6-4f80-8f75-dafda2ff13b0']
+    params = self.TaskParams()[0]
     hist = params['data']
     owners_info = hist['diagnostics'][reserved_infos.OWNERS.name]
     self.assertEqual(4, len(diagnostics))
@@ -1265,7 +1272,6 @@ class AddHistogramsTest(AddHistogramsBaseTest):
                 reserved_infos.OWNERS.name:
                     'cabb59fe-4bcf-4512-881c-d038c7a80635'
             },
-            'guid': '4989617a-14d6-4f80-8f75-dafda2ff13b0',
             'name': 'foo',
             'unit': 'count'
         }, {
@@ -1282,7 +1288,6 @@ class AddHistogramsTest(AddHistogramsBaseTest):
                 reserved_infos.BENCHMARKS.name:
                     '0bc1021b-8107-4db7-bc8c-49d7cf53c5ae',
             },
-            'guid': '5239617a-14d6-4f80-8f75-dafda2ff13b1',
             'name': 'bar',
             'unit': 'count'
         }])
@@ -1335,7 +1340,6 @@ class AddHistogramsTest(AddHistogramsBaseTest):
                 reserved_infos.OWNERS.name:
                     'cabb59fe-4bcf-4512-881c-d038c7a80635'
             },
-            'guid': '4989617a-14d6-4f80-8f75-dafda2ff13b0',
             'name': 'foo',
             'unit': 'count'
         }, {
@@ -1352,7 +1356,6 @@ class AddHistogramsTest(AddHistogramsBaseTest):
                 reserved_infos.OWNERS.name:
                     '7c5bd92f-4146-411b-9192-248ffc1be92c'
             },
-            'guid': 'bda61ae3-0178-43f8-8aec-3ab78b9a2e18',
             'name': 'foo',
             'unit': 'count'
         }])
@@ -1476,3 +1479,106 @@ class AddHistogramsTest(AddHistogramsBaseTest):
     add_histograms._LogDebugInfo(histograms)
     self.assertEqual('No LOG_URLS in data.', mock_log.call_args_list[0][0][0])
     self.assertEqual('No BUILD_URLS in data.', mock_log.call_args_list[1][0][0])
+
+
+def RandomChars(length):
+  for _ in xrange(length):
+    yield '%s' % (random.choice(string.letters))
+
+
+class DecompressFileWrapperTest(testing_common.TestCase):
+
+  def testBasic(self):
+    filesize = 1024 * 256
+    random.seed(1)
+    payload = ''.join([x for x in RandomChars(filesize)])
+    random.seed(None)
+    self.assertEqual(len(payload), filesize)
+    input_file = BufferedFakeFile(zlib.compress(payload))
+    retrieved_payload = str()
+    with add_histograms.DecompressFileWrapper(input_file, 2048) as decompressor:
+      while True:
+        chunk = decompressor.read(1024)
+        if len(chunk) == 0:
+          break
+        retrieved_payload += chunk
+    self.assertEqual(payload, retrieved_payload)
+
+  def testDecompressionFail(self):
+    filesize = 1024 * 256
+    random.seed(1)
+    payload = ''.join([x for x in RandomChars(filesize)])
+    random.seed(None)
+    self.assertEqual(len(payload), filesize)
+
+    # We create a BufferedFakeFile which does not contain zlib-compressed data.
+    input_file = BufferedFakeFile(payload)
+    retrieved_payload = str()
+    with self.assertRaises(zlib.error):
+      with add_histograms.DecompressFileWrapper(input_file, 2048) as d:
+        while True:
+          chunk = d.read(1024)
+          if len(chunk) == 0:
+            break
+          retrieved_payload += chunk
+
+  def testJSON(self):
+    # Create a JSON payload that's compressed and loaded appropriately.
+    def _MakeHistogram(name):
+      h = histogram_module.Histogram(name, 'count')
+      for i in xrange(100):
+        h.AddSample(i)
+      return h
+
+    hists = [_MakeHistogram('hist_%d' % i) for i in xrange(1000)]
+    histograms = histogram_set.HistogramSet(hists)
+    histograms.AddSharedDiagnosticToAllHistograms(
+        reserved_infos.MASTERS.name,
+        generic_set.GenericSet(['master']))
+    histograms.AddSharedDiagnosticToAllHistograms(
+        reserved_infos.BOTS.name,
+        generic_set.GenericSet(['bot']))
+    histograms.AddSharedDiagnosticToAllHistograms(
+        reserved_infos.CHROMIUM_COMMIT_POSITIONS.name,
+        generic_set.GenericSet([12345]))
+    histograms.AddSharedDiagnosticToAllHistograms(
+        reserved_infos.BENCHMARKS.name,
+        generic_set.GenericSet(['benchmark']))
+    histograms.AddSharedDiagnosticToAllHistograms(
+        reserved_infos.DEVICE_IDS.name,
+        generic_set.GenericSet(['device_foo']))
+
+    input_file_compressed = BufferedFakeFile(
+        zlib.compress(json.dumps(histograms.AsDicts())))
+    input_file_raw = BufferedFakeFile(json.dumps(histograms.AsDicts()))
+
+    loaded_compressed_histograms = histogram_set.HistogramSet()
+
+    with add_histograms.DecompressFileWrapper(
+        input_file_compressed, 256) as decompressor:
+      loaded_compressed_histograms.ImportDicts(
+          add_histograms._LoadHistogramList(decompressor))
+
+    loaded_compressed_histograms.DeduplicateDiagnostics()
+
+    loaded_raw_histograms = histogram_set.HistogramSet()
+    loaded_raw_histograms.ImportDicts(
+        add_histograms._LoadHistogramList(input_file_raw))
+    loaded_raw_histograms.DeduplicateDiagnostics()
+
+    self.assertEquals(sorted(loaded_raw_histograms.AsDicts()),
+                      sorted(loaded_compressed_histograms.AsDicts()))
+
+  def testJSONFail(self):
+    with BufferedFakeFile('Not JSON') as input_file:
+      with self.assertRaises(ValueError):
+        _ = add_histograms._LoadHistogramList(input_file)
+
+  def testIncrementalJSONSupport(self):
+    with BufferedFakeFile('[{"key": "value incomplete"') as input_file:
+      with self.assertRaises(ValueError):
+        _ = add_histograms._LoadHistogramList(input_file)
+
+    with BufferedFakeFile('[{"key": "complete list"}]') as input_file:
+      dicts = add_histograms._LoadHistogramList(input_file)
+      self.assertSequenceEqual([{u'key': u'complete list'}], dicts)

@@ -11,7 +11,8 @@
 #include <memory>
 
 #include "core/fxcrt/fx_memory.h"
-#include "core/fxge/fx_font.h"
+#include "core/fxcrt/fx_string.h"
+#include "core/fxge/fx_freetype.h"
 #include "third_party/base/optional.h"
 #include "third_party/base/span.h"
 
@@ -22,6 +23,8 @@ class SystemFontInfoIface;
 
 class CFX_FontMgr {
  public:
+  static Optional<pdfium::span<const uint8_t>> GetBuiltinFont(size_t index);
+
   CFX_FontMgr();
   ~CFX_FontMgr();
 
@@ -56,8 +59,10 @@ class CFX_FontMgr {
                           int italic_angle,
                           int CharsetCP,
                           CFX_SubstFont* pSubstFont);
-  Optional<pdfium::span<const uint8_t>> GetBuiltinFont(size_t index);
+
+  // Always present.
   CFX_FontMapper* GetBuiltinMapper() const { return m_pBuiltinMapper.get(); }
+
   FXFT_Library GetFTLibrary() const { return m_FTLibrary; }
   bool FTLibrarySupportsHinting() const { return m_FTLibrarySupportsHinting; }
 
@@ -67,8 +72,8 @@ class CFX_FontMgr {
 
   std::unique_ptr<CFX_FontMapper> m_pBuiltinMapper;
   std::map<ByteString, std::unique_ptr<CTTFontDesc>> m_FaceMap;
-  FXFT_Library m_FTLibrary;
-  bool m_FTLibrarySupportsHinting;
+  FXFT_Library m_FTLibrary = nullptr;
+  bool m_FTLibrarySupportsHinting = false;
 };
 
 #endif  // CORE_FXGE_CFX_FONTMGR_H_

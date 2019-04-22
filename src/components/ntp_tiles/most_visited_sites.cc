@@ -263,7 +263,6 @@ void MostVisitedSites::UninitializeCustomLinks() {
   custom_links_action_count_ = -1;
   custom_links_->Uninitialize();
   BuildCurrentTiles();
-  Refresh();
 }
 
 bool MostVisitedSites::IsCustomLinksInitialized() {
@@ -414,8 +413,7 @@ void MostVisitedSites::InitiateTopSitesQuery() {
     return;  // Ongoing query.
   top_sites_->GetMostVisitedURLs(
       base::Bind(&MostVisitedSites::OnMostVisitedURLsAvailable,
-                 top_sites_weak_ptr_factory_.GetWeakPtr()),
-      false);
+                 top_sites_weak_ptr_factory_.GetWeakPtr()));
 }
 
 base::FilePath MostVisitedSites::GetWhitelistLargeIconPath(const GURL& url) {
@@ -447,8 +445,8 @@ void MostVisitedSites::OnMostVisitedURLsAvailable(
       continue;
 
     NTPTile tile;
-    tile.title = IsCustomLinksEnabled() ? GenerateShortTitle(visited.title)
-                                        : visited.title;
+    tile.title =
+        custom_links_ ? GenerateShortTitle(visited.title) : visited.title;
     tile.url = visited.url;
     tile.source = TileSource::TOP_SITES;
     tile.whitelist_icon_path = GetWhitelistLargeIconPath(visited.url);
@@ -514,7 +512,7 @@ void MostVisitedSites::BuildCurrentTilesGivenSuggestionsProfile(
 
     NTPTile tile;
     tile.title =
-        IsCustomLinksEnabled()
+        custom_links_
             ? GenerateShortTitle(base::UTF8ToUTF16(suggestion_pb.title()))
             : base::UTF8ToUTF16(suggestion_pb.title());
     tile.url = url;
@@ -522,7 +520,6 @@ void MostVisitedSites::BuildCurrentTilesGivenSuggestionsProfile(
     // The title is an aggregation of multiple history entries of one site.
     tile.title_source = TileTitleSource::INFERRED;
     tile.whitelist_icon_path = GetWhitelistLargeIconPath(url);
-    tile.thumbnail_url = GURL(suggestion_pb.thumbnail());
     tile.favicon_url = GURL(suggestion_pb.favicon_url());
     tile.data_generation_time = profile_timestamp;
 
@@ -701,14 +698,21 @@ NTPTilesVector MostVisitedSites::InsertHomeTile(
 
 void MostVisitedSites::OnCustomLinksChanged() {
   DCHECK(custom_links_);
-  DCHECK(custom_links_->IsInitialized());
-  if (custom_links_enabled_)
+  if (!custom_links_enabled_)
+    return;
+
+  if (custom_links_->IsInitialized()) {
     BuildCustomLinks(custom_links_->GetLinks());
+  } else {
+    // Since custom links have been uninitialized (e.g. through Chrome sync), we
+    // should show the regular Most Visited tiles.
+    BuildCurrentTiles();
+  }
 }
 
 void MostVisitedSites::BuildCustomLinks(
     const std::vector<CustomLinksManager::Link>& links) {
-  DCHECK(IsCustomLinksEnabled());
+  DCHECK(custom_links_);
 
   NTPTilesVector tiles;
   size_t num_tiles = std::min(links.size(), kMaxNumCustomLinks);
@@ -721,8 +725,7 @@ void MostVisitedSites::BuildCustomLinks(
     tile.title = link.title;
     tile.url = link.url;
     tile.source = TileSource::CUSTOM_LINKS;
-    // TODO(crbug.com/773278): Populate |data_generation_time| here in order to
-    // log UMA metrics of age.
+    tile.from_most_visited = link.is_most_visited;
     tiles.push_back(std::move(tile));
   }
 

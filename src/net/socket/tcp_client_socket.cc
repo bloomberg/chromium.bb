@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -296,10 +297,6 @@ const NetLogWithSource& TCPClientSocket::NetLog() const {
 
 bool TCPClientSocket::WasEverUsed() const {
   return was_ever_used_;
-}
-
-void TCPClientSocket::EnableTCPFastOpenIfSupported() {
-  socket_->EnableTCPFastOpenIfSupported();
 }
 
 bool TCPClientSocket::WasAlpnNegotiated() const {

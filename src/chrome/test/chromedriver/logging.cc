@@ -14,7 +14,7 @@
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -25,6 +25,7 @@
 #include "chrome/test/chromedriver/devtools_events_logger.h"
 #include "chrome/test/chromedriver/performance_logger.h"
 #include "chrome/test/chromedriver/session.h"
+#include "chrome/test/chromedriver/version.h"
 
 #if defined(OS_POSIX)
 #include <fcntl.h>
@@ -51,7 +52,7 @@ const char* const kLevelToName[] = {
 const char* LevelToName(Log::Level level) {
   const int index = level - Log::kAll;
   CHECK_GE(index, 0);
-  CHECK_LT(static_cast<size_t>(index), arraysize(kLevelToName));
+  CHECK_LT(static_cast<size_t>(index), base::size(kLevelToName));
   return kLevelToName[index];
 }
 
@@ -134,7 +135,7 @@ const char WebDriverLog::kPerformanceType[] = "performance";
 const char WebDriverLog::kDevToolsType[] = "devtools";
 
 bool WebDriverLog::NameToLevel(const std::string& name, Log::Level* out_level) {
-  for (size_t i = 0; i < arraysize(kNameToLevel); ++i) {
+  for (size_t i = 0; i < base::size(kNameToLevel); ++i) {
     if (name == kNameToLevel[i].name) {
       *out_level = kNameToLevel[i].level;
       return true;
@@ -253,7 +254,6 @@ bool InitLogging() {
       printf("Failed to redirect stderr to log file.\n");
       return false;
     }
-    VLOG(0) << kPortProtectionMessage;
   }
 
   Log::truncate_logged_params = !cmd_line->HasSwitch("replayable");
@@ -298,7 +298,12 @@ bool InitLogging() {
 
   logging::LoggingSettings logging_settings;
   logging_settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
-  return logging::InitLogging(logging_settings);
+  bool res = logging::InitLogging(logging_settings);
+  if (cmd_line->HasSwitch("log-path") && res) {
+    VLOG(0) << "Starting ChromeDriver " << kChromeDriverVersion;
+    VLOG(0) << kPortProtectionMessage;
+  }
+  return res;
 }
 
 Status CreateLogs(

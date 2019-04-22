@@ -4,13 +4,15 @@
 
 #include "media/gpu/vaapi/vaapi_jpeg_encoder.h"
 
+#include <array>
+#include <type_traits>
+
 #include <stddef.h>
 #include <string.h>
-#include <array>
 
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/stl_util.h"
 #include "media/filters/jpeg_parser.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
@@ -50,37 +52,37 @@ void FillQMatrix(VAQMatrixBufferJPEG* q_matrix) {
   // responsible for scaling the quantization tables based on picture
   // parameter quality.
   const JpegQuantizationTable& luminance = kDefaultQuantTable[0];
-  static_assert(
-      arraysize(luminance.value) == arraysize(q_matrix->lum_quantiser_matrix),
-      "Luminance quantization table size mismatch.");
-  static_assert(arraysize(kZigZag8x8) == arraysize(luminance.value),
+  static_assert(std::extent<decltype(luminance.value)>() ==
+                    std::extent<decltype(q_matrix->lum_quantiser_matrix)>(),
+                "Luminance quantization table size mismatch.");
+  static_assert(base::size(kZigZag8x8) == base::size(luminance.value),
                 "Luminance quantization table size mismatch.");
   q_matrix->load_lum_quantiser_matrix = 1;
-  for (size_t i = 0; i < arraysize(kZigZag8x8); i++) {
+  for (size_t i = 0; i < base::size(kZigZag8x8); i++) {
     q_matrix->lum_quantiser_matrix[i] = luminance.value[kZigZag8x8[i]];
   }
 
   const JpegQuantizationTable& chrominance = kDefaultQuantTable[1];
-  static_assert(arraysize(chrominance.value) ==
-                    arraysize(q_matrix->chroma_quantiser_matrix),
+  static_assert(std::extent<decltype(chrominance.value)>() ==
+                    std::extent<decltype(q_matrix->chroma_quantiser_matrix)>(),
                 "Chrominance quantization table size mismatch.");
-  static_assert(arraysize(kZigZag8x8) == arraysize(chrominance.value),
+  static_assert(base::size(kZigZag8x8) == base::size(chrominance.value),
                 "Chrominance quantization table size mismatch.");
   q_matrix->load_chroma_quantiser_matrix = 1;
-  for (size_t i = 0; i < arraysize(kZigZag8x8); i++) {
+  for (size_t i = 0; i < base::size(kZigZag8x8); i++) {
     q_matrix->chroma_quantiser_matrix[i] = chrominance.value[kZigZag8x8[i]];
   }
 }
 
 void FillHuffmanTableParameters(
     VAHuffmanTableBufferJPEGBaseline* huff_table_param) {
-  static_assert(arraysize(kDefaultDcTable) == arraysize(kDefaultAcTable),
+  static_assert(base::size(kDefaultDcTable) == base::size(kDefaultAcTable),
                 "DC table and AC table size mismatch.");
-  static_assert(
-      arraysize(kDefaultDcTable) == arraysize(huff_table_param->huffman_table),
-      "DC table and destination table size mismatch.");
+  static_assert(base::size(kDefaultDcTable) ==
+                    std::extent<decltype(huff_table_param->huffman_table)>(),
+                "DC table and destination table size mismatch.");
 
-  for (size_t i = 0; i < arraysize(kDefaultDcTable); ++i) {
+  for (size_t i = 0; i < base::size(kDefaultDcTable); ++i) {
     const JpegHuffmanTable& dcTable = kDefaultDcTable[i];
     const JpegHuffmanTable& acTable = kDefaultAcTable[i];
     huff_table_param->load_huffman_table[i] = true;
@@ -92,9 +94,10 @@ void FillHuffmanTableParameters(
     // so it has different size than
     // |huff_table_param->huffman_table[i].dc_values|. Therefore we can't use
     // SafeArrayMemcpy() here.
-    static_assert(arraysize(huff_table_param->huffman_table[i].dc_values) <=
-                      arraysize(dcTable.code_value),
-                  "DC table code value array too small.");
+    static_assert(
+        std::extent<decltype(huff_table_param->huffman_table[i].dc_values)>() <=
+            std::extent<decltype(dcTable.code_value)>(),
+        "DC table code value array too small.");
     memcpy(huff_table_param->huffman_table[i].dc_values, &dcTable.code_value[0],
            sizeof(huff_table_param->huffman_table[i].dc_values));
 

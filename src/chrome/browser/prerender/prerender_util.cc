@@ -6,8 +6,10 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "components/google/core/common/google_util.h"
+#include "content/public/common/url_constants.h"
 #include "extensions/buildflags/buildflags.h"
 #include "url/gurl.h"
+#include "url/url_constants.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/common/constants.h"
@@ -58,27 +60,27 @@ void ReportPrerenderExternalURL() {
 }
 
 void ReportUnsupportedPrerenderScheme(const GURL& url) {
-  if (url.SchemeIs("data")) {
+  if (url.SchemeIs(url::kDataScheme)) {
     ReportPrerenderSchemeCancelReason(PRERENDER_SCHEME_CANCEL_REASON_DATA);
-  } else if (url.SchemeIs("blob")) {
+  } else if (url.SchemeIs(url::kBlobScheme)) {
     ReportPrerenderSchemeCancelReason(PRERENDER_SCHEME_CANCEL_REASON_BLOB);
   } else if (url.SchemeIsFile()) {
     ReportPrerenderSchemeCancelReason(PRERENDER_SCHEME_CANCEL_REASON_FILE);
   } else if (url.SchemeIsFileSystem()) {
     ReportPrerenderSchemeCancelReason(
         PRERENDER_SCHEME_CANCEL_REASON_FILESYSTEM);
-  } else if (url.SchemeIs("ws") || url.SchemeIs("wss")) {
+  } else if (url.SchemeIs(url::kWsScheme) || url.SchemeIs(url::kWssScheme)) {
     ReportPrerenderSchemeCancelReason(PRERENDER_SCHEME_CANCEL_REASON_WEBSOCKET);
-  } else if (url.SchemeIs("ftp")) {
+  } else if (url.SchemeIs(url::kFtpScheme)) {
     ReportPrerenderSchemeCancelReason(PRERENDER_SCHEME_CANCEL_REASON_FTP);
-  } else if (url.SchemeIs("chrome")) {
+  } else if (url.SchemeIs(content::kChromeUIScheme)) {
     ReportPrerenderSchemeCancelReason(PRERENDER_SCHEME_CANCEL_REASON_CHROME);
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   } else if (url.SchemeIs(extensions::kExtensionScheme)) {
     ReportPrerenderSchemeCancelReason(
         PRERENDER_SCHEME_CANCEL_REASON_CHROME_EXTENSION);
 #endif
-  } else if (url.SchemeIs("about")) {
+  } else if (url.SchemeIs(url::kAboutScheme)) {
     ReportPrerenderSchemeCancelReason(PRERENDER_SCHEME_CANCEL_REASON_ABOUT);
   } else {
     ReportPrerenderSchemeCancelReason(PRERENDER_SCHEME_CANCEL_REASON_UNKNOWN);

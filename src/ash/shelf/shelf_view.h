@@ -14,13 +14,18 @@
 #include "ash/public/cpp/shelf_model_observer.h"
 #include "ash/public/interfaces/shelf.mojom.h"
 #include "ash/shelf/ink_drop_button_listener.h"
+#include "ash/shelf/overflow_bubble.h"
+#include "ash/shelf/overflow_bubble_view.h"
 #include "ash/shelf/shelf_button_pressed_metric_tracker.h"
 #include "ash/shelf/shelf_tooltip_manager.h"
+#include "ash/shell_observer.h"
 #include "ash/system/model/virtual_keyboard_model.h"
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/timer/timer.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/bounds_animator_observer.h"
 #include "ui/views/animation/ink_drop_state.h"
 #include "ui/views/context_menu_controller.h"
@@ -48,6 +53,7 @@ class OverflowBubble;
 class OverflowButton;
 class ScopedRootWindowForNewWindows;
 class Shelf;
+class ShelfAppButton;
 class ShelfButton;
 class ShelfModel;
 struct ShelfItem;
@@ -70,12 +76,12 @@ enum ShelfAlignmentUmaEnumValue {
 //
 // If there is enough screen space, all icons can fit:
 //
-// -----------------------------------------------------------------
-// | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 10 | 11 | 12 | 13 |
-// -----------------------------------------------------------------
-//   ^                                               ^
-//   |                                               |
-// first_visible_index = 0                 last_visible_index = 13
+// -------------------------------------------------------------------------
+// | 1 |         | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 |
+// -------------------------------------------------------------------------
+//   ^                                                        ^
+//   |                                                        |
+// first_visible_index = 1 (app list)                 last_visible_index = 12
 // (back button = 0 is hidden)
 //
 // Where:
@@ -85,29 +91,28 @@ enum ShelfAlignmentUmaEnumValue {
 // If screen space is more constrained, some icons are placed in an overflow
 // menu (which holds its own instance of ShelfView):
 //
-//            first_visible_index = 10
-//               (for the overflow)     last_visible_index = 13 (for overflow)
-//                                |               |
-//                                v               v
-//                              ---------------------
-//                              | 10 | 11 | 12 | 13 |
-//                              ---------------------
-//                                        ^
-// -------------------------------------------
-// | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | ... |
-// -------------------------------------------
-//   ^                                    ^
-//   |                                    |
-// first_visible_index = 0       last_visible_index = 10
-//   (for the main shelf)         (the overflow button)
-//  (back button = 0
-//           is hidden)
+//             first_visible_index = 10          last_visible_index = 13
+//                    (for the overflow)         (for overflow)
+//                                     |               |
+//                                     v               v
+//                                   ---------------------
+//                                   | 10 | 11 | 12 | 13 |
+//                                   ---------------------
+//                                           ^
+// --------------------------------------------------
+// | 1 |    | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | ... |
+// --------------------------------------------------
+//   ^                                    ^    ^
+//   |                                    |    L-- overflow button
+// first_visible_index = 1                |
+//   (for the main shelf)        last_visible_index = 9
+//   (back button = 0
+//             is hidden)
 //
-// Note that last_visible_index is 10 (not 9) even though the overflow button
-// doesn't shift the array of indices.
 
 class ASH_EXPORT ShelfView : public views::View,
                              public ShelfModelObserver,
+                             public ShellObserver,
                              public InkDropButtonListener,
                              public views::ContextMenuController,
                              public views::FocusTraversable,
@@ -124,8 +129,6 @@ class ASH_EXPORT ShelfView : public views::View,
 
   void Init();
 
-  void OnShelfAlignmentChanged();
-
   // Returns the ideal bounds of the specified item, or an empty rect if id
   // isn't know. If the item is in an overflow shelf, the overflow icon location
   // will be returned.
@@ -136,7 +139,7 @@ class ASH_EXPORT ShelfView : public views::View,
   bool IsShowingMenu() const;
 
   // Returns true if we're showing a menu for |view|. |view| could be a
-  // ShelfButton or the ShelfView.
+  // ShelfAppButton or the ShelfView.
   bool IsShowingMenuForView(const views::View* view) const;
 
   // Returns true if overflow bubble is shown.
@@ -148,8 +151,16 @@ class ASH_EXPORT ShelfView : public views::View,
     owner_overflow_bubble_ = owner;
   }
 
+  void set_focused_button(ShelfButton* focused) { focused_button_ = focused; }
+
   AppListButton* GetAppListButton() const;
   BackButton* GetBackButton() const;
+  OverflowButton* GetOverflowButton() const;
+
+  // Updates the union of all the shelf item bounds shown by this shelf view.
+  // This is used to determine the common area where the mouse can hover
+  // for showing tooltips without stuttering over gaps.
+  void UpdateVisibleShelfItemBoundsUnion();
 
   // Returns true if the mouse cursor exits the area for launcher tooltip.
   // There are thin gaps between launcher buttons but the tooltip shouldn't hide
@@ -166,6 +177,15 @@ class ASH_EXPORT ShelfView : public views::View,
   // Returns rectangle bounding all visible launcher items. Used screen
   // coordinate system.
   gfx::Rect GetVisibleItemsBoundsInScreen();
+
+  // Overridden from views::View:
+  gfx::Size CalculatePreferredSize() const override;
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
+  FocusTraversable* GetPaneFocusTraversable() override;
+  bool OnKeyPressed(const ui::KeyEvent& event) override;
+
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
 
   // InkDropButtonListener:
   void ButtonPressed(views::Button* sender,
@@ -214,6 +234,10 @@ class ASH_EXPORT ShelfView : public views::View,
   // Used to determine whether a pending ink drop should be shown or not.
   bool ShouldEventActivateButton(views::View* view, const ui::Event& event);
 
+  // Swaps the given button with the next one if |with_next| is true, or with
+  // the previous one if |with_next| is false.
+  void SwapButtons(ShelfButton* button_to_swap, bool with_next);
+
   // The shelf buttons use the Pointer interface to enable item reordering.
   enum Pointer { NONE, DRAG_AND_DROP, MOUSE, TOUCH };
   void PointerPressedOnButton(views::View* view,
@@ -229,16 +253,9 @@ class ASH_EXPORT ShelfView : public views::View,
   // Returns whether |item| should belong in the pinned section of the shelf.
   bool IsItemPinned(const ShelfItem& item) const;
 
-  // Enumerates the shelf items that are centered in the new UI and returns
-  // the total size they occupy.
-  int GetDimensionOfCenteredShelfItems() const;
-
   // Returns the index of the item after which the separator should be shown,
   // or -1 if no separator is required.
   int GetSeparatorIndex() const;
-
-  // Updates the background for the shelf items.
-  void UpdateShelfItemBackground(SkColor color);
 
   // Update the layout when entering or exiting tablet mode. Have the owning
   // widget call this instead of observing changes ourselves to ensure this
@@ -246,23 +263,47 @@ class ASH_EXPORT ShelfView : public views::View,
   void OnTabletModeChanged();
 
   // True if the current |drag_view_| is the given |drag_view|.
-  bool IsDraggedView(const ShelfButton* drag_view) const;
+  bool IsDraggedView(const ShelfAppButton* drag_view) const;
 
   // Returns the list of open windows that correspond to the app represented by
   // this shelf view.
   const std::vector<aura::Window*> GetOpenWindowsForShelfView(
       views::View* view);
 
+  // The three methods below return the first or last focusable child of the
+  // set including both the main shelf and the overflow shelf it it's showing.
+  // - The first focusable child is either the app list button, or the back
+  //   button in tablet mode.
+  // - The last focusable child can be either 1) the last app icon on the main
+  //   shelf if there aren't enough apps to overflow, 2) the overflow button
+  //   if it's visible but the overflow bubble isn't showing, or 3) the last
+  //   app icon in the overflow bubble if it's showing.
+  views::View* FindFirstOrLastFocusableChild(bool last);
+  views::View* FindFirstFocusableChild();
+  views::View* FindLastFocusableChild();
+
+  void OnShelfButtonAboutToRequestFocusFromTabTraversal(ShelfButton* button,
+                                                        bool reverse);
+
   // Return the view model for test purposes.
   const views::ViewModel* view_model_for_test() const {
     return view_model_.get();
   }
 
-  // Return the main shelf. This will return nullptr if this is not called on
-  // the overflow shelf.
-  ShelfView* main_shelf() { return main_shelf_; }
+  // Returns the main shelf. This can be called on either the main shelf
+  // or the overflow shelf.
+  ShelfView* main_shelf() { return main_shelf_ ? main_shelf_ : this; }
+  // Returns the overflow shelf. This can be called on either the main shelf
+  // or the overflow shelf. Returns nullptr if the overflow shelf isn't visible.
+  ShelfView* overflow_shelf() {
+    if (is_overflow_mode())
+      return this;
+    return IsShowingOverflowBubble()
+               ? overflow_bubble_->bubble_view()->shelf_view()
+               : nullptr;
+  }
 
-  const ShelfButton* drag_view() const { return drag_view_; }
+  const ShelfAppButton* drag_view() const { return drag_view_; }
 
   // Returns true when this ShelfView is used for Overflow Bubble.
   // In this mode, it does not show app list and overflow button.
@@ -274,6 +315,12 @@ class ASH_EXPORT ShelfView : public views::View,
 
   int first_visible_index() const { return first_visible_index_; }
   int last_visible_index() const { return last_visible_index_; }
+  int number_of_visible_apps() const {
+    if (is_overflow_mode())
+      return last_visible_index_ - first_visible_index_ + 1;
+    else
+      return last_visible_index_ - 1;
+  }
   ShelfWidget* shelf_widget() const { return shelf_widget_; }
   OverflowBubble* overflow_bubble() { return overflow_bubble_.get(); }
   views::ViewModel* view_model() { return view_model_.get(); }
@@ -283,6 +330,11 @@ class ASH_EXPORT ShelfView : public views::View,
 
   class FadeOutAnimationDelegate;
   class StartFadeAnimationDelegate;
+
+  struct AppCenteringStrategy {
+    bool center_on_screen = false;
+    bool overflow = false;
+  };
 
   enum RemovableState {
     REMOVABLE,      // Item can be removed when dragged away.
@@ -303,9 +355,21 @@ class ASH_EXPORT ShelfView : public views::View,
 
   void LayoutAppListAndBackButtonHighlight() const;
 
+  // Returns the size that's actually available for app icons. Size occupied
+  // by the app list button and back button plus all appropriate margins is
+  // not available for app icons.
+  int GetAvailableSpaceForAppIcons() const;
+
+  // This method determines which centering strategy is adequate, returns that,
+  // and sets the |first_visible_index_| and |last_visible_index_| fields
+  // appropriately.
+  AppCenteringStrategy CalculateAppCenteringStrategy() const;
+
   // Calculates the ideal bounds. The bounds of each button corresponding to an
   // item in the model is set in |view_model_|.
-  void CalculateIdealBounds(gfx::Rect* overflow_bounds) const;
+  void CalculateIdealBounds() const;
+
+  void LayoutOverflowButton() const;
 
   // Returns the index of the last view whose max primary axis coordinate is
   // less than |max_value|. Returns -1 if nothing fits, or there are no views.
@@ -326,6 +390,15 @@ class ASH_EXPORT ShelfView : public views::View,
 
   // Invoked when the mouse is dragged. Updates the models as appropriate.
   void ContinueDrag(const ui::LocatedEvent& event);
+
+  // Scroll the view to show more content in the direction of the user's drag.
+  void ScrollForUserDrag(int offset);
+
+  // Increase the speed of an existing scroll.
+  void SpeedUpDragScrolling();
+
+  // Reorder |drag_view_| according to the latest dragging coordinate.
+  void MoveDragViewTo(int primary_axis_coordinate);
 
   // Ends the drag on the other shelf. (ie if we are on main shelf, ends drag on
   // the overflow shelf). Invoked when a shelf item is being dragged from one
@@ -382,11 +455,8 @@ class ASH_EXPORT ShelfView : public views::View,
                               const gfx::Point& location,
                               bool context_menu) const;
 
-  // Overridden from views::View:
-  gfx::Size CalculatePreferredSize() const override;
-  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
-  FocusTraversable* GetPaneFocusTraversable() override;
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  void AnnounceShelfAlignment();
+  void AnnounceShelfAutohideBehavior();
 
   // Overridden from ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override;
@@ -401,6 +471,10 @@ class ASH_EXPORT ShelfView : public views::View,
                                 ShelfItemDelegate* old_delegate,
                                 ShelfItemDelegate* delegate) override;
   void ShelfItemStatusChanged(const ShelfID& id) override;
+
+  // Overridden from ShellObserver:
+  void OnShelfAlignmentChanged(aura::Window* root_window) override;
+  void OnShelfAutoHideBehaviorChanged(aura::Window* root_window) override;
 
   // Handles the result when querying ShelfItemDelegates for context menu items.
   // Shows a default shelf context menu with optional extra custom |menu_items|.
@@ -421,9 +495,9 @@ class ASH_EXPORT ShelfView : public views::View,
       base::Optional<std::vector<mojom::MenuItemPtr>> menu_items);
 
   // Overridden from views::ContextMenuController:
-  void ShowContextMenuForView(views::View* source,
-                              const gfx::Point& point,
-                              ui::MenuSourceType source_type) override;
+  void ShowContextMenuForViewImpl(views::View* source,
+                                  const gfx::Point& point,
+                                  ui::MenuSourceType source_type) override;
 
   // Show either a context or normal click menu of given |menu_model|.
   // If |context_menu| is set, the displayed menu is a context menu and not
@@ -479,12 +553,15 @@ class ASH_EXPORT ShelfView : public views::View,
   // item in |model_|.
   std::unique_ptr<views::ViewModel> view_model_;
 
-  // Index of the first visible launcher item. This is not always zero because
-  // the overflow view (also a kind of shelf view) only shows a subset of items.
-  int first_visible_index_ = 0;
+  // Index of the first visible launcher item. This is either:
+  // * 0 (back button) for the main shelf when tablet mode is on
+  // * 1 (app list button) for the main shelf when tablet mode is off
+  // * > 1 when this shelf view is the overflow shelf view and only shows a
+  //   subset of items.
+  mutable int first_visible_index_ = 0;
 
-  // Last index of a launcher button that is visible
-  // (does not go into overflow).
+  // Last index of a launcher button that is visible (does not go into
+  // overflow).
   mutable int last_visible_index_ = -1;
 
   std::unique_ptr<views::BoundsAnimator> bounds_animator_;
@@ -503,10 +580,10 @@ class ASH_EXPORT ShelfView : public views::View,
 
   // The view being dragged. This is set immediately when the mouse is pressed.
   // |dragging_| is set only if the mouse is dragged far enough.
-  ShelfButton* drag_view_ = nullptr;
+  ShelfAppButton* drag_view_ = nullptr;
 
   // The view showing a context menu. This can be either a ShelfView or
-  // ShelfButton.
+  // ShelfAppButton.
   views::View* menu_owner_ = nullptr;
 
   // Position of the mouse down event in |drag_view_|'s coordinates.
@@ -528,12 +605,17 @@ class ASH_EXPORT ShelfView : public views::View,
   // True when an item being inserted or removed in the model cancels a drag.
   bool cancelling_drag_model_changed_ = false;
 
-  // Whether context menu options have been requested. Prevents multiple
-  // requests.
-  bool waiting_for_context_menu_options_ = false;
+  // The item with an in-flight async request for a context menu or selection
+  // (which shows a shelf item application menu if multiple windows are open).
+  // Used to avoid multiple concurrent menu requests. The value is null if none.
+  ShelfID item_awaiting_response_;
 
   // The timestamp of the event which closed the last menu - or 0.
   base::TimeTicks closing_event_time_;
+
+  // The button that is currently focused for keyboard navigation, or null
+  // if nothing is focused.
+  ShelfButton* focused_button_ = nullptr;
 
   // True if a drag and drop operation created/pinned the item in the launcher
   // and it needs to be deleted/unpinned again if the operation gets cancelled.
@@ -588,17 +670,30 @@ class ASH_EXPORT ShelfView : public views::View,
   // Tracks UMA metrics based on shelf button press actions.
   ShelfButtonPressedMetricTracker shelf_button_pressed_metric_tracker_;
 
-  // Color used to paint the background behind the app list button and back
-  // button.
-  SkColor shelf_item_background_color_;
-
   // A reference to the view used as a separator between pinned and unpinned
   // items.
   views::Separator* separator_ = nullptr;
 
+  // The union of all visible shelf item bounds. Used for showing tooltips in
+  // a continuous manner.
+  gfx::Rect visible_shelf_item_bounds_union_;
+
   // A view to draw a background behind the app list and back buttons.
   // Owned by the view hierarchy.
   views::View* back_and_app_list_background_ = nullptr;
+
+  // A view used to make accessibility announcements (changes in the shelf's
+  // alignment or auto-hide state).
+  views::View* announcement_view_ = nullptr;  // Owned by ShelfView
+
+  // For dragging: -1 if scrolling back, 1 if scrolling forward, 0 if neither.
+  int drag_scroll_dir_ = 0;
+
+  // Used to periodically call ScrollForUserDrag.
+  base::RepeatingTimer scrolling_timer_;
+
+  // Used to call SpeedUpDragScrolling.
+  base::OneShotTimer speed_up_drag_scrolling_;
 
   base::WeakPtrFactory<ShelfView> weak_factory_;
 

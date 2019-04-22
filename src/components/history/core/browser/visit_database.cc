@@ -605,7 +605,7 @@ void VisitDatabase::GetVisitsSource(const VisitVector& visits,
     for (size_t j = start_index; j < end_index; j++) {
       if (j != start_index)
         sql.push_back(',');
-      sql.append(base::Int64ToString(visits[j].visit_id));
+      sql.append(base::NumberToString(visits[j].visit_id));
     }
     sql.append(") ORDER BY id");
     sql::Statement statement(GetDB().GetUniqueStatement(sql.c_str()));

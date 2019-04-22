@@ -5,14 +5,9 @@
 #include "src/snapshot/deserializer-allocator.h"
 
 #include "src/heap/heap-inl.h"  // crbug.com/v8/8499
-#include "src/snapshot/deserializer.h"
-#include "src/snapshot/startup-deserializer.h"
 
 namespace v8 {
 namespace internal {
-
-DeserializerAllocator::DeserializerAllocator(Deserializer* deserializer)
-    : deserializer_(deserializer) {}
 
 // We know the space requirements before deserialization and can
 // pre-allocate that reserved space. During deserialization, all we need
@@ -27,12 +22,12 @@ DeserializerAllocator::DeserializerAllocator(Deserializer* deserializer)
 // reference large objects by index.
 Address DeserializerAllocator::AllocateRaw(AllocationSpace space, int size) {
   if (space == LO_SPACE) {
-    AlwaysAllocateScope scope(isolate());
+    AlwaysAllocateScope scope(heap_);
     // Note that we currently do not support deserialization of large code
     // objects.
-    LargeObjectSpace* lo_space = isolate()->heap()->lo_space();
+    LargeObjectSpace* lo_space = heap_->lo_space();
     AllocationResult result = lo_space->AllocateRaw(size);
-    HeapObject* obj = result.ToObjectChecked();
+    HeapObject obj = result.ToObjectChecked();
     deserialized_large_objects_.push_back(obj);
     return obj->address();
   } else if (space == MAP_SPACE) {
@@ -56,7 +51,7 @@ Address DeserializerAllocator::AllocateRaw(AllocationSpace space, int size) {
 
 Address DeserializerAllocator::Allocate(AllocationSpace space, int size) {
   Address address;
-  HeapObject* obj;
+  HeapObject obj;
 
   if (next_alignment_ != kWordAligned) {
     const int reserved = size + Heap::GetMaximumFillToAlign(next_alignment_);
@@ -65,11 +60,10 @@ Address DeserializerAllocator::Allocate(AllocationSpace space, int size) {
     // If one of the following assertions fails, then we are deserializing an
     // aligned object when the filler maps have not been deserialized yet.
     // We require filler maps as padding to align the object.
-    Heap* heap = isolate()->heap();
-    DCHECK(ReadOnlyRoots(heap).free_space_map()->IsMap());
-    DCHECK(ReadOnlyRoots(heap).one_pointer_filler_map()->IsMap());
-    DCHECK(ReadOnlyRoots(heap).two_pointer_filler_map()->IsMap());
-    obj = heap->AlignWithFiller(obj, size, reserved, next_alignment_);
+    DCHECK(ReadOnlyRoots(heap_).free_space_map()->IsMap());
+    DCHECK(ReadOnlyRoots(heap_).one_pointer_filler_map()->IsMap());
+    DCHECK(ReadOnlyRoots(heap_).two_pointer_filler_map()->IsMap());
+    obj = heap_->AlignWithFiller(obj, size, reserved, next_alignment_);
     address = obj->address();
     next_alignment_ = kWordAligned;
     return address;
@@ -90,19 +84,19 @@ void DeserializerAllocator::MoveToNextChunk(AllocationSpace space) {
   high_water_[space] = reservation[chunk_index].start;
 }
 
-HeapObject* DeserializerAllocator::GetMap(uint32_t index) {
+HeapObject DeserializerAllocator::GetMap(uint32_t index) {
   DCHECK_LT(index, next_map_index_);
   return HeapObject::FromAddress(allocated_maps_[index]);
 }
 
-HeapObject* DeserializerAllocator::GetLargeObject(uint32_t index) {
+HeapObject DeserializerAllocator::GetLargeObject(uint32_t index) {
   DCHECK_LT(index, deserialized_large_objects_.size());
   return deserialized_large_objects_[index];
 }
 
-HeapObject* DeserializerAllocator::GetObject(AllocationSpace space,
-                                             uint32_t chunk_index,
-                                             uint32_t chunk_offset) {
+HeapObject DeserializerAllocator::GetObject(AllocationSpace space,
+                                            uint32_t chunk_index,
+                                            uint32_t chunk_offset) {
   DCHECK_LT(space, kNumberOfPreallocatedSpaces);
   DCHECK_LE(chunk_index, current_chunk_[space]);
   Address address = reservations_[space][chunk_index].start + chunk_offset;
@@ -135,7 +129,7 @@ bool DeserializerAllocator::ReserveSpace() {
   }
 #endif  // DEBUG
   DCHECK(allocated_maps_.empty());
-  if (!isolate()->heap()->ReserveSpace(reservations_, &allocated_maps_)) {
+  if (!heap_->ReserveSpace(reservations_, &allocated_maps_)) {
     return false;
   }
   for (int i = 0; i < kNumberOfPreallocatedSpaces; i++) {
@@ -158,12 +152,8 @@ bool DeserializerAllocator::ReservationsAreFullyUsed() const {
 }
 
 void DeserializerAllocator::RegisterDeserializedObjectsForBlackAllocation() {
-  isolate()->heap()->RegisterDeserializedObjectsForBlackAllocation(
+  heap_->RegisterDeserializedObjectsForBlackAllocation(
       reservations_, deserialized_large_objects_, allocated_maps_);
-}
-
-Isolate* DeserializerAllocator::isolate() const {
-  return deserializer_->isolate();
 }
 
 }  // namespace internal

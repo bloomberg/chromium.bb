@@ -1,4 +1,5 @@
-main frame - didStartProvisionalLoadForFrame
+main frame - DidStartNavigation
+main frame - ReadyToCommitNavigation
 main frame - didCommitLoadForFrame
 main frame - didReceiveTitle: 
 main frame - didFinishDocumentLoadForFrame
@@ -11,5 +12,6 @@ PASS internals.isPreloaded('data:image/gif;base64,R0lGODlhAQABAIAAAP///////yH5BA
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 This test passes if the image (defined in the src attribute) is preloaded, except for data URI.
   

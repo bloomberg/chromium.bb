@@ -1,5 +1,6 @@
 <html>
 <head>
+<script src="../../../resources/run-after-layout-and-paint.js"></script>
 <style type="text/css">
     #test1 div {
         height: 100px;
@@ -74,12 +75,12 @@
         // Ensure the deferred decoder has decoded ../resources/apple.jpg.
         testRunner.updateAllLifecyclePhasesAndCompositeThen(function() {
             internals.advanceImageAnimation(imgForAdvanceImageAnimation);
-            testRunner.layoutAndPaintAsyncThen(function() {
+            runAfterLayoutAndPaint(function() {
                 internals.startTrackingRepaints(document);
                 internals.advanceImageAnimation(imgForAdvanceImageAnimation);
-                testRunner.layoutAndPaintAsyncThen(function() {
+                runAfterLayoutAndPaint(function() {
                     internals.advanceImageAnimation(imgForAdvanceImageAnimation);
-                    testRunner.layoutAndPaintAsyncThen(finish);
+                    runAfterLayoutAndPaint(finish);
                 });
             });
         });

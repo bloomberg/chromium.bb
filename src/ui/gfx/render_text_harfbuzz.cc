@@ -10,9 +10,8 @@
 #include "base/command_line.h"
 #include "base/containers/mru_cache.h"
 #include "base/feature_list.h"
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "base/i18n/base_i18n_switches.h"
-#include "base/i18n/bidi_line_iterator.h"
 #include "base/i18n/break_iterator.h"
 #include "base/i18n/char_iterator.h"
 #include "base/macros.h"
@@ -26,9 +25,12 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "third_party/icu/source/common/unicode/ubidi.h"
+#include "third_party/icu/source/common/unicode/uscript.h"
 #include "third_party/icu/source/common/unicode/utf16.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkFontMetrics.h"
 #include "third_party/skia/include/core/SkTypeface.h"
+#include "ui/gfx/bidi_line_iterator.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/decorated_text.h"
 #include "ui/gfx/font.h"
@@ -195,10 +197,10 @@ size_t FindRunBreakingCharacter(const base::string16& text,
 // Consider 3 characters with the script values {Kana}, {Hira, Kana}, {Kana}.
 // Without script extensions only the first script in each set would be taken
 // into account, resulting in 3 runs where 1 would be enough.
-int ScriptInterval(const base::string16& text,
-                   size_t start,
-                   size_t length,
-                   UScriptCode* script) {
+size_t ScriptInterval(const base::string16& text,
+                      size_t start,
+                      size_t length,
+                      UScriptCode* script) {
   DCHECK_GT(length, 0U);
 
   UScriptCode scripts[kMaxScripts] = { USCRIPT_INVALID_CODE };
@@ -490,12 +492,12 @@ class HarfBuzzLineBreaker {
     line->segments.push_back(segment);
     line->size.set_width(line->size.width() + segment.width());
 
-    SkPaint paint;
-    paint.setTypeface(run.font_params.skia_face);
-    paint.setTextSize(SkIntToScalar(run.font_params.font_size));
-    paint.setAntiAlias(run.font_params.render_params.antialiasing);
+    SkFont font(run.font_params.skia_face, run.font_params.font_size);
+    font.setEdging(run.font_params.render_params.antialiasing
+                       ? SkFont::Edging::kAntiAlias
+                       : SkFont::Edging::kAlias);
     SkFontMetrics metrics;
-    paint.getFontMetrics(&metrics);
+    font.getMetrics(&metrics);
 
     // max_descent_ is y-down, fDescent is y-down, baseline_offset is y-down
     max_descent_ = std::max(max_descent_,
@@ -813,7 +815,8 @@ void TextRunHarfBuzz::GetClusterAt(size_t pos,
     for (size_t i = 0; i < shape.glyph_count && i < shape.glyph_to_char.size();
          ++i) {
       glyph_to_char_string += base::NumberToString(i) + "->" +
-                              base::UintToString(shape.glyph_to_char[i]) + ", ";
+                              base::NumberToString(shape.glyph_to_char[i]) +
+                              ", ";
     }
     LOG(ERROR) << " TextRunHarfBuzz error, please report at crbug.com/724880:"
                << " range: " << range.ToString()
@@ -1100,9 +1103,9 @@ void ShapeRunWithFont(const ShapeRunWithFontInput& in,
   // Note that the value of the |item_offset| argument (here specified as
   // |in.range.start()|) does affect the result, so we will have to adjust
   // the computed offsets.
-  hb_buffer_add_utf16(buffer,
-                      reinterpret_cast<const uint16_t*>(in.text.c_str()),
-                      in.text.length(), in.range.start(), in.range.length());
+  hb_buffer_add_utf16(
+      buffer, reinterpret_cast<const uint16_t*>(in.text.c_str()),
+      static_cast<int>(in.text.length()), in.range.start(), in.range.length());
   hb_buffer_set_script(buffer, ICUScriptToHBScript(in.script));
   hb_buffer_set_direction(buffer,
                           in.is_rtl ? HB_DIRECTION_RTL : HB_DIRECTION_LTR);
@@ -1215,7 +1218,9 @@ SizeF RenderTextHarfBuzz::GetStringSizeF() {
   return total_size_;
 }
 
-SelectionModel RenderTextHarfBuzz::FindCursorPosition(const Point& view_point) {
+SelectionModel RenderTextHarfBuzz::FindCursorPosition(
+    const Point& view_point,
+    const Point& drag_origin) {
   EnsureLayout();
   DCHECK(!lines().empty());
 
@@ -1225,7 +1230,9 @@ SelectionModel RenderTextHarfBuzz::FindCursorPosition(const Point& view_point) {
   if (RenderText::kDragToEndIfOutsideVerticalBounds && !multiline() &&
       (line_index < 0 || line_index >= static_cast<int>(lines().size()))) {
     SelectionModel selection_start = GetSelectionModelForSelectionStart();
-    bool left = view_point.x() < GetCursorBounds(selection_start, true).x();
+    int edge = drag_origin.x() == 0 ? GetCursorBounds(selection_start, true).x()
+                                    : drag_origin.x();
+    bool left = view_point.x() < edge;
     return EdgeSelectionModel(left ? CURSOR_LEFT : CURSOR_RIGHT);
   }
   // Otherwise, clamp |line_index| to a valid value or drag to logical ends.
@@ -1693,18 +1700,9 @@ void RenderTextHarfBuzz::ItemizeTextToRuns(
   // If ICU fails to itemize the text, we create a run that spans the entire
   // text. This is needed because leaving the runs set empty causes some clients
   // to misbehave since they expect non-zero text metrics from a non-empty text.
-  base::i18n::BiDiLineIterator bidi_iterator;
-  base::i18n::BiDiLineIterator::CustomBehavior behavior =
-      base::i18n::BiDiLineIterator::CustomBehavior::NONE;
+  ui::gfx::BiDiLineIterator bidi_iterator;
 
-  // If the feature flag is enabled, use the special URL behaviour on the Bidi
-  // algorithm, if this is a URL.
-  if (base::FeatureList::IsEnabled(features::kLeftToRightUrls) &&
-      directionality_mode() == DIRECTIONALITY_AS_URL) {
-    behavior = base::i18n::BiDiLineIterator::CustomBehavior::AS_URL;
-  }
-
-  if (!bidi_iterator.Open(text, GetTextDirection(text), behavior)) {
+  if (!bidi_iterator.Open(text, GetTextDirection(text))) {
     auto run = std::make_unique<internal::TextRunHarfBuzz>(
         font_list().GetPrimaryFont());
     run->range = Range(0, text.length());
@@ -1731,12 +1729,12 @@ void RenderTextHarfBuzz::ItemizeTextToRuns(
     Range run_range;
     internal::TextRunHarfBuzz::FontParams font_params(primary_font);
     run_range.set_start(run_break);
-    font_params.italic = style.style(ITALIC);
+    font_params.italic = style.style(TEXT_STYLE_ITALIC);
     font_params.baseline_type = style.baseline();
     font_params.font_size = style.font_size_override();
-    font_params.strike = style.style(STRIKE);
-    font_params.underline = style.style(UNDERLINE);
-    font_params.heavy_underline = style.style(HEAVY_UNDERLINE);
+    font_params.strike = style.style(TEXT_STYLE_STRIKE);
+    font_params.underline = style.style(TEXT_STYLE_UNDERLINE);
+    font_params.heavy_underline = style.style(TEXT_STYLE_HEAVY_UNDERLINE);
     font_params.weight = style.weight();
     int32_t script_item_break = 0;
     bidi_iterator.GetLogicalRun(run_break, &script_item_break,
@@ -1820,7 +1818,8 @@ void RenderTextHarfBuzz::ShapeRuns(
   std::vector<Font> fallback_font_list;
   {
     SCOPED_UMA_HISTOGRAM_LONG_TIMER("RenderTextHarfBuzz.GetFallbackFontsTime");
-    TRACE_EVENT0("ui", "RenderTextHarfBuzz::GetFallbackFonts");
+    TRACE_EVENT1("ui", "RenderTextHarfBuzz::GetFallbackFonts", "script",
+                 TRACE_STR_COPY(uscript_getShortName(font_params.script)));
     fallback_font_list = GetFallbackFonts(primary_font);
 
 #if defined(OS_WIN)

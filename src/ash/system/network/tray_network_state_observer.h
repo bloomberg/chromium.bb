@@ -5,16 +5,15 @@
 #ifndef ASH_SYSTEM_NETWORK_TRAY_NETWORK_STATE_OBSERVER_H_
 #define ASH_SYSTEM_NETWORK_TRAY_NETWORK_STATE_OBSERVER_H_
 
+#include <vector>
+
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "chromeos/network/network_state_handler_observer.h"
-#include "chromeos/network/portal_detector/network_portal_detector.h"
 
 namespace ash {
 
-class TrayNetworkStateObserver
-    : public chromeos::NetworkStateHandlerObserver,
-      public chromeos::NetworkPortalDetector::Observer {
+class TrayNetworkStateObserver : public chromeos::NetworkStateHandlerObserver {
  public:
   class Delegate {
    public:
@@ -33,17 +32,10 @@ class TrayNetworkStateObserver
   // NetworkStateHandlerObserver
   void NetworkListChanged() override;
   void DeviceListChanged() override;
-  void DefaultNetworkChanged(const chromeos::NetworkState* network) override;
-  void NetworkConnectionStateChanged(
-      const chromeos::NetworkState* network) override;
+  void ActiveNetworksChanged(const std::vector<const chromeos::NetworkState*>&
+                                 active_networks) override;
   void NetworkPropertiesUpdated(const chromeos::NetworkState* network) override;
   void DevicePropertiesUpdated(const chromeos::DeviceState* device) override;
-
-  // NetworkPortalDetector::Observer
-  void OnPortalDetectionCompleted(
-      const chromeos::NetworkState* network,
-      const chromeos::NetworkPortalDetector::CaptivePortalState& state)
-      override;
 
  private:
   void SignalUpdate(bool notify_a11y);
@@ -60,9 +52,12 @@ class TrayNetworkStateObserver
   // Timer used to limit the frequency of NetworkStateChanged updates.
   base::OneShotTimer timer_;
 
-  // The previous state of the wifi network, used to immediately send
-  // NetworkStateChanged update when wifi changed from enabled->disabled.
+  // The cached states of whether Wi-Fi and Mobile are enabled. The tray
+  // includes expanding network lists of these types, so these cached values
+  // are used to determine when to prioritize updating the tray when they
+  // change.
   bool wifi_enabled_ = false;
+  bool mobile_enabled_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TrayNetworkStateObserver);
 };

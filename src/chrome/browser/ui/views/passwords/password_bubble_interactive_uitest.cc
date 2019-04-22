@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_samples.h"
@@ -107,7 +108,7 @@ IN_PROC_BROWSER_TEST_F(PasswordBubbleInteractiveUiTest, BasicOpenAndClose) {
       PasswordBubbleViewBase::manage_password_bubble());
   // A pending password with empty username should initially focus on the
   // username field.
-  EXPECT_EQ(bubble->username_field(),
+  EXPECT_EQ(bubble->GetUsernameTextfieldForTest(),
             bubble->GetFocusManager()->GetFocusedView());
   PasswordBubbleViewBase::CloseCurrentBubble();
   EXPECT_FALSE(IsBubbleShowing());
@@ -266,13 +267,13 @@ IN_PROC_BROWSER_TEST_F(PasswordBubbleInteractiveUiTest,
   // Set up the second tab and bring the bubble again.
   AddTabAtIndex(1, GURL("http://example.com/"), ui::PAGE_TRANSITION_TYPED);
   TabStripModel* tab_model = browser()->tab_strip_model();
-  tab_model->ActivateTabAt(1, true);
+  tab_model->ActivateTabAt(1, {TabStripModel::GestureType::kOther});
   EXPECT_FALSE(IsBubbleShowing());
   EXPECT_EQ(1, tab_model->active_index());
   SetupPendingPassword();
   EXPECT_TRUE(IsBubbleShowing());
   // Back to the first tab.
-  tab_model->ActivateTabAt(0, true);
+  tab_model->ActivateTabAt(0, {TabStripModel::GestureType::kOther});
   EXPECT_FALSE(IsBubbleShowing());
 }
 
@@ -281,13 +282,13 @@ IN_PROC_BROWSER_TEST_F(PasswordBubbleInteractiveUiTest,
   // Set up the second tab and bring the bubble there.
   AddTabAtIndex(1, GURL("http://example.com/"), ui::PAGE_TRANSITION_TYPED);
   TabStripModel* tab_model = browser()->tab_strip_model();
-  tab_model->ActivateTabAt(1, true);
+  tab_model->ActivateTabAt(1, {TabStripModel::GestureType::kOther});
   EXPECT_FALSE(IsBubbleShowing());
   EXPECT_EQ(1, tab_model->active_index());
   SetupPendingPassword();
   EXPECT_TRUE(IsBubbleShowing());
   // Back to the first tab. Set up the bubble.
-  tab_model->ActivateTabAt(0, true);
+  tab_model->ActivateTabAt(0, {TabStripModel::GestureType::kOther});
   // Drain message pump to ensure the bubble view is cleared so that it can be
   // created again (it is checked on Mac to prevent re-opening the bubble when
   // clicking the location bar button repeatedly).
@@ -311,7 +312,7 @@ IN_PROC_BROWSER_TEST_F(PasswordBubbleInteractiveUiTest,
       PasswordBubbleViewBase::manage_password_bubble();
   bool ran_event_task = false;
   base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(press_button, bubble, &ran_event_task));
+      FROM_HERE, base::BindOnce(press_button, bubble, &ran_event_task));
   EXPECT_TRUE(IsBubbleShowing());
 
   // Close the tab.

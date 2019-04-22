@@ -2,12 +2,6 @@
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 
-<style>
-.hideAllContainers .container {
-    display: none;
-}
-</style>
-
 <div class="container">
     <input id="button1" type="button">
 </div>
@@ -226,9 +220,4 @@ test(function(t) {
     assert_equals(axImageInput5.name, "image-input-title5");
     assert_equals(axImageInput5.nameFrom, "title");
 }, "Image input with title only");
-</script>
-
-<script>
-if (window.testRunner)
-    document.body.className = "hideAllContainers";
 </script>

@@ -3,7 +3,6 @@ Test for <https://bugs.webkit.org/show_bug.cgi?id=85775> [BlackBerry] Cookie par
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Check that setting a cookie with a single-quoted value works.
 PASS cookie is 'singleQuoted="value'.
 PASS successfullyParsed is true

@@ -14,7 +14,7 @@ constexpr base::TimeDelta LongTaskDetector::kLongTaskThreshold;
 // static
 LongTaskDetector& LongTaskDetector::Instance() {
   DEFINE_STATIC_LOCAL(Persistent<LongTaskDetector>, long_task_detector,
-                      (new LongTaskDetector));
+                      (MakeGarbageCollected<LongTaskDetector>()));
   DCHECK(IsMainThread());
   return *long_task_detector;
 }

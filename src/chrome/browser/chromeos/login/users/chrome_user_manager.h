@@ -11,7 +11,7 @@
 #include "chrome/browser/chromeos/login/users/affiliation.h"
 #include "chrome/browser/chromeos/login/users/user_manager_interface.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
-#include "chromeos/login/login_state.h"
+#include "chromeos/login/login_state/login_state.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager_base.h"
@@ -37,11 +37,6 @@ class ChromeUserManager : public user_manager::UserManagerBase,
   // Returns current ChromeUserManager or NULL if instance hasn't been
   // yet initialized.
   static ChromeUserManager* Get();
-
-  // Helper method for sorting out of user list only users that can create
-  // supervised users.
-  static user_manager::UserList GetUsersAllowedAsSupervisedUserManagers(
-      const user_manager::UserList& user_list);
 
   // Sets affiliation status for the user identified with |account_id|
   // judging by |user_affiliation_ids| and device affiliation IDs.

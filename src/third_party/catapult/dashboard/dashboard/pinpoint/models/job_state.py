@@ -3,12 +3,16 @@
 # found in the LICENSE file.
 
 import collections
+import httplib
 import logging
+
+from google.appengine.api import urlfetch_errors
 
 from dashboard.common import math_utils
 from dashboard.pinpoint.models import attempt as attempt_module
 from dashboard.pinpoint.models import change as change_module
 from dashboard.pinpoint.models import compare
+from dashboard.pinpoint.models import errors
 
 
 _REPEAT_COUNT_INCREASE = 10
@@ -115,6 +119,9 @@ class JobState(object):
           midpoint = change_module.Change.Midpoint(change_a, change_b)
         except change_module.NonLinearError:
           continue
+        except (httplib.HTTPException,
+                urlfetch_errors.DeadlineExceededError):
+          raise errors.RecoverableError()
 
         logging.info('Adding Change %s.', midpoint)
         self.AddChange(midpoint, index)
@@ -252,9 +259,9 @@ class JobState(object):
           any_unknowns = True
 
       # Compare result values.
-      values_a = tuple(_Mean(execution.result_values)
+      values_a = tuple(Mean(execution.result_values)
                        for execution in executions_a if execution.result_values)
-      values_b = tuple(_Mean(execution.result_values)
+      values_b = tuple(Mean(execution.result_values)
                        for execution in executions_b if execution.result_values)
       if values_a and values_b:
         if (hasattr(self, '_comparison_magnitude') and
@@ -288,7 +295,7 @@ class JobState(object):
         if attempt.completed:
           pass_fails.append(int(attempt.failed))
       if pass_fails:
-        result_values.append(_Mean(pass_fails))
+        result_values.append(Mean(pass_fails))
 
     elif self._comparison_mode == 'performance':
       for attempt in self._attempts[change]:
@@ -306,5 +313,8 @@ def _ExecutionsPerQuest(attempts):
   return executions
 
 
-def _Mean(values):
+def Mean(values):
+  values = [v for v in values if isinstance(v, (int, long, float))]
+  if len(values) == 0:
+    return float('nan')
   return float(sum(values)) / len(values)

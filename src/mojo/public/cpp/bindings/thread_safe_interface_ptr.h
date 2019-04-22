@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
@@ -97,7 +98,7 @@ class ThreadSafeForwarder : public MessageReceiverWithResponder {
           associated_group_.GetController());
     }
     task_runner_->PostTask(FROM_HERE,
-                           base::Bind(forward_, base::Passed(message)));
+                           base::BindOnce(forward_, base::Passed(message)));
     return true;
   }
 
@@ -117,8 +118,9 @@ class ThreadSafeForwarder : public MessageReceiverWithResponder {
       auto reply_forwarder =
           std::make_unique<ForwardToCallingThread>(std::move(responder));
       task_runner_->PostTask(
-          FROM_HERE, base::Bind(forward_with_responder_, base::Passed(message),
-                                base::Passed(&reply_forwarder)));
+          FROM_HERE,
+          base::BindOnce(forward_with_responder_, base::Passed(message),
+                         std::move(reply_forwarder)));
       return true;
     }
 
@@ -136,8 +138,9 @@ class ThreadSafeForwarder : public MessageReceiverWithResponder {
     auto response = base::MakeRefCounted<SyncResponseInfo>();
     auto response_signaler = std::make_unique<SyncResponseSignaler>(response);
     task_runner_->PostTask(
-        FROM_HERE, base::Bind(forward_with_responder_, base::Passed(message),
-                              base::Passed(&response_signaler)));
+        FROM_HERE,
+        base::BindOnce(forward_with_responder_, base::Passed(message),
+                       std::move(response_signaler)));
 
     // Save the pending SyncResponseInfo so that if the sync call deletes
     // |this|, we can signal the completion of the call to return from
@@ -229,9 +232,9 @@ class ThreadSafeForwarder : public MessageReceiverWithResponder {
       // deleted.
       caller_task_runner_->PostTask(
           FROM_HERE,
-          base::Bind(&ForwardToCallingThread::CallAcceptAndDeleteResponder,
-                     base::Passed(std::move(responder_)),
-                     base::Passed(std::move(*message))));
+          base::BindOnce(&ForwardToCallingThread::CallAcceptAndDeleteResponder,
+                         base::Passed(std::move(responder_)),
+                         base::Passed(std::move(*message))));
       return true;
     }
 
@@ -318,8 +321,8 @@ class ThreadSafeInterfacePtrBase
 
     void BindOnTaskRunner(AssociatedInterfacePtrInfo<InterfaceType> ptr_info) {
       associated_group_ = AssociatedGroup(ptr_info.handle());
-      task_runner_->PostTask(FROM_HERE, base::Bind(&PtrWrapper::Bind, this,
-                                                   base::Passed(&ptr_info)));
+      task_runner_->PostTask(FROM_HERE, base::BindOnce(&PtrWrapper::Bind, this,
+                                                       std::move(ptr_info)));
     }
 
     void BindOnTaskRunner(InterfacePtrInfo<InterfaceType> ptr_info) {
@@ -330,8 +333,8 @@ class ThreadSafeInterfacePtrBase
       // the interface pointer on the |task_runner_|. Therefore, MultiplexRouter
       // should be able to be created on a sequence different than the one that
       // it is supposed to listen on. crbug.com/682334
-      task_runner_->PostTask(FROM_HERE, base::Bind(&PtrWrapper::Bind, this,
-                                                   base::Passed(&ptr_info)));
+      task_runner_->PostTask(FROM_HERE, base::BindOnce(&PtrWrapper::Bind, this,
+                                                       std::move(ptr_info)));
     }
 
     std::unique_ptr<ThreadSafeForwarder<InterfaceType>> CreateForwarder() {
@@ -365,9 +368,9 @@ class ThreadSafeInterfacePtrBase
       if (!task_runner_->RunsTasksInCurrentSequence()) {
         // NOTE: This is only called when there are no more references to
         // |this|, so binding it unretained is both safe and necessary.
-        task_runner_->PostTask(FROM_HERE,
-                               base::Bind(&PtrWrapper::DeleteOnCorrectThread,
-                                          base::Unretained(this)));
+        task_runner_->PostTask(
+            FROM_HERE, base::BindOnce(&PtrWrapper::DeleteOnCorrectThread,
+                                      base::Unretained(this)));
       } else {
         delete this;
       }

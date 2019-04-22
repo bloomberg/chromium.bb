@@ -102,7 +102,7 @@ class SVGPropertyBase : public GarbageCollectedFinalized<SVGPropertyBase> {
 #define DEFINE_SVG_PROPERTY_TYPE_CASTS(thisType)               \
   DEFINE_TYPE_CASTS(thisType, SVGPropertyBase, value,          \
                     value->GetType() == thisType::ClassType(), \
-                    value.GetType() == thisType::ClassType());
+                    value.GetType() == thisType::ClassType())
 
 }  // namespace blink
 

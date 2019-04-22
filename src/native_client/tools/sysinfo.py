@@ -16,7 +16,8 @@
 # http://www.koders.com/python/fidB436B8043AA994C550C0961247DACC3E04E84734.aspx?s=config
 # http://developer.apple.com/documentation/Darwin/Reference/ManPages/man8/sysctl.8.html
 
-# imports
+from __future__ import print_function
+
 import os
 import sys
 import time
@@ -26,9 +27,9 @@ VERBOSE = 0
 
 
 def Banner(text):
-  print '=' * 70
-  print text
-  print '=' * 70
+  print('=' * 70)
+  print(text)
+  print('=' * 70)
   # quick hack to keep banner in sync with os.system output
   sys.stdout.flush()
 
@@ -76,7 +77,7 @@ def InfoDarwin():
     os.system("sysctl hw | egrep 'mem'")
 
   Banner('LOAD:')
-  print 'TBD'
+  print('TBD')
 
   Banner('UPTIME:')
   os.system('sysctl kern | egrep "kern\.boottime"')
@@ -95,37 +96,39 @@ def InfoWin32():
   for key in ['ProductName',
               'CSDVersion',
               'CurrentBuildNumber']:
-    print  GetRegistryOS(key)
+    print(GetRegistryOS(key))
 
   Banner('CPU:')
   db = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE,
                        'HARDWARE\\DESCRIPTION\\System\\CentralProcessor')
   for n in range(0, 1000):
-     try:
-       cpu = _winreg.EnumKey(db, n)
-     except Exception:
-       break
-     print "\nProcessor :", cpu
-     db_cpu = _winreg.OpenKey(db, cpu)
-     for i in range(0, 1000):
-       try:
-         name, value, type =_winreg.EnumValue(db_cpu, i)
-       except Exception:
-         break
-       # skip binary data
-       if type == _winreg.REG_BINARY: continue
-       if type == _winreg.REG_FULL_RESOURCE_DESCRIPTOR: continue
-       print name, type, value
+    try:
+      cpu = _winreg.EnumKey(db, n)
+    except Exception:
+      break
+    print("\nProcessor :", cpu)
+    db_cpu = _winreg.OpenKey(db, cpu)
+    for i in range(0, 1000):
+      try:
+        name, value, type = _winreg.EnumValue(db_cpu, i)
+      except Exception:
+        break
+      # skip binary data
+      if type == _winreg.REG_BINARY:
+        continue
+      if type == _winreg.REG_FULL_RESOURCE_DESCRIPTOR:
+        continue
+      print(name, type, value)
 
   Banner('RAM:')
-  print 'TBD'
+  print('TBD')
   # TODO: this is currently broken since ctypes is not available
 
   Banner('LOAD:')
-  print 'TBD'
+  print('TBD')
 
   Banner('UPTIME:')
-  print 'TBD'
+  print('TBD')
 
 
 PLATFORM_INFO = {
@@ -138,21 +141,21 @@ PLATFORM_INFO = {
 
 def main():
   Banner('Python Info:')
-  print sys.platform
-  print sys.version
+  print(sys.platform)
+  print(sys.version)
 
   Banner('ENV:')
   for e in ['PATH']:
-    print e, os.getenv(e)
+    print(e, os.getenv(e))
 
 
   if sys.platform in PLATFORM_INFO:
     try:
       PLATFORM_INFO[sys.platform]()
     except Exception, err:
-      print 'ERRROR: processing sys info', str(err)
+      print('ERRROR: processing sys info', str(err))
   else:
-    print 'ERROR: unknwon platform', system.platform
+    print('ERROR: unknwon platform', system.platform)
 
   return 0
 

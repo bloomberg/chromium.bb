@@ -46,11 +46,11 @@ class StyledMarkupAccumulator final {
   STACK_ALLOCATED();
 
  public:
-  StyledMarkupAccumulator(EAbsoluteURLs,
+  StyledMarkupAccumulator(AbsoluteURLs,
                           const TextOffset& start,
                           const TextOffset& end,
                           Document*,
-                          EAnnotateForInterchange,
+                          AnnotateForInterchange,
                           ConvertBlocksToInlines);
 
   void AppendEndTag(const Element&);
@@ -70,6 +70,7 @@ class StyledMarkupAccumulator final {
   void AppendElementWithInlineStyle(StringBuilder&,
                                     const Element&,
                                     EditingStyle*);
+  // Serialize a Node, without its children and its end tag.
   void AppendStartMarkup(Node&);
 
   bool ShouldAnnotate() const;
@@ -82,12 +83,15 @@ class StyledMarkupAccumulator final {
   String StringValueForRange(const Text&);
 
   void AppendEndMarkup(StringBuilder&, const Element&);
+  void AppendAttribute(StringBuilder& result,
+                       const Element& element,
+                       const Attribute& attribute);
 
   MarkupFormatter formatter_;
   const TextOffset start_;
   const TextOffset end_;
   const Member<Document> document_;
-  const EAnnotateForInterchange should_annotate_;
+  const AnnotateForInterchange should_annotate_;
   StringBuilder result_;
   Vector<String> reversed_preceding_markup_;
   const ConvertBlocksToInlines convert_blocks_to_inlines_;

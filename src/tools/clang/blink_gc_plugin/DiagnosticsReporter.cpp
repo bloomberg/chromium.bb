@@ -17,9 +17,6 @@ const char kClassRequiresTraceMethod[] =
 const char kBaseRequiresTracing[] =
     "[blink-gc] Base class %0 of derived class %1 requires tracing.";
 
-const char kBaseRequiresWrapperTracing[] =
-    "[blink-gc] Base class %0 of derived class %1 requires wrapper tracing.";
-
 const char kBaseRequiresTracingNote[] =
     "[blink-gc] Untraced base class %0 declared here:";
 

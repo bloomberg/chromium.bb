@@ -48,7 +48,6 @@
 // If DebugMessage.exe is not found, the logging code will use a normal
 // MessageBox, potentially causing the problems discussed above.
 
-
 // Instructions
 // ------------
 //
@@ -143,12 +142,27 @@
 //
 // There is the special severity of DFATAL, which logs FATAL in debug mode,
 // ERROR in normal mode.
+//
+// Output is of the format, for example:
+// [3816:3877:0812/234555.406952:VERBOSE1:drm_device_handle.cc(90)] Succeeded
+// authenticating /dev/dri/card0 in 0 ms with 1 attempt(s)
+//
+// The colon separated fields inside the brackets are as follows:
+// 0. An optional Logfile prefix (not included in this example)
+// 1. Process ID
+// 2. Thread ID
+// 3. The date/time of the log message, in MMDD/HHMMSS.Milliseconds format
+// 4. The log level
+// 5. The filename and line number where the log was instantiated
+//
+// Note that the visibility can be changed by setting preferences in
+// SetLogItems()
 
 namespace logging {
 
 // TODO(avi): do we want to do a unification of character types here?
 #if defined(OS_WIN)
-typedef wchar_t PathChar;
+typedef base::char16 PathChar;
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
 typedef char PathChar;
 #endif
@@ -286,10 +300,10 @@ BASE_EXPORT void SetShowErrorDialogs(bool enable_dialogs);
 // however clients can use this function to override with their own handling
 // (e.g. a silent one for Unit Tests)
 using LogAssertHandlerFunction =
-    base::Callback<void(const char* file,
-                        int line,
-                        const base::StringPiece message,
-                        const base::StringPiece stack_trace)>;
+    base::RepeatingCallback<void(const char* file,
+                                 int line,
+                                 const base::StringPiece message,
+                                 const base::StringPiece stack_trace)>;
 
 class BASE_EXPORT ScopedLogAssertHandler {
  public:
@@ -402,8 +416,8 @@ const LogSeverity LOG_0 = LOG_ERROR;
 #define LOG_IS_ON(severity) \
   (::logging::ShouldCreateLogMessage(::logging::LOG_##severity))
 
-// We can't do any caching tricks with VLOG_IS_ON() like the
-// google-glog version since it requires GCC extensions.  This means
+// We don't do any caching tricks with VLOG_IS_ON() like the
+// google-glog version since it increases binary size.  This means
 // that using the v-logging functions in conjunction with --vmodule
 // may be slow.
 #define VLOG_IS_ON(verboselevel) \
@@ -603,11 +617,17 @@ class CheckOpResult {
   } while (false)
 #endif
 
+#if defined(__clang__) || defined(COMPILER_GCC)
 #define IMMEDIATE_CRASH()    \
   ({                         \
     WRAPPED_TRAP_SEQUENCE(); \
     __builtin_unreachable(); \
   })
+#else
+// This is supporting non-chromium user of logging.h to build with MSVC, like
+// pdfium. On MSVC there is no __builtin_unreachable().
+#define IMMEDIATE_CRASH() WRAPPED_TRAP_SEQUENCE()
+#endif
 
 // CHECK dies with a fatal error if condition is not true.  It is *not*
 // controlled by NDEBUG, so the check will be executed regardless of
@@ -639,26 +659,6 @@ class CheckOpResult {
 
 #else  // !(OFFICIAL_BUILD && NDEBUG)
 
-#if defined(_PREFAST_) && defined(OS_WIN)
-// Use __analysis_assume to tell the VC++ static analysis engine that
-// assert conditions are true, to suppress warnings.  The LAZY_STREAM
-// parameter doesn't reference 'condition' in /analyze builds because
-// this evaluation confuses /analyze. The !! before condition is because
-// __analysis_assume gets confused on some conditions:
-// http://randomascii.wordpress.com/2011/09/13/analyze-for-visual-studio-the-ugly-part-5/
-
-#define CHECK(condition)                    \
-  __analysis_assume(!!(condition)),         \
-      LAZY_STREAM(LOG_STREAM(FATAL), false) \
-          << "Check failed: " #condition ". "
-
-#define PCHECK(condition)                    \
-  __analysis_assume(!!(condition)),          \
-      LAZY_STREAM(PLOG_STREAM(FATAL), false) \
-          << "Check failed: " #condition ". "
-
-#else  // _PREFAST_
-
 // Do as much work as possible out of line to reduce inline code size.
 #define CHECK(condition)                                                      \
   LAZY_STREAM(::logging::LogMessage(__FILE__, __LINE__, #condition).stream(), \
@@ -667,8 +667,6 @@ class CheckOpResult {
 #define PCHECK(condition)                                           \
   LAZY_STREAM(PLOG_STREAM(FATAL), !ANALYZER_ASSUME_TRUE(condition)) \
       << "Check failed: " #condition ". "
-
-#endif  // _PREFAST_
 
 // Helper macro for binary operators.
 // Don't use this macro directly in your code, use CHECK_EQ et al below.
@@ -834,9 +832,9 @@ DEFINE_CHECK_OP_IMPL(GT, > )
 #define DPLOG(severity)                                         \
   LAZY_STREAM(PLOG_STREAM(severity), DLOG_IS_ON(severity))
 
-#define DVLOG(verboselevel) DVLOG_IF(verboselevel, VLOG_IS_ON(verboselevel))
+#define DVLOG(verboselevel) DVLOG_IF(verboselevel, true)
 
-#define DVPLOG(verboselevel) DVPLOG_IF(verboselevel, VLOG_IS_ON(verboselevel))
+#define DVPLOG(verboselevel) DVPLOG_IF(verboselevel, true)
 
 // Definitions for DCHECK et al.
 
@@ -865,21 +863,6 @@ const LogSeverity LOG_DCHECK = LOG_FATAL;
 // DCHECK_IS_ON() is true. When DCHECK_IS_ON() is false, the macros use
 // EAT_STREAM_PARAMETERS to avoid expressions that would create temporaries.
 
-#if defined(_PREFAST_) && defined(OS_WIN)
-// See comments on the previous use of __analysis_assume.
-
-#define DCHECK(condition)                    \
-  __analysis_assume(!!(condition)),          \
-      LAZY_STREAM(LOG_STREAM(DCHECK), false) \
-          << "Check failed: " #condition ". "
-
-#define DPCHECK(condition)                    \
-  __analysis_assume(!!(condition)),           \
-      LAZY_STREAM(PLOG_STREAM(DCHECK), false) \
-          << "Check failed: " #condition ". "
-
-#else  // !(defined(_PREFAST_) && defined(OS_WIN))
-
 #if DCHECK_IS_ON()
 
 #define DCHECK(condition)                                           \
@@ -895,8 +878,6 @@ const LogSeverity LOG_DCHECK = LOG_FATAL;
 #define DPCHECK(condition) EAT_STREAM_PARAMETERS << !(condition)
 
 #endif  // DCHECK_IS_ON()
-
-#endif  // defined(_PREFAST_) && defined(OS_WIN)
 
 // Helper macro for binary operators.
 // Don't use this macro directly in your code, use DCHECK_EQ et al below.
@@ -1115,7 +1096,7 @@ BASE_EXPORT void RawLog(int level, const char* message);
 BASE_EXPORT bool IsLoggingToFileEnabled();
 
 // Returns the default log file path.
-BASE_EXPORT std::wstring GetLogFileFullPath();
+BASE_EXPORT base::string16 GetLogFileFullPath();
 #endif
 
 }  // namespace logging

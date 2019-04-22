@@ -60,6 +60,7 @@ class TaskManagerView : public TableViewDelegate,
   bool CanMinimize() const override;
   bool ExecuteWindowsCommand(int command_id) override;
   base::string16 GetWindowTitle() const override;
+  gfx::ImageSkia GetWindowIcon() override;
   std::string GetWindowName() const override;
   bool Accept() override;
   bool Close() override;
@@ -78,9 +79,9 @@ class TaskManagerView : public TableViewDelegate,
   void OnKeyDown(ui::KeyboardCode keycode) override;
 
   // views::ContextMenuController:
-  void ShowContextMenuForView(views::View* source,
-                              const gfx::Point& point,
-                              ui::MenuSourceType source_type) override;
+  void ShowContextMenuForViewImpl(views::View* source,
+                                  const gfx::Point& point,
+                                  ui::MenuSourceType source_type) override;
 
   // ui::SimpleMenuModel::Delegate:
   bool IsCommandIdChecked(int id) const override;

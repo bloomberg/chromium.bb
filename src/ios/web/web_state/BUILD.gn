@@ -12,9 +12,11 @@ source_set("web_state") {
     ":web_state_impl_header",
     ":wk_web_view_security_util",
     "//base",
+    "//ios/web/common",
     "//ios/web/interstitials",
     "//ios/web/navigation",
     "//ios/web/navigation:core",
+    "//ios/web/navigation:wk_navigation_util",
     "//ios/web/public",
     "//ios/web/web_state/ui",
     "//ios/web/web_state/ui:crw_web_view_navigation_proxy",
@@ -151,6 +153,7 @@ source_set("context_menu") {
   deps = [
     "//base",
     "//components/url_formatter",
+    "//ios/web/common",
     "//ios/web/public",
   ]
 

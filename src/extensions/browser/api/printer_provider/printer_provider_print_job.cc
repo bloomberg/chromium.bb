@@ -6,13 +6,14 @@
 
 namespace extensions {
 
-PrinterProviderPrintJob::PrinterProviderPrintJob() {
-}
+PrinterProviderPrintJob::PrinterProviderPrintJob() = default;
 
 PrinterProviderPrintJob::PrinterProviderPrintJob(
-    const PrinterProviderPrintJob& other) = default;
+    PrinterProviderPrintJob&& other) = default;
 
-PrinterProviderPrintJob::~PrinterProviderPrintJob() {
-}
+PrinterProviderPrintJob& PrinterProviderPrintJob::operator=(
+    PrinterProviderPrintJob&& other) = default;
+
+PrinterProviderPrintJob::~PrinterProviderPrintJob() = default;
 
 }  // namespace extensions

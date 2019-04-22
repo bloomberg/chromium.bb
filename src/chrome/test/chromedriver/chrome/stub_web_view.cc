@@ -172,10 +172,10 @@ Status StubWebView::CaptureScreenshot(
   return Status(kOk);
 }
 
-Status StubWebView::SetFileInputFiles(
-    const std::string& frame,
-    const base::DictionaryValue& element,
-    const std::vector<base::FilePath>& files) {
+Status StubWebView::SetFileInputFiles(const std::string& frame,
+                                      const base::DictionaryValue& element,
+                                      const std::vector<base::FilePath>& files,
+                                      const bool append) {
   return Status(kOk);
 }
 
@@ -227,4 +227,12 @@ bool StubWebView::IsOOPIF(const std::string& frame_id) {
 
 FrameTracker* StubWebView::GetFrameTracker() const {
   return nullptr;
+}
+
+std::unique_ptr<base::Value> StubWebView::GetCastSinks() {
+  return std::make_unique<base::Value>();
+}
+
+std::unique_ptr<base::Value> StubWebView::GetCastIssueMessage() {
+  return std::make_unique<base::Value>();
 }

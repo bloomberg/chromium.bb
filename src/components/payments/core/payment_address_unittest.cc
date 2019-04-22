@@ -71,13 +71,6 @@ TEST(PaymentRequestTest, PaymentAddressEquality) {
   address2.sorting_code = "14390";
   EXPECT_TRUE(address1.Equals(address2));
 
-  address1.language_code = "fr";
-  EXPECT_FALSE(address1.Equals(address2));
-  address2.language_code = "zh-HK";
-  EXPECT_FALSE(address1.Equals(address2));
-  address2.language_code = "fr";
-  EXPECT_TRUE(address1.Equals(address2));
-
   address1.organization = "The Willy Wonka Candy Company";
   EXPECT_FALSE(address1.Equals(address2));
   address2.organization = "Sears";

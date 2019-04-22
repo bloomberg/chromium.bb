@@ -90,7 +90,7 @@ TEST_P(ParseNumberTest, ParsePhoneNumber) {
   EXPECT_EQ(test_case.deduced_region, deduced_region);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     PhoneNumberI18NTest,
     ParseNumberTest,
     testing::Values(
@@ -272,6 +272,37 @@ TEST(PhoneNumberUtilTest, FormatPhoneForResponse) {
             i18n::FormatPhoneForResponse("(1) 515-123-1234", "US"));
 }
 
+// Tests that phone numbers are correctly formatted in a national format.
+TEST(PhoneNumberUtilTest, FormatPhoneNationallyForDisplay) {
+  // Invalid US and Brazilian numbers are not formatted.
+  EXPECT_EQ("1234567890",
+            i18n::FormatPhoneNationallyForDisplay("1234567890", "US"));
+  EXPECT_EQ("(11) 13333-4444",
+            i18n::FormatPhoneNationallyForDisplay("(11) 13333-4444", "BR"));
+  EXPECT_EQ("(11) 13333-4444",
+            i18n::FormatPhoneNationallyForDisplay("(11) 13333-4444", "IN"));
+
+  // Valid US, Canadian, UK, and Brazilian numbers are nationally formatted.
+  EXPECT_EQ("(202) 444-0000",
+            i18n::FormatPhoneNationallyForDisplay("2024440000", "US"));
+  EXPECT_EQ("(202) 444-0000",
+            i18n::FormatPhoneNationallyForDisplay("+1(202)4440000", "US"));
+  EXPECT_EQ("(202) 444-0000",
+            i18n::FormatPhoneNationallyForDisplay("12024440000", "US"));
+  EXPECT_EQ("(202) 444-0000",
+            i18n::FormatPhoneNationallyForDisplay("(202)4440000", "US"));
+  EXPECT_EQ("(202) 444-0000",
+            i18n::FormatPhoneNationallyForDisplay("202-444-0000", "US"));
+  EXPECT_EQ("(819) 555-9999",
+            i18n::FormatPhoneNationallyForDisplay("+1(819)555 9999", "CA"));
+  EXPECT_EQ("(819) 555-9999",
+            i18n::FormatPhoneNationallyForDisplay("18195559999", "CA"));
+  EXPECT_EQ("020 7601 4444",
+            i18n::FormatPhoneNationallyForDisplay("+4402076014444", "UK"));
+  EXPECT_EQ("(21) 3883-5600",
+            i18n::FormatPhoneNationallyForDisplay("2138835600", "BR"));
+}
+
 // Tests that the phone numbers are correctly formatted to display to the user.
 TEST(PhoneNumberUtilTest, FormatPhoneForDisplay) {
   // Invalid number is not formatted.
@@ -314,7 +345,7 @@ TEST_P(GetFormattedPhoneNumberForDisplayTest,
                 profile, GetParam().locale)));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     GetFormattedPhoneNumberForDisplay,
     GetFormattedPhoneNumberForDisplayTest,
     testing::Values(
@@ -421,7 +452,7 @@ INSTANTIATE_TEST_CASE_P(
         // This number is not a valid US number, we won't try to format.
         PhoneNumberFormatCase("55 5342 8400", "US", "5553428400")));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     GetFormattedPhoneNumberForDisplay_EdgeCases,
     GetFormattedPhoneNumberForDisplayTest,
     testing::Values(

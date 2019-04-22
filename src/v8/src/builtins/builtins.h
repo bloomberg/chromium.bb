@@ -76,16 +76,12 @@ class Builtins {
   Handle<Code> NonPrimitiveToPrimitive(
       ToPrimitiveHint hint = ToPrimitiveHint::kDefault);
   Handle<Code> OrdinaryToPrimitive(OrdinaryToPrimitiveHint hint);
-  Handle<Code> InterpreterPushArgsThenCall(ConvertReceiverMode receiver_mode,
-                                           InterpreterPushArgsMode mode);
-  Handle<Code> InterpreterPushArgsThenConstruct(InterpreterPushArgsMode mode);
-  Handle<Code> NewFunctionContext(ScopeType scope_type);
   Handle<Code> JSConstructStubGeneric();
 
   // Used by CreateOffHeapTrampolines in isolate.cc.
   void set_builtin(int index, Code builtin);
 
-  Code builtin(int index);
+  V8_EXPORT_PRIVATE Code builtin(int index);
   V8_EXPORT_PRIVATE Handle<Code> builtin_handle(int index);
 
   V8_EXPORT_PRIVATE static Callable CallableFor(Isolate* isolate, Name name);
@@ -129,12 +125,23 @@ class Builtins {
 
   // True, iff the given builtin contains no isolate-specific code and can be
   // embedded into the binary.
-  static bool IsIsolateIndependent(int index) { return true; }
+  static constexpr bool kAllBuiltinsAreIsolateIndependent = true;
+  static constexpr bool AllBuiltinsAreIsolateIndependent() {
+    return kAllBuiltinsAreIsolateIndependent;
+  }
+  static constexpr bool IsIsolateIndependent(int index) {
+    STATIC_ASSERT(kAllBuiltinsAreIsolateIndependent);
+    return kAllBuiltinsAreIsolateIndependent;
+  }
 
   // Wasm runtime stubs are treated specially by wasm. To guarantee reachability
   // through near jumps, their code is completely copied into a fresh off-heap
   // area.
   static bool IsWasmRuntimeStub(int index);
+
+  // Updates the table of builtin entry points based on the current contents of
+  // the builtins table.
+  static void UpdateBuiltinEntryTable(Isolate* isolate);
 
   bool is_initialized() const { return initialized_; }
 
@@ -171,6 +178,31 @@ class Builtins {
   // trampoline.
   static Handle<ByteArray> GenerateOffHeapTrampolineRelocInfo(Isolate* isolate);
 
+  static bool IsJSEntryVariant(int builtin_index) {
+    switch (builtin_index) {
+      case kJSEntry:
+      case kJSConstructEntry:
+      case kJSRunMicrotasksEntry:
+        return true;
+      default:
+        return false;
+    }
+    UNREACHABLE();
+  }
+
+  int js_entry_handler_offset() const {
+    DCHECK_NE(js_entry_handler_offset_, 0);
+    return js_entry_handler_offset_;
+  }
+
+  void SetJSEntryHandlerOffset(int offset) {
+    // Check the stored offset is either uninitialized or unchanged (we
+    // generate multiple variants of this builtin but they should all have the
+    // same handler offset).
+    CHECK(js_entry_handler_offset_ == 0 || js_entry_handler_offset_ == offset);
+    js_entry_handler_offset_ = offset;
+  }
+
  private:
   static void Generate_CallFunction(MacroAssembler* masm,
                                     ConvertReceiverMode mode);
@@ -206,6 +238,11 @@ class Builtins {
 
   Isolate* isolate_;
   bool initialized_ = false;
+
+  // Stores the offset of exception handler entry point (the handler_entry
+  // label) in JSEntry and its variants. It's used to generate the handler table
+  // during codegen (mksnapshot-only).
+  int js_entry_handler_offset_ = 0;
 
   friend class SetupIsolateDelegate;
 

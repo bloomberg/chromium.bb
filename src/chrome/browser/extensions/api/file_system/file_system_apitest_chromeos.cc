@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -20,7 +21,7 @@
 #include "chrome/browser/extensions/api/file_system/consent_provider.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/common/chrome_paths.h"
-#include "chromeos/chromeos_features.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/drive/chromeos/file_system_interface.h"
 #include "components/drive/service/fake_drive_service.h"
 #include "components/user_manager/scoped_user_manager.h"
@@ -158,7 +159,7 @@ class FileSystemApiTestForDrive : public PlatformAppBrowserTest {
   void TearDown() override {
     FileSystemChooseEntryFunction::StopSkippingPickerForTest();
     PlatformAppBrowserTest::TearDown();
-  };
+  }
 
   base::FilePath GetDriveMountPoint() {
     if (base::FeatureList::IsEnabled(chromeos::features::kDriveFs)) {
@@ -192,8 +193,7 @@ class FileSystemApiTestForDrive : public PlatformAppBrowserTest {
 
     integration_service_ = new drive::DriveIntegrationService(
         profile, nullptr, fake_drive_service_, "", test_cache_root_.GetPath(),
-        nullptr,
-        fake_drivefs_helper_->CreateFakeDriveFsConnectionDelegateFactory());
+        nullptr, fake_drivefs_helper_->CreateFakeDriveFsListenerFactory());
     return integration_service_;
   }
 
@@ -357,7 +357,7 @@ class FileSystemApiTestForRequestFileSystem : public PlatformAppBrowserTest {
 
     return new drive::DriveIntegrationService(
         profile, nullptr, nullptr, "", {}, nullptr,
-        fake_drivefs_helper_->CreateFakeDriveFsConnectionDelegateFactory());
+        fake_drivefs_helper_->CreateFakeDriveFsListenerFactory());
   }
 
   base::ScopedTempDir drivefs_root_;

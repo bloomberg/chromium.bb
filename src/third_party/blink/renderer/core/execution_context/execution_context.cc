@@ -31,16 +31,20 @@
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
-#include "third_party/blink/renderer/core/dom/pausable_object.h"
 #include "third_party/blink/renderer/core/events/error_event.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_state_observer.h"
 #include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
+#include "third_party/blink/renderer/core/frame/csp/execution_context_csp_delegate.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/core/script/fetch_client_settings_object_impl.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
+#include "third_party/blink/renderer/platform/mojo/interface_invalidator.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 
 namespace blink {
@@ -49,8 +53,8 @@ ExecutionContext::ExecutionContext(v8::Isolate* isolate)
     : isolate_(isolate),
       circular_sequential_id_(0),
       in_dispatch_error_event_(false),
-      is_context_paused_(false),
       is_context_destroyed_(false),
+      csp_delegate_(MakeGarbageCollected<ExecutionContextCSPDelegate>(*this)),
       window_interaction_tokens_(0),
       referrer_policy_(network::mojom::ReferrerPolicy::kDefault),
       invalidator_(std::make_unique<InterfaceInvalidator>()) {}
@@ -75,16 +79,19 @@ ExecutionContext* ExecutionContext::ForRelevantRealm(
   return ToExecutionContext(info.Holder()->CreationContext());
 }
 
-void ExecutionContext::PausePausableObjects() {
-  DCHECK(!is_context_paused_);
-  NotifySuspendingPausableObjects();
-  is_context_paused_ = true;
-}
+void ExecutionContext::SetLifecycleState(mojom::FrameLifecycleState state) {
+  bool was_paused = lifecycle_state_ != mojom::FrameLifecycleState::kRunning;
+  lifecycle_state_ = state;
+  NotifyContextLifecycleStateChanged(state);
+  bool paused = lifecycle_state_ != mojom::FrameLifecycleState::kRunning;
 
-void ExecutionContext::UnpausePausableObjects() {
-  DCHECK(is_context_paused_);
-  is_context_paused_ = false;
-  NotifyResumingPausableObjects();
+  if (was_paused == paused)
+    return;
+
+  if (paused)
+    TasksWerePaused();
+  else
+    TasksWereUnpaused();
 }
 
 void ExecutionContext::NotifyContextDestroyed() {
@@ -93,23 +100,15 @@ void ExecutionContext::NotifyContextDestroyed() {
   ContextLifecycleNotifier::NotifyContextDestroyed();
 }
 
-void ExecutionContext::PauseScheduledTasks() {
-  PausePausableObjects();
-  TasksWerePaused();
+bool ExecutionContext::FeatureEnabled(OriginTrialFeature feature) const {
+  const OriginTrialContext* context = OriginTrialContext::From(this);
+  return context && context->IsFeatureEnabled(feature);
 }
 
-void ExecutionContext::UnpauseScheduledTasks() {
-  UnpausePausableObjects();
-  TasksWereUnpaused();
-}
-
-void ExecutionContext::PausePausableObjectIfNeeded(PausableObject* object) {
-#if DCHECK_IS_ON()
-  DCHECK(Contains(object));
-#endif
-  // Ensure all PausableObjects are paused also newly created ones.
-  if (is_context_paused_)
-    object->Pause();
+void ExecutionContext::AddConsoleMessage(mojom::ConsoleMessageSource source,
+                                         mojom::ConsoleMessageLevel level,
+                                         const String& message) {
+  AddConsoleMessage(ConsoleMessage::Create(source, level, message));
 }
 
 void ExecutionContext::DispatchErrorEvent(
@@ -160,8 +159,19 @@ int ExecutionContext::CircularSequentialID() {
 
 PublicURLManager& ExecutionContext::GetPublicURLManager() {
   if (!public_url_manager_)
-    public_url_manager_ = PublicURLManager::Create(this);
+    public_url_manager_ = MakeGarbageCollected<PublicURLManager>(this);
   return *public_url_manager_;
+}
+
+ContentSecurityPolicyDelegate&
+ExecutionContext::GetContentSecurityPolicyDelegate() {
+  return *csp_delegate_;
+}
+
+ContentSecurityPolicy* ExecutionContext::GetContentSecurityPolicyForWorld() {
+  // Isolated worlds are only relevant for Documents. Hence just return the main
+  // world's content security policy by default.
+  return GetContentSecurityPolicy();
 }
 
 const SecurityOrigin* ExecutionContext::GetSecurityOrigin() {
@@ -204,13 +214,6 @@ String ExecutionContext::OutgoingReferrer() const {
   return Url().StrippedForUseAsReferrer();
 }
 
-FetchClientSettingsObjectSnapshot*
-ExecutionContext::CreateFetchClientSettingsObjectSnapshot() {
-  return MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
-      BaseURL(), GetSecurityOrigin(), GetReferrerPolicy(), OutgoingReferrer(),
-      GetHttpsState());
-}
-
 void ExecutionContext::ParseAndSetReferrerPolicy(const String& policies,
                                                  bool support_legacy_keywords) {
   network::mojom::ReferrerPolicy referrer_policy;
@@ -221,7 +224,8 @@ void ExecutionContext::ParseAndSetReferrerPolicy(const String& policies,
                                   : kDoNotSupportReferrerPolicyLegacyKeywords,
           &referrer_policy)) {
     AddConsoleMessage(ConsoleMessage::Create(
-        kRenderingMessageSource, kErrorMessageLevel,
+        mojom::ConsoleMessageSource::kRendering,
+        mojom::ConsoleMessageLevel::kError,
         "Failed to set referrer policy: The value '" + policies +
             "' is not one of " +
             (support_legacy_keywords
@@ -256,7 +260,9 @@ void ExecutionContext::RemoveURLFromMemoryCache(const KURL& url) {
 void ExecutionContext::Trace(blink::Visitor* visitor) {
   visitor->Trace(public_url_manager_);
   visitor->Trace(pending_exceptions_);
+  visitor->Trace(csp_delegate_);
   ContextLifecycleNotifier::Trace(visitor);
+  ConsoleLogger::Trace(visitor);
   Supplementable<ExecutionContext>::Trace(visitor);
 }
 

@@ -21,6 +21,7 @@ import sys
 import tempfile
 import textwrap
 
+import adb_command_line
 import devil_chromium
 from devil import devil_env
 from devil.android import apk_helper
@@ -61,6 +62,8 @@ _DALVIK_IGNORE_PATTERN = re.compile('|'.join([
     r'^WAIT_',
     ]))
 
+BASE_MODULE = 'base'
+
 
 def _Colorize(text, style=''):
   return (style
@@ -73,7 +76,7 @@ def _InstallApk(devices, apk, install_dict):
     if install_dict:
       installer.Install(device, install_dict, apk=apk)
     else:
-      device.Install(apk, reinstall=True)
+      device.Install(apk, allow_downgrade=True, reinstall=True)
 
   logging.info('Installing %sincremental apk.', '' if install_dict else 'non-')
   device_utils.DeviceUtils.parallel(devices).pMap(install)
@@ -88,49 +91,168 @@ def _InstallApk(devices, apk, install_dict):
 #   keystore_path: Path to keystore file.
 #   keystore_password: Password for the keystore file.
 #   keystore_alias: Signing key name alias within the keystore file.
+#   system_image_locales: List of Chromium locales to include in system .apks.
 BundleGenerationInfo = collections.namedtuple(
     'BundleGenerationInfo',
     'bundle_path,bundle_apks_path,aapt2_path,keystore_path,keystore_password,'
-    'keystore_alias')
+    'keystore_alias,system_image_locales')
 
 
-def _GenerateBundleApks(info, universal=False):
+def _GenerateBundleApks(info,
+                        output_path,
+                        minimal=False,
+                        minimal_sdk_version=None,
+                        mode=None):
   """Generate an .apks archive from a bundle on demand.
 
   Args:
     info: A BundleGenerationInfo instance.
-    universal: Whether to create a single APK that contains the contents of all
-      modules.
-  Returns:
-    Path of output .apks archive.
+    output_path: Path of output .apks archive.
+    minimal: Create the minimal set of apks possible (english-only).
+    minimal_sdk_version: When minimal=True, use this sdkVersion.
+    mode: Build mode, either None, or one of app_bundle_utils.BUILD_APKS_MODES.
   """
   app_bundle_utils.GenerateBundleApks(
       info.bundle_path,
-      info.bundle_apks_path,
+      output_path,
       info.aapt2_path,
       info.keystore_path,
       info.keystore_password,
       info.keystore_alias,
-      universal)
-  return info.bundle_apks_path
+      system_image_locales=info.system_image_locales,
+      mode=mode,
+      minimal=minimal,
+      minimal_sdk_version=minimal_sdk_version)
 
 
-def _InstallBundle(devices, bundle_apks, modules):
-  def install(device):
+def _InstallBundle(devices, bundle_apks, package_name, command_line_flags_file,
+                   modules, fake_modules):
+  # Path to push fake modules for Chrome to pick up.
+  MODULES_SRC_DIRECTORY_PATH = '/data/local/tmp/modules'
+  # Path Chrome creates after validating fake modules. This needs to be cleared
+  # for pushed fake modules to be picked up.
+  SPLITCOMPAT_PATH = '/data/data/' + package_name + '/files/splitcompat'
+  # Chrome command line flag needed for fake modules to work.
+  FAKE_FEATURE_MODULE_INSTALL = '--fake-feature-module-install'
+
+  def ShouldWarnFakeFeatureModuleInstallFlag(device):
+    if command_line_flags_file:
+      changer = flag_changer.FlagChanger(device, command_line_flags_file)
+      return FAKE_FEATURE_MODULE_INSTALL not in changer.GetCurrentFlags()
+    return False
+
+  def ClearFakeModules(device):
+    if device.PathExists(SPLITCOMPAT_PATH, as_root=True):
+      device.RemovePath(
+          SPLITCOMPAT_PATH, force=True, recursive=True, as_root=True)
+      logging.info('Removed %s', SPLITCOMPAT_PATH)
+    else:
+      logging.info('Skipped removing nonexistent %s', SPLITCOMPAT_PATH)
+
+  def InstallFakeModules(device):
+    try:
+      temp_path = tempfile.mkdtemp()
+
+      if not fake_modules:
+        # Push empty temp_path to clear folder on device and update the cache.
+        device.PushChangedFiles([(temp_path, MODULES_SRC_DIRECTORY_PATH)],
+                                delete_device_stale=True)
+        return
+
+      # Device-spec JSON is needed, so create that first.
+      device_spec_filename = os.path.join(temp_path, 'device_spec.json')
+      get_device_spec_cmd_args = [
+          'get-device-spec', '--adb=' + adb_wrapper.AdbWrapper.GetAdbPath(),
+          '--device-id=' + device.serial, '--output=' + device_spec_filename
+      ]
+      bundletool.RunBundleTool(get_device_spec_cmd_args)
+
+      # Extract fake modules to temp directory. For now, installation
+      # requires running 'bundletool extract-apks'. Unfortunately, this leads
+      # to unneeded compression of module files.
+      extract_apks_cmd_args = [
+          'extract-apks', '--apks=' + bundle_apks,
+          '--device-spec=' + device_spec_filename,
+          '--modules=' + ','.join(fake_modules), '--output-dir=' + temp_path
+      ]
+      bundletool.RunBundleTool(extract_apks_cmd_args)
+
+      # Push fake modules, with renames.
+      fake_module_apks = set()
+      for fake_module in fake_modules:
+        found_master = False
+
+        for filename in os.listdir(temp_path):
+          # If file matches expected format, rename it to follow conventions
+          # required by splitcompatting.
+          match = re.match(r'%s-([a-z_0-9]+)\.apk' % fake_module, filename)
+          local_path = os.path.join(temp_path, filename)
+
+          if not match:
+            continue
+
+          module_suffix = match.group(1)
+          remote = os.path.join(
+              temp_path, '%s.config.%s.apk' % (fake_module, module_suffix))
+          # Check if filename matches a master apk.
+          if 'master' in module_suffix:
+            if found_master:
+              raise Exception('Expect 1 master apk file for %s' % fake_module)
+            found_master = True
+            remote = os.path.join(temp_path, '%s.apk' % fake_module)
+
+          os.rename(local_path, remote)
+          fake_module_apks.add(os.path.basename(remote))
+
+      # Files that weren't renamed should not be pushed, remove from temp_path.
+      for filename in os.listdir(temp_path):
+        if filename not in fake_module_apks:
+          os.remove(os.path.join(temp_path, filename))
+
+      device.PushChangedFiles([(temp_path, MODULES_SRC_DIRECTORY_PATH)],
+                              delete_device_stale=True)
+
+    finally:
+      shutil.rmtree(temp_path, ignore_errors=True)
+
+  def Install(device):
+    ClearFakeModules(device)
+    if fake_modules:
+      # Print warning if command line is not set up for fake modules.
+      if ShouldWarnFakeFeatureModuleInstallFlag(device):
+        msg = ('Command line has no %s: Fake modules will be ignored.' %
+               FAKE_FEATURE_MODULE_INSTALL)
+        print _Colorize(msg, colorama.Fore.YELLOW + colorama.Style.BRIGHT)
+
+    InstallFakeModules(device)
+
     # NOTE: For now, installation requires running 'bundletool install-apks'.
     # TODO(digit): Add proper support for bundles to devil instead, then use it.
-    cmd_args = [
-        'install-apks',
-        '--apks=' + bundle_apks,
+    install_cmd_args = [
+        'install-apks', '--apks=' + bundle_apks,
         '--adb=' + adb_wrapper.AdbWrapper.GetAdbPath(),
         '--device-id=' + device.serial
     ]
     if modules:
-      cmd_args += ['--modules=' + ','.join(modules)]
-    bundletool.RunBundleTool(cmd_args)
+      install_cmd_args += ['--modules=' + ','.join(modules)]
+    bundletool.RunBundleTool(install_cmd_args)
+
+  # Basic checks for |modules| and |fake_modules|.
+  # * |fake_modules| cannot include 'base'.
+  # * If |fake_modules| is given, ensure |modules| includes 'base'.
+  # * They must be disjoint.
+  modules_set = set(modules) if modules else set()
+  fake_modules_set = set(fake_modules) if fake_modules else set()
+  if BASE_MODULE in fake_modules_set:
+    raise Exception('\'-f {}\' is disallowed.'.format(BASE_MODULE))
+  if fake_modules_set and BASE_MODULE not in modules_set:
+    raise Exception(
+        '\'-f FAKE\' must be accompanied by \'-m {}\''.format(BASE_MODULE))
+  if fake_modules_set.intersection(modules_set):
+    raise Exception('\'-m\' and \'-f\' entries must be disjoint.')
 
   logging.info('Installing bundle.')
-  device_utils.DeviceUtils.parallel(devices).pMap(install)
+  device_utils.DeviceUtils.parallel(devices).pMap(Install)
 
 
 def _UninstallApk(devices, install_dict, package_name):
@@ -140,6 +262,24 @@ def _UninstallApk(devices, install_dict, package_name):
     else:
       device.Uninstall(package_name)
   device_utils.DeviceUtils.parallel(devices).pMap(uninstall)
+
+
+def _IsWebViewProvider(apk_helper_instance):
+  meta_data = apk_helper_instance.GetAllMetadata()
+  meta_data_keys = [pair[0] for pair in meta_data]
+  return 'com.android.webview.WebViewLibrary' in meta_data_keys
+
+
+def _SetWebViewProvider(devices, package_name):
+
+  def switch_provider(device):
+    if device.build_version_sdk < version_codes.NOUGAT:
+      logging.error('No need to switch provider on pre-Nougat devices (%s)',
+                    device.serial)
+    else:
+      device.SetWebViewImplementation(package_name)
+
+  device_utils.DeviceUtils.parallel(devices).pMap(switch_provider)
 
 
 def _NormalizeProcessName(debug_process_name, package_name):
@@ -184,6 +324,8 @@ def _LaunchUrl(devices, package_name, argv=None, command_line_flags_file=None,
         changer = flag_changer.FlagChanger(device, command_line_flags_file)
         flags = []
         if argv:
+          adb_command_line.CheckBuildTypeSupportsFlags(device,
+                                                       command_line_flags_file)
           flags = shlex.split(argv)
         try:
           changer.ReplaceFlags(flags)
@@ -192,8 +334,10 @@ def _LaunchUrl(devices, package_name, argv=None, command_line_flags_file=None,
 
     if url is None:
       # Simulate app icon click if no url is present.
-      cmd = ['monkey', '-p', package_name, '-c',
-             'android.intent.category.LAUNCHER', '1']
+      cmd = [
+          'am', 'start', '-p', package_name, '-c',
+          'android.intent.category.LAUNCHER', '-a', 'android.intent.action.MAIN'
+      ]
       device.RunShellCommand(cmd, check_return=True)
     else:
       launch_intent = intent.Intent(action='android.intent.action.VIEW',
@@ -212,6 +356,8 @@ def _ChangeFlags(devices, argv, command_line_flags_file):
   else:
     flags = shlex.split(argv)
     def update(device):
+      adb_command_line.CheckBuildTypeSupportsFlags(device,
+                                                   command_line_flags_file)
       changer = flag_changer.FlagChanger(device, command_line_flags_file)
       changer.ReplaceFlags(flags)
     device_utils.DeviceUtils.parallel(devices).pMap(update)
@@ -991,6 +1137,25 @@ class _DevicesCommand(_Command):
     print _GenerateAvailableDevicesMessage(self.devices)
 
 
+class _PackageInfoCommand(_Command):
+  name = 'package-info'
+  # TODO(ntfschr): Support this by figuring out how to construct
+  # self.apk_helper for bundles (http://crbug.com/952443).
+  description = 'Show various attributes of this APK.'
+  need_device_args = False
+  needs_package_name = True
+  needs_apk_path = True
+
+  def Run(self):
+    # Format all (even ints) as strings, to handle cases where APIs return None
+    print 'Package name: "%s"' % self.args.package_name
+    print 'versionCode: %s' % self.apk_helper.GetVersionCode()
+    print 'versionName: "%s"' % self.apk_helper.GetVersionName()
+    print 'minSdkVersion: %s' % self.apk_helper.GetMinSdkVersion()
+    print 'targetSdkVersion: "%s"' % self.apk_helper.GetTargetSdkVersion()
+    print 'Supported ABIs: %r' % self.apk_helper.GetAbis()
+
+
 class _InstallCommand(_Command):
   name = 'install'
   description = 'Installs the APK or bundle to one or more devices.'
@@ -999,14 +1164,28 @@ class _InstallCommand(_Command):
 
   def _RegisterExtraArgs(self, group):
     if self.is_bundle:
-      group.add_argument('-m', '--module', action='append',
-                         help='Module to install. Can be specified multiple '
-                              'times. One of them has to be \'base\'')
+      group.add_argument(
+          '-m',
+          '--module',
+          action='append',
+          help='Module to install. Can be specified multiple times. ' +
+          'One of them has to be \'{}\''.format(BASE_MODULE))
+      group.add_argument(
+          '-f',
+          '--fake',
+          action='append',
+          help='Fake bundle module install. Can be specified multiple times. '
+          'Requires \'-m {0}\' to be given, and \'-f {0}\' is illegal.'.format(
+              BASE_MODULE))
 
   def Run(self):
     if self.is_bundle:
-      bundle_apks_path = _GenerateBundleApks(self.bundle_generation_info)
-      _InstallBundle(self.devices, bundle_apks_path, self.args.module)
+      # Store .apks file beside the .aab file so that it gets cached.
+      output_path = self.bundle_generation_info.bundle_apks_path
+      _GenerateBundleApks(self.bundle_generation_info, output_path)
+      _InstallBundle(self.devices, output_path, self.args.package_name,
+                     self.args.command_line_flags_file, self.args.module,
+                     self.args.fake)
     else:
       _InstallApk(self.devices, self.apk_helper, self.install_dict)
 
@@ -1018,6 +1197,24 @@ class _UninstallCommand(_Command):
 
   def Run(self):
     _UninstallApk(self.devices, self.install_dict, self.args.package_name)
+
+
+class _SetWebViewProviderCommand(_Command):
+  name = 'set-webview-provider'
+  description = ("Sets the device's WebView provider to this APK's "
+                 "package name.")
+  needs_package_name = True
+
+  def Run(self):
+    if self.is_bundle:
+      # TODO(ntfschr): Support this by figuring out how to construct
+      # self.apk_helper for bundles (http://crbug.com/952443).
+      raise Exception(
+          'Switching WebView providers not supported for bundles yet!')
+    if not _IsWebViewProvider(self.apk_helper):
+      raise Exception('This package does not have a WebViewLibrary meta-data '
+                      'tag. Are you sure it contains a WebView implementation?')
+    _SetWebViewProvider(self.devices, self.args.package_name)
 
 
 class _LaunchCommand(_Command):
@@ -1317,28 +1514,52 @@ class _BuildBundleApks(_Command):
   need_device_args = False
 
   def _RegisterExtraArgs(self, group):
-    group.add_argument('--output-apks',
-                       help='Destination path for .apks archive copy.')
-    group.add_argument('--universal', action='store_true',
-                       help='Build .apks archive containing single APK with '
-                            'contents of all splits. NOTE: Won\'t add modules '
-                            'with <dist:fusing dist:include="false"/> flag.')
+    group.add_argument(
+        '--output-apks', required=True, help='Destination path for .apks file.')
+    group.add_argument(
+        '--minimal',
+        action='store_true',
+        help='Build .apks archive that targets the bundle\'s minSdkVersion and '
+        'contains only english splits. It still contains optional splits.')
+    group.add_argument(
+        '--sdk-version',
+        help='Implies --minimal. The sdkVersion to build the .apks for.')
+    group.add_argument(
+        '--build-mode',
+        choices=app_bundle_utils.BUILD_APKS_MODES,
+        help='Specify which type of APKs archive to build. "default" '
+        'generates regular splits, "universal" generates an archive with a '
+        'single universal APK, "system" generates an archive with a system '
+        'image APK, while "system_compressed" generates a compressed system '
+        'APK, with an additional stub APK for the system image.')
 
   def Run(self):
-    bundle_apks_path = _GenerateBundleApks(self.bundle_generation_info,
-                                           self.args.universal)
-    if self.args.output_apks:
-      try:
-        shutil.copyfile(bundle_apks_path, self.args.output_apks)
-      except shutil.Error as e:
-        logging.exception('Failed to copy .apks archive: %s', e)
+    _GenerateBundleApks(
+        self.bundle_generation_info,
+        self.args.output_apks,
+        minimal=self.args.sdk_version is not None or self.args.minimal,
+        minimal_sdk_version=self.args.sdk_version,
+        mode=self.args.build_mode)
+
+
+class _ManifestCommand(_Command):
+  name = 'dump-manifest'
+  description = 'Dump the android manifest from this bundle, as XML, to stdout.'
+  need_device_args = False
+
+  def Run(self):
+    bundletool.RunBundleTool([
+        'dump', 'manifest', '--bundle', self.bundle_generation_info.bundle_path
+    ])
 
 
 # Shared commands for regular APKs and app bundles.
 _COMMANDS = [
     _DevicesCommand,
+    _PackageInfoCommand,
     _InstallCommand,
     _UninstallCommand,
+    _SetWebViewProviderCommand,
     _LaunchCommand,
     _StopCommand,
     _ClearDataCommand,
@@ -1357,6 +1578,7 @@ _COMMANDS = [
 # Commands specific to app bundles.
 _BUNDLE_COMMANDS = [
     _BuildBundleApks,
+    _ManifestCommand,
 ]
 
 
@@ -1408,10 +1630,10 @@ def Run(output_directory, apk_path, incremental_json, command_line_flags_file,
   _RunInternal(parser, output_directory=output_directory)
 
 
-def RunForBundle(output_directory, bundle_path, bundle_apks_path,
-                 aapt2_path, keystore_path, keystore_password,
-                 keystore_alias, package_name, command_line_flags_file,
-                 proguard_mapping_path, target_cpu):
+def RunForBundle(output_directory, bundle_path, bundle_apks_path, aapt2_path,
+                 keystore_path, keystore_password, keystore_alias, package_name,
+                 command_line_flags_file, proguard_mapping_path, target_cpu,
+                 system_image_locales):
   """Entry point for generated app bundle wrapper scripts.
 
   Args:
@@ -1428,6 +1650,8 @@ def RunForBundle(output_directory, bundle_path, bundle_apks_path,
     proguard_mapping_path: Input path to the Proguard mapping file, used to
       deobfuscate Java stack traces.
     target_cpu: Chromium target CPU name, used by the 'gdb' command.
+    system_image_locales: List of Chromium locales that should be included in
+      system image APKs.
   """
   constants.SetOutputDirectory(output_directory)
   devil_chromium.Initialize(output_directory=output_directory)
@@ -1437,7 +1661,8 @@ def RunForBundle(output_directory, bundle_path, bundle_apks_path,
       aapt2_path=aapt2_path,
       keystore_path=keystore_path,
       keystore_password=keystore_password,
-      keystore_alias=keystore_alias)
+      keystore_alias=keystore_alias,
+      system_image_locales=system_image_locales)
 
   parser = argparse.ArgumentParser()
   parser.set_defaults(

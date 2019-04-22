@@ -31,8 +31,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICE_WORKER_SERVICE_WORKER_GLOBAL_SCOPE_H_
 
 #include <memory>
+#include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom-blink.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom-blink.h"
-#include "third_party/blink/public/platform/modules/cache_storage/cache_storage.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/request_or_usv_string.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -42,6 +42,7 @@
 
 namespace blink {
 
+class ExceptionState;
 class RespondWithObserver;
 class RequestInit;
 class ScriptPromise;
@@ -50,7 +51,9 @@ class ServiceWorker;
 class ServiceWorkerClients;
 class ServiceWorkerRegistration;
 class ServiceWorkerThread;
+class StringOrTrustedScriptURL;
 class WaitUntilObserver;
+class WorkerClassicScriptLoader;
 struct GlobalScopeCreationParams;
 struct WebServiceWorkerObjectInfo;
 struct WebServiceWorkerRegistrationObjectInfo;
@@ -77,16 +80,32 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final : public WorkerGlobalScope {
   bool IsServiceWorkerGlobalScope() const override { return true; }
   bool ShouldInstallV8Extensions() const final;
 
-  // Implements WorkerGlobalScope.
-  void EvaluateClassicScript(
+  // Implements WorkerGlobalScope:
+  // Fetches and runs the top-level classic worker script for the 'new' or
+  // 'update' service worker cases.
+  void FetchAndRunClassicScript(
       const KURL& script_url,
-      String source_code,
-      std::unique_ptr<Vector<char>> cached_meta_data) override;
-  void ImportModuleScript(
+      const FetchClientSettingsObjectSnapshot& outside_settings_object,
+      const v8_inspector::V8StackTraceId& stack_id) override;
+  // Fetches and runs the top-level module worker script for the 'new' or
+  // 'update' service worker cases.
+  void FetchAndRunModuleScript(
       const KURL& module_url_record,
-      FetchClientSettingsObjectSnapshot* outside_settings_object,
+      const FetchClientSettingsObjectSnapshot& outside_settings_object,
       network::mojom::FetchCredentialsMode) override;
   void Dispose() override;
+
+  // Runs the installed top-level classic worker script for the 'installed'
+  // service worker case.
+  void RunInstalledClassicScript(const KURL& script_url,
+                                 const v8_inspector::V8StackTraceId& stack_id);
+
+  // Runs the installed top-level module worker script for the 'installed'
+  // service worker case.
+  void RunInstalledModuleScript(
+      const KURL& module_url_record,
+      const FetchClientSettingsObjectSnapshot& outside_settings_object,
+      network::mojom::FetchCredentialsMode);
 
   // Counts an evaluated script and its size. Called for the main worker script.
   void CountWorkerScript(size_t script_size, size_t cached_metadata_size);
@@ -138,10 +157,14 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final : public WorkerGlobalScope {
 
   mojom::blink::CacheStoragePtrInfo TakeCacheStorage();
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(install, kInstall);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(activate, kActivate);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(fetch, kFetch);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(message, kMessage);
+  // See the functions of the same name in WebServiceWorkerContextClient.
+  int WillStartTask();
+  void DidEndTask(int task_id);
+
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(install, kInstall)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(activate, kActivate)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(fetch, kFetch)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(message, kMessage)
 
   void Trace(blink::Visitor*) override;
 
@@ -152,12 +175,32 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final : public WorkerGlobalScope {
       EventListener*,
       const AddEventListenerOptionsResolved*) override;
 
+  // WorkerGlobalScope
+  void EvaluateClassicScriptInternal(
+      const KURL& script_url,
+      String source_code,
+      std::unique_ptr<Vector<uint8_t>> cached_meta_data) override;
+
  private:
-  void importScripts(const Vector<String>& urls, ExceptionState&) override;
+  void importScripts(const HeapVector<StringOrTrustedScriptURL>& urls,
+                     ExceptionState&) override;
   SingleCachedMetadataHandler* CreateWorkerScriptCachedMetadataHandler(
       const KURL& script_url,
-      const Vector<char>* meta_data) override;
+      std::unique_ptr<Vector<uint8_t>> meta_data) override;
   void ExceptionThrown(ErrorEvent*) override;
+
+  void DidReceiveResponseForClassicScript(
+      WorkerClassicScriptLoader* classic_script_loader);
+  void DidFetchClassicScript(WorkerClassicScriptLoader* classic_script_loader,
+                             const v8_inspector::V8StackTraceId& stack_id);
+
+  // https://w3c.github.io/ServiceWorker/#run-service-worker-algorithm
+  void RunClassicScript(const KURL& response_url,
+                        network::mojom::ReferrerPolicy,
+                        const Vector<CSPHeaderAndType>,
+                        const String& source_code,
+                        std::unique_ptr<Vector<uint8_t>> cached_meta_data,
+                        const v8_inspector::V8StackTraceId&);
 
   // Counts the |script_size| and |cached_metadata_size| for UMA to measure the
   // number of scripts and the total bytes of scripts.

@@ -1999,29 +1999,29 @@ TEST_P(MutedWatchTimeReporterTest, MutedDisplayType) {
   wtr_.reset();
 }
 
-INSTANTIATE_TEST_CASE_P(WatchTimeReporterTest,
-                        WatchTimeReporterTest,
-                        testing::ValuesIn({// has_video, has_audio
-                                           std::make_tuple(true, true),
-                                           // has_video
-                                           std::make_tuple(true, false),
-                                           // has_audio
-                                           std::make_tuple(false, true)}));
+INSTANTIATE_TEST_SUITE_P(WatchTimeReporterTest,
+                         WatchTimeReporterTest,
+                         testing::ValuesIn({// has_video, has_audio
+                                            std::make_tuple(true, true),
+                                            // has_video
+                                            std::make_tuple(true, false),
+                                            // has_audio
+                                            std::make_tuple(false, true)}));
 
 // Separate test set since display tests only work with video.
-INSTANTIATE_TEST_CASE_P(DisplayTypeWatchTimeReporterTest,
-                        DisplayTypeWatchTimeReporterTest,
-                        testing::ValuesIn({// has_video, has_audio
-                                           std::make_tuple(true, true),
-                                           // has_video
-                                           std::make_tuple(true, false)}));
+INSTANTIATE_TEST_SUITE_P(DisplayTypeWatchTimeReporterTest,
+                         DisplayTypeWatchTimeReporterTest,
+                         testing::ValuesIn({// has_video, has_audio
+                                            std::make_tuple(true, true),
+                                            // has_video
+                                            std::make_tuple(true, false)}));
 
 // Separate test set since muted tests only work with audio+video.
-INSTANTIATE_TEST_CASE_P(MutedWatchTimeReporterTest,
-                        MutedWatchTimeReporterTest,
-                        testing::ValuesIn({
-                            // has_video, has_audio
-                            std::make_tuple(true, true),
-                        }));
+INSTANTIATE_TEST_SUITE_P(MutedWatchTimeReporterTest,
+                         MutedWatchTimeReporterTest,
+                         testing::ValuesIn({
+                             // has_video, has_audio
+                             std::make_tuple(true, true),
+                         }));
 
 }  // namespace media

@@ -21,6 +21,7 @@
 #include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_flags.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkFont.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/gfx/break_list.h"
 #include "ui/gfx/font_list.h"
@@ -80,6 +81,7 @@ class GFX_EXPORT SkiaTextRenderer {
   Canvas* canvas_;
   cc::PaintCanvas* canvas_skia_;
   cc::PaintFlags flags_;
+  SkFont font_;
 
   DISALLOW_COPY_AND_ASSIGN(SkiaTextRenderer);
 };
@@ -166,10 +168,10 @@ sk_sp<SkTypeface> CreateSkiaTypeface(const Font& font,
                                      bool italic,
                                      Font::Weight weight);
 
-// Applies the given FontRenderParams to the PaintFlags.
+// Applies the given FontRenderParams to the SkFont.
 void ApplyRenderParams(const FontRenderParams& params,
                        bool subpixel_rendering_suppressed,
-                       cc::PaintFlags* flags);
+                       SkFont* font);
 
 }  // namespace internal
 
@@ -344,8 +346,13 @@ class GFX_EXPORT RenderText {
   // Moves the cursor to the text index corresponding to |point|. If |select| is
   // true, a selection is made with the current selection start index. If the
   // resultant text indices do not lie on valid grapheme boundaries, it is a no-
-  // op and returns false.
-  bool MoveCursorToPoint(const gfx::Point& point, bool select);
+  // op and returns false. If this move is happening because of a drag causing a
+  // selection change, and |drag_origin| is not the zero point, then
+  // |drag_origin| overrides the default origin for a select-to-drag
+  // (usually the existing text insertion cursor).
+  bool MoveCursorToPoint(const gfx::Point& point,
+                         bool select,
+                         const gfx::Point& drag_origin = gfx::Point());
 
   // Set the selection_model_ based on |range|.
   // If the |range| start or end is greater than text length, it is modified
@@ -446,8 +453,13 @@ class GFX_EXPORT RenderText {
 
   void Draw(Canvas* canvas);
 
-  // Gets the SelectionModel from a visual point in local coordinates.
-  virtual SelectionModel FindCursorPosition(const Point& point) = 0;
+  // Gets the SelectionModel from a visual point in local coordinates. If
+  // |drag_origin| is nonzero, it is used as the baseline for
+  // out-of-vertical-bounds drags on platforms that have them, instead of the
+  // default origin (the insertion cursor's position).
+  virtual SelectionModel FindCursorPosition(
+      const Point& point,
+      const Point& drag_origin = gfx::Point()) = 0;
 
   // Returns true if the position is a valid logical index into text(), and is
   // also a valid grapheme boundary, which may be used as a cursor position.

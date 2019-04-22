@@ -33,35 +33,38 @@ message FileTransfer {
   // Next Id: 1
   message Success {}
 
-  // Bidirectional message canceling the transfer as the result of a user action
-  // or otherwise not due to an error. When Cancel is received, no more messages
-  // relating to the transfer should be sent, but the canceling end should be
-  // prepared to handle any messages that may already be on the wire.
+  // Receiver->sender message sent requesting the sender to select and send a
+  // file. This must be the first message on the connection.
   // Next Id: 1
-  message Cancel {}
+  message RequestTransfer {}
 
-  // Bidirectional message aborting the transfer due to an error. This may be
-  // sent by the sender to signal a read error, by the receiver to signal a
-  // write error, or by either side to signal any of the myriad of other things
-  // that can go wrong while attempting to transfer a file.
+  // Bidirectional message aborting the transfer due to an error or user
+  // cancellation. This may be sent by the sender to signal a read error, by the
+  // receiver to signal a write error, or by either side to signal any of the
+  // myriad of other things that can go wrong while attempting to transfer a
+  // file. When Error is received, no more messages relating to the transfer
+  // should be sent, but the end sending the error should be prepared to handle
+  // any messages that may already be on the wire.
   // Next Id: 6
   message Error {
     enum Type {
       UNSPECIFIED = 0;
-      UNEXPECTED_ERROR = 1;
-      PROTOCOL_ERROR = 2;
-      PERMISSION_DENIED = 3;
-      OUT_OF_DISK_SPACE = 4;
-      IO_ERROR = 5;
+      CANCELED = 1;
+      UNEXPECTED_ERROR = 2;
+      PROTOCOL_ERROR = 3;
+      PERMISSION_DENIED = 4;
+      OUT_OF_DISK_SPACE = 5;
+      IO_ERROR = 6;
+      NOT_LOGGED_IN = 7;
     }
 
     // An error category to be used to select a user-displayed error message.
     optional Type type = 1;
     // The error code returned by the failed API call (if applicable).
     optional int32 api_error_code = 2;
-    // The function in which the error occured.
+    // The function in which the error occurred.
     optional string function = 3;
-    // The source file in which the error occured.
+    // The source file in which the error occurred.
     optional string source_file = 4;
     // The line number on which the error occurred.
     optional uint32 line_number = 5;
@@ -72,7 +75,7 @@ message FileTransfer {
     Data data = 2;
     End end = 3;
     Success success = 4;
-    Cancel cancel = 5;
+    RequestTransfer request_transfer = 5;
     Error error = 6;
   }
 }

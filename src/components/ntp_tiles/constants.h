@@ -29,13 +29,6 @@ extern const base::Feature kSiteExplorationUiFeature;
 // If this feature is enabled, we enable popular sites in the suggestions UI.
 extern const base::Feature kUsePopularSitesSuggestions;
 
-// Feature that enables custom links and replaces Most Visited. Implicitly
-// enables |features::kNtpIcons|. Desktop only.
-extern const base::Feature kNtpCustomLinks;
-
-// Returns whether the custom links is enabled.
-bool IsCustomLinksEnabled();
-
 }  // namespace ntp_tiles
 
 #endif  // COMPONENTS_NTP_TILES_CONSTANTS_H_

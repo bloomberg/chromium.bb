@@ -180,6 +180,7 @@ CA_NAME="req_ca_dn" \
 /bin/sh -c "cat out/ok_cert.key out/bad_validity.pem \
     > ../certificates/bad_validity.pem"
 /bin/sh -c "cat out/ok_cert.key out/int/ok_cert.pem \
+    out/int/2048-sha256-int.pem \
     > ../certificates/ok_cert_by_intermediate.pem"
 /bin/sh -c "cat out/int/2048-sha256-int.key out/int/2048-sha256-int.pem \
     > ../certificates/intermediate_ca_cert.pem"

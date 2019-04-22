@@ -8,14 +8,17 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/location.h"
+#include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/performance_entry.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -42,6 +45,9 @@ static float GetMoveDistance(const FloatRect& old_rect,
 }
 
 static float RegionGranularityScale(const IntRect& viewport) {
+  if (RuntimeEnabledFeatures::JankTrackingSweepLineEnabled())
+    return 1;
+
   return kRegionGranularitySteps /
          std::min(viewport.Height(), viewport.Width());
 }
@@ -61,7 +67,7 @@ static bool SmallerThanRegionGranularity(const FloatRect& rect,
          rect.Height() * granularity_scale < 0.5;
 }
 
-static const TransformPaintPropertyNode* TransformNodeFor(
+static const TransformPaintPropertyNode& TransformNodeFor(
     LayoutObject& object) {
   return object.FirstFragment().LocalBorderBoxProperties().Transform();
 }
@@ -93,6 +99,7 @@ static void RegionToTracedValue(const JankRegion& region,
 JankTracker::JankTracker(LocalFrameView* frame_view)
     : frame_view_(frame_view),
       score_(0.0),
+      weighted_score_(0.0),
       timer_(frame_view->GetFrame().GetTaskRunner(TaskType::kInternalDefault),
              this,
              &JankTracker::TimerFired),
@@ -109,15 +116,28 @@ void JankTracker::AccumulateJank(const LayoutObject& source,
                                    LogicalStart(new_rect, source), source))
     return;
 
-  IntRect viewport = frame_view_->GetScrollableArea()->VisibleContentRect();
+  IntRect viewport =
+      IntRect(IntPoint(),
+              frame_view_->GetScrollableArea()->VisibleContentRect().Size());
   float scale = RegionGranularityScale(viewport);
 
   if (SmallerThanRegionGranularity(old_rect, scale) &&
       SmallerThanRegionGranularity(new_rect, scale))
     return;
 
-  const auto* local_xform = TransformNodeFor(painting_layer.GetLayoutObject());
-  const auto* root_xform = TransformNodeFor(*source.View());
+  // Ignore layout objects that move (in the coordinate space of the paint
+  // invalidation container) on scroll.
+  // TODO(skobes): Find a way to detect when these objects jank.
+  if (source.IsFixedPositioned() || source.IsStickyPositioned())
+    return;
+
+  // SVG elements don't participate in the normal layout algorithms and are
+  // more likely to be used for animations.
+  if (source.IsSVG())
+    return;
+
+  const auto& local_xform = TransformNodeFor(painting_layer.GetLayoutObject());
+  const auto& root_xform = TransformNodeFor(*source.View());
 
   GeometryMapper::SourceToDestinationRect(local_xform, root_xform, old_rect);
   GeometryMapper::SourceToDestinationRect(local_xform, root_xform, new_rect);
@@ -150,7 +170,7 @@ void JankTracker::AccumulateJank(const LayoutObject& source,
 }
 
 void JankTracker::NotifyObjectPrePaint(const LayoutObject& object,
-                                       const LayoutRect& old_visual_rect,
+                                       const IntRect& old_visual_rect,
                                        const PaintLayer& painting_layer) {
   if (!IsActive())
     return;
@@ -177,6 +197,32 @@ void JankTracker::NotifyCompositedLayerMoved(const PaintLayer& paint_layer,
   new_layer_rect.MoveBy(transform_parent_offset);
 
   AccumulateJank(layout_object, paint_layer, old_layer_rect, new_layer_rect);
+}
+
+double JankTracker::SubframeWeightingFactor() const {
+  LocalFrame& frame = frame_view_->GetFrame();
+  if (frame.IsMainFrame())
+    return 1;
+
+  // Map the subframe view rect into the coordinate space of the local root.
+  FloatClipRect subframe_cliprect =
+      FloatClipRect(FloatRect(FloatPoint(), FloatSize(frame_view_->Size())));
+  GeometryMapper::LocalToAncestorVisualRect(
+      frame_view_->GetLayoutView()->FirstFragment().LocalBorderBoxProperties(),
+      PropertyTreeState::Root(), subframe_cliprect);
+  LayoutRect subframe_rect = LayoutRect(subframe_cliprect.Rect());
+
+  // Intersect with the portion of the local root that overlaps the main frame.
+  frame.LocalFrameRoot().View()->MapToVisualRectInTopFrameSpace(subframe_rect);
+  IntSize subframe_visible_size = subframe_rect.PixelSnappedSize();
+
+  // TODO(crbug.com/939050): This does not update on window resize.
+  IntSize main_frame_size = frame.GetPage()->GetVisualViewport().Size();
+
+  // TODO(crbug.com/940711): This comparison ignores page scale and CSS
+  // transforms above the local root.
+  return static_cast<double>(subframe_visible_size.Area()) /
+         main_frame_size.Area();
 }
 
 void JankTracker::NotifyPrePaintFinished() {
@@ -206,19 +252,26 @@ void JankTracker::NotifyPrePaintFinished() {
   DVLOG(1) << "viewport " << (jank_fraction * 100)
            << "% janked, raising score to " << score_;
 
+  LocalFrame& frame = frame_view_->GetFrame();
+
   TRACE_EVENT_INSTANT2("loading", "FrameLayoutJank", TRACE_EVENT_SCOPE_THREAD,
                        "data",
                        PerFrameTraceData(jank_fraction, granularity_scale),
-                       "frame", ToTraceValue(&frame_view_->GetFrame()));
+                       "frame", ToTraceValue(&frame));
 
-  frame_view_->GetFrame().Client()->DidObserveLayoutJank(jank_fraction);
+  double weighted_jank_fraction = jank_fraction * SubframeWeightingFactor();
+  if (weighted_jank_fraction > 0) {
+    weighted_score_ += weighted_jank_fraction;
+    frame.Client()->DidObserveLayoutJank(weighted_jank_fraction);
+  }
 
-  if (RuntimeEnabledFeatures::LayoutJankAPIEnabled() &&
-      frame_view_->GetFrame().DomWindow()) {
+  if (RuntimeEnabledFeatures::LayoutJankAPIEnabled(frame.GetDocument()) &&
+      frame.DomWindow()) {
     WindowPerformance* performance =
-        DOMWindowPerformance::performance(*frame_view_->GetFrame().DomWindow());
+        DOMWindowPerformance::performance(*frame.DomWindow());
     if (performance &&
-        performance->HasObserverFor(PerformanceEntry::kLayoutJank)) {
+        (performance->HasObserverFor(PerformanceEntry::kLayoutJank) ||
+         performance->ShouldBufferEntries())) {
       performance->AddLayoutJankFraction(jank_fraction);
     }
   }
@@ -262,7 +315,7 @@ bool JankTracker::IsActive() {
 std::unique_ptr<TracedValue> JankTracker::PerFrameTraceData(
     double jank_fraction,
     double granularity_scale) const {
-  std::unique_ptr<TracedValue> value = TracedValue::Create();
+  auto value = std::make_unique<TracedValue>();
   value->SetDouble("jank_fraction", jank_fraction);
   value->SetDouble("cumulative_score", score_);
   value->SetDouble("max_distance", max_distance_);

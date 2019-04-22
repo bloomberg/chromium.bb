@@ -30,6 +30,8 @@ class TestFullscreenController : public FullscreenController {
   bool IsEnabled() const override;
   void IncrementDisabledCounter() override;
   void DecrementDisabledCounter() override;
+  void BrowserTraitCollectionChangedBegin() override;
+  void BrowserTraitCollectionChangedEnd() override;
   CGFloat GetProgress() const override;
   UIEdgeInsets GetMinViewportInsets() const override;
   UIEdgeInsets GetMaxViewportInsets() const override;
@@ -43,6 +45,8 @@ class TestFullscreenController : public FullscreenController {
  private:
   // The model.
   FullscreenModel* model_ = nullptr;
+  // The WebStateList.
+  WebStateList* web_state_list_ = nullptr;
   // The broadcaster.
   ChromeBroadcaster* broadcaster_ = nil;
   // The observers.

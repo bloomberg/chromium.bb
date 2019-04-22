@@ -8,8 +8,8 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/feature_policy/feature_policy_helper.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
-#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -19,22 +19,24 @@
 namespace blink {
 
 class Document;
+class ExecutionContext;
 
-// Returns a map between feature name (string) and mojom::FeaturePolicyFeature
-// (enum).
-typedef HashMap<String, mojom::FeaturePolicyFeature> FeatureNameMap;
-CORE_EXPORT const FeatureNameMap& GetDefaultFeatureNameMap();
+// Returns the list of features which are currently available in this context,
+// including any features which have been made available by an origin trial.
+CORE_EXPORT const Vector<String> GetAvailableFeatures(ExecutionContext*);
 
 // Converts a header policy string into a vector of allowlists, one for each
-// feature specified. Unrecognized features are filtered out. If |messages|
-// is not null, then any message in the input will cause a warning message to be
-// appended to it.
+// feature specified. Unrecognized features are filtered out. If |messages| is
+// not null, then any message in the input will cause a warning message to be
+// appended to it. The optional ExecutionContext is used to determine if any
+// origin trials affect the parsing.
 // Example of a feature policy string:
 //     "vibrate a.com b.com; fullscreen 'none'; payment 'self', payment *".
 CORE_EXPORT ParsedFeaturePolicy
 ParseFeaturePolicyHeader(const String& policy,
                          scoped_refptr<const SecurityOrigin>,
-                         Vector<String>* messages);
+                         Vector<String>* messages,
+                         ExecutionContext* execution_context = nullptr);
 
 // Converts a container policy string into a vector of allowlists, given self
 // and src origins provided, one for each feature specified. Unrecognized
@@ -52,14 +54,16 @@ ParseFeaturePolicyAttribute(const String& policy,
 // Converts a feature policy string into a vector of allowlists (see comments
 // above), with an explicit FeatureNameMap. This algorithm is called by both
 // header policy parsing and container policy parsing. |self_origin|,
-// |src_origin|, and |document| are nullable.
+// |src_origin|, and |execution_context| are nullable. The optional
+// ExecutionContext is used to determine if any origin trials affect the
+// parsing.
 CORE_EXPORT ParsedFeaturePolicy
 ParseFeaturePolicy(const String& policy,
                    scoped_refptr<const SecurityOrigin> self_origin,
                    scoped_refptr<const SecurityOrigin> src_origin,
                    Vector<String>* messages,
                    const FeatureNameMap& feature_names,
-                   Document* document = nullptr);
+                   ExecutionContext* execution_context = nullptr);
 
 // Returns true iff any declaration in the policy is for the given feature.
 CORE_EXPORT bool IsFeatureDeclared(mojom::FeaturePolicyFeature,

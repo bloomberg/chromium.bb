@@ -4,22 +4,34 @@ Canvas log:
 {
     0 : {
         commandIndex : 0
+        method : "drawPaint"
+        params : {
+            paint : {
+                blendMode : "Src"
+                color : "#00000000"
+                filterLevel : "None"
+                flags : "none"
+                strokeCap : "Butt"
+                strokeJoin : "Miter"
+                strokeMiter : 4
+                strokeWidth : 0
+                styleName : "Fill"
+            }
+        }
+    }
+    1 : {
+        commandIndex : 1
         method : "drawRect"
         params : {
             paint : {
                 color : "#FF0000FF"
                 filterLevel : "Low"
                 flags : "AntiAlias"
-                hinting : "Normal"
                 strokeCap : "Butt"
                 strokeJoin : "Miter"
                 strokeMiter : 4
                 strokeWidth : 0
                 styleName : "Fill"
-                textEncoding : "UTF-8"
-                textScaleX : 1
-                textSize : 12
-                textSkewX : 0
             }
             rect : {
                 bottom : 100
@@ -29,24 +41,19 @@ Canvas log:
             }
         }
     }
-    1 : {
-        commandIndex : 1
+    2 : {
+        commandIndex : 2
         method : "drawRect"
         params : {
             paint : {
                 color : "#FFFF0000"
                 filterLevel : "Low"
                 flags : "AntiAlias"
-                hinting : "Normal"
                 strokeCap : "Butt"
                 strokeJoin : "Miter"
                 strokeMiter : 4
                 strokeWidth : 0
                 styleName : "Fill"
-                textEncoding : "UTF-8"
-                textScaleX : 1
-                textSize : 12
-                textSkewX : 0
             }
             rect : {
                 bottom : 50
@@ -56,8 +63,8 @@ Canvas log:
             }
         }
     }
-    2 : {
-        commandIndex : 2
+    3 : {
+        commandIndex : 3
         method : "drawImageRect"
         params : {
             dst : {
@@ -75,16 +82,11 @@ Canvas log:
                 color : "#FF000000"
                 filterLevel : "Medium"
                 flags : "AntiAlias"
-                hinting : "Normal"
                 strokeCap : "Butt"
                 strokeJoin : "Miter"
                 strokeMiter : 4
                 strokeWidth : 0
                 styleName : "Fill"
-                textEncoding : "UTF-8"
-                textScaleX : 1
-                textSize : 12
-                textSkewX : 0
             }
             src : {
                 bottom : 21
@@ -94,21 +96,21 @@ Canvas log:
             }
         }
     }
-    3 : {
-        commandIndex : 3
+    4 : {
+        commandIndex : 4
         method : "save"
         params : undefined
     }
-    4 : {
-        commandIndex : 4
+    5 : {
+        commandIndex : 5
         method : "translate"
         params : {
             dx : 0
             dy : 71
         }
     }
-    5 : {
-        commandIndex : 5
+    6 : {
+        commandIndex : 6
         method : "clipRect"
         params : {
             SkRegion::Op : "kIntersect_Op"
@@ -121,24 +123,19 @@ Canvas log:
             softClipEdgeStyle : true
         }
     }
-    6 : {
-        commandIndex : 6
+    7 : {
+        commandIndex : 7
         method : "drawRect"
         params : {
             paint : {
                 color : "#7F000000"
                 filterLevel : "Low"
                 flags : "AntiAlias"
-                hinting : "Normal"
                 strokeCap : "Butt"
                 strokeJoin : "Miter"
                 strokeMiter : 4
                 strokeWidth : 0
                 styleName : "Fill"
-                textEncoding : "UTF-8"
-                textScaleX : 1
-                textSize : 12
-                textSkewX : 0
             }
             rect : {
                 bottom : 10
@@ -148,8 +145,8 @@ Canvas log:
             }
         }
     }
-    7 : {
-        commandIndex : 7
+    8 : {
+        commandIndex : 8
         method : "restore"
         params : undefined
     }

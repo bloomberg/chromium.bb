@@ -113,8 +113,9 @@ bool AskIfSharedCorsOriginAccessListNotAllowOnIO(
     const GURL url) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
-  return !shared_cors_origin_access_list->GetOriginAccessList().IsAllowed(
-      origin, url);
+  return shared_cors_origin_access_list->GetOriginAccessList().CheckAccessState(
+             origin, url) !=
+         network::cors::OriginAccessList::AccessState::kAllowed;
 }
 
 class FileURLDirectoryLoader
@@ -138,11 +139,9 @@ class FileURLDirectoryLoader
   }
 
   // network::mojom::URLLoader:
-  void FollowRedirect(
-      const base::Optional<std::vector<std::string>>&
-          to_be_removed_request_headers,
-      const base::Optional<net::HttpRequestHeaders>& modified_request_headers,
-      const base::Optional<GURL>& new_url) override {}
+  void FollowRedirect(const std::vector<std::string>& removed_headers,
+                      const net::HttpRequestHeaders& modified_headers,
+                      const base::Optional<GURL>& new_url) override {}
   void ProceedWithResponse() override { NOTREACHED(); }
   void SetPriority(net::RequestPriority priority,
                    int32_t intra_priority_value) override {}
@@ -350,11 +349,11 @@ class FileURLLoader : public network::mojom::URLLoader {
   }
 
   // network::mojom::URLLoader:
-  void FollowRedirect(
-      const base::Optional<std::vector<std::string>>&
-          to_be_removed_request_headers,
-      const base::Optional<net::HttpRequestHeaders>& modified_request_headers,
-      const base::Optional<GURL>& new_url) override {
+  void FollowRedirect(const std::vector<std::string>& removed_headers,
+                      const net::HttpRequestHeaders& modified_headers,
+                      const base::Optional<GURL>& new_url) override {
+    // |removed_headers| and |modified_headers| are unused. It doesn't make
+    // sense for files. The FileURLLoader can redirect only to another file.
     std::unique_ptr<RedirectData> redirect_data = std::move(redirect_data_);
     if (redirect_data->is_directory) {
       FileURLDirectoryLoader::CreateAndStart(
@@ -620,12 +619,14 @@ class FileURLLoader : public network::mojom::URLLoader {
     }
 
     if (!net::GetMimeTypeFromFile(path, &head.mime_type)) {
+      std::string new_type;
       net::SniffMimeType(
           initial_read_buffer, initial_read_result, request.url, head.mime_type,
           GetContentClient()->browser()->ForceSniffingFileUrlsForHtml()
               ? net::ForceSniffFileUrlsForHtml::kEnabled
               : net::ForceSniffFileUrlsForHtml::kDisabled,
-          &head.mime_type);
+          &new_type);
+      head.mime_type.assign(new_type);
       head.did_mime_sniff = true;
     }
     if (head.headers) {
@@ -645,8 +646,8 @@ class FileURLLoader : public network::mojom::URLLoader {
     // In case of a range request, seek to the appropriate position before
     // sending the remaining bytes asynchronously. Under normal conditions
     // (i.e., no range request) this Seek is effectively a no-op.
-    int new_position = file.Seek(base::File::FROM_BEGIN,
-                                 static_cast<int64_t>(first_byte_to_send));
+    int64_t new_position = file.Seek(base::File::FROM_BEGIN,
+                                     static_cast<int64_t>(first_byte_to_send));
     if (observer)
       observer->OnSeekComplete(new_position);
 
@@ -774,8 +775,9 @@ void FileURLLoaderFactory::CreateLoaderAndStart(
       // Only internal call sites, such as ExtensionDownloader, is permitted.
       DCHECK(shared_cors_origin_access_list_);
       cors_flag =
-          !shared_cors_origin_access_list_->GetOriginAccessList().IsAllowed(
-              *request.request_initiator, request.url);
+          shared_cors_origin_access_list_->GetOriginAccessList()
+              .CheckAccessState(*request.request_initiator, request.url) !=
+          network::cors::OriginAccessList::AccessState::kAllowed;
     } else {
       // TODO(toyoshim): Remove this thread-hop code once the NetworkService is
       // fully enabled, and if other IO thread users do not need cors enabled
@@ -852,28 +854,35 @@ void CreateFileURLLoader(
     network::mojom::URLLoaderRequest loader,
     network::mojom::URLLoaderClientPtr client,
     std::unique_ptr<FileURLLoaderObserver> observer,
+    bool allow_directory_listing,
     scoped_refptr<net::HttpResponseHeaders> extra_response_headers) {
+  // TODO(crbug.com/924416): Re-evaluate how TaskPriority is set here and in
+  // other file URL-loading-related code. Some callers require USER_VISIBLE
+  // (i.e., BEST_EFFORT is not enough).
   auto task_runner = base::CreateSequencedTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
   task_runner->PostTask(
       FROM_HERE,
-      base::BindOnce(&FileURLLoader::CreateAndStart, base::FilePath(), request,
-                     std::move(loader), client.PassInterface(),
-                     DirectoryLoadingPolicy::kFail,
-                     FileAccessPolicy::kUnrestricted,
-                     LinkFollowingPolicy::kDoNotFollow, std::move(observer),
-                     std::move(extra_response_headers)));
+      base::BindOnce(
+          &FileURLLoader::CreateAndStart, base::FilePath(), request,
+          std::move(loader), client.PassInterface(),
+          allow_directory_listing ? DirectoryLoadingPolicy::kRespondWithListing
+                                  : DirectoryLoadingPolicy::kFail,
+          FileAccessPolicy::kUnrestricted, LinkFollowingPolicy::kDoNotFollow,
+          std::move(observer), std::move(extra_response_headers)));
 }
 
 std::unique_ptr<network::mojom::URLLoaderFactory> CreateFileURLLoaderFactory(
     const base::FilePath& profile_path,
     scoped_refptr<const SharedCorsOriginAccessList>
         shared_cors_origin_access_list) {
+  // TODO(crbug.com/924416): Re-evaluate TaskPriority: Should the caller provide
+  // it?
   return std::make_unique<content::FileURLLoaderFactory>(
       profile_path, shared_cors_origin_access_list,
       base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
 }
 

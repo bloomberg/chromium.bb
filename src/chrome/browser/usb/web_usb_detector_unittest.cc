@@ -48,6 +48,7 @@ const char* kProductName_3 = "Google Product C";
 const char* kLandingPage_1 = "https://www.google.com/A";
 const char* kLandingPage_2 = "https://www.google.com/B";
 const char* kLandingPage_3 = "https://www.google.com/C";
+const char* kLandingPage_1_fuzzed = "https://www.google.com/A/fuzzy";
 
 }  // namespace
 
@@ -540,7 +541,6 @@ TEST_F(WebUsbDetectorTest,
 
 TEST_F(WebUsbDetectorTest, NotificationClickedWhileNoTabUrlIsLandingPage) {
   GURL landing_page_1(kLandingPage_1);
-  GURL landing_page_2(kLandingPage_2);
   auto device_1 = base::MakeRefCounted<device::FakeUsbDeviceInfo>(
       0, 1, "Google", kProductName_1, "002", landing_page_1);
   std::string guid_1 = device_1->guid();
@@ -565,4 +565,202 @@ TEST_F(WebUsbDetectorTest, NotificationClickedWhileNoTabUrlIsLandingPage) {
   EXPECT_FALSE(display_service_->GetNotification(guid_1));
   histogram_tester.ExpectUniqueSample("WebUsb.NotificationClosed", 2, 1);
 }
+
+TEST_F(WebUsbDetectorTest, UsbDeviceAddedBeforeActiveTabFuzzyUrlIsLandingPage) {
+  GURL landing_page_1(kLandingPage_1);
+  GURL landing_page_1_fuzzed(kLandingPage_1_fuzzed);
+  auto device_1 = base::MakeRefCounted<device::FakeUsbDeviceInfo>(
+      0, 1, "Google", kProductName_1, "002", landing_page_1);
+  std::string guid_1 = device_1->guid();
+
+  base::HistogramTester histogram_tester;
+  Initialize();
+  base::RunLoop().RunUntilIdle();
+
+  device_manager_.AddDevice(device_1);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(display_service_->GetNotification(guid_1));
+
+  AddTab(browser(), landing_page_1_fuzzed);
+  EXPECT_FALSE(display_service_->GetNotification(guid_1));
+  histogram_tester.ExpectUniqueSample("WebUsb.NotificationClosed", 3, 1);
+}
+
+TEST_F(WebUsbDetectorTest, UsbDeviceAddedWhileActiveTabFuzzyUrlIsLandingPage) {
+  GURL landing_page_1(kLandingPage_1);
+  GURL landing_page_1_fuzzed(kLandingPage_1_fuzzed);
+  auto device_1 = base::MakeRefCounted<device::FakeUsbDeviceInfo>(
+      0, 1, "Google", kProductName_3, "002", landing_page_1);
+  std::string guid_1 = device_1->guid();
+
+  Initialize();
+  base::RunLoop().RunUntilIdle();
+
+  AddTab(browser(), landing_page_1_fuzzed);
+
+  device_manager_.AddDevice(device_1);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(display_service_->GetNotification(guid_1));
+}
+
+TEST_F(WebUsbDetectorTest, TwoDevicesSameLandingPageAddedRemovedAndAddedAgain) {
+  GURL landing_page_1(kLandingPage_1);
+  auto device_1 = base::MakeRefCounted<device::FakeUsbDeviceInfo>(
+      0, 1, "Google", kProductName_1, "002", landing_page_1);
+  std::string guid_1 = device_1->guid();
+
+  auto device_2 = base::MakeRefCounted<device::FakeUsbDeviceInfo>(
+      3, 4, "Google", kProductName_2, "005", landing_page_1);
+  std::string guid_2 = device_2->guid();
+
+  Initialize();
+  base::RunLoop().RunUntilIdle();
+
+  device_manager_.AddDevice(device_1);
+  base::RunLoop().RunUntilIdle();
+  base::Optional<message_center::Notification> notification_1 =
+      display_service_->GetNotification(guid_1);
+  ASSERT_TRUE(notification_1);
+  base::string16 expected_title_1 =
+      base::ASCIIToUTF16("Google Product A detected");
+  EXPECT_EQ(expected_title_1, notification_1->title());
+  base::string16 expected_message_1 =
+      base::ASCIIToUTF16("Go to www.google.com to connect.");
+  EXPECT_EQ(expected_message_1, notification_1->message());
+  EXPECT_TRUE(notification_1->delegate() != nullptr);
+
+  device_manager_.AddDevice(device_2);
+  base::RunLoop().RunUntilIdle();
+  ASSERT_FALSE(display_service_->GetNotification(guid_2));
+
+  device_manager_.RemoveDevice(device_2);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(display_service_->GetNotification(guid_1));
+
+  device_manager_.RemoveDevice(device_1);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(display_service_->GetNotification(guid_1));
+
+  device_manager_.AddDevice(device_2);
+  base::RunLoop().RunUntilIdle();
+  base::Optional<message_center::Notification> notification_2 =
+      display_service_->GetNotification(guid_2);
+  ASSERT_TRUE(notification_2);
+  base::string16 expected_title_2 =
+      base::ASCIIToUTF16("Google Product B detected");
+  EXPECT_EQ(expected_title_2, notification_2->title());
+  base::string16 expected_message_2 =
+      base::ASCIIToUTF16("Go to www.google.com to connect.");
+  EXPECT_EQ(expected_message_2, notification_2->message());
+  EXPECT_TRUE(notification_2->delegate() != nullptr);
+
+  device_manager_.AddDevice(device_1);
+  base::RunLoop().RunUntilIdle();
+  ASSERT_FALSE(display_service_->GetNotification(guid_1));
+}
+
+TEST_F(
+    WebUsbDetectorTest,
+    DeviceWithSameLandingPageAddedAfterNotificationClickedAndThenNewTabActive) {
+  GURL landing_page_1(kLandingPage_1);
+  GURL landing_page_2(kLandingPage_2);
+  auto device_1 = base::MakeRefCounted<device::FakeUsbDeviceInfo>(
+      0, 1, "Google", kProductName_1, "002", landing_page_1);
+  std::string guid_1 = device_1->guid();
+
+  auto device_2 = base::MakeRefCounted<device::FakeUsbDeviceInfo>(
+      0, 1, "Google", kProductName_2, "002", landing_page_1);
+  std::string guid_2 = device_2->guid();
+
+  TabStripModel* tab_strip_model = browser()->tab_strip_model();
+
+  base::HistogramTester histogram_tester;
+  Initialize();
+  base::RunLoop().RunUntilIdle();
+
+  device_manager_.AddDevice(device_1);
+  base::RunLoop().RunUntilIdle();
+  base::Optional<message_center::Notification> notification_1 =
+      display_service_->GetNotification(guid_1);
+  ASSERT_TRUE(notification_1);
+  EXPECT_EQ(0, tab_strip_model->count());
+
+  notification_1->delegate()->Click(base::nullopt, base::nullopt);
+  EXPECT_EQ(1, tab_strip_model->count());
+  content::WebContents* web_contents =
+      tab_strip_model->GetWebContentsAt(tab_strip_model->active_index());
+  EXPECT_EQ(landing_page_1, web_contents->GetURL());
+  EXPECT_FALSE(display_service_->GetNotification(guid_1));
+  histogram_tester.ExpectUniqueSample("WebUsb.NotificationClosed", 2, 1);
+
+  AddTab(browser(), landing_page_2);
+
+  device_manager_.AddDevice(device_2);
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(display_service_->GetNotification(guid_2));
+}
+
+TEST_F(WebUsbDetectorTest,
+       NotificationClickedWhileInactiveTabFuzzyUrlIsLandingPage) {
+  GURL landing_page_1(kLandingPage_1);
+  GURL landing_page_1_fuzzed(kLandingPage_1_fuzzed);
+  GURL landing_page_2(kLandingPage_2);
+  auto device_1 = base::MakeRefCounted<device::FakeUsbDeviceInfo>(
+      0, 1, "Google", kProductName_1, "002", landing_page_1);
+  std::string guid_1 = device_1->guid();
+  TabStripModel* tab_strip_model = browser()->tab_strip_model();
+
+  base::HistogramTester histogram_tester;
+  Initialize();
+  base::RunLoop().RunUntilIdle();
+
+  AddTab(browser(), landing_page_1_fuzzed);
+  AddTab(browser(), landing_page_2);
+
+  device_manager_.AddDevice(device_1);
+  base::RunLoop().RunUntilIdle();
+  base::Optional<message_center::Notification> notification_1 =
+      display_service_->GetNotification(guid_1);
+  ASSERT_TRUE(notification_1);
+  EXPECT_EQ(2, tab_strip_model->count());
+
+  notification_1->delegate()->Click(base::nullopt, base::nullopt);
+  EXPECT_EQ(2, tab_strip_model->count());
+  content::WebContents* web_contents =
+      tab_strip_model->GetWebContentsAt(tab_strip_model->active_index());
+  EXPECT_EQ(landing_page_1_fuzzed, web_contents->GetURL());
+  EXPECT_FALSE(display_service_->GetNotification(guid_1));
+  histogram_tester.ExpectUniqueSample("WebUsb.NotificationClosed", 2, 1);
+}
+
+TEST_F(WebUsbDetectorTest,
+       DeviceWithSameLandingPageAddedAfterPageVisitedAndNewTabActive) {
+  GURL landing_page_1(kLandingPage_1);
+  GURL landing_page_2(kLandingPage_2);
+  auto device_1 = base::MakeRefCounted<device::FakeUsbDeviceInfo>(
+      0, 1, "Google", kProductName_1, "002", landing_page_1);
+  std::string guid_1 = device_1->guid();
+
+  auto device_2 = base::MakeRefCounted<device::FakeUsbDeviceInfo>(
+      0, 1, "Google", kProductName_1, "002", landing_page_1);
+  std::string guid_2 = device_2->guid();
+
+  base::HistogramTester histogram_tester;
+  Initialize();
+  base::RunLoop().RunUntilIdle();
+
+  device_manager_.AddDevice(device_1);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(display_service_->GetNotification(guid_1));
+
+  AddTab(browser(), landing_page_1);
+  EXPECT_FALSE(display_service_->GetNotification(guid_1));
+  histogram_tester.ExpectUniqueSample("WebUsb.NotificationClosed", 3, 1);
+
+  AddTab(browser(), landing_page_2);
+  device_manager_.AddDevice(device_2);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(display_service_->GetNotification(guid_2));
+}
+
 #endif  // !OS_WIN

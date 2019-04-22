@@ -32,6 +32,7 @@
 #include "base/threading/thread.h"
 #include "third_party/blink/public/platform/web_thread_type.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -62,7 +63,7 @@ struct PLATFORM_EXPORT ThreadCreationParams {
   WebThreadType thread_type;
   const char* name;
   FrameOrWorkerScheduler* frame_or_worker_scheduler;  // NOT OWNED
-  base::Thread::Options thread_options;
+  base::ThreadPriority thread_priority = base::ThreadPriority::NORMAL;
 };
 
 // The interface of a thread recognized by Blink.
@@ -70,6 +71,8 @@ struct PLATFORM_EXPORT ThreadCreationParams {
 // Deleting the thread blocks until all pending, non-delayed tasks have been
 // run.
 class PLATFORM_EXPORT Thread {
+  USING_FAST_MALLOC(Thread);
+
  public:
   friend class Platform;  // For SetMainThread() and IsSimpleMainThread().
   friend class ScopedMainThreadOverrider;  // For SetMainThread().

@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -70,7 +71,7 @@ AndroidDeviceManager::DeviceInfo ServiceDescriptionToDeviceInfo(
     device_info.model = kUnknownCastDevice;
 
   AndroidDeviceManager::BrowserInfo browser_info;
-  browser_info.socket_name = base::IntToString(kCastInspectPort);
+  browser_info.socket_name = base::NumberToString(kCastInspectPort);
   browser_info.display_name =
       base::SplitString(service_description.service_name, ".",
                         base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)[0];

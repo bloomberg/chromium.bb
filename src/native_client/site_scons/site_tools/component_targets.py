@@ -5,6 +5,7 @@
 
 """Software construction toolkit target management for SCons."""
 
+from __future__ import print_function
 
 import __builtin__
 import SCons.Script
@@ -95,8 +96,8 @@ def AddTargetGroup(name, description):
   # Warn if the target group already exists with a different description
   if (name in __target_groups
       and __target_groups[name].description != description):
-    print ('Warning: Changing description of target group "%s" from "%s" to '
-           '"%s"' % (name, __target_groups[name].description, description))
+    print('Warning: Changing description of target group "%s" from "%s" to '
+          '"%s"' % (name, __target_groups[name].description, description))
     __target_groups[name].description = description
   else:
     __target_groups[name] = TargetGroup(name, description)

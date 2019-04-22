@@ -30,13 +30,13 @@ using message_center::MessageCenter;
 using message_center::NotifierId;
 
 // static
-NotificationUIManager* NotificationUIManager::Create() {
+std::unique_ptr<NotificationUIManager> NotificationUIManager::Create() {
   // If there's no MessageCenter, there should be no NotificationUIManager to
   // manage it.
   if (!message_center::MessageCenter::Get())
     return nullptr;
 
-  return new NotificationUIManagerImpl();
+  return std::make_unique<NotificationUIManagerImpl>();
 }
 
 NotificationUIManagerImpl::NotificationUIManagerImpl()

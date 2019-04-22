@@ -62,7 +62,7 @@
             </div>
           </div>
         </div>
-        <div id="offline-content-list" hidden>
+        <div id="offline-content-list" class="list-hidden" hidden>
           <div id="offline-content-list-visibility-card"
               onclick="toggleOfflineContentListVisibility(true)">
             <div id="offline-content-list-title"
@@ -84,28 +84,6 @@
             </a>
           </div>
         </div>
-        <div id="offline-content-summary" onclick="launchDownloadsPage()" hidden>
-          <div class="offline-content-summary-images">
-            <div class="offline-content-summary-image-truncate">
-              <img id="earth" src="images/generic-globe.svg">
-            </div>
-            <div class="offline-content-summary-image-truncate">
-              <img id="music-note" src="images/music-note.svg">
-            </div>
-            <div class="offline-content-summary-image-truncate">
-              <img id="video" src="images/video.svg">
-            </div>
-            <div>
-              <img id="image" src="images/image.svg">
-            </div>
-          </div>
-          <div class="offline-content-summary-description"
-              jsselect="offlineContentSummary" jscontent="description">
-          </div>
-          <a class="offline-content-summary-action link-button"
-              jsselect="offlineContentSummary" jscontent="actionText">
-          </a>
-        </div>
       </div>
     </div>
     <div id="buttons" class="nav-wrapper">
@@ -117,12 +95,6 @@
             jsselect="reloadButton"
             jsvalues=".url:reloadUrl; .trackingId:reloadTrackingId"
             jscontent="msg"></button>
-        <button id="show-saved-copy-button"
-            class="blue-button text-button"
-            onclick="showSavedCopyButtonClick()"
-            jsselect="showSavedCopyButton"
-            jscontent="msg" jsvalues="title:title; .primary:primary">
-        </button>
         <button id="download-button"
             class="blue-button text-button"
             onclick="downloadButtonClick()"

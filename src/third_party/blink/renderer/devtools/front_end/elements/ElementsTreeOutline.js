@@ -50,7 +50,6 @@ Elements.ElementsTreeOutline = class extends UI.TreeOutline {
     if (hideGutter)
       this._element.classList.add('elements-hide-gutter');
     UI.ARIAUtils.setAccessibleName(this._element, Common.UIString('Page DOM'));
-    this._element.addEventListener('focusin', this._onfocusin.bind(this), false);
     this._element.addEventListener('focusout', this._onfocusout.bind(this), false);
     this._element.addEventListener('mousedown', this._onmousedown.bind(this), false);
     this._element.addEventListener('mousemove', this._onmousemove.bind(this), false);
@@ -90,6 +89,7 @@ Elements.ElementsTreeOutline = class extends UI.TreeOutline {
 
     this._showHTMLCommentsSetting = Common.moduleSetting('showHTMLComments');
     this._showHTMLCommentsSetting.addChangeListener(this._onShowHTMLCommentsChange.bind(this));
+    this.useLightSelectionColor();
   }
 
   /**
@@ -291,6 +291,8 @@ Elements.ElementsTreeOutline = class extends UI.TreeOutline {
    * @param {boolean} visible
    */
   setVisible(visible) {
+    if (visible === this._visible)
+      return;
     this._visible = visible;
     if (!this._visible) {
       this._popoverHelper.hidePopover();
@@ -441,9 +443,13 @@ Elements.ElementsTreeOutline = class extends UI.TreeOutline {
 
     // Walk down to populate each ancestor's children, to fill in the tree and the cache.
     for (let i = ancestors.length - 1; i >= 0; --i) {
+      const child = ancestors[i - 1] || node;
       const treeElement = ancestors[i][this._treeElementSymbol];
-      if (treeElement)
+      if (treeElement) {
         treeElement.onpopulate();  // fill the cache with the children of treeElement
+        if (child.index >= treeElement.expandedChildrenLimit())
+          this.setExpandedChildrenLimit(treeElement, child.index + 1);
+      }
     }
 
     return node[this._treeElementSymbol];
@@ -546,17 +552,6 @@ Elements.ElementsTreeOutline = class extends UI.TreeOutline {
   /**
    * @param {!Event} event
    */
-  _onfocusin(event) {
-    const listItem = event.target.enclosingNodeOrSelfWithNodeName('li');
-    if (!listItem || !listItem.treeElement || !listItem.treeElement.selected)
-      return;
-    if (event.relatedTarget)
-      this._highlightTreeElement(/** @type {!UI.TreeElement} */ (listItem.treeElement), true /* showInfo */);
-  }
-
-  /**
-   * @param {!Event} event
-   */
   _onfocusout(event) {
     SDK.OverlayModel.hideDOMNodeHighlight();
   }
@@ -604,14 +599,12 @@ Elements.ElementsTreeOutline = class extends UI.TreeOutline {
    */
   _highlightTreeElement(element, showInfo) {
     if (element instanceof Elements.ElementsTreeElement) {
-      element.node().domModel().overlayModel().highlightDOMNodeWithConfig(element.node().id, {mode: 'all', showInfo});
+      element.node().domModel().overlayModel().highlightInOverlay({node: element.node()}, 'all', showInfo);
       return;
     }
 
-    if (element instanceof Elements.ElementsTreeOutline.ShortcutTreeElement) {
-      element.domModel().overlayModel().highlightDOMNodeWithConfig(
-          undefined, {mode: 'all', showInfo}, element.backendNodeId());
-    }
+    if (element instanceof Elements.ElementsTreeOutline.ShortcutTreeElement)
+      element.domModel().overlayModel().highlightInOverlay({deferredNode: element.deferredNode()}, 'all', showInfo);
   }
 
   _onmouseleave(event) {
@@ -1249,7 +1242,7 @@ Elements.ElementsTreeOutline = class extends UI.TreeOutline {
    * @return {boolean}
    */
   _hasVisibleChildren(node) {
-    if (node.isIframe() && Runtime.experiments.isEnabled('oopifInlineDOM'))
+    if (node.isIframe())
       return true;
     if (node.contentDocument())
       return true;
@@ -1647,10 +1640,10 @@ Elements.ElementsTreeOutline.ShortcutTreeElement = class extends UI.TreeElement 
   }
 
   /**
-   * @return {number}
+   * @return {!SDK.DeferredDOMNode}
    */
-  backendNodeId() {
-    return this._nodeShortcut.deferredNode.backendNodeId();
+  deferredNode() {
+    return this._nodeShortcut.deferredNode;
   }
 
   /**
@@ -1668,6 +1661,7 @@ Elements.ElementsTreeOutline.ShortcutTreeElement = class extends UI.TreeElement 
   onselect(selectedByUser) {
     if (!selectedByUser)
       return true;
+    this._nodeShortcut.deferredNode.highlight();
     this._nodeShortcut.deferredNode.resolve(resolved.bind(this));
     /**
      * @param {?SDK.DOMNode} node

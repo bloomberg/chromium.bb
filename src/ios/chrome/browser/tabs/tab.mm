@@ -42,7 +42,6 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/download/download_manager_tab_helper.h"
-#include "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/find_in_page/find_in_page_controller.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/history/history_tab_helper.h"
@@ -55,16 +54,14 @@
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
+#include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/tabs/legacy_tab_helper.h"
-#import "ios/chrome/browser/tabs/tab_dialog_delegate.h"
 #import "ios/chrome/browser/tabs/tab_helper_util.h"
 #import "ios/chrome/browser/tabs/tab_private.h"
 #include "ios/chrome/browser/translate/chrome_ios_translate_client.h"
-#import "ios/chrome/browser/u2f/u2f_controller.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
-#import "ios/chrome/browser/ui/open_in_controller.h"
-#import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
+#import "ios/chrome/browser/ui/open_in/open_in_controller.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
@@ -73,18 +70,15 @@
 #include "ios/web/public/favicon_status.h"
 #include "ios/web/public/favicon_url.h"
 #include "ios/web/public/interstitials/web_interstitial.h"
-#include "ios/web/public/load_committed_details.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/referrer.h"
 #import "ios/web/public/serializable_user_data_manager.h"
 #include "ios/web/public/ssl_status.h"
 #include "ios/web/public/url_scheme_util.h"
-#include "ios/web/public/url_util.h"
 #include "ios/web/public/web_client.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #import "ios/web/public/web_state/navigation_context.h"
-#import "ios/web/public/web_state/ui/crw_generic_content_view.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 #include "ios/web/public/web_thread.h"
@@ -107,10 +101,6 @@
 #error "This file requires ARC support."
 #endif
 
-NSString* const kTabUrlStartedLoadingNotificationForCrashReporting =
-    @"kTabUrlStartedLoadingNotificationForCrashReporting";
-NSString* const kTabUrlMayStartLoadingNotificationForCrashReporting =
-    @"kTabUrlMayStartLoadingNotificationForCrashReporting";
 NSString* const kTabIsShowingExportableNotificationForCrashReporting =
     @"kTabIsShowingExportableNotificationForCrashReporting";
 NSString* const kTabClosingCurrentDocumentNotificationForCrashReporting =
@@ -119,22 +109,16 @@ NSString* const kTabClosingCurrentDocumentNotificationForCrashReporting =
 NSString* const kTabUrlKey = @"url";
 
 @interface Tab ()<CRWWebStateObserver> {
+  // Browser state associated with this Tab.
   ios::ChromeBrowserState* _browserState;
 
   OpenInController* _openInController;
-
-  // The Overscroll controller responsible for displaying the
-  // overscrollActionsView above the toolbar.
-  OverscrollActionsController* _overscrollActionsController;
 
   // WebStateImpl for this tab.
   web::WebStateImpl* _webStateImpl;
 
   // Allows Tab to conform CRWWebStateDelegate protocol.
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserver;
-
-  // Universal Second Factor (U2F) call controller.
-  U2FController* _secondFactorController;
 
 }
 
@@ -147,12 +131,6 @@ NSString* const kTabUrlKey = @"url";
 @end
 
 @implementation Tab
-
-@synthesize browserState = _browserState;
-@synthesize overscrollActionsController = _overscrollActionsController;
-@synthesize overscrollActionsControllerDelegate =
-    overscrollActionsControllerDelegate_;
-@synthesize dialogDelegate = dialogDelegate_;
 
 #pragma mark - Initializers
 
@@ -188,56 +166,8 @@ NSString* const kTabUrlKey = @"url";
 
 #pragma mark - Properties
 
-- (NSString*)tabId {
-  if (!self.webState) {
-    // Tab can outlive WebState, in which case Tab is not valid anymore and
-    // tabId should be nil.
-    return nil;
-  }
-  TabIdTabHelper* tab_id_helper = TabIdTabHelper::FromWebState(self.webState);
-  DCHECK(tab_id_helper);
-  return tab_id_helper->tab_id();
-}
-
 - (web::WebState*)webState {
   return _webStateImpl;
-}
-
-- (BOOL)canGoBack {
-  return self.navigationManager && self.navigationManager->CanGoBack();
-}
-
-- (BOOL)canGoForward {
-  return self.navigationManager && self.navigationManager->CanGoForward();
-}
-
-- (void)setOverscrollActionsControllerDelegate:
-    (id<OverscrollActionsControllerDelegate>)
-        overscrollActionsControllerDelegate {
-  if (overscrollActionsControllerDelegate_ ==
-      overscrollActionsControllerDelegate) {
-    return;
-  }
-
-  // Lazily create a OverscrollActionsController.
-  // The check for overscrollActionsControllerDelegate is necessary to avoid
-  // recreating a OverscrollActionsController during teardown.
-  if (!_overscrollActionsController) {
-    _overscrollActionsController = [[OverscrollActionsController alloc]
-        initWithWebViewProxy:self.webState->GetWebViewProxy()];
-  }
-  OverscrollStyle style = OverscrollStyle::REGULAR_PAGE_NON_INCOGNITO;
-  if (_browserState->IsOffTheRecord())
-    style = OverscrollStyle::REGULAR_PAGE_INCOGNITO;
-  [_overscrollActionsController setStyle:style];
-  [_overscrollActionsController
-      setDelegate:overscrollActionsControllerDelegate];
-  [_overscrollActionsController setBrowserState:self.browserState];
-  overscrollActionsControllerDelegate_ = overscrollActionsControllerDelegate;
-}
-
-- (BOOL)loadFinished {
-  return self.webState && !self.webState->IsLoading();
 }
 
 #pragma mark - Public API
@@ -256,100 +186,15 @@ NSString* const kTabUrlKey = @"url";
   [self.webController dismissModals];
 }
 
-- (web::NavigationManager*)navigationManager {
-  return self.webState ? self.webState->GetNavigationManager() : nullptr;
-}
-
-- (void)goBack {
-  if (self.navigationManager) {
-    DCHECK(self.navigationManager->CanGoBack());
-    base::RecordAction(base::UserMetricsAction("Back"));
-    self.navigationManager->GoBack();
-  }
-}
-
-- (void)goForward {
-  if (self.navigationManager) {
-    DCHECK(self.navigationManager->CanGoForward());
-    base::RecordAction(base::UserMetricsAction("Forward"));
-    self.navigationManager->GoForward();
-  }
-}
-
-- (void)willUpdateSnapshot {
-  [_overscrollActionsController clear];
-}
-
-- (void)notifyTabOfUrlMayStartLoading:(const GURL&)url {
-  NSString* urlString = base::SysUTF8ToNSString(url.spec());
-  if ([urlString length]) {
-    [[NSNotificationCenter defaultCenter]
-        postNotificationName:kTabUrlMayStartLoadingNotificationForCrashReporting
-                      object:self
-                    userInfo:@{kTabUrlKey : urlString}];
-  }
-}
-
-#pragma mark - Public API (relatinge to User agent)
-
-- (BOOL)usesDesktopUserAgent {
-  if (!self.navigationManager)
-    return NO;
-
-  web::NavigationItem* visibleItem = self.navigationManager->GetVisibleItem();
-  return visibleItem &&
-         visibleItem->GetUserAgentType() == web::UserAgentType::DESKTOP;
-}
-
-- (void)reloadWithUserAgentType:(web::UserAgentType)userAgentType {
-  web::NavigationManager* navigationManager = [self navigationManager];
-  DCHECK(navigationManager);
-  navigationManager->ReloadWithUserAgentType(userAgentType);
-}
-
-#pragma mark - Public API (relating to U2F)
-
-- (void)evaluateU2FResultFromURL:(const GURL&)URL {
-  DCHECK(_secondFactorController);
-  [_secondFactorController evaluateU2FResultFromU2FURL:URL
-                                              webState:self.webState];
-}
-
-- (GURL)XCallbackFromRequestURL:(const GURL&)requestURL
-                      originURL:(const GURL&)originURL {
-  // Create U2FController object lazily.
-  if (!_secondFactorController)
-    _secondFactorController = [[U2FController alloc] init];
-  return [_secondFactorController
-      XCallbackFromRequestURL:requestURL
-                    originURL:originURL
-                       tabURL:self.webState->GetLastCommittedURL()
-                        tabID:self.tabId];
-}
-
 #pragma mark - CRWWebStateObserver protocol
 
 - (void)webState:(web::WebState*)webState
     didStartNavigation:(web::NavigationContext*)navigation {
-  // Notify tab of Url may start loading, this notification is not sent in cases
-  // of app launching, history api navigations, and hash change navigations.
-  [self notifyTabOfUrlMayStartLoading:navigation->GetUrl()];
-
-  [self.dialogDelegate cancelDialogForTab:self];
   [_openInController disable];
 }
 
 - (void)webState:(web::WebState*)webState
-    didFinishNavigation:(web::NavigationContext*)navigation {
-  if (navigation->HasCommitted() && !navigation->IsSameDocument()) {
-    [self.dialogDelegate cancelDialogForTab:self];
-  }
-}
-
-- (void)webState:(web::WebState*)webState
     didLoadPageWithSuccess:(BOOL)loadSuccess {
-  DCHECK([self loadFinished]);
-
   if (loadSuccess) {
     scoped_refptr<net::HttpResponseHeaders> headers =
         _webStateImpl->GetHttpResponseHeaders();
@@ -357,22 +202,11 @@ NSString* const kTabUrlKey = @"url";
   }
 }
 
-- (void)renderProcessGoneForWebState:(web::WebState*)webState {
-  DCHECK(webState == _webStateImpl);
-  [self.dialogDelegate cancelDialogForTab:self];
-}
-
 - (void)webStateDestroyed:(web::WebState*)webState {
   DCHECK_EQ(_webStateImpl, webState);
-  self.overscrollActionsControllerDelegate = nil;
 
-  [_openInController detachFromWebController];
+  [_openInController detachFromWebState];
   _openInController = nil;
-  [_overscrollActionsController invalidate];
-  _overscrollActionsController = nil;
-
-  // Cancel any queued dialogs.
-  [self.dialogDelegate cancelDialogForTab:self];
 
   _webStateImpl->RemoveObserver(_webStateObserver.get());
   _webStateObserver.reset();
@@ -385,7 +219,7 @@ NSString* const kTabUrlKey = @"url";
   if (!_openInController) {
     _openInController = [[OpenInController alloc]
         initWithURLLoaderFactory:_browserState->GetSharedURLLoaderFactory()
-                   webController:self.webController];
+                        webState:self.webState];
     // Previously evicted tabs should be reloaded before this method is called.
     DCHECK(!self.webState->IsEvicted());
     self.webState->GetNavigationManager()->LoadIfNecessary();
@@ -410,7 +244,9 @@ NSString* const kTabUrlKey = @"url";
     headers->GetNormalizedHeader("content-disposition", &contentDisposition);
   std::string defaultFilename =
       l10n_util::GetStringUTF8(IDS_IOS_OPEN_IN_FILE_DEFAULT_TITLE);
-  const GURL& lastCommittedURL = self.webState->GetLastCommittedURL();
+  web::NavigationItem* item =
+      self.webState->GetNavigationManager()->GetLastCommittedItem();
+  const GURL& lastCommittedURL = item ? item->GetURL() : GURL::EmptyGURL();
   base::string16 filename =
       net::GetSuggestedFilename(lastCommittedURL, contentDisposition,
                                 "",                 // referrer-charset

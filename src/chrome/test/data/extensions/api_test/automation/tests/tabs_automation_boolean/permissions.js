@@ -21,8 +21,8 @@ var allTestsADomain = [
 
 var allTestsBDomain = [
   function testError() {
-    var expectedError = 'Cannot request automation tree on url "' + urlB +
-        '". Extension manifest must request permission to access this host.';
+    var expectedError = 'Failed request of automation on a page';
+
     chrome.automation.getTree(callbackFail(expectedError, function(tree) {
       assertEq(undefined, tree);
       chrome.test.succeed();
@@ -46,4 +46,3 @@ chrome.test.getConfig(function(config) {
     });
   });
 });
-

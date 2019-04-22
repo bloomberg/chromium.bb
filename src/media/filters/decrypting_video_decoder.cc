@@ -24,25 +24,18 @@ const char DecryptingVideoDecoder::kDecoderName[] = "DecryptingVideoDecoder";
 DecryptingVideoDecoder::DecryptingVideoDecoder(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     MediaLog* media_log)
-    : task_runner_(task_runner),
-      media_log_(media_log),
-      state_(kUninitialized),
-      decryptor_(NULL),
-      key_added_while_decode_pending_(false),
-      support_clear_content_(false),
-      weak_factory_(this) {}
+    : task_runner_(task_runner), media_log_(media_log), weak_factory_(this) {}
 
 std::string DecryptingVideoDecoder::GetDisplayName() const {
   return kDecoderName;
 }
 
-void DecryptingVideoDecoder::Initialize(
-    const VideoDecoderConfig& config,
-    bool /* low_delay */,
-    CdmContext* cdm_context,
-    const InitCB& init_cb,
-    const OutputCB& output_cb,
-    const WaitingForDecryptionKeyCB& waiting_for_decryption_key_cb) {
+void DecryptingVideoDecoder::Initialize(const VideoDecoderConfig& config,
+                                        bool /* low_delay */,
+                                        CdmContext* cdm_context,
+                                        const InitCB& init_cb,
+                                        const OutputCB& output_cb,
+                                        const WaitingCB& waiting_cb) {
   DVLOG(2) << __func__ << ": " << config.AsHumanReadableString();
 
   DCHECK(task_runner_->BelongsToCurrentThread());
@@ -74,8 +67,8 @@ void DecryptingVideoDecoder::Initialize(
   weak_this_ = weak_factory_.GetWeakPtr();
   config_ = config;
 
-  DCHECK(waiting_for_decryption_key_cb);
-  waiting_for_decryption_key_cb_ = waiting_for_decryption_key_cb;
+  DCHECK(waiting_cb);
+  waiting_cb_ = waiting_cb;
 
   if (state_ == kUninitialized) {
     if (!cdm_context->GetDecryptor()) {
@@ -283,7 +276,7 @@ void DecryptingVideoDecoder::DeliverFrame(
     TRACE_EVENT_ASYNC_BEGIN0(
         "media", "DecryptingVideoDecoder::WaitingForDecryptionKey", this);
     state_ = kWaitingForKey;
-    waiting_for_decryption_key_cb_.Run();
+    waiting_cb_.Run(WaitingReason::kNoDecryptionKey);
     return;
   }
 

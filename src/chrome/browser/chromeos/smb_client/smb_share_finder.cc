@@ -7,8 +7,10 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/chromeos/smb_client/discovery/mdns_host_locator.h"
 #include "chrome/browser/chromeos/smb_client/smb_constants.h"
+#include "chrome/browser/chromeos/smb_client/smb_errors.h"
 
 namespace chromeos {
 namespace smb_client {
@@ -19,29 +21,63 @@ SmbShareFinder::~SmbShareFinder() = default;
 void SmbShareFinder::GatherSharesInNetwork(
     HostDiscoveryResponse discovery_callback,
     GatherSharesInNetworkResponse shares_callback) {
-  const bool should_start_discovery = share_callbacks_.empty();
+  const bool is_host_discovery_pending = !discovery_callbacks_.empty();
+  const bool is_share_discovery_pending = !share_callbacks_.empty();
 
-  if (discovery_callbacks_.empty() && !should_start_discovery) {
-    // Host discovery completed but shares callback is still in progress.
-    std::move(discovery_callback).Run();
-    InsertShareCallback(std::move(shares_callback));
-  } else {
-    // Either GatherSharesInNetwork has not been called yet or it has and
-    // discovery has not yet finished.
+  if (is_host_discovery_pending) {
+    // Host discovery is currently running, add both |discovery_callback| and
+    // |share_callback| to their respective vectors.
     InsertDiscoveryAndShareCallbacks(std::move(discovery_callback),
                                      std::move(shares_callback));
+    return;
   }
-  if (should_start_discovery) {
-    scanner_.FindHostsInNetwork(
-        base::BindOnce(&SmbShareFinder::OnHostsFound, AsWeakPtr()));
+
+  if (is_share_discovery_pending) {
+    // Host discovery is complete but there are still share callbacks pending.
+    // Run |discovery_callback| because pending share discoveries and no pending
+    // host discoveries indicate that a host discovery must have recently
+    // completed.
+    std::move(discovery_callback).Run();
+    InsertShareCallback(std::move(shares_callback));
+    return;
   }
+
+  // No host discovery or share discovery in progress. This is only because
+  // GatherSharesInNetwork has not been called yet or the previous host
+  // discovery has been fully completed.
+  InsertDiscoveryAndShareCallbacks(std::move(discovery_callback),
+                                   std::move(shares_callback));
+  scanner_.FindHostsInNetwork(
+      base::BindOnce(&SmbShareFinder::OnHostsFound, AsWeakPtr()));
 }
 
 void SmbShareFinder::DiscoverHostsInNetwork(
     HostDiscoveryResponse discovery_callback) {
-  scanner_.FindHostsInNetwork(base::BindOnce(&SmbShareFinder::OnHostsDiscovered,
-                                             AsWeakPtr(),
-                                             std::move(discovery_callback)));
+  const bool is_host_discovery_pending = !discovery_callbacks_.empty();
+  const bool is_share_discovery_pending = !share_callbacks_.empty();
+
+  if (is_host_discovery_pending) {
+    // Host discovery is currently running, add |discovery_callback| to
+    // |discovery_callbacks|.
+    InsertDiscoveryCallback(std::move(discovery_callback));
+    return;
+  }
+
+  if (is_share_discovery_pending) {
+    // Host discovery is complete but there are still share callbacks pending.
+    // Run |discovery_callback| because pending share discoveries and no pending
+    // host discoveries indicate that a host discovery must have recently
+    // completed.
+    std::move(discovery_callback).Run();
+    return;
+  }
+
+  // No host discovery or share discovery in progress. This is only because
+  // GatherSharesInNetwork has not been called yet or the previous host
+  // discovery has been fully completed.
+  InsertDiscoveryCallback(std::move(discovery_callback));
+  scanner_.FindHostsInNetwork(
+      base::BindOnce(&SmbShareFinder::OnHostsFound, AsWeakPtr()));
 }
 
 void SmbShareFinder::RegisterHostLocator(std::unique_ptr<HostLocator> locator) {
@@ -52,17 +88,19 @@ std::string SmbShareFinder::GetResolvedUrl(const SmbUrl& url) const {
   DCHECK(url.IsValid());
 
   const std::string ip_address = scanner_.ResolveHost(url.GetHost());
-  if (ip_address.empty()) {
+  // Return the original URL if the resolved host cannot be found or if there is
+  // no change in the resolved IP address.
+  if (ip_address.empty() || ip_address == url.GetHost()) {
     return url.ToString();
   }
 
   return url.ReplaceHost(ip_address);
 }
 
-void SmbShareFinder::OnHostsDiscovered(HostDiscoveryResponse discovery_callback,
-                                       bool success,
-                                       const HostMap& hosts) {
-  std::move(discovery_callback).Run();
+bool SmbShareFinder::TryResolveUrl(const SmbUrl& url,
+                                   std::string* updated_url) const {
+  *updated_url = GetResolvedUrl(url);
+  return *updated_url != url.ToString();
 }
 
 void SmbShareFinder::OnHostsFound(bool success, const HostMap& hosts) {
@@ -100,9 +138,13 @@ void SmbShareFinder::OnSharesFound(
   DCHECK_GT(host_counter_, 0u);
   --host_counter_;
 
+  UMA_HISTOGRAM_ENUMERATION("NativeSmbFileShare.GetSharesResult",
+                            TranslateErrorToMountResult(error));
+
   if (error != smbprovider::ErrorType::ERROR_OK) {
     LOG(ERROR) << "Error finding shares: " << error;
-    return;
+    // Don't early out here because this could be the last host being queried,
+    // and the final share discovery callback may need to run.
   }
 
   for (const smbprovider::DirectoryEntryProto& entry : entries.entries()) {
@@ -141,13 +183,18 @@ void SmbShareFinder::RunEmptySharesCallbacks() {
 void SmbShareFinder::InsertDiscoveryAndShareCallbacks(
     HostDiscoveryResponse discovery_callback,
     GatherSharesInNetworkResponse share_callback) {
-  discovery_callbacks_.push_back(std::move(discovery_callback));
-  share_callbacks_.push_back(std::move(share_callback));
+  InsertDiscoveryCallback(std::move(discovery_callback));
+  InsertShareCallback(std::move(share_callback));
 }
 
 void SmbShareFinder::InsertShareCallback(
     GatherSharesInNetworkResponse share_callback) {
   share_callbacks_.push_back(std::move(share_callback));
+}
+
+void SmbShareFinder::InsertDiscoveryCallback(
+    HostDiscoveryResponse discovery_callback) {
+  discovery_callbacks_.push_back(std::move(discovery_callback));
 }
 
 }  // namespace smb_client

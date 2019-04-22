@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: git-new-branch
 .\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
-.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 12/15/2016
+.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
+.\"      Date: 12/05/2018
 .\"    Manual: Chromium depot_tools Manual
-.\"    Source: depot_tools f72f1ad
+.\"    Source: depot_tools 0379dbb3
 .\"  Language: English
 .\"
-.TH "GIT\-NEW\-BRANCH" "1" "12/15/2016" "depot_tools f72f1ad" "Chromium depot_tools Manual"
+.TH "GIT\-NEW\-BRANCH" "1" "12/05/2018" "depot_tools 0379dbb3" "Chromium depot_tools Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -50,7 +50,7 @@ Conceptually, each branch in your repo represents one \fIChange List (CL)\fR\&. 
 Set the tracking (upstream) branch to the currently\-checked\-out branch\&.
 .RE
 .PP
-\-\-uptstream <REF>
+\-\-upstream <REF>
 .RS 4
 Set the tracking (upstream) branch to <REF>\&. <REF> may be a local branch, remote branch, or a tag\&.
 .RE
@@ -77,43 +77,51 @@ This configures the default \fIupstream\fR for all new branches\&. If it is unse
 .RS 4
 .\}
 .nf
-\fB$ git map\-branches\fR
+\fB$ git map\-branches \-v\fR
 origin/master
-  cool_feature
-    subfeature
-  fixit
-\fB    frozen_branch *
+  cool_feature         [ ahead 4            ]
+    subfeature         [ ahead 2 | behind 1 ]
+  fixit                [ ahead 2            ]
+\fB    frozen_branch *    [ ahead 3            ]
 $ git new\-branch independent_cl\fR
-\fB$ git map\-branches\fR
+\fB$ git map\-branches \-v\fR
 \fBorigin/master
-\fR  cool_feature
-    subfeature
-  fixit
-    frozen_branch
+\fR  cool_feature        [ ahead 4            ]
+    subfeature        [ ahead 2 | behind 1 ]
+  fixit               [ ahead 2            ]
+    frozen_branch     [ ahead 3            ]
 \fB  independent_cl *
-$ git new\-branch \-\-upstream subfeature nested_cl\fR
-\fB$ git map\-branches\fR
+$ vi foo && git add \-A && git commit \-m foo\fR
+\fB$ git map\-branches \-v\fR
 origin/master
-  cool_feature
-\fB    subfeature  \fR\fB\fB(1)\fR\fR\fB
+  cool_feature        [ ahead 4            ]
+    subfeature        [ ahead 2 | behind 1 ]
+  fixit               [ ahead 2            ]
+    frozen_branch     [ ahead 3            ]
+\fB  independent_cl *    [ ahead 1            ]
+$ git new\-branch \-\-upstream subfeature nested_cl\fR
+\fB$ git map\-branches \-v\fR
+origin/master
+  cool_feature       [ ahead 4            ]
+\fB    subfeature       [ ahead 2 | behind 1 ]  \fR\fB\fB(1)\fR\fR\fB
       nested_cl *
-\fR  fixit
-    frozen_branch
-  independent_cl
+\fR  fixit              [ ahead 2            ]
+    frozen_branch    [ ahead 3            ]
+  independent_cl     [ ahead 1            ]
 \fB$ git checkout cool_feature\fR
 Switched to branch \*(Aqcool_feature\*(Aq
 Your branch is ahead of \*(Aqorigin/master\*(Aq by 4 commits\&.
   (use "git push" to publish your local commits)
 \fB$ git new\-branch \-\-upstream_current cl_depends_on_cool_feature\fR
-\fB$ git map\-branches\fR
+\fB$ git map\-branches \-v\fR
 origin/master
-\fB  cool_feature
+\fB  cool_feature                      [ ahead 4            ]
     cl_depends_on_cool_feature *
-\fR    subfeature
+\fR    subfeature                      [ ahead 2 | behind 1 ]
       nested_cl
-  fixit
-    frozen_branch
-  independent_cl
+  fixit                             [ ahead 2            ]
+    frozen_branch                   [ ahead 3            ]
+  independent_cl                    [ ahead 1            ]
 .fi
 .if n \{\
 .RE

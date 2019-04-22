@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_SIGNIN_FAKE_OAUTH2_TOKEN_SERVICE_DELEGATE_H_
 #define CHROME_BROWSER_SIGNIN_FAKE_OAUTH2_TOKEN_SERVICE_DELEGATE_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_token_service_delegate.h"
@@ -29,28 +30,36 @@ class FakeOAuth2TokenServiceDelegate : public OAuth2TokenServiceDelegate {
 
   // Overriden to make sure it works on Android.
   bool RefreshTokenIsAvailable(const std::string& account_id) const override;
+
   GoogleServiceAuthError GetAuthError(
       const std::string& account_id) const override;
   void UpdateAuthError(const std::string& account_id,
                        const GoogleServiceAuthError& error) override;
-
   std::vector<std::string> GetAccounts() override;
   void RevokeAllCredentials() override;
-
   void LoadCredentials(const std::string& primary_account_id) override;
-
   void UpdateCredentials(const std::string& account_id,
                          const std::string& refresh_token) override;
   void RevokeCredentials(const std::string& account_id) override;
+  void ExtractCredentials(OAuth2TokenService* to_service,
+                          const std::string& account_id) override;
 
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory()
       const override;
+
+  bool FixRequestErrorIfPossible() override;
 
   std::string GetRefreshToken(const std::string& account_id) const;
 
   network::TestURLLoaderFactory* test_url_loader_factory() {
     return &test_url_loader_factory_;
   }
+
+  void set_fix_request_if_possible(bool value) {
+    fix_request_if_possible_ = value;
+  }
+
+  const net::BackoffEntry* BackoffEntry() const override;
 
  private:
   struct AccountInfo {
@@ -64,11 +73,13 @@ class FakeOAuth2TokenServiceDelegate : public OAuth2TokenServiceDelegate {
                                 const std::string& token);
 
   // Maps account ids to info.
-  typedef std::map<std::string, linked_ptr<AccountInfo>> AccountInfoMap;
-  AccountInfoMap refresh_tokens_;
+  std::map<std::string, std::unique_ptr<AccountInfo>> refresh_tokens_;
 
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_factory_;
+  bool fix_request_if_possible_ = false;
+
+  net::BackoffEntry backoff_entry_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeOAuth2TokenServiceDelegate);
 };

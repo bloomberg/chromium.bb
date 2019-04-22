@@ -1,5 +1,11 @@
 # Using clang-format on Chromium C++ Code
 
+*** note
+NOTE: This page does not apply to the Chromium OS project. See [Chromium Issue
+878506](https://bugs.chromium.org/p/chromium/issues/detail?id=878506#c10)
+for updates.
+***
+
 ## Easiest usage, from the command line
 
 To automatically format a pending patch according to

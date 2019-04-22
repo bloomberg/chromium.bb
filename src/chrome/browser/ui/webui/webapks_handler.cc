@@ -6,13 +6,14 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/callback_forward.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/android/color_helpers.h"
 #include "chrome/browser/android/shortcut_helper.h"
 #include "content/public/browser/web_ui.h"
-#include "content/public/common/manifest_util.h"
+#include "third_party/blink/public/common/manifest/manifest_util.h"
 #include "ui/gfx/color_utils.h"
 
 WebApksHandler::WebApksHandler() : weak_ptr_factory_(this) {}
@@ -49,10 +50,10 @@ void WebApksHandler::OnWebApkInfoRetrieved(
     result->SetString("manifestUrl", webapk_info.manifest_url);
     result->SetString("manifestStartUrl", webapk_info.manifest_start_url);
     result->SetString("displayMode",
-                      content::WebDisplayModeToString(webapk_info.display));
+                      blink::WebDisplayModeToString(webapk_info.display));
     result->SetString(
         "orientation",
-        content::WebScreenOrientationLockTypeToString(webapk_info.orientation));
+        blink::WebScreenOrientationLockTypeToString(webapk_info.orientation));
     result->SetString("themeColor",
                       OptionalSkColorToString(webapk_info.theme_color));
     result->SetString("backgroundColor",

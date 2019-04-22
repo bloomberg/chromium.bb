@@ -31,16 +31,14 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_EXPORTED_WRAPPED_RESOURCE_RESPONSE_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_EXPORTED_WRAPPED_RESOURCE_RESPONSE_H_
 
+#include "base/macros.h"
 #include "third_party/blink/public/platform/web_url_response.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
 // WrappedResourceResponse doesn't take ownership of given ResourceResponse,
 // but just holds a pointer to it. It is not copyable.
 class WrappedResourceResponse : public WebURLResponse {
-  WTF_MAKE_NONCOPYABLE(WrappedResourceResponse);
-
  public:
   ~WrappedResourceResponse() = default;
 
@@ -50,6 +48,9 @@ class WrappedResourceResponse : public WebURLResponse {
   explicit WrappedResourceResponse(const ResourceResponse& resource_response)
       : WrappedResourceResponse(
             const_cast<ResourceResponse&>(resource_response)) {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WrappedResourceResponse);
 };
 
 }  // namespace blink

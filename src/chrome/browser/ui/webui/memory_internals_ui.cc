@@ -208,8 +208,8 @@ void MemoryInternalsDOMHandler::HandleRequestProcessList(
   // the IO thread, while the render process iterator must run on the UI thread.
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::IO},
-      base::Bind(&MemoryInternalsDOMHandler::GetChildProcessesOnIOThread,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&MemoryInternalsDOMHandler::GetChildProcessesOnIOThread,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void MemoryInternalsDOMHandler::HandleSaveDump(const base::ListValue* args) {

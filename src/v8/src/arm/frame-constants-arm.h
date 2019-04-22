@@ -13,15 +13,20 @@ namespace internal {
 
 class EntryFrameConstants : public AllStatic {
  public:
+  // This is the offset to where JSEntry pushes the current value of
+  // Isolate::c_entry_fp onto the stack.
   static constexpr int kCallerFPOffset =
       -(StandardFrameConstants::kFixedFrameSizeFromFp + kPointerSize);
+
+  // Stack offsets for arguments passed to JSEntry.
+  static constexpr int kArgcOffset = +0 * kSystemPointerSize;
+  static constexpr int kArgvOffset = +1 * kSystemPointerSize;
 };
 
 class ExitFrameConstants : public TypedFrameConstants {
  public:
   static constexpr int kSPOffset = TYPED_FRAME_PUSHED_VALUE_OFFSET(0);
-  static constexpr int kCodeOffset = TYPED_FRAME_PUSHED_VALUE_OFFSET(1);
-  DEFINE_TYPED_FRAME_SIZES(2);
+  DEFINE_TYPED_FRAME_SIZES(1);
 
   // The caller fields are below the frame pointer on the stack.
   static constexpr int kCallerFPOffset = 0 * kPointerSize;

@@ -53,10 +53,6 @@ class DeprecatedStorageQuota final : public ScriptWrappable {
     kPersistent,
   };
 
-  static DeprecatedStorageQuota* Create(Type type) {
-    return MakeGarbageCollected<DeprecatedStorageQuota>(type);
-  }
-
   static void EnqueueStorageErrorCallback(ScriptState*,
                                           V8StorageErrorCallback*,
                                           DOMExceptionCode);
@@ -68,7 +64,7 @@ class DeprecatedStorageQuota final : public ScriptWrappable {
                           V8StorageErrorCallback* = nullptr);
 
   void requestQuota(ScriptState*,
-                    unsigned long long new_quota_in_bytes,
+                    uint64_t new_quota_in_bytes,
                     V8StorageQuotaCallback* = nullptr,
                     V8StorageErrorCallback* = nullptr);
 

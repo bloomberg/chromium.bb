@@ -79,7 +79,7 @@ struct BridgedNativeWidgetInitParams {
 };
 
 // The interface through which a NativeWidgetMac may interact with an NSWindow
-// in another process.
+// (possibly in a process separate from the browser process).
 interface BridgedNativeWidget {
   // Create and set the NSWindow for the bridge.
   CreateWindow(CreateWindowParams params);
@@ -87,6 +87,15 @@ interface BridgedNativeWidget {
   // Set the BridgedNativeWidget indicated by |parent_id| to be the parent of
   // this BridgedNativeWidget.
   SetParent(uint64 parent_id);
+
+  // Places this BridgedNativeWidget in front of the BridgedNativeWidget
+  // indicated by |sibling_id| in z-order.
+  StackAbove(uint64 sibling_id);
+
+  StackAtTop();
+
+  // Show the emoji panel for the NSWindow's process.
+  ShowEmojiPanel();
 
   // Initialize the window's style.
   InitWindow(BridgedNativeWidgetInitParams params);
@@ -149,6 +158,11 @@ interface BridgedNativeWidget {
   // Called by NativeWidgetMac to initiate a transition to the specified target
   // fullscreen state.
   SetFullscreen(bool fullscreen);
+
+  // Called by NativeWidgetMac; sets whether the window can share fullscreen
+  // windows' spaces by changing the NSWindow's collectionBehavior.
+  SetCanAppearInExistingFullscreenSpaces(
+      bool can_appear_in_existing_fullscreen_spaces);
 
   // Miniaturize or deminiaturize the window.
   SetMiniaturized(bool miniaturized);

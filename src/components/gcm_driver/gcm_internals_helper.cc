@@ -65,7 +65,7 @@ void SetReceivingInfo(const std::vector<gcm::ReceivingActivity>& receives,
     row->AppendDouble(receive.time.ToJsTime());
     row->AppendString(receive.app_id);
     row->AppendString(receive.from);
-    row->AppendString(base::IntToString(receive.message_byte_size));
+    row->AppendString(base::NumberToString(receive.message_byte_size));
     row->AppendString(receive.event);
     row->AppendString(receive.details);
     receive_info->Append(std::move(row));

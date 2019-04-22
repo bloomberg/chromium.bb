@@ -112,7 +112,7 @@ void ExtensionGCMAppHandler::OnExtensionUnloaded(
     return;
 
   if (reason == UnloadedExtensionReason::UPDATE &&
-      GetGCMDriver()->app_handlers().size() >= 1) {
+      !GetGCMDriver()->app_handlers().empty()) {
     // When the extension is being updated, it will be first unloaded and then
     // loaded again by ExtensionService::AddExtension. If the app handler for
     // this extension is the only handler, removing it and adding it again will

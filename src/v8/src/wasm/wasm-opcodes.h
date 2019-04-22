@@ -16,43 +16,48 @@ namespace internal {
 namespace wasm {
 
 std::ostream& operator<<(std::ostream& os, const FunctionSig& function);
-bool IsJSCompatibleSignature(const FunctionSig* sig);
+bool IsJSCompatibleSignature(const FunctionSig* sig, bool hasBigIntFeature);
 
 // Control expressions and blocks.
-#define FOREACH_CONTROL_OPCODE(V)         \
-  V(Unreachable, 0x00, _)                 \
-  V(Nop, 0x01, _)                         \
-  V(Block, 0x02, _)                       \
-  V(Loop, 0x03, _)                        \
-  V(If, 0x004, _)                         \
-  V(Else, 0x05, _)                        \
-  V(Try, 0x06, _ /* eh_prototype */)      \
-  V(Catch, 0x07, _ /* eh_prototype */)    \
-  V(Throw, 0x08, _ /* eh_prototype */)    \
-  V(Rethrow, 0x09, _ /* eh_prototype */)  \
-  V(CatchAll, 0x0a, _ /* eh prototype */) \
-  V(End, 0x0b, _)                         \
-  V(Br, 0x0c, _)                          \
-  V(BrIf, 0x0d, _)                        \
-  V(BrTable, 0x0e, _)                     \
+#define FOREACH_CONTROL_OPCODE(V)        \
+  V(Unreachable, 0x00, _)                \
+  V(Nop, 0x01, _)                        \
+  V(Block, 0x02, _)                      \
+  V(Loop, 0x03, _)                       \
+  V(If, 0x04, _)                         \
+  V(Else, 0x05, _)                       \
+  V(Try, 0x06, _ /* eh_prototype */)     \
+  V(Catch, 0x07, _ /* eh_prototype */)   \
+  V(Throw, 0x08, _ /* eh_prototype */)   \
+  V(Rethrow, 0x09, _ /* eh_prototype */) \
+  V(BrOnExn, 0x0a, _ /* eh prototype */) \
+  V(End, 0x0b, _)                        \
+  V(Br, 0x0c, _)                         \
+  V(BrIf, 0x0d, _)                       \
+  V(BrTable, 0x0e, _)                    \
   V(Return, 0x0f, _)
 
 // Constants, locals, globals, and calls.
-#define FOREACH_MISC_OPCODE(V) \
-  V(CallFunction, 0x10, _)     \
-  V(CallIndirect, 0x11, _)     \
-  V(Drop, 0x1a, _)             \
-  V(Select, 0x1b, _)           \
-  V(GetLocal, 0x20, _)         \
-  V(SetLocal, 0x21, _)         \
-  V(TeeLocal, 0x22, _)         \
-  V(GetGlobal, 0x23, _)        \
-  V(SetGlobal, 0x24, _)        \
-  V(I32Const, 0x41, _)         \
-  V(I64Const, 0x42, _)         \
-  V(F32Const, 0x43, _)         \
-  V(F64Const, 0x44, _)         \
-  V(RefNull, 0xd0, _)
+#define FOREACH_MISC_OPCODE(V)   \
+  V(CallFunction, 0x10, _)       \
+  V(CallIndirect, 0x11, _)       \
+  V(ReturnCall, 0x12, _)         \
+  V(ReturnCallIndirect, 0x13, _) \
+  V(Drop, 0x1a, _)               \
+  V(Select, 0x1b, _)             \
+  V(GetLocal, 0x20, _)           \
+  V(SetLocal, 0x21, _)           \
+  V(TeeLocal, 0x22, _)           \
+  V(GetGlobal, 0x23, _)          \
+  V(SetGlobal, 0x24, _)          \
+  V(GetTable, 0x25, _)           \
+  V(SetTable, 0x26, _)           \
+  V(I32Const, 0x41, _)           \
+  V(I64Const, 0x42, _)           \
+  V(F32Const, 0x43, _)           \
+  V(F64Const, 0x44, _)           \
+  V(RefNull, 0xd0, _)            \
+  V(RefFunc, 0xd2, _)
 
 // Load memory expressions.
 #define FOREACH_LOAD_MEM_OPCODE(V) \
@@ -410,16 +415,17 @@ bool IsJSCompatibleSignature(const FunctionSig* sig);
   V(I64SConvertSatF64, 0xfc06, l_d) \
   V(I64UConvertSatF64, 0xfc07, l_d) \
   V(MemoryInit, 0xfc08, v_iii)      \
-  V(MemoryDrop, 0xfc09, v_v)        \
+  V(DataDrop, 0xfc09, v_v)          \
   V(MemoryCopy, 0xfc0a, v_iii)      \
   V(MemoryFill, 0xfc0b, v_iii)      \
   V(TableInit, 0xfc0c, v_iii)       \
-  V(TableDrop, 0xfc0d, v_v)         \
+  V(ElemDrop, 0xfc0d, v_v)          \
   V(TableCopy, 0xfc0e, v_iii)
 
 #define FOREACH_ATOMIC_OPCODE(V)                \
-  V(AtomicWake, 0xfe00, i_ii)                   \
+  V(AtomicNotify, 0xfe00, i_ii)                 \
   V(I32AtomicWait, 0xfe01, i_iil)               \
+  V(I64AtomicWait, 0xfe02, i_ill)               \
   V(I32AtomicLoad, 0xfe10, i_i)                 \
   V(I64AtomicLoad, 0xfe11, l_i)                 \
   V(I32AtomicLoad8U, 0xfe12, i_i)               \
@@ -540,6 +546,7 @@ bool IsJSCompatibleSignature(const FunctionSig* sig);
   V(i_iii, kWasmI32, kWasmI32, kWasmI32, kWasmI32)  \
   V(l_ill, kWasmI64, kWasmI32, kWasmI64, kWasmI64)  \
   V(i_iil, kWasmI32, kWasmI32, kWasmI32, kWasmI64)  \
+  V(i_ill, kWasmI32, kWasmI32, kWasmI64, kWasmI64)  \
   V(i_r, kWasmI32, kWasmAnyRef)
 
 #define FOREACH_SIMD_SIGNATURE(V)          \
@@ -574,8 +581,6 @@ enum TrapReason {
 #undef DECLARE_ENUM
 };
 
-extern const std::array<const FunctionSig*, 256> kSimpleOpcodeSigs;
-
 // A collection of opcode-related static methods.
 class V8_EXPORT_PRIVATE WasmOpcodes {
  public:
@@ -586,6 +591,7 @@ class V8_EXPORT_PRIVATE WasmOpcodes {
   static bool IsControlOpcode(WasmOpcode opcode);
   static bool IsSignExtensionOpcode(WasmOpcode opcode);
   static bool IsAnyRefOpcode(WasmOpcode opcode);
+  static bool IsThrowingOpcode(WasmOpcode opcode);
   // Check whether the given opcode always jumps, i.e. all instructions after
   // this one in the current block are dead. Returns false for |end|.
   static bool IsUnconditionalJump(WasmOpcode opcode);
@@ -603,7 +609,7 @@ struct WasmInitExpr {
     kI64Const,
     kF32Const,
     kF64Const,
-    kAnyRefConst,
+    kRefNullConst,
   } kind;
 
   union {

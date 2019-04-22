@@ -71,7 +71,7 @@ class TestPaintArtifact {
   TestPaintArtifact& Properties(const TransformPaintPropertyNode& transform,
                                 const ClipPaintPropertyNode& clip,
                                 const EffectPaintPropertyNode& effect) {
-    return Properties(PropertyTreeState(&transform, &clip, &effect));
+    return Properties(PropertyTreeState(transform, clip, effect));
   }
   TestPaintArtifact& Properties(const RefCountedPropertyTreeState& properties) {
     return Properties(properties.GetPropertyTreeState());
@@ -109,7 +109,7 @@ class TestPaintArtifact {
   // Sets fake bounds for the last paint chunk. Note that the bounds will be
   // overwritten when the PaintArtifact is constructed if the chunk has any
   // display items.
-  TestPaintArtifact& Bounds(const FloatRect&);
+  TestPaintArtifact& Bounds(const IntRect&);
 
   TestPaintArtifact& KnownToBeOpaque();
   TestPaintArtifact& Uncacheable();

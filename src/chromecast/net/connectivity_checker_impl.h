@@ -85,6 +85,7 @@ class ConnectivityCheckerImpl
   void CheckInternal();
 
   std::unique_ptr<GURL> connectivity_check_url_;
+  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
   net::URLRequestContext* url_request_context_;
   std::unique_ptr<net::URLRequest> url_request_;
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

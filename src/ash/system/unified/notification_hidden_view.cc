@@ -7,9 +7,12 @@
 #include "ash/public/cpp/ash_features.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/message_center/ash_message_center_lock_screen_controller.h"
 #include "ash/system/message_center/message_center_controller.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/sign_out_button.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/message_center/lock_screen/lock_screen_controller.h"
 #include "ui/message_center/message_center.h"
@@ -32,9 +35,6 @@ void ShowLockScreenNotificationSettings() {
 }  // namespace
 
 NotificationHiddenView::NotificationHiddenView() {
-  const bool lock_screen_notification_enabled =
-      features::IsLockScreenNotificationsEnabled();
-
   auto* label = new views::Label;
   label->SetEnabledColor(kUnifiedMenuTextColor);
   label->SetAutoColorReadabilityEnabled(false);
@@ -55,14 +55,16 @@ NotificationHiddenView::NotificationHiddenView() {
   container->AddChildView(label);
   layout->SetFlexForView(label, 1);
 
-  if (lock_screen_notification_enabled) {
-    auto* change_button = new RoundedLabelButton(
+  // Shows the "Change" button, unless the locks screen notification is
+  // prohibited by policy or flag.
+  if (AshMessageCenterLockScreenController::IsAllowed()) {
+    change_button_ = new RoundedLabelButton(
         this,
         l10n_util::GetStringUTF16(IDS_ASH_MESSAGE_CENTER_LOCKSCREEN_CHANGE));
-    change_button->SetTooltipText(l10n_util::GetStringUTF16(
+    change_button_->SetTooltipText(l10n_util::GetStringUTF16(
         IDS_ASH_MESSAGE_CENTER_LOCKSCREEN_CHANGE_TOOLTIP));
 
-    container->AddChildView(change_button);
+    container->AddChildView(change_button_);
   }
 
   SetBorder(
@@ -80,7 +82,7 @@ void NotificationHiddenView::ButtonPressed(views::Button* sender,
       ->lock_screen_controller()
       ->DismissLockScreenThenExecute(
           base::BindOnce(&ShowLockScreenNotificationSettings),
-          base::DoNothing());
+          base::DoNothing(), IDS_ASH_MESSAGE_CENTER_UNLOCK_TO_CHANGE_SETTING);
 }
 
 }  // namespace ash

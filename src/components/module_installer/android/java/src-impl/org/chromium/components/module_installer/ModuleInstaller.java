@@ -49,6 +49,17 @@ public class ModuleInstaller {
         updateCrashKeys();
     }
 
+    /**
+     * Needs to be called in attachBaseContext of the activities that want to have access to
+     * splits prior to application restart.
+     *
+     * For details, see:
+     * https://developer.android.com/reference/com/google/android/play/core/splitcompat/SplitCompat.html#install(android.content.Context)
+     */
+    public static void initActivity(Context context) {
+        SplitCompat.install(context);
+    }
+
     /** Writes fully installed and emulated modules to crash keys. */
     public static void updateCrashKeys() {
         Context context = ContextUtils.getApplicationContext();
@@ -108,6 +119,18 @@ public class ModuleInstaller {
             return;
         }
         getBackend().install(moduleName);
+    }
+
+    /**
+     * Asynchronously installs module in the background when on unmetered connection and charging.
+     * Install is best effort and may fail silently. Upon success, the module will only be available
+     * after Chrome restarts.
+     *
+     * @param moduleName Name of the module.
+     */
+    public static void installDeferred(String moduleName) {
+        ThreadUtils.assertOnUiThread();
+        getBackend().installDeferred(moduleName);
     }
 
     private static void onFinished(boolean success, List<String> moduleNames) {

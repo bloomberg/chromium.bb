@@ -29,7 +29,7 @@ class CORE_EXPORT PointerEvent final : public MouseEvent {
                const PointerEventInit*,
                TimeTicks platform_time_stamp);
 
-  int32_t pointerId() const { return pointer_id_; }
+  PointerId pointerId() const { return pointer_id_; }
   double width() const { return width_; }
   double height() const { return height_; }
   float pressure() const { return pressure_; }
@@ -40,7 +40,7 @@ class CORE_EXPORT PointerEvent final : public MouseEvent {
   const String& pointerType() const { return pointer_type_; }
   bool isPrimary() const { return is_primary_; }
 
-  short button() const override { return RawButton(); }
+  int16_t button() const override { return RawButton(); }
   bool IsMouseEvent() const override;
   bool IsPointerEvent() const override;
 
@@ -70,7 +70,7 @@ class CORE_EXPORT PointerEvent final : public MouseEvent {
   void Trace(blink::Visitor*) override;
 
  private:
-  int32_t pointer_id_;
+  PointerId pointer_id_;
   double width_;
   double height_;
   float pressure_;

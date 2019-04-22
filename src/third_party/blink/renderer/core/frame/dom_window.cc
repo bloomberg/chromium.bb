@@ -72,7 +72,7 @@ bool DOMWindow::IsWindowOrWorkerGlobalScope() const {
 
 Location* DOMWindow::location() const {
   if (!location_)
-    location_ = Location::Create(const_cast<DOMWindow*>(this));
+    location_ = MakeGarbageCollected<Location>(const_cast<DOMWindow*>(this));
   return location_.Get();
 }
 
@@ -115,7 +115,7 @@ DOMWindow* DOMWindow::top() const {
   return GetFrame()->Tree().Top().DomWindow();
 }
 
-void DOMWindow::postMessage(LocalDOMWindow* incumbent_window,
+void DOMWindow::postMessage(v8::Isolate* isolate,
                             const ScriptValue& message,
                             const String& target_origin,
                             Vector<ScriptValue>& transfer,
@@ -124,20 +124,16 @@ void DOMWindow::postMessage(LocalDOMWindow* incumbent_window,
   options->setTargetOrigin(target_origin);
   if (!transfer.IsEmpty())
     options->setTransfer(transfer);
-  postMessage(incumbent_window, message, options, exception_state);
+  postMessage(isolate, message, options, exception_state);
 }
 
-void DOMWindow::postMessage(LocalDOMWindow* incumbent_window,
+void DOMWindow::postMessage(v8::Isolate* isolate,
                             const ScriptValue& message,
                             const WindowPostMessageOptions* options,
                             ExceptionState& exception_state) {
-  UseCounter::Count(incumbent_window->GetFrame(),
+  LocalDOMWindow* incumbent_window = IncumbentDOMWindow(isolate);
+  UseCounter::Count(incumbent_window->document(),
                     WebFeature::kWindowPostMessage);
-
-  // Since remote windows do not have a v8::Context, we cannot use
-  // [CallWith=ScriptState], and there is no good way to get the v8::Isolate.
-  // As a compromise, ask the isolate to the WindowProxyManager.
-  v8::Isolate* isolate = window_proxy_manager_->GetIsolate();
 
   Transferables transferables;
   scoped_refptr<SerializedScriptValue> serialized_message =
@@ -164,7 +160,7 @@ bool DOMWindow::IsCurrentlyDisplayedInFrame() const {
   return GetFrame() && GetFrame()->GetPage();
 }
 
-bool DOMWindow::IsInsecureScriptAccess(LocalDOMWindow& calling_window,
+bool DOMWindow::IsInsecureScriptAccess(LocalDOMWindow& accessing_window,
                                        const KURL& url) {
   if (!url.ProtocolIsJavaScript())
     return false;
@@ -173,21 +169,21 @@ bool DOMWindow::IsInsecureScriptAccess(LocalDOMWindow& calling_window,
   // way we should allow the access.
   if (IsCurrentlyDisplayedInFrame()) {
     // FIXME: Is there some way to eliminate the need for a separate
-    // "callingWindow == this" check?
-    if (&calling_window == this)
+    // "accessing_window == this" check?
+    if (&accessing_window == this)
       return false;
 
     // FIXME: The name canAccess seems to be a roundabout way to ask "can
     // execute script".  Can we name the SecurityOrigin function better to make
     // this more clear?
-    if (calling_window.document()->GetSecurityOrigin()->CanAccess(
+    if (accessing_window.document()->GetSecurityOrigin()->CanAccess(
             GetFrame()->GetSecurityContext()->GetSecurityOrigin())) {
       return false;
     }
   }
 
-  calling_window.PrintErrorMessage(
-      CrossDomainAccessErrorMessage(&calling_window));
+  accessing_window.PrintErrorMessage(
+      CrossDomainAccessErrorMessage(&accessing_window));
   return true;
 }
 
@@ -198,16 +194,16 @@ bool DOMWindow::IsInsecureScriptAccess(LocalDOMWindow& calling_window,
 //
 // http://crbug.com/17325
 String DOMWindow::SanitizedCrossDomainAccessErrorMessage(
-    const LocalDOMWindow* calling_window) const {
-  if (!calling_window || !calling_window->document() || !GetFrame())
+    const LocalDOMWindow* accessing_window) const {
+  if (!accessing_window || !accessing_window->document() || !GetFrame())
     return String();
 
-  const KURL& calling_window_url = calling_window->document()->Url();
-  if (calling_window_url.IsNull())
+  const KURL& accessing_window_url = accessing_window->document()->Url();
+  if (accessing_window_url.IsNull())
     return String();
 
   const SecurityOrigin* active_origin =
-      calling_window->document()->GetSecurityOrigin();
+      accessing_window->document()->GetSecurityOrigin();
   String message = "Blocked a frame with origin \"" +
                    active_origin->ToString() +
                    "\" from accessing a cross-origin frame.";
@@ -219,18 +215,18 @@ String DOMWindow::SanitizedCrossDomainAccessErrorMessage(
 }
 
 String DOMWindow::CrossDomainAccessErrorMessage(
-    const LocalDOMWindow* calling_window) const {
-  if (!calling_window || !calling_window->document() || !GetFrame())
+    const LocalDOMWindow* accessing_window) const {
+  if (!accessing_window || !accessing_window->document() || !GetFrame())
     return String();
 
-  const KURL& calling_window_url = calling_window->document()->Url();
-  if (calling_window_url.IsNull())
+  const KURL& accessing_window_url = accessing_window->document()->Url();
+  if (accessing_window_url.IsNull())
     return String();
 
   // FIXME: This message, and other console messages, have extra newlines.
   // Should remove them.
   const SecurityOrigin* active_origin =
-      calling_window->document()->GetSecurityOrigin();
+      accessing_window->document()->GetSecurityOrigin();
   const SecurityOrigin* target_origin =
       GetFrame()->GetSecurityContext()->GetSecurityOrigin();
   // It's possible for a remote frame to be same origin with respect to a
@@ -246,26 +242,28 @@ String DOMWindow::CrossDomainAccessErrorMessage(
 
   // Sandbox errors: Use the origin of the frames' location, rather than their
   // actual origin (since we know that at least one will be "null").
-  KURL active_url = calling_window->document()->Url();
+  KURL active_url = accessing_window->document()->Url();
   // TODO(alexmos): RemoteFrames do not have a document, and their URLs
   // aren't replicated.  For now, construct the URL using the replicated
   // origin for RemoteFrames. If the target frame is remote and sandboxed,
   // there isn't anything else to show other than "null" for its origin.
-  KURL target_url = IsLocalDOMWindow()
-                        ? blink::ToLocalDOMWindow(this)->document()->Url()
+  auto* local_dom_window = DynamicTo<LocalDOMWindow>(this);
+  KURL target_url = local_dom_window
+                        ? local_dom_window->document()->Url()
                         : KURL(NullURL(), target_origin->ToString());
-  if (GetFrame()->GetSecurityContext()->IsSandboxed(kSandboxOrigin) ||
-      calling_window->document()->IsSandboxed(kSandboxOrigin)) {
+  if (GetFrame()->GetSecurityContext()->IsSandboxed(WebSandboxFlags::kOrigin) ||
+      accessing_window->document()->IsSandboxed(WebSandboxFlags::kOrigin)) {
     message = "Blocked a frame at \"" +
               SecurityOrigin::Create(active_url)->ToString() +
               "\" from accessing a frame at \"" +
               SecurityOrigin::Create(target_url)->ToString() + "\". ";
-    if (GetFrame()->GetSecurityContext()->IsSandboxed(kSandboxOrigin) &&
-        calling_window->document()->IsSandboxed(kSandboxOrigin))
+    if (GetFrame()->GetSecurityContext()->IsSandboxed(
+            WebSandboxFlags::kOrigin) &&
+        accessing_window->document()->IsSandboxed(WebSandboxFlags::kOrigin))
       return "Sandbox access violation: " + message +
              " Both frames are sandboxed and lack the \"allow-same-origin\" "
              "flag.";
-    if (GetFrame()->GetSecurityContext()->IsSandboxed(kSandboxOrigin))
+    if (GetFrame()->GetSecurityContext()->IsSandboxed(WebSandboxFlags::kOrigin))
       return "Sandbox access violation: " + message +
              " The frame being accessed is sandboxed and lacks the "
              "\"allow-same-origin\" flag.";
@@ -307,7 +305,14 @@ String DOMWindow::CrossDomainAccessErrorMessage(
   return message + "Protocols, domains, and ports must match.";
 }
 
-void DOMWindow::close(LocalDOMWindow* incumbent_window) {
+void DOMWindow::close(v8::Isolate* isolate) {
+  LocalDOMWindow* incumbent_window = IncumbentDOMWindow(isolate);
+  Close(incumbent_window);
+}
+
+void DOMWindow::Close(LocalDOMWindow* incumbent_window) {
+  DCHECK(incumbent_window);
+
   if (!GetFrame() || !GetFrame()->IsMainFrame())
     return;
 
@@ -315,16 +320,10 @@ void DOMWindow::close(LocalDOMWindow* incumbent_window) {
   if (!page)
     return;
 
-  Document* active_document = nullptr;
-  if (incumbent_window) {
-    DCHECK(IsMainThread());
-    active_document = incumbent_window->document();
-    if (!active_document)
-      return;
-
-    if (!active_document->GetFrame() ||
-        !active_document->GetFrame()->CanNavigate(*GetFrame()))
-      return;
+  Document* active_document = incumbent_window->document();
+  if (!(active_document && active_document->GetFrame() &&
+        active_document->GetFrame()->CanNavigate(*GetFrame()))) {
+    return;
   }
 
   Settings* settings = GetFrame()->GetSettings();
@@ -333,12 +332,11 @@ void DOMWindow::close(LocalDOMWindow* incumbent_window) {
 
   if (!page->OpenedByDOM() && GetFrame()->Client()->BackForwardLength() > 1 &&
       !allow_scripts_to_close_windows) {
-    if (active_document) {
-      active_document->domWindow()->GetFrameConsole()->AddMessage(
-          ConsoleMessage::Create(
-              kJSMessageSource, kWarningMessageLevel,
-              "Scripts may close only the windows that were opened by it."));
-    }
+    active_document->domWindow()->GetFrameConsole()->AddMessage(
+        ConsoleMessage::Create(
+            mojom::ConsoleMessageSource::kJavaScript,
+            mojom::ConsoleMessageLevel::kWarning,
+            "Scripts may close only the windows that were opened by it."));
     return;
   }
 
@@ -346,10 +344,10 @@ void DOMWindow::close(LocalDOMWindow* incumbent_window) {
     return;
 
   ExecutionContext* execution_context = nullptr;
-  if (IsLocalDOMWindow()) {
-    execution_context = blink::ToLocalDOMWindow(this)->GetExecutionContext();
+  if (auto* local_dom_window = DynamicTo<LocalDOMWindow>(this)) {
+    execution_context = local_dom_window->GetExecutionContext();
   }
-  probe::breakableLocation(execution_context, "DOMWindow.close");
+  probe::BreakableLocation(execution_context, "DOMWindow.close");
 
   page->CloseSoon();
 
@@ -360,7 +358,7 @@ void DOMWindow::close(LocalDOMWindow* incumbent_window) {
   window_is_closing_ = true;
 }
 
-void DOMWindow::focus(LocalDOMWindow* incumbent_window) {
+void DOMWindow::focus(v8::Isolate* isolate) {
   if (!GetFrame())
     return;
 
@@ -368,7 +366,14 @@ void DOMWindow::focus(LocalDOMWindow* incumbent_window) {
   if (!page)
     return;
 
-  DCHECK(incumbent_window);
+  // HTML standard doesn't require to check the incumbent realm, but Blink
+  // historically checks it for some reasons, maybe the same reason as |close|.
+  // (|close| checks whether the incumbent realm is eligible to close the window
+  // in order to prevent a (cross origin) window from abusing |close| to close
+  // pages randomly or with a malicious intent.)
+  // https://html.spec.whatwg.org/C/#dom-window-focus
+  // https://html.spec.whatwg.org/C/#focusing-steps
+  LocalDOMWindow* incumbent_window = IncumbentDOMWindow(isolate);
   ExecutionContext* incumbent_execution_context =
       incumbent_window->GetExecutionContext();
 
@@ -455,25 +460,26 @@ void DOMWindow::DoPostMessage(scoped_refptr<SerializedScriptValue> message,
 
   String source_origin = security_origin->ToString();
 
-  KURL target_url = IsLocalDOMWindow()
-                        ? blink::ToLocalDOMWindow(this)->document()->Url()
+  auto* local_dom_window = DynamicTo<LocalDOMWindow>(this);
+  KURL target_url = local_dom_window
+                        ? local_dom_window->document()->Url()
                         : KURL(NullURL(), GetFrame()
                                               ->GetSecurityContext()
                                               ->GetSecurityOrigin()
                                               ->ToString());
   if (MixedContentChecker::IsMixedContent(source_document->GetSecurityOrigin(),
                                           target_url)) {
-    UseCounter::Count(source->GetFrame(),
+    UseCounter::Count(source_document,
                       WebFeature::kPostMessageFromSecureToInsecure);
   } else if (MixedContentChecker::IsMixedContent(
                  GetFrame()->GetSecurityContext()->GetSecurityOrigin(),
                  source_document->Url())) {
-    UseCounter::Count(source->GetFrame(),
+    UseCounter::Count(source_document,
                       WebFeature::kPostMessageFromInsecureToSecure);
     if (MixedContentChecker::IsMixedContent(
             GetFrame()->Tree().Top().GetSecurityContext()->GetSecurityOrigin(),
             source_document->Url())) {
-      UseCounter::Count(source->GetFrame(),
+      UseCounter::Count(source_document,
                         WebFeature::kPostMessageFromInsecureToSecureToplevel);
     }
   }
@@ -482,16 +488,25 @@ void DOMWindow::DoPostMessage(scoped_refptr<SerializedScriptValue> message,
           target_url, RedirectStatus::kNoRedirect,
           SecurityViolationReportingPolicy::kSuppressReporting)) {
     UseCounter::Count(
-        source->GetFrame(),
+        source_document,
         WebFeature::kPostMessageOutgoingWouldBeBlockedByConnectSrc);
   }
   UserActivation* user_activation = nullptr;
   if (options->includeUserActivation())
     user_activation = UserActivation::CreateSnapshot(source);
 
-  MessageEvent* event =
-      MessageEvent::Create(std::move(channels), std::move(message),
-                           source_origin, String(), source, user_activation);
+  MessageEvent* event = MessageEvent::Create(
+      std::move(channels), std::move(message), source_origin, String(), source,
+      user_activation, options->transferUserActivation());
+
+  // Transfer user activation state in the source's renderer when
+  // |transferUserActivation| is true.
+  LocalFrame* source_frame = source->GetFrame();
+  if (RuntimeEnabledFeatures::UserActivationPostMessageTransferEnabled() &&
+      options->transferUserActivation() &&
+      LocalFrame::HasTransientUserActivation(source_frame)) {
+    GetFrame()->TransferActivationFrom(source_frame);
+  }
 
   SchedulePostMessage(event, std::move(target), source_document);
 }

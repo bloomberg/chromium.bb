@@ -85,11 +85,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDiscovery
       FidoCableHandshakeHandler* handshake_handler,
       base::Optional<std::vector<uint8_t>> handshake_response);
 
-  const CableDiscoveryData* GetFoundCableDiscoveryData(
+  const CableDiscoveryData* GetCableDiscoveryData(
       const BluetoothDevice* device) const;
-  const CableDiscoveryData* GetFoundCableDiscoveryDataFromServiceData(
+  const CableDiscoveryData* GetCableDiscoveryDataFromServiceData(
       const BluetoothDevice* device) const;
-  const CableDiscoveryData* GetFoundCableDiscoveryDataFromServiceUUIDs(
+  const CableDiscoveryData* GetCableDiscoveryDataFromServiceUUIDs(
       const BluetoothDevice* device) const;
 
   std::vector<CableDiscoveryData> discovery_data_;

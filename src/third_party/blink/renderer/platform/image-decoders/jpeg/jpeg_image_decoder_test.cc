@@ -51,7 +51,7 @@ static const size_t kLargeEnoughSize = 1000 * 1000;
 
 namespace {
 
-std::unique_ptr<ImageDecoder> CreateJPEGDecoder(size_t max_decoded_bytes) {
+std::unique_ptr<JPEGImageDecoder> CreateJPEGDecoder(size_t max_decoded_bytes) {
   return std::make_unique<JPEGImageDecoder>(
       ImageDecoder::kAlphaNotPremultiplied, ColorBehavior::TransformToSRGB(),
       max_decoded_bytes);
@@ -89,8 +89,10 @@ void ReadYUV(size_t max_decoded_bytes,
   scoped_refptr<SharedBuffer> data = ReadFile(image_file_path);
   ASSERT_TRUE(data);
 
-  std::unique_ptr<ImageDecoder> decoder = CreateJPEGDecoder(max_decoded_bytes);
+  std::unique_ptr<JPEGImageDecoder> decoder =
+      CreateJPEGDecoder(max_decoded_bytes);
   decoder->SetData(data.get(), true);
+  decoder->SetDecodeToYuvForTesting(true);
 
   // Setting a dummy ImagePlanes object signals to the decoder that we want to
   // do YUV decoding.
@@ -134,7 +136,8 @@ void ReadYUV(size_t max_decoded_bytes,
       std::make_unique<ImagePlanes>(planes, row_bytes);
   decoder->SetImagePlanes(std::move(image_planes));
 
-  ASSERT_TRUE(decoder->DecodeToYUV());
+  decoder->DecodeToYUV();
+  ASSERT_TRUE(!decoder->Failed());
 }
 
 // Tests failure on a too big image.
@@ -262,8 +265,9 @@ TEST(JPEGImageDecoderTest, yuv) {
   scoped_refptr<SharedBuffer> data = ReadFile(jpeg_file);
   ASSERT_TRUE(data);
 
-  std::unique_ptr<ImageDecoder> decoder = CreateJPEGDecoder(230 * 230 * 4);
+  std::unique_ptr<JPEGImageDecoder> decoder = CreateJPEGDecoder(230 * 230 * 4);
   decoder->SetData(data.get(), true);
+  decoder->SetDecodeToYuvForTesting(true);
 
   std::unique_ptr<ImagePlanes> image_planes = std::make_unique<ImagePlanes>();
   decoder->SetImagePlanes(std::move(image_planes));
@@ -535,8 +539,8 @@ const ColorSpaceUMATest::ParamType kColorSpaceUMATestParams[] = {
     // any samples.
     {"cs-uma-two-channels-jfif-marker.jpg", false}};
 
-INSTANTIATE_TEST_CASE_P(JPEGImageDecoderTest,
-                        ColorSpaceUMATest,
-                        ::testing::ValuesIn(kColorSpaceUMATestParams));
+INSTANTIATE_TEST_SUITE_P(JPEGImageDecoderTest,
+                         ColorSpaceUMATest,
+                         ::testing::ValuesIn(kColorSpaceUMATestParams));
 
 }  // namespace blink

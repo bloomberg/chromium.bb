@@ -39,6 +39,8 @@ namespace {
 
 using favicon_base::GoogleFaviconServerRequestStatus;
 
+const char kImageFetcherUmaClient[] = "LargeIconService";
+
 // This feature is only used for accessing field trial parameters, not for
 // switching on/off the code.
 const base::Feature kLargeIconServiceFetchingFeature{
@@ -341,9 +343,9 @@ LargeIconWorker::LargeIconWorker(
 LargeIconWorker::~LargeIconWorker() {}
 
 void LargeIconWorker::OnIconLookupComplete(
-    const GURL& page_url,
+    const GURL& page_url_for_uma,
     const favicon_base::FaviconRawBitmapResult& db_result) {
-  LogSuspiciousURLMismatches(page_url, db_result);
+  LogSuspiciousURLMismatches(page_url_for_uma, db_result);
   tracker_->PostTaskAndReply(
       background_task_runner_.get(), FROM_HERE,
       base::BindOnce(&ProcessIconOnBackgroundThread, db_result,
@@ -378,11 +380,11 @@ void LargeIconWorker::OnIconProcessingComplete() {
 }
 
 void LargeIconWorker::LogSuspiciousURLMismatches(
-    const GURL& page_url,
+    const GURL& page_url_for_uma,
     const favicon_base::FaviconRawBitmapResult& db_result) {
   const int page_organization_id =
       DomainToOrganizationIdMap::GetInstance()->GetCanonicalOrganizationId(
-          page_url);
+          page_url_for_uma);
 
   // Ignore trivial cases.
   if (!db_result.is_valid() || page_organization_id == kInvalidOrganizationId)
@@ -411,14 +413,15 @@ void OnSetOnDemandFaviconComplete(
 void OnFetchIconFromGoogleServerComplete(
     FaviconService* favicon_service,
     const GURL& page_url,
+    const GURL& server_request_url,
     favicon_base::IconType icon_type,
     const favicon_base::GoogleFaviconServerCallback& callback,
-    const std::string& server_request_url,
     const gfx::Image& image,
     const image_fetcher::RequestMetadata& metadata) {
   if (image.IsEmpty()) {
-    DLOG(WARNING) << "large icon server fetch empty " << server_request_url;
-    favicon_service->UnableToDownloadFavicon(GURL(server_request_url));
+    DLOG(WARNING) << "large icon server fetch empty "
+                  << server_request_url.spec();
+    favicon_service->UnableToDownloadFavicon(server_request_url);
     callback.Run(
         metadata.http_response_code ==
                 image_fetcher::RequestMetadata::RESPONSE_CODE_INVALID
@@ -434,7 +437,7 @@ void OnFetchIconFromGoogleServerComplete(
   // Otherwise, use the request URL as fallback.
   std::string original_icon_url = metadata.content_location_header;
   if (original_icon_url.empty()) {
-    original_icon_url = server_request_url;
+    original_icon_url = server_request_url.spec();
   }
 
   // Write fetched icons to FaviconService's cache, but only if no icon was
@@ -466,7 +469,7 @@ LargeIconServiceImpl::LargeIconServiceImpl(
 LargeIconServiceImpl::~LargeIconServiceImpl() {}
 
 base::CancelableTaskTracker::TaskId
-LargeIconServiceImpl::GetLargeIconOrFallbackStyle(
+LargeIconServiceImpl::GetLargeIconRawBitmapOrFallbackStyleForPageUrl(
     const GURL& page_url,
     int min_source_size_in_pixel,
     int desired_size_in_pixel,
@@ -478,7 +481,7 @@ LargeIconServiceImpl::GetLargeIconOrFallbackStyle(
 }
 
 base::CancelableTaskTracker::TaskId
-LargeIconServiceImpl::GetLargeIconImageOrFallbackStyle(
+LargeIconServiceImpl::GetLargeIconImageOrFallbackStyleForPageUrl(
     const GURL& page_url,
     int min_source_size_in_pixel,
     int desired_size_in_pixel,
@@ -487,6 +490,29 @@ LargeIconServiceImpl::GetLargeIconImageOrFallbackStyle(
   return GetLargeIconOrFallbackStyleImpl(
       page_url, min_source_size_in_pixel, desired_size_in_pixel,
       favicon_base::LargeIconCallback(), image_callback, tracker);
+}
+
+base::CancelableTaskTracker::TaskId
+LargeIconServiceImpl::GetLargeIconRawBitmapOrFallbackStyleForIconUrl(
+    const GURL& icon_url,
+    int min_source_size_in_pixel,
+    int desired_size_in_pixel,
+    const favicon_base::LargeIconCallback& raw_bitmap_callback,
+    base::CancelableTaskTracker* tracker) {
+  DCHECK_LE(1, min_source_size_in_pixel);
+  DCHECK_LE(0, desired_size_in_pixel);
+
+  scoped_refptr<LargeIconWorker> worker = base::MakeRefCounted<LargeIconWorker>(
+      min_source_size_in_pixel, desired_size_in_pixel, raw_bitmap_callback,
+      favicon_base::LargeIconImageCallback(), tracker);
+
+  int max_size_in_pixel =
+      std::max(desired_size_in_pixel, min_source_size_in_pixel);
+  return favicon_service_->GetRawFavicon(
+      icon_url, favicon_base::IconType::kFavicon, max_size_in_pixel,
+      base::BindRepeating(&LargeIconWorker::OnIconLookupComplete, worker,
+                          /*page_url_for_uma=*/GURL()),
+      tracker);
 }
 
 void LargeIconServiceImpl::
@@ -607,13 +633,13 @@ void LargeIconServiceImpl::OnCanSetOnDemandFaviconComplete(
     return;
   }
 
-  image_fetcher_->SetDataUseServiceName(
-      data_use_measurement::DataUseUserData::LARGE_ICON_SERVICE);
+  image_fetcher::ImageFetcherParams params(traffic_annotation,
+                                           kImageFetcherUmaClient);
   image_fetcher_->FetchImage(
-      server_request_url.spec(), server_request_url,
+      server_request_url,
       base::BindOnce(&OnFetchIconFromGoogleServerComplete, favicon_service_,
-                     page_url, icon_type, callback),
-      traffic_annotation);
+                     page_url, server_request_url, icon_type, callback),
+      std::move(params));
 }
 
 }  // namespace favicon

@@ -5,12 +5,11 @@
 #ifndef ASH_WM_MRU_WINDOW_TRACKER_H_
 #define ASH_WM_MRU_WINDOW_TRACKER_H_
 
-#include <list>
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/session/session_observer.h"
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "ui/aura/window_observer.h"
 #include "ui/wm/public/activation_change_observer.h"
 
@@ -19,10 +18,15 @@ namespace ash {
 // Maintains a most recently used list of windows. This is used for window
 // cycling using Alt+Tab and overview mode.
 class ASH_EXPORT MruWindowTracker : public ::wm::ActivationChangeObserver,
-                                    public aura::WindowObserver,
-                                    public SessionObserver {
+                                    public aura::WindowObserver {
  public:
   using WindowList = std::vector<aura::Window*>;
+
+  class Observer : public base::CheckedObserver {
+   public:
+    // Invoked when a tracked window is destroyed,
+    virtual void OnWindowUntracked(aura::Window* untracked_window) {}
+  };
 
   MruWindowTracker();
   ~MruWindowTracker() override;
@@ -47,8 +51,9 @@ class ASH_EXPORT MruWindowTracker : public ::wm::ActivationChangeObserver,
   // windows to the front of the MRU window list.
   void SetIgnoreActivations(bool ignore);
 
-  // SessionObserver
-  void OnUserSessionAdded(const AccountId& account_id) override;
+  // Add/Remove observers.
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
  private:
   // Updates the mru_windows_ list to insert/move |active_window| at/to the
@@ -64,11 +69,12 @@ class ASH_EXPORT MruWindowTracker : public ::wm::ActivationChangeObserver,
   void OnWindowDestroyed(aura::Window* window) override;
 
   // List of windows that have been activated in containers that we cycle
-  // through, sorted by most recently used.
-  std::list<aura::Window*> mru_windows_;
+  // through, sorted such that the most recently used window comes last.
+  std::vector<aura::Window*> mru_windows_;
+
+  base::ObserverList<Observer, true> observers_;
 
   bool ignore_window_activations_ = false;
-  bool user_session_focus_restored_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(MruWindowTracker);
 };

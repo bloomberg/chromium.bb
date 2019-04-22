@@ -9,14 +9,14 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/scoped_task_environment.h"
+#include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/components/tether/fake_disconnect_tethering_request_sender.h"
 #include "chromeos/components/tether/fake_tether_host_fetcher.h"
 #include "chromeos/components/tether/tether_component_impl.h"
+#include "chromeos/services/device_sync/fake_remote_device_provider.h"
 #include "chromeos/services/device_sync/public/cpp/fake_device_sync_client.h"
+#include "chromeos/services/device_sync/remote_device_provider_impl.h"
 #include "chromeos/services/secure_channel/public/cpp/client/fake_secure_channel_client.h"
-#include "components/cryptauth/fake_remote_device_provider.h"
-#include "components/cryptauth/remote_device_provider_impl.h"
-#include "components/cryptauth/remote_device_test_util.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,17 +32,17 @@ namespace tether {
 namespace {
 
 class FakeRemoteDeviceProviderFactory
-    : public cryptauth::RemoteDeviceProviderImpl::Factory {
+    : public device_sync::RemoteDeviceProviderImpl::Factory {
  public:
   FakeRemoteDeviceProviderFactory() = default;
   ~FakeRemoteDeviceProviderFactory() override = default;
 
-  // cryptauth::RemoteDeviceProviderImpl::Factory:
-  std::unique_ptr<cryptauth::RemoteDeviceProvider> BuildInstance(
-      cryptauth::CryptAuthDeviceManager* device_manager,
+  // device_sync::RemoteDeviceProviderImpl::Factory:
+  std::unique_ptr<device_sync::RemoteDeviceProvider> BuildInstance(
+      device_sync::CryptAuthDeviceManager* device_manager,
       const std::string& user_id,
       const std::string& user_private_key) override {
-    return std::make_unique<cryptauth::FakeRemoteDeviceProvider>();
+    return std::make_unique<device_sync::FakeRemoteDeviceProvider>();
   }
 };
 
@@ -51,14 +51,14 @@ class FakeRemoteDeviceProviderFactory
 class AsynchronousShutdownObjectContainerImplTest : public testing::Test {
  protected:
   AsynchronousShutdownObjectContainerImplTest()
-      : test_device_(cryptauth::CreateRemoteDeviceRefListForTest(1u)[0]) {}
+      : test_device_(multidevice::CreateRemoteDeviceRefListForTest(1u)[0]) {}
 
   void SetUp() override {
     was_shutdown_callback_invoked_ = false;
 
     fake_remote_device_provider_factory_ =
         base::WrapUnique(new FakeRemoteDeviceProviderFactory());
-    cryptauth::RemoteDeviceProviderImpl::Factory::SetInstanceForTesting(
+    device_sync::RemoteDeviceProviderImpl::Factory::SetInstanceForTesting(
         fake_remote_device_provider_factory_.get());
 
     fake_device_sync_client_ =
@@ -97,8 +97,8 @@ class AsynchronousShutdownObjectContainerImplTest : public testing::Test {
 
   void OnShutdownComplete() { was_shutdown_callback_invoked_ = true; }
 
-  const base::test::ScopedTaskEnvironment scoped_task_environment_;
-  const cryptauth::RemoteDeviceRef test_device_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  const multidevice::RemoteDeviceRef test_device_;
 
   std::unique_ptr<device_sync::FakeDeviceSyncClient> fake_device_sync_client_;
   std::unique_ptr<secure_channel::FakeSecureChannelClient>

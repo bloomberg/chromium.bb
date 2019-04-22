@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/chrome_cleaner/interfaces/string16_embedded_nulls.mojom.h"
 #include "chrome/chrome_cleaner/interfaces/test_string16_embedded_nulls.mojom.h"

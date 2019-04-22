@@ -32,30 +32,7 @@ CFWL_ScrollBar::CFWL_ScrollBar(
     std::unique_ptr<CFWL_WidgetProperties> properties,
     CFWL_Widget* pOuter)
     : CFWL_Widget(app, std::move(properties), pOuter),
-      m_pTimerInfo(nullptr),
-      m_fRangeMin(0),
-      m_fRangeMax(-1),
-      m_fPageSize(0),
-      m_fStepSize(0),
-      m_fPos(0),
-      m_fTrackPos(0),
-      m_iMinButtonState(CFWL_PartState_Normal),
-      m_iMaxButtonState(CFWL_PartState_Normal),
-      m_iThumbButtonState(CFWL_PartState_Normal),
-      m_iMinTrackState(CFWL_PartState_Normal),
-      m_iMaxTrackState(CFWL_PartState_Normal),
-      m_fLastTrackPos(0),
-      m_iMouseWheel(0),
-      m_bMouseDown(false),
-      m_fButtonLen(0),
-      m_bMinSize(false),
       m_Timer(this) {
-  m_rtClient.Reset();
-  m_rtThumb.Reset();
-  m_rtMinBtn.Reset();
-  m_rtMaxBtn.Reset();
-  m_rtMinTrack.Reset();
-  m_rtMaxTrack.Reset();
 }
 
 CFWL_ScrollBar::~CFWL_ScrollBar() {}
@@ -116,7 +93,7 @@ void CFWL_ScrollBar::DrawTrack(CXFA_Graphics* pGraphics,
   param.m_pGraphics = pGraphics;
   param.m_matrix.Concat(*pMatrix);
   param.m_rtPart = bLower ? m_rtMinTrack : m_rtMaxTrack;
-  pTheme->DrawBackground(&param);
+  pTheme->DrawBackground(param);
 }
 
 void CFWL_ScrollBar::DrawArrowBtn(CXFA_Graphics* pGraphics,
@@ -133,7 +110,7 @@ void CFWL_ScrollBar::DrawArrowBtn(CXFA_Graphics* pGraphics,
   param.m_matrix.Concat(*pMatrix);
   param.m_rtPart = bMinBtn ? m_rtMinBtn : m_rtMaxBtn;
   if (param.m_rtPart.height > 0 && param.m_rtPart.width > 0)
-    pTheme->DrawBackground(&param);
+    pTheme->DrawBackground(param);
 }
 
 void CFWL_ScrollBar::DrawThumb(CXFA_Graphics* pGraphics,
@@ -148,7 +125,7 @@ void CFWL_ScrollBar::DrawThumb(CXFA_Graphics* pGraphics,
   param.m_pGraphics = pGraphics;
   param.m_matrix.Concat(*pMatrix);
   param.m_rtPart = m_rtThumb;
-  pTheme->DrawBackground(&param);
+  pTheme->DrawBackground(param);
 }
 
 void CFWL_ScrollBar::Layout() {

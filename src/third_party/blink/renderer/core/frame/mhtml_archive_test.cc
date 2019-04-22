@@ -36,7 +36,7 @@
 #include "third_party/blink/renderer/platform/date_components.h"
 #include "third_party/blink/renderer/platform/mhtml/mhtml_archive.h"
 #include "third_party/blink/renderer/platform/mhtml/mhtml_parser.h"
-#include "third_party/blink/renderer/platform/serialized_resource.h"
+#include "third_party/blink/renderer/platform/mhtml/serialized_resource.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
@@ -45,8 +45,8 @@
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
+using blink::mojom::MHTMLLoadResult;
 using blink::url_test_helpers::ToKURL;
-using LoadResult = blink::MHTMLArchive::LoadResult;
 
 namespace blink {
 namespace test {
@@ -184,20 +184,19 @@ class MHTMLArchiveTest : public testing::Test {
 
   void CheckLoadResult(const KURL url,
                        scoped_refptr<const SharedBuffer> data,
-                       LoadResult expected_result) {
+                       MHTMLLoadResult expected_result) {
     // Set up histogram testing (takes snapshot of histogram data).
     base::HistogramTester histogram_tester;
 
     // Attempt loading the archive and check the returned pointer.
     MHTMLArchive* archive = MHTMLArchive::Create(url, data);
-    if (expected_result == LoadResult::kSuccess)
-      EXPECT_NE(nullptr, archive);
-    else
-      EXPECT_EQ(nullptr, archive);
+    ASSERT_TRUE(archive);
+
+    EXPECT_EQ(archive->LoadResult(), expected_result);
 
     // Check that the correct count, and only the correct count, increased.
-    histogram_tester.ExpectUniqueSample(MHTMLArchive::kLoadResultUmaName,
-                                        expected_result, 1);
+    histogram_tester.ExpectUniqueSample(
+        "PageSerialization.MhtmlLoading.LoadResult", expected_result, 1);
   }
 
  private:
@@ -356,26 +355,26 @@ TEST_F(MHTMLArchiveTest, MHTMLFromScheme) {
 
   scoped_refptr<SharedBuffer> data =
       SharedBuffer::Create(mhtml_data().data(), mhtml_data().size());
-  KURL http_url = ToKURL("http://www.example.com");
-  KURL content_url = ToKURL("content://foo");
-  KURL file_url = ToKURL("file://foo");
-  KURL special_scheme_url = ToKURL("fooscheme://bar");
 
   // MHTMLArchives can only be initialized from local schemes, http/https
   // schemes, and content scheme(Android specific).
-  CheckLoadResult(http_url, data.get(), LoadResult::kSuccess);
+  CheckLoadResult(ToKURL("http://www.example.com"), data.get(),
+                  MHTMLLoadResult::kSuccess);
 
 #if defined(OS_ANDROID)
-  CheckLoadResult(content_url, data.get(), LoadResult::kSuccess);
+  CheckLoadResult(ToKURL("content://foo"), data.get(),
+                  MHTMLLoadResult::kSuccess);
 #else
-  CheckLoadResult(content_url, data.get(), LoadResult::kUrlSchemeNotAllowed);
+  CheckLoadResult(ToKURL("content://foo"), data.get(),
+                  MHTMLLoadResult::kUrlSchemeNotAllowed);
 #endif
-  CheckLoadResult(file_url, data.get(), LoadResult::kSuccess);
-  CheckLoadResult(special_scheme_url, data.get(),
-                  LoadResult::kUrlSchemeNotAllowed);
+  CheckLoadResult(ToKURL("file://foo"), data.get(), MHTMLLoadResult::kSuccess);
+  CheckLoadResult(ToKURL("fooscheme://bar"), data.get(),
+                  MHTMLLoadResult::kUrlSchemeNotAllowed);
 
   SchemeRegistry::RegisterURLSchemeAsLocal("fooscheme");
-  CheckLoadResult(special_scheme_url, data.get(), LoadResult::kSuccess);
+  CheckLoadResult(ToKURL("fooscheme://bar"), data.get(),
+                  MHTMLLoadResult::kSuccess);
 }
 
 TEST_F(MHTMLArchiveTest, MHTMLDate) {
@@ -402,13 +401,13 @@ TEST_F(MHTMLArchiveTest, MHTMLDate) {
 TEST_F(MHTMLArchiveTest, EmptyArchive) {
   // Test failure to load when |data| is null.
   KURL http_url = ToKURL("http://www.example.com");
-  CheckLoadResult(http_url, nullptr, LoadResult::kEmptyFile);
+  CheckLoadResult(http_url, nullptr, MHTMLLoadResult::kEmptyFile);
 
   // Test failure to load when |data| is non-null but empty.
   const char* buf = "";
   scoped_refptr<SharedBuffer> data =
       SharedBuffer::Create(buf, static_cast<size_t>(0u));
-  CheckLoadResult(http_url, data.get(), LoadResult::kEmptyFile);
+  CheckLoadResult(http_url, data.get(), MHTMLLoadResult::kEmptyFile);
 }
 
 TEST_F(MHTMLArchiveTest, NoMainResource) {
@@ -424,7 +423,7 @@ TEST_F(MHTMLArchiveTest, NoMainResource) {
       SharedBuffer::Create(mhtml_data().data(), mhtml_data().size());
   KURL http_url = ToKURL("http://www.example.com");
 
-  CheckLoadResult(http_url, data.get(), LoadResult::kMissingMainResource);
+  CheckLoadResult(http_url, data.get(), MHTMLLoadResult::kMissingMainResource);
 }
 
 TEST_F(MHTMLArchiveTest, InvalidMHTML) {
@@ -437,7 +436,7 @@ TEST_F(MHTMLArchiveTest, InvalidMHTML) {
   scoped_refptr<SharedBuffer> data =
       SharedBuffer::Create(mhtml_data().data(), mhtml_data().size());
 
-  CheckLoadResult(ToKURL(kURL), data.get(), LoadResult::kInvalidArchive);
+  CheckLoadResult(ToKURL(kURL), data.get(), MHTMLLoadResult::kInvalidArchive);
 }
 
 }  // namespace test

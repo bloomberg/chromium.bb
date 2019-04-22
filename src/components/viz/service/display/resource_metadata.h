@@ -5,12 +5,13 @@
 #ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_RESOURCE_METADATA_H_
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_RESOURCE_METADATA_H_
 
+#include "GrTypes.h"
+#include "components/viz/common/resources/resource_format.h"
+#include "components/viz/common/resources/resource_id.h"
 #include "components/viz/service/viz_service_export.h"
-#include "gpu/command_buffer/common/mailbox.h"
+#include "gpu/command_buffer/common/mailbox_holder.h"
 #include "gpu/command_buffer/common/sync_token.h"
-#include "third_party/skia/include/core/SkColorSpace.h"
-#include "third_party/skia/include/gpu/GrBackendSurface.h"
-#include "third_party/skia/include/gpu/GrTypes.h"
+#include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace viz {
@@ -19,40 +20,30 @@ namespace viz {
 // Used to construct a promise SkImage for a ResourceId.
 struct VIZ_SERVICE_EXPORT ResourceMetadata {
   ResourceMetadata();
-  ResourceMetadata(ResourceMetadata&& other);
+  ResourceMetadata(const ResourceMetadata& other);
   ~ResourceMetadata();
-  ResourceMetadata& operator=(ResourceMetadata&& other);
+  ResourceMetadata& operator=(const ResourceMetadata& other);
 
-  // A mailbox for the resource texture.
-  gpu::Mailbox mailbox;
+  // Resource Id.
+  ResourceId resource_id = kInvalidResourceId;
 
-  // The backend format for the resource texture. It includes sized texture
-  // format and texture target. Sometimes backend_format differs from
-  // driver_backend_format when we emulate support (e.g. BGRA8 actually
-  // implemented as RGBA8).
-  GrBackendFormat backend_format;
-  GrBackendFormat driver_backend_format;
+  // A mailbox holder for the resource texture.
+  gpu::MailboxHolder mailbox_holder;
 
   // The resource size.
   gfx::Size size;
 
-  // the mipmap of the resource texture.
-  GrMipMapped mip_mapped = GrMipMapped::kNo;
+  // ResourceFormat from the resource texture.
+  ResourceFormat resource_format = RGBA_8888;
 
-  // The origin type for the resource texture.
-  GrSurfaceOrigin origin = kTopLeft_GrSurfaceOrigin;
+  // The color space for the resource texture.
+  gfx::ColorSpace color_space;
 
-  // The color type for creating SkImage from the resource texture.
-  SkColorType color_type = kUnknown_SkColorType;
+  // Whether resource is premultiplied.
+  SkAlphaType alpha_type;
 
-  // The alpha type for the resource texture.
-  SkAlphaType alpha_type = kUnknown_SkAlphaType;
-
-  // The color space for the resource texture. It could be null.
-  sk_sp<SkColorSpace> color_space;
-
-  // The sync token for the resource texture.
-  gpu::SyncToken sync_token;
+  // If the SkImage should use top-left or bottom-left for (0,0) uv
+  GrSurfaceOrigin origin;
 };
 
 }  // namespace viz

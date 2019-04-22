@@ -69,6 +69,10 @@ class RLZTrackerDelegate {
   // once.
   virtual void SetHomepageSearchCallback(const base::Closure& callback) = 0;
 
+  // Returns true if the existing access point RLZ strings in the data file
+  // should be updated.
+  virtual bool ShouldUpdateExistingAccessPointRlz() = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(RLZTrackerDelegate);
 };

@@ -14,6 +14,7 @@
 #include <string>
 
 #include "absl/memory/memory.h"
+#include "rtc_base/checks.h"
 #include "rtc_base/flags.h"
 #include "rtc_base/logging.h"
 #include "rtc_base/thread.h"
@@ -22,11 +23,11 @@
 #include "test/field_trial.h"
 #include "test/gmock.h"
 #include "test/gtest.h"
-#include "test/testsupport/fileutils.h"
+#include "test/testsupport/file_utils.h"
 #include "test/testsupport/perf_test.h"
 
 #if defined(WEBRTC_WIN)
-#include "rtc_base/win32socketinit.h"
+#include "rtc_base/win32_socket_init.h"
 #endif
 
 #if defined(WEBRTC_IOS)
@@ -64,6 +65,7 @@ WEBRTC_DEFINE_string(
 #endif
 
 WEBRTC_DEFINE_bool(logs, false, "print logs to stderr");
+WEBRTC_DEFINE_bool(verbose, false, "verbose logs to stderr");
 
 WEBRTC_DEFINE_string(
     force_fieldtrials,
@@ -85,7 +87,6 @@ class TestMainImpl : public TestMain {
 
     // Default to LS_INFO, even for release builds to provide better test
     // logging.
-    // TODO(pbos): Consider adding a command-line override.
     if (rtc::LogMessage::GetLogToDebug() > rtc::LS_INFO)
       rtc::LogMessage::LogToDebug(rtc::LS_INFO);
 
@@ -96,6 +97,11 @@ class TestMainImpl : public TestMain {
       rtc::FlagList::Print(nullptr, false);
       return 0;
     }
+
+    if (FLAG_verbose)
+      rtc::LogMessage::LogToDebug(rtc::LS_VERBOSE);
+
+    rtc::LogMessage::SetLogToStderr(FLAG_logs || FLAG_verbose);
 
     // TODO(bugs.webrtc.org/9792): we need to reference something from
     // fileutils.h so that our downstream hack where we replace fileutils.cc
@@ -113,8 +119,6 @@ class TestMainImpl : public TestMain {
 #if defined(WEBRTC_WIN)
     winsock_init_ = absl::make_unique<rtc::WinsockInitializer>();
 #endif
-
-    rtc::LogMessage::SetLogToStderr(FLAG_logs);
 
     // Ensure that main thread gets wrapped as an rtc::Thread.
     // TODO(bugs.webrt.org/9714): It might be better to avoid wrapping the main

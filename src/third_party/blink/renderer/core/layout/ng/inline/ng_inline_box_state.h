@@ -15,7 +15,6 @@
 
 namespace blink {
 
-class LayoutObject;
 class NGInlineItem;
 struct NGInlineItemResult;
 class ShapeResultView;
@@ -117,7 +116,7 @@ class CORE_EXPORT NGInlineLayoutStateStack {
 
   // Initialize the box state stack for a new line.
   // @return The initial box state for the line.
-  NGInlineBoxState* OnBeginPlaceItems(const ComputedStyle*, FontBaseline, bool);
+  NGInlineBoxState* OnBeginPlaceItems(const ComputedStyle&, FontBaseline, bool);
 
   // Push a box state stack.
   NGInlineBoxState* OnOpenTag(const NGInlineItem&,
@@ -134,8 +133,6 @@ class CORE_EXPORT NGInlineLayoutStateStack {
 
   // Compute all the pending positioning at the end of a line.
   void OnEndPlaceItems(NGLineBoxFragmentBuilder::ChildList*, FontBaseline);
-
-  LayoutObject* ContainingLayoutObjectForAbsolutePositionObjects() const;
 
   bool HasBoxFragments() const { return !box_data_list_.IsEmpty(); }
 
@@ -239,7 +236,7 @@ class CORE_EXPORT NGInlineLayoutStateStack {
 
     void UpdateFragmentEdges(Vector<BoxData, 4>& list);
 
-    scoped_refptr<NGLayoutResult> CreateBoxFragment(
+    scoped_refptr<const NGLayoutResult> CreateBoxFragment(
         NGLineBoxFragmentBuilder::ChildList*);
   };
 

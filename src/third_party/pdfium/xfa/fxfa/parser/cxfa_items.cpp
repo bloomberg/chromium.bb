@@ -6,7 +6,7 @@
 
 #include "xfa/fxfa/parser/cxfa_items.h"
 
-#include "fxjs/xfa/cjx_items.h"
+#include "fxjs/xfa/cjx_node.h"
 #include "third_party/base/ptr_util.h"
 
 namespace {
@@ -17,12 +17,10 @@ const CXFA_Node::AttributeData kItemsAttributeData[] = {
     {XFA_Attribute::Ref, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Use, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Presence, XFA_AttributeType::Enum,
-     (void*)XFA_AttributeEnum::Visible},
+     (void*)XFA_AttributeValue::Visible},
     {XFA_Attribute::Save, XFA_AttributeType::Boolean, (void*)0},
     {XFA_Attribute::Usehref, XFA_AttributeType::CData, nullptr},
-    {XFA_Attribute::Unknown, XFA_AttributeType::Integer, nullptr}};
-
-constexpr wchar_t kItemsName[] = L"items";
+};
 
 }  // namespace
 
@@ -32,9 +30,8 @@ CXFA_Items::CXFA_Items(CXFA_Document* doc, XFA_PacketType packet)
                 (XFA_XDPPACKET_Template | XFA_XDPPACKET_Form),
                 XFA_ObjectType::Node,
                 XFA_Element::Items,
-                nullptr,
+                {},
                 kItemsAttributeData,
-                kItemsName,
-                pdfium::MakeUnique<CJX_Items>(this)) {}
+                pdfium::MakeUnique<CJX_Node>(this)) {}
 
-CXFA_Items::~CXFA_Items() {}
+CXFA_Items::~CXFA_Items() = default;

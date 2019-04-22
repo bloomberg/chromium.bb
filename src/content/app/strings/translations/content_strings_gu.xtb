@@ -19,6 +19,7 @@
 <translation id="1591562245178063882">આ મહિને</translation>
 <translation id="1637811476055996098">ફાઇલો પસંદ કરો</translation>
 <translation id="1650423536718072820">પુલક્વોટ</translation>
+<translation id="1727886345390570319">બંધ કરેલું ઉપશીર્ષક મેનૂ છુપાવો</translation>
 <translation id="1729654308190250600">કૃપા કરીને ખાલી ન હોય એવું ઇમેઇલ ઍડ્રેસ દાખલ કરો.</translation>
 <translation id="1758486001363313524">અન્ય...</translation>
 <translation id="1806710327868736751">ચેતવણી_સંવાદ</translation>
@@ -41,6 +42,7 @@
 <translation id="2291999235780842123">ચેકબોક્સ</translation>
 <translation id="2311842470354187719">પેજ વિભાજન</translation>
 <translation id="2335594187091864976">તારીખ અને સમય પીકર</translation>
+<translation id="245932805758469625">વીડિયોની બાકી સેકન્ડ</translation>
 <translation id="248395913932153421">દિવસ</translation>
 <translation id="2507943997699731163">કૃપા કરીને આ ફીલ્ડ ભરો.</translation>
 <translation id="2508569020611168319">ટેબ સૂચિ</translation>
@@ -50,7 +52,6 @@
 <translation id="2653659639078652383">સબમિટ કરો</translation>
 <translation id="2657045182931379222">ગ્રાફિક્સ ઑબ્જેક્ટ</translation>
 <translation id="2674318244760992338">ફૂટર</translation>
-<translation id="2706474812903655270">આ વીડિઓ ચિત્રમાં ચિત્ર મોડમાં ચાલી રહ્યો છે</translation>
 <translation id="2709516037105925701">સ્વતઃભરો</translation>
 <translation id="2723001399770238859">ઑડિઓ</translation>
 <translation id="2746543609216772311">મૂલ્ય <ph name="MINIMUM_DATE_OR_TIME" /> અથવા પછીનું હોવું આવશ્યક છે.</translation>
@@ -71,11 +72,10 @@
 <translation id="3450233048674729344">મૂલ્ય <ph name="MAXIMUM" /> જેટલું અથવા આનાથી ઓછું હોવું આવશ્યક છે.</translation>
 <translation id="3486220673238053218">વિવરણ</translation>
 <translation id="3557673793733683882">મથાળું <ph name="HEADING_LEVEL" /></translation>
-<translation id="3639613635497528239">મૂવીની બાકી સેકન્ડની સંખ્યા</translation>
+<translation id="3685101356851116974">લેબલ વિનાની છબી</translation>
 <translation id="3706100364254443312">સ્વિચ</translation>
 <translation id="3732799496749320381">mm</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
-<translation id="3785482301506746191">મૂવી સમયનું સ્ક્રબર</translation>
 <translation id="3808586225841795776">ટર્મ</translation>
 <translation id="3822383571486410024">કૃપા કરીને આ ટેક્સ્ટને <ph name="MIN_CHARACTERS" /> અક્ષર અથવા તેથી વધુ સુધી લંબાવો (તમે હાલમાં <ph name="CURRENT_LENGTH" /> અક્ષરોનો ઉપયોગ કરી રહ્યાં છો).</translation>
 <translation id="383465348367842624">'<ph name="ATSIGN" />' દ્વારા અનુસરાઈ રહેલા ભાગમાં '<ph name="INVALIDCHARACTER" />' પ્રતીક શામેલ હોવું જોઈએ નહીં.</translation>
@@ -94,8 +94,10 @@
 <translation id="4360991593054037559">કૃપા કરીને એક માન્ય મૂલ્ય દાખલ કરો. બે નિકટતમ માન્ય મૂલ્યો <ph name="VALID_VALUE_LOW" /> અને <ph name="VALID_VALUE_HIGHER" /> છે.</translation>
 <translation id="4384583879834880242">પ્રશ્ન અને જવાબ</translation>
 <translation id="4413860115965805769">મેનૂ બટન</translation>
+<translation id="4444765639179266822">આવું બોલતા જણાય છે: <ph name="OCR_TEXT" /></translation>
 <translation id="4446524499724042288">શબ્દાવલીનો સંદર્ભ</translation>
 <translation id="4522570452068850558">વિગતો</translation>
+<translation id="4542388879936266156">બાકીનો સમય: <ph name="REMAINING_TIME" /></translation>
 <translation id="4597532268155981612">ફોર્મ</translation>
 <translation id="4661075872484491155">ટ્રી</translation>
 <translation id="4664250907885839816">'<ph name="ATSIGN" />' ને અનુસરી રહેલા ભાગમાં '<ph name="INVALIDCHARACTER" />' પ્રતીક શામેલ હોવું જોઈએ નહીં.</translation>
@@ -111,6 +113,7 @@
 <translation id="4992066212339426712">અનમ્યૂટ કરો</translation>
 <translation id="49969490063480558">કૃપા કરીને '<ph name="ATSIGN" />' ને અનુસરી રહેલો ભાગ દાખલ કરો. '<ph name="INVALIDADDRESS" />' અપૂર્ણ છે.</translation>
 <translation id="5034860022980953847">પ્રગતિ સૂચક</translation>
+<translation id="5090250355906949916">વીડિયો ટાઇમ સ્ક્રબર</translation>
 <translation id="5093189678851173835">શિલાલેખ</translation>
 <translation id="5117590920725113268">આગલો મહિનો દર્શાવો</translation>
 <translation id="512758898067543763">પંક્તિ હેડર</translation>
@@ -118,6 +121,7 @@
 <translation id="5164977714490026579">મૂલ્ય <ph name="MINIMUM" /> જેટલું અથવા આનાથી વધુ હોવું આવશ્યક છે.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">કૃપા કરીને '<ph name="ATSIGN" />' ની આગળનો ભાગ દાખલ કરો. '<ph name="INVALIDADDRESS" />' અપૂર્ણ છે.</translation>
+<translation id="5334352251556557839">મીડિયા ચલાવવામાં નિષ્ફળ રહ્યાં.</translation>
 <translation id="5406322316791861025">આકૃતિ</translation>
 <translation id="5453733299334684579">ટ્રી આઇટમ</translation>
 <translation id="5466621249238537318">કૃપા કરીને એક અથવા વધુ ફાઇલ પસંદ કરો. </translation>
@@ -144,12 +148,16 @@
 <translation id="6150588977291308318">ગ્રંથસૂચિ</translation>
 <translation id="6164829606128959761">મીટર</translation>
 <translation id="6166809985690652833">સમાપન ભાષણ</translation>
+<translation id="6209276755895393898">આના જેવું જણાય છે: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">શબ્દાવલી</translation>
+<translation id="628938136236500310">વીડિયો ચિત્ર-માં-ચિત્ર મોડમાં ચાલી રહ્યો છે</translation>
 <translation id="6398862346408813489">મહિના પસંદગી પેનલ દર્શાવો</translation>
 <translation id="6404546809543547843">ઑડિઓ સમય સ્ક્રબર</translation>
+<translation id="6443871981718447451">બંધ કરેલું ઉપશીર્ષક મેનૂ દર્શાવો</translation>
 <translation id="6453774872122745852">સ્વીકૃતિઓ</translation>
 <translation id="648732519525291180">સમય પીકર</translation>
 <translation id="6550675742724504774">વિકલ્પો</translation>
+<translation id="6572309429103589720">અમાન્ય વ્યાકરણ</translation>
 <translation id="658823671542763450">પૂર્ણ સ્ક્રીનમાં દાખલ થાઓ</translation>
 <translation id="663493177488814956">ફીડ</translation>
 <translation id="6637586476836377253">લૉગ</translation>
@@ -162,7 +170,6 @@
 <translation id="6820355525329141109">પ્લગિન લોડ કરી શક્યાં નથી.</translation>
 <translation id="6820615603175220800">ગ્રંથસૂચિનો સંદર્ભ</translation>
 <translation id="6843725295806269523">બંધ કરો</translation>
-<translation id="6853785296079745596">ઉપશીર્ષક છુપાવો</translation>
 <translation id="6885760532393684712">ડિરેક્ટરી</translation>
 <translation id="689129560213475294">પ્રકાશકની માહિતી</translation>
 <translation id="6934078000481955284">બ્લૉકક્વોટ</translation>
@@ -170,25 +177,29 @@
 <translation id="6981594929165378967">ઉમેરો</translation>
 <translation id="6989848892321993519">કૃપા કરીને આ ટેક્સ્ટને <ph name="MIN_CHARACTERS" /> અથવા તેથી વધુ અક્ષર સુધી લંબાવો (તમે હાલમાં 1 અક્ષરનો ઉપયોગ કરી રહ્યાં છો).</translation>
 <translation id="709897737746224366">કૃપા કરીને વિનંતી કરેલા ફોર્મેટ સાથે મેળ કરો.</translation>
+<translation id="7118469954320184356">કોઈ વર્ણન ઉપલબ્ધ નથી.</translation>
 <translation id="7139483182332611405">પ્રસ્તાવના</translation>
-<translation id="7223624360433298498">વીતેલો સમય</translation>
 <translation id="7263440858009898357">કૃપા કરીને સૂચિમાંથી એક આઇટમ પસંદ કરો.</translation>
 <translation id="727747134524199931">કૉલમ હેડર</translation>
+<translation id="7320576522385648310">બફર થઈ રહ્યું છે</translation>
 <translation id="7353453495576941748">ક્રેડિટ</translation>
 <translation id="7364796246159120393">ફાઇલ પસંદ કરો</translation>
 <translation id="739024184232394898">અન્ય...</translation>
 <translation id="7405738980073107433">અંતિમ નોંધ</translation>
+<translation id="7410239719251593705">પુખ્ત લોકો માટેનું કન્ટેન્ટ સમાવતી હોવાનું જણાય છે. કોઈ વર્ણન ઉપલબ્ધ નથી.</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7491962110804786152">ટેબ</translation>
 <translation id="7514365320538308">ડાઉનલોડ કરો</translation>
 <translation id="7529102961911894712">પાછળ લઈ જતી લિંક</translation>
+<translation id="7533959249147584474">લેબલ વિનાનું ગ્રાફિક</translation>
 <translation id="7647456547678091388">ટિપ</translation>
 <translation id="7661956066982048809">ગ્રાફિક્સ દસ્તાવેજ</translation>
 <translation id="7673697353781729403">કલાક</translation>
 <translation id="7681220483256441252">અનુક્રમણિકા</translation>
-<translation id="7720026100085573005">બાકીનો સમય</translation>
 <translation id="7740050170769002709">HTML માહિતી</translation>
+<translation id="7745230546936012372">છબીઓના ખૂટતા વર્ણનો માટે, સંદર્ભ મેનૂ ખોલો.</translation>
 <translation id="7750228210027921155">ચિત્રમાં ચિત્ર</translation>
+<translation id="775297008183122718">અમાન્ય એન્ટ્રી</translation>
 <translation id="7789962463072032349">થોભો</translation>
 <translation id="7802800022689234070">પ્રકટીકરણ ત્રિકોણ</translation>
 <translation id="7888071071722539607">કૃપા કરીને ઇમેઇલ સરનામાંમાં '<ph name="ATSIGN" />' શામેલ કરો. '<ph name="INVALIDADDRESS" />'માં '<ph name="ATSIGN" />' ખૂટે છે.</translation>
@@ -197,10 +208,13 @@
 <translation id="8053789581856978548">ટેક્સ્ટ ફીલ્ડ શોધો</translation>
 <translation id="8057695513531652401">સૂચના</translation>
 <translation id="8105797009065549151">નોંધ સંદર્ભ</translation>
+<translation id="811583516810654505">વર્ણન મેળવી રહ્યાં છીએ…</translation>
 <translation id="8117451130807776954">આ અઠવાડિયે</translation>
 <translation id="8199524924445686405">yyyy</translation>
+<translation id="8261464734335370856">અમાન્ય જોડણી</translation>
 <translation id="8284326494547611709">કૅપ્શન્સ</translation>
 <translation id="835897206747267392">અમાન્ય મૂલ્ય.</translation>
+<translation id="8403857369060869934">વીતેલો સમય: <ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">ભાગ</translation>
 <translation id="8433900881053900389">ટુલબાર</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES" /> ફાઇલો</translation>
@@ -225,7 +239,6 @@
 <translation id="8987927404178983737">મહિનો</translation>
 <translation id="901493112792887934">સેકન્ડ્સમાં વર્તમાન સમય</translation>
 <translation id="9048119486235211610">નેવિગેશન</translation>
-<translation id="9050748414552849310">ઉપશીર્ષક બતાવો</translation>
 <translation id="9062295712474918030">દસ્તાવેજ</translation>
 <translation id="9093215626363556771">ચિત્ર-માં-ચિત્રમાંથી બહાર નીકળો</translation>
 <translation id="9108370397979208512">ગણિત</translation>

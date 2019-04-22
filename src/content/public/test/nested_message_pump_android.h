@@ -12,7 +12,7 @@
 
 namespace content {
 
-// A nested message pump to be used for content browsertests and layout tests
+// A nested message pump to be used for content browsertests and web tests
 // on Android. It overrides the default UI message pump to allow nested loops.
 class NestedMessagePumpAndroid : public base::MessagePumpForUI {
  public:

@@ -31,7 +31,6 @@
 
 #include "third_party/blink/renderer/core/html/forms/text_field_input_type.h"
 
-#include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatch_forbidden_scope.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
@@ -64,7 +63,8 @@ class DataListIndicatorElement final : public HTMLDivElement {
     return ToHTMLInputElement(OwnerShadowHost());
   }
 
-  LayoutObject* CreateLayoutObject(const ComputedStyle&) override {
+  LayoutObject* CreateLayoutObject(const ComputedStyle&,
+                                   LegacyLayout) override {
     return new LayoutDetailsMarker(this);
   }
 
@@ -113,7 +113,7 @@ TextFieldInputType::TextFieldInputType(HTMLInputElement& element)
 
 TextFieldInputType::~TextFieldInputType() = default;
 
-void TextFieldInputType::Trace(blink::Visitor* visitor) {
+void TextFieldInputType::Trace(Visitor* visitor) {
   InputTypeView::Trace(visitor);
   InputType::Trace(visitor);
 }
@@ -154,7 +154,7 @@ void TextFieldInputType::SetValue(const String& sanitized_value,
                                   TextControlSetValueSelection selection) {
   // We don't use InputType::setValue.  TextFieldInputType dispatches events
   // different way from InputType::setValue.
-  if (event_behavior == kDispatchNoEvent)
+  if (event_behavior == TextFieldEventBehavior::kDispatchNoEvent)
     GetElement().SetNonAttributeValue(sanitized_value);
   else
     GetElement().SetNonAttributeValueByUserEdit(sanitized_value);
@@ -174,7 +174,7 @@ void TextFieldInputType::SetValue(const String& sanitized_value,
   }
 
   switch (event_behavior) {
-    case kDispatchChangeEvent:
+    case TextFieldEventBehavior::kDispatchChangeEvent:
       // If the user is still editing this field, dispatch an input event rather
       // than a change event.  The change event will be dispatched when editing
       // finishes.
@@ -184,13 +184,13 @@ void TextFieldInputType::SetValue(const String& sanitized_value,
         GetElement().DispatchFormControlChangeEvent();
       break;
 
-    case kDispatchInputAndChangeEvent: {
+    case TextFieldEventBehavior::kDispatchInputAndChangeEvent: {
       GetElement().DispatchInputEvent();
       GetElement().DispatchFormControlChangeEvent();
       break;
     }
 
-    case kDispatchNoEvent:
+    case TextFieldEventBehavior::kDispatchNoEvent:
       break;
   }
 }
@@ -265,12 +265,12 @@ void TextFieldInputType::HandleBlurEvent() {
 bool TextFieldInputType::ShouldSubmitImplicitly(const Event& event) {
   return (event.type() == event_type_names::kTextInput &&
           event.HasInterface(event_interface_names::kTextEvent) &&
-          ToTextEvent(event).data() == "\n") ||
+          To<TextEvent>(event).data() == "\n") ||
          InputTypeView::ShouldSubmitImplicitly(event);
 }
 
-LayoutObject* TextFieldInputType::CreateLayoutObject(
-    const ComputedStyle&) const {
+LayoutObject* TextFieldInputType::CreateLayoutObject(const ComputedStyle&,
+                                                     LegacyLayout) const {
   return new LayoutTextControlSingleLine(&GetElement());
 }
 
@@ -370,20 +370,17 @@ void TextFieldInputType::AttributeChanged() {
   UpdateView();
 }
 
-void TextFieldInputType::DisabledOrReadonlyAttributeChanged(
-    const QualifiedName& attr) {
+void TextFieldInputType::DisabledOrReadonlyAttributeChanged() {
   if (SpinButtonElement* spin_button = GetSpinButtonElement())
     spin_button->ReleaseCapture();
-  GetElement().InnerEditorElement()->SetNeedsStyleRecalc(
-      kLocalStyleChange, StyleChangeReasonForTracing::FromAttribute(attr));
 }
 
 void TextFieldInputType::DisabledAttributeChanged() {
-  DisabledOrReadonlyAttributeChanged(kDisabledAttr);
+  DisabledOrReadonlyAttributeChanged();
 }
 
 void TextFieldInputType::ReadonlyAttributeChanged() {
-  DisabledOrReadonlyAttributeChanged(kReadonlyAttr);
+  DisabledOrReadonlyAttributeChanged();
 }
 
 bool TextFieldInputType::SupportsReadOnly() const {
@@ -424,9 +421,9 @@ void TextFieldInputType::HandleBeforeTextInsertedEvent(
   // that case, and nothing in the text field will be removed.
   unsigned selection_length = 0;
   if (GetElement().IsFocused()) {
-    // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets
+    // TODO(editing-dev): Use of UpdateStyleAndLayout
     // needs to be audited.  See http://crbug.com/590369 for more details.
-    GetElement().GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+    GetElement().GetDocument().UpdateStyleAndLayout();
 
     selection_length = GetElement()
                            .GetDocument()
@@ -480,10 +477,11 @@ void TextFieldInputType::UpdatePlaceholderText() {
         HTMLDivElement::Create(GetElement().GetDocument());
     placeholder = new_element;
     placeholder->SetShadowPseudoId(AtomicString("-webkit-input-placeholder"));
-    placeholder->SetInlineStyleProperty(
-        CSSPropertyDisplay,
-        GetElement().IsPlaceholderVisible() ? CSSValueBlock : CSSValueNone,
-        true);
+    placeholder->SetInlineStyleProperty(CSSPropertyID::kDisplay,
+                                        GetElement().IsPlaceholderVisible()
+                                            ? CSSValueID::kBlock
+                                            : CSSValueID::kNone,
+                                        true);
     placeholder->setAttribute(kIdAttr, shadow_element_names::Placeholder());
     Element* container = ContainerElement();
     Node* previous = container ? container : GetElement().InnerEditorElement();

@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/core/animation/interpolation_type.h"
 #include "third_party/blink/renderer/core/animation/keyframe_effect.h"
 #include "third_party/blink/renderer/core/animation/keyframe_effect_model.h"
+#include "third_party/blink/renderer/core/animation/timing_calculations.h"
 #include "third_party/blink/renderer/core/animation/transition_interpolation.h"
 #include "third_party/blink/renderer/core/animation/worklet_animation_base.h"
 #include "third_party/blink/renderer/core/css/css_keyframe_rule.h"
@@ -110,14 +111,14 @@ StringKeyframeEffectModel* CreateKeyframeEffectModel(
     for (unsigned j = 0; j < properties.PropertyCount(); j++) {
       const CSSProperty& property = properties.PropertyAt(j).Property();
       specified_properties_for_use_counter.insert(&property);
-      if (property.PropertyID() == CSSPropertyAnimationTimingFunction) {
+      if (property.PropertyID() == CSSPropertyID::kAnimationTimingFunction) {
         const CSSValue& value = properties.PropertyAt(j).Value();
         scoped_refptr<TimingFunction> timing_function;
         if (value.IsInheritedValue() && parent_style->Animations()) {
           timing_function = parent_style->Animations()->TimingFunctionList()[0];
-        } else if (value.IsValueList()) {
-          timing_function = CSSToStyleMap::MapAnimationTimingFunction(
-              ToCSSValueList(value).Item(0));
+        } else if (auto* value_list = DynamicTo<CSSValueList>(value)) {
+          timing_function =
+              CSSToStyleMap::MapAnimationTimingFunction(value_list->Item(0));
         } else {
           DCHECK(value.IsCSSWideKeyword());
           timing_function = CSSTimingData::InitialTimingFunction();
@@ -208,6 +209,12 @@ std::unique_ptr<TypedInterpolationValue> SampleAnimation(
   if (sample.IsEmpty())
     return nullptr;
   return ToTransitionInterpolation(*sample.at(0)).GetInterpolatedValue();
+}
+
+// Returns the start time of an animation given the start delay. A negative
+// start delay results in the animation starting with non-zero progress.
+double StartTimeFromDelay(double start_delay) {
+  return start_delay < 0 ? -start_delay : 0;
 }
 
 }  // namespace
@@ -376,14 +383,14 @@ void CSSAnimations::CalculateAnimationUpdate(CSSAnimationUpdate& update,
       wtf_size_t existing_animation_index = 0;
 
       if (css_animations) {
-        for (wtf_size_t i = 0; i < css_animations->running_animations_.size();
-             i++) {
+        for (wtf_size_t j = 0; j < css_animations->running_animations_.size();
+             j++) {
           const RunningAnimation& running_animation =
-              *css_animations->running_animations_[i];
+              *css_animations->running_animations_[j];
           if (running_animation.name == name &&
               running_animation.name_index == name_index) {
             existing_animation = &running_animation;
-            existing_animation_index = i;
+            existing_animation_index = j;
             break;
           }
         }
@@ -786,34 +793,16 @@ void CSSAnimations::CalculateTransitionUpdateForProperty(
   }
 
   TransitionKeyframeVector keyframes;
-  double start_keyframe_offset = 0;
-
-  if (timing.start_delay > 0) {
-    timing.iteration_duration.value() +=
-        AnimationTimeDelta::FromSecondsD(timing.start_delay);
-    start_keyframe_offset =
-        timing.start_delay / timing.iteration_duration->InSecondsF();
-    timing.start_delay = 0;
-  }
-
-  TransitionKeyframe* delay_keyframe = TransitionKeyframe::Create(property);
-  delay_keyframe->SetValue(TypedInterpolationValue::Create(
-      *transition_type, start.interpolable_value->Clone(),
-      start.non_interpolable_value));
-  delay_keyframe->SetOffset(0);
-  keyframes.push_back(delay_keyframe);
 
   TransitionKeyframe* start_keyframe = TransitionKeyframe::Create(property);
-  start_keyframe->SetValue(TypedInterpolationValue::Create(
+  start_keyframe->SetValue(std::make_unique<TypedInterpolationValue>(
       *transition_type, start.interpolable_value->Clone(),
       start.non_interpolable_value));
-  start_keyframe->SetOffset(start_keyframe_offset);
-  start_keyframe->SetEasing(std::move(timing.timing_function));
-  timing.timing_function = LinearTimingFunction::Shared();
+  start_keyframe->SetOffset(0);
   keyframes.push_back(start_keyframe);
 
   TransitionKeyframe* end_keyframe = TransitionKeyframe::Create(property);
-  end_keyframe->SetValue(TypedInterpolationValue::Create(
+  end_keyframe->SetValue(std::make_unique<TypedInterpolationValue>(
       *transition_type, end.interpolable_value->Clone(),
       end.non_interpolable_value));
   end_keyframe->SetOffset(1);
@@ -824,7 +813,6 @@ void CSSAnimations::CalculateTransitionUpdateForProperty(
         CSSAnimatableValueFactory::Create(property, state.old_style);
     AnimatableValue* to =
         CSSAnimatableValueFactory::Create(property, state.style);
-    delay_keyframe->SetCompositorValue(from);
     start_keyframe->SetCompositorValue(from);
     end_keyframe->SetCompositorValue(to);
   }
@@ -872,7 +860,7 @@ void CSSAnimations::CalculateTransitionUpdateForStandardProperty(
 
   CSSPropertyID resolved_id =
       resolveCSSPropertyID(transition_property.unresolved_property);
-  bool animate_all = resolved_id == CSSPropertyAll;
+  bool animate_all = resolved_id == CSSPropertyID::kAll;
   const StylePropertyShorthand& property_list =
       animate_all ? PropertiesForTransitionAll()
                   : shorthandForProperty(resolved_id);
@@ -932,7 +920,7 @@ void CSSAnimations::CalculateTransitionUpdate(CSSAnimationUpdate& update,
          ++transition_index) {
       const CSSTransitionData::TransitionProperty& transition_property =
           transition_data->PropertyList()[transition_index];
-      if (transition_property.unresolved_property == CSSPropertyAll) {
+      if (transition_property.unresolved_property == CSSPropertyID::kAll) {
         any_transition_had_transition_all = true;
       }
       if (property_pass == PropertyPass::kCustom) {
@@ -1196,25 +1184,84 @@ EventTarget* CSSAnimations::TransitionEventDelegate::GetEventTarget() const {
 void CSSAnimations::TransitionEventDelegate::OnEventCondition(
     const AnimationEffect& animation_node) {
   const AnimationEffect::Phase current_phase = animation_node.GetPhase();
-  if (current_phase == AnimationEffect::kPhaseAfter &&
-      current_phase != previous_phase_ &&
-      GetDocument().HasListenerType(Document::kTransitionEndListener)) {
-    String property_name =
-        property_.IsCSSCustomProperty()
-            ? property_.CustomPropertyName()
-            : property_.GetCSSProperty().GetPropertyNameString();
-    const Timing& timing = animation_node.SpecifiedTiming();
-    double elapsed_time = timing.iteration_duration->InSecondsF();
-    const AtomicString& event_type = event_type_names::kTransitionend;
-    String pseudo_element =
-        PseudoElement::PseudoElementNameForEvents(GetPseudoId());
-    TransitionEvent* event = TransitionEvent::Create(
-        event_type, property_name, elapsed_time, pseudo_element);
-    event->SetTarget(GetEventTarget());
-    GetDocument().EnqueueAnimationFrameEvent(event);
+  if (current_phase == previous_phase_)
+    return;
+
+  if (GetDocument().HasListenerType(Document::kTransitionRunListener)) {
+    if (previous_phase_ == AnimationEffect::kPhaseNone) {
+      EnqueueEvent(
+          event_type_names::kTransitionrun,
+          StartTimeFromDelay(animation_node.SpecifiedTiming().start_delay));
+    }
+  }
+
+  if (GetDocument().HasListenerType(Document::kTransitionStartListener)) {
+    if ((current_phase == AnimationEffect::kPhaseActive ||
+         current_phase == AnimationEffect::kPhaseAfter) &&
+        (previous_phase_ == AnimationEffect::kPhaseNone ||
+         previous_phase_ == AnimationEffect::kPhaseBefore)) {
+      EnqueueEvent(
+          event_type_names::kTransitionstart,
+          StartTimeFromDelay(animation_node.SpecifiedTiming().start_delay));
+    } else if ((current_phase == AnimationEffect::kPhaseActive ||
+                current_phase == AnimationEffect::kPhaseBefore) &&
+               previous_phase_ == AnimationEffect::kPhaseAfter) {
+      // If the transition is progressing backwards it is considered to have
+      // started at the end position.
+      EnqueueEvent(
+          event_type_names::kTransitionstart,
+          animation_node.SpecifiedTiming().iteration_duration->InSecondsF());
+    }
+  }
+
+  if (GetDocument().HasListenerType(Document::kTransitionEndListener)) {
+    if (current_phase == AnimationEffect::kPhaseAfter &&
+        (previous_phase_ == AnimationEffect::kPhaseActive ||
+         previous_phase_ == AnimationEffect::kPhaseBefore ||
+         previous_phase_ == AnimationEffect::kPhaseNone)) {
+      EnqueueEvent(
+          event_type_names::kTransitionend,
+          animation_node.SpecifiedTiming().iteration_duration->InSecondsF());
+    } else if (current_phase == AnimationEffect::kPhaseBefore &&
+               (previous_phase_ == AnimationEffect::kPhaseActive ||
+                previous_phase_ == AnimationEffect::kPhaseAfter)) {
+      // If the transition is progressing backwards it is considered to have
+      // ended at the start position.
+      EnqueueEvent(
+          event_type_names::kTransitionend,
+          StartTimeFromDelay(animation_node.SpecifiedTiming().start_delay));
+    }
+  }
+
+  if (GetDocument().HasListenerType(Document::kTransitionCancelListener)) {
+    if (current_phase == AnimationEffect::kPhaseNone) {
+      // Per the css-transitions-2 spec, transitioncancel is fired with the
+      // "active time of the animation at the moment it was cancelled,
+      // calculated using a fill mode of both".
+      double cancel_active_time = CalculateActiveTime(
+          animation_node.RepeatedDuration(), Timing::FillMode::BOTH,
+          animation_node.LocalTime(), previous_phase_,
+          animation_node.SpecifiedTiming());
+      EnqueueEvent(event_type_names::kTransitioncancel, cancel_active_time);
+    }
   }
 
   previous_phase_ = current_phase;
+}
+
+void CSSAnimations::TransitionEventDelegate::EnqueueEvent(
+    const WTF::AtomicString& type,
+    double elapsed_time) {
+  String property_name =
+      property_.IsCSSCustomProperty()
+          ? property_.CustomPropertyName()
+          : property_.GetCSSProperty().GetPropertyNameString();
+  String pseudo_element =
+      PseudoElement::PseudoElementNameForEvents(GetPseudoId());
+  TransitionEvent* event = TransitionEvent::Create(
+      type, property_name, elapsed_time, pseudo_element);
+  event->SetTarget(GetEventTarget());
+  GetDocument().EnqueueAnimationFrameEvent(event);
 }
 
 void CSSAnimations::TransitionEventDelegate::Trace(blink::Visitor* visitor) {
@@ -1226,22 +1273,21 @@ const StylePropertyShorthand& CSSAnimations::PropertiesForTransitionAll() {
   DEFINE_STATIC_LOCAL(Vector<const CSSProperty*>, properties, ());
   DEFINE_STATIC_LOCAL(StylePropertyShorthand, property_shorthand, ());
   if (properties.IsEmpty()) {
-    for (int i = firstCSSProperty; i <= lastCSSProperty; ++i) {
-      CSSPropertyID id = convertToCSSPropertyID(i);
+    for (CSSPropertyID id : CSSPropertyIDList()) {
       // Avoid creating overlapping transitions with perspective-origin and
       // transition-origin.
-      if (id == CSSPropertyWebkitPerspectiveOriginX ||
-          id == CSSPropertyWebkitPerspectiveOriginY ||
-          id == CSSPropertyWebkitTransformOriginX ||
-          id == CSSPropertyWebkitTransformOriginY ||
-          id == CSSPropertyWebkitTransformOriginZ)
+      if (id == CSSPropertyID::kWebkitPerspectiveOriginX ||
+          id == CSSPropertyID::kWebkitPerspectiveOriginY ||
+          id == CSSPropertyID::kWebkitTransformOriginX ||
+          id == CSSPropertyID::kWebkitTransformOriginY ||
+          id == CSSPropertyID::kWebkitTransformOriginZ)
         continue;
       const CSSProperty& property = CSSProperty::Get(id);
       if (property.IsInterpolable())
         properties.push_back(&property);
     }
     property_shorthand = StylePropertyShorthand(
-        CSSPropertyInvalid, properties.begin(), properties.size());
+        CSSPropertyID::kInvalid, properties.begin(), properties.size());
   }
   return property_shorthand;
 }
@@ -1250,27 +1296,27 @@ const StylePropertyShorthand& CSSAnimations::PropertiesForTransitionAll() {
 // animations. https://drafts.csswg.org/web-animations/#not-animatable-section
 bool CSSAnimations::IsAnimationAffectingProperty(const CSSProperty& property) {
   switch (property.PropertyID()) {
-    case CSSPropertyAnimation:
-    case CSSPropertyAnimationDelay:
-    case CSSPropertyAnimationDirection:
-    case CSSPropertyAnimationDuration:
-    case CSSPropertyAnimationFillMode:
-    case CSSPropertyAnimationIterationCount:
-    case CSSPropertyAnimationName:
-    case CSSPropertyAnimationPlayState:
-    case CSSPropertyAnimationTimingFunction:
-    case CSSPropertyContain:
-    case CSSPropertyDirection:
-    case CSSPropertyDisplay:
-    case CSSPropertyTextOrientation:
-    case CSSPropertyTransition:
-    case CSSPropertyTransitionDelay:
-    case CSSPropertyTransitionDuration:
-    case CSSPropertyTransitionProperty:
-    case CSSPropertyTransitionTimingFunction:
-    case CSSPropertyUnicodeBidi:
-    case CSSPropertyWillChange:
-    case CSSPropertyWritingMode:
+    case CSSPropertyID::kAnimation:
+    case CSSPropertyID::kAnimationDelay:
+    case CSSPropertyID::kAnimationDirection:
+    case CSSPropertyID::kAnimationDuration:
+    case CSSPropertyID::kAnimationFillMode:
+    case CSSPropertyID::kAnimationIterationCount:
+    case CSSPropertyID::kAnimationName:
+    case CSSPropertyID::kAnimationPlayState:
+    case CSSPropertyID::kAnimationTimingFunction:
+    case CSSPropertyID::kContain:
+    case CSSPropertyID::kDirection:
+    case CSSPropertyID::kDisplay:
+    case CSSPropertyID::kTextOrientation:
+    case CSSPropertyID::kTransition:
+    case CSSPropertyID::kTransitionDelay:
+    case CSSPropertyID::kTransitionDuration:
+    case CSSPropertyID::kTransitionProperty:
+    case CSSPropertyID::kTransitionTimingFunction:
+    case CSSPropertyID::kUnicodeBidi:
+    case CSSPropertyID::kWillChange:
+    case CSSPropertyID::kWritingMode:
       return true;
     default:
       return false;
@@ -1288,7 +1334,7 @@ bool CSSAnimations::IsAffectedByKeyframesFromScope(
     return false;
   if (tree_scope.RootNode() == tree_scope.GetDocument())
     return false;
-  return ToShadowRoot(tree_scope.RootNode()).host() == element;
+  return To<ShadowRoot>(tree_scope.RootNode()).host() == element;
 }
 
 bool CSSAnimations::IsAnimatingCustomProperties(

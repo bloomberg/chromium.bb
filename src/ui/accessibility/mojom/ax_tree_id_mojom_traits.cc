@@ -7,12 +7,22 @@
 namespace mojo {
 
 // static
-bool StructTraits<ax::mojom::AXTreeIDDataView, ui::AXTreeID>::Read(
+bool UnionTraits<ax::mojom::AXTreeIDDataView, ui::AXTreeID>::Read(
     ax::mojom::AXTreeIDDataView data,
     ui::AXTreeID* out) {
-  if (!data.ReadId(&out->id_))
-    return false;
-  return true;
+  switch (data.tag()) {
+    case ax::mojom::AXTreeIDDataView::Tag::UNKNOWN:
+      out->type_ = ax::mojom::AXTreeIDType::kUnknown;
+      return true;
+    case ax::mojom::AXTreeIDDataView::Tag::TOKEN:
+      out->type_ = ax::mojom::AXTreeIDType::kToken;
+      if (!data.ReadToken(&out->token_))
+        return false;
+      return true;
+  }
+
+  NOTREACHED();
+  return false;
 }
 
 }  // namespace mojo

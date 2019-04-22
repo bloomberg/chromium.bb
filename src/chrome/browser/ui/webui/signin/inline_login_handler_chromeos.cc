@@ -12,12 +12,13 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/account_tracker_service_factory.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/webui/signin/inline_login_handler.h"
-#include "chromeos/account_manager/account_manager.h"
-#include "chromeos/account_manager/account_manager_factory.h"
-#include "components/signin/core/browser/account_tracker_service.h"
+#include "chromeos/components/account_manager/account_manager.h"
+#include "chromeos/components/account_manager/account_manager_factory.h"
+#include "components/signin/core/browser/account_info.h"
 #include "google_apis/gaia/gaia_urls.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace chromeos {
@@ -32,15 +33,13 @@ namespace {
 class SigninHelper : public GaiaAuthConsumer {
  public:
   SigninHelper(
-      Profile* profile,
       chromeos::AccountManager* account_manager,
       const base::RepeatingClosure& close_dialog_closure,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const std::string& gaia_id,
       const std::string& email,
       const std::string& auth_code)
-      : profile_(profile),
-        account_manager_(account_manager),
+      : account_manager_(account_manager),
         close_dialog_closure_(close_dialog_closure),
         email_(email),
         gaia_auth_fetcher_(this,
@@ -56,17 +55,20 @@ class SigninHelper : public GaiaAuthConsumer {
 
   // GaiaAuthConsumer overrides.
   void OnClientOAuthSuccess(const ClientOAuthResult& result) override {
-    // TODO(sinhak): Do not depend on Profile unnecessarily. A Profile should
-    // call |AccountTrackerServiceFactory| for the list of accounts it wants to
-    // pull from |AccountManager|, not the other way round. Remove this when we
-    // release multi Profile on Chrome OS and have the infra in place to do
-    // this.
-    // Account info needs to be seeded before the OAuth2TokenService chain can
-    // use it. Do this before anything else.
-    AccountTrackerServiceFactory::GetForProfile(profile_)->SeedAccountInfo(
-        account_key_.id, email_);
-
-    account_manager_->UpsertToken(account_key_, result.refresh_token);
+    // Flow of control after this call:
+    // |AccountManager::UpsertAccount| updates / inserts the account and calls
+    // its |Observer|s, one of which is
+    // |ProfileOAuth2TokenServiceDelegateChromeOS|.
+    // |ProfileOAuth2TokenServiceDelegateChromeOS::OnTokenUpserted| seeds the
+    // Gaia id and email id for this account in |AccountTrackerService| and
+    // invokes |FireRefreshTokenAvailable|. This causes the account to propagate
+    // throughout the Identity Service chain, including in
+    // |AccountFetcherService|. |AccountFetcherService::OnRefreshTokenAvailable|
+    // invokes |AccountTrackerService::StartTrackingAccount|, triggers a fetch
+    // for the account information from Gaia and updates this information into
+    // |AccountTrackerService|. At this point the account will be fully added to
+    // the system.
+    account_manager_->UpsertAccount(account_key_, email_, result.refresh_token);
 
     close_dialog_closure_.Run();
     base::SequencedTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
@@ -79,8 +81,6 @@ class SigninHelper : public GaiaAuthConsumer {
   }
 
  private:
-  // A non-owning pointer to Profile.
-  Profile* const profile_;
   // A non-owning pointer to Chrome OS AccountManager.
   chromeos::AccountManager* const account_manager_;
   // A closure to close the hosting dialog window.
@@ -103,10 +103,19 @@ InlineLoginHandlerChromeOS::InlineLoginHandlerChromeOS(
 
 InlineLoginHandlerChromeOS::~InlineLoginHandlerChromeOS() = default;
 
+void InlineLoginHandlerChromeOS::RegisterMessages() {
+  InlineLoginHandler::RegisterMessages();
+
+  web_ui()->RegisterMessageCallback(
+      "showIncognito",
+      base::BindRepeating(
+          &InlineLoginHandlerChromeOS::ShowIncognitoAndCloseDialog,
+          base::Unretained(this)));
+}
+
 void InlineLoginHandlerChromeOS::SetExtraInitParams(
     base::DictionaryValue& params) {
   const GaiaUrls* const gaia_urls = GaiaUrls::GetInstance();
-  params.SetKey("service", base::Value("chromiumsync"));
   params.SetKey("isNewGaiaFlow", base::Value(true));
   params.SetKey("clientId", base::Value(gaia_urls->oauth2_chrome_client_id()));
 
@@ -114,7 +123,7 @@ void InlineLoginHandlerChromeOS::SetExtraInitParams(
   params.SetKey("gaiaPath", base::Value(url.path().substr(1)));
 
   params.SetKey("constrained", base::Value("1"));
-  params.SetKey("flow", base::Value("addaccount"));
+  params.SetKey("flow", base::Value("crosAddAccount"));
 }
 
 void InlineLoginHandlerChromeOS::CompleteLogin(const std::string& email,
@@ -141,9 +150,15 @@ void InlineLoginHandlerChromeOS::CompleteLogin(const std::string& email,
           ->GetAccountManager(profile->GetPath().value());
 
   // SigninHelper deletes itself after its work is done.
-  new SigninHelper(profile, account_manager, close_dialog_closure_,
+  new SigninHelper(account_manager, close_dialog_closure_,
                    account_manager->GetUrlLoaderFactory(), gaia_id, email,
                    auth_code);
+}
+
+void InlineLoginHandlerChromeOS::ShowIncognitoAndCloseDialog(
+    const base::ListValue* args) {
+  chrome::NewIncognitoWindow(Profile::FromWebUI(web_ui()));
+  close_dialog_closure_.Run();
 }
 
 }  // namespace chromeos

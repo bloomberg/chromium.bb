@@ -12,11 +12,12 @@
 #include "android_webview/browser/aw_contents_client_bridge.h"
 #include "android_webview/browser/aw_contents_io_thread_client.h"
 #include "android_webview/browser/aw_resource_context.h"
-#include "android_webview/browser/aw_safe_browsing_resource_throttle.h"
 #include "android_webview/browser/net/aw_web_resource_request.h"
-#include "android_webview/browser/net_helpers.h"
+#include "android_webview/browser/network_service/net_helpers.h"
 #include "android_webview/browser/renderer_host/auto_login_parser.h"
+#include "android_webview/browser/safe_browsing/aw_safe_browsing_resource_throttle.h"
 #include "android_webview/common/url_constants.h"
+#include "base/bind.h"
 #include "base/task/post_task.h"
 #include "components/safe_browsing/android/safe_browsing_api_handler.h"
 #include "components/safe_browsing/features.h"
@@ -46,18 +47,6 @@ namespace {
 base::LazyInstance<android_webview::AwResourceDispatcherHostDelegate>::
     DestructorAtExit g_webview_resource_dispatcher_host_delegate =
         LAZY_INSTANCE_INITIALIZER;
-
-void SetCacheControlFlag(
-    net::URLRequest* request, int flag) {
-  const int all_cache_control_flags =
-      net::LOAD_BYPASS_CACHE | net::LOAD_VALIDATE_CACHE |
-      net::LOAD_SKIP_CACHE_VALIDATION | net::LOAD_ONLY_FROM_CACHE;
-  DCHECK_EQ((flag & all_cache_control_flags), flag);
-  int load_flags = request->load_flags();
-  load_flags &= ~all_cache_control_flags;
-  load_flags |= flag;
-  request->SetLoadFlags(load_flags);
-}
 
 // Called when ResourceDispathcerHost detects a download request.
 // The download is already cancelled when this is called, since
@@ -165,7 +154,7 @@ IoThreadClientThrottle::GetIoThreadClient() const {
     return AwContentsIoThreadClient::GetServiceWorkerIoThreadClient();
 
   if (render_process_id_ == -1 || render_frame_id_ == -1) {
-    const content::ResourceRequestInfo* resourceRequestInfo =
+    content::ResourceRequestInfo* resourceRequestInfo =
         content::ResourceRequestInfo::ForRequest(request_);
     if (resourceRequestInfo == nullptr) {
       return nullptr;
@@ -230,31 +219,11 @@ bool IoThreadClientThrottle::ShouldBlockRequest() {
   if (!io_client)
     return false;
 
-  // Part of implementation of WebSettings.allowContentAccess.
-  if (request_->url().SchemeIs(url::kContentScheme) &&
-      io_client->ShouldBlockContentUrls()) {
+  if (ShouldBlockURL(request_->url(), io_client.get()))
     return true;
-  }
 
-  // Part of implementation of WebSettings.allowFileAccess.
-  if (request_->url().SchemeIsFile() &&
-      io_client->ShouldBlockFileUrls()) {
-    // Application's assets and resources are always available.
-    return !IsAndroidSpecialFileUrl(request_->url());
-  }
-
-  if (io_client->ShouldBlockNetworkLoads()) {
-    if (request_->url().SchemeIs(url::kFtpScheme)) {
-      return true;
-    }
-    SetCacheControlFlag(
-        request_, net::LOAD_ONLY_FROM_CACHE | net::LOAD_SKIP_CACHE_VALIDATION);
-  } else {
-    int cache_mode = GetCacheModeForClient(io_client.get());
-    if (cache_mode) {
-      SetCacheControlFlag(request_, cache_mode);
-    }
-  }
+  request_->SetLoadFlags(
+      UpdateLoadFlags(request_->load_flags(), io_client.get()));
   return false;
 }
 
@@ -276,9 +245,7 @@ void AwResourceDispatcherHostDelegate::RequestBeginning(
     content::AppCacheService* appcache_service,
     ResourceType resource_type,
     std::vector<std::unique_ptr<content::ResourceThrottle>>* throttles) {
-  AddExtraHeadersIfNeeded(request, resource_context);
-
-  const content::ResourceRequestInfo* request_info =
+  content::ResourceRequestInfo* request_info =
       content::ResourceRequestInfo::ForRequest(request);
 
   std::unique_ptr<IoThreadClientThrottle> ioThreadThrottle =
@@ -320,18 +287,10 @@ void AwResourceDispatcherHostDelegate::RequestBeginning(
           request->url(), is_main_frame));
 }
 
-void AwResourceDispatcherHostDelegate::OnRequestRedirected(
-    const GURL& redirect_url,
-    net::URLRequest* request,
-    content::ResourceContext* resource_context,
-    network::ResourceResponse* response) {
-  AddExtraHeadersIfNeeded(request, resource_context);
-}
-
 void AwResourceDispatcherHostDelegate::RequestComplete(
     net::URLRequest* request) {
   if (request && !request->status().is_success()) {
-    const content::ResourceRequestInfo* request_info =
+    content::ResourceRequestInfo* request_info =
         content::ResourceRequestInfo::ForRequest(request);
 
     bool safebrowsing_hit = false;
@@ -377,7 +336,7 @@ void AwResourceDispatcherHostDelegate::DownloadStarting(
   if ("GET" != request->method())
     return;
 
-  const content::ResourceRequestInfo* request_info =
+  content::ResourceRequestInfo* request_info =
       content::ResourceRequestInfo::ForRequest(request);
 
   base::PostTaskWithTraits(
@@ -392,7 +351,7 @@ void AwResourceDispatcherHostDelegate::OnResponseStarted(
     net::URLRequest* request,
     content::ResourceContext* resource_context,
     network::ResourceResponse* response) {
-  const content::ResourceRequestInfo* request_info =
+  content::ResourceRequestInfo* request_info =
       content::ResourceRequestInfo::ForRequest(request);
   if (!request_info) {
     DLOG(FATAL) << "Started request without associated info: " <<
@@ -475,36 +434,6 @@ void AwResourceDispatcherHostDelegate::OnIoThreadClientReadyInternal(
     IoThreadClientThrottle* throttle = it->second;
     throttle->OnIoThreadClientReady(new_render_process_id, new_render_frame_id);
     pending_throttles_.erase(it);
-  }
-}
-
-void AwResourceDispatcherHostDelegate::AddExtraHeadersIfNeeded(
-    net::URLRequest* request,
-    content::ResourceContext* resource_context) {
-  const content::ResourceRequestInfo* request_info =
-      content::ResourceRequestInfo::ForRequest(request);
-  if (!request_info)
-    return;
-  if (request_info->GetResourceType() != content::RESOURCE_TYPE_MAIN_FRAME)
-    return;
-
-  const ui::PageTransition transition = request_info->GetPageTransition();
-  const bool is_load_url =
-      transition & ui::PAGE_TRANSITION_FROM_API;
-  const bool is_go_back_forward =
-      transition & ui::PAGE_TRANSITION_FORWARD_BACK;
-  const bool is_reload = ui::PageTransitionCoreTypeIs(
-      transition, ui::PAGE_TRANSITION_RELOAD);
-  if (is_load_url || is_go_back_forward || is_reload) {
-    AwResourceContext* awrc = static_cast<AwResourceContext*>(resource_context);
-    std::string extra_headers = awrc->GetExtraHeaders(request->url());
-    if (!extra_headers.empty()) {
-      net::HttpRequestHeaders headers;
-      headers.AddHeadersFromString(extra_headers);
-      for (net::HttpRequestHeaders::Iterator it(headers); it.GetNext(); ) {
-        request->SetExtraRequestHeaderByName(it.name(), it.value(), false);
-      }
-    }
   }
 }
 

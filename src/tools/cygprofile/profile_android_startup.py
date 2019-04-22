@@ -191,7 +191,7 @@ class AndroidProfileTool(object):
       os.path.dirname(__file__), 'memory_top_10_mobile_000.wprgo')
 
   def __init__(self, output_directory, host_profile_dir, use_wpr, urls,
-               simulate_user, device=None):
+               simulate_user, device, debug=False):
     """Constructor.
 
     Args:
@@ -201,21 +201,22 @@ class AndroidProfileTool(object):
       urls: (str) URLs to load. Have to be contained in the WPR archive if
                   use_wpr is True.
       simulate_user: (bool) Whether to simulate a user.
+      device: (DeviceUtils) Android device selected to be used to
+                            generate orderfile.
+      debug: (bool) Use simpler, non-representative debugging profile.
     """
-    if device is None:
-      devices = device_utils.DeviceUtils.HealthyDevices()
-      assert len(devices) == 1, 'Expected exactly one connected device'
-      self._device = devices[0]
-    else:
-      self._device = device_utils.DeviceUtils(device)
+    assert device, 'Expected a valid device'
+    self._device = device
     self._cygprofile_tests = os.path.join(
         output_directory, 'cygprofile_unittests')
     self._host_profile_dir = host_profile_dir
     self._use_wpr = use_wpr
     self._urls = urls
     self._simulate_user = simulate_user
+    self._debug = debug
     self._SetUpDevice()
     self._pregenerated_profiles = None
+
 
   def SetPregeneratedProfiles(self, files):
     """Set pregenerated profiles.
@@ -306,12 +307,16 @@ class AndroidProfileTool(object):
       logging.info('Profile files: %s', '\n'.join(self._pregenerated_profiles))
       return self._pregenerated_profiles
     logging.info('Running system health profile')
+    profile_benchmark = 'orderfile_generation.training'
+    if self._debug:
+      logging.info('Using reduced debugging profile')
+      profile_benchmark = 'orderfile_generation.debugging'
     self._SetUpDeviceFolders()
     self._RunCommand(['tools/perf/run_benchmark',
                       '--device={}'.format(self._device.serial),
                       '--browser=exact',
                       '--browser-executable={}'.format(apk),
-                      'orderfile_generation.training'])
+                      profile_benchmark])
     data = self._PullProfileData()
     self._DeleteDeviceData()
     return data
@@ -532,9 +537,12 @@ def main():
   trace_directory = args.trace_directory
   if not trace_directory:
     trace_directory = os.path.join(args.output_directory, 'profile_data')
+  devices = device_utils.DeviceUtils.HealthyDevices()
+  assert devices, 'Expected at least one connected device'
   profiler = AndroidProfileTool(
       args.output_directory, host_profile_dir=trace_directory,
-      use_wpr=not args.no_wpr, urls=args.urls, simulate_user=args.simulate_user)
+      use_wpr=not args.no_wpr, urls=args.urls, simulate_user=args.simulate_user,
+      device=devices[0])
   profiler.CollectProfile(args.apk_path, package_info)
   return 0
 

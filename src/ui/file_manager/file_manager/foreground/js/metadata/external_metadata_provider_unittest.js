@@ -2,19 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var entryA = {
-  toURL: function() { return "filesystem://A"; },
-  isFile: true
-};
+/** @const {!Entry} */
+const entryA = /** @type {!Entry} */ ({
+  toURL: function() {
+    return 'filesystem://A';
+  },
+  isFile: true,
+});
 
-var entryB = {
-  toURL: function() { return "filesystem://B"; },
-  isFile: true
-};
+/** @const {!Entry} */
+const entryB = /** @type {!Entry} */ ({
+  toURL: function() {
+    return 'filesystem://B';
+  },
+  isFile: true,
+});
+
+/**
+ * Mock chrome APIs.
+ * @type {!Object}
+ */
+let mockChrome;
 
 function testExternalMetadataProviderBasic(callback) {
-  // Mocking chrome API.
-  window.chrome = {
+  // Setup mock chrome APIs.
+  mockChrome = {
     fileManagerPrivate: {
       getEntryProperties: function(entries, names, callback) {
         assertEquals(2, entries.length);
@@ -41,27 +53,36 @@ function testExternalMetadataProviderBasic(callback) {
         ]);
       }
     },
-    runtime: {lastError: null}
+    runtime: {
+      lastError: null,
+    },
   };
-  var provider = new ExternalMetadataProvider();
-  reportPromise(provider.get([
-    new MetadataRequest(entryA, ['modificationTime', 'size']),
-    new MetadataRequest(entryB, ['modificationTime', 'size']),
-  ]).then(function(results) {
-    assertEquals(2, results.length);
-    assertEquals(
-        new Date(2015, 0, 1).toString(),
-        results[0].modificationTime.toString());
-    assertEquals(1024, results[0].size);
-    assertEquals(true, results[0].isMachineRoot);
-    assertEquals(true, results[0].isExternalMedia);
-    assertEquals(true, results[0].isArbitrarySyncFolder);
-    assertEquals(
-        new Date(2015, 1, 2).toString(),
-        results[1].modificationTime.toString());
-    assertEquals(2048, results[1].size);
-    assertEquals(false, results[1].isMachineRoot);
-    assertEquals(false, results[1].isExternalMedia);
-    assertEquals(false, results[1].isArbitrarySyncFolder);
-  }), callback);
+
+  installMockChrome(mockChrome);
+
+  const provider = new ExternalMetadataProvider();
+  reportPromise(
+      provider
+          .get([
+            new MetadataRequest(entryA, ['modificationTime', 'size']),
+            new MetadataRequest(entryB, ['modificationTime', 'size']),
+          ])
+          .then(results => {
+            assertEquals(2, results.length);
+            assertEquals(
+                new Date(2015, 0, 1).toString(),
+                results[0].modificationTime.toString());
+            assertEquals(1024, results[0].size);
+            assertEquals(true, results[0].isMachineRoot);
+            assertEquals(true, results[0].isExternalMedia);
+            assertEquals(true, results[0].isArbitrarySyncFolder);
+            assertEquals(
+                new Date(2015, 1, 2).toString(),
+                results[1].modificationTime.toString());
+            assertEquals(2048, results[1].size);
+            assertEquals(false, results[1].isMachineRoot);
+            assertEquals(false, results[1].isExternalMedia);
+            assertEquals(false, results[1].isArbitrarySyncFolder);
+          }),
+      callback);
 }

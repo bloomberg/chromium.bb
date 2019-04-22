@@ -34,13 +34,13 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "cc/animation/scroll_offset_animation_curve.h"
+#include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/layers/picture_layer.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
 #include "third_party/blink/renderer/platform/animation/compositor_keyframe_model.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
-#include "third_party/blink/renderer/platform/scroll/main_thread_scrolling_reason.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
@@ -56,7 +56,7 @@ cc::PictureLayer* ToCcLayer(GraphicsLayer* layer) {
 ScrollAnimatorBase* ScrollAnimatorBase::Create(
     ScrollableArea* scrollable_area) {
   if (scrollable_area && scrollable_area->ScrollAnimatorEnabled())
-    return new ScrollAnimator(scrollable_area);
+    return MakeGarbageCollected<ScrollAnimator>(scrollable_area);
   return MakeGarbageCollected<ScrollAnimatorBase>(scrollable_area);
 }
 
@@ -171,6 +171,16 @@ bool ScrollAnimator::WillAnimateToOffset(const ScrollOffset& target_offset) {
       animation_curve_->UpdateTarget(
           TimeDelta::FromSecondsD(time_function_() - start_time_),
           CompositorOffsetFromBlinkOffset(target_offset));
+
+      // Schedule an animation for this scrollable area even though we are
+      // updating the animation target - updating the animation will keep
+      // it going for another frame. This typically will happen at the
+      // beginning of a frame when coalesced input is dispatched.
+      // If we don't schedule an animation during the handling of the input
+      // event, the LatencyInfo associated with the input event will not be
+      // added as a swap promise and we won't get any swap results.
+      GetScrollableArea()->ScheduleAnimation();
+
       return true;
     }
 
@@ -256,9 +266,8 @@ bool ScrollAnimator::SendAnimationToCompositor() {
   if (scrollable_area_->ShouldScrollOnMainThread())
     return false;
 
-  std::unique_ptr<CompositorKeyframeModel> animation =
-      CompositorKeyframeModel::Create(
-          *animation_curve_, compositor_target_property::SCROLL_OFFSET, 0, 0);
+  auto animation = std::make_unique<CompositorKeyframeModel>(
+      *animation_curve_, compositor_target_property::SCROLL_OFFSET, 0, 0);
   // Being here means that either there is an animation that needs
   // to be sent to the compositor, or an animation that needs to
   // be updated (a new scroll event before the previous animation
@@ -282,7 +291,7 @@ bool ScrollAnimator::SendAnimationToCompositor() {
 
 void ScrollAnimator::CreateAnimationCurve() {
   DCHECK(!animation_curve_);
-  animation_curve_ = CompositorScrollOffsetAnimationCurve::Create(
+  animation_curve_ = std::make_unique<CompositorScrollOffsetAnimationCurve>(
       CompositorOffsetFromBlinkOffset(target_offset_),
       last_granularity_ == kScrollByPixel
           ? CompositorScrollOffsetAnimationCurve::kScrollDurationInverseDelta
@@ -374,7 +383,7 @@ void ScrollAnimator::AddMainThreadScrollingReason() {
   if (cc::Layer* scroll_layer =
           ToCcLayer(GetScrollableArea()->LayerForScrolling())) {
     scroll_layer->AddMainThreadScrollingReasons(
-        MainThreadScrollingReason::kHandlingScrollFromMainThread);
+        cc::MainThreadScrollingReason::kHandlingScrollFromMainThread);
   }
 }
 
@@ -382,7 +391,7 @@ void ScrollAnimator::RemoveMainThreadScrollingReason() {
   if (cc::Layer* scroll_layer =
           ToCcLayer(GetScrollableArea()->LayerForScrolling())) {
     scroll_layer->ClearMainThreadScrollingReasons(
-        MainThreadScrollingReason::kHandlingScrollFromMainThread);
+        cc::MainThreadScrollingReason::kHandlingScrollFromMainThread);
   }
 }
 
@@ -410,7 +419,7 @@ void ScrollAnimator::NotifyAnimationTakeover(
   ScrollOffset target_value(scroll_offset_animation_curve->target_value().x(),
                             scroll_offset_animation_curve->target_value().y());
   if (WillAnimateToOffset(target_value)) {
-    animation_curve_ = CompositorScrollOffsetAnimationCurve::Create(
+    animation_curve_ = std::make_unique<CompositorScrollOffsetAnimationCurve>(
         scroll_offset_animation_curve);
     start_time_ = animation_start_time;
   }

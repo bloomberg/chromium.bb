@@ -8,6 +8,7 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
+#include <float.h>
 #include <limits.h>
 #include <math.h>
 #include <stdio.h>
@@ -180,6 +181,70 @@ static BLOCK_SIZE get_rd_var_based_fixed_partition(VP9_COMP *cpi, MACROBLOCK *x,
     return BLOCK_8X8;
 }
 
+static void set_segment_index(VP9_COMP *cpi, MACROBLOCK *const x, int mi_row,
+                              int mi_col, BLOCK_SIZE bsize, int segment_index) {
+  VP9_COMMON *const cm = &cpi->common;
+  const struct segmentation *const seg = &cm->seg;
+  MACROBLOCKD *const xd = &x->e_mbd;
+  MODE_INFO *mi = xd->mi[0];
+
+  const AQ_MODE aq_mode = cpi->oxcf.aq_mode;
+  const uint8_t *const map =
+      seg->update_map ? cpi->segmentation_map : cm->last_frame_seg_map;
+
+  // Initialize the segmentation index as 0.
+  mi->segment_id = 0;
+
+  // Skip the rest if AQ mode is disabled.
+  if (!seg->enabled) return;
+
+  switch (aq_mode) {
+    case CYCLIC_REFRESH_AQ:
+      mi->segment_id = get_segment_id(cm, map, bsize, mi_row, mi_col);
+      break;
+    case VARIANCE_AQ:
+      if (cm->frame_type == KEY_FRAME || cpi->refresh_alt_ref_frame ||
+          cpi->force_update_segmentation ||
+          (cpi->refresh_golden_frame && !cpi->rc.is_src_frame_alt_ref)) {
+        int min_energy;
+        int max_energy;
+        // Get sub block energy range
+        if (bsize >= BLOCK_32X32) {
+          vp9_get_sub_block_energy(cpi, x, mi_row, mi_col, bsize, &min_energy,
+                                   &max_energy);
+        } else {
+          min_energy = bsize <= BLOCK_16X16 ? x->mb_energy
+                                            : vp9_block_energy(cpi, x, bsize);
+        }
+        mi->segment_id = vp9_vaq_segment_id(min_energy);
+      } else {
+        mi->segment_id = get_segment_id(cm, map, bsize, mi_row, mi_col);
+      }
+      break;
+    case LOOKAHEAD_AQ:
+      mi->segment_id = get_segment_id(cm, map, bsize, mi_row, mi_col);
+      break;
+    case EQUATOR360_AQ:
+      if (cm->frame_type == KEY_FRAME || cpi->force_update_segmentation)
+        mi->segment_id = vp9_360aq_segment_id(mi_row, cm->mi_rows);
+      else
+        mi->segment_id = get_segment_id(cm, map, bsize, mi_row, mi_col);
+      break;
+    case PSNR_AQ: mi->segment_id = segment_index; break;
+    default:
+      // NO_AQ or PSNR_AQ
+      break;
+  }
+
+  // Set segment index from ROI map if it's enabled.
+  if (cpi->roi.enabled)
+    mi->segment_id = get_segment_id(cm, map, bsize, mi_row, mi_col);
+
+  if (cpi->sf.enable_wiener_variance) mi->segment_id = x->segment_id;
+
+  vp9_init_plane_quantizers(cpi, x);
+}
+
 // Lighter version of set_offsets that only sets the mode info
 // pointers.
 static INLINE void set_mode_info_offsets(VP9_COMMON *const cm,
@@ -189,25 +254,40 @@ static INLINE void set_mode_info_offsets(VP9_COMMON *const cm,
   const int idx_str = xd->mi_stride * mi_row + mi_col;
   xd->mi = cm->mi_grid_visible + idx_str;
   xd->mi[0] = cm->mi + idx_str;
+  xd->mi_row = mi_row;
+  xd->mi_col = mi_col;
   x->mbmi_ext = x->mbmi_ext_base + (mi_row * cm->mi_cols + mi_col);
+}
+
+static double get_ssim_rdmult_scaling_factor(VP9_COMP *const cpi, int mi_row,
+                                             int mi_col) {
+  const VP9_COMMON *const cm = &cpi->common;
+
+  // SSIM rdmult scaling factors are currently 64x64 based.
+  const int num_8x8_w = 8;
+  const int num_8x8_h = 8;
+  const int num_cols = (cm->mi_cols + num_8x8_w - 1) / num_8x8_w;
+  const int row = mi_row / num_8x8_h;
+  const int col = mi_col / num_8x8_w;
+  const int index = row * num_cols + col;
+
+  assert(cpi->oxcf.tuning == VP8_TUNE_SSIM);
+  return cpi->mi_ssim_rdmult_scaling_factors[index];
 }
 
 static void set_offsets(VP9_COMP *cpi, const TileInfo *const tile,
                         MACROBLOCK *const x, int mi_row, int mi_col,
                         BLOCK_SIZE bsize) {
   VP9_COMMON *const cm = &cpi->common;
+  const VP9EncoderConfig *const oxcf = &cpi->oxcf;
   MACROBLOCKD *const xd = &x->e_mbd;
-  MODE_INFO *mi;
   const int mi_width = num_8x8_blocks_wide_lookup[bsize];
   const int mi_height = num_8x8_blocks_high_lookup[bsize];
-  const struct segmentation *const seg = &cm->seg;
   MvLimits *const mv_limits = &x->mv_limits;
 
   set_skip_context(xd, mi_row, mi_col);
 
   set_mode_info_offsets(cm, x, xd, mi_row, mi_col);
-
-  mi = xd->mi[0];
 
   // Set up destination pointers.
   vp9_setup_dst_planes(xd->plane, get_frame_new_buffer(cm), mi_row, mi_col);
@@ -230,21 +310,10 @@ static void set_offsets(VP9_COMP *cpi, const TileInfo *const tile,
   // R/D setup.
   x->rddiv = cpi->rd.RDDIV;
   x->rdmult = cpi->rd.RDMULT;
-
-  // Setup segment ID.
-  if (seg->enabled) {
-    if (cpi->oxcf.aq_mode != VARIANCE_AQ && cpi->oxcf.aq_mode != LOOKAHEAD_AQ &&
-        cpi->oxcf.aq_mode != EQUATOR360_AQ) {
-      const uint8_t *const map =
-          seg->update_map ? cpi->segmentation_map : cm->last_frame_seg_map;
-      mi->segment_id = get_segment_id(cm, map, bsize, mi_row, mi_col);
-    }
-    vp9_init_plane_quantizers(cpi, x);
-
-    x->encode_breakout = cpi->segment_encode_breakout[mi->segment_id];
-  } else {
-    mi->segment_id = 0;
-    x->encode_breakout = cpi->encode_breakout;
+  if (oxcf->tuning == VP8_TUNE_SSIM) {
+    const double ssim_factor =
+        get_ssim_rdmult_scaling_factor(cpi, mi_row, mi_col);
+    x->rdmult = (int)(ssim_factor * x->rdmult);
   }
 
   // required by vp9_append_sub8x8_mvs_for_idx() and vp9_find_best_ref_mvs()
@@ -508,7 +577,8 @@ static void set_vbp_thresholds(VP9_COMP *cpi, int64_t thresholds[], int q,
                                int content_state) {
   VP9_COMMON *const cm = &cpi->common;
   const int is_key_frame = frame_is_intra_only(cm);
-  const int threshold_multiplier = is_key_frame ? 20 : 1;
+  const int threshold_multiplier =
+      is_key_frame ? 20 : cpi->sf.variance_part_thresh_mult;
   int64_t threshold_base =
       (int64_t)(threshold_multiplier * cpi->y_dequant[q][1]);
 
@@ -919,12 +989,12 @@ static int scale_partitioning_svc(VP9_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
   const int has_rows = (mi_row_high + bs_high) < cm->mi_rows;
   const int has_cols = (mi_col_high + bs_high) < cm->mi_cols;
 
-  const int row_boundary_block_scale_factor[BLOCK_SIZES] = {
-    13, 13, 13, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0
-  };
-  const int col_boundary_block_scale_factor[BLOCK_SIZES] = {
-    13, 13, 13, 2, 2, 0, 2, 2, 0, 2, 2, 0, 0
-  };
+  const int row_boundary_block_scale_factor[BLOCK_SIZES] = { 13, 13, 13, 1, 0,
+                                                             1,  1,  0,  1, 1,
+                                                             0,  1,  0 };
+  const int col_boundary_block_scale_factor[BLOCK_SIZES] = { 13, 13, 13, 2, 2,
+                                                             0,  2,  2,  0, 2,
+                                                             2,  0,  0 };
   int start_pos;
   BLOCK_SIZE bsize_low;
   PARTITION_TYPE partition_high;
@@ -1223,9 +1293,11 @@ static int choose_partitioning(VP9_COMP *cpi, const TileInfo *const tile,
   int pixels_wide = 64, pixels_high = 64;
   int64_t thresholds[4] = { cpi->vbp_thresholds[0], cpi->vbp_thresholds[1],
                             cpi->vbp_thresholds[2], cpi->vbp_thresholds[3] };
-  int scene_change_detected =
-      cpi->rc.high_source_sad ||
-      (cpi->use_svc && cpi->svc.high_source_sad_superframe);
+  int force_64_split = cpi->rc.high_source_sad ||
+                       (cpi->use_svc && cpi->svc.high_source_sad_superframe) ||
+                       (cpi->oxcf.content == VP9E_CONTENT_SCREEN &&
+                        cpi->compute_source_sad_onepass &&
+                        cpi->sf.use_source_sad && !x->zero_temp_sad_source);
 
   // For the variance computation under SVC mode, we treat the frame as key if
   // the reference (base layer frame) is key frame (i.e., is_key_frame == 1).
@@ -1254,6 +1326,7 @@ static int choose_partitioning(VP9_COMP *cpi, const TileInfo *const tile,
   }
 
   set_offsets(cpi, tile, x, mi_row, mi_col, BLOCK_64X64);
+  set_segment_index(cpi, x, mi_row, mi_col, BLOCK_64X64, 0);
   segment_id = xd->mi[0]->segment_id;
 
   if (cpi->oxcf.speed >= 8 || (cpi->use_svc && cpi->svc.non_reference_frame))
@@ -1287,7 +1360,7 @@ static int choose_partitioning(VP9_COMP *cpi, const TileInfo *const tile,
     }
     // If source_sad is low copy the partition without computing the y_sad.
     if (x->skip_low_source_sad && cpi->sf.copy_partition_flag &&
-        !scene_change_detected &&
+        !force_64_split &&
         copy_partitioning(cpi, x, xd, mi_row, mi_col, segment_id, sb_offset)) {
       x->sb_use_mv_part = 1;
       if (cpi->sf.svc_use_lowres_part &&
@@ -1304,6 +1377,11 @@ static int choose_partitioning(VP9_COMP *cpi, const TileInfo *const tile,
   } else {
     set_vbp_thresholds(cpi, thresholds, cm->base_qindex, content_state);
   }
+  // Decrease 32x32 split threshold for screen on base layer, for scene
+  // change/high motion frames.
+  if (cpi->oxcf.content == VP9E_CONTENT_SCREEN &&
+      cpi->svc.spatial_layer_id == 0 && force_64_split)
+    thresholds[1] = 3 * thresholds[1] >> 2;
 
   // For non keyframes, disable 4x4 average for low resolution when speed = 8
   threshold_4x4avg = (cpi->oxcf.speed < 8) ? thresholds[1] << 1 : INT64_MAX;
@@ -1316,7 +1394,7 @@ static int choose_partitioning(VP9_COMP *cpi, const TileInfo *const tile,
 
   // Index for force_split: 0 for 64x64, 1-4 for 32x32 blocks,
   // 5-20 for the 16x16 blocks.
-  force_split[0] = scene_change_detected;
+  force_split[0] = force_64_split;
 
   if (!is_key_frame) {
     // In the case of spatial/temporal scalable coding, the assumption here is
@@ -1381,14 +1459,16 @@ static int choose_partitioning(VP9_COMP *cpi, const TileInfo *const tile,
       x->sb_mvcol_part = mi->mv[0].as_mv.col;
       x->sb_mvrow_part = mi->mv[0].as_mv.row;
       if (cpi->oxcf.content == VP9E_CONTENT_SCREEN &&
-          cpi->svc.spatial_layer_id == 0 &&
-          cpi->rc.high_num_blocks_with_motion && !x->zero_temp_sad_source &&
+          cpi->svc.spatial_layer_id == cpi->svc.first_spatial_layer_to_encode &&
+          cpi->svc.high_num_blocks_with_motion && !x->zero_temp_sad_source &&
           cm->width > 640 && cm->height > 480) {
-        // Disable split below 16x16 block size when scroll motion is detected.
+        // Disable split below 16x16 block size when scroll motion (horz or
+        // vert) is detected.
         // TODO(marpan/jianj): Improve this condition: issue is that search
         // range is hard-coded/limited in vp9_int_pro_motion_estimation() so
         // scroll motion may not be detected here.
-        if ((abs(x->sb_mvrow_part) >= 48 && abs(x->sb_mvcol_part) <= 8) ||
+        if (((abs(x->sb_mvrow_part) >= 48 && abs(x->sb_mvcol_part) <= 8) ||
+             (abs(x->sb_mvcol_part) >= 48 && abs(x->sb_mvrow_part) <= 8)) &&
             y_sad < 100000) {
           compute_minmax_variance = 0;
           thresholds[2] = INT64_MAX;
@@ -1852,14 +1932,40 @@ static void set_mode_info_seg_skip(MACROBLOCK *x, TX_MODE tx_mode,
   vp9_rd_cost_init(rd_cost);
 }
 
-static int set_segment_rdmult(VP9_COMP *const cpi, MACROBLOCK *const x,
-                              int8_t segment_id) {
-  int segment_qindex;
+static void set_segment_rdmult(VP9_COMP *const cpi, MACROBLOCK *const x,
+                               int mi_row, int mi_col, BLOCK_SIZE bsize,
+                               AQ_MODE aq_mode) {
   VP9_COMMON *const cm = &cpi->common;
+  const VP9EncoderConfig *const oxcf = &cpi->oxcf;
+  const uint8_t *const map =
+      cm->seg.update_map ? cpi->segmentation_map : cm->last_frame_seg_map;
+
   vp9_init_plane_quantizers(cpi, x);
   vpx_clear_system_state();
-  segment_qindex = vp9_get_qindex(&cm->seg, segment_id, cm->base_qindex);
-  return vp9_compute_rd_mult(cpi, segment_qindex + cm->y_dc_delta_q);
+
+  if (aq_mode == NO_AQ || aq_mode == PSNR_AQ) {
+    if (cpi->sf.enable_tpl_model || cpi->sf.enable_wiener_variance)
+      x->rdmult = x->cb_rdmult;
+  } else if (aq_mode == CYCLIC_REFRESH_AQ) {
+    // If segment is boosted, use rdmult for that segment.
+    if (cyclic_refresh_segment_id_boosted(
+            get_segment_id(cm, map, bsize, mi_row, mi_col)))
+      x->rdmult = vp9_cyclic_refresh_get_rdmult(cpi->cyclic_refresh);
+  } else {
+    x->rdmult = vp9_compute_rd_mult(cpi, cm->base_qindex + cm->y_dc_delta_q);
+    if (cpi->sf.enable_wiener_variance && cm->show_frame) {
+      if (cm->seg.enabled)
+        x->rdmult = vp9_compute_rd_mult(
+            cpi, vp9_get_qindex(&cm->seg, x->e_mbd.mi[0]->segment_id,
+                                cm->base_qindex));
+    }
+  }
+
+  if (oxcf->tuning == VP8_TUNE_SSIM) {
+    const double ssim_factor =
+        get_ssim_rdmult_scaling_factor(cpi, mi_row, mi_col);
+    x->rdmult = (int)(ssim_factor * x->rdmult);
+  }
 }
 
 static void rd_pick_sb_modes(VP9_COMP *cpi, TileDataEnc *tile_data,
@@ -1930,55 +2036,8 @@ static void rd_pick_sb_modes(VP9_COMP *cpi, TileDataEnc *tile_data,
     x->block_qcoeff_opt = cpi->sf.allow_quant_coeff_opt;
   }
 
-  if (aq_mode == VARIANCE_AQ) {
-    if (cm->frame_type == KEY_FRAME || cpi->refresh_alt_ref_frame ||
-        cpi->force_update_segmentation ||
-        (cpi->refresh_golden_frame && !cpi->rc.is_src_frame_alt_ref)) {
-      int min_energy;
-      int max_energy;
-
-      // Get sub block energy range
-      if (bsize >= BLOCK_32X32) {
-        vp9_get_sub_block_energy(cpi, x, mi_row, mi_col, bsize, &min_energy,
-                                 &max_energy);
-      } else {
-        min_energy = bsize <= BLOCK_16X16 ? x->mb_energy
-                                          : vp9_block_energy(cpi, x, bsize);
-      }
-
-      mi->segment_id = vp9_vaq_segment_id(min_energy);
-    } else {
-      const uint8_t *const map =
-          cm->seg.update_map ? cpi->segmentation_map : cm->last_frame_seg_map;
-      mi->segment_id = get_segment_id(cm, map, bsize, mi_row, mi_col);
-    }
-    x->rdmult = set_segment_rdmult(cpi, x, mi->segment_id);
-  } else if (aq_mode == LOOKAHEAD_AQ) {
-    const uint8_t *const map = cpi->segmentation_map;
-
-    // I do not change rdmult here consciously.
-    mi->segment_id = get_segment_id(cm, map, bsize, mi_row, mi_col);
-  } else if (aq_mode == EQUATOR360_AQ) {
-    if (cm->frame_type == KEY_FRAME || cpi->force_update_segmentation) {
-      mi->segment_id = vp9_360aq_segment_id(mi_row, cm->mi_rows);
-    } else {
-      const uint8_t *const map =
-          cm->seg.update_map ? cpi->segmentation_map : cm->last_frame_seg_map;
-      mi->segment_id = get_segment_id(cm, map, bsize, mi_row, mi_col);
-    }
-    x->rdmult = set_segment_rdmult(cpi, x, mi->segment_id);
-  } else if (aq_mode == COMPLEXITY_AQ) {
-    x->rdmult = set_segment_rdmult(cpi, x, mi->segment_id);
-  } else if (aq_mode == CYCLIC_REFRESH_AQ) {
-    const uint8_t *const map =
-        cm->seg.update_map ? cpi->segmentation_map : cm->last_frame_seg_map;
-    // If segment is boosted, use rdmult for that segment.
-    if (cyclic_refresh_segment_id_boosted(
-            get_segment_id(cm, map, bsize, mi_row, mi_col)))
-      x->rdmult = vp9_cyclic_refresh_get_rdmult(cpi->cyclic_refresh);
-  } else {
-    if (cpi->sf.enable_tpl_model) x->rdmult = x->cb_rdmult;
-  }
+  set_segment_index(cpi, x, mi_row, mi_col, bsize, 0);
+  set_segment_rdmult(cpi, x, mi_row, mi_col, bsize, aq_mode);
 
   // Find best coding mode & reconstruct the MB so it is available
   // as a predictor for MBs that follow in the SB
@@ -2143,8 +2202,16 @@ static void encode_b(VP9_COMP *cpi, const TileInfo *const tile, ThreadData *td,
   MACROBLOCK *const x = &td->mb;
   set_offsets(cpi, tile, x, mi_row, mi_col, bsize);
 
-  if (cpi->sf.enable_tpl_model && cpi->oxcf.aq_mode == NO_AQ)
+  if ((cpi->sf.enable_tpl_model || cpi->sf.enable_wiener_variance) &&
+      cpi->oxcf.aq_mode == NO_AQ) {
+    const VP9EncoderConfig *const oxcf = &cpi->oxcf;
     x->rdmult = x->cb_rdmult;
+    if (oxcf->tuning == VP8_TUNE_SSIM) {
+      const double ssim_factor =
+          get_ssim_rdmult_scaling_factor(cpi, mi_row, mi_col);
+      x->rdmult = (int)(ssim_factor * x->rdmult);
+    }
+  }
 
   update_state(cpi, td, ctx, mi_row, mi_col, bsize, output_enabled);
   encode_superblock(cpi, td, tp, output_enabled, mi_row, mi_col, bsize, ctx);
@@ -2429,17 +2496,15 @@ static void update_state_rt(VP9_COMP *cpi, ThreadData *td,
   *(xd->mi[0]) = ctx->mic;
   *(x->mbmi_ext) = ctx->mbmi_ext;
 
-  if (seg->enabled && cpi->oxcf.aq_mode != NO_AQ) {
-    // For in frame complexity AQ or variance AQ, copy segment_id from
-    // segmentation_map.
-    if (cpi->oxcf.aq_mode != CYCLIC_REFRESH_AQ) {
+  if (seg->enabled && (cpi->oxcf.aq_mode != NO_AQ || cpi->roi.enabled)) {
+    // Setting segmentation map for cyclic_refresh.
+    if (cpi->oxcf.aq_mode == CYCLIC_REFRESH_AQ) {
+      vp9_cyclic_refresh_update_segment(cpi, mi, mi_row, mi_col, bsize,
+                                        ctx->rate, ctx->dist, x->skip, p);
+    } else {
       const uint8_t *const map =
           seg->update_map ? cpi->segmentation_map : cm->last_frame_seg_map;
       mi->segment_id = get_segment_id(cm, map, bsize, mi_row, mi_col);
-    } else {
-      // Setting segmentation map for cyclic_refresh.
-      vp9_cyclic_refresh_update_segment(cpi, mi, mi_row, mi_col, bsize,
-                                        ctx->rate, ctx->dist, x->skip, p);
     }
     vp9_init_plane_quantizers(cpi, x);
   }
@@ -3015,15 +3080,15 @@ const int num_16x16_blocks_wide_lookup[BLOCK_SIZES] = { 1, 1, 1, 1, 1, 1, 1,
                                                         1, 2, 2, 2, 4, 4 };
 const int num_16x16_blocks_high_lookup[BLOCK_SIZES] = { 1, 1, 1, 1, 1, 1, 1,
                                                         2, 1, 2, 4, 2, 4 };
-const int qindex_skip_threshold_lookup[BLOCK_SIZES] = {
-  0, 10, 10, 30, 40, 40, 60, 80, 80, 90, 100, 100, 120
-};
-const int qindex_split_threshold_lookup[BLOCK_SIZES] = {
-  0, 3, 3, 7, 15, 15, 30, 40, 40, 60, 80, 80, 120
-};
-const int complexity_16x16_blocks_threshold[BLOCK_SIZES] = {
-  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 4, 4, 6
-};
+const int qindex_skip_threshold_lookup[BLOCK_SIZES] = { 0,   10,  10, 30, 40,
+                                                        40,  60,  80, 80, 90,
+                                                        100, 100, 120 };
+const int qindex_split_threshold_lookup[BLOCK_SIZES] = { 0,  3,  3,  7,  15,
+                                                         15, 30, 40, 40, 60,
+                                                         80, 80, 120 };
+const int complexity_16x16_blocks_threshold[BLOCK_SIZES] = { 1, 1, 1, 1, 1,
+                                                             1, 1, 1, 1, 1,
+                                                             4, 4, 6 };
 
 typedef enum {
   MV_ZERO = 0,
@@ -3277,23 +3342,24 @@ static int ml_predict_breakout(VP9_COMP *const cpi, BLOCK_SIZE bsize,
       linear_score += linear_weights[i] * features[i];
   }
 
-  return linear_score >= cpi->sf.ml_partition_search_breakout_thresh[q_ctx];
+  return linear_score >= cpi->sf.rd_ml_partition.search_breakout_thresh[q_ctx];
 }
 #undef FEATURES
 
-#define FEATURES 17
+#define FEATURES 8
 #define LABELS 4
 static void ml_prune_rect_partition(VP9_COMP *const cpi, MACROBLOCK *const x,
                                     BLOCK_SIZE bsize,
                                     const PC_TREE *const pc_tree,
                                     int *allow_horz, int *allow_vert,
-                                    int64_t ref_rd, int mi_row, int mi_col) {
+                                    int64_t ref_rd) {
   const NN_CONFIG *nn_config = NULL;
   float score[LABELS] = {
     0.0f,
   };
   int thresh = -1;
   int i;
+  (void)x;
 
   if (ref_rd <= 0 || ref_rd > 1000000000) return;
 
@@ -3301,15 +3367,15 @@ static void ml_prune_rect_partition(VP9_COMP *const cpi, MACROBLOCK *const x,
     case BLOCK_8X8: break;
     case BLOCK_16X16:
       nn_config = &vp9_rect_part_nnconfig_16;
-      thresh = cpi->sf.ml_prune_rect_partition_threhold[1];
+      thresh = cpi->sf.rd_ml_partition.prune_rect_thresh[1];
       break;
     case BLOCK_32X32:
       nn_config = &vp9_rect_part_nnconfig_32;
-      thresh = cpi->sf.ml_prune_rect_partition_threhold[2];
+      thresh = cpi->sf.rd_ml_partition.prune_rect_thresh[2];
       break;
     case BLOCK_64X64:
       nn_config = &vp9_rect_part_nnconfig_64;
-      thresh = cpi->sf.ml_prune_rect_partition_threhold[3];
+      thresh = cpi->sf.rd_ml_partition.prune_rect_thresh[3];
       break;
     default: assert(0 && "Unexpected block size."); return;
   }
@@ -3317,7 +3383,6 @@ static void ml_prune_rect_partition(VP9_COMP *const cpi, MACROBLOCK *const x,
 
   // Feature extraction and model score calculation.
   {
-    const int64_t none_rdcost = pc_tree->none.rdcost;
     const VP9_COMMON *const cm = &cpi->common;
 #if CONFIG_VP9_HIGHBITDEPTH
     const int dc_q =
@@ -3325,83 +3390,32 @@ static void ml_prune_rect_partition(VP9_COMP *const cpi, MACROBLOCK *const x,
 #else
     const int dc_q = vp9_dc_quant(cm->base_qindex, 0, cm->bit_depth);
 #endif  // CONFIG_VP9_HIGHBITDEPTH
+    const int bs = 4 * num_4x4_blocks_wide_lookup[bsize];
     int feature_index = 0;
-    unsigned int block_var = 0;
-    unsigned int sub_block_var[4] = { 0 };
     float features[FEATURES];
 
+    features[feature_index++] = logf((float)dc_q + 1.0f);
     features[feature_index++] =
         (float)(pc_tree->partitioning == PARTITION_NONE);
-    features[feature_index++] = logf((float)(dc_q * dc_q) / 256.0f + 1.0f);
-
-    // Calculate source pixel variance.
-    {
-      struct buf_2d buf;
-      const BLOCK_SIZE subsize = get_subsize(bsize, PARTITION_SPLIT);
-      const int bs = 4 * num_4x4_blocks_wide_lookup[bsize];
-      const MACROBLOCKD *const xd = &x->e_mbd;
-      vp9_setup_src_planes(x, cpi->Source, mi_row, mi_col);
-
-      (void)xd;
-#if CONFIG_VP9_HIGHBITDEPTH
-      if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-        block_var = vp9_high_get_sby_perpixel_variance(cpi, &x->plane[0].src,
-                                                       bsize, xd->bd);
-      } else {
-        block_var = vp9_get_sby_perpixel_variance(cpi, &x->plane[0].src, bsize);
-      }
-#else
-      block_var = vp9_get_sby_perpixel_variance(cpi, &x->plane[0].src, bsize);
-#endif  // CONFIG_VP9_HIGHBITDEPTH
-
-      buf.stride = x->plane[0].src.stride;
-      for (i = 0; i < 4; ++i) {
-        const int x_idx = (i & 1) * bs / 2;
-        const int y_idx = (i >> 1) * bs / 2;
-        buf.buf = x->plane[0].src.buf + x_idx + y_idx * buf.stride;
-#if CONFIG_VP9_HIGHBITDEPTH
-        if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-          sub_block_var[i] =
-              vp9_high_get_sby_perpixel_variance(cpi, &buf, subsize, xd->bd);
-        } else {
-          sub_block_var[i] = vp9_get_sby_perpixel_variance(cpi, &buf, subsize);
-        }
-#else
-        sub_block_var[i] = vp9_get_sby_perpixel_variance(cpi, &buf, subsize);
-#endif  // CONFIG_VP9_HIGHBITDEPTH
-      }
-    }
-
-    features[feature_index++] = logf((float)block_var + 1.0f);
-    features[feature_index++] = logf((float)ref_rd + 1.0f);
-    features[feature_index++] = (none_rdcost > 0 && none_rdcost < 1000000000)
-                                    ? (float)pc_tree->none.skippable
-                                    : 0.0f;
-
-    for (i = 0; i < 4; ++i) {
-      const int64_t this_rd = pc_tree->split[i]->none.rdcost;
-      const int rd_valid = this_rd > 0 && this_rd < 1000000000;
-      // Ratio between sub-block RD and whole block RD.
-      features[feature_index++] =
-          rd_valid ? ((float)this_rd / (float)ref_rd) : 1.0f;
-      // Sub-block skippable.
-      features[feature_index++] =
-          rd_valid ? ((float)pc_tree->split[i]->none.skippable) : 0.0f;
-    }
+    features[feature_index++] = logf((float)ref_rd / bs / bs + 1.0f);
 
     {
-      const float denom = (float)(block_var + 1);
-      const float low_b = 0.1f;
-      const float high_b = 10.0f;
+      const float norm_factor = 1.0f / ((float)ref_rd + 1.0f);
+      const int64_t none_rdcost = pc_tree->none.rdcost;
+      float rd_ratio = 2.0f;
+      if (none_rdcost > 0 && none_rdcost < 1000000000)
+        rd_ratio = (float)none_rdcost * norm_factor;
+      features[feature_index++] = VPXMIN(rd_ratio, 2.0f);
+
       for (i = 0; i < 4; ++i) {
-        // Ratio between the quarter sub-block variance and the
-        // whole-block variance.
-        float var_ratio = (float)(sub_block_var[i] + 1) / denom;
-        if (var_ratio < low_b) var_ratio = low_b;
-        if (var_ratio > high_b) var_ratio = high_b;
-        features[feature_index++] = var_ratio;
+        const int64_t this_rd = pc_tree->split[i]->none.rdcost;
+        const int rd_valid = this_rd > 0 && this_rd < 1000000000;
+        // Ratio between sub-block RD and whole block RD.
+        features[feature_index++] =
+            rd_valid ? (float)this_rd * norm_factor : 1.0f;
       }
     }
+
     assert(feature_index == FEATURES);
     nn_predict(features, nn_config, score);
   }
@@ -3429,18 +3443,59 @@ static void ml_prune_rect_partition(VP9_COMP *const cpi, MACROBLOCK *const x,
 #undef FEATURES
 #undef LABELS
 
+// Perform fast and coarse motion search for the given block. This is a
+// pre-processing step for the ML based partition search speedup.
+static void simple_motion_search(const VP9_COMP *const cpi, MACROBLOCK *const x,
+                                 BLOCK_SIZE bsize, int mi_row, int mi_col,
+                                 MV ref_mv, MV_REFERENCE_FRAME ref,
+                                 uint8_t *const pred_buf) {
+  const VP9_COMMON *const cm = &cpi->common;
+  MACROBLOCKD *const xd = &x->e_mbd;
+  MODE_INFO *const mi = xd->mi[0];
+  const YV12_BUFFER_CONFIG *const yv12 = get_ref_frame_buffer(cpi, ref);
+  const int step_param = 1;
+  const MvLimits tmp_mv_limits = x->mv_limits;
+  const SEARCH_METHODS search_method = NSTEP;
+  const int sadpb = x->sadperbit16;
+  MV ref_mv_full = { ref_mv.row >> 3, ref_mv.col >> 3 };
+  MV best_mv = { 0, 0 };
+  int cost_list[5];
+
+  assert(yv12 != NULL);
+  if (!yv12) return;
+  vp9_setup_pre_planes(xd, 0, yv12, mi_row, mi_col,
+                       &cm->frame_refs[ref - 1].sf);
+  mi->ref_frame[0] = ref;
+  mi->ref_frame[1] = NONE;
+  mi->sb_type = bsize;
+  vp9_set_mv_search_range(&x->mv_limits, &ref_mv);
+  vp9_full_pixel_search(cpi, x, bsize, &ref_mv_full, step_param, search_method,
+                        sadpb, cond_cost_list(cpi, cost_list), &ref_mv,
+                        &best_mv, 0, 0);
+  best_mv.row *= 8;
+  best_mv.col *= 8;
+  x->mv_limits = tmp_mv_limits;
+  mi->mv[0].as_mv = best_mv;
+
+  set_ref_ptrs(cm, xd, mi->ref_frame[0], mi->ref_frame[1]);
+  xd->plane[0].dst.buf = pred_buf;
+  xd->plane[0].dst.stride = 64;
+  vp9_build_inter_predictors_sby(xd, mi_row, mi_col, bsize);
+}
+
 // Use a neural net model to prune partition-none and partition-split search.
-// The model uses prediction residue variance and quantization step size as
-// input features.
-#define FEATURES 6
-static void ml_predict_var_rd_paritioning(VP9_COMP *cpi, MACROBLOCK *x,
+// Features used: QP; spatial block size contexts; variance of prediction
+// residue after simple_motion_search.
+#define FEATURES 12
+static void ml_predict_var_rd_paritioning(const VP9_COMP *const cpi,
+                                          MACROBLOCK *const x,
+                                          PC_TREE *const pc_tree,
                                           BLOCK_SIZE bsize, int mi_row,
                                           int mi_col, int *none, int *split) {
-  VP9_COMMON *const cm = &cpi->common;
-  MACROBLOCKD *xd = &x->e_mbd;
-  MODE_INFO *mi = xd->mi[0];
+  const VP9_COMMON *const cm = &cpi->common;
   const NN_CONFIG *nn_config = NULL;
 #if CONFIG_VP9_HIGHBITDEPTH
+  MACROBLOCKD *xd = &x->e_mbd;
   DECLARE_ALIGNED(16, uint8_t, pred_buffer[64 * 64 * 2]);
   uint8_t *const pred_buf = (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
                                 ? (CONVERT_TO_BYTEPTR(pred_buffer))
@@ -3450,69 +3505,48 @@ static void ml_predict_var_rd_paritioning(VP9_COMP *cpi, MACROBLOCK *x,
   uint8_t *const pred_buf = pred_buffer;
 #endif  // CONFIG_VP9_HIGHBITDEPTH
   const int speed = cpi->oxcf.speed;
-  int i;
   float thresh = 0.0f;
 
   switch (bsize) {
     case BLOCK_64X64:
-      nn_config = &vp9_var_rd_part_nnconfig_64;
-      thresh = speed > 0 ? 3.5f : 3.0f;
+      nn_config = &vp9_part_split_nnconfig_64;
+      thresh = speed > 0 ? 2.8f : 3.0f;
       break;
     case BLOCK_32X32:
-      nn_config = &vp9_var_rd_part_nnconfig_32;
+      nn_config = &vp9_part_split_nnconfig_32;
       thresh = speed > 0 ? 3.5f : 3.0f;
       break;
     case BLOCK_16X16:
-      nn_config = &vp9_var_rd_part_nnconfig_16;
-      thresh = speed > 0 ? 3.5f : 4.0f;
+      nn_config = &vp9_part_split_nnconfig_16;
+      thresh = speed > 0 ? 3.8f : 4.0f;
       break;
     case BLOCK_8X8:
-      nn_config = &vp9_var_rd_part_nnconfig_8;
+      nn_config = &vp9_part_split_nnconfig_8;
       if (cm->width >= 720 && cm->height >= 720)
         thresh = speed > 0 ? 2.5f : 2.0f;
       else
-        thresh = speed > 0 ? 3.5f : 2.0f;
+        thresh = speed > 0 ? 3.8f : 2.0f;
       break;
     default: assert(0 && "Unexpected block size."); return;
   }
 
   if (!nn_config) return;
 
-  mi->ref_frame[1] = NONE;
-  mi->sb_type = bsize;
   // Do a simple single motion search to find a prediction for current block.
   // The variance of the residue will be used as input features.
   {
+    MV ref_mv;
     const MV_REFERENCE_FRAME ref =
         cpi->rc.is_src_frame_alt_ref ? ALTREF_FRAME : LAST_FRAME;
-    YV12_BUFFER_CONFIG *yv12 = get_ref_frame_buffer(cpi, ref);
-    MV ref_mv = { 0, 0 };
-    MV ref_mv_full = { 0, 0 };
-    const int step_param = 1;
-    const MvLimits tmp_mv_limits = x->mv_limits;
-    const SEARCH_METHODS search_method = NSTEP;
-    const int sadpb = x->sadperbit16;
-    MV best_mv = { 0, 0 };
-    int cost_list[5];
-
-    assert(yv12 != NULL);
-    if (!yv12) return;
-    vp9_setup_pre_planes(xd, 0, yv12, mi_row, mi_col,
-                         &cm->frame_refs[ref - 1].sf);
-    mi->ref_frame[0] = ref;
-    vp9_set_mv_search_range(&x->mv_limits, &ref_mv);
-    vp9_full_pixel_search(cpi, x, bsize, &ref_mv_full, step_param,
-                          search_method, sadpb, cond_cost_list(cpi, cost_list),
-                          &ref_mv, &best_mv, 0, 0);
-    best_mv.row *= 8;
-    best_mv.col *= 8;
-    x->mv_limits = tmp_mv_limits;
-    mi->mv[0].as_mv = best_mv;
-
-    set_ref_ptrs(cm, xd, mi->ref_frame[0], mi->ref_frame[1]);
-    xd->plane[0].dst.buf = pred_buf;
-    xd->plane[0].dst.stride = 64;
-    vp9_build_inter_predictors_sby(xd, mi_row, mi_col, bsize);
+    // If bsize is 64x64, use zero MV as reference; otherwise, use MV result
+    // of previous(larger) block as reference.
+    if (bsize == BLOCK_64X64)
+      ref_mv.row = ref_mv.col = 0;
+    else
+      ref_mv = pc_tree->mv;
+    vp9_setup_src_planes(x, cpi->Source, mi_row, mi_col);
+    simple_motion_search(cpi, x, bsize, mi_row, mi_col, ref_mv, ref, pred_buf);
+    pc_tree->mv = x->e_mbd.mi[0]->mv[0].as_mv;
   }
 
   vpx_clear_system_state();
@@ -3529,8 +3563,8 @@ static void ml_predict_var_rd_paritioning(VP9_COMP *cpi, MACROBLOCK *x,
     float score;
 
     // Generate model input features.
-    features[feature_idx++] = logf((float)(dc_q * dc_q) / 256.0f + 1.0f);
-    vp9_setup_src_planes(x, cpi->Source, mi_row, mi_col);
+    features[feature_idx++] = logf((float)dc_q + 1.0f);
+
     // Get the variance of the residue as input features.
     {
       const int bs = 4 * num_4x4_blocks_wide_lookup[bsize];
@@ -3544,7 +3578,19 @@ static void ml_predict_var_rd_paritioning(VP9_COMP *cpi, MACROBLOCK *x,
       const unsigned int var =
           cpi->fn_ptr[bsize].vf(src, src_stride, pred, pred_stride, &sse);
       const float factor = (var == 0) ? 1.0f : (1.0f / (float)var);
+      const MACROBLOCKD *const xd = &x->e_mbd;
+      const int has_above = !!xd->above_mi;
+      const int has_left = !!xd->left_mi;
+      const BLOCK_SIZE above_bsize = has_above ? xd->above_mi->sb_type : bsize;
+      const BLOCK_SIZE left_bsize = has_left ? xd->left_mi->sb_type : bsize;
+      int i;
 
+      features[feature_idx++] = (float)has_above;
+      features[feature_idx++] = (float)b_width_log2_lookup[above_bsize];
+      features[feature_idx++] = (float)b_height_log2_lookup[above_bsize];
+      features[feature_idx++] = (float)has_left;
+      features[feature_idx++] = (float)b_width_log2_lookup[left_bsize];
+      features[feature_idx++] = (float)b_height_log2_lookup[left_bsize];
       features[feature_idx++] = logf((float)var + 1.0f);
       for (i = 0; i < 4; ++i) {
         const int x_idx = (i & 1) * bs / 2;
@@ -3573,10 +3619,105 @@ static void ml_predict_var_rd_paritioning(VP9_COMP *cpi, MACROBLOCK *x,
   }
 }
 #undef FEATURES
-#undef LABELS
 
-int get_rdmult_delta(VP9_COMP *cpi, BLOCK_SIZE bsize, int mi_row, int mi_col,
-                     int orig_rdmult) {
+static double log_wiener_var(int64_t wiener_variance) {
+  return log(1.0 + wiener_variance) / log(2.0);
+}
+
+static void build_kmeans_segmentation(VP9_COMP *cpi) {
+  VP9_COMMON *cm = &cpi->common;
+  BLOCK_SIZE bsize = BLOCK_64X64;
+  KMEANS_DATA *kmeans_data;
+
+  vp9_disable_segmentation(&cm->seg);
+  if (cm->show_frame) {
+    int mi_row, mi_col;
+    cpi->kmeans_data_size = 0;
+    cpi->kmeans_ctr_num = 8;
+
+    for (mi_row = 0; mi_row < cm->mi_rows; mi_row += MI_BLOCK_SIZE) {
+      for (mi_col = 0; mi_col < cm->mi_cols; mi_col += MI_BLOCK_SIZE) {
+        int mb_row_start = mi_row >> 1;
+        int mb_col_start = mi_col >> 1;
+        int mb_row_end = VPXMIN(
+            (mi_row + num_8x8_blocks_high_lookup[bsize]) >> 1, cm->mb_rows);
+        int mb_col_end = VPXMIN(
+            (mi_col + num_8x8_blocks_wide_lookup[bsize]) >> 1, cm->mb_cols);
+        int row, col;
+        int64_t wiener_variance = 0;
+
+        for (row = mb_row_start; row < mb_row_end; ++row)
+          for (col = mb_col_start; col < mb_col_end; ++col)
+            wiener_variance += cpi->mb_wiener_variance[row * cm->mb_cols + col];
+
+        wiener_variance /=
+            (mb_row_end - mb_row_start) * (mb_col_end - mb_col_start);
+
+#if CONFIG_MULTITHREAD
+        pthread_mutex_lock(&cpi->kmeans_mutex);
+#endif  // CONFIG_MULTITHREAD
+
+        kmeans_data = &cpi->kmeans_data_arr[cpi->kmeans_data_size++];
+        kmeans_data->value = log_wiener_var(wiener_variance);
+        kmeans_data->pos = mi_row * cpi->kmeans_data_stride + mi_col;
+#if CONFIG_MULTITHREAD
+        pthread_mutex_unlock(&cpi->kmeans_mutex);
+#endif  // CONFIG_MULTITHREAD
+      }
+    }
+
+    vp9_kmeans(cpi->kmeans_ctr_ls, cpi->kmeans_boundary_ls,
+               cpi->kmeans_count_ls, cpi->kmeans_ctr_num, cpi->kmeans_data_arr,
+               cpi->kmeans_data_size);
+
+    vp9_perceptual_aq_mode_setup(cpi, &cm->seg);
+  }
+}
+
+static int wiener_var_segment(VP9_COMP *cpi, BLOCK_SIZE bsize, int mi_row,
+                              int mi_col) {
+  VP9_COMMON *cm = &cpi->common;
+  int mb_row_start = mi_row >> 1;
+  int mb_col_start = mi_col >> 1;
+  int mb_row_end =
+      VPXMIN((mi_row + num_8x8_blocks_high_lookup[bsize]) >> 1, cm->mb_rows);
+  int mb_col_end =
+      VPXMIN((mi_col + num_8x8_blocks_wide_lookup[bsize]) >> 1, cm->mb_cols);
+  int row, col, idx;
+  int64_t wiener_variance = 0;
+  int segment_id;
+  int8_t seg_hist[MAX_SEGMENTS] = { 0 };
+  int8_t max_count = 0, max_index = -1;
+
+  vpx_clear_system_state();
+
+  assert(cpi->norm_wiener_variance > 0);
+
+  for (row = mb_row_start; row < mb_row_end; ++row) {
+    for (col = mb_col_start; col < mb_col_end; ++col) {
+      wiener_variance = cpi->mb_wiener_variance[row * cm->mb_cols + col];
+      segment_id =
+          vp9_get_group_idx(log_wiener_var(wiener_variance),
+                            cpi->kmeans_boundary_ls, cpi->kmeans_ctr_num);
+      ++seg_hist[segment_id];
+    }
+  }
+
+  for (idx = 0; idx < cpi->kmeans_ctr_num; ++idx) {
+    if (seg_hist[idx] > max_count) {
+      max_count = seg_hist[idx];
+      max_index = idx;
+    }
+  }
+
+  assert(max_index >= 0);
+  segment_id = max_index;
+
+  return segment_id;
+}
+
+static int get_rdmult_delta(VP9_COMP *cpi, BLOCK_SIZE bsize, int mi_row,
+                            int mi_col, int orig_rdmult) {
   const int gf_group_index = cpi->twopass.gf_group.index;
   TplDepFrame *tpl_frame = &cpi->tpl_stats[gf_group_index];
   TplDepStats *tpl_stats = tpl_frame->tpl_stats_ptr;
@@ -3634,6 +3775,7 @@ static void rd_pick_partition(VP9_COMP *cpi, ThreadData *td,
                               RD_COST *rd_cost, int64_t best_rd,
                               PC_TREE *pc_tree) {
   VP9_COMMON *const cm = &cpi->common;
+  const VP9EncoderConfig *const oxcf = &cpi->oxcf;
   TileInfo *const tile_info = &tile_data->tile_info;
   MACROBLOCK *const x = &td->mb;
   MACROBLOCKD *const xd = &x->e_mbd;
@@ -3673,12 +3815,17 @@ static void rd_pick_partition(VP9_COMP *cpi, ThreadData *td,
   int64_t dist_breakout_thr = cpi->sf.partition_search_breakout_thr.dist;
   int rate_breakout_thr = cpi->sf.partition_search_breakout_thr.rate;
   int must_split = 0;
-  int partition_mul = cpi->sf.enable_tpl_model && cpi->oxcf.aq_mode == NO_AQ
-                          ? x->cb_rdmult
-                          : cpi->rd.RDMULT;
+
   // Ref frames picked in the [i_th] quarter subblock during square partition
   // RD search. It may be used to prune ref frame selection of rect partitions.
   uint8_t ref_frames_used[4] = { 0, 0, 0, 0 };
+
+  int partition_mul = x->cb_rdmult;
+  if (oxcf->tuning == VP8_TUNE_SSIM) {
+    const double ssim_factor =
+        get_ssim_rdmult_scaling_factor(cpi, mi_row, mi_col);
+    partition_mul = (int)(ssim_factor * partition_mul);
+  }
 
   (void)*tp_orig;
 
@@ -3807,14 +3954,19 @@ static void rd_pick_partition(VP9_COMP *cpi, ThreadData *td,
 
   pc_tree->partitioning = PARTITION_NONE;
 
-  if (cpi->sf.ml_var_partition_pruning) {
-    const int do_ml_var_partition_pruning =
-        !frame_is_intra_only(cm) && partition_none_allowed && do_split &&
+  if (cpi->sf.rd_ml_partition.var_pruning && !frame_is_intra_only(cm)) {
+    const int do_rd_ml_partition_var_pruning =
+        partition_none_allowed && do_split &&
         mi_row + num_8x8_blocks_high_lookup[bsize] <= cm->mi_rows &&
         mi_col + num_8x8_blocks_wide_lookup[bsize] <= cm->mi_cols;
-    if (do_ml_var_partition_pruning) {
-      ml_predict_var_rd_paritioning(cpi, x, bsize, mi_row, mi_col,
+    if (do_rd_ml_partition_var_pruning) {
+      ml_predict_var_rd_paritioning(cpi, x, pc_tree, bsize, mi_row, mi_col,
                                     &partition_none_allowed, &do_split);
+    } else {
+      vp9_zero(pc_tree->mv);
+    }
+    if (bsize > BLOCK_8X8) {  // Store MV result as reference for subblocks.
+      for (i = 0; i < 4; ++i) pc_tree->split[i]->mv = pc_tree->mv;
     }
   }
 
@@ -3844,7 +3996,7 @@ static void rd_pick_partition(VP9_COMP *cpi, ThreadData *td,
         best_rdc = this_rdc;
         if (bsize >= BLOCK_8X8) pc_tree->partitioning = PARTITION_NONE;
 
-        if (cpi->sf.ml_partition_search_early_termination) {
+        if (cpi->sf.rd_ml_partition.search_early_termination) {
           // Currently, the machine-learning based partition search early
           // termination is only used while bsize is 16x16, 32x32 or 64x64,
           // VPXMIN(cm->width, cm->height) >= 480, and speed = 0.
@@ -3860,15 +4012,14 @@ static void rd_pick_partition(VP9_COMP *cpi, ThreadData *td,
 
         if ((do_split || do_rect) && !x->e_mbd.lossless && ctx->skippable) {
           const int use_ml_based_breakout =
-              cpi->sf.use_ml_partition_search_breakout &&
-              cm->base_qindex >= 100;
+              cpi->sf.rd_ml_partition.search_breakout && cm->base_qindex >= 100;
           if (use_ml_based_breakout) {
             if (ml_predict_breakout(cpi, bsize, x, &this_rdc)) {
               do_split = 0;
               do_rect = 0;
             }
           } else {
-            if (!cpi->sf.ml_partition_search_early_termination) {
+            if (!cpi->sf.rd_ml_partition.search_early_termination) {
               if ((best_rdc.dist < (dist_breakout_thr >> 2)) ||
                   (best_rdc.dist < dist_breakout_thr &&
                    best_rdc.rate < rate_breakout_thr)) {
@@ -4024,7 +4175,7 @@ static void rd_pick_partition(VP9_COMP *cpi, ThreadData *td,
         pc_tree->partitioning = PARTITION_SPLIT;
 
         // Rate and distortion based partition search termination clause.
-        if (!cpi->sf.ml_partition_search_early_termination &&
+        if (!cpi->sf.rd_ml_partition.search_early_termination &&
             !x->e_mbd.lossless &&
             ((best_rdc.dist < (dist_breakout_thr >> 2)) ||
              (best_rdc.dist < dist_breakout_thr &&
@@ -4065,8 +4216,7 @@ static void rd_pick_partition(VP9_COMP *cpi, ThreadData *td,
         (partition_horz_allowed || partition_vert_allowed) && bsize > BLOCK_8X8;
     if (do_ml_rect_partition_pruning) {
       ml_prune_rect_partition(cpi, x, bsize, pc_tree, &partition_horz_allowed,
-                              &partition_vert_allowed, best_rdc.rdcost, mi_row,
-                              mi_col);
+                              &partition_vert_allowed, best_rdc.rdcost);
     }
   }
 
@@ -4217,6 +4367,7 @@ static void encode_rd_sb_row(VP9_COMP *cpi, ThreadData *td,
     RD_COST dummy_rdc;
     int i;
     int seg_skip = 0;
+    int orig_rdmult = cpi->rd.RDMULT;
 
     const int idx_str = cm->mi_stride * mi_row + mi_col;
     MODE_INFO **mi = cm->mi_grid_visible + idx_str;
@@ -4249,6 +4400,9 @@ static void encode_rd_sb_row(VP9_COMP *cpi, ThreadData *td,
     }
 
     x->source_variance = UINT_MAX;
+
+    x->cb_rdmult = orig_rdmult;
+
     if (sf->partition_search_type == FIXED_PARTITION || seg_skip) {
       const BLOCK_SIZE bsize =
           seg_skip ? BLOCK_64X64 : sf->always_this_block_size;
@@ -4269,12 +4423,16 @@ static void encode_rd_sb_row(VP9_COMP *cpi, ThreadData *td,
       rd_use_partition(cpi, td, tile_data, mi, tp, mi_row, mi_col, BLOCK_64X64,
                        &dummy_rate, &dummy_dist, 1, td->pc_root);
     } else {
-      int orig_rdmult = cpi->rd.RDMULT;
-      x->cb_rdmult = orig_rdmult;
       if (cpi->twopass.gf_group.index > 0 && cpi->sf.enable_tpl_model) {
         int dr =
             get_rdmult_delta(cpi, BLOCK_64X64, mi_row, mi_col, orig_rdmult);
         x->cb_rdmult = dr;
+      }
+
+      if (cpi->sf.enable_wiener_variance && cm->show_frame) {
+        x->segment_id = wiener_var_segment(cpi, BLOCK_64X64, mi_row, mi_col);
+        x->cb_rdmult = vp9_compute_rd_mult(
+            cpi, vp9_get_qindex(&cm->seg, x->segment_id, cm->base_qindex));
       }
 
       // If required set upper and lower partition size limits
@@ -4413,6 +4571,9 @@ static void nonrd_pick_sb_modes(VP9_COMP *cpi, TileDataEnc *tile_data,
   int plane;
 
   set_offsets(cpi, tile_info, x, mi_row, mi_col, bsize);
+
+  set_segment_index(cpi, x, mi_row, mi_col, bsize, 0);
+
   mi = xd->mi[0];
   mi->sb_type = bsize;
 
@@ -4534,7 +4695,6 @@ static void pred_pixel_ready_reset(PC_TREE *pc_tree, BLOCK_SIZE bsize) {
   }
 }
 
-#if CONFIG_ML_VAR_PARTITION
 #define FEATURES 6
 #define LABELS 2
 static int ml_predict_var_paritioning(VP9_COMP *cpi, MACROBLOCK *x,
@@ -4604,7 +4764,6 @@ static int ml_predict_var_paritioning(VP9_COMP *cpi, MACROBLOCK *x,
 }
 #undef FEATURES
 #undef LABELS
-#endif  // CONFIG_ML_VAR_PARTITION
 
 static void nonrd_pick_partition(VP9_COMP *cpi, ThreadData *td,
                                  TileDataEnc *tile_data, TOKENEXTRA **tp,
@@ -4635,10 +4794,8 @@ static void nonrd_pick_partition(VP9_COMP *cpi, ThreadData *td,
       !force_vert_split && yss <= xss && bsize >= BLOCK_8X8;
   int partition_vert_allowed =
       !force_horz_split && xss <= yss && bsize >= BLOCK_8X8;
-#if CONFIG_ML_VAR_PARTITION
   const int use_ml_based_partitioning =
       sf->partition_search_type == ML_BASED_PARTITION;
-#endif  // CONFIG_ML_VAR_PARTITION
 
   (void)*tp_orig;
 
@@ -4670,7 +4827,6 @@ static void nonrd_pick_partition(VP9_COMP *cpi, ThreadData *td,
     partition_vert_allowed &= force_vert_split;
   }
 
-#if CONFIG_ML_VAR_PARTITION
   if (use_ml_based_partitioning) {
     if (partition_none_allowed || do_split) do_rect = 0;
     if (partition_none_allowed && do_split) {
@@ -4680,7 +4836,6 @@ static void nonrd_pick_partition(VP9_COMP *cpi, ThreadData *td,
       if (ml_predicted_partition == PARTITION_SPLIT) partition_none_allowed = 0;
     }
   }
-#endif  // CONFIG_ML_VAR_PARTITION
 
   if (!partition_none_allowed && !do_split) do_rect = 1;
 
@@ -4705,10 +4860,7 @@ static void nonrd_pick_partition(VP9_COMP *cpi, ThreadData *td,
         best_rdc = this_rdc;
         if (bsize >= BLOCK_8X8) pc_tree->partitioning = PARTITION_NONE;
 
-#if CONFIG_ML_VAR_PARTITION
-        if (!use_ml_based_partitioning)
-#endif  // CONFIG_ML_VAR_PARTITION
-        {
+        if (!use_ml_based_partitioning) {
           int64_t dist_breakout_thr = sf->partition_search_breakout_thr.dist;
           int64_t rate_breakout_thr = sf->partition_search_breakout_thr.rate;
           dist_breakout_thr >>=
@@ -5117,30 +5269,25 @@ static void nonrd_use_partition(VP9_COMP *cpi, ThreadData *td,
     update_partition_context(xd, mi_row, mi_col, subsize, bsize);
 }
 
-#if CONFIG_ML_VAR_PARTITION
 // Get a prediction(stored in x->est_pred) for the whole 64x64 superblock.
 static void get_estimated_pred(VP9_COMP *cpi, const TileInfo *const tile,
                                MACROBLOCK *x, int mi_row, int mi_col) {
   VP9_COMMON *const cm = &cpi->common;
   const int is_key_frame = frame_is_intra_only(cm);
+  MACROBLOCKD *xd = &x->e_mbd;
 
   set_offsets(cpi, tile, x, mi_row, mi_col, BLOCK_64X64);
 
   if (!is_key_frame) {
-    MACROBLOCKD *xd = &x->e_mbd;
     MODE_INFO *mi = xd->mi[0];
     YV12_BUFFER_CONFIG *yv12 = get_ref_frame_buffer(cpi, LAST_FRAME);
     const YV12_BUFFER_CONFIG *yv12_g = NULL;
     const BLOCK_SIZE bsize = BLOCK_32X32 + (mi_col + 4 < cm->mi_cols) * 2 +
                              (mi_row + 4 < cm->mi_rows);
-    int pixels_wide = 64, pixels_high = 64;
     unsigned int y_sad_g, y_sad_thr;
     unsigned int y_sad = UINT_MAX;
 
     assert(yv12 != NULL);
-
-    if (xd->mb_to_right_edge < 0) pixels_wide += (xd->mb_to_right_edge >> 3);
-    if (xd->mb_to_bottom_edge < 0) pixels_high += (xd->mb_to_bottom_edge >> 3);
 
     if (!(is_one_pass_cbr_svc(cpi) && cpi->svc.spatial_layer_id) ||
         cpi->svc.use_gf_temporal_ref_current_layer) {
@@ -5195,7 +5342,6 @@ static void get_estimated_pred(VP9_COMP *cpi, const TileInfo *const tile,
                            &cm->frame_refs[GOLDEN_FRAME - 1].sf);
       mi->ref_frame[0] = GOLDEN_FRAME;
       mi->mv[0].as_int = 0;
-      y_sad = y_sad_g;
     } else {
       x->pred_mv[LAST_FRAME] = mi->mv[0].as_mv;
     }
@@ -5220,7 +5366,6 @@ static void get_estimated_pred(VP9_COMP *cpi, const TileInfo *const tile,
 #endif  // CONFIG_VP9_HIGHBITDEPTH
   }
 }
-#endif  // CONFIG_ML_VAR_PARTITION
 
 static void encode_nonrd_sb_row(VP9_COMP *cpi, ThreadData *td,
                                 TileDataEnc *tile_data, int mi_row,
@@ -5313,7 +5458,6 @@ static void encode_nonrd_sb_row(VP9_COMP *cpi, ThreadData *td,
         nonrd_use_partition(cpi, td, tile_data, mi, tp, mi_row, mi_col,
                             BLOCK_64X64, 1, &dummy_rdc, td->pc_root);
         break;
-#if CONFIG_ML_VAR_PARTITION
       case ML_BASED_PARTITION:
         get_estimated_pred(cpi, tile_info, x, mi_row, mi_col);
         x->max_partition_size = BLOCK_64X64;
@@ -5323,7 +5467,6 @@ static void encode_nonrd_sb_row(VP9_COMP *cpi, ThreadData *td,
                              BLOCK_64X64, &dummy_rdc, 1, INT64_MAX,
                              td->pc_root);
         break;
-#endif  // CONFIG_ML_VAR_PARTITION
       case SOURCE_VAR_BASED_PARTITION:
         set_source_var_based_partition(cpi, tile_info, x, mi, mi_row, mi_col);
         nonrd_use_partition(cpi, td, tile_data, mi, tp, mi_row, mi_col,
@@ -5650,6 +5793,107 @@ static int input_fpmb_stats(FIRSTPASS_MB_STATS *firstpass_mb_stats,
 }
 #endif
 
+static int compare_kmeans_data(const void *a, const void *b) {
+  if (((const KMEANS_DATA *)a)->value > ((const KMEANS_DATA *)b)->value) {
+    return 1;
+  } else if (((const KMEANS_DATA *)a)->value <
+             ((const KMEANS_DATA *)b)->value) {
+    return -1;
+  } else {
+    return 0;
+  }
+}
+
+static void compute_boundary_ls(const double *ctr_ls, int k,
+                                double *boundary_ls) {
+  // boundary_ls[j] is the upper bound of data centered at ctr_ls[j]
+  int j;
+  for (j = 0; j < k - 1; ++j) {
+    boundary_ls[j] = (ctr_ls[j] + ctr_ls[j + 1]) / 2.;
+  }
+  boundary_ls[k - 1] = DBL_MAX;
+}
+
+int vp9_get_group_idx(double value, double *boundary_ls, int k) {
+  int group_idx = 0;
+  while (value >= boundary_ls[group_idx]) {
+    ++group_idx;
+    if (group_idx == k - 1) {
+      break;
+    }
+  }
+  return group_idx;
+}
+
+void vp9_kmeans(double *ctr_ls, double *boundary_ls, int *count_ls, int k,
+                KMEANS_DATA *arr, int size) {
+  double min, max;
+  double step;
+  int i, j;
+  int itr;
+  int group_idx;
+  double sum;
+  int count;
+
+  vpx_clear_system_state();
+
+  assert(k >= 2 && k <= MAX_KMEANS_GROUPS);
+
+  qsort(arr, size, sizeof(*arr), compare_kmeans_data);
+
+  min = arr[0].value;
+  max = arr[size - 1].value;
+
+  // initialize the center points
+  step = (max - min) * 1. / k;
+  for (j = 0; j < k; ++j) {
+    ctr_ls[j] = min + j * step + step / 2;
+  }
+
+  for (itr = 0; itr < 10; ++itr) {
+    compute_boundary_ls(ctr_ls, k, boundary_ls);
+    group_idx = 0;
+    count = 0;
+    sum = 0;
+    for (i = 0; i < size; ++i) {
+      while (arr[i].value >= boundary_ls[group_idx]) {
+        ++group_idx;
+        if (group_idx == k - 1) {
+          break;
+        }
+      }
+
+      sum += arr[i].value;
+      ++count;
+
+      if (i + 1 == size || arr[i + 1].value >= boundary_ls[group_idx]) {
+        if (count > 0) {
+          ctr_ls[group_idx] = sum / count;
+        }
+        count = 0;
+        sum = 0;
+      }
+    }
+  }
+
+  // compute group_idx, boundary_ls and count_ls
+  for (j = 0; j < k; ++j) {
+    count_ls[j] = 0;
+  }
+  compute_boundary_ls(ctr_ls, k, boundary_ls);
+  group_idx = 0;
+  for (i = 0; i < size; ++i) {
+    while (arr[i].value >= boundary_ls[group_idx]) {
+      ++group_idx;
+      if (group_idx == k - 1) {
+        break;
+      }
+    }
+    arr[i].group_idx = group_idx;
+    ++count_ls[group_idx];
+  }
+}
+
 static void encode_frame_internal(VP9_COMP *cpi) {
   SPEED_FEATURES *const sf = &cpi->sf;
   ThreadData *const td = &cpi->td;
@@ -5734,7 +5978,7 @@ static void encode_frame_internal(VP9_COMP *cpi) {
     int64_t mc_dep_cost_base = 0;
     int row, col;
 
-    for (row = 0; row < cm->mi_rows; ++row) {
+    for (row = 0; row < cm->mi_rows && tpl_frame->is_valid; ++row) {
       for (col = 0; col < cm->mi_cols; ++col) {
         TplDepStats *this_stats = &tpl_stats[row * tpl_stride + col];
         intra_cost_base += this_stats->intra_cost;
@@ -5747,6 +5991,9 @@ static void encode_frame_internal(VP9_COMP *cpi) {
     if (tpl_frame->is_valid)
       cpi->rd.r0 = (double)intra_cost_base / mc_dep_cost_base;
   }
+
+  // Frame segmentation
+  if (cpi->sf.enable_wiener_variance) build_kmeans_segmentation(cpi);
 
   {
     struct vpx_usec_timer emr_timer;

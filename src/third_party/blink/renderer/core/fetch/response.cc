@@ -86,6 +86,7 @@ FetchResponseData* CreateFetchResponseDataFromFetchAPIResponse(
   else
     response = FetchResponseData::CreateNetworkErrorResponse();
 
+  response->SetResponseSource(fetch_api_response.response_source);
   response->SetURLList(fetch_api_response.url_list);
   response->SetStatus(fetch_api_response.status_code);
   response->SetStatusMessage(WTF::AtomicString(fetch_api_response.status_text));
@@ -96,11 +97,19 @@ FetchResponseData* CreateFetchResponseDataFromFetchAPIResponse(
   for (const auto& header : fetch_api_response.headers)
     response->HeaderList()->Append(header.key, header.value);
 
+  // TODO(wanderview): This sets the mime type of the Response based on the
+  // current headers.  This should be correct for most cases, but technically
+  // the mime type should really be frozen at the initial Response
+  // construction.  We should plumb the value through the cache_storage
+  // persistence layer and include the explicit mime type in FetchAPIResponse
+  // to set here. See: crbug.com/938939
+  response->SetMimeType(response->HeaderList()->ExtractMIMEType());
+
   if (fetch_api_response.blob) {
-    response->ReplaceBodyStreamBuffer(new BodyStreamBuffer(
+    response->ReplaceBodyStreamBuffer(MakeGarbageCollected<BodyStreamBuffer>(
         script_state,
-        new BlobBytesConsumer(ExecutionContext::From(script_state),
-                              fetch_api_response.blob),
+        MakeGarbageCollected<BlobBytesConsumer>(
+            ExecutionContext::From(script_state), fetch_api_response.blob),
         nullptr /* AbortSignal */));
   }
 
@@ -113,7 +122,7 @@ FetchResponseData* CreateFetchResponseDataFromFetchAPIResponse(
 
 // Checks whether |status| is a null body status.
 // Spec: https://fetch.spec.whatwg.org/#null-body-status
-bool IsNullBodyStatus(unsigned short status) {
+bool IsNullBodyStatus(uint16_t status) {
   if (status == 101 || status == 204 || status == 205 || status == 304)
     return true;
 
@@ -159,16 +168,17 @@ Response* Response::Create(ScriptState* script_state,
     // https://crbug.com/335871.
   } else if (V8Blob::HasInstance(body, isolate)) {
     Blob* blob = V8Blob::ToImpl(body.As<v8::Object>());
-    body_buffer = new BodyStreamBuffer(
+    body_buffer = MakeGarbageCollected<BodyStreamBuffer>(
         script_state,
-        new BlobBytesConsumer(execution_context, blob->GetBlobDataHandle()),
+        MakeGarbageCollected<BlobBytesConsumer>(execution_context,
+                                                blob->GetBlobDataHandle()),
         nullptr /* AbortSignal */);
     content_type = blob->type();
   } else if (body->IsArrayBuffer()) {
     // Avoid calling into V8 from the following constructor parameters, which
     // is potentially unsafe.
     DOMArrayBuffer* array_buffer = V8ArrayBuffer::ToImpl(body.As<v8::Object>());
-    body_buffer = new BodyStreamBuffer(
+    body_buffer = MakeGarbageCollected<BodyStreamBuffer>(
         script_state, MakeGarbageCollected<FormDataBytesConsumer>(array_buffer),
         nullptr /* AbortSignal */);
   } else if (body->IsArrayBufferView()) {
@@ -176,7 +186,7 @@ Response* Response::Create(ScriptState* script_state,
     // is potentially unsafe.
     DOMArrayBufferView* array_buffer_view =
         V8ArrayBufferView::ToImpl(body.As<v8::Object>());
-    body_buffer = new BodyStreamBuffer(
+    body_buffer = MakeGarbageCollected<BodyStreamBuffer>(
         script_state,
         MakeGarbageCollected<FormDataBytesConsumer>(array_buffer_view),
         nullptr /* AbortSignal */);
@@ -187,31 +197,31 @@ Response* Response::Create(ScriptState* script_state,
     // FormDataEncoder::generateUniqueBoundaryString.
     content_type = AtomicString("multipart/form-data; boundary=") +
                    form_data->Boundary().data();
-    body_buffer =
-        new BodyStreamBuffer(script_state,
-                             MakeGarbageCollected<FormDataBytesConsumer>(
-                                 execution_context, std::move(form_data)),
-                             nullptr /* AbortSignal */);
+    body_buffer = MakeGarbageCollected<BodyStreamBuffer>(
+        script_state,
+        MakeGarbageCollected<FormDataBytesConsumer>(execution_context,
+                                                    std::move(form_data)),
+        nullptr /* AbortSignal */);
   } else if (V8URLSearchParams::HasInstance(body, isolate)) {
     scoped_refptr<EncodedFormData> form_data =
         V8URLSearchParams::ToImpl(body.As<v8::Object>())->ToEncodedFormData();
-    body_buffer =
-        new BodyStreamBuffer(script_state,
-                             MakeGarbageCollected<FormDataBytesConsumer>(
-                                 execution_context, std::move(form_data)),
-                             nullptr /* AbortSignal */);
+    body_buffer = MakeGarbageCollected<BodyStreamBuffer>(
+        script_state,
+        MakeGarbageCollected<FormDataBytesConsumer>(execution_context,
+                                                    std::move(form_data)),
+        nullptr /* AbortSignal */);
     content_type = "application/x-www-form-urlencoded;charset=UTF-8";
   } else if (V8ReadableStream::HasInstance(body, isolate)) {
     UseCounter::Count(execution_context,
                       WebFeature::kFetchResponseConstructionWithStream);
-    body_buffer = new BodyStreamBuffer(
+    body_buffer = MakeGarbageCollected<BodyStreamBuffer>(
         script_state, V8ReadableStream::ToImpl(body.As<v8::Object>()));
   } else {
     String string = NativeValueTraits<IDLUSVString>::NativeValue(
         isolate, body, exception_state);
     if (exception_state.HadException())
       return nullptr;
-    body_buffer = new BodyStreamBuffer(
+    body_buffer = MakeGarbageCollected<BodyStreamBuffer>(
         script_state, MakeGarbageCollected<FormDataBytesConsumer>(string),
         nullptr /* AbortSignal */);
     content_type = "text/plain;charset=UTF-8";
@@ -224,7 +234,7 @@ Response* Response::Create(ScriptState* script_state,
                            const String& content_type,
                            const ResponseInit* init,
                            ExceptionState& exception_state) {
-  unsigned short status = init->status();
+  uint16_t status = init->status();
 
   // "1. If |init|'s status member is not in the range 200 to 599, inclusive,
   // throw a RangeError."
@@ -308,7 +318,7 @@ Response* Response::Create(ScriptState* script_state,
 
   // "9. Set |r|'s MIME type to the result of extracting a MIME type
   // from |r|'s response's header list."
-  r->response_->SetMIMEType(r->response_->HeaderList()->ExtractMIMEType());
+  r->response_->SetMimeType(r->response_->HeaderList()->ExtractMIMEType());
 
   // "10. Set |r|'s response’s HTTPS state to current settings object's"
   // HTTPS state."
@@ -342,7 +352,7 @@ Response* Response::error(ScriptState* script_state) {
 
 Response* Response::redirect(ScriptState* script_state,
                              const String& url,
-                             unsigned short status,
+                             uint16_t status,
                              ExceptionState& exception_state) {
   KURL parsed_url = ExecutionContext::From(script_state)->CompleteURL(url);
   if (!parsed_url.IsValid()) {
@@ -402,7 +412,7 @@ bool Response::redirected() const {
   return response_->UrlList().size() > 1;
 }
 
-unsigned short Response::status() const {
+uint16_t Response::status() const {
   // "The status attribute's getter must return response's status."
   return response_->Status();
 }

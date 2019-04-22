@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/presentation/presentation_availability_callbacks.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -30,6 +31,8 @@ class PresentationAvailabilityObserver;
 // this class by moving the multiple URL tracking logic to the former, and
 // consolidating this class's APIs to take repeating callbacks.
 class MODULES_EXPORT PresentationAvailabilityState {
+  USING_FAST_MALLOC(PresentationAvailabilityState);
+
  public:
   explicit PresentationAvailabilityState(mojom::blink::PresentationService*);
   ~PresentationAvailabilityState();

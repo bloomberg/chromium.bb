@@ -105,6 +105,28 @@
             "type": "array",
             "items": { "type": "string" },
             "description": "Erases only the activities which IDs are listed in the array."
+          }, {
+            "type": "function",
+            "name": "callback",
+            "parameters": [],
+            "optional": true
+          }
+        ]
+      },
+      {
+        "name": "deleteActivitiesByExtension",
+        "type": "function",
+        "description": "Deletes activities in the ActivityLog database specified by the extension ID.",
+        "parameters": [
+          {
+            "name": "extensionId",
+            "type": "string",
+            "description": "The ID of the extension to delete activities for."
+          }, {
+            "type": "function",
+            "name": "callback",
+            "parameters": [],
+            "optional": true
           }
         ]
       },

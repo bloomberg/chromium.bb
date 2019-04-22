@@ -61,9 +61,9 @@ CSSLengthArray& SetLengthArray(CSSLengthArray& length_array, String text) {
     x = 0;
   MutableCSSPropertyValueSet* property_set =
       MutableCSSPropertyValueSet::Create(kHTMLQuirksMode);
-  property_set->SetProperty(CSSPropertyLeft, text, /* important */ false,
+  property_set->SetProperty(CSSPropertyID::kLeft, text, /* important */ false,
                             SecureContextMode::kInsecureContext);
-  ToCSSPrimitiveValue(property_set->GetPropertyCSSValue(CSSPropertyLeft))
+  To<CSSPrimitiveValue>(property_set->GetPropertyCSSValue(CSSPropertyID::kLeft))
       ->AccumulateLengthArray(length_array);
   return length_array;
 }

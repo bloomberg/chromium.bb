@@ -13,7 +13,7 @@
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/media/webrtc/webrtc_event_log_history.h"
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager_common.h"
-#include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
 
 namespace network {
 class SimpleURLLoader;

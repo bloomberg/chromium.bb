@@ -58,15 +58,15 @@ class SpellcheckLanguage {
   //   |skip_or_misspelling_start| and |skip_or_misspelling_len| are then set to
   //   the position and length of the misspelled word. In addition, finds the
   //   suggested words for a given misspelled word and puts them into
-  //   |*optional_suggestions|. If optional_suggestions is NULL, suggested words
-  //   will not be looked up. Note that doing suggest lookups can be slow.
+  //   |*optional_suggestions|. If optional_suggestions is nullptr, suggested
+  //   words will not be looked up. Note that doing suggest lookups can be slow.
   SpellcheckWordResult SpellCheckWord(
       const base::char16* text_begin,
-      int position_in_text,
-      int text_length,
+      size_t position_in_text,
+      size_t text_length,
       int tag,
-      int* skip_or_misspelling_start,
-      int* skip_or_misspelling_len,
+      size_t* skip_or_misspelling_start,
+      size_t* skip_or_misspelling_len,
       std::vector<base::string16>* optional_suggestions);
 
   // Initialize |spellcheck_| if that hasn't happened yet.

@@ -9,9 +9,9 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/loader/long_task_detector.h"
-#include "third_party/blink/renderer/core/page/page_visibility_state.h"
+#include "third_party/blink/renderer/core/page/page_hidden_state.h"
 #include "third_party/blink/renderer/core/paint/first_meaningful_paint_detector.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
@@ -22,7 +22,7 @@
 namespace blink {
 
 class Document;
-class WebInputEvent;
+class Event;
 
 // Detects when a page reaches First Idle and Time to Interactive. See
 // https://goo.gl/SYt55W for detailed description and motivation of First Idle
@@ -43,7 +43,7 @@ class CORE_EXPORT InteractiveDetector
   // InteractiveDetector.
   class CORE_EXPORT NetworkActivityChecker {
    public:
-    NetworkActivityChecker(Document* document) : document_(document) {}
+    explicit NetworkActivityChecker(Document* document) : document_(document) {}
 
     virtual int GetActiveConnections();
     virtual ~NetworkActivityChecker() = default;
@@ -74,7 +74,7 @@ class CORE_EXPORT InteractiveDetector
       FirstMeaningfulPaintDetector::HadUserInput user_input_before_fmp);
   void OnDomContentLoadedEnd(TimeTicks dcl_time);
   void OnInvalidatingInputEvent(TimeTicks invalidation_time);
-  void OnPageVisibilityChanged(mojom::PageVisibilityState);
+  void OnPageHiddenChanged(bool is_hidden);
 
   // Returns Interactive Time if already detected, or 0.0 otherwise.
   TimeTicks GetInteractiveTime() const;
@@ -107,7 +107,9 @@ class CORE_EXPORT InteractiveDetector
 
   // Process an input event, updating first_input_delay and
   // first_input_timestamp if needed.
-  void HandleForInputDelay(const WebInputEvent&);
+  void HandleForInputDelay(const Event&,
+                           TimeTicks event_platform_timestamp,
+                           TimeTicks processing_start);
 
   // ContextLifecycleObserver
   void ContextDestroyed(ExecutionContext*) override;
@@ -136,7 +138,7 @@ class CORE_EXPORT InteractiveDetector
 
   struct VisibilityChangeEvent {
     TimeTicks timestamp;
-    mojom::PageVisibilityState visibility;
+    bool was_hidden;
   };
 
   // Stores sufficiently long quiet windows on main thread and network.
@@ -173,7 +175,7 @@ class CORE_EXPORT InteractiveDetector
   void OnTimeToInteractiveDetected();
 
   std::vector<VisibilityChangeEvent> visibility_change_events_;
-  mojom::PageVisibilityState initial_visibility_;
+  bool initially_hidden_;
   // Returns true if page was ever backgrounded in the range
   // [event_time, CurrentTimeTicks()].
   bool PageWasBackgroundedSinceEvent(TimeTicks event_time);

@@ -11,6 +11,7 @@
 
 #include <stdint.h>
 
+#include <algorithm>
 #include <memory>
 #include <string>
 #include <vector>
@@ -126,24 +127,36 @@ StringSlicer::StringSlicer(const base::string16& text,
 
 base::string16 StringSlicer::CutString(size_t length,
                                        bool insert_ellipsis) const {
-  const base::string16 ellipsis_text = insert_ellipsis ? ellipsis_
-                                                       : base::string16();
+  const base::string16 ellipsis_text =
+      insert_ellipsis ? ellipsis_ : base::string16();
 
-  if (elide_at_beginning_)
+  // For visual consistency, when eliding at either end of the string, excess
+  // space should be trimmed from the text to return "Foo bar..." instead of
+  // "Foo bar ...".
+
+  if (elide_at_beginning_) {
     return ellipsis_text +
-           text_.substr(
-               FindValidBoundaryBefore(text_, text_.length() - length));
+           text_.substr(FindValidBoundaryAfter(text_, text_.length() - length,
+                                               /* trim_whitespace */ true));
+  }
 
-  if (!elide_in_middle_)
-    return text_.substr(0, FindValidBoundaryBefore(text_, length)) +
+  if (!elide_in_middle_) {
+    return text_.substr(0, FindValidBoundaryBefore(
+                               text_, length, /* trim_whitespace */ true)) +
            ellipsis_text;
+  }
 
-  // We put the extra character, if any, before the cut.
+  // Put the extra character, if any, before the cut.
+  // Extra space around the ellipses will *not* be trimmed for |elide_in_middle|
+  // mode (we can change this later). The reason is that when laying out a
+  // column of middle-trimmed lines of text (such as a list of paths), the
+  // desired appearance is to be fully justified and the elipses should more or
+  // less line up; eliminating space would make the text look more ragged.
   const size_t half_length = length / 2;
-  const size_t prefix_length =
-      FindValidBoundaryBefore(text_, length - half_length);
-  const size_t suffix_start =
-      FindValidBoundaryAfter(text_, text_.length() - half_length);
+  const size_t prefix_length = FindValidBoundaryBefore(
+      text_, length - half_length, /* trim_whitespace */ false);
+  const size_t suffix_start = FindValidBoundaryAfter(
+      text_, text_.length() - half_length, /* trim_whitespace */ false);
   return text_.substr(0, prefix_length) + ellipsis_text +
          text_.substr(suffix_start);
 }
@@ -294,8 +307,8 @@ bool ElideString(const base::string16& input,
                      input.substr(input.length() - 1));
       break;
     default: {
-      int rstr_len = (max_len - 3) / 2;
-      int lstr_len = rstr_len + ((max_len - 3) % 2);
+      size_t rstr_len = (max_len - 3) / 2;
+      size_t lstr_len = rstr_len + ((max_len - 3) % 2);
       output->assign(input.substr(0, lstr_len) + ASCIIToUTF16("...") +
                      input.substr(input.length() - rstr_len));
       break;
@@ -434,11 +447,11 @@ void RectangleString::AddWord(const base::string16& word) {
     base::i18n::UTF16CharIterator chars(&word);
     while (!chars.end()) {
       // When boundary is hit, add as much as will fit on this line.
-      if (current_col_ + (chars.char_pos() - char_start) >= max_cols_) {
+      if (current_col_ + (chars.char_offset() - char_start) >= max_cols_) {
         Append(word.substr(array_start, chars.array_pos() - array_start));
         NewLine(true);
         array_start = chars.array_pos();
-        char_start = chars.char_pos();
+        char_start = chars.char_offset();
       }
       chars.Advance();
     }
@@ -638,9 +651,9 @@ void RectangleText::AddLine(const base::string16& line) {
         if (lines_added) {
           if (truncate) {
             // Trim trailing whitespace from the line that was added.
-            const int line = lines_->size() - lines_added;
-            base::TrimWhitespace(lines_->at(line), base::TRIM_TRAILING,
-                                 &lines_->at(line));
+            const size_t new_line = lines_->size() - lines_added;
+            base::TrimWhitespace(lines_->at(new_line), base::TRIM_TRAILING,
+                                 &lines_->at(new_line));
           }
           if (base::ContainsOnlyChars(word, base::kWhitespaceUTF16)) {
             // Skip the first space if the previous line was carried over.

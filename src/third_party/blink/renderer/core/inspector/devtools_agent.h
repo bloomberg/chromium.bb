@@ -11,7 +11,7 @@
 #include "base/unguessable_token.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "third_party/blink/public/web/devtools_agent.mojom-blink.h"
+#include "third_party/blink/public/mojom/devtools/devtools_agent.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -44,7 +44,8 @@ class CORE_EXPORT DevToolsAgent
   static std::unique_ptr<WorkerDevToolsParams> WorkerThreadCreated(
       ExecutionContext* parent_context,
       WorkerThread*,
-      const KURL&);
+      const KURL&,
+      const String& global_scope_name);
   static void WorkerThreadTerminated(ExecutionContext* parent_context,
                                      WorkerThread*);
 
@@ -75,7 +76,9 @@ class CORE_EXPORT DevToolsAgent
       mojom::blink::DevToolsSessionRequest io_session,
       mojom::blink::DevToolsSessionStatePtr reattach_session_state) override;
   void InspectElement(const WebPoint& point) override;
-  void ReportChildWorkers(bool report, bool wait_for_debugger) override;
+  void ReportChildWorkers(bool report,
+                          bool wait_for_debugger,
+                          base::OnceClosure callback) override;
 
   struct WorkerData {
     KURL url;
@@ -83,6 +86,7 @@ class CORE_EXPORT DevToolsAgent
     mojom::blink::DevToolsAgentHostRequest host_request;
     base::UnguessableToken devtools_worker_token;
     bool waiting_for_debugger;
+    String name;
   };
   void ReportChildWorker(std::unique_ptr<WorkerData>);
 

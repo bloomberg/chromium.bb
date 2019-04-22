@@ -11,7 +11,7 @@
 
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
-#include "third_party/blink/public/platform/modules/insecure_input/insecure_input_service.mojom.h"
+#include "third_party/blink/public/mojom/insecure_input/insecure_input_service.mojom.h"
 
 namespace content {
 class WebContents;
@@ -45,20 +45,6 @@ class InsecureSensitiveInputDriverFactory
   InsecureSensitiveInputDriver* GetOrCreateDriverForFrame(
       content::RenderFrameHost* render_frame_host);
 
-  // This method is called when the autofill component detects a credit
-  // card field was interacted with in a non-secure context.
-  void DidInteractWithNonsecureCreditCardInput();
-
-  // This method is called when there is a message notifying
-  // the browser process that the renderer has a visible password field.
-  void RenderFrameHasVisiblePasswordField(
-      content::RenderFrameHost* render_frame_host);
-
-  // This method is called when there is a message notifying the browser
-  // process that the renderer has no visible password fields anymore.
-  void RenderFrameHasNoVisiblePasswordFields(
-      content::RenderFrameHost* render_frame_host);
-
   // This method is called when there is a message notifying the browser
   // process that the user edited a field in a non-secure context.
   void DidEditFieldInInsecureContext();
@@ -77,6 +63,8 @@ class InsecureSensitiveInputDriverFactory
       frame_driver_map_;
 
   std::set<content::RenderFrameHost*> frames_with_visible_password_fields_;
+
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(InsecureSensitiveInputDriverFactory);
 };

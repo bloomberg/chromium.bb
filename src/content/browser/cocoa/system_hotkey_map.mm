@@ -50,28 +50,9 @@ struct SystemHotkey {
 
 #pragma mark - SystemHotkeyMap
 
-SystemHotkeyMap::SystemHotkeyMap() {
-}
-SystemHotkeyMap::~SystemHotkeyMap() {
-}
-
-NSDictionary* SystemHotkeyMap::DictionaryFromData(NSData* data) {
-  if (!data)
-    return nil;
-
-  NSError* error = nil;
-  NSPropertyListFormat format;
-  NSDictionary* dictionary =
-      [NSPropertyListSerialization propertyListWithData:data
-                                                options:0
-                                                 format:&format
-                                                  error:&error];
-
-  if (![dictionary isKindOfClass:[NSDictionary class]])
-    return nil;
-
-  return dictionary;
-}
+SystemHotkeyMap::SystemHotkeyMap() = default;
+SystemHotkeyMap::SystemHotkeyMap(SystemHotkeyMap&&) = default;
+SystemHotkeyMap::~SystemHotkeyMap() = default;
 
 bool SystemHotkeyMap::ParseDictionary(NSDictionary* dictionary) {
   system_hotkeys_.clear();

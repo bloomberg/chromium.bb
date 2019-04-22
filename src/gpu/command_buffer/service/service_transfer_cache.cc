@@ -6,6 +6,8 @@
 
 #include <inttypes.h>
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
@@ -13,6 +15,7 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "cc/paint/image_transfer_cache_entry.h"
 #include "gpu/command_buffer/service/service_discardable_manager.h"
+#include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "ui/gl/trace_util.h"
 
@@ -202,6 +205,37 @@ void ServiceTransferCache::DeleteAllEntriesForDecoder(int decoder_id) {
     }
     it = ForceDeleteEntry(it);
   }
+}
+
+bool ServiceTransferCache::CreateLockedImageEntry(
+    int decoder_id,
+    uint32_t entry_id,
+    ServiceDiscardableHandle handle,
+    GrContext* context,
+    base::span<const uint8_t> decoded_image,
+    size_t row_bytes,
+    const SkImageInfo& image_info,
+    bool needs_mips,
+    sk_sp<SkColorSpace> target_color_space) {
+  EntryKey key(decoder_id, cc::TransferCacheEntryType::kImage, entry_id);
+  auto found = entries_.Peek(key);
+  if (found != entries_.end())
+    return false;
+
+  // Create the service-side image transfer cache entry. Note that this involves
+  // uploading the image if it fits in GPU memory.
+  auto entry = std::make_unique<cc::ServiceImageTransferCacheEntry>();
+  if (!entry->BuildFromDecodedData(context, decoded_image, row_bytes,
+                                   image_info, needs_mips,
+                                   target_color_space)) {
+    return false;
+  }
+
+  // Insert it in the transfer cache.
+  total_size_ += entry->CachedSize();
+  entries_.Put(key, CacheEntryInternal(handle, std::move(entry)));
+  EnforceLimits();
+  return true;
 }
 
 bool ServiceTransferCache::OnMemoryDump(

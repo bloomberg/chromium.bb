@@ -16,6 +16,7 @@
 #include "android_webview/browser/aw_variations_seed_bridge.h"
 #include "android_webview/browser/net/aw_url_request_context_getter.h"
 #include "base/base_switches.h"
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
@@ -47,10 +48,13 @@ namespace {
 // These prefs go in the JsonPrefStore, and will persist across runs. Other
 // prefs go in the InMemoryPrefStore, and will be lost when the process ends.
 const char* const kPersistentPrefsWhitelist[] = {
-    // Random seed value for variation's entropy providers, used to assign
+    // Randomly-generated GUID which pseudonymously identifies uploaded metrics.
+    metrics::prefs::kMetricsClientID,
+    // Random seed values for variation's entropy providers, used to assign
     // experiment groups.
     metrics::prefs::kMetricsLowEntropySource,
     // Used by CachingPermutedEntropyProvider to cache generated values.
+    // TODO(crbug/912368): Remove this.
     variations::prefs::kVariationsPermutedEntropyCache,
 };
 
@@ -81,8 +85,15 @@ std::unique_ptr<PrefService> CreatePrefService(
   pref_registry->RegisterStringPref(
       android_webview::prefs::kWebRestrictionsAuthority, std::string());
 
-  android_webview::AwURLRequestContextGetter::RegisterPrefs(
-      pref_registry.get());
+  // Register the Autocomplete Data Retention Policy pref.
+  // The default value '0' represents the latest Chrome major version on which
+  // the retention policy ran. By setting it to a low default value, we're
+  // making sure it runs now (as it only runs once per major version).
+  pref_registry->RegisterIntegerPref(
+      autofill::prefs::kAutocompleteLastVersionRetentionPolicy, 0);
+
+  AwBrowserContext::RegisterPrefs(pref_registry.get());
+
   metrics::MetricsService::RegisterPrefs(pref_registry.get());
   variations::VariationsService::RegisterPrefs(pref_registry.get());
   safe_browsing::RegisterProfilePrefs(pref_registry.get());
@@ -146,19 +157,20 @@ void AwFeatureListCreator::SetUpFieldTrials() {
   variations_field_trial_creator_->OverrideVariationsPlatform(
       variations::Study::PLATFORM_ANDROID_WEBVIEW);
 
-  // Unused by WebView, but required by
-  // VariationsFieldTrialCreator::SetupFieldTrials().
-  // TODO(isherman): We might want a more genuine SafeSeedManager:
-  // https://crbug.com/801771
+  // Safe Mode is a feature which reverts to a previous variations seed if the
+  // current one is suspected to be causing crashes, or preventing new seeds
+  // from being downloaded. It's not implemented for WebView because 1) it's
+  // difficult for WebView to implement Safe Mode's crash detection, and 2)
+  // downloading and disseminating seeds is handled by the WebView service,
+  // which itself doesn't support variations; therefore a bad seed shouldn't be
+  // able to break seed downloads. See https://crbug.com/801771 for more info.
   std::set<std::string> unforceable_field_trials;
   variations::SafeSeedManager ignored_safe_seed_manager(true,
                                                         local_state_.get());
 
   // Populate FieldTrialList. Since low_entropy_provider is null, it will fall
   // back to the provider we previously gave to FieldTrialList, which is a low
-  // entropy provider. We only want one low entropy provider, because multiple
-  // CachingPermutedEntropyProvider objects would all try to cache their values
-  // in the same pref store, overwriting each other's.
+  // entropy provider.
   variations_field_trial_creator_->SetupFieldTrials(
       cc::switches::kEnableGpuBenchmarking, switches::kEnableFeatures,
       switches::kDisableFeatures, unforceable_field_trials,

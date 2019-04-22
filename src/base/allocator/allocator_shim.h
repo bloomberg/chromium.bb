@@ -41,7 +41,7 @@ namespace allocator {
 // It is possible to dynamically insert further AllocatorDispatch stages
 // to the front of the chain, for debugging / profiling purposes.
 //
-// All the functions must be thred safe. The shim does not enforce any
+// All the functions must be thread safe. The shim does not enforce any
 // serialization. This is to route to thread-aware allocators (e.g, tcmalloc)
 // wihout introducing unnecessary perf hits.
 
@@ -84,6 +84,18 @@ struct AllocatorDispatch {
                                   void* ptr,
                                   size_t size,
                                   void* context);
+  using AlignedMallocFn = void*(const AllocatorDispatch* self,
+                                size_t size,
+                                size_t alignment,
+                                void* context);
+  using AlignedReallocFn = void*(const AllocatorDispatch* self,
+                                 void* address,
+                                 size_t size,
+                                 size_t alignment,
+                                 void* context);
+  using AlignedFreeFn = void(const AllocatorDispatch* self,
+                             void* address,
+                             void* context);
 
   AllocFn* const alloc_function;
   AllocZeroInitializedFn* const alloc_zero_initialized_function;
@@ -91,9 +103,16 @@ struct AllocatorDispatch {
   ReallocFn* const realloc_function;
   FreeFn* const free_function;
   GetSizeEstimateFn* const get_size_estimate_function;
+  // batch_malloc, batch_free, and free_definite_size are specific to the OSX
+  // and iOS allocators.
   BatchMallocFn* const batch_malloc_function;
   BatchFreeFn* const batch_free_function;
   FreeDefiniteSizeFn* const free_definite_size_function;
+  // _aligned_malloc, _aligned_realloc, and _aligned_free are specific to the
+  // Windows allocator.
+  AlignedMallocFn* const aligned_malloc_function;
+  AlignedReallocFn* const aligned_realloc_function;
+  AlignedFreeFn* const aligned_free_function;
 
   const AllocatorDispatch* next;
 

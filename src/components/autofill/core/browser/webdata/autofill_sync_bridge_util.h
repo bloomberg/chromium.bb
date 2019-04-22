@@ -18,61 +18,29 @@ class AutofillTable;
 class CreditCard;
 struct PaymentsCustomerData;
 
-// Returns the specified |server_id| encoded in base 64.
-std::string GetBase64EncodedServerId(const std::string& server_id);
+// Returns the specified |id| encoded in / decoded from base 64.
+std::string GetBase64EncodedId(const std::string& id);
+std::string GetBase64DecodedId(const std::string& id);
 
-// Returns the wallet data specifics id for the specified |server_id|.
-std::string GetSpecificsIdForEntryServerId(const std::string& server_id);
-
-// Returns the wallet metadata specifics id for the specified |metadata_id|.
-std::string GetSpecificsIdForMetadataId(const std::string& metadata_id);
-
-// Returns the storage key for the specified |specifics_id|.
-std::string GetStorageKeyForSpecificsId(const std::string& specifics_id);
-
-// Returns the wallet data specifics storage key for the specified
-// |server_id|.
-std::string GetStorageKeyForEntryServerId(const std::string& server_id);
-
-// Returns the wallet metadata specifics storage key for the specified
-// |metadata_id|.
-std::string GetStorageKeyForMetadataId(const std::string& metadata_id);
-
-// Returns the client tag for the specified wallet |type| and
-// |wallet_data_specifics_id|.
-std::string GetClientTagForSpecificsId(
-    sync_pb::AutofillWalletSpecifics::WalletInfoType type,
-    const std::string& wallet_data_specifics_id);
+// Returns the storage key to be used for wallet metadata for the specified
+// wallet metadata |type| and |specifics_id|.
+std::string GetStorageKeyForWalletMetadataTypeAndSpecificsId(
+    sync_pb::WalletMetadataSpecifics::Type type,
+    const std::string& specifics_id);
 
 // Sets the fields of the |wallet_specifics| based on the the specified
-// |address|.
+// |address|. If |enforce_utf8|, ids are encoded into UTF-8.
 void SetAutofillWalletSpecificsFromServerProfile(
     const AutofillProfile& address,
-    sync_pb::AutofillWalletSpecifics* wallet_specifics);
-
-// Creates a EntityData object corresponding to the specified |address|.
-std::unique_ptr<syncer::EntityData> CreateEntityDataFromAutofillServerProfile(
-    const AutofillProfile& address);
-
-// Creates an AutofillProfile from the specified |address| specifics.
-AutofillProfile ProfileFromSpecifics(
-    const sync_pb::WalletPostalAddress& address);
+    sync_pb::AutofillWalletSpecifics* wallet_specifics,
+    bool enforce_utf8 = false);
 
 // Sets the fields of the |wallet_specifics| based on the the specified |card|.
+// If |enforce_utf8|, ids are encoded into UTF-8.
 void SetAutofillWalletSpecificsFromServerCard(
     const CreditCard& card,
-    sync_pb::AutofillWalletSpecifics* wallet_specifics);
-
-// Creates a EntityData object corresponding to the specified |card|.
-std::unique_ptr<syncer::EntityData> CreateEntityDataFromCard(
-    const CreditCard& card);
-
-// Creates an AutofillProfile from the specified |card| specifics.
-CreditCard CardFromSpecifics(const sync_pb::WalletMaskedCreditCard& card);
-
-// Creates a EntityData object corresponding to the specified |customer_data|.
-std::unique_ptr<syncer::EntityData> CreateEntityDataFromPaymentsCustomerData(
-    const PaymentsCustomerData& customer_data);
+    sync_pb::AutofillWalletSpecifics* wallet_specifics,
+    bool enforce_utf8 = false);
 
 // Sets the fields of the |wallet_specifics| based on the specified
 // |customer_data|.
@@ -80,10 +48,9 @@ void SetAutofillWalletSpecificsFromPaymentsCustomerData(
     const PaymentsCustomerData& customer_data,
     sync_pb::AutofillWalletSpecifics* wallet_specifics);
 
-// Creates a PaymentCustomerData object corresponding to the sync datatype
-// |customer_data|.
-PaymentsCustomerData CustomerDataFromSpecifics(
-    const sync_pb::PaymentsCustomerData& customer_data);
+// Creates an AutofillProfile from the specified |address| specifics.
+AutofillProfile ProfileFromSpecifics(
+    const sync_pb::WalletPostalAddress& address);
 
 // TODO(sebsg): This should probably copy the converted state for the address
 // too.

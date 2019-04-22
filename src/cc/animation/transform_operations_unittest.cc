@@ -9,6 +9,7 @@
 #include <limits>
 #include <vector>
 
+#include "base/stl_util.h"
 #include "cc/test/geometry_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/animation/tween.h"
@@ -85,7 +86,7 @@ TEST(TransformOperationTest, TransformTypesAreUnique) {
   }
 }
 
-TEST(TransformOperationTest, MatchTypesSameLength) {
+TEST(TransformOperationTest, MatchingPrefixSameLength) {
   TransformOperations translates;
   translates.AppendTranslate(1, 0, 0);
   translates.AppendTranslate(1, 0, 0);
@@ -100,15 +101,21 @@ TEST(TransformOperationTest, MatchTypesSameLength) {
   translates2.AppendTranslate(0, 2, 0);
   translates2.AppendTranslate(0, 2, 0);
   translates2.AppendTranslate(0, 2, 0);
+
+  TransformOperations mixed;
+  mixed.AppendTranslate(0, 2, 0);
+  mixed.AppendScale(2, 1, 1);
+  mixed.AppendSkew(0, 2);
 
   TransformOperations translates3 = translates2;
 
-  EXPECT_FALSE(translates.MatchesTypes(skews));
-  EXPECT_TRUE(translates.MatchesTypes(translates2));
-  EXPECT_TRUE(translates.MatchesTypes(translates3));
+  EXPECT_EQ(0UL, translates.MatchingPrefixLength(skews));
+  EXPECT_EQ(3UL, translates.MatchingPrefixLength(translates2));
+  EXPECT_EQ(3UL, translates.MatchingPrefixLength(translates3));
+  EXPECT_EQ(1UL, translates.MatchingPrefixLength(mixed));
 }
 
-TEST(TransformOperationTest, MatchTypesDifferentLength) {
+TEST(TransformOperationTest, MatchingPrefixDifferentLength) {
   TransformOperations translates;
   translates.AppendTranslate(1, 0, 0);
   translates.AppendTranslate(1, 0, 0);
@@ -122,8 +129,14 @@ TEST(TransformOperationTest, MatchTypesDifferentLength) {
   translates2.AppendTranslate(0, 2, 0);
   translates2.AppendTranslate(0, 2, 0);
 
-  EXPECT_FALSE(translates.MatchesTypes(skews));
-  EXPECT_FALSE(translates.MatchesTypes(translates2));
+  TransformOperations none;
+
+  EXPECT_EQ(0UL, translates.MatchingPrefixLength(skews));
+  // Pad the length of the shorter list provided all previous operation-
+  // pairs match per spec
+  // (https://drafts.csswg.org/css-transforms/#interpolation-of-transforms).
+  EXPECT_EQ(3UL, translates.MatchingPrefixLength(translates2));
+  EXPECT_EQ(3UL, translates.MatchingPrefixLength(none));
 }
 
 std::vector<std::unique_ptr<TransformOperations>> GetIdentityOperations() {
@@ -180,7 +193,7 @@ std::vector<std::unique_ptr<TransformOperations>> GetIdentityOperations() {
   return operations;
 }
 
-TEST(TransformOperationTest, MatchTypesOrder) {
+TEST(TransformOperationTest, MatchingPrefixLengthOrder) {
   TransformOperations mix_order_identity;
   mix_order_identity.AppendTranslate(0, 0, 0);
   mix_order_identity.AppendScale(1, 1, 1);
@@ -196,9 +209,9 @@ TEST(TransformOperationTest, MatchTypesOrder) {
   mix_order_two.AppendTranslate(1, 0, 0);
   mix_order_two.AppendScale(2, 1, 3);
 
-  EXPECT_TRUE(mix_order_identity.MatchesTypes(mix_order_one));
-  EXPECT_FALSE(mix_order_identity.MatchesTypes(mix_order_two));
-  EXPECT_FALSE(mix_order_one.MatchesTypes(mix_order_two));
+  EXPECT_EQ(3UL, mix_order_identity.MatchingPrefixLength(mix_order_one));
+  EXPECT_EQ(1UL, mix_order_identity.MatchingPrefixLength(mix_order_two));
+  EXPECT_EQ(1UL, mix_order_one.MatchingPrefixLength(mix_order_two));
 }
 
 TEST(TransformOperationTest, NoneAlwaysMatches) {
@@ -207,7 +220,8 @@ TEST(TransformOperationTest, NoneAlwaysMatches) {
 
   TransformOperations none_operation;
   for (size_t i = 0; i < operations.size(); ++i)
-    EXPECT_TRUE(operations[i]->MatchesTypes(none_operation));
+    EXPECT_EQ(operations[i]->size(),
+              operations[i]->MatchingPrefixLength(none_operation));
 }
 
 TEST(TransformOperationTest, ApplyTranslate) {
@@ -316,6 +330,10 @@ TEST(TransformOperationTest, BlendOrder) {
   SkMScalar dy2 = 20;
   SkMScalar dz2 = 30;
 
+  SkMScalar sx3 = 2;
+  SkMScalar sy3 = 1;
+  SkMScalar sz3 = 1;
+
   TransformOperations operations_from;
   operations_from.AppendScale(sx1, sy1, sz1);
   operations_from.AppendTranslate(dx1, dy1, dz1);
@@ -368,16 +386,54 @@ TEST(TransformOperationTest, BlendOrder) {
     ExpectTransformOperationEqual(expected_op, blended_op);
   }
 
-  // Create a mismatch, forcing matrix interpolation.
-  operations_to.AppendMatrix(gfx::Transform());
+  TransformOperations base_operations_expected = operations_expected;
+
+  // Create a mismatch in number of operations. Pairwise interpolation is still
+  // used when the operations match up to the length of the shorter list.
+  operations_to.AppendScale(sx3, sy3, sz3);
+
+  gfx::Transform appended_scale;
+  appended_scale.Scale3d(sx3, sy3, sz3);
+
+  gfx::Transform blended_append_scale = appended_scale;
+  blended_append_scale.Blend(gfx::Transform(), progress);
+  expected.PreconcatTransform(blended_append_scale);
+
+  operations_expected.AppendScale(
+      gfx::Tween::FloatValueBetween(progress, 1, sx3),
+      gfx::Tween::FloatValueBetween(progress, 1, sy3),
+      gfx::Tween::FloatValueBetween(progress, 1, sz3));
 
   blended = operations_to.Blend(operations_from, progress);
 
-  expected = operations_to.Apply();
-  expected.Blend(operations_from.Apply(), progress);
+  EXPECT_TRANSFORMATION_MATRIX_EQ(expected, blended.Apply());
+  EXPECT_TRANSFORMATION_MATRIX_EQ(operations_expected.Apply(), blended.Apply());
+  EXPECT_EQ(operations_expected.size(), blended.size());
+  for (size_t i = 0; i < operations_expected.size(); ++i) {
+    TransformOperation expected_op = operations_expected.at(i);
+    TransformOperation blended_op = blended.at(i);
+    SCOPED_TRACE(i);
+    ExpectTransformOperationEqual(expected_op, blended_op);
+  }
 
-  operations_expected = TransformOperations();
-  operations_expected.AppendMatrix(expected);
+  // Create a mismatch, forcing matrix interpolation for the last operator pair.
+  operations_from.AppendRotate(0, 0, 1, 90);
+
+  blended = operations_to.Blend(operations_from, progress);
+
+  gfx::Transform transform_from;
+  transform_from.RotateAboutZAxis(90);
+  gfx::Transform transform_to;
+  transform_to.Scale3d(sx3, sy3, sz3);
+  gfx::Transform blended_matrix = transform_to;
+  blended_matrix.Blend(transform_from, progress);
+
+  expected = blended_scale;
+  expected.PreconcatTransform(blended_translate);
+  expected.PreconcatTransform(blended_matrix);
+
+  operations_expected = base_operations_expected;
+  operations_expected.AppendMatrix(blended_matrix);
 
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected, blended.Apply());
   EXPECT_TRANSFORMATION_MATRIX_EQ(operations_expected.Apply(), blended.Apply());
@@ -1028,7 +1084,7 @@ TEST(TransformOperationTest, BlendedBoundsForRotationTrivial) {
   // Since we're rotating 360 degrees, any box with dimensions between 0 and
   // 2 * sqrt(2) should give the same result.
   float sizes[] = { 0.f, 0.1f, sqrt_2, 2.f * sqrt_2 };
-  for (size_t i = 0; i < arraysize(sizes); ++i) {
+  for (size_t i = 0; i < base::size(sizes); ++i) {
     box.set_size(sizes[i], sizes[i], 0.f);
     SkMScalar min_progress = 0.f;
     SkMScalar max_progress = 1.f;
@@ -1123,7 +1179,7 @@ TEST(TransformOperationTest, BlendedBoundsForRotationProblematicAxes) {
                {0.f, 1.f, 1.f, gfx::BoxF(-1.f, dim1, dim1, 2.f, dim2, dim2)},
                {1.f, 0.f, 1.f, gfx::BoxF(dim1, -1.f, dim1, dim2, 2.f, dim2)}};
 
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     float x = tests[i].x;
     float y = tests[i].y;
     float z = tests[i].z;
@@ -1262,9 +1318,9 @@ TEST(TransformOperationTest, BlendedBoundsForRotationEmpiricalTests) {
         {0.f, 1.f}, {-.25f, 1.25f},
     };
 
-  for (size_t i = 0; i < arraysize(axes); ++i) {
-    for (size_t j = 0; j < arraysize(angles); ++j) {
-      for (size_t k = 0; k < arraysize(progress); ++k) {
+  for (size_t i = 0; i < base::size(axes); ++i) {
+    for (size_t j = 0; j < base::size(angles); ++j) {
+      for (size_t k = 0; k < base::size(progress); ++k) {
         float x = axes[i].x;
         float y = axes[i].y;
         float z = axes[i].z;
@@ -1325,8 +1381,8 @@ TEST(TransformOperationTest, BlendedBoundsForPerspective) {
         {0.f, 1.f}, {-0.1f, 1.1f},
     };
 
-  for (size_t i = 0; i < arraysize(perspective_depths); ++i) {
-    for (size_t j = 0; j < arraysize(progress); ++j) {
+  for (size_t i = 0; i < base::size(perspective_depths); ++i) {
+    for (size_t j = 0; j < base::size(progress); ++j) {
       TransformOperations operations_from;
       operations_from.AppendPerspective(perspective_depths[i].from_depth);
       TransformOperations operations_to;
@@ -1356,8 +1412,8 @@ TEST(TransformOperationTest, BlendedBoundsForSkew) {
         {0.f, 1.f}, {-0.1f, 1.1f},
     };
 
-  for (size_t i = 0; i < arraysize(skews); ++i) {
-    for (size_t j = 0; j < arraysize(progress); ++j) {
+  for (size_t i = 0; i < base::size(skews); ++i) {
+    for (size_t j = 0; j < base::size(progress); ++j) {
       TransformOperations operations_from;
       operations_from.AppendSkew(skews[i].from_x, skews[i].from_y);
       TransformOperations operations_to;
@@ -1681,4 +1737,60 @@ TEST(TransformOperationsTest, ApproximateEquality) {
 }
 
 }  // namespace
+
+// This test is intentionally outside the anonymous namespace for visibility as
+// it needs to be friend of TransformOperations.
+TEST(TransformOperationsTest, TestDecompositionCache) {
+  TransformOperations transforms;
+  EXPECT_EQ(0UL, transforms.decomposed_transforms_.size());
+  EXPECT_TRUE(transforms.ComputeDecomposedTransform(0));
+  EXPECT_EQ(1UL, transforms.decomposed_transforms_.size());
+
+  // Reset cache when appending a scale transform.
+  transforms.AppendScale(2.f, 2.f, 2.f);
+  EXPECT_EQ(0UL, transforms.decomposed_transforms_.size());
+  EXPECT_TRUE(transforms.ComputeDecomposedTransform(1));
+  EXPECT_EQ(1UL, transforms.decomposed_transforms_.size());
+  EXPECT_TRUE(transforms.ComputeDecomposedTransform(1));
+  EXPECT_EQ(1UL, transforms.decomposed_transforms_.size());
+  EXPECT_TRUE(transforms.ComputeDecomposedTransform(0));
+  EXPECT_EQ(2UL, transforms.decomposed_transforms_.size());
+
+  // Reset cache when appending a rotation transform.
+  transforms.AppendRotate(1, 0, 0, 45);
+  EXPECT_EQ(0UL, transforms.decomposed_transforms_.size());
+  EXPECT_TRUE(transforms.ComputeDecomposedTransform(0));
+  EXPECT_EQ(1UL, transforms.decomposed_transforms_.size());
+
+  // Reset cache when appending a translation transform.
+  transforms.AppendTranslate(1, 1, 1);
+  EXPECT_EQ(0UL, transforms.decomposed_transforms_.size());
+  EXPECT_TRUE(transforms.ComputeDecomposedTransform(0));
+  EXPECT_EQ(1UL, transforms.decomposed_transforms_.size());
+
+  // Reset cache when appending a skew transform.
+  transforms.AppendSkew(1, 0);
+  EXPECT_EQ(0UL, transforms.decomposed_transforms_.size());
+  EXPECT_TRUE(transforms.ComputeDecomposedTransform(0));
+  EXPECT_EQ(1UL, transforms.decomposed_transforms_.size());
+
+  // Reset cache when appending a perspective transform.
+  transforms.AppendPerspective(800);
+  EXPECT_EQ(0UL, transforms.decomposed_transforms_.size());
+  EXPECT_TRUE(transforms.ComputeDecomposedTransform(0));
+  EXPECT_EQ(1UL, transforms.decomposed_transforms_.size());
+
+  // Reset cache when appending a matrix transform.
+  transforms.AppendMatrix(gfx::Transform());
+  EXPECT_EQ(0UL, transforms.decomposed_transforms_.size());
+  EXPECT_TRUE(transforms.ComputeDecomposedTransform(0));
+  EXPECT_EQ(1UL, transforms.decomposed_transforms_.size());
+
+  // Reset cache when appending a generic transform operation.
+  transforms.Append(TransformOperation());
+  EXPECT_EQ(0UL, transforms.decomposed_transforms_.size());
+  EXPECT_TRUE(transforms.ComputeDecomposedTransform(0));
+  EXPECT_EQ(1UL, transforms.decomposed_transforms_.size());
+}
+
 }  // namespace cc

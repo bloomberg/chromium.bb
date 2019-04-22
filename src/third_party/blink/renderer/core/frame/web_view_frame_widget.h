@@ -48,56 +48,53 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   void DidEnterFullscreen() override;
   void DidExitFullscreen() override;
   void SetSuppressFrameRequestsWorkaroundFor704763Only(bool) final;
-  void BeginFrame(base::TimeTicks last_frame_time) override;
+  void BeginFrame(base::TimeTicks last_frame_time,
+                  bool record_main_frame_metrics) override;
+  void DidBeginFrame() override;
+  void BeginRafAlignedInput() override;
+  void EndRafAlignedInput() override;
+  void BeginUpdateLayers() override;
+  void EndUpdateLayers() override;
+  void BeginCommitCompositorFrame() override;
+  void EndCommitCompositorFrame() override;
+  void RecordStartOfFrameMetrics() override;
   void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) override;
   void UpdateLifecycle(LifecycleUpdate requested_update,
                        LifecycleUpdateReason reason) override;
-  void PaintContent(cc::PaintCanvas*, const WebRect& view_port) override;
-  void LayoutAndPaintAsync(base::OnceClosure callback) override;
-  void CompositeAndReadbackAsync(
-      base::OnceCallback<void(const SkBitmap&)>) override;
   void ThemeChanged() override;
   WebInputEventResult HandleInputEvent(const WebCoalescedInputEvent&) override;
   WebInputEventResult DispatchBufferedTouchEvents() override;
   void SetCursorVisibilityState(bool is_visible) override;
+  void OnFallbackCursorModeToggled(bool is_on) override;
   void ApplyViewportChanges(const ApplyViewportChangesArgs&) override;
   void RecordWheelAndTouchScrollingCount(bool has_scrolled_by_wheel,
                                          bool has_scrolled_by_touch) override;
+  void SendOverscrollEventFromImplSide(
+      const gfx::Vector2dF& overscroll_delta,
+      cc::ElementId scroll_latched_element_id) override;
+  void SendScrollEndEventFromImplSide(
+      cc::ElementId scroll_latched_element_id) override;
   void MouseCaptureLost() override;
   void SetFocus(bool) override;
   bool SelectionBounds(WebRect& anchor, WebRect& focus) const override;
   bool IsAcceleratedCompositingActive() const override;
-  bool IsWebView() const override { return false; }
-  bool IsPagePopup() const override { return false; }
-  void WillCloseLayerTreeView() override;
-  SkColor BackgroundColor() const override;
-  WebPagePopup* GetPagePopup() const override;
   WebURL GetURLForDebugTrace() override;
 
   // WebFrameWidget overrides:
-  void SetBackgroundColorOverride(SkColor) override;
-  void ClearBackgroundColorOverride() override;
-  void SetBaseBackgroundColorOverride(SkColor) override;
-  void ClearBaseBackgroundColorOverride() override;
-  void SetBaseBackgroundColor(SkColor) override;
   WebInputMethodController* GetActiveWebInputMethodController() const override;
   bool ScrollFocusedEditableElementIntoView() override;
   WebHitTestResult HitTestResultAt(const gfx::Point&) override;
 
   // WebFrameWidgetBase overrides:
-  void Initialize() override;
-  void SetLayerTreeView(WebLayerTreeView*) override;
+  void SetLayerTreeView(WebLayerTreeView*, cc::AnimationHost*) override;
   bool ForSubframe() const override { return false; }
-  void ScheduleAnimation() override;
-  base::WeakPtr<AnimationWorkletMutatorDispatcherImpl>
-  EnsureCompositorMutatorDispatcher(
-      scoped_refptr<base::SingleThreadTaskRunner>*) override;
   void SetRootGraphicsLayer(GraphicsLayer*) override;
   GraphicsLayer* RootGraphicsLayer() const override;
   void SetRootLayer(scoped_refptr<cc::Layer>) override;
   WebLayerTreeView* GetLayerTreeView() const override;
-  CompositorAnimationHost* AnimationHost() const override;
+  cc::AnimationHost* AnimationHost() const override;
   HitTestResult CoreHitTestResultAt(const gfx::Point&) override;
+  void ZoomToFindInPageRect(const WebRect& rect_in_root_frame) override;
 
   void Trace(blink::Visitor*) override;
 

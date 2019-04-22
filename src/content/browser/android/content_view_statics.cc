@@ -92,7 +92,6 @@ base::LazyInstance<SuspendedProcessWatcher>::DestructorAtExit
 
 static void JNI_ContentViewStaticsImpl_SetWebKitSharedTimersSuspended(
     JNIEnv* env,
-    const JavaParamRef<jclass>& obj,
     jboolean suspend) {
   if (suspend) {
     g_suspended_processes_watcher.Pointer()->SuspendWebKitSharedTimers();

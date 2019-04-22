@@ -77,7 +77,7 @@ Please follow these general guidelines:
    them.
 1. If other parts of CQ bot execution (e.g. `bot_update`) are failing, or you
    have reason to believe the CQ itself is broken, or you can't really
-   tell what's wrong, please file a [trooper bug](g.co/bugatrooper).
+   tell what's wrong, please file a [trooper bug](https://g.co/bugatrooper).
 
 In both cases, when filing bugs, please include links to the build and/or CL
 (including relevant patchset information) in question.
@@ -133,4 +133,4 @@ levels:
 ## Help!
 
 Have other questions? Run into any issues with the CQ? Email
-infra-dev@chromium.org, or file a [trooper bug](g.co/bugatrooper).
+infra-dev@chromium.org, or file a [trooper bug](https://g.co/bugatrooper).

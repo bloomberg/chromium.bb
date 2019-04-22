@@ -7,6 +7,7 @@
 
 #include <map>
 #include <string>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
@@ -65,7 +66,13 @@ class SessionService : public sessions::BaseSessionServiceDelegate,
  public:
   // Used to distinguish an application from a ordinary content window.
   enum AppType {
-    TYPE_APP,
+    // Chrome Apps.
+    TYPE_CHROME_APP,
+
+    // Web Apps.
+    TYPE_WEB_APP,
+
+    // Not an app.
     TYPE_NORMAL
   };
 
@@ -162,17 +169,13 @@ class SessionService : public sessions::BaseSessionServiceDelegate,
   void SetWindowAppName(const SessionID& window_id,
                         const std::string& app_name);
 
-  // Invoked when the NavigationController has removed entries from the back of
-  // the list. |count| gives the number of entries in the navigation controller.
-  void TabNavigationPathPrunedFromBack(const SessionID& window_id,
-                                       const SessionID& tab_id,
-                                       int count);
-
-  // Invoked when the NavigationController has removed entries from the front of
-  // the list. |count| gives the number of entries that were removed.
-  void TabNavigationPathPrunedFromFront(const SessionID& window_id,
-                                        const SessionID& tab_id,
-                                        int count);
+  // Invoked when the NavigationController has removed entries from the list.
+  // |index| gives the the starting index from which entries were deleted.
+  // |count| gives the number of entries that were removed.
+  void TabNavigationPathPruned(const SessionID& window_id,
+                               const SessionID& tab_id,
+                               int index,
+                               int count);
 
   // Invoked when the NavigationController has deleted entries because of a
   // history deletion.
@@ -328,6 +331,11 @@ class SessionService : public sessions::BaseSessionServiceDelegate,
 
   // Unit test accessors.
   sessions::BaseSessionService* GetBaseSessionServiceForTest();
+
+  void SetAvailableRangeForTest(const SessionID& tab_id,
+                                const std::pair<int, int>& range);
+  bool GetAvailableRangeForTest(const SessionID& tab_id,
+                                std::pair<int, int>* range);
 
   // The profile. This may be null during testing.
   Profile* profile_;

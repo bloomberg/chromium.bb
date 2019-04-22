@@ -70,7 +70,7 @@ PP_Bool URLRequestInfoResource::SetProperty(PP_URLRequestProperty property,
   if (!result) {
     std::string error_msg("PPB_URLRequestInfo.SetProperty: Attempted to set a "
                           "value for PP_URLRequestProperty ");
-    error_msg += base::IntToString(property);
+    error_msg += base::NumberToString(property);
     error_msg += ", but either this property type is invalid or its parameter "
                  "was inappropriate (e.g., the wrong type of PP_Var).";
     Log(PP_LOGLEVEL_ERROR, error_msg);

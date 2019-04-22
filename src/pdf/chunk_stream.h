@@ -119,6 +119,6 @@ class ChunkStream {
   uint32_t filled_chunks_count_ = 0;
 };
 
-};  // namespace chrome_pdf
+}  // namespace chrome_pdf
 
 #endif  // PDF_CHUNK_STREAM_H_

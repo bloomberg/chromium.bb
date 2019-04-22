@@ -14,7 +14,7 @@ namespace chromeos {
 namespace device_sync {
 
 // Fake DeviceSyncObserver implementation for tests.
-class FakeDeviceSyncObserver : public device_sync::mojom::DeviceSyncObserver {
+class FakeDeviceSyncObserver : public mojom::DeviceSyncObserver {
  public:
   FakeDeviceSyncObserver();
   ~FakeDeviceSyncObserver() override;
@@ -24,7 +24,7 @@ class FakeDeviceSyncObserver : public device_sync::mojom::DeviceSyncObserver {
   size_t num_enrollment_events() { return num_enrollment_events_; }
   size_t num_sync_events() { return num_sync_events_; }
 
-  // device_sync::mojom::DeviceSyncObserver:
+  // mojom::DeviceSyncObserver:
   void OnEnrollmentFinished() override;
   void OnNewDevicesSynced() override;
 

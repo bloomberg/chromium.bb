@@ -3,7 +3,6 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/md_select_css.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="appearance_browser_proxy.html">
 <link rel="import" href="../controls/controlled_radio_button.html">
@@ -22,10 +21,6 @@
 <dom-module id="settings-appearance-page">
   <template>
     <style include="settings-shared md-select iron-flex">
-      .secondary-button ~ .secondary-button {
-        margin-inline-start: 12px;
-      }
-
       /* Lines up with cr-input. */
       #custom-input {
         --cr-radio-button-disc: {
@@ -49,13 +44,13 @@
     </style>
     <settings-animated-pages id="pages" section="appearance"
         focus-config="[[focusConfig_]]">
-      <neon-animatable route-path="default">
+      <div route-path="default">
 <if expr="chromeos">
-        <cr-link-row icon-class="icon-external" id="wallpaperButton"
+        <cr-link-row  id="wallpaperButton"
             hidden="[[!pageVisibility.setWallpaper]]"
-            on-click="openWallpaperManager_"
-            label="$i18n{setWallpaper}" sub-label="$i18n{openWallpaperApp}"
-            disabled="[[isWallpaperPolicyControlled_]]">
+            on-click="openWallpaperManager_" label="$i18n{setWallpaper}"
+            sub-label="$i18n{openWallpaperApp}"
+            disabled="[[isWallpaperPolicyControlled_]]" external>
           <template is="dom-if" if="[[isWallpaperPolicyControlled_]]">
             <cr-policy-indicator id="wallpaperPolicyIndicator"
                 indicator-type="devicePolicy">
@@ -66,10 +61,9 @@
 </if>
         <div class="settings-row continuation" id="themeRow"
             hidden="[[!pageVisibility.setTheme]]">
-          <cr-link-row class="first" icon-class="icon-external"
-              hidden="[[!pageVisibility.setTheme]]"
+          <cr-link-row class="first" hidden="[[!pageVisibility.setTheme]]"
               label="$i18n{themes}" sub-label="[[themeSublabel_]]"
-              on-click="openThemeUrl_"></cr-link-row>
+              on-click="openThemeUrl_" external></cr-link-row>
 <if expr="not is_linux or chromeos">
           <template is="dom-if" if="[[prefs.extensions.theme.id.value]]">
             <div class="separator"></div>
@@ -159,8 +153,7 @@
               menu-options="[[fontSizeOptions_]]">
           </settings-dropdown-menu>
         </div>
-        <cr-link-row class="hr"
-            icon-class="subpage-arrow" id="customize-fonts-subpage-trigger"
+        <cr-link-row class="hr" id="customize-fonts-subpage-trigger"
             label="$i18n{customizeFonts}" on-click="onCustomizeFontsTap_">
         </cr-link-row>
         <div class="settings-box" hidden="[[!pageVisibility.pageZoom]]">
@@ -183,7 +176,7 @@
             label="$i18n{warnBeforeQuitting}">
         </settings-toggle-button>
 </if>
-      </neon-animatable>
+      </div>
       <template is="dom-if" route-path="/fonts">
         <settings-subpage
             associated-control="[[$$('#customize-fonts-subpage-trigger')]]"

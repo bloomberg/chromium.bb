@@ -9,11 +9,16 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 
 class Profile;
+
+namespace identity {
+class IdentityManager;
+}  // namespace identity.
 
 // Shows signin-related errors as notifications in Ash.
 class SigninErrorNotifier : public SigninErrorController::Observer,
@@ -29,17 +34,37 @@ class SigninErrorNotifier : public SigninErrorController::Observer,
   void OnErrorChanged() override;
 
  private:
-  base::string16 GetMessageBody() const;
+  // Handles errors for the Device Account.
+  // Displays a notification asking the user to Sign Out.
+  void HandleDeviceAccountError();
+
+  // Handles errors for Secondary Accounts.
+  // Displays a notification that allows users to open crOS Account Manager UI.
+  // |account_id| is the account identifier (used by the Token Service chain)
+  // for the Secondary Account which received an error.
+  void HandleSecondaryAccountError(const std::string& account_id);
+
+  // Handles clicks on the Secondary Account reauth notification. See
+  // |message_center::HandleNotificationClickDelegate|.
+  void HandleSecondaryAccountReauthNotificationClick(
+      base::Optional<int> button_index);
+
+  base::string16 GetMessageBody(bool is_secondary_account_error) const;
 
   // The error controller to query for error details.
   SigninErrorController* error_controller_;
 
   // The Profile this service belongs to.
-  Profile* profile_;
+  Profile* const profile_;
 
-  // Used to keep track of the message center notification.
-  std::string notification_id_;
+  // A non-owning pointer to IdentityManager.
+  identity::IdentityManager* const identity_manager_;
 
+  // Used to keep track of the message center notifications.
+  std::string device_account_notification_id_;
+  std::string secondary_account_notification_id_;
+
+  base::WeakPtrFactory<SigninErrorNotifier> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(SigninErrorNotifier);
 };
 

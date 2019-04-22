@@ -6,7 +6,7 @@
 #define ASH_SHELF_SHELF_TOOLTIP_BUBBLE_H_
 
 #include "ash/ash_export.h"
-#include "ash/shelf/shelf_tooltip_bubble_base.h"
+#include "ash/shelf/shelf_bubble.h"
 
 namespace views {
 class BubbleDialogDelegateView;
@@ -16,19 +16,21 @@ class View;
 namespace ash {
 
 // The implementation of tooltip bubbles for the shelf.
-class ASH_EXPORT ShelfTooltipBubble : public ShelfTooltipBubbleBase {
+class ASH_EXPORT ShelfTooltipBubble : public ShelfBubble {
  public:
   ShelfTooltipBubble(views::View* anchor,
-                     views::BubbleBorder::Arrow arrow,
+                     ShelfAlignment alignment,
+                     SkColor background_color,
                      const base::string16& text);
+
+ protected:
+  // ShelfBubble:
+  bool ShouldCloseOnPressDown() override;
+  bool ShouldCloseOnMouseExit() override;
 
  private:
   // BubbleDialogDelegateView overrides:
   gfx::Size CalculatePreferredSize() const override;
-
-  // ShelfTooltipBubbleBase:
-  bool ShouldCloseOnPressDown() override;
-  bool ShouldCloseOnMouseExit() override;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfTooltipBubble);
 };

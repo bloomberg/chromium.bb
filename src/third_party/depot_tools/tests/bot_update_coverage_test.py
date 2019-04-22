@@ -295,6 +295,22 @@ class BotUpdateUnittests(unittest.TestCase):
         'https://chromium.googlesource.com/breakpad')
     self.assertNotIn('src/overridden', out['directories'])
 
+  def testParsesRevisions(self):
+    revisions = [
+      'f671d3baeb64d9dba628ad582e867cf1aebc0207',
+      'src@deadbeef',
+      'https://foo.googlesource.com/bar@12345',
+      'bar@refs/experimental/test@example.com/test',
+    ]
+    expected_results = {
+      'root': 'f671d3baeb64d9dba628ad582e867cf1aebc0207',
+      'src': 'deadbeef',
+      'https://foo.googlesource.com/bar.git': '12345',
+      'bar': 'refs/experimental/test@example.com/test',
+    }
+    actual_results = bot_update.parse_revisions(revisions, 'root')
+    self.assertEqual(expected_results, actual_results)
+
 
 if __name__ == '__main__':
   unittest.main()

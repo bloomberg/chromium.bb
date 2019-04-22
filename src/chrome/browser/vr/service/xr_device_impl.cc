@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/trace_event/common/trace_event_common.h"
 #include "chrome/browser/vr/metrics/session_metrics_helper.h"
 #include "chrome/browser/vr/mode.h"
 #include "chrome/browser/vr/service/browser_xr_runtime.h"
@@ -128,6 +129,9 @@ void XRDeviceImpl::RequestSession(
   // Get the runtime we'll be creating a session with.
   BrowserXRRuntime* runtime =
       XRRuntimeManager::GetInstance()->GetRuntimeForOptions(options.get());
+  int id_for_event = runtime ? static_cast<int>(runtime->GetId()) : -1;
+  TRACE_EVENT_INSTANT1("xr", "GetRuntimeForOptions", TRACE_EVENT_SCOPE_THREAD,
+                       "id", id_for_event);
   if (!runtime) {
     std::move(callback).Run(nullptr);
     return;
@@ -175,8 +179,8 @@ void XRDeviceImpl::ReportRequestPresent() {
   if (!metrics_helper) {
     // This will only happen if we are not already in VR, set start params
     // accordingly.
-    metrics_helper = SessionMetricsHelper::CreateForWebContents(
-        web_contents, Mode::kNoVr, false);
+    metrics_helper =
+        SessionMetricsHelper::CreateForWebContents(web_contents, Mode::kNoVr);
   }
   metrics_helper->ReportRequestPresent();
 }
@@ -207,7 +211,8 @@ void XRDeviceImpl::GetImmersiveVRDisplayInfo(
     return;
   }
 
-  immersive_runtime->InitializeAndGetDisplayInfo(std::move(callback));
+  immersive_runtime->InitializeAndGetDisplayInfo(render_frame_host_,
+                                                 std::move(callback));
 }
 
 void XRDeviceImpl::SetInFocusedFrame(bool in_focused_frame) {

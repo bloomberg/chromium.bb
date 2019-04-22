@@ -21,12 +21,12 @@ OfflinePageItem OfflinePageItemGenerator::CreateItem() {
   item.offline_id = store_utils::GenerateOfflineId();
   item.client_id.name_space = namespace_;
   if (id_.empty())
-    item.client_id.id = base::Int64ToString(item.offline_id);
+    item.client_id.id = base::NumberToString(item.offline_id);
   else
     item.client_id.id = id_;
   item.request_origin = request_origin_;
   item.url = url_;
-  item.original_url = original_url_;
+  item.original_url_if_different = original_url_;
   item.file_size = file_size_;
   item.creation_time = creation_time_;
   item.last_access_time = last_access_time_;

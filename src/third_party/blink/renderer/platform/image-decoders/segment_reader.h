@@ -5,9 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_IMAGE_DECODERS_SEGMENT_READER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_IMAGE_DECODERS_SEGMENT_READER_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 
 class SkData;
@@ -28,8 +28,6 @@ namespace blink {
 // modify the underlying data source.
 class PLATFORM_EXPORT SegmentReader
     : public ThreadSafeRefCounted<SegmentReader> {
-  WTF_MAKE_NONCOPYABLE(SegmentReader);
-
  public:
   // This version is thread-safe so long as no thread is modifying the
   // underlying SharedBuffer. This class does not modify it, so that would
@@ -46,6 +44,9 @@ class PLATFORM_EXPORT SegmentReader
   virtual size_t size() const = 0;
   virtual size_t GetSomeData(const char*& data, size_t position) const = 0;
   virtual sk_sp<SkData> GetAsSkData() const = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SegmentReader);
 };
 
 }  // namespace blink

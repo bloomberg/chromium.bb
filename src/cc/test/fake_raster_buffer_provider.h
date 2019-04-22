@@ -29,7 +29,7 @@ class FakeRasterBufferProviderImpl : public RasterBufferProvider {
       const ResourcePool::InUsePoolResource& resource) const override;
   uint64_t SetReadyToDrawCallback(
       const std::vector<const ResourcePool::InUsePoolResource*>& resources,
-      const base::Callback<void()>& callback,
+      base::OnceClosure callback,
       uint64_t pending_callback_id) const override;
   void Shutdown() override;
   bool CheckRasterFinishedQueries() override;

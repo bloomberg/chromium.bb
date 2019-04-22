@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/views/controls/menu/menu_types.h"
@@ -36,7 +37,6 @@ class MenuRunnerHandler;
 class Widget;
 
 namespace internal {
-class DisplayChangeListener;
 class MenuRunnerImplInterface;
 }
 
@@ -60,6 +60,8 @@ class MenuRunnerTestAPI;
 class VIEWS_EXPORT MenuRunner {
  public:
   enum RunTypes {
+    NO_FLAGS = 0,
+
     // The menu has mnemonics.
     HAS_MNEMONICS = 1 << 0,
 
@@ -98,6 +100,14 @@ class VIEWS_EXPORT MenuRunner {
 
     // Whether to use the touchable layout for this context menu.
     USE_TOUCHABLE_LAYOUT = 1 << 8,
+
+    // Similar to COMBOBOX, but does not capture the mouse and lets some keys
+    // propagate back to the parent so the combobox content can be edited even
+    // while the menu is open.
+    EDITABLE_COMBOBOX = 1 << 9,
+
+    // Indicates that the menu should show mnemonics.
+    SHOULD_SHOW_MNEMONICS = 1 << 10,
   };
 
   // Creates a new MenuRunner, which may use a native menu if available.
@@ -105,9 +115,11 @@ class VIEWS_EXPORT MenuRunner {
   // |on_menu_closed_callback| is invoked when the menu is closed.
   // Note that with a native menu (e.g. on Mac), the ASYNC flag in |run_types|
   // may be ignored. See http://crbug.com/682544.
+  // The MenuModelDelegate of |menu_model| will be overwritten by this call.
   MenuRunner(ui::MenuModel* menu_model,
              int32_t run_types,
-             const base::Closure& on_menu_closed_callback = base::Closure());
+             base::RepeatingClosure on_menu_closed_callback =
+                 base::RepeatingClosure());
 
   // Creates a runner for a custom-created toolkit-views menu.
   MenuRunner(MenuItemView* menu, int32_t run_types);
@@ -146,30 +158,8 @@ class VIEWS_EXPORT MenuRunner {
   // is not NULL, this implementation will be used.
   std::unique_ptr<MenuRunnerHandler> runner_handler_;
 
-  std::unique_ptr<internal::DisplayChangeListener> display_change_listener_;
-
   DISALLOW_COPY_AND_ASSIGN(MenuRunner);
 };
-
-namespace internal {
-
-// DisplayChangeListener is intended to listen for changes in the display size
-// and cancel the menu. DisplayChangeListener is created when the menu is
-// shown.
-class DisplayChangeListener {
- public:
-  virtual ~DisplayChangeListener() {}
-
-  // Creates the platform specified DisplayChangeListener, or NULL if there
-  // isn't one. Caller owns the returned value.
-  static DisplayChangeListener* Create(Widget* parent,
-                                       MenuRunner* runner);
-
- protected:
-  DisplayChangeListener() {}
-};
-
-}  // namespace internal
 
 }  // namespace views
 

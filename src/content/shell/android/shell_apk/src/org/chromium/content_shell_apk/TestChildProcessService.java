@@ -73,16 +73,6 @@ public class TestChildProcessService extends ChildProcessService {
         }
 
         @Override
-        public void onDestroy() {
-            if (mIChildProcessTest == null) return;
-            try {
-                mIChildProcessTest.onDestroy();
-            } catch (RemoteException re) {
-                Log.e(TAG, "Failed to call IChildProcessTest.onDestroy.", re);
-            }
-        }
-
-        @Override
         public void preloadNativeLibrary(Context hostContext) {
             LibraryLoader.getInstance().preloadNow();
         }

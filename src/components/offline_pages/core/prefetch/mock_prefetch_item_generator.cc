@@ -47,13 +47,14 @@ PrefetchItem MockPrefetchItemGenerator::CreateItem(PrefetchItemState state) {
 
   // Values always set using prefixes.
   CHECK(client_namespace_.length());
-  new_item.client_id = ClientId(
-      client_namespace_, client_id_prefix_ + base::IntToString(item_counter));
-  new_item.url = GURL(url_prefix_ + base::IntToString(item_counter));
+  new_item.client_id =
+      ClientId(client_namespace_,
+               client_id_prefix_ + base::NumberToString(item_counter));
+  new_item.url = GURL(url_prefix_ + base::NumberToString(item_counter));
 
   if (title_prefix_.length()) {
     new_item.title =
-        base::UTF8ToUTF16(title_prefix_ + base::IntToString(item_counter));
+        base::UTF8ToUTF16(title_prefix_ + base::NumberToString(item_counter));
   }
 
   if (state == PrefetchItemState::NEW_REQUEST ||
@@ -63,7 +64,7 @@ PrefetchItem MockPrefetchItemGenerator::CreateItem(PrefetchItemState state) {
 
   if (operation_name_prefix_.length()) {
     new_item.operation_name =
-        operation_name_prefix_ + base::IntToString(item_counter);
+        operation_name_prefix_ + base::NumberToString(item_counter);
   }
 
   if (state == PrefetchItemState::AWAITING_GCM ||
@@ -74,12 +75,12 @@ PrefetchItem MockPrefetchItemGenerator::CreateItem(PrefetchItemState state) {
 
   if (archive_body_name_prefix_.length()) {
     new_item.archive_body_name =
-        archive_body_name_prefix_ + base::IntToString(item_counter);
+        archive_body_name_prefix_ + base::NumberToString(item_counter);
     new_item.archive_body_length = item_counter * 100;
   }
   if (final_url_prefix_.length()) {
     new_item.final_archived_url =
-        GURL(final_url_prefix_ + base::IntToString(item_counter));
+        GURL(final_url_prefix_ + base::NumberToString(item_counter));
   }
 
   if (state == PrefetchItemState::RECEIVED_BUNDLE)
@@ -88,7 +89,7 @@ PrefetchItem MockPrefetchItemGenerator::CreateItem(PrefetchItemState state) {
   new_item.guid = base::GenerateGUID();
   if (file_path_prefix_.length()) {
     new_item.file_path = base::FilePath::FromUTF8Unsafe(
-        file_path_prefix_ + base::IntToString(item_counter));
+        file_path_prefix_ + base::NumberToString(item_counter));
   }
 
   if (state == PrefetchItemState::DOWNLOADING) {

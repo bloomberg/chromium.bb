@@ -37,6 +37,7 @@ class OverlayPanelLayer : public Layer {
                      float panel_y,
                      float panel_width,
                      float panel_height,
+                     int bar_background_color,
                      float bar_margin_side,
                      float bar_height,
                      float bar_offset_y,
@@ -45,7 +46,17 @@ class OverlayPanelLayer : public Layer {
                      float bar_border_height,
                      bool bar_shadow_visible,
                      float bar_shadow_opacity,
+                     int icon_tint,
                      float close_icon_opacity);
+
+  void SetProgressBar(int progress_bar_background_resource_id,
+                      int progress_bar_resource_id,
+                      bool progress_bar_visible,
+                      float progress_bar_position_y,
+                      float progress_bar_height,
+                      float progress_bar_opacity,
+                      int progress_bar_completion,
+                      float panel_width);
 
   scoped_refptr<cc::Layer> layer() override;
 
@@ -68,6 +79,8 @@ class OverlayPanelLayer : public Layer {
   scoped_refptr<cc::Layer> content_container_;
   scoped_refptr<cc::Layer> text_container_;
   scoped_refptr<cc::SolidColorLayer> bar_border_;
+  scoped_refptr<cc::NinePatchLayer> progress_bar_;
+  scoped_refptr<cc::NinePatchLayer> progress_bar_background_;
 
   int panel_icon_resource_id_;
   int bar_text_resource_id_;

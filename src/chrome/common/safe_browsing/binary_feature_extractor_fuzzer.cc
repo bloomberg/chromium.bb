@@ -11,7 +11,7 @@
 
 #include "components/safe_browsing/proto/csd.pb.h"
 
-extern "C" int LLVMFuzzerTestOneInput(uint8_t* data, size_t size) {
+extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   static safe_browsing::BinaryFeatureExtractor* extractor =
       new safe_browsing::BinaryFeatureExtractor();
 

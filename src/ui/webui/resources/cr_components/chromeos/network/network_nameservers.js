@@ -8,7 +8,7 @@
 Polymer({
   is: 'network-nameservers',
 
-  behaviors: [I18nBehavior],
+  behaviors: [I18nBehavior, CrPolicyNetworkBehavior],
 
   properties: {
     /**
@@ -19,12 +19,6 @@ Polymer({
     networkProperties: {
       type: Object,
       observer: 'networkPropertiesChanged_',
-    },
-
-    /** Whether or not the nameservers can be edited. */
-    editable: {
-      type: Boolean,
-      value: false,
     },
 
     /**
@@ -54,6 +48,12 @@ Polymer({
         return this.i18nAdvanced(
             'networkNameserversGoogle', {substitutions: [], tags: ['a']});
       }
+    },
+
+    /** @private */
+    canChangeConfigType_: {
+      type: Boolean,
+      computed: 'computeCanChangeConfigType_(networkProperties)',
     }
   },
 
@@ -74,18 +74,21 @@ Polymer({
 
   /** @private */
   networkPropertiesChanged_: function(newValue, oldValue) {
-    if (!this.networkProperties)
+    if (!this.networkProperties) {
       return;
+    }
 
-    if (!oldValue || newValue.GUID != oldValue.GUID)
+    if (!oldValue || newValue.GUID != oldValue.GUID) {
       this.savedNameservers_ = [];
+    }
 
     // Update the 'nameservers' property.
     let nameservers = [];
     const ipv4 =
         CrOnc.getIPConfigForType(this.networkProperties, CrOnc.IPType.IPV4);
-    if (ipv4 && ipv4.NameServers)
+    if (ipv4 && ipv4.NameServers) {
       nameservers = ipv4.NameServers;
+    }
 
     // Update the 'nameserversType' property.
     const configType =
@@ -114,27 +117,46 @@ Polymer({
   setNameservers_: function(nameserversType, nameservers, sendNameservers) {
     if (nameserversType == 'custom') {
       // Add empty entries for unset custom nameservers.
-      for (let i = nameservers.length; i < this.MAX_NAMESERVERS; ++i)
+      for (let i = nameservers.length; i < this.MAX_NAMESERVERS; ++i) {
         nameservers[i] = '';
+      }
       this.savedNameservers_ = nameservers.slice();
     }
     this.nameservers_ = nameservers;
     // Set nameserversType_ after dom-repeat has been stamped.
     this.async(() => {
       this.nameserversType_ = nameserversType;
-      if (sendNameservers)
+      if (sendNameservers) {
         this.sendNameServers_();
+      }
     });
   },
 
   /**
-   * @param {boolean} editable
+   * @param {!CrOnc.NetworkProperties} networkProperties
+   * @return {boolean} True if the nameservers config type type can be changed.
+   * @private
+   */
+  computeCanChangeConfigType_: function(networkProperties) {
+    return !this.isNetworkPolicyPathEnforced(
+               networkProperties, 'NameServersConfigType') &&
+        !this.isNetworkPolicyPathEnforced(
+            networkProperties, 'StaticIPConfig.NameServers');
+  },
+
+  /**
    * @param {string} nameserversType
+   * @param {!CrOnc.NetworkProperties} networkProperties
    * @return {boolean} True if the nameservers are editable.
    * @private
    */
-  canEdit_: function(editable, nameserversType) {
-    return editable && nameserversType == 'custom';
+  canEditCustomNameServers_: function(nameserversType, networkProperties) {
+    return nameserversType == 'custom' &&
+        !this.isNetworkPolicyEnforced(
+            networkProperties.NameServersConfigType) &&
+        !!networkProperties.StaticIPConfig &&
+        !this.isNetworkPolicyEnforced(
+            networkProperties.StaticIPConfig.NameServers);
   },
 
   /**
@@ -145,8 +167,9 @@ Polymer({
    * @private
    */
   showNameservers_: function(nameserversType, type, nameservers) {
-    if (nameserversType != type)
+    if (nameserversType != type) {
       return false;
+    }
     return type == 'custom' || nameservers.length > 0;
   },
 

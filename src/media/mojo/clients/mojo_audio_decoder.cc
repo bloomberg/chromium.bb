@@ -42,12 +42,11 @@ bool MojoAudioDecoder::IsPlatformDecoder() const {
   return true;
 }
 
-void MojoAudioDecoder::Initialize(
-    const AudioDecoderConfig& config,
-    CdmContext* cdm_context,
-    const InitCB& init_cb,
-    const OutputCB& output_cb,
-    const WaitingForDecryptionKeyCB& /* waiting_for_decryption_key_cb */) {
+void MojoAudioDecoder::Initialize(const AudioDecoderConfig& config,
+                                  CdmContext* cdm_context,
+                                  const InitCB& init_cb,
+                                  const OutputCB& output_cb,
+                                  const WaitingCB& waiting_cb) {
   DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
@@ -74,6 +73,7 @@ void MojoAudioDecoder::Initialize(
 
   init_cb_ = init_cb;
   output_cb_ = output_cb;
+  waiting_cb_ = waiting_cb;
 
   // Using base::Unretained(this) is safe because |this| owns |remote_decoder_|,
   // and the callback won't be dispatched if |remote_decoder_| is destroyed.
@@ -88,16 +88,16 @@ void MojoAudioDecoder::Decode(scoped_refptr<DecoderBuffer> media_buffer,
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (remote_decoder_.encountered_error()) {
-    task_runner_->PostTask(FROM_HERE,
-                           base::Bind(decode_cb, DecodeStatus::DECODE_ERROR));
+    task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(decode_cb, DecodeStatus::DECODE_ERROR));
     return;
   }
 
   mojom::DecoderBufferPtr buffer =
       mojo_decoder_buffer_writer_->WriteDecoderBuffer(std::move(media_buffer));
   if (!buffer) {
-    task_runner_->PostTask(FROM_HERE,
-                           base::Bind(decode_cb, DecodeStatus::DECODE_ERROR));
+    task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(decode_cb, DecodeStatus::DECODE_ERROR));
     return;
   }
 
@@ -159,6 +159,13 @@ void MojoAudioDecoder::OnBufferDecoded(mojom::AudioBufferPtr buffer) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   output_cb_.Run(buffer.To<scoped_refptr<AudioBuffer>>());
+}
+
+void MojoAudioDecoder::OnWaiting(WaitingReason reason) {
+  DVLOG(1) << __func__;
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  waiting_cb_.Run(reason);
 }
 
 void MojoAudioDecoder::OnConnectionError() {

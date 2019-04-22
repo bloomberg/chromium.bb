@@ -30,6 +30,7 @@
 #include "build/build_config.h"
 #include "net/base/auth.h"
 #include "net/base/host_port_pair.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/proxy_delegate.h"
 #include "net/base/url_util.h"
 #include "net/http/http_request_headers.h"
@@ -125,9 +126,9 @@ class ConnectTestingEventInterface : public WebSocketEventInterface {
       const SSLInfo& ssl_info,
       bool fatal) override;
 
-  int OnAuthRequired(scoped_refptr<AuthChallengeInfo> auth_info,
+  int OnAuthRequired(const AuthChallengeInfo& auth_info,
                      scoped_refptr<HttpResponseHeaders> response_headers,
-                     const HostPortPair& host_port_pair,
+                     const IPEndPoint& remote_endpoint,
                      base::OnceCallback<void(const AuthCredentials*)> callback,
                      base::Optional<AuthCredentials>* credentials) override;
 
@@ -202,15 +203,15 @@ void ConnectTestingEventInterface::OnSSLCertificateError(
     const SSLInfo& ssl_info,
     bool fatal) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&SSLErrorCallbacks::CancelSSLRequest,
-                            base::Owned(ssl_error_callbacks.release()),
-                            ERR_SSL_PROTOCOL_ERROR, &ssl_info));
+      FROM_HERE, base::BindOnce(&SSLErrorCallbacks::CancelSSLRequest,
+                                base::Owned(ssl_error_callbacks.release()),
+                                ERR_SSL_PROTOCOL_ERROR, &ssl_info));
 }
 
 int ConnectTestingEventInterface::OnAuthRequired(
-    scoped_refptr<AuthChallengeInfo> auth_info,
+    const AuthChallengeInfo& auth_info,
     scoped_refptr<HttpResponseHeaders> response_headers,
-    const HostPortPair& host_port_pair,
+    const IPEndPoint& remote_endpoint,
     base::OnceCallback<void(const AuthCredentials*)> callback,
     base::Optional<AuthCredentials>* credentials) {
   *credentials = base::nullopt;
@@ -246,6 +247,15 @@ class TestProxyDelegateWithProxyInfo : public ProxyDelegate {
   }
 
   void OnFallback(const ProxyServer& bad_proxy, int net_error) override {}
+
+  void OnBeforeHttp1TunnelRequest(const ProxyServer& proxy_server,
+                                  HttpRequestHeaders* extra_headers) override {}
+
+  Error OnHttp1TunnelHeadersReceived(
+      const ProxyServer& proxy_server,
+      const HttpResponseHeaders& response_headers) override {
+    return OK;
+  }
 
  private:
   ResolvedProxyInfo resolved_proxy_info_;

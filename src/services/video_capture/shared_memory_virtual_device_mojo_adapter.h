@@ -11,6 +11,7 @@
 #include "services/service_manager/public/cpp/service_context_ref.h"
 #include "services/video_capture/public/mojom/device.mojom.h"
 #include "services/video_capture/public/mojom/producer.mojom.h"
+#include "services/video_capture/public/mojom/receiver.mojom.h"
 #include "services/video_capture/public/mojom/virtual_device.mojom.h"
 
 namespace video_capture {
@@ -37,9 +38,6 @@ class SharedMemoryVirtualDeviceMojoAdapter
   // mojom::Device implementation.
   void Start(const media::VideoCaptureParams& requested_settings,
              mojom::ReceiverPtr receiver) override;
-  void OnReceiverReportingUtilization(int32_t frame_feedback_id,
-                                      double utilization) override;
-  void RequestRefreshFrame() override;
   void MaybeSuspend() override;
   void Resume() override;
   void GetPhotoState(GetPhotoStateCallback callback) override;

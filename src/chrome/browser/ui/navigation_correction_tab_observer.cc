@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/navigation_correction_tab_observer.h"
 
+#include "base/bind.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/google/google_url_tracker_factory.h"
@@ -49,14 +50,12 @@ NavigationCorrectionTabObserver::NavigationCorrectionTabObserver(
   }
 }
 
-NavigationCorrectionTabObserver::~NavigationCorrectionTabObserver() {
-}
+NavigationCorrectionTabObserver::~NavigationCorrectionTabObserver() {}
 
 // static
 void NavigationCorrectionTabObserver::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* prefs) {
-  prefs->RegisterBooleanPref(prefs::kAlternateErrorPagesEnabled,
-                             true,
+  prefs->RegisterBooleanPref(prefs::kAlternateErrorPagesEnabled, true,
                              user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
@@ -106,3 +105,5 @@ void NavigationCorrectionTabObserver::UpdateNavigationCorrectionInfo(
       google_apis::GetAPIKey(),
       google_util::GetGoogleSearchURL(google_base_url));
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(NavigationCorrectionTabObserver)

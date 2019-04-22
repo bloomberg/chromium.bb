@@ -11,9 +11,9 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "gpu/ipc/common/gpu_memory_buffer_impl_android_hardware_buffer.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gl/android/android_surface_control_compat.h"
 
 namespace gpu {
 
@@ -36,6 +36,9 @@ AHardwareBuffer_Desc GetBufferDescription(const gfx::Size& size,
     case gfx::BufferFormat::RGBX_8888:
       desc.format = AHARDWAREBUFFER_FORMAT_R8G8B8X8_UNORM;
       break;
+    case gfx::BufferFormat::BGR_565:
+      desc.format = AHARDWAREBUFFER_FORMAT_R5G6B5_UNORM;
+      break;
     default:
       NOTREACHED();
   }
@@ -45,6 +48,8 @@ AHardwareBuffer_Desc GetBufferDescription(const gfx::Size& size,
     case gfx::BufferUsage::SCANOUT:
       desc.usage = AHARDWAREBUFFER_USAGE_GPU_SAMPLED_IMAGE |
                    AHARDWAREBUFFER_USAGE_GPU_COLOR_OUTPUT;
+      if (usage == gfx::BufferUsage::SCANOUT)
+        desc.usage |= gl::SurfaceControl::RequiredUsage();
       break;
     default:
       NOTREACHED();
@@ -59,9 +64,9 @@ GpuMemoryBufferImplAndroidHardwareBuffer::
         gfx::GpuMemoryBufferId id,
         const gfx::Size& size,
         gfx::BufferFormat format,
-        const DestructionCallback& callback,
+        DestructionCallback callback,
         base::android::ScopedHardwareBufferHandle handle)
-    : GpuMemoryBufferImpl(id, size, format, callback),
+    : GpuMemoryBufferImpl(id, size, format, std::move(callback)),
       hardware_buffer_handle_(std::move(handle)) {}
 
 GpuMemoryBufferImplAndroidHardwareBuffer::
@@ -69,12 +74,11 @@ GpuMemoryBufferImplAndroidHardwareBuffer::
 
 // static
 std::unique_ptr<GpuMemoryBufferImplAndroidHardwareBuffer>
-GpuMemoryBufferImplAndroidHardwareBuffer::Create(
-    gfx::GpuMemoryBufferId id,
-    const gfx::Size& size,
-    gfx::BufferFormat format,
-    gfx::BufferUsage usage,
-    const DestructionCallback& callback) {
+GpuMemoryBufferImplAndroidHardwareBuffer::Create(gfx::GpuMemoryBufferId id,
+                                                 const gfx::Size& size,
+                                                 gfx::BufferFormat format,
+                                                 gfx::BufferUsage usage,
+                                                 DestructionCallback callback) {
   DCHECK(base::AndroidHardwareBufferCompat::IsSupportAvailable());
 
   AHardwareBuffer* buffer = nullptr;
@@ -86,7 +90,7 @@ GpuMemoryBufferImplAndroidHardwareBuffer::Create(
   }
 
   return base::WrapUnique(new GpuMemoryBufferImplAndroidHardwareBuffer(
-      id, size, format, callback,
+      id, size, format, std::move(callback),
       base::android::ScopedHardwareBufferHandle::Adopt(buffer)));
 }
 
@@ -97,10 +101,10 @@ GpuMemoryBufferImplAndroidHardwareBuffer::CreateFromHandle(
     const gfx::Size& size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
-    const DestructionCallback& callback) {
+    DestructionCallback callback) {
   DCHECK(handle.android_hardware_buffer.is_valid());
   return base::WrapUnique(new GpuMemoryBufferImplAndroidHardwareBuffer(
-      handle.id, size, format, callback,
+      handle.id, size, format, std::move(callback),
       std::move(handle.android_hardware_buffer)));
 }
 
@@ -133,7 +137,7 @@ GpuMemoryBufferImplAndroidHardwareBuffer::CloneHandle() const {
 }
 
 // static
-base::Closure GpuMemoryBufferImplAndroidHardwareBuffer::AllocateForTesting(
+base::OnceClosure GpuMemoryBufferImplAndroidHardwareBuffer::AllocateForTesting(
     const gfx::Size& size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,

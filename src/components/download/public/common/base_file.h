@@ -21,6 +21,7 @@
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/download/public/common/download_export.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "crypto/secure_hash.h"
@@ -151,6 +152,11 @@ class COMPONENTS_DOWNLOAD_EXPORT BaseFile {
       const std::string& client_guid,
       const GURL& source_url,
       const GURL& referrer_url);
+
+#if defined(OS_ANDROID)
+  // Publishes the intermediate download to public download collection.
+  DownloadInterruptReason PublishDownload();
+#endif
 
   // Returns the last known path to the download file. Can be empty if there's
   // no file.

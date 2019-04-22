@@ -19,7 +19,6 @@ namespace android {
 
 ScopedJavaLocalRef<jstring> JNI_VariationsAssociatedData_GetVariationParamValue(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& jtrial_name,
     const JavaParamRef<jstring>& jparam_name) {
   std::string trial_name(ConvertJavaStringToUTF8(env, jtrial_name));
@@ -30,8 +29,7 @@ ScopedJavaLocalRef<jstring> JNI_VariationsAssociatedData_GetVariationParamValue(
 }
 
 ScopedJavaLocalRef<jstring> JNI_VariationsAssociatedData_GetFeedbackVariations(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& clazz) {
+    JNIEnv* env) {
   const std::string values =
       VariationsHttpHeaderProvider::GetInstance()->GetVariationsString();
   return ConvertUTF8ToJavaString(env, values);

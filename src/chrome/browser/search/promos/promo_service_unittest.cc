@@ -57,15 +57,15 @@ class PromoServiceTest : public testing::Test {
             GoogleURLTracker::ALWAYS_DOT_COM_MODE,
             network::TestNetworkConnectionTracker::GetInstance()) {}
 
-  ~PromoServiceTest() override {
-    static_cast<KeyedService&>(google_url_tracker_).Shutdown();
-  }
-
   void SetUp() override {
     testing::Test::SetUp();
 
     service_ = std::make_unique<PromoService>(test_shared_loader_factory_,
                                               &google_url_tracker_);
+  }
+
+  void TearDown() override {
+    static_cast<KeyedService&>(google_url_tracker_).Shutdown();
   }
 
   void SetUpResponseWithData(const GURL& load_url,
@@ -109,7 +109,7 @@ TEST_F(PromoServiceTest, PromoDataNetworkError) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(service()->promo_data(), base::nullopt);
-  EXPECT_EQ(service()->promo_status(), Status::TRANSIENT_ERROR);
+  EXPECT_EQ(service()->promo_status(), PromoService::Status::TRANSIENT_ERROR);
 }
 
 TEST_F(PromoServiceTest, BadPromoResponse) {
@@ -122,15 +122,46 @@ TEST_F(PromoServiceTest, BadPromoResponse) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(service()->promo_data(), base::nullopt);
-  EXPECT_EQ(service()->promo_status(), Status::FATAL_ERROR);
+  EXPECT_EQ(service()->promo_status(), PromoService::Status::FATAL_ERROR);
+}
+
+TEST_F(PromoServiceTest, BadPromoResponseNoLogUrl) {
+  SetUpResponseWithData(
+      service()->GetLoadURLForTesting(),
+      "{\"update\":{\"promos\":{\"middle\":\"<style></style><div><script></"
+      "script></div>\"}}}");
+
+  ASSERT_EQ(service()->promo_data(), base::nullopt);
+
+  service()->Refresh();
+  base::RunLoop().RunUntilIdle();
+
+  PromoData data;
+  EXPECT_EQ(service()->promo_data(), data);
+  EXPECT_EQ(service()->promo_status(), PromoService::Status::OK_WITHOUT_PROMO);
+}
+
+TEST_F(PromoServiceTest, PromoResponseMissingData) {
+  SetUpResponseWithData(service()->GetLoadURLForTesting(),
+                        "{\"update\":{\"promos\":{}}}");
+
+  ASSERT_EQ(service()->promo_data(), base::nullopt);
+
+  service()->Refresh();
+  base::RunLoop().RunUntilIdle();
+
+  PromoData data;
+  EXPECT_EQ(service()->promo_data(), data);
+  EXPECT_EQ(service()->promo_status(), PromoService::Status::OK_WITHOUT_PROMO);
 }
 
 TEST_F(PromoServiceTest, GoodPromoResponse) {
   std::string response_string =
       "{\"update\":{\"promos\":{\"middle\":\"<style></style><div><script></"
-      "script></div>\"}}}";
+      "script></div>\", \"log_url\":\"/log_url?param=1\"}}}";
   PromoData promo;
   promo.promo_html = "<style></style><div><script></script></div>";
+  promo.promo_log_url = GURL("https://www.google.com/log_url?param=1");
 
   SetUpResponseWithData(service()->GetLoadURLForTesting(), response_string);
 
@@ -140,5 +171,5 @@ TEST_F(PromoServiceTest, GoodPromoResponse) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(service()->promo_data(), promo);
-  EXPECT_EQ(service()->promo_status(), Status::OK);
+  EXPECT_EQ(service()->promo_status(), PromoService::Status::OK_WITH_PROMO);
 }

@@ -8,10 +8,12 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
+#include <stdint.h>
+#include <string.h>
 #include <memory>
+#include <utility>
 
 #include "modules/desktop_capture/desktop_and_cursor_composer.h"
-#include "modules/desktop_capture/desktop_capture_options.h"
 #include "modules/desktop_capture/desktop_capturer.h"
 #include "modules/desktop_capture/desktop_frame.h"
 #include "modules/desktop_capture/mouse_cursor.h"
@@ -124,7 +126,6 @@ class FakeMouseMonitor : public MouseCursorMonitor {
       std::unique_ptr<DesktopFrame> image(
           new BasicDesktopFrame(DesktopSize(kCursorWidth, kCursorHeight)));
       uint32_t* data = reinterpret_cast<uint32_t*>(image->data());
-      memset(data, 0, image->stride() * kCursorHeight);
 
       // Set four pixels near the hotspot and leave all other blank.
       for (int y = 0; y < kTestCursorSize; ++y) {
@@ -172,7 +173,7 @@ void VerifyFrame(const DesktopFrame& frame,
 
 }  // namespace
 
-class DesktopAndCursorComposerTest : public testing::Test,
+class DesktopAndCursorComposerTest : public ::testing::Test,
                                      public DesktopCapturer::Callback {
  public:
   DesktopAndCursorComposerTest()

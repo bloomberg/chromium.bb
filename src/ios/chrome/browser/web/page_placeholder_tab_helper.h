@@ -43,6 +43,8 @@ class PagePlaceholderTabHelper
   explicit PagePlaceholderTabHelper(web::WebState* web_state);
 
   // web::WebStateObserver overrides:
+  void WasShown(web::WebState* web_state) override;
+  void WasHidden(web::WebState* web_state) override;
   void DidStartNavigation(web::WebState* web_state,
                           web::NavigationContext* navigation_context) override;
   void PageLoaded(
@@ -52,6 +54,9 @@ class PagePlaceholderTabHelper
 
   void AddPlaceholder();
   void RemovePlaceholder();
+
+  // Adds the given |snapshot| image to the |web_state_|'s view.
+  void DisplaySnapshotImage(UIImage* snapshot);
 
   // WebState this tab helper is attached to.
   web::WebState* web_state_ = nullptr;
@@ -66,6 +71,8 @@ class PagePlaceholderTabHelper
   bool add_placeholder_for_next_navigation_ = false;
 
   base::WeakPtrFactory<PagePlaceholderTabHelper> weak_factory_;
+
+  WEB_STATE_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(PagePlaceholderTabHelper);
 };

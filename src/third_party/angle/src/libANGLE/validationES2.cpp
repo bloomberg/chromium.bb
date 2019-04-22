@@ -56,9 +56,9 @@ bool IsPartialBlit(gl::Context *context,
         return true;
     }
 
-    if (context->getGLState().isScissorTestEnabled())
+    if (context->getState().isScissorTestEnabled())
     {
-        const Rectangle &scissor = context->getGLState().getScissor();
+        const Rectangle &scissor = context->getState().getScissor();
         return scissor.x > 0 || scissor.y > 0 || scissor.width < writeSize.width ||
                scissor.height < writeSize.height;
     }
@@ -96,20 +96,19 @@ bool ValidateInstancedPathParameters(gl::Context *context,
 {
     if (!context->getExtensions().pathRendering)
     {
-        context->validationError(GL_INVALID_OPERATION,
-                                 "GL_CHROMIUM_path_rendering is not available.");
+        context->validationError(GL_INVALID_OPERATION, kExtensionNotEnabled);
         return false;
     }
 
     if (paths == nullptr)
     {
-        context->validationError(GL_INVALID_VALUE, "No path name array.");
+        context->validationError(GL_INVALID_VALUE, kInvalidPathNameArray);
         return false;
     }
 
     if (numPaths < 0)
     {
-        context->validationError(GL_INVALID_VALUE, "Invalid (negative) numPaths.");
+        context->validationError(GL_INVALID_VALUE, kInvalidPathNumPaths);
         return false;
     }
 
@@ -161,7 +160,7 @@ bool ValidateInstancedPathParameters(gl::Context *context,
             break;
 
         default:
-            context->validationError(GL_INVALID_ENUM, "Invalid path name type.");
+            context->validationError(GL_INVALID_ENUM, kInvalidPathNameType);
             return false;
     }
 
@@ -189,12 +188,12 @@ bool ValidateInstancedPathParameters(gl::Context *context,
             componentCount = 12;
             break;
         default:
-            context->validationError(GL_INVALID_ENUM, "Invalid transformation.");
+            context->validationError(GL_INVALID_ENUM, kInvalidTransformation);
             return false;
     }
     if (componentCount != 0 && transformValues == nullptr)
     {
-        context->validationError(GL_INVALID_VALUE, "No transform array given.");
+        context->validationError(GL_INVALID_VALUE, kNoTransformArray);
         return false;
     }
 
@@ -347,10 +346,8 @@ bool IsValidCopyTextureSourceTarget(Context *context, TextureType type)
             return true;
         case TextureType::Rectangle:
             return context->getExtensions().textureRectangle;
-
-            // TODO(geofflang): accept GL_TEXTURE_EXTERNAL_OES if the texture_external extension is
-            // supported
-
+        case TextureType::External:
+            return context->getExtensions().eglImageExternal;
         default:
             return false;
     }
@@ -481,7 +478,7 @@ bool ValidateES2CopyTexImageParameters(Context *context,
     TextureType texType = TextureTargetToType(target);
     if (!ValidImageSizeParameters(context, texType, level, width, height, 1, isSubImage))
     {
-        context->validationError(GL_INVALID_VALUE, "Invalid texture dimensions.");
+        // Error is already handled.
         return false;
     }
 
@@ -493,7 +490,7 @@ bool ValidateES2CopyTexImageParameters(Context *context,
         return false;
     }
 
-    const gl::Framebuffer *framebuffer = context->getGLState().getReadFramebuffer();
+    const gl::Framebuffer *framebuffer = context->getState().getReadFramebuffer();
     GLenum colorbufferFormat =
         framebuffer->getReadColorbuffer()->getFormat().info->sizedInternalFormat;
     const auto &formatInfo = *textureFormat.info;
@@ -721,14 +718,12 @@ bool ValidateES2CopyTexImageParameters(Context *context,
             case GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_LOSSY_DECODE_ETC2_ANGLE:
                 if (context->getExtensions().lossyETCDecode)
                 {
-                    context->validationError(GL_INVALID_OPERATION,
-                                             "ETC lossy decode formats can't be copied to.");
+                    context->validationError(GL_INVALID_OPERATION, kInvalidFormat);
                     return false;
                 }
                 else
                 {
-                    context->validationError(GL_INVALID_ENUM,
-                                             "ANGLE_lossy_etc_decode extension is not supported.");
+                    context->validationError(GL_INVALID_ENUM, kEnumNotSupported);
                     return false;
                 }
                 break;
@@ -1044,8 +1039,7 @@ bool ValidateMatrixMode(Context *context, GLenum matrixMode)
 {
     if (!context->getExtensions().pathRendering)
     {
-        context->validationError(GL_INVALID_OPERATION,
-                                 "GL_CHROMIUM_path_rendering is not available.");
+        context->validationError(GL_INVALID_OPERATION, kExtensionNotEnabled);
         return false;
     }
 
@@ -1117,46 +1111,6 @@ bool ValidDstBlendFunc(const Context *context, GLenum val)
 
     return false;
 }
-
-void RecordBindTextureTypeError(Context *context, TextureType target)
-{
-    ASSERT(!context->getStateCache().isValidBindTextureType(target));
-
-    switch (target)
-    {
-        case TextureType::Rectangle:
-            ASSERT(!context->getExtensions().textureRectangle);
-            context->validationError(GL_INVALID_ENUM,
-                                     "Context does not support GL_ANGLE_texture_rectangle");
-            break;
-
-        case TextureType::_3D:
-        case TextureType::_2DArray:
-            ASSERT(context->getClientMajorVersion() < 3);
-            context->validationError(GL_INVALID_ENUM, kES3Required);
-            break;
-
-        case TextureType::_2DMultisample:
-            ASSERT(context->getClientVersion() < Version(3, 1) &&
-                   !context->getExtensions().textureMultisample);
-            context->validationError(GL_INVALID_ENUM, kMultisampleTextureExtensionOrES31Required);
-            break;
-
-        case TextureType::_2DMultisampleArray:
-            ASSERT(!context->getExtensions().textureStorageMultisample2DArray);
-            context->validationError(GL_INVALID_ENUM, kMultisampleArrayExtensionRequired);
-            break;
-
-        case TextureType::External:
-            ASSERT(!context->getExtensions().eglImageExternal &&
-                   !context->getExtensions().eglStreamConsumerExternal);
-            context->validationError(GL_INVALID_ENUM, "External texture extension not enabled");
-            break;
-
-        default:
-            context->validationError(GL_INVALID_ENUM, kInvalidTextureTarget);
-    }
-}
 }  // anonymous namespace
 
 bool ValidateES2TexImageParameters(Context *context,
@@ -1201,21 +1155,6 @@ bool ValidateES2TexImageParameters(Context *context,
         return false;
     }
 
-    // From GL_CHROMIUM_color_buffer_float_rgb[a]:
-    // GL_RGB[A] / GL_RGB[A]32F becomes an allowable format / internalformat parameter pair for
-    // TexImage2D. The restriction in section 3.7.1 of the OpenGL ES 2.0 spec that the
-    // internalformat parameter and format parameter of TexImage2D must match is lifted for this
-    // case.
-    bool nonEqualFormatsAllowed =
-        (internalformat == GL_RGB32F && context->getExtensions().colorBufferFloatRGB) ||
-        (internalformat == GL_RGBA32F && context->getExtensions().colorBufferFloatRGBA);
-
-    if (!isSubImage && !isCompressed && internalformat != format && !nonEqualFormatsAllowed)
-    {
-        context->validationError(GL_INVALID_OPERATION, kInvalidFormatCombination);
-        return false;
-    }
-
     const gl::Caps &caps = context->getCaps();
 
     switch (texType)
@@ -1239,8 +1178,7 @@ bool ValidateES2TexImageParameters(Context *context,
             }
             if (isCompressed)
             {
-                context->validationError(GL_INVALID_ENUM,
-                                         "Rectangle texture cannot have a compressed format.");
+                context->validationError(GL_INVALID_ENUM, kRectangleTextureCompressed);
                 return false;
             }
             break;
@@ -1265,53 +1203,11 @@ bool ValidateES2TexImageParameters(Context *context,
             return false;
     }
 
-    gl::Texture *texture = context->getTargetTexture(texType);
+    gl::Texture *texture = context->getTextureByType(texType);
     if (!texture)
     {
         context->validationError(GL_INVALID_OPERATION, kBufferNotBound);
         return false;
-    }
-
-    if (isSubImage)
-    {
-        const InternalFormat &textureInternalFormat = *texture->getFormat(target, level).info;
-        if (textureInternalFormat.internalFormat == GL_NONE)
-        {
-            context->validationError(GL_INVALID_OPERATION, "Texture level does not exist.");
-            return false;
-        }
-
-        if (format != GL_NONE)
-        {
-            if (GetInternalFormatInfo(format, type).sizedInternalFormat !=
-                textureInternalFormat.sizedInternalFormat)
-            {
-                context->validationError(GL_INVALID_OPERATION, kTypeMismatch);
-                return false;
-            }
-        }
-
-        if (static_cast<size_t>(xoffset + width) > texture->getWidth(target, level) ||
-            static_cast<size_t>(yoffset + height) > texture->getHeight(target, level))
-        {
-            context->validationError(GL_INVALID_VALUE, kOffsetOverflow);
-            return false;
-        }
-
-        if (width > 0 && height > 0 && pixels == nullptr &&
-            context->getGLState().getTargetBuffer(BufferBinding::PixelUnpack) == nullptr)
-        {
-            context->validationError(GL_INVALID_VALUE, kPixelDataNull);
-            return false;
-        }
-    }
-    else
-    {
-        if (texture->getImmutableFormat())
-        {
-            context->validationError(GL_INVALID_OPERATION, kTextureIsImmutable);
-            return false;
-        }
     }
 
     // Verify zero border
@@ -1320,6 +1216,8 @@ bool ValidateES2TexImageParameters(Context *context,
         context->validationError(GL_INVALID_VALUE, kInvalidBorder);
         return false;
     }
+
+    bool nonEqualFormatsAllowed = false;
 
     if (isCompressed)
     {
@@ -1358,8 +1256,7 @@ bool ValidateES2TexImageParameters(Context *context,
                                              height, texture->getWidth(target, level),
                                              texture->getHeight(target, level)))
             {
-                context->validationError(GL_INVALID_OPERATION,
-                                         "Invalid compressed format dimension.");
+                context->validationError(GL_INVALID_OPERATION, kInvalidCompressedImageSize);
                 return false;
             }
 
@@ -1373,8 +1270,7 @@ bool ValidateES2TexImageParameters(Context *context,
         {
             if (!ValidCompressedImageSize(context, actualInternalFormat, level, width, height))
             {
-                context->validationError(GL_INVALID_OPERATION,
-                                         "Invalid compressed format dimension.");
+                context->validationError(GL_INVALID_OPERATION, kInvalidCompressedImageSize);
                 return false;
             }
         }
@@ -1590,14 +1486,12 @@ bool ValidateES2TexImageParameters(Context *context,
             case GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_LOSSY_DECODE_ETC2_ANGLE:
                 if (context->getExtensions().lossyETCDecode)
                 {
-                    context->validationError(GL_INVALID_OPERATION,
-                                             "ETC lossy decode formats can't work with this type.");
+                    context->validationError(GL_INVALID_OPERATION, kInvalidFormat);
                     return false;
                 }
                 else
                 {
-                    context->validationError(GL_INVALID_ENUM,
-                                             "ANGLE_lossy_etc_decode extension is not supported.");
+                    context->validationError(GL_INVALID_ENUM, kEnumNotSupported);
                     return false;
                 }
                 break;
@@ -1634,14 +1528,23 @@ bool ValidateES2TexImageParameters(Context *context,
         {
             switch (internalformat)
             {
+                // Core ES 2.0 formats
+                case GL_ALPHA:
+                case GL_LUMINANCE:
+                case GL_LUMINANCE_ALPHA:
+                case GL_RGB:
+                case GL_RGBA:
+                    break;
+
                 case GL_RGBA32F:
                     if (!context->getExtensions().colorBufferFloatRGBA)
                     {
-                        context->validationError(GL_INVALID_ENUM,
-                                                 "Sized GL_RGBA32F internal format requires "
-                                                 "GL_CHROMIUM_color_buffer_float_rgba");
+                        context->validationError(GL_INVALID_ENUM, kInvalidFormat);
                         return false;
                     }
+
+                    nonEqualFormatsAllowed = true;
+
                     if (type != GL_FLOAT)
                     {
                         context->validationError(GL_INVALID_OPERATION, kMismatchedTypeAndFormat);
@@ -1657,11 +1560,12 @@ bool ValidateES2TexImageParameters(Context *context,
                 case GL_RGB32F:
                     if (!context->getExtensions().colorBufferFloatRGB)
                     {
-                        context->validationError(GL_INVALID_ENUM,
-                                                 "Sized GL_RGB32F internal format requires "
-                                                 "GL_CHROMIUM_color_buffer_float_rgb");
+                        context->validationError(GL_INVALID_ENUM, kInvalidFormat);
                         return false;
                     }
+
+                    nonEqualFormatsAllowed = true;
+
                     if (type != GL_FLOAT)
                     {
                         context->validationError(GL_INVALID_OPERATION, kMismatchedTypeAndFormat);
@@ -1674,8 +1578,44 @@ bool ValidateES2TexImageParameters(Context *context,
                     }
                     break;
 
-                default:
+                case GL_BGRA_EXT:
+                    if (!context->getExtensions().textureFormatBGRA8888)
+                    {
+                        context->validationError(GL_INVALID_ENUM, kInvalidFormat);
+                        return false;
+                    }
                     break;
+
+                case GL_DEPTH_COMPONENT:
+                case GL_DEPTH_STENCIL:
+                    if (!context->getExtensions().depthTextures)
+                    {
+                        context->validationError(GL_INVALID_ENUM, kInvalidFormat);
+                        return false;
+                    }
+                    break;
+
+                case GL_RED:
+                case GL_RG:
+                    if (!context->getExtensions().textureRG)
+                    {
+                        context->validationError(GL_INVALID_ENUM, kInvalidFormat);
+                        return false;
+                    }
+                    break;
+
+                case GL_SRGB_EXT:
+                case GL_SRGB_ALPHA_EXT:
+                    if (!context->getExtensions().sRGB)
+                    {
+                        context->validationError(GL_INVALID_ENUM, kEnumNotSupported);
+                        return false;
+                    }
+                    break;
+
+                default:
+                    context->validationError(GL_INVALID_VALUE, kInvalidInternalFormat);
+                    return false;
             }
         }
 
@@ -1697,14 +1637,68 @@ bool ValidateES2TexImageParameters(Context *context,
         }
     }
 
-    GLenum sizeCheckFormat = isSubImage ? format : internalformat;
-    if (!ValidImageDataSize(context, texType, width, height, 1, sizeCheckFormat, type, pixels,
-                            imageSize))
+    if (isSubImage)
     {
+        const InternalFormat &textureInternalFormat = *texture->getFormat(target, level).info;
+        if (textureInternalFormat.internalFormat == GL_NONE)
+        {
+            context->validationError(GL_INVALID_OPERATION, kInvalidTextureLevel);
+            return false;
+        }
+
+        if (format != textureInternalFormat.format)
+        {
+            context->validationError(GL_INVALID_OPERATION, err::kTextureFormatMismatch);
+            return false;
+        }
+
+        if (context->getExtensions().webglCompatibility)
+        {
+            if (GetInternalFormatInfo(format, type).sizedInternalFormat !=
+                textureInternalFormat.sizedInternalFormat)
+            {
+                context->validationError(GL_INVALID_OPERATION, kTextureTypeMismatch);
+                return false;
+            }
+        }
+
+        if (static_cast<size_t>(xoffset + width) > texture->getWidth(target, level) ||
+            static_cast<size_t>(yoffset + height) > texture->getHeight(target, level))
+        {
+            context->validationError(GL_INVALID_VALUE, kOffsetOverflow);
+            return false;
+        }
+
+        if (width > 0 && height > 0 && pixels == nullptr &&
+            context->getState().getTargetBuffer(BufferBinding::PixelUnpack) == nullptr)
+        {
+            context->validationError(GL_INVALID_VALUE, kPixelDataNull);
+            return false;
+        }
+    }
+    else
+    {
+        if (texture->getImmutableFormat())
+        {
+            context->validationError(GL_INVALID_OPERATION, kTextureIsImmutable);
+            return false;
+        }
+    }
+
+    // From GL_CHROMIUM_color_buffer_float_rgb[a]:
+    // GL_RGB[A] / GL_RGB[A]32F becomes an allowable format / internalformat parameter pair for
+    // TexImage2D. The restriction in section 3.7.1 of the OpenGL ES 2.0 spec that the
+    // internalformat parameter and format parameter of TexImage2D must match is lifted for this
+    // case.
+    if (!isSubImage && !isCompressed && internalformat != format && !nonEqualFormatsAllowed)
+    {
+        context->validationError(GL_INVALID_OPERATION, kInvalidFormatCombination);
         return false;
     }
 
-    return true;
+    GLenum sizeCheckFormat = isSubImage ? format : internalformat;
+    return ValidImageDataSize(context, texType, width, height, 1, sizeCheckFormat, type, pixels,
+                              imageSize);
 }
 
 bool ValidateES2TexStorageParameters(Context *context,
@@ -1837,8 +1831,7 @@ bool ValidateES2TexStorageParameters(Context *context,
         case GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_LOSSY_DECODE_ETC2_ANGLE:
             if (!context->getExtensions().lossyETCDecode)
             {
-                context->validationError(GL_INVALID_ENUM,
-                                         "ANGLE_lossy_etc_decode extension is not supported.");
+                context->validationError(GL_INVALID_ENUM, kEnumNotSupported);
                 return false;
             }
             break;
@@ -1912,7 +1905,7 @@ bool ValidateES2TexStorageParameters(Context *context,
             break;
     }
 
-    gl::Texture *texture = context->getTargetTexture(target);
+    gl::Texture *texture = context->getTextureByType(target);
     if (!texture || texture->id() == 0)
     {
         context->validationError(GL_INVALID_OPERATION, kMissingTexture);
@@ -1945,7 +1938,7 @@ bool ValidateDiscardFramebufferEXT(Context *context,
     {
         case GL_FRAMEBUFFER:
             defaultFramebuffer =
-                (context->getGLState().getTargetFramebuffer(GL_FRAMEBUFFER)->id() == 0);
+                (context->getState().getTargetFramebuffer(GL_FRAMEBUFFER)->id() == 0);
             break;
         default:
             context->validationError(GL_INVALID_ENUM, kInvalidFramebufferTarget);
@@ -2122,17 +2115,13 @@ bool ValidateDebugMessageControlKHR(Context *context,
     {
         if (source == GL_DONT_CARE || type == GL_DONT_CARE)
         {
-            context->validationError(
-                GL_INVALID_OPERATION,
-                "If count is greater than zero, source and severity cannot be GL_DONT_CARE.");
+            context->validationError(GL_INVALID_OPERATION, kInvalidDebugSourceType);
             return false;
         }
 
         if (severity != GL_DONT_CARE)
         {
-            context->validationError(
-                GL_INVALID_OPERATION,
-                "If count is greater than zero, severity must be GL_DONT_CARE.");
+            context->validationError(GL_INVALID_OPERATION, kInvalidDebugSeverity);
             return false;
         }
     }
@@ -2154,7 +2143,7 @@ bool ValidateDebugMessageInsertKHR(Context *context,
         return false;
     }
 
-    if (!context->getGLState().getDebug().isOutputEnabled())
+    if (!context->getState().getDebug().isOutputEnabled())
     {
         // If the DEBUG_OUTPUT state is disabled calls to DebugMessageInsert are discarded and do
         // not generate an error.
@@ -2182,8 +2171,7 @@ bool ValidateDebugMessageInsertKHR(Context *context,
     size_t messageLength = (length < 0) ? strlen(buf) : length;
     if (messageLength > context->getExtensions().maxDebugMessageLength)
     {
-        context->validationError(GL_INVALID_VALUE,
-                                 "Message length is larger than GL_MAX_DEBUG_MESSAGE_LENGTH.");
+        context->validationError(GL_INVALID_VALUE, kExceedsMaxDebugMessageLength);
         return false;
     }
 
@@ -2249,17 +2237,14 @@ bool ValidatePushDebugGroupKHR(Context *context,
     size_t messageLength = (length < 0) ? strlen(message) : length;
     if (messageLength > context->getExtensions().maxDebugMessageLength)
     {
-        context->validationError(GL_INVALID_VALUE,
-                                 "Message length is larger than GL_MAX_DEBUG_MESSAGE_LENGTH.");
+        context->validationError(GL_INVALID_VALUE, kExceedsMaxDebugMessageLength);
         return false;
     }
 
-    size_t currentStackSize = context->getGLState().getDebug().getGroupStackDepth();
+    size_t currentStackSize = context->getState().getDebug().getGroupStackDepth();
     if (currentStackSize >= context->getExtensions().maxDebugGroupStackDepth)
     {
-        context->validationError(
-            GL_STACK_OVERFLOW,
-            "Cannot push more than GL_MAX_DEBUG_GROUP_STACK_DEPTH debug groups.");
+        context->validationError(GL_STACK_OVERFLOW, kExceedsMaxDebugGroupStackDepth);
         return false;
     }
 
@@ -2274,10 +2259,10 @@ bool ValidatePopDebugGroupKHR(Context *context)
         return false;
     }
 
-    size_t currentStackSize = context->getGLState().getDebug().getGroupStackDepth();
+    size_t currentStackSize = context->getState().getDebug().getGroupStackDepth();
     if (currentStackSize <= 1)
     {
-        context->validationError(GL_STACK_UNDERFLOW, "Cannot pop the default debug group.");
+        context->validationError(GL_STACK_UNDERFLOW, kCannotPopDefaultDebugGroup);
         return false;
     }
 
@@ -2291,7 +2276,7 @@ static bool ValidateObjectIdentifierAndName(Context *context, GLenum identifier,
         case GL_BUFFER:
             if (context->getBuffer(name) == nullptr)
             {
-                context->validationError(GL_INVALID_VALUE, "name is not a valid buffer.");
+                context->validationError(GL_INVALID_VALUE, kInvalidBufferName);
                 return false;
             }
             return true;
@@ -2299,7 +2284,7 @@ static bool ValidateObjectIdentifierAndName(Context *context, GLenum identifier,
         case GL_SHADER:
             if (context->getShader(name) == nullptr)
             {
-                context->validationError(GL_INVALID_VALUE, "name is not a valid shader.");
+                context->validationError(GL_INVALID_VALUE, kInvalidShaderName);
                 return false;
             }
             return true;
@@ -2307,7 +2292,7 @@ static bool ValidateObjectIdentifierAndName(Context *context, GLenum identifier,
         case GL_PROGRAM:
             if (context->getProgramNoResolveLink(name) == nullptr)
             {
-                context->validationError(GL_INVALID_VALUE, "name is not a valid program.");
+                context->validationError(GL_INVALID_VALUE, kInvalidProgramName);
                 return false;
             }
             return true;
@@ -2315,7 +2300,7 @@ static bool ValidateObjectIdentifierAndName(Context *context, GLenum identifier,
         case GL_VERTEX_ARRAY:
             if (context->getVertexArray(name) == nullptr)
             {
-                context->validationError(GL_INVALID_VALUE, "name is not a valid vertex array.");
+                context->validationError(GL_INVALID_VALUE, kInvalidVertexArrayName);
                 return false;
             }
             return true;
@@ -2323,7 +2308,7 @@ static bool ValidateObjectIdentifierAndName(Context *context, GLenum identifier,
         case GL_QUERY:
             if (context->getQuery(name) == nullptr)
             {
-                context->validationError(GL_INVALID_VALUE, "name is not a valid query.");
+                context->validationError(GL_INVALID_VALUE, kInvalidQueryName);
                 return false;
             }
             return true;
@@ -2331,8 +2316,7 @@ static bool ValidateObjectIdentifierAndName(Context *context, GLenum identifier,
         case GL_TRANSFORM_FEEDBACK:
             if (context->getTransformFeedback(name) == nullptr)
             {
-                context->validationError(GL_INVALID_VALUE,
-                                         "name is not a valid transform feedback.");
+                context->validationError(GL_INVALID_VALUE, kInvalidTransformFeedbackName);
                 return false;
             }
             return true;
@@ -2340,7 +2324,7 @@ static bool ValidateObjectIdentifierAndName(Context *context, GLenum identifier,
         case GL_SAMPLER:
             if (context->getSampler(name) == nullptr)
             {
-                context->validationError(GL_INVALID_VALUE, "name is not a valid sampler.");
+                context->validationError(GL_INVALID_VALUE, kInvalidSamplerName);
                 return false;
             }
             return true;
@@ -2348,7 +2332,7 @@ static bool ValidateObjectIdentifierAndName(Context *context, GLenum identifier,
         case GL_TEXTURE:
             if (context->getTexture(name) == nullptr)
             {
-                context->validationError(GL_INVALID_VALUE, "name is not a valid texture.");
+                context->validationError(GL_INVALID_VALUE, kInvalidTextureName);
                 return false;
             }
             return true;
@@ -2356,7 +2340,7 @@ static bool ValidateObjectIdentifierAndName(Context *context, GLenum identifier,
         case GL_RENDERBUFFER:
             if (context->getRenderbuffer(name) == nullptr)
             {
-                context->validationError(GL_INVALID_VALUE, "name is not a valid renderbuffer.");
+                context->validationError(GL_INVALID_VALUE, kInvalidRenderbufferName);
                 return false;
             }
             return true;
@@ -2364,13 +2348,13 @@ static bool ValidateObjectIdentifierAndName(Context *context, GLenum identifier,
         case GL_FRAMEBUFFER:
             if (context->getFramebuffer(name) == nullptr)
             {
-                context->validationError(GL_INVALID_VALUE, "name is not a valid framebuffer.");
+                context->validationError(GL_INVALID_VALUE, kInvalidFramebufferName);
                 return false;
             }
             return true;
 
         default:
-            context->validationError(GL_INVALID_ENUM, "Invalid identifier.");
+            context->validationError(GL_INVALID_ENUM, kInvalidIndentifier);
             return false;
     }
 }
@@ -2393,8 +2377,7 @@ static bool ValidateLabelLength(Context *context, GLsizei length, const GLchar *
 
     if (labelLength > context->getExtensions().maxLabelLength)
     {
-        context->validationError(GL_INVALID_VALUE,
-                                 "Label length is larger than GL_MAX_LABEL_LENGTH.");
+        context->validationError(GL_INVALID_VALUE, kExceedsMaxLabelLength);
         return false;
     }
 
@@ -2457,7 +2440,7 @@ static bool ValidateObjectPtrName(Context *context, const void *ptr)
 {
     if (context->getSync(reinterpret_cast<GLsync>(const_cast<void *>(ptr))) == nullptr)
     {
-        context->validationError(GL_INVALID_VALUE, "name is not a valid sync.");
+        context->validationError(GL_INVALID_VALUE, kInvalidSyncPointer);
         return false;
     }
 
@@ -2578,8 +2561,8 @@ bool ValidateBlitFramebufferANGLE(Context *context,
         return false;
     }
 
-    Framebuffer *readFramebuffer = context->getGLState().getReadFramebuffer();
-    Framebuffer *drawFramebuffer = context->getGLState().getDrawFramebuffer();
+    Framebuffer *readFramebuffer = context->getState().getReadFramebuffer();
+    Framebuffer *drawFramebuffer = context->getState().getDrawFramebuffer();
 
     if (mask & GL_COLOR_BUFFER_BIT)
     {
@@ -2676,7 +2659,7 @@ bool ValidateBlitFramebufferANGLE(Context *context,
 
 bool ValidateClear(Context *context, GLbitfield mask)
 {
-    Framebuffer *fbo             = context->getGLState().getDrawFramebuffer();
+    Framebuffer *fbo             = context->getState().getDrawFramebuffer();
     const Extensions &extensions = context->getExtensions();
 
     if (!ValidateFramebufferComplete(context, fbo))
@@ -2706,17 +2689,13 @@ bool ValidateClear(Context *context, GLbitfield mask)
         }
     }
 
-    if (extensions.multiview && extensions.disjointTimerQuery)
+    if (extensions.multiview2 && extensions.disjointTimerQuery)
     {
-        const State &state       = context->getGLState();
+        const State &state       = context->getState();
         Framebuffer *framebuffer = state.getDrawFramebuffer();
         if (framebuffer->getNumViews() > 1 && state.isQueryActive(QueryType::TimeElapsed))
         {
-            context->validationError(GL_INVALID_OPERATION,
-                                     "There is an active query for target "
-                                     "GL_TIME_ELAPSED_EXT when the number of "
-                                     "views in the active draw framebuffer is "
-                                     "greater than 1.");
+            context->validationError(GL_INVALID_OPERATION, kMultiviewTimerQuery);
             return false;
         }
     }
@@ -2728,7 +2707,7 @@ bool ValidateDrawBuffersEXT(Context *context, GLsizei n, const GLenum *bufs)
 {
     if (!context->getExtensions().drawBuffers)
     {
-        context->validationError(GL_INVALID_OPERATION, "Extension not supported.");
+        context->validationError(GL_INVALID_OPERATION, kExtensionNotEnabled);
         return false;
     }
 
@@ -2888,8 +2867,7 @@ bool ValidateCompressedTexImage2D(Context *context,
 
     if (target == TextureTarget::Rectangle)
     {
-        context->validationError(GL_INVALID_ENUM,
-                                 "Rectangle texture cannot have a compressed format.");
+        context->validationError(GL_INVALID_ENUM, kRectangleTextureCompressed);
         return false;
     }
 
@@ -2989,6 +2967,12 @@ bool ValidateGetBufferPointervOES(Context *context,
                                   GLenum pname,
                                   void **params)
 {
+    if (!context->getExtensions().mapBuffer)
+    {
+        context->validationError(GL_INVALID_OPERATION, kExtensionNotEnabled);
+        return false;
+    }
+
     return ValidateGetBufferPointervBase(context, target, pname, nullptr, params);
 }
 
@@ -2996,7 +2980,7 @@ bool ValidateMapBufferOES(Context *context, BufferBinding target, GLenum access)
 {
     if (!context->getExtensions().mapBuffer)
     {
-        context->validationError(GL_INVALID_OPERATION, "Map buffer extension not available.");
+        context->validationError(GL_INVALID_OPERATION, kExtensionNotEnabled);
         return false;
     }
 
@@ -3006,23 +2990,23 @@ bool ValidateMapBufferOES(Context *context, BufferBinding target, GLenum access)
         return false;
     }
 
-    Buffer *buffer = context->getGLState().getTargetBuffer(target);
+    Buffer *buffer = context->getState().getTargetBuffer(target);
 
     if (buffer == nullptr)
     {
-        context->validationError(GL_INVALID_OPERATION, "Attempted to map buffer object zero.");
+        context->validationError(GL_INVALID_OPERATION, kBufferNotMappable);
         return false;
     }
 
     if (access != GL_WRITE_ONLY_OES)
     {
-        context->validationError(GL_INVALID_ENUM, "Non-write buffer mapping not supported.");
+        context->validationError(GL_INVALID_ENUM, kInvalidAccessBits);
         return false;
     }
 
     if (buffer->isMapped())
     {
-        context->validationError(GL_INVALID_OPERATION, "Buffer is already mapped.");
+        context->validationError(GL_INVALID_OPERATION, kBufferAlreadyMapped);
         return false;
     }
 
@@ -3033,7 +3017,7 @@ bool ValidateUnmapBufferOES(Context *context, BufferBinding target)
 {
     if (!context->getExtensions().mapBuffer)
     {
-        context->validationError(GL_INVALID_OPERATION, "Map buffer extension not available.");
+        context->validationError(GL_INVALID_OPERATION, kExtensionNotEnabled);
         return false;
     }
 
@@ -3048,20 +3032,303 @@ bool ValidateMapBufferRangeEXT(Context *context,
 {
     if (!context->getExtensions().mapBufferRange)
     {
-        context->validationError(GL_INVALID_OPERATION, "Map buffer range extension not available.");
+        context->validationError(GL_INVALID_OPERATION, kExtensionNotEnabled);
         return false;
     }
 
     return ValidateMapBufferRangeBase(context, target, offset, length, access);
 }
 
+bool ValidateBufferStorageMemEXT(Context *context,
+                                 TextureType target,
+                                 GLsizeiptr size,
+                                 GLuint memory,
+                                 GLuint64 offset)
+{
+    if (!context->getExtensions().memoryObject)
+    {
+        context->validationError(GL_INVALID_OPERATION, kExtensionNotEnabled);
+        return false;
+    }
+
+    UNIMPLEMENTED();
+    return false;
+}
+
+bool ValidateCreateMemoryObjectsEXT(Context *context, GLsizei n, GLuint *memoryObjects)
+{
+    if (!context->getExtensions().memoryObject)
+    {
+        context->validationError(GL_INVALID_OPERATION, kExtensionNotEnabled);
+        return false;
+    }
+
+    return ValidateGenOrDelete(context, n);
+}
+
+bool ValidateDeleteMemoryObjectsEXT(Context *context, GLsizei n, const GLuint *memoryObjects)
+{
+    if (!context->getExtensions().memoryObject)
+    {
+        context->validationError(GL_INVALID_OPERATION, kExtensionNotEnabled);
+        return false;
+    }
+
+    return ValidateGenOrDelete(context, n);
+}
+
+bool ValidateGetMemoryObjectParameterivEXT(Context *context,
+                                           GLuint memoryObject,
+                                           GLenum pname,
+                                           GLint *params)
+{
+    if (!context->getExtensions().memoryObject)
+    {
+        context->validationError(GL_INVALID_OPERATION, kExtensionNotEnabled);
+        return false;
+    }
+
+    UNIMPLEMENTED();
+    return false;
+}
+
+bool ValidateGetUnsignedBytevEXT(Context *context, GLenum pname, GLubyte *data)
+{
+    if (!context->getExtensions().memoryObject && !context->getExtensions().semaphore)
+    {
+        context->validationError(GL_INVALID_OPERATION, kExtensionNotEnabled);
+        return false;
+    }
+
+    UNIMPLEMENTED();
+    return false;
+}
+
+bool ValidateGetUnsignedBytei_vEXT(Context *context, GLenum target, GLuint index, GLubyte *data)
+{
+    if (!context->getExtensions().memoryObject && !context->getExtensions().semaphore)
+    {
+        context->validationError(GL_INVALID_OPERATION, kExtensionNotEnabled);
+        return false;
+    }
+
+    UNIMPLEMENTED();
+    return false;
+}
+
+bool ValidateIsMemoryObjectEXT(Context *context, GLuint memoryObject)
+{
+    if (!context->getExtensions().memoryObject)
+    {
+        context->validationError(GL_INVALID_OPERATION, kExtensionNotEnabled);
+        return false;
+    }
+
+    return true;
+}
+
+bool ValidateMemoryObjectParameterivEXT(Context *context,
+                                        GLuint memoryObject,
+                                        GLenum pname,
+                                        const GLint *params)
+{
+    if (!context->getExtensions().memoryObject)
+    {
+        context->validationError(GL_INVALID_OPERATION, kExtensionNotEnabled);
+        return false;
+    }
+
+    UNIMPLEMENTED();
+    return false;
+}
+
+bool ValidateTexStorageMem2DEXT(Context *context,
+                                TextureType target,
+                                GLsizei levels,
+                                GLenum internalFormat,
+                                GLsizei width,
+                                GLsizei height,
+                                GLuint memory,
+                                GLuint64 offset)
+{
+    if (!context->getExtensions().memoryObject)
+    {
+        context->validationError(GL_INVALID_OPERATION, kExtensionNotEnabled);
+        return false;
+    }
+
+    UNIMPLEMENTED();
+    return false;
+}
+
+bool ValidateTexStorageMem3DEXT(Context *context,
+                                TextureType target,
+                                GLsizei levels,
+                                GLenum internalFormat,
+                                GLsizei width,
+                                GLsizei height,
+                                GLsizei depth,
+                                GLuint memory,
+                                GLuint64 offset)
+{
+    if (!context->getExtensions().memoryObject)
+    {
+        context->validationError(GL_INVALID_OPERATION, kExtensionNotEnabled);
+        return false;
+    }
+
+    UNIMPLEMENTED();
+    return false;
+}
+
+bool ValidateImportMemoryFdEXT(Context *context,
+                               GLuint memory,
+                               GLuint64 size,
+                               HandleType handleType,
+                               GLint fd)
+{
+    if (!context->getExtensions().memoryObjectFd)
+    {
+        context->validationError(GL_INVALID_OPERATION, kExtensionNotEnabled);
+        return false;
+    }
+
+    switch (handleType)
+    {
+        case HandleType::OpaqueFd:
+            break;
+        default:
+            context->validationError(GL_INVALID_ENUM, kInvalidHandleType);
+            return false;
+    }
+
+    return true;
+}
+
+bool ValidateDeleteSemaphoresEXT(Context *context, GLsizei n, const GLuint *semaphores)
+{
+    if (!context->getExtensions().semaphore)
+    {
+        context->validationError(GL_INVALID_OPERATION, kExtensionNotEnabled);
+        return false;
+    }
+
+    UNIMPLEMENTED();
+    return false;
+}
+
+bool ValidateGenSemaphoresEXT(Context *context, GLsizei n, GLuint *semaphores)
+{
+    if (!context->getExtensions().semaphore)
+    {
+        context->validationError(GL_INVALID_OPERATION, kExtensionNotEnabled);
+        return false;
+    }
+
+    UNIMPLEMENTED();
+    return false;
+}
+
+bool ValidateGetSemaphoreParameterui64vEXT(Context *context,
+                                           GLuint semaphore,
+                                           GLenum pname,
+                                           GLuint64 *params)
+{
+    if (!context->getExtensions().semaphore)
+    {
+        context->validationError(GL_INVALID_OPERATION, kExtensionNotEnabled);
+        return false;
+    }
+
+    UNIMPLEMENTED();
+    return false;
+}
+
+bool ValidateIsSemaphoreEXT(Context *context, GLuint semaphore)
+{
+    if (!context->getExtensions().semaphore)
+    {
+        context->validationError(GL_INVALID_OPERATION, kExtensionNotEnabled);
+        return false;
+    }
+
+    UNIMPLEMENTED();
+    return false;
+}
+
+bool ValidateSemaphoreParameterui64vEXT(Context *context,
+                                        GLuint semaphore,
+                                        GLenum pname,
+                                        const GLuint64 *params)
+{
+    if (!context->getExtensions().semaphore)
+    {
+        context->validationError(GL_INVALID_OPERATION, kExtensionNotEnabled);
+        return false;
+    }
+
+    UNIMPLEMENTED();
+    return false;
+}
+
+bool ValidateSignalSemaphoreEXT(Context *context,
+                                GLuint semaphore,
+                                GLuint numBufferBarriers,
+                                const GLuint *buffers,
+                                GLuint numTextureBarriers,
+                                const GLuint *textures,
+                                const GLenum *dstLayouts)
+{
+    if (!context->getExtensions().semaphore)
+    {
+        context->validationError(GL_INVALID_OPERATION, kExtensionNotEnabled);
+        return false;
+    }
+
+    UNIMPLEMENTED();
+    return false;
+}
+
+bool ValidateWaitSemaphoreEXT(Context *context,
+                              GLuint semaphore,
+                              GLuint numBufferBarriers,
+                              const GLuint *buffers,
+                              GLuint numTextureBarriers,
+                              const GLuint *textures,
+                              const GLenum *srcLayouts)
+{
+    if (!context->getExtensions().semaphore)
+    {
+        context->validationError(GL_INVALID_OPERATION, kExtensionNotEnabled);
+        return false;
+    }
+
+    UNIMPLEMENTED();
+    return false;
+}
+
+bool ValidateImportSemaphoreFdEXT(Context *context,
+                                  GLuint semaphore,
+                                  HandleType handleType,
+                                  GLint fd)
+{
+    if (!context->getExtensions().semaphoreFd)
+    {
+        context->validationError(GL_INVALID_OPERATION, kExtensionNotEnabled);
+        return false;
+    }
+
+    UNIMPLEMENTED();
+    return false;
+}
+
 bool ValidateMapBufferBase(Context *context, BufferBinding target)
 {
-    Buffer *buffer = context->getGLState().getTargetBuffer(target);
+    Buffer *buffer = context->getState().getTargetBuffer(target);
     ASSERT(buffer != nullptr);
 
     // Check if this buffer is currently being used as a transform feedback output buffer
-    TransformFeedback *transformFeedback = context->getGLState().getCurrentTransformFeedback();
+    TransformFeedback *transformFeedback = context->getState().getCurrentTransformFeedback();
     if (transformFeedback != nullptr && transformFeedback->isActive())
     {
         for (size_t i = 0; i < transformFeedback->getIndexedBufferCount(); i++)
@@ -3069,8 +3336,7 @@ bool ValidateMapBufferBase(Context *context, BufferBinding target)
             const auto &transformFeedbackBuffer = transformFeedback->getIndexedBuffer(i);
             if (transformFeedbackBuffer.get() == buffer)
             {
-                context->validationError(GL_INVALID_OPERATION,
-                                         "Buffer is currently bound for transform feedback.");
+                context->validationError(GL_INVALID_OPERATION, kBufferBoundForTransformFeedback);
                 return false;
             }
         }
@@ -3093,41 +3359,11 @@ bool ValidateFlushMappedBufferRangeEXT(Context *context,
 {
     if (!context->getExtensions().mapBufferRange)
     {
-        context->validationError(GL_INVALID_OPERATION, "Map buffer range extension not available.");
+        context->validationError(GL_INVALID_OPERATION, kExtensionNotEnabled);
         return false;
     }
 
     return ValidateFlushMappedBufferRangeBase(context, target, offset, length);
-}
-
-bool ValidateBindTexture(Context *context, TextureType target, GLuint texture)
-{
-    if (!context->getStateCache().isValidBindTextureType(target))
-    {
-        RecordBindTextureTypeError(context, target);
-        return false;
-    }
-
-    if (texture == 0)
-    {
-        return true;
-    }
-
-    Texture *textureObject = context->getTexture(texture);
-    if (textureObject && textureObject->getType() != target)
-    {
-        context->validationError(GL_INVALID_OPERATION, kTypeMismatch);
-        return false;
-    }
-
-    if (!context->getGLState().isBindGeneratesResourceEnabled() &&
-        !context->isTextureGenerated(texture))
-    {
-        context->validationError(GL_INVALID_OPERATION, "Texture was not generated");
-        return false;
-    }
-
-    return true;
 }
 
 bool ValidateBindUniformLocationCHROMIUM(Context *context,
@@ -3137,8 +3373,7 @@ bool ValidateBindUniformLocationCHROMIUM(Context *context,
 {
     if (!context->getExtensions().bindUniformLocation)
     {
-        context->validationError(GL_INVALID_OPERATION,
-                                 "GL_CHROMIUM_bind_uniform_location is not available.");
+        context->validationError(GL_INVALID_OPERATION, kExtensionNotEnabled);
         return false;
     }
 
@@ -3150,7 +3385,7 @@ bool ValidateBindUniformLocationCHROMIUM(Context *context,
 
     if (location < 0)
     {
-        context->validationError(GL_INVALID_VALUE, "Location cannot be less than 0.");
+        context->validationError(GL_INVALID_VALUE, kNegativeLocation);
         return false;
     }
 
@@ -3158,10 +3393,7 @@ bool ValidateBindUniformLocationCHROMIUM(Context *context,
     if (static_cast<size_t>(location) >=
         (caps.maxVertexUniformVectors + caps.maxFragmentUniformVectors) * 4)
     {
-        context->validationError(GL_INVALID_VALUE,
-                                 "Location must be less than "
-                                 "(MAX_VERTEX_UNIFORM_VECTORS + "
-                                 "MAX_FRAGMENT_UNIFORM_VECTORS) * 4");
+        context->validationError(GL_INVALID_VALUE, kInvalidBindUniformLocation);
         return false;
     }
 
@@ -3186,8 +3418,7 @@ bool ValidateCoverageModulationCHROMIUM(Context *context, GLenum components)
 {
     if (!context->getExtensions().framebufferMixedSamples)
     {
-        context->validationError(GL_INVALID_OPERATION,
-                                 "GL_CHROMIUM_framebuffer_mixed_samples is not available.");
+        context->validationError(GL_INVALID_OPERATION, kExtensionNotEnabled);
         return false;
     }
     switch (components)
@@ -3198,9 +3429,7 @@ bool ValidateCoverageModulationCHROMIUM(Context *context, GLenum components)
         case GL_NONE:
             break;
         default:
-            context->validationError(
-                GL_INVALID_ENUM,
-                "GLenum components is not one of GL_RGB, GL_RGBA, GL_ALPHA or GL_NONE.");
+            context->validationError(GL_INVALID_ENUM, kInvalidCoverageComponents);
             return false;
     }
 
@@ -3218,7 +3447,7 @@ bool ValidateMatrixLoadfCHROMIUM(Context *context, GLenum matrixMode, const GLfl
 
     if (matrix == nullptr)
     {
-        context->validationError(GL_INVALID_OPERATION, "Invalid matrix.");
+        context->validationError(GL_INVALID_OPERATION, kInvalidPathMatrix);
         return false;
     }
 
@@ -3234,8 +3463,7 @@ bool ValidateGenPathsCHROMIUM(Context *context, GLsizei range)
 {
     if (!context->getExtensions().pathRendering)
     {
-        context->validationError(GL_INVALID_OPERATION,
-                                 "GL_CHROMIUM_path_rendering is not available.");
+        context->validationError(GL_INVALID_OPERATION, kExtensionNotEnabled);
         return false;
     }
 
@@ -3260,8 +3488,7 @@ bool ValidateDeletePathsCHROMIUM(Context *context, GLuint path, GLsizei range)
 {
     if (!context->getExtensions().pathRendering)
     {
-        context->validationError(GL_INVALID_OPERATION,
-                                 "GL_CHROMIUM_path_rendering is not available.");
+        context->validationError(GL_INVALID_OPERATION, kExtensionNotEnabled);
         return false;
     }
 
@@ -3294,8 +3521,7 @@ bool ValidatePathCommandsCHROMIUM(Context *context,
 {
     if (!context->getExtensions().pathRendering)
     {
-        context->validationError(GL_INVALID_OPERATION,
-                                 "GL_CHROMIUM_path_rendering is not available.");
+        context->validationError(GL_INVALID_OPERATION, kExtensionNotEnabled);
         return false;
     }
     if (!context->isPathGenerated(path))
@@ -3306,28 +3532,28 @@ bool ValidatePathCommandsCHROMIUM(Context *context,
 
     if (numCommands < 0)
     {
-        context->validationError(GL_INVALID_VALUE, "Invalid number of commands.");
+        context->validationError(GL_INVALID_VALUE, kInvalidPathNumCommands);
         return false;
     }
     else if (numCommands > 0)
     {
         if (!commands)
         {
-            context->validationError(GL_INVALID_VALUE, "No commands array given.");
+            context->validationError(GL_INVALID_VALUE, kInvalidPathCommandsArray);
             return false;
         }
     }
 
     if (numCoords < 0)
     {
-        context->validationError(GL_INVALID_VALUE, "Invalid number of coordinates.");
+        context->validationError(GL_INVALID_VALUE, kInvalidPathNumCoords);
         return false;
     }
     else if (numCoords > 0)
     {
         if (!coords)
         {
-            context->validationError(GL_INVALID_VALUE, "No coordinate array given.");
+            context->validationError(GL_INVALID_VALUE, kInvalidPathNumCoordsArray);
             return false;
         }
     }
@@ -3356,7 +3582,7 @@ bool ValidatePathCommandsCHROMIUM(Context *context,
             break;
 
         default:
-            context->validationError(GL_INVALID_ENUM, "Invalid coordinate type.");
+            context->validationError(GL_INVALID_ENUM, kInvalidPathCoordinateType);
             return false;
     }
 
@@ -3393,13 +3619,14 @@ bool ValidatePathCommandsCHROMIUM(Context *context,
                 expectedNumCoords += 5;
                 break;
             default:
-                context->validationError(GL_INVALID_ENUM, "Invalid command.");
+                context->validationError(GL_INVALID_ENUM, kInvalidPathCommand);
                 return false;
         }
     }
+
     if (expectedNumCoords != numCoords)
     {
-        context->validationError(GL_INVALID_VALUE, "Invalid number of coordinates.");
+        context->validationError(GL_INVALID_VALUE, kInvalidPathNumCoords);
         return false;
     }
 
@@ -3410,8 +3637,7 @@ bool ValidatePathParameterfCHROMIUM(Context *context, GLuint path, GLenum pname,
 {
     if (!context->getExtensions().pathRendering)
     {
-        context->validationError(GL_INVALID_OPERATION,
-                                 "GL_CHROMIUM_path_rendering is not available.");
+        context->validationError(GL_INVALID_OPERATION, kExtensionNotEnabled);
         return false;
     }
     if (!context->isPathGenerated(path))
@@ -3425,7 +3651,7 @@ bool ValidatePathParameterfCHROMIUM(Context *context, GLuint path, GLenum pname,
         case GL_PATH_STROKE_WIDTH_CHROMIUM:
             if (value < 0.0f)
             {
-                context->validationError(GL_INVALID_VALUE, "Invalid stroke width.");
+                context->validationError(GL_INVALID_VALUE, kInvalidPathStrokeWidth);
                 return false;
             }
             break;
@@ -3437,7 +3663,7 @@ bool ValidatePathParameterfCHROMIUM(Context *context, GLuint path, GLenum pname,
                 case GL_ROUND_CHROMIUM:
                     break;
                 default:
-                    context->validationError(GL_INVALID_ENUM, "Invalid end caps.");
+                    context->validationError(GL_INVALID_ENUM, kInvalidPathEndCaps);
                     return false;
             }
             break;
@@ -3449,14 +3675,14 @@ bool ValidatePathParameterfCHROMIUM(Context *context, GLuint path, GLenum pname,
                 case GL_ROUND_CHROMIUM:
                     break;
                 default:
-                    context->validationError(GL_INVALID_ENUM, "Invalid join style.");
+                    context->validationError(GL_INVALID_ENUM, kInvalidPathJoinStyle);
                     return false;
             }
             break;
         case GL_PATH_MITER_LIMIT_CHROMIUM:
             if (value < 0.0f)
             {
-                context->validationError(GL_INVALID_VALUE, "Invalid miter limit.");
+                context->validationError(GL_INVALID_VALUE, kInvalidPathMiterLimit);
                 return false;
             }
             break;
@@ -3466,7 +3692,7 @@ bool ValidatePathParameterfCHROMIUM(Context *context, GLuint path, GLenum pname,
             break;
 
         default:
-            context->validationError(GL_INVALID_ENUM, "Invalid path parameter.");
+            context->validationError(GL_INVALID_ENUM, kInvalidPathParameter);
             return false;
     }
     return true;
@@ -3482,8 +3708,7 @@ bool ValidateGetPathParameterfvCHROMIUM(Context *context, GLuint path, GLenum pn
 {
     if (!context->getExtensions().pathRendering)
     {
-        context->validationError(GL_INVALID_OPERATION,
-                                 "GL_CHROMIUM_path_rendering is not available.");
+        context->validationError(GL_INVALID_OPERATION, kExtensionNotEnabled);
         return false;
     }
 
@@ -3492,9 +3717,10 @@ bool ValidateGetPathParameterfvCHROMIUM(Context *context, GLuint path, GLenum pn
         context->validationError(GL_INVALID_OPERATION, kNoSuchPath);
         return false;
     }
+
     if (!value)
     {
-        context->validationError(GL_INVALID_VALUE, "No value array.");
+        context->validationError(GL_INVALID_VALUE, kInvalidPathValueArray);
         return false;
     }
 
@@ -3508,7 +3734,7 @@ bool ValidateGetPathParameterfvCHROMIUM(Context *context, GLuint path, GLenum pn
             break;
 
         default:
-            context->validationError(GL_INVALID_ENUM, "Invalid path parameter.");
+            context->validationError(GL_INVALID_ENUM, kInvalidPathParameter);
             return false;
     }
 
@@ -3525,8 +3751,7 @@ bool ValidatePathStencilFuncCHROMIUM(Context *context, GLenum func, GLint ref, G
 {
     if (!context->getExtensions().pathRendering)
     {
-        context->validationError(GL_INVALID_OPERATION,
-                                 "GL_CHROMIUM_path_rendering is not available.");
+        context->validationError(GL_INVALID_OPERATION, kExtensionNotEnabled);
         return false;
     }
 
@@ -3559,8 +3784,7 @@ bool ValidateStencilFillPathCHROMIUM(Context *context, GLuint path, GLenum fillM
 {
     if (!context->getExtensions().pathRendering)
     {
-        context->validationError(GL_INVALID_OPERATION,
-                                 "GL_CHROMIUM_path_rendering is not available.");
+        context->validationError(GL_INVALID_OPERATION, kExtensionNotEnabled);
         return false;
     }
     if (context->isPathGenerated(path) && !context->isPath(path))
@@ -3592,13 +3816,13 @@ bool ValidateStencilStrokePathCHROMIUM(Context *context, GLuint path, GLint refe
 {
     if (!context->getExtensions().pathRendering)
     {
-        context->validationError(GL_INVALID_OPERATION,
-                                 "GL_CHROMIUM_path_rendering is not available.");
+        context->validationError(GL_INVALID_OPERATION, kExtensionNotEnabled);
         return false;
     }
+
     if (context->isPathGenerated(path) && !context->isPath(path))
     {
-        context->validationError(GL_INVALID_OPERATION, "No such path or path has no data.");
+        context->validationError(GL_INVALID_OPERATION, kNoPathOrNoPathData);
         return false;
     }
 
@@ -3609,8 +3833,7 @@ bool ValidateCoverPathCHROMIUM(Context *context, GLuint path, GLenum coverMode)
 {
     if (!context->getExtensions().pathRendering)
     {
-        context->validationError(GL_INVALID_OPERATION,
-                                 "GL_CHROMIUM_path_rendering is not available.");
+        context->validationError(GL_INVALID_OPERATION, kExtensionNotEnabled);
         return false;
     }
     if (context->isPathGenerated(path) && !context->isPath(path))
@@ -3665,8 +3888,7 @@ bool ValidateIsPathCHROMIUM(Context *context, GLuint path)
 {
     if (!context->getExtensions().pathRendering)
     {
-        context->validationError(GL_INVALID_OPERATION,
-                                 "GL_CHROMIUM_path_rendering is not available.");
+        context->validationError(GL_INVALID_OPERATION, kExtensionNotEnabled);
         return false;
     }
     return true;
@@ -3857,15 +4079,14 @@ bool ValidateBindFragmentInputLocationCHROMIUM(Context *context,
 {
     if (!context->getExtensions().pathRendering)
     {
-        context->validationError(GL_INVALID_OPERATION,
-                                 "GL_CHROMIUM_path_rendering is not available.");
+        context->validationError(GL_INVALID_OPERATION, kExtensionNotEnabled);
         return false;
     }
 
     const GLint MaxLocation = context->getCaps().maxVaryingVectors * 4;
     if (location >= MaxLocation)
     {
-        context->validationError(GL_INVALID_VALUE, "Location exceeds max varying.");
+        context->validationError(GL_INVALID_VALUE, kInvalidVaryingLocation);
         return false;
     }
 
@@ -3878,7 +4099,7 @@ bool ValidateBindFragmentInputLocationCHROMIUM(Context *context,
 
     if (!name)
     {
-        context->validationError(GL_INVALID_VALUE, "No name given.");
+        context->validationError(GL_INVALID_VALUE, kMissingName);
         return false;
     }
 
@@ -3900,8 +4121,7 @@ bool ValidateProgramPathFragmentInputGenCHROMIUM(Context *context,
 {
     if (!context->getExtensions().pathRendering)
     {
-        context->validationError(GL_INVALID_OPERATION,
-                                 "GL_CHROMIUM_path_rendering is not available.");
+        context->validationError(GL_INVALID_OPERATION, kExtensionNotEnabled);
         return false;
     }
 
@@ -3923,7 +4143,7 @@ bool ValidateProgramPathFragmentInputGenCHROMIUM(Context *context,
         case GL_NONE:
             if (components != 0)
             {
-                context->validationError(GL_INVALID_VALUE, "Invalid components.");
+                context->validationError(GL_INVALID_VALUE, kInvalidComponents);
                 return false;
             }
             break;
@@ -3933,18 +4153,18 @@ bool ValidateProgramPathFragmentInputGenCHROMIUM(Context *context,
         case GL_CONSTANT_CHROMIUM:
             if (components < 1 || components > 4)
             {
-                context->validationError(GL_INVALID_VALUE, "Invalid components.");
+                context->validationError(GL_INVALID_VALUE, kInvalidComponents);
                 return false;
             }
             if (!coeffs)
             {
-                context->validationError(GL_INVALID_VALUE, "No coefficients array given.");
+                context->validationError(GL_INVALID_VALUE, kInvalidPathCoefficientsArray);
                 return false;
             }
             break;
 
         default:
-            context->validationError(GL_INVALID_ENUM, "Invalid gen mode.");
+            context->validationError(GL_INVALID_ENUM, kInvalidPathGenMode);
             return false;
     }
 
@@ -3957,7 +4177,7 @@ bool ValidateProgramPathFragmentInputGenCHROMIUM(Context *context,
 
     if (!binding.valid)
     {
-        context->validationError(GL_INVALID_OPERATION, "No such binding.");
+        context->validationError(GL_INVALID_OPERATION, kInvalidFragmentInputBinding);
         return false;
     }
 
@@ -3979,14 +4199,12 @@ bool ValidateProgramPathFragmentInputGenCHROMIUM(Context *context,
                 expectedComponents = 4;
                 break;
             default:
-                context->validationError(
-                    GL_INVALID_OPERATION,
-                    "Fragment input type is not a floating point scalar or vector.");
+                context->validationError(GL_INVALID_OPERATION, kFragmentInputTypeNotFloatingPoint);
                 return false;
         }
         if (expectedComponents != components && genMode != GL_NONE)
         {
-            context->validationError(GL_INVALID_OPERATION, "Unexpected number of components");
+            context->validationError(GL_INVALID_OPERATION, kInvalidPathComponents);
             return false;
         }
     }
@@ -4007,15 +4225,14 @@ bool ValidateCopyTextureCHROMIUM(Context *context,
 {
     if (!context->getExtensions().copyTexture)
     {
-        context->validationError(GL_INVALID_OPERATION,
-                                 "GL_CHROMIUM_copy_texture extension not available.");
+        context->validationError(GL_INVALID_OPERATION, kExtensionNotEnabled);
         return false;
     }
 
     const Texture *source = context->getTexture(sourceId);
     if (source == nullptr)
     {
-        context->validationError(GL_INVALID_VALUE, "Source texture is not a valid texture object.");
+        context->validationError(GL_INVALID_VALUE, kInvalidSourceTexture);
         return false;
     }
 
@@ -4031,7 +4248,7 @@ bool ValidateCopyTextureCHROMIUM(Context *context,
 
     if (!IsValidCopyTextureSourceLevel(context, sourceType, sourceLevel))
     {
-        context->validationError(GL_INVALID_VALUE, "Source texture level is not valid.");
+        context->validationError(GL_INVALID_VALUE, kInvalidSourceTextureLevel);
         return false;
     }
 
@@ -4046,8 +4263,7 @@ bool ValidateCopyTextureCHROMIUM(Context *context,
     const InternalFormat &sourceFormat = *source->getFormat(sourceTarget, sourceLevel).info;
     if (!IsValidCopyTextureSourceInternalFormatEnum(sourceFormat.internalFormat))
     {
-        context->validationError(GL_INVALID_OPERATION,
-                                 "Source texture internal format is invalid.");
+        context->validationError(GL_INVALID_OPERATION, kInvalidSourceTextureInternalFormat);
         return false;
     }
 
@@ -4060,14 +4276,13 @@ bool ValidateCopyTextureCHROMIUM(Context *context,
     const Texture *dest = context->getTexture(destId);
     if (dest == nullptr)
     {
-        context->validationError(GL_INVALID_VALUE,
-                                 "Destination texture is not a valid texture object.");
+        context->validationError(GL_INVALID_VALUE, kInvalidDestinationTexture);
         return false;
     }
 
     if (!IsValidCopyTextureDestinationTarget(context, dest->getType(), destTarget))
     {
-        context->validationError(GL_INVALID_VALUE, "Destination texture a valid texture type.");
+        context->validationError(GL_INVALID_VALUE, kInvalidDestinationTextureType);
         return false;
     }
 
@@ -4085,14 +4300,13 @@ bool ValidateCopyTextureCHROMIUM(Context *context,
 
     if (dest->getType() == TextureType::CubeMap && sourceWidth != sourceHeight)
     {
-        context->validationError(
-            GL_INVALID_VALUE, "Destination width and height must be equal for cube map textures.");
+        context->validationError(GL_INVALID_VALUE, kCubemapFacesEqualDimensions);
         return false;
     }
 
     if (dest->getImmutableFormat())
     {
-        context->validationError(GL_INVALID_OPERATION, "Destination texture is immutable.");
+        context->validationError(GL_INVALID_OPERATION, kDestinationImmutable);
         return false;
     }
 
@@ -4117,21 +4331,20 @@ bool ValidateCopySubTextureCHROMIUM(Context *context,
 {
     if (!context->getExtensions().copyTexture)
     {
-        context->validationError(GL_INVALID_OPERATION,
-                                 "GL_CHROMIUM_copy_texture extension not available.");
+        context->validationError(GL_INVALID_OPERATION, kExtensionNotEnabled);
         return false;
     }
 
     const Texture *source = context->getTexture(sourceId);
     if (source == nullptr)
     {
-        context->validationError(GL_INVALID_VALUE, "Source texture is not a valid texture object.");
+        context->validationError(GL_INVALID_VALUE, kInvalidSourceTexture);
         return false;
     }
 
     if (!IsValidCopyTextureSourceTarget(context, source->getType()))
     {
-        context->validationError(GL_INVALID_VALUE, "Source texture a valid texture type.");
+        context->validationError(GL_INVALID_VALUE, kInvalidSourceTextureType);
         return false;
     }
 
@@ -4148,14 +4361,13 @@ bool ValidateCopySubTextureCHROMIUM(Context *context,
     if (source->getWidth(sourceTarget, sourceLevel) == 0 ||
         source->getHeight(sourceTarget, sourceLevel) == 0)
     {
-        context->validationError(GL_INVALID_VALUE,
-                                 "The source level of the source texture must be defined.");
+        context->validationError(GL_INVALID_VALUE, kInvalidSourceTextureLevel);
         return false;
     }
 
     if (x < 0 || y < 0)
     {
-        context->validationError(GL_INVALID_VALUE, "x and y cannot be negative.");
+        context->validationError(GL_INVALID_VALUE, kNegativeOffset);
         return false;
     }
 
@@ -4188,37 +4400,33 @@ bool ValidateCopySubTextureCHROMIUM(Context *context,
     const Texture *dest = context->getTexture(destId);
     if (dest == nullptr)
     {
-        context->validationError(GL_INVALID_VALUE,
-                                 "Destination texture is not a valid texture object.");
+        context->validationError(GL_INVALID_VALUE, kInvalidDestinationTexture);
         return false;
     }
 
     if (!IsValidCopyTextureDestinationTarget(context, dest->getType(), destTarget))
     {
-        context->validationError(GL_INVALID_VALUE, "Destination texture a valid texture type.");
+        context->validationError(GL_INVALID_VALUE, kInvalidDestinationTextureType);
         return false;
     }
 
     if (!IsValidCopyTextureDestinationLevel(context, dest->getType(), destLevel, width, height,
                                             true))
     {
-        context->validationError(GL_INVALID_VALUE, "Destination texture level is not valid.");
+        context->validationError(GL_INVALID_VALUE, kInvalidMipLevel);
         return false;
     }
 
     if (dest->getWidth(destTarget, destLevel) == 0 || dest->getHeight(destTarget, destLevel) == 0)
     {
-        context->validationError(
-            GL_INVALID_OPERATION,
-            "The destination level of the destination texture must be defined.");
+        context->validationError(GL_INVALID_OPERATION, kDestinationLevelNotDefined);
         return false;
     }
 
     const InternalFormat &destFormat = *dest->getFormat(destTarget, destLevel).info;
     if (!IsValidCopySubTextureDestionationInternalFormat(destFormat.internalFormat))
     {
-        context->validationError(GL_INVALID_OPERATION,
-                                 "Destination internal format and type combination is not valid.");
+        context->validationError(GL_INVALID_OPERATION, kInvalidFormatCombination);
         return false;
     }
 
@@ -4231,8 +4439,7 @@ bool ValidateCopySubTextureCHROMIUM(Context *context,
     if (static_cast<size_t>(xoffset + width) > dest->getWidth(destTarget, destLevel) ||
         static_cast<size_t>(yoffset + height) > dest->getHeight(destTarget, destLevel))
     {
-        context->validationError(GL_INVALID_VALUE,
-                                 "Destination texture not large enough to copy to.");
+        context->validationError(GL_INVALID_VALUE, kOffsetOverflow);
         return false;
     }
 
@@ -4243,57 +4450,53 @@ bool ValidateCompressedCopyTextureCHROMIUM(Context *context, GLuint sourceId, GL
 {
     if (!context->getExtensions().copyCompressedTexture)
     {
-        context->validationError(GL_INVALID_OPERATION,
-                                 "GL_CHROMIUM_copy_compressed_texture extension not available.");
+        context->validationError(GL_INVALID_OPERATION, kExtensionNotEnabled);
         return false;
     }
 
     const gl::Texture *source = context->getTexture(sourceId);
     if (source == nullptr)
     {
-        context->validationError(GL_INVALID_VALUE, "Source texture is not a valid texture object.");
+        context->validationError(GL_INVALID_VALUE, kInvalidSourceTexture);
         return false;
     }
 
     if (source->getType() != TextureType::_2D)
     {
-        context->validationError(GL_INVALID_VALUE, "Source texture must be of type GL_TEXTURE_2D.");
+        context->validationError(GL_INVALID_VALUE, kInvalidSourceTextureType);
         return false;
     }
 
     if (source->getWidth(TextureTarget::_2D, 0) == 0 ||
         source->getHeight(TextureTarget::_2D, 0) == 0)
     {
-        context->validationError(GL_INVALID_VALUE, "Source texture must level 0 defined.");
+        context->validationError(GL_INVALID_VALUE, kSourceTextureLevelZeroDefined);
         return false;
     }
 
     const gl::Format &sourceFormat = source->getFormat(TextureTarget::_2D, 0);
     if (!sourceFormat.info->compressed)
     {
-        context->validationError(GL_INVALID_OPERATION,
-                                 "Source texture must have a compressed internal format.");
+        context->validationError(GL_INVALID_OPERATION, kSourceTextureMustBeCompressed);
         return false;
     }
 
     const gl::Texture *dest = context->getTexture(destId);
     if (dest == nullptr)
     {
-        context->validationError(GL_INVALID_VALUE,
-                                 "Destination texture is not a valid texture object.");
+        context->validationError(GL_INVALID_VALUE, kInvalidDestinationTexture);
         return false;
     }
 
     if (dest->getType() != TextureType::_2D)
     {
-        context->validationError(GL_INVALID_VALUE,
-                                 "Destination texture must be of type GL_TEXTURE_2D.");
+        context->validationError(GL_INVALID_VALUE, kInvalidDestinationTextureType);
         return false;
     }
 
     if (dest->getImmutableFormat())
     {
-        context->validationError(GL_INVALID_OPERATION, "Destination cannot be immutable.");
+        context->validationError(GL_INVALID_OPERATION, kDestinationImmutable);
         return false;
     }
 
@@ -4374,7 +4577,7 @@ bool ValidateBufferData(Context *context,
         return false;
     }
 
-    Buffer *buffer = context->getGLState().getTargetBuffer(target);
+    Buffer *buffer = context->getState().getTargetBuffer(target);
 
     if (!buffer)
     {
@@ -4416,7 +4619,7 @@ bool ValidateBufferSubData(Context *context,
         return false;
     }
 
-    Buffer *buffer = context->getGLState().getTargetBuffer(target);
+    Buffer *buffer = context->getState().getTargetBuffer(target);
 
     if (!buffer)
     {
@@ -4459,14 +4662,13 @@ bool ValidateRequestExtensionANGLE(Context *context, const GLchar *name)
 {
     if (!context->getExtensions().requestExtension)
     {
-        context->validationError(GL_INVALID_OPERATION,
-                                 "GL_ANGLE_request_extension is not available.");
+        context->validationError(GL_INVALID_OPERATION, kExtensionNotEnabled);
         return false;
     }
 
     if (!context->isExtensionRequestable(name))
     {
-        context->validationError(GL_INVALID_OPERATION, "Extension is not requestable.");
+        context->validationError(GL_INVALID_OPERATION, kExtensionNotRequestable);
         return false;
     }
 
@@ -4556,7 +4758,7 @@ bool ValidateBindFramebuffer(Context *context, GLenum target, GLuint framebuffer
         return false;
     }
 
-    if (!context->getGLState().isBindGeneratesResourceEnabled() &&
+    if (!context->getState().isBindGeneratesResourceEnabled() &&
         !context->isFramebufferGenerated(framebuffer))
     {
         context->validationError(GL_INVALID_OPERATION, kObjectNotGenerated);
@@ -4574,7 +4776,7 @@ bool ValidateBindRenderbuffer(Context *context, GLenum target, GLuint renderbuff
         return false;
     }
 
-    if (!context->getGLState().isBindGeneratesResourceEnabled() &&
+    if (!context->getState().isBindGeneratesResourceEnabled() &&
         !context->isRenderbufferGenerated(renderbuffer))
     {
         context->validationError(GL_INVALID_OPERATION, kObjectNotGenerated);
@@ -4683,20 +4885,14 @@ bool ValidateBlendFuncSeparate(Context *context,
 
         if (constantColorUsed && constantAlphaUsed)
         {
-            const char *msg;
             if (context->getExtensions().webglCompatibility)
             {
-                msg = kInvalidConstantColor;
+                context->validationError(GL_INVALID_OPERATION, kInvalidConstantColor);
+                return false;
             }
-            else
-            {
-                msg =
-                    "Simultaneous use of GL_CONSTANT_ALPHA/GL_ONE_MINUS_CONSTANT_ALPHA and "
-                    "GL_CONSTANT_COLOR/GL_ONE_MINUS_CONSTANT_COLOR not supported by this "
-                    "implementation.";
-                WARN() << msg;
-            }
-            context->validationError(GL_INVALID_OPERATION, msg);
+
+            WARN() << kConstantColorAlphaLimitation;
+            context->validationError(GL_INVALID_OPERATION, kConstantColorAlphaLimitation);
             return false;
         }
     }
@@ -4742,77 +4938,6 @@ bool ValidateLineWidth(Context *context, GLfloat width)
     return true;
 }
 
-bool ValidateVertexAttribPointer(Context *context,
-                                 GLuint index,
-                                 GLint size,
-                                 GLenum type,
-                                 GLboolean normalized,
-                                 GLsizei stride,
-                                 const void *ptr)
-{
-    if (!ValidateVertexFormatBase(context, index, size, type, false))
-    {
-        return false;
-    }
-
-    if (stride < 0)
-    {
-        context->validationError(GL_INVALID_VALUE, kNegativeStride);
-        return false;
-    }
-
-    const Caps &caps = context->getCaps();
-    if (context->getClientVersion() >= ES_3_1)
-    {
-        if (stride > caps.maxVertexAttribStride)
-        {
-            context->validationError(GL_INVALID_VALUE,
-                                     "stride cannot be greater than MAX_VERTEX_ATTRIB_STRIDE.");
-            return false;
-        }
-
-        if (index >= caps.maxVertexAttribBindings)
-        {
-            context->validationError(GL_INVALID_VALUE,
-                                     "index must be smaller than MAX_VERTEX_ATTRIB_BINDINGS.");
-            return false;
-        }
-    }
-
-    // [OpenGL ES 3.0.2] Section 2.8 page 24:
-    // An INVALID_OPERATION error is generated when a non-zero vertex array object
-    // is bound, zero is bound to the ARRAY_BUFFER buffer object binding point,
-    // and the pointer argument is not NULL.
-    bool nullBufferAllowed = context->getGLState().areClientArraysEnabled() &&
-                             context->getGLState().getVertexArray()->id() == 0;
-    if (!nullBufferAllowed && context->getGLState().getTargetBuffer(BufferBinding::Array) == 0 &&
-        ptr != nullptr)
-    {
-        context->validationError(
-            GL_INVALID_OPERATION,
-            "Client data cannot be used with a non-default vertex array object.");
-        return false;
-    }
-
-    if (context->getExtensions().webglCompatibility)
-    {
-        // WebGL 1.0 [Section 6.14] Fixed point support
-        // The WebGL API does not support the GL_FIXED data type.
-        if (type == GL_FIXED)
-        {
-            context->validationError(GL_INVALID_ENUM, "GL_FIXED is not supported in WebGL.");
-            return false;
-        }
-
-        if (!ValidateWebGLVertexAttribPointer(context, type, normalized, stride, ptr, false))
-        {
-            return false;
-        }
-    }
-
-    return true;
-}
-
 bool ValidateDepthRangef(Context *context, GLfloat zNear, GLfloat zFar)
 {
     if (context->getExtensions().webglCompatibility && zNear > zFar)
@@ -4843,8 +4968,7 @@ bool ValidateRenderbufferStorageMultisampleANGLE(Context *context,
 {
     if (!context->getExtensions().framebufferMultisample)
     {
-        context->validationError(GL_INVALID_OPERATION,
-                                 "GL_ANGLE_framebuffer_multisample not available");
+        context->validationError(GL_INVALID_OPERATION, kExtensionNotEnabled);
         return false;
     }
 
@@ -5274,8 +5398,7 @@ bool ValidateGetShaderPrecisionFormat(Context *context,
         case GL_FRAGMENT_SHADER:
             break;
         case GL_COMPUTE_SHADER:
-            context->validationError(GL_INVALID_OPERATION,
-                                     "compute shader precision not yet implemented.");
+            context->validationError(GL_INVALID_OPERATION, kUnimplementedComputeShaderPrecision);
             return false;
         default:
             context->validationError(GL_INVALID_ENUM, kInvalidShaderType);
@@ -5375,8 +5498,7 @@ bool ValidateHint(Context *context, GLenum target, GLenum mode)
             if (context->getClientVersion() < ES_3_0 &&
                 !context->getExtensions().standardDerivatives)
             {
-                context->validationError(GL_INVALID_ENUM,
-                                         "hint requires OES_standard_derivatives.");
+                context->validationError(GL_INVALID_ENUM, kEnumNotSupported);
                 return false;
             }
             break;
@@ -5465,7 +5587,7 @@ bool ValidatePixelStorei(Context *context, GLenum pname, GLint param)
 
     if (param < 0)
     {
-        context->validationError(GL_INVALID_VALUE, "Cannot use negative values in PixelStorei");
+        context->validationError(GL_INVALID_VALUE, kNegativeParam);
         return false;
     }
 
@@ -5549,7 +5671,7 @@ bool ValidateShaderBinary(Context *context,
     if (std::find(shaderBinaryFormats.begin(), shaderBinaryFormats.end(), binaryformat) ==
         shaderBinaryFormats.end())
     {
-        context->validationError(GL_INVALID_ENUM, "Invalid shader binary format.");
+        context->validationError(GL_INVALID_ENUM, kInvalidShaderBinaryFormat);
         return false;
     }
 
@@ -5843,15 +5965,6 @@ bool ValidateViewport(Context *context, GLint x, GLint y, GLsizei width, GLsizei
     return true;
 }
 
-bool ValidateDrawElements(Context *context,
-                          PrimitiveMode mode,
-                          GLsizei count,
-                          GLenum type,
-                          const void *indices)
-{
-    return ValidateDrawElementsCommon(context, mode, count, type, indices, 1);
-}
-
 bool ValidateGetFramebufferAttachmentParameteriv(Context *context,
                                                  GLenum target,
                                                  GLenum attachment,
@@ -5950,12 +6063,11 @@ bool ValidateEnable(Context *context, GLenum cap)
     if (context->getLimitations().noSampleAlphaToCoverageSupport &&
         cap == GL_SAMPLE_ALPHA_TO_COVERAGE)
     {
-        const char *errorMessage = "Current renderer doesn't support alpha-to-coverage";
-        context->validationError(GL_INVALID_OPERATION, errorMessage);
+        context->validationError(GL_INVALID_OPERATION, kNoSampleAlphaToCoveragesLimitation);
 
         // We also output an error message to the debugger window if tracing is active, so that
         // developers can see the error message.
-        ERR() << errorMessage;
+        ERR() << kNoSampleAlphaToCoveragesLimitation;
         return false;
     }
 
@@ -6038,8 +6150,7 @@ bool ValidateFramebufferTexture2D(Context *context,
                 }
                 if (tex->getType() != TextureType::Rectangle)
                 {
-                    context->validationError(GL_INVALID_OPERATION,
-                                             "Textarget must match the texture target type.");
+                    context->validationError(GL_INVALID_OPERATION, kTextureTargetMismatch);
                     return false;
                 }
             }
@@ -6059,8 +6170,7 @@ bool ValidateFramebufferTexture2D(Context *context,
                 }
                 if (tex->getType() != TextureType::CubeMap)
                 {
-                    context->validationError(GL_INVALID_OPERATION,
-                                             "Textarget must match the texture target type.");
+                    context->validationError(GL_INVALID_OPERATION, kTextureTargetMismatch);
                     return false;
                 }
             }
@@ -6083,8 +6193,7 @@ bool ValidateFramebufferTexture2D(Context *context,
                 }
                 if (tex->getType() != TextureType::_2DMultisample)
                 {
-                    context->validationError(GL_INVALID_OPERATION,
-                                             "Textarget must match the texture target type.");
+                    context->validationError(GL_INVALID_OPERATION, kTextureTargetMismatch);
                     return false;
                 }
             }
@@ -6127,7 +6236,7 @@ bool ValidateGenerateMipmap(Context *context, TextureType target)
         return false;
     }
 
-    Texture *texture = context->getTargetTexture(target);
+    Texture *texture = context->getTextureByType(target);
 
     if (texture == nullptr)
     {
@@ -6310,10 +6419,7 @@ bool ValidateLinkProgram(Context *context, GLuint program)
     if (context->hasActiveTransformFeedback(program))
     {
         // ES 3.0.4 section 2.15 page 91
-        context->validationError(GL_INVALID_OPERATION,
-                                 "Cannot link program while program is "
-                                 "associated with an active transform "
-                                 "feedback object.");
+        context->validationError(GL_INVALID_OPERATION, kTransformFeedbackActiveDuringLink);
         return false;
     }
 
@@ -6413,12 +6519,10 @@ bool ValidateUseProgram(Context *context, GLuint program)
             return false;
         }
     }
-    if (context->getGLState().isTransformFeedbackActiveUnpaused())
+    if (context->getState().isTransformFeedbackActiveUnpaused())
     {
         // ES 3.0.4 section 2.15 page 91
-        context->validationError(
-            GL_INVALID_OPERATION,
-            "Cannot change active program while transform feedback is unpaused.");
+        context->validationError(GL_INVALID_OPERATION, kTransformFeedbackUseProgram);
         return false;
     }
 
@@ -6647,7 +6751,7 @@ bool ValidateTexStorage2DEXT(Context *context,
 
 bool ValidateVertexAttribDivisorANGLE(Context *context, GLuint index, GLuint divisor)
 {
-    if (!context->getExtensions().instancedArrays)
+    if (!context->getExtensions().instancedArraysANGLE)
     {
         context->validationError(GL_INVALID_OPERATION, kExtensionNotEnabled);
         return false;
@@ -6663,18 +6767,30 @@ bool ValidateVertexAttribDivisorANGLE(Context *context, GLuint index, GLuint div
     {
         if (index == 0 && divisor != 0)
         {
-            const char *errorMessage =
-                "The current context doesn't support setting a non-zero divisor on the "
-                "attribute with index zero. "
-                "Please reorder the attributes in your vertex shader so that attribute zero "
-                "can have a zero divisor.";
-            context->validationError(GL_INVALID_OPERATION, errorMessage);
+            context->validationError(GL_INVALID_OPERATION, kAttributeZeroRequiresDivisorLimitation);
 
             // We also output an error message to the debugger window if tracing is active, so
             // that developers can see the error message.
-            ERR() << errorMessage;
+            ERR() << kAttributeZeroRequiresDivisorLimitation;
             return false;
         }
+    }
+
+    return true;
+}
+
+bool ValidateVertexAttribDivisorEXT(Context *context, GLuint index, GLuint divisor)
+{
+    if (!context->getExtensions().instancedArraysEXT)
+    {
+        context->validationError(GL_INVALID_OPERATION, kExtensionNotEnabled);
+        return false;
+    }
+
+    if (index >= MAX_VERTEX_ATTRIBS)
+    {
+        context->validationError(GL_INVALID_VALUE, kIndexExceedsMaxVertexAttribute);
+        return false;
     }
 
     return true;
@@ -6778,7 +6894,7 @@ bool ValidateMultiDrawArraysANGLE(Context *context,
 bool ValidateMultiDrawElementsANGLE(Context *context,
                                     PrimitiveMode mode,
                                     const GLsizei *counts,
-                                    GLenum type,
+                                    DrawElementsType type,
                                     const GLvoid *const *indices,
                                     GLsizei drawcount)
 {
@@ -6795,6 +6911,66 @@ bool ValidateMultiDrawElementsANGLE(Context *context,
         }
     }
     return true;
+}
+
+bool ValidateProvokingVertexANGLE(Context *context, ProvokingVertex modePacked)
+{
+    if (!context->getExtensions().provokingVertex)
+    {
+        context->validationError(GL_INVALID_OPERATION, kExtensionNotEnabled);
+        return false;
+    }
+
+    switch (modePacked)
+    {
+        case ProvokingVertex::FirstVertexConvention:
+        case ProvokingVertex::LastVertexConvention:
+            break;
+        default:
+            context->validationError(GL_INVALID_ENUM, kInvalidProvokingVertex);
+            return false;
+    }
+
+    return true;
+}
+
+void RecordBindTextureTypeError(Context *context, TextureType target)
+{
+    ASSERT(!context->getStateCache().isValidBindTextureType(target));
+
+    switch (target)
+    {
+        case TextureType::Rectangle:
+            ASSERT(!context->getExtensions().textureRectangle);
+            context->validationError(GL_INVALID_ENUM, kTextureRectangleNotSupported);
+            break;
+
+        case TextureType::_3D:
+        case TextureType::_2DArray:
+            ASSERT(context->getClientMajorVersion() < 3);
+            context->validationError(GL_INVALID_ENUM, kES3Required);
+            break;
+
+        case TextureType::_2DMultisample:
+            ASSERT(context->getClientVersion() < Version(3, 1) &&
+                   !context->getExtensions().textureMultisample);
+            context->validationError(GL_INVALID_ENUM, kMultisampleTextureExtensionOrES31Required);
+            break;
+
+        case TextureType::_2DMultisampleArray:
+            ASSERT(!context->getExtensions().textureStorageMultisample2DArray);
+            context->validationError(GL_INVALID_ENUM, kMultisampleArrayExtensionRequired);
+            break;
+
+        case TextureType::External:
+            ASSERT(!context->getExtensions().eglImageExternal &&
+                   !context->getExtensions().eglStreamConsumerExternal);
+            context->validationError(GL_INVALID_ENUM, kExternalTextureNotSupported);
+            break;
+
+        default:
+            context->validationError(GL_INVALID_ENUM, kInvalidTextureTarget);
+    }
 }
 
 }  // namespace gl

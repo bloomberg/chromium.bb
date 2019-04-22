@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/fetch/multipart_parser.h"
 
+#include "base/stl_util.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
@@ -18,10 +19,10 @@ namespace {
 
 constexpr char kCloseDelimiterSuffix[] = "--\r\n";
 constexpr size_t kCloseDelimiterSuffixSize =
-    arraysize(kCloseDelimiterSuffix) - 1u;
+    base::size(kCloseDelimiterSuffix) - 1u;
 constexpr size_t kDashBoundaryOffset = 2u;  // The length of "\r\n".
 constexpr char kDelimiterSuffix[] = "\r\n";
-constexpr size_t kDelimiterSuffixSize = arraysize(kDelimiterSuffix) - 1u;
+constexpr size_t kDelimiterSuffixSize = base::size(kDelimiterSuffix) - 1u;
 
 }  // namespace
 

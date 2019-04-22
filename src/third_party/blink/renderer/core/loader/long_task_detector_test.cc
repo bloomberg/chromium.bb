@@ -69,7 +69,8 @@ class LongTaskDetectorTest : public testing::Test {
 };
 
 TEST_F(LongTaskDetectorTest, DeliversLongTaskNotificationOnlyWhenRegistered) {
-  TestLongTaskObserver* long_task_observer = new TestLongTaskObserver();
+  TestLongTaskObserver* long_task_observer =
+      MakeGarbageCollected<TestLongTaskObserver>();
   SimulateTask(LongTaskDetector::kLongTaskThreshold +
                base::TimeDelta::FromMilliseconds(10));
   EXPECT_EQ(long_task_observer->last_long_task_end, TimeTicks());
@@ -92,7 +93,8 @@ TEST_F(LongTaskDetectorTest, DeliversLongTaskNotificationOnlyWhenRegistered) {
 }
 
 TEST_F(LongTaskDetectorTest, DoesNotGetNotifiedOfShortTasks) {
-  TestLongTaskObserver* long_task_observer = new TestLongTaskObserver();
+  TestLongTaskObserver* long_task_observer =
+      MakeGarbageCollected<TestLongTaskObserver>();
   LongTaskDetector::Instance().RegisterObserver(long_task_observer);
   SimulateTask(LongTaskDetector::kLongTaskThreshold -
                base::TimeDelta::FromMilliseconds(10));
@@ -105,7 +107,8 @@ TEST_F(LongTaskDetectorTest, DoesNotGetNotifiedOfShortTasks) {
 }
 
 TEST_F(LongTaskDetectorTest, RegisterSameObserverTwice) {
-  TestLongTaskObserver* long_task_observer = new TestLongTaskObserver();
+  TestLongTaskObserver* long_task_observer =
+      MakeGarbageCollected<TestLongTaskObserver>();
   LongTaskDetector::Instance().RegisterObserver(long_task_observer);
   LongTaskDetector::Instance().RegisterObserver(long_task_observer);
 

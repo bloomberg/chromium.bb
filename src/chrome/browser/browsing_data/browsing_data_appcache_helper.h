@@ -7,16 +7,19 @@
 
 #include <stddef.h>
 
-#include <map>
+#include <list>
+#include <set>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/appcache_service.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
-class BrowserContext;
+struct StorageUsageInfo;
 }
 
 // This class fetches appcache information on behalf of a caller
@@ -24,41 +27,40 @@ class BrowserContext;
 class BrowsingDataAppCacheHelper
     : public base::RefCountedThreadSafe<BrowsingDataAppCacheHelper> {
  public:
-  using OriginAppCacheInfoMap =
-      std::map<url::Origin, content::AppCacheInfoVector>;
-
   using FetchCallback =
-      base::Callback<void(scoped_refptr<content::AppCacheInfoCollection>)>;
+      base::OnceCallback<void(const std::list<content::StorageUsageInfo>&)>;
 
-  explicit BrowsingDataAppCacheHelper(content::BrowserContext* browser_context);
+  explicit BrowsingDataAppCacheHelper(
+      content::AppCacheService* appcache_service);
 
-  virtual void StartFetching(const FetchCallback& completion_callback);
-  virtual void DeleteAppCacheGroup(const GURL& manifest_url);
+  virtual void StartFetching(FetchCallback completion_callback);
+  virtual void DeleteAppCaches(const url::Origin& origin_url);
 
  protected:
   friend class base::RefCountedThreadSafe<BrowsingDataAppCacheHelper>;
   virtual ~BrowsingDataAppCacheHelper();
 
  private:
-  void StartFetchingOnIOThread(const FetchCallback& completion_callback);
-  void DeleteAppCacheGroupOnIOThread(const GURL& manifest_url);
+  void StartFetchingOnIOThread(FetchCallback completion_callback);
+  void DeleteAppCachesOnIOThread(const url::Origin& origin);
 
+  // Owned by the profile.
   content::AppCacheService* appcache_service_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataAppCacheHelper);
 };
 
 // This class is a thin wrapper around BrowsingDataAppCacheHelper that does not
-// fetch its information from the appcache service, but gets them passed as
-// a parameter during construction.
+// fetch its information from the appcache service, but gets them passed when
+// called on access.
 class CannedBrowsingDataAppCacheHelper : public BrowsingDataAppCacheHelper {
  public:
   explicit CannedBrowsingDataAppCacheHelper(
-      content::BrowserContext* browser_context);
+      content::AppCacheService* appcache_service);
 
   // Add an appcache to the set of canned caches that is returned by this
   // helper.
-  void AddAppCache(const GURL& manifest_url);
+  void Add(const url::Origin& origin);
 
   // Clears the list of canned caches.
   void Reset();
@@ -67,19 +69,19 @@ class CannedBrowsingDataAppCacheHelper : public BrowsingDataAppCacheHelper {
   bool empty() const;
 
   // Returns the number of app cache resources.
-  size_t GetAppCacheCount() const;
+  size_t GetCount() const;
 
-  // Returns a current map with the |AppCacheInfoVector|s per origin.
-  const OriginAppCacheInfoMap& GetOriginAppCacheInfoMap() const;
+  // Returns the set or origins with app caches.
+  const std::set<url::Origin>& GetOrigins() const;
 
   // BrowsingDataAppCacheHelper methods.
-  void StartFetching(const FetchCallback& completion_callback) override;
-  void DeleteAppCacheGroup(const GURL& manifest_url) override;
+  void StartFetching(FetchCallback callback) override;
+  void DeleteAppCaches(const url::Origin& origin) override;
 
  private:
   ~CannedBrowsingDataAppCacheHelper() override;
 
-  scoped_refptr<content::AppCacheInfoCollection> info_collection_;
+  std::set<url::Origin> pending_origins_;
 
   DISALLOW_COPY_AND_ASSIGN(CannedBrowsingDataAppCacheHelper);
 };

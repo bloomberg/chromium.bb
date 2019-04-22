@@ -29,10 +29,10 @@
 #include "Test.h"
 
 #include "Resources.h"
-#include "sk_pixel_iter.h"
-#include "sk_tool_utils.h"
+#include "ToolUtils.h"
 
 #include "GrContextPriv.h"
+#include "GrContextThreadSafeProxy.h"
 #include "GrGpu.h"
 #include "GrResourceCache.h"
 #include "GrTexture.h"
@@ -41,7 +41,7 @@
 using namespace sk_gpu_test;
 
 SkImageInfo read_pixels_info(SkImage* image) {
-    if (as_IB(image)->onImageInfo().colorSpace()) {
+    if (image->colorSpace()) {
         return SkImageInfo::MakeS32(image->width(), image->height(), image->alphaType());
     }
 
@@ -425,7 +425,7 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(SkImage_makeTextureImage, reporter, contextIn
                 }
                 if (GrMipMapped::kYes == mipMapped &&
                     as_IB(texImage)->peekProxy()->mipMapped() != mipMapped &&
-                    context->contextPriv().caps()->mipMapSupport()) {
+                    context->priv().caps()->mipMapSupport()) {
                     ERRORF(reporter, "makeTextureImage returned non-mipmapped texture.");
                     continue;
                 }
@@ -481,21 +481,12 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(SkImage_makeNonTextureImage, reporter, contex
     }
 }
 
-DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(SkImage_drawAbandonedGpuImage, reporter, contextInfo) {
-    auto context = contextInfo.grContext();
-    auto image = create_gpu_image(context);
-    auto info = SkImageInfo::MakeN32(20, 20, kOpaque_SkAlphaType);
-    auto surface(SkSurface::MakeRenderTarget(context, SkBudgeted::kNo, info));
-    image->getTexture()->abandon();
-    surface->getCanvas()->drawImage(image, 0, 0);
-}
-
 DEF_GPUTEST_FOR_RENDERING_CONTEXTS(GrContext_colorTypeSupportedAsImage, reporter, ctxInfo) {
     for (int ct = 0; ct < kLastEnum_SkColorType; ++ct) {
         static constexpr int kSize = 10;
         SkColorType colorType = static_cast<SkColorType>(ct);
         bool can = ctxInfo.grContext()->colorTypeSupportedAsImage(colorType);
-        auto* gpu = ctxInfo.grContext()->contextPriv().getGpu();
+        auto* gpu = ctxInfo.grContext()->priv().getGpu();
         GrBackendTexture backendTex = gpu->createTestingOnlyBackendTexture(
                 nullptr, kSize, kSize, colorType, false, GrMipMapped::kNo);
         auto img =
@@ -837,7 +828,7 @@ DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(SkImage_NewFromTextureRelease, reporter, c
     std::unique_ptr<uint32_t[]> pixels(new uint32_t[kWidth * kHeight]);
 
     GrContext* ctx = ctxInfo.grContext();
-    GrGpu* gpu = ctx->contextPriv().getGpu();
+    GrGpu* gpu = ctx->priv().getGpu();
 
     GrBackendTexture backendTex = gpu->createTestingOnlyBackendTexture(
                pixels.get(), kWidth, kHeight, GrColorType::kRGBA_8888, true, GrMipMapped::kNo);
@@ -884,7 +875,7 @@ static void test_cross_context_image(skiatest::Reporter* reporter, const GrConte
         // If we don't have proper support for this feature, the factory will fallback to returning
         // codec-backed images. Those will "work", but some of our checks will fail because we
         // expect the cross-context images not to work on multiple contexts at once.
-        if (!ctx->contextPriv().caps()->crossContextTextureSupport()) {
+        if (!ctx->priv().caps()->crossContextTextureSupport()) {
             continue;
         }
 
@@ -916,7 +907,7 @@ static void test_cross_context_image(skiatest::Reporter* reporter, const GrConte
             sk_sp<SkImage> refImg(imageMaker(ctx));
 
             canvas->drawImage(refImg, 0, 0);
-            canvas->flush();
+            surface->flush();
 
             refImg.reset(nullptr); // force a release of the image
         }
@@ -928,7 +919,7 @@ static void test_cross_context_image(skiatest::Reporter* reporter, const GrConte
             canvas->drawImage(refImg, 0, 0);
             refImg.reset(nullptr); // force a release of the image
 
-            canvas->flush();
+            surface->flush();
         }
 
         // Configure second context
@@ -953,7 +944,7 @@ static void test_cross_context_image(skiatest::Reporter* reporter, const GrConte
 
             otherTestContext->makeCurrent();
             canvas->drawImage(refImg, 0, 0);
-            canvas->flush();
+            surface->flush();
 
             testContext->makeCurrent();
             refImg.reset(nullptr); // force a release of the image
@@ -971,11 +962,11 @@ static void test_cross_context_image(skiatest::Reporter* reporter, const GrConte
             refImg.reset(nullptr); // force a release of the image
 
             otherTestContext->makeCurrent();
-            canvas->flush();
+            surface->flush();
 
             // This is specifically here for vulkan to guarantee the command buffer will finish
             // which is when we call the ReleaseProc.
-            otherCtx->contextPriv().getGpu()->testingOnly_flushGpuAndSync();
+            otherCtx->priv().getGpu()->testingOnly_flushGpuAndSync();
         }
 
         // Case #6: Verify that only one context can be using the image at a time
@@ -1064,7 +1055,7 @@ DEF_GPUTEST(SkImage_CrossContextGrayAlphaConfigs, reporter, options) {
             GrContextFactory::ContextType ctxType = static_cast<GrContextFactory::ContextType>(i);
             ContextInfo ctxInfo = testFactory.getContextInfo(ctxType);
             GrContext* ctx = ctxInfo.grContext();
-            if (!ctx || !ctx->contextPriv().caps()->crossContextTextureSupport()) {
+            if (!ctx || !ctx->priv().caps()->crossContextTextureSupport()) {
                 continue;
             }
 
@@ -1092,7 +1083,7 @@ DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(makeBackendTexture, reporter, ctxInfo) {
     testContext->makeCurrent();
     REPORTER_ASSERT(reporter, proxy);
     auto createLarge = [context] {
-        return create_image_large(context->contextPriv().caps()->maxTextureSize());
+        return create_image_large(context->priv().caps()->maxTextureSize());
     };
     struct {
         std::function<sk_sp<SkImage> ()>                      fImageFactory;
@@ -1168,13 +1159,13 @@ DEF_TEST(Image_ColorSpace, r) {
     REPORTER_ASSERT(r, srgb.get() == image->colorSpace());
 
     image = GetResourceAsImage("images/webp-color-profile-lossy.webp");
-    SkColorSpaceTransferFn fn;
+    skcms_TransferFunction fn;
     bool success = image->colorSpace()->isNumericalTransferFn(&fn);
     REPORTER_ASSERT(r, success);
-    REPORTER_ASSERT(r, color_space_almost_equal(1.8f, fn.fG));
+    REPORTER_ASSERT(r, color_space_almost_equal(1.8f, fn.g));
 
-    sk_sp<SkColorSpace> rec2020 = SkColorSpace::MakeRGB(SkColorSpace::kSRGB_RenderTargetGamma,
-                                                        SkColorSpace::kRec2020_Gamut);
+    sk_sp<SkColorSpace> rec2020 = SkColorSpace::MakeRGB(SkNamedTransferFn::kSRGB,
+                                                        SkNamedGamut::kRec2020);
     image = create_picture_image(rec2020);
     REPORTER_ASSERT(r, SkColorSpace::Equals(rec2020.get(), image->colorSpace()));
 
@@ -1195,11 +1186,10 @@ DEF_TEST(Image_ColorSpace, r) {
 }
 
 DEF_TEST(Image_makeColorSpace, r) {
-    sk_sp<SkColorSpace> p3 = SkColorSpace::MakeRGB(SkColorSpace::kSRGB_RenderTargetGamma,
-                                                   SkColorSpace::kDCIP3_D65_Gamut);
-    SkColorSpaceTransferFn fn;
-    fn.fA = 1.f; fn.fB = 0.f; fn.fC = 0.f; fn.fD = 0.f; fn.fE = 0.f; fn.fF = 0.f; fn.fG = 1.8f;
-    sk_sp<SkColorSpace> adobeGamut = SkColorSpace::MakeRGB(fn, SkColorSpace::kAdobeRGB_Gamut);
+    sk_sp<SkColorSpace> p3 = SkColorSpace::MakeRGB(SkNamedTransferFn::kSRGB, SkNamedGamut::kDCIP3);
+    skcms_TransferFunction fn;
+    fn.a = 1.f; fn.b = 0.f; fn.c = 0.f; fn.d = 0.f; fn.e = 0.f; fn.f = 0.f; fn.g = 1.8f;
+    sk_sp<SkColorSpace> adobeGamut = SkColorSpace::MakeRGB(fn, SkNamedGamut::kAdobeRGB);
 
     SkBitmap srgbBitmap;
     srgbBitmap.allocPixels(SkImageInfo::MakeS32(1, 1, kOpaque_SkAlphaType));
@@ -1374,7 +1364,7 @@ DEF_TEST(Image_nonfinite_dst, reporter) {
             surf->getCanvas()->drawImageRect(img, dst, &paint);
 
             // we should draw nothing
-            sk_tool_utils::PixelIter iter(surf.get());
+            ToolUtils::PixelIter iter(surf.get());
             while (void* addr = iter.next()) {
                 REPORTER_ASSERT(reporter, *(SkPMColor*)addr == 0);
             }

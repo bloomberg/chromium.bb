@@ -8,9 +8,9 @@
 //    clang-format -i -style=chromium filename
 // DO NOT EDIT!
 
-// The following line silences a presubmit warning that would otherwise be
-// triggered by this:
+// Silence presubmit and Tricium warnings about include guards
 // no-include-guard-because-multiply-included
+// NOLINT(build/header_guard)
 
 static EGLBoolean GL_BINDING_CALL Mock_eglBindAPI(EGLenum api);
 static EGLBoolean GL_BINDING_CALL Mock_eglBindTexImage(EGLDisplay dpy,

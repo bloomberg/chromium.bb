@@ -238,7 +238,8 @@ AffineTransform LayoutSVGResourceClipper::CalculateClipTransform(
 bool LayoutSVGResourceClipper::HitTestClipContent(
     const FloatRect& object_bounding_box,
     const HitTestLocation& location) const {
-  if (!SVGLayoutSupport::IntersectsClipPath(*this, location))
+  if (!SVGLayoutSupport::IntersectsClipPath(*this, object_bounding_box,
+                                            location))
     return false;
 
   TransformedHitTestLocation local_location(

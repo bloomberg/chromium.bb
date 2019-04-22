@@ -20,19 +20,28 @@
 namespace blink {
 
 NGInlineBoxFragmentPainter::NGInlineBoxFragmentPainter(
-    const NGPaintFragment& inline_box_fragment)
-    : InlineBoxPainterBase(
-          inline_box_fragment,
-          &inline_box_fragment.GetLayoutObject()->GetDocument(),
-          inline_box_fragment.GetLayoutObject()->GeneratingNode(),
-          inline_box_fragment.Style(),
-          // TODO(layout-dev): Should be first-line style.
-          inline_box_fragment.Style()),
+    const NGPaintFragment& inline_box_fragment,
+    const LayoutObject& layout_object,
+    const ComputedStyle& style,
+    const ComputedStyle& line_style)
+    : InlineBoxPainterBase(layout_object,
+                           &layout_object.GetDocument(),
+                           layout_object.GeneratingNode(),
+                           style,
+                           line_style),
       inline_box_fragment_(inline_box_fragment),
       border_edges_(NGBorderEdges::FromPhysical(
           inline_box_fragment.PhysicalFragment().BorderEdges(),
-          inline_box_fragment.Style().GetWritingMode())) {
-}
+          style.GetWritingMode())) {}
+
+NGInlineBoxFragmentPainter::NGInlineBoxFragmentPainter(
+    const NGPaintFragment& inline_box_fragment)
+    : NGInlineBoxFragmentPainter(
+          inline_box_fragment,
+          *inline_box_fragment.GetLayoutObject(),
+          inline_box_fragment.Style(),
+          // TODO(layout-dev): Should be first-line style.
+          inline_box_fragment.Style()) {}
 
 void NGInlineBoxFragmentPainter::Paint(const PaintInfo& paint_info,
                                        const LayoutPoint& paint_offset) {
@@ -42,7 +51,9 @@ void NGInlineBoxFragmentPainter::Paint(const PaintInfo& paint_info,
     PaintBackgroundBorderShadow(paint_info, adjusted_paint_offset);
 
   NGBoxFragmentPainter box_painter(inline_box_fragment_);
-  box_painter.PaintObject(paint_info, adjusted_paint_offset, true);
+  bool suppress_box_decoration_background = true;
+  box_painter.PaintObject(paint_info, adjusted_paint_offset,
+                          suppress_box_decoration_background);
 }
 
 void NGInlineBoxFragmentPainter::PaintBackgroundBorderShadow(
@@ -82,7 +93,9 @@ void NGInlineBoxFragmentPainter::PaintBackgroundBorderShadow(
       inline_box_fragment_.InlineFragmentsFor(
           inline_box_fragment_.GetLayoutObject());
   NGPaintFragment::FragmentRange::iterator iter = fragments.begin();
-  bool object_has_multiple_boxes = ++iter != fragments.end();
+  DCHECK(iter != fragments.end());
+  bool object_has_multiple_boxes =
+      iter != fragments.end() && ++iter != fragments.end();
 
   // TODO(eae): Switch to LayoutNG version of BackgroundImageGeometry.
   BackgroundImageGeometry geometry(*static_cast<const LayoutBoxModelObject*>(

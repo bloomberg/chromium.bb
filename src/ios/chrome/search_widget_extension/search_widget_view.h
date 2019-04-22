@@ -7,6 +7,8 @@
 
 #import <UIKit/UIKit.h>
 
+typedef NS_ENUM(NSInteger, CopiedContentType);
+
 // Protocol to be implemented by targets for user actions coming from the search
 // widget view.
 @protocol SearchWidgetViewActionTarget
@@ -20,7 +22,7 @@
 // Called when the user taps the QR Code button.
 - (void)openQRCode:(id)sender;
 // Called when the user taps the Open Copied URL section.
-- (void)openCopiedURL:(id)sender;
+- (void)openCopiedContent:(id)sender;
 
 @end
 
@@ -42,9 +44,10 @@
 // Gets the height of the widget.
 - (CGFloat)widgetHeight;
 
-// Sets the copied URL string to be displayed. nil is a valid value to indicate
-// there is no copied URL to display.
-- (void)setCopiedURLString:(NSString*)URL;
+// Sets the copied content type. |copiedText| should be provided if the content
+// type requires textual data, otherwise it should be nil.
+- (void)setCopiedContentType:(CopiedContentType)type
+                  copiedText:(NSString*)copiedText;
 
 @end
 

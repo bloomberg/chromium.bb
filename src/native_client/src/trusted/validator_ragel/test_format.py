@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 import glob
 import optparse
 import re
@@ -168,10 +170,10 @@ class TestRunner(object):
     assert self.SECTION_NAME in info
 
     content = self.GetSectionContent(options, info)
-    print '  Checking %s field...' % self.SECTION_NAME
+    print('  Checking %s field...' % self.SECTION_NAME)
     if options.update:
       if content != info[self.SECTION_NAME]:
-        print '  Updating %s field...' % self.SECTION_NAME
+        print('  Updating %s field...' % self.SECTION_NAME)
         info[self.SECTION_NAME] = content
     else:
       AssertEquals(content, info[self.SECTION_NAME])
@@ -206,10 +208,10 @@ class TestRunner(object):
         raise AssertionError(
             '%r matched no files, which was probably not intended' % glob_expr)
       for test_file in test_files:
-        print 'Testing %s...' % test_file
+        print('Testing %s...' % test_file)
         tests = LoadTestFile(test_file)
         tests = [self.Test(options, test) for test in tests]
         if options.update:
           SaveTestFile(tests, test_file)
         processed += 1
-    print '%s test files were processed.' % processed
+    print('%s test files were processed.' % processed)

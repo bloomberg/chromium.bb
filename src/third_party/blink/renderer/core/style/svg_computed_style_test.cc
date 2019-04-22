@@ -19,7 +19,7 @@ namespace blink {
     scoped_refptr<type> value2 = value1->Copy();                       \
     svg1->Set##fieldName(value1);                                      \
     svg2->Set##fieldName(value2);                                      \
-    EXPECT_FALSE(svg1->Diff(svg2.get()).HasDifference());              \
+    EXPECT_FALSE(svg1->Diff(*svg2).HasDifference());                   \
   }
 
 // This is not very useful for fields directly stored by values, because they
@@ -31,7 +31,7 @@ namespace blink {
     scoped_refptr<SVGComputedStyle> svg2 = SVGComputedStyle::Create(); \
     svg1->Set##fieldName(SVGComputedStyle::Initial##fieldName());      \
     svg2->Set##fieldName(SVGComputedStyle::Initial##fieldName());      \
-    EXPECT_FALSE(svg1->Diff(svg2.get()).HasDifference());              \
+    EXPECT_FALSE(svg1->Diff(*svg2).HasDifference());                   \
   }
 
 TEST(SVGComputedStyleTest, StrokeStyleShouldCompareValue) {
@@ -47,7 +47,7 @@ TEST(SVGComputedStyleTest, StrokeStyleShouldCompareValue) {
     scoped_refptr<SVGComputedStyle> svg2 = SVGComputedStyle::Create();
     svg1->SetVisitedLinkStrokePaint(SVGComputedStyle::InitialStrokePaint());
     svg2->SetVisitedLinkStrokePaint(SVGComputedStyle::InitialStrokePaint());
-    EXPECT_FALSE(svg1->Diff(svg2.get()).HasDifference());
+    EXPECT_FALSE(svg1->Diff(*svg2).HasDifference());
   }
 }
 

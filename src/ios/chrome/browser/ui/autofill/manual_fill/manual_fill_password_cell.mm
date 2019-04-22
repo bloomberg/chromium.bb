@@ -5,14 +5,19 @@
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_password_cell.h"
 
 #include "base/metrics/user_metrics.h"
+#include "base/strings/sys_string_conversions.h"
+#import "ios/chrome/browser/favicon/favicon_loader.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/credential.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_cell_utils.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_content_delegate.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/uicolor_manualfill.h"
 #import "ios/chrome/browser/ui/list_model/list_model.h"
+#import "ios/chrome/common/favicon/favicon_view.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+#include "ui/gfx/favicon_size.h"
+#include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -36,8 +41,6 @@
 @end
 
 @implementation ManualFillCredentialItem
-@synthesize delegate = _delegate;
-@synthesize credential = _credential;
 
 - (instancetype)initWithCredential:(ManualFillCredential*)credential
          isConnectedToPreviousItem:(BOOL)isConnectedToPreviousItem
@@ -63,6 +66,14 @@
                        delegate:self.delegate];
 }
 
+- (const GURL&)faviconURL {
+  return self.credential.URL;
+}
+
+- (NSString*)uniqueIdentifier {
+  return base::SysUTF8ToNSString(self.credential.URL.spec());
+}
+
 @end
 
 namespace {
@@ -79,11 +90,17 @@ static const CGFloat NoMultiplier = 1.0;
 @interface ManualFillPasswordCell ()
 
 // The credential this cell is showing.
-@property(nonatomic, strong) ManualFillCredential* manualFillCredential;
+@property(nonatomic, strong) ManualFillCredential* credential;
 
 // The dynamic constraints for all the lines (i.e. not set in createView).
 @property(nonatomic, strong)
     NSMutableArray<NSLayoutConstraint*>* dynamicConstraints;
+
+// The constraints for the visible favicon.
+@property(nonatomic, strong) NSArray<NSLayoutConstraint*>* faviconContraints;
+
+// The favicon for the credential.
+@property(nonatomic, strong) FaviconView* faviconView;
 
 // The label with the site name and host.
 @property(nonatomic, strong) UILabel* siteNameLabel;
@@ -108,21 +125,25 @@ static const CGFloat NoMultiplier = 1.0;
 
 - (void)prepareForReuse {
   [super prepareForReuse];
+  [NSLayoutConstraint deactivateConstraints:self.faviconContraints];
+  self.faviconView.hidden = YES;
+
   [NSLayoutConstraint deactivateConstraints:self.dynamicConstraints];
   [self.dynamicConstraints removeAllObjects];
 
   self.siteNameLabel.text = @"";
+  [self.faviconView configureWithAttributes:nil];
 
   [self.usernameButton setTitle:@"" forState:UIControlStateNormal];
   self.usernameButton.enabled = YES;
-  [self.usernameButton setTitleColor:UIColor.cr_manualFillTintColor
+  [self.usernameButton setTitleColor:UIColor.cr_manualFillChipDarkTextColor
                             forState:UIControlStateNormal];
 
   [self.passwordButton setTitle:@"" forState:UIControlStateNormal];
   self.passwordButton.accessibilityLabel = nil;
   self.passwordButton.hidden = NO;
 
-  self.manualFillCredential = nil;
+  self.credential = nil;
 
   self.grayLine.hidden = NO;
 }
@@ -135,12 +156,13 @@ static const CGFloat NoMultiplier = 1.0;
     [self createViewHierarchy];
   }
   self.delegate = delegate;
-  self.manualFillCredential = credential;
+  self.credential = credential;
 
   NSMutableArray<UIView*>* verticalLeadViews = [[NSMutableArray alloc] init];
 
   if (isConnectedToPreviousCell) {
     self.siteNameLabel.hidden = YES;
+    self.faviconView.hidden = YES;
   } else {
     NSMutableAttributedString* attributedString =
         [[NSMutableAttributedString alloc]
@@ -167,6 +189,7 @@ static const CGFloat NoMultiplier = 1.0;
     self.siteNameLabel.attributedText = attributedString;
     [verticalLeadViews addObject:self.siteNameLabel];
     self.siteNameLabel.hidden = NO;
+    self.faviconView.hidden = NO;
   }
 
   if (credential.username.length) {
@@ -205,9 +228,23 @@ static const CGFloat NoMultiplier = 1.0;
   self.dynamicConstraints = [[NSMutableArray alloc] init];
   AppendVerticalConstraintsSpacingForViews(
       self.dynamicConstraints, verticalLeadViews, self.contentView,
-      topSystemSpacingMultiplier, MiddleSystemSpacingMultiplier,
-      bottomSystemSpacingMultiplier);
+      topSystemSpacingMultiplier, bottomSystemSpacingMultiplier);
   [NSLayoutConstraint activateConstraints:self.dynamicConstraints];
+}
+
+- (NSString*)uniqueIdentifier {
+  return base::SysUTF8ToNSString(self.credential.URL.spec());
+}
+
+- (void)configureWithFaviconAttributes:(FaviconAttributes*)attributes {
+  if (attributes.faviconImage) {
+    self.faviconView.hidden = NO;
+    [NSLayoutConstraint activateConstraints:self.faviconContraints];
+    [self.faviconView configureWithAttributes:attributes];
+    return;
+  }
+  [NSLayoutConstraint deactivateConstraints:self.faviconContraints];
+  self.faviconView.hidden = YES;
 }
 
 #pragma mark - Private
@@ -216,30 +253,53 @@ static const CGFloat NoMultiplier = 1.0;
 - (void)createViewHierarchy {
   self.selectionStyle = UITableViewCellSelectionStyleNone;
 
-  UIView* guide = self.contentView;
-  self.grayLine = CreateGraySeparatorForContainer(guide);
+  self.grayLine = CreateGraySeparatorForContainer(self.contentView);
   NSMutableArray<NSLayoutConstraint*>* staticConstraints =
       [[NSMutableArray alloc] init];
+
+  self.faviconView = [[FaviconView alloc] init];
+  self.faviconView.translatesAutoresizingMaskIntoConstraints = NO;
+  self.faviconView.clipsToBounds = YES;
+  self.faviconView.hidden = YES;
+  [self.contentView addSubview:self.faviconView];
+  self.faviconContraints = @[
+    [self.faviconView.widthAnchor constraintEqualToConstant:gfx::kFaviconSize],
+    [self.faviconView.heightAnchor
+        constraintEqualToAnchor:self.faviconView.widthAnchor],
+  ];
 
   self.siteNameLabel = CreateLabel();
   self.siteNameLabel.translatesAutoresizingMaskIntoConstraints = NO;
   self.siteNameLabel.adjustsFontForContentSizeCategory = YES;
   [self.contentView addSubview:self.siteNameLabel];
-  AppendHorizontalConstraintsForViews(staticConstraints,
-                                      @[ self.siteNameLabel ], guide,
-                                      ButtonHorizontalMargin);
 
-  self.usernameButton = CreateButtonWithSelectorAndTarget(
+  UIStackView* stackView = [[UIStackView alloc]
+      initWithArrangedSubviews:@[ self.faviconView, self.siteNameLabel ]];
+  stackView.translatesAutoresizingMaskIntoConstraints = NO;
+  stackView.spacing = UIStackViewSpacingUseSystem;
+  stackView.alignment = UIStackViewAlignmentCenter;
+
+  [self.contentView addSubview:stackView];
+
+  AppendHorizontalConstraintsForViews(staticConstraints, @[ stackView ],
+                                      self.contentView,
+                                      kButtonHorizontalMargin);
+
+  self.usernameButton = CreateChipWithSelectorAndTarget(
       @selector(userDidTapUsernameButton:), self);
   [self.contentView addSubview:self.usernameButton];
-  AppendHorizontalConstraintsForViews(staticConstraints,
-                                      @[ self.usernameButton ], guide);
+  AppendHorizontalConstraintsForViews(
+      staticConstraints, @[ self.usernameButton ], self.grayLine,
+      kChipsHorizontalMargin,
+      AppendConstraintsHorizontalEqualOrSmallerThanGuide);
 
-  self.passwordButton = CreateButtonWithSelectorAndTarget(
+  self.passwordButton = CreateChipWithSelectorAndTarget(
       @selector(userDidTapPasswordButton:), self);
   [self.contentView addSubview:self.passwordButton];
-  AppendHorizontalConstraintsForViews(staticConstraints,
-                                      @[ self.passwordButton ], guide);
+  AppendHorizontalConstraintsForViews(
+      staticConstraints, @[ self.passwordButton ], self.grayLine,
+      kChipsHorizontalMargin,
+      AppendConstraintsHorizontalEqualOrSmallerThanGuide);
 
   [NSLayoutConstraint activateConstraints:staticConstraints];
 }
@@ -247,7 +307,7 @@ static const CGFloat NoMultiplier = 1.0;
 - (void)userDidTapUsernameButton:(UIButton*)button {
   base::RecordAction(
       base::UserMetricsAction("ManualFallback_Password_SelectUsername"));
-  [self.delegate userDidPickContent:self.manualFillCredential.username
+  [self.delegate userDidPickContent:self.credential.username
                       passwordField:NO
                       requiresHTTPS:NO];
 }
@@ -258,7 +318,7 @@ static const CGFloat NoMultiplier = 1.0;
   }
   base::RecordAction(
       base::UserMetricsAction("ManualFallback_Password_SelectPassword"));
-  [self.delegate userDidPickContent:self.manualFillCredential.password
+  [self.delegate userDidPickContent:self.credential.password
                       passwordField:YES
                       requiresHTTPS:YES];
 }

@@ -31,7 +31,7 @@ ClearDigestTask::ClearDigestTask(OfflinePageMetadataStore* store,
   DCHECK(store_);
 }
 
-ClearDigestTask::~ClearDigestTask(){};
+ClearDigestTask::~ClearDigestTask() {}
 
 void ClearDigestTask::Run() {
   store_->Execute(base::BindOnce(&ClearDigestSync, offline_id_),

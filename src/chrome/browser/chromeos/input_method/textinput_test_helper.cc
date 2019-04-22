@@ -19,7 +19,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/base/ime/input_method_factory.h"
+#include "ui/base/ime/init/input_method_factory.h"
 
 namespace chromeos {
 
@@ -97,7 +97,7 @@ void TextInputTestHelper::OnCaretBoundsChanged(
     if (!GetTextInputClient()->GetTextRange(&text_range) ||
         !GetTextInputClient()->GetTextFromRange(text_range,
                                                 &surrounding_text_) ||
-        !GetTextInputClient()->GetSelectionRange(&selection_range_))
+        !GetTextInputClient()->GetEditableSelectionRange(&selection_range_))
       return;
   }
   if (waiting_type_ == WAIT_ON_CARET_BOUNDS_CHANGED)

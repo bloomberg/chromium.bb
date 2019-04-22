@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/net/wake_on_wifi_connection_observer.h"
 
-
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "chrome/browser/chromeos/net/wake_on_wifi_manager.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"

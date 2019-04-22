@@ -42,11 +42,13 @@ MediaManager.prototype.isAvailableForCast = function() {
  * @return {Promise} Promise which is resolved with the token. Reject if failed.
  */
 MediaManager.prototype.getToken = function(refresh) {
-  if (chrome.test)
+  if (chrome.test) {
     return Promise.resolve('DUMMY_ACCESS_TOKEN');
+  }
 
-  if (this.cachedToken_ && !refresh)
+  if (this.cachedToken_ && !refresh) {
     return Promise.resolve(this.cachedToken_);
+  }
 
   return new Promise(function(fulfill, reject) {
     // TODO(yoshiki): Creates the method to get a token and use it.
@@ -56,8 +58,9 @@ MediaManager.prototype.getToken = function(refresh) {
       return Promise.reject(
           'Token fetch failed: ' + chrome.runtime.lastError.message);
     }
-    if (!url)
+    if (!url) {
       return Promise.reject('Token fetch failed.');
+    }
     var index = url.indexOf('access_token=');
     var token = url.substring(index + 13);
     if (index > 0 && token) {
@@ -75,11 +78,13 @@ MediaManager.prototype.getToken = function(refresh) {
  * @return {Promise} Promise which is resolved with the url. Reject if failed.
  */
 MediaManager.prototype.getUrl = function() {
-  if (chrome.test)
+  if (chrome.test) {
     return Promise.resolve('http://example.com/dummy_url.mp4');
+  }
 
-  if (this.cachedUrl_)
+  if (this.cachedUrl_) {
     return Promise.resolve(this.cachedUrl_);
+  }
 
   return new Promise(function(fulfill, reject) {
     // TODO(yoshiki): Creates the method to get a url and use it.
@@ -89,11 +94,12 @@ MediaManager.prototype.getUrl = function() {
       return Promise.reject(
           'URL fetch failed: ' + chrome.runtime.lastError.message);
     }
-    if (!url)
+    if (!url) {
       return Promise.reject('URL fetch failed.');
-    var access_token_index = url.indexOf('access_token=');
-    if (access_token_index) {
-      url = url.substring(0, access_token_index - 1);
+    }
+    var accessTokenIndex = url.indexOf('access_token=');
+    if (accessTokenIndex) {
+      url = url.substring(0, accessTokenIndex - 1);
     }
     this.cachedUrl_ = url;
     return url;
@@ -106,8 +112,9 @@ MediaManager.prototype.getUrl = function() {
  * @return {Promise} Promise which is resolved with the mime. Reject if failed.
  */
 MediaManager.prototype.getMime = function() {
-  if (this.cachedDriveProp_)
+  if (this.cachedDriveProp_) {
     return Promise.resolve(this.cachedDriveProp_.contentMimeType || '');
+  }
 
   return new Promise(function(fulfill, reject) {
     chrome.fileManagerPrivate.getEntryProperties(
@@ -132,8 +139,9 @@ MediaManager.prototype.getMime = function() {
  * @return {Promise} Promise which is resolved with the url. Reject if failed.
  */
 MediaManager.prototype.getThumbnail = function() {
-  if (this.cachedDriveProp_)
+  if (this.cachedDriveProp_) {
     return Promise.resolve(this.cachedDriveProp_.thumbnailUrl || '');
+  }
 
   return new Promise(function(fulfill, reject) {
     chrome.fileManagerPrivate.getEntryProperties(

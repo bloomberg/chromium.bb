@@ -111,7 +111,8 @@ std::string IntArrayToString(const std::vector<int32_t>& values) {
 #if DCHECK_IS_ON()
   std::vector<std::string> value_strings;
   std::transform(values.begin(), values.end(),
-                 std::back_inserter(value_strings), &base::IntToString);
+                 std::back_inserter(value_strings),
+                 [](int32_t value) { return base::NumberToString(value); });
   return base::JoinString(value_strings, ", ");
 #else   // DCHECK_IS_ON()
   return std::string();

@@ -17,6 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "content/shell/test_runner/test_runner_export.h"
 #include "third_party/blink/public/platform/web_drag_data.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
 #include "third_party/blink/public/platform/web_input_event.h"
@@ -31,16 +32,16 @@ class WebLocalFrame;
 class WebView;
 class WebWidget;
 struct WebContextMenuData;
-}
+}  // namespace blink
 
 namespace gin {
 class Arguments;
-}
+}  // namespace gin
 
 namespace test_runner {
 
 class TestInterfaces;
-class WebWidgetTestProxyBase;
+class WebWidgetTestProxy;
 class WebTestDelegate;
 
 // Key event location code introduced in DOM Level 3.
@@ -52,9 +53,9 @@ enum KeyLocationCode {
   DOMKeyLocationNumpad = 0x03
 };
 
-class EventSender {
+class TEST_RUNNER_EXPORT EventSender {
  public:
-  explicit EventSender(WebWidgetTestProxyBase*);
+  explicit EventSender(WebWidgetTestProxy*);
   virtual ~EventSender();
 
   void Reset();
@@ -148,7 +149,11 @@ class EventSender {
 
   void LeapForward(int milliseconds);
 
+  void BeginDragWithItems(
+      const blink::WebVector<blink::WebDragData::Item>& items);
   void BeginDragWithFiles(const std::vector<std::string>& files);
+  void BeginDragWithStringData(const std::string& data,
+                               const std::string& mime_type);
 
   void AddTouchPoint(float x, float y, gin::Arguments* args);
 
@@ -257,7 +262,7 @@ class EventSender {
   int wm_sys_dead_char_;
 #endif
 
-  WebWidgetTestProxyBase* web_widget_test_proxy_base_;
+  WebWidgetTestProxy* web_widget_test_proxy_;
   TestInterfaces* interfaces();
   WebTestDelegate* delegate();
   const blink::WebView* view() const;

@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/password_manager/core/browser/fake_form_fetcher.h"
@@ -153,7 +154,8 @@ ManagePasswordsStateTest::CreateFormManagerInternal(bool include_federated) {
           test_local_form(),
           base::WrapUnique(new password_manager::StubFormSaver), &fetcher_));
   test_form_manager->Init(nullptr);
-  fetcher_.SetNonFederated(test_stored_forms_, 0u);
+  fetcher_.SetNonFederated(test_stored_forms_);
+  fetcher_.NotifyFetchCompleted();
   if (include_federated) {
     fetcher_.set_federated({&test_local_federated_form()});
   }

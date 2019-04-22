@@ -14,9 +14,9 @@ cr.define('multidevice_setup', function() {
     constructor() {
       /**
        * @private {?chromeos.multideviceSetup.mojom.
-       *               PrivilegedHostDeviceSetterPtr}
+       *               PrivilegedHostDeviceSetterProxy}
        */
-      this.ptr_ = null;
+      this.proxy_ = null;
     }
 
     /** @override */
@@ -30,15 +30,13 @@ cr.define('multidevice_setup', function() {
       // required.
       assert(!opt_authToken);
 
-      if (!this.ptr_) {
-        this.ptr_ =
-            new chromeos.multideviceSetup.mojom.PrivilegedHostDeviceSetterPtr();
-        Mojo.bindInterface(
-            chromeos.multideviceSetup.mojom.PrivilegedHostDeviceSetter.name,
-            mojo.makeRequest(this.ptr_).handle);
+      if (!this.proxy_) {
+        this.proxy_ = chromeos.multideviceSetup.mojom.PrivilegedHostDeviceSetter
+                          .getProxy();
       }
 
-      return this.ptr_.setHostDevice(hostDeviceId);
+      return /** @type {!Promise<{success: boolean}>} */ (
+          this.proxy_.setHostDevice(hostDeviceId));
     }
 
     /** @override */
@@ -111,17 +109,14 @@ cr.define('multidevice_setup', function() {
     /** @override */
     attached: function() {
       this.delegate_ = new MultiDeviceSetupFirstRunDelegate();
-      this.addWebUIListener(
-          'multidevice_setup.initializeSetupFlow',
-          this.initializeSetupFlow.bind(this));
     },
 
-    initializeSetupFlow: function() {
+    onForwardButtonFocusRequested_: function() {
       this.$$('#next-button').focus();
     },
 
     /**
-     * @param {!{detail:{didUserCompleteSetup: boolean}}} event
+     * @param {!CustomEvent<!{didUserCompleteSetup: boolean}>} event
      * @private
      */
     onExitRequested_: function(event) {
@@ -152,7 +147,7 @@ cr.define('multidevice_setup', function() {
     },
 
     /**
-     * @param {!{detail: string}} event
+     * @param {!CustomEvent<string>} event
      * @private
      */
     onOpenLearnMoreWebviewRequested_: function(event) {

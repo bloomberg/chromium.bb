@@ -23,7 +23,7 @@ void SyncPolicyHandler::ApplyPolicySettings(const policy::PolicyMap& policies,
   const base::Value* value = policies.GetValue(policy_name());
   bool disable_sync;
   if (value && value->GetAsBoolean(&disable_sync) && disable_sync)
-    prefs->SetValue(prefs::kSyncManaged, value->CreateDeepCopy());
+    prefs->SetValue(prefs::kSyncManaged, value->Clone());
 }
 
 }  // namespace syncer

@@ -16,11 +16,12 @@ namespace search_provider_logos {
 
 struct EncodedLogo;
 
-// Implements AppendFingerprintToLogoURL, defined in logo_tracker.h,
+// Implements AppendQueryparamsToLogoURL, defined in logo_common.h,
 // for static logos.
 GURL UseFixedLogoUrl(const GURL& logo_url, const std::string& fingerprint);
 
-// Implements ParseLogoResponse, defined in logo_tracker.h, for static logos.
+// Implements ParseLogoResponse, defined in logo_common.h,
+// for static logos.
 std::unique_ptr<EncodedLogo> ParseFixedLogoResponse(
     std::unique_ptr<std::string> response,
     base::Time response_time,

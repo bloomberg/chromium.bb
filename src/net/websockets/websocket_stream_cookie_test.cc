@@ -5,6 +5,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
@@ -81,12 +82,13 @@ class WebSocketStreamClientUseCookieTest
     base::RunLoop().RunUntilIdle();
   }
 
-  static void SetCookieHelperFunction(const base::Closure& task,
-                                      base::WeakPtr<bool> weak_is_called,
-                                      base::WeakPtr<bool> weak_result,
-                                      bool success) {
+  static void SetCookieHelperFunction(
+      const base::RepeatingClosure& task,
+      base::WeakPtr<bool> weak_is_called,
+      base::WeakPtr<bool> weak_result,
+      CanonicalCookie::CookieInclusionStatus status) {
     *weak_is_called = true;
-    *weak_result = success;
+    *weak_result = (status == CanonicalCookie::CookieInclusionStatus::INCLUDE);
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, task);
   }
 };
@@ -113,10 +115,12 @@ class WebSocketStreamServerSetCookieTest
     base::RunLoop().RunUntilIdle();
   }
 
-  static void GetCookieListHelperFunction(base::OnceClosure task,
-                                          base::WeakPtr<bool> weak_is_called,
-                                          base::WeakPtr<CookieList> weak_result,
-                                          const CookieList& cookie_list) {
+  static void GetCookieListHelperFunction(
+      base::OnceClosure task,
+      base::WeakPtr<bool> weak_is_called,
+      base::WeakPtr<CookieList> weak_result,
+      const CookieList& cookie_list,
+      const CookieStatusList& excluded_cookies) {
     *weak_is_called = true;
     *weak_result = cookie_list;
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(task));
@@ -379,9 +383,9 @@ const ClientUseCookieParameter kClientUseCookieParameters[] = {
      kNoCookieHeader},
 };
 
-INSTANTIATE_TEST_CASE_P(WebSocketStreamClientUseCookieTest,
-                        WebSocketStreamClientUseCookieTest,
-                        ValuesIn(kClientUseCookieParameters));
+INSTANTIATE_TEST_SUITE_P(WebSocketStreamClientUseCookieTest,
+                         WebSocketStreamClientUseCookieTest,
+                         ValuesIn(kClientUseCookieParameters));
 
 const ServerSetCookieParameter kServerSetCookieParameters[] = {
     // Cookies coming from ws
@@ -511,9 +515,9 @@ const ServerSetCookieParameter kServerSetCookieParameters[] = {
      "Set-Cookie: test-cookie"},
 };
 
-INSTANTIATE_TEST_CASE_P(WebSocketStreamServerSetCookieTest,
-                        WebSocketStreamServerSetCookieTest,
-                        ValuesIn(kServerSetCookieParameters));
+INSTANTIATE_TEST_SUITE_P(WebSocketStreamServerSetCookieTest,
+                         WebSocketStreamServerSetCookieTest,
+                         ValuesIn(kServerSetCookieParameters));
 
 }  // namespace
 }  // namespace net

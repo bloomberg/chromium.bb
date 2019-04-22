@@ -36,7 +36,7 @@
 
 namespace blink {
 
-class CORE_EXPORT DOMException final : public ScriptWrappable {
+class CORE_EXPORT DOMException : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -49,7 +49,7 @@ class CORE_EXPORT DOMException final : public ScriptWrappable {
   // Constructor exposed to script.
   static DOMException* Create(const String& message, const String& name);
 
-  DOMException(unsigned short legacy_code,
+  DOMException(uint16_t legacy_code,
                const String& name,
                const String& sanitized_message,
                const String& unsanitized_message);
@@ -57,7 +57,7 @@ class CORE_EXPORT DOMException final : public ScriptWrappable {
   static String GetErrorName(DOMExceptionCode);
   static String GetErrorMessage(DOMExceptionCode);
 
-  unsigned short code() const { return legacy_code_; }
+  uint16_t code() const { return legacy_code_; }
   String name() const { return name_; }
 
   // This is the message that's exposed to JavaScript: never return unsanitized
@@ -73,7 +73,7 @@ class CORE_EXPORT DOMException final : public ScriptWrappable {
   String ToStringForConsole() const;
 
  private:
-  unsigned short legacy_code_;
+  uint16_t legacy_code_;
   String name_;
   String sanitized_message_;
   String unsanitized_message_;

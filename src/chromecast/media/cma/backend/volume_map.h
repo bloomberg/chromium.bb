@@ -32,13 +32,14 @@ class VolumeMap {
 
   float DbFSToVolume(float db);
 
+  void LoadVolumeMap(std::unique_ptr<base::Value> cast_audio_config);
+
  private:
   struct LevelToDb {
     float level;
     float db;
   };
 
-  void LoadVolumeMap(std::unique_ptr<base::Value> cast_audio_config);
   void UseDefaultVolumeMap();
 
   // |volume_map_| must be accessed with |lock_|.

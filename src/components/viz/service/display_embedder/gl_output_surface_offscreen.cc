@@ -25,8 +25,8 @@ constexpr ResourceFormat kFboTextureFormat = RGBA_8888;
 
 GLOutputSurfaceOffscreen::GLOutputSurfaceOffscreen(
     scoped_refptr<VizProcessContextProvider> context_provider,
-    SyntheticBeginFrameSource* synthetic_begin_frame_source)
-    : GLOutputSurface(context_provider, synthetic_begin_frame_source),
+    UpdateVSyncParametersCallback update_vsync_callback)
+    : GLOutputSurface(context_provider, std::move(update_vsync_callback)),
       weak_ptr_factory_(this) {}
 
 GLOutputSurfaceOffscreen::~GLOutputSurfaceOffscreen() {}
@@ -104,17 +104,14 @@ void GLOutputSurfaceOffscreen::SwapBuffers(OutputSurfaceFrame frame) {
       sync_token,
       base::BindOnce(&GLOutputSurfaceOffscreen::OnSwapBuffersComplete,
                      weak_ptr_factory_.GetWeakPtr(),
-                     std::move(frame.latency_info),
-                     frame.need_presentation_feedback));
+                     std::move(frame.latency_info)));
 }
 
 void GLOutputSurfaceOffscreen::OnSwapBuffersComplete(
-    std::vector<ui::LatencyInfo> latency_info,
-    bool need_presentation_feedback) {
+    std::vector<ui::LatencyInfo> latency_info) {
   latency_tracker()->OnGpuSwapBuffersCompleted(latency_info);
   client()->DidReceiveSwapBuffersAck();
-  if (need_presentation_feedback)
-    client()->DidReceivePresentationFeedback(gfx::PresentationFeedback());
+  client()->DidReceivePresentationFeedback(gfx::PresentationFeedback());
 }
 
 }  // namespace viz

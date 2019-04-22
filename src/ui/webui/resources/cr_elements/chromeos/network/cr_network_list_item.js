@@ -56,9 +56,22 @@ Polymer({
      * @type {!CrOnc.ConnectionState|undefined}
      */
     connectionState_: String,
+
+    /** Whether to show technology badge on mobile network icon. */
+    showTechnologyBadge: {type: Boolean, value: true},
   },
 
   behaviors: [CrPolicyNetworkBehavior],
+
+  /** @override */
+  attached: function() {
+    this.listen(this, 'keydown', 'onKeydown_');
+  },
+
+  /** @override */
+  detached: function() {
+    this.unlisten(this, 'keydown', 'onKeydown_');
+  },
 
   /** @private */
   itemChanged_: function() {
@@ -72,11 +85,13 @@ Polymer({
 
   /** @private */
   networkStateChanged_: function() {
-    if (!this.networkState)
+    if (!this.networkState) {
       return;
+    }
     const connectionState = this.networkState.ConnectionState;
-    if (connectionState == this.connectionState_)
+    if (connectionState == this.connectionState_) {
       return;
+    }
     this.connectionState_ = connectionState;
     this.fire('network-connect-changed', this.networkState);
   },
@@ -90,8 +105,9 @@ Polymer({
     if (this.item.hasOwnProperty('customItemName')) {
       const item = /** @type {!CrNetworkList.CustomItemState} */ (this.item);
       let name = item.customItemName || '';
-      if (CrOncStrings.hasOwnProperty(item.customItemName))
+      if (CrOncStrings.hasOwnProperty(item.customItemName)) {
         name = CrOncStrings[item.customItemName];
+      }
       return name;
     }
     const network = /** @type {!CrOnc.NetworkStateProperties} */ (this.item);
@@ -112,26 +128,31 @@ Polymer({
    * @private
    */
   getNetworkStateText_: function() {
-    if (!this.networkState)
+    if (!this.networkState) {
       return '';
+    }
     const connectionState = this.networkState.ConnectionState;
     if (this.networkState.Type == CrOnc.Type.CELLULAR) {
       // For Cellular, an empty ConnectionState indicates that the device is
       // still initializing.
-      if (!connectionState)
+      if (!connectionState) {
         return CrOncStrings.networkListItemInitializing;
-      if (this.networkState.Cellular && this.networkState.Cellular.Scanning)
+      }
+      if (this.networkState.Cellular && this.networkState.Cellular.Scanning) {
         return CrOncStrings.networkListItemScanning;
+      }
     }
-    if (connectionState == CrOnc.ConnectionState.CONNECTED)
+    if (connectionState == CrOnc.ConnectionState.CONNECTED) {
       return CrOncStrings.networkListItemConnected;
-    if (connectionState == CrOnc.ConnectionState.CONNECTING)
+    }
+    if (connectionState == CrOnc.ConnectionState.CONNECTING) {
       return CrOncStrings.networkListItemConnecting;
+    }
     return '';
   },
 
   /**
-   * @param {!CrOnc.NetworkStateProperties} networkState
+   * @param {!CrOnc.NetworkStateProperties|undefined} networkState
    * @param {boolean} showButtons
    * @return {boolean}
    * @private
@@ -150,8 +171,38 @@ Polymer({
   },
 
   /**
+   * @param {!KeyboardEvent} event
+   * @private
+   */
+  onKeydown_: function(event) {
+    // The only key event handled by this element is pressing Enter when the
+    // subpage arrow is focused.
+    if (event.key != 'Enter' ||
+        !this.isSubpageButtonVisible_(this.networkState, this.showButtons) ||
+        this.$$('#subpage-button') != this.shadowRoot.activeElement) {
+      return;
+    }
+
+    this.fireShowDetails_(event);
+
+    // The default event for pressing Enter on a focused button is to simulate a
+    // click on the button. Prevent this action, since it would navigate a
+    // second time to the details page and cause an unnecessary entry to be
+    // added to the back stack. See https://crbug.com/736963.
+    event.preventDefault();
+  },
+
+  /**
+   * @param {!MouseEvent} event
+   * @private
+   */
+  onSubpageArrowClick_: function(event) {
+    this.fireShowDetails_(event);
+  },
+
+  /**
    * Fires a 'show-details' event with |this.networkState| as the details.
-   * @param {Event} event
+   * @param {!Event} event
    * @private
    */
   fireShowDetails_: function(event) {

@@ -15,7 +15,6 @@ namespace rappor {
 
 void JNI_RapporServiceBridge_SampleDomainAndRegistryFromURL(
     JNIEnv* env,
-    const JavaParamRef<jclass>& caller,
     const JavaParamRef<jstring>& j_metric,
     const JavaParamRef<jstring>& j_url) {
   // TODO(knn): UMA metrics hash the string to prevent frequent re-encoding,
@@ -28,7 +27,6 @@ void JNI_RapporServiceBridge_SampleDomainAndRegistryFromURL(
 
 void JNI_RapporServiceBridge_SampleString(
     JNIEnv* env,
-    const JavaParamRef<jclass>& caller,
     const JavaParamRef<jstring>& j_metric,
     const JavaParamRef<jstring>& j_value) {
   std::string metric(base::android::ConvertJavaStringToUTF8(env, j_metric));

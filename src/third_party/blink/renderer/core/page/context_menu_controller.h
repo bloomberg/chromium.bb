@@ -46,7 +46,7 @@ struct WebContextMenuData;
 class CORE_EXPORT ContextMenuController final
     : public GarbageCollectedFinalized<ContextMenuController> {
  public:
-  static ContextMenuController* Create(Page*);
+  explicit ContextMenuController(Page*);
   ~ContextMenuController();
   void Trace(blink::Visitor*);
 
@@ -66,8 +66,6 @@ class CORE_EXPORT ContextMenuController final
 
  private:
   friend class ContextMenuControllerTest;
-
-  explicit ContextMenuController(Page*);
 
   // Returns whether a Context Menu was actually shown.
   bool ShowContextMenu(LocalFrame*, const LayoutPoint&, WebMenuSourceType);

@@ -39,14 +39,17 @@ Polymer({
   },
 
   /**
-   * @param {!CustomEvent} e Event containing the new search.
+   * @param {!CustomEvent<string>} e Event containing the new search.
    * @private
    */
   onSearchChanged_: function(e) {
-    let safeQuery = e.detail.trim().replace(SANITIZE_REGEX, '\\$&');
-    safeQuery = safeQuery.length > 0 ? new RegExp(`(${safeQuery})`, 'i') : null;
-    if (this.timeout_)
+    const safeQueryString = e.detail.trim().replace(SANITIZE_REGEX, '\\$&');
+    const safeQuery = safeQueryString.length > 0 ?
+        new RegExp(`(${safeQueryString})`, 'i') :
+        null;
+    if (this.timeout_) {
       clearTimeout(this.timeout_);
+    }
     this.timeout_ = setTimeout(() => {
       this.searchQuery = safeQuery;
       this.timeout_ = null;

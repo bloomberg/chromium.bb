@@ -26,7 +26,7 @@ class CAPTURE_EXPORT VideoCaptureBufferTracker {
   virtual bool Init(const gfx::Size& dimensions,
                     VideoPixelFormat format,
                     const mojom::PlaneStridesPtr& strides) = 0;
-  virtual ~VideoCaptureBufferTracker(){};
+  virtual ~VideoCaptureBufferTracker() {}
 
   bool held_by_producer() const { return held_by_producer_; }
   void set_held_by_producer(bool value) { held_by_producer_ = value; }

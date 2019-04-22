@@ -110,7 +110,7 @@ class SelectionPaintRange : public GarbageCollected<SelectionPaintRange> {
 LayoutSelection::LayoutSelection(FrameSelection& frame_selection)
     : frame_selection_(&frame_selection),
       has_pending_selection_(false),
-      paint_range_(new SelectionPaintRange) {}
+      paint_range_(MakeGarbageCollected<SelectionPaintRange>()) {}
 
 enum class SelectionMode {
   kNone,
@@ -176,7 +176,8 @@ struct OldSelectedNodes {
   STACK_ALLOCATED();
 
  public:
-  OldSelectedNodes() : paint_range(new SelectionPaintRange) {}
+  OldSelectedNodes()
+      : paint_range(MakeGarbageCollected<SelectionPaintRange>()) {}
   OldSelectedNodes(OldSelectedNodes&& other) {
     paint_range = other.paint_range;
     selected_map = std::move(other.selected_map);
@@ -197,7 +198,8 @@ struct NewPaintRangeAndSelectedNodes {
   STACK_ALLOCATED();
 
  public:
-  NewPaintRangeAndSelectedNodes() : paint_range(new SelectionPaintRange) {}
+  NewPaintRangeAndSelectedNodes()
+      : paint_range(MakeGarbageCollected<SelectionPaintRange>()) {}
   NewPaintRangeAndSelectedNodes(
       SelectionPaintRange* passed_paint_range,
       HeapHashSet<Member<const Node>>&& passed_selected_objects)
@@ -297,9 +299,10 @@ static void SetSelectionStateIfNeeded(const Node& node, SelectionState state) {
 static void SetShouldInvalidateSelection(
     const NewPaintRangeAndSelectedNodes& new_range,
     const OldSelectedNodes& old_selected_objects) {
-  // We invalidate each LayoutObject in new SelectionPaintRange which
-  // has SelectionState of kStart, kEnd, kStartAndEnd, or kInside
-  // and is not in old SelectionPaintRange.
+  // We invalidate each LayoutObject in
+  // MakeGarbageCollected<SelectionPaintRange> which has SelectionState of
+  // kStart, kEnd, kStartAndEnd, or kInside and is not in old
+  // SelectionPaintRange.
   for (const Node* node : new_range.selected_objects) {
     if (old_selected_objects.selected_map.Contains(node))
       continue;
@@ -541,8 +544,8 @@ static SelectionPaintRange* ComputeNewPaintRange(
           ? GetTextContentOffsetEnd(end_node, paint_range.end_offset)
           : paint_range.end_offset;
 
-  return new SelectionPaintRange(*paint_range.start_node, start_offset,
-                                 *paint_range.end_node, end_offset);
+  return MakeGarbageCollected<SelectionPaintRange>(
+      *paint_range.start_node, start_offset, *paint_range.end_node, end_offset);
 }
 
 // ClampOffset modifies |offset| fixed in a range of |text_fragment| start/end
@@ -568,7 +571,7 @@ static bool IsLastLineInInlineBlock(const NGPaintFragment& line) {
 }
 
 static bool IsBeforeSoftLineBreak(const NGPaintFragment& fragment) {
-  if (ToNGPhysicalTextFragmentOrDie(fragment.PhysicalFragment()).IsLineBreak())
+  if (To<NGPhysicalTextFragment>(fragment.PhysicalFragment()).IsLineBreak())
     return false;
 
   // TODO(yoichio): InlineBlock should not be container line box.
@@ -577,8 +580,8 @@ static bool IsBeforeSoftLineBreak(const NGPaintFragment& fragment) {
   DCHECK(container_line_box);
   if (IsLastLineInInlineBlock(*container_line_box))
     return false;
-  const NGPhysicalLineBoxFragment& physical_line_box =
-      ToNGPhysicalLineBoxFragment(container_line_box->PhysicalFragment());
+  const auto& physical_line_box =
+      To<NGPhysicalLineBoxFragment>(container_line_box->PhysicalFragment());
   const NGPhysicalFragment* last_leaf = physical_line_box.LastLogicalLeaf();
   DCHECK(last_leaf);
   if (&fragment.PhysicalFragment() != last_leaf)
@@ -646,6 +649,9 @@ static LayoutTextSelectionStatus ComputeSelectionStatusForNode(
 
 LayoutTextSelectionStatus LayoutSelection::ComputeSelectionStatus(
     const LayoutText& layout_text) const {
+  Document& document = frame_selection_->GetDocument();
+  DCHECK_GE(document.Lifecycle().GetState(), DocumentLifecycle::kLayoutClean);
+  DCHECK(!document.IsSlotAssignmentOrLegacyDistributionDirty());
   DCHECK(!has_pending_selection_);
   const SelectionState selection_state = GetSelectionStateFor(layout_text);
   if (selection_state == SelectionState::kNone)
@@ -680,8 +686,11 @@ LayoutTextSelectionStatus FrameSelection::ComputeLayoutSelectionStatus(
 // LayoutText and not of each NGPhysicalTextFragment for it.
 LayoutSelectionStatus LayoutSelection::ComputeSelectionStatus(
     const NGPaintFragment& fragment) const {
-  const NGPhysicalTextFragment& text_fragment =
-      ToNGPhysicalTextFragmentOrDie(fragment.PhysicalFragment());
+  Document& document = frame_selection_->GetDocument();
+  DCHECK_GE(document.Lifecycle().GetState(), DocumentLifecycle::kLayoutClean);
+  DCHECK(!document.IsSlotAssignmentOrLegacyDistributionDirty());
+  const auto& text_fragment =
+      To<NGPhysicalTextFragment>(fragment.PhysicalFragment());
   // We don't paint selection on ellipsis.
   if (text_fragment.StyleVariant() == NGStyleVariant::kEllipsis)
     return {0, 0, SelectSoftLineBreak::kNotSelected};
@@ -789,8 +798,8 @@ static NewPaintRangeAndSelectedNodes CalcSelectionRangeAndSetSelectionState(
     selected_objects.insert(end_node);
   }
 
-  SelectionPaintRange* new_range =
-      new SelectionPaintRange(*start_node, start_offset, *end_node, end_offset);
+  SelectionPaintRange* new_range = MakeGarbageCollected<SelectionPaintRange>(
+      *start_node, start_offset, *end_node, end_offset);
   if (!RuntimeEnabledFeatures::LayoutNGEnabled())
     return {new_range, std::move(selected_objects)};
   return {ComputeNewPaintRange(*new_range), std::move(selected_objects)};
@@ -891,7 +900,7 @@ void LayoutSelection::InvalidatePaintForSelection() {
                                       &visitor);
 }
 
-void LayoutSelection::Trace(blink::Visitor* visitor) {
+void LayoutSelection::Trace(Visitor* visitor) {
   visitor->Trace(frame_selection_);
   visitor->Trace(paint_range_);
 }

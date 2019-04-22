@@ -13,9 +13,9 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/numerics/ranges.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/system/sys_info.h"
@@ -35,6 +35,7 @@
 #include "gpu/config/gpu_switches.h"
 #include "gpu/ipc/host/gpu_memory_buffer_support.h"
 #include "media/media_buildflags.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gl/gl_switches.h"
 
 namespace content {
@@ -78,6 +79,8 @@ gpu::GpuFeatureStatus SafeGetFeatureStatus(
 gpu::GpuFeatureStatus GetGpuCompositingStatus(
     const gpu::GpuFeatureInfo& gpu_feature_info,
     GpuFeatureInfoType type) {
+  if (features::IsMultiProcessMash())
+    return gpu::kGpuFeatureStatusEnabled;
   gpu::GpuFeatureStatus status = SafeGetFeatureStatus(
       gpu_feature_info, gpu::GPU_FEATURE_TYPE_GPU_COMPOSITING);
 #if defined(USE_AURA) || defined(OS_MACOSX)
@@ -181,7 +184,7 @@ const GpuFeatureData GetGpuFeatureData(
        SafeGetFeatureStatus(gpu_feature_info,
                             gpu::GPU_FEATURE_TYPE_ANDROID_SURFACE_CONTROL),
 #if defined(OS_ANDROID)
-       !base::FeatureList::IsEnabled(features::kAndroidSurfaceControl),
+       !features::IsAndroidSurfaceControlEnabled(),
 #else
        false,
 #endif
@@ -200,18 +203,19 @@ const GpuFeatureData GetGpuFeatureData(
        "WebGL2 has been disabled via blacklist or the command line.", false,
        true},
       {"viz_display_compositor", gpu::kGpuFeatureStatusEnabled,
-       !base::FeatureList::IsEnabled(features::kVizDisplayCompositor),
+       !features::IsVizDisplayCompositorEnabled(),
        "Viz service display compositor is not enabled by default.", false,
+       false},
+      {"viz_hit_test_surface_layer", gpu::kGpuFeatureStatusEnabled,
+       !features::IsVizHitTestingSurfaceLayerEnabled(),
+       "Viz hit-test surface layer version is not enabled by default.", false,
        false},
       {"skia_renderer", gpu::kGpuFeatureStatusEnabled,
        !features::IsUsingSkiaRenderer(),
        "Skia renderer is not used by default.", false, false},
-      {"skia_deferred_display_list", gpu::kGpuFeatureStatusEnabled,
-       !features::IsUsingSkiaDeferredDisplayList(),
-       "Skia deferred display list is not used by default.", false, false},
   };
-  DCHECK(index < arraysize(kGpuFeatureData));
-  *eof = (index == arraysize(kGpuFeatureData) - 1);
+  DCHECK(index < base::size(kGpuFeatureData));
+  *eof = (index == base::size(kGpuFeatureData) - 1);
   return kGpuFeatureData[index];
 }
 
@@ -270,8 +274,8 @@ std::unique_ptr<base::DictionaryValue> GetFeatureStatusImpl(
         if (features::IsUsingSkiaRenderer())
           status += "_on";
       }
-      if (gpu_feature_data.name == "skia_deferred_display_list") {
-        if (features::IsUsingSkiaDeferredDisplayList())
+      if (gpu_feature_data.name == "viz_hit_test_surface_layer") {
+        if (features::IsVizHitTestingSurfaceLayerEnabled())
           status += "_on";
       }
     }

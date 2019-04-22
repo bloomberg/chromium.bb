@@ -38,6 +38,8 @@ namespace blink {
 
 enum class FileErrorCode;
 
+// For more information on how to read Blobs in your specific situation, see:
+// https://chromium.googlesource.com/chromium/src/+/HEAD/storage/browser/blob/README.md#accessing-reading
 class CORE_EXPORT FileReaderLoaderClient {
  public:
   virtual ~FileReaderLoaderClient() = default;

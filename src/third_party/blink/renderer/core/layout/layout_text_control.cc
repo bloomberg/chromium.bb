@@ -22,6 +22,7 @@
 
 #include "third_party/blink/renderer/core/layout/layout_text_control.h"
 
+#include "base/stl_util.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/html/forms/text_control_element.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
@@ -52,7 +53,7 @@ void LayoutTextControl::StyleDidChange(StyleDifference diff,
   if (!inner_editor)
     return;
   LayoutBlock* inner_editor_layout_object =
-      ToLayoutBlock(inner_editor->GetLayoutObject());
+      To<LayoutBlock>(inner_editor->GetLayoutObject());
   if (inner_editor_layout_object) {
     inner_editor->SetNeedsStyleRecalc(
         kSubtreeStyleChange,
@@ -204,7 +205,7 @@ bool LayoutTextControl::HasValidAvgCharWidth(const SimpleFontData* font_data,
   if (!font_families_with_invalid_char_width_map) {
     font_families_with_invalid_char_width_map = new HashSet<AtomicString>;
 
-    for (size_t i = 0; i < arraysize(kFontFamiliesWithInvalidCharWidth); ++i)
+    for (size_t i = 0; i < base::size(kFontFamiliesWithInvalidCharWidth); ++i)
       font_families_with_invalid_char_width_map->insert(
           AtomicString(kFontFamiliesWithInvalidCharWidth[i]));
   }
@@ -319,6 +320,9 @@ LayoutObject* LayoutTextControl::LayoutSpecialExcludedChild(
 }
 
 LayoutUnit LayoutTextControl::FirstLineBoxBaseline() const {
+  if (ShouldApplyLayoutContainment())
+    return LayoutUnit(-1);
+
   LayoutUnit result = LayoutBlock::FirstLineBoxBaseline();
   if (result != -1)
     return result;
@@ -330,7 +334,7 @@ LayoutUnit LayoutTextControl::FirstLineBoxBaseline() const {
     return LayoutUnit(-1);
 
   LayoutBlock* inner_editor_layout_object =
-      ToLayoutBlock(inner_editor->GetLayoutObject());
+      To<LayoutBlock>(inner_editor->GetLayoutObject());
   const SimpleFontData* font_data =
       inner_editor_layout_object->Style(true)->GetFont().PrimaryFont();
   DCHECK(font_data);

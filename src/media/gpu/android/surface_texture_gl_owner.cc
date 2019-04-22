@@ -4,6 +4,10 @@
 
 #include "media/gpu/android/surface_texture_gl_owner.h"
 
+#include <memory>
+
+#include "base/android/scoped_hardware_buffer_fence_sync.h"
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -33,7 +37,7 @@ struct FrameAvailableEvent
 
 SurfaceTextureGLOwner::SurfaceTextureGLOwner(
     std::unique_ptr<gpu::gles2::AbstractTexture> texture)
-    : TextureOwner(std::move(texture)),
+    : TextureOwner(true /*binds_texture_on_update */, std::move(texture)),
       surface_texture_(gl::SurfaceTexture::Create(GetTextureId())),
       context_(gl::GLContext::GetCurrent()),
       surface_(gl::GLSurface::GetCurrent()),
@@ -68,6 +72,10 @@ void SurfaceTextureGLOwner::UpdateTexImage() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (surface_texture_)
     surface_texture_->UpdateTexImage();
+}
+
+void SurfaceTextureGLOwner::EnsureTexImageBound() {
+  NOTREACHED();
 }
 
 void SurfaceTextureGLOwner::GetTransformMatrix(float mtx[]) {
@@ -122,28 +130,32 @@ void SurfaceTextureGLOwner::WaitForFrameAvailable() {
   const base::TimeDelta elapsed = call_time - release_time_;
   const base::TimeDelta remaining = max_wait - elapsed;
   release_time_ = base::TimeTicks();
+  bool timed_out = false;
 
   if (remaining <= base::TimeDelta()) {
     if (!frame_available_event_->event.IsSignaled()) {
       DVLOG(1) << "Deferred WaitForFrameAvailable() timed out, elapsed: "
                << elapsed.InMillisecondsF() << "ms";
+      timed_out = true;
     }
-    return;
+  } else {
+    DCHECK_LE(remaining, max_wait);
+    SCOPED_UMA_HISTOGRAM_TIMER(
+        "Media.CodecImage.SurfaceTextureGLOwner.WaitTimeForFrame");
+    if (!frame_available_event_->event.TimedWait(remaining)) {
+      DVLOG(1) << "WaitForFrameAvailable() timed out, elapsed: "
+               << elapsed.InMillisecondsF()
+               << "ms, additionally waited: " << remaining.InMillisecondsF()
+               << "ms, total: " << (elapsed + remaining).InMillisecondsF()
+               << "ms";
+      timed_out = true;
+    }
   }
-
-  DCHECK_LE(remaining, max_wait);
-  SCOPED_UMA_HISTOGRAM_TIMER(
-      "Media.CodecImage.SurfaceTextureGLOwner.WaitTimeForFrame");
-  if (!frame_available_event_->event.TimedWait(remaining)) {
-    DVLOG(1) << "WaitForFrameAvailable() timed out, elapsed: "
-             << elapsed.InMillisecondsF()
-             << "ms, additionally waited: " << remaining.InMillisecondsF()
-             << "ms, total: " << (elapsed + remaining).InMillisecondsF()
-             << "ms";
-  }
+  UMA_HISTOGRAM_BOOLEAN("Media.CodecImage.SurfaceTextureGLOwner.FrameTimedOut",
+                        timed_out);
 }
 
-std::unique_ptr<gl::GLImage::ScopedHardwareBuffer>
+std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
 SurfaceTextureGLOwner::GetAHardwareBuffer() {
   NOTREACHED() << "Don't use AHardwareBuffers with SurfaceTextureGLOwner";
   return nullptr;

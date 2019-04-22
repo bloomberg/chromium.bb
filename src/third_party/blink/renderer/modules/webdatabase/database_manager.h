@@ -26,6 +26,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBDATABASE_DATABASE_MANAGER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBDATABASE_DATABASE_MANAGER_H_
 
+#include "base/macros.h"
 #include "third_party/blink/renderer/modules/webdatabase/database_context.h"
 #include "third_party/blink/renderer/modules/webdatabase/database_error.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
@@ -43,7 +44,6 @@ class SecurityOrigin;
 class V8DatabaseCallback;
 
 class DatabaseManager {
-  WTF_MAKE_NONCOPYABLE(DatabaseManager);
   USING_FAST_MALLOC(DatabaseManager);
 
  public:
@@ -70,7 +70,7 @@ class DatabaseManager {
                          const String& name,
                          const String& expected_version,
                          const String& display_name,
-                         unsigned estimated_size,
+                         uint32_t estimated_size,
                          V8DatabaseCallback*,
                          DatabaseError&,
                          String& error_message);
@@ -94,7 +94,7 @@ class DatabaseManager {
                                  const String& name,
                                  const String& expected_version,
                                  const String& display_name,
-                                 unsigned estimated_size,
+                                 uint32_t estimated_size,
                                  V8DatabaseCallback*,
                                  bool set_version_in_new_database,
                                  DatabaseError&,
@@ -112,6 +112,8 @@ class DatabaseManager {
   int database_context_registered_count_ = 0;
   int database_context_instance_count_ = 0;
 #endif
+
+  DISALLOW_COPY_AND_ASSIGN(DatabaseManager);
 };
 
 }  // namespace blink

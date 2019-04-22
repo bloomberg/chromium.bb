@@ -16,8 +16,8 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.StreamUtil;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.chrome.browser.TabState;
-import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tab.TabState;
+import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 
 import java.io.DataOutputStream;
 import java.io.File;
@@ -37,9 +37,9 @@ public class TabStateUnitTest {
     private static final int PARENT_ID = 1;
     private static final int VERSION = 2;
     private static final int THEME_COLOR = 4;
-    private static final boolean SHOULD_PRESERVE = true;
     private static final String OPENER_APP_ID = "test";
-    private static final @Nullable @TabModel.TabLaunchType Integer LAUNCH_TYPE_AT_CREATION = null;
+    private static final @Nullable @TabLaunchType Integer LAUNCH_TYPE_AT_CREATION = null;
+    private static final int ROOT_ID = 1;
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -66,9 +66,9 @@ public class TabStateUnitTest {
             state.timestampMillis = TIMESTAMP;
             state.parentId = PARENT_ID;
             state.themeColor = THEME_COLOR;
-            state.shouldPreserve = SHOULD_PRESERVE;
             state.openerAppId = OPENER_APP_ID;
             state.tabLaunchTypeAtCreation = LAUNCH_TYPE_AT_CREATION;
+            state.rootId = ROOT_ID;
         } finally {
             StreamUtil.closeQuietly(fileInputStream);
         }
@@ -80,9 +80,9 @@ public class TabStateUnitTest {
         assertEquals(PARENT_ID, state.parentId);
         assertEquals(OPENER_APP_ID, state.openerAppId);
         assertEquals(VERSION, state.contentsState.version());
-        assertEquals(SHOULD_PRESERVE, state.shouldPreserve);
         assertEquals(THEME_COLOR, state.getThemeColor());
         assertEquals(LAUNCH_TYPE_AT_CREATION, state.tabLaunchTypeAtCreation);
+        assertEquals(ROOT_ID, state.rootId);
         assertEquals(CONTENTS_STATE_BYTES.length, state.contentsState.buffer().remaining());
 
         byte[] bytesFromFile = new byte[CONTENTS_STATE_BYTES.length];

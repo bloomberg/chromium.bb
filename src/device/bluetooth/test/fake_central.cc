@@ -40,9 +40,7 @@ device::BluetoothDevice::ManufacturerDataMap ToManufacturerDataMap(
 
 FakeCentral::FakeCentral(mojom::CentralState state,
                          mojom::FakeCentralRequest request)
-    : has_pending_or_active_discovery_session_(false),
-      state_(state),
-      binding_(this, std::move(request)) {}
+    : state_(state), binding_(this, std::move(request)) {}
 
 void FakeCentral::SimulatePreconnectedPeripheral(
     const std::string& address,
@@ -82,16 +80,26 @@ void FakeCentral::SimulateAdvertisementReceived(
   }
 
   auto& scan_record = scan_result_ptr->scan_record;
+  auto uuids = ValueOrDefault(std::move(scan_record->uuids));
+  auto service_data = ValueOrDefault(std::move(scan_record->service_data));
+  auto manufacturer_data = ToManufacturerDataMap(
+      ValueOrDefault(std::move(scan_record->manufacturer_data)));
+
+  for (auto& observer : observers_) {
+    observer.DeviceAdvertisementReceived(
+        scan_result_ptr->device_address, scan_record->name, scan_record->name,
+        scan_result_ptr->rssi, scan_record->tx_power->value,
+        base::nullopt, /* TODO(crbug.com/588083) Implement appearance */
+        uuids, service_data, manufacturer_data);
+  }
+
   fake_peripheral->SetName(std::move(scan_record->name));
   fake_peripheral->UpdateAdvertisementData(
-      scan_result_ptr->rssi, base::nullopt /* flags */,
-      ValueOrDefault(std::move(scan_record->uuids)),
+      scan_result_ptr->rssi, base::nullopt /* flags */, uuids,
       scan_record->tx_power->has_value
           ? base::make_optional(scan_record->tx_power->value)
           : base::nullopt,
-      ValueOrDefault(std::move(scan_record->service_data)),
-      ToManufacturerDataMap(
-          ValueOrDefault(std::move(scan_record->manufacturer_data))));
+      service_data, manufacturer_data);
 
   if (is_new_device) {
     // Call DeviceAdded on observers because it is a newly detected peripheral.
@@ -552,11 +560,7 @@ void FakeCentral::AddDiscoverySession(
     return;
   }
 
-  // TODO(https://crbug.com/820113): Currently, multiple discovery sessions are
-  // not supported, so we DCHECK to ensure that there is not an active session
-  // already.
-  DCHECK(!has_pending_or_active_discovery_session_);
-  has_pending_or_active_discovery_session_ = true;
+  ++num_discovery_sessions_;
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                 base::BindOnce(callback));
 }
@@ -574,11 +578,15 @@ void FakeCentral::RemoveDiscoverySession(
     return;
   }
 
-  // TODO(https://crbug.com/820113): Currently, multiple discovery sessions are
-  // not supported, so we DCHECK to ensure that there is currently an active
-  // session already.
-  DCHECK(has_pending_or_active_discovery_session_);
-  has_pending_or_active_discovery_session_ = false;
+  if (num_discovery_sessions_ == 0) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(error_callback),
+                       device::UMABluetoothDiscoverySessionOutcome::UNKNOWN));
+    return;
+  }
+
+  --num_discovery_sessions_;
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                 base::BindOnce(callback));
 }

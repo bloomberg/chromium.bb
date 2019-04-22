@@ -13,6 +13,8 @@
 #include "core/fxcrt/fx_system.h"
 #include "core/fxge/cfx_font.h"
 #include "core/fxge/cfx_pathdata.h"
+#include "core/fxge/cfx_substfont.h"
+#include "core/fxge/fx_font.h"
 #include "third_party/base/ptr_util.h"
 #include "third_party/base/stl_util.h"
 #include "xfa/fgas/font/cfgas_gefont.h"
@@ -36,23 +38,18 @@ bool IsTextAlignmentTop(const FDE_TextAlignment align) {
 bool CFDE_TextOut::DrawString(CFX_RenderDevice* device,
                               FX_ARGB color,
                               const RetainPtr<CFGAS_GEFont>& pFont,
-                              FXTEXT_CHARPOS* pCharPos,
-                              int32_t iCount,
+                              pdfium::span<TextCharPos> pCharPos,
                               float fFontSize,
                               const CFX_Matrix* pMatrix) {
   ASSERT(pFont);
-  ASSERT(pCharPos);
-  ASSERT(iCount > 0);
+  ASSERT(!pCharPos.empty());
 
   CFX_Font* pFxFont = pFont->GetDevFont();
   if (FontStyleIsItalic(pFont->GetFontStyles()) && !pFxFont->IsItalic()) {
-    FXTEXT_CHARPOS* pCharPosIter = pCharPos;
-    for (int32_t i = 0; i < iCount; ++i) {
-      static const float mc = 0.267949f;
-      float* pAM = pCharPosIter->m_AdjustMatrix;
-      pAM[2] = mc * pAM[0] + pAM[2];
-      pAM[3] = mc * pAM[1] + pAM[3];
-      ++pCharPosIter;
+    for (auto& pos : pCharPos) {
+      static constexpr float mc = 0.267949f;
+      pos.m_AdjustMatrix[2] += mc * pos.m_AdjustMatrix[0];
+      pos.m_AdjustMatrix[3] += mc * pos.m_AdjustMatrix[1];
     }
   }
 
@@ -68,14 +65,13 @@ bool CFDE_TextOut::DrawString(CFX_RenderDevice* device,
 #endif  // _FX_PLATFORM_ != _FX_PLATFORM_WINDOWS_
 
   RetainPtr<CFGAS_GEFont> pCurFont;
-  FXTEXT_CHARPOS* pCurCP = nullptr;
+  TextCharPos* pCurCP = nullptr;
   int32_t iCurCount = 0;
-  FXTEXT_CHARPOS* pCharPosIter = pCharPos;
-  for (int32_t i = 0; i < iCount; ++i) {
+  for (auto& pos : pCharPos) {
     RetainPtr<CFGAS_GEFont> pSTFont =
-        pFont->GetSubstFont(static_cast<int32_t>(pCharPosIter->m_GlyphIndex));
-    pCharPosIter->m_GlyphIndex &= 0x00FFFFFF;
-    pCharPosIter->m_bFontStyle = false;
+        pFont->GetSubstFont(static_cast<int32_t>(pos.m_GlyphIndex));
+    pos.m_GlyphIndex &= 0x00FFFFFF;
+    pos.m_bFontStyle = false;
     if (pCurFont != pSTFont) {
       if (pCurFont) {
         pFxFont = pCurFont->GetDevFont();
@@ -92,12 +88,11 @@ bool CFDE_TextOut::DrawString(CFX_RenderDevice* device,
                                color, FXTEXT_CLEARTYPE);
       }
       pCurFont = pSTFont;
-      pCurCP = pCharPosIter;
+      pCurCP = &pos;
       iCurCount = 1;
     } else {
       ++iCurCount;
     }
-    ++pCharPosIter;
   }
 
   bool bRet = true;
@@ -129,21 +124,9 @@ FDE_TTOPIECE::FDE_TTOPIECE(const FDE_TTOPIECE& that) = default;
 FDE_TTOPIECE::~FDE_TTOPIECE() = default;
 
 CFDE_TextOut::CFDE_TextOut()
-    : m_pTxtBreak(pdfium::MakeUnique<CFX_TxtBreak>()),
-      m_pFont(nullptr),
-      m_fFontSize(12.0f),
-      m_fLineSpace(m_fFontSize),
-      m_fLinePos(0.0f),
-      m_fTolerance(0.0f),
-      m_iAlignment(FDE_TextAlignment::kTopLeft),
-      m_TxtColor(0xFF000000),
-      m_dwTxtBkStyles(0),
-      m_ttoLines(5),
-      m_iCurLine(0),
-      m_iCurPiece(0),
-      m_iTotalLines(0) {}
+    : m_pTxtBreak(pdfium::MakeUnique<CFX_TxtBreak>()), m_ttoLines(5) {}
 
-CFDE_TextOut::~CFDE_TextOut() {}
+CFDE_TextOut::~CFDE_TextOut() = default;
 
 void CFDE_TextOut::SetFont(const RetainPtr<CFGAS_GEFont>& pFont) {
   ASSERT(pFont);
@@ -284,7 +267,7 @@ bool CFDE_TextOut::RetrieveLineWidth(CFX_BreakType dwBreakStatus,
 }
 
 void CFDE_TextOut::DrawLogicText(CFX_RenderDevice* device,
-                                 const WideStringView& str,
+                                 WideStringView str,
                                  const CFX_RectF& rect) {
   ASSERT(m_pFont);
   ASSERT(m_fFontSize >= 1.0f);
@@ -318,10 +301,11 @@ void CFDE_TextOut::DrawLogicText(CFX_RenderDevice* device,
       if (!pPiece)
         continue;
 
-      int32_t iCount = GetDisplayPos(pPiece);
-      if (iCount > 0) {
-        CFDE_TextOut::DrawString(device, m_TxtColor, m_pFont, m_CharPos.data(),
-                                 iCount, m_fFontSize, &m_Matrix);
+      size_t szCount = GetDisplayPos(pPiece);
+      if (szCount > 0) {
+        CFDE_TextOut::DrawString(device, m_TxtColor, m_pFont,
+                                 {m_CharPos.data(), szCount}, m_fFontSize,
+                                 &m_Matrix);
       }
     }
   }
@@ -518,13 +502,13 @@ void CFDE_TextOut::DoAlignment(const CFX_RectF& rect) {
   }
 }
 
-int32_t CFDE_TextOut::GetDisplayPos(FDE_TTOPIECE* pPiece) {
+size_t CFDE_TextOut::GetDisplayPos(FDE_TTOPIECE* pPiece) {
   ASSERT(pPiece->iChars >= 0);
 
   if (pdfium::CollectionSize<int32_t>(m_CharPos) < pPiece->iChars)
-    m_CharPos.resize(pPiece->iChars, FXTEXT_CHARPOS());
+    m_CharPos.resize(pPiece->iChars, TextCharPos());
 
-  FX_TXTRUN tr;
+  CFX_TxtBreak::Run tr;
   tr.wsStr = m_wsText + pPiece->iStartChar;
   tr.pWidths = &m_CharWidths[pPiece->iStartChar];
   tr.iLength = pPiece->iChars;

@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/lazy_instance.h"
-#include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/viz/common/gpu/context_cache_controller.h"
@@ -116,8 +115,7 @@ gpu::ContextResult TestInProcessContextProvider::BindToCurrentThread() {
                                         base::ThreadTaskRunnerHandle::Get()));
     raster_implementation_gles2_ =
         std::make_unique<gpu::raster::RasterImplementationGLES>(
-            gles2_context_->GetImplementation(),
-            gles2_context_->GetCapabilities());
+            gles2_context_->GetImplementation());
   }
 
   cache_controller_->SetLock(GetLock());

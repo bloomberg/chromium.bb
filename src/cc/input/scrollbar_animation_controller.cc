@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
 #include "base/time/time.h"
 #include "cc/trees/layer_tree_impl.h"
 
@@ -124,8 +125,8 @@ void ScrollbarAnimationController::PostDelayedAnimation(
   animation_change_ = animation_change;
   delayed_scrollbar_animation_.Cancel();
   delayed_scrollbar_animation_.Reset(
-      base::Bind(&ScrollbarAnimationController::StartAnimation,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&ScrollbarAnimationController::StartAnimation,
+                     weak_factory_.GetWeakPtr()));
   client_->PostDelayedScrollbarAnimationTask(
       delayed_scrollbar_animation_.callback(), fade_delay_);
 }

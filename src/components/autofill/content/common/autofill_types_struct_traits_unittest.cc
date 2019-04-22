@@ -4,11 +4,13 @@
 
 #include <utility>
 
-#include "base/message_loop/message_loop.h"
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/autofill/content/common/test_autofill_types.mojom.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
+#include "components/autofill/core/common/button_title_type.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/password_generation_util.h"
@@ -244,6 +246,12 @@ class AutofillTypeTraitsTestImpl : public testing::Test,
     std::move(callback).Run(s);
   }
 
+  void PassNewPasswordFormGenerationData(
+      const NewPasswordFormGenerationData& s,
+      PassNewPasswordFormGenerationDataCallback callback) override {
+    std::move(callback).Run(s);
+  }
+
   void PassPasswordGenerationUIData(
       const password_generation::PasswordGenerationUIData& s,
       PassPasswordGenerationUIDataCallback callback) override {
@@ -262,7 +270,7 @@ class AutofillTypeTraitsTestImpl : public testing::Test,
   }
 
  private:
-  base::MessageLoop loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
 
   mojo::BindingSet<TypeTraitsTest> bindings_;
 };
@@ -271,6 +279,8 @@ void ExpectFormFieldData(const FormFieldData& expected,
                          const base::Closure& closure,
                          const FormFieldData& passed) {
   EXPECT_EQ(expected, passed);
+  EXPECT_EQ(expected.value, passed.value);
+  EXPECT_EQ(expected.typed_value, passed.typed_value);
   closure.Run();
 }
 
@@ -307,6 +317,16 @@ void ExpectPasswordFormGenerationData(
     const base::Closure& closure,
     const PasswordFormGenerationData& passed) {
   CheckEqualPasswordFormGenerationData(expected, passed);
+  closure.Run();
+}
+
+void ExpectNewPasswordFormGenerationData(
+    const NewPasswordFormGenerationData& expected,
+    const base::Closure& closure,
+    const NewPasswordFormGenerationData& passed) {
+  EXPECT_EQ(expected.new_password_renderer_id, passed.new_password_renderer_id);
+  EXPECT_EQ(expected.confirmation_password_renderer_id,
+            passed.confirmation_password_renderer_id);
   closure.Run();
 }
 
@@ -351,6 +371,7 @@ TEST_F(AutofillTypeTraitsTestImpl, PassFormFieldData) {
   input.role = FormFieldData::ROLE_ATTRIBUTE_PRESENTATION;
   input.text_direction = base::i18n::RIGHT_TO_LEFT;
   input.properties_mask = FieldPropertiesFlags::HAD_FOCUS;
+  input.typed_value = base::ASCIIToUTF16("TestTypedValue");
 
   base::RunLoop loop;
   mojom::TypeTraitsTestPtr proxy = GetTypeTraitsTestProxy();
@@ -363,6 +384,9 @@ TEST_F(AutofillTypeTraitsTestImpl, PassFormData) {
   FormData input;
   test::CreateTestAddressFormData(&input);
   input.username_predictions = {1, 13, 2};
+  input.button_titles.push_back(
+      std::make_pair(base::ASCIIToUTF16("Sign-up"),
+                     autofill::ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE));
 
   base::RunLoop loop;
   mojom::TypeTraitsTestPtr proxy = GetTypeTraitsTestProxy();
@@ -430,6 +454,19 @@ TEST_F(AutofillTypeTraitsTestImpl, PassPasswordFormGenerationData) {
   proxy->PassPasswordFormGenerationData(
       input,
       base::Bind(&ExpectPasswordFormGenerationData, input, loop.QuitClosure()));
+  loop.Run();
+}
+
+TEST_F(AutofillTypeTraitsTestImpl, NewPasswordFormGenerationData) {
+  NewPasswordFormGenerationData input = {
+      .new_password_renderer_id = 1234u,
+      .confirmation_password_renderer_id = 5789u};
+
+  base::RunLoop loop;
+  mojom::TypeTraitsTestPtr proxy = GetTypeTraitsTestProxy();
+  proxy->PassNewPasswordFormGenerationData(
+      input, base::BindOnce(&ExpectNewPasswordFormGenerationData, input,
+                            loop.QuitClosure()));
   loop.Run();
 }
 

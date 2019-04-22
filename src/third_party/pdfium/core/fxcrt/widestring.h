@@ -11,11 +11,11 @@
 #include <iterator>
 #include <utility>
 
-#include "core/fxcrt/fx_memory.h"
 #include "core/fxcrt/fx_system.h"
 #include "core/fxcrt/retain_ptr.h"
 #include "core/fxcrt/string_data_template.h"
 #include "core/fxcrt/string_view_template.h"
+#include "third_party/base/logging.h"
 #include "third_party/base/optional.h"
 #include "third_party/base/span.h"
 
@@ -54,15 +54,16 @@ class WideString {
 
   WideString(const wchar_t* ptr, size_t len);
 
-  explicit WideString(const WideStringView& str);
-  WideString(const WideStringView& str1, const WideStringView& str2);
+  explicit WideString(WideStringView str);
+  WideString(WideStringView str1, WideStringView str2);
   WideString(const std::initializer_list<WideStringView>& list);
 
   ~WideString();
 
-  static WideString FromASCII(const ByteStringView& str) WARN_UNUSED_RESULT;
-  static WideString FromDefANSI(const ByteStringView& str) WARN_UNUSED_RESULT;
-  static WideString FromUTF8(const ByteStringView& str) WARN_UNUSED_RESULT;
+  static WideString FromASCII(ByteStringView str) WARN_UNUSED_RESULT;
+  static WideString FromLatin1(ByteStringView str) WARN_UNUSED_RESULT;
+  static WideString FromDefANSI(ByteStringView str) WARN_UNUSED_RESULT;
+  static WideString FromUTF8(ByteStringView str) WARN_UNUSED_RESULT;
   static WideString FromUTF16LE(const unsigned short* str,
                                 size_t len) WARN_UNUSED_RESULT;
 
@@ -110,30 +111,30 @@ class WideString {
   bool IsValidLength(size_t length) const { return length <= GetLength(); }
 
   const WideString& operator=(const wchar_t* str);
-  const WideString& operator=(const WideStringView& stringSrc);
+  const WideString& operator=(WideStringView stringSrc);
   const WideString& operator=(const WideString& that);
   const WideString& operator=(WideString&& that);
 
   const WideString& operator+=(const wchar_t* str);
   const WideString& operator+=(wchar_t ch);
   const WideString& operator+=(const WideString& str);
-  const WideString& operator+=(const WideStringView& str);
+  const WideString& operator+=(WideStringView str);
 
   bool operator==(const wchar_t* ptr) const;
-  bool operator==(const WideStringView& str) const;
+  bool operator==(WideStringView str) const;
   bool operator==(const WideString& other) const;
 
   bool operator!=(const wchar_t* ptr) const { return !(*this == ptr); }
-  bool operator!=(const WideStringView& str) const { return !(*this == str); }
+  bool operator!=(WideStringView str) const { return !(*this == str); }
   bool operator!=(const WideString& other) const { return !(*this == other); }
 
   bool operator<(const wchar_t* ptr) const;
-  bool operator<(const WideStringView& str) const;
+  bool operator<(WideStringView str) const;
   bool operator<(const WideString& other) const;
 
   CharType operator[](const size_t index) const {
-    ASSERT(IsValidIndex(index));
-    return m_pData ? m_pData->m_String[index] : 0;
+    CHECK(IsValidIndex(index));
+    return m_pData->m_String[index];
   }
 
   CharType First() const { return GetLength() ? (*this)[0] : 0; }
@@ -159,15 +160,15 @@ class WideString {
 
   void Trim();
   void Trim(wchar_t target);
-  void Trim(const WideStringView& targets);
+  void Trim(WideStringView targets);
 
   void TrimLeft();
   void TrimLeft(wchar_t target);
-  void TrimLeft(const WideStringView& targets);
+  void TrimLeft(WideStringView targets);
 
   void TrimRight();
   void TrimRight(wchar_t target);
-  void TrimRight(const WideStringView& targets);
+  void TrimRight(WideStringView targets);
 
   void Reserve(size_t len);
 
@@ -178,10 +179,10 @@ class WideString {
 
   int GetInteger() const;
 
-  Optional<size_t> Find(const WideStringView& pSub, size_t start = 0) const;
+  Optional<size_t> Find(WideStringView pSub, size_t start = 0) const;
   Optional<size_t> Find(wchar_t ch, size_t start = 0) const;
 
-  bool Contains(const WideStringView& lpszSub, size_t start = 0) const {
+  bool Contains(WideStringView lpszSub, size_t start = 0) const {
     return Find(lpszSub, start).has_value();
   }
 
@@ -189,11 +190,19 @@ class WideString {
     return Find(ch, start).has_value();
   }
 
-  size_t Replace(const WideStringView& pOld, const WideStringView& pNew);
+  size_t Replace(WideStringView pOld, WideStringView pNew);
   size_t Remove(wchar_t ch);
 
-  bool IsASCII() const;
+  bool IsASCII() const { return AsStringView().IsASCII(); }
+  bool EqualsASCII(ByteStringView that) const {
+    return AsStringView().EqualsASCII(that);
+  }
+  bool EqualsASCIINoCase(ByteStringView that) const {
+    return AsStringView().EqualsASCIINoCase(that);
+  }
+
   ByteString ToASCII() const;
+  ByteString ToLatin1() const;
   ByteString ToDefANSI() const;
   ByteString ToUTF8() const;
 
@@ -219,20 +228,19 @@ class WideString {
   friend StringPool_WideString_Test;
 };
 
-inline WideString operator+(const WideStringView& str1,
-                            const WideStringView& str2) {
+inline WideString operator+(WideStringView str1, WideStringView str2) {
   return WideString(str1, str2);
 }
-inline WideString operator+(const WideStringView& str1, const wchar_t* str2) {
+inline WideString operator+(WideStringView str1, const wchar_t* str2) {
   return WideString(str1, str2);
 }
-inline WideString operator+(const wchar_t* str1, const WideStringView& str2) {
+inline WideString operator+(const wchar_t* str1, WideStringView str2) {
   return WideString(str1, str2);
 }
-inline WideString operator+(const WideStringView& str1, wchar_t ch) {
+inline WideString operator+(WideStringView str1, wchar_t ch) {
   return WideString(str1, WideStringView(ch));
 }
-inline WideString operator+(wchar_t ch, const WideStringView& str2) {
+inline WideString operator+(wchar_t ch, WideStringView str2) {
   return WideString(ch, str2);
 }
 inline WideString operator+(const WideString& str1, const WideString& str2) {
@@ -250,24 +258,22 @@ inline WideString operator+(const WideString& str1, const wchar_t* str2) {
 inline WideString operator+(const wchar_t* str1, const WideString& str2) {
   return WideString(str1, str2.AsStringView());
 }
-inline WideString operator+(const WideString& str1,
-                            const WideStringView& str2) {
+inline WideString operator+(const WideString& str1, WideStringView str2) {
   return WideString(str1.AsStringView(), str2);
 }
-inline WideString operator+(const WideStringView& str1,
-                            const WideString& str2) {
+inline WideString operator+(WideStringView str1, const WideString& str2) {
   return WideString(str1, str2.AsStringView());
 }
 inline bool operator==(const wchar_t* lhs, const WideString& rhs) {
   return rhs == lhs;
 }
-inline bool operator==(const WideStringView& lhs, const WideString& rhs) {
+inline bool operator==(WideStringView lhs, const WideString& rhs) {
   return rhs == lhs;
 }
 inline bool operator!=(const wchar_t* lhs, const WideString& rhs) {
   return rhs != lhs;
 }
-inline bool operator!=(const WideStringView& lhs, const WideString& rhs) {
+inline bool operator!=(WideStringView lhs, const WideString& rhs) {
   return rhs != lhs;
 }
 inline bool operator<(const wchar_t* lhs, const WideString& rhs) {
@@ -276,14 +282,14 @@ inline bool operator<(const wchar_t* lhs, const WideString& rhs) {
 
 std::wostream& operator<<(std::wostream& os, const WideString& str);
 std::ostream& operator<<(std::ostream& os, const WideString& str);
-std::wostream& operator<<(std::wostream& os, const WideStringView& str);
-std::ostream& operator<<(std::ostream& os, const WideStringView& str);
+std::wostream& operator<<(std::wostream& os, WideStringView str);
+std::ostream& operator<<(std::ostream& os, WideStringView str);
 
 }  // namespace fxcrt
 
 using WideString = fxcrt::WideString;
 
-uint32_t FX_HashCode_GetW(const WideStringView& str, bool bIgnoreCase);
+uint32_t FX_HashCode_GetW(WideStringView str, bool bIgnoreCase);
 
 namespace std {
 

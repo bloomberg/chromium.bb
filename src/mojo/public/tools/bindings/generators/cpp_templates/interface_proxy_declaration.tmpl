@@ -2,6 +2,8 @@
 class {{export_attribute}} {{interface.name}}Proxy
     : public {{interface.name}} {
  public:
+  using InterfaceType = {{interface.name}};
+
   explicit {{interface.name}}Proxy(mojo::MessageReceiverWithResponder* receiver);
 
 {%- for method in interface.methods %}

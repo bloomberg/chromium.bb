@@ -14,7 +14,6 @@ js_type_check("closure_compile") {
     ":multidevice_setup",
     ":multidevice_setup_browser_proxy",
     ":multidevice_setup_delegate",
-    ":setup_failed_page",
     ":setup_succeeded_page",
     ":start_setup_page",
     ":ui_page_container_behavior",
@@ -27,25 +26,14 @@ js_library("button_bar") {
 
 js_library("fake_mojo_service") {
   deps = [
+    "//chromeos/services/multidevice_setup/public/mojom:mojom_js_library_for_compile",
     "//ui/webui/resources/js:cr",
-  ]
-
-  extra_deps = [
-    "//chromeos/services/device_sync/public/mojom:mojom_js",
-    "//chromeos/services/multidevice_setup/public/mojom:mojom_js",
-    "//mojo/public/mojom/base:base_js",
-  ]
-
-  externs_list = [
-    "$root_gen_dir/chromeos/services/device_sync/public/mojom/device_sync.mojom.externs.js",
-    "$root_gen_dir/chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.externs.js",
-    "$root_gen_dir/mojo/public/mojom/base/time.mojom.externs.js",
-    "$externs_path/mojo.js",
   ]
 }
 
 js_library("mojo_api") {
   deps = [
+    "//chromeos/services/multidevice_setup/public/mojom:mojom_js_library_for_compile",
     "//ui/webui/resources/js:cr",
   ]
 }
@@ -57,24 +45,10 @@ js_library("multidevice_setup") {
     ":mojo_api",
     ":multidevice_setup_delegate",
     ":password_page",
-    ":setup_failed_page",
     ":setup_succeeded_page",
     ":start_setup_page",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:web_ui_listener_behavior",
-  ]
-
-  extra_deps = [
-    "//chromeos/services/device_sync/public/mojom:mojom_js",
-    "//chromeos/services/multidevice_setup/public/mojom:mojom_js",
-    "//mojo/public/mojom/base:base_js",
-  ]
-
-  externs_list = [
-    "$root_gen_dir/chromeos/services/device_sync/public/mojom/device_sync.mojom.externs.js",
-    "$root_gen_dir/chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.externs.js",
-    "$root_gen_dir/mojo/public/mojom/base/time.mojom.externs.js",
-    "$externs_path/mojo.js",
   ]
 }
 
@@ -99,12 +73,6 @@ js_library("password_page") {
   ]
   externs_list = [ "$externs_path/quick_unlock_private.js" ]
   extra_sources = [ "$interfaces_path/quick_unlock_private_interface.js" ]
-}
-
-js_library("setup_failed_page") {
-  deps = [
-    ":ui_page_container_behavior",
-  ]
 }
 
 js_library("setup_succeeded_page") {

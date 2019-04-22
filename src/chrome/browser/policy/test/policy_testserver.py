@@ -58,6 +58,10 @@ Example:
       "token": "abcd-ef01-123123123",
       "username": "admin@example.com"
    },
+   "expected_errors": {
+     "register": 500,
+   }
+   "allow_set_device_attributes" : false,
 }
 
 """
@@ -305,10 +309,16 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         (self.GetUniqueParam('deviceid') is not None and
          len(self.GetUniqueParam('deviceid')) >= 64)):
       return (400, 'Invalid request parameter')
+
+    expected_error = self.GetExpectedError(request_type)
+    if expected_error:
+      return expected_error
+
     if request_type == 'register':
       response = self.ProcessRegister(rmsg.register_request)
     elif request_type == 'certificate_based_register':
-      response = self.ProcessCertBasedRegister(rmsg.register_request)
+      response = self.ProcessCertBasedRegister(
+          rmsg.certificate_based_register_request)
     elif request_type == 'api_authorization':
       response = self.ProcessApiAuthorization(rmsg.service_api_access_request)
     elif request_type == 'unregister':
@@ -401,7 +411,7 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     is GoogleEnrollmentToken token from an Authorization header. Returns None
     if no token is present.
     """
-    match = re.match('GoogleEnrollmentToken auth=(\\w+)',
+    match = re.match('GoogleEnrollmentToken token=(\\S+)',
                      self.headers.getheader('Authorization', ''))
     if match:
       return match.group(1)
@@ -420,26 +430,15 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     Returns:
       A tuple of HTTP status code and response data to send to the client.
     """
-    enrollment_token = self.CheckEnrollmentToken()
     policy = self.server.GetPolicies()
-    if enrollment_token:
-      if ((not policy['token_enrollment']) or
-          (not policy['token_enrollment']['token']) or
-          (not policy['token_enrollment']['username'])):
-        return (500, 'Error in config - no token-based enrollment')
-      if policy['token_enrollment']['token'] != enrollment_token:
-        return (403, 'Invalid enrollment token')
-      username = policy['token_enrollment']['username']
-    else:
-      # Check the auth token and device ID.
-      auth = self.CheckGoogleLogin()
-      if not auth:
-        return (403, 'No authorization')
+    # Check the auth token and device ID.
+    auth = self.CheckGoogleLogin()
+    if not auth:
+      return (403, 'No authorization')
 
-      if ('managed_users' not in policy):
-        return (500, 'Error in config - no managed users')
-      username = self.server.ResolveUser(auth)
-
+    if ('managed_users' not in policy):
+      return (500, 'Error in config - no managed users')
+    username = self.server.ResolveUser(auth)
     if ('*' not in policy['managed_users'] and
         username not in policy['managed_users']):
       return (403, 'Unmanaged')
@@ -461,8 +460,9 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     """
     # Unwrap the request
     try:
-      req = self.UnwrapCertificateBasedDeviceRegistrationData(signed_msg)
-    except (Error):
+      req = self.UnwrapCertificateBasedDeviceRegistrationData(
+          signed_msg.signed_request)
+    except (IOError):
       return(400, 'Invalid request')
 
     # TODO(drcrash): Check the certificate itself.
@@ -470,7 +470,25 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         ENTERPRISE_ENROLLMENT_CERTIFICATE:
       return(403, 'Invalid certificate type for registration')
 
-    return self.RegisterDeviceAndSendResponse(req.device_register_request, None)
+    register_req = req.device_register_request
+    username = None
+
+    if (register_req.flavor == dm.DeviceRegisterRequest.
+        FLAVOR_ENROLLMENT_ATTESTATION_USB_ENROLLMENT):
+      enrollment_token = self.CheckEnrollmentToken()
+      policy = self.server.GetPolicies()
+      if not enrollment_token:
+        return (401, 'Missing enrollment token.')
+
+      if ((not policy['token_enrollment']) or
+              (not policy['token_enrollment']['token']) or
+              (not policy['token_enrollment']['username'])):
+        return (500, 'Error in config - no token-based enrollment')
+      if policy['token_enrollment']['token'] != enrollment_token:
+        return (403, 'Invalid enrollment token')
+      username = policy['token_enrollment']['username']
+
+    return self.RegisterDeviceAndSendResponse(register_req, username)
 
   def RegisterDeviceAndSendResponse(self, msg, username):
     """Registers a device and send a response to the client.
@@ -498,6 +516,12 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     """Verifies the signature of |msg| and if it is valid, return the
     certificate based device registration data. If not, throws an
     exception.
+
+    Args:
+      msg: SignedData received from the client.
+
+    Returns:
+      CertificateBasedDeviceRegistrationData
     """
     # TODO(drcrash): Verify signature.
     rdata = dm.CertificateBasedDeviceRegistrationData()
@@ -567,9 +591,9 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       return error
 
     key_update_request = msg.device_state_key_update_request
-    if len(key_update_request.server_backed_state_key) > 0:
+    if len(key_update_request.server_backed_state_keys) > 0:
       self.server.UpdateStateKeys(token_info['device_token'],
-                                  key_update_request.server_backed_state_key)
+                                  key_update_request.server_backed_state_keys)
 
     # See whether the |username| for the client is known. During policy
     # validation, the client verifies that the policy blob is bound to the
@@ -583,23 +607,25 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     # If this is a |publicaccount| request, use the |settings_entity_id| from
     # the request as the |username|. This is required to validate policy for
     # extensions in device-local accounts.
-    for request in msg.policy_request.request:
+    for request in msg.policy_request.requests:
       if request.policy_type == 'google/chromeos/publicaccount':
         username = request.settings_entity_id
 
     response = dm.DeviceManagementResponse()
-    for request in msg.policy_request.request:
+    for request in msg.policy_request.requests:
       if (request.policy_type in
              ('google/android/user',
               'google/chromeos/device',
               'google/chromeos/publicaccount',
               'google/chromeos/user',
-              'google/chrome/user')):
-        fetch_response = response.policy_response.response.add()
+              'google/chrome/user',
+              'google/chrome/machine-level-user')):
+        fetch_response = response.policy_response.responses.add()
         self.ProcessCloudPolicy(request, token_info, fetch_response, username)
       elif (request.policy_type in
              ('google/chrome/extension',
-              'google/chromeos/signinextension')):
+              'google/chromeos/signinextension',
+              'google/chrome/machine-level-extension')):
         self.ProcessCloudPolicyForExtensions(
             request, response.policy_response, token_info, username)
       else:
@@ -631,7 +657,7 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     auto_enrollment_response = dm.DeviceAutoEnrollmentResponse()
 
     if msg.modulus == 1:
-      auto_enrollment_response.hash.extend(
+      auto_enrollment_response.hashes.extend(
           self.server.GetMatchingStateKeyHashes(msg.modulus, msg.remainder))
     elif msg.modulus == 2:
       auto_enrollment_response.expected_modulus = 4
@@ -699,8 +725,15 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       A tuple of HTTP status code and response data to send to the client.
     """
     response = dm.DeviceManagementResponse()
+    policy = self.server.GetPolicies()
+    update_allowed = True
+    if ('allow_set_device_attributes' in policy):
+      update_allowed = policy['allow_set_device_attributes']
+
     response.device_attribute_update_permission_response.result = (
-        dm.DeviceAttributeUpdatePermissionResponse.ATTRIBUTE_UPDATE_ALLOWED)
+        dm.DeviceAttributeUpdatePermissionResponse.ATTRIBUTE_UPDATE_ALLOWED
+        if update_allowed else
+        dm.DeviceAttributeUpdatePermissionResponse.ATTRIBUTE_UPDATE_DISALLOWED)
 
     return (200, response)
 
@@ -730,7 +763,7 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       available_licenses = policy['available_licenses']
       selection_mode = dm.CheckDeviceLicenseResponse.USER_SELECTION
       for license_type in available_licenses:
-        license = license_response.license_availability.add()
+        license = license_response.license_availabilities.add()
         license.license_type.license_type = LICENSE_TYPES[license_type]
         license.available_licenses = available_licenses[license_type]
     license_response.license_selection_mode = (selection_mode)
@@ -799,9 +832,12 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     if enrollment_token == INVALID_ENROLLMENT_TOKEN:
       return (401, 'Invalid enrollment token')
 
+    dm_token = 'fake_device_management_token'
     response = dm.DeviceManagementResponse()
     response.register_response.device_management_token = (
-        'fake_device_management_token')
+        dm_token)
+    self.server.RegisterBrowser(dm_token, device_id, msg.machine_name)
+
     return (200, response)
 
   def ProcessChromeDesktopReportUploadRequest(self, chrome_desktop_report):
@@ -987,7 +1023,7 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       # Reuse the extension policy request, to trigger the same signature
       # type in the response.
       request.settings_entity_id = settings_entity_id
-      fetch_response = response.response.add()
+      fetch_response = response.responses.add()
       self.ProcessCloudPolicy(request, token_info, fetch_response, username)
       # Don't do key rotations for these messages.
       fetch_response.ClearField('new_public_key')
@@ -1021,7 +1057,8 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       if msg.policy_type in ('google/android/user',
                              'google/chromeos/publicaccount',
                              'google/chromeos/user',
-                             'google/chrome/user'):
+                             'google/chrome/user',
+                             'google/chrome/machine-level-user'):
         settings = cp.CloudPolicySettings()
         payload = self.server.ReadPolicyFromDataDir(policy_key, settings)
         if payload is None:
@@ -1034,7 +1071,8 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
           self.GatherDevicePolicySettings(settings, policy.get(policy_key, {}))
           payload = settings.SerializeToString()
       elif msg.policy_type in ('google/chrome/extension',
-                               'google/chromeos/signinextension'):
+                               'google/chromeos/signinextension',
+                               'google/chrome/machine-level-extension'):
         settings = ep.ExternalPolicyData()
         payload = self.server.ReadPolicyFromDataDir(policy_key, settings)
         if payload is None:
@@ -1194,6 +1232,21 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     """Helper for logging an ASCII dump of a protobuf message."""
     logging.debug('%s\n%s' % (label, str(msg)))
 
+  def GetExpectedError(self, request):
+    """
+    Returns the preset HTTP error for |request| if it is defined in
+    configuration.
+
+    Returns:
+      A tuple of HTTP status code and response data to send to the client or
+      None if no error was defined.
+    """
+    policy = self.server.GetPolicies()
+    if 'request_errors' in policy:
+      errors = policy['request_errors']
+      if (request in errors) and (errors[request] > 0):
+        return errors[request], 'Preconfigured error'
+    return None
 
 class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
                        testserver_base.StoppableHTTPServer):
@@ -1205,21 +1258,28 @@ class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
 
     Args:
       server_address: Server host and port.
+      data_dir: Directory that contains files with signature, policy, clients
+        information.
       policy_path: Names the file to read JSON-formatted policy from.
+      client_state_file: Path to file with registered clients.
       private_key_paths: List of paths to read private keys from.
       rotate_keys_automatically: Whether the keys should be rotated in a
         round-robin fashion for each policy request (by default, either the
         key specified in the config or the first key will be used for all
         requests).
+      server_base_url: The server base URL. Used for ExternalPolicyData message.
     """
     testserver_base.StoppableHTTPServer.__init__(self, server_address,
                                                  PolicyRequestHandler)
-    self._registered_tokens = {}
     self.data_dir = data_dir
     self.policy_path = policy_path
-    self.client_state_file = client_state_file
     self.rotate_keys_automatically = rotate_keys_automatically
     self.server_base_url = server_base_url
+
+    #  _registered_tokens and client_state_file kept in sync if the file is set.
+    self._registered_tokens = {}
+    self.client_state_file = client_state_file
+    self.client_state_file_timestamp = 0
 
     self.keys = []
     if private_key_paths:
@@ -1275,13 +1335,11 @@ class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
       pubkey = asn1der.Sequence([ algorithm, asn1der.Bitstring(rsa_pubkey) ])
       entry['public_key'] = pubkey
 
-    # Load client state.
-    if self.client_state_file is not None:
-      try:
-        file_contents = open(self.client_state_file).read()
-        self._registered_tokens = json.loads(file_contents, strict=False)
-      except IOError:
-        pass
+    try:
+      self.ReadClientStateFile()
+    except Exception as e:
+      # Could fail if file is not written yet.
+      logging.info('failed to load client state %s' % e)
 
   def GetPolicies(self):
     """Returns the policies to be used, reloaded from the backend file every
@@ -1408,6 +1466,16 @@ class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
     self.WriteClientState()
     return self._registered_tokens[dmtoken]
 
+  def RegisterBrowser(self, dm_token, device_id, machine_name):
+    self._registered_tokens[dm_token] = {
+      'device_id': device_id,
+      'device_token': dm_token,
+      'allowed_policy_types': ['google/chrome/machine-level-user',
+                               'google/chrome/machine-level-extension'],
+      'machine_name': machine_name
+    }
+    self.WriteClientState()
+
   def UpdateStateKeys(self, dmtoken, state_keys):
     """Updates the state keys for a given client.
 
@@ -1430,6 +1498,7 @@ class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
       A dictionary with information about a device or user that is registered by
       dmtoken, or None if the token is not found.
     """
+    self.ReadClientStateFile()
     return self._registered_tokens.get(dmtoken, None)
 
   def LookupByStateKey(self, state_key):
@@ -1442,6 +1511,7 @@ class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
       A dictionary with information about a device or user or None if there is
       no matching record.
     """
+    self.ReadClientStateFile()
     for client in self._registered_tokens.values():
       if state_key.encode('hex') in client.get('state_keys', []):
         return client
@@ -1454,6 +1524,7 @@ class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
     Returns:
       The list of registered clients.
     """
+    self.ReadClientStateFile()
     state_keys = sum([ c.get('state_keys', [])
                        for c in self._registered_tokens.values() ], [])
     hashed_keys = map(lambda key: hashlib.sha256(key.decode('hex')).digest(),
@@ -1472,11 +1543,25 @@ class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
       del self._registered_tokens[dmtoken]
       self.WriteClientState()
 
+  def ReadClientStateFile(self):
+    """ Loads _registered_tokens from client_state_file."""
+    if self.client_state_file is None:
+      return
+    file_timestamp = os.stat(self.client_state_file).st_mtime
+    if file_timestamp == self.client_state_file_timestamp:
+      return
+    logging.info('load client state')
+    file_contents = open(self.client_state_file).read()
+    self._registered_tokens = json.loads(file_contents, strict=False)
+    self.client_state_file_timestamp = file_timestamp
+
   def WriteClientState(self):
     """Writes the client state back to the file."""
     if self.client_state_file is not None:
       json_data = json.dumps(self._registered_tokens)
       open(self.client_state_file, 'w').write(json_data)
+      self.client_state_file_timestamp = os.stat(
+                                         self.client_state_file).st_mtime
 
   def GetBaseFilename(self, policy_selector):
     """Returns the base filename for the given policy_selector.

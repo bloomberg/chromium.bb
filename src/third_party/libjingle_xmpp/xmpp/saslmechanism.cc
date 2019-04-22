@@ -15,7 +15,7 @@
 
 using rtc::Base64;
 
-namespace buzz {
+namespace jingle_xmpp {
 
 XmlElement *
 SaslMechanism::StartSaslAuth() {

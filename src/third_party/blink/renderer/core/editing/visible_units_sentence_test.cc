@@ -59,9 +59,9 @@ class ParameterizedVisibleUnitsSentenceTest
   bool LayoutNGEnabled() const { return GetParam(); }
 };
 
-INSTANTIATE_TEST_CASE_P(All,
-                        ParameterizedVisibleUnitsSentenceTest,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All,
+                         ParameterizedVisibleUnitsSentenceTest,
+                         ::testing::Bool());
 
 TEST_P(ParameterizedVisibleUnitsSentenceTest, EndOfSentenceShadowDOMV0) {
   const char* body_content = "<a id=host><b id=one>1</b><b id=two>22</b></a>";

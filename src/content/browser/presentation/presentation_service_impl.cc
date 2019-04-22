@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
@@ -137,7 +138,7 @@ void PresentationServiceImpl::SetController(
 
 void PresentationServiceImpl::SetReceiver(
     blink::mojom::PresentationReceiverPtr receiver) {
-  // Presentation receiver virtual layout tests (which have the flag set) has no
+  // Presentation receiver virtual web tests (which have the flag set) has no
   // ReceiverPresentationServiceDelegate implementation.
   // TODO(imcheng): Refactor content_browser_client to return a no-op
   // PresentationService instead.
@@ -208,18 +209,19 @@ void PresentationServiceImpl::StartPresentation(
     const std::vector<GURL>& presentation_urls,
     NewPresentationCallback callback) {
   DVLOG(2) << "StartPresentation";
-  if (!controller_delegate_) {
-    std::move(callback).Run(
-        /** PresentationConnectionResultPtr */ nullptr,
-        PresentationError::New(PresentationErrorType::NO_AVAILABLE_SCREENS,
-                               "No screens found."));
-    return;
-  }
 
   // There is a StartPresentation request in progress. To avoid queueing up
   // requests, the incoming request is rejected.
   if (start_presentation_request_id_ != kInvalidRequestId) {
     InvokeNewPresentationCallbackWithError(std::move(callback));
+    return;
+  }
+
+  if (!controller_delegate_) {
+    std::move(callback).Run(
+        /** PresentationConnectionResultPtr */ nullptr,
+        PresentationError::New(PresentationErrorType::NO_AVAILABLE_SCREENS,
+                               "No screens found."));
     return;
   }
 
@@ -275,8 +277,8 @@ int PresentationServiceImpl::RegisterReconnectPresentationCallback(
     return kInvalidRequestId;
 
   int request_id = GetNextRequestId();
-  pending_reconnect_presentation_cbs_[request_id].reset(
-      new NewPresentationCallbackWrapper(std::move(*callback)));
+  pending_reconnect_presentation_cbs_[request_id] =
+      std::make_unique<NewPresentationCallbackWrapper>(std::move(*callback));
   DCHECK_NE(kInvalidRequestId, request_id);
   return request_id;
 }

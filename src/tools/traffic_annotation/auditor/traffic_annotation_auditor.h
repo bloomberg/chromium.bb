@@ -117,11 +117,11 @@ class TrafficAnnotationAuditor {
   // net/traffic_annotation/network_traffic_annotation_test_helper.h
   static std::set<int> GetReservedIDsSet();
 
-  std::string clang_tool_raw_output() const { return clang_tool_raw_output_; };
+  std::string clang_tool_raw_output() const { return clang_tool_raw_output_; }
 
   void set_clang_tool_raw_output(const std::string& raw_output) {
     clang_tool_raw_output_ = raw_output;
-  };
+  }
 
   const std::vector<AnnotationInstance>& extracted_annotations() const {
     return extracted_annotations_;

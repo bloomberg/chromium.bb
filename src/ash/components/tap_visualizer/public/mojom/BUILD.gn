@@ -4,14 +4,8 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 
-group("mojom") {
-  public_deps = [
-    ":constants",
-  ]
-}
-
-mojom("constants") {
+mojom("mojom") {
   sources = [
-    "constants.mojom",
+    "tap_visualizer.mojom",
   ]
 }

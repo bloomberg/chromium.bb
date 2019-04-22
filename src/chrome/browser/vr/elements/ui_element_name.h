@@ -148,6 +148,11 @@ enum UiElementName {
   kControllerBatteryDot4,
   kContentRepositionHitPlane,
   kContentRepositionVisibilityToggle,
+  kWebXrExternalPromptNotification,
+  kUsbConnectedIndicator,
+  kWebXrUsbConnectedIndicator,
+  kMidiConnectedIndicator,
+  kWebXrMidiConnectedIndicator,
 
   // This must be last.
   kNumUiElementNames,

@@ -139,7 +139,7 @@ const AtomicString& InputType::NormalizeTypeName(
 
 InputType::~InputType() = default;
 
-void InputType::Trace(blink::Visitor* visitor) {
+void InputType::Trace(Visitor* visitor) {
   visitor->Trace(element_);
 }
 
@@ -354,7 +354,7 @@ std::pair<String, String> InputType::ValidationMessage(
     return std::make_pair(TypeMismatchText(), g_empty_string);
 
   if (PatternMismatch(value)) {
-    // https://html.spec.whatwg.org/multipage/forms.html#attr-input-pattern
+    // https://html.spec.whatwg.org/C/#attr-input-pattern
     //   When an input element has a pattern attribute specified, authors
     //   should include a title attribute to give a description of the
     //   pattern. User agents may use the contents of this attribute, if it
@@ -485,7 +485,11 @@ FileList* InputType::Files() {
   return nullptr;
 }
 
-void InputType::SetFiles(FileList*) {}
+bool InputType::SetFiles(FileList*) {
+  return false;
+}
+
+void InputType::SetFilesAndDispatchEvents(FileList*) {}
 
 void InputType::SetFilesFromPaths(const Vector<String>& paths) {}
 
@@ -516,21 +520,21 @@ void InputType::SetValue(const String& sanitized_value,
   // TextFieldInputType. That is to say, type=color, type=range, and temporal
   // input types.
   DCHECK_EQ(GetValueMode(), ValueMode::kValue);
-  if (event_behavior == kDispatchNoEvent)
+  if (event_behavior == TextFieldEventBehavior::kDispatchNoEvent)
     GetElement().SetNonAttributeValue(sanitized_value);
   else
     GetElement().SetNonAttributeValueByUserEdit(sanitized_value);
   if (!value_changed)
     return;
   switch (event_behavior) {
-    case kDispatchChangeEvent:
+    case TextFieldEventBehavior::kDispatchChangeEvent:
       GetElement().DispatchFormControlChangeEvent();
       break;
-    case kDispatchInputAndChangeEvent:
+    case TextFieldEventBehavior::kDispatchInputAndChangeEvent:
       GetElement().DispatchInputEvent();
       GetElement().DispatchFormControlChangeEvent();
       break;
-    case kDispatchNoEvent:
+    case TextFieldEventBehavior::kDispatchNoEvent:
       break;
   }
 }
@@ -642,8 +646,6 @@ void InputType::CopyNonAttributeProperties(const HTMLInputElement&) {}
 
 void InputType::OnAttachWithLayoutObject() {}
 
-void InputType::OnDetachWithLayoutObject() {}
-
 bool InputType::ShouldAppearIndeterminate() const {
   return false;
 }
@@ -673,7 +675,7 @@ void InputType::ApplyStep(const Decimal& current,
                           AnyStepHandling any_step_handling,
                           TextFieldEventBehavior event_behavior,
                           ExceptionState& exception_state) {
-  // https://html.spec.whatwg.org/multipage/forms.html#dom-input-stepup
+  // https://html.spec.whatwg.org/C/#dom-input-stepup
 
   StepRange step_range(CreateStepRange(any_step_handling));
   // 2. If the element has no allowed value step, then throw an
@@ -773,7 +775,8 @@ void InputType::StepUp(double n, ExceptionState& exception_state) {
     return;
   }
   const Decimal current = ParseToNumber(GetElement().value(), 0);
-  ApplyStep(current, n, kRejectAny, kDispatchNoEvent, exception_state);
+  ApplyStep(current, n, kRejectAny, TextFieldEventBehavior::kDispatchNoEvent,
+            exception_state);
 }
 
 void InputType::StepUpFromLayoutObject(int n) {
@@ -843,18 +846,21 @@ void InputType::StepUpFromLayoutObject(int n) {
       current = step_range.Minimum() - next_diff;
     if (current > step_range.Maximum() - next_diff)
       current = step_range.Maximum() - next_diff;
-    SetValueAsDecimal(current, kDispatchNoEvent, IGNORE_EXCEPTION_FOR_TESTING);
+    SetValueAsDecimal(current, TextFieldEventBehavior::kDispatchNoEvent,
+                      IGNORE_EXCEPTION_FOR_TESTING);
   }
   if ((sign > 0 && current < step_range.Minimum()) ||
       (sign < 0 && current > step_range.Maximum())) {
     SetValueAsDecimal(sign > 0 ? step_range.Minimum() : step_range.Maximum(),
-                      kDispatchChangeEvent, IGNORE_EXCEPTION_FOR_TESTING);
+                      TextFieldEventBehavior::kDispatchChangeEvent,
+                      IGNORE_EXCEPTION_FOR_TESTING);
     return;
   }
   if ((sign > 0 && current >= step_range.Maximum()) ||
       (sign < 0 && current <= step_range.Minimum()))
     return;
-  ApplyStep(current, n, kAnyIsDefaultStep, kDispatchChangeEvent,
+  ApplyStep(current, n, kAnyIsDefaultStep,
+            TextFieldEventBehavior::kDispatchChangeEvent,
             IGNORE_EXCEPTION_FOR_TESTING);
 }
 
@@ -903,7 +909,8 @@ StepRange InputType::CreateStepRange(
 void InputType::AddWarningToConsole(const char* message_format,
                                     const String& value) const {
   GetElement().GetDocument().AddConsoleMessage(ConsoleMessage::Create(
-      kRenderingMessageSource, kWarningMessageLevel,
+      mojom::ConsoleMessageSource::kRendering,
+      mojom::ConsoleMessageLevel::kWarning,
       String::Format(message_format,
                      JSONValue::QuoteString(value).Utf8().data())));
 }

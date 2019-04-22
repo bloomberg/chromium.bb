@@ -6,8 +6,11 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "media/mojo/interfaces/audio_data_pipe.mojom.h"
 #include "mojo/public/cpp/system/platform_handle.h"
+#include "services/audio/public/mojom/audio_processing.mojom.h"
 #include "services/audio/public/mojom/constants.mojom.h"
 
 namespace audio {

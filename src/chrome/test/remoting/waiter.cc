@@ -4,6 +4,7 @@
 
 #include "chrome/test/remoting/waiter.h"
 
+#include "base/bind.h"
 #include "content/public/test/test_utils.h"
 
 namespace remoting {

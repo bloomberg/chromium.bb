@@ -7,10 +7,10 @@
 
 #include <memory>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "chromeos/chromeos_export.h"
 #include "net/base/completion_once_callback.h"
 #include "net/proxy_resolution/dhcp_pac_file_fetcher.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -31,7 +31,7 @@ namespace chromeos {
 // ChromeOS specific implementation of DhcpPacFileFetcher.
 // This looks up Service.WebProxyAutoDiscoveryUrl for the default network
 // from Shill and uses that to fetch the PAC file if available.
-class CHROMEOS_EXPORT DhcpPacFileFetcherChromeos
+class COMPONENT_EXPORT(CHROMEOS_NETWORK) DhcpPacFileFetcherChromeos
     : public net::DhcpPacFileFetcher {
  public:
   explicit DhcpPacFileFetcherChromeos(

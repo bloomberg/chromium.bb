@@ -16,10 +16,6 @@ namespace aura {
 class Window;
 }
 
-namespace keyboard {
-class KeyboardUI;
-}
-
 namespace ws {
 class InputDeviceControllerClient;
 }
@@ -37,10 +33,7 @@ class ASH_EXPORT ShellDelegate {
 
   // Returns true if |window| can be shown for the delegate's concept of current
   // user.
-  virtual bool CanShowWindowForUser(aura::Window* window) const = 0;
-
-  // Create a shell-specific keyboard::KeyboardUI.
-  virtual std::unique_ptr<keyboard::KeyboardUI> CreateKeyboardUI() = 0;
+  virtual bool CanShowWindowForUser(const aura::Window* window) const = 0;
 
   // TODO(jamescook): Replace with a mojo-compatible interface.
   virtual std::unique_ptr<ScreenshotDelegate> CreateScreenshotDelegate() = 0;

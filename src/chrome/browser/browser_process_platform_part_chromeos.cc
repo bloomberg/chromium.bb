@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "ash/public/interfaces/constants.mojom.h"
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
@@ -29,7 +30,7 @@
 #include "chrome/browser/component_updater/metadata_table_chromeos.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
-#include "chromeos/account_manager/account_manager_factory.h"
+#include "chromeos/components/account_manager/account_manager_factory.h"
 #include "chromeos/geolocation/simple_geolocation_provider.h"
 #include "chromeos/timezone/timezone_resolver.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
@@ -42,7 +43,6 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/runner/common/client_util.h"
 #include "services/ws/public/cpp/input_devices/input_device_controller.h"
 #include "services/ws/public/cpp/input_devices/input_device_controller_client.h"
 #include "services/ws/public/mojom/constants.mojom.h"
@@ -113,7 +113,7 @@ void BrowserProcessPlatformPart::InitializeCrosComponentManager() {
   DCHECK(!cros_component_manager_);
   cros_component_manager_ =
       std::make_unique<component_updater::CrOSComponentInstaller>(
-          component_updater::MetadataTable::Create(
+          std::make_unique<component_updater::MetadataTable>(
               g_browser_process->local_state()),
           g_browser_process->component_updater());
 
@@ -187,12 +187,6 @@ std::unique_ptr<policy::ChromeBrowserPolicyConnector>
 BrowserProcessPlatformPart::CreateBrowserPolicyConnector() {
   return std::unique_ptr<policy::ChromeBrowserPolicyConnector>(
       new policy::BrowserPolicyConnectorChromeOS());
-}
-
-void BrowserProcessPlatformPart::RegisterInProcessServices(
-    content::ContentBrowserClient::StaticServiceMap* services,
-    content::ServiceManagerConnection* connection) {
-  ash_service_registry::RegisterInProcessServices(services, connection);
 }
 
 chromeos::system::SystemClock* BrowserProcessPlatformPart::GetSystemClock() {

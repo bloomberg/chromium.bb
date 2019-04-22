@@ -4,9 +4,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Check if a LayoutTest expected file is an all-PASS testharness result.
+"""Check if a web test expected file is an all-PASS testharness result.
 
-LayoutTests/PRESUBMIT.py uses this script to identify generic all-PASS
+web_tests/PRESUBMIT.py uses this script to identify generic all-PASS
 testharness baselines, which are redundant because run_web_tests.py assumes
 all-PASS results for testharness tests when baselines are not found.
 """

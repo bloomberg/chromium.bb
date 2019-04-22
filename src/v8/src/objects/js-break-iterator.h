@@ -35,7 +35,7 @@ class JSV8BreakIterator : public JSObject {
   static Handle<JSObject> ResolvedOptions(
       Isolate* isolate, Handle<JSV8BreakIterator> break_iterator);
 
-  static std::set<std::string> GetAvailableLocales();
+  V8_EXPORT_PRIVATE static const std::set<std::string>& GetAvailableLocales();
 
   static void AdoptText(Isolate* isolate,
                         Handle<JSV8BreakIterator> break_iterator,
@@ -60,7 +60,7 @@ class JSV8BreakIterator : public JSObject {
   DECL_PRINTER(JSV8BreakIterator)
   DECL_VERIFIER(JSV8BreakIterator)
 
-  DECL_ACCESSORS2(locale, String)
+  DECL_ACCESSORS(locale, String)
   DECL_ACCESSORS(break_iterator, Managed<icu::BreakIterator>)
   DECL_ACCESSORS(unicode_string, Managed<icu::UnicodeString>)
   DECL_ACCESSORS(bound_adopt_text, Object)
@@ -87,8 +87,7 @@ class JSV8BreakIterator : public JSObject {
   DEFINE_FIELD_OFFSET_CONSTANTS(JSObject::kHeaderSize, BREAK_ITERATOR_FIELDS)
 #undef BREAK_ITERATOR_FIELDS
 
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(JSV8BreakIterator)
+  OBJECT_CONSTRUCTORS(JSV8BreakIterator, JSObject);
 };
 
 }  // namespace internal

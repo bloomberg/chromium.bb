@@ -26,14 +26,18 @@ const base::Feature kUnfilteredBluetoothDevices{
     "UnfilteredBluetoothDevices", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_CHROMEOS)
 
-#if defined(OS_MACOSX)
-// Controls whether the CTAP2 implementation should use a built-in platform
-// authenticator, where available.
-const base::Feature kWebAuthTouchId{"WebAuthenticationTouchId",
-                                    base::FEATURE_ENABLED_BY_DEFAULT};
-#endif  // defined(OS_MACOSX)
-
-const base::Feature kNewCtap2Device{"WebAuthenticationCtap2",
-                                    base::FEATURE_ENABLED_BY_DEFAULT};
+#if BUILDFLAG(ENABLE_VR)
+// Controls whether the orientation sensor based device is enabled.
+const base::Feature kWebXrOrientationSensorDevice {
+  "WebXROrientationSensorDevice",
+#if defined(OS_ANDROID)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      // TODO(https://crbug.com/820308, https://crbug.com/773829): Enable once
+      // platform specific bugs have been fixed.
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
+#endif  // BUILDFLAG(ENABLE_VR)
 
 }  // namespace device

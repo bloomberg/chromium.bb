@@ -87,7 +87,7 @@ std::unique_ptr<base::Value> ValueResultFromWKResult(id wk_result) {
 
 void ExecuteJavaScript(WKWebView* web_view,
                        NSString* script,
-                       JavaScriptResultBlock completion_handler) {
+                       void (^completion_handler)(id, NSError*)) {
   DCHECK([script length]);
   if (!web_view && completion_handler) {
     dispatch_async(dispatch_get_main_queue(), ^{

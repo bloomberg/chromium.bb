@@ -156,9 +156,8 @@ class PannerHandler final : public AudioHandler {
   bool IsDistanceConeGainDirty() const { return is_distance_cone_gain_dirty_; }
   void UpdateDirtyState();
 
-  // This Persistent doesn't make a reference cycle including the owner
-  // PannerNode. It is accessed by both audio and main thread.
-  CrossThreadPersistent<AudioListener> listener_;
+  // AudioListener is held alive by PannerNode.
+  CrossThreadWeakPersistent<AudioListener> listener_;
   std::unique_ptr<Panner> panner_;
   unsigned panning_model_;
   unsigned distance_model_;
@@ -219,13 +218,13 @@ class PannerNode final : public AudioNode {
   void Trace(blink::Visitor*) override;
 
   // Uses a 3D cartesian coordinate system
-  AudioParam* positionX() const { return position_x_; };
-  AudioParam* positionY() const { return position_y_; };
-  AudioParam* positionZ() const { return position_z_; };
+  AudioParam* positionX() const { return position_x_; }
+  AudioParam* positionY() const { return position_y_; }
+  AudioParam* positionZ() const { return position_z_; }
 
-  AudioParam* orientationX() const { return orientation_x_; };
-  AudioParam* orientationY() const { return orientation_y_; };
-  AudioParam* orientationZ() const { return orientation_z_; };
+  AudioParam* orientationX() const { return orientation_x_; }
+  AudioParam* orientationY() const { return orientation_y_; }
+  AudioParam* orientationZ() const { return orientation_z_; }
 
   String panningModel() const;
   void setPanningModel(const String&);
@@ -254,6 +253,10 @@ class PannerNode final : public AudioNode {
   Member<AudioParam> orientation_x_;
   Member<AudioParam> orientation_y_;
   Member<AudioParam> orientation_z_;
+
+  // This listener is held alive here to allow referencing it from PannerHandler
+  // via weak reference.
+  Member<AudioListener> listener_;
 };
 
 }  // namespace blink

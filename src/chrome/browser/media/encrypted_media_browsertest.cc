@@ -32,7 +32,6 @@
 #include "media/cdm/supported_cdm_versions.h"
 #include "media/media_buildflags.h"
 #include "testing/gtest/include/gtest/gtest-spi.h"
-#include "third_party/libaom/av1_buildflags.h"
 #include "third_party/widevine/cdm/buildflags.h"
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
 
@@ -356,7 +355,7 @@ class ECKEncryptedMediaTest : public EncryptedMediaTestBase,
     // Override enabled CDM interface version for testing.
     command_line->AppendSwitchASCII(
         switches::kOverrideEnabledCdmInterfaceVersion,
-        base::IntToString(GetCdmInterfaceVersion()));
+        base::NumberToString(GetCdmInterfaceVersion()));
   }
 };
 
@@ -423,7 +422,7 @@ class EncryptedMediaTest
     query_params.emplace_back("keySystem", CurrentKeySystem());
     query_params.emplace_back(
         "configChangeType",
-        base::IntToString(static_cast<int>(config_change_type)));
+        base::NumberToString(static_cast<int>(config_change_type)));
     RunEncryptedMediaTestPage("mse_config_change.html", CurrentKeySystem(),
                               query_params, media::kEnded);
   }
@@ -470,36 +469,36 @@ class EncryptedMediaTest
 using ::testing::Combine;
 using ::testing::Values;
 
-INSTANTIATE_TEST_CASE_P(MSE_ClearKey,
-                        EncryptedMediaTest,
-                        Combine(Values(kClearKeyKeySystem),
-                                Values(SrcType::MSE)));
+INSTANTIATE_TEST_SUITE_P(MSE_ClearKey,
+                         EncryptedMediaTest,
+                         Combine(Values(kClearKeyKeySystem),
+                                 Values(SrcType::MSE)));
 
 // External Clear Key is currently only used on platforms that use library CDMs.
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-INSTANTIATE_TEST_CASE_P(SRC_ExternalClearKey,
-                        EncryptedMediaTest,
-                        Combine(Values(kExternalClearKeyKeySystem),
-                                Values(SrcType::SRC)));
+INSTANTIATE_TEST_SUITE_P(SRC_ExternalClearKey,
+                         EncryptedMediaTest,
+                         Combine(Values(kExternalClearKeyKeySystem),
+                                 Values(SrcType::SRC)));
 
-INSTANTIATE_TEST_CASE_P(MSE_ExternalClearKey,
-                        EncryptedMediaTest,
-                        Combine(Values(kExternalClearKeyKeySystem),
-                                Values(SrcType::MSE)));
+INSTANTIATE_TEST_SUITE_P(MSE_ExternalClearKey,
+                         EncryptedMediaTest,
+                         Combine(Values(kExternalClearKeyKeySystem),
+                                 Values(SrcType::MSE)));
 #else   // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 // To reduce test time, only run ClearKey SRC tests when we are not running
 // ExternalClearKey SRC tests.
-INSTANTIATE_TEST_CASE_P(SRC_ClearKey,
-                        EncryptedMediaTest,
-                        Combine(Values(kClearKeyKeySystem),
-                                Values(SrcType::SRC)));
+INSTANTIATE_TEST_SUITE_P(SRC_ClearKey,
+                         EncryptedMediaTest,
+                         Combine(Values(kClearKeyKeySystem),
+                                 Values(SrcType::SRC)));
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 #if BUILDFLAG(BUNDLE_WIDEVINE_CDM)
-INSTANTIATE_TEST_CASE_P(MSE_Widevine,
-                        EncryptedMediaTest,
-                        Combine(Values(kWidevineKeySystem),
-                                Values(SrcType::MSE)));
+INSTANTIATE_TEST_SUITE_P(MSE_Widevine,
+                         EncryptedMediaTest,
+                         Combine(Values(kWidevineKeySystem),
+                                 Values(SrcType::MSE)));
 #endif  // #if BUILDFLAG(BUNDLE_WIDEVINE_CDM)
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioClearVideo_WebM) {
@@ -790,9 +789,9 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
 // Test CDM_9 through CDM_11.
 static_assert(media::CheckSupportedCdmInterfaceVersions(9, 11),
               "Mismatch between implementation and test coverage");
-INSTANTIATE_TEST_CASE_P(CDM_9, ECKEncryptedMediaTest, Values(9));
-INSTANTIATE_TEST_CASE_P(CDM_10, ECKEncryptedMediaTest, Values(10));
-INSTANTIATE_TEST_CASE_P(CDM_11, ECKEncryptedMediaTest, Values(11));
+INSTANTIATE_TEST_SUITE_P(CDM_9, ECKEncryptedMediaTest, Values(9));
+INSTANTIATE_TEST_SUITE_P(CDM_10, ECKEncryptedMediaTest, Values(10));
+INSTANTIATE_TEST_SUITE_P(CDM_11, ECKEncryptedMediaTest, Values(11));
 
 IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, InitializeCDMFail) {
   TestNonPlaybackCases(kExternalClearKeyInitializeFailKeySystem,
@@ -852,6 +851,13 @@ IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, LoadLoadableSession) {
 IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, LoadUnknownSession) {
   TestPlaybackCase(kExternalClearKeyKeySystem, kUnknownSession,
                    kEmeSessionNotFound);
+}
+
+IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, LoadSessionAfterClose) {
+  base::StringPairs query_params{{"keySystem", kExternalClearKeyKeySystem}};
+  RunEncryptedMediaTestPage("eme_load_session_after_close_test.html",
+                            kExternalClearKeyKeySystem, query_params,
+                            media::kEnded);
 }
 
 const char kExternalClearKeyDecryptOnlyKeySystem[] =
@@ -930,7 +936,14 @@ IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, StorageIdTest) {
                        kUnitTestSuccess);
 }
 
-IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, MultipleCdmTypes) {
+// TODO(crbug.com/902310): Times out in debug builds.
+#ifdef NDEBUG
+#define MAYBE_MultipleCdmTypes MultipeCdmTypes
+#else
+#define MAYBE_MultipleCdmTypes DISABLED_MultipeCdmTypes
+#endif
+
+IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, MAYBE_MultipleCdmTypes) {
   base::StringPairs empty_query_params;
   RunMediaTestPage("multiple_cdm_types.html", empty_query_params, media::kEnded,
                    true);

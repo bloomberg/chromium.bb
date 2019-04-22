@@ -84,11 +84,10 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
   DialogDelegate* GetDialogDelegate() const;
 
   // View implementation.
-  void ChildPreferredSizeChanged(View* child) override;
   void ChildVisibilityChanged(View* child) override;
 
   // DialogObserver:
-  void OnDialogModelChanged() override;
+  void OnDialogChanged() override;
 
   // Update the dialog buttons to match the dialog's delegate.
   void UpdateDialogButtons();

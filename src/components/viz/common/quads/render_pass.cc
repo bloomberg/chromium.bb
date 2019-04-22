@@ -26,6 +26,7 @@
 #include "components/viz/common/quads/surface_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/quads/tile_draw_quad.h"
+#include "components/viz/common/quads/video_hole_draw_quad.h"
 #include "components/viz/common/quads/yuv_video_draw_quad.h"
 #include "components/viz/common/traced_value.h"
 
@@ -110,8 +111,8 @@ std::unique_ptr<RenderPass> RenderPass::Copy(int new_id) const {
   std::unique_ptr<RenderPass> copy_pass(
       Create(shared_quad_state_list.size(), quad_list.size()));
   copy_pass->SetAll(new_id, output_rect, damage_rect, transform_to_root_target,
-                    filters, backdrop_filters, color_space,
-                    has_transparent_background, cache_render_pass,
+                    filters, backdrop_filters, backdrop_filter_bounds,
+                    color_space, has_transparent_background, cache_render_pass,
                     has_damage_from_contributing_content, generate_mipmap);
   return copy_pass;
 }
@@ -124,8 +125,8 @@ std::unique_ptr<RenderPass> RenderPass::DeepCopy() const {
   std::unique_ptr<RenderPass> copy_pass(
       Create(shared_quad_state_list.size(), quad_list.size()));
   copy_pass->SetAll(id, output_rect, damage_rect, transform_to_root_target,
-                    filters, backdrop_filters, color_space,
-                    has_transparent_background, cache_render_pass,
+                    filters, backdrop_filters, backdrop_filter_bounds,
+                    color_space, has_transparent_background, cache_render_pass,
                     has_damage_from_contributing_content, generate_mipmap);
 
   if (shared_quad_state_list.empty()) {
@@ -189,6 +190,7 @@ void RenderPass::SetAll(uint64_t id,
                         const gfx::Transform& transform_to_root_target,
                         const cc::FilterOperations& filters,
                         const cc::FilterOperations& backdrop_filters,
+                        const gfx::RRectF& backdrop_filter_bounds,
                         const gfx::ColorSpace& color_space,
                         bool has_transparent_background,
                         bool cache_render_pass,
@@ -202,6 +204,7 @@ void RenderPass::SetAll(uint64_t id,
   this->transform_to_root_target = transform_to_root_target;
   this->filters = filters;
   this->backdrop_filters = backdrop_filters;
+  this->backdrop_filter_bounds = backdrop_filter_bounds;
   this->color_space = color_space;
   this->has_transparent_background = has_transparent_background;
   this->cache_render_pass = cache_render_pass;
@@ -233,6 +236,9 @@ void RenderPass::AsValueInto(base::trace_event::TracedValue* value) const {
   value->BeginArray("backdrop_filters");
   backdrop_filters.AsValueInto(value);
   value->EndArray();
+
+  cc::MathUtil::AddToTracedValue("backdrop_filter_bounds",
+                                 backdrop_filter_bounds, value);
 
   value->BeginArray("shared_quad_state_list");
   for (auto* shared_quad_state : shared_quad_state_list) {
@@ -292,6 +298,9 @@ DrawQuad* RenderPass::CopyFromAndAppendDrawQuad(const DrawQuad* quad) {
       break;
     case DrawQuad::SURFACE_CONTENT:
       CopyFromAndAppendTypedDrawQuad<SurfaceDrawQuad>(quad);
+      break;
+    case DrawQuad::VIDEO_HOLE:
+      CopyFromAndAppendTypedDrawQuad<VideoHoleDrawQuad>(quad);
       break;
     case DrawQuad::YUV_VIDEO_CONTENT:
       CopyFromAndAppendTypedDrawQuad<YUVVideoDrawQuad>(quad);

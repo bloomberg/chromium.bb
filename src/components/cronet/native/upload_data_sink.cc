@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/cronet/cronet_upload_data_stream.h"
 #include "components/cronet/native/engine.h"
 #include "components/cronet/native/generated/cronet.idl_impl_struct.h"
@@ -78,7 +79,7 @@ Cronet_UploadDataSinkImpl::Cronet_UploadDataSinkImpl(
 
 Cronet_UploadDataSinkImpl::~Cronet_UploadDataSinkImpl() = default;
 
-bool Cronet_UploadDataSinkImpl::InitRequest(CronetURLRequest* request) {
+void Cronet_UploadDataSinkImpl::InitRequest(CronetURLRequest* request) {
   int64_t length = upload_data_provider_->GetLength();
   if (length == -1) {
     is_chunked_ = true;
@@ -90,7 +91,6 @@ bool Cronet_UploadDataSinkImpl::InitRequest(CronetURLRequest* request) {
 
   request->SetUpload(std::make_unique<CronetUploadDataStream>(
       new NetworkTasks(this, upload_data_provider_executor_), length));
-  return true;
 }
 
 void Cronet_UploadDataSinkImpl::OnReadSucceeded(uint64_t bytes_read,
@@ -288,4 +288,4 @@ void Cronet_UploadDataSinkImpl::NetworkTasks::PostTaskToExecutor(
   Cronet_Executor_Execute(upload_data_provider_executor_, runnable);
 }
 
-};  // namespace cronet
+}  // namespace cronet

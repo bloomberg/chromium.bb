@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 
+#include "base/synchronization/waitable_event.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/unpacked_serialized_script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
@@ -62,16 +63,16 @@ TEST(SerializedScriptValueThreadedTest,
 
             // Make sure this thread's references in the Oilpan heap are dropped
             // before the main thread continues.
-            ThreadState::Current()->CollectAllGarbage();
+            ThreadState::Current()->CollectAllGarbageForTesting();
           },
           CrossThreadUnretained(&worker_thread), serialized));
 
   // Wait for a subsequent task on the worker to finish, to ensure that the
   // references held by the task are dropped.
-  WaitableEvent done;
+  base::WaitableEvent done;
   worker_thread.GetWorkerBackingThread().BackingThread().PostTask(
-      FROM_HERE,
-      CrossThreadBind(&WaitableEvent::Signal, CrossThreadUnretained(&done)));
+      FROM_HERE, CrossThreadBind(&base::WaitableEvent::Signal,
+                                 CrossThreadUnretained(&done)));
   done.Wait();
 
   // Now destroy the value on the main thread.

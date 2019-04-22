@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/time/time.h"
 #include "net/base/net_errors.h"
 
@@ -116,7 +117,7 @@ bool CachingCertVerifier::CacheExpirationFunctor::operator()(
   // time.
   return now.verification_time >= expiration.verification_time &&
          now.verification_time < expiration.expiration_time;
-};
+}
 
 void CachingCertVerifier::OnRequestFinished(uint32_t config_id,
                                             const RequestParams& params,

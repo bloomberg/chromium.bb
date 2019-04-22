@@ -30,7 +30,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_ANDROID)
-#include "components/variations/android/variations_seed_bridge.h"
 #include "components/variations/seed_response.h"
 #endif  // OS_ANDROID
 
@@ -99,6 +98,7 @@ VariationsSeed CreateTestSeedWithCountryFilter() {
   Study* study = seed.mutable_study(0);
   Study::Filter* filter = study->mutable_filter();
   filter->add_country(kTestSeedCountry);
+  filter->add_platform(Study::PLATFORM_ANDROID);
   return seed;
 }
 

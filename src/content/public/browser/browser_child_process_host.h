@@ -23,7 +23,7 @@
 
 namespace base {
 class CommandLine;
-class SharedPersistentMemoryAllocator;
+class PersistentMemoryAllocator;
 }
 
 namespace content {
@@ -77,7 +77,7 @@ class CONTENT_EXPORT BrowserChildProcessHost : public IPC::Sender {
   virtual ChildProcessTerminationInfo GetTerminationInfo(bool known_dead) = 0;
 
   // Take ownership of a "shared" metrics allocator (if one exists).
-  virtual std::unique_ptr<base::SharedPersistentMemoryAllocator>
+  virtual std::unique_ptr<base::PersistentMemoryAllocator>
   TakeMetricsAllocator() = 0;
 
   // Sets the user-visible name of the process.
@@ -105,6 +105,6 @@ class CONTENT_EXPORT BrowserChildProcessHost : public IPC::Sender {
 #endif
 };
 
-};  // namespace content
+}  // namespace content
 
 #endif  // CONTENT_PUBLIC_BROWSER_BROWSER_CHILD_PROCESS_HOST_H_

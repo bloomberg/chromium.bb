@@ -12,9 +12,17 @@ FakeConnectionEstablisher::FakeConnectionEstablisher() = default;
 FakeConnectionEstablisher::~FakeConnectionEstablisher() = default;
 
 void FakeConnectionEstablisher::EstablishConnection(
-    content::ServiceWorkerContext* service_worker_context_,
-    ConnectionMode connection_mode) {
-  establish_connection_calls_.push_back(service_worker_context_);
+    const GURL& url,
+    ConnectionMode connection_mode,
+    content::ServiceWorkerContext* service_worker_context_) {
+  establish_connection_calls_.emplace_back(url, connection_mode,
+                                           service_worker_context_);
+}
+
+void FakeConnectionEstablisher::TearDownConnection(
+    const GURL& url,
+    content::ServiceWorkerContext* service_worker_context_) {
+  tear_down_connection_calls_.emplace_back(url, service_worker_context_);
 }
 
 }  // namespace android_sms

@@ -65,7 +65,10 @@ class TabReloader : public content::WebContentsUserData<TabReloader> {
 
   content::WebContents* web_contents_;
   base::WeakPtrFactory<TabReloader> weak_ptr_factory_;
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
 };
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(TabReloader)
 
 }  // namespace
 

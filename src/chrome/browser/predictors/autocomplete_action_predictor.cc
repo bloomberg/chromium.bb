@@ -6,11 +6,11 @@
 
 #include <math.h>
 #include <stddef.h>
+#include <queue>
 
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/i18n/case_conversion.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -43,12 +43,16 @@ const float kConfidenceCutoff[] = {
   0.5f
 };
 
-static_assert(arraysize(kConfidenceCutoff) ==
-              predictors::AutocompleteActionPredictor::LAST_PREDICT_ACTION,
+static_assert(base::size(kConfidenceCutoff) ==
+                  predictors::AutocompleteActionPredictor::LAST_PREDICT_ACTION,
               "kConfidenceCutoff count should match LAST_PREDICT_ACTION");
 
 const int kMinimumNumberOfHits = 3;
 const size_t kMaximumTransitionalMatchesSize = 1024 * 1024;  // 1 MB.
+
+// As of February 2019, 99% of users on Windows have less than 2000 entries in
+// the database.
+const size_t kMaximumCacheSize = 2000;
 
 enum DatabaseAction {
   DATABASE_ACTION_ADD,
@@ -301,8 +305,20 @@ void AutocompleteActionPredictor::OnOmniboxOpenedUrl(const OmniboxLog& log) {
       }
     }
   }
-  if (rows_to_add.size() > 0 || rows_to_update.size() > 0)
+  if (!rows_to_add.empty() || !rows_to_update.empty())
     AddAndUpdateRows(rows_to_add, rows_to_update);
+
+  std::vector<AutocompleteActionPredictorTable::Row::Id> ids_to_delete;
+  if (db_cache_.size() > kMaximumCacheSize) {
+    DeleteLowestConfidenceRowsFromCaches(db_cache_.size() - kMaximumCacheSize,
+                                         &ids_to_delete);
+  }
+
+  if (!ids_to_delete.empty() && table_.get()) {
+    table_->GetTaskRunner()->PostTask(
+        FROM_HERE, base::BindOnce(&AutocompleteActionPredictorTable::DeleteRows,
+                                  table_, std::move(ids_to_delete)));
+  }
 
   ClearTransitionalMatches();
 
@@ -471,9 +487,16 @@ void AutocompleteActionPredictor::DeleteOldEntries(
   std::vector<AutocompleteActionPredictorTable::Row::Id> ids_to_delete;
   DeleteOldIdsFromCaches(url_db, &ids_to_delete);
 
-  table_->GetTaskRunner()->PostTask(
-      FROM_HERE, base::BindOnce(&AutocompleteActionPredictorTable::DeleteRows,
-                                table_, ids_to_delete));
+  if (db_cache_.size() > kMaximumCacheSize) {
+    DeleteLowestConfidenceRowsFromCaches(db_cache_.size() - kMaximumCacheSize,
+                                         &ids_to_delete);
+  }
+
+  if (!ids_to_delete.empty()) {
+    table_->GetTaskRunner()->PostTask(
+        FROM_HERE, base::BindOnce(&AutocompleteActionPredictorTable::DeleteRows,
+                                  table_, std::move(ids_to_delete)));
+  }
 
   FinishInitialization();
   if (incognito_predictor_)
@@ -502,6 +525,52 @@ void AutocompleteActionPredictor::DeleteOldIdsFromCaches(
     } else {
       ++it;
     }
+  }
+}
+
+void AutocompleteActionPredictor::DeleteLowestConfidenceRowsFromCaches(
+    size_t count,
+    std::vector<AutocompleteActionPredictorTable::Row::Id>* id_list) {
+  CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(id_list);
+
+  auto compare_confidence = [](const DBCacheMap::iterator& lhs,
+                               const DBCacheMap::iterator& rhs) {
+    const DBCacheValue& lhs_value = lhs->second;
+    const DBCacheValue& rhs_value = rhs->second;
+    // Compare by confidence scores first. In case of equality, compare by
+    // number of hits.
+    int lhs_confidence_to_compare =
+        lhs_value.number_of_hits *
+        (rhs_value.number_of_hits + rhs_value.number_of_misses);
+    int rhs_confidence_to_compare =
+        rhs_value.number_of_hits *
+        (lhs_value.number_of_hits + lhs_value.number_of_misses);
+    return std::tie(lhs_confidence_to_compare, lhs_value.number_of_hits) <
+           std::tie(rhs_confidence_to_compare, rhs_value.number_of_hits);
+  };
+  // Use max heap to find |count| smallest elements in |db_cache_|.
+  std::priority_queue<DBCacheMap::iterator, std::vector<DBCacheMap::iterator>,
+                      decltype(compare_confidence)>
+      max_heap(compare_confidence);
+
+  for (auto it = db_cache_.begin(); it != db_cache_.end(); ++it) {
+    max_heap.push(it);
+    if (max_heap.size() > count)
+      max_heap.pop();
+  }
+
+  // Only iterators to the erased elements are invalidated, so it's safe to keep
+  // using remaining iterators.
+  while (!max_heap.empty()) {
+    auto entry_to_delete = max_heap.top();
+    auto id_it = db_id_cache_.find(entry_to_delete->first);
+    DCHECK(id_it != db_id_cache_.end());
+
+    id_list->push_back(id_it->second);
+    db_id_cache_.erase(id_it);
+    db_cache_.erase(entry_to_delete);
+    max_heap.pop();
   }
 }
 

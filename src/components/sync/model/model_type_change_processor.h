@@ -11,6 +11,7 @@
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/time/time.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/model/entity_data.h"
 #include "components/sync/model/model_error.h"
@@ -73,6 +74,16 @@ class ModelTypeChangeProcessor {
   // moving the SyncableService to history's backend thread, and leveraging
   // USS's ability to delete local data upcon commit completion.
   virtual bool IsEntityUnsynced(const std::string& storage_key) = 0;
+
+  // Returns the creation timestamp of the sync entity, or a null time if the
+  // entity is not tracked.
+  virtual base::Time GetEntityCreationTime(
+      const std::string& storage_key) const = 0;
+
+  // Returns the modification timestamp of the sync entity, or a null time if
+  // the entity is not tracked.
+  virtual base::Time GetEntityModificationTime(
+      const std::string& storage_key) const = 0;
 
   // Pass the pointer to the processor so that the processor can notify the
   // bridge of various events; |bridge| must not be nullptr and must outlive

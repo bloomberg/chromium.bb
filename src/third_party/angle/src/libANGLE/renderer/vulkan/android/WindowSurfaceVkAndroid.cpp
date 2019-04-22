@@ -33,12 +33,18 @@ angle::Result WindowSurfaceVkAndroid::createSurfaceVk(vk::Context *context, gl::
     ANGLE_VK_TRY(context, vkCreateAndroidSurfaceKHR(context->getRenderer()->getInstance(),
                                                     &createInfo, nullptr, &mSurface));
 
+    return getCurrentWindowSize(context, extentsOut);
+}
+
+angle::Result WindowSurfaceVkAndroid::getCurrentWindowSize(vk::Context *context,
+                                                           gl::Extents *extentsOut)
+{
     int32_t width  = ANativeWindow_getWidth(mNativeWindowType);
     int32_t height = ANativeWindow_getHeight(mNativeWindowType);
     ANGLE_VK_CHECK(context, width > 0 && height > 0, VK_ERROR_INITIALIZATION_FAILED);
 
     *extentsOut = gl::Extents(width, height, 0);
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 }  // namespace rx

@@ -65,6 +65,9 @@ class CHROMECAST_EXPORT RebootShlib {
 
     // A reboot caused by other software reason that is not listed above.
     SW_OTHER = 10,
+
+    // A reboot caused by overheat.
+    OVERHEAT = 11,
   };
 
   // Initializes any platform-specific reboot systems.

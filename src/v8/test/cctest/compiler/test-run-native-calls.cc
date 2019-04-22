@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "src/assembler.h"
-#include "src/codegen.h"
+#include "src/base/overflowing-math.h"
 #include "src/compiler/linkage.h"
 #include "src/compiler/raw-machine-assembler.h"
 #include "src/machine-type.h"
@@ -143,7 +143,7 @@ class Allocator {
   }
   int StackWords(MachineType type) {
     int size = 1 << ElementSizeLog2Of(type.representation());
-    return size <= kPointerSize ? 1 : size / kPointerSize;
+    return size <= kSystemPointerSize ? 1 : size / kSystemPointerSize;
   }
   void Reset() {
     stack_offset_ = 0;
@@ -542,9 +542,9 @@ static void TestInt32Sub(CallDescriptor* desc) {
 
   FOR_INT32_INPUTS(i) {
     FOR_INT32_INPUTS(j) {
-      int32_t expected = static_cast<int32_t>(static_cast<uint32_t>(*i) -
-                                              static_cast<uint32_t>(*j));
-      int32_t result = runnable.Call(*i, *j);
+      int32_t expected = static_cast<int32_t>(static_cast<uint32_t>(i) -
+                                              static_cast<uint32_t>(j));
+      int32_t result = runnable.Call(i, j);
       CHECK_EQ(expected, result);
     }
   }
@@ -831,7 +831,8 @@ TEST_INT32_SELECT(63)
 
 TEST(Int64Select_registers) {
   if (GetRegConfig()->num_allocatable_general_registers() < 2) return;
-  if (kPointerSize < 8) return;  // TODO(titzer): int64 on 32-bit platforms
+  // TODO(titzer): int64 on 32-bit platforms
+  if (kSystemPointerSize < 8) return;
 
   int rarray[] = {GetRegConfig()->GetAllocatableGeneralCode(0)};
   ArgsBuffer<int64_t>::Sig sig(2);
@@ -1061,7 +1062,7 @@ void MixedParamTest(int start) {
       Handle<Code> wrapper = Handle<Code>::null();
       int32_t expected_ret;
       char bytes[kDoubleSize];
-      V8_ALIGNED(8) char output[kDoubleSize];
+      alignas(8) char output[kDoubleSize];
       int expected_size = 0;
       CSignatureOf<int32_t> csig;
       {
@@ -1101,7 +1102,8 @@ void MixedParamTest(int start) {
           CHECK_NOT_NULL(konst);
 
           inputs[input_count++] = konst;
-          constant += 0x1010101010101010;
+          const int64_t kIncrement = 0x1010101010101010;
+          constant = base::AddWithWraparound(constant, kIncrement);
         }
 
         Node* call = raw.CallN(desc, input_count, inputs);

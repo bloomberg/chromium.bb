@@ -101,7 +101,7 @@ base::Time CookieCreationTimeManager::MakeUniqueCreationTime(
 
 base::Time CookieCreationTimeManager::GetCreationTime(NSHTTPCookie* cookie) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  base::hash_map<std::string, base::Time>::iterator it =
+  std::unordered_map<std::string, base::Time>::iterator it =
       creation_times_.find(GetCookieUniqueID(cookie));
   if (it != creation_times_.end())
     return it->second;

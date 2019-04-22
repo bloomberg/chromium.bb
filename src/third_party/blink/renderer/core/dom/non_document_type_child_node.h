@@ -7,10 +7,13 @@
 
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
 class NonDocumentTypeChildNode {
+  STATIC_ONLY(NonDocumentTypeChildNode);
+
  public:
   static Element* previousElementSibling(Node& node) {
     return ElementTraversal::PreviousSibling(node);

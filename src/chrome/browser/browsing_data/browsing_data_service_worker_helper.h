@@ -16,6 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/service_worker_context.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 struct StorageUsageInfo;
@@ -31,7 +32,7 @@ class BrowsingDataServiceWorkerHelper
     : public base::RefCountedThreadSafe<BrowsingDataServiceWorkerHelper> {
  public:
   using FetchCallback =
-      base::Callback<void(const std::list<content::StorageUsageInfo>&)>;
+      base::OnceCallback<void(const std::list<content::StorageUsageInfo>&)>;
 
   // Create a BrowsingDataServiceWorkerHelper instance for the Service Workers
   // stored in |context|'s associated profile's user data directory.
@@ -40,7 +41,7 @@ class BrowsingDataServiceWorkerHelper
 
   // Starts the fetching process, which will notify its completion via
   // |callback|. This must be called only in the UI thread.
-  virtual void StartFetching(const FetchCallback& callback);
+  virtual void StartFetching(FetchCallback callback);
   // Requests the Service Worker data for an origin be deleted.
   virtual void DeleteServiceWorkers(const GURL& origin);
 
@@ -54,7 +55,7 @@ class BrowsingDataServiceWorkerHelper
   friend class base::RefCountedThreadSafe<BrowsingDataServiceWorkerHelper>;
 
   // Enumerates all Service Worker instances on the IO thread.
-  void FetchServiceWorkerUsageInfoOnIOThread(const FetchCallback& callback);
+  void FetchServiceWorkerUsageInfoOnIOThread(FetchCallback callback);
 
   // Deletes Service Workers for an origin the IO thread.
   void DeleteServiceWorkersOnIOThread(const GURL& origin);
@@ -64,29 +65,16 @@ class BrowsingDataServiceWorkerHelper
 
 // This class is an implementation of BrowsingDataServiceWorkerHelper that does
 // not fetch its information from the Service Worker context, but is passed the
-// info as a parameter.
+// info by call when accessed.
 class CannedBrowsingDataServiceWorkerHelper
     : public BrowsingDataServiceWorkerHelper {
  public:
-  // Contains information about a Service Worker.
-  struct PendingServiceWorkerUsageInfo {
-    PendingServiceWorkerUsageInfo(const GURL& origin,
-                                  const std::vector<GURL>& scopes);
-    PendingServiceWorkerUsageInfo(const PendingServiceWorkerUsageInfo& other);
-    ~PendingServiceWorkerUsageInfo();
-
-    bool operator<(const PendingServiceWorkerUsageInfo& other) const;
-
-    GURL origin;
-    std::vector<GURL> scopes;
-  };
-
   explicit CannedBrowsingDataServiceWorkerHelper(
       content::ServiceWorkerContext* context);
 
   // Add a Service Worker to the set of canned Service Workers that is
   // returned by this helper.
-  void AddServiceWorker(const GURL& origin, const std::vector<GURL>& scopes);
+  void Add(const url::Origin& origin);
 
   // Clear the list of canned Service Workers.
   void Reset();
@@ -95,21 +83,19 @@ class CannedBrowsingDataServiceWorkerHelper
   bool empty() const;
 
   // Returns the number of currently stored Service Workers.
-  size_t GetServiceWorkerCount() const;
+  size_t GetCount() const;
 
   // Returns the current list of Service Workers.
-  const std::set<
-      CannedBrowsingDataServiceWorkerHelper::PendingServiceWorkerUsageInfo>&
-      GetServiceWorkerUsageInfo() const;
+  const std::set<url::Origin>& GetOrigins() const;
 
   // BrowsingDataServiceWorkerHelper methods.
-  void StartFetching(const FetchCallback& callback) override;
+  void StartFetching(FetchCallback callback) override;
   void DeleteServiceWorkers(const GURL& origin) override;
 
  private:
   ~CannedBrowsingDataServiceWorkerHelper() override;
 
-  std::set<PendingServiceWorkerUsageInfo> pending_service_worker_info_;
+  std::set<url::Origin> pending_origins_;
 
   DISALLOW_COPY_AND_ASSIGN(CannedBrowsingDataServiceWorkerHelper);
 };

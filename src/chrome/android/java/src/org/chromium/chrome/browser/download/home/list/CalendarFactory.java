@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.download.home.list;
 
 import org.chromium.base.task.AsyncTask;
+import org.chromium.base.task.BackgroundOnlyAsyncTask;
 
 import java.util.Calendar;
 import java.util.concurrent.ExecutionException;
@@ -34,7 +35,7 @@ public final class CalendarFactory {
         return calendar;
     }
 
-    private static class CalendarBuilder extends AsyncTask<Calendar> {
+    private static class CalendarBuilder extends BackgroundOnlyAsyncTask<Calendar> {
         @Override
         protected Calendar doInBackground() {
             return Calendar.getInstance();

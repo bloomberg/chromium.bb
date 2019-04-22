@@ -96,6 +96,9 @@ struct DialDeviceDescriptionData {
   DialDeviceDescriptionData() = default;
   DialDeviceDescriptionData(const std::string& device_description,
                             const GURL& app_url);
+  ~DialDeviceDescriptionData() = default;
+
+  bool operator==(const DialDeviceDescriptionData& other_data) const;
 
   std::string device_description;
   GURL app_url;

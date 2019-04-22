@@ -12,36 +12,36 @@
 
 namespace gfx {
 
-float SkTransferFnEvalUnclamped(const SkColorSpaceTransferFn& fn, float x) {
-  if (x < fn.fD)
-    return fn.fC * x + fn.fF;
-  return std::pow(fn.fA * x + fn.fB, fn.fG) + fn.fE;
+float SkTransferFnEvalUnclamped(const skcms_TransferFunction& fn, float x) {
+  if (x < fn.d)
+    return fn.c * x + fn.f;
+  return std::pow(fn.a * x + fn.b, fn.g) + fn.e;
 }
 
-float SkTransferFnEval(const SkColorSpaceTransferFn& fn, float x) {
+float SkTransferFnEval(const skcms_TransferFunction& fn, float x) {
   float fn_at_x_unclamped = SkTransferFnEvalUnclamped(fn, x);
   return std::min(std::max(fn_at_x_unclamped, 0.f), 1.f);
 }
 
-SkColorSpaceTransferFn SkTransferFnInverse(const SkColorSpaceTransferFn& fn) {
-  SkColorSpaceTransferFn fn_inv = {0};
-  if (fn.fA > 0 && fn.fG > 0) {
-    double a_to_the_g = std::pow(fn.fA, fn.fG);
-    fn_inv.fA = 1.f / a_to_the_g;
-    fn_inv.fB = -fn.fE / a_to_the_g;
-    fn_inv.fG = 1.f / fn.fG;
+skcms_TransferFunction SkTransferFnInverse(const skcms_TransferFunction& fn) {
+  skcms_TransferFunction fn_inv = {0};
+  if (fn.a > 0 && fn.g > 0) {
+    double a_to_the_g = std::pow(fn.a, fn.g);
+    fn_inv.a = 1.f / a_to_the_g;
+    fn_inv.b = -fn.e / a_to_the_g;
+    fn_inv.g = 1.f / fn.g;
   }
-  fn_inv.fD = fn.fC * fn.fD + fn.fF;
-  fn_inv.fE = -fn.fB / fn.fA;
-  if (fn.fC != 0) {
-    fn_inv.fC = 1.f / fn.fC;
-    fn_inv.fF = -fn.fF / fn.fC;
+  fn_inv.d = fn.c * fn.d + fn.f;
+  fn_inv.e = -fn.b / fn.a;
+  if (fn.c != 0) {
+    fn_inv.c = 1.f / fn.c;
+    fn_inv.f = -fn.f / fn.c;
   }
   return fn_inv;
 }
 
-bool SkTransferFnsApproximatelyCancel(const SkColorSpaceTransferFn& a,
-                                      const SkColorSpaceTransferFn& b) {
+bool SkTransferFnsApproximatelyCancel(const skcms_TransferFunction& a,
+                                      const skcms_TransferFunction& b) {
   const float kStep = 1.f / 8.f;
   const float kEpsilon = 2.5f / 256.f;
   for (float x = 0; x <= 1.f; x += kStep) {
@@ -53,7 +53,7 @@ bool SkTransferFnsApproximatelyCancel(const SkColorSpaceTransferFn& a,
   return true;
 }
 
-bool SkTransferFnIsApproximatelyIdentity(const SkColorSpaceTransferFn& a) {
+bool SkTransferFnIsApproximatelyIdentity(const skcms_TransferFunction& a) {
   const float kStep = 1.f / 8.f;
   const float kEpsilon = 2.5f / 256.f;
   for (float x = 0; x <= 1.f; x += kStep) {

@@ -20,7 +20,28 @@ source_set("bookmark_apps") {
     "//chrome/common",
     "//components/favicon/content",
     "//components/pref_registry",
+    "//extensions/browser",
     "//skia",
+  ]
+}
+
+source_set("test_support") {
+  testonly = true
+
+  sources = [
+    "test_web_app_provider.cc",
+    "test_web_app_provider.h",
+  ]
+
+  deps = [
+    ":bookmark_apps",
+    "//base",
+    "//chrome/browser",
+    "//chrome/browser/web_applications",
+    "//chrome/browser/web_applications:web_app_group",
+    "//chrome/browser/web_applications:web_applications_on_extensions",
+    "//chrome/browser/web_applications/components",
+    "//components/keyed_service/content",
   ]
 }
 
@@ -28,6 +49,7 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
+    "bookmark_app_install_manager_unittest.cc",
     "external_web_apps_unittest.cc",
     "policy/web_app_policy_manager_unittest.cc",
     "system_web_app_manager_unittest.cc",
@@ -35,6 +57,7 @@ source_set("unit_tests") {
 
   deps = [
     ":bookmark_apps",
+    ":test_support",
     "//base",
     "//chrome/browser",
     "//chrome/browser/web_applications",
@@ -46,6 +69,7 @@ source_set("unit_tests") {
     "//chrome/browser/web_applications/extensions",
     "//chrome/common:constants",
     "//chrome/test:test_support",
+    "//components/account_id",
     "//components/crx_file:crx_file",
     "//components/sync_preferences:test_support",
     "//content/test:test_support",
@@ -69,6 +93,7 @@ source_set("browser_tests") {
 
   deps = [
     ":bookmark_apps",
+    ":test_support",
     "//base",
     "//base/test:test_support",
     "//chrome/app/theme:chrome_unscaled_resources_grit",

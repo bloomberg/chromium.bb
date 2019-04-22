@@ -78,8 +78,8 @@ void SkRecorder::append(Args&&... args) {
     new (fRecord->append<T>()) T{std::forward<Args>(args)...};
 }
 
-#define TRY_MINIRECORDER(method, ...)                       \
-    if (fMiniRecorder && fMiniRecorder->method(__VA_ARGS__)) { return; }
+#define TRY_MINIRECORDER(method, ...) \
+    if (fMiniRecorder && fMiniRecorder->method(__VA_ARGS__)) return
 
 // For methods which must call back into SkNoDrawCanvas.
 #define INHERITED(method, ...) this->SkNoDrawCanvas::method(__VA_ARGS__)
@@ -253,52 +253,6 @@ void SkRecorder::onDrawImageLattice(const SkImage* image, const Lattice& lattice
            this->copy(lattice.fColors, flagCount), *lattice.fBounds, dst);
 }
 
-void SkRecorder::onDrawImageSet(const ImageSetEntry set[], int count, SkFilterQuality filterQuality,
-                                SkBlendMode mode) {
-    SkAutoTArray<ImageSetEntry> setCopy(count);
-    for (int i = 0; i < count; ++i) {
-        setCopy[i] = set[i];
-    }
-    this->append<SkRecords::DrawImageSet>(std::move(setCopy), count, filterQuality, mode);
-}
-
-void SkRecorder::onDrawText(const void* text, size_t byteLength,
-                            SkScalar x, SkScalar y, const SkPaint& paint) {
-    this->append<SkRecords::DrawText>(
-           paint, this->copy((const char*)text, byteLength), byteLength, x, y);
-}
-
-void SkRecorder::onDrawPosText(const void* text, size_t byteLength,
-                               const SkPoint pos[], const SkPaint& paint) {
-    const int points = paint.countText(text, byteLength);
-    this->append<SkRecords::DrawPosText>(
-           paint,
-           this->copy((const char*)text, byteLength),
-           byteLength,
-           this->copy(pos, points));
-}
-
-void SkRecorder::onDrawPosTextH(const void* text, size_t byteLength,
-                                const SkScalar xpos[], SkScalar constY, const SkPaint& paint) {
-    const int points = paint.countText(text, byteLength);
-    this->append<SkRecords::DrawPosTextH>(
-           paint,
-           this->copy((const char*)text, byteLength),
-           SkToUInt(byteLength),
-           constY,
-           this->copy(xpos, points));
-}
-
-void SkRecorder::onDrawTextRSXform(const void* text, size_t byteLength, const SkRSXform xform[],
-                                   const SkRect* cull, const SkPaint& paint) {
-    this->append<SkRecords::DrawTextRSXform>(
-           paint,
-           this->copy((const char*)text, byteLength),
-           byteLength,
-           this->copy(xform, paint.countText(text, byteLength)),
-           this->copy(cull));
-}
-
 void SkRecorder::onDrawTextBlob(const SkTextBlob* blob, SkScalar x, SkScalar y,
                                 const SkPaint& paint) {
     TRY_MINIRECORDER(drawTextBlob, blob, x, y, paint);
@@ -356,6 +310,28 @@ void SkRecorder::onDrawAnnotation(const SkRect& rect, const char key[], SkData* 
     this->append<SkRecords::DrawAnnotation>(rect, SkString(key), sk_ref_sp(value));
 }
 
+void SkRecorder::onDrawEdgeAAQuad(const SkRect& rect, const SkPoint clip[4],
+                                  QuadAAFlags aa, SkColor color, SkBlendMode mode) {
+    this->append<SkRecords::DrawEdgeAAQuad>(
+            rect, this->copy(clip, 4), aa, color, mode);
+}
+
+void SkRecorder::onDrawEdgeAAImageSet(const ImageSetEntry set[], int count,
+                                      const SkPoint dstClips[], const SkMatrix preViewMatrices[],
+                                      const SkPaint* paint, SrcRectConstraint constraint) {
+    int totalDstClipCount, totalMatrixCount;
+    SkCanvasPriv::GetDstClipAndMatrixCounts(set, count, &totalDstClipCount, &totalMatrixCount);
+
+    SkAutoTArray<ImageSetEntry> setCopy(count);
+    for (int i = 0; i < count; ++i) {
+        setCopy[i] = set[i];
+    }
+
+    this->append<SkRecords::DrawEdgeAAImageSet>(this->copy(paint), std::move(setCopy), count,
+            this->copy(dstClips, totalDstClipCount),
+            this->copy(preViewMatrices, totalMatrixCount), constraint);
+}
+
 void SkRecorder::onFlush() {
     this->append<SkRecords::Flush>();
 }
@@ -372,6 +348,11 @@ SkCanvas::SaveLayerStrategy SkRecorder::getSaveLayerStrategy(const SaveLayerRec&
                     , this->copy(rec.fClipMatrix)
                     , rec.fSaveLayerFlags);
     return SkCanvas::kNoLayer_SaveLayerStrategy;
+}
+
+bool SkRecorder::onDoSaveBehind(const SkRect* subset) {
+    this->append<SkRecords::SaveBehind>(this->copy(subset));
+    return false;
 }
 
 void SkRecorder::didRestore() {

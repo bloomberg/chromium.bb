@@ -4,8 +4,6 @@
 
 #include "ios/testing/embedded_test_server_handlers.h"
 
-#include <string>
-
 #include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -78,9 +76,28 @@ std::unique_ptr<net::test_server::HttpResponse> HandleIFrame(
     const net::test_server::HttpRequest& request) {
   auto http_response = std::make_unique<net::test_server::BasicHttpResponse>();
   http_response->set_content_type("text/html");
-  http_response->set_content(base::StringPrintf(
-      "<html><head></head><body><iframe src='%s'></iframe></body></html>",
-      ExtractUlrSpecFromQuery(request).c_str()));
+  http_response->set_content(
+      base::StringPrintf("<html><head></head><body><iframe "
+                         "src='%s'></iframe>Main frame text</body></html>",
+                         ExtractUlrSpecFromQuery(request).c_str()));
+  return std::move(http_response);
+}
+
+// Returns a page with |html|.
+std::unique_ptr<net::test_server::HttpResponse> HandlePageWithHtml(
+    const std::string& html,
+    const net::test_server::HttpRequest& request) {
+  auto http_response = std::make_unique<net::test_server::BasicHttpResponse>();
+  http_response->set_content_type("text/html");
+  http_response->set_content(html);
+  return std::move(http_response);
+}
+
+std::unique_ptr<net::test_server::HttpResponse> HandlePageWithContents(
+    const net::test_server::HttpRequest& request) {
+  auto http_response = std::make_unique<net::test_server::BasicHttpResponse>();
+  http_response->set_content_type("text/html");
+  http_response->set_content(request.GetURL().query());
   return std::move(http_response);
 }
 

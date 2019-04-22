@@ -41,8 +41,8 @@ void LayoutFieldset::ComputePreferredLogicalWidths() {
   if (LayoutBox* legend = FindInFlowLegend()) {
     int legend_min_width = legend->MinPreferredLogicalWidth().ToInt();
 
-    Length legend_margin_left = legend->StyleRef().MarginLeft();
-    Length legend_margin_right = legend->StyleRef().MarginRight();
+    const Length& legend_margin_left = legend->StyleRef().MarginLeft();
+    const Length& legend_margin_right = legend->StyleRef().MarginRight();
 
     if (legend_margin_left.IsFixed())
       legend_min_width += legend_margin_left.Value();
@@ -146,7 +146,7 @@ LayoutBox* LayoutFieldset::FindInFlowLegend(const LayoutBlock& fieldset) {
     if (fieldset.IsLayoutNGFieldset()) {
       // If there is a rendered legend, it will be found inside the anonymous
       // fieldset wrapper.
-      parent = ToLayoutBlock(fieldset.FirstChild());
+      parent = To<LayoutBlock>(fieldset.FirstChild());
       if (!parent)
         return nullptr;
     }
@@ -156,7 +156,7 @@ LayoutBox* LayoutFieldset::FindInFlowLegend(const LayoutBlock& fieldset) {
     if (legend->IsFloatingOrOutOfFlowPositioned())
       continue;
 
-    if (IsHTMLLegendElement(legend->GetNode()))
+    if (legend->IsHTMLLegendElement())
       return ToLayoutBox(legend);
   }
   return nullptr;
@@ -171,6 +171,16 @@ void LayoutFieldset::PaintBoxDecorationBackground(
 void LayoutFieldset::PaintMask(const PaintInfo& paint_info,
                                const LayoutPoint& paint_offset) const {
   FieldsetPainter(*this).PaintMask(paint_info, paint_offset);
+}
+
+bool LayoutFieldset::BackgroundIsKnownToBeOpaqueInRect(
+    const LayoutRect& local_rect) const {
+  // If the field set has a legend, then it probably does not completely fill
+  // its background.
+  if (FindInFlowLegend())
+    return false;
+
+  return LayoutBlockFlow::BackgroundIsKnownToBeOpaqueInRect(local_rect);
 }
 
 }  // namespace blink

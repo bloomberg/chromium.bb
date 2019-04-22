@@ -94,13 +94,31 @@ bool LayoutMultiColumnSpannerPlaceholder::NeedsPreferredWidthsRecalculation()
   return layout_object_in_flow_thread_->NeedsPreferredWidthsRecalculation();
 }
 
+void LayoutMultiColumnSpannerPlaceholder::RecalcVisualOverflow() {
+  LayoutBox::RecalcVisualOverflow();
+  ClearVisualOverflow();
+  AddContentsVisualOverflow(
+      layout_object_in_flow_thread_->VisualOverflowRect());
+}
+
 LayoutUnit LayoutMultiColumnSpannerPlaceholder::MinPreferredLogicalWidth()
     const {
+  // There should be no contribution from a spanner if the multicol container is
+  // size-contained. Normally we'd stop at the object that has contain:size
+  // applied, but for multicol, we descend into the children, in order to get
+  // the flow thread to calculate the correct preferred width (to honor
+  // column-count, column-width and column-gap). Since spanner placeholders are
+  // siblings of the flow thread, we need this check.
+  if (MultiColumnBlockFlow()->ShouldApplySizeContainment())
+    return LayoutUnit();
   return layout_object_in_flow_thread_->MinPreferredLogicalWidth();
 }
 
 LayoutUnit LayoutMultiColumnSpannerPlaceholder::MaxPreferredLogicalWidth()
     const {
+  // See above.
+  if (MultiColumnBlockFlow()->ShouldApplySizeContainment())
+    return LayoutUnit();
   return layout_object_in_flow_thread_->MaxPreferredLogicalWidth();
 }
 
@@ -123,9 +141,7 @@ void LayoutMultiColumnSpannerPlaceholder::UpdateLayout() {
 
   // Take the overflow from the spanner, so that it gets propagated to the
   // multicol container and beyond.
-  overflow_.reset();
-  AddContentsVisualOverflow(
-      layout_object_in_flow_thread_->VisualOverflowRect());
+  ClearLayoutOverflow();
   AddLayoutOverflow(layout_object_in_flow_thread_->LayoutOverflowRect());
 
   ClearNeedsLayout();

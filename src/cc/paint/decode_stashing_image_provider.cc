@@ -12,17 +12,19 @@ DecodeStashingImageProvider::DecodeStashingImageProvider(
 }
 DecodeStashingImageProvider::~DecodeStashingImageProvider() = default;
 
-ImageProvider::ScopedDecodedDrawImage
-DecodeStashingImageProvider::GetDecodedDrawImage(const DrawImage& draw_image) {
-  auto decode = source_provider_->GetDecodedDrawImage(draw_image);
+ImageProvider::ScopedResult DecodeStashingImageProvider::GetRasterContent(
+    const DrawImage& draw_image) {
+  // TODO(xidachen): Ensure this function works with paint worklet generated
+  // images.
+  auto decode = source_provider_->GetRasterContent(draw_image);
   if (!decode.needs_unlock())
     return decode;
 
   // No need to add any destruction callback to the returned image. The images
   // decoded here match the lifetime of this provider.
-  auto image_to_return = ScopedDecodedDrawImage(decode.decoded_image());
+  auto result = ScopedResult(decode.decoded_image());
   decoded_images_->push_back(std::move(decode));
-  return image_to_return;
+  return result;
 }
 
 void DecodeStashingImageProvider::Reset() {

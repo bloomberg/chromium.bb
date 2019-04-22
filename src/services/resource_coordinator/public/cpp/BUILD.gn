@@ -32,23 +32,8 @@ component("resource_coordinator_cpp_features") {
   ]
 }
 
-component("resource_coordinator_cpp") {
-  sources = [
-    "frame_resource_coordinator.cc",
-    "frame_resource_coordinator.h",
-    "page_resource_coordinator.cc",
-    "page_resource_coordinator.h",
-    "process_resource_coordinator.cc",
-    "process_resource_coordinator.h",
-    "resource_coordinator_interface.h",
-    "system_resource_coordinator.cc",
-    "system_resource_coordinator.h",
-  ]
-
-  configs += [ "//build/config/compiler:wexit_time_destructors" ]
-
-  defines = [ "IS_SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_IMPL" ]
-
+# TODO(siggi): Remove this target and redirect users to specific dependencies.
+source_set("resource_coordinator_cpp") {
   public_deps = [
     ":resource_coordinator_cpp_base",
     ":resource_coordinator_cpp_features",
@@ -57,5 +42,20 @@ component("resource_coordinator_cpp") {
     "//services/resource_coordinator/public/cpp/memory_instrumentation",
     "//services/resource_coordinator/public/mojom",
     "//services/service_manager/public/cpp",
+  ]
+}
+
+source_set("manifest") {
+  sources = [
+    "manifest.cc",
+    "manifest.h",
+  ]
+
+  deps = [
+    "//base",
+    "//services/metrics/public/mojom",
+    "//services/resource_coordinator/public/mojom",
+    "//services/service_manager/public/cpp",
+    "//services/service_manager/public/mojom",
   ]
 }

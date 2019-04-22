@@ -6,6 +6,8 @@
 
 #include <winstring.h>
 
+#include "base/numerics/safe_conversions.h"
+#include "base/process/memory.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 
@@ -16,7 +18,8 @@ namespace {
 static bool g_load_succeeded = false;
 
 FARPROC LoadComBaseFunction(const char* function_name) {
-  static HMODULE const handle = ::LoadLibrary(L"combase.dll");
+  static HMODULE const handle =
+      ::LoadLibraryEx(L"combase.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
   return handle ? ::GetProcAddress(handle, function_name) : nullptr;
 }
 
@@ -41,7 +44,7 @@ decltype(&::WindowsGetStringRawBuffer) GetWindowsGetStringRawBuffer() {
   return function;
 }
 
-HRESULT WindowsCreateString(const base::char16* src,
+HRESULT WindowsCreateString(const wchar_t* src,
                             uint32_t len,
                             HSTRING* out_hstr) {
   decltype(&::WindowsCreateString) create_string_func =
@@ -59,7 +62,7 @@ HRESULT WindowsDeleteString(HSTRING hstr) {
   return delete_string_func(hstr);
 }
 
-const base::char16* WindowsGetStringRawBuffer(HSTRING hstr, uint32_t* out_len) {
+const wchar_t* WindowsGetStringRawBuffer(HSTRING hstr, uint32_t* out_len) {
   decltype(&::WindowsGetStringRawBuffer) get_string_raw_buffer_func =
       GetWindowsGetStringRawBuffer();
   if (!get_string_raw_buffer_func) {
@@ -82,23 +85,30 @@ void ScopedHStringTraits::Free(HSTRING hstr) {
 
 namespace win {
 
+ScopedHString::ScopedHString(HSTRING hstr) : ScopedGeneric(hstr) {
+  DCHECK(g_load_succeeded);
+}
+
 // static
-ScopedHString ScopedHString::Create(StringPiece16 str) {
+ScopedHString ScopedHString::Create(WStringPiece str) {
   DCHECK(g_load_succeeded);
   HSTRING hstr;
-  HRESULT hr = base::WindowsCreateString(str.data(), str.length(), &hstr);
+  HRESULT hr = base::WindowsCreateString(
+      str.data(), checked_cast<UINT32>(str.length()), &hstr);
   if (SUCCEEDED(hr))
     return ScopedHString(hstr);
+  if (hr == E_OUTOFMEMORY) {
+    // This size is an approximation. The actual size likely includes
+    // sizeof(HSTRING_HEADER) as well.
+    base::TerminateBecauseOutOfMemory((str.length() + 1) * sizeof(wchar_t));
+  }
   DLOG(ERROR) << "Failed to create HSTRING" << std::hex << hr;
   return ScopedHString(nullptr);
 }
 
+// static
 ScopedHString ScopedHString::Create(StringPiece str) {
   return Create(UTF8ToWide(str));
-}
-
-ScopedHString::ScopedHString(HSTRING hstr) : ScopedGeneric(hstr) {
-  DCHECK(g_load_succeeded);
 }
 
 // static
@@ -114,17 +124,14 @@ bool ScopedHString::ResolveCoreWinRTStringDelayload() {
   return load_succeeded;
 }
 
-StringPiece16 ScopedHString::Get() const {
+WStringPiece ScopedHString::Get() const {
   UINT32 length = 0;
   const wchar_t* buffer = base::WindowsGetStringRawBuffer(get(), &length);
-  return StringPiece16(buffer, length);
+  return WStringPiece(buffer, length);
 }
 
 std::string ScopedHString::GetAsUTF8() const {
-  std::string result;
-  const StringPiece16 wide_string = Get();
-  WideToUTF8(wide_string.data(), wide_string.length(), &result);
-  return result;
+  return WideToUTF8(Get());
 }
 
 }  // namespace win

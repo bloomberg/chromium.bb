@@ -10,6 +10,7 @@
 #include "base/values.h"
 #include "content/public/common/content_features.h"
 #include "content/public/renderer/v8_value_converter.h"
+#include "extensions/renderer/bindings/api_binding_util.h"
 #include "extensions/renderer/bindings/api_response_validator.h"
 #include "extensions/renderer/bindings/exception_handler.h"
 #include "extensions/renderer/bindings/js_runner.h"
@@ -76,12 +77,12 @@ APIRequestHandler::PendingRequest::PendingRequest(
     const std::string& method_name,
     v8::Local<v8::Function> request_callback,
     const base::Optional<std::vector<v8::Local<v8::Value>>>&
-        local_callback_args)
+        local_callback_args,
+    const base::Optional<blink::WebUserGestureToken>& gesture_token)
     : isolate(isolate), context(isolate, context), method_name(method_name) {
   if (!request_callback.IsEmpty()) {
     callback.emplace(isolate, request_callback);
-    user_gesture_token =
-        blink::WebUserGestureIndicator::CurrentUserGestureToken();
+    user_gesture_token = gesture_token;
 
     if (local_callback_args) {
       callback_arguments = std::vector<v8::Global<v8::Value>>();
@@ -89,6 +90,11 @@ APIRequestHandler::PendingRequest::PendingRequest(
       for (const auto& arg : *local_callback_args)
         callback_arguments->emplace_back(isolate, arg);
     }
+  } else {
+    DCHECK(!local_callback_args.has_value())
+        << "Cannot specify callback arguments without a callback.";
+    DCHECK(!user_gesture_token.has_value())
+        << "Cannot specify a user gesture token without a callback.";
   }
 }
 
@@ -98,14 +104,15 @@ APIRequestHandler::PendingRequest& APIRequestHandler::PendingRequest::operator=(
     PendingRequest&&) = default;
 
 APIRequestHandler::APIRequestHandler(
-    const SendRequestMethod& send_request,
+    SendRequestMethod send_request,
     APILastError last_error,
     ExceptionHandler* exception_handler,
-    const GetUserActivationState& get_user_activation_state_callback)
-    : send_request_(send_request),
+    GetUserActivationState get_user_activation_state_callback)
+    : send_request_(std::move(send_request)),
       last_error_(std::move(last_error)),
       exception_handler_(exception_handler),
-      get_user_activation_state_callback_(get_user_activation_state_callback) {}
+      get_user_activation_state_callback_(
+          std::move(get_user_activation_state_callback)) {}
 
 APIRequestHandler::~APIRequestHandler() {}
 
@@ -132,6 +139,7 @@ int APIRequestHandler::StartRequest(v8::Local<v8::Context> context,
 
   base::Optional<std::vector<v8::Local<v8::Value>>> callback_args;
   v8::Isolate* isolate = context->GetIsolate();
+  base::Optional<blink::WebUserGestureToken> user_gesture_token;
   if (!custom_callback.IsEmpty() || !callback.IsEmpty()) {
     // In the JS bindings, custom callbacks are called with the arguments of
     // name, the full request object (see below), the original callback, and
@@ -154,11 +162,13 @@ int APIRequestHandler::StartRequest(v8::Local<v8::Context> context,
       callback = custom_callback;
     }
 
+    user_gesture_token =
+        blink::WebUserGestureIndicator::CurrentUserGestureToken();
     request->has_callback = true;
   }
-  pending_requests_.insert(std::make_pair(
-      request_id,
-      PendingRequest(isolate, context, method, callback, callback_args)));
+  pending_requests_.emplace(request_id,
+                            PendingRequest(isolate, context, method, callback,
+                                           callback_args, user_gesture_token));
 
   request->has_user_gesture = get_user_activation_state_callback_.Run(context);
   request->arguments = std::move(arguments);
@@ -186,9 +196,17 @@ void APIRequestHandler::CompleteRequest(
 int APIRequestHandler::AddPendingRequest(v8::Local<v8::Context> context,
                                          v8::Local<v8::Function> callback) {
   int request_id = next_request_id_++;
+
+  // NOTE(devlin): We ignore the UserGestureToken for synthesized requests like
+  // these that aren't sent to the browser. It is the caller's responsibility to
+  // handle any user gesture behavior. This prevents an issue where messaging
+  // handling would create an extra scoped user gesture, causing issues. See
+  // https://crbug.com/921141.
+  base::Optional<blink::WebUserGestureToken> null_user_gesture_token;
   pending_requests_.emplace(
-      request_id, PendingRequest(context->GetIsolate(), context, std::string(),
-                                 callback, base::nullopt));
+      request_id,
+      PendingRequest(context->GetIsolate(), context, std::string(), callback,
+                     base::nullopt, null_user_gesture_token));
   return request_id;
 }
 
@@ -260,7 +278,8 @@ void APIRequestHandler::CompleteRequestImpl(int request_id,
   std::unique_ptr<blink::WebScopedUserGesture> user_gesture;
   // UserActivationV2 replaces the concept of (scoped) tokens with a frame-wide
   // state, hence skips token forwarding.
-  if (!base::FeatureList::IsEnabled(features::kUserActivationV2)) {
+  if (!base::FeatureList::IsEnabled(features::kUserActivationV2) &&
+      pending_request.user_gesture_token) {
     user_gesture = std::make_unique<blink::WebScopedUserGesture>(
         *pending_request.user_gesture_token);
   }
@@ -283,6 +302,12 @@ void APIRequestHandler::CompleteRequestImpl(int request_id,
   JSRunner::Get(context)->RunJSFunction(pending_request.callback->Get(isolate),
                                         context, full_args.size(),
                                         full_args.data());
+
+  // Since arbitrary JS has ran, the context may have been invalidated. If it
+  // was, bail.
+  if (!binding::IsContextValid(context))
+    return;
+
   if (try_catch.HasCaught()) {
     v8::Local<v8::Message> v8_message = try_catch.Message();
     base::Optional<std::string> message;

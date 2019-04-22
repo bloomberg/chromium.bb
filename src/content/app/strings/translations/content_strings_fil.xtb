@@ -19,6 +19,7 @@
 <translation id="1591562245178063882">Buwang ito</translation>
 <translation id="1637811476055996098">Pumili ng Mga File</translation>
 <translation id="1650423536718072820">pullquote</translation>
+<translation id="1727886345390570319">itago ang menu ng mga nakasarang caption</translation>
 <translation id="1729654308190250600">Mangyaring maglagay ng isang non-empty na email address.</translation>
 <translation id="1758486001363313524">Iba pa...</translation>
 <translation id="1806710327868736751">alert_dialog</translation>
@@ -41,6 +42,7 @@
 <translation id="2291999235780842123">checkbox</translation>
 <translation id="2311842470354187719">page break</translation>
 <translation id="2335594187091864976">picker ng petsa at oras</translation>
+<translation id="245932805758469625">bilang ng mga segundong natitira sa video</translation>
 <translation id="248395913932153421">Araw</translation>
 <translation id="2507943997699731163">Pakipunan ang field na ito.</translation>
 <translation id="2508569020611168319">listahan ng tab</translation>
@@ -50,7 +52,6 @@
 <translation id="2653659639078652383">Isumite</translation>
 <translation id="2657045182931379222">object ng graphics</translation>
 <translation id="2674318244760992338">footer</translation>
-<translation id="2706474812903655270">Nagpe-play ang video na ito sa picture-in-picture mode</translation>
 <translation id="2709516037105925701">AutoFill</translation>
 <translation id="2723001399770238859">audio</translation>
 <translation id="2746543609216772311">Dapat <ph name="MINIMUM_DATE_OR_TIME" /> o mas bago ang value.</translation>
@@ -71,11 +72,10 @@
 <translation id="3450233048674729344">Dapat mas mababa kaysa sa o katumbas ng <ph name="MAXIMUM" /> ang halaga.</translation>
 <translation id="3486220673238053218">kahulugan</translation>
 <translation id="3557673793733683882">heading <ph name="HEADING_LEVEL" /></translation>
-<translation id="3639613635497528239">bilang ng mga segundong natitira sa pelikula</translation>
+<translation id="3685101356851116974">Walang label na larawan</translation>
 <translation id="3706100364254443312">lumipat</translation>
 <translation id="3732799496749320381">mm</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> (na) GB</translation>
-<translation id="3785482301506746191">scrubber ng oras ng pelikula</translation>
 <translation id="3808586225841795776">termino</translation>
 <translation id="3822383571486410024">Pakihabaan ang text na ito hanggang <ph name="MIN_CHARACTERS" /> (na) character o higit pa (kasalukuyan kang gumagamit ng <ph name="CURRENT_LENGTH" /> (na) character).</translation>
 <translation id="383465348367842624">Hindi dapat naglalaman ng simbolong '<ph name="INVALIDCHARACTER" />' ang bahagi bago ang '<ph name="ATSIGN" />.'</translation>
@@ -94,8 +94,10 @@
 <translation id="4360991593054037559">Mangyaring maglagay ng isang wastong value. Ang dalawang pinakamalapit na wastong value ay <ph name="VALID_VALUE_LOW" /> at <ph name="VALID_VALUE_HIGHER" />.</translation>
 <translation id="4384583879834880242">Q&amp;A</translation>
 <translation id="4413860115965805769">button ng menu</translation>
+<translation id="4444765639179266822">Mukhang ang sabi ay: <ph name="OCR_TEXT" /></translation>
 <translation id="4446524499724042288">sanggunian sa glosaryo</translation>
 <translation id="4522570452068850558">Mga Detalye</translation>
+<translation id="4542388879936266156">natitirang oras: <ph name="REMAINING_TIME" /></translation>
 <translation id="4597532268155981612">form</translation>
 <translation id="4661075872484491155">tree</translation>
 <translation id="4664250907885839816">Hindi dapat naglalaman ng simbolong '<ph name="INVALIDCHARACTER" />' ang bahagi pagkatapos ng '<ph name="ATSIGN" />.'</translation>
@@ -111,6 +113,7 @@
 <translation id="4992066212339426712">I-unmute</translation>
 <translation id="49969490063480558">Mangyaring maglagay ng isang bahagi pagkatapos ng '<ph name="ATSIGN" />.' Hindi kumpleto ang '<ph name="INVALIDADDRESS" />.'</translation>
 <translation id="5034860022980953847">indicator ng pag-usad</translation>
+<translation id="5090250355906949916">scrubber ng tagal ng video</translation>
 <translation id="5093189678851173835">epigraph</translation>
 <translation id="5117590920725113268">Ipakita ang susunod na buwan</translation>
 <translation id="512758898067543763">header ng row</translation>
@@ -118,6 +121,7 @@
 <translation id="5164977714490026579">Dapat mas mataas kaysa sa o katumbas ng <ph name="MINIMUM" /> ang halaga.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> (na) PB</translation>
 <translation id="5307600278924710095">Mangyaring maglagay ng isang bahagi na sinusundan ng '<ph name="ATSIGN" />.' Hindi kumpleto ang '<ph name="INVALIDADDRESS" />.'</translation>
+<translation id="5334352251556557839">Hindi ma-play ang media.</translation>
 <translation id="5406322316791861025">anyo</translation>
 <translation id="5453733299334684579">item sa tree</translation>
 <translation id="5466621249238537318">Mangyaring pumili ng isa o higit pang mga file.</translation>
@@ -144,12 +148,16 @@
 <translation id="6150588977291308318">bibliograpiya</translation>
 <translation id="6164829606128959761">metro</translation>
 <translation id="6166809985690652833">afterword</translation>
+<translation id="6209276755895393898">Mukhang: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">glosaryo</translation>
+<translation id="628938136236500310">Nagpe-play sa picture-in-picture mode</translation>
 <translation id="6398862346408813489">Ipakita ang panel ng pagpipilian ng buwan</translation>
 <translation id="6404546809543547843">scrubber ng oras ng audio</translation>
+<translation id="6443871981718447451">Ipakita ang menu ng mga nakasarang caption</translation>
 <translation id="6453774872122745852">mga pagkilala</translation>
 <translation id="648732519525291180">picker ng petsa</translation>
 <translation id="6550675742724504774">Mga Pagpipilian</translation>
+<translation id="6572309429103589720">Invalid na grammar</translation>
 <translation id="658823671542763450">mag-full screen</translation>
 <translation id="663493177488814956">feed</translation>
 <translation id="6637586476836377253">log</translation>
@@ -162,7 +170,6 @@
 <translation id="6820355525329141109">Hindi ma-load ang plugin.</translation>
 <translation id="6820615603175220800">sanggunian sa bibliograpiya</translation>
 <translation id="6843725295806269523">i-mute</translation>
-<translation id="6853785296079745596">itago ang mga nakasarang caption</translation>
 <translation id="6885760532393684712">direktoryo</translation>
 <translation id="689129560213475294">colophon</translation>
 <translation id="6934078000481955284">blockquote</translation>
@@ -170,25 +177,29 @@
 <translation id="6981594929165378967">paglagay</translation>
 <translation id="6989848892321993519">Pakidagdagan ang text na ito nang hanggang <ph name="MIN_CHARACTERS" /> (na) character o higit pa (kasalukuyan kang gumagamit ng 1 character).</translation>
 <translation id="709897737746224366">Pakitugma ang hiniling na format.</translation>
+<translation id="7118469954320184356">Walang available na paglalarawan.</translation>
 <translation id="7139483182332611405">preface</translation>
-<translation id="7223624360433298498">lumipas na oras</translation>
 <translation id="7263440858009898357">Mangyaring pumili ng item sa listahan.</translation>
 <translation id="727747134524199931">header ng column</translation>
+<translation id="7320576522385648310">nagba-buffer</translation>
 <translation id="7353453495576941748">credit</translation>
 <translation id="7364796246159120393">Pumili ng File</translation>
 <translation id="739024184232394898">Iba pa...</translation>
 <translation id="7405738980073107433">mga endnote</translation>
+<translation id="7410239719251593705">Mukhang may lamang pang-adult na content. Walang available na paglalarawan.</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> (na) TB</translation>
 <translation id="7491962110804786152">tab</translation>
 <translation id="7514365320538308">I-download</translation>
 <translation id="7529102961911894712">back link</translation>
+<translation id="7533959249147584474">Walang label na graphic</translation>
 <translation id="7647456547678091388">tip</translation>
 <translation id="7661956066982048809">dokumento ng graphics</translation>
 <translation id="7673697353781729403">Oras</translation>
 <translation id="7681220483256441252">index</translation>
-<translation id="7720026100085573005">natitirang oras</translation>
 <translation id="7740050170769002709">HTML na nilalaman</translation>
+<translation id="7745230546936012372">Para kunin ang mga paglalarawan ng larawan, buksan ang menu ng konteksto.</translation>
 <translation id="7750228210027921155">Picture in picture</translation>
+<translation id="775297008183122718">Di-wastong entry</translation>
 <translation id="7789962463072032349">i-pause</translation>
 <translation id="7802800022689234070">disclosure triangle</translation>
 <translation id="7888071071722539607">Mangyaring magsama ng '<ph name="ATSIGN" />' sa email address. Kulang ng '<ph name="ATSIGN" />' ang '<ph name="INVALIDADDRESS" />.'</translation>
@@ -197,10 +208,13 @@
 <translation id="8053789581856978548">text field ng paghahanap</translation>
 <translation id="8057695513531652401">paunawa</translation>
 <translation id="8105797009065549151">sanggunian sa tala</translation>
+<translation id="811583516810654505">Kinukuha ang paglalarawan...</translation>
 <translation id="8117451130807776954">Linggong ito</translation>
 <translation id="8199524924445686405">yyyy</translation>
+<translation id="8261464734335370856">Invalid na spelling</translation>
 <translation id="8284326494547611709">Mga Caption</translation>
 <translation id="835897206747267392">Di-wastong halaga.</translation>
+<translation id="8403857369060869934">lumipas na oras: <ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">bahagi</translation>
 <translation id="8433900881053900389">toolbar</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES" /> mga file</translation>
@@ -225,7 +239,6 @@
 <translation id="8987927404178983737">Buwan</translation>
 <translation id="901493112792887934">kasalukuyang oras ayon sa segundo</translation>
 <translation id="9048119486235211610">navigation</translation>
-<translation id="9050748414552849310">ipakita ang mga nakasarang caption</translation>
 <translation id="9062295712474918030">dokumento</translation>
 <translation id="9093215626363556771">lumabas sa picture-in-picture</translation>
 <translation id="9108370397979208512">math</translation>

@@ -87,9 +87,9 @@ std::string OidToString(const uint8_t* data, size_t len) {
         first = 2;
         value -= 80;
       }
-      out = base::UintToString(first);
+      out = base::NumberToString(first);
     }
-    out += "." + base::UintToString(value);
+    out += "." + base::NumberToString(value);
   }
 
   return out;

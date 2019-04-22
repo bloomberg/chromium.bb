@@ -2,17 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread_restrictions.h"
-#include "device/vr/openvr/test/test_helper.h"
-#include "device/vr/openvr/test/test_hook.h"
-#include "third_party/openvr/src/headers/openvr.h"
-#include "third_party/openvr/src/src/ivrclientcore.h"
-
 #include <D3D11_1.h>
 #include <DXGI1_4.h>
 #include <wrl.h>
 #include <memory>
+
+#include "base/stl_util.h"
+#include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_restrictions.h"
+#include "device/vr/openvr/test/test_helper.h"
+#include "device/vr/test/test_hook.h"
+#include "third_party/openvr/src/headers/openvr.h"
+#include "third_party/openvr/src/src/ivrclientcore.h"
 
 // TODO(https://crbug.com/892717): Update argument names to be consistent with
 // Chromium style guidelines.
@@ -27,7 +28,7 @@ class TestVRSystem : public IVRSystem {
                                     float far_z) override {
     NOTIMPLEMENTED();
     return {};
-  };
+  }
   void GetProjectionRaw(EVREye eye,
                         float* left,
                         float* right,
@@ -177,7 +178,7 @@ class TestVRSystem : public IVRSystem {
   const char* GetButtonIdNameFromEnum(EVRButtonId button_id) override {
     NOTIMPLEMENTED();
     return nullptr;
-  };
+  }
   const char* GetControllerAxisTypeNameFromEnum(
       EVRControllerAxisType axis_type) override {
     NOTIMPLEMENTED();
@@ -406,7 +407,7 @@ void* TestVRClientCore::GetGenericInterface(const char* name_and_version,
   if (strcmp(name_and_version, IVRCompositor_Version) == 0)
     return static_cast<IVRCompositor*>(&g_compositor);
   if (strcmp(name_and_version, device::kChromeOpenVRTestHookAPI) == 0)
-    return static_cast<device::TestHookRegistration*>(&g_test_helper);
+    return static_cast<device::ServiceTestHook*>(&g_test_helper);
 
   *error = VRInitError_Init_InvalidInterface;
   return nullptr;
@@ -427,8 +428,8 @@ void TestVRSystem::GetDXGIOutputInfo(int32_t* adapter_index) {
   *adapter_index = -1;
   Microsoft::WRL::ComPtr<IDXGIFactory1> dxgi_factory;
   Microsoft::WRL::ComPtr<IDXGIAdapter> adapter;
-  DCHECK(
-      SUCCEEDED(CreateDXGIFactory1(IID_PPV_ARGS(dxgi_factory.GetAddressOf()))));
+  bool success = SUCCEEDED(CreateDXGIFactory1(IID_PPV_ARGS(&dxgi_factory)));
+  DCHECK(success);
   for (int i = 0; SUCCEEDED(
            dxgi_factory->EnumAdapters(i, adapter.ReleaseAndGetAddressOf()));
        ++i) {
@@ -440,7 +441,7 @@ void TestVRSystem::GetDXGIOutputInfo(int32_t* adapter_index) {
     Microsoft::WRL::ComPtr<ID3D11DeviceContext> d3d11_device_context;
     if (SUCCEEDED(D3D11CreateDevice(
             adapter.Get(), D3D_DRIVER_TYPE_UNKNOWN, NULL, flags, feature_levels,
-            arraysize(feature_levels), D3D11_SDK_VERSION,
+            base::size(feature_levels), D3D11_SDK_VERSION,
             d3d11_device.GetAddressOf(), &feature_level_out,
             d3d11_device_context.GetAddressOf()))) {
       *adapter_index = i;

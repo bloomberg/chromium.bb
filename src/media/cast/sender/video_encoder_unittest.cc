@@ -379,8 +379,9 @@ std::vector<std::pair<Codec, bool>> DetermineEncodersToTest() {
 }
 }  // namespace
 
-INSTANTIATE_TEST_CASE_P(
-    , VideoEncoderTest, ::testing::ValuesIn(DetermineEncodersToTest()));
+INSTANTIATE_TEST_SUITE_P(,
+                         VideoEncoderTest,
+                         ::testing::ValuesIn(DetermineEncodersToTest()));
 
 }  // namespace cast
 }  // namespace media

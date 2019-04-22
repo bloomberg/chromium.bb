@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -118,7 +119,7 @@ RemoteSafeBrowsingDatabaseManager::RemoteSafeBrowsingDatabaseManager() {
   if (ints_str.empty()) {
     // By default, we check all types except a few.
     static_assert(content::RESOURCE_TYPE_LAST_TYPE ==
-                      content::RESOURCE_TYPE_PLUGIN_RESOURCE + 1,
+                      content::RESOURCE_TYPE_NAVIGATION_PRELOAD + 1,
                   "Decide if new resource type should be skipped on mobile.");
     for (int t_int = 0; t_int < content::RESOURCE_TYPE_LAST_TYPE; t_int++) {
       content::ResourceType t = static_cast<content::ResourceType>(t_int);
@@ -291,6 +292,17 @@ bool RemoteSafeBrowsingDatabaseManager::MatchMalwareIP(
 safe_browsing::ThreatSource RemoteSafeBrowsingDatabaseManager::GetThreatSource()
     const {
   return safe_browsing::ThreatSource::REMOTE;
+}
+
+std::string RemoteSafeBrowsingDatabaseManager::GetSafetyNetId() const {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(IsSupported());
+  if (!enabled_)
+    return std::string();
+
+  SafeBrowsingApiHandler* api_handler = SafeBrowsingApiHandler::GetInstance();
+  DCHECK(api_handler) << "SafeBrowsingApiHandler was never constructed";
+  return api_handler->GetSafetyNetId();
 }
 
 bool RemoteSafeBrowsingDatabaseManager::IsDownloadProtectionEnabled() const {

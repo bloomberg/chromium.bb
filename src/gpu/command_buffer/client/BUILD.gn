@@ -4,6 +4,11 @@
 
 import("//build/config/jumbo.gni")
 
+declare_args() {
+  # Enable GPU client logging without DCHECK being on.
+  enable_gpu_client_logging = false
+}
+
 # The files here go into the "gpu" component in a component build (with
 # "command_buffer_client" and "gles2_cmd_helper" just forwarding) and goes into
 # separate static libraries in non-component build.
@@ -80,6 +85,7 @@ jumbo_source_set("client_sources") {
     "shared_image_interface.h",
     "transfer_buffer.cc",
     "transfer_buffer.h",
+    "transfer_buffer_cmd_copy_helpers.h",
   ]
 
   configs += [ "//gpu:gpu_implementation" ]
@@ -163,6 +169,16 @@ gles2_implementation_source_files = [
   "vertex_array_object_manager.h",
 ]
 
+source_set("interface_base") {
+  sources = [
+    "interface_base.h",
+  ]
+  public_configs = [ "//third_party/khronos:khronos_headers" ]
+  deps = [
+    "//base",
+  ]
+}
+
 # Provides GLES2 interface, but does not cause any implementation to be linked
 # in. Useful when a target uses the interface, but permits its users to choose
 # an implementation.
@@ -172,6 +188,7 @@ source_set("gles2_interface") {
   ]
   public_configs = [ "//third_party/khronos:khronos_headers" ]
   deps = [
+    ":interface_base",
     "//base",
   ]
 }
@@ -183,6 +200,7 @@ source_set("raster_interface") {
   ]
   public_configs = [ "//third_party/khronos:khronos_headers" ]
   deps = [
+    ":interface_base",
     "//base",
     "//components/viz/common:resource_format",
     "//gpu/command_buffer/common",
@@ -195,7 +213,9 @@ source_set("webgpu_interface") {
     "webgpu_interface.h",
     "webgpu_interface_autogen.h",
   ]
+  public_configs = [ "//third_party/khronos:khronos_headers" ]
   deps = [
+    ":interface_base",
     "//base",
   ]
 }
@@ -205,6 +225,9 @@ jumbo_component("gles2_implementation") {
   sources = gles2_implementation_source_files
 
   defines = [ "GLES2_IMPL_IMPLEMENTATION" ]
+  if (enable_gpu_client_logging) {
+    defines += [ "GPU_ENABLE_CLIENT_LOGGING" ]
+  }
   all_dependent_configs = [ "//third_party/khronos:khronos_headers" ]
 
   deps = [
@@ -275,6 +298,9 @@ source_set("webgpu_sources") {
     ":webgpu_interface",
     "//gpu/command_buffer/common:webgpu",
   ]
+  public_deps = [
+    "//third_party/dawn/src/dawn:dawn_headers",
+  ]
   sources = [
     "webgpu_cmd_helper.cc",
     "webgpu_cmd_helper.h",
@@ -295,6 +321,9 @@ jumbo_component("gles2_implementation_no_check") {
     "GLES2_IMPL_IMPLEMENTATION",
     "GLES2_CONFORMANCE_TESTS=1",
   ]
+  if (enable_gpu_client_logging) {
+    defines += [ "GPU_ENABLE_CLIENT_LOGGING" ]
+  }
 
   deps = [
     ":client",

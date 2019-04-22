@@ -7,7 +7,6 @@ package org.chromium.ui.base;
 import android.content.res.Configuration;
 import android.view.View;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.LocaleUtils;
 import org.chromium.base.VisibleForTesting;
@@ -55,8 +54,8 @@ public class LocalizationUtils {
         if (sIsLayoutRtl == null) {
             Configuration configuration =
                     ContextUtils.getApplicationContext().getResources().getConfiguration();
-            sIsLayoutRtl = Boolean.valueOf(ApiCompatibilityUtils.getLayoutDirection(configuration)
-                    == View.LAYOUT_DIRECTION_RTL);
+            sIsLayoutRtl = Boolean.valueOf(
+                    configuration.getLayoutDirection() == View.LAYOUT_DIRECTION_RTL);
         }
 
         return sIsLayoutRtl.booleanValue();
@@ -79,36 +78,6 @@ public class LocalizationUtils {
 
     public static String substituteLocalePlaceholder(String str) {
         return str.replace("$LOCALE", LocaleUtils.getDefaultLocaleString().replace('-', '_'));
-    }
-
-    /**
-     * @return the current Chromium locale used to display UI elements.
-     *
-     * This matches what the Android framework resolves localized string resources to, using the
-     * system locale and the application's resources. For example, if the system uses a locale
-     * that is not supported by Chromium resources (e.g. 'fur-rIT'), Android will likely fallback
-     * to 'en-rUS' strings when Resources.getString() is called, and this method will return the
-     * matching Chromium name (i.e. 'en-US').
-     *
-     * Using this value is only necessary to ensure that the strings accessed from the locale .pak
-     * files from C++ match the resources displayed by the Java-based UI views.
-     */
-    public static String getUiLocaleStringForCompressedPak() {
-        String uiLocale = ContextUtils.getApplicationContext().getResources().getString(
-                org.chromium.ui.R.string.current_detected_ui_locale_name);
-        return uiLocale;
-    }
-
-    /**
-     * @return the language of the current Chromium locale used to display UI elements.
-     */
-    public static String getUiLanguageStringForCompressedPak() {
-        String uiLocale = getUiLocaleStringForCompressedPak();
-        int pos = uiLocale.indexOf('-');
-        if (pos > 0) {
-            return uiLocale.substring(0, pos);
-        }
-        return uiLocale;
     }
 
     /**
@@ -176,11 +145,7 @@ public class LocalizationUtils {
      *         but true for ("en-US", "en") (USA locale + English language).
      */
     public static boolean chromiumLocaleMatchesLanguage(String locale, String lang) {
-        int pos = locale.indexOf('-');
-        if (pos > 0) {
-            return locale.substring(0, pos).equals(lang);
-        }
-        return locale.equals(lang);
+        return LocaleUtils.toLanguage(locale).equals(lang);
     }
 
     private static native int nativeGetFirstStrongCharacterDirection(String string);

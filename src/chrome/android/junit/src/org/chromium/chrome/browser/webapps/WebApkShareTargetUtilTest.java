@@ -9,7 +9,6 @@ import android.net.Uri;
 import android.os.Bundle;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
@@ -33,32 +32,19 @@ import java.util.ArrayList;
         shadows = {WebApkShareTargetUtilTest.WebApkShareTargetUtilShadow.class})
 public class WebApkShareTargetUtilTest {
     private static final String WEBAPK_PACKAGE_NAME = "org.chromium.webapk.test_package";
-    private static final String WEBAPK_SELECTED_SHARE_TARGET_ACTIVITY_CLASS_NAME =
-            "org.chromium.webapk.class_name";
 
     // Android Manifest meta data for {@link PACKAGE_NAME}.
     private static final String START_URL = "https://www.google.com/scope/a_is_for_apple";
 
-    @Before
-    public void setUp() {
+    private void registerWebApk(Bundle shareTargetBundle) {
         Bundle appBundle = new Bundle();
         appBundle.putString(WebApkMetaDataKeys.START_URL, START_URL);
-        WebApkTestHelper.registerWebApkWithMetaData(WEBAPK_PACKAGE_NAME, appBundle);
+        WebApkTestHelper.registerWebApkWithMetaData(
+                WEBAPK_PACKAGE_NAME, appBundle, new Bundle[] {shareTargetBundle});
     }
 
     @Implements(WebApkShareTargetUtil.class)
     public static class WebApkShareTargetUtilShadow extends WebApkShareTargetUtil {
-        private static Bundle sShareActivityBundle;
-
-        public static void setActivityMetaData(Bundle shareActivityBundle) {
-            sShareActivityBundle = shareActivityBundle;
-        }
-
-        @Implementation
-        public static Bundle computeShareTargetMetaData(
-                String apkPackageName, WebApkInfo.ShareData shareData) {
-            return sShareActivityBundle;
-        }
         @Implementation
         public static byte[] readStringFromContentUri(Uri uri) {
             return "content".getBytes();
@@ -84,12 +70,12 @@ public class WebApkShareTargetUtilTest {
         shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_METHOD, "GET");
         shareActivityBundle.putString(
                 WebApkMetaDataKeys.SHARE_ENCTYPE, "application/x-www-form-urlencoded");
-        WebApkShareTargetUtilShadow.setActivityMetaData(shareActivityBundle);
+        registerWebApk(shareActivityBundle);
 
         Intent intent = new Intent();
         intent.putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, WEBAPK_PACKAGE_NAME);
         intent.putExtra(WebApkConstants.EXTRA_WEBAPK_SELECTED_SHARE_TARGET_ACTIVITY_CLASS_NAME,
-                WEBAPK_SELECTED_SHARE_TARGET_ACTIVITY_CLASS_NAME);
+                WebApkTestHelper.getGeneratedShareTargetActivityClassName(0));
         intent.putExtra(ShortcutHelper.EXTRA_URL, START_URL);
 
         WebApkInfo info = WebApkInfo.create(intent);
@@ -98,7 +84,7 @@ public class WebApkShareTargetUtilTest {
                 WebApkShareTargetUtilShadow.computePostData(WEBAPK_PACKAGE_NAME, info.shareData()));
 
         shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_METHOD, "POST");
-        WebApkShareTargetUtilShadow.setActivityMetaData(shareActivityBundle);
+        registerWebApk(shareActivityBundle);
         Assert.assertNotEquals(null,
                 WebApkShareTargetUtilShadow.computePostData(WEBAPK_PACKAGE_NAME, info.shareData()));
     }
@@ -115,12 +101,12 @@ public class WebApkShareTargetUtilTest {
         shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_METHOD, "POST");
         shareActivityBundle.putString(
                 WebApkMetaDataKeys.SHARE_ENCTYPE, "application/x-www-form-urlencoded");
-        WebApkShareTargetUtilShadow.setActivityMetaData(shareActivityBundle);
+        registerWebApk(shareActivityBundle);
 
         Intent intent = new Intent();
         intent.putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, WEBAPK_PACKAGE_NAME);
         intent.putExtra(WebApkConstants.EXTRA_WEBAPK_SELECTED_SHARE_TARGET_ACTIVITY_CLASS_NAME,
-                WEBAPK_SELECTED_SHARE_TARGET_ACTIVITY_CLASS_NAME);
+                WebApkTestHelper.getGeneratedShareTargetActivityClassName(0));
         intent.putExtra(ShortcutHelper.EXTRA_URL, START_URL);
         intent.putExtra(Intent.EXTRA_SUBJECT, "extra_subject");
         intent.putExtra(Intent.EXTRA_TEXT, "extra_text");
@@ -150,12 +136,12 @@ public class WebApkShareTargetUtilTest {
         shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_METHOD, "POST");
         shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ENCTYPE, "multipart/form-data");
         // Note that names and accepts are not specified
-        WebApkShareTargetUtilShadow.setActivityMetaData(shareActivityBundle);
+        registerWebApk(shareActivityBundle);
 
         Intent intent = new Intent();
         intent.putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, WEBAPK_PACKAGE_NAME);
         intent.putExtra(WebApkConstants.EXTRA_WEBAPK_SELECTED_SHARE_TARGET_ACTIVITY_CLASS_NAME,
-                WEBAPK_SELECTED_SHARE_TARGET_ACTIVITY_CLASS_NAME);
+                WebApkTestHelper.getGeneratedShareTargetActivityClassName(0));
         intent.putExtra(ShortcutHelper.EXTRA_URL, START_URL);
 
         ArrayList<Uri> uris = new ArrayList<>();
@@ -179,12 +165,12 @@ public class WebApkShareTargetUtilTest {
         shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ENCTYPE, "multipart/form-data");
         shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_NAMES, "[\"name\"]");
         shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_ACCEPTS, "[[\"image/*\"]]");
-        WebApkShareTargetUtilShadow.setActivityMetaData(shareActivityBundle);
+        registerWebApk(shareActivityBundle);
 
         Intent intent = new Intent();
         intent.putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, WEBAPK_PACKAGE_NAME);
         intent.putExtra(WebApkConstants.EXTRA_WEBAPK_SELECTED_SHARE_TARGET_ACTIVITY_CLASS_NAME,
-                WEBAPK_SELECTED_SHARE_TARGET_ACTIVITY_CLASS_NAME);
+                WebApkTestHelper.getGeneratedShareTargetActivityClassName(0));
         intent.putExtra(ShortcutHelper.EXTRA_URL, START_URL);
         // Intent.EXTRA_STREAM is not specified.
         WebApkInfo info = WebApkInfo.create(intent);
@@ -200,12 +186,12 @@ public class WebApkShareTargetUtilTest {
         shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_ENCTYPE, "multipart/form-data");
         shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_NAMES, "[\"name\"]");
         shareActivityBundle.putString(WebApkMetaDataKeys.SHARE_PARAM_ACCEPTS, "[[\"image/*\"]]");
-        WebApkShareTargetUtilShadow.setActivityMetaData(shareActivityBundle);
+        registerWebApk(shareActivityBundle);
 
         Intent intent = new Intent();
         intent.putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, WEBAPK_PACKAGE_NAME);
         intent.putExtra(WebApkConstants.EXTRA_WEBAPK_SELECTED_SHARE_TARGET_ACTIVITY_CLASS_NAME,
-                WEBAPK_SELECTED_SHARE_TARGET_ACTIVITY_CLASS_NAME);
+                WebApkTestHelper.getGeneratedShareTargetActivityClassName(0));
         intent.putExtra(ShortcutHelper.EXTRA_URL, START_URL);
 
         ArrayList<Uri> uris = new ArrayList<>();

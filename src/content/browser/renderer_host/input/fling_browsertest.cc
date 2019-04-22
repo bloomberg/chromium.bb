@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/input/synthetic_smooth_scroll_gesture.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
@@ -148,7 +149,7 @@ class BrowserSideFlingBrowserTest : public ContentBrowserTest {
     blink::WebGestureEvent gesture_scroll_begin(
         blink::WebGestureEvent::kGestureScrollBegin,
         blink::WebInputEvent::kNoModifiers, ui::EventTimeForNow());
-    gesture_scroll_begin.SetSourceDevice(blink::kWebGestureDeviceTouchscreen);
+    gesture_scroll_begin.SetSourceDevice(blink::WebGestureDevice::kTouchscreen);
     gesture_scroll_begin.data.scroll_begin.delta_hint_units =
         blink::WebGestureEvent::ScrollUnits::kPrecisePixels;
     gesture_scroll_begin.data.scroll_begin.delta_x_hint = fling_velocity.x();
@@ -171,7 +172,7 @@ class BrowserSideFlingBrowserTest : public ContentBrowserTest {
     blink::WebGestureEvent gesture_fling_start(
         blink::WebGestureEvent::kGestureFlingStart,
         blink::WebInputEvent::kNoModifiers, ui::EventTimeForNow());
-    gesture_fling_start.SetSourceDevice(blink::kWebGestureDeviceTouchscreen);
+    gesture_fling_start.SetSourceDevice(blink::WebGestureDevice::kTouchscreen);
     gesture_fling_start.data.fling_start.velocity_x = fling_velocity.x();
     gesture_fling_start.data.fling_start.velocity_y = fling_velocity.y();
     gesture_fling_start.SetPositionInWidget(scroll_location_in_widget);
@@ -217,7 +218,7 @@ class BrowserSideFlingBrowserTest : public ContentBrowserTest {
     blink::WebGestureEvent gesture_fling_start(
         blink::WebGestureEvent::kGestureFlingStart,
         blink::WebInputEvent::kNoModifiers, ui::EventTimeForNow());
-    gesture_fling_start.SetSourceDevice(blink::kWebGestureDeviceTouchpad);
+    gesture_fling_start.SetSourceDevice(blink::WebGestureDevice::kTouchpad);
     gesture_fling_start.data.fling_start.velocity_x = fling_velocity.x();
     gesture_fling_start.data.fling_start.velocity_y = fling_velocity.y();
     gesture_fling_start.SetPositionInWidget(position_in_widget);
@@ -431,7 +432,7 @@ IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest,
   blink::WebGestureEvent gesture_fling_cancel(
       blink::WebGestureEvent::kGestureFlingCancel,
       blink::WebInputEvent::kNoModifiers, ui::EventTimeForNow());
-  gesture_fling_cancel.SetSourceDevice(blink::kWebGestureDeviceTouchscreen);
+  gesture_fling_cancel.SetSourceDevice(blink::WebGestureDevice::kTouchscreen);
 
   const gfx::PointF location_in_widget(1, 1);
   const gfx::PointF location_in_root =
@@ -450,6 +451,10 @@ IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest,
                        InertialGSUBubblingStopsWhenParentCannotScroll) {
   LoadPageWithOOPIF();
   // Scroll the parent down so that it is scrollable upward.
+
+  // Initialize observer before scrolling changes the position of the OOPIF.
+  HitTestTransformChangeObserver observer(child_view_->GetFrameSinkId());
+
   EXPECT_TRUE(
       ExecJs(GetRootNode()->current_frame_host(), "window.scrollTo(0, 20)"));
   // We expect to have window.scrollY == 20 after scrolling but with zoom for
@@ -457,6 +462,9 @@ IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest,
   // https://crbug.com/891860).
   WaitForFrameScroll(GetRootNode(), 19);
   SynchronizeThreads();
+
+  // Wait for hit test data to change after scroll happens.
+  observer.WaitForHitTestDataChange();
 
   // Fling and wait for the parent to scroll up.
   auto input_msg_watcher = std::make_unique<InputMsgWatcher>(
@@ -474,10 +482,8 @@ IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest,
 
   run_loop_ = std::make_unique<base::RunLoop>();
 
-  std::unique_ptr<SyntheticSmoothScrollGesture> gesture(
-      new SyntheticSmoothScrollGesture(params));
   GetWidgetHost()->QueueSyntheticGesture(
-      std::move(gesture),
+      std::make_unique<SyntheticSmoothScrollGesture>(params),
       base::BindOnce(&BrowserSideFlingBrowserTest::OnSyntheticGestureCompleted,
                      base::Unretained(this)));
 
@@ -494,60 +500,6 @@ IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest,
           ->GetInputEventRouter();
   EXPECT_TRUE(
       router->forced_last_fling_start_target_to_stop_flinging_for_test());
-}
-
-// Flaky, see https://crbug.com/850455
-#define MAYBE_ScrollEndGeneratedForFilteredFling \
-  DISABLED_ScrollEndGeneratedForFilteredFling
-IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest,
-                       MAYBE_ScrollEndGeneratedForFilteredFling) {
-  LoadURL(kTouchActionFilterDataURL);
-
-  // Necessary for checking the ACK source of the sent events. The events are
-  // filtered when the Browser is the source.
-  auto scroll_begin_watcher = std::make_unique<InputMsgWatcher>(
-      GetWidgetHost(), blink::WebInputEvent::kGestureScrollBegin);
-  auto fling_start_watcher = std::make_unique<InputMsgWatcher>(
-      GetWidgetHost(), blink::WebInputEvent::kGestureFlingStart);
-  auto scroll_end_watcher = std::make_unique<InputMsgWatcher>(
-      GetWidgetHost(), blink::WebInputEvent::kGestureScrollEnd);
-
-  // Do a horizontal touchscreen scroll followed by a fling. The GFS must get
-  // filtered since the GSB is filtered.
-  SyntheticSmoothScrollGestureParams params;
-  params.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
-  params.anchor = gfx::PointF(10, 10);
-  params.distances.push_back(gfx::Vector2d(-60, 0));
-  params.prevent_fling = false;
-
-  run_loop_ = std::make_unique<base::RunLoop>();
-
-  std::unique_ptr<SyntheticSmoothScrollGesture> gesture(
-      new SyntheticSmoothScrollGesture(params));
-  GetWidgetHost()->QueueSyntheticGesture(
-      std::move(gesture),
-      base::BindOnce(&BrowserSideFlingBrowserTest::OnSyntheticGestureCompleted,
-                     base::Unretained(this)));
-
-  // Runs until we get the OnSyntheticGestureCompleted callback.
-  run_loop_->Run();
-
-  scroll_begin_watcher->GetAckStateWaitIfNecessary();
-  EXPECT_EQ(InputEventAckSource::BROWSER,
-            scroll_begin_watcher->last_event_ack_source());
-
-  fling_start_watcher->GetAckStateWaitIfNecessary();
-  EXPECT_EQ(InputEventAckSource::BROWSER,
-            fling_start_watcher->last_event_ack_source());
-
-  // Since the GFS is filtered. the input_router_impl will generate and forward
-  // a GSE to make sure that the scrolling sequence and the touch action filter
-  // state get reset properly. The generated GSE will also get filtered since
-  // its equivalent GSB is filtered. The test will timeout if the GSE is not
-  // generated.
-  scroll_end_watcher->GetAckStateWaitIfNecessary();
-  EXPECT_EQ(InputEventAckSource::BROWSER,
-            scroll_end_watcher->last_event_ack_source());
 }
 #endif  // !defined(OS_MACOSX)
 

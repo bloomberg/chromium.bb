@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_SIM_SIM_CANVAS_H_
 
 #include "third_party/blink/renderer/platform/graphics/color.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -24,6 +25,8 @@ class SimCanvas : public SkCanvas {
   };
 
   class Commands {
+    DISALLOW_NEW();
+
    public:
     size_t DrawCount() const { return commands_.size(); }
     size_t DrawCount(CommandType, const String& color_string = String()) const;
@@ -62,20 +65,6 @@ class SimCanvas : public SkCanvas {
                        SrcRectConstraint) override;
 
   // Text
-  void onDrawText(const void* text,
-                  size_t byte_length,
-                  SkScalar x,
-                  SkScalar y,
-                  const SkPaint&) override;
-  void onDrawPosText(const void* text,
-                     size_t byte_length,
-                     const SkPoint pos[],
-                     const SkPaint&) override;
-  void onDrawPosTextH(const void* text,
-                      size_t byte_length,
-                      const SkScalar xpos[],
-                      SkScalar const_y,
-                      const SkPaint&) override;
   void onDrawTextBlob(const SkTextBlob*,
                       SkScalar x,
                       SkScalar y,

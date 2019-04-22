@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "base/process/launch.h"
 #include "content/browser/child_process_launcher.h"
-#include "content/common/sandbox_policy_fuchsia.h"
 #include "content/public/browser/child_process_launcher_utils.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "services/service_manager/embedder/result_codes.h"
@@ -19,8 +18,7 @@ void ChildProcessLauncherHelper::SetProcessPriorityOnLauncherThread(
     base::Process process,
     const ChildProcessLauncherPriority& priority) {
   DCHECK(CurrentlyOnProcessLauncherTaskRunner());
-  // TODO(fuchsia): Implement this. (crbug.com/707031)
-  NOTIMPLEMENTED();
+  // TODO(https://crbug.com/926583): Fuchsia does not currently support this.
 }
 
 ChildProcessTerminationInfo ChildProcessLauncherHelper::GetTerminationInfo(
@@ -41,15 +39,12 @@ bool ChildProcessLauncherHelper::TerminateProcess(const base::Process& process,
 // static
 void ChildProcessLauncherHelper::SetRegisteredFilesForService(
     const std::string& service_name,
-    catalog::RequiredFileMap required_files) {
-  // TODO(fuchsia): Implement this. (crbug.com/707031)
-  NOTIMPLEMENTED();
+    std::map<std::string, base::FilePath> required_files) {
+  NOTREACHED() << " for service " << service_name;
 }
 
 // static
 void ChildProcessLauncherHelper::ResetRegisteredFilesForTesting() {
-  // TODO(fuchsia): Implement this. (crbug.com/707031)
-  NOTIMPLEMENTED();
 }
 
 void ChildProcessLauncherHelper::BeforeLaunchOnClientThread() {
@@ -86,7 +81,6 @@ ChildProcessLauncherHelper::LaunchProcessOnLauncherThread(
   DCHECK(mojo_channel_);
   DCHECK(mojo_channel_->remote_endpoint().is_valid());
 
-  // TODO(750938): Implement sandboxed/isolated subprocess launching.
   Process child_process;
   child_process.process = base::LaunchProcess(*command_line(), options);
   return child_process;

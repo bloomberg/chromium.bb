@@ -10,41 +10,53 @@
     <link rel="stylesheet" href="assistant_shared_styles.css">
     <link rel="stylesheet" href="assistant_voice_match.css">
     <oobe-dialog id="voice-match-dialog" role="dialog" has-buttons hide-shadow
-        no-footer-padding no-header class="intro">
+        no-footer-padding no-header class="intro"
+        i18n-values="aria-label:assistantVoiceMatchTitle">
       <div slot="footer">
         <div class="container">
-          <img id="logo" src="assistant_logo.png">
+          <img id="logo" src="assistant_logo.png"
+              i18n-values="aria-label:assistantLogo">
           <div id="intro-container">
             <div class="title" i18n-content="assistantVoiceMatchTitle"></div>
-            <div class="content" i18n-content="assistantVoiceMatchMessage">
+            <div class="content"
+                i18n-values=".innerHTML:assistantVoiceMatchMessage">
             </div>
-            <img id="voice-match-img" src="assistant_voice_match.png">
+            <div class="content" id="no-dsp-message"
+                i18n-content="assistantVoiceMatchNoDspMessage">
+            </div>
+            <div id="voice-match-video">
+              <video muted autoplay loop>
+                <source src="voice_laptop_1x.webm" type="video/webm">
+              </video>
+            </div>
           </div>
           <div id="recording-container">
             <div class="title" id="title-recording"
                 i18n-content="assistantVoiceMatchRecording"></div>
             <div class="title" id="title-completed"
                 i18n-content="assistantVoiceMatchCompleted"></div>
-            <voice-match-entry id="voice-entry-0">
-              <div class="entry-content"
-                  i18n-content="assistantVoiceMatchInstruction0"></div>
-            </voice-match-entry>
-            <voice-match-entry id="voice-entry-1">
-              <div class="entry-content"
-                  i18n-content="assistantVoiceMatchInstruction1"></div>
-            </voice-match-entry>
-            <voice-match-entry id="voice-entry-2">
-              <div class="entry-content"
-                  i18n-content="assistantVoiceMatchInstruction2"></div>
-            </voice-match-entry>
-            <voice-match-entry id="voice-entry-3">
-              <div class="entry-content"
-                  i18n-content="assistantVoiceMatchInstruction3"></div>
-            </voice-match-entry>
-            <voice-match-entry id="voice-uploading">
-              <div class="entry-content"
-                  i18n-content="assistantVoiceMatchUploading"></div>
-            </voice-match-entry>
+            <div id="voice-match-entries">
+              <voice-match-entry id="voice-entry-0">
+                <div class="entry-content"
+                    i18n-content="assistantVoiceMatchInstruction0"></div>
+              </voice-match-entry>
+              <voice-match-entry id="voice-entry-1">
+                <div class="entry-content"
+                    i18n-content="assistantVoiceMatchInstruction1"></div>
+              </voice-match-entry>
+              <voice-match-entry id="voice-entry-2">
+                <div class="entry-content"
+                    i18n-content="assistantVoiceMatchInstruction2"></div>
+              </voice-match-entry>
+              <voice-match-entry id="voice-entry-3">
+                <div class="entry-content"
+                    i18n-content="assistantVoiceMatchInstruction3"></div>
+              </voice-match-entry>
+            </div>
+            <div id="loading-animation" hidden>
+              <paper-spinner-lite id="loading-spinner" active>
+              </paper-spinner-lite>
+            </div>
             <div class="content" id="footer-text"
                 i18n-content="assistantVoiceMatchFooter"></div>
           </div>
@@ -53,6 +65,11 @@
                 i18n-content="assistantVoiceMatchAlreadySetupTitle"></div>
             <div class="content"
                 i18n-content="assistantVoiceMatchAlreadySetupMessage"></div>
+            <div id="already-setup-video-container">
+              <video id="already-setup-video" muted autoplay loop>
+                <source src="voice_already_setup.webm" type="video/webm">
+              </video>
+            </div>
           </div>
         </div>
       </div>
@@ -69,14 +86,6 @@
         <oobe-text-button id="agree-button" inverse on-tap="onAgreeTap_"
             disabled="[[buttonsDisabled]]">
           <div i18n-content="assistantOptinAgreeButton"></div>
-        </oobe-text-button>
-        <oobe-text-button id="done-button" inverse on-tap="onDoneTap_"
-            disabled="[[buttonsDisabled]]">
-          <div i18n-content="assistantOptinSaveButton"></div>
-        </oobe-text-button>
-        <oobe-text-button id="next-button" inverse on-tap="onDoneTap_"
-            disabled="[[buttonsDisabled]]">
-          <div i18n-content="next"></div>
         </oobe-text-button>
       </div>
     </oobe-dialog>

@@ -45,6 +45,7 @@ int HostProcessMain();
 #if defined(OS_WIN)
 int DaemonProcessMain();
 int DesktopProcessMain();
+int FileChooserMain();
 int RdpDesktopSessionMain();
 #endif  // defined(OS_WIN)
 
@@ -132,6 +133,8 @@ MainRoutineFn SelectMainRoutine(const std::string& process_type) {
     main_routine = &DaemonProcessMain;
   } else if (process_type == kProcessTypeDesktop) {
     main_routine = &DesktopProcessMain;
+  } else if (process_type == kProcessTypeFileChooser) {
+    main_routine = &FileChooserMain;
   } else if (process_type == kProcessTypeRdpDesktopSession) {
     main_routine = &RdpDesktopSessionMain;
 #endif  // defined(OS_WIN)
@@ -149,6 +152,15 @@ int HostMain(int argc, char** argv) {
 #endif
 
   base::CommandLine::Init(argc, argv);
+
+#if !defined(NDEBUG)
+  // Always enable Webrtc logging for debug builds.
+  // Without this switch, Webrtc errors will still be logged but
+  // RTC_LOG(LS_INFO) lines will not.
+  // See https://webrtc.org/native-code/logging
+  auto* cl = base::CommandLine::ForCurrentProcess();
+  cl->AppendSwitch("vmodule=*/webrtc/*=1");
+#endif
 
   // Parse the command line.
   const base::CommandLine* command_line =

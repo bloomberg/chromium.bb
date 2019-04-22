@@ -7,15 +7,15 @@ package org.chromium.android_webview.test.util;
 import android.support.test.InstrumentationRegistry;
 
 import org.chromium.android_webview.AwQuotaManagerBridge;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**
  * This class provides common methods for AwQuotaManagerBridge related tests
  */
 public class AwQuotaManagerBridgeTestUtil {
     public static AwQuotaManagerBridge getQuotaManagerBridge() throws Exception {
-        return ThreadUtils.runOnUiThreadBlocking(() -> AwQuotaManagerBridge.getInstance());
+        return TestThreadUtils.runOnUiThreadBlocking(() -> AwQuotaManagerBridge.getInstance());
     }
 
     private static class GetOriginsCallbackHelper extends CallbackHelper {

@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
-import static org.chromium.base.ThreadUtils.runOnUiThreadBlocking;
+import static org.chromium.content_public.browser.test.util.TestThreadUtils.runOnUiThreadBlocking;
 
 import android.app.Activity;
 import android.content.Context;
@@ -39,7 +39,7 @@ public class FakeKeyboard extends ChromeKeyboardVisibilityDelegate {
         super(activity);
     }
 
-    private int getStaticKeyboardHeight() {
+    protected int getStaticKeyboardHeight() {
         return (int) getActivity().getResources().getDisplayMetrics().density * KEYBOARD_HEIGHT_DP;
     }
 
@@ -53,6 +53,8 @@ public class FakeKeyboard extends ChromeKeyboardVisibilityDelegate {
         boolean keyboardWasVisible = mIsShowing;
         mIsShowing = true;
         runOnUiThreadBlocking(() -> {
+            // Fake a layout change for components listening to the activity directly ...
+            if (getStaticKeyboardHeight() <= 0) return; // ... unless the keyboard didn't affect it.
             if (!keyboardWasVisible) notifyListeners(isKeyboardShowing(getActivity(), view));
             // Pretend a layout change for components listening to the activity directly:
             View contentView = getActivity().findViewById(android.R.id.content);
@@ -67,8 +69,9 @@ public class FakeKeyboard extends ChromeKeyboardVisibilityDelegate {
         boolean keyboardWasVisible = mIsShowing;
         mIsShowing = false;
         runOnUiThreadBlocking(() -> {
+            // Fake a layout change for components listening to the activity directly ...
+            if (getStaticKeyboardHeight() <= 0) return; // ... unless the keyboard didn't affect it.
             if (keyboardWasVisible) notifyListeners(isKeyboardShowing(getActivity(), view));
-            // Pretend a layout change for components listening to the activity directly:
             View contentView = getActivity().findViewById(android.R.id.content);
             ViewGroup.LayoutParams p = contentView.getLayoutParams();
             p.height = p.height + getStaticKeyboardHeight();

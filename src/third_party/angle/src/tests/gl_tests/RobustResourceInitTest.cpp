@@ -8,9 +8,19 @@
 #include "test_utils/ANGLETest.h"
 
 #include "test_utils/gl_raii.h"
+#include "util/EGLWindow.h"
 
 namespace angle
 {
+constexpr char kSimpleTextureVertexShader[] =
+    "#version 300 es\n"
+    "in vec4 position;\n"
+    "out vec2 texcoord;\n"
+    "void main()\n"
+    "{\n"
+    "    gl_Position = position;\n"
+    "    texcoord = vec2(position.xy * 0.5 - 0.5);\n"
+    "}";
 
 // TODO(jmadill): Would be useful in a shared place in a utils folder.
 void UncompressDXTBlock(int destX,
@@ -194,6 +204,9 @@ class RobustResourceInitTest : public ANGLETest
         setConfigStencilBits(8);
 
         setRobustResourceInit(true);
+
+        // Test flakiness was noticed when reusing displays.
+        forceNewDisplay();
     }
 
     bool hasGLExtension() { return extensionEnabled("GL_ANGLE_robust_resource_initialization"); }
@@ -248,16 +261,6 @@ class RobustResourceInitTest : public ANGLETest
                                              int skipHeight,
                                              const GLColor &skip);
 
-    const std::string kSimpleTextureVertexShader =
-        "#version 300 es\n"
-        "in vec4 position;\n"
-        "out vec2 texcoord;\n"
-        "void main()\n"
-        "{\n"
-        "    gl_Position = position;\n"
-        "    texcoord = vec2(position.xy * 0.5 - 0.5);\n"
-        "}";
-
     static std::string GetSimpleTextureFragmentShader(const char *samplerType)
     {
         std::stringstream fragmentStream;
@@ -304,7 +307,8 @@ class RobustResourceInitTestES31 : public RobustResourceInitTest
 // it only works on the implemented renderers
 TEST_P(RobustResourceInitTest, ExpectedRendererSupport)
 {
-    bool shouldHaveSupport = IsD3D11() || IsD3D11_FL93() || IsD3D9() || IsOpenGL() || IsOpenGLES();
+    bool shouldHaveSupport =
+        IsD3D11() || IsD3D11_FL93() || IsD3D9() || IsOpenGL() || IsOpenGLES() || IsVulkan();
     EXPECT_EQ(shouldHaveSupport, hasGLExtension());
     EXPECT_EQ(shouldHaveSupport, hasEGLExtension());
     EXPECT_EQ(shouldHaveSupport, hasRobustSurfaceInit());
@@ -342,7 +346,7 @@ TEST_P(RobustResourceInitTest, BufferData)
     glBufferData(GL_ARRAY_BUFFER, getWindowWidth() * getWindowHeight() * sizeof(GLfloat), nullptr,
                  GL_STATIC_DRAW);
 
-    const std::string &vertexShader =
+    constexpr char kVS[] =
         "attribute vec2 position;\n"
         "attribute float testValue;\n"
         "varying vec4 colorOut;\n"
@@ -350,13 +354,13 @@ TEST_P(RobustResourceInitTest, BufferData)
         "    gl_Position = vec4(position, 0, 1);\n"
         "    colorOut = testValue == 0.0 ? vec4(0, 1, 0, 1) : vec4(1, 0, 0, 1);\n"
         "}";
-    const std::string &fragmentShader =
+    constexpr char kFS[] =
         "varying mediump vec4 colorOut;\n"
         "void main() {\n"
         "    gl_FragColor = colorOut;\n"
         "}";
 
-    ANGLE_GL_PROGRAM(program, vertexShader, fragmentShader);
+    ANGLE_GL_PROGRAM(program, kVS, kFS);
 
     GLint testValueLoc = glGetAttribLocation(program.get(), "testValue");
     ASSERT_NE(-1, testValueLoc);
@@ -558,8 +562,8 @@ TEST_P(RobustResourceInitTest, TexImageThenSubImage)
 {
     ANGLE_SKIP_TEST_IF(!hasGLExtension());
 
-    // http://anglebug.com/2407
-    ANGLE_SKIP_TEST_IF(IsAndroid());
+    // http://anglebug.com/2407, but only fails on Nexus devices
+    ANGLE_SKIP_TEST_IF(IsNexus5X() || IsNexus6P());
 
     // Put some data into the texture
 
@@ -704,14 +708,14 @@ TEST_P(RobustResourceInitTest, DrawWithTexture)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-    const std::string &vertexShader =
+    constexpr char kVS[] =
         "attribute vec2 position;\n"
         "varying vec2 texCoord;\n"
         "void main() {\n"
         "    gl_Position = vec4(position, 0, 1);\n"
         "    texCoord = (position * 0.5) + 0.5;\n"
         "}";
-    const std::string &fragmentShader =
+    constexpr char kFS[] =
         "precision mediump float;\n"
         "varying vec2 texCoord;\n"
         "uniform sampler2D tex;\n"
@@ -719,7 +723,7 @@ TEST_P(RobustResourceInitTest, DrawWithTexture)
         "    gl_FragColor = texture2D(tex, texCoord);\n"
         "}";
 
-    ANGLE_GL_PROGRAM(program, vertexShader, fragmentShader);
+    ANGLE_GL_PROGRAM(program, kVS, kFS);
     drawQuad(program, "position", 0.5f);
 
     checkFramebufferNonZeroPixels(0, 0, 0, 0, GLColor::black);
@@ -731,8 +735,8 @@ TEST_P(RobustResourceInitTest, ReadingPartiallyInitializedTexture)
 {
     ANGLE_SKIP_TEST_IF(!hasGLExtension());
 
-    // http://anglebug.com/2407
-    ANGLE_SKIP_TEST_IF(IsAndroid());
+    // http://anglebug.com/2407, but only fails on Nexus devices
+    ANGLE_SKIP_TEST_IF(IsNexus5X() || IsNexus6P());
 
     GLTexture tex;
     setupTexture(&tex);
@@ -772,7 +776,7 @@ TEST_P(RobustResourceInitTest, UninitializedPartsOfCopied2DTexturesAreBlack)
 // succeed with all bytes set to 0. Regression test for a bug where the zeroing out of the
 // texture was done via the same code path as glTexImage2D, causing the PIXEL_UNPACK_BUFFER
 // to be used.
-TEST_P(RobustResourceInitTestES3, ReadingOutOfboundsCopiedTextureWithUnpackBuffer)
+TEST_P(RobustResourceInitTestES3, ReadingOutOfBoundsCopiedTextureWithUnpackBuffer)
 {
     ANGLE_SKIP_TEST_IF(!hasGLExtension());
     // TODO(geofflang@chromium.org): CopyTexImage from GL_RGBA4444 to GL_ALPHA fails when looking
@@ -831,7 +835,7 @@ TEST_P(RobustResourceInitTestES3, ReadingOutOfboundsCopiedTextureWithUnpackBuffe
 
 // Reading an uninitialized portion of a texture (copyTexImage2D with negative x and y) should
 // succeed with all bytes set to 0.
-TEST_P(RobustResourceInitTest, ReadingOutOfboundsCopiedTexture)
+TEST_P(RobustResourceInitTest, ReadingOutOfBoundsCopiedTexture)
 {
     ANGLE_SKIP_TEST_IF(!hasGLExtension());
 
@@ -935,8 +939,9 @@ void RobustResourceInitTestES3::testIntegerTextureInit(const char *samplerType,
 {
     ANGLE_SKIP_TEST_IF(!hasGLExtension());
 
-    ANGLE_GL_PROGRAM(program, kSimpleTextureVertexShader,
-                     GetSimpleTextureFragmentShader(samplerType));
+    std::string fs = GetSimpleTextureFragmentShader(samplerType);
+
+    ANGLE_GL_PROGRAM(program, kSimpleTextureVertexShader, fs.c_str());
 
     // Make an RGBA framebuffer.
     GLTexture framebufferTexture;
@@ -1011,7 +1016,7 @@ TEST_P(RobustResourceInitTestES3, TextureInit_IntRGB32)
 TEST_P(RobustResourceInitTestES31, ImageTextureInit_R32UI)
 {
     ANGLE_SKIP_TEST_IF(!hasGLExtension());
-    const std::string csSource =
+    constexpr char kCS[] =
         R"(#version 310 es
         layout(local_size_x=1, local_size_y=1, local_size_z=1) in;
         layout(r32ui, binding = 1) writeonly uniform highp uimage2D writeImage;
@@ -1026,7 +1031,7 @@ TEST_P(RobustResourceInitTestES31, ImageTextureInit_R32UI)
     glTexStorage2D(GL_TEXTURE_2D, 1, GL_R32UI, 1, 1);
     EXPECT_GL_NO_ERROR();
 
-    ANGLE_GL_COMPUTE_PROGRAM(program, csSource);
+    ANGLE_GL_COMPUTE_PROGRAM(program, kCS);
     glUseProgram(program.get());
 
     glBindImageTexture(1, texture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_R32UI);
@@ -1042,6 +1047,18 @@ TEST_P(RobustResourceInitTestES31, ImageTextureInit_R32UI)
     glReadPixels(0, 0, 1, 1, GL_RED_INTEGER, GL_UNSIGNED_INT, &outputValue);
     EXPECT_GL_NO_ERROR();
 
+    EXPECT_EQ(200u, outputValue);
+
+    outputValue = 0u;
+    // Write to another uninitialized texture.
+    GLTexture texture2;
+    glBindTexture(GL_TEXTURE_2D, texture2);
+    glTexStorage2D(GL_TEXTURE_2D, 1, GL_R32UI, 1, 1);
+    EXPECT_GL_NO_ERROR();
+    glBindImageTexture(1, texture2, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_R32UI);
+    glDispatchCompute(1, 1, 1);
+    glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture2, 0);
+    glReadPixels(0, 0, 1, 1, GL_RED_INTEGER, GL_UNSIGNED_INT, &outputValue);
     EXPECT_EQ(200u, outputValue);
 }
 
@@ -1076,7 +1093,8 @@ TEST_P(RobustResourceInitTestES3, GenerateMipmap)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-    ANGLE_GL_PROGRAM(program, kSimpleTextureVertexShader, GetSimpleTextureFragmentShader(""));
+    std::string shader = GetSimpleTextureFragmentShader("");
+    ANGLE_GL_PROGRAM(program, kSimpleTextureVertexShader, shader.c_str());
 
     // Generate mipmaps and verify all the mips.
     glGenerateMipmap(GL_TEXTURE_2D);
@@ -1358,8 +1376,8 @@ TEST_P(RobustResourceInitTest, MaskedStencilClear)
     ANGLE_SKIP_TEST_IF(!hasGLExtension());
     ANGLE_SKIP_TEST_IF(IsD3D11_FL93());
 
-    // http://anglebug.com/2407
-    ANGLE_SKIP_TEST_IF(IsAndroid());
+    // http://anglebug.com/2407, but only fails on Nexus devices
+    ANGLE_SKIP_TEST_IF(IsNexus5X() || IsNexus6P());
 
     auto clearFunc = [](GLint clearValue) {
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -1380,8 +1398,8 @@ TEST_P(RobustResourceInitTestES3, MaskedStencilClearBuffer)
 
     ANGLE_SKIP_TEST_IF(IsLinux() && IsOpenGL());
 
-    // http://anglebug.com/2407
-    ANGLE_SKIP_TEST_IF(IsAndroid());
+    // http://anglebug.com/2407, but only fails on Nexus devices
+    ANGLE_SKIP_TEST_IF(IsNexus5X() || IsNexus6P());
 
     auto clearFunc = [](GLint clearValue) {
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -1735,9 +1753,6 @@ TEST_P(RobustResourceInitTestES31, Multisample2DTexture)
 {
     ANGLE_SKIP_TEST_IF(!hasGLExtension());
 
-    const GLsizei kWidth  = 128;
-    const GLsizei kHeight = 128;
-
     GLTexture texture;
     glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, texture);
     glTexStorage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 2, GL_RGBA8, kWidth, kHeight, false);
@@ -1777,8 +1792,6 @@ TEST_P(RobustResourceInitTestES31, Multisample2DTextureArray)
     }
     ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_OES_texture_storage_multisample_2d_array"));
 
-    const GLsizei kWidth  = 128;
-    const GLsizei kHeight = 128;
     const GLsizei kLayers = 4;
 
     GLTexture texture;
@@ -1812,6 +1825,28 @@ TEST_P(RobustResourceInitTestES31, Multisample2DTextureArray)
     }
 }
 
+// Tests that using an out of bounds draw offset with a dynamic array succeeds.
+TEST_P(RobustResourceInitTest, DynamicVertexArrayOffsetOutOfBounds)
+{
+    // Not implemented on Vulkan.  http://anglebug.com/3350
+    ANGLE_SKIP_TEST_IF(IsVulkan());
+
+    ANGLE_GL_PROGRAM(program, essl1_shaders::vs::Simple(), essl1_shaders::fs::Red());
+    glUseProgram(program);
+
+    GLint posLoc = glGetAttribLocation(program, essl1_shaders::PositionAttrib());
+    ASSERT_NE(-1, posLoc);
+
+    glEnableVertexAttribArray(posLoc);
+    GLBuffer buf;
+    glBindBuffer(GL_ARRAY_BUFFER, buf);
+    glVertexAttribPointer(posLoc, 4, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<const void *>(500));
+    glBufferData(GL_ARRAY_BUFFER, 100, nullptr, GL_DYNAMIC_DRAW);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+
+    // Either no error or invalid operation is okay.
+}
+
 ANGLE_INSTANTIATE_TEST(RobustResourceInitTest,
                        ES2_D3D9(),
                        ES2_D3D11(),
@@ -1820,7 +1855,8 @@ ANGLE_INSTANTIATE_TEST(RobustResourceInitTest,
                        ES2_OPENGL(),
                        ES3_OPENGL(),
                        ES2_OPENGLES(),
-                       ES3_OPENGLES());
+                       ES3_OPENGLES(),
+                       ES2_VULKAN());
 
 ANGLE_INSTANTIATE_TEST(RobustResourceInitTestES3, ES3_D3D11(), ES3_OPENGL(), ES3_OPENGLES());
 

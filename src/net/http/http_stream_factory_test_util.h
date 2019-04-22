@@ -72,10 +72,11 @@ class MockHttpStreamRequestDelegate : public HttpStreamRequest::Delegate {
       const ProxyInfo& used_proxy_info,
       std::unique_ptr<WebSocketHandshakeStreamBase> stream) override {}
 
-  MOCK_METHOD3(OnStreamFailed,
+  MOCK_METHOD4(OnStreamFailed,
                void(int status,
                     const NetErrorDetails& net_error_details,
-                    const SSLConfig& used_ssl_config));
+                    const SSLConfig& used_ssl_config,
+                    const ProxyInfo& used_proxy_info));
 
   MOCK_METHOD3(OnCertificateError,
                void(int status,
@@ -93,11 +94,11 @@ class MockHttpStreamRequestDelegate : public HttpStreamRequest::Delegate {
                     SSLCertRequestInfo* cert_info));
 
   // std::unique_ptr is not copyable and therefore cannot be mocked.
-  void OnHttpsProxyTunnelResponse(const HttpResponseInfo& response_info,
-                                  const SSLConfig& used_ssl_config,
-                                  const ProxyInfo& used_proxy_info,
-                                  std::unique_ptr<HttpStream> stream) override {
-  }
+  void OnHttpsProxyTunnelResponseRedirect(
+      const HttpResponseInfo& response_info,
+      const SSLConfig& used_ssl_config,
+      const ProxyInfo& used_proxy_info,
+      std::unique_ptr<HttpStream> stream) override {}
 
   MOCK_METHOD0(OnQuicBroken, void());
 

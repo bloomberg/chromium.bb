@@ -68,8 +68,8 @@ enum EasyUnlockAuthEvent {
   // their password every 20 hours).
   PASSWORD_ENTRY_FORCED_REAUTH = 20,
 
-  // Password entry was forced because it is required to login.
-  PASSWORD_ENTRY_REQUIRED_FOR_LOGIN = 21,
+  // Password entry was forced because sign-in with Smart Lock is disabled.
+  PASSWORD_ENTRY_LOGIN_DISABLED = 21,
 
   EASY_UNLOCK_AUTH_EVENT_COUNT  // Must be the last entry.
 };

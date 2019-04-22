@@ -231,7 +231,7 @@ void ContentSuggestionsService::GetFaviconFromCache(
 
   // Use desired_size = 0 for getting the icon from the cache (so that the icon
   // is not poorly rescaled by LargeIconService).
-  large_icon_service_->GetLargeIconImageOrFallbackStyle(
+  large_icon_service_->GetLargeIconImageOrFallbackStyleForPageUrl(
       publisher_url, minimum_size_in_pixel, /*desired_size_in_pixel=*/0,
       base::Bind(&ContentSuggestionsService::OnGetFaviconFromCacheFinished,
                  base::Unretained(this), publisher_url, minimum_size_in_pixel,
@@ -522,12 +522,12 @@ void ContentSuggestionsService::OnSuggestionInvalidated(
 }
 // identity::IdentityManager::Observer implementation
 void ContentSuggestionsService::OnPrimaryAccountSet(
-    const AccountInfo& account_info) {
+    const CoreAccountInfo& account_info) {
   OnSignInStateChanged(/*has_signed_in=*/true);
 }
 
 void ContentSuggestionsService::OnPrimaryAccountCleared(
-    const AccountInfo& account_info) {
+    const CoreAccountInfo& account_info) {
   OnSignInStateChanged(/*has_signed_in=*/false);
 }
 

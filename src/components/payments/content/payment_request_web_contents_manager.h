@@ -71,6 +71,8 @@ class PaymentRequestWebContentsManager
   // the requests themselves call DestroyRequest().
   std::map<PaymentRequest*, std::unique_ptr<PaymentRequest>> payment_requests_;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestWebContentsManager);
 };
 

@@ -138,7 +138,13 @@ class RequestBuild(object):
       tags['master'] = 'False'
 
     # Don't include tags with no value, there is no point.
-    tags = {k: v for k, v in tags.iteritems() if v}
+    # Convert tag values to strings.
+    #
+    # Note that cbb_master_build_id must be a string (not a number) in properties
+    # because JSON does not distnguish integers and floats, so nothing
+    # guarantees that 0 won't turn into 0.0.
+    # Recipe expects it to be a string anyway.
+    tags = {k: str(v) for k, v in tags.iteritems() if v}
 
     # All tags should also be listed as properties.
     properties = tags.copy()

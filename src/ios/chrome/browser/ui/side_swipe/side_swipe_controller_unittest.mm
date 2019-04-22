@@ -6,7 +6,10 @@
 #include "base/test/scoped_feature_list.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
-#include "ios/web/public/features.h"
+#import "ios/chrome/browser/web_state_list/web_state_list.h"
+#import "ios/chrome/browser/web_state_list/web_state_list_delegate.h"
+#import "ios/chrome/browser/web_state_list/web_state_opener.h"
+#include "ios/web/common/features.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
@@ -28,11 +31,27 @@
 
 namespace {
 
+class TestWebStateListDelegate : public WebStateListDelegate {
+  void WillAddWebState(web::WebState* web_state) override {}
+  void WebStateDetached(web::WebState* web_state) override {}
+};
+
 class SideSwipeControllerTest : public PlatformTest {
  public:
   void SetUp() override {
     // Create a mock for the TabModel that owns the object under test.
     tab_model_ = [OCMockObject niceMockForClass:[TabModel class]];
+    std::unique_ptr<web::TestWebState> original_web_state(
+        std::make_unique<web::TestWebState>());
+
+    web_state_list_ = std::make_unique<WebStateList>(&web_state_list_delegate_);
+    web_state_list_->InsertWebState(0, std::move(original_web_state),
+                                    WebStateList::INSERT_NO_FLAGS,
+                                    WebStateOpener());
+
+    WebStateList* web_state_list = web_state_list_.get();
+    [[[tab_model_ stub] andReturnValue:OCMOCK_VALUE(web_state_list)]
+        webStateList];
 
     TestChromeBrowserState::Builder builder;
     browser_state_ = builder.Build();
@@ -44,12 +63,15 @@ class SideSwipeControllerTest : public PlatformTest {
     view_ = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 320, 240)];
 
     [side_swipe_controller_ addHorizontalGesturesToView:view_];
-  };
+  }
 
   web::TestWebThreadBundle thread_bundle_;
   std::unique_ptr<TestChromeBrowserState> browser_state_;
+  TestWebStateListDelegate web_state_list_delegate_;
+  std::unique_ptr<WebStateList> web_state_list_;
+
   UIView* view_;
-  TabModel* tab_model_;
+  id tab_model_;
   SideSwipeController* side_swipe_controller_;
   base::test::ScopedFeatureList feature_list_;
 };
@@ -108,6 +130,19 @@ TEST_F(SideSwipeControllerTest, TestEdgeNavigationEnabled) {
       updateNavigationEdgeSwipeForWebState:testWebState.get()];
   EXPECT_FALSE(side_swipe_controller_.leadingEdgeNavigationEnabled);
   EXPECT_FALSE(side_swipe_controller_.trailingEdgeNavigationEnabled);
+
+  // Tests that when webstate is nil calling
+  // updateNavigationEdgeSwipeForWebState doesn't change the edge navigation
+  // state.
+  item->SetURL(GURL("http://wwww.test.com"));
+  [side_swipe_controller_ updateNavigationEdgeSwipeForWebState:nil];
+  EXPECT_FALSE(side_swipe_controller_.leadingEdgeNavigationEnabled);
+  EXPECT_FALSE(side_swipe_controller_.trailingEdgeNavigationEnabled);
+  side_swipe_controller_.leadingEdgeNavigationEnabled = YES;
+  side_swipe_controller_.trailingEdgeNavigationEnabled = YES;
+  [side_swipe_controller_ updateNavigationEdgeSwipeForWebState:nil];
+  EXPECT_TRUE(side_swipe_controller_.leadingEdgeNavigationEnabled);
+  EXPECT_TRUE(side_swipe_controller_.trailingEdgeNavigationEnabled);
 }
 
 }  // anonymous namespace

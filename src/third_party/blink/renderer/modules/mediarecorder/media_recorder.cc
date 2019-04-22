@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/modules/mediarecorder/blob_event.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/network/mime/content_type.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
@@ -89,7 +90,8 @@ void AllocateVideoAndAudioBitrates(ExceptionState& exception_state,
     if (options->hasAudioBitsPerSecond() || options->hasBitsPerSecond()) {
       if (audio_bps > kLargestAutoAllocatedOpusBitRate) {
         context->AddConsoleMessage(ConsoleMessage::Create(
-            kJSMessageSource, kWarningMessageLevel,
+            mojom::ConsoleMessageSource::kJavaScript,
+            mojom::ConsoleMessageLevel::kWarning,
             "Clamping calculated audio bitrate (" + String::Number(audio_bps) +
                 "bps) to the maximum (" +
                 String::Number(kLargestAutoAllocatedOpusBitRate) + "bps)"));
@@ -98,7 +100,8 @@ void AllocateVideoAndAudioBitrates(ExceptionState& exception_state,
 
       if (audio_bps < kSmallestPossibleOpusBitRate) {
         context->AddConsoleMessage(ConsoleMessage::Create(
-            kJSMessageSource, kWarningMessageLevel,
+            mojom::ConsoleMessageSource::kJavaScript,
+            mojom::ConsoleMessageLevel::kWarning,
             "Clamping calculated audio bitrate (" + String::Number(audio_bps) +
                 "bps) to the minimum (" +
                 String::Number(kSmallestPossibleOpusBitRate) + "bps)"));
@@ -118,7 +121,8 @@ void AllocateVideoAndAudioBitrates(ExceptionState& exception_state,
     if (options->hasVideoBitsPerSecond() || options->hasBitsPerSecond()) {
       if (video_bps < kSmallestPossibleVpxBitRate) {
         context->AddConsoleMessage(ConsoleMessage::Create(
-            kJSMessageSource, kWarningMessageLevel,
+            mojom::ConsoleMessageSource::kJavaScript,
+            mojom::ConsoleMessageLevel::kWarning,
             "Clamping calculated video bitrate (" + String::Number(video_bps) +
                 "bps) to the minimum (" +
                 String::Number(kSmallestPossibleVpxBitRate) + "bps)"));
@@ -139,48 +143,35 @@ void AllocateVideoAndAudioBitrates(ExceptionState& exception_state,
 MediaRecorder* MediaRecorder::Create(ExecutionContext* context,
                                      MediaStream* stream,
                                      ExceptionState& exception_state) {
-  MediaRecorder* recorder = MakeGarbageCollected<MediaRecorder>(
+  return MakeGarbageCollected<MediaRecorder>(
       context, stream, MediaRecorderOptions::Create(), exception_state);
-  recorder->PauseIfNeeded();
-
-  return recorder;
 }
 
 MediaRecorder* MediaRecorder::Create(ExecutionContext* context,
                                      MediaStream* stream,
                                      const MediaRecorderOptions* options,
                                      ExceptionState& exception_state) {
-  MediaRecorder* recorder = MakeGarbageCollected<MediaRecorder>(
-      context, stream, options, exception_state);
-  recorder->PauseIfNeeded();
-
-  return recorder;
+  return MakeGarbageCollected<MediaRecorder>(context, stream, options,
+                                             exception_state);
 }
 
 MediaRecorder::MediaRecorder(ExecutionContext* context,
                              MediaStream* stream,
                              const MediaRecorderOptions* options,
                              ExceptionState& exception_state)
-    : PausableObject(context),
+    : ContextLifecycleObserver(context),
       stream_(stream),
       mime_type_(options->hasMimeType() ? options->mimeType()
                                         : kDefaultMimeType),
       stopped_(true),
       audio_bits_per_second_(0),
       video_bits_per_second_(0),
-      state_(State::kInactive),
-      // MediaStream recording should use DOM manipulation task source.
-      // https://www.w3.org/TR/mediastream-recording/
-      dispatch_scheduled_event_runner_(AsyncMethodRunner<MediaRecorder>::Create(
-          this,
-          &MediaRecorder::DispatchScheduledEvent,
-          context->GetTaskRunner(TaskType::kDOMManipulation))) {
+      state_(State::kInactive) {
   if (context->IsContextDestroyed()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kNotAllowedError,
                                       "Execution context is detached.");
     return;
   }
-
   DCHECK(stream_->getTracks().size());
   recorder_handler_ = Platform::Current()->CreateMediaRecorderHandler(
       context->GetTaskRunner(TaskType::kInternalMediaRealTime));
@@ -324,15 +315,7 @@ const AtomicString& MediaRecorder::InterfaceName() const {
 }
 
 ExecutionContext* MediaRecorder::GetExecutionContext() const {
-  return PausableObject::GetExecutionContext();
-}
-
-void MediaRecorder::Pause() {
-  dispatch_scheduled_event_runner_->Pause();
-}
-
-void MediaRecorder::Unpause() {
-  dispatch_scheduled_event_runner_->Unpause();
+  return ContextLifecycleObserver::GetExecutionContext();
 }
 
 void MediaRecorder::ContextDestroyed(ExecutionContext*) {
@@ -354,7 +337,7 @@ void MediaRecorder::WriteData(const char* data,
   }
 
   if (!blob_data_) {
-    blob_data_ = BlobData::Create();
+    blob_data_ = std::make_unique<BlobData>();
     blob_data_->SetContentType(mime_type_);
   }
   if (data)
@@ -364,7 +347,7 @@ void MediaRecorder::WriteData(const char* data,
     return;
 
   // Cache |m_blobData->length()| before release()ng it.
-  const long long blob_data_length = blob_data_->length();
+  const uint64_t blob_data_length = blob_data_->length();
   CreateBlobEvent(Blob::Create(BlobDataHandle::Create(std::move(blob_data_),
                                                       blob_data_length)),
                   timecode);
@@ -377,8 +360,8 @@ void MediaRecorder::OnError(const WebString& message) {
 }
 
 void MediaRecorder::CreateBlobEvent(Blob* blob, double timecode) {
-  ScheduleDispatchEvent(
-      BlobEvent::Create(event_type_names::kDataavailable, blob, timecode));
+  ScheduleDispatchEvent(MakeGarbageCollected<BlobEvent>(
+      event_type_names::kDataavailable, blob, timecode));
 }
 
 void MediaRecorder::StopRecording() {
@@ -394,8 +377,17 @@ void MediaRecorder::StopRecording() {
 
 void MediaRecorder::ScheduleDispatchEvent(Event* event) {
   scheduled_events_.push_back(event);
-
-  dispatch_scheduled_event_runner_->RunAsync();
+  // Only schedule a post if we are placing the first item in the queue.
+  if (scheduled_events_.size() == 1) {
+    if (auto* context = GetExecutionContext()) {
+      // MediaStream recording should use DOM manipulation task source.
+      // https://www.w3.org/TR/mediastream-recording/
+      context->GetTaskRunner(TaskType::kDOMManipulation)
+          ->PostTask(FROM_HERE,
+                     WTF::Bind(&MediaRecorder::DispatchScheduledEvent,
+                               WrapPersistent(this)));
+    }
+  }
 }
 
 void MediaRecorder::DispatchScheduledEvent() {
@@ -408,10 +400,9 @@ void MediaRecorder::DispatchScheduledEvent() {
 
 void MediaRecorder::Trace(blink::Visitor* visitor) {
   visitor->Trace(stream_);
-  visitor->Trace(dispatch_scheduled_event_runner_);
   visitor->Trace(scheduled_events_);
   EventTargetWithInlineData::Trace(visitor);
-  PausableObject::Trace(visitor);
+  ContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink

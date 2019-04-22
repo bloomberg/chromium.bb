@@ -26,9 +26,9 @@
 #include "third_party/blink/renderer/core/timing/performance_user_timing.h"
 
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/renderer/bindings/core/v8/double_or_performance_mark_options.h"
 #include "third_party/blink/renderer/core/timing/performance.h"
 #include "third_party/blink/renderer/core/timing/performance_mark.h"
+#include "third_party/blink/renderer/core/timing/performance_mark_options.h"
 #include "third_party/blink/renderer/core/timing/performance_measure.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/histogram.h"
@@ -100,30 +100,24 @@ static void ClearPeformanceEntries(PerformanceEntryMap& performance_entry_map,
     performance_entry_map.erase(name);
 }
 
-PerformanceMark* UserTiming::Mark(
-    ScriptState* script_state,
-    const AtomicString& mark_name,
-    DoubleOrPerformanceMarkOptions& start_time_or_mark_options,
-    ExceptionState& exception_state) {
+PerformanceMark* UserTiming::Mark(ScriptState* script_state,
+                                  const AtomicString& mark_name,
+                                  PerformanceMarkOptions* mark_options,
+                                  ExceptionState& exception_state) {
   if (!RuntimeEnabledFeatures::CustomUserTimingEnabled())
-    DCHECK(start_time_or_mark_options.IsNull());
+    DCHECK(!mark_options);
 
   DOMHighResTimeStamp start = 0.0;
-  if (start_time_or_mark_options.IsDouble()) {
-    start = start_time_or_mark_options.GetAsDouble();
-  } else if (start_time_or_mark_options.IsPerformanceMarkOptions() &&
-             start_time_or_mark_options.GetAsPerformanceMarkOptions()
-                 ->hasStartTime()) {
-    start =
-        start_time_or_mark_options.GetAsPerformanceMarkOptions()->startTime();
+  if (mark_options && mark_options->hasStartTime()) {
+    start = mark_options->startTime();
   } else {
     start = performance_->now();
   }
 
   // Pass in a null ScriptValue if the mark's detail doesn't exist.
   ScriptValue detail = ScriptValue::CreateNull(script_state);
-  if (start_time_or_mark_options.IsPerformanceMarkOptions())
-    detail = start_time_or_mark_options.GetAsPerformanceMarkOptions()->detail();
+  if (mark_options)
+    detail = mark_options->detail();
 
   return MarkInternal(script_state, mark_name, start, detail, exception_state);
 }
@@ -133,7 +127,11 @@ PerformanceMark* UserTiming::MarkInternal(ScriptState* script_state,
                                           const DOMHighResTimeStamp& start_time,
                                           const ScriptValue& detail,
                                           ExceptionState& exception_state) {
-  if (GetRestrictedKeyMap().Contains(mark_name)) {
+  DCHECK(performance_);
+  bool is_worker_global_scope =
+      performance_->GetExecutionContext() &&
+      performance_->GetExecutionContext()->IsWorkerGlobalScope();
+  if (!is_worker_global_scope && GetRestrictedKeyMap().Contains(mark_name)) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kSyntaxError,
         "'" + mark_name +
@@ -142,7 +140,12 @@ PerformanceMark* UserTiming::MarkInternal(ScriptState* script_state,
     return nullptr;
   }
 
-  TRACE_EVENT_COPY_MARK("blink.user_timing", mark_name.Utf8().data());
+  if (performance_->timing()) {
+    TRACE_EVENT_COPY_MARK1("blink.user_timing", mark_name.Utf8().data(), "data",
+                           performance_->timing()->GetNavigationTracingData());
+  } else {
+    TRACE_EVENT_COPY_MARK("blink.user_timing", mark_name.Utf8().data());
+  }
   PerformanceMark* mark =
       PerformanceMark::Create(script_state, mark_name, start_time, detail);
   InsertPerformanceEntry(marks_map_, *mark);
@@ -183,16 +186,14 @@ double UserTiming::FindExistingMarkStartTime(const AtomicString& mark_name,
   return 0.0;
 }
 
-double UserTiming::FindStartMarkOrTime(const StringOrDouble& start,
-                                       ExceptionState& exception_state) {
-  if (start.IsString()) {
-    return FindExistingMarkStartTime(AtomicString(start.GetAsString()),
+double UserTiming::GetTimeOrFindMarkTime(const StringOrDouble& mark_or_time,
+                                         ExceptionState& exception_state) {
+  if (mark_or_time.IsString()) {
+    return FindExistingMarkStartTime(AtomicString(mark_or_time.GetAsString()),
                                      exception_state);
   }
-  if (start.IsDouble())
-    return start.GetAsDouble();
-  NOTREACHED();
-  return 0;
+  DCHECK(mark_or_time.IsDouble());
+  return mark_or_time.GetAsDouble();
 }
 
 PerformanceMeasure* UserTiming::Measure(ScriptState* script_state,
@@ -201,24 +202,15 @@ PerformanceMeasure* UserTiming::Measure(ScriptState* script_state,
                                         const StringOrDouble& end,
                                         const ScriptValue& detail,
                                         ExceptionState& exception_state) {
-  double start_time = 0.0;
-  double end_time = 0.0;
+  double start_time =
+      start.IsNull() ? 0.0 : GetTimeOrFindMarkTime(start, exception_state);
+  if (exception_state.HadException())
+    return nullptr;
 
-  if (start.IsNull()) {
-    end_time = performance_->now();
-  } else if (end.IsNull()) {
-    end_time = performance_->now();
-    start_time = FindStartMarkOrTime(start, exception_state);
-    if (exception_state.HadException())
-      return nullptr;
-  } else {
-    end_time = FindStartMarkOrTime(end, exception_state);
-    if (exception_state.HadException())
-      return nullptr;
-    start_time = FindStartMarkOrTime(start, exception_state);
-    if (exception_state.HadException())
-      return nullptr;
-  }
+  double end_time = end.IsNull() ? performance_->now()
+                                 : GetTimeOrFindMarkTime(end, exception_state);
+  if (exception_state.HadException())
+    return nullptr;
 
   // User timing events are stored as integer milliseconds from the start of
   // navigation, whereas trace events accept double seconds based off of
@@ -226,17 +218,18 @@ PerformanceMeasure* UserTiming::Measure(ScriptState* script_state,
   double start_time_monotonic =
       performance_->GetTimeOrigin() + start_time / 1000.0;
   double end_time_monotonic = performance_->GetTimeOrigin() + end_time / 1000.0;
+  unsigned hash = WTF::StringHash::GetHash(measure_name);
+  WTF::AddFloatToHash(hash, start_time);
+  WTF::AddFloatToHash(hash, end_time);
 
   TRACE_EVENT_COPY_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP0(
-      "blink.user_timing", measure_name.Utf8().data(),
-      WTF::StringHash::GetHash(measure_name),
+      "blink.user_timing", measure_name.Utf8().data(), hash,
       trace_event::ToTraceTimestamp(start_time_monotonic));
   TRACE_EVENT_COPY_NESTABLE_ASYNC_END_WITH_TIMESTAMP0(
-      "blink.user_timing", measure_name.Utf8().data(),
-      WTF::StringHash::GetHash(measure_name),
+      "blink.user_timing", measure_name.Utf8().data(), hash,
       trace_event::ToTraceTimestamp(end_time_monotonic));
 
-  PerformanceMeasure* measure = PerformanceMeasure::Create(
+  auto* measure = MakeGarbageCollected<PerformanceMeasure>(
       script_state, measure_name, start_time, end_time, detail);
   InsertPerformanceEntry(measures_map_, *measure);
   if (end_time >= start_time) {

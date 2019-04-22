@@ -19,13 +19,21 @@
       "paintInvalidations": [
         {
           "object": "LayoutNGBlockFlow (relative positioned) DIV id='ul'",
-          "rect": [677, 252, 100, 100],
-          "reason": "paint property change"
-        },
-        {
-          "object": "LayoutNGBlockFlow (relative positioned) DIV id='ul'",
           "rect": [677, 52, 100, 100],
-          "reason": "paint property change"
+          "reason": "chunk disappeared"
+        }
+      ],
+      "transform": 1
+    },
+    {
+      "name": "LayoutNGBlockFlow (positioned) DIV id='scrollpanel'",
+      "position": [677, 252],
+      "bounds": [100, 100],
+      "paintInvalidations": [
+        {
+          "object": "LayoutNGBlockFlow (positioned) DIV id='scrollpanel'",
+          "rect": [0, 0, 100, 100],
+          "reason": "full layer"
         }
       ],
       "transform": 1

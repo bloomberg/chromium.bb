@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/macros.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/network/network_handler_callbacks.h"
 
 namespace base {
@@ -36,7 +36,7 @@ namespace chromeos {
 // |error_callback| will be called with information about the error, including a
 // symbolic name for the error and often some error message that is suitable for
 // logging. None of the error message text is meant for user consumption.
-class CHROMEOS_EXPORT NetworkDeviceHandler {
+class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkDeviceHandler {
  public:
   // Constants for |error_name| from |error_callback|.
   static const char kErrorDeviceMissing[];

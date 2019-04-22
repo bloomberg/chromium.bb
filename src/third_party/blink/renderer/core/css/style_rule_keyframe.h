@@ -7,6 +7,7 @@
 
 #include <memory>
 #include "third_party/blink/renderer/core/css/style_rule.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -15,11 +16,6 @@ class CSSPropertyValueSet;
 
 class StyleRuleKeyframe final : public StyleRuleBase {
  public:
-  static StyleRuleKeyframe* Create(std::unique_ptr<Vector<double>> keys,
-                                   CSSPropertyValueSet* properties) {
-    return MakeGarbageCollected<StyleRuleKeyframe>(std::move(keys), properties);
-  }
-
   StyleRuleKeyframe(std::unique_ptr<Vector<double>>, CSSPropertyValueSet*);
 
   // Exposed to JavaScript.
@@ -41,7 +37,12 @@ class StyleRuleKeyframe final : public StyleRuleBase {
   Vector<double> keys_;
 };
 
-DEFINE_STYLE_RULE_TYPE_CASTS(Keyframe);
+template <>
+struct DowncastTraits<StyleRuleKeyframe> {
+  static bool AllowFrom(const StyleRuleBase& rule) {
+    return rule.IsKeyframeRule();
+  }
+};
 
 }  // namespace blink
 

@@ -14,13 +14,13 @@
 
 #include "base/bind.h"
 #include "base/callback_forward.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr_info.h"
-#include "mojo/public/cpp/bindings/bindings_export.h"
 #include "mojo/public/cpp/bindings/connection_error_callback.h"
 #include "mojo/public/cpp/bindings/interface_endpoint_client.h"
 #include "mojo/public/cpp/bindings/interface_id.h"
@@ -30,7 +30,7 @@
 namespace mojo {
 namespace internal {
 
-class MOJO_CPP_BINDINGS_EXPORT AssociatedInterfacePtrStateBase {
+class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) AssociatedInterfacePtrStateBase {
  public:
   AssociatedInterfacePtrStateBase();
   ~AssociatedInterfacePtrStateBase();

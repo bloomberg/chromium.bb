@@ -8,8 +8,8 @@
 #include <string>
 
 #include "content/common/content_export.h"
-#include "content/public/common/media_stream_request.h"
-#include "content/renderer/media/stream/media_stream_constraints_util.h"
+#include "third_party/blink/public/common/mediastream/media_stream_request.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
 
 namespace blink {
 class WebMediaConstraints;
@@ -27,9 +27,9 @@ CONTENT_EXPORT extern const double kDefaultScreenCastFrameRate;
 
 // This function performs source, source-settings and track-settings selection
 // for content video capture based on the given |constraints|.
-VideoCaptureSettings CONTENT_EXPORT
+blink::VideoCaptureSettings CONTENT_EXPORT
 SelectSettingsVideoContentCapture(const blink::WebMediaConstraints& constraints,
-                                  MediaStreamType stream_type,
+                                  blink::MediaStreamType stream_type,
                                   int screen_width,
                                   int screen_height);
 

@@ -49,7 +49,7 @@ namespace internal {
 #define EXPAND_BINOP_TOKEN(T, name, string, precedence) \
   T(name, string, precedence)
 
-#define TOKEN_LIST(T, K, C)                                        \
+#define TOKEN_LIST(T, K)                                           \
                                                                    \
   /* BEGIN PropertyOrCall */                                       \
   /* BEGIN Member */                                               \
@@ -171,6 +171,8 @@ namespace internal {
   /* BEGIN AnyIdentifier */                                        \
   /* Identifiers (not keywords or future reserved words). */       \
   T(IDENTIFIER, nullptr, 0)                                        \
+  K(GET, "get", 0)                                                 \
+  K(SET, "set", 0)                                                 \
   K(ASYNC, "async", 0)                                             \
   /* `await` is a reserved word in module code only */             \
   K(AWAIT, "await", 0)                                             \
@@ -180,9 +182,9 @@ namespace internal {
   /* Future reserved words (ECMA-262, section 7.6.1.2). */         \
   T(FUTURE_STRICT_RESERVED_WORD, nullptr, 0)                       \
   T(ESCAPED_STRICT_RESERVED_WORD, nullptr, 0)                      \
-  K(ENUM, "enum", 0)                                               \
-  /* END Callable */                                               \
   /* END AnyIdentifier */                                          \
+  /* END Callable */                                               \
+  K(ENUM, "enum", 0)                                               \
   K(CLASS, "class", 0)                                             \
   K(CONST, "const", 0)                                             \
   K(EXPORT, "export", 0)                                           \
@@ -199,11 +201,11 @@ namespace internal {
   T(UNINITIALIZED, nullptr, 0)                                     \
   T(REGEXP_LITERAL, nullptr, 0)
 
-class Token {
+class V8_EXPORT_PRIVATE Token {
  public:
   // All token values.
 #define T(name, string, precedence) name,
-  enum Value : uint8_t { TOKEN_LIST(T, T, T) NUM_TOKENS };
+  enum Value : uint8_t { TOKEN_LIST(T, T) NUM_TOKENS };
 #undef T
 
   // Returns a string corresponding to the C++ token name
@@ -213,34 +215,42 @@ class Token {
     return name_[token];
   }
 
-  static char TypeForTesting(Value token) { return token_type[token]; }
+  class IsKeywordBits : public BitField8<bool, 0, 1> {};
+  class IsPropertyNameBits : public BitField8<bool, IsKeywordBits::kNext, 1> {};
 
   // Predicates
-  static bool IsKeyword(Value token) { return token_type[token] == 'K'; }
-
-  static bool IsIdentifier(Value token, LanguageMode language_mode,
-                           bool is_generator, bool disallow_await) {
-    if (IsInRange(token, IDENTIFIER, ASYNC)) return true;
-    if (IsInRange(token, LET, ESCAPED_STRICT_RESERVED_WORD)) {
-      return is_sloppy(language_mode);
-    }
-    if (token == AWAIT) return !disallow_await;
-    if (token == YIELD) return !is_generator && is_sloppy(language_mode);
-    return false;
+  static bool IsKeyword(Value token) {
+    return IsKeywordBits::decode(token_flags[token]);
   }
 
-  static bool IsCallable(Value token) { return IsInRange(token, SUPER, ENUM); }
+  static bool IsPropertyName(Value token) {
+    return IsPropertyNameBits::decode(token_flags[token]);
+  }
+
+  V8_INLINE static bool IsValidIdentifier(Value token,
+                                          LanguageMode language_mode,
+                                          bool is_generator,
+                                          bool disallow_await) {
+    if (V8_LIKELY(IsInRange(token, IDENTIFIER, ASYNC))) return true;
+    if (token == AWAIT) return !disallow_await;
+    if (token == YIELD) return !is_generator && is_sloppy(language_mode);
+    return IsStrictReservedWord(token) && is_sloppy(language_mode);
+  }
+
+  static bool IsCallable(Value token) {
+    return IsInRange(token, SUPER, ESCAPED_STRICT_RESERVED_WORD);
+  }
 
   static bool IsAutoSemicolon(Value token) {
     return IsInRange(token, SEMICOLON, EOS);
   }
 
   static bool IsAnyIdentifier(Value token) {
-    return IsInRange(token, IDENTIFIER, ENUM);
+    return IsInRange(token, IDENTIFIER, ESCAPED_STRICT_RESERVED_WORD);
   }
 
   static bool IsStrictReservedWord(Value token) {
-    return IsInRange(token, LET, ESCAPED_STRICT_RESERVED_WORD);
+    return IsInRange(token, YIELD, ESCAPED_STRICT_RESERVED_WORD);
   }
 
   static bool IsLiteral(Value token) {
@@ -322,7 +332,7 @@ class Token {
   static const char* const string_[NUM_TOKENS];
   static const uint8_t string_length_[NUM_TOKENS];
   static const int8_t precedence_[2][NUM_TOKENS];
-  static const char token_type[NUM_TOKENS];
+  static const uint8_t token_flags[NUM_TOKENS];
 };
 
 }  // namespace internal

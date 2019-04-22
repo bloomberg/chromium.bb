@@ -11,14 +11,15 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libjingle_xmpp/xmllite/qname.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlparser.h"
-#include "third_party/webrtc/rtc_base/gunit.h"
 
-using buzz::QName;
-using buzz::XmlParser;
-using buzz::XmlParseContext;
-using buzz::XmlParseHandler;
+using jingle_xmpp::QName;
+using jingle_xmpp::XmlParser;
+using jingle_xmpp::XmlParseContext;
+using jingle_xmpp::XmlParseHandler;
 
 class XmlParserTestHandler : public XmlParseHandler {
  public:

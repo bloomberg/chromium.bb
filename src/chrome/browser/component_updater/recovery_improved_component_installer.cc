@@ -9,8 +9,19 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "base/process/process.h"
+#include "base/strings/sys_string_conversions.h"
 #include "build/build_config.h"
-#include "chrome/browser/component_updater/component_updater_utils.h"
+
+#if defined(OS_WIN)
+#include <windows.h>
+#include <wrl/client.h>
+#include "chrome/install_static/install_util.h"
+#endif
+
+#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+#include "chrome/elevation_service/elevation_service_idl.h"
+#endif
 
 // This component is behind a Finch experiment. To enable the registration of
 // the component, run Chrome with --enable-features=ImprovedRecoveryComponent.
@@ -22,6 +33,47 @@ constexpr uint8_t kRecoveryImprovedPublicKeySHA256[32] = {
     0x87, 0xdb, 0x24, 0xde, 0x24, 0x76, 0x30, 0x46, 0x3c, 0x71, 0x83,
     0x97, 0xd7, 0x32, 0x75, 0xcc, 0xd5, 0x7f, 0xec, 0x09, 0x60, 0x6d,
     0x20, 0xc3, 0x81, 0xd7, 0xce, 0x7b, 0x10, 0x15, 0x44, 0xd1};
+
+#if defined(GOOGLE_CHROME_BUILD) && defined(OS_WIN)
+// Instantiates the elevator service, calls its elevator interface, then
+// blocks waiting for the recovery processes to exit. Returns the result
+// of the recovery as a tuple.
+std::tuple<bool, int, int> RunRecoveryCRXElevated(
+    const base::FilePath& crx_path,
+    const std::string& browser_appid,
+    const std::string& browser_version,
+    const std::string& session_id) {
+  Microsoft::WRL::ComPtr<IElevator> elevator;
+  HRESULT hr = CoCreateInstance(
+      install_static::GetElevatorClsid(), nullptr, CLSCTX_LOCAL_SERVER,
+      install_static::GetElevatorIid(), IID_PPV_ARGS_Helper(&elevator));
+  if (FAILED(hr))
+    return {false, static_cast<int>(hr), 0};
+
+  hr = CoSetProxyBlanket(
+      elevator.Get(), RPC_C_AUTHN_DEFAULT, RPC_C_AUTHZ_DEFAULT,
+      COLE_DEFAULT_PRINCIPAL, RPC_C_AUTHN_LEVEL_PKT_PRIVACY,
+      RPC_C_IMP_LEVEL_IMPERSONATE, NULL, EOAC_DYNAMIC_CLOAKING);
+  if (FAILED(hr))
+    return {false, static_cast<int>(hr), 0};
+
+  ULONG_PTR proc_handle = 0;
+  hr = elevator->RunRecoveryCRXElevated(
+      crx_path.value().c_str(), base::SysUTF8ToWide(browser_appid).c_str(),
+      base::SysUTF8ToWide(browser_version).c_str(),
+      base::SysUTF8ToWide(session_id).c_str(), base::Process::Current().Pid(),
+      &proc_handle);
+  if (FAILED(hr))
+    return {false, static_cast<int>(hr), 0};
+
+  int exit_code = 0;
+  const base::TimeDelta kMaxWaitTime = base::TimeDelta::FromSeconds(600);
+  base::Process process(reinterpret_cast<base::ProcessHandle>(proc_handle));
+  const bool succeeded =
+      process.WaitForExitWithTimeout(kMaxWaitTime, &exit_code);
+  return {succeeded, exit_code, 0};
+}
+#endif
 
 RecoveryImprovedInstallerPolicy::RecoveryImprovedInstallerPolicy(
     PrefService* prefs)
@@ -88,12 +140,6 @@ void RegisterRecoveryImprovedComponent(ComponentUpdateService* cus,
                                        PrefService* prefs) {
 #if defined(GOOGLE_CHROME_BUILD)
 #if defined(OS_WIN) || defined(OS_MACOSX)
-  // The improved recovery components requires elevation in the case where
-  // Chrome is installed per-machine. The elevation mechanism is not implemented
-  // yet; therefore, the component is not registered in this case.
-  if (!IsPerUserInstall())
-    return;
-
   DVLOG(1) << "Registering RecoveryImproved component.";
 
   // |cus| takes ownership of |installer| through the CrxComponent instance.

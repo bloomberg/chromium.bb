@@ -46,8 +46,9 @@ Polymer({
     }
     const effective = property.Effective;
     let active = property.Active;
-    if (active == undefined)
+    if (active == undefined) {
       active = property[effective];
+    }
 
     if (property.UserEditable === true &&
         property.hasOwnProperty('UserPolicy')) {
@@ -78,15 +79,17 @@ Polymer({
    * @private
    */
   getNetworkIndicatorTooltip_: function() {
-    if (this.property === undefined)
+    if (this.property === undefined) {
       return '';
+    }
 
     let matches;
     if (this.indicatorType == CrPolicyIndicatorType.RECOMMENDED &&
         this.property) {
       let value = this.property.Active;
-      if (value == undefined && this.property.Effective)
+      if (value == undefined && this.property.Effective) {
         value = this.property[this.property.Effective];
+      }
       matches = value == this.recommended_;
     }
     return this.getIndicatorTooltip(this.indicatorType, '', matches);

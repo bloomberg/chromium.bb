@@ -11,6 +11,7 @@ add_subdirectory(ubo)
 add_subdirectory(dynamic_state)
 add_subdirectory(ssbo)
 add_subdirectory(query_pool)
+add_subdirectory(conditional_rendering)
 add_subdirectory(draw)
 add_subdirectory(device_group)
 add_subdirectory(compute)
@@ -30,6 +31,9 @@ add_subdirectory(multiview)
 add_subdirectory(subgroups)
 add_subdirectory(ycbcr)
 add_subdirectory(protected_memory)
+add_subdirectory(memory_model)
+add_subdirectory(util)
+add_subdirectory(vkrunner)
 
 include_directories(
 	api
@@ -43,6 +47,7 @@ include_directories(
 	dynamic_state
 	ssbo
 	query_pool
+	conditional_rendering
 	draw
 	device_group
 	compute
@@ -62,6 +67,9 @@ include_directories(
 	subgroups
 	ycbcr
 	protected_memory
+	memory_model
+	util
+	vkrunner
 	)
 
 set(DEQP_VK_SRCS
@@ -78,12 +86,6 @@ set(DEQP_VK_SRCS
 	vktTestGroupUtil.hpp
 	vktInfoTests.cpp
 	vktInfoTests.hpp
-	vktDrawUtil.cpp
-	vktDrawUtil.hpp
-	vktExternalMemoryUtil.cpp
-	vktExternalMemoryUtil.hpp
-	vktDrawUtil.cpp
-	vktDrawUtil.hpp
 	)
 
 set(DEQP_VK_LIBS
@@ -101,6 +103,7 @@ set(DEQP_VK_LIBS
 	deqp-vk-dynamic-state
 	deqp-vk-ssbo
 	deqp-vk-query-pool
+	deqp-vk-conditional-rendering
 	deqp-vk-draw
 	deqp-vk-device-group
 	deqp-vk-compute
@@ -120,11 +123,15 @@ set(DEQP_VK_LIBS
 	deqp-vk-subgroups
 	deqp-vk-ycbcr
 	deqp-vk-protected-memory
+	deqp-vk-memory-model
+	deqp-vk-vkrunner
 	)
 
 if (DE_COMPILER_IS_MSC AND (DE_PTR_SIZE EQUAL 4))
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /LARGEADDRESSAWARE")
 endif ()
+
+PCH(DEQP_VK_SRCS pch.cpp)
 
 add_deqp_module(deqp-vk "${DEQP_VK_SRCS}" "${DEQP_VK_LIBS}" vktTestPackageEntry.cpp)
 

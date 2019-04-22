@@ -49,10 +49,7 @@ class PLATFORM_EXPORT HeapCompact final {
   friend class incremental_marking_test::IncrementalMarkingTestDriver;
 
  public:
-  static std::unique_ptr<HeapCompact> Create(ThreadHeap* heap) {
-    return base::WrapUnique(new HeapCompact(heap));
-  }
-
+  explicit HeapCompact(ThreadHeap*);
   ~HeapCompact();
 
   // Remove slot from traced_slots_ when a registered slot is destructed by
@@ -105,6 +102,8 @@ class PLATFORM_EXPORT HeapCompact final {
   void StartThreadCompaction();
   void FinishThreadCompaction();
 
+  void CancelCompaction();
+
   // Perform any relocation post-processing after having completed compacting
   // the given arena. The number of pages that were freed together with the
   // total size (in bytes) of freed heap storage, are passed in as arguments.
@@ -143,8 +142,6 @@ class PLATFORM_EXPORT HeapCompact final {
 
  private:
   class MovableObjectFixups;
-
-  explicit HeapCompact(ThreadHeap*);
 
   // Sample the amount of fragmentation and heap memory currently residing
   // on the freelists of the arenas we're able to compact. The computed

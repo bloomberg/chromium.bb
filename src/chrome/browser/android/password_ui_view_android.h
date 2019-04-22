@@ -16,8 +16,8 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
-#include "chrome/browser/ui/passwords/password_manager_presenter.h"
-#include "chrome/browser/ui/passwords/password_ui_view.h"
+#include "chrome/browser/ui/passwords/settings/password_manager_presenter.h"
+#include "chrome/browser/ui/passwords/settings/password_ui_view.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 
@@ -50,8 +50,6 @@ class PasswordUIViewAndroid : public PasswordUIView {
 
   // PasswordUIView implementation.
   Profile* GetProfile() override;
-  void ShowPassword(const std::string& sort_key,
-                    const base::string16& password_value) override;
   void SetPasswordList(
       const std::vector<std::unique_ptr<autofill::PasswordForm>>& password_list)
       override;

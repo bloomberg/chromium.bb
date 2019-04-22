@@ -16,7 +16,6 @@
 <link rel="import" href="../icons.html">
 <link rel="import" href="../route.html">
 <link rel="import" href="../settings_shared_css.html">
-<link rel="import" href="../settings_vars_css.html">
 
 <dom-module id="settings-clear-browsing-data-dialog">
   <template>
@@ -29,14 +28,19 @@
       }
 
       #clearBrowsingDataDialog {
+        --border-top-color: var(--paper-grey-300);
         --cr-dialog-top-container-min-height: 42px;
         --cr-dialog-title: {
           padding-bottom: 8px;
         };
         --cr-dialog-body-container: {
-          border-top: 1px solid var(--paper-grey-300);
           height: var(--body-container-height);
         };
+        --cr-dialog-body-border-top: 1px solid var(--border-top-color);
+      }
+
+      :host-context([dark]) #clearBrowsingDataDialog {
+        --border-top-color: var(--cr-separator-color);
       }
 
       #clearBrowsingDataDialog:not(.fully-rendered) {
@@ -51,6 +55,10 @@
         background: var(--paper-grey-50);
         border-top: none;
         padding: 0;
+      }
+
+      :host-context([dark]) #clearBrowsingDataDialog [slot=footer] {
+        background: rgb(50, 54, 57);  /* Custom color from Namrata. */
       }
 
       .row {
@@ -97,7 +105,7 @@
       }
 
       .divider {
-        border-top: var(--settings-separator-line);
+        border-top: var(--cr-separator-line);
         margin: 0 16px;
       }
 
@@ -233,12 +241,6 @@
                 pref="{{prefs.browser.clear_data.hosted_apps_data}}"
                 label="$i18n{clearHostedAppData}"
                 sub-label="[[counters_.hosted_apps_data]]"
-                disabled="[[clearingInProgress_]]">
-            </settings-checkbox>
-            <settings-checkbox
-                pref="{{prefs.browser.clear_data.media_licenses}}"
-                label="$i18n{clearMediaLicenses}"
-                sub-label="[[counters_.media_licenses]]"
                 disabled="[[clearingInProgress_]]">
             </settings-checkbox>
           </div>

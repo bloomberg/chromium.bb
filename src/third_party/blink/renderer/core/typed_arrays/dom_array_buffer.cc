@@ -32,7 +32,7 @@ bool DOMArrayBuffer::IsNeuterable(v8::Isolate* isolate) {
 
   bool is_neuterable = true;
   for (const auto& buffer_handle : buffer_handles)
-    is_neuterable &= buffer_handle->IsNeuterable();
+    is_neuterable &= buffer_handle->IsDetachable();
 
   return is_neuterable;
 }

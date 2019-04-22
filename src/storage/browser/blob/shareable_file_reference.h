@@ -5,10 +5,10 @@
 #ifndef STORAGE_BROWSER_BLOB_SHAREABLE_FILE_REFERENCE_H_
 #define STORAGE_BROWSER_BLOB_SHAREABLE_FILE_REFERENCE_H_
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "storage/browser/blob/blob_data_item.h"
 #include "storage/browser/blob/scoped_file.h"
-#include "storage/browser/storage_browser_export.h"
 
 namespace storage {
 
@@ -16,7 +16,8 @@ namespace storage {
 // same path if it already exists in its internal map.
 // This class is non-thread-safe and all methods must be called on a single
 // thread.
-class STORAGE_EXPORT ShareableFileReference : public BlobDataItem::DataHandle {
+class COMPONENT_EXPORT(STORAGE_BROWSER) ShareableFileReference
+    : public BlobDataItem::DataHandle {
  public:
   using FinalReleaseCallback = ScopedFile::ScopeOutCallback;
 

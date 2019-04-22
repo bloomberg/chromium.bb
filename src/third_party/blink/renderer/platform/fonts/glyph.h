@@ -30,9 +30,11 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_GLYPH_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_GLYPH_H_
 
+#include <cstdint>
+
 namespace blink {
 
-typedef unsigned short Glyph;
+typedef uint16_t Glyph;
 
 }  // namespace blink
 

@@ -109,7 +109,7 @@ TEST_P(ReadingListMediatorTest, fillItems) {
   EXPECT_TRUE([rlReadArray[1].title isEqualToString:@"read1"]);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ,  // Empty instatiation name.
     ReadingListMediatorTest,
     ::testing::Values(FaviconServiceType::FAVICON_LOADER,

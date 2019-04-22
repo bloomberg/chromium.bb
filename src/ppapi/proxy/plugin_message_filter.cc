@@ -96,8 +96,8 @@ void PluginMessageFilter::OnMsgResourceReply(
   scoped_refptr<base::SingleThreadTaskRunner> target =
       resource_reply_thread_registrar_->GetTargetThread(reply_params,
                                                         nested_msg);
-  target->PostTask(
-      FROM_HERE, base::Bind(&DispatchResourceReply, reply_params, nested_msg));
+  target->PostTask(FROM_HERE, base::BindOnce(&DispatchResourceReply,
+                                             reply_params, nested_msg));
 }
 
 // static

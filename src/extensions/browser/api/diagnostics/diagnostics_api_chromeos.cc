@@ -29,7 +29,8 @@ typedef base::Callback<void(
 
 bool ParseResult(const std::string& status, std::string* ip, double* latency) {
   // Parses the result and returns IP and latency.
-  std::unique_ptr<base::Value> parsed_value(base::JSONReader::Read(status));
+  std::unique_ptr<base::Value> parsed_value(
+      base::JSONReader::ReadDeprecated(status));
   if (!parsed_value)
     return false;
 
@@ -69,11 +70,11 @@ void DiagnosticsSendPacketFunction::AsyncWorkStart() {
   std::map<std::string, std::string> config;
   config[kCount] = kDefaultCount;
   if (parameters_->options.ttl)
-    config[kTTL] = base::IntToString(*parameters_->options.ttl);
+    config[kTTL] = base::NumberToString(*parameters_->options.ttl);
   if (parameters_->options.timeout)
-    config[kTimeout] = base::IntToString(*parameters_->options.timeout);
+    config[kTimeout] = base::NumberToString(*parameters_->options.timeout);
   if (parameters_->options.size)
-    config[kSize] = base::IntToString(*parameters_->options.size);
+    config[kSize] = base::NumberToString(*parameters_->options.size);
 
   chromeos::DBusThreadManager::Get()
       ->GetDebugDaemonClient()

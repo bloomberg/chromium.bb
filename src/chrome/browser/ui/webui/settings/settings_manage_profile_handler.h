@@ -44,6 +44,8 @@ class ManageProfileHandler : public settings::SettingsPageUIHandler,
   FRIEND_TEST_ALL_PREFIXES(ManageProfileHandlerTest, HandleSetProfileName);
   FRIEND_TEST_ALL_PREFIXES(ManageProfileHandlerTest, HandleGetAvailableIcons);
   FRIEND_TEST_ALL_PREFIXES(ManageProfileHandlerTest,
+                           HandleGetAvailableIconsOldIconSelected);
+  FRIEND_TEST_ALL_PREFIXES(ManageProfileHandlerTest,
                            HandleGetAvailableIconsGaiaAvatarSelected);
 
   // Callback for the "getAvailableIcons" message.

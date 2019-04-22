@@ -16,7 +16,7 @@ class SlideAnimation;
 
 class OmniboxTabSwitchButton : public views::MdTextButton {
  public:
-  OmniboxTabSwitchButton(OmniboxPopupContentsView* model,
+  OmniboxTabSwitchButton(OmniboxPopupContentsView* popup_contents_view,
                          OmniboxResultView* result_view,
                          const base::string16& hint,
                          const base::string16& hint_short,
@@ -63,8 +63,10 @@ class OmniboxTabSwitchButton : public views::MdTextButton {
   size_t CalculateGoalWidth(size_t parent_width, base::string16* goal_text);
 
   static constexpr int kButtonHeight = 32;
-  OmniboxPopupContentsView* model_;
-  OmniboxResultView* result_view_;
+
+  // The ancestor views.
+  OmniboxPopupContentsView* const popup_contents_view_;
+  OmniboxResultView* const result_view_;
 
   // Only calculate the width of various contents once.
   static bool calculated_widths_;

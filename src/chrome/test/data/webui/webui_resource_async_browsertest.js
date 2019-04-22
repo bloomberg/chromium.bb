@@ -129,10 +129,12 @@ TEST_F('WebUIResourceAsyncTest', 'WebUIListeners', function() {
     var EVENT_NAME = 'my-foo-event';
 
     teardown(function() {
-      if (listener1)
+      if (listener1) {
         cr.removeWebUIListener(listener1);
-      if (listener2)
+      }
+      if (listener2) {
         cr.removeWebUIListener(listener2);
+      }
     });
 
     test('removeWebUIListener', function() {

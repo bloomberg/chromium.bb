@@ -60,12 +60,15 @@ function test() {
             break;
         case 3:
             console.log("Injecting into isolated world without bypass: this should fail.");
+            // Clear any existing csp or security origin as a side effect of
+            // another test.
+            testRunner.setIsolatedWorldInfo(1, null, null);
             testRunner.evaluateScriptInIsolatedWorld(1, String(eval("injectInlineStyle")) + "\ninjectInlineStyle(false," + tests + ");");
             testRunner.evaluateScriptInIsolatedWorld(1, String(eval("injectInlineStyleAttribute")) + "\ninjectInlineStyleAttribute(false," + tests + ");");
             break;
         case 2:
             console.log("Starting to bypass main world's CSP: this should pass!");
-            testRunner.setIsolatedWorldContentSecurityPolicy(1, 'style-src \'unsafe-inline\' *');
+            testRunner.setIsolatedWorldInfo(1, 'chrome-extension://123', 'style-src \'unsafe-inline\' *');
             testRunner.evaluateScriptInIsolatedWorld(1, String(eval("injectInlineStyle")) + "\ninjectInlineStyle(true," + tests + ");");
             testRunner.evaluateScriptInIsolatedWorld(1, String(eval("injectInlineStyleAttribute")) + "\ninjectInlineStyleAttribute(true," + tests + ");");
             break;
@@ -74,7 +77,7 @@ function test() {
             injectInlineStyle(false, tests);
             break;
         case 0:
-            testRunner.setIsolatedWorldContentSecurityPolicy(1, '');
+            testRunner.setIsolatedWorldInfo(1, null, null);
             testRunner.notifyDone();
             break;
     }

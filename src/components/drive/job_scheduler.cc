@@ -9,6 +9,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
@@ -139,19 +140,6 @@ google_apis::CancelCallback RunResumeUploadFile(
                                     params.progress_callback);
 }
 
-// Collects information about sizes of files copied or moved from or to Drive
-// Otherwise does nothing. Temporary for crbug.com/229650.
-void CollectCopyHistogramSample(const std::string& histogram_name,
-                                int64_t size) {
-  base::HistogramBase* const counter =
-      base::Histogram::FactoryGet(histogram_name,
-                                  1,
-                                  1024 * 1024 /* 1 GB */,
-                                  50,
-                                  base::Histogram::kUmaTargetedHistogramFlag);
-  counter->Add(size / 1024);
-}
-
 }  // namespace
 
 // Metadata jobs are cheap, so we run them concurrently. File jobs run serially.
@@ -180,6 +168,7 @@ JobScheduler::JobScheduler(
     PrefService* pref_service,
     EventLogger* logger,
     DriveServiceInterface* drive_service,
+    network::NetworkConnectionTracker* network_connection_tracker,
     base::SequencedTaskRunner* blocking_task_runner,
     device::mojom::WakeLockProviderPtr wake_lock_provider)
     : throttle_count_(0),
@@ -187,6 +176,7 @@ JobScheduler::JobScheduler(
       disable_throttling_(false),
       logger_(logger),
       drive_service_(drive_service),
+      network_connection_tracker_(network_connection_tracker),
       blocking_task_runner_(blocking_task_runner),
       uploader_(new DriveUploader(drive_service,
                                   blocking_task_runner,
@@ -197,7 +187,7 @@ JobScheduler::JobScheduler(
     queue_[i] = std::make_unique<JobQueue>(kMaxJobCount[i], NUM_CONTEXT_TYPES,
                                            kMaxBatchCount, kMaxBatchSize);
 
-  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
+  network_connection_tracker_->AddNetworkConnectionObserver(this);
 }
 
 JobScheduler::~JobScheduler() {
@@ -208,7 +198,7 @@ JobScheduler::~JobScheduler() {
     num_queued_jobs += queue_[i]->GetNumberOfJobs();
   DCHECK_EQ(num_queued_jobs, job_map_.size());
 
-  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
+  network_connection_tracker_->RemoveNetworkConnectionObserver(this);
 }
 
 std::vector<JobInfo> JobScheduler::GetJobInfoList() {
@@ -614,10 +604,6 @@ JobID JobScheduler::DownloadFile(
     const google_apis::GetContentCallback& get_content_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  // Temporary histogram for crbug.com/229650.
-  CollectCopyHistogramSample("Drive.DownloadFromDriveFileSize",
-                             expected_file_size);
-
   JobEntry* new_job = CreateNewJob(TYPE_DOWNLOAD_FILE);
   new_job->job_info.file_path = virtual_path;
   new_job->job_info.num_total_bytes = expected_file_size;
@@ -656,9 +642,6 @@ void JobScheduler::UploadNewFile(
   new_job->job_info.file_path = drive_file_path;
   new_job->job_info.num_total_bytes = expected_file_size;
   new_job->context = context;
-
-  // Temporary histogram for crbug.com/229650.
-  CollectCopyHistogramSample("Drive.UploadToDriveFileSize", expected_file_size);
 
   UploadNewFileParams params;
   params.parent_resource_id = parent_resource_id;
@@ -699,9 +682,6 @@ void JobScheduler::UploadExistingFile(
   new_job->job_info.file_path = drive_file_path;
   new_job->job_info.num_total_bytes = expected_file_size;
   new_job->context = context;
-
-  // Temporary histogram for crbug.com/229650.
-  CollectCopyHistogramSample("Drive.UploadToDriveFileSize", expected_file_size);
 
   UploadExistingFileParams params;
   params.resource_id = resource_id;
@@ -776,20 +756,6 @@ void JobScheduler::QueueJob(JobID job_id) {
                          job_info.job_type == TYPE_UPLOAD_NEW_FILE;
   queue_[queue_type]->Push(job_id, job_entry->context.type, batchable,
                            job_info.num_total_bytes);
-
-  // Temporary histogram for crbug.com/229650.
-  if (job_info.job_type == TYPE_DOWNLOAD_FILE ||
-      job_info.job_type == TYPE_UPLOAD_EXISTING_FILE ||
-      job_info.job_type == TYPE_UPLOAD_NEW_FILE) {
-    std::vector<JobID> jobs_with_the_same_priority;
-    queue_[queue_type]->GetQueuedJobs(job_entry->context.type,
-                                      &jobs_with_the_same_priority);
-    DCHECK(!jobs_with_the_same_priority.empty());
-
-    const size_t blocking_jobs_count = jobs_with_the_same_priority.size() - 1;
-    UMA_HISTOGRAM_COUNTS_10000("Drive.TransferBlockedOnJobs",
-                               blocking_jobs_count);
-  }
 
   const std::string retry_prefix = job_entry->retry_count > 0 ?
       base::StringPrintf(" (retry %d)", job_entry->retry_count) : "";
@@ -867,15 +833,18 @@ int JobScheduler::GetCurrentAcceptedPriority(QueueType queue_type) {
     return kNoJobShouldRun;
 
   // Should stop if the network is not online.
-  if (net::NetworkChangeNotifier::IsOffline())
+  auto connection_type = network::mojom::ConnectionType::CONNECTION_UNKNOWN;
+  network_connection_tracker_->GetConnectionType(
+      &connection_type, base::BindOnce(&JobScheduler::OnConnectionChanged,
+                                       weak_ptr_factory_.GetWeakPtr()));
+  if (connection_type == network::mojom::ConnectionType::CONNECTION_NONE)
     return kNoJobShouldRun;
 
   // For the file queue, if it is on cellular network, only user initiated
   // operations are allowed to start.
   if (queue_type == FILE_QUEUE &&
       pref_service_->GetBoolean(prefs::kDisableDriveOverCellular) &&
-      net::NetworkChangeNotifier::IsConnectionCellular(
-          net::NetworkChangeNotifier::GetConnectionType()))
+      network::NetworkConnectionTracker::IsConnectionCellular(connection_type))
     return USER_INITIATED;
 
   // Otherwise, every operations including background tasks are allowed.
@@ -914,7 +883,7 @@ bool JobScheduler::OnJobDone(JobID job_id,
                "Job done: %s => %s (elapsed time: %sms) - %s",
                job_info->ToString().c_str(),
                DriveApiErrorCodeToString(error).c_str(),
-               base::Int64ToString(elapsed.InMilliseconds()).c_str(),
+               base::NumberToString(elapsed.InMilliseconds()).c_str(),
                GetQueueInfo(queue_type).c_str());
 
   // Retry, depending on the error.
@@ -1122,13 +1091,12 @@ void JobScheduler::UpdateProgress(JobID job_id,
   NotifyJobUpdated(job_entry->job_info);
 }
 
-void JobScheduler::OnNetworkChanged(
-    net::NetworkChangeNotifier::ConnectionType type) {
+void JobScheduler::OnConnectionChanged(network::mojom::ConnectionType type) {
   // When connection type switches from one connection to another,
   // CONNECTION_NONE signal comes right before the changed connection signal.
   // Ignore such signals to avoid aborting jobs.
-  if (type == net::NetworkChangeNotifier::CONNECTION_NONE &&
-      !net::NetworkChangeNotifier::IsOffline())
+  if (type == network::mojom::ConnectionType::CONNECTION_NONE &&
+      !network_connection_tracker_->IsOffline())
     return;
 
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -1183,7 +1151,7 @@ void JobScheduler::AbortNotRunningJob(JobEntry* job,
                "Job aborted: %s => %s (elapsed time: %sms) - %s",
                job->job_info.ToString().c_str(),
                DriveApiErrorCodeToString(error).c_str(),
-               base::Int64ToString(elapsed.InMilliseconds()).c_str(),
+               base::NumberToString(elapsed.InMilliseconds()).c_str(),
                GetQueueInfo(queue_type).c_str());
 
   base::Callback<void(google_apis::DriveApiErrorCode)> callback =

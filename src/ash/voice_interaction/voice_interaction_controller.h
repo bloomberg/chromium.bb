@@ -31,11 +31,13 @@ class ASH_EXPORT VoiceInteractionController
   void NotifySettingsEnabled(bool enabled) override;
   void NotifyContextEnabled(bool enabled) override;
   void NotifyHotwordEnabled(bool enabled) override;
-  void NotifySetupCompleted(bool completed) override;
+  void NotifyHotwordAlwaysOn(bool always_on) override;
+  void NotifyConsentStatus(mojom::ConsentStatus consent_status) override;
   void NotifyFeatureAllowed(mojom::AssistantAllowedState state) override;
   void NotifyNotificationEnabled(bool enabled) override;
   void NotifyLocaleChanged(const std::string& locale) override;
   void NotifyLaunchWithMicOpen(bool launch_with_mic_open) override;
+  void NotifyArcPlayStoreEnabledChanged(bool enabled) override;
   void AddObserver(mojom::VoiceInteractionObserverPtr observer) override;
 
   // Adding local observers in the same process.

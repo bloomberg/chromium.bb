@@ -13,6 +13,7 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
+#include "base/bind.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -20,7 +21,6 @@
 #include "chrome/browser/ntp_tiles/chrome_most_visited_sites_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
-#include "chrome/browser/thumbnails/thumbnail_list_source.h"
 #include "components/favicon_base/favicon_types.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/ntp_tiles/metrics.h"
@@ -195,10 +195,6 @@ MostVisitedSitesBridge::MostVisitedSitesBridge(Profile* profile)
     : most_visited_(ChromeMostVisitedSitesFactory::NewForProfile(profile)),
       profile_(profile) {
   DCHECK(!profile->IsOffTheRecord());
-  // Register the thumbnails debugging page.
-  // TODO(sfiera): find thumbnails a home. They don't belong here.
-  content::URLDataSource::Add(profile,
-                              std::make_unique<ThumbnailListSource>(profile));
 }
 
 MostVisitedSitesBridge::~MostVisitedSitesBridge() {}

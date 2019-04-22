@@ -20,7 +20,7 @@ class WebstoreWidgetPrivateInstallWebstoreItemFunction
   WebstoreWidgetPrivateInstallWebstoreItemFunction();
 
   DECLARE_EXTENSION_FUNCTION("webstoreWidgetPrivate.installWebstoreItem",
-                             WEBSTOREWIDGETPRIVATE_INSTALLWEBSTOREITEM);
+                             WEBSTOREWIDGETPRIVATE_INSTALLWEBSTOREITEM)
 
  protected:
   ~WebstoreWidgetPrivateInstallWebstoreItemFunction() override;

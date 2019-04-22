@@ -4,6 +4,8 @@
 
 #include "remoting/protocol/audio_decode_scheduler.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/message_loop/message_loop.h"
@@ -34,9 +36,9 @@ class FakeAudioConsumer : public AudioStub {
 
   // AudioStub implementation.
   void ProcessAudioPacket(std::unique_ptr<AudioPacket> packet,
-                          const base::Closure& done) override {
+                          base::OnceClosure done) override {
     if (!done.is_null())
-      done.Run();
+      std::move(done).Run();
   }
 
  private:

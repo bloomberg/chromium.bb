@@ -18,19 +18,23 @@ class CFX_Font;
 
 class CBC_OneCode : public CBC_CodeBase {
  public:
+  // Limit the size of 1D barcodes. Typical 1D barcodes are short so this should
+  // be sufficient for most use cases.
+  static constexpr size_t kMaxInputLengthBytes = 8192;
+
   explicit CBC_OneCode(std::unique_ptr<CBC_Writer> pWriter);
   ~CBC_OneCode() override;
 
-  virtual bool CheckContentValidity(const WideStringView& contents);
-  virtual WideString FilterContents(const WideStringView& contents);
+  virtual bool CheckContentValidity(WideStringView contents);
+  virtual WideString FilterContents(WideStringView contents);
 
-  virtual void SetPrintChecksum(bool checksum);
-  virtual void SetDataLength(int32_t length);
-  virtual void SetCalChecksum(bool calc);
-  virtual bool SetFont(CFX_Font* cFont);
-  virtual void SetFontSize(float size);
-  virtual void SetFontStyle(int32_t style);
-  virtual void SetFontColor(FX_ARGB color);
+  void SetPrintChecksum(bool checksum);
+  void SetDataLength(int32_t length);
+  void SetCalChecksum(bool calc);
+  bool SetFont(CFX_Font* cFont);
+  void SetFontSize(float size);
+  void SetFontStyle(int32_t style);
+  void SetFontColor(FX_ARGB color);
 
  private:
   CBC_OneDimWriter* GetOneDimWriter();

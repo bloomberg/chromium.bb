@@ -43,12 +43,12 @@ void OneClickSigninDialogView::ShowDialog(
     const base::string16& email,
     std::unique_ptr<OneClickSigninLinksDelegate> delegate,
     gfx::NativeWindow window,
-    const BrowserWindow::StartSyncCallback& start_sync) {
+    base::OnceCallback<void(bool)> confirmed_callback) {
   if (IsShowing())
     return;
 
-  dialog_view_ =
-      new OneClickSigninDialogView(email, std::move(delegate), start_sync);
+  dialog_view_ = new OneClickSigninDialogView(email, std::move(delegate),
+                                              std::move(confirmed_callback));
   dialog_view_->Init();
   constrained_window::CreateBrowserModalDialogViews(dialog_view_, window)
       ->Show();
@@ -68,23 +68,21 @@ void OneClickSigninDialogView::Hide() {
 OneClickSigninDialogView::OneClickSigninDialogView(
     const base::string16& email,
     std::unique_ptr<OneClickSigninLinksDelegate> delegate,
-    const BrowserWindow::StartSyncCallback& start_sync_callback)
+    base::OnceCallback<void(bool)> confirmed_callback)
     : delegate_(std::move(delegate)),
       email_(email),
-      start_sync_callback_(start_sync_callback),
+      confirmed_callback_(std::move(confirmed_callback)),
       advanced_link_(nullptr),
       learn_more_link_(nullptr) {
-  DCHECK(!start_sync_callback_.is_null());
+  DCHECK(!confirmed_callback_.is_null());
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::TEXT, views::TEXT));
   chrome::RecordDialogCreation(chrome::DialogIdentifier::ONE_CLICK_SIGNIN);
 }
 
 OneClickSigninDialogView::~OneClickSigninDialogView() {
-  if (!start_sync_callback_.is_null()) {
-    base::ResetAndReturn(&start_sync_callback_)
-        .Run(OneClickSigninSyncStarter::UNDO_SYNC);
-  }
+  if (!confirmed_callback_.is_null())
+    std::move(confirmed_callback_).Run(false);
 }
 
 void OneClickSigninDialogView::Init() {
@@ -151,14 +149,12 @@ void OneClickSigninDialogView::LinkClicked(views::Link* source,
   if (source == learn_more_link_) {
     delegate_->OnLearnMoreLinkClicked(true);
   } else if (source == advanced_link_) {
-    base::ResetAndReturn(&start_sync_callback_)
-        .Run(OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST);
+    std::move(confirmed_callback_).Run(true);
     GetWidget()->Close();
   }
 }
 
 bool OneClickSigninDialogView::Accept() {
-  base::ResetAndReturn(&start_sync_callback_)
-      .Run(OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS);
+  std::move(confirmed_callback_).Run(true);
   return true;
 }

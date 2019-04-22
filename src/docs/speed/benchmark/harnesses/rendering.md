@@ -27,11 +27,13 @@ These benchmarks are run on the [Chromium Perf Waterfall](https://ci.chromium.or
 
 ## What are the  rendering metrics
 
-Some rendering metrics are [written in Python](https://cs.chromium.org/chromium/src/third_party/catapult/telemetry/telemetry/web_perf/metrics/smoothness.py) and others are written [in JavaScript](https://github.com/catapult-project/catapult/blob/master/tracing/tracing/metrics/rendering_metric.html). The list of all metrics and their meanings should be documented in the files they are defined in. We are in the progress of writing all metrics in JavaScript, which means [rendering_metric.html](https://github.com/catapult-project/catapult/blob/master/tracing/tracing/metrics/rendering_metric.html) will eventually contain all metrics.
+Rendering metrics are [written in Javascript](https://cs.chromium.org/chromium/src/third_party/catapult/tracing/tracing/metrics/rendering). The list of all metrics and their meanings should be documented in the files they are defined in.
 
-Important rendering metrics include:
--   `mean_frame_time`: the amount of time it takes for a frame to be rendered
--   `mean_input_event_latency`: time from when the input event is created to when its resulted page is swap buffered (from [here](https://github.com/catapult-project/catapult/blob/master/telemetry/telemetry/web_perf/metrics/smoothness.py))
+-   [cpu\_utilization.html](https://cs.chromium.org/chromium/src/third_party/catapult/tracing/tracing/metrics/rendering/cpu_utilization.html): `cpu_time_per_frame` and `tasks_per_frame`
+-   [frame\_time.html](https://cs.chromium.org/chromium/src/third_party/catapult/tracing/tracing/metrics/rendering/frame_time.html): `frame_times`, `percentage_smooth`, `frame_lengths`, `avg_surface_fps`, `jank_count`, and `ui_frame_times`
+-   [latency.html](https://cs.chromium.org/chromium/src/third_party/catapult/tracing/tracing/metrics/rendering/latency.html): `input_event_latency`, `main_thread_scroll_latency`, and `first_gesture_scroll_update_latency`
+-   [pixels.html](https://cs.chromium.org/chromium/src/third_party/catapult/tracing/tracing/metrics/rendering/pixels.html): `mean_pixels_approximated` and `mean_pixels_checkerboarded`
+-   [queueing\_duration.html](https://cs.chromium.org/chromium/src/third_party/catapult/tracing/tracing/metrics/rendering/queueing_duration.html): `queueing_durations`
 
 ## How to run rendering benchmarks on local devices
 

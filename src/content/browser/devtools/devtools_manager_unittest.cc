@@ -203,11 +203,11 @@ class TestExternalAgentDelegate: public DevToolsExternalAgentProxyDelegate {
 
   void Attach(DevToolsExternalAgentProxy* proxy) override {
     recordEvent("Attach");
-  };
+  }
 
   void Detach(DevToolsExternalAgentProxy* proxy) override {
     recordEvent("Detach");
-  };
+  }
 
   std::string GetType() override { return std::string(); }
   std::string GetTitle() override { return std::string(); }
@@ -215,15 +215,15 @@ class TestExternalAgentDelegate: public DevToolsExternalAgentProxyDelegate {
   GURL GetURL() override { return GURL(); }
   GURL GetFaviconURL() override { return GURL(); }
   std::string GetFrontendURL() override { return std::string(); }
-  bool Activate() override { return false; };
-  void Reload() override { };
-  bool Close() override { return false; };
+  bool Activate() override { return false; }
+  void Reload() override {}
+  bool Close() override { return false; }
   base::TimeTicks GetLastActivityTime() override { return base::TimeTicks(); }
 
   void SendMessageToBackend(DevToolsExternalAgentProxy* proxy,
                             const std::string& message) override {
     recordEvent(std::string("SendMessageToBackend.") + message);
-  };
+  }
 };
 
 TEST_F(DevToolsManagerTest, TestExternalProxy) {

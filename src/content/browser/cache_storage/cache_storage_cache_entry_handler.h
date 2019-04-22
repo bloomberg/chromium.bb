@@ -9,12 +9,13 @@
 #include <set>
 
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/cache_storage/cache_storage_cache_handle.h"
 #include "content/common/content_export.h"
 #include "net/disk_cache/disk_cache.h"
 #include "storage/browser/blob/blob_data_builder.h"
-#include "third_party/blink/public/platform/modules/cache_storage/cache_storage.mojom.h"
+#include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
 
 namespace storage {
 class BlobStorageContext;
@@ -23,29 +24,30 @@ class BlobStorageContext;
 namespace content {
 
 enum class CacheStorageOwner;
-struct ServiceWorkerFetchRequest;
 
 // The state needed to pass when writing to a cache.
 struct PutContext {
   using ErrorCallback =
       base::OnceCallback<void(blink::mojom::CacheStorageError)>;
 
-  PutContext(std::unique_ptr<ServiceWorkerFetchRequest> request,
+  PutContext(blink::mojom::FetchAPIRequestPtr request,
              blink::mojom::FetchAPIResponsePtr response,
              blink::mojom::BlobPtr blob,
              uint64_t blob_size,
              blink::mojom::BlobPtr side_data_blob,
-             uint64_t side_data_blob_size);
+             uint64_t side_data_blob_size,
+             int64_t trace_id);
 
   ~PutContext();
 
   // Provided by the constructor.
-  std::unique_ptr<ServiceWorkerFetchRequest> request;
+  blink::mojom::FetchAPIRequestPtr request;
   blink::mojom::FetchAPIResponsePtr response;
   blink::mojom::BlobPtr blob;
   uint64_t blob_size;
   blink::mojom::BlobPtr side_data_blob;
   uint64_t side_data_blob_size;
+  int64_t trace_id;
 
   // Provided while writing to the cache.
   ErrorCallback callback;
@@ -69,6 +71,8 @@ class CONTENT_EXPORT CacheStorageCacheEntryHandler {
 
     void Invalidate();
 
+    disk_cache::ScopedEntryPtr& entry() { return entry_; }
+
    private:
     ~BlobDataHandle() override;
 
@@ -79,17 +83,20 @@ class CONTENT_EXPORT CacheStorageCacheEntryHandler {
     DISALLOW_COPY_AND_ASSIGN(BlobDataHandle);
   };
 
+  scoped_refptr<BlobDataHandle> CreateBlobDataHandle(
+      CacheStorageCacheHandle cache_handle,
+      disk_cache::ScopedEntryPtr entry);
+
   virtual ~CacheStorageCacheEntryHandler();
 
   virtual std::unique_ptr<PutContext> CreatePutContext(
-      std::unique_ptr<ServiceWorkerFetchRequest>,
-      blink::mojom::FetchAPIResponsePtr response) = 0;
+      blink::mojom::FetchAPIRequestPtr request,
+      blink::mojom::FetchAPIResponsePtr response,
+      int64_t trace_id) = 0;
   virtual void PopulateResponseBody(
-      CacheStorageCacheHandle handle,
-      disk_cache::ScopedEntryPtr entry,
+      scoped_refptr<BlobDataHandle> data_handle,
       blink::mojom::FetchAPIResponse* response) = 0;
-  virtual void PopulateRequestBody(CacheStorageCacheHandle handle,
-                                   disk_cache::ScopedEntryPtr entry,
+  virtual void PopulateRequestBody(scoped_refptr<BlobDataHandle> data_handle,
                                    blink::mojom::FetchAPIRequest* request) = 0;
 
   static std::unique_ptr<CacheStorageCacheEntryHandler> CreateCacheEntryHandler(
@@ -97,7 +104,6 @@ class CONTENT_EXPORT CacheStorageCacheEntryHandler {
       base::WeakPtr<storage::BlobStorageContext> blob_context);
 
   void InvalidateBlobDataHandles();
-
   void EraseBlobDataHandle(BlobDataHandle* handle);
 
  protected:
@@ -106,12 +112,14 @@ class CONTENT_EXPORT CacheStorageCacheEntryHandler {
 
   base::WeakPtr<storage::BlobStorageContext> blob_context_;
 
+  // Every subclass should provide its own implementation to avoid partial
+  // destruction.
+  virtual base::WeakPtr<CacheStorageCacheEntryHandler> GetWeakPtr() = 0;
+
   // We keep track of the BlobDataHandle instances to allow us to invalidate
   // them if the cache has to be deleted while there are still references to
   // data in it.
   std::set<BlobDataHandle*> blob_data_handles_;
-
-  base::WeakPtrFactory<CacheStorageCacheEntryHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CacheStorageCacheEntryHandler);
 };

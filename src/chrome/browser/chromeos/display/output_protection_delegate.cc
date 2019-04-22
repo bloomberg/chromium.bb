@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/display/output_protection_delegate.h"
 
+#include "base/bind_helpers.h"
 #include "chrome/browser/chromeos/display/output_protection_controller_ash.h"
 #include "chrome/browser/chromeos/display/output_protection_controller_mus.h"
 #include "content/public/browser/browser_thread.h"
@@ -28,6 +29,8 @@ bool GetCurrentDisplayId(content::RenderFrameHost* rfh, int64_t* display_id) {
   display::Display display =
       screen->GetDisplayNearestView(rfh->GetNativeView());
   *display_id = display.id();
+  DCHECK_NE(*display_id, display::kInvalidDisplayId);
+
   return true;
 }
 
@@ -44,13 +47,43 @@ OutputProtectionDelegate::OutputProtectionDelegate(int render_process_id,
       window_(nullptr),
       display_id_(display::kInvalidDisplayId),
       weak_ptr_factory_(this) {
-  // This can be constructed on IO or UI thread.
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  display::Screen::GetScreen()->AddObserver(this);
 }
 
 OutputProtectionDelegate::~OutputProtectionDelegate() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  display::Screen::GetScreen()->RemoveObserver(this);
   if (window_)
     window_->RemoveObserver(this);
+}
+
+void OutputProtectionDelegate::OnDisplayMetricsChanged(
+    const display::Display& display,
+    uint32_t changed_metrics) {
+  // Switching the primary display (either by user or by going into docked
+  // mode), as well as changing mirror mode may change the display on which
+  // the window resides without actually changing the window hierarchy (i.e.
+  // the root window is still the same). Hence we need to watch out for these
+  // situations and update |display_id_| if needed.
+  if (!(changed_metrics &
+        (display::DisplayObserver::DISPLAY_METRIC_PRIMARY |
+         display::DisplayObserver::DISPLAY_METRIC_MIRROR_STATE))) {
+    return;
+  }
+
+  OnWindowMayHaveMovedToAnotherDisplay();
+}
+
+void OutputProtectionDelegate::OnWindowHierarchyChanged(
+    const aura::WindowObserver::HierarchyChangeParams& params) {
+  OnWindowMayHaveMovedToAnotherDisplay();
+}
+
+void OutputProtectionDelegate::OnWindowDestroying(aura::Window* window) {
+  DCHECK_EQ(window, window_);
+  window_->RemoveObserver(this);
+  window_ = nullptr;
 }
 
 void OutputProtectionDelegate::QueryStatus(
@@ -76,6 +109,32 @@ void OutputProtectionDelegate::SetProtection(
   }
   controller_->SetProtection(display_id_, desired_method_mask, callback);
   desired_method_mask_ = desired_method_mask;
+}
+
+void OutputProtectionDelegate::OnWindowMayHaveMovedToAnotherDisplay() {
+  content::RenderFrameHost* rfh =
+      content::RenderFrameHost::FromID(render_process_id_, render_frame_id_);
+  if (!rfh) {
+    DLOG(WARNING) << "RenderFrameHost is not alive.";
+    return;
+  }
+
+  int64_t new_display_id = display::kInvalidDisplayId;
+  if (!GetCurrentDisplayId(rfh, &new_display_id))
+    return;
+
+  if (display_id_ == new_display_id)
+    return;
+
+  if (desired_method_mask_ != display::CONTENT_PROTECTION_METHOD_NONE) {
+    DCHECK(controller_);
+    controller_->SetProtection(new_display_id, desired_method_mask_,
+                               base::DoNothing());
+    controller_->SetProtection(display_id_,
+                               display::CONTENT_PROTECTION_METHOD_NONE,
+                               base::DoNothing());
+  }
+  display_id_ = new_display_id;
 }
 
 bool OutputProtectionDelegate::InitializeControllerIfNecessary() {
@@ -108,39 +167,6 @@ bool OutputProtectionDelegate::InitializeControllerIfNecessary() {
   window_ = window;
   window_->AddObserver(this);
   return true;
-}
-
-void OutputProtectionDelegate::OnWindowHierarchyChanged(
-    const aura::WindowObserver::HierarchyChangeParams& params) {
-  content::RenderFrameHost* rfh =
-      content::RenderFrameHost::FromID(render_process_id_, render_frame_id_);
-  if (!rfh) {
-    DLOG(WARNING) << "RenderFrameHost is not alive.";
-    return;
-  }
-
-  int64_t new_display_id = display::kInvalidDisplayId;
-  if (!GetCurrentDisplayId(rfh, &new_display_id))
-    return;
-
-  if (display_id_ == new_display_id)
-    return;
-
-  if (desired_method_mask_ != display::CONTENT_PROTECTION_METHOD_NONE) {
-    DCHECK(controller_);
-    controller_->SetProtection(new_display_id, desired_method_mask_,
-                               base::DoNothing());
-    controller_->SetProtection(display_id_,
-                               display::CONTENT_PROTECTION_METHOD_NONE,
-                               base::DoNothing());
-  }
-  display_id_ = new_display_id;
-}
-
-void OutputProtectionDelegate::OnWindowDestroying(aura::Window* window) {
-  DCHECK_EQ(window, window_);
-  window_->RemoveObserver(this);
-  window_ = nullptr;
 }
 
 }  // namespace chromeos

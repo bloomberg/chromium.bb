@@ -27,9 +27,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SCRIPT_REGEXP_H_
 #define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SCRIPT_REGEXP_H_
 
+#include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/bindings/scoped_persistent.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "v8/include/v8.h"
 
@@ -39,7 +39,6 @@ enum MultilineMode { kMultilineDisabled, kMultilineEnabled };
 
 class CORE_EXPORT ScriptRegexp {
   USING_FAST_MALLOC(ScriptRegexp);
-  WTF_MAKE_NONCOPYABLE(ScriptRegexp);
 
  public:
   enum CharacterMode {
@@ -65,6 +64,8 @@ class CORE_EXPORT ScriptRegexp {
  private:
   ScopedPersistent<v8::RegExp> regex_;
   String exception_message_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScriptRegexp);
 };
 
 }  // namespace blink

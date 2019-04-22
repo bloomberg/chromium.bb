@@ -8,9 +8,10 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/core/loader/preload_helper.h"
 #include "third_party/blink/renderer/core/script/document_write_intervention.h"
 #include "third_party/blink/renderer/core/script/script_loader.h"
-#include "third_party/blink/renderer/platform/cross_origin_attribute_value.h"
+#include "third_party/blink/renderer/platform/loader/fetch/cross_origin_attribute_value.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_info.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
@@ -42,8 +43,8 @@ Resource* PreloadRequest::Start(Document* document) {
   if (referrer_source_ == kBaseUrlIsReferrer)
     resource_request.SetReferrerString(base_url_.StrippedForUseAsReferrer());
 
-  resource_request.SetRequestContext(ResourceFetcher::DetermineRequestContext(
-      resource_type_, is_image_set_, false));
+  resource_request.SetRequestContext(
+      ResourceFetcher::DetermineRequestContext(resource_type_, is_image_set_));
 
   resource_request.SetFetchImportanceMode(importance_);
 
@@ -113,7 +114,8 @@ Resource* PreloadRequest::Start(Document* document) {
     }
   }
 
-  return document->Loader()->StartPreload(resource_type_, params);
+  return PreloadHelper::StartPreload(resource_type_, params,
+                                     document->Fetcher());
 }
 
 }  // namespace blink

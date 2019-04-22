@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/proxy/error_conversion.h"
@@ -36,10 +36,10 @@ TCPSocketResourceBase::TCPSocketResourceBase(Connection connection,
       version_(version) {
   local_addr_.size = 0;
   memset(local_addr_.data, 0,
-         arraysize(local_addr_.data) * sizeof(*local_addr_.data));
+         base::size(local_addr_.data) * sizeof(*local_addr_.data));
   remote_addr_.size = 0;
   memset(remote_addr_.data, 0,
-         arraysize(remote_addr_.data) * sizeof(*remote_addr_.data));
+         base::size(remote_addr_.data) * sizeof(*remote_addr_.data));
 }
 
 TCPSocketResourceBase::TCPSocketResourceBase(

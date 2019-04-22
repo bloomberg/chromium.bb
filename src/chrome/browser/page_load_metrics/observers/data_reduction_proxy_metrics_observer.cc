@@ -233,15 +233,6 @@ void DataReductionProxyMetricsObserver::OnFirstPaintInPage(
       ::internal::kHistogramFirstPaintSuffix);
 }
 
-void DataReductionProxyMetricsObserver::OnFirstTextPaintInPage(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  RECORD_FOREGROUND_HISTOGRAMS_FOR_SUFFIX(
-      info, data(), timing.paint_timing->first_text_paint,
-      ::internal::kHistogramFirstTextPaintSuffix);
-}
-
 void DataReductionProxyMetricsObserver::OnFirstImagePaintInPage(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {

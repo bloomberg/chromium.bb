@@ -109,7 +109,7 @@ Length Length::BlendMixedTypes(const Length& from,
 Length Length::BlendSameTypes(const Length& from,
                               double progress,
                               ValueRange range) const {
-  LengthType result_type = GetType();
+  Length::Type result_type = GetType();
   if (IsZero())
     result_type = from.GetType();
 
@@ -140,14 +140,14 @@ Length Length::SubtractFromOneHundredPercent() const {
   if (result.pixels && result.percent)
     return Length(CalculationValue::Create(result, kValueRangeAll));
   if (result.percent)
-    return Length(result.percent, kPercent);
-  return Length(result.pixels, kFixed);
+    return Length::Percent(result.percent);
+  return Length::Fixed(result.pixels);
 }
 
 Length Length::Zoom(double factor) const {
   switch (GetType()) {
     case kFixed:
-      return Length(GetFloatValue() * factor, kFixed);
+      return Length::Fixed(GetFloatValue() * factor);
     case kCalculated: {
       PixelsAndPercent result = GetPixelsAndPercent();
       result.pixels *= factor;

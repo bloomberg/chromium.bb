@@ -4,12 +4,13 @@
 
 module video_capture.mojom;
 
-import "media/mojo/interfaces/jpeg_decode_accelerator.mojom";
+import "media/mojo/interfaces/mjpeg_decode_accelerator.mojom";
 import "services/video_capture/public/mojom/device_factory.mojom";
+import "services/video_capture/public/mojom/video_source_provider.mojom";
 
 interface AcceleratorFactory {
   // Creates a new JpegDecodeAccelerator and binds it to |jda|.
-  CreateJpegDecodeAccelerator(media.mojom.JpegDecodeAccelerator& jda);
+  CreateJpegDecodeAccelerator(media.mojom.MjpegDecodeAccelerator& jda);
 };
 
 // Entry point to the Video Capture Service API.
@@ -21,8 +22,21 @@ interface AcceleratorFactory {
 // to be called once before any call to ConnectToDeviceFactory() is made.
 // Calling InjectGpuDependencies() is optional. If it is not called, MJPEG
 // decoding will be performed without gpu acceleration.
+// TODO(chfremer): Consider renaming this to VideoCaptureService.
 interface DeviceFactoryProvider  {
   InjectGpuDependencies(AcceleratorFactory accelerator_factory);
 
+  // Legacy API. Supports one client per device.
   ConnectToDeviceFactory(DeviceFactory& request);
+
+  // Current API. Supports multiple clients per source.
+  ConnectToVideoSourceProvider(VideoSourceProvider& request);
+
+  // Lets the service to close all connections and ask the service_manager to be
+  // shut down.
+  ShutdownServiceAsap();
+
+  // Sets a retry count that is used by the service for logging UMA events in
+  // the context of investigation for https://crbug.com/643068.
+  SetRetryCount(int32 count);
 };

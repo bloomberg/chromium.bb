@@ -203,15 +203,17 @@ class ThreadedWorkletMessagingProxyForTest
     std::unique_ptr<WorkerSettings> worker_settings = nullptr;
     InitializeWorkerThread(
         std::make_unique<GlobalScopeCreationParams>(
-            document->Url(), mojom::ScriptType::kModule, document->UserAgent(),
-            nullptr /* web_worker_fetch_context */,
+            document->Url(), mojom::ScriptType::kModule,
+            OffMainThreadWorkerScriptFetchOption::kEnabled, "threaded_worklet",
+            document->UserAgent(), nullptr /* web_worker_fetch_context */,
             document->GetContentSecurityPolicy()->Headers(),
             document->GetReferrerPolicy(), document->GetSecurityOrigin(),
             document->IsSecureContext(), document->GetHttpsState(),
             worker_clients, document->AddressSpace(),
             OriginTrialContext::GetTokens(document).get(),
             base::UnguessableToken::Create(), std::move(worker_settings),
-            kV8CacheOptionsDefault, new WorkletModuleResponsesMap),
+            kV8CacheOptionsDefault,
+            MakeGarbageCollected<WorkletModuleResponsesMap>()),
         base::nullopt);
   }
 
@@ -226,7 +228,7 @@ class ThreadedWorkletMessagingProxyForTest
 class ThreadedWorkletTest : public testing::Test {
  public:
   void SetUp() override {
-    page_ = DummyPageHolder::Create();
+    page_ = std::make_unique<DummyPageHolder>();
     Document* document = page_->GetFrame().GetDocument();
     document->SetURL(KURL("https://example.com/"));
     document->UpdateSecurityOrigin(SecurityOrigin::Create(document->Url()));
@@ -273,7 +275,7 @@ TEST_F(ThreadedWorkletTest, SecurityOrigin) {
 TEST_F(ThreadedWorkletTest, ContentSecurityPolicy) {
   // Set up the CSP for Document before starting ThreadedWorklet because
   // ThreadedWorklet inherits the owner Document's CSP.
-  ContentSecurityPolicy* csp = ContentSecurityPolicy::Create();
+  auto* csp = MakeGarbageCollected<ContentSecurityPolicy>();
   csp->DidReceiveHeader("script-src 'self' https://allowed.example.com",
                         kContentSecurityPolicyHeaderTypeEnforce,
                         kContentSecurityPolicyHeaderSourceHTTP);
@@ -289,7 +291,7 @@ TEST_F(ThreadedWorkletTest, ContentSecurityPolicy) {
 }
 
 TEST_F(ThreadedWorkletTest, InvalidContentSecurityPolicy) {
-  ContentSecurityPolicy* csp = ContentSecurityPolicy::Create();
+  auto* csp = MakeGarbageCollected<ContentSecurityPolicy>();
   csp->DidReceiveHeader("invalid-csp", kContentSecurityPolicyHeaderTypeEnforce,
                         kContentSecurityPolicyHeaderSourceHTTP);
   GetDocument().InitContentSecurityPolicy(csp);

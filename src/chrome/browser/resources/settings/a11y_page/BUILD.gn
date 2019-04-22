@@ -18,6 +18,7 @@ js_library("a11y_page") {
     "..:route",
     "../settings_page:settings_animated_pages",
     "//ui/webui/resources/js:load_time_data",
+    "//ui/webui/resources/js:web_ui_listener_behavior",
   ]
 }
 

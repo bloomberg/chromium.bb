@@ -12,9 +12,9 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "ipc/ipc_test_base.h"
@@ -51,7 +51,7 @@ IPC_MESSAGE_CONTROL0(MsgClassShutdown)
 namespace {
 
 const char kHelloString[] = "Hello, SyncSocket Client";
-const size_t kHelloStringLength = arraysize(kHelloString);
+const size_t kHelloStringLength = base::size(kHelloString);
 
 // The SyncSocket server listener class processes two sorts of
 // messages from the client.
@@ -225,8 +225,8 @@ TEST_F(SyncSocketTest, DisconnectTest) {
   char buf[0xff];
   size_t received = 1U;  // Initialize to an unexpected value.
   worker.task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&BlockingRead, &pair[0], &buf[0], arraysize(buf), &received));
+      FROM_HERE, base::BindOnce(&BlockingRead, &pair[0], &buf[0],
+                                base::size(buf), &received));
 
   // Wait for the worker thread to say hello.
   char hello[kHelloStringLength] = {0};
@@ -255,9 +255,9 @@ TEST_F(SyncSocketTest, BlockingReceiveTest) {
   // Try to do a blocking read from one of the sockets on the worker thread.
   char buf[kHelloStringLength] = {0};
   size_t received = 1U;  // Initialize to an unexpected value.
-  worker.task_runner()->PostTask(FROM_HERE,
-                                 base::Bind(&BlockingRead, &pair[0], &buf[0],
-                                            kHelloStringLength, &received));
+  worker.task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&BlockingRead, &pair[0], &buf[0],
+                                kHelloStringLength, &received));
 
   // Wait for the worker thread to say hello.
   char hello[kHelloStringLength] = {0};

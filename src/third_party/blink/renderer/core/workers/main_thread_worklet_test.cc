@@ -56,7 +56,7 @@ class MainThreadWorkletTest : public PageTestBase {
 
     // Set up the CSP for Document before starting MainThreadWorklet because
     // MainThreadWorklet inherits the owner Document's CSP.
-    ContentSecurityPolicy* csp = ContentSecurityPolicy::Create();
+    auto* csp = MakeGarbageCollected<ContentSecurityPolicy>();
     csp->DidReceiveHeader(csp_header, kContentSecurityPolicyHeaderTypeEnforce,
                           kContentSecurityPolicyHeaderSourceHTTP);
     document->InitContentSecurityPolicy(csp);
@@ -64,15 +64,17 @@ class MainThreadWorkletTest : public PageTestBase {
     reporting_proxy_ =
         std::make_unique<MainThreadWorkletReportingProxyForTest>(document);
     auto creation_params = std::make_unique<GlobalScopeCreationParams>(
-        document->Url(), mojom::ScriptType::kModule, document->UserAgent(),
-        nullptr /* web_worker_fetch_context */,
+        document->Url(), mojom::ScriptType::kModule,
+        OffMainThreadWorkerScriptFetchOption::kEnabled, "MainThreadWorklet",
+        document->UserAgent(), nullptr /* web_worker_fetch_context */,
         document->GetContentSecurityPolicy()->Headers(),
         document->GetReferrerPolicy(), document->GetSecurityOrigin(),
         document->IsSecureContext(), document->GetHttpsState(),
         nullptr /* worker_clients */, document->AddressSpace(),
         OriginTrialContext::GetTokens(document).get(),
         base::UnguessableToken::Create(), nullptr /* worker_settings */,
-        kV8CacheOptionsDefault, new WorkletModuleResponsesMap);
+        kV8CacheOptionsDefault,
+        MakeGarbageCollected<WorkletModuleResponsesMap>());
     global_scope_ = MakeGarbageCollected<WorkletGlobalScope>(
         std::move(creation_params), *reporting_proxy_, &GetFrame());
     EXPECT_TRUE(global_scope_->IsMainThreadWorkletGlobalScope());

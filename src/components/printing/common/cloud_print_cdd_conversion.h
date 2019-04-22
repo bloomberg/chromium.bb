@@ -16,7 +16,7 @@ struct PrinterSemanticCapsAndDefaults;
 
 namespace cloud_print {
 
-std::unique_ptr<base::DictionaryValue> PrinterSemanticCapsAndDefaultsToCdd(
+base::Value PrinterSemanticCapsAndDefaultsToCdd(
     const printing::PrinterSemanticCapsAndDefaults& semantic_info);
 
 }  // namespace cloud_print

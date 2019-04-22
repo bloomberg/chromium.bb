@@ -12,8 +12,8 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.UrlConstants;
+import org.chromium.chrome.browser.datareduction.DataReductionPromoUtils;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionDataUseItem;
-import org.chromium.chrome.browser.preferences.datareduction.DataReductionPromoUtils;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionProxySavingsClearedReason;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionStatsPreference;
 import org.chromium.chrome.browser.util.ConversionUtils;
@@ -204,9 +204,9 @@ public class DataReductionProxySettings {
      * @param reason from the DataReductionProxySavingsClearedReason enum
      */
     public void clearDataSavingStatistics(@DataReductionProxySavingsClearedReason int reason) {
-        // When the data saving statistics are cleared, reset the snackbar promo that tells the user
-        // how much data they have saved using Data Saver so far.
-        DataReductionPromoUtils.saveSnackbarPromoDisplayed(0);
+        // When the data saving statistics are cleared, reset the milestone promo that tells the
+        // user how much data they have saved using Data Saver so far.
+        DataReductionPromoUtils.saveMilestonePromoDisplayed(0);
         ContextUtils.getAppSharedPreferences()
                 .edit()
                 .putLong(DATA_REDUCTION_FIRST_ENABLED_TIME, System.currentTimeMillis())

@@ -44,7 +44,6 @@ void MemoryMonitorAndroidDelegateImpl::GetMemoryInfo(MemoryInfo* out) {
 // Called by JNI to populate ActivityManager.MemoryInfo.
 static void JNI_MemoryMonitorAndroid_GetMemoryInfoCallback(
     JNIEnv* env,
-    const base::android::JavaParamRef<jclass>& clazz,
     jlong avail_mem,
     jboolean low_memory,
     jlong threshold,
@@ -66,7 +65,6 @@ const int kTrimMemoryRunningCritical = 15;
 // Called by JNI.
 static void JNI_MemoryMonitorAndroid_OnTrimMemory(
     JNIEnv* env,
-    const base::android::JavaParamRef<jclass>& jcaller,
     jint level) {
   DCHECK(level >= 0 && level <= kTrimMemoryLevelMax);
 

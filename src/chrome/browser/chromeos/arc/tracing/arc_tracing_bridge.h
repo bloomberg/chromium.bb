@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ARC_TRACING_ARC_TRACING_BRIDGE_H_
 #define CHROME_BROWSER_CHROMEOS_ARC_TRACING_ARC_TRACING_BRIDGE_H_
 
+#include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -16,9 +18,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/trace_event/trace_event.h"
 #include "components/arc/common/tracing.mojom.h"
-#include "components/arc/connection_observer.h"
+#include "components/arc/session/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "services/tracing/public/cpp/base_agent.h"
+#include "services/tracing/public/cpp/perfetto/producer_client.h"
 #include "services/tracing/public/mojom/tracing.mojom.h"
 
 namespace content {
@@ -31,7 +34,6 @@ class ArcBridgeService;
 
 // This class provides the interface to trigger tracing in the container.
 class ArcTracingBridge : public KeyedService,
-                         public tracing::BaseAgent,
                          public ConnectionObserver<mojom::TracingInstance> {
  public:
   // Returns singleton instance for the given BrowserContext,
@@ -43,67 +45,100 @@ class ArcTracingBridge : public KeyedService,
                    ArcBridgeService* bridge_service);
   ~ArcTracingBridge() override;
 
+  void GetCategories(std::set<std::string>* category_set);
+
   // ConnectionObserver<mojom::TracingInstance> overrides:
   void OnConnectionReady() override;
 
+  // State of the tracing activity of the bridge.
+  enum class State { kDisabled, kStarting, kEnabled, kStopping };
+  State state() const { return state_; }
+
+  using SuccessCallback = base::OnceCallback<void(bool)>;
+  using TraceDataCallback = base::OnceCallback<void(const std::string& data)>;
+
+  // Starts tracing and calls |callback| when started indicating whether tracing
+  // was started successfully via its parameter.
+  void StartTracing(const std::string& config, SuccessCallback callback);
+
+  // Stops tracing and calls |callback| with the recorded trace data once
+  // stopped. If unsuccessful, calls |callback| with an empty data string.
+  void StopAndFlush(TraceDataCallback callback);
+
  private:
+  // TODO(crbug.com/839086): Remove once we have replaced the legacy tracing
+  // service with perfetto.
+  class ArcTracingAgent : public tracing::BaseAgent {
+   public:
+    explicit ArcTracingAgent(ArcTracingBridge* bridge);
+    ~ArcTracingAgent() override;
+
+   private:
+    // tracing::BaseAgent.
+    void GetCategories(std::set<std::string>* category_set) override;
+
+    // tracing::mojom::Agent.
+    void StartTracing(const std::string& config,
+                      base::TimeTicks coordinator_time,
+                      Agent::StartTracingCallback callback) override;
+    void StopAndFlush(tracing::mojom::RecorderPtr recorder) override;
+
+    void OnTraceData(const std::string& data);
+
+    ArcTracingBridge* const bridge_;
+    tracing::mojom::RecorderPtr recorder_;
+
+    DISALLOW_COPY_AND_ASSIGN(ArcTracingAgent);
+  };
+
   // A helper class for reading trace data from the client side. We separate
   // this from |ArcTracingAgentImpl| to isolate the logic that runs on browser's
-  // IO thread. All the functions in this class except for constructor,
-  // destructor, and |GetWeakPtr| are expected to be run on browser's IO thread.
+  // IO thread. All the functions in this class except for constructor are
+  // expected to be run on browser's IO thread.
   class ArcTracingReader {
    public:
     ArcTracingReader();
     ~ArcTracingReader();
 
+    // Starts reading trace data from the given file descriptor.
     void StartTracing(base::ScopedFD read_fd);
-    void OnTraceDataAvailable();
-    void StopTracing(base::OnceCallback<void(const std::string&)> callback);
-    base::WeakPtr<ArcTracingReader> GetWeakPtr();
+    // Stops reading and returns the collected trace data.
+    std::string StopTracing();
 
    private:
+    void OnTraceDataAvailable();
+
     // Number of events for the ring buffer.
     static constexpr size_t kTraceEventBufferSize = 64000;
 
     base::ScopedFD read_fd_;
     std::unique_ptr<base::FileDescriptorWatcher::Controller> fd_watcher_;
     base::RingBuffer<std::string, kTraceEventBufferSize> ring_buffer_;
-    // NOTE: Weak pointers must be invalidated before all other member variables
-    // so it must be the last member.
-    base::WeakPtrFactory<ArcTracingReader> weak_ptr_factory_;
 
     DISALLOW_COPY_AND_ASSIGN(ArcTracingReader);
   };
 
   struct Category;
 
-  // tracing::mojom::Agent.
-  void StartTracing(const std::string& config,
-                    base::TimeTicks coordinator_time,
-                    Agent::StartTracingCallback callback) override;
-  void StopAndFlush(tracing::mojom::RecorderPtr recorder) override;
-
   // Callback for QueryAvailableCategories.
   void OnCategoriesReady(const std::vector<std::string>& categories);
 
-  void OnArcTracingStopped(bool success);
-  void OnTracingReaderStopped(const std::string& data);
+  void OnArcTracingStarted(SuccessCallback callback, bool success);
+  void OnArcTracingStopped(TraceDataCallback tracing_stopped_callback,
+                           bool success);
+  void OnTracingReaderStopped(TraceDataCallback tracing_stopped_callback,
+                              const std::string& data);
 
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
 
   // List of available categories.
   std::vector<Category> categories_;
 
-  // We use |reader_.GetWeakPtr()| when binding callbacks with its functions.
-  // Notes that the weak pointer returned by it can only be deferenced or
-  // invalided in the same task runner to avoid racing condition. The
-  // destruction of |reader_| is also a source of invalidation. However, we're
-  // lucky as we're using |ArcTracingAgentImpl| as a singleton, the
-  // destruction is always performed after all MessageLoops are destroyed, and
-  // thus there are no race conditions in such situation.
-  ArcTracingReader reader_;
-  bool is_stopping_ = false;
-  tracing::mojom::RecorderPtr recorder_;
+  ArcTracingAgent agent_;
+
+  std::unique_ptr<ArcTracingReader> reader_;
+
+  State state_ = State::kDisabled;
 
   // NOTE: Weak pointers must be invalidated before all other member variables
   // so it must be the last member.

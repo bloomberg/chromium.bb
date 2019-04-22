@@ -5,19 +5,20 @@
 #include "extensions/browser/api/serial/serial_api.h"
 
 #include <algorithm>
-#include <vector>
+#include <map>
+#include <unordered_set>
+#include <utility>
 
+#include "base/bind.h"
 #include "base/task/post_task.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/service_manager_connection.h"
 #include "extensions/browser/api/serial/serial_connection.h"
-#include "extensions/browser/api/serial/serial_event_dispatcher.h"
+#include "extensions/browser/api/serial/serial_port_manager.h"
 #include "extensions/common/api/serial.h"
+#include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "services/device/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 using content::BrowserThread;
 
@@ -83,26 +84,20 @@ SerialGetDevicesFunction::~SerialGetDevicesFunction() {}
 
 ExtensionFunction::ResponseAction SerialGetDevicesFunction::Run() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(content::ServiceManagerConnection::GetForProcess());
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(device::mojom::kServiceName,
-                      mojo::MakeRequest(&enumerator_));
-  enumerator_.set_connection_error_handler(
-      base::BindOnce(&SerialGetDevicesFunction::OnGotDevices, this,
-                     std::vector<device::mojom::SerialDeviceInfoPtr>()));
-  enumerator_->GetDevices(
-      base::BindOnce(&SerialGetDevicesFunction::OnGotDevices, this));
+  auto* port_manager = SerialPortManager::Get(browser_context());
+  DCHECK(port_manager);
+  port_manager->GetDevices(mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+      base::BindOnce(&SerialGetDevicesFunction::OnGotDevices, this),
+      std::vector<device::mojom::SerialPortInfoPtr>()));
   return RespondLater();
 }
 
 void SerialGetDevicesFunction::OnGotDevices(
-    std::vector<device::mojom::SerialDeviceInfoPtr> devices) {
+    std::vector<device::mojom::SerialPortInfoPtr> devices) {
   std::unique_ptr<base::ListValue> results =
       serial::GetDevices::Results::Create(
           mojo::ConvertTo<std::vector<serial::DeviceInfo>>(devices));
   Respond(ArgumentList(std::move(results)));
-  enumerator_.reset();
 }
 
 SerialConnectFunction::SerialConnectFunction() {}
@@ -133,14 +128,10 @@ bool SerialConnectFunction::Prepare() {
     options->stop_bits = kDefaultStopBits;
 
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(content::ServiceManagerConnection::GetForProcess());
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(device::mojom::kServiceName,
-                      mojo::MakeRequest(&io_handler_info_));
-
-  serial_event_dispatcher_ = SerialEventDispatcher::Get(browser_context());
-  DCHECK(serial_event_dispatcher_);
+  serial_port_manager_ = SerialPortManager::Get(browser_context());
+  DCHECK(serial_port_manager_);
+  serial_port_manager_->GetPort(params_->path,
+                                mojo::MakeRequest(&serial_port_info_));
 
   return true;
 }
@@ -148,7 +139,7 @@ bool SerialConnectFunction::Prepare() {
 void SerialConnectFunction::AsyncWorkStart() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   connection_ = std::make_unique<SerialConnection>(
-      params_->path, extension_->id(), std::move(io_handler_info_));
+      extension_->id(), std::move(serial_port_info_));
   connection_->Open(*params_->options,
                     base::BindOnce(&SerialConnectFunction::OnConnected, this));
 }
@@ -188,9 +179,9 @@ void SerialConnectFunction::FinishConnect(
           connections->Remove(extension_id, api_resource_id);
         },
         manager_->data_, extension_->id(), id));
-
     info->connection_id = id;
-    serial_event_dispatcher_->PollConnection(extension_->id(), id);
+    // Start polling.
+    serial_port_manager_->StartConnectionPolling(extension_->id(), id);
     results_ = serial::Connect::Results::Create(*info);
   }
   AsyncWorkCompleted();
@@ -316,8 +307,8 @@ bool SerialSetPausedFunction::Prepare() {
   params_ = serial::SetPaused::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
 
-  serial_event_dispatcher_ = SerialEventDispatcher::Get(browser_context());
-  DCHECK(serial_event_dispatcher_);
+  serial_port_manager_ = SerialPortManager::Get(browser_context());
+  DCHECK(serial_port_manager_);
   return true;
 }
 
@@ -330,10 +321,6 @@ void SerialSetPausedFunction::Work() {
 
   if (params_->paused != connection->paused()) {
     connection->set_paused(params_->paused);
-    if (!params_->paused) {
-      serial_event_dispatcher_->PollConnection(extension_->id(),
-                                               params_->connection_id);
-    }
   }
 
   results_ = serial::SetPaused::Results::Create();
@@ -382,7 +369,7 @@ bool SerialGetConnectionsFunction::Prepare() {
 
 void SerialGetConnectionsFunction::AsyncWorkStart() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  const base::hash_set<int>* connection_ids =
+  const std::unordered_set<int>* connection_ids =
       manager_->GetResourceIds(extension_->id());
   if (connection_ids) {
     for (auto it = connection_ids->cbegin(); it != connection_ids->cend();
@@ -556,10 +543,10 @@ namespace mojo {
 // static
 extensions::api::serial::DeviceInfo
 TypeConverter<extensions::api::serial::DeviceInfo,
-              device::mojom::SerialDeviceInfoPtr>::
-    Convert(const device::mojom::SerialDeviceInfoPtr& device) {
+              device::mojom::SerialPortInfoPtr>::
+    Convert(const device::mojom::SerialPortInfoPtr& device) {
   extensions::api::serial::DeviceInfo info;
-  info.path = device->path;
+  info.path = device->path.AsUTF8Unsafe();
   if (device->has_vendor_id)
     info.vendor_id.reset(new int(static_cast<int>(device->vendor_id)));
   if (device->has_product_id)

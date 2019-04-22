@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
@@ -125,7 +126,7 @@ class CategorizedWorkerPool::CategorizedWorkerPoolSequencedTaskRunner
     task_graph_runner_->WaitForTasksToFinishRunning(namespace_token_);
     task_graph_runner_->CollectCompletedTasks(namespace_token_,
                                               &completed_tasks_);
-  };
+  }
 
   // Lock to exclusively access all the following members that are used to
   // implement the SequencedTaskRunner interfaces.
@@ -227,11 +228,9 @@ bool CategorizedWorkerPool::PostDelayedTask(const base::Location& from_here,
   DCHECK(completed_tasks_.empty());
   CollectCompletedTasksWithLockAcquired(namespace_token_, &completed_tasks_);
 
-  auto end = std::remove_if(
-      tasks_.begin(), tasks_.end(), [this](const scoped_refptr<cc::Task>& e) {
-        return base::ContainsValue(this->completed_tasks_, e);
-      });
-  tasks_.erase(end, tasks_.end());
+  base::EraseIf(tasks_, [this](const scoped_refptr<cc::Task>& e) {
+    return base::ContainsValue(this->completed_tasks_, e);
+  });
 
   tasks_.push_back(base::MakeRefCounted<ClosureTask>(std::move(task)));
   graph_.Reset();
@@ -385,12 +384,13 @@ bool CategorizedWorkerPool::RunTaskWithLockAcquired(
 
 void CategorizedWorkerPool::RunTaskInCategoryWithLockAcquired(
     cc::TaskCategory category) {
-  TRACE_EVENT0("toplevel", "TaskGraphRunner::RunTask");
 
   lock_.AssertAcquired();
 
   auto prioritized_task = work_queue_.GetNextTaskToRun(category);
 
+  TRACE_EVENT1("toplevel", "TaskGraphRunner::RunTask", "source_frame_number_",
+               prioritized_task.task->frame_number());
   // There may be more work available, so wake up another worker thread.
   SignalHasReadyToRunTasksWithLockAcquired();
 

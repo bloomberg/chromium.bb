@@ -8,9 +8,11 @@
 namespace ui {
 
 TEST(CombineAXTreesTest, RenumberOneTree) {
+  AXTreeID tree_id_1 = AXTreeID::CreateNewAXTreeID();
+
   AXTreeUpdate tree;
   tree.has_tree_data = true;
-  tree.tree_data.tree_id = ui::AXTreeID::FromString("1");
+  tree.tree_data.tree_id = tree_id_1;
   tree.root_id = 2;
   tree.nodes.resize(3);
   tree.nodes[0].id = 2;
@@ -36,10 +38,13 @@ TEST(CombineAXTreesTest, RenumberOneTree) {
 }
 
 TEST(CombineAXTreesTest, EmbedChildTree) {
+  AXTreeID tree_id_1 = AXTreeID::CreateNewAXTreeID();
+  AXTreeID tree_id_2 = AXTreeID::CreateNewAXTreeID();
+
   AXTreeUpdate parent_tree;
   parent_tree.root_id = 1;
   parent_tree.has_tree_data = true;
-  parent_tree.tree_data.tree_id = ui::AXTreeID::FromString("1");
+  parent_tree.tree_data.tree_id = tree_id_1;
   parent_tree.nodes.resize(3);
   parent_tree.nodes[0].id = 1;
   parent_tree.nodes[0].child_ids.push_back(2);
@@ -49,13 +54,13 @@ TEST(CombineAXTreesTest, EmbedChildTree) {
   parent_tree.nodes[2].id = 3;
   parent_tree.nodes[2].role = ax::mojom::Role::kIframe;
   parent_tree.nodes[2].AddStringAttribute(
-      ax::mojom::StringAttribute::kChildTreeId, "2");
+      ax::mojom::StringAttribute::kChildTreeId, tree_id_2.ToString());
 
   AXTreeUpdate child_tree;
   child_tree.root_id = 1;
   child_tree.has_tree_data = true;
-  child_tree.tree_data.parent_tree_id = ui::AXTreeID::FromString("1");
-  child_tree.tree_data.tree_id = ui::AXTreeID::FromString("2");
+  child_tree.tree_data.parent_tree_id = tree_id_1;
+  child_tree.tree_data.tree_id = tree_id_2;
   child_tree.nodes.resize(3);
   child_tree.nodes[0].id = 1;
   child_tree.nodes[0].child_ids.push_back(2);
@@ -92,12 +97,14 @@ TEST(CombineAXTreesTest, EmbedChildTree) {
 }
 
 TEST(CombineAXTreesTest, MapAllIdAttributes) {
+  AXTreeID tree_id_1 = AXTreeID::CreateNewAXTreeID();
+
   // This is a nonsensical accessibility tree, the goal is to make sure
   // that all attributes that reference IDs of other nodes are remapped.
 
   AXTreeUpdate tree;
   tree.has_tree_data = true;
-  tree.tree_data.tree_id = ui::AXTreeID::FromString("1");
+  tree.tree_data.tree_id = tree_id_1;
   tree.root_id = 11;
   tree.nodes.resize(2);
   tree.nodes[0].id = 11;
@@ -155,10 +162,13 @@ TEST(CombineAXTreesTest, MapAllIdAttributes) {
 }
 
 TEST(CombineAXTreesTest, FocusedTree) {
+  AXTreeID tree_id_1 = AXTreeID::CreateNewAXTreeID();
+  AXTreeID tree_id_2 = AXTreeID::CreateNewAXTreeID();
+
   AXTreeUpdate parent_tree;
   parent_tree.has_tree_data = true;
-  parent_tree.tree_data.tree_id = ui::AXTreeID::FromString("1");
-  parent_tree.tree_data.focused_tree_id = ui::AXTreeID::FromString("2");
+  parent_tree.tree_data.tree_id = tree_id_1;
+  parent_tree.tree_data.focused_tree_id = tree_id_2;
   parent_tree.tree_data.focus_id = 2;
   parent_tree.root_id = 1;
   parent_tree.nodes.resize(3);
@@ -170,12 +180,12 @@ TEST(CombineAXTreesTest, FocusedTree) {
   parent_tree.nodes[2].id = 3;
   parent_tree.nodes[2].role = ax::mojom::Role::kIframe;
   parent_tree.nodes[2].AddStringAttribute(
-      ax::mojom::StringAttribute::kChildTreeId, "2");
+      ax::mojom::StringAttribute::kChildTreeId, tree_id_2.ToString());
 
   AXTreeUpdate child_tree;
   child_tree.has_tree_data = true;
-  child_tree.tree_data.parent_tree_id = ui::AXTreeID::FromString("1");
-  child_tree.tree_data.tree_id = ui::AXTreeID::FromString("2");
+  child_tree.tree_data.parent_tree_id = tree_id_1;
+  child_tree.tree_data.tree_id = tree_id_2;
   child_tree.tree_data.focus_id = 3;
   child_tree.root_id = 1;
   child_tree.nodes.resize(3);

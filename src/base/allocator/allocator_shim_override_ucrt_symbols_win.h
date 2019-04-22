@@ -70,6 +70,83 @@ size_t _msize(void* memblock) {
   return ShimGetSizeEstimate(memblock, nullptr);
 }
 
+__declspec(restrict) void* _aligned_malloc(size_t size, size_t alignment) {
+  return ShimAlignedMalloc(size, alignment, nullptr);
+}
+
+__declspec(restrict) void* _aligned_realloc(void* address,
+                                            size_t size,
+                                            size_t alignment) {
+  return ShimAlignedRealloc(address, size, alignment, nullptr);
+}
+
+void _aligned_free(void* address) {
+  ShimAlignedFree(address, nullptr);
+}
+
+// _recalloc_base is called by CRT internally.
+__declspec(restrict) void* _recalloc_base(void* block,
+                                          size_t count,
+                                          size_t size) {
+  const size_t old_block_size = (block != nullptr) ? _msize(block) : 0;
+  base::CheckedNumeric<size_t> new_block_size_checked = count;
+  new_block_size_checked *= size;
+  const size_t new_block_size = new_block_size_checked.ValueOrDie();
+
+  void* const new_block = realloc(block, new_block_size);
+
+  if (new_block != nullptr && old_block_size < new_block_size) {
+    memset(static_cast<char*>(new_block) + old_block_size, 0,
+           new_block_size - old_block_size);
+  }
+
+  return new_block;
+}
+
+__declspec(restrict) void* _recalloc(void* block, size_t count, size_t size) {
+  return _recalloc_base(block, count, size);
+}
+
+// The following uncommon _aligned_* routines are not used in Chromium and have
+// been shimmed to immediately crash to ensure that implementations are added if
+// uses are introduced.
+__declspec(restrict) void* _aligned_recalloc(void* address,
+                                             size_t num,
+                                             size_t size,
+                                             size_t alignment) {
+  CHECK(false) << "This routine has not been implemented";
+  __builtin_unreachable();
+}
+
+size_t _aligned_msize(void* address, size_t alignment, size_t offset) {
+  CHECK(false) << "This routine has not been implemented";
+  __builtin_unreachable();
+}
+
+__declspec(restrict) void* _aligned_offset_malloc(size_t size,
+                                                  size_t alignment,
+                                                  size_t offset) {
+  CHECK(false) << "This routine has not been implemented";
+  __builtin_unreachable();
+}
+
+__declspec(restrict) void* _aligned_offset_realloc(void* address,
+                                                   size_t size,
+                                                   size_t alignment,
+                                                   size_t offset) {
+  CHECK(false) << "This routine has not been implemented";
+  __builtin_unreachable();
+}
+
+__declspec(restrict) void* _aligned_offset_recalloc(void* address,
+                                                    size_t num,
+                                                    size_t size,
+                                                    size_t alignment,
+                                                    size_t offset) {
+  CHECK(false) << "This routine has not been implemented";
+  __builtin_unreachable();
+}
+
 // The symbols
 //   * __acrt_heap
 //   * __acrt_initialize_heap

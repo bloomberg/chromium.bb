@@ -57,6 +57,12 @@ class VIEWS_EXPORT NativeViewHost : public View {
   // NB: This does not interact nicely with fast_resize.
   bool SetCustomMask(std::unique_ptr<ui::LayerOwner> mask);
 
+  // Sets the height of the top region where the gfx::NativeView shouldn't be
+  // targeted. This will be used when another view is covering there
+  // temporarily, like the immersive fullscreen mode of ChromeOS.
+  void SetHitTestTopInset(int top_inset);
+  int GetHitTestTopInset() const;
+
   // Sets the size for the NativeView that may or may not match the size of this
   // View when it is being captured. If the size does not match, scaling will
   // occur. Pass an empty size to revert to the default behavior, where the
@@ -67,6 +73,10 @@ class VIEWS_EXPORT NativeViewHost : public View {
   // if there's no attached native view or it has no container.
   gfx::NativeView GetNativeViewContainer() const;
 
+  // Pass the parent accessible object to this host's native view so that
+  // it can return this value when querying its parent accessible.
+  void SetParentAccessible(gfx::NativeViewAccessible);
+
   // Fast resizing will move the native view and clip its visible region, this
   // will result in white areas and will not resize the content (so scrollbars
   // will be all wrong and content will flow offscreen). Only use this
@@ -75,12 +85,6 @@ class VIEWS_EXPORT NativeViewHost : public View {
   // end. USE WITH CAUTION.
   void set_fast_resize(bool fast_resize) { fast_resize_ = fast_resize; }
   bool fast_resize() const { return fast_resize_; }
-
-  // Sets the color to paint the background during a resize that involves a
-  // clip. This is white by default.
-  void set_resize_background_color(SkColor resize_background_color) {
-    resize_background_color_ = resize_background_color;
-  }
 
   // Value of fast_resize() the last time Layout() was invoked.
   bool fast_resize_at_last_layout() const {
@@ -120,7 +124,7 @@ class VIEWS_EXPORT NativeViewHost : public View {
   void ClearFocus();
 
   // The attached native view. There is exactly one native_view_ attached.
-  gfx::NativeView native_view_;
+  gfx::NativeView native_view_ = nullptr;
 
   // A platform-specific wrapper that does the OS-level manipulation of the
   // attached gfx::NativeView.
@@ -132,13 +136,10 @@ class VIEWS_EXPORT NativeViewHost : public View {
 
   // True if the native view is being resized using the fast method described
   // in the setter/accessor above.
-  bool fast_resize_;
+  bool fast_resize_ = false;
 
   // Value of |fast_resize_| during the last call to Layout.
-  bool fast_resize_at_last_layout_;
-
-  // Color to paint in the background while resizing.
-  SkColor resize_background_color_;
+  bool fast_resize_at_last_layout_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(NativeViewHost);
 };

@@ -4,6 +4,7 @@
 
 #include "gpu/gles2_conform_support/egl/display.h"
 
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "gpu/gles2_conform_support/egl/config.h"
 #include "gpu/gles2_conform_support/egl/context.h"
@@ -86,7 +87,7 @@ EGLBoolean Display::ChooseConfig(ThreadState* ts,
   if (!configs)
     config_size = 0;
   *num_config = 0;
-  for (size_t i = 0; i < arraysize(configs_); ++i) {
+  for (size_t i = 0; i < base::size(configs_); ++i) {
     if (configs_[i]->Matches(attrib_list)) {
       if (*num_config < config_size) {
         configs[*num_config] = configs_[i].get();
@@ -109,9 +110,9 @@ EGLBoolean Display::GetConfigs(ThreadState* ts,
   InitializeConfigsIfNeeded();
   if (!configs)
     config_size = 0;
-  *num_config = arraysize(configs_);
+  *num_config = base::size(configs_);
   size_t count =
-      std::min(arraysize(configs_), static_cast<size_t>(config_size));
+      std::min(base::size(configs_), static_cast<size_t>(config_size));
   for (size_t i = 0; i < count; ++i)
     configs[i] = configs_[i].get();
   return ts->ReturnSuccess(EGL_TRUE);

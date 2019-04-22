@@ -8,8 +8,11 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
+#include <errno.h>
+#include <string.h>
 #include <algorithm>
 
+#include "rtc_base/checks.h"
 #include "rtc_base/memory_stream.h"
 
 namespace rtc {
@@ -86,6 +89,10 @@ bool MemoryStream::GetPosition(size_t* position) const {
   if (position)
     *position = seek_position_;
   return true;
+}
+
+void MemoryStream::Rewind() {
+  seek_position_ = 0;
 }
 
 bool MemoryStream::GetSize(size_t* size) const {

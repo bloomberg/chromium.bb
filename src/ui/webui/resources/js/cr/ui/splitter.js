@@ -41,13 +41,13 @@ cr.define('cr.ui', function() {
    * @return {number} The zoom factor of the document.
    */
   function getZoomFactor(doc) {
-    var dummyElement = doc.createElement('div');
+    const dummyElement = doc.createElement('div');
     dummyElement.style.cssText = 'position:absolute;width:100px;height:100px;' +
         'top:-1000px;overflow:hidden';
     doc.body.appendChild(dummyElement);
-    var cs = doc.defaultView.getComputedStyle(dummyElement);
-    var rect = dummyElement.getBoundingClientRect();
-    var zoomFactor = parseFloat(cs.width) / 100;
+    const cs = doc.defaultView.getComputedStyle(dummyElement);
+    const rect = dummyElement.getBoundingClientRect();
+    const zoomFactor = parseFloat(cs.width) / 100;
     doc.body.removeChild(dummyElement);
     return zoomFactor;
   }
@@ -58,7 +58,7 @@ cr.define('cr.ui', function() {
    * @constructor
    * @extends {HTMLDivElement}
    */
-  var Splitter = cr.ui.define('div');
+  const Splitter = cr.ui.define('div');
 
   Splitter.prototype = {
     __proto__: HTMLDivElement.prototype,
@@ -95,7 +95,7 @@ cr.define('cr.ui', function() {
         this.endDrag_();
       }
       if (isTouchEvent) {
-        var endDragBound = this.endDrag_.bind(this);
+        const endDragBound = this.endDrag_.bind(this);
         this.handlers_ = {
           'touchmove': this.handleTouchMove_.bind(this),
           'touchend': endDragBound,
@@ -111,11 +111,11 @@ cr.define('cr.ui', function() {
         };
       }
 
-      var doc = this.ownerDocument;
+      const doc = this.ownerDocument;
 
       // Use capturing events on the document to get events when the mouse
       // leaves the document.
-      for (var eventType in this.handlers_) {
+      for (const eventType in this.handlers_) {
         doc.addEventListener(eventType, this.handlers_[eventType], true);
       }
 
@@ -129,8 +129,8 @@ cr.define('cr.ui', function() {
      * @private
      */
     endDrag_: function() {
-      var doc = this.ownerDocument;
-      for (var eventType in this.handlers_) {
+      const doc = this.ownerDocument;
+      for (const eventType in this.handlers_) {
         doc.removeEventListener(eventType, this.handlers_[eventType], true);
       }
       this.handlers_ = null;
@@ -163,8 +163,9 @@ cr.define('cr.ui', function() {
      */
     handleMouseDown_: function(e) {
       e = /** @type {!MouseEvent} */ (e);
-      if (e.button)
+      if (e.button) {
         return;
+      }
       this.startDrag(e.clientX, false);
       // Default action is to start selection and to move focus.
       e.preventDefault();
@@ -198,8 +199,9 @@ cr.define('cr.ui', function() {
      * @param {!TouchEvent} e The touch event.
      */
     handleTouchMove_: function(e) {
-      if (e.touches.length == 1)
+      if (e.touches.length == 1) {
         this.handleMove_(e.touches[0].clientX);
+      }
     },
 
     /**
@@ -209,11 +211,11 @@ cr.define('cr.ui', function() {
      * @private
      */
     handleMove_: function(clientX) {
-      var rtl =
+      const rtl =
           this.ownerDocument.defaultView.getComputedStyle(this).direction ==
           'rtl';
-      var dirMultiplier = rtl ? -1 : 1;
-      var deltaX = dirMultiplier * (clientX - this.startX_);
+      const dirMultiplier = rtl ? -1 : 1;
+      const deltaX = dirMultiplier * (clientX - this.startX_);
       this.handleSplitterDragMove(deltaX);
     },
 
@@ -234,8 +236,8 @@ cr.define('cr.ui', function() {
       // Use the computed width style as the base so that we can ignore what
       // box sizing the element has. Add the difference between offset and
       // client widths to account for any scrollbars.
-      var targetElement = this.getResizeTarget_();
-      var doc = targetElement.ownerDocument;
+      const targetElement = this.getResizeTarget_();
+      const doc = targetElement.ownerDocument;
       this.startWidth_ =
           parseFloat(doc.defaultView.getComputedStyle(targetElement).width) +
           targetElement.offsetWidth - targetElement.clientWidth;
@@ -248,8 +250,8 @@ cr.define('cr.ui', function() {
      * @param {number} deltaX The change of splitter horizontal position.
      */
     handleSplitterDragMove: function(deltaX) {
-      var targetElement = this.getResizeTarget_();
-      var newWidth = this.startWidth_ + this.calcDeltaX_(deltaX);
+      const targetElement = this.getResizeTarget_();
+      const newWidth = this.startWidth_ + this.calcDeltaX_(deltaX);
       targetElement.style.width = newWidth + 'px';
       cr.dispatchSimpleEvent(this, 'dragmove');
     },
@@ -260,12 +262,13 @@ cr.define('cr.ui', function() {
      */
     handleSplitterDragEnd: function() {
       // Check if the size changed.
-      var targetElement = this.getResizeTarget_();
-      var doc = targetElement.ownerDocument;
-      var computedWidth =
+      const targetElement = this.getResizeTarget_();
+      const doc = targetElement.ownerDocument;
+      const computedWidth =
           parseFloat(doc.defaultView.getComputedStyle(targetElement).width);
-      if (this.startWidth_ != computedWidth)
+      if (this.startWidth_ != computedWidth) {
         cr.dispatchSimpleEvent(this, 'resize');
+      }
 
       this.classList.remove('splitter-active');
     },

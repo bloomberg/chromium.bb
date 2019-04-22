@@ -6,14 +6,15 @@
 
 #include "xfa/fxfa/parser/cxfa_attributes.h"
 
+#include "fxjs/xfa/cjx_node.h"
+#include "third_party/base/ptr_util.h"
+
 namespace {
 
 const CXFA_Node::AttributeData kAttributesAttributeData[] = {
     {XFA_Attribute::Desc, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Lock, XFA_AttributeType::Integer, (void*)0},
-    {XFA_Attribute::Unknown, XFA_AttributeType::Integer, nullptr}};
-
-constexpr wchar_t kAttributesName[] = L"attributes";
+};
 
 }  // namespace
 
@@ -23,8 +24,8 @@ CXFA_Attributes::CXFA_Attributes(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_XDPPACKET_Config,
                 XFA_ObjectType::NodeV,
                 XFA_Element::Attributes,
-                nullptr,
+                {},
                 kAttributesAttributeData,
-                kAttributesName) {}
+                pdfium::MakeUnique<CJX_Node>(this)) {}
 
-CXFA_Attributes::~CXFA_Attributes() {}
+CXFA_Attributes::~CXFA_Attributes() = default;

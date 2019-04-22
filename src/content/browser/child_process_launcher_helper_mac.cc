@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/metrics/field_trial.h"
 #include "base/path_service.h"
 #include "base/posix/global_descriptors.h"
 #include "base/strings/stringprintf.h"
@@ -20,16 +21,18 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
+#include "mojo/public/cpp/platform/features.h"
 #include "sandbox/mac/seatbelt_exec.h"
 #include "services/service_manager/embedder/result_codes.h"
 #include "services/service_manager/sandbox/mac/audio.sb.h"
 #include "services/service_manager/sandbox/mac/cdm.sb.h"
-#include "services/service_manager/sandbox/mac/common_v2.sb.h"
+#include "services/service_manager/sandbox/mac/common.sb.h"
 #include "services/service_manager/sandbox/mac/gpu_v2.sb.h"
 #include "services/service_manager/sandbox/mac/nacl_loader.sb.h"
+#include "services/service_manager/sandbox/mac/network.sb.h"
 #include "services/service_manager/sandbox/mac/pdf_compositor.sb.h"
-#include "services/service_manager/sandbox/mac/ppapi_v2.sb.h"
-#include "services/service_manager/sandbox/mac/renderer_v2.sb.h"
+#include "services/service_manager/sandbox/mac/ppapi.sb.h"
+#include "services/service_manager/sandbox/mac/renderer.sb.h"
 #include "services/service_manager/sandbox/mac/utility.sb.h"
 #include "services/service_manager/sandbox/sandbox.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
@@ -64,7 +67,17 @@ bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
   options->fds_to_remap = files_to_register.GetMappingWithIDAdjustment(
       base::GlobalDescriptors::kBaseDescriptor);
 
-  options->environ = delegate_->GetEnvironment();
+  base::FieldTrialList::InsertFieldTrialHandleIfNeeded(
+      &options->mach_ports_for_rendezvous);
+
+  if (base::FeatureList::IsEnabled(mojo::features::kMojoChannelMac)) {
+    options->mach_ports_for_rendezvous.insert(std::make_pair(
+        'mojo', base::MachRendezvousPort(mojo_channel_->TakeRemoteEndpoint()
+                                             .TakePlatformHandle()
+                                             .TakeMachReceiveRight())));
+  }
+
+  options->environment = delegate_->GetEnvironment();
 
   auto sandbox_type =
       service_manager::SandboxTypeFromCommandLine(*command_line_);
@@ -73,39 +86,13 @@ bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
       command_line_->HasSwitch(service_manager::switches::kNoSandbox) ||
       service_manager::IsUnsandboxedSandboxType(sandbox_type);
 
-  // TODO(kerrnel): Delete this switch once the V2 sandbox is always enabled.
-  bool use_v2 = base::FeatureList::IsEnabled(features::kMacV2Sandbox);
-
-  switch (sandbox_type) {
-    case service_manager::SANDBOX_TYPE_NO_SANDBOX:
-      break;
-    case service_manager::SANDBOX_TYPE_CDM:
-    case service_manager::SANDBOX_TYPE_PPAPI:
-    case service_manager::SANDBOX_TYPE_RENDERER:
-    case service_manager::SANDBOX_TYPE_UTILITY:
-    case service_manager::SANDBOX_TYPE_NACL_LOADER:
-    case service_manager::SANDBOX_TYPE_PDF_COMPOSITOR:
-    case service_manager::SANDBOX_TYPE_PROFILING:
-      // If the feature experiment is enabled and this process type supports
-      // the v2 sandbox, use it.
-      use_v2 &= true;
-      break;
-    case service_manager::SANDBOX_TYPE_AUDIO:
-      // The audio service only exists with the v2 sandbox.
-      use_v2 |= true;
-      break;
-    default:
-      // This is a 'break' because the V2 sandbox is not enabled for all
-      // processes yet, and so there are sandbox types like NETWORK that
-      // should not be run under the V2 sandbox.
-      use_v2 = false;
-      break;
-  }
+  bool use_v2 = (sandbox_type != service_manager::SANDBOX_TYPE_GPU) ||
+                base::FeatureList::IsEnabled(features::kMacV2GPUSandbox);
 
   if (use_v2 && !no_sandbox) {
     // Generate the profile string.
     std::string profile =
-        std::string(service_manager::kSeatbeltPolicyString_common_v2);
+        std::string(service_manager::kSeatbeltPolicyString_common);
 
     switch (sandbox_type) {
       case service_manager::SANDBOX_TYPE_CDM:
@@ -118,10 +105,10 @@ bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
         profile += service_manager::kSeatbeltPolicyString_nacl_loader;
         break;
       case service_manager::SANDBOX_TYPE_PPAPI:
-        profile += service_manager::kSeatbeltPolicyString_ppapi_v2;
+        profile += service_manager::kSeatbeltPolicyString_ppapi;
         break;
       case service_manager::SANDBOX_TYPE_RENDERER:
-        profile += service_manager::kSeatbeltPolicyString_renderer_v2;
+        profile += service_manager::kSeatbeltPolicyString_renderer;
         break;
       case service_manager::SANDBOX_TYPE_PDF_COMPOSITOR:
         profile += service_manager::kSeatbeltPolicyString_pdf_compositor;
@@ -129,17 +116,23 @@ bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
       case service_manager::SANDBOX_TYPE_AUDIO:
         profile += service_manager::kSeatbeltPolicyString_audio;
         break;
+      case service_manager::SANDBOX_TYPE_NETWORK:
+        profile += service_manager::kSeatbeltPolicyString_network;
+        break;
       case service_manager::SANDBOX_TYPE_UTILITY:
       case service_manager::SANDBOX_TYPE_PROFILING:
         profile += service_manager::kSeatbeltPolicyString_utility;
         break;
-      default:
+      case service_manager::SANDBOX_TYPE_INVALID:
+      case service_manager::SANDBOX_TYPE_FIRST_TYPE:
+      case service_manager::SANDBOX_TYPE_AFTER_LAST_TYPE:
         CHECK(false);
+        break;
     }
 
     // Disable os logging to com.apple.diagnosticd which is a performance
     // problem.
-    options->environ.insert(std::make_pair("OS_ACTIVITY_MODE", "disable"));
+    options->environment.insert(std::make_pair("OS_ACTIVITY_MODE", "disable"));
 
     seatbelt_exec_client_ = std::make_unique<sandbox::SeatbeltExecClient>();
     seatbelt_exec_client_->SetProfile(profile);
@@ -155,6 +148,9 @@ bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
       case service_manager::SANDBOX_TYPE_AUDIO:
         SetupCommonSandboxParameters(seatbelt_exec_client_.get());
         break;
+      case service_manager::SANDBOX_TYPE_NETWORK:
+        SetupNetworkSandboxParameters(seatbelt_exec_client_.get());
+        break;
       case service_manager::SANDBOX_TYPE_PPAPI:
         SetupPPAPISandboxParameters(seatbelt_exec_client_.get());
         break;
@@ -164,7 +160,8 @@ bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
                                       *command_line_.get());
         break;
       default:
-        CHECK(false);
+        CHECK(false) << "Unhandled parameters for sandbox_type "
+                     << sandbox_type;
     }
 
     int pipe = seatbelt_exec_client_->GetReadFD();
@@ -172,10 +169,6 @@ bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
       LOG(ERROR) << "The file descriptor for the sandboxed child is invalid.";
       return false;
     }
-
-    base::FilePath helper_executable;
-    CHECK(
-        base::PathService::Get(content::CHILD_PROCESS_EXE, &helper_executable));
 
     options->fds_to_remap.push_back(std::make_pair(pipe, pipe));
 
@@ -276,7 +269,7 @@ void ChildProcessLauncherHelper::SetProcessPriorityOnLauncherThread(
 // static
 void ChildProcessLauncherHelper::SetRegisteredFilesForService(
     const std::string& service_name,
-    catalog::RequiredFileMap required_files) {
+    std::map<std::string, base::FilePath> required_files) {
   // No file passing from the manifest on Mac yet.
   DCHECK(required_files.empty());
 }

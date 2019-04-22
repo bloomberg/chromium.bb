@@ -8,23 +8,35 @@
 #include <utility>
 #include <vector>
 
+#include "ash/accelerometer/accelerometer_reader.h"
+#include "ash/accelerometer/accelerometer_types.h"
+#include "ash/app_list/app_list_controller_impl.h"
+#include "ash/app_list/test/app_list_test_helper.h"
+#include "ash/app_list/views/app_list_view.h"
 #include "ash/display/screen_orientation_controller.h"
+#include "ash/public/cpp/app_types.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/tablet_mode.h"
+#include "ash/public/cpp/window_properties.h"
+#include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/wm/overview/window_selector_controller.h"
+#include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
+#include "ash/wm/wm_event.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
-#include "chromeos/accelerometer/accelerometer_reader.h"
-#include "chromeos/accelerometer/accelerometer_types.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_power_manager_client.h"
+#include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "services/ws/public/cpp/input_devices/input_device_client_test_api.h"
+#include "ui/aura/client/aura_constants.h"
+#include "ui/aura/test/test_window_delegate.h"
+#include "ui/base/hit_test.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/display/test/display_manager_test_api.h"
@@ -33,6 +45,7 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/vector3d_f.h"
 #include "ui/message_center/message_center.h"
+#include "ui/wm/core/window_util.h"
 
 namespace ash {
 
@@ -79,7 +92,7 @@ class TabletModeControllerTest : public AshTestBase {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kAshEnableTabletMode);
     AshTestBase::SetUp();
-    chromeos::AccelerometerReader::GetInstance()->RemoveObserver(
+    AccelerometerReader::GetInstance()->RemoveObserver(
         tablet_mode_controller());
 
     // Set the first display to be the internal display for the accelerometer
@@ -91,8 +104,7 @@ class TabletModeControllerTest : public AshTestBase {
   }
 
   void TearDown() override {
-    chromeos::AccelerometerReader::GetInstance()->AddObserver(
-        tablet_mode_controller());
+    AccelerometerReader::GetInstance()->AddObserver(tablet_mode_controller());
     AshTestBase::TearDown();
   }
 
@@ -137,6 +149,27 @@ class TabletModeControllerTest : public AshTestBase {
   }
 
   base::UserActionTester* user_action_tester() { return &user_action_tester_; }
+
+  void SuspendImminent() { test_api_->SuspendImminent(); }
+  void SuspendDone(const base::TimeDelta& sleep_duration) {
+    test_api_->SuspendDone(sleep_duration);
+  }
+
+  // Creates a test window snapped on the left in desktop mode.
+  std::unique_ptr<aura::Window> CreateDesktopWindowSnappedLeft() {
+    std::unique_ptr<aura::Window> window = CreateTestWindow();
+    wm::WMEvent snap_to_left(wm::WM_EVENT_CYCLE_SNAP_LEFT);
+    wm::GetWindowState(window.get())->OnWMEvent(&snap_to_left);
+    return window;
+  }
+
+  // Creates a test window snapped on the right in desktop mode.
+  std::unique_ptr<aura::Window> CreateDesktopWindowSnappedRight() {
+    std::unique_ptr<aura::Window> window = CreateTestWindow();
+    wm::WMEvent snap_to_right(wm::WM_EVENT_CYCLE_SNAP_RIGHT);
+    wm::GetWindowState(window.get())->OnWMEvent(&snap_to_right);
+    return window;
+  }
 
  private:
   std::unique_ptr<TabletModeControllerTestApi> test_api_;
@@ -501,7 +534,7 @@ TEST_F(TabletModeControllerTest, VerticalHingeTest) {
 // Test if this case does not crash. See http://crbug.com/462806
 TEST_F(TabletModeControllerTest, DisplayDisconnectionDuringOverview) {
   // Do not animate wallpaper on entering overview.
-  WindowSelectorController::SetDoNotChangeWallpaperBlurForTests();
+  OverviewController::SetDoNotChangeWallpaperBlurForTests();
 
   UpdateDisplay("800x600,800x600");
   std::unique_ptr<aura::Window> w1(
@@ -512,11 +545,11 @@ TEST_F(TabletModeControllerTest, DisplayDisconnectionDuringOverview) {
   ASSERT_FALSE(IsTabletModeStarted());
 
   tablet_mode_controller()->EnableTabletModeWindowManager(true);
-  EXPECT_TRUE(Shell::Get()->window_selector_controller()->ToggleOverview());
+  EXPECT_TRUE(Shell::Get()->overview_controller()->ToggleOverview());
 
   UpdateDisplay("800x600");
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(Shell::Get()->window_selector_controller()->IsSelecting());
+  EXPECT_FALSE(Shell::Get()->overview_controller()->IsSelecting());
   EXPECT_EQ(w1->GetRootWindow(), w2->GetRootWindow());
 }
 
@@ -625,11 +658,7 @@ TEST_F(TabletModeControllerTest, VerticalHingeUnstableAnglesTest) {
 // state will trigger a mode update.
 TEST_F(TabletModeControllerTest, InitializedWhileTabletModeSwitchOn) {
   base::RunLoop().RunUntilIdle();
-  // FakePowerManagerClient is always installed for tests
-  chromeos::FakePowerManagerClient* power_manager_client =
-      static_cast<chromeos::FakePowerManagerClient*>(
-          chromeos::DBusThreadManager::Get()->GetPowerManagerClient());
-  power_manager_client->SetTabletMode(
+  power_manager_client()->SetTabletMode(
       chromeos::PowerManagerClient::TabletMode::ON, base::TimeTicks::Now());
 
   // Clear the callback that was set by the original TabletModeController.
@@ -704,9 +733,7 @@ TEST_F(TabletModeControllerTest, RecordLidAngle) {
 TEST_F(TabletModeControllerTest, CannotEnterTabletModeWithExternalMouse) {
   // Set the current list of devices to empty so that they don't interfere
   // with the test.
-  base::RunLoop().RunUntilIdle();
   ws::InputDeviceClientTestApi().SetMouseDevices({});
-  base::RunLoop().RunUntilIdle();
 
   OpenLidToAngle(300.0f);
   EXPECT_TRUE(IsTabletModeStarted());
@@ -717,7 +744,6 @@ TEST_F(TabletModeControllerTest, CannotEnterTabletModeWithExternalMouse) {
   // Attach a external mouse.
   ws::InputDeviceClientTestApi().SetMouseDevices(
       {ui::InputDevice(3, ui::InputDeviceType::INPUT_DEVICE_USB, "mouse")});
-  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(IsTabletModeStarted());
 
   // Open lid to tent mode. Verify that tablet mode is not started.
@@ -730,9 +756,7 @@ TEST_F(TabletModeControllerTest, CannotEnterTabletModeWithExternalMouse) {
 TEST_F(TabletModeControllerTest, LeaveTabletModeWhenExternalMouseConnected) {
   // Set the current list of devices to empty so that they don't interfere
   // with the test.
-  base::RunLoop().RunUntilIdle();
   ws::InputDeviceClientTestApi().SetMouseDevices({});
-  base::RunLoop().RunUntilIdle();
 
   // Start in tablet mode.
   OpenLidToAngle(300.0f);
@@ -743,13 +767,11 @@ TEST_F(TabletModeControllerTest, LeaveTabletModeWhenExternalMouseConnected) {
   // events are still blocked because the keyboard is still facing the bottom.
   ws::InputDeviceClientTestApi().SetMouseDevices(
       {ui::InputDevice(3, ui::InputDeviceType::INPUT_DEVICE_USB, "mouse")});
-  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(IsTabletModeStarted());
   EXPECT_TRUE(AreEventsBlocked());
 
   // Verify that after unplugging the mouse, tablet mode will resume.
   ws::InputDeviceClientTestApi().SetMouseDevices({});
-  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(IsTabletModeStarted());
   EXPECT_TRUE(AreEventsBlocked());
 }
@@ -759,38 +781,7 @@ TEST_F(TabletModeControllerTest, LeaveTabletModeWhenExternalMouseConnected) {
 TEST_F(TabletModeControllerTest, ExternalMouseInLaptopMode) {
   // Set the current list of devices to empty so that they don't interfere
   // with the test.
-  base::RunLoop().RunUntilIdle();
   ws::InputDeviceClientTestApi().SetMouseDevices({});
-  base::RunLoop().RunUntilIdle();
-
-  // Start in laptop mode.
-  OpenLidToAngle(30.0f);
-  EXPECT_FALSE(IsTabletModeStarted());
-  EXPECT_FALSE(AreEventsBlocked());
-
-  // Attach external mouse doesn't change the mode.
-  ws::InputDeviceClientTestApi().SetMouseDevices({ui::InputDevice(
-      3, ui::InputDeviceType::INPUT_DEVICE_USB, "mouse")});
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(IsTabletModeStarted());
-  EXPECT_FALSE(AreEventsBlocked());
-
-  // Now remove the external mouse. It still should maintain in laptop mode
-  // because its lid angle is still in laptop mode.
-  ws::InputDeviceClientTestApi().SetMouseDevices({});
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(IsTabletModeStarted());
-  EXPECT_FALSE(AreEventsBlocked());
-}
-
-// Test that the ui mode and input event blocker should be both correctly
-// updated when there is a change in external mouse and lid angle.
-TEST_F(TabletModeControllerTest, ExternalMouseWithLidAngleTest) {
-  // Set the current list of devices to empty so that they don't interfere
-  // with the test.
-  base::RunLoop().RunUntilIdle();
-  ws::InputDeviceClientTestApi().SetMouseDevices({});
-  base::RunLoop().RunUntilIdle();
 
   // Start in laptop mode.
   OpenLidToAngle(30.0f);
@@ -800,7 +791,72 @@ TEST_F(TabletModeControllerTest, ExternalMouseWithLidAngleTest) {
   // Attach external mouse doesn't change the mode.
   ws::InputDeviceClientTestApi().SetMouseDevices(
       {ui::InputDevice(3, ui::InputDeviceType::INPUT_DEVICE_USB, "mouse")});
+  EXPECT_FALSE(IsTabletModeStarted());
+  EXPECT_FALSE(AreEventsBlocked());
+
+  // Now remove the external mouse. It still should maintain in laptop mode
+  // because its lid angle is still in laptop mode.
+  ws::InputDeviceClientTestApi().SetMouseDevices({});
+  EXPECT_FALSE(IsTabletModeStarted());
+  EXPECT_FALSE(AreEventsBlocked());
+}
+
+// Test that docked mode prevents entering tablet mode on detaching an external
+// mouse while in tablet position.
+TEST_F(TabletModeControllerTest, ExternalMouseInDockedMode) {
+  // Set the current list of devices to empty so that they don't interfere
+  // with the test.
   base::RunLoop().RunUntilIdle();
+  ws::InputDeviceClientTestApi().SetMouseDevices({});
+  base::RunLoop().RunUntilIdle();
+
+  UpdateDisplay("800x600, 800x600");
+  const int64_t internal_display_id =
+      display::test::DisplayManagerTestApi(display_manager())
+          .SetFirstDisplayAsInternalDisplay();
+
+  // Set the current list of devices with an external mouse.
+  ws::InputDeviceClientTestApi().SetMouseDevices(
+      {ui::InputDevice(3, ui::InputDeviceType::INPUT_DEVICE_USB, "mouse")});
+
+  // Deactivate internal display to simulate Docked Mode.
+  std::vector<display::ManagedDisplayInfo> all_displays;
+  all_displays.push_back(display_manager()->GetDisplayInfo(
+      display_manager()->GetDisplayAt(0).id()));
+  std::vector<display::ManagedDisplayInfo> secondary_only;
+  display::ManagedDisplayInfo secondary_display =
+      display_manager()->GetDisplayInfo(
+          display_manager()->GetDisplayAt(1).id());
+  all_displays.push_back(secondary_display);
+  secondary_only.push_back(secondary_display);
+  display_manager()->OnNativeDisplaysChanged(secondary_only);
+  ASSERT_FALSE(display_manager()->IsActiveDisplayId(internal_display_id));
+
+  // Enter tablet position.
+  SetTabletMode(true);
+  ASSERT_FALSE(IsTabletModeStarted());
+
+  // Detach the external mouse.
+  ws::InputDeviceClientTestApi().SetMouseDevices({});
+  // Still expect clamshell mode.
+  EXPECT_FALSE(IsTabletModeStarted());
+}
+
+// Test that the ui mode and input event blocker should be both correctly
+// updated when there is a change in external mouse and lid angle.
+TEST_F(TabletModeControllerTest, ExternalMouseWithLidAngleTest) {
+  // Set the current list of devices to empty so that they don't interfere
+  // with the test.
+  ws::InputDeviceClientTestApi().SetMouseDevices({});
+
+  // Start in laptop mode.
+  OpenLidToAngle(30.0f);
+  EXPECT_FALSE(IsTabletModeStarted());
+  EXPECT_FALSE(AreEventsBlocked());
+
+  // Attach external mouse doesn't change the mode.
+  ws::InputDeviceClientTestApi().SetMouseDevices(
+      {ui::InputDevice(3, ui::InputDeviceType::INPUT_DEVICE_USB, "mouse")});
   EXPECT_FALSE(IsTabletModeStarted());
   EXPECT_FALSE(AreEventsBlocked());
 
@@ -814,14 +870,12 @@ TEST_F(TabletModeControllerTest, ExternalMouseWithLidAngleTest) {
   // Remove the external mouse should enter tablet mode now. The internal input
   // events should still be blocked.
   ws::InputDeviceClientTestApi().SetMouseDevices({});
-  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(IsTabletModeStarted());
   EXPECT_TRUE(AreEventsBlocked());
 
   // Attach the mouse again should enter clamshell mode again.
   ws::InputDeviceClientTestApi().SetMouseDevices(
       {ui::InputDevice(3, ui::InputDeviceType::INPUT_DEVICE_USB, "mouse")});
-  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(IsTabletModeStarted());
   EXPECT_TRUE(AreEventsBlocked());
 
@@ -834,7 +888,6 @@ TEST_F(TabletModeControllerTest, ExternalMouseWithLidAngleTest) {
   // Now remove the mouse. The device should stay in clamshell mode and the
   // internal events should not be blocked.
   ws::InputDeviceClientTestApi().SetMouseDevices({});
-  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(IsTabletModeStarted());
   EXPECT_FALSE(AreEventsBlocked());
 }
@@ -845,9 +898,7 @@ TEST_F(TabletModeControllerTest, ExternalMouseWithLidAngleTest) {
 TEST_F(TabletModeControllerTest, ExternalMouseWithTabletModeSwithTest) {
   // Set the current list of devices to empty so that they don't interfere
   // with the test.
-  base::RunLoop().RunUntilIdle();
   ws::InputDeviceClientTestApi().SetMouseDevices({});
-  base::RunLoop().RunUntilIdle();
 
   // Start in laptop mode.
   SetTabletMode(false);
@@ -857,7 +908,6 @@ TEST_F(TabletModeControllerTest, ExternalMouseWithTabletModeSwithTest) {
   // Attach external mouse doesn't change the mode.
   ws::InputDeviceClientTestApi().SetMouseDevices(
       {ui::InputDevice(3, ui::InputDeviceType::INPUT_DEVICE_USB, "mouse")});
-  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(IsTabletModeStarted());
   EXPECT_FALSE(AreEventsBlocked());
 
@@ -871,14 +921,12 @@ TEST_F(TabletModeControllerTest, ExternalMouseWithTabletModeSwithTest) {
   // Remove the external mouse should enter tablet mode now. The internal input
   // events should still be blocked.
   ws::InputDeviceClientTestApi().SetMouseDevices({});
-  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(IsTabletModeStarted());
   EXPECT_TRUE(AreEventsBlocked());
 
   // Attach the mouse again should enter clamshell mode again.
   ws::InputDeviceClientTestApi().SetMouseDevices(
       {ui::InputDevice(3, ui::InputDeviceType::INPUT_DEVICE_USB, "mouse")});
-  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(IsTabletModeStarted());
   EXPECT_TRUE(AreEventsBlocked());
 
@@ -891,7 +939,6 @@ TEST_F(TabletModeControllerTest, ExternalMouseWithTabletModeSwithTest) {
   // Now remove the mouse. The device should stay in clamshell mode and the
   // internal events should not be blocked.
   ws::InputDeviceClientTestApi().SetMouseDevices({});
-  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(IsTabletModeStarted());
   EXPECT_FALSE(AreEventsBlocked());
 }
@@ -901,10 +948,8 @@ TEST_F(TabletModeControllerTest, ExternalMouseWithTabletModeSwithTest) {
 TEST_F(TabletModeControllerTest, ExternalTouchPadTest) {
   // Set the current list of devices to empty so that they don't interfere
   // with the test.
-  base::RunLoop().RunUntilIdle();
   ws::InputDeviceClientTestApi().SetMouseDevices({});
   ws::InputDeviceClientTestApi().SetTouchpadDevices({});
-  base::RunLoop().RunUntilIdle();
 
   OpenLidToAngle(300.0f);
   EXPECT_TRUE(IsTabletModeStarted());
@@ -915,7 +960,6 @@ TEST_F(TabletModeControllerTest, ExternalTouchPadTest) {
   // Attach a external touchpad.
   ws::InputDeviceClientTestApi().SetTouchpadDevices(
       {ui::InputDevice(3, ui::InputDeviceType::INPUT_DEVICE_USB, "touchpad")});
-  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(IsTabletModeStarted());
   EXPECT_FALSE(AreEventsBlocked());
 
@@ -926,7 +970,48 @@ TEST_F(TabletModeControllerTest, ExternalTouchPadTest) {
 
   // Verify that after unplugging the touchpad, tablet mode will resume.
   ws::InputDeviceClientTestApi().SetTouchpadDevices({});
-  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(IsTabletModeStarted());
+  EXPECT_TRUE(AreEventsBlocked());
+}
+
+// Test that internal keyboard and mouse are not disabled in docked mode.
+TEST_F(TabletModeControllerTest, InternalKeyboardMouseInDockedModeTest) {
+  UpdateDisplay("800x600, 800x600");
+  const int64_t internal_display_id =
+      display::test::DisplayManagerTestApi(display_manager())
+          .SetFirstDisplayAsInternalDisplay();
+  EXPECT_FALSE(IsTabletModeStarted());
+  // Input devices events are unblocked.
+  EXPECT_FALSE(AreEventsBlocked());
+  EXPECT_TRUE(display::Display::HasInternalDisplay());
+  EXPECT_TRUE(
+      Shell::Get()->display_manager()->IsActiveDisplayId(internal_display_id));
+
+  // Enter tablet mode first.
+  SetTabletMode(true);
+  EXPECT_TRUE(IsTabletModeStarted());
+  EXPECT_TRUE(AreEventsBlocked());
+
+  // Deactivate internal display to simulate Docked Mode.
+  std::vector<display::ManagedDisplayInfo> all_displays;
+  all_displays.push_back(display_manager()->GetDisplayInfo(
+      display_manager()->GetDisplayAt(0).id()));
+  std::vector<display::ManagedDisplayInfo> secondary_only;
+  display::ManagedDisplayInfo secondary_display =
+      display_manager()->GetDisplayInfo(
+          display_manager()->GetDisplayAt(1).id());
+  all_displays.push_back(secondary_display);
+  secondary_only.push_back(secondary_display);
+  display_manager()->OnNativeDisplaysChanged(secondary_only);
+  ASSERT_FALSE(display_manager()->IsActiveDisplayId(internal_display_id));
+  // We should now enter in clamshell mode when the device is docked.
+  EXPECT_FALSE(IsTabletModeStarted());
+  EXPECT_FALSE(AreEventsBlocked());
+
+  // Exiting docked state should enter tablet mode again.
+  display_manager()->OnNativeDisplaysChanged(all_displays);
+  display::test::DisplayManagerTestApi(display_manager())
+      .SetFirstDisplayAsInternalDisplay();
   EXPECT_TRUE(IsTabletModeStarted());
   EXPECT_TRUE(AreEventsBlocked());
 }
@@ -950,26 +1035,49 @@ class TabletModeControllerForceTabletModeTest
 
 // Verify when the force touch view mode flag is turned on, tablet mode is on
 // initially, and opening the lid to less than 180 degress or setting tablet
-// mode to off will not turn off tablet mode.
+// mode to off will not turn off tablet mode. The internal keyboard and trackpad
+// should still work as it makes testing easier.
 TEST_F(TabletModeControllerForceTabletModeTest, ForceTabletModeTest) {
   EXPECT_EQ(TabletModeController::UiMode::kTabletMode, forced_ui_mode());
   EXPECT_TRUE(IsTabletModeStarted());
-  EXPECT_TRUE(AreEventsBlocked());
+  EXPECT_FALSE(AreEventsBlocked());
 
   OpenLidToAngle(30.0f);
   EXPECT_TRUE(IsTabletModeStarted());
-  EXPECT_TRUE(AreEventsBlocked());
+  EXPECT_FALSE(AreEventsBlocked());
 
   SetTabletMode(false);
   EXPECT_TRUE(IsTabletModeStarted());
-  EXPECT_TRUE(AreEventsBlocked());
+  EXPECT_FALSE(AreEventsBlocked());
 
   // Tests that attaching a external mouse will not change the mode.
   ws::InputDeviceClientTestApi().SetMouseDevices(
       {ui::InputDevice(3, ui::InputDeviceType::INPUT_DEVICE_USB, "mouse")});
-  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(IsTabletModeStarted());
-  EXPECT_TRUE(AreEventsBlocked());
+  EXPECT_FALSE(AreEventsBlocked());
+}
+
+TEST_F(TabletModeControllerForceTabletModeTest, DockInForcedTabletMode) {
+  UpdateDisplay("800x600, 800x600");
+  const int64_t internal_display_id =
+      display::test::DisplayManagerTestApi(display_manager())
+          .SetFirstDisplayAsInternalDisplay();
+
+  // Deactivate internal display to simulate Docked Mode.
+  std::vector<display::ManagedDisplayInfo> all_displays;
+  all_displays.push_back(display_manager()->GetDisplayInfo(
+      display_manager()->GetDisplayAt(0).id()));
+  std::vector<display::ManagedDisplayInfo> secondary_only;
+  display::ManagedDisplayInfo secondary_display =
+      display_manager()->GetDisplayInfo(
+          display_manager()->GetDisplayAt(1).id());
+  all_displays.push_back(secondary_display);
+  secondary_only.push_back(secondary_display);
+  display_manager()->OnNativeDisplaysChanged(secondary_only);
+  ASSERT_FALSE(display_manager()->IsActiveDisplayId(internal_display_id));
+
+  // Still expect tablet mode.
+  EXPECT_TRUE(IsTabletModeStarted());
 }
 
 class TabletModeControllerForceClamshellModeTest
@@ -1004,6 +1112,420 @@ TEST_F(TabletModeControllerForceClamshellModeTest, ForceClamshellModeTest) {
   SetTabletMode(true);
   EXPECT_FALSE(IsTabletModeStarted());
   EXPECT_FALSE(AreEventsBlocked());
+}
+
+// Test that if the active window is not snapped before tablet mode, then split
+// view is not activated.
+TEST_F(TabletModeControllerTest, StartTabletActiveNoSnap) {
+  SplitViewController* split_view_controller =
+      Shell::Get()->split_view_controller();
+  std::unique_ptr<aura::Window> window = CreateTestWindow();
+  ::wm::ActivateWindow(window.get());
+  tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  EXPECT_EQ(SplitViewController::NO_SNAP, split_view_controller->state());
+  EXPECT_FALSE(Shell::Get()->overview_controller()->IsSelecting());
+}
+
+// Test that if the active window is snapped on the left before tablet mode,
+// then split view is activated with the active window on the left.
+TEST_F(TabletModeControllerTest, StartTabletActiveLeftSnap) {
+  SplitViewController* split_view_controller =
+      Shell::Get()->split_view_controller();
+  std::unique_ptr<aura::Window> window = CreateDesktopWindowSnappedLeft();
+  ::wm::ActivateWindow(window.get());
+  tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  EXPECT_EQ(SplitViewController::LEFT_SNAPPED, split_view_controller->state());
+  EXPECT_EQ(window.get(), split_view_controller->left_window());
+  EXPECT_TRUE(Shell::Get()->overview_controller()->IsSelecting());
+}
+
+// Test that if the active window is snapped on the right before tablet mode,
+// then split view is activated with the active window on the right.
+TEST_F(TabletModeControllerTest, StartTabletActiveRightSnap) {
+  SplitViewController* split_view_controller =
+      Shell::Get()->split_view_controller();
+  std::unique_ptr<aura::Window> window = CreateDesktopWindowSnappedRight();
+  ::wm::ActivateWindow(window.get());
+  tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  EXPECT_EQ(SplitViewController::RIGHT_SNAPPED, split_view_controller->state());
+  EXPECT_EQ(window.get(), split_view_controller->right_window());
+  EXPECT_TRUE(Shell::Get()->overview_controller()->IsSelecting());
+}
+
+// Test that if before tablet mode, the active window is snapped on the left and
+// the previous window is snapped on the right, then split view is activated
+// with the active window on the left and the previous window on the right.
+TEST_F(TabletModeControllerTest, StartTabletActiveLeftSnapPreviousRightSnap) {
+  SplitViewController* split_view_controller =
+      Shell::Get()->split_view_controller();
+  std::unique_ptr<aura::Window> left_window = CreateDesktopWindowSnappedLeft();
+  std::unique_ptr<aura::Window> right_window =
+      CreateDesktopWindowSnappedRight();
+  ::wm::ActivateWindow(left_window.get());
+  tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  EXPECT_EQ(SplitViewController::BOTH_SNAPPED, split_view_controller->state());
+  EXPECT_EQ(left_window.get(), split_view_controller->left_window());
+  EXPECT_EQ(right_window.get(), split_view_controller->right_window());
+  EXPECT_FALSE(Shell::Get()->overview_controller()->IsSelecting());
+}
+
+// Test that if before tablet mode, the active window is snapped on the right
+// and the previous window is snapped on the left, then split view is activated
+// with the active window on the right and the previous window on the left.
+TEST_F(TabletModeControllerTest, StartTabletActiveRightSnapPreviousLeftSnap) {
+  SplitViewController* split_view_controller =
+      Shell::Get()->split_view_controller();
+  std::unique_ptr<aura::Window> left_window = CreateDesktopWindowSnappedLeft();
+  std::unique_ptr<aura::Window> right_window =
+      CreateDesktopWindowSnappedRight();
+  ::wm::ActivateWindow(left_window.get());
+  tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  EXPECT_EQ(SplitViewController::BOTH_SNAPPED, split_view_controller->state());
+  EXPECT_EQ(left_window.get(), split_view_controller->left_window());
+  EXPECT_EQ(right_window.get(), split_view_controller->right_window());
+  EXPECT_FALSE(Shell::Get()->overview_controller()->IsSelecting());
+}
+
+// Test that if before tablet mode, the active window is an ARC window snapped
+// on the left and the previous window is snapped on the right, then split view
+// is not activated.
+TEST_F(TabletModeControllerTest,
+       StartTabletActiveArcLeftSnapPreviousRightSnap) {
+  SplitViewController* split_view_controller =
+      Shell::Get()->split_view_controller();
+  std::unique_ptr<aura::Window> left_window = CreateDesktopWindowSnappedLeft();
+  left_window->SetProperty(aura::client::kAppType,
+                           static_cast<int>(AppType::ARC_APP));
+  std::unique_ptr<aura::Window> right_window =
+      CreateDesktopWindowSnappedRight();
+  ::wm::ActivateWindow(left_window.get());
+  tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  EXPECT_EQ(SplitViewController::NO_SNAP, split_view_controller->state());
+  EXPECT_FALSE(Shell::Get()->overview_controller()->IsSelecting());
+}
+
+// Test that if before tablet mode, the active window is snapped on the left,
+// the previous window is an ARC window snapped on the right, and the third
+// window is snapped on the right (just to test that it is ignored after the ARC
+// window), then split view is activated with the active window on the left.
+TEST_F(TabletModeControllerTest,
+       StartTabletActiveLeftSnapPreviousArcRightSnap) {
+  SplitViewController* split_view_controller =
+      Shell::Get()->split_view_controller();
+  std::unique_ptr<aura::Window> left_window = CreateDesktopWindowSnappedLeft();
+  std::unique_ptr<aura::Window> right_window =
+      CreateDesktopWindowSnappedRight();
+  right_window->SetProperty(aura::client::kAppType,
+                            static_cast<int>(AppType::ARC_APP));
+  std::unique_ptr<aura::Window> extra_right_window =
+      CreateDesktopWindowSnappedRight();
+  ::wm::ActivateWindow(right_window.get());
+  ::wm::ActivateWindow(left_window.get());
+  tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  EXPECT_EQ(SplitViewController::LEFT_SNAPPED, split_view_controller->state());
+  EXPECT_EQ(left_window.get(), split_view_controller->left_window());
+  EXPECT_TRUE(Shell::Get()->overview_controller()->IsSelecting());
+}
+
+// Test that if before tablet mode, the active window is a transient child of a
+// window snapped on the left, then split view is activated with the parent
+// snapped on the left.
+TEST_F(TabletModeControllerTest, StartTabletActiveTransientChildOfLeftSnap) {
+  SplitViewController* split_view_controller =
+      Shell::Get()->split_view_controller();
+  std::unique_ptr<aura::Window> parent = CreateDesktopWindowSnappedLeft();
+  std::unique_ptr<aura::Window> child =
+      CreateTestWindow(gfx::Rect(), aura::client::WINDOW_TYPE_POPUP);
+  ::wm::AddTransientChild(parent.get(), child.get());
+  ::wm::ActivateWindow(parent.get());
+  ::wm::ActivateWindow(child.get());
+  tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  EXPECT_EQ(SplitViewController::LEFT_SNAPPED, split_view_controller->state());
+  EXPECT_EQ(parent.get(), split_view_controller->left_window());
+  EXPECT_TRUE(Shell::Get()->overview_controller()->IsSelecting());
+}
+
+// Test that if before tablet mode, the active window is the app list and the
+// previous window is snapped on the left, then split view is activated with the
+// previous window on the left.
+TEST_F(TabletModeControllerTest, StartTabletActiveAppListPreviousLeftSnap) {
+  SplitViewController* split_view_controller =
+      Shell::Get()->split_view_controller();
+  std::unique_ptr<aura::Window> window = CreateDesktopWindowSnappedLeft();
+  ::wm::ActivateWindow(window.get());
+  Shell::Get()->app_list_controller()->ShowAppList();
+  ASSERT_TRUE(::wm::IsActiveWindow(
+      GetAppListTestHelper()->GetAppListView()->GetWidget()->GetNativeView()));
+  tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  EXPECT_EQ(SplitViewController::LEFT_SNAPPED, split_view_controller->state());
+  EXPECT_EQ(window.get(), split_view_controller->left_window());
+  EXPECT_TRUE(Shell::Get()->overview_controller()->IsSelecting());
+}
+
+// Test that if before tablet mode, the active window is being dragged and the
+// previous window is snapped on the left, then split view is activated with the
+// previous window on the left.
+TEST_F(TabletModeControllerTest, StartTabletActiveDraggedPreviousLeftSnap) {
+  SplitViewController* split_view_controller =
+      Shell::Get()->split_view_controller();
+  std::unique_ptr<aura::Window> dragged_window = CreateTestWindow();
+  wm::WindowState* dragged_window_state =
+      wm::GetWindowState(dragged_window.get());
+  dragged_window_state->CreateDragDetails(
+      gfx::Point(), HTNOWHERE,
+      ::wm::WindowMoveSource::WINDOW_MOVE_SOURCE_MOUSE);
+  dragged_window_state->OnDragStarted(HTNOWHERE);
+  ASSERT_TRUE(dragged_window_state->is_dragged());
+  std::unique_ptr<aura::Window> snapped_window =
+      CreateDesktopWindowSnappedLeft();
+  ::wm::ActivateWindow(snapped_window.get());
+  ::wm::ActivateWindow(dragged_window.get());
+  tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  EXPECT_EQ(SplitViewController::LEFT_SNAPPED, split_view_controller->state());
+  EXPECT_EQ(snapped_window.get(), split_view_controller->left_window());
+  EXPECT_TRUE(Shell::Get()->overview_controller()->IsSelecting());
+}
+
+// Test that if before tablet mode, the active window is hidden from overview
+// and the previous window is snapped on the left, then split view is activated
+// with the previous window on the left.
+TEST_F(TabletModeControllerTest,
+       StartTabletActiveHiddenFromOverviewPreviousLeftSnap) {
+  SplitViewController* split_view_controller =
+      Shell::Get()->split_view_controller();
+  std::unique_ptr<aura::Window> window_hidden_from_overview =
+      CreateTestWindow();
+  window_hidden_from_overview->SetProperty(kHideInOverviewKey, true);
+  std::unique_ptr<aura::Window> snapped_window =
+      CreateDesktopWindowSnappedLeft();
+  ::wm::ActivateWindow(snapped_window.get());
+  ::wm::ActivateWindow(window_hidden_from_overview.get());
+  tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  EXPECT_EQ(SplitViewController::LEFT_SNAPPED, split_view_controller->state());
+  EXPECT_EQ(snapped_window.get(), split_view_controller->left_window());
+  EXPECT_TRUE(Shell::Get()->overview_controller()->IsSelecting());
+}
+
+// Test that if before tablet mode, the active window is snapped on the left but
+// does not meet the requirements to be snapped in split view, and the previous
+// window is snapped on the right, then split view is not activated.
+TEST_F(TabletModeControllerTest,
+       StartTabletActiveDesktopOnlyLeftSnapPreviousRightSnap) {
+  SplitViewController* split_view_controller =
+      Shell::Get()->split_view_controller();
+  aura::test::TestWindowDelegate left_window_delegate;
+  std::unique_ptr<aura::Window> left_window(CreateTestWindowInShellWithDelegate(
+      &left_window_delegate, /*id=*/-1, /*bounds=*/gfx::Rect(0, 0, 400, 400)));
+  const gfx::Rect display_bounds =
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
+          left_window.get());
+  left_window_delegate.set_minimum_size(
+      gfx::Size(display_bounds.width() * 0.67f, display_bounds.height()));
+  wm::WindowState* left_window_state = wm::GetWindowState(left_window.get());
+  ASSERT_TRUE(left_window_state->CanSnap());
+  ASSERT_FALSE(CanSnapInSplitview(left_window.get()));
+  wm::WMEvent snap_to_left(wm::WM_EVENT_CYCLE_SNAP_LEFT);
+  left_window_state->OnWMEvent(&snap_to_left);
+  std::unique_ptr<aura::Window> right_window =
+      CreateDesktopWindowSnappedRight();
+  ::wm::ActivateWindow(right_window.get());
+  ::wm::ActivateWindow(left_window.get());
+  tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  EXPECT_EQ(SplitViewController::NO_SNAP, split_view_controller->state());
+  EXPECT_FALSE(Shell::Get()->overview_controller()->IsSelecting());
+}
+
+// Test that if before tablet mode, the active window is snapped on the right
+// but does not meet the requirements to be snapped in split view, and the
+// previous window is snapped on the left, then split view is not activated.
+TEST_F(TabletModeControllerTest,
+       StartTabletActiveDesktopOnlyRightSnapPreviousLeftSnap) {
+  SplitViewController* split_view_controller =
+      Shell::Get()->split_view_controller();
+  std::unique_ptr<aura::Window> left_window = CreateDesktopWindowSnappedLeft();
+  aura::test::TestWindowDelegate right_window_delegate;
+  std::unique_ptr<aura::Window> right_window(
+      CreateTestWindowInShellWithDelegate(
+          &right_window_delegate, /*id=*/-1,
+          /*bounds=*/gfx::Rect(0, 0, 400, 400)));
+  const gfx::Rect display_bounds =
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
+          right_window.get());
+  right_window_delegate.set_minimum_size(
+      gfx::Size(display_bounds.width() * 0.67f, display_bounds.height()));
+  wm::WindowState* right_window_state = wm::GetWindowState(right_window.get());
+  ASSERT_TRUE(right_window_state->CanSnap());
+  ASSERT_FALSE(CanSnapInSplitview(right_window.get()));
+  wm::WMEvent snap_to_right(wm::WM_EVENT_CYCLE_SNAP_RIGHT);
+  right_window_state->OnWMEvent(&snap_to_right);
+  ::wm::ActivateWindow(left_window.get());
+  ::wm::ActivateWindow(right_window.get());
+  tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  EXPECT_EQ(SplitViewController::NO_SNAP, split_view_controller->state());
+  EXPECT_FALSE(Shell::Get()->overview_controller()->IsSelecting());
+}
+
+// Test that if before tablet mode, the active window is snapped on the left and
+// the previous window is snapped on the right but does not meet the
+// requirements to be snapped in split view, then split view is activated with
+// the active window on the left.
+TEST_F(TabletModeControllerTest,
+       StartTabletActiveLeftSnapPreviousDesktopOnlyRightSnap) {
+  SplitViewController* split_view_controller =
+      Shell::Get()->split_view_controller();
+  std::unique_ptr<aura::Window> left_window = CreateDesktopWindowSnappedLeft();
+  aura::test::TestWindowDelegate right_window_delegate;
+  std::unique_ptr<aura::Window> right_window(
+      CreateTestWindowInShellWithDelegate(
+          &right_window_delegate, /*id=*/-1,
+          /*bounds=*/gfx::Rect(0, 0, 400, 400)));
+  const gfx::Rect display_bounds =
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
+          right_window.get());
+  right_window_delegate.set_minimum_size(
+      gfx::Size(display_bounds.width() * 0.67f, display_bounds.height()));
+  wm::WindowState* right_window_state = wm::GetWindowState(right_window.get());
+  ASSERT_TRUE(right_window_state->CanSnap());
+  ASSERT_FALSE(CanSnapInSplitview(right_window.get()));
+  wm::WMEvent snap_to_right(wm::WM_EVENT_CYCLE_SNAP_RIGHT);
+  right_window_state->OnWMEvent(&snap_to_right);
+  ::wm::ActivateWindow(right_window.get());
+  ::wm::ActivateWindow(left_window.get());
+  tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  EXPECT_EQ(SplitViewController::LEFT_SNAPPED, split_view_controller->state());
+  EXPECT_EQ(left_window.get(), split_view_controller->left_window());
+  EXPECT_TRUE(Shell::Get()->overview_controller()->IsSelecting());
+}
+
+// Test that if before tablet mode, the active window is snapped on the right
+// and the previous window is snapped on the left but does not meet the
+// requirements to be snapped in split view, then split view is activated with
+// the active window on the right.
+TEST_F(TabletModeControllerTest,
+       StartTabletActiveRightSnapPreviousDesktopOnlyLeftSnap) {
+  SplitViewController* split_view_controller =
+      Shell::Get()->split_view_controller();
+  aura::test::TestWindowDelegate left_window_delegate;
+  std::unique_ptr<aura::Window> left_window(CreateTestWindowInShellWithDelegate(
+      &left_window_delegate, /*id=*/-1, /*bounds=*/gfx::Rect(0, 0, 400, 400)));
+  const gfx::Rect display_bounds =
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
+          left_window.get());
+  left_window_delegate.set_minimum_size(
+      gfx::Size(display_bounds.width() * 0.67f, display_bounds.height()));
+  wm::WindowState* left_window_state = wm::GetWindowState(left_window.get());
+  ASSERT_TRUE(left_window_state->CanSnap());
+  ASSERT_FALSE(CanSnapInSplitview(left_window.get()));
+  wm::WMEvent snap_to_left(wm::WM_EVENT_CYCLE_SNAP_LEFT);
+  left_window_state->OnWMEvent(&snap_to_left);
+  std::unique_ptr<aura::Window> right_window =
+      CreateDesktopWindowSnappedRight();
+  ::wm::ActivateWindow(left_window.get());
+  ::wm::ActivateWindow(right_window.get());
+  tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  EXPECT_EQ(SplitViewController::RIGHT_SNAPPED, split_view_controller->state());
+  EXPECT_EQ(right_window.get(), split_view_controller->right_window());
+  EXPECT_TRUE(Shell::Get()->overview_controller()->IsSelecting());
+}
+
+// Test that if overview is triggered on entering tablet mode, then the app list
+// can still be successfully shown and actually seen.
+TEST_F(TabletModeControllerTest, AppListWorksAfterEnteringTabletForOverview) {
+  AppListControllerImpl* app_list_controller =
+      Shell::Get()->app_list_controller();
+  std::unique_ptr<aura::Window> window = CreateDesktopWindowSnappedLeft();
+  ::wm::ActivateWindow(window.get());
+  tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  app_list_controller->ShowAppList();
+  EXPECT_TRUE(app_list_controller->IsVisible());
+}
+
+// Test that if both the active window and the previous window are snapped on
+// the left before tablet mode, then split view is activated with the active
+// window on the left, and if the user proceeds to snap the other window on the
+// right and then enter overview again.
+TEST_F(TabletModeControllerTest, StartTabletActiveLeftSnapPreviousLeftSnap) {
+  SplitViewController* split_view_controller =
+      Shell::Get()->split_view_controller();
+  std::unique_ptr<aura::Window> window1 = CreateDesktopWindowSnappedLeft();
+  std::unique_ptr<aura::Window> window2 = CreateDesktopWindowSnappedLeft();
+  ::wm::ActivateWindow(window1.get());
+  tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  EXPECT_EQ(SplitViewController::LEFT_SNAPPED, split_view_controller->state());
+  EXPECT_EQ(window1.get(), split_view_controller->left_window());
+  EXPECT_TRUE(Shell::Get()->overview_controller()->IsSelecting());
+}
+
+// Test that it is okay to write code that first starts split view by snapping a
+// window on one side, and then starts overview to be seen on the other side.
+TEST_F(TabletModeControllerTest,
+       ProgrammaticallyStartSplitViewAndThenOverview) {
+  SplitViewController* split_view_controller =
+      Shell::Get()->split_view_controller();
+  tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  std::unique_ptr<aura::Window> window = CreateTestWindow();
+  ::wm::ActivateWindow(window.get());
+  split_view_controller->SnapWindow(window.get(), SplitViewController::LEFT);
+  EXPECT_TRUE(Shell::Get()->overview_controller()->ToggleOverview());
+}
+
+// Test that when OnKioskNextEnabled() is called the UI mode changes into
+// TabletMode. Ensure that UI mode keeps staying in Tablet Mode.
+TEST_F(TabletModeControllerTest, TestKioskNextModeUI) {
+  ws::InputDeviceClientTestApi().SetMouseDevices({});
+  ws::InputDeviceClientTestApi().SetTouchpadDevices({});
+  ws::InputDeviceClientTestApi().SetKeyboardDevices({});
+
+  tablet_mode_controller()->OnKioskNextEnabled();
+  EXPECT_TRUE(IsTabletModeStarted());
+
+  // Attach a mouse. Check that we are still in Tablet Mode.
+  ws::InputDeviceClientTestApi().SetMouseDevices(
+      {ui::InputDevice(0, ui::InputDeviceType::INPUT_DEVICE_USB, "mouse")});
+  EXPECT_TRUE(IsTabletModeStarted());
+  ws::InputDeviceClientTestApi().SetMouseDevices({});
+
+  // Attach Touchpad
+  ws::InputDeviceClientTestApi().SetTouchpadDevices(
+      {ui::InputDevice(1, ui::InputDeviceType::INPUT_DEVICE_USB, "touchpad")});
+  EXPECT_TRUE(IsTabletModeStarted());
+  ws::InputDeviceClientTestApi().SetTouchpadDevices({});
+
+  // Attach Keyboard
+  ws::InputDeviceClientTestApi().SetKeyboardDevices(
+      {ui::InputDevice(2, ui::InputDeviceType::INPUT_DEVICE_USB, "keyboard")});
+  EXPECT_TRUE(IsTabletModeStarted());
+  ws::InputDeviceClientTestApi().SetKeyboardDevices({});
+}
+
+// Test that tablet mode controller does not respond to the input device changes
+// during its suspend.
+TEST_F(TabletModeControllerTest, DoNotObserverInputDeviceChangeDuringSuspend) {
+  // Set the current list of devices to empty so that they don't interfere
+  // with the test.
+  ws::InputDeviceClientTestApi().SetMouseDevices({});
+
+  // Start in tablet mode.
+  OpenLidToAngle(300.0f);
+  EXPECT_TRUE(IsTabletModeStarted());
+
+  // Attaching external mouse will end tablet mode.
+  ws::InputDeviceClientTestApi().SetMouseDevices(
+      {ui::InputDevice(3, ui::InputDeviceType::INPUT_DEVICE_USB, "mouse")});
+  EXPECT_FALSE(IsTabletModeStarted());
+
+  // Now suspend the device. Input device changes are no longer be observed.
+  SuspendImminent();
+  ws::InputDeviceClientTestApi().SetMouseDevices({});
+  EXPECT_FALSE(IsTabletModeStarted());
+
+  // Resume the device. Input device changes are being observed again.
+  SuspendDone(base::TimeDelta::Max());
+  EXPECT_TRUE(IsTabletModeStarted());
+
+  ws::InputDeviceClientTestApi().SetMouseDevices(
+      {ui::InputDevice(3, ui::InputDeviceType::INPUT_DEVICE_USB, "mouse")});
+  EXPECT_FALSE(IsTabletModeStarted());
 }
 
 }  // namespace ash

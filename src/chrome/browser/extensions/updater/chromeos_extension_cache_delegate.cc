@@ -8,7 +8,7 @@
 
 #include "base/path_service.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chromeos/chromeos_paths.h"
+#include "chromeos/constants/chromeos_paths.h"
 #include "chromeos/settings/cros_settings_names.h"
 
 namespace extensions {

@@ -4,6 +4,7 @@
 
 #include "ui/ozone/platform/scenic/scenic_gpu_service.h"
 
+#include "base/bind.h"
 #include "mojo/public/c/system/message_pipe.h"
 
 namespace ui {
@@ -29,9 +30,8 @@ void FulfillInterfaceRequest(
 
 }  // namespace
 
-ScenicGpuService::ScenicGpuService()
-    : gpu_host_request_(mojo::MakeRequest(&gpu_host_)),
-      weak_ptr_factory_(this) {}
+ScenicGpuService::ScenicGpuService(mojom::ScenicGpuHostRequest gpu_host_request)
+    : gpu_host_request_(std::move(gpu_host_request)), weak_ptr_factory_(this) {}
 
 ScenicGpuService::~ScenicGpuService() {}
 

@@ -9,15 +9,10 @@
 #include "build/build_config.h"
 
 class Profile;
-class SigninManagerBase;
 
-namespace identity {
-class IdentityManager;
-}
-
-namespace browser_sync {
-class ProfileSyncService;
-}  // namespace browser_sync
+namespace syncer {
+class SyncService;
+}  // namespace syncer
 
 // Utility functions to gather current sync status information from the sync
 // service and constructs messages suitable for showing in UI.
@@ -39,52 +34,47 @@ enum ActionType {
   CONFIRM_SYNC_SETTINGS,  // User needs to confirm sync settings.
 };
 
-enum StatusLabelStyle {
-  PLAIN_TEXT,  // Label will be plain-text only.
-  WITH_HTML    // Label may contain an HTML-formatted link.
-};
-
 // Sync errors that should be exposed to the user through the avatar button.
 enum AvatarSyncErrorType {
   NO_SYNC_ERROR,                     // No sync error.
   MANAGED_USER_UNRECOVERABLE_ERROR,  // Unrecoverable error for managed users.
   UNRECOVERABLE_ERROR,               // Unrecoverable error for regular users.
-  SUPERVISED_USER_AUTH_ERROR,        // Auth token error for supervised users.
-  AUTH_ERROR,                        // Authentication error.
-  UPGRADE_CLIENT_ERROR,              // Out-of-date client error.
-  PASSPHRASE_ERROR,                  // Sync passphrase error.
-  SETTINGS_UNCONFIRMED_ERROR,        // Sync settings dialog not confirmed yet.
+  AUTH_ERROR,                  // Authentication error.
+  UPGRADE_CLIENT_ERROR,        // Out-of-date client error.
+  PASSPHRASE_ERROR,            // Sync passphrase error.
+  SETTINGS_UNCONFIRMED_ERROR,  // Sync settings dialog not confirmed yet.
 };
 
-// TODO(akalin): audit the use of ProfileSyncService* service below,
-// and use const ProfileSyncService& service where possible.
-
-// Create status and link labels for the current status labels and link text
-// by querying |service|.
+// Returns the high-level sync status, and populates status and link label
+// strings for the current sync status by querying |profile|.
+// Any of |status_label|, |link_label|, and |action_type| may be null if the
+// caller isn't interested in it.
 MessageType GetStatusLabels(Profile* profile,
-                            const browser_sync::ProfileSyncService* service,
-                            const SigninManagerBase& signin,
                             base::string16* status_label,
                             base::string16* link_label,
                             ActionType* action_type);
+
+// Convenience version of GetStatusLabels for when you're not interested in the
+// actual labels, only in the return value.
+MessageType GetStatus(Profile* profile);
 
 #if !defined(OS_CHROMEOS)
 // Gets the error message and button label for the sync errors that should be
 // exposed to the user through the titlebar avatar button.
 AvatarSyncErrorType GetMessagesForAvatarSyncError(
     Profile* profile,
-    const identity::IdentityManager& identity_manager,
     int* content_string_id,
     int* button_string_id);
 #endif
 
-MessageType GetStatus(Profile* profile,
-                      const browser_sync::ProfileSyncService* service,
-                      const SigninManagerBase& signin);
+// Whether sync is currently blocked from starting because the sync
+// confirmation dialog hasn't been shown. Note that once the dialog is
+// showing (i.e. IsSetupInProgress() is true), this will return false.
+bool ShouldRequestSyncConfirmation(const syncer::SyncService* service);
 
 // Returns whether it makes sense to show a Sync passphrase error UI, i.e.
 // whether a missing passphrase is preventing Sync from fully starting up.
-bool ShouldShowPassphraseError(const browser_sync::ProfileSyncService* service);
+bool ShouldShowPassphraseError(const syncer::SyncService* service);
 
 }  // namespace sync_ui_util
 

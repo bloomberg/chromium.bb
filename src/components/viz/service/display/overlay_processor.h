@@ -9,6 +9,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
+#include "components/viz/common/display/overlay_strategy.h"
 #include "components/viz/common/quads/render_pass.h"
 #include "components/viz/service/display/ca_layer_overlay.h"
 #include "components/viz/service/display/dc_layer_overlay.h"
@@ -24,20 +25,14 @@ class OutputSurface;
 
 class VIZ_SERVICE_EXPORT OverlayProcessor {
  public:
-  // Enum used for UMA histogram. These enum values must not be changed or
-  // reused.
-  enum class StrategyType {
-    kUnknown = 0,
-    kNoStrategyUsed = 1,
-    kFullscreen = 2,
-    kSingleOnTop = 3,
-    kUnderlay = 4,
-    kUnderlayCast = 5,
-    kMaxValue = kUnderlayCast,
-  };
-
   using FilterOperationsMap =
       base::flat_map<RenderPassId, cc::FilterOperations*>;
+
+  static void RecordOverlayDamageRectHistograms(
+      bool is_overlay,
+      bool has_occluding_surface_damage,
+      bool zero_damage_rect,
+      bool occluding_damage_equal_to_damage_rect);
 
   class VIZ_SERVICE_EXPORT Strategy {
    public:
@@ -45,16 +40,17 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
     // Returns false if the strategy cannot be made to work with the
     // current set of render passes. Returns true if the strategy was successful
     // and adds any additional passes necessary to represent overlays to
-    // |render_passes|.
+    // |render_pass_list|. Most strategies should look at the primary
+    // RenderPass, the last element.
     virtual bool Attempt(
         const SkMatrix44& output_color_matrix,
         const FilterOperationsMap& render_pass_backdrop_filters,
         DisplayResourceProvider* resource_provider,
-        RenderPass* render_pass,
+        RenderPassList* render_pass_list,
         OverlayCandidateList* candidates,
         std::vector<gfx::Rect>* content_bounds) = 0;
 
-    virtual StrategyType GetUMAEnum() const;
+    virtual OverlayStrategy GetUMAEnum() const;
   };
   using StrategyList = std::vector<std::unique_ptr<Strategy>>;
 
@@ -111,6 +107,7 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
   void UpdateDamageRect(OverlayCandidateList* candidates,
                         const gfx::Rect& previous_frame_underlay_rect,
                         bool previous_frame_underlay_was_unoccluded,
+                        const QuadList* quad_list,
                         gfx::Rect* damage_rect);
 
   DCLayerOverlayProcessor dc_processor_;

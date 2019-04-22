@@ -6,6 +6,7 @@
 #define CHROME_COMMON_MEDIA_ROUTER_DISCOVERY_MEDIA_SINK_SERVICE_BASE_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/containers/flat_map.h"
 #include "base/gtest_prod_util.h"
@@ -16,6 +17,8 @@
 #include "chrome/common/media_router/discovery/media_sink_service_util.h"
 
 namespace media_router {
+
+class MediaRoute;
 
 // Base class for discovering MediaSinks. Responsible for bookkeeping of
 // current set of discovered sinks, and notifying observers when there are
@@ -36,15 +39,19 @@ class MediaSinkServiceBase {
    public:
     virtual ~Observer() = default;
 
+    // Invoked when the list of discovered sinks changes.
+    virtual void OnSinksDiscovered(
+        const std::vector<MediaSinkInternal>& sinks) {}
+
     // Invoked when |sink| is added or updated.
-    virtual void OnSinkAddedOrUpdated(const MediaSinkInternal& sink) = 0;
+    virtual void OnSinkAddedOrUpdated(const MediaSinkInternal& sink) {}
 
     // Invoked when |sink| is removed.
-    virtual void OnSinkRemoved(const MediaSinkInternal& sink) = 0;
+    virtual void OnSinkRemoved(const MediaSinkInternal& sink) {}
   };
 
-  // |callback|: Callback to invoke inform MediaRouter of discovered sinks
-  // updates.
+  // |callback|: Callback to inform the MediaRouter extension of discovered
+  // sinks updates. Other uses should implement Observer::OnSinksDiscovered().
   explicit MediaSinkServiceBase(const OnSinksDiscoveredCallback& callback);
   virtual ~MediaSinkServiceBase();
 
@@ -66,7 +73,10 @@ class MediaSinkServiceBase {
   void RemoveSinkById(const MediaSink::Id& sink_id);
 
   const base::flat_map<MediaSink::Id, MediaSinkInternal>& GetSinks() const;
+
+  // These methods return nullptr when no sink is found.
   const MediaSinkInternal* GetSinkById(const MediaSink::Id& sink_id) const;
+  const MediaSinkInternal* GetSinkByRoute(const MediaRoute& route) const;
 
   void SetTimerForTest(std::unique_ptr<base::OneShotTimer> timer);
 

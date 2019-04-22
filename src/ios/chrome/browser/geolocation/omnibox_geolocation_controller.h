@@ -10,7 +10,6 @@
 #include "ui/base/page_transition_types.h"
 
 class GURL;
-@class Tab;
 
 namespace ios {
 class ChromeBrowserState;
@@ -18,6 +17,8 @@ class ChromeBrowserState;
 
 namespace web {
 class NavigationItem;
+class WebState;
+class BrowserState;
 }
 
 // Manages using the current device location for omnibox search queries.
@@ -41,19 +42,19 @@ class NavigationItem;
     (ios::ChromeBrowserState*)browserState;
 
 // Notifies the receiver that the user submitted a URL via the location bar.
-- (void)locationBarDidSubmitURL:(const GURL&)url
-                     transition:(ui::PageTransition)transition
-                   browserState:(ios::ChromeBrowserState*)browserState;
+- (void)locationBarDidSubmitURL;
 
 // Adds the current device location to |item| if |item| represents an Omnibox
 // query that's eligible for location. Returns |YES| if the current device
 // location was added to |item|; returns |NO| otherwise.
 - (BOOL)addLocationToNavigationItem:(web::NavigationItem*)item
-                       browserState:(ios::ChromeBrowserState*)browserState;
+                       browserState:(web::BrowserState*)browserState;
 
-// Notifies the receiver that the browser finished loading the page for |tab|.
-// |loadSuccess| whether the tab loaded successfully
-- (void)finishPageLoadForTab:(Tab*)tab loadSuccess:(BOOL)loadSuccess;
+// Notifies the receiver that the browser finished loading the page for
+// |webState|. |loadSuccess| whether the web state loaded successfully.
+// |webState| can't be null.
+- (void)finishPageLoadForWebState:(web::WebState*)webState
+                      loadSuccess:(BOOL)loadSuccess;
 
 @end
 

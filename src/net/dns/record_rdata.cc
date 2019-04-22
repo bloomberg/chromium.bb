@@ -29,6 +29,7 @@ bool RecordRdata::HasValidSize(const base::StringPiece& data, uint16_t type) {
     case dns_protocol::kTypeTXT:
     case dns_protocol::kTypeNSEC:
     case dns_protocol::kTypeOPT:
+    case dns_protocol::kTypeSOA:
       return true;
     default:
       VLOG(1) << "Unsupported RDATA type.";
@@ -230,7 +231,7 @@ std::unique_ptr<NsecRecordRdata> NsecRecordRdata::Create(
 
   // Read the "next domain". This part for the NSEC record format is
   // ignored for mDNS, since it has no semantic meaning.
-  unsigned next_domain_length = parser.ReadName(data.data(), NULL);
+  unsigned next_domain_length = parser.ReadName(data.data(), nullptr);
 
   // If we did not succeed in getting the next domain or the data length
   // is too short for reading the bitmap header, return.

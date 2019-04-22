@@ -12,8 +12,6 @@ static_library("unified_consent") {
     "unified_consent_metrics.h",
     "unified_consent_service.cc",
     "unified_consent_service.h",
-    "unified_consent_service_client.cc",
-    "unified_consent_service_client.h",
     "url_keyed_data_collection_consent_helper.cc",
     "url_keyed_data_collection_consent_helper.h",
   ]
@@ -21,10 +19,10 @@ static_library("unified_consent") {
     "//base",
     "//components/autofill/core/common",
     "//components/browser_sync",
-    "//components/contextual_search/core:browser",
     "//components/pref_registry",
     "//components/signin/core/browser",
     "//components/sync",
+    "//components/sync_preferences",
     "//services/identity/public/cpp",
   ]
 }
@@ -58,8 +56,6 @@ source_set("unit_tests") {
     ":test_support",
     ":unified_consent",
     "//base/test:test_support",
-    "//components/autofill/core/common",
-    "//components/contextual_search/core:browser",
     "//components/sync",
     "//components/sync:test_support_driver",
     "//components/sync_preferences:test_support",

@@ -23,6 +23,7 @@ class GaiaUrls {
   const GURL& client_login_url() const;
   const GURL& service_login_url() const;
   const GURL& embedded_setup_chromeos_url(unsigned version) const;
+  const GURL& embedded_setup_windows_url() const;
   const GURL& signin_chrome_sync_dice() const;
   const GURL& service_login_auth_url() const;
   const GURL& service_logout_url() const;
@@ -66,13 +67,11 @@ class GaiaUrls {
   GURL gaia_url_;
   GURL captcha_base_url_;
 
-  GURL lso_origin_url_;
-  GURL google_apis_origin_url_;
-
   GURL client_login_url_;
   GURL service_login_url_;
   GURL embedded_setup_chromeos_url_v1_;
   GURL embedded_setup_chromeos_url_v2_;
+  GURL embedded_setup_windows_url_;
   GURL signin_chrome_sync_dice_;
   GURL service_login_auth_url_;
   GURL service_logout_url_;

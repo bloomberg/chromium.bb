@@ -96,12 +96,17 @@ import pprint
 import re
 import sys
 import time
-import urlparse
+
+try:
+  import urlparse
+except ImportError:  # For Py3 compatibility
+  import urllib.parse as urlparse
 
 import detect_host_arch
 import fix_encoding
 import gclient_eval
 import gclient_scm
+import gclient_paths
 import gclient_utils
 import git_cache
 import metrics
@@ -127,14 +132,14 @@ def ToGNString(value, allow_dicts = True):
   allow_dicts indicates if this function will allow converting dictionaries
   to GN scopes. This is only possible at the top level, you can't nest a
   GN scope in a list, so this should be set to False for recursive calls."""
-  if isinstance(value, basestring):
+  if isinstance(value, str):
     if value.find('\n') >= 0:
       raise GNException("Trying to print a string with a newline in it.")
     return '"' + \
         value.replace('\\', '\\\\').replace('"', '\\"').replace('$', '\\$') + \
         '"'
 
-  if isinstance(value, unicode):
+  if sys.version_info.major == 2 and isinstance(value, unicode):
     return ToGNString(value.encode('utf-8'))
 
   if isinstance(value, bool):
@@ -285,7 +290,7 @@ class DependencySettings(object):
     self._custom_hooks = custom_hooks or []
 
     # Post process the url to remove trailing slashes.
-    if isinstance(self.url, basestring):
+    if isinstance(self.url, str):
       # urls are sometime incorrectly written as proto://host/path/@rev. Replace
       # it to proto://host/path@rev.
       self.set_url(self.url.replace('/@', '@'))
@@ -427,7 +432,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
 
     self._OverrideUrl()
     # This is inherited from WorkItem.  We want the URL to be a resource.
-    if self.url and isinstance(self.url, basestring):
+    if self.url and isinstance(self.url, str):
       # The url is usually given to gclient either as https://blah@123
       # or just https://blah.  The @123 portion is irrelevant.
       self.resources.append(self.url.split('@')[0])
@@ -447,7 +452,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
                    self.url, parsed_url)
       self.set_url(parsed_url)
 
-    elif isinstance(self.url, basestring):
+    elif isinstance(self.url, str):
       parsed_url = urlparse.urlparse(self.url)
       if (not parsed_url[0] and
           not re.match(r'^\w+\@[\w\.-]+\:[\w\/]+', parsed_url[2])):
@@ -571,7 +576,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
 
     # If a line is in custom_deps, but not in the solution, we want to append
     # this line to the solution.
-    for dep_name, dep_info in self.custom_deps.iteritems():
+    for dep_name, dep_info in self.custom_deps.items():
       if dep_name not in deps:
         deps[dep_name] = {'url': dep_info, 'dep_type': 'git'}
 
@@ -600,7 +605,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
   def _deps_to_objects(self, deps, use_relative_paths):
     """Convert a deps dict to a dict of Dependency objects."""
     deps_to_add = []
-    for name, dep_value in deps.iteritems():
+    for name, dep_value in deps.items():
       should_process = self.should_process
       if dep_value is None:
         continue
@@ -708,7 +713,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
 
     self._vars = local_scope.get('vars', {})
     if self.parent:
-      for key, value in self.parent.get_vars().iteritems():
+      for key, value in self.parent.get_vars().items():
         if key in self._vars:
           self._vars[key] = value
     # Since we heavily post-process things, freeze ones which should
@@ -736,7 +741,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
 
     if 'recursedeps' in local_scope:
       for ent in local_scope['recursedeps']:
-        if isinstance(ent, basestring):
+        if isinstance(ent, str):
           self.recursedeps[ent] = self.deps_file
         else:  # (depname, depsfilename)
           self.recursedeps[ent[0]] = ent[1]
@@ -745,7 +750,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       if rel_prefix:
         logging.warning('Updating recursedeps by prepending %s.', rel_prefix)
         rel_deps = {}
-        for depname, options in self.recursedeps.iteritems():
+        for depname, options in self.recursedeps.items():
           rel_deps[
               os.path.normpath(os.path.join(rel_prefix, depname))] = options
         self.recursedeps = rel_deps
@@ -1003,7 +1008,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     variables = self.get_vars()
     for arg in self._gn_args:
       value = variables[arg]
-      if isinstance(value, basestring):
+      if isinstance(value, str):
         value = gclient_eval.EvaluateCondition(value, variables)
       lines.append('%s = %s' % (arg, ToGNString(value)))
     with open(os.path.join(self.root.root_dir, self._gn_args_file), 'w') as f:
@@ -1280,6 +1285,7 @@ class GClient(GitDependency):
     "android": "android",
     "ios": "ios",
     "fuchsia": "fuchsia",
+    "chromeos": "chromeos",
   }
 
   DEFAULT_CLIENT_FILE_TEXT = ("""\
@@ -1351,7 +1357,8 @@ solutions = %(solution_list)s
                                                 mirror.exists())
           else:
             mirror_string = 'not used'
-          raise gclient_utils.Error('''
+          raise gclient_utils.Error(
+              '''
 Your .gclient file seems to be broken. The requested URL is different from what
 is actually checked out in %(checkout_path)s.
 
@@ -1367,7 +1374,7 @@ it or fix the checkout.
 '''  % {'checkout_path': os.path.join(self.root_dir, dep.name),
         'expected_url': dep.url,
         'expected_scm': dep.GetScmName(),
-        'mirror_string' : mirror_string,
+        'mirror_string': mirror_string,
         'actual_url': actual_url,
         'actual_scm': dep.GetScmName()})
 
@@ -1379,6 +1386,21 @@ it or fix the checkout.
       exec(content, config_dict)
     except SyntaxError as e:
       gclient_utils.SyntaxErrorToError('.gclient', e)
+
+    # Supporting Unicode URLs in both Python 2 and 3 is annoying. Try to
+    # convert to ASCII in case the URL doesn't actually have any Unicode
+    # characters, otherwise raise an error.
+    # This isn't an issue on Python 3 because everything's Unicode anyway.
+    if sys.version_info.major == 2:
+      try:
+        url = config_dict['solutions'][0]['url']
+        if isinstance(url, unicode):
+          config_dict['solutions'][0]['url'] = url.encode('ascii')
+      except UnicodeEncodeError:
+        raise gclient_utils.Error(
+            "Invalid .gclient file. The url mustn't be unicode.")
+      except KeyError:
+        pass
 
     # Append any target OS that is not already being enforced to the tuple.
     target_os = config_dict.get('target_os', [])
@@ -1458,7 +1480,7 @@ it or fix the checkout.
       if options.verbose:
         print('Looking for %s starting from %s\n' % (
             options.config_filename, os.getcwd()))
-      path = gclient_utils.FindGclientRoot(os.getcwd(), options.config_filename)
+      path = gclient_paths.FindGclientRoot(os.getcwd(), options.config_filename)
       if not path:
         if options.verbose:
           print('Couldn\'t find configuration file.')
@@ -1579,7 +1601,7 @@ it or fix the checkout.
     full_entries = [os.path.join(self.root_dir, e.replace('/', os.path.sep))
                     for e in entries]
 
-    for entry, prev_url in self._ReadEntries().iteritems():
+    for entry, prev_url in self._ReadEntries().items():
       if not prev_url:
         # entry must have been overridden via .gclient custom_deps
         continue
@@ -1653,9 +1675,23 @@ it or fix the checkout.
             (modified_files and not self._options.force)):
           # There are modified files in this entry. Keep warning until
           # removed.
-          print(('\nWARNING: \'%s\' is no longer part of this client.  '
-                 'It is recommended that you manually remove it.\n') %
-                    entry_fixed)
+          self.add_dependency(
+              GitDependency(
+                  parent=self,
+                  name=entry,
+                  url=prev_url,
+                  managed=False,
+                  custom_deps={},
+                  custom_vars={},
+                  custom_hooks=[],
+                  deps_file=None,
+                  should_process=True,
+                  should_recurse=False,
+                  relative=None,
+                  condition=None))
+          print(('\nWARNING: \'%s\' is no longer part of this client.\n'
+                 'It is recommended that you manually remove it or use '
+                 '\'gclient sync -D\' next time.') % entry_fixed)
         else:
           # Delete the entry
           print('\n________ deleting \'%s\' in \'%s\'' % (
@@ -1876,10 +1912,6 @@ class CipdDependency(Dependency):
         should_recurse=False,
         relative=relative,
         condition=condition)
-    if relative:
-      # TODO(jbudorick): Implement relative if necessary.
-      raise gclient_utils.Error(
-          'Relative CIPD dependencies are not currently supported.')
     self._cipd_package = None
     self._cipd_root = cipd_root
     # CIPD wants /-separated paths, even on Windows.
@@ -2156,7 +2188,9 @@ class Flattener(object):
     for key, value in dep._vars.iteritems():
       # Make sure there are no conflicting variables. It is fine however
       # to use same variable name, as long as the value is consistent.
-      assert key not in self._vars or self._vars[key][1] == value
+      assert key not in self._vars or self._vars[key][1] == value, (
+        "dep:%s key:%s value:%s != %s" % (
+          dep.name, key, value, self._vars[key][1]))
       self._vars[key] = (hierarchy, value)
     # Override explicit custom variables.
     for key, value in dep.custom_vars.iteritems():

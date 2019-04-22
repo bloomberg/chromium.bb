@@ -13,10 +13,77 @@ class NGPhysicalBoxFragmentTest : public NGLayoutTest {
   NGPhysicalBoxFragmentTest() : NGLayoutTest() {}
 
   const NGPhysicalBoxFragment& GetBodyFragment() const {
-    return *ToLayoutBlockFlow(GetDocument().body()->GetLayoutObject())
+    return *To<LayoutBlockFlow>(GetDocument().body()->GetLayoutObject())
                 ->CurrentFragment();
   }
+
+  const NGPhysicalBoxFragment& GetPhysicalBoxFragmentByElementId(
+      const char* id) {
+    auto* layout_object = To<LayoutBlockFlow>(GetLayoutObjectByElementId(id));
+    DCHECK(layout_object);
+    const NGPhysicalBoxFragment* fragment = layout_object->CurrentFragment();
+    DCHECK(fragment);
+    return *fragment;
+  }
 };
+
+TEST_F(NGPhysicalBoxFragmentTest, FloatingDescendantsInlineChlidren) {
+  SetBodyInnerHTML(R"HTML(
+    <div id="hasfloats">
+      text
+      <div style="float: left"></div>
+    </div>
+    <div id="nofloats">
+      text
+    </div>
+  )HTML");
+
+  const NGPhysicalBoxFragment& has_floats =
+      GetPhysicalBoxFragmentByElementId("hasfloats");
+  EXPECT_TRUE(has_floats.HasFloatingDescendants());
+  const NGPhysicalBoxFragment& no_floats =
+      GetPhysicalBoxFragmentByElementId("nofloats");
+  EXPECT_FALSE(no_floats.HasFloatingDescendants());
+}
+
+TEST_F(NGPhysicalBoxFragmentTest, FloatingDescendantsBlockChlidren) {
+  SetBodyInnerHTML(R"HTML(
+    <div id="hasfloats">
+      <div></div>
+      <div style="float: left"></div>
+    </div>
+    <div id="nofloats">
+      <div></div>
+    </div>
+  )HTML");
+
+  const NGPhysicalBoxFragment& has_floats =
+      GetPhysicalBoxFragmentByElementId("hasfloats");
+  EXPECT_TRUE(has_floats.HasFloatingDescendants());
+  const NGPhysicalBoxFragment& no_floats =
+      GetPhysicalBoxFragmentByElementId("nofloats");
+  EXPECT_FALSE(no_floats.HasFloatingDescendants());
+}
+
+// HasFloatingDescendants() should be set for each inline formatting context and
+// should not be propagated across inline formatting context.
+TEST_F(NGPhysicalBoxFragmentTest, FloatingDescendantsInlineBlock) {
+  SetBodyInnerHTML(R"HTML(
+    <div id="nofloats">
+      text
+      <span id="hasfloats" style="display: inline-block">
+        <div style="float: left"></div>
+      </span>
+    </div>
+  )HTML");
+
+  const NGPhysicalBoxFragment& has_floats =
+      GetPhysicalBoxFragmentByElementId("hasfloats");
+  EXPECT_TRUE(has_floats.HasFloatingDescendants());
+  const NGPhysicalBoxFragment& no_floats =
+      GetPhysicalBoxFragmentByElementId("nofloats");
+  EXPECT_FALSE(no_floats.HasFloatingDescendants());
+}
 
 // TODO(layout-dev): Design more straightforward way to ensure old layout
 // instead of using |contenteditable|.
@@ -53,8 +120,8 @@ TEST_F(NGPhysicalBoxFragmentTest, DISABLED_FloatOldLayoutRoot) {
 TEST_F(NGPhysicalBoxFragmentTest, DISABLED_InlineBlockOldLayoutRoot) {
   SetBodyInnerHTML(
       "<span contenteditable style='display:inline-block'>X</span>foo");
-  const NGPhysicalContainerFragment* line_box =
-      ToNGPhysicalContainerFragment(GetBodyFragment().Children().front().get());
+  const auto* line_box = To<NGPhysicalContainerFragment>(
+      GetBodyFragment().Children().front().get());
   const NGPhysicalFragment* fragment = line_box->Children().front().get();
   ASSERT_TRUE(fragment);
   EXPECT_TRUE(fragment->IsBox());

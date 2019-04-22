@@ -103,7 +103,7 @@ class Renderer9 : public RendererD3D
                                    HANDLE shareHandle,
                                    const egl::AttributeMap &attribs) const override;
 
-    ContextImpl *createContext(const gl::ContextState &state) override;
+    ContextImpl *createContext(const gl::State &state, gl::ErrorSet *errorSet) override;
 
     angle::Result allocateEventQuery(const gl::Context *context, IDirect3DQuery9 **outQuery);
     void freeEventQuery(IDirect3DQuery9 *query);
@@ -159,7 +159,7 @@ class Renderer9 : public RendererD3D
                                    const void *indices,
                                    GLsizei count,
                                    gl::PrimitiveMode mode,
-                                   GLenum type,
+                                   gl::DrawElementsType type,
                                    TranslatedIndexData *indexInfo);
 
     void clear(const ClearParameters &clearParams,
@@ -390,7 +390,7 @@ class Renderer9 : public RendererD3D
     angle::Result genericDrawElements(const gl::Context *context,
                                       gl::PrimitiveMode mode,
                                       GLsizei count,
-                                      GLenum type,
+                                      gl::DrawElementsType type,
                                       const void *indices,
                                       GLsizei instances);
 
@@ -424,7 +424,7 @@ class Renderer9 : public RendererD3D
     angle::Result drawElementsImpl(const gl::Context *context,
                                    gl::PrimitiveMode mode,
                                    GLsizei count,
-                                   GLenum type,
+                                   gl::DrawElementsType type,
                                    const void *indices,
                                    GLsizei instances);
 
@@ -450,13 +450,13 @@ class Renderer9 : public RendererD3D
 
     angle::Result drawLineLoop(const gl::Context *context,
                                GLsizei count,
-                               GLenum type,
+                               gl::DrawElementsType type,
                                const void *indices,
                                int minIndex,
                                gl::Buffer *elementArrayBuffer);
     angle::Result drawIndexedPoints(const gl::Context *context,
                                     GLsizei count,
-                                    GLenum type,
+                                    gl::DrawElementsType type,
                                     const void *indices,
                                     int minIndex,
                                     gl::Buffer *elementArrayBuffer);

@@ -7,12 +7,8 @@
 
 #include <memory>
 
+#include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
-
-namespace base {
-template <typename T>
-struct DefaultSingletonTraits;
-}  // namespace base
 
 class ReadingListModel;
 
@@ -33,7 +29,7 @@ class ReadingListModelFactory : public BrowserStateKeyedServiceFactory {
       user_prefs::PrefRegistrySyncable* registry) override;
 
  private:
-  friend struct base::DefaultSingletonTraits<ReadingListModelFactory>;
+  friend class base::NoDestructor<ReadingListModelFactory>;
 
   ReadingListModelFactory();
   ~ReadingListModelFactory() override;

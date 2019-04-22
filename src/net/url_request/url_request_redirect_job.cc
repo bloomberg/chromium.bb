@@ -53,10 +53,11 @@ void URLRequestRedirectJob::GetResponseInfo(HttpResponseInfo* info) {
 
 void URLRequestRedirectJob::GetLoadTimingInfo(
     LoadTimingInfo* load_timing_info) const {
-  // Set send_start and send_end to receive_headers_end_ to be consistent
-  // with network cache behavior.
+  // Set send_start, send_end, and receive_headers_start to
+  // receive_headers_end_ to be consistent with network cache behavior.
   load_timing_info->send_start = receive_headers_end_;
   load_timing_info->send_end = receive_headers_end_;
+  load_timing_info->receive_headers_start = receive_headers_end_;
   load_timing_info->receive_headers_end = receive_headers_end_;
 }
 
@@ -65,8 +66,8 @@ void URLRequestRedirectJob::Start() {
       NetLogEventType::URL_REQUEST_REDIRECT_JOB,
       NetLog::StringCallback("reason", &redirect_reason_));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&URLRequestRedirectJob::StartAsync,
-                            weak_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&URLRequestRedirectJob::StartAsync,
+                                weak_factory_.GetWeakPtr()));
 }
 
 void URLRequestRedirectJob::Kill() {
@@ -113,7 +114,7 @@ void URLRequestRedirectJob::StartAsync() {
   fake_headers_ = new HttpResponseHeaders(
       HttpUtil::AssembleRawHeaders(header_string.c_str(),
                                    header_string.length()));
-  DCHECK(fake_headers_->IsRedirect(NULL));
+  DCHECK(fake_headers_->IsRedirect(nullptr));
 
   request()->net_log().AddEvent(
       NetLogEventType::URL_REQUEST_FAKE_RESPONSE_HEADERS_CREATED,

@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/files/scoped_file.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/gpu_fence.h"
@@ -27,40 +28,46 @@
 #define DRM_FORMAT_ABGR8888 FOURCC('A', 'B', '2', '4')
 #define DRM_FORMAT_XRGB8888 FOURCC('X', 'R', '2', '4')
 #define DRM_FORMAT_XBGR8888 FOURCC('X', 'B', '2', '4')
-#define DRM_FORMAT_ABGR2101010 FOURCC('A', 'B', '3', '0')
+#define DRM_FORMAT_XBGR2101010 FOURCC('X', 'B', '3', '0')
+#define DRM_FORMAT_XRGB2101010 FOURCC('X', 'R', '3', '0')
 #define DRM_FORMAT_YVU420 FOURCC('Y', 'V', '1', '2')
 #define DRM_FORMAT_NV12 FOURCC('N', 'V', '1', '2')
 
 namespace gl {
 namespace {
 
-bool ValidInternalFormat(unsigned internalformat, gfx::BufferFormat format) {
-  switch (internalformat) {
-    case GL_RGB:
-      return format == gfx::BufferFormat::BGR_565 ||
-             format == gfx::BufferFormat::RGBX_8888 ||
-             format == gfx::BufferFormat::BGRX_8888;
-    case GL_RGB10_A2_EXT:
-      return format == gfx::BufferFormat::RGBX_1010102;
-    case GL_RGB_YCRCB_420_CHROMIUM:
-      return format == gfx::BufferFormat::YVU_420;
-    case GL_RGB_YCBCR_420V_CHROMIUM:
-      return format == gfx::BufferFormat::YUV_420_BIPLANAR;
-    case GL_RGBA:
-      return format == gfx::BufferFormat::RGBA_8888 ||
-             format == gfx::BufferFormat::RGBX_1010102;
-    case GL_BGRA_EXT:
-      return format == gfx::BufferFormat::BGRA_8888 ||
-             format == gfx::BufferFormat::BGRX_1010102;
-    case GL_RED_EXT:
-      return format == gfx::BufferFormat::R_8;
-    case GL_R16_EXT:
-      return format == gfx::BufferFormat::R_16;
-    case GL_RG_EXT:
-      return format == gfx::BufferFormat::RG_88;
-    default:
-      return false;
+// Returns corresponding internalformat if supported, and GL_NONE otherwise.
+unsigned GetInternalFormatFromFormat(gfx::BufferFormat format) {
+  switch (format) {
+    case gfx::BufferFormat::R_8:
+      return GL_RED_EXT;
+    case gfx::BufferFormat::R_16:
+      return GL_R16_EXT;
+    case gfx::BufferFormat::RG_88:
+      return GL_RG_EXT;
+    case gfx::BufferFormat::BGR_565:
+    case gfx::BufferFormat::RGBX_8888:
+    case gfx::BufferFormat::BGRX_8888:
+      return GL_RGB;
+    case gfx::BufferFormat::RGBA_8888:
+      return GL_RGBA;
+    case gfx::BufferFormat::RGBX_1010102:
+    case gfx::BufferFormat::BGRX_1010102:
+      return GL_RGB10_A2_EXT;
+    case gfx::BufferFormat::BGRA_8888:
+      return GL_BGRA_EXT;
+    case gfx::BufferFormat::YVU_420:
+      return GL_RGB_YCRCB_420_CHROMIUM;
+    case gfx::BufferFormat::YUV_420_BIPLANAR:
+      return GL_RGB_YCBCR_420V_CHROMIUM;
+    case gfx::BufferFormat::RGBA_4444:
+    case gfx::BufferFormat::RGBA_F16:
+    case gfx::BufferFormat::UYVY_422:
+      return GL_NONE;
   }
+
+  NOTREACHED();
+  return GL_NONE;
 }
 
 EGLint FourCC(gfx::BufferFormat format) {
@@ -82,15 +89,14 @@ EGLint FourCC(gfx::BufferFormat format) {
     case gfx::BufferFormat::BGRX_8888:
       return DRM_FORMAT_XRGB8888;
     case gfx::BufferFormat::RGBX_1010102:
-      // We should use here DRM_FORMAT_XBGR2101010 format, but EGL on Intel
-      // doesn't support it for scanout, see https://crbug.com/776093#c14.
-      return DRM_FORMAT_ABGR2101010;
+      return DRM_FORMAT_XBGR2101010;
+    case gfx::BufferFormat::BGRX_1010102:
+      return DRM_FORMAT_XRGB2101010;
     case gfx::BufferFormat::YVU_420:
       return DRM_FORMAT_YVU420;
     case gfx::BufferFormat::YUV_420_BIPLANAR:
       return DRM_FORMAT_NV12;
     case gfx::BufferFormat::RGBA_4444:
-    case gfx::BufferFormat::BGRX_1010102:
     case gfx::BufferFormat::RGBA_F16:
     case gfx::BufferFormat::UYVY_422:
       NOTREACHED();
@@ -115,9 +121,7 @@ gfx::BufferFormat GetBufferFormatFromFourCCFormat(int format) {
       return gfx::BufferFormat::BGRA_8888;
     case DRM_FORMAT_XRGB8888:
       return gfx::BufferFormat::BGRX_8888;
-    case DRM_FORMAT_ABGR2101010:
-      // We should support DRM_FORMAT_XBGR2101010 format instead, but EGL on
-      // Intel doesn't support it for scanout, see https://crbug.com/776093#c14.
+    case DRM_FORMAT_XBGR2101010:
       return gfx::BufferFormat::RGBX_1010102;
     case DRM_FORMAT_RGB565:
       return gfx::BufferFormat::BGR_565;
@@ -134,9 +138,9 @@ gfx::BufferFormat GetBufferFormatFromFourCCFormat(int format) {
 }  // namespace
 
 GLImageNativePixmap::GLImageNativePixmap(const gfx::Size& size,
-                                         unsigned internalformat)
+                                         gfx::BufferFormat format)
     : GLImageEGL(size),
-      internalformat_(internalformat),
+      format_(format),
       has_image_flush_external_(
           gl::GLSurfaceEGL::HasEGLExtension("EGL_EXT_image_flush_external")),
       has_image_dma_buf_export_(
@@ -144,22 +148,13 @@ GLImageNativePixmap::GLImageNativePixmap(const gfx::Size& size,
 
 GLImageNativePixmap::~GLImageNativePixmap() {}
 
-bool GLImageNativePixmap::Initialize(gfx::NativePixmap* pixmap,
-                                     gfx::BufferFormat format) {
+bool GLImageNativePixmap::Initialize(scoped_refptr<gfx::NativePixmap> pixmap) {
   DCHECK(!pixmap_);
+  if (GetInternalFormatFromFormat(format_) == GL_NONE) {
+    LOG(ERROR) << "Unsupported format: " << gfx::BufferFormatToString(format_);
+    return false;
+  }
   if (pixmap->AreDmaBufFdsValid()) {
-    if (!ValidFormat(format)) {
-      LOG(ERROR) << "Invalid format: " << gfx::BufferFormatToString(format);
-      return false;
-    }
-
-    if (!ValidInternalFormat(internalformat_, format)) {
-      LOG(ERROR) << "Invalid internalformat: "
-                 << GLEnums::GetStringEnum(internalformat_)
-                 << " for format: " << gfx::BufferFormatToString(format);
-      return false;
-    }
-
     // Note: If eglCreateImageKHR is successful for a EGL_LINUX_DMA_BUF_EXT
     // target, the EGL will take a reference to the dma_buf.
     std::vector<EGLint> attrs;
@@ -168,7 +163,7 @@ bool GLImageNativePixmap::Initialize(gfx::NativePixmap* pixmap,
     attrs.push_back(EGL_HEIGHT);
     attrs.push_back(size_.height());
     attrs.push_back(EGL_LINUX_DRM_FOURCC_EXT);
-    attrs.push_back(FourCC(format));
+    attrs.push_back(FourCC(format_));
 
     const EGLint kLinuxDrmModifiers[] = {EGL_DMA_BUF_PLANE0_MODIFIER_LO_EXT,
                                          EGL_DMA_BUF_PLANE1_MODIFIER_LO_EXT,
@@ -184,8 +179,7 @@ bool GLImageNativePixmap::Initialize(gfx::NativePixmap* pixmap,
 
       size_t pixmap_plane = attrs_plane;
 
-      attrs.push_back(pixmap->GetDmaBufFd(
-          pixmap_plane < pixmap->GetDmaBufFdCount() ? pixmap_plane : 0));
+      attrs.push_back(pixmap->GetDmaBufFd(pixmap_plane));
       attrs.push_back(EGL_DMA_BUF_PLANE0_OFFSET_EXT + attrs_plane * 3);
       attrs.push_back(pixmap->GetDmaBufOffset(pixmap_plane));
       attrs.push_back(EGL_DMA_BUF_PLANE0_PITCH_EXT + attrs_plane * 3);
@@ -193,7 +187,7 @@ bool GLImageNativePixmap::Initialize(gfx::NativePixmap* pixmap,
       if (has_dma_buf_import_modifier &&
           pixmap->GetDmaBufModifier(0) != gfx::NativePixmapPlane::kNoModifier) {
         uint64_t modifier = pixmap->GetDmaBufModifier(pixmap_plane);
-        DCHECK(attrs_plane < arraysize(kLinuxDrmModifiers));
+        DCHECK(attrs_plane < base::size(kLinuxDrmModifiers));
         attrs.push_back(kLinuxDrmModifiers[attrs_plane]);
         attrs.push_back(modifier & 0xffffffff);
         attrs.push_back(kLinuxDrmModifiers[attrs_plane] + 1);
@@ -214,6 +208,10 @@ bool GLImageNativePixmap::Initialize(gfx::NativePixmap* pixmap,
 }
 
 bool GLImageNativePixmap::InitializeFromTexture(uint32_t texture_id) {
+  if (GetInternalFormatFromFormat(format_) == GL_NONE) {
+    LOG(ERROR) << "Unsupported format: " << gfx::BufferFormatToString(format_);
+    return false;
+  }
   GLContext* current_context = GLContext::GetCurrent();
   if (!current_context || !current_context->IsCurrent(nullptr)) {
     LOG(ERROR) << "No gl context bound to the current thread";
@@ -268,14 +266,16 @@ gfx::NativePixmapHandle GLImageNativePixmap::ExportHandle() {
     return gfx::NativePixmapHandle();
   }
 
-  if (!ValidInternalFormat(internalformat_, format)) {
+  if (format != format_) {
     // A driver has returned a format different than what has been requested.
     // This can happen if RGBX is implemented using RGBA. Otherwise there is
     // a real mistake from the user and we have to fail.
-    if (internalformat_ == GL_RGB && format != gfx::BufferFormat::RGBA_8888) {
-      LOG(ERROR) << "Invalid internalformat: "
-                 << GLEnums::GetStringEnum(internalformat_)
-                 << " for format: " << gfx::BufferFormatToString(format);
+    if (GetInternalFormat() == GL_RGB &&
+        format != gfx::BufferFormat::RGBA_8888) {
+      LOG(ERROR) << "Invalid driver format: "
+                 << gfx::BufferFormatToString(format)
+                 << " for requested format: "
+                 << gfx::BufferFormatToString(format_);
       return gfx::NativePixmapHandle();
     }
   }
@@ -308,15 +308,8 @@ gfx::NativePixmapHandle GLImageNativePixmap::ExportHandle() {
       return gfx::NativePixmapHandle();
     }
 
-    // scoped_fd.release() transfers ownership to the caller so it will not
-    // call close when going out of scope. base::FileDescriptor never closes
-    // the fd when going out of scope. The auto_close flag is just a hint for
-    // the user. When true it means the user has ownership of it so they are
-    // responsible for closing the fd.
-    handle.fds.emplace_back(
-        base::FileDescriptor(scoped_fd.release(), true /* auto_close */));
     handle.planes.emplace_back(strides[i], offsets[i], 0 /* size opaque */,
-                               modifiers);
+                               std::move(scoped_fd), modifiers);
   }
 
   return handle;
@@ -324,19 +317,19 @@ gfx::NativePixmapHandle GLImageNativePixmap::ExportHandle() {
 }
 
 unsigned GLImageNativePixmap::GetInternalFormat() {
-  return internalformat_;
+  return GetInternalFormatFromFormat(format_);
 }
 
 bool GLImageNativePixmap::CopyTexImage(unsigned target) {
-  if (egl_image_ == EGL_NO_IMAGE_KHR) {
-    // Pass-through image type fails to bind and copy; make sure we
-    // don't draw with uninitialized texture.
-    std::vector<unsigned char> data(size_.width() * size_.height() * 4);
-    glTexImage2D(target, 0, GL_RGBA, size_.width(), size_.height(), 0, GL_RGBA,
-                 GL_UNSIGNED_BYTE, data.data());
-    return true;
-  }
-  return false;
+  if (egl_image_ != EGL_NO_IMAGE_KHR)
+    return false;
+
+  // Pass-through image type fails to bind and copy; make sure we
+  // don't draw with uninitialized texture.
+  std::vector<unsigned char> data(size_.width() * size_.height() * 4);
+  glTexImage2D(target, 0, GL_RGBA, size_.width(), size_.height(), 0, GL_RGBA,
+               GL_UNSIGNED_BYTE, data.data());
+  return true;
 }
 
 bool GLImageNativePixmap::CopyTexSubImage(unsigned target,
@@ -380,69 +373,6 @@ void GLImageNativePixmap::OnMemoryDump(
     uint64_t process_tracing_id,
     const std::string& dump_name) {
   // TODO(ericrk): Implement GLImage OnMemoryDump. crbug.com/514914
-}
-
-// static
-unsigned GLImageNativePixmap::GetInternalFormatForTesting(
-    gfx::BufferFormat format) {
-  DCHECK(ValidFormat(format));
-  switch (format) {
-    case gfx::BufferFormat::R_8:
-      return GL_RED_EXT;
-    case gfx::BufferFormat::R_16:
-      return GL_R16_EXT;
-    case gfx::BufferFormat::RG_88:
-      return GL_RG_EXT;
-    case gfx::BufferFormat::BGR_565:
-    case gfx::BufferFormat::RGBX_8888:
-    case gfx::BufferFormat::BGRX_8888:
-      return GL_RGB;
-    case gfx::BufferFormat::RGBA_8888:
-      return GL_RGBA;
-    case gfx::BufferFormat::RGBX_1010102:
-      return GL_RGB10_A2_EXT;
-    case gfx::BufferFormat::BGRA_8888:
-      return GL_BGRA_EXT;
-    case gfx::BufferFormat::YVU_420:
-      return GL_RGB_YCRCB_420_CHROMIUM;
-    case gfx::BufferFormat::YUV_420_BIPLANAR:
-      return GL_RGB_YCBCR_420V_CHROMIUM;
-    case gfx::BufferFormat::RGBA_4444:
-    case gfx::BufferFormat::BGRX_1010102:
-    case gfx::BufferFormat::RGBA_F16:
-    case gfx::BufferFormat::UYVY_422:
-      NOTREACHED();
-      return GL_NONE;
-  }
-
-  NOTREACHED();
-  return GL_NONE;
-}
-
-// static
-bool GLImageNativePixmap::ValidFormat(gfx::BufferFormat format) {
-  switch (format) {
-    case gfx::BufferFormat::R_8:
-    case gfx::BufferFormat::R_16:
-    case gfx::BufferFormat::RG_88:
-    case gfx::BufferFormat::BGR_565:
-    case gfx::BufferFormat::RGBA_8888:
-    case gfx::BufferFormat::RGBX_8888:
-    case gfx::BufferFormat::BGRA_8888:
-    case gfx::BufferFormat::BGRX_8888:
-    case gfx::BufferFormat::RGBX_1010102:
-    case gfx::BufferFormat::YVU_420:
-    case gfx::BufferFormat::YUV_420_BIPLANAR:
-      return true;
-    case gfx::BufferFormat::RGBA_4444:
-    case gfx::BufferFormat::BGRX_1010102:
-    case gfx::BufferFormat::RGBA_F16:
-    case gfx::BufferFormat::UYVY_422:
-      return false;
-  }
-
-  NOTREACHED();
-  return false;
 }
 
 }  // namespace gl

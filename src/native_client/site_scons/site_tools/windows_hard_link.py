@@ -9,6 +9,7 @@ This module is a SCons tool which should be include in the topmost windows
 environment.  It is usually included by the target_platform_windows tool.
 """
 
+from __future__ import print_function
 
 import os
 import stat
@@ -20,8 +21,8 @@ if sys.platform == 'win32':
   try:
     import win32file
   except ImportError:
-    print ('Warning: Unable to load win32file module; using copy instead of'
-           ' hard linking for env.Install().  Is pywin32 present?')
+    print('Warning: Unable to load win32file module; using copy instead of'
+          ' hard linking for env.Install().  Is pywin32 present?')
 
 #------------------------------------------------------------------------------
 # Python 2.4 and 2.5's os module doesn't support os.link on Windows, even

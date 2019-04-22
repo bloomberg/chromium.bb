@@ -37,6 +37,7 @@ class InstantService;
 class OmniboxView;
 class Profile;
 class SearchIPCRouterTest;
+class SearchSuggestService;
 
 // This is the browser-side, per-tab implementation of the embeddedSearch API
 // (see https://www.chromium.org/embeddedsearch).
@@ -123,6 +124,14 @@ class SearchTabHelper : public content::WebContentsObserver,
       const std::string& attribution_line_2,
       const GURL& action_url) override;
   void OnSelectLocalBackgroundImage() override;
+  void OnBlocklistSearchSuggestion(int task_version, long task_id) override;
+  void OnBlocklistSearchSuggestionWithHash(int task_version,
+                                           long task_id,
+                                           const uint8_t hash[4]) override;
+  void OnSearchSuggestionSelected(int task_version,
+                                  long task_id,
+                                  const uint8_t hash[4]) override;
+  void OnOptOutOfSearchSuggestions() override;
 
   // Overridden from InstantServiceObserver:
   void ThemeInfoChanged(const ThemeBackgroundInfo& theme_info) override;
@@ -150,9 +159,13 @@ class SearchTabHelper : public content::WebContentsObserver,
 
   InstantService* instant_service_;
 
+  SearchSuggestService* search_suggest_service_;
+
   bool is_setting_title_ = false;
 
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
+
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(SearchTabHelper);
 };

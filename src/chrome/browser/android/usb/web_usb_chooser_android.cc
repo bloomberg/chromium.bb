@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "chrome/browser/ui/android/usb_chooser_dialog_android.h"
 #include "chrome/browser/usb/usb_chooser_controller.h"
 

@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/android/scoped_java_ref.h"
@@ -18,12 +19,15 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "media/base/android/media_player_android.h"
+#include "media/base/android/media_player_listener.h"
+#include "media/base/media_export.h"
+#include "ui/gl/android/scoped_java_surface.h"
 #include "url/gurl.h"
 
 namespace media {
 
-class MediaPlayerManager;
+class MediaResourceGetter;
+class MediaUrlInterceptor;
 
 // This class serves as a bridge between the native code and Android MediaPlayer
 // Java class. For more information on Android MediaPlayer, check
@@ -34,81 +38,114 @@ class MediaPlayerManager;
 // will cache those information in case the mediaplayer gets released.
 // The class uses the corresponding MediaPlayerBridge Java class to talk to
 // the Android MediaPlayer instance.
-class MEDIA_EXPORT MediaPlayerBridge : public MediaPlayerAndroid {
+class MEDIA_EXPORT MediaPlayerBridge {
  public:
+  class Client {
+   public:
+    // Returns a pointer to the MediaResourceGetter object.
+    virtual MediaResourceGetter* GetMediaResourceGetter() = 0;
+
+    // Returns a pointer to the MediaUrlInterceptor object or null.
+    virtual MediaUrlInterceptor* GetMediaUrlInterceptor() = 0;
+
+    // Called when media duration is first detected or changes.
+    virtual void OnMediaDurationChanged(base::TimeDelta duration) = 0;
+
+    // Called when playback completed.
+    virtual void OnPlaybackComplete() = 0;
+
+    // Called when error happens.
+    virtual void OnError(int error) = 0;
+
+    // Called when video size has changed.
+    virtual void OnVideoSizeChanged(int width, int height) = 0;
+  };
+
+  // Error types for MediaErrorCB.
+  enum MediaErrorType {
+    MEDIA_ERROR_FORMAT,
+    MEDIA_ERROR_DECODE,
+    MEDIA_ERROR_NOT_VALID_FOR_PROGRESSIVE_PLAYBACK,
+    MEDIA_ERROR_INVALID_CODE,
+    MEDIA_ERROR_SERVER_DIED,
+  };
+
   // Construct a MediaPlayerBridge object. This object needs to call |manager|'s
   // RequestMediaResources() before decoding the media stream. This allows
   // |manager| to track unused resources and free them when needed.
   // MediaPlayerBridge also forwards Android MediaPlayer callbacks to
   // the |manager| when needed.
-  MediaPlayerBridge(
-      int player_id,
-      const GURL& url,
-      const GURL& site_for_cookies,
-      const std::string& user_agent,
-      bool hide_url_log,
-      MediaPlayerManager* manager,
-      const OnDecoderResourcesReleasedCB& on_decoder_resources_released_cb,
-      const GURL& frame_url,
-      bool allow_credentials);
-  ~MediaPlayerBridge() override;
+  MediaPlayerBridge(const GURL& url,
+                    const GURL& site_for_cookies,
+                    const std::string& user_agent,
+                    bool hide_url_log,
+                    Client* client,
+                    bool allow_credentials);
+  virtual ~MediaPlayerBridge();
 
   // Initialize this object and extract the metadata from the media.
-  virtual void Initialize();
+  void Initialize();
 
-  // MediaPlayerAndroid implementation.
-  void SetVideoSurface(gl::ScopedJavaSurface surface) override;
-  void Start() override;
-  void Pause(bool is_media_related_action) override;
-  void SeekTo(base::TimeDelta timestamp) override;
-  void Release() override;
-  bool HasVideo() const override;
-  bool HasAudio() const override;
-  int GetVideoWidth() override;
-  int GetVideoHeight() override;
-  base::TimeDelta GetCurrentTime() override;
-  base::TimeDelta GetDuration() override;
-  bool IsPlaying() override;
-  bool CanPause() override;
-  bool CanSeekForward() override;
-  bool CanSeekBackward() override;
-  bool IsPlayerReady() override;
-  GURL GetUrl() override;
-  GURL GetSiteForCookies() override;
+  // Methods to partially expose the underlying MediaPlayer.
+  void SetVideoSurface(gl::ScopedJavaSurface surface);
+  void Pause();
+  void SeekTo(base::TimeDelta timestamp);
+  base::TimeDelta GetCurrentTime();
+
+  // Starts media playback.
+  // The first call to this method will call Prepare() and create the underlying
+  // MediaPlayer for the first time.
+  void Start();
+
+  // The media URL given to the underlying MediaPlayer.
+  GURL GetUrl();
+
+  // The site whose cookies should be given to the MediaPlayer if needed.
+  GURL GetSiteForCookies();
+
+  // Set the player volume, and take effect immediately.
+  // The volume should be between 0.0 and 1.0.
+  void SetVolume(double volume);
 
   void OnDidSetDataUriDataSource(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       jboolean success);
 
- protected:
-  void SetDuration(base::TimeDelta time);
+ private:
+  friend class MediaPlayerListener;
+  friend class MediaPlayerBridgeTest;
 
-  virtual void PendingSeekInternal(const base::TimeDelta& time);
+  // Releases the resources such as the underlying MediaPlayer and
+  // MediaPlayerListener.
+  void Release();
+
+  base::TimeDelta GetDuration();
+  void PropagateDuration(base::TimeDelta time);
+  bool IsPlaying();
 
   // Prepare the player for playback, asynchronously. When succeeds,
   // OnMediaPrepared() will be called. Otherwise, OnMediaError() will
   // be called with an error type.
-  virtual void Prepare();
+  void Prepare();
 
-  // MediaPlayerAndroid implementation.
-  void OnVideoSizeChanged(int width, int height) override;
-  void OnMediaError(int error_type) override;
-  void OnPlaybackComplete() override;
-  void OnMediaInterrupted() override;
-  void OnMediaPrepared() override;
+  // MediaPlayerListener callbacks.
+  void OnVideoSizeChanged(int width, int height);
+  void OnMediaError(int error_type);
+  void OnPlaybackComplete();
+  void OnMediaPrepared();
 
   // Create the corresponding Java class instance.
-  virtual void CreateJavaMediaPlayerBridge();
+  void CreateJavaMediaPlayerBridge();
 
   // Get allowed operations from the player.
-  virtual base::android::ScopedJavaLocalRef<jobject> GetAllowedOperations();
+  base::android::ScopedJavaLocalRef<jobject> GetAllowedOperations();
 
- private:
-  friend class MediaPlayerBridgeTest;
-
-  // MediaPlayerAndroid implementation
-  void UpdateEffectiveVolumeInternal(double effective_volume) override;
+  // Attach/Detaches |listener_| for listening to all the media events. If
+  // |j_media_player| is NULL, |listener_| only listens to the system media
+  // events. Otherwise, it also listens to the events from |j_media_player|.
+  void AttachListener(const base::android::JavaRef<jobject>& j_media_player);
+  void DetachListener();
 
   // Set the data source for the media player.
   void SetDataSource(const std::string& url);
@@ -117,11 +154,9 @@ class MEDIA_EXPORT MediaPlayerBridge : public MediaPlayerAndroid {
   void StartInternal();
   void PauseInternal();
 
-  // Returns true if the Java MediaPlayerBridge's seekTo method is called
-  bool SeekInternal(base::TimeDelta current_time, base::TimeDelta time);
-
-  // Called when |time_update_timer_| fires.
-  void OnTimeUpdateTimerFired();
+  // Calls Java MediaPlayerBridge's seekTo method, or no-ops if the operation
+  // is not allowed (based off of |can_seek_forward_| and |can_seek_backward_|).
+  void SeekInternal(base::TimeDelta time);
 
   // Update allowed operations from the player.
   void UpdateAllowedOperations();
@@ -132,13 +167,15 @@ class MEDIA_EXPORT MediaPlayerBridge : public MediaPlayerAndroid {
 
   // Callback function passed to |resource_getter_|. Called when the auth
   // credentials are retrieved.
-  void OnAuthCredentialsRetrieved(
-      const base::string16& username, const base::string16& password);
+  void OnAuthCredentialsRetrieved(const base::string16& username,
+                                  const base::string16& password);
 
   // Extract the media metadata from a url, asynchronously.
   // OnMediaMetadataExtracted() will be called when this call finishes.
   void ExtractMediaMetadata(const std::string& url);
-  void OnMediaMetadataExtracted(base::TimeDelta duration, int width, int height,
+  void OnMediaMetadataExtracted(base::TimeDelta duration,
+                                int width,
+                                int height,
                                 bool success);
 
   // Returns true if a MediaUrlInterceptor registered by the embedder has
@@ -147,6 +184,11 @@ class MEDIA_EXPORT MediaPlayerBridge : public MediaPlayerAndroid {
                          int* fd,
                          int64_t* offset,
                          int64_t* size);
+
+  // Sets the underlying MediaPlayer's volume.
+  void UpdateVolumeInternal();
+
+  base::WeakPtr<MediaPlayerBridge> WeakPtrForUIThread();
 
   // Whether the player is prepared for playback.
   bool prepared_;
@@ -177,10 +219,11 @@ class MEDIA_EXPORT MediaPlayerBridge : public MediaPlayerAndroid {
   int width_;
   int height_;
 
-  // Meta data about actions can be taken.
-  bool can_pause_;
   bool can_seek_forward_;
   bool can_seek_backward_;
+
+  // The player volume. Should be between 0.0 and 1.0.
+  double volume_;
 
   // Cookies for |url_|.
   std::string cookies_;
@@ -191,14 +234,8 @@ class MEDIA_EXPORT MediaPlayerBridge : public MediaPlayerAndroid {
   // Java MediaPlayerBridge instance.
   base::android::ScopedJavaGlobalRef<jobject> j_media_player_bridge_;
 
-  base::RepeatingTimer time_update_timer_;
-
-  base::TimeDelta last_time_update_timestamp_;
-
   // Whether user credentials are allowed to be passed.
   bool allow_credentials_;
-
-  // Helper variables for UMA reporting.
 
   // Whether the preparation for playback or the playback is currently going on.
   // This flag is set in Start() and cleared in Pause() and Release(). Used for
@@ -211,6 +248,13 @@ class MEDIA_EXPORT MediaPlayerBridge : public MediaPlayerAndroid {
   // The flag is set if Start() has been called at least once.
   bool has_ever_started_;
 
+  // A reference to the owner of |this|.
+  Client* client_;
+
+  // Listener object that listens to all the media player events.
+  std::unique_ptr<MediaPlayerListener> listener_;
+
+  // Weak pointer passed to |listener_| for callbacks.
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<MediaPlayerBridge> weak_factory_;
 

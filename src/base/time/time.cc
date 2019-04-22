@@ -137,24 +137,44 @@ int64_t TimeDelta::InNanoseconds() const {
 
 namespace time_internal {
 
-int64_t SaturatedAdd(TimeDelta delta, int64_t value) {
-  CheckedNumeric<int64_t> rv(delta.delta_);
-  rv += value;
+int64_t SaturatedAdd(int64_t value, TimeDelta delta) {
+  // Treat Min/Max() as +/- infinity (additions involving two infinities are
+  // only valid if signs match).
+  if (delta.is_max()) {
+    CHECK_GT(value, std::numeric_limits<int64_t>::min());
+    return std::numeric_limits<int64_t>::max();
+  } else if (delta.is_min()) {
+    CHECK_LT(value, std::numeric_limits<int64_t>::max());
+    return std::numeric_limits<int64_t>::min();
+  }
+
+  CheckedNumeric<int64_t> rv(value);
+  rv += delta.delta_;
   if (rv.IsValid())
     return rv.ValueOrDie();
   // Positive RHS overflows. Negative RHS underflows.
-  if (value < 0)
+  if (delta.delta_ < 0)
     return std::numeric_limits<int64_t>::min();
   return std::numeric_limits<int64_t>::max();
 }
 
-int64_t SaturatedSub(TimeDelta delta, int64_t value) {
-  CheckedNumeric<int64_t> rv(delta.delta_);
-  rv -= value;
+int64_t SaturatedSub(int64_t value, TimeDelta delta) {
+  // Treat Min/Max() as +/- infinity (subtractions involving two infinities are
+  // only valid if signs are opposite).
+  if (delta.is_max()) {
+    CHECK_LT(value, std::numeric_limits<int64_t>::max());
+    return std::numeric_limits<int64_t>::min();
+  } else if (delta.is_min()) {
+    CHECK_GT(value, std::numeric_limits<int64_t>::min());
+    return std::numeric_limits<int64_t>::max();
+  }
+
+  CheckedNumeric<int64_t> rv(value);
+  rv -= delta.delta_;
   if (rv.IsValid())
     return rv.ValueOrDie();
   // Negative RHS overflows. Positive RHS underflows.
-  if (value < 0)
+  if (delta.delta_ < 0)
     return std::numeric_limits<int64_t>::max();
   return std::numeric_limits<int64_t>::min();
 }

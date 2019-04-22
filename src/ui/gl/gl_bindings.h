@@ -428,6 +428,13 @@
 #define GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM 0x8AF6
 #endif /* GL_CHROMIUM_shared_image */
 
+#ifndef GL_NV_internalformat_sample_query
+#define GL_MULTISAMPLES_NV 0x9371
+#define GL_SUPERSAMPLE_SCALE_X_NV 0x9372
+#define GL_SUPERSAMPLE_SCALE_Y_NV 0x9373
+#define GL_CONFORMANT_NV 0x9374
+#endif /* GL_NV_internalformat_sample_query */
+
 #define GL_GLEXT_PROTOTYPES 1
 
 #if defined(OS_WIN)
@@ -436,14 +443,15 @@
 #define GL_BINDING_CALL
 #endif
 
+#if defined(NDEBUG) && !defined(GPU_ENABLE_SERVICE_LOGGING)
 #define GL_SERVICE_LOG(args) DLOG(INFO) << args;
-#if defined(NDEBUG)
-  #define GL_SERVICE_LOG_CODE_BLOCK(code)
+#define GL_SERVICE_LOG_CODE_BLOCK(code)
 #else
-  #define GL_SERVICE_LOG_CODE_BLOCK(code) code
+#define GL_SERVICE_LOG(args) LOG(INFO) << args;
+#define GL_SERVICE_LOG_CODE_BLOCK(code) code
 #endif
 
-// ANGLE_multiview constants.
+// OVR_multiview2 constants.
 #define GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_NUM_VIEWS_OVR 0x9630
 #define GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_BASE_VIEW_INDEX_OVR 0x9632
 #define GL_MAX_VIEWS_OVR 0x9631

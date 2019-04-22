@@ -10,16 +10,48 @@
 
 #include "base/logging.h"
 #include "base/rand_util.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 
 namespace gpu {
+namespace {
+
+// The last byte of the mailbox's name stores the SharedImage flag. This avoids
+// conflicts with Verify logic, which uses the first byte.
+constexpr size_t kSharedImageFlagIndex = GL_MAILBOX_SIZE_CHROMIUM - 1;
+
+// Use the lowest bit for the SharedImage flag (any bit would work).
+constexpr int8_t kSharedImageFlag = 0x1;
+
+void MarkMailboxAsSharedImage(bool is_shared_image, int8_t* name) {
+  if (is_shared_image)
+    name[kSharedImageFlagIndex] |= kSharedImageFlag;
+  else
+    name[kSharedImageFlagIndex] &= ~kSharedImageFlag;
+}
+
+Mailbox GenerateMailbox(bool is_shared_image) {
+  Mailbox result;
+  // Generates cryptographically-secure bytes.
+  base::RandBytes(result.name, sizeof(result.name));
+  MarkMailboxAsSharedImage(is_shared_image, result.name);
+#if !defined(NDEBUG)
+  int8_t value = 1;
+  for (size_t i = 1; i < sizeof(result.name); ++i)
+    value ^= result.name[i];
+  result.name[0] = value;
+#endif
+  return result;
+}
+
+}  // namespace
 
 Mailbox::Mailbox() {
   memset(name, 0, sizeof(name));
 }
 
 bool Mailbox::IsZero() const {
-  for (size_t i = 0; i < arraysize(name); ++i) {
+  for (size_t i = 0; i < base::size(name); ++i) {
     if (name[i])
       return false;
   }
@@ -35,17 +67,16 @@ void Mailbox::SetName(const int8_t* n) {
   memcpy(name, n, sizeof(name));
 }
 
+bool Mailbox::IsSharedImage() const {
+  return name[kSharedImageFlagIndex] & kSharedImageFlag;
+}
+
 Mailbox Mailbox::Generate() {
-  Mailbox result;
-  // Generates cryptographically-secure bytes.
-  base::RandBytes(result.name, sizeof(result.name));
-#if !defined(NDEBUG)
-  int8_t value = 1;
-  for (size_t i = 1; i < sizeof(result.name); ++i)
-    value ^= result.name[i];
-  result.name[0] = value;
-#endif
-  return result;
+  return GenerateMailbox(false /* is_shared_image */);
+}
+
+Mailbox Mailbox::GenerateForSharedImage() {
+  return GenerateMailbox(true /* is_shared_image */);
 }
 
 bool Mailbox::Verify() const {

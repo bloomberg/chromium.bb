@@ -5,12 +5,12 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_BACKGROUND_FETCH_BACKGROUND_FETCH_RECORD_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_BACKGROUND_FETCH_BACKGROUND_FETCH_RECORD_H_
 
-#include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom-blink.h"
+#include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_property.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/testing/garbage_collected_script_wrappable.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
-#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
@@ -50,13 +50,16 @@ class MODULES_EXPORT BackgroundFetchRecord final : public ScriptWrappable {
   bool IsRecordPending();
   void Trace(blink::Visitor* visitor) override;
 
+  void OnRequestCompleted(mojom::blink::FetchAPIResponsePtr response);
+  const KURL& ObservedUrl() const;
+
  private:
   using ResponseReadyProperty =
       ScriptPromiseProperty<Member<BackgroundFetchRecord>,
                             Member<Response>,
                             Member<DOMException>>;
 
-  // Resolves a pending |response_read_property_| with |response|, if it's not
+  // Resolves a pending |response_ready_property_| with |response|, if it's not
   // null.
   // If |response| is null, we do nothing if the record isn't final yet. If
   // |record_state_| is State::kSettled in this case, we reject the promise.

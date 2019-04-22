@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "build/build_config.h"
+#include "third_party/skia/include/core/SkFont.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "ui/gfx/render_text.h"
 #include "ui/gfx/skia_util.h"
@@ -33,9 +34,9 @@ typedef std::pair<HarfBuzzFace, GlyphCache> FaceCache;
 // Font data provider for HarfBuzz using Skia. Copied from Blink.
 // TODO(ckocagil): Eliminate the duplication. http://crbug.com/368375
 struct FontData {
-  FontData(GlyphCache* glyph_cache) : glyph_cache_(glyph_cache) {}
+  explicit FontData(GlyphCache* glyph_cache) : glyph_cache_(glyph_cache) {}
 
-  cc::PaintFlags flags_;
+  SkFont font_;
   GlyphCache* glyph_cache_;
 };
 
@@ -54,12 +55,10 @@ void DeleteArrayByType(void* data) {
 
 // Outputs the |width| and |extents| of the glyph with index |codepoint| in
 // |paint|'s font.
-void GetGlyphWidthAndExtents(cc::PaintFlags* flags,
+void GetGlyphWidthAndExtents(const SkFont& font,
                              hb_codepoint_t codepoint,
                              hb_position_t* width,
                              hb_glyph_extents_t* extents) {
-  SkFont font = flags->ToSkFont();
-
   DCHECK_LE(codepoint, std::numeric_limits<uint16_t>::max());
 
   SkScalar sk_width;
@@ -91,10 +90,9 @@ hb_bool_t GetGlyph(hb_font_t* font,
   GlyphCache* cache = font_data->glyph_cache_;
 
   bool exists = cache->count(unicode) != 0;
-  if (!exists) {
-    (*cache)[unicode] =
-        font_data->flags_.getTypeface()->unicharToGlyph(unicode);
-  }
+  if (!exists)
+    (*cache)[unicode] = font_data->font_.unicharToGlyph(unicode);
+
   *glyph = (*cache)[unicode];
   return !!*glyph;
 }
@@ -115,7 +113,7 @@ hb_position_t GetGlyphHorizontalAdvance(hb_font_t* font,
   FontData* font_data = reinterpret_cast<FontData*>(data);
   hb_position_t advance = 0;
 
-  GetGlyphWidthAndExtents(&font_data->flags_, glyph, &advance, 0);
+  GetGlyphWidthAndExtents(font_data->font_, glyph, &advance, 0);
   return advance;
 }
 
@@ -132,7 +130,7 @@ hb_bool_t GetGlyphHorizontalOrigin(hb_font_t* font,
 hb_position_t GetGlyphKerning(FontData* font_data,
                               hb_codepoint_t first_glyph,
                               hb_codepoint_t second_glyph) {
-  SkTypeface* typeface = font_data->flags_.getTypeface().get();
+  SkTypeface* typeface = font_data->font_.getTypeface();
   const uint16_t glyphs[2] = { static_cast<uint16_t>(first_glyph),
                                static_cast<uint16_t>(second_glyph) };
   int32_t kerning_adjustments[1] = { 0 };
@@ -141,7 +139,7 @@ hb_position_t GetGlyphKerning(FontData* font_data,
     return 0;
 
   SkScalar upm = SkIntToScalar(typeface->getUnitsPerEm());
-  SkScalar size = font_data->flags_.getTextSize();
+  SkScalar size = font_data->font_.getSize();
   return SkiaScalarToHarfBuzzUnits(SkIntToScalar(kerning_adjustments[0]) *
                                    size / upm);
 }
@@ -172,7 +170,7 @@ hb_bool_t GetGlyphExtents(hb_font_t* font,
                           void* user_data) {
   FontData* font_data = reinterpret_cast<FontData*>(data);
 
-  GetGlyphWidthAndExtents(&font_data->flags_, glyph, 0, extents);
+  GetGlyphWidthAndExtents(font_data->font_, glyph, 0, extents);
   return true;
 }
 
@@ -224,8 +222,9 @@ hb_blob_t* GetFontTable(hb_face_t* face, hb_tag_t tag, void* user_data) {
     return 0;
 
   char* buffer_raw = buffer.release();
-  return hb_blob_create(buffer_raw, table_size, HB_MEMORY_MODE_WRITABLE,
-                        buffer_raw, DeleteArrayByType<char>);
+  return hb_blob_create(buffer_raw, static_cast<uint32_t>(table_size),
+                        HB_MEMORY_MODE_WRITABLE, buffer_raw,
+                        DeleteArrayByType<char>);
 }
 
 void UnrefSkTypeface(void* data) {
@@ -279,11 +278,11 @@ hb_font_t* CreateHarfBuzzFont(sk_sp<SkTypeface> skia_face,
   const int scale = SkiaScalarToHarfBuzzUnits(text_size);
   hb_font_set_scale(harfbuzz_font, scale, scale);
   FontData* hb_font_data = new FontData(&face_cache->second);
-  hb_font_data->flags_.setTypeface(std::move(skia_face));
-  hb_font_data->flags_.setTextSize(text_size);
+  hb_font_data->font_.setTypeface(std::move(skia_face));
+  hb_font_data->font_.setSize(text_size);
   // TODO(ckocagil): Do we need to update these params later?
   internal::ApplyRenderParams(params, subpixel_rendering_suppressed,
-                              &hb_font_data->flags_);
+                              &hb_font_data->font_);
   hb_font_set_funcs(harfbuzz_font, g_font_funcs.Get().get(), hb_font_data,
                     DeleteByType<FontData>);
   hb_font_make_immutable(harfbuzz_font);

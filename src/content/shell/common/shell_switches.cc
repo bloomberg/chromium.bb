@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/strings/string_split.h"
-#include "content/shell/common/layout_test/layout_test_switches.h"
+#include "content/shell/common/web_test/web_test_switches.h"
 
 namespace switches {
 
@@ -17,7 +17,7 @@ const char kContentShellDataPath[] = "data-path";
 const char kCrashDumpsDir[] = "crash-dumps-dir";
 
 // Exposes the window.internals object to JavaScript for interactive development
-// and debugging of layout tests that rely on it.
+// and debugging of web tests that rely on it.
 const char kExposeInternalsForTesting[] = "expose-internals-for-testing";
 
 // Registers additional font files on Windows (for fonts outside the usual

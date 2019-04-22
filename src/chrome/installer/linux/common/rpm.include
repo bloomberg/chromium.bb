@@ -192,7 +192,7 @@ determine_rpm_package_manager() {
   if [ -x "$LSB_RELEASE" ]; then
     RELEASE=$(lsb_release -i 2> /dev/null | sed 's/:\t/:/' | cut -d ':' -f 2-)
     case $RELEASE in
-    "Fedora")
+    "Fedora"|"Amazon")
       PACKAGEMANAGERS=(yum)
       ;;
     "Mageia")
@@ -230,6 +230,8 @@ determine_rpm_package_manager() {
   fi
 
   if [ -f "/etc/fedora-release" ] || [ -f "/etc/redhat-release" ]; then
+    PACKAGEMANAGERS=(yum)
+  elif [ -f "/etc/system-release" ] && grep -Fq "Amazon Linux" "/etc/system-release"; then
     PACKAGEMANAGERS=(yum)
   elif [ -f "/etc/SuSE-release" ]; then
     PACKAGEMANAGERS=(yast)

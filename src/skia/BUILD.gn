@@ -33,6 +33,7 @@ config("skia_config") {
     "config",
     "ext",
     "//third_party/skia/include/c",
+    "//third_party/skia/include/codec",
     "//third_party/skia/include/config",
     "//third_party/skia/include/core",
     "//third_party/skia/include/docs",
@@ -51,14 +52,12 @@ config("skia_config") {
     configs = [ "//third_party/vulkan:vulkan_config" ]
   }
 
-  defines = skia_for_chromium_defines
-  defines += [
+  defines = [
     "SK_HAS_PNG_LIBRARY",
     "SK_HAS_WEBP_LIBRARY",
   ]
 
   if (!is_ios) {
-    include_dirs += [ "//third_party/skia/include/codec" ]
     defines += [ "SK_HAS_JPEG_LIBRARY" ]
   }
   if (enable_vulkan) {
@@ -157,9 +156,7 @@ config("skia_library_config") {
     defines += [ "SK_FREETYPE_MINIMUM_RUNTIME_VERSION=(((FREETYPE_MAJOR) * 0x01000000) | ((FREETYPE_MINOR) * 0x00010000) | ((FREETYPE_PATCH) * 0x00000100))" ]
   }
 
-  if (is_component_build) {
-    defines += [ "SKIA_IMPLEMENTATION=1" ]
-  }
+  defines += [ "SKIA_IMPLEMENTATION=1" ]
 
   if (current_cpu == "arm") {
     if (arm_use_neon) {
@@ -232,7 +229,10 @@ config("skia_library_config") {
   }
 
   if (skia_support_skottie) {
-    include_dirs += [ "//third_party/skia/modules/sksg/include" ]
+    include_dirs += [
+      "//third_party/skia/modules/sksg/include",
+      "//third_party/skia/modules/skshaper/include",
+    ]
   }
 }
 
@@ -275,12 +275,6 @@ component("skia") {
     "ext/convolver.h",
     "ext/event_tracer_impl.cc",
     "ext/event_tracer_impl.h",
-    "ext/fontmgr_default_android.cc",
-    "ext/fontmgr_default_android.h",
-    "ext/fontmgr_default_linux.cc",
-    "ext/fontmgr_default_linux.h",
-    "ext/fontmgr_default_win.cc",
-    "ext/fontmgr_default_win.h",
     "ext/google_logging.cc",
     "ext/image_operations.cc",
     "ext/image_operations.h",
@@ -303,6 +297,16 @@ component("skia") {
     "ext/skia_utils_win.cc",
     "ext/skia_utils_win.h",
   ]
+
+  if (!is_mac && !is_ios) {
+    sources += [
+      "ext/fontmgr_default.cc",
+      "ext/fontmgr_default.h",
+      "ext/fontmgr_default_android.cc",
+      "ext/fontmgr_default_linux.cc",
+      "ext/fontmgr_default_win.cc",
+    ]
+  }
 
   if (!is_ios) {
     sources += [
@@ -485,13 +489,12 @@ component("skia") {
   if (is_fuchsia) {
     sources += [
       "//third_party/skia/src/ports/SkFontMgr_custom.cpp",
+      "//third_party/skia/src/ports/SkFontMgr_fuchsia.cpp",
       "ext/fontmgr_default_fuchsia.cc",
-      "ext/fontmgr_default_fuchsia.h",
-      "ext/fontmgr_fuchsia.cc",
-      "ext/fontmgr_fuchsia.h",
     ]
     deps += [
       "//third_party/fuchsia-sdk/sdk:fonts",
+      "//third_party/fuchsia-sdk/sdk:zx",
       "//third_party/icu:icuuc",
     ]
   }
@@ -541,7 +544,7 @@ component("skia") {
 
   if (is_android) {
     deps += [
-      "//third_party/android_tools:cpu_features",
+      "//third_party/android_sdk:cpu_features",
       "//third_party/expat",
     ]
   }
@@ -600,7 +603,10 @@ component("skia") {
   if (skia_support_skottie) {
     import("//third_party/skia/modules/skottie/skottie.gni")
     import("//third_party/skia/modules/sksg/sksg.gni")
-    sources += skia_skottie_sources + skia_skottie_public + skia_sksg_sources
+    import("//third_party/skia/modules/skshaper/skshaper.gni")
+    sources += skia_skottie_sources + skia_skottie_public
+    sources += skia_sksg_sources
+    sources += skia_shaper_primitive_sources
   }
 }
 
@@ -782,6 +788,78 @@ skia_source_set("skia_opts") {
   }
 
   visibility = [ ":skia" ]
+}
+
+# Font copies.
+if (is_android || is_fuchsia) {
+  copy("copy_android_fonts_config") {
+    sources = [
+      "ext/data/test_fonts/android_fallback_fonts.xml",
+      "ext/data/test_fonts/android_main_fonts.xml",
+    ]
+    outputs = [
+      "$root_out_dir/test_fonts/{{source_file_part}}",
+    ]
+  }
+}
+if (is_mac) {
+  bundle_data("test_fonts_bundle_data") {
+    public_deps = [
+      "//third_party/test_fonts",
+    ]
+
+    sources = [
+      "$root_out_dir/test_fonts/Ahem.ttf",
+      "ext/data/test_fonts/ChromiumAATTest.ttf",
+    ]
+
+    outputs = [
+      "{{bundle_resources_dir}}/{{source_file_part}}",
+    ]
+  }
+}
+
+group("test_fonts_resources") {
+  deps = []
+  data_deps = []
+
+  if (is_mac) {
+    deps += [ ":test_fonts_bundle_data" ]
+    data_deps += [ ":test_fonts_bundle_data" ]
+  } else {
+    deps += [ "//third_party/test_fonts" ]
+    data_deps += [ "//third_party/test_fonts" ]
+  }
+
+  if (is_android || is_fuchsia) {
+    deps += [ ":copy_android_fonts_config" ]
+    data_deps += [ ":copy_android_fonts_config" ]
+  }
+}
+
+source_set("test_fonts") {
+  testonly = true
+  sources = [
+    "ext/test_fonts.h",
+  ]
+  if (is_android) {
+    sources += [ "ext/test_fonts_android.cc" ]
+  }
+  if (is_fuchsia) {
+    sources += [ "ext/test_fonts_fuchsia.cc" ]
+  }
+  if (is_linux) {
+    sources += [ "ext/test_fonts_linux.cc" ]
+  }
+  if (is_mac) {
+    sources += [ "ext/test_fonts_mac.mm" ]
+  }
+
+  deps = [
+    ":test_fonts_resources",
+    "//base/test:test_support",
+    "//skia",
+  ]
 }
 
 test("skia_unittests") {

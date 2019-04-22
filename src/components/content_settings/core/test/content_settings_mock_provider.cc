@@ -25,12 +25,14 @@ bool MockProvider::SetWebsiteSetting(
     const ContentSettingsPattern& embedding_url_pattern,
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
-    base::Value* value) {
+    base::Value* in_value) {
   if (read_only_)
     return false;
+  std::unique_ptr<base::Value> value(in_value);
   if (value) {
     value_map_.SetValue(requesting_url_pattern, embedding_url_pattern,
-                        content_type, resource_identifier, base::Time(), value);
+                        content_type, resource_identifier, base::Time(),
+                        std::move(*value));
   } else {
     value_map_.DeleteValue(requesting_url_pattern, embedding_url_pattern,
                            content_type, resource_identifier);

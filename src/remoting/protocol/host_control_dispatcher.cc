@@ -93,6 +93,8 @@ void HostControlDispatcher::OnIncomingMessage(
     host_stub_->RequestPairing(message->pairing_request());
   } else if (message->has_extension_message()) {
     host_stub_->DeliverClientMessage(message->extension_message());
+  } else if (message->has_select_display()) {
+    host_stub_->SelectDesktopDisplay(message->select_display());
   } else {
     LOG(WARNING) << "Unknown control message received.";
   }

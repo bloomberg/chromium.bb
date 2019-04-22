@@ -24,8 +24,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostPlatform
       DesktopNativeWidgetAura* desktop_native_widget_aura);
   ~DesktopWindowTreeHostPlatform() override;
 
-  void SetBoundsInDIP(const gfx::Rect& bounds_in_dip);
-
   // DesktopWindowTreeHost:
   void Init(const Widget::InitParams& params) override;
   void OnNativeWidgetCreated(const Widget::InitParams& params) override;
@@ -80,7 +78,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostPlatform
   void SetFullscreen(bool fullscreen) override;
   bool IsFullscreen() const override;
   void SetOpacity(float opacity) override;
-  void SetAspectRatio(const gfx::SizeF& aspect_ratio) override {}
+  void SetAspectRatio(const gfx::SizeF& aspect_ratio) override;
   void SetWindowIcons(const gfx::ImageSkia& window_icon,
                       const gfx::ImageSkia& app_icon) override;
   void InitModalType(ui::ModalType modal_type) override;

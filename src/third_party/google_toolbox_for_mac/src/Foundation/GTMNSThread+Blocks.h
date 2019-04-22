@@ -30,23 +30,22 @@
 // and this method returns immediately.
 // If self is the current thread, the block will be performed immediately, and
 // then this method will return.
-- (void)gtm_performBlock:(void (^)())block;
+- (void)gtm_performBlock:(void (^)(void))block;
 
-- (void)gtm_performWaitingUntilDone:(BOOL)waitDone block:(void (^)())block;
-+ (void)gtm_performBlockInBackground:(void (^)())block;
+- (void)gtm_performWaitingUntilDone:(BOOL)waitDone block:(void (^)(void))block;
++ (void)gtm_performBlockInBackground:(void (^)(void))block;
 @end
 
 #endif  // NS_BLOCKS_AVAILABLE
 
-// A simple thread that does nothing but handle performBlock and
-// performSelector calls.
-@interface GTMSimpleWorkerThread : NSThread {
- @private
-  CFRunLoopRef runLoop_;
-  NSConditionLock *runLock_;
-}
+// A simple thread that does nothing but runs a runloop.
+// That means that it can handle performBlock and performSelector calls.
+@interface GTMSimpleWorkerThread : NSThread
 
-// Will stop the thread, blocking till the thread exits.
+// If called from another thread, blocks until worker thread is done.
+// If called from the worker thread it is equivalent to cancel and
+// returns immediately.
+// Note that "stop" will set the isCancelled on the thread.
 - (void)stop;
 
 @end

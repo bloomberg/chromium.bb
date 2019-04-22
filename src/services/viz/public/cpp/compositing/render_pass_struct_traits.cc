@@ -6,6 +6,7 @@
 
 #include "base/numerics/safe_conversions.h"
 #include "base/trace_event/trace_event.h"
+#include "ui/gfx/mojo/color_space_mojom_traits.h"
 
 namespace mojo {
 
@@ -22,6 +23,7 @@ bool StructTraits<viz::mojom::RenderPassDataView,
       !data.ReadTransformToRootTarget(&(*out)->transform_to_root_target) ||
       !data.ReadFilters(&(*out)->filters) ||
       !data.ReadBackdropFilters(&(*out)->backdrop_filters) ||
+      !data.ReadBackdropFilterBounds(&(*out)->backdrop_filter_bounds) ||
       !data.ReadColorSpace(&(*out)->color_space) ||
       !data.ReadCopyRequests(&(*out)->copy_requests)) {
     return false;

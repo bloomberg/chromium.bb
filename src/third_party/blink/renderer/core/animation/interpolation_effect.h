@@ -39,7 +39,7 @@ class CORE_EXPORT InterpolationEffect
                         double end,
                         double apply_from,
                         double apply_to) {
-    interpolations_.push_back(new InterpolationRecord(
+    interpolations_.push_back(MakeGarbageCollected<InterpolationRecord>(
         interpolation, std::move(easing), start, end, apply_from, apply_to));
   }
 

@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "ash/public/cpp/app_list/app_list_metrics.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
@@ -32,6 +33,9 @@ class AppContextMenu;
 
 class InternalAppResult : public AppResult {
  public:
+  static void RecordShowHistogram(const std::string& app_id);
+  static void RecordOpenHistogram(const std::string& app_id);
+
   InternalAppResult(Profile* profile,
                     const std::string& app_id,
                     AppListControllerDelegate* controller,
@@ -41,6 +45,7 @@ class InternalAppResult : public AppResult {
   // ChromeSearchResult overrides:
   void Open(int event_flags) override;
   void GetContextMenuModel(GetMenuModelCallback callback) override;
+  SearchResultType GetSearchResultType() const override;
 
   // AppContextMenuDelegate overrides:
   void ExecuteLaunchCommand(int event_flags) override;

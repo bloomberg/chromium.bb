@@ -31,23 +31,11 @@ class OutdatedUpgradeBubbleTest : public DialogBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(OutdatedUpgradeBubbleTest);
 };
 
-#if defined(OS_MACOSX)
-// This bubble doesn't show on Mac right now: https://crbug.com/764111
-#define MAYBE_InvokeUi_Outdated DISABLED_InvokeUi_Outdated
-#else
-#define MAYBE_InvokeUi_Outdated InvokeUi_Outdated
-#endif
-IN_PROC_BROWSER_TEST_F(OutdatedUpgradeBubbleTest, MAYBE_InvokeUi_Outdated) {
+IN_PROC_BROWSER_TEST_F(OutdatedUpgradeBubbleTest, InvokeUi_Outdated) {
   ShowAndVerifyUi();
 }
 
-#if defined(OS_MACOSX)
-// This bubble doesn't show on Mac right now: https://crbug.com/764111
-#define MAYBE_InvokeUi_NoAutoUpdate DISABLED_InvokeUi_NoAutoUpdate
-#else
-#define MAYBE_InvokeUi_NoAutoUpdate InvokeUi_NoAutoUpdate
-#endif
-IN_PROC_BROWSER_TEST_F(OutdatedUpgradeBubbleTest, MAYBE_InvokeUi_NoAutoUpdate) {
+IN_PROC_BROWSER_TEST_F(OutdatedUpgradeBubbleTest, InvokeUi_NoAutoUpdate) {
   ShowAndVerifyUi();
 }
 

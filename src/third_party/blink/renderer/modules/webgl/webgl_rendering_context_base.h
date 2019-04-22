@@ -29,6 +29,7 @@
 #include <memory>
 #include <set>
 
+#include "base/macros.h"
 #include "base/numerics/checked_math.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
@@ -46,7 +47,6 @@
 #include "third_party/blink/renderer/modules/webgl/webgl_extension_name.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_texture.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_vertex_array_object_base.h"
-#include "third_party/blink/renderer/modules/xr/xr_device.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/drawing_buffer.h"
@@ -124,8 +124,6 @@ class ScopedRGBEmulationColorMask {
 
 class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                                                  public DrawingBuffer::Client {
-  WTF_MAKE_NONCOPYABLE(WebGLRenderingContextBase);
-
  public:
   ~WebGLRenderingContextBase() override;
 
@@ -170,14 +168,14 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                          GLenum src_alpha,
                          GLenum dst_alpha);
 
-  void bufferData(GLenum target, long long size, GLenum usage);
+  void bufferData(GLenum target, int64_t size, GLenum usage);
   void bufferData(GLenum target, DOMArrayBuffer* data, GLenum usage);
   void bufferData(GLenum target,
                   MaybeShared<DOMArrayBufferView> data,
                   GLenum usage);
-  void bufferSubData(GLenum target, long long offset, DOMArrayBuffer* data);
+  void bufferSubData(GLenum target, int64_t offset, DOMArrayBuffer* data);
   void bufferSubData(GLenum target,
-                     long long offset,
+                     int64_t offset,
                      const FlexibleArrayBufferView& data);
 
   GLenum checkFramebufferStatus(GLenum target);
@@ -247,7 +245,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   void disable(GLenum cap);
   void disableVertexAttribArray(GLuint index);
   void drawArrays(GLenum mode, GLint first, GLsizei count);
-  void drawElements(GLenum mode, GLsizei count, GLenum type, long long offset);
+  void drawElements(GLenum mode, GLsizei count, GLenum type, int64_t offset);
 
   void DrawArraysInstancedANGLE(GLenum mode,
                                 GLint first,
@@ -256,7 +254,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   void DrawElementsInstancedANGLE(GLenum mode,
                                   GLsizei count,
                                   GLenum type,
-                                  long long offset,
+                                  int64_t offset,
                                   GLsizei primcount);
 
   void enable(GLenum cap);
@@ -309,7 +307,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                          const WebGLUniformLocation*);
   WebGLUniformLocation* getUniformLocation(WebGLProgram*, const String&);
   ScriptValue getVertexAttrib(ScriptState*, GLuint index, GLenum pname);
-  long long getVertexAttribOffset(GLuint index, GLenum pname);
+  int64_t getVertexAttribOffset(GLuint index, GLenum pname);
 
   void hint(GLenum target, GLenum mode);
   GLboolean isBuffer(WebGLBuffer*);
@@ -519,7 +517,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                            GLenum type,
                            GLboolean normalized,
                            GLsizei stride,
-                           long long offset);
+                           int64_t offset);
 
   void VertexAttribDivisorANGLE(GLuint index, GLuint divisor);
 
@@ -566,6 +564,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
 
   scoped_refptr<Uint8Array> PaintRenderingResultsToDataArray(
       SourceDrawingBuffer) override;
+  void ProvideBackBufferToResourceProvider() const override;
 
   unsigned MaxVertexAttribs() const { return max_vertex_attribs_; }
 
@@ -583,14 +582,13 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
     DISALLOW_NEW();
 
    public:
-    TraceWrapperMember<WebGLTexture> texture2d_binding_;
-    TraceWrapperMember<WebGLTexture> texture_cube_map_binding_;
-    TraceWrapperMember<WebGLTexture> texture3d_binding_;
-    TraceWrapperMember<WebGLTexture> texture2d_array_binding_;
+    Member<WebGLTexture> texture2d_binding_;
+    Member<WebGLTexture> texture_cube_map_binding_;
+    Member<WebGLTexture> texture3d_binding_;
+    Member<WebGLTexture> texture2d_array_binding_;
+    Member<WebGLTexture> texture_video_image_binding_;
 
     void Trace(blink::Visitor*);
-    // Wrappers are traced by parent since TextureUnitState is not a heap
-    // object.
   };
 
   scoped_refptr<StaticBitmapImage> GetImage(
@@ -614,8 +612,8 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   scoped_refptr<StaticBitmapImage> GetStaticBitmapImage(
       std::unique_ptr<viz::SingleReleaseCallback>* out_release_callback);
 
-  ScriptPromise setCompatibleXRDevice(ScriptState*, XRDevice*);
-  bool IsXRDeviceCompatible(const XRDevice*);
+  ScriptPromise makeXRCompatible(ScriptState*);
+  bool IsXRCompatible();
 
  protected:
   friend class EXTDisjointTimerQuery;
@@ -625,6 +623,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   friend class WebGLObject;
   friend class WebGLContextObject;
   friend class OESVertexArrayObject;
+  friend class OVRMultiview2;
   friend class WebGLDebugShaders;
   friend class WebGLCompressedTextureASTC;
   friend class WebGLCompressedTextureETC;
@@ -632,9 +631,12 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   friend class WebGLCompressedTexturePVRTC;
   friend class WebGLCompressedTextureS3TC;
   friend class WebGLCompressedTextureS3TCsRGB;
-  friend class WebGLMultiview;
+  friend class WebGLMultiDraw;
+  friend class WebGLMultiDrawCommon;
+  friend class WebGLMultiDrawInstanced;
   friend class WebGLRenderingContextErrorMessageCallback;
   friend class WebGLVertexArrayObjectBase;
+  friend class WebGLVideoTexture;
   friend class ScopedDrawingBufferBinder;
   friend class ScopedTexture2DRestorer;
   friend class ScopedFramebufferRestorer;
@@ -686,7 +688,23 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   // Check if each enabled vertex attribute is bound to a buffer.
   bool ValidateRenderingState(const char*);
 
-  bool ValidateWebGLObject(const char*, WebGLObject*);
+  // Helper function for APIs which can legally receive null objects, including
+  // the bind* calls (bindBuffer, bindTexture, etc.) and useProgram. Checks that
+  // the object belongs to this context and that it's not marked for deletion.
+  // Returns false if the caller should return without further processing.
+  // Performs a context loss check internally.
+  // This returns true for null WebGLObject arguments!
+  bool ValidateNullableWebGLObject(const char* function_name, WebGLObject*);
+
+  // Validates the incoming WebGL object, which is assumed to be non-null.
+  // Checks that the object belongs to this context and that it's not marked for
+  // deletion. Performs a context loss check internally.
+  bool ValidateWebGLObject(const char* function_name, WebGLObject*);
+
+  // Validates the incoming WebGL program or shader, which is assumed to be
+  // non-null. OpenGL ES's validation rules differ for these types of objetcts
+  // compared to others. Performs a context loss check internally.
+  bool ValidateWebGLProgramOrShader(const char* function_name, WebGLObject*);
 
   // Adds a compressed texture format.
   void AddCompressedTextureFormat(GLenum);
@@ -711,7 +729,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   // to the back-buffer of m_context.
   scoped_refptr<DrawingBuffer> drawing_buffer_;
 
-  TraceWrapperMember<WebGLContextGroup> context_group_;
+  Member<WebGLContextGroup> context_group_;
 
   bool is_origin_top_left_ = false;
 
@@ -737,10 +755,10 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
 
   // List of bound VBO's. Used to maintain info about sizes for ARRAY_BUFFER and
   // stored values for ELEMENT_ARRAY_BUFFER
-  TraceWrapperMember<WebGLBuffer> bound_array_buffer_;
+  Member<WebGLBuffer> bound_array_buffer_;
 
   Member<WebGLVertexArrayObjectBase> default_vertex_array_object_;
-  TraceWrapperMember<WebGLVertexArrayObjectBase> bound_vertex_array_object_;
+  Member<WebGLVertexArrayObjectBase> bound_vertex_array_object_;
   void SetBoundVertexArrayObject(WebGLVertexArrayObjectBase*);
 
   enum VertexAttribValueType {
@@ -753,11 +771,11 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   unsigned max_vertex_attribs_;
   void SetVertexAttribType(GLuint index, VertexAttribValueType);
 
-  TraceWrapperMember<WebGLProgram> current_program_;
-  TraceWrapperMember<WebGLFramebuffer> framebuffer_binding_;
-  TraceWrapperMember<WebGLRenderbuffer> renderbuffer_binding_;
+  Member<WebGLProgram> current_program_;
+  Member<WebGLFramebuffer> framebuffer_binding_;
+  Member<WebGLRenderbuffer> renderbuffer_binding_;
 
-  Member<XRDevice> compatible_xr_device_;
+  bool xr_compatible_;
 
   HeapVector<TextureUnitState> texture_units_;
   wtf_size_t active_texture_unit_;
@@ -871,8 +889,15 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
     static TypedExtensionTracker<T>* Create(Member<T>& extension_field,
                                             ExtensionFlags flags,
                                             const char* const* prefixes) {
-      return new TypedExtensionTracker<T>(extension_field, flags, prefixes);
+      return MakeGarbageCollected<TypedExtensionTracker<T>>(extension_field,
+                                                            flags, prefixes);
     }
+
+    TypedExtensionTracker(Member<T>& extension_field,
+                          ExtensionFlags flags,
+                          const char* const* prefixes)
+        : ExtensionTracker(flags, prefixes),
+          extension_field_(extension_field) {}
 
     WebGLExtension* GetExtension(WebGLRenderingContextBase* context) override {
       if (!extension_) {
@@ -907,21 +932,15 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
     }
 
    private:
-    TypedExtensionTracker(Member<T>& extension_field,
-                          ExtensionFlags flags,
-                          const char* const* prefixes)
-        : ExtensionTracker(flags, prefixes),
-          extension_field_(extension_field) {}
-
     GC_PLUGIN_IGNORE("http://crbug.com/519953")
     Member<T>& extension_field_;
     // ExtensionTracker holds it's own reference to the extension to ensure
     // that it is not deleted before this object's destructor is called
-    TraceWrapperMember<T> extension_;
+    Member<T> extension_;
   };
 
   bool extension_enabled_[kWebGLExtensionNameCount];
-  HeapVector<TraceWrapperMember<ExtensionTracker>> extensions_;
+  HeapVector<Member<ExtensionTracker>> extensions_;
   HashSet<String> disabled_extensions_;
 
   template <typename T>
@@ -1238,7 +1257,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                                         GLenum format,
                                         GLenum type,
                                         DOMArrayBufferView*,
-                                        long long buffer_size);
+                                        int64_t buffer_size);
 
   virtual GLint GetMaxTextureLevelForTarget(GLenum target);
 
@@ -1252,7 +1271,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   // a 32-bit integer.  Generates GL error and returns false if not.
   bool ValidateValueFitNonNegInt32(const char* function_name,
                                    const char* param_name,
-                                   long long value);
+                                   int64_t value);
 
   enum TexFuncValidationSourceType {
     kSourceArrayBufferView,
@@ -1474,31 +1493,24 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   // Helper function to validate drawElements(Instanced) calls
   bool ValidateDrawElements(const char* function_name,
                             GLenum type,
-                            long long offset);
+                            int64_t offset);
 
   // State updates and operations necessary before or at draw call time.
   virtual void OnBeforeDrawCall();
 
   // Helper functions to bufferData() and bufferSubData().
   void BufferDataImpl(GLenum target,
-                      long long size,
+                      int64_t size,
                       const void* data,
                       GLenum usage);
   void BufferSubDataImpl(GLenum target,
-                         long long offset,
+                         int64_t offset,
                          GLsizeiptr,
                          const void* data);
 
   // Helper function for delete* (deleteBuffer, deleteProgram, etc) functions.
   // Return false if caller should return without further processing.
   bool DeleteObject(WebGLObject*);
-
-  // Helper function for bind* (bindBuffer, bindTexture, etc) and useProgram.
-  // If the object has already been deleted, set deleted to true upon return.
-  // Return false if caller should return without further processing.
-  bool CheckObjectToBeBound(const char* function_name,
-                            WebGLObject*,
-                            bool& deleted);
 
   void DispatchContextLostEvent(TimerBase*);
   // Helper for restoration after context lost.
@@ -1672,7 +1684,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                         GLenum format,
                         GLenum type,
                         DOMArrayBufferView* pixels,
-                        long long offset);
+                        int64_t offset);
 
  private:
   WebGLRenderingContextBase(CanvasRenderingContextHost*,
@@ -1710,21 +1722,23 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
 
   bool IsPaintable() const final { return GetDrawingBuffer(); }
 
-  // Returns true if the context is compatible with the given device as defined
+  // Returns true if the context is compatible with the XR device as defined
   // by https://immersive-web.github.io/webxr/spec/latest/#contextcompatibility
-  bool ContextCreatedOnCompatibleAdapter(const XRDevice*);
+  bool ContextCreatedOnXRCompatibleAdapter();
 
   bool CopyRenderingResultsFromDrawingBuffer(CanvasResourceProvider*,
                                              SourceDrawingBuffer) const;
   void HoldReferenceToDrawingBuffer(DrawingBuffer*);
 
   static void InitializeWebGLContextLimits(
-      const DrawingBuffer::WebGLContextLimits&);
+      WebGraphicsContext3DProvider* context_provider);
   static unsigned CurrentMaxGLContexts();
 
   static bool webgl_context_limits_initialized_;
   static unsigned max_active_webgl_contexts_;
   static unsigned max_active_webgl_contexts_on_worker_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebGLRenderingContextBase);
 };
 
 // TODO(fserb): remove this.
@@ -1737,6 +1751,6 @@ DEFINE_TYPE_CASTS(WebGLRenderingContextBase,
 }  // namespace blink
 
 WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(
-    blink::WebGLRenderingContextBase::TextureUnitState);
+    blink::WebGLRenderingContextBase::TextureUnitState)
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_RENDERING_CONTEXT_BASE_H_

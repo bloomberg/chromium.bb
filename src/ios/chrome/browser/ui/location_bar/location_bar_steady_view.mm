@@ -5,8 +5,11 @@
 #import "ios/chrome/browser/ui/location_bar/location_bar_steady_view.h"
 
 #include "components/strings/grit/components_strings.h"
-#import "ios/chrome/browser/ui/location_bar/extended_touch_target_button.h"
+#import "ios/chrome/browser/ui/elements/extended_touch_target_button.h"
+#import "ios/chrome/browser/ui/infobars/infobar_feature.h"
+#import "ios/chrome/browser/ui/omnibox/omnibox_constants.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
+#import "ios/chrome/browser/ui/util/dynamic_type_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -26,7 +29,8 @@ const CGFloat kLocationImageToLabelSpacing = -4.0;
 // Minimal horizontal padding between the leading edge of the location bar and
 // the content of the location bar.
 const CGFloat kLocationBarLeadingPadding = 5.0;
-// Trailing space between the button and the trailing edge of the location bar.
+// Trailing space between the trailing button and the trailing edge of the
+// location bar.
 const CGFloat kButtonTrailingSpacing = 10;
 
 }  // namespace
@@ -39,14 +43,6 @@ const CGFloat kButtonTrailingSpacing = 10;
 // The view containing the location label, and (sometimes) the location image
 // view.
 @property(nonatomic, strong) UIView* locationContainerView;
-
-// Constraints to hide the trailing button.
-@property(nonatomic, strong)
-    NSArray<NSLayoutConstraint*>* hideButtonConstraints;
-
-// Constraints to show the trailing button.
-@property(nonatomic, strong)
-    NSArray<NSLayoutConstraint*>* showButtonConstraints;
 
 // Constraints to hide the location image view.
 @property(nonatomic, strong)
@@ -73,7 +69,8 @@ const CGFloat kButtonTrailingSpacing = 10;
       [[LocationBarSteadyViewColorScheme alloc] init];
 
   scheme.fontColor = [UIColor colorWithWhite:0 alpha:0.7];
-  scheme.placeholderColor = [UIColor colorWithWhite:0 alpha:0.3];
+  scheme.placeholderColor = [UIColor colorWithWhite:0
+                                              alpha:kOmniboxPlaceholderAlpha];
   scheme.trailingButtonColor = [UIColor colorWithWhite:0 alpha:0.7];
 
   return scheme;
@@ -107,7 +104,8 @@ const CGFloat kButtonTrailingSpacing = 10;
 
 - (void)setHighlighted:(BOOL)highlighted {
   [super setHighlighted:highlighted];
-  [UIView animateWithDuration:0.1
+  CGFloat duration = highlighted ? 0.1 : 0.2;
+  [UIView animateWithDuration:duration
                         delay:0
                       options:UIViewAnimationOptionBeginFromCurrentState
                    animations:^{
@@ -129,8 +127,6 @@ const CGFloat kButtonTrailingSpacing = 10;
 @synthesize locationLabel = _locationLabel;
 @synthesize locationIconImageView = _locationIconImageView;
 @synthesize trailingButton = _trailingButton;
-@synthesize hideButtonConstraints = _hideButtonConstraints;
-@synthesize showButtonConstraints = _showButtonConstraints;
 @synthesize hideLocationImageConstraints = _hideLocationImageConstraints;
 @synthesize showLocationImageConstraints = _showLocationImageConstraints;
 @synthesize locationContainerView = _locationContainerView;
@@ -213,6 +209,7 @@ const CGFloat kButtonTrailingSpacing = 10;
         constraintEqualToAnchor:self.centerXAnchor];
     centerX.priority = UILayoutPriorityDefaultHigh;
 
+    // Setup and activate constraints.
     [NSLayoutConstraint activateConstraints:@[
       [_locationContainerView.leadingAnchor
           constraintGreaterThanOrEqualToAnchor:self.leadingAnchor
@@ -224,26 +221,35 @@ const CGFloat kButtonTrailingSpacing = 10;
       [_trailingButton.leadingAnchor
           constraintGreaterThanOrEqualToAnchor:_locationContainerView
                                                    .trailingAnchor],
-      centerX,
-    ]];
-
-    // Setup hiding constraints.
-    _hideButtonConstraints = @[
-      [_trailingButton.widthAnchor constraintEqualToConstant:0],
-      [_trailingButton.heightAnchor constraintEqualToConstant:0],
-      [self.trailingButton.trailingAnchor
-          constraintEqualToAnchor:self.trailingAnchor]
-    ];
-
-    // Setup and activate the show button constraints.
-    _showButtonConstraints = @[
       [_trailingButton.widthAnchor constraintEqualToConstant:kButtonSize],
       [_trailingButton.heightAnchor constraintEqualToConstant:kButtonSize],
       [self.trailingButton.trailingAnchor
           constraintEqualToAnchor:self.trailingAnchor
                          constant:-kButtonTrailingSpacing],
-    ];
-    [NSLayoutConstraint activateConstraints:_showButtonConstraints];
+      centerX,
+    ]];
+
+    if (IsInfobarUIRebootEnabled()) {
+      // Setup leading button.
+      _leadingButton =
+          [ExtendedTouchTargetButton buttonWithType:UIButtonTypeSystem];
+      _leadingButton.translatesAutoresizingMaskIntoConstraints = NO;
+      // TODO(crbug.com/935804): Create constants variables for the magic
+      // numbers being used here if/when this stops being temporary.
+      _leadingButton.layer.cornerRadius = 15;
+      [_locationButton addSubview:_leadingButton];
+
+      // Setup and activate the leading button constraints.
+      [NSLayoutConstraint activateConstraints:@[
+        [_leadingButton.widthAnchor constraintEqualToConstant:35],
+        [_leadingButton.topAnchor constraintEqualToAnchor:self.topAnchor],
+        [_leadingButton.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
+        [_leadingButton.leadingAnchor
+            constraintEqualToAnchor:self.leadingAnchor],
+        [_leadingButton.centerYAnchor
+            constraintEqualToAnchor:self.centerYAnchor],
+      ]];
+    }
   }
 
   // Setup accessibility.
@@ -291,18 +297,6 @@ const CGFloat kButtonTrailingSpacing = 10;
         deactivateConstraints:self.showLocationImageConstraints];
     [NSLayoutConstraint activateConstraints:self.hideLocationImageConstraints];
     [self.locationIconImageView removeFromSuperview];
-  }
-}
-
-- (void)hideButton:(BOOL)hidden {
-  if (hidden) {
-    [NSLayoutConstraint deactivateConstraints:self.showButtonConstraints];
-    [NSLayoutConstraint activateConstraints:self.hideButtonConstraints];
-    [self.accessibleElements removeObject:self.trailingButton];
-  } else {
-    [NSLayoutConstraint deactivateConstraints:self.hideButtonConstraints];
-    [NSLayoutConstraint activateConstraints:self.showButtonConstraints];
-    [self.accessibleElements addObject:self.trailingButton];
   }
 }
 

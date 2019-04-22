@@ -138,10 +138,10 @@ public final class MockInputStub extends Assert implements InputStub {
 
         // TouchEventData stores degrees instead of radians
         private static final float INVALID_DEGREES = (float) Math.toDegrees(INVALID_RADIANS);
-        private final TouchEventData.EventType mEventType;
+        private final @TouchEventData.EventType int mEventType;
         private final TouchEventData[] mData;
 
-        public TouchEvent(TouchEventData.EventType eventType, TouchEventData[] data) {
+        public TouchEvent(@TouchEventData.EventType int eventType, TouchEventData[] data) {
             mEventType = eventType;
             mData = (data == null ? null : Arrays.copyOf(data, data.length));
         }
@@ -273,15 +273,16 @@ public final class MockInputStub extends Assert implements InputStub {
      * an up action at specified position |x|, |y|, and consumes these events.
      */
     public void assertTapInjected(float x, float y) {
-        assertTouchEventInjected(TouchEventData.EventType.TOUCH_EVENT_START, x, y);
-        assertTouchEventInjected(TouchEventData.EventType.TOUCH_EVENT_END, x, y);
+        assertTouchEventInjected(TouchEventData.EventType.START, x, y);
+        assertTouchEventInjected(TouchEventData.EventType.END, x, y);
     }
 
     /**
      * Checks whether the first event in {@link #mTouchEvents} is representing an event with type
      * |eventType| and at specified position |x|, |y|, and consumes this event.
      */
-    public void assertTouchEventInjected(TouchEventData.EventType eventType, float x, float y) {
+    public void assertTouchEventInjected(
+            @TouchEventData.EventType int eventType, float x, float y) {
         assertContainsTouchEvents(new TouchEvent[] {
                 new TouchEventBuilder()
                         .withEventType(eventType)
@@ -296,7 +297,7 @@ public final class MockInputStub extends Assert implements InputStub {
      * Checks whether the first event in {@link #mTouchEvents} is representing an event with type
      * |eventType|, and consumes this event.
      */
-    public void assertTouchEventInjected(TouchEventData.EventType eventType) {
+    public void assertTouchEventInjected(@TouchEventData.EventType int eventType) {
         assertContainsTouchEvents(new TouchEvent[] {
                 new TouchEventBuilder().withEventType(eventType).build(),
         });
@@ -319,7 +320,7 @@ public final class MockInputStub extends Assert implements InputStub {
         for (int i = 0; i < initPositions.length; i++) {
             assertNotNull(initPositions[i]);
             events.add(new TouchEventBuilder()
-                               .withEventType(TouchEventData.EventType.TOUCH_EVENT_START)
+                               .withEventType(TouchEventData.EventType.START)
                                .withX(initPositions[i].x)
                                .withY(initPositions[i].y)
                                .append()
@@ -333,7 +334,7 @@ public final class MockInputStub extends Assert implements InputStub {
         for (int i = 0; i < moveCount; i++) {
             for (int j = 0; j < initPositions.length; j++) {
                 TouchEventBuilder builder = new TouchEventBuilder();
-                builder.withEventType(TouchEventData.EventType.TOUCH_EVENT_MOVE);
+                builder.withEventType(TouchEventData.EventType.MOVE);
                 for (int k = 0; k < initPositions.length; k++) {
                     // We inject one finger at a time which means that finger will have the correct
                     // value but other fingers may still be stepSize behind it.
@@ -389,7 +390,7 @@ public final class MockInputStub extends Assert implements InputStub {
     }
 
     @Override
-    public void sendTouchEvent(TouchEventData.EventType eventType, TouchEventData[] data) {
+    public void sendTouchEvent(@TouchEventData.EventType int eventType, TouchEventData[] data) {
         assertNotNull(data);
         assertTrue(data.length != 0);
         for (int i = 0; i < data.length; i++) {

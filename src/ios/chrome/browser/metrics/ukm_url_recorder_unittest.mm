@@ -4,6 +4,7 @@
 
 #include "ios/chrome/browser/metrics/ukm_url_recorder.h"
 
+#include "base/bind.h"
 #include "base/optional.h"
 #import "base/test/ios/wait_util.h"
 #include "components/ukm/test_ukm_recorder.h"

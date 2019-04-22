@@ -9,7 +9,7 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/policy_constants.h"
@@ -120,18 +120,6 @@ LoginState::LoggedInUserType ChromeUserManager::GetLoggedInUserType(
 ChromeUserManager* ChromeUserManager::Get() {
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   return user_manager ? static_cast<ChromeUserManager*>(user_manager) : NULL;
-}
-
-// static
-user_manager::UserList
-ChromeUserManager::GetUsersAllowedAsSupervisedUserManagers(
-    const user_manager::UserList& user_list) {
-  user_manager::UserList result;
-  for (user_manager::User* user : user_list) {
-    if (user->GetType() == user_manager::USER_TYPE_REGULAR)
-      result.push_back(user);
-  }
-  return result;
 }
 
 }  // namespace chromeos

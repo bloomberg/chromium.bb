@@ -37,9 +37,16 @@ class CONTENT_EXPORT DevToolsAgentHostClient {
   // manipulate browser altogether.
   virtual bool MayAttachToBrowser();
 
-  // Returns true if the client is allowed to affect local files over the
+  // Returns true if the client is allowed to read local files over the
+  // protocol. Example would be exposing file content to the page under debug.
+  virtual bool MayReadLocalFiles();
+
+  // Returns true if the client is allowed to write local files over the
   // protocol. Example would be manipulating a deault downloads path.
-  virtual bool MayAffectLocalFiles();
+  virtual bool MayWriteLocalFiles();
+
+  // Determines protocol message format.
+  virtual bool UsesBinaryProtocol();
 };
 
 }  // namespace content

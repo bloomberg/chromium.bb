@@ -9,8 +9,8 @@
 #include <cmath>
 
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 
 namespace ui {
@@ -48,7 +48,7 @@ void FarApartTapsTouchNoiseFilter::Filter(
   // Remove old taps.
   base::TimeTicks tap_cutoff =
       time - base::TimeDelta::FromMilliseconds(kMaxTapDeltaMs);
-  for (size_t i = 0; i < arraysize(tracked_taps_); ++i) {
+  for (size_t i = 0; i < base::size(tracked_taps_); ++i) {
     if (tracked_taps_[i].start < tap_cutoff)
       tracked_taps_[i].Invalidate();
   }
@@ -73,7 +73,7 @@ void FarApartTapsTouchNoiseFilter::Filter(
     if (tracked_taps_[slot].is_valid()) {
       // Check distance from other tracked taps.
       int min_distance2 = -1;
-      for (size_t i = 0; i < arraysize(tracked_taps_); ++i) {
+      for (size_t i = 0; i < base::size(tracked_taps_); ++i) {
         if (i == slot || !tracked_taps_[i].is_valid())
           continue;
 

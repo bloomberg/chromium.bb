@@ -17,54 +17,45 @@
 
 #include "common/Constants.h"
 #include "dawn_native/BindGroupLayout.h"
-#include "dawn_native/Builder.h"
+#include "dawn_native/Error.h"
 #include "dawn_native/Forward.h"
 #include "dawn_native/ObjectBase.h"
 
 #include "dawn_native/dawn_platform.h"
 
 #include <array>
-#include <bitset>
 
 namespace dawn_native {
 
+    class DeviceBase;
+
+    MaybeError ValidateBindGroupDescriptor(DeviceBase* device,
+                                           const BindGroupDescriptor* descriptor);
+
+    struct BufferBinding {
+        BufferBase* buffer;
+        uint64_t offset;
+        uint64_t size;
+    };
+
     class BindGroupBase : public ObjectBase {
       public:
-        BindGroupBase(BindGroupBuilder* builder);
+        BindGroupBase(DeviceBase* device, const BindGroupDescriptor* descriptor);
+
+        static BindGroupBase* MakeError(DeviceBase* device);
 
         const BindGroupLayoutBase* GetLayout() const;
-        BufferViewBase* GetBindingAsBufferView(size_t binding);
+        BufferBinding GetBindingAsBufferBinding(size_t binding);
         SamplerBase* GetBindingAsSampler(size_t binding);
         TextureViewBase* GetBindingAsTextureView(size_t binding);
 
       private:
-        Ref<BindGroupLayoutBase> mLayout;
-        std::array<Ref<ObjectBase>, kMaxBindingsPerGroup> mBindings;
-    };
-
-    class BindGroupBuilder : public Builder<BindGroupBase> {
-      public:
-        BindGroupBuilder(DeviceBase* device);
-
-        // Dawn API
-        void SetLayout(BindGroupLayoutBase* layout);
-
-        void SetBufferViews(uint32_t start, uint32_t count, BufferViewBase* const* bufferViews);
-        void SetSamplers(uint32_t start, uint32_t count, SamplerBase* const* samplers);
-        void SetTextureViews(uint32_t start, uint32_t count, TextureViewBase* const* textureViews);
-
-      private:
-        friend class BindGroupBase;
-
-        BindGroupBase* GetResultImpl() override;
-        void SetBindingsBase(uint32_t start, uint32_t count, ObjectBase* const* objects);
-        bool SetBindingsValidationBase(uint32_t start, uint32_t count);
-
-        std::bitset<kMaxBindingsPerGroup> mSetMask;
-        int mPropertiesSet = 0;
+        BindGroupBase(DeviceBase* device, ObjectBase::ErrorTag tag);
 
         Ref<BindGroupLayoutBase> mLayout;
         std::array<Ref<ObjectBase>, kMaxBindingsPerGroup> mBindings;
+        std::array<uint32_t, kMaxBindingsPerGroup> mOffsets;
+        std::array<uint32_t, kMaxBindingsPerGroup> mSizes;
     };
 
 }  // namespace dawn_native

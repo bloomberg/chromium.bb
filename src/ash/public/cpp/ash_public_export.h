@@ -7,23 +7,11 @@
 
 #if defined(COMPONENT_BUILD)
 
-#if defined(WIN32)
-
-#if defined(ASH_PUBLIC_IMPLEMENTATION)
-#define ASH_PUBLIC_EXPORT __declspec(dllexport)
-#else
-#define ASH_PUBLIC_EXPORT __declspec(dllimport)
-#endif
-
-#else  // !defined(WIN32)
-
 #if defined(ASH_PUBLIC_IMPLEMENTATION)
 #define ASH_PUBLIC_EXPORT __attribute((visibility("default")))
 #else
 #define ASH_PUBLIC_EXPORT
 #endif
-
-#endif  // defined(WIN32)
 
 #else  // !defined(COMPONENT_BUILD)
 

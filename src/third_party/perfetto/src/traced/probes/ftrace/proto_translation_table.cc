@@ -17,10 +17,12 @@
 #include "src/traced/probes/ftrace/proto_translation_table.h"
 
 #include <regex.h>
+#include <sys/utsname.h>
 
 #include <algorithm>
 
 #include "perfetto/base/string_utils.h"
+#include "perfetto/protozero/proto_utils.h"
 #include "src/traced/probes/ftrace/event_info.h"
 #include "src/traced/probes/ftrace/ftrace_procfs.h"
 
@@ -32,6 +34,7 @@ namespace perfetto {
 
 namespace {
 
+using protozero::proto_utils::ProtoSchemaType;
 using protos::pbzero::GenericFtraceEvent;
 
 ProtoTranslationTable::FtracePageHeaderSpec MakeFtracePageHeaderSpec(
@@ -48,6 +51,38 @@ ProtoTranslationTable::FtracePageHeaderSpec MakeFtracePageHeaderSpec(
     else if (name != "data")
       PERFETTO_DFATAL("Invalid field in header spec: %s", name.c_str());
   }
+  return spec;
+}
+
+// Fallback used when the "header_page" is not readable.
+// It uses a hard-coded header_page. The only caveat is that the size of the
+// |commit| field depends on the kernel bit-ness. This function tries to infer
+// that from the uname() and if that fails assumes that the kernel bitness
+// matches the userspace bitness.
+ProtoTranslationTable::FtracePageHeaderSpec GuessFtracePageHeaderSpec() {
+  ProtoTranslationTable::FtracePageHeaderSpec spec{};
+  uint16_t commit_size = sizeof(long);
+
+  struct utsname sysinfo;
+  // If user space is 32-bit check the kernel to verify.
+  if (commit_size < 8 && uname(&sysinfo) == 0) {
+    // Arm returns armv# for its machine type. The first (and only currently)
+    // arm processor that supports 64bit is the armv8 series.
+    commit_size = strstr(sysinfo.machine, "64") ||
+                  strstr(sysinfo.machine, "armv8") ? 8 : 4;
+  }
+
+  // header_page typically looks as follows on a 64-bit kernel:
+  // field: u64 timestamp; offset:0; size:8; signed:0;
+  // field: local_t commit; offset:8; size:8; signed:1;
+  // field: int overwrite; offset:8; size:1; signed:1;
+  // field: char data; offset:16; size:4080; signed:0;
+  //
+  // On a 32-bit kernel local_t is 32-bit wide and data starts @ offset 12.
+
+  spec.timestamp = FtraceEvent::Field{"u64 timestamp", 0, 8, 0};
+  spec.size = FtraceEvent::Field{"local_t commit", 8, commit_size, 1};
+  spec.overwrite = FtraceEvent::Field{"int overwrite", 8, 1, 1};
   return spec;
 }
 
@@ -74,7 +109,7 @@ bool MergeFieldInfo(const FtraceEvent::Field& ftrace_field,
                     const char* event_name_for_debug) {
   PERFETTO_DCHECK(field->ftrace_name);
   PERFETTO_DCHECK(field->proto_field_id);
-  PERFETTO_DCHECK(field->proto_field_type);
+  PERFETTO_DCHECK(static_cast<int>(field->proto_field_type));
   PERFETTO_DCHECK(!field->ftrace_offset);
   PERFETTO_DCHECK(!field->ftrace_size);
   PERFETTO_DCHECK(!field->ftrace_type);
@@ -100,9 +135,9 @@ bool MergeFieldInfo(const FtraceEvent::Field& ftrace_field,
         "Failed to find translation strategy for ftrace field \"%s.%s\" (%s -> "
         "%s)",
         event_name_for_debug, field->ftrace_name, ToString(field->ftrace_type),
-        ToString(field->proto_field_type));
+        protozero::proto_utils::ProtoSchemaToString(field->proto_field_type));
     // TODO(hjd): Uncomment DCHECK when proto generation is fixed.
-    // PERFETTO_DCHECK(false);
+    // PERFETTO_DFATAL("Failed to find translation strategy");
     return false;
   }
 
@@ -168,14 +203,14 @@ bool Match(const char* string, const char* pattern) {
 
 // Set proto field type and id based on the ftrace type.
 void SetProtoType(FtraceFieldType ftrace_type,
-                  ProtoFieldType* proto_type,
+                  ProtoSchemaType* proto_type,
                   uint32_t* proto_field_id) {
   switch (ftrace_type) {
     case kFtraceCString:
     case kFtraceFixedCString:
     case kFtraceStringPtr:
     case kFtraceDataLoc:
-      *proto_type = kProtoString;
+      *proto_type = ProtoSchemaType::kString;
       *proto_field_id = GenericFtraceEvent::Field::kStrValueFieldNumber;
       break;
     case kFtraceInt8:
@@ -184,7 +219,7 @@ void SetProtoType(FtraceFieldType ftrace_type,
     case kFtracePid32:
     case kFtraceCommonPid32:
     case kFtraceInt64:
-      *proto_type = kProtoInt64;
+      *proto_type = ProtoSchemaType::kInt64;
       *proto_field_id = GenericFtraceEvent::Field::kIntValueFieldNumber;
       break;
     case kFtraceUint8:
@@ -196,7 +231,7 @@ void SetProtoType(FtraceFieldType ftrace_type,
     case kFtraceUint64:
     case kFtraceInode32:
     case kFtraceInode64:
-      *proto_type = kProtoUint64;
+      *proto_type = ProtoSchemaType::kUint64;
       *proto_field_id = GenericFtraceEvent::Field::kUintValueFieldNumber;
       break;
   }
@@ -338,11 +373,20 @@ std::unique_ptr<ProtoTranslationTable> ProtoTranslationTable::Create(
   bool common_fields_processed = false;
   uint16_t common_fields_end = 0;
 
-  std::vector<FtraceEvent::Field> page_header_fields;
   std::string page_header = ftrace_procfs->ReadPageHeaderFormat();
-  PERFETTO_CHECK(!page_header.empty());
-  PERFETTO_CHECK(ParseFtraceEventBody(std::move(page_header), nullptr,
-                                      &page_header_fields));
+  bool ftrace_header_parsed = false;
+  FtracePageHeaderSpec header_spec{};
+  if (!page_header.empty()) {
+    std::vector<FtraceEvent::Field> page_header_fields;
+    ftrace_header_parsed = ParseFtraceEventBody(std::move(page_header), nullptr,
+                                                &page_header_fields);
+    header_spec = MakeFtracePageHeaderSpec(page_header_fields);
+  }
+
+  if (!ftrace_header_parsed) {
+    PERFETTO_LOG("Failed to parse ftrace page header, using fallback layout");
+    header_spec = GuessFtracePageHeaderSpec();
+  }
 
   for (Event& event : events) {
     if (event.proto_field_id ==
@@ -358,7 +402,20 @@ std::unique_ptr<ProtoTranslationTable> ProtoTranslationTable::Create(
         ftrace_procfs->ReadEventFormat(event.group, event.name);
     FtraceEvent ftrace_event;
     if (contents.empty() || !ParseFtraceEvent(contents, &ftrace_event)) {
-      continue;
+      if (!strcmp(event.group, "ftrace") && !strcmp(event.name, "print")) {
+        // On some "user" builds of Android <P the ftrace/print event is not
+        // selinux-whitelisted. Thankfully this event is an always-on built-in
+        // so we don't need to write to its 'enable' file. However we need to
+        // know its binary layout to decode it, so we hardcode it.
+        ftrace_event.id = 5;  // Seems quite stable across kernels.
+        ftrace_event.name = "print";
+        // The only field we care about is:
+        // field:char buf; offset:16; size:0; signed:0;
+        ftrace_event.fields.emplace_back(
+            FtraceEvent::Field{"char buf", 16, 0, 0});
+      } else {
+        continue;
+      }
     }
 
     event.ftrace_event_id = ftrace_event.id;
@@ -382,9 +439,8 @@ std::unique_ptr<ProtoTranslationTable> ProtoTranslationTable::Create(
                               }),
                events.end());
 
-  auto table = std::unique_ptr<ProtoTranslationTable>(
-      new ProtoTranslationTable(ftrace_procfs, events, std::move(common_fields),
-                                MakeFtracePageHeaderSpec(page_header_fields)));
+  auto table = std::unique_ptr<ProtoTranslationTable>(new ProtoTranslationTable(
+      ftrace_procfs, events, std::move(common_fields), header_spec));
   return table;
 }
 
@@ -485,8 +541,9 @@ uint16_t ProtoTranslationTable::CreateGenericEventField(
   field->ftrace_size = ftrace_field.size;
   // Proto type is set based on ftrace type so all fields should have a
   // translation strategy.
-  PERFETTO_DCHECK(SetTranslationStrategy(
-      field->ftrace_type, field->proto_field_type, &field->strategy));
+  bool success = SetTranslationStrategy(
+      field->ftrace_type, field->proto_field_type, &field->strategy);
+  PERFETTO_DCHECK(success);
   return field_end;
 }
 

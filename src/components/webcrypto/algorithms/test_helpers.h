@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include "base/optional.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_crypto_algorithm.h"
 #include "third_party/blink/public/platform/web_crypto_key.h"
@@ -83,17 +84,15 @@ std::vector<uint8_t> MakeJsonVector(const base::DictionaryValue& dict);
 
 // Reads a file in "src/content/test/data/webcrypto" to a base::Value.
 // The file must be JSON, however it can also include C++ style comments.
-::testing::AssertionResult ReadJsonTestFile(
-    const char* test_file_name,
-    std::unique_ptr<base::Value>* value);
+::testing::AssertionResult ReadJsonTestFile(const char* test_file_name,
+                                            base::Value* value);
 // Same as ReadJsonTestFile(), but returns the value as a List.
-::testing::AssertionResult ReadJsonTestFileToList(
-    const char* test_file_name,
-    std::unique_ptr<base::ListValue>* list);
+::testing::AssertionResult ReadJsonTestFileToList(const char* test_file_name,
+                                                  base::ListValue* list);
 // Same as ReadJsonTestFile(), but returns the value as a Dictionary.
 ::testing::AssertionResult ReadJsonTestFileToDictionary(
     const char* test_file_name,
-    std::unique_ptr<base::DictionaryValue>* dict);
+    base::DictionaryValue* dict);
 
 // Reads a string property from the dictionary with path |property_name|
 // (which can include periods for nested dictionaries). Interprets the
@@ -113,7 +112,7 @@ bool CopiesExist(const std::vector<std::vector<uint8_t>>& bufs);
 
 blink::WebCryptoAlgorithm CreateAesKeyGenAlgorithm(
     blink::WebCryptoAlgorithmId aes_alg_id,
-    unsigned short length);
+    uint16_t length);
 
 // The following key pair is comprised of the SPKI (public key) and PKCS#8
 // (private key) representations of the key pair provided in Example 1 of the
@@ -148,7 +147,7 @@ Status ImportKeyJwkFromDict(const base::DictionaryValue& dict,
                             blink::WebCryptoKey* key);
 
 // Parses a vector of JSON into a dictionary.
-std::unique_ptr<base::DictionaryValue> GetJwkDictionary(
+base::Optional<base::DictionaryValue> GetJwkDictionary(
     const std::vector<uint8_t>& json);
 
 // Verifies the input dictionary contains the expected values. Exact matches are

@@ -7,7 +7,7 @@ jobs:
       xcode: "9.2.0"
     steps:
       - checkout
-      - run: HOMEBREW_NO_AUTO_UPDATE=1 brew install wget pkg-config libtool ragel freetype glib cairo
+      - run: HOMEBREW_NO_AUTO_UPDATE=1 brew install wget autoconf automake libtool pkg-config ragel freetype glib cairo
       - run: ./autogen.sh --with-freetype --with-glib --with-gobject --with-cairo
       - run: make -j4
       - run: make check || .ci/fail.sh
@@ -17,45 +17,20 @@ jobs:
       xcode: "10.1.0"
     steps:
       - checkout
-      - run: HOMEBREW_NO_AUTO_UPDATE=1 brew install wget pkg-config libtool ragel freetype glib cairo
+      - run: HOMEBREW_NO_AUTO_UPDATE=1 brew install wget autoconf automake libtool pkg-config ragel freetype glib cairo
       - run: ./autogen.sh --with-freetype --with-glib --with-gobject --with-cairo
       - run: make -j4
       - run: make check || .ci/fail.sh
 
-  # macos-llvm-gcc-4.2:
-  #   macos:
-  #     xcode: "8.3.3"
-  #   steps:
-  #     - checkout
-  #     - run: HOMEBREW_NO_AUTO_UPDATE=1 brew install wget pkg-config libtool ragel freetype glib cairo
-  #     - run: wget https://packages.macports.org/llvm-gcc42/llvm-gcc42-2336.11_3+universal.darwin_15.i386-x86_64.tbz2 && tar zxvf llvm-gcc42-2336.11_3+universal.darwin_15.i386-x86_64.tbz2
-  #     - run: CC=$PWD/opt/local/bin/llvm-gcc-4.2 CXX=$PWD/opt/local/bin/llvm-g++-4.2 ./autogen.sh --with-freetype --with-glib --with-gobject --with-cairo
-  #     # Ignoring assembler complains, https://stackoverflow.com/a/39867021
-  #     - run: make 2>&1 | grep -v -e '^/var/folders/*' -e '^[[:space:]]*\.section' -e '^[[:space:]]*\^[[:space:]]*~*'
-  #     - run: make check || .ci/fail.sh
-
-  # macos-notest-apple-gcc-i686-4.2:
-  #   macos:
-  #     xcode: "8.3.3"
-  #   steps:
-  #     - checkout
-  #     - run: HOMEBREW_NO_AUTO_UPDATE=1 brew install wget pkg-config libtool ragel
-  #     - run: wget https://packages.macports.org/apple-gcc42/apple-gcc42-5666.3_15+universal.darwin_15.i386-x86_64.tbz2 && tar zxvf apple-gcc42-5666.3_15+universal.darwin_15.i386-x86_64.tbz2
-  #     - run: CPP=$PWD/opt/local/bin/i686-apple-darwin15-cpp-apple-4.2.1 CC=$PWD/opt/local/bin/i686-apple-darwin15-gcc-apple-4.2.1 CXX=$PWD/opt/local/bin/i686-apple-darwin15-g++-apple-4.2.1 ./autogen.sh
-  #     # Ignoring assembler complains, https://stackoverflow.com/a/39867021
-  #     - run: make 2>&1 | grep -v -e '^/var/folders/*' -e '^[[:space:]]*\.section' -e '^[[:space:]]*\^[[:space:]]*~*'
-
-  macos-notest-ios:
+  macos-10.14.3-aat-fonts:
     macos:
-      xcode: "10.0.0"
+      xcode: "10.2.0"
     steps:
       - checkout
-      - run: HOMEBREW_NO_AUTO_UPDATE=1 brew install cmake
-      # not needed to be a framework but we like to test that also
-      # TODO: wrong way of targeting iOS as it doesn't point to iOS headers thus building
-      # CoreText support is not possible, after the fix feel free HB_IOS from CMake altogether
-      - run: cmake -DBUILD_FRAMEWORK=ON -H. -Bbuild -GXcode -DHB_HAVE_CORETEXT=OFF -DHB_BUILD_SUBSET=OFF -DHB_BUILD_TESTS=OFF
-      - run: cd build && xcodebuild -sdk iphoneos12.0 -configuration Release build -arch arm64
+      - run: HOMEBREW_NO_AUTO_UPDATE=1 brew install wget autoconf automake libtool pkg-config ragel freetype glib cairo icu4c graphite2
+      - run: export PKG_CONFIG_PATH="/usr/local/opt/icu4c/lib/pkgconfig" && ./autogen.sh --with-freetype --with-glib --with-gobject --with-cairo --with-icu --with-coretext --with-graphite2
+      - run: make -j4
+      - run: make check || .ci/fail.sh
 
   distcheck:
     docker:
@@ -75,31 +50,41 @@ jobs:
       - image: alpine
     steps:
       - checkout
-      - run: apk update && apk add ragel make pkgconfig libtool autoconf automake gettext gcc g++ glib-dev freetype-dev cairo-dev
+      - run: apk update && apk add ragel make pkgconfig libtool autoconf automake gettext gcc g++ glib-dev freetype-dev cairo-dev python
       # C??FLAGS are not needed for a regular build
       - run: CFLAGS="-O3" CXXFLAGS="-O3 -DHB_NO_MMAP" ./autogen.sh
       - run: make -j32
       - run: make check || .ci/fail.sh
 
-  archlinux-debug-O0-py3:
+  archlinux-py3-all:
     docker:
-      - image: base/devel
+      - image: archlinux/base
     steps:
       - checkout
-      - run: pacman --noconfirm -Syu freetype2 cairo icu gettext gobject-introspection gcc gcc-libs glib2 graphite pkg-config ragel python python-pip
-      - run: pip install fonttools
+      - run: pacman --noconfirm -Syu freetype2 cairo icu gettext gobject-introspection gcc gcc-libs glib2 graphite pkg-config ragel python python-pip make which base-devel
+      - run: pip install flake8 fonttools
+      - run: flake8 . --count --select=E901,E999,F821,F822,F823 --show-source --statistics
       # C??FLAGS are not needed for a regular build
-      - run: CFLAGS="-O0" CXXFLAGS="-O0" CPPFLAGS="-DHB_DEBUG" ./autogen.sh --with-freetype --with-glib --with-gobject --with-cairo --with-icu --with-graphite2
-      - run: make -j32
-      - run: make check || .ci/fail.sh
+      - run: ./autogen.sh --with-freetype --with-glib --with-gobject --with-cairo --with-icu --with-graphite2
+      - run: make -j32 CPPFLAGS="-Werror"
+      - run: make check CPPFLAGS="-Werror" || .ci/fail.sh
+
+  ## Doesn't play well with CircleCI apparently
+  #void-notest:
+  #  docker:
+  #    - image: voidlinux/voidlinux
+  #  steps:
+  #    - checkout
+  #    - run: xbps-install -Suy freetype gettext gcc glib graphite pkg-config ragel libtool autoconf automake make
+  #    - run: ./autogen.sh && make -j32 && make check
 
   clang-O3-O0:
     docker:
-      - image: multiarch/crossbuild
+      - image: ubuntu:18.10
     steps:
       - checkout
       - run: apt update || true
-      - run: apt install -y ragel libfreetype6-dev libfontconfig1-dev libglib2.0-dev libcairo2-dev libicu-dev libgraphite2-dev python python-pip
+      - run: apt install -y clang wget autoconf automake libtool pkg-config ragel libfreetype6-dev libfontconfig1-dev libglib2.0-dev libcairo2-dev libicu-dev libgraphite2-dev python python-pip
       - run: pip install fonttools
       - run: wget http://download.savannah.gnu.org/releases/freetype/freetype-2.9.tar.bz2 && tar xf freetype-2.9.tar.bz2 && cd freetype-2.9 && ./autogen.sh && ./configure && make -j32 && cd ..
       - run: CFLAGS="-O3" CXXFLAGS="-O3" CC=clang CXX=clang++ ./autogen.sh --with-freetype --with-fontconfig --with-glib --with-cairo --with-icu --with-graphite2
@@ -137,7 +122,7 @@ jobs:
       - run: apt update || true
       - run: apt install -y clang lld binutils libtool autoconf automake make pkg-config gtk-doc-tools ragel libfreetype6-dev libfontconfig1-dev libglib2.0-dev libcairo2-dev libicu-dev libgraphite2-dev python python-pip
       - run: pip install fonttools
-      - run: CFLAGS="-Weverything -Wno-reserved-id-macro -Wno-conversion -Wno-padded -Wno-sign-conversion -Wno-cast-qual -Wno-documentation -Wno-documentation-unknown-command" CXXFLAGS="-Weverything -Wno-old-style-cast -Wno-documentation -Wno-documentation-unknown-command -Wno-c++98-compat -Wno-cast-qual -Wno-c++98-compat-pedantic -Wno-sign-conversion -Wno-padded -Wno-shorten-64-to-32 -Wno-reserved-id-macro -Wno-float-conversion -Wno-format-pedantic -Wno-shadow -Wno-conversion -Wno-zero-as-null-pointer-constant -Wno-missing-field-initializers -Wno-used-but-marked-unused -Wno-unused-macros -Wno-comma -Wno-float-equal -Wno-disabled-macro-expansion -Wno-weak-vtables -Wno-unused-parameter -Wno-covered-switch-default -Wno-unreachable-code" CC=clang CXX=clang++ ./autogen.sh --with-freetype --with-glib --with-cairo --with-icu --with-graphite2 --with-fontconfig
+      - run: CFLAGS="-Weverything -Wno-reserved-id-macro -Wno-conversion -Wno-padded -Wno-sign-conversion -Wno-cast-qual -Wno-documentation -Wno-documentation-unknown-command" CXXFLAGS="-Weverything -Wno-old-style-cast -Wno-documentation -Wno-documentation-unknown-command -Wno-c++98-compat -Wno-cast-qual -Wno-c++98-compat-pedantic -Wno-sign-conversion -Wno-padded -Wno-shorten-64-to-32 -Wno-reserved-id-macro -Wno-float-conversion -Wno-format-pedantic -Wno-shadow -Wno-conversion -Wno-zero-as-null-pointer-constant -Wno-missing-field-initializers -Wno-used-but-marked-unused -Wno-unused-macros -Wno-comma -Wno-float-equal -Wno-disabled-macro-expansion -Wno-weak-vtables -Wno-unused-parameter -Wno-covered-switch-default -Wno-unreachable-code -Wno-unused-template" CC=clang CXX=clang++ ./autogen.sh --with-freetype --with-glib --with-cairo --with-icu --with-graphite2 --with-fontconfig
       - run: make -j32 CPPFLAGS="-Werror"
       - run: make check CPPFLAGS="-Werror" || .ci/fail.sh
 
@@ -207,13 +192,13 @@ jobs:
       - run: make -j32
       - run: make check || .ci/fail.sh | asan_symbolize | c++filt
 
-  fedora-outoftreebuild:
+  fedora-O0-debug-outoftreebuild:
     docker:
       - image: fedora
     steps:
       - checkout
       - run: dnf install -y pkg-config ragel gcc gcc-c++ automake autoconf libtool make which glib2-devel freetype-devel cairo-devel libicu-devel gobject-introspection-devel graphite2-devel redhat-rpm-config python || true
-      - run: NOCONFIGURE=1 ./autogen.sh --with-freetype --with-glib --with-gobject --with-cairo --with-icu --with-graphite2
+      - run: CFLAGS="-O0" CXXFLAGS="-O0" CPPFLAGS="-DHB_DEBUG" NOCONFIGURE=1 ./autogen.sh --with-freetype --with-glib --with-gobject --with-cairo --with-icu --with-graphite2
       - run: mkdir build && cd build && ../configure && make && (make check || ../.ci/fail.sh)
 
   cmake-gcc:
@@ -264,8 +249,8 @@ jobs:
       - image: dockcross/base
     steps:
       - checkout
-      - run: apt update && apt install ragel
       - run: git clone https://github.com/vitasdk/vdpm && cd vdpm && ./bootstrap-vitasdk.sh
+      - run: echo "#""!""/bin/true" > /usr/bin/ragel && chmod +x /usr/bin/ragel
       - run: ./autogen.sh --prefix=/usr/local/vitasdk/arm-vita-eabi --host=arm-vita-eabi
       - run: make -j32
 
@@ -274,7 +259,6 @@ jobs:
       - image: dockcross/android-arm
     steps:
       - checkout
-      - run: apt update && apt install ragel
       - run: cmake -Bbuild -H. -GNinja
       - run: ninja -Cbuild
 
@@ -283,7 +267,6 @@ jobs:
       - image: dockcross/browser-asmjs
     steps:
       - checkout
-      - run: apt update && apt install ragel
       - run: cmake -Bbuild -H. -GNinja
       - run: ninja -Cbuild
 
@@ -292,7 +275,6 @@ jobs:
       - image: dockcross/linux-arm64
     steps:
       - checkout
-      - run: apt update && apt install ragel
       - run: cmake -Bbuild -H. -GNinja
       - run: ninja -Cbuild
 
@@ -301,7 +283,6 @@ jobs:
       - image: dockcross/linux-mips
     steps:
       - checkout
-      - run: apt update && apt install ragel
       - run: cmake -Bbuild -H. -GNinja
       - run: ninja -Cbuild
 
@@ -310,7 +291,6 @@ jobs:
   #    - image: dockcross/windows-x64
   #  steps:
   #    - checkout
-  #    - run: apt update && apt install ragel
   #    - run: cmake -Bbuild -H. -GNinja
   #    - run: ninja -Cbuild
 
@@ -321,16 +301,15 @@ workflows:
       # macOS
       - macos-10.12.6-aat-fonts
       - macos-10.13.6-aat-fonts
-      #- macos-llvm-gcc-4.2
-      #- macos-notest-apple-gcc-i686-4.2
-      - macos-notest-ios
+      - macos-10.14.3-aat-fonts
 
       # both autotools and cmake
       - distcheck
 
       # autotools based builds
       - alpine-O3-NOMMAP
-      - archlinux-debug-O0-py3
+      - archlinux-py3-all
+      #- void-notest
       - gcc-valgrind
       - clang-O3-O0
       - clang-everything
@@ -338,11 +317,11 @@ workflows:
       - clang-msan
       - clang-tsan
       - clang-ubsan
-      - fedora-outoftreebuild
+      - fedora-O0-debug-outoftreebuild
 
       # cmake based builds
       - cmake-gcc
-      - cmake-oracledeveloperstudio
+      #- cmake-oracledeveloperstudio
 
       # crosscompiles
       # they can't be test thus are without tests

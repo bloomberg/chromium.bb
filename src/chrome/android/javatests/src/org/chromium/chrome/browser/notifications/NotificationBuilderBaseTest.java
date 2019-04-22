@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.notifications;
 
-import android.app.Notification;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -68,7 +67,7 @@ public class NotificationBuilderBaseTest {
 
         NotificationBuilderBase notificationBuilder = new NotificationBuilderBase(resources) {
             @Override
-            public Notification build() {
+            public ChromeNotification build(NotificationMetadata metadata) {
                 return null;
             }
         };

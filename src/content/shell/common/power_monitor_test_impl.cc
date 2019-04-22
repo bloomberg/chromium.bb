@@ -10,9 +10,9 @@ namespace content {
 
 // static
 void PowerMonitorTestImpl::MakeStrongBinding(
-    std::unique_ptr<PowerMonitorTestImpl> instance,
     mojom::PowerMonitorTestRequest request) {
-  mojo::MakeStrongBinding(std::move(instance), std::move(request));
+  mojo::MakeStrongBinding(std::make_unique<PowerMonitorTestImpl>(),
+                          std::move(request));
 }
 
 PowerMonitorTestImpl::PowerMonitorTestImpl() {

@@ -99,3 +99,24 @@ def ShaSums(file_path):
   sha256_hex = base64.b64encode(sha256.digest())
 
   return sha1_hex, sha256_hex
+
+
+def CopyFileSegment(in_file, in_mode, in_len, out_file, out_mode, in_seek=0):
+  """Simulates a `dd` operation with seeks.
+
+  Args:
+    in_file: The input file
+    in_mode: The mode to open the input file
+    in_len: The length to copy
+    out_file: The output file
+    out_mode: The mode to open the output file
+    in_seek: How many bytes to seek from the |in_file|
+  """
+  with open(in_file, in_mode) as in_stream, \
+       open(out_file, out_mode) as out_stream:
+    in_stream.seek(in_seek)
+    remaining = in_len
+    while remaining:
+      chunk = in_stream.read(min(8192 * 1024, remaining))
+      remaining -= len(chunk)
+      out_stream.write(chunk)

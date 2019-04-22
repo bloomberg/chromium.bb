@@ -12,7 +12,7 @@ in half4x4 gradientMatrix;
 }
 
 void main() {
-    half t = length(sk_TransformedCoords2D[0]);
+    half t = half(length(sk_TransformedCoords2D[0]));
     sk_OutColor = half4(t, 1, 0, 0); // y = 1 for always valid
 }
 
@@ -20,7 +20,7 @@ void main() {
 
 @header {
     #include "SkRadialGradient.h"
-    #include "GrGradientShader.h"
+    #include "../GrGradientShader.h"
 }
 
 // The radial gradient never rejects a pixel so it doesn't change opacity
@@ -49,22 +49,22 @@ void main() {
 
 @test(d) {
     SkScalar scale = GrGradientShader::RandomParams::kGradientScale;
-    sk_sp<SkShader> shader;
+    std::unique_ptr<GrFragmentProcessor> fp;
+    GrTest::TestAsFPArgs asFPArgs(d);
     do {
         GrGradientShader::RandomParams params(d->fRandom);
         SkPoint center = {d->fRandom->nextRangeScalar(0.0f, scale),
                           d->fRandom->nextRangeScalar(0.0f, scale)};
         SkScalar radius = d->fRandom->nextRangeScalar(0.0f, scale);
-        shader = params.fUseColors4f
+        sk_sp<SkShader> shader = params.fUseColors4f
                          ? SkGradientShader::MakeRadial(center, radius, params.fColors4f,
                                                         params.fColorSpace, params.fStops,
                                                         params.fColorCount, params.fTileMode)
                          : SkGradientShader::MakeRadial(center, radius, params.fColors,
                                                         params.fStops, params.fColorCount,
                                                         params.fTileMode);
-    } while (!shader);
-    GrTest::TestAsFPArgs asFPArgs(d);
-    std::unique_ptr<GrFragmentProcessor> fp = as_SB(shader)->asFragmentProcessor(asFPArgs.args());
-    GrAlwaysAssert(fp);
+        // Degenerate params can create an Empty (non-null) shader, where fp will be nullptr
+        fp = shader ? as_SB(shader)->asFragmentProcessor(asFPArgs.args()) : nullptr;
+    } while (!fp);
     return fp;
 }

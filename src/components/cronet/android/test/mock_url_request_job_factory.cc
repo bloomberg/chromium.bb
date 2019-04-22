@@ -4,6 +4,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "base/bind.h"
 #include "components/cronet/android/test/cronet_test_util.h"
 #include "jni/MockUrlRequestJobFactory_jni.h"
 #include "net/test/url_request/ssl_certificate_error_job.h"
@@ -77,7 +78,6 @@ class UrlInterceptorJobFactoryHandle {
 // that calls into libcronet_tests.so's URLRequestFilter.
 jlong JNI_MockUrlRequestJobFactory_AddUrlInterceptors(
     JNIEnv* env,
-    const JavaParamRef<jclass>& jcaller,
     jlong jcontext_adapter) {
   net::URLRequestMockDataJob::AddUrlHandler();
   net::URLRequestFailedJob::AddUrlHandler();
@@ -90,7 +90,6 @@ jlong JNI_MockUrlRequestJobFactory_AddUrlInterceptors(
 // Put back the old URLRequestJobFactory into the URLRequestContext.
 void JNI_MockUrlRequestJobFactory_RemoveUrlInterceptorJobFactory(
     JNIEnv* env,
-    const JavaParamRef<jclass>& jcaller,
     jlong jinterceptor_handle) {
   reinterpret_cast<UrlInterceptorJobFactoryHandle*>(jinterceptor_handle)
       ->ShutDown();
@@ -98,7 +97,6 @@ void JNI_MockUrlRequestJobFactory_RemoveUrlInterceptorJobFactory(
 
 ScopedJavaLocalRef<jstring> JNI_MockUrlRequestJobFactory_GetMockUrlWithFailure(
     JNIEnv* jenv,
-    const JavaParamRef<jclass>& jcaller,
     jint jphase,
     jint jnet_error) {
   GURL url(net::URLRequestFailedJob::GetMockHttpUrlWithFailurePhase(
@@ -109,7 +107,6 @@ ScopedJavaLocalRef<jstring> JNI_MockUrlRequestJobFactory_GetMockUrlWithFailure(
 
 ScopedJavaLocalRef<jstring> JNI_MockUrlRequestJobFactory_GetMockUrlForData(
     JNIEnv* jenv,
-    const JavaParamRef<jclass>& jcaller,
     const JavaParamRef<jstring>& jdata,
     jint jdata_repeat_count) {
   std::string data(base::android::ConvertJavaStringToUTF8(jenv, jdata));
@@ -119,25 +116,20 @@ ScopedJavaLocalRef<jstring> JNI_MockUrlRequestJobFactory_GetMockUrlForData(
 }
 
 ScopedJavaLocalRef<jstring>
-JNI_MockUrlRequestJobFactory_GetMockUrlForSSLCertificateError(
-    JNIEnv* jenv,
-    const JavaParamRef<jclass>& jcaller) {
+JNI_MockUrlRequestJobFactory_GetMockUrlForSSLCertificateError(JNIEnv* jenv) {
   GURL url(net::SSLCertificateErrorJob::GetMockUrl());
   return base::android::ConvertUTF8ToJavaString(jenv, url.spec());
 }
 
 ScopedJavaLocalRef<jstring>
 JNI_MockUrlRequestJobFactory_GetMockUrlForClientCertificateRequest(
-    JNIEnv* jenv,
-    const JavaParamRef<jclass>& jcaller) {
+    JNIEnv* jenv) {
   GURL url(net::URLRequestMockDataJob::GetMockUrlForClientCertificateRequest());
   return base::android::ConvertUTF8ToJavaString(jenv, url.spec());
 }
 
 ScopedJavaLocalRef<jstring>
-JNI_MockUrlRequestJobFactory_GetMockUrlForHangingRead(
-    JNIEnv* jenv,
-    const JavaParamRef<jclass>& jcaller) {
+JNI_MockUrlRequestJobFactory_GetMockUrlForHangingRead(JNIEnv* jenv) {
   GURL url(net::URLRequestHangingReadJob::GetMockHttpUrl());
   return base::android::ConvertUTF8ToJavaString(jenv, url.spec());
 }

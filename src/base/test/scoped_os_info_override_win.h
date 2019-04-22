@@ -28,6 +28,10 @@ class ScopedOSInfoOverride {
   enum class Type {
     kWin10Pro,
     kWin10Home,
+    kWinServer2016,
+    kWin81Pro,
+    kWinServer2012R2,
+    kWin7ProSP1,
   };
 
   explicit ScopedOSInfoOverride(Type type);

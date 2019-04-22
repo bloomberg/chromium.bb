@@ -26,7 +26,7 @@ struct AVCDecoderConfigurationRecord;
 
 class MEDIA_EXPORT AVC {
  public:
-  static bool ConvertFrameToAnnexB(int length_size,
+  static bool ConvertFrameToAnnexB(size_t length_size,
                                    std::vector<uint8_t>* buffer,
                                    std::vector<SubsampleEntry>* subsamples);
 

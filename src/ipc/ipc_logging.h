@@ -10,10 +10,10 @@
 #if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
 
 #include <stdint.h>
+#include <unordered_map>
 #include <vector>
 
 #include "base/component_export.h"
-#include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/single_thread_task_runner.h"
@@ -25,7 +25,7 @@ typedef void (*LogFunction)(std::string* name,
                             const IPC::Message* msg,
                             std::string* params);
 
-typedef base::hash_map<uint32_t, LogFunction > LogFunctionMap;
+typedef std::unordered_map<uint32_t, LogFunction> LogFunctionMap;
 
 namespace IPC {
 

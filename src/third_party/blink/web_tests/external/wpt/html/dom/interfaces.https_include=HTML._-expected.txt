@@ -1,7 +1,8 @@
 This is a testharness.js-based test.
+Found 3615 tests; 3570 PASS, 45 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Partial interface Document: original interface defined
-PASS Partial interface NavigatorID: original interface defined
+PASS Partial interface mixin NavigatorID: original interface mixin defined
 PASS Partial interface HTMLAnchorElement: original interface defined
 PASS Partial interface HTMLAreaElement: original interface defined
 PASS Partial interface HTMLBodyElement: original interface defined
@@ -97,6 +98,7 @@ PASS HTMLElement interface: attribute accessKey
 FAIL HTMLElement interface: attribute accessKeyLabel assert_true: The prototype object must have a property "accessKeyLabel" expected true got false
 PASS HTMLElement interface: attribute draggable
 PASS HTMLElement interface: attribute spellcheck
+PASS HTMLElement interface: attribute autocapitalize
 PASS HTMLElement interface: attribute innerText
 PASS HTMLElement interface: attribute onabort
 PASS HTMLElement interface: attribute onauxclick
@@ -123,6 +125,7 @@ PASS HTMLElement interface: attribute onemptied
 PASS HTMLElement interface: attribute onended
 PASS HTMLElement interface: attribute onerror
 PASS HTMLElement interface: attribute onfocus
+PASS HTMLElement interface: attribute onformdata
 PASS HTMLElement interface: attribute oninput
 PASS HTMLElement interface: attribute oninvalid
 PASS HTMLElement interface: attribute onkeydown
@@ -164,6 +167,7 @@ PASS HTMLElement interface: attribute oncopy
 PASS HTMLElement interface: attribute oncut
 PASS HTMLElement interface: attribute onpaste
 PASS HTMLElement interface: attribute contentEditable
+FAIL HTMLElement interface: attribute enterKeyHint assert_true: The prototype object must have a property "enterKeyHint" expected true got false
 PASS HTMLElement interface: attribute isContentEditable
 PASS HTMLElement interface: attribute inputMode
 PASS HTMLElement interface: attribute dataset
@@ -183,6 +187,7 @@ PASS HTMLElement interface: document.createElement("noscript") must inherit prop
 FAIL HTMLElement interface: document.createElement("noscript") must inherit property "accessKeyLabel" with the proper type assert_inherits: property "accessKeyLabel" not found in prototype chain
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "draggable" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "spellcheck" with the proper type
+PASS HTMLElement interface: document.createElement("noscript") must inherit property "autocapitalize" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "innerText" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "onabort" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "onauxclick" with the proper type
@@ -209,6 +214,7 @@ PASS HTMLElement interface: document.createElement("noscript") must inherit prop
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "onended" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "onerror" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "onfocus" with the proper type
+PASS HTMLElement interface: document.createElement("noscript") must inherit property "onformdata" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "oninput" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "oninvalid" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "onkeydown" with the proper type
@@ -250,6 +256,7 @@ PASS HTMLElement interface: document.createElement("noscript") must inherit prop
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "oncut" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "onpaste" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "contentEditable" with the proper type
+FAIL HTMLElement interface: document.createElement("noscript") must inherit property "enterKeyHint" with the proper type assert_inherits: property "enterKeyHint" not found in prototype chain
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "isContentEditable" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "inputMode" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "dataset" with the proper type
@@ -322,6 +329,8 @@ PASS HTMLLinkElement interface: attribute integrity
 PASS HTMLLinkElement interface: attribute hreflang
 PASS HTMLLinkElement interface: attribute type
 PASS HTMLLinkElement interface: attribute sizes
+PASS HTMLLinkElement interface: attribute imageSrcset
+PASS HTMLLinkElement interface: attribute imageSizes
 PASS HTMLLinkElement interface: attribute referrerPolicy
 PASS HTMLLinkElement interface: attribute charset
 PASS HTMLLinkElement interface: attribute rev
@@ -338,6 +347,8 @@ PASS HTMLLinkElement interface: document.createElement("link") must inherit prop
 PASS HTMLLinkElement interface: document.createElement("link") must inherit property "hreflang" with the proper type
 PASS HTMLLinkElement interface: document.createElement("link") must inherit property "type" with the proper type
 PASS HTMLLinkElement interface: document.createElement("link") must inherit property "sizes" with the proper type
+PASS HTMLLinkElement interface: document.createElement("link") must inherit property "imageSrcset" with the proper type
+PASS HTMLLinkElement interface: document.createElement("link") must inherit property "imageSizes" with the proper type
 PASS HTMLLinkElement interface: document.createElement("link") must inherit property "referrerPolicy" with the proper type
 PASS HTMLLinkElement interface: document.createElement("link") must inherit property "charset" with the proper type
 PASS HTMLLinkElement interface: document.createElement("link") must inherit property "rev" with the proper type
@@ -688,6 +699,12 @@ PASS HTMLSourceElement interface: document.createElement("source") must inherit 
 PASS HTMLImageElement interface: existence and properties of interface object
 PASS HTMLImageElement interface object length
 PASS HTMLImageElement interface object name
+PASS HTMLImageElement interface: named constructor
+PASS HTMLImageElement interface: named constructor object
+PASS HTMLImageElement interface: named constructor prototype property
+PASS HTMLImageElement interface: named constructor name
+PASS HTMLImageElement interface: named constructor length
+PASS HTMLImageElement interface: named constructor without 'new'
 PASS HTMLImageElement interface: existence and properties of interface prototype object
 PASS HTMLImageElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLImageElement interface: existence and properties of interface prototype object's @@unscopables property
@@ -705,6 +722,7 @@ PASS HTMLImageElement interface: attribute naturalHeight
 PASS HTMLImageElement interface: attribute complete
 PASS HTMLImageElement interface: attribute currentSrc
 PASS HTMLImageElement interface: attribute referrerPolicy
+PASS HTMLImageElement interface: attribute decoding
 PASS HTMLImageElement interface: operation decode()
 PASS HTMLImageElement interface: attribute name
 PASS HTMLImageElement interface: attribute lowsrc
@@ -729,6 +747,7 @@ PASS HTMLImageElement interface: document.createElement("img") must inherit prop
 PASS HTMLImageElement interface: document.createElement("img") must inherit property "complete" with the proper type
 PASS HTMLImageElement interface: document.createElement("img") must inherit property "currentSrc" with the proper type
 PASS HTMLImageElement interface: document.createElement("img") must inherit property "referrerPolicy" with the proper type
+PASS HTMLImageElement interface: document.createElement("img") must inherit property "decoding" with the proper type
 PASS HTMLImageElement interface: document.createElement("img") must inherit property "decode()" with the proper type
 PASS HTMLImageElement interface: document.createElement("img") must inherit property "name" with the proper type
 PASS HTMLImageElement interface: document.createElement("img") must inherit property "lowsrc" with the proper type
@@ -753,6 +772,7 @@ PASS HTMLImageElement interface: new Image() must inherit property "naturalHeigh
 PASS HTMLImageElement interface: new Image() must inherit property "complete" with the proper type
 PASS HTMLImageElement interface: new Image() must inherit property "currentSrc" with the proper type
 PASS HTMLImageElement interface: new Image() must inherit property "referrerPolicy" with the proper type
+PASS HTMLImageElement interface: new Image() must inherit property "decoding" with the proper type
 PASS HTMLImageElement interface: new Image() must inherit property "decode()" with the proper type
 PASS HTMLImageElement interface: new Image() must inherit property "name" with the proper type
 PASS HTMLImageElement interface: new Image() must inherit property "lowsrc" with the proper type
@@ -771,16 +791,15 @@ PASS HTMLIFrameElement interface: attribute src
 PASS HTMLIFrameElement interface: attribute srcdoc
 PASS HTMLIFrameElement interface: attribute name
 PASS HTMLIFrameElement interface: attribute sandbox
+PASS HTMLIFrameElement interface: attribute allow
 PASS HTMLIFrameElement interface: attribute allowFullscreen
 PASS HTMLIFrameElement interface: attribute allowPaymentRequest
-FAIL HTMLIFrameElement interface: attribute allowUserMedia assert_true: The prototype object must have a property "allowUserMedia" expected true got false
 PASS HTMLIFrameElement interface: attribute width
 PASS HTMLIFrameElement interface: attribute height
 PASS HTMLIFrameElement interface: attribute referrerPolicy
 PASS HTMLIFrameElement interface: attribute contentDocument
 PASS HTMLIFrameElement interface: attribute contentWindow
 PASS HTMLIFrameElement interface: operation getSVGDocument()
-FAIL HTMLIFrameElement interface: attribute delegateStickyUserActivation assert_true: The prototype object must have a property "delegateStickyUserActivation" expected true got false
 PASS HTMLIFrameElement interface: attribute align
 PASS HTMLIFrameElement interface: attribute scrolling
 PASS HTMLIFrameElement interface: attribute frameBorder
@@ -899,7 +918,7 @@ PASS HTMLVideoElement interface: attribute height
 PASS HTMLVideoElement interface: attribute videoWidth
 PASS HTMLVideoElement interface: attribute videoHeight
 PASS HTMLVideoElement interface: attribute poster
-FAIL HTMLVideoElement interface: attribute playsInline assert_true: The prototype object must have a property "playsInline" expected true got false
+PASS HTMLVideoElement interface: attribute playsInline
 PASS HTMLVideoElement must be primary interface of document.createElement("video")
 PASS Stringification of document.createElement("video")
 PASS HTMLVideoElement interface: document.createElement("video") must inherit property "width" with the proper type
@@ -907,7 +926,7 @@ PASS HTMLVideoElement interface: document.createElement("video") must inherit pr
 PASS HTMLVideoElement interface: document.createElement("video") must inherit property "videoWidth" with the proper type
 PASS HTMLVideoElement interface: document.createElement("video") must inherit property "videoHeight" with the proper type
 PASS HTMLVideoElement interface: document.createElement("video") must inherit property "poster" with the proper type
-FAIL HTMLVideoElement interface: document.createElement("video") must inherit property "playsInline" with the proper type assert_inherits: property "playsInline" not found in prototype chain
+PASS HTMLVideoElement interface: document.createElement("video") must inherit property "playsInline" with the proper type
 PASS HTMLMediaElement interface: document.createElement("video") must inherit property "error" with the proper type
 PASS HTMLMediaElement interface: document.createElement("video") must inherit property "src" with the proper type
 FAIL HTMLMediaElement interface: document.createElement("video") must inherit property "srcObject" with the proper type Unrecognized type MediaStream
@@ -957,6 +976,12 @@ PASS HTMLMediaElement interface: calling addTextTrack(TextTrackKind, DOMString, 
 PASS HTMLAudioElement interface: existence and properties of interface object
 PASS HTMLAudioElement interface object length
 PASS HTMLAudioElement interface object name
+PASS HTMLAudioElement interface: named constructor
+PASS HTMLAudioElement interface: named constructor object
+PASS HTMLAudioElement interface: named constructor prototype property
+PASS HTMLAudioElement interface: named constructor name
+PASS HTMLAudioElement interface: named constructor length
+PASS HTMLAudioElement interface: named constructor without 'new'
 PASS HTMLAudioElement interface: existence and properties of interface prototype object
 PASS HTMLAudioElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLAudioElement interface: existence and properties of interface prototype object's @@unscopables property
@@ -1451,6 +1476,8 @@ PASS HTMLFormElement interface: attribute method
 PASS HTMLFormElement interface: attribute name
 PASS HTMLFormElement interface: attribute noValidate
 PASS HTMLFormElement interface: attribute target
+FAIL HTMLFormElement interface: attribute rel assert_true: The prototype object must have a property "rel" expected true got false
+FAIL HTMLFormElement interface: attribute relList assert_true: The prototype object must have a property "relList" expected true got false
 PASS HTMLFormElement interface: attribute elements
 PASS HTMLFormElement interface: attribute length
 PASS HTMLFormElement interface: operation submit()
@@ -1468,6 +1495,8 @@ PASS HTMLFormElement interface: document.createElement("form") must inherit prop
 PASS HTMLFormElement interface: document.createElement("form") must inherit property "name" with the proper type
 PASS HTMLFormElement interface: document.createElement("form") must inherit property "noValidate" with the proper type
 PASS HTMLFormElement interface: document.createElement("form") must inherit property "target" with the proper type
+FAIL HTMLFormElement interface: document.createElement("form") must inherit property "rel" with the proper type assert_inherits: property "rel" not found in prototype chain
+FAIL HTMLFormElement interface: document.createElement("form") must inherit property "relList" with the proper type assert_inherits: property "relList" not found in prototype chain
 PASS HTMLFormElement interface: document.createElement("form") must inherit property "elements" with the proper type
 PASS HTMLFormElement interface: document.createElement("form") must inherit property "length" with the proper type
 PASS HTMLFormElement interface: document.createElement("form") must inherit property "submit()" with the proper type
@@ -3133,6 +3162,12 @@ PASS HTMLOptGroupElement interface: document.createElement("optgroup") must inhe
 PASS HTMLOptionElement interface: existence and properties of interface object
 PASS HTMLOptionElement interface object length
 PASS HTMLOptionElement interface object name
+PASS HTMLOptionElement interface: named constructor
+PASS HTMLOptionElement interface: named constructor object
+PASS HTMLOptionElement interface: named constructor prototype property
+PASS HTMLOptionElement interface: named constructor name
+PASS HTMLOptionElement interface: named constructor length
+PASS HTMLOptionElement interface: named constructor without 'new'
 PASS HTMLOptionElement interface: existence and properties of interface prototype object
 PASS HTMLOptionElement interface: existence and properties of interface prototype object's "constructor" property
 PASS HTMLOptionElement interface: existence and properties of interface prototype object's @@unscopables property
@@ -3377,6 +3412,7 @@ PASS HTMLScriptElement interface: attribute defer
 PASS HTMLScriptElement interface: attribute crossOrigin
 PASS HTMLScriptElement interface: attribute text
 PASS HTMLScriptElement interface: attribute integrity
+PASS HTMLScriptElement interface: attribute referrerPolicy
 PASS HTMLScriptElement interface: attribute charset
 PASS HTMLScriptElement interface: attribute event
 PASS HTMLScriptElement interface: attribute htmlFor
@@ -3390,6 +3426,7 @@ PASS HTMLScriptElement interface: document.createElement("script") must inherit 
 PASS HTMLScriptElement interface: document.createElement("script") must inherit property "crossOrigin" with the proper type
 PASS HTMLScriptElement interface: document.createElement("script") must inherit property "text" with the proper type
 PASS HTMLScriptElement interface: document.createElement("script") must inherit property "integrity" with the proper type
+FAIL HTMLScriptElement interface: document.createElement("script") must inherit property "referrerPolicy" with the proper type assert_equals: expected "string" but got "object"
 PASS HTMLScriptElement interface: document.createElement("script") must inherit property "charset" with the proper type
 PASS HTMLScriptElement interface: document.createElement("script") must inherit property "event" with the proper type
 PASS HTMLScriptElement interface: document.createElement("script") must inherit property "htmlFor" with the proper type

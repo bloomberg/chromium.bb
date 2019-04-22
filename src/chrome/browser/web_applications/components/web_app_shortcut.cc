@@ -4,6 +4,9 @@
 
 #include "chrome/browser/web_applications/components/web_app_shortcut.h"
 
+#include <functional>
+
+#include "base/bind.h"
 #include "base/i18n/file_util_icu.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -92,8 +95,7 @@ void PostShortcutIOTaskAndReply(
   // outlive the const reference.
   const web_app::ShortcutInfo& shortcut_info_ref = *shortcut_info;
   GetShortcutIOTaskRunner()->PostTaskAndReply(
-      FROM_HERE,
-      base::BindOnce(std::move(task), base::ConstRef(shortcut_info_ref)),
+      FROM_HERE, base::BindOnce(std::move(task), std::cref(shortcut_info_ref)),
       base::BindOnce(&DeleteShortcutInfoOnUIThread, std::move(shortcut_info),
                      std::move(reply)));
 }

@@ -16,7 +16,7 @@ bool AssistantNullQuery::Empty() const {
 
 bool AssistantTextQuery::Empty() const {
   return text_.empty();
-};
+}
 
 // AssistantVoiceQuery ---------------------------------------------------------
 

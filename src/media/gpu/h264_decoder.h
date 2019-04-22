@@ -54,8 +54,8 @@ class MEDIA_GPU_EXPORT H264Decoder : public AcceleratedVideoDecoder {
       // operation later, once the data has been provided.
       kTryAgain,
 
-      // Operation is not supported. Used by SetStream() and ParseSliceHeader()
-      // to indicate that the Accelerator can not handle this operation.
+      // Operation is not supported. Used by SetStream() to indicate that the
+      // Accelerator can not handle this operation.
       kNotSupported,
     };
 
@@ -142,14 +142,6 @@ class MEDIA_GPU_EXPORT H264Decoder : public AcceleratedVideoDecoder {
     virtual Status SetStream(base::span<const uint8_t> stream,
                              const DecryptConfig* decrypt_config);
 
-    // Parse a slice header, returning it in |*slice_header|. |slice_nalu| must
-    // be a slice NALU. On success, this populates |*slice_header|. If the
-    // Accelerator doesn't handle this slice header, then it should return
-    // kNotSupported. This method has a default implementation that returns
-    // kNotSupported.
-    virtual Status ParseSliceHeader(const H264NALU& slice_nalu,
-                                    H264SliceHeader* slice_header);
-
    private:
     DISALLOW_COPY_AND_ASSIGN(H264Accelerator);
   };
@@ -168,6 +160,7 @@ class MEDIA_GPU_EXPORT H264Decoder : public AcceleratedVideoDecoder {
   DecodeResult Decode() override WARN_UNUSED_RESULT;
   gfx::Size GetPicSize() const override;
   size_t GetRequiredNumOfPictures() const override;
+  size_t GetNumReferenceFrames() const override;
 
   // Return true if we need to start a new picture.
   static bool IsNewPrimaryCodedPicture(const H264Picture* curr_pic,
@@ -182,17 +175,6 @@ class MEDIA_GPU_EXPORT H264Decoder : public AcceleratedVideoDecoder {
                                              H264Picture* pic);
 
  private:
-  // We need to keep at most kDPBMaxSize pictures in DPB for
-  // reference/to display later and an additional one for the one currently
-  // being decoded. We also ask for some additional ones since VDA needs
-  // to accumulate a few ready-to-output pictures before it actually starts
-  // displaying and giving them back. +2 instead of +1 because of subjective
-  // smoothness improvement during testing.
-  enum {
-    kPicsInPipeline = limits::kMaxVideoFrames + 2,
-    kMaxNumReqPictures = H264DPB::kDPBMaxSize + kPicsInPipeline,
-  };
-
   // Internal state of the decoder.
   enum State {
     // After initialization, need an SPS.

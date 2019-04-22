@@ -7,6 +7,7 @@
 #include <memory>
 #include <tuple>
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -15,7 +16,7 @@
 #include "base/sequence_checker.h"
 #include "base/task/post_task.h"
 #include "base/time/default_clock.h"
-#include "components/leveldb_proto/proto_database_impl.h"
+#include "components/leveldb_proto/public/proto_database_provider.h"
 #include "media/base/media_switches.h"
 #include "media/capabilities/video_decode_stats.pb.h"
 
@@ -33,7 +34,7 @@ const int kMaxFramesPerBufferDefault = 2500;
 
 const int kMaxDaysToKeepStatsDefault = 30;
 
-};  // namespace
+}  // namespace
 
 const char VideoDecodeStatsDBImpl::kMaxFramesPerBufferParamName[] =
     "db_frames_buffer_size";
@@ -61,7 +62,7 @@ std::unique_ptr<VideoDecodeStatsDBImpl> VideoDecodeStatsDBImpl::Create(
   DVLOG(2) << __func__ << " db_dir:" << db_dir;
 
   auto proto_db =
-      std::make_unique<leveldb_proto::ProtoDatabaseImpl<DecodeStatsProto>>(
+      leveldb_proto::ProtoDatabaseProvider::CreateUniqueDB<DecodeStatsProto>(
           base::CreateSequencedTaskRunnerWithTraits(
               {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
                base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}));

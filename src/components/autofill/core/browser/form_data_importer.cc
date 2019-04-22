@@ -14,6 +14,7 @@
 #include <set>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -30,6 +31,7 @@
 #include "components/autofill/core/browser/phone_number_i18n.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_util.h"
 
 namespace autofill {
@@ -176,7 +178,8 @@ void FormDataImporter::ImportFormData(const FormStructure& submitted_form,
            imported_credit_card_record_type_ ==
                ImportedCreditCardRecordType::NEW_CARD);
     credit_card_save_manager_->AttemptToOfferCardUploadSave(
-        submitted_form, *imported_credit_card,
+        submitted_form, from_dynamic_change_form_, has_non_focusable_field_,
+        *imported_credit_card,
         /*uploading_local_card=*/imported_credit_card_record_type_ ==
             ImportedCreditCardRecordType::LOCAL_CARD);
   } else {
@@ -184,6 +187,7 @@ void FormDataImporter::ImportFormData(const FormStructure& submitted_form,
     DCHECK(imported_credit_card_record_type_ ==
            ImportedCreditCardRecordType::NEW_CARD);
     credit_card_save_manager_->AttemptToOfferCardLocalSave(
+        from_dynamic_change_form_, has_non_focusable_field_,
         *imported_credit_card);
   }
 }
@@ -442,7 +446,10 @@ bool FormDataImporter::ImportCreditCard(
   // there is for local cards.
   for (const CreditCard* card :
        personal_data_manager_->GetServerCreditCards()) {
-    if (candidate_credit_card.HasSameNumberAs(*card)) {
+    if ((card->record_type() == CreditCard::MASKED_SERVER_CARD &&
+         card->LastFourDigits() == candidate_credit_card.LastFourDigits()) ||
+        (card->record_type() == CreditCard::FULL_SERVER_CARD &&
+         candidate_credit_card.HasSameNumberAs(*card))) {
       // Don't update card if the expiration date is missing
       if (candidate_credit_card.expiration_month() == 0 ||
           candidate_credit_card.expiration_year() == 0) {
@@ -487,15 +494,27 @@ CreditCard FormDataImporter::ExtractCreditCardFromForm(
     base::TrimWhitespace(field->value, base::TRIM_ALL, &value);
 
     // If we don't know the type of the field, or the user hasn't entered any
-    // information into the field, or the field is non-focusable (hidden), then
-    // skip it.
-    if (!field->IsFieldFillable() || !field->is_focusable || value.empty())
+    // information into the field, then skip it.
+    if (!field->IsFieldFillable() || value.empty())
       continue;
+    // If the field is non-focusable (hidden) after the user entered information
+    // into it, then skip it, unless the experiment to import non-focusable
+    // forms is enabled.
+    if (!field->is_focusable &&
+        !base::FeatureList::IsEnabled(
+            features::kAutofillImportNonFocusableCreditCardForms)) {
+      continue;
+    }
 
     AutofillType field_type = field->Type();
     // Field was not identified as a credit card field.
     if (field_type.group() != CREDIT_CARD)
       continue;
+
+    if (form.value_from_dynamic_change_form())
+      from_dynamic_change_form_ = true;
+    if (!field->is_focusable)
+      has_non_focusable_field_ = true;
 
     // If we've seen the same credit card field type twice in the same form,
     // set |has_duplicate_field_type| to true.

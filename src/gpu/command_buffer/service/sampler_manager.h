@@ -5,9 +5,9 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_SAMPLER_MANAGER_H_
 #define GPU_COMMAND_BUFFER_SERVICE_SAMPLER_MANAGER_H_
 
+#include <unordered_map>
 #include <vector>
 
-#include "base/containers/hash_tables.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -160,7 +160,7 @@ class GPU_GLES2_EXPORT SamplerManager {
   scoped_refptr<FeatureInfo> feature_info_;
 
   // Info for each sampler in the system.
-  typedef base::hash_map<GLuint, scoped_refptr<Sampler> > SamplerMap;
+  typedef std::unordered_map<GLuint, scoped_refptr<Sampler>> SamplerMap;
   SamplerMap samplers_;
 
   bool have_context_;

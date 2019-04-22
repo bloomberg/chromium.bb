@@ -18,8 +18,6 @@ TEST_F(WebMeaningfulLayoutsTest, VisuallyNonEmptyTextCharacters) {
 
   LoadURL("https://example.com/index.html");
 
-  main_resource.Start();
-
   // Write 201 characters.
   const char* ten_characters = "0123456789";
   for (int i = 0; i < 20; ++i)
@@ -30,15 +28,13 @@ TEST_F(WebMeaningfulLayoutsTest, VisuallyNonEmptyTextCharacters) {
 
   Compositor().BeginFrame();
 
-  EXPECT_EQ(1, WebViewClient().VisuallyNonEmptyLayoutCount());
+  EXPECT_EQ(1, WebWidgetClient().VisuallyNonEmptyLayoutCount());
 }
 
 TEST_F(WebMeaningfulLayoutsTest, VisuallyNonEmptyTextCharactersEventually) {
   SimRequest main_resource("https://example.com/index.html", "text/html");
 
   LoadURL("https://example.com/index.html");
-
-  main_resource.Start();
 
   // Write 200 characters.
   const char* ten_characters = "0123456789";
@@ -48,7 +44,7 @@ TEST_F(WebMeaningfulLayoutsTest, VisuallyNonEmptyTextCharactersEventually) {
   // Pump a frame mid-load.
   Compositor().BeginFrame();
 
-  EXPECT_EQ(0, WebViewClient().VisuallyNonEmptyLayoutCount());
+  EXPECT_EQ(0, WebWidgetClient().VisuallyNonEmptyLayoutCount());
 
   // Write more than 200 characters.
   main_resource.Write("!");
@@ -59,7 +55,7 @@ TEST_F(WebMeaningfulLayoutsTest, VisuallyNonEmptyTextCharactersEventually) {
   // not as the character count goes over 200.
   Compositor().BeginFrame();
 
-  EXPECT_EQ(1, WebViewClient().VisuallyNonEmptyLayoutCount());
+  EXPECT_EQ(1, WebWidgetClient().VisuallyNonEmptyLayoutCount());
 }
 
 // TODO(dglazkov): Write pixel-count and canvas-based VisuallyNonEmpty tests
@@ -68,8 +64,6 @@ TEST_F(WebMeaningfulLayoutsTest, VisuallyNonEmptyMissingPump) {
   SimRequest main_resource("https://example.com/index.html", "text/html");
 
   LoadURL("https://example.com/index.html");
-
-  main_resource.Start();
 
   // Write <200 characters.
   main_resource.Write("less than 200 characters.");
@@ -89,7 +83,7 @@ TEST_F(WebMeaningfulLayoutsTest, VisuallyNonEmptyMissingPump) {
   Compositor().BeginFrame();
 
   // ... which correctly signals the VisuallyNonEmpty.
-  EXPECT_EQ(1, WebViewClient().VisuallyNonEmptyLayoutCount());
+  EXPECT_EQ(1, WebWidgetClient().VisuallyNonEmptyLayoutCount());
 }
 
 TEST_F(WebMeaningfulLayoutsTest, FinishedParsing) {
@@ -101,7 +95,7 @@ TEST_F(WebMeaningfulLayoutsTest, FinishedParsing) {
 
   Compositor().BeginFrame();
 
-  EXPECT_EQ(1, WebViewClient().FinishedParsingLayoutCount());
+  EXPECT_EQ(1, WebWidgetClient().FinishedParsingLayoutCount());
 }
 
 TEST_F(WebMeaningfulLayoutsTest, FinishedLoading) {
@@ -113,12 +107,13 @@ TEST_F(WebMeaningfulLayoutsTest, FinishedLoading) {
 
   Compositor().BeginFrame();
 
-  EXPECT_EQ(1, WebViewClient().FinishedLoadingLayoutCount());
+  EXPECT_EQ(1, WebWidgetClient().FinishedLoadingLayoutCount());
 }
 
 TEST_F(WebMeaningfulLayoutsTest, FinishedParsingThenLoading) {
   SimRequest main_resource("https://example.com/index.html", "text/html");
-  SimRequest image_resource("https://example.com/cat.png", "image/png");
+  SimSubresourceRequest image_resource("https://example.com/cat.png",
+                                       "image/png");
 
   LoadURL("https://example.com/index.html");
 
@@ -126,8 +121,8 @@ TEST_F(WebMeaningfulLayoutsTest, FinishedParsingThenLoading) {
 
   Compositor().BeginFrame();
 
-  EXPECT_EQ(1, WebViewClient().FinishedParsingLayoutCount());
-  EXPECT_EQ(0, WebViewClient().FinishedLoadingLayoutCount());
+  EXPECT_EQ(1, WebWidgetClient().FinishedParsingLayoutCount());
+  EXPECT_EQ(0, WebWidgetClient().FinishedLoadingLayoutCount());
 
   image_resource.Complete("image data");
 
@@ -136,8 +131,8 @@ TEST_F(WebMeaningfulLayoutsTest, FinishedParsingThenLoading) {
 
   Compositor().BeginFrame();
 
-  EXPECT_EQ(1, WebViewClient().FinishedParsingLayoutCount());
-  EXPECT_EQ(1, WebViewClient().FinishedLoadingLayoutCount());
+  EXPECT_EQ(1, WebWidgetClient().FinishedParsingLayoutCount());
+  EXPECT_EQ(1, WebWidgetClient().FinishedLoadingLayoutCount());
 }
 
 TEST_F(WebMeaningfulLayoutsTest, WithIFrames) {
@@ -150,9 +145,9 @@ TEST_F(WebMeaningfulLayoutsTest, WithIFrames) {
 
   Compositor().BeginFrame();
 
-  EXPECT_EQ(1, WebViewClient().VisuallyNonEmptyLayoutCount());
-  EXPECT_EQ(1, WebViewClient().FinishedParsingLayoutCount());
-  EXPECT_EQ(0, WebViewClient().FinishedLoadingLayoutCount());
+  EXPECT_EQ(1, WebWidgetClient().VisuallyNonEmptyLayoutCount());
+  EXPECT_EQ(1, WebWidgetClient().FinishedParsingLayoutCount());
+  EXPECT_EQ(0, WebWidgetClient().FinishedLoadingLayoutCount());
 
   iframe_resource.Complete("iframe data");
 
@@ -161,9 +156,9 @@ TEST_F(WebMeaningfulLayoutsTest, WithIFrames) {
 
   Compositor().BeginFrame();
 
-  EXPECT_EQ(1, WebViewClient().VisuallyNonEmptyLayoutCount());
-  EXPECT_EQ(1, WebViewClient().FinishedParsingLayoutCount());
-  EXPECT_EQ(1, WebViewClient().FinishedLoadingLayoutCount());
+  EXPECT_EQ(1, WebWidgetClient().VisuallyNonEmptyLayoutCount());
+  EXPECT_EQ(1, WebWidgetClient().FinishedParsingLayoutCount());
+  EXPECT_EQ(1, WebWidgetClient().FinishedLoadingLayoutCount());
 }
 
 // NoOverflowInIncrementVisuallyNonEmptyPixelCount tests fail if the number of
@@ -172,27 +167,27 @@ TEST_F(WebMeaningfulLayoutsTest, WithIFrames) {
 TEST_F(WebMeaningfulLayoutsTest,
        NoOverflowInIncrementVisuallyNonEmptyPixelCount) {
   SimRequest main_resource("https://example.com/test.html", "text/html");
-  SimRequest svg_resource("https://example.com/test.svg", "image/svg+xml");
+  SimSubresourceRequest svg_resource("https://example.com/test.svg",
+                                     "image/svg+xml");
 
   LoadURL("https://example.com/test.html");
 
-  main_resource.Start();
   main_resource.Write("<DOCTYPE html><body><img src=\"test.svg\">");
   // Run pending tasks to initiate the request to test.svg.
   test::RunPendingTasks();
-  EXPECT_EQ(0, WebViewClient().VisuallyNonEmptyLayoutCount());
+  EXPECT_EQ(0, WebWidgetClient().VisuallyNonEmptyLayoutCount());
 
-  // We serve the SVG file and check visuallyNonEmptyLayoutCount() before
-  // mainResource.finish() because finishing the main resource causes
+  // We serve the SVG file and check VisuallyNonEmptyLayoutCount() before
+  // main_resource.Finish() because finishing the main resource causes
   // |FrameView::m_isVisuallyNonEmpty| to be true and
-  // visuallyNonEmptyLayoutCount() to be 1 irrespective of the SVG sizes.
+  // VisuallyNonEmptyLayoutCount() to be 1 irrespective of the SVG sizes.
   svg_resource.Start();
   svg_resource.Write(
       "<svg xmlns=\"http://www.w3.org/2000/svg\" height=\"65536\" "
       "width=\"65536\"></svg>");
   svg_resource.Finish();
   Compositor().BeginFrame();
-  EXPECT_EQ(1, WebViewClient().VisuallyNonEmptyLayoutCount());
+  EXPECT_EQ(1, WebWidgetClient().VisuallyNonEmptyLayoutCount());
 
   main_resource.Finish();
 }
@@ -201,7 +196,8 @@ TEST_F(WebMeaningfulLayoutsTest,
 // a pending stylesheet if a layout is triggered before it loads.
 TEST_F(WebMeaningfulLayoutsTest, LayoutWithPendingRenderBlockingStylesheet) {
   SimRequest main_resource("https://example.com/index.html", "text/html");
-  SimRequest style_resource("https://example.com/style.css", "text/css");
+  SimSubresourceRequest style_resource("https://example.com/style.css",
+                                       "text/css");
 
   LoadURL("https://example.com/index.html");
 
@@ -211,36 +207,18 @@ TEST_F(WebMeaningfulLayoutsTest, LayoutWithPendingRenderBlockingStylesheet) {
       "</head><body></body></html>");
 
   GetDocument().UpdateStyleAndLayoutTree();
-  EXPECT_FALSE(GetDocument().IsRenderingReady());
+  EXPECT_FALSE(GetDocument().HaveRenderBlockingResourcesLoaded());
 
   style_resource.Complete("");
-  EXPECT_TRUE(GetDocument().IsRenderingReady());
-}
-
-// A pending stylesheet in the body is not render-blocking and should not
-// be considered a pending stylesheet if a layout is triggered before it loads.
-TEST_F(WebMeaningfulLayoutsTest, LayoutWithPendingScriptBlockingStylesheet) {
-  SimRequest main_resource("https://example.com/index.html", "text/html");
-  SimRequest style_resource("https://example.com/style.css", "text/css");
-
-  LoadURL("https://example.com/index.html");
-
-  main_resource.Complete(
-      "<html><head></head><body>"
-      "<link rel=\"stylesheet\" href=\"style.css\">"
-      "</body></html>");
-
-  GetDocument().UpdateStyleAndLayoutTreeIgnorePendingStylesheets();
-  EXPECT_FALSE(GetDocument().DidLayoutWithPendingStylesheets());
-
-  style_resource.Complete("");
+  EXPECT_TRUE(GetDocument().HaveRenderBlockingResourcesLoaded());
 }
 
 // A pending import in the head is render-blocking and will be treated like
 // a pending stylesheet if a layout is triggered before it loads.
 TEST_F(WebMeaningfulLayoutsTest, LayoutWithPendingImportInHead) {
   SimRequest main_resource("https://example.com/index.html", "text/html");
-  SimRequest import_resource("https://example.com/import.html", "text/html");
+  SimSubresourceRequest import_resource("https://example.com/import.html",
+                                        "text/html");
 
   LoadURL("https://example.com/index.html");
 
@@ -250,19 +228,20 @@ TEST_F(WebMeaningfulLayoutsTest, LayoutWithPendingImportInHead) {
       "</head><body></body></html>");
 
   GetDocument().UpdateStyleAndLayoutTree();
-  EXPECT_FALSE(GetDocument().IsRenderingReady());
+  EXPECT_FALSE(GetDocument().HaveRenderBlockingResourcesLoaded());
 
   import_resource.Complete("");
   // Pump the HTMLImportTreeRoot::RecalcTimerFired task.
   test::RunPendingTasks();
-  EXPECT_TRUE(GetDocument().IsRenderingReady());
+  EXPECT_TRUE(GetDocument().HaveRenderBlockingResourcesLoaded());
 }
 
 // A pending import in the body is render-blocking and will be treated like
 // a pending stylesheet if a layout is triggered before it loads.
 TEST_F(WebMeaningfulLayoutsTest, LayoutWithPendingImportInBody) {
   SimRequest main_resource("https://example.com/index.html", "text/html");
-  SimRequest import_resource("https://example.com/import.html", "text/html");
+  SimSubresourceRequest import_resource("https://example.com/import.html",
+                                        "text/html");
 
   LoadURL("https://example.com/index.html");
 
@@ -272,12 +251,12 @@ TEST_F(WebMeaningfulLayoutsTest, LayoutWithPendingImportInBody) {
       "</body></html>");
 
   GetDocument().UpdateStyleAndLayoutTree();
-  EXPECT_FALSE(GetDocument().IsRenderingReady());
+  EXPECT_FALSE(GetDocument().HaveRenderBlockingResourcesLoaded());
 
   import_resource.Complete("");
   // Pump the HTMLImportTreeRoot::RecalcTimerFired task.
   test::RunPendingTasks();
-  EXPECT_TRUE(GetDocument().IsRenderingReady());
+  EXPECT_TRUE(GetDocument().HaveRenderBlockingResourcesLoaded());
 }
 
 }  // namespace blink

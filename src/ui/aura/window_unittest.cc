@@ -15,6 +15,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/bind_test_util.h"
 #include "build/build_config.h"
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "services/ws/public/mojom/window_tree_constants.mojom.h"
@@ -106,11 +107,11 @@ class DeletionTestProperty {
 
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(DeletionTestProperty,
                                    kDeletionTestPropertyKey,
-                                   nullptr);
+                                   nullptr)
 
 }  // namespace
 
-DEFINE_UI_CLASS_PROPERTY_TYPE(DeletionTestProperty*);
+DEFINE_UI_CLASS_PROPERTY_TYPE(DeletionTestProperty*)
 
 namespace aura {
 namespace test {
@@ -1589,29 +1590,38 @@ TEST_P(WindowTest, EventTargetingPolicy) {
   EXPECT_EQ(w121.get(), w1->GetEventHandlerForPoint(gfx::Point(160, 160)));
   w12->SetEventTargetingPolicy(ws::mojom::EventTargetingPolicy::TARGET_ONLY);
   EXPECT_EQ(w12.get(), w1->GetEventHandlerForPoint(gfx::Point(160, 160)));
+  EXPECT_TRUE(w12.get()->layer()->accept_events());
   w12->SetEventTargetingPolicy(
       ws::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS);
-
   EXPECT_EQ(w12.get(), w1->GetEventHandlerForPoint(gfx::Point(10, 10)));
+  EXPECT_TRUE(w12.get()->layer()->accept_events());
   w12->SetEventTargetingPolicy(ws::mojom::EventTargetingPolicy::NONE);
   EXPECT_EQ(w11.get(), w1->GetEventHandlerForPoint(gfx::Point(10, 10)));
+  EXPECT_FALSE(w12.get()->layer()->accept_events());
+
   w12->SetEventTargetingPolicy(
       ws::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS);
 
   EXPECT_EQ(w121.get(), w1->GetEventHandlerForPoint(gfx::Point(160, 160)));
   w121->SetEventTargetingPolicy(ws::mojom::EventTargetingPolicy::NONE);
   EXPECT_EQ(w12.get(), w1->GetEventHandlerForPoint(gfx::Point(160, 160)));
+  EXPECT_FALSE(w121.get()->layer()->accept_events());
   w12->SetEventTargetingPolicy(ws::mojom::EventTargetingPolicy::NONE);
   EXPECT_EQ(w111.get(), w1->GetEventHandlerForPoint(gfx::Point(160, 160)));
+  EXPECT_FALSE(w12.get()->layer()->accept_events());
   w111->SetEventTargetingPolicy(ws::mojom::EventTargetingPolicy::NONE);
   EXPECT_EQ(w11.get(), w1->GetEventHandlerForPoint(gfx::Point(160, 160)));
+  EXPECT_FALSE(w111.get()->layer()->accept_events());
 
   w11->SetEventTargetingPolicy(
       ws::mojom::EventTargetingPolicy::DESCENDANTS_ONLY);
   EXPECT_EQ(nullptr, w1->GetEventHandlerForPoint(gfx::Point(160, 160)));
+  EXPECT_TRUE(w11.get()->layer()->accept_events());
+
   w111->SetEventTargetingPolicy(
       ws::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS);
   EXPECT_EQ(w111.get(), w1->GetEventHandlerForPoint(gfx::Point(160, 160)));
+  EXPECT_TRUE(w111.get()->layer()->accept_events());
 }
 
 // Tests transformation on the root window.
@@ -2918,8 +2928,8 @@ class AddChildNotificationsObserver : public WindowObserver {
   AddChildNotificationsObserver() : added_count_(0), removed_count_(0) {}
 
   std::string CountStringAndReset() {
-    std::string result = base::IntToString(added_count_) + " " +
-        base::IntToString(removed_count_);
+    std::string result = base::NumberToString(added_count_) + " " +
+                         base::NumberToString(removed_count_);
     added_count_ = removed_count_ = 0;
     return result;
   }
@@ -3255,6 +3265,11 @@ TEST_P(WindowTest, RootWindowUsesCompositorFrameSinkId) {
 }
 
 TEST_P(WindowTest, LocalSurfaceIdChanges) {
+  // This uses Window::CreateLayerTreeFrameSink(), which is not wired up in
+  // Mus. At this time it is only used for LOCAL, so it's not wired up for MUS.
+  if (GetParam() == Env::Mode::MUS)
+    return;
+
   Window window(nullptr);
   window.Init(ui::LAYER_NOT_DRAWN);
   window.SetBounds(gfx::Rect(300, 300));
@@ -3311,13 +3326,101 @@ TEST_P(WindowTest, LocalSurfaceIdChanges) {
   EXPECT_NE(local_surface_id5, local_surface_id6);
 }
 
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        WindowTest,
-                        ::testing::Values(Env::Mode::LOCAL, Env::Mode::MUS));
+// This delegate moves its parent window to the specified one when the gesture
+// ends.
+class HandleGestureEndDelegate : public TestWindowDelegate {
+ public:
+  explicit HandleGestureEndDelegate(
+      base::OnceCallback<void(Window*)> on_gesture_end)
+      : on_gesture_end_(std::move(on_gesture_end)) {}
+  ~HandleGestureEndDelegate() override = default;
 
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        WindowObserverTest,
-                        ::testing::Values(Env::Mode::LOCAL, Env::Mode::MUS));
+ private:
+  // WindowDelegate:
+  void OnGestureEvent(ui::GestureEvent* event) override {
+    switch (event->type()) {
+      case ui::ET_GESTURE_SCROLL_END:
+      case ui::ET_GESTURE_END:
+      case ui::ET_GESTURE_PINCH_END: {
+        if (on_gesture_end_)
+          std::move(on_gesture_end_).Run(static_cast<Window*>(event->target()));
+        break;
+      }
+      default:
+        break;
+    }
+  }
+
+  base::OnceCallback<void(Window*)> on_gesture_end_;
+  DISALLOW_COPY_AND_ASSIGN(HandleGestureEndDelegate);
+};
+
+TEST_P(WindowTest, CleanupGestureStateChangesWindowHierarchy) {
+  Window window(nullptr);
+  window.Init(ui::LAYER_NOT_DRAWN);
+  root_window()->AddChild(&window);
+  window.SetBounds(gfx::Rect(0, 0, 100, 100));
+  window.Show();
+  Window window2(nullptr);
+  window2.Init(ui::LAYER_NOT_DRAWN);
+  root_window()->AddChild(&window2);
+  root_window()->StackChildAtBottom(&window2);
+  window2.Show();
+  HandleGestureEndDelegate delegate(base::BindLambdaForTesting(
+      [&](Window* target_window) { window2.AddChild(target_window); }));
+  std::unique_ptr<Window> child = std::make_unique<Window>(&delegate);
+  child->Init(ui::LAYER_NOT_DRAWN);
+  window.AddChild(child.get());
+  child->SetBounds(gfx::Rect(0, 0, 100, 100));
+  child->Show();
+  EXPECT_EQ(1u, window.children().size());
+  EXPECT_EQ(0u, window2.children().size());
+
+  ui::test::EventGenerator event_generator(root_window(), child.get());
+  event_generator.PressTouch();
+  window.CleanupGestureState();
+  EXPECT_EQ(0u, window.children().size());
+  EXPECT_EQ(1u, window2.children().size());
+  child.reset();
+}
+
+TEST_P(WindowTest, CleanupGestureStateDeleteOtherWindows) {
+  Window window(nullptr);
+  window.Init(ui::LAYER_NOT_DRAWN);
+  root_window()->AddChild(&window);
+  window.SetBounds(gfx::Rect(0, 0, 200, 200));
+  window.Show();
+  std::unique_ptr<Window> child1 = std::make_unique<Window>(nullptr);
+  child1->Init(ui::LAYER_NOT_DRAWN);
+  child1->SetBounds(gfx::Rect(100, 100, 100, 100));
+  window.AddChild(child1.get());
+  child1->Show();
+  HandleGestureEndDelegate delegate(base::BindLambdaForTesting(
+      [&](Window* target_window) { child1.reset(); }));
+  std::unique_ptr<Window> child2 = std::make_unique<Window>(&delegate);
+  child2->Init(ui::LAYER_NOT_DRAWN);
+  window.AddChild(child2.get());
+  child2->SetBounds(gfx::Rect(0, 0, 100, 100));
+  child2->Show();
+  window.StackChildAtBottom(child2.get());
+  EXPECT_EQ(2u, window.children().size());
+  EXPECT_EQ(child2.get(), window.children().front());
+
+  ui::test::EventGenerator event_generator(root_window(), child2.get());
+  event_generator.PressTouch();
+  window.CleanupGestureState();
+  EXPECT_EQ(1u, window.children().size());
+  EXPECT_FALSE(child1);
+  child2.reset();
+}
+
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         WindowTest,
+                         ::testing::Values(Env::Mode::LOCAL, Env::Mode::MUS));
+
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         WindowObserverTest,
+                         ::testing::Values(Env::Mode::LOCAL, Env::Mode::MUS));
 
 }  // namespace
 }  // namespace test

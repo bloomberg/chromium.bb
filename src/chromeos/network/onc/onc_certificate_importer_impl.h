@@ -10,10 +10,10 @@
 #include <string>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/network/onc/onc_certificate_importer.h"
 #include "chromeos/network/onc/onc_parsed_certificates.h"
 #include "components/onc/onc_constants.h"
@@ -35,7 +35,8 @@ namespace onc {
 // certificates are identified by their PEM and not by GUID.
 // TODO(pneubeck): Replace Nickname by PEM for Client
 // certificates. http://crbug.com/252119
-class CHROMEOS_EXPORT CertificateImporterImpl : public CertificateImporter {
+class COMPONENT_EXPORT(CHROMEOS_NETWORK) CertificateImporterImpl
+    : public CertificateImporter {
  public:
   // |io_task_runner| will be used for NSSCertDatabase accesses.
   CertificateImporterImpl(

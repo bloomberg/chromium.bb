@@ -16,7 +16,6 @@
 <translation id="152892567002884378">Појачајте звук</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, па <ph name="ESC" /></translation>
 <translation id="1652741121070700329">Померите на почетак претходне речи</translation>
-<translation id="1671169355475348905">Пређите на метод уноса претходног језика</translation>
 <translation id="1679841710523778799">Повећајте осветљеност</translation>
 <translation id="168356808214100546">Притисните и задржите <ph name="ALT" />, додирујте <ph name="TAB" /> док не дођете до прозора који желите да отворите, па отпустите.</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -33,6 +32,7 @@
 <translation id="2181097965834437145">Прикажите или сакријте траку са обележивачима</translation>
 <translation id="2185166372312820725">Идите на претходну картицу</translation>
 <translation id="2194790690264064655">Притисните <ph name="CTRL" /> и кликните на линк</translation>
+<translation id="2246352309084894470">Отворите/затворите покретач режима целог екрана</translation>
 <translation id="2382644247745281995">Није подржано са актуелним распоредом тастатуре</translation>
 <translation id="2397416548179033562">Приказ Chrome менија</translation>
 <translation id="2424073332829844142">Укључите или искључите тастер Caps Lock</translation>
@@ -44,7 +44,6 @@
 <translation id="2574014812750545982">Ресетујте ниво зумирања на страници</translation>
 <translation id="2596078834055697711">Направите снимак екрана прозора</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, па <ph name="TAB" /> или <ph name="RIGHT" /></translation>
-<translation id="2687057317448262550">Пређите на метод уноса следећег језика</translation>
 <translation id="2699509451653686398">Сачувајте тренутну веб-страницу као обележивач</translation>
 <translation id="2750942583782703988">Поново учитајте тренутну страницу</translation>
 <translation id="2764005613199379871">Поставите фокус на траку за адресу и претрагу</translation>
@@ -114,7 +113,7 @@
 <translation id="5563050856984839829">Притисните <ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" /> и кликните на линк</translation>
 <translation id="561814908794220892">Отворите веб-страницу на новој картици</translation>
 <translation id="5710621673935162997"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="L" /> или <ph name="ALT" /><ph name="SEPARATOR2" /><ph name="D" /></translation>
-<translation id="5757111373163288447">Отворите линк у картици</translation>
+<translation id="5757111373163288447">Отворите линк на картици</translation>
 <translation id="5757474750054631686">Смањите осветљеност тастатуре (само за тастатуре са позадинским осветљењем)</translation>
 <translation id="587531134027443617">Избришите претходну реч</translation>
 <translation id="5899919361772749550">Прикажите или сакријте конзолу Алатке за програмере</translation>
@@ -147,6 +146,7 @@
 <translation id="671928215901716392">Закључај екран</translation>
 <translation id="6727005317916125192">Претходни оквир</translation>
 <translation id="6740781404993465795">Изаберите следећу реч или слово</translation>
+<translation id="6755851152783057058">Пређите на метод уноса који је последњи коришћен</translation>
 <translation id="6760706756348334449">Утишајте звук</translation>
 <translation id="6941333068993625698">Пошаљите повратне информације</translation>
 <translation id="6981982820502123353">Приступачност</translation>
@@ -157,6 +157,7 @@
 <translation id="7237562915163138771">Унесите веб-адресу у траку за адресу, па притисните <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /></translation>
 <translation id="7254764037241667478">Ставите уређај у режим спавања (суспендујте га)</translation>
 <translation id="7379254767514753910"><ph name="ALT" /> или <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
+<translation id="7422707470576323858">Пређите на следећи доступни метод уноса</translation>
 <translation id="743754632698445141">Откачите апликацију</translation>
 <translation id="7439718573248533901">Избришите следеће слово (брисање унапред)</translation>
 <translation id="7611271430932669992">Померите фокус на искачуће прозоре и дијалоге</translation>

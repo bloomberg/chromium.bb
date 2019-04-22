@@ -21,6 +21,7 @@
 /android_tools/
 /android_tools_internal/
 /android_webview_glue/src
+/androidx/lib/
 /angle
 /angle_dx11
 /apache-portable-runtime/src
@@ -29,13 +30,16 @@
 /apache-win32/bin/iconv/*.so
 /apache-win32/modules/*.so
 /apache-win32/modules/*.dll
+/apache-mac/bin/httpd
+/apache-mac/bin/openssl
+/apache-mac/lib/*.dylib
+/apache-mac/libexec/apache2/*.so
 /apk-patch-size-estimator/lib/
 /arcore-android-sdk/src/
 /arcore-android-sdk/test-apks/arcore/*.apk
 /asan
 /auto/src
 /bazel/desugar/Desugar.jar
-/bidichecker
 /bison
 /boringssl/src
 /bouncycastle/lib/
@@ -58,12 +62,14 @@
 /cros_system_api
 /custom_tabs_client/src
 /cygwin
+/dav1d/libdav1d
 /dawn
 /depot_tools
 /devtools-node-modules
 /directxsdk
 /dom_distiller_js/dist
 /elfutils/src
+/emoji-segmenter/src
 /errorprone/lib
 /espresso/lib/
 /eyesfree/src
@@ -79,7 +85,6 @@
 /gles2_conform
 /glfw/src
 /glslang/src
-/glslang-angle/src
 /gn/
 /gnu_binutils/
 /google_android_play_core/core-*.aar
@@ -87,14 +92,11 @@
 /google_toolbox_for_mac/src
 /googlemac
 /googletest/src
-/grpc
+/grpc/src
 /gson/lib/
 /gvr-android-sdk/common_library.aar
 /gvr-android-sdk/test-libraries/controller_test_api.aar
-/gvr-android-sdk/libgvr_shim_static_arm.a
-/gvr-android-sdk/libgvr_shim_static_arm64.a
-/gvr-android-sdk/libgvr_shim_static_custom_libcxx_arm.a
-/gvr-android-sdk/libgvr_shim_static_custom_libcxx_arm64.a
+/gvr-android-sdk/libgvr_shim_static_*.a
 /gvr-android-sdk/src
 /gvr-android-sdk/test-apks/daydream_home/*.apk
 /gvr-android-sdk/test-apks/vr_services/*.apk
@@ -111,6 +113,7 @@
 /instrumented_libraries/scripts/*.tgz
 /instrumented_libraries/scripts/out/*
 /javax_inject/lib/
+/jacoco/lib/
 /jsoncpp/source
 /jsr-305/src
 /junit/src
@@ -165,6 +168,7 @@
 /omaha/src/omaha
 /openmax_dl/
 /openh264/src
+/openscreen/src
 /ow2_asm/lib/
 /pdfsqueeze
 /pdfium
@@ -204,7 +208,6 @@
 /spirv-cross/spirv-cross
 /spirv-headers/src
 /SPIRV-Tools/src
-/spirv-tools-angle/src
 /sqlite4java/lib/
 /swiftshader/
 /syzygy
@@ -215,7 +218,6 @@
 /usrsctp/usrsctplib
 /v8-i18n
 /valgrind
-/visualmetrics
 /wayland/src
 /wayland-protocols/src
 /wds/src

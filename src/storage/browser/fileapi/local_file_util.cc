@@ -30,11 +30,11 @@ class LocalFileEnumerator : public FileSystemFileUtil::AbstractFileEnumerator {
  public:
   LocalFileEnumerator(const base::FilePath& platform_root_path,
                       const base::FilePath& virtual_root_path,
+                      bool recursive,
                       int file_type)
-      : file_enum_(platform_root_path, false /* recursive */, file_type),
+      : file_enum_(platform_root_path, recursive, file_type),
         platform_root_path_(platform_root_path),
-        virtual_root_path_(virtual_root_path) {
-  }
+        virtual_root_path_(virtual_root_path) {}
 
   ~LocalFileEnumerator() override = default;
 
@@ -138,14 +138,15 @@ base::File::Error LocalFileUtil::GetFileInfo(
 
 std::unique_ptr<FileSystemFileUtil::AbstractFileEnumerator>
 LocalFileUtil::CreateFileEnumerator(FileSystemOperationContext* context,
-                                    const FileSystemURL& root_url) {
+                                    const FileSystemURL& root_url,
+                                    bool recursive) {
   base::FilePath file_path;
   if (GetLocalFilePath(context, root_url, &file_path) !=
       base::File::FILE_OK) {
     return base::WrapUnique(new EmptyFileEnumerator);
   }
   return std::make_unique<LocalFileEnumerator>(
-      file_path, root_url.path(),
+      file_path, root_url.path(), recursive,
       base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES);
 }
 

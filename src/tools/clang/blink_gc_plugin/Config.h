@@ -68,6 +68,14 @@ class Config {
     return name == "unique_ptr";
   }
 
+  static bool IsTraceWrapperMember(const std::string& name) {
+    return name == "TraceWrapperMember";
+  }
+
+  static bool IsTraceWrapperV8Reference(const std::string& name) {
+    return name == "TraceWrapperV8Reference";
+  }
+
   static bool IsWTFCollection(const std::string& name) {
     return name == "Vector" ||
            name == "Deque" ||

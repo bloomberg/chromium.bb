@@ -623,6 +623,19 @@ class RepoRepository(object):
       logging.error(err_msg)
       raise SrcCheckOutException(err_msg)
 
+  def FetchAll(self, detach=False):
+    """Run repo forall -c git fetch --all'.
+
+    Args:
+      detach: If true, throw away all local changes, even if on tracking
+        branches.
+    """
+    cmd = [self.repo_cmd, 'forall', '-c', 'git', 'fetch', '--all']
+    if detach:
+      cmd.append('--detach')
+
+    cros_build_lib.RunCommand(cmd, cwd=self.directory, error_code_ok=True)
+
   def GetRelativePath(self, path):
     """Returns full path including source directory of path in repo."""
     return os.path.join(self.directory, path)

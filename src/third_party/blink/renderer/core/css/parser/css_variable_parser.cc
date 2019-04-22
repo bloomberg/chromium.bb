@@ -13,12 +13,10 @@ namespace blink {
 
 namespace {
 
-bool IsValidVariableReference(CSSParserTokenRange, bool);
-bool IsValidEnvVariableReference(CSSParserTokenRange, bool);
+bool IsValidVariableReference(CSSParserTokenRange);
+bool IsValidEnvVariableReference(CSSParserTokenRange);
 
-bool ClassifyBlock(CSSParserTokenRange range,
-                   bool& has_references,
-                   bool skip_variables) {
+bool ClassifyBlock(CSSParserTokenRange range, bool& has_references) {
   size_t block_stack_size = 0;
 
   while (!range.AtEnd()) {
@@ -30,14 +28,13 @@ bool ClassifyBlock(CSSParserTokenRange range,
       // A block may have both var and env references. They can also be nested
       // and used as fallbacks.
       switch (token.FunctionId()) {
-        case CSSValueVar:
-          if (!IsValidVariableReference(range.ConsumeBlock(), skip_variables))
+        case CSSValueID::kVar:
+          if (!IsValidVariableReference(range.ConsumeBlock()))
             return false;  // Invalid reference.
           has_references = true;
           continue;
-        case CSSValueEnv:
-          if (!IsValidEnvVariableReference(range.ConsumeBlock(),
-                                           skip_variables))
+        case CSSValueID::kEnv:
+          if (!IsValidEnvVariableReference(range.ConsumeBlock()))
             return false;  // Invalid reference.
           has_references = true;
           continue;
@@ -48,12 +45,6 @@ bool ClassifyBlock(CSSParserTokenRange range,
 
     const CSSParserToken& token = range.Consume();
     if (token.GetBlockType() == CSSParserToken::kBlockStart) {
-      // If we are an invalid function then we should skip over any variables
-      // this function contains.
-      if (token.GetType() == CSSParserTokenType::kFunctionToken &&
-          token.FunctionId() == CSSValueInvalid) {
-        skip_variables = true;
-      }
       ++block_stack_size;
     } else if (token.GetBlockType() == CSSParserToken::kBlockEnd) {
       --block_stack_size;
@@ -82,10 +73,8 @@ bool ClassifyBlock(CSSParserTokenRange range,
   return true;
 }
 
-bool IsValidVariableReference(CSSParserTokenRange range, bool skip_variables) {
+bool IsValidVariableReference(CSSParserTokenRange range) {
   range.ConsumeWhitespace();
-  if (skip_variables)
-    return false;
   if (!CSSVariableParser::IsValidVariableName(
           range.ConsumeIncludingWhitespace()))
     return false;
@@ -98,14 +87,11 @@ bool IsValidVariableReference(CSSParserTokenRange range, bool skip_variables) {
     return false;
 
   bool has_references = false;
-  return ClassifyBlock(range, has_references, skip_variables);
+  return ClassifyBlock(range, has_references);
 }
 
-bool IsValidEnvVariableReference(CSSParserTokenRange range,
-                                 bool skip_variables) {
+bool IsValidEnvVariableReference(CSSParserTokenRange range) {
   range.ConsumeWhitespace();
-  if (skip_variables)
-    return false;
   if (range.ConsumeIncludingWhitespace().GetType() !=
       CSSParserTokenType::kIdentToken)
     return false;
@@ -118,7 +104,7 @@ bool IsValidEnvVariableReference(CSSParserTokenRange range,
     return false;
 
   bool has_references = false;
-  return ClassifyBlock(range, has_references, skip_variables);
+  return ClassifyBlock(range, has_references);
 }
 
 CSSValueID ClassifyVariableRange(CSSParserTokenRange range,
@@ -129,13 +115,14 @@ CSSValueID ClassifyVariableRange(CSSParserTokenRange range,
   if (range.Peek().GetType() == kIdentToken) {
     CSSValueID id = range.ConsumeIncludingWhitespace().Id();
     if (range.AtEnd() &&
-        (id == CSSValueInherit || id == CSSValueInitial || id == CSSValueUnset))
+        (id == CSSValueID::kInherit || id == CSSValueID::kInitial ||
+         id == CSSValueID::kUnset))
       return id;
   }
 
-  if (ClassifyBlock(range, has_references, false /* skip_variables */))
-    return CSSValueInternalVariableValue;
-  return CSSValueInvalid;
+  if (ClassifyBlock(range, has_references))
+    return CSSValueID::kInternalVariableValue;
+  return CSSValueID::kInvalid;
 }
 
 }  // namespace
@@ -156,7 +143,7 @@ bool CSSVariableParser::ContainsValidVariableReferences(
     CSSParserTokenRange range) {
   bool has_references;
   CSSValueID type = ClassifyVariableRange(range, has_references);
-  return type == CSSValueInternalVariableValue && has_references;
+  return type == CSSValueID::kInternalVariableValue && has_references;
 }
 
 CSSCustomPropertyDeclaration* CSSVariableParser::ParseDeclarationValue(
@@ -170,15 +157,16 @@ CSSCustomPropertyDeclaration* CSSVariableParser::ParseDeclarationValue(
   bool has_references;
   CSSValueID type = ClassifyVariableRange(range, has_references);
 
-  if (type == CSSValueInvalid)
+  if (!IsValidCSSValueID(type))
     return nullptr;
-  if (type == CSSValueInternalVariableValue) {
-    return CSSCustomPropertyDeclaration::Create(
+  if (type == CSSValueID::kInternalVariableValue) {
+    return MakeGarbageCollected<CSSCustomPropertyDeclaration>(
         variable_name,
         CSSVariableData::Create(range, is_animation_tainted, has_references,
                                 context.BaseURL(), context.Charset()));
   }
-  return CSSCustomPropertyDeclaration::Create(variable_name, type);
+  return MakeGarbageCollected<CSSCustomPropertyDeclaration>(variable_name,
+                                                            type);
 }
 
 CSSVariableReferenceValue* CSSVariableParser::ParseRegisteredPropertyValue(
@@ -192,11 +180,11 @@ CSSVariableReferenceValue* CSSVariableParser::ParseRegisteredPropertyValue(
   bool has_references;
   CSSValueID type = ClassifyVariableRange(range, has_references);
 
-  if (type != CSSValueInternalVariableValue)
+  if (type != CSSValueID::kInternalVariableValue)
     return nullptr;  // Invalid or a css-wide keyword
   if (require_var_reference && !has_references)
     return nullptr;
-  return CSSVariableReferenceValue::Create(
+  return MakeGarbageCollected<CSSVariableReferenceValue>(
       CSSVariableData::Create(range, is_animation_tainted, has_references,
                               context.BaseURL(), context.Charset()),
       context);

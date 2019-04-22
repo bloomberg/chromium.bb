@@ -9,6 +9,7 @@
 #include <sys/socket.h>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
@@ -90,7 +91,7 @@ int SocketPosix::Open(int address_family) {
       SOCK_STREAM,
       address_family == AF_UNIX ? 0 : IPPROTO_TCP);
   if (socket_fd_ < 0) {
-    PLOG(ERROR) << "CreatePlatformSocket() returned an error, errno=" << errno;
+    PLOG(ERROR) << "CreatePlatformSocket() failed";
     return MapSystemError(errno);
   }
 
@@ -141,7 +142,7 @@ int SocketPosix::Bind(const SockaddrStorage& address) {
 
   int rv = bind(socket_fd_, address.addr, address.addr_len);
   if (rv < 0) {
-    PLOG(ERROR) << "bind() returned an error, errno=" << errno;
+    PLOG(ERROR) << "bind() failed";
     return MapSystemError(errno);
   }
 
@@ -155,7 +156,7 @@ int SocketPosix::Listen(int backlog) {
 
   int rv = listen(socket_fd_, backlog);
   if (rv < 0) {
-    PLOG(ERROR) << "listen() returned an error, errno=" << errno;
+    PLOG(ERROR) << "listen() failed";
     return MapSystemError(errno);
   }
 
@@ -177,7 +178,7 @@ int SocketPosix::Accept(std::unique_ptr<SocketPosix>* socket,
   if (!base::MessageLoopCurrentForIO::Get()->WatchFileDescriptor(
           socket_fd_, true, base::MessagePumpForIO::WATCH_READ,
           &accept_socket_watcher_, this)) {
-    PLOG(ERROR) << "WatchFileDescriptor failed on accept, errno " << errno;
+    PLOG(ERROR) << "WatchFileDescriptor failed on accept";
     return MapSystemError(errno);
   }
 
@@ -202,7 +203,7 @@ int SocketPosix::Connect(const SockaddrStorage& address,
   if (!base::MessageLoopCurrentForIO::Get()->WatchFileDescriptor(
           socket_fd_, true, base::MessagePumpForIO::WATCH_WRITE,
           &write_socket_watcher_, this)) {
-    PLOG(ERROR) << "WatchFileDescriptor failed on connect, errno " << errno;
+    PLOG(ERROR) << "WatchFileDescriptor failed on connect";
     return MapSystemError(errno);
   }
 
@@ -248,14 +249,15 @@ bool SocketPosix::IsConnected() const {
   return true;
 
 #else   // OS_FUCHSIA
-  // Fuchsia currently doesn't support MSG_PEEK flag in recv(), so the code
-  // above doesn't work on Fuchsia. IsConnected() must return true if the
-  // connection is alive or if it was terminated but there is still data pending
-  // in the incoming buffer.
-  //   1. Check if the connection is alive using poll(POLLRDHUP).
-  //   2. If closed, then use ioctl(FIONREAD) to check if there is data to be
-  //   read.
   // TODO(crbug.com/887587): Remove once MSG_PEEK is implemented on Fuchsia.
+  // Fuchsia currently doesn't support MSG_PEEK flag in recv(), so the code
+  // above doesn't work on Fuchsia.
+
+  // If there is no peer address then this socket was never connected.
+  if (!HasPeerAddress())
+    return false;
+
+  // Use poll(POLLRDHUP) to check whether the socket is disconnected.
   struct pollfd pollfd;
   pollfd.fd = socket_fd_;
   pollfd.events = POLLRDHUP;
@@ -263,12 +265,14 @@ bool SocketPosix::IsConnected() const {
   const int poll_result = HANDLE_EINTR(poll(&pollfd, 1, 0));
 
   if (poll_result == 1) {
+    // The socket is disconnected, so check whether it has data to read.
     int bytes_available;
     int ioctl_result =
         HANDLE_EINTR(ioctl(socket_fd_, FIONREAD, &bytes_available));
     return ioctl_result == 0 && bytes_available > 0;
   }
 
+  // The socket is still connected, or poll() reported an error.
   return poll_result == 0;
 #endif  // OS_FUCHSIA
 }
@@ -290,14 +294,18 @@ bool SocketPosix::IsConnectedAndIdle() const {
     return false;
 
   return true;
-
 #else   // OS_FUCHSIA
-  // Fuchsia currently doesn't support MSG_PEEK flag in recv(), so the code
-  // above doesn't work on Fuchsia. Use poll(POLLIN) to check state of the
-  // socket. POLLIN is signaled if the socket is readable or if it was closed by
-  // the peer, i.e. the socket is connected and idle if and only if POLLIN is
-  // not signaled.
   // TODO(crbug.com/887587): Remove once MSG_PEEK is implemented.
+  // Fuchsia currently doesn't support MSG_PEEK flag in recv(), so the code
+  // above doesn't work on Fuchsia.
+
+  // If there is no peer address then this socket was never connected.
+  if (!HasPeerAddress())
+    return false;
+
+  // Use poll(POLLIN) to check state of the socket. POLLIN is signaled if the
+  // socket is readable or if it was closed by the peer, i.e. the socket is
+  // connected and idle if and only if POLLIN is not signaled.
   struct pollfd pollfd;
   pollfd.fd = socket_fd_;
   pollfd.events = POLLIN;
@@ -340,7 +348,7 @@ int SocketPosix::ReadIfReady(IOBuffer* buf,
   if (!base::MessageLoopCurrentForIO::Get()->WatchFileDescriptor(
           socket_fd_, true, base::MessagePumpForIO::WATCH_READ,
           &read_socket_watcher_, this)) {
-    PLOG(ERROR) << "WatchFileDescriptor failed on read, errno " << errno;
+    PLOG(ERROR) << "WatchFileDescriptor failed on read";
     return MapSystemError(errno);
   }
 
@@ -390,7 +398,7 @@ int SocketPosix::WaitForWrite(IOBuffer* buf,
   if (!base::MessageLoopCurrentForIO::Get()->WatchFileDescriptor(
           socket_fd_, true, base::MessagePumpForIO::WATCH_WRITE,
           &write_socket_watcher_, this)) {
-    PLOG(ERROR) << "WatchFileDescriptor failed on write, errno " << errno;
+    PLOG(ERROR) << "WatchFileDescriptor failed on write";
     return MapSystemError(errno);
   }
 
@@ -445,7 +453,7 @@ void SocketPosix::Close() {
 
   if (socket_fd_ != kInvalidSocket) {
     if (IGNORE_EINTR(close(socket_fd_)) < 0)
-      PLOG(ERROR) << "close() returned an error, errno=" << errno;
+      PLOG(ERROR) << "close() failed";
     socket_fd_ = kInvalidSocket;
   }
 }

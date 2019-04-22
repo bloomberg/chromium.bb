@@ -40,6 +40,8 @@ class HTMLDialogElement final : public HTMLElement {
  public:
   DECLARE_NODE_FACTORY(HTMLDialogElement);
 
+  explicit HTMLDialogElement(Document&);
+
   void close(const String& return_value = String());
   void show();
   void showModal(ExceptionState&);
@@ -63,8 +65,6 @@ class HTMLDialogElement final : public HTMLElement {
   }
 
  private:
-  explicit HTMLDialogElement(Document&);
-
   bool IsPresentationAttribute(const QualifiedName&) const override;
   void DefaultEventHandler(Event&) override;
 

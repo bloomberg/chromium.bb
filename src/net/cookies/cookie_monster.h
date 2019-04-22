@@ -40,7 +40,6 @@ class HistogramBase;
 
 namespace net {
 
-class ChannelIDService;
 class CookieChangeDispatcher;
 
 // The cookie monster is the system for storing and retrieving cookies. It has
@@ -131,12 +130,8 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // class will take care of initializing it. The backing store is NOT owned by
   // this class, but it must remain valid for the duration of the cookie
   // monster's existence. If |store| is NULL, then no backing store will be
-  // updated. |channel_id_service| is a non-owninng pointer for the
-  // corresponding ChannelIDService used with this CookieStore. The
-  // |channel_id_service| must outlive the CookieMonster. |net_log| must outlive
-  // the CookieMonster. Both |channel_id_service| and |net_log| can be null.
+  // updated. |net_log| must outlive the CookieMonster and can be null.
   CookieMonster(scoped_refptr<PersistentCookieStore> store,
-                ChannelIDService* channel_id_service,
                 NetLog* net_log);
 
   // Only used during unit testing.
@@ -161,16 +156,13 @@ class NET_EXPORT CookieMonster : public CookieStore {
                                  const CookieOptions& options,
                                  SetCookiesCallback callback) override;
   void SetCanonicalCookieAsync(std::unique_ptr<CanonicalCookie> cookie,
-                               bool secure_source,
-                               bool modify_http_only,
+                               std::string source_scheme,
+                               const CookieOptions& options,
                                SetCookiesCallback callback) override;
   void GetCookieListWithOptionsAsync(const GURL& url,
                                      const CookieOptions& options,
                                      GetCookieListCallback callback) override;
   void GetAllCookiesAsync(GetCookieListCallback callback) override;
-  void DeleteCookieAsync(const GURL& url,
-                         const std::string& cookie_name,
-                         base::OnceClosure callback) override;
   void DeleteCanonicalCookieAsync(const CanonicalCookie& cookie,
                                   DeleteCallback callback) override;
   void DeleteAllCreatedInTimeRangeAsync(
@@ -182,11 +174,8 @@ class NET_EXPORT CookieMonster : public CookieStore {
   void FlushStore(base::OnceClosure callback) override;
   void SetForceKeepSessionState() override;
   CookieChangeDispatcher& GetChangeDispatcher() override;
-
-  // Resets the list of cookieable schemes to the supplied schemes. Does
-  // nothing if called after first use of the instance (i.e. after the
-  // instance initialization process).
-  void SetCookieableSchemes(const std::vector<std::string>& schemes);
+  void SetCookieableSchemes(const std::vector<std::string>& schemes,
+                            SetCookieableSchemesCallback callback) override;
 
   // Enables writing session cookies into the cookie database. If this this
   // method is called, it must be called before first use of the instance
@@ -213,11 +202,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
   static std::string GetKey(base::StringPiece domain);
 
  private:
-  CookieMonster(scoped_refptr<PersistentCookieStore> store,
-                ChannelIDService* channel_id_service,
-                base::TimeDelta last_access_threshold,
-                NetLog* net_log);
-
   // For garbage collection constants.
   FRIEND_TEST_ALL_PREFIXES(CookieMonsterTest, TestHostGarbageCollection);
   FRIEND_TEST_ALL_PREFIXES(CookieMonsterTest, GarbageCollectionTriggers);
@@ -362,13 +346,15 @@ class NET_EXPORT CookieMonster : public CookieStore {
   static const int kRecordStatisticsIntervalSeconds = 10 * 60;
 
   // Sets a canonical cookie, deletes equivalents and performs garbage
-  // collection.  |source_secure| indicates if the cookie is being set
-  // from a secure source (e.g. a cryptographic scheme).
-  // |modify_http_only| indicates if this setting operation is allowed
-  // to affect http_only cookies.
+  // collection.  |source_scheme| indicates what scheme the cookie is being set
+  // from; secure cookies cannot be altered from insecure schemes, and some
+  // schemes may not be authorized.
+  //
+  // |options| indicates if this setting operation is allowed
+  // to affect http_only or same-site cookies.
   void SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cookie,
-                          bool secure_source,
-                          bool can_modify_httponly,
+                          std::string source_scheme,
+                          const CookieOptions& options,
                           SetCookiesCallback callback);
 
   void GetAllCookies(GetCookieListCallback callback);
@@ -388,10 +374,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
                             const std::string& cookie_line,
                             const CookieOptions& options,
                             SetCookiesCallback callback);
-
-  void DeleteCookie(const GURL& url,
-                    const std::string& cookie_name,
-                    base::OnceClosure callback);
 
   void DeleteCanonicalCookie(const CanonicalCookie& cookie,
                              DeleteCallback callback);
@@ -446,16 +428,16 @@ class NET_EXPORT CookieMonster : public CookieStore {
 
   void SetDefaultCookieableSchemes();
 
-  void FindCookiesForHostAndDomain(const GURL& url,
-                                   const CookieOptions& options,
-                                   std::vector<CanonicalCookie*>* cookies);
+  void FindCookiesForRegistryControlledHost(
+      const GURL& url,
+      std::vector<CanonicalCookie*>* cookies);
 
-  void FindCookiesForKey(const std::string& key,
-                         const GURL& url,
-                         const CookieOptions& options,
-                         const base::Time& current,
-                         std::vector<CanonicalCookie*>* cookies);
-
+  void FilterCookiesWithOptions(
+      const GURL url,
+      const CookieOptions options,
+      std::vector<CanonicalCookie*>* cookie_ptrs,
+      std::vector<CanonicalCookie*>* included_cookie_ptrs,
+      CookieStatusList* excluded_cookie_ptrs);
   // Delete any cookies that are equivalent to |ecc| (same path, domain, etc).
   // |source_secure| indicates if the source may override existing secure
   // cookies.
@@ -470,12 +452,13 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // |creation_date_to_inherit| will be set to that cookie's creation date.
   //
   // NOTE: There should never be more than a single matching equivalent cookie.
-  bool DeleteAnyEquivalentCookie(const std::string& key,
-                                 const CanonicalCookie& ecc,
-                                 bool source_secure,
-                                 bool skip_httponly,
-                                 bool already_expired,
-                                 base::Time* creation_date_to_inherit);
+  CanonicalCookie::CookieInclusionStatus DeleteAnyEquivalentCookie(
+      const std::string& key,
+      const CanonicalCookie& ecc,
+      bool source_secure,
+      bool skip_httponly,
+      bool already_expired,
+      base::Time* creation_date_to_inherit);
 
   // Inserts |cc| into cookies_. Returns an iterator that points to the inserted
   // cookie in cookies_. Guarantee: all iterators to cookies_ remain valid.
@@ -561,10 +544,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // the constructor.
   void InitializeHistograms();
 
-  // The resolution of our time isn't enough, so we do something
-  // ugly and increment when we've seen the same time twice.
-  base::Time CurrentTime();
-
   // Defers the callback until the full coookie database has been loaded. If
   // it's already been loaded, runs the callback synchronously.
   void DoCookieCallback(base::OnceClosure callback);
@@ -624,8 +603,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
 
   scoped_refptr<PersistentCookieStore> store_;
 
-  base::Time last_time_seen_;
-
   // Minimum delay after updating a cookie's LastAccessDate before we will
   // update it again.
   const base::TimeDelta last_access_threshold_;
@@ -642,8 +619,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
   base::Time earliest_access_time_;
 
   std::vector<std::string> cookieable_schemes_;
-
-  ChannelIDService* channel_id_service_;
 
   base::Time last_statistic_record_time_;
 
@@ -662,7 +637,8 @@ typedef base::RefCountedThreadSafe<CookieMonster::PersistentCookieStore>
 class NET_EXPORT CookieMonster::PersistentCookieStore
     : public RefcountedPersistentCookieStore {
  public:
-  typedef base::Callback<void(std::vector<std::unique_ptr<CanonicalCookie>>)>
+  typedef base::OnceCallback<void(
+      std::vector<std::unique_ptr<CanonicalCookie>>)>
       LoadedCallback;
 
   // Initializes the store and retrieves the existing cookies. This will be
@@ -672,7 +648,7 @@ class NET_EXPORT CookieMonster::PersistentCookieStore
   // |loaded_callback| may not be NULL.
   // |net_log| is a NetLogWithSource that may be copied if the persistent
   // store wishes to log NetLog events.
-  virtual void Load(const LoadedCallback& loaded_callback,
+  virtual void Load(LoadedCallback loaded_callback,
                     const NetLogWithSource& net_log) = 0;
 
   // Does a priority load of all cookies for the domain key (eTLD+1). The
@@ -683,7 +659,7 @@ class NET_EXPORT CookieMonster::PersistentCookieStore
   //
   // |loaded_callback| may not be NULL.
   virtual void LoadCookiesForKey(const std::string& key,
-                                 const LoadedCallback& loaded_callback) = 0;
+                                 LoadedCallback loaded_callback) = 0;
 
   virtual void AddCookie(const CanonicalCookie& cc) = 0;
   virtual void UpdateCookieAccessTime(const CanonicalCookie& cc) = 0;
@@ -695,7 +671,7 @@ class NET_EXPORT CookieMonster::PersistentCookieStore
   // Sets a callback that will be run before the store flushes.  If |callback|
   // performs any async operations, the store will not wait for those to finish
   // before flushing.
-  virtual void SetBeforeFlushCallback(base::RepeatingClosure callback) = 0;
+  virtual void SetBeforeCommitCallback(base::RepeatingClosure callback) = 0;
 
   // Flushes the store and posts |callback| when complete. |callback| may be
   // NULL.

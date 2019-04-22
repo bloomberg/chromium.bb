@@ -36,8 +36,6 @@ const char kGSuiteSyncPasswordPageInfoHistogram[] =
     "PasswordProtection.PageInfoAction.GSuiteSyncPasswordEntry";
 const char kGSuiteSyncPasswordWarningDialogHistogram[] =
     "PasswordProtection.ModalWarningDialogAction.GSuiteSyncPasswordEntry";
-const char kInterstitialActionByUserNavigationHistogram[] =
-    "PasswordProtection.InterstitialActionByUserNavigation";
 const char kPasswordOnFocusRequestOutcomeHistogram[] =
     "PasswordProtection.RequestOutcome.PasswordFieldOnFocus";
 const char kPasswordOnFocusVerdictHistogram[] =
@@ -179,8 +177,6 @@ void LogWarningAction(WarningUIType ui_type,
   // chrome://reset-password page. In this case, do not record user action.
   if (password_type == PasswordReuseEvent::REUSED_PASSWORD_TYPE_UNKNOWN &&
       ui_type == WarningUIType::INTERSTITIAL) {
-    UMA_HISTOGRAM_ENUMERATION(
-        "PasswordProtection.InterstitialActionByUserNavigation", action);
     return;
   }
   bool is_sign_in_password =

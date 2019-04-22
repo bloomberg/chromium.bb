@@ -33,8 +33,9 @@ void TestGpuInterfaceProvider::RegisterGpuInterfaces(
 }
 
 #if defined(USE_OZONE)
-void TestGpuInterfaceProvider::RegisterOzoneGpuInterfaces(
-    service_manager::BinderRegistry* registry) {}
+void TestGpuInterfaceProvider::BindOzoneGpuInterface(
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle handle) {}
 #endif
 
 void TestGpuInterfaceProvider::BindDiscardableSharedMemoryManagerRequest(

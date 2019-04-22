@@ -51,9 +51,12 @@ const uint16_t kFlagNamePointer = 0xc000;
 #endif
 
 namespace net {
+namespace {
 
 // Based on DJB's public domain code.
-bool DNSDomainFromDot(const base::StringPiece& dotted, std::string* out) {
+bool DNSDomainFromDot(const base::StringPiece& dotted,
+                      bool is_unrestricted,
+                      std::string* out) {
   const char* buf = dotted.data();
   size_t n = dotted.size();
   char label[kMaxLabelLength];
@@ -81,7 +84,7 @@ bool DNSDomainFromDot(const base::StringPiece& dotted, std::string* out) {
     }
     if (labellen >= sizeof label)
       return false;
-    if (!IsValidHostLabelCharacter(ch, labellen == 0)) {
+    if (!is_unrestricted && !IsValidHostLabelCharacter(ch, labellen == 0)) {
       return false;
     }
     label[labellen++] = ch;
@@ -107,9 +110,25 @@ bool DNSDomainFromDot(const base::StringPiece& dotted, std::string* out) {
   return true;
 }
 
+}  // namespace
+
+bool DNSDomainFromDot(const base::StringPiece& dotted, std::string* out) {
+  return DNSDomainFromDot(dotted, false /* is_unrestricted */, out);
+}
+
+bool DNSDomainFromUnrestrictedDot(const base::StringPiece& dotted,
+                                  std::string* out) {
+  return DNSDomainFromDot(dotted, true /* is_unrestricted */, out);
+}
+
 bool IsValidDNSDomain(const base::StringPiece& dotted) {
   std::string dns_formatted;
   return DNSDomainFromDot(dotted, &dns_formatted);
+}
+
+bool IsValidUnrestrictedDNSDomain(const base::StringPiece& dotted) {
+  std::string dns_formatted;
+  return DNSDomainFromUnrestrictedDot(dotted, &dns_formatted);
 }
 
 bool IsValidHostLabelCharacter(char c, bool is_first_char) {
@@ -196,12 +215,21 @@ AddressListDeltaType FindAddressListDeltaType(const AddressList& a,
       if (a[i] == b[j]) {
         any_match = true;
         this_match = true;
+        // If there is no match before, and the current match, this means
+        // DELTA_OVERLAP.
+        if (any_missing)
+          return DELTA_OVERLAP;
       } else if (i == j) {
         pairwise_mismatch = true;
       }
     }
-    if (!this_match)
+    if (!this_match) {
       any_missing = true;
+      // If any match has occurred before, then there is no need to compare the
+      // remaining addresses. This means DELTA_OVERLAP.
+      if (any_match)
+        return DELTA_OVERLAP;
+    }
   }
 
   if (same_size && !pairwise_mismatch)
@@ -231,6 +259,12 @@ uint16_t DnsQueryTypeToQtype(DnsQueryType dns_query_type) {
       return dns_protocol::kTypeA;
     case DnsQueryType::AAAA:
       return dns_protocol::kTypeAAAA;
+    case DnsQueryType::TXT:
+      return dns_protocol::kTypeTXT;
+    case DnsQueryType::PTR:
+      return dns_protocol::kTypePTR;
+    case DnsQueryType::SRV:
+      return dns_protocol::kTypeSRV;
   }
 }
 

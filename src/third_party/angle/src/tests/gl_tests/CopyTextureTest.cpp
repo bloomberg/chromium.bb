@@ -129,6 +129,433 @@ class CopyTextureTest : public ANGLETest
     PFNGLCOPYSUBTEXTURECHROMIUMPROC glCopySubTextureCHROMIUM = nullptr;
 };
 
+using CopyTextureVariationsTestParams =
+    std::tuple<angle::PlatformParameters, GLenum, GLenum, bool, bool, bool>;
+
+std::string CopyTextureVariationsTestPrint(
+    const ::testing::TestParamInfo<CopyTextureVariationsTestParams> &paramsInfo)
+{
+    const CopyTextureVariationsTestParams &params = paramsInfo.param;
+    std::ostringstream out;
+
+    out << std::get<0>(params) << '_';
+
+    switch (std::get<1>(params))
+    {
+        case GL_ALPHA:
+            out << "A";
+            break;
+        case GL_RGB:
+            out << "RGB";
+            break;
+        case GL_RGBA:
+            out << "RGBA";
+            break;
+        case GL_LUMINANCE:
+            out << "L";
+            break;
+        case GL_LUMINANCE_ALPHA:
+            out << "LA";
+            break;
+        case GL_BGRA_EXT:
+            out << "BGRA";
+            break;
+        default:
+            out << "UPDATE_THIS_SWITCH";
+    }
+
+    out << "To";
+
+    switch (std::get<2>(params))
+    {
+        case GL_RGB:
+            out << "RGB";
+            break;
+        case GL_RGBA:
+            out << "RGBA";
+            break;
+        case GL_BGRA_EXT:
+            out << "BGRA";
+            break;
+        default:
+            out << "UPDATE_THIS_SWITCH";
+    }
+
+    if (std::get<3>(params))
+    {
+        out << "FlipY";
+    }
+    if (std::get<4>(params))
+    {
+        out << "PremultiplyAlpha";
+    }
+    if (std::get<5>(params))
+    {
+        out << "UnmultiplyAlpha";
+    }
+
+    return out.str();
+}
+
+class CopyTextureVariationsTest : public ANGLETestWithParam<CopyTextureVariationsTestParams>
+{
+  protected:
+    CopyTextureVariationsTest()
+    {
+        setWindowWidth(256);
+        setWindowHeight(256);
+        setConfigRedBits(8);
+        setConfigGreenBits(8);
+        setConfigBlueBits(8);
+        setConfigAlphaBits(8);
+    }
+
+    void SetUp() override
+    {
+        ANGLETestWithParam::SetUp();
+
+        glGenTextures(2, mTextures);
+        glBindTexture(GL_TEXTURE_2D, mTextures[1]);
+
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+        glGenFramebuffers(1, &mFramebuffer);
+        glBindFramebuffer(GL_FRAMEBUFFER, mFramebuffer);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mTextures[1],
+                               0);
+
+        if (extensionEnabled("GL_CHROMIUM_copy_texture"))
+        {
+            glCopyTextureCHROMIUM = reinterpret_cast<PFNGLCOPYTEXTURECHROMIUMPROC>(
+                eglGetProcAddress("glCopyTextureCHROMIUM"));
+            glCopySubTextureCHROMIUM = reinterpret_cast<PFNGLCOPYSUBTEXTURECHROMIUMPROC>(
+                eglGetProcAddress("glCopySubTextureCHROMIUM"));
+        }
+    }
+
+    void TearDown() override
+    {
+        glDeleteTextures(2, mTextures);
+        glDeleteFramebuffers(1, &mFramebuffer);
+
+        ANGLETestWithParam::TearDown();
+    }
+
+    bool checkExtensions(GLenum sourceFormat, GLenum destFormat) const
+    {
+        if (!extensionEnabled("GL_CHROMIUM_copy_texture"))
+        {
+            std::cout << "Test skipped because GL_CHROMIUM_copy_texture is not available."
+                      << std::endl;
+            return false;
+        }
+
+        if ((sourceFormat == GL_BGRA_EXT || destFormat == GL_BGRA_EXT) &&
+            !extensionEnabled("GL_EXT_texture_format_BGRA8888"))
+        {
+            return false;
+        }
+
+        EXPECT_NE(nullptr, glCopyTextureCHROMIUM);
+        EXPECT_NE(nullptr, glCopySubTextureCHROMIUM);
+        return true;
+    }
+
+    void calculateCopyTextureResults(GLenum sourceFormat,
+                                     GLenum destFormat,
+                                     bool premultiplyAlpha,
+                                     bool unmultiplyAlpha,
+                                     const uint8_t *sourceColor,
+                                     GLColor *destColor)
+    {
+        GLColor color;
+
+        switch (sourceFormat)
+        {
+            case GL_RGB:
+                color = GLColor(sourceColor[0], sourceColor[1], sourceColor[2], 255);
+                break;
+            case GL_RGBA:
+                color = GLColor(sourceColor[0], sourceColor[1], sourceColor[2], sourceColor[3]);
+                break;
+            case GL_LUMINANCE:
+                color = GLColor(sourceColor[0], sourceColor[0], sourceColor[0], 255);
+                break;
+            case GL_ALPHA:
+                color = GLColor(0, 0, 0, sourceColor[0]);
+                break;
+            case GL_LUMINANCE_ALPHA:
+                color = GLColor(sourceColor[0], sourceColor[0], sourceColor[0], sourceColor[1]);
+                break;
+            case GL_BGRA_EXT:
+                color = GLColor(sourceColor[2], sourceColor[1], sourceColor[0], sourceColor[3]);
+                break;
+            default:
+                EXPECT_EQ(true, false);
+        }
+
+        if (premultiplyAlpha != unmultiplyAlpha)
+        {
+            float alpha = color.A / 255.0f;
+            if (premultiplyAlpha)
+            {
+                color.R = static_cast<GLubyte>(static_cast<float>(color.R) * alpha);
+                color.G = static_cast<GLubyte>(static_cast<float>(color.G) * alpha);
+                color.B = static_cast<GLubyte>(static_cast<float>(color.B) * alpha);
+            }
+            else if (unmultiplyAlpha && color.A != 0)
+            {
+                color.R = static_cast<GLubyte>(static_cast<float>(color.R) / alpha);
+                color.G = static_cast<GLubyte>(static_cast<float>(color.G) / alpha);
+                color.B = static_cast<GLubyte>(static_cast<float>(color.B) / alpha);
+            }
+        }
+
+        switch (destFormat)
+        {
+            case GL_RGB:
+                color.A = 255;
+                break;
+            case GL_RGBA:
+            case GL_BGRA_EXT:
+                break;
+            default:
+                EXPECT_EQ(true, false);
+        }
+
+        *destColor = color;
+    }
+
+    const uint8_t *getSourceColors(GLenum sourceFormat, size_t *colorCount, uint8_t *componentCount)
+    {
+        // Note: in all the following values, alpha is larger than RGB so unmultiply alpha doesn't
+        // overflow
+        constexpr static uint8_t kRgbaColors[7 * 4] = {
+            255u, 127u, 63u,  255u,  // 0
+            31u,  127u, 63u,  127u,  // 1
+            31u,  63u,  127u, 255u,  // 2
+            15u,  127u, 31u,  127u,  // 3
+            127u, 255u, 63u,  0u,    // 4
+            31u,  63u,  127u, 0u,    // 5
+            15u,  31u,  63u,  63u,   // 6
+        };
+
+        constexpr static uint8_t kRgbColors[7 * 3] = {
+            255u, 127u, 63u,   // 0
+            31u,  127u, 63u,   // 1
+            31u,  63u,  127u,  // 2
+            15u,  127u, 31u,   // 3
+            127u, 255u, 63u,   // 4
+            31u,  63u,  127u,  // 5
+            15u,  31u,  63u,   // 6
+        };
+
+        constexpr static uint8_t kLumColors[7 * 1] = {
+            255u,  // 0
+            163u,  // 1
+            78u,   // 2
+            114u,  // 3
+            51u,   // 4
+            0u,    // 5
+            217u,  // 6
+        };
+
+        constexpr static uint8_t kLumaColors[7 * 2] = {
+            255u, 255u,  // 0
+            67u,  163u,  // 1
+            78u,  231u,  // 2
+            8u,   114u,  // 3
+            51u,  199u,  // 4
+            0u,   173u,  // 5
+            34u,  217u,  // 6
+        };
+
+        constexpr static uint8_t kAlphaColors[7 * 1] = {
+            255u,  // 0
+            67u,   // 1
+            231u,  // 2
+            8u,    // 3
+            199u,  // 4
+            173u,  // 5
+            34u,   // 6
+        };
+
+        *colorCount = 7;
+
+        switch (sourceFormat)
+        {
+            case GL_RGB:
+                *componentCount = 3;
+                return kRgbColors;
+            case GL_RGBA:
+            case GL_BGRA_EXT:
+                *componentCount = 4;
+                return kRgbaColors;
+            case GL_LUMINANCE:
+                *componentCount = 1;
+                return kLumColors;
+            case GL_ALPHA:
+                *componentCount = 1;
+                return kAlphaColors;
+            case GL_LUMINANCE_ALPHA:
+                *componentCount = 2;
+                return kLumaColors;
+            default:
+                EXPECT_EQ(true, false);
+                return nullptr;
+        }
+    }
+
+    void initializeSourceTexture(GLenum sourceFormat,
+                                 const uint8_t *srcColors,
+                                 uint8_t componentCount)
+    {
+        // The texture is initialized as 2x2.  If the componentCount is 1 or 3, then the input data
+        // will have a row pitch of 2 or 6, which needs to be padded to 4 or 8 respectively.
+        uint8_t srcColorsPadded[4 * 4];
+        size_t srcRowPitch =
+            2 * componentCount + (componentCount == 1 || componentCount == 3 ? 2 : 0);
+        size_t inputRowPitch = 2 * componentCount;
+        for (size_t row = 0; row < 2; ++row)
+        {
+            memcpy(&srcColorsPadded[row * srcRowPitch], &srcColors[row * inputRowPitch],
+                   inputRowPitch);
+            memset(&srcColorsPadded[row * srcRowPitch + inputRowPitch], 0,
+                   srcRowPitch - inputRowPitch);
+        }
+
+        glBindTexture(GL_TEXTURE_2D, mTextures[0]);
+        glTexImage2D(GL_TEXTURE_2D, 0, sourceFormat, 2, 2, 0, sourceFormat, GL_UNSIGNED_BYTE,
+                     srcColorsPadded);
+    }
+
+    void testCopyTexture(GLenum sourceFormat,
+                         GLenum destFormat,
+                         bool flipY,
+                         bool premultiplyAlpha,
+                         bool unmultiplyAlpha)
+    {
+        if (!checkExtensions(sourceFormat, destFormat))
+        {
+            return;
+        }
+
+        size_t colorCount;
+        uint8_t componentCount;
+        const uint8_t *srcColors = getSourceColors(sourceFormat, &colorCount, &componentCount);
+
+        std::vector<GLColor> destColors(colorCount);
+        for (size_t i = 0; i < colorCount; ++i)
+        {
+            calculateCopyTextureResults(sourceFormat, destFormat, premultiplyAlpha, unmultiplyAlpha,
+                                        &srcColors[i * componentCount], &destColors[i]);
+        }
+
+        for (size_t i = 0; i < colorCount - 3; ++i)
+        {
+            initializeSourceTexture(sourceFormat, &srcColors[i * componentCount], componentCount);
+
+            glCopyTextureCHROMIUM(mTextures[0], 0, GL_TEXTURE_2D, mTextures[1], 0, destFormat,
+                                  GL_UNSIGNED_BYTE, flipY, premultiplyAlpha, unmultiplyAlpha);
+
+            EXPECT_GL_NO_ERROR();
+
+            // Check that FB is complete.
+            EXPECT_GLENUM_EQ(GL_FRAMEBUFFER_COMPLETE, glCheckFramebufferStatus(GL_FRAMEBUFFER));
+
+            if (flipY)
+            {
+                EXPECT_PIXEL_COLOR_NEAR(0, 0, destColors[i + 2], 1.0);
+                EXPECT_PIXEL_COLOR_NEAR(1, 0, destColors[i + 3], 1.0);
+                EXPECT_PIXEL_COLOR_NEAR(0, 1, destColors[i + 0], 1.0);
+                EXPECT_PIXEL_COLOR_NEAR(1, 1, destColors[i + 1], 1.0);
+            }
+            else
+            {
+                EXPECT_PIXEL_COLOR_NEAR(0, 0, destColors[i + 0], 1.0);
+                EXPECT_PIXEL_COLOR_NEAR(1, 0, destColors[i + 1], 1.0);
+                EXPECT_PIXEL_COLOR_NEAR(0, 1, destColors[i + 2], 1.0);
+                EXPECT_PIXEL_COLOR_NEAR(1, 1, destColors[i + 3], 1.0);
+            }
+
+            EXPECT_GL_NO_ERROR();
+        }
+    }
+
+    void testCopySubTexture(GLenum sourceFormat,
+                            GLenum destFormat,
+                            bool flipY,
+                            bool premultiplyAlpha,
+                            bool unmultiplyAlpha)
+    {
+        if (!checkExtensions(sourceFormat, destFormat))
+        {
+            return;
+        }
+
+        size_t colorCount;
+        uint8_t componentCount;
+        const uint8_t *srcColors = getSourceColors(sourceFormat, &colorCount, &componentCount);
+
+        std::vector<GLColor> destColors(colorCount);
+        for (size_t i = 0; i < colorCount; ++i)
+        {
+            calculateCopyTextureResults(sourceFormat, destFormat, premultiplyAlpha, unmultiplyAlpha,
+                                        &srcColors[i * componentCount], &destColors[i]);
+        }
+
+        for (size_t i = 0; i < colorCount - 3; ++i)
+        {
+            initializeSourceTexture(sourceFormat, &srcColors[i * componentCount], componentCount);
+
+            glBindTexture(GL_TEXTURE_2D, mTextures[1]);
+            glTexImage2D(GL_TEXTURE_2D, 0, destFormat, 2, 2, 0, destFormat, GL_UNSIGNED_BYTE,
+                         nullptr);
+
+            glCopySubTextureCHROMIUM(mTextures[0], 0, GL_TEXTURE_2D, mTextures[1], 0, 0, 0, 0, 0, 2,
+                                     2, flipY, premultiplyAlpha, unmultiplyAlpha);
+
+            EXPECT_GL_NO_ERROR();
+
+            if (sourceFormat != GL_LUMINANCE && sourceFormat != GL_LUMINANCE_ALPHA &&
+                sourceFormat != GL_ALPHA)
+            {
+                // Check that FB is complete.
+                EXPECT_GLENUM_EQ(GL_FRAMEBUFFER_COMPLETE, glCheckFramebufferStatus(GL_FRAMEBUFFER));
+            }
+
+            if (flipY)
+            {
+                EXPECT_PIXEL_COLOR_NEAR(0, 0, destColors[i + 2], 1.0);
+                EXPECT_PIXEL_COLOR_NEAR(1, 0, destColors[i + 3], 1.0);
+                EXPECT_PIXEL_COLOR_NEAR(0, 1, destColors[i + 0], 1.0);
+                EXPECT_PIXEL_COLOR_NEAR(1, 1, destColors[i + 1], 1.0);
+            }
+            else
+            {
+                EXPECT_PIXEL_COLOR_NEAR(0, 0, destColors[i + 0], 1.0);
+                EXPECT_PIXEL_COLOR_NEAR(1, 0, destColors[i + 1], 1.0);
+                EXPECT_PIXEL_COLOR_NEAR(0, 1, destColors[i + 2], 1.0);
+                EXPECT_PIXEL_COLOR_NEAR(1, 1, destColors[i + 3], 1.0);
+            }
+
+            EXPECT_GL_NO_ERROR();
+        }
+    }
+
+    GLuint mTextures[2] = {
+        0,
+        0,
+    };
+    GLuint mFramebuffer = 0;
+
+    PFNGLCOPYTEXTURECHROMIUMPROC glCopyTextureCHROMIUM       = nullptr;
+    PFNGLCOPYSUBTEXTURECHROMIUMPROC glCopySubTextureCHROMIUM = nullptr;
+};
+
 class CopyTextureTestDest : public CopyTextureTest
 {};
 
@@ -140,56 +567,6 @@ class CopyTextureTestWebGL : public CopyTextureTest
 
 class CopyTextureTestES3 : public CopyTextureTest
 {};
-
-// Test to ensure that the basic functionality of the extension works.
-TEST_P(CopyTextureTest, BasicCopyTexture)
-{
-    if (!checkExtensions())
-    {
-        return;
-    }
-
-    GLColor pixels = GLColor::red;
-
-    glBindTexture(GL_TEXTURE_2D, mTextures[0]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, &pixels);
-
-    glCopyTextureCHROMIUM(mTextures[0], 0, GL_TEXTURE_2D, mTextures[1], 0, GL_RGBA,
-                          GL_UNSIGNED_BYTE, false, false, false);
-
-    EXPECT_GL_NO_ERROR();
-
-    EXPECT_PIXEL_COLOR_EQ(0, 0, pixels);
-}
-
-// Test to ensure that the basic functionality of the extension works.
-TEST_P(CopyTextureTest, BasicCopySubTexture)
-{
-    if (!checkExtensions())
-    {
-        return;
-    }
-
-    GLColor pixels = GLColor::red;
-
-    glBindTexture(GL_TEXTURE_2D, mTextures[0]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, &pixels);
-
-    glBindTexture(GL_TEXTURE_2D, mTextures[1]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-
-    glCopySubTextureCHROMIUM(mTextures[0], 0, GL_TEXTURE_2D, mTextures[1], 0, 0, 0, 0, 0, 1, 1,
-                             false, false, false);
-
-    EXPECT_GL_NO_ERROR();
-
-    // Check that FB is complete.
-    EXPECT_GLENUM_EQ(GL_FRAMEBUFFER_COMPLETE, glCheckFramebufferStatus(GL_FRAMEBUFFER));
-
-    EXPECT_PIXEL_COLOR_EQ(0, 0, pixels);
-
-    EXPECT_GL_NO_ERROR();
-}
 
 // Test that CopyTexture cannot redefine an immutable texture and CopySubTexture can copy data to
 // immutable textures
@@ -480,204 +857,51 @@ TEST_P(CopyTextureTest, CopySubTextureOffset)
     glBindTexture(GL_TEXTURE_2D, mTextures[1]);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, transparentPixels);
 
+    // Check that FB is complete.
+    EXPECT_GLENUM_EQ(GL_FRAMEBUFFER_COMPLETE, glCheckFramebufferStatus(GL_FRAMEBUFFER));
+
     glCopySubTextureCHROMIUM(mTextures[0], 0, GL_TEXTURE_2D, mTextures[1], 0, 1, 1, 0, 0, 1, 1,
                              false, false, false);
     EXPECT_GL_NO_ERROR();
+    EXPECT_PIXEL_COLOR_EQ(1, 1, GLColor::red);
+
     glCopySubTextureCHROMIUM(mTextures[0], 0, GL_TEXTURE_2D, mTextures[1], 0, 1, 0, 1, 0, 1, 1,
                              false, false, false);
     EXPECT_GL_NO_ERROR();
+    EXPECT_PIXEL_COLOR_EQ(1, 0, GLColor::green);
+
     glCopySubTextureCHROMIUM(mTextures[0], 0, GL_TEXTURE_2D, mTextures[1], 0, 0, 1, 0, 1, 1, 1,
                              false, false, false);
     EXPECT_GL_NO_ERROR();
-
-    // Check that FB is complete.
-    EXPECT_GLENUM_EQ(GL_FRAMEBUFFER_COMPLETE, glCheckFramebufferStatus(GL_FRAMEBUFFER));
+    EXPECT_PIXEL_COLOR_EQ(0, 1, GLColor::blue);
 
     EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::transparentBlack);
-    EXPECT_PIXEL_COLOR_EQ(1, 1, GLColor::red);
-    EXPECT_PIXEL_COLOR_EQ(1, 0, GLColor::green);
-    EXPECT_PIXEL_COLOR_EQ(0, 1, GLColor::blue);
     EXPECT_GL_NO_ERROR();
 }
 
-// Test that flipping the Y component works correctly
-TEST_P(CopyTextureTest, FlipY)
+// Test every combination of copy [sub]texture parameters:
+// source: ALPHA, RGB, RGBA, LUMINANCE, LUMINANCE_ALPHA, BGRA_EXT
+// destination: RGB, RGBA, BGRA_EXT
+// flipY: false, true
+// premultiplyAlpha: false, true
+// unmultiplyAlpha: false, true
+namespace
 {
-    if (!checkExtensions())
-    {
-        return;
-    }
+constexpr GLenum kCopyTextureVariationsSrcFormats[] = {
+    GL_ALPHA, GL_RGB, GL_RGBA, GL_LUMINANCE, GL_LUMINANCE_ALPHA, GL_BGRA_EXT};
+constexpr GLenum kCopyTextureVariationsDstFormats[] = {GL_RGB, GL_RGBA, GL_BGRA_EXT};
+}  // anonymous namespace
 
-    GLColor rgbaPixels[4] = {GLColor(255u, 255u, 255u, 255u), GLColor(127u, 127u, 127u, 127u),
-                             GLColor(63u, 63u, 63u, 127u), GLColor(255u, 255u, 255u, 0u)};
-
-    glBindTexture(GL_TEXTURE_2D, mTextures[0]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, rgbaPixels);
-
-    glCopyTextureCHROMIUM(mTextures[0], 0, GL_TEXTURE_2D, mTextures[1], 0, GL_RGBA,
-                          GL_UNSIGNED_BYTE, GL_TRUE, GL_FALSE, GL_FALSE);
-    EXPECT_GL_NO_ERROR();
-
-    // Check that FB is complete.
-    EXPECT_GLENUM_EQ(GL_FRAMEBUFFER_COMPLETE, glCheckFramebufferStatus(GL_FRAMEBUFFER));
-
-    EXPECT_PIXEL_COLOR_EQ(0, 0, rgbaPixels[2]);
-    EXPECT_PIXEL_COLOR_EQ(1, 0, rgbaPixels[3]);
-    EXPECT_PIXEL_COLOR_EQ(0, 1, rgbaPixels[0]);
-    EXPECT_PIXEL_COLOR_EQ(1, 1, rgbaPixels[1]);
-    EXPECT_GL_NO_ERROR();
+TEST_P(CopyTextureVariationsTest, CopyTexture)
+{
+    testCopyTexture(std::get<1>(GetParam()), std::get<2>(GetParam()), std::get<3>(GetParam()),
+                    std::get<4>(GetParam()), std::get<5>(GetParam()));
 }
 
-// Test that premultipying the alpha on copy works correctly
-TEST_P(CopyTextureTest, PremultiplyAlpha)
+TEST_P(CopyTextureVariationsTest, CopySubTexture)
 {
-    if (!checkExtensions())
-    {
-        return;
-    }
-
-    GLColor rgbaPixels[4] = {GLColor(255u, 255u, 255u, 255u), GLColor(255u, 255u, 255u, 127u),
-                             GLColor(127u, 127u, 127u, 127u), GLColor(255u, 255u, 255u, 0u)};
-
-    glBindTexture(GL_TEXTURE_2D, mTextures[0]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, rgbaPixels);
-
-    glCopyTextureCHROMIUM(mTextures[0], 0, GL_TEXTURE_2D, mTextures[1], 0, GL_RGBA,
-                          GL_UNSIGNED_BYTE, GL_FALSE, GL_TRUE, GL_FALSE);
-    EXPECT_GL_NO_ERROR();
-
-    // Check that FB is complete.
-    EXPECT_GLENUM_EQ(GL_FRAMEBUFFER_COMPLETE, glCheckFramebufferStatus(GL_FRAMEBUFFER));
-
-    EXPECT_PIXEL_COLOR_NEAR(0, 0, GLColor(255, 255, 255, 255), 1.0);
-    EXPECT_PIXEL_COLOR_NEAR(1, 0, GLColor(127, 127, 127, 127), 1.0);
-    EXPECT_PIXEL_COLOR_NEAR(0, 1, GLColor(63, 63, 63, 127), 1.0);
-    EXPECT_PIXEL_COLOR_NEAR(1, 1, GLColor(0, 0, 0, 0), 1.0);
-    EXPECT_GL_NO_ERROR();
-}
-
-// Test that unmultipying the alpha on copy works correctly
-TEST_P(CopyTextureTest, UnmultiplyAlpha)
-{
-    if (!checkExtensions())
-    {
-        return;
-    }
-
-    GLColor rgbaPixels[4] = {GLColor(255u, 255u, 255u, 255u), GLColor(127u, 127u, 127u, 127u),
-                             GLColor(63u, 63u, 63u, 127u), GLColor(255u, 255u, 255u, 0u)};
-
-    glBindTexture(GL_TEXTURE_2D, mTextures[0]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, rgbaPixels);
-
-    glCopyTextureCHROMIUM(mTextures[0], 0, GL_TEXTURE_2D, mTextures[1], 0, GL_RGBA,
-                          GL_UNSIGNED_BYTE, GL_FALSE, GL_FALSE, GL_TRUE);
-    EXPECT_GL_NO_ERROR();
-
-    // Check that FB is complete.
-    EXPECT_GLENUM_EQ(GL_FRAMEBUFFER_COMPLETE, glCheckFramebufferStatus(GL_FRAMEBUFFER));
-
-    EXPECT_PIXEL_COLOR_NEAR(0, 0, GLColor(255, 255, 255, 255), 1.0);
-    EXPECT_PIXEL_COLOR_NEAR(1, 0, GLColor(255, 255, 255, 127), 1.0);
-    EXPECT_PIXEL_COLOR_NEAR(0, 1, GLColor(127, 127, 127, 127), 1.0);
-    EXPECT_PIXEL_COLOR_NEAR(1, 1, GLColor(255, 255, 255, 0), 1.0);
-    EXPECT_GL_NO_ERROR();
-}
-
-// Test that unmultipying and premultiplying the alpha is the same as doing neither
-TEST_P(CopyTextureTest, UnmultiplyAndPremultiplyAlpha)
-{
-    if (!checkExtensions())
-    {
-        return;
-    }
-
-    GLColor rgbaPixels[4] = {GLColor(255u, 255u, 255u, 255u), GLColor(127u, 127u, 127u, 127u),
-                             GLColor(63u, 63u, 63u, 127u), GLColor(255u, 255u, 255u, 0u)};
-
-    glBindTexture(GL_TEXTURE_2D, mTextures[0]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, rgbaPixels);
-
-    glCopyTextureCHROMIUM(mTextures[0], 0, GL_TEXTURE_2D, mTextures[1], 0, GL_RGBA,
-                          GL_UNSIGNED_BYTE, GL_FALSE, GL_TRUE, GL_TRUE);
-    EXPECT_GL_NO_ERROR();
-
-    // Check that FB is complete.
-    EXPECT_GLENUM_EQ(GL_FRAMEBUFFER_COMPLETE, glCheckFramebufferStatus(GL_FRAMEBUFFER));
-
-    EXPECT_PIXEL_COLOR_NEAR(0, 0, GLColor(255, 255, 255, 255), 1.0);
-    EXPECT_PIXEL_COLOR_NEAR(1, 0, GLColor(127, 127, 127, 127), 1.0);
-    EXPECT_PIXEL_COLOR_NEAR(0, 1, GLColor(63, 63, 63, 127), 1.0);
-    EXPECT_PIXEL_COLOR_NEAR(1, 1, GLColor(255, 255, 255, 0), 1.0);
-    EXPECT_GL_NO_ERROR();
-}
-
-// Test to ensure that CopyTexture works with LUMINANCE_ALPHA texture
-TEST_P(CopyTextureTest, LuminanceAlpha)
-{
-    if (!checkExtensions())
-    {
-        return;
-    }
-
-    uint8_t originalPixels[] = {163u, 67u};
-    GLColor expectedPixels(163u, 163u, 163u, 67u);
-
-    glBindTexture(GL_TEXTURE_2D, mTextures[0]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE_ALPHA, 1, 1, 0, GL_LUMINANCE_ALPHA,
-                 GL_UNSIGNED_BYTE, &originalPixels);
-
-    glCopyTextureCHROMIUM(mTextures[0], 0, GL_TEXTURE_2D, mTextures[1], 0, GL_RGBA,
-                          GL_UNSIGNED_BYTE, false, false, false);
-
-    EXPECT_GL_NO_ERROR();
-
-    EXPECT_PIXEL_COLOR_EQ(0, 0, expectedPixels);
-}
-
-// Test to ensure that CopyTexture works with LUMINANCE texture
-TEST_P(CopyTextureTest, Luminance)
-{
-    if (!checkExtensions())
-    {
-        return;
-    }
-
-    uint8_t originalPixels[] = {57u};
-    GLColor expectedPixels(57u, 57u, 57u, 255u);
-
-    glBindTexture(GL_TEXTURE_2D, mTextures[0]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, 1, 1, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE,
-                 &originalPixels);
-
-    glCopyTextureCHROMIUM(mTextures[0], 0, GL_TEXTURE_2D, mTextures[1], 0, GL_RGBA,
-                          GL_UNSIGNED_BYTE, false, false, false);
-
-    EXPECT_GL_NO_ERROR();
-
-    EXPECT_PIXEL_COLOR_EQ(0, 0, expectedPixels);
-}
-
-// Test to ensure that CopyTexture works with ALPHA texture
-TEST_P(CopyTextureTest, Alpha)
-{
-    if (!checkExtensions())
-    {
-        return;
-    }
-
-    uint8_t originalPixels[] = {77u};
-    GLColor expectedPixels(0u, 0u, 0u, 77u);
-
-    glBindTexture(GL_TEXTURE_2D, mTextures[0]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, 1, 1, 0, GL_ALPHA, GL_UNSIGNED_BYTE, &originalPixels);
-
-    glCopyTextureCHROMIUM(mTextures[0], 0, GL_TEXTURE_2D, mTextures[1], 0, GL_RGBA,
-                          GL_UNSIGNED_BYTE, false, false, false);
-
-    EXPECT_GL_NO_ERROR();
-
-    EXPECT_PIXEL_COLOR_EQ(0, 0, expectedPixels);
+    testCopySubTexture(std::get<1>(GetParam()), std::get<2>(GetParam()), std::get<3>(GetParam()),
+                       std::get<4>(GetParam()), std::get<5>(GetParam()));
 }
 
 // Test that copying to cube maps works
@@ -688,12 +912,19 @@ TEST_P(CopyTextureTest, CubeMapTarget)
         return;
     }
 
-    GLColor pixels = GLColor::red;
+    // http://anglebug.com/1932
+    ANGLE_SKIP_TEST_IF(IsOSX() && IsIntel() && IsDesktopOpenGL());
+
+    // http://anglebug.com/3145
+    ANGLE_SKIP_TEST_IF(IsFuchsia() && IsIntel() && IsVulkan());
+
+    GLColor pixels[7] = {
+        GLColor(10u, 13u, 16u, 19u), GLColor(20u, 23u, 26u, 29u), GLColor(30u, 33u, 36u, 39u),
+        GLColor(40u, 43u, 46u, 49u), GLColor(50u, 53u, 56u, 59u), GLColor(60u, 63u, 66u, 69u),
+        GLColor(70u, 73u, 76u, 79u),
+    };
 
     GLTexture textures[2];
-
-    glBindTexture(GL_TEXTURE_2D, textures[0]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, &pixels);
 
     glBindTexture(GL_TEXTURE_CUBE_MAP, textures[1]);
     for (GLenum face = GL_TEXTURE_CUBE_MAP_POSITIVE_X; face <= GL_TEXTURE_CUBE_MAP_NEGATIVE_Z;
@@ -702,22 +933,173 @@ TEST_P(CopyTextureTest, CubeMapTarget)
         glTexImage2D(face, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
     }
 
-    glCopySubTextureCHROMIUM(textures[0], 0, GL_TEXTURE_CUBE_MAP_POSITIVE_X, textures[1], 0, 0, 0,
-                             0, 0, 1, 1, false, false, false);
+    for (size_t i = 0; i < 2; ++i)
+    {
+        for (GLenum face = GL_TEXTURE_CUBE_MAP_POSITIVE_X; face <= GL_TEXTURE_CUBE_MAP_NEGATIVE_Z;
+             face++)
+        {
+            glBindTexture(GL_TEXTURE_2D, textures[0]);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                         &pixels[face - GL_TEXTURE_CUBE_MAP_POSITIVE_X + i]);
 
-    EXPECT_GL_NO_ERROR();
+            glCopySubTextureCHROMIUM(textures[0], 0, face, textures[1], 0, 0, 0, 0, 0, 1, 1, false,
+                                     false, false);
+        }
 
-    GLFramebuffer fbo;
-    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X,
-                           textures[1], 0);
+        EXPECT_GL_NO_ERROR();
 
-    // Check that FB is complete.
-    EXPECT_GLENUM_EQ(GL_FRAMEBUFFER_COMPLETE, glCheckFramebufferStatus(GL_FRAMEBUFFER));
+        GLFramebuffer fbo;
+        glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 
-    EXPECT_PIXEL_COLOR_EQ(0, 0, pixels);
+        for (GLenum face = GL_TEXTURE_CUBE_MAP_POSITIVE_X; face <= GL_TEXTURE_CUBE_MAP_NEGATIVE_Z;
+             face++)
+        {
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, face, textures[1], 0);
 
-    EXPECT_GL_NO_ERROR();
+            // Check that FB is complete.
+            EXPECT_GLENUM_EQ(GL_FRAMEBUFFER_COMPLETE, glCheckFramebufferStatus(GL_FRAMEBUFFER));
+
+            EXPECT_PIXEL_COLOR_EQ(0, 0, pixels[face - GL_TEXTURE_CUBE_MAP_POSITIVE_X + i]);
+
+            EXPECT_GL_NO_ERROR();
+        }
+    }
+}
+
+// Test BGRA to RGBA cube map copy
+TEST_P(CopyTextureTest, CubeMapTargetBGRA)
+{
+    if (!checkExtensions())
+    {
+        return;
+    }
+
+    if (!extensionEnabled("GL_EXT_texture_format_BGRA8888"))
+    {
+        return;
+    }
+
+    // http://anglebug.com/3145
+    ANGLE_SKIP_TEST_IF(IsFuchsia() && IsIntel() && IsVulkan());
+
+    GLColor pixels[7] = {
+        GLColor(10u, 13u, 16u, 19u), GLColor(20u, 23u, 26u, 29u), GLColor(30u, 33u, 36u, 39u),
+        GLColor(40u, 43u, 46u, 49u), GLColor(50u, 53u, 56u, 59u), GLColor(60u, 63u, 66u, 69u),
+        GLColor(70u, 73u, 76u, 79u),
+    };
+
+    GLTexture textures[2];
+
+    glBindTexture(GL_TEXTURE_CUBE_MAP, textures[1]);
+    for (GLenum face = GL_TEXTURE_CUBE_MAP_POSITIVE_X; face <= GL_TEXTURE_CUBE_MAP_NEGATIVE_Z;
+         face++)
+    {
+        glTexImage2D(face, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+    }
+
+    for (size_t i = 0; i < 2; ++i)
+    {
+        for (GLenum face = GL_TEXTURE_CUBE_MAP_POSITIVE_X; face <= GL_TEXTURE_CUBE_MAP_NEGATIVE_Z;
+             face++)
+        {
+            glBindTexture(GL_TEXTURE_2D, textures[0]);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_BGRA_EXT, 1, 1, 0, GL_BGRA_EXT, GL_UNSIGNED_BYTE,
+                         &pixels[face - GL_TEXTURE_CUBE_MAP_POSITIVE_X + i]);
+
+            glCopySubTextureCHROMIUM(textures[0], 0, face, textures[1], 0, 0, 0, 0, 0, 1, 1, false,
+                                     false, false);
+        }
+
+        EXPECT_GL_NO_ERROR();
+
+        GLFramebuffer fbo;
+        glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+
+        for (GLenum face = GL_TEXTURE_CUBE_MAP_POSITIVE_X; face <= GL_TEXTURE_CUBE_MAP_NEGATIVE_Z;
+             face++)
+        {
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, face, textures[1], 0);
+
+            // Check that FB is complete.
+            EXPECT_GLENUM_EQ(GL_FRAMEBUFFER_COMPLETE, glCheckFramebufferStatus(GL_FRAMEBUFFER));
+
+            GLColor converted = pixels[face - GL_TEXTURE_CUBE_MAP_POSITIVE_X + i];
+            std::swap(converted.R, converted.B);
+            EXPECT_PIXEL_COLOR_EQ(0, 0, converted);
+
+            EXPECT_GL_NO_ERROR();
+        }
+    }
+}
+
+// Test cube map copies with RGB format
+TEST_P(CopyTextureTest, CubeMapTargetRGB)
+{
+    if (!checkExtensions())
+    {
+        return;
+    }
+
+    // http://anglebug.com/1932
+    ANGLE_SKIP_TEST_IF(IsOSX() && IsIntel() && IsDesktopOpenGL());
+
+    // http://anglebug.com/3145
+    ANGLE_SKIP_TEST_IF(IsFuchsia() && IsIntel() && IsVulkan());
+
+    constexpr uint8_t pixels[16 * 7] = {
+        0u,   3u,   6u,   10u,  13u,  16u,  0, 0, 20u,  23u,  26u,  30u,  33u,  36u,  0, 0,  // 2x2
+        40u,  43u,  46u,  50u,  53u,  56u,  0, 0, 60u,  63u,  66u,  70u,  73u,  76u,  0, 0,  // 2x2
+        80u,  83u,  86u,  90u,  93u,  96u,  0, 0, 100u, 103u, 106u, 110u, 113u, 116u, 0, 0,  // 2x2
+        120u, 123u, 126u, 130u, 133u, 136u, 0, 0, 140u, 143u, 146u, 160u, 163u, 166u, 0, 0,  // 2x2
+        170u, 173u, 176u, 180u, 183u, 186u, 0, 0, 190u, 193u, 196u, 200u, 203u, 206u, 0, 0,  // 2x2
+        210u, 213u, 216u, 220u, 223u, 226u, 0, 0, 230u, 233u, 236u, 240u, 243u, 246u, 0, 0,  // 2x2
+        10u,  50u,  100u, 30u,  80u,  130u, 0, 0, 60u,  110u, 160u, 90u,  140u, 200u, 0, 0,  // 2x2
+    };
+
+    GLTexture textures[2];
+
+    glBindTexture(GL_TEXTURE_CUBE_MAP, textures[1]);
+    for (GLenum face = GL_TEXTURE_CUBE_MAP_POSITIVE_X; face <= GL_TEXTURE_CUBE_MAP_NEGATIVE_Z;
+         face++)
+    {
+        glTexImage2D(face, 0, GL_RGB, 2, 2, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+    }
+
+    for (size_t i = 0; i < 2; ++i)
+    {
+        for (GLenum face = GL_TEXTURE_CUBE_MAP_POSITIVE_X; face <= GL_TEXTURE_CUBE_MAP_NEGATIVE_Z;
+             face++)
+        {
+            glBindTexture(GL_TEXTURE_2D, textures[0]);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 2, 2, 0, GL_RGB, GL_UNSIGNED_BYTE,
+                         &pixels[(face - GL_TEXTURE_CUBE_MAP_POSITIVE_X + i) * 16]);
+
+            glCopySubTextureCHROMIUM(textures[0], 0, face, textures[1], 0, 0, 0, 0, 0, 2, 2, false,
+                                     false, false);
+        }
+
+        EXPECT_GL_NO_ERROR();
+
+        GLFramebuffer fbo;
+        glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+
+        for (GLenum face = GL_TEXTURE_CUBE_MAP_POSITIVE_X; face <= GL_TEXTURE_CUBE_MAP_NEGATIVE_Z;
+             face++)
+        {
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, face, textures[1], 0);
+
+            // Check that FB is complete.
+            EXPECT_GLENUM_EQ(GL_FRAMEBUFFER_COMPLETE, glCheckFramebufferStatus(GL_FRAMEBUFFER));
+
+            const uint8_t *faceData = &pixels[(face - GL_TEXTURE_CUBE_MAP_POSITIVE_X + i) * 16];
+            EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor(faceData[0], faceData[1], faceData[2], 255));
+            EXPECT_PIXEL_COLOR_EQ(1, 0, GLColor(faceData[3], faceData[4], faceData[5], 255));
+            EXPECT_PIXEL_COLOR_EQ(0, 1, GLColor(faceData[8], faceData[9], faceData[10], 255));
+            EXPECT_PIXEL_COLOR_EQ(1, 1, GLColor(faceData[11], faceData[12], faceData[13], 255));
+
+            EXPECT_GL_NO_ERROR();
+        }
+    }
 }
 
 // Test that copying to non-zero mipmaps works
@@ -1222,7 +1604,7 @@ TEST_P(CopyTextureTestES3, ES3UnormFormats)
     }
 
     auto testOutput = [this](GLuint texture, const GLColor &expectedColor) {
-        const std::string vs =
+        constexpr char kVS[] =
             "#version 300 es\n"
             "in vec4 position;\n"
             "out vec2 texcoord;\n"
@@ -1232,7 +1614,7 @@ TEST_P(CopyTextureTestES3, ES3UnormFormats)
             "    texcoord = (position.xy * 0.5) + 0.5;\n"
             "}\n";
 
-        const std::string fs =
+        constexpr char kFS[] =
             "#version 300 es\n"
             "precision mediump float;\n"
             "uniform sampler2D tex;\n"
@@ -1243,7 +1625,7 @@ TEST_P(CopyTextureTestES3, ES3UnormFormats)
             "    color = texture(tex, texcoord);\n"
             "}\n";
 
-        ANGLE_GL_PROGRAM(program, vs, fs);
+        ANGLE_GL_PROGRAM(program, kVS, kFS);
         glUseProgram(program);
 
         GLRenderbuffer rbo;
@@ -1361,7 +1743,7 @@ TEST_P(CopyTextureTestES3, ES3FloatFormats)
     ANGLE_SKIP_TEST_IF(!extensionEnabled("GL_EXT_color_buffer_float"));
 
     auto testOutput = [this](GLuint texture, const GLColor32F &expectedColor) {
-        const std::string vs =
+        constexpr char kVS[] =
             "#version 300 es\n"
             "in vec4 position;\n"
             "out vec2 texcoord;\n"
@@ -1371,7 +1753,7 @@ TEST_P(CopyTextureTestES3, ES3FloatFormats)
             "    texcoord = (position.xy * 0.5) + 0.5;\n"
             "}\n";
 
-        const std::string fs =
+        constexpr char kFS[] =
             "#version 300 es\n"
             "precision mediump float;\n"
             "uniform sampler2D tex;\n"
@@ -1382,7 +1764,7 @@ TEST_P(CopyTextureTestES3, ES3FloatFormats)
             "    color = texture(tex, texcoord);\n"
             "}\n";
 
-        ANGLE_GL_PROGRAM(program, vs, fs);
+        ANGLE_GL_PROGRAM(program, kVS, kFS);
         glUseProgram(program);
 
         GLRenderbuffer rbo;
@@ -1484,7 +1866,7 @@ TEST_P(CopyTextureTestES3, ES3UintFormats)
     using GLColor32U = std::tuple<GLuint, GLuint, GLuint, GLuint>;
 
     auto testOutput = [this](GLuint texture, const GLColor32U &expectedColor) {
-        const std::string vs =
+        constexpr char kVS[] =
             "#version 300 es\n"
             "in vec4 position;\n"
             "out vec2 texcoord;\n"
@@ -1494,7 +1876,7 @@ TEST_P(CopyTextureTestES3, ES3UintFormats)
             "    texcoord = (position.xy * 0.5) + 0.5;\n"
             "}\n";
 
-        std::string fs =
+        constexpr char kFS[] =
             "#version 300 es\n"
             "precision mediump float;\n"
             "precision mediump usampler2D;\n"
@@ -1506,7 +1888,7 @@ TEST_P(CopyTextureTestES3, ES3UintFormats)
             "    color = texture(tex, texcoord);\n"
             "}\n";
 
-        ANGLE_GL_PROGRAM(program, vs, fs);
+        ANGLE_GL_PROGRAM(program, kVS, kFS);
         glUseProgram(program);
 
         GLRenderbuffer rbo;
@@ -1585,6 +1967,11 @@ TEST_P(CopyTextureTestES3, ES3UintFormats)
                         GL_UNSIGNED_BYTE, false, false, true, GLColor32U(240, 0, 0, 1));
 }
 
+#ifdef Bool
+// X11 craziness.
+#    undef Bool
+#endif
+
 // Use this to select which configurations (e.g. which renderer, which GLES major version) these
 // tests should be run against.
 ANGLE_INSTANTIATE_TEST(CopyTextureTest,
@@ -1593,6 +1980,18 @@ ANGLE_INSTANTIATE_TEST(CopyTextureTest,
                        ES2_OPENGL(),
                        ES2_OPENGLES(),
                        ES2_VULKAN());
+ANGLE_INSTANTIATE_TEST_COMBINE_5(CopyTextureVariationsTest,
+                                 CopyTextureVariationsTestPrint,
+                                 testing::ValuesIn(kCopyTextureVariationsSrcFormats),
+                                 testing::ValuesIn(kCopyTextureVariationsDstFormats),
+                                 testing::Bool(),  // flipY
+                                 testing::Bool(),  // premultiplyAlpha
+                                 testing::Bool(),  // unmultiplyAlpha
+                                 ES2_D3D9(),
+                                 ES2_D3D11(),
+                                 ES2_OPENGL(),
+                                 ES2_OPENGLES(),
+                                 ES2_VULKAN());
 ANGLE_INSTANTIATE_TEST(CopyTextureTestWebGL,
                        ES2_D3D9(),
                        ES2_D3D11(),

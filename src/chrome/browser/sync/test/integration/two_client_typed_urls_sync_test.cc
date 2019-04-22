@@ -74,7 +74,7 @@ class TwoClientTypedUrlsSyncTest : public SyncTest {
 
   int GetVisitCountForFirstURL(int index) {
     history::URLRows urls = GetTypedUrlsFromClient(index);
-    if (urls.size() == 0)
+    if (urls.empty())
       return 0;
     else
       return urls[0].visit_count();
@@ -427,8 +427,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
   const base::string16 kUrl2(ASCIIToUTF16("http://history2.google.com/"));
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
-  // Disable typed url sync for one client, leave it active for the other.
-  GetClient(0)->DisableSyncForDatatype(syncer::TYPED_URLS);
+  // Disable history sync for one client, leave it active for the other.
+  GetClient(0)->DisableSyncForType(syncer::UserSelectableType::kHistory);
 
   // Add one URL to non-syncing client, add a different URL to the other,
   // wait for sync cycle to complete. No data should be exchanged.
@@ -446,8 +446,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
   ASSERT_EQ(1U, post_sync_urls.size());
   ASSERT_EQ(url2, post_sync_urls[0].url());
 
-  // Enable typed url sync, make both URLs are synced to each client.
-  GetClient(0)->EnableSyncForDatatype(syncer::TYPED_URLS);
+  // Enable history sync, make both URLs are synced to each client.
+  GetClient(0)->EnableSyncForType(syncer::UserSelectableType::kHistory);
 
   ASSERT_TRUE(ProfilesHaveSameTypedURLsChecker().Wait());
 }

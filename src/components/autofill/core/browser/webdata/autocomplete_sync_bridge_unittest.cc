@@ -17,12 +17,14 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/webdata/autofill_entry.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/browser/webdata/mock_autofill_webdata_backend.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/sync/base/hash_util.h"
 #include "components/sync/model/data_batch.h"
 #include "components/sync/model/data_type_activation_request.h"
@@ -47,7 +49,6 @@ using syncer::DataBatch;
 using syncer::EntityChange;
 using syncer::EntityChangeList;
 using syncer::EntityData;
-using syncer::EntityDataPtr;
 using syncer::HasInitialSyncDone;
 using syncer::IsEmptyMetadataBatch;
 using syncer::KeyAndData;
@@ -184,7 +185,7 @@ class AutocompleteSyncBridgeTest : public testing::Test {
     for (const AutofillSpecifics& specifics : remote_data) {
       initial_updates.push_back(SpecificsToUpdateResponse(specifics));
     }
-    real_processor_->OnUpdateReceived(state, initial_updates);
+    real_processor_->OnUpdateReceived(state, std::move(initial_updates));
   }
 
   void SaveSpecificsToTable(
@@ -221,15 +222,13 @@ class AutocompleteSyncBridgeTest : public testing::Test {
   }
 
   std::string GetClientTag(const AutofillSpecifics& specifics) {
-    std::string tag =
-        bridge()->GetClientTag(SpecificsToEntity(specifics).value());
+    std::string tag = bridge()->GetClientTag(*SpecificsToEntity(specifics));
     EXPECT_FALSE(tag.empty());
     return tag;
   }
 
   std::string GetStorageKey(const AutofillSpecifics& specifics) {
-    std::string key =
-        bridge()->GetStorageKey(SpecificsToEntity(specifics).value());
+    std::string key = bridge()->GetStorageKey(*SpecificsToEntity(specifics));
     EXPECT_FALSE(key.empty());
     return key;
   }
@@ -244,24 +243,25 @@ class AutocompleteSyncBridgeTest : public testing::Test {
     return changes;
   }
 
-  EntityDataPtr SpecificsToEntity(const AutofillSpecifics& specifics) {
-    EntityData data;
-    *data.specifics.mutable_autofill() = specifics;
-    data.client_tag_hash = syncer::GenerateSyncableHash(
-        syncer::AUTOFILL, bridge()->GetClientTag(data));
-    return data.PassToPtr();
-  }
-
-  syncer::UpdateResponseData SpecificsToUpdateResponse(
+  std::unique_ptr<EntityData> SpecificsToEntity(
       const AutofillSpecifics& specifics) {
-    syncer::UpdateResponseData data;
-    data.entity = SpecificsToEntity(specifics);
+    auto data = std::make_unique<EntityData>();
+    *data->specifics.mutable_autofill() = specifics;
+    data->client_tag_hash = syncer::GenerateSyncableHash(
+        syncer::AUTOFILL, bridge()->GetClientTag(*data));
     return data;
   }
 
-  void ApplyChanges(const EntityChangeList& changes) {
+  std::unique_ptr<syncer::UpdateResponseData> SpecificsToUpdateResponse(
+      const AutofillSpecifics& specifics) {
+    auto data = std::make_unique<syncer::UpdateResponseData>();
+    data->entity = SpecificsToEntity(specifics);
+    return data;
+  }
+
+  void ApplyChanges(EntityChangeList changes) {
     const auto error = bridge()->ApplySyncChanges(
-        bridge()->CreateMetadataChangeList(), changes);
+        bridge()->CreateMetadataChangeList(), std::move(changes));
     EXPECT_FALSE(error);
   }
 
@@ -438,23 +438,71 @@ TEST_F(AutocompleteSyncBridgeTest, ApplySyncChangesSimple) {
   ASSERT_NE(specifics1.SerializeAsString(), specifics2.SerializeAsString());
   ASSERT_NE(GetStorageKey(specifics1), GetStorageKey(specifics2));
 
+  EXPECT_CALL(*backend(), CommitChanges());
+  EXPECT_CALL(*backend(), NotifyOfMultipleAutofillChanges());
+
   ApplyAdds({specifics1, specifics2});
   VerifyAllData({specifics1, specifics2});
 
-  ApplyChanges({EntityChange::CreateDelete(GetStorageKey(specifics1))});
+  EXPECT_CALL(*backend(), CommitChanges());
+  EXPECT_CALL(*backend(), NotifyOfMultipleAutofillChanges());
+
+  syncer::EntityChangeList entity_change_list;
+  entity_change_list.push_back(
+      EntityChange::CreateDelete(GetStorageKey(specifics1)));
+  ApplyChanges(std::move(entity_change_list));
   VerifyAllData({specifics2});
+}
+
+// Tests that the function RemoveExpiredFormElements is called when the
+// Autocomplete Retention Policy feature flag is disabled.
+TEST_F(AutocompleteSyncBridgeTest,
+       ApplySyncChangesSimple_FlagOff_Calls_RemoveExpiredFormElements) {
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitAndDisableFeature(
+      features::kAutocompleteRetentionPolicyEnabled);
+
+  EXPECT_CALL(*backend(), RemoveExpiredFormElements);
+
+  AutofillSpecifics specifics1 = CreateSpecifics(1);
+  ApplyAdds({specifics1});
+}
+
+// Tests that the function RemoveExpiredFormElements is not called when the
+// Autocomplete Retention Policy feature flag is enabled.
+TEST_F(AutocompleteSyncBridgeTest,
+       ApplySyncChangesSimple_FlagOn_Not_Calls_RemoveExpiredFormElements) {
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitAndEnableFeature(
+      features::kAutocompleteRetentionPolicyEnabled);
+
+  EXPECT_CALL(*backend(), RemoveExpiredFormElements).Times(0);
+
+  AutofillSpecifics specifics1 = CreateSpecifics(1);
+  ApplyAdds({specifics1});
 }
 
 // Should be resilient to deleting and updating non-existent things, and adding
 // existing ones.
 TEST_F(AutocompleteSyncBridgeTest, ApplySyncChangesWrongChangeType) {
   AutofillSpecifics specifics = CreateSpecifics(1, {1});
-  ApplyChanges({EntityChange::CreateDelete(GetStorageKey(specifics))});
+  syncer::EntityChangeList entity_change_list1;
+  entity_change_list1.push_back(
+      EntityChange::CreateDelete(GetStorageKey(specifics)));
+  ApplyChanges(std::move(entity_change_list1));
   VerifyAllData(std::vector<AutofillSpecifics>());
 
-  ApplyChanges({EntityChange::CreateUpdate(GetStorageKey(specifics),
-                                           SpecificsToEntity(specifics))});
+  EXPECT_CALL(*backend(), CommitChanges());
+  EXPECT_CALL(*backend(), NotifyOfMultipleAutofillChanges());
+
+  syncer::EntityChangeList entity_change_list2;
+  entity_change_list2.push_back(EntityChange::CreateUpdate(
+      GetStorageKey(specifics), SpecificsToEntity(specifics)));
+  ApplyChanges(std::move(entity_change_list2));
   VerifyAllData({specifics});
+
+  EXPECT_CALL(*backend(), CommitChanges());
+  EXPECT_CALL(*backend(), NotifyOfMultipleAutofillChanges());
 
   specifics.add_usage_timestamp(Time::FromTimeT(2).ToInternalValue());
   ApplyAdds({specifics});
@@ -534,9 +582,10 @@ TEST_F(AutocompleteSyncBridgeTest, ApplySyncChangesMinMaxTimestamps) {
 // should never happen in practice because storage keys should be generated at
 // runtime by the bridge and not loaded from disk.
 TEST_F(AutocompleteSyncBridgeTest, ApplySyncChangesBadStorageKey) {
+  syncer::EntityChangeList entity_change_list;
+  entity_change_list.push_back(EntityChange::CreateDelete("bogus storage key"));
   const auto error = bridge()->ApplySyncChanges(
-      bridge()->CreateMetadataChangeList(),
-      {EntityChange::CreateDelete("bogus storage key")});
+      bridge()->CreateMetadataChangeList(), std::move(entity_change_list));
   EXPECT_TRUE(error);
 }
 
@@ -557,6 +606,11 @@ TEST_F(AutocompleteSyncBridgeTest, LocalEntriesAdded) {
 
   EXPECT_CALL(mock_processor(), Put(_, HasSpecifics(added_specifics1), _));
   EXPECT_CALL(mock_processor(), Put(_, HasSpecifics(added_specifics2), _));
+  // Bridge should not commit transaction on local changes (it is committed by
+  // the AutofillWebDataService itself).
+  EXPECT_CALL(*backend(), CommitChanges()).Times(0);
+  EXPECT_CALL(*backend(), NotifyOfMultipleAutofillChanges()).Times(0);
+
   bridge()->AutofillEntriesChanged(
       {AutofillChange(AutofillChange::ADD, added_entry1.key()),
        AutofillChange(AutofillChange::ADD, added_entry2.key())});
@@ -568,6 +622,10 @@ TEST_F(AutocompleteSyncBridgeTest, LocalEntryAddedThenUpdated) {
   const AutofillEntry added_entry = CreateAutofillEntry(added_specifics);
   table()->UpdateAutofillEntries({added_entry});
   EXPECT_CALL(mock_processor(), Put(_, HasSpecifics(added_specifics), _));
+  // Bridge should not commit transaction on local changes (it is committed by
+  // the AutofillWebDataService itself).
+  EXPECT_CALL(*backend(), CommitChanges()).Times(0);
+  EXPECT_CALL(*backend(), NotifyOfMultipleAutofillChanges()).Times(0);
 
   bridge()->AutofillEntriesChanged(
       {AutofillChange(AutofillChange::ADD, added_entry.key())});
@@ -576,6 +634,10 @@ TEST_F(AutocompleteSyncBridgeTest, LocalEntryAddedThenUpdated) {
   const AutofillEntry updated_entry = CreateAutofillEntry(updated_specifics);
   table()->UpdateAutofillEntries({updated_entry});
   EXPECT_CALL(mock_processor(), Put(_, HasSpecifics(updated_specifics), _));
+  // Bridge should not commit transaction on local changes (it is committed by
+  // the AutofillWebDataService itself).
+  EXPECT_CALL(*backend(), CommitChanges()).Times(0);
+  EXPECT_CALL(*backend(), NotifyOfMultipleAutofillChanges()).Times(0);
 
   bridge()->AutofillEntriesChanged(
       {AutofillChange(AutofillChange::UPDATE, updated_entry.key())});
@@ -588,8 +650,44 @@ TEST_F(AutocompleteSyncBridgeTest, LocalEntryDeleted) {
   const std::string storage_key = GetStorageKey(deleted_specifics);
 
   EXPECT_CALL(mock_processor(), Delete(storage_key, _));
+  // Bridge should not commit transaction on local changes (it is committed by
+  // the AutofillWebDataService itself).
+  EXPECT_CALL(*backend(), CommitChanges()).Times(0);
+  EXPECT_CALL(*backend(), NotifyOfMultipleAutofillChanges()).Times(0);
+
   bridge()->AutofillEntriesChanged(
       {AutofillChange(AutofillChange::REMOVE, deleted_entry.key())});
+}
+
+// Tests that AutofillEntry marked with AutofillChange::EXPIRE are unlinked from
+// sync, and their sync metadata is deleted in this client.
+TEST_F(AutocompleteSyncBridgeTest, LocalEntryExpired) {
+  StartSyncing();
+  const AutofillSpecifics expired_specifics = CreateSpecifics(1, {2, 3});
+  const AutofillEntry expired_entry = CreateAutofillEntry(expired_specifics);
+  const std::string storage_key = GetStorageKey(expired_specifics);
+
+  // Let's add the sync metadata
+  ASSERT_TRUE(table()->UpdateSyncMetadata(syncer::AUTOFILL, storage_key,
+                                          EntityMetadata()));
+
+  // Validate that it was added.
+  syncer::MetadataBatch batch;
+  ASSERT_TRUE(table()->GetAllSyncMetadata(syncer::AUTOFILL, &batch));
+  ASSERT_EQ(1U, batch.TakeAllMetadata().size());
+
+  EXPECT_CALL(mock_processor(), UntrackEntityForStorageKey(storage_key));
+  // Bridge should not commit transaction on local changes (it is committed by
+  // the AutofillWebDataService itself).
+  EXPECT_CALL(*backend(), CommitChanges()).Times(0);
+  EXPECT_CALL(*backend(), NotifyOfMultipleAutofillChanges()).Times(0);
+
+  bridge()->AutofillEntriesChanged(
+      {AutofillChange(AutofillChange::EXPIRE, expired_entry.key())});
+
+  // Expect metadata to have been cleaned up.
+  EXPECT_TRUE(table()->GetAllSyncMetadata(syncer::AUTOFILL, &batch));
+  EXPECT_EQ(0U, batch.TakeAllMetadata().size());
 }
 
 TEST_F(AutocompleteSyncBridgeTest, LoadMetadataCalled) {
@@ -616,6 +714,9 @@ TEST_F(AutocompleteSyncBridgeTest, LoadMetadataReportsErrorForMissingDB) {
 TEST_F(AutocompleteSyncBridgeTest, MergeSyncDataEmpty) {
   EXPECT_CALL(mock_processor(), Delete(_, _)).Times(0);
   EXPECT_CALL(mock_processor(), Put(_, _, _)).Times(0);
+  EXPECT_CALL(*backend(), NotifyOfMultipleAutofillChanges()).Times(0);
+  // The bridge should still commit the model type state change.
+  EXPECT_CALL(*backend(), CommitChanges());
 
   StartSyncing(/*remote_data=*/std::vector<AutofillSpecifics>());
 
@@ -628,6 +729,8 @@ TEST_F(AutocompleteSyncBridgeTest, MergeSyncDataRemoteOnly) {
 
   EXPECT_CALL(mock_processor(), Delete(_, _)).Times(0);
   EXPECT_CALL(mock_processor(), Put(_, _, _)).Times(0);
+  EXPECT_CALL(*backend(), CommitChanges());
+  EXPECT_CALL(*backend(), NotifyOfMultipleAutofillChanges());
 
   StartSyncing(/*remote_data=*/{specifics1, specifics2});
 
@@ -644,6 +747,9 @@ TEST_F(AutocompleteSyncBridgeTest, MergeSyncDataLocalOnly) {
 
   ApplyAdds({specifics1, specifics2});
   VerifyAllData({specifics1, specifics2});
+
+  EXPECT_CALL(*backend(), NotifyOfMultipleAutofillChanges()).Times(0);
+  EXPECT_CALL(*backend(), CommitChanges());
 
   StartSyncing(/*remote_data=*/{});
   VerifyAllData({specifics1, specifics2});
@@ -677,6 +783,9 @@ TEST_F(AutocompleteSyncBridgeTest, MergeSyncDataAllMerged) {
 
   ApplyAdds({local1, local2, local3, local4, local5, local6});
 
+  EXPECT_CALL(*backend(), CommitChanges());
+  EXPECT_CALL(*backend(), NotifyOfMultipleAutofillChanges());
+
   StartSyncing(
       /*remote_data=*/{remote1, remote2, remote3, remote4, remote5, remote6});
   VerifyAllData({merged1, merged2, merged3, merged4, merged5, merged6});
@@ -695,6 +804,9 @@ TEST_F(AutocompleteSyncBridgeTest, MergeSyncDataMixed) {
   EXPECT_CALL(mock_processor(), Delete(_, _)).Times(0);
 
   ApplyAdds({local1, specifics3, local4});
+
+  EXPECT_CALL(*backend(), CommitChanges());
+  EXPECT_CALL(*backend(), NotifyOfMultipleAutofillChanges());
 
   StartSyncing(/*remote_data=*/{remote2, specifics3, remote4});
 

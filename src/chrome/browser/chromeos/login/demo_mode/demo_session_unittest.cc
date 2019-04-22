@@ -15,6 +15,8 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
+#include "base/timer/mock_timer.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_resources.h"
@@ -22,18 +24,24 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/component_updater/fake_cros_component_manager.h"
 #include "chrome/browser/prefs/browser_prefs.h"
+#include "chrome/browser/ui/apps/chrome_app_delegate.h"
+#include "chrome/browser/ui/ash/test_wallpaper_controller.h"
+#include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_process_platform_part_test_api_chromeos.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "extensions/browser/app_window/app_window.h"
+#include "extensions/common/extension_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using component_updater::FakeCrOSComponentManager;
@@ -55,34 +63,46 @@ void SetBoolean(bool* value) {
 class DemoSessionTest : public testing::Test {
  public:
   DemoSessionTest()
-      : browser_process_platform_part_test_api_(
+      : profile_manager_(std::make_unique<TestingProfileManager>(
+            TestingBrowserProcess::GetGlobal())),
+        browser_process_platform_part_test_api_(
             g_browser_process->platform_part()),
         scoped_user_manager_(std::make_unique<FakeChromeUserManager>()) {}
 
   ~DemoSessionTest() override = default;
 
   void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(
+        chromeos::switches::kShowSplashScreenInDemoMode);
+
+    ASSERT_TRUE(profile_manager_->SetUp());
     chromeos::DBusThreadManager::Initialize();
     DemoSession::SetDemoConfigForTesting(DemoSession::DemoModeConfig::kOnline);
     InitializeCrosComponentManager();
     session_manager_ = std::make_unique<session_manager::SessionManager>();
+    wallpaper_controller_client_ =
+        std::make_unique<WallpaperControllerClient>();
+    wallpaper_controller_client_->InitForTesting(
+        test_wallpaper_controller_.CreateInterfacePtr());
   }
 
   void TearDown() override {
     DemoSession::ShutDownIfInitialized();
     DemoSession::ResetDemoConfigForTesting();
 
+    wallpaper_controller_client_.reset();
     chromeos::DBusThreadManager::Shutdown();
 
     cros_component_manager_ = nullptr;
     browser_process_platform_part_test_api_.ShutdownCrosComponentManager();
+    profile_manager_->DeleteAllTestingProfiles();
   }
 
  protected:
   bool FinishResourcesComponentLoad(const base::FilePath& mount_path) {
     EXPECT_TRUE(
         cros_component_manager_->HasPendingInstall(kOfflineResourcesComponent));
-    EXPECT_FALSE(
+    EXPECT_TRUE(
         cros_component_manager_->UpdateRequested(kOfflineResourcesComponent));
 
     return cros_component_manager_->FinishLoadRequest(
@@ -104,13 +124,42 @@ class DemoSessionTest : public testing::Test {
         std::move(fake_cros_component_manager));
   }
 
+  // Creates a dummy demo user with a testing profile and logs in.
+  TestingProfile* LoginDemoUser() {
+    const AccountId account_id(
+        AccountId::FromUserEmailGaiaId("demo@test.com", "demo_user"));
+    FakeChromeUserManager* user_manager =
+        static_cast<FakeChromeUserManager*>(user_manager::UserManager::Get());
+    const user_manager::User* user =
+        user_manager->AddPublicAccountUser(account_id);
+
+    auto prefs =
+        std::make_unique<sync_preferences::TestingPrefServiceSyncable>();
+    RegisterUserProfilePrefs(prefs->registry());
+    TestingProfile* profile = profile_manager_->CreateTestingProfile(
+        "test-profile", std::move(prefs), base::ASCIIToUTF16("Test profile"),
+        1 /* avatar_id */, std::string() /* supervised_user_id */,
+        TestingProfile::TestingFactories());
+    chromeos::ProfileHelper::Get()->SetUserToProfileMappingForTesting(user,
+                                                                      profile);
+
+    user_manager->LoginUser(account_id);
+    profile_manager_->SetLoggedIn(true);
+    return profile;
+  }
+
   FakeCrOSComponentManager* cros_component_manager_ = nullptr;
   content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<session_manager::SessionManager> session_manager_;
+  std::unique_ptr<WallpaperControllerClient> wallpaper_controller_client_;
+  TestWallpaperController test_wallpaper_controller_;
+  std::unique_ptr<TestingProfileManager> profile_manager_;
 
  private:
   BrowserProcessPlatformPartTestApi browser_process_platform_part_test_api_;
   user_manager::ScopedUserManager scoped_user_manager_;
+  chromeos::ScopedCrosSettingsTestHelper cros_settings_test_helper_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(DemoSessionTest);
 };
@@ -372,54 +421,125 @@ TEST_F(DemoSessionTest, MultipleEnsureOfflineResourcesLoaded) {
       demo_session->resources()->GetAbsolutePath(base::FilePath("foo.txt")));
 }
 
-class DemoSessionLocaleTest : public DemoSessionTest {
- public:
-  DemoSessionLocaleTest() = default;
+TEST_F(DemoSessionTest, ShowAndRemoveSplashScreen) {
+  DemoSession* demo_session = DemoSession::StartIfInDemoMode();
+  ASSERT_TRUE(demo_session);
 
-  ~DemoSessionLocaleTest() override = default;
+  std::unique_ptr<base::MockOneShotTimer> timer =
+      std::make_unique<base::MockOneShotTimer>();
+  demo_session->SetTimerForTesting(std::move(timer));
 
-  void SetUp() override {
-    profile_manager_ = std::make_unique<TestingProfileManager>(
-        TestingBrowserProcess::GetGlobal());
-    ASSERT_TRUE(profile_manager_->SetUp());
-    DemoSessionTest::SetUp();
-  }
+  EXPECT_EQ(0, test_wallpaper_controller_.show_always_on_top_wallpaper_count());
+  EXPECT_EQ(0,
+            test_wallpaper_controller_.remove_always_on_top_wallpaper_count());
+  session_manager_->SetSessionState(
+      session_manager::SessionState::LOGIN_PRIMARY);
+  wallpaper_controller_client_->FlushForTesting();
+  EXPECT_EQ(0, test_wallpaper_controller_.show_always_on_top_wallpaper_count());
+  EXPECT_EQ(0,
+            test_wallpaper_controller_.remove_always_on_top_wallpaper_count());
 
-  void TearDown() override {
-    profile_manager_->DeleteAllTestingProfiles();
-    DemoSessionTest::TearDown();
-  }
+  ASSERT_TRUE(FinishResourcesComponentLoad(
+      base::FilePath(kTestDemoModeResourcesMountPoint)));
+  wallpaper_controller_client_->FlushForTesting();
+  EXPECT_EQ(1, test_wallpaper_controller_.show_always_on_top_wallpaper_count());
+  EXPECT_EQ(0,
+            test_wallpaper_controller_.remove_always_on_top_wallpaper_count());
 
- protected:
-  // Creates a dummy demo user with a testing profile and logs in.
-  TestingProfile* LoginDemoUser() {
-    const AccountId account_id(
-        AccountId::FromUserEmailGaiaId("demo@test.com", "demo_user"));
-    FakeChromeUserManager* user_manager =
-        static_cast<FakeChromeUserManager*>(user_manager::UserManager::Get());
-    const user_manager::User* user =
-        user_manager->AddPublicAccountUser(account_id);
+  TestingProfile* profile = LoginDemoUser();
+  scoped_refptr<const extensions::Extension> screensaver_app =
+      extensions::ExtensionBuilder()
+          .SetManifest(extensions::DictionaryBuilder()
+                           .Set("name", "Test App")
+                           .Set("version", "1.0")
+                           .Set("manifest_version", 2)
+                           .Build())
+          .SetID(DemoSession::GetScreensaverAppId())
+          .Build();
+  extensions::AppWindow* app_window = new extensions::AppWindow(
+      profile, new ChromeAppDelegate(true /* keep_alive */),
+      screensaver_app.get());
+  demo_session->OnAppWindowActivated(app_window);
+  wallpaper_controller_client_->FlushForTesting();
+  // The splash screen is not removed until active session starts.
+  EXPECT_EQ(1, test_wallpaper_controller_.show_always_on_top_wallpaper_count());
+  EXPECT_EQ(0,
+            test_wallpaper_controller_.remove_always_on_top_wallpaper_count());
+  session_manager_->SetSessionState(session_manager::SessionState::ACTIVE);
+  wallpaper_controller_client_->FlushForTesting();
+  EXPECT_EQ(1, test_wallpaper_controller_.show_always_on_top_wallpaper_count());
+  EXPECT_EQ(1,
+            test_wallpaper_controller_.remove_always_on_top_wallpaper_count());
+  // The timer is cleared after splash screen is removed.
+  EXPECT_FALSE(demo_session->GetTimerForTesting());
 
-    auto prefs =
-        std::make_unique<sync_preferences::TestingPrefServiceSyncable>();
-    RegisterUserProfilePrefs(prefs->registry());
-    TestingProfile* profile = profile_manager_->CreateTestingProfile(
-        "test-profile", std::move(prefs), base::ASCIIToUTF16("Test profile"),
-        1 /* avatar_id */, std::string() /* supervised_user_id */,
-        TestingProfile::TestingFactories());
-    chromeos::ProfileHelper::Get()->SetUserToProfileMappingForTesting(user,
-                                                                      profile);
+  app_window->OnNativeClose();
+}
 
-    user_manager->LoginUser(account_id);
-    profile_manager_->SetLoggedIn(true);
-    return profile;
-  }
+TEST_F(DemoSessionTest, RemoveSplashScreenWhenTimeout) {
+  DemoSession* demo_session = DemoSession::StartIfInDemoMode();
+  ASSERT_TRUE(demo_session);
 
- private:
-  std::unique_ptr<TestingProfileManager> profile_manager_;
+  std::unique_ptr<base::MockOneShotTimer> timer =
+      std::make_unique<base::MockOneShotTimer>();
+  demo_session->SetTimerForTesting(std::move(timer));
 
-  DISALLOW_COPY_AND_ASSIGN(DemoSessionLocaleTest);
-};
+  EXPECT_EQ(0, test_wallpaper_controller_.show_always_on_top_wallpaper_count());
+  EXPECT_EQ(0,
+            test_wallpaper_controller_.remove_always_on_top_wallpaper_count());
+  session_manager_->SetSessionState(
+      session_manager::SessionState::LOGIN_PRIMARY);
+  wallpaper_controller_client_->FlushForTesting();
+  EXPECT_EQ(0, test_wallpaper_controller_.show_always_on_top_wallpaper_count());
+  EXPECT_EQ(0,
+            test_wallpaper_controller_.remove_always_on_top_wallpaper_count());
+
+  ASSERT_TRUE(FinishResourcesComponentLoad(
+      base::FilePath(kTestDemoModeResourcesMountPoint)));
+  wallpaper_controller_client_->FlushForTesting();
+  EXPECT_EQ(1, test_wallpaper_controller_.show_always_on_top_wallpaper_count());
+  EXPECT_EQ(0,
+            test_wallpaper_controller_.remove_always_on_top_wallpaper_count());
+
+  base::MockOneShotTimer* timer_ptr =
+      static_cast<base::MockOneShotTimer*>(demo_session->GetTimerForTesting());
+  ASSERT_TRUE(timer_ptr);
+  timer_ptr->Fire();
+  wallpaper_controller_client_->FlushForTesting();
+  EXPECT_EQ(1, test_wallpaper_controller_.show_always_on_top_wallpaper_count());
+  EXPECT_EQ(1,
+            test_wallpaper_controller_.remove_always_on_top_wallpaper_count());
+
+  // Launching the screensaver will not trigger splash screen removal anymore.
+  TestingProfile* profile = LoginDemoUser();
+  scoped_refptr<const extensions::Extension> screensaver_app =
+      extensions::ExtensionBuilder()
+          .SetManifest(extensions::DictionaryBuilder()
+                           .Set("name", "Test App")
+                           .Set("version", "1.0")
+                           .Set("manifest_version", 2)
+                           .Build())
+          .SetID(DemoSession::GetScreensaverAppId())
+          .Build();
+  extensions::AppWindow* app_window = new extensions::AppWindow(
+      profile, new ChromeAppDelegate(true /* keep_alive */),
+      screensaver_app.get());
+  demo_session->OnAppWindowActivated(app_window);
+  wallpaper_controller_client_->FlushForTesting();
+  EXPECT_EQ(1, test_wallpaper_controller_.show_always_on_top_wallpaper_count());
+  EXPECT_EQ(1,
+            test_wallpaper_controller_.remove_always_on_top_wallpaper_count());
+  // Entering active session will not trigger splash screen removal anymore.
+  session_manager_->SetSessionState(session_manager::SessionState::ACTIVE);
+  wallpaper_controller_client_->FlushForTesting();
+  EXPECT_EQ(1, test_wallpaper_controller_.show_always_on_top_wallpaper_count());
+  EXPECT_EQ(1,
+            test_wallpaper_controller_.remove_always_on_top_wallpaper_count());
+
+  app_window->OnNativeClose();
+}
+
+using DemoSessionLocaleTest = DemoSessionTest;
 
 TEST_F(DemoSessionLocaleTest, InitializeDefaultLocale) {
   DemoSession* demo_session = DemoSession::StartIfInDemoMode();

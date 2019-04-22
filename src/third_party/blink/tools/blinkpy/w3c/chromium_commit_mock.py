@@ -29,8 +29,8 @@ class MockChromiumCommit(object):
 
     def filtered_changed_files(self):
         return [
-            'third_party/WebKit/LayoutTests/external/wpt/one.html',
-            'third_party/WebKit/LayoutTests/external/wpt/two.html',
+            'third_party/blink/web_tests/external/wpt/one.html',
+            'third_party/blink/web_tests/external/wpt/two.html',
         ]
 
     def url(self):

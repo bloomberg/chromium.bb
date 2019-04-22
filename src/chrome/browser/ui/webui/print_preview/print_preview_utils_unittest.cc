@@ -189,7 +189,7 @@ void ValidateVendorCaps(const base::Value* printer_out,
   }
 }
 
-void ValidatePrinter(const base::DictionaryValue* cdd_out,
+void ValidatePrinter(const base::Value* cdd_out,
                      const base::DictionaryValue& printer) {
   const base::Value* printer_out =
       cdd_out->FindKeyOfType(kPrinter, base::Value::Type::DICTIONARY);
@@ -217,8 +217,8 @@ TEST_F(PrintPreviewUtilsTest, FullCddPassthrough) {
   base::DictionaryValue printer = GetCapabilitiesFull();
   base::DictionaryValue cdd;
   cdd.SetKey(kPrinter, printer.Clone());
-  auto cdd_out = ValidateCddForPrintPreview(cdd);
-  ValidatePrinter(cdd_out.get(), printer);
+  auto cdd_out = ValidateCddForPrintPreview(std::move(cdd));
+  ValidatePrinter(&cdd_out, printer);
 }
 
 TEST_F(PrintPreviewUtilsTest, FilterBadList) {
@@ -230,8 +230,8 @@ TEST_F(PrintPreviewUtilsTest, FilterBadList) {
   printer.SetKey(kMediaSizes, base::Value(list_media));
   base::DictionaryValue cdd;
   cdd.SetKey(kPrinter, printer.Clone());
-  auto cdd_out = ValidateCddForPrintPreview(cdd);
-  ValidatePrinter(cdd_out.get(), printer);
+  auto cdd_out = ValidateCddForPrintPreview(std::move(cdd));
+  ValidatePrinter(&cdd_out, printer);
 }
 
 TEST_F(PrintPreviewUtilsTest, FilterBadOptionOneElement) {
@@ -245,8 +245,8 @@ TEST_F(PrintPreviewUtilsTest, FilterBadOptionOneElement) {
   printer.SetKey(kDpi, std::move(options));
   base::DictionaryValue cdd;
   cdd.SetKey(kPrinter, printer.Clone());
-  auto cdd_out = ValidateCddForPrintPreview(cdd);
-  ValidatePrinter(cdd_out.get(), printer);
+  auto cdd_out = ValidateCddForPrintPreview(std::move(cdd));
+  ValidatePrinter(&cdd_out, printer);
 }
 
 TEST_F(PrintPreviewUtilsTest, FilterBadOptionAllElement) {
@@ -260,8 +260,8 @@ TEST_F(PrintPreviewUtilsTest, FilterBadOptionAllElement) {
   printer.SetKey(kDpi, std::move(options));
   base::DictionaryValue cdd;
   cdd.SetKey(kPrinter, printer.Clone());
-  auto cdd_out = ValidateCddForPrintPreview(cdd);
-  ValidatePrinter(cdd_out.get(), printer);
+  auto cdd_out = ValidateCddForPrintPreview(std::move(cdd));
+  ValidatePrinter(&cdd_out, printer);
 }
 
 TEST_F(PrintPreviewUtilsTest, FilterBadVendorCapabilityAllElement) {
@@ -277,8 +277,8 @@ TEST_F(PrintPreviewUtilsTest, FilterBadVendorCapabilityAllElement) {
   select_cap_0->SetKey(kOptionKey, base::Value(option_list));
   base::DictionaryValue cdd;
   cdd.SetKey(kPrinter, printer.Clone());
-  auto cdd_out = ValidateCddForPrintPreview(cdd);
-  ValidatePrinter(cdd_out.get(), printer);
+  auto cdd_out = ValidateCddForPrintPreview(std::move(cdd));
+  ValidatePrinter(&cdd_out, printer);
 }
 
 TEST_F(PrintPreviewUtilsTest, FilterBadVendorCapabilityOneElement) {
@@ -305,8 +305,8 @@ TEST_F(PrintPreviewUtilsTest, FilterBadVendorCapabilityOneElement) {
 
   base::DictionaryValue cdd;
   cdd.SetKey(kPrinter, printer.Clone());
-  auto cdd_out = ValidateCddForPrintPreview(cdd);
-  ValidatePrinter(cdd_out.get(), printer);
+  auto cdd_out = ValidateCddForPrintPreview(std::move(cdd));
+  ValidatePrinter(&cdd_out, printer);
 }
 
 }  // namespace printing

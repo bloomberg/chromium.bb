@@ -115,6 +115,8 @@ void DynamicStoreCallback(SCDynamicStoreRef /* store */,
 }
 #endif  // !defined(OS_IOS)
 
+}  // namespace
+
 class NetworkConfigWatcherMacThread : public base::Thread {
  public:
   NetworkConfigWatcherMacThread(NetworkConfigWatcherMac::Delegate* delegate);
@@ -154,10 +156,8 @@ NetworkConfigWatcherMacThread::NetworkConfigWatcherMacThread(
 }
 
 NetworkConfigWatcherMacThread::~NetworkConfigWatcherMacThread() {
-  // Allow IO because Stop() calls PlatformThread::Join(), which is a blocking
-  // operation. This is expected during shutdown.
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
-
+  // This is expected to be invoked during shutdown.
+  base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_thread_join;
   Stop();
 }
 
@@ -169,8 +169,9 @@ void NetworkConfigWatcherMacThread::Init() {
   // initialize this, rather than just delaying it by a fixed time.
   const base::TimeDelta kInitializationDelay = base::TimeDelta::FromSeconds(1);
   task_runner()->PostDelayedTask(
-      FROM_HERE, base::Bind(&NetworkConfigWatcherMacThread::InitNotifications,
-                            weak_factory_.GetWeakPtr()),
+      FROM_HERE,
+      base::BindOnce(&NetworkConfigWatcherMacThread::InitNotifications,
+                     weak_factory_.GetWeakPtr()),
       kInitializationDelay);
 }
 
@@ -258,8 +259,6 @@ bool NetworkConfigWatcherMacThread::InitNotificationsHelper() {
 #endif  // !defined(OS_IOS)
   return true;
 }
-
-}  // namespace
 
 NetworkConfigWatcherMac::NetworkConfigWatcherMac(Delegate* delegate)
     : notifier_thread_(new NetworkConfigWatcherMacThread(delegate)) {

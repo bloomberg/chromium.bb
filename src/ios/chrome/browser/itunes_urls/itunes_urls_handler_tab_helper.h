@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #import "ios/web/public/web_state/web_state_policy_decider.h"
-#include "ios/web/public/web_state/web_state_user_data.h"
+#import "ios/web/public/web_state/web_state_user_data.h"
 
 // Enum for the IOS.StoreKit.ITunesURLsHandlingResult UMA histogram to report
 // the results of the StoreKit handling.
@@ -49,8 +49,12 @@ class ITunesUrlsHandlerTabHelper
       const web::WebStatePolicyDecider::RequestInfo& request_info) override;
 
  private:
+  friend class web::WebStateUserData<ITunesUrlsHandlerTabHelper>;
+
   // Opens the StoreKit for the given iTunes app |url|.
   void HandleITunesUrl(const GURL& url);
+
+  WEB_STATE_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(ITunesUrlsHandlerTabHelper);
 };

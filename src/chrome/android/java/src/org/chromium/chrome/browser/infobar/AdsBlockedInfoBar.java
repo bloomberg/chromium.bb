@@ -42,7 +42,7 @@ public class AdsBlockedInfoBar extends ConfirmInfoBar implements OnCheckedChange
 
     private AdsBlockedInfoBar(int iconDrawbleId, String message, String oKButtonText,
             String reloadButtonText, String toggleText, String followUpMessage) {
-        super(iconDrawbleId, null, message, null, null, null); //, oKButtonText, reloadButtonText);
+        super(iconDrawbleId, R.color.infobar_icon_drawable_color, null, message, null, null, null);
         mFollowUpMessage = followUpMessage;
         mMessage = message;
         mOKButtonText = oKButtonText;
@@ -65,7 +65,7 @@ public class AdsBlockedInfoBar extends ConfirmInfoBar implements OnCheckedChange
             description.append(learnMore);
 
             NoUnderlineClickableSpan clickableSpan =
-                    new NoUnderlineClickableSpan((view) -> onLinkClicked());
+                    new NoUnderlineClickableSpan(layout.getResources(), (view) -> onLinkClicked());
             description.setSpan(clickableSpan, spanStart, description.length(),
                     Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
             layout.getMessageLayout().addDescription(description);

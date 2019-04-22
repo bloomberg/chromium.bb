@@ -74,7 +74,6 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
 
   ~SimpleBackendImpl() override;
 
-  net::CacheType cache_type() const { return cache_type_; }
   SimpleIndex* index() { return index_.get(); }
 
   void SetWorkerPoolForTesting(scoped_refptr<base::TaskRunner> task_runner);
@@ -104,7 +103,6 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
                    CompletionOnceCallback callback) override;
 
   // Backend:
-  net::CacheType GetCacheType() const override;
   int32_t GetEntryCount() const override;
   net::Error OpenEntry(const std::string& key,
                        net::RequestPriority request_priority,
@@ -114,6 +112,10 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
                          net::RequestPriority request_priority,
                          Entry** entry,
                          CompletionOnceCallback callback) override;
+  net::Error OpenOrCreateEntry(const std::string& key,
+                               net::RequestPriority priority,
+                               EntryWithOpened* entry_struct,
+                               CompletionOnceCallback callback) override;
   net::Error DoomEntry(const std::string& key,
                        net::RequestPriority priority,
                        CompletionOnceCallback callback) override;
@@ -220,6 +222,18 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
       net::RequestPriority request_priority,
       std::vector<PostDoomWaiter>** post_doom);
 
+  // If post-doom and settings indicates that optimistically succeeding a create
+  // due to being immediately after a doom is possible, sets up an entry for
+  // that, and returns a non-null pointer. (CreateEntry still needs to be called
+  // to actually do the creation operation). Otherwise returns nullptr.
+  //
+  // Pre-condition: |post_doom| is non-null.
+  scoped_refptr<SimpleEntryImpl> MaybeOptimisticCreateForPostDoom(
+      uint64_t entry_hash,
+      const std::string& key,
+      net::RequestPriority request_priority,
+      std::vector<PostDoomWaiter>* post_doom);
+
   // Given a hash, will try to open the corresponding Entry. If we have an Entry
   // corresponding to |hash| in the map of active entries, opens it. Otherwise,
   // a new empty Entry will be created, opened and filled with information from
@@ -267,7 +281,6 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
   SimpleFileTracker* const file_tracker_;
 
   const base::FilePath path_;
-  const net::CacheType cache_type_;
   std::unique_ptr<SimpleIndex> index_;
 
   // This is only used for initial open (including potential format upgrade)

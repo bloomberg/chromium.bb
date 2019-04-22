@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_UI_LIBGTKUI_X11_INPUT_METHOD_CONTEXT_IMPL_GTK_H_
 #define CHROME_BROWSER_UI_LIBGTKUI_X11_INPUT_METHOD_CONTEXT_IMPL_GTK_H_
 
+#include <unordered_set>
 #include <vector>
 
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "ui/base/glib/glib_integers.h"
@@ -98,7 +98,7 @@ class X11InputMethodContextImplGtk : public ui::LinuxInputMethodContext {
   gfx::Rect last_caret_bounds_;
 
   // A set of hardware keycodes of modifier keys.
-  base::hash_set<unsigned int> modifier_keycodes_;
+  std::unordered_set<unsigned int> modifier_keycodes_;
 
   // A list of keycodes of each modifier key.
   std::vector<int> meta_keycodes_;

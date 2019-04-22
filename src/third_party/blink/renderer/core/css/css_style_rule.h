@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/core/css/css_rule.h"
 #include "third_party/blink/renderer/core/css/cssom/style_property_map.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -37,10 +38,6 @@ class CORE_EXPORT CSSStyleRule final : public CSSRule {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static CSSStyleRule* Create(StyleRule* rule, CSSStyleSheet* sheet) {
-    return MakeGarbageCollected<CSSStyleRule>(rule, sheet);
-  }
-
   CSSStyleRule(StyleRule*, CSSStyleSheet*);
   ~CSSStyleRule() override;
 
@@ -67,7 +64,12 @@ class CORE_EXPORT CSSStyleRule final : public CSSRule {
   Member<StylePropertyMap> style_map_;
 };
 
-DEFINE_CSS_RULE_TYPE_CASTS(CSSStyleRule, kStyleRule);
+template <>
+struct DowncastTraits<CSSStyleRule> {
+  static bool AllowFrom(const CSSRule& rule) {
+    return rule.type() == CSSRule::kStyleRule;
+  }
+};
 
 }  // namespace blink
 

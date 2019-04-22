@@ -7,8 +7,8 @@
 #ifndef FXJS_XFA_CJX_SOURCE_H_
 #define FXJS_XFA_CJX_SOURCE_H_
 
-#include "fxjs/jse_define.h"
 #include "fxjs/xfa/cjx_node.h"
+#include "fxjs/xfa/jse_define.h"
 
 class CXFA_Source;
 
@@ -17,29 +17,34 @@ class CJX_Source final : public CJX_Node {
   explicit CJX_Source(CXFA_Source* src);
   ~CJX_Source() override;
 
-  JSE_METHOD(addNew, CJX_Source);
-  JSE_METHOD(cancel, CJX_Source);
-  JSE_METHOD(cancelBatch, CJX_Source);
-  JSE_METHOD(close, CJX_Source);
-  JSE_METHOD(deleteItem /*delete*/, CJX_Source);
-  JSE_METHOD(first, CJX_Source);
-  JSE_METHOD(hasDataChanged, CJX_Source);
-  JSE_METHOD(isBOF, CJX_Source);
-  JSE_METHOD(isEOF, CJX_Source);
-  JSE_METHOD(last, CJX_Source);
-  JSE_METHOD(next, CJX_Source);
-  JSE_METHOD(open, CJX_Source);
-  JSE_METHOD(previous, CJX_Source);
-  JSE_METHOD(requery, CJX_Source);
-  JSE_METHOD(resync, CJX_Source);
-  JSE_METHOD(update, CJX_Source);
-  JSE_METHOD(updateBatch, CJX_Source);
+  // CJX_Object:
+  bool DynamicTypeIs(TypeTag eType) const override;
+
+  JSE_METHOD(addNew);
+  JSE_METHOD(cancel);
+  JSE_METHOD(cancelBatch);
+  JSE_METHOD(close);
+  JSE_METHOD(deleteItem /*delete*/);
+  JSE_METHOD(first);
+  JSE_METHOD(hasDataChanged);
+  JSE_METHOD(isBOF);
+  JSE_METHOD(isEOF);
+  JSE_METHOD(last);
+  JSE_METHOD(next);
+  JSE_METHOD(open);
+  JSE_METHOD(previous);
+  JSE_METHOD(requery);
+  JSE_METHOD(resync);
+  JSE_METHOD(update);
+  JSE_METHOD(updateBatch);
 
   JSE_PROP(db);
-  JSE_PROP(use);
-  JSE_PROP(usehref);
 
  private:
+  using Type__ = CJX_Source;
+  using ParentType__ = CJX_Node;
+
+  static const TypeTag static_type__ = TypeTag::Source;
   static const CJX_MethodSpec MethodSpecs[];
 };
 

@@ -21,21 +21,6 @@ void InsecureSensitiveInputDriver::BindInsecureInputServiceRequest(
   insecure_input_bindings_.AddBinding(this, std::move(request));
 }
 
-void InsecureSensitiveInputDriver::PasswordFieldVisibleInInsecureContext() {
-  InsecureSensitiveInputDriverFactory* parent =
-      InsecureSensitiveInputDriverFactory::GetOrCreateForWebContents(
-          content::WebContents::FromRenderFrameHost(render_frame_host_));
-  parent->RenderFrameHasVisiblePasswordField(render_frame_host_);
-}
-
-void InsecureSensitiveInputDriver::
-    AllPasswordFieldsInInsecureContextInvisible() {
-  InsecureSensitiveInputDriverFactory* parent =
-      InsecureSensitiveInputDriverFactory::GetOrCreateForWebContents(
-          content::WebContents::FromRenderFrameHost(render_frame_host_));
-  parent->RenderFrameHasNoVisiblePasswordFields(render_frame_host_);
-}
-
 void InsecureSensitiveInputDriver::DidEditFieldInInsecureContext() {
   InsecureSensitiveInputDriverFactory* parent =
       InsecureSensitiveInputDriverFactory::GetOrCreateForWebContents(

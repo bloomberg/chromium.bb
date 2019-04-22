@@ -9,47 +9,15 @@
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/test/test_cookie_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace {
-class FakeCookieManager : public network::mojom::CookieManager {
- public:
-  void SetCanonicalCookie(const net::CanonicalCookie& cookie,
-                          bool secure_source,
-                          bool modify_http_only,
-                          SetCanonicalCookieCallback callback) override;
-  void GetAllCookies(GetAllCookiesCallback callback) override {}
-  void GetCookieList(const GURL& url,
-                     const net::CookieOptions& cookie_options,
-                     GetCookieListCallback callback) override {}
-  void DeleteCanonicalCookie(const net::CanonicalCookie& cookie,
-                             DeleteCanonicalCookieCallback callback) override {}
-  void DeleteCookies(network::mojom::CookieDeletionFilterPtr filter,
-                     DeleteCookiesCallback callback) override {}
-  void AddCookieChangeListener(
-      const GURL& url,
-      const std::string& name,
-      network::mojom::CookieChangeListenerPtr listener) override {}
-  void AddGlobalChangeListener(
-      network::mojom::CookieChangeListenerPtr notification_pointer) override {}
-  void CloneInterface(
-      network::mojom::CookieManagerRequest new_interface) override {}
-  void FlushCookieStore(FlushCookieStoreCallback callback) override {}
-  void SetContentSettings(
-      const std::vector<::ContentSettingPatternSource>& settings) override {}
-  void SetForceKeepSessionState() override {}
-  void BlockThirdPartyCookies(bool block) override {}
-};
-}  // namespace
-
 TestSigninClient::TestSigninClient(PrefService* pref_service)
-    : shared_factory_(
-          base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-              &test_url_loader_factory_)),
-      pref_service_(pref_service),
+    : pref_service_(pref_service),
       are_signin_cookies_allowed_(true),
       network_calls_delayed_(false),
-      is_signout_allowed_(true) {}
+      is_signout_allowed_(true),
+      is_ready_for_dice_migration_(false) {}
 
 TestSigninClient::~TestSigninClient() {}
 
@@ -57,20 +25,6 @@ void TestSigninClient::DoFinalInit() {}
 
 PrefService* TestSigninClient::GetPrefs() {
   return pref_service_;
-}
-
-void FakeCookieManager::SetCanonicalCookie(
-    const net::CanonicalCookie& cookie,
-    bool secure_source,
-    bool modify_http_only,
-    SetCanonicalCookieCallback callback) {
-  std::move(callback).Run(false);
-}
-
-void TestSigninClient::PostSignedIn(const std::string& account_id,
-                  const std::string& username,
-                  const std::string& password) {
-  signed_in_password_ = password;
 }
 
 void TestSigninClient::PreSignOut(
@@ -83,12 +37,12 @@ void TestSigninClient::PreSignOut(
 
 scoped_refptr<network::SharedURLLoaderFactory>
 TestSigninClient::GetURLLoaderFactory() {
-  return shared_factory_;
+  return test_url_loader_factory_.GetSafeWeakWrapper();
 }
 
 network::mojom::CookieManager* TestSigninClient::GetCookieManager() {
   if (!cookie_manager_)
-    cookie_manager_ = std::make_unique<FakeCookieManager>();
+    cookie_manager_ = std::make_unique<network::TestCookieManager>();
   return cookie_manager_.get();
 }
 
@@ -124,11 +78,11 @@ void TestSigninClient::RemoveContentSettingsObserver(
     content_settings::Observer* observer) {
 }
 
-void TestSigninClient::DelayNetworkCall(const base::Closure& callback) {
+void TestSigninClient::DelayNetworkCall(base::OnceClosure callback) {
   if (network_calls_delayed_) {
-    delayed_network_calls_.push_back(callback);
+    delayed_network_calls_.push_back(std::move(callback));
   } else {
-    callback.Run();
+    std::move(callback).Run();
   }
 }
 
@@ -144,4 +98,8 @@ void TestSigninClient::PreGaiaLogout(base::OnceClosure callback) {
   if (!callback.is_null()) {
     std::move(callback).Run();
   }
+}
+
+void TestSigninClient::SetReadyForDiceMigration(bool ready) {
+  is_ready_for_dice_migration_ = ready;
 }

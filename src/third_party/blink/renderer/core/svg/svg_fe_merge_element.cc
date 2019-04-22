@@ -35,7 +35,7 @@ DEFINE_NODE_FACTORY(SVGFEMergeElement)
 
 FilterEffect* SVGFEMergeElement::Build(SVGFilterBuilder* filter_builder,
                                        Filter* filter) {
-  FilterEffect* effect = FEMerge::Create(filter);
+  FilterEffect* effect = MakeGarbageCollected<FEMerge>(filter);
   FilterEffectVector& merge_inputs = effect->InputEffects();
   for (SVGFEMergeNodeElement& merge_node :
        Traversal<SVGFEMergeNodeElement>::ChildrenOf(*this)) {
@@ -45,10 +45,6 @@ FilterEffect* SVGFEMergeElement::Build(SVGFilterBuilder* filter_builder,
     merge_inputs.push_back(merge_effect);
   }
   return effect;
-}
-
-bool SVGFEMergeElement::TaintsOrigin(bool inputs_taint_origin) const {
-  return inputs_taint_origin;
 }
 
 }  // namespace blink

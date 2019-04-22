@@ -7,8 +7,8 @@
 #ifndef FXJS_XFA_CJX_INSTANCEMANAGER_H_
 #define FXJS_XFA_CJX_INSTANCEMANAGER_H_
 
-#include "fxjs/jse_define.h"
 #include "fxjs/xfa/cjx_node.h"
+#include "fxjs/xfa/jse_define.h"
 
 class CXFA_InstanceManager;
 
@@ -17,11 +17,14 @@ class CJX_InstanceManager final : public CJX_Node {
   explicit CJX_InstanceManager(CXFA_InstanceManager* mgr);
   ~CJX_InstanceManager() override;
 
-  JSE_METHOD(addInstance, CJX_InstanceManager);
-  JSE_METHOD(insertInstance, CJX_InstanceManager);
-  JSE_METHOD(moveInstance, CJX_InstanceManager);
-  JSE_METHOD(removeInstance, CJX_InstanceManager);
-  JSE_METHOD(setInstances, CJX_InstanceManager);
+  // CJX_Object:
+  bool DynamicTypeIs(TypeTag eType) const override;
+
+  JSE_METHOD(addInstance);
+  JSE_METHOD(insertInstance);
+  JSE_METHOD(moveInstance);
+  JSE_METHOD(removeInstance);
+  JSE_METHOD(setInstances);
 
   JSE_PROP(count);
   JSE_PROP(max);
@@ -30,9 +33,13 @@ class CJX_InstanceManager final : public CJX_Node {
   int32_t MoveInstance(int32_t iTo, int32_t iFrom);
 
  private:
-  int32_t SetInstances(int32_t iDesired);
+  using Type__ = CJX_InstanceManager;
+  using ParentType__ = CJX_Node;
 
+  static const TypeTag static_type__ = TypeTag::InstanceManager;
   static const CJX_MethodSpec MethodSpecs[];
+
+  int32_t SetInstances(int32_t iDesired);
 };
 
 #endif  // FXJS_XFA_CJX_INSTANCEMANAGER_H_

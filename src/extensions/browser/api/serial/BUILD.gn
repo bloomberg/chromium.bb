@@ -13,8 +13,8 @@ source_set("serial") {
     "serial_api.h",
     "serial_connection.cc",
     "serial_connection.h",
-    "serial_event_dispatcher.cc",
-    "serial_event_dispatcher.h",
+    "serial_port_manager.cc",
+    "serial_port_manager.h",
   ]
 
   deps = [

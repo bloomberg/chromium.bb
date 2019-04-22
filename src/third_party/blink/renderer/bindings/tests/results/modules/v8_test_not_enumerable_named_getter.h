@@ -24,6 +24,8 @@
 
 namespace blink {
 
+MODULES_EXPORT extern const WrapperTypeInfo v8_test_not_enumerable_named_getter_wrapper_type_info;
+
 class V8TestNotEnumerableNamedGetter {
   STATIC_ONLY(V8TestNotEnumerableNamedGetter);
  public:
@@ -34,7 +36,11 @@ class V8TestNotEnumerableNamedGetter {
     return ToScriptWrappable(object)->ToImpl<TestNotEnumerableNamedGetter>();
   }
   MODULES_EXPORT static TestNotEnumerableNamedGetter* ToImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
-  MODULES_EXPORT static const WrapperTypeInfo wrapper_type_info;
+
+  MODULES_EXPORT static constexpr const WrapperTypeInfo* GetWrapperTypeInfo() {
+    return &v8_test_not_enumerable_named_getter_wrapper_type_info;
+  }
+
   static constexpr int kInternalFieldCount = kV8DefaultWrapperInternalFieldCount;
 
   // Callback functions

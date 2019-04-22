@@ -18,7 +18,7 @@ class TitledUrlNodeSorter {
   using TitledUrlNodes = std::vector<const TitledUrlNode*>;
   using TitledUrlNodeSet = base::flat_set<const TitledUrlNode*>;
 
-  virtual ~TitledUrlNodeSorter() {};
+  virtual ~TitledUrlNodeSorter() {}
 
   // Sorts |matches| in an implementation-specific way, placing the results in
   // |sorted_nodes|.

@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/metrics/histogram_macros.h"
@@ -140,6 +141,12 @@ syncer::SyncData SupervisedUserWhitelistService::CreateWhitelistSyncData(
   whitelist->set_name(name);
 
   return syncer::SyncData::CreateLocalData(id, name, specifics);
+}
+
+void SupervisedUserWhitelistService::WaitUntilReadyToSync(
+    base::OnceClosure done) {
+  // This service handles sync events at any time.
+  std::move(done).Run();
 }
 
 syncer::SyncMergeResult

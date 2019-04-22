@@ -16,6 +16,7 @@
 #include "base/task_runner.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/pref_names.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/browser/browser_thread.h"
@@ -128,10 +129,6 @@ InputMethodSyncer::~InputMethodSyncer() {
 void InputMethodSyncer::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterStringPref(
-      prefs::kLanguagePreferredLanguagesSyncable,
-      "",
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterStringPref(
       prefs::kLanguagePreloadEnginesSyncable,
       "",
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
@@ -145,8 +142,8 @@ void InputMethodSyncer::Initialize() {
   // PrefService::IsSyncing() changes.
   prefs_->AddObserver(this);
 
-  preferred_languages_syncable_.Init(prefs::kLanguagePreferredLanguagesSyncable,
-                                     prefs_);
+  preferred_languages_syncable_.Init(
+      language::prefs::kPreferredLanguagesSyncable, prefs_);
   preload_engines_syncable_.Init(prefs::kLanguagePreloadEnginesSyncable,
                                  prefs_);
   enabled_imes_syncable_.Init(prefs::kLanguageEnabledImesSyncable, prefs_);
@@ -154,8 +151,8 @@ void InputMethodSyncer::Initialize() {
   BooleanPrefMember::NamedChangeCallback callback =
       base::Bind(&InputMethodSyncer::OnPreferenceChanged,
                  base::Unretained(this));
-  preferred_languages_.Init(prefs::kLanguagePreferredLanguages,
-                            prefs_, callback);
+  preferred_languages_.Init(language::prefs::kPreferredLanguages, prefs_,
+                            callback);
   preload_engines_.Init(prefs::kLanguagePreloadEngines,
                         prefs_, callback);
   enabled_imes_.Init(prefs::kLanguageEnabledImes, prefs_, callback);
@@ -230,10 +227,9 @@ void InputMethodSyncer::MergeSyncedPrefs() {
       prefs::kLanguageEnabledImes));
 
   // Remove unsupported locales before updating the local languages preference.
-  std::string languages(
-      AddSupportedInputMethodValues(preferred_languages_.GetValue(),
-                                    preferred_languages_syncable,
-                                    prefs::kLanguagePreferredLanguages));
+  std::string languages(AddSupportedInputMethodValues(
+      preferred_languages_.GetValue(), preferred_languages_syncable,
+      language::prefs::kPreferredLanguages));
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::Bind(&CheckAndResolveLocales, languages),
@@ -272,9 +268,9 @@ std::string InputMethodSyncer::AddSupportedInputMethodValues(
       ime_state_->GetInputMethodExtensions(supported_descriptors.get());
     }
     CheckAndResolveInputMethodIDs(*supported_descriptors, &new_token_values);
-  } else if (pref_name != prefs::kLanguagePreferredLanguages) {
+  } else if (pref_name != language::prefs::kPreferredLanguages) {
     NOTREACHED() << "Attempting to merge an invalid preference.";
-    // kLanguagePreferredLanguages is checked in CheckAndResolveLocales().
+    // kPreferredLanguages is checked in CheckAndResolveLocales().
   }
 
   // Do the actual merging.
@@ -296,7 +292,7 @@ void InputMethodSyncer::FinishMerge(const std::string& languages) {
 }
 
 void InputMethodSyncer::OnPreferenceChanged(const std::string& pref_name) {
-  DCHECK(pref_name == prefs::kLanguagePreferredLanguages ||
+  DCHECK(pref_name == language::prefs::kPreferredLanguages ||
          pref_name == prefs::kLanguagePreloadEngines ||
          pref_name == prefs::kLanguageEnabledImes);
 

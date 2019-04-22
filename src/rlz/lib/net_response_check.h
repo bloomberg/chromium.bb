@@ -22,6 +22,6 @@ const size_t kMaxPingResponseLength = 0x4000;  // 16K
 // Access: No restrictions.
 bool RLZ_LIB_API IsPingResponseValid(const char* response, int* checksum_idx);
 
-};  // namespace rlz_lib
+}  // namespace rlz_lib
 
 #endif  // RLZ_LIB_NET_RESPONSE_CHECK_H_

@@ -5,6 +5,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://oobe/custom_elements.html">
+<link rel="import" href="chrome://resources/cr_components/chromeos/multidevice_setup/mojo_api.html">
 <link rel="import" href="chrome://resources/cr_components/chromeos/multidevice_setup/multidevice_setup_shared_css.html">
 <link rel="import" href="chrome://resources/cr_components/chromeos/multidevice_setup/multidevice_setup.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
@@ -85,6 +86,7 @@
     </style>
     <multidevice-setup delegate="[[delegate_]]"
         on-setup-exited="onExitRequested_"
+        on-forward-button-focus-requested="onForwardButtonFocusRequested_"
         forward-button-text="{{forwardButtonText_}}"
         forward-button-disabled="{{forwardButtonDisabled_}}"
         cancel-button-text="{{cancelButtonText_}}">

@@ -6,62 +6,140 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
+#include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/time/time.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "net/base/address_family.h"
 #include "net/base/address_list.h"
+#include "net/base/completion_once_callback.h"
+#include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
 
 namespace proxy_resolver {
 namespace {
 
 // Default TTL for successful host resolutions.
-const int kCacheEntryTTLSeconds = 5;
+constexpr auto kCacheEntryTTL = base::TimeDelta::FromSeconds(5);
 
 // Default TTL for unsuccessful host resolutions.
-const int kNegativeCacheEntryTTLSeconds = 0;
+constexpr auto kNegativeCacheEntryTTL = base::TimeDelta();
 
 net::HostCache::Key CacheKeyForRequest(
-    const net::HostResolver::RequestInfo& info) {
-  return net::HostCache::Key(info.hostname(), info.address_family(),
-                             info.host_resolver_flags());
+    const std::string& hostname,
+    net::ProxyResolveDnsOperation operation) {
+  net::AddressFamily address_family = net::ADDRESS_FAMILY_UNSPECIFIED;
+  if (operation == net::ProxyResolveDnsOperation::MY_IP_ADDRESS ||
+      operation == net::ProxyResolveDnsOperation::DNS_RESOLVE) {
+    address_family = net::ADDRESS_FAMILY_IPV4;
+  }
+
+  return net::HostCache::Key(hostname, address_family,
+                             0 /* host_resolver_flags */);
 }
 
 }  // namespace
 
-class HostResolverMojo::Job : public mojom::HostResolverRequestClient {
+class HostResolverMojo::RequestImpl : public ProxyHostResolver::Request,
+                                      public mojom::HostResolverRequestClient {
  public:
-  Job(const net::HostCache::Key& key,
-      net::AddressList* addresses,
-      net::CompletionOnceCallback callback,
-      mojo::InterfaceRequest<mojom::HostResolverRequestClient> request,
-      base::WeakPtr<net::HostCache> host_cache);
-
- private:
-  // mojom::HostResolverRequestClient override.
-  void ReportResult(int32_t error,
-                    const net::AddressList& address_list) override;
-
-  // Mojo error handler.
-  void OnConnectionError();
-
-  const net::HostCache::Key key_;
-  net::AddressList* addresses_;
-  net::CompletionOnceCallback callback_;
-  mojo::Binding<mojom::HostResolverRequestClient> binding_;
-  base::WeakPtr<net::HostCache> host_cache_;
-};
-
-class HostResolverMojo::RequestImpl : public HostResolver::Request {
- public:
-  explicit RequestImpl(std::unique_ptr<Job> job) : job_(std::move(job)) {}
+  RequestImpl(const std::string& hostname,
+              net::ProxyResolveDnsOperation operation,
+              base::WeakPtr<net::HostCache> host_cache,
+              Impl* impl)
+      : hostname_(hostname),
+        operation_(operation),
+        binding_(this),
+        host_cache_(std::move(host_cache)),
+        impl_(impl) {}
 
   ~RequestImpl() override = default;
 
-  void ChangeRequestPriority(net::RequestPriority priority) override {}
+  // ProxyHostResolver::Request override
+  int Start(net::CompletionOnceCallback callback) override {
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+    DVLOG(1) << "Resolve " << hostname_;
+
+    int cached_result = ResolveFromCacheInternal();
+    if (cached_result != net::ERR_DNS_CACHE_MISS) {
+      DVLOG(1) << "Resolved " << hostname_ << " from cache";
+      return cached_result;
+    }
+
+    callback_ = std::move(callback);
+
+    mojom::HostResolverRequestClientPtr handle;
+    binding_.Bind(mojo::MakeRequest(&handle));
+    binding_.set_connection_error_handler(base::BindOnce(
+        &RequestImpl::OnConnectionError, base::Unretained(this)));
+
+    impl_->ResolveDns(hostname_, operation_, std::move(handle));
+    return net::ERR_IO_PENDING;
+  }
+
+  const std::vector<net::IPAddress>& GetResults() const override {
+    return results_;
+  }
+
+  // mojom::HostResolverRequestClient override
+  void ReportResult(int32_t error,
+                    const std::vector<net::IPAddress>& result) override {
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+    if (error == net::OK)
+      results_ = result;
+    if (host_cache_) {
+      base::TimeDelta ttl =
+          error == net::OK ? kCacheEntryTTL : kNegativeCacheEntryTTL;
+      net::HostCache::Entry entry(
+          error, net::AddressList::CreateFromIPAddressList(result, ""),
+          net::HostCache::Entry::SOURCE_UNKNOWN, ttl);
+      host_cache_->Set(CacheKeyForRequest(hostname_, operation_), entry,
+                       base::TimeTicks::Now(), ttl);
+    }
+    if (binding_.is_bound())
+      binding_.Close();
+    std::move(callback_).Run(error);
+  }
 
  private:
-  std::unique_ptr<Job> job_;
+  int ResolveFromCacheInternal() {
+    DCHECK(host_cache_);
+
+    net::HostCache::Key key = CacheKeyForRequest(hostname_, operation_);
+    const std::pair<const net::HostCache::Key, net::HostCache::Entry>*
+        cache_result = host_cache_->Lookup(key, base::TimeTicks::Now());
+    if (!cache_result)
+      return net::ERR_DNS_CACHE_MISS;
+
+    results_ = AddressListToAddresses(cache_result->second.addresses().value());
+    return cache_result->second.error();
+  }
+
+  void OnConnectionError() { ReportResult(net::ERR_FAILED, {} /* result */); }
+
+  static std::vector<net::IPAddress> AddressListToAddresses(
+      net::AddressList address_list) {
+    std::vector<net::IPAddress> result;
+    for (net::IPEndPoint endpoint : address_list.endpoints()) {
+      result.push_back(endpoint.address());
+    }
+    return result;
+  }
+
+  const std::string hostname_;
+  const net::ProxyResolveDnsOperation operation_;
+
+  mojo::Binding<mojom::HostResolverRequestClient> binding_;
+  net::CompletionOnceCallback callback_;
+
+  base::WeakPtr<net::HostCache> host_cache_;
+  Impl* const impl_;
+  std::vector<net::IPAddress> results_;
+
+  THREAD_CHECKER(thread_checker_);
 };
 
 HostResolverMojo::HostResolverMojo(Impl* impl)
@@ -71,127 +149,12 @@ HostResolverMojo::HostResolverMojo(Impl* impl)
 
 HostResolverMojo::~HostResolverMojo() = default;
 
-std::unique_ptr<net::HostResolver::ResolveHostRequest>
-HostResolverMojo::CreateRequest(
-    const net::HostPortPair& host,
-    const net::NetLogWithSource& source_net_log,
-    const base::Optional<ResolveHostParameters>& optional_parameters) {
-  // TODO(crbug.com/821021): Implement.
-  NOTIMPLEMENTED();
-  return nullptr;
-}
-
-int HostResolverMojo::Resolve(const RequestInfo& info,
-                              net::RequestPriority priority,
-                              net::AddressList* addresses,
-                              net::CompletionOnceCallback callback,
-                              std::unique_ptr<Request>* request,
-                              const net::NetLogWithSource& source_net_log) {
+std::unique_ptr<net::ProxyHostResolver::Request>
+HostResolverMojo::CreateRequest(const std::string& hostname,
+                                net::ProxyResolveDnsOperation operation) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(request);
-  DVLOG(1) << "Resolve " << info.host_port_pair().ToString();
-
-  net::HostCache::Key key = CacheKeyForRequest(info);
-  int cached_result = ResolveFromCacheInternal(info, key, addresses);
-  if (cached_result != net::ERR_DNS_CACHE_MISS) {
-    DVLOG(1) << "Resolved " << info.host_port_pair().ToString()
-             << " from cache";
-    return cached_result;
-  }
-
-  mojom::HostResolverRequestClientPtr handle;
-  std::unique_ptr<Job> job(new Job(key, addresses, std::move(callback),
-                                   mojo::MakeRequest(&handle),
-                                   host_cache_weak_factory_.GetWeakPtr()));
-  request->reset(new RequestImpl(std::move(job)));
-
-  impl_->ResolveDns(std::make_unique<HostResolver::RequestInfo>(info),
-                    std::move(handle));
-  return net::ERR_IO_PENDING;
-}
-
-int HostResolverMojo::ResolveFromCache(
-    const RequestInfo& info,
-    net::AddressList* addresses,
-    const net::NetLogWithSource& source_net_log) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DVLOG(1) << "ResolveFromCache " << info.host_port_pair().ToString();
-  return ResolveFromCacheInternal(info, CacheKeyForRequest(info), addresses);
-}
-
-int HostResolverMojo::ResolveStaleFromCache(
-    const RequestInfo& info,
-    net::AddressList* addresses,
-    net::HostCache::EntryStaleness* stale_info,
-    const net::NetLogWithSource& net_log) {
-  NOTREACHED();
-  return net::ERR_UNEXPECTED;
-}
-
-net::HostCache* HostResolverMojo::GetHostCache() {
-  return host_cache_.get();
-}
-
-bool HostResolverMojo::HasCached(
-    base::StringPiece hostname,
-    net::HostCache::Entry::Source* source_out,
-    net::HostCache::EntryStaleness* stale_out) const {
-  if (!host_cache_)
-    return false;
-
-  return host_cache_->HasEntry(hostname, source_out, stale_out);
-}
-
-int HostResolverMojo::ResolveFromCacheInternal(const RequestInfo& info,
-                                               const net::HostCache::Key& key,
-                                               net::AddressList* addresses) {
-  if (!info.allow_cached_response())
-    return net::ERR_DNS_CACHE_MISS;
-
-  const net::HostCache::Entry* entry =
-      host_cache_->Lookup(key, base::TimeTicks::Now());
-  if (!entry)
-    return net::ERR_DNS_CACHE_MISS;
-
-  *addresses =
-      net::AddressList::CopyWithPort(entry->addresses().value(), info.port());
-  return entry->error();
-}
-
-HostResolverMojo::Job::Job(
-    const net::HostCache::Key& key,
-    net::AddressList* addresses,
-    net::CompletionOnceCallback callback,
-    mojo::InterfaceRequest<mojom::HostResolverRequestClient> request,
-    base::WeakPtr<net::HostCache> host_cache)
-    : key_(key),
-      addresses_(addresses),
-      callback_(std::move(callback)),
-      binding_(this, std::move(request)),
-      host_cache_(host_cache) {
-  binding_.set_connection_error_handler(base::Bind(
-      &HostResolverMojo::Job::OnConnectionError, base::Unretained(this)));
-}
-
-void HostResolverMojo::Job::ReportResult(int32_t error,
-                                         const net::AddressList& address_list) {
-  if (error == net::OK)
-    *addresses_ = address_list;
-  if (host_cache_) {
-    base::TimeDelta ttl = base::TimeDelta::FromSeconds(
-        error == net::OK ? kCacheEntryTTLSeconds
-                         : kNegativeCacheEntryTTLSeconds);
-    net::HostCache::Entry entry(error, *addresses_,
-                                net::HostCache::Entry::SOURCE_UNKNOWN, ttl);
-    host_cache_->Set(key_, entry, base::TimeTicks::Now(), ttl);
-  }
-  if (binding_.is_bound())
-    binding_.Close();
-  std::move(callback_).Run(error);
-}
-
-void HostResolverMojo::Job::OnConnectionError() {
-  ReportResult(net::ERR_FAILED, net::AddressList());
+  return std::make_unique<RequestImpl>(
+      hostname, operation, host_cache_weak_factory_.GetWeakPtr(), impl_);
 }
 
 }  // namespace proxy_resolver

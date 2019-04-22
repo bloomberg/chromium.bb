@@ -2,7 +2,6 @@ Tests touch-adjustment on inline links. Making sure we can hit over line-breaks,
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Test some direct hits.
 PASS adjusted node was A#1.
 PASS adjusted node was A#2.

@@ -53,7 +53,7 @@ public class AccessibilityPreferences extends PreferenceFragment
         PreferenceUtils.addPreferencesFromResource(this, R.xml.accessibility_preferences);
 
         mFormat = NumberFormat.getPercentInstance();
-        mFontSizePrefs = FontSizePrefs.getInstance(getActivity());
+        mFontSizePrefs = FontSizePrefs.getInstance();
 
         mTextScalePref = (TextScalePreference) findPreference(PREF_TEXT_SCALE);
         mTextScalePref.setOnPreferenceChangeListener(this);

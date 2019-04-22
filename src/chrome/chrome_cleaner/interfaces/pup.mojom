@@ -4,39 +4,8 @@
 
 module chrome_cleaner.mojom;
 
-import "chrome/chrome_cleaner/interfaces/string16_embedded_nulls.mojom";
-import "chrome/chrome_cleaner/interfaces/windows_handle.mojom";
+// chrome_prompt included for the FilePath struct.
 import "components/chrome_cleaner/public/interfaces/chrome_prompt.mojom";
-import "mojo/public/mojom/base/string16.mojom";
-
-// Source:
-//   https://msdn.microsoft.com/en-us/library/windows/desktop/aa384129.aspx
-enum Wow64Access {
-  kNone = 0,
-  // KEY_WOW64_64KEY
-  k64Key = 0x0100,
-  // KEY_WOW64_32KEY
-  k32Key = 0x0200,
-};
-
-// Typemapped to chrome_cleaner::RegKeyPath.
-struct RegKeyPath {
-  PredefinedHandle rootkey;
-  // This is only sent by URZA, which currently doesn't support registry paths
-  // with embedded nulls.
-  mojo_base.mojom.String16 subkey;
-  Wow64Access wow64access;
-};
-
-// Used for reporting detected registry footprints.
-// Typemapped to chrome_cleaner::PUPData::RegistryFootprint.
-struct RegistryFootprint {
-  RegKeyPath key_path;
-  String16EmbeddedNulls value_name;
-  String16EmbeddedNulls value_substring;
-  // An enumerator of chrome_cleaner::RegistryMatchRule.
-  uint32 rule;
-};
 
 // Typemapped to chrome_cleaner::UwS::TraceLocation enumeration from
 // chrome_cleaner/logging/proto/shared_data.proto.
@@ -52,10 +21,11 @@ struct FileInfo {
 };
 
 // Partially typemapped to chrome_cleaner::PUPData::PUP.
-// UwS signatures are not included.
+//
+// Only fields which are detected by the sandboxed engine are included. Other
+// fields of PUPData::PUP are populated directly in the broker process, so
+// there is no need to pass them over IPC.
 struct PUP {
   array<FilePath> expanded_disk_footprints;
-  array<RegistryFootprint> expanded_registry_footprints;
-  array<mojo_base.mojom.String16> expanded_scheduled_tasks;
   map<FilePath, FileInfo> disk_footprints_info;
 };

@@ -4,6 +4,7 @@
 
 #include "components/sync/driver/backend_migrator.h"
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -117,7 +118,7 @@ namespace {
 ModelTypeSet GetUnsyncedDataTypes(UserShare* user_share) {
   ReadTransaction trans(FROM_HERE, user_share);
   ModelTypeSet unsynced_data_types;
-  for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
+  for (int i = FIRST_REAL_MODEL_TYPE; i < ModelType::NUM_ENTRIES; ++i) {
     ModelType type = ModelTypeFromInt(i);
     sync_pb::DataTypeProgressMarker progress_marker;
     trans.GetDirectory()->GetDownloadProgress(type, &progress_marker);
@@ -205,4 +206,4 @@ ModelTypeSet BackendMigrator::GetPendingMigrationTypesForTest() const {
 
 #undef SLOG
 
-};  // namespace syncer
+}  // namespace syncer

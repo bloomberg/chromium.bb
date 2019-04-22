@@ -70,9 +70,9 @@ class ChromeTranslateClient
       content::WebContents* web_contents);
 
   // Gets |source| and |target| language for translation.
-  static void GetTranslateLanguages(content::WebContents* web_contents,
-                                    std::string* source,
-                                    std::string* target);
+  void GetTranslateLanguages(content::WebContents* web_contents,
+                             std::string* source,
+                             std::string* target);
 
   // Gets the associated TranslateManager.
   translate::TranslateManager* GetTranslateManager();
@@ -86,7 +86,6 @@ class ChromeTranslateClient
   PrefService* GetPrefs() override;
   std::unique_ptr<translate::TranslatePrefs> GetTranslatePrefs() override;
   translate::TranslateAcceptLanguages* GetTranslateAcceptLanguages() override;
-  void RecordTranslateEvent(const metrics::TranslateEventProto&) override;
 #if defined(OS_ANDROID)
   std::unique_ptr<infobars::InfoBar> CreateInfoBar(
       std::unique_ptr<translate::TranslateInfoBarDelegate> delegate)
@@ -97,9 +96,8 @@ class ChromeTranslateClient
   // language) is ready.
   void ManualTranslateWhenReady();
 #endif
+  void SetPredefinedTargetLanguage(const std::string& translate_language_code);
 
-  void RecordLanguageDetectionEvent(
-      const translate::LanguageDetectionDetails& details) const override;
   bool ShowTranslateUI(translate::TranslateStep step,
                        const std::string& source_language,
                        const std::string& target_language,
@@ -133,6 +131,8 @@ class ChromeTranslateClient
   // Shows the translate bubble.
   ShowTranslateBubbleResult ShowBubble(
       translate::TranslateStep step,
+      const std::string& source_language,
+      const std::string& target_language,
       translate::TranslateErrors::Type error_type);
 
   translate::ContentTranslateDriver translate_driver_;
@@ -143,6 +143,8 @@ class ChromeTranslateClient
   // See ChromeTranslateClient::ManualTranslateOnReady
   bool manual_translate_on_ready_ = false;
 #endif
+
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(ChromeTranslateClient);
 };

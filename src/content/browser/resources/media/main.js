@@ -32,8 +32,9 @@ var media = (function() {
   };
 
   media.onReceiveAudioFocusState = function(audioFocusState) {
-    if (!audioFocusState)
+    if (!audioFocusState) {
       return;
+    }
 
     manager.updateAudioFocusSessions(audioFocusState.sessions);
   };

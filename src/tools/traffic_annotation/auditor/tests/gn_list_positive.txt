@@ -1,11 +1,11 @@
 //:All
 //:blink_tests
+//:blink_web_tests
+//:blink_web_tests_exparchive
 //:chromium_builder_asan
 //:chromium_builder_perf
 //:gn_all
-//:run_webkit_tests
-//:webkit_layout_tests
-//:webkit_layout_tests_exparchive
+//:run_web_tests
 //apps:apps
 //apps:test_support
 //apps/ui/views:views

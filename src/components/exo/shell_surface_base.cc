@@ -13,6 +13,7 @@
 #include "ash/public/cpp/window_state_type.h"
 #include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "ash/shell.h"
+#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/drag_window_resizer.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
@@ -29,8 +30,10 @@
 #include "components/exo/surface.h"
 #include "components/exo/wm_helper.h"
 #include "services/ws/public/mojom/window_tree_constants.mojom.h"
+#include "third_party/skia/include/core/SkPath.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
@@ -45,9 +48,7 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
-#include "ui/gfx/path.h"
 #include "ui/views/widget/widget.h"
-#include "ui/wm/core/capture_controller.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/shadow_controller.h"
 #include "ui/wm/core/shadow_types.h"
@@ -68,11 +69,9 @@ const struct {
 
 class ShellSurfaceWidget : public views::Widget {
  public:
-  explicit ShellSurfaceWidget(ShellSurfaceBase* shell_surface)
-      : shell_surface_(shell_surface) {}
+  ShellSurfaceWidget() = default;
 
   // Overridden from views::Widget:
-  void Close() override { shell_surface_->Close(); }
   void OnKeyEvent(ui::KeyEvent* event) override {
     // Handle only accelerators. Do not call Widget::OnKeyEvent that eats focus
     // management keys (like the tab key) as well.
@@ -81,8 +80,6 @@ class ShellSurfaceWidget : public views::Widget {
   }
 
  private:
-  ShellSurfaceBase* const shell_surface_;
-
   DISALLOW_COPY_AND_ASSIGN(ShellSurfaceWidget);
 };
 
@@ -119,29 +116,6 @@ class CustomFrameView : public ash::NonClientFrameViewAsh,
       NonClientFrameViewAsh::SetShouldPaintHeader(paint);
       return;
     }
-    // TODO(oshima): The caption area will be unknown
-    // if a client draw a caption. (It may not even be
-    // rectangular). Remove mask.
-    aura::Window* window = GetWidget()->GetNativeWindow();
-    ui::Layer* layer = window->layer();
-    if (paint) {
-      if (layer->alpha_shape()) {
-        layer->SetAlphaShape(nullptr);
-        layer->SetMasksToBounds(false);
-      }
-      return;
-    }
-
-    int inset = window->GetProperty(aura::client::kTopViewInset);
-    if (inset <= 0)
-      return;
-
-    gfx::Rect bound(bounds().size());
-    bound.Inset(0, inset, 0, 0);
-    std::unique_ptr<ShapeRects> shape = std::make_unique<ShapeRects>();
-    shape->push_back(bound);
-    layer->SetAlphaShape(std::move(shape));
-    layer->SetMasksToBounds(true);
   }
 
   // Overridden from aura::WindowObserver:
@@ -181,7 +155,7 @@ class CustomFrameView : public ash::NonClientFrameViewAsh,
       return ash::NonClientFrameViewAsh::NonClientHitTest(point);
     return GetWidget()->client_view()->NonClientHitTest(point);
   }
-  void GetWindowMask(const gfx::Size& size, gfx::Path* window_mask) override {
+  void GetWindowMask(const gfx::Size& size, SkPath* window_mask) override {
     if (visible())
       return ash::NonClientFrameViewAsh::GetWindowMask(size, window_mask);
   }
@@ -209,6 +183,15 @@ class CustomFrameView : public ash::NonClientFrameViewAsh,
           .size();
     }
     return minimum_size;
+  }
+  gfx::Size GetMaximumSize() const override {
+    gfx::Size maximum_size = shell_surface_->GetMaximumSize();
+    if (visible() && !maximum_size.IsEmpty()) {
+      return ash::NonClientFrameViewAsh::GetWindowBoundsForClientBounds(
+                 gfx::Rect(maximum_size))
+          .size();
+    }
+    return maximum_size;
   }
 
  private:
@@ -366,7 +349,7 @@ ShellSurfaceBase::~ShellSurfaceBase() {
   if (root_surface())
     root_surface()->RemoveSurfaceObserver(this);
   if (has_grab_)
-    wm::CaptureController::Get()->RemoveObserver(this);
+    WMHelper::GetInstance()->GetCaptureClient()->RemoveObserver(this);
 }
 
 void ShellSurfaceBase::Activate() {
@@ -520,6 +503,13 @@ void ShellSurfaceBase::SetMinimumSize(const gfx::Size& size) {
   pending_minimum_size_ = size;
 }
 
+void ShellSurfaceBase::SetAspectRatio(const gfx::SizeF& aspect_ratio) {
+  TRACE_EVENT1("exo", "ShellSurfaceBase::SetAspectRatio", "aspect_ratio",
+               aspect_ratio.ToString());
+
+  pending_aspect_ratio_ = aspect_ratio;
+}
+
 void ShellSurfaceBase::SetCanMinimize(bool can_minimize) {
   TRACE_EVENT1("exo", "ShellSurfaceBase::SetCanMinimize", "can_minimize",
                can_minimize);
@@ -532,41 +522,6 @@ void ShellSurfaceBase::DisableMovement() {
 
   if (widget_)
     widget_->set_movement_disabled(true);
-}
-
-// static
-Surface* ShellSurfaceBase::GetTargetSurfaceForLocatedEvent(
-    ui::LocatedEvent* event) {
-  aura::Window* window = wm::CaptureController::Get()->GetCaptureWindow();
-  gfx::PointF location_in_target = event->location_f();
-
-  if (!window)
-    return Surface::AsSurface(static_cast<aura::Window*>(event->target()));
-
-  Surface* main_surface = GetShellMainSurface(window);
-  // Skip if the event is captured by non exo windwows.
-  if (!main_surface)
-    return nullptr;
-
-  while (true) {
-    aura::Window* focused = window->GetEventHandlerForPoint(
-        gfx::ToFlooredPoint(location_in_target));
-
-    if (focused) {
-      aura::Window::ConvertPointToTarget(window, focused, &location_in_target);
-      return Surface::AsSurface(focused);
-    }
-
-    aura::Window* parent_window = wm::GetTransientParent(window);
-
-    if (!parent_window) {
-      location_in_target = event->location_f();
-      return main_surface;
-    }
-    aura::Window::ConvertPointToTarget(window, parent_window,
-                                       &location_in_target);
-    window = parent_window;
-  }
 }
 
 std::unique_ptr<base::trace_event::TracedValue>
@@ -719,7 +674,7 @@ bool ShellSurfaceBase::CanResize() const {
 
 bool ShellSurfaceBase::CanMaximize() const {
   // Shell surfaces in system modal container cannot be maximized.
-  if (container_ != ash::kShellWindowId_DefaultContainer)
+  if (!ash::desks_util::IsDeskContainerId(container_))
     return false;
 
   // Non-transient shell surfaces can be maximized.
@@ -741,6 +696,16 @@ bool ShellSurfaceBase::ShouldShowWindowTitle() const {
 
 gfx::ImageSkia ShellSurfaceBase::GetWindowIcon() {
   return icon_;
+}
+
+bool ShellSurfaceBase::OnCloseRequested(
+    views::Widget::ClosedReason close_reason) {
+  // Closing the shell surface is a potentially asynchronous operation, so we
+  // will defer actually closing the Widget right now, and come back and call
+  // CloseNow() when the callback completes and the shell surface is destroyed
+  // (see ~ShellSurfaceBase()).
+  Close();
+  return false;
 }
 
 void ShellSurfaceBase::WindowClosing() {
@@ -780,7 +745,7 @@ bool ShellSurfaceBase::WidgetHasHitTestMask() const {
   return true;
 }
 
-void ShellSurfaceBase::GetWidgetHitTestMask(gfx::Path* mask) const {
+void ShellSurfaceBase::GetWidgetHitTestMask(SkPath* mask) const {
   GetHitTestMask(mask);
 
   gfx::Point origin = host_window()->bounds().origin();
@@ -795,7 +760,7 @@ void ShellSurfaceBase::GetWidgetHitTestMask(gfx::Path* mask) const {
 void ShellSurfaceBase::OnCaptureChanged(aura::Window* lost_capture,
                                         aura::Window* gained_capture) {
   if (lost_capture == widget_->GetNativeWindow() && is_popup_) {
-    wm::CaptureController::Get()->RemoveObserver(this);
+    WMHelper::GetInstance()->GetCaptureClient()->RemoveObserver(this);
     if (gained_capture &&
         lost_capture == wm::GetTransientParent(gained_capture)) {
       // Don't close if the capture has been transferred to the child popup.
@@ -842,7 +807,7 @@ void ShellSurfaceBase::GetAccessibleNodeData(ui::AXNodeData* node_data) {
     return;
 
   node_data->AddStringAttribute(ax::mojom::StringAttribute::kChildTreeId,
-                                child_ax_tree_id_);
+                                child_ax_tree_id_.ToString());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -922,7 +887,7 @@ void ShellSurfaceBase::CreateShellSurfaceWidget(
   params.activatable = activatable ? views::Widget::InitParams::ACTIVATABLE_YES
                                    : views::Widget::InitParams::ACTIVATABLE_NO;
   // Note: NativeWidget owns this widget.
-  widget_ = new ShellSurfaceWidget(this);
+  widget_ = new ShellSurfaceWidget;
   widget_->Init(params);
 
   aura::Window* window = widget_->GetNativeWindow();
@@ -1087,27 +1052,9 @@ float ShellSurfaceBase::GetScale() const {
   return 1.f;
 }
 
-void ShellSurfaceBase::SetParentWindow(aura::Window* parent) {
-  if (parent_) {
-    parent_->RemoveObserver(this);
-    if (widget_)
-      wm::RemoveTransientChild(parent_, widget_->GetNativeWindow());
-  }
-  parent_ = parent;
-  if (parent_) {
-    parent_->AddObserver(this);
-    if (widget_)
-      wm::AddTransientChild(parent_, widget_->GetNativeWindow());
-  }
-
-  // If |parent_| is set effects the ability to maximize the window.
-  if (widget_)
-    widget_->OnSizeConstraintsChanged();
-}
-
 void ShellSurfaceBase::StartCapture() {
   widget_->set_auto_release_capture(false);
-  wm::CaptureController::Get()->AddObserver(this);
+  WMHelper::GetInstance()->GetCaptureClient()->AddObserver(this);
   // Just capture on the window.
   widget_->SetCapture(nullptr /* view */);
 }
@@ -1126,6 +1073,13 @@ void ShellSurfaceBase::CommitWidget() {
   if (!widget_)
     return;
 
+  if (!pending_aspect_ratio_.IsEmpty()) {
+    widget_->SetAspectRatio(pending_aspect_ratio_);
+  } else if (widget_->GetNativeWindow()) {
+    // TODO(yoshiki): Move the logic to clear aspect ratio into view::Widget.
+    widget_->GetNativeWindow()->ClearProperty(aura::client::kAspectRatio);
+  }
+
   UpdateWidgetBounds();
   UpdateShadow();
 
@@ -1137,7 +1091,7 @@ void ShellSurfaceBase::CommitWidget() {
     // Prevent window from being activated when hit test region is empty.
     bool activatable = activatable_ && HasHitTestRegion();
     if (activatable != CanActivate()) {
-      set_can_activate(activatable);
+      SetCanActivate(activatable);
       // Activate or deactivate window if activation state changed.
       if (activatable) {
         // Automatically activate only if the window is modal.

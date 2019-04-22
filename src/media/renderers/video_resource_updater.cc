@@ -25,16 +25,20 @@
 #include "components/viz/client/client_resource_provider.h"
 #include "components/viz/client/shared_bitmap_reporter.h"
 #include "components/viz/common/gpu/context_provider.h"
-#include "components/viz/common/gpu/texture_allocation.h"
+#include "components/viz/common/gpu/raster_context_provider.h"
 #include "components/viz/common/quads/render_pass.h"
 #include "components/viz/common/quads/stream_video_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
+#include "components/viz/common/quads/video_hole_draw_quad.h"
 #include "components/viz/common/quads/yuv_video_draw_quad.h"
 #include "components/viz/common/resources/bitmap_allocation.h"
 #include "components/viz/common/resources/resource_sizes.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/command_buffer/client/shared_image_interface.h"
+#include "gpu/command_buffer/common/shared_image_trace_utils.h"
+#include "gpu/command_buffer/common/shared_image_usage.h"
 #include "media/base/video_frame.h"
 #include "media/renderers/paint_canvas_video_renderer.h"
 #include "media/video/half_float_maker.h"
@@ -71,11 +75,10 @@ VideoFrameResourceType ExternalResourceTypeForHardwarePlanes(
             return VideoFrameResourceType::STREAM_TEXTURE;
           FALLTHROUGH;
         case GL_TEXTURE_2D:
+        case GL_TEXTURE_RECTANGLE_ARB:
           return (format == PIXEL_FORMAT_XRGB)
                      ? VideoFrameResourceType::RGB
                      : VideoFrameResourceType::RGBA_PREMULTIPLIED;
-        case GL_TEXTURE_RECTANGLE_ARB:
-          return VideoFrameResourceType::RGB;
         default:
           NOTREACHED();
           break;
@@ -114,6 +117,7 @@ VideoFrameResourceType ExternalResourceTypeForHardwarePlanes(
     case PIXEL_FORMAT_Y16:
     case PIXEL_FORMAT_ABGR:
     case PIXEL_FORMAT_XBGR:
+    case PIXEL_FORMAT_P016LE:
     case PIXEL_FORMAT_UNKNOWN:
       break;
   }
@@ -299,31 +303,96 @@ class VideoResourceUpdater::SoftwarePlaneResource
 class VideoResourceUpdater::HardwarePlaneResource
     : public VideoResourceUpdater::PlaneResource {
  public:
+  // Provides a RAII scope to access the HardwarePlaneResource as a texture on a
+  // GL context. This will wait on the sync token and provide the shared image
+  // access scope.
+  class ScopedTexture {
+   public:
+    ScopedTexture(gpu::gles2::GLES2Interface* gl,
+                  HardwarePlaneResource* resource)
+        : gl_(gl) {
+      texture_id_ = gl_->CreateAndTexStorage2DSharedImageCHROMIUM(
+          resource->mailbox().name);
+      gl_->BeginSharedImageAccessDirectCHROMIUM(
+          texture_id_, GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
+    }
+
+    ~ScopedTexture() {
+      gl_->EndSharedImageAccessDirectCHROMIUM(texture_id_);
+      gl_->DeleteTextures(1, &texture_id_);
+    }
+
+    GLuint texture_id() const { return texture_id_; }
+
+   private:
+    gpu::gles2::GLES2Interface* gl_;
+    GLuint texture_id_;
+  };
+
   HardwarePlaneResource(uint32_t plane_resource_id,
                         const gfx::Size& size,
                         viz::ResourceFormat format,
+                        const gfx::ColorSpace& color_space,
+                        bool use_gpu_memory_buffer_resources,
                         viz::ContextProvider* context_provider,
-                        viz::TextureAllocation allocation)
+                        viz::RasterContextProvider* raster_context_provider)
       : PlaneResource(plane_resource_id, size, format, /*is_software=*/false),
         context_provider_(context_provider),
-        allocation_(std::move(allocation)) {
-    DCHECK(context_provider_);
-    context_provider_->ContextGL()->ProduceTextureDirectCHROMIUM(
-        allocation_.texture_id, mailbox_.name);
+        raster_context_provider_(raster_context_provider) {
+    DCHECK(context_provider_ || raster_context_provider_);
+    const gpu::Capabilities& caps =
+        raster_context_provider_
+            ? raster_context_provider_->ContextCapabilities()
+            : context_provider_->ContextCapabilities();
+    overlay_candidate_ = use_gpu_memory_buffer_resources &&
+                         caps.texture_storage_image &&
+                         IsGpuMemoryBufferFormatSupported(format);
+    uint32_t shared_image_usage =
+        gpu::SHARED_IMAGE_USAGE_GLES2 | gpu::SHARED_IMAGE_USAGE_DISPLAY;
+    if (overlay_candidate_) {
+      shared_image_usage |= gpu::SHARED_IMAGE_USAGE_SCANOUT;
+      texture_target_ = gpu::GetBufferTextureTarget(gfx::BufferUsage::SCANOUT,
+                                                    BufferFormat(format), caps);
+    }
+    auto* sii = SharedImageInterface();
+    mailbox_ =
+        sii->CreateSharedImage(format, size, color_space, shared_image_usage);
+    ContextGL()->WaitSyncTokenCHROMIUM(
+        sii->GenUnverifiedSyncToken().GetConstData());
   }
+
   ~HardwarePlaneResource() override {
-    context_provider_->ContextGL()->DeleteTextures(1, &allocation_.texture_id);
+    gpu::SyncToken sync_token;
+    ContextGL()->GenUnverifiedSyncTokenCHROMIUM(sync_token.GetData());
+    SharedImageInterface()->DestroySharedImage(sync_token, mailbox_);
   }
 
   const gpu::Mailbox& mailbox() const { return mailbox_; }
-  GLuint texture_id() const { return allocation_.texture_id; }
-  GLenum texture_target() const { return allocation_.texture_target; }
-  bool overlay_candidate() const { return allocation_.overlay_candidate; }
+
+  GLenum texture_target() const { return texture_target_; }
+  bool overlay_candidate() const { return overlay_candidate_; }
 
  private:
+  gpu::SharedImageInterface* SharedImageInterface() {
+    auto* sii = raster_context_provider_
+                    ? raster_context_provider_->SharedImageInterface()
+                    : context_provider_->SharedImageInterface();
+    DCHECK(sii);
+    return sii;
+  }
+
+  gpu::gles2::GLES2Interface* ContextGL() {
+    auto* gl = raster_context_provider_ ? raster_context_provider_->ContextGL()
+                                        : context_provider_->ContextGL();
+    DCHECK(gl);
+    return gl;
+  }
+
   viz::ContextProvider* const context_provider_;
+  viz::RasterContextProvider* const raster_context_provider_;
   gpu::Mailbox mailbox_;
-  const viz::TextureAllocation allocation_;
+  GLenum texture_target_ = GL_TEXTURE_2D;
+  bool overlay_candidate_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(HardwarePlaneResource);
 };
@@ -342,6 +411,7 @@ VideoResourceUpdater::PlaneResource::AsHardware() {
 
 VideoResourceUpdater::VideoResourceUpdater(
     viz::ContextProvider* context_provider,
+    viz::RasterContextProvider* raster_context_provider,
     viz::SharedBitmapReporter* shared_bitmap_reporter,
     viz::ClientResourceProvider* resource_provider,
     bool use_stream_video_draw_quad,
@@ -349,6 +419,7 @@ VideoResourceUpdater::VideoResourceUpdater(
     bool use_r16_texture,
     int max_resource_size)
     : context_provider_(context_provider),
+      raster_context_provider_(raster_context_provider),
       shared_bitmap_reporter_(shared_bitmap_reporter),
       resource_provider_(resource_provider),
       use_stream_video_draw_quad_(use_stream_video_draw_quad),
@@ -357,7 +428,8 @@ VideoResourceUpdater::VideoResourceUpdater(
       max_resource_size_(max_resource_size),
       tracing_id_(g_next_video_resource_updater_id.GetNext()),
       weak_ptr_factory_(this) {
-  DCHECK(context_provider_ || shared_bitmap_reporter_);
+  DCHECK(context_provider_ || raster_context_provider_ ||
+         shared_bitmap_reporter_);
 
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "media::VideoResourceUpdater", base::ThreadTaskRunnerHandle::Get());
@@ -370,6 +442,13 @@ VideoResourceUpdater::~VideoResourceUpdater() {
 
 void VideoResourceUpdater::ObtainFrameResources(
     scoped_refptr<VideoFrame> video_frame) {
+  if (video_frame->metadata()->GetUnguessableToken(
+          VideoFrameMetadata::OVERLAY_PLANE_ID, &overlay_plane_id_)) {
+    // This is a hole punching VideoFrame, there is nothing to display.
+    frame_resource_type_ = VideoFrameResourceType::VIDEO_HOLE;
+    return;
+  }
+
   VideoFrameExternalResources external_resources =
       CreateExternalResourcesFromVideoFrame(video_frame);
   frame_resource_type_ = external_resources.type;
@@ -406,6 +485,7 @@ void VideoResourceUpdater::AppendQuads(viz::RenderPass* render_pass,
                                        gfx::Transform transform,
                                        gfx::Rect quad_rect,
                                        gfx::Rect visible_quad_rect,
+                                       const gfx::RRectF& rounded_corner_bounds,
                                        gfx::Rect clip_rect,
                                        bool is_clipped,
                                        bool contents_opaque,
@@ -415,8 +495,9 @@ void VideoResourceUpdater::AppendQuads(viz::RenderPass* render_pass,
 
   viz::SharedQuadState* shared_quad_state =
       render_pass->CreateAndAppendSharedQuadState();
-  shared_quad_state->SetAll(transform, quad_rect, visible_quad_rect, clip_rect,
-                            is_clipped, contents_opaque, draw_opacity,
+  shared_quad_state->SetAll(transform, quad_rect, visible_quad_rect,
+                            rounded_corner_bounds, clip_rect, is_clipped,
+                            contents_opaque, draw_opacity,
                             SkBlendMode::kSrcOver, sorting_context_id);
 
   bool needs_blending = !contents_opaque;
@@ -429,7 +510,17 @@ void VideoResourceUpdater::AppendQuads(viz::RenderPass* render_pass,
   const float tex_height_scale =
       static_cast<float>(visible_rect.height()) / coded_size.height();
 
+  const gfx::PointF uv_top_left(0.f, 0.f);
+  const gfx::PointF uv_bottom_right(tex_width_scale, tex_height_scale);
+
   switch (frame_resource_type_) {
+    case VideoFrameResourceType::VIDEO_HOLE: {
+      auto* video_hole_quad =
+          render_pass->CreateAndAppendDrawQuad<viz::VideoHoleDrawQuad>();
+      video_hole_quad->SetNew(shared_quad_state, quad_rect, visible_quad_rect,
+                              overlay_plane_id_);
+      break;
+    }
     case VideoFrameResourceType::YUV: {
       const gfx::Size ya_tex_size = coded_size;
 
@@ -502,8 +593,7 @@ void VideoResourceUpdater::AppendQuads(viz::RenderPass* render_pass,
         break;
       bool premultiplied_alpha =
           frame_resource_type_ == VideoFrameResourceType::RGBA_PREMULTIPLIED;
-      gfx::PointF uv_top_left(0.f, 0.f);
-      gfx::PointF uv_bottom_right(tex_width_scale, tex_height_scale);
+
       float opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
       bool flipped = false;
       bool nearest_neighbor = false;
@@ -527,19 +617,19 @@ void VideoResourceUpdater::AppendQuads(viz::RenderPass* render_pass,
       for (viz::ResourceId resource_id : texture_quad->resources) {
         resource_provider_->ValidateResource(resource_id);
       }
+
       break;
     }
     case VideoFrameResourceType::STREAM_TEXTURE: {
       DCHECK_EQ(frame_resources_.size(), 1u);
       if (frame_resources_.size() < 1u)
         break;
-      gfx::Transform scale;
-      scale.Scale(tex_width_scale, tex_height_scale);
       auto* stream_video_quad =
           render_pass->CreateAndAppendDrawQuad<viz::StreamVideoDrawQuad>();
       stream_video_quad->SetNew(shared_quad_state, quad_rect, visible_quad_rect,
                                 needs_blending, frame_resources_[0].id,
-                                frame_resources_[0].size_in_pixels, scale);
+                                frame_resources_[0].size_in_pixels, uv_top_left,
+                                uv_bottom_right);
       for (viz::ResourceId resource_id : stream_video_quad->resources) {
         resource_provider_->ValidateResource(resource_id);
       }
@@ -565,8 +655,10 @@ VideoResourceUpdater::CreateExternalResourcesFromVideoFrame(
 
 viz::ResourceFormat VideoResourceUpdater::YuvResourceFormat(
     int bits_per_channel) {
-  DCHECK(context_provider_);
-  const auto& caps = context_provider_->ContextCapabilities();
+  DCHECK(raster_context_provider_ || context_provider_);
+  const auto& caps = raster_context_provider_
+                         ? raster_context_provider_->ContextCapabilities()
+                         : context_provider_->ContextCapabilities();
   if (caps.disable_one_component_textures)
     return viz::RGBA_8888;
   if (bits_per_channel <= 8)
@@ -628,22 +720,10 @@ VideoResourceUpdater::PlaneResource* VideoResourceUpdater::AllocateResource(
     all_resources_.push_back(std::make_unique<SoftwarePlaneResource>(
         plane_resource_id, plane_size, shared_bitmap_reporter_));
   } else {
-    // Video textures get composited into the display frame, the GPU doesn't
-    // draw to them directly.
-    constexpr bool kForFrameBufferAttachment = false;
-
-    viz::TextureAllocation alloc = viz::TextureAllocation::MakeTextureId(
-        context_provider_->ContextGL(),
-        context_provider_->ContextCapabilities(), format,
-        use_gpu_memory_buffer_resources_, kForFrameBufferAttachment);
-    viz::TextureAllocation::AllocateStorage(
-        context_provider_->ContextGL(),
-        context_provider_->ContextCapabilities(), format, plane_size, alloc,
-        color_space);
-
     all_resources_.push_back(std::make_unique<HardwarePlaneResource>(
-        plane_resource_id, plane_size, format, context_provider_,
-        std::move(alloc)));
+        plane_resource_id, plane_size, format, color_space,
+        use_gpu_memory_buffer_resources_, context_provider_,
+        raster_context_provider_));
   }
   return all_resources_.back().get();
 }
@@ -670,15 +750,21 @@ void VideoResourceUpdater::CopyHardwarePlane(
   DCHECK_EQ(hardware_resource->texture_target(),
             static_cast<GLenum>(GL_TEXTURE_2D));
 
-  gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();
+  auto* gl = raster_context_provider_ ? raster_context_provider_->ContextGL()
+                                      : context_provider_->ContextGL();
 
   gl->WaitSyncTokenCHROMIUM(mailbox_holder.sync_token.GetConstData());
-  uint32_t src_texture_id =
+  // TODO(piman): convert to CreateAndTexStorage2DSharedImageCHROMIUM once
+  // VideoFrame is all converted to SharedImage.
+  GLuint src_texture_id =
       gl->CreateAndConsumeTextureCHROMIUM(mailbox_holder.mailbox.name);
-  gl->CopySubTextureCHROMIUM(
-      src_texture_id, 0, GL_TEXTURE_2D, hardware_resource->texture_id(), 0, 0,
-      0, 0, 0, output_plane_resource_size.width(),
-      output_plane_resource_size.height(), false, false, false);
+  {
+    HardwarePlaneResource::ScopedTexture scope(gl, hardware_resource);
+    gl->CopySubTextureCHROMIUM(
+        src_texture_id, 0, GL_TEXTURE_2D, scope.texture_id(), 0, 0, 0, 0, 0,
+        output_plane_resource_size.width(), output_plane_resource_size.height(),
+        false, false, false);
+  }
   gl->DeleteTextures(1, &src_texture_id);
 
   // Pass an empty sync token to force generation of a new sync token.
@@ -700,7 +786,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
     scoped_refptr<VideoFrame> video_frame) {
   TRACE_EVENT0("cc", "VideoResourceUpdater::CreateForHardwarePlanes");
   DCHECK(video_frame->HasTextures());
-  if (!context_provider_)
+  if (!context_provider_ && !raster_context_provider_)
     return VideoFrameExternalResources();
 
   VideoFrameExternalResources external_resources;
@@ -740,9 +826,15 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
       CopyHardwarePlane(video_frame.get(), resource_color_space, mailbox_holder,
                         &external_resources);
     } else {
+      const gfx::Size& coded_size = video_frame->coded_size();
+      const size_t width =
+          VideoFrame::Columns(i, video_frame->format(), coded_size.width());
+      const size_t height =
+          VideoFrame::Rows(i, video_frame->format(), coded_size.height());
+      const gfx::Size plane_size(width, height);
       auto transfer_resource = viz::TransferableResource::MakeGLOverlay(
           mailbox_holder.mailbox, GL_LINEAR, mailbox_holder.texture_target,
-          mailbox_holder.sync_token, video_frame->coded_size(),
+          mailbox_holder.sync_token, plane_size,
           video_frame->metadata()->IsTrue(VideoFrameMetadata::ALLOW_OVERLAY));
       transfer_resource.color_space = resource_color_space;
       transfer_resource.read_lock_fences_enabled =
@@ -898,14 +990,20 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
             video_frame.get(), upload_pixels_.get(), bytes_per_row);
 
         // Copy pixels into texture.
-        auto* gl = context_provider_->ContextGL();
-        gl->BindTexture(hardware_resource->texture_target(),
-                        hardware_resource->texture_id());
+        auto* gl = raster_context_provider_
+                       ? raster_context_provider_->ContextGL()
+                       : context_provider_->ContextGL();
+
         const gfx::Size& plane_size = hardware_resource->resource_size();
-        gl->TexSubImage2D(
-            hardware_resource->texture_target(), 0, 0, 0, plane_size.width(),
-            plane_size.height(), GLDataFormat(viz::ResourceFormat::RGBA_8888),
-            GLDataType(viz::ResourceFormat::RGBA_8888), upload_pixels_.get());
+        {
+          HardwarePlaneResource::ScopedTexture scope(gl, hardware_resource);
+          gl->BindTexture(hardware_resource->texture_target(),
+                          scope.texture_id());
+          gl->TexSubImage2D(
+              hardware_resource->texture_target(), 0, 0, 0, plane_size.width(),
+              plane_size.height(), GLDataFormat(viz::ResourceFormat::RGBA_8888),
+              GLDataType(viz::ResourceFormat::RGBA_8888), upload_pixels_.get());
+        }
       }
       plane_resource->SetUniqueId(video_frame->unique_id(), 0);
     }
@@ -922,7 +1020,10 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
       HardwarePlaneResource* hardware_resource = plane_resource->AsHardware();
       external_resources.type = VideoFrameResourceType::RGBA;
       gpu::SyncToken sync_token;
-      GenerateCompositorSyncToken(context_provider_->ContextGL(), &sync_token);
+      auto* gl = raster_context_provider_
+                     ? raster_context_provider_->ContextGL()
+                     : context_provider_->ContextGL();
+      GenerateCompositorSyncToken(gl, &sync_token);
       transferable_resource = viz::TransferableResource::MakeGLOverlay(
           hardware_resource->mailbox(), GL_LINEAR,
           hardware_resource->texture_target(), sync_token,
@@ -1053,21 +1154,27 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
 
     // Copy pixels into texture. TexSubImage2D() is applicable because
     // |yuv_resource_format| is LUMINANCE_F16, R16_EXT, LUMINANCE_8 or RED_8.
-    auto* gl = context_provider_->ContextGL();
-    gl->BindTexture(plane_resource->texture_target(),
-                    plane_resource->texture_id());
+    auto* gl = raster_context_provider_ ? raster_context_provider_->ContextGL()
+                                        : context_provider_->ContextGL();
     DCHECK(GLSupportsFormat(plane_resource_format));
-    gl->TexSubImage2D(
-        plane_resource->texture_target(), 0, 0, 0, resource_size_pixels.width(),
-        resource_size_pixels.height(), GLDataFormat(plane_resource_format),
-        GLDataType(plane_resource_format), pixels);
+    {
+      HardwarePlaneResource::ScopedTexture scope(gl, plane_resource);
+      gl->BindTexture(plane_resource->texture_target(), scope.texture_id());
+      gl->TexSubImage2D(plane_resource->texture_target(), 0, 0, 0,
+                        resource_size_pixels.width(),
+                        resource_size_pixels.height(),
+                        GLDataFormat(plane_resource_format),
+                        GLDataType(plane_resource_format), pixels);
+    }
 
     plane_resource->SetUniqueId(video_frame->unique_id(), i);
   }
 
   // Set the sync token otherwise resource is assumed to be synchronized.
   gpu::SyncToken sync_token;
-  GenerateCompositorSyncToken(context_provider_->ContextGL(), &sync_token);
+  auto* gl = raster_context_provider_ ? raster_context_provider_->ContextGL()
+                                      : context_provider_->ContextGL();
+  GenerateCompositorSyncToken(gl, &sync_token);
 
   for (size_t i = 0; i < plane_resources.size(); ++i) {
     HardwarePlaneResource* plane_resource = plane_resources[i]->AsHardware();
@@ -1096,7 +1203,9 @@ void VideoResourceUpdater::ReturnTexture(
     return;
 
   // The video frame will insert a wait on the previous release sync token.
-  SyncTokenClientImpl client(context_provider_->ContextGL(), sync_token);
+  auto* gl = raster_context_provider_ ? raster_context_provider_->ContextGL()
+                                      : context_provider_->ContextGL();
+  SyncTokenClientImpl client(gl, sync_token);
   video_frame->UpdateReleaseSyncToken(&client);
 }
 
@@ -1113,8 +1222,9 @@ void VideoResourceUpdater::RecycleResource(uint32_t plane_resource_id,
     return;
 
   if (context_provider_ && sync_token.HasData()) {
-    context_provider_->ContextGL()->WaitSyncTokenCHROMIUM(
-        sync_token.GetConstData());
+    auto* gl = raster_context_provider_ ? raster_context_provider_->ContextGL()
+                                        : context_provider_->ContextGL();
+    gl->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
   }
 
   if (lost_resource) {
@@ -1154,9 +1264,7 @@ bool VideoResourceUpdater::OnMemoryDump(
       pmd->CreateSharedMemoryOwnershipEdge(dump->guid(), shm_guid, kImportance);
     } else {
       base::trace_event::MemoryAllocatorDumpGuid guid =
-          gl::GetGLTextureClientGUIDForTracing(
-              context_provider_->ContextSupport()->ShareGroupTracingGUID(),
-              resource->AsHardware()->texture_id());
+          gpu::GetSharedImageGUIDForTracing(resource->AsHardware()->mailbox());
       pmd->CreateSharedGlobalAllocatorDump(guid);
       pmd->AddOwnershipEdge(dump->guid(), guid, kImportance);
     }

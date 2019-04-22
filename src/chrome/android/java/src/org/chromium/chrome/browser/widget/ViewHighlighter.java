@@ -40,11 +40,10 @@ public class ViewHighlighter {
                 : false;
         if (highlighted) return;
 
-        PulseDrawable pulseDrawable = circular
-                ? PulseDrawable.createCircle(ContextUtils.getApplicationContext())
-                : PulseDrawable.createHighlight();
+        PulseDrawable pulseDrawable = circular ? PulseDrawable.createCircle(view.getContext())
+                                               : PulseDrawable.createHighlight(view.getContext());
 
-        Resources resources = ContextUtils.getApplicationContext().getResources();
+        Resources resources = view.getContext().getResources();
         Drawable background = (Drawable) view.getBackground();
         if (background != null) {
             background = background.getConstantState().newDrawable(resources);

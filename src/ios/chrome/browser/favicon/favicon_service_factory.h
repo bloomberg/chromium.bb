@@ -8,12 +8,8 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
-
-namespace base {
-template <typename T>
-struct DefaultSingletonTraits;
-}  // namespace base
 
 enum class ServiceAccessType;
 
@@ -35,7 +31,7 @@ class FaviconServiceFactory : public BrowserStateKeyedServiceFactory {
   static FaviconServiceFactory* GetInstance();
 
  private:
-  friend struct base::DefaultSingletonTraits<FaviconServiceFactory>;
+  friend class base::NoDestructor<FaviconServiceFactory>;
 
   FaviconServiceFactory();
   ~FaviconServiceFactory() override;

@@ -51,13 +51,11 @@ std::unique_ptr<UsbChooserDialogAndroid> UsbChooserDialogAndroid::Create(
   SecurityStateTabHelper* helper =
       SecurityStateTabHelper::FromWebContents(web_contents);
   DCHECK(helper);
-  security_state::SecurityInfo security_info;
-  helper->GetSecurityInfo(&security_info);
 
   auto dialog = std::make_unique<UsbChooserDialogAndroid>(std::move(controller),
                                                           std::move(on_close));
   dialog->java_dialog_.Reset(Java_UsbChooserDialog_create(
-      env, window_android, origin_string, security_info.security_level,
+      env, window_android, origin_string, helper->GetSecurityLevel(),
       reinterpret_cast<intptr_t>(dialog.get())));
   if (dialog->java_dialog_.is_null())
     return nullptr;
@@ -93,7 +91,7 @@ void UsbChooserDialogAndroid::OnOptionAdded(size_t index) {
 
   DCHECK_LE(index, item_id_map_.size());
   int item_id = next_item_id_++;
-  std::string item_id_str = base::IntToString(item_id);
+  std::string item_id_str = base::NumberToString(item_id);
   item_id_map_.insert(item_id_map_.begin() + index, item_id_str);
 
   base::string16 device_name = controller_->GetOption(index);

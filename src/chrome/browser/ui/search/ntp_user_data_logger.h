@@ -124,6 +124,8 @@ class NTPUserDataLogger
   // The profile in which this New Tab Page was loaded.
   Profile* profile_;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(NTPUserDataLogger);
 };
 

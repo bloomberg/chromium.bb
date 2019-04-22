@@ -43,6 +43,8 @@ class CORE_EXPORT HTMLContentElement final : public V0InsertionPoint {
 
  public:
   DECLARE_NODE_FACTORY(HTMLContentElement);
+
+  HTMLContentElement(Document&);
   ~HTMLContentElement() override;
 
   bool CanAffectSelector() const override { return true; }
@@ -53,11 +55,9 @@ class CORE_EXPORT HTMLContentElement final : public V0InsertionPoint {
   const CSSSelectorList& SelectorList() const;
   bool IsSelectValid() const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
-  HTMLContentElement(Document&);
-
   void ParseAttribute(const AttributeModificationParams&) override;
 
   bool ValidateSelect() const;

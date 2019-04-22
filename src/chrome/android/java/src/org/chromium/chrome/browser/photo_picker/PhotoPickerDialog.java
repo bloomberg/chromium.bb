@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.photo_picker;
 
 import android.app.Activity;
 import android.content.Context;
+import android.net.Uri;
 import android.support.v7.app.AlertDialog;
 
 import org.chromium.base.ActivityState;
@@ -55,7 +56,7 @@ public class PhotoPickerDialog extends AlertDialog {
 
         // PhotoPickerListener:
         @Override
-        public void onPhotoPickerUserAction(@PhotoPickerAction int action, String[] photos) {
+        public void onPhotoPickerUserAction(@PhotoPickerAction int action, Uri[] photos) {
             mExternalIntentSelected = false;
             if (action == PhotoPickerAction.LAUNCH_GALLERY
                     || action == PhotoPickerAction.LAUNCH_CAMERA) {
@@ -83,7 +84,7 @@ public class PhotoPickerDialog extends AlertDialog {
      */
     public PhotoPickerDialog(Context context, PhotoPickerListener listener,
             boolean multiSelectionAllowed, List<String> mimeTypes) {
-        super(context, R.style.FullscreenWhite);
+        super(context, R.style.Theme_Chromium_Fullscreen);
         mContext = context;
         mListenerWrapper = new PhotoPickerListenerWrapper(listener);
 

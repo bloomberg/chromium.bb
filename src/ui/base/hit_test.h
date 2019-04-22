@@ -6,6 +6,7 @@
 #define UI_BASE_HIT_TEST_H_
 
 #include "build/build_config.h"
+#include "ui/base/ui_base_export.h"
 
 #if !defined(OS_WIN)
 
@@ -43,5 +44,16 @@ enum HitTestCompat {
 };
 
 #endif  // !defined(OS_WIN)
+
+namespace ui {
+
+// Returns true if the |component| is for resizing, like HTTOP or HTBOTTOM.
+UI_BASE_EXPORT bool IsResizingComponent(int component);
+
+// Returns true if the |component| is HTCAPTION or one of the resizing
+// components.
+UI_BASE_EXPORT bool CanPerformDragOrResize(int component);
+
+}  // namespace ui
 
 #endif  // UI_BASE_HIT_TEST_H_

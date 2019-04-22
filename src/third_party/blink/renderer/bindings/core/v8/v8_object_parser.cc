@@ -109,7 +109,7 @@ bool V8ObjectParser::ParseGeneratorFunction(v8::Local<v8::Context> context,
 
 bool V8ObjectParser::ParseCSSPropertyList(
     v8::Local<v8::Context> context,
-    v8::Local<v8::Function> constructor,
+    v8::Local<v8::Object> constructor,
     const AtomicString list_name,
     Vector<CSSPropertyID>* native_properties,
     Vector<AtomicString>* custom_properties,
@@ -134,9 +134,9 @@ bool V8ObjectParser::ParseCSSPropertyList(
 
     for (const auto& property : properties) {
       CSSPropertyID property_id = cssPropertyID(property);
-      if (property_id == CSSPropertyVariable) {
+      if (property_id == CSSPropertyID::kVariable) {
         custom_properties->push_back(std::move(property));
-      } else if (property_id != CSSPropertyInvalid) {
+      } else if (property_id != CSSPropertyID::kInvalid) {
         native_properties->push_back(std::move(property_id));
       }
     }

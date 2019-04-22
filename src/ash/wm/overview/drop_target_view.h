@@ -15,9 +15,6 @@ namespace ash {
 // be dragged into it and then dropped into overview.
 class DropTargetView : public views::View {
  public:
-  // The amount of rounding on window edges in overview mode.
-  static constexpr int kOverviewWindowRoundingDp = 4;
-
   explicit DropTargetView(bool has_plus_icon);
   ~DropTargetView() override = default;
 

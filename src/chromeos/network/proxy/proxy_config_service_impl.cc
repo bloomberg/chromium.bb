@@ -161,7 +161,7 @@ bool ProxyConfigServiceImpl::IgnoreProxy(const PrefService* profile_prefs,
   if (onc_source == ::onc::ONC_SOURCE_DEVICE_POLICY) {
     const user_manager::User* primary_user =
         user_manager::UserManager::Get()->GetPrimaryUser();
-    if (primary_user->IsAffiliated()) {
+    if (!primary_user || primary_user->IsAffiliated()) {
       VLOG(1) << "Respecting proxy for network, as the primary user belongs to "
               << "the domain the device is enrolled to.";
       return false;

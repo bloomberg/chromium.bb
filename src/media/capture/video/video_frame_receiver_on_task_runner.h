@@ -38,6 +38,7 @@ class CAPTURE_EXPORT VideoFrameReceiverOnTaskRunner
   void OnLog(const std::string& message) override;
   void OnStarted() override;
   void OnStartedUsingGpuDecode() override;
+  void OnStopped() override;
 
  private:
   const base::WeakPtr<VideoFrameReceiver> receiver_;

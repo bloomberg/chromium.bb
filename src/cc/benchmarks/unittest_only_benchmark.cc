@@ -61,8 +61,8 @@ std::unique_ptr<MicroBenchmarkImpl> UnittestOnlyBenchmark::CreateBenchmarkImpl(
 
   return base::WrapUnique(new UnittestOnlyBenchmarkImpl(
       origin_task_runner, nullptr,
-      base::Bind(&UnittestOnlyBenchmark::RecordImplResults,
-                 weak_ptr_factory_.GetWeakPtr())));
+      base::BindOnce(&UnittestOnlyBenchmark::RecordImplResults,
+                     weak_ptr_factory_.GetWeakPtr())));
 }
 
 }  // namespace cc

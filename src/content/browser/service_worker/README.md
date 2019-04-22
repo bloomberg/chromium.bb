@@ -4,8 +4,8 @@
 [content/renderer/service_worker]: /content/renderer/service_worker
 [content/common/service_worker]: /content/common/service_worker
 [disk_cache]: /net/disk_cache/README.md
-[embedded_worker.mojom]: https://codesearch.chromium.org/chromium/src/content/common/service_worker/embedded_worker.mojom
-[service_worker_container.mojom]: https://codesearch.chromium.org/chromium/src/content/common/service_worker/service_worker_container.mojom
+[embedded_worker.mojom]: https://codesearch.chromium.org/chromium/src/third_party/blink/public/mojom/service_worker/embedded_worker.mojom
+[service_worker_container.mojom]: https://codesearch.chromium.org/chromium/src/third_party/blink/public/mojom/service_worker/service_worker_container.mojom
 [service_worker_database.h]: https://codesearch.chromium.org/chromium/src/content/browser/service_worker/service_worker_database.h
 [third_party/blink/common/service_worker]: /third_party/blink/common/service_worker
 [third_party/blink/public/common/service_worker]: /third_party/blink/public/common/service_worker
@@ -115,6 +115,81 @@ ServiceWorkerContainer.CountFeature in [service_worker_container.mojom].
 in [embedded_worker.mojom].
 - (Persistence) ServiceWorkerDatabase::RegistrationData::used_features
 in [service_worker_database.h].
+
+## Performance
+
+We monitor service worker performance with real-world metrics
+([UMA](/tools/metrics/histograms/README.md)) and performance benchmarks.
+
+### UMA
+
+The UMA data is internal-only. Key metrics include:
+
+[Page load metrics](/chrome/browser/page_load_metrics/README) for service worker
+controlled loads:
+- PageLoad.Clients.ServiceWorker2.PaintTiming.NavigationToFirstContentfulPaint
+- PageLoad.Clients.ServiceWorker2.Input.NavigationToFirstContentfulPaint
+- PageLoad.Clients.ServiceWorker2.InteractiveTiming.FirstInputDelay2
+
+Service worker startup time and breakdown:
+- ServiceWorker.StartWorker.Time
+- ServiceWorker.StartTiming.Duration
+- ServiceWorker.StartTiming.\*To\* (e.g.,
+  ServiceWorker.StartTiming.StartToReceivedStartWorker)
+
+Fetch event handling:
+- ServiceWorker.LoadTiming.MainFrame.MainResource.\*
+- ServiceWorker.LoadTiming.Subresource.\*
+
+TODO(falken, bashi): Add a list of the milestones of startup and fetch event
+handling.
+
+### Tests
+
+We run a limited number of
+[Telemetry](https://chromium.googlesource.com/catapult/+/HEAD/telemetry/README.md)
+benchmark tests for service worker. These tests are part of the [Loading
+benchmarks](/docs/speed/benchmark/harnesses/loading.md), as the "pwa" tests
+inside the "loading.mobile" suite. The tests do not run on desktop machines
+(loading.desktop) due to resource constraints.
+
+See a quick
+[dashboard](https://chromeperf.appspot.com/report?sid=59acafc01d33fa4fcea163b4b83d733670d91e7c2eaa853656c2e23f21c04dfd)
+of these test results. You can also run the benchmarks locally:
+
+```
+# Run benchmark on `FlipKart`
+$ tools/perf/run_benchmark --browser=android-chromium loading.mobile --story-filter='FlipKart'
+
+# Run benchmark on `FlipKart` with cache_temperature = cold
+$ tools/perf/run_benchmark --browser=android-chromium loading.mobile --story-filter='FlipKart_cold'
+```
+
+TODO(falken): Merge this with loading.md and cache_temperature.py documentation.
+
+The PWA tests load a page multiple times. Each time has a different "cache
+temperature". These temperatures have special significance for service worker
+controlled page loads:
+- **cold**: tests the very first load to a page (no active service worker).
+  Browser cache and storage data including service worker registrations are
+  cleared first.
+- **warm**: tests the second load to a page (with an active service worker). It
+  first does a cold load which installs a service worker, waits for the service
+  worker to reach activated state, and then tests the load.
+- **hot**: tests the third load to the page (with an active service worker and
+  V8 code caching). It first does a warm load, then waits(?) for V8 Code Caching
+  to complete, then tests another load.
+
+Service workers are terminated between loads in order to include service worker
+startup as part of the performance test.
+
+Code links and resources:
+- PWA test suite: see 'pwa' in
+  [loading_mobile.py](/tools/perf/page_sets/loading_mobile.py), as of March 2019
+  [here](https://cs.chromium.org/chromium/src/tools/perf/page_sets/loading_mobile.py?l=88&rcl=e590d4e0ae6d3cbdabee199ea6fabe152a3eea83).
+- [cache_temperature.py](https://chromium.googlesource.com/catapult/+/master/telemetry/telemetry/page/cache_temperature.py)
+- "Perf benchmark for PWAs using the loading benchmark": [crbug](https://crbug.com/736697) and
+  [design doc](https://docs.google.com/document/d/1Nf97CVp1X7aSqvAspyJ7yOCDyr1osUNrnfrGwZ_Yuuo/edit?usp=sharing).
 
 ## Other documentation
 

@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -19,6 +20,7 @@
 #include "base/threading/thread.h"
 #include "net/base/io_buffer.h"
 #include "net/base/test_completion_callback.h"
+#include "storage/browser/fileapi/file_stream_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using storage::FileStreamWriter;
@@ -45,27 +47,6 @@ class LocalFileStreamWriterTest : public testing::Test {
  protected:
   base::FilePath Path(const std::string& name) {
     return temp_dir_.GetPath().AppendASCII(name);
-  }
-
-  int WriteStringToWriter(LocalFileStreamWriter* writer,
-                          const std::string& data) {
-    scoped_refptr<net::StringIOBuffer> buffer =
-        base::MakeRefCounted<net::StringIOBuffer>(data);
-    scoped_refptr<net::DrainableIOBuffer> drainable =
-        base::MakeRefCounted<net::DrainableIOBuffer>(std::move(buffer),
-                                                     data.size());
-
-    while (drainable->BytesRemaining() > 0) {
-      net::TestCompletionCallback callback;
-      int result = writer->Write(
-          drainable.get(), drainable->BytesRemaining(), callback.callback());
-      if (result == net::ERR_IO_PENDING)
-        result = callback.WaitForResult();
-      if (result <= 0)
-        return result;
-      drainable->DidConsume(result);
-    }
-    return net::OK;
   }
 
   std::string GetFileContent(const base::FilePath& path) {

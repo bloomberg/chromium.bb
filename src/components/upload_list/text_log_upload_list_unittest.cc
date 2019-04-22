@@ -248,7 +248,7 @@ TEST_F(TextLogUploadListTest, ParseWithState) {
     test_entry += ",";
     test_entry.append(kTestCaptureTime);
     test_entry += ",";
-    test_entry.append(base::IntToString(
+    test_entry.append(base::NumberToString(
         static_cast<int>(UploadList::UploadInfo::State::Uploaded)));
     test_entry += "\n";
   }
@@ -274,6 +274,69 @@ TEST_F(TextLogUploadListTest, ParseWithState) {
     EXPECT_STREQ(kTestCaptureTime, base::NumberToString(time_double).c_str());
     EXPECT_EQ(UploadList::UploadInfo::State::Uploaded, uploads[i].state);
   }
+}
+
+TEST_F(TextLogUploadListTest, ClearUsingUploadTime) {
+  constexpr time_t kTestTime = 1234u;
+  constexpr char kOtherEntry[] = "4567,def\n";
+  std::string test_entry = base::NumberToString(kTestTime);
+  test_entry.append(",abc\n");
+  test_entry.append(kOtherEntry);
+  WriteUploadLog(test_entry);
+
+  scoped_refptr<TextLogUploadList> upload_list =
+      new TextLogUploadList(log_path());
+
+  base::RunLoop run_loop;
+  upload_list->Clear(base::Time::FromTimeT(kTestTime),
+                     base::Time::FromTimeT(kTestTime + 1),
+                     run_loop.QuitClosure());
+  run_loop.Run();
+
+  std::string contents;
+  base::ReadFileToString(log_path(), &contents);
+  EXPECT_EQ(kOtherEntry, contents);
+}
+
+TEST_F(TextLogUploadListTest, ClearUsingCaptureTime) {
+  constexpr time_t kTestTime = 1234u;
+  constexpr char kOtherEntry[] = "4567,def,def,7890\n";
+  std::string test_entry = kOtherEntry;
+  test_entry.append("4567,abc,abc,");
+  test_entry.append(base::NumberToString(kTestTime));
+  test_entry.append("\n");
+  WriteUploadLog(test_entry);
+
+  scoped_refptr<TextLogUploadList> upload_list =
+      new TextLogUploadList(log_path());
+
+  base::RunLoop run_loop;
+  upload_list->Clear(base::Time::FromTimeT(kTestTime),
+                     base::Time::FromTimeT(kTestTime + 1),
+                     run_loop.QuitClosure());
+  run_loop.Run();
+
+  std::string contents;
+  ASSERT_TRUE(base::ReadFileToString(log_path(), &contents));
+  EXPECT_EQ(kOtherEntry, contents);
+}
+
+TEST_F(TextLogUploadListTest, ClearingAllDataDeletesFile) {
+  constexpr time_t kTestTime = 1234u;
+  std::string test_entry = base::NumberToString(kTestTime);
+  test_entry.append(",abc\n");
+  WriteUploadLog(test_entry);
+
+  scoped_refptr<TextLogUploadList> upload_list =
+      new TextLogUploadList(log_path());
+
+  base::RunLoop run_loop;
+  upload_list->Clear(base::Time::FromTimeT(kTestTime),
+                     base::Time::FromTimeT(kTestTime + 1),
+                     run_loop.QuitClosure());
+  run_loop.Run();
+
+  EXPECT_FALSE(base::PathExists(log_path()));
 }
 
 // https://crbug.com/597384

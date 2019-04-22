@@ -11,6 +11,7 @@
   var message = await dp.DOM.getNodeForLocation({x: 10, y: 10, includeUserAgentShadowDOM: false});
   var backendNodeId = message.result.backendNodeId;
   await dp.DOM.enable();
+  await dp.DOM.getDocument();
   testRunner.log(await nodeTracker.nodeForBackendId(backendNodeId), 'Node: ');
   testRunner.completeTest();
 })

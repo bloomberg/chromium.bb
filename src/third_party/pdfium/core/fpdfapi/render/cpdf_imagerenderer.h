@@ -14,6 +14,7 @@
 #include "core/fxcrt/unowned_ptr.h"
 #include "core/fxge/dib/cfx_imagerenderer.h"
 #include "core/fxge/fx_dib.h"
+#include "third_party/base/optional.h"
 
 class CFX_DIBitmap;
 class CFX_DIBBase;
@@ -32,7 +33,7 @@ class CPDF_ImageRenderer {
 
   bool Start(CPDF_RenderStatus* pStatus,
              CPDF_ImageObject* pImageObject,
-             const CFX_Matrix* pObj2Device,
+             const CFX_Matrix& mtObj2Device,
              bool bStdCS,
              BlendMode blendType);
 
@@ -40,7 +41,7 @@ class CPDF_ImageRenderer {
              const RetainPtr<CFX_DIBBase>& pDIBBase,
              FX_ARGB bitmap_argb,
              int bitmap_alpha,
-             const CFX_Matrix* pImage2Device,
+             const CFX_Matrix& mtImage2Device,
              const FXDIB_ResampleOptions& options,
              bool bStdCS,
              BlendMode blendType);
@@ -49,33 +50,49 @@ class CPDF_ImageRenderer {
   bool GetResult() const { return m_Result; }
 
  private:
+  enum class Mode {
+    kNone = 0,
+    kDefault,
+    kBlend,
+    kTransform,
+  };
+
   bool StartBitmapAlpha();
   bool StartDIBBase();
   bool StartRenderDIBBase();
   bool StartLoadDIBBase();
+  bool ContinueDefault(PauseIndicatorIface* pPause);
+  bool ContinueBlend(PauseIndicatorIface* pPause);
+  bool ContinueTransform(PauseIndicatorIface* pPause);
   bool DrawMaskedImage();
-  bool DrawPatternImage(const CFX_Matrix* pObj2Device);
+  bool DrawPatternImage();
   bool NotDrawing() const;
   FX_RECT GetDrawRect() const;
   CFX_Matrix GetDrawMatrix(const FX_RECT& rect) const;
   void CalculateDrawImage(CFX_DefaultRenderDevice* bitmap_device1,
                           CFX_DefaultRenderDevice* bitmap_device2,
                           const RetainPtr<CFX_DIBBase>& pDIBBase,
-                          CFX_Matrix* pNewMatrix,
+                          const CFX_Matrix& mtNewMatrix,
                           const FX_RECT& rect) const;
   const CPDF_RenderOptions& GetRenderOptions() const;
   void HandleFilters();
+  Optional<FX_RECT> GetUnitRect() const;
+  bool GetDimensionsFromUnitRect(const FX_RECT& rect,
+                                 int* left,
+                                 int* top,
+                                 int* width,
+                                 int* height) const;
 
   UnownedPtr<CPDF_RenderStatus> m_pRenderStatus;
   UnownedPtr<CPDF_ImageObject> m_pImageObject;
-  UnownedPtr<const CFX_Matrix> m_pObj2Device;
   UnownedPtr<CPDF_Pattern> m_pPattern;
   RetainPtr<CFX_DIBBase> m_pDIBBase;
+  CFX_Matrix m_mtObj2Device;
   CFX_Matrix m_ImageMatrix;
   CPDF_ImageLoader m_Loader;
   std::unique_ptr<CFX_ImageTransformer> m_pTransformer;
   std::unique_ptr<CFX_ImageRenderer> m_DeviceHandle;
-  int m_Status = 0;
+  Mode m_Mode = Mode::kNone;
   int m_BitmapAlpha = 0;
   BlendMode m_BlendType = BlendMode::kNormal;
   FX_ARGB m_FillArgb = 0;

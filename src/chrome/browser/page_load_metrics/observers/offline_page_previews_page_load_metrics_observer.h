@@ -26,6 +26,7 @@ extern const char kHistogramOfflinePreviewsFirstLayout[];
 extern const char kHistogramOfflinePreviewsLoadEventFired[];
 extern const char kHistogramOfflinePreviewsFirstContentfulPaint[];
 extern const char kHistogramOfflinePreviewsParseStart[];
+extern const char kHistogramOfflinePreviewsPageEndReason[];
 
 }  // namespace internal
 
@@ -40,6 +41,11 @@ class OfflinePagePreviewsPageLoadMetricsObserver
   // page_load_metrics::PageLoadMetricsObserver:
   ObservePolicy OnCommit(content::NavigationHandle* navigation_handle,
                          ukm::SourceId source_id) override;
+  ObservePolicy FlushMetricsOnAppEnterBackground(
+      const page_load_metrics::mojom::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadExtraInfo& info) override;
+  void OnComplete(const page_load_metrics::mojom::PageLoadTiming& timing,
+                  const page_load_metrics::PageLoadExtraInfo& info) override;
   void OnDomContentLoadedEventStart(
       const page_load_metrics::mojom::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& info) override;

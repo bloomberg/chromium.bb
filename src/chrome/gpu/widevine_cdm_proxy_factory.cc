@@ -8,6 +8,7 @@
 #include <initguid.h>
 
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "media/cdm/cdm_proxy.h"
 #include "media/gpu/windows/d3d11_cdm_proxy.h"
@@ -34,7 +35,7 @@ std::unique_ptr<media::CdmProxy> CreateWidevineCdmProxy() {
   // Create device and pupulate |device|.
   HRESULT hresult = D3D11CreateDevice(
       nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, 0, feature_levels,
-      arraysize(feature_levels), D3D11_SDK_VERSION, device.GetAddressOf(),
+      base::size(feature_levels), D3D11_SDK_VERSION, device.GetAddressOf(),
       nullptr, nullptr);
 
   if (FAILED(hresult)) {

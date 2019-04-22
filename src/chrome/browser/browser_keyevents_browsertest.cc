@@ -7,8 +7,8 @@
 #include <stddef.h>
 
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -25,6 +25,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 // TODO(kbr): remove: http://crbug.com/222296
@@ -370,7 +371,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_NormalKeyEvents) {
   ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER));
 
   int tab_index = browser()->tab_strip_model()->active_index();
-  for (size_t i = 0; i < arraysize(kTestNoInput); ++i) {
+  for (size_t i = 0; i < base::size(kTestNoInput); ++i) {
     EXPECT_NO_FATAL_FAILURE(TestKeyEvent(tab_index, kTestNoInput[i]))
         << "kTestNoInput[" << i << "] failed:\n"
         << GetTestDataDescription(kTestNoInput[i]);
@@ -378,7 +379,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_NormalKeyEvents) {
 
   // Input in normal text box.
   ASSERT_NO_FATAL_FAILURE(SetFocusedElement(tab_index, L"A"));
-  for (size_t i = 0; i < arraysize(kTestWithInput); ++i) {
+  for (size_t i = 0; i < base::size(kTestWithInput); ++i) {
     EXPECT_NO_FATAL_FAILURE(TestKeyEvent(tab_index, kTestWithInput[i]))
         << "kTestWithInput[" << i << "] in text box failed:\n"
         << GetTestDataDescription(kTestWithInput[i]);
@@ -387,7 +388,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_NormalKeyEvents) {
 
   // Input in password box.
   ASSERT_NO_FATAL_FAILURE(SetFocusedElement(tab_index, L"B"));
-  for (size_t i = 0; i < arraysize(kTestWithInput); ++i) {
+  for (size_t i = 0; i < base::size(kTestWithInput); ++i) {
     EXPECT_NO_FATAL_FAILURE(TestKeyEvent(tab_index, kTestWithInput[i]))
         << "kTestWithInput[" << i << "] in password box failed:\n"
         << GetTestDataDescription(kTestWithInput[i]);
@@ -527,6 +528,14 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, CommandKeyEvents) {
 #define MAYBE_AccessKeys AccessKeys
 #endif
 IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_AccessKeys) {
+  // TODO(crbug.com/916379): this test fails in mash because of differences in
+  // timing. In particular, in classic mode an accelerator that moves focus is
+  // processed *after* text is inserted, where as now the accelerator runs
+  // first, resulting in text going to the wrong place. The right fix likely
+  // entails updating the test for mash.
+  if (features::IsSingleProcessMash())
+    return;
+
 #if defined(OS_MACOSX)
   // On Mac, access keys use ctrl+alt modifiers.
   static const KeyEventTestData kTestAccessA = {
@@ -755,13 +764,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, EditorKeyBindings) {
 }
 #endif
 
-// See http://crbug.com/147579
-#if defined(OS_WIN)
-#define MAYBE_PageUpDownKeys PageUpDownKeys
-#else
-#define MAYBE_PageUpDownKeys DISABLED_PageUpDownKeys
-#endif
-IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_PageUpDownKeys) {
+IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, PageUpDownKeys) {
   static const KeyEventTestData kTestPageUp = {
     ui::VKEY_PRIOR, false, false, false, false,
     false, false, false, false, 2,

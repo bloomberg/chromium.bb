@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,10 +17,31 @@
 chrome.safeBrowsingPrivate = {};
 
 /**
+ * @enum {string}
+ */
+chrome.safeBrowsingPrivate.URLType = {
+  EVENT_URL: 'EVENT_URL',
+  LANDING_PAGE: 'LANDING_PAGE',
+  LANDING_REFERRER: 'LANDING_REFERRER',
+  CLIENT_REDIRECT: 'CLIENT_REDIRECT',
+  RECENT_NAVIGATION: 'RECENT_NAVIGATION',
+  REFERRER: 'REFERRER',
+};
+
+/**
+ * @enum {string}
+ */
+chrome.safeBrowsingPrivate.NavigationInitiation = {
+  BROWSER_INITIATED: 'BROWSER_INITIATED',
+  RENDERER_INITIATED_WITHOUT_USER_GESTURE: 'RENDERER_INITIATED_WITHOUT_USER_GESTURE',
+  RENDERER_INITIATED_WITH_USER_GESTURE: 'RENDERER_INITIATED_WITH_USER_GESTURE',
+};
+
+/**
  * @typedef {{
  *   url: string,
  *   userName: string,
- *   isPhishing: boolean
+ *   isPhishingUrl: boolean
  * }}
  */
 chrome.safeBrowsingPrivate.PolicySpecifiedPasswordReuse;
@@ -29,8 +50,8 @@ chrome.safeBrowsingPrivate.PolicySpecifiedPasswordReuse;
  * @typedef {{
  *   url: string,
  *   fileName: string,
- *   sha256: string,
- *   userName: (string|undefined)
+ *   downloadDigestSha256: string,
+ *   userName: string
  * }}
  */
 chrome.safeBrowsingPrivate.DangerousDownloadInfo;
@@ -39,10 +60,43 @@ chrome.safeBrowsingPrivate.DangerousDownloadInfo;
  * @typedef {{
  *   url: string,
  *   reason: string,
- *   netErrorCode: (number|undefined)
+ *   netErrorCode: (string|undefined),
+ *   userName: string
  * }}
  */
 chrome.safeBrowsingPrivate.InterstitialInfo;
+
+/**
+ * @typedef {{
+ *   url: (string|undefined)
+ * }}
+ */
+chrome.safeBrowsingPrivate.ServerRedirect;
+
+/**
+ * @typedef {{
+ *   url: string,
+ *   mainFrameUrl: (string|undefined),
+ *   urlType: !chrome.safeBrowsingPrivate.URLType,
+ *   ipAddresses: (!Array<string>|undefined),
+ *   referrerUrl: (string|undefined),
+ *   referrerMainFrameUrl: (string|undefined),
+ *   isRetargeting: (boolean|undefined),
+ *   navigationTimeMs: (number|undefined),
+ *   serverRedirectChain: (!Array<!chrome.safeBrowsingPrivate.ServerRedirect>|undefined),
+ *   navigationInitiation: (!chrome.safeBrowsingPrivate.NavigationInitiation|undefined),
+ *   maybeLaunchedByExternalApp: (boolean|undefined)
+ * }}
+ */
+chrome.safeBrowsingPrivate.ReferrerChainEntry;
+
+/**
+ * Gets referrer chain for the specified tab.
+ * @param {number} tabId Id of the tab from which to retrieve the referrer.
+ * @param {function(!Array<!chrome.safeBrowsingPrivate.ReferrerChainEntry>):void} callbac
+ *     k Called with the list of referrer chain entries.
+ */
+chrome.safeBrowsingPrivate.getReferrerChain = function(tabId, callback) {};
 
 /**
  * Fired when Chrome detects a reuse of a policy specified password.
@@ -66,10 +120,10 @@ chrome.safeBrowsingPrivate.onDangerousDownloadOpened;
  * Fired when a security interstitial is shown to the user.
  * @type {!ChromeEvent}
  */
-chrome.safeBrowsingPrivate.onInterstitialShown;
+chrome.safeBrowsingPrivate.onSecurityInterstitialShown;
 
 /**
  * Fired when the user clicked-through a security interstitial.
  * @type {!ChromeEvent}
  */
-chrome.safeBrowsingPrivate.onInterstitialProceeded;
+chrome.safeBrowsingPrivate.onSecurityInterstitialProceeded;

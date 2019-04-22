@@ -10,14 +10,13 @@
 #include <memory>
 
 #include "base/base_paths.h"
-#include "base/macros.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_path_override.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/win/registry.h"
 #include "base/win/shlwapi.h"  // For SHDeleteKey.
-#include "base/win/win_util.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome/install_static/test/scoped_install_details.h"
@@ -244,20 +243,20 @@ TEST_F(GoogleUpdateSettingsTest, UpdateGoogleUpdateApKey) {
     L"1.1-full",
     L"1.1-dev-full"
   };
-  static_assert(arraysize(full) == arraysize(plain), "bad full array size");
+  static_assert(base::size(full) == base::size(plain), "bad full array size");
   const wchar_t* const multifail[] = {
     L"-multifail",
     L"1.1-multifail",
     L"1.1-dev-multifail"
   };
-  static_assert(arraysize(multifail) == arraysize(plain),
+  static_assert(base::size(multifail) == base::size(plain),
                 "bad multifail array size");
   const wchar_t* const multifail_full[] = {
     L"-multifail-full",
     L"1.1-multifail-full",
     L"1.1-dev-multifail-full"
   };
-  static_assert(arraysize(multifail_full) == arraysize(plain),
+  static_assert(base::size(multifail_full) == base::size(plain),
                 "bad multifail_full array size");
   const wchar_t* const* input_arrays[] = {
     plain,
@@ -290,7 +289,7 @@ TEST_F(GoogleUpdateSettingsTest, UpdateGoogleUpdateApKey) {
           else
             outputs = plain;
         }
-        for (size_t input_idx = 0; input_idx < arraysize(plain); ++input_idx) {
+        for (size_t input_idx = 0; input_idx < base::size(plain); ++input_idx) {
           const wchar_t* input = inputs[input_idx];
           const wchar_t* output = outputs[input_idx];
 
@@ -453,108 +452,6 @@ TEST_F(GoogleUpdateSettingsTest, GetAppUpdatePolicyNoOverride) {
             GoogleUpdateSettings::GetAppUpdatePolicy(kTestProductGuid,
                                                      &is_overridden));
   EXPECT_FALSE(is_overridden);
-}
-
-TEST_F(GoogleUpdateSettingsTest, UpdateProfileCountsSystemInstall) {
-  // Set up a basic system-level InstallDetails.
-  install_static::ScopedInstallDetails details(true /* system_level */);
-
-  // No profile count keys present yet.
-  base::string16 state_key = install_static::GetClientStateMediumKeyPath();
-  base::string16 num_profiles_path(state_key);
-  num_profiles_path.append(L"\\");
-  num_profiles_path.append(google_update::kRegProfilesActive);
-  base::string16 num_signed_in_path(state_key);
-  num_signed_in_path.append(L"\\");
-  num_signed_in_path.append(google_update::kRegProfilesSignedIn);
-
-  EXPECT_EQ(ERROR_FILE_NOT_FOUND,
-            RegKey().Open(HKEY_LOCAL_MACHINE,
-                          num_profiles_path.c_str(),
-                          KEY_QUERY_VALUE));
-  EXPECT_EQ(ERROR_FILE_NOT_FOUND,
-            RegKey().Open(HKEY_LOCAL_MACHINE,
-                          num_signed_in_path.c_str(),
-                          KEY_QUERY_VALUE));
-
-  // Show time! Write the values.
-  GoogleUpdateSettings::UpdateProfileCounts(3, 2);
-
-  // Verify the keys were created.
-  EXPECT_EQ(ERROR_SUCCESS,
-            RegKey().Open(HKEY_LOCAL_MACHINE,
-                          num_profiles_path.c_str(),
-                          KEY_QUERY_VALUE));
-  EXPECT_EQ(ERROR_SUCCESS,
-            RegKey().Open(HKEY_LOCAL_MACHINE,
-                          num_signed_in_path.c_str(),
-                          KEY_QUERY_VALUE));
-
-  base::string16 uniquename;
-  EXPECT_TRUE(base::win::GetUserSidString(&uniquename));
-
-  // Verify the values are accessible.
-  DWORD num_profiles = 0;
-  DWORD num_signed_in = 0;
-  base::string16 aggregate;
-  EXPECT_EQ(
-      ERROR_SUCCESS,
-      RegKey(HKEY_LOCAL_MACHINE, num_profiles_path.c_str(),
-             KEY_QUERY_VALUE).ReadValueDW(uniquename.c_str(),
-                                          &num_profiles));
-  EXPECT_EQ(
-      ERROR_SUCCESS,
-      RegKey(HKEY_LOCAL_MACHINE, num_signed_in_path.c_str(),
-             KEY_QUERY_VALUE).ReadValueDW(uniquename.c_str(),
-                                          &num_signed_in));
-  EXPECT_EQ(
-      ERROR_SUCCESS,
-      RegKey(HKEY_LOCAL_MACHINE, num_signed_in_path.c_str(),
-             KEY_QUERY_VALUE).ReadValue(google_update::kRegAggregateMethod,
-                                        &aggregate));
-
-  // Verify the correct values were written.
-  EXPECT_EQ(3u, num_profiles);
-  EXPECT_EQ(2u, num_signed_in);
-  EXPECT_EQ(L"sum()", aggregate);
-}
-
-TEST_F(GoogleUpdateSettingsTest, UpdateProfileCountsUserInstall) {
-  // Unit tests never operate as an installed application, so will never
-  // be a system install.
-
-  // No profile count values present yet.
-  base::string16 state_key = install_static::GetClientStateKeyPath();
-
-  EXPECT_EQ(ERROR_FILE_NOT_FOUND,
-            RegKey().Open(HKEY_CURRENT_USER,
-                          state_key.c_str(),
-                          KEY_QUERY_VALUE));
-
-  // Show time! Write the values.
-  GoogleUpdateSettings::UpdateProfileCounts(4, 1);
-
-  // Verify the key was created.
-  EXPECT_EQ(ERROR_SUCCESS,
-            RegKey().Open(HKEY_CURRENT_USER,
-                          state_key.c_str(),
-                          KEY_QUERY_VALUE));
-
-  // Verify the values are accessible.
-  base::string16 num_profiles;
-  base::string16 num_signed_in;
-  EXPECT_EQ(
-      ERROR_SUCCESS,
-      RegKey(HKEY_CURRENT_USER, state_key.c_str(), KEY_QUERY_VALUE).
-          ReadValue(google_update::kRegProfilesActive, &num_profiles));
-  EXPECT_EQ(
-      ERROR_SUCCESS,
-      RegKey(HKEY_CURRENT_USER, state_key.c_str(), KEY_QUERY_VALUE).
-          ReadValue(google_update::kRegProfilesSignedIn, &num_signed_in));
-
-  // Verify the correct values were written.
-  EXPECT_EQ(L"4", num_profiles);
-  EXPECT_EQ(L"1", num_signed_in);
 }
 
 #if defined(GOOGLE_CHROME_BUILD)
@@ -855,12 +752,12 @@ TEST_P(SetProgressTest, SetProgress) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(SetProgressUserLevel,
-                        SetProgressTest,
-                        testing::Values(false));
-INSTANTIATE_TEST_CASE_P(SetProgressSystemLevel,
-                        SetProgressTest,
-                        testing::Values(true));
+INSTANTIATE_TEST_SUITE_P(SetProgressUserLevel,
+                         SetProgressTest,
+                         testing::Values(false));
+INSTANTIATE_TEST_SUITE_P(SetProgressSystemLevel,
+                         SetProgressTest,
+                         testing::Values(true));
 
 // Test GoogleUpdateSettings::GetUninstallCommandLine at system- or user-level,
 // according to the param.
@@ -918,8 +815,9 @@ TEST_P(GetUninstallCommandLine, TestRealValue) {
             GoogleUpdateSettings::GetUninstallCommandLine(!system_install_));
 }
 
-INSTANTIATE_TEST_CASE_P(GetUninstallCommandLineAtLevel, GetUninstallCommandLine,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(GetUninstallCommandLineAtLevel,
+                         GetUninstallCommandLine,
+                         testing::Bool());
 
 // Test GoogleUpdateSettings::GetGoogleUpdateVersion at system- or user-level,
 // according to the param.
@@ -978,8 +876,9 @@ TEST_P(GetGoogleUpdateVersion, TestRealValue) {
           .IsValid());
 }
 
-INSTANTIATE_TEST_CASE_P(GetGoogleUpdateVersionAtLevel, GetGoogleUpdateVersion,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(GetGoogleUpdateVersionAtLevel,
+                         GetGoogleUpdateVersion,
+                         testing::Bool());
 
 // Test values for use by the CollectStatsConsent test fixture.
 class StatsState {
@@ -1124,14 +1023,14 @@ TEST_P(CollectStatsConsent, SetCollectStatsConsent) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     UserLevel,
     CollectStatsConsent,
     ::testing::Values(
         StatsState(StatsState::kUserLevel, StatsState::NO_SETTING),
         StatsState(StatsState::kUserLevel, StatsState::FALSE_SETTING),
         StatsState(StatsState::kUserLevel, StatsState::TRUE_SETTING)));
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SystemLevel,
     CollectStatsConsent,
     ::testing::Values(StatsState(StatsState::kSystemLevel,

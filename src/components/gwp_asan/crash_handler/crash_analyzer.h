@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include "base/gtest_prod_util.h"
 #include "components/gwp_asan/common/allocator_state.h"
 #include "components/gwp_asan/crash_handler/crash.pb.h"
 #include "third_party/crashpad/crashpad/util/misc/address_types.h"
@@ -47,8 +48,16 @@ class CrashAnalyzer {
     kErrorMismatchedBitness = 7,
     // The allocator computed an invalid slot index.
     kErrorBadSlot = 8,
+    // Failed to read the crashing process' memory of the SlotMetadata.
+    kErrorFailedToReadSlotMetadata = 9,
+    // The allocator stored an invalid metadata index for a given slot.
+    kErrorBadMetadataIndex = 10,
+    // The computed metadata index was outdated.
+    kErrorOutdatedMetadataIndex = 11,
+    // Failed to read the crashing process' slot to metadata mapping.
+    kErrorFailedToReadSlotMetadataMapping = 12,
     // Number of values in this enumeration, required by UMA.
-    kMaxValue = kErrorBadSlot
+    kMaxValue = kErrorFailedToReadSlotMetadataMapping
   };
 
   // Given a ProcessSnapshot, determine if the exception is related to GWP-ASan.
@@ -62,10 +71,6 @@ class CrashAnalyzer {
  private:
   using SlotMetadata = AllocatorState::SlotMetadata;
 
-  // The maximum stack trace size the analyzer will extract from a crashing
-  // process.
-  static constexpr size_t kMaxStackTraceLen = 64;
-
   // Given an ExceptionSnapshot, return the address of where the exception
   // occurred (or null if it was not a data access exception.)
   static crashpad::VMAddress GetAccessAddress(
@@ -78,26 +83,22 @@ class CrashAnalyzer {
 
   // This method implements the underlying logic for GetExceptionInfo(). It
   // analyzes the GuardedPageAllocator of the crashing process, and if the
-  // exception address is in the GWP-ASan region it fills out the protobuf
+  // exception occurred in the GWP-ASan region it fills out the protobuf
   // parameter and returns kGwpAsanCrash.
   static GwpAsanCrashAnalysisResult AnalyzeCrashedAllocator(
       const crashpad::ProcessMemory& memory,
+      const crashpad::ExceptionSnapshot& exception,
       crashpad::VMAddress gpa_addr,
-      crashpad::VMAddress exception_addr,
       gwp_asan::Crash* proto);
 
-  // This method fills out an AllocationInfo protobuf from a
-  // SlotMetadata::AllocationInfo struct.
-  static bool ReadAllocationInfo(const crashpad::ProcessMemory& memory,
+  // This method fills out an AllocationInfo protobuf from a stack trace
+  // and a SlotMetadata::AllocationInfo struct.
+  static void ReadAllocationInfo(const uint8_t* stack_trace,
+                                 size_t stack_trace_offset,
                                  const SlotMetadata::AllocationInfo& slot_info,
                                  gwp_asan::Crash_AllocationInfo* proto_info);
 
-  // Read a stack trace from a crashing process with address crashing_trace_addr
-  // and length trace_len into trace_output. On failure returns false.
-  static bool ReadStackTrace(const crashpad::ProcessMemory& memory,
-                             crashpad::VMAddress crashing_trace_addr,
-                             uintptr_t* trace_output,
-                             size_t trace_len);
+  FRIEND_TEST_ALL_PREFIXES(CrashAnalyzerTest, StackTraceCollection);
 };
 
 }  // namespace internal

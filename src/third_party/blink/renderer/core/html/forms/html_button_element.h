@@ -36,6 +36,8 @@ class HTMLButtonElement final : public HTMLFormControlElement {
 
   explicit HTMLButtonElement(Document&);
 
+  const AttrNameToTrustedType& GetCheckedAttributeTypes() const override;
+
   void setType(const AtomicString&);
 
   const AtomicString& Value() const;
@@ -47,7 +49,7 @@ class HTMLButtonElement final : public HTMLFormControlElement {
 
   const AtomicString& FormControlType() const override;
 
-  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout) override;
 
   // HTMLFormControlElement always creates one, but buttons don't need it.
   bool AlwaysCreateUserAgentShadowRoot() const override { return false; }
@@ -61,8 +63,8 @@ class HTMLButtonElement final : public HTMLFormControlElement {
   void AppendToFormData(FormData&) override;
 
   bool IsEnumeratable() const override { return true; }
-  bool SupportLabels() const override { return true; }
-  bool ShouldForceLegacyLayout() const final { return true; }
+  bool IsLabelable() const override { return true; }
+  bool TypeShouldForceLegacyLayout() const final { return true; }
   bool IsInteractiveContent() const override;
   bool SupportsAutofocus() const override;
   bool MatchesDefaultPseudoClass() const override;

@@ -111,8 +111,13 @@ class Executive(object):
 
         Will fail silently if pid does not exist or insufficient permissions.
         """
-        # According to http://docs.python.org/library/os.html
-        # os.kill isn't available on Windows.
+        # This method behaves differently on Windows and Linux. On Windows, it
+        # kills the process as well as all of its subprocesses (because of the
+        # '/t' flag). Some call sites depend on this behaviour (e.g. to kill all
+        # worker processes of wptserve on Windows).
+        # TODO(robertma): Replicate the behaviour on POSIX by calling setsid()
+        # in Popen's preexec_fn hook, and perhaps rename the method to
+        # kill_process_tree.
         if sys.platform == 'win32':
             # Workaround for race condition that occurs when the browser is
             # killed as it's launching a process. This sometimes leaves a child
@@ -129,7 +134,7 @@ class Executive(object):
 
             command = ['taskkill.exe', '/f', '/t', '/pid', pid]
             # taskkill will exit 128 if the process is not found. We should log.
-            self.run_command(command, error_handler=self.ignore_error)
+            self.run_command(command, error_handler=self.log_error)
             return
 
         try:
@@ -137,7 +142,7 @@ class Executive(object):
             os.waitpid(pid, os.WNOHANG)
         except OSError as error:
             if error.errno == errno.ESRCH:
-                # The process does not exist.
+                _log.debug("PID %s does not exist.", pid)
                 return
             if error.errno == errno.ECHILD:
                 # Can't wait on a non-child process, but the kill worked.
@@ -259,6 +264,10 @@ class Executive(object):
     @staticmethod
     def ignore_error(error):
         pass
+
+    @staticmethod
+    def log_error(error):
+        _log.debug(error)
 
     def _compute_stdin(self, user_input):
         """Returns (stdin, string_to_communicate)"""

@@ -88,8 +88,7 @@ bool ParseChildPermissions(const std::string& base_name,
                            base::string16* error,
                            std::vector<std::string>* unhandled_permissions) {
   if (permission_value) {
-    const base::ListValue* permissions;
-    if (!permission_value->GetAsList(&permissions)) {
+    if (!permission_value->is_list()) {
       if (error) {
         *error = ErrorUtils::FormatErrorMessageUTF16(
             errors::kInvalidPermission, base_name);
@@ -101,9 +100,10 @@ bool ParseChildPermissions(const std::string& base_name,
       return true;
     }
 
-    for (size_t i = 0; i < permissions->GetSize(); ++i) {
+    const base::Value::ListStorage& list_storage = permission_value->GetList();
+    for (size_t i = 0; i < list_storage.size(); ++i) {
       std::string permission_str;
-      if (!permissions->GetString(i, &permission_str)) {
+      if (!list_storage[i].is_string()) {
         // permission should be a string
         if (error) {
           *error = ErrorUtils::FormatErrorMessageUTF16(
@@ -115,15 +115,15 @@ bool ParseChildPermissions(const std::string& base_name,
         continue;
       }
 
-      if (!CreateAPIPermission(
-              base_name + '.' + permission_str, NULL, source,
-              api_permissions, error, unhandled_permissions))
+      if (!CreateAPIPermission(base_name + '.' + list_storage[i].GetString(),
+                               nullptr, source, api_permissions, error,
+                               unhandled_permissions))
         return false;
     }
   }
 
-  return CreateAPIPermission(base_name, NULL, source,
-                             api_permissions, error, NULL);
+  return CreateAPIPermission(base_name, nullptr, source, api_permissions, error,
+                             nullptr);
 }
 
 }  // namespace
@@ -141,29 +141,41 @@ void APIPermissionSet::insert(std::unique_ptr<APIPermission> permission) {
 
 // static
 bool APIPermissionSet::ParseFromJSON(
-    const base::ListValue* permissions,
+    const base::Value* permissions,
     APIPermissionSet::ParseSource source,
     APIPermissionSet* api_permissions,
     base::string16* error,
     std::vector<std::string>* unhandled_permissions) {
-  for (size_t i = 0; i < permissions->GetSize(); ++i) {
+  if (!permissions->is_list()) {
+    if (error) {
+      *error = ErrorUtils::FormatErrorMessageUTF16(errors::kInvalidPermission,
+                                                   "<root>");
+      return false;
+    }
+    LOG(WARNING) << "Root Permissions value is not a list.";
+    // Failed to parse, but since error is NULL, failures are not fatal so
+    // return true here anyway.
+    return true;
+  }
+  const base::Value::ListStorage& list_storage = permissions->GetList();
+  for (size_t i = 0; i < list_storage.size(); ++i) {
     std::string permission_str;
-    const base::Value* permission_value = NULL;
-    if (!permissions->GetString(i, &permission_str)) {
-      const base::DictionaryValue* dict = NULL;
-      // permission should be a string or a single key dict.
-      if (!permissions->GetDictionary(i, &dict) || dict->size() != 1) {
-        if (error) {
-          *error = ErrorUtils::FormatErrorMessageUTF16(
-              errors::kInvalidPermission, base::NumberToString(i));
-          return false;
-        }
-        LOG(WARNING) << "Permission is not a string or single key dict.";
-        continue;
+    const base::Value* permission_value = nullptr;
+    // permission should be a string or a single key dict.
+    if (list_storage[i].is_string()) {
+      permission_str = list_storage[i].GetString();
+    } else if (list_storage[i].is_dict() && list_storage[i].DictSize() == 1) {
+      auto dict_iter = list_storage[i].DictItems().begin();
+      permission_str = dict_iter->first;
+      permission_value = &dict_iter->second;
+    } else {
+      if (error) {
+        *error = ErrorUtils::FormatErrorMessageUTF16(errors::kInvalidPermission,
+                                                     base::NumberToString(i));
+        return false;
       }
-      base::DictionaryValue::Iterator it(*dict);
-      permission_str = it.key();
-      permission_value = &it.value();
+      LOG(WARNING) << "Permission is not a string or single key dict.";
+      continue;
     }
 
     // Check if this permission is a special case where its value should

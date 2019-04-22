@@ -54,8 +54,7 @@ class NavigationPredictorBrowserTest
   NavigationPredictorBrowserTest()
       : subresource_filter::SubresourceFilterBrowserTest() {
     const std::vector<base::Feature> features = {
-        blink::features::kRecordAnchorMetricsVisible,
-        blink::features::kRecordAnchorMetricsClicked};
+        blink::features::kNavigationPredictor};
     feature_list_.InitWithFeatures(features, {});
   }
 
@@ -104,7 +103,7 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest, Pipeline) {
   base::RunLoop().RunUntilIdle();
 
   histogram_tester.ExpectUniqueSample(
-      "AnchorElementMetrics.Visible.NumberOfAnchorElements", 3, 1);
+      "AnchorElementMetrics.Visible.NumberOfAnchorElements", 5, 1);
   // Same document anchor element should be removed after merge.
   histogram_tester.ExpectUniqueSample(
       "AnchorElementMetrics.Visible.NumberOfAnchorElementsAfterMerge", 2, 1);
@@ -327,14 +326,14 @@ IN_PROC_BROWSER_TEST_F(
       "NavigationPredictor.OnNonDSE.ActionTaken",
       NavigationPredictor::Action::kPreconnectOnVisibilityChange, 1);
 
-  // Hiding and showing the tab again should not cause change in histograms
-  // since Pre* on tab foreground is done at most once per page.
+  // Hiding and showing the tab again should cause change in histograms since
+  // Pre* on tab foreground is done more than once per page.
   browser()->tab_strip_model()->GetActiveWebContents()->WasHidden();
   histogram_tester.ExpectTotalCount("NavigationPredictor.OnNonDSE.ActionTaken",
                                     2);
   browser()->tab_strip_model()->GetActiveWebContents()->WasShown();
   histogram_tester.ExpectTotalCount("NavigationPredictor.OnNonDSE.ActionTaken",
-                                    2);
+                                    3);
 }
 
 // Test that the action accuracy is properly recorded and when same origin
@@ -348,7 +347,7 @@ IN_PROC_BROWSER_TEST_F(
   base::test::ScopedFeatureList feature_list;
   parameters["same_origin_preconnecting_allowed"] = "true";
   feature_list.InitAndEnableFeatureWithParameters(
-      blink::features::kRecordAnchorMetricsVisible, parameters);
+      blink::features::kNavigationPredictor, parameters);
 
   base::HistogramTester histogram_tester;
 
@@ -381,17 +380,101 @@ IN_PROC_BROWSER_TEST_F(
       "NavigationPredictor.OnNonDSE.ActionTaken",
       NavigationPredictor::Action::kPreconnectOnVisibilityChange, 1);
 
-  // Hiding and showing the tab again should not cause change in histograms
-  // since Pre* on tab foreground is done at most once per page.
+  // Hiding and showing the tab again should cause change in histograms since
+  // Pre* on tab foreground is done more than once per page.
   browser()->tab_strip_model()->GetActiveWebContents()->WasHidden();
   histogram_tester.ExpectTotalCount("NavigationPredictor.OnNonDSE.ActionTaken",
                                     2);
   browser()->tab_strip_model()->GetActiveWebContents()->WasShown();
   histogram_tester.ExpectTotalCount("NavigationPredictor.OnNonDSE.ActionTaken",
-                                    2);
+                                    3);
   histogram_tester.ExpectBucketCount(
       "NavigationPredictor.OnNonDSE.ActionTaken",
-      NavigationPredictor::Action::kPreconnectOnVisibilityChange, 1);
+      NavigationPredictor::Action::kPreconnectOnVisibilityChange, 2);
+}
+
+IN_PROC_BROWSER_TEST_F(
+    NavigationPredictorBrowserTest,
+    DISABLE_ON_CHROMEOS(NoPreconnectNonSearchOnOtherHostLinks)) {
+  std::map<std::string, std::string> parameters;
+  base::test::ScopedFeatureList feature_list;
+  parameters["same_origin_preconnecting_allowed"] = "true";
+  parameters["preconnect_skip_link_scores"] = "false";
+  feature_list.InitAndEnableFeatureWithParameters(
+      blink::features::kNavigationPredictor, parameters);
+
+  base::HistogramTester histogram_tester;
+
+  // This page only has non-same host links.
+  const GURL& url = GetTestURL("/anchors_different_area.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+  base::RunLoop().RunUntilIdle();
+
+  histogram_tester.ExpectUniqueSample(
+      "NavigationPredictor.OnNonDSE.ActionTaken",
+      NavigationPredictor::Action::kNone, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
+                       DISABLE_ON_CHROMEOS(PreconnectNonSearch)) {
+  std::map<std::string, std::string> parameters;
+  base::test::ScopedFeatureList feature_list;
+  parameters["same_origin_preconnecting_allowed"] = "true";
+  parameters["preconnect_skip_link_scores"] = "true";
+  feature_list.InitAndEnableFeatureWithParameters(
+      blink::features::kNavigationPredictor, parameters);
+
+  base::HistogramTester histogram_tester;
+
+  // This page only has non-same host links.
+  const GURL& url = GetTestURL("/anchors_different_area.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+  base::RunLoop().RunUntilIdle();
+
+  histogram_tester.ExpectUniqueSample(
+      "NavigationPredictor.OnNonDSE.ActionTaken",
+      NavigationPredictor::Action::kPreconnect, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
+                       DISABLE_ON_CHROMEOS(NoPreconnectSearch)) {
+  static const char kShortName[] = "test";
+  static const char kSearchURL[] =
+      "/anchors_different_area.html?q={searchTerms}";
+
+  // Force Preconnect on
+  std::map<std::string, std::string> parameters;
+  base::test::ScopedFeatureList feature_list;
+  parameters["same_origin_preconnecting_allowed"] = "true";
+  parameters["preconnect_skip_link_scores"] = "true";
+  feature_list.InitAndEnableFeatureWithParameters(
+      blink::features::kNavigationPredictor, parameters);
+
+  // Set up default search engine.
+  TemplateURLService* model =
+      TemplateURLServiceFactory::GetForProfile(browser()->profile());
+  ASSERT_TRUE(model);
+  search_test_utils::WaitForTemplateURLServiceToLoad(model);
+  ASSERT_TRUE(model->loaded());
+
+  TemplateURLData data;
+  data.SetShortName(base::ASCIIToUTF16(kShortName));
+  data.SetKeyword(data.short_name());
+  data.SetURL(GetTestURL(kSearchURL).spec());
+
+  TemplateURL* template_url = model->Add(std::make_unique<TemplateURL>(data));
+  ASSERT_TRUE(template_url);
+  model->SetUserSelectedDefaultSearchProvider(template_url);
+
+  base::HistogramTester histogram_tester;
+
+  // This page only has non-same host links.
+  const GURL& url = GetTestURL("/anchors_different_area.html?q=cats");
+  ui_test_utils::NavigateToURL(browser(), url);
+  base::RunLoop().RunUntilIdle();
+
+  histogram_tester.ExpectUniqueSample("NavigationPredictor.OnDSE.ActionTaken",
+                                      NavigationPredictor::Action::kNone, 1);
 }
 
 // Simulate a click at the anchor element.
@@ -605,7 +688,7 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
   base::RunLoop().RunUntilIdle();
 
   histogram_tester.ExpectUniqueSample(
-      "AnchorElementMetrics.Visible.NumberOfAnchorElements", 3, 1);
+      "AnchorElementMetrics.Visible.NumberOfAnchorElements", 5, 1);
   // Same document anchor element should be removed after merge.
   histogram_tester.ExpectUniqueSample(
       "AnchorElementMetrics.Visible.NumberOfAnchorElementsAfterMerge", 2, 1);

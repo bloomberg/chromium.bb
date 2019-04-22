@@ -202,6 +202,13 @@ void SelectionChanged(PP_Instance instance,
   enter.functions()->SelectionChanged(*left, left_height, *right, right_height);
 }
 
+void SetPluginCanSave(PP_Instance instance, bool can_save) {
+  EnterInstanceAPI<PPB_PDF_API> enter(instance);
+  if (enter.failed())
+    return;
+  enter.functions()->SetPluginCanSave(can_save);
+}
+
 const PPB_PDF g_ppb_pdf_thunk = {
     &GetFontFileWithFallback,
     &GetFontTableForPrivateFontFile,
@@ -222,6 +229,7 @@ const PPB_PDF g_ppb_pdf_thunk = {
     &SetAccessibilityPageInfo,
     &SetCrashData,
     &SelectionChanged,
+    &SetPluginCanSave,
     &ShowAlertDialog,
     &ShowConfirmDialog,
     &ShowPromptDialog,

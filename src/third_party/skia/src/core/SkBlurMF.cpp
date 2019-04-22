@@ -20,20 +20,20 @@
 
 #if SK_SUPPORT_GPU
 #include "GrClip.h"
-#include "GrContext.h"
-#include "GrContextPriv.h"
 #include "GrFragmentProcessor.h"
+#include "GrRecordingContext.h"
+#include "GrRecordingContextPriv.h"
 #include "GrRenderTargetContext.h"
 #include "GrResourceProvider.h"
 #include "GrShaderCaps.h"
 #include "GrShape.h"
 #include "GrStyle.h"
 #include "GrTextureProxy.h"
-#include "effects/GrCircleBlurFragmentProcessor.h"
-#include "effects/GrRectBlurEffect.h"
-#include "effects/GrRRectBlurEffect.h"
-#include "effects/GrSimpleTextureEffect.h"
 #include "effects/GrTextureDomain.h"
+#include "effects/generated/GrCircleBlurFragmentProcessor.h"
+#include "effects/generated/GrSimpleTextureEffect.h"
+#include "effects/generated/GrRectBlurEffect.h"
+#include "effects/generated/GrRRectBlurEffect.h"
 #include "glsl/GrGLSLFragmentProcessor.h"
 #include "glsl/GrGLSLFragmentShaderBuilder.h"
 #include "glsl/GrGLSLProgramDataManager.h"
@@ -55,13 +55,13 @@ public:
                           const SkIRect& clipBounds,
                           const SkMatrix& ctm,
                           SkIRect* maskRect) const override;
-    bool directFilterMaskGPU(GrContext*,
+    bool directFilterMaskGPU(GrRecordingContext*,
                              GrRenderTargetContext* renderTargetContext,
                              GrPaint&&,
                              const GrClip&,
                              const SkMatrix& viewMatrix,
                              const GrShape& shape) const override;
-    sk_sp<GrTextureProxy> filterMaskGPU(GrContext*,
+    sk_sp<GrTextureProxy> filterMaskGPU(GrRecordingContext*,
                                         sk_sp<GrTextureProxy> srcProxy,
                                         const SkMatrix& ctm,
                                         const SkIRect& maskRect) const override;
@@ -716,7 +716,7 @@ void SkBlurMaskFilterImpl::flatten(SkWriteBuffer& buffer) const {
 
 #if SK_SUPPORT_GPU
 
-bool SkBlurMaskFilterImpl::directFilterMaskGPU(GrContext* context,
+bool SkBlurMaskFilterImpl::directFilterMaskGPU(GrRecordingContext* context,
                                                GrRenderTargetContext* renderTargetContext,
                                                GrPaint&& paint,
                                                const GrClip& clip,
@@ -757,7 +757,7 @@ bool SkBlurMaskFilterImpl::directFilterMaskGPU(GrContext* context,
         return false;
     }
 
-    GrProxyProvider* proxyProvider = context->contextPriv().proxyProvider();
+    GrProxyProvider* proxyProvider = context->priv().proxyProvider();
     std::unique_ptr<GrFragmentProcessor> fp;
 
     if (devRRect.isRect() || SkRRectPriv::IsCircle(devRRect)) {
@@ -765,7 +765,7 @@ bool SkBlurMaskFilterImpl::directFilterMaskGPU(GrContext* context,
             SkScalar pad = 3.0f * xformedSigma;
             const SkRect dstCoverageRect = devRRect.rect().makeOutset(pad, pad);
 
-            fp = GrRectBlurEffect::Make(proxyProvider, *context->contextPriv().caps()->shaderCaps(),
+            fp = GrRectBlurEffect::Make(proxyProvider, *context->priv().caps()->shaderCaps(),
                                         dstCoverageRect, xformedSigma);
         } else {
             fp = GrCircleBlurFragmentProcessor::Make(proxyProvider, devRRect.rect(), xformedSigma);
@@ -868,7 +868,7 @@ bool SkBlurMaskFilterImpl::canFilterMaskGPU(const GrShape& shape,
     return true;
 }
 
-sk_sp<GrTextureProxy> SkBlurMaskFilterImpl::filterMaskGPU(GrContext* context,
+sk_sp<GrTextureProxy> SkBlurMaskFilterImpl::filterMaskGPU(GrRecordingContext* context,
                                                           sk_sp<GrTextureProxy> srcProxy,
                                                           const SkMatrix& ctm,
                                                           const SkIRect& maskRect) const {
@@ -924,9 +924,7 @@ sk_sp<GrTextureProxy> SkBlurMaskFilterImpl::filterMaskGPU(GrContext* context,
 
 #endif // SK_SUPPORT_GPU
 
-void sk_register_blur_maskfilter_createproc() {
-    SK_REGISTER_FLATTENABLE(SkBlurMaskFilterImpl)
-}
+void sk_register_blur_maskfilter_createproc() { SK_REGISTER_FLATTENABLE(SkBlurMaskFilterImpl); }
 
 sk_sp<SkMaskFilter> SkMaskFilter::MakeBlur(SkBlurStyle style, SkScalar sigma, bool respectCTM) {
     if (SkScalarIsFinite(sigma) && sigma > 0) {

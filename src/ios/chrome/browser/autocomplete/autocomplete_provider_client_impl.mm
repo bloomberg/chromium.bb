@@ -6,9 +6,9 @@
 
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/keyed_service/core/service_access_type.h"
+#include "components/language/core/browser/pref_names.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/sync_service.h"
@@ -134,7 +134,8 @@ AutocompleteProviderClientImpl::GetKeywordExtensionsDelegate(
 }
 
 std::string AutocompleteProviderClientImpl::GetAcceptLanguages() const {
-  return browser_state_->GetPrefs()->GetString(prefs::kAcceptLanguages);
+  return browser_state_->GetPrefs()->GetString(
+      language::prefs::kAcceptLanguages);
 }
 
 std::string
@@ -220,15 +221,6 @@ bool AutocompleteProviderClientImpl::IsTabOpenWithURL(
   TabModel* tab_model =
       TabModelList::GetLastActiveTabModelForChromeBrowserState(browser_state_);
   WebStateList* web_state_list = tab_model.webStateList;
-  if (!web_state_list)
-    return false;
-
-  for (int index = 0; index < web_state_list->count(); index++) {
-    web::WebState* web_state = web_state_list->GetWebStateAt(index);
-
-    if (web_state != web_state_list->GetActiveWebState() &&
-        url == web_state->GetVisibleURL())
-      return true;
-  }
-  return false;
+  return web_state_list && web_state_list->GetIndexOfInactiveWebStateWithURL(
+                               url) != WebStateList::kInvalidIndex;
 }

@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/cssom/css_numeric_value.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -71,11 +72,12 @@ class CORE_EXPORT CSSUnitValue final : public CSSNumericValue {
   DISALLOW_COPY_AND_ASSIGN(CSSUnitValue);
 };
 
-DEFINE_TYPE_CASTS(CSSUnitValue,
-                  CSSNumericValue,
-                  value,
-                  value->IsUnitValue(),
-                  value.IsUnitValue());
+template <>
+struct DowncastTraits<CSSUnitValue> {
+  static bool AllowFrom(const CSSStyleValue& value) {
+    return value.GetType() == CSSStyleValue::StyleValueType::kUnitType;
+  }
+};
 
 }  // namespace blink
 

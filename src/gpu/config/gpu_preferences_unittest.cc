@@ -14,8 +14,6 @@ namespace gpu {
 namespace {
 
 void CheckGpuPreferencesEqual(GpuPreferences left, GpuPreferences right) {
-  EXPECT_EQ(left.single_process, right.single_process);
-  EXPECT_EQ(left.in_process_gpu, right.in_process_gpu);
   EXPECT_EQ(left.disable_accelerated_video_decode,
             right.disable_accelerated_video_decode);
   EXPECT_EQ(left.disable_accelerated_video_encode,
@@ -110,8 +108,6 @@ TEST(GpuPreferencesTest, EncodeDecode) {
   prefs_mojom.name = value;                        \
   EXPECT_EQ(input_prefs.name, prefs_mojom.name);
 
-    GPU_PREFERENCES_FIELD(single_process, true)
-    GPU_PREFERENCES_FIELD(in_process_gpu, true)
     GPU_PREFERENCES_FIELD(disable_accelerated_video_decode, true)
     GPU_PREFERENCES_FIELD(disable_accelerated_video_encode, true)
     GPU_PREFERENCES_FIELD(gpu_startup_dialog, true)

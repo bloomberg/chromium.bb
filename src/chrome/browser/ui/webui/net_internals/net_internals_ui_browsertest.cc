@@ -44,6 +44,7 @@
 #include "net/test/embedded_test_server/request_handler_util.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -203,6 +204,12 @@ void NetInternalsTest::MessageHandler::AddCacheEntry(
   ASSERT_TRUE(list_value->GetDouble(2, &net_error));
   ASSERT_TRUE(list_value->GetDouble(3, &expire_days_from_now));
   ASSERT_TRUE(browser());
+
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    // TODO(mattm): implement this with a ForTesting method on NetworkContext
+    // when it's needed.
+    return;
+  }
 
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},

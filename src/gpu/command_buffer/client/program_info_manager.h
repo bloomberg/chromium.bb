@@ -9,9 +9,9 @@
 #include <stdint.h>
 
 #include <string>
+#include <unordered_map>
 #include <vector>
 
-#include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
 #include "base/synchronization/lock.h"
 #include "gles2_impl_export.h"
@@ -82,6 +82,27 @@ class GLES2_IMPL_EXPORT ProgramInfoManager {
   bool GetActiveUniformsiv(
       GLES2Implementation* gl, GLuint program, GLsizei count,
       const GLuint* indices, GLenum pname, GLint* params);
+
+  bool GetProgramInterfaceiv(
+      GLES2Implementation* gl, GLuint program, GLenum program_interface,
+      GLenum pname, GLint* params);
+
+  GLuint GetProgramResourceIndex(
+      GLES2Implementation* gl, GLuint program, GLenum program_interface,
+      const char* name);
+
+  bool GetProgramResourceName(
+      GLES2Implementation* gl, GLuint program, GLenum program_interface,
+      GLuint index, GLsizei bufsize, GLsizei* length, char* name);
+
+  bool GetProgramResourceiv(
+      GLES2Implementation* gl, GLuint program, GLenum program_interface,
+      GLuint index, GLsizei prop_count, const GLenum* props, GLsizei bufsize,
+      GLsizei* length, GLint* params);
+
+  GLint GetProgramResourceLocation(
+      GLES2Implementation* gl, GLuint program, GLenum program_interface,
+      const char* name);
 
  private:
   friend class ProgramInfoManagerTest;
@@ -242,14 +263,14 @@ class GLES2_IMPL_EXPORT ProgramInfoManager {
 
     std::vector<UniformES3> uniforms_es3_;
 
-    base::hash_map<std::string, GLint> frag_data_locations_;
-    base::hash_map<std::string, GLint> frag_data_indices_;
+    std::unordered_map<std::string, GLint> frag_data_locations_;
+    std::unordered_map<std::string, GLint> frag_data_indices_;
   };
 
   Program* GetProgramInfo(
       GLES2Implementation* gl, GLuint program, ProgramInfoType type);
 
-  typedef base::hash_map<GLuint, Program> ProgramInfoMap;
+  typedef std::unordered_map<GLuint, Program> ProgramInfoMap;
 
   ProgramInfoMap program_infos_;
 

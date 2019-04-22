@@ -4,15 +4,15 @@
 
 #include "chromeos/services/secure_channel/public/cpp/client/fake_secure_channel_client.h"
 
-#include "components/cryptauth/remote_device_ref.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
 
 namespace chromeos {
 
 namespace secure_channel {
 
 FakeSecureChannelClient::ConnectionRequestArguments::ConnectionRequestArguments(
-    cryptauth::RemoteDeviceRef device_to_connect,
-    cryptauth::RemoteDeviceRef local_device,
+    multidevice::RemoteDeviceRef device_to_connect,
+    multidevice::RemoteDeviceRef local_device,
     const std::string& feature,
     const ConnectionPriority& connection_priority)
     : device_to_connect(device_to_connect),
@@ -32,8 +32,8 @@ FakeSecureChannelClient::~FakeSecureChannelClient() {
 
 std::unique_ptr<ConnectionAttempt>
 FakeSecureChannelClient::InitiateConnectionToDevice(
-    cryptauth::RemoteDeviceRef device_to_connect,
-    cryptauth::RemoteDeviceRef local_device,
+    multidevice::RemoteDeviceRef device_to_connect,
+    multidevice::RemoteDeviceRef local_device,
     const std::string& feature,
     ConnectionPriority connection_priority) {
   auto remote_local_pair = std::make_pair(device_to_connect, local_device);
@@ -45,8 +45,8 @@ FakeSecureChannelClient::InitiateConnectionToDevice(
 
 std::unique_ptr<ConnectionAttempt>
 FakeSecureChannelClient::ListenForConnectionFromDevice(
-    cryptauth::RemoteDeviceRef device_to_connect,
-    cryptauth::RemoteDeviceRef local_device,
+    multidevice::RemoteDeviceRef device_to_connect,
+    multidevice::RemoteDeviceRef local_device,
     const std::string& feature,
     ConnectionPriority connection_priority) {
   auto remote_local_pair = std::make_pair(device_to_connect, local_device);

@@ -101,7 +101,7 @@ class ChromotingClientRuntime {
   // thread. We should update this class to use regular threads like the client
   // plugin does.
   // Longer term we should migrate most of these to background tasks except the
-  // network thread to TaskScheduler, removing the need for threads.
+  // network thread to ThreadPool, removing the need for threads.
 
   scoped_refptr<AutoThreadTaskRunner> audio_task_runner_;
   scoped_refptr<AutoThreadTaskRunner> display_task_runner_;

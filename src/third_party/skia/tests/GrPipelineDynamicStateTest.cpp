@@ -8,12 +8,15 @@
 #include "SkTypes.h"
 #include "Test.h"
 
-#include "GrContext.h"
 #include "GrColor.h"
+#include "GrContext.h"
+#include "GrContextPriv.h"
 #include "GrGeometryProcessor.h"
 #include "GrGpuCommandBuffer.h"
 #include "GrMemoryPool.h"
 #include "GrOpFlushState.h"
+#include "GrRecordingContext.h"
+#include "GrRecordingContextPriv.h"
 #include "GrRenderTargetContext.h"
 #include "GrRenderTargetContextPriv.h"
 #include "GrResourceProvider.h"
@@ -110,10 +113,10 @@ class GrPipelineDynamicStateTestOp : public GrDrawOp {
 public:
     DEFINE_OP_CLASS_ID
 
-    static std::unique_ptr<GrDrawOp> Make(GrContext* context,
+    static std::unique_ptr<GrDrawOp> Make(GrRecordingContext* context,
                                           GrScissorTest scissorTest,
                                           sk_sp<const GrBuffer> vbuff) {
-        GrOpMemoryPool* pool = context->contextPriv().opMemoryPool();
+        GrOpMemoryPool* pool = context->priv().opMemoryPool();
 
         return pool->allocate<GrPipelineDynamicStateTestOp>(scissorTest, std::move(vbuff));
     }
@@ -131,18 +134,18 @@ private:
 
     const char* name() const override { return "GrPipelineDynamicStateTestOp"; }
     FixedFunctionFlags fixedFunctionFlags() const override { return FixedFunctionFlags::kNone; }
-    RequiresDstTexture finalize(const GrCaps&, const GrAppliedClip*) override {
-        return RequiresDstTexture::kNo;
+    GrProcessorSet::Analysis finalize(
+            const GrCaps&, const GrAppliedClip*, GrFSAAType, GrClampType) override {
+        return GrProcessorSet::EmptySetAnalysis();
     }
     void onPrepare(GrOpFlushState*) override {}
     void onExecute(GrOpFlushState* state, const SkRect& chainBounds) override {
-        GrRenderTargetProxy* proxy = state->drawOpArgs().fProxy;
-        GrPipeline pipeline(proxy, fScissorTest, SkBlendMode::kSrc);
+        GrPipeline pipeline(fScissorTest, SkBlendMode::kSrc);
         SkSTArray<kNumMeshes, GrMesh> meshes;
         for (int i = 0; i < kNumMeshes; ++i) {
             GrMesh& mesh = meshes.emplace_back(GrPrimitiveType::kTriangleStrip);
             mesh.setNonIndexedNonInstanced(4);
-            mesh.setVertexData(fVertexBuffer.get(), 4 * i);
+            mesh.setVertexData(fVertexBuffer, 4 * i);
         }
         GrPipeline::DynamicStateArrays dynamicState;
         dynamicState.fScissorRects = kDynamicScissors;
@@ -159,12 +162,12 @@ private:
 
 DEF_GPUTEST_FOR_RENDERING_CONTEXTS(GrPipelineDynamicStateTest, reporter, ctxInfo) {
     GrContext* context = ctxInfo.grContext();
-    GrResourceProvider* rp = context->contextPriv().resourceProvider();
+    GrResourceProvider* rp = context->priv().resourceProvider();
 
     const GrBackendFormat format =
-            context->contextPriv().caps()->getBackendFormatFromColorType(kRGBA_8888_SkColorType);
+            context->priv().caps()->getBackendFormatFromColorType(kRGBA_8888_SkColorType);
 
-    sk_sp<GrRenderTargetContext> rtc(context->contextPriv().makeDeferredRenderTargetContext(
+    sk_sp<GrRenderTargetContext> rtc(context->priv().makeDeferredRenderTargetContext(
                                                  format, SkBackingFit::kExact, kScreenSize,
                                                  kScreenSize, kRGBA_8888_GrPixelConfig, nullptr));
     if (!rtc) {
@@ -195,11 +198,8 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(GrPipelineDynamicStateTest, reporter, ctxInfo
         {d, d, kMeshColors[3]}
     };
 
-    sk_sp<const GrBuffer> vbuff(rp->createBuffer(sizeof(vdata), kVertex_GrBufferType,
-                                                 kDynamic_GrAccessPattern,
-                                                 GrResourceProvider::Flags::kNoPendingIO |
-                                                 GrResourceProvider::Flags::kRequireGpuMemory,
-                                                 vdata));
+    sk_sp<const GrBuffer> vbuff(rp->createBuffer(sizeof(vdata), GrGpuBufferType::kVertex,
+                                                 kDynamic_GrAccessPattern, vdata));
     if (!vbuff) {
         ERRORF(reporter, "vbuff is null.");
         return;

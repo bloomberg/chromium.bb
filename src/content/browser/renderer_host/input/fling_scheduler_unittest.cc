@@ -82,22 +82,22 @@ class FlingSchedulerTest : public testing::Test,
   void SimulateFlingStart(const gfx::Vector2dF& velocity) {
     blink::WebGestureEvent fling_start(blink::WebInputEvent::kGestureFlingStart,
                                        0, base::TimeTicks::Now(),
-                                       blink::kWebGestureDeviceTouchscreen);
+                                       blink::WebGestureDevice::kTouchscreen);
     fling_start.data.fling_start.velocity_x = velocity.x();
     fling_start.data.fling_start.velocity_y = velocity.y();
     GestureEventWithLatencyInfo fling_start_with_latency(fling_start);
-    if (!fling_controller_->FilterGestureEvent(fling_start_with_latency))
-      fling_controller_->ProcessGestureFlingStart(fling_start_with_latency);
+    fling_controller_->ObserveAndMaybeConsumeGestureEvent(
+        fling_start_with_latency);
   }
 
   void SimulateFlingCancel() {
     blink::WebGestureEvent fling_cancel(
         blink::WebInputEvent::kGestureFlingCancel, 0, base::TimeTicks::Now(),
-        blink::kWebGestureDeviceTouchscreen);
+        blink::WebGestureDevice::kTouchscreen);
     fling_cancel.data.fling_cancel.prevent_boosting = true;
     GestureEventWithLatencyInfo fling_cancel_with_latency(fling_cancel);
-    if (!fling_controller_->FilterGestureEvent(fling_cancel_with_latency))
-      fling_controller_->ProcessGestureFlingCancel(fling_cancel_with_latency);
+    fling_controller_->ObserveAndMaybeConsumeGestureEvent(
+        fling_cancel_with_latency);
   }
 
   // FlingControllerEventSenderClient

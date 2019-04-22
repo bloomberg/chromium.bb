@@ -8,8 +8,8 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chromeos/chromeos_switches.h"
-#include "chromeos/login/login_state.h"
+#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/login/login_state/login_state.h"
 #include "chromeos/settings/cros_settings_names.h"
 
 namespace chromeos {
@@ -31,9 +31,22 @@ bool FineGrainedTimeZoneDetectionEnabled() {
 
 }  // namespace
 
+SystemSettingsProvider::SystemSettingsProvider()
+    : CrosSettingsProvider(CrosSettingsProvider::NotifyObserversCallback()) {
+  Init();
+}
+
 SystemSettingsProvider::SystemSettingsProvider(
     const NotifyObserversCallback& notify_cb)
     : CrosSettingsProvider(notify_cb) {
+  Init();
+}
+
+SystemSettingsProvider::~SystemSettingsProvider() {
+  system::TimezoneSettings::GetInstance()->RemoveObserver(this);
+}
+
+void SystemSettingsProvider::Init() {
   system::TimezoneSettings* timezone_settings =
       system::TimezoneSettings::GetInstance();
   timezone_settings->AddObserver(this);
@@ -43,37 +56,6 @@ SystemSettingsProvider::SystemSettingsProvider(
       new base::Value(PerUserTimezoneEnabled()));
   fine_grained_time_zone_enabled_value_.reset(
       new base::Value(FineGrainedTimeZoneDetectionEnabled()));
-}
-
-SystemSettingsProvider::~SystemSettingsProvider() {
-  system::TimezoneSettings::GetInstance()->RemoveObserver(this);
-}
-
-void SystemSettingsProvider::DoSet(const std::string& path,
-                                   const base::Value& in_value) {
-  // TODO(olsen): crbug.com/433840 - separate read path and write path.
-  // The write path which goes through CrosSettings and SystemSettingsProvider,
-  // should more simply go straight through TimezoneUtil.
-
-  // Guest, public, or child accounts cannot change the time zone.
-  // TODO(olsen): This logic is duplicated in TimezoneUtil::CanSetSystemTimezone
-  // and can be removed once the write path goes through there.
-  if (!LoginState::Get()->IsUserLoggedIn() ||
-      LoginState::Get()->IsGuestSessionUser() ||
-      LoginState::Get()->IsPublicSessionUser() ||
-      LoginState::Get()->IsChildUser()) {
-    return;
-  }
-
-  if (path == kSystemTimezone) {
-    base::string16 timezone_id;
-    if (!in_value.GetAsString(&timezone_id))
-      return;
-    // This will call TimezoneChanged.
-    system::TimezoneSettings::GetInstance()->SetTimezoneFromID(timezone_id);
-  }
-  // kPerUserTimezoneEnabled is read-only.
-  // kFineGrainedTimeZoneResolveEnabled is read-only.
 }
 
 const base::Value* SystemSettingsProvider::Get(const std::string& path) const {

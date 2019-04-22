@@ -5,12 +5,12 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PAYMENTS_PAYMENT_ADDRESS_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PAYMENTS_PAYMENT_ADDRESS_H_
 
+#include "base/macros.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -18,7 +18,6 @@ namespace blink {
 
 class MODULES_EXPORT PaymentAddress final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
-  WTF_MAKE_NONCOPYABLE(PaymentAddress);
 
  public:
   explicit PaymentAddress(payments::mojom::blink::PaymentAddressPtr);
@@ -33,7 +32,6 @@ class MODULES_EXPORT PaymentAddress final : public ScriptWrappable {
   const String& dependentLocality() const { return dependent_locality_; }
   const String& postalCode() const { return postal_code_; }
   const String& sortingCode() const { return sorting_code_; }
-  const String& languageCode() const { return language_code_; }
   const String& organization() const { return organization_; }
   const String& recipient() const { return recipient_; }
   const String& phone() const { return phone_; }
@@ -46,10 +44,11 @@ class MODULES_EXPORT PaymentAddress final : public ScriptWrappable {
   String dependent_locality_;
   String postal_code_;
   String sorting_code_;
-  String language_code_;
   String organization_;
   String recipient_;
   String phone_;
+
+  DISALLOW_COPY_AND_ASSIGN(PaymentAddress);
 };
 
 }  // namespace blink

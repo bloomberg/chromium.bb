@@ -7,8 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
+
+#include "base/component_export.h"
+#include "base/memory/weak_ptr.h"
 #include "net/base/completion_once_callback.h"
-#include "storage/browser/storage_browser_export.h"
 
 namespace base {
 class FilePath;
@@ -20,6 +23,10 @@ class IOBuffer;
 }
 
 namespace storage {
+class ObfuscatedFileUtilMemoryDelegate;
+}
+
+namespace storage {
 
 // A generic interface for writing to a file-like object.
 class FileStreamWriter {
@@ -28,8 +35,18 @@ class FileStreamWriter {
 
   // Creates a writer for the existing file in the path |file_path| starting
   // from |initial_offset|. Uses |task_runner| for async file operations.
-  STORAGE_EXPORT static FileStreamWriter* CreateForLocalFile(
+  COMPONENT_EXPORT(STORAGE_BROWSER)
+  static std::unique_ptr<FileStreamWriter> CreateForLocalFile(
       base::TaskRunner* task_runner,
+      const base::FilePath& file_path,
+      int64_t initial_offset,
+      OpenOrCreate open_or_create);
+
+  // Creates a writer for the existing memory file in the path |file_path|
+  // starting from |initial_offset|.
+  COMPONENT_EXPORT(STORAGE_BROWSER)
+  static std::unique_ptr<FileStreamWriter> CreateForMemoryFile(
+      base::WeakPtr<ObfuscatedFileUtilMemoryDelegate> memory_file_util,
       const base::FilePath& file_path,
       int64_t initial_offset,
       OpenOrCreate open_or_create);

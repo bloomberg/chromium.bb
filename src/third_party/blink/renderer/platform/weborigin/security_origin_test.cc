@@ -32,12 +32,14 @@
 
 #include <stdint.h>
 
+#include "base/stl_util.h"
 #include "services/network/public/mojom/cors.mojom-shared.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/blob/blob_url.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin_hash.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -56,7 +58,7 @@ class SecurityOriginTest : public testing::Test {
 TEST_F(SecurityOriginTest, ValidPortsCreateTupleOrigins) {
   uint16_t ports[] = {0, 80, 443, 5000, kMaxAllowedPort};
 
-  for (size_t i = 0; i < arraysize(ports); ++i) {
+  for (size_t i = 0; i < base::size(ports); ++i) {
     scoped_refptr<const SecurityOrigin> origin =
         SecurityOrigin::Create("http", "example.com", ports[i]);
     EXPECT_FALSE(origin->IsOpaque())
@@ -153,7 +155,7 @@ TEST_F(SecurityOriginTest, IsPotentiallyTrustworthy) {
       {false, "filesystem:ftp://evil:99/foo"},
   };
 
-  for (size_t i = 0; i < arraysize(inputs); ++i) {
+  for (size_t i = 0; i < base::size(inputs); ++i) {
     SCOPED_TRACE(inputs[i].url);
     scoped_refptr<const SecurityOrigin> origin =
         SecurityOrigin::CreateFromString(inputs[i].url);
@@ -202,7 +204,7 @@ TEST_F(SecurityOriginTest, IsSecureViaTrustworthy) {
   for (const char* test : urls) {
     KURL url(test);
     EXPECT_FALSE(SecurityOrigin::IsSecure(url));
-    SecurityPolicy::AddOriginTrustworthyWhiteList(
+    SecurityPolicy::AddOriginToTrustworthySafelist(
         SecurityOrigin::CreateFromString(url)->ToRawString());
     EXPECT_TRUE(SecurityOrigin::IsSecure(url));
   }
@@ -211,7 +213,7 @@ TEST_F(SecurityOriginTest, IsSecureViaTrustworthy) {
 TEST_F(SecurityOriginTest, IsSecureViaTrustworthyHostnamePattern) {
   KURL url("http://bar.foo.com");
   EXPECT_FALSE(SecurityOrigin::IsSecure(url));
-  SecurityPolicy::AddOriginTrustworthyWhiteList("*.foo.com");
+  SecurityPolicy::AddOriginToTrustworthySafelist("*.foo.com");
   EXPECT_TRUE(SecurityOrigin::IsSecure(url));
 }
 
@@ -219,7 +221,7 @@ TEST_F(SecurityOriginTest, IsSecureViaTrustworthyHostnamePattern) {
 TEST_F(SecurityOriginTest, IsSecureViaTrustworthyHostnamePatternEmptyHostname) {
   KURL url("file://foo");
   EXPECT_FALSE(SecurityOrigin::IsSecure(url));
-  SecurityPolicy::AddOriginTrustworthyWhiteList("*.foo.com");
+  SecurityPolicy::AddOriginToTrustworthySafelist("*.foo.com");
   EXPECT_FALSE(SecurityOrigin::IsSecure(url));
 }
 
@@ -237,7 +239,7 @@ TEST_F(SecurityOriginTest, CanAccess) {
       {false, "file:///", "file://localhost/"},
   };
 
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     scoped_refptr<const SecurityOrigin> origin1 =
         SecurityOrigin::CreateFromString(tests[i].origin1);
     scoped_refptr<const SecurityOrigin> origin2 =
@@ -344,7 +346,7 @@ TEST_F(SecurityOriginTest, CanRequest) {
       {false, "https://foobar.com", "https://bazbar.com"},
   };
 
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     scoped_refptr<const SecurityOrigin> origin =
         SecurityOrigin::CreateFromString(tests[i].origin);
     blink::KURL url(tests[i].url);
@@ -458,8 +460,8 @@ TEST_F(SecurityOriginTest, PunycodeNotUnicode) {
 
 TEST_F(SecurityOriginTest, PortAndEffectivePortMethod) {
   struct TestCase {
-    unsigned short port;
-    unsigned short effective_port;
+    uint16_t port;
+    uint16_t effective_port;
     const char* origin;
   } cases[] = {
       {0, 80, "http://example.com"},
@@ -805,6 +807,50 @@ TEST_F(SecurityOriginTest, NonStandardSchemeWithAndroidWebViewHack) {
   EXPECT_EQ("", origin->Host());
   EXPECT_EQ(0, origin->Port());
   url::Shutdown();
+}
+
+TEST_F(SecurityOriginTest, OpaqueIsolatedCopy) {
+  scoped_refptr<const SecurityOrigin> origin =
+      SecurityOrigin::CreateUniqueOpaque();
+  scoped_refptr<const SecurityOrigin> copied = origin->IsolatedCopy();
+  EXPECT_TRUE(origin->CanAccess(copied.get()));
+  EXPECT_TRUE(origin->IsSameSchemeHostPort(copied.get()));
+  EXPECT_EQ(SecurityOriginHash::GetHash(origin),
+            SecurityOriginHash::GetHash(copied));
+  EXPECT_TRUE(SecurityOriginHash::Equal(origin, copied));
+}
+
+TEST_F(SecurityOriginTest, EdgeCases) {
+  scoped_refptr<SecurityOrigin> nulled_domain =
+      SecurityOrigin::CreateFromString("http://localhost");
+  nulled_domain->SetDomainFromDOM("null");
+  EXPECT_TRUE(nulled_domain->CanAccess(nulled_domain.get()));
+
+  scoped_refptr<SecurityOrigin> local =
+      SecurityOrigin::CreateFromString("file:///foo/bar");
+  local->BlockLocalAccessFromLocalOrigin();
+  EXPECT_TRUE(local->IsSameSchemeHostPort(local.get()));
+}
+
+TEST_F(SecurityOriginTest, RegistrableDomain) {
+  scoped_refptr<SecurityOrigin> opaque = SecurityOrigin::CreateUniqueOpaque();
+  EXPECT_TRUE(opaque->RegistrableDomain().IsNull());
+
+  scoped_refptr<SecurityOrigin> ip_address =
+      SecurityOrigin::CreateFromString("http://0.0.0.0");
+  EXPECT_TRUE(ip_address->RegistrableDomain().IsNull());
+
+  scoped_refptr<SecurityOrigin> public_suffix =
+      SecurityOrigin::CreateFromString("http://com");
+  EXPECT_TRUE(public_suffix->RegistrableDomain().IsNull());
+
+  scoped_refptr<SecurityOrigin> registrable =
+      SecurityOrigin::CreateFromString("http://example.com");
+  EXPECT_EQ(String("example.com"), registrable->RegistrableDomain());
+
+  scoped_refptr<SecurityOrigin> subdomain =
+      SecurityOrigin::CreateFromString("http://foo.example.com");
+  EXPECT_EQ(String("example.com"), subdomain->RegistrableDomain());
 }
 
 }  // namespace blink

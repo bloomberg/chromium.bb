@@ -30,17 +30,12 @@ class CONTENT_EXPORT WebRtcEventLogger {
   virtual ~WebRtcEventLogger();
 
   // Call this to let the logger know when a PeerConnection was created.
-  // |peer_connection_id| should be a non-empty, relatively short (i.e.
-  // inexpensive to store) identifier, by which the peer connection may later
-  // be identified. The identifier is assumed  to be unique (within the
-  // renderer process).
   // If a reply callback is given, it will be posted back to BrowserThread::UI,
   // with true if and only if the operation was successful (failure is only
   // possible if a peer connection with this exact key was previously added,
   // but not removed).
   virtual void PeerConnectionAdded(int render_process_id,
                                    int lid,
-                                   const std::string& peer_connection_id,
                                    base::OnceCallback<void(bool)> reply) = 0;
 
   // Call this to let the logger know when a PeerConnection was closed.
@@ -59,6 +54,15 @@ class CONTENT_EXPORT WebRtcEventLogger {
   virtual void PeerConnectionStopped(int render_process_id,
                                      int lid,
                                      base::OnceCallback<void(bool)> reply) = 0;
+
+  // Call this to let the logger know of a peer connection's session
+  // description ID. By referring to this ID, remote-bound event logging
+  // may later be initiated for the peer connection.
+  virtual void PeerConnectionSessionIdSet(
+      int render_process_id,
+      int lid,
+      const std::string& session_id,
+      base::OnceCallback<void(bool)> reply) = 0;
 
   // Enable local logging of WebRTC events.
   // Local logging is distinguished from remote logging, in that local logs are

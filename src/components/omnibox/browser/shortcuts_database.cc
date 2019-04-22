@@ -153,7 +153,7 @@ bool ShortcutsDatabase::Init() {
 
   // To recover from corruption.
   db_.set_error_callback(
-      base::Bind(&DatabaseErrorCallback, &db_, database_path_));
+      base::BindRepeating(&DatabaseErrorCallback, &db_, database_path_));
 
   // Set the database page size to something a little larger to give us
   // better performance (we're typically seek rather than bandwidth limited).

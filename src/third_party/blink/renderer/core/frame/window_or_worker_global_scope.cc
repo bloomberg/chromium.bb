@@ -32,6 +32,7 @@
 
 #include "third_party/blink/renderer/core/frame/window_or_worker_global_scope.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/scheduled_action.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_script.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_for_context_dispose.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -128,7 +129,7 @@ String WindowOrWorkerGlobalScope::atob(EventTarget&,
 int WindowOrWorkerGlobalScope::setTimeout(
     ScriptState* script_state,
     EventTarget& event_target,
-    const ScriptValue& handler,
+    V8Function* handler,
     int timeout,
     const Vector<ScriptValue>& arguments) {
   ExecutionContext* execution_context = event_target.GetExecutionContext();
@@ -174,7 +175,7 @@ int WindowOrWorkerGlobalScope::setTimeoutFromString(
   if (!IsAllowed(script_state, execution_context, true, handler))
     return 0;
   // Don't allow setting timeouts to run empty functions.  Was historically a
-  // perfomance issue.
+  // performance issue.
   if (handler.IsEmpty())
     return 0;
   if (timeout >= 0 && execution_context->IsDocument()) {
@@ -191,7 +192,7 @@ int WindowOrWorkerGlobalScope::setTimeoutFromString(
 int WindowOrWorkerGlobalScope::setInterval(
     ScriptState* script_state,
     EventTarget& event_target,
-    const ScriptValue& handler,
+    V8Function* handler,
     int timeout,
     const Vector<ScriptValue>& arguments) {
   ExecutionContext* execution_context = event_target.GetExecutionContext();
@@ -232,7 +233,7 @@ int WindowOrWorkerGlobalScope::setIntervalFromString(
   if (!IsAllowed(script_state, execution_context, true, handler))
     return 0;
   // Don't allow setting timeouts to run empty functions.  Was historically a
-  // perfomance issue.
+  // performance issue.
   if (handler.IsEmpty())
     return 0;
   ScheduledAction* action =

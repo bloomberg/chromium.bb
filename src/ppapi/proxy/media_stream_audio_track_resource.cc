@@ -4,6 +4,7 @@
 
 #include "ppapi/proxy/media_stream_audio_track_resource.h"
 
+#include "base/bind.h"
 #include "ppapi/proxy/audio_buffer_resource.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/media_stream_audio_track_shared.h"

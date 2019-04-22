@@ -6,9 +6,9 @@
 
 #include <memory>
 
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/data_use_measurement/core/data_use_ascriber.h"
 #include "components/data_use_measurement/core/url_request_classifier.h"
 #include "components/metrics/data_use_tracker.h"
@@ -106,7 +106,8 @@ std::unique_ptr<net::URLRequest> RequestURL(
   if (redirect)
     socket_factory->AddSocketDataProvider(&redirect_socket_data_provider);
   net::MockRead response_mock_reads[] = {
-      net::MockRead("HTTP/1.1 200 OK\r\n\r\n"), net::MockRead("response body"),
+      net::MockRead("HTTP/1.1 200 OK\r\n\r\n"),
+      net::MockRead("response body"),
       net::MockRead(net::SYNCHRONOUS, net::OK),
   };
   const auto traffic_annotation =
@@ -155,7 +156,8 @@ class DataUseNetworkDelegateTest : public testing::Test {
   }
 
  private:
-  base::MessageLoopForIO message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::IO};
   net::MockClientSocketFactory mock_socket_factory_;
   net::TestURLRequestContext context_;
   TestDataUseAscriber test_data_use_ascriber_;

@@ -14,36 +14,40 @@ cloudprint.CloudPrintInterfaceEventType = {
   PRINTER_DONE: 'cloudprint.CloudPrintInterface.PRINTER_DONE',
   PRINTER_FAILED: 'cloudprint.CloudPrintInterface.PRINTER_FAILED',
   PROCESS_INVITE_DONE: 'cloudprint.CloudPrintInterface.PROCESS_INVITE_DONE',
-  PROCESS_INVITE_FAILED: 'cloudprint.CloudPrintInterface.PROCESS_INVITE_FAILED',
   SEARCH_DONE: 'cloudprint.CloudPrintInterface.SEARCH_DONE',
   SEARCH_FAILED: 'cloudprint.CloudPrintInterface.SEARCH_FAILED',
   SUBMIT_DONE: 'cloudprint.CloudPrintInterface.SUBMIT_DONE',
   SUBMIT_FAILED: 'cloudprint.CloudPrintInterface.SUBMIT_FAILED',
+  UPDATE_USERS: 'cloudprint.CloudPrintInterface.UPDATE_USERS',
 };
+
+/**
+ * @typedef {{
+ *   status: number,
+ *   errorCode: number,
+ *   message: string,
+ *   origin: !print_preview.DestinationOrigin,
+ * }}
+ */
+cloudprint.CloudPrintInterfaceErrorEventDetail;
 
 /**
  * @typedef {{
  *   user: string,
  *   origin: !print_preview.DestinationOrigin,
- *   printers: (!Array<!print_preview.Destination>|undefined)
+ *   printers: (!Array<!print_preview.Destination>|undefined),
+ *   searchDone: boolean,
  * }}
  */
-cloudprint.CloudPrintInterfaceSearchDoneEvent;
-
-/**
- * @typedef {{
- *   printer: !print_preview.Destination,
- * }}
- */
-cloudprint.CloudPrintInterfacePrinterDoneEvent;
+cloudprint.CloudPrintInterfaceSearchDoneDetail;
 
 /**
  * @typedef {{
  *   destinationId: string,
- *   destinationOrigin: !print_preview.DestinationOrigin,
+ *   origin: !print_preview.DestinationOrigin,
  * }}
  */
-cloudprint.CloudPrintInterfacePrinterFailedEvent;
+cloudprint.CloudPrintInterfacePrinterFailedDetail;
 
 /**
  * @typedef {{
@@ -51,21 +55,17 @@ cloudprint.CloudPrintInterfacePrinterFailedEvent;
  *   user: string,
  * }}
  */
-cloudprint.CloudPrintInterfaceInvitesDoneEvent;
-
-/**
- * @typedef {{
- *   user: string,
- * }}
- */
-cloudprint.CloudPrintInterfaceInvitesFailedEvent;
+cloudprint.CloudPrintInterfaceInvitesDoneDetail;
 
 /**
  * @typedef {{
  *   invitation: !print_preview.Invitation,
+ *   printer: ?print_preview.Destination,
+ *   accept: boolean,
+ *   user: string,
  * }}
  */
-cloudprint.CloudPrintInterfaceProcessInviteEvent;
+cloudprint.CloudPrintInterfaceProcessInviteDetail;
 
 cr.define('cloudprint', function() {
   /** @interface */
@@ -106,10 +106,10 @@ cr.define('cloudprint', function() {
      * @param {!print_preview.Destination} destination Cloud destination to
      *     print to.
      * @param {string} printTicket The print ticket to print.
-     * @param {!print_preview.DocumentInfo} documentInfo Document data model.
+     * @param {string} documentTitle Title of the document.
      * @param {string} data Base64 encoded data of the document.
      */
-    submit(destination, printTicket, documentInfo, data) {}
+    submit(destination, printTicket, documentTitle, data) {}
 
     /**
      * Sends a Google Cloud Print printer API request.

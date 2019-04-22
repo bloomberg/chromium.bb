@@ -245,8 +245,14 @@ base::string16 SanitizePath(const base::FilePath& path) {
 base::string16 SanitizeCommandLine(const base::CommandLine& command_line) {
   base::FilePath sanitized_program =
       SanitizePathImpl(command_line.GetProgram());
-  base::CommandLine sanitized_command_line(command_line);
-  sanitized_command_line.SetProgram(sanitized_program);
+  base::CommandLine sanitized_command_line(sanitized_program);
+  for (const auto& s : command_line.GetSwitches()) {
+    sanitized_command_line.AppendSwitchNative(
+        s.first, SanitizePath(base::FilePath(s.second)));
+  }
+  for (const auto& arg : command_line.GetArgs()) {
+    sanitized_command_line.AppendArgNative(SanitizePath(base::FilePath(arg)));
+  }
   return sanitized_command_line.GetCommandLineString();
 }
 

@@ -14,10 +14,11 @@
 #include "core/fxcrt/fx_unicode.h"
 #include "core/fxcrt/retain_ptr.h"
 #include "xfa/fgas/layout/cfx_break.h"
-#include "xfa/fxfa/cxfa_textuserdata.h"
 
 class CFGAS_GEFont;
-class FXTEXT_CHARPOS;
+class CFX_TextUserData;
+class CFX_TextPiece;
+class TextCharPos;
 
 enum class CFX_RTFLineAlignment {
   Left = 0,
@@ -25,22 +26,6 @@ enum class CFX_RTFLineAlignment {
   Right,
   Justified,
   Distributed
-};
-
-struct FX_RTFTEXTOBJ {
-  FX_RTFTEXTOBJ();
-  ~FX_RTFTEXTOBJ();
-
-  WideString pStr;
-  std::vector<int32_t> pWidths;
-  RetainPtr<CFGAS_GEFont> pFont;
-  const CFX_RectF* pRect;
-  wchar_t wLineBreakChar;
-  float fFontSize;
-  int32_t iLength;
-  int32_t iBidiLevel;
-  int32_t iHorizontalScale;
-  int32_t iVerticalScale;
 };
 
 class CFX_RTFBreak final : public CFX_Break {
@@ -51,15 +36,14 @@ class CFX_RTFBreak final : public CFX_Break {
   void SetLineStartPos(float fLinePos);
 
   void SetAlignment(CFX_RTFLineAlignment align) { m_iAlignment = align; }
-  void SetUserData(const RetainPtr<CXFA_TextUserData>& pUserData);
+  void SetUserData(const RetainPtr<CFX_TextUserData>& pUserData);
 
   void AddPositionedTab(float fTabPos);
 
   CFX_BreakType EndBreak(CFX_BreakType dwStatus);
 
-  int32_t GetDisplayPos(const FX_RTFTEXTOBJ* pText,
-                        FXTEXT_CHARPOS* pCharPos,
-                        bool bCharCode) const;
+  size_t GetDisplayPos(const CFX_TextPiece* pPiece,
+                       std::vector<TextCharPos>* pCharPos) const;
 
   CFX_BreakType AppendChar(wchar_t wch);
 
@@ -90,7 +74,7 @@ class CFX_RTFBreak final : public CFX_Break {
   bool m_bPagination;
   std::vector<int32_t> m_PositionedTabs;
   CFX_RTFLineAlignment m_iAlignment;
-  RetainPtr<CXFA_TextUserData> m_pUserData;
+  RetainPtr<CFX_TextUserData> m_pUserData;
 };
 
 #endif  // XFA_FGAS_LAYOUT_CFX_RTFBREAK_H_

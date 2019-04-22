@@ -17,14 +17,15 @@ class TransferCacheSerializeHelper;
 class CC_PAINT_EXPORT PaintOpBufferSerializer {
  public:
   using SerializeCallback =
-      base::Callback<size_t(const PaintOp*, const PaintOp::SerializeOptions&)>;
+      base::RepeatingCallback<size_t(const PaintOp*,
+                                     const PaintOp::SerializeOptions&)>;
 
   PaintOpBufferSerializer(SerializeCallback serialize_cb,
                           ImageProvider* image_provider,
                           TransferCacheSerializeHelper* transfer_cache,
                           ClientPaintCache* paint_cache,
                           SkStrikeServer* strike_server,
-                          SkColorSpace* color_space,
+                          sk_sp<SkColorSpace> color_space,
                           bool can_use_lcd_text,
                           bool context_supports_distance_field_text,
                           int max_texture_size,
@@ -100,21 +101,22 @@ class CC_PAINT_EXPORT PaintOpBufferSerializer {
   void ClearForOpaqueRaster(const Preamble& preamble,
                             const PaintOp::SerializeOptions& options,
                             const PlaybackParams& params);
+  void PlaybackOnAnalysisCanvas(const PaintOp* op,
+                                const PaintOp::SerializeOptions& options,
+                                const PlaybackParams& params);
 
   SerializeCallback serialize_cb_;
   ImageProvider* image_provider_;
   TransferCacheSerializeHelper* transfer_cache_;
   ClientPaintCache* paint_cache_;
   SkStrikeServer* strike_server_;
-  SkColorSpace* color_space_;
+  sk_sp<SkColorSpace> color_space_;
   bool can_use_lcd_text_;
   bool context_supports_distance_field_text_;
   int max_texture_size_;
   size_t max_texture_bytes_;
 
   SkTextBlobCacheDiffCanvas text_blob_canvas_;
-  std::unique_ptr<SkCanvas> color_canvas_;
-  SkCanvas* canvas_ = nullptr;
   bool valid_ = true;
 };
 
@@ -127,7 +129,7 @@ class CC_PAINT_EXPORT SimpleBufferSerializer : public PaintOpBufferSerializer {
                          TransferCacheSerializeHelper* transfer_cache,
                          ClientPaintCache* paint_cache,
                          SkStrikeServer* strike_server,
-                         SkColorSpace* color_space,
+                         sk_sp<SkColorSpace> color_space,
                          bool can_use_lcd_text,
                          bool context_supports_distance_field_text,
                          int max_texture_size,

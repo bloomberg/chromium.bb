@@ -11,19 +11,26 @@
 #include <memory>
 #include <string>
 
+#if defined(OS_WIN)
+#include <vector>
+#endif
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/ime/text_edit_commands.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/pointer/touch_editing_controller.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/font_list.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/range/range.h"
 #include "ui/gfx/selection_model.h"
 #include "ui/gfx/text_constants.h"
@@ -246,6 +253,8 @@ class VIEWS_EXPORT Textfield : public View,
 
   int GetPasswordCharRevealIndex() const { return password_char_reveal_index_; }
 
+  void SetExtraInsets(const gfx::Insets& insets);
+
   // View overrides:
   int GetBaseline() const override;
   gfx::Size CalculatePreferredSize() const override;
@@ -264,9 +273,8 @@ class VIEWS_EXPORT Textfield : public View,
   bool CanHandleAccelerators() const override;
   void AboutToRequestFocusFromTabTraversal(bool reverse) override;
   bool SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) override;
-  bool GetDropFormats(
-      int* formats,
-      std::set<ui::Clipboard::FormatType>* format_types) override;
+  bool GetDropFormats(int* formats,
+                      std::set<ui::ClipboardFormatType>* format_types) override;
   bool CanDrop(const ui::OSExchangeData& data) override;
   int OnDragUpdated(const ui::DropTargetEvent& event) override;
   void OnDragExited() override;
@@ -288,9 +296,9 @@ class VIEWS_EXPORT Textfield : public View,
   void OnCompositionTextConfirmedOrCleared() override;
 
   // ContextMenuController overrides:
-  void ShowContextMenuForView(View* source,
-                              const gfx::Point& point,
-                              ui::MenuSourceType source_type) override;
+  void ShowContextMenuForViewImpl(View* source,
+                                  const gfx::Point& point,
+                                  ui::MenuSourceType source_type) override;
 
   // DragController overrides:
   void WriteDragDataForView(View* sender,
@@ -349,8 +357,8 @@ class VIEWS_EXPORT Textfield : public View,
   FocusReason GetFocusReason() const override;
   bool GetTextRange(gfx::Range* range) const override;
   bool GetCompositionTextRange(gfx::Range* range) const override;
-  bool GetSelectionRange(gfx::Range* range) const override;
-  bool SetSelectionRange(const gfx::Range& range) override;
+  bool GetEditableSelectionRange(gfx::Range* range) const override;
+  bool SetEditableSelectionRange(const gfx::Range& range) override;
   bool DeleteRange(const gfx::Range& range) override;
   bool GetTextFromRange(const gfx::Range& range,
                         base::string16* text) const override;
@@ -363,6 +371,17 @@ class VIEWS_EXPORT Textfield : public View,
   void SetTextEditCommandForNextKeyEvent(ui::TextEditCommand command) override;
   ukm::SourceId GetClientSourceForMetrics() const override;
   bool ShouldDoLearning() override;
+
+#if defined(OS_WIN)
+  // Overridden from ui::TextInputClient(Windows only):
+  void SetCompositionFromExistingText(
+      const gfx::Range& range,
+      const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) override;
+  void SetActiveCompositionForAccessibility(
+      const gfx::Range& range,
+      const base::string16& active_composition_text,
+      bool is_composition_committed) override;
+#endif
 
  protected:
   // Inserts or appends a character in response to an IME operation.
@@ -507,39 +526,40 @@ class VIEWS_EXPORT Textfield : public View,
   std::unique_ptr<TextfieldModel> model_;
 
   // This is the current listener for events from this Textfield.
-  TextfieldController* controller_;
+  TextfieldController* controller_ = nullptr;
 
   // An edit command to execute on the next key event. When set to a valid
   // value, the key event is still passed to |controller_|, but otherwise
   // ignored in favor of the edit command. Set via
   // SetTextEditCommandForNextKeyEvent() during dispatch of that key event (see
   // comment in TextInputClient).
-  ui::TextEditCommand scheduled_text_edit_command_;
+  ui::TextEditCommand scheduled_text_edit_command_ =
+      ui::TextEditCommand::INVALID_COMMAND;
 
   // True if this Textfield cannot accept input and is read-only.
-  bool read_only_;
+  bool read_only_ = false;
 
   // The default number of average characters for the width of this text field.
   // This will be reported as the "desired size". Must be set to >=
   // minimum_width_in_chars_. Defaults to 0.
-  int default_width_in_chars_;
+  int default_width_in_chars_ = 0;
 
   // The minimum allowed width of this text field in average characters. This
   // will be reported as the minimum size. Must be set to <=
   // default_width_in_chars_. Setting this to -1 will cause GetMinimumSize() to
   // return View::GetMinimumSize(). Defaults to -1.
-  int minimum_width_in_chars_;
+  int minimum_width_in_chars_ = -1;
 
   // Flags indicating whether various system colors should be used, and if not,
   // what overriding color values should be used instead.
-  bool use_default_text_color_;
-  bool use_default_background_color_;
-  bool use_default_selection_text_color_;
-  bool use_default_selection_background_color_;
-  SkColor text_color_;
-  SkColor background_color_;
-  SkColor selection_text_color_;
-  SkColor selection_background_color_;
+  bool use_default_text_color_ = true;
+  bool use_default_background_color_ = true;
+  bool use_default_selection_text_color_ = true;
+  bool use_default_selection_background_color_ = true;
+  SkColor text_color_ = SK_ColorBLACK;
+  SkColor background_color_ = SK_ColorWHITE;
+  SkColor selection_text_color_ = SK_ColorWHITE;
+  SkColor selection_background_color_ = SK_ColorBLUE;
 
   // Text to display when empty.
   base::string16 placeholder_text_;
@@ -559,19 +579,19 @@ class VIEWS_EXPORT Textfield : public View,
 
   // True when the contents are deemed unacceptable and should be indicated as
   // such.
-  bool invalid_;
+  bool invalid_ = false;
 
   // The unique id for the associated label's accessible object.
-  int32_t label_ax_id_;
+  int32_t label_ax_id_ = 0;
 
   // The accessible name of the text field.
   base::string16 accessible_name_;
 
   // The input type of this text field.
-  ui::TextInputType text_input_type_;
+  ui::TextInputType text_input_type_ = ui::TEXT_INPUT_TYPE_TEXT;
 
   // The input flags of this text field.
-  int text_input_flags_;
+  int text_input_flags_ = 0;
 
   // The timer to reveal the last typed password character.
   base::OneShotTimer password_reveal_timer_;
@@ -579,20 +599,20 @@ class VIEWS_EXPORT Textfield : public View,
   // Tracks whether a user action is being performed which may change the
   // textfield; i.e. OnBeforeUserAction() has been called, but
   // OnAfterUserAction() has not yet been called.
-  bool performing_user_action_;
+  bool performing_user_action_ = false;
 
   // True if InputMethod::CancelComposition() should not be called.
-  bool skip_input_method_cancel_composition_;
+  bool skip_input_method_cancel_composition_ = false;
 
   // Insertion cursor repaint timer and visibility.
   base::RepeatingTimer cursor_blink_timer_;
 
   // The drop cursor is a visual cue for where dragged text will be dropped.
-  bool drop_cursor_visible_;
+  bool drop_cursor_visible_ = false;
   gfx::SelectionModel drop_cursor_position_;
 
   // Is the user potentially dragging and dropping from this view?
-  bool initiating_drag_;
+  bool initiating_drag_ = false;
 
   std::unique_ptr<ui::TouchEditingControllerDeprecated>
       touch_selection_controller_;
@@ -602,14 +622,14 @@ class VIEWS_EXPORT Textfield : public View,
   // Used to track touch drag starting location and offset to enable touch
   // scrolling.
   gfx::Point drag_start_location_;
-  int drag_start_display_offset_;
+  int drag_start_display_offset_ = 0;
 
   // Tracks if touch editing handles are hidden because user has started
   // scrolling. If |true|, handles are shown after scrolling ends.
-  bool touch_handles_hidden_due_to_scroll_;
+  bool touch_handles_hidden_due_to_scroll_ = false;
 
   // True if this textfield should use a focus ring to indicate focus.
-  bool use_focus_ring_;
+  bool use_focus_ring_ = true;
 
   // Context menu related members.
   std::unique_ptr<ui::SimpleMenuModel> context_menu_contents_;
@@ -633,6 +653,9 @@ class VIEWS_EXPORT Textfield : public View,
 
   // The password char reveal index, for testing only.
   int password_char_reveal_index_ = -1;
+
+  // Extra insets, useful to make room for a button for example.
+  gfx::Insets extra_insets_ = gfx::Insets();
 
   // Used to bind callback functions to this object.
   base::WeakPtrFactory<Textfield> weak_ptr_factory_;

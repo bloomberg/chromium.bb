@@ -8,6 +8,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -77,8 +78,9 @@ void DefaultURLRequestContextGetter::SetProxyConfiguration(
     const std::string& bypass_list) {
   network_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&DefaultURLRequestContextGetter::SetProxyConfigurationInternal,
-                 this, proxy_server, bypass_list));
+      base::BindOnce(
+          &DefaultURLRequestContextGetter::SetProxyConfigurationInternal, this,
+          proxy_server, bypass_list));
 }
 
 void DefaultURLRequestContextGetter::SetProxyConfigurationInternal(

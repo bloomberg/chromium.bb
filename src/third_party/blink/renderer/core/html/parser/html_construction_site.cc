@@ -110,7 +110,7 @@ static inline void Insert(HTMLConstructionSiteTask& task) {
   if (auto* template_element = ToHTMLTemplateElementOrNull(*task.parent))
     task.parent = template_element->content();
 
-  // https://html.spec.whatwg.org/#insert-a-foreign-element
+  // https://html.spec.whatwg.org/C/#insert-a-foreign-element
   // 3.1, (3) Push (pop) an element queue
   CEReactionsScope reactions;
   if (task.next_child)
@@ -385,7 +385,7 @@ HTMLConstructionSite::~HTMLConstructionSite() {
   DCHECK(pending_text_.IsEmpty());
 }
 
-void HTMLConstructionSite::Trace(blink::Visitor* visitor) {
+void HTMLConstructionSite::Trace(Visitor* visitor) {
   visitor->Trace(document_);
   visitor->Trace(attachment_root_);
   visitor->Trace(head_);
@@ -842,7 +842,7 @@ inline Document& HTMLConstructionSite::OwnerDocumentForCurrentNode() {
 }
 
 // "look up a custom element definition" for a token
-// https://html.spec.whatwg.org/#look-up-a-custom-element-definition
+// https://html.spec.whatwg.org/C/#look-up-a-custom-element-definition
 CustomElementDefinition* HTMLConstructionSite::LookUpCustomElementDefinition(
     Document& document,
     const QualifiedName& tag_name,
@@ -871,7 +871,7 @@ CustomElementDefinition* HTMLConstructionSite::LookUpCustomElementDefinition(
 }
 
 // "create an element for a token"
-// https://html.spec.whatwg.org/multipage/syntax.html#create-an-element-for-the-token
+// https://html.spec.whatwg.org/C/#create-an-element-for-the-token
 Element* HTMLConstructionSite::CreateElement(
     AtomicHTMLToken* token,
     const AtomicString& namespace_uri) {
@@ -1058,7 +1058,7 @@ bool HTMLConstructionSite::InQuirksMode() {
 
 // Adjusts |task| to match the "adjusted insertion location" determined by the
 // foster parenting algorithm, laid out as the substeps of step 2 of
-// https://html.spec.whatwg.org/#appropriate-place-for-inserting-a-node
+// https://html.spec.whatwg.org/C/#appropriate-place-for-inserting-a-node
 void HTMLConstructionSite::FindFosterSite(HTMLConstructionSiteTask& task) {
   // 2.1
   HTMLElementStack::ElementRecord* last_template =
@@ -1106,7 +1106,7 @@ void HTMLConstructionSite::FosterParent(Node* node) {
   QueueTask(task);
 }
 
-void HTMLConstructionSite::PendingText::Trace(blink::Visitor* visitor) {
+void HTMLConstructionSite::PendingText::Trace(Visitor* visitor) {
   visitor->Trace(parent);
   visitor->Trace(next_child);
 }

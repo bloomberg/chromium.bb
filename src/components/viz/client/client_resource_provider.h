@@ -32,6 +32,7 @@ class RasterInterface;
 
 namespace viz {
 class ContextProvider;
+class RasterContextProvider;
 
 // This class is used to give an integer name (ResourceId) to a gpu or software
 // resource (shipped as a TransferableResource), in order to use that name in
@@ -44,7 +45,7 @@ class ContextProvider;
 // created on (in practice, the impl thread).
 class VIZ_CLIENT_EXPORT ClientResourceProvider {
  public:
-  explicit ClientResourceProvider(bool delegated_sync_points_required);
+  explicit ClientResourceProvider(bool verified_sync_tokens_required);
   ~ClientResourceProvider();
 
   static gpu::SyncToken GenerateSyncTokenHelper(gpu::gles2::GLES2Interface* gl);
@@ -55,6 +56,13 @@ class VIZ_CLIENT_EXPORT ClientResourceProvider {
   // mailboxes and serializing meta-data into TransferableResources.
   // Resources are not removed from the ResourceProvider, but are marked as
   // "in use".
+  void PrepareSendToParent(
+      const std::vector<ResourceId>& resource_ids,
+      std::vector<TransferableResource>* transferable_resources,
+      RasterContextProvider* context_provider);
+
+  // TODO(sergeyu): Remove after updating all callers to use the above version
+  // of this method.
   void PrepareSendToParent(
       const std::vector<ResourceId>& resource_ids,
       std::vector<TransferableResource>* transferable_resources,
@@ -105,6 +113,7 @@ class VIZ_CLIENT_EXPORT ClientResourceProvider {
   class VIZ_CLIENT_EXPORT ScopedSkSurface {
    public:
     ScopedSkSurface(GrContext* gr_context,
+                    sk_sp<SkColorSpace> color_space,
                     GLuint texture_id,
                     GLenum texture_target,
                     const gfx::Size& size,
@@ -126,8 +135,14 @@ class VIZ_CLIENT_EXPORT ClientResourceProvider {
  private:
   struct ImportedResource;
 
+  void PrepareSendToParentInternal(
+      const std::vector<ResourceId>& export_ids,
+      std::vector<TransferableResource>* list,
+      base::OnceCallback<void(std::vector<GLbyte*>* tokens)>
+          verify_sync_tokens);
+
   THREAD_CHECKER(thread_checker_);
-  const bool delegated_sync_points_required_;
+  const bool verified_sync_tokens_required_;
 
   base::flat_map<ResourceId, ImportedResource> imported_resources_;
   // The ResourceIds in ClientResourceProvider start from 1 to avoid

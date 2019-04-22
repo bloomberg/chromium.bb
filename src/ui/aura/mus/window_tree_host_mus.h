@@ -15,7 +15,10 @@
 #include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/aura/aura_export.h"
 #include "ui/aura/mus/input_method_mus_delegate.h"
+#include "ui/aura/window_observer.h"
 #include "ui/aura/window_tree_host_platform.h"
+#include "ui/base/ime/mojo/ime.mojom.h"
+#include "ui/base/mojo/ui_base_types.mojom.h"
 
 namespace display {
 class Display;
@@ -33,22 +36,28 @@ class AURA_EXPORT WindowTreeHostMus : public WindowTreeHostPlatform,
                                       public InputMethodMusDelegate {
  public:
   explicit WindowTreeHostMus(WindowTreeHostMusInitParams init_params);
-
   ~WindowTreeHostMus() override;
 
   // Returns the WindowTreeHostMus for |window|. This returns null if |window|
   // is null, or not in a WindowTreeHostMus.
   static WindowTreeHostMus* ForWindow(aura::Window* window);
 
-  // Sets the bounds in pixels.
-  void SetBoundsFromServerInPixels(const gfx::Rect& bounds_in_pixels,
-                                   const viz::LocalSurfaceId& local_surface_id);
+  virtual void SetBounds(
+      const gfx::Rect& bounds_in_dip,
+      const viz::LocalSurfaceIdAllocation& local_surface_id_allocation);
+  void SetBoundsFromServer(
+      const gfx::Rect& bounds,
+      ui::WindowShowState state,
+      const viz::LocalSurfaceIdAllocation& local_surface_id_allocation);
+  const gfx::Rect& bounds_in_dip() const { return bounds_in_dip_; }
 
   ui::EventDispatchDetails SendEventToSink(ui::Event* event) {
     return aura::WindowTreeHostPlatform::SendEventToSink(event);
   }
 
-  InputMethodMus* input_method() { return input_method_.get(); }
+  void DispatchKeyEventFromServer(
+      ui::KeyEvent* event,
+      base::OnceCallback<void(ws::mojom::EventResult)>);
 
   // Sets the client area on the underlying mus window.
   void SetClientArea(const gfx::Insets& insets,
@@ -70,9 +79,11 @@ class AURA_EXPORT WindowTreeHostMus : public WindowTreeHostPlatform,
 
   // Tells the window manager to take control of moving the window. Returns
   // true if the move wasn't canceled.
-  void PerformWindowMove(ws::mojom::MoveLoopSource mus_source,
+  void PerformWindowMove(Window* window,
+                         ws::mojom::MoveLoopSource mus_source,
                          const gfx::Point& cursor_location,
-                         const base::Callback<void(bool)>& callback);
+                         int hit_test,
+                         base::OnceCallback<void(bool)> callback);
 
   // Tells the window manager to abort any current move initiated by
   // PerformWindowMove().
@@ -83,31 +94,95 @@ class AURA_EXPORT WindowTreeHostMus : public WindowTreeHostPlatform,
   int64_t display_id() const { return display_id_; }
   display::Display GetDisplay() const;
 
+  // Used to hold a LocalSurfaceIdAllocation from the server. This is used
+  // when a LocalSurfaceIdAllocation is received from the server, and there are
+  // inflight bounds changes. In such a scenario |id| is only applied once
+  // all inflight changes have been acked, or the size changes requiring a new
+  // LocalSurfaceIdAllocation. |id| is only applied after the changes have been
+  // acked to ensure the client/server stay in sync with ids.
+  void SetPendingLocalSurfaceIdFromServer(
+      const viz::LocalSurfaceIdAllocation& id);
+  bool has_pending_local_surface_id_from_server() const {
+    return pending_local_surface_id_from_server_.has_value();
+  }
+  base::Optional<viz::LocalSurfaceIdAllocation>
+  TakePendingLocalSurfaceIdFromServer();
+
   // aura::WindowTreeHostPlatform:
   void HideImpl() override;
-  void SetBoundsInPixels(
-      const gfx::Rect& bounds,
-      const viz::LocalSurfaceIdAllocation& local_surface_id_allocation =
-          viz::LocalSurfaceIdAllocation()) override;
   void DispatchEvent(ui::Event* event) override;
   void OnClosed() override;
   void OnActivationChanged(bool active) override;
   void OnCloseRequest() override;
   int64_t GetDisplayId() override;
+  bool ShouldAllocateLocalSurfaceIdOnResize() override;
+  gfx::Rect GetTransformedRootWindowBoundsInPixels(
+      const gfx::Size& size_in_pixels) const override;
 
   // InputMethodMusDelegate:
   void SetTextInputState(ui::mojom::TextInputStatePtr state) override;
   void SetImeVisibility(bool visible,
                         ui::mojom::TextInputStatePtr state) override;
+  bool ConnectToImeEngine(ime::mojom::ImeEngineRequest engine_request,
+                          ime::mojom::ImeEngineClientPtr client) override;
+
+  bool is_server_setting_bounds() const { return is_server_setting_bounds_; }
+
+ protected:
+  // This is in the protected section as SetBounds() is preferred.
+  // aura::WindowTreeHostPlatform:
+  void SetBoundsInPixels(
+      const gfx::Rect& bounds,
+      const viz::LocalSurfaceIdAllocation& local_surface_id_allocation =
+          viz::LocalSurfaceIdAllocation()) override;
 
  private:
+  // This class observes |window()| and runs a callback every time the show
+  // state has changed.
+  class WindowShowStateChangeObserver : public WindowObserver {
+   public:
+    WindowShowStateChangeObserver(
+        aura::Window* window,
+        base::RepeatingClosure show_state_changed_callback);
+    ~WindowShowStateChangeObserver() override;
+
+    // WindowObserver:
+    void OnWindowPropertyChanged(aura::Window* window,
+                                 const void* key,
+                                 intptr_t old) override;
+
+   private:
+    base::RepeatingClosure show_state_changed_callback_;
+
+    DISALLOW_COPY_AND_ASSIGN(WindowShowStateChangeObserver);
+  };
+
+  void OnWindowShowStateDidChange();
+
   int64_t display_id_;
 
   WindowTreeHostMusDelegate* delegate_;
 
-  bool in_set_bounds_from_server_ = false;
+  // If true, the server initiated the bounds change.
+  bool is_server_setting_bounds_ = false;
 
-  std::unique_ptr<InputMethodMus> input_method_;
+  // These two properties point to the arguments passed into
+  // SetBoundsFromServer, or null if that method isn't currently on the call
+  // stack. They're only set when the window's show state needs to change in
+  // addition to the bounds.
+  const gfx::Rect* server_bounds_ = nullptr;
+  const viz::LocalSurfaceIdAllocation* server_lsia_ = nullptr;
+
+  std::unique_ptr<InputMethodMus> input_method_mus_;
+
+  base::Optional<viz::LocalSurfaceIdAllocation>
+      pending_local_surface_id_from_server_;
+
+  gfx::Rect bounds_in_dip_;
+
+  // Start observing the window early (at construction time), because |this|
+  // needs to receive updates to the show state before other observers.
+  WindowShowStateChangeObserver show_state_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeHostMus);
 };

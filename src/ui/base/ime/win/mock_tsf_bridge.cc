@@ -45,6 +45,15 @@ void MockTSFBridge::RemoveFocusedClient(TextInputClient* client) {
   focused_window_ = nullptr;
 }
 
+void MockTSFBridge::SetInputMethodDelegate(
+    internal::InputMethodDelegate* delegate) {
+  input_method_delegate_ = delegate;
+}
+
+void MockTSFBridge::RemoveInputMethodDelegate() {
+  input_method_delegate_ = nullptr;
+}
+
 Microsoft::WRL::ComPtr<ITfThreadMgr> MockTSFBridge::GetThreadManager() {
   return thread_manager_;
 }

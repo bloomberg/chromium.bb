@@ -1946,7 +1946,7 @@ Matcher<Node*> IsTailCall(
         IrOpcode::k##opcode, hint_matcher, lhs_matcher, rhs_matcher,          \
         effect_matcher, control_matcher));                                    \
   }
-SIMPLIFIED_SPECULATIVE_NUMBER_BINOP_LIST(DEFINE_SPECULATIVE_BINOP_MATCHER);
+SIMPLIFIED_SPECULATIVE_NUMBER_BINOP_LIST(DEFINE_SPECULATIVE_BINOP_MATCHER)
 DEFINE_SPECULATIVE_BINOP_MATCHER(SpeculativeNumberEqual)
 DEFINE_SPECULATIVE_BINOP_MATCHER(SpeculativeNumberLessThan)
 DEFINE_SPECULATIVE_BINOP_MATCHER(SpeculativeNumberLessThanOrEqual)
@@ -2190,6 +2190,7 @@ IS_UNOP_MATCHER(ChangeInt32ToFloat64)
 IS_UNOP_MATCHER(ChangeInt32ToInt64)
 IS_UNOP_MATCHER(ChangeUint32ToFloat64)
 IS_UNOP_MATCHER(ChangeUint32ToUint64)
+IS_UNOP_MATCHER(ChangeCompressedToTagged)
 IS_UNOP_MATCHER(TruncateFloat64ToFloat32)
 IS_UNOP_MATCHER(TruncateInt64ToInt32)
 IS_UNOP_MATCHER(Float32Abs)
@@ -2256,22 +2257,14 @@ IS_UNOP_MATCHER(TaggedPoisonOnSpeculation)
 // Special-case Bitcast operators which are disabled when ENABLE_VERIFY_CSA is
 // not enabled.
 Matcher<Node*> IsBitcastTaggedToWord(const Matcher<Node*>& input_matcher) {
-  if (FLAG_verify_csa || FLAG_optimize_csa) {
-    return MakeMatcher(
-        new IsUnopMatcher(IrOpcode::kBitcastTaggedToWord, input_matcher));
-  } else {
-    return input_matcher;
-  }
+  return MakeMatcher(
+      new IsUnopMatcher(IrOpcode::kBitcastTaggedToWord, input_matcher));
 }
 
 Matcher<Node*> IsBitcastWordToTaggedSigned(
     const Matcher<Node*>& input_matcher) {
-  if (FLAG_verify_csa || FLAG_optimize_csa) {
-    return MakeMatcher(
-        new IsUnopMatcher(IrOpcode::kBitcastWordToTaggedSigned, input_matcher));
-  } else {
-    return input_matcher;
-  }
+  return MakeMatcher(
+      new IsUnopMatcher(IrOpcode::kBitcastWordToTaggedSigned, input_matcher));
 }
 
 #undef LOAD_MATCHER

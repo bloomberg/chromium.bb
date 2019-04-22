@@ -16,6 +16,7 @@
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 
@@ -66,28 +67,33 @@ void XboxDataFetcher::PlayEffect(
     int source_id,
     mojom::GamepadHapticEffectType type,
     mojom::GamepadEffectParametersPtr params,
-    mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback callback) {
+    mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback callback,
+    scoped_refptr<base::SequencedTaskRunner> callback_runner) {
   XboxControllerMac* controller = ControllerForLocation(source_id);
   if (!controller) {
-    std::move(callback).Run(
+    RunVibrationCallback(
+        std::move(callback), std::move(callback_runner),
         mojom::GamepadHapticsResult::GamepadHapticsResultError);
     return;
   }
 
-  controller->PlayEffect(type, std::move(params), std::move(callback));
+  controller->PlayEffect(type, std::move(params), std::move(callback),
+                         std::move(callback_runner));
 }
 
 void XboxDataFetcher::ResetVibration(
     int source_id,
-    mojom::GamepadHapticsManager::ResetVibrationActuatorCallback callback) {
+    mojom::GamepadHapticsManager::ResetVibrationActuatorCallback callback,
+    scoped_refptr<base::SequencedTaskRunner> callback_runner) {
   XboxControllerMac* controller = ControllerForLocation(source_id);
   if (!controller) {
-    std::move(callback).Run(
+    RunVibrationCallback(
+        std::move(callback), std::move(callback_runner),
         mojom::GamepadHapticsResult::GamepadHapticsResultError);
     return;
   }
 
-  controller->ResetVibration(std::move(callback));
+  controller->ResetVibration(std::move(callback), std::move(callback_runner));
 }
 
 void XboxDataFetcher::OnAddedToProvider() {
@@ -138,12 +144,9 @@ void XboxDataFetcher::PendingControllerBecameAvailable(
     PendingController* pending) {
   // Destroying the PendingController object unregisters our interest
   // notification.
-  for (auto it = pending_controllers_.begin(); it != pending_controllers_.end();
-       ++it) {
-    if (pending == it->get()) {
-      pending_controllers_.erase(it);
-      break;
-    }
+  auto it = pending_controllers_.find(pending);
+  if (it != pending_controllers_.end()) {
+    pending_controllers_.erase(it);
   }
   TryOpenDevice(service);
 }
@@ -309,9 +312,9 @@ void XboxDataFetcher::AddController(XboxControllerMac* controller) {
   controller->SetLEDPattern((XboxControllerMac::LEDPattern)(
       XboxControllerMac::LED_FLASH_TOP_LEFT + controller->location_id()));
 
-  CopyToUString(state->data.id, arraysize(state->data.id),
+  CopyToUString(state->data.id, base::size(state->data.id),
                 base::UTF8ToUTF16(controller->GetIdString()));
-  CopyToUString(state->data.mapping, arraysize(state->data.mapping),
+  CopyToUString(state->data.mapping, base::size(state->data.mapping),
                 base::UTF8ToUTF16("standard"));
 
   state->data.connected = true;
@@ -358,9 +361,11 @@ void XboxDataFetcher::XboxControllerGotData(
     pad.buttons[i].pressed = data.buttons[i];
     pad.buttons[i].value = data.buttons[i] ? 1.0f : 0.0f;
   }
-  pad.buttons[6].pressed = data.triggers[0] > kDefaultButtonPressedThreshold;
+  pad.buttons[6].pressed =
+      data.triggers[0] > GamepadButton::kDefaultButtonPressedThreshold;
   pad.buttons[6].value = data.triggers[0];
-  pad.buttons[7].pressed = data.triggers[1] > kDefaultButtonPressedThreshold;
+  pad.buttons[7].pressed =
+      data.triggers[1] > GamepadButton::kDefaultButtonPressedThreshold;
   pad.buttons[7].value = data.triggers[1];
   for (size_t i = 8; i < 16; i++) {
     pad.buttons[i].pressed = data.buttons[i - 2];
@@ -371,7 +376,7 @@ void XboxDataFetcher::XboxControllerGotData(
     pad.buttons[16].pressed = data.buttons[14];
     pad.buttons[16].value = data.buttons[14] ? 1.0f : 0.0f;
   }
-  for (size_t i = 0; i < arraysize(data.axes); i++) {
+  for (size_t i = 0; i < base::size(data.axes); i++) {
     pad.axes[i] = data.axes[i];
   }
 

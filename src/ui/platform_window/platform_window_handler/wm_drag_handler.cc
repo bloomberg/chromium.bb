@@ -11,7 +11,7 @@ DEFINE_UI_CLASS_PROPERTY_TYPE(ui::WmDragHandler*)
 
 namespace ui {
 
-DEFINE_UI_CLASS_PROPERTY_KEY(WmDragHandler*, kWmDragHandlerKey, nullptr);
+DEFINE_UI_CLASS_PROPERTY_KEY(WmDragHandler*, kWmDragHandlerKey, nullptr)
 
 void SetWmDragHandler(PlatformWindow* platform_window,
                       WmDragHandler* drag_handler) {

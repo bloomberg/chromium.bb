@@ -12,6 +12,7 @@ namespace blink {
 
 class NGBreakToken;
 class NGBlockBreakToken;
+class NGInlineBreakToken;
 
 // A utility class for block-flow layout which given the first child and a
 // break token will iterate through unfinished children.
@@ -31,7 +32,8 @@ class CORE_EXPORT NGBlockChildIterator {
   //    needed as multiple line-boxes can exist within the same parent
   //    fragment, unlike blocks.
   struct Entry;
-  Entry NextChild(const NGBreakToken* previous_inline_break_token = nullptr);
+  Entry NextChild(
+      const NGInlineBreakToken* previous_inline_break_token = nullptr);
 
  private:
   NGLayoutInputNode child_;

@@ -122,26 +122,3 @@ TEST_F(FullscreenWebStateObserverTest, ResetForSameDocumentURLChange) {
   web_state().OnNavigationFinished(&context);
   EXPECT_EQ(1.0, model().progress());
 }
-
-// Tests that the model is not disabled when a load is occurring.
-TEST_F(FullscreenWebStateObserverTest, DisableDuringLoad) {
-  EXPECT_TRUE(model().enabled());
-  web_state().SetLoading(true);
-  EXPECT_TRUE(model().enabled());
-  web_state().SetLoading(false);
-  EXPECT_TRUE(model().enabled());
-}
-
-// Tests that the model remains enabled when the SSL status is broken and the
-// UI refresh flag is enabled.
-TEST_F(FullscreenWebStateObserverTest, DisableForBrokenSSL) {
-  std::unique_ptr<web::NavigationItem> item = web::NavigationItem::Create();
-  item->GetSSL().security_style = web::SECURITY_STYLE_AUTHENTICATION_BROKEN;
-  navigation_manager().SetVisibleItem(item.get());
-  EXPECT_TRUE(model().enabled());
-  web_state().OnVisibleSecurityStateChanged();
-  EXPECT_TRUE(model().enabled());
-  navigation_manager().SetVisibleItem(nullptr);
-  web_state().OnVisibleSecurityStateChanged();
-  EXPECT_TRUE(model().enabled());
-}

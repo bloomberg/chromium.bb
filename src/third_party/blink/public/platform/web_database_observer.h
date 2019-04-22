@@ -43,7 +43,7 @@ class WebDatabaseObserver {
   virtual void DatabaseOpened(const WebSecurityOrigin&,
                               const WebString& database_name,
                               const WebString& database_display_name,
-                              unsigned long estimated_size) = 0;
+                              uint32_t estimated_size) = 0;
   virtual void DatabaseModified(const WebSecurityOrigin&,
                                 const WebString& database_name) = 0;
   virtual void DatabaseClosed(const WebSecurityOrigin&,

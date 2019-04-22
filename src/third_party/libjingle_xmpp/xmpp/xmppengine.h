@@ -8,8 +8,8 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#ifndef WEBRTC_LIBJINGLE_XMPP_XMPPENGINE_H_
-#define WEBRTC_LIBJINGLE_XMPP_XMPPENGINE_H_
+#ifndef THIRD_PARTY_LIBJINGLE_XMPP_XMPP_XMPPENGINE_H_
+#define THIRD_PARTY_LIBJINGLE_XMPP_XMPP_XMPPENGINE_H_
 
 // also part of the API
 #include "third_party/libjingle_xmpp/xmllite/qname.h"
@@ -17,7 +17,7 @@
 #include "third_party/libjingle_xmpp/xmpp/jid.h"
 
 
-namespace buzz {
+namespace jingle_xmpp {
 
 class XmppEngine;
 class SaslHandler;
@@ -305,11 +305,11 @@ public:
 // Move these to a better location
 
 #define XMPP_FAILED(x)                      \
-  ( (x) == buzz::XMPP_RETURN_OK ? false : true)   \
+  ( (x) == jingle_xmpp::XMPP_RETURN_OK ? false : true)   \
 
 
 #define XMPP_SUCCEEDED(x)                   \
-  ( (x) == buzz::XMPP_RETURN_OK ? true : false)   \
+  ( (x) == jingle_xmpp::XMPP_RETURN_OK ? true : false)   \
 
 #define IFR(x)                        \
   do {                                \
@@ -329,4 +329,4 @@ public:
   } while (false)                     \
 
 
-#endif  // WEBRTC_LIBJINGLE_XMPP_XMPPENGINE_H_
+#endif  // THIRD_PARTY_LIBJINGLE_XMPP_XMPP_XMPPENGINE_H_

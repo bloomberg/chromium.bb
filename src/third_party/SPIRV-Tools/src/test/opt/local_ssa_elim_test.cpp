@@ -1759,6 +1759,177 @@ TEST_F(LocalSSAElimTest, DecoratedVariable) {
   SinglePassRunAndMatch<SSARewritePass>(spv_asm, true);
 }
 
+// Test that the RelaxedPrecision decoration on the variable to added to the
+// result of the OpPhi instruction.
+TEST_F(LocalSSAElimTest, MultipleEdges) {
+  const std::string spv_asm = R"(
+  ; CHECK: OpSelectionMerge
+  ; CHECK: [[header_bb:%\w+]] = OpLabel
+  ; CHECK-NOT: OpLabel
+  ; CHECK: OpSwitch {{%\w+}} {{%\w+}} 76 [[bb1:%\w+]] 17 [[bb2:%\w+]]
+  ; CHECK-SAME: 4 [[bb2]]
+  ; CHECK: [[bb2]] = OpLabel
+  ; CHECK-NEXT: OpPhi [[type:%\w+]] [[val:%\w+]] [[header_bb]] %int_0 [[bb1]]
+          OpCapability Shader
+     %1 = OpExtInstImport "GLSL.std.450"
+          OpMemoryModel Logical GLSL450
+          OpEntryPoint Fragment %4 "main"
+          OpExecutionMode %4 OriginUpperLeft
+          OpSource ESSL 310
+  %void = OpTypeVoid
+     %3 = OpTypeFunction %void
+   %int = OpTypeInt 32 1
+  %_ptr_Function_int = OpTypePointer Function %int
+  %int_0 = OpConstant %int 0
+  %bool = OpTypeBool
+  %true = OpConstantTrue %bool
+  %false = OpConstantFalse %bool
+  %int_1 = OpConstant %int 1
+     %4 = OpFunction %void None %3
+     %5 = OpLabel
+     %8 = OpVariable %_ptr_Function_int Function
+          OpBranch %10
+    %10 = OpLabel
+          OpLoopMerge %12 %13 None
+          OpBranch %14
+    %14 = OpLabel
+          OpBranchConditional %true %11 %12
+    %11 = OpLabel
+          OpSelectionMerge %19 None
+          OpBranchConditional %false %18 %19
+    %18 = OpLabel
+          OpSelectionMerge %22 None
+          OpSwitch %int_0 %22 76 %20 17 %21 4 %21
+    %20 = OpLabel
+    %23 = OpLoad %int %8
+          OpStore %8 %int_0
+          OpBranch %21
+    %21 = OpLabel
+          OpBranch %22
+    %22 = OpLabel
+          OpBranch %19
+    %19 = OpLabel
+          OpBranch %13
+    %13 = OpLabel
+          OpBranch %10
+    %12 = OpLabel
+          OpReturn
+          OpFunctionEnd
+  )";
+
+  SinglePassRunAndMatch<SSARewritePass>(spv_asm, true);
+}
+
+TEST_F(LocalSSAElimTest, VariablePointerTest1) {
+  // Check that the load of the first variable is still used and that the load
+  // of the third variable is propagated.  The first load has to remain because
+  // of the store to the variable pointer.
+  const std::string text = R"(
+; CHECK: [[v1:%\w+]] = OpVariable
+; CHECK: [[v2:%\w+]] = OpVariable
+; CHECK: [[v3:%\w+]] = OpVariable
+; CHECK: [[ld1:%\w+]] = OpLoad %int [[v1]]
+; CHECK: OpIAdd %int [[ld1]] %int_0
+               OpCapability Shader
+               OpCapability VariablePointers
+          %1 = OpExtInstImport "GLSL.std.450"
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint GLCompute %2 "main"
+               OpExecutionMode %2 LocalSize 1 1 1
+               OpSource GLSL 450
+               OpMemberDecorate %_struct_3 0 Offset 0
+               OpMemberDecorate %_struct_3 1 Offset 4
+       %void = OpTypeVoid
+          %5 = OpTypeFunction %void
+        %int = OpTypeInt 32 1
+       %bool = OpTypeBool
+  %_struct_3 = OpTypeStruct %int %int
+%_ptr_Function__struct_3 = OpTypePointer Function %_struct_3
+%_ptr_Function_int = OpTypePointer Function %int
+       %true = OpConstantTrue %bool
+      %int_0 = OpConstant %int 0
+      %int_1 = OpConstant %int 1
+         %13 = OpConstantNull %_struct_3
+          %2 = OpFunction %void None %5
+         %14 = OpLabel
+         %15 = OpVariable %_ptr_Function_int Function
+         %16 = OpVariable %_ptr_Function_int Function
+         %17 = OpVariable %_ptr_Function_int Function
+               OpStore %15 %int_1
+               OpStore %17 %int_0
+               OpSelectionMerge %18 None
+               OpBranchConditional %true %19 %20
+         %19 = OpLabel
+               OpBranch %18
+         %20 = OpLabel
+               OpBranch %18
+         %18 = OpLabel
+         %21 = OpPhi %_ptr_Function_int %15 %19 %16 %20
+               OpStore %21 %int_0
+         %22 = OpLoad %int %15
+         %23 = OpLoad %int %17
+         %24 = OpIAdd %int %22 %23
+               OpReturn
+               OpFunctionEnd
+  )";
+  SinglePassRunAndMatch<SSARewritePass>(text, false);
+}
+
+TEST_F(LocalSSAElimTest, VariablePointerTest2) {
+  // Check that the load of the first variable is still used and that the load
+  // of the third variable is propagated.  The first load has to remain because
+  // of the store to the variable pointer.
+  const std::string text = R"(
+; CHECK: [[v1:%\w+]] = OpVariable
+; CHECK: [[v2:%\w+]] = OpVariable
+; CHECK: [[v3:%\w+]] = OpVariable
+; CHECK: [[ld1:%\w+]] = OpLoad %int [[v1]]
+; CHECK: OpIAdd %int [[ld1]] %int_0
+               OpCapability Shader
+               OpCapability VariablePointers
+          %1 = OpExtInstImport "GLSL.std.450"
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint GLCompute %2 "main"
+               OpExecutionMode %2 LocalSize 1 1 1
+               OpSource GLSL 450
+               OpMemberDecorate %_struct_3 0 Offset 0
+               OpMemberDecorate %_struct_3 1 Offset 4
+       %void = OpTypeVoid
+          %5 = OpTypeFunction %void
+        %int = OpTypeInt 32 1
+       %bool = OpTypeBool
+  %_struct_3 = OpTypeStruct %int %int
+%_ptr_Function__struct_3 = OpTypePointer Function %_struct_3
+%_ptr_Function_int = OpTypePointer Function %int
+       %true = OpConstantTrue %bool
+      %int_0 = OpConstant %int 0
+      %int_1 = OpConstant %int 1
+         %13 = OpConstantNull %_struct_3
+          %2 = OpFunction %void None %5
+         %14 = OpLabel
+         %15 = OpVariable %_ptr_Function_int Function
+         %16 = OpVariable %_ptr_Function_int Function
+         %17 = OpVariable %_ptr_Function_int Function
+               OpStore %15 %int_1
+               OpStore %17 %int_0
+               OpSelectionMerge %18 None
+               OpBranchConditional %true %19 %20
+         %19 = OpLabel
+               OpBranch %18
+         %20 = OpLabel
+               OpBranch %18
+         %18 = OpLabel
+         %21 = OpPhi %_ptr_Function_int %15 %19 %16 %20
+               OpStore %21 %int_0
+         %22 = OpLoad %int %15
+         %23 = OpLoad %int %17
+         %24 = OpIAdd %int %22 %23
+               OpReturn
+               OpFunctionEnd
+  )";
+  SinglePassRunAndMatch<LocalMultiStoreElimPass>(text, false);
+}
+
 // TODO(greg-lunarg): Add tests to verify handling of these cases:
 //
 //    No optimization in the presence of

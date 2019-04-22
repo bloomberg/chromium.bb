@@ -14,6 +14,7 @@
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_controller.h"
+#include "base/bind.h"
 #include "base/strings/strcat.h"
 #include "services/ws/public/cpp/property_type_converters.h"
 #include "services/ws/public/mojom/window_manager.mojom.h"
@@ -134,6 +135,17 @@ void LoginTestBase::AddPublicAccountUsers(size_t num_public_accounts) {
     std::string email =
         base::StrCat({"user", std::to_string(users_.size()), "@domain.com"});
     users_.push_back(CreatePublicAccountUser(email));
+  }
+
+  // Notify any listeners that the user count has changed.
+  DataDispatcher()->NotifyUsers(users_);
+}
+
+void LoginTestBase::AddChildUsers(size_t num_users) {
+  for (size_t i = 0; i < num_users; i++) {
+    std::string email =
+        base::StrCat({"user", std::to_string(users_.size()), "@domain.com"});
+    users_.push_back(CreateChildUser(email));
   }
 
   // Notify any listeners that the user count has changed.

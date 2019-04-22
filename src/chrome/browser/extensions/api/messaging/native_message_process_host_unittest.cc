@@ -122,7 +122,7 @@ class NativeMessagingTest : public ::testing::Test,
 
     // Parse the message.
     std::unique_ptr<base::DictionaryValue> dict_value =
-        base::DictionaryValue::From(base::JSONReader::Read(message));
+        base::DictionaryValue::From(base::JSONReader::ReadDeprecated(message));
     if (dict_value) {
       last_message_parsed_ = std::move(dict_value);
     } else {

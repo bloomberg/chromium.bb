@@ -17,8 +17,10 @@
 #ifndef SRC_TRACED_PROBES_PS_PROCESS_STATS_DATA_SOURCE_H_
 #define SRC_TRACED_PROBES_PS_PROCESS_STATS_DATA_SOURCE_H_
 
+#include <limits>
 #include <memory>
 #include <set>
+#include <unordered_map>
 #include <vector>
 
 #include "perfetto/base/scoped_file.h"
@@ -38,6 +40,7 @@ namespace protos {
 namespace pbzero {
 class ProcessTree;
 class ProcessStats;
+class ProcessStats_Process;
 }  // namespace pbzero
 }  // namespace protos
 
@@ -66,6 +69,18 @@ class ProcessStatsDataSource : public ProbesDataSource {
   virtual std::string ReadProcPidFile(int32_t pid, const std::string& file);
 
  private:
+  struct CachedProcessStats {
+    uint32_t vm_size_kb = std::numeric_limits<uint32_t>::max();
+    uint32_t vm_rss_kb = std::numeric_limits<uint32_t>::max();
+    uint32_t rss_anon_kb = std::numeric_limits<uint32_t>::max();
+    uint32_t rss_file_kb = std::numeric_limits<uint32_t>::max();
+    uint32_t rss_shmem_kb = std::numeric_limits<uint32_t>::max();
+    uint32_t vm_swap_kb = std::numeric_limits<uint32_t>::max();
+    uint32_t vm_locked_kb = std::numeric_limits<uint32_t>::max();
+    uint32_t vm_hvm_kb = std::numeric_limits<uint32_t>::max();
+    int oom_score_adj = std::numeric_limits<int>::max();
+  };
+
   // Common functions.
   ProcessStatsDataSource(const ProcessStatsDataSource&) = delete;
   ProcessStatsDataSource& operator=(const ProcessStatsDataSource&) = delete;
@@ -74,17 +89,18 @@ class ProcessStatsDataSource : public ProbesDataSource {
   void FinalizeCurPacket();
   protos::pbzero::ProcessTree* GetOrCreatePsTree();
   protos::pbzero::ProcessStats* GetOrCreateStats();
+  protos::pbzero::ProcessStats_Process* GetOrCreateStatsProcess(int32_t pid);
 
   // Functions for snapshotting process/thread long-term info and relationships.
   void WriteProcess(int32_t pid, const std::string& proc_status);
-  void WriteThread(int32_t tid, int32_t tgid, const std::string& proc_status);
+  void WriteThread(int32_t tid, int32_t tgid, const char* optional_name);
   void WriteProcessOrThread(int32_t pid);
   std::string ReadProcStatusEntry(const std::string& buf, const char* key);
 
   // Functions for periodically sampling process stats/counters.
   static void Tick(base::WeakPtr<ProcessStatsDataSource>);
   void WriteAllProcessStats();
-  bool WriteProcessStats(int32_t pid, const std::string& proc_status);
+  bool WriteMemCounters(int32_t pid, const std::string& proc_status);
 
   // Common fields used for both process/tree relationships and stats/counters.
   base::TaskRunner* const task_runner_;
@@ -104,8 +120,15 @@ class ProcessStatsDataSource : public ProbesDataSource {
 
   // Fields for keeping track of the periodic stats/counters.
   uint32_t poll_period_ms_ = 0;
+  uint64_t ticks_ = 0;
   protos::pbzero::ProcessStats* cur_ps_stats_ = nullptr;
-  std::vector<bool> pids_to_skip_;
+  protos::pbzero::ProcessStats_Process* cur_ps_stats_process_ = nullptr;
+  std::vector<bool> skip_stats_for_pids_;
+
+  // Cached process stats per process. Cleared every |cache_ttl_ticks_| *
+  // |poll_period_ms_| ms.
+  uint32_t process_stats_cache_ttl_ticks_ = 0;
+  std::unordered_map<int32_t, CachedProcessStats> process_stats_cache_;
 
   base::WeakPtrFactory<ProcessStatsDataSource> weak_factory_;  // Keep last.
 };

@@ -67,6 +67,9 @@ struct ThemeBackgroundInfo {
   // True if the default theme is selected.
   bool using_default_theme;
 
+  // True if dark mode is enabled.
+  bool using_dark_mode;
+
   // Url of the custom background selected by the user.
   GURL custom_background_url;
 
@@ -131,9 +134,6 @@ struct InstantMostVisitedItem {
   // The title of the Most Visited page.  May be empty, in which case the |url|
   // is used as the title.
   base::string16 title;
-
-  // The external URL of the thumbnail associated with this page.
-  GURL thumbnail;
 
   // The external URL of the favicon associated with this page.
   GURL favicon;

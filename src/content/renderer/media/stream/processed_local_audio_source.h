@@ -14,9 +14,9 @@
 #include "content/renderer/media/stream/audio_service_audio_processor_proxy.h"
 #include "content/renderer/media/stream/media_stream_audio_level_calculator.h"
 #include "content/renderer/media/stream/media_stream_audio_processor.h"
-#include "content/renderer/media/stream/media_stream_audio_source.h"
 #include "media/base/audio_capturer_source.h"
 #include "media/webrtc/audio_processor_controls.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 
 namespace media {
@@ -24,6 +24,8 @@ class AudioBus;
 }
 
 namespace content {
+
+CONTENT_EXPORT bool IsApmInAudioServiceEnabled();
 
 class PeerConnectionDependencyFactory;
 
@@ -33,7 +35,7 @@ class PeerConnectionDependencyFactory;
 // MediaStreamProcessor that modifies its audio. Modified audio is delivered to
 // one or more MediaStreamAudioTracks.
 class CONTENT_EXPORT ProcessedLocalAudioSource final
-    : public MediaStreamAudioSource,
+    : public blink::MediaStreamAudioSource,
       public media::AudioCapturerSource::CaptureCallback {
  public:
   // |consumer_render_frame_id| references the RenderFrame that will consume the
@@ -41,18 +43,18 @@ class CONTENT_EXPORT ProcessedLocalAudioSource final
   // ID are derived from |device_info|. |factory| must outlive this instance.
   ProcessedLocalAudioSource(
       int consumer_render_frame_id,
-      const MediaStreamDevice& device,
-      bool hotword_enabled,
+      const blink::MediaStreamDevice& device,
       bool disable_local_echo,
-      const AudioProcessingProperties& audio_processing_properties,
+      const blink::AudioProcessingProperties& audio_processing_properties,
       const ConstraintsCallback& started_callback,
-      PeerConnectionDependencyFactory* factory);
+      PeerConnectionDependencyFactory* factory,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   ~ProcessedLocalAudioSource() final;
 
   // If |source| is an instance of ProcessedLocalAudioSource, return a
   // type-casted pointer to it. Otherwise, return null.
-  static ProcessedLocalAudioSource* From(MediaStreamAudioSource* source);
+  static ProcessedLocalAudioSource* From(blink::MediaStreamAudioSource* source);
 
   // Non-browser unit tests cannot provide RenderFrame implementations at
   // run-time. This is used to skip the otherwise mandatory check for a valid
@@ -61,7 +63,7 @@ class CONTENT_EXPORT ProcessedLocalAudioSource final
     allow_invalid_render_frame_id_for_testing_ = allowed;
   }
 
-  const AudioProcessingProperties& audio_processing_properties() const {
+  const blink::AudioProcessingProperties& audio_processing_properties() const {
     return audio_processing_properties_;
   }
 
@@ -128,7 +130,7 @@ class CONTENT_EXPORT ProcessedLocalAudioSource final
 
   PeerConnectionDependencyFactory* const pc_factory_;
 
-  AudioProcessingProperties audio_processing_properties_;
+  blink::AudioProcessingProperties audio_processing_properties_;
 
   // Callback that's called when the audio source has been initialized.
   ConstraintsCallback started_callback_;

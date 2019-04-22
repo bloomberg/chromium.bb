@@ -58,7 +58,7 @@ class GerritAPI(object):
         return cl
 
     def query_exportable_open_cls(self, limit=200):
-        path = ('/changes/?q=project:\"chromium/src\"+status:open'
+        path = ('/changes/?q=project:\"chromium/src\"+branch:master+status:open'
                 '&o=CURRENT_FILES&o=CURRENT_REVISION&o=COMMIT_FOOTERS'
                 '&o=DETAILED_ACCOUNTS&o=DETAILED_LABELS&n={}').format(limit)
         # The underlying host.web.get_binary() automatically retries until it

@@ -151,6 +151,8 @@ WebRtcEventLogUploaderImpl::WebRtcEventLogUploaderImpl(
   if (!history_file_writer_) {
     // File either could not be created, or, if a different error occurred,
     // Create() will have tried to remove the file it has created.
+    UmaRecordWebRtcEventLoggingUpload(
+        WebRtcEventLoggingUploadUma::kHistoryFileCreationError);
     ReportResult(false);
     return;
   }
@@ -159,6 +161,8 @@ WebRtcEventLogUploaderImpl::WebRtcEventLogUploaderImpl(
   if (!history_file_writer_->WriteCaptureTime(log_file.last_modified) ||
       !history_file_writer_->WriteUploadTime(now)) {
     LOG(ERROR) << "Writing to history file failed.";
+    UmaRecordWebRtcEventLoggingUpload(
+        WebRtcEventLoggingUploadUma::kHistoryFileWriteError);
     DeleteHistoryFile();  // Avoid partial, potentially-corrupt history files.
     ReportResult(false);
     return;
@@ -167,7 +171,7 @@ WebRtcEventLogUploaderImpl::WebRtcEventLogUploaderImpl(
   std::string upload_data;
   if (!PrepareUploadData(&upload_data)) {
     // History file will reflect a failed upload attempt.
-    ReportResult(false);
+    ReportResult(false);  // UMA recorded by PrepareUploadData().
     return;
   }
 
@@ -203,8 +207,8 @@ const WebRtcLogFileInfo& WebRtcEventLogUploaderImpl::GetWebRtcLogFileInfo()
 bool WebRtcEventLogUploaderImpl::Cancel() {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
 
-  // The upload either already completed, or was never properly started (due
-  // to a file read failure, etc.).
+  // The upload could already have been completed, or maybe was never properly
+  // started (due to a file read failure, etc.).
   const bool upload_was_active = (url_loader_.get() != nullptr);
 
   // Note that in this case, it might still be that the last bytes hit the
@@ -214,6 +218,11 @@ bool WebRtcEventLogUploaderImpl::Cancel() {
 
   DeleteLogFile();
   DeleteHistoryFile();
+
+  if (upload_was_active) {
+    UmaRecordWebRtcEventLoggingUpload(
+        WebRtcEventLoggingUploadUma::kUploadCancelled);
+  }
 
   return upload_was_active;
 }
@@ -225,6 +234,8 @@ bool WebRtcEventLogUploaderImpl::PrepareUploadData(std::string* upload_data) {
   if (!base::ReadFileToStringWithMaxSize(log_file_.path, &log_file_contents,
                                          max_log_file_size_bytes_)) {
     LOG(WARNING) << "Couldn't read event log file, or max file size exceeded.";
+    UmaRecordWebRtcEventLoggingUpload(
+        WebRtcEventLoggingUploadUma::kLogFileReadError);
     return false;
   }
 
@@ -234,6 +245,8 @@ bool WebRtcEventLogUploaderImpl::PrepareUploadData(std::string* upload_data) {
   const std::string filename_str = log_file_.path.BaseName().MaybeAsASCII();
   if (filename_str.empty()) {
     LOG(WARNING) << "Log filename is not according to acceptable format.";
+    UmaRecordWebRtcEventLoggingUpload(
+        WebRtcEventLoggingUploadUma::kLogFileNameError);
     return false;
   }
 
@@ -300,6 +313,9 @@ void WebRtcEventLogUploaderImpl::OnURLLoadComplete(
   const bool upload_successful =
       (response_body.get() != nullptr && !response_body->empty());
 
+  // NetError() is 0 when no error occurred.
+  UmaRecordWebRtcEventLoggingNetErrorType(url_loader_->NetError());
+
   DCHECK(history_file_writer_);
   if (upload_successful) {
     if (!history_file_writer_->WriteUploadId(*response_body)) {
@@ -313,6 +329,10 @@ void WebRtcEventLogUploaderImpl::OnURLLoadComplete(
     // By not writing an UploadId to the history file, it is inferrable that
     // the upload was initiated, but did not end successfully.
   }
+
+  UmaRecordWebRtcEventLoggingUpload(
+      upload_successful ? WebRtcEventLoggingUploadUma::kSuccess
+                        : WebRtcEventLoggingUploadUma::kUploadFailure);
 
   url_loader_.reset();  // Explicitly maintain determinant.
 

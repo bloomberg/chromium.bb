@@ -9,10 +9,8 @@
 #include <memory>
 #include <string>
 
-#include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
@@ -32,8 +30,6 @@ class BrowserContext;
 namespace extensions {
 class ExtensionRegistry;
 
-typedef base::Callback<void(ui::IdleState)> QueryStateCallback;
-
 struct IdleMonitor {
   explicit IdleMonitor(ui::IdleState initial_state);
 
@@ -50,9 +46,8 @@ class IdleManager : public ExtensionRegistryObserver,
    public:
     IdleTimeProvider() {}
     virtual ~IdleTimeProvider() {}
-    virtual void CalculateIdleState(int idle_threshold,
-                                    ui::IdleCallback notify) = 0;
-    virtual void CalculateIdleTime(ui::IdleTimeCallback notify) = 0;
+    virtual ui::IdleState CalculateIdleState(int idle_threshold) = 0;
+    virtual int CalculateIdleTime() = 0;
     virtual bool CheckIdleStateIsLocked() = 0;
 
    private:
@@ -89,8 +84,14 @@ class IdleManager : public ExtensionRegistryObserver,
   void OnListenerAdded(const EventListenerInfo& details) override;
   void OnListenerRemoved(const EventListenerInfo& details) override;
 
-  void QueryState(int threshold, const QueryStateCallback& notify);
+  ui::IdleState QueryState(int threshold);
   void SetThreshold(const std::string& extension_id, int threshold);
+  // Returns the maximum time in seconds until the screen lock automatically
+  // when idle.
+  // Note: Currently supported on Chrome OS only. Returns a zero duration for
+  // other operating systems.
+  base::TimeDelta GetAutoLockDelay() const;
+
   static std::unique_ptr<base::Value> CreateIdleValue(ui::IdleState idle_state);
 
   // Override default event class. Callee assumes ownership. Used for testing.
@@ -122,7 +123,6 @@ class IdleManager : public ExtensionRegistryObserver,
   void StartPolling();
   void StopPolling();
   void UpdateIdleState();
-  void UpdateIdleStateCallback(int idle_time);
 
   content::BrowserContext* const context_;
 
@@ -139,8 +139,6 @@ class IdleManager : public ExtensionRegistryObserver,
   // Listen to extension unloaded notification.
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observer_;
-
-  base::WeakPtrFactory<IdleManager> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(IdleManager);
 };

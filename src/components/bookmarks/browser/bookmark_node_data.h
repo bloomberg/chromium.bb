@@ -19,7 +19,7 @@
 #include "url/gurl.h"
 
 #if defined(TOOLKIT_VIEWS)
-#include "ui/base/clipboard/clipboard.h"
+#include "ui/base/clipboard/clipboard_format_type.h"
 #endif
 
 namespace base {
@@ -115,7 +115,7 @@ struct BookmarkNodeData {
   ~BookmarkNodeData();
 
 #if defined(TOOLKIT_VIEWS)
-  static const ui::Clipboard::FormatType& GetBookmarkFormatType();
+  static const ui::ClipboardFormatType& GetBookmarkFormatType();
 #endif
 
   static bool ClipboardContainsBookmarks();
@@ -127,7 +127,7 @@ struct BookmarkNodeData {
   bool ReadFromTuple(const GURL& url, const base::string16& title);
 
   // Writes bookmarks to the specified clipboard.
-  void WriteToClipboard(ui::ClipboardType type);
+  void WriteToClipboard();
 
   // Reads bookmarks from the specified clipboard. Prefers data written via
   // WriteToClipboard() but will also attempt to read a plain bookmark.

@@ -12,7 +12,7 @@
 #include <utility>
 
 #include "base/base_export.h"
-#include "base/task/task_traits_details.h"
+#include "base/traits_bag.h"
 
 namespace base {
 

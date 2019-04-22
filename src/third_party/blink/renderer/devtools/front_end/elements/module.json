@@ -143,6 +143,15 @@
         },
         {
             "type": "setting",
+            "category": "Elements",
+            "order": 5,
+            "title": "Show detailed inspect tooltip",
+            "settingName": "showDetailedInspectTooltip",
+            "settingType": "boolean",
+            "defaultValue": true
+        },
+        {
+            "type": "setting",
             "settingName": "showEventListenersForAncestors",
             "settingType": "boolean",
             "defaultValue": true
@@ -255,6 +264,13 @@
                     "shortcut": "Meta+Shift+C"
                 }
             ]
+        },
+        {
+            "type": "action",
+            "actionId": "elements.capture-area-screenshot",
+            "className": "Elements.InspectElementModeController.ToggleSearchActionDelegate",
+            "title": "Capture area screenshot",
+            "category": "Screenshot"
         },
         {
             "type": "@UI.ToolbarItem.Provider",

@@ -72,9 +72,7 @@
 #include "third_party/blink/renderer/platform/graphics/filters/filter.h"
 #include "third_party/blink/renderer/platform/graphics/filters/source_graphic.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
-
-#include <math.h>
-#include <memory>
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -418,7 +416,7 @@ static void WriteLayoutSVGTextBox(WTF::TextStream& ts,
     return;
 
   // FIXME: Remove this hack, once the new text layout engine is completly
-  // landed. We want to preserve the old layout test results for now.
+  // landed. We want to preserve the old web test results for now.
   ts << " contains 1 chunk(s)";
 
   if (text.Parent() && (text.Parent()->ResolveColor(GetCSSPropertyColor()) !=
@@ -451,7 +449,7 @@ static inline void WriteSVGInlineTextBox(WTF::TextStream& ts,
     unsigned end_offset = fragment.character_offset + fragment.length;
 
     // FIXME: Remove this hack, once the new text layout engine is completly
-    // landed. We want to preserve the old layout test results for now.
+    // landed. We want to preserve the old web test results for now.
     ts << "chunk 1 ";
     ETextAnchor anchor = svg_style.TextAnchor();
     bool is_vertical_text =
@@ -567,8 +565,8 @@ void WriteSVGResourceContainer(WTF::TextStream& ts,
     ts << "\n";
     // Creating a placeholder filter which is passed to the builder.
     FloatRect dummy_rect;
-    Filter* dummy_filter =
-        Filter::Create(dummy_rect, dummy_rect, 1, Filter::kBoundingBox);
+    auto* dummy_filter = MakeGarbageCollected<Filter>(dummy_rect, dummy_rect, 1,
+                                                      Filter::kBoundingBox);
     SVGFilterBuilder builder(dummy_filter->GetSourceGraphic());
     builder.BuildGraph(dummy_filter, ToSVGFilterElement(*filter->GetElement()),
                        dummy_rect);
@@ -734,7 +732,7 @@ void WriteResources(WTF::TextStream& ts,
     DCHECK(style.ClipPath());
     DCHECK_EQ(style.ClipPath()->GetType(), ClipPathOperation::REFERENCE);
     const ReferenceClipPathOperation& clip_path_reference =
-        ToReferenceClipPathOperation(*style.ClipPath());
+        To<ReferenceClipPathOperation>(*style.ClipPath());
     AtomicString id = SVGURIReference::FragmentIdentifierFromIRIString(
         clip_path_reference.Url(), tree_scope);
     WriteIndent(ts, indent);
@@ -750,7 +748,7 @@ void WriteResources(WTF::TextStream& ts,
     const FilterOperation& filter_operation = *style.Filter().at(0);
     DCHECK_EQ(filter_operation.GetType(), FilterOperation::REFERENCE);
     const auto& reference_filter_operation =
-        ToReferenceFilterOperation(filter_operation);
+        To<ReferenceFilterOperation>(filter_operation);
     AtomicString id = SVGURIReference::FragmentIdentifierFromIRIString(
         reference_filter_operation.Url(), tree_scope);
     WriteIndent(ts, indent);

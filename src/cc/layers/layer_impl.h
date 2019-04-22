@@ -15,7 +15,6 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "cc/base/region.h"
@@ -79,7 +78,10 @@ class CC_EXPORT LayerImpl {
     return base::WrapUnique(new LayerImpl(tree_impl, id));
   }
 
+  LayerImpl(const LayerImpl&) = delete;
   virtual ~LayerImpl();
+
+  LayerImpl& operator=(const LayerImpl&) = delete;
 
   int id() const { return layer_id_; }
 
@@ -126,6 +128,10 @@ class CC_EXPORT LayerImpl {
 
   void PopulateSharedQuadState(viz::SharedQuadState* state,
                                bool contents_opaque) const;
+
+  // If using this, you need to override GetEnclosingRectInTargetSpace() to
+  // use GetScaledEnclosingRectInTargetSpace(). To do otherwise may result in
+  // inconsistent values, and drawing/clipping problems.
   void PopulateScaledSharedQuadState(viz::SharedQuadState* state,
                                      float layer_to_content_scale_x,
                                      float layer_to_content_scale_y,
@@ -159,17 +165,9 @@ class CC_EXPORT LayerImpl {
   void SetDrawsContent(bool draws_content);
   bool DrawsContent() const { return draws_content_; }
 
-  // Make the layer hit test (see: |should_hit_test|) even if !draws_content_.
-  void SetHitTestableWithoutDrawsContent(bool should_hit_test);
-  bool hit_testable_without_draws_content() const {
-    return hit_testable_without_draws_content_;
-  }
-
-  // True if either the layer draws content or has been marked as hit testable
-  // without draws_content.
-  bool should_hit_test() const {
-    return draws_content_ || hit_testable_without_draws_content_;
-  }
+  // Make the layer hit testable.
+  void SetHitTestable(bool should_hit_test);
+  bool HitTestable() const;
 
   LayerImplTestProperties* test_properties() {
     if (!test_properties_)
@@ -195,9 +193,6 @@ class CC_EXPORT LayerImpl {
   // Stable identifier for clients. See comment in cc/trees/element_id.h.
   void SetElementId(ElementId element_id);
   ElementId element_id() const { return element_id_; }
-
-  void SetPosition(const gfx::PointF& position);
-  gfx::PointF position() const { return position_; }
 
   bool IsAffectedByPageScale() const;
 
@@ -309,14 +304,6 @@ class CC_EXPORT LayerImpl {
   gfx::Size scroll_container_bounds() const { return scroll_container_bounds_; }
   bool scrollable() const { return scrollable_; }
 
-  void set_main_thread_scrolling_reasons(
-      uint32_t main_thread_scrolling_reasons) {
-    main_thread_scrolling_reasons_ = main_thread_scrolling_reasons;
-  }
-  uint32_t main_thread_scrolling_reasons() const {
-    return main_thread_scrolling_reasons_;
-  }
-
   void SetNonFastScrollableRegion(const Region& region) {
     non_fast_scrollable_region_ = region;
   }
@@ -348,7 +335,7 @@ class CC_EXPORT LayerImpl {
   void AddDamageRect(const gfx::Rect& damage_rect);
   const gfx::Rect& damage_rect() const { return damage_rect_; }
 
-  virtual std::unique_ptr<base::DictionaryValue> LayerAsJson();
+  virtual std::unique_ptr<base::DictionaryValue> LayerAsJson() const;
   // TODO(pdr): This should be removed because there is no longer a tree
   // of layers, only a list.
   std::unique_ptr<base::DictionaryValue> LayerTreeAsJson();
@@ -398,6 +385,7 @@ class CC_EXPORT LayerImpl {
   virtual void GetAllPrioritizedTilesForTracing(
       std::vector<PrioritizedTile>* prioritized_tiles) const;
   virtual void AsValueInto(base::trace_event::TracedValue* dict) const;
+  std::string ToString() const;
 
   virtual size_t GPUMemoryUsageInBytes() const;
 
@@ -437,7 +425,17 @@ class CC_EXPORT LayerImpl {
   // for layers that provide it.
   virtual Region GetInvalidationRegionForDebugging();
 
+  // If you override this, and are making use of
+  // PopulateScaledSharedQuadState(), make sure you call
+  // GetScaledEnclosingRectInTargetSpace(). See comment for
+  // PopulateScaledSharedQuadState().
   virtual gfx::Rect GetEnclosingRectInTargetSpace() const;
+
+  // Returns the bounds of this layer in target space when scaled by |scale|.
+  // This function scales in the same way as
+  // PopulateScaledSharedQuadStateQuadState(). See
+  // PopulateScaledSharedQuadStateQuadState() for more details.
+  gfx::Rect GetScaledEnclosingRectInTargetSpace(float scale) const;
 
   void UpdatePropertyTreeForAnimationIfNeeded(ElementId element_id);
 
@@ -466,11 +464,6 @@ class CC_EXPORT LayerImpl {
   // TODO(sunxd): Remove this function and replace it with visitor pattern.
   virtual bool is_surface_layer() const;
 
-  void set_is_rounded_corner_mask(bool rounded) {
-    is_rounded_corner_mask_ = rounded;
-  }
-  bool is_rounded_corner_mask() const { return is_rounded_corner_mask_; }
-
  protected:
   // When |will_always_push_properties| is true, the layer will not itself set
   // its SetNeedsPushProperties() state, as it expects to be always pushed to
@@ -493,8 +486,6 @@ class CC_EXPORT LayerImpl {
                              SkColor color,
                              float width) const;
 
-  gfx::Rect GetScaledEnclosingRectInTargetSpace(float scale) const;
-
  private:
   void ValidateQuadResourcesInternal(viz::DrawQuad* quad) const;
 
@@ -510,7 +501,6 @@ class CC_EXPORT LayerImpl {
   gfx::Size bounds_;
 
   gfx::Vector2dF offset_to_transform_parent_;
-  uint32_t main_thread_scrolling_reasons_;
 
   // Size of the scroll container that this layer scrolls in.
   gfx::Size scroll_container_bounds_;
@@ -540,10 +530,8 @@ class CC_EXPORT LayerImpl {
   bool draws_content_ : 1;
   bool contributes_to_drawn_render_surface_ : 1;
 
-  // Hit testing depends on draws_content (see: |LayerImpl::should_hit_test|)
-  // and this bit can be set to cause the layer to be hit testable without
-  // draws_content.
-  bool hit_testable_without_draws_content_ : 1;
+  // Tracks if this layer should participate in hit testing.
+  bool hit_testable_ : 1;
   bool is_resized_by_browser_controls_ : 1;
 
   // TODO(bokan): This can likely be removed after blink-gen-property-trees
@@ -558,8 +546,6 @@ class CC_EXPORT LayerImpl {
   SkColor background_color_;
   SkColor safe_opaque_background_color_;
 
-  gfx::PointF position_;
-
   int transform_tree_index_;
   int effect_tree_index_;
   int clip_tree_index_;
@@ -569,11 +555,11 @@ class CC_EXPORT LayerImpl {
   friend class TreeSynchronizer;
 
   DrawMode current_draw_mode_;
+  EffectTree& GetEffectTree() const;
 
  private:
   PropertyTrees* GetPropertyTrees() const;
   ClipTree& GetClipTree() const;
-  EffectTree& GetEffectTree() const;
   ScrollTree& GetScrollTree() const;
   TransformTree& GetTransformTree() const;
 
@@ -612,9 +598,6 @@ class CC_EXPORT LayerImpl {
   bool raster_even_if_not_drawn_ : 1;
 
   bool has_transform_node_ : 1;
-  bool is_rounded_corner_mask_ : 1;
-
-  DISALLOW_COPY_AND_ASSIGN(LayerImpl);
 };
 
 }  // namespace cc

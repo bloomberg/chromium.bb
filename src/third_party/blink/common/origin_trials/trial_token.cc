@@ -168,8 +168,8 @@ std::unique_ptr<TrialToken> TrialToken::Parse(
     return nullptr;
   }
 
-  std::unique_ptr<base::DictionaryValue> datadict =
-      base::DictionaryValue::From(base::JSONReader::Read(token_payload));
+  std::unique_ptr<base::DictionaryValue> datadict = base::DictionaryValue::From(
+      base::JSONReader::ReadDeprecated(token_payload));
   if (!datadict) {
     return nullptr;
   }

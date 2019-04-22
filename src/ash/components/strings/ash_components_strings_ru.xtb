@@ -16,7 +16,6 @@
 <translation id="152892567002884378">Увеличить громкость</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, затем <ph name="ESC" /></translation>
 <translation id="1652741121070700329">Перейти к началу предыдущего слова</translation>
-<translation id="1671169355475348905">Переключиться на способ ввода для предыдущего языка.</translation>
 <translation id="1679841710523778799">Увеличить яркость</translation>
 <translation id="168356808214100546">Нажать и удерживать клавишу <ph name="ALT" />, нажимать <ph name="TAB" />, пока не откроется нужное окно.</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -33,6 +32,7 @@
 <translation id="2181097965834437145">Показать или скрыть панель закладок</translation>
 <translation id="2185166372312820725">Перейти на предыдущую вкладку</translation>
 <translation id="2194790690264064655">Нажать <ph name="CTRL" /> и перейти по ссылке</translation>
+<translation id="2246352309084894470">Открыть/закрыть полноэкранную панель запуска</translation>
 <translation id="2382644247745281995">Не поддерживается в текущей раскладке клавиатуры</translation>
 <translation id="2397416548179033562">Отображение меню Chrome</translation>
 <translation id="2424073332829844142">Включить или отключить режим Caps Lock</translation>
@@ -44,7 +44,6 @@
 <translation id="2574014812750545982">Восстановить исходный масштаб страницы</translation>
 <translation id="2596078834055697711">Сделать скриншот окна</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, затем <ph name="TAB" /> или <ph name="RIGHT" /></translation>
-<translation id="2687057317448262550">Переключиться на способ ввода для следующего языка.</translation>
 <translation id="2699509451653686398">Сохранить веб-страницу в закладках</translation>
 <translation id="2750942583782703988">Обновить страницу</translation>
 <translation id="2764005613199379871">Переместить курсор в адресную строку.</translation>
@@ -147,6 +146,7 @@
 <translation id="671928215901716392">Блокировать экран</translation>
 <translation id="6727005317916125192">Предыдущая панель</translation>
 <translation id="6740781404993465795">Выделить следующее слово или букву</translation>
+<translation id="6755851152783057058">Переключиться на последний использованный способ ввода</translation>
 <translation id="6760706756348334449">Уменьшить громкость</translation>
 <translation id="6941333068993625698">Отправить отзыв</translation>
 <translation id="6981982820502123353">Специальные возможности</translation>
@@ -157,6 +157,7 @@
 <translation id="7237562915163138771">Ввести веб-адрес в адресной строке и нажать <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /></translation>
 <translation id="7254764037241667478">Перевести устройство в спящий режим</translation>
 <translation id="7379254767514753910"><ph name="ALT" /> или <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
+<translation id="7422707470576323858">Переключиться на следующий доступный способ ввода</translation>
 <translation id="743754632698445141">Открепить приложение</translation>
 <translation id="7439718573248533901">Удалить следующую букву (удаление вперед)</translation>
 <translation id="7611271430932669992">Перейти к всплывающим и диалоговым окнам.</translation>

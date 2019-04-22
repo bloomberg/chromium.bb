@@ -206,6 +206,12 @@ AutofillWalletSyncableService::AutofillWalletSyncableService(
 
 AutofillWalletSyncableService::~AutofillWalletSyncableService() {}
 
+void AutofillWalletSyncableService::WaitUntilReadyToSync(
+    base::OnceClosure done) {
+  // Not used in the legacy directory-based architecture.
+  NOTREACHED();
+}
+
 syncer::SyncMergeResult AutofillWalletSyncableService::MergeDataAndStartSyncing(
     syncer::ModelType type,
     const syncer::SyncDataList& initial_sync_data,
@@ -213,7 +219,8 @@ syncer::SyncMergeResult AutofillWalletSyncableService::MergeDataAndStartSyncing(
     std::unique_ptr<syncer::SyncErrorFactory> sync_error_factory) {
   DCHECK(thread_checker_.CalledOnValidThread());
   sync_processor_ = std::move(sync_processor);
-  syncer::SyncMergeResult result = SetSyncData(initial_sync_data);
+  syncer::SyncMergeResult result =
+      SetSyncData(initial_sync_data, /*is_initial_merge=*/true);
   if (webdata_backend_)
     webdata_backend_->NotifyThatSyncHasStarted(type);
   return result;
@@ -239,7 +246,8 @@ syncer::SyncError AutofillWalletSyncableService::ProcessSyncChanges(
   DCHECK(thread_checker_.CalledOnValidThread());
   // Don't bother handling incremental updates. Wallet data changes very rarely
   // and has few items. Instead, just get all the current data and save it.
-  SetSyncData(sync_processor_->GetAllSyncData(syncer::AUTOFILL_WALLET_DATA));
+  SetSyncData(sync_processor_->GetAllSyncData(syncer::AUTOFILL_WALLET_DATA),
+              /*is_initial_merge=*/false);
   return syncer::SyncError();
 }
 
@@ -250,8 +258,8 @@ void AutofillWalletSyncableService::CreateForWebDataServiceAndBackend(
     const std::string& app_locale) {
   web_data_service->GetDBUserData()->SetUserData(
       AutofillWalletSyncableServiceUserDataKey(),
-      base::WrapUnique(
-          new AutofillWalletSyncableService(webdata_backend, app_locale)));
+      std::make_unique<AutofillWalletSyncableService>(webdata_backend,
+                                                      app_locale));
 }
 
 // static
@@ -340,7 +348,8 @@ void AutofillWalletSyncableService::CopyRelevantMetadataFromDisk(
 }
 
 syncer::SyncMergeResult AutofillWalletSyncableService::SetSyncData(
-    const syncer::SyncDataList& data_list) {
+    const syncer::SyncDataList& data_list,
+    bool is_initial_merge) {
   std::vector<CreditCard> wallet_cards;
   std::vector<AutofillProfile> wallet_addresses;
   std::vector<PaymentsCustomerData> customer_data;
@@ -402,20 +411,29 @@ syncer::SyncMergeResult AutofillWalletSyncableService::SetSyncData(
     table->SetPaymentsCustomerData(&customer_data.front());
   }
 
+  if (is_initial_merge && cards_diff.IsEmpty() && addresses_diff.IsEmpty()) {
+    // Skip reporting the diff on startup if there is no change. It can happen
+    // that new updates come into the directory before
+    // MergeDataAndStartSyncing() gets called; such updates should get reported.
+    // We cannot distinguish them precisely so we at least report the non-empty
+    // diffs which _must_ be caused by an update from the server.
+    should_report_diff = false;
+  }
+
   if (should_report_diff) {
-    UMA_HISTOGRAM_COUNTS_100("Autofill.WalletCards.Added",
+    UMA_HISTOGRAM_COUNTS_100("Autofill.WalletCards2.Added",
                              cards_diff.items_added);
-    UMA_HISTOGRAM_COUNTS_100("Autofill.WalletCards.Removed",
+    UMA_HISTOGRAM_COUNTS_100("Autofill.WalletCards2.Removed",
                              cards_diff.items_removed);
-    UMA_HISTOGRAM_COUNTS_100("Autofill.WalletCards.AddedOrRemoved",
+    UMA_HISTOGRAM_COUNTS_100("Autofill.WalletCards2.AddedOrRemoved",
                              cards_diff.items_added + cards_diff.items_removed);
 
-    UMA_HISTOGRAM_COUNTS_100("Autofill.WalletAddresses.Added",
+    UMA_HISTOGRAM_COUNTS_100("Autofill.WalletAddresses2.Added",
                              addresses_diff.items_added);
-    UMA_HISTOGRAM_COUNTS_100("Autofill.WalletAddresses.Removed",
+    UMA_HISTOGRAM_COUNTS_100("Autofill.WalletAddresses2.Removed",
                              addresses_diff.items_removed);
     UMA_HISTOGRAM_COUNTS_100(
-        "Autofill.WalletAddresses.AddedOrRemoved",
+        "Autofill.WalletAddresses2.AddedOrRemoved",
         addresses_diff.items_added + addresses_diff.items_removed);
   }
 

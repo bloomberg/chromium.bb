@@ -182,6 +182,7 @@
         "persistence"
     ],
     "scripts": [
+        "BinaryResourceView.js",
         "BlockedURLsPane.js",
         "EventSourceMessagesView.js",
         "HARWriter.js",
@@ -207,6 +208,7 @@
         "NetworkPanel.js"
     ],
     "resources": [
+        "binaryResourceView.css",
         "blockedURLsPane.css",
         "eventSourceMessagesView.css",
         "networkConfigView.css",

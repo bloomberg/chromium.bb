@@ -33,7 +33,6 @@ class ChromeBrowserProvider : public bookmarks::BaseBookmarkModelObserver,
                               public history::HistoryServiceObserver {
  public:
   ChromeBrowserProvider(JNIEnv* env, jobject obj);
-  void Destroy(JNIEnv*, const base::android::JavaParamRef<jobject>&);
 
   // Adds either a new bookmark or bookmark folder based on |is_folder|.  The
   // bookmark is added to the beginning of the specified parent and if the
@@ -209,6 +208,9 @@ class ChromeBrowserProvider : public bookmarks::BaseBookmarkModelObserver,
                                   const base::string16& term) override;
   void OnKeywordSearchTermDeleted(history::HistoryService* history_service,
                                   history::URLID url_id) override;
+  bool GetJavaProviderOrDeleteSelf(
+      base::android::ScopedJavaLocalRef<jobject>* out_ref,
+      JNIEnv* env);
 
   JavaObjectWeakGlobalRef weak_java_provider_;
 

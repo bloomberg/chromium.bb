@@ -15,9 +15,8 @@
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_power_manager_client.h"
-#include "chromeos/dbus/fake_system_clock_client.h"
+#include "chromeos/dbus/power/fake_power_manager_client.h"
+#include "chromeos/dbus/system_clock/system_clock_client.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 
 namespace em = enterprise_management;
@@ -103,27 +102,27 @@ void SetOffHoursPolicyToProto(em::ChromeDeviceSettingsProto* proto,
 class DeviceOffHoursControllerSimpleTest
     : public chromeos::DeviceSettingsTestBase {
  protected:
-  DeviceOffHoursControllerSimpleTest()
-      : fake_user_manager_(new chromeos::FakeChromeUserManager()),
-        scoped_user_manager_(base::WrapUnique(fake_user_manager_)) {}
+  DeviceOffHoursControllerSimpleTest() = default;
+  ~DeviceOffHoursControllerSimpleTest() override = default;
 
   void SetUp() override {
     chromeos::DeviceSettingsTestBase::SetUp();
-    system_clock_client_ = new chromeos::FakeSystemClockClient();
-    dbus_setter_->SetSystemClockClient(base::WrapUnique(system_clock_client_));
-    power_manager_client_ = new chromeos::FakePowerManagerClient();
-    dbus_setter_->SetPowerManagerClient(
-        base::WrapUnique(power_manager_client_));
+    chromeos::SystemClockClient::InitializeFake();
 
-    device_settings_service_.SetDeviceOffHoursControllerForTesting(
+    device_settings_service_->SetDeviceOffHoursControllerForTesting(
         std::make_unique<policy::off_hours::DeviceOffHoursController>());
     device_off_hours_controller_ =
-        device_settings_service_.device_off_hours_controller();
+        device_settings_service_->device_off_hours_controller();
+  }
+
+  void TearDown() override {
+    chromeos::SystemClockClient::Shutdown();
+    chromeos::DeviceSettingsTestBase::TearDown();
   }
 
   void UpdateDeviceSettings() {
-    device_policy_.Build();
-    session_manager_client_.set_device_policy(device_policy_.GetBlob());
+    device_policy_->Build();
+    session_manager_client_.set_device_policy(device_policy_->GetBlob());
     ReloadDeviceSettings();
   }
 
@@ -141,61 +140,44 @@ class DeviceOffHoursControllerSimpleTest
   // = Monday etc.)
   int NextDayOfWeek(int day_of_week) { return day_of_week % 7 + 1; }
 
-  chromeos::FakeSystemClockClient* system_clock_client() {
-    return system_clock_client_;
-  }
-
-  chromeos::FakePowerManagerClient* power_manager() {
-    return power_manager_client_;
+  chromeos::SystemClockClient::TestInterface* system_clock_client() {
+    return chromeos::SystemClockClient::Get()->GetTestInterface();
   }
 
   policy::off_hours::DeviceOffHoursController* device_off_hours_controller() {
     return device_off_hours_controller_;
   }
 
-  chromeos::FakeChromeUserManager* fake_user_manager() {
-    return fake_user_manager_;
-  }
-
- private:
-  // The object is owned by DeviceSettingsTestBase class.
-  chromeos::FakeSystemClockClient* system_clock_client_;
-
-  // The object is owned by DeviceSettingsTestBase class.
-  chromeos::FakePowerManagerClient* power_manager_client_;
-
   // The object is owned by DeviceSettingsService class.
   policy::off_hours::DeviceOffHoursController* device_off_hours_controller_;
 
-  chromeos::FakeChromeUserManager* fake_user_manager_;
-  user_manager::ScopedUserManager scoped_user_manager_;
-
+ private:
   DISALLOW_COPY_AND_ASSIGN(DeviceOffHoursControllerSimpleTest);
 };
 
 TEST_F(DeviceOffHoursControllerSimpleTest, CheckOffHoursUnset) {
-  system_clock_client()->set_network_synchronized(true);
+  system_clock_client()->SetNetworkSynchronized(true);
   system_clock_client()->NotifyObserversSystemClockUpdated();
-  em::ChromeDeviceSettingsProto& proto(device_policy_.payload());
+  em::ChromeDeviceSettingsProto& proto(device_policy_->payload());
   proto.mutable_guest_mode_enabled()->set_guest_mode_enabled(false);
   UpdateDeviceSettings();
-  EXPECT_FALSE(device_settings_service_.device_settings()
+  EXPECT_FALSE(device_settings_service_->device_settings()
                    ->guest_mode_enabled()
                    .guest_mode_enabled());
   RemoveOffHoursPolicyFromProto(&proto);
   UpdateDeviceSettings();
-  EXPECT_FALSE(device_settings_service_.device_settings()
+  EXPECT_FALSE(device_settings_service_->device_settings()
                    ->guest_mode_enabled()
                    .guest_mode_enabled());
 }
 
 TEST_F(DeviceOffHoursControllerSimpleTest, CheckOffHoursModeOff) {
-  system_clock_client()->set_network_synchronized(true);
+  system_clock_client()->SetNetworkSynchronized(true);
   system_clock_client()->NotifyObserversSystemClockUpdated();
-  em::ChromeDeviceSettingsProto& proto(device_policy_.payload());
+  em::ChromeDeviceSettingsProto& proto(device_policy_->payload());
   proto.mutable_guest_mode_enabled()->set_guest_mode_enabled(false);
   UpdateDeviceSettings();
-  EXPECT_FALSE(device_settings_service_.device_settings()
+  EXPECT_FALSE(device_settings_service_->device_settings()
                    ->guest_mode_enabled()
                    .guest_mode_enabled());
   int current_day_of_week = ExtractDayOfWeek(base::Time::Now());
@@ -209,18 +191,18 @@ TEST_F(DeviceOffHoursControllerSimpleTest, CheckOffHoursModeOff) {
               WeeklyTime(NextDayOfWeek(current_day_of_week),
                          TimeDelta::FromHours(15).InMilliseconds(), 0))}));
   UpdateDeviceSettings();
-  EXPECT_FALSE(device_settings_service_.device_settings()
+  EXPECT_FALSE(device_settings_service_->device_settings()
                    ->guest_mode_enabled()
                    .guest_mode_enabled());
 }
 
 TEST_F(DeviceOffHoursControllerSimpleTest, CheckOffHoursModeOn) {
-  system_clock_client()->set_network_synchronized(true);
+  system_clock_client()->SetNetworkSynchronized(true);
   system_clock_client()->NotifyObserversSystemClockUpdated();
-  em::ChromeDeviceSettingsProto& proto(device_policy_.payload());
+  em::ChromeDeviceSettingsProto& proto(device_policy_->payload());
   proto.mutable_guest_mode_enabled()->set_guest_mode_enabled(false);
   UpdateDeviceSettings();
-  EXPECT_FALSE(device_settings_service_.device_settings()
+  EXPECT_FALSE(device_settings_service_->device_settings()
                    ->guest_mode_enabled()
                    .guest_mode_enabled());
   int current_day_of_week = ExtractDayOfWeek(base::Time::Now());
@@ -233,18 +215,18 @@ TEST_F(DeviceOffHoursControllerSimpleTest, CheckOffHoursModeOn) {
               WeeklyTime(NextDayOfWeek(current_day_of_week),
                          TimeDelta::FromHours(10).InMilliseconds(), 0))}));
   UpdateDeviceSettings();
-  EXPECT_TRUE(device_settings_service_.device_settings()
+  EXPECT_TRUE(device_settings_service_->device_settings()
                   ->guest_mode_enabled()
                   .guest_mode_enabled());
 }
 
 TEST_F(DeviceOffHoursControllerSimpleTest, NoNetworkSynchronization) {
-  system_clock_client()->set_network_synchronized(false);
+  system_clock_client()->SetNetworkSynchronized(false);
   system_clock_client()->NotifyObserversSystemClockUpdated();
-  em::ChromeDeviceSettingsProto& proto(device_policy_.payload());
+  em::ChromeDeviceSettingsProto& proto(device_policy_->payload());
   proto.mutable_guest_mode_enabled()->set_guest_mode_enabled(false);
   UpdateDeviceSettings();
-  EXPECT_FALSE(device_settings_service_.device_settings()
+  EXPECT_FALSE(device_settings_service_->device_settings()
                    ->guest_mode_enabled()
                    .guest_mode_enabled());
   int current_day_of_week = ExtractDayOfWeek(base::Time::Now());
@@ -256,7 +238,7 @@ TEST_F(DeviceOffHoursControllerSimpleTest, NoNetworkSynchronization) {
               WeeklyTime(current_day_of_week, 0, 0),
               WeeklyTime(NextDayOfWeek(current_day_of_week),
                          TimeDelta::FromHours(10).InMilliseconds(), 0))}));
-  EXPECT_FALSE(device_settings_service_.device_settings()
+  EXPECT_FALSE(device_settings_service_->device_settings()
                    ->guest_mode_enabled()
                    .guest_mode_enabled());
 }
@@ -266,13 +248,13 @@ TEST_F(DeviceOffHoursControllerSimpleTest,
   EXPECT_FALSE(
       device_off_hours_controller()->IsCurrentSessionAllowedOnlyForOffHours());
 
-  system_clock_client()->set_network_synchronized(true);
+  system_clock_client()->SetNetworkSynchronized(true);
   system_clock_client()->NotifyObserversSystemClockUpdated();
 
   EXPECT_FALSE(
       device_off_hours_controller()->IsCurrentSessionAllowedOnlyForOffHours());
 
-  em::ChromeDeviceSettingsProto& proto(device_policy_.payload());
+  em::ChromeDeviceSettingsProto& proto(device_policy_->payload());
   proto.mutable_guest_mode_enabled()->set_guest_mode_enabled(false);
   int current_day_of_week = ExtractDayOfWeek(base::Time::Now());
   SetOffHoursPolicyToProto(
@@ -288,8 +270,8 @@ TEST_F(DeviceOffHoursControllerSimpleTest,
   EXPECT_FALSE(
       device_off_hours_controller()->IsCurrentSessionAllowedOnlyForOffHours());
 
-  fake_user_manager()->AddGuestUser();
-  fake_user_manager()->LoginUser(fake_user_manager()->GetGuestAccountId());
+  user_manager_->AddGuestUser();
+  user_manager_->LoginUser(user_manager_->GetGuestAccountId());
 
   EXPECT_TRUE(
       device_off_hours_controller()->IsCurrentSessionAllowedOnlyForOffHours());
@@ -302,7 +284,7 @@ class DeviceOffHoursControllerFakeClockTest
 
   void SetUp() override {
     DeviceOffHoursControllerSimpleTest::SetUp();
-    system_clock_client()->set_network_synchronized(true);
+    system_clock_client()->SetNetworkSynchronized(true);
     system_clock_client()->NotifyObserversSystemClockUpdated();
     // Clocks are set to 1970-01-01 00:00:00 UTC, Thursday.
     test_clock_.SetNow(base::Time::UnixEpoch());
@@ -328,7 +310,7 @@ class DeviceOffHoursControllerFakeClockTest
 TEST_F(DeviceOffHoursControllerFakeClockTest, FakeClock) {
   EXPECT_FALSE(device_off_hours_controller()->is_off_hours_mode());
   int current_day_of_week = ExtractDayOfWeek(clock()->Now());
-  em::ChromeDeviceSettingsProto& proto(device_policy_.payload());
+  em::ChromeDeviceSettingsProto& proto(device_policy_->payload());
   SetOffHoursPolicyToProto(
       &proto,
       OffHoursPolicy(
@@ -349,7 +331,7 @@ TEST_F(DeviceOffHoursControllerFakeClockTest, FakeClock) {
 TEST_F(DeviceOffHoursControllerFakeClockTest, CheckSendSuspendDone) {
   int current_day_of_week = ExtractDayOfWeek(clock()->Now());
   LOG(ERROR) << "day " << current_day_of_week;
-  em::ChromeDeviceSettingsProto& proto(device_policy_.payload());
+  em::ChromeDeviceSettingsProto& proto(device_policy_->payload());
   SetOffHoursPolicyToProto(
       &proto,
       OffHoursPolicy(kUtcTimezone,
@@ -361,11 +343,11 @@ TEST_F(DeviceOffHoursControllerFakeClockTest, CheckSendSuspendDone) {
   EXPECT_FALSE(device_off_hours_controller()->is_off_hours_mode());
 
   AdvanceTestClock(kDay);
-  power_manager()->SendSuspendDone();
+  power_manager_client()->SendSuspendDone();
   EXPECT_TRUE(device_off_hours_controller()->is_off_hours_mode());
 
   AdvanceTestClock(kHour);
-  power_manager()->SendSuspendDone();
+  power_manager_client()->SendSuspendDone();
   EXPECT_FALSE(device_off_hours_controller()->is_off_hours_mode());
 }
 
@@ -380,7 +362,7 @@ class DeviceOffHoursControllerUpdateTest
 };
 
 TEST_P(DeviceOffHoursControllerUpdateTest, CheckUpdateOffHoursPolicy) {
-  em::ChromeDeviceSettingsProto& proto(device_policy_.payload());
+  em::ChromeDeviceSettingsProto& proto(device_policy_->payload());
   SetOffHoursPolicyToProto(&proto, off_hours_policy());
   AdvanceTestClock(advance_clock());
   UpdateDeviceSettings();
@@ -388,7 +370,7 @@ TEST_P(DeviceOffHoursControllerUpdateTest, CheckUpdateOffHoursPolicy) {
             is_off_hours_expected());
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     TestCases,
     DeviceOffHoursControllerUpdateTest,
     testing::Values(

@@ -49,7 +49,7 @@ void FakeMultiDeviceSetupClient::SetFeatureState(
 }
 
 void FakeMultiDeviceSetupClient::InvokePendingGetEligibleHostDevicesCallback(
-    const cryptauth::RemoteDeviceRefList& eligible_devices) {
+    const multidevice::RemoteDeviceRefList& eligible_devices) {
   std::move(get_eligible_host_devices_callback_queue_.front())
       .Run(eligible_devices);
   get_eligible_host_devices_callback_queue_.pop();

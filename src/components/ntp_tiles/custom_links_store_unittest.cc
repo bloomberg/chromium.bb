@@ -28,41 +28,42 @@ const char kTestUrl2[] = "http://foo2.com/";
 
 class CustomLinksStoreTest : public testing::Test {
  public:
-  CustomLinksStoreTest() : custom_links_store_(&prefs_) {
+  CustomLinksStoreTest() {
+    custom_links_store_ = std::make_unique<CustomLinksStore>(&prefs_);
     CustomLinksStore::RegisterProfilePrefs(prefs_.registry());
   }
 
  protected:
   sync_preferences::TestingPrefServiceSyncable prefs_;
-  CustomLinksStore custom_links_store_;
+  std::unique_ptr<CustomLinksStore> custom_links_store_;
 
   DISALLOW_COPY_AND_ASSIGN(CustomLinksStoreTest);
 };
 
 TEST_F(CustomLinksStoreTest, StoreAndRetrieveLinks) {
   std::vector<CustomLinksManager::Link> initial_links({CustomLinksManager::Link{
-      GURL(kTestUrl1), base::UTF8ToUTF16(kTestTitle1)}});
+      GURL(kTestUrl1), base::UTF8ToUTF16(kTestTitle1), true}});
 
-  custom_links_store_.StoreLinks(initial_links);
+  custom_links_store_->StoreLinks(initial_links);
   std::vector<CustomLinksManager::Link> retrieved_links =
-      custom_links_store_.RetrieveLinks();
+      custom_links_store_->RetrieveLinks();
   EXPECT_EQ(initial_links, retrieved_links);
 }
 
 TEST_F(CustomLinksStoreTest, StoreEmptyList) {
   std::vector<CustomLinksManager::Link> populated_links(
-      {CustomLinksManager::Link{GURL(kTestUrl1),
-                                base::UTF8ToUTF16(kTestTitle1)},
-       CustomLinksManager::Link{GURL(kTestUrl2),
-                                base::UTF8ToUTF16(kTestTitle2)}});
+      {CustomLinksManager::Link{GURL(kTestUrl1), base::UTF8ToUTF16(kTestTitle1),
+                                false},
+       CustomLinksManager::Link{GURL(kTestUrl2), base::UTF8ToUTF16(kTestTitle2),
+                                true}});
 
-  custom_links_store_.StoreLinks(populated_links);
+  custom_links_store_->StoreLinks(populated_links);
   std::vector<CustomLinksManager::Link> retrieved_links =
-      custom_links_store_.RetrieveLinks();
+      custom_links_store_->RetrieveLinks();
   ASSERT_EQ(populated_links, retrieved_links);
 
-  custom_links_store_.StoreLinks(std::vector<CustomLinksManager::Link>());
-  retrieved_links = custom_links_store_.RetrieveLinks();
+  custom_links_store_->StoreLinks(std::vector<CustomLinksManager::Link>());
+  retrieved_links = custom_links_store_->RetrieveLinks();
   EXPECT_TRUE(retrieved_links.empty());
 }
 
@@ -70,14 +71,33 @@ TEST_F(CustomLinksStoreTest, ClearLinks) {
   std::vector<CustomLinksManager::Link> initial_links({CustomLinksManager::Link{
       GURL(kTestUrl1), base::UTF8ToUTF16(kTestTitle1)}});
 
-  custom_links_store_.StoreLinks(initial_links);
+  custom_links_store_->StoreLinks(initial_links);
   std::vector<CustomLinksManager::Link> retrieved_links =
-      custom_links_store_.RetrieveLinks();
+      custom_links_store_->RetrieveLinks();
   ASSERT_EQ(initial_links, retrieved_links);
 
-  custom_links_store_.ClearLinks();
-  retrieved_links = custom_links_store_.RetrieveLinks();
+  custom_links_store_->ClearLinks();
+  retrieved_links = custom_links_store_->RetrieveLinks();
   EXPECT_TRUE(retrieved_links.empty());
+}
+
+TEST_F(CustomLinksStoreTest, LinksSavedAfterShutdown) {
+  std::vector<CustomLinksManager::Link> initial_links(
+      {CustomLinksManager::Link{GURL(kTestUrl1), base::UTF8ToUTF16(kTestTitle1),
+                                false},
+       CustomLinksManager::Link{GURL(kTestUrl2), base::UTF8ToUTF16(kTestTitle2),
+                                true}});
+
+  custom_links_store_->StoreLinks(initial_links);
+  std::vector<CustomLinksManager::Link> retrieved_links =
+      custom_links_store_->RetrieveLinks();
+  ASSERT_EQ(initial_links, retrieved_links);
+
+  // Simulate shutdown by recreating CustomLinksStore.
+  custom_links_store_.reset();
+  custom_links_store_ = std::make_unique<CustomLinksStore>(&prefs_);
+  retrieved_links = custom_links_store_->RetrieveLinks();
+  EXPECT_EQ(initial_links, retrieved_links);
 }
 
 }  // namespace ntp_tiles

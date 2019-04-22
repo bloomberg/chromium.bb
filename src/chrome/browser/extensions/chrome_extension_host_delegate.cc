@@ -8,12 +8,15 @@
 #include <string>
 
 #include "base/lazy_instance.h"
+#include "chrome/browser/apps/platform_apps/audio_focus_web_contents_observer.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/data_use_measurement/data_use_web_contents_observer.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
+#include "chrome/browser/performance_manager/performance_manager.h"
+#include "chrome/browser/performance_manager/performance_manager_tab_helper.h"
 #include "chrome/browser/picture_in_picture/picture_in_picture_window_manager.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 #include "components/app_modal/javascript_dialog_manager.h"
@@ -49,6 +52,12 @@ void ChromeExtensionHostDelegate::OnExtensionHostCreated(
   data_use_measurement::DataUseWebContentsObserver::CreateForWebContents(
       web_contents);
   PrefsTabHelper::CreateForWebContents(web_contents);
+  apps::AudioFocusWebContentsObserver::CreateForWebContents(web_contents);
+
+  if (performance_manager::PerformanceManager::GetInstance()) {
+    performance_manager::PerformanceManagerTabHelper::CreateForWebContents(
+        web_contents);
+  }
 }
 
 void ChromeExtensionHostDelegate::OnRenderViewCreatedForBackgroundPage(
@@ -92,7 +101,7 @@ void ChromeExtensionHostDelegate::ProcessMediaAccessRequest(
 bool ChromeExtensionHostDelegate::CheckMediaAccessPermission(
     content::RenderFrameHost* render_frame_host,
     const GURL& security_origin,
-    content::MediaStreamType type,
+    blink::MediaStreamType type,
     const Extension* extension) {
   return MediaCaptureDevicesDispatcher::GetInstance()
       ->CheckMediaAccessPermission(render_frame_host, security_origin, type,

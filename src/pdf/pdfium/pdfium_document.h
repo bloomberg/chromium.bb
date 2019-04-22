@@ -5,6 +5,9 @@
 #ifndef PDF_PDFIUM_PDFIUM_DOCUMENT_H_
 #define PDF_PDFIUM_PDFIUM_DOCUMENT_H_
 
+#include <memory>
+#include <string>
+
 #include "base/macros.h"
 #include "third_party/pdfium/public/cpp/fpdf_scopers.h"
 #include "third_party/pdfium/public/fpdf_dataavail.h"
@@ -32,7 +35,7 @@ class PDFiumDocument {
   void CreateFPDFAvailability();
   void ResetFPDFAvailability();
 
-  void LoadDocument(const char* password);
+  void LoadDocument(const std::string& password);
 
   void SetFormStatus();
   void InitializeForm(FPDF_FORMFILLINFO* form_info);

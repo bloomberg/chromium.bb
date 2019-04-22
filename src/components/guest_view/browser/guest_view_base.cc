@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
@@ -518,14 +519,14 @@ void GuestViewBase::WillAttach(WebContents* embedder_web_contents,
                                int element_instance_id,
                                bool is_full_page_plugin,
                                base::OnceClosure completion_callback) {
-  WillAttach(embedder_web_contents, element_instance_id, is_full_page_plugin,
-             base::OnceClosure(), std::move(completion_callback));
+  WillAttach(embedder_web_contents, nullptr, element_instance_id,
+             is_full_page_plugin, std::move(completion_callback));
 }
 
 void GuestViewBase::WillAttach(WebContents* embedder_web_contents,
+                               content::RenderFrameHost* outer_contents_frame,
                                int element_instance_id,
                                bool is_full_page_plugin,
-                               base::OnceClosure perform_attach,
                                base::OnceClosure completion_callback) {
   // Stop tracking the old embedder's zoom level.
   if (owner_web_contents())
@@ -547,9 +548,18 @@ void GuestViewBase::WillAttach(WebContents* embedder_web_contents,
 
   WillAttachToEmbedder();
 
-  if (perform_attach)
-    std::move(perform_attach).Run();
-
+  if (content::GuestMode::IsCrossProcessFrameGuest(web_contents())) {
+    owner_web_contents_->AttachInnerWebContents(
+        base::WrapUnique<WebContents>(web_contents()), outer_contents_frame);
+    // TODO(ekaramad): MimeHandlerViewGuest might not need this ACK
+    // (https://crbug.com/659750).
+    // We don't ACK until after AttachToOuterWebContentsFrame, so that
+    // |outer_contents_frame| gets swapped before the AttachIframeGuest callback
+    // is run. We also need to send the ACK before queued events are sent in
+    // DidAttach.
+    embedder_web_contents->GetMainFrame()->Send(
+        new GuestViewMsg_AttachToEmbedderFrame_ACK(element_instance_id));
+  }
   // Completing attachment will resume suspended resource loads and then send
   // queued events.
   SignalWhenReady(std::move(completion_callback));
@@ -691,8 +701,7 @@ bool GuestViewBase::PreHandleGestureEvent(WebContents* source,
   // Pinch events which cause a scale change should not be routed to a guest.
   // We still allow synthetic wheel events for touchpad pinch to go to the page.
   DCHECK(!blink::WebInputEvent::IsPinchGestureEventType(event.GetType()) ||
-         (event.SourceDevice() ==
-              blink::WebGestureDevice::kWebGestureDeviceTouchpad &&
+         (event.SourceDevice() == blink::WebGestureDevice::kTouchpad &&
           event.NeedsWheelEvent()));
   return false;
 }
@@ -741,6 +750,18 @@ content::SiteInstance* GuestViewBase::GetOwnerSiteInstance() {
   if (auto* owner_contents = GetOwnerWebContents())
     return owner_contents->GetSiteInstance();
   return nullptr;
+}
+
+void GuestViewBase::AttachToOuterWebContentsFrame(
+    content::RenderFrameHost* embedder_frame,
+    int32_t element_instance_id,
+    bool is_full_page_plugin) {
+  auto completion_callback =
+      base::BindOnce(&GuestViewBase::DidAttach, weak_ptr_factory_.GetWeakPtr(),
+                     MSG_ROUTING_NONE);
+  WillAttach(WebContents::FromRenderFrameHost(embedder_frame), embedder_frame,
+             element_instance_id, is_full_page_plugin,
+             std::move(completion_callback));
 }
 
 void GuestViewBase::OnZoomChanged(

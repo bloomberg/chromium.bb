@@ -4,18 +4,11 @@
 
 #include "ios/chrome/browser/update_client/ios_chrome_update_query_params_delegate.h"
 
-#include "base/lazy_instance.h"
+#include "base/no_destructor.h"
 #include "base/strings/stringprintf.h"
 #include "components/version_info/version_info.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/common/channel_info.h"
-
-namespace {
-
-base::LazyInstance<IOSChromeUpdateQueryParamsDelegate>::DestructorAtExit
-    g_delegate = LAZY_INSTANCE_INITIALIZER;
-
-}  // namespace
 
 IOSChromeUpdateQueryParamsDelegate::IOSChromeUpdateQueryParamsDelegate() {}
 
@@ -24,7 +17,8 @@ IOSChromeUpdateQueryParamsDelegate::~IOSChromeUpdateQueryParamsDelegate() {}
 // static
 IOSChromeUpdateQueryParamsDelegate*
 IOSChromeUpdateQueryParamsDelegate::GetInstance() {
-  return g_delegate.Pointer();
+  static base::NoDestructor<IOSChromeUpdateQueryParamsDelegate> instance;
+  return instance.get();
 }
 
 std::string IOSChromeUpdateQueryParamsDelegate::GetExtraParams() {

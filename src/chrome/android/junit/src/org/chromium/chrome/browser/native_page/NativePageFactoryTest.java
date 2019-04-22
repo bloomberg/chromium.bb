@@ -72,11 +72,6 @@ public class NativePageFactoryTest {
         }
 
         @Override
-        public int getThemeColor() {
-            return 0;
-        }
-
-        @Override
         public boolean needsToolbarShadow() {
             return true;
         }
@@ -204,7 +199,7 @@ public class NativePageFactoryTest {
                     MockNativePage candidate = candidateType == NativePageType.NONE ? null
                             : new MockNativePage(candidateType);
                     MockNativePage page = (MockNativePage) NativePageFactory.createNativePageForURL(
-                            urlCombo.url, candidate, null, null, null, isIncognito);
+                            urlCombo.url, candidate, null, null, isIncognito);
                     String debugMessage = String.format(
                             "Failed test case: isIncognito=%s, urlCombo={%s,%s}, candidateType=%s",
                             isIncognito, urlCombo.url, urlCombo.expectedType, candidateType);
@@ -229,14 +224,16 @@ public class NativePageFactoryTest {
     public void testCreateNativePageWithInvalidUrl() {
         for (UrlCombo urlCombo : VALID_URLS) {
             if (!isValidInIncognito(urlCombo)) {
-                Assert.assertNull(urlCombo.url, NativePageFactory.createNativePageForURL(
-                        urlCombo.url, null, null, null, null, true));
+                Assert.assertNull(urlCombo.url,
+                        NativePageFactory.createNativePageForURL(
+                                urlCombo.url, null, null, null, true));
             }
         }
         for (boolean isIncognito : new boolean[] {true, false}) {
             for (String invalidUrl : INVALID_URLS) {
-                Assert.assertNull(invalidUrl, NativePageFactory.createNativePageForURL(invalidUrl,
-                        null, null, null, null, isIncognito));
+                Assert.assertNull(invalidUrl,
+                        NativePageFactory.createNativePageForURL(
+                                invalidUrl, null, null, null, isIncognito));
             }
         }
     }

@@ -19,7 +19,6 @@ from telemetry import benchmark as benchmark_module
 from telemetry import decorators
 from telemetry.testing import options_for_unittests
 from telemetry.testing import progress_reporter
-
 from py_utils import discover
 
 from benchmarks import jetstream
@@ -44,20 +43,15 @@ def SmokeTestGenerator(benchmark, num_pages=1):
   #
   # This smoke test dynamically tests all benchmarks. So disabling it for one
   # failing or flaky benchmark would disable a much wider swath of coverage
-  # than is usally intended. Instead, if a particular benchmark is failing,
+  # than is usually intended. Instead, if a particular benchmark is failing,
   # disable it in tools/perf/benchmarks/*.
   @decorators.Disabled('chromeos')  # crbug.com/351114
   @decorators.Disabled('android')  # crbug.com/641934
   def BenchmarkSmokeTest(self):
-    # Only measure a single page so that this test cycles reasonably quickly.
-    benchmark.options['smoke_test_mode'] = True
-
-    # Some benchmarks are running multiple iterations
-    # which is not needed for a smoke test
-    if hasattr(benchmark, 'enable_smoke_test_mode'):
-      benchmark.enable_smoke_test_mode = True
-
     class SinglePageBenchmark(benchmark):  # pylint: disable=no-init
+      # Only measure a single page so that this test cycles reasonably quickly.
+      options = benchmark.options.copy()
+      options['pageset_repeat'] = 1
 
       def CreateStorySet(self, options):
         # pylint: disable=super-on-old-class
@@ -69,14 +63,19 @@ def SmokeTestGenerator(benchmark, num_pages=1):
           story_set.RemoveStory(s)
         return story_set
 
+    # Some benchmarks are running multiple iterations
+    # which is not needed for a smoke test
+    if hasattr(SinglePageBenchmark, 'enable_smoke_test_mode'):
+      SinglePageBenchmark.enable_smoke_test_mode = True
+
     # Set the benchmark's default arguments.
     options = options_for_unittests.GetCopy()
     options.output_formats = ['none']
     parser = options.CreateParser()
 
-    benchmark.AddCommandLineArgs(parser)
+    SinglePageBenchmark.AddCommandLineArgs(parser)
     benchmark_module.AddCommandLineArgs(parser)
-    benchmark.SetArgumentDefaults(parser)
+    SinglePageBenchmark.SetArgumentDefaults(parser)
     options.MergeDefaultValues(parser.get_default_values())
 
     # Prevent benchmarks from accidentally trying to upload too much data to the
@@ -90,7 +89,7 @@ def SmokeTestGenerator(benchmark, num_pages=1):
     story_set = benchmark().CreateStorySet(options)
     SinglePageBenchmark.MAX_NUM_VALUES = MAX_NUM_VALUES / len(story_set.stories)
 
-    benchmark.ProcessCommandLineArgs(None, options)
+    SinglePageBenchmark.ProcessCommandLineArgs(None, options)
     benchmark_module.ProcessCommandLineArgs(None, options)
 
     single_page_benchmark = SinglePageBenchmark()
@@ -117,7 +116,8 @@ _BLACK_LIST_TEST_MODULES = {
 _BLACK_LIST_TEST_NAMES = [
    'memory.long_running_idle_gmail_background_tbmv2',
    'tab_switching.typical_25',
-   'oortonline_tbmv2',
+   'UNSCHEDULED_oortonline_tbmv2',
+   'webrtc',  # crbug.com/932036
 ]
 
 

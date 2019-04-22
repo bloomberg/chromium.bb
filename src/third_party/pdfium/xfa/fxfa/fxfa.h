@@ -83,12 +83,11 @@ enum XFA_WidgetStatus {
   XFA_WidgetStatus_ButtonDown = 1 << 1,
   XFA_WidgetStatus_Disabled = 1 << 2,
   XFA_WidgetStatus_Focused = 1 << 3,
-  XFA_WidgetStatus_Highlight = 1 << 4,
-  XFA_WidgetStatus_Printable = 1 << 5,
-  XFA_WidgetStatus_RectCached = 1 << 6,
-  XFA_WidgetStatus_TextEditValueChanged = 1 << 7,
-  XFA_WidgetStatus_Viewable = 1 << 8,
-  XFA_WidgetStatus_Visible = 1 << 9
+  XFA_WidgetStatus_Printable = 1 << 4,
+  XFA_WidgetStatus_RectCached = 1 << 5,
+  XFA_WidgetStatus_TextEditValueChanged = 1 << 6,
+  XFA_WidgetStatus_Viewable = 1 << 7,
+  XFA_WidgetStatus_Visible = 1 << 8
 };
 
 enum XFA_WIDGETTYPE {
@@ -263,12 +262,11 @@ class IXFA_DocEnvironment {
   virtual bool Submit(CXFA_FFDoc* hDoc, CXFA_Submit* submit) = 0;
 #endif  // PDF_XFA_ELEMENT_SUBMIT_ENABLED
 
-  virtual bool GetPropertyFromNonXFAGlobalObject(
-      CXFA_FFDoc* hDoc,
-      const ByteStringView& szPropName,
-      CFXJSE_Value* pValue) = 0;
+  virtual bool GetPropertyFromNonXFAGlobalObject(CXFA_FFDoc* hDoc,
+                                                 ByteStringView szPropName,
+                                                 CFXJSE_Value* pValue) = 0;
   virtual bool SetPropertyInNonXFAGlobalObject(CXFA_FFDoc* hDoc,
-                                               const ByteStringView& szPropName,
+                                               ByteStringView szPropName,
                                                CFXJSE_Value* pValue) = 0;
   virtual RetainPtr<IFX_SeekableReadStream> OpenLinkedFile(
       CXFA_FFDoc* hDoc,

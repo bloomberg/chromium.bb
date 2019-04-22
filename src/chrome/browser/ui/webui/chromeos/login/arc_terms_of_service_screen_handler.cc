@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/webui/chromeos/login/arc_terms_of_service_screen_handler.h"
 
 #include "base/command_line.h"
+#include "base/hash/sha1.h"
 #include "base/i18n/timezone.h"
-#include "base/sha1.h"
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/optin/arc_optin_preference_handler.h"
@@ -20,7 +20,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -43,19 +43,14 @@ using ArcPlayTermsOfServiceConsent =
 
 using sync_pb::UserConsentTypes;
 
-namespace {
-
-const char kJsScreenPath[] = "login.ArcTermsOfServiceScreen";
-
-}  // namespace
-
 namespace chromeos {
 
-ArcTermsOfServiceScreenHandler::ArcTermsOfServiceScreenHandler()
-    : BaseScreenHandler(kScreenId),
+ArcTermsOfServiceScreenHandler::ArcTermsOfServiceScreenHandler(
+    JSCallsContainer* js_calls_container)
+    : BaseScreenHandler(kScreenId, js_calls_container),
       is_child_account_(
           user_manager::UserManager::Get()->IsLoggedInAsChildUser()) {
-  set_call_js_prefix(kJsScreenPath);
+  set_user_acted_method_path("login.ArcTermsOfServiceScreen.userActed");
 }
 
 ArcTermsOfServiceScreenHandler::~ArcTermsOfServiceScreenHandler() {
@@ -87,7 +82,7 @@ void ArcTermsOfServiceScreenHandler::MaybeLoadPlayStoreToS(
   if (!ignore_network_state && !default_network)
     return;
   const std::string country_code = base::CountryCodeForCurrentTimezone();
-  CallJSWithPrefix("loadPlayStoreToS", country_code);
+  CallJS("login.ArcTermsOfServiceScreen.loadPlayStoreToS", country_code);
 }
 
 void ArcTermsOfServiceScreenHandler::OnCurrentScreenChanged(
@@ -192,20 +187,22 @@ void ArcTermsOfServiceScreenHandler::OnMetricsModeChanged(bool enabled,
                            : IDS_ARC_OOBE_TERMS_DIALOG_METRICS_MANAGED_DISABLED;
     }
   }
-  CallJSWithPrefix("setMetricsMode", l10n_util::GetStringUTF16(message_id),
-                   true);
+  CallJS("login.ArcTermsOfServiceScreen.setMetricsMode",
+         l10n_util::GetStringUTF16(message_id), true);
 }
 
 void ArcTermsOfServiceScreenHandler::OnBackupAndRestoreModeChanged(
     bool enabled, bool managed) {
   backup_restore_managed_ = managed;
-  CallJSWithPrefix("setBackupAndRestoreMode", enabled, managed);
+  CallJS("login.ArcTermsOfServiceScreen.setBackupAndRestoreMode", enabled,
+         managed);
 }
 
 void ArcTermsOfServiceScreenHandler::OnLocationServicesModeChanged(
     bool enabled, bool managed) {
   location_services_managed_ = managed;
-  CallJSWithPrefix("setLocationServicesMode", enabled, managed);
+  CallJS("login.ArcTermsOfServiceScreen.setLocationServicesMode", enabled,
+         managed);
 }
 
 void ArcTermsOfServiceScreenHandler::AddObserver(
@@ -269,7 +266,7 @@ void ArcTermsOfServiceScreenHandler::DoShow() {
   Profile* profile = ProfileManager::GetActiveUserProfile();
   CHECK(profile);
 
-  CallJSWithPrefix("clearDemoMode");
+  CallJS("login.ArcTermsOfServiceScreen.clearDemoMode");
 
   // Enable ARC to match ArcSessionManager logic. ArcSessionManager expects that
   // ARC is enabled (prefs::kArcEnabled = true) on showing Terms of Service. If
@@ -280,7 +277,7 @@ void ArcTermsOfServiceScreenHandler::DoShow() {
   // Hide the Skip button if the ToS screen can not be skipped during OOBE.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kEnableArcOobeOptinNoSkip)) {
-    CallJSWithPrefix("hideSkipButton");
+    CallJS("login.ArcTermsOfServiceScreen.hideSkipButton");
   }
 
   action_taken_ = false;
@@ -288,7 +285,7 @@ void ArcTermsOfServiceScreenHandler::DoShow() {
   ShowScreen(kScreenId);
 
   arc_managed_ = arc::IsArcPlayStoreEnabledPreferenceManagedForProfile(profile);
-  CallJSWithPrefix("setArcManaged", arc_managed_);
+  CallJS("login.ArcTermsOfServiceScreen.setArcManaged", arc_managed_);
 
   MaybeLoadPlayStoreToS(true);
   StartNetworkAndTimeZoneObserving();
@@ -301,7 +298,7 @@ void ArcTermsOfServiceScreenHandler::DoShow() {
 void ArcTermsOfServiceScreenHandler::DoShowForDemoModeSetup() {
   DCHECK(arc::IsArcDemoModeSetupFlow());
 
-  CallJSWithPrefix("setupForDemoMode");
+  CallJS("login.ArcTermsOfServiceScreen.setupForDemoMode");
   action_taken_ = false;
   ShowScreen(kScreenId);
   MaybeLoadPlayStoreToS(true);

@@ -146,8 +146,10 @@ void FlagsDOMHandler::HandleRequestExperimentalFeatures(
 
   results.SetBoolean(flags_ui::kShowBetaChannelPromotion, false);
   results.SetBoolean(flags_ui::kShowDevChannelPromotion, false);
+
+  std::vector<const base::Value*> params{&results};
   web_ui()->CallJavascriptFunction(flags_ui::kReturnExperimentalFeatures,
-                                   results);
+                                   params);
 }
 
 void FlagsDOMHandler::HandleEnableExperimentalFeatureMessage(

@@ -7,7 +7,8 @@
 
 #include <string>
 
-#include "base/macros.h"
+#include "base/bind_helpers.h"
+#include "base/stl_util.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/prefs/json_pref_store.h"
@@ -377,10 +378,9 @@ TEST(PrefServiceTest, WriteablePrefStoreFlags) {
        PrefRegistry::LOSSY_PREF | kCustomRegistrationFlag,
        WriteablePrefStore::LOSSY_PREF_WRITE_FLAG}};
 
-  for (size_t i = 0; i < arraysize(kRegistrationToWriteFlags); ++i) {
+  for (size_t i = 0; i < base::size(kRegistrationToWriteFlags); ++i) {
     RegistrationToWriteFlags entry = kRegistrationToWriteFlags[i];
     registry->RegisterDictionaryPref(entry.pref_name,
-                                     std::make_unique<base::DictionaryValue>(),
                                      entry.registration_flags);
 
     SCOPED_TRACE("Currently testing pref with name: " +

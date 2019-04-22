@@ -12,14 +12,19 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "components/autofill/core/browser/autofill_metrics.h"
+#include "components/autofill/core/browser/payments/payments_util.h"
+#include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/suggestion.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_service_utils.h"
+#include "components/sync/driver/sync_user_settings.h"
 #include "components/variations/variations_associated_data.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -28,50 +33,27 @@
 
 namespace autofill {
 
-#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
-namespace {
-// Returns the font weight corresponding to the value of param
-// kAutofillForcedFontWeightParameterName, or kDefault if the param is not
-// valid.
-ForcedFontWeight GetFontWeightFromParam() {
-  std::string param = base::GetFieldTrialParamValueByFeature(
-      kAutofillPrimaryInfoStyleExperiment,
-      kAutofillForcedFontWeightParameterName);
-
-  if (param == kAutofillForcedFontWeightParameterMedium)
-    return ForcedFontWeight::kMedium;
-  if (param == kAutofillForcedFontWeightParameterBold)
-    return ForcedFontWeight::kBold;
-
-  return ForcedFontWeight::kDefault;
-}
-}  // namespace
-#endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
-
-#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
-const base::Feature kAutofillDropdownLayoutExperiment{
-    "AutofillDropdownLayout", base::FEATURE_DISABLED_BY_DEFAULT};
-const char kAutofillDropdownLayoutParameterName[] = "variant";
-const char kAutofillDropdownLayoutParameterLeadingIcon[] = "leading-icon";
-const char kAutofillDropdownLayoutParameterTrailingIcon[] = "trailing-icon";
-const char kAutofillDropdownLayoutParameterTwoLinesLeadingIcon[] =
-    "two-lines-leading-icon";
-#endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
-
-#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
-const base::Feature kAutofillPrimaryInfoStyleExperiment{
-    "AutofillPrimaryInfoStyleExperiment", base::FEATURE_DISABLED_BY_DEFAULT};
-const char kAutofillForcedFontWeightParameterName[] = "font_weight";
-const char kAutofillForcedFontWeightParameterMedium[] = "medium";
-const char kAutofillForcedFontWeightParameterBold[] = "bold";
-#endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
-
 bool IsCreditCardUploadEnabled(const PrefService* pref_service,
                                const syncer::SyncService* sync_service,
                                const std::string& user_email) {
-  if (!sync_service || sync_service->GetAuthError().IsPersistentError() ||
-      !sync_service->GetActiveDataTypes().Has(syncer::AUTOFILL_WALLET_DATA)) {
+  if (!sync_service) {
     // If credit card sync is not active, we're not offering to upload cards.
+    AutofillMetrics::LogCardUploadEnabledMetric(
+        AutofillMetrics::CardUploadEnabledMetric::SYNC_SERVICE_NULL);
+    return false;
+  }
+
+  if (sync_service->GetAuthError().IsPersistentError()) {
+    AutofillMetrics::LogCardUploadEnabledMetric(
+        AutofillMetrics::CardUploadEnabledMetric::
+            SYNC_SERVICE_PERSISTENT_AUTH_ERROR);
+    return false;
+  }
+
+  if (!sync_service->GetActiveDataTypes().Has(syncer::AUTOFILL_WALLET_DATA)) {
+    AutofillMetrics::LogCardUploadEnabledMetric(
+        AutofillMetrics::CardUploadEnabledMetric::
+            SYNC_SERVICE_MISSING_AUTOFILL_WALLET_DATA_ACTIVE_TYPE);
     return false;
   }
 
@@ -79,6 +61,9 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
     if (!sync_service->GetActiveDataTypes().Has(syncer::AUTOFILL_PROFILE)) {
       // In full sync mode, we only allow card upload when addresses are also
       // active, because we upload potential billing addresses with the card.
+      AutofillMetrics::LogCardUploadEnabledMetric(
+          AutofillMetrics::CardUploadEnabledMetric::
+              SYNC_SERVICE_MISSING_AUTOFILL_PROFILE_ACTIVE_TYPE);
       return false;
     }
   } else {
@@ -90,6 +75,9 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
             features::kAutofillEnableAccountWalletStorageUpload)) {
       // We're not enabling uploads in the account wallet mode, so suppress
       // the upload prompt.
+      AutofillMetrics::LogCardUploadEnabledMetric(
+          AutofillMetrics::CardUploadEnabledMetric::
+              ACCOUNT_WALLET_STORAGE_UPLOAD_DISABLED);
       return false;
     }
   }
@@ -98,48 +86,107 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
   // Users who have enabled a passphrase have chosen to not make their sync
   // information accessible to Google. Since upload makes credit card data
   // available to other Google systems, disable it for passphrase users.
-  if (sync_service->IsUsingSecondaryPassphrase())
+  if (sync_service->GetUserSettings()->IsUsingSecondaryPassphrase()) {
+    AutofillMetrics::LogCardUploadEnabledMetric(
+        AutofillMetrics::CardUploadEnabledMetric::
+            USING_SECONDARY_SYNC_PASSPHRASE);
     return false;
+  }
 
   // Don't offer upload for users that are only syncing locally, since they
   // won't receive the cards back from Google Payments.
-  if (sync_service->IsLocalSyncEnabled())
+  if (sync_service->IsLocalSyncEnabled()) {
+    AutofillMetrics::LogCardUploadEnabledMetric(
+        AutofillMetrics::CardUploadEnabledMetric::LOCAL_SYNC_ENABLED);
     return false;
+  }
 
   // Check Payments integration user setting.
-  if (!prefs::IsPaymentsIntegrationEnabled(pref_service))
+  if (!prefs::IsPaymentsIntegrationEnabled(pref_service)) {
+    AutofillMetrics::LogCardUploadEnabledMetric(
+        AutofillMetrics::CardUploadEnabledMetric::
+            PAYMENTS_INTEGRATION_DISABLED);
     return false;
+  }
 
   // Check that the user is logged into a supported domain.
-  if (user_email.empty())
+  if (user_email.empty()) {
+    AutofillMetrics::LogCardUploadEnabledMetric(
+        AutofillMetrics::CardUploadEnabledMetric::EMAIL_EMPTY);
     return false;
+  }
 
   std::string domain = gaia::ExtractDomainName(user_email);
   // If the "allow all email domains" flag is off, restrict credit card upload
   // only to Google Accounts with @googlemail, @gmail, @google, or @chromium
   // domains.
+  // example.com is on the list because ChromeOS tests rely on using this. That
+  // should be fine, since example.com is an IANA reserved domain.
   if (!base::FeatureList::IsEnabled(
           features::kAutofillUpstreamAllowAllEmailDomains) &&
       !(domain == "googlemail.com" || domain == "gmail.com" ||
-        domain == "google.com" || domain == "chromium.org")) {
+        domain == "google.com" || domain == "chromium.org" ||
+        domain == "example.com")) {
+    AutofillMetrics::LogCardUploadEnabledMetric(
+        AutofillMetrics::CardUploadEnabledMetric::EMAIL_DOMAIN_NOT_SUPPORTED);
     return false;
   }
 
-  return base::FeatureList::IsEnabled(features::kAutofillUpstream);
+  if (!base::FeatureList::IsEnabled(features::kAutofillUpstream)) {
+    AutofillMetrics::LogCardUploadEnabledMetric(
+        AutofillMetrics::CardUploadEnabledMetric::AUTOFILL_UPSTREAM_DISABLED);
+    return false;
+  }
+
+  AutofillMetrics::LogCardUploadEnabledMetric(
+      AutofillMetrics::CardUploadEnabledMetric::CARD_UPLOAD_ENABLED);
+  return true;
+}
+
+bool IsCreditCardMigrationEnabled(PersonalDataManager* personal_data_manager,
+                                  PrefService* pref_service,
+                                  syncer::SyncService* sync_service,
+                                  bool is_test_mode) {
+  // Confirm that experiment flags are enabled.
+  if (features::GetLocalCardMigrationExperimentalFlag() ==
+      features::LocalCardMigrationExperimentalFlag::kMigrationDisabled) {
+    return false;
+  }
+
+  // If |is_test_mode| is set, assume we are in a browsertest and
+  // credit card upload should be enabled by default to fix flaky
+  // local card migration browsertests.
+  if (!is_test_mode &&
+      !IsCreditCardUploadEnabled(
+          pref_service, sync_service,
+          personal_data_manager->GetAccountInfoForPaymentsServer().email)) {
+    return false;
+  }
+
+  if (!autofill::payments::HasGooglePaymentsAccount(personal_data_manager))
+    return false;
+
+  switch (personal_data_manager->GetSyncSigninState()) {
+    case AutofillSyncSigninState::kSignedOut:
+    case AutofillSyncSigninState::kSignedIn:
+    case AutofillSyncSigninState::kSyncPaused:
+      return false;
+    case AutofillSyncSigninState::kSignedInAndWalletSyncTransportEnabled:
+      return base::FeatureList::IsEnabled(
+          features::kAutofillEnableLocalCardMigrationForNonSyncUser);
+    case AutofillSyncSigninState::kSignedInAndSyncFeatureEnabled:
+      return true;
+    case AutofillSyncSigninState::kNumSyncStates:
+      break;
+  }
+  NOTREACHED();
+  return false;
 }
 
 bool IsInAutofillSuggestionsDisabledExperiment() {
   std::string group_name =
       base::FieldTrialList::FindFullName("AutofillEnabled");
   return group_name == "Disabled";
-}
-
-bool IsAutofillCreditCardAssistEnabled() {
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
-  return false;
-#else
-  return base::FeatureList::IsEnabled(features::kAutofillCreditCardAssist);
-#endif
 }
 
 features::LocalCardMigrationExperimentalFlag
@@ -167,13 +214,18 @@ bool IsAutofillNoLocalSaveOnUploadSuccessExperimentEnabled() {
       features::kAutofillNoLocalSaveOnUploadSuccess);
 }
 
-bool OfferStoreUnmaskedCards() {
+bool OfferStoreUnmaskedCards(bool is_off_the_record) {
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   // The checkbox can be forced on with a flag, but by default we don't store
   // on Linux due to lack of system keychain integration. See crbug.com/162735
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableOfferStoreUnmaskedWalletCards);
 #else
+  // Never offer to store unmasked cards when off the record.
+  if (is_off_the_record) {
+    return false;
+  }
+
   // Query the field trial before checking command line flags to ensure UMA
   // reports the correct group.
   std::string group_name =
@@ -200,42 +252,5 @@ bool ShouldUseActiveSignedInAccount() {
          base::FeatureList::IsEnabled(
              features::kAutofillGetPaymentsIdentityFromSync);
 }
-
-#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
-ForcedFontWeight GetForcedFontWeight() {
-  if (!base::FeatureList::IsEnabled(kAutofillPrimaryInfoStyleExperiment))
-    return ForcedFontWeight::kDefault;
-
-  // Only read the feature param's value the first time it's needed.
-  static ForcedFontWeight font_weight_from_param = GetFontWeightFromParam();
-  return font_weight_from_param;
-}
-#endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
-
-#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
-ForcedPopupLayoutState GetForcedPopupLayoutState() {
-  if (!base::FeatureList::IsEnabled(
-          autofill::kAutofillDropdownLayoutExperiment))
-    return ForcedPopupLayoutState::kDefault;
-
-  std::string param = base::GetFieldTrialParamValueByFeature(
-      kAutofillDropdownLayoutExperiment, kAutofillDropdownLayoutParameterName);
-
-  if (param == kAutofillDropdownLayoutParameterLeadingIcon) {
-    return ForcedPopupLayoutState::kLeadingIcon;
-  } else if (param == kAutofillDropdownLayoutParameterTrailingIcon) {
-    return ForcedPopupLayoutState::kTrailingIcon;
-  } else if (param ==
-             autofill::kAutofillDropdownLayoutParameterTwoLinesLeadingIcon) {
-    return ForcedPopupLayoutState::kTwoLinesLeadingIcon;
-  } else if (param.empty()) {
-    return ForcedPopupLayoutState::kDefault;
-  }
-
-  // Unknown parameter value.
-  NOTREACHED();
-  return ForcedPopupLayoutState::kDefault;
-}
-#endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
 
 }  // namespace autofill

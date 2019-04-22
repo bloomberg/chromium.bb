@@ -28,6 +28,9 @@ const char kErrorUnknown[] = "Unknown";
 
 const char kDefaultCellularNetworkPath[] = "/cellular";
 
+// TODO(tbarzic): Add payment portal method values to shill/dbus-constants.
+constexpr char kPaymentPortalMethodPost[] = "POST";
+
 std::string GetStringFromDictionary(const base::Value* dict, const char* key) {
   const base::Value* v = dict ? dict->FindKey(key) : nullptr;
   return v ? v->GetString() : std::string();
@@ -91,14 +94,11 @@ bool NetworkState::PropertyChanged(const std::string& key,
   if (key == shill::kSignalStrengthProperty) {
     return GetIntegerValue(key, value, &signal_strength_);
   } else if (key == shill::kStateProperty) {
-    std::string saved_state = connection_state_;
-    if (GetStringValue(key, value, &connection_state_)) {
-      if (connection_state_ != saved_state)
-        last_connection_state_ = saved_state;
-      return true;
-    } else {
+    std::string connection_state;
+    if (!GetStringValue(key, value, &connection_state))
       return false;
-    }
+    SetConnectionState(connection_state);
+    return true;
   } else if (key == shill::kVisibleProperty) {
     return GetBooleanValue(key, value, &visible_);
   } else if (key == shill::kConnectableProperty) {
@@ -127,6 +127,17 @@ bool NetworkState::PropertyChanged(const std::string& key,
     if (!portal_url_value)
       return false;
     payment_url_ = portal_url_value->GetString();
+    // If payment portal uses post method, set up post data.
+    const base::Value* portal_method_value = value.FindKeyOfType(
+        shill::kPaymentPortalMethod, base::Value::Type::STRING);
+    const base::Value* portal_post_data_value = value.FindKeyOfType(
+        shill::kPaymentPortalPostData, base::Value::Type::STRING);
+    if (portal_method_value &&
+        portal_method_value->GetString() == kPaymentPortalMethodPost &&
+        portal_post_data_value) {
+      payment_post_data_ = portal_post_data_value->GetString();
+    }
+    return true;
   } else if (key == shill::kSecurityClassProperty) {
     return GetStringValue(key, value, &security_class_);
   } else if (key == shill::kEapMethodProperty) {
@@ -306,7 +317,7 @@ void NetworkState::GetStateProperties(base::Value* dictionary) const {
                        base::Value(network_technology()));
     dictionary->SetKey(shill::kActivationStateProperty,
                        base::Value(activation_state()));
-    dictionary->SetKey(shill::kRoamingStateProperty, base::Value(roaming()));
+    dictionary->SetKey(shill::kRoamingStateProperty, base::Value(roaming_));
     dictionary->SetKey(shill::kOutOfCreditsProperty,
                        base::Value(cellular_out_of_credits()));
   }
@@ -376,9 +387,22 @@ std::string NetworkState::connection_state() const {
   return connection_state_;
 }
 
-void NetworkState::set_connection_state(const std::string connection_state) {
+void NetworkState::SetConnectionState(const std::string& connection_state) {
+  if (connection_state == connection_state_)
+    return;
   last_connection_state_ = connection_state_;
   connection_state_ = connection_state;
+  if (StateIsConnected(connection_state_) ||
+      StateIsConnecting(last_connection_state_)) {
+    // If connected or previously connecting, clear |connect_requested_|.
+    connect_requested_ = false;
+  } else if (StateIsConnected(last_connection_state_) &&
+             StateIsConnecting(connection_state_)) {
+    // If transitioning from a connected state to a connecting state, set
+    // |connect_requested_| so that the UI knows the connecting state is
+    // important (i.e. not a normal auto connect).
+    connect_requested_ = true;
+  }
 }
 
 bool NetworkState::IsManagedByPolicy() const {
@@ -391,6 +415,11 @@ bool NetworkState::IsUsingMobileData() const {
          tethering_state() == shill::kTetheringConfirmedState;
 }
 
+bool NetworkState::IndicateRoaming() const {
+  return type() == shill::kTypeCellular &&
+         roaming_ == shill::kRoamingStateRoaming && !provider_requires_roaming_;
+}
+
 bool NetworkState::IsDynamicWep() const {
   return security_class_ == shill::kSecurityWep &&
          eap_key_mgmt_ == shill::kKeyManagementIEEE8021X;
@@ -401,17 +430,23 @@ bool NetworkState::IsConnectedState() const {
 }
 
 bool NetworkState::IsConnectingState() const {
-  return visible() && StateIsConnecting(connection_state_);
+  return visible() &&
+         (connect_requested_ || StateIsConnecting(connection_state_));
 }
 
 bool NetworkState::IsConnectingOrConnected() const {
-  return visible() && (StateIsConnecting(connection_state_) ||
-                       StateIsConnected(connection_state_));
+  return visible() &&
+         (connect_requested_ || StateIsConnecting(connection_state_) ||
+          StateIsConnected(connection_state_));
 }
 
-bool NetworkState::IsReconnecting() const {
-  return visible() && StateIsConnecting(connection_state_) &&
-         StateIsConnected(last_connection_state_);
+bool NetworkState::IsActive() const {
+  return IsConnectingOrConnected() ||
+         activation_state() == shill::kActivationStateActivating;
+}
+
+bool NetworkState::IsOnline() const {
+  return connection_state() == shill::kStateOnline;
 }
 
 bool NetworkState::IsInProfile() const {
@@ -433,6 +468,10 @@ bool NetworkState::IsPrivate() const {
 bool NetworkState::IsDefaultCellular() const {
   return type() == shill::kTypeCellular &&
          path() == kDefaultCellularNetworkPath;
+}
+
+bool NetworkState::IsCaptivePortal() const {
+  return is_captive_portal_ || is_chrome_captive_portal_;
 }
 
 std::string NetworkState::GetHexSsid() const {
@@ -505,8 +544,10 @@ bool NetworkState::NetworkStateIsCaptivePortal(
 
 // static
 bool NetworkState::ErrorIsValid(const std::string& error) {
-  // Shill uses "Unknown" to indicate an unset or cleared error state.
-  return !error.empty() && error != kErrorUnknown;
+  // Pre M-74 Shill uses "Unknown" to indicate an unset or cleared error state.
+  // TODO(stevenjb): Remove kErrorUnknown once 74 has shipped.
+  return !error.empty() && error != kErrorUnknown &&
+         error != shill::kErrorNoFailure;
 }
 
 // static

@@ -24,7 +24,6 @@
 #include "base/values.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/image_fetcher/core/image_fetcher.h"
-#include "components/ntp_snippets/breaking_news/breaking_news_listener.h"
 #include "components/ntp_snippets/category_rankers/category_ranker.h"
 #include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/pref_names.h"
@@ -164,30 +163,6 @@ bool IsPushedSuggestionsNotificationsEnabled() {
   return base::GetFieldTrialParamByFeatureAsBool(
       kNotificationsFeature, kEnablePushedSuggestionsNotificationsParamName,
       kEnablePushedSuggestionsNotificationsDefault);
-}
-
-// Whether signed-in users should be subscribed for pushed suggestions.
-const bool kEnableSignedInUsersSubscriptionForPushedSuggestionsDefault = true;
-const char kEnableSignedInUsersSubscriptionForPushedSuggestionsParamName[] =
-    "enable_signed_in_users_subscription_for_pushed_suggestions";
-
-bool IsSignedInUsersSubscriptionForPushedSuggestionsEnabled() {
-  return base::GetFieldTrialParamByFeatureAsBool(
-      kBreakingNewsPushFeature,
-      kEnableSignedInUsersSubscriptionForPushedSuggestionsParamName,
-      kEnableSignedInUsersSubscriptionForPushedSuggestionsDefault);
-}
-
-// Whether signed-out users should be subscribed for pushed suggestions.
-const bool kEnableSignedOutUsersSubscriptionForPushedSuggestionsDefault = false;
-const char kEnableSignedOutUsersSubscriptionForPushedSuggestionsParamName[] =
-    "enable_signed_out_users_subscription_for_pushed_suggestions";
-
-bool IsSignedOutUsersSubscriptionForPushedSuggestionsEnabled() {
-  return base::GetFieldTrialParamByFeatureAsBool(
-      kBreakingNewsPushFeature,
-      kEnableSignedOutUsersSubscriptionForPushedSuggestionsParamName,
-      kEnableSignedOutUsersSubscriptionForPushedSuggestionsDefault);
 }
 
 // Whether notification info is overriden for fetched suggestions. Note that
@@ -368,7 +343,6 @@ RemoteSuggestionsProviderImpl::RemoteSuggestionsProviderImpl(
     std::unique_ptr<RemoteSuggestionsDatabase> database,
     std::unique_ptr<RemoteSuggestionsStatusService> status_service,
     std::unique_ptr<PrefetchedPagesTracker> prefetched_pages_tracker,
-    std::unique_ptr<BreakingNewsListener> breaking_news_raw_data_provider,
     Logger* debug_logger,
     std::unique_ptr<base::OneShotTimer> fetch_timeout_timer)
     : RemoteSuggestionsProvider(observer),
@@ -387,8 +361,6 @@ RemoteSuggestionsProviderImpl::RemoteSuggestionsProviderImpl(
       clear_cached_suggestions_when_initialized_(false),
       clock_(base::DefaultClock::GetInstance()),
       prefetched_pages_tracker_(std::move(prefetched_pages_tracker)),
-      breaking_news_raw_data_provider_(
-          std::move(breaking_news_raw_data_provider)),
       debug_logger_(debug_logger),
       fetch_timeout_timer_(std::move(fetch_timeout_timer)),
       request_status_(FetchRequestStatus::NONE) {
@@ -423,10 +395,6 @@ RemoteSuggestionsProviderImpl::RemoteSuggestionsProviderImpl(
 }
 
 RemoteSuggestionsProviderImpl::~RemoteSuggestionsProviderImpl() {
-  if (breaking_news_raw_data_provider_ &&
-      breaking_news_raw_data_provider_->IsListening()) {
-    breaking_news_raw_data_provider_->StopListening();
-  }
 }
 
 // static
@@ -1465,46 +1433,6 @@ void RemoteSuggestionsProviderImpl::FetchSuggestionImageData(
                                       ntp_snippets::ImageFetchedCallback());
 }
 
-void RemoteSuggestionsProviderImpl::
-    UpdatePushedSuggestionsSubscriptionDueToStatusChange(
-        RemoteSuggestionsStatus new_status) {
-  if (!breaking_news_raw_data_provider_) {
-    return;
-  }
-
-  bool should_be_subscribed = false;
-  switch (new_status) {
-    case RemoteSuggestionsStatus::ENABLED_AND_SIGNED_IN:
-      should_be_subscribed =
-          IsSignedInUsersSubscriptionForPushedSuggestionsEnabled();
-      break;
-
-    case RemoteSuggestionsStatus::ENABLED_AND_SIGNED_OUT:
-      should_be_subscribed =
-          IsSignedOutUsersSubscriptionForPushedSuggestionsEnabled();
-      break;
-
-    case RemoteSuggestionsStatus::EXPLICITLY_DISABLED:
-      should_be_subscribed = false;
-      break;
-  }
-
-  if (should_be_subscribed) {
-    if (!breaking_news_raw_data_provider_->IsListening()) {
-      breaking_news_raw_data_provider_->StartListening(
-          base::Bind(&RemoteSuggestionsProviderImpl::PrependArticleSuggestion,
-                     base::Unretained(this)),
-          base::Bind(&RemoteSuggestionsProviderImpl::
-                         RefreshSuggestionsUponPushToRefreshRequest,
-                     base::Unretained(this)));
-    }
-  } else {
-    if (breaking_news_raw_data_provider_->IsListening()) {
-      breaking_news_raw_data_provider_->StopListening();
-    }
-  }
-}
-
 void RemoteSuggestionsProviderImpl::FinishInitialization() {
   // Note: Initializing the status service will run the callback right away with
   // the current state.
@@ -1560,8 +1488,6 @@ void RemoteSuggestionsProviderImpl::OnStatusChanged(
       EnterState(State::DISABLED);
       break;
   }
-
-  UpdatePushedSuggestionsSubscriptionDueToStatusChange(new_status);
 }
 
 void RemoteSuggestionsProviderImpl::EnterState(State state) {
@@ -1620,10 +1546,6 @@ void RemoteSuggestionsProviderImpl::EnterState(State state) {
       ClearCachedSuggestionsImpl();
       clear_cached_suggestions_when_initialized_ = false;
 
-      if (breaking_news_raw_data_provider_ &&
-          breaking_news_raw_data_provider_->IsListening()) {
-        breaking_news_raw_data_provider_->StopListening();
-      }
       UpdateAllCategoryStatus(CategoryStatus::CATEGORY_EXPLICITLY_DISABLED);
       break;
 

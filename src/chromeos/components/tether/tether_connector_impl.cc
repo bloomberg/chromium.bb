@@ -5,8 +5,9 @@
 #include "chromeos/components/tether/tether_connector_impl.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/metrics/histogram_macros.h"
-#include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/tether/active_host.h"
 #include "chromeos/components/tether/device_id_tether_network_guid_map.h"
 #include "chromeos/components/tether/disconnect_tethering_request_sender.h"
@@ -29,7 +30,7 @@ namespace {
 void OnDisconnectFromWifiFailure(const std::string& device_id,
                                  const std::string& error_name) {
   PA_LOG(WARNING) << "Failed to disconnect from tether hotspot for device ID "
-                  << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                  << multidevice::RemoteDeviceRef::TruncateDeviceIdForLogs(
                          device_id)
                   << ". Error: " << error_name;
 }
@@ -149,7 +150,9 @@ bool TetherConnectorImpl::CancelConnectionAttempt(
 }
 
 void TetherConnectorImpl::OnConnectTetheringRequestSent(
-    cryptauth::RemoteDeviceRef remote_device) {
+    multidevice::RemoteDeviceRef remote_device) {
+  did_send_successful_request_ = true;
+
   // If setup is required for the phone, display a notification so that the
   // user knows to follow instructions on the phone. Note that the notification
   // is displayed only after a request has been sent successfully. If the
@@ -169,7 +172,7 @@ void TetherConnectorImpl::OnConnectTetheringRequestSent(
 }
 
 void TetherConnectorImpl::OnSuccessfulConnectTetheringResponse(
-    cryptauth::RemoteDeviceRef remote_device,
+    multidevice::RemoteDeviceRef remote_device,
     const std::string& ssid,
     const std::string& password) {
   if (device_id_pending_connection_ != remote_device.GetDeviceId()) {
@@ -204,7 +207,7 @@ void TetherConnectorImpl::OnSuccessfulConnectTetheringResponse(
 }
 
 void TetherConnectorImpl::OnConnectTetheringFailure(
-    cryptauth::RemoteDeviceRef remote_device,
+    multidevice::RemoteDeviceRef remote_device,
     ConnectTetheringOperation::HostResponseErrorCode error_code) {
   std::string device_id_copy = remote_device.GetDeviceId();
   if (device_id_pending_connection_ != device_id_copy) {
@@ -230,10 +233,10 @@ void TetherConnectorImpl::OnConnectTetheringFailure(
 
 void TetherConnectorImpl::OnTetherHostToConnectFetched(
     const std::string& device_id,
-    base::Optional<cryptauth::RemoteDeviceRef> tether_host_to_connect) {
+    base::Optional<multidevice::RemoteDeviceRef> tether_host_to_connect) {
   if (device_id_pending_connection_ != device_id) {
     PA_LOG(VERBOSE) << "Device to connect to has changed while device with ID "
-                    << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                    << multidevice::RemoteDeviceRef::TruncateDeviceIdForLogs(
                            device_id)
                     << " was being fetched.";
     return;
@@ -241,7 +244,7 @@ void TetherConnectorImpl::OnTetherHostToConnectFetched(
 
   if (!tether_host_to_connect) {
     PA_LOG(ERROR) << "Could not fetch tether host with device ID "
-                  << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                  << multidevice::RemoteDeviceRef::TruncateDeviceIdForLogs(
                          device_id)
                   << ". Cannot connect.";
     SetConnectionFailed(
@@ -333,14 +336,14 @@ void TetherConnectorImpl::OnWifiConnection(
     if (wifi_network_guid.empty()) {
       PA_LOG(WARNING)
           << "Failed to connect to Wi-Fi hotspot for device with ID "
-          << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(device_id)
+          << multidevice::RemoteDeviceRef::TruncateDeviceIdForLogs(device_id)
           << ", "
           << "but the connection to that device was canceled.";
       return;
     }
 
     PA_LOG(VERBOSE) << "Connected to Wi-Fi hotspot for device with ID "
-                    << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                    << multidevice::RemoteDeviceRef::TruncateDeviceIdForLogs(
                            device_id)
                     << ", but the connection to that device was canceled. "
                     << "Disconnecting.";
@@ -358,7 +361,7 @@ void TetherConnectorImpl::OnWifiConnection(
     // If the Wi-Fi network ID is empty, then the connection did not succeed.
     PA_LOG(ERROR) << "Failed to connect to the hotspot belonging to the device "
                   << "with ID "
-                  << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                  << multidevice::RemoteDeviceRef::TruncateDeviceIdForLogs(
                          device_id)
                   << ".";
 
@@ -432,8 +435,19 @@ TetherConnectorImpl::GetConnectionToHostResultFromErrorCode(
         CONNECTION_RESULT_FAILURE_INVALID_HOTSPOT_CREDENTIALS;
   }
 
+  if (error_code ==
+      ConnectTetheringOperation::HostResponseErrorCode::NO_RESPONSE) {
+    if (did_send_successful_request_) {
+      return HostConnectionMetricsLogger::ConnectionToHostResult::
+          CONNECTION_RESULT_FAILURE_SUCCESSFUL_REQUEST_BUT_NO_RESPONSE;
+    } else {
+      return HostConnectionMetricsLogger::ConnectionToHostResult::
+          CONNECTION_RESULT_FAILURE_NO_RESPONSE;
+    }
+  }
+
   return HostConnectionMetricsLogger::ConnectionToHostResult::
-      CONNECTION_RESULT_FAILURE_NO_RESPONSE;
+      CONNECTION_RESULT_FAILURE_UNRECOGNIZED_RESPONSE_ERROR;
 }
 
 }  // namespace tether

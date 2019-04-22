@@ -14,9 +14,14 @@ namespace chromeos {
 
 class MockDemoSetupScreen : public DemoSetupScreen {
  public:
-  MockDemoSetupScreen(BaseScreenDelegate* base_screen_delegate,
-                      DemoSetupScreenView* view);
+  MockDemoSetupScreen(DemoSetupScreenView* view,
+                      const ScreenExitCallback& exit_callback);
   ~MockDemoSetupScreen() override;
+
+  MOCK_METHOD0(Show, void());
+  MOCK_METHOD0(Hide, void());
+
+  void ExitScreen(Result result);
 };
 
 class MockDemoSetupScreenView : public DemoSetupScreenView {
@@ -34,7 +39,7 @@ class MockDemoSetupScreenView : public DemoSetupScreenView {
   void Bind(DemoSetupScreen* screen) override;
 
  private:
-  DemoSetupScreen* screen_;
+  DemoSetupScreen* screen_ = nullptr;
 };
 
 }  // namespace chromeos

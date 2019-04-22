@@ -55,7 +55,7 @@ GrTextureProxy::GrTextureProxy(sk_sp<GrSurface> surf, GrSurfaceOrigin origin)
         , fProxyProvider(nullptr)
         , fDeferredUploader(nullptr) {
     if (fTarget->getUniqueKey().isValid()) {
-        fProxyProvider = fTarget->asTexture()->getContext()->contextPriv().proxyProvider();
+        fProxyProvider = fTarget->asTexture()->getContext()->priv().proxyProvider();
         fProxyProvider->adoptUniqueKeyFromSurface(this, fTarget);
     }
 }
@@ -69,19 +69,22 @@ GrTextureProxy::~GrTextureProxy() {
     // proxy provider has gone away. In that case there is noone to send the invalid key
     // message to (Note: in this case we don't want to remove its cached resource).
     if (fUniqueKey.isValid() && fProxyProvider) {
-        fProxyProvider->processInvalidProxyUniqueKey(fUniqueKey, this, false);
+        fProxyProvider->processInvalidUniqueKey(fUniqueKey, this,
+                                                GrProxyProvider::InvalidateGPUResource::kNo);
     } else {
         SkASSERT(!fProxyProvider);
     }
 }
 
-bool GrTextureProxy::instantiate(GrResourceProvider* resourceProvider) {
+bool GrTextureProxy::instantiate(GrResourceProvider* resourceProvider,
+                                 bool dontForceNoPendingIO) {
     if (LazyState::kNot != this->lazyInstantiationState()) {
         return false;
     }
     if (!this->instantiateImpl(resourceProvider, 1, /* needsStencil = */ false,
                                kNone_GrSurfaceFlags, fMipMapped,
-                               fUniqueKey.isValid() ? &fUniqueKey : nullptr)) {
+                               fUniqueKey.isValid() ? &fUniqueKey : nullptr,
+                               dontForceNoPendingIO)) {
         return false;
     }
 
@@ -91,10 +94,12 @@ bool GrTextureProxy::instantiate(GrResourceProvider* resourceProvider) {
 }
 
 sk_sp<GrSurface> GrTextureProxy::createSurface(GrResourceProvider* resourceProvider) const {
-    sk_sp<GrSurface> surface= this->createSurfaceImpl(resourceProvider, 1,
-                                                      /* needsStencil = */ false,
-                                                      kNone_GrSurfaceFlags,
-                                                      fMipMapped);
+    SkASSERT(resourceProvider->explicitlyAllocateGPUResources());
+
+    sk_sp<GrSurface> surface = this->createSurfaceImpl(resourceProvider, 1,
+                                                       /* needsStencil = */ false,
+                                                       kNone_GrSurfaceFlags,
+                                                       fMipMapped, true);
     if (!surface) {
         return nullptr;
     }
@@ -138,11 +143,18 @@ size_t GrTextureProxy::onUninstantiatedGpuMemorySize() const {
                                   this->proxyMipMapped(), !this->priv().isExact());
 }
 
+bool GrTextureProxy::ProxiesAreCompatibleAsDynamicState(const GrTextureProxy* first,
+                                                        const GrTextureProxy* second) {
+    return first->config() == second->config() &&
+           first->textureType() == second->textureType() &&
+           first->backendFormat() == second->backendFormat();
+}
+
 void GrTextureProxy::setUniqueKey(GrProxyProvider* proxyProvider, const GrUniqueKey& key) {
     SkASSERT(key.isValid());
     SkASSERT(!fUniqueKey.isValid()); // proxies can only ever get one uniqueKey
 
-    if (fTarget) {
+    if (fTarget && fSyncTargetKey) {
         if (!fTarget->getUniqueKey().isValid()) {
             fTarget->resourcePriv().setUniqueKey(key);
         }
@@ -166,7 +178,14 @@ void GrTextureProxy::onValidateSurface(const GrSurface* surface) {
     SkASSERT(surface->asTexture());
     SkASSERT(GrMipMapped::kNo == this->proxyMipMapped() ||
              GrMipMapped::kYes == surface->asTexture()->texturePriv().mipMapped());
+
     SkASSERT(surface->asTexture()->texturePriv().textureType() == this->textureType());
+
+    GrInternalSurfaceFlags proxyFlags = fSurfaceFlags;
+    GrInternalSurfaceFlags surfaceFlags = surface->surfacePriv().flags();
+    SkASSERT((proxyFlags & GrInternalSurfaceFlags::kTextureMask) ==
+             (surfaceFlags & GrInternalSurfaceFlags::kTextureMask));
 }
+
 #endif
 

@@ -582,7 +582,7 @@ class TestAutotestEvaluator(cros_test_lib.MockTempDirTestCase):
                         '--no-ns-pid'],
         'cwd': self.evaluator.cros_dir}
     command_mock.AddCmdResult(
-        ['./setup_board', '--board', self.BOARD], kwargs=kwargs_run_chroot)
+        ['setup_board', '--board', self.BOARD], kwargs=kwargs_run_chroot)
     command_mock.AddCmdResult(
         ['./build_packages', '--board', self.BOARD], kwargs=kwargs_run_chroot)
 
@@ -597,7 +597,7 @@ class TestAutotestEvaluator(cros_test_lib.MockTempDirTestCase):
                         '--no-ns-pid'],
         'cwd': self.evaluator.cros_dir}
     command_mock.AddCmdResult(
-        ['./setup_board', '--board', self.BOARD], kwargs=kwargs_run_chroot)
+        ['setup_board', '--board', self.BOARD], kwargs=kwargs_run_chroot)
 
     command_mock.AddCmdResult(
         ['./build_packages', '--board', self.BOARD], kwargs=kwargs_run_chroot,

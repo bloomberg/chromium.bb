@@ -10,9 +10,9 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/api/signed_in_devices/id_mapping_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/device_info_sync_service_factory.h"
 #include "chrome/common/extensions/api/signed_in_devices.h"
-#include "components/browser_sync/profile_sync_service.h"
+#include "components/sync/device_info/device_info_sync_service.h"
 #include "components/sync/device_info/device_info_tracker.h"
 #include "components/sync/device_info/local_device_info_provider.h"
 #include "extensions/browser/extension_prefs.h"
@@ -82,7 +82,8 @@ std::vector<std::unique_ptr<DeviceInfo>> GetAllSignedInDevices(
   // Get the device tracker and extension prefs pointers
   // and call the helper.
   DeviceInfoTracker* device_tracker =
-      ProfileSyncServiceFactory::GetForProfile(profile)->GetDeviceInfoTracker();
+      DeviceInfoSyncServiceFactory::GetForProfile(profile)
+          ->GetDeviceInfoTracker();
   DCHECK(device_tracker);
   if (!device_tracker->IsSyncing()) {
     // Devices are not sync'ing.
@@ -96,19 +97,23 @@ std::vector<std::unique_ptr<DeviceInfo>> GetAllSignedInDevices(
 
 std::unique_ptr<DeviceInfo> GetLocalDeviceInfo(const std::string& extension_id,
                                                Profile* profile) {
-  browser_sync::ProfileSyncService* pss =
-      ProfileSyncServiceFactory::GetForProfile(profile);
-  if (!pss) {
-    return std::unique_ptr<DeviceInfo>();
+  syncer::DeviceInfoSyncService* service =
+      DeviceInfoSyncServiceFactory::GetForProfile(profile);
+  if (!service) {
+    return nullptr;
   }
 
-  const LocalDeviceInfoProvider* local_device =
-      pss->GetLocalDeviceInfoProvider();
-  DCHECK(local_device);
-  std::string guid = local_device->GetLocalSyncCacheGUID();
-  std::unique_ptr<DeviceInfo> device =
-      GetDeviceInfoForClientId(guid, extension_id, profile);
-  return device;
+  const LocalDeviceInfoProvider* local_device_info_provider =
+      service->GetLocalDeviceInfoProvider();
+  DCHECK(local_device_info_provider);
+  const DeviceInfo* local_device =
+      local_device_info_provider->GetLocalDeviceInfo();
+  if (!local_device)
+    return nullptr;
+
+  // TODO(karandeepb): Can't we just return a copy of |local_device|, without
+  // having to look it up by GUID?
+  return GetDeviceInfoForClientId(local_device->guid(), extension_id, profile);
 }
 
 ExtensionFunction::ResponseAction SignedInDevicesGetFunction::Run() {

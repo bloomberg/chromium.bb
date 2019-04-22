@@ -320,11 +320,9 @@ TEST_F(ValidateComposites, CompositeConstructVectorWrongConsituent1) {
 )";
 
   CompileSuccessfully(GenerateShaderCode(body).c_str());
-  ASSERT_EQ(SPV_ERROR_INVALID_DATA, ValidateInstructions());
-  EXPECT_THAT(
-      getDiagnosticString(),
-      HasSubstr("Expected Constituents to be scalars or vectors of the same "
-                "type as Result Type components"));
+  ASSERT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
+  EXPECT_THAT(getDiagnosticString(), HasSubstr("Operand 5[%float] cannot be a "
+                                               "type"));
 }
 
 TEST_F(ValidateComposites, CompositeConstructVectorWrongConsituent2) {
@@ -540,7 +538,8 @@ TEST_F(ValidateComposites, CopyObjectResultTypeNotType) {
 
   CompileSuccessfully(GenerateShaderCode(body).c_str());
   ASSERT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
-  EXPECT_THAT(getDiagnosticString(), HasSubstr("ID 19 is not a type id"));
+  EXPECT_THAT(getDiagnosticString(),
+              HasSubstr("ID 19[%float_0] is not a type id"));
 }
 
 TEST_F(ValidateComposites, CopyObjectWrongOperandType) {
@@ -660,10 +659,9 @@ TEST_F(ValidateComposites, CompositeExtractNotObject) {
 )";
 
   CompileSuccessfully(GenerateShaderCode(body));
-  ASSERT_EQ(SPV_ERROR_INVALID_DATA, ValidateInstructions());
-  EXPECT_THAT(getDiagnosticString(),
-              HasSubstr("Expected Composite to be an object "
-                        "of composite type"));
+  ASSERT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
+  EXPECT_THAT(getDiagnosticString(), HasSubstr("Operand 11[%v4float] cannot "
+                                               "be a type"));
 }
 
 TEST_F(ValidateComposites, CompositeExtractNotComposite) {
@@ -1469,6 +1467,83 @@ OpFunctionEnd
   EXPECT_EQ(SPV_SUCCESS, ValidateInstructions());
 }
 
+TEST_F(ValidateComposites, CoopMatConstantCompositeMismatchFail) {
+  const std::string body =
+      R"(
+OpCapability Shader
+OpCapability Float16
+OpCapability CooperativeMatrixNV
+OpExtension "SPV_NV_cooperative_matrix"
+OpMemoryModel Logical GLSL450
+OpEntryPoint GLCompute %main "main"
+%void = OpTypeVoid
+%func = OpTypeFunction %void
+%bool = OpTypeBool
+%f16 = OpTypeFloat 16
+%f32 = OpTypeFloat 32
+%u32 = OpTypeInt 32 0
+
+%u32_8 = OpConstant %u32 8
+%subgroup = OpConstant %u32 3
+
+%f16mat = OpTypeCooperativeMatrixNV %f16 %subgroup %u32_8 %u32_8
+
+%f32_1 = OpConstant %f32 1
+
+%f16mat_1 = OpConstantComposite %f16mat %f32_1
+
+%main = OpFunction %void None %func
+%main_entry = OpLabel
+
+OpReturn
+OpFunctionEnd)";
+
+  CompileSuccessfully(body.c_str());
+  ASSERT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
+  EXPECT_THAT(
+      getDiagnosticString(),
+      HasSubstr("OpConstantComposite Constituent <id> '11[%float_1]' type does "
+                "not match the Result Type <id> '10[%10]'s component type."));
+}
+
+TEST_F(ValidateComposites, CoopMatCompositeConstructMismatchFail) {
+  const std::string body =
+      R"(
+OpCapability Shader
+OpCapability Float16
+OpCapability CooperativeMatrixNV
+OpExtension "SPV_NV_cooperative_matrix"
+OpMemoryModel Logical GLSL450
+OpEntryPoint GLCompute %main "main"
+%void = OpTypeVoid
+%func = OpTypeFunction %void
+%bool = OpTypeBool
+%f16 = OpTypeFloat 16
+%f32 = OpTypeFloat 32
+%u32 = OpTypeInt 32 0
+
+%u32_8 = OpConstant %u32 8
+%subgroup = OpConstant %u32 3
+
+%f16mat = OpTypeCooperativeMatrixNV %f16 %subgroup %u32_8 %u32_8
+
+%f32_1 = OpConstant %f32 1
+
+%main = OpFunction %void None %func
+%main_entry = OpLabel
+
+%f16mat_1 = OpCompositeConstruct %f16mat %f32_1
+
+OpReturn
+OpFunctionEnd)";
+
+  CompileSuccessfully(body.c_str());
+  ASSERT_EQ(SPV_ERROR_INVALID_DATA, ValidateInstructions());
+  EXPECT_THAT(
+      getDiagnosticString(),
+      HasSubstr("Expected Constituent type to be equal to the component type"));
+}
+
 TEST_F(ValidateComposites, ExtractDynamicLabelIndex) {
   const std::string spirv = R"(
 OpCapability Shader
@@ -1482,7 +1557,7 @@ OpMemoryModel Logical GLSL450
 %v4float_0 = OpConstantComposite %v4float %float_0 %float_0 %float_0 %float_0
 %func = OpFunction %void None %void_fn
 %1 = OpLabel
-%ex = OpVectorExtractDynamic %float %v4float_0 %1
+%ex = OpVectorExtractDynamic %float %v4float_0 %v4float_0
 OpReturn
 OpFunctionEnd
 )";

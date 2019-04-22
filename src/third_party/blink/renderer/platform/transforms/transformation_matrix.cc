@@ -30,6 +30,7 @@
 #include <cmath>
 #include <cstdlib>
 
+#include "base/compiler_specific.h"
 #include "third_party/blink/renderer/platform/geometry/float_box.h"
 #include "third_party/blink/renderer/platform/geometry/float_quad.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
@@ -39,7 +40,6 @@
 #include "third_party/blink/renderer/platform/transforms/affine_transform.h"
 #include "third_party/blink/renderer/platform/transforms/rotation.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
-#include "third_party/blink/renderer/platform/wtf/cpu.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "ui/gfx/transform.h"
@@ -48,7 +48,7 @@
 #include <emmintrin.h>
 #endif
 
-#if HAVE_MIPS_MSA_INTRINSICS
+#if defined(HAVE_MIPS_MSA_INTRINSICS)
 #include "third_party/blink/renderer/platform/cpu/mips/common_macros_msa.h"
 #endif
 
@@ -340,7 +340,7 @@ static bool Inverse(const TransformationMatrix::Matrix4& matrix,
       : "memory", "v0", "v1", "v2", "v3", "v4", "v5", "v6", "v7", "v16", "v17",
         "v18", "v19", "v20", "v21", "v22", "v23", "24", "25", "v26", "v27",
         "v28", "v29", "v30");
-#elif HAVE_MIPS_MSA_INTRINSICS
+#elif defined(HAVE_MIPS_MSA_INTRINSICS)
   const double rDet = 1 / det;
   const double* mat = &(matrix[0][0]);
   v2f64 mat0, mat1, mat2, mat3, mat4, mat5, mat6, mat7;
@@ -559,6 +559,10 @@ static void V3Cross(const Vector3 a, const Vector3 b, Vector3 result) {
   result[2] = (a[0] * b[1]) - (a[1] * b[0]);
 }
 
+// TODO(crbug/937296): This implementation is virtually identical to the
+// implementation in ui/gfx/transform_util with the main difference being
+// the representation of the underlying matrix. These implementations should be
+// consolidated.
 static bool Decompose(const TransformationMatrix::Matrix4& mat,
                       TransformationMatrix::DecomposedType& result) {
   TransformationMatrix::Matrix4 local_matrix;
@@ -1341,7 +1345,7 @@ TransformationMatrix& TransformationMatrix::Multiply(
       : "memory", "x9", "v16", "v17", "v18", "v19", "v20", "v21", "v22", "v23",
         "v24", "v25", "v26", "v27", "v28", "v29", "v30", "v31", "v0", "v1",
         "v2", "v3", "v4", "v5", "v6", "v7");
-#elif HAVE_MIPS_MSA_INTRINSICS
+#elif defined(HAVE_MIPS_MSA_INTRINSICS)
   v2f64 v_right_m0, v_right_m1, v_right_m2, v_right_m3, v_right_m4, v_right_m5,
       v_right_m6, v_right_m7;
   v2f64 v_left_m0, v_left_m1, v_left_m2, v_left_m3, v_left_m4, v_left_m5,
@@ -1713,10 +1717,27 @@ static inline void BlendFloat(double& from, double to, double progress) {
     from = from + (to - from) * progress;
 }
 
+bool TransformationMatrix::Is2dTransform() const {
+  if (!IsFlat())
+    return false;
+
+  // Check perspective.
+  if (matrix_[0][3] != 0 || matrix_[1][3] != 0 || matrix_[2][3] != 0 ||
+      matrix_[3][3] != 1)
+    return false;
+
+  return true;
+}
+
 void TransformationMatrix::Blend(const TransformationMatrix& from,
                                  double progress) {
   if (from.IsIdentity() && IsIdentity())
     return;
+
+  if (from.Is2dTransform() && Is2dTransform()) {
+    Blend2D(from, progress);
+    return;
+  }
 
   // decompose
   DecomposedType from_decomp;
@@ -1748,6 +1769,40 @@ void TransformationMatrix::Blend(const TransformationMatrix& from,
   Recompose(from_decomp);
 }
 
+void TransformationMatrix::Blend2D(const TransformationMatrix& from,
+                                   double progress) {
+  // Decompose into scale, rotate, translate and skew transforms.
+  Decomposed2dType from_decomp;
+  Decomposed2dType to_decomp;
+  if (!from.Decompose2D(from_decomp) || !Decompose2D(to_decomp)) {
+    if (progress < 0.5)
+      *this = from;
+    return;
+  }
+
+  // Take the shorter of the clockwise or counter-clockwise paths.
+  double rotation = abs(from_decomp.angle - to_decomp.angle);
+  DCHECK(rotation < 2 * M_PI);
+  if (rotation > M_PI) {
+    if (from_decomp.angle > to_decomp.angle) {
+      from_decomp.angle -= 2 * M_PI;
+    } else {
+      to_decomp.angle -= 2 * M_PI;
+    }
+  }
+
+  // Interpolate.
+  BlendFloat(from_decomp.scale_x, to_decomp.scale_x, progress);
+  BlendFloat(from_decomp.scale_y, to_decomp.scale_y, progress);
+  BlendFloat(from_decomp.skew_xy, to_decomp.skew_xy, progress);
+  BlendFloat(from_decomp.translate_x, to_decomp.translate_x, progress);
+  BlendFloat(from_decomp.translate_y, to_decomp.translate_y, progress);
+  BlendFloat(from_decomp.angle, to_decomp.angle, progress);
+
+  // Recompose.
+  Recompose2D(from_decomp);
+}
+
 bool TransformationMatrix::Decompose(DecomposedType& decomp) const {
   if (IsIdentity()) {
     memset(&decomp, 0, sizeof(decomp));
@@ -1759,6 +1814,100 @@ bool TransformationMatrix::Decompose(DecomposedType& decomp) const {
 
   if (!blink::Decompose(matrix_, decomp))
     return false;
+  return true;
+}
+
+// Decompose a 2D transformation matrix of the form:
+// [m11 m21 0 m41]
+// [m12 m22 0 m42]
+// [ 0   0  1  0 ]
+// [ 0   0  0  1 ]
+//
+// The decomposition is of the form:
+// M = translate * rotate * skew * scale
+//     [1 0 0 Tx] [cos(R) -sin(R) 0 0] [1 K 0 0] [Sx 0  0 0]
+//   = [0 1 0 Ty] [sin(R)  cos(R) 0 0] [0 1 0 0] [0  Sy 0 0]
+//     [0 0 1 0 ] [  0       0    1 0] [0 0 1 0] [0  0  1 0]
+//     [0 0 0 1 ] [  0       0    0 1] [0 0 0 1] [0  0  0 1]
+//
+bool TransformationMatrix::Decompose2D(Decomposed2dType& decomp) const {
+  if (!Is2dTransform()) {
+    LOG(ERROR) << "2-D decomposition cannot be performed on a 3-D transform.";
+    return false;
+  }
+
+  double m11 = matrix_[0][0];
+  double m21 = matrix_[1][0];
+  double m12 = matrix_[0][1];
+  double m22 = matrix_[1][1];
+
+  double determinant = m11 * m22 - m12 * m21;
+  // Test for matrix being singular.
+  if (determinant == 0) {
+    return false;
+  }
+
+  // Translation transform.
+  // [m11 m21 0 m41]    [1 0 0 Tx] [m11 m21 0 0]
+  // [m12 m22 0 m42]  = [0 1 0 Ty] [m12 m22 0 0]
+  // [ 0   0  1  0 ]    [0 0 1 0 ] [ 0   0  1 0]
+  // [ 0   0  0  1 ]    [0 0 0 1 ] [ 0   0  0 1]
+  decomp.translate_x = matrix_[3][0];
+  decomp.translate_y = matrix_[3][1];
+
+  // For the remainder of the decomposition process, we can focus on the upper
+  // 2x2 submatrix
+  // [m11 m21] = [cos(R) -sin(R)] [1 K] [Sx 0 ]
+  // [m12 m22]   [sin(R)  cos(R)] [0 1] [0  Sy]
+  //           = [Sx*cos(R) Sy*(K*cos(R) - sin(R))]
+  //             [Sx*sin(R) Sy*(K*sin(R) + cos(R))]
+
+  // Determine sign of the x and y scale.
+  decomp.scale_x = 1;
+  decomp.scale_y = 1;
+  if (determinant < 0) {
+    // If the determinant is negative, we need to flip either the x or y scale.
+    // Flipping both is equivalent to rotating by 180 degrees.
+    // Flip the axis with the minimum unit vector dot product.
+    if (m11 < m22) {
+      decomp.scale_x = -decomp.scale_x;
+    } else {
+      decomp.scale_y = -decomp.scale_y;
+    }
+  }
+
+  // X Scale.
+  // m11^2 + m12^2 = Sx^2*(cos^2(R) + sin^2(R)) = Sx^2.
+  // Sx = +/-sqrt(m11^2 + m22^2)
+  decomp.scale_x *= sqrt(m11 * m11 + m12 * m12);
+  m11 /= decomp.scale_x;
+  m12 /= decomp.scale_x;
+
+  // Post normalization, the submatrix is now of the form:
+  // [m11 m21] = [cos(R)  Sy*(K*cos(R) - sin(R))]
+  // [m12 m22]   [sin(R)  Sy*(K*sin(R) + cos(R))]
+
+  // XY Shear.
+  // m11 * m21 + m12 * m22 = Sy*K*cos^2(R) - Sy*sin(R)*cos(R) +
+  //                         Sy*K*sin^2(R) + Sy*cos(R)*sin(R)
+  //                       = Sy*K
+  double scaledShear = m11 * m21 + m12 * m22;
+  m21 -= m11 * scaledShear;
+  m22 -= m12 * scaledShear;
+
+  // Post normalization, the submatrix is now of the form:
+  // [m11 m21] = [cos(R)  -Sy*sin(R)]
+  // [m12 m22]   [sin(R)   Sy*cos(R)]
+
+  // Y Scale.
+  // Similar process to determining x-scale.
+  decomp.scale_y *= sqrt(m21 * m21 + m22 * m22);
+  m21 /= decomp.scale_y;
+  m22 /= decomp.scale_y;
+  decomp.skew_xy = scaledShear / decomp.scale_y;
+
+  // Rotation transform.
+  decomp.angle = atan2(m12, m11);
   return true;
 }
 
@@ -1816,6 +1965,32 @@ void TransformationMatrix::Recompose(const DecomposedType& decomp) {
   Scale3d(decomp.scale_x, decomp.scale_y, decomp.scale_z);
 }
 
+void TransformationMatrix::Recompose2D(const Decomposed2dType& decomp) {
+  MakeIdentity();
+
+  // Translate transform.
+  SetM41(decomp.translate_x);
+  SetM42(decomp.translate_y);
+
+  // Rotate transform.
+  double cosAngle = cos(decomp.angle);
+  double sinAngle = sin(decomp.angle);
+  SetM11(cosAngle);
+  SetM21(-sinAngle);
+  SetM12(sinAngle);
+  SetM22(cosAngle);
+
+  // skew transform.
+  if (decomp.skew_xy) {
+    TransformationMatrix skewTransform;
+    skewTransform.SetM21(decomp.skew_xy);
+    Multiply(skewTransform);
+  }
+
+  // Scale transform.
+  Scale3d(decomp.scale_x, decomp.scale_y, 1);
+}
+
 bool TransformationMatrix::IsIntegerTranslation() const {
   if (!IsIdentityOrTranslation())
     return false;
@@ -1855,7 +2030,9 @@ bool TransformationMatrix::Preserves2dAxisAlignment() const {
   if (has_x_or_y_perspective)
     return false;
 
-  constexpr double kEpsilon = std::numeric_limits<double>::epsilon();
+  // Use float epsilon here, not double, to round very small rotations back
+  // to zero.
+  constexpr double kEpsilon = std::numeric_limits<float>::epsilon();
 
   int num_non_zero_in_row_1 = 0;
   int num_non_zero_in_row_2 = 0;
@@ -1882,11 +2059,6 @@ bool TransformationMatrix::Preserves2dAxisAlignment() const {
          num_non_zero_in_col_1 <= 1 && num_non_zero_in_col_2 <= 1;
 }
 
-FloatSize TransformationMatrix::To2DTranslation() const {
-  DCHECK(IsIdentityOr2DTranslation());
-  return FloatSize(matrix_[3][0], matrix_[3][1]);
-}
-
 void TransformationMatrix::ToColumnMajorFloatArray(FloatMatrix4& result) const {
   result[0] = M11();
   result[1] = M12();
@@ -1909,28 +2081,19 @@ void TransformationMatrix::ToColumnMajorFloatArray(FloatMatrix4& result) const {
 SkMatrix44 TransformationMatrix::ToSkMatrix44(
     const TransformationMatrix& matrix) {
   SkMatrix44 ret(SkMatrix44::kUninitialized_Constructor);
-  ret.setDouble(0, 0, matrix.M11());
-  ret.setDouble(0, 1, matrix.M21());
-  ret.setDouble(0, 2, matrix.M31());
-  ret.setDouble(0, 3, matrix.M41());
-  ret.setDouble(1, 0, matrix.M12());
-  ret.setDouble(1, 1, matrix.M22());
-  ret.setDouble(1, 2, matrix.M32());
-  ret.setDouble(1, 3, matrix.M42());
-  ret.setDouble(2, 0, matrix.M13());
-  ret.setDouble(2, 1, matrix.M23());
-  ret.setDouble(2, 2, matrix.M33());
-  ret.setDouble(2, 3, matrix.M43());
-  ret.setDouble(3, 0, matrix.M14());
-  ret.setDouble(3, 1, matrix.M24());
-  ret.setDouble(3, 2, matrix.M34());
-  ret.setDouble(3, 3, matrix.M44());
+  ret.set4x4(matrix.M11(), matrix.M12(), matrix.M13(), matrix.M14(),
+             matrix.M21(), matrix.M22(), matrix.M23(), matrix.M24(),
+             matrix.M31(), matrix.M32(), matrix.M33(), matrix.M34(),
+             matrix.M41(), matrix.M42(), matrix.M43(), matrix.M44());
   return ret;
 }
 
 gfx::Transform TransformationMatrix::ToTransform(
     const TransformationMatrix& matrix) {
-  return gfx::Transform(TransformationMatrix::ToSkMatrix44(matrix));
+  return gfx::Transform(matrix.M11(), matrix.M21(), matrix.M31(), matrix.M41(),
+                        matrix.M12(), matrix.M22(), matrix.M32(), matrix.M42(),
+                        matrix.M13(), matrix.M23(), matrix.M33(), matrix.M43(),
+                        matrix.M14(), matrix.M24(), matrix.M34(), matrix.M44());
 }
 
 String TransformationMatrix::ToString(bool as_matrix) const {
@@ -1978,9 +2141,9 @@ static double RoundCloseToZero(double number) {
 }
 
 std::unique_ptr<JSONArray> TransformAsJSONArray(const TransformationMatrix& t) {
-  std::unique_ptr<JSONArray> array = JSONArray::Create();
+  auto array = std::make_unique<JSONArray>();
   {
-    std::unique_ptr<JSONArray> row = JSONArray::Create();
+    auto row = std::make_unique<JSONArray>();
     row->PushDouble(RoundCloseToZero(t.M11()));
     row->PushDouble(RoundCloseToZero(t.M12()));
     row->PushDouble(RoundCloseToZero(t.M13()));
@@ -1988,7 +2151,7 @@ std::unique_ptr<JSONArray> TransformAsJSONArray(const TransformationMatrix& t) {
     array->PushArray(std::move(row));
   }
   {
-    std::unique_ptr<JSONArray> row = JSONArray::Create();
+    auto row = std::make_unique<JSONArray>();
     row->PushDouble(RoundCloseToZero(t.M21()));
     row->PushDouble(RoundCloseToZero(t.M22()));
     row->PushDouble(RoundCloseToZero(t.M23()));
@@ -1996,7 +2159,7 @@ std::unique_ptr<JSONArray> TransformAsJSONArray(const TransformationMatrix& t) {
     array->PushArray(std::move(row));
   }
   {
-    std::unique_ptr<JSONArray> row = JSONArray::Create();
+    auto row = std::make_unique<JSONArray>();
     row->PushDouble(RoundCloseToZero(t.M31()));
     row->PushDouble(RoundCloseToZero(t.M32()));
     row->PushDouble(RoundCloseToZero(t.M33()));
@@ -2004,7 +2167,7 @@ std::unique_ptr<JSONArray> TransformAsJSONArray(const TransformationMatrix& t) {
     array->PushArray(std::move(row));
   }
   {
-    std::unique_ptr<JSONArray> row = JSONArray::Create();
+    auto row = std::make_unique<JSONArray>();
     row->PushDouble(RoundCloseToZero(t.M41()));
     row->PushDouble(RoundCloseToZero(t.M42()));
     row->PushDouble(RoundCloseToZero(t.M43()));

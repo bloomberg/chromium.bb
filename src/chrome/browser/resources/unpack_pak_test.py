@@ -15,6 +15,13 @@ class UnpackPakTest(unittest.TestCase):
     self.assertTrue(unpack_pak.ParseLine('  {"path.js", IDR_PATH, false}'))
     self.assertTrue(unpack_pak.ParseLine('  {"path.js", IDR_PATH, true}'))
 
+  def testUngzipString(self):
+    self.assertEqual(
+      unpack_pak.UngzipString(
+        '\x1f\x8b\x08\x00\x00\x00\x00\x00\x02\xff\xcbH\xcd\xc9\xc9W' +
+        '(\xcf/\xcaI\x01\x00\x85\x11J\r\x0b\x00\x00\x00'),
+      'hello world')
+
 
 if __name__ == '__main__':
   unittest.main()

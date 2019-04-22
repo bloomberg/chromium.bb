@@ -24,7 +24,6 @@
 #include "third_party/blink/renderer/core/workers/worklet_module_responses_map.h"
 #include "third_party/blink/renderer/core/workers/worklet_module_tree_client.h"
 #include "third_party/blink/renderer/core/workers/worklet_pending_tasks.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 
 namespace blink {
@@ -63,6 +62,9 @@ WorkletGlobalScope::WorkletGlobalScope(
     WorkerThread* worker_thread)
     : WorkerOrWorkletGlobalScope(
           isolate,
+          creation_params->global_scope_name,
+          creation_params->parent_devtools_token,
+          creation_params->v8_cache_options,
           creation_params->worker_clients,
           std::move(creation_params->web_worker_fetch_context),
           reporting_proxy),
@@ -91,11 +93,14 @@ WorkletGlobalScope::WorkletGlobalScope(
   // Step 5: "Let inheritedReferrerPolicy be outsideSettings's referrer policy."
   SetReferrerPolicy(creation_params->referrer_policy);
 
+  SetOutsideContentSecurityPolicyHeaders(
+      creation_params->outside_content_security_policy_headers);
+
   // https://drafts.css-houdini.org/worklets/#creating-a-workletglobalscope
   // Step 6: "Invoke the initialize a global object's CSP list algorithm given
   // workletGlobalScope."
   InitContentSecurityPolicyFromVector(
-      creation_params->content_security_policy_parsed_headers);
+      creation_params->outside_content_security_policy_headers);
   BindContentSecurityPolicyToExecutionContext();
 
   OriginTrialContext::AddTokens(this,
@@ -190,7 +195,7 @@ LocalFrame* WorkletGlobalScope::GetFrame() const {
 void WorkletGlobalScope::FetchAndInvokeScript(
     const KURL& module_url_record,
     network::mojom::FetchCredentialsMode credentials_mode,
-    FetchClientSettingsObjectSnapshot* outside_settings_object,
+    const FetchClientSettingsObjectSnapshot& outside_settings_object,
     scoped_refptr<base::SingleThreadTaskRunner> outside_settings_task_runner,
     WorkletPendingTasks* pending_tasks) {
   DCHECK(IsContextThread());
@@ -209,9 +214,10 @@ void WorkletGlobalScope::FetchAndInvokeScript(
       MakeGarbageCollected<WorkletModuleTreeClient>(
           modulator, std::move(outside_settings_task_runner), pending_tasks);
 
-  // TODO(nhiroki): Specify an appropriate destination defined in each worklet
-  // spec (e.g., "paint worklet", "audio worklet").
-  mojom::RequestContextType destination = mojom::RequestContextType::SCRIPT;
+  // TODO(nhiroki): Pass an appropriate destination defined in each worklet
+  // spec (e.g., "paint worklet", "audio worklet") (https://crbug.com/843980,
+  // https://crbug.com/843982)
+  auto destination = mojom::RequestContextType::SCRIPT;
   FetchModuleScript(module_url_record, outside_settings_object, destination,
                     credentials_mode,
                     ModuleScriptCustomFetchType::kWorkletAddModule, client);

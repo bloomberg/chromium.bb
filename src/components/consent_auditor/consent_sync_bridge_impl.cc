@@ -22,9 +22,20 @@
 #include "components/sync/model/mutable_data_batch.h"
 #include "components/sync/protocol/sync.pb.h"
 
-namespace syncer {
+namespace consent_auditor {
 
 using sync_pb::UserConsentSpecifics;
+using syncer::EntityChange;
+using syncer::EntityChangeList;
+using syncer::EntityData;
+using syncer::MetadataBatch;
+using syncer::MetadataChangeList;
+using syncer::ModelError;
+using syncer::ModelTypeChangeProcessor;
+using syncer::ModelTypeStore;
+using syncer::ModelTypeSyncBridge;
+using syncer::MutableDataBatch;
+using syncer::OnceModelTypeStoreFactory;
 using IdList = ModelTypeStore::IdList;
 using Record = ModelTypeStore::Record;
 using RecordList = ModelTypeStore::RecordList;
@@ -46,7 +57,7 @@ std::unique_ptr<EntityData> MoveToEntityData(
     std::unique_ptr<UserConsentSpecifics> specifics) {
   auto entity_data = std::make_unique<EntityData>();
   entity_data->non_unique_name =
-      base::Int64ToString(specifics->client_consent_time_usec());
+      base::NumberToString(specifics->client_consent_time_usec());
   entity_data->specifics.set_allocated_user_consent(specifics.release());
   return entity_data;
 }
@@ -59,8 +70,9 @@ ConsentSyncBridgeImpl::ConsentSyncBridgeImpl(
     : ModelTypeSyncBridge(std::move(change_processor)),
       weak_ptr_factory_(this) {
   std::move(store_factory)
-      .Run(USER_CONSENTS, base::BindOnce(&ConsentSyncBridgeImpl::OnStoreCreated,
-                                         weak_ptr_factory_.GetWeakPtr()));
+      .Run(syncer::USER_CONSENTS,
+           base::BindOnce(&ConsentSyncBridgeImpl::OnStoreCreated,
+                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 ConsentSyncBridgeImpl::~ConsentSyncBridgeImpl() {
@@ -88,9 +100,9 @@ base::Optional<ModelError> ConsentSyncBridgeImpl::ApplySyncChanges(
     std::unique_ptr<MetadataChangeList> metadata_change_list,
     EntityChangeList entity_changes) {
   std::unique_ptr<WriteBatch> batch = store_->CreateWriteBatch();
-  for (EntityChange& change : entity_changes) {
-    DCHECK_EQ(EntityChange::ACTION_DELETE, change.type());
-    batch->DeleteData(change.storage_key());
+  for (const std::unique_ptr<EntityChange>& change : entity_changes) {
+    DCHECK_EQ(EntityChange::ACTION_DELETE, change->type());
+    batch->DeleteData(change->storage_key());
   }
 
   batch->TakeMetadataChangesFrom(std::move(metadata_change_list));
@@ -123,8 +135,7 @@ std::string ConsentSyncBridgeImpl::GetStorageKey(
   return GetStorageKeyFromSpecifics(entity_data.specifics.user_consent());
 }
 
-ModelTypeSyncBridge::StopSyncResponse
-ConsentSyncBridgeImpl::ApplyStopSyncChanges(
+void ConsentSyncBridgeImpl::ApplyStopSyncChanges(
     std::unique_ptr<MetadataChangeList> delete_metadata_change_list) {
   // Sync can only be stopped after initialization.
   DCHECK(deferred_consents_while_initializing_.empty());
@@ -143,8 +154,6 @@ ConsentSyncBridgeImpl::ApplyStopSyncChanges(
                              base::BindOnce(&ConsentSyncBridgeImpl::OnCommit,
                                             weak_ptr_factory_.GetWeakPtr()));
   }
-
-  return StopSyncResponse::kModelStillReadyToSync;
 }
 
 void ConsentSyncBridgeImpl::ReadAllDataAndResubmit() {
@@ -311,4 +320,4 @@ void ConsentSyncBridgeImpl::OnReadAllData(
   std::move(callback).Run(std::move(batch));
 }
 
-}  // namespace syncer
+}  // namespace consent_auditor

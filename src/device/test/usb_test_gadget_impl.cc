@@ -9,13 +9,13 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
@@ -23,6 +23,7 @@
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -437,7 +438,7 @@ class DeviceAddListener : public UsbService::Observer {
       const uint16_t product_id = device->product_id();
       if (product_id_ == -1) {
         bool found = false;
-        for (size_t i = 0; i < arraysize(kConfigurations); ++i) {
+        for (size_t i = 0; i < base::size(kConfigurations); ++i) {
           if (product_id == kConfigurations[i].product_id) {
             found = true;
             break;
@@ -569,7 +570,7 @@ bool UsbTestGadgetImpl::Unclaim() {
 
 bool UsbTestGadgetImpl::SetType(Type type) {
   const struct UsbTestGadgetConfiguration* config = NULL;
-  for (size_t i = 0; i < arraysize(kConfigurations); ++i) {
+  for (size_t i = 0; i < base::size(kConfigurations); ++i) {
     if (kConfigurations[i].type == type) {
       config = &kConfigurations[i];
     }

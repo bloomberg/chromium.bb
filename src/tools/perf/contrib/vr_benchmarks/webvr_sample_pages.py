@@ -21,8 +21,10 @@ class WebVrSamplePage(VrSamplePage):
     action_runner.MeasureMemory(True)
     # We don't want to be in VR or on a page with a WebGL canvas at the end of
     # the test, as this generates unnecessary heat while the trace data is being
-    # processed, so navigate to a blank page.
-    action_runner.Navigate("about:blank")
+    # processed, so navigate to a blank page if we're on a platform that cares
+    # about the heat generation.
+    if self._shared_page_state.ShouldNavigateToBlankPageBeforeFinishing():
+      action_runner.Navigate("about:blank")
 
 
 class WebVrSamplePageSet(VrStorySet):
@@ -52,10 +54,9 @@ class WebVrSamplePageSet(VrStorySet):
     for url_parameters in cube_test_cases:
       # Standard set of pages with defaults
       self.AddStory(WebVrSamplePage(self, url_parameters, 'test-slow-render'))
-      # Set of pages with standardized render size and VSync alignment disabled
+      # Set of pages with standardized render size
       self.AddStory(WebVrSamplePage(self, url_parameters + ['standardSize=1'],
-          'test-slow-render',
-          extra_browser_args=['--disable-features=WebVrVsyncAlign']))
+          'test-slow-render'))
 
     # Test cases that use the 360 video page
     video_test_cases = [

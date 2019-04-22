@@ -21,20 +21,20 @@ cloud_devices::printer::DuplexType ToCloudDuplexType(
     printing::DuplexMode mode) {
   switch (mode) {
     case printing::SIMPLEX:
-      return cloud_devices::printer::NO_DUPLEX;
+      return cloud_devices::printer::DuplexType::NO_DUPLEX;
     case printing::LONG_EDGE:
-      return cloud_devices::printer::LONG_EDGE;
+      return cloud_devices::printer::DuplexType::LONG_EDGE;
     case printing::SHORT_EDGE:
-      return cloud_devices::printer::SHORT_EDGE;
+      return cloud_devices::printer::DuplexType::SHORT_EDGE;
     default:
       NOTREACHED();
   }
-  return cloud_devices::printer::NO_DUPLEX;
+  return cloud_devices::printer::DuplexType::NO_DUPLEX;
 }
 
 }  // namespace
 
-std::unique_ptr<base::DictionaryValue> PrinterSemanticCapsAndDefaultsToCdd(
+base::Value PrinterSemanticCapsAndDefaultsToCdd(
     const printing::PrinterSemanticCapsAndDefaults& semantic_info) {
   using namespace cloud_devices::printer;
   cloud_devices::CloudDeviceDescription description;
@@ -65,13 +65,14 @@ std::unique_ptr<base::DictionaryValue> PrinterSemanticCapsAndDefaultsToCdd(
 
   ColorCapability color;
   if (semantic_info.color_default || semantic_info.color_changeable) {
-    Color standard_color(STANDARD_COLOR);
-    standard_color.vendor_id = base::IntToString(semantic_info.color_model);
+    Color standard_color(ColorType::STANDARD_COLOR);
+    standard_color.vendor_id = base::NumberToString(semantic_info.color_model);
     color.AddDefaultOption(standard_color, semantic_info.color_default);
   }
   if (!semantic_info.color_default || semantic_info.color_changeable) {
-    Color standard_monochrome(STANDARD_MONOCHROME);
-    standard_monochrome.vendor_id = base::IntToString(semantic_info.bw_model);
+    Color standard_monochrome(ColorType::STANDARD_MONOCHROME);
+    standard_monochrome.vendor_id =
+        base::NumberToString(semantic_info.bw_model);
     color.AddDefaultOption(standard_monochrome, !semantic_info.color_default);
   }
   color.SaveTo(&description);
@@ -135,12 +136,18 @@ std::unique_ptr<base::DictionaryValue> PrinterSemanticCapsAndDefaultsToCdd(
   }
 
   OrientationCapability orientation;
-  orientation.AddDefaultOption(PORTRAIT, true);
-  orientation.AddOption(LANDSCAPE);
-  orientation.AddOption(AUTO_ORIENTATION);
+  orientation.AddDefaultOption(OrientationType::PORTRAIT, true);
+  orientation.AddOption(OrientationType::LANDSCAPE);
+  orientation.AddOption(OrientationType::AUTO_ORIENTATION);
   orientation.SaveTo(&description);
 
-  return base::WrapUnique(description.root().DeepCopy());
+#if defined(OS_CHROMEOS)
+  PinCapability pin;
+  pin.set_value(semantic_info.pin_supported);
+  pin.SaveTo(&description);
+#endif  // defined(OS_CHROMEOS)
+
+  return std::move(description).ToValue();
 }
 
 }  // namespace cloud_print

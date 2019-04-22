@@ -10,9 +10,9 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/hash/sha1.h"
 #include "base/i18n/case_conversion.h"
 #include "base/optional.h"
-#include "base/sha1.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -122,13 +122,13 @@ class ModuleListBuilder {
 ModuleInfo CreateModuleInfo(const base::FilePath& module_path,
                             uint32_t module_size,
                             uint32_t module_time_date_stamp) {
-  ModuleInfo result(std::piecewise_construct,
-                    std::forward_as_tuple(module_path, module_size,
-                                          module_time_date_stamp, 0),
-                    std::forward_as_tuple());
+  ModuleInfo result(
+      std::piecewise_construct,
+      std::forward_as_tuple(module_path, module_size, module_time_date_stamp),
+      std::forward_as_tuple());
 
-  result.second.inspection_result = std::make_unique<ModuleInspectionResult>();
-
+  result.second.inspection_result =
+      base::make_optional<ModuleInspectionResult>();
   result.second.inspection_result->basename = module_path.BaseName().value();
 
   return result;

@@ -4,6 +4,7 @@
 
 #include "content/browser/frame_host/keep_alive_handle_factory.h"
 
+#include "base/bind.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/task/post_task.h"

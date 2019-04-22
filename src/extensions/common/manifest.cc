@@ -17,6 +17,7 @@
 #include "extensions/common/features/feature_provider.h"
 #include "extensions/common/install_warning.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/manifest_handler_helpers.h"
 
 namespace extensions {
 
@@ -241,9 +242,30 @@ bool Manifest::GetDictionary(
   return CanAccessPath(path) && value_->GetDictionary(path, out_value);
 }
 
+bool Manifest::GetDictionary(const std::string& path,
+                             const base::Value** out_value) const {
+  return GetPathOfType(path, base::Value::Type::DICTIONARY, out_value);
+}
+
 bool Manifest::GetList(
     const std::string& path, const base::ListValue** out_value) const {
   return CanAccessPath(path) && value_->GetList(path, out_value);
+}
+
+bool Manifest::GetList(const std::string& path,
+                       const base::Value** out_value) const {
+  return GetPathOfType(path, base::Value::Type::LIST, out_value);
+}
+
+bool Manifest::GetPathOfType(const std::string& path,
+                             base::Value::Type type,
+                             const base::Value** out_value) const {
+  const std::vector<base::StringPiece> components =
+      manifest_handler_helpers::TokenizeDictionaryPath(path);
+  if (!CanAccessPath(components))
+    return false;
+  *out_value = value_->FindPathOfType(components, type);
+  return *out_value != nullptr;
 }
 
 std::unique_ptr<Manifest> Manifest::CreateDeepCopy() const {
@@ -266,9 +288,12 @@ int Manifest::GetManifestVersion() const {
 }
 
 bool Manifest::CanAccessPath(const std::string& path) const {
+  return CanAccessPath(manifest_handler_helpers::TokenizeDictionaryPath(path));
+}
+
+bool Manifest::CanAccessPath(base::span<const base::StringPiece> path) const {
   std::string key;
-  for (const base::StringPiece& component : base::SplitStringPiece(
-           path, ".", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
+  for (base::StringPiece component : path) {
     component.AppendToString(&key);
     if (!CanAccessKey(key))
       return false;

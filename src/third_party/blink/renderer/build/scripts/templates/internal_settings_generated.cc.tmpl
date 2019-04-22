@@ -11,9 +11,9 @@
 namespace blink {
 
 InternalSettingsGenerated::InternalSettingsGenerated(Page* page)
-    : m_page(page)
+    : page_(page)
     {% for setting in settings if setting.type|to_idl_type %}
-    , m_{{setting.name}}(page->GetSettings().Get{{setting.name.to_upper_camel_case()}}())
+    , {{setting.name}}_(page->GetSettings().Get{{setting.name.to_upper_camel_case()}}())
     {% endfor %}
 {
 }
@@ -22,18 +22,18 @@ InternalSettingsGenerated::~InternalSettingsGenerated() {}
 
 void InternalSettingsGenerated::resetToConsistentState() {
   {% for setting in settings if setting.type|to_idl_type %}
-  m_page->GetSettings().Set{{setting.name.to_upper_camel_case()}}(m_{{setting.name}});
+  page_->GetSettings().Set{{setting.name.to_upper_camel_case()}}({{setting.name}}_);
   {% endfor %}
 }
 {% for setting in settings if setting.type|to_idl_type %}
 
 void InternalSettingsGenerated::set{{setting.name.to_upper_camel_case()}}({{setting.type|to_passing_type}} {{setting.name}}) {
-  m_page->GetSettings().Set{{setting.name.to_upper_camel_case()}}({{setting.name}});
+  page_->GetSettings().Set{{setting.name.to_upper_camel_case()}}({{setting.name}});
 }
 {% endfor %}
 
 void InternalSettingsGenerated::Trace(Visitor* visitor) {
-  visitor->Trace(m_page);
+  visitor->Trace(page_);
   ScriptWrappable::Trace(visitor);
 }
 

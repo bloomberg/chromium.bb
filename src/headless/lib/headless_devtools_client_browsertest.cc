@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "base/base_paths.h"
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -178,7 +179,7 @@ class HeadlessDevToolsClientChangeWindowStateTest
  public:
   explicit HeadlessDevToolsClientChangeWindowStateTest(
       browser::WindowState state)
-      : state_(state){};
+      : state_(state) {}
 
   void RunDevTooledTest() override {
     SetWindowState(
@@ -213,7 +214,7 @@ class HeadlessDevToolsClientMinimizeWindowTest
  public:
   HeadlessDevToolsClientMinimizeWindowTest()
       : HeadlessDevToolsClientChangeWindowStateTest(
-            browser::WindowState::MINIMIZED){};
+            browser::WindowState::MINIMIZED) {}
 };
 
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(HeadlessDevToolsClientMinimizeWindowTest);
@@ -223,7 +224,7 @@ class HeadlessDevToolsClientMaximizeWindowTest
  public:
   HeadlessDevToolsClientMaximizeWindowTest()
       : HeadlessDevToolsClientChangeWindowStateTest(
-            browser::WindowState::MAXIMIZED){};
+            browser::WindowState::MAXIMIZED) {}
 };
 
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(HeadlessDevToolsClientMaximizeWindowTest);
@@ -233,7 +234,7 @@ class HeadlessDevToolsClientFullscreenWindowTest
  public:
   HeadlessDevToolsClientFullscreenWindowTest()
       : HeadlessDevToolsClientChangeWindowStateTest(
-            browser::WindowState::FULLSCREEN){};
+            browser::WindowState::FULLSCREEN) {}
 };
 
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(HeadlessDevToolsClientFullscreenWindowTest);

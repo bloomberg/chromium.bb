@@ -115,6 +115,7 @@ class CAPTURE_EXPORT VideoCaptureDeviceMFWin : public VideoCaptureDevice {
   void OnError(VideoCaptureError error,
                const base::Location& from_here,
                const char* message);
+  void SendOnStartedIfNotYetSent();
 
   VideoFacingMode facing_mode_;
   CreateMFPhotoCallbackCB create_mf_photo_callback_;
@@ -135,6 +136,7 @@ class CAPTURE_EXPORT VideoCaptureDeviceMFWin : public VideoCaptureDevice {
   CapabilityList photo_capabilities_;
   std::unique_ptr<CapabilityWin> selected_photo_capability_;
   bool is_started_;
+  bool has_sent_on_started_to_client_;
   base::queue<TakePhotoCallback> video_stream_take_photo_callbacks_;
 
   SEQUENCE_CHECKER(sequence_checker_);

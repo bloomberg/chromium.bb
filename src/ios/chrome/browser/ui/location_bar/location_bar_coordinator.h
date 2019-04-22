@@ -20,9 +20,8 @@ class WebStateList;
 @protocol BrowserCommands;
 @protocol EditViewAnimatee;
 @protocol LocationBarAnimatee;
-@protocol OmniboxPopupPositioner;
+@protocol OmniboxPopupPresenterDelegate;
 @protocol ToolbarCoordinatorDelegate;
-@protocol UrlLoader;
 
 // Location bar coordinator.
 @interface LocationBarCoordinator
@@ -30,21 +29,21 @@ class WebStateList;
 
 // Command dispatcher.
 @property(nonatomic, strong) CommandDispatcher* commandDispatcher;
-// View containing the omnibox.
-@property(nonatomic, strong, readonly) UIView* view;
+// View controller containing the omnibox.
+@property(nonatomic, strong, readonly)
+    UIViewController* locationBarViewController;
 // Weak reference to ChromeBrowserState;
 @property(nonatomic, assign) ios::ChromeBrowserState* browserState;
 // The dispatcher for this view controller.
 @property(nonatomic, weak) CommandDispatcher* dispatcher;
-// URL loader for the location bar.
-@property(nonatomic, weak) id<UrlLoader> URLLoader;
 // Delegate for this coordinator.
 // TODO(crbug.com/799446): Change this.
 @property(nonatomic, weak) id<ToolbarCoordinatorDelegate> delegate;
 // The web state list this ToolbarCoordinator is handling.
 @property(nonatomic, assign) WebStateList* webStateList;
 
-@property(nonatomic, weak) id<OmniboxPopupPositioner> popupPositioner;
+@property(nonatomic, weak) id<OmniboxPopupPresenterDelegate>
+    popupPresenterDelegate;
 
 // Start this coordinator.
 - (void)start;

@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -57,6 +57,8 @@ class WatchTimeRecorderTest : public testing::Test {
         true /* is_top_frame */,
         base::BindRepeating(&WatchTimeRecorderTest::GetSourceId,
                             base::Unretained(this)),
+        base::BindRepeating(
+            []() { return learning::FeatureValue(0); }) /* origin callback */,
         VideoDecodePerfHistory::SaveCallback(), mojo::MakeRequest(&provider_));
   }
 

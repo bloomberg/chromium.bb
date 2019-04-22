@@ -27,7 +27,7 @@ class LayoutBoxTest : public testing::WithParamInterface<bool>,
   }
 };
 
-INSTANTIATE_TEST_CASE_P(All, LayoutBoxTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, LayoutBoxTest, testing::Bool());
 
 TEST_P(LayoutBoxTest, BackgroundObscuredInRect) {
   SetBodyInnerHTML(R"HTML(
@@ -39,9 +39,8 @@ TEST_P(LayoutBoxTest, BackgroundObscuredInRect) {
     <div class='column'> <div> <div id='target' class='white-background'>
     <div class='black-background'></div> </div> </div> </div>
   )HTML");
-  LayoutObject* layout_object = GetLayoutObjectByElementId("target");
-  ASSERT_TRUE(layout_object);
-  ASSERT_TRUE(layout_object->BackgroundIsKnownToBeObscured());
+  const auto* target = GetLayoutBoxByElementId("target");
+  EXPECT_TRUE(target->BackgroundIsKnownToBeObscured());
 }
 
 TEST_P(LayoutBoxTest, BackgroundNotObscuredWithCssClippedChild) {
@@ -66,10 +65,10 @@ TEST_P(LayoutBoxTest, BackgroundNotObscuredWithCssClippedChild) {
       <div id="child"></div>
     </div>
   )HTML");
-  auto* child = GetLayoutObjectByElementId("child");
+  auto* child = GetLayoutBoxByElementId("child");
   EXPECT_FALSE(child->BackgroundIsKnownToBeObscured());
 
-  auto* parent = GetLayoutObjectByElementId("parent");
+  auto* parent = GetLayoutBoxByElementId("parent");
   EXPECT_FALSE(parent->BackgroundIsKnownToBeObscured());
 }
 
@@ -102,13 +101,13 @@ TEST_P(LayoutBoxTest, BackgroundNotObscuredWithCssClippedGrandChild) {
       </div>
     </div>
   )HTML");
-  auto* grandchild = GetLayoutObjectByElementId("grandchild");
+  auto* grandchild = GetLayoutBoxByElementId("grandchild");
   EXPECT_FALSE(grandchild->BackgroundIsKnownToBeObscured());
 
-  auto* child = GetLayoutObjectByElementId("child");
+  auto* child = GetLayoutBoxByElementId("child");
   EXPECT_FALSE(child->BackgroundIsKnownToBeObscured());
 
-  auto* parent = GetLayoutObjectByElementId("parent");
+  auto* parent = GetLayoutBoxByElementId("parent");
   EXPECT_FALSE(parent->BackgroundIsKnownToBeObscured());
 }
 
@@ -327,7 +326,7 @@ TEST_P(LayoutBoxTest, ControlClip) {
 }
 
 TEST_P(LayoutBoxTest, LocalVisualRectWithMask) {
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
   SetBodyInnerHTML(R"HTML(
@@ -344,7 +343,7 @@ TEST_P(LayoutBoxTest, LocalVisualRectWithMask) {
 }
 
 TEST_P(LayoutBoxTest, LocalVisualRectWithMaskAndOverflowClip) {
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
   SetBodyInnerHTML(R"HTML(
@@ -362,7 +361,7 @@ TEST_P(LayoutBoxTest, LocalVisualRectWithMaskAndOverflowClip) {
 }
 
 TEST_P(LayoutBoxTest, LocalVisualRectWithMaskWithOutset) {
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
   SetBodyInnerHTML(R"HTML(
@@ -380,7 +379,7 @@ TEST_P(LayoutBoxTest, LocalVisualRectWithMaskWithOutset) {
 }
 
 TEST_P(LayoutBoxTest, LocalVisualRectWithMaskWithOutsetAndOverflowClip) {
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
   SetBodyInnerHTML(R"HTML(
@@ -1353,6 +1352,17 @@ TEST_P(LayoutBoxTest, GeometriesWithScrollbarsScrollable) {
   EXPECT_EQ(LayoutRect(45, 20, 445, 324), rtl_vrl->NoOverflowRect());
   EXPECT_EQ(LayoutRect(50, 20, 445, 324), rtl_vrl->PhysicalPaddingBoxRect());
   EXPECT_EQ(LayoutRect(90, 30, 385, 284), rtl_vrl->PhysicalContentBoxRect());
+}
+
+TEST_P(LayoutBoxTest, HasNonCollapsedBorderDecoration) {
+  SetBodyInnerHTML("<div id='div'></div>");
+  auto* div = GetLayoutBoxByElementId("div");
+  EXPECT_FALSE(div->HasNonCollapsedBorderDecoration());
+
+  ToElement(div->GetNode())
+      ->setAttribute(html_names::kStyleAttr, "border: 1px solid black");
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  EXPECT_TRUE(div->HasNonCollapsedBorderDecoration());
 }
 
 }  // namespace blink

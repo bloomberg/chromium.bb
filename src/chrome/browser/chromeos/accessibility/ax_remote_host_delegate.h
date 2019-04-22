@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "mojo/public/cpp/bindings/interface_ptr.h"
-#include "ui/accessibility/ax_host_delegate.h"
+#include "ui/accessibility/ax_action_handler.h"
 #include "ui/accessibility/ax_tree_update.h"
 #include "ui/accessibility/mojom/ax_host.mojom.h"
 
@@ -22,9 +22,10 @@ class AXHostService;
 // Forwards accessibility events from a remote process that uses aura and views
 // (e.g. the Chrome OS keyboard shortcut_viewer) to accessibility extensions.
 // Renderers, PDF, etc. use a different path. Created when the app connects over
-// mojo. Implements AXHostDelegate to route actions over mojo to the remote
+// mojo. Implements AXActionHandler to route actions over mojo to the remote
 // process.
-class AXRemoteHostDelegate : public ui::AXHostDelegate {
+// TODO(jamescook): Rename to AXRemoteActionHandler.
+class AXRemoteHostDelegate : public ui::AXActionHandler {
  public:
   // |host_service| owns this object. |remote_host_ptr| is the mojo interface
   // for the remote app.
@@ -43,7 +44,7 @@ class AXRemoteHostDelegate : public ui::AXHostDelegate {
                                 const std::vector<ui::AXTreeUpdate>& updates,
                                 const ui::AXEvent& event);
 
-  // ui::AXHostDelegate:
+  // ui::AXActionHandler:
   void PerformAction(const ui::AXActionData& data) override;
 
   void FlushForTesting();

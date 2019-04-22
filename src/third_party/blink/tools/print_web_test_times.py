@@ -31,6 +31,6 @@
 import sys
 
 from blinkpy.common import host
-from blinkpy.web_tests import print_layout_test_times
+from blinkpy.web_tests import print_web_test_times
 
-print_layout_test_times.main(host.Host(), sys.argv[1:])
+print_web_test_times.main(host.Host(), sys.argv[1:])

@@ -4,6 +4,7 @@
 
 #include "content/browser/devtools/devtools_target_registry.h"
 
+#include "base/bind.h"
 #include "base/task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "content/browser/frame_host/frame_tree_node.h"

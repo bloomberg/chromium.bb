@@ -18,7 +18,7 @@
 #include "cc/layers/surface_layer.h"
 #include "cc/layers/video_frame_provider.h"
 #include "content/common/content_export.h"
-#include "media/base/media_log.h"
+#include "media/base/media_util.h"
 #include "media/blink/webmediaplayer_params.h"
 #include "third_party/blink/public/platform/web_video_frame_submitter.h"
 
@@ -89,12 +89,13 @@ class CONTENT_EXPORT WebMediaPlayerMSCompositor
       const viz::SurfaceId& id,
       base::TimeTicks local_surface_id_allocation_time,
       media::VideoRotation rotation,
-      bool force_submit,
-      bool is_opaque,
-      blink::WebFrameSinkDestroyedCallback frame_sink_destroyed_callback);
+      bool force_submit);
 
   // Notifies the |submitter_| that the frames must be submitted.
   void SetForceSubmit(bool force_submit);
+
+  // Notifies the |submitter_| that the page is no longer visible.
+  void SetIsPageVisible(bool is_visible);
 
   // VideoFrameProvider implementation.
   void SetVideoFrameProviderClient(
@@ -132,7 +133,7 @@ class CONTENT_EXPORT WebMediaPlayerMSCompositor
   void InitializeSubmitter();
 
   // Signals the VideoFrameSubmitter to stop submitting frames.
-  void UpdateSubmissionState(bool);
+  void SetIsSurfaceVisible(bool);
 
   bool MapTimestampsToRenderTimeTicks(
       const std::vector<base::TimeDelta>& timestamps,
@@ -168,7 +169,7 @@ class CONTENT_EXPORT WebMediaPlayerMSCompositor
 
   // Used for DCHECKs to ensure method calls executed in the correct thread,
   // which is renderer main thread in this class.
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
 
   const scoped_refptr<base::SingleThreadTaskRunner>
       video_frame_compositor_task_runner_;
@@ -180,7 +181,7 @@ class CONTENT_EXPORT WebMediaPlayerMSCompositor
   // TODO(qiangchen, emircan): It might be nice to use a real MediaLog here from
   // the WebMediaPlayerMS instance, but it owns the MediaLog and this class has
   // non-deterministic destruction paths (either compositor or IO).
-  media::MediaLog media_log_;
+  media::NullMediaLog media_log_;
 
   size_t serial_;
 

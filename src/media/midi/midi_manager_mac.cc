@@ -19,7 +19,7 @@
 #include "media/midi/midi_service.h"
 #include "media/midi/task_service.h"
 
-using base::IntToString;
+using base::NumberToString;
 using base::SysCFStringRefToUTF8;
 using midi::mojom::PortState;
 using midi::mojom::Result;
@@ -72,7 +72,7 @@ mojom::PortInfo GetPortInfoFromEndpoint(MIDIEndpointRef endpoint) {
   result = MIDIObjectGetIntegerProperty(
       endpoint, kMIDIPropertyDriverVersion, &version_number);
   if (result == noErr) {
-    version = IntToString(version_number);
+    version = NumberToString(version_number);
   } else {
     // kMIDIPropertyDriverVersion is not supported in IAC driver providing
     // endpoints, and the result will be kMIDIUnknownProperty (-10835).
@@ -85,7 +85,7 @@ mojom::PortInfo GetPortInfoFromEndpoint(MIDIEndpointRef endpoint) {
   result = MIDIObjectGetIntegerProperty(
       endpoint, kMIDIPropertyUniqueID, &id_number);
   if (result == noErr) {
-    id = IntToString(id_number);
+    id = NumberToString(id_number);
   } else {
     // On connecting some devices, e.g., nano KONTROL2, unknown endpoints
     // appear and disappear quickly and they fail on queries.
@@ -118,9 +118,10 @@ MidiManager* MidiManager::Create(MidiService* service) {
 MidiManagerMac::MidiManagerMac(MidiService* service) : MidiManager(service) {}
 
 MidiManagerMac::~MidiManagerMac() {
-  bool result = service()->task_service()->UnbindInstance();
-  CHECK(result);
+  if (!service()->task_service()->UnbindInstance())
+    return;
 
+  // Finalization steps should be implemented after the UnbindInstance() call.
   // Do not need to dispose |coremidi_input_| and |coremidi_output_| explicitly.
   // CoreMIDI automatically disposes them on the client disposal.
   base::AutoLock lock(midi_client_lock_);
@@ -129,10 +130,9 @@ MidiManagerMac::~MidiManagerMac() {
 }
 
 void MidiManagerMac::StartInitialization() {
-  if (!service()->task_service()->BindInstance()) {
-    NOTREACHED();
+  if (!service()->task_service()->BindInstance())
     return CompleteInitialization(Result::INITIALIZATION_ERROR);
-  }
+
   service()->task_service()->PostBoundTask(
       kClientTaskRunner, base::BindOnce(&MidiManagerMac::InitializeCoreMIDI,
                                         base::Unretained(this)));

@@ -4,7 +4,8 @@
 
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/ash_view_ids.h"
-#include "ash/public/interfaces/system_tray_test_api.mojom.h"
+#include "ash/public/interfaces/system_tray_test_api.test-mojom-test-utils.h"
+#include "ash/public/interfaces/system_tray_test_api.test-mojom.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
@@ -20,7 +21,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
@@ -651,12 +652,11 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityLoginTest,
   EXPECT_TRUE(IsMenuButtonVisible());
 }
 
-INSTANTIATE_TEST_CASE_P(TrayAccessibilityTestInstance,
-                        TrayAccessibilityTest,
-                        testing::Values(PREF_SERVICE,
-                                        POLICY));
-INSTANTIATE_TEST_CASE_P(TrayAccessibilityLoginTestInstance,
-                        TrayAccessibilityLoginTest,
-                        testing::Values(PREF_SERVICE, POLICY));
+INSTANTIATE_TEST_SUITE_P(TrayAccessibilityTestInstance,
+                         TrayAccessibilityTest,
+                         testing::Values(PREF_SERVICE, POLICY));
+INSTANTIATE_TEST_SUITE_P(TrayAccessibilityLoginTestInstance,
+                         TrayAccessibilityLoginTest,
+                         testing::Values(PREF_SERVICE, POLICY));
 
 }  // namespace chromeos

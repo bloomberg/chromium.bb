@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -238,8 +239,8 @@ void GlobalConfirmInfoBar::MaybeAddInfoBar(content::WebContents* web_contents) {
       is_closing_ = true;
 
       base::SequencedTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::Bind(&GlobalConfirmInfoBar::Close, weak_factory_.GetWeakPtr()));
+          FROM_HERE, base::BindOnce(&GlobalConfirmInfoBar::Close,
+                                    weak_factory_.GetWeakPtr()));
     }
     return;
   }

@@ -5,6 +5,7 @@
 assert(is_fuchsia)
 
 import("//build/config/fuchsia/fidl_library.gni")
+import("//build/toolchain/toolchain.gni")
 
 # Templates for Fuchsia SDK packages.
 
@@ -48,11 +49,31 @@ template("fuchsia_sdk_fidl_pkg") {
 #                  is not specified explicitly.
 #   sources      - List of sources relative to sdk/pkg/${name}.
 #   deps         - List of dependencies.
-#   libs         - List of precompiled libraries.
+#   shared_libs  - List of precompiled shared libraries.
+#   static_libs  - List of precompiled static libraries.
 template("fuchsia_sdk_pkg") {
   config("${target_name}_config") {
     forward_variables_from(invoker, [ "include_dirs" ])
     visibility = [ ":${invoker.target_name}" ]
+  }
+
+  if (defined(invoker.shared_libs)) {
+    if (defined(invoker.sdk_dist_dir)) {
+      sdk_dist_dir = invoker.sdk_dist_dir
+    } else {
+      sdk_dist_dir = "arch/${target_cpu}/dist"
+    }
+
+    copy("${target_name}_dist_libs") {
+      sources = []
+      foreach(lib, invoker.shared_libs) {
+        sources += [ "${sdk_dist_dir}/lib${lib}.so" ]
+      }
+
+      outputs = [
+        "${root_out_dir}${shlib_subdir}/{{source_file_part}}",
+      ]
+    }
   }
 
   static_library(target_name) {
@@ -60,7 +81,6 @@ template("fuchsia_sdk_pkg") {
                            [
                              "data",
                              "deps",
-                             "libs",
                              "public_deps",
                              "sources",
                              "testonly",
@@ -69,8 +89,14 @@ template("fuchsia_sdk_pkg") {
 
     public_configs = [ ":${invoker.target_name}_config" ]
 
-    if (defined(libs)) {
+    if (defined(invoker.shared_libs)) {
       configs += [ "//third_party/fuchsia-sdk:sdk_lib_dirs_config" ]
+      libs = invoker.shared_libs
+      data_deps = [
+        ":${target_name}_dist_libs",
+      ]
+    } else if (defined(invoker.static_libs)) {
+      libs = invoker.static_libs
     }
   }
 }

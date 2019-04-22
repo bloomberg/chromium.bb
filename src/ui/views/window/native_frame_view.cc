@@ -20,13 +20,9 @@ namespace views {
 // static
 const char NativeFrameView::kViewClassName[] = "NativeFrameView";
 
-NativeFrameView::NativeFrameView(Widget* frame)
-    : NonClientFrameView(),
-      frame_(frame) {
-}
+NativeFrameView::NativeFrameView(Widget* frame) : frame_(frame) {}
 
-NativeFrameView::~NativeFrameView() {
-}
+NativeFrameView::~NativeFrameView() = default;
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeFrameView, NonClientFrameView overrides:
@@ -55,7 +51,7 @@ int NativeFrameView::NonClientHitTest(const gfx::Point& point) {
 }
 
 void NativeFrameView::GetWindowMask(const gfx::Size& size,
-                                    gfx::Path* window_mask) {
+                                    SkPath* window_mask) {
   // Nothing to do, we use the default window mask.
 }
 

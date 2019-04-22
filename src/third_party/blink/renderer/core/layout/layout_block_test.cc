@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "build/build_config.h"
+
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
-
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
@@ -19,8 +20,10 @@ class LayoutBlockTest : public RenderingTest {};
 
 TEST_F(LayoutBlockTest, LayoutNameCalledWithNullStyle) {
   scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
-  LayoutObject* obj = LayoutBlockFlow::CreateAnonymous(&GetDocument(), style);
-  obj->SetStyleInternal(nullptr);
+  LayoutObject* obj = LayoutBlockFlow::CreateAnonymous(&GetDocument(), style,
+                                                       LegacyLayout::kAuto);
+  obj->SetModifiedStyleOutsideStyleRecalc(nullptr,
+                                          LayoutObject::ApplyStyleChanges::kNo);
   EXPECT_FALSE(obj->Style());
   EXPECT_THAT(obj->DecoratedName().Ascii().data(),
               MatchesRegex("LayoutN?G?BlockFlow \\(anonymous\\)"));
@@ -69,6 +72,59 @@ TEST_F(LayoutBlockTest, OverflowWithTransformAndPerspective) {
   LayoutBox* scroller =
       ToLayoutBox(GetDocument().getElementById("target")->GetLayoutObject());
   EXPECT_EQ(119.5, scroller->LayoutOverflowRect().Width().ToFloat());
+}
+
+TEST_F(LayoutBlockTest, NestedInlineVisualOverflow) {
+  // Only exercises legacy code.
+  if (RuntimeEnabledFeatures::LayoutNGEnabled())
+    return;
+  SetBodyInnerHTML(R"HTML(
+    <label style="font-size: 0px">
+      <input type="radio" style="margin-left: -15px">
+    </label>
+  )HTML");
+  auto* body = To<LayoutBlockFlow>(GetDocument().body()->GetLayoutObject());
+  RootInlineBox* box = body->FirstRootBox();
+#if defined(OS_MACOSX)
+  EXPECT_EQ(LayoutRect(-17, 0, 16, 19),
+            box->VisualOverflowRect(box->LineTop(), box->LineBottom()));
+#elif defined(OS_ANDROID)
+  EXPECT_EQ(LayoutRect(-15, 3, 19, 16),
+            box->VisualOverflowRect(box->LineTop(), box->LineBottom()));
+#else
+  EXPECT_EQ(LayoutRect(-15, 3, 16, 13),
+            box->VisualOverflowRect(box->LineTop(), box->LineBottom()));
+#endif
+}
+
+TEST_F(LayoutBlockTest, ContainmentStyleChange) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      * { display: block }
+    </style>
+    <div id=target style="contain:strict">
+      <div>
+        <div>
+          <div id=contained style="position: fixed"></div>
+          <div></div>
+        <div>
+      </div>
+    </div>
+  )HTML");
+
+  Element* target_element = GetDocument().getElementById("target");
+  LayoutBlockFlow* target =
+      ToLayoutBlockFlow(target_element->GetLayoutObject());
+  LayoutBox* contained = ToLayoutBox(GetLayoutObjectByElementId("contained"));
+  EXPECT_TRUE(target->PositionedObjects()->Contains(contained));
+
+  // Remove layout containment. This should cause |contained| to now be
+  // in the positioned objects set for the LayoutView, not |target|.
+  target_element->setAttribute(html_names::kStyleAttr, "contain:style");
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_FALSE(target->PositionedObjects());
+  EXPECT_TRUE(
+      GetDocument().GetLayoutView()->PositionedObjects()->Contains(contained));
 }
 
 }  // namespace blink

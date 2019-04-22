@@ -135,7 +135,7 @@ class SetCertificateResultPromise
   }
 
   void CompleteWithError(WebContentDecryptionModuleException exception_code,
-                         unsigned long system_code,
+                         uint32_t system_code,
                          const WebString& error_message) override {
     if (!IsValidToFulfillPromise())
       return;
@@ -199,14 +199,6 @@ class GetStatusForPolicyResultPromise
   // the promise is pending.
   Member<MediaKeys> media_keys_;
 };
-
-MediaKeys* MediaKeys::Create(
-    ExecutionContext* context,
-    const WebVector<WebEncryptedMediaSessionType>& supported_session_types,
-    std::unique_ptr<WebContentDecryptionModule> cdm) {
-  return MakeGarbageCollected<MediaKeys>(context, supported_session_types,
-                                         std::move(cdm));
-}
 
 MediaKeys::MediaKeys(
     ExecutionContext* context,
@@ -273,7 +265,8 @@ MediaKeySession* MediaKeys::createSession(ScriptState* script_state,
   //    follows:
   //    (Initialization is performed in the constructor.)
   // 4. Return session.
-  return MediaKeySession::Create(script_state, this, session_type);
+  return MakeGarbageCollected<MediaKeySession>(script_state, this,
+                                               session_type);
 }
 
 ScriptPromise MediaKeys::setServerCertificate(

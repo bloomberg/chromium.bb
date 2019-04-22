@@ -49,8 +49,8 @@ void FakeSignalStrategy::ConnectTo(FakeSignalStrategy* peer) {
     peer->SetPeerCallback(peer_callback);
   } else {
     peer->main_thread_->PostTask(
-        FROM_HERE, base::Bind(&FakeSignalStrategy::SetPeerCallback,
-                              base::Unretained(peer), peer_callback));
+        FROM_HERE, base::BindOnce(&FakeSignalStrategy::SetPeerCallback,
+                                  base::Unretained(peer), peer_callback));
   }
 }
 
@@ -101,7 +101,7 @@ void FakeSignalStrategy::RemoveListener(Listener* listener) {
   listeners_.RemoveObserver(listener);
 }
 
-bool FakeSignalStrategy::SendStanza(std::unique_ptr<buzz::XmlElement> stanza) {
+bool FakeSignalStrategy::SendStanza(std::unique_ptr<jingle_xmpp::XmlElement> stanza) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   address_.SetInMessage(stanza.get(), SignalingAddress::FROM);
@@ -113,7 +113,7 @@ bool FakeSignalStrategy::SendStanza(std::unique_ptr<buzz::XmlElement> stanza) {
     peer_callback_.Run(std::move(stanza));
   } else {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(peer_callback_, base::Passed(&stanza)),
+        FROM_HERE, base::BindOnce(peer_callback_, std::move(stanza)),
         send_delay_);
   }
   return true;
@@ -121,21 +121,21 @@ bool FakeSignalStrategy::SendStanza(std::unique_ptr<buzz::XmlElement> stanza) {
 
 std::string FakeSignalStrategy::GetNextId() {
   ++last_id_;
-  return base::IntToString(last_id_);
+  return base::NumberToString(last_id_);
 }
 
 // static
 void FakeSignalStrategy::DeliverMessageOnThread(
     scoped_refptr<base::SingleThreadTaskRunner> thread,
     base::WeakPtr<FakeSignalStrategy> target,
-    std::unique_ptr<buzz::XmlElement> stanza) {
-  thread->PostTask(FROM_HERE,
-                   base::Bind(&FakeSignalStrategy::OnIncomingMessage,
-                              target, base::Passed(&stanza)));
+    std::unique_ptr<jingle_xmpp::XmlElement> stanza) {
+  thread->PostTask(
+      FROM_HERE, base::BindOnce(&FakeSignalStrategy::OnIncomingMessage, target,
+                                std::move(stanza)));
 }
 
 void FakeSignalStrategy::OnIncomingMessage(
-    std::unique_ptr<buzz::XmlElement> stanza) {
+    std::unique_ptr<jingle_xmpp::XmlElement> stanza) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!simulate_reorder_) {
@@ -155,10 +155,10 @@ void FakeSignalStrategy::OnIncomingMessage(
 }
 
 void FakeSignalStrategy::NotifyListeners(
-    std::unique_ptr<buzz::XmlElement> stanza) {
+    std::unique_ptr<jingle_xmpp::XmlElement> stanza) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  buzz::XmlElement* stanza_ptr = stanza.get();
+  jingle_xmpp::XmlElement* stanza_ptr = stanza.get();
   received_messages_.push_back(std::move(stanza));
 
   std::string to_error;

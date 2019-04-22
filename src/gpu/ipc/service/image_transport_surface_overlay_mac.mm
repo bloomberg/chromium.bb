@@ -7,6 +7,7 @@
 #include <sstream>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -89,17 +90,17 @@ void ImageTransportSurfaceOverlayMac::ApplyBackpressure() {
 }
 
 void ImageTransportSurfaceOverlayMac::BufferPresented(
-    const PresentationCallback& callback,
+    PresentationCallback callback,
     const gfx::PresentationFeedback& feedback) {
   DCHECK(!callback.is_null());
-  callback.Run(feedback);
+  std::move(callback).Run(feedback);
   if (delegate_)
     delegate_->BufferPresented(feedback);
 }
 
 gfx::SwapResult ImageTransportSurfaceOverlayMac::SwapBuffersInternal(
     const gfx::Rect& pixel_damage_rect,
-    const PresentationCallback& callback) {
+    PresentationCallback callback) {
   TRACE_EVENT0("gpu", "ImageTransportSurfaceOverlayMac::SwapBuffersInternal");
 
   // Do a GL fence for flush to apply back-pressure before drawing.
@@ -166,14 +167,16 @@ gfx::SwapResult ImageTransportSurfaceOverlayMac::SwapBuffersInternal(
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&ImageTransportSurfaceOverlayMac::BufferPresented,
-                     weak_ptr_factory_.GetWeakPtr(), callback, feedback));
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                     feedback));
   return gfx::SwapResult::SWAP_ACK;
 }
 
 gfx::SwapResult ImageTransportSurfaceOverlayMac::SwapBuffers(
-    const PresentationCallback& callback) {
+    PresentationCallback callback) {
   return SwapBuffersInternal(
-      gfx::Rect(0, 0, pixel_size_.width(), pixel_size_.height()), callback);
+      gfx::Rect(0, 0, pixel_size_.width(), pixel_size_.height()),
+      std::move(callback));
 }
 
 gfx::SwapResult ImageTransportSurfaceOverlayMac::PostSubBuffer(
@@ -181,8 +184,9 @@ gfx::SwapResult ImageTransportSurfaceOverlayMac::PostSubBuffer(
     int y,
     int width,
     int height,
-    const PresentationCallback& callback) {
-  return SwapBuffersInternal(gfx::Rect(x, y, width, height), callback);
+    PresentationCallback callback) {
+  return SwapBuffersInternal(gfx::Rect(x, y, width, height),
+                             std::move(callback));
 }
 
 bool ImageTransportSurfaceOverlayMac::SupportsPostSubBuffer() {
@@ -303,8 +307,8 @@ void ImageTransportSurfaceOverlayMac::OnGpuSwitched() {
   // transport surface that is observing the GPU switch.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(
-          base::DoNothing::Repeatedly<scoped_refptr<ui::IOSurfaceContext>>(),
+      base::BindOnce(
+          base::DoNothing::Once<scoped_refptr<ui::IOSurfaceContext>>(),
           context_on_new_gpu));
 }
 

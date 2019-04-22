@@ -13,7 +13,7 @@
 
 #define VARNAME "TEST_VAR"
 
-static const char kJniLibName[] = "libjni_lib.so";
+static const char kJniLibName[] = "libcrazy_linker_tests_libjni_lib.so";
 static void* kJavaVM = (void*)0xdeadcafe;
 
 int main() {
@@ -21,9 +21,9 @@ int main() {
   crazy_library_t* library;
 
   // Expect to find the library in the same directory than this executable.
-  crazy_context_add_search_path_for_address(context, (void*)&main);
+  crazy_add_search_path_for_address((void*)&main);
 
-  crazy_context_set_java_vm(context, kJavaVM, JNI_VERSION_1_2);
+  crazy_set_java_vm(kJavaVM, JNI_VERSION_1_2);
 
   // Load libjni_lib.so, this should invoke its JNI_OnLoad() function
   // automatically.
@@ -42,7 +42,7 @@ int main() {
 
   // Now, change the minimum JNI version to JNI_VERSION_1_6, which should
   // prevent loading the library properly, since it only supports 1.2.
-  crazy_context_set_java_vm(context, kJavaVM, JNI_VERSION_1_6);
+  crazy_set_java_vm(kJavaVM, JNI_VERSION_1_6);
 
   setenv(VARNAME, "INIT", 1);
   if (crazy_library_open(&library, kJniLibName, context))
@@ -50,7 +50,7 @@ int main() {
 
   // Disable the feature, this shall load the library, but not call the
   // JNI_OnLoad() hook.
-  crazy_context_set_java_vm(context, NULL, 0);
+  crazy_set_java_vm(nullptr, 0);
 
   setenv(VARNAME, "INIT", 1);
   if (!crazy_library_open(&library, kJniLibName, context))

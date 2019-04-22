@@ -6,6 +6,8 @@
 
 from recipe_engine import recipe_api
 
+from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
+
 
 class BotUpdateApi(recipe_api.RecipeApi):
 
@@ -74,6 +76,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
                       gerrit_no_rebase_patch_ref=False,
                       disable_syntax_validation=False, manifest_name=None,
                       patch_refs=None, ignore_input_commit=False,
+                      set_output_commit=False,
                       **kwargs):
     """
     Args:
@@ -84,6 +87,15 @@ class BotUpdateApi(recipe_api.RecipeApi):
         such as bisect.
       manifest_name: The name of the manifest to upload to LogDog.  This must
         be unique for the whole build.
+      ignore_input_commit: if True, ignore api.buildbucket.gitiles_commit.
+        Exists for historical reasons. Please do not use.
+      set_output_commit: if True, mark the checked out commit as the
+        primary output commit of this build, i.e. call
+        api.buildbucket.set_output_gitiles_commit.
+        In case of multiple repos, the repo is the one specified in
+        api.buildbucket.gitiles_commit or the first configured solution.
+        When sorting builds by commit position, this commit will be used.
+        Requires falsy ignore_input_commit.
     """
     assert use_site_config_creds is None, "use_site_config_creds is deprecated"
     assert rietveld is None, "rietveld is deprecated"
@@ -91,6 +103,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
     assert patchset is None, "patchset is deprecated"
     assert patch_oauth2 is None, "patch_oauth2 is deprecated"
     assert oauth2_json is None, "oauth2_json is deprecated"
+    assert not (ignore_input_commit and set_output_commit)
 
     refs = refs or []
     # We can re-use the gclient spec from the gclient module, since all the
@@ -143,18 +156,19 @@ class BotUpdateApi(recipe_api.RecipeApi):
 
     # HACK: ensure_checkout API must be redesigned so that we don't pass such
     # parameters. Existing semantics is too opiniated.
+    main_repo_path = None
+    input_commit = self.m.buildbucket.gitiles_commit
+    input_commit_rev = input_commit.id or input_commit.ref
     if not ignore_input_commit:
-      # Apply input gitiles_commit, if any.
-      input_commit = self.m.buildbucket.build.input.gitiles_commit
-      if input_commit.id or input_commit.ref:
-        repo_path = self._get_commit_repo_path(input_commit, cfg)
-        # Note: this is not entirely correct. build.input.gitiles_commit
-        # definition says "The Gitiles commit to run against.".
-        # However, here we ignore it if the config specified a revision.
-        # This is necessary because existing builders rely on this behavior,
-        # e.g. they want to force refs/heads/master at the config level.
-        revisions[repo_path] = (
-            revisions.get(repo_path) or input_commit.id or input_commit.ref)
+      main_repo_path = self._get_commit_repo_path(input_commit, cfg)
+      # Note: this is not entirely correct. build.input.gitiles_commit
+      # definition says "The Gitiles commit to run against.".
+      # However, here we ignore it if the config specified a revision.
+      # This is necessary because existing builders rely on this behavior,
+      # e.g. they want to force refs/heads/master at the config level.
+      if input_commit_rev:
+        revisions[main_repo_path] = (
+            revisions.get(main_repo_path) or input_commit_rev)
 
     # Guarantee that first solution has a revision.
     # TODO(machenbach): We should explicitly pass HEAD for ALL solutions
@@ -253,27 +267,54 @@ class BotUpdateApi(recipe_api.RecipeApi):
     finally:
       if step_result and step_result.json.output:
         result = step_result.json.output
-        self._last_returned_properties = step_result.json.output.get(
-            'properties', {})
+        self._last_returned_properties = result.get('properties', {})
 
         if update_presentation:
           # Set properties such as got_revision.
           for prop_name, prop_value in (
               self.last_returned_properties.iteritems()):
             step_result.presentation.properties[prop_name] = prop_value
+
         # Add helpful step description in the step UI.
         if 'step_text' in result:
           step_text = result['step_text']
           step_result.presentation.step_text = step_text
 
         # Export the step results as a Source Manifest to LogDog.
+        source_manifest = result.get('source_manifest', {})
         if manifest_name:
           if not patch:
             # The param "patched" is purely cosmetic to mean "if false, this
             # bot_update run exists purely to unpatch an existing patch".
             manifest_name += '_unpatched'
           self.m.source_manifest.set_json_manifest(
-              manifest_name, result.get('source_manifest', {}))
+              manifest_name, source_manifest)
+
+        # Set output commit of the build.
+        git_checkout = (
+            source_manifest
+            .get('directories', {})
+            .get(main_repo_path, {})
+            .get('git_checkout', {}))
+        if set_output_commit and git_checkout:
+          output_commit = common_pb2.GitilesCommit(
+              ref=revisions.get(main_repo_path) or '',
+              id=git_checkout['revision'],
+          )
+          if not output_commit.ref.startswith('refs/'):
+            # Require that what was checked out is what was requested on
+            # input commit.
+            # If this assertion fails, this setup is unusual/unsupported.
+            # The caller should not pass set_output_commit=True and should call
+            # api.buildbucket.set_output_gitiles_commit themselves.
+            assert (
+                input_commit.ref and
+                # Revision was not overridden.
+                revisions[main_repo_path] == input_commit_rev)
+            output_commit.ref = input_commit.ref
+          output_commit.host, output_commit.project = (
+              self.m.gitiles.parse_repo_url(git_checkout['repo_url']))
+          self.m.buildbucket.set_output_gitiles_commit(output_commit)
 
         # Set the "checkout" path for the main solution.
         # This is used by the Chromium module to figure out where to look for

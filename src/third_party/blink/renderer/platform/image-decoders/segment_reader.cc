@@ -4,10 +4,10 @@
 
 #include "third_party/blink/renderer/platform/image-decoders/segment_reader.h"
 
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkRWBuffer.h"
@@ -18,8 +18,6 @@ namespace blink {
 
 // Interface for ImageDecoder to read a SharedBuffer.
 class SharedBufferSegmentReader final : public SegmentReader {
-  WTF_MAKE_NONCOPYABLE(SharedBufferSegmentReader);
-
  public:
   SharedBufferSegmentReader(scoped_refptr<SharedBuffer>);
   size_t size() const override;
@@ -28,6 +26,8 @@ class SharedBufferSegmentReader final : public SegmentReader {
 
  private:
   scoped_refptr<SharedBuffer> shared_buffer_;
+
+  DISALLOW_COPY_AND_ASSIGN(SharedBufferSegmentReader);
 };
 
 SharedBufferSegmentReader::SharedBufferSegmentReader(
@@ -56,8 +56,6 @@ sk_sp<SkData> SharedBufferSegmentReader::GetAsSkData() const {
 
 // Interface for ImageDecoder to read an SkData.
 class DataSegmentReader final : public SegmentReader {
-  WTF_MAKE_NONCOPYABLE(DataSegmentReader);
-
  public:
   DataSegmentReader(sk_sp<SkData>);
   size_t size() const override;
@@ -66,6 +64,8 @@ class DataSegmentReader final : public SegmentReader {
 
  private:
   sk_sp<SkData> data_;
+
+  DISALLOW_COPY_AND_ASSIGN(DataSegmentReader);
 };
 
 DataSegmentReader::DataSegmentReader(sk_sp<SkData> data)
@@ -91,8 +91,6 @@ sk_sp<SkData> DataSegmentReader::GetAsSkData() const {
 // ROBufferSegmentReader -------------------------------------------------------
 
 class ROBufferSegmentReader final : public SegmentReader {
-  WTF_MAKE_NONCOPYABLE(ROBufferSegmentReader);
-
  public:
   ROBufferSegmentReader(sk_sp<SkROBuffer>);
 
@@ -107,6 +105,8 @@ class ROBufferSegmentReader final : public SegmentReader {
   // Position of the first char in the current block of iter_.
   mutable size_t position_of_block_;
   mutable SkROBuffer::Iter iter_;
+
+  DISALLOW_COPY_AND_ASSIGN(ROBufferSegmentReader);
 };
 
 ROBufferSegmentReader::ROBufferSegmentReader(sk_sp<SkROBuffer> buffer)

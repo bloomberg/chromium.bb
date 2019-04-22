@@ -69,7 +69,7 @@ class V0CustomElementRegistrationContext final
   bool NameIsDefined(const AtomicString& name) const;
   void SetV1(const CustomElementRegistry*);
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
   // Instance creation
   void DidGiveTypeExtension(Element*, const AtomicString& type);

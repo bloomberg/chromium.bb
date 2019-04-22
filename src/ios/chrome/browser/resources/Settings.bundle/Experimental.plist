@@ -34,38 +34,6 @@
 			<key>Type</key>
 			<string>PSMultiValueSpecifier</string>
 			<key>Title</key>
-			<string>Gaia Environment</string>
-			<key>Key</key>
-			<string>GAIAEnvironment</string>
-			<key>DefaultValue</key>
-			<string></string>
-			<key>Values</key>
-			<array>
-				<string></string>
-				<string>Staging</string>
-				<string>Test</string>
-			</array>
-			<key>Titles</key>
-			<array>
-				<string>Prod</string>
-				<string>Staging</string>
-				<string>Test</string>
-			</array>
-		</dict>
-		<dict>
-			<key>Type</key>
-			<string>PSToggleSwitchSpecifier</string>
-			<key>Title</key>
-			<string>Enable Startup Crash</string>
-			<key>Key</key>
-			<string>EnableStartupCrash</string>
-			<key>DefaultValue</key>
-			<false/>
-		</dict>
-		<dict>
-			<key>Type</key>
-			<string>PSMultiValueSpecifier</string>
-			<key>Title</key>
 			<string>Force What&apos;s New Promo</string>
 			<key>Key</key>
 			<string>WhatsNewPromoStatus</string>
@@ -88,55 +56,45 @@
 			<key>Type</key>
 			<string>PSMultiValueSpecifier</string>
 			<key>Title</key>
-			<string>Enable View/Copy passwords</string>
+			<string>Force Language</string>
 			<key>Key</key>
-			<string>EnableViewCopyPasswords</string>
+			<string>UILanguageOverride</string>
 			<key>DefaultValue</key>
 			<string></string>
 			<key>Values</key>
 			<array>
 				<string></string>
-				<string>Disabled</string>
-				<string>Enabled</string>
+				<string>ar</string>
+				<string>en</string>
+				<string>fr</string>
+				<string>he</string>
+				<string>hi</string>
 			</array>
 			<key>Titles</key>
 			<array>
 				<string>Default</string>
-				<string>Disabled</string>
-				<string>Enabled</string>
+				<string>Arabic</string>
+				<string>English</string>
+				<string>French</string>
+				<string>Hebrew</string>
+				<string>Hindi</string>
 			</array>
 		</dict>
 		<dict>
 			<key>Type</key>
-			<string>PSToggleSwitchSpecifier</string>
-			<key>Title</key>
-			<string>Disable Update Password UI</string>
-			<key>Key</key>
-			<string>UpdatePasswordUIDisabled</string>
-			<key>DefaultValue</key>
-			<false/>
-		</dict>
-		<dict>
-			<key>Type</key>
 			<string>PSGroupSpecifier</string>
 			<key>Title</key>
-			<string>Application Group</string>
+			<string>Debug Settings</string>
 		</dict>
 		<dict>
 			<key>Type</key>
 			<string>PSToggleSwitchSpecifier</string>
 			<key>Title</key>
-			<string>Clear Application Group sandbox</string>
+			<string>Enable Startup Crash</string>
 			<key>Key</key>
-			<string>ClearApplicationGroup</string>
+			<string>EnableStartupCrash</string>
 			<key>DefaultValue</key>
 			<false/>
-		</dict>
-		<dict>
-			<key>Type</key>
-			<string>PSGroupSpecifier</string>
-			<key>Title</key>
-			<string>Memory</string>
 		</dict>
 		<dict>
 			<key>Type</key>
@@ -147,12 +105,6 @@
 			<string>EnableMemoryDebugging</string>
 			<key>DefaultValue</key>
 			<false/>
-		</dict>
-		<dict>
-			<key>Type</key>
-			<string>PSGroupSpecifier</string>
-			<key>Title</key>
-			<string>User Agent</string>
 		</dict>
 		<dict>
 			<key>Type</key>
@@ -169,6 +121,38 @@
 			<string>PSGroupSpecifier</string>
 			<key>Title</key>
 			<string>Google App Ecosystem</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSMultiValueSpecifier</string>
+			<key>Title</key>
+			<string>Gaia Environment</string>
+			<key>Key</key>
+			<string>GAIAEnvironment</string>
+			<key>DefaultValue</key>
+			<string></string>
+			<key>Values</key>
+			<array>
+				<string></string>
+				<string>Staging</string>
+				<string>Test</string>
+			</array>
+			<key>Titles</key>
+			<array>
+				<string>Prod</string>
+				<string>Staging</string>
+				<string>Test</string>
+			</array>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSToggleSwitchSpecifier</string>
+			<key>Title</key>
+			<string>Clear Application Group sandbox</string>
+			<key>Key</key>
+			<string>ClearApplicationGroup</string>
+			<key>DefaultValue</key>
+			<false/>
 		</dict>
 		<dict>
 			<key>Type</key>

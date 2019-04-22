@@ -27,16 +27,17 @@ namespace media {
 // to talk to the concrete implementation for persistent data management.
 class MediaDrmStorageBridge {
  public:
+  using InitCB = base::OnceCallback<void(bool)>;
+
   MediaDrmStorageBridge();
   ~MediaDrmStorageBridge();
 
   // Once storage is initialized, |init_cb| will be called and it will have a
   // random generated origin id for later usage. If this function isn't called,
   // all the other functions will fail.
-  void Initialize(const CreateStorageCB& create_storage_cb,
-                  base::OnceClosure init_cb);
+  void Initialize(const CreateStorageCB& create_storage_cb, InitCB init_cb);
 
-  std::string origin_id() const { return origin_id_; }
+  const std::string& origin_id() const { return origin_id_; }
 
   // The following OnXXX functions are called by Java. The functions will post
   // task on message loop immediately to avoid reentrancy issues.
@@ -73,8 +74,9 @@ class MediaDrmStorageBridge {
 
  private:
   void RunAndroidBoolCallback(JavaObjectPtr j_callback, bool success);
-  void OnInitialized(base::OnceClosure init_cb,
-                     const base::UnguessableToken& origin_id);
+  void OnInitialized(InitCB init_cb,
+                     bool success,
+                     const MediaDrmStorage::MediaDrmOriginId& origin_id);
   void OnSessionDataLoaded(
       JavaObjectPtr j_callback,
       const std::string& session_id,

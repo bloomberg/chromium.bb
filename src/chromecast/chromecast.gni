@@ -17,11 +17,6 @@ declare_args() {
   # when the default value is used.
   cast_build_incremental = "999999"
 
-  # If true, IS_CAST_DEBUG_BUILD() will evaluate to 1 in version.h. Otherwise,
-  # it will evaluate to 0. Overriding this when is_debug=false is useful for
-  # doing engineering builds.
-  cast_is_debug = is_debug
-
   if (is_android) {
     # If true, run receiver apps in an Android service instead of an activity.
     display_web_contents_in_service = is_cast_audio_only
@@ -39,6 +34,10 @@ declare_args() {
   # device supports multizone. The command line flag --enable-multizone must
   # still be used to enable multizone.
   supports_multizone = is_cast_audio_only && !is_cast_desktop_build
+
+  # Set to true on devices where the VolumeControl implementation is in the
+  # libcast_avsettings_1.0.so instead of in libcast_media_1.0.so.
+  cast_volume_control_in_avsettings = false
 
   # Set to true for builds targeting ARC.
   is_android_arc = false
@@ -104,6 +103,22 @@ declare_args() {
 
   # Whether to build cast for Android Things N version
   build_for_android_things_n = false
+
+  # Set to true to enable mixing in CastAudioManager. Only needed on devices
+  # that do not have a mixer in the CMA backend.
+  enable_cast_audio_manager_mixer =
+      chromecast_branding == "google" && !is_cast_audio_only && !is_android
+
+  # Set to true to enable video capture service for video input and output.
+  enable_video_capture_service = false
+
+  # Set to true to enable external Mojo services to communicate with services
+  # within cast_shell. Enable for desktop builds to ensure that Chromium CQ
+  # builds the external Mojo broker code.
+  enable_external_mojo_services = is_cast_desktop_build
+
+  # Recording happens at this sample rate. Must be 16000, 48000 or 96000 Hz.
+  audio_input_sample_rate = 16000
 }
 
 declare_args() {

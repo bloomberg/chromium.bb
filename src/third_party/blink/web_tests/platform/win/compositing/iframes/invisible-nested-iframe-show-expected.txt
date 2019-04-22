@@ -19,8 +19,8 @@
     },
     {
       "name": "LayoutIFrame IFRAME",
-      "position": [-11, -11],
-      "bounds": [368, 218]
+      "position": [-22, -22],
+      "bounds": [390, 240]
     },
     {
       "name": "LayoutView #document",
@@ -49,12 +49,6 @@
       "position": [32, 32],
       "bounds": [250, 170],
       "backgroundColor": "#C0C0C0"
-    },
-    {
-      "name": "Child Containment Layer",
-      "position": [32, 32],
-      "bounds": [250, 170],
-      "drawsContent": false
     },
     {
       "name": "LayoutBlockFlow DIV id='iframe-content' class='box'",

@@ -13,11 +13,11 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "media/audio/audio_manager.h"
-#include "media/audio/audio_processing.h"
 #include "media/audio/fake_audio_input_stream.h"
 #include "media/audio/fake_audio_log_factory.h"
 #include "media/audio/fake_audio_manager.h"
 #include "media/audio/test_audio_thread.h"
+#include "media/base/audio_processing.h"
 #include "media/base/user_input_monitor.h"
 #include "media/webrtc/audio_processor.h"
 #include "media/webrtc/webrtc_switches.h"
@@ -270,9 +270,9 @@ TEST_P(InputControllerTest, TestOnmutedCallbackInitiallyMuted) {
 }
 
 #if defined(AUDIO_PROCESSING_IN_AUDIO_SERVICE)
-INSTANTIATE_TEST_CASE_P(, InputControllerTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(, InputControllerTest, ::testing::Bool());
 #else
-INSTANTIATE_TEST_CASE_P(, InputControllerTest, testing::Values(false));
+INSTANTIATE_TEST_SUITE_P(, InputControllerTest, testing::Values(false));
 #endif
 
 }  // namespace audio

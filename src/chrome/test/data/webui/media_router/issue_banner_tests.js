@@ -44,10 +44,11 @@ cr.define('issue_banner', function() {
       // expected data.
       var checkDataFromEventFiring = function(issue, data, isDefault) {
         assertEquals(issue.id, data.detail.id);
-        if (isDefault)
+        if (isDefault) {
           assertEquals(issue.defaultActionType, data.detail.actionType);
-        else
+        } else {
           assertEquals(issue.secondaryActionType, data.detail.actionType);
+        }
         assertEquals(issue.helpPageId, data.detail.helpPageId);
       };
 

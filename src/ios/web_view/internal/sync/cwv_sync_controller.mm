@@ -8,16 +8,16 @@
 #include <memory>
 
 #include "base/strings/sys_string_conversions.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/signin/core/browser/account_info.h"
-#include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_manager.h"
-#include "components/signin/ios/browser/profile_oauth2_token_service_ios_delegate.h"
+#include "components/signin/core/browser/signin_error_controller.h"
+#include "components/sync/driver/sync_service.h"
+#include "components/sync/driver/sync_user_settings.h"
 #include "ios/web/public/web_thread.h"
 #import "ios/web_view/public/cwv_identity.h"
 #import "ios/web_view/public/cwv_sync_controller_data_source.h"
 #import "ios/web_view/public/cwv_sync_controller_delegate.h"
+#include "services/identity/public/cpp/identity_manager.h"
+#include "services/identity/public/cpp/primary_account_mutator.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -76,7 +76,7 @@ CWVSyncError CWVConvertGoogleServiceAuthErrorStateToCWVSyncError(
 
 namespace ios_web_view {
 
-// Bridge that observes browser_sync::ProfileSyncService and calls analagous
+// Bridge that observes syncer::SyncService and calls analagous
 // methods on CWVSyncController.
 class WebViewSyncControllerObserverBridge
     : public syncer::SyncServiceObserver,
@@ -105,10 +105,8 @@ class WebViewSyncControllerObserverBridge
 }  // namespace ios_web_view
 
 @implementation CWVSyncController {
-  browser_sync::ProfileSyncService* _profileSyncService;
-  AccountTrackerService* _accountTrackerService;
-  SigninManager* _signinManager;
-  ProfileOAuth2TokenService* _tokenService;
+  syncer::SyncService* _syncService;
+  identity::IdentityManager* _identityManager;
   SigninErrorController* _signinErrorController;
   std::unique_ptr<ios_web_view::WebViewSyncControllerObserverBridge> _observer;
 
@@ -117,25 +115,21 @@ class WebViewSyncControllerObserverBridge
 }
 
 @synthesize delegate = _delegate;
+@synthesize currentIdentity = _currentIdentity;
 
-- (instancetype)
-    initWithProfileSyncService:
-        (browser_sync::ProfileSyncService*)profileSyncService
-         accountTrackerService:(AccountTrackerService*)accountTrackerService
-                 signinManager:(SigninManager*)signinManager
-                  tokenService:(ProfileOAuth2TokenService*)tokenService
-         signinErrorController:(SigninErrorController*)signinErrorController {
+- (instancetype)initWithSyncService:(syncer::SyncService*)syncService
+                    identityManager:(identity::IdentityManager*)identityManager
+              signinErrorController:
+                  (SigninErrorController*)signinErrorController {
   self = [super init];
   if (self) {
-    _profileSyncService = profileSyncService;
-    _accountTrackerService = accountTrackerService;
-    _signinManager = signinManager;
-    _tokenService = tokenService;
+    _syncService = syncService;
+    _identityManager = identityManager;
     _signinErrorController = signinErrorController;
     _observer =
         std::make_unique<ios_web_view::WebViewSyncControllerObserverBridge>(
             self);
-    _profileSyncService->AddObserver(_observer.get());
+    _syncService->AddObserver(_observer.get());
     _signinErrorController->AddObserver(_observer.get());
 
     // Refresh access tokens on foreground to extend expiration dates.
@@ -149,57 +143,48 @@ class WebViewSyncControllerObserverBridge
 }
 
 - (void)dealloc {
-  _profileSyncService->RemoveObserver(_observer.get());
+  _syncService->RemoveObserver(_observer.get());
   _signinErrorController->RemoveObserver(_observer.get());
 }
 
 #pragma mark - Public Methods
 
-- (CWVIdentity*)currentIdentity {
-  std::string authenticatedID = _signinManager->GetAuthenticatedAccountId();
-  if (authenticatedID.empty()) {
-    return nil;
-  }
-  AccountInfo accountInfo =
-      _accountTrackerService->GetAccountInfo(authenticatedID);
-  NSString* email = base::SysUTF8ToNSString(accountInfo.email);
-  NSString* fullName = base::SysUTF8ToNSString(accountInfo.full_name);
-  NSString* gaiaID = base::SysUTF8ToNSString(accountInfo.gaia);
-  return
-      [[CWVIdentity alloc] initWithEmail:email fullName:fullName gaiaID:gaiaID];
-}
-
 - (BOOL)isPassphraseNeeded {
-  return _profileSyncService->IsPassphraseRequiredForDecryption();
+  return _syncService->GetUserSettings()->IsPassphraseRequiredForDecryption();
 }
 
 - (void)startSyncWithIdentity:(CWVIdentity*)identity
                    dataSource:
                        (__weak id<CWVSyncControllerDataSource>)dataSource {
   DCHECK(!_dataSource);
+  DCHECK(!_currentIdentity);
 
   _dataSource = dataSource;
+  _currentIdentity = identity;
 
   AccountInfo info;
   info.gaia = base::SysNSStringToUTF8(identity.gaiaID);
   info.email = base::SysNSStringToUTF8(identity.email);
-  info.full_name = base::SysNSStringToUTF8(identity.fullName);
   std::string newAuthenticatedAccountID =
-      _accountTrackerService->SeedAccountInfo(info);
-  _signinManager->OnExternalSigninCompleted(info.email);
+      _identityManager->LegacySeedAccountInfo(info);
+  auto* primaryAccountMutator = _identityManager->GetPrimaryAccountMutator();
+  primaryAccountMutator->SetPrimaryAccount(newAuthenticatedAccountID);
 
   [self reloadCredentials];
 }
 
 - (void)stopSyncAndClearIdentity {
-  _signinManager->SignOut(
+  auto* primaryAccountMutator = _identityManager->GetPrimaryAccountMutator();
+  primaryAccountMutator->ClearPrimaryAccount(
+      identity::PrimaryAccountMutator::ClearAccountsAction::kDefault,
       signin_metrics::ProfileSignout::USER_CLICKED_SIGNOUT_SETTINGS,
       signin_metrics::SignoutDelete::IGNORE_METRIC);
+  _currentIdentity = nil;
   _dataSource = nil;
 }
 
 - (BOOL)unlockWithPassphrase:(NSString*)passphrase {
-  return _profileSyncService->SetDecryptionPassphrase(
+  return _syncService->GetUserSettings()->SetDecryptionPassphrase(
       base::SysNSStringToUTF8(passphrase));
 }
 
@@ -212,18 +197,12 @@ class WebViewSyncControllerObserverBridge
 }
 
 - (void)didShutdownSync {
-  _profileSyncService->RemoveObserver(_observer.get());
+  _syncService->RemoveObserver(_observer.get());
   _signinErrorController->RemoveObserver(_observer.get());
 }
 
 - (void)reloadCredentials {
-  std::string authenticatedID = _signinManager->GetAuthenticatedAccountId();
-  if (!authenticatedID.empty()) {
-    ProfileOAuth2TokenServiceIOSDelegate* tokenDelegate =
-        static_cast<ProfileOAuth2TokenServiceIOSDelegate*>(
-            _tokenService->GetDelegate());
-    tokenDelegate->ReloadCredentials(authenticatedID);
-  }
+  _identityManager->LegacyReloadAccountsFromSystem();
 }
 
 #pragma mark - Internal Methods

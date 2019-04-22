@@ -487,12 +487,14 @@ DiscardableSharedMemory::LockResult DiscardableSharedMemory::LockPages(
     size_t length) {
 #if defined(OS_ANDROID)
   if (region.IsValid()) {
-    int pin_result =
-        ashmem_pin_region(region.GetPlatformHandle(), offset, length);
-    if (pin_result == ASHMEM_WAS_PURGED)
-      return PURGED;
-    if (pin_result < 0)
-      return FAILED;
+    if (ashmem_device_is_supported()) {
+      int pin_result =
+          ashmem_pin_region(region.GetPlatformHandle(), offset, length);
+      if (pin_result == ASHMEM_WAS_PURGED)
+        return PURGED;
+      if (pin_result < 0)
+        return FAILED;
+    }
   }
 #endif
   return SUCCESS;
@@ -505,9 +507,11 @@ void DiscardableSharedMemory::UnlockPages(
     size_t length) {
 #if defined(OS_ANDROID)
   if (region.IsValid()) {
-    int unpin_result =
-        ashmem_unpin_region(region.GetPlatformHandle(), offset, length);
-    DCHECK_EQ(0, unpin_result);
+    if (ashmem_device_is_supported()) {
+      int unpin_result =
+          ashmem_unpin_region(region.GetPlatformHandle(), offset, length);
+      DCHECK_EQ(0, unpin_result);
+    }
   }
 #endif
 }
@@ -515,5 +519,12 @@ void DiscardableSharedMemory::UnlockPages(
 Time DiscardableSharedMemory::Now() const {
   return Time::Now();
 }
+
+#if defined(OS_ANDROID)
+// static
+bool DiscardableSharedMemory::IsAshmemDeviceSupportedForTesting() {
+  return ashmem_device_is_supported();
+}
+#endif
 
 }  // namespace base

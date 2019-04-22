@@ -27,7 +27,6 @@ struct WebServiceWorkerRegistrationObjectInfo {
   WebServiceWorkerRegistrationObjectInfo(
       int64_t registration_id,
       WebURL scope,
-      mojom::ScriptType type,
       mojom::ServiceWorkerUpdateViaCache update_via_cache,
       mojo::ScopedInterfaceEndpointHandle host_ptr_info,
       mojo::ScopedInterfaceEndpointHandle request,
@@ -36,7 +35,6 @@ struct WebServiceWorkerRegistrationObjectInfo {
       WebServiceWorkerObjectInfo active)
       : registration_id(registration_id),
         scope(std::move(scope)),
-        type(type),
         update_via_cache(update_via_cache),
         host_ptr_info(std::move(host_ptr_info)),
         request(std::move(request)),
@@ -49,7 +47,6 @@ struct WebServiceWorkerRegistrationObjectInfo {
   int64_t registration_id;
 
   WebURL scope;
-  mojom::ScriptType type;
   mojom::ServiceWorkerUpdateViaCache update_via_cache;
 
   // For blink::mojom::ServiceWorkerRegistrationObjectHostAssociatedPtrInfo.

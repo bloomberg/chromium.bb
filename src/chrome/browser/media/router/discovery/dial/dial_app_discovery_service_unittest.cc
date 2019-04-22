@@ -4,6 +4,7 @@
 
 #include "chrome/browser/media/router/discovery/dial/dial_app_discovery_service.h"
 
+#include "base/bind.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/mock_callback.h"
 #include "chrome/browser/media/router/discovery/dial/parsed_dial_device_description.h"

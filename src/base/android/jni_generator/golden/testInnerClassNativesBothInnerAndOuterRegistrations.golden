@@ -14,27 +14,28 @@
 
 #include "base/android/jni_generator/jni_generator_helper.h"
 #include "base/android/jni_int_wrapper.h"
+#include "base/stl_util.h"  // For base::size().
 
 
 // Step 1: Forward declarations (classes).
 
-extern const char kClassPath_org_chromium_TestJni_00024MyOtherInnerClass[];
-
 extern const char kClassPath_org_chromium_TestJni[];
-extern std::atomic<jclass> g_org_chromium_TestJni_00024MyOtherInnerClass_clazz;
-#ifndef org_chromium_TestJni_00024MyOtherInnerClass_clazz_defined
-#define org_chromium_TestJni_00024MyOtherInnerClass_clazz_defined
-inline jclass org_chromium_TestJni_00024MyOtherInnerClass_clazz(JNIEnv* env) {
-  return base::android::LazyGetClass(env, kClassPath_org_chromium_TestJni_00024MyOtherInnerClass,
-      &g_org_chromium_TestJni_00024MyOtherInnerClass_clazz);
-}
-#endif
+
+extern const char kClassPath_org_chromium_TestJni_00024MyOtherInnerClass[];
 extern std::atomic<jclass> g_org_chromium_TestJni_clazz;
 #ifndef org_chromium_TestJni_clazz_defined
 #define org_chromium_TestJni_clazz_defined
 inline jclass org_chromium_TestJni_clazz(JNIEnv* env) {
   return base::android::LazyGetClass(env, kClassPath_org_chromium_TestJni,
       &g_org_chromium_TestJni_clazz);
+}
+#endif
+extern std::atomic<jclass> g_org_chromium_TestJni_00024MyOtherInnerClass_clazz;
+#ifndef org_chromium_TestJni_00024MyOtherInnerClass_clazz_defined
+#define org_chromium_TestJni_00024MyOtherInnerClass_clazz_defined
+inline jclass org_chromium_TestJni_00024MyOtherInnerClass_clazz(JNIEnv* env) {
+  return base::android::LazyGetClass(env, kClassPath_org_chromium_TestJni_00024MyOtherInnerClass,
+      &g_org_chromium_TestJni_00024MyOtherInnerClass_clazz);
 }
 #endif
 
@@ -51,39 +52,39 @@ JNI_GENERATOR_EXPORT jint Java_org_chromium_TestJni_00024MyOtherInnerClass_nativ
 
 // Step 3: Method declarations.
 
+static const JNINativeMethod kMethods_org_chromium_TestJni[] = {
+    { "nativeInit", "()I", reinterpret_cast<void*>(Java_org_chromium_TestJni_nativeInit) },
+};
+
+
 static const JNINativeMethod kMethods_org_chromium_TestJni_00024MyOtherInnerClass[] = {
     { "nativeInit", "()I",
         reinterpret_cast<void*>(Java_org_chromium_TestJni_00024MyOtherInnerClass_nativeInit) },
 };
 
 
-static const JNINativeMethod kMethods_org_chromium_TestJni[] = {
-    { "nativeInit", "()I", reinterpret_cast<void*>(Java_org_chromium_TestJni_nativeInit) },
-};
-
-
 JNI_REGISTRATION_EXPORT bool RegisterNative_org_chromium_TestJni(JNIEnv* env) {
-  const int kMethods_org_chromium_TestJni_00024MyOtherInnerClassSize =
-      arraysize(kMethods_org_chromium_TestJni_00024MyOtherInnerClass);
-  if (env->RegisterNatives(
-      org_chromium_TestJni_00024MyOtherInnerClass_clazz(env),
-      kMethods_org_chromium_TestJni_00024MyOtherInnerClass,
-      kMethods_org_chromium_TestJni_00024MyOtherInnerClassSize) < 0) {
-    jni_generator::HandleRegistrationError(env,
-        org_chromium_TestJni_00024MyOtherInnerClass_clazz(env),
-        __FILE__);
-    return false;
-  }
-
-
   const int kMethods_org_chromium_TestJniSize =
-      arraysize(kMethods_org_chromium_TestJni);
+      base::size(kMethods_org_chromium_TestJni);
   if (env->RegisterNatives(
       org_chromium_TestJni_clazz(env),
       kMethods_org_chromium_TestJni,
       kMethods_org_chromium_TestJniSize) < 0) {
     jni_generator::HandleRegistrationError(env,
         org_chromium_TestJni_clazz(env),
+        __FILE__);
+    return false;
+  }
+
+
+  const int kMethods_org_chromium_TestJni_00024MyOtherInnerClassSize =
+      base::size(kMethods_org_chromium_TestJni_00024MyOtherInnerClass);
+  if (env->RegisterNatives(
+      org_chromium_TestJni_00024MyOtherInnerClass_clazz(env),
+      kMethods_org_chromium_TestJni_00024MyOtherInnerClass,
+      kMethods_org_chromium_TestJni_00024MyOtherInnerClassSize) < 0) {
+    jni_generator::HandleRegistrationError(env,
+        org_chromium_TestJni_00024MyOtherInnerClass_clazz(env),
         __FILE__);
     return false;
   }

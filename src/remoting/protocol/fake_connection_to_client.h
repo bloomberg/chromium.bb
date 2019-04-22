@@ -32,6 +32,7 @@ class FakeVideoStream : public protocol::VideoStream {
   void SetLosslessEncode(bool want_lossless) override;
   void SetLosslessColor(bool want_lossless) override;
   void SetObserver(Observer* observer) override;
+  void SelectSource(int id) override;
 
   Observer* observer() { return observer_; }
 

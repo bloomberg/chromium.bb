@@ -13,14 +13,17 @@ namespace blink {
 
 // Data which is required for inline nodes.
 struct CORE_EXPORT NGInlineNodeData : NGInlineItemsData {
+ public:
+  bool IsBidiEnabled() const { return is_bidi_enabled_; }
+  TextDirection BaseDirection() const {
+    return static_cast<TextDirection>(base_direction_);
+  }
+
  private:
   const NGInlineItemsData& ItemsData(bool is_first_line) const {
     return !is_first_line || !first_line_items_
                ? (const NGInlineItemsData&)*this
                : *first_line_items_;
-  }
-  TextDirection BaseDirection() const {
-    return static_cast<TextDirection>(base_direction_);
   }
   void SetBaseDirection(TextDirection direction) {
     base_direction_ = static_cast<unsigned>(direction);
@@ -45,6 +48,11 @@ struct CORE_EXPORT NGInlineNodeData : NGInlineItemsData {
   // produce a single zero block-size line box. If the node has text, atomic
   // inlines, open/close tags with margins/border/padding this will be false.
   unsigned is_empty_inline_ : 1;
+
+  // True if changes to an item may affect different layout of earlier lines.
+  // May not be able to use line caches even when the line or earlier lines are
+  // not dirty.
+  unsigned changes_may_affect_earlier_lines_ : 1;
 };
 
 }  // namespace blink

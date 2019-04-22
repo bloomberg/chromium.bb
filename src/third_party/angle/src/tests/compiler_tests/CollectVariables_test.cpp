@@ -995,7 +995,7 @@ TEST_F(CollectVertexVariablesTest, ViewID_OVR)
 {
     const std::string &shaderString =
         "#version 300 es\n"
-        "#extension GL_OVR_multiview : require\n"
+        "#extension GL_OVR_multiview2 : require\n"
         "precision mediump float;\n"
         "void main()\n"
         "{\n"
@@ -1003,7 +1003,7 @@ TEST_F(CollectVertexVariablesTest, ViewID_OVR)
         "}\n";
 
     ShBuiltInResources resources = mTranslator->getResources();
-    resources.OVR_multiview      = 1;
+    resources.OVR_multiview2     = 1;
     resources.MaxViewsOVR        = 4;
     initTranslator(resources);
 
@@ -2035,6 +2035,37 @@ TEST_F(CollectVertexVariablesTest, StaticallyUsedButNotActiveInstancedInterfaceB
     // See TODO in CollectVariables.cpp about tracking instanced interface block field static use.
     // EXPECT_TRUE(field.staticUse);
     EXPECT_FALSE(field.active);
+}
+
+// Test an interface block member variable that is statically used. The variable is used to call
+// array length method.
+TEST_F(CollectVertexVariablesTest, StaticallyUsedInArrayLengthOp)
+{
+    const std::string &shaderString =
+        R"(#version 300 es
+        uniform b
+        {
+            float f[3];
+        };
+        void main() {
+            if (f.length() > 1)
+            {
+                gl_Position = vec4(1.0);
+            }
+            else
+            {
+                gl_Position = vec4(0.0);
+            }
+        })";
+
+    compile(shaderString);
+
+    const std::vector<InterfaceBlock> &interfaceBlocks = mTranslator->getInterfaceBlocks();
+    ASSERT_EQ(1u, interfaceBlocks.size());
+    const InterfaceBlock &interfaceBlock = interfaceBlocks[0];
+
+    EXPECT_EQ("b", interfaceBlock.name);
+    EXPECT_TRUE(interfaceBlock.staticUse);
 }
 
 // Test a varying that is declared invariant but not otherwise used.

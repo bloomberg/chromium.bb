@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string_hash.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
+#include "third_party/blink/renderer/platform/wtf/thread_specific.h"
 
 namespace blink {
 
@@ -168,8 +169,8 @@ AtomicString SpaceSplitString::SerializeToString() const {
 }
 
 SpaceSplitString::DataMap& SpaceSplitString::SharedDataMap() {
-  DEFINE_STATIC_LOCAL(DataMap, map, ());
-  return map;
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<DataMap>, map, ());
+  return *map;
 }
 
 void SpaceSplitString::Set(const AtomicString& input_string) {

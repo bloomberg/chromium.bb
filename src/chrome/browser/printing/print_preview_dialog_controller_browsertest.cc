@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -49,9 +50,8 @@ namespace {
 class RequestPrintPreviewObserver : public WebContentsObserver {
  public:
   explicit RequestPrintPreviewObserver(WebContents* dialog)
-      : WebContentsObserver(dialog) {
-  }
-  ~RequestPrintPreviewObserver() override {}
+      : WebContentsObserver(dialog) {}
+  ~RequestPrintPreviewObserver() override = default;
 
   void set_quit_closure(const base::Closure& quit_closure) {
     quit_closure_ = quit_closure;
@@ -82,9 +82,8 @@ class RequestPrintPreviewObserver : public WebContentsObserver {
 class PrintPreviewDialogClonedObserver : public WebContentsObserver {
  public:
   explicit PrintPreviewDialogClonedObserver(WebContents* dialog)
-      : WebContentsObserver(dialog) {
-  }
-  ~PrintPreviewDialogClonedObserver() override {}
+      : WebContentsObserver(dialog) {}
+  ~PrintPreviewDialogClonedObserver() override = default;
 
   RequestPrintPreviewObserver* request_preview_dialog_observer() {
     return request_preview_dialog_observer_.get();
@@ -106,10 +105,8 @@ class PrintPreviewDialogClonedObserver : public WebContentsObserver {
 class PrintPreviewDialogDestroyedObserver : public WebContentsObserver {
  public:
   explicit PrintPreviewDialogDestroyedObserver(WebContents* dialog)
-      : WebContentsObserver(dialog),
-        dialog_destroyed_(false) {
-  }
-  ~PrintPreviewDialogDestroyedObserver() override {}
+      : WebContentsObserver(dialog) {}
+  ~PrintPreviewDialogDestroyedObserver() override = default;
 
   bool dialog_destroyed() const { return dialog_destroyed_; }
 
@@ -117,7 +114,7 @@ class PrintPreviewDialogDestroyedObserver : public WebContentsObserver {
   // content::WebContentsObserver implementation.
   void WebContentsDestroyed() override { dialog_destroyed_ = true; }
 
-  bool dialog_destroyed_;
+  bool dialog_destroyed_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewDialogDestroyedObserver);
 };
@@ -156,8 +153,8 @@ void CheckPdfPluginForRenderFrame(content::RenderFrameHost* frame) {
 
 class PrintPreviewDialogControllerBrowserTest : public InProcessBrowserTest {
  public:
-  PrintPreviewDialogControllerBrowserTest() : initiator_(nullptr) {}
-  ~PrintPreviewDialogControllerBrowserTest() override {}
+  PrintPreviewDialogControllerBrowserTest() = default;
+  ~PrintPreviewDialogControllerBrowserTest() override = default;
 
   WebContents* initiator() {
     return initiator_;
@@ -176,9 +173,9 @@ class PrintPreviewDialogControllerBrowserTest : public InProcessBrowserTest {
     return dialog_controller->GetPrintPreviewForContents(initiator_);
   }
 
-  void SetAlwaysOpenPdfExternallyForTests(bool always_open_pdf_externally) {
+  void SetAlwaysOpenPdfExternallyForTests() {
     PluginPrefs::GetForProfile(browser()->profile())
-        ->SetAlwaysOpenPdfExternallyForTests(always_open_pdf_externally);
+        ->SetAlwaysOpenPdfExternallyForTests(true);
   }
 
  private:
@@ -218,7 +215,7 @@ class PrintPreviewDialogControllerBrowserTest : public InProcessBrowserTest {
   }
 
   std::unique_ptr<PrintPreviewDialogClonedObserver> cloned_tab_observer_;
-  WebContents* initiator_;
+  WebContents* initiator_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewDialogControllerBrowserTest);
 };
@@ -303,7 +300,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
   ASSERT_TRUE(GetPdfPluginInfo(&pdf_plugin_info));
 
   // Disable the PDF plugin.
-  SetAlwaysOpenPdfExternallyForTests(true);
+  SetAlwaysOpenPdfExternallyForTests();
 
   // Make sure it is actually disabled for webpages.
   ChromePluginServiceFilter* filter = ChromePluginServiceFilter::GetInstance();
@@ -352,6 +349,8 @@ base::string16 GetExpectedPrefix() {
 const std::vector<task_manager::WebContentsTag*>& GetTrackedTags() {
   return task_manager::WebContentsTagsManager::GetInstance()->tracked_tags();
 }
+
+}  // namespace
 
 IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
                        TaskManagementTest) {
@@ -403,5 +402,3 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
   WebContents* preview_dialog = GetPrintPreviewDialog();
   WaitForAccessibilityTreeToContainNodeWithName(preview_dialog, "HelloWorld");
 }
-
-}  // namespace

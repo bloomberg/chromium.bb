@@ -6,6 +6,7 @@
 #define V8_STRING_STREAM_H_
 
 #include "src/allocation.h"
+#include "src/base/small-vector.h"
 #include "src/handles.h"
 #include "src/objects/heap-object.h"
 #include "src/vector.h"
@@ -56,6 +57,34 @@ class FixedStringAllocator final : public StringAllocator {
   DISALLOW_COPY_AND_ASSIGN(FixedStringAllocator);
 };
 
+template <std::size_t kInlineSize>
+class SmallStringOptimizedAllocator final : public StringAllocator {
+ public:
+  typedef base::SmallVector<char, kInlineSize> SmallVector;
+
+  explicit SmallStringOptimizedAllocator(SmallVector* vector) V8_NOEXCEPT
+      : vector_(vector) {}
+
+  char* allocate(unsigned bytes) override {
+    vector_->resize_no_init(bytes);
+    return vector_->data();
+  }
+
+  char* grow(unsigned* bytes) override {
+    unsigned new_bytes = *bytes * 2;
+    // Check for overflow.
+    if (new_bytes <= *bytes) {
+      return vector_->data();
+    }
+    vector_->resize_no_init(new_bytes);
+    *bytes = new_bytes;
+    return vector_->data();
+  }
+
+ private:
+  SmallVector* vector_;
+};
+
 class StringStream final {
   class FmtElm final {
    public:
@@ -71,11 +100,8 @@ class StringStream final {
     FmtElm(const Vector<const uc16>& value) : FmtElm(LC_STR) {  // NOLINT
       data_.u_lc_str_ = &value;
     }
-    FmtElm(Object* value) : FmtElm(OBJ) {  // NOLINT
-      data_.u_obj_ = value;
-    }
-    FmtElm(ObjectPtr value) : FmtElm(OBJ) {  // NOLINT
-      data_.u_obj_ = reinterpret_cast<Object*>(value.ptr());
+    FmtElm(Object value) : FmtElm(OBJ) {  // NOLINT
+      data_.u_obj_ = value.ptr();
     }
     FmtElm(Handle<Object> value) : FmtElm(HANDLE) {  // NOLINT
       data_.u_handle_ = value.location();
@@ -100,7 +126,7 @@ class StringStream final {
       double u_double_;
       const char* u_c_str_;
       const Vector<const uc16>* u_lc_str_;
-      Object* u_obj_;
+      Address u_obj_;
       Address* u_handle_;
       void* u_pointer_;
     } data_;
@@ -108,8 +134,8 @@ class StringStream final {
 
  public:
   enum ObjectPrintMode { kPrintObjectConcise, kPrintObjectVerbose };
-  StringStream(StringAllocator* allocator,
-               ObjectPrintMode object_print_mode = kPrintObjectVerbose)
+  explicit StringStream(StringAllocator* allocator,
+                        ObjectPrintMode object_print_mode = kPrintObjectVerbose)
       : allocator_(allocator),
         object_print_mode_(object_print_mode),
         capacity_(kInitialCapacity),
@@ -144,14 +170,14 @@ class StringStream final {
   int length() const { return length_; }
 
   // Object printing support.
-  void PrintName(Object* o);
+  void PrintName(Object o);
   void PrintFixedArray(FixedArray array, unsigned int limit);
   void PrintByteArray(ByteArray ba);
-  void PrintUsingMap(JSObject* js_object);
-  void PrintPrototype(JSFunction* fun, Object* receiver);
-  void PrintSecurityTokenIfChanged(JSFunction* function);
+  void PrintUsingMap(JSObject js_object);
+  void PrintPrototype(JSFunction fun, Object receiver);
+  void PrintSecurityTokenIfChanged(JSFunction function);
   // NOTE: Returns the code in the output parameter.
-  void PrintFunction(JSFunction* function, Object* receiver, Code* code);
+  void PrintFunction(JSFunction function, Object receiver, Code* code);
 
   // Reset the stream.
   void Reset() {
@@ -161,7 +187,7 @@ class StringStream final {
 
   // Mentioned object cache support.
   void PrintMentionedObjectCache(Isolate* isolate);
-  static void ClearMentionedObjectCache(Isolate* isolate);
+  V8_EXPORT_PRIVATE static void ClearMentionedObjectCache(Isolate* isolate);
 #ifdef DEBUG
   bool IsMentionedObjectCacheClear(Isolate* isolate);
 #endif
@@ -170,7 +196,7 @@ class StringStream final {
 
  private:
   void Add(Vector<const char> format, Vector<FmtElm> elms);
-  void PrintObject(Object* obj);
+  void PrintObject(Object obj);
 
   StringAllocator* allocator_;
   ObjectPrintMode object_print_mode_;

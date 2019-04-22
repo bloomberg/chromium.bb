@@ -238,7 +238,7 @@ UIImage* GetFallbackImageWithStringAndColor(NSString* string,
   };
 
   base::CancelableTaskTracker::TaskId taskID =
-      _largeIconService->GetLargeIconOrFallbackStyle(
+      _largeIconService->GetLargeIconRawBitmapOrFallbackStyleForPageUrl(
           URL, kMinIconSize * [UIScreen mainScreen].scale,
           kIconSize * [UIScreen mainScreen].scale,
           base::BindRepeating(faviconBlock), &_largeIconTaskTracker);

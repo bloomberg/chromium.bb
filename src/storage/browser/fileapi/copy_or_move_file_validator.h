@@ -6,8 +6,8 @@
 #define STORAGE_BROWSER_FILEAPI_COPY_OR_MOVE_FILE_VALIDATOR_H_
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/files/file.h"
-#include "storage/browser/storage_browser_export.h"
 
 namespace base {
 class FilePath;
@@ -17,7 +17,7 @@ namespace storage {
 
 class FileSystemURL;
 
-class STORAGE_EXPORT CopyOrMoveFileValidator {
+class COMPONENT_EXPORT(STORAGE_BROWSER) CopyOrMoveFileValidator {
  public:
   // Callback that is invoked when validation completes. A result of
   // base::File::FILE_OK means the file validated.

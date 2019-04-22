@@ -22,7 +22,7 @@
 #include "SkTypes.h"
 #include "SkUnPreMultiply.h"
 #include "Test.h"
-#include "sk_tool_utils.h"
+#include "ToolUtils.h"
 
 #include <algorithm>
 #include <memory>
@@ -47,10 +47,10 @@ DEF_TEST(AnimatedImage_scaled, r) {
     }
 
     // Force the drawable follow its special case that requires scaling.
-    auto size = codec->getInfo().dimensions();
-    size.set(size.width() - 5, size.height() - 5);
-    auto rect = SkIRect::MakeSize(size);
-    auto image = SkAnimatedImage::Make(std::move(codec), size, rect, nullptr);
+    auto info = codec->getInfo();
+    info = info.makeWH(info.width() - 5, info.height() - 5);
+    auto rect = info.bounds();
+    auto image = SkAnimatedImage::Make(std::move(codec), info, rect, nullptr);
     if (!image) {
         ERRORF(r, "Failed to create animated image for %s", file);
         return;
@@ -59,12 +59,12 @@ DEF_TEST(AnimatedImage_scaled, r) {
     // Clear a bitmap to non-transparent and draw to it. pixels that are transparent
     // in the image should not replace the original non-transparent color.
     SkBitmap bm;
-    bm.allocPixels(SkImageInfo::MakeN32Premul(size.width(), size.height()));
+    bm.allocPixels(SkImageInfo::MakeN32Premul(info.width(), info.height()));
     bm.eraseColor(SK_ColorBLUE);
     SkCanvas canvas(bm);
     image->draw(&canvas);
-    for (int i = 0; i < size.width();  ++i)
-    for (int j = 0; j < size.height(); ++j) {
+    for (int i = 0; i < info.width();  ++i)
+    for (int j = 0; j < info.height(); ++j) {
         if (*bm.getAddr32(i, j) == SK_ColorTRANSPARENT) {
             ERRORF(r, "Erased color underneath!");
             return;
@@ -95,17 +95,6 @@ static bool compare_bitmaps(skiatest::Reporter* r,
         }
     }
     return true;
-}
-
-// Temporary hack to avoid linear sRGB 8888 surfaces.
-static SkImageInfo temporarily_sanitize(SkImageInfo info) {
-    if (info.colorType() == kRGBA_8888_SkColorType ||
-        info.colorType() == kBGRA_8888_SkColorType) {
-        if (info.colorSpace() && info.colorSpace()->isSRGB()) {
-            info = info.makeColorSpace(nullptr);
-        }
-    }
-    return info;
 }
 
 DEF_TEST(AnimatedImage_copyOnWrite, r) {
@@ -148,7 +137,7 @@ DEF_TEST(AnimatedImage_copyOnWrite, r) {
         std::vector<sk_sp<SkPicture>> pictures(frameCount);
         for (int i = 0; i < frameCount; i++) {
             SkBitmap& bm = expected[i];
-            bm.allocPixels(temporarily_sanitize(imageInfo));
+            bm.allocPixels(imageInfo);
             bm.eraseColor(SK_ColorTRANSPARENT);
             SkCanvas canvas(bm);
 
@@ -168,7 +157,7 @@ DEF_TEST(AnimatedImage_copyOnWrite, r) {
 
         for (int i = 0; i < frameCount; i++) {
             SkBitmap test;
-            test.allocPixels(temporarily_sanitize(imageInfo));
+            test.allocPixels(imageInfo);
             test.eraseColor(SK_ColorTRANSPARENT);
             SkCanvas canvas(test);
 
@@ -218,7 +207,7 @@ DEF_TEST(AnimatedImage, r) {
                 bm.eraseColor(0);
             } else {
                 const SkBitmap& priorFrame = frames[options.fPriorFrame];
-                if (!sk_tool_utils::copy_to(&bm, priorFrame.colorType(), priorFrame)) {
+                if (!ToolUtils::copy_to(&bm, priorFrame.colorType(), priorFrame)) {
                     ERRORF(r, "Failed to copy %s frame %i", file, options.fPriorFrame);
                     options.fPriorFrame = SkCodec::kNoFrame;
                 }
@@ -248,7 +237,7 @@ DEF_TEST(AnimatedImage, r) {
         auto testDraw = [r, &frames, &imageInfo, file](const sk_sp<SkAnimatedImage>& animatedImage,
                                                        int expectedFrame) {
             SkBitmap test;
-            test.allocPixels(temporarily_sanitize(imageInfo));
+            test.allocPixels(imageInfo);
             test.eraseColor(0);
             SkCanvas c(test);
             animatedImage->draw(&c);

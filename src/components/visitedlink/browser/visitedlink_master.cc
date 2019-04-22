@@ -17,8 +17,8 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/rand_util.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
@@ -997,7 +997,7 @@ uint32_t VisitedLinkMaster::NewTableSizeForCount(int32_t item_count) const {
   int desired = item_count * 3;
 
   // Find the closest prime.
-  for (size_t i = 0; i < arraysize(table_sizes); i ++) {
+  for (size_t i = 0; i < base::size(table_sizes); i++) {
     if (table_sizes[i] > desired)
       return table_sizes[i];
   }

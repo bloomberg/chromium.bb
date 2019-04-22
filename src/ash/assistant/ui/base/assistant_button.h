@@ -7,15 +7,40 @@
 
 #include <memory>
 
+#include "base/component_export.h"
 #include "base/macros.h"
+#include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/views/controls/button/image_button.h"
+
+namespace gfx {
+struct VectorIcon;
+}  // namespace gfx
+
+namespace views {
+class ButtonListener;
+class ImageButton;
+}  // namespace views
 
 namespace ash {
 
-class AssistantButton : public views::ImageButton {
+enum class AssistantButtonId;
+
+class COMPONENT_EXPORT(ASSISTANT_UI) AssistantButton
+    : public views::ImageButton,
+      public views::ButtonListener {
  public:
-  explicit AssistantButton(views::ButtonListener* listener);
+  AssistantButton(views::ButtonListener* listener, AssistantButtonId button_id);
   ~AssistantButton() override;
+
+  // Creates an ImageButton with the default Assistant styles.
+  static views::ImageButton* Create(views::ButtonListener* listener,
+                                    const gfx::VectorIcon& icon,
+                                    int size_in_dip,
+                                    int icon_size_in_dip,
+                                    int accessible_name_id,
+                                    AssistantButtonId button_id,
+                                    SkColor icon_color = gfx::kGoogleGrey700);
 
   // views::Button:
   const char* GetClassName() const override;
@@ -26,7 +51,12 @@ class AssistantButton : public views::ImageButton {
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
 
+  // views::ButtonListener:
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+
  private:
+  views::ButtonListener* listener_;
+
   DISALLOW_COPY_AND_ASSIGN(AssistantButton);
 };
 

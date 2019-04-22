@@ -52,7 +52,7 @@ TEST_F(ProgrammaticScrollTest, RestoreScrollPositionAndViewStateWithScale) {
   frame_test_helpers::WebViewHelper web_view_helper;
   WebViewImpl* web_view =
       web_view_helper.InitializeAndLoad(base_url_ + "long_scroll.html");
-  web_view->Resize(WebSize(1000, 1000));
+  web_view->MainFrameWidget()->Resize(WebSize(1000, 1000));
   web_view->MainFrameWidget()->UpdateAllLifecyclePhases(
       WebWidget::LifecycleUpdateReason::kTest);
 
@@ -85,7 +85,7 @@ TEST_F(ProgrammaticScrollTest, RestoreScrollPositionAndViewStateWithoutScale) {
   frame_test_helpers::WebViewHelper web_view_helper;
   WebViewImpl* web_view =
       web_view_helper.InitializeAndLoad(base_url_ + "long_scroll.html");
-  web_view->Resize(WebSize(1000, 1000));
+  web_view->MainFrameWidget()->Resize(WebSize(1000, 1000));
   web_view->MainFrameWidget()->UpdateAllLifecyclePhases(
       WebWidget::LifecycleUpdateReason::kTest);
 
@@ -115,7 +115,7 @@ TEST_F(ProgrammaticScrollTest, SaveScrollStateClearsAnchor) {
   frame_test_helpers::WebViewHelper web_view_helper;
   WebViewImpl* web_view =
       web_view_helper.InitializeAndLoad(base_url_ + "long_scroll.html");
-  web_view->Resize(WebSize(1000, 1000));
+  web_view->MainFrameWidget()->Resize(WebSize(1000, 1000));
   web_view->MainFrameWidget()->UpdateAllLifecyclePhases(
       WebWidget::LifecycleUpdateReason::kTest);
 
@@ -141,16 +141,16 @@ TEST_F(ProgrammaticScrollTest, SaveScrollStateClearsAnchor) {
 class ProgrammaticScrollSimTest : public SimTest {};
 
 TEST_F(ProgrammaticScrollSimTest, NavigateToHash) {
-  WebView().Resize(WebSize(800, 600));
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
   SimRequest main_resource("https://example.com/test.html#target", "text/html");
-  SimRequest css_resource("https://example.com/test.css", "text/css");
+  SimSubresourceRequest css_resource("https://example.com/test.css",
+                                     "text/css");
 
   LoadURL("https://example.com/test.html#target");
 
   // Finish loading the main document before the stylesheet is loaded so that
   // rendering is blocked when parsing finishes. This will delay closing the
   // document until the load event.
-  main_resource.Start();
   main_resource.Write(
       "<!DOCTYPE html><link id=link rel=stylesheet href=test.css>");
   css_resource.Start();

@@ -110,6 +110,9 @@ class EmbeddedTestServer {
 
     // A certificate that is a leaf certificate signed with SHA-1.
     CERT_SHA1_LEAF,
+
+    // A certificate that is signed by an intermediate certificate.
+    CERT_OK_BY_INTERMEDIATE,
   };
 
   typedef base::RepeatingCallback<std::unique_ptr<HttpResponse>(
@@ -158,9 +161,7 @@ class EmbeddedTestServer {
   bool ShutdownAndWaitUntilComplete() WARN_UNUSED_RESULT;
 
   // Checks if the server has started listening for incoming connections.
-  bool Started() const {
-    return listen_socket_.get() != NULL;
-  }
+  bool Started() const { return listen_socket_.get() != nullptr; }
 
   static base::FilePath GetRootCertPemPath();
 

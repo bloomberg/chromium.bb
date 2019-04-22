@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ANDROID_SMS_FAKE_CONNECTION_ESTABLISHER_H_
 #define CHROME_BROWSER_CHROMEOS_ANDROID_SMS_FAKE_CONNECTION_ESTABLISHER_H_
 
+#include <tuple>
+#include <vector>
+
 #include "chrome/browser/chromeos/android_sms/connection_establisher.h"
 
 namespace chromeos {
@@ -17,18 +20,33 @@ class FakeConnectionEstablisher : public ConnectionEstablisher {
   FakeConnectionEstablisher();
   ~FakeConnectionEstablisher() override;
 
-  const std::vector<content::ServiceWorkerContext*>&
+  const std::vector<
+      std::tuple<GURL, ConnectionMode, content::ServiceWorkerContext*>>&
   establish_connection_calls() const {
     return establish_connection_calls_;
+  }
+
+  const std::vector<std::tuple<GURL, content::ServiceWorkerContext*>>&
+  tear_down_connection_calls() const {
+    return tear_down_connection_calls_;
   }
 
  private:
   // ConnectionEstablisher:
   void EstablishConnection(
-      content::ServiceWorkerContext* service_worker_context_,
-      ConnectionMode connection_mode) override;
+      const GURL& url,
+      ConnectionMode connection_mode,
+      content::ServiceWorkerContext* service_worker_context) override;
 
-  std::vector<content::ServiceWorkerContext*> establish_connection_calls_;
+  void TearDownConnection(
+      const GURL& url,
+      content::ServiceWorkerContext* service_worker_context) override;
+
+  std::vector<std::tuple<GURL, ConnectionMode, content::ServiceWorkerContext*>>
+      establish_connection_calls_;
+  std::vector<std::tuple<GURL, content::ServiceWorkerContext*>>
+      tear_down_connection_calls_;
+
   DISALLOW_COPY_AND_ASSIGN(FakeConnectionEstablisher);
 };
 

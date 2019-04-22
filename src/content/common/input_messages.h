@@ -71,7 +71,7 @@ IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::WebPointerProperties::Button,
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebPointerProperties::PointerType,
                           blink::WebPointerProperties::PointerType::kLastEntry)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebGestureDevice,
-                          (blink::WebGestureDevice::kWebGestureDeviceCount - 1))
+                          blink::WebGestureDevice::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebInputEvent::DispatchType,
                           blink::WebInputEvent::DispatchType::kLastDispatchType)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebGestureEvent::ScrollUnits,
@@ -144,6 +144,13 @@ IPC_STRUCT_TRAITS_BEGIN(content::SyntheticPointerActionParams)
   IPC_STRUCT_TRAITS_MEMBER(pointer_id_)
   IPC_STRUCT_TRAITS_MEMBER(position_)
   IPC_STRUCT_TRAITS_MEMBER(button_)
+  IPC_STRUCT_TRAITS_MEMBER(key_modifiers_)
+  IPC_STRUCT_TRAITS_MEMBER(width_)
+  IPC_STRUCT_TRAITS_MEMBER(height_)
+  IPC_STRUCT_TRAITS_MEMBER(rotation_angle_)
+  IPC_STRUCT_TRAITS_MEMBER(force_)
+  IPC_STRUCT_TRAITS_MEMBER(timestamp_)
+  IPC_STRUCT_TRAITS_MEMBER(duration_)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::SyntheticPointerActionListParams)

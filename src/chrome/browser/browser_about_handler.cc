@@ -60,18 +60,13 @@ bool WillHandleBrowserAboutURL(GURL* url,
   if (host == chrome::kChromeUIAboutHost)
     host = chrome::kChromeUIChromeURLsHost;
 
-  // Legacy redirect from chrome://history-frame to chrome://history.
-  if (host == chrome::kDeprecatedChromeUIHistoryFrameHost)
-    host = chrome::kChromeUIHistoryHost;
-
   if (host == chrome::kChromeUISyncHost) {
     // Replace sync with sync-internals (for legacy reasons).
     host = chrome::kChromeUISyncInternalsHost;
-// Redirect chrome://extensions, chrome://extensions-frame, and
-// chrome://settings/extensions all to chrome://extensions and forward path.
+// Redirect chrome://extensions and chrome://settings/extensions all to
+// chrome://extensions and forward path.
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   } else if (host == chrome::kChromeUIExtensionsHost ||
-             host == chrome::kChromeUIExtensionsFrameHost ||
              (host == chrome::kChromeUISettingsHost &&
               url->path() ==
                   std::string("/") + chrome::kDeprecatedExtensionsSubPage)) {

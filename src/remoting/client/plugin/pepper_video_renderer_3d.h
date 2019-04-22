@@ -54,7 +54,7 @@ class PepperVideoRenderer3D : public PepperVideoRenderer,
 
   // protocol::VideoStub interface.
   void ProcessVideoPacket(std::unique_ptr<VideoPacket> packet,
-                          const base::Closure& done) override;
+                          base::OnceClosure done) override;
 
  private:
   // Class responsible for tracking state of a frame until it's rendered.

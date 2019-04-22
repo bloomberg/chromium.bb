@@ -6,12 +6,15 @@
 
 #include <unistd.h>
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/mac/foundation_util.h"
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_restrictions.h"
+#include "chrome/app_shim/app_shim_controller.h"
 #include "chrome/browser/apps/app_shim/app_shim_handler_mac.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_bootstrap_mac.h"
 #include "chrome/browser/apps/app_shim/test/app_shim_host_manager_test_api_mac.h"
@@ -26,13 +29,13 @@
 #include "components/version_info/version_info.h"
 #include "content/public/test/test_utils.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/platform/features.h"
 #include "mojo/public/cpp/platform/named_platform_channel.h"
+#include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/system/isolated_connection.h"
 
 using LaunchAppCallback =
     chrome::mojom::AppShimHostBootstrap::LaunchAppCallback;
-
-namespace {
 
 const char kTestAppMode[] = "test_app";
 
@@ -40,6 +43,12 @@ const char kTestAppMode[] = "test_app";
 class TestShimClient : public chrome::mojom::AppShim {
  public:
   TestShimClient();
+
+  // Friend accessor.
+  mojo::PlatformChannelEndpoint ConnectToBrowser(
+      const mojo::NamedPlatformChannel::ServerName& server_name) {
+    return AppShimController::ConnectToBrowser(server_name);
+  }
 
   chrome::mojom::AppShimHostRequest GetHostRequest() {
     return std::move(host_request_);
@@ -60,9 +69,11 @@ class TestShimClient : public chrome::mojom::AppShim {
       override {}
   void CreateContentNSViewBridgeFactory(
       content::mojom::NSViewBridgeFactoryAssociatedRequest request) override {}
+  void CreateCommandDispatcherForWidget(uint64_t widget_id) override {}
   void Hide() override {}
   void UnhideWithoutActivation() override {}
   void SetUserAttention(apps::AppShimAttentionType attention_type) override {}
+  void SetBadgeLabel(const std::string& badge_label) override {}
 
  private:
   void LaunchAppDone(apps::AppShimLaunchResult result,
@@ -83,16 +94,27 @@ TestShimClient::TestShimClient()
     : shim_binding_(this), host_request_(mojo::MakeRequest(&host_)) {
   base::FilePath user_data_dir;
   CHECK(base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir));
-  base::FilePath symlink_path =
-      user_data_dir.Append(app_mode::kAppShimSocketSymlinkName);
 
-  base::FilePath socket_path;
-  base::ScopedAllowBlockingForTesting allow_blocking;
-  CHECK(base::ReadSymbolicLink(symlink_path, &socket_path));
-  app_mode::VerifySocketPermissions(socket_path);
+  mojo::PlatformChannelEndpoint endpoint;
 
-  mojo::ScopedMessagePipeHandle message_pipe = mojo_connection_.Connect(
-      mojo::NamedPlatformChannel::ConnectToServer(socket_path.value()));
+  if (base::FeatureList::IsEnabled(mojo::features::kMojoChannelMac)) {
+    std::string name_fragment =
+        base::StringPrintf("%s.%s.%s", base::mac::BaseBundleID(),
+                           app_mode::kAppShimBootstrapNameFragment,
+                           base::MD5String(user_data_dir.value()).c_str());
+    endpoint = ConnectToBrowser(name_fragment);
+  } else {
+    base::FilePath symlink_path =
+        user_data_dir.Append(app_mode::kAppShimSocketSymlinkName);
+
+    base::FilePath socket_path;
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    CHECK(base::ReadSymbolicLink(symlink_path, &socket_path));
+    app_mode::VerifySocketPermissions(socket_path);
+    endpoint = mojo::NamedPlatformChannel::ConnectToServer(socket_path.value());
+  }
+  mojo::ScopedMessagePipeHandle message_pipe =
+      mojo_connection_.Connect(std::move(endpoint));
   host_bootstrap_ = chrome::mojom::AppShimHostBootstrapPtr(
       chrome::mojom::AppShimHostBootstrapPtrInfo(std::move(message_pipe), 0));
 }
@@ -106,8 +128,8 @@ class AppShimHostManagerBrowserTest : public InProcessBrowserTest,
   AppShimHostManagerBrowserTest() : binding_(this) {}
 
  protected:
-  // Wait for OnShimLaunch, then send a quit, and wait for the response. Used to
-  // test launch behavior.
+  // Wait for OnShimProcessConnected, then send a quit, and wait for the
+  // response. Used to test launch behavior.
   void RunAndExitGracefully();
 
   // InProcessBrowserTest overrides:
@@ -115,14 +137,19 @@ class AppShimHostManagerBrowserTest : public InProcessBrowserTest,
   void TearDownOnMainThread() override;
 
   // AppShimHandler overrides:
-  void OnShimLaunch(std::unique_ptr<AppShimHostBootstrap> bootstrap) override;
-  void OnShimClose(apps::AppShimHandler::Host* host) override {}
-  void OnShimFocus(apps::AppShimHandler::Host* host,
+  void OnShimLaunchRequested(
+      ::AppShimHost* host,
+      bool recreate_shims,
+      apps::ShimLaunchedCallback launched_callback,
+      apps::ShimTerminatedCallback terminated_callback) override {}
+  void OnShimProcessConnected(
+      std::unique_ptr<AppShimHostBootstrap> bootstrap) override;
+  void OnShimClose(::AppShimHost* host) override {}
+  void OnShimFocus(::AppShimHost* host,
                    apps::AppShimFocusType focus_type,
                    const std::vector<base::FilePath>& files) override {}
-  void OnShimSetHidden(apps::AppShimHandler::Host* host, bool hidden) override {
-  }
-  void OnShimQuit(apps::AppShimHandler::Host* host) override {}
+  void OnShimSetHidden(::AppShimHost* host, bool hidden) override {}
+  void OnShimQuit(::AppShimHost* host) override {}
 
   std::unique_ptr<TestShimClient> test_client_;
   std::vector<base::FilePath> last_launch_files_;
@@ -151,7 +178,7 @@ class AppShimHostManagerBrowserTest : public InProcessBrowserTest,
 void AppShimHostManagerBrowserTest::RunAndExitGracefully() {
   runner_ = std::make_unique<base::RunLoop>();
   EXPECT_EQ(0, launch_count_);
-  runner_->Run();  // Will stop in OnShimLaunch().
+  runner_->Run();  // Will stop in OnShimProcessConnected().
   EXPECT_EQ(1, launch_count_);
 
   runner_ = std::make_unique<base::RunLoop>();
@@ -172,14 +199,14 @@ void AppShimHostManagerBrowserTest::TearDownOnMainThread() {
   apps::AppShimHandler::RemoveHandler(kTestAppMode);
 }
 
-void AppShimHostManagerBrowserTest::OnShimLaunch(
+void AppShimHostManagerBrowserTest::OnShimProcessConnected(
     std::unique_ptr<AppShimHostBootstrap> bootstrap) {
   ++launch_count_;
   binding_.Bind(bootstrap->GetLaunchAppShimHostRequest());
   last_launch_type_ = bootstrap->GetLaunchType();
   last_launch_files_ = bootstrap->GetLaunchFiles();
 
-  bootstrap->OnLaunchAppSucceeded(mojo::MakeRequest(&app_shim_ptr_));
+  bootstrap->OnConnectedToHost(mojo::MakeRequest(&app_shim_ptr_));
   runner_->Quit();
 }
 
@@ -214,7 +241,11 @@ IN_PROC_BROWSER_TEST_F(AppShimHostManagerBrowserTest,
                        PRE_ReCreate) {
   test::AppShimHostManagerTestApi test_api(
       g_browser_process->platform_part()->app_shim_host_manager());
-  EXPECT_TRUE(test_api.acceptor());
+  if (base::FeatureList::IsEnabled(mojo::features::kMojoChannelMac)) {
+    EXPECT_TRUE(test_api.mach_acceptor());
+  } else {
+    EXPECT_TRUE(test_api.acceptor());
+  }
 }
 
 // Ensure the domain socket can be re-created after a prior browser process has
@@ -223,7 +254,11 @@ IN_PROC_BROWSER_TEST_F(AppShimHostManagerBrowserTest,
                        ReCreate) {
   test::AppShimHostManagerTestApi test_api(
       g_browser_process->platform_part()->app_shim_host_manager());
-  EXPECT_TRUE(test_api.acceptor());
+  if (base::FeatureList::IsEnabled(mojo::features::kMojoChannelMac)) {
+    EXPECT_TRUE(test_api.mach_acceptor());
+  } else {
+    EXPECT_TRUE(test_api.acceptor());
+  }
 }
 
 // Tests for the files created by AppShimHostManager.
@@ -272,6 +307,9 @@ void AppShimHostManagerBrowserTestSocketFiles::
 
 IN_PROC_BROWSER_TEST_F(AppShimHostManagerBrowserTestSocketFiles,
                        ReplacesSymlinkAndCleansUpFiles) {
+  if (base::FeatureList::IsEnabled(mojo::features::kMojoChannelMac))
+    return;
+
   // Get the directory created by AppShimHostManager.
   test::AppShimHostManagerTestApi test_api(
       g_browser_process->platform_part()->app_shim_host_manager());
@@ -292,5 +330,3 @@ IN_PROC_BROWSER_TEST_F(AppShimHostManagerBrowserTestSocketFiles,
   EXPECT_TRUE(base::ReadSymbolicLink(version_path_, &version));
   EXPECT_EQ(version_info::GetVersionNumber(), version.value());
 }
-
-}  // namespace

@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <string>
+#include <utility>
 
 #include "base/callback_helpers.h"
 #include "base/logging.h"
@@ -26,7 +27,7 @@ AudioPlayer::AudioPlayer()
 AudioPlayer::~AudioPlayer() = default;
 
 void AudioPlayer::ProcessAudioPacket(std::unique_ptr<AudioPacket> packet,
-                                     const base::Closure& done) {
+                                     base::OnceClosure done) {
   CHECK_EQ(1, packet->data_size());
   DCHECK_EQ(AudioPacket::ENCODING_RAW, packet->encoding());
   DCHECK_NE(AudioPacket::SAMPLING_RATE_INVALID, packet->sampling_rate());
@@ -34,7 +35,7 @@ void AudioPlayer::ProcessAudioPacket(std::unique_ptr<AudioPacket> packet,
   DCHECK_EQ(kChannels, static_cast<int>(packet->channels()));
   DCHECK_EQ(packet->data(0).size() % (kChannels * kSampleSizeBytes), 0u);
 
-  base::ScopedClosureRunner done_runner(done);
+  base::ScopedClosureRunner done_runner(std::move(done));
 
   // No-op if the Pepper player won't start.
   if (start_failed_) {

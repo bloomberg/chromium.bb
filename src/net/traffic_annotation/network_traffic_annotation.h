@@ -153,7 +153,7 @@ NetworkTrafficAnnotationTag BranchedCompleteNetworkTrafficAnnotation(
     const char (&proto)[N3]) {
 #if !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
   DCHECK(partial_annotation.completing_id_hash_code ==
-             COMPUTE_NETWORK_TRAFFIC_ANNOTATION_ID_HASH(unique_id) ||
+             COMPUTE_NETWORK_TRAFFIC_ANNOTATION_ID_HASH(group_id) ||
          partial_annotation.unique_id_hash_code ==
              COMPUTE_NETWORK_TRAFFIC_ANNOTATION_ID_HASH("test_partial") ||
          partial_annotation.unique_id_hash_code ==

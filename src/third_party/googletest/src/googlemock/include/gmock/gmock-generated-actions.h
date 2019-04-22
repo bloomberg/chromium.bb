@@ -50,537 +50,6 @@
 namespace testing {
 namespace internal {
 
-// InvokeHelper<F> knows how to unpack an N-tuple and invoke an N-ary
-// function, method, or callback with the unpacked values, where F is
-// a function type that takes N arguments.
-template <typename Result, typename ArgumentTuple>
-class InvokeHelper;
-
-template <typename R>
-class InvokeHelper<R, ::std::tuple<> > {
- public:
-  template <typename Function>
-  static R Invoke(Function function, const ::std::tuple<>&) {
-           return function();
-  }
-
-  template <class Class, typename MethodPtr>
-  static R InvokeMethod(Class* obj_ptr,
-                        MethodPtr method_ptr,
-                        const ::std::tuple<>&) {
-           return (obj_ptr->*method_ptr)();
-  }
-
-  template <typename CallbackType>
-  static R InvokeCallback(CallbackType* callback,
-                          const ::std::tuple<>&) {
-           return callback->Run();
-  }
-};
-
-template <typename R, typename A1>
-class InvokeHelper<R, ::std::tuple<A1> > {
- public:
-  template <typename Function>
-  static R Invoke(Function function, const ::std::tuple<A1>& args) {
-           return function(std::get<0>(args));
-  }
-
-  template <class Class, typename MethodPtr>
-  static R InvokeMethod(Class* obj_ptr,
-                        MethodPtr method_ptr,
-                        const ::std::tuple<A1>& args) {
-           return (obj_ptr->*method_ptr)(std::get<0>(args));
-  }
-
-  template <typename CallbackType>
-  static R InvokeCallback(CallbackType* callback,
-                          const ::std::tuple<A1>& args) {
-           return callback->Run(std::get<0>(args));
-  }
-};
-
-template <typename R, typename A1, typename A2>
-class InvokeHelper<R, ::std::tuple<A1, A2> > {
- public:
-  template <typename Function>
-  static R Invoke(Function function, const ::std::tuple<A1, A2>& args) {
-           return function(std::get<0>(args), std::get<1>(args));
-  }
-
-  template <class Class, typename MethodPtr>
-  static R InvokeMethod(Class* obj_ptr,
-                        MethodPtr method_ptr,
-                        const ::std::tuple<A1, A2>& args) {
-           return (obj_ptr->*method_ptr)(std::get<0>(args), std::get<1>(args));
-  }
-
-  template <typename CallbackType>
-  static R InvokeCallback(CallbackType* callback,
-                          const ::std::tuple<A1, A2>& args) {
-           return callback->Run(std::get<0>(args), std::get<1>(args));
-  }
-};
-
-template <typename R, typename A1, typename A2, typename A3>
-class InvokeHelper<R, ::std::tuple<A1, A2, A3> > {
- public:
-  template <typename Function>
-  static R Invoke(Function function, const ::std::tuple<A1, A2, A3>& args) {
-           return function(std::get<0>(args), std::get<1>(args),
-               std::get<2>(args));
-  }
-
-  template <class Class, typename MethodPtr>
-  static R InvokeMethod(Class* obj_ptr,
-                        MethodPtr method_ptr,
-                        const ::std::tuple<A1, A2, A3>& args) {
-           return (obj_ptr->*method_ptr)(std::get<0>(args), std::get<1>(args),
-               std::get<2>(args));
-  }
-
-  template <typename CallbackType>
-  static R InvokeCallback(CallbackType* callback,
-                          const ::std::tuple<A1, A2, A3>& args) {
-           return callback->Run(std::get<0>(args), std::get<1>(args),
-               std::get<2>(args));
-  }
-};
-
-template <typename R, typename A1, typename A2, typename A3, typename A4>
-class InvokeHelper<R, ::std::tuple<A1, A2, A3, A4> > {
- public:
-  template <typename Function>
-  static R Invoke(Function function, const ::std::tuple<A1, A2, A3, A4>& args) {
-           return function(std::get<0>(args), std::get<1>(args),
-               std::get<2>(args), std::get<3>(args));
-  }
-
-  template <class Class, typename MethodPtr>
-  static R InvokeMethod(Class* obj_ptr,
-                        MethodPtr method_ptr,
-                        const ::std::tuple<A1, A2, A3, A4>& args) {
-           return (obj_ptr->*method_ptr)(std::get<0>(args), std::get<1>(args),
-               std::get<2>(args), std::get<3>(args));
-  }
-
-  template <typename CallbackType>
-  static R InvokeCallback(CallbackType* callback,
-                          const ::std::tuple<A1, A2, A3, A4>& args) {
-           return callback->Run(std::get<0>(args), std::get<1>(args),
-               std::get<2>(args), std::get<3>(args));
-  }
-};
-
-template <typename R, typename A1, typename A2, typename A3, typename A4,
-    typename A5>
-class InvokeHelper<R, ::std::tuple<A1, A2, A3, A4, A5> > {
- public:
-  template <typename Function>
-  static R Invoke(Function function, const ::std::tuple<A1, A2, A3, A4,
-      A5>& args) {
-           return function(std::get<0>(args), std::get<1>(args),
-               std::get<2>(args), std::get<3>(args), std::get<4>(args));
-  }
-
-  template <class Class, typename MethodPtr>
-  static R InvokeMethod(Class* obj_ptr,
-                        MethodPtr method_ptr,
-                        const ::std::tuple<A1, A2, A3, A4, A5>& args) {
-           return (obj_ptr->*method_ptr)(std::get<0>(args), std::get<1>(args),
-               std::get<2>(args), std::get<3>(args), std::get<4>(args));
-  }
-
-  template <typename CallbackType>
-  static R InvokeCallback(CallbackType* callback,
-                          const ::std::tuple<A1, A2, A3, A4, A5>& args) {
-           return callback->Run(std::get<0>(args), std::get<1>(args),
-               std::get<2>(args), std::get<3>(args), std::get<4>(args));
-  }
-};
-
-template <typename R, typename A1, typename A2, typename A3, typename A4,
-    typename A5, typename A6>
-class InvokeHelper<R, ::std::tuple<A1, A2, A3, A4, A5, A6> > {
- public:
-  template <typename Function>
-  static R Invoke(Function function, const ::std::tuple<A1, A2, A3, A4, A5,
-      A6>& args) {
-           return function(std::get<0>(args), std::get<1>(args),
-               std::get<2>(args), std::get<3>(args), std::get<4>(args),
-               std::get<5>(args));
-  }
-
-  template <class Class, typename MethodPtr>
-  static R InvokeMethod(Class* obj_ptr,
-                        MethodPtr method_ptr,
-                        const ::std::tuple<A1, A2, A3, A4, A5, A6>& args) {
-           return (obj_ptr->*method_ptr)(std::get<0>(args), std::get<1>(args),
-               std::get<2>(args), std::get<3>(args), std::get<4>(args),
-               std::get<5>(args));
-  }
-
-  // There is no InvokeCallback() for 6-tuples
-};
-
-template <typename R, typename A1, typename A2, typename A3, typename A4,
-    typename A5, typename A6, typename A7>
-class InvokeHelper<R, ::std::tuple<A1, A2, A3, A4, A5, A6, A7> > {
- public:
-  template <typename Function>
-  static R Invoke(Function function, const ::std::tuple<A1, A2, A3, A4, A5, A6,
-      A7>& args) {
-           return function(std::get<0>(args), std::get<1>(args),
-               std::get<2>(args), std::get<3>(args), std::get<4>(args),
-               std::get<5>(args), std::get<6>(args));
-  }
-
-  template <class Class, typename MethodPtr>
-  static R InvokeMethod(Class* obj_ptr,
-                        MethodPtr method_ptr,
-                        const ::std::tuple<A1, A2, A3, A4, A5, A6, A7>& args) {
-           return (obj_ptr->*method_ptr)(std::get<0>(args), std::get<1>(args),
-               std::get<2>(args), std::get<3>(args), std::get<4>(args),
-               std::get<5>(args), std::get<6>(args));
-  }
-
-  // There is no InvokeCallback() for 7-tuples
-};
-
-template <typename R, typename A1, typename A2, typename A3, typename A4,
-    typename A5, typename A6, typename A7, typename A8>
-class InvokeHelper<R, ::std::tuple<A1, A2, A3, A4, A5, A6, A7, A8> > {
- public:
-  template <typename Function>
-  static R Invoke(Function function, const ::std::tuple<A1, A2, A3, A4, A5, A6,
-      A7, A8>& args) {
-           return function(std::get<0>(args), std::get<1>(args),
-               std::get<2>(args), std::get<3>(args), std::get<4>(args),
-               std::get<5>(args), std::get<6>(args), std::get<7>(args));
-  }
-
-  template <class Class, typename MethodPtr>
-  static R InvokeMethod(Class* obj_ptr,
-                        MethodPtr method_ptr,
-                        const ::std::tuple<A1, A2, A3, A4, A5, A6, A7,
-                            A8>& args) {
-           return (obj_ptr->*method_ptr)(std::get<0>(args), std::get<1>(args),
-               std::get<2>(args), std::get<3>(args), std::get<4>(args),
-               std::get<5>(args), std::get<6>(args), std::get<7>(args));
-  }
-
-  // There is no InvokeCallback() for 8-tuples
-};
-
-template <typename R, typename A1, typename A2, typename A3, typename A4,
-    typename A5, typename A6, typename A7, typename A8, typename A9>
-class InvokeHelper<R, ::std::tuple<A1, A2, A3, A4, A5, A6, A7, A8, A9> > {
- public:
-  template <typename Function>
-  static R Invoke(Function function, const ::std::tuple<A1, A2, A3, A4, A5, A6,
-      A7, A8, A9>& args) {
-           return function(std::get<0>(args), std::get<1>(args),
-               std::get<2>(args), std::get<3>(args), std::get<4>(args),
-               std::get<5>(args), std::get<6>(args), std::get<7>(args),
-               std::get<8>(args));
-  }
-
-  template <class Class, typename MethodPtr>
-  static R InvokeMethod(Class* obj_ptr,
-                        MethodPtr method_ptr,
-                        const ::std::tuple<A1, A2, A3, A4, A5, A6, A7, A8,
-                            A9>& args) {
-           return (obj_ptr->*method_ptr)(std::get<0>(args), std::get<1>(args),
-               std::get<2>(args), std::get<3>(args), std::get<4>(args),
-               std::get<5>(args), std::get<6>(args), std::get<7>(args),
-               std::get<8>(args));
-  }
-
-  // There is no InvokeCallback() for 9-tuples
-};
-
-template <typename R, typename A1, typename A2, typename A3, typename A4,
-    typename A5, typename A6, typename A7, typename A8, typename A9,
-    typename A10>
-class InvokeHelper<R, ::std::tuple<A1, A2, A3, A4, A5, A6, A7, A8, A9, A10> > {
- public:
-  template <typename Function>
-  static R Invoke(Function function, const ::std::tuple<A1, A2, A3, A4, A5, A6,
-      A7, A8, A9, A10>& args) {
-           return function(std::get<0>(args), std::get<1>(args),
-               std::get<2>(args), std::get<3>(args), std::get<4>(args),
-               std::get<5>(args), std::get<6>(args), std::get<7>(args),
-               std::get<8>(args), std::get<9>(args));
-  }
-
-  template <class Class, typename MethodPtr>
-  static R InvokeMethod(Class* obj_ptr,
-                        MethodPtr method_ptr,
-                        const ::std::tuple<A1, A2, A3, A4, A5, A6, A7, A8, A9,
-                            A10>& args) {
-           return (obj_ptr->*method_ptr)(std::get<0>(args), std::get<1>(args),
-               std::get<2>(args), std::get<3>(args), std::get<4>(args),
-               std::get<5>(args), std::get<6>(args), std::get<7>(args),
-               std::get<8>(args), std::get<9>(args));
-  }
-
-  // There is no InvokeCallback() for 10-tuples
-};
-
-// Implements the Invoke(callback) action.
-template <typename CallbackType>
-class InvokeCallbackAction {
- public:
-  // The c'tor takes ownership of the callback.
-  explicit InvokeCallbackAction(CallbackType* callback)
-      : callback_(callback) {
-    callback->CheckIsRepeatable();  // Makes sure the callback is permanent.
-  }
-
-  // This type conversion operator template allows Invoke(callback) to
-  // be used wherever the callback's type is compatible with that of
-  // the mock function, i.e. if the mock function's arguments can be
-  // implicitly converted to the callback's arguments and the
-  // callback's result can be implicitly converted to the mock
-  // function's result.
-  template <typename Result, typename ArgumentTuple>
-  Result Perform(const ArgumentTuple& args) const {
-    return InvokeHelper<Result, ArgumentTuple>::InvokeCallback(
-        callback_.get(), args);
-  }
- private:
-  const std::shared_ptr<CallbackType> callback_;
-};
-
-// An INTERNAL macro for extracting the type of a tuple field.  It's
-// subject to change without notice - DO NOT USE IN USER CODE!
-#define GMOCK_FIELD_(Tuple, N) \
-    typename ::std::tuple_element<N, Tuple>::type
-
-// SelectArgs<Result, ArgumentTuple, k1, k2, ..., k_n>::type is the
-// type of an n-ary function whose i-th (1-based) argument type is the
-// k{i}-th (0-based) field of ArgumentTuple, which must be a tuple
-// type, and whose return type is Result.  For example,
-//   SelectArgs<int, ::std::tuple<bool, char, double, long>, 0, 3>::type
-// is int(bool, long).
-//
-// SelectArgs<Result, ArgumentTuple, k1, k2, ..., k_n>::Select(args)
-// returns the selected fields (k1, k2, ..., k_n) of args as a tuple.
-// For example,
-//   SelectArgs<int, std::tuple<bool, char, double>, 2, 0>::Select(
-//       ::std::make_tuple(true, 'a', 2.5))
-// returns tuple (2.5, true).
-//
-// The numbers in list k1, k2, ..., k_n must be >= 0, where n can be
-// in the range [0, 10].  Duplicates are allowed and they don't have
-// to be in an ascending or descending order.
-
-template <typename Result, typename ArgumentTuple, int k1, int k2, int k3,
-    int k4, int k5, int k6, int k7, int k8, int k9, int k10>
-class SelectArgs {
- public:
-  typedef Result type(GMOCK_FIELD_(ArgumentTuple, k1),
-      GMOCK_FIELD_(ArgumentTuple, k2), GMOCK_FIELD_(ArgumentTuple, k3),
-      GMOCK_FIELD_(ArgumentTuple, k4), GMOCK_FIELD_(ArgumentTuple, k5),
-      GMOCK_FIELD_(ArgumentTuple, k6), GMOCK_FIELD_(ArgumentTuple, k7),
-      GMOCK_FIELD_(ArgumentTuple, k8), GMOCK_FIELD_(ArgumentTuple, k9),
-      GMOCK_FIELD_(ArgumentTuple, k10));
-  typedef typename Function<type>::ArgumentTuple SelectedArgs;
-  static SelectedArgs Select(const ArgumentTuple& args) {
-    return SelectedArgs(std::get<k1>(args), std::get<k2>(args),
-        std::get<k3>(args), std::get<k4>(args), std::get<k5>(args),
-        std::get<k6>(args), std::get<k7>(args), std::get<k8>(args),
-        std::get<k9>(args), std::get<k10>(args));
-  }
-};
-
-template <typename Result, typename ArgumentTuple>
-class SelectArgs<Result, ArgumentTuple,
-                 -1, -1, -1, -1, -1, -1, -1, -1, -1, -1> {
- public:
-  typedef Result type();
-  typedef typename Function<type>::ArgumentTuple SelectedArgs;
-  static SelectedArgs Select(const ArgumentTuple& /* args */) {
-    return SelectedArgs();
-  }
-};
-
-template <typename Result, typename ArgumentTuple, int k1>
-class SelectArgs<Result, ArgumentTuple,
-                 k1, -1, -1, -1, -1, -1, -1, -1, -1, -1> {
- public:
-  typedef Result type(GMOCK_FIELD_(ArgumentTuple, k1));
-  typedef typename Function<type>::ArgumentTuple SelectedArgs;
-  static SelectedArgs Select(const ArgumentTuple& args) {
-    return SelectedArgs(std::get<k1>(args));
-  }
-};
-
-template <typename Result, typename ArgumentTuple, int k1, int k2>
-class SelectArgs<Result, ArgumentTuple,
-                 k1, k2, -1, -1, -1, -1, -1, -1, -1, -1> {
- public:
-  typedef Result type(GMOCK_FIELD_(ArgumentTuple, k1),
-      GMOCK_FIELD_(ArgumentTuple, k2));
-  typedef typename Function<type>::ArgumentTuple SelectedArgs;
-  static SelectedArgs Select(const ArgumentTuple& args) {
-    return SelectedArgs(std::get<k1>(args), std::get<k2>(args));
-  }
-};
-
-template <typename Result, typename ArgumentTuple, int k1, int k2, int k3>
-class SelectArgs<Result, ArgumentTuple,
-                 k1, k2, k3, -1, -1, -1, -1, -1, -1, -1> {
- public:
-  typedef Result type(GMOCK_FIELD_(ArgumentTuple, k1),
-      GMOCK_FIELD_(ArgumentTuple, k2), GMOCK_FIELD_(ArgumentTuple, k3));
-  typedef typename Function<type>::ArgumentTuple SelectedArgs;
-  static SelectedArgs Select(const ArgumentTuple& args) {
-    return SelectedArgs(std::get<k1>(args), std::get<k2>(args),
-        std::get<k3>(args));
-  }
-};
-
-template <typename Result, typename ArgumentTuple, int k1, int k2, int k3,
-    int k4>
-class SelectArgs<Result, ArgumentTuple,
-                 k1, k2, k3, k4, -1, -1, -1, -1, -1, -1> {
- public:
-  typedef Result type(GMOCK_FIELD_(ArgumentTuple, k1),
-      GMOCK_FIELD_(ArgumentTuple, k2), GMOCK_FIELD_(ArgumentTuple, k3),
-      GMOCK_FIELD_(ArgumentTuple, k4));
-  typedef typename Function<type>::ArgumentTuple SelectedArgs;
-  static SelectedArgs Select(const ArgumentTuple& args) {
-    return SelectedArgs(std::get<k1>(args), std::get<k2>(args),
-        std::get<k3>(args), std::get<k4>(args));
-  }
-};
-
-template <typename Result, typename ArgumentTuple, int k1, int k2, int k3,
-    int k4, int k5>
-class SelectArgs<Result, ArgumentTuple,
-                 k1, k2, k3, k4, k5, -1, -1, -1, -1, -1> {
- public:
-  typedef Result type(GMOCK_FIELD_(ArgumentTuple, k1),
-      GMOCK_FIELD_(ArgumentTuple, k2), GMOCK_FIELD_(ArgumentTuple, k3),
-      GMOCK_FIELD_(ArgumentTuple, k4), GMOCK_FIELD_(ArgumentTuple, k5));
-  typedef typename Function<type>::ArgumentTuple SelectedArgs;
-  static SelectedArgs Select(const ArgumentTuple& args) {
-    return SelectedArgs(std::get<k1>(args), std::get<k2>(args),
-        std::get<k3>(args), std::get<k4>(args), std::get<k5>(args));
-  }
-};
-
-template <typename Result, typename ArgumentTuple, int k1, int k2, int k3,
-    int k4, int k5, int k6>
-class SelectArgs<Result, ArgumentTuple,
-                 k1, k2, k3, k4, k5, k6, -1, -1, -1, -1> {
- public:
-  typedef Result type(GMOCK_FIELD_(ArgumentTuple, k1),
-      GMOCK_FIELD_(ArgumentTuple, k2), GMOCK_FIELD_(ArgumentTuple, k3),
-      GMOCK_FIELD_(ArgumentTuple, k4), GMOCK_FIELD_(ArgumentTuple, k5),
-      GMOCK_FIELD_(ArgumentTuple, k6));
-  typedef typename Function<type>::ArgumentTuple SelectedArgs;
-  static SelectedArgs Select(const ArgumentTuple& args) {
-    return SelectedArgs(std::get<k1>(args), std::get<k2>(args),
-        std::get<k3>(args), std::get<k4>(args), std::get<k5>(args),
-        std::get<k6>(args));
-  }
-};
-
-template <typename Result, typename ArgumentTuple, int k1, int k2, int k3,
-    int k4, int k5, int k6, int k7>
-class SelectArgs<Result, ArgumentTuple,
-                 k1, k2, k3, k4, k5, k6, k7, -1, -1, -1> {
- public:
-  typedef Result type(GMOCK_FIELD_(ArgumentTuple, k1),
-      GMOCK_FIELD_(ArgumentTuple, k2), GMOCK_FIELD_(ArgumentTuple, k3),
-      GMOCK_FIELD_(ArgumentTuple, k4), GMOCK_FIELD_(ArgumentTuple, k5),
-      GMOCK_FIELD_(ArgumentTuple, k6), GMOCK_FIELD_(ArgumentTuple, k7));
-  typedef typename Function<type>::ArgumentTuple SelectedArgs;
-  static SelectedArgs Select(const ArgumentTuple& args) {
-    return SelectedArgs(std::get<k1>(args), std::get<k2>(args),
-        std::get<k3>(args), std::get<k4>(args), std::get<k5>(args),
-        std::get<k6>(args), std::get<k7>(args));
-  }
-};
-
-template <typename Result, typename ArgumentTuple, int k1, int k2, int k3,
-    int k4, int k5, int k6, int k7, int k8>
-class SelectArgs<Result, ArgumentTuple,
-                 k1, k2, k3, k4, k5, k6, k7, k8, -1, -1> {
- public:
-  typedef Result type(GMOCK_FIELD_(ArgumentTuple, k1),
-      GMOCK_FIELD_(ArgumentTuple, k2), GMOCK_FIELD_(ArgumentTuple, k3),
-      GMOCK_FIELD_(ArgumentTuple, k4), GMOCK_FIELD_(ArgumentTuple, k5),
-      GMOCK_FIELD_(ArgumentTuple, k6), GMOCK_FIELD_(ArgumentTuple, k7),
-      GMOCK_FIELD_(ArgumentTuple, k8));
-  typedef typename Function<type>::ArgumentTuple SelectedArgs;
-  static SelectedArgs Select(const ArgumentTuple& args) {
-    return SelectedArgs(std::get<k1>(args), std::get<k2>(args),
-        std::get<k3>(args), std::get<k4>(args), std::get<k5>(args),
-        std::get<k6>(args), std::get<k7>(args), std::get<k8>(args));
-  }
-};
-
-template <typename Result, typename ArgumentTuple, int k1, int k2, int k3,
-    int k4, int k5, int k6, int k7, int k8, int k9>
-class SelectArgs<Result, ArgumentTuple,
-                 k1, k2, k3, k4, k5, k6, k7, k8, k9, -1> {
- public:
-  typedef Result type(GMOCK_FIELD_(ArgumentTuple, k1),
-      GMOCK_FIELD_(ArgumentTuple, k2), GMOCK_FIELD_(ArgumentTuple, k3),
-      GMOCK_FIELD_(ArgumentTuple, k4), GMOCK_FIELD_(ArgumentTuple, k5),
-      GMOCK_FIELD_(ArgumentTuple, k6), GMOCK_FIELD_(ArgumentTuple, k7),
-      GMOCK_FIELD_(ArgumentTuple, k8), GMOCK_FIELD_(ArgumentTuple, k9));
-  typedef typename Function<type>::ArgumentTuple SelectedArgs;
-  static SelectedArgs Select(const ArgumentTuple& args) {
-    return SelectedArgs(std::get<k1>(args), std::get<k2>(args),
-        std::get<k3>(args), std::get<k4>(args), std::get<k5>(args),
-        std::get<k6>(args), std::get<k7>(args), std::get<k8>(args),
-        std::get<k9>(args));
-  }
-};
-
-#undef GMOCK_FIELD_
-
-// Implements the WithArgs action.
-template <typename InnerAction, int k1 = -1, int k2 = -1, int k3 = -1,
-    int k4 = -1, int k5 = -1, int k6 = -1, int k7 = -1, int k8 = -1,
-    int k9 = -1, int k10 = -1>
-class WithArgsAction {
- public:
-  explicit WithArgsAction(const InnerAction& action) : action_(action) {}
-
-  template <typename F>
-  operator Action<F>() const { return MakeAction(new Impl<F>(action_)); }
-
- private:
-  template <typename F>
-  class Impl : public ActionInterface<F> {
-   public:
-    typedef typename Function<F>::Result Result;
-    typedef typename Function<F>::ArgumentTuple ArgumentTuple;
-
-    explicit Impl(const InnerAction& action) : action_(action) {}
-
-    virtual Result Perform(const ArgumentTuple& args) {
-      return action_.Perform(SelectArgs<Result, ArgumentTuple, k1, k2, k3, k4,
-          k5, k6, k7, k8, k9, k10>::Select(args));
-    }
-
-   private:
-    typedef typename SelectArgs<Result, ArgumentTuple,
-        k1, k2, k3, k4, k5, k6, k7, k8, k9, k10>::type InnerFunctionType;
-
-    Action<InnerFunctionType> action_;
-  };
-
-  const InnerAction action_;
-
-  GTEST_DISALLOW_ASSIGN_(WithArgsAction);
-};
-
 // A macro from the ACTION* family (defined later in this file)
 // defines an action that can be used in a mock function.  Typically,
 // these actions only care about a subset of the arguments of the mock
@@ -703,173 +172,6 @@ class ActionHelper {
 };
 
 }  // namespace internal
-
-// Various overloads for Invoke().
-
-// WithArgs<N1, N2, ..., Nk>(an_action) creates an action that passes
-// the selected arguments of the mock function to an_action and
-// performs it.  It serves as an adaptor between actions with
-// different argument lists.  C++ doesn't support default arguments for
-// function templates, so we have to overload it.
-template <int k1, typename InnerAction>
-inline internal::WithArgsAction<InnerAction, k1>
-WithArgs(const InnerAction& action) {
-  return internal::WithArgsAction<InnerAction, k1>(action);
-}
-
-template <int k1, int k2, typename InnerAction>
-inline internal::WithArgsAction<InnerAction, k1, k2>
-WithArgs(const InnerAction& action) {
-  return internal::WithArgsAction<InnerAction, k1, k2>(action);
-}
-
-template <int k1, int k2, int k3, typename InnerAction>
-inline internal::WithArgsAction<InnerAction, k1, k2, k3>
-WithArgs(const InnerAction& action) {
-  return internal::WithArgsAction<InnerAction, k1, k2, k3>(action);
-}
-
-template <int k1, int k2, int k3, int k4, typename InnerAction>
-inline internal::WithArgsAction<InnerAction, k1, k2, k3, k4>
-WithArgs(const InnerAction& action) {
-  return internal::WithArgsAction<InnerAction, k1, k2, k3, k4>(action);
-}
-
-template <int k1, int k2, int k3, int k4, int k5, typename InnerAction>
-inline internal::WithArgsAction<InnerAction, k1, k2, k3, k4, k5>
-WithArgs(const InnerAction& action) {
-  return internal::WithArgsAction<InnerAction, k1, k2, k3, k4, k5>(action);
-}
-
-template <int k1, int k2, int k3, int k4, int k5, int k6, typename InnerAction>
-inline internal::WithArgsAction<InnerAction, k1, k2, k3, k4, k5, k6>
-WithArgs(const InnerAction& action) {
-  return internal::WithArgsAction<InnerAction, k1, k2, k3, k4, k5, k6>(action);
-}
-
-template <int k1, int k2, int k3, int k4, int k5, int k6, int k7,
-    typename InnerAction>
-inline internal::WithArgsAction<InnerAction, k1, k2, k3, k4, k5, k6, k7>
-WithArgs(const InnerAction& action) {
-  return internal::WithArgsAction<InnerAction, k1, k2, k3, k4, k5, k6,
-      k7>(action);
-}
-
-template <int k1, int k2, int k3, int k4, int k5, int k6, int k7, int k8,
-    typename InnerAction>
-inline internal::WithArgsAction<InnerAction, k1, k2, k3, k4, k5, k6, k7, k8>
-WithArgs(const InnerAction& action) {
-  return internal::WithArgsAction<InnerAction, k1, k2, k3, k4, k5, k6, k7,
-      k8>(action);
-}
-
-template <int k1, int k2, int k3, int k4, int k5, int k6, int k7, int k8,
-    int k9, typename InnerAction>
-inline internal::WithArgsAction<InnerAction, k1, k2, k3, k4, k5, k6, k7, k8, k9>
-WithArgs(const InnerAction& action) {
-  return internal::WithArgsAction<InnerAction, k1, k2, k3, k4, k5, k6, k7, k8,
-      k9>(action);
-}
-
-template <int k1, int k2, int k3, int k4, int k5, int k6, int k7, int k8,
-    int k9, int k10, typename InnerAction>
-inline internal::WithArgsAction<InnerAction, k1, k2, k3, k4, k5, k6, k7, k8,
-    k9, k10>
-WithArgs(const InnerAction& action) {
-  return internal::WithArgsAction<InnerAction, k1, k2, k3, k4, k5, k6, k7, k8,
-      k9, k10>(action);
-}
-
-// Creates an action that does actions a1, a2, ..., sequentially in
-// each invocation.
-template <typename Action1, typename Action2>
-inline internal::DoBothAction<Action1, Action2>
-DoAll(Action1 a1, Action2 a2) {
-  return internal::DoBothAction<Action1, Action2>(a1, a2);
-}
-
-template <typename Action1, typename Action2, typename Action3>
-inline internal::DoBothAction<Action1, internal::DoBothAction<Action2,
-    Action3> >
-DoAll(Action1 a1, Action2 a2, Action3 a3) {
-  return DoAll(a1, DoAll(a2, a3));
-}
-
-template <typename Action1, typename Action2, typename Action3,
-    typename Action4>
-inline internal::DoBothAction<Action1, internal::DoBothAction<Action2,
-    internal::DoBothAction<Action3, Action4> > >
-DoAll(Action1 a1, Action2 a2, Action3 a3, Action4 a4) {
-  return DoAll(a1, DoAll(a2, a3, a4));
-}
-
-template <typename Action1, typename Action2, typename Action3,
-    typename Action4, typename Action5>
-inline internal::DoBothAction<Action1, internal::DoBothAction<Action2,
-    internal::DoBothAction<Action3, internal::DoBothAction<Action4,
-    Action5> > > >
-DoAll(Action1 a1, Action2 a2, Action3 a3, Action4 a4, Action5 a5) {
-  return DoAll(a1, DoAll(a2, a3, a4, a5));
-}
-
-template <typename Action1, typename Action2, typename Action3,
-    typename Action4, typename Action5, typename Action6>
-inline internal::DoBothAction<Action1, internal::DoBothAction<Action2,
-    internal::DoBothAction<Action3, internal::DoBothAction<Action4,
-    internal::DoBothAction<Action5, Action6> > > > >
-DoAll(Action1 a1, Action2 a2, Action3 a3, Action4 a4, Action5 a5, Action6 a6) {
-  return DoAll(a1, DoAll(a2, a3, a4, a5, a6));
-}
-
-template <typename Action1, typename Action2, typename Action3,
-    typename Action4, typename Action5, typename Action6, typename Action7>
-inline internal::DoBothAction<Action1, internal::DoBothAction<Action2,
-    internal::DoBothAction<Action3, internal::DoBothAction<Action4,
-    internal::DoBothAction<Action5, internal::DoBothAction<Action6,
-    Action7> > > > > >
-DoAll(Action1 a1, Action2 a2, Action3 a3, Action4 a4, Action5 a5, Action6 a6,
-    Action7 a7) {
-  return DoAll(a1, DoAll(a2, a3, a4, a5, a6, a7));
-}
-
-template <typename Action1, typename Action2, typename Action3,
-    typename Action4, typename Action5, typename Action6, typename Action7,
-    typename Action8>
-inline internal::DoBothAction<Action1, internal::DoBothAction<Action2,
-    internal::DoBothAction<Action3, internal::DoBothAction<Action4,
-    internal::DoBothAction<Action5, internal::DoBothAction<Action6,
-    internal::DoBothAction<Action7, Action8> > > > > > >
-DoAll(Action1 a1, Action2 a2, Action3 a3, Action4 a4, Action5 a5, Action6 a6,
-    Action7 a7, Action8 a8) {
-  return DoAll(a1, DoAll(a2, a3, a4, a5, a6, a7, a8));
-}
-
-template <typename Action1, typename Action2, typename Action3,
-    typename Action4, typename Action5, typename Action6, typename Action7,
-    typename Action8, typename Action9>
-inline internal::DoBothAction<Action1, internal::DoBothAction<Action2,
-    internal::DoBothAction<Action3, internal::DoBothAction<Action4,
-    internal::DoBothAction<Action5, internal::DoBothAction<Action6,
-    internal::DoBothAction<Action7, internal::DoBothAction<Action8,
-    Action9> > > > > > > >
-DoAll(Action1 a1, Action2 a2, Action3 a3, Action4 a4, Action5 a5, Action6 a6,
-    Action7 a7, Action8 a8, Action9 a9) {
-  return DoAll(a1, DoAll(a2, a3, a4, a5, a6, a7, a8, a9));
-}
-
-template <typename Action1, typename Action2, typename Action3,
-    typename Action4, typename Action5, typename Action6, typename Action7,
-    typename Action8, typename Action9, typename Action10>
-inline internal::DoBothAction<Action1, internal::DoBothAction<Action2,
-    internal::DoBothAction<Action3, internal::DoBothAction<Action4,
-    internal::DoBothAction<Action5, internal::DoBothAction<Action6,
-    internal::DoBothAction<Action7, internal::DoBothAction<Action8,
-    internal::DoBothAction<Action9, Action10> > > > > > > > >
-DoAll(Action1 a1, Action2 a2, Action3 a3, Action4 a4, Action5 a5, Action6 a6,
-    Action7 a7, Action8 a8, Action9 a9, Action10 a10) {
-  return DoAll(a1, DoAll(a2, a3, a4, a5, a6, a7, a8, a9, a10));
-}
-
 }  // namespace testing
 
 // The ACTION* family of macros can be used in a namespace scope to
@@ -971,16 +273,16 @@ DoAll(Action1 a1, Action2 a2, Action3 a3, Action4 a4, Action5 a5, Action6 a6,
 // An internal macro needed for implementing ACTION*().
 #define GMOCK_ACTION_ARG_TYPES_AND_NAMES_UNUSED_\
     const args_type& args GTEST_ATTRIBUTE_UNUSED_, \
-    arg0_type arg0 GTEST_ATTRIBUTE_UNUSED_, \
-    arg1_type arg1 GTEST_ATTRIBUTE_UNUSED_, \
-    arg2_type arg2 GTEST_ATTRIBUTE_UNUSED_, \
-    arg3_type arg3 GTEST_ATTRIBUTE_UNUSED_, \
-    arg4_type arg4 GTEST_ATTRIBUTE_UNUSED_, \
-    arg5_type arg5 GTEST_ATTRIBUTE_UNUSED_, \
-    arg6_type arg6 GTEST_ATTRIBUTE_UNUSED_, \
-    arg7_type arg7 GTEST_ATTRIBUTE_UNUSED_, \
-    arg8_type arg8 GTEST_ATTRIBUTE_UNUSED_, \
-    arg9_type arg9 GTEST_ATTRIBUTE_UNUSED_
+    const arg0_type& arg0 GTEST_ATTRIBUTE_UNUSED_, \
+    const arg1_type& arg1 GTEST_ATTRIBUTE_UNUSED_, \
+    const arg2_type& arg2 GTEST_ATTRIBUTE_UNUSED_, \
+    const arg3_type& arg3 GTEST_ATTRIBUTE_UNUSED_, \
+    const arg4_type& arg4 GTEST_ATTRIBUTE_UNUSED_, \
+    const arg5_type& arg5 GTEST_ATTRIBUTE_UNUSED_, \
+    const arg6_type& arg6 GTEST_ATTRIBUTE_UNUSED_, \
+    const arg7_type& arg7 GTEST_ATTRIBUTE_UNUSED_, \
+    const arg8_type& arg8 GTEST_ATTRIBUTE_UNUSED_, \
+    const arg9_type& arg9 GTEST_ATTRIBUTE_UNUSED_
 
 // Sometimes you want to give an action explicit template parameters
 // that cannot be inferred from its value parameters.  ACTION() and
@@ -1370,10 +672,12 @@ DoAll(Action1 a1, Action2 a2, Action3 a3, Action4 a4, Action5 a5, Action6 a6,
           typename arg3_type, typename arg4_type, typename arg5_type, \
           typename arg6_type, typename arg7_type, typename arg8_type, \
           typename arg9_type>\
-      return_type gmock_PerformImpl(const args_type& args, arg0_type arg0, \
-          arg1_type arg1, arg2_type arg2, arg3_type arg3, arg4_type arg4, \
-          arg5_type arg5, arg6_type arg6, arg7_type arg7, arg8_type arg8, \
-          arg9_type arg9) const;\
+      return_type gmock_PerformImpl(const args_type& args, \
+          const arg0_type& arg0, const arg1_type& arg1, \
+          const arg2_type& arg2, const arg3_type& arg3, \
+          const arg4_type& arg4, const arg5_type& arg5, \
+          const arg6_type& arg6, const arg7_type& arg7, \
+          const arg8_type& arg8, const arg9_type& arg9) const;\
       GMOCK_INTERNAL_DEFN_##value_params\
      private:\
       GTEST_DISALLOW_ASSIGN_(gmock_Impl);\
@@ -1431,10 +735,12 @@ DoAll(Action1 a1, Action2 a2, Action3 a3, Action4 a4, Action5 a5, Action6 a6,
           typename arg3_type, typename arg4_type, typename arg5_type, \
           typename arg6_type, typename arg7_type, typename arg8_type, \
           typename arg9_type>\
-      return_type gmock_PerformImpl(const args_type& args, arg0_type arg0, \
-          arg1_type arg1, arg2_type arg2, arg3_type arg3, arg4_type arg4, \
-          arg5_type arg5, arg6_type arg6, arg7_type arg7, arg8_type arg8, \
-          arg9_type arg9) const;\
+      return_type gmock_PerformImpl(const args_type& args, \
+          const arg0_type& arg0, const arg1_type& arg1, \
+          const arg2_type& arg2, const arg3_type& arg3, \
+          const arg4_type& arg4, const arg5_type& arg5, \
+          const arg6_type& arg6, const arg7_type& arg7, \
+          const arg8_type& arg8, const arg9_type& arg9) const;\
      private:\
       GTEST_DISALLOW_ASSIGN_(gmock_Impl);\
     };\
@@ -1479,10 +785,12 @@ DoAll(Action1 a1, Action2 a2, Action3 a3, Action4 a4, Action5 a5, Action6 a6,
           typename arg3_type, typename arg4_type, typename arg5_type, \
           typename arg6_type, typename arg7_type, typename arg8_type, \
           typename arg9_type>\
-      return_type gmock_PerformImpl(const args_type& args, arg0_type arg0, \
-          arg1_type arg1, arg2_type arg2, arg3_type arg3, arg4_type arg4, \
-          arg5_type arg5, arg6_type arg6, arg7_type arg7, arg8_type arg8, \
-          arg9_type arg9) const;\
+      return_type gmock_PerformImpl(const args_type& args, \
+          const arg0_type& arg0, const arg1_type& arg1, \
+          const arg2_type& arg2, const arg3_type& arg3, \
+          const arg4_type& arg4, const arg5_type& arg5, \
+          const arg6_type& arg6, const arg7_type& arg7, \
+          const arg8_type& arg8, const arg9_type& arg9) const;\
       p0##_type p0;\
      private:\
       GTEST_DISALLOW_ASSIGN_(gmock_Impl);\
@@ -1533,10 +841,12 @@ DoAll(Action1 a1, Action2 a2, Action3 a3, Action4 a4, Action5 a5, Action6 a6,
           typename arg3_type, typename arg4_type, typename arg5_type, \
           typename arg6_type, typename arg7_type, typename arg8_type, \
           typename arg9_type>\
-      return_type gmock_PerformImpl(const args_type& args, arg0_type arg0, \
-          arg1_type arg1, arg2_type arg2, arg3_type arg3, arg4_type arg4, \
-          arg5_type arg5, arg6_type arg6, arg7_type arg7, arg8_type arg8, \
-          arg9_type arg9) const;\
+      return_type gmock_PerformImpl(const args_type& args, \
+          const arg0_type& arg0, const arg1_type& arg1, \
+          const arg2_type& arg2, const arg3_type& arg3, \
+          const arg4_type& arg4, const arg5_type& arg5, \
+          const arg6_type& arg6, const arg7_type& arg7, \
+          const arg8_type& arg8, const arg9_type& arg9) const;\
       p0##_type p0;\
       p1##_type p1;\
      private:\
@@ -1592,10 +902,12 @@ DoAll(Action1 a1, Action2 a2, Action3 a3, Action4 a4, Action5 a5, Action6 a6,
           typename arg3_type, typename arg4_type, typename arg5_type, \
           typename arg6_type, typename arg7_type, typename arg8_type, \
           typename arg9_type>\
-      return_type gmock_PerformImpl(const args_type& args, arg0_type arg0, \
-          arg1_type arg1, arg2_type arg2, arg3_type arg3, arg4_type arg4, \
-          arg5_type arg5, arg6_type arg6, arg7_type arg7, arg8_type arg8, \
-          arg9_type arg9) const;\
+      return_type gmock_PerformImpl(const args_type& args, \
+          const arg0_type& arg0, const arg1_type& arg1, \
+          const arg2_type& arg2, const arg3_type& arg3, \
+          const arg4_type& arg4, const arg5_type& arg5, \
+          const arg6_type& arg6, const arg7_type& arg7, \
+          const arg8_type& arg8, const arg9_type& arg9) const;\
       p0##_type p0;\
       p1##_type p1;\
       p2##_type p2;\
@@ -1658,10 +970,12 @@ DoAll(Action1 a1, Action2 a2, Action3 a3, Action4 a4, Action5 a5, Action6 a6,
           typename arg3_type, typename arg4_type, typename arg5_type, \
           typename arg6_type, typename arg7_type, typename arg8_type, \
           typename arg9_type>\
-      return_type gmock_PerformImpl(const args_type& args, arg0_type arg0, \
-          arg1_type arg1, arg2_type arg2, arg3_type arg3, arg4_type arg4, \
-          arg5_type arg5, arg6_type arg6, arg7_type arg7, arg8_type arg8, \
-          arg9_type arg9) const;\
+      return_type gmock_PerformImpl(const args_type& args, \
+          const arg0_type& arg0, const arg1_type& arg1, \
+          const arg2_type& arg2, const arg3_type& arg3, \
+          const arg4_type& arg4, const arg5_type& arg5, \
+          const arg6_type& arg6, const arg7_type& arg7, \
+          const arg8_type& arg8, const arg9_type& arg9) const;\
       p0##_type p0;\
       p1##_type p1;\
       p2##_type p2;\
@@ -1733,10 +1047,12 @@ DoAll(Action1 a1, Action2 a2, Action3 a3, Action4 a4, Action5 a5, Action6 a6,
           typename arg3_type, typename arg4_type, typename arg5_type, \
           typename arg6_type, typename arg7_type, typename arg8_type, \
           typename arg9_type>\
-      return_type gmock_PerformImpl(const args_type& args, arg0_type arg0, \
-          arg1_type arg1, arg2_type arg2, arg3_type arg3, arg4_type arg4, \
-          arg5_type arg5, arg6_type arg6, arg7_type arg7, arg8_type arg8, \
-          arg9_type arg9) const;\
+      return_type gmock_PerformImpl(const args_type& args, \
+          const arg0_type& arg0, const arg1_type& arg1, \
+          const arg2_type& arg2, const arg3_type& arg3, \
+          const arg4_type& arg4, const arg5_type& arg5, \
+          const arg6_type& arg6, const arg7_type& arg7, \
+          const arg8_type& arg8, const arg9_type& arg9) const;\
       p0##_type p0;\
       p1##_type p1;\
       p2##_type p2;\
@@ -1812,10 +1128,12 @@ DoAll(Action1 a1, Action2 a2, Action3 a3, Action4 a4, Action5 a5, Action6 a6,
           typename arg3_type, typename arg4_type, typename arg5_type, \
           typename arg6_type, typename arg7_type, typename arg8_type, \
           typename arg9_type>\
-      return_type gmock_PerformImpl(const args_type& args, arg0_type arg0, \
-          arg1_type arg1, arg2_type arg2, arg3_type arg3, arg4_type arg4, \
-          arg5_type arg5, arg6_type arg6, arg7_type arg7, arg8_type arg8, \
-          arg9_type arg9) const;\
+      return_type gmock_PerformImpl(const args_type& args, \
+          const arg0_type& arg0, const arg1_type& arg1, \
+          const arg2_type& arg2, const arg3_type& arg3, \
+          const arg4_type& arg4, const arg5_type& arg5, \
+          const arg6_type& arg6, const arg7_type& arg7, \
+          const arg8_type& arg8, const arg9_type& arg9) const;\
       p0##_type p0;\
       p1##_type p1;\
       p2##_type p2;\
@@ -1897,10 +1215,12 @@ DoAll(Action1 a1, Action2 a2, Action3 a3, Action4 a4, Action5 a5, Action6 a6,
           typename arg3_type, typename arg4_type, typename arg5_type, \
           typename arg6_type, typename arg7_type, typename arg8_type, \
           typename arg9_type>\
-      return_type gmock_PerformImpl(const args_type& args, arg0_type arg0, \
-          arg1_type arg1, arg2_type arg2, arg3_type arg3, arg4_type arg4, \
-          arg5_type arg5, arg6_type arg6, arg7_type arg7, arg8_type arg8, \
-          arg9_type arg9) const;\
+      return_type gmock_PerformImpl(const args_type& args, \
+          const arg0_type& arg0, const arg1_type& arg1, \
+          const arg2_type& arg2, const arg3_type& arg3, \
+          const arg4_type& arg4, const arg5_type& arg5, \
+          const arg6_type& arg6, const arg7_type& arg7, \
+          const arg8_type& arg8, const arg9_type& arg9) const;\
       p0##_type p0;\
       p1##_type p1;\
       p2##_type p2;\
@@ -1991,10 +1311,12 @@ DoAll(Action1 a1, Action2 a2, Action3 a3, Action4 a4, Action5 a5, Action6 a6,
           typename arg3_type, typename arg4_type, typename arg5_type, \
           typename arg6_type, typename arg7_type, typename arg8_type, \
           typename arg9_type>\
-      return_type gmock_PerformImpl(const args_type& args, arg0_type arg0, \
-          arg1_type arg1, arg2_type arg2, arg3_type arg3, arg4_type arg4, \
-          arg5_type arg5, arg6_type arg6, arg7_type arg7, arg8_type arg8, \
-          arg9_type arg9) const;\
+      return_type gmock_PerformImpl(const args_type& args, \
+          const arg0_type& arg0, const arg1_type& arg1, \
+          const arg2_type& arg2, const arg3_type& arg3, \
+          const arg4_type& arg4, const arg5_type& arg5, \
+          const arg6_type& arg6, const arg7_type& arg7, \
+          const arg8_type& arg8, const arg9_type& arg9) const;\
       p0##_type p0;\
       p1##_type p1;\
       p2##_type p2;\
@@ -2091,10 +1413,12 @@ DoAll(Action1 a1, Action2 a2, Action3 a3, Action4 a4, Action5 a5, Action6 a6,
           typename arg3_type, typename arg4_type, typename arg5_type, \
           typename arg6_type, typename arg7_type, typename arg8_type, \
           typename arg9_type>\
-      return_type gmock_PerformImpl(const args_type& args, arg0_type arg0, \
-          arg1_type arg1, arg2_type arg2, arg3_type arg3, arg4_type arg4, \
-          arg5_type arg5, arg6_type arg6, arg7_type arg7, arg8_type arg8, \
-          arg9_type arg9) const;\
+      return_type gmock_PerformImpl(const args_type& args, \
+          const arg0_type& arg0, const arg1_type& arg1, \
+          const arg2_type& arg2, const arg3_type& arg3, \
+          const arg4_type& arg4, const arg5_type& arg5, \
+          const arg6_type& arg6, const arg7_type& arg7, \
+          const arg8_type& arg8, const arg9_type& arg9) const;\
       p0##_type p0;\
       p1##_type p1;\
       p2##_type p2;\
@@ -2198,10 +1522,12 @@ DoAll(Action1 a1, Action2 a2, Action3 a3, Action4 a4, Action5 a5, Action6 a6,
           typename arg3_type, typename arg4_type, typename arg5_type, \
           typename arg6_type, typename arg7_type, typename arg8_type, \
           typename arg9_type>\
-      return_type gmock_PerformImpl(const args_type& args, arg0_type arg0, \
-          arg1_type arg1, arg2_type arg2, arg3_type arg3, arg4_type arg4, \
-          arg5_type arg5, arg6_type arg6, arg7_type arg7, arg8_type arg8, \
-          arg9_type arg9) const;\
+      return_type gmock_PerformImpl(const args_type& args, \
+          const arg0_type& arg0, const arg1_type& arg1, \
+          const arg2_type& arg2, const arg3_type& arg3, \
+          const arg4_type& arg4, const arg5_type& arg5, \
+          const arg6_type& arg6, const arg7_type& arg7, \
+          const arg8_type& arg8, const arg9_type& arg9) const;\
       p0##_type p0;\
       p1##_type p1;\
       p2##_type p2;\

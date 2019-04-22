@@ -16,11 +16,11 @@ function testPixels(actualPixels, refPixels, testScenario)
     // Narrowing down the source of expected error:
     // - Alpha values should always match.
     // - Color components should be acceptably close. All tests locally pass
-    //   with a tolerance of 4 (uint8), 0.01 (f16/srgb,p3), and 0.02 (rec2020).
+    //   with a tolerance of 4 (uint8) or 0.02 (f16).
     // - The red channel of the green pixel has the largest error since green
     //   has the largest change in what's representable between sRGB and
     //   P3/Rec2020. Red channel of the green pixel is R channel of the second
-    //   pixel. All tests locally pass with a tolerance of 8 (uint8) and 0.03 (f16).
+    //   pixel. All tests locally pass with a tolerance of 8 (uint8) and 0.035 (f16).
     if (testScenario.canvasColorParam.pixelFormat == 'uint8') {
         let tolerance_color = 4;
         let tolerance_r_green = 8;
@@ -35,11 +35,9 @@ function testPixels(actualPixels, refPixels, testScenario)
                 assert_approx_equals(actualPixels[i], refPixels[i], tolerance_color);
         }
     } else {
-        // For half float backed canvas, we expect the error < 0.01.
-        let tolerance_color = 0.01;
-        if (testScenario.encodeOptions.colorSpace == 'rec2020')
-            tolerance_color = 0.02;
-        let tolerance_r_green = 0.03;
+        // For half float backed canvas, we expect the error < 0.02.
+        let tolerance_color = 0.02;
+        let tolerance_r_green = 0.035;
         for (let i = 0; i < actualPixels.length; i++) {
             // Alpha channel
             if (i % 4 == 3)

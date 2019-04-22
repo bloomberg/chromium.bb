@@ -10,7 +10,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
-#include "third_party/blink/renderer/core/dom/events/event_listener.h"
+#include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/modules/presentation/presentation_connection.h"
@@ -20,15 +20,8 @@
 
 namespace blink {
 
-class MockEventListenerForPresentationReceiver : public EventListener {
+class MockEventListenerForPresentationReceiver : public NativeEventListener {
  public:
-  MockEventListenerForPresentationReceiver()
-      : EventListener(kCPPEventListenerType) {}
-
-  bool operator==(const EventListener& other) const final {
-    return this == &other;
-  }
-
   MOCK_METHOD2(Invoke, void(ExecutionContext* executionContext, Event*));
 };
 
@@ -82,8 +75,8 @@ TEST_F(PresentationReceiverTest, NoConnectionUnresolvedConnectionList) {
   auto* receiver =
       MakeGarbageCollected<PresentationReceiver>(&scope.GetFrame());
 
-  auto* event_handler =
-      new StrictMock<MockEventListenerForPresentationReceiver>();
+  auto* event_handler = MakeGarbageCollected<
+      StrictMock<MockEventListenerForPresentationReceiver>>();
   AddConnectionavailableEventListener(event_handler, receiver);
   EXPECT_CALL(*event_handler, Invoke(testing::_, testing::_)).Times(0);
 
@@ -99,8 +92,8 @@ TEST_F(PresentationReceiverTest, OneConnectionResolvedConnectionListNoEvent) {
   auto* receiver =
       MakeGarbageCollected<PresentationReceiver>(&scope.GetFrame());
 
-  auto* event_handler =
-      new StrictMock<MockEventListenerForPresentationReceiver>();
+  auto* event_handler = MakeGarbageCollected<
+      StrictMock<MockEventListenerForPresentationReceiver>>();
   AddConnectionavailableEventListener(event_handler, receiver);
   EXPECT_CALL(*event_handler, Invoke(testing::_, testing::_)).Times(0);
 
@@ -122,7 +115,8 @@ TEST_F(PresentationReceiverTest, TwoConnectionsFireOnconnectionavailableEvent) {
       MakeGarbageCollected<PresentationReceiver>(&scope.GetFrame());
 
   StrictMock<MockEventListenerForPresentationReceiver>* event_handler =
-      new StrictMock<MockEventListenerForPresentationReceiver>();
+      MakeGarbageCollected<
+          StrictMock<MockEventListenerForPresentationReceiver>>();
   AddConnectionavailableEventListener(event_handler, receiver);
   EXPECT_CALL(*event_handler, Invoke(testing::_, testing::_)).Times(1);
 
@@ -154,7 +148,8 @@ TEST_F(PresentationReceiverTest, TwoConnectionsNoEvent) {
       MakeGarbageCollected<PresentationReceiver>(&scope.GetFrame());
 
   StrictMock<MockEventListenerForPresentationReceiver>* event_handler =
-      new StrictMock<MockEventListenerForPresentationReceiver>();
+      MakeGarbageCollected<
+          StrictMock<MockEventListenerForPresentationReceiver>>();
   AddConnectionavailableEventListener(event_handler, receiver);
   EXPECT_CALL(*event_handler, Invoke(testing::_, testing::_)).Times(0);
 

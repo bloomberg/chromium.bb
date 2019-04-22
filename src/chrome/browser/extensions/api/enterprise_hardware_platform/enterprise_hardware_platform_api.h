@@ -24,7 +24,7 @@ class EnterpriseHardwarePlatformGetHardwarePlatformInfoFunction
  private:
   DECLARE_EXTENSION_FUNCTION(
       "enterprise.hardwarePlatform.getHardwarePlatformInfo",
-      ENTERPRISE_HARDWAREPLATFORM_GETHARDWAREPLATFORMINFO);
+      ENTERPRISE_HARDWAREPLATFORM_GETHARDWAREPLATFORMINFO)
 
   void OnHardwarePlatformInfo(base::SysInfo::HardwareInfo info);
 

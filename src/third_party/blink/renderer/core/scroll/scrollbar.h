@@ -27,10 +27,10 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SCROLL_SCROLLBAR_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
@@ -48,14 +48,6 @@ class WebMouseEvent;
 class CORE_EXPORT Scrollbar : public GarbageCollectedFinalized<Scrollbar>,
                               public DisplayItemClient {
  public:
-  static Scrollbar* Create(ScrollableArea* scrollable_area,
-                           ScrollbarOrientation orientation,
-                           ScrollbarControlSize size,
-                           ChromeClient* chrome_client) {
-    return MakeGarbageCollected<Scrollbar>(scrollable_area, orientation, size,
-                                           chrome_client);
-  }
-
   // Theme object ownership remains with the caller and it must outlive the
   // scrollbar.
   static Scrollbar* CreateForTesting(ScrollableArea* scrollable_area,
@@ -178,9 +170,9 @@ class CORE_EXPORT Scrollbar : public GarbageCollectedFinalized<Scrollbar>,
     return orientation_ == kHorizontalScrollbar ? "HorizontalScrollbar"
                                                 : "VerticalScrollbar";
   }
-  LayoutRect VisualRect() const final { return visual_rect_; }
+  IntRect VisualRect() const final { return visual_rect_; }
 
-  virtual void SetVisualRect(const LayoutRect& r) { visual_rect_ = r; }
+  virtual void SetVisualRect(const IntRect& r) { visual_rect_ = r; }
 
   // Marks the scrollbar as needing to be redrawn.
   //
@@ -200,7 +192,7 @@ class CORE_EXPORT Scrollbar : public GarbageCollectedFinalized<Scrollbar>,
   // Promptly unregister from the theme manager + run finalizers of derived
   // Scrollbars.
   EAGERLY_FINALIZE();
-  DECLARE_EAGER_FINALIZATION_OPERATOR_NEW();
+  DEFINE_INLINE_EAGER_FINALIZATION_OPERATOR_NEW()
   virtual void Trace(blink::Visitor*);
 
  protected:
@@ -243,7 +235,7 @@ class CORE_EXPORT Scrollbar : public GarbageCollectedFinalized<Scrollbar>,
   int theme_scrollbar_thickness_;
   bool track_needs_repaint_;
   bool thumb_needs_repaint_;
-  LayoutRect visual_rect_;
+  IntRect visual_rect_;
   IntRect frame_rect_;
 };
 

@@ -5,8 +5,8 @@
  * found in the LICENSE file.
  */
 
+#include "ToolUtils.h"
 #include "gm.h"
-#include "sk_tool_utils.h"
 
 #include "SkShader.h"
 
@@ -35,16 +35,13 @@ protected:
 
     void onDraw(SkCanvas* canvas) override {
         SkPaint bgPaint;
-        bgPaint.setShader(
-                sk_tool_utils::create_checkerboard_shader(0xFFAAAAAA, 0xFF777777, 1));
+        bgPaint.setShader(ToolUtils::create_checkerboard_shader(0xFFAAAAAA, 0xFF777777, 1));
         canvas->drawPaint(bgPaint);
 
         SkString offset;
         SkPaint labelPaint;
-        labelPaint.setAntiAlias(true);
         labelPaint.setColor(SK_ColorWHITE);
-        labelPaint.setTextSize(SkIntToScalar(kLabelTextSize));
-        sk_tool_utils::set_portable_typeface(&labelPaint);
+        SkFont  font(ToolUtils::create_portable_typeface(), SkIntToScalar(kLabelTextSize));
         SkPaint linePaint;
         linePaint.setColor(SK_ColorWHITE);
 
@@ -53,9 +50,8 @@ protected:
             canvas->translate(0, SkIntToScalar(kLabelOffsetY));
             for (int i = 0; i <= kSubPixelSteps; ++i) {
                 offset.printf("%d", i);
-                canvas->drawString(offset,
-                                    0, i * kTrans + labelPaint.getTextSize(),
-                                    labelPaint);
+                canvas->drawString(offset, 0, i * kTrans + SkIntToScalar(kLabelTextSize),
+                                   font, labelPaint);
             }
         canvas->restore();
 
@@ -64,9 +60,8 @@ protected:
             canvas->translate(SkIntToScalar(kLabelOffsetX), 0);
             for (int i = 0; i <= kSubPixelSteps; ++i) {
                 offset.printf("%d", i);
-                canvas->drawString(offset,
-                                    i * SkIntToScalar(kTrans), labelPaint.getTextSize(),
-                                    labelPaint);
+                canvas->drawString(offset, i * SkIntToScalar(kTrans), SkIntToScalar(kLabelTextSize),
+                                   font, labelPaint);
             }
         canvas->restore();
 

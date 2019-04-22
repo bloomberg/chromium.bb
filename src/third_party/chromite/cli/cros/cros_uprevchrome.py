@@ -10,6 +10,7 @@ from __future__ import print_function
 import os
 import re
 
+from chromite.lib import buildstore as buildstore_lib
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_logging as logging
@@ -41,7 +42,7 @@ MASTER_BRANCH = 'master'
 class MissingBranchException(Exception):
   """Remote branch wasn't found."""
 
-class InvalidPFQBuildIdExcpetion(Exception):
+class InvalidPFQBuildbucketIdException(Exception):
   """The PFQ build_id isn't valid."""
 
 class InvalidReviewerEmailException(Exception):
@@ -91,6 +92,8 @@ class UprevChromeCommand(command.CliCommand):
   please submit them together.
   Please do not revert the generated CLs after they're merged.
   Please use cros_pinchrome to pin/unpin Chrome if needed.
+  A detailed guide here:
+  http://g3doc/company/teams/chrome/ops/chromeos/continuous_integration/on-call/guides/cros_uprevchrome_guide
   """
 
   # No limit when retrieving results from cidb.
@@ -104,15 +107,17 @@ class UprevChromeCommand(command.CliCommand):
     super(cls, UprevChromeCommand).AddParser(parser)
     parser.add_argument('--pfq-build', action='store', required=True,
                         metavar='PFQ_BUILD',
-                        help='The build_id of the master chrome pfq build. '
-                        'Note this is from the BuildStart step, not the '
-                        'build number on the waterfall.')
+                        help='The buildbucket_id of the master chrome pfq'
+                        ' build. Note this is a 19 digit ID that can be found'
+                        'in the Milo or GoldenEye URL for the build.')
     parser.add_argument('--cred-dir', action='store',
                         metavar='CIDB_CREDENTIALS_DIR',
                         help=('Database credentials directory with '
                               'certificates and other connection '
                               'information. Obtain your credentials '
                               'at go/cros-cidb-admin.'))
+    parser.add_argument('--fake-buildstore', action='store', default=False,
+                        help='Use a FakeBuildStore instance')
     parser.add_argument('--bug', action='store', required=True,
                         help='Used in the "BUG" field of CLs.')
     parser.add_argument('--nowipe', default=True, dest='wipe',
@@ -128,24 +133,29 @@ class UprevChromeCommand(command.CliCommand):
                         'ex:--reviewer x@email.com --reviewer y@email.com')
     return parser
 
-  def ValidatePFQBuild(self, pfq_build, db):
+  def ValidatePFQBuild(self, pfq_build, buildstore):
     """Validate the pfq build id.
 
     Args:
-      pfq_build: master chrome pfq build_id to uprev.
-      db: cidb connection instance.
+      pfq_build: master chrome pfq buildbucket_id to uprev.
+      buildstore: BuildStore instance to make DB calls.
 
     Returns:
-      build_number if pfq_build is valid.
+      BuildIdentifier instance of the PFQ Build.
 
     Raises:
-      InvalidPFQBuildIdExcpetion when pfq_build is invalid.
+      InvalidPFQBuildbucketIdException when pfq_build is invalid.
     """
-    pfq_info = db.GetBuildStatus(pfq_build)
+    try:
+      pfq_info = buildstore.GetBuildStatuses(buildbucket_ids=[pfq_build])[0]
+    except IndexError:
+      logging.error('Could not find the PFQ build. --pfq-build needs to be'
+                    'a valid Buildbucket-ID')
+      raise
 
     # Return False if it's not a master_chromium_pfq build.
     if pfq_info['build_config'] != constants.PFQ_MASTER:
-      raise InvalidPFQBuildIdExcpetion(
+      raise InvalidPFQBuildbucketIdException(
           'pfq_build %s with build_config %s is invalid. '
           'build_config must be master_chromium_pfq.' %
           (pfq_build, pfq_info['build_config']))
@@ -154,7 +164,7 @@ class UprevChromeCommand(command.CliCommand):
     if pfq_info['status'] != constants.BUILDER_STATUS_FAILED:
       logging.error('pfq_build %s not valid, status: %s',
                     pfq_build, pfq_info['status'])
-      raise InvalidPFQBuildIdExcpetion(
+      raise InvalidPFQBuildbucketIdException(
           'pfq_build %s with status: %s is invalid. '
           'Can only uprev a failed pfq build.' %
           (pfq_build, pfq_info['status']))
@@ -162,17 +172,18 @@ class UprevChromeCommand(command.CliCommand):
     # Get all the pfq builds which were started after
     # the given pfq build_id. If one build passed after this
     # pfq run, should not uprev or overwrite the uprevs.
-    build_infos = db.GetBuildHistory(constants.PFQ_MASTER,
-                                     self.NUM_RESULTS_NO_LIMIT,
-                                     starting_build_id=pfq_info['id'])
+    build_infos = buildstore.GetBuildHistory(constants.PFQ_MASTER,
+                                             self.NUM_RESULTS_NO_LIMIT,
+                                             starting_build_id=pfq_info['id'])
 
     for build_info in build_infos:
       if build_info['status'] == 'pass':
-        raise InvalidPFQBuildIdExcpetion(
+        raise InvalidPFQBuildbucketIdException(
             'pfq_build %s is invalid as build %s passed.' %
             (pfq_build, build_info['id']))
 
-    return pfq_info['build_number']
+    return buildstore_lib.BuildIdentifier(cidb_id=pfq_info['id'],
+                                          buildbucket_id=pfq_build)
 
   def CheckRemoteBranch(self, git_repo, remote, remote_ref):
     """Check if the remote ref exists."""
@@ -204,14 +215,12 @@ class UprevChromeCommand(command.CliCommand):
         parsed_log.append(line)
     return '\n'.join(parsed_log)
 
-  def CommitMessage(self, body, pfq_build, build_number,
-                    cq_depend=None, change_id=None):
+  def CommitMessage(self, body, pfq_build, cq_depend=None, change_id=None):
     """Generate a commit message.
 
     Args:
       body: The body of the message.
-      pfq_build: build_id of the Chrome PFQ run.
-      build_number: build_number of the Chrome PFQ run.
+      pfq_build: buildbucket_id of the Chrome PFQ run.
       cq_depend: An optional CQ-DEPEND target.
       change_id: An optional change ID.
 
@@ -220,7 +229,7 @@ class UprevChromeCommand(command.CliCommand):
     """
     message = [
         ('Manual Uprev Chrome: generated by cros_uprevchrome based on '
-         'build_id %s, build_number %s' % (pfq_build, build_number)),
+         'buildbucket_id %s' % pfq_build),
         '',
         body,
         '',
@@ -228,7 +237,7 @@ class UprevChromeCommand(command.CliCommand):
         'TEST=None',
     ]
     if cq_depend:
-      message += ['CQ-DEPEND=%s' % cq_depend]
+      message += ['Cq-Depend: %s' % cq_depend]
     if change_id:
       message += [
           '',
@@ -245,18 +254,20 @@ class UprevChromeCommand(command.CliCommand):
             'Invalid reviewer email %s: %s' % (
                 r, 'it cannot contain \" or \''))
 
-  def UprevChrome(self, work_dir, pfq_build, build_number):
+  def UprevChrome(self, work_dir, pfq_identifier):
     """Uprev Chrome.
 
     Args:
       work_dir: directory to clone repository and update uprev.
-      pfq_build: pfq build_id to uprev chrome.
-      build_number: corresponding build number showed on waterfall.
+      pfq_identifier: pfq BuildIdentifier to uprev chrome.
 
     Raises:
       Exception when no commit ID is found in the public overlay CL.
       Exception when no commit ID is found in the private overlay CL.
     """
+    pfq_build = pfq_identifier.buildbucket_id
+    pfq_cidb_id = pfq_identifier.cidb_id
+
     # Verify the format of reviewers
     reviewers = self.options.reviewers
     self.ValidateReviewers(reviewers)
@@ -278,9 +289,19 @@ class UprevChromeCommand(command.CliCommand):
     remote_ref = ('refs/' + constants.PFQ_REF + '/' + branch_name)
     local_branch = '%s_%s' % (branch_name, cros_build_lib.GetRandomString())
 
-    logging.info('Checking remote refs.')
-    self.CheckRemoteBranch(pub_overlay, remote, remote_ref)
-    self.CheckRemoteBranch(priv_overlay, remote, remote_ref)
+    try:
+      logging.info('Checking remote refs.')
+      self.CheckRemoteBranch(pub_overlay, remote, remote_ref)
+      self.CheckRemoteBranch(priv_overlay, remote, remote_ref)
+    except MissingBranchException:
+      # TODO(dhanya): remove the whole retry logic after a couple of weeks.
+      logging.info('Couldn\'t find the pfq staging_branch.'
+                   ' Retrying with cidb_id.')
+      branch_name = constants.STAGING_PFQ_BRANCH_PREFIX + str(pfq_cidb_id)
+      remote_ref = ('refs/' + constants.PFQ_REF + '/' + branch_name)
+      local_branch = '%s_%s' % (branch_name, cros_build_lib.GetRandomString())
+      self.CheckRemoteBranch(pub_overlay, remote, remote_ref)
+      self.CheckRemoteBranch(priv_overlay, remote, remote_ref)
 
     # Fetch the remote refspec for the public overlay
     logging.info('git fetch %s %s:%s', remote, remote_ref, local_branch)
@@ -291,8 +312,7 @@ class UprevChromeCommand(command.CliCommand):
     git.RunGit(pub_overlay, ['checkout', local_branch])
 
     pub_commit_body = self.ParseGitLog(pub_overlay)
-    commit_message = self.CommitMessage(
-        pub_commit_body, pfq_build, build_number)
+    commit_message = self.CommitMessage(pub_commit_body, pfq_build)
 
     # Update the commit message and reset author.
     pub_cid = git.Commit(pub_overlay, commit_message, amend=True,
@@ -309,9 +329,9 @@ class UprevChromeCommand(command.CliCommand):
     logging.info('git checkout %s', local_branch)
 
     priv_commit_body = self.ParseGitLog(priv_overlay)
-    # Add CQ-DEPEND
+    # Add CQ-DEPEND (using 'CL:' prefix so cross-site links work).
     commit_message = self.CommitMessage(
-        priv_commit_body, pfq_build, build_number, pub_cid)
+        priv_commit_body, pfq_build, 'CL:' + pub_cid)
 
     # Update the commit message and reset author
     priv_cid = git.Commit(priv_overlay, commit_message, amend=True,
@@ -319,9 +339,9 @@ class UprevChromeCommand(command.CliCommand):
     if not priv_cid:
       raise Exception("Don't know the commit ID of the private overlay CL.")
 
-    # Add CQ-DEPEND
+    # Add CQ-DEPEND (using 'CL:' prefix so cross-site links work).
     commit_message = self.CommitMessage(
-        pub_commit_body, pfq_build, build_number, '*' + priv_cid, pub_cid)
+        pub_commit_body, pfq_build, 'CL:*' + priv_cid, pub_cid)
 
     git.Commit(pub_overlay, commit_message, amend=True)
 
@@ -350,9 +370,6 @@ class UprevChromeCommand(command.CliCommand):
     """
     self.options.Freeze()
 
-    # Delay import so sqlalchemy isn't pulled in until we need it.
-    from chromite.lib import cidb
-
     cidb_creds = self.options.cred_dir
     if cidb_creds is None:
       try:
@@ -364,11 +381,14 @@ class UprevChromeCommand(command.CliCommand):
                       'with --cred-dir.')
         raise
 
-    db = cidb.CIDBConnection(cidb_creds)
-
-    build_number = self.ValidatePFQBuild(self.options.pfq_build, db)
+    if self.options.fake_buildstore:
+      buildstore = buildstore_lib.FakeBuildStore()
+    else:
+      buildstore = buildstore_lib.BuildStore(cidb_creds=cidb_creds)
+    pfq_identifier = self.ValidatePFQBuild(self.options.pfq_build,
+                                           buildstore)
 
     with osutils.TempDir(prefix='uprevchrome_',
                          delete=self.options.wipe) as work_dir:
-      self.UprevChrome(work_dir, self.options.pfq_build, build_number)
+      self.UprevChrome(work_dir, pfq_identifier)
       logging.info('Used working directory: %s', work_dir)

@@ -8,7 +8,7 @@
 
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
-#import "ios/chrome/browser/ui/browser_view_controller.h"
+#import "ios/chrome/browser/ui/browser_view/browser_view_controller.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/platform_test.h"
 
@@ -35,25 +35,24 @@ TEST_F(BrowserViewWranglerTest, TestInitNilObserver) {
   @autoreleasepool {
     BrowserViewWrangler* wrangler = [[BrowserViewWrangler alloc]
               initWithBrowserState:chrome_browser_state_.get()
-
                   tabModelObserver:nil
-        applicationCommandEndpoint:(id<ApplicationCommands>)nil];
-    // Test that BVC and tab model are created on demand.
-    BrowserViewController* bvc = [wrangler mainBVC];
+        applicationCommandEndpoint:(id<ApplicationCommands>)nil
+              appURLLoadingService:nil
+                   storageSwitcher:nil];
+    [wrangler createMainBrowser];
+    // Test that BVC is created on demand.
+    BrowserViewController* bvc = wrangler.mainInterface.bvc;
     EXPECT_NE(bvc, nil);
 
-    TabModel* tabModel = [wrangler mainTabModel];
-    EXPECT_NE(tabModel, nil);
-
-    // Test that once created the BVC and tab model aren't re-created.
-    EXPECT_EQ(bvc, [wrangler mainBVC]);
-    EXPECT_EQ(tabModel, [wrangler mainTabModel]);
+    // Test that once created the BVC isn't re-created.
+    EXPECT_EQ(bvc, wrangler.mainInterface.bvc);
 
     // Test that the OTR objects are (a) OTR and (b) not the same as the non-OTR
     // objects.
-    EXPECT_NE(bvc, [wrangler otrBVC]);
-    EXPECT_NE(tabModel, [wrangler otrTabModel]);
-    EXPECT_TRUE([wrangler otrTabModel].browserState->IsOffTheRecord());
+    EXPECT_NE(bvc, wrangler.incognitoInterface.bvc);
+    EXPECT_NE(wrangler.mainInterface.tabModel,
+              wrangler.incognitoInterface.tabModel);
+    EXPECT_TRUE(wrangler.incognitoInterface.browserState->IsOffTheRecord());
 
     [wrangler shutdown];
   }

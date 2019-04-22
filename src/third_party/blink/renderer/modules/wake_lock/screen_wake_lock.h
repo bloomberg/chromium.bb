@@ -5,12 +5,12 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WAKE_LOCK_SCREEN_WAKE_LOCK_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WAKE_LOCK_SCREEN_WAKE_LOCK_H_
 
+#include "base/macros.h"
 #include "services/device/public/mojom/wake_lock.mojom-blink.h"
-#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/page/page_visibility_observer.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -23,7 +23,6 @@ class MODULES_EXPORT ScreenWakeLock final
       public ContextLifecycleObserver,
       public PageVisibilityObserver {
   USING_GARBAGE_COLLECTED_MIXIN(ScreenWakeLock);
-  WTF_MAKE_NONCOPYABLE(ScreenWakeLock);
 
  public:
   static const char kSupplementName[];
@@ -53,6 +52,8 @@ class MODULES_EXPORT ScreenWakeLock final
 
   device::mojom::blink::WakeLockPtr service_;
   bool keep_awake_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScreenWakeLock);
 };
 
 }  // namespace blink

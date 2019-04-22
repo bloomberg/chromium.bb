@@ -44,8 +44,17 @@ bool HttpAuthPreferences::CanUseDefaultCredentials(
   return security_manager_->CanUseDefaultCredentials(auth_origin);
 }
 
-bool HttpAuthPreferences::CanDelegate(const GURL& auth_origin) const {
-  return security_manager_->CanDelegate(auth_origin);
+using DelegationType = HttpAuth::DelegationType;
+
+DelegationType HttpAuthPreferences::GetDelegationType(
+    const GURL& auth_origin) const {
+  if (!security_manager_->CanDelegate(auth_origin))
+    return DelegationType::kNone;
+
+  if (delegate_by_kdc_policy())
+    return DelegationType::kByKdcPolicy;
+
+  return DelegationType::kUnconstrained;
 }
 
 void HttpAuthPreferences::SetServerWhitelist(

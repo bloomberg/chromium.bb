@@ -78,11 +78,14 @@ class InjectedScript final {
           result,
       Maybe<protocol::Runtime::ExceptionDetails>*);
 
-  Response getInternalProperties(
+  Response getInternalAndPrivateProperties(
       v8::Local<v8::Value>, const String16& groupName,
       std::unique_ptr<
           protocol::Array<protocol::Runtime::InternalPropertyDescriptor>>*
-          result);
+          internalProperties,
+      std::unique_ptr<
+          protocol::Array<protocol::Runtime::PrivatePropertyDescriptor>>*
+          privateProperties);
 
   void releaseObject(const String16& objectId);
 
@@ -134,6 +137,7 @@ class InjectedScript final {
     v8::Local<v8::Context> context() const { return m_context; }
     InjectedScript* injectedScript() const { return m_injectedScript; }
     const v8::TryCatch& tryCatch() const { return m_tryCatch; }
+    V8InspectorImpl* inspector() const { return m_inspector; }
 
    protected:
     explicit Scope(V8InspectorSessionImpl*);

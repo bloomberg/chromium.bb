@@ -9,8 +9,12 @@ set(DEQP_VK_SPIRV_ASSEMBLY_SRCS
 	vktSpvAsmCrossStageInterfaceTests.hpp
 	vktSpvAsm16bitStorageTests.cpp
 	vktSpvAsm16bitStorageTests.hpp
+	vktSpvAsmFloatControlsTests.cpp
+	vktSpvAsmFloatControlsTests.hpp
 	vktSpvAsmUboMatrixPaddingTests.cpp
 	vktSpvAsmUboMatrixPaddingTests.hpp
+	vktSpvAsmCompositeInsertTests.cpp
+	vktSpvAsmCompositeInsertTests.hpp
 	vktSpvAsmConditionalBranchTests.cpp
 	vktSpvAsmConditionalBranchTests.hpp
 	vktSpvAsmIndexingTests.cpp
@@ -43,12 +47,18 @@ set(DEQP_VK_SPIRV_ASSEMBLY_SRCS
 	vktSpvAsmLoopDepLenTests.hpp
 	vktSpvAsmLoopDepInfTests.cpp
 	vktSpvAsmLoopDepInfTests.hpp
+	vktSpvAsmVaryingNameTests.cpp
+	vktSpvAsmVaryingNameTests.hpp
+	vktSpvAsmWorkgroupMemoryTests.cpp
+	vktSpvAsmWorkgroupMemoryTests.hpp
 	)
 
 set(DEQP_VK_SPIRV_ASSEMBLY_LIBS
 	tcutil
 	vkutil
 	)
+
+PCH(DEQP_VK_SPIRV_ASSEMBLY_SRCS ../pch.cpp)
 
 add_library(deqp-vk-spirv-assembly STATIC ${DEQP_VK_SPIRV_ASSEMBLY_SRCS})
 target_link_libraries(deqp-vk-spirv-assembly ${DEQP_VK_SPIRV_ASSEMBLY_LIBS})

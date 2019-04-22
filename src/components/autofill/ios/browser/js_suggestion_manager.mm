@@ -6,13 +6,13 @@
 
 #include <vector>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/format_macros.h"
 #include "base/json/string_escape.h"
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
-#include "components/autofill/ios/browser/autofill_switches.h"
 #import "components/autofill/ios/browser/autofill_util.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #include "ios/web/public/web_state/web_frame.h"
@@ -132,11 +132,8 @@
 }
 
 - (web::WebFrame*)frameWithFrameID:(NSString*)frameID {
-  if (autofill::switches::IsAutofillIFrameMessagingEnabled()) {
-    DCHECK(_webFramesManager);
-    return _webFramesManager->GetFrameWithId(base::SysNSStringToUTF8(frameID));
-  }
-  return nil;
+  DCHECK(_webFramesManager);
+  return _webFramesManager->GetFrameWithId(base::SysNSStringToUTF8(frameID));
 }
 
 @end

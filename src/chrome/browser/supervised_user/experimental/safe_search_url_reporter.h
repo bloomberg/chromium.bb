@@ -32,7 +32,6 @@ class SafeSearchURLReporter {
 
   SafeSearchURLReporter(
       identity::IdentityManager* identity_manager,
-      const std::string& account_id,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   ~SafeSearchURLReporter();
 
@@ -59,7 +58,6 @@ class SafeSearchURLReporter {
   void DispatchResult(ReportList::iterator it, bool success);
 
   identity::IdentityManager* identity_manager_;
-  std::string account_id_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   ReportList reports_;

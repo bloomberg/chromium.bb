@@ -13,10 +13,10 @@
 
 namespace notifier {
 
-// This class implements buzz::PreXmppAuth interface for token-based
+// This class implements jingle_xmpp::PreXmppAuth interface for token-based
 // authentication in GTalk. It looks for the X-GOOGLE-TOKEN auth mechanism
 // and uses that instead of the default auth mechanism (PLAIN).
-class GaiaTokenPreXmppAuth : public buzz::PreXmppAuth {
+class GaiaTokenPreXmppAuth : public jingle_xmpp::PreXmppAuth {
  public:
   GaiaTokenPreXmppAuth(const std::string& username, const std::string& token,
                        const std::string& token_service,
@@ -24,11 +24,10 @@ class GaiaTokenPreXmppAuth : public buzz::PreXmppAuth {
 
   ~GaiaTokenPreXmppAuth() override;
 
-  // buzz::PreXmppAuth (-buzz::SaslHandler) implementation.  We stub
+  // jingle_xmpp::PreXmppAuth (-jingle_xmpp::SaslHandler) implementation.  We stub
   // all the methods out as we don't actually do any authentication at
   // this point.
-  void StartPreXmppAuth(const buzz::Jid& jid,
-                        const rtc::SocketAddress& server,
+  void StartPreXmppAuth(const jingle_xmpp::Jid& jid,
                         const std::string& pass,
                         const std::string& auth_mechanism,
                         const std::string& auth_token) override;
@@ -41,19 +40,19 @@ class GaiaTokenPreXmppAuth : public buzz::PreXmppAuth {
 
   int GetError() const override;
 
-  buzz::CaptchaChallenge GetCaptchaChallenge() const override;
+  jingle_xmpp::CaptchaChallenge GetCaptchaChallenge() const override;
 
   std::string GetAuthToken() const override;
 
   std::string GetAuthMechanism() const override;
 
-  // buzz::SaslHandler implementation.
+  // jingle_xmpp::SaslHandler implementation.
 
   std::string ChooseBestSaslMechanism(
       const std::vector<std::string>& mechanisms,
       bool encrypted) override;
 
-  buzz::SaslMechanism* CreateSaslMechanism(
+  jingle_xmpp::SaslMechanism* CreateSaslMechanism(
       const std::string& mechanism) override;
 
  private:

@@ -65,9 +65,8 @@ class GLRendererCopierTest : public testing::Test {
     auto context_provider = TestContextProvider::Create(
         std::make_unique<CopierTestGLES2Interface>());
     context_provider->BindToCurrentThread();
-    copier_ = std::make_unique<GLRendererCopier>(
-        std::move(context_provider), nullptr,
-        base::BindRepeating([](const gfx::Rect& rect) { return rect; }));
+    copier_ = std::make_unique<GLRendererCopier>(std::move(context_provider),
+                                                 nullptr);
   }
 
   void TearDown() override { copier_.reset(); }

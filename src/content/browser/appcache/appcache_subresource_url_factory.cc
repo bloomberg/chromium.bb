@@ -4,16 +4,24 @@
 
 #include "content/browser/appcache/appcache_subresource_url_factory.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/bind.h"
+#include "base/debug/crash_logging.h"
 #include "base/logging.h"
 #include "content/browser/appcache/appcache_host.h"
 #include "content/browser/appcache/appcache_request_handler.h"
 #include "content/browser/appcache/appcache_url_loader_job.h"
 #include "content/browser/appcache/appcache_url_loader_request.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/content_browser_client.h"
+#include "content/public/common/content_client.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
+#include "mojo/public/cpp/bindings/message.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -127,17 +135,16 @@ class SubresourceLoader : public network::mojom::URLLoader,
 
   // network::mojom::URLLoader implementation
   // Called by the remote client in the renderer.
-  void FollowRedirect(
-      const base::Optional<std::vector<std::string>>&
-          to_be_removed_request_headers,
-      const base::Optional<net::HttpRequestHeaders>& modified_request_headers,
-      const base::Optional<GURL>& new_url) override {
-    DCHECK(!modified_request_headers.has_value())
+  void FollowRedirect(const std::vector<std::string>& removed_headers,
+                      const net::HttpRequestHeaders& modified_headers,
+                      const base::Optional<GURL>& new_url) override {
+    DCHECK(removed_headers.empty() && modified_headers.IsEmpty())
         << "Redirect with modified headers was not supported yet. "
            "crbug.com/845683";
     if (!handler_) {
-      network_loader_->FollowRedirect(base::nullopt, base::nullopt,
-                                      base::nullopt);
+      network_loader_->FollowRedirect({} /* removed_headers */,
+                                      {} /* modified_headers */,
+                                      base::nullopt /* new_url */);
       return;
     }
     DCHECK(network_loader_);
@@ -156,8 +163,9 @@ class SubresourceLoader : public network::mojom::URLLoader,
     if (handler) {
       CreateAndStartAppCacheLoader(std::move(handler));
     } else {
-      network_loader_->FollowRedirect(base::nullopt, base::nullopt,
-                                      base::nullopt);
+      network_loader_->FollowRedirect({} /* removed_headers */,
+                                      {} /* modified_headers */,
+                                      base::nullopt /* new_url */);
     }
   }
 
@@ -358,6 +366,36 @@ void AppCacheSubresourceURLFactory::CreateLoaderAndStart(
     network::mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  // TODO(943887): Replace HasSecurityState() call with something that can
+  // preserve security state after process shutdown. The security state check
+  // is a temporary solution to avoid crashes when this method is run after the
+  // process associated with |appcache_host_->process_id()| has been destroyed.
+  // It temporarily restores the old behavior of always allowing access if the
+  // process is gone.
+  // See https://crbug.com/910287 for details.
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+  if (request.request_initiator.has_value() &&
+      !request.request_initiator.value().opaque() && appcache_host_ &&
+      !policy->CanAccessDataForOrigin(appcache_host_->process_id(),
+                                      request.request_initiator.value()) &&
+      policy->HasSecurityState(appcache_host_->process_id())) {
+    const char* scheme_exception =
+        GetContentClient()
+            ->browser()
+            ->GetInitiatorSchemeBypassingDocumentBlocking();
+    if (!scheme_exception ||
+        request.request_initiator.value().scheme() != scheme_exception) {
+      static auto* initiator_origin_key = base::debug::AllocateCrashKeyString(
+          "initiator_origin", base::debug::CrashKeySize::Size64);
+      base::debug::SetCrashKeyString(
+          initiator_origin_key, request.request_initiator.value().Serialize());
+
+      mojo::ReportBadMessage(
+          "APPCACHE_SUBRESOURCE_URL_FACTORY_INVALID_INITIATOR");
+      return;
+    }
+  }
+
   new SubresourceLoader(std::move(url_loader_request), routing_id, request_id,
                         options, request, std::move(client), traffic_annotation,
                         appcache_host_, network_loader_factory_);

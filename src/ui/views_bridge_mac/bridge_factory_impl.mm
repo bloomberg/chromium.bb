@@ -4,9 +4,11 @@
 
 #include "ui/views_bridge_mac/bridge_factory_impl.h"
 
+#include "base/bind.h"
 #include "base/no_destructor.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #include "ui/base/cocoa/remote_accessibility_api.h"
+#include "ui/views_bridge_mac/alert.h"
 #include "ui/views_bridge_mac/bridged_native_widget_host_helper.h"
 #include "ui/views_bridge_mac/bridged_native_widget_impl.h"
 
@@ -20,12 +22,15 @@ namespace {
 class Bridge : public BridgedNativeWidgetHostHelper {
  public:
   Bridge(uint64_t bridge_id,
+         mojom::BridgedNativeWidgetAssociatedRequest bridge_request,
          mojom::BridgedNativeWidgetHostAssociatedPtrInfo host_ptr,
-         mojom::BridgedNativeWidgetAssociatedRequest bridge_request) {
+         mojom::TextInputHostAssociatedPtrInfo text_input_host_ptr) {
     host_ptr_.Bind(std::move(host_ptr),
                    ui::WindowResizeHelperMac::Get()->task_runner());
+    text_input_host_ptr_.Bind(std::move(text_input_host_ptr),
+                              ui::WindowResizeHelperMac::Get()->task_runner());
     bridge_impl_ = std::make_unique<BridgedNativeWidgetImpl>(
-        bridge_id, host_ptr_.get(), this);
+        bridge_id, host_ptr_.get(), this, text_input_host_ptr_.get());
     bridge_impl_->BindRequest(
         std::move(bridge_request),
         base::BindOnce(&Bridge::OnConnectionError, base::Unretained(this)));
@@ -41,12 +46,7 @@ class Bridge : public BridgedNativeWidgetHostHelper {
     if (!remote_accessibility_element_) {
       int64_t browser_pid = 0;
       std::vector<uint8_t> element_token;
-      host_ptr_->GetAccessibilityTokens(
-          ui::RemoteAccessibility::GetTokenForLocalElement(
-              bridge_impl_->ns_window()),
-          ui::RemoteAccessibility::GetTokenForLocalElement(
-              bridge_impl_->ns_view()),
-          &browser_pid, &element_token);
+      host_ptr_->GetRootViewAccessibilityToken(&browser_pid, &element_token);
       [NSAccessibilityRemoteUIElement
           registerRemoteUIProcessIdentifier:browser_pid];
       remote_accessibility_element_ =
@@ -77,13 +77,18 @@ class Bridge : public BridgedNativeWidgetHostHelper {
                  gfx::Point* baseline_point) override {
     *found_word = false;
   }
-  double SheetPositionY() override { return 0; }
   views_bridge_mac::DragDropClient* GetDragDropClient() override {
     // Drag-drop only doesn't work across mojo yet.
     return nullptr;
   }
+  ui::TextInputClient* GetTextInputClient() override {
+    // Text input doesn't work across mojo yet.
+    return nullptr;
+  }
 
   mojom::BridgedNativeWidgetHostAssociatedPtr host_ptr_;
+  mojom::TextInputHostAssociatedPtr text_input_host_ptr_;
+
   std::unique_ptr<BridgedNativeWidgetImpl> bridge_impl_;
   base::scoped_nsobject<NSAccessibilityRemoteUIElement>
       remote_accessibility_element_;
@@ -103,13 +108,19 @@ void BridgeFactoryImpl::BindRequest(
                 ui::WindowResizeHelperMac::Get()->task_runner());
 }
 
+void BridgeFactoryImpl::CreateAlert(mojom::AlertBridgeRequest bridge_request) {
+  // The resulting object manages its own lifetime.
+  ignore_result(new AlertBridge(std::move(bridge_request)));
+}
+
 void BridgeFactoryImpl::CreateBridgedNativeWidget(
     uint64_t bridge_id,
     mojom::BridgedNativeWidgetAssociatedRequest bridge_request,
-    mojom::BridgedNativeWidgetHostAssociatedPtrInfo host) {
+    mojom::BridgedNativeWidgetHostAssociatedPtrInfo host,
+    mojom::TextInputHostAssociatedPtrInfo text_input_host) {
   // The resulting object will be destroyed when its message pipe is closed.
-  ignore_result(
-      new Bridge(bridge_id, std::move(host), std::move(bridge_request)));
+  ignore_result(new Bridge(bridge_id, std::move(bridge_request),
+                           std::move(host), std::move(text_input_host)));
 }
 
 BridgeFactoryImpl::BridgeFactoryImpl() : binding_(this) {}

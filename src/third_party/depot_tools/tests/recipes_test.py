@@ -13,8 +13,8 @@ ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 def recipes_py(*args):
   subprocess.check_call([
-      os.path.join(ROOT_DIR, 'recipes', 'recipes.py'),
-      '--use-bootstrap'] + list(args))
+      os.path.join(ROOT_DIR, 'recipes', 'recipes.py')
+  ] + list(args))
 
 recipes_py('test', 'run')
 

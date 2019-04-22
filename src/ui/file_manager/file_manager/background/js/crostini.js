@@ -3,21 +3,37 @@
 // found in the LICENSE file.
 
 /**
- * Crostini shared path state handler.
+ * Implementation of Crostini shared path state handler.
+ *
  * @constructor
+ * @implements {Crostini}
  */
-function Crostini() {
-  /** @private {boolean} */
-  this.enabled_ = false;
+function CrostiniImpl() {
+  /**
+   * True if VM is enabled.
+   * @private {Object<boolean>}
+   */
+  this.enabled_ = {};
 
   /**
-   * Maintains a list of paths shared with the crostini container.
-   * Keyed by VolumeManagerCommon.RootType, with boolean set values
-   * of string paths.  e.g. {'Downloads': {'/foo': true, '/bar': true}}.
-   * @private @dict {!Object<!Object<boolean>>}
+   * Maintains a list of paths shared with VMs.
+   * Keyed by entry.toURL(), maps to list of VMs.
+   * @private @dict {!Object<!Array<string>>}
    */
   this.shared_paths_ = {};
 }
+
+/**
+ * Default Crostini VM is 'termina'.
+ * @const
+ */
+CrostiniImpl.DEFAULT_VM = 'termina';
+
+/**
+ * Plugin VM 'PluginVm'.
+ * @const
+ */
+CrostiniImpl.PLUGIN_VM = 'PluginVm';
 
 /**
  * Keep in sync with histograms.xml:FileBrowserCrostiniSharedPathsDepth
@@ -25,9 +41,10 @@ function Crostini() {
  * @type {!Map<VolumeManagerCommon.RootType, string>}
  * @const
  */
-Crostini.VALID_ROOT_TYPES_FOR_SHARE = new Map([
+CrostiniImpl.VALID_ROOT_TYPES_FOR_SHARE = new Map([
   [VolumeManagerCommon.RootType.DOWNLOADS, 'Downloads'],
   [VolumeManagerCommon.RootType.REMOVABLE, 'Removable'],
+  [VolumeManagerCommon.RootType.ANDROID_FILES, 'AndroidFiles'],
 ]);
 
 /**
@@ -38,145 +55,195 @@ Crostini.VALID_ROOT_TYPES_FOR_SHARE = new Map([
  * @type {!Map<VolumeManagerCommon.RootType, string>}
  * @const
  */
-Crostini.VALID_DRIVE_FS_ROOT_TYPES_FOR_SHARE = new Map([
+CrostiniImpl.VALID_DRIVE_FS_ROOT_TYPES_FOR_SHARE = new Map([
   [VolumeManagerCommon.RootType.COMPUTERS_GRAND_ROOT, 'DriveComputers'],
   [VolumeManagerCommon.RootType.COMPUTER, 'DriveComputers'],
   [VolumeManagerCommon.RootType.DRIVE, 'MyDrive'],
-  [VolumeManagerCommon.RootType.TEAM_DRIVES_GRAND_ROOT, 'TeamDrive'],
-  [VolumeManagerCommon.RootType.TEAM_DRIVE, 'TeamDrive'],
+  [VolumeManagerCommon.RootType.SHARED_DRIVES_GRAND_ROOT, 'TeamDrive'],
+  [VolumeManagerCommon.RootType.SHARED_DRIVE, 'TeamDrive'],
 ]);
 
-/** @private {string} */
-Crostini.UMA_ROOT_TYPE_OTHER = 'Other';
+/**
+ * @private {string}
+ * @const
+ */
+CrostiniImpl.UMA_ROOT_TYPE_OTHER = 'Other';
 
 /**
  * Initialize Volume Manager.
  * @param {!VolumeManager} volumeManager
  */
-Crostini.prototype.init = function(volumeManager) {
+CrostiniImpl.prototype.init = function(volumeManager) {
   this.volumeManager_ = volumeManager;
 };
 
 /**
  * Register for any shared path changes.
  */
-Crostini.prototype.listen = function() {
-  chrome.fileManagerPrivate.onCrostiniSharedPathsChanged.addListener(
+CrostiniImpl.prototype.listen = function() {
+  chrome.fileManagerPrivate.onCrostiniChanged.addListener(
       this.onChange_.bind(this));
 };
 
 /**
- * Set from feature 'crostini-files'.
+ * Set whether the specified VM is enabled.
+ * @param {string} vmName
  * @param {boolean} enabled
  */
-Crostini.prototype.setEnabled = function(enabled) {
-  this.enabled_ = enabled;
+CrostiniImpl.prototype.setEnabled = function(vmName, enabled) {
+  this.enabled_[vmName] = enabled;
 };
 
 /**
- * @return {boolean} Whether crostini is enabled.
+ * Returns true if crostini is enabled.
+ * @param {string} vmName
+ * @return {boolean}
  */
-Crostini.prototype.isEnabled = function() {
-  return this.enabled_;
+CrostiniImpl.prototype.isEnabled = function(vmName) {
+  return this.enabled_[vmName];
 };
 
 /**
- * Registers an entry as a shared path.
+ * @param {!Entry} entry
+ * @return {VolumeManagerCommon.RootType}
+ * @private
+ */
+CrostiniImpl.prototype.getRoot_ = function(entry) {
+  const info =
+      this.volumeManager_ && this.volumeManager_.getLocationInfo(entry);
+  return info && info.rootType;
+};
+
+/**
+ * Registers an entry as a shared path for the specified VM.
+ * @param {string} vmName
  * @param {!Entry} entry
  */
-Crostini.prototype.registerSharedPath = function(entry) {
-  const info = this.volumeManager_.getLocationInfo(entry);
-  if (!info)
-    return;
-  let paths = this.shared_paths_[info.rootType];
-  if (!paths) {
-    paths = {};
-    this.shared_paths_[info.rootType] = paths;
-  }
+CrostiniImpl.prototype.registerSharedPath = function(vmName, entry) {
+  const url = entry.toURL();
   // Remove any existing paths that are children of the new path.
-  for (let path in paths) {
-    if (path.startsWith(entry.fullPath))
-      delete paths[path];
+  // These paths will still be shared as a result of a parent path being
+  // shared, but if the parent is unshared in the future, these children
+  // paths should not remain.
+  for (const [path, vms] of Object.entries(this.shared_paths_)) {
+    if (path.startsWith(url)) {
+      this.unregisterSharedPath_(vmName, path);
+    }
   }
-  paths[entry.fullPath] = true;
+  const vms = this.shared_paths_[url];
+  if (this.shared_paths_[url]) {
+    this.shared_paths_[url].push(vmName);
+  } else {
+    this.shared_paths_[url] = [vmName];
+  }
 
   // Record UMA.
-  let suffix = Crostini.VALID_ROOT_TYPES_FOR_SHARE.get(info.rootType) ||
-      Crostini.VALID_DRIVE_FS_ROOT_TYPES_FOR_SHARE.get(info.rootType) ||
-      Crostini.UMA_ROOT_TYPE_OTHER;
+  const root = this.getRoot_(entry);
+  let suffix = CrostiniImpl.VALID_ROOT_TYPES_FOR_SHARE.get(root) ||
+      CrostiniImpl.VALID_DRIVE_FS_ROOT_TYPES_FOR_SHARE.get(root) ||
+      CrostiniImpl.UMA_ROOT_TYPE_OTHER;
   metrics.recordSmallCount(
       'CrostiniSharedPaths.Depth.' + suffix,
       entry.fullPath.split('/').length - 1);
 };
 
 /**
- * Unregisters entry as a shared path.
+ * Unregisters path as a shared path from the specified VM.
+ * @param {string} vmName
+ * @param {string} path
+ * @private
+ */
+CrostiniImpl.prototype.unregisterSharedPath_ = function(vmName, path) {
+  const vms = this.shared_paths_[path];
+  if (vms) {
+    const newVms = vms.filter(vm => vm != vmName);
+    if (newVms.length > 0) {
+      this.shared_paths_[path] = newVms;
+    } else {
+      delete this.shared_paths_[path];
+    }
+  }
+};
+
+/**
+ * Unregisters entry as a shared path from the specified VM.
+ * @param {string} vmName
  * @param {!Entry} entry
  */
-Crostini.prototype.unregisterSharedPath = function(entry) {
-  const info = this.volumeManager_.getLocationInfo(entry);
-  if (!info)
-    return;
-  const paths = this.shared_paths_[info.rootType];
-  if (paths) {
-    delete paths[entry.fullPath];
-  }
+CrostiniImpl.prototype.unregisterSharedPath = function(vmName, entry) {
+  this.unregisterSharedPath_(vmName, entry.toURL());
 };
 
 /**
  * Handles shared path changes.
- * @param {chrome.fileManagerPrivate.CrostiniSharedPathsChangedEvent} event
+ * @param {chrome.fileManagerPrivate.CrostiniEvent} event
  * @private
  */
-Crostini.prototype.onChange_ = function(event) {
+CrostiniImpl.prototype.onChange_ = function(event) {
   if (event.eventType === 'share') {
     for (const entry of event.entries) {
-      this.registerSharedPath(entry);
+      this.registerSharedPath(event.vmName, entry);
     }
   } else if (event.eventType === 'unshare') {
     for (const entry of event.entries) {
-      this.unregisterSharedPath(entry);
+      this.unregisterSharedPath(event.vmName, entry);
     }
   }
 };
 
 /**
- * Returns true if entry is shared.
+ * Returns true if entry is shared with the specified VM.
+ * @param {string} vmName
  * @param {!Entry} entry
  * @return {boolean} True if path is shared either by a direct
  *   share or from one of its ancestor directories.
  */
-Crostini.prototype.isPathShared = function(entry) {
-  const root = this.volumeManager_.getLocationInfo(entry).rootType;
-  const paths = this.shared_paths_[root];
-  if (!paths)
-    return false;
+CrostiniImpl.prototype.isPathShared = function(vmName, entry) {
   // Check path and all ancestor directories.
-  let path = entry.fullPath;
-  while (path.length > 1) {
-    if (paths[path])
+  let path = entry.toURL();
+  let root = path;
+  if (entry && entry.filesystem && entry.filesystem.root) {
+    root = entry.filesystem.root.toURL();
+  }
+
+  while (path.length > root.length) {
+    const vms = this.shared_paths_[path];
+    if (vms && vms.includes(vmName)) {
       return true;
+    }
     path = path.substring(0, path.lastIndexOf('/'));
   }
-  return !!paths['/'];
+  const rootVms = this.shared_paths_[root];
+  return !!rootVms && rootVms.includes(vmName);
 };
 
 /**
- * Returns true if entry can be shared with Crostini.
+ * Returns true if entry can be shared with the specified VM.
+ * @param {string} vmName
  * @param {!Entry} entry
  * @param {boolean} persist If path is to be persisted.
  */
-Crostini.prototype.canSharePath = function(entry, persist) {
-  if (!this.enabled_)
+CrostiniImpl.prototype.canSharePath = function(vmName, entry, persist) {
+  if (!this.enabled_[vmName]) {
     return false;
+  }
 
   // Only directories for persistent shares.
-  if (persist && !entry.isDirectory)
+  if (persist && !entry.isDirectory) {
     return false;
+  }
 
-  // Allow Downloads, and Drive if DriveFS is enabled.
-  const rootType = this.volumeManager_.getLocationInfo(entry).rootType;
-  return Crostini.VALID_ROOT_TYPES_FOR_SHARE.has(rootType) ||
+  const root = this.getRoot_(entry);
+
+  // TODO(crbug.com/917920): Remove when DriveFS enforces allowed write paths.
+  // Disallow Computers Grand Root, and Computer Root.
+  if (root === VolumeManagerCommon.RootType.COMPUTERS_GRAND_ROOT ||
+      (root === VolumeManagerCommon.RootType.COMPUTER &&
+       entry.fullPath.split('/').length <= 3)) {
+    return false;
+  }
+
+  return CrostiniImpl.VALID_ROOT_TYPES_FOR_SHARE.has(root) ||
       (loadTimeData.getBoolean('DRIVE_FS_ENABLED') &&
-       Crostini.VALID_DRIVE_FS_ROOT_TYPES_FOR_SHARE.has(rootType));
+       CrostiniImpl.VALID_DRIVE_FS_ROOT_TYPES_FOR_SHARE.has(root));
 };

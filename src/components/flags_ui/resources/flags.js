@@ -15,8 +15,26 @@
  *     See returnFlagsExperiments() for the structure of this object.
  */
 function renderTemplate(experimentalFeaturesData) {
-  // This is the javascript code that processes the template:
-  jstProcess(new JsEvalContext(experimentalFeaturesData), $('flagsTemplate'));
+  var templateToProcess = jstGetTemplate('tab-content-available-template');
+  var context = new JsEvalContext(experimentalFeaturesData);
+  var content = $('tab-content-available');
+
+  // Duplicate the template into the content area.
+  // This prevents the misrendering of available flags when the template
+  // is rerendered. Example - resetting flags.
+  content.textContent = '';
+  content.appendChild(templateToProcess);
+
+  // Process the templates: available / unavailable flags.
+  jstProcess(context, templateToProcess);
+
+  // Unavailable flags are not shown on iOS.
+  var unavailableTemplate = $('tab-content-unavailable');
+  if (unavailableTemplate) {
+    jstProcess(context, $('tab-content-unavailable'));
+  }
+
+  showRestartToast(experimentalFeaturesData.needsRestart);
 
   // Add handlers to dynamically created HTML elements.
   var elements = document.getElementsByClassName('experiment-select');
@@ -44,9 +62,10 @@ function renderTemplate(experimentalFeaturesData) {
     };
   }
 
-  elements = document.getElementsByClassName('experiment-restart-button');
-  for (var i = 0; i < elements.length; ++i) {
-    elements[i].onclick = restartBrowser;
+  var element = $('experiment-restart-button');
+  assert(element || cr.isIOS);
+  if (element) {
+    element.onclick = restartBrowser;
   }
 
   // Tab panel selection.
@@ -89,8 +108,9 @@ function highlightReferencedFlag() {
     var el = document.querySelector(window.location.hash);
     if (el && !el.classList.contains('referenced')) {
       // Unhighlight whatever's highlighted.
-      if (document.querySelector('.referenced'))
+      if (document.querySelector('.referenced')) {
         document.querySelector('.referenced').classList.remove('referenced');
+      }
       // Highlight the referenced element.
       el.classList.add('referenced');
 
@@ -126,7 +146,16 @@ function restartBrowser() {
 function resetAllFlags() {
   // Asks the C++ FlagsDOMHandler to reset all flags to default values.
   chrome.send('resetAllFlags');
+  showRestartToast(true);
   requestExperimentalFeaturesData();
+}
+
+/**
+ * Show the restart toast.
+ * @param {boolean} show Setting to toggle showing / hiding the toast.
+ */
+function showRestartToast(show) {
+  $('needs-restart').classList.toggle('show', show);
 }
 
 /**
@@ -172,15 +201,20 @@ function returnExperimentalFeatures(experimentalFeaturesData) {
   var bodyContainer = $('body-container');
   renderTemplate(experimentalFeaturesData);
 
-  if (experimentalFeaturesData.showBetaChannelPromotion)
+  if (experimentalFeaturesData.showBetaChannelPromotion) {
     $('channel-promo-beta').hidden = false;
-  else if (experimentalFeaturesData.showDevChannelPromotion)
+  } else if (experimentalFeaturesData.showDevChannelPromotion) {
     $('channel-promo-dev').hidden = false;
+  }
+
+  $('promos').hidden = !experimentalFeaturesData.showBetaChannelPromotion &&
+      !experimentalFeaturesData.showDevChannelPromotion;
 
   bodyContainer.style.visibility = 'visible';
   var ownerWarningDiv = $('owner-warning');
-  if (ownerWarningDiv)
+  if (ownerWarningDiv) {
     ownerWarningDiv.hidden = !experimentalFeaturesData.showOwnerWarning;
+  }
 }
 
 /**
@@ -199,7 +233,7 @@ function experimentChangesUiUpdates(node, index) {
   experimentContainerEl.classList.toggle('experiment-default', isDefault);
   experimentContainerEl.classList.toggle('experiment-switched', !isDefault);
 
-  $('needs-restart').classList.add('show');
+  showRestartToast(true);
 }
 
 /**
@@ -216,7 +250,7 @@ function handleEnableExperimentalFeature(node, enable) {
 
 function handleSetOriginListFlag(node, value) {
   chrome.send('setOriginListFlag', [String(node.internal_name), String(value)]);
-  $('needs-restart').classList.add('show');
+  showRestartToast(true);
 }
 
 /**
@@ -294,7 +328,8 @@ FlagSearch.prototype = {
         document.querySelectorAll('#tab-content-unavailable p');
 
     if (!this.initialized) {
-      this.searchBox_.addEventListener('keyup', this.debounceSearch.bind(this));
+      this.searchBox_.addEventListener('input', this.debounceSearch.bind(this));
+
       document.querySelector('.clear-search').addEventListener('click',
           this.clearSearch.bind(this));
 
@@ -426,9 +461,8 @@ FlagSearch.prototype = {
 
   /**
    * Performs a search against the experiment title, description, permalink.
-   * @param {Event} e
    */
-  doSearch: function(e) {
+  doSearch: function() {
     var searchTerm =
         this.searchBox_.value.trim().toLowerCase();
 
@@ -448,9 +482,8 @@ FlagSearch.prototype = {
   /**
    * Debounces the search to improve performance and prevent too many searches
    * from being initiated.
-   * @param {Event} e
    */
-  debounceSearch: function(e) {
+  debounceSearch: function() {
     // Don't search if the search term did not change.
     if (this.searchValue_ == this.searchBox_.value) {
       return;
@@ -464,8 +497,12 @@ FlagSearch.prototype = {
   }
 };
 
-// Get and display the data upon loading.
-document.addEventListener('DOMContentLoaded', requestExperimentalFeaturesData);
+document.addEventListener('DOMContentLoaded', function() {
+  // Get and display the data upon loading.
+  requestExperimentalFeaturesData();
+
+  cr.ui.FocusOutlineManager.forDocument(document);
+});
 
 // Update the highlighted flag when the hash changes.
 window.addEventListener('hashchange', highlightReferencedFlag);

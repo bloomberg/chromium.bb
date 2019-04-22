@@ -5,6 +5,7 @@
 #include "content/browser/loader/intercepting_resource_handler.h"
 
 #include "base/auto_reset.h"
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
@@ -29,11 +30,12 @@ class InterceptingResourceHandler::Controller : public ResourceController {
     intercepting_handler_->ResumeInternal();
   }
 
-  void ResumeForRedirect(const base::Optional<net::HttpRequestHeaders>&
-                             modified_request_headers) override {
-    DCHECK(!modified_request_headers.has_value())
-        << "Redirect with modified headers was not supported yet. "
-           "crbug.com/845683";
+  void ResumeForRedirect(
+      const std::vector<std::string>& removed_headers,
+      const net::HttpRequestHeaders& modified_headers) override {
+    DCHECK(removed_headers.empty() && modified_headers.IsEmpty())
+        << "Removing or modifying headers from the |new_handler| is not used "
+           "and not supported. See https://crbug.com/845683.";
     Resume();
   }
 

@@ -4,6 +4,8 @@
 
 #include "services/identity/public/cpp/primary_account_mutator_impl.h"
 
+#include <utility>
+
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 
@@ -33,7 +35,7 @@ bool PrimaryAccountMutatorImpl::SetPrimaryAccount(
 
   // TODO(crbug.com/889899): should check that the account email is allowed.
 
-  signin_manager_->OnExternalSigninCompleted(account_info.email);
+  signin_manager_->SignIn(account_info.email);
   return true;
 }
 
@@ -41,13 +43,8 @@ bool PrimaryAccountMutatorImpl::ClearPrimaryAccount(
     ClearAccountsAction action,
     signin_metrics::ProfileSignout source_metric,
     signin_metrics::SignoutDelete delete_metric) {
-  // Check if and auth process is ongoing before reporting failure to support
-  // the legacy workflow of cancelling it by clearing the primary account.
-  if (!signin_manager_->IsAuthenticated() &&
-      !LegacyIsPrimaryAccountAuthInProgress())
+  if (!signin_manager_->IsAuthenticated())
     return false;
-
-  // TODO: report failure if SignOut is not allowed.
 
   switch (action) {
     case PrimaryAccountMutator::ClearAccountsAction::kDefault:
@@ -73,58 +70,8 @@ void PrimaryAccountMutatorImpl::SetSettingPrimaryAccountAllowed(bool allowed) {
   signin_manager_->SetSigninAllowed(allowed);
 }
 
-bool PrimaryAccountMutatorImpl::IsClearingPrimaryAccountAllowed() const {
-  NOTIMPLEMENTED();
-  return false;
-}
-
-void PrimaryAccountMutatorImpl::SetClearingPrimaryAccountAllowed(bool allowed) {
-  NOTIMPLEMENTED();
-}
-
 void PrimaryAccountMutatorImpl::SetAllowedPrimaryAccountPattern(
     const std::string& pattern) {
-  NOTIMPLEMENTED();
-}
-
-void PrimaryAccountMutatorImpl::
-    LegacyStartSigninWithRefreshTokenForPrimaryAccount(
-        const std::string& refresh_token,
-        const std::string& gaia_id,
-        const std::string& username,
-        const std::string& password,
-        base::OnceCallback<void(const std::string&)> callback) {
-  signin_manager_->StartSignInWithRefreshToken(refresh_token, gaia_id, username,
-                                               password, std::move(callback));
-}
-
-void PrimaryAccountMutatorImpl::LegacyCompletePendingPrimaryAccountSignin() {
-  signin_manager_->CompletePendingSignin();
-}
-
-void PrimaryAccountMutatorImpl::LegacyMergeSigninCredentialIntoCookieJar() {
-  NOTIMPLEMENTED();
-}
-
-bool PrimaryAccountMutatorImpl::LegacyIsPrimaryAccountAuthInProgress() const {
-  return signin_manager_->AuthInProgress();
-}
-
-AccountInfo PrimaryAccountMutatorImpl::LegacyPrimaryAccountForAuthInProgress()
-    const {
-  if (!LegacyIsPrimaryAccountAuthInProgress())
-    return AccountInfo{};
-
-  AccountInfo account_info;
-  account_info.account_id = signin_manager_->GetAccountIdForAuthInProgress();
-  account_info.gaia = signin_manager_->GetGaiaIdForAuthInProgress();
-  account_info.email = signin_manager_->GetUsernameForAuthInProgress();
-
-  return account_info;
-}
-
-void PrimaryAccountMutatorImpl::LegacyCopyCredentialsFrom(
-    const PrimaryAccountMutator& source) {
   NOTIMPLEMENTED();
 }
 

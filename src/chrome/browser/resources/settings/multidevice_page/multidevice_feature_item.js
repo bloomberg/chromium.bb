@@ -47,8 +47,9 @@ Polymer({
 
   /** @private */
   handleItemClick_: function(event) {
-    if (!this.hasSubpageClickHandler_())
+    if (!this.hasSubpageClickHandler_()) {
       return;
+    }
 
     // We do not navigate away if the click was on a link.
     if (event.path[0].tagName === 'A') {

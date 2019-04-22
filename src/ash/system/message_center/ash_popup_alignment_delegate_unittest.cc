@@ -14,6 +14,7 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/desks/desks_util.h"
 #include "base/command_line.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
@@ -143,7 +144,7 @@ TEST_F(AshPopupAlignmentDelegateTest, AutoHide) {
 
   // Create a window, otherwise autohide doesn't work.
   std::unique_ptr<views::Widget> widget = CreateTestWidget(
-      nullptr, kShellWindowId_DefaultContainer, gfx::Rect(0, 0, 50, 50));
+      nullptr, desks_util::GetActiveDeskContainerId(), gfx::Rect(0, 0, 50, 50));
   Shelf* shelf = GetPrimaryShelf();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   EXPECT_EQ(origin_x, alignment_delegate()->GetToastOriginX(toast_size));

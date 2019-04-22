@@ -5,27 +5,31 @@
 #include "chrome/browser/chromeos/ownership/fake_owner_settings_service.h"
 
 #include "base/logging.h"
+#include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
-#include "chromeos/settings/install_attributes.h"
+#include "chromeos/tpm/install_attributes.h"
 #include "components/ownership/mock_owner_key_util.h"
 
 namespace chromeos {
 
-FakeOwnerSettingsService::FakeOwnerSettingsService(Profile* profile)
-    : OwnerSettingsServiceChromeOS(nullptr,
-                                   profile,
-                                   new ownership::MockOwnerKeyUtil()),
-      settings_provider_(nullptr) {
-}
+FakeOwnerSettingsService::FakeOwnerSettingsService(
+    StubCrosSettingsProvider* provider,
+    Profile* profile)
+    : OwnerSettingsServiceChromeOS(
+          /* device_settings_service= */ nullptr,
+          profile,
+          OwnerSettingsServiceChromeOSFactory::GetInstance()
+              ->GetOwnerKeyUtil()),
+      set_management_settings_result_(true),
+      settings_provider_(provider) {}
 
 FakeOwnerSettingsService::FakeOwnerSettingsService(
+    StubCrosSettingsProvider* provider,
     Profile* profile,
-    const scoped_refptr<ownership::OwnerKeyUtil>& owner_key_util,
-    StubCrosSettingsProvider* provider)
+    const scoped_refptr<ownership::OwnerKeyUtil>& owner_key_util)
     : OwnerSettingsServiceChromeOS(nullptr, profile, owner_key_util),
       set_management_settings_result_(true),
-      settings_provider_(provider) {
-}
+      settings_provider_(provider) {}
 
 FakeOwnerSettingsService::~FakeOwnerSettingsService() {
 }

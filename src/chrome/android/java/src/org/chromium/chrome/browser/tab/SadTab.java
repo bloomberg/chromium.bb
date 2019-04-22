@@ -218,10 +218,11 @@ public class SadTab extends EmptyTabObserver implements UserData {
      */
     private static CharSequence getHelpMessage(
             Context context, final Runnable suggestionAction, final boolean showSendFeedback) {
-        NoUnderlineClickableSpan linkSpan = new NoUnderlineClickableSpan((view) -> {
-            recordEvent(showSendFeedback, SadTabEvent.HELP_LINK_CLICKED);
-            suggestionAction.run();
-        });
+        NoUnderlineClickableSpan linkSpan =
+                new NoUnderlineClickableSpan(context.getResources(), (view) -> {
+                    recordEvent(showSendFeedback, SadTabEvent.HELP_LINK_CLICKED);
+                    suggestionAction.run();
+                });
 
         if (showSendFeedback) {
             SpannableString learnMoreLink =

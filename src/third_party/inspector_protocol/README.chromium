@@ -2,7 +2,7 @@ Name: inspector protocol
 Short Name: inspector_protocol
 URL: https://chromium.googlesource.com/deps/inspector_protocol/
 Version: 0
-Revision: 460186cff1f0eead0d418626e7e75f52105182b2
+Revision: 34bdcd1fb46ec80fb22908ee03fdb7cacf2575ac
 License: BSD
 License File: LICENSE
 Security Critical: no
@@ -12,5 +12,7 @@ WebKit/core/inspector uses these scripts to generate handlers from protocol
 description.
 
 Local modifications:
-- This only includes the lib/ and templates/ directories, scripts, build
+- This only includes the lib/, templates/, encoding/ directories, scripts, build
   and the LICENSE files.
+- DEPS file to allow the base/gmock/gtest includes from encoding/ tests.
+

@@ -126,4 +126,6 @@ void NavigationTracingObserver::DidStartNavigation(
 content::BackgroundTracingManager::TriggerHandle
     NavigationTracingObserver::navigation_trigger_handle_ = -1;
 
+WEB_CONTENTS_USER_DATA_KEY_IMPL(NavigationTracingObserver)
+
 }  // namespace tracing

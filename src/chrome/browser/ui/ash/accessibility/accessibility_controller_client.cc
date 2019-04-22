@@ -40,12 +40,6 @@ void AccessibilityControllerClient::Init() {
   BindAndSetClient();
 }
 
-void AccessibilityControllerClient::InitForTesting(
-    ash::mojom::AccessibilityControllerPtr controller) {
-  accessibility_controller_ = std::move(controller);
-  BindAndSetClient();
-}
-
 void AccessibilityControllerClient::TriggerAccessibilityAlert(
     ash::mojom::AccessibilityAlert alert) {
   Profile* profile = ProfileManager::GetActiveUserProfile();
@@ -77,6 +71,12 @@ void AccessibilityControllerClient::TriggerAccessibilityAlert(
       break;
     case ash::mojom::AccessibilityAlert::WINDOW_OVERVIEW_MODE_ENTERED:
       msg = IDS_A11Y_ALERT_WINDOW_OVERVIEW_MODE_ENTERED;
+      break;
+    case ash::mojom::AccessibilityAlert::WORKSPACE_FULLSCREEN_STATE_ENTERED:
+      msg = IDS_A11Y_ALERT_WORKSPACE_FULLSCREEN_STATE_ENTERED;
+      break;
+    case ash::mojom::AccessibilityAlert::WORKSPACE_FULLSCREEN_STATE_EXITED:
+      msg = IDS_A11Y_ALERT_WORKSPACE_FULLSCREEN_STATE_EXITED;
       break;
     case ash::mojom::AccessibilityAlert::NONE:
       msg = 0;

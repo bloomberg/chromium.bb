@@ -12,7 +12,7 @@
 
 #include <utility>
 
-#include "api/crypto/frameencryptorinterface.h"
+#include "api/crypto/frame_encryptor_interface.h"
 #include "rtc_base/strings/string_builder.h"
 
 namespace webrtc {
@@ -67,8 +67,11 @@ std::string VideoSendStream::Stats::ToString(int64_t time_ms) const {
 
 VideoSendStream::Config::Config(const Config&) = default;
 VideoSendStream::Config::Config(Config&&) = default;
+VideoSendStream::Config::Config(Transport* send_transport,
+                                MediaTransportInterface* media_transport)
+    : send_transport(send_transport), media_transport(media_transport) {}
 VideoSendStream::Config::Config(Transport* send_transport)
-    : send_transport(send_transport) {}
+    : Config(send_transport, nullptr) {}
 
 VideoSendStream::Config& VideoSendStream::Config::operator=(Config&&) = default;
 VideoSendStream::Config::Config::~Config() = default;
@@ -80,8 +83,8 @@ std::string VideoSendStream::Config::ToString() const {
      << (encoder_settings.experiment_cpu_load_estimator ? "on" : "off") << "}}";
   ss << ", rtp: " << rtp.ToString();
   ss << ", rtcp_report_interval_ms: " << rtcp_report_interval_ms;
-  ss << ", pre_encode_callback: "
-     << (pre_encode_callback ? "(VideoSinkInterface)" : "nullptr");
+  ss << ", send_transport: " << (send_transport ? "(Transport)" : "nullptr");
+  ss << ", media_transport: " << (media_transport ? "(Transport)" : "nullptr");
   ss << ", render_delay_ms: " << render_delay_ms;
   ss << ", target_delay_ms: " << target_delay_ms;
   ss << ", suspend_below_min_bitrate: "

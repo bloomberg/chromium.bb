@@ -23,7 +23,7 @@ class SpellCheckRequester;
 class ColdModeSpellCheckRequester
     : public GarbageCollected<ColdModeSpellCheckRequester> {
  public:
-  static ColdModeSpellCheckRequester* Create(LocalFrame&);
+  explicit ColdModeSpellCheckRequester(LocalFrame&);
 
   void SetNeedsMoreInvocationForTesting() {
     needs_more_invocation_for_testing_ = true;
@@ -34,11 +34,9 @@ class ColdModeSpellCheckRequester
   void ClearProgress();
   bool FullyChecked() const;
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
-  explicit ColdModeSpellCheckRequester(LocalFrame&);
-
   LocalFrame& GetFrame() const { return *frame_; }
   SpellCheckRequester& GetSpellCheckRequester() const;
 

@@ -69,6 +69,7 @@ class PPAPI_PROXY_EXPORT PDFResource
                         int32_t left_height,
                         const PP_FloatPoint& right,
                         int32_t right_height) override;
+  void SetPluginCanSave(bool can_save) override;
 
  private:
   std::string locale_;

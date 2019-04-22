@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/layout/order_iterator.h"
 #include "third_party/blink/renderer/core/style/grid_area.h"
 #include "third_party/blink/renderer/core/style/grid_positions_resolver.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/doubly_linked_list.h"
 #include "third_party/blink/renderer/platform/wtf/linked_hash_set.h"
@@ -30,6 +31,8 @@ class GridIterator;
 // instead of just traversing the DOM or Layout trees. The other user
 // of this class is the GridTrackSizingAlgorithm class.
 class CORE_EXPORT Grid {
+  USING_FAST_MALLOC(Grid);
+
  public:
   static std::unique_ptr<Grid> Create(const LayoutGrid*);
 
@@ -41,7 +44,7 @@ class CORE_EXPORT Grid {
 
   virtual const GridItemList& Cell(size_t row, size_t column) const = 0;
 
-  virtual ~Grid(){};
+  virtual ~Grid() {}
 
   // Note that out of flow children are not grid items.
   bool HasGridItems() const { return !grid_item_area_.IsEmpty(); }
@@ -72,13 +75,15 @@ class CORE_EXPORT Grid {
   OrderIterator& GetOrderIterator() { return order_iterator_; }
 
   void SetNeedsItemsPlacement(bool);
-  bool NeedsItemsPlacement() const { return needs_items_placement_; };
+  bool NeedsItemsPlacement() const { return needs_items_placement_; }
 
 #if DCHECK_IS_ON()
   bool HasAnyGridItemPaintOrder() const;
 #endif
 
   class GridIterator {
+    USING_FAST_MALLOC(GridIterator);
+
    public:
     virtual LayoutBox* NextGridItem() = 0;
 

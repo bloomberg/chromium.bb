@@ -12,6 +12,7 @@
 
 class Browser;
 class GURL;
+class TabGroupData;
 
 namespace content {
 class WebContents;
@@ -51,7 +52,10 @@ class TabStripModelDelegate {
   // Adds a tab to the model and loads |url| in the tab. If |url| is an empty
   // URL, then the new tab-page is loaded instead. An |index| value of -1
   // means to append the contents to the end of the tab strip.
-  virtual void AddTabAt(const GURL& url, int index, bool foreground) = 0;
+  virtual void AddTabAt(const GURL& url,
+                        int index,
+                        bool foreground,
+                        const TabGroupData* group = nullptr) = 0;
 
   // Asks for a new TabStripModel to be created and the given web contentses to
   // be added to it. Its size and position are reflected in |window_bounds|.

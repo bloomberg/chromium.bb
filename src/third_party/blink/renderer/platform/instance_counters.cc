@@ -32,10 +32,14 @@
 
 namespace blink {
 
-int InstanceCounters::counters_[kCounterTypeLength];
+// static
+std::atomic_int InstanceCounters::counters_[kCounterTypeLength];
+
+// static
+int InstanceCounters::node_counter_ = 0;
 
 int InstanceCounters::CounterValue(CounterType type) {
-  return AcquireLoad(&counters_[type]);
+  return counters_[type].load(std::memory_order_relaxed);
 }
 
 }  // namespace blink

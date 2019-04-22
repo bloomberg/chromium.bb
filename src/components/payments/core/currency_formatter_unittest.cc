@@ -55,7 +55,7 @@ TEST_P(PaymentsCurrencyFormatterTest, IsValidCurrencyFormat) {
             formatter.formatted_currency_code());
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CurrencyAmounts,
     PaymentsCurrencyFormatterTest,
     testing::Values(

@@ -6,6 +6,7 @@
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
+#include "base/strings/string_util.h"
 #include "chromecast/base/cast_features.h"
 #include "chromecast/base/pref_names.h"
 #include "chromecast/browser/metrics/cast_metrics_prefs.h"
@@ -15,6 +16,20 @@
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
 
 namespace chromecast {
+
+namespace {
+
+// Convert the |features| vector into a comma separated string.
+std::string FeatureVectorToString(const std::vector<base::Feature>& features) {
+  std::vector<std::string> feature_names;
+
+  for (auto& feature : features)
+    feature_names.push_back(feature.name);
+
+  return base::JoinString(feature_names, ",");
+}
+
+}  // namespace
 
 CastFeatureListCreator::CastFeatureListCreator() {}
 
@@ -38,7 +53,7 @@ void CastFeatureListCreator::CreatePrefServiceAndFeatureList() {
       *features_dict, *experiment_ids,
       command_line->GetSwitchValueASCII(switches::kEnableFeatures),
       command_line->GetSwitchValueASCII(switches::kDisableFeatures),
-      extra_enable_features_);
+      extra_enable_features_, extra_disable_features_);
 }
 
 std::unique_ptr<PrefService> CastFeatureListCreator::TakePrefService() {
@@ -46,8 +61,13 @@ std::unique_ptr<PrefService> CastFeatureListCreator::TakePrefService() {
 }
 
 void CastFeatureListCreator::SetExtraEnableFeatures(
-    std::string extra_enable_features) {
-  extra_enable_features_ = extra_enable_features;
+    const std::vector<base::Feature>& extra_enable_features) {
+  extra_enable_features_ = FeatureVectorToString(extra_enable_features);
+}
+
+void CastFeatureListCreator::SetExtraDisableFeatures(
+    const std::vector<base::Feature>& extra_disable_features) {
+  extra_disable_features_ = FeatureVectorToString(extra_disable_features);
 }
 
 }  // namespace chromecast

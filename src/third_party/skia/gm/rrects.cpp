@@ -11,7 +11,7 @@
 #include "GrRenderTargetContextPriv.h"
 #include "effects/GrRRectEffect.h"
 #include "ops/GrDrawOp.h"
-#include "ops/GrRectOpFactory.h"
+#include "ops/GrFillRectOp.h"
 #include "SkRRect.h"
 
 namespace skiagm {
@@ -60,18 +60,13 @@ protected:
 
     SkISize onISize() override { return SkISize::Make(kImageWidth, kImageHeight); }
 
-    void onDraw(SkCanvas* canvas) override {
+    DrawResult onDraw(SkCanvas* canvas, SkString* errorMsg) override {
         GrRenderTargetContext* renderTargetContext =
             canvas->internal_private_accessTopLayerRenderTargetContext();
-        if (kEffect_Type == fType && !renderTargetContext) {
-            skiagm::GM::DrawGpuOnlyMessage(canvas);
-            return;
-        }
-
         GrContext* context = canvas->getGrContext();
-        if (kEffect_Type == fType && !context) {
-            skiagm::GM::DrawGpuOnlyMessage(canvas);
-            return;
+        if (kEffect_Type == fType && (!renderTargetContext || !context)) {
+            *errorMsg = kErrorMsg_DrawSkippedGpuOnly;
+            return DrawResult::kSkip;
         }
 
         SkPaint paint;
@@ -117,9 +112,8 @@ protected:
                             bounds.outset(2.f, 2.f);
 
                             renderTargetContext->priv().testingOnly_addDrawOp(
-                                    GrRectOpFactory::MakeNonAAFill(context, std::move(grPaint),
-                                                                   SkMatrix::I(), bounds,
-                                                                   GrAAType::kNone));
+                                    GrFillRectOp::Make(context, std::move(grPaint), GrAAType::kNone,
+                                                       SkMatrix::I(), bounds));
                         } else {
                             drew = false;
                         }
@@ -143,6 +137,7 @@ protected:
                 y += kTileY;
             }
         }
+        return DrawResult::kOk;
     }
 
     void setUpRRects() {

@@ -6,9 +6,10 @@
 
 #include "base/containers/adapters.h"
 #include "base/lazy_instance.h"
+#include "base/unguessable_token.h"
 #include "components/viz/common/quads/draw_quad.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
-#include "components/viz/common/quads/texture_draw_quad.h"
+#include "components/viz/common/quads/video_hole_draw_quad.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
 namespace viz {
@@ -29,9 +30,10 @@ bool OverlayStrategyUnderlayCast::Attempt(
     const SkMatrix44& output_color_matrix,
     const OverlayProcessor::FilterOperationsMap& render_pass_backdrop_filters,
     DisplayResourceProvider* resource_provider,
-    RenderPass* render_pass,
+    RenderPassList* render_pass_list,
     OverlayCandidateList* candidate_list,
     std::vector<gfx::Rect>* content_bounds) {
+  RenderPass* render_pass = render_pass_list->back().get();
   QuadList& quad_list = render_pass->quad_list;
   bool found_underlay = false;
   gfx::Rect content_rect;
@@ -53,10 +55,11 @@ bool OverlayStrategyUnderlayCast::Attempt(
       // sitting underneath the primary plane. This is only looking at where the
       // quad is supposed to be to replace it with a transparent quad to allow
       // the underlay to be visible.
+      // VIDEO_HOLE implies it requires overlay.
       is_underlay =
+          quad->material == DrawQuad::VIDEO_HOLE &&
           OverlayCandidate::FromDrawQuad(resource_provider, output_color_matrix,
-                                         quad, &candidate) &&
-          OverlayCandidate::RequiresOverlay(quad);
+                                         quad, &candidate);
       found_underlay = is_underlay;
     }
 
@@ -89,10 +92,17 @@ bool OverlayStrategyUnderlayCast::Attempt(
 
     for (auto it = quad_list.begin(); it != quad_list.end(); ++it) {
       OverlayCandidate candidate;
-      if (!OverlayCandidate::FromDrawQuad(
+      if (it->material != DrawQuad::VIDEO_HOLE ||
+          !OverlayCandidate::FromDrawQuad(
               resource_provider, output_color_matrix, *it, &candidate)) {
         continue;
       }
+
+      // TODO(guohuideng): activate overlay through MediaServe when it's
+      // ready, using |overlay_plane_id|. see b/79266094.
+      base::UnguessableToken overlay_plane_id =
+          VideoHoleDrawQuad::MaterialCast(*it)->overlay_plane_id;
+      ANALYZER_ALLOW_UNUSED(overlay_plane_id);
 
       render_pass->quad_list.ReplaceExistingQuadWithOpaqueTransparentSolidColor(
           it);
@@ -101,7 +111,6 @@ bool OverlayStrategyUnderlayCast::Attempt(
         g_overlay_composited_callback.Get().Run(candidate.display_rect,
                                                 candidate.transform);
       }
-
       break;
     }
   }
@@ -113,8 +122,8 @@ bool OverlayStrategyUnderlayCast::Attempt(
   return found_underlay;
 }
 
-OverlayProcessor::StrategyType OverlayStrategyUnderlayCast::GetUMAEnum() const {
-  return OverlayProcessor::StrategyType::kUnderlayCast;
+OverlayStrategy OverlayStrategyUnderlayCast::GetUMAEnum() const {
+  return OverlayStrategy::kUnderlayCast;
 }
 
 // static

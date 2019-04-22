@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/unguessable_token.h"
 #include "content/browser/devtools/devtools_agent_host_impl.h"
-#include "third_party/blink/public/web/devtools_agent.mojom.h"
+#include "third_party/blink/public/mojom/devtools/devtools_agent.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -20,6 +20,7 @@ class WorkerDevToolsAgentHost : public DevToolsAgentHostImpl {
       blink::mojom::DevToolsAgentPtr agent_ptr,
       blink::mojom::DevToolsAgentHostRequest host_request,
       const GURL& url,
+      const std::string& name,
       const base::UnguessableToken& devtools_worker_token,
       const std::string& parent_id,
       base::OnceCallback<void(DevToolsAgentHostImpl*)> destroyed_callback);
@@ -44,6 +45,7 @@ class WorkerDevToolsAgentHost : public DevToolsAgentHostImpl {
 
   const int process_id_;
   const GURL url_;
+  const std::string name_;
   const std::string parent_id_;
   base::OnceCallback<void(DevToolsAgentHostImpl*)> destroyed_callback_;
 

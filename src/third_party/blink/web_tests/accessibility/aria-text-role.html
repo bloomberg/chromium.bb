@@ -1,7 +1,8 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
 <html>
 <head>
-<script src="../resources/js-test.js"></script>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
 </head>
 <body id="body">
 
@@ -11,25 +12,20 @@
 <a href="#">more test</a>
 </div>
 
-<p id="description"></p>
-<div id="console"></div>
-
 <script>
 
-    description("This tests that you can set an ARIA text role and that it will not have children through hit testing");
+test((t) => {
+    document.getElementById("textrole").focus();
+    var textrole = accessibilityController.focusedElement;
+    assert_equals(textrole.role, 'AXRole: AXStaticText');
+    assert_equals(textrole.name, 'all at once');
 
-    if (window.accessibilityController) {
+    // now check the hit-testing
+    var x = textrole.clickPointX;
+    var y = textrole.clickPointY;
+    assert_equals(textrole.elementAtPoint(x, y).isEqual(textrole), true);
+}, "This tests that you can set an ARIA text role and that it will not have children through hit testing");
 
-        document.getElementById("textrole").focus();
-        var textrole = accessibilityController.focusedElement;
-        shouldBe("textrole.role", "'AXRole: AXStaticText'");
-        shouldBe("textrole.name", "'all at once'");
-
-        // now check the hit-testing
-        var x = textrole.clickPointX;
-        var y = textrole.clickPointY;
-        shouldBe("textrole.elementAtPoint(x, y).isEqual(textrole)", "true");
-    }
 
 </script>
 

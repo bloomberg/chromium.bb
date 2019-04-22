@@ -26,8 +26,8 @@
 #include "third_party/blink/renderer/modules/permissions/permission_utils.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
-#include "third_party/blink/renderer/platform/wtf/not_found.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
+#include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
 
 namespace blink {
 
@@ -140,13 +140,10 @@ PermissionDescriptorPtr ParsePermission(ScriptState* script_state,
   if (name == "payment-handler")
     return CreatePermissionDescriptor(PermissionName::PAYMENT_HANDLER);
   if (name == "background-fetch") {
-    if (!origin_trials::BackgroundFetchEnabled(
-            ExecutionContext::From(script_state))) {
-      exception_state.ThrowTypeError("Background Fetch is not enabled.");
-      return nullptr;
-    }
     return CreatePermissionDescriptor(PermissionName::BACKGROUND_FETCH);
   }
+  if (name == "idle-detection")
+    return CreatePermissionDescriptor(PermissionName::IDLE_DETECTION);
 
   return nullptr;
 }
@@ -161,7 +158,7 @@ ScriptPromise Permissions::query(ScriptState* script_state,
   if (exception_state.HadException())
     return ScriptPromise();
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   // If the current origin is a file scheme, it will unlikely return a
@@ -187,7 +184,7 @@ ScriptPromise Permissions::request(ScriptState* script_state,
 
   ExecutionContext* context = ExecutionContext::From(script_state);
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   PermissionDescriptorPtr descriptor_copy = descriptor->Clone();
@@ -212,7 +209,7 @@ ScriptPromise Permissions::revoke(ScriptState* script_state,
   if (exception_state.HadException())
     return ScriptPromise();
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   PermissionDescriptorPtr descriptor_copy = descriptor->Clone();
@@ -257,7 +254,7 @@ ScriptPromise Permissions::requestAll(
 
   ExecutionContext* context = ExecutionContext::From(script_state);
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   Vector<PermissionDescriptorPtr> internal_permissions_copy;
@@ -282,7 +279,10 @@ ScriptPromise Permissions::requestAll(
 PermissionService& Permissions::GetService(
     ExecutionContext* execution_context) {
   if (!service_) {
-    ConnectToPermissionService(execution_context, mojo::MakeRequest(&service_));
+    ConnectToPermissionService(
+        execution_context,
+        mojo::MakeRequest(&service_, execution_context->GetTaskRunner(
+                                         TaskType::kPermission)));
     service_.set_connection_error_handler(WTF::Bind(
         &Permissions::ServiceConnectionError, WrapWeakPersistent(this)));
   }

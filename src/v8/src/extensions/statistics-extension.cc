@@ -76,14 +76,15 @@ void StatisticsExtension::GetCounters(
     v8::internal::StatsCounter* counter;
     const char* name;
   };
+  // clang-format off
   const StatisticsCounter counter_list[] = {
-#define ADD_COUNTER(name, caption) \
-  { counters->name(), #name }      \
-  ,
-
-      STATS_COUNTER_LIST_1(ADD_COUNTER) STATS_COUNTER_LIST_2(ADD_COUNTER)
+#define ADD_COUNTER(name, caption) {counters->name(), #name},
+      STATS_COUNTER_LIST_1(ADD_COUNTER)
+      STATS_COUNTER_LIST_2(ADD_COUNTER)
+      STATS_COUNTER_NATIVE_CODE_LIST(ADD_COUNTER)
 #undef ADD_COUNTER
   };  // End counter_list array.
+  // clang-format on
 
   for (size_t i = 0; i < arraysize(counter_list); i++) {
     AddCounter(args.GetIsolate(), result, counter_list[i].counter,
@@ -124,10 +125,10 @@ void StatisticsExtension::GetCounters(
   args.GetReturnValue().Set(result);
 
   HeapIterator iterator(reinterpret_cast<Isolate*>(args.GetIsolate())->heap());
-  HeapObject* obj;
   int reloc_info_total = 0;
   int source_position_table_total = 0;
-  while ((obj = iterator.next()) != nullptr) {
+  for (HeapObject obj = iterator.next(); !obj.is_null();
+       obj = iterator.next()) {
     if (obj->IsCode()) {
       Code code = Code::cast(obj);
       reloc_info_total += code->relocation_info()->Size();

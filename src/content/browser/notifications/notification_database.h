@@ -19,6 +19,10 @@
 
 class GURL;
 
+namespace blink {
+struct NotificationResources;
+}  // namespace blink
+
 namespace leveldb {
 class DB;
 class Env;
@@ -42,8 +46,10 @@ class CONTENT_EXPORT NotificationDatabase {
  public:
   using UkmCallback =
       base::RepeatingCallback<void(const NotificationDatabaseData&)>;
+  using ReadAllNotificationsCallback =
+      base::RepeatingCallback<void(const NotificationDatabaseData&)>;
 
-  // Result status codes for interations with the database. Will be used for
+  // Result status codes for interactions with the database. Will be used for
   // UMA, so the assigned ids must remain stable.
   enum Status {
     STATUS_OK = 0,
@@ -95,6 +101,14 @@ class CONTENT_EXPORT NotificationDatabase {
       const GURL& origin,
       NotificationDatabaseData* notification_data) const;
 
+  // Reads the notification resources for the notification identified by
+  // |notification_id| and belonging to |origin| from the database, and stores
+  // it in |*notification_resources|. Returns the status code.
+  Status ReadNotificationResources(
+      const std::string& notification_id,
+      const GURL& origin,
+      blink::NotificationResources* notification_resources) const;
+
   // This function is identical to ReadNotificationData above, but also records
   // an interaction with that notification in the database for UKM logging
   // purposes.
@@ -103,6 +117,10 @@ class CONTENT_EXPORT NotificationDatabase {
       const GURL& origin,
       PlatformNotificationContext::Interaction interaction,
       NotificationDatabaseData* notification_data);
+
+  // Iterates over all notification data for all origins from the database, and
+  // calls |callback| with each notification data. Returns the status code.
+  Status ForEachNotificationData(ReadAllNotificationsCallback callback) const;
 
   // Reads all notification data for all origins from the database, and appends
   // the data to |notification_data_vector|. Returns the status code.
@@ -172,15 +190,22 @@ class CONTENT_EXPORT NotificationDatabase {
   // in the |next_persistent_notification_id_| member.
   Status ReadNextPersistentNotificationId();
 
+  // Iterates over all notifications and pushes matching ones onto
+  // |notification_data_vector|. See ForEachNotificationDataInternal for deails.
+  Status ReadAllNotificationDataInternal(
+      const GURL& origin,
+      int64_t service_worker_registration_id,
+      std::vector<NotificationDatabaseData>* notification_data_vector) const;
+
   // Reads all notification data with the given constraints. |origin| may be
   // empty to read all notification data from all origins. If |origin| is
   // set, but |service_worker_registration_id| is invalid, then all notification
   // data for |origin| will be read. If both are set, then all notification data
   // for the given |service_worker_registration_id| will be read.
-  Status ReadAllNotificationDataInternal(
+  Status ForEachNotificationDataInternal(
       const GURL& origin,
       int64_t service_worker_registration_id,
-      std::vector<NotificationDatabaseData>* notification_data_vector) const;
+      ReadAllNotificationsCallback callback) const;
 
   // Deletes all notification data with the given constraints. |origin| must
   // always be set - use Destroy() when the goal is to empty the database. If

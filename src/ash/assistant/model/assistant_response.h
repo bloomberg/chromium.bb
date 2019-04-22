@@ -9,8 +9,10 @@
 #include <memory>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/content/public/cpp/navigable_contents.h"
 
 namespace ash {
@@ -18,7 +20,7 @@ namespace ash {
 class AssistantUiElement;
 
 // Models a renderable Assistant response.
-class AssistantResponse {
+class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantResponse {
  public:
   using AssistantSuggestion = chromeos::assistant::mojom::AssistantSuggestion;
   using AssistantSuggestionPtr =
@@ -65,16 +67,18 @@ class AssistantResponse {
 
   // Invoke to begin processing the response. Upon completion, |callback| will
   // be run to indicate success or failure.
-  void Process(content::mojom::NavigableContentsFactoryPtr contents_factory,
-               ProcessingCallback callback);
+  void Process(
+      mojo::Remote<content::mojom::NavigableContentsFactory> contents_factory,
+      ProcessingCallback callback);
 
  private:
   // Handles processing for an AssistantResponse.
   class Processor {
    public:
-    Processor(AssistantResponse& response,
-              content::mojom::NavigableContentsFactoryPtr contents_factory,
-              ProcessingCallback callback);
+    Processor(
+        AssistantResponse& response,
+        mojo::Remote<content::mojom::NavigableContentsFactory> contents_factory,
+        ProcessingCallback callback);
     ~Processor();
 
     // Invoke to begin processing.
@@ -91,7 +95,7 @@ class AssistantResponse {
     void TryFinishing();
 
     AssistantResponse& response_;
-    content::mojom::NavigableContentsFactoryPtr contents_factory_;
+    mojo::Remote<content::mojom::NavigableContentsFactory> contents_factory_;
     ProcessingCallback callback_;
 
     int processing_count_ = 0;

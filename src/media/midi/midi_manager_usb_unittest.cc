@@ -10,9 +10,9 @@
 #include <string>
 #include <utility>
 
-#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "media/midi/midi_service.h"
@@ -553,7 +553,7 @@ TEST_F(MidiManagerUsbTest, Receive) {
   RunCallbackUntilCallbackInvoked(true, &devices);
   EXPECT_EQ(Result::OK, GetInitializationResult());
 
-  manager()->ReceiveUsbMidiData(device_raw, 2, data, arraysize(data),
+  manager()->ReceiveUsbMidiData(device_raw, 2, data, base::size(data),
                                 base::TimeTicks());
   Finalize();
 

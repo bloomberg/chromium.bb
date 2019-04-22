@@ -16,8 +16,9 @@ namespace test_util {
 std::unique_ptr<base::Value> ReadJson(const base::StringPiece& json) {
   int error_code;
   std::string error_msg;
-  std::unique_ptr<base::Value> result(base::JSONReader::ReadAndReturnError(
-      json, base::JSON_ALLOW_TRAILING_COMMAS, &error_code, &error_msg));
+  std::unique_ptr<base::Value> result(
+      base::JSONReader::ReadAndReturnErrorDeprecated(
+          json, base::JSON_ALLOW_TRAILING_COMMAS, &error_code, &error_msg));
   // CHECK not ASSERT since passing invalid |json| is a test error.
   CHECK(result) << error_msg;
   return result;

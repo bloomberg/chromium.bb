@@ -44,9 +44,9 @@
             "description": "Returns id of the launched process. If no process was launched returns -1.",
             "parameters": [
               {
-                "name": "pid",
+                "name": "id",
                 "description": "Id of the launched process.",
-                "type": "integer"
+                "type": "string"
               }
             ]
           }
@@ -58,9 +58,9 @@
         "description": "Closes previously opened process.",
         "parameters": [
           {
-            "name": "pid",
-            "type": "integer",
-            "description": "Process id of the process we want to close."
+            "name": "id",
+            "type": "string",
+            "description": "Unique id of the process we want to close."
           },
           {
             "name": "callback",
@@ -82,8 +82,8 @@
         "description": "Sends input that will be routed to stdin of the process with the specified id.",
         "parameters": [
           {
-            "name": "pid",
-            "type": "integer",
+            "name": "id",
+            "type": "string",
             "description": "The id of the process to which we want to send input."
           },
           {
@@ -111,8 +111,8 @@
         "description": "Notify the process with the id id that terminal window size has changed.",
         "parameters": [
           {
-            "name": "pid",
-            "type": "integer",
+            "name": "id",
+            "type": "string",
             "description": "The id of the process."
           },
           {
@@ -150,8 +150,8 @@
             "description": "Tab ID from |onProcessOutput| event."
           },
           {
-            "name": "pid",
-            "type": "integer",
+            "name": "id",
+            "type": "string",
             "description": "The id of the process to which |onProcessOutput| was dispatched."
           }
         ]
@@ -164,8 +164,8 @@
         "description": "Fired when an opened process writes something to its output. Observing further process output will be blocked until |ackOutput| for the terminal is called. Internally, first event argument will be ID of the tab that contains terminal instance for which this event is intended. This argument will be stripped before passing the event to the extension.",
         "parameters": [
           {
-            "name": "pid",
-            "type": "integer",
+            "name": "id",
+            "type": "string",
             "description": "Id of the process from which the output came."
           },
           {

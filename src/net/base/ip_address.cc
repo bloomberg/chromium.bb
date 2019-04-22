@@ -463,7 +463,7 @@ bool ParseURLHostnameToAddress(const base::StringPiece& hostname,
   return ip_address->AssignFromIPLiteral(hostname) && ip_address->IsIPv4();
 }
 
-unsigned CommonPrefixLength(const IPAddress& a1, const IPAddress& a2) {
+size_t CommonPrefixLength(const IPAddress& a1, const IPAddress& a2) {
   DCHECK_EQ(a1.size(), a2.size());
   for (size_t i = 0; i < a1.size(); ++i) {
     unsigned diff = a1.bytes()[i] ^ a2.bytes()[i];
@@ -479,7 +479,7 @@ unsigned CommonPrefixLength(const IPAddress& a1, const IPAddress& a2) {
   return a1.size() * CHAR_BIT;
 }
 
-unsigned MaskPrefixLength(const IPAddress& mask) {
+size_t MaskPrefixLength(const IPAddress& mask) {
   base::StackVector<uint8_t, 16> all_ones;
   all_ones->resize(mask.size(), 0xFF);
   return CommonPrefixLength(mask,

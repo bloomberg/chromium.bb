@@ -6,12 +6,15 @@
 
 #include <utility>
 
+#include "ash/metrics/pip_uma.h"
+#include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_state_util.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_window_delegate.h"
@@ -57,6 +60,7 @@ class AlwaysMaximizeTestState : public WindowState::State {
 }  // namespace
 
 using WindowStateTest = AshTestBase;
+using Sample = base::HistogramBase::Sample;
 
 // Test that a window gets properly snapped to the display's edges in a
 // multi monitor environment.
@@ -160,6 +164,102 @@ TEST_F(WindowStateTest, PipWindowCannotSnap) {
   window_state->OnWMEvent(&enter_pip);
 
   EXPECT_FALSE(window_state->CanSnap());
+}
+
+TEST_F(WindowStateTest, ChromePipWindowUmaMetrics) {
+  base::HistogramTester histograms;
+  std::unique_ptr<aura::Window> window(
+      CreateTestWindowInShellWithBounds(gfx::Rect(100, 100, 100, 100)));
+
+  WindowState* window_state = GetWindowState(window.get());
+  const WMEvent enter_pip(WM_EVENT_PIP);
+  window_state->OnWMEvent(&enter_pip);
+
+  EXPECT_EQ(1, histograms.GetBucketCount(kAshPipEventsHistogramName,
+                                         Sample(AshPipEvents::PIP_START)));
+  EXPECT_EQ(1,
+            histograms.GetBucketCount(kAshPipEventsHistogramName,
+                                      Sample(AshPipEvents::CHROME_PIP_START)));
+  histograms.ExpectTotalCount(kAshPipEventsHistogramName, 2);
+
+  const WMEvent enter_normal(WM_EVENT_NORMAL);
+  window_state->OnWMEvent(&enter_normal);
+
+  EXPECT_EQ(1, histograms.GetBucketCount(kAshPipEventsHistogramName,
+                                         Sample(AshPipEvents::PIP_END)));
+  EXPECT_EQ(1, histograms.GetBucketCount(kAshPipEventsHistogramName,
+                                         Sample(AshPipEvents::CHROME_PIP_END)));
+  histograms.ExpectTotalCount(kAshPipEventsHistogramName, 4);
+}
+
+TEST_F(WindowStateTest, AndroidPipWindowUmaMetrics) {
+  base::HistogramTester histograms;
+  std::unique_ptr<aura::Window> window(
+      CreateTestWindowInShellWithBounds(gfx::Rect(100, 100, 100, 100)));
+  window->SetProperty(aura::client::kAppType,
+                      static_cast<int>(ash::AppType::ARC_APP));
+
+  WindowState* window_state = GetWindowState(window.get());
+  const WMEvent enter_pip(WM_EVENT_PIP);
+  window_state->OnWMEvent(&enter_pip);
+
+  EXPECT_EQ(1, histograms.GetBucketCount(kAshPipEventsHistogramName,
+                                         Sample(AshPipEvents::PIP_START)));
+  EXPECT_EQ(1,
+            histograms.GetBucketCount(kAshPipEventsHistogramName,
+                                      Sample(AshPipEvents::ANDROID_PIP_START)));
+  histograms.ExpectTotalCount(kAshPipEventsHistogramName, 2);
+
+  const WMEvent enter_normal(WM_EVENT_NORMAL);
+  window_state->OnWMEvent(&enter_normal);
+
+  EXPECT_EQ(1, histograms.GetBucketCount(kAshPipEventsHistogramName,
+                                         Sample(AshPipEvents::PIP_END)));
+  EXPECT_EQ(1,
+            histograms.GetBucketCount(kAshPipEventsHistogramName,
+                                      Sample(AshPipEvents::ANDROID_PIP_END)));
+  histograms.ExpectTotalCount(kAshPipEventsHistogramName, 4);
+}
+
+TEST_F(WindowStateTest, ChromePipWindowUmaMetricsCountsExitOnDestroy) {
+  base::HistogramTester histograms;
+  std::unique_ptr<aura::Window> window(
+      CreateTestWindowInShellWithBounds(gfx::Rect(100, 100, 100, 100)));
+
+  WindowState* window_state = GetWindowState(window.get());
+  const WMEvent enter_pip(WM_EVENT_PIP);
+  window_state->OnWMEvent(&enter_pip);
+
+  // Destroy the window.
+  window.reset();
+
+  EXPECT_EQ(1, histograms.GetBucketCount(kAshPipEventsHistogramName,
+                                         Sample(AshPipEvents::PIP_END)));
+  EXPECT_EQ(1, histograms.GetBucketCount(kAshPipEventsHistogramName,
+                                         Sample(AshPipEvents::CHROME_PIP_END)));
+  histograms.ExpectTotalCount(kAshPipEventsHistogramName, 4);
+}
+
+TEST_F(WindowStateTest, AndroidPipWindowUmaMetricsCountsExitOnDestroy) {
+  base::HistogramTester histograms;
+  std::unique_ptr<aura::Window> window(
+      CreateTestWindowInShellWithBounds(gfx::Rect(100, 100, 100, 100)));
+  window->SetProperty(aura::client::kAppType,
+                      static_cast<int>(ash::AppType::ARC_APP));
+
+  WindowState* window_state = GetWindowState(window.get());
+  const WMEvent enter_pip(WM_EVENT_PIP);
+  window_state->OnWMEvent(&enter_pip);
+
+  // Destroy the window.
+  window.reset();
+
+  EXPECT_EQ(1, histograms.GetBucketCount(kAshPipEventsHistogramName,
+                                         Sample(AshPipEvents::PIP_END)));
+  EXPECT_EQ(1,
+            histograms.GetBucketCount(kAshPipEventsHistogramName,
+                                      Sample(AshPipEvents::ANDROID_PIP_END)));
+  histograms.ExpectTotalCount(kAshPipEventsHistogramName, 4);
 }
 
 // Test that modal window dialogs can be snapped.
@@ -571,6 +671,101 @@ TEST_F(WindowStateTest, CanConsumeSystemKeys) {
 
   window->SetProperty(kCanConsumeSystemKeysKey, true);
   EXPECT_TRUE(window_state->CanConsumeSystemKeys());
+}
+
+TEST_F(WindowStateTest,
+       RestoreStateAfterEnteringPipViaOcculusionAndDismissingPip) {
+  std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
+  wm::WindowState* window_state = wm::GetWindowState(window.get());
+  window->Show();
+  EXPECT_TRUE(window->layer()->visible());
+
+  // Ensure a maximized window gets maximized again after it enters PIP via
+  // occlusion, gets minimized, and unminimized.
+  window_state->Maximize();
+  EXPECT_TRUE(window_state->IsMaximized());
+
+  const wm::WMEvent enter_pip(wm::WM_EVENT_PIP);
+  window_state->OnWMEvent(&enter_pip);
+  EXPECT_TRUE(window_state->IsPip());
+
+  window_state->Minimize();
+  EXPECT_TRUE(window_state->IsMinimized());
+
+  window_state->Unminimize();
+  EXPECT_TRUE(window_state->IsMaximized());
+
+  // Ensure a freeform window gets freeform again after it enters PIP via
+  // occulusion, gets minimized, and unminimized.
+  ::wm::SetWindowState(window.get(), ui::SHOW_STATE_NORMAL);
+
+  window_state->OnWMEvent(&enter_pip);
+  EXPECT_TRUE(window_state->IsPip());
+
+  window_state->Minimize();
+  EXPECT_TRUE(window_state->IsMinimized());
+
+  window_state->Unminimize();
+  EXPECT_TRUE(window_state->GetStateType() == mojom::WindowStateType::NORMAL);
+}
+
+TEST_F(WindowStateTest, RestoreStateAfterEnterPipViaMinimizeAndDismissingPip) {
+  std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
+  wm::WindowState* window_state = wm::GetWindowState(window.get());
+  window->Show();
+  EXPECT_TRUE(window->layer()->visible());
+
+  // Ensure a maximized window gets maximized again after it enters PIP via
+  // minimize, gets minimized, and unminimized.
+  window_state->Maximize();
+  EXPECT_TRUE(window_state->IsMaximized());
+
+  window_state->Minimize();
+  EXPECT_TRUE(window_state->IsMinimized());
+
+  const wm::WMEvent enter_pip(wm::WM_EVENT_PIP);
+  window_state->OnWMEvent(&enter_pip);
+  EXPECT_TRUE(window_state->IsPip());
+
+  window_state->Minimize();
+  EXPECT_TRUE(window_state->IsMinimized());
+
+  window_state->Unminimize();
+  EXPECT_TRUE(window_state->IsMaximized());
+
+  // Ensure a freeform window gets freeform again after it enters PIP via
+  // minimize, gets minimized, and unminimized.
+  ::wm::SetWindowState(window.get(), ui::SHOW_STATE_NORMAL);
+
+  window_state->Minimize();
+  EXPECT_TRUE(window_state->IsMinimized());
+
+  window_state->OnWMEvent(&enter_pip);
+  EXPECT_TRUE(window_state->IsPip());
+
+  window_state->Minimize();
+  EXPECT_TRUE(window_state->IsMinimized());
+
+  window_state->Unminimize();
+  EXPECT_TRUE(window_state->GetStateType() == mojom::WindowStateType::NORMAL);
+}
+
+TEST_F(WindowStateTest, SetBoundsUpdatesSizeOfPipRestoreBounds) {
+  std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
+  wm::WindowState* window_state = wm::GetWindowState(window.get());
+  window->Show();
+  window->SetBounds(gfx::Rect(0, 0, 50, 50));
+
+  const wm::WMEvent enter_pip(wm::WM_EVENT_PIP);
+  window_state->OnWMEvent(&enter_pip);
+
+  EXPECT_TRUE(window_state->IsPip());
+  EXPECT_TRUE(window_state->HasRestoreBounds());
+  EXPECT_EQ(gfx::Rect(8, 8, 50, 50), window_state->GetRestoreBoundsInScreen());
+  window_state->window()->SetBounds(gfx::Rect(100, 100, 100, 100));
+  // SetBounds only updates the size of the restore bounds.
+  EXPECT_EQ(gfx::Rect(8, 8, 100, 100),
+            window_state->GetRestoreBoundsInScreen());
 }
 
 // TODO(skuhne): Add more unit test to verify the correctness for the restore

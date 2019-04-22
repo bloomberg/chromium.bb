@@ -9,3 +9,12 @@ proto_library("app_launch_predictor_proto") {
     "app_launch_predictor.proto",
   ]
 }
+
+proto_library("recurrence_ranker_proto") {
+  sources = [
+    "frecency_store.proto",
+    "recurrence_predictor.proto",
+    "recurrence_ranker.proto",
+    "recurrence_ranker_config.proto",
+  ]
+}

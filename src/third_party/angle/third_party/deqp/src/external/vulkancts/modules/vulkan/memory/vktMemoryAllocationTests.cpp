@@ -58,6 +58,12 @@ namespace memory
 namespace
 {
 
+template<typename T>
+T roundUpToMultiple(const T& a, const T& b)
+{
+	return b * (a / b + (a % b != 0 ? 1 : 0));
+}
+
 enum
 {
 	// The min max for allocation count is 4096. Use 4000 to take into account
@@ -108,22 +114,6 @@ T roundUpToNextMultiple (T value, T multiple)
 		return value;
 	else
 		return value + multiple - (value % multiple);
-}
-
-vk::Move<VkInstance> createInstanceWithExtensions (const vk::PlatformInterface& vkp, deUint32 version, const std::vector<std::string>& enableExtensions)
-{
-	std::vector<std::string>					enableExtensionPtrs;
-	const std::vector<VkExtensionProperties>	availableExtensions	 = enumerateInstanceExtensionProperties(vkp, DE_NULL);
-	for (size_t extensionID = 0; extensionID < enableExtensions.size(); extensionID++)
-	{
-		if (!isInstanceExtensionSupported(version, availableExtensions, RequiredExtension(enableExtensions[extensionID])))
-			TCU_THROW(NotSupportedError, (enableExtensions[extensionID] + " is not supported").c_str());
-
-		if (!isCoreInstanceExtension(version, enableExtensions[extensionID]))
-			enableExtensionPtrs.push_back(enableExtensions[extensionID]);
-	}
-
-	return createDefaultInstance(vkp, version, std::vector<std::string>() /* layers */, enableExtensionPtrs);
 }
 
 class BaseAllocateTestInstance : public TestInstance
@@ -301,8 +291,8 @@ tcu::TestStatus AllocateFreeTestInstance::iterate (void)
 
 	try
 	{
-		const VkMemoryType		memoryType		= m_memoryProperties.memoryTypes[m_memoryTypeIndex];
-		const VkMemoryHeap		memoryHeap		= m_memoryProperties.memoryHeaps[memoryType.heapIndex];
+		const VkMemoryType		memoryType				= m_memoryProperties.memoryTypes[m_memoryTypeIndex];
+		const VkMemoryHeap		memoryHeap				= m_memoryProperties.memoryHeaps[memoryType.heapIndex];
 
 		const VkDeviceSize		allocationSize	= (m_config.memorySize ? memReqs.size : (VkDeviceSize)(*m_config.memoryPercentage * (float)memoryHeap.size));
 		const VkDeviceSize		roundedUpAllocationSize	 = roundUpToNextMultiple(allocationSize, m_memoryLimits.deviceMemoryAllocationGranularity);
@@ -324,7 +314,7 @@ tcu::TestStatus AllocateFreeTestInstance::iterate (void)
 			// For 32-bit binaries we cap the total host visible allocations to 1.5GB to
 			// avoid exhausting CPU virtual address space and throwing a false negative result.
 			if ((memoryType.propertyFlags & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) &&
-				allocationSize * m_config.memoryAllocationCount >= 1610612736)
+				allocationSize * m_config.memoryAllocationCount * (m_subsetAllocationAllowed ? 1 : m_numPhysDevices) >= 1610612736)
 
 				log << TestLog::Message << "    Skipping: Not enough CPU virtual address space for all host visible allocations." << TestLog::EndMessage;
 			else

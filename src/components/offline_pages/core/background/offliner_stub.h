@@ -39,6 +39,14 @@ class OfflinerStub : public Offliner {
 
   void enable_snapshot_on_last_retry() { snapshot_on_last_retry_ = true; }
 
+  void set_cancel_delay(base::TimeDelta cancel_delay) {
+    cancel_delay_ = cancel_delay;
+  }
+
+  bool has_pending_request() const { return pending_request_ != nullptr; }
+
+  bool load_and_save_called() const { return load_and_save_called_; }
+
  private:
   CompletionCallback completion_callback_;
   std::unique_ptr<SavePageRequest> pending_request_;
@@ -46,6 +54,8 @@ class OfflinerStub : public Offliner {
   bool enable_callback_;
   bool cancel_called_;
   bool snapshot_on_last_retry_;
+  bool load_and_save_called_ = false;
+  base::TimeDelta cancel_delay_;
 };
 
 }  // namespace offline_pages

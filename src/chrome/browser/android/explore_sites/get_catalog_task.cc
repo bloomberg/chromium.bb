@@ -4,6 +4,7 @@
 
 #include "chrome/browser/android/explore_sites/get_catalog_task.h"
 
+#include "base/bind.h"
 #include "chrome/browser/android/explore_sites/explore_sites_schema.h"
 #include "sql/database.h"
 #include "sql/meta_table.h"
@@ -13,8 +14,12 @@
 namespace explore_sites {
 namespace {
 
-static const char kSelectCategorySql[] = R"(SELECT category_id, type, label
+static const char kSelectCategorySql[] = R"(SELECT
+category_id, type, label, ntp_shown_count, activityCount.count
 FROM categories
+LEFT JOIN (SELECT COUNT(url) as count, category_type
+FROM activity GROUP BY category_type) AS activityCount
+ON categories.type = activityCount.category_type
 WHERE version_token = ?
 ORDER BY category_id ASC;)";
 
@@ -123,8 +128,10 @@ GetCatalogSync(bool update_current, sql::Database* db) {
   while (category_statement.Step()) {
     result->emplace_back(category_statement.ColumnInt(0),  // category_id
                          catalog_version_token,
-                         category_statement.ColumnInt(1),      // type
-                         category_statement.ColumnString(2));  // label
+                         category_statement.ColumnInt(1),     // type
+                         category_statement.ColumnString(2),  // label
+                         category_statement.ColumnInt(3),     // ntp_shown_count
+                         category_statement.ColumnInt(4));  // interaction_count
   }
   if (!category_statement.Succeeded())
     return std::make_pair(GetCatalogStatus::kFailed, nullptr);

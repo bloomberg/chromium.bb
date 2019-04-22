@@ -23,7 +23,6 @@ namespace android {
 
 void JNI_DomDistillerTabUtils_DistillCurrentPageAndView(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& j_web_contents) {
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(j_web_contents);
@@ -32,7 +31,6 @@ void JNI_DomDistillerTabUtils_DistillCurrentPageAndView(
 
 void JNI_DomDistillerTabUtils_DistillCurrentPage(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& j_source_web_contents) {
   content::WebContents* source_web_contents =
       content::WebContents::FromJavaWebContents(j_source_web_contents);
@@ -41,7 +39,6 @@ void JNI_DomDistillerTabUtils_DistillCurrentPage(
 
 void JNI_DomDistillerTabUtils_DistillAndView(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& j_source_web_contents,
     const JavaParamRef<jobject>& j_destination_web_contents) {
   content::WebContents* source_web_contents =
@@ -54,7 +51,6 @@ void JNI_DomDistillerTabUtils_DistillAndView(
 ScopedJavaLocalRef<jstring>
 JNI_DomDistillerTabUtils_GetFormattedUrlFromOriginalDistillerUrl(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& j_url) {
   GURL url(base::android::ConvertJavaStringToUTF8(env, j_url));
 
@@ -70,15 +66,12 @@ JNI_DomDistillerTabUtils_GetFormattedUrlFromOriginalDistillerUrl(
                                     nullptr));
 }
 
-jint JNI_DomDistillerTabUtils_GetDistillerHeuristics(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& clazz) {
+jint JNI_DomDistillerTabUtils_GetDistillerHeuristics(JNIEnv* env) {
   return static_cast<jint>(dom_distiller::GetDistillerHeuristicsType());
 }
 
 void JNI_DomDistillerTabUtils_SetInterceptNavigationDelegate(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& delegate,
     const JavaParamRef<jobject>& j_web_contents) {
   content::WebContents* web_contents =

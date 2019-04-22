@@ -50,6 +50,7 @@ namespace safe_browsing {
 namespace {
 
 using ::testing::_;
+using ::testing::DoAll;
 using ::testing::Eq;
 using ::testing::InvokeWithoutArgs;
 using ::testing::Return;
@@ -87,21 +88,27 @@ class Waiter {
 //  - bool: if managed, whether the policy is forced on or not.
 using ReporterRunnerPolicyTestParams = std::tuple<bool, bool>;
 
+enum class ReporterRunnerPolicy {
+  kNoPolicy,
+  kEnabled,
+  kDisabled,
+};
+
 class ReporterRunnerPolicyTest
     : public InProcessBrowserTest,
-      public ::testing::WithParamInterface<ReporterRunnerPolicyTestParams> {
+      public ::testing::WithParamInterface<ReporterRunnerPolicy> {
  public:
   ReporterRunnerPolicyTest() {
-    std::tie(is_managed_, is_enabled_) = GetParam();
+    policy_ = GetParam();
     component_updater::SetRegisterSwReporterComponentCallbackForTesting(
         base::BindOnce(&ReporterRunnerPolicyTest::ComponentRegistered,
                        base::Unretained(this)));
   }
 
-  bool is_managed() const { return is_managed_; }
-  bool is_enabled() const { return is_enabled_; }
-
   void WaitForComponentRegistration() { waiter_.Wait(); }
+
+ protected:
+  ReporterRunnerPolicy policy_;
 
  private:
   void SetUpCommandLine(base::CommandLine* command_line) override {}
@@ -121,12 +128,13 @@ class ReporterRunnerPolicyTest
         &policy_provider_);
 
     // Setup polices as needed.
-    if (is_managed_) {
+    if (policy_ != ReporterRunnerPolicy::kNoPolicy) {
+      bool is_enabled = policy_ == ReporterRunnerPolicy::kEnabled;
       policy::PolicyMap policies;
       policies.Set(policy::key::kChromeCleanupEnabled,
                    policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                    policy::POLICY_SOURCE_PLATFORM,
-                   std::make_unique<base::Value>(is_enabled_), nullptr);
+                   std::make_unique<base::Value>(is_enabled), nullptr);
       policy_provider_.UpdateChromePolicy(policies);
     }
   }
@@ -135,8 +143,6 @@ class ReporterRunnerPolicyTest
 
   policy::MockConfigurationPolicyProvider policy_provider_;
   Waiter waiter_;
-  bool is_managed_;
-  bool is_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(ReporterRunnerPolicyTest);
 };
@@ -150,17 +156,15 @@ IN_PROC_BROWSER_TEST_P(ReporterRunnerPolicyTest, CheckComponent) {
       g_browser_process->component_updater()->GetComponentIDs();
   bool sw_component_registered = base::ContainsValue(
       component_ids, component_updater::kSwReporterComponentId);
-  ASSERT_EQ(!is_managed() || is_enabled(), sw_component_registered);
+  ASSERT_EQ(policy_ != ReporterRunnerPolicy::kDisabled,
+            sw_component_registered);
 }
 
-// Tests for kUserInitiatedChromeCleanupsFeature enabled (all invocation types
-// are allowed).
-INSTANTIATE_TEST_CASE_P(
-    PolicyControl,
-    ReporterRunnerPolicyTest,
-    ::testing::Values(ReporterRunnerPolicyTestParams(false, false),
-                      ReporterRunnerPolicyTestParams(true, false),
-                      ReporterRunnerPolicyTestParams(true, true)));
+INSTANTIATE_TEST_SUITE_P(PolicyControl,
+                         ReporterRunnerPolicyTest,
+                         ::testing::Values(ReporterRunnerPolicy::kNoPolicy,
+                                           ReporterRunnerPolicy::kEnabled,
+                                           ReporterRunnerPolicy::kDisabled));
 
 // The state of the the enterprise policy to use during tests.
 enum class PolicyState {
@@ -214,7 +218,7 @@ class ReporterRunnerTest
                      policy::POLICY_SOURCE_PLATFORM,
                      std::make_unique<base::Value>(is_enabled), nullptr);
         policy_provider_.UpdateChromePolicy(policies);
-        EXPECT_CALL(mock_chrome_cleaner_controller_, logs_enabled())
+        EXPECT_CALL(mock_chrome_cleaner_controller_, logs_enabled(_))
             .WillRepeatedly(Return(is_enabled));
         break;
       }
@@ -922,10 +926,9 @@ struct ReporterRunTestParamsToString {
   }
 };
 
-// Tests for kUserInitiatedChromeCleanupsFeature enabled (all invocation types
-// are allowed) without an enterprise policy set.
-INSTANTIATE_TEST_CASE_P(
-    UserInitiatedRunsEnabled,
+// Tests without an enterprise policy set.
+INSTANTIATE_TEST_SUITE_P(
+    NoEnterprisePolicy,
     ReporterRunnerTest,
     ::testing::Combine(
         ::testing::Values(
@@ -937,11 +940,10 @@ INSTANTIATE_TEST_CASE_P(
         ::testing::Values(PolicyState::kNoLogs)),
     ReporterRunTestParamsToString());
 
-// Tests for kUserInitiatedChromeCleanupsFeature enabled (all invocation types
-// are allowed) with enterprise policies forcing reporting to be either enabled
+// Tests with enterprise policies forcing reporting to be either enabled
 // or disabled.
-INSTANTIATE_TEST_CASE_P(
-    UserInitiatedRunsEnabledWithPolicy,
+INSTANTIATE_TEST_SUITE_P(
+    EnterprisePolicy,
     ReporterRunnerTest,
     ::testing::Combine(
         ::testing::Values(

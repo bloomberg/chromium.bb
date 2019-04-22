@@ -53,7 +53,14 @@ class INVALIDATION_EXPORT InvalidatorRegistrarWithMemory
   // handlers that have been unregistered).
   TopicSet GetAllRegisteredIds() const override;
 
+  void RequestDetailedStatus(
+      base::RepeatingCallback<void(const base::DictionaryValue&)> callback)
+      const;
+
  private:
+  // Generate a Dictionary with all the debugging information.
+  base::DictionaryValue CollectDebugData() const;
+
   std::unordered_map<std::string, InvalidationHandler*>
       handler_name_to_handler_;
   HandlerNameTopicsMap handler_name_to_topics_map_;

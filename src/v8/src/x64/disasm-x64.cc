@@ -12,7 +12,8 @@
 #include "src/base/lazy-instance.h"
 #include "src/base/v8-fallthrough.h"
 #include "src/disasm.h"
-#include "src/macro-assembler.h"
+#include "src/utils.h"
+#include "src/x64/register-x64.h"
 #include "src/x64/sse-instr.h"
 
 namespace disasm {
@@ -250,10 +251,9 @@ void InstructionTable::AddJumpConditionalShort() {
   }
 }
 
-
-static v8::base::LazyInstance<InstructionTable>::type instruction_table =
-    LAZY_INSTANCE_INITIALIZER;
-
+namespace {
+DEFINE_LAZY_LEAKY_OBJECT_GETTER(InstructionTable, GetInstructionTable)
+}
 
 static const InstructionDesc cmov_instructions[16] = {
   {"cmovo", TWO_OPERANDS_INSTR, REG_OPER_OP_ORDER, false},
@@ -296,7 +296,7 @@ class DisassemblerX64 {
         vex_byte1_(0),
         vex_byte2_(0),
         byte_size_operand_(false),
-        instruction_table_(instruction_table.Pointer()) {
+        instruction_table_(GetInstructionTable()) {
     tmp_buffer_[0] = '\0';
   }
 
@@ -1310,6 +1310,11 @@ int DisassemblerX64::AVXInstruction(byte* data) {
         break;
       case 0x54:
         AppendToBuffer("vandps %s,%s,", NameOfXMMRegister(regop),
+                       NameOfXMMRegister(vvvv));
+        current += PrintRightXMMOperand(current);
+        break;
+      case 0x55:
+        AppendToBuffer("vandnps %s,%s,", NameOfXMMRegister(regop),
                        NameOfXMMRegister(vvvv));
         current += PrintRightXMMOperand(current);
         break;

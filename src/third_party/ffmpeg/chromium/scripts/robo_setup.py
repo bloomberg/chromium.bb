@@ -8,9 +8,11 @@
 
 import io
 import os
+from robo_lib import UserInstructions
 from subprocess import call
 import subprocess
 from robo_lib import log
+import shutil
 
 def InstallUbuntuPackage(robo_configuration, package):
   """Install |package|.
@@ -85,7 +87,7 @@ def EnsureASANDirWorks(robo_configuration):
 
     # Ask gn to generate build files.
     log("Running gn on %s" % directory_name)
-    if call(["gn", "gen", robo_configuration.local_asan_directory()]):
+    if call(["gn", "gen", robo_configuration.relative_asan_directory()]):
       raise Exception("Unable to gn gen %s" %
               robo_configuration.local_asan_directory())
 
@@ -114,14 +116,14 @@ def EnsureGClientTargets(robo_configuration):
     log("OUTSIDE of the solutions = [] section")
     log("Example line:")
     log("target_os = [ 'android', 'win' ]")
-    raise Exception("Please add target_os to %s" % gclient_filename)
+    raise UserInstructions("Please add target_os to %s" % gclient_filename)
 
   if ('android' not in scope['target_os']) or ('win' not in scope['target_os']):
     log("Missing 'android' and/or 'win' in target_os, which goes at the")
     log("end of .gclient, OUTSIDE of the solutions = [] section")
     log("Example line:")
     log("target_os = [ 'android', 'win' ]")
-    raise Exception("Please add 'android' and 'win' to target_os in %s" %
+    raise UserInstructions("Please add 'android' and 'win' to target_os in %s" %
         gclient_filename)
 
   # Sync regardless of whether we changed the config.
@@ -174,6 +176,39 @@ def EnsureSysroots(robo_configuration):
     if call(["build/linux/sysroot_scripts/install-sysroot.py",
              "--arch=" + arch]):
       raise Exception("Failed to install sysroot for " + arch);
+
+def EnsureChromiumNasm(robo_configuration):
+  """Make sure that chromium's nasm is built, so we can use it.  apt-get's is
+  too old."""
+  os.chdir(robo_configuration.chrome_src())
+
+  # nasm in the LLVM bin directory that we already added to $PATH.  Note that we
+  # put it there so that configure can find is as "nasm", rather than us having
+  # to give it the full path.  I think the full path would affect the real
+  # build.  That's not good.
+  llvm_nasm_path = os.path.join(robo_configuration.llvm_path(), "nasm")
+  if os.path.exists(llvm_nasm_path):
+    log("nasm already installed in llvm bin directory")
+    return
+
+  # Make sure nasm is built, and copy it to the llvm bin directory.
+  chromium_nasm_path = os.path.join(
+                  robo_configuration.absolute_asan_directory(),
+                  "nasm")
+  if not os.path.exists(chromium_nasm_path):
+    log("Building Chromium's nasm")
+    if call(["ninja", "-j5000", "-C",
+          robo_configuration.relative_asan_directory(), "third_party/nasm"]):
+        raise Exception("Failed to build nasm")
+    # Verify that it exists now, for sanity.
+    if not os.path.exists(chromium_nasm_path):
+        raise Exception("Failed to find nasm even after building it")
+
+  # Copy it
+  log("Copying Chromium's nasm to llvm bin directory")
+  if shutil.copy(chromium_nasm_path, llvm_nasm_path):
+     raise Exception("Could not copy %s into %s" %
+                     (chromium_nasm_path, llvm_nasm_path))
 
 def EnsureToolchains(robo_configuration):
   """Make sure that we have all the toolchains for cross-compilation"""

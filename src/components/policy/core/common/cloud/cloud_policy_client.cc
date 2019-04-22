@@ -72,9 +72,9 @@ LicenseType TranslateLicenseType(em::LicenseType type) {
 
 void ExtractLicenseMap(const em::CheckDeviceLicenseResponse& license_response,
                        CloudPolicyClient::LicenseMap& licenses) {
-  for (int i = 0; i < license_response.license_availability_size(); i++) {
+  for (int i = 0; i < license_response.license_availabilities_size(); i++) {
     const em::LicenseAvailability& license =
-        license_response.license_availability(i);
+        license_response.license_availabilities(i);
     if (!license.has_license_type() || !license.has_available_licenses())
       continue;
     auto license_type = TranslateLicenseType(license.license_type());
@@ -203,19 +203,19 @@ void CloudPolicyClient::Register(em::DeviceRegisterRequest::Type type,
                                  em::DeviceRegisterRequest::Flavor flavor,
                                  em::DeviceRegisterRequest::Lifetime lifetime,
                                  em::LicenseType::LicenseTypeEnum license_type,
-                                 std::unique_ptr<DMAuth> auth,
+                                 const std::string& oauth_token,
                                  const std::string& client_id,
                                  const std::string& requisition,
                                  const std::string& current_state_key) {
   DCHECK(service_);
-  DCHECK(auth->has_oauth_token());
+  DCHECK(!oauth_token.empty());
   DCHECK(!is_registered());
 
   SetClientId(client_id);
 
   policy_fetch_request_job_.reset(service_->CreateJob(
       DeviceManagementRequestJob::TYPE_REGISTRATION, GetURLLoaderFactory()));
-  policy_fetch_request_job_->SetAuthData(std::move(auth));
+  policy_fetch_request_job_->SetOAuthTokenParameter(oauth_token);
   policy_fetch_request_job_->SetClientID(client_id_);
 
   em::DeviceRegisterRequest* request =
@@ -258,7 +258,8 @@ void CloudPolicyClient::RegisterWithCertificate(
     const std::string& pem_certificate_chain,
     const std::string& client_id,
     const std::string& requisition,
-    const std::string& current_state_key) {
+    const std::string& current_state_key,
+    const std::string& sub_organization) {
   DCHECK(signing_service_);
   DCHECK(service_);
   DCHECK(!is_registered());
@@ -288,6 +289,12 @@ void CloudPolicyClient::RegisterWithCertificate(
   if (license_type != em::LicenseType::UNDEFINED)
     request->mutable_license_type()->set_license_type(license_type);
   request->set_lifetime(lifetime);
+
+  if (!sub_organization.empty()) {
+    em::DeviceRegisterConfiguration* configuration =
+        data.mutable_device_register_configuration();
+    configuration->set_device_owner(sub_organization);
+  }
 
   signing_service_->SignData(
       data.SerializeAsString(),
@@ -359,6 +366,11 @@ void CloudPolicyClient::SetInvalidationInfo(int64_t version,
   invalidation_payload_ = payload;
 }
 
+void CloudPolicyClient::SetOAuthTokenAsAdditionalAuth(
+    const std::string& oauth_token) {
+  oauth_token_ = oauth_token;
+}
+
 void CloudPolicyClient::FetchPolicy() {
   CHECK(is_registered());
   CHECK(!types_to_fetch_.empty());
@@ -366,6 +378,8 @@ void CloudPolicyClient::FetchPolicy() {
   policy_fetch_request_job_.reset(service_->CreateJob(
       DeviceManagementRequestJob::TYPE_POLICY_FETCH, GetURLLoaderFactory()));
   policy_fetch_request_job_->SetAuthData(DMAuth::FromDMToken(dm_token_));
+  if (!oauth_token_.empty())
+    policy_fetch_request_job_->SetOAuthTokenParameter(oauth_token_);
   policy_fetch_request_job_->SetClientID(client_id_);
   if (!public_key_version_valid_)
     policy_fetch_request_job_->SetCritical(true);
@@ -376,7 +390,7 @@ void CloudPolicyClient::FetchPolicy() {
   // Build policy fetch requests.
   em::DevicePolicyRequest* policy_request = request->mutable_policy_request();
   for (const auto& type_to_fetch : types_to_fetch_) {
-    em::PolicyFetchRequest* fetch_request = policy_request->add_request();
+    em::PolicyFetchRequest* fetch_request = policy_request->add_requests();
     fetch_request->set_policy_type(type_to_fetch.first);
     if (!type_to_fetch.second.empty())
       fetch_request->set_settings_entity_id(type_to_fetch.second);
@@ -409,7 +423,7 @@ void CloudPolicyClient::FetchPolicy() {
              state_keys_to_upload_.begin());
          key != state_keys_to_upload_.end();
          ++key) {
-      key_update_request->add_server_backed_state_key(*key);
+      key_update_request->add_server_backed_state_keys(*key);
     }
   }
 
@@ -480,7 +494,7 @@ void CloudPolicyClient::FetchRobotAuthCodes(std::unique_ptr<DMAuth> auth,
       mutable_service_api_access_request();
   request->set_oauth2_client_id(
       GaiaUrls::GetInstance()->oauth2_chrome_client_id());
-  request->add_auth_scope(GaiaConstants::kAnyApiOAuth2Scope);
+  request->add_auth_scopes(GaiaConstants::kAnyApiOAuth2Scope);
   request->set_device_type(em::DeviceServiceApiAccessRequest::CHROME_OS);
 
   policy_fetch_request_job_->Start(base::AdaptCallbackForRepeating(
@@ -542,13 +556,16 @@ void CloudPolicyClient::UploadEnterpriseEnrollmentId(
 void CloudPolicyClient::UploadDeviceStatus(
     const em::DeviceStatusReportRequest* device_status,
     const em::SessionStatusReportRequest* session_status,
+    const em::ChildStatusReportRequest* child_status,
     const CloudPolicyClient::StatusCallback& callback) {
   CHECK(is_registered());
   // Should pass in at least one type of status.
-  DCHECK(device_status || session_status);
+  DCHECK(device_status || session_status || child_status);
   std::unique_ptr<DeviceManagementRequestJob> request_job(service_->CreateJob(
       DeviceManagementRequestJob::TYPE_UPLOAD_STATUS, GetURLLoaderFactory()));
   request_job->SetAuthData(DMAuth::FromDMToken(dm_token_));
+  if (!oauth_token_.empty())
+    request_job->SetOAuthTokenParameter(oauth_token_);
   request_job->SetClientID(client_id_);
 
   em::DeviceManagementRequest* request = request_job->GetRequest();
@@ -556,6 +573,8 @@ void CloudPolicyClient::UploadDeviceStatus(
     *request->mutable_device_status_report_request() = *device_status;
   if (session_status)
     *request->mutable_session_status_report_request() = *session_status;
+  if (child_status)
+    *request->mutable_child_status_report_request() = *child_status;
 
   const DeviceManagementRequestJob::Callback job_callback =
       base::AdaptCallbackForRepeating(base::BindOnce(
@@ -656,13 +675,19 @@ void CloudPolicyClient::GetDeviceAttributeUpdatePermission(
     std::unique_ptr<DMAuth> auth,
     const CloudPolicyClient::StatusCallback& callback) {
   CHECK(is_registered());
-  DCHECK(auth->has_oauth_token() || auth->has_enrollment_token());
+  // This condition is wrong in case of Attestation enrollment
+  // (https://crbug.com/942013).
+  // DCHECK(auth->has_oauth_token() || auth->has_enrollment_token());
 
   std::unique_ptr<DeviceManagementRequestJob> request_job(service_->CreateJob(
       DeviceManagementRequestJob::TYPE_ATTRIBUTE_UPDATE_PERMISSION,
       GetURLLoaderFactory()));
 
-  request_job->SetAuthData(std::move(auth));
+  if (auth->has_oauth_token()) {
+    request_job->SetOAuthTokenParameter(auth->oauth_token());
+  } else {
+    request_job->SetAuthData(std::move(auth));
+  }
   request_job->SetClientID(client_id_);
 
   request_job->GetRequest()->
@@ -688,7 +713,11 @@ void CloudPolicyClient::UpdateDeviceAttributes(
       service_->CreateJob(DeviceManagementRequestJob::TYPE_ATTRIBUTE_UPDATE,
                           GetURLLoaderFactory()));
 
-  request_job->SetAuthData(std::move(auth));
+  if (auth->has_oauth_token()) {
+    request_job->SetOAuthTokenParameter(auth->oauth_token());
+  } else {
+    request_job->SetAuthData(std::move(auth));
+  }
   request_job->SetClientID(client_id_);
 
   em::DeviceAttributeUpdateRequest* request =
@@ -706,15 +735,15 @@ void CloudPolicyClient::UpdateDeviceAttributes(
 }
 
 void CloudPolicyClient::RequestAvailableLicenses(
-    std::unique_ptr<DMAuth> auth,
+    const std::string& oauth_token,
     const LicenseRequestCallback& callback) {
-  DCHECK(auth->has_oauth_token());
+  DCHECK(!oauth_token.empty());
 
   std::unique_ptr<DeviceManagementRequestJob> request_job(service_->CreateJob(
       DeviceManagementRequestJob::TYPE_REQUEST_LICENSE_TYPES,
       GetURLLoaderFactory()));
 
-  request_job->SetAuthData(std::move(auth));
+  request_job->SetOAuthTokenParameter(oauth_token);
   request_job->GetRequest()->mutable_check_device_license_request();
 
   const DeviceManagementRequestJob::Callback job_callback =
@@ -852,9 +881,10 @@ void CloudPolicyClient::OnRegisterCompleted(
     dm_token_ = response.register_response().device_management_token();
     reregistration_dm_token_.clear();
     if (response.register_response().has_configuration_seed()) {
-      configuration_seed_ = base::DictionaryValue::From(base::JSONReader::Read(
-          response.register_response().configuration_seed(),
-          base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS));
+      configuration_seed_ =
+          base::DictionaryValue::From(base::JSONReader::ReadDeprecated(
+              response.register_response().configuration_seed(),
+              base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS));
       if (!configuration_seed_)
         LOG(ERROR) << "Failed to parse configuration seed";
     }
@@ -907,7 +937,7 @@ void CloudPolicyClient::OnPolicyFetchCompleted(
     const em::DeviceManagementResponse& response) {
   if (status == DM_STATUS_SUCCESS) {
     if (!response.has_policy_response() ||
-        response.policy_response().response_size() == 0) {
+        response.policy_response().responses_size() == 0) {
       LOG(WARNING) << "Empty policy response.";
       status = DM_STATUS_RESPONSE_DECODING_ERROR;
     }
@@ -918,8 +948,8 @@ void CloudPolicyClient::OnPolicyFetchCompleted(
     const em::DevicePolicyResponse& policy_response =
         response.policy_response();
     responses_.clear();
-    for (int i = 0; i < policy_response.response_size(); ++i) {
-      const em::PolicyFetchResponse& response = policy_response.response(i);
+    for (int i = 0; i < policy_response.responses_size(); ++i) {
+      const em::PolicyFetchResponse& response = policy_response.responses(i);
       em::PolicyData policy_data;
       if (!policy_data.ParseFromString(response.policy_data()) ||
           !policy_data.IsInitialized() ||

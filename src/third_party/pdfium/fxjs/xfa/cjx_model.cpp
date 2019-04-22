@@ -8,11 +8,12 @@
 
 #include <vector>
 
-#include "fxjs/cfxjse_engine.h"
-#include "fxjs/cfxjse_value.h"
 #include "fxjs/js_resources.h"
+#include "fxjs/xfa/cfxjse_engine.h"
+#include "fxjs/xfa/cfxjse_value.h"
 #include "xfa/fxfa/parser/cxfa_delta.h"
 #include "xfa/fxfa/parser/cxfa_document.h"
+#include "xfa/fxfa/parser/xfa_basic_data.h"
 
 const CJX_MethodSpec CJX_Model::MethodSpecs[] = {
     {"clearErrorList", clearErrorList_static},
@@ -24,6 +25,10 @@ CJX_Model::CJX_Model(CXFA_Node* node) : CJX_Node(node) {
 }
 
 CJX_Model::~CJX_Model() {}
+
+bool CJX_Model::DynamicTypeIs(TypeTag eType) const {
+  return eType == static_type__ || ParentType__::DynamicTypeIs(eType);
+}
 
 CJS_Result CJX_Model::clearErrorList(
     CFX_V8* runtime,
@@ -46,7 +51,7 @@ CJS_Result CJX_Model::createNode(
     nameSpace = runtime->ToWideString(params[2]);
 
   WideString tagName = runtime->ToWideString(params[0]);
-  XFA_Element eType = CXFA_Node::NameToElement(tagName);
+  XFA_Element eType = XFA_GetElementByName(tagName.AsStringView());
   CXFA_Node* pNewNode = GetXFANode()->CreateSamePacketNode(eType);
   if (!pNewNode)
     return CJS_Result::Success(runtime->NewNull());
@@ -62,9 +67,7 @@ CJS_Result CJX_Model::createNode(
   }
 
   CFXJSE_Value* value =
-      GetDocument()->GetScriptContext()->GetJSValueFromMap(pNewNode);
-  if (!value)
-    return CJS_Result::Success(runtime->NewNull());
+      GetDocument()->GetScriptContext()->GetOrCreateJSBindingFromMap(pNewNode);
 
   return CJS_Result::Success(
       value->DirectGetValue().Get(runtime->GetIsolate()));

@@ -29,6 +29,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_SCHEDULED_SOURCE_NODE_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_SCHEDULED_SOURCE_NODE_H_
 
+#include <atomic>
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node.h"
 
@@ -67,11 +68,11 @@ class AudioScheduledSourceHandler : public AudioHandler {
   double LatencyTime() const override { return 0; }
 
   PlaybackState GetPlaybackState() const {
-    return static_cast<PlaybackState>(AcquireLoad(&playback_state_));
+    return playback_state_.load(std::memory_order_acquire);
   }
 
   void SetPlaybackState(PlaybackState new_state) {
-    ReleaseStore(&playback_state_, new_state);
+    playback_state_.store(new_state, std::memory_order_release);
   }
 
   bool IsPlayingOrScheduled() const {
@@ -84,6 +85,12 @@ class AudioScheduledSourceHandler : public AudioHandler {
   // Source nodes don't have tail or latency times so no tail
   // processing needed.
   bool RequiresTailProcessing() const final { return false; }
+
+  // Stops a node if the stop time has passed.  Generally used when a source
+  // node has been scheduled to start but has disconnected some time before the
+  // stop time has arrived.  Nodes that are not reachable from the destination
+  // don't progress in time so we need to handle this specially.
+  virtual void HandleStoppableSourceNode() = 0;
 
  protected:
   // Get frame information for the current time quantum.
@@ -132,12 +139,21 @@ class AudioScheduledSourceHandler : public AudioHandler {
   // will stop when the end of the AudioBuffer has been reached.
   double end_time_;  // in seconds
 
+  // Magic value indicating that the time (start or end) has not yet been set.
   static const double kUnknownTime;
+
+  // Number of extra frames to use when determining if a source node can be
+  // stopped.  This should be at least one rendering quantum, but we add one
+  // more quantum for good measure.  This doesn't need to be extra precise, just
+  // more than one rendering quantum.  See |handleStoppableSourceNode()|.
+  // FIXME: Expose the rendering quantum somehow instead of hardwiring a value
+  // here.
+  static const int kExtraStopFrames = 256;
 
  private:
   // This is accessed by both the main thread and audio thread.  Use the setter
   // and getter to protect the access to this.
-  int playback_state_;
+  std::atomic<PlaybackState> playback_state_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };
@@ -162,9 +178,10 @@ class AudioScheduledSourceNode
 
   void Trace(blink::Visitor* visitor) override { AudioNode::Trace(visitor); }
 
+  AudioScheduledSourceHandler& GetAudioScheduledSourceHandler() const;
+
  protected:
   explicit AudioScheduledSourceNode(BaseAudioContext&);
-  AudioScheduledSourceHandler& GetAudioScheduledSourceHandler() const;
 };
 
 }  // namespace blink

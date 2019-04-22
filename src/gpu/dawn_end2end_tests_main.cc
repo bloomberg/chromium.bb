@@ -19,10 +19,15 @@ int RunHelper(base::TestSuite* test_suite) {
 
 }  // namespace
 
+// Definition located in third_party/dawn/src/tests/DawnTest.h
+// Forward declared here to avoid pulling in the Dawn headers.
+void InitDawnEnd2EndTestEnvironment(int argc, char** argv);
+
 int main(int argc, char** argv) {
   base::CommandLine::Init(argc, argv);
   testing::InitGoogleMock(&argc, argv);
   base::TestSuite test_suite(argc, argv);
+  InitDawnEnd2EndTestEnvironment(argc, argv);
   int rt = base::LaunchUnitTestsWithOptions(
       argc, argv,
       1,     // Run tests serially.

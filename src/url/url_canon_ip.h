@@ -5,20 +5,20 @@
 #ifndef URL_URL_CANON_IP_H_
 #define URL_URL_CANON_IP_H_
 
+#include "base/component_export.h"
 #include "base/strings/string16.h"
 #include "url/third_party/mozilla/url_parse.h"
 #include "url/url_canon.h"
-#include "url/url_export.h"
 
 namespace url {
 
 // Writes the given IPv4 address to |output|.
-URL_EXPORT void AppendIPv4Address(const unsigned char address[4],
-                                  CanonOutput* output);
+COMPONENT_EXPORT(URL)
+void AppendIPv4Address(const unsigned char address[4], CanonOutput* output);
 
 // Writes the given IPv6 address to |output|.
-URL_EXPORT void AppendIPv6Address(const unsigned char address[16],
-                                  CanonOutput* output);
+COMPONENT_EXPORT(URL)
+void AppendIPv6Address(const unsigned char address[16], CanonOutput* output);
 
 // Searches the host name for the portions of the IPv4 address. On success,
 // each component will be placed into |components| and it will return true.
@@ -38,12 +38,14 @@ URL_EXPORT void AppendIPv6Address(const unsigned char address[16],
 // so this code path never gets hit. Our host canonicalization will notice
 // these spaces and escape them, which will make IP address finding fail. This
 // seems like better behavior than stripping after a space.
-URL_EXPORT bool FindIPv4Components(const char* spec,
-                                   const Component& host,
-                                   Component components[4]);
-URL_EXPORT bool FindIPv4Components(const base::char16* spec,
-                                   const Component& host,
-                                   Component components[4]);
+COMPONENT_EXPORT(URL)
+bool FindIPv4Components(const char* spec,
+                        const Component& host,
+                        Component components[4]);
+COMPONENT_EXPORT(URL)
+bool FindIPv4Components(const base::char16* spec,
+                        const Component& host,
+                        Component components[4]);
 
 // Converts an IPv4 address to a 32-bit number (network byte order).
 //
@@ -56,26 +58,30 @@ URL_EXPORT bool FindIPv4Components(const base::char16* spec,
 //
 // On success, |num_ipv4_components| will be populated with the number of
 // components in the IPv4 address.
-URL_EXPORT CanonHostInfo::Family IPv4AddressToNumber(const char* spec,
-                                                     const Component& host,
-                                                     unsigned char address[4],
-                                                     int* num_ipv4_components);
-URL_EXPORT CanonHostInfo::Family IPv4AddressToNumber(const base::char16* spec,
-                                                     const Component& host,
-                                                     unsigned char address[4],
-                                                     int* num_ipv4_components);
+COMPONENT_EXPORT(URL)
+CanonHostInfo::Family IPv4AddressToNumber(const char* spec,
+                                          const Component& host,
+                                          unsigned char address[4],
+                                          int* num_ipv4_components);
+COMPONENT_EXPORT(URL)
+CanonHostInfo::Family IPv4AddressToNumber(const base::char16* spec,
+                                          const Component& host,
+                                          unsigned char address[4],
+                                          int* num_ipv4_components);
 
 // Converts an IPv6 address to a 128-bit number (network byte order), returning
 // true on success. False means that the input was not a valid IPv6 address.
 //
 // NOTE that |host| is expected to be surrounded by square brackets.
 // i.e. "[::1]" rather than "::1".
-URL_EXPORT bool IPv6AddressToNumber(const char* spec,
-                                    const Component& host,
-                                    unsigned char address[16]);
-URL_EXPORT bool IPv6AddressToNumber(const base::char16* spec,
-                                    const Component& host,
-                                    unsigned char address[16]);
+COMPONENT_EXPORT(URL)
+bool IPv6AddressToNumber(const char* spec,
+                         const Component& host,
+                         unsigned char address[16]);
+COMPONENT_EXPORT(URL)
+bool IPv6AddressToNumber(const base::char16* spec,
+                         const Component& host,
+                         unsigned char address[16]);
 
 }  // namespace url
 

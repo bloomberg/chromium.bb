@@ -35,6 +35,7 @@
 #include "base/debug/alias.h"
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/process_memory_dump.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/font_family_names.h"
@@ -46,6 +47,7 @@
 #include "third_party/blink/renderer/platform/fonts/font_global_context.h"
 #include "third_party/blink/renderer/platform/fonts/font_platform_data.h"
 #include "third_party/blink/renderer/platform/fonts/font_smoothing_mode.h"
+#include "third_party/blink/renderer/platform/fonts/font_unique_name_lookup.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_cache.h"
 #include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
 #include "third_party/blink/renderer/platform/fonts/text_rendering_mode.h"
@@ -117,7 +119,10 @@ FontPlatformData* FontCache::GetFontPlatformData(
 
   float size = font_description.EffectiveFontSize();
   unsigned rounded_size = size * FontCacheKey::PrecisionMultiplier();
-  FontCacheKey key = font_description.CacheKey(creation_params);
+  bool is_unique_match =
+      alternate_font_name == AlternateFontName::kLocalUniqueFace;
+  FontCacheKey key =
+      font_description.CacheKey(creation_params, is_unique_match);
 
   // Remove the font size from the cache key, and handle the font size
   // separately in the inner HashMap. So that different size of FontPlatformData
@@ -130,7 +135,7 @@ FontPlatformData* FontCache::GetFontPlatformData(
 
   {
     // addResult's scope must end before we recurse for alternate family names
-    // below, to avoid trigering its dtor hash-changed asserts.
+    // below, to avoid triggering its dtor hash-changed asserts.
     SizedFontPlatformDataSet* sized_fonts =
         &font_platform_data_cache_.insert(key, SizedFontPlatformDataSet())
              .stored_value->value;
@@ -186,6 +191,8 @@ std::unique_ptr<FontPlatformData> FontCache::ScaleFontPlatformData(
     const FontDescription& font_description,
     const FontFaceCreationParams& creation_params,
     float font_size) {
+  TRACE_EVENT0("ui", "FontCache::ScaleFontPlatformData");
+
 #if defined(OS_MACOSX)
   return CreateFontPlatformData(font_description, creation_params, font_size);
 #else
@@ -304,6 +311,7 @@ void FontCache::ReleaseFontData(const SimpleFontData* font_data) {
 }
 
 void FontCache::PurgePlatformFontDataCache() {
+  TRACE_EVENT0("ui", "FontCache::PurgePlatformFontDataCache");
   Vector<FontCacheKey> keys_to_remove;
   keys_to_remove.ReserveInitialCapacity(font_platform_data_cache_.size());
   for (auto& sized_fonts : font_platform_data_cache_) {
@@ -322,6 +330,7 @@ void FontCache::PurgePlatformFontDataCache() {
 }
 
 void FontCache::PurgeFallbackListShaperCache() {
+  TRACE_EVENT0("ui", "FontCache::PurgeFallbackListShaperCache");
   unsigned items = 0;
   FallbackListShaperCache::iterator iter;
   for (iter = fallback_list_shaper_cache_.begin();
@@ -341,7 +350,7 @@ void FontCache::InvalidateShapeCache() {
 void FontCache::Purge(PurgeSeverity purge_severity) {
   // Ideally we should never be forcing the purge while the
   // FontCachePurgePreventer is in scope, but we call purge() at any timing
-  // via MemoryCoordinator.
+  // via MemoryPressureListenerRegistry.
   if (purge_prevent_count_)
     return;
 
@@ -363,11 +372,12 @@ void FontCache::AddClient(FontCacheClient* client) {
   font_cache_clients_->insert(client);
 }
 
-unsigned short FontCache::Generation() {
+uint16_t FontCache::Generation() {
   return generation_;
 }
 
 void FontCache::Invalidate() {
+  TRACE_EVENT0("ui", "FontCache::Invalidate");
   font_platform_data_cache_.clear();
   generation_++;
 
@@ -438,6 +448,20 @@ void FontCache::DumpShapeResultCache(
   dump->AddScalar("size", "bytes", shape_result_cache_size);
   memory_dump->AddSuballocation(dump->guid(),
                                 WTF::Partitions::kAllocatedObjectPoolName);
+}
+
+sk_sp<SkTypeface> FontCache::CreateTypefaceFromUniqueName(
+    const FontFaceCreationParams& creation_params,
+    CString& name) {
+  FontUniqueNameLookup* unique_name_lookup =
+      FontGlobalContext::Get()->GetFontUniqueNameLookup();
+  DCHECK(unique_name_lookup);
+  sk_sp<SkTypeface> uniquely_identified_font =
+      unique_name_lookup->MatchUniqueName(creation_params.Family());
+  if (uniquely_identified_font) {
+    return uniquely_identified_font;
+  }
+  return nullptr;
 }
 
 }  // namespace blink

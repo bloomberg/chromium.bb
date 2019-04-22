@@ -9,26 +9,24 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/values.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/core/browser/signin_internals_util.h"
-#include "components/signin/core/browser/signin_manager.h"
-#include "google_apis/gaia/oauth2_token_service.h"
 #include "services/identity/public/cpp/identity_manager.h"
+#include "services/identity/public/cpp/scope_set.h"
 
 namespace identity {
-class IdentityManager;
+struct AccountsInCookieJarInfo;
 }
 
-class AccountTrackerService;
 class PrefRegistrySimple;
-class ProfileOAuth2TokenService;
 class SigninClient;
 
 // Many values in SigninStatus are also associated with a timestamp.
@@ -39,10 +37,6 @@ using TimedSigninStatusValue = std::pair<std::string, std::string>;
 // to propagate to about:signin-internals via SigninInternalsUI.
 class AboutSigninInternals
     : public KeyedService,
-      public signin_internals_util::SigninDiagnosticsObserver,
-      public OAuth2TokenService::Observer,
-      public OAuth2TokenService::DiagnosticsObserver,
-      public GaiaCookieManagerService::Observer,
       SigninErrorController::Observer,
       identity::IdentityManager::Observer,
       identity::IdentityManager::DiagnosticsObserver {
@@ -57,12 +51,8 @@ class AboutSigninInternals
     virtual void OnCookieAccountsFetched(const base::DictionaryValue* info) = 0;
   };
 
-  AboutSigninInternals(ProfileOAuth2TokenService* token_service,
-                       AccountTrackerService* account_tracker,
-                       identity::IdentityManager* identity_manager,
-                       SigninManagerBase* signin_manager,
+  AboutSigninInternals(identity::IdentityManager* identity_manager,
                        SigninErrorController* signin_error_controller,
-                       GaiaCookieManagerService* cookie_manager_service,
                        signin::AccountConsistencyMethod account_consistency);
   ~AboutSigninInternals() override;
 
@@ -101,17 +91,15 @@ class AboutSigninInternals
   //  }
   std::unique_ptr<base::DictionaryValue> GetSigninStatus();
 
-  // GaiaCookieManagerService::Observer implementations.
-  void OnGaiaAccountsInCookieUpdated(
-      const std::vector<gaia::ListedAccount>& gaia_accounts,
-      const std::vector<gaia::ListedAccount>& signed_out_accounts,
+  // identity::IdentityManager::Observer implementations.
+  void OnAccountsInCookieUpdated(
+      const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
       const GoogleServiceAuthError& error) override;
 
  private:
   // Encapsulates diagnostic information about tokens for different services.
   struct TokenInfo {
-    TokenInfo(const std::string& consumer_id,
-              const OAuth2TokenService::ScopeSet& scopes);
+    TokenInfo(const std::string& consumer_id, const identity::ScopeSet& scopes);
     ~TokenInfo();
     std::unique_ptr<base::DictionaryValue> ToValue() const;
 
@@ -121,8 +109,8 @@ class AboutSigninInternals
     // Called when the token is invalidated.
     void Invalidate();
 
-    std::string consumer_id;              // service that requested the token.
-    OAuth2TokenService::ScopeSet scopes;  // Scoped that are requested.
+    std::string consumer_id;    // service that requested the token.
+    identity::ScopeSet scopes;  // Scoped that are requested.
     base::Time request_time;
     base::Time receive_time;
     base::Time expiration_time;
@@ -165,7 +153,7 @@ class AboutSigninInternals
 
     TokenInfo* FindToken(const std::string& account_id,
                          const std::string& consumer_id,
-                         const OAuth2TokenService::ScopeSet& scopes);
+                         const identity::ScopeSet& scopes);
 
     void AddRefreshTokenEvent(const RefreshTokenEvent& event);
 
@@ -187,76 +175,56 @@ class AboutSigninInternals
     //       }],
     //  }
     std::unique_ptr<base::DictionaryValue> ToValue(
-        AccountTrackerService* account_tracker,
         identity::IdentityManager* identity_manager,
         SigninErrorController* signin_error_controller,
-        ProfileOAuth2TokenService* token_service,
-        GaiaCookieManagerService* cookie_manager_service_,
         SigninClient* signin_client,
         signin::AccountConsistencyMethod account_consistency);
   };
 
-  // SigninManager::SigninDiagnosticsObserver implementation.
-  void NotifySigninValueChanged(
-      const signin_internals_util::TimedSigninStatusField& field,
-      const std::string& value) override;
-
-  // IdentityMager::DiagnosticsObserver implementations.
+  // IdentityManager::DiagnosticsObserver implementations.
   void OnAccessTokenRequested(const std::string& account_id,
                               const std::string& consumer_id,
                               const identity::ScopeSet& scopes) override;
-
-  // OAuth2TokenService::DiagnosticsObserver implementations.
-  void OnFetchAccessTokenComplete(const std::string& account_id,
-                                  const std::string& consumer_id,
-                                  const OAuth2TokenService::ScopeSet& scopes,
-                                  GoogleServiceAuthError error,
-                                  base::Time expiration_time) override;
-  void OnAccessTokenRemoved(
+  void OnAccessTokenRequestCompleted(const std::string& account_id,
+                                     const std::string& consumer_id,
+                                     const identity::ScopeSet& scopes,
+                                     GoogleServiceAuthError error,
+                                     base::Time expiration_time) override;
+  void OnAccessTokenRemovedFromCache(const std::string& account_id,
+                                     const identity::ScopeSet& scopes) override;
+  void OnRefreshTokenUpdatedForAccountFromSource(
       const std::string& account_id,
-      const OAuth2TokenService::ScopeSet& scopes) override;
-  void OnRefreshTokenAvailableFromSource(const std::string& account_id,
-                                         bool is_refresh_token_valid,
-                                         const std::string& source) override;
-  void OnRefreshTokenRevokedFromSource(const std::string& account_id,
-                                       const std::string& source) override;
-
-  // OAuth2TokenServiceDelegate::Observer implementations.
-  void OnRefreshTokensLoaded() override;
-  void OnEndBatchChanges() override;
+      bool is_refresh_token_valid,
+      const std::string& source) override;
+  void OnRefreshTokenRemovedForAccountFromSource(
+      const std::string& account_id,
+      const std::string& source) override;
 
   // IdentityManager::Observer implementations.
-  void OnPrimaryAccountSigninFailed(
-      const GoogleServiceAuthError& error) override;
-  void OnPrimaryAccountSet(const AccountInfo& primary_account_info) override;
+  void OnRefreshTokensLoaded() override;
+  void OnEndBatchOfRefreshTokenStateChanges() override;
+  void OnPrimaryAccountSet(
+      const CoreAccountInfo& primary_account_info) override;
   void OnPrimaryAccountCleared(
-      const AccountInfo& primary_account_info) override;
+      const CoreAccountInfo& primary_account_info) override;
+
+  void NotifyTimedSigninFieldValueChanged(
+      const signin_internals_util::TimedSigninStatusField& field,
+      const std::string& value);
 
   void NotifyObservers();
 
   // SigninErrorController::Observer implementation
   void OnErrorChanged() override;
 
-  // Weak pointer to the token service.
-  ProfileOAuth2TokenService* token_service_;
-
-  // Weak pointer to the account tracker.
-  AccountTrackerService* account_tracker_;
-
   // Weak pointer to the identity manager.
   identity::IdentityManager* identity_manager_;
-
-  // Weak pointer to the signin manager.
-  SigninManagerBase* signin_manager_;
 
   // Weak pointer to the client.
   SigninClient* client_;
 
   // Weak pointer to the SigninErrorController
   SigninErrorController* signin_error_controller_;
-
-  // Weak pointer to the GaiaCookieManagerService
-  GaiaCookieManagerService* cookie_manager_service_;
 
   // Encapsulates the actual signin and token related values.
   // Most of the values are mirrored in the prefs for persistence.

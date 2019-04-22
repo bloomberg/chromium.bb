@@ -246,9 +246,16 @@ class InlineFlowBox : public InlineBox {
   LayoutUnit ComputeUnderAnnotationAdjustment(
       LayoutUnit allowed_position) const;
 
+  // Computes all layout overflow, plus visual overflow not due to replaced
+  // children. Visual overflow due to replaced children is computed during
+  // the RecalcVisualOverflow tree walk. Other visual overflow is computed
+  // during layout for performance reasons.
   void ComputeOverflow(LayoutUnit line_top,
                        LayoutUnit line_bottom,
                        GlyphOverflowAndFallbackFontsMap&);
+  // Adds visual flow to the current visual overflow for replaced children.
+  void AddReplacedChildrenVisualOverflow(LayoutUnit line_top,
+                                         LayoutUnit line_bottom);
 
   void RemoveChild(InlineBox* child, MarkLineBoxes);
 
@@ -279,19 +286,24 @@ class InlineFlowBox : public InlineBox {
   // the right in vertical-rl.
   LayoutRect LayoutOverflowRect(LayoutUnit line_top,
                                 LayoutUnit line_bottom) const {
-    return overflow_ ? overflow_->LayoutOverflowRect()
-                     : FrameRectIncludingLineHeight(line_top, line_bottom);
+    return LayoutOverflowIsSet()
+               ? overflow_->layout_overflow->LayoutOverflowRect()
+               : FrameRectIncludingLineHeight(line_top, line_bottom);
   }
   LayoutUnit LogicalTopLayoutOverflow(LayoutUnit line_top) const {
-    if (overflow_)
-      return IsHorizontal() ? overflow_->LayoutOverflowRect().Y()
-                            : overflow_->LayoutOverflowRect().X();
+    if (LayoutOverflowIsSet()) {
+      return IsHorizontal()
+                 ? overflow_->layout_overflow->LayoutOverflowRect().Y()
+                 : overflow_->layout_overflow->LayoutOverflowRect().X();
+    }
     return line_top;
   }
   LayoutUnit LogicalBottomLayoutOverflow(LayoutUnit line_bottom) const {
-    if (overflow_)
-      return IsHorizontal() ? overflow_->LayoutOverflowRect().MaxY()
-                            : overflow_->LayoutOverflowRect().MaxX();
+    if (LayoutOverflowIsSet()) {
+      return IsHorizontal()
+                 ? overflow_->layout_overflow->LayoutOverflowRect().MaxY()
+                 : overflow_->layout_overflow->LayoutOverflowRect().MaxX();
+    }
     return line_bottom;
   }
   LayoutRect LogicalLayoutOverflowRect(LayoutUnit line_top,
@@ -301,46 +313,41 @@ class InlineFlowBox : public InlineBox {
       result = result.TransposedRect();
     return result;
   }
-  LayoutUnit LogicalRightLayoutOverflow() const {
-    if (overflow_) {
-      return IsHorizontal() ? overflow_->LayoutOverflowRect().MaxX()
-                            : overflow_->LayoutOverflowRect().MaxY();
-    }
-    return LogicalRight();
-  }
-  LayoutUnit LogicalLeftLayoutOverflow() const {
-    if (overflow_) {
-      return IsHorizontal() ? overflow_->LayoutOverflowRect().X()
-                            : overflow_->LayoutOverflowRect().Y();
-    }
-    return LogicalLeft();
-  }
 
   LayoutRect VisualOverflowRect(LayoutUnit line_top,
                                 LayoutUnit line_bottom) const {
-    return overflow_ ? overflow_->VisualOverflowRect()
-                     : FrameRectIncludingLineHeight(line_top, line_bottom);
+    return VisualOverflowIsSet()
+               ? overflow_->visual_overflow->VisualOverflowRect()
+               : FrameRectIncludingLineHeight(line_top, line_bottom);
   }
   LayoutUnit LogicalLeftVisualOverflow() const {
-    return overflow_ ? (IsHorizontal() ? overflow_->VisualOverflowRect().X()
-                                       : overflow_->VisualOverflowRect().Y())
-                     : LogicalLeft();
+    return VisualOverflowIsSet()
+               ? (IsHorizontal()
+                      ? overflow_->visual_overflow->VisualOverflowRect().X()
+                      : overflow_->visual_overflow->VisualOverflowRect().Y())
+               : LogicalLeft();
   }
   LayoutUnit LogicalRightVisualOverflow() const {
-    return overflow_ ? (IsHorizontal() ? overflow_->VisualOverflowRect().MaxX()
-                                       : overflow_->VisualOverflowRect().MaxY())
-                     : static_cast<LayoutUnit>(LogicalRight().Ceil());
+    return VisualOverflowIsSet()
+               ? (IsHorizontal()
+                      ? overflow_->visual_overflow->VisualOverflowRect().MaxX()
+                      : overflow_->visual_overflow->VisualOverflowRect().MaxY())
+               : static_cast<LayoutUnit>(LogicalRight().Ceil());
   }
   LayoutUnit LogicalTopVisualOverflow(LayoutUnit line_top) const {
-    if (overflow_)
-      return IsHorizontal() ? overflow_->VisualOverflowRect().Y()
-                            : overflow_->VisualOverflowRect().X();
+    if (VisualOverflowIsSet()) {
+      return IsHorizontal()
+                 ? overflow_->visual_overflow->VisualOverflowRect().Y()
+                 : overflow_->visual_overflow->VisualOverflowRect().X();
+    }
     return line_top;
   }
   LayoutUnit LogicalBottomVisualOverflow(LayoutUnit line_bottom) const {
-    if (overflow_)
-      return IsHorizontal() ? overflow_->VisualOverflowRect().MaxY()
-                            : overflow_->VisualOverflowRect().MaxX();
+    if (VisualOverflowIsSet()) {
+      return IsHorizontal()
+                 ? overflow_->visual_overflow->VisualOverflowRect().MaxY()
+                 : overflow_->visual_overflow->VisualOverflowRect().MaxX();
+    }
     return line_bottom;
   }
   LayoutRect LogicalVisualOverflowRect(LayoutUnit line_top,
@@ -378,7 +385,7 @@ class InlineFlowBox : public InlineBox {
     is_first_after_page_break_ = is_first_after_page_break;
   }
 
-  void OverrideVisualOverflowFromLogicalRect(
+  bool OverrideVisualOverflowFromLogicalRect(
       const LayoutRect& logical_visual_overflow,
       LayoutUnit line_top,
       LayoutUnit line_bottom);
@@ -394,6 +401,12 @@ class InlineFlowBox : public InlineBox {
                                           LayoutUnit current) const;
 
  private:
+  inline bool LayoutOverflowIsSet() const {
+    return overflow_ && overflow_->layout_overflow;
+  }
+  inline bool VisualOverflowIsSet() const {
+    return overflow_ && overflow_->visual_overflow;
+  }
   void PlaceBoxRangeInInlineDirection(InlineBox* first_child,
                                       InlineBox* last_child,
                                       LayoutUnit& logical_left,
@@ -419,9 +432,8 @@ class InlineFlowBox : public InlineBox {
   void AddTextBoxVisualOverflow(InlineTextBox*,
                                 GlyphOverflowAndFallbackFontsMap&,
                                 LayoutRect& logical_visual_overflow);
-  void AddReplacedChildOverflow(const InlineBox*,
-                                LayoutRect& logical_layout_overflow,
-                                LayoutRect& logical_visual_overflow);
+  void AddReplacedChildLayoutOverflow(const InlineBox*,
+                                      LayoutRect& logical_layout_overflow);
   bool HasEmphasisMarkBefore(const InlineTextBox*) const;
   bool HasEmphasisMarkOver(const InlineTextBox*) const;
   bool HasEmphasisMarkUnder(const InlineTextBox*) const;

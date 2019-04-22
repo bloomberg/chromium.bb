@@ -6,6 +6,7 @@
 
 #include "base/metrics/field_trial_param_associator.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -63,7 +64,7 @@ class NetInfoNetworkQualityEstimatorHoldbackBrowserTest
   }
 
   void SetUp() override {
-    test_server_.ServeFilesFromSourceDirectory("chrome/test/data");
+    test_server_.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
     ASSERT_TRUE(test_server_.Start());
     InProcessBrowserTest::SetUp();
   }
@@ -101,27 +102,12 @@ class NetInfoNetworkQualityEstimatorHoldbackBrowserTest
   }
 
   void ConfigureHoldbackExperiment() {
-    base::FieldTrialParamAssociator::GetInstance()->ClearAllParamsForTesting();
-    const std::string kTrialName = "TrialFoo";
-    const std::string kGroupName = "GroupFoo";  // Value not used
-
-    scoped_refptr<base::FieldTrial> trial =
-        base::FieldTrialList::CreateFieldTrial(kTrialName, kGroupName);
-
     std::map<std::string, std::string> params;
-
     if (GetParam()) {
       params["web_effective_connection_type_override"] = "2G";
     }
-    ASSERT_TRUE(
-        base::FieldTrialParamAssociator::GetInstance()
-            ->AssociateFieldTrialParams(kTrialName, kGroupName, params));
-
-    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-    feature_list->RegisterFieldTrialOverride(
-        features::kNetworkQualityEstimatorWebHoldback.name,
-        base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());
-    scoped_feature_list_.InitWithFeatureList(std::move(feature_list));
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        features::kNetworkQualityEstimatorWebHoldback, params);
   }
 
   // Simulates a network quality change.
@@ -257,6 +243,6 @@ IN_PROC_BROWSER_TEST_P(NetInfoNetworkQualityEstimatorHoldbackBrowserTest,
 
 // The network quality estimator web holdback is enabled only if the first
 // param is true.
-INSTANTIATE_TEST_CASE_P(,
-                        NetInfoNetworkQualityEstimatorHoldbackBrowserTest,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(,
+                         NetInfoNetworkQualityEstimatorHoldbackBrowserTest,
+                         testing::Bool());

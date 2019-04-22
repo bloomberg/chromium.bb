@@ -34,10 +34,11 @@ CONTENT_EXPORT bool FileSystemURLIsValid(storage::FileSystemContext* context,
 
 // Get the platform path from a file system URL. This needs to be called
 // on the FILE thread.
+using SyncGetPlatformPathCB = base::OnceCallback<void(const base::FilePath&)>;
 CONTENT_EXPORT void SyncGetPlatformPath(storage::FileSystemContext* context,
                                         int process_id,
                                         const GURL& path,
-                                        base::FilePath* platform_path);
+                                        SyncGetPlatformPathCB callback);
 
 // Make it possible for a |drop_data|'s resources to be read by |child_id|'s
 // process -- by granting permissions, rewriting |drop_data|, or both.

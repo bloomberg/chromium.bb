@@ -14,7 +14,7 @@
 
 #include "base/strings/string16.h"
 #include "base/strings/string_split.h"
-#include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_enums.mojom-shared.h"
 #include "ui/accessibility/ax_export.h"
 #include "ui/accessibility/ax_relative_bounds.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -37,6 +37,7 @@ struct AX_EXPORT AXNodeData {
   virtual ~AXNodeData();
 
   AXNodeData(const AXNodeData& other);
+  AXNodeData(AXNodeData&& other);
   AXNodeData& operator=(AXNodeData other);
 
   // Accessing accessibility attributes:
@@ -93,17 +94,34 @@ struct AX_EXPORT AXNodeData {
   bool GetHtmlAttribute(const char* attribute, base::string16* value) const;
   bool GetHtmlAttribute(const char* attribute, std::string* value) const;
 
+  //
   // Setting accessibility attributes.
+  //
+  // Replaces an attribute if present. This is safer than crashing via a DCHECK
+  // or doing nothing, because most likely replacing is what the caller would
+  // have wanted or what existing code already assumes.
+  //
+
   void AddStringAttribute(ax::mojom::StringAttribute attribute,
                           const std::string& value);
   void AddIntAttribute(ax::mojom::IntAttribute attribute, int32_t value);
-  void RemoveIntAttribute(ax::mojom::IntAttribute attribute);
   void AddFloatAttribute(ax::mojom::FloatAttribute attribute, float value);
   void AddBoolAttribute(ax::mojom::BoolAttribute attribute, bool value);
   void AddIntListAttribute(ax::mojom::IntListAttribute attribute,
                            const std::vector<int32_t>& value);
   void AddStringListAttribute(ax::mojom::StringListAttribute attribute,
                               const std::vector<std::string>& value);
+
+  //
+  // Removing accessibility attributes.
+  //
+
+  void RemoveStringAttribute(ax::mojom::StringAttribute attribute);
+  void RemoveIntAttribute(ax::mojom::IntAttribute attribute);
+  void RemoveFloatAttribute(ax::mojom::FloatAttribute attribute);
+  void RemoveBoolAttribute(ax::mojom::BoolAttribute attribute);
+  void RemoveIntListAttribute(ax::mojom::IntListAttribute attribute);
+  void RemoveStringListAttribute(ax::mojom::StringListAttribute attribute);
 
   //
   // Convenience functions.
@@ -149,12 +167,21 @@ struct AX_EXPORT AXNodeData {
   void SetInvalidState(ax::mojom::InvalidState invalid_state);
   ax::mojom::NameFrom GetNameFrom() const;
   void SetNameFrom(ax::mojom::NameFrom name_from);
+  ax::mojom::DescriptionFrom GetDescriptionFrom() const;
+  void SetDescriptionFrom(ax::mojom::DescriptionFrom description_from);
   ax::mojom::TextPosition GetTextPosition() const;
   void SetTextPosition(ax::mojom::TextPosition text_position);
   ax::mojom::Restriction GetRestriction() const;
   void SetRestriction(ax::mojom::Restriction restriction);
+  ax::mojom::ListStyle GetListStyle() const;
+  void SetListStyle(ax::mojom::ListStyle list_style);
   ax::mojom::TextDirection GetTextDirection() const;
   void SetTextDirection(ax::mojom::TextDirection text_direction);
+  ax::mojom::ImageAnnotationStatus GetImageAnnotationStatus() const;
+  void SetImageAnnotationStatus(ax::mojom::ImageAnnotationStatus status);
+
+  // Helper to determine if |GetRestriction| is either ReadOnly or Disabled
+  bool IsReadOnlyOrDisabled() const;
 
   // Return a string representation of this data, for debugging.
   virtual std::string ToString() const;

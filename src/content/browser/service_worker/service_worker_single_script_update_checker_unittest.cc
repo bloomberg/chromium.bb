@@ -5,6 +5,7 @@
 #include "content/browser/service_worker/service_worker_single_script_update_checker.h"
 
 #include <vector>
+#include "base/bind.h"
 #include "base/containers/queue.h"
 #include "base/run_loop.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
@@ -25,6 +26,28 @@ constexpr char kSuccessHeader[] =
 
 class ServiceWorkerSingleScriptUpdateCheckerTest : public testing::Test {
  public:
+  struct CheckResult {
+    CheckResult(
+        const GURL& script_url,
+        ServiceWorkerSingleScriptUpdateChecker::Result compare_result,
+        std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker::PausedState>
+            paused_state)
+        : url(script_url),
+          result(compare_result),
+          paused_state(std::move(paused_state)) {}
+
+    CheckResult(CheckResult&& ref) = default;
+
+    CheckResult& operator=(CheckResult&& ref) = default;
+
+    ~CheckResult() = default;
+
+    GURL url;
+    ServiceWorkerSingleScriptUpdateChecker::Result result;
+    std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker::PausedState>
+        paused_state;
+  };
+
   ServiceWorkerSingleScriptUpdateCheckerTest()
       : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
   ~ServiceWorkerSingleScriptUpdateCheckerTest() override = default;
@@ -52,17 +75,23 @@ class ServiceWorkerSingleScriptUpdateCheckerTest : public testing::Test {
       std::unique_ptr<ServiceWorkerResponseReader> copy_reader,
       std::unique_ptr<ServiceWorkerResponseWriter> writer,
       network::TestURLLoaderFactory* loader_factory,
-      base::Optional<bool>* out_script_changed) {
+      base::Optional<CheckResult>* out_check_result) {
     helper_->SetNetworkFactory(loader_factory);
     return std::make_unique<ServiceWorkerSingleScriptUpdateChecker>(
         GURL(url), true /* is_main_script */,
         helper_->url_loader_factory_getter()->GetNetworkFactory(),
         std::move(compare_reader), std::move(copy_reader), std::move(writer),
         base::BindOnce(
-            [](base::Optional<bool>* out_script_changed, bool script_changed) {
-              *out_script_changed = script_changed;
+            [](base::Optional<CheckResult>* out_check_result_param,
+               const GURL& script_url,
+               ServiceWorkerSingleScriptUpdateChecker::Result result,
+               std::unique_ptr<
+                   ServiceWorkerSingleScriptUpdateChecker::PausedState>
+                   paused_state) {
+              *out_check_result_param =
+                  CheckResult(script_url, result, std::move(paused_state));
             },
-            out_script_changed));
+            out_check_result));
   }
 
   std::unique_ptr<network::TestURLLoaderFactory> CreateLoaderFactoryWithRespone(
@@ -106,14 +135,16 @@ TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest, Identical_SingleSyncRead) {
   compare_reader->ExpectReadOk(body_from_storage, TotalBytes(body_from_storage),
                                false /* async */);
 
-  base::Optional<bool> script_changed;
+  base::Optional<CheckResult> check_result;
   std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker> checker =
       CreateSingleScriptUpdateChecker(kScriptURL, std::move(compare_reader),
                                       std::move(copy_reader), std::move(writer),
-                                      loader_factory.get(), &script_changed);
+                                      loader_factory.get(), &check_result);
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(script_changed.has_value());
-  EXPECT_FALSE(script_changed.value());
+  EXPECT_TRUE(check_result.has_value());
+  EXPECT_EQ(check_result.value().result,
+            ServiceWorkerSingleScriptUpdateChecker::Result::kIdentical);
+  EXPECT_EQ(check_result.value().url, kScriptURL);
   EXPECT_TRUE(compare_reader_rawptr->AllExpectedReadsDone());
 }
 
@@ -135,15 +166,17 @@ TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest, Different_SingleSyncRead) {
   compare_reader->ExpectReadOk(body_from_storage, TotalBytes(body_from_storage),
                                false /* async */);
 
-  base::Optional<bool> script_changed;
+  base::Optional<CheckResult> check_result;
   std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker> checker =
       CreateSingleScriptUpdateChecker(kScriptURL, std::move(compare_reader),
                                       std::move(copy_reader), std::move(writer),
-                                      loader_factory.get(), &script_changed);
+                                      loader_factory.get(), &check_result);
 
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(script_changed.has_value());
-  EXPECT_TRUE(script_changed.value());
+  EXPECT_TRUE(check_result.has_value());
+  EXPECT_EQ(check_result.value().result,
+            ServiceWorkerSingleScriptUpdateChecker::Result::kDifferent);
+  EXPECT_EQ(check_result.value().url, kScriptURL);
   EXPECT_TRUE(compare_reader_rawptr->AllExpectedReadsDone());
 }
 
@@ -166,15 +199,17 @@ TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest, Different_MultipleSyncRead) {
   compare_reader->ExpectReadOk(body_from_storage, TotalBytes(body_from_storage),
                                false /* async */);
 
-  base::Optional<bool> script_changed;
+  base::Optional<CheckResult> check_result;
   std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker> checker =
       CreateSingleScriptUpdateChecker(kScriptURL, std::move(compare_reader),
                                       std::move(copy_reader), std::move(writer),
-                                      loader_factory.get(), &script_changed);
+                                      loader_factory.get(), &check_result);
 
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(script_changed.has_value());
-  EXPECT_TRUE(script_changed.value());
+  EXPECT_TRUE(check_result.has_value());
+  EXPECT_EQ(check_result.value().result,
+            ServiceWorkerSingleScriptUpdateChecker::Result::kDifferent);
+  EXPECT_EQ(check_result.value().url, kScriptURL);
   EXPECT_TRUE(compare_reader_rawptr->AllExpectedReadsDone());
 }
 
@@ -196,14 +231,16 @@ TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest, NetworkDataLong_SyncRead) {
   compare_reader->ExpectReadOk(body_from_storage, TotalBytes(body_from_storage),
                                false /* async */);
 
-  base::Optional<bool> script_changed;
+  base::Optional<CheckResult> check_result;
   std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker> checker =
       CreateSingleScriptUpdateChecker(kScriptURL, std::move(compare_reader),
                                       std::move(copy_reader), std::move(writer),
-                                      loader_factory.get(), &script_changed);
+                                      loader_factory.get(), &check_result);
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(script_changed.has_value());
-  EXPECT_TRUE(script_changed.value());
+  EXPECT_TRUE(check_result.has_value());
+  EXPECT_EQ(check_result.value().result,
+            ServiceWorkerSingleScriptUpdateChecker::Result::kDifferent);
+  EXPECT_EQ(check_result.value().url, kScriptURL);
   EXPECT_TRUE(compare_reader_rawptr->AllExpectedReadsDone());
 }
 
@@ -229,14 +266,16 @@ TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest, NetworkDataShort_SyncRead) {
   compare_reader->ExpectReadOk(body_read_from_storage,
                                TotalBytes(body_in_storage), false /* async */);
 
-  base::Optional<bool> script_changed;
+  base::Optional<CheckResult> check_result;
   std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker> checker =
       CreateSingleScriptUpdateChecker(kScriptURL, std::move(compare_reader),
                                       std::move(copy_reader), std::move(writer),
-                                      loader_factory.get(), &script_changed);
+                                      loader_factory.get(), &check_result);
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(script_changed.has_value());
-  EXPECT_TRUE(script_changed.value());
+  EXPECT_TRUE(check_result.has_value());
+  EXPECT_EQ(check_result.value().result,
+            ServiceWorkerSingleScriptUpdateChecker::Result::kDifferent);
+  EXPECT_EQ(check_result.value().url, kScriptURL);
   EXPECT_TRUE(compare_reader_rawptr->AllExpectedReadsDone());
 }
 
@@ -258,29 +297,32 @@ TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest, Identical_SingleAsyncRead) {
   compare_reader->ExpectReadOk(body_from_storage, TotalBytes(body_from_storage),
                                true /* async */);
 
-  base::Optional<bool> script_changed;
+  base::Optional<CheckResult> check_result;
   std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker> checker =
       CreateSingleScriptUpdateChecker(kScriptURL, std::move(compare_reader),
                                       std::move(copy_reader), std::move(writer),
-                                      loader_factory.get(), &script_changed);
+                                      loader_factory.get(), &check_result);
 
   // Update check stops in WriteHeader() due to the asynchronous read of the
   // |compare_reader|.
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(script_changed.has_value());
+  EXPECT_FALSE(check_result.has_value());
 
   // Continue the update check and trigger OnWriteHeadersComplete(). The resumed
   // update check stops again at CompareData().
   compare_reader_rawptr->CompletePendingRead();
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(script_changed.has_value());
+  EXPECT_FALSE(check_result.has_value());
 
   // Continue the update check and trigger OnCompareDataComplete(). This will
   // finish the entire update check.
   compare_reader_rawptr->CompletePendingRead();
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(script_changed.has_value());
-  EXPECT_FALSE(script_changed.value());
+  EXPECT_TRUE(check_result.has_value());
+  EXPECT_EQ(check_result.value().result,
+            ServiceWorkerSingleScriptUpdateChecker::Result::kIdentical);
+  EXPECT_EQ(check_result.value().url, kScriptURL);
+  EXPECT_FALSE(check_result.value().paused_state);
   EXPECT_TRUE(compare_reader_rawptr->AllExpectedReadsDone());
 }
 

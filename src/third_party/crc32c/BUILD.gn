@@ -45,15 +45,10 @@ config("crc32c_config") {
     defines += [ "HAVE_ARM64_CRC32C=0" ]
   }
 
-  if (is_linux || is_chromeos) {
+  # Android added <sys/auxv.h> in API level 18.
+  if (is_linux || is_chromeos || is_android) {
     defines += [
       "HAVE_STRONG_GETAUXVAL=1",
-      "HAVE_WEAK_GETAUXVAL=1",
-    ]
-  } else if (is_android) {
-    # Android added <sys/auxv.h> in API level 20.
-    defines += [
-      "HAVE_STRONG_GETAUXVAL=0",
       "HAVE_WEAK_GETAUXVAL=1",
     ]
   } else {
@@ -113,7 +108,25 @@ source_set("crc32c_arm64") {
 
   configs += [ ":crc32c_config" ]
   if (current_cpu == "arm64") {
-    cflags = [ "-march=armv8-a+crc+crypto" ]
+    if (is_clang) {
+      cflags = [
+        "-march=armv8-a",
+
+        # Some builds set -march to a different value from the above.
+        # The specific feature flags below enable the instructions we need
+        # in these cases. See https://crbug.com/934016 for example.
+        "-Xclang",
+        "-target-feature",
+        "-Xclang",
+        "+crc",
+        "-Xclang",
+        "-target-feature",
+        "-Xclang",
+        "+crypto",
+      ]
+    } else {
+      cflags = [ "-march=armv8-a+crc+crypto" ]
+    }
   }
 
   deps = [

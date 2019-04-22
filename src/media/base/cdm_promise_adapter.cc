@@ -12,8 +12,8 @@ CdmPromiseAdapter::CdmPromiseAdapter()
     : next_promise_id_(kInvalidPromiseId + 1) {}
 
 CdmPromiseAdapter::~CdmPromiseAdapter() {
-  DCHECK(promises_.empty());
   DCHECK(thread_checker_.CalledOnValidThread());
+  DLOG_IF(WARNING, !promises_.empty()) << "There are unfulfilled promises";
   Clear();
 }
 

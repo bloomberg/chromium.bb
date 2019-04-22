@@ -27,7 +27,6 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -45,11 +44,11 @@ class CORE_EXPORT CSSStyleDeclaration : public ScriptWrappable {
   ~CSSStyleDeclaration() override = default;
 
   virtual CSSRule* parentRule() const = 0;
-  String cssFloat() { return GetPropertyValueInternal(CSSPropertyFloat); }
+  String cssFloat() { return GetPropertyValueInternal(CSSPropertyID::kFloat); }
   void setCSSFloat(const ExecutionContext* execution_context,
                    const String& value,
                    ExceptionState& exception_state) {
-    SetPropertyInternal(CSSPropertyFloat, String(), value, false,
+    SetPropertyInternal(CSSPropertyID::kFloat, String(), value, false,
                         execution_context->GetSecureContextMode(),
                         exception_state);
   }

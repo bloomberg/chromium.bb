@@ -9,10 +9,12 @@
 // and service side have different requirements.
 #include "gpu/command_buffer/common/cmd_buffer_common.h"
 
+#include <stddef.h>
+
+#include "base/stl_util.h"
+
 namespace gpu {
 namespace raster {
-
-#include <stddef.h>
 
 #include "gpu/command_buffer/common/raster_cmd_ids_autogen.h"
 
@@ -26,7 +28,7 @@ const char* GetCommandName(CommandId id) {
   };
 
   size_t index = static_cast<size_t>(id) - kFirstRasterCommand;
-  return (index < arraysize(names)) ? names[index] : "*unknown-command*";
+  return (index < base::size(names)) ? names[index] : "*unknown-command*";
 }
 
 }  // namespace raster

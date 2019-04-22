@@ -6,10 +6,10 @@ import json
 import math
 import numbers
 import random
-import uuid
 
 from tracing.value.diagnostics import diagnostic
 from tracing.value.diagnostics import diagnostic_ref
+from tracing.value.diagnostics import generic_set
 from tracing.value.diagnostics import reserved_infos
 from tracing.value.diagnostics import unmergeable_diagnostic_set
 
@@ -28,6 +28,7 @@ except NameError:
 # between platforms, whereas ECMA Script specifies this value for all platforms.
 # The specific value should not matter in normal practice.
 JS_MAX_VALUE = 1.7976931348623157e+308
+DEFAULT_ITERATION_FOR_BOOTSTRAP_RESAMPLING = 500
 
 
 # Converts the given percent to a string in the following format:
@@ -35,7 +36,7 @@ JS_MAX_VALUE = 1.7976931348623157e+308
 # 0.xx produces '0xx',
 # 0.xxy produces '0xx_y',
 # 1.0 produces '100'.
-def PercentToString(percent):
+def PercentToString(percent, force3=False):
   if percent < 0 or percent > 1:
     raise ValueError('percent must be in [0,1]')
   if percent == 0:
@@ -47,8 +48,15 @@ def PercentToString(percent):
     raise ValueError('Unexpected percent')
   s += '0' * max(4 - len(s), 0)
   if len(s) > 4:
-    s = s[:4] + '_' + s[4:]
+    if force3:
+      s = s[:4]
+    else:
+      s = s[:4] + '_' + s[4:]
   return '0' + s[2:]
+
+
+def PercentFromString(s):
+  return float(s[0] + '.' + s[1:].replace('_', ''))
 
 
 # This variation of binary search returns the index |hi| into |ary| for which
@@ -130,6 +138,32 @@ def Percentile(ary, percent):
   ary = list(ary)
   ary.sort()
   return ary[int((len(ary) - 1) * percent)]
+
+
+class HistogramError(ValueError):
+  """Base execption type for Histogram related exceptions."""
+  pass
+
+
+class InvalidBucketError(HistogramError):
+  """Context-carrying exception type for invalid bucket values."""
+
+  def __init__(self, bucket_index, value, buckets):
+    """Raised when a provided index to a bucket is not valid.
+
+    Arguments:
+      - bucket_index: a numeric index.
+      - value: a dict associated with the provided bucket index.
+      - buckets: a list of valid bucket definitions.
+    """
+    super(InvalidBucketError, self).__init__()
+    self.bucket_index = bucket_index
+    self.value = value
+    self.buckets = buckets
+
+  def __str__(self):
+    return 'Invalid Bucket: %s not a valid offset from [0..%s); value = %r' % (
+        self.bucket_index, len(self.buckets), self.value)
 
 
 class Range(object):
@@ -357,68 +391,6 @@ class RunningStatistics(object):
     return result
 
 
-class HistogramRef(object):
-  __slots__ = '_guid',
-
-  def __init__(self, guid):
-    self._guid = guid
-
-  @property
-  def guid(self):
-    return self._guid
-
-
-class RelatedHistogramMap(diagnostic.Diagnostic):
-  __slots__ = '_histograms_by_name',
-
-  def __init__(self):
-    super(RelatedHistogramMap, self).__init__()
-    self._histograms_by_name = {}
-
-  def Get(self, name):
-    return self._histograms_by_name.get(name)
-
-  def Set(self, name, hist):
-    assert isinstance(hist, (Histogram, HistogramRef)), (
-        'Expected Histogram or HistogramRef, found %s: "%r"',
-        (type(hist).__name__, hist))
-    self._histograms_by_name[name] = hist
-
-  def Add(self, hist):
-    self.Set(hist.name, hist)
-
-  def __len__(self):
-    return len(self._histograms_by_name)
-
-  def __iter__(self):
-    for name, hist in self._histograms_by_name.items():
-      yield name, hist
-
-  def Resolve(self, histograms, required=False):
-    for name, hist in self:
-      if not isinstance(hist, HistogramRef):
-        continue
-
-      guid = hist.guid
-      hist = histograms.LookupHistogram(guid)
-      if isinstance(hist, Histogram):
-        self._histograms_by_name[name] = hist
-      else:
-        assert not required, ('Missing required Histogram %s' % guid)
-
-  def _AsDictInto(self, d):
-    d['values'] = {}
-    for name, hist in self:
-      d['values'][name] = hist.guid
-
-  @staticmethod
-  def FromDict(d):
-    result = RelatedHistogramMap()
-    for name, guid in d['values'].items():
-      result.Set(name, HistogramRef(guid))
-    return result
-
-
 class DiagnosticMap(dict):
   __slots__ = '_allow_reserved_names',
 
@@ -446,6 +418,16 @@ class DiagnosticMap(dict):
     dict.__setitem__(self, name, diag)
 
   @staticmethod
+  def Deserialize(data, deserializer):
+    dm = DiagnosticMap()
+    dm.DeserializeAdd(data, deserializer)
+    return dm
+
+  def DeserializeAdd(self, data, deserializer):
+    for i in data:
+      self.update(deserializer.GetDiagnostic(i))
+
+  @staticmethod
   def FromDict(dct):
     dm = DiagnosticMap()
     dm.AddDicts(dct)
@@ -453,9 +435,14 @@ class DiagnosticMap(dict):
 
   def AddDicts(self, dct):
     for name, diagnostic_dict in dct.items():
+      if name == 'tagmap':
+        continue
       if isinstance(diagnostic_dict, StringTypes):
         self[name] = diagnostic_ref.DiagnosticRef(diagnostic_dict)
-      else:
+      elif diagnostic_dict['type'] not in [
+          'RelatedHistogramMap', 'RelatedHistogramBreakdown', 'TagMap']:
+        # Ignore RelatedHistograms and TagMaps.
+        # TODO(benjhayden): Forget about them in 2019 Q2.
         self[name] = diagnostic.Diagnostic.FromDict(diagnostic_dict)
 
   def ResolveSharedDiagnostics(self, histograms, required=False):
@@ -468,6 +455,10 @@ class DiagnosticMap(dict):
         self[name] = diag
       elif required:
         raise ValueError('Unable to find shared Diagnostic ' + guid)
+
+  def Serialize(self, serializer):
+    return [serializer.GetOrAllocateDiagnosticId(name, diag)
+            for name, diag in self.items()]
 
   def AsDict(self):
     dct = {}
@@ -533,6 +524,24 @@ class HistogramBin(object):
       return [self.count]
     return [self.count, [d.AsDict() for d in self._diagnostic_maps]]
 
+  def Serialize(self, serializer):
+    if len(self._diagnostic_maps) == 0:
+      return self.count
+    return [self.count] + [
+        [None] + d.Serialize(serializer) for d in self._diagnostic_maps]
+
+  def Deserialize(self, data, deserializer):
+    if not isinstance(data, list):
+      self._count = data
+      return
+    self._count = data[0]
+    for sample in data[1:]:
+      # TODO(benjhayden): class Sample
+      if not isinstance(sample, list):
+        continue
+      self._diagnostic_maps.append(DiagnosticMap.Deserialize(
+          sample[1:], deserializer))
+
 
 # TODO(#3814) Presubmit to compare with unit.html.
 UNIT_NAMES = [
@@ -558,6 +567,8 @@ def ExtendUnitNames():
   for name in list(UNIT_NAMES):
     UNIT_NAMES.append(name + '_biggerIsBetter')
     UNIT_NAMES.append(name + '_smallerIsBetter')
+    UNIT_NAMES.append(name + '-')
+    UNIT_NAMES.append(name + '+')
 
 ExtendUnitNames()
 
@@ -604,7 +615,6 @@ DEFAULT_SUMMARY_OPTIONS = {
 
 class Histogram(object):
   __slots__ = (
-      '_guid',
       '_bin_boundaries_dict',
       '_description',
       '_name',
@@ -613,7 +623,7 @@ class Histogram(object):
       '_num_nans',
       '_running',
       '_sample_values',
-      '_short_name',
+      '_sample_means',
       '_summary_options',
       '_unit',
       '_bins',
@@ -624,10 +634,8 @@ class Histogram(object):
         'Unrecognized unit "%r"' % unit)
 
     if bin_boundaries is None:
-      base_unit = unit.split('_')[0]
+      base_unit = unit.split('_')[0].strip('+-')
       bin_boundaries = DEFAULT_BOUNDARIES_FOR_UNIT[base_unit]
-
-    self._guid = None
 
     # Serialize bin boundaries here instead of holding a reference to it in case
     # it is modified.
@@ -645,12 +653,42 @@ class Histogram(object):
     self._num_nans = 0
     self._running = None
     self._sample_values = []
-    self._short_name = None
+    self._sample_means = []
     self._summary_options = dict(DEFAULT_SUMMARY_OPTIONS)
     self._summary_options['percentile'] = []
+    self._summary_options['ci'] = []
     self._unit = unit
 
     self._max_num_sample_values = self._GetDefaultMaxNumSampleValues()
+
+  @classmethod
+  def Create(cls, name, unit, samples, bin_boundaries=None, description='',
+             summary_options=None, diagnostics=None):
+    hist = cls(name, unit, bin_boundaries)
+    hist.description = description
+    if summary_options:
+      hist.CustomizeSummaryOptions(summary_options)
+    if diagnostics:
+      for name, diag in diagnostics.items():
+        hist.diagnostics[name] = diag
+
+    if not isinstance(samples, list):
+      samples = [samples]
+    for sample in samples:
+      if isinstance(sample, tuple) and len(sample) == 2:
+        hist.AddSample(sample[0], sample[1])
+      else:
+        hist.AddSample(sample)
+
+    return hist
+
+  @property
+  def description(self):
+    return self._description
+
+  @description.setter
+  def description(self, d):
+    self._description = d
 
   @property
   def nan_diagnostic_maps(self):
@@ -682,21 +720,6 @@ class Histogram(object):
     return self._name
 
   @property
-  def short_name(self):
-    return self._short_name
-
-  @property
-  def guid(self):
-    if self._guid is None:
-      self._guid = str(uuid.uuid4())
-    return self._guid
-
-  @guid.setter
-  def guid(self, g):
-    assert self._guid is None, self._guid
-    self._guid = g
-
-  @property
   def bins(self):
     return self._bins
 
@@ -704,13 +727,86 @@ class Histogram(object):
   def diagnostics(self):
     return self._diagnostics
 
+  def _DeserializeStatistics(self):
+    statistics_names = self.diagnostics.get(
+        reserved_infos.STATISTICS_NAMES.name)
+    if not statistics_names:
+      return
+    for stat_name in statistics_names:
+      if stat_name.startswith('pct_'):
+        percent = PercentFromString(stat_name[4:])
+        self._summary_options.get('percentile').append(percent)
+      elif stat_name.startswith('ipr_'):
+        lower = PercentFromString(stat_name[4:7])
+        upper = PercentFromString(stat_name[8:])
+        self._summary_options.get('iprs').push(
+            Range.FromExplicitRange(lower, upper))
+    for stat_name in self._summary_options.keys():
+      if stat_name in ['percentile', 'iprs']:
+        continue
+      self._summary_options[stat_name] = stat_name in statistics_names
+
+  def _DeserializeBin(self, i, bin_data, deserializer):
+    # Copy HistogramBin on write, share the rest with the other
+    # Histograms that use the same HistogramBinBoundaries.
+    self._bins[i] = HistogramBin(self._bins[i].range)
+    self._bins[i].Deserialize(bin_data, deserializer)
+
+    # TODO(benjhayden): Remove after class Sample.
+    if not isinstance(bin_data, list):
+      return
+    for sample in bin_data[1:]:
+      if isinstance(sample, list):
+        sample = sample[0]
+      self._sample_values.append(sample)
+
+
+  def _DeserializeBins(self, bins, deserializer):
+    if isinstance(bins, list):
+      for i, bin_data in enumerate(bins):
+        self._DeserializeBin(i, bin_data, deserializer)
+    else:
+      for i, bin_data in bins.items():
+        self._DeserializeBin(int(i), bin_data, deserializer)
+
+  @staticmethod
+  def Deserialize(data, deserializer):
+    name, unit, boundaries, diagnostics, running, bins, nan_bin = data
+    name = deserializer.GetObject(name)
+    boundaries = HistogramBinBoundaries.FromDict(
+        deserializer.GetObject(boundaries))
+    hist = Histogram(name, unit, boundaries)
+
+    hist._diagnostics.DeserializeAdd(diagnostics, deserializer)
+
+    desc = hist.diagnostics.get(reserved_infos.DESCRIPTION.name)
+    if desc:
+      hist.description = list(desc)[0]
+
+    hist._DeserializeStatistics()
+
+    if running:
+      hist._running = RunningStatistics.FromDict(running)
+
+    if bins:
+      hist._DeserializeBins(bins, deserializer)
+
+    if isinstance(nan_bin, list):
+      # TODO(benjhayden): hist._nan_bin
+      hist._num_nans = nan_bin[0]
+      for sample in nan_bin[1:]:
+        # TODO(benjhayden): class Sample
+        hist._nan_diagnostic_maps.append(
+            DiagnosticMap.Deserialize(sample[1:], deserializer))
+    elif nan_bin:
+      hist._num_nans = nan_bin
+
+    return hist
+
   @staticmethod
   def FromDict(dct):
     boundaries = HistogramBinBoundaries.FromDict(dct.get('binBoundaries'))
     hist = Histogram(dct['name'], dct['unit'], boundaries)
-    hist.guid = dct['guid']
-    if 'shortName' in dct:
-      hist._short_name = dct['shortName']
     if 'description' in dct:
       hist._description = dct['description']
     if 'diagnostics' in dct:
@@ -725,11 +821,18 @@ class Histogram(object):
       else:
         for i, bin_dct in dct['allBins'].items():
           i = int(i)
+          # Check whether i is a valid index before using it as a list index.
+          if i >= len(hist._bins) or i < 0:
+            raise InvalidBucketError(i, bin_dct, hist._bins)
           hist._bins[i] = HistogramBin(hist._bins[i].range)
           hist._bins[i].FromDict(bin_dct)
     if 'running' in dct:
       hist._running = RunningStatistics.FromDict(dct['running'])
     if 'summaryOptions' in dct:
+      if 'iprs' in dct['summaryOptions']:
+        dct['summaryOptions']['iprs'] = [
+            Range.FromExplicitRange(r[0], r[1])
+            for r in dct['summaryOptions']['iprs']]
       hist.CustomizeSummaryOptions(dct['summaryOptions'])
     if 'maxNumSampleValues' in dct:
       hist._max_num_sample_values = dct['maxNumSampleValues']
@@ -801,6 +904,35 @@ class Histogram(object):
         return hbin.range.center
     return self._bins[len(self._bins) - 1].range.min
 
+  def _ResampleMean(self, percent):
+    if percent <= 0 or percent >= 1:
+      raise ValueError('percent must be in (0,1)')
+    filtered_samples = [
+        x for x in self._sample_values if isinstance(x, (float, int))
+    ]
+    if not filtered_samples:
+      return [0, 0]
+
+    sample_count = len(filtered_samples)
+    iterations = DEFAULT_ITERATION_FOR_BOOTSTRAP_RESAMPLING
+    if sample_count == 1:
+      return [filtered_samples[0], filtered_samples[0]]
+    if len(self._sample_means) != iterations:
+      self._sample_means = []
+      for _ in range(0, iterations):
+        temp_sum = 0
+        for _ in range(0, sample_count):
+          temp_sum += random.choice(filtered_samples)
+        self._sample_means.append(temp_sum / sample_count)
+      self._sample_means.sort()
+
+    return [
+        self._sample_means[int(
+            math.floor((iterations - 1) * (0.5 - percent / 2)))],
+        self._sample_means[int(
+            math.ceil((iterations - 1) * (0.5 + percent / 2)))],
+    ]
+
   def GetBinIndexForValue(self, value):
     index = FindHighIndexInSortedArray(
         self._bins, lambda b: (-1 if (value < b.range.max) else 1))
@@ -864,12 +996,6 @@ class Histogram(object):
         self._bins[i] = mybin = HistogramBin(mybin.range)
       mybin.AddBin(hbin)
 
-    merged_from = self.diagnostics.get(reserved_infos.MERGED_FROM.name)
-    if merged_from is None:
-      merged_from = RelatedHistogramMap()
-      self.diagnostics[reserved_infos.MERGED_FROM.name] = merged_from
-    merged_from.Set(len(merged_from), other)
-
     self.diagnostics.Merge(other.diagnostics)
 
   def CustomizeSummaryOptions(self, options):
@@ -884,44 +1010,112 @@ class Histogram(object):
         self._bin_boundaries_dict))
 
   @property
+  def statistics_names(self):
+    names = set()
+    for stat_name, option in self._summary_options.items():
+      if stat_name == 'percentile':
+        for pctile in option:
+          names.add('pct_' + PercentToString(pctile))
+      elif stat_name == 'iprs':
+        for rang in option:
+          names.add('ipr_' + PercentToString(rang.min, True) +
+                    '_' + PercentToString(rang.max, True))
+      elif stat_name == 'ci':
+        for ci in option:
+          ps = PercentToString(ci)
+          names.add('ci_' + ps + '_lower')
+          names.add('ci_' + ps + '_upper')
+          names.add('ci_' + ps)
+      elif option:
+        names.add(stat_name)
+    return names
+
+  def GetStatisticScalar(self, stat_name):
+    if stat_name == 'avg':
+      if self.average is None:
+        return None
+      return Scalar(self.unit, self.average)
+
+    if stat_name == 'std':
+      if self.standard_deviation is None:
+        return None
+      return Scalar(self.unit, self.standard_deviation)
+
+    if stat_name == 'geometricMean':
+      if self.geometric_mean is None:
+        return None
+      return Scalar(self.unit, self.geometric_mean)
+
+    if stat_name in ['min', 'max', 'sum']:
+      if self._running is None:
+        self._running = RunningStatistics()
+      return Scalar(self.unit, getattr(self._running, stat_name))
+
+    if stat_name == 'nans':
+      return Scalar('count_smallerIsBetter', self.num_nans)
+
+    if stat_name == 'count':
+      return Scalar('count_smallerIsBetter', self.num_values)
+
+    if stat_name.startswith('pct_'):
+      if self.num_values == 0:
+        return None
+      percent = PercentFromString(stat_name[4:])
+      percentile = self.GetApproximatePercentile(percent)
+      return Scalar(self.unit, percentile)
+
+    if stat_name.startswith('ci_'):
+      if self.num_values == 0:
+        return None
+      ci = PercentFromString(stat_name[3:6])
+      [ci_lower, ci_upper] = self._ResampleMean(ci)
+      if stat_name.endswith('lower'):
+        return Scalar(self.unit, ci_lower)
+      if stat_name.endswith('upper'):
+        return Scalar(self.unit, ci_upper)
+      return Scalar(self.unit, ci_upper - ci_lower)
+
+    if stat_name.startswith('ipr_'):
+      lower = PercentFromString(stat_name[4:7])
+      upper = PercentFromString(stat_name[8:])
+      if lower >= upper:
+        raise ValueError('Invalid inter-percentile range: ' + stat_name)
+      return Scalar(self.unit, (self.GetApproximatePercentile(upper) -
+                                self.GetApproximatePercentile(lower)))
+
+  @property
   def statistics_scalars(self):
     results = {}
-    for stat_name, option in self._summary_options.items():
-      if not option:
-        continue
-      if stat_name == 'percentile':
-        for percent in option:
-          percentile = self.GetApproximatePercentile(percent)
-          results['pct_' + PercentToString(percent)] = Scalar(
-              self.unit, percentile)
-      elif stat_name == 'nans':
-        results['nans'] = Scalar('count', self.num_nans)
-      else:
-        if stat_name == 'count':
-          stat_unit = 'count'
-        else:
-          stat_unit = self.unit
-        if stat_name == 'std':
-          key = 'stddev'
-        elif stat_name == 'avg':
-          key = 'mean'
-        elif stat_name == 'geometricMean':
-          key = 'geometric_mean'
-        else:
-          key = stat_name
-        if self._running is None:
-          self._running = RunningStatistics()
-        stat_value = getattr(self._running, key)
-        if isinstance(stat_value, numbers.Number):
-          results[stat_name] = Scalar(stat_unit, stat_value)
+    for name in self.statistics_names:
+      scalar = self.GetStatisticScalar(name)
+      if scalar:
+        results[name] = scalar
     return results
 
+  def Serialize(self, serializer):
+    nan_bin = self.num_nans
+    if self.nan_diagnostic_maps:
+      nan_bin = [nan_bin] + [
+          [None] + dm.Serialize(serializer) for dm in self.nan_diagnostic_maps]
+    self.diagnostics[reserved_infos.STATISTICS_NAMES.name] = \
+      generic_set.GenericSet(sorted(self.statistics_names))
+    self.diagnostics[reserved_infos.DESCRIPTION.name] = \
+      generic_set.GenericSet([self._description])
+    return [
+        serializer.GetOrAllocateId(self.name),
+        self.unit.replace(
+            '_biggerIsBetter', '+').replace('_smallerIsBetter', '-'),
+        serializer.GetOrAllocateId(self._bin_boundaries_dict),
+        self.diagnostics.Serialize(serializer),
+        self._running.AsDict() if self._running else 0,
+        self._SerializeBins(serializer),
+        nan_bin,
+    ]
+
   def AsDict(self):
-    dct = {'name': self.name, 'unit': self.unit, 'guid': self.guid}
+    dct = {'name': self.name, 'unit': self.unit}
     if self._bin_boundaries_dict is not None:
       dct['binBoundaries'] = self._bin_boundaries_dict
-    if self._short_name:
-      dct['shortName'] = self._short_name
     if self._description:
       dct['description'] = self._description
     if len(self.diagnostics):
@@ -942,7 +1136,14 @@ class Histogram(object):
     summary_options = {}
     any_overridden_summary_options = False
     for name, option in self._summary_options.items():
-      if name == 'percentile':
+      if name == 'percentile' or name == 'ci':
+        if len(option) == 0:
+          continue
+      elif name == 'iprs':
+        if len(option) == 0:
+          continue
+        option = [[r.min, r.max] for r in option]
+      elif name == 'ci':
         if len(option) == 0:
           continue
       elif option == DEFAULT_SUMMARY_OPTIONS[name]:
@@ -952,6 +1153,27 @@ class Histogram(object):
     if any_overridden_summary_options:
       dct['summaryOptions'] = summary_options
     return dct
+
+  def _SerializeBins(self, serializer):
+    num_bins = len(self._bins)
+    empty_bins = 0
+    for hbin in self._bins:
+      if hbin.count == 0:
+        empty_bins += 1
+    if empty_bins == num_bins:
+      return None
+
+    if empty_bins > (num_bins / 2):
+      all_bins_dict = {}
+      for i, hbin in enumerate(self._bins):
+        if hbin.count > 0:
+          all_bins_dict[i] = hbin.Serialize(serializer)
+      return all_bins_dict
+
+    all_bins_list = []
+    for hbin in self._bins:
+      all_bins_list.append(hbin.Serialize(serializer))
+    return all_bins_list
 
   def _GetAllBinsAsDict(self):
     num_bins = len(self._bins)

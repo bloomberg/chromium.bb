@@ -44,12 +44,12 @@ UI.SplitWidget = class extends UI.Widget {
     this.registerRequiredCSS('ui/splitWidget.css');
 
     this.contentElement.classList.add('shadow-split-widget');
-    this._mainElement =
-        this.contentElement.createChild('div', 'shadow-split-widget-contents shadow-split-widget-main vbox');
-    this._mainElement.createChild('content').select = '.insertion-point-main';
     this._sidebarElement =
         this.contentElement.createChild('div', 'shadow-split-widget-contents shadow-split-widget-sidebar vbox');
-    this._sidebarElement.createChild('content').select = '.insertion-point-sidebar';
+    this._mainElement =
+        this.contentElement.createChild('div', 'shadow-split-widget-contents shadow-split-widget-main vbox');
+    this._mainElement.createChild('slot').name = 'insertion-point-main';
+    this._sidebarElement.createChild('slot').name = 'insertion-point-sidebar';
     this._resizerElement = this.contentElement.createChild('div', 'shadow-split-widget-resizer');
     this._resizerElementSize = null;
 
@@ -165,8 +165,7 @@ UI.SplitWidget = class extends UI.Widget {
       this._mainWidget.detach();
     this._mainWidget = widget;
     if (widget) {
-      widget.element.classList.add('insertion-point-main');
-      widget.element.classList.remove('insertion-point-sidebar');
+      widget.element.slot = 'insertion-point-main';
       if (this._showMode === UI.SplitWidget.ShowMode.OnlyMain || this._showMode === UI.SplitWidget.ShowMode.Both)
         widget.show(this.element);
     }
@@ -184,8 +183,7 @@ UI.SplitWidget = class extends UI.Widget {
       this._sidebarWidget.detach();
     this._sidebarWidget = widget;
     if (widget) {
-      widget.element.classList.add('insertion-point-sidebar');
-      widget.element.classList.remove('insertion-point-main');
+      widget.element.slot = 'insertion-point-sidebar';
       if (this._showMode === UI.SplitWidget.ShowMode.OnlySidebar || this._showMode === UI.SplitWidget.ShowMode.Both)
         widget.show(this.element);
     }
@@ -243,8 +241,23 @@ UI.SplitWidget = class extends UI.Widget {
    * @param {boolean} secondIsSidebar
    */
   setSecondIsSidebar(secondIsSidebar) {
-    this.contentElement.classList.toggle('shadow-split-widget-first-is-sidebar', !secondIsSidebar);
+    if (secondIsSidebar === this._secondIsSidebar)
+      return;
     this._secondIsSidebar = secondIsSidebar;
+    if (!this._mainWidget || !this._mainWidget.shouldHideOnDetach()) {
+      if (secondIsSidebar)
+        this.contentElement.insertBefore(this._mainElement, this._sidebarElement);
+      else
+        this.contentElement.insertBefore(this._mainElement, this._resizerElement);
+    } else if (!this._sidebarWidget || !this._sidebarWidget.shouldHideOnDetach()) {
+      if (secondIsSidebar)
+        this.contentElement.insertBefore(this._sidebarElement, this._resizerElement);
+      else
+        this.contentElement.insertBefore(this._sidebarElement, this._mainElement);
+    } else {
+      console.error('Could not swap split widget side. Both children widgets contain iframes.');
+      this._secondIsSidebar = !secondIsSidebar;
+    }
   }
 
   /**

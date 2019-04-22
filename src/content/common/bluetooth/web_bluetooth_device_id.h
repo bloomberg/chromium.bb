@@ -22,7 +22,7 @@ class CONTENT_EXPORT WebBluetoothDeviceId {
   // resulting object will DCHECK-fail.
   WebBluetoothDeviceId();
 
-  // DCHECKS that |device_id| is valid.
+  // CHECKS that |device_id| is valid.
   explicit WebBluetoothDeviceId(std::string device_id);
   ~WebBluetoothDeviceId();
 
@@ -33,8 +33,11 @@ class CONTENT_EXPORT WebBluetoothDeviceId {
   // string and base64-encoding it.
   static WebBluetoothDeviceId Create();
 
-  // Returns true if base64-decoding |device_id| results in a 128bit string.
+  // This method will return true. if |device_id| results in a 128bit
+  // base64-encoding string. Otherwise returns false.
   static bool IsValid(const std::string& device_id);
+
+  bool IsValid() const;
 
   bool operator==(const WebBluetoothDeviceId& device_id) const;
   bool operator!=(const WebBluetoothDeviceId& device_id) const;

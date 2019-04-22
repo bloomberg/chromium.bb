@@ -18,8 +18,8 @@
 
 namespace {
 
-// The toolbar color specified in the theme.
-const SkColor kThemeToolbarColor = 0xFFCFDDC0;
+// The ntp link color specified in the theme.
+constexpr SkColor kThemeNtpLinkColor = SkColorSetRGB(36, 70, 0);
 
 bool UsingCustomTheme(const ThemeService& theme_service) {
   return !theme_service.UsingSystemTheme() &&
@@ -53,8 +53,8 @@ IN_PROC_BROWSER_TEST_F(ThemeServiceBrowserTest, PRE_ThemeDataPackInvalid) {
 
   // Test initial state.
   EXPECT_FALSE(UsingCustomTheme(*theme_service));
-  EXPECT_NE(kThemeToolbarColor,
-            theme_provider.GetColor(ThemeProperties::COLOR_TOOLBAR));
+  EXPECT_NE(kThemeNtpLinkColor,
+            theme_provider.GetColor(ThemeProperties::COLOR_NTP_LINK));
   EXPECT_EQ(base::FilePath(),
             profile->GetPrefs()->GetFilePath(prefs::kCurrentThemePackFilename));
 
@@ -66,8 +66,8 @@ IN_PROC_BROWSER_TEST_F(ThemeServiceBrowserTest, PRE_ThemeDataPackInvalid) {
 
   // Check that the theme was installed.
   EXPECT_TRUE(UsingCustomTheme(*theme_service));
-  EXPECT_EQ(kThemeToolbarColor,
-            theme_provider.GetColor(ThemeProperties::COLOR_TOOLBAR));
+  EXPECT_EQ(kThemeNtpLinkColor,
+            theme_provider.GetColor(ThemeProperties::COLOR_NTP_LINK));
   EXPECT_NE(base::FilePath(),
             profile->GetPrefs()->GetFilePath(prefs::kCurrentThemePackFilename));
 
@@ -84,8 +84,8 @@ IN_PROC_BROWSER_TEST_F(ThemeServiceBrowserTest, ThemeDataPackInvalid) {
   const ui::ThemeProvider& theme_provider =
       ThemeService::GetThemeProviderForProfile(browser()->profile());
   EXPECT_TRUE(UsingCustomTheme(*theme_service));
-  EXPECT_EQ(kThemeToolbarColor,
-            theme_provider.GetColor(ThemeProperties::COLOR_TOOLBAR));
+  EXPECT_EQ(kThemeNtpLinkColor,
+            theme_provider.GetColor(ThemeProperties::COLOR_NTP_LINK));
 }
 
 }  // namespace

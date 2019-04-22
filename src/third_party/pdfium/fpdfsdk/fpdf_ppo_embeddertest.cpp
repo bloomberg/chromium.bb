@@ -13,11 +13,10 @@
 #include "public/fpdfview.h"
 #include "testing/embedder_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "testing/test_support.h"
 
 namespace {
 
-class FPDFPPOEmbeddertest : public EmbedderTest {};
+class FPDFPPOEmbedderTest : public EmbedderTest {};
 
 int FakeBlockWriter(FPDF_FILEWRITE* pThis,
                     const void* pData,
@@ -27,7 +26,7 @@ int FakeBlockWriter(FPDF_FILEWRITE* pThis,
 
 }  // namespace
 
-TEST_F(FPDFPPOEmbeddertest, NoViewerPreferences) {
+TEST_F(FPDFPPOEmbedderTest, NoViewerPreferences) {
   EXPECT_TRUE(OpenDocument("hello_world.pdf"));
 
   FPDF_DOCUMENT output_doc = FPDF_CreateNewDocument();
@@ -36,7 +35,7 @@ TEST_F(FPDFPPOEmbeddertest, NoViewerPreferences) {
   FPDF_CloseDocument(output_doc);
 }
 
-TEST_F(FPDFPPOEmbeddertest, ViewerPreferences) {
+TEST_F(FPDFPPOEmbedderTest, ViewerPreferences) {
   EXPECT_TRUE(OpenDocument("viewer_ref.pdf"));
 
   FPDF_DOCUMENT output_doc = FPDF_CreateNewDocument();
@@ -45,7 +44,7 @@ TEST_F(FPDFPPOEmbeddertest, ViewerPreferences) {
   FPDF_CloseDocument(output_doc);
 }
 
-TEST_F(FPDFPPOEmbeddertest, ImportPages) {
+TEST_F(FPDFPPOEmbedderTest, ImportPages) {
   ASSERT_TRUE(OpenDocument("viewer_ref.pdf"));
 
   FPDF_PAGE page = LoadPage(0);
@@ -61,7 +60,7 @@ TEST_F(FPDFPPOEmbeddertest, ImportPages) {
   UnloadPage(page);
 }
 
-TEST_F(FPDFPPOEmbeddertest, ImportNPages) {
+TEST_F(FPDFPPOEmbedderTest, ImportNPages) {
   ASSERT_TRUE(OpenDocument("rectangles_multi_pages.pdf"));
 
   ScopedFPDFDocument output_doc_2up(
@@ -82,7 +81,7 @@ TEST_F(FPDFPPOEmbeddertest, ImportNPages) {
   EXPECT_EQ(1, FPDF_GetPageCount(output_doc_128up.get()));
 }
 
-TEST_F(FPDFPPOEmbeddertest, BadNupParams) {
+TEST_F(FPDFPPOEmbedderTest, BadNupParams) {
   ASSERT_TRUE(OpenDocument("rectangles_multi_pages.pdf"));
 
   FPDF_DOCUMENT output_doc_zero_row =
@@ -101,7 +100,7 @@ TEST_F(FPDFPPOEmbeddertest, BadNupParams) {
 
 // TODO(Xlou): Add more tests to check output doc content of
 // FPDF_ImportNPagesToOne()
-TEST_F(FPDFPPOEmbeddertest, NupRenderImage) {
+TEST_F(FPDFPPOEmbedderTest, NupRenderImage) {
   ASSERT_TRUE(OpenDocument("rectangles_multi_pages.pdf"));
   const int kPageCount = 2;
   constexpr const char* kExpectedMD5s[kPageCount] = {
@@ -113,14 +112,21 @@ TEST_F(FPDFPPOEmbeddertest, NupRenderImage) {
   for (int i = 0; i < kPageCount; ++i) {
     ScopedFPDFPage page(FPDF_LoadPage(output_doc_3up.get(), i));
     ASSERT_TRUE(page);
-    ScopedFPDFBitmap bitmap(RenderPageWithFlags(page.get(), nullptr, 0));
+    ScopedFPDFBitmap bitmap = RenderPage(page.get());
     EXPECT_EQ(792, FPDFBitmap_GetWidth(bitmap.get()));
     EXPECT_EQ(612, FPDFBitmap_GetHeight(bitmap.get()));
     EXPECT_EQ(kExpectedMD5s[i], HashBitmap(bitmap.get()));
   }
 }
 
-TEST_F(FPDFPPOEmbeddertest, BadRepeatViewerPref) {
+TEST_F(FPDFPPOEmbedderTest, BUG_925981) {
+  ASSERT_TRUE(OpenDocument("bug_925981.pdf"));
+  ScopedFPDFDocument output_doc_2up(
+      FPDF_ImportNPagesToOne(document(), 612, 792, 2, 1));
+  EXPECT_EQ(1, FPDF_GetPageCount(output_doc_2up.get()));
+}
+
+TEST_F(FPDFPPOEmbedderTest, BadRepeatViewerPref) {
   ASSERT_TRUE(OpenDocument("repeat_viewer_ref.pdf"));
 
   FPDF_DOCUMENT output_doc = FPDF_CreateNewDocument();
@@ -135,7 +141,7 @@ TEST_F(FPDFPPOEmbeddertest, BadRepeatViewerPref) {
   FPDF_CloseDocument(output_doc);
 }
 
-TEST_F(FPDFPPOEmbeddertest, BadCircularViewerPref) {
+TEST_F(FPDFPPOEmbedderTest, BadCircularViewerPref) {
   ASSERT_TRUE(OpenDocument("circular_viewer_ref.pdf"));
 
   FPDF_DOCUMENT output_doc = FPDF_CreateNewDocument();
@@ -150,7 +156,7 @@ TEST_F(FPDFPPOEmbeddertest, BadCircularViewerPref) {
   FPDF_CloseDocument(output_doc);
 }
 
-TEST_F(FPDFPPOEmbeddertest, BadRanges) {
+TEST_F(FPDFPPOEmbedderTest, BadRanges) {
   EXPECT_TRUE(OpenDocument("hello_world.pdf"));
 
   FPDF_PAGE page = LoadPage(0);
@@ -173,7 +179,7 @@ TEST_F(FPDFPPOEmbeddertest, BadRanges) {
   UnloadPage(page);
 }
 
-TEST_F(FPDFPPOEmbeddertest, GoodRanges) {
+TEST_F(FPDFPPOEmbedderTest, GoodRanges) {
   EXPECT_TRUE(OpenDocument("viewer_ref.pdf"));
 
   FPDF_PAGE page = LoadPage(0);
@@ -195,7 +201,7 @@ TEST_F(FPDFPPOEmbeddertest, GoodRanges) {
   UnloadPage(page);
 }
 
-TEST_F(FPDFPPOEmbeddertest, BUG_664284) {
+TEST_F(FPDFPPOEmbedderTest, BUG_664284) {
   EXPECT_TRUE(OpenDocument("bug_664284.pdf"));
 
   FPDF_PAGE page = LoadPage(0);
@@ -209,7 +215,7 @@ TEST_F(FPDFPPOEmbeddertest, BUG_664284) {
   UnloadPage(page);
 }
 
-TEST_F(FPDFPPOEmbeddertest, BUG_750568) {
+TEST_F(FPDFPPOEmbedderTest, BUG_750568) {
   const char* const kHashes[] = {
       "64ad08132a1c5a166768298c8a578f57", "83b83e2f6bc80707d0a917c7634140b9",
       "913cd3723a451e4e46fbc2c05702d1ee", "81fb7cfd4860f855eb468f73dfeb6d60"};
@@ -238,7 +244,7 @@ TEST_F(FPDFPPOEmbeddertest, BUG_750568) {
     FPDF_PAGE page = FPDF_LoadPage(output_doc, i);
     ASSERT_TRUE(page);
 
-    ScopedFPDFBitmap bitmap = RenderPageWithFlags(page, nullptr, 0);
+    ScopedFPDFBitmap bitmap = RenderPage(page);
     ASSERT_EQ(200, FPDFBitmap_GetWidth(bitmap.get()));
     ASSERT_EQ(200, FPDFBitmap_GetHeight(bitmap.get()));
     ASSERT_EQ(800, FPDFBitmap_GetStride(bitmap.get()));
@@ -249,7 +255,7 @@ TEST_F(FPDFPPOEmbeddertest, BUG_750568) {
   FPDF_CloseDocument(output_doc);
 }
 
-TEST_F(FPDFPPOEmbeddertest, ImportWithZeroLengthStream) {
+TEST_F(FPDFPPOEmbedderTest, ImportWithZeroLengthStream) {
   EXPECT_TRUE(OpenDocument("zero_length_stream.pdf"));
   FPDF_PAGE page = LoadPage(0);
   ASSERT_TRUE(page);
@@ -269,7 +275,7 @@ TEST_F(FPDFPPOEmbeddertest, ImportWithZeroLengthStream) {
   EXPECT_EQ(1, FPDF_GetPageCount(new_doc));
   FPDF_PAGE new_page = FPDF_LoadPage(new_doc, 0);
   ASSERT_NE(nullptr, new_page);
-  ScopedFPDFBitmap new_bitmap = RenderPageWithFlags(new_page, nullptr, 0);
+  ScopedFPDFBitmap new_bitmap = RenderPage(new_page);
   ASSERT_EQ(200, FPDFBitmap_GetWidth(new_bitmap.get()));
   ASSERT_EQ(200, FPDFBitmap_GetHeight(new_bitmap.get()));
   ASSERT_EQ(800, FPDFBitmap_GetStride(new_bitmap.get()));

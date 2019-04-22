@@ -29,8 +29,6 @@
 
 namespace blink {
 
-class LabelableElement;
-
 class CORE_EXPORT HTMLLabelElement final : public HTMLElement {
   DEFINE_WRAPPERTYPEINFO();
 
@@ -39,7 +37,7 @@ class CORE_EXPORT HTMLLabelElement final : public HTMLElement {
 
   explicit HTMLLabelElement(Document&);
 
-  LabelableElement* control() const;
+  HTMLElement* control() const;
   HTMLFormElement* form() const;
 
   bool WillRespondToMouseClickEvents() override;

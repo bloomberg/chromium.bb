@@ -9,6 +9,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #import "base/mac/foundation_util.h"
 #import "base/mac/mac_util.h"
 #import "base/mac/scoped_objc_class_swizzler.h"
@@ -26,6 +27,7 @@
 #include "ui/events/test/cocoa_test_event_utils.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
 #import "ui/views/cocoa/bridged_native_widget_host_impl.h"
+#import "ui/views/cocoa/text_input_host.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/controls/textfield/textfield_model.h"
@@ -299,7 +301,7 @@ class MockNativeWidgetMac : public NativeWidgetMac {
   explicit MockNativeWidgetMac(internal::NativeWidgetDelegate* delegate)
       : NativeWidgetMac(delegate) {}
   using NativeWidgetMac::bridge_impl;
-  using NativeWidgetMac::bridge_host_for_testing;
+  using NativeWidgetMac::bridge_host;
 
   // internal::NativeWidgetPrivate:
   void InitNativeWidget(const Widget::InitParams& params) override {
@@ -311,19 +313,19 @@ class MockNativeWidgetMac : public NativeWidgetMac {
                       styleMask:NSBorderlessWindowMask
                         backing:NSBackingStoreBuffered
                           defer:NO]);
-    bridge_host_for_testing()->CreateLocalBridge(window);
+    bridge_host()->CreateLocalBridge(window);
     if (auto* parent =
             BridgedNativeWidgetHostImpl::GetFromNativeView(params.parent)) {
-      bridge_host_for_testing()->SetParent(parent);
+      bridge_host()->SetParent(parent);
     }
-    bridge_host_for_testing()->InitWindow(params);
+    bridge_host()->InitWindow(params);
 
     // Usually the bridge gets initialized here. It is skipped to run extra
     // checks in tests, and so that a second window isn't created.
-    delegate()->OnNativeWidgetCreated(true);
+    delegate()->OnNativeWidgetCreated();
 
     // To allow events to dispatch to a view, it needs a way to get focus.
-    bridge_host_for_testing()->SetFocusManager(GetWidget()->GetFocusManager());
+    bridge_host()->SetFocusManager(GetWidget()->GetFocusManager());
   }
 
   void ReorderNativeViews() override {
@@ -350,7 +352,7 @@ class BridgedNativeWidgetTestBase : public ui::CocoaTest {
     return native_widget_mac_->bridge_impl();
   }
   BridgedNativeWidgetHostImpl* bridge_host() {
-    return native_widget_mac_->bridge_host_for_testing();
+    return native_widget_mac_->bridge_host();
   }
 
   // Generate an autoreleased KeyDown NSEvent* in |widget_| for pressing the
@@ -504,7 +506,8 @@ class BridgedNativeWidgetTest : public BridgedNativeWidgetTestBase,
 
   HandleKeyEventCallback handle_key_event_callback_;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::UI};
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BridgedNativeWidgetTest);
@@ -527,12 +530,9 @@ class EnterAcceleratorView : public View {
   int count_ = 0;
 };
 
-BridgedNativeWidgetTest::BridgedNativeWidgetTest()
-    : scoped_task_environment_(
-          base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+BridgedNativeWidgetTest::BridgedNativeWidgetTest() = default;
 
-BridgedNativeWidgetTest::~BridgedNativeWidgetTest() {
-}
+BridgedNativeWidgetTest::~BridgedNativeWidgetTest() = default;
 
 Textfield* BridgedNativeWidgetTest::InstallTextField(
     const base::string16& text,
@@ -550,7 +550,7 @@ Textfield* BridgedNativeWidgetTest::InstallTextField(
   // schedules a task to flash the cursor, so this requires |message_loop_|.
   textfield->RequestFocus();
 
-  [ns_view_ setTextInputClient:textfield];
+  bridge_host()->text_input_host()->SetTextInputClient(textfield);
 
   // Initialize the dummy text view. Initializing this with NSZeroRect causes
   // weird NSTextView behavior on OSX 10.9.
@@ -591,7 +591,7 @@ NSRange BridgedNativeWidgetTest::GetExpectedSelectionRange() {
 
 void BridgedNativeWidgetTest::SetSelectionRange(NSRange range) {
   ui::TextInputClient* client = [ns_view_ textInputClient];
-  client->SetSelectionRange(gfx::Range(range));
+  client->SetEditableSelectionRange(gfx::Range(range));
 
   [dummy_text_view_ setSelectedRange:range];
 }
@@ -607,7 +607,7 @@ void BridgedNativeWidgetTest::MakeSelection(int start, int end) {
 
   // Although a gfx::Range is directed, the underlying model will not choose an
   // affinity until the cursor is moved.
-  client->SetSelectionRange(range);
+  client->SetEditableSelectionRange(range);
 
   // Set the range without an affinity. The first @selector sent to the text
   // field determines the affinity. Note that Range::ToNSRange() may discard
@@ -930,7 +930,7 @@ TEST_F(BridgedNativeWidgetTest, InputContext) {
   EXPECT_FALSE([ns_view_ inputContext]);
   InstallTextField(test_string, ui::TEXT_INPUT_TYPE_TEXT);
   EXPECT_TRUE([ns_view_ inputContext]);
-  [ns_view_ setTextInputClient:nil];
+  bridge_host()->text_input_host()->SetTextInputClient(nullptr);
   EXPECT_FALSE([ns_view_ inputContext]);
   InstallTextField(test_string, ui::TEXT_INPUT_TYPE_NONE);
   EXPECT_FALSE([ns_view_ inputContext]);
@@ -1339,7 +1339,7 @@ TEST_F(BridgedNativeWidgetTest, TextInput_DeleteCommands) {
 // Test that we don't crash during an action message even if the TextInputClient
 // is nil. Regression test for crbug.com/615745.
 TEST_F(BridgedNativeWidgetTest, NilTextInputClient) {
-  [ns_view_ setTextInputClient:nil];
+  bridge_host()->text_input_host()->SetTextInputClient(nullptr);
   NSMutableArray* selectors = [NSMutableArray array];
   [selectors addObjectsFromArray:kMoveActions];
   [selectors addObjectsFromArray:kSelectActions];
@@ -1751,7 +1751,7 @@ TEST_F(BridgedNativeWidgetTest, TextInput_RecursiveUpdateWindows) {
   bool saw_update_windows = false;
   base::RepeatingClosure update_windows_closure = base::BindRepeating(
       [](bool* saw_update_windows, BridgedContentView* view,
-         Textfield* textfield) {
+         BridgedNativeWidgetHostImpl* host, Textfield* textfield) {
         // Ensure updateWindows is not invoked recursively.
         EXPECT_FALSE(*saw_update_windows);
         *saw_update_windows = true;
@@ -1768,7 +1768,7 @@ TEST_F(BridgedNativeWidgetTest, TextInput_RecursiveUpdateWindows) {
         // reacting to InsertChar could theoretically do this, but toolkit-views
         // DCHECKs if there is recursive event dispatch, so call
         // setTextInputClient directly.
-        [view setTextInputClient:textfield];
+        host->text_input_host()->SetTextInputClient(textfield);
 
         // Finally simulate what -[NSApp updateWindows] should _actually_ do,
         // which is to update the input context (from the first responder).
@@ -1777,20 +1777,21 @@ TEST_F(BridgedNativeWidgetTest, TextInput_RecursiveUpdateWindows) {
         // Now, the |textfield| set above should have been set again.
         EXPECT_TRUE(g_fake_current_input_context);
       },
-      &saw_update_windows, ns_view_, textfield);
+      &saw_update_windows, ns_view_, bridge_host(), textfield);
 
   SetHandleKeyEventCallback(base::BindRepeating(
-      [](int* saw_return_count, BridgedContentView* view, Textfield* textfield,
+      [](int* saw_return_count, BridgedContentView* view,
+         BridgedNativeWidgetHostImpl* host, Textfield* textfield,
          const ui::KeyEvent& event) {
         if (event.key_code() == ui::VKEY_RETURN) {
           *saw_return_count += 1;
           // Simulate Textfield::OnBlur() by clearing the input method.
           // Textfield needs to be in a Widget to do this normally.
-          [view setTextInputClient:nullptr];
+          host->text_input_host()->SetTextInputClient(nullptr);
         }
         return false;
       },
-      &vkey_return_count, ns_view_));
+      &vkey_return_count, ns_view_, bridge_host()));
 
   // Starting text (just insert it).
   [ns_view_ insertText:@"ㅂ" replacementRange:NSMakeRange(NSNotFound, 0)];
@@ -1819,6 +1820,41 @@ TEST_F(BridgedNativeWidgetTest, TextInput_RecursiveUpdateWindows) {
   g_fake_current_input_context = nullptr;
   g_fake_interpret_key_events = nullptr;
   g_update_windows_closure = nullptr;
+}
+
+// Write selection text to the pasteboard.
+TEST_F(BridgedNativeWidgetTest, TextInput_WriteToPasteboard) {
+  const std::string test_string = "foo bar baz";
+  InstallTextField(test_string);
+
+  NSArray* types =
+      @[ NSStringPboardType, base::mac::CFToNSCast(kUTTypeUTF8PlainText) ];
+
+  // Try to write with no selection. This will succeed, but the string will be
+  // empty.
+  {
+    NSPasteboard* pboard = [NSPasteboard pasteboardWithUniqueName];
+    BOOL wrote_to_pboard = [ns_view_ writeSelectionToPasteboard:pboard
+                                                          types:types];
+    EXPECT_TRUE(wrote_to_pboard);
+    NSArray* objects = [pboard readObjectsForClasses:@ [[NSString class]]
+        options:0];
+    EXPECT_EQ(1u, [objects count]);
+    EXPECT_NSEQ(@"", [objects lastObject]);
+  }
+
+  // Write a selection successfully.
+  {
+    SetSelectionRange(NSMakeRange(4, 7));
+    NSPasteboard* pboard = [NSPasteboard pasteboardWithUniqueName];
+    BOOL wrote_to_pboard = [ns_view_ writeSelectionToPasteboard:pboard
+                                                          types:types];
+    EXPECT_TRUE(wrote_to_pboard);
+    NSArray* objects = [pboard readObjectsForClasses:@ [[NSString class]]
+        options:0];
+    EXPECT_EQ(1u, [objects count]);
+    EXPECT_NSEQ(@"bar baz", [objects lastObject]);
+  }
 }
 
 typedef BridgedNativeWidgetTestBase BridgedNativeWidgetSimulateFullscreenTest;

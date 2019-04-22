@@ -20,8 +20,8 @@
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
-#include "chromeos/dbus/shill_third_party_vpn_driver_client.h"
-#include "chromeos/dbus/shill_third_party_vpn_observer.h"
+#include "chromeos/dbus/shill/shill_third_party_vpn_driver_client.h"
+#include "chromeos/dbus/shill/shill_third_party_vpn_observer.h"
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_profile.h"
 #include "chromeos/network/network_profile_handler.h"
@@ -235,8 +235,8 @@ VpnService::VpnService(
   network_state_handler_->AddObserver(this, FROM_HERE);
   network_configuration_handler_->AddObserver(this);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&VpnService::NetworkListChanged, weak_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&VpnService::NetworkListChanged,
+                                weak_factory_.GetWeakPtr()));
 }
 
 VpnService::~VpnService() {

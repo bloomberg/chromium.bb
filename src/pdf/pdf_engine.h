@@ -235,9 +235,6 @@ class PDFEngine {
         const base::char16* term,
         bool case_sensitive) = 0;
 
-    // Notifies the client that the engine has painted a page from the document.
-    virtual void DocumentPaintOccurred() {}
-
     // Notifies the client that the document has finished loading.
     virtual void DocumentLoadComplete(const DocumentFeatures& document_features,
                                       uint32_t file_size) {}
@@ -412,6 +409,9 @@ class PDFEngine {
 
   // Remove focus from form widgets, consolidating the user input.
   virtual void KillFormFocus() = 0;
+
+  virtual uint32_t GetLoadedByteSize() = 0;
+  virtual bool ReadLoadedBytes(uint32_t length, void* buffer) = 0;
 };
 
 // Interface for exports that wrap the PDF engine.

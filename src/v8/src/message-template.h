@@ -10,6 +10,7 @@
 namespace v8 {
 namespace internal {
 
+// TODO(913887): fix the use of 'neuter' in these error messages.
 #define MESSAGE_TEMPLATES(T)                                                   \
   /* Error */                                                                  \
   T(None, "")                                                                  \
@@ -60,7 +61,7 @@ namespace internal {
   T(CannotFreezeArrayBufferView,                                               \
     "Cannot freeze array buffer views with elements")                          \
   T(CannotSeal, "Cannot seal")                                                 \
-  T(CircularStructure, "Converting circular structure to JSON")                \
+  T(CircularStructure, "Converting circular structure to JSON%")               \
   T(ConstructAbstractClass, "Abstract class % not directly constructable")     \
   T(ConstAssign, "Assignment to constant variable.")                           \
   T(ConstructorClassField, "Classes may not have a field named 'constructor'") \
@@ -77,7 +78,7 @@ namespace internal {
   T(DebuggerType, "Debugger: Parameters have wrong types.")                    \
   T(DeclarationMissingInitializer, "Missing initializer in % declaration")     \
   T(DefineDisallowed, "Cannot define property %, object is not extensible")    \
-  T(DetachedOperation, "Cannot perform % on a detached ArrayBuffer")           \
+  T(DetachedOperation, "Cannot perform % on a neutered ArrayBuffer")           \
   T(DuplicateTemplateProperty, "Object template has duplicate property '%'")   \
   T(ExtendsValueNotConstructor,                                                \
     "Class extends value % is not a constructor or null")                      \
@@ -168,7 +169,7 @@ namespace internal {
     "'construct' on proxy: trap returned non-object ('%')")                    \
   T(ProxyDefinePropertyNonConfigurable,                                        \
     "'defineProperty' on proxy: trap returned truish for defining "            \
-    "non-configurable property '%' which is either non-existant or "           \
+    "non-configurable property '%' which is either non-existent or "           \
     "configurable in the proxy target")                                        \
   T(ProxyDefinePropertyNonExtensible,                                          \
     "'defineProperty' on proxy: trap returned truish for adding property '%' " \
@@ -196,7 +197,7 @@ namespace internal {
     "undefined for property '%'")                                              \
   T(ProxyGetOwnPropertyDescriptorNonConfigurable,                              \
     "'getOwnPropertyDescriptor' on proxy: trap reported non-configurability "  \
-    "for property '%' which is either non-existant or configurable in the "    \
+    "for property '%' which is either non-existent or configurable in the "    \
     "proxy target")                                                            \
   T(ProxyGetOwnPropertyDescriptorNonExtensible,                                \
     "'getOwnPropertyDescriptor' on proxy: trap returned undefined for "        \
@@ -227,6 +228,8 @@ namespace internal {
   T(ProxyOwnKeysNonExtensible,                                                 \
     "'ownKeys' on proxy: trap returned extra keys but proxy target is "        \
     "non-extensible")                                                          \
+  T(ProxyOwnKeysDuplicateEntries,                                              \
+    "'ownKeys' on proxy: trap returned duplicate entries")                     \
   T(ProxyPreventExtensionsExtensible,                                          \
     "'preventExtensions' on proxy: trap returned truish but the proxy target " \
     "is extensible")                                                           \
@@ -289,6 +292,7 @@ namespace internal {
   /* ReferenceError */                                                         \
   T(NotDefined, "% is not defined")                                            \
   T(SuperAlreadyCalled, "Super constructor may only be called once")           \
+  T(AccessedUninitializedVariable, "Cannot access '%' before initialization")  \
   T(UnsupportedSuper, "Unsupported reference to 'super'")                      \
   /* RangeError */                                                             \
   T(BigIntDivZero, "Division by zero")                                         \
@@ -320,9 +324,6 @@ namespace internal {
   T(InvalidTypedArrayAlignment, "% of % should be a multiple of %")            \
   T(InvalidTypedArrayIndex, "Invalid typed array index")                       \
   T(InvalidTypedArrayLength, "Invalid typed array length: %")                  \
-  T(IllegalTypeWhileStyleNarrow,                                               \
-    "When style is 'narrow', 'unit' is the only allowed value for the type "   \
-    "option.")                                                                 \
   T(LetInLexicalBinding, "let is disallowed as a lexically bound name")        \
   T(LocaleMatcher, "Illegal value for localeMatcher:%")                        \
   T(NormalizationForm, "The normalization form should be one of %.")           \
@@ -395,7 +396,12 @@ namespace internal {
     "Invalid left-hand side expression in prefix operation")                   \
   T(InvalidRegExpFlags, "Invalid flags supplied to RegExp constructor '%'")    \
   T(InvalidOrUnexpectedToken, "Invalid or unexpected token")                   \
-  T(InvalidPrivateFieldAccess, "Invalid private field '%'")                    \
+  T(InvalidPrivateFieldResolution,                                             \
+    "Undefined private field %: must be declared in an enclosing class")       \
+  T(InvalidPrivateFieldRead,                                                   \
+    "Read of private field % from an object which did not contain the field")  \
+  T(InvalidPrivateFieldWrite,                                                  \
+    "Write of private field % to an object which did not contain the field")   \
   T(JsonParseUnexpectedEOS, "Unexpected end of JSON input")                    \
   T(JsonParseUnexpectedToken, "Unexpected token % in JSON at position %")      \
   T(JsonParseUnexpectedTokenNumber, "Unexpected number in JSON at position %") \
@@ -408,6 +414,7 @@ namespace internal {
   T(MalformedRegExp, "Invalid regular expression: /%/: %")                     \
   T(MalformedRegExpFlags, "Invalid regular expression flags")                  \
   T(ModuleExportUndefined, "Export '%' is not defined in module")              \
+  T(MissingFunctionName, "Function statements require a function name")        \
   T(HtmlCommentInModule, "HTML comments are not allowed in modules")           \
   T(MultipleDefaultsInSwitch,                                                  \
     "More than one default clause in switch statement")                        \
@@ -469,12 +476,16 @@ namespace internal {
   T(TypedArrayTooShort,                                                        \
     "Derived TypedArray constructor created an array which was too small")     \
   T(UnexpectedEOS, "Unexpected end of input")                                  \
+  T(UnexpectedPrivateField, "Unexpected private field")                        \
   T(UnexpectedReserved, "Unexpected reserved word")                            \
   T(UnexpectedStrictReserved, "Unexpected strict mode reserved word")          \
   T(UnexpectedSuper, "'super' keyword unexpected here")                        \
   T(UnexpectedNewTarget, "new.target expression is not allowed here")          \
   T(UnexpectedTemplateString, "Unexpected template string")                    \
   T(UnexpectedToken, "Unexpected token %")                                     \
+  T(UnexpectedTokenUnaryExponentiation,                                        \
+    "Unary operator used immediately before exponentiation expression. "       \
+    "Parenthesis must be used to disambiguate operator precedence")            \
   T(UnexpectedTokenIdentifier, "Unexpected identifier")                        \
   T(UnexpectedTokenNumber, "Unexpected number")                                \
   T(UnexpectedTokenString, "Unexpected string")                                \
@@ -509,6 +520,9 @@ namespace internal {
   T(WasmTrapFuncInvalid, "invalid index into function table")                  \
   T(WasmTrapFuncSigMismatch, "function signature mismatch")                    \
   T(WasmTrapTypeError, "wasm function signature contains illegal type")        \
+  T(WasmTrapDataSegmentDropped, "data segment has been dropped")               \
+  T(WasmTrapElemSegmentDropped, "element segment has been dropped")            \
+  T(WasmTrapTableOutOfBounds, "table access out of bounds")                    \
   T(WasmExceptionError, "wasm exception")                                      \
   /* Asm.js validation related */                                              \
   T(AsmJsInvalid, "Invalid asm.js: %")                                         \
@@ -518,7 +532,7 @@ namespace internal {
   /* DataCloneError messages */                                                \
   T(DataCloneError, "% could not be cloned.")                                  \
   T(DataCloneErrorOutOfMemory, "Data cannot be cloned, out of memory.")        \
-  T(DataCloneErrorNeuteredArrayBuffer,                                         \
+  T(DataCloneErrorDetachedArrayBuffer,                                         \
     "An ArrayBuffer is neutered and could not be cloned.")                     \
   T(DataCloneErrorSharedArrayBufferTransferred,                                \
     "A SharedArrayBuffer could not be cloned. SharedArrayBuffer must not be "  \
@@ -535,15 +549,15 @@ namespace internal {
   T(TraceEventPhaseError, "Trace event phase must be a number.")               \
   T(TraceEventIDError, "Trace event id must be a number.")                     \
   /* Weak refs */                                                              \
-  T(WeakRefsCleanupMustBeCallable, "WeakFactory: cleanup must be callable")    \
-  T(WeakRefsMakeCellTargetMustBeObject,                                        \
-    "WeakFactory.prototype.makeCell: target must be an object")                \
-  T(WeakRefsMakeCellTargetAndHoldingsMustNotBeSame,                            \
-    "WeakFactory.prototype.makeCell: target and holdings must not be same")    \
-  T(WeakRefsMakeRefTargetMustBeObject,                                         \
-    "WeakFactory.prototype.makeRef: target must be an object")                 \
-  T(WeakRefsMakeRefTargetAndHoldingsMustNotBeSame,                             \
-    "WeakFactory.prototype.makeRef: target and holdings must not be same")
+  T(WeakRefsCleanupMustBeCallable,                                             \
+    "FinalizationGroup: cleanup must be callable")                             \
+  T(WeakRefsRegisterTargetMustBeObject,                                        \
+    "FinalizationGroup.prototype.register: target must be an object")          \
+  T(WeakRefsRegisterTargetAndHoldingsMustNotBeSame,                            \
+    "FinalizationGroup.prototype.register: target and holdings must not be "   \
+    "same")                                                                    \
+  T(WeakRefsWeakRefConstructorTargetMustBeObject,                              \
+    "WeakRef: target must be an object")
 
 enum class MessageTemplate {
 #define TEMPLATE(NAME, STRING) k##NAME,

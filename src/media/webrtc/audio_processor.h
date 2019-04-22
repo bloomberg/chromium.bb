@@ -15,11 +15,10 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "media/audio/audio_io.h"
-#include "media/audio/audio_processing.h"
 #include "media/base/audio_parameters.h"
+#include "media/base/audio_processing.h"
 #include "media/webrtc/audio_delay_stats_reporter.h"
 #include "media/webrtc/audio_processor_controls.h"
-#include "media/webrtc/echo_information.h"
 #include "third_party/webrtc/modules/audio_processing/include/audio_processing.h"
 #include "third_party/webrtc/modules/audio_processing/typing_detection.h"
 #include "third_party/webrtc/rtc_base/task_queue.h"
@@ -62,8 +61,6 @@ class COMPONENT_EXPORT(MEDIA_WEBRTC) AudioProcessor final
   void AnalyzePlayout(const AudioBus& audio,
                       const AudioParameters& parameters,
                       base::TimeTicks playout_time);
-
-  void UpdateInternalStats();
 
   void set_has_reverse_stream(bool has_reverse_stream) {
     has_reverse_stream_ = has_reverse_stream;
@@ -108,8 +105,6 @@ class COMPONENT_EXPORT(MEDIA_WEBRTC) AudioProcessor final
   // out-live |audio_processing_| and be created/destroyed from the same
   // thread.
   std::unique_ptr<rtc::TaskQueue> worker_queue_;
-
-  EchoInformation echo_information_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioProcessor);
 };

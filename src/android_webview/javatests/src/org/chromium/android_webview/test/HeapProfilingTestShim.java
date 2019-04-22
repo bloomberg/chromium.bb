@@ -24,9 +24,9 @@ public class HeapProfilingTestShim {
      *  rather than native stacks.
      */
     public boolean runTestForMode(String mode, boolean dynamicallyStartProfiling, String stackMode,
-            boolean shouldSample, boolean sampleEverything) {
+            boolean streamSamples, boolean shouldSample, boolean sampleEverything) {
         return nativeRunTestForMode(mNativeHeapProfilingTestShim, mode, dynamicallyStartProfiling,
-                stackMode, shouldSample, sampleEverything);
+                stackMode, streamSamples, shouldSample, sampleEverything);
     }
 
     /**
@@ -44,6 +44,6 @@ public class HeapProfilingTestShim {
     private native long nativeInit();
     private native void nativeDestroy(long nativeHeapProfilingTestShim);
     private native boolean nativeRunTestForMode(long nativeHeapProfilingTestShim, String mode,
-            boolean dynamicallyStartProfiling, String stackMode, boolean shouldSample,
-            boolean sampleEverything);
+            boolean dynamicallyStartProfiling, String stackMode, boolean streamSamples,
+            boolean shouldSample, boolean sampleEverything);
 }

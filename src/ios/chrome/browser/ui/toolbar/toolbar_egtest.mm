@@ -93,11 +93,9 @@ using chrome_test_util::SystemSelectionCalloutCopyButton;
 
   [ChromeEarlGrey loadURL:URL];
 
-  if (IsRefreshLocationBarEnabled()) {
     [[EarlGrey
         selectElementWithMatcher:chrome_test_util::DefocusedLocationView()]
         performAction:grey_tap()];
-  }
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       assertWithMatcher:chrome_test_util::OmniboxText(URL.GetContent())];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
@@ -187,14 +185,9 @@ using chrome_test_util::SystemSelectionCalloutCopyButton;
 
   // First test: check that the keyboard is opened when tapping the omnibox,
   // and that it is dismissed when the "Back" button is tapped.
-  if (IsRefreshLocationBarEnabled()) {
     [[EarlGrey
         selectElementWithMatcher:chrome_test_util::DefocusedLocationView()]
         performAction:grey_tap()];
-  } else {
-    [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
-        performAction:grey_tap()];
-  }
 
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Typing Shield")]
       assertWithMatcher:grey_notNil()];
@@ -206,14 +199,9 @@ using chrome_test_util::SystemSelectionCalloutCopyButton;
 
   // Second test: check that the keyboard is opened when tapping the omnibox,
   // and that it is dismissed when the tools menu button is tapped.
-  if (IsRefreshLocationBarEnabled()) {
     [[EarlGrey
         selectElementWithMatcher:chrome_test_util::DefocusedLocationView()]
         performAction:grey_tap()];
-  } else {
-    [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
-        performAction:grey_tap()];
-  }
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Typing Shield")]
       assertWithMatcher:grey_notNil()];
 
@@ -249,14 +237,9 @@ using chrome_test_util::SystemSelectionCalloutCopyButton;
 
   // Can't access share menu from xctest on iOS 11+, so use the text field
   // callout bar instead.
-  if (IsRefreshLocationBarEnabled()) {
     [[EarlGrey
         selectElementWithMatcher:chrome_test_util::DefocusedLocationView()]
         performAction:grey_tap()];
-  } else {
-    [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
-        performAction:grey_tap()];
-  }
   // Tap twice to get the pre-edit label callout bar copy button.
   [[EarlGrey
       selectElementWithMatcher:grey_allOf(
@@ -305,11 +288,9 @@ using chrome_test_util::SystemSelectionCalloutCopyButton;
   const GURL URL = web::test::HttpServer::MakeUrl("http://origin");
 
   [ChromeEarlGrey loadURL:URL];
-  if (IsRefreshLocationBarEnabled()) {
     [[EarlGrey
         selectElementWithMatcher:chrome_test_util::DefocusedLocationView()]
         performAction:grey_tap()];
-  }
 
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       performAction:grey_typeText(@"foo")];

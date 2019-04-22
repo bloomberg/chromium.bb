@@ -21,6 +21,7 @@
 #include "chrome/common/page_load_metrics/page_load_timing.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/global_request_id.h"
+#include "content/public/browser/media_player_id.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -29,6 +30,8 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "content/public/common/resource_load_info.mojom.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "services/network/public/cpp/features.h"
 #include "ui/base/page_transition_types.h"
@@ -55,9 +58,7 @@ UserInitiatedInfo CreateUserInitiatedInfo(
 
   return UserInitiatedInfo::RenderInitiated(
       navigation_handle->HasUserGesture(),
-      committed_load &&
-          committed_load->input_tracker()->FindAndConsumeInputEventsBefore(
-              navigation_handle->NavigationStart()));
+      !navigation_handle->NavigationInputStart().is_null());
 }
 
 }  // namespace
@@ -149,17 +150,21 @@ void MetricsWebContentsObserver::RenderViewHostChanged(
   RegisterInputEventObserver(new_host);
 }
 
+void MetricsWebContentsObserver::FrameDeleted(content::RenderFrameHost* rfh) {
+  if (committed_load_)
+    committed_load_->FrameDeleted(rfh);
+}
+
 void MetricsWebContentsObserver::MediaStartedPlaying(
     const content::WebContentsObserver::MediaPlayerInfo& video_type,
-    const content::WebContentsObserver::MediaPlayerId& id) {
+    const content::MediaPlayerId& id) {
   if (GetMainFrame(id.render_frame_host) != web_contents()->GetMainFrame()) {
     // Ignore media that starts playing in a document that was navigated away
     // from.
     return;
   }
   if (committed_load_)
-    committed_load_->MediaStartedPlaying(
-        video_type, id.render_frame_host == web_contents()->GetMainFrame());
+    committed_load_->MediaStartedPlaying(video_type, id.render_frame_host);
 }
 
 void MetricsWebContentsObserver::WillStartNavigationRequest(
@@ -292,6 +297,7 @@ PageLoadTracker* MetricsWebContentsObserver::GetTrackerOrNullForRequest(
   }
   return nullptr;
 }
+
 void MetricsWebContentsObserver::ResourceLoadComplete(
     content::RenderFrameHost* render_frame_host,
     const content::GlobalRequestID& request_id,
@@ -319,7 +325,7 @@ void MetricsWebContentsObserver::ResourceLoadComplete(
     const content::mojom::CommonNetworkInfoPtr& network_info =
         resource_load_info.network_info;
     ExtraRequestCompleteInfo extra_request_complete_info(
-        resource_load_info.url, network_info->ip_port_pair.value(),
+        resource_load_info.url, network_info->remote_endpoint.value(),
         render_frame_host->GetFrameTreeNodeId(), resource_load_info.was_cached,
         resource_load_info.raw_body_bytes, original_content_length,
         std::move(data_reduction_proxy_data), resource_load_info.resource_type,
@@ -330,9 +336,30 @@ void MetricsWebContentsObserver::ResourceLoadComplete(
   }
 }
 
+void MetricsWebContentsObserver::FrameReceivedFirstUserActivation(
+    content::RenderFrameHost* render_frame_host) {
+  if (committed_load_)
+    committed_load_->FrameReceivedFirstUserActivation(render_frame_host);
+}
+
+void MetricsWebContentsObserver::FrameDisplayStateChanged(
+    content::RenderFrameHost* render_frame_host,
+    bool is_display_none) {
+  if (committed_load_)
+    committed_load_->FrameDisplayStateChanged(render_frame_host,
+                                              is_display_none);
+}
+
+void MetricsWebContentsObserver::FrameSizeChanged(
+    content::RenderFrameHost* render_frame_host,
+    const gfx::Size& frame_size) {
+  if (committed_load_)
+    committed_load_->FrameSizeChanged(render_frame_host, frame_size);
+}
+
 void MetricsWebContentsObserver::OnRequestComplete(
     const GURL& url,
-    const net::HostPortPair& host_port_pair,
+    const net::IPEndPoint& remote_endpoint,
     int frame_tree_node_id,
     const content::GlobalRequestID& request_id,
     content::RenderFrameHost* render_frame_host_or_null,
@@ -355,7 +382,7 @@ void MetricsWebContentsObserver::OnRequestComplete(
       request_id, render_frame_host_or_null, resource_type, creation_time);
   if (tracker) {
     ExtraRequestCompleteInfo extra_request_complete_info(
-        url, host_port_pair, frame_tree_node_id, was_cached, raw_body_bytes,
+        url, remote_endpoint, frame_tree_node_id, was_cached, raw_body_bytes,
         was_cached ? 0 : original_content_length,
         std::move(data_reduction_proxy_data), resource_type, net_error,
         std::move(load_timing_info));
@@ -367,6 +394,12 @@ const PageLoadExtraInfo
 MetricsWebContentsObserver::GetPageLoadExtraInfoForCommittedLoad() {
   DCHECK(committed_load_);
   return committed_load_->ComputePageLoadExtraInfo();
+}
+
+void MetricsWebContentsObserver::ReadyToCommitNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (committed_load_)
+    committed_load_->ReadyToCommitNavigation(navigation_handle);
 }
 
 void MetricsWebContentsObserver::DidFinishNavigation(
@@ -535,9 +568,8 @@ void MetricsWebContentsObserver::OnVisibilityChanged(
   if (web_contents_will_soon_be_destroyed_)
     return;
 
-  // TODO(bmcquade): Consider handling an OCCLUDED tab as not in foreground.
   bool was_in_foreground = in_foreground_;
-  in_foreground_ = visibility != content::Visibility::HIDDEN;
+  in_foreground_ = visibility == content::Visibility::VISIBLE;
   if (in_foreground_ == was_in_foreground)
     return;
 
@@ -621,7 +653,7 @@ MetricsWebContentsObserver::NotifyAbortedProvisionalLoadsNewNavigation(
   // If there are multiple aborted loads that can be attributed to this one,
   // just count the latest one for simplicity. Other loads will fall into the
   // OTHER bucket, though there shouldn't be very many.
-  if (aborted_provisional_loads_.size() == 0)
+  if (aborted_provisional_loads_.empty())
     return nullptr;
   if (aborted_provisional_loads_.size() > 1)
     RecordInternalError(ERR_NAVIGATION_SIGNALS_MULIPLE_ABORTED_LOADS);
@@ -647,7 +679,9 @@ void MetricsWebContentsObserver::OnTimingUpdated(
     mojom::PageLoadMetadataPtr metadata,
     mojom::PageLoadFeaturesPtr new_features,
     const std::vector<mojom::ResourceDataUpdatePtr>& resources,
-    mojom::PageRenderDataPtr render_data) {
+    mojom::FrameRenderDataUpdatePtr render_data,
+    mojom::CpuTimingPtr cpu_timing,
+    mojom::DeferredResourceCountsPtr new_deferred_resource_data) {
   // We may receive notifications from frames that have been navigated away
   // from. We simply ignore them.
   if (GetMainFrame(render_frame_host) != web_contents()->GetMainFrame()) {
@@ -681,7 +715,8 @@ void MetricsWebContentsObserver::OnTimingUpdated(
   if (committed_load_) {
     committed_load_->metrics_update_dispatcher()->UpdateMetrics(
         render_frame_host, std::move(timing), std::move(metadata),
-        std::move(new_features), resources, std::move(render_data));
+        std::move(new_features), resources, std::move(render_data),
+        std::move(cpu_timing), std::move(new_deferred_resource_data));
   }
 }
 
@@ -690,11 +725,14 @@ void MetricsWebContentsObserver::UpdateTiming(
     mojom::PageLoadMetadataPtr metadata,
     mojom::PageLoadFeaturesPtr new_features,
     std::vector<mojom::ResourceDataUpdatePtr> resources,
-    mojom::PageRenderDataPtr render_data) {
+    mojom::FrameRenderDataUpdatePtr render_data,
+    mojom::CpuTimingPtr cpu_timing,
+    mojom::DeferredResourceCountsPtr new_deferred_resource_data) {
   content::RenderFrameHost* render_frame_host =
       page_load_metrics_binding_.GetCurrentTargetFrame();
   OnTimingUpdated(render_frame_host, std::move(timing), std::move(metadata),
-                  std::move(new_features), resources, std::move(render_data));
+                  std::move(new_features), resources, std::move(render_data),
+                  std::move(cpu_timing), std::move(new_deferred_resource_data));
 }
 
 bool MetricsWebContentsObserver::ShouldTrackNavigation(
@@ -756,5 +794,7 @@ void MetricsWebContentsObserver::BroadcastEventToObservers(
   if (committed_load_)
     committed_load_->BroadcastEventToObservers(event_key);
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(MetricsWebContentsObserver)
 
 }  // namespace page_load_metrics

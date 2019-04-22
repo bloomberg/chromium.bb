@@ -117,7 +117,7 @@ void IceTransportHost::OnCandidateGathered(
                                       proxy_, candidate));
 }
 
-void IceTransportHost::OnStateChanged(cricket::IceTransportState new_state) {
+void IceTransportHost::OnStateChanged(webrtc::IceTransportState new_state) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   PostCrossThreadTask(
       *proxy_thread_, FROM_HERE,

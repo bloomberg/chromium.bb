@@ -122,7 +122,8 @@ int main(int argc, char* argv[]) {
   const std::vector<std::string> input_files = parse_input_files();
   std::vector<webrtc::test::FilePlayingSource> sources;
   const int num_channels = FLAG_stereo ? 2 : 1;
-  for (auto input_file : input_files) {
+  sources.reserve(input_files.size());
+  for (const auto& input_file : input_files) {
     sources.emplace_back(input_file);
   }
 

@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
 
 class ChromeAppListItem;
@@ -51,6 +52,7 @@ class ChromeAppListModelUpdater : public AppListModelUpdater {
                                const std::string& short_name) override;
   void SetItemPosition(const std::string& id,
                        const syncer::StringOrdinal& new_position) override;
+  void SetItemIsPersistent(const std::string& id, bool is_persistent) override;
   void SetItemFolderId(const std::string& id,
                        const std::string& folder_id) override;
   void SetItemIsInstalling(const std::string& id, bool is_installing) override;
@@ -112,14 +114,15 @@ class ChromeAppListModelUpdater : public AppListModelUpdater {
                             const syncer::StringOrdinal& position) override;
   void OnPageBreakItemDeleted(const std::string& id) override;
 
-  void SetDelegate(AppListModelUpdaterDelegate* delegate) override;
+  void AddObserver(AppListModelUpdaterObserver* observer) override;
+  void RemoveObserver(AppListModelUpdaterObserver* observer) override;
 
  private:
   // A map from a ChromeAppListItem's id to its unique pointer. This item set
   // matches the one in AppListModel.
   std::map<std::string, std::unique_ptr<ChromeAppListItem>> items_;
   Profile* const profile_ = nullptr;
-  AppListModelUpdaterDelegate* delegate_ = nullptr;
+  base::ObserverList<AppListModelUpdaterObserver> observers_;
   ash::mojom::AppListController* app_list_controller_ = nullptr;
   bool search_engine_is_google_ = false;
 

@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
+#include "chrome/browser/ui/web_app_browser_controller.h"
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 SSLErrorNavigationThrottle::SSLErrorNavigationThrottle(
@@ -36,10 +37,10 @@ content::NavigationThrottle::ThrottleCheckResult
 SSLErrorNavigationThrottle::WillFailRequest() {
   DCHECK(base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials));
   content::NavigationHandle* handle = navigation_handle();
-  // If there was no certificate error, SSLInfo will be empty.
-  int cert_status = handle->GetSSLInfo().cert_status;
-  if (!net::IsCertStatusError(cert_status) ||
-      net::IsCertStatusMinorError(cert_status)) {
+
+  // Check the network error code in case we are here due to a non-ssl related
+  // error
+  if (!net::IsCertificateError(handle->GetNetErrorCode())) {
     return content::NavigationThrottle::PROCEED;
   }
 
@@ -49,10 +50,11 @@ SSLErrorNavigationThrottle::WillFailRequest() {
     return content::NavigationThrottle::PROCEED;
   }
 
+  const net::SSLInfo info = handle->GetSSLInfo().value_or(net::SSLInfo());
+  int cert_status = info.cert_status;
   QueueShowInterstitial(std::move(handle_ssl_error_callback_),
-                        handle->GetWebContents(), cert_status,
-                        handle->GetSSLInfo(), handle->GetURL(),
-                        std::move(ssl_cert_reporter_));
+                        handle->GetWebContents(), cert_status, info,
+                        handle->GetURL(), std::move(ssl_cert_reporter_));
   return content::NavigationThrottle::ThrottleCheckResult(
       content::NavigationThrottle::DEFER);
 }
@@ -62,7 +64,8 @@ SSLErrorNavigationThrottle::WillProcessResponse() {
   DCHECK(base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials));
   content::NavigationHandle* handle = navigation_handle();
   // If there was no certificate error, SSLInfo will be empty.
-  int cert_status = handle->GetSSLInfo().cert_status;
+  const net::SSLInfo info = handle->GetSSLInfo().value_or(net::SSLInfo());
+  int cert_status = info.cert_status;
   if (!net::IsCertStatusError(cert_status) ||
       net::IsCertStatusMinorError(cert_status)) {
     return content::NavigationThrottle::PROCEED;
@@ -83,12 +86,10 @@ SSLErrorNavigationThrottle::WillProcessResponse() {
   Browser* browser =
       chrome::FindBrowserWithWebContents(handle->GetWebContents());
   if (browser &&
-      extensions::HostedAppBrowserController::IsForExperimentalHostedAppBrowser(
-          browser)) {
+      WebAppBrowserController::IsForExperimentalWebAppBrowser(browser)) {
     QueueShowInterstitial(std::move(handle_ssl_error_callback_),
-                          handle->GetWebContents(), cert_status,
-                          handle->GetSSLInfo(), handle->GetURL(),
-                          std::move(ssl_cert_reporter_));
+                          handle->GetWebContents(), cert_status, info,
+                          handle->GetURL(), std::move(ssl_cert_reporter_));
     return content::NavigationThrottle::ThrottleCheckResult(
         content::NavigationThrottle::DEFER);
   }
@@ -108,19 +109,16 @@ void SSLErrorNavigationThrottle::QueueShowInterstitial(
     const net::SSLInfo& ssl_info,
     const GURL& request_url,
     std::unique_ptr<SSLCertReporter> ssl_cert_reporter) {
-  // We don't know whether SSLErrorHandler will call the ShowInterstitial()
-  // callback synchronously, so we post a task that will run after the caller
-  // defers the navigation. This ensures that ShowInterstitial() can always
-  // safely call CancelDeferredNavigation().
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          std::move(handle_ssl_error_callback), web_contents,
-          net::MapCertStatusToNetError(cert_status), ssl_info, request_url,
-          false /* expired_previous_decision */, std::move(ssl_cert_reporter),
-          base::Callback<void(content::CertificateRequestResultType)>(),
-          base::BindOnce(&SSLErrorNavigationThrottle::ShowInterstitial,
-                         weak_ptr_factory_.GetWeakPtr())));
+  // It is safe to call this without posting because SSLErrorHandler will always
+  // call ShowInterstitial asynchronously, giving the throttle time to defer the
+  // navigation.
+  std::move(handle_ssl_error_callback)
+      .Run(web_contents, net::MapCertStatusToNetError(cert_status), ssl_info,
+           request_url, false /* expired_previous_decision */,
+           std::move(ssl_cert_reporter),
+           base::Callback<void(content::CertificateRequestResultType)>(),
+           base::BindOnce(&SSLErrorNavigationThrottle::ShowInterstitial,
+                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void SSLErrorNavigationThrottle::ShowInterstitial(
@@ -128,7 +126,7 @@ void SSLErrorNavigationThrottle::ShowInterstitial(
         blocking_page) {
   content::NavigationHandle* handle = navigation_handle();
   int net_error =
-      net::MapCertStatusToNetError(handle->GetSSLInfo().cert_status);
+      net::MapCertStatusToNetError(handle->GetSSLInfo()->cert_status);
 
   // Get the error page content before giving up ownership of |blocking_page|.
   std::string error_page_content = blocking_page->GetHTMLContents();

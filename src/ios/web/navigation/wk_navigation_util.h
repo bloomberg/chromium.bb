@@ -50,13 +50,16 @@ bool URLNeedsUserAgentType(const GURL& url);
 // This is used in unit tests.
 GURL GetRestoreSessionBaseUrl();
 
-// Creates a restore_session.html URL with the provided session history encoded
-// in the URL fragment, such that when this URL is loaded in the web view,
-// recreates all the history entries in |items| and the current loaded item is
-// the entry at |last_committed_item_index|.
-GURL CreateRestoreSessionUrl(
+// Creates a restore_session.html |url| with the provided session
+// history encoded in the URL fragment, such that when this URL is loaded in the
+// web view, recreates all the history entries in |items| and the current loaded
+// item is the entry at |last_committed_item_index|.  Sets |first_index| to the
+// new beginning of items.
+void CreateRestoreSessionUrl(
     int last_committed_item_index,
-    const std::vector<std::unique_ptr<NavigationItem>>& items);
+    const std::vector<std::unique_ptr<NavigationItem>>& items,
+    GURL* url,
+    int* first_index);
 
 // Returns true if the base URL of |url| is restore_session.html.
 bool IsRestoreSessionUrl(const GURL& url);

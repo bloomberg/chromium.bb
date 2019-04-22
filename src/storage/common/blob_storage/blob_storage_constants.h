@@ -9,8 +9,8 @@
 #include <stdint.h>
 
 #include "base/callback_forward.h"
+#include "base/component_export.h"
 #include "build/build_config.h"
-#include "storage/common/storage_common_export.h"
 
 namespace storage {
 
@@ -35,7 +35,7 @@ constexpr const char kBlobFileTransportByFileTriggerSwitch[] =
     "blob-transport-by-file-trigger";
 
 // All sizes are in bytes.
-struct STORAGE_COMMON_EXPORT BlobStorageLimits {
+struct COMPONENT_EXPORT(STORAGE_COMMON) BlobStorageLimits {
   BlobStorageLimits();
   ~BlobStorageLimits();
   BlobStorageLimits(const BlobStorageLimits&);
@@ -140,8 +140,7 @@ enum class BlobStatus {
   PENDING_TRANSPORT = 202,
   // Waiting for any operations involving dependent blobs after transport data
   // has been populated. See BlobEntry::BuildingState for more info.
-  // TODO(dmurph): Change to PENDING_REFERENCED_BLOBS (crbug.com/670398).
-  PENDING_INTERNALS = 203,
+  PENDING_REFERENCED_BLOBS = 203,
   // Waiting for construction to begin.
   PENDING_CONSTRUCTION = 204,
   LAST_PENDING = PENDING_CONSTRUCTION,
@@ -151,13 +150,13 @@ enum class BlobStatus {
 using BlobStatusCallback = base::OnceCallback<void(BlobStatus)>;
 
 // Returns if the status is an error code.
-STORAGE_COMMON_EXPORT bool BlobStatusIsError(BlobStatus status);
+COMPONENT_EXPORT(STORAGE_COMMON) bool BlobStatusIsError(BlobStatus status);
 
-STORAGE_COMMON_EXPORT bool BlobStatusIsPending(BlobStatus status);
+COMPONENT_EXPORT(STORAGE_COMMON) bool BlobStatusIsPending(BlobStatus status);
 
 // Returns if the status is a bad enough error to flag the IPC as bad. This is
 // only INVALID_CONSTRUCTION_ARGUMENTS.
-STORAGE_COMMON_EXPORT bool BlobStatusIsBadIPC(BlobStatus status);
+COMPONENT_EXPORT(STORAGE_COMMON) bool BlobStatusIsBadIPC(BlobStatus status);
 
 }  // namespace storage
 

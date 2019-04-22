@@ -4,6 +4,8 @@
 
 #include "ui/events/devices/input_device_observer_win.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/singleton.h"
@@ -12,39 +14,30 @@
 #include <windows.h>
 
 // This macro provides the implementation for the observer notification methods.
-#define NOTIFY_OBSERVERS_METHOD(method_decl, observer_call) \
-  void InputDeviceObserverWin::method_decl {                \
-    for (InputDeviceEventObserver & observer : observers_)  \
-      observer.observer_call;                               \
+#define WIN_NOTIFY_OBSERVERS(method_decl, input_device_types) \
+  void InputDeviceObserverWin::method_decl {                  \
+    for (InputDeviceEventObserver & observer : observers_) {  \
+      observer.OnInputDeviceConfigurationChanged(             \
+          InputDeviceEventObserver::input_device_types);      \
+    }                                                         \
   }
 
 namespace ui {
 
-namespace {
-
 // The registry subkey that contains information about the state of the
 // detachable/convertible laptop, it tells if the device has an accessible
-// keyboard.
-// OEMs are expected to follow this guidelines to report docked/undocked state
+// keyboard. OEMs are expected to follow these guidelines to report
+// docked/undocked state
 // https://msdn.microsoft.com/en-us/windows/hardware/commercialize/customize/desktop/unattend/microsoft-windows-gpiobuttons-convertibleslatemode
-const base::char16 kRegistryPriorityControl[] =
-    L"System\\CurrentControlSet\\Control\\PriorityControl";
-
-const base::char16 kRegistryConvertibleSlateModeKey[] = L"ConvertibleSlateMode";
-
-}  // namespace
-
-InputDeviceObserverWin::InputDeviceObserverWin() : weak_factory_(this) {
-  registry_key_.reset(new base::win::RegKey(
-      HKEY_LOCAL_MACHINE, kRegistryPriorityControl, KEY_NOTIFY | KEY_READ));
-
-  if (registry_key_->Valid()) {
-    slate_mode_enabled_ = IsSlateModeEnabled(registry_key_.get());
+InputDeviceObserverWin::InputDeviceObserverWin()
+    : registry_key_(HKEY_LOCAL_MACHINE,
+                    L"System\\CurrentControlSet\\Control\\PriorityControl",
+                    KEY_NOTIFY | KEY_READ) {
+  if (registry_key_.Valid()) {
+    slate_mode_enabled_ = IsSlateModeEnabled();
     // Start watching the registry for changes.
-    base::win::RegKey::ChangeCallback callback =
-        base::Bind(&InputDeviceObserverWin::OnRegistryKeyChanged,
-                   weak_factory_.GetWeakPtr(), registry_key_.get());
-    registry_key_->StartWatching(callback);
+    registry_key_.StartWatching(base::BindOnce(
+        &InputDeviceObserverWin::OnRegistryKeyChanged, base::Unretained(this)));
   }
 }
 
@@ -56,17 +49,13 @@ InputDeviceObserverWin* InputDeviceObserverWin::GetInstance() {
 
 InputDeviceObserverWin::~InputDeviceObserverWin() {}
 
-void InputDeviceObserverWin::OnRegistryKeyChanged(base::win::RegKey* key) {
-  if (!key)
-    return;
-
+void InputDeviceObserverWin::OnRegistryKeyChanged() {
   // |OnRegistryKeyChanged| is removed as an observer when the ChangeCallback is
   // called, so we need to re-register.
-  key->StartWatching(base::Bind(&InputDeviceObserverWin::OnRegistryKeyChanged,
-                                weak_factory_.GetWeakPtr(),
-                                base::Unretained(key)));
+  registry_key_.StartWatching(base::BindOnce(
+      &InputDeviceObserverWin::OnRegistryKeyChanged, base::Unretained(this)));
 
-  bool new_slate_mode = IsSlateModeEnabled(key);
+  bool new_slate_mode = IsSlateModeEnabled();
   if (slate_mode_enabled_ == new_slate_mode)
     return;
 
@@ -75,12 +64,12 @@ void InputDeviceObserverWin::OnRegistryKeyChanged(base::win::RegKey* key) {
   slate_mode_enabled_ = new_slate_mode;
 }
 
-bool InputDeviceObserverWin::IsSlateModeEnabled(base::win::RegKey* key) {
-  DWORD slate_enabled;
-  if (key->ReadValueDW(kRegistryConvertibleSlateModeKey, &slate_enabled) !=
-      ERROR_SUCCESS)
-    return false;
-  return slate_enabled == 1;
+bool InputDeviceObserverWin::IsSlateModeEnabled() {
+  DCHECK(registry_key_.Valid());
+  DWORD slate_enabled = 0;
+  return registry_key_.ReadValueDW(L"ConvertibleSlateMode", &slate_enabled) ==
+             ERROR_SUCCESS &&
+         slate_enabled == 1;
 }
 
 void InputDeviceObserverWin::AddObserver(InputDeviceEventObserver* observer) {
@@ -92,10 +81,10 @@ void InputDeviceObserverWin::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
-NOTIFY_OBSERVERS_METHOD(NotifyObserversKeyboardDeviceConfigurationChanged(),
-                        OnKeyboardDeviceConfigurationChanged());
+WIN_NOTIFY_OBSERVERS(NotifyObserversKeyboardDeviceConfigurationChanged(),
+                     kKeyboard)
 
-NOTIFY_OBSERVERS_METHOD(NotifyObserversTouchpadDeviceConfigurationChanged(),
-                        OnTouchpadDeviceConfigurationChanged());
+WIN_NOTIFY_OBSERVERS(NotifyObserversTouchpadDeviceConfigurationChanged(),
+                     kTouchpad)
 
 }  // namespace ui

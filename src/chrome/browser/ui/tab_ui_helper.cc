@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/tab_ui_helper.h"
 
+#include "base/bind.h"
 #include "build/build_config.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/favicon/favicon_utils.h"
@@ -30,9 +31,7 @@ base::string16 FormatUrlToSubdomain(const GURL& url) {
 }  // namespace
 
 TabUIHelper::TabUIData::TabUIData(const GURL& url)
-    : title(FormatUrlToSubdomain(url)),
-      favicon(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-          IDR_DEFAULT_FAVICON)) {}
+    : title(FormatUrlToSubdomain(url)), favicon(favicon::GetDefaultFavicon()) {}
 
 TabUIHelper::TabUIHelper(content::WebContents* contents)
     : WebContentsObserver(contents), weak_ptr_factory_(this) {}
@@ -151,3 +150,5 @@ void TabUIHelper::UpdateFavicon(
     web_contents()->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TAB);
   }
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(TabUIHelper)

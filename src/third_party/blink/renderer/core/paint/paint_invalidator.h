@@ -9,11 +9,11 @@
 #include "third_party/blink/renderer/core/paint/paint_property_tree_builder.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/graphics/paint_invalidation_reason.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
-class NGPaintFragment;
 class PrePaintTreeWalk;
 
 struct CORE_EXPORT PaintInvalidatorContext {
@@ -44,7 +44,17 @@ struct CORE_EXPORT PaintInvalidatorContext {
             ParentContext()->paint_invalidation_container_for_stacked_contents),
         painting_layer(ParentContext()->painting_layer) {}
 
-  void MapLocalRectToVisualRect(const LayoutObject&, LayoutRect&) const;
+  // Maps a rect in the object's local coordinates in flipped blocks direction
+  // to a visual rect in the local transform space. This is for non-SVG objects
+  // to map any local rect, and SVG child derived from non-SVG layout objects to
+  // map local rect of caret, selection, etc.
+  IntRect MapLocalRectToVisualRect(const LayoutObject&,
+                                   const LayoutRect&) const;
+
+  // Maps a rect in the SVG child object's local coordinates to a visual rect
+  // in the local transform space.
+  IntRect MapLocalRectToVisualRectForSVGChild(const LayoutObject&,
+                                              const FloatRect&) const;
 
   bool NeedsVisualRectUpdate(const LayoutObject& object) const {
 #if DCHECK_IS_ON()
@@ -81,9 +91,6 @@ struct CORE_EXPORT PaintInvalidatorContext {
     kSubtreeFullInvalidation = 1 << 2,
     kSubtreeFullInvalidationForStackedContents = 1 << 3,
 
-    // For repeated objects inside multicolumn.
-    kSubtreeSlowPathRect = 1 << 4,
-
     // When this flag is set, no paint or raster invalidation will be issued
     // for the subtree.
     //
@@ -118,13 +125,17 @@ struct CORE_EXPORT PaintInvalidatorContext {
   PaintLayer* painting_layer = nullptr;
 
   // The previous VisualRect and PaintOffset of FragmentData.
-  LayoutRect old_visual_rect;
+  IntRect old_visual_rect;
   LayoutPoint old_paint_offset;
 
   const FragmentData* fragment_data;
 
  private:
   friend class PaintInvalidator;
+
+  template <typename Rect, typename Point>
+  void ExcludeCompositedLayerSubpixelAccumulation(const LayoutObject&,
+                                                  Rect&) const;
 
   const PaintPropertyTreeBuilderFragmentContext* tree_builder_context_ =
       nullptr;
@@ -137,11 +148,11 @@ struct CORE_EXPORT PaintInvalidatorContext {
 };
 
 class PaintInvalidator {
+  DISALLOW_NEW();
+
  public:
-  void InvalidatePaint(LocalFrameView&,
-                       const PaintPropertyTreeBuilderContext*,
-                       PaintInvalidatorContext&);
-  void InvalidatePaint(const LayoutObject&,
+  // Returns true if the object is invalidated.
+  bool InvalidatePaint(const LayoutObject&,
                        const PaintPropertyTreeBuilderContext*,
                        PaintInvalidatorContext&);
 
@@ -153,24 +164,8 @@ class PaintInvalidator {
   friend struct PaintInvalidatorContext;
   friend class PrePaintTreeWalk;
 
-  template <typename Rect, typename Point>
-  static void ExcludeCompositedLayerSubpixelAccumulation(
-      const LayoutObject&,
-      const PaintInvalidatorContext&,
-      Rect&);
-  template <typename Rect, typename Point>
-  static LayoutRect MapLocalRectToVisualRect(const LayoutObject&,
-                                             const Rect&,
-                                             const PaintInvalidatorContext&,
-                                             bool disable_flip = false);
-
-  ALWAYS_INLINE LayoutRect ComputeVisualRect(const LayoutObject&,
-                                             const PaintInvalidatorContext&);
-  ALWAYS_INLINE LayoutRect
-  MapFragmentLocalRectToVisualRect(const LayoutRect&,
-                                   const LayoutObject&,
-                                   const NGPaintFragment&,
-                                   const PaintInvalidatorContext&);
+  ALWAYS_INLINE IntRect ComputeVisualRect(const LayoutObject&,
+                                          const PaintInvalidatorContext&);
   ALWAYS_INLINE void UpdatePaintingLayer(const LayoutObject&,
                                          PaintInvalidatorContext&);
   ALWAYS_INLINE void UpdatePaintInvalidationContainer(const LayoutObject&,

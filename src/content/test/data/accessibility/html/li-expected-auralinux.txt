@@ -1,5 +1,5 @@
 [document web]
-++[list] display:block
+++[list] display:block setsize:3
 ++++[list item] display:list-item posinset:1 setsize:3
 ++++++[static] name='• '
 ++++++[text] name='Item 1' display:list-item

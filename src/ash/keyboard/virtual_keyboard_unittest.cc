@@ -4,6 +4,7 @@
 
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/events/test/event_generator.h"
@@ -24,7 +25,6 @@ class VirtualKeyboardTest : public AshTestBase {
         keyboard::switches::kEnableVirtualKeyboard);
     AshTestBase::SetUp();
     keyboard::SetTouchKeyboardEnabled(true);
-    Shell::Get()->EnableKeyboard();
   }
 
   void TearDown() override {

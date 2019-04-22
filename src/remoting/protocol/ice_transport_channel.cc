@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/single_thread_task_runner.h"
@@ -16,9 +17,9 @@
 #include "remoting/protocol/channel_socket_adapter.h"
 #include "remoting/protocol/port_allocator_factory.h"
 #include "remoting/protocol/transport_context.h"
-#include "third_party/webrtc/p2p/base/p2pconstants.h"
-#include "third_party/webrtc/p2p/base/p2ptransportchannel.h"
-#include "third_party/webrtc/p2p/base/packettransportinterface.h"
+#include "third_party/webrtc/p2p/base/p2p_constants.h"
+#include "third_party/webrtc/p2p/base/p2p_transport_channel.h"
+#include "third_party/webrtc/p2p/base/packet_transport_interface.h"
 #include "third_party/webrtc/p2p/base/port.h"
 #include "third_party/webrtc/rtc_base/network.h"
 
@@ -131,8 +132,8 @@ void IceTransportChannel::Connect(const std::string& name,
                          this, &IceTransportChannel::TryReconnect);
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&IceTransportChannel::NotifyConnected,
-                            weak_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&IceTransportChannel::NotifyConnected,
+                                weak_factory_.GetWeakPtr()));
 }
 
 void IceTransportChannel::NotifyConnected() {

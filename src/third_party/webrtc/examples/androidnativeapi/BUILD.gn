@@ -18,6 +18,7 @@ if (is_android) {
       "//sdk/android:surfaceviewrenderer_java",
       "//sdk/android:video_api_java",
       "//sdk/android:video_java",
+      "//third_party/android_deps:com_android_support_support_annotations_java",
     ]
 
     shared_libraries = [ ":examples_androidnativeapi_jni" ]
@@ -36,8 +37,8 @@ if (is_android) {
   rtc_shared_library("examples_androidnativeapi_jni") {
     testonly = true
     sources = [
-      "jni/androidcallclient.cc",
-      "jni/androidcallclient.h",
+      "jni/android_call_client.cc",
+      "jni/android_call_client.h",
       "jni/onload.cc",
     ]
 
@@ -46,6 +47,7 @@ if (is_android) {
 
     deps = [
       ":generated_jni",
+      "../../api:scoped_refptr",
       "//api:libjingle_peerconnection_api",
       "//api/audio_codecs:builtin_audio_decoder_factory",
       "//api/audio_codecs:builtin_audio_encoder_factory",
@@ -55,9 +57,9 @@ if (is_android) {
       "//media:rtc_internal_video_codecs",
       "//modules/audio_processing",
       "//modules/audio_processing:api",
-      "//modules/utility:utility",
+      "//modules/utility",
       "//pc:libjingle_peerconnection",
-      "//rtc_base:rtc_base",
+      "//rtc_base",
       "//rtc_base:rtc_base_approved",
       "//sdk/android:native_api_base",
       "//sdk/android:native_api_jni",

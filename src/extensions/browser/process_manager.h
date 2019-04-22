@@ -11,6 +11,7 @@
 #include <set>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
@@ -18,13 +19,17 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/scoped_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/devtools_agent_host_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/render_process_host_observer.h"
 #include "extensions/browser/activity.h"
 #include "extensions/browser/event_page_tracker.h"
 #include "extensions/browser/extension_registry_observer.h"
+#include "extensions/browser/service_worker/worker_id.h"
+#include "extensions/browser/service_worker/worker_id_set.h"
 #include "extensions/common/extension_id.h"
 #include "extensions/common/view_type.h"
 
@@ -36,7 +41,7 @@ class DevToolsAgentHost;
 class RenderFrameHost;
 class SiteInstance;
 class WebContents;
-};
+}  // namespace content
 
 namespace extensions {
 
@@ -52,7 +57,8 @@ class ProcessManager : public KeyedService,
                        public content::NotificationObserver,
                        public ExtensionRegistryObserver,
                        public EventPageTracker,
-                       public content::DevToolsAgentHostObserver {
+                       public content::DevToolsAgentHostObserver,
+                       public content::RenderProcessHostObserver {
  public:
   using ExtensionHostSet = std::set<extensions::ExtensionHost*>;
 
@@ -66,6 +72,11 @@ class ProcessManager : public KeyedService,
                                content::RenderFrameHost* render_frame_host,
                                const Extension* extension);
   void UnregisterRenderFrameHost(content::RenderFrameHost* render_frame_host);
+
+  // Registers or unregisters a running worker state to this process manager.
+  // Note: This does not create any Service Workers.
+  void RegisterServiceWorker(const WorkerId& worker_id);
+  void UnregisterServiceWorker(const WorkerId& worker_id);
 
   // Returns the SiteInstance that the given URL belongs to.
   // TODO(aa): This only returns correct results for extensions and packaged
@@ -137,6 +148,21 @@ class ProcessManager : public KeyedService,
                                    Activity::Type activity_type,
                                    const std::string& extra_data);
 
+  // Methods to increment or decrement the ref-count of a specified service
+  // worker with id |worker_id|.
+  // The increment method returns the guid that needs to be passed to the
+  // decrement method.
+  std::string IncrementServiceWorkerKeepaliveCount(
+      const WorkerId& worker_id,
+      Activity::Type activity_type,
+      const std::string& extra_data);
+  // Decrements the ref-count of the specified worker with |worker_id| that
+  // had its ref-count incremented with |request_uuid|.
+  void DecrementServiceWorkerKeepaliveCount(const WorkerId& worker_id,
+                                            const std::string& request_uuid,
+                                            Activity::Type activity_type,
+                                            const std::string& extra_data);
+
   using ActivitiesMultisetPair = std::pair<Activity::Type, std::string>;
   using ActivitiesMultiset = std::multiset<ActivitiesMultisetPair>;
 
@@ -198,9 +224,20 @@ class ProcessManager : public KeyedService,
     return background_hosts_;
   }
 
+  // Returns true if this ProcessManager has registered any worker with id
+  // |worker_id|.
+  bool HasServiceWorker(const WorkerId& worker_id) const;
+
+  // Returns all the Service Worker infos that is active in the given render
+  // process for the extension with |extension_id|.
+  std::vector<WorkerId> GetServiceWorkers(const ExtensionId& extension_id,
+                                          int render_process_id) const;
+
   bool startup_background_hosts_created_for_test() const {
     return startup_background_hosts_created_;
   }
+
+  std::vector<WorkerId> GetAllWorkersIdsForTesting();
 
  protected:
   static ProcessManager* Create(content::BrowserContext* context);
@@ -230,6 +267,11 @@ class ProcessManager : public KeyedService,
   void OnExtensionUnloaded(content::BrowserContext* browser_context,
                            const Extension* extension,
                            UnloadedExtensionReason reason) override;
+
+  // content::RenderProcessHostObserver:
+  void RenderProcessExited(
+      content::RenderProcessHost* host,
+      const content::ChildProcessTerminationInfo& info) override;
 
   // Extra information we keep for each extension's background page.
   struct BackgroundPageData;
@@ -307,6 +349,13 @@ class ProcessManager : public KeyedService,
   // information is not accessible at registration/deregistration time.
   ExtensionRenderFrames all_extension_frames_;
 
+  // TaskRunner for interacting with ServiceWorkerContexts.
+  scoped_refptr<base::SequencedTaskRunner> worker_task_runner_;
+
+  // Contains all active extension Service Worker information for all
+  // extensions.
+  WorkerIdSet all_extension_workers_;
+
   BackgroundPageDataMap background_page_data_;
 
   // True if we have created the startup set of background hosts.
@@ -335,6 +384,13 @@ class ProcessManager : public KeyedService,
   // starting, we can receive a completion notification without a corresponding
   // start notification. In that case we want to avoid decrementing keepalive.
   std::map<int, ExtensionHost*> pending_network_requests_;
+
+  // Observers of Service Worker RPH this ProcessManager manages.
+  ScopedObserver<content::RenderProcessHost, content::RenderProcessHostObserver>
+      process_observer_;
+  // Maps render render_process_id -> extension_id for all Service Workers this
+  // ProcessManager manages.
+  std::map<int, std::set<ExtensionId>> worker_process_to_extension_ids_;
 
   // Must be last member, see doc on WeakPtrFactory.
   base::WeakPtrFactory<ProcessManager> weak_ptr_factory_;

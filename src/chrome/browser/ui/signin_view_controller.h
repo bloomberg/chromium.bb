@@ -25,11 +25,13 @@ class SigninViewControllerTestUtil;
 namespace signin_metrics {
 enum class AccessPoint;
 enum class PromoAction;
-}
+enum class Reason;
+}  // namespace signin_metrics
 
 // Class responsible for showing and hiding all sign-in related UIs
 // (modal sign-in, DICE full-tab sign-in page, sync confirmation dialog, sign-in
 // error dialog).
+// This is only used on desktop platforms, not used on Android and ChromeOS.
 class SigninViewController {
  public:
   SigninViewController();
@@ -41,21 +43,25 @@ class SigninViewController {
   // Shows the signin attached to |browser|'s active web contents.
   // |access_point| indicates the access point used to open the Gaia sign in
   // page.
+  // DEPRECATED: Use ShowDiceEnableSyncTab instead.
   void ShowSignin(profiles::BubbleViewMode mode,
                   Browser* browser,
                   signin_metrics::AccessPoint access_point,
                   const GURL& redirect_url = GURL::EmptyGURL());
 
-#if !defined(OS_CHROMEOS)
-  // Shows the DICE-specific sign-in flow: opens a Gaia sign-in webpage in a new
-  // tab attached to |browser|.
-  void ShowDiceSigninTab(profiles::BubbleViewMode mode,
-                         Browser* browser,
-                         signin_metrics::AccessPoint access_point,
-                         signin_metrics::PromoAction promo_action,
-                         const std::string& email,
-                         const GURL& redirect_url = GURL::EmptyGURL());
-#endif  // !defined(OS_CHROMEOS)
+  // Shows a Chrome Sync signin tab. |email_hint| may be empty.
+  // Note: If the user has already set a primary account, then this is
+  // considered a reauth of the primary account, and |email_hint| is ignored.
+  void ShowDiceEnableSyncTab(Browser* browser,
+                             signin_metrics::AccessPoint access_point,
+                             signin_metrics::PromoAction promo_action,
+                             const std::string& email_hint);
+
+  // Shows the Dice "add account" tab, which adds an account to the browser but
+  // does not turn sync on. |email_hint| may be empty.
+  void ShowDiceAddAccountTab(Browser* browser,
+                             signin_metrics::AccessPoint access_point,
+                             const std::string& email_hint);
 
   // Shows the modal sync confirmation dialog as a browser-modal dialog on top
   // of the |browser|'s window.
@@ -75,24 +81,20 @@ class SigninViewController {
   // Sets the height of the modal signin dialog.
   void SetModalSigninHeight(int height);
 
-  // Either navigates back in the signin flow if the history state allows it or
-  // closes the flow otherwise.
-  // Does nothing if the signin flow does not exist.
-  void PerformNavigation();
-
   // Notifies this object that it's |delegate_| member has become invalid.
   void ResetModalSigninDelegate();
 
  private:
-  friend class login_ui_test_utils::SigninViewControllerTestUtil;
+  // Shows the DICE-specific sign-in flow: opens a Gaia sign-in webpage in a new
+  // tab attached to |browser|. |email_hint| may be empty.
+  void ShowDiceSigninTab(Browser* browser,
+                         signin_metrics::Reason signin_reason,
+                         signin_metrics::AccessPoint access_point,
+                         signin_metrics::PromoAction promo_action,
+                         const std::string& email_hint,
+                         const GURL& redirect_url = GURL::EmptyGURL());
 
-  // Shows the signin flow as a tab modal dialog attached to |browser|'s active
-  // web contents.
-  // |access_point| indicates the access point used to open the Gaia sign in
-  // page.
-  void ShowModalSigninDialog(profiles::BubbleViewMode mode,
-                             Browser* browser,
-                             signin_metrics::AccessPoint access_point);
+  friend class login_ui_test_utils::SigninViewControllerTestUtil;
 
   // Returns the web contents of the modal dialog.
   content::WebContents* GetModalDialogWebContentsForTesting();

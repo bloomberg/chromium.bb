@@ -17,7 +17,10 @@ class WebContentsContext
  private:
   friend class content::WebContentsUserData<WebContentsContext>;
   explicit WebContentsContext(content::WebContents* web_contents) {}
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
 };
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(WebContentsContext)
 
 }  // namespace
 

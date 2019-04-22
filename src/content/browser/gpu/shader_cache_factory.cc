@@ -4,6 +4,7 @@
 
 #include "content/browser/gpu/shader_cache_factory.h"
 
+#include "base/bind.h"
 #include "base/single_thread_task_runner.h"
 #include "gpu/ipc/host/shader_disk_cache.h"
 

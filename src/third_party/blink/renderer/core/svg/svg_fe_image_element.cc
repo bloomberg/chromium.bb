@@ -28,6 +28,7 @@
 #include "third_party/blink/renderer/core/svg/svg_preserve_aspect_ratio.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
@@ -37,9 +38,10 @@ namespace blink {
 inline SVGFEImageElement::SVGFEImageElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(svg_names::kFEImageTag, document),
       SVGURIReference(this),
-      preserve_aspect_ratio_(SVGAnimatedPreserveAspectRatio::Create(
-          this,
-          svg_names::kPreserveAspectRatioAttr)) {
+      preserve_aspect_ratio_(
+          MakeGarbageCollected<SVGAnimatedPreserveAspectRatio>(
+              this,
+              svg_names::kPreserveAspectRatioAttr)) {
   AddToPropertyMap(preserve_aspect_ratio_);
 }
 
@@ -153,20 +155,17 @@ FilterEffect* SVGFEImageElement::Build(SVGFilterBuilder*, Filter* filter) {
     // Don't use the broken image icon on image loading errors.
     scoped_refptr<Image> image =
         cached_image_->ErrorOccurred() ? nullptr : cached_image_->GetImage();
-    return FEImage::CreateWithImage(filter, image,
-                                    preserve_aspect_ratio_->CurrentValue());
+    return MakeGarbageCollected<FEImage>(
+        filter, image, preserve_aspect_ratio_->CurrentValue());
   }
 
-  return FEImage::CreateWithIRIReference(
-      filter, GetTreeScope(), HrefString(),
-      preserve_aspect_ratio_->CurrentValue());
+  return MakeGarbageCollected<FEImage>(filter, GetTreeScope(), HrefString(),
+                                       preserve_aspect_ratio_->CurrentValue());
 }
 
-bool SVGFEImageElement::TaintsOrigin(bool inputs_taint_origin) const {
-  const SecurityOrigin* security_origin = GetDocument().GetSecurityOrigin();
-  if (cached_image_ && cached_image_->IsAccessAllowed(security_origin))
-    return inputs_taint_origin;
-  return true;
+bool SVGFEImageElement::TaintsOrigin() const {
+  // We always consider a 'href' that references a local element as tainting.
+  return !cached_image_ || !cached_image_->IsAccessAllowed();
 }
 
 }  // namespace blink

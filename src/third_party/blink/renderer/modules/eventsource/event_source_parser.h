@@ -24,8 +24,7 @@ class MODULES_EXPORT EventSourceParser final
     virtual void OnMessageEvent(const AtomicString& type,
                                 const String& data,
                                 const AtomicString& last_event_id) = 0;
-    virtual void OnReconnectionTimeSet(
-        unsigned long long reconnection_time) = 0;
+    virtual void OnReconnectionTimeSet(uint64_t reconnection_time) = 0;
     void Trace(blink::Visitor* visitor) override {}
   };
 

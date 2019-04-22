@@ -26,7 +26,6 @@
 #include "content/common/content_param_traits.h"
 #include "content/common/content_security_policy/csp_context.h"
 #include "content/common/content_security_policy_header.h"
-#include "content/common/download/mhtml_save_status.h"
 #include "content/common/frame_message_enums.h"
 #include "content/common/frame_message_structs.h"
 #include "content/common/frame_owner_properties.h"
@@ -37,7 +36,6 @@
 #include "content/common/resource_timing_info.h"
 #include "content/common/savable_subframe.h"
 #include "content/public/common/common_param_traits.h"
-#include "content/public/common/console_message_level.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/favicon_url.h"
 #include "content/public/common/frame_navigate_params.h"
@@ -57,11 +55,14 @@
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
+#include "third_party/blink/public/common/frame/occlusion_state.h"
 #include "third_party/blink/public/common/frame/user_activation_update_type.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/common/messaging/transferable_message.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
-#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
+#include "third_party/blink/public/mojom/frame/lifecycle.mojom.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/public/platform/web_intrinsic_sizing_info.h"
@@ -69,7 +70,6 @@
 #include "third_party/blink/public/platform/web_scroll_types.h"
 #include "third_party/blink/public/platform/web_sudden_termination_disabler_type.h"
 #include "third_party/blink/public/web/web_frame_owner_properties.h"
-#include "third_party/blink/public/web/web_frame_serializer_cache_control_policy.h"
 #include "third_party/blink/public/web/web_fullscreen_options.h"
 #include "third_party/blink/public/web/web_media_player_action.h"
 #include "third_party/blink/public/web/web_tree_scope_type.h"
@@ -150,11 +150,18 @@ IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::WebScrollDirection,
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::WebScrollGranularity,
                               blink::kFirstScrollGranularity,
                               blink::kLastScrollGranularity)
-IPC_ENUM_TRAITS_MIN_MAX_VALUE(content::NavigationDownloadPolicy,
-                              content::NavigationDownloadPolicy::kAllow,
-                              content::NavigationDownloadPolicy::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::FeaturePolicyDisposition,
                           blink::mojom::FeaturePolicyDisposition::kMaxValue)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::FrameVisibility,
+                          blink::mojom::FrameVisibility::kMaxValue)
+IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::FrameOcclusionState,
+                              blink::FrameOcclusionState::kUnknown,
+                              blink::FrameOcclusionState::kMaxValue)
+
+IPC_STRUCT_TRAITS_BEGIN(content::NavigationDownloadPolicy)
+  IPC_STRUCT_TRAITS_MEMBER(observed_types)
+  IPC_STRUCT_TRAITS_MEMBER(disallowed_types)
+IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(blink::WebFloatSize)
   IPC_STRUCT_TRAITS_MEMBER(width)
@@ -258,6 +265,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::FrameVisualProperties)
   IPC_STRUCT_TRAITS_MEMBER(capture_sequence_number)
   IPC_STRUCT_TRAITS_MEMBER(zoom_level)
   IPC_STRUCT_TRAITS_MEMBER(page_scale_factor)
+  IPC_STRUCT_TRAITS_MEMBER(is_pinch_gesture_active)
   IPC_STRUCT_TRAITS_MEMBER(local_surface_id_allocation)
 IPC_STRUCT_TRAITS_END()
 
@@ -275,6 +283,7 @@ IPC_STRUCT_TRAITS_END()
 IPC_STRUCT_TRAITS_BEGIN(blink::FramePolicy)
   IPC_STRUCT_TRAITS_MEMBER(sandbox_flags)
   IPC_STRUCT_TRAITS_MEMBER(container_policy)
+  IPC_STRUCT_TRAITS_MEMBER(allowed_to_download_without_user_activation)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::PageImportanceSignals)
@@ -308,7 +317,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::ResourceTimingInfo)
   IPC_STRUCT_TRAITS_MEMBER(connection_info)
   IPC_STRUCT_TRAITS_MEMBER(timing)
   IPC_STRUCT_TRAITS_MEMBER(last_redirect_end_time)
-  IPC_STRUCT_TRAITS_MEMBER(finish_time)
+  IPC_STRUCT_TRAITS_MEMBER(response_end)
   IPC_STRUCT_TRAITS_MEMBER(transfer_size)
   IPC_STRUCT_TRAITS_MEMBER(encoded_body_size)
   IPC_STRUCT_TRAITS_MEMBER(decoded_body_size)
@@ -410,16 +419,6 @@ IPC_STRUCT_BEGIN_WITH_PARENT(FrameHostMsg_DidCommitProvisionalLoad_Params,
   // successfully cleared.
   IPC_STRUCT_MEMBER(bool, history_list_was_cleared)
 
-  // The routing_id of the render view associated with the navigation. We need
-  // to track the RenderViewHost routing_id because of downstream dependencies
-  // (https://crbug.com/392171 DownloadRequestHandle, SaveFileManager,
-  // ResourceDispatcherHostImpl, MediaStreamUIProxy and possibly others). They
-  // look up the view based on the ID stored in the resource requests. Once
-  // those dependencies are unwound or moved to RenderFrameHost
-  // (https://crbug.com/304341) we can move the client to be based on the
-  // routing_id of the RenderFrameHost.
-  IPC_STRUCT_MEMBER(int, render_view_routing_id)
-
   // Origin of the frame.  This will be replicated to any associated
   // RenderFrameProxies.
   IPC_STRUCT_MEMBER(url::Origin, origin)
@@ -442,6 +441,10 @@ IPC_STRUCT_BEGIN_WITH_PARENT(FrameHostMsg_DidCommitProvisionalLoad_Params,
 
   // Request ID generated by the renderer.
   IPC_STRUCT_MEMBER(int, request_id)
+
+  // A token that has been passed by the browser process when it asked the
+  // renderer process to commit the navigation.
+  IPC_STRUCT_MEMBER(base::UnguessableToken, navigation_token)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(FrameMsg_PostMessage_Params)
@@ -476,6 +479,7 @@ IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::CommonNavigationParams)
   IPC_STRUCT_TRAITS_MEMBER(url)
+  IPC_STRUCT_TRAITS_MEMBER(initiator_origin)
   IPC_STRUCT_TRAITS_MEMBER(referrer)
   IPC_STRUCT_TRAITS_MEMBER(transition)
   IPC_STRUCT_TRAITS_MEMBER(navigation_type)
@@ -502,7 +506,8 @@ IPC_STRUCT_TRAITS_BEGIN(content::NavigationTiming)
   IPC_STRUCT_TRAITS_MEMBER(fetch_start)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(content::RequestNavigationParams)
+IPC_STRUCT_TRAITS_BEGIN(content::CommitNavigationParams)
+  IPC_STRUCT_TRAITS_MEMBER(origin_to_commit)
   IPC_STRUCT_TRAITS_MEMBER(is_overriding_user_agent)
   IPC_STRUCT_TRAITS_MEMBER(redirects)
   IPC_STRUCT_TRAITS_MEMBER(redirect_response)
@@ -522,11 +527,10 @@ IPC_STRUCT_TRAITS_BEGIN(content::RequestNavigationParams)
   IPC_STRUCT_TRAITS_MEMBER(was_discarded)
   IPC_STRUCT_TRAITS_MEMBER(is_view_source)
   IPC_STRUCT_TRAITS_MEMBER(should_clear_history_list)
-  IPC_STRUCT_TRAITS_MEMBER(should_create_service_worker)
   IPC_STRUCT_TRAITS_MEMBER(navigation_timing)
-  IPC_STRUCT_TRAITS_MEMBER(service_worker_provider_id)
   IPC_STRUCT_TRAITS_MEMBER(appcache_host_id)
   IPC_STRUCT_TRAITS_MEMBER(was_activated)
+  IPC_STRUCT_TRAITS_MEMBER(navigation_token)
 #if defined(OS_ANDROID)
   IPC_STRUCT_TRAITS_MEMBER(data_url_as_string)
 #endif
@@ -534,10 +538,9 @@ IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(blink::ParsedFeaturePolicyDeclaration)
   IPC_STRUCT_TRAITS_MEMBER(feature)
-  IPC_STRUCT_TRAITS_MEMBER(matches_all_origins)
-  IPC_STRUCT_TRAITS_MEMBER(matches_opaque_src)
-  IPC_STRUCT_TRAITS_MEMBER(disposition)
-  IPC_STRUCT_TRAITS_MEMBER(origins)
+  IPC_STRUCT_TRAITS_MEMBER(values)
+  IPC_STRUCT_TRAITS_MEMBER(fallback_value)
+  IPC_STRUCT_TRAITS_MEMBER(opaque_value)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::FrameReplicationState)
@@ -547,6 +550,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::FrameReplicationState)
   IPC_STRUCT_TRAITS_MEMBER(feature_policy_header)
   IPC_STRUCT_TRAITS_MEMBER(active_sandbox_flags)
   IPC_STRUCT_TRAITS_MEMBER(frame_policy)
+  IPC_STRUCT_TRAITS_MEMBER(opener_feature_state)
   IPC_STRUCT_TRAITS_MEMBER(accumulated_csp_headers)
   IPC_STRUCT_TRAITS_MEMBER(scope)
   IPC_STRUCT_TRAITS_MEMBER(insecure_request_policy)
@@ -562,6 +566,7 @@ IPC_STRUCT_TRAITS_END()
 // process should look for an existing history item for the frame.
 IPC_STRUCT_BEGIN(FrameHostMsg_OpenURL_Params)
   IPC_STRUCT_MEMBER(GURL, url)
+  IPC_STRUCT_MEMBER(url::Origin, initiator_origin)
   IPC_STRUCT_MEMBER(bool, uses_post)
   IPC_STRUCT_MEMBER(scoped_refptr<network::ResourceRequestBody>,
                     resource_request_body)
@@ -574,6 +579,7 @@ IPC_STRUCT_BEGIN(FrameHostMsg_OpenURL_Params)
   IPC_STRUCT_MEMBER(blink::WebTriggeringEventInfo, triggering_event_info)
   IPC_STRUCT_MEMBER(mojo::MessagePipeHandle, blob_url_token)
   IPC_STRUCT_MEMBER(std::string, href_translate)
+  IPC_STRUCT_MEMBER(content::NavigationDownloadPolicy, download_policy)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(FrameHostMsg_DownloadUrl_Params)
@@ -618,43 +624,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::SavableSubframe)
   IPC_STRUCT_TRAITS_MEMBER(routing_id)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_BEGIN(FrameMsg_SerializeAsMHTML_Params)
-  // Job id - used to match responses to requests.
-  IPC_STRUCT_MEMBER(int, job_id)
-
-  // Destination file handle.
-  IPC_STRUCT_MEMBER(IPC::PlatformFileForTransit, destination_file)
-
-  // MHTML boundary marker / MIME multipart boundary maker.  The same
-  // |mhtml_boundary_marker| should be used for serialization of each frame.
-  IPC_STRUCT_MEMBER(std::string, mhtml_boundary_marker)
-
-  // Whether to use binary encoding while serializing.  Binary encoding is not
-  // supported outside of Chrome, so this should not be used if the MHTML is
-  // intended for sharing.
-  IPC_STRUCT_MEMBER(bool, mhtml_binary_encoding)
-
-  IPC_STRUCT_MEMBER(blink::WebFrameSerializerCacheControlPolicy,
-                    mhtml_cache_control_policy)
-
-  // Whether to remove popup overlay while serializing.
-  IPC_STRUCT_MEMBER(bool, mhtml_popup_overlay_removal)
-
-  // Whether to detect problems while serializing.
-  IPC_STRUCT_MEMBER(bool, mhtml_problem_detection)
-
-  // |digests_of_uris_to_skip| contains digests of uris of MHTML parts that
-  // should be skipped.  This helps deduplicate mhtml parts across frames.
-  // SECURITY NOTE: Sha256 digests (rather than uris) are used to prevent
-  // disclosing uris to other renderer processes;  the digests should be
-  // generated using SHA256HashString function from crypto/sha2.h and hashing
-  // |salt + url.spec()|.
-  IPC_STRUCT_MEMBER(std::set<std::string>, digests_of_uris_to_skip)
-
-  // Salt used for |digests_of_uris_to_skip|.
-  IPC_STRUCT_MEMBER(std::string, salt)
-IPC_STRUCT_END()
-
 // This message is used to send hittesting data from the renderer in order
 // to perform hittesting on the browser process.
 IPC_STRUCT_BEGIN(FrameHostMsg_HittestData_Params)
@@ -675,6 +644,16 @@ IPC_STRUCT_BEGIN(FrameHostMsg_CreateChildFrame_Params)
   IPC_STRUCT_MEMBER(blink::FramePolicy, frame_policy)
   IPC_STRUCT_MEMBER(content::FrameOwnerProperties, frame_owner_properties)
   IPC_STRUCT_MEMBER(blink::FrameOwnerElementType, frame_owner_element_type)
+IPC_STRUCT_END()
+
+IPC_STRUCT_BEGIN(FrameHostMsg_CreateChildFrame_Params_Reply)
+  IPC_STRUCT_MEMBER(int32_t, child_routing_id)
+  IPC_STRUCT_MEMBER(mojo::MessagePipeHandle, new_interface_provider)
+  IPC_STRUCT_MEMBER(mojo::MessagePipeHandle,
+                    document_interface_broker_content_handle)
+  IPC_STRUCT_MEMBER(mojo::MessagePipeHandle,
+                    document_interface_broker_blink_handle)
+  IPC_STRUCT_MEMBER(base::UnguessableToken, devtools_frame_token)
 IPC_STRUCT_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::CSPSource)
@@ -865,38 +844,8 @@ IPC_MESSAGE_ROUTED0(FrameMsg_DidStopLoading)
 
 // Add message to the frame console.
 IPC_MESSAGE_ROUTED2(FrameMsg_AddMessageToConsole,
-                    content::ConsoleMessageLevel /* level */,
+                    blink::mojom::ConsoleMessageLevel /* level */,
                     std::string /* message */)
-
-// Request for the renderer to execute JavaScript in the frame's context.
-//
-// javascript is the string containing the JavaScript to be executed in the
-// target frame's context.
-//
-// If the third parameter is true the result is sent back to the browser using
-// the message FrameHostMsg_JavaScriptExecuteResponse.
-// FrameHostMsg_JavaScriptExecuteResponse is passed the ID parameter so that the
-// host can uniquely identify the request.
-IPC_MESSAGE_ROUTED3(FrameMsg_JavaScriptExecuteRequest,
-                    base::string16,  /* javascript */
-                    int,  /* ID */
-                    bool  /* if true, a reply is requested */)
-
-// ONLY FOR TESTS: Same as above but adds a fake UserGestureindicator around
-// execution. (crbug.com/408426)
-IPC_MESSAGE_ROUTED4(FrameMsg_JavaScriptExecuteRequestForTests,
-                    base::string16,  /* javascript */
-                    int,  /* ID */
-                    bool, /* if true, a reply is requested */
-                    bool  /* if true, a user gesture indicator is created */)
-
-// Same as FrameMsg_JavaScriptExecuteRequest above except the script is
-// run in the isolated world specified by the fourth parameter.
-IPC_MESSAGE_ROUTED4(FrameMsg_JavaScriptExecuteRequestInIsolatedWorld,
-                    base::string16, /* javascript */
-                    int, /* ID */
-                    bool, /* if true, a reply is requested */
-                    int /* world_id */)
 
 // Tells the renderer to reload the frame, optionally bypassing the cache while
 // doing so.
@@ -993,9 +942,6 @@ IPC_MESSAGE_ROUTED1(FrameMsg_SetTextTrackSettings,
 // frame can update its loading state.
 IPC_MESSAGE_ROUTED0(FrameMsg_CheckCompleted)
 
-// Posts a message from a frame in another process to the current renderer.
-IPC_MESSAGE_ROUTED1(FrameMsg_PostMessageEvent, FrameMsg_PostMessage_Params)
-
 // Tells the RenderFrame to clear the focused element (if any).
 IPC_MESSAGE_ROUTED0(FrameMsg_ClearFocusedElement)
 
@@ -1037,16 +983,10 @@ IPC_MESSAGE_ROUTED0(FrameMsg_GetSavableResourceLinks)
 
 // Get html data by serializing the target frame and replacing all resource
 // links with a path to the local copy passed in the message payload.
-IPC_MESSAGE_ROUTED2(FrameMsg_GetSerializedHtmlWithLocalLinks,
+IPC_MESSAGE_ROUTED3(FrameMsg_GetSerializedHtmlWithLocalLinks,
                     FrameMsg_GetSerializedHtmlWithLocalLinks_UrlMap,
-                    FrameMsg_GetSerializedHtmlWithLocalLinks_FrameRoutingIdMap)
-
-// Serialize target frame and its resources into MHTML and write it into the
-// provided destination file handle.  Note that when serializing multiple
-// frames, one needs to serialize the *main* frame first (the main frame
-// needs to go first according to RFC2557 + the main frame will trigger
-// generation of the MHTML header).
-IPC_MESSAGE_ROUTED1(FrameMsg_SerializeAsMHTML, FrameMsg_SerializeAsMHTML_Params)
+                    FrameMsg_GetSerializedHtmlWithLocalLinks_FrameRoutingIdMap,
+                    bool /* save_with_empty_url */)
 
 IPC_MESSAGE_ROUTED1(FrameMsg_SetFrameOwnerProperties,
                     content::FrameOwnerProperties /* frame_owner_properties */)
@@ -1104,6 +1044,11 @@ IPC_MESSAGE_ROUTED0(FrameMsg_SuppressFurtherDialogs)
 // Notifies the RenderFrame about a user activation detected in the browser side
 // (e.g. during Android voice search).
 IPC_MESSAGE_ROUTED0(FrameMsg_NotifyUserActivation)
+
+// Notifies a parent frame that the child frame requires information about
+// whether it is occluded or has visual effects applied.
+IPC_MESSAGE_ROUTED1(FrameMsg_SetNeedsOcclusionTracking,
+                    bool /* needs_tracking */)
 
 // Tells the frame to update the user activation state in appropriate part of
 // the frame tree (ancestors for activation notification and all nodes for
@@ -1165,15 +1110,13 @@ IPC_MESSAGE_ROUTED4(FrameHostMsg_DidAddMessageToConsole,
 //
 // Each of these messages will have a corresponding FrameHostMsg_Detach message
 // sent when the frame is detached from the DOM.
-// Note that |new_render_frame_id|, |new_interface_provider|, and
-// |devtools_frame_token| are out parameters. Browser process defines them for
+// Note that |params_reply| is an out parameter. Browser process defines it for
 // the renderer process.
-IPC_SYNC_MESSAGE_CONTROL1_3(
-    FrameHostMsg_CreateChildFrame,
-    FrameHostMsg_CreateChildFrame_Params,
-    int32_t,                 /* new_routing_id */
-    mojo::MessagePipeHandle, /* new_interface_provider */
-    base::UnguessableToken /* devtools_frame_token */)
+// |params_reply.child_routing_id| may not be assigned MSG_ROUTING_NONE.
+IPC_SYNC_MESSAGE_CONTROL1_1(FrameHostMsg_CreateChildFrame,
+                            FrameHostMsg_CreateChildFrame_Params,
+                            // params_reply
+                            FrameHostMsg_CreateChildFrame_Params_Reply)
 
 // Sent by the renderer to the parent RenderFrameHost when a child frame is
 // detached from the DOM.
@@ -1236,12 +1179,6 @@ IPC_MESSAGE_CONTROL3(FrameHostMsg_SaveImageFromDataURL,
                      int /* render_view_id */,
                      int /* render_frame_id */,
                      std::string /* data_url */)
-
-// Sent when after the onload handler has been invoked for the document
-// in this frame. Sent for top-level frames. |report_type| and |ui_timestamp|
-// are used to report navigation metrics starting on the ui input event that
-// triggered the navigation timestamp.
-IPC_MESSAGE_ROUTED0(FrameHostMsg_DocumentOnLoadCompleted)
 
 // Notifies that the initial empty document of a view has been accessed.
 // After this, it is no longer safe to show a pending navigation's URL without
@@ -1461,10 +1398,17 @@ IPC_MESSAGE_ROUTED2(FrameHostMsg_SynchronizeVisualProperties,
 IPC_MESSAGE_ROUTED3(FrameHostMsg_UpdateViewportIntersection,
                     gfx::Rect /* viewport_intersection */,
                     gfx::Rect /* compositor_visible_rect */,
-                    bool /* occluded or obscured */)
+                    blink::FrameOcclusionState /* occlusion_state */)
+
+// Indicates that a child frame requires its parent frame to send it information
+// about whether it is occluded or has visual effects applied, in order to
+// service IntersectionObserver's that track visibility.
+IPC_MESSAGE_ROUTED1(FrameHostMsg_SetNeedsOcclusionTracking,
+                    bool /* needs_tracking */)
 
 // Informs the child that the frame has changed visibility.
-IPC_MESSAGE_ROUTED1(FrameHostMsg_VisibilityChanged, bool /* visible */)
+IPC_MESSAGE_ROUTED1(FrameHostMsg_VisibilityChanged,
+                    blink::mojom::FrameVisibility /* visibility */)
 
 // Sent by a RenderFrameProxy to the browser signaling that the renderer
 // has determined the DOM subtree it represents is inert and should no
@@ -1510,15 +1454,6 @@ IPC_MESSAGE_ROUTED3(FrameHostMsg_SelectionChanged,
                     uint32_t /* the offset of the text in the document */,
                     gfx::Range /* selection range in the document */)
 
-// Response for FrameMsg_JavaScriptExecuteRequest, sent when a reply was
-// requested. The ID is the parameter supplied to
-// FrameMsg_JavaScriptExecuteRequest. The result has the value returned by the
-// script as its only element, one of Null, Boolean, Integer, Real, Date, or
-// String.
-IPC_MESSAGE_ROUTED2(FrameHostMsg_JavaScriptExecuteResponse,
-                    int  /* id */,
-                    base::ListValue  /* result */)
-
 // A request to run a JavaScript dialog.
 IPC_SYNC_MESSAGE_ROUTED3_2(FrameHostMsg_RunJavaScriptDialog,
                            base::string16 /* in - alert message */,
@@ -1538,7 +1473,7 @@ IPC_SYNC_MESSAGE_ROUTED1_2(FrameHostMsg_RunBeforeUnloadConfirm,
 
 // Notify browser the theme color has been changed.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_DidChangeThemeColor,
-                    SkColor /* theme_color */)
+                    base::Optional<SkColor> /* theme_color */)
 
 // Response for FrameMsg_TextSurroundingSelectionRequest, |startOffset| and
 // |endOffset| are the offsets of the selection in the returned |content|.
@@ -1564,10 +1499,11 @@ IPC_MESSAGE_ROUTED3(FrameHostMsg_UnregisterProtocolHandler,
 // The security info is non empty if the resource was originally loaded over
 // a secure connection.
 // Note: May only be sent once per URL per frame per committed load.
-IPC_MESSAGE_ROUTED4(FrameHostMsg_DidLoadResourceFromMemoryCache,
+IPC_MESSAGE_ROUTED5(FrameHostMsg_DidLoadResourceFromMemoryCache,
                     GURL /* url */,
                     std::string /* http method */,
                     std::string /* mime type */,
+                    base::Optional<url::Origin> /* top frame origin */,
                     content::ResourceType /* resource type */)
 
 // This frame attempted to navigate the main frame to the given url, even
@@ -1651,14 +1587,6 @@ IPC_MESSAGE_ROUTED2(FrameHostMsg_SerializedHtmlWithLocalLinksResponse,
                     std::string /* data buffer */,
                     bool /* end of data? */)
 
-// Response to FrameMsg_SerializeAsMHTML.
-IPC_MESSAGE_ROUTED4(
-    FrameHostMsg_SerializeAsMHTMLResponse,
-    int /* job_id (used to match responses to requests) */,
-    content::MhtmlSaveStatus /* final success/failure status */,
-    std::set<std::string> /* digests of uris of serialized resources */,
-    base::TimeDelta /* how much time of the main render thread was used */)
-
 // Sent when the renderer updates hint for importance of a tab.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_UpdatePageImportanceSignals,
                     content::PageImportanceSignals)
@@ -1716,6 +1644,13 @@ IPC_MESSAGE_ROUTED2(FrameHostMsg_PrintCrossProcessSubframe,
 // Asks the frame host to notify the owner element in parent process that it
 // should render fallback content.
 IPC_MESSAGE_ROUTED0(FrameHostMsg_RenderFallbackContentInParentProcess)
+
+// Used to go to the session history entry at the given offset (ie, -1 will
+// return the "back" item). This message affects a view and not just a frame,
+// but is sent on the frame channel for attribution purposes.
+IPC_MESSAGE_ROUTED2(FrameHostMsg_GoToEntryAtOffset,
+                    int /* offset (from current) of history item to get */,
+                    bool /* has_user_gesture */)
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
 

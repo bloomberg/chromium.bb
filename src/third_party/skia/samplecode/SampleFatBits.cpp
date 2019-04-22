@@ -23,7 +23,7 @@
 #include "SkString.h"
 #include "SkSurface.h"
 #include "SkTypes.h"
-#include "sk_tool_utils.h"
+#include "ToolUtils.h"
 
 class SkEvent;
 
@@ -105,8 +105,8 @@ public:
         fBounds.set(0, 0, SkIntToScalar(width * zoom), SkIntToScalar(height * zoom));
         fMatrix.setScale(SkIntToScalar(zoom), SkIntToScalar(zoom));
         fInverse.setScale(SK_Scalar1 / zoom, SK_Scalar1 / zoom);
-        fShader0 = sk_tool_utils::create_checkerboard_shader(0xFFDDDDDD, 0xFFFFFFFF, zoom);
-        fShader1 = SkShader::MakeColorShader(SK_ColorWHITE);
+        fShader0 = ToolUtils::create_checkerboard_shader(0xFFDDDDDD, 0xFFFFFFFF, zoom);
+        fShader1 = SkShaders::Color(SK_ColorWHITE);
         fShader = fShader0;
 
         SkImageInfo info = SkImageInfo::MakeN32Premul(width, height);
@@ -467,10 +467,9 @@ protected:
                        FatBits::kHair_Style == fFB.getStyle() ? "Hair" : "Stroke",
                        fFB.getUseClip() ? "clip" : "noclip");
             SkPaint paint;
-            paint.setAntiAlias(true);
-            paint.setTextSize(16);
             paint.setColor(SK_ColorBLUE);
-            canvas->drawString(str, 10, 16, paint);
+            SkFont font(nullptr, 16);
+            canvas->drawString(str, 10, 16, font, paint);
         }
     }
 

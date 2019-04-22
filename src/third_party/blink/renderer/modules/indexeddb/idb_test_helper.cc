@@ -26,8 +26,8 @@ std::unique_ptr<IDBValue> CreateNullIDBValueForTesting(v8::Isolate* isolate) {
   scoped_refptr<SharedBuffer> idb_value_buffer = SharedBuffer::Create();
   idb_value_buffer->Append(reinterpret_cast<const char*>(ssv_wire_bytes.data()),
                            ssv_wire_bytes.size());
-  std::unique_ptr<IDBValue> idb_value =
-      IDBValue::Create(std::move(idb_value_buffer), Vector<WebBlobInfo>());
+  auto idb_value = std::make_unique<IDBValue>(std::move(idb_value_buffer),
+                                              Vector<WebBlobInfo>());
   idb_value->SetInjectedPrimaryKey(IDBKey::CreateNumber(42.0),
                                    IDBKeyPath(String("primaryKey")));
   idb_value->SetIsolate(isolate);
@@ -37,9 +37,10 @@ std::unique_ptr<IDBValue> CreateNullIDBValueForTesting(v8::Isolate* isolate) {
 std::unique_ptr<IDBValue> CreateIDBValueForTesting(v8::Isolate* isolate,
                                                    bool create_wrapped_value) {
   uint32_t element_count = create_wrapped_value ? 16 : 2;
+  v8::Local<v8::Context> context = isolate->GetCurrentContext();
   v8::Local<v8::Array> v8_array = v8::Array::New(isolate, element_count);
   for (uint32_t i = 0; i < element_count; ++i)
-    v8_array->Set(i, v8::True(isolate));
+    v8_array->Set(context, i, v8::True(isolate)).Check();
 
   NonThrowableExceptionState non_throwable_exception_state;
   IDBValueWrapper wrapper(isolate, v8_array,
@@ -53,8 +54,8 @@ std::unique_ptr<IDBValue> CreateIDBValueForTesting(v8::Isolate* isolate,
   Vector<WebBlobInfo> blob_infos = wrapper.TakeBlobInfo();
   scoped_refptr<SharedBuffer> wrapped_marker_buffer = wrapper.TakeWireBytes();
 
-  std::unique_ptr<IDBValue> idb_value =
-      IDBValue::Create(std::move(wrapped_marker_buffer), std::move(blob_infos));
+  auto idb_value = std::make_unique<IDBValue>(std::move(wrapped_marker_buffer),
+                                              std::move(blob_infos));
   idb_value->SetInjectedPrimaryKey(IDBKey::CreateNumber(42.0),
                                    IDBKeyPath(String("primaryKey")));
   idb_value->SetIsolate(isolate);

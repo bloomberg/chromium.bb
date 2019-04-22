@@ -1,10 +1,10 @@
 <!DOCTYPE HTML>
 <html>
 <body>
-<script src="../resources/js-test.js"></script>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
 
 <div id="container">
-
   <div>
     <label id="label1" for="control1">Label 1</label>
     <input id="control1" type="text">
@@ -40,13 +40,8 @@
   </div>
 </div>
 
-<div id="console"></div>
 <script>
-description("This tests that titleUIElement works correctly even when things change dynamically.");
-
-if (window.testRunner && window.accessibilityController) {
-    testRunner.dumpAsText();
-
+async_test((t) => {
     function hasTitleUIElement(axElement) {
         var label1 = accessibilityController.accessibleElementById("label1");
         var titleUIElement = axElement.nameElementAtIndex(0);
@@ -72,39 +67,46 @@ if (window.testRunner && window.accessibilityController) {
         return accessibilityController.accessibleElementById(id);
     }
 
-    shouldBe("axElement('control1').nameElementAtIndex(0).isEqual(axElement('label1'))", "true");
+    assert_equals(axElement('control1').nameElementAtIndex(0).isEqual(axElement('label1')), true);
 
-    shouldBe("axElement('control2').nameElementAtIndex(0).isEqual(axElement('label2'))", "true");
+    assert_equals(axElement('control2').nameElementAtIndex(0).isEqual(axElement('label2')), true);
 
     // Test changing the "for" attribute dynamically.
-    shouldBe("hasTitleUIElement(axElement('control3'))", "false");
-    shouldBe("document.getElementById('label3').setAttribute('for', 'control3'); axElement('control3').nameElementAtIndex(0).isEqual(axElement('label3'))", "true");
+    assert_equals(hasTitleUIElement(axElement('control3')), false);
+    document.getElementById('label3').setAttribute('for', 'control3');
+    assert_equals(axElement('control3').nameElementAtIndex(0), axElement('label3'));
 
     // Test unattached label element that's subsequently attached.
     var label4Element = document.createElement("label");
     label4Element.id = "label4";
     label4Element.setAttribute("for", "control4");
     label4Element.innerText = "Label 4";
-    shouldBe("var label4Element = createLabelWithIdAndForAttribute('label4', 'control4'); hasTitleUIElement(axElement('control4'))", "false");
-    shouldBe("document.getElementById('container').appendChild(label4Element); hasTitleUIElement(axElement('control4'))", "true");
-    shouldBe("axElement('control4').nameElementAtIndex(0).isEqual(axElement('label4'))", "true");
+    var label4Element = createLabelWithIdAndForAttribute('label4', 'control4');
+    assert_equals(hasTitleUIElement(axElement('control4')), false);
+    document.getElementById('container').appendChild(label4Element);
+    assert_equals(hasTitleUIElement(axElement('control4')), true);
+    assert_equals(axElement('control4').nameElementAtIndex(0).isEqual(axElement('label4')), true);
 
     // Test what happens when the label is detached.
-    shouldBe("label4Element.parentElement.removeChild(label4Element); hasTitleUIElement(axElement('control4'))", "false");
+    label4Element.parentElement.removeChild(label4Element);
+    assert_equals(hasTitleUIElement(axElement('control4')), false);
 
     // Test label that gets a control reparented into it.
-    shouldBe("hasTitleUIElement(axElement('control5'))", "false");
+    assert_equals(hasTitleUIElement(axElement('control5')), false);
 
-    shouldBe("reparentNodeIntoContainer(document.getElementById('control5'), document.getElementById('label5')); document.body.offsetTop; axElement('control5').nameElementAtIndex(0) != null", "true");
-    shouldBe("axElement('control5').nameElementAtIndex(0).isEqual(axElement('label5'))", "true");
+    reparentNodeIntoContainer(document.getElementById('control5'), document.getElementById('label5'));
+    assert_equals(axElement('control5').nameElementAtIndex(0) != null, true);
+    assert_equals(axElement('control5').nameElementAtIndex(0).isEqual(axElement('label5')), true);
 
     // Make sure the first label is returned, even as labels are added and removed.
-    shouldBe("axElement('control6').nameElementAtIndex(0).isEqual(axElement('label6b'))", "true");
-    shouldBe("newLabel6Element = createLabelWithIdAndForAttribute('label6a', 'control6'); document.body.insertBefore(newLabel6Element, document.body.firstChild); axElement('control6').nameElementAtIndex(0).isEqual(axElement('label6a'))", "true");
-    shouldBe("document.body.removeChild(newLabel6Element); axElement('control6').nameElementAtIndex(0).isEqual(axElement('label6b'))", "true");
-
-    document.getElementById('container').style.display = 'none';
-}
+    assert_equals(axElement('control6').nameElementAtIndex(0).isEqual(axElement('label6b')), true);
+    newLabel6Element = createLabelWithIdAndForAttribute('label6a', 'control6');
+    document.body.insertBefore(newLabel6Element, document.body.firstChild);
+    assert_equals(axElement('control6').nameElementAtIndex(0).isEqual(axElement('label6a')), true);
+    document.body.removeChild(newLabel6Element);
+    assert_equals(axElement('control6').nameElementAtIndex(0).isEqual(axElement('label6b')), true);
+    t.done();
+}, "This tests that titleUIElement works correctly even when things change dynamically.");
 
 </script>
 

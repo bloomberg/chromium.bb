@@ -37,7 +37,7 @@ scoped_refptr<SerializedScriptValue> BuildSerializedScriptValue(
 
 TEST(BlinkTransferableMessageStructTraitsTest,
      ArrayBufferTransferOutOfScopeSucceeds) {
-  // More exhaustive tests in LayoutTests/. This is a sanity check.
+  // More exhaustive tests in web_tests/. This is a sanity check.
   // Build the original ArrayBuffer in a block scope to simulate situations
   // where a buffer may be freed twice.
   mojo::Message mojo_message;
@@ -79,7 +79,7 @@ TEST(BlinkTransferableMessageStructTraitsTest,
 
 TEST(BlinkTransferableMessageStructTraitsTest,
      ArrayBufferContentsLazySerializationSucceeds) {
-  // More exhaustive tests in LayoutTests/. This is a sanity check.
+  // More exhaustive tests in web_tests/. This is a sanity check.
   V8TestingScope scope;
   v8::Isolate* isolate = scope.GetIsolate();
   size_t num_elements = 8;
@@ -125,7 +125,7 @@ ImageBitmap* CreateBitmap() {
 
 TEST(BlinkTransferableMessageStructTraitsTest,
      BitmapTransferOutOfScopeSucceeds) {
-  // More exhaustive tests in LayoutTests/. This is a sanity check.
+  // More exhaustive tests in web_tests/. This is a sanity check.
   // Build the original ImageBitmap in a block scope to simulate situations
   // where a buffer may be freed twice.
   mojo::Message mojo_message;
@@ -149,7 +149,7 @@ TEST(BlinkTransferableMessageStructTraitsTest,
 
 TEST(BlinkTransferableMessageStructTraitsTest,
      BitmapLazySerializationSucceeds) {
-  // More exhaustive tests in LayoutTests/. This is a sanity check.
+  // More exhaustive tests in web_tests/. This is a sanity check.
   V8TestingScope scope;
   ImageBitmap* original_bitmap = CreateBitmap();
   // The original bitmap's height and width will be 0 after it is transferred.

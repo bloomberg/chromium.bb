@@ -11,11 +11,11 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "chromeos/components/multidevice/remote_device.h"
+#include "chromeos/components/multidevice/remote_device_cache.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
-#include "components/cryptauth/remote_device.h"
-#include "components/cryptauth/remote_device_cache.h"
-#include "components/cryptauth/remote_device_ref.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace service_manager {
@@ -70,7 +70,7 @@ class MultiDeviceSetupClientImpl : public MultiDeviceSetupClient,
   // mojom::HostStatusObserver:
   void OnHostStatusChanged(
       mojom::HostStatus host_status,
-      const base::Optional<cryptauth::RemoteDevice>& host_device) override;
+      const base::Optional<multidevice::RemoteDevice>& host_device) override;
 
   // mojom::FeatureStateObserver:
   void OnFeatureStatesChanged(
@@ -83,7 +83,7 @@ class MultiDeviceSetupClientImpl : public MultiDeviceSetupClient,
 
   void OnGetEligibleHostDevicesCompleted(
       GetEligibleHostDevicesCallback callback,
-      const cryptauth::RemoteDeviceList& eligible_host_devices);
+      const multidevice::RemoteDeviceList& eligible_host_devices);
 
   mojom::HostStatusObserverPtr GenerateHostStatusObserverInterfacePtr();
   mojom::FeatureStateObserverPtr GenerateFeatureStatesObserverInterfacePtr();
@@ -93,7 +93,7 @@ class MultiDeviceSetupClientImpl : public MultiDeviceSetupClient,
   mojom::MultiDeviceSetupPtr multidevice_setup_ptr_;
   mojo::Binding<mojom::HostStatusObserver> host_status_observer_binding_;
   mojo::Binding<mojom::FeatureStateObserver> feature_state_observer_binding_;
-  std::unique_ptr<cryptauth::RemoteDeviceCache> remote_device_cache_;
+  std::unique_ptr<multidevice::RemoteDeviceCache> remote_device_cache_;
 
   HostStatusWithDevice host_status_with_device_;
   FeatureStatesMap feature_states_map_;

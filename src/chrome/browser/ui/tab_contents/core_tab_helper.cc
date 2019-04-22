@@ -58,7 +58,6 @@ const int kImageSearchThumbnailMaxHeight = 600;
 
 CoreTabHelper::CoreTabHelper(WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      delegate_(NULL),
       content_restrictions_(0),
       weak_factory_(this) {}
 
@@ -72,26 +71,6 @@ base::string16 CoreTabHelper::GetStatusText() const {
   base::string16 status_text;
   GetStatusTextForWebContents(&status_text, web_contents());
   return status_text;
-}
-
-void CoreTabHelper::OnCloseStarted() {
-  if (close_start_time_.is_null())
-    close_start_time_ = base::TimeTicks::Now();
-}
-
-void CoreTabHelper::OnCloseCanceled() {
-  close_start_time_ = base::TimeTicks();
-  before_unload_end_time_ = base::TimeTicks();
-  unload_detached_start_time_ = base::TimeTicks();
-}
-
-void CoreTabHelper::OnUnloadStarted() {
-  before_unload_end_time_ = base::TimeTicks::Now();
-}
-
-void CoreTabHelper::OnUnloadDetachedStarted() {
-  if (unload_detached_start_time_.is_null())
-    unload_detached_start_time_ = base::TimeTicks::Now();
 }
 
 void CoreTabHelper::UpdateContentRestrictions(int content_restrictions) {
@@ -242,46 +221,6 @@ void CoreTabHelper::OnVisibilityChanged(content::Visibility visibility) {
   }
 }
 
-void CoreTabHelper::WebContentsDestroyed() {
-  // OnCloseStarted isn't called in unit tests.
-  if (!close_start_time_.is_null()) {
-    bool fast_tab_close_enabled =
-        base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableFastUnload);
-
-    if (fast_tab_close_enabled) {
-      base::TimeTicks now = base::TimeTicks::Now();
-      base::TimeDelta close_time = now - close_start_time_;
-      UMA_HISTOGRAM_TIMES("Tab.Close", close_time);
-
-      base::TimeTicks unload_start_time = close_start_time_;
-      base::TimeTicks unload_end_time = now;
-      if (!before_unload_end_time_.is_null())
-        unload_start_time = before_unload_end_time_;
-      if (!unload_detached_start_time_.is_null())
-        unload_end_time = unload_detached_start_time_;
-      base::TimeDelta unload_time = unload_end_time - unload_start_time;
-      UMA_HISTOGRAM_TIMES("Tab.Close.UnloadTime", unload_time);
-    } else {
-      base::TimeTicks now = base::TimeTicks::Now();
-      base::TimeTicks unload_start_time = close_start_time_;
-      if (!before_unload_end_time_.is_null())
-        unload_start_time = before_unload_end_time_;
-      UMA_HISTOGRAM_TIMES("Tab.Close", now - close_start_time_);
-      UMA_HISTOGRAM_TIMES("Tab.Close.UnloadTime", now - unload_start_time);
-    }
-  }
-}
-
-void CoreTabHelper::BeforeUnloadFired(bool proceed,
-                                      const base::TimeTicks& proceed_time) {
-  before_unload_end_time_ = proceed_time;
-}
-
-void CoreTabHelper::BeforeUnloadDialogCancelled() {
-  OnCloseCanceled();
-}
-
 // Update back/forward buttons for web_contents that are active.
 void CoreTabHelper::NavigationEntriesDeleted() {
 #if !defined(OS_ANDROID)
@@ -342,3 +281,5 @@ void CoreTabHelper::DoSearchByImageInNewTab(
   }
   web_contents()->OpenURL(open_url_params);
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(CoreTabHelper)

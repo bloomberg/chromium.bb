@@ -11,5 +11,5 @@ typemaps = [
   "//chrome/services/media_gallery_util/public/mojom/media_parser.typemap",
   "//chrome/services/printing/public/mojom/pdf_render_settings.typemap",
   "//chrome/services/printing/public/mojom/pdf_to_pwg_raster_converter.typemap",
-  "//chrome/services/util_win/public/mojom/shell_util_win.typemap",
+  "//chrome/services/util_win/public/mojom/util_win.typemap",
 ]

@@ -72,6 +72,8 @@ class SessionTabHelper : public content::WebContentsObserver,
   // Unique identifier of the window the tab is in.
   SessionID window_id_;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(SessionTabHelper);
 };
 

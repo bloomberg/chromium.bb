@@ -13,7 +13,7 @@ namespace extensions {
 class ResourcesPrivateGetStringsFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("resourcesPrivate.getStrings",
-                             RESOURCESPRIVATE_GETSTRINGS);
+                             RESOURCESPRIVATE_GETSTRINGS)
   ResourcesPrivateGetStringsFunction();
 
  protected:

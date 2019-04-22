@@ -41,13 +41,22 @@ class MEDIA_GPU_EXPORT VideoFrameFactory {
   // Initializes the factory and runs |init_cb| on the current thread when it's
   // complete. If initialization fails, the returned texture owner will be
   // null.
-  // |wants_promotion_hint| tells us whether to mark VideoFrames for compositor
-  // overlay promotion hints or not.
-  // |use_texture_owner_as_overlays| tells us whether TextureOwner can be used
-  // as an overlay, in which case java overlays will never be used.
-  virtual void Initialize(bool wants_promotion_hint,
-                          bool use_texture_owner_as_overlays,
-                          InitCb init_cb) = 0;
+  enum class OverlayMode {
+    // When using java overlays, the compositor can provide hints to the media
+    // pipeline to indicate whether the video can be promoted to an overlay.
+    // This indicates whether promotion hints are needed, if framework support
+    // for overlay promotion is available (requires MediaCodec.setOutputSurface
+    // support).
+    kDontRequestPromotionHints,
+    kRequestPromotionHints,
+
+    // When using surface control, the factory should always use a TextureOwner
+    // since it can directly be promoted to an overlay on a frame-by-frame
+    // basis. The bits below indicate whether the media uses a secure codec.
+    kSurfaceControlSecure,
+    kSurfaceControlInsecure
+  };
+  virtual void Initialize(OverlayMode overlay_mode, InitCb init_cb) = 0;
 
   // Notify us about the current surface bundle that subsequent video frames
   // should use.

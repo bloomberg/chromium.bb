@@ -20,10 +20,14 @@ public final class FeedConfiguration {
     /** Do not allow construction */
     private FeedConfiguration() {}
 
+    private static final String CARD_MENU_TOOLTIP_ELIGIBLE = "card_menu_tooltip_eligible";
+    /** Default value for if card menus should have tooltips enabled. */
+    public static final boolean CARD_MENU_TOOLTIP_ELIGIBLE_DEFAULT = false;
+
     private static final String FEED_SERVER_ENDPOINT = "feed_server_endpoint";
     /** Default value for server endpoint. */
     public static final String FEED_SERVER_ENDPOINT_DEFAULT =
-            "https://www.google.com/httpservice/noretry/NowStreamService/FeedQuery";
+            "https://www.google.com/httpservice/noretry/DiscoverClankService/FeedQuery";
 
     private static final String FEED_SERVER_METHOD = "feed_server_method";
     /** Default value for feed server method. */
@@ -34,6 +38,10 @@ public final class FeedConfiguration {
     /** Default value for feed server response length prefixed. */
     public static final boolean FEED_SERVER_RESPONSE_LENGTH_PREFIXED_DEFAULT = true;
 
+    private static final String FEED_UI_ENABLED = "feed_ui_enabled";
+    /** Default value for the type of UI to request from the server. */
+    public static final boolean FEED_UI_ENABLED_DEFAULT = false;
+
     private static final String INITIAL_NON_CACHED_PAGE_SIZE = "initial_non_cached_page_size";
     /** Default value for initial non cached page size. */
     public static final int INITIAL_NON_CACHED_PAGE_SIZE_DEFAULT = 10;
@@ -43,21 +51,37 @@ public final class FeedConfiguration {
     /** Default value for logging immediate content threshold. */
     public static final int LOGGING_IMMEDIATE_CONTENT_THRESHOLD_MS_DEFAULT = 1000;
 
+    private static final String MANAGE_INTERESTS_ENABLED = "manage_interests_enabled";
+    /** Default value for whether to use menu options to launch interest management page. */
+    public static final boolean MANAGE_INTERESTS_ENABLED_DEFAULT = false;
+
     private static final String NON_CACHED_MIN_PAGE_SIZE = "non_cached_min_page_size";
     /** Default value for non cached minimum page size. */
     public static final int NON_CACHED_MIN_PAGE_SIZE_DEFAULT = 5;
 
     private static final String NON_CACHED_PAGE_SIZE = "non_cached_page_size";
     /** Default value for non cached page size. */
-    public static final int NON_CACHED_PAGE_SIZE_DEFAULT = 20;
+    public static final int NON_CACHED_PAGE_SIZE_DEFAULT = 25;
 
     private static final String SESSION_LIFETIME_MS = "session_lifetime_ms";
     /** Default value for session lifetime. */
     public static final int SESSION_LIFETIME_MS_DEFAULT = 3600000;
 
+    private static final String SNIPPETS_ENABLED = "snippets_enabled";
+    /** Default value for whether to show article snippets. */
+    public static final boolean SNIPPETS_ENABLED_DEFAULT = false;
+
     private static final String TRIGGER_IMMEDIATE_PAGINATION = "trigger_immediate_pagination";
     /** Default value for triggering immediate pagination. */
     public static final boolean TRIGGER_IMMEDIATE_PAGINATION_DEFAULT = false;
+
+    private static final String UNDOABLE_ACTIONS_ENABLED = "undoable_actions_enabled";
+    /** Default value for if undoable actions should be presented to the user. */
+    public static final boolean UNDOABLE_ACTIONS_ENABLED_DEFAULT = false;
+
+    private static final String USE_SECONDARY_PAGE_REQUEST = "use_secondary_page_request";
+    /** Default value for pagination behavior. */
+    public static final boolean USE_SECONDARY_PAGE_REQUEST_DEFAULT = false;
 
     private static final String USE_TIMEOUT_SCHEDULER = "use_timeout_scheduler";
     /** Default value for the type of scheduler handling. */
@@ -66,6 +90,14 @@ public final class FeedConfiguration {
     private static final String VIEW_LOG_THRESHOLD = "view_log_threshold";
     /** Default value for logging view threshold. */
     public static final double VIEW_LOG_THRESHOLD_DEFAULT = 0.66d;
+
+    /** @return Whether to show card tooltips */
+    @VisibleForTesting
+    static boolean getCardMenuTooltipEligible() {
+        return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS, CARD_MENU_TOOLTIP_ELIGIBLE,
+                CARD_MENU_TOOLTIP_ELIGIBLE_DEFAULT);
+    }
 
     /** @return Feed server endpoint to use to fetch content suggestions. */
     @VisibleForTesting
@@ -91,7 +123,16 @@ public final class FeedConfiguration {
                 FEED_SERVER_RESPONSE_LENGTH_PREFIXED, FEED_SERVER_RESPONSE_LENGTH_PREFIXED_DEFAULT);
     }
 
+    /** @return Whether to ask the server for "Feed" UI or just basic UI. */
+    @VisibleForTesting
+    static boolean getFeedUiEnabled() {
+        return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS, FEED_UI_ENABLED,
+                FEED_UI_ENABLED_DEFAULT);
+    }
+
     /** @return Used to decide where to place the more button initially. */
+    @VisibleForTesting
     static int getInitialNonCachedPageSize() {
         return ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
                 ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS, INITIAL_NON_CACHED_PAGE_SIZE,
@@ -110,7 +151,16 @@ public final class FeedConfiguration {
                 LOGGING_IMMEDIATE_CONTENT_THRESHOLD_MS_DEFAULT);
     }
 
+    /** return Whether to show context menu option to launch to customization page. */
+    @VisibleForTesting
+    static boolean getManageInterestsEnabled() {
+        return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS, MANAGE_INTERESTS_ENABLED,
+                MANAGE_INTERESTS_ENABLED_DEFAULT);
+    }
+
     /** @return Used to decide where to place the more button. */
+    @VisibleForTesting
     static int getNonCachedMinPageSize() {
         return ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
                 ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS, NON_CACHED_MIN_PAGE_SIZE,
@@ -118,6 +168,7 @@ public final class FeedConfiguration {
     }
 
     /** @return Used to decide where to place the more button. */
+    @VisibleForTesting
     static int getNonCachedPageSize() {
         return ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
                 ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS, NON_CACHED_PAGE_SIZE,
@@ -143,6 +194,14 @@ public final class FeedConfiguration {
                 TRIGGER_IMMEDIATE_PAGINATION_DEFAULT);
     }
 
+    /** @return Whether to allow the present the user with the ability to undo actions. */
+    @VisibleForTesting
+    static boolean getUndoableActionsEnabled() {
+        return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS, UNDOABLE_ACTIONS_ENABLED,
+                UNDOABLE_ACTIONS_ENABLED_DEFAULT);
+    }
+
     /**
      * @return Whether the Feed's session handling should use logic to deal with timeouts and
      * placing new results below the fold.
@@ -154,6 +213,17 @@ public final class FeedConfiguration {
                 USE_TIMEOUT_SCHEDULER_DEFAULT);
     }
 
+    /**
+     * @return If secondary (a more intuitive) pagination approach should be used, or the original
+     * Zine matching behavior should be used.
+     */
+    @VisibleForTesting
+    static boolean getUseSecondaryPageRequest() {
+        return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS, USE_SECONDARY_PAGE_REQUEST,
+                USE_SECONDARY_PAGE_REQUEST_DEFAULT);
+    }
+
     /** @return How much of a card must be on screen to generate a UMA log view. */
     @VisibleForTesting
     static double getViewLogThreshold() {
@@ -162,26 +232,44 @@ public final class FeedConfiguration {
                 VIEW_LOG_THRESHOLD_DEFAULT);
     }
 
+    /** @return Whether the article snippets feature is enabled. */
+    @VisibleForTesting
+    static boolean getSnippetsEnabled() {
+        return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS, SNIPPETS_ENABLED,
+                SNIPPETS_ENABLED_DEFAULT);
+    }
+
     /**
      * @return A fully built {@link Configuration}, ready to be given to the Feed.
      */
     public static Configuration createConfiguration() {
         return new Configuration.Builder()
+                .put(ConfigKey.CARD_MENU_TOOLTIP_ELIGIBLE,
+                        FeedConfiguration.getCardMenuTooltipEligible())
                 .put(ConfigKey.FEED_SERVER_ENDPOINT, FeedConfiguration.getFeedServerEndpoint())
                 .put(ConfigKey.FEED_SERVER_METHOD, FeedConfiguration.getFeedServerMethod())
                 .put(ConfigKey.FEED_SERVER_RESPONSE_LENGTH_PREFIXED,
                         FeedConfiguration.getFeedServerResponseLengthPrefixed())
+                .put(ConfigKey.FEED_UI_ENABLED, FeedConfiguration.getFeedUiEnabled())
                 .put(ConfigKey.INITIAL_NON_CACHED_PAGE_SIZE,
                         FeedConfiguration.getInitialNonCachedPageSize())
                 .put(ConfigKey.LOGGING_IMMEDIATE_CONTENT_THRESHOLD_MS,
                         FeedConfiguration.getLoggingImmediateContentThresholdMs())
+                .put(ConfigKey.MANAGE_INTERESTS_ENABLED,
+                        FeedConfiguration.getManageInterestsEnabled())
                 .put(ConfigKey.NON_CACHED_MIN_PAGE_SIZE,
                         FeedConfiguration.getNonCachedMinPageSize())
                 .put(ConfigKey.NON_CACHED_PAGE_SIZE, FeedConfiguration.getNonCachedPageSize())
                 .put(ConfigKey.SESSION_LIFETIME_MS, FeedConfiguration.getSessionLifetimeMs())
+                .put(ConfigKey.SNIPPETS_ENABLED, FeedConfiguration.getSnippetsEnabled())
                 .put(ConfigKey.TRIGGER_IMMEDIATE_PAGINATION,
                         FeedConfiguration.getTriggerImmediatePagination())
+                .put(ConfigKey.UNDOABLE_ACTIONS_ENABLED,
+                        FeedConfiguration.getUndoableActionsEnabled())
                 .put(ConfigKey.USE_TIMEOUT_SCHEDULER, FeedConfiguration.getUseTimeoutScheduler())
+                .put(ConfigKey.USE_SECONDARY_PAGE_REQUEST,
+                        FeedConfiguration.getUseSecondaryPageRequest())
                 .put(ConfigKey.VIEW_LOG_THRESHOLD, FeedConfiguration.getViewLogThreshold())
                 .build();
     }

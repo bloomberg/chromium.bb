@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//      http://www.apache.org/licenses/LICENSE-2.0
+//      https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -39,11 +39,14 @@ class raw_hash_map : public raw_hash_set<Policy, Hash, Eq, Alloc> {
   using MappedConstReference = decltype(P::value(
       std::addressof(std::declval<typename raw_hash_map::const_reference>())));
 
+  using KeyArgImpl =
+      KeyArg<IsTransparent<Eq>::value && IsTransparent<Hash>::value>;
+
  public:
   using key_type = typename Policy::key_type;
   using mapped_type = typename Policy::mapped_type;
-  template <typename K>
-  using key_arg = typename raw_hash_map::raw_hash_set::template key_arg<K>;
+  template <class K>
+  using key_arg = typename KeyArgImpl::template type<K, key_type>;
 
   static_assert(!std::is_reference<key_type>::value, "");
   // TODO(alkis): remove this assertion and verify that reference mapped_type is

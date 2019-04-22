@@ -119,6 +119,47 @@ bool StreamingDecoder::SetCompiledModuleBytes(
   return true;
 }
 
+namespace {
+
+class TopTierCompiledCallback {
+ public:
+  TopTierCompiledCallback(std::weak_ptr<NativeModule> native_module,
+                          StreamingDecoder::ModuleCompiledCallback callback)
+      : native_module_(std::move(native_module)),
+        callback_(std::move(callback)) {}
+
+  void operator()(CompilationEvent event) const {
+    if (event != CompilationEvent::kFinishedTopTierCompilation) return;
+    // If the native module is still alive, get back a shared ptr and call the
+    // callback.
+    if (std::shared_ptr<NativeModule> native_module = native_module_.lock()) {
+      callback_(native_module);
+    }
+#ifdef DEBUG
+    DCHECK(!called_);
+    called_ = true;
+#endif
+  }
+
+ private:
+  const std::weak_ptr<NativeModule> native_module_;
+  const StreamingDecoder::ModuleCompiledCallback callback_;
+#ifdef DEBUG
+  mutable bool called_ = false;
+#endif
+};
+
+}  // namespace
+
+void StreamingDecoder::NotifyNativeModuleCreated(
+    const std::shared_ptr<NativeModule>& native_module) {
+  if (!module_compiled_callback_) return;
+  auto* comp_state = native_module->compilation_state();
+  comp_state->AddCallback(TopTierCompiledCallback{
+      std::move(native_module), std::move(module_compiled_callback_)});
+  module_compiled_callback_ = {};
+}
+
 // An abstract class to share code among the states which decode VarInts. This
 // class takes over the decoding of the VarInt and then calls the actual decode
 // code with the decoded value.
@@ -278,7 +319,8 @@ size_t StreamingDecoder::DecodeVarInt32::ReadBytes(
   TRACE_STREAMING("ReadBytes of a VarInt\n");
   memcpy(remaining_buf.start(), &bytes.first(), new_bytes);
   buf.Truncate(offset() + new_bytes);
-  Decoder decoder(buf, streaming->module_offset());
+  Decoder decoder(buf,
+                  streaming->module_offset() - static_cast<uint32_t>(offset()));
   value_ = decoder.consume_u32v(field_name_);
   // The number of bytes we actually needed to read.
   DCHECK_GT(decoder.pc(), buffer().start());
@@ -288,7 +330,7 @@ size_t StreamingDecoder::DecodeVarInt32::ReadBytes(
   if (decoder.failed()) {
     if (new_bytes == remaining_buf.size()) {
       // We only report an error if we read all bytes.
-      streaming->Error(decoder.toResult(nullptr));
+      streaming->Error(decoder.error());
     }
     set_offset(offset() + new_bytes);
     return new_bytes;
@@ -339,17 +381,27 @@ StreamingDecoder::DecodeSectionLength::NextWithValue(
   SectionBuffer* buf =
       streaming->CreateNewBuffer(module_offset_, section_id_, value_,
                                  buffer().SubVector(0, bytes_consumed_));
-  if (!buf) return nullptr;
+  DCHECK_NOT_NULL(buf);
   if (value_ == 0) {
     if (section_id_ == SectionCode::kCodeSectionCode) {
-      return streaming->Error("Code section cannot have size 0");
+      return streaming->Error("code section cannot have size 0");
     }
+    // Process section without payload as well, to enforce section order and
+    // other feature checks specific to each individual section.
     streaming->ProcessSection(buf);
     if (!streaming->ok()) return nullptr;
     // There is no payload, we go to the next section immediately.
     return base::make_unique<DecodeSectionID>(streaming->module_offset_);
   } else {
     if (section_id_ == SectionCode::kCodeSectionCode) {
+      // Explicitly check for multiple code sections as module decoder never
+      // sees the code section and hence cannot track this section.
+      if (streaming->code_section_processed_) {
+        // TODO(mstarzinger): This error message (and other in this class) is
+        // different for non-streaming decoding. Bring them in sync and test.
+        return streaming->Error("code section can only appear once");
+      }
+      streaming->code_section_processed_ = true;
       // We reached the code section. All functions of the code section are put
       // into the same SectionBuffer.
       return base::make_unique<DecodeNumberOfFunctions>(buf);
@@ -373,19 +425,21 @@ StreamingDecoder::DecodeNumberOfFunctions::NextWithValue(
   // Copy the bytes we read into the section buffer.
   Vector<uint8_t> payload_buf = section_buffer_->payload();
   if (payload_buf.size() < bytes_consumed_) {
-    return streaming->Error("Invalid code section length");
+    return streaming->Error("invalid code section length");
   }
   memcpy(payload_buf.start(), buffer().start(), bytes_consumed_);
 
   // {value} is the number of functions.
   if (value_ == 0) {
     if (payload_buf.size() != bytes_consumed_) {
-      return streaming->Error("not all code section bytes were consumed");
+      return streaming->Error("not all code section bytes were used");
     }
     return base::make_unique<DecodeSectionID>(streaming->module_offset());
   }
 
-  streaming->StartCodeSection(value_, streaming->section_buffers_.back());
+  DCHECK_GE(kMaxInt, value_);
+  streaming->StartCodeSection(static_cast<int>(value_),
+                              streaming->section_buffers_.back());
   if (!streaming->ok()) return nullptr;
   return base::make_unique<DecodeFunctionLength>(
       section_buffer_, section_buffer_->payload_offset() + bytes_consumed_,
@@ -399,12 +453,12 @@ StreamingDecoder::DecodeFunctionLength::NextWithValue(
   // Copy the bytes we consumed into the section buffer.
   Vector<uint8_t> fun_length_buffer = section_buffer_->bytes() + buffer_offset_;
   if (fun_length_buffer.size() < bytes_consumed_) {
-    return streaming->Error("Invalid code section length");
+    return streaming->Error("read past code section end");
   }
   memcpy(fun_length_buffer.start(), buffer().start(), bytes_consumed_);
 
   // {value} is the length of the function.
-  if (value_ == 0) return streaming->Error("Invalid function length (0)");
+  if (value_ == 0) return streaming->Error("invalid function length (0)");
 
   if (buffer_offset_ + bytes_consumed_ + value_ > section_buffer_->length()) {
     return streaming->Error("not enough code section bytes");
@@ -442,14 +496,8 @@ StreamingDecoder::StreamingDecoder(
 StreamingDecoder::SectionBuffer* StreamingDecoder::CreateNewBuffer(
     uint32_t module_offset, uint8_t section_id, size_t length,
     Vector<const uint8_t> length_bytes) {
-  // Check the order of sections. Unknown sections can appear at any position.
-  if (section_id != kUnknownSectionCode) {
-    if (section_id < next_section_id_) {
-      Error("Unexpected section");
-      return nullptr;
-    }
-    next_section_id_ = section_id + 1;
-  }
+  // Section buffers are allocated in the same order they appear in the module,
+  // they will be processed and later on concatenated in that same order.
   section_buffers_.emplace_back(std::make_shared<SectionBuffer>(
       module_offset, section_id, length, length_bytes));
   return section_buffers_.back().get();

@@ -92,33 +92,37 @@ def diff_binary(first_filepath, second_filepath, file_len):
   CHUNK_SIZE = 32
   NUM_CHUNKS_IN_BLOCK = BLOCK_SIZE / CHUNK_SIZE
   MAX_STREAMS = 10
-  diffs = 0
+  num_diffs = 0
   streams = []
   offset = 0
   with open(first_filepath, 'rb') as lhs, open(second_filepath, 'rb') as rhs:
     while True:
       lhs_data = lhs.read(BLOCK_SIZE)
       rhs_data = rhs.read(BLOCK_SIZE)
-      if not lhs_data:
+      if not lhs_data or not rhs_data:
         break
       if lhs_data != rhs_data:
-        diffs += sum(l != r for l, r in zip(lhs_data, rhs_data))
-        for idx in xrange(NUM_CHUNKS_IN_BLOCK):
-          lhs_chunk = lhs_data[idx * CHUNK_SIZE:(idx + 1) * CHUNK_SIZE]
-          rhs_chunk = rhs_data[idx * CHUNK_SIZE:(idx + 1) * CHUNK_SIZE]
-          if streams is not None and lhs_chunk != rhs_chunk:
-            if len(streams) < MAX_STREAMS:
-              streams.append((offset + CHUNK_SIZE * idx,
-                              lhs_chunk, rhs_chunk))
-            else:
-              streams = None
+        for i in xrange(min(len(lhs_data), len(rhs_data))):
+          if lhs_data[i] != rhs_data[i]:
+            num_diffs += 1
+        if streams is not None:
+          for idx in xrange(NUM_CHUNKS_IN_BLOCK):
+            lhs_chunk = lhs_data[idx * CHUNK_SIZE:(idx + 1) * CHUNK_SIZE]
+            rhs_chunk = rhs_data[idx * CHUNK_SIZE:(idx + 1) * CHUNK_SIZE]
+            if lhs_chunk != rhs_chunk:
+              if len(streams) < MAX_STREAMS:
+                streams.append((offset + CHUNK_SIZE * idx,
+                                lhs_chunk, rhs_chunk))
+              else:
+                streams = None
+                break
       offset += len(lhs_data)
       del lhs_data
       del rhs_data
-  if not diffs:
+  if not num_diffs:
     return None
   result = '%d out of %d bytes are different (%.2f%%)' % (
-        diffs, file_len, 100.0 * diffs / file_len)
+        num_diffs, file_len, 100.0 * num_diffs / file_len)
   if streams:
     encode = lambda text: ''.join(i if 31 < ord(i) < 127 else '.' for i in text)
     for offset, lhs_data, rhs_data in streams:

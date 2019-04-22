@@ -149,13 +149,11 @@ protected:
             bug->addArc(circle, kStartAngle, kSweepAngle);
 
             // Now add the chord that should cap the circular arc
-            SkScalar cosV, sinV = SkScalarSinCos(SkDegreesToRadians(kStartAngle), &cosV);
+            SkPoint p0 = { kRad * SkScalarCos(SkDegreesToRadians(kStartAngle)),
+                           kRad * SkScalarSin(SkDegreesToRadians(kStartAngle)) };
 
-            SkPoint p0 = SkPoint::Make(kRad * cosV, kRad * sinV);
-
-            sinV = SkScalarSinCos(SkDegreesToRadians(kStartAngle + kSweepAngle), &cosV);
-
-            SkPoint p1 = SkPoint::Make(kRad * cosV, kRad * sinV);
+            SkPoint p1 = { kRad * SkScalarCos(SkDegreesToRadians(kStartAngle + kSweepAngle)),
+                           kRad * SkScalarSin(SkDegreesToRadians(kStartAngle + kSweepAngle)) };
 
             bug->moveTo(p0);
             bug->lineTo(p1);
@@ -258,7 +256,6 @@ DEF_SIMPLE_GM(squarehair, canvas, 240, 360) {
 
 //////////////////////////////////////////////////////////////////////////////
 
-static GM* MyFactory(void*) { return new HairlinesGM; }
-static GMRegistry reg(MyFactory);
+DEF_GM( return new HairlinesGM; )
 
 }

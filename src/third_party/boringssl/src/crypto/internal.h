@@ -116,6 +116,10 @@
 #include <assert.h>
 #include <string.h>
 
+#if defined(BORINGSSL_CONSTANT_TIME_VALIDATION)
+#include <valgrind/memcheck.h>
+#endif
+
 #if !defined(__cplusplus)
 #if defined(_MSC_VER)
 #define alignas(x) __declspec(align(x))
@@ -365,6 +369,26 @@ static inline int constant_time_select_int(crypto_word_t mask, int a, int b) {
                                       (crypto_word_t)(b)));
 }
 
+#if defined(BORINGSSL_CONSTANT_TIME_VALIDATION)
+
+// CONSTTIME_SECRET takes a pointer and a number of bytes and marks that region
+// of memory as secret. Secret data is tracked as it flows to registers and
+// other parts of a memory. If secret data is used as a condition for a branch,
+// or as a memory index, it will trigger warnings in valgrind.
+#define CONSTTIME_SECRET(x, y) VALGRIND_MAKE_MEM_UNDEFINED(x, y)
+
+// CONSTTIME_DECLASSIFY takes a pointer and a number of bytes and marks that
+// region of memory as public. Public data is not subject to constant-time
+// rules.
+#define CONSTTIME_DECLASSIFY(x, y) VALGRIND_MAKE_MEM_DEFINED(x, y)
+
+#else
+
+#define CONSTTIME_SECRET(x, y)
+#define CONSTTIME_DECLASSIFY(x, y)
+
+#endif  // BORINGSSL_CONSTANT_TIME_VALIDATION
+
 
 // Thread-safe initialisation.
 
@@ -529,6 +553,7 @@ BSSL_NAMESPACE_END
 // stored.
 typedef enum {
   OPENSSL_THREAD_LOCAL_ERR = 0,
+  OPENSSL_THREAD_LOCAL_RAND,
   OPENSSL_THREAD_LOCAL_TEST,
   NUM_OPENSSL_THREAD_LOCALS,
 } thread_local_data_t;
@@ -620,7 +645,7 @@ static inline uint64_t CRYPTO_bswap8(uint64_t x) {
 }
 #elif defined(_MSC_VER)
 OPENSSL_MSVC_PRAGMA(warning(push, 3))
-#include <intrin.h>
+#include <stdlib.h>
 OPENSSL_MSVC_PRAGMA(warning(pop))
 #pragma intrinsic(_byteswap_uint64, _byteswap_ulong)
 static inline uint32_t CRYPTO_bswap4(uint32_t x) {

@@ -15,13 +15,15 @@
 
 #include "absl/types/optional.h"
 #include "api/video/color_space.h"
-#include "api/video/video_bitrate_allocation.h"
+#include "api/video/video_codec_constants.h"
 #include "api/video/video_codec_type.h"
 #include "api/video/video_content_type.h"
+#include "api/video/video_frame_type.h"
 #include "api/video/video_rotation.h"
 #include "api/video/video_timing.h"
 #include "common_types.h"  // NOLINT(build/include)
 #include "rtc_base/checks.h"
+#include "rtc_base/copy_on_write_buffer.h"
 #include "rtc_base/system/rtc_export.h"
 
 namespace webrtc {
@@ -30,15 +32,17 @@ namespace webrtc {
 // cleaned up. Direct use of its members is strongly discouraged.
 class RTC_EXPORT EncodedImage {
  public:
-  static const size_t kBufferPaddingBytesH264;
-
-  // Some decoders require encoded image buffers to be padded with a small
-  // number of additional bytes (due to over-reading byte readers).
-  static size_t GetBufferPaddingBytes(VideoCodecType codec_type);
-
   EncodedImage();
+  EncodedImage(EncodedImage&&);
+  // Discouraged: potentially expensive.
   EncodedImage(const EncodedImage&);
-  EncodedImage(uint8_t* buffer, size_t length, size_t size);
+  EncodedImage(uint8_t* buffer, size_t length, size_t capacity);
+
+  ~EncodedImage();
+
+  EncodedImage& operator=(EncodedImage&&);
+  // Discouraged: potentially expensive.
+  EncodedImage& operator=(const EncodedImage&);
 
   // TODO(nisse): Change style to timestamp(), set_timestamp(), for consistency
   // with the VideoFrame class.
@@ -62,32 +66,51 @@ class RTC_EXPORT EncodedImage {
   const webrtc::ColorSpace* ColorSpace() const {
     return color_space_ ? &*color_space_ : nullptr;
   }
-  void SetColorSpace(const webrtc::ColorSpace* color_space) {
-    color_space_ =
-        color_space ? absl::make_optional(*color_space) : absl::nullopt;
+  void SetColorSpace(const absl::optional<webrtc::ColorSpace>& color_space) {
+    color_space_ = color_space;
   }
 
-  size_t size() const { return _length; }
+  size_t size() const { return size_; }
   void set_size(size_t new_size) {
-    RTC_DCHECK_LE(new_size, _size);
-    _length = new_size;
+    RTC_DCHECK_LE(new_size, capacity());
+    size_ = new_size;
   }
-  size_t capacity() const { return _size; }
+  size_t capacity() const { return buffer_ ? capacity_ : encoded_data_.size(); }
 
   void set_buffer(uint8_t* buffer, size_t capacity) {
-    _buffer = buffer;
-    _size = capacity;
+    buffer_ = buffer;
+    capacity_ = capacity;
   }
+
+  void Allocate(size_t capacity) {
+    encoded_data_.SetSize(capacity);
+    buffer_ = nullptr;
+  }
+
+  uint8_t* data() { return buffer_ ? buffer_ : encoded_data_.data(); }
+  const uint8_t* data() const {
+    return buffer_ ? buffer_ : encoded_data_.cdata();
+  }
+  // TODO(nisse): At some places, code accepts a const ref EncodedImage, but
+  // still writes to it, to clear padding at the end of the encoded data.
+  // Padding is required by ffmpeg; the best way to deal with that is likely to
+  // make this class ensure that buffers always have a few zero padding bytes.
+  uint8_t* mutable_data() const { return const_cast<uint8_t*>(data()); }
+
+  // TODO(bugs.webrtc.org/9378): Delete. Used by code that wants to modify a
+  // buffer corresponding to a const EncodedImage. Requires an un-owned buffer.
+  uint8_t* buffer() const { return buffer_; }
+
+  // Hack to workaround lack of ownership of the encoded data. If we don't
+  // already own the underlying data, make an owned copy.
+  void Retain();
 
   uint32_t _encodedWidth = 0;
   uint32_t _encodedHeight = 0;
   // NTP time of the capture time in local timebase in milliseconds.
   int64_t ntp_time_ms_ = 0;
   int64_t capture_time_ms_ = 0;
-  FrameType _frameType = kVideoFrameDelta;
-  uint8_t* _buffer;
-  size_t _length;
-  size_t _size;
+  VideoFrameType _frameType = VideoFrameType::kVideoFrameDelta;
   VideoRotation rotation_ = kVideoRotation_0;
   VideoContentType content_type_ = VideoContentType::UNSPECIFIED;
   bool _completeFrame = false;
@@ -111,6 +134,14 @@ class RTC_EXPORT EncodedImage {
   } timing_;
 
  private:
+  // TODO(bugs.webrtc.org/9378): We're transitioning to always owning the
+  // encoded data.
+  rtc::CopyOnWriteBuffer encoded_data_;
+  size_t size_;      // Size of encoded frame data.
+  // Non-null when used with an un-owned buffer.
+  uint8_t* buffer_;
+  // Allocated size of _buffer; relevant only if it's non-null.
+  size_t capacity_;
   uint32_t timestamp_rtp_ = 0;
   absl::optional<int> spatial_index_;
   absl::optional<webrtc::ColorSpace> color_space_;

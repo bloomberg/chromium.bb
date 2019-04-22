@@ -8,6 +8,10 @@ namespace prefs {
 
 #if defined(OS_CHROMEOS)
 // Boolean identifying if Mirror account consistency is required for profile.
+// If Chrome OS Account Manager is not available, this has the effect of
+// disabling secondary account sign-ins within the content area.
+// TODO(https://crbug.com/938835): Clean this up after releasing Chrome OS
+// Account Manager.
 const char kAccountConsistencyMirrorRequired[] =
     "account_consistency_mirror.required";
 #endif
@@ -16,6 +20,10 @@ const char kAccountConsistencyMirrorRequired[] =
 // email to gaia id for the the profile.  See account_tracker_service.h
 // for possible values.
 const char kAccountIdMigrationState[] = "account_id_migration_state";
+
+// Name of the preference property that persists the account information
+// tracked by this signin.
+const char kAccountInfo[] = "account_info";
 
 // Boolean identifying whether reverse auto-login is enabled.
 const char kAutologinEnabled[] = "autologin.enabled";
@@ -39,8 +47,8 @@ const char kGaiaCookiePeriodicReportTime[] = "gaia_cookie.periodic_report_time";
 // eventually be fixed, allowing the removal of kGoogleServicesUserAccountId.
 const char kGoogleServicesAccountId[] = "google.services.account_id";
 
-// The profile's hosted domain; empty if unset;
-// AccountTrackerService::kNoHostedDomainFound if there is none.
+// The profile's hosted domain; empty if unset; kNoHostedDomainFound if there
+// is none.
 const char kGoogleServicesHostedDomain[] = "google.services.hosted_domain";
 
 // Similar to kGoogleServicesLastUsername, this is the corresponding version of
@@ -85,6 +93,11 @@ const char kReverseAutologinRejectedEmailList[] =
 // Int64 which tracks, as time from epoch, when last time the user signed in
 // to the browser.
 const char kSignedInTime[] = "signin.signedin_time";
+
+// Boolean indicating if this profile was signed in with information from a
+// credential provider.
+const char kSignedInWithCredentialProvider[] =
+    "signin.with_credential_provider";
 
 // Boolean which stores if the user is allowed to signin to chrome.
 const char kSigninAllowed[] = "signin.allowed";

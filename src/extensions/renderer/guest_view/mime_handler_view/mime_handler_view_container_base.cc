@@ -4,10 +4,14 @@
 
 #include "extensions/renderer/guest_view/mime_handler_view/mime_handler_view_container_base.h"
 
+#include "base/auto_reset.h"
+#include "base/bind.h"
 #include "base/guid.h"
 #include "base/lazy_instance.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
+#include "base/values.h"
 #include "components/guest_view/common/guest_view_constants.h"
 #include "content/public/common/url_loader_throttle.h"
 #include "content/public/common/webplugininfo.h"
@@ -23,17 +27,21 @@
 #include "gin/interceptor.h"
 #include "gin/object_template_builder.h"
 #include "gin/wrappable.h"
-#include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_sync_channel.h"
 #include "services/network/public/cpp/features.h"
+#include "third_party/blink/public/platform/web_security_origin.h"
+#include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/web/web_associated_url_loader.h"
 #include "third_party/blink/public/web/web_associated_url_loader_options.h"
+#include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_remote_frame.h"
 
 namespace extensions {
+using UMAType = MimeHandlerViewUMATypes::Type;
+
 namespace {
 
 const char kPostMessageName[] = "postMessage";
@@ -181,6 +189,13 @@ MimeHandlerViewContainerBase::MimeHandlerViewContainerBase(
       mime_type_(mime_type),
       embedder_render_frame_routing_id_(embedder_render_frame->GetRoutingID()),
       before_unload_control_binding_(this),
+      resource_access_type_(
+          embedder_render_frame->GetWebFrame()
+                  ->GetDocument()
+                  .GetSecurityOrigin()
+                  .CanAccess(blink::WebSecurityOrigin::Create(original_url))
+              ? ResourceAccessType::kAccessible
+              : ResourceAccessType::kInaccessible),
       weak_factory_(this) {
   DCHECK(!mime_type_.empty());
   g_mime_handler_view_container_base_map.Get()[embedder_render_frame].insert(
@@ -212,32 +227,6 @@ MimeHandlerViewContainerBase::FromRenderFrame(
                                                     it->second.end());
 }
 
-// static
-bool MimeHandlerViewContainerBase::TryHandleMessage(
-    const IPC::Message& message) {
-  int element_instance_id = guest_view::kInstanceIDNone;
-  base::PickleIterator iter(message);
-  bool success = iter.ReadInt(&element_instance_id);
-  DCHECK(success);
-  MimeHandlerViewContainerBase* target_container = nullptr;
-  for (auto& pair : g_mime_handler_view_container_base_map.Get()) {
-    auto it = std::find_if(
-        pair.second.begin(), pair.second.end(),
-        [&element_instance_id](MimeHandlerViewContainerBase* container) {
-          return container->GetInstanceId() == element_instance_id;
-        });
-    if (it != pair.second.end()) {
-      target_container = *it;
-      break;
-    }
-  }
-
-  if (target_container)
-    target_container->OnHandleMessage(message);
-
-  return false;
-}
-
 std::unique_ptr<content::URLLoaderThrottle>
 MimeHandlerViewContainerBase::MaybeCreatePluginThrottle(const GURL& url) {
   if (!waiting_to_create_throttle_ || url != original_url_)
@@ -250,6 +239,8 @@ MimeHandlerViewContainerBase::MaybeCreatePluginThrottle(const GURL& url) {
 void MimeHandlerViewContainerBase::PostJavaScriptMessage(
     v8::Isolate* isolate,
     v8::Local<v8::Value> message) {
+  if (should_report_internal_messages_)
+    RecordUMAForPostMessage(message);
   if (!guest_loaded_) {
     pending_messages_.push_back(v8::Global<v8::Value>(isolate, message));
     return;
@@ -285,26 +276,11 @@ void MimeHandlerViewContainerBase::PostMessageFromValue(
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
   v8::HandleScope handle_scope(isolate);
   v8::Context::Scope context_scope(frame->MainWorldScriptContext());
+  base::AutoReset<bool> avoid_recording_internal_messages(
+      &should_report_internal_messages_, false);
   PostJavaScriptMessage(isolate,
                         content::V8ValueConverter::Create()->ToV8Value(
                             &message, frame->MainWorldScriptContext()));
-}
-
-bool MimeHandlerViewContainerBase::OnHandleMessage(
-    const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(MimeHandlerViewContainerBase, message)
-    IPC_MESSAGE_HANDLER(
-        ExtensionsGuestViewMsg_MimeHandlerViewGuestOnLoadCompleted,
-        OnMimeHandlerViewGuestOnLoadCompleted)
-    IPC_MESSAGE_HANDLER(
-        ExtensionsGuestViewMsg_RetryCreatingMimeHandlerViewGuest,
-        OnRetryCreatingMimeHandlerViewGuest)
-    IPC_MESSAGE_HANDLER(ExtensionsGuestViewMsg_DestroyFrameContainer,
-                        OnDestroyFrameContainer)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
 }
 
 void MimeHandlerViewContainerBase::DidReceiveData(const char* data,
@@ -384,18 +360,8 @@ void MimeHandlerViewContainerBase::CreateMimeHandlerViewGuestIfNecessary() {
   guest_created_ = true;
 }
 
-void MimeHandlerViewContainerBase::OnRetryCreatingMimeHandlerViewGuest(
-    int32_t element_instance_id) {
-  NOTREACHED();
-}
-
-void MimeHandlerViewContainerBase::OnDestroyFrameContainer(
-    int element_instance_id) {
-  NOTREACHED();
-}
-
-void MimeHandlerViewContainerBase::OnMimeHandlerViewGuestOnLoadCompleted(
-    int32_t /* element_instance_id */) {
+void MimeHandlerViewContainerBase::DidLoadInternal() {
+  RecordInteraction(UMAType::kDidLoadExtension);
   if (!GetEmbedderRenderFrame())
     return;
 
@@ -453,7 +419,50 @@ void MimeHandlerViewContainerBase::SetEmbeddedLoader(
   CreateMimeHandlerViewGuestIfNecessary();
 }
 
-v8::Local<v8::Object> MimeHandlerViewContainerBase::GetScriptableObject(
+void MimeHandlerViewContainerBase::RecordUMAForPostMessage(
+    v8::Local<v8::Value>& message) {
+  auto data = content::V8ValueConverter::Create()->FromV8Value(
+      message,
+      GetEmbedderRenderFrame()->GetWebFrame()->MainWorldScriptContext());
+  std::string message_type;
+  if (data->is_dict()) {
+    base::DictionaryValue::From(std::move(data))
+        ->GetString("type", &message_type);
+  }
+
+  bool accessible = resource_access_type_ == ResourceAccessType::kAccessible;
+  MimeHandlerViewUMATypes::Type post_message_type;
+  if (message_type == "getSelectedText") {
+    post_message_type = accessible ? UMAType::kAccessibleGetSelectedText
+                                   : UMAType::kInaccessibleGetSelectedText;
+  } else if (message_type == "print") {
+    post_message_type =
+        accessible ? UMAType::kAccessiblePrint : UMAType::kInaccessiblePrint;
+  } else if (message_type == "selectAll") {
+    post_message_type = accessible ? UMAType::kAccessibleSelectAll
+                                   : UMAType::kInaccessibleSelectAll;
+  } else {
+    post_message_type = accessible ? UMAType::kAccessibleInvalid
+                                   : UMAType::kInaccessibleInvalid;
+  }
+  DCHECK_NE(post_message_type, UMAType::kDidCreateMimeHandlerViewContainerBase);
+  RecordInteraction(post_message_type);
+  if (is_embedded_)
+    RecordInteraction(UMAType::kPostMessageToEmbeddedMimeHandlerView);
+}
+
+void MimeHandlerViewContainerBase::SetShowBeforeUnloadDialog(
+    bool show_dialog,
+    SetShowBeforeUnloadDialogCallback callback) {
+  DCHECK(!is_embedded_);
+  GetEmbedderRenderFrame()
+      ->GetWebFrame()
+      ->GetDocument()
+      .SetShowBeforeUnloadDialog(show_dialog);
+  std::move(callback).Run();
+}
+
+v8::Local<v8::Object> MimeHandlerViewContainerBase::GetScriptableObjectInternal(
     v8::Isolate* isolate) {
   if (scriptable_object_.IsEmpty()) {
     v8::Local<v8::Object> object =
@@ -461,6 +470,10 @@ v8::Local<v8::Object> MimeHandlerViewContainerBase::GetScriptableObject(
     scriptable_object_.Reset(isolate, object);
   }
   return v8::Local<v8::Object>::New(isolate, scriptable_object_);
+}
+
+void MimeHandlerViewContainerBase::RecordInteraction(UMAType uma_type) {
+  base::UmaHistogramEnumeration(MimeHandlerViewUMATypes::kUMAName, uma_type);
 }
 
 }  // namespace extensions

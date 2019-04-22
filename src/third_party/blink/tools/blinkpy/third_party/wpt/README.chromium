@@ -1,4 +1,4 @@
-W3C Web Platform Tests in Blink Layout Tests
+W3C Web Platform Tests in Blink Web Tests
 
 Design Doc: https://goo.gl/iXUaZd
 
@@ -28,7 +28,7 @@ changing the ports (HTTP/S, WS/S), make sure to also:
 
 - update `WPT_HOST_AND_PORTS` in
   `//third_party/blink/tools/blinkpy/web_tests/port/driver.py`
-- update LayoutTestContentBrowserClient::GetOriginsRequiringDedicatedProcess()
+- update WebTestContentBrowserClient::GetOriginsRequiringDedicatedProcess()
 
 checkout.sh
 ===========
@@ -70,6 +70,10 @@ re-generate them:
 **
 
 Rolling in WPT
+
+If there are new files that need to be rolled in, add the intended files to
+the WPTWhiteList. Ensure these files are in the correct order by running
+"LC_ALL=C sort WPTWhiteList".
 
 When rolling in new versions of WPT support, modify WPT_HEAD in checkout.sh to
 the desired HEAD position. You can then call "./checkout.sh clone" which will

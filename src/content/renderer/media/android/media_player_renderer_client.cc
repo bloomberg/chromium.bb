@@ -4,22 +4,32 @@
 
 #include "content/renderer/media/android/media_player_renderer_client.h"
 
+#include <utility>
+
+#include "base/bind.h"
 #include "base/callback_helpers.h"
 
 namespace content {
 
 MediaPlayerRendererClient::MediaPlayerRendererClient(
+    RendererExtentionPtr renderer_extension_ptr,
+    ClientExtentionRequest client_extension_request,
     scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
-    media::MojoRenderer* mojo_renderer,
+    std::unique_ptr<media::MojoRenderer> mojo_renderer,
     media::ScopedStreamTextureWrapper stream_texture_wrapper,
     media::VideoRendererSink* sink)
-    : mojo_renderer_(mojo_renderer),
+    : MojoRendererWrapper(std::move(mojo_renderer)),
       stream_texture_wrapper_(std::move(stream_texture_wrapper)),
       client_(nullptr),
       sink_(sink),
       media_task_runner_(std::move(media_task_runner)),
       compositor_task_runner_(std::move(compositor_task_runner)),
+      delayed_bind_client_extension_request_(
+          std::move(client_extension_request)),
+      delayed_bind_renderer_extention_ptr_info_(
+          renderer_extension_ptr.PassInterface()),
+      client_extension_binding_(this),
       weak_factory_(this) {}
 
 MediaPlayerRendererClient::~MediaPlayerRendererClient() {
@@ -37,6 +47,14 @@ void MediaPlayerRendererClient::Initialize(
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   DCHECK(!init_cb_);
 
+  // Consume and bind the delayed Request and PtrInfo now that we are on
+  // |media_task_runner_|.
+  renderer_extension_ptr_.Bind(
+      std::move(delayed_bind_renderer_extention_ptr_info_), media_task_runner_);
+  client_extension_binding_.Bind(
+      std::move(delayed_bind_client_extension_request_), media_task_runner_);
+
+  media_resource_ = media_resource;
   client_ = client;
   init_cb_ = init_cb;
 
@@ -55,6 +73,13 @@ void MediaPlayerRendererClient::Initialize(
                  weak_factory_.GetWeakPtr(), media_resource));
 }
 
+void MediaPlayerRendererClient::SetCdm(
+    media::CdmContext* cdm_context,
+    const media::CdmAttachedCB& cdm_attached_cb) {
+  // MediaPlayerRenderer does not support encrypted media.
+  NOTREACHED();
+}
+
 void MediaPlayerRendererClient::OnStreamTextureWrapperInitialized(
     media::MediaResource* media_resource,
     bool success) {
@@ -65,15 +90,19 @@ void MediaPlayerRendererClient::OnStreamTextureWrapperInitialized(
     return;
   }
 
-  mojo_renderer_->Initialize(
-      media_resource, this,
+  MojoRendererWrapper::Initialize(
+      media_resource, client_,
       base::Bind(&MediaPlayerRendererClient::OnRemoteRendererInitialized,
                  weak_factory_.GetWeakPtr()));
 }
 
 void MediaPlayerRendererClient::OnScopedSurfaceRequested(
     const base::UnguessableToken& request_token) {
-  DCHECK(request_token);
+  if (request_token == base::UnguessableToken::Null()) {
+    client_->OnError(media::PIPELINE_ERROR_INITIALIZATION_FAILED);
+    return;
+  }
+
   stream_texture_wrapper_->ForwardStreamTextureForSurfaceRequest(request_token);
 }
 
@@ -82,39 +111,14 @@ void MediaPlayerRendererClient::OnRemoteRendererInitialized(
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   DCHECK(!init_cb_.is_null());
 
-  // TODO(tguilbert): Measure and smooth out the initialization's ordering to
-  // have the lowest total initialization time.
-  mojo_renderer_->InitiateScopedSurfaceRequest(
-      base::Bind(&MediaPlayerRendererClient::OnScopedSurfaceRequested,
-                 weak_factory_.GetWeakPtr()));
-
+  if (status == media::PIPELINE_OK) {
+    // TODO(tguilbert): Measure and smooth out the initialization's ordering to
+    // have the lowest total initialization time.
+    renderer_extension_ptr_->InitiateScopedSurfaceRequest(
+        base::Bind(&MediaPlayerRendererClient::OnScopedSurfaceRequested,
+                   weak_factory_.GetWeakPtr()));
+  }
   base::ResetAndReturn(&init_cb_).Run(status);
-}
-
-void MediaPlayerRendererClient::SetCdm(
-    media::CdmContext* cdm_context,
-    const media::CdmAttachedCB& cdm_attached_cb) {
-  NOTREACHED();
-}
-
-void MediaPlayerRendererClient::Flush(const base::Closure& flush_cb) {
-  mojo_renderer_->Flush(flush_cb);
-}
-
-void MediaPlayerRendererClient::StartPlayingFrom(base::TimeDelta time) {
-  mojo_renderer_->StartPlayingFrom(time);
-}
-
-void MediaPlayerRendererClient::SetPlaybackRate(double playback_rate) {
-  mojo_renderer_->SetPlaybackRate(playback_rate);
-}
-
-void MediaPlayerRendererClient::SetVolume(float volume) {
-  mojo_renderer_->SetVolume(volume);
-}
-
-base::TimeDelta MediaPlayerRendererClient::GetMediaTime() {
-  return mojo_renderer_->GetMediaTime();
 }
 
 void MediaPlayerRendererClient::OnFrameAvailable() {
@@ -122,49 +126,15 @@ void MediaPlayerRendererClient::OnFrameAvailable() {
   sink_->PaintSingleFrame(stream_texture_wrapper_->GetCurrentFrame(), true);
 }
 
-void MediaPlayerRendererClient::OnError(media::PipelineStatus status) {
-  client_->OnError(status);
-}
-
-void MediaPlayerRendererClient::OnEnded() {
-  client_->OnEnded();
-}
-
-void MediaPlayerRendererClient::OnStatisticsUpdate(
-    const media::PipelineStatistics& stats) {
-  client_->OnStatisticsUpdate(stats);
-}
-
-void MediaPlayerRendererClient::OnBufferingStateChange(
-    media::BufferingState state) {
-  client_->OnBufferingStateChange(state);
-}
-
-void MediaPlayerRendererClient::OnWaitingForDecryptionKey() {
-  client_->OnWaitingForDecryptionKey();
-}
-
-void MediaPlayerRendererClient::OnAudioConfigChange(
-    const media::AudioDecoderConfig& config) {
-  client_->OnAudioConfigChange(config);
-}
-void MediaPlayerRendererClient::OnVideoConfigChange(
-    const media::VideoDecoderConfig& config) {
-  client_->OnVideoConfigChange(config);
-}
-
-void MediaPlayerRendererClient::OnVideoNaturalSizeChange(
-    const gfx::Size& size) {
+void MediaPlayerRendererClient::OnVideoSizeChange(const gfx::Size& size) {
   stream_texture_wrapper_->UpdateTextureSize(size);
   client_->OnVideoNaturalSizeChange(size);
 }
 
-void MediaPlayerRendererClient::OnVideoOpacityChange(bool opaque) {
-  client_->OnVideoOpacityChange(opaque);
-}
-
 void MediaPlayerRendererClient::OnDurationChange(base::TimeDelta duration) {
-  client_->OnDurationChange(duration);
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
+
+  media_resource_->ForwardDurationChangeToDemuxerHost(duration);
 }
 
 }  // namespace content

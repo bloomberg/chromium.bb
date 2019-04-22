@@ -23,6 +23,7 @@ Za več informacij o zasebnosti si oglejte Googlov pravilnik o zasebnosti (http:
 <translation id="1520828917794284345">Prilagodi velikost namizja</translation>
 <translation id="154040539590487450">Storitve oddaljenega dostopa ni bilo mogoče zagnati.</translation>
 <translation id="1546934824884762070">Nepričakovana napaka. O tem obvestite razvijalce.</translation>
+<translation id="1624185583382384493">Oddaljeno namizje za Chrome je zdaj v spletu. Preizkusite <ph name="LINK_BEGIN" />spletno aplikacijo<ph name="LINK_END" />— je hitra in brezplačna s še več funkcijami, vključno z izboljšano podporo za več monitorjev.</translation>
 <translation id="1643640058022401035">Če zapustite to stran, se bo seja Oddaljenega povezovanja s Chromom končala.</translation>
 <translation id="1654128982815600832">Omogočanje oddaljenih povezav za ta računalnik ...</translation>
 <translation id="170207782578677537">Računalnika ni bilo mogoče registrirati.</translation>
@@ -136,6 +137,7 @@ Za več informacij o zasebnosti si oglejte Googlov pravilnik o zasebnosti (http:
 <translation id="3989511127559254552">Če želite nadaljevati, morate računalniku najprej odobriti dovoljenja za razširjen dostop. To je treba narediti samo enkrat.</translation>
 <translation id="4006787130661126000">Če želite do računalnika dostopati z Oddaljenim namizjem za Chrome, omogočite oddaljene povezave.</translation>
 <translation id="405887016757208221">Oddaljeni računalnik ni inicializiral seje. Če se težava ponovi, poskusite znova konfigurirati gostitelja.</translation>
+<translation id="4060747889721220580">Prenos datoteke</translation>
 <translation id="4068946408131579958">Vse povezave</translation>
 <translation id="409800995205263688">OPOMBA: Nastavitve na podlagi pravilnika dovoljujejo povezave samo med računalniki v vašem omrežju.</translation>
 <translation id="4126409073460786861">Po končani nastavitvi osvežite to stran in lahko boste dostopali do računalnika tako, da boste izbrali napravo in vnesli kodo PIN</translation>
@@ -231,6 +233,7 @@ PC</translation>
 <translation id="6198252989419008588">Spremeni PIN</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (zastarelo)</translation>
 <translation id="6221358653751391898">Niste prijavljeni v Chrome. Prijavite se in poskusite znova.</translation>
+<translation id="6227369581881558336">Oddaljeno namizje za Chrome je zdaj v spletu z novimi funkcijami, vključno s prenosom datotek. Obiščite <ph name="LINK_BEGIN" />spletno aplikacijo<ph name="LINK_END" />.</translation>
 <translation id="6284412385303060032">Gostitelj, ki se je izvajal na zaslonu za prijavo v konzolo, se je zaustavil zaradi podpore načinu zavese, tako da je preklopil na gostitelja, ki se izvaja v seji uporabnika.</translation>
 <translation id="629730747756840877">Račun</translation>
 <translation id="6304318647555713317">Odjemalec</translation>
@@ -277,7 +280,6 @@ PC</translation>
 <translation id="7434397035092923453">Dostop zavrnjen za odjemalca: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7444276978508498879">Odjemalec povezan: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7526139040829362392">Sprememba računa</translation>
-<translation id="7589941250119944644">Oddaljeno namizje za Chrome ima novo mesto v spletu. Preskusite hitro in brezplačno <ph name="LINK_BEGIN" />spletno aplikacijo<ph name="LINK_END" />, ki ima enake funkcije kot prej.</translation>
 <translation id="7606912958770842224">Omogoči oddaljene povezave</translation>
 <translation id="7649070708921625228">Pomoč</translation>
 <translation id="7658239707568436148">Prekliči</translation>

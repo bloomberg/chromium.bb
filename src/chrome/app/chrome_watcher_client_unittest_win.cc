@@ -11,8 +11,8 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/process/process_handle.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -101,7 +101,7 @@ MULTIPROCESS_TEST_MAIN(ChromeWatcherClientTestProcess) {
     // or one times before exit_event, never more.
     HANDLE handles[] = {exit_event.Get(), initialize_event.Get()};
     DWORD result =
-        ::WaitForMultipleObjects(arraysize(handles), handles, FALSE, INFINITE);
+        ::WaitForMultipleObjects(base::size(handles), handles, FALSE, INFINITE);
     switch (result) {
       case WAIT_OBJECT_0:
         // exit_event
@@ -154,7 +154,7 @@ class ChromeWatcherClientThread : public base::SimpleThread {
   ChromeWatcherClient& client() { return client_; }
 
   base::string16 NamedEventSuffix() {
-    return base::UintToString16(base::GetCurrentProcId());
+    return base::NumberToString16(base::GetCurrentProcId());
   }
 
   // base::SimpleThread implementation.
@@ -175,10 +175,10 @@ class ChromeWatcherClientThread : public base::SimpleThread {
                           "ChromeWatcherClientTestProcess");
     ret.AppendSwitchASCII(
         kEventHandle,
-        base::UintToString(base::win::HandleToUint32(on_initialized_event)));
+        base::NumberToString(base::win::HandleToUint32(on_initialized_event)));
     ret.AppendSwitchASCII(
         kParentHandle,
-        base::UintToString(base::win::HandleToUint32(parent_handle)));
+        base::NumberToString(base::win::HandleToUint32(parent_handle)));
 
     // Our child does not actually need the main thread ID, but we verify here
     // that the correct ID is being passed from the client.

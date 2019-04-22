@@ -10,8 +10,8 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "media/base/cdm_callback_promise.h"
@@ -121,7 +121,7 @@ class CdmAdapterTestBase : public testing::Test,
   CdmAdapterTestBase() {
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kOverrideEnabledCdmInterfaceVersion,
-        base::IntToString(GetCdmInterfaceVersion()));
+        base::NumberToString(GetCdmInterfaceVersion()));
   }
 
   ~CdmAdapterTestBase() override { CdmModule::ResetInstanceForTesting(); }
@@ -360,13 +360,13 @@ class CdmAdapterTestWithMockCdm : public CdmAdapterTestBase {
 
 // Instantiate test cases
 
-INSTANTIATE_TEST_CASE_P(CDM_9, CdmAdapterTestWithClearKeyCdm, Values(9));
-INSTANTIATE_TEST_CASE_P(CDM_10, CdmAdapterTestWithClearKeyCdm, Values(10));
-INSTANTIATE_TEST_CASE_P(CDM_11, CdmAdapterTestWithClearKeyCdm, Values(11));
+INSTANTIATE_TEST_SUITE_P(CDM_9, CdmAdapterTestWithClearKeyCdm, Values(9));
+INSTANTIATE_TEST_SUITE_P(CDM_10, CdmAdapterTestWithClearKeyCdm, Values(10));
+INSTANTIATE_TEST_SUITE_P(CDM_11, CdmAdapterTestWithClearKeyCdm, Values(11));
 
-INSTANTIATE_TEST_CASE_P(CDM_9, CdmAdapterTestWithMockCdm, Values(9));
-INSTANTIATE_TEST_CASE_P(CDM_10, CdmAdapterTestWithMockCdm, Values(10));
-INSTANTIATE_TEST_CASE_P(CDM_11, CdmAdapterTestWithMockCdm, Values(11));
+INSTANTIATE_TEST_SUITE_P(CDM_9, CdmAdapterTestWithMockCdm, Values(9));
+INSTANTIATE_TEST_SUITE_P(CDM_10, CdmAdapterTestWithMockCdm, Values(10));
+INSTANTIATE_TEST_SUITE_P(CDM_11, CdmAdapterTestWithMockCdm, Values(11));
 
 // CdmAdapterTestWithClearKeyCdm Tests
 
@@ -392,7 +392,7 @@ TEST_P(CdmAdapterTestWithClearKeyCdm, BadLibraryPath) {
 TEST_P(CdmAdapterTestWithClearKeyCdm, CreateWebmSession) {
   InitializeAndExpect(SUCCESS);
 
-  std::vector<uint8_t> key_id(kKeyId, kKeyId + arraysize(kKeyId));
+  std::vector<uint8_t> key_id(kKeyId, kKeyId + base::size(kKeyId));
   CreateSessionAndExpect(EmeInitDataType::WEBM, key_id, SUCCESS);
 }
 
@@ -401,7 +401,7 @@ TEST_P(CdmAdapterTestWithClearKeyCdm, CreateKeyIdsSession) {
 
   // Don't include the trailing /0 from the string in the data passed in.
   std::vector<uint8_t> key_id(kKeyIdAsJWK,
-                              kKeyIdAsJWK + arraysize(kKeyIdAsJWK) - 1);
+                              kKeyIdAsJWK + base::size(kKeyIdAsJWK) - 1);
   CreateSessionAndExpect(EmeInitDataType::KEYIDS, key_id, SUCCESS);
 }
 
@@ -409,7 +409,7 @@ TEST_P(CdmAdapterTestWithClearKeyCdm, CreateCencSession) {
   InitializeAndExpect(SUCCESS);
 
   std::vector<uint8_t> key_id(kKeyIdAsPssh,
-                              kKeyIdAsPssh + arraysize(kKeyIdAsPssh));
+                              kKeyIdAsPssh + base::size(kKeyIdAsPssh));
   CreateSessionAndExpect(EmeInitDataType::CENC, key_id, SUCCESS);
 }
 
@@ -417,7 +417,7 @@ TEST_P(CdmAdapterTestWithClearKeyCdm, CreateSessionWithBadData) {
   InitializeAndExpect(SUCCESS);
 
   // Use |kKeyId| but specify KEYIDS format.
-  std::vector<uint8_t> key_id(kKeyId, kKeyId + arraysize(kKeyId));
+  std::vector<uint8_t> key_id(kKeyId, kKeyId + base::size(kKeyId));
   CreateSessionAndExpect(EmeInitDataType::KEYIDS, key_id, FAILURE);
 }
 
@@ -425,14 +425,14 @@ TEST_P(CdmAdapterTestWithClearKeyCdm, LoadSession) {
   InitializeAndExpect(SUCCESS);
 
   // LoadSession() is not supported by AesDecryptor.
-  std::vector<uint8_t> key_id(kKeyId, kKeyId + arraysize(kKeyId));
+  std::vector<uint8_t> key_id(kKeyId, kKeyId + base::size(kKeyId));
   CreateSessionAndExpect(EmeInitDataType::KEYIDS, key_id, FAILURE);
 }
 
 TEST_P(CdmAdapterTestWithClearKeyCdm, UpdateSession) {
   InitializeAndExpect(SUCCESS);
 
-  std::vector<uint8_t> key_id(kKeyId, kKeyId + arraysize(kKeyId));
+  std::vector<uint8_t> key_id(kKeyId, kKeyId + base::size(kKeyId));
   CreateSessionAndExpect(EmeInitDataType::WEBM, key_id, SUCCESS);
 
   UpdateSessionAndExpect(SessionId(), kKeyAsJWK, SUCCESS, true);
@@ -441,7 +441,7 @@ TEST_P(CdmAdapterTestWithClearKeyCdm, UpdateSession) {
 TEST_P(CdmAdapterTestWithClearKeyCdm, UpdateSessionWithBadData) {
   InitializeAndExpect(SUCCESS);
 
-  std::vector<uint8_t> key_id(kKeyId, kKeyId + arraysize(kKeyId));
+  std::vector<uint8_t> key_id(kKeyId, kKeyId + base::size(kKeyId));
   CreateSessionAndExpect(EmeInitDataType::WEBM, key_id, SUCCESS);
 
   UpdateSessionAndExpect(SessionId(), "random data", FAILURE, true);

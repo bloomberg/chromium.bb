@@ -1093,6 +1093,6 @@ IN_PROC_BROWSER_TEST_P(IncognitoCommandsApiTest, IncognitoMode) {
                               "commands.onCommand"));
 }
 
-INSTANTIATE_TEST_CASE_P(, IncognitoCommandsApiTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(, IncognitoCommandsApiTest, testing::Bool());
 
 }  // namespace extensions

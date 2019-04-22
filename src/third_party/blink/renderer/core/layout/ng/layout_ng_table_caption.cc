@@ -25,7 +25,7 @@ void LayoutNGTableCaption::CalculateAndSetMargins(
 
   NGBoxFragment box_fragment(containing_block_style.GetWritingMode(),
                              containing_block_style.Direction(),
-                             ToNGPhysicalBoxFragment(physical_fragment));
+                             To<NGPhysicalBoxFragment>(physical_fragment));
 
   NGPhysicalBoxStrut physical_margins =
       ComputePhysicalMargins(constraint_space, StyleRef());
@@ -59,7 +59,7 @@ void LayoutNGTableCaption::UpdateBlockLayout(bool relayout_children) {
   NGConstraintSpace constraint_space =
       NGConstraintSpace::CreateFromLayoutObject(*this);
 
-  scoped_refptr<NGLayoutResult> result =
+  scoped_refptr<const NGLayoutResult> result =
       NGBlockNode(this).Layout(constraint_space);
 
   CalculateAndSetMargins(constraint_space, *result->PhysicalFragment());

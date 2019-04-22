@@ -6,9 +6,9 @@
 #define NET_DNS_MAPPED_HOST_RESOLVER_H_
 
 #include <memory>
-#include <string>
 #include <vector>
 
+#include "base/strings/string_piece.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/host_mapping_rules.h"
 #include "net/base/net_export.h"
@@ -38,12 +38,12 @@ class NET_EXPORT MappedHostResolver : public HostResolver {
   // to be resolved with ERR_NAME_NOT_RESOLVED.
   //
   // Returns true if the rule was successfully parsed and added.
-  bool AddRuleFromString(const std::string& rule_string) {
+  bool AddRuleFromString(base::StringPiece rule_string) {
     return rules_.AddRuleFromString(rule_string);
   }
 
   // Takes a comma separated list of rules, and assigns them to this resolver.
-  void SetRulesFromString(const std::string& rules_string) {
+  void SetRulesFromString(base::StringPiece rules_string) {
     rules_.SetRulesFromString(rules_string);
   }
 
@@ -53,24 +53,12 @@ class NET_EXPORT MappedHostResolver : public HostResolver {
       const NetLogWithSource& net_log,
       const base::Optional<ResolveHostParameters>& optional_parameters)
       override;
-  int Resolve(const RequestInfo& info,
-              RequestPriority priority,
-              AddressList* addresses,
-              CompletionOnceCallback callback,
-              std::unique_ptr<Request>* request,
-              const NetLogWithSource& net_log) override;
-  int ResolveFromCache(const RequestInfo& info,
-                       AddressList* addresses,
-                       const NetLogWithSource& net_log) override;
-  int ResolveStaleFromCache(const RequestInfo& info,
-                            AddressList* addresses,
-                            HostCache::EntryStaleness* stale_info,
-                            const NetLogWithSource& source_net_log) override;
   void SetDnsClientEnabled(bool enabled) override;
   HostCache* GetHostCache() override;
   bool HasCached(base::StringPiece hostname,
                  HostCache::Entry::Source* source_out,
-                 HostCache::EntryStaleness* stale_out) const override;
+                 HostCache::EntryStaleness* stale_out,
+                 bool* secure_out) const override;
   std::unique_ptr<base::Value> GetDnsConfigAsValue() const override;
   void SetNoIPv6OnWifi(bool no_ipv6_on_wifi) override;
   bool GetNoIPv6OnWifi() override;
@@ -81,10 +69,6 @@ class NET_EXPORT MappedHostResolver : public HostResolver {
 
  private:
   class AlwaysErrorRequestImpl;
-
-  // Modify the request |info| according to |rules_|. Returns either OK or
-  // the network error code that the hostname's resolution mapped to.
-  int ApplyRules(RequestInfo* info) const;
 
   std::unique_ptr<HostResolver> impl_;
 

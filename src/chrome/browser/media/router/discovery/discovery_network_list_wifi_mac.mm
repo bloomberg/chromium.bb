@@ -12,6 +12,12 @@
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
 
+// TODO(crbug.com/841631): This file uses the deprecated CWInterface interface;
+// it needs to be migrated to CWWiFiClient, which is unfortunately not
+// compatible.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 namespace media_router {
 namespace {
 
@@ -42,3 +48,5 @@ bool MaybeGetWifiSSID(const std::string& if_name, std::string* ssid_out) {
 }
 
 }  // namespace media_router
+
+#pragma clang diagnostic pop

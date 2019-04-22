@@ -11,6 +11,7 @@
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/sample_vector.h"
 #include "base/metrics/statistics_recorder.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 
@@ -67,7 +68,7 @@ const char* const kCounterNames[] = {
   "Doom recent entries",
   "unused"
 };
-static_assert(arraysize(kCounterNames) == disk_cache::Stats::MAX_COUNTER,
+static_assert(base::size(kCounterNames) == disk_cache::Stats::MAX_COUNTER,
               "update the names");
 
 }  // namespace

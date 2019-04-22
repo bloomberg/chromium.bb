@@ -11,15 +11,15 @@ namespace media {
 
 namespace {
 // Keyframe period.
-const size_t kKFPeriod = 3000;
+constexpr size_t kKFPeriod = 3000;
 
 // Arbitrarily chosen bitrate window size for rate control, in ms.
-const int kCPBWindowSizeMs = 1500;
+constexpr int kCPBWindowSizeMs = 1500;
 
 // Based on WebRTC's defaults.
-const int kMinQP = 4;
-const int kMaxQP = 112;
-const int kDefaultQP = (3 * kMinQP + kMaxQP) / 4;
+constexpr int kMinQP = 4;
+constexpr int kMaxQP = 112;
+constexpr int kDefaultQP = (3 * kMinQP + kMaxQP) / 4;
 }  // namespace
 
 VP8Encoder::EncodeParams::EncodeParams()
@@ -47,7 +47,8 @@ VP8Encoder::~VP8Encoder() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-bool VP8Encoder::Initialize(const VideoEncodeAccelerator::Config& config) {
+bool VP8Encoder::Initialize(const VideoEncodeAccelerator::Config& config,
+                            const AcceleratedVideoEncoder::Config& ave_config) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (VideoCodecProfileToVideoCodec(config.output_profile) != kCodecVP8) {
     DVLOGF(1) << "Invalid profile: " << GetProfileName(config.output_profile);
@@ -110,8 +111,19 @@ bool VP8Encoder::PrepareEncodeJob(EncodeJob* encode_job) {
   UpdateFrameHeader(encode_job->IsKeyframeRequested());
   *picture->frame_hdr = current_frame_hdr_;
 
+  // We only use |last_frame| for a reference frame. This follows the behavior
+  // of libvpx encoder in chromium webrtc use case.
+  std::array<bool, kNumVp8ReferenceBuffers> ref_frames_used{true, false, false};
+
+  if (current_frame_hdr_.IsKeyframe()) {
+    // A driver should ignore |ref_frames_used| values if keyframe is requested.
+    // But we fill false in |ref_frames_used| just in case.
+    std::fill(std::begin(ref_frames_used), std::end(ref_frames_used), false);
+  }
+
   if (!accelerator_->SubmitFrameParameters(encode_job, current_params_, picture,
-                                           reference_frames_)) {
+                                           reference_frames_,
+                                           ref_frames_used)) {
     LOG(ERROR) << "Failed submitting frame parameters";
     return false;
   }
@@ -147,7 +159,11 @@ void VP8Encoder::InitializeFrameHeader() {
   DCHECK(!visible_size_.IsEmpty());
   current_frame_hdr_.width = visible_size_.width();
   current_frame_hdr_.height = visible_size_.height();
-  current_frame_hdr_.quantization_hdr.y_ac_qi = current_params_.initial_qp;
+  // Since initial_qp is always kDefaultQP (=31), y_ac_qi should be 27
+  // (the table index for kDefaultQP, see rfc 14.1. table ac_qlookup)
+  DCHECK_EQ(current_params_.initial_qp, kDefaultQP);
+  constexpr uint8_t kDefaultQPACQIndex = 27;
+  current_frame_hdr_.quantization_hdr.y_ac_qi = kDefaultQPACQIndex;
   current_frame_hdr_.show_frame = true;
   // TODO(sprang): Make this dynamic. Value based on reference implementation
   // in libyami (https://github.com/intel/libyami).
@@ -155,12 +171,8 @@ void VP8Encoder::InitializeFrameHeader() {
 }
 
 void VP8Encoder::UpdateFrameHeader(bool keyframe) {
-  current_frame_hdr_.frame_type =
-      keyframe ? Vp8FrameHeader::KEYFRAME : Vp8FrameHeader::INTERFRAME;
-}
-
-void VP8Encoder::UpdateReferenceFrames(scoped_refptr<VP8Picture> picture) {
-  if (current_frame_hdr_.IsKeyframe()) {
+  if (keyframe) {
+    current_frame_hdr_.frame_type = Vp8FrameHeader::KEYFRAME;
     current_frame_hdr_.refresh_last = true;
     current_frame_hdr_.refresh_golden_frame = true;
     current_frame_hdr_.refresh_alternate_frame = true;
@@ -169,6 +181,7 @@ void VP8Encoder::UpdateReferenceFrames(scoped_refptr<VP8Picture> picture) {
     current_frame_hdr_.copy_buffer_to_alternate =
         Vp8FrameHeader::NO_ALT_REFRESH;
   } else {
+    current_frame_hdr_.frame_type = Vp8FrameHeader::INTERFRAME;
     // TODO(sprang): Add temporal layer support.
     current_frame_hdr_.refresh_last = true;
     current_frame_hdr_.refresh_golden_frame = false;
@@ -178,7 +191,9 @@ void VP8Encoder::UpdateReferenceFrames(scoped_refptr<VP8Picture> picture) {
     current_frame_hdr_.copy_buffer_to_alternate =
         Vp8FrameHeader::COPY_GOLDEN_TO_ALT;
   }
+}
 
+void VP8Encoder::UpdateReferenceFrames(scoped_refptr<VP8Picture> picture) {
   reference_frames_.Refresh(picture);
 }
 

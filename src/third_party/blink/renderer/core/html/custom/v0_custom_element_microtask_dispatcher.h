@@ -18,15 +18,15 @@ class V0CustomElementMicrotaskDispatcher final
  public:
   static V0CustomElementMicrotaskDispatcher& Instance();
 
+  V0CustomElementMicrotaskDispatcher();
+
   void Enqueue(V0CustomElementCallbackQueue*);
 
   bool ElementQueueIsEmpty() { return elements_.IsEmpty(); }
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
-  V0CustomElementMicrotaskDispatcher();
-
   void EnsureMicrotaskScheduledForElementQueue();
   void EnsureMicrotaskScheduled();
 

@@ -1,5 +1,7 @@
 #include "rar.hpp"
 
+namespace third_party_unrar {
+
 RawRead::RawRead()
 {
   RawRead::SrcFile=NULL;
@@ -195,3 +197,5 @@ uint64 RawGetV(const byte *Data,uint &ReadPos,uint DataSize,bool &Overflow)
   Overflow=true;
   return 0; // Out of buffer border.
 }
+
+}  // namespace third_party_unrar

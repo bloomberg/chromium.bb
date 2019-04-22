@@ -5,7 +5,7 @@
 #include "ios/chrome/browser/payments/ios_can_make_payment_query_factory.h"
 
 #include "base/memory/ptr_util.h"
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/payments/core/can_make_payment_query.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -13,7 +13,8 @@
 
 // static
 IOSCanMakePaymentQueryFactory* IOSCanMakePaymentQueryFactory::GetInstance() {
-  return base::Singleton<IOSCanMakePaymentQueryFactory>::get();
+  static base::NoDestructor<IOSCanMakePaymentQueryFactory> instance;
+  return instance.get();
 }
 
 // static

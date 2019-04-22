@@ -18,7 +18,7 @@
 #include "net/base/net_export.h"
 #include "net/base/request_priority.h"
 #include "net/log/net_log_with_source.h"
-#include "net/third_party/spdy/core/spdy_header_block.h"
+#include "net/third_party/quiche/src/spdy/core/spdy_header_block.h"
 #include "net/websockets/websocket_basic_stream_adapters.h"
 #include "net/websockets/websocket_handshake_stream_base.h"
 #include "net/websockets/websocket_stream.h"
@@ -93,6 +93,8 @@ class NET_EXPORT_PRIVATE WebSocketHttp2HandshakeStream
   // depending on what extensions were negotiated. This object is unusable after
   // Upgrade() has been called and should be disposed of as soon as possible.
   std::unique_ptr<WebSocketStream> Upgrade() override;
+
+  base::WeakPtr<WebSocketHandshakeStreamBase> GetWeakPtr() override;
 
   // WebSocketSpdyStreamAdapter::Delegate methods.
   void OnHeadersSent() override;
@@ -174,6 +176,8 @@ class NET_EXPORT_PRIVATE WebSocketHttp2HandshakeStream
   // The extension parameters. The class is defined in the implementation file
   // to avoid including extension-related header files here.
   std::unique_ptr<WebSocketExtensionParams> extension_params_;
+
+  base::WeakPtrFactory<WebSocketHttp2HandshakeStream> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSocketHttp2HandshakeStream);
 };

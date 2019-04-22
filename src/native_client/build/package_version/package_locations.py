@@ -7,6 +7,7 @@
 
 import os
 import posixpath
+import sys
 
 SHARED_FOLDER = 'shared'
 ARCHIVE_DIR = 'package_archives'
@@ -105,7 +106,8 @@ def GetLocalPackageArchiveFile(tar_dir, archive_name, archive_hash):
   Returns:
     The standard location where local package archive file is found.
   """
-  if isinstance(archive_hash, (int, long)):
+  if isinstance(archive_hash, int) or (sys.version_info.major < 3 and
+                                       isinstance(archive_hash, long)):
     archive_hash = '%040x' % archive_hash
 
   archive_directory = GetLocalPackageArchiveDir(tar_dir, archive_name)

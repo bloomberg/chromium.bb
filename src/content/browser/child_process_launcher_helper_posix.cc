@@ -15,8 +15,8 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_descriptors.h"
 #include "content/public/common/content_switches.h"
+#include "mojo/public/cpp/platform/features.h"
 #include "mojo/public/cpp/platform/platform_channel_endpoint.h"
-#include "services/catalog/public/cpp/manifest_parsing_util.h"
 #include "services/service_manager/embedder/shared_file_util.h"
 #include "services/service_manager/embedder/switches.h"
 
@@ -26,7 +26,7 @@ namespace internal {
 namespace {
 
 using RequiredFilesByServiceMap =
-    std::map<std::string, catalog::RequiredFileMap>;
+    std::map<std::string, std::map<std::string, base::FilePath>>;
 
 RequiredFilesByServiceMap& GetRequiredFilesByServiceMap() {
   static auto* required_files_by_service = new RequiredFilesByServiceMap();
@@ -83,18 +83,22 @@ std::unique_ptr<PosixFileDescriptorInfo> CreateDefaultPosixFilesToMap(
 
 // Mac shared memory doesn't use file descriptors.
 #if !defined(OS_MACOSX)
-  base::SharedMemoryHandle shm = base::FieldTrialList::GetFieldTrialHandle();
-  if (shm.IsValid()) {
-    files_to_register->Share(
-        service_manager::kFieldTrialDescriptor,
-        base::SharedMemory::GetFdFromSharedMemoryHandle(shm));
-  }
+  int fd = base::FieldTrialList::GetFieldTrialDescriptor();
+  DCHECK_NE(fd, -1);
+  files_to_register->Share(service_manager::kFieldTrialDescriptor, fd);
+
+  const bool mojo_channel_mac = false;
+#else
+  const bool mojo_channel_mac =
+      base::FeatureList::IsEnabled(mojo::features::kMojoChannelMac);
 #endif
 
-  DCHECK(mojo_channel_remote_endpoint.is_valid());
-  files_to_register->Share(
-      service_manager::kMojoIPCChannel,
-      mojo_channel_remote_endpoint.platform_handle().GetFD().get());
+  if (!mojo_channel_mac) {
+    DCHECK(mojo_channel_remote_endpoint.is_valid());
+    files_to_register->Share(
+        service_manager::kMojoIPCChannel,
+        mojo_channel_remote_endpoint.platform_handle().GetFD().get());
+  }
 
   // TODO(jcivelli): remove this "if defined" by making
   // GetAdditionalMappedFilesForChildProcess a no op on Mac.
@@ -113,7 +117,8 @@ std::unique_ptr<PosixFileDescriptorInfo> CreateDefaultPosixFilesToMap(
   const std::string& service_name = service_name_iter->second;
   auto files_iter = GetRequiredFilesByServiceMap().find(service_name);
   if (files_iter != GetRequiredFilesByServiceMap().end()) {
-    const catalog::RequiredFileMap& required_files_map = files_iter->second;
+    const std::map<std::string, base::FilePath>& required_files_map =
+        files_iter->second;
     base::GlobalDescriptors::Key key = kContentDynamicDescriptorStart;
     service_manager::SharedFileSwitchValueBuilder file_switch_value_builder;
     for (const auto& key_path_iter : required_files_map) {
@@ -137,8 +142,9 @@ std::unique_ptr<PosixFileDescriptorInfo> CreateDefaultPosixFilesToMap(
   return files_to_register;
 }
 
-void SetFilesToShareForServicePosix(const std::string& service_name,
-                                    catalog::RequiredFileMap required_files) {
+void SetFilesToShareForServicePosix(
+    const std::string& service_name,
+    std::map<std::string, base::FilePath> required_files) {
   if (required_files.empty())
     return;
 

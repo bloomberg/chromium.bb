@@ -27,7 +27,8 @@ class TestPersonalDataManager : public PersonalDataManager {
   // PersonalDataManager overrides.  These functions are overridden as needed
   // for various tests, whether to skip calls to uncreated databases/services,
   // or to make things easier in general to toggle.
-  void OnSyncServiceInitialized(syncer::SyncService* sync_service) override {}
+  void OnSyncServiceInitialized(syncer::SyncService* sync_service) override;
+  AutofillSyncSigninState GetSyncSigninState() const override;
   void RecordUseOf(const AutofillDataModel& data_model) override;
   std::string SaveImportedProfile(
       const AutofillProfile& imported_profile) override;
@@ -55,7 +56,7 @@ class TestPersonalDataManager : public PersonalDataManager {
   CreditCard* GetCreditCardByNumber(const std::string& number) override;
   bool IsDataLoaded() const override;
   bool IsSyncFeatureEnabled() const override;
-  AccountInfo GetAccountInfoForPaymentsServer() const override;
+  CoreAccountInfo GetAccountInfoForPaymentsServer() const override;
 
   // Unique to TestPersonalDataManager:
 
@@ -90,6 +91,8 @@ class TestPersonalDataManager : public PersonalDataManager {
     return num_times_save_imported_credit_card_called_;
   }
 
+  bool sync_service_initialized() const { return sync_service_initialized_; }
+
   void SetAutofillEnabled(bool autofill_enabled) {
     autofill_enabled_ = autofill_enabled;
   }
@@ -113,7 +116,11 @@ class TestPersonalDataManager : public PersonalDataManager {
 
   void SetSyncFeatureEnabled(bool enabled) { sync_feature_enabled_ = enabled; }
 
-  void SetAccountInfoForPayments(const AccountInfo& account_info) {
+  void SetSyncAndSignInState(AutofillSyncSigninState sync_and_signin_state) {
+    sync_and_signin_state_ = sync_and_signin_state;
+  }
+
+  void SetAccountInfoForPayments(const CoreAccountInfo& account_info) {
     account_info_ = account_info;
   }
 
@@ -127,7 +134,10 @@ class TestPersonalDataManager : public PersonalDataManager {
   base::Optional<bool> autofill_credit_card_enabled_;
   base::Optional<bool> autofill_wallet_import_enabled_;
   bool sync_feature_enabled_ = false;
-  AccountInfo account_info_;
+  AutofillSyncSigninState sync_and_signin_state_ =
+      AutofillSyncSigninState::kSignedInAndSyncFeatureEnabled;
+  bool sync_service_initialized_ = false;
+  CoreAccountInfo account_info_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPersonalDataManager);
 };

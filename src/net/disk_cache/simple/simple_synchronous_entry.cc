@@ -10,13 +10,14 @@
 #include <limits>
 
 #include "base/compiler_specific.h"
+#include "base/containers/stack_container.h"
 #include "base/files/file_util.h"
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/sha1.h"
 #include "base/strings/string_piece.h"
 #include "base/timer/elapsed_timer.h"
 #include "crypto/secure_hash.h"
@@ -37,21 +38,10 @@ namespace disk_cache {
 
 namespace {
 
-void RecordSyncOpenResult(net::CacheType cache_type,
-                          OpenEntryResult result,
-                          bool had_index) {
+void RecordSyncOpenResult(net::CacheType cache_type, OpenEntryResult result) {
   DCHECK_LT(result, OPEN_ENTRY_MAX);
   SIMPLE_CACHE_UMA(ENUMERATION,
                    "SyncOpenResult", cache_type, result, OPEN_ENTRY_MAX);
-  if (had_index) {
-    SIMPLE_CACHE_UMA(ENUMERATION,
-                     "SyncOpenResult_WithIndex", cache_type,
-                     result, OPEN_ENTRY_MAX);
-  } else {
-    SIMPLE_CACHE_UMA(ENUMERATION,
-                     "SyncOpenResult_WithoutIndex", cache_type,
-                     result, OPEN_ENTRY_MAX);
-  }
 }
 
 void RecordWriteResult(net::CacheType cache_type, SyncWriteResult result) {
@@ -76,8 +66,13 @@ void RecordKeySHA256Result(net::CacheType cache_type, KeySHA256Result result) {
                    static_cast<int>(KeySHA256Result::MAX));
 }
 
-void RecordWhetherOpenDidPrefetch(net::CacheType cache_type, bool result) {
-  SIMPLE_CACHE_UMA(BOOLEAN, "SyncOpenDidPrefetch", cache_type, result);
+void RecordOpenPrefetchMode(net::CacheType cache_type, OpenPrefetchMode mode) {
+  SIMPLE_CACHE_UMA(ENUMERATION, "SyncOpenPrefetchMode", cache_type, mode,
+                   OPEN_PREFETCH_MAX);
+}
+
+void RecordDiskCreateLatency(net::CacheType cache_type, base::TimeDelta delay) {
+  SIMPLE_CACHE_UMA(TIMES, "DiskCreateLatency", cache_type, delay);
 }
 
 bool CanOmitEmptyFile(int file_index) {
@@ -119,6 +114,85 @@ int FileIndexForSubFile(SimpleFileTracker::SubFile sub_file) {
 
 }  // namespace
 
+// Helper class to track a range of data prefetched from a file.
+class SimpleSynchronousEntry::PrefetchData final {
+ public:
+  explicit PrefetchData(size_t file_size)
+      : file_size_(file_size),
+        offset_in_file_(0),
+        earliest_requested_offset_(file_size) {}
+
+  // Returns true if the specified range within the file has been completely
+  // prefetched.  Returns false if any part of the range has not been
+  // prefetched.
+  bool HasData(size_t offset, size_t length) {
+    size_t end = 0;
+    if (!base::CheckAdd(offset, length).AssignIfValid(&end))
+      return false;
+    UpdateEarliestOffset(offset);
+    return offset >= offset_in_file_ &&
+           end <= (offset_in_file_ + buffer_->size());
+  }
+
+  // Read the given range out of the prefetch buffer into the target
+  // destination buffer.  If the range is not wholely contained within
+  // the prefetch buffer than no data will be written to the target
+  // buffer.  Returns true if the range has been copied.
+  bool ReadData(size_t offset, size_t length, char* dest) {
+    DCHECK(dest);
+    if (!length)
+      return true;
+    if (!HasData(offset, length))
+      return false;
+    DCHECK(offset >= offset_in_file_);
+    size_t buffer_offset = offset - offset_in_file_;
+    memcpy(dest, buffer_->data() + buffer_offset, length);
+    return true;
+  }
+
+  // Populate the prefetch buffer from the given file and range.  Returns
+  // true if the data is successfully read.
+  bool PrefetchFromFile(SimpleFileTracker::FileHandle* file,
+                        size_t offset,
+                        size_t length) {
+    DCHECK(file);
+    if (!buffer_->empty())
+      return false;
+    buffer_->resize(length);
+    if (file->get()->Read(offset, buffer_->data(), length) !=
+        static_cast<int>(length)) {
+      buffer_->resize(0);
+      return false;
+    }
+    offset_in_file_ = offset;
+    return true;
+  }
+
+  // Return how much trailing data has been requested via HasData() or
+  // ReadData().  The intent is that this value can be used to tune
+  // future prefetching behavior.
+  size_t GetDesiredTrailerPrefetchSize() const {
+    return file_size_ - earliest_requested_offset_;
+  }
+
+ private:
+  // Track the earliest offset requested in order to return an optimal trailer
+  // prefetch amount in GetDesiredTrailerPrefetchSize().
+  void UpdateEarliestOffset(size_t offset) {
+    DCHECK_LE(earliest_requested_offset_, file_size_);
+    earliest_requested_offset_ = std::min(earliest_requested_offset_, offset);
+  }
+
+  const size_t file_size_;
+
+  // Prefer to read the prefetch data into a stack buffer to minimize
+  // memory pressure on the OS disk cache.
+  base::StackVector<char, 1024> buffer_;
+  size_t offset_in_file_;
+
+  size_t earliest_requested_offset_;
+};
+
 using simple_util::GetEntryHashKey;
 using simple_util::GetFilenameFromEntryFileKeyAndFileIndex;
 using simple_util::GetSparseFilenameFromEntryFileKey;
@@ -128,12 +202,31 @@ using simple_util::GetFileSizeFromDataSize;
 using simple_util::GetFileIndexFromStreamIndex;
 
 const base::Feature kSimpleCachePrefetchExperiment = {
-    "SimpleCachePrefetchExperiment", base::FEATURE_DISABLED_BY_DEFAULT};
-const char kSimplePrefetchBytesParam[] = "Bytes";
+    "SimpleCachePrefetchExperiment2", base::FEATURE_DISABLED_BY_DEFAULT};
 
-int GetSimpleCachePrefetchSize() {
-  return base::GetFieldTrialParamByFeatureAsInt(kSimpleCachePrefetchExperiment,
-                                                kSimplePrefetchBytesParam, 0);
+const char kSimpleCacheFullPrefetchBytesParam[] = "FullPrefetchBytes";
+constexpr base::FeatureParam<int> kSimpleCacheFullPrefetchSize{
+    &kSimpleCachePrefetchExperiment, kSimpleCacheFullPrefetchBytesParam, 0};
+
+const char kSimpleCacheTrailerPrefetchHintParam[] = "TrailerPrefetchHint";
+constexpr base::FeatureParam<bool> kSimpleCacheTrailerPrefetchHint{
+    &kSimpleCachePrefetchExperiment, kSimpleCacheTrailerPrefetchHintParam,
+    false};
+
+const char kSimpleCacheTrailerPrefetchSpeculativeBytesParam[] =
+    "TrailerPrefetchSpeculativeBytes";
+constexpr base::FeatureParam<int> kSimpleCacheTrailerPrefetchSpeculativeBytes{
+    &kSimpleCachePrefetchExperiment,
+    kSimpleCacheTrailerPrefetchSpeculativeBytesParam, 0};
+
+int GetSimpleCacheFullPrefetchSize() {
+  return kSimpleCacheFullPrefetchSize.Get();
+}
+
+int GetSimpleCacheTrailerPrefetchSize(int hint_size) {
+  if (kSimpleCacheTrailerPrefetchHint.Get() && hint_size > 0)
+    return hint_size;
+  return kSimpleCacheTrailerPrefetchSpeculativeBytes.Get();
 }
 
 SimpleEntryStat::SimpleEntryStat(base::Time last_used,
@@ -195,7 +288,10 @@ SimpleStreamPrefetchData::~SimpleStreamPrefetchData() = default;
 
 SimpleEntryCreationResults::SimpleEntryCreationResults(
     SimpleEntryStat entry_stat)
-    : sync_entry(NULL), entry_stat(entry_stat), result(net::OK) {}
+    : sync_entry(nullptr),
+      entry_stat(entry_stat),
+      result(net::OK),
+      created(false) {}
 
 SimpleEntryCreationResults::~SimpleEntryCreationResults() = default;
 
@@ -242,22 +338,22 @@ void SimpleSynchronousEntry::OpenEntry(
     const FilePath& path,
     const std::string& key,
     const uint64_t entry_hash,
-    const bool had_index,
     const base::TimeTicks& time_enqueued,
     SimpleFileTracker* file_tracker,
+    int32_t trailer_prefetch_size,
     SimpleEntryCreationResults* out_results) {
   base::TimeTicks start_sync_open_entry = base::TimeTicks::Now();
   SIMPLE_CACHE_UMA(TIMES, "QueueLatency.OpenEntry", cache_type,
                    (start_sync_open_entry - time_enqueued));
 
   SimpleSynchronousEntry* sync_entry = new SimpleSynchronousEntry(
-      cache_type, path, key, entry_hash, had_index, file_tracker);
+      cache_type, path, key, entry_hash, file_tracker, trailer_prefetch_size);
   out_results->result = sync_entry->InitializeForOpen(
       &out_results->entry_stat, out_results->stream_prefetch_data);
   if (out_results->result != net::OK) {
     sync_entry->Doom();
     delete sync_entry;
-    out_results->sync_entry = NULL;
+    out_results->sync_entry = nullptr;
     out_results->stream_prefetch_data[0].data = nullptr;
     out_results->stream_prefetch_data[1].data = nullptr;
     return;
@@ -265,6 +361,8 @@ void SimpleSynchronousEntry::OpenEntry(
   SIMPLE_CACHE_UMA(TIMES, "DiskOpenLatency", cache_type,
                    base::TimeTicks::Now() - start_sync_open_entry);
   out_results->sync_entry = sync_entry;
+  out_results->computed_trailer_prefetch_size =
+      sync_entry->computed_trailer_prefetch_size();
 }
 
 // static
@@ -273,7 +371,6 @@ void SimpleSynchronousEntry::CreateEntry(
     const FilePath& path,
     const std::string& key,
     const uint64_t entry_hash,
-    const bool had_index,
     const base::TimeTicks& time_enqueued,
     SimpleFileTracker* file_tracker,
     SimpleEntryCreationResults* out_results) {
@@ -283,19 +380,77 @@ void SimpleSynchronousEntry::CreateEntry(
                    (start_sync_create_entry - time_enqueued));
 
   SimpleSynchronousEntry* sync_entry = new SimpleSynchronousEntry(
-      cache_type, path, key, entry_hash, had_index, file_tracker);
+      cache_type, path, key, entry_hash, file_tracker, -1);
   out_results->result =
       sync_entry->InitializeForCreate(&out_results->entry_stat);
   if (out_results->result != net::OK) {
     if (out_results->result != net::ERR_FILE_EXISTS)
       sync_entry->Doom();
     delete sync_entry;
-    out_results->sync_entry = NULL;
+    out_results->sync_entry = nullptr;
     return;
   }
   out_results->sync_entry = sync_entry;
-  SIMPLE_CACHE_UMA(TIMES, "DiskCreateLatency", cache_type,
-                   base::TimeTicks::Now() - start_sync_create_entry);
+  out_results->created = true;
+  RecordDiskCreateLatency(cache_type,
+                          base::TimeTicks::Now() - start_sync_create_entry);
+}
+
+// static
+void SimpleSynchronousEntry::OpenOrCreateEntry(
+    net::CacheType cache_type,
+    const FilePath& path,
+    const std::string& key,
+    const uint64_t entry_hash,
+    OpenEntryIndexEnum index_state,
+    bool optimistic_create,
+    const base::TimeTicks& time_enqueued,
+    SimpleFileTracker* file_tracker,
+    int32_t trailer_prefetch_size,
+    SimpleEntryCreationResults* out_results) {
+  base::TimeTicks start = base::TimeTicks::Now();
+  SIMPLE_CACHE_UMA(TIMES, "QueueLatency.OpenOrCreateEntry", cache_type,
+                   (start - time_enqueued));
+  if (index_state == INDEX_MISS) {
+    // Try to just create.
+    auto sync_entry = base::WrapUnique(
+        new SimpleSynchronousEntry(cache_type, path, key, entry_hash,
+                                   file_tracker, trailer_prefetch_size));
+
+    out_results->result =
+        sync_entry->InitializeForCreate(&out_results->entry_stat);
+    switch (out_results->result) {
+      case net::OK:
+        out_results->sync_entry = sync_entry.release();
+        out_results->created = true;
+        RecordDiskCreateLatency(cache_type, base::TimeTicks::Now() - start);
+        return;
+      case net::ERR_FILE_EXISTS:
+        // Our index was messed up.
+        if (optimistic_create) {
+          // In this case, ::OpenOrCreateEntry already returned claiming it made
+          // a new entry. Try extra-hard to make that the actual case.
+          sync_entry->Doom();
+          CreateEntry(cache_type, path, key, entry_hash, time_enqueued,
+                      file_tracker, out_results);
+          return;
+        }
+        // Otherwise can just try opening.
+        break;
+      default:
+        // Trouble. Fail this time.
+        sync_entry->Doom();
+        return;
+    }
+  }
+
+  // Try open, then if that fails create.
+  OpenEntry(cache_type, path, key, entry_hash, time_enqueued, file_tracker,
+            trailer_prefetch_size, out_results);
+  if (out_results->sync_entry)
+    return;
+  CreateEntry(cache_type, path, key, entry_hash, time_enqueued, file_tracker,
+              out_results);
 }
 
 // static
@@ -645,10 +800,18 @@ void SimpleSynchronousEntry::WriteSparseData(const SparseRequest& in_entry_op,
     return;
   }
 
-  uint64_t sparse_data_size = out_entry_stat->sparse_data_size();
+  int32_t sparse_data_size = out_entry_stat->sparse_data_size();
+  int32_t future_sparse_data_size;
+  if (!base::CheckAdd(sparse_data_size, buf_len)
+           .AssignIfValid(&future_sparse_data_size) ||
+      future_sparse_data_size < 0) {
+    Doom();
+    *out_result = net::ERR_CACHE_WRITE_FAILURE;
+    return;
+  }
   // This is a pessimistic estimate; it assumes the entire buffer is going to
   // be appended as a new range, not written over existing ranges.
-  if (sparse_data_size + buf_len > max_sparse_data_size) {
+  if (static_cast<uint64_t>(future_sparse_data_size) > max_sparse_data_size) {
     DVLOG(1) << "Truncating sparse data file (" << sparse_data_size << " + "
              << buf_len << " > " << max_sparse_data_size << ")";
     TruncateSparseFile(sparse_file.get());
@@ -778,8 +941,8 @@ int SimpleSynchronousEntry::CheckEOFRecord(base::File* file,
   SimpleFileEOF eof_record;
   int file_offset = entry_stat.GetEOFOffsetInFile(key_.size(), stream_index);
   int file_index = GetFileIndexFromStreamIndex(stream_index);
-  int rv = GetEOFRecordData(file, base::StringPiece(), file_index, file_offset,
-                            &eof_record);
+  int rv =
+      GetEOFRecordData(file, nullptr, file_index, file_offset, &eof_record);
 
   if (rv != net::OK) {
     Doom();
@@ -798,7 +961,7 @@ int SimpleSynchronousEntry::CheckEOFRecord(base::File* file,
 
 int SimpleSynchronousEntry::PreReadStreamPayload(
     base::File* file,
-    base::StringPiece file_0_prefetch,
+    PrefetchData* prefetch_data,
     int stream_index,
     int extra_size,
     const SimpleEntryStat& entry_stat,
@@ -811,8 +974,8 @@ int SimpleSynchronousEntry::PreReadStreamPayload(
   out->data = base::MakeRefCounted<net::GrowableIOBuffer>();
   out->data->SetCapacity(read_size);
   int file_offset = entry_stat.GetOffsetInFile(key_.size(), 0, stream_index);
-  if (!ReadFromFileOrPrefetched(file, file_0_prefetch, 0, file_offset,
-                                read_size, out->data->data()))
+  if (!ReadFromFileOrPrefetched(file, prefetch_data, 0, file_offset, read_size,
+                                out->data->data()))
     return net::ERR_FAILED;
 
   // Check the CRC32.
@@ -831,7 +994,8 @@ int SimpleSynchronousEntry::PreReadStreamPayload(
 void SimpleSynchronousEntry::Close(
     const SimpleEntryStat& entry_stat,
     std::unique_ptr<std::vector<CRCRecord>> crc32s_to_write,
-    net::GrowableIOBuffer* stream_0_data) {
+    net::GrowableIOBuffer* stream_0_data,
+    SimpleEntryCloseResults* out_results) {
   base::ElapsedTimer close_time;
   DCHECK(stream_0_data);
 
@@ -876,6 +1040,9 @@ void SimpleSynchronousEntry::Close(
             simple_util::Crc32(stream_0_data->data(), entry_stat.data_size(0));
         it->has_crc32 = true;
       }
+
+      out_results->estimated_trailer_prefetch_size =
+          entry_stat.data_size(0) + sizeof(hash_value) + sizeof(SimpleFileEOF);
     }
 
     SimpleFileEOF eof_record;
@@ -933,17 +1100,14 @@ SimpleSynchronousEntry::SimpleSynchronousEntry(net::CacheType cache_type,
                                                const FilePath& path,
                                                const std::string& key,
                                                const uint64_t entry_hash,
-                                               const bool had_index,
-                                               SimpleFileTracker* file_tracker)
+                                               SimpleFileTracker* file_tracker,
+                                               int32_t trailer_prefetch_size)
     : cache_type_(cache_type),
       path_(path),
       entry_file_key_(entry_hash),
-      had_index_(had_index),
       key_(key),
-      have_open_files_(false),
-      initialized_(false),
       file_tracker_(file_tracker),
-      sparse_file_open_(false) {
+      trailer_prefetch_size_(trailer_prefetch_size) {
   for (int i = 0; i < kSimpleEntryNormalFileCount; ++i)
     empty_file_omitted_[i] = false;
 }
@@ -1026,23 +1190,10 @@ bool SimpleSynchronousEntry::OpenFiles(SimpleEntryStat* out_entry_stat) {
       file_1_open_start = base::Time::Now();
 
     if (!MaybeOpenFile(i, &error)) {
-      // TODO(morlovich): Remove one each of these triplets of histograms. We
-      // can calculate the third as the sum or difference of the other two.
-      RecordSyncOpenResult(cache_type_, OPEN_ENTRY_PLATFORM_FILE_ERROR,
-                           had_index_);
+      RecordSyncOpenResult(cache_type_, OPEN_ENTRY_PLATFORM_FILE_ERROR);
       SIMPLE_CACHE_UMA(ENUMERATION,
                        "SyncOpenPlatformFileError", cache_type_,
                        -error, -base::File::FILE_ERROR_MAX);
-      if (had_index_) {
-        SIMPLE_CACHE_UMA(ENUMERATION,
-                         "SyncOpenPlatformFileError_WithIndex", cache_type_,
-                         -error, -base::File::FILE_ERROR_MAX);
-      } else {
-        SIMPLE_CACHE_UMA(ENUMERATION,
-                         "SyncOpenPlatformFileError_WithoutIndex",
-                         cache_type_,
-                         -error, -base::File::FILE_ERROR_MAX);
-      }
       while (--i >= 0)
         CloseFile(i);
       return false;
@@ -1089,8 +1240,7 @@ bool SimpleSynchronousEntry::OpenFiles(SimpleEntryStat* out_entry_stat) {
     // stream 1 and stream 0 is only determined after reading the EOF record
     // for stream 0 in ReadAndValidateStream0AndMaybe1.
     if (!base::IsValueInRangeForNumericType<int>(file_info.size)) {
-      RecordSyncOpenResult(cache_type_, OPEN_ENTRY_INVALID_FILE_LENGTH,
-                           had_index_);
+      RecordSyncOpenResult(cache_type_, OPEN_ENTRY_INVALID_FILE_LENGTH);
       return false;
     }
     out_entry_stat->set_data_size(i + 1, static_cast<int>(file_info.size));
@@ -1124,22 +1274,10 @@ bool SimpleSynchronousEntry::CreateFiles(SimpleEntryStat* out_entry_stat) {
   for (int i = 0; i < kSimpleEntryNormalFileCount; ++i) {
     base::File::Error error;
     if (!MaybeCreateFile(i, FILE_NOT_REQUIRED, &error)) {
-      // TODO(morlovich): Remove one each of these triplets of histograms. We
-      // can calculate the third as the sum or difference of the other two.
-      RecordSyncCreateResult(CREATE_ENTRY_PLATFORM_FILE_ERROR, had_index_);
+      RecordSyncCreateResult(CREATE_ENTRY_PLATFORM_FILE_ERROR);
       SIMPLE_CACHE_UMA(ENUMERATION,
                        "SyncCreatePlatformFileError", cache_type_,
                        -error, -base::File::FILE_ERROR_MAX);
-      if (had_index_) {
-        SIMPLE_CACHE_UMA(ENUMERATION,
-                         "SyncCreatePlatformFileError_WithIndex", cache_type_,
-                         -error, -base::File::FILE_ERROR_MAX);
-      } else {
-        SIMPLE_CACHE_UMA(ENUMERATION,
-                         "SyncCreatePlatformFileError_WithoutIndex",
-                         cache_type_,
-                         -error, -base::File::FILE_ERROR_MAX);
-      }
       while (--i >= 0)
         CloseFile(i);
       return false;
@@ -1190,7 +1328,7 @@ bool SimpleSynchronousEntry::CheckHeaderAndKey(base::File* file,
       reinterpret_cast<const SimpleFileHeader*>(header_data.data());
 
   if (bytes_read == -1 || static_cast<size_t>(bytes_read) < sizeof(*header)) {
-    RecordSyncOpenResult(cache_type_, OPEN_ENTRY_CANT_READ_HEADER, had_index_);
+    RecordSyncOpenResult(cache_type_, OPEN_ENTRY_CANT_READ_HEADER);
     return false;
   }
   // This resize will not invalidate iterators since it does not enlarge the
@@ -1199,12 +1337,12 @@ bool SimpleSynchronousEntry::CheckHeaderAndKey(base::File* file,
   header_data.resize(bytes_read);
 
   if (header->initial_magic_number != kSimpleInitialMagicNumber) {
-    RecordSyncOpenResult(cache_type_, OPEN_ENTRY_BAD_MAGIC_NUMBER, had_index_);
+    RecordSyncOpenResult(cache_type_, OPEN_ENTRY_BAD_MAGIC_NUMBER);
     return false;
   }
 
   if (header->version != kSimpleEntryVersionOnDisk) {
-    RecordSyncOpenResult(cache_type_, OPEN_ENTRY_BAD_VERSION, had_index_);
+    RecordSyncOpenResult(cache_type_, OPEN_ENTRY_BAD_VERSION);
     return false;
   }
 
@@ -1217,7 +1355,7 @@ bool SimpleSynchronousEntry::CheckHeaderAndKey(base::File* file,
     int bytes_read =
         file->Read(old_size, header_data.data() + old_size, bytes_to_read);
     if (bytes_read != bytes_to_read) {
-      RecordSyncOpenResult(cache_type_, OPEN_ENTRY_CANT_READ_KEY, had_index_);
+      RecordSyncOpenResult(cache_type_, OPEN_ENTRY_CANT_READ_KEY);
       return false;
     }
     header = reinterpret_cast<const SimpleFileHeader*>(header_data.data());
@@ -1225,7 +1363,7 @@ bool SimpleSynchronousEntry::CheckHeaderAndKey(base::File* file,
 
   char* key_data = header_data.data() + sizeof(*header);
   if (base::Hash(key_data, header->key_length) != header->key_hash) {
-    RecordSyncOpenResult(cache_type_, OPEN_ENTRY_KEY_HASH_MISMATCH, had_index_);
+    RecordSyncOpenResult(cache_type_, OPEN_ENTRY_KEY_HASH_MISMATCH);
     return false;
   }
 
@@ -1234,7 +1372,7 @@ bool SimpleSynchronousEntry::CheckHeaderAndKey(base::File* file,
     key_.swap(key_from_header);
   } else {
     if (key_ != key_from_header) {
-      RecordSyncOpenResult(cache_type_, OPEN_ENTRY_KEY_MISMATCH, had_index_);
+      RecordSyncOpenResult(cache_type_, OPEN_ENTRY_KEY_MISMATCH);
       return false;
     }
   }
@@ -1283,17 +1421,28 @@ int SimpleSynchronousEntry::InitializeForOpen(
       out_entry_stat->set_data_size(
           2,
           GetDataSizeFromFileSize(key_.size(), out_entry_stat->data_size(2)));
-      if (out_entry_stat->data_size(2) < 0) {
+      const int32_t data_size_2 = out_entry_stat->data_size(2);
+      if (data_size_2 < 0) {
         DLOG(WARNING) << "Stream 2 file is too small.";
         return net::ERR_FAILED;
+      } else if (data_size_2 > 0) {
+        // Validate non empty stream 2.
+        SimpleFileEOF eof_record;
+        SimpleFileTracker::FileHandle file =
+            file_tracker_->Acquire(this, SubFileForFileIndex(i));
+        int file_offset =
+            out_entry_stat->GetEOFOffsetInFile(key_.size(), 2 /*stream index*/);
+        int ret_value_stream_2 =
+            GetEOFRecordData(file.get(), nullptr, i, file_offset, &eof_record);
+        if (ret_value_stream_2 != net::OK)
+          return ret_value_stream_2;
       }
     }
   }
 
   int32_t sparse_data_size = 0;
   if (!OpenSparseFileIfExists(&sparse_data_size)) {
-    RecordSyncOpenResult(cache_type_, OPEN_ENTRY_SPARSE_OPEN_FAILED,
-                         had_index_);
+    RecordSyncOpenResult(cache_type_, OPEN_ENTRY_SPARSE_OPEN_FAILED);
     return net::ERR_FAILED;
   }
   out_entry_stat->set_sparse_data_size(sparse_data_size);
@@ -1314,7 +1463,7 @@ int SimpleSynchronousEntry::InitializeForOpen(
   SIMPLE_CACHE_UMA(BOOLEAN, "EntryOpenedAndStream2Removed", cache_type_,
                    removed_stream2);
 
-  RecordSyncOpenResult(cache_type_, OPEN_ENTRY_SUCCESS, had_index_);
+  RecordSyncOpenResult(cache_type_, OPEN_ENTRY_SUCCESS);
   initialized_ = true;
   return net::OK;
 }
@@ -1365,11 +1514,11 @@ int SimpleSynchronousEntry::InitializeForCreate(
 
     CreateEntryResult result;
     if (!InitializeCreatedFile(i, &result)) {
-      RecordSyncCreateResult(result, had_index_);
+      RecordSyncCreateResult(result);
       return net::ERR_FAILED;
     }
   }
-  RecordSyncCreateResult(CREATE_ENTRY_SUCCESS, had_index_);
+  RecordSyncCreateResult(CREATE_ENTRY_SUCCESS);
   initialized_ = true;
   return net::OK;
 }
@@ -1383,27 +1532,56 @@ int SimpleSynchronousEntry::ReadAndValidateStream0AndMaybe1(
   if (!file.IsOK())
     return net::ERR_FAILED;
 
-  // If the file is sufficiently small, we will prefetch everything --
-  // in which case |prefetch_buf| will be non-null, and we should look at it
-  // rather than call ::Read for the bits.
-  std::unique_ptr<char[]> prefetch_buf;
-  base::StringPiece file_0_prefetch;
+  // We may prefetch data from file in a couple cases:
+  //  1) If the file is small enough we may prefetch it entirely.
+  //  2) We may also prefetch a block of trailer bytes from the end of
+  //     the file.
+  // In these cases the PrefetchData object is used to store the
+  // bytes read from the file.  The PrefetchData object also keeps track
+  // of what range within the file has been prefetched.  It will only
+  // allow reads wholely within this range to be accessed via its
+  // ReadData() method.
+  PrefetchData prefetch_data(file_size);
 
-  if (file_size > GetSimpleCachePrefetchSize()) {
-    RecordWhetherOpenDidPrefetch(cache_type_, false);
-  } else {
-    RecordWhetherOpenDidPrefetch(cache_type_, true);
-    prefetch_buf = std::make_unique<char[]>(file_size);
-    if (file->Read(0, prefetch_buf.get(), file_size) != file_size)
+  // Determine a threshold for fully prefetching the entire entry file.  If
+  // the entry file is less than or equal to this number of bytes it will
+  // be fully prefetched.
+  int full_prefetch_size = GetSimpleCacheFullPrefetchSize();
+
+  // Determine how much trailer data to prefetch.  If the full file prefetch
+  // does not trigger then this is the number of bytes to read from the end
+  // of the file in a single file operation.  Ideally the trailer prefetch
+  // will contain at least stream 0 and its EOF record.
+  int trailer_prefetch_size =
+      GetSimpleCacheTrailerPrefetchSize(trailer_prefetch_size_);
+
+  OpenPrefetchMode prefetch_mode = OPEN_PREFETCH_NONE;
+  if (file_size <= full_prefetch_size || file_size <= trailer_prefetch_size) {
+    // Prefetch the entire file.
+    prefetch_mode = OPEN_PREFETCH_FULL;
+    RecordOpenPrefetchMode(cache_type_, prefetch_mode);
+    if (!prefetch_data.PrefetchFromFile(&file, 0, file_size))
       return net::ERR_FAILED;
-    file_0_prefetch.set(prefetch_buf.get(), file_size);
+  } else if (trailer_prefetch_size > 0) {
+    // Prefetch trailer data from the end of the file.
+    prefetch_mode = OPEN_PREFETCH_TRAILER;
+    RecordOpenPrefetchMode(cache_type_, prefetch_mode);
+    size_t length = std::min(trailer_prefetch_size, file_size);
+    size_t offset = file_size - length;
+    if (!prefetch_data.PrefetchFromFile(&file, offset, length))
+      return net::ERR_FAILED;
+    SIMPLE_CACHE_UMA(COUNTS_100000, "EntryTrailerPrefetchSize", cache_type_,
+                     trailer_prefetch_size);
+  } else {
+    // Do no prefetching.
+    RecordOpenPrefetchMode(cache_type_, prefetch_mode);
   }
 
   // Read stream 0 footer first --- it has size/feature info required to figure
   // out file 0's layout.
   SimpleFileEOF stream_0_eof;
   int rv = GetEOFRecordData(
-      file.get(), file_0_prefetch, /* file_index = */ 0,
+      file.get(), &prefetch_data, /* file_index = */ 0,
       /* file_offset = */ file_size - sizeof(SimpleFileEOF), &stream_0_eof);
   if (rv != net::OK)
     return rv;
@@ -1431,24 +1609,45 @@ int SimpleSynchronousEntry::ReadAndValidateStream0AndMaybe1(
   out_entry_stat->set_data_size(1, stream1_size);
 
   // Put stream 0 data in memory --- plus maybe the sha256(key) footer.
-  rv = PreReadStreamPayload(file.get(), file_0_prefetch, /* stream_index = */ 0,
+  rv = PreReadStreamPayload(file.get(), &prefetch_data, /* stream_index = */ 0,
                             extra_post_stream_0_read, *out_entry_stat,
                             stream_0_eof, &stream_prefetch_data[0]);
   if (rv != net::OK)
     return rv;
 
+  // Note the exact range needed in order to read the EOF record and stream 0.
+  // In APP_CACHE mode this will be stored directly in the index so we can
+  // know exactly how much to read next time.  Its also reported in a histogram
+  // so we can tune the speculative trailer prefetching experiment.
+  computed_trailer_prefetch_size_ =
+      prefetch_data.GetDesiredTrailerPrefetchSize();
+  SIMPLE_CACHE_UMA(COUNTS_100000, "EntryTrailerSize", cache_type_,
+                   computed_trailer_prefetch_size_);
+
+  // If we performed a trailer prefetch, record how accurate the prefetch was
+  // compared to the ideal value.
+  if (prefetch_mode == OPEN_PREFETCH_TRAILER) {
+    SIMPLE_CACHE_UMA(COUNTS_100000, "EntryTrailerPrefetchDelta", cache_type_,
+                     (trailer_prefetch_size - computed_trailer_prefetch_size_));
+  }
+
   // If prefetch buffer is available, and we have sha256(key) (so we don't need
   // to look at the header), extract out stream 1 info as well.
-  if (prefetch_buf && has_key_sha256) {
+  int stream_1_offset = out_entry_stat->GetOffsetInFile(
+      key_.size(), /* offset= */ 0, /* stream_index = */ 1);
+  int stream_1_read_size =
+      sizeof(SimpleFileEOF) + out_entry_stat->data_size(/* stream_index = */ 1);
+  if (has_key_sha256 &&
+      prefetch_data.HasData(stream_1_offset, stream_1_read_size)) {
     SimpleFileEOF stream_1_eof;
-    rv = GetEOFRecordData(
-        file.get(), file_0_prefetch, /* file_index = */ 0,
-        out_entry_stat->GetEOFOffsetInFile(key_.size(), /* stream_index = */ 1),
-        &stream_1_eof);
+    int stream_1_eof_offset =
+        out_entry_stat->GetEOFOffsetInFile(key_.size(), /* stream_index = */ 1);
+    rv = GetEOFRecordData(file.get(), &prefetch_data, /* file_index = */ 0,
+                          stream_1_eof_offset, &stream_1_eof);
     if (rv != net::OK)
       return rv;
 
-    rv = PreReadStreamPayload(file.get(), file_0_prefetch,
+    rv = PreReadStreamPayload(file.get(), &prefetch_data,
                               /* stream_index = */ 1,
                               /* extra_size = */ 0, *out_entry_stat,
                               stream_1_eof, &stream_prefetch_data[1]);
@@ -1484,42 +1683,42 @@ int SimpleSynchronousEntry::ReadAndValidateStream0AndMaybe1(
 
 bool SimpleSynchronousEntry::ReadFromFileOrPrefetched(
     base::File* file,
-    base::StringPiece file_0_prefetch,
+    PrefetchData* prefetch_data,
     int file_index,
     int offset,
     int size,
     char* dest) {
-  if (file_0_prefetch.empty() || file_index != 0) {
-    return file->Read(offset, dest, size) == size;
-  } else {
-    if (offset < 0 || size < 0)
-      return false;
-    if (size == 0)
-      return true;
+  if (offset < 0 || size < 0)
+    return false;
+  if (size == 0)
+    return true;
 
-    base::CheckedNumeric<size_t> start(offset);
-    size_t start_numeric;
-    if (!start.AssignIfValid(&start_numeric) ||
-        start_numeric >= file_0_prefetch.size())
-      return false;
+  base::CheckedNumeric<size_t> start(offset);
+  size_t start_numeric;
+  if (!start.AssignIfValid(&start_numeric))
+    return false;
 
-    base::CheckedNumeric<size_t> end = start + size - 1;
-    size_t end_numeric;
-    if (!end.AssignIfValid(&end_numeric) ||
-        end_numeric >= file_0_prefetch.size())
-      return false;
+  base::CheckedNumeric<size_t> length(size);
+  size_t length_numeric;
+  if (!length.AssignIfValid(&length_numeric))
+    return false;
 
-    memcpy(dest, file_0_prefetch.data() + offset, size);
+  // First try to extract the desired range from the PrefetchData.
+  if (file_index == 0 && prefetch_data &&
+      prefetch_data->ReadData(start_numeric, length_numeric, dest)) {
     return true;
   }
+
+  // If we have not prefetched the range then we must read it from disk.
+  return file->Read(start_numeric, dest, length_numeric) == size;
 }
 
 int SimpleSynchronousEntry::GetEOFRecordData(base::File* file,
-                                             base::StringPiece file_0_prefetch,
+                                             PrefetchData* prefetch_data,
                                              int file_index,
                                              int file_offset,
                                              SimpleFileEOF* eof_record) {
-  if (!ReadFromFileOrPrefetched(file, file_0_prefetch, file_index, file_offset,
+  if (!ReadFromFileOrPrefetched(file, prefetch_data, file_index, file_offset,
                                 sizeof(SimpleFileEOF),
                                 reinterpret_cast<char*>(eof_record))) {
     RecordCheckEOFResult(cache_type_, CHECK_EOF_RESULT_READ_FAILURE);
@@ -1582,20 +1781,10 @@ bool SimpleSynchronousEntry::TruncateFilesForEntryHash(
   return result;
 }
 
-void SimpleSynchronousEntry::RecordSyncCreateResult(CreateEntryResult result,
-                                                    bool had_index) {
+void SimpleSynchronousEntry::RecordSyncCreateResult(CreateEntryResult result) {
   DCHECK_LT(result, CREATE_ENTRY_MAX);
   SIMPLE_CACHE_UMA(ENUMERATION,
                    "SyncCreateResult", cache_type_, result, CREATE_ENTRY_MAX);
-  if (had_index) {
-    SIMPLE_CACHE_UMA(ENUMERATION,
-                     "SyncCreateResult_WithIndex", cache_type_,
-                     result, CREATE_ENTRY_MAX);
-  } else {
-    SIMPLE_CACHE_UMA(ENUMERATION,
-                     "SyncCreateResult_WithoutIndex", cache_type_,
-                     result, CREATE_ENTRY_MAX);
-  }
 }
 
 FilePath SimpleSynchronousEntry::GetFilenameFromFileIndex(

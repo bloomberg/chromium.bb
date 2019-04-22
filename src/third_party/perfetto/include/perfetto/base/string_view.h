@@ -19,7 +19,11 @@
 
 #include <string.h>
 
+#include <algorithm>
 #include <string>
+
+#include "perfetto/base/hash.h"
+#include "perfetto/base/logging.h"
 
 namespace perfetto {
 namespace base {
@@ -28,14 +32,27 @@ namespace base {
 // Strings are internally NOT null terminated.
 class StringView {
  public:
-  StringView() : data_(""), size_(0) {}
+  static constexpr size_t npos = static_cast<size_t>(-1);
+
+  StringView() : data_(nullptr), size_(0) {}
   StringView(const StringView&) = default;
   StringView& operator=(const StringView&) = default;
-  StringView(const char* data, size_t size) : data_(data), size_(size) {}
+  StringView(const char* data, size_t size) : data_(data), size_(size) {
+    PERFETTO_DCHECK(data != nullptr);
+  }
+
+  // Allow implicit conversion from any class that has a |data| and |size| field
+  // and has the kConvertibleToStringView trait (e.g., protozero::ConstChars).
+  template <typename T, typename = std::enable_if<T::kConvertibleToStringView>>
+  StringView(const T& x) : StringView(x.data, x.size) {
+    PERFETTO_DCHECK(x.data != nullptr);
+  }
 
   // Creates a StringView from a null-terminated C string.
   // Deliberately not "explicit".
-  StringView(const char* cstr) : data_(cstr), size_(strlen(cstr)) {}
+  StringView(const char* cstr) : data_(cstr), size_(strlen(cstr)) {
+    PERFETTO_DCHECK(cstr != nullptr);
+  }
 
   // This instead has to be explicit, as creating a StringView out of a
   // std::string can be subtle.
@@ -46,17 +63,42 @@ class StringView {
   size_t size() const { return size_; }
   const char* data() const { return data_; }
 
-  std::string ToStdString() const { return std::string(data_, size_); }
+  char at(size_t pos) const {
+    PERFETTO_DCHECK(pos < size_);
+    return data_[pos];
+  }
+
+  size_t find(char c) const {
+    for (size_t i = 0; i < size_; ++i) {
+      if (data_[i] == c)
+        return i;
+    }
+    return npos;
+  }
+
+  size_t rfind(char c) const {
+    for (size_t i = size_; i > 0; --i) {
+      if (data_[i - 1] == c)
+        return i - 1;
+    }
+    return npos;
+  }
+
+  StringView substr(size_t pos, size_t count = npos) const {
+    if (pos >= size_)
+      return StringView("", 0);
+    size_t rcount = std::min(count, size_ - pos);
+    return StringView(data_ + pos, rcount);
+  }
+
+  std::string ToStdString() const {
+    return data_ == nullptr ? "" : std::string(data_, size_);
+  }
 
   uint64_t Hash() const {
-    if (size_ == 0)
-      return 0;
-    uint64_t hash = 0xcbf29ce484222325;  // FNV-1a-64 offset basis.
-    for (size_t i = 0; i < size_; ++i) {
-      hash ^= static_cast<decltype(hash)>(data_[i]);
-      hash *= 1099511628211;  // FNV-1a-64 prime.
-    }
-    return hash;
+    base::Hash hasher;
+    hasher.Update(data_, size_);
+    return hasher.digest();
   }
 
  private:
@@ -67,11 +109,33 @@ class StringView {
 inline bool operator==(const StringView& x, const StringView& y) {
   if (x.size() != y.size())
     return false;
+  if (x.size() == 0)
+    return true;
   return memcmp(x.data(), y.data(), x.size()) == 0;
 }
 
 inline bool operator!=(const StringView& x, const StringView& y) {
   return !(x == y);
+}
+
+inline bool operator<(const StringView& x, const StringView& y) {
+  auto size = std::min(x.size(), y.size());
+  if (size == 0)
+    return x.size() < y.size();
+  int result = memcmp(x.data(), y.data(), size);
+  return result < 0 || (result == 0 && x.size() < y.size());
+}
+
+inline bool operator>=(const StringView& x, const StringView& y) {
+  return !(x < y);
+}
+
+inline bool operator>(const StringView& x, const StringView& y) {
+  return y < x;
+}
+
+inline bool operator<=(const StringView& x, const StringView& y) {
+  return !(y < x);
 }
 
 }  // namespace base

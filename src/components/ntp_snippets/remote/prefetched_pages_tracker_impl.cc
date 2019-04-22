@@ -4,11 +4,15 @@
 
 #include "components/ntp_snippets/remote/prefetched_pages_tracker_impl.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
+#include "components/offline_pages/core/page_criteria.h"
 
 using offline_pages::OfflinePageItem;
 using offline_pages::OfflinePageModel;
+using offline_pages::PageCriteria;
 
 namespace ntp_snippets {
 
@@ -17,12 +21,6 @@ namespace {
 bool IsOfflineItemPrefetchedPage(const OfflinePageItem& offline_page_item) {
   return offline_page_item.client_id.name_space ==
          offline_pages::kSuggestedArticlesNamespace;
-}
-
-const GURL& GetOfflinePageUrl(const OfflinePageItem& offline_page_item) {
-  return offline_page_item.original_url != GURL()
-             ? offline_page_item.original_url
-             : offline_page_item.url;
 }
 
 }  // namespace
@@ -53,8 +51,11 @@ void PrefetchedPagesTrackerImpl::Initialize(
     // calls to this method. In this case, there is at least one callback
     // already waiting.
     if (initialization_completed_callbacks_.size() == 1) {
-      offline_page_model_->GetPagesByNamespace(
-          offline_pages::kSuggestedArticlesNamespace,
+      PageCriteria criteria;
+      criteria.client_namespaces.push_back(
+          offline_pages::kSuggestedArticlesNamespace);
+      offline_page_model_->GetPagesWithCriteria(
+          criteria,
           base::BindOnce(&PrefetchedPagesTrackerImpl::OfflinePagesLoaded,
                          weak_ptr_factory_.GetWeakPtr()));
     }
@@ -119,7 +120,7 @@ void PrefetchedPagesTrackerImpl::OfflinePagesLoaded(
 
 void PrefetchedPagesTrackerImpl::AddOfflinePage(
     const OfflinePageItem& offline_page_item) {
-  const GURL& url = GetOfflinePageUrl(offline_page_item);
+  const GURL& url = offline_page_item.GetOriginalUrl();
   DCHECK(prefetched_url_counts_.count(url) == 0 ||
          prefetched_url_counts_.find(url)->second > 0);
   ++prefetched_url_counts_[url];

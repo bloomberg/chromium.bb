@@ -4,13 +4,12 @@
 
 package org.chromium.chrome.browser.contextualsearch;
 
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.content_public.browser.WebContents;
-
-import javax.annotation.Nullable;
 
 /**
  * Provides a context in which to search, and links to the native ContextualSearchContext.
@@ -71,6 +70,10 @@ public abstract class ContextualSearchContext {
     private String mWordFollowingTap;
     private int mWordFollowingTapOffset = INVALID_OFFSET;
 
+    // Data about the previous user interactions and the event-ID from the server that will log it.
+    private long mPreviousEventId;
+    private int mPreviousUserInteractions;
+
     /**
      * Constructs a context that tracks the selection and some amount of page content.
      */
@@ -85,11 +88,18 @@ public abstract class ContextualSearchContext {
      * @param homeCountry The country where the user usually resides, or an empty string if not
      *        known.
      * @param maySendBasePageUrl Whether policy allows sending the base-page URL to the server.
+     * @param previousEventId An EventID from the server to send along with the resolve request.
+     * @param previousUserInteractions Persisted interaction outcomes to send along with the resolve
+     *         request.
      */
-    void setResolveProperties(String homeCountry, boolean maySendBasePageUrl) {
+    void setResolveProperties(String homeCountry, boolean maySendBasePageUrl, long previousEventId,
+            int previousUserInteractions) {
         mHasSetResolveProperties = true;
         mHomeCountry = homeCountry;
-        nativeSetResolveProperties(getNativePointer(), homeCountry, maySendBasePageUrl);
+        mPreviousEventId = previousEventId;
+        mPreviousUserInteractions = previousUserInteractions;
+        nativeSetResolveProperties(getNativePointer(), homeCountry, maySendBasePageUrl,
+                previousEventId, previousUserInteractions);
     }
 
     /**
@@ -454,6 +464,20 @@ public abstract class ContextualSearchContext {
     }
 
     // ============================================================================================
+    // Test support.
+    // ============================================================================================
+
+    @VisibleForTesting
+    int getPreviousUserInteractions() {
+        return mPreviousUserInteractions;
+    }
+
+    @VisibleForTesting
+    long getPreviousEventId() {
+        return mPreviousEventId;
+    }
+
+    // ============================================================================================
     // Native callback support.
     // ============================================================================================
 
@@ -471,8 +495,9 @@ public abstract class ContextualSearchContext {
     @VisibleForTesting
     protected native void nativeDestroy(long nativeContextualSearchContext);
     @VisibleForTesting
-    protected native void nativeSetResolveProperties(
-            long nativeContextualSearchContext, String homeCountry, boolean maySendBasePageUrl);
+    protected native void nativeSetResolveProperties(long nativeContextualSearchContext,
+            String homeCountry, boolean maySendBasePageUrl, long previousEventId,
+            int previousEventResults);
     @VisibleForTesting
     protected native void nativeAdjustSelection(
             long nativeContextualSearchContext, int startAdjust, int endAdjust);

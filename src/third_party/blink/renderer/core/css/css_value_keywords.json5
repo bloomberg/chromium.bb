@@ -220,6 +220,9 @@
     // Value used to implement the behavior in:
     // https://quirks.spec.whatwg.org/#the-tables-inherit-color-from-body-quirk
     "-internal-quirk-inherit",
+    // The default color value for the root element. Using a keyword to account
+    // for different values for different color schemes like dark mode.
+    "-internal-root-color",
     //
     // background-repeat
     //
@@ -455,6 +458,7 @@
     "bidi-override",
     "blink",
     "both",
+    "break-spaces",
     "close-quote",
     "embed",
     "fixed",
@@ -641,59 +645,34 @@
     "manual",
 
     // -webkit-appearance
-    // The order here must match the order in the ControlPart enum in ThemeTypes.h.
-    // All appearance values that should be accepted by the parser should be listed between 'checkbox' and 'textarea':
+    // The order here must match the order in the ControlPart enum in
+    // theme_types.h.
+    // All appearance values that should be accepted by the parser should be
+    // listed between 'checkbox' and 'textarea'.
     "checkbox",
     "radio",
     "push-button",
     "square-button",
     "button",
-    "button-bevel",
     "inner-spin-button",
     "listbox",
-    "listitem",
-    "media-enter-fullscreen-button",
-    "media-exit-fullscreen-button",
-    "media-mute-button",
-    "media-play-button",
-    "media-overlay-play-button",
-    "media-toggle-closed-captions-button",
     "media-slider",
     "media-sliderthumb",
-    "media-volume-slider-container",
     "media-volume-slider",
     "media-volume-sliderthumb",
-    "media-controls-background",
-    "media-controls-fullscreen-background",
-    "media-current-time-display",
-    "media-time-remaining-display",
-    "-internal-media-cast-off-button",
-    "-internal-media-overlay-cast-off-button",
-    "-internal-media-track-selection-checkmark",
-    "-internal-media-closed-captions-icon",
-    "-internal-media-subtitles-icon",
-    "-internal-media-overflow-button",
-    "-internal-media-download-button",
-    "-internal-media-remoting-cast-icon",
     "-internal-media-control",
     "menulist",
     "menulist-button",
-    "menulist-text",
-    "menulist-textfield",
     "meter",
     "progress-bar",
-    "progress-bar-value",
     "slider-horizontal",
     "slider-vertical",
     "sliderthumb-horizontal",
     "sliderthumb-vertical",
-    "caret",
     "searchfield",
     "searchfield-cancel-button",
     "textfield",
     "textarea",
-    // An appearance value that should not be accepted by the parser:
-    "caps-lock-indicator",
 
     //
     // border-image
@@ -776,7 +755,6 @@
     "ease-out",
     "ease-in-out",
     "step-start",
-    "step-middle",
     "step-end",
     "steps",
     "frames",
@@ -954,10 +932,6 @@
 
     // column-fill
     "balance",
-
-    // overflow
-    "-webkit-paged-x",
-    "-webkit-paged-y",
 
     // -webkit-app-region
     "drag",
@@ -1196,5 +1170,15 @@
     // pan-up,
     // pan-down
     // none
+
+    // (prefers-*:) media features
+    "no-preference",
+
+    // (prefers-color-scheme:) media feature
+    "dark",
+    "light",
+
+    // (prefers-reduced-motion:) media feature
+    "reduce",
   ],
 }

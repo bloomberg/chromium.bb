@@ -52,8 +52,9 @@ cr.define('print_preview_new', function() {
      * @private
      */
     onKeyDown_: function(event) {
-      if (event.code != 'Enter')
+      if (event.code != 'Enter') {
         return;
+      }
 
       this.resetAndUpdate();
     },

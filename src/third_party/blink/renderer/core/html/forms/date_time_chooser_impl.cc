@@ -58,17 +58,9 @@ DateTimeChooserImpl::DateTimeChooserImpl(
   popup_ = chrome_client_->OpenPagePopup(this);
 }
 
-DateTimeChooserImpl* DateTimeChooserImpl::Create(
-    ChromeClient* chrome_client,
-    DateTimeChooserClient* client,
-    const DateTimeChooserParameters& parameters) {
-  return MakeGarbageCollected<DateTimeChooserImpl>(chrome_client, client,
-                                                   parameters);
-}
-
 DateTimeChooserImpl::~DateTimeChooserImpl() = default;
 
-void DateTimeChooserImpl::Trace(blink::Visitor* visitor) {
+void DateTimeChooserImpl::Trace(Visitor* visitor) {
   visitor->Trace(chrome_client_);
   visitor->Trace(client_);
   DateTimeChooser::Trace(visitor);
@@ -234,7 +226,7 @@ void DateTimeChooserImpl::SetValue(const String& value) {
   client_->DidChooseValue(value);
 }
 
-void DateTimeChooserImpl::ClosePopup() {
+void DateTimeChooserImpl::CancelPopup() {
   EndChooser();
 }
 

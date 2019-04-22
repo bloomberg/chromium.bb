@@ -83,7 +83,7 @@ class AppBannerManagerAndroid
       const base::android::JavaParamRef<jstring>& jicon_url);
 
   // AppBannerManager overrides.
-  void RequestAppBanner(const GURL& validated_url, bool is_debug_mode) override;
+  void RequestAppBanner(const GURL& validated_url) override;
   void SendBannerDismissed() override;
 
   // InstallableAmbientBadgeInfoBarAndroid::Client overrides.
@@ -110,7 +110,7 @@ class AppBannerManagerAndroid
   friend class content::WebContentsUserData<AppBannerManagerAndroid>;
 
   // Creates the Java-side AppBannerManager.
-  void CreateJavaBannerManager();
+  void CreateJavaBannerManager(content::WebContents* web_contents);
 
   // Returns the query value for |name| in |url|, e.g. example.com?name=value.
   std::string ExtractQueryValueForName(const GURL& url,
@@ -158,6 +158,8 @@ class AppBannerManagerAndroid
 
   // Whether WebAPKs can be installed.
   bool can_install_webapk_;
+
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(AppBannerManagerAndroid);
 };

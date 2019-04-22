@@ -12,7 +12,7 @@ cr.define('cert_viewer', function() {
   function initialize() {
     cr.ui.decorate('tabbox', cr.ui.TabBox);
 
-    var args = JSON.parse(chrome.getVariableValue('dialogArguments'));
+    const args = JSON.parse(chrome.getVariableValue('dialogArguments'));
     getCertificateInfo(args);
 
     /**
@@ -22,7 +22,7 @@ cr.define('cert_viewer', function() {
      * purposes in case a test needs to initialize the tab before the timer
      * fires.
      */
-    var initializeDetailTab = oneShot(function() {
+    const initializeDetailTab = oneShot(function() {
       initializeTree($('hierarchy'), showCertificateFields);
       initializeTree($('cert-fields'), showCertificateFieldValue);
       createCertificateHierarchy(args.hierarchy);
@@ -50,10 +50,11 @@ cr.define('cert_viewer', function() {
    * Decorate a function so that it can only be invoked once.
    */
   function oneShot(fn) {
-    var fired = false;
+    let fired = false;
     return function() {
-      if (fired)
+      if (fired) {
         return;
+      }
       fired = true;
       fn();
     };
@@ -79,10 +80,11 @@ cr.define('cert_viewer', function() {
    */
   function stripGtkAccessorKeys() {
     // Copy all the tab labels into an array.
-    var nodes = Array.prototype.slice.call($('tabs').childNodes, 0);
+    const nodes = Array.prototype.slice.call($('tabs').childNodes, 0);
     nodes.push($('export'));
-    for (var i = 0; i < nodes.length; i++)
+    for (let i = 0; i < nodes.length; i++) {
       nodes[i].textContent = nodes[i].textContent.replace('&', '');
+    }
   }
 
   /**
@@ -91,7 +93,7 @@ cr.define('cert_viewer', function() {
    */
   function revealTree(tree) {
     tree.expanded = true;
-    for (var key in tree.detail.children) {
+    for (const key in tree.detail.children) {
       revealTree(tree.detail.children[key]);
     }
   }
@@ -102,7 +104,7 @@ cr.define('cert_viewer', function() {
    * @param {Object} certInfo Certificate information in named fields.
    */
   function getCertificateInfo(certInfo) {
-    for (var key in certInfo.general) {
+    for (const key in certInfo.general) {
       $(key).textContent = certInfo.general[key];
     }
   }
@@ -112,17 +114,18 @@ cr.define('cert_viewer', function() {
    * @param {Object} hierarchy A dictionary containing the hierarchy.
    */
   function createCertificateHierarchy(hierarchy) {
-    var treeItem = $('hierarchy');
-    var root = constructTree(hierarchy[0]);
+    const treeItem = $('hierarchy');
+    const root = constructTree(hierarchy[0]);
     treeItem.detail.children['root'] = root;
     treeItem.add(root);
 
     // Select the last item in the hierarchy (really we have a list here - each
     // node has at most one child).  This will reveal the parent nodes and
     // populate the fields view.
-    var last = root;
-    while (last.detail.children && last.detail.children[0])
+    let last = root;
+    while (last.detail.children && last.detail.children[0]) {
       last = last.detail.children[0];
+    }
     last.selected = true;
   }
 
@@ -132,12 +135,12 @@ cr.define('cert_viewer', function() {
    * @return {cr.ui.TreeItem} Tree node corresponding to the input dictionary.
    */
   function constructTree(tree) {
-    var treeItem = new cr.ui.TreeItem({
+    const treeItem = new cr.ui.TreeItem({
       label: tree.label,
       detail: {payload: tree.payload ? tree.payload : {}, children: {}}
     });
     if (tree.children) {
-      for (var i = 0; i < tree.children.length; i++) {
+      for (let i = 0; i < tree.children.length; i++) {
         treeItem.add(
             treeItem.detail.children[i] = constructTree(tree.children[i]));
       }
@@ -149,8 +152,8 @@ cr.define('cert_viewer', function() {
    * Clear any previous certificate fields in the tree.
    */
   function clearCertificateFields() {
-    var treeItem = $('cert-fields');
-    for (var key in treeItem.detail.children) {
+    const treeItem = $('cert-fields');
+    for (const key in treeItem.detail.children) {
       treeItem.remove(treeItem.detail.children[key]);
       delete treeItem.detail.children[key];
     }
@@ -161,9 +164,10 @@ cr.define('cert_viewer', function() {
    */
   function showCertificateFields() {
     clearCertificateFields();
-    var item = $('hierarchy').selectedItem;
-    if (item && item.detail.payload.index !== undefined)
+    const item = $('hierarchy').selectedItem;
+    if (item && item.detail.payload.index !== undefined) {
       chrome.send('requestCertificateFields', [item.detail.payload.index]);
+    }
   }
 
   /**
@@ -173,7 +177,7 @@ cr.define('cert_viewer', function() {
    */
   function getCertificateFields(certFields) {
     clearCertificateFields();
-    var treeItem = $('cert-fields');
+    const treeItem = $('cert-fields');
     treeItem.add(
         treeItem.detail.children['root'] = constructTree(certFields[0]));
     revealTree(treeItem);
@@ -185,20 +189,22 @@ cr.define('cert_viewer', function() {
    * Show certificate field value for a selected certificate field.
    */
   function showCertificateFieldValue() {
-    var item = $('cert-fields').selectedItem;
-    if (item && item.detail.payload.val)
+    const item = $('cert-fields').selectedItem;
+    if (item && item.detail.payload.val) {
       $('cert-field-value').textContent = item.detail.payload.val;
-    else
+    } else {
       $('cert-field-value').textContent = '';
+    }
   }
 
   /**
    * Export the selected certificate.
    */
   function exportCertificate() {
-    var item = $('hierarchy').selectedItem;
-    if (item && item.detail.payload.index !== undefined)
+    const item = $('hierarchy').selectedItem;
+    if (item && item.detail.payload.index !== undefined) {
       chrome.send('exportCertificate', [item.detail.payload.index]);
+    }
   }
 
   return {

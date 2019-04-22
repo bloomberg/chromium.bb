@@ -48,6 +48,16 @@ void AddInternetStrings(content::WebUIDataSource* html_source) {
     html_source->AddLocalizedString(entry.name, entry.id);
 }
 
+std::string GetId(const std::string& network_type,
+                  const std::string& network_id) {
+  std::string result = chrome::kChromeUIIntenetConfigDialogURL + network_type;
+  if (!network_id.empty()) {
+    result += ".";
+    result += network_id;
+  }
+  return result;
+}
+
 }  // namespace
 
 // static
@@ -62,26 +72,46 @@ void InternetConfigDialog::ShowDialogForNetworkId(
   }
   std::string network_type =
       chromeos::network_util::TranslateShillTypeToONC(network_state->type());
+  std::string id = GetId(network_type, network_id);
+  auto* instance = SystemWebDialogDelegate::FindInstance(id);
+  if (instance) {
+    instance->Focus();
+    return;
+  }
+
   InternetConfigDialog* dialog =
-      new InternetConfigDialog(network_type, network_id);
+      new InternetConfigDialog(id, network_type, network_id);
   dialog->ShowSystemDialog();
 }
 
 // static
 void InternetConfigDialog::ShowDialogForNetworkType(
     const std::string& network_type) {
-  InternetConfigDialog* dialog = new InternetConfigDialog(network_type, "");
+  std::string id = GetId(network_type, "");
+  auto* instance = SystemWebDialogDelegate::FindInstance(id);
+  if (instance) {
+    instance->Focus();
+    return;
+  }
+
+  InternetConfigDialog* dialog = new InternetConfigDialog(id, network_type, "");
   dialog->ShowSystemDialog();
 }
 
-InternetConfigDialog::InternetConfigDialog(const std::string& network_type,
+InternetConfigDialog::InternetConfigDialog(const std::string& dialog_id,
+                                           const std::string& network_type,
                                            const std::string& network_id)
     : SystemWebDialogDelegate(GURL(chrome::kChromeUIIntenetConfigDialogURL),
                               base::string16() /* title */),
+      dialog_id_(dialog_id),
       network_type_(network_type),
       network_id_(network_id) {}
 
-InternetConfigDialog::~InternetConfigDialog() {}
+InternetConfigDialog::~InternetConfigDialog() = default;
+
+const std::string& InternetConfigDialog::Id() {
+  return dialog_id_;
+}
 
 void InternetConfigDialog::GetDialogSize(gfx::Size* size) const {
   const NetworkState* network =
@@ -117,9 +147,9 @@ InternetConfigDialogUI::InternetConfigDialogUI(content::WebUI* web_ui)
 #if BUILDFLAG(OPTIMIZE_WEBUI)
   source->UseGzip();
   source->SetDefaultResource(
-      base::FeatureList::IsEnabled(features::kWebUIPolymer2) ?
-          IDR_INTERNET_CONFIG_DIALOG_VULCANIZED_P2_HTML :
-          IDR_INTERNET_CONFIG_DIALOG_VULCANIZED_HTML);
+      base::FeatureList::IsEnabled(features::kWebUIPolymer2)
+          ? IDR_INTERNET_CONFIG_DIALOG_VULCANIZED_P2_HTML
+          : IDR_INTERNET_CONFIG_DIALOG_VULCANIZED_HTML);
   source->AddResourcePath("crisper.js", IDR_INTERNET_CONFIG_DIALOG_CRISPER_JS);
 #else
   source->SetDefaultResource(IDR_INTERNET_CONFIG_DIALOG_HTML);

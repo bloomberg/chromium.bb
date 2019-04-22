@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/modules/cache_storage/cache_storage_error.h"
 
-#include "third_party/blink/public/platform/modules/cache_storage/cache_storage.mojom-blink.h"
+#include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/modules/cache_storage/cache.h"
 
@@ -43,7 +43,8 @@ String GetDefaultMessage(mojom::CacheStorageError web_error) {
 DOMException* CacheStorageError::CreateException(
     mojom::CacheStorageError web_error,
     const String& message) {
-  String final_message = message ? message : GetDefaultMessage(web_error);
+  String final_message =
+      !message.IsEmpty() ? message : GetDefaultMessage(web_error);
   switch (web_error) {
     case mojom::CacheStorageError::kSuccess:
       // This function should only be called with an error.

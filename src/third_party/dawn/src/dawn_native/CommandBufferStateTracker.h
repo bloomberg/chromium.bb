@@ -16,7 +16,8 @@
 #define DAWNNATIVE_COMMANDBUFFERSTATETRACKER_H
 
 #include "common/Constants.h"
-#include "dawn_native/CommandBuffer.h"
+#include "dawn_native/Error.h"
+#include "dawn_native/Forward.h"
 
 #include <array>
 #include <bitset>
@@ -29,8 +30,8 @@ namespace dawn_native {
       public:
         // Non-state-modifying validation functions
         MaybeError ValidateCanDispatch();
-        MaybeError ValidateCanDrawArrays();
-        MaybeError ValidateCanDrawElements();
+        MaybeError ValidateCanDraw();
+        MaybeError ValidateCanDrawIndexed();
 
         // State-modifying methods
         void SetComputePipeline(ComputePipelineBase* pipeline);

@@ -26,9 +26,9 @@ class ClientCertStoreMacTestDelegate {
   ClientCertStoreMac store_;
 };
 
-INSTANTIATE_TYPED_TEST_CASE_P(Mac,
-                              ClientCertStoreTest,
-                              ClientCertStoreMacTestDelegate);
+INSTANTIATE_TYPED_TEST_SUITE_P(Mac,
+                               ClientCertStoreTest,
+                               ClientCertStoreMacTestDelegate);
 
 class ClientCertStoreMacTest : public ::testing::Test {
  protected:

@@ -158,9 +158,6 @@ bool ImageFrameGenerator::DecodeToYUV(SegmentReader* data,
   if (decode_failed_)
     return false;
 
-  TRACE_EVENT1("blink", "ImageFrameGenerator::decodeToYUV", "frame index",
-               static_cast<int>(index));
-
   if (!planes || !planes[0] || !planes[1] || !planes[2] || !row_bytes ||
       !row_bytes[0] || !row_bytes[1] || !row_bytes[2]) {
     return false;
@@ -178,10 +175,15 @@ bool ImageFrameGenerator::DecodeToYUV(SegmentReader* data,
       std::make_unique<ImagePlanes>(planes, row_bytes);
   decoder->SetImagePlanes(std::move(image_planes));
 
-  DCHECK(decoder->CanDecodeToYUV());
+  {
+    // This is the YUV analog of ImageFrameGenerator::decode.
+    TRACE_EVENT0("blink", "ImageFrameGenerator::decodeToYUV");
+    decoder->DecodeToYUV();
+  }
 
-  if (decoder->DecodeToYUV()) {
-    SetHasAlpha(0, false);  // YUV is always opaque
+  if (!decoder->Failed()) {
+    // TODO(crbug.com/910276): Set this properly for alpha support.
+    SetHasAlpha(index, false);
     return true;
   }
 

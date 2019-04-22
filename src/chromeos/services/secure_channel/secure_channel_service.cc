@@ -4,20 +4,17 @@
 
 #include "chromeos/services/secure_channel/secure_channel_service.h"
 
-#include "chromeos/components/proximity_auth/logging/logging.h"
+#include "base/bind.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/services/secure_channel/secure_channel_initializer.h"
 
 namespace chromeos {
 
 namespace secure_channel {
 
-// static
-std::unique_ptr<service_manager::Service>
-SecureChannelService::CreateService() {
-  return std::make_unique<SecureChannelService>();
-}
-
-SecureChannelService::SecureChannelService() = default;
+SecureChannelService::SecureChannelService(
+    service_manager::mojom::ServiceRequest request)
+    : service_binding_(this, std::move(request)) {}
 
 SecureChannelService::~SecureChannelService() = default;
 

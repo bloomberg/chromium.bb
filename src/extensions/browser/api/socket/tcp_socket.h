@@ -58,13 +58,13 @@ class TCPSocket : public Socket {
   void Disconnect(bool socket_destroying) override;
   void Bind(const std::string& address,
             uint16_t port,
-            const CompletionCallback& callback) override;
+            net::CompletionOnceCallback callback) override;
   void Read(int count, ReadCompletionCallback callback) override;
-  void RecvFrom(int count, const RecvFromCompletionCallback& callback) override;
+  void RecvFrom(int count, RecvFromCompletionCallback callback) override;
   void SendTo(scoped_refptr<net::IOBuffer> io_buffer,
               int byte_count,
               const net::IPEndPoint& address,
-              const CompletionCallback& callback) override;
+              net::CompletionOnceCallback callback) override;
   void SetKeepAlive(bool enable,
                     int delay,
                     SetKeepAliveCallback callback) override;
@@ -93,7 +93,7 @@ class TCPSocket : public Socket {
  protected:
   int WriteImpl(net::IOBuffer* io_buffer,
                 int io_buffer_size,
-                const net::CompletionCallback& callback) override;
+                net::CompletionOnceCallback callback) override;
 
  private:
   // Connects a client TCP socket. This is done on the UI thread because
@@ -142,7 +142,7 @@ class TCPSocket : public Socket {
                 network::mojom::TCPConnectedSocketPtr connected_socket,
                 mojo::ScopedDataPipeConsumerHandle receive_stream,
                 mojo::ScopedDataPipeProducerHandle send_stream);
-  void OnWriteComplete(const net::CompletionCallback& callback, int result);
+  void OnWriteComplete(net::CompletionOnceCallback callback, int result);
   void OnReadComplete(int result, scoped_refptr<net::IOBuffer> io_buffer);
   void OnUpgradeToTLSComplete(UpgradeToTLSCallback callback,
                               network::mojom::TLSClientSocketPtr tls_socket,

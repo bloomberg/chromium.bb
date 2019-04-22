@@ -6,6 +6,8 @@
 
 #include <windows.h>
 
+#include "base/message_loop/message_loop.h"
+
 namespace gfx {
 
 // static
@@ -21,6 +23,18 @@ bool Animation::ShouldRenderRichAnimationImpl() {
 // static
 bool Animation::ScrollAnimationsEnabledBySystem() {
   return ShouldRenderRichAnimation();
+}
+
+// static
+void Animation::UpdatePrefersReducedMotion() {
+  // prefers_reduced_motion_ should only be modified on the UI thread.
+  // TODO(crbug.com/927163): DCHECK this assertion once tests are well-behaved.
+
+  // We default to assuming that animations are enabled, to avoid impacting the
+  // experience for users on systems that don't have SPI_GETCLIENTAREAANIMATION.
+  BOOL win_anim_enabled = true;
+  SystemParametersInfo(SPI_GETCLIENTAREAANIMATION, 0, &win_anim_enabled, 0);
+  prefers_reduced_motion_ = !win_anim_enabled;
 }
 
 } // namespace gfx

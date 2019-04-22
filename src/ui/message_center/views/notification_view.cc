@@ -112,11 +112,6 @@ void SetBorderRight(views::View* view, int right) {
 class NotificationItemView : public views::View {
  public:
   explicit NotificationItemView(const NotificationItem& item);
-  ~NotificationItemView() override;
-
-  // Overridden from views::View:
-  void SetVisible(bool visible) override;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(NotificationItemView);
 };
@@ -142,14 +137,6 @@ NotificationItemView::NotificationItemView(const NotificationItem& item) {
 
   PreferredSizeChanged();
   SchedulePaint();
-}
-
-NotificationItemView::~NotificationItemView() {}
-
-void NotificationItemView::SetVisible(bool visible) {
-  views::View::SetVisible(visible);
-  for (int i = 0; i < child_count(); ++i)
-    child_at(i)->SetVisible(visible);
 }
 
 }  // namespace
@@ -631,59 +618,21 @@ void NotificationView::UpdateControlButtonsVisibilityWithNotification(
   UpdateControlButtonsVisibility();
 }
 
-void NotificationView::UpdateControlButtonsVisibility() {
-#if defined(OS_CHROMEOS)
-  // On Chrome OS, the settings button and the close button are shown when:
-  // (1) the mouse is hovering on the notification.
-  // (2) the focus is on the control buttons.
-  const bool target_visibility =
-      IsMouseHovered() || control_buttons_view_->IsCloseButtonFocused() ||
-      control_buttons_view_->IsSettingsButtonFocused();
-#else
-  // On non Chrome OS, the settings button and the close button are always
-  // shown.
-  const bool target_visibility = true;
-#endif
-
-  control_buttons_view_->SetVisible(target_visibility);
-}
-
 NotificationControlButtonsView* NotificationView::GetControlButtonsView()
     const {
   return control_buttons_view_;
 }
 
 int NotificationView::GetMessageLineLimit(int title_lines, int width) const {
-  // Image notifications require that the image must be kept flush against
-  // their icons, but we can allow more text if no image.
   int effective_title_lines = std::max(0, title_lines - 1);
-  int line_reduction_from_title = (image_view_ ? 1 : 2) * effective_title_lines;
-  if (!image_view_) {
-    // Title lines are counted as twice as big as message lines for the purpose
-    // of this calculation.
-    // The effect from the title reduction here should be:
-    //   * 0 title lines: 5 max lines message.
-    //   * 1 title line:  5 max lines message.
-    //   * 2 title lines: 3 max lines message.
-    return std::max(0, kMessageExpandedLineLimit - line_reduction_from_title);
-  }
-
-  int message_line_limit = kMessageCollapsedLineLimit;
-
-  // Subtract any lines taken by the context message.
-  if (context_message_view_) {
-    message_line_limit -= context_message_view_->GetLinesForWidthAndLimit(
-        width, kContextMessageLineLimit);
-  }
-
+  int line_reduction_from_title = 2 * effective_title_lines;
+  // Title lines are counted as twice as big as message lines for the purpose
+  // of this calculation.
   // The effect from the title reduction here should be:
-  //   * 0 title lines: 2 max lines message + context message.
-  //   * 1 title line:  2 max lines message + context message.
-  //   * 2 title lines: 1 max lines message + context message.
-  message_line_limit =
-      std::max(0, message_line_limit - line_reduction_from_title);
-
-  return message_line_limit;
+  //   * 0 title lines: 5 max lines message.
+  //   * 1 title line:  5 max lines message.
+  //   * 2 title lines: 3 max lines message.
+  return std::max(0, kMessageExpandedLineLimit - line_reduction_from_title);
 }
 
 int NotificationView::GetMessageHeight(int width, int limit) const {
@@ -695,12 +644,12 @@ void NotificationView::ShrinkTopmostLabel() {
 // Reduce width of the topmost label not to be covered by the control buttons
 // only on non Chrome OS platform.
 #if !defined(OS_CHROMEOS)
-  const int child_count = top_view_->child_count();
-  if (child_count > 0) {
-    const int buttons_width = control_buttons_view_->GetPreferredSize().width();
-    SetBorderRight(top_view_->child_at(0), kTextRightPadding + buttons_width);
-    for (int i = 1; i < child_count; ++i)
-      SetBorderRight(top_view_->child_at(i), kTextRightPadding);
+  const auto& children = top_view_->children();
+  int right =
+      kTextRightPadding + control_buttons_view_->GetPreferredSize().width();
+  for (auto* child : children) {
+    SetBorderRight(child, right);
+    right = kTextRightPadding;
   }
 #endif
 }

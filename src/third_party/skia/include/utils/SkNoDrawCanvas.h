@@ -38,16 +38,12 @@ public:
 
 protected:
     SaveLayerStrategy getSaveLayerStrategy(const SaveLayerRec& rec) override;
+    bool onDoSaveBehind(const SkRect*) override;
 
     // No-op overrides for aborting rasterization earlier than SkNullBlitter.
     void onDrawAnnotation(const SkRect&, const char[], SkData*) override {}
     void onDrawDRRect(const SkRRect&, const SkRRect&, const SkPaint&) override {}
     void onDrawDrawable(SkDrawable*, const SkMatrix*) override {}
-    void onDrawText(const void*, size_t, SkScalar, SkScalar, const SkPaint&) override {}
-    void onDrawPosText(const void*, size_t, const SkPoint[], const SkPaint&) override {}
-    void onDrawPosTextH(const void*, size_t, const SkScalar[], SkScalar, const SkPaint&) override {}
-    void onDrawTextRSXform(const void*, size_t, const SkRSXform[], const SkRect*,
-                           const SkPaint&) override {}
     void onDrawTextBlob(const SkTextBlob*, SkScalar, SkScalar, const SkPaint&) override {}
     void onDrawPatch(const SkPoint[12], const SkColor[4], const SkPoint[4], SkBlendMode,
                      const SkPaint&) override {}
@@ -71,8 +67,6 @@ protected:
                           const SkPaint*) override {}
     void onDrawImageLattice(const SkImage*, const Lattice&, const SkRect&,
                             const SkPaint*) override {}
-    void onDrawImageSet(const SkCanvas::ImageSetEntry[], int, SkFilterQuality,
-                        SkBlendMode) override {}
     void onDrawBitmapLattice(const SkBitmap&, const Lattice&, const SkRect&,
                              const SkPaint*) override {}
     void onDrawVerticesObject(const SkVertices*, const SkVertices::Bone[], int, SkBlendMode,
@@ -81,6 +75,11 @@ protected:
                      int, SkBlendMode, const SkRect*, const SkPaint*) override {}
     void onDrawShadowRec(const SkPath&, const SkDrawShadowRec&) override {}
     void onDrawPicture(const SkPicture*, const SkMatrix*, const SkPaint*) override {}
+
+    void onDrawEdgeAAQuad(const SkRect&, const SkPoint[4], QuadAAFlags, SkColor,
+                          SkBlendMode) override {}
+    void onDrawEdgeAAImageSet(const ImageSetEntry[], int, const SkPoint[],
+                              const SkMatrix[], const SkPaint*, SrcRectConstraint) override {}
 
 private:
     typedef SkCanvasVirtualEnforcer<SkCanvas> INHERITED;

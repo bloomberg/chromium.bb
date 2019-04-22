@@ -68,4 +68,8 @@ void ReceiverMojoToMediaAdapter::OnStartedUsingGpuDecode() {
   receiver_->OnStartedUsingGpuDecode();
 }
 
+void ReceiverMojoToMediaAdapter::OnStopped() {
+  receiver_->OnStopped();
+}
+
 }  // namespace video_capture

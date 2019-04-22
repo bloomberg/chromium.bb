@@ -11,6 +11,7 @@
 #include "base/strings/strcat.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/apdu/apdu_response.h"
+#include "components/cbor/writer.h"
 #include "device/fido/device_response_converter.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_parsing_utils.h"
@@ -52,14 +53,32 @@ MockFidoDevice::MakeU2fWithGetInfoExpectation() {
 // static
 std::unique_ptr<MockFidoDevice> MockFidoDevice::MakeCtapWithGetInfoExpectation(
     base::Optional<base::span<const uint8_t>> get_info_response) {
-  auto device = std::make_unique<MockFidoDevice>();
-  device->StubGetId();
   if (!get_info_response) {
     get_info_response = test_data::kTestAuthenticatorGetInfoResponse;
   }
+
+  auto get_info = ReadCTAPGetInfoResponse(*get_info_response);
+  CHECK(get_info);
+  auto device = MockFidoDevice::MakeCtap(std::move(*get_info));
+  device->StubGetId();
   device->ExpectCtap2CommandAndRespondWith(
       CtapRequestCommand::kAuthenticatorGetInfo, std::move(get_info_response));
   return device;
+}
+
+std::vector<uint8_t> MockFidoDevice::EncodeCBORRequest(
+    std::pair<CtapRequestCommand, base::Optional<cbor::Value>> request) {
+  std::vector<uint8_t> request_bytes;
+
+  if (request.second) {
+    base::Optional<std::vector<uint8_t>> cbor_bytes =
+        cbor::Writer::Write(*request.second);
+    DCHECK(cbor_bytes);
+    request_bytes = std::move(*cbor_bytes);
+  }
+  request_bytes.insert(request_bytes.begin(),
+                       static_cast<uint8_t>(request.first));
+  return request_bytes;
 }
 
 // Matcher to compare the fist byte of the incoming requests.
@@ -79,13 +98,10 @@ MockFidoDevice::MockFidoDevice(
 }
 MockFidoDevice::~MockFidoDevice() = default;
 
-void MockFidoDevice::TryWink(WinkCallback cb) {
-  TryWinkRef(cb);
-}
-
-void MockFidoDevice::DeviceTransact(std::vector<uint8_t> command,
-                                    DeviceCallback cb) {
-  DeviceTransactPtr(command, cb);
+FidoDevice::CancelToken MockFidoDevice::DeviceTransact(
+    std::vector<uint8_t> command,
+    DeviceCallback cb) {
+  return DeviceTransactPtr(command, cb);
 }
 
 FidoTransportProtocol MockFidoDevice::DeviceTransport() const {
@@ -94,10 +110,6 @@ FidoTransportProtocol MockFidoDevice::DeviceTransport() const {
 
 base::WeakPtr<FidoDevice> MockFidoDevice::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
-}
-
-void MockFidoDevice::ExpectWinkedAtLeastOnce() {
-  EXPECT_CALL(*this, TryWinkRef(::testing::_)).Times(::testing::AtLeast(1));
 }
 
 void MockFidoDevice::StubGetId() {
@@ -119,7 +131,9 @@ void MockFidoDevice::ExpectCtap2CommandAndRespondWith(
   };
 
   EXPECT_CALL(*this, DeviceTransactPtr(IsCtap2Command(command), ::testing::_))
-      .WillOnce(::testing::WithArg<1>(::testing::Invoke(send_response)));
+      .WillOnce(::testing::DoAll(
+          ::testing::WithArg<1>(::testing::Invoke(send_response)),
+          ::testing::Return(0)));
 }
 
 void MockFidoDevice::ExpectCtap2CommandAndRespondWithError(
@@ -143,19 +157,23 @@ void MockFidoDevice::ExpectRequestAndRespondWith(
   auto request_as_vector = fido_parsing_utils::Materialize(request);
   EXPECT_CALL(*this,
               DeviceTransactPtr(std::move(request_as_vector), ::testing::_))
-      .WillOnce(::testing::WithArg<1>(::testing::Invoke(send_response)));
+      .WillOnce(::testing::DoAll(
+          ::testing::WithArg<1>(::testing::Invoke(send_response)),
+          ::testing::Return(0)));
 }
 
 void MockFidoDevice::ExpectCtap2CommandAndDoNotRespond(
     CtapRequestCommand command) {
-  EXPECT_CALL(*this, DeviceTransactPtr(IsCtap2Command(command), ::testing::_));
+  EXPECT_CALL(*this, DeviceTransactPtr(IsCtap2Command(command), ::testing::_))
+      .WillOnce(::testing::Return(0));
 }
 
 void MockFidoDevice::ExpectRequestAndDoNotRespond(
     base::span<const uint8_t> request) {
   auto request_as_vector = fido_parsing_utils::Materialize(request);
   EXPECT_CALL(*this,
-              DeviceTransactPtr(std::move(request_as_vector), ::testing::_));
+              DeviceTransactPtr(std::move(request_as_vector), ::testing::_))
+      .WillOnce(::testing::Return(0));
 }
 
 void MockFidoDevice::SetDeviceTransport(

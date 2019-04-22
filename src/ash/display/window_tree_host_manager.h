@@ -132,10 +132,6 @@ class ASH_EXPORT WindowTreeHostManager
   // exist.
   AshWindowTreeHost* GetAshWindowTreeHostForDisplayId(int64_t id);
 
-  // Sets the primary display by display id. This re-assigns the current primary
-  // root window host to to new primary display.
-  void SetPrimaryDisplayId(int64_t id);
-
   // Returns all root windows. In non extended desktop mode, this
   // returns the primary root window only.
   aura::Window::Windows GetAllRootWindows();
@@ -172,14 +168,14 @@ class ASH_EXPORT WindowTreeHostManager
   void CreateOrUpdateMirroringDisplay(
       const display::DisplayInfoList& info_list) override;
   void CloseMirroringDisplayIfNotNecessary() override;
+  void SetPrimaryDisplayId(int64_t id) override;
   void PreDisplayConfigurationChange(bool clear_focus) override;
   void PostDisplayConfigurationChange() override;
-  display::DisplayConfigurator* display_configurator() override;
 
   // ui::internal::InputMethodDelegate overrides:
   ui::EventDispatchDetails DispatchKeyEventPostIME(
       ui::KeyEvent* event,
-      base::OnceCallback<void(bool)> ack_callback) override;
+      DispatchKeyEventPostIMECallback callback) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(WindowTreeHostManagerTest, BoundsUpdated);

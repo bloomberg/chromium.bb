@@ -4,11 +4,12 @@
 
 #include <stdint.h>
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/local_discovery/service_discovery_client_impl.h"
 #include "net/base/net_errors.h"
@@ -210,7 +211,7 @@ class ServiceDiscoveryTest : public ::testing::Test {
  public:
   ServiceDiscoveryTest()
       : service_discovery_client_(&mdns_client_) {
-    mdns_client_.StartListening(&socket_factory_);
+    EXPECT_EQ(net::OK, mdns_client_.StartListening(&socket_factory_));
   }
 
   ~ServiceDiscoveryTest() override {}
@@ -230,7 +231,7 @@ class ServiceDiscoveryTest : public ::testing::Test {
   net::MockMDnsSocketFactory socket_factory_;
   net::MDnsClientImpl mdns_client_;
   ServiceDiscoveryClientImpl service_discovery_client_;
-  base::MessageLoop loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
 TEST_F(ServiceDiscoveryTest, AddRemoveService) {
@@ -261,6 +262,26 @@ TEST_F(ServiceDiscoveryTest, DiscoverNewServices) {
   std::unique_ptr<ServiceWatcher> watcher(
       service_discovery_client_.CreateServiceWatcher("_privet._tcp.local",
                                                      delegate.GetCallback()));
+
+  watcher->Start();
+
+  EXPECT_CALL(socket_factory_, OnSendTo(_)).Times(2);
+
+  watcher->DiscoverNewServices();
+
+  EXPECT_CALL(socket_factory_, OnSendTo(_)).Times(2);
+
+  RunFor(base::TimeDelta::FromSeconds(2));
+}
+
+// Test that we can query the network with a service name that includes
+// characters beyond those explicitly allowed in DNS such as spaces and parens.
+TEST_F(ServiceDiscoveryTest, DiscoverNewServicesUnrestricted) {
+  StrictMock<MockServiceWatcherClient> delegate;
+
+  std::unique_ptr<ServiceWatcher> watcher =
+      service_discovery_client_.CreateServiceWatcher(
+          "foo bar(A1B2)_ipp._tcp.local", delegate.GetCallback());
 
   watcher->Start();
 

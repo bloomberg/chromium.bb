@@ -21,7 +21,6 @@ import android.support.v4.view.animation.PathInterpolatorCompat;
 import android.view.animation.Interpolator;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.util.MathUtils;
 
@@ -64,9 +63,10 @@ public class PulseDrawable extends Drawable implements Animatable {
 
     /**
      * Creates a {@link PulseDrawable} that will fill the bounds with a pulsing color.
+     * @param context The {@link Context} under which the drawable is created.
      * @return A new {@link PulseDrawable} instance.
      */
-    public static PulseDrawable createHighlight() {
+    public static PulseDrawable createHighlight(Context context) {
         PulseDrawable.Painter painter = new PulseDrawable.Painter() {
             @Override
             public void modifyDrawable(PulseDrawable drawable, float interpolation) {
@@ -80,11 +80,12 @@ public class PulseDrawable extends Drawable implements Animatable {
             }
         };
 
-        return new PulseDrawable(new FastOutSlowInInterpolator(), painter);
+        return new PulseDrawable(context, new FastOutSlowInInterpolator(), painter);
     }
 
     /**
      * Creates a {@link PulseDrawable} that will draw a pulsing circle inside the bounds.
+     * @param context The {@link Context} under which the drawable is created.
      * @return A new {@link PulseDrawable} instance.
      */
     public static PulseDrawable createCircle(Context context) {
@@ -111,8 +112,8 @@ public class PulseDrawable extends Drawable implements Animatable {
             }
         };
 
-        PulseDrawable drawable =
-                new PulseDrawable(PathInterpolatorCompat.create(.8f, 0.f, .6f, 1.f), painter);
+        PulseDrawable drawable = new PulseDrawable(
+                context, PathInterpolatorCompat.create(.8f, 0.f, .6f, 1.f), painter);
         drawable.setAlpha(76);
         return drawable;
     }
@@ -136,25 +137,28 @@ public class PulseDrawable extends Drawable implements Animatable {
 
     /**
      * Creates a new {@link PulseDrawable} instance.
+     * @param context The {@link Context} under which the drawable is created.
      * @param interpolator An {@link Interpolator} that defines how the pulse will fade in and out.
      * @param painter      The {@link Painter} that will be responsible for drawing the pulse.
      */
-    private PulseDrawable(Interpolator interpolator, Painter painter) {
+    private PulseDrawable(Context context, Interpolator interpolator, Painter painter) {
         this(new PulseState(interpolator, painter));
-        setUseLightPulseColor(false);
+        setUseLightPulseColor(context.getResources(), false);
     }
 
     private PulseDrawable(PulseState state) {
         mState = state;
     }
 
-    /** Whether or not to use a light or dark color for the pulse. */
-    public void setUseLightPulseColor(boolean useLightPulseColor) {
-        Resources resources = ContextUtils.getApplicationContext().getResources();
-
+    /**
+     * @param resources The {@link Resources} for accessing colors.
+     * @param useLightPulseColor Whether or not to use a light or dark color for the pulse.
+     * */
+    public void setUseLightPulseColor(Resources resources, boolean useLightPulseColor) {
         @ColorInt
         int color = ApiCompatibilityUtils.getColor(resources,
-                useLightPulseColor ? R.color.modern_grey_100 : R.color.default_icon_color_blue);
+                useLightPulseColor ? R.color.modern_secondary_color
+                                   : R.color.default_icon_color_blue);
         if (mState.color == color) return;
 
         int alpha = getAlpha();

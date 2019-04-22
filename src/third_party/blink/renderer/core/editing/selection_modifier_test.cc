@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
 #include "third_party/blink/renderer/core/editing/visible_position.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 
@@ -21,6 +22,10 @@ TEST_F(SelectionModifierTest, ExtendForwardByWordNone) {
 }
 
 TEST_F(SelectionModifierTest, leftPositionOf) {
+  // TODO(editing-dev): The behavior is for editable text only.
+  // Enable it in LayoutNG phase 2+.
+  ScopedLayoutNGForTest scoped_layout_ng(false);
+
   const char* body_content =
       "<b id=zero>0</b><p id=host><b id=one>1</b><b id=two>22</b></p><b "
       "id=three>333</b>";
@@ -68,6 +73,10 @@ TEST_F(SelectionModifierTest, MoveForwardByWordNone) {
 }
 
 TEST_F(SelectionModifierTest, rightPositionOf) {
+  // TODO(editing-dev): The behavior is for editable text only.
+  // Enable it in LayoutNG phase 2+.
+  ScopedLayoutNGForTest scoped_layout_ng(false);
+
   const char* body_content =
       "<b id=zero>0</b><p id=host><b id=one>1</b><b id=two>22</b></p><b "
       "id=three>333</b>";

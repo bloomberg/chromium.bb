@@ -4,6 +4,7 @@
 
 #include "content/browser/media/android/browser_gpu_video_accelerator_factories.h"
 
+#include "base/bind.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/public/browser/android/gpu_video_accelerator_factories_provider.h"
 #include "content/public/common/gpu_stream_constants.h"
@@ -105,8 +106,7 @@ bool BrowserGpuVideoAcceleratorFactories::IsDecoderConfigSupported(
 std::unique_ptr<media::VideoDecoder>
 BrowserGpuVideoAcceleratorFactories::CreateVideoDecoder(
     media::MediaLog* media_log,
-    const media::RequestOverlayInfoCB& request_overlay_info_cb,
-    const gfx::ColorSpace& target_color_space) {
+    const media::RequestOverlayInfoCB& request_overlay_info_cb) {
   return nullptr;
 }
 
@@ -172,6 +172,18 @@ gpu::gles2::GLES2Interface* BrowserGpuVideoAcceleratorFactories::ContextGL() {
   return nullptr;
 }
 
+gpu::SharedImageInterface*
+BrowserGpuVideoAcceleratorFactories::SharedImageInterface() {
+  NOTREACHED();
+  return nullptr;
+}
+
+gpu::GpuMemoryBufferManager*
+BrowserGpuVideoAcceleratorFactories::GpuMemoryBufferManager() {
+  NOTREACHED();
+  return nullptr;
+}
+
 std::unique_ptr<base::SharedMemory>
 BrowserGpuVideoAcceleratorFactories::CreateSharedMemory(size_t size) {
   return nullptr;
@@ -202,6 +214,11 @@ BrowserGpuVideoAcceleratorFactories::
 scoped_refptr<ws::ContextProviderCommandBuffer>
 BrowserGpuVideoAcceleratorFactories::GetMediaContextProvider() {
   return context_provider_;
+}
+
+gpu::ContextSupport*
+BrowserGpuVideoAcceleratorFactories::GetMediaContextProviderContextSupport() {
+  return GetMediaContextProvider()->ContextSupport();
 }
 
 void BrowserGpuVideoAcceleratorFactories::SetRenderingColorSpace(

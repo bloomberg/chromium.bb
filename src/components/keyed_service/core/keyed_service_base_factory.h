@@ -12,39 +12,38 @@
 #include "components/keyed_service/core/keyed_service_export.h"
 
 class DependencyManager;
-class PrefService;
-
-namespace base {
-class SupportsUserData;
-}
 
 namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
-// Base class for factories that take a base::SupportsUserData and return some
-// service. Not for direct usage, instead use descendent classes that deal with
-// more specific context objects.
+// Base class for factories that take an opaque pointer and return some service.
+// Not for direct usage, instead use descendent classes that deal with more
+// specific context objects.
 //
 // This object describes general dependency management between factories while
 // direct subclasses react to lifecycle events and implement memory management.
 class KEYED_SERVICE_EXPORT KeyedServiceBaseFactory : public DependencyNode {
  public:
+  // The type is used to determine whether a service can depend on another.
+  // Each type can only depend on other services that are of the same type.
+  // TODO(crbug.com/944906): Remove once there are no dependencies between
+  // factories with different type of context, or dependencies are safe to have.
+  enum Type { BROWSER_CONTEXT, BROWSER_STATE, SIMPLE };
+
   // Returns our name.
   const char* name() const { return service_name_; }
 
- protected:
-  KeyedServiceBaseFactory(const char* service_name, DependencyManager* manager);
-  virtual ~KeyedServiceBaseFactory();
+  // Returns the type of this service factory.
+  // TODO(crbug.com/944906): Remove once there are no dependencies between
+  // factories with different type of context, or dependencies are safe to have.
+  Type type() { return type_; }
 
-  // Registers preferences used in this service on the pref service associated
-  // with |context|. This is safe to be called multiple times because testing
-  // code can have multiple services of the same type attached to a single
-  // |context|. Only test code is allowed to call this method.
-  //
-  // TODO(gab): This method can be removed entirely when
-  // PrefService::DeprecatedGetPrefRegistry() is phased out.
-  void RegisterUserPrefsOnContextForTest(base::SupportsUserData* context);
+ protected:
+  KeyedServiceBaseFactory(const char* service_name,
+                          DependencyManager* manager,
+                          Type type);
+  virtual ~KeyedServiceBaseFactory();
 
   // The main public interface for declaring dependencies between services
   // created by factories.
@@ -52,31 +51,17 @@ class KEYED_SERVICE_EXPORT KeyedServiceBaseFactory : public DependencyNode {
 
   // Runtime assertion to check if |context| is considered stale. Should be used
   // by subclasses when accessing |context|.
-  void AssertContextWasntDestroyed(base::SupportsUserData* context) const;
+  void AssertContextWasntDestroyed(void* context) const;
 
   // Marks |context| as live (i.e., not stale). This method can be called as a
   // safeguard against |AssertContextWasntDestroyed()| checks going off due to
   // |context| aliasing an instance from a prior construction (i.e., 0xWhatever
   // might be created, be destroyed, and then a new object might be created at
   // 0xWhatever).
-  void MarkContextLive(base::SupportsUserData* context);
-
-  // Calls RegisterProfilePrefs() after doing house keeping required to work
-  // alongside RegisterUserPrefsOnContextForTest().
-  // TODO(gab): This method can be replaced by RegisterProfilePrefs() directly
-  // once RegisterUserPrefsOnContextForTest() is phased out.
-  void RegisterPrefsIfNecessaryForContext(
-      base::SupportsUserData* context,
-      user_prefs::PrefRegistrySyncable* registry);
-
-  // Returns the |user_pref::PrefRegistrySyncable| associated with |context|.
-  // The way they are associated is controlled by the embedder.
-  user_prefs::PrefRegistrySyncable* GetAssociatedPrefRegistry(
-      base::SupportsUserData* context) const;
+  void MarkContextLive(void* context);
 
   // Finds which context (if any) to use.
-  virtual base::SupportsUserData* GetContextToUse(
-      base::SupportsUserData* context) const = 0;
+  virtual void* GetContextToUse(void* context) const = 0;
 
   // By default, instance of a service are created lazily when GetForContext()
   // is called by the subclass. Some services need to be created as soon as the
@@ -99,14 +84,8 @@ class KEYED_SERVICE_EXPORT KeyedServiceBaseFactory : public DependencyNode {
   //   service with GetForContext() will NOTREACHED() and code should delete/
   //   deref/do other final memory management during this phase. The base class
   //   method *must* be called as the last thing.
-  virtual void ContextShutdown(base::SupportsUserData* context) = 0;
-  virtual void ContextDestroyed(base::SupportsUserData* context);
-
-  // Returns whether the preferences have been registered on this context.
-  bool ArePreferencesSetOn(base::SupportsUserData* context) const;
-
-  // Mark context has having preferences registered.
-  void MarkPreferencesSetOn(base::SupportsUserData* context);
+  virtual void ContextShutdown(void* context) = 0;
+  virtual void ContextDestroyed(void* context);
 
   SEQUENCE_CHECKER(sequence_checker_);
 
@@ -117,25 +96,30 @@ class KEYED_SERVICE_EXPORT KeyedServiceBaseFactory : public DependencyNode {
   // by all the factories of a given type. Unit tests will use their own copy.
   DependencyManager* dependency_manager_;
 
-  // Registers any preferences used by this service.
+  // Registers any preferences used by this service. This should be overriden by
+  // any services that want to register context-specific preferences.
   virtual void RegisterPrefs(user_prefs::PrefRegistrySyncable* registry) {}
 
   // Used by DependencyManager to disable creation of the service when the
   // method ServiceIsNULLWhileTesting() returns true.
-  virtual void SetEmptyTestingFactory(base::SupportsUserData* context) = 0;
+  virtual void SetEmptyTestingFactory(void* context) = 0;
 
   // Returns true if a testing factory function has been set for |context|.
-  virtual bool HasTestingFactory(base::SupportsUserData* context) = 0;
+  virtual bool HasTestingFactory(void* context) = 0;
 
   // Create the service associated with |context|.
-  virtual void CreateServiceNow(base::SupportsUserData* context) = 0;
-
-  // Contexts that have this service's preferences registered on them.
-  std::set<base::SupportsUserData*> registered_preferences_;
+  virtual void CreateServiceNow(void* context) = 0;
 
   // A static string passed in to the constructor. Should be unique across all
   // services.
   const char* service_name_;
+
+  // The type of this service.
+  // TODO(crbug.com/944906): Remove once there are no dependencies between
+  // factories with different type of context, or dependencies are safe to have.
+  Type type_;
+
+  DISALLOW_COPY_AND_ASSIGN(KeyedServiceBaseFactory);
 };
 
 #endif  // COMPONENTS_KEYED_SERVICE_CORE_KEYED_SERVICE_BASE_FACTORY_H_

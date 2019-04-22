@@ -14,6 +14,11 @@ body {
   text-align: center;
 }
 
+[dark] body {
+  background: var(--md-background-color);
+  color: var(--cr-secondary-text-color);
+}
+
 .watermark {
   -webkit-mask-image: url(chrome://resources/images/google_logo.svg);
   -webkit-mask-repeat: no-repeat;
@@ -24,6 +29,10 @@ body {
   height: 24px;
   position: absolute;
   width: 74px;
+}
+
+[dark] .watermark {
+  background: var(--cr-secondary-text-color);
 }
 
 @media(max-height: 608px) {

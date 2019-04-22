@@ -11,6 +11,7 @@
     <div class="testElement">P</div><div class="testElement">A</div>
     <div class="testElement">S</div><div class="testElement">S</div>
   `);
+  await TestRunner.addScriptTag('../../../resources/run-after-layout-and-paint.js');
   await TestRunner.evaluateInPagePromise(`
     function display()
     {
@@ -21,7 +22,7 @@
             testElements[i].style.color = "red";
             testElements[i].style.backgroundColor = "blue";
           }
-          testRunner.layoutAndPaintAsyncThen(resolve);
+          runAfterLayoutAndPaint(resolve);
         });
       });
     }
@@ -43,10 +44,10 @@
   var invalidations = invalidationsTree.shadowRoot.textContent;
   checkStringContains(
       invalidations,
-      `Inline CSS style declaration was mutated for [ DIV class='testElement' ], [ DIV class='testElement' ], and 2 others. (anonymous) @ timeline-grouped-invalidations.js:21`);
+      `Inline CSS style declaration was mutated for [ DIV class='testElement' ], [ DIV class='testElement' ], and 2 others. (anonymous) @ timeline-grouped-invalidations.js:22`);
   checkStringContains(
       invalidations,
-      `Inline CSS style declaration was mutated for [ DIV class='testElement' ], [ DIV class='testElement' ], and 2 others. (anonymous) @ timeline-grouped-invalidations.js:22`);
+      `Inline CSS style declaration was mutated for [ DIV class='testElement' ], [ DIV class='testElement' ], and 2 others. (anonymous) @ timeline-grouped-invalidations.js:23`);
   TestRunner.completeTest();
 
   function checkStringContains(string, contains) {

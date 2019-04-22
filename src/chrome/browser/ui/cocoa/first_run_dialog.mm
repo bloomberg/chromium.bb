@@ -4,6 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/first_run_dialog.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/mac/bundle_locations.h"
@@ -146,13 +147,18 @@ void ShowFirstRunDialog(Profile* profile) {
   // handlers is received. (The ShutdownDetector posts a task to the UI thread's
   // TaskRunner to begin shutdown upon receiving a SIGTERM.)
   static_cast<BrowserProcessImpl*>(g_browser_process)
-      ->SetQuitClosure(run_loop.QuitClosure());
+      ->SetQuitClosure(base::BindOnce(
+          [](base::RunLoop* run_loop) {
+            [NSApp abortModal];
+            run_loop->Quit();
+          },
+          &run_loop));
 
   // Barring a shutdown signal, the run loop will quit when the user closes the
   // first run dialog.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&FirstRunShowBridge::ShowDialog, bridge.get(),
-                            run_loop.QuitClosure()));
+      FROM_HERE, base::BindOnce(&FirstRunShowBridge::ShowDialog, bridge.get(),
+                                run_loop.QuitClosure()));
   run_loop.Run();
 
   static_cast<BrowserProcessImpl*>(g_browser_process)->ClearQuitClosure();

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <grit-part>
   <!-- HTTP POST Warning -->
-  <message name="IDS_HTTP_POST_WARNING_TITLE" desc="Title for dialog that warns users about a navigation that results in a repost">
+  <message name="IDS_HTTP_POST_WARNING_TITLE" desc="Title for dialog that warns users about a navigation that results in a repost" formatter_data="android_java">
     Confirm Form Resubmission
   </message>
   <message name="IDS_HTTP_POST_WARNING" desc="Re-navigation to page that leads to HTTP POST" formatter_data="android_java">

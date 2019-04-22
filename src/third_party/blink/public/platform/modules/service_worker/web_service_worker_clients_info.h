@@ -6,7 +6,6 @@
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_SERVICE_WORKER_WEB_SERVICE_WORKER_CLIENTS_INFO_H_
 
 #include "services/network/public/mojom/request_context_frame_type.mojom-shared.h"
-#include "third_party/blink/public/mojom/page/page_visibility_state.mojom-shared.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_client.mojom-shared.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
@@ -19,19 +18,17 @@ namespace blink {
 // TODO(crbug.com/879019): Remove this class once we move
 // content.mojom.ServiceWorker impl into Blink.
 struct WebServiceWorkerClientInfo {
-  WebServiceWorkerClientInfo()
-      : page_visibility_state(mojom::PageVisibilityState::kMaxValue),
-        is_focused(false),
-        frame_type(network::mojom::RequestContextFrameType::kNone),
-        client_type(mojom::ServiceWorkerClientType::kWindow) {}
+  WebServiceWorkerClientInfo() = default;
 
   WebString uuid;
 
-  mojom::PageVisibilityState page_visibility_state;
-  bool is_focused;
+  bool page_hidden = true;
+  bool is_focused = false;
   WebURL url;
-  network::mojom::RequestContextFrameType frame_type;
-  mojom::ServiceWorkerClientType client_type;
+  network::mojom::RequestContextFrameType frame_type =
+      network::mojom::RequestContextFrameType::kNone;
+  mojom::ServiceWorkerClientType client_type =
+      mojom::ServiceWorkerClientType::kWindow;
 };
 
 }  // namespace blink

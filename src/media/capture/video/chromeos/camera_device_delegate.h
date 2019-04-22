@@ -20,13 +20,21 @@ namespace media {
 class Camera3AController;
 class CameraDeviceContext;
 class CameraHalDelegate;
-class StreamBufferManager;
+class ReprocessManager;
+class RequestManager;
 
 enum class StreamType : uint64_t {
-  kPreview = 0,
-  kStillCapture = 1,
+  kPreviewOutput = 0,
+  kJpegOutput = 1,
+  kYUVInput = 2,
+  kYUVOutput = 3,
   kUnknown,
 };
+
+// Returns true if the given stream type is an input stream.
+bool IsInputStream(StreamType stream_type);
+
+StreamType StreamIdToStreamType(uint64_t stream_id);
 
 std::string StreamTypeToString(StreamType stream_type);
 
@@ -46,16 +54,6 @@ class CAPTURE_EXPORT StreamCaptureInterface {
 
   virtual ~StreamCaptureInterface() {}
 
-  // Registers a buffer to the camera HAL.
-  virtual void RegisterBuffer(uint64_t buffer_id,
-                              cros::mojom::Camera3DeviceOps::BufferType type,
-                              uint32_t drm_format,
-                              cros::mojom::HalPixelFormat hal_pixel_format,
-                              uint32_t width,
-                              uint32_t height,
-                              std::vector<Plane> planes,
-                              base::OnceCallback<void(int32_t)> callback) = 0;
-
   // Sends a capture request to the camera HAL.
   virtual void ProcessCaptureRequest(
       cros::mojom::Camera3CaptureRequestPtr request,
@@ -74,7 +72,8 @@ class CAPTURE_EXPORT CameraDeviceDelegate final {
   CameraDeviceDelegate(
       VideoCaptureDeviceDescriptor device_descriptor,
       scoped_refptr<CameraHalDelegate> camera_hal_delegate,
-      scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner,
+      ReprocessManager* reprocess_manager);
 
   ~CameraDeviceDelegate();
 
@@ -137,6 +136,14 @@ class CAPTURE_EXPORT CameraDeviceDelegate final {
       int32_t result,
       cros::mojom::Camera3StreamConfigurationPtr updated_config);
 
+  // Checks metadata in |static_metadata_| to ensure field
+  // request.availableCapabilities contains YUV reprocessing and field
+  // scaler.availableInputOutputFormatsMap contains YUV => BLOB mapping.
+  // If above checks both pass, fill the max yuv width and height in
+  // |max_width| and |max_height| and return true if both width and height are
+  // positive numbers. Return false otherwise.
+  bool IsYUVReprocessingSupported(int* max_width, int* max_height);
+
   // ConstructDefaultRequestSettings asks the camera HAL for the default request
   // settings of the stream in |stream_context_|.
   // OnConstructedDefaultRequestSettings sets the request settings in
@@ -153,14 +160,6 @@ class CAPTURE_EXPORT CameraDeviceDelegate final {
 
   // StreamCaptureInterface implementations.  These methods are called by
   // |stream_buffer_manager_| on |ipc_task_runner_|.
-  void RegisterBuffer(uint64_t buffer_id,
-                      cros::mojom::Camera3DeviceOps::BufferType type,
-                      uint32_t drm_format,
-                      cros::mojom::HalPixelFormat hal_pixel_format,
-                      uint32_t width,
-                      uint32_t height,
-                      std::vector<StreamCaptureInterface::Plane> planes,
-                      base::OnceCallback<void(int32_t)> callback);
   void ProcessCaptureRequest(cros::mojom::Camera3CaptureRequestPtr request,
                              base::OnceCallback<void(int32_t)> callback);
   void Flush(base::OnceCallback<void(int32_t)> callback);
@@ -180,7 +179,7 @@ class CAPTURE_EXPORT CameraDeviceDelegate final {
 
   std::queue<VideoCaptureDevice::TakePhotoCallback> take_photo_callbacks_;
 
-  std::unique_ptr<StreamBufferManager> stream_buffer_manager_;
+  std::unique_ptr<RequestManager> request_manager_;
 
   std::unique_ptr<Camera3AController> camera_3a_controller_;
 
@@ -197,6 +196,8 @@ class CAPTURE_EXPORT CameraDeviceDelegate final {
   base::OnceClosure device_close_callback_;
 
   VideoCaptureDevice::SetPhotoOptionsCallback set_photo_option_callback_;
+
+  ReprocessManager* reprocess_manager_;  // weak
 
   base::WeakPtrFactory<CameraDeviceDelegate> weak_ptr_factory_;
 

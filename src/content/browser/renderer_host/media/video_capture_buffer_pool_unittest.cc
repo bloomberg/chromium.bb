@@ -265,8 +265,8 @@ TEST_P(VideoCaptureBufferPoolTest, BufferPool) {
   buffer4.reset();
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        VideoCaptureBufferPoolTest,
-                        testing::ValuesIn(kCapturePixelFormats));
+INSTANTIATE_TEST_SUITE_P(,
+                         VideoCaptureBufferPoolTest,
+                         testing::ValuesIn(kCapturePixelFormats));
 
 } // namespace content

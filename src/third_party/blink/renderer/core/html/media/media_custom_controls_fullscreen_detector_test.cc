@@ -32,9 +32,8 @@ class MediaCustomControlsFullscreenDetectorTest
 
  protected:
   void SetUp() override {
-
-    page_holder_ = DummyPageHolder::Create();
-    new_page_holder_ = DummyPageHolder::Create();
+    page_holder_ = std::make_unique<DummyPageHolder>();
+    new_page_holder_ = std::make_unique<DummyPageHolder>();
   }
 
   HTMLVideoElement* VideoElement() const {
@@ -71,8 +70,8 @@ class MediaCustomControlsFullscreenDetectorTest
                                      const IntRect& root_rect,
                                      const IntRect& intersection_rect) {
     return MediaCustomControlsFullscreenDetector::
-        ComputeIsDominantVideoForTests(target_rect, root_rect,
-                                       intersection_rect);
+        ComputeIsDominantVideoForTests(target_rect.Size(), root_rect.Size(),
+                                       intersection_rect.Size());
   }
 
  private:

@@ -14,9 +14,8 @@
 #include <stdio.h>
 #include <string>
 
-#include "common_types.h"  // NOLINT(build/include)
 #include "modules/audio_coding/neteq/tools/packet_source.h"
-#include "rtc_base/constructormagic.h"
+#include "rtc_base/constructor_magic.h"
 
 namespace webrtc {
 namespace test {

@@ -14,9 +14,8 @@
 // select a language from the languages exposed by a translate_infobar_delegate.
 @protocol LanguageSelectionHandler
 
-// Tells the handler to display a language selector using the language
-// information in |languages| and telling |delegate| the results of the
-// selection.
+// Tells the handler to display a language selector using the information in
+// |context| and telling |delegate| the results of the selection.
 - (void)showLanguageSelectorWithContext:(LanguageSelectionContext*)context
                                delegate:(id<LanguageSelectionDelegate>)delegate;
 

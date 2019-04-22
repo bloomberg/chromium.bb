@@ -601,7 +601,7 @@ TEST_F('InterventionsInternalsUITest', 'OnECTChanged', function() {
     let pageImpl = new InterventionsInternalPageImpl(null);
     let ectTypes = ['type1', 'type2', 'type3'];
     ectTypes.forEach((type) => {
-      pageImpl.onEffectiveConnectionTypeChanged(type);
+      pageImpl.updateEffectiveConnectionType(type, 'max');
       let actual = $('nqe-type').textContent;
       expectEquals(type, actual);
     });

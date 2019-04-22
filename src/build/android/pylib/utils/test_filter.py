@@ -9,9 +9,12 @@ import re
 _CMDLINE_NAME_SEGMENT_RE = re.compile(
     r' with(?:out)? \{[^\}]*\}')
 
+class ConflictingPositiveFiltersException(Exception):
+  """Raised when both filter file and filter argument have positive filters."""
+
 
 def ParseFilterFile(input_lines):
-  """Converts test filter file contents into --gtest_filter argument.
+  """Converts test filter file contents to positive and negative pattern lists.
 
   See //testing/buildbot/filters/README.md for description of the
   syntax that |input_lines| are expected to follow.
@@ -23,7 +26,7 @@ def ParseFilterFile(input_lines):
   Args:
     input_lines: An iterable (e.g. a list or a file) containing input lines.
   Returns:
-    a string suitable for feeding as an argument of --gtest_filter parameter.
+    tuple containing the lists of positive patterns and negative patterns
   """
   # Strip comments and whitespace from each line and filter non-empty lines.
   stripped_lines = (l.split('#', 1)[0].strip() for l in input_lines)
@@ -31,13 +34,9 @@ def ParseFilterFile(input_lines):
 
   # Split the tests into positive and negative patterns (gtest treats
   # every pattern after the first '-' sign as an exclusion).
-  positive_patterns = ':'.join(l for l in filter_lines if l[0] != '-')
-  negative_patterns = ':'.join(l[1:] for l in filter_lines if l[0] == '-')
-  if negative_patterns:
-    negative_patterns = '-' + negative_patterns
-
-  # Join the filter lines into one, big --gtest_filter argument.
-  return positive_patterns + negative_patterns
+  positive_patterns = [l for l in filter_lines if l[0] != '-']
+  negative_patterns = [l[1:] for l in filter_lines if l[0] == '-']
+  return positive_patterns, negative_patterns
 
 
 def AddFilterOptions(parser):
@@ -46,13 +45,7 @@ def AddFilterOptions(parser):
   Args:
     parser: an argparse.ArgumentParser instance.
   """
-  filter_group = parser.add_mutually_exclusive_group()
-  filter_group.add_argument(
-      '-f', '--test-filter', '--gtest_filter', '--gtest-filter',
-      dest='test_filter',
-      help='googletest-style filter string.',
-      default=os.environ.get('GTEST_FILTER'))
-  filter_group.add_argument(
+  parser.add_argument(
       # Deprecated argument.
       '--gtest-filter-file',
       # New argument.
@@ -61,10 +54,58 @@ def AddFilterOptions(parser):
       help='Path to file that contains googletest-style filter strings. '
            'See also //testing/buildbot/filters/README.md.')
 
+  filter_group = parser.add_mutually_exclusive_group()
+  filter_group.add_argument(
+      '-f', '--test-filter', '--gtest_filter', '--gtest-filter',
+      dest='test_filter',
+      help='googletest-style filter string.',
+      default=os.environ.get('GTEST_FILTER'))
   filter_group.add_argument(
       '--isolated-script-test-filter',
       help='isolated script filter string. '
            'Like gtest filter strings, but with :: separators instead of :')
+
+
+def AppendPatternsToFilter(test_filter, positive_patterns=None,
+                           negative_patterns=None):
+  """Returns a test-filter string with additional patterns.
+
+  Args:
+    test_filter: test filter string
+    positive_patterns: list of positive patterns to add to string
+    negative_patterns: list of negative patterns to add to string
+  """
+  positives = []
+  negatives = []
+  positive = ''
+  negative = ''
+
+  split_filter = test_filter.split('-', 1)
+  if len(split_filter) == 1:
+    positive = split_filter[0]
+  else:
+    positive, negative = split_filter
+
+  positives += [f for f in positive.split(':') if f]
+  negatives += [f for f in negative.split(':') if f]
+
+  positives += positive_patterns if positive_patterns else []
+  negatives += negative_patterns if negative_patterns else []
+
+  final_filter = ':'.join([p.replace('#', '.') for p in positives])
+  if negatives:
+    final_filter += '-' + ':'.join([n.replace('#', '.') for n in negatives])
+  return final_filter
+
+
+def HasPositivePatterns(test_filter):
+  """Returns True if test_filter contains a positive pattern, else False
+
+  Args:
+    test_filter: test-filter style string
+  """
+  return bool(len(test_filter) > 0 and test_filter[0] != '-')
+
 
 def InitializeFilterFromArgs(args):
   """Returns a filter string from the command-line option values.
@@ -72,15 +113,27 @@ def InitializeFilterFromArgs(args):
   Args:
     args: an argparse.Namespace instance resulting from a using parser
       to which the filter options above were added.
+
+  Raises:
+    ConflictingPositiveFiltersException if both filter file and command line
+    specify positive filters.
   """
-  parsed_filter = None
+  test_filter = ''
   if args.isolated_script_test_filter:
     args.test_filter = args.isolated_script_test_filter.replace('::', ':')
   if args.test_filter:
-    parsed_filter = _CMDLINE_NAME_SEGMENT_RE.sub(
+    test_filter = _CMDLINE_NAME_SEGMENT_RE.sub(
         '', args.test_filter.replace('#', '.'))
-  elif args.test_filter_file:
-    with open(args.test_filter_file, 'r') as f:
-      parsed_filter = ParseFilterFile(f)
 
-  return parsed_filter
+  if args.test_filter_file:
+    with open(args.test_filter_file, 'r') as f:
+      positive_file_patterns, negative_file_patterns = ParseFilterFile(f)
+      if positive_file_patterns and HasPositivePatterns(test_filter):
+        raise ConflictingPositiveFiltersException(
+            'Cannot specify positive pattern in both filter file and ' +
+            'filter command line argument')
+      test_filter = AppendPatternsToFilter(test_filter,
+          positive_patterns=positive_file_patterns,
+          negative_patterns=negative_file_patterns)
+
+  return test_filter

@@ -73,9 +73,8 @@ void OpenFileManagerWithInternalActionId(Profile* profile,
     return;
   base::RecordAction(base::UserMetricsAction("ShowFileBrowserFullTab"));
 
-  file_tasks::TaskDescriptor task(kFileManagerAppId,
-                                  file_tasks::TASK_TYPE_FILE_BROWSER_HANDLER,
-                                  action_id);
+  file_tasks::TaskDescriptor task(
+      kFileManagerAppId, file_tasks::TASK_TYPE_FILE_HANDLER, action_id);
   ExecuteFileTaskForUrl(profile, task, url);
 }
 
@@ -167,6 +166,26 @@ void OpenItemWithMetadata(Profile* profile,
   callback.Run(platform_util::OPEN_FAILED_INVALID_TYPE);
 }
 
+void ShowItemInFolderWithMetadata(
+    Profile* profile,
+    const base::FilePath& file_path,
+    const GURL& url,
+    const platform_util::OpenOperationCallback& callback,
+    base::File::Error error,
+    const base::File::Info& file_info) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (error != base::File::FILE_OK) {
+    callback.Run(error == base::File::FILE_ERROR_NOT_FOUND
+                     ? platform_util::OPEN_FAILED_PATH_NOT_FOUND
+                     : platform_util::OPEN_FAILED_FILE_ERROR);
+    return;
+  }
+
+  // This action changes the selection so we do not reuse existing tabs.
+  OpenFileManagerWithInternalActionId(profile, url, "select");
+  callback.Run(platform_util::OPEN_SUCCEEDED);
+}
+
 }  // namespace
 
 void OpenItem(Profile* profile,
@@ -202,9 +221,11 @@ void ShowItemInFolder(Profile* profile,
     return;
   }
 
-  // This action changes the selection so we do not reuse existing tabs.
-  OpenFileManagerWithInternalActionId(profile, url, "select");
-  callback.Run(platform_util::OPEN_SUCCEEDED);
+  GetMetadataForPath(
+      GetFileSystemContextForExtensionId(profile, kFileManagerAppId), file_path,
+      storage::FileSystemOperation::GET_METADATA_FIELD_IS_DIRECTORY,
+      base::BindOnce(&ShowItemInFolderWithMetadata, profile, file_path, url,
+                     callback));
 }
 
 void DisableShellOperationsForTesting() {

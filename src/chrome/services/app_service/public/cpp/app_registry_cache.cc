@@ -47,34 +47,78 @@ void AppRegistryCache::RemoveObserver(Observer* observer) {
 }
 
 void AppRegistryCache::OnApps(std::vector<apps::mojom::AppPtr> deltas) {
-  for (const auto& delta : deltas) {
-    auto iter = states_.find(delta->app_id);
-    if (iter == states_.end()) {
-      // The previous state is missing. Create an AppPtr to be that previous
-      // state, and copy over the mandatory fields. All other fields are the
-      // zero "unknown" value.
-      apps::mojom::AppPtr state = apps::mojom::App::New();
-      state->app_type = delta->app_type;
-      state->app_id = delta->app_id;
+  DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
 
-      using Pair = std::pair<std::string, apps::mojom::AppPtr>;
-      iter = states_.insert(Pair(delta->app_id, std::move(state))).first;
-    }
+  if (!deltas_in_progress_.empty()) {
+    std::move(deltas.begin(), deltas.end(),
+              std::back_inserter(deltas_pending_));
+    return;
+  }
 
-    // Merge the delta, updating the internal states_ map. We do this before we
-    // notify the observers, so that if an observer calls back into the cache,
-    // it will see a consistent snapshot.
-    //
-    // We also keep (as the clone variable) the states_ value before the merge,
-    // so that the observers can know which fields (such as name, icon key or
-    // readiness) have changed.
-    apps::mojom::AppPtr clone = iter->second.Clone();
-    AppUpdate::Merge(iter->second.get(), delta);
+  DoOnApps(std::move(deltas));
+  while (!deltas_pending_.empty()) {
+    std::vector<apps::mojom::AppPtr> pending;
+    pending.swap(deltas_pending_);
+    DoOnApps(std::move(pending));
+  }
+}
 
-    for (auto& obs : observers_) {
-      obs.OnAppUpdate(AppUpdate(clone, delta));
+void AppRegistryCache::DoOnApps(std::vector<apps::mojom::AppPtr> deltas) {
+  // Merge any deltas elements that have the same app_id. If an observer's
+  // OnAppUpdate calls back into this AppRegistryCache then we can therefore
+  // present a single delta for any given app_id.
+  for (auto& delta : deltas) {
+    auto d_iter = deltas_in_progress_.find(delta->app_id);
+    if (d_iter != deltas_in_progress_.end()) {
+      AppUpdate::Merge(d_iter->second, delta.get());
+    } else {
+      deltas_in_progress_[delta->app_id] = delta.get();
     }
   }
+
+  // The remaining for loops range over the deltas_in_progress_ map, not the
+  // deltas vector, so that OnAppUpdate is called only once per unique app_id.
+
+  // Notify the observers for every de-duplicated delta.
+  for (const auto& d_iter : deltas_in_progress_) {
+    auto s_iter = states_.find(d_iter.first);
+    apps::mojom::App* state =
+        (s_iter != states_.end()) ? s_iter->second.get() : nullptr;
+    apps::mojom::App* delta = d_iter.second;
+
+    for (auto& obs : observers_) {
+      obs.OnAppUpdate(AppUpdate(state, delta));
+    }
+  }
+
+  // Update the states for every de-duplicated delta.
+  for (const auto& d_iter : deltas_in_progress_) {
+    auto s_iter = states_.find(d_iter.first);
+    apps::mojom::App* state =
+        (s_iter != states_.end()) ? s_iter->second.get() : nullptr;
+    apps::mojom::App* delta = d_iter.second;
+
+    if (state) {
+      AppUpdate::Merge(state, delta);
+    } else {
+      states_.insert(std::make_pair(delta->app_id, delta->Clone()));
+    }
+  }
+  deltas_in_progress_.clear();
+}
+
+apps::mojom::AppType AppRegistryCache::GetAppType(const std::string& app_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
+
+  auto d_iter = deltas_in_progress_.find(app_id);
+  if (d_iter != deltas_in_progress_.end()) {
+    return d_iter->second->app_type;
+  }
+  auto s_iter = states_.find(app_id);
+  if (s_iter != states_.end()) {
+    return s_iter->second->app_type;
+  }
+  return apps::mojom::AppType::kUnknown;
 }
 
 }  // namespace apps

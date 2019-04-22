@@ -7,8 +7,8 @@
 
 #include <string>
 
+#include "base/component_export.h"
 #include "base/values.h"
-#include "chromeos/chromeos_export.h"
 
 namespace chromeos {
 namespace onc {
@@ -20,63 +20,99 @@ struct OncFieldSignature {
   const OncValueSignature* value_signature;
 };
 
-struct CHROMEOS_EXPORT OncValueSignature {
+struct COMPONENT_EXPORT(CHROMEOS_NETWORK) OncValueSignature {
   base::Value::Type onc_type;
   const OncFieldSignature* fields;
   const OncValueSignature* onc_array_entry_signature;
   const OncValueSignature* base_signature;
 };
 
-CHROMEOS_EXPORT const OncFieldSignature* GetFieldSignature(
-    const OncValueSignature& signature,
-    const std::string& onc_field_name);
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+const OncFieldSignature* GetFieldSignature(const OncValueSignature& signature,
+                                           const std::string& onc_field_name);
 
-CHROMEOS_EXPORT bool FieldIsCredential(const OncValueSignature& signature,
-                                       const std::string& onc_field_name);
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+bool FieldIsCredential(const OncValueSignature& signature,
+                       const std::string& onc_field_name);
 
-CHROMEOS_EXPORT extern const OncValueSignature kRecommendedSignature;
-CHROMEOS_EXPORT extern const OncValueSignature kEAPSignature;
-CHROMEOS_EXPORT extern const OncValueSignature kIssuerSubjectPatternSignature;
-CHROMEOS_EXPORT extern const OncValueSignature kCertificatePatternSignature;
-CHROMEOS_EXPORT extern const OncValueSignature kIPsecSignature;
-CHROMEOS_EXPORT extern const OncValueSignature kL2TPSignature;
-CHROMEOS_EXPORT extern const OncValueSignature kXAUTHSignature;
-CHROMEOS_EXPORT extern const OncValueSignature kOpenVPNSignature;
-CHROMEOS_EXPORT extern const OncValueSignature kThirdPartyVPNSignature;
-CHROMEOS_EXPORT extern const OncValueSignature kARCVPNSignature;
-CHROMEOS_EXPORT extern const OncValueSignature kVerifyX509Signature;
-CHROMEOS_EXPORT extern const OncValueSignature kVPNSignature;
-CHROMEOS_EXPORT extern const OncValueSignature kEthernetSignature;
-CHROMEOS_EXPORT extern const OncValueSignature kTetherSignature;
-CHROMEOS_EXPORT extern const OncValueSignature kTetherWithStateSignature;
-CHROMEOS_EXPORT extern const OncValueSignature kIPConfigSignature;
-CHROMEOS_EXPORT extern const OncValueSignature kSavedIPConfigSignature;
-CHROMEOS_EXPORT extern const OncValueSignature kStaticIPConfigSignature;
-CHROMEOS_EXPORT extern const OncValueSignature kProxyLocationSignature;
-CHROMEOS_EXPORT extern const OncValueSignature kProxyManualSignature;
-CHROMEOS_EXPORT extern const OncValueSignature kProxySettingsSignature;
-CHROMEOS_EXPORT extern const OncValueSignature kWiFiSignature;
-CHROMEOS_EXPORT extern const OncValueSignature kWiMAXSignature;
-CHROMEOS_EXPORT extern const OncValueSignature kCertificateSignature;
-CHROMEOS_EXPORT extern const OncValueSignature kNetworkConfigurationSignature;
-CHROMEOS_EXPORT extern const OncValueSignature
-    kGlobalNetworkConfigurationSignature;
-CHROMEOS_EXPORT extern const OncValueSignature kCertificateListSignature;
-CHROMEOS_EXPORT extern const OncValueSignature
-    kNetworkConfigurationListSignature;
-CHROMEOS_EXPORT extern const OncValueSignature kToplevelConfigurationSignature;
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+extern const OncValueSignature kRecommendedSignature;
+COMPONENT_EXPORT(CHROMEOS_NETWORK) extern const OncValueSignature kEAPSignature;
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+extern const OncValueSignature kIssuerSubjectPatternSignature;
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+extern const OncValueSignature kCertificatePatternSignature;
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+extern const OncValueSignature kIPsecSignature;
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+extern const OncValueSignature kL2TPSignature;
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+extern const OncValueSignature kXAUTHSignature;
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+extern const OncValueSignature kOpenVPNSignature;
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+extern const OncValueSignature kThirdPartyVPNSignature;
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+extern const OncValueSignature kARCVPNSignature;
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+extern const OncValueSignature kVerifyX509Signature;
+COMPONENT_EXPORT(CHROMEOS_NETWORK) extern const OncValueSignature kVPNSignature;
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+extern const OncValueSignature kEthernetSignature;
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+extern const OncValueSignature kTetherSignature;
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+extern const OncValueSignature kTetherWithStateSignature;
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+extern const OncValueSignature kIPConfigSignature;
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+extern const OncValueSignature kSavedIPConfigSignature;
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+extern const OncValueSignature kStaticIPConfigSignature;
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+extern const OncValueSignature kProxyLocationSignature;
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+extern const OncValueSignature kProxyManualSignature;
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+extern const OncValueSignature kProxySettingsSignature;
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+extern const OncValueSignature kWiFiSignature;
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+extern const OncValueSignature kWiMAXSignature;
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+extern const OncValueSignature kCertificateSignature;
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+extern const OncValueSignature kNetworkConfigurationSignature;
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+extern const OncValueSignature kGlobalNetworkConfigurationSignature;
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+extern const OncValueSignature kCertificateListSignature;
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+extern const OncValueSignature kNetworkConfigurationListSignature;
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+extern const OncValueSignature kToplevelConfigurationSignature;
 
 // Derived "ONC with State" signatures.
-CHROMEOS_EXPORT extern const OncValueSignature kNetworkWithStateSignature;
-CHROMEOS_EXPORT extern const OncValueSignature kWiFiWithStateSignature;
-CHROMEOS_EXPORT extern const OncValueSignature kWiMAXWithStateSignature;
-CHROMEOS_EXPORT extern const OncValueSignature kCellularSignature;
-CHROMEOS_EXPORT extern const OncValueSignature kCellularWithStateSignature;
-CHROMEOS_EXPORT extern const OncValueSignature kCellularPaymentPortalSignature;
-CHROMEOS_EXPORT extern const OncValueSignature kCellularProviderSignature;
-CHROMEOS_EXPORT extern const OncValueSignature kCellularApnSignature;
-CHROMEOS_EXPORT extern const OncValueSignature kCellularFoundNetworkSignature;
-CHROMEOS_EXPORT extern const OncValueSignature kSIMLockStatusSignature;
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+extern const OncValueSignature kNetworkWithStateSignature;
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+extern const OncValueSignature kWiFiWithStateSignature;
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+extern const OncValueSignature kWiMAXWithStateSignature;
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+extern const OncValueSignature kCellularSignature;
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+extern const OncValueSignature kCellularWithStateSignature;
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+extern const OncValueSignature kCellularPaymentPortalSignature;
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+extern const OncValueSignature kCellularProviderSignature;
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+extern const OncValueSignature kCellularApnSignature;
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+extern const OncValueSignature kCellularFoundNetworkSignature;
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+extern const OncValueSignature kSIMLockStatusSignature;
 
 }  // namespace onc
 }  // namespace chromeos

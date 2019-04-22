@@ -6,9 +6,9 @@
 
 #include <string>
 
-#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/threading/platform_thread.h"
 #include "google_apis/gaia/fake_oauth2_token_service_delegate.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -110,6 +110,9 @@ class OAuth2TokenServiceTest : public testing::Test {
  public:
   void SetUp() override {
     auto delegate = std::make_unique<FakeOAuth2TokenServiceDelegate>();
+    // Save raw delegate pointer for later.
+    delegate_ptr_ = delegate.get();
+
     test_url_loader_factory_ = delegate->test_url_loader_factory();
     oauth2_service_ =
         std::make_unique<TestOAuth2TokenService>(std::move(delegate));
@@ -130,6 +133,7 @@ class OAuth2TokenServiceTest : public testing::Test {
  protected:
   base::MessageLoopForIO message_loop_;  // net:: stuff needs IO message loop.
   network::TestURLLoaderFactory* test_url_loader_factory_ = nullptr;
+  FakeOAuth2TokenServiceDelegate* delegate_ptr_ = nullptr;  // Not owned.
   std::unique_ptr<TestOAuth2TokenService> oauth2_service_;
   std::string account_id_;
   TestingOAuth2TokenServiceConsumer consumer_;
@@ -504,7 +508,7 @@ TEST_F(OAuth2TokenServiceTest, ServiceShutDownBeforeFetchComplete) {
   EXPECT_EQ(0, consumer_.number_of_errors_);
 
   // The destructor should cancel all in-flight fetchers.
-  oauth2_service_.reset(NULL);
+  oauth2_service_.reset(nullptr);
 
   EXPECT_EQ(0, consumer_.number_of_successful_tokens_);
   EXPECT_EQ(1, consumer_.number_of_errors_);
@@ -754,8 +758,8 @@ TEST_F(OAuth2TokenServiceTest, RequestParametersOrderTest) {
       OAuth2TokenService::RequestParameters("1", "1", set_1),
   };
 
-  for (size_t i = 0; i < arraysize(params); i++) {
-    for (size_t j = 0; j < arraysize(params); j++) {
+  for (size_t i = 0; i < base::size(params); i++) {
+    for (size_t j = 0; j < base::size(params); j++) {
       if (i == j) {
         EXPECT_FALSE(params[i] < params[j]) << " i=" << i << ", j=" << j;
         EXPECT_FALSE(params[j] < params[i]) << " i=" << i << ", j=" << j;
@@ -798,4 +802,33 @@ TEST_F(OAuth2TokenServiceTest, UpdateClearsCache) {
   EXPECT_EQ(0, consumer_.number_of_errors_);
   EXPECT_EQ("another token", consumer_.last_token_);
   EXPECT_EQ(1, (int)oauth2_service_->token_cache_.size());
+}
+
+TEST_F(OAuth2TokenServiceTest, FixRequestErrorIfPossible) {
+  oauth2_service_->GetFakeOAuth2TokenServiceDelegate()->UpdateCredentials(
+      account_id_, "refreshToken");
+  std::unique_ptr<OAuth2TokenService::Request> request(
+      oauth2_service_->StartRequest(account_id_, OAuth2TokenService::ScopeSet(),
+                                    &consumer_));
+  EXPECT_EQ(0, consumer_.number_of_successful_tokens_);
+  EXPECT_EQ(0, consumer_.number_of_errors_);
+
+  delegate_ptr_->set_fix_request_if_possible(true);
+  SimulateOAuthTokenResponse("", net::HTTP_UNAUTHORIZED);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0, consumer_.number_of_successful_tokens_);
+  EXPECT_EQ(0, consumer_.number_of_errors_);
+
+  SimulateOAuthTokenResponse(GetValidTokenResponse("token", 3600));
+  base::RunLoop().RunUntilIdle();
+  for (int max_reties = 5;
+       max_reties >= 0 && consumer_.number_of_successful_tokens_ != 1;
+       --max_reties) {
+    base::RunLoop().RunUntilIdle();
+    base::PlatformThread::Sleep(TimeDelta::FromSeconds(1));
+  }
+
+  EXPECT_EQ(1, consumer_.number_of_successful_tokens_);
+  EXPECT_EQ(0, consumer_.number_of_errors_);
+  EXPECT_EQ("token", consumer_.last_token_);
 }

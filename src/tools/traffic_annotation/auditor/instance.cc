@@ -124,7 +124,7 @@ AnnotationInstance::AnnotationInstance(const AnnotationInstance& other)
       second_id_hash_code(other.second_id_hash_code),
       archive_content_hash_code(other.archive_content_hash_code),
       is_loaded_from_archive(other.is_loaded_from_archive),
-      is_merged(other.is_merged){};
+      is_merged(other.is_merged) {}
 
 AuditorResult AnnotationInstance::Deserialize(
     const std::vector<std::string>& serialized_lines,
@@ -652,7 +652,7 @@ CallInstance::CallInstance(const CallInstance& other)
       line_number(other.line_number),
       function_context(other.function_context),
       function_name(other.function_name),
-      is_annotated(other.is_annotated){};
+      is_annotated(other.is_annotated) {}
 
 AuditorResult CallInstance::Deserialize(
     const std::vector<std::string>& serialized_lines,
@@ -680,7 +680,7 @@ AssignmentInstance::AssignmentInstance() : line_number(0) {}
 AssignmentInstance::AssignmentInstance(const AssignmentInstance& other)
     : file_path(other.file_path),
       line_number(other.line_number),
-      function_context(other.function_context){};
+      function_context(other.function_context) {}
 
 AuditorResult AssignmentInstance::Deserialize(
     const std::vector<std::string>& serialized_lines,

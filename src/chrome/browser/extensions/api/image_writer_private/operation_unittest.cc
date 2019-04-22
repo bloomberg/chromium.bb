@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/image_writer_private/operation.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
@@ -119,7 +121,7 @@ class ImageWriterOperationTest : public ImageWriterUnitTestBase {
 
     // Cancel() will ensure we Shutdown() FakeImageWriterClient.
     operation_->Cancel();
-    scoped_task_environment_.RunUntilIdle();
+    thread_bundle_.RunUntilIdle();
 
     ImageWriterUnitTestBase::TearDown();
   }

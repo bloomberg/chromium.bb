@@ -50,7 +50,7 @@ class TestImageController : public ImageController {
 
   ImageDecodeRequestId QueueImageDecode(
       const DrawImage& image,
-      const ImageDecodedCallback& callback) override {
+      ImageDecodedCallback callback) override {
     ImageDecodeRequestId request_id = next_image_request_id_++;
 
     decoded_images_.push_back(image);
@@ -60,8 +60,8 @@ class TestImageController : public ImageController {
     // Post the callback asynchronously to match the behaviour in
     // ImageController.
     worker_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(callback, request_id, ImageDecodeResult::SUCCESS));
+        FROM_HERE, base::BindOnce(std::move(callback), request_id,
+                                  ImageDecodeResult::SUCCESS));
 
     return request_id;
   }

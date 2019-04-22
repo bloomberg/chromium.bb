@@ -42,6 +42,7 @@ MidiService::~MidiService() {
 void MidiService::Shutdown() {
   base::AutoLock lock(lock_);
   if (manager_) {
+    manager_->EndAllSessions();
     DCHECK(manager_destructor_runner_);
     manager_destructor_runner_->DeleteSoon(FROM_HERE, std::move(manager_));
     manager_destructor_runner_ = nullptr;

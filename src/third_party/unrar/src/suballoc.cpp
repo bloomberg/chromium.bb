@@ -5,6 +5,8 @@
  *  Contents: memory allocation routines                                    *
  ****************************************************************************/
 
+namespace third_party_unrar {
+
 static const uint UNIT_SIZE=Max(sizeof(RARPPM_CONTEXT),sizeof(RARPPM_MEM_BLK));
 static const uint FIXED_UNIT_SIZE=12;
 
@@ -80,7 +82,7 @@ bool SubAllocator::StartSubAllocator(int SASize)
 {
   uint t=SASize << 20;
   if (SubAllocatorSize == t)
-    return TRUE;
+    return true;
   StopSubAllocator();
 
   // Original algorithm expects FIXED_UNIT_SIZE, but actual structure size
@@ -91,7 +93,7 @@ bool SubAllocator::StartSubAllocator(int SASize)
   if ((HeapStart=(byte *)malloc(AllocSize)) == NULL)
   {
     ErrHandler.MemoryError();
-    return FALSE;
+    return false;
   }
 
   // HeapEnd did not present in original algorithm. We added it to control
@@ -99,7 +101,7 @@ bool SubAllocator::StartSubAllocator(int SASize)
   HeapEnd=HeapStart+AllocSize-UNIT_SIZE;
 
   SubAllocatorSize=t;
-  return TRUE;
+  return true;
 }
 
 
@@ -293,3 +295,5 @@ void SubAllocator::FreeUnits(void* ptr,int OldNU)
 {
   InsertNode(ptr,Units2Indx[OldNU-1]);
 }
+
+}  // namespace third_party_unrar

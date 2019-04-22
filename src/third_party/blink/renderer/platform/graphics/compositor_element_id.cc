@@ -45,6 +45,7 @@ CompositorElementId PLATFORM_EXPORT CompositorElementIdFromUniqueObjectId(
 
 CompositorElementId PLATFORM_EXPORT
 CompositorElementIdFromDOMNodeId(DOMNodeId id) {
+  DCHECK_GE(id, 0);
   return CreateCompositorElementId(
       id, CompositorElementIdNamespace::kUniqueObjectId);
 }

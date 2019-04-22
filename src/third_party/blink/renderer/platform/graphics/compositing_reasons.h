@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -26,13 +27,16 @@ using CompositingReasons = uint64_t;
   V(ActiveOpacityAnimation)                                                   \
   V(ActiveFilterAnimation)                                                    \
   V(ActiveBackdropFilterAnimation)                                            \
-  V(TransitionProperty)                                                       \
   V(ScrollDependentPosition)                                                  \
   V(OverflowScrollingTouch)                                                   \
   V(OverflowScrollingParent)                                                  \
   V(OutOfFlowClipping)                                                        \
   V(VideoOverlay)                                                             \
-  V(WillChangeCompositingHint)                                                \
+  V(WillChangeTransform)                                                      \
+  V(WillChangeOpacity)                                                        \
+  /* This flag is needed only when neither kWillChangeTransform nor           \
+     kWillChangeOpacity is set */                                             \
+  V(WillChangeOther)                                                          \
   V(BackdropFilter)                                                           \
   V(RootScroller)                                                             \
   V(ScrollTimelineTarget)                                                     \
@@ -85,6 +89,8 @@ using CompositingReasons = uint64_t;
   V(LayerForDecoration)
 
 class PLATFORM_EXPORT CompositingReason {
+  DISALLOW_NEW();
+
  private:
   // This contains ordinal values for compositing reasons and will be used to
   // generate the compositing reason bits.
@@ -118,7 +124,8 @@ class PLATFORM_EXPORT CompositingReason {
 
     kComboAllDirectStyleDeterminedReasons =
         k3DTransform | kBackfaceVisibilityHidden | kComboActiveAnimation |
-        kTransitionProperty | kWillChangeCompositingHint | kBackdropFilter,
+        kWillChangeTransform | kWillChangeOpacity | kWillChangeOther |
+        kBackdropFilter,
 
     kComboAllDirectNonStyleDeterminedReasons =
         kVideo | kCanvas | kPlugin | kIFrame | kOverflowScrollingParent |
@@ -135,8 +142,7 @@ class PLATFORM_EXPORT CompositingReason {
         kTransformWithCompositedDescendants | kIsolateCompositedDescendants |
         kOpacityWithCompositedDescendants | kMaskWithCompositedDescendants |
         kFilterWithCompositedDescendants | kBlendingWithCompositedDescendants |
-        kReflectionWithCompositedDescendants | kClipsCompositingDescendants |
-        kPositionFixedOrStickyWithCompositedDescendants,
+        kReflectionWithCompositedDescendants | kClipsCompositingDescendants,
 
     kCombo3DDescendants =
         kPreserve3DWith3DDescendants | kPerspectiveWith3DDescendants,
@@ -147,6 +153,15 @@ class PLATFORM_EXPORT CompositingReason {
 
     kComboSquashableReasons =
         kOverlap | kAssumedOverlap | kOverflowScrollingParent,
+
+    kDirectReasonsForTransformProperty =
+        k3DTransform | kWillChangeTransform | kWillChangeOther |
+        kPerspectiveWith3DDescendants | kPreserve3DWith3DDescendants |
+        kActiveTransformAnimation,
+    kDirectReasonsForEffectProperty = kActiveOpacityAnimation |
+                                      kWillChangeOpacity |
+                                      kActiveBackdropFilterAnimation,
+    kDirectReasonsForFilterProperty = kActiveFilterAnimation,
   };
 };
 

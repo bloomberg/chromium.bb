@@ -12,7 +12,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libjingle_xmpp/xmpp/jid.h"
 
-namespace buzz {
+namespace jingle_xmpp {
 class XmlElement;
 }
 
@@ -29,7 +29,7 @@ class SendPingTaskTest : public testing::Test {
 TEST_F(SendPingTaskTest, MakePingStanza) {
   std::string task_id = "42";
 
-  std::unique_ptr<buzz::XmlElement> message(
+  std::unique_ptr<jingle_xmpp::XmlElement> message(
       SendPingTask::MakePingStanza(task_id));
 
   std::string expected_xml_string("<cli:iq type=\"get\" id=\"");

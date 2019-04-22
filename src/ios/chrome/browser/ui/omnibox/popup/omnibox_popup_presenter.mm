@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_presenter.h"
 
-#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_positioner.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_configuration.h"
 #import "ios/chrome/browser/ui/toolbar/public/features.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
@@ -18,8 +17,6 @@
 #endif
 
 namespace {
-const CGFloat kExpandAnimationDuration = 0.1;
-const CGFloat kCollapseAnimationDuration = 0.05;
 const CGFloat kVerticalOffset = 6;
 }  // namespace
 
@@ -27,23 +24,20 @@ const CGFloat kVerticalOffset = 6;
 // Constraint for the bottom anchor of the popup.
 @property(nonatomic, strong) NSLayoutConstraint* bottomConstraint;
 
-@property(nonatomic, weak) id<OmniboxPopupPositioner> positioner;
+@property(nonatomic, weak) id<OmniboxPopupPresenterDelegate> delegate;
 @property(nonatomic, weak) UIViewController* viewController;
 @property(nonatomic, strong) UIView* popupContainerView;
 @end
 
 @implementation OmniboxPopupPresenter
-@synthesize viewController = _viewController;
-@synthesize positioner = _positioner;
-@synthesize popupContainerView = _popupContainerView;
-@synthesize bottomConstraint = _bottomConstraint;
 
-- (instancetype)initWithPopupPositioner:(id<OmniboxPopupPositioner>)positioner
-                    popupViewController:(UIViewController*)viewController
-                              incognito:(BOOL)incognito {
+- (instancetype)initWithPopupPresenterDelegate:
+                    (id<OmniboxPopupPresenterDelegate>)delegate
+                           popupViewController:(UIViewController*)viewController
+                                     incognito:(BOOL)incognito {
   self = [super init];
   if (self) {
-    _positioner = positioner;
+    _delegate = delegate;
     _viewController = viewController;
 
     // Popup uses same colors as the toolbar, so the ToolbarConfiguration is
@@ -72,51 +66,41 @@ const CGFloat kVerticalOffset = 6;
   return self;
 }
 
-- (void)updateHeightAndAnimateAppearanceIfNecessary {
-  UIView* popup = self.popupContainerView;
-  if (!popup.superview) {
-    UIViewController* parentVC = [self.positioner popupParentViewController];
+- (void)updatePopup {
+  BOOL popupHeightIsZero =
+      self.viewController.view.intrinsicContentSize.height == 0;
+  BOOL popupIsOnscreen = self.popupContainerView.superview != nil;
+  if (popupHeightIsZero && popupIsOnscreen) {
+    // If intrinsic size is 0 and popup is onscreen, we want to remove the
+    // popup view.
+    if (!IsIPadIdiom()) {
+      self.bottomConstraint.active = NO;
+    }
+
+    [self.viewController willMoveToParentViewController:nil];
+    [self.popupContainerView removeFromSuperview];
+    [self.viewController removeFromParentViewController];
+
+    self.open = NO;
+    [self.delegate popupDidCloseForPresenter:self];
+  } else if (!popupHeightIsZero && !popupIsOnscreen) {
+    // If intrinsic size is nonzero and popup is offscreen, we want to add it.
+    UIViewController* parentVC =
+        [self.delegate popupParentViewControllerForPresenter:self];
     [parentVC addChildViewController:self.viewController];
-    [[self.positioner popupParentView] addSubview:popup];
+    [[self.delegate popupParentViewForPresenter:self]
+        addSubview:self.popupContainerView];
     [self.viewController didMoveToParentViewController:parentVC];
 
     [self initialLayout];
-  }
 
-  if (!IsIPadIdiom()) {
-    self.bottomConstraint.active = YES;
-  }
+    if (!IsIPadIdiom()) {
+      self.bottomConstraint.active = YES;
+    }
 
-  if (popup.bounds.size.height == 0) {
-    // Animate if it expanding.
-    [UIView animateWithDuration:kExpandAnimationDuration
-                          delay:0
-                        options:UIViewAnimationOptionCurveEaseInOut
-                     animations:^{
-                       [[popup superview] layoutIfNeeded];
-                     }
-                     completion:nil];
+    self.open = YES;
+    [self.delegate popupDidOpenForPresenter:self];
   }
-}
-
-- (void)animateCollapse {
-  UIView* retainedPopupView = self.popupContainerView;
-  UIViewController* retainedViewController = self.viewController;
-  if (!IsIPadIdiom()) {
-    self.bottomConstraint.active = NO;
-  }
-
-  [UIView animateWithDuration:kCollapseAnimationDuration
-      delay:0
-      options:UIViewAnimationOptionCurveEaseInOut
-      animations:^{
-        [[self.popupContainerView superview] layoutIfNeeded];
-      }
-      completion:^(BOOL) {
-        [retainedViewController willMoveToParentViewController:nil];
-        [retainedPopupView removeFromSuperview];
-        [retainedViewController removeFromParentViewController];
-      }];
 }
 
 #pragma mark - Private

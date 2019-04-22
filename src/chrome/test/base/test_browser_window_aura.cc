@@ -4,9 +4,10 @@
 
 #include "chrome/test/base/test_browser_window_aura.h"
 
-#include <utility>
-
 #include "base/memory/ptr_util.h"
+#include "chrome/browser/ui/browser.h"
+#include "ui/aura/window.h"
+#include "ui/views/widget/widget.h"
 #include "ui/wm/public/activation_client.h"
 
 namespace chrome {
@@ -21,9 +22,16 @@ std::unique_ptr<Browser> CreateBrowserWithAuraTestWindowForParams(
     window->Init(ui::LAYER_TEXTURED);
     window->Show();
   }
-
   TestBrowserWindowAura* browser_window =
       new TestBrowserWindowAura(std::move(window));
+  new TestBrowserWindowOwner(browser_window);
+  return browser_window->CreateBrowser(params);
+}
+
+std::unique_ptr<Browser> CreateBrowserWithViewsTestWindowForParams(
+    const Browser::CreateParams& params,
+    aura::Window* parent) {
+  TestBrowserWindowViews* browser_window = new TestBrowserWindowViews(parent);
   new TestBrowserWindowOwner(browser_window);
   return browser_window->CreateBrowser(params);
 }
@@ -76,4 +84,52 @@ std::unique_ptr<Browser> TestBrowserWindowAura::CreateBrowser(
   params->window = this;
   browser_ = new Browser(*params);
   return base::WrapUnique(browser_);
+}
+
+TestBrowserWindowViews::TestBrowserWindowViews(aura::Window* parent)
+    : widget_(std::make_unique<views::Widget>()) {
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
+  params.bounds = gfx::Rect(5, 5, 20, 20);
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.parent = parent;
+  widget_->Init(params);
+}
+
+TestBrowserWindowViews::~TestBrowserWindowViews() {}
+
+gfx::NativeWindow TestBrowserWindowViews::GetNativeWindow() const {
+  return widget_->GetNativeWindow();
+}
+
+void TestBrowserWindowViews::Show() {
+  widget_->Show();
+}
+
+void TestBrowserWindowViews::Hide() {
+  widget_->Hide();
+}
+
+bool TestBrowserWindowViews::IsVisible() const {
+  return widget_->IsVisible();
+}
+
+void TestBrowserWindowViews::Activate() {
+  widget_->Activate();
+}
+
+bool TestBrowserWindowViews::IsActive() const {
+  return widget_->IsActive();
+}
+
+gfx::Rect TestBrowserWindowViews::GetBounds() const {
+  return widget_->GetWindowBoundsInScreen();
+}
+
+std::unique_ptr<Browser> TestBrowserWindowViews::CreateBrowser(
+    const Browser::CreateParams& params) {
+  Browser::CreateParams params_copy = params;
+  params_copy.window = this;
+  std::unique_ptr<Browser> browser = std::make_unique<Browser>(params_copy);
+  browser_ = browser.get();
+  return browser;
 }

@@ -56,14 +56,10 @@ MEDIA_EXPORT extern const char kUseCras[];
 MEDIA_EXPORT extern const char
     kUnsafelyAllowProtectedMediaIdentifierForDomain[];
 
-#if BUILDFLAG(ENABLE_RUNTIME_MEDIA_RENDERER_SELECTION)
-MEDIA_EXPORT extern const char kDisableMojoRenderer[];
-#endif  // BUILDFLAG(ENABLE_RUNTIME_MEDIA_RENDERER_SELECTION)
-
 MEDIA_EXPORT extern const char kUseFakeDeviceForMediaStream[];
 MEDIA_EXPORT extern const char kUseFileForFakeVideoCapture[];
 MEDIA_EXPORT extern const char kUseFileForFakeAudioCapture[];
-MEDIA_EXPORT extern const char kUseFakeJpegDecodeAccelerator[];
+MEDIA_EXPORT extern const char kUseFakeMjpegDecodeAccelerator[];
 MEDIA_EXPORT extern const char kDisableAcceleratedMjpegDecode[];
 
 MEDIA_EXPORT extern const char kRequireAudioHardwareForTesting[];
@@ -87,7 +83,6 @@ namespace autoplay {
 MEDIA_EXPORT extern const char kDocumentUserActivationRequiredPolicy[];
 MEDIA_EXPORT extern const char kNoUserGestureRequiredPolicy[];
 MEDIA_EXPORT extern const char kUserGestureRequiredPolicy[];
-MEDIA_EXPORT extern const char kUserGestureRequiredForCrossOriginPolicy[];
 
 }  // namespace autoplay
 
@@ -98,28 +93,28 @@ namespace media {
 // All features in alphabetical order. The features should be documented
 // alongside the definition of their values in the .cc file.
 
+MEDIA_EXPORT extern const base::Feature kAudioFocusDuckFlash;
 MEDIA_EXPORT extern const base::Feature kAutoplayIgnoreWebAudio;
 MEDIA_EXPORT extern const base::Feature kAutoplayDisableSettings;
 MEDIA_EXPORT extern const base::Feature kAutoplayWhitelistSettings;
 MEDIA_EXPORT extern const base::Feature kBackgroundSrcVideoTrackOptimization;
 MEDIA_EXPORT extern const base::Feature kBackgroundVideoPauseOptimization;
-MEDIA_EXPORT extern const base::Feature kD3D11EncryptedMedia;
-MEDIA_EXPORT extern const base::Feature kD3D11VP9Decoder;
 MEDIA_EXPORT extern const base::Feature kD3D11VideoDecoder;
+MEDIA_EXPORT extern const base::Feature kD3D11VideoDecoderIgnoreWorkarounds;
 MEDIA_EXPORT extern const base::Feature kExternalClearKeyForTesting;
 MEDIA_EXPORT extern const base::Feature kFallbackAfterDecodeError;
 MEDIA_EXPORT extern const base::Feature kHardwareMediaKeyHandling;
 MEDIA_EXPORT extern const base::Feature kHardwareSecureDecryption;
-MEDIA_EXPORT extern const base::Feature kLimitParallelMediaPreloading;
+MEDIA_EXPORT extern const base::Feature kInternalMediaSession;
 MEDIA_EXPORT extern const base::Feature kLowDelayVideoRenderingOnLiveStream;
 MEDIA_EXPORT extern const base::Feature kMediaCapabilitiesWithParameters;
 MEDIA_EXPORT extern const base::Feature kMediaCastOverlayButton;
 MEDIA_EXPORT extern const base::Feature kMediaEngagementBypassAutoplayPolicies;
+MEDIA_EXPORT extern const base::Feature kMediaLearningExperiment;
 MEDIA_EXPORT extern const base::Feature kMemoryPressureBasedSourceBufferGC;
 MEDIA_EXPORT extern const base::Feature kMojoVideoDecoder;
 MEDIA_EXPORT extern const base::Feature kMseBufferByPts;
 MEDIA_EXPORT extern const base::Feature kNewEncodeCpuLoadEstimator;
-MEDIA_EXPORT extern const base::Feature kNewRemotePlaybackPipeline;
 MEDIA_EXPORT extern const base::Feature kOverflowIconsForMediaControls;
 MEDIA_EXPORT extern const base::Feature kOverlayFullscreenVideo;
 MEDIA_EXPORT extern const base::Feature kPictureInPicture;
@@ -138,17 +133,18 @@ MEDIA_EXPORT extern const base::Feature kUseModernMediaControls;
 MEDIA_EXPORT extern const base::Feature kUseNewMediaCache;
 MEDIA_EXPORT extern const base::Feature kUseR16Texture;
 MEDIA_EXPORT extern const base::Feature kUseSurfaceLayerForVideo;
-MEDIA_EXPORT extern const base::Feature kUseSurfaceLayerForVideoPIP;
+MEDIA_EXPORT extern const base::Feature kVaapiLowPowerEncoder;
 MEDIA_EXPORT extern const base::Feature kVaapiVP8Encoder;
+MEDIA_EXPORT extern const base::Feature kVaapiVP9Encoder;
 MEDIA_EXPORT extern const base::Feature kVideoBlitColorAccuracy;
 
 #if defined(OS_ANDROID)
 MEDIA_EXPORT extern const base::Feature kMediaControlsExpandGesture;
-MEDIA_EXPORT extern const base::Feature kVideoFullscreenOrientationLock;
-MEDIA_EXPORT extern const base::Feature kVideoRotateToFullscreen;
 MEDIA_EXPORT extern const base::Feature kMediaDrmPersistentLicense;
-MEDIA_EXPORT extern const base::Feature kCafMediaRouterImpl;
+MEDIA_EXPORT extern const base::Feature kMediaDrmPreprovisioning;
+MEDIA_EXPORT extern const base::Feature kMediaDrmPreprovisioningAtStartup;
 MEDIA_EXPORT extern const base::Feature kAImageReaderVideoOutput;
+MEDIA_EXPORT extern const base::Feature kDisableSurfaceLayerForVideo;
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_WIN)

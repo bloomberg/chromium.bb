@@ -10,6 +10,8 @@
 #include <memory>
 #include <utility>
 
+#include "constants/annotation_flags.h"
+#include "constants/form_flags.h"
 #include "core/fpdfapi/font/cpdf_font.h"
 #include "core/fpdfdoc/cpdf_formcontrol.h"
 #include "core/fpdfdoc/cpdf_formfield.h"
@@ -150,26 +152,27 @@ bool SetWidgetDisplayStatus(CPDFSDK_Widget* pWidget, int value) {
   uint32_t dwFlag = pWidget->GetFlags();
   switch (value) {
     case 0:
-      dwFlag &= ~ANNOTFLAG_INVISIBLE;
-      dwFlag &= ~ANNOTFLAG_HIDDEN;
-      dwFlag &= ~ANNOTFLAG_NOVIEW;
-      dwFlag |= ANNOTFLAG_PRINT;
+      dwFlag &= ~pdfium::annotation_flags::kInvisible;
+      dwFlag &= ~pdfium::annotation_flags::kHidden;
+      dwFlag &= ~pdfium::annotation_flags::kNoView;
+      dwFlag |= pdfium::annotation_flags::kPrint;
       break;
     case 1:
-      dwFlag &= ~ANNOTFLAG_INVISIBLE;
-      dwFlag &= ~ANNOTFLAG_NOVIEW;
-      dwFlag |= (ANNOTFLAG_HIDDEN | ANNOTFLAG_PRINT);
+      dwFlag &= ~pdfium::annotation_flags::kInvisible;
+      dwFlag &= ~pdfium::annotation_flags::kNoView;
+      dwFlag |= (pdfium::annotation_flags::kHidden |
+                 pdfium::annotation_flags::kPrint);
       break;
     case 2:
-      dwFlag &= ~ANNOTFLAG_INVISIBLE;
-      dwFlag &= ~ANNOTFLAG_PRINT;
-      dwFlag &= ~ANNOTFLAG_HIDDEN;
-      dwFlag &= ~ANNOTFLAG_NOVIEW;
+      dwFlag &= ~pdfium::annotation_flags::kInvisible;
+      dwFlag &= ~pdfium::annotation_flags::kPrint;
+      dwFlag &= ~pdfium::annotation_flags::kHidden;
+      dwFlag &= ~pdfium::annotation_flags::kNoView;
       break;
     case 3:
-      dwFlag |= ANNOTFLAG_NOVIEW;
-      dwFlag |= ANNOTFLAG_PRINT;
-      dwFlag &= ~ANNOTFLAG_HIDDEN;
+      dwFlag |= pdfium::annotation_flags::kNoView;
+      dwFlag |= pdfium::annotation_flags::kPrint;
+      dwFlag &= ~pdfium::annotation_flags::kHidden;
       break;
   }
 
@@ -250,7 +253,7 @@ void SetCurrentValueIndices(CPDFSDK_FormFillEnvironment* pFormFillEnv,
     uint32_t dwFieldFlags = pFormField->GetFieldFlags();
     pFormField->ClearSelection(NotificationOption::kNotify);
     for (size_t i = 0; i < array.size(); ++i) {
-      if (i != 0 && !(dwFieldFlags & (1 << 21)))
+      if (i != 0 && !(dwFieldFlags & pdfium::form_flags::kChoiceMultiSelect))
         break;
       if (array[i] < static_cast<uint32_t>(pFormField->CountOptions()) &&
           !pFormField->IsItemSelected(array[i])) {
@@ -403,10 +406,10 @@ void SetRect(CPDFSDK_FormFillEnvironment* pFormFillEnv,
   }
 }
 
-void SetValue(CPDFSDK_FormFillEnvironment* pFormFillEnv,
-              const WideString& swFieldName,
-              int nControlIndex,
-              const std::vector<WideString>& strArray) {
+void SetFieldValue(CPDFSDK_FormFillEnvironment* pFormFillEnv,
+                   const WideString& swFieldName,
+                   int nControlIndex,
+                   const std::vector<WideString>& strArray) {
   ASSERT(pFormFillEnv);
   if (strArray.empty())
     return;
@@ -954,8 +957,8 @@ CJS_Result CJS_Field::get_comb(CJS_Runtime* pRuntime) {
   if (pFormField->GetFieldType() != FormFieldType::kTextField)
     return CJS_Result::Failure(JSMessage::kObjectTypeError);
 
-  return CJS_Result::Success(
-      pRuntime->NewBoolean(!!(pFormField->GetFieldFlags() & FIELDFLAG_COMB)));
+  return CJS_Result::Success(pRuntime->NewBoolean(
+      !!(pFormField->GetFieldFlags() & pdfium::form_flags::kTextComb)));
 }
 
 CJS_Result CJS_Field::set_comb(CJS_Runtime* pRuntime, v8::Local<v8::Value> vp) {
@@ -975,8 +978,9 @@ CJS_Result CJS_Field::get_commit_on_sel_change(CJS_Runtime* pRuntime) {
   if (!IsComboBoxOrListBox(pFormField))
     return CJS_Result::Failure(JSMessage::kObjectTypeError);
 
+  uint32_t dwFieldFlags = pFormField->GetFieldFlags();
   return CJS_Result::Success(pRuntime->NewBoolean(
-      !!(pFormField->GetFieldFlags() & FIELDFLAG_COMMITONSELCHANGE)));
+      !!(dwFieldFlags & pdfium::form_flags::kChoiceCommitOnSelChange)));
 }
 
 CJS_Result CJS_Field::set_commit_on_sel_change(CJS_Runtime* pRuntime,
@@ -1081,7 +1085,7 @@ CJS_Result CJS_Field::get_do_not_scroll(CJS_Runtime* pRuntime) {
     return CJS_Result::Failure(JSMessage::kObjectTypeError);
 
   return CJS_Result::Success(pRuntime->NewBoolean(
-      !!(pFormField->GetFieldFlags() & FIELDFLAG_DONOTSCROLL)));
+      !!(pFormField->GetFieldFlags() & pdfium::form_flags::kTextDoNotScroll)));
 }
 
 CJS_Result CJS_Field::set_do_not_scroll(CJS_Runtime* pRuntime,
@@ -1102,8 +1106,9 @@ CJS_Result CJS_Field::get_do_not_spell_check(CJS_Runtime* pRuntime) {
   if (!IsComboBoxOrTextField(pFormField))
     return CJS_Result::Failure(JSMessage::kObjectTypeError);
 
+  uint32_t dwFieldFlags = pFormField->GetFieldFlags();
   return CJS_Result::Success(pRuntime->NewBoolean(
-      !!(pFormField->GetFieldFlags() & FIELDFLAG_DONOTSPELLCHECK)));
+      !!(dwFieldFlags & pdfium::form_flags::kTextDoNotSpellCheck)));
 }
 
 CJS_Result CJS_Field::set_do_not_spell_check(CJS_Runtime* pRuntime,
@@ -1147,11 +1152,13 @@ CJS_Result CJS_Field::get_display(CJS_Runtime* pRuntime) {
     return CJS_Result::Failure(JSMessage::kBadObjectError);
 
   uint32_t dwFlag = pWidget->GetFlags();
-  if (ANNOTFLAG_INVISIBLE & dwFlag || ANNOTFLAG_HIDDEN & dwFlag)
+  if (pdfium::annotation_flags::kInvisible & dwFlag ||
+      pdfium::annotation_flags::kHidden & dwFlag) {
     return CJS_Result::Success(pRuntime->NewNumber(1));
+  }
 
-  if (ANNOTFLAG_PRINT & dwFlag) {
-    if (ANNOTFLAG_NOVIEW & dwFlag)
+  if (pdfium::annotation_flags::kPrint & dwFlag) {
+    if (pdfium::annotation_flags::kNoView & dwFlag)
       return CJS_Result::Success(pRuntime->NewNumber(3));
     return CJS_Result::Success(pRuntime->NewNumber(0));
   }
@@ -1188,8 +1195,8 @@ CJS_Result CJS_Field::get_editable(CJS_Runtime* pRuntime) {
   if (pFormField->GetFieldType() != FormFieldType::kComboBox)
     return CJS_Result::Failure(JSMessage::kObjectTypeError);
 
-  return CJS_Result::Success(
-      pRuntime->NewBoolean(!!(pFormField->GetFieldFlags() & FIELDFLAG_EDIT)));
+  return CJS_Result::Success(pRuntime->NewBoolean(
+      !!(pFormField->GetFieldFlags() & pdfium::form_flags::kChoiceEdit)));
 }
 
 CJS_Result CJS_Field::set_editable(CJS_Runtime* pRuntime,
@@ -1258,7 +1265,7 @@ CJS_Result CJS_Field::get_file_select(CJS_Runtime* pRuntime) {
     return CJS_Result::Failure(JSMessage::kObjectTypeError);
 
   return CJS_Result::Success(pRuntime->NewBoolean(
-      !!(pFormField->GetFieldFlags() & FIELDFLAG_FILESELECT)));
+      !!(pFormField->GetFieldFlags() & pdfium::form_flags::kTextFileSelect)));
 }
 
 CJS_Result CJS_Field::set_file_select(CJS_Runtime* pRuntime,
@@ -1339,8 +1346,9 @@ CJS_Result CJS_Field::get_hidden(CJS_Runtime* pRuntime) {
     return CJS_Result::Failure(JSMessage::kBadObjectError);
 
   uint32_t dwFlags = pWidget->GetFlags();
-  return CJS_Result::Success(pRuntime->NewBoolean(
-      ANNOTFLAG_INVISIBLE & dwFlags || ANNOTFLAG_HIDDEN & dwFlags));
+  return CJS_Result::Success(
+      pRuntime->NewBoolean(pdfium::annotation_flags::kInvisible & dwFlags ||
+                           pdfium::annotation_flags::kHidden & dwFlags));
 }
 
 CJS_Result CJS_Field::set_hidden(CJS_Runtime* pRuntime,
@@ -1440,7 +1448,7 @@ CJS_Result CJS_Field::get_multiline(CJS_Runtime* pRuntime) {
     return CJS_Result::Failure(JSMessage::kObjectTypeError);
 
   return CJS_Result::Success(pRuntime->NewBoolean(
-      !!(pFormField->GetFieldFlags() & FIELDFLAG_MULTILINE)));
+      !!(pFormField->GetFieldFlags() & pdfium::form_flags::kTextMultiline)));
 }
 
 CJS_Result CJS_Field::set_multiline(CJS_Runtime* pRuntime,
@@ -1460,8 +1468,9 @@ CJS_Result CJS_Field::get_multiple_selection(CJS_Runtime* pRuntime) {
   if (pFormField->GetFieldType() != FormFieldType::kListBox)
     return CJS_Result::Failure(JSMessage::kObjectTypeError);
 
+  uint32_t dwFieldFlags = pFormField->GetFieldFlags();
   return CJS_Result::Success(pRuntime->NewBoolean(
-      !!(pFormField->GetFieldFlags() & FIELDFLAG_MULTISELECT)));
+      !!(dwFieldFlags & pdfium::form_flags::kChoiceMultiSelect)));
 }
 
 CJS_Result CJS_Field::set_multiple_selection(CJS_Runtime* pRuntime,
@@ -1544,7 +1553,7 @@ CJS_Result CJS_Field::get_password(CJS_Runtime* pRuntime) {
     return CJS_Result::Failure(JSMessage::kObjectTypeError);
 
   return CJS_Result::Success(pRuntime->NewBoolean(
-      !!(pFormField->GetFieldFlags() & FIELDFLAG_PASSWORD)));
+      !!(pFormField->GetFieldFlags() & pdfium::form_flags::kTextPassword)));
 }
 
 CJS_Result CJS_Field::set_password(CJS_Runtime* pRuntime,
@@ -1565,8 +1574,8 @@ CJS_Result CJS_Field::get_print(CJS_Runtime* pRuntime) {
   if (!pWidget)
     return CJS_Result::Failure(JSMessage::kBadObjectError);
 
-  return CJS_Result::Success(
-      pRuntime->NewBoolean(!!(pWidget->GetFlags() & ANNOTFLAG_PRINT)));
+  return CJS_Result::Success(pRuntime->NewBoolean(
+      !!(pWidget->GetFlags() & pdfium::annotation_flags::kPrint)));
 }
 
 CJS_Result CJS_Field::set_print(CJS_Runtime* pRuntime,
@@ -1587,9 +1596,9 @@ CJS_Result CJS_Field::set_print(CJS_Runtime* pRuntime,
                 pForm->GetWidget(pFormField->GetControl(i))) {
           uint32_t dwFlags = pWidget->GetFlags();
           if (pRuntime->ToBoolean(vp))
-            dwFlags |= ANNOTFLAG_PRINT;
+            dwFlags |= pdfium::annotation_flags::kPrint;
           else
-            dwFlags &= ~ANNOTFLAG_PRINT;
+            dwFlags &= ~pdfium::annotation_flags::kPrint;
 
           if (dwFlags != pWidget->GetFlags()) {
             pWidget->SetFlags(dwFlags);
@@ -1612,9 +1621,9 @@ CJS_Result CJS_Field::set_print(CJS_Runtime* pRuntime,
       if (CPDFSDK_Widget* pWidget = pForm->GetWidget(pFormControl)) {
         uint32_t dwFlags = pWidget->GetFlags();
         if (pRuntime->ToBoolean(vp))
-          dwFlags |= ANNOTFLAG_PRINT;
+          dwFlags |= pdfium::annotation_flags::kPrint;
         else
-          dwFlags &= ~ANNOTFLAG_PRINT;
+          dwFlags &= ~pdfium::annotation_flags::kPrint;
 
         if (dwFlags != pWidget->GetFlags()) {
           pWidget->SetFlags(dwFlags);
@@ -1636,8 +1645,9 @@ CJS_Result CJS_Field::get_radios_in_unison(CJS_Runtime* pRuntime) {
   if (pFormField->GetFieldType() != FormFieldType::kRadioButton)
     return CJS_Result::Failure(JSMessage::kObjectTypeError);
 
+  uint32_t dwFieldFlags = pFormField->GetFieldFlags();
   return CJS_Result::Success(pRuntime->NewBoolean(
-      !!(pFormField->GetFieldFlags() & FIELDFLAG_RADIOSINUNISON)));
+      !!(dwFieldFlags & pdfium::form_flags::kButtonRadiosInUnison)));
 }
 
 CJS_Result CJS_Field::set_radios_in_unison(CJS_Runtime* pRuntime,
@@ -1656,7 +1666,7 @@ CJS_Result CJS_Field::get_readonly(CJS_Runtime* pRuntime) {
     return CJS_Result::Failure(JSMessage::kBadObjectError);
 
   return CJS_Result::Success(pRuntime->NewBoolean(
-      !!(pFormField->GetFieldFlags() & FIELDFLAG_READONLY)));
+      !!(pFormField->GetFieldFlags() & pdfium::form_flags::kReadOnly)));
 }
 
 CJS_Result CJS_Field::set_readonly(CJS_Runtime* pRuntime,
@@ -1731,7 +1741,7 @@ CJS_Result CJS_Field::get_required(CJS_Runtime* pRuntime) {
     return CJS_Result::Failure(JSMessage::kObjectTypeError);
 
   return CJS_Result::Success(pRuntime->NewBoolean(
-      !!(pFormField->GetFieldFlags() & FIELDFLAG_REQUIRED)));
+      !!(pFormField->GetFieldFlags() & pdfium::form_flags::kRequired)));
 }
 
 CJS_Result CJS_Field::set_required(CJS_Runtime* pRuntime,
@@ -1755,7 +1765,7 @@ CJS_Result CJS_Field::get_rich_text(CJS_Runtime* pRuntime) {
     return CJS_Result::Failure(JSMessage::kObjectTypeError);
 
   return CJS_Result::Success(pRuntime->NewBoolean(
-      !!(pFormField->GetFieldFlags() & FIELDFLAG_RICHTEXT)));
+      !!(pFormField->GetFieldFlags() & pdfium::form_flags::kTextRichText)));
 }
 
 CJS_Result CJS_Field::set_rich_text(CJS_Runtime* pRuntime,
@@ -2144,7 +2154,8 @@ CJS_Result CJS_Field::set_value(CJS_Runtime* pRuntime,
   if (m_bDelay) {
     AddDelay_WideStringArray(FP_VALUE, strArray);
   } else {
-    SetValue(m_pFormFillEnv.Get(), m_FieldName, m_nFormControlIndex, strArray);
+    SetFieldValue(m_pFormFillEnv.Get(), m_FieldName, m_nFormControlIndex,
+                  strArray);
   }
   return CJS_Result::Success();
 }
@@ -2165,7 +2176,8 @@ CJS_Result CJS_Field::get_value_as_string(CJS_Runtime* pRuntime) {
   }
 
   if (pFormField->GetFieldType() == FormFieldType::kRadioButton &&
-      !(pFormField->GetFieldFlags() & FIELDFLAG_RADIOSINUNISON)) {
+      !(pFormField->GetFieldFlags() &
+        pdfium::form_flags::kButtonRadiosInUnison)) {
     for (int i = 0, sz = pFormField->CountControls(); i < sz; i++) {
       if (pFormField->GetControl(i)->IsChecked()) {
         return CJS_Result::Success(pRuntime->NewString(
@@ -2195,7 +2207,7 @@ CJS_Result CJS_Field::browseForFileToSubmit(
   if (!pFormField)
     return CJS_Result::Failure(JSMessage::kBadObjectError);
 
-  if ((pFormField->GetFieldFlags() & FIELDFLAG_FILESELECT) &&
+  if ((pFormField->GetFieldFlags() & pdfium::form_flags::kTextFileSelect) &&
       (pFormField->GetFieldType() == FormFieldType::kTextField)) {
     WideString wsFileName = m_pFormFillEnv->JS_fieldBrowse();
     if (!wsFileName.IsEmpty()) {
@@ -2640,8 +2652,8 @@ void CJS_Field::DoDelay(CPDFSDK_FormFillEnvironment* pFormFillEnv,
               pData->rect);
       break;
     case FP_VALUE:
-      SetValue(pFormFillEnv, pData->sFieldName, pData->nControlIndex,
-               pData->widestringarray);
+      SetFieldValue(pFormFillEnv, pData->sFieldName, pData->nControlIndex,
+                    pData->widestringarray);
       break;
     default:
       NOTREACHED();

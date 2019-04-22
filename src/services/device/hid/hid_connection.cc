@@ -70,12 +70,20 @@ HidConnection::HidConnection(scoped_refptr<HidDeviceInfo> device_info)
 }
 
 HidConnection::~HidConnection() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(closed_);
 }
 
+void HidConnection::SetClient(Client* client) {
+  if (client) {
+    DCHECK(pending_reads_.empty());
+    DCHECK(pending_reports_.empty());
+  }
+  client_ = client;
+}
+
 void HidConnection::Close() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!closed_);
 
   PlatformClose();
@@ -83,7 +91,8 @@ void HidConnection::Close() {
 }
 
 void HidConnection::Read(ReadCallback callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!client_);
   if (device_info_->max_input_report_size() == 0) {
     HID_LOG(USER) << "This device does not support input reports.";
     std::move(callback).Run(false, NULL, 0);
@@ -96,7 +105,7 @@ void HidConnection::Read(ReadCallback callback) {
 
 void HidConnection::Write(scoped_refptr<base::RefCountedBytes> buffer,
                           WriteCallback callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (device_info_->max_output_report_size() == 0) {
     HID_LOG(USER) << "This device does not support output reports.";
     std::move(callback).Run(false);
@@ -126,7 +135,7 @@ void HidConnection::Write(scoped_refptr<base::RefCountedBytes> buffer,
 }
 
 void HidConnection::GetFeatureReport(uint8_t report_id, ReadCallback callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (device_info_->max_feature_report_size() == 0) {
     HID_LOG(USER) << "This device does not support feature reports.";
     std::move(callback).Run(false, NULL, 0);
@@ -149,7 +158,7 @@ void HidConnection::GetFeatureReport(uint8_t report_id, ReadCallback callback) {
 void HidConnection::SendFeatureReport(
     scoped_refptr<base::RefCountedBytes> buffer,
     WriteCallback callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (device_info_->max_feature_report_size() == 0) {
     HID_LOG(USER) << "This device does not support feature reports.";
     std::move(callback).Run(false);
@@ -184,19 +193,24 @@ bool HidConnection::IsReportIdProtected(uint8_t report_id) {
 void HidConnection::ProcessInputReport(
     scoped_refptr<base::RefCountedBytes> buffer,
     size_t size) {
-  DCHECK(thread_checker().CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_GE(size, 1u);
 
   uint8_t report_id = buffer->data()[0];
   if (IsReportIdProtected(report_id))
     return;
 
-  pending_reports_.emplace(buffer, size);
-  ProcessReadQueue();
+  if (client_) {
+    client_->OnInputReport(buffer, size);
+  } else {
+    pending_reports_.emplace(buffer, size);
+    ProcessReadQueue();
+  }
 }
 
 void HidConnection::ProcessReadQueue() {
-  DCHECK(thread_checker().CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!client_);
 
   // Hold a reference to |this| to prevent a callback from freeing this object
   // during the loop.

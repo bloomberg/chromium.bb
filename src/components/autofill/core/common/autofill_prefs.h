@@ -19,7 +19,6 @@ namespace prefs {
 // Alphabetical list of preference names specific to the Autofill
 // component. Keep alphabetized, and document each in the .cc file.
 extern const char kAutofillAcceptSaveCreditCardPromptState[];
-extern const char kAutofillBillingCustomerNumber[];
 // Do not get/set the value of this pref directly. Use provided getter/setter.
 extern const char kAutofillCreditCardEnabled[];
 extern const char kAutofillCreditCardSigninPromoImpressionCount[];
@@ -41,6 +40,7 @@ extern const char kAutofillUploadEvents[];
 extern const char kAutofillUploadEventsLastResetTimestamp[];
 extern const char kAutofillWalletImportEnabled[];
 extern const char kAutofillWalletImportStorageCheckboxState[];
+extern const char kAutocompleteLastVersionRetentionPolicy[];
 
 namespace sync_transport_opt_in {
 enum Flags {

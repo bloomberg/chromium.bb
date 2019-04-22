@@ -4,9 +4,11 @@
 
 #include <vector>
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "content/browser/renderer_host/input/input_router_impl.h"
 #include "content/browser/renderer_host/input/synthetic_smooth_drag_gesture.h"
 #include "content/browser/renderer_host/input/touch_action_filter.h"
@@ -16,6 +18,8 @@
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
+#include "content/common/view_messages.h"
+#include "content/common/widget_messages.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/browser_test_utils.h"
@@ -23,6 +27,7 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "content/test/content_browser_test_utils_internal.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -145,10 +150,10 @@ class RenderWidgetHostTouchEmulatorBrowserTest : public ContentBrowserTest {
 
 // Synthetic mouse events not allowed on Android.
 #if !defined(OS_ANDROID)
-// This test makes sure that TouchEmulator doesn't emit a GestureScrollEnd without a valid
-// unique_touch_event_id when it sees a GestureFlingStart terminating the underlying mouse
-// scroll sequence. If the GestureScrollEnd is given a unique_touch_event_id of 0, then a
-// crash will occur.
+// This test makes sure that TouchEmulator doesn't emit a GestureScrollEnd
+// without a valid unique_touch_event_id when it sees a GestureFlingStart
+// terminating the underlying mouse scroll sequence. If the GestureScrollEnd is
+// given a unique_touch_event_id of 0, then a crash will occur.
 IN_PROC_BROWSER_TEST_F(RenderWidgetHostTouchEmulatorBrowserTest,
                        TouchEmulatorPinchWithGestureFling) {
   auto* touch_emulator = host()->GetTouchEmulator();
@@ -168,30 +173,39 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostTouchEmulatorBrowserTest,
   params.distances.push_back(gfx::Vector2d(0, -10));
   params.speed_in_pixels_s = 1200;
 
-  std::unique_ptr<SyntheticSmoothDragGesture> gesture(
-      new SyntheticSmoothDragGesture(params));
+  // On slow bots (e.g. ChromeOS DBG) the synthetic gesture sequence events may
+  // be delivered slowly/erratically-timed so that the velocity_tracker in the
+  // TouchEmulator's GestureDetector may either (i) drop some scroll updates
+  // from the velocity estimate, or (ii) create an unexpectedly low velocity
+  // estimate. In either case, the minimum fling start velocity may not be
+  // achieved, meaning the condition we're trying to test never occurs. To
+  // avoid that, we'll keep trying until it happens. The failure mode for the
+  // test is that it times out.
+  do {
+    std::unique_ptr<SyntheticSmoothDragGesture> gesture(
+        new SyntheticSmoothDragGesture(params));
 
-  InputEventAckWaiter scroll_end_ack_waiter(
-      host(), blink::WebInputEvent::kGestureScrollEnd);
-  base::RunLoop run_loop;
-  host()->QueueSyntheticGesture(
-      std::move(gesture),
-      base::BindOnce(
-          base::BindLambdaForTesting([&](SyntheticGesture::Result result) {
-            EXPECT_EQ(SyntheticGesture::GESTURE_FINISHED, result);
-            run_loop.Quit();
-          })));
-  run_loop.Run();
-  scroll_end_ack_waiter.Wait();
+    InputEventAckWaiter scroll_end_ack_waiter(
+        host(), blink::WebInputEvent::kGestureScrollEnd);
+    base::RunLoop run_loop;
+    host()->QueueSyntheticGesture(
+        std::move(gesture),
+        base::BindOnce(
+            base::BindLambdaForTesting([&](SyntheticGesture::Result result) {
+              EXPECT_EQ(SyntheticGesture::GESTURE_FINISHED, result);
+              run_loop.Quit();
+            })));
+    run_loop.Run();
+    scroll_end_ack_waiter.Wait();
 
-  // Verify that a GestureFlingStart was suppressed by the TouchEmulator, and
-  // that we generated a GestureScrollEnd and routed it without crashing.
-  TestInputEventObserver::EventTypeVector dispatched_events =
-      observer.GetAndResetDispatchedEventTypes();
-  auto it_gse = std::find(dispatched_events.begin(), dispatched_events.end(),
-                          blink::WebInputEvent::kGestureScrollEnd);
-  EXPECT_NE(dispatched_events.end(), it_gse);
-  EXPECT_TRUE(touch_emulator->suppress_next_fling_cancel_for_testing());
+    // Verify that a GestureFlingStart was suppressed by the TouchEmulator, and
+    // that we generated a GestureScrollEnd and routed it without crashing.
+    TestInputEventObserver::EventTypeVector dispatched_events =
+        observer.GetAndResetDispatchedEventTypes();
+    auto it_gse = std::find(dispatched_events.begin(), dispatched_events.end(),
+                            blink::WebInputEvent::kGestureScrollEnd);
+    EXPECT_NE(dispatched_events.end(), it_gse);
+  } while (!touch_emulator->suppress_next_fling_cancel_for_testing());
 }
 #endif  // !defined(OS_ANDROID)
 
@@ -427,5 +441,108 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostSitePerProcessTest,
                                                    ->GetRenderWidgetHost());
   EXPECT_TRUE(filter->allowed_touch_action().has_value());
 }
+
+// The plumbing that this test is verifying is not utilized on Mac/Android,
+// where popup menus don't create a popup RenderWidget, but rather they trigger
+// a FrameHostMsg_ShowPopup to ask the browser to build and display the actual
+// popup using native controls.
+#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
+IN_PROC_BROWSER_TEST_F(RenderWidgetHostSitePerProcessTest,
+                       BrowserClosesSelectPopup) {
+  // Navigate to a page with a <select> element.
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/site_isolation/page-with-select.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  auto* contents = static_cast<WebContentsImpl*>(shell()->web_contents());
+  FrameTreeNode* root = contents->GetFrameTree()->root();
+  RenderFrameHostImpl* root_frame_host = root->current_frame_host();
+  RenderProcessHost* process = root_frame_host->GetProcess();
+
+  // Open the <select> menu by focusing it and sending a space key
+  // at the focused node. This creates a popup widget.
+  NativeWebKeyboardEvent event(
+      blink::WebKeyboardEvent::kChar, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
+  event.text[0] = ' ';
+
+  // A class to wait for ViewHostMsg_ShowWidget.
+  class WaitForShowWidgetFilter : public ObserveMessageFilter {
+   public:
+    explicit WaitForShowWidgetFilter()
+        : ObserveMessageFilter(ViewMsgStart, ViewHostMsg_ShowWidget::ID) {}
+
+    bool OnMessageReceived(const IPC::Message& message) override {
+      IPC_BEGIN_MESSAGE_MAP(WaitForShowWidgetFilter, message)
+        IPC_MESSAGE_HANDLER(ViewHostMsg_ShowWidget, OnShowWidget)
+      IPC_END_MESSAGE_MAP()
+      return ObserveMessageFilter::OnMessageReceived(message);
+    }
+
+    int routing_id() const { return routing_id_; }
+
+   private:
+    ~WaitForShowWidgetFilter() override = default;
+
+    void OnShowWidget(int routing_id, const gfx::Rect& initial_rect) {
+      routing_id_ = routing_id;
+    }
+
+    int routing_id_ = 0;
+
+    DISALLOW_COPY_AND_ASSIGN(WaitForShowWidgetFilter);
+  };
+
+  for (int i = 0; i < 2; ++i) {
+    bool browser_closes = i == 0;
+
+    // This focuses and opens the select box, creating a popup RenderWidget. We
+    // wait for the RenderWidgetHost to be shown.
+    auto filter = base::MakeRefCounted<WaitForShowWidgetFilter>();
+    process->AddFilter(filter.get());
+    EXPECT_TRUE(ExecuteScript(root_frame_host, "focusSelectMenu();"));
+    root_frame_host->GetRenderWidgetHost()->ForwardKeyboardEvent(event);
+    filter->Wait();
+
+    // The popup RenderWidget will get its own routing id.
+    int popup_routing_id = filter->routing_id();
+    EXPECT_TRUE(popup_routing_id);
+    // Grab a pointer to the popup RenderWidget.
+    RenderWidgetHost* popup_widget_host =
+        RenderWidgetHost::FromID(process->GetID(), popup_routing_id);
+    ASSERT_TRUE(popup_widget_host);
+    ASSERT_NE(popup_widget_host, root_frame_host->GetRenderWidgetHost());
+
+    // A class to wait for WidgetHostMsg_Close_ACK.
+    auto close_filter = base::MakeRefCounted<ObserveMessageFilter>(
+        WidgetMsgStart, WidgetHostMsg_Close_ACK::ID);
+    process->AddFilter(close_filter.get());
+
+    if (browser_closes) {
+      // Close the popup RenderWidget from the browser side.
+      auto* popup_widget_host_impl =
+          static_cast<RenderWidgetHostImpl*>(popup_widget_host);
+      popup_widget_host_impl->ShutdownAndDestroyWidget(true);
+    } else {
+      // Close the popup RenderWidget from the renderer side by removing focus.
+      EXPECT_TRUE(
+          ExecuteScript(root_frame_host, "document.activeElement.blur()"));
+    }
+    // In either case, wait until closing the popup RenderWidget is complete to
+    // know it worked by waiting for the WidgetHostMsg_Close_ACK.
+    close_filter->Wait();
+
+    // Ensure the renderer didn't explode :).
+    {
+      base::string16 title_when_done[] = {base::UTF8ToUTF16("done 0"),
+                                          base::UTF8ToUTF16("done 1")};
+      TitleWatcher title_watcher(shell()->web_contents(), title_when_done[i]);
+      EXPECT_TRUE(ExecuteScript(root_frame_host,
+                                JsReplace("document.title='done $1'", i)));
+      EXPECT_EQ(title_watcher.WaitAndGetTitle(), title_when_done[i]);
+    }
+  }
+}
+#endif
 
 }  // namespace content

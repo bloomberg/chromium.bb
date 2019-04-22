@@ -70,7 +70,7 @@ class VTTCueBox final : public HTMLDivElement {
   void ApplyCSSProperties(const VTTDisplayParameters&);
 
  private:
-  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout) override;
 
   // The computed line position for snap-to-lines layout, and NaN for
   // non-snap-to-lines layout where no adjustment should take place.
@@ -155,7 +155,7 @@ class VTTCue final : public TextTrackCue {
   String ToString() const override;
 #endif
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   Document& GetDocument() const;

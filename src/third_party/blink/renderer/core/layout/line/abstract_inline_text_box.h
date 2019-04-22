@@ -79,6 +79,8 @@ class CORE_EXPORT AbstractInlineTextBox
  protected:
   explicit AbstractInlineTextBox(LineLayoutText line_layout_item);
 
+  LayoutText* GetFirstLetterPseudoLayoutText() const;
+
  private:
   // Weak ptrs; these are nulled when InlineTextBox::destroy() calls
   // AbstractInlineTextBox::willDestroy.

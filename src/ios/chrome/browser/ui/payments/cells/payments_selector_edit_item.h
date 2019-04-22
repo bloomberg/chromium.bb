@@ -45,4 +45,32 @@
 
 @end
 
+// CollectionViewDetailCell implements an MDCCollectionViewCell subclass
+// containing two text labels: a "main" label and a "detail" label.  The two
+// labels are laid out side-by-side and fill the full width of the cell.  Labels
+// are truncated as needed to fit in the cell.
+@interface CollectionViewDetailCell : MDCCollectionViewCell
+
+// UILabels corresponding to |text| and |detailText| from the item.
+@property(nonatomic, readonly, strong, nonnull) UILabel* textLabel;
+@property(nonatomic, readonly, strong, nonnull) UILabel* detailTextLabel;
+
+// The amount of horizontal space to provide to each of the labels. These values
+// are determined with the following logic:
+//
+// - If there is sufficient room (after accounting for margins) for the full
+//   width of each label, use the current width of each label.
+// - If not, use the current width of the main label and a clipped width for the
+//   detail label.
+// - Unless the main label wants more than 75% of the available width and the
+//   detail label wants 25% or less of the available width, in which case use a
+//   clipped width for the main label and the current width of the detail label.
+// - If both labels want more width than their guaranteed minimums (75% and
+//   25%), use the guaranteed minimum amount for each.
+//
+// Exposed for testing.
+@property(nonatomic, readonly) CGFloat textLabelTargetWidth;
+@property(nonatomic, readonly) CGFloat detailTextLabelTargetWidth;
+
+@end
 #endif  // IOS_CHROME_BROWSER_UI_PAYMENTS_CELLS_PAYMENTS_SELECTOR_EDIT_ITEM_H_

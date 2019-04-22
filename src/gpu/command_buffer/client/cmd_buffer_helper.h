@@ -60,7 +60,7 @@ class GPU_EXPORT CommandBufferHelper {
   // Parameters:
   //   ring_buffer_size: The size of the ring buffer portion of the command
   //       buffer.
-  gpu::ContextResult Initialize(int32_t ring_buffer_size);
+  gpu::ContextResult Initialize(uint32_t ring_buffer_size);
 
   // Sets whether the command buffer should automatically flush periodically
   // to try to increase performance. Defaults to true.
@@ -250,6 +250,13 @@ class GPU_EXPORT CommandBufferHelper {
     }
   }
 
+  void InsertFenceSync(uint64_t release_count) {
+    cmd::InsertFenceSync* c = GetCmdSpace<cmd::InsertFenceSync>();
+    if (c) {
+      c->Init(release_count);
+    }
+  }
+
   CommandBuffer* command_buffer() const { return command_buffer_; }
 
   scoped_refptr<Buffer> get_ring_buffer() const { return ring_buffer_; }
@@ -293,7 +300,7 @@ class GPU_EXPORT CommandBufferHelper {
 
   CommandBuffer* const command_buffer_;
   int32_t ring_buffer_id_ = -1;
-  int32_t ring_buffer_size_ = 0;
+  uint32_t ring_buffer_size_ = 0;
   scoped_refptr<gpu::Buffer> ring_buffer_;
   CommandBufferEntry* entries_ = nullptr;
   int32_t total_entry_count_ = 0;  // the total number of entries

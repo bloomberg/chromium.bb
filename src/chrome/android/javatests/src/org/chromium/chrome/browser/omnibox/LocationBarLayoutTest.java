@@ -15,7 +15,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
@@ -23,18 +22,17 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.search_engines.TemplateUrlServiceTestUtils;
 import org.chromium.chrome.browser.toolbar.LocationBarModel;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.UiRestriction;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
 
 /**
  * Unit tests for {@link LocationBarLayout}.
@@ -64,6 +62,7 @@ public class LocationBarLayoutTest {
         private String mCurrentUrl;
         private String mEditingText;
         private String mDisplayText;
+        private String mDisplaySearchTerms;
         private Integer mSecurityLevel;
 
         public TestLocationBarModel() {
@@ -75,6 +74,10 @@ public class LocationBarLayoutTest {
             mCurrentUrl = url;
         }
 
+        void setDisplaySearchTerms(String terms) {
+            mDisplaySearchTerms = terms;
+        }
+
         void setSecurityLevel(@ConnectionSecurityLevel int securityLevel) {
             mSecurityLevel = securityLevel;
         }
@@ -83,6 +86,12 @@ public class LocationBarLayoutTest {
         public String getCurrentUrl() {
             if (mCurrentUrl == null) return super.getCurrentUrl();
             return mCurrentUrl;
+        }
+
+        @Override
+        public String getDisplaySearchTerms() {
+            if (mDisplaySearchTerms == null) return super.getDisplaySearchTerms();
+            return mDisplaySearchTerms;
         }
 
         @Override
@@ -107,17 +116,17 @@ public class LocationBarLayoutTest {
         mTestLocationBarModel = new TestLocationBarModel();
         mTestLocationBarModel.setTab(mActivityTestRule.getActivity().getActivityTab(), false);
 
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> getLocationBar().setToolbarDataProvider(mTestLocationBarModel));
     }
 
     private void setUrlToPageUrl(LocationBarLayout locationBar) {
-        ThreadUtils.runOnUiThreadBlocking(() -> { getLocationBar().updateLoadingState(true); });
+        TestThreadUtils.runOnUiThreadBlocking(() -> { getLocationBar().updateLoadingState(true); });
     }
 
     private String getUrlText(UrlBar urlBar) {
         try {
-            return ThreadUtils.runOnUiThreadBlocking(() -> urlBar.getText().toString());
+            return TestThreadUtils.runOnUiThreadBlocking(() -> urlBar.getText().toString());
         } catch (ExecutionException ex) {
             throw new RuntimeException(ex);
         }
@@ -145,7 +154,7 @@ public class LocationBarLayoutTest {
 
     private void setUrlBarTextAndFocus(String text)
             throws ExecutionException, InterruptedException {
-        ThreadUtils.runOnUiThreadBlocking(new Callable<Void>() {
+        TestThreadUtils.runOnUiThreadBlocking(new Callable<Void>() {
             @Override
             public Void call() throws InterruptedException {
                 getLocationBar().onUrlFocusChange(true);
@@ -157,10 +166,8 @@ public class LocationBarLayoutTest {
 
     @Test
     @SmallTest
-    @DisableFeatures(ChromeFeatureList.OMNIBOX_VOICE_SEARCH_ALWAYS_VISIBLE)
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @Feature({"OmniboxVoiceSearchAlwaysVisible"})
-    public void testNotShowingVoiceSearchButtonIfUrlBarContainsTextAndFlagIsDisabled()
+    public void testNotShowingVoiceSearchButtonIfUrlBarContainsText()
             throws ExecutionException, InterruptedException {
         setUrlBarTextAndFocus("testing");
 
@@ -170,36 +177,8 @@ public class LocationBarLayoutTest {
 
     @Test
     @SmallTest
-    @DisableFeatures(ChromeFeatureList.OMNIBOX_VOICE_SEARCH_ALWAYS_VISIBLE)
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @Feature({"OmniboxVoiceSearchAlwaysVisible"})
-    public void testShowingVoiceSearchButtonIfUrlBarIsEmptyAndFlagIsDisabled()
-            throws ExecutionException, InterruptedException {
-        setUrlBarTextAndFocus("");
-
-        Assert.assertNotEquals(getDeleteButton().getVisibility(), View.VISIBLE);
-        Assert.assertEquals(getMicButton().getVisibility(), View.VISIBLE);
-    }
-
-    @Test
-    @SmallTest
-    @EnableFeatures(ChromeFeatureList.OMNIBOX_VOICE_SEARCH_ALWAYS_VISIBLE)
-    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @Feature({"OmniboxVoiceSearchAlwaysVisible"})
-    public void testShowingVoiceAndDeleteButtonsShowingIfUrlBarContainsText()
-            throws ExecutionException, InterruptedException {
-        setUrlBarTextAndFocus("testing");
-
-        Assert.assertEquals(getDeleteButton().getVisibility(), View.VISIBLE);
-        Assert.assertEquals(getMicButton().getVisibility(), View.VISIBLE);
-    }
-
-    @Test
-    @SmallTest
-    @EnableFeatures(ChromeFeatureList.OMNIBOX_VOICE_SEARCH_ALWAYS_VISIBLE)
-    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @Feature({"OmniboxVoiceSearchAlwaysVisible"})
-    public void testShowingOnlyVoiceButtonIfUrlBarIsEmpty()
+    public void testShowingVoiceSearchButtonIfUrlBarIsEmpty()
             throws ExecutionException, InterruptedException {
         setUrlBarTextAndFocus("");
 
@@ -211,125 +190,24 @@ public class LocationBarLayoutTest {
     @SmallTest
     @EnableFeatures(ChromeFeatureList.QUERY_IN_OMNIBOX)
     @Feature({"QueryInOmnibox"})
-    public void testIsOnlyShowingSearchTermsIfSrpIsGoogle() {
+    public void testIsViewShowingModelSearchTerms() {
         final UrlBar urlBar = getUrlBar();
         final LocationBarLayout locationBar = getLocationBar();
 
         mTestLocationBarModel.setCurrentUrl(GOOGLE_SRP_URL);
         mTestLocationBarModel.setSecurityLevel(ConnectionSecurityLevel.SECURE);
+        mTestLocationBarModel.setDisplaySearchTerms(null);
         setUrlToPageUrl(locationBar);
+        Assert.assertNotEquals(SEARCH_TERMS, getUrlText(urlBar));
 
+        mTestLocationBarModel.setDisplaySearchTerms(SEARCH_TERMS);
+        setUrlToPageUrl(locationBar);
         Assert.assertEquals(SEARCH_TERMS, getUrlText(urlBar));
     }
 
     @Test
     @SmallTest
-    @EnableFeatures(ChromeFeatureList.QUERY_IN_OMNIBOX)
-    @Feature({"QueryInOmnibox"})
-    public void testIsOnlyShowingSearchTermsIfSrpIsBing()
-            throws ExecutionException, InterruptedException, TimeoutException {
-        final UrlBar urlBar = getUrlBar();
-        final LocationBarLayout locationBar = getLocationBar();
-
-        TemplateUrlServiceTestUtils.setSearchEngine("bing.com");
-        mTestLocationBarModel.setCurrentUrl(BING_SRP_URL);
-        mTestLocationBarModel.setSecurityLevel(ConnectionSecurityLevel.SECURE);
-        setUrlToPageUrl(locationBar);
-
-        Assert.assertEquals(SEARCH_TERMS, getUrlText(urlBar));
-    }
-
-    @Test
-    @SmallTest
-    @EnableFeatures(ChromeFeatureList.QUERY_IN_OMNIBOX)
-    @Feature({"QueryInOmnibox"})
-    public void testIsNotShowingSearchTermsIfSrpIsBingAndSrpUrlIsGoogle()
-            throws ExecutionException, InterruptedException, TimeoutException {
-        final UrlBar urlBar = getUrlBar();
-        final LocationBarLayout locationBar = getLocationBar();
-
-        TemplateUrlServiceTestUtils.setSearchEngine("bing.com");
-        mTestLocationBarModel.setCurrentUrl(GOOGLE_SRP_URL);
-        mTestLocationBarModel.setSecurityLevel(ConnectionSecurityLevel.SECURE);
-        setUrlToPageUrl(locationBar);
-
-        Assert.assertNotEquals(SEARCH_TERMS, getUrlText(urlBar));
-    }
-
-    @Test
-    @SmallTest
-    @EnableFeatures(ChromeFeatureList.QUERY_IN_OMNIBOX)
-    @Feature({"QueryInOmnibox"})
-    public void testNotShowingSearchIconOnMixedContent() {
-        final UrlBar urlBar = getUrlBar();
-        final LocationBarLayout locationBar = getLocationBar();
-
-        mTestLocationBarModel.setCurrentUrl(GOOGLE_SRP_URL);
-        mTestLocationBarModel.setSecurityLevel(ConnectionSecurityLevel.NONE);
-        setUrlToPageUrl(locationBar);
-
-        ImageButton securityButton = getSecurityButton();
-        Assert.assertNotEquals(SEARCH_TERMS, urlBar.getText().toString());
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            Assert.assertNotEquals(mTestLocationBarModel.getSecurityIconResource(
-                                           mActivityTestRule.getActivity().isTablet()),
-                    SEARCH_ICON_RESOURCE);
-        });
-    }
-
-    @Test
-    @SmallTest
-    @EnableFeatures(ChromeFeatureList.QUERY_IN_OMNIBOX)
-    @Feature({"QueryInOmnibox"})
-    public void testIsShowingSearchIconSecureContent() {
-        final LocationBarLayout locationBar = getLocationBar();
-
-        mTestLocationBarModel.setCurrentUrl(GOOGLE_SRP_URL);
-        mTestLocationBarModel.setSecurityLevel(ConnectionSecurityLevel.SECURE);
-        setUrlToPageUrl(locationBar);
-
-        ImageButton securityButton = getSecurityButton();
-        Assert.assertEquals(securityButton.getVisibility(), View.VISIBLE);
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            Assert.assertEquals(mTestLocationBarModel.getSecurityIconResource(
-                                        mActivityTestRule.getActivity().isTablet()),
-                    SEARCH_ICON_RESOURCE);
-        });
-    }
-
-    @Test
-    @SmallTest
-    @EnableFeatures(ChromeFeatureList.QUERY_IN_OMNIBOX)
-    @Feature({"QueryInOmnibox"})
-    public void testNotShowingSearchTermsIfLooksLikeUrl() throws ExecutionException {
-        final UrlBar urlBar = getUrlBar();
-        final LocationBarLayout locationBar = getLocationBar();
-
-        mTestLocationBarModel.setCurrentUrl(GOOGLE_SRP_URL_LIKE_URL);
-        mTestLocationBarModel.setSecurityLevel(ConnectionSecurityLevel.SECURE);
-        setUrlToPageUrl(locationBar);
-
-        Assert.assertNotEquals(SEARCH_TERMS_URL, getUrlText(urlBar));
-    }
-
-    @Test
-    @SmallTest
-    @DisableFeatures(ChromeFeatureList.QUERY_IN_OMNIBOX)
-    @Feature({"QueryInOmnibox"})
-    public void testNotShowingSearchTermsIfSrpIsGoogleAndFlagIsDisabled()
-            throws ExecutionException {
-        final UrlBar urlBar = getUrlBar();
-        final LocationBarLayout locationBar = getLocationBar();
-
-        mTestLocationBarModel.setCurrentUrl(GOOGLE_SRP_URL);
-        mTestLocationBarModel.setSecurityLevel(ConnectionSecurityLevel.SECURE);
-        setUrlToPageUrl(locationBar);
-
-        Assert.assertNotEquals(SEARCH_TERMS, getUrlText(urlBar));
-    }
-
-    @Test
-    @SmallTest
+    @DisableFeatures(ChromeFeatureList.SEARCH_READY_OMNIBOX)
     public void testEditingTextShownOnFocus() {
         final UrlBar urlBar = getUrlBar();
         final LocationBarLayout locationBar = getLocationBar();
@@ -342,11 +220,11 @@ public class LocationBarLayoutTest {
 
         Assert.assertEquals(TRIMMED_URL, getUrlText(urlBar));
 
-        ThreadUtils.runOnUiThreadBlocking(() -> { urlBar.requestFocus(); });
+        TestThreadUtils.runOnUiThreadBlocking(() -> { urlBar.requestFocus(); });
 
         Assert.assertEquals(VERBOSE_URL, getUrlText(urlBar));
 
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertEquals(0, urlBar.getSelectionStart());
             Assert.assertEquals(VERBOSE_URL.length(), urlBar.getSelectionEnd());
         });

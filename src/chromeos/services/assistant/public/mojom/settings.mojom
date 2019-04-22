@@ -41,4 +41,7 @@ interface AssistantSettingsManager {
 
   // Stops speaker id enrollment.
   StopSpeakerIdEnrollment() => ();
+
+  // Sync speaker id enrollment status.
+  SyncSpeakerIdEnrollmentStatus();
 };

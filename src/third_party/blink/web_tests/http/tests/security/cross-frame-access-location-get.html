@@ -20,10 +20,11 @@
             shouldBeFalse("canGet('targetWindow.location.toString')");
             shouldBeTrue("accessThrowsException('targetWindow.location.toString')");
 
-            shouldBeFalse("canGet('targetWindow.location.href')");
+            shouldBeFalse("canGet('targetWindow.location.assign')");
             shouldBeFalse("canGet('targetWindow.location.hash')");
             shouldBeFalse("canGet('targetWindow.location.host')");
             shouldBeFalse("canGet('targetWindow.location.hostname')");
+            shouldBeFalse("canGet('targetWindow.location.href')");
             shouldBeFalse("canGet('targetWindow.location.pathname')");
             shouldBeFalse("canGet('targetWindow.location.port')");
             shouldBeFalse("canGet('targetWindow.location.protocol')");
@@ -43,7 +44,6 @@
             shouldBeTrue("accessThrowsException('targetWindow.location.existingCustomProperty')");
             shouldBeTrue("accessThrowsException('targetWindow.location[1]')");
 
-            shouldBeTrue("canGet('targetWindow.location.assign')");
             shouldBeTrue("canGet('targetWindow.location.replace')");
 
             if (window.testRunner)

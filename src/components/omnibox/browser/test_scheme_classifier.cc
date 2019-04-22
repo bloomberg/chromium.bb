@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "components/omnibox/browser/test_scheme_classifier.h"
 #include "net/url_request/url_request.h"
 #include "third_party/metrics_proto/omnibox_input_type.pb.h"
@@ -23,7 +23,7 @@ metrics::OmniboxInputType TestSchemeClassifier::GetInputTypeForScheme(
     url::kFileScheme, url::kAboutScheme, url::kFtpScheme, url::kBlobScheme,
     url::kFileSystemScheme, "view-source", "javascript", "chrome", "chrome-ui",
   };
-  for (size_t i = 0; i < arraysize(kKnownURLSchemes); ++i) {
+  for (size_t i = 0; i < base::size(kKnownURLSchemes); ++i) {
     if (scheme == kKnownURLSchemes[i])
       return metrics::OmniboxInputType::URL;
   }

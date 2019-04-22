@@ -22,6 +22,7 @@
 #include "ui/aura/mus/window_tree_host_mus_init_params.h"
 #include "ui/aura/test/mus/window_tree_client_test_api.h"
 #include "ui/aura/test/test_focus_client.h"
+#include "ui/aura/test/test_screen.h"
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/platform_window/platform_window_init_properties.h"
@@ -63,6 +64,9 @@ WMTestHelper::~WMTestHelper() {
     run_loop.Run();
   }
   host_->window()->RemovePreTargetHandler(root_window_event_filter_.get());
+
+  if (display::Screen::GetScreen() == test_screen_.get())
+    display::Screen::SetScreenInstance(nullptr);
 }
 
 aura::Window* WMTestHelper::GetDefaultParent(aura::Window* window,
@@ -72,6 +76,11 @@ aura::Window* WMTestHelper::GetDefaultParent(aura::Window* window,
 
 void WMTestHelper::InitLocalHost(const gfx::Size& default_window_size) {
   wm_state_ = std::make_unique<WMState>();
+
+  // Install a screen, like TestWindowService's AuraTestHelper for InitMusHost.
+  test_screen_ = base::WrapUnique(aura::TestScreen::Create(gfx::Size()));
+  display::Screen::SetScreenInstance(test_screen_.get());
+
   host_ = aura::WindowTreeHost::Create(
       ui::PlatformWindowInitProperties{gfx::Rect(default_window_size)});
   host_->InitHost();

@@ -17,8 +17,9 @@ class BrowserView;
 // possible.
 class TestWithBrowserView : public BrowserWithTestWindowTest {
  public:
-  TestWithBrowserView();
-  TestWithBrowserView(Browser::Type browser_type, bool hosted_app);
+  template <typename... Args>
+  TestWithBrowserView(Args... args) : BrowserWithTestWindowTest(args...) {}
+
   ~TestWithBrowserView() override;
 
   // BrowserWithTestWindowTest overrides:

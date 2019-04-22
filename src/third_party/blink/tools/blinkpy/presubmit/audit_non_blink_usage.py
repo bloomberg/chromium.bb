@@ -32,6 +32,7 @@ _CONFIG = [
             # //base constructs that are allowed everywhere
             'base::AdoptRef',
             'base::AutoReset',
+            'base::CreateSequencedTaskRunnerWithTraits',
             'base::ElapsedTimer',
             'base::File',
             'base::FilePath',
@@ -40,9 +41,10 @@ _CONFIG = [
             'base::MakeRefCounted',
             'base::Optional',
             'base::OptionalOrNullptr',
+            'base::PlatformThread',
+            'base::PlatformThreadId',
             'base::RefCountedData',
             'base::RunLoop',
-            'base::CreateSequencedTaskRunnerWithTraits',
             'base::ReadOnlySharedMemoryMapping',
             'base::ReadOnlySharedMemoryRegion',
             'base::SequencedTaskRunner',
@@ -55,7 +57,13 @@ _CONFIG = [
             'base::TimeDelta',
             'base::TimeTicks',
             'base::ThreadTicks',
+            'base::trace_event::MemoryAllocatorDump',
+            'base::trace_event::MemoryDumpArgs',
+            'base::trace_event::MemoryDumpManager',
+            'base::trace_event::MemoryDumpProvider',
+            'base::trace_event::ProcessMemoryDump',
             'base::UnguessableToken',
+            'base::UnguessableTokenHash',
             'base::UnsafeSharedMemoryRegion',
             'base::WeakPtr',
             'base::WeakPtrFactory',
@@ -69,6 +77,10 @@ _CONFIG = [
             'base::span',
             'logging::GetVlogLevel',
 
+            # //base/observer_list.h.
+            'base::ObserverList',
+            'base::CheckedObserver',
+
             # //base/bind_helpers.h.
             'base::DoNothing',
 
@@ -79,6 +91,12 @@ _CONFIG = [
             'base::OnceClosure',
             'base::RepeatingCallback',
             'base::RepeatingClosure',
+
+            # //base/mac/scoped_nsobject.h
+            'base::scoped_nsobject',
+
+            # //base/memory/scoped_policy.h
+            'base::scoped_policy::RETAIN',
 
             # //base/memory/ptr_util.h.
             'base::WrapUnique',
@@ -108,6 +126,9 @@ _CONFIG = [
             'base::IsTypeInRangeForNumericType',
             'base::IsValueNegative',
 
+            # //base/strings/char_traits.h.
+            'base::CharTraits',
+
             # //base/synchronization/waitable_event.h.
             'base::WaitableEvent',
 
@@ -130,10 +151,16 @@ _CONFIG = [
             'base::CheckOr',
             'base::CheckXor',
 
+            # //base/numerics/clamped_math.h.
+            'base::ClampAdd',
+            'base::ClampSub',
+            'base::MakeClampedNum',
+
             # Debugging helpers from //base/debug are allowed everywhere.
             'base::debug::.+',
 
             # Base atomic utilities
+            'base::AtomicFlag',
             'base::AtomicSequenceNumber',
 
             # Task traits
@@ -158,6 +185,7 @@ _CONFIG = [
             # Feature list checking.
             'base::Feature.*',
             'base::FEATURE_.+',
+            "base::GetFieldTrial.*",
             'features::.+',
 
             # PartitionAlloc
@@ -169,11 +197,15 @@ _CONFIG = [
             # cc painting types.
             'cc::PaintCanvas',
             'cc::PaintFlags',
+            'cc::NodeHolder',
+            'cc::TextHolder',
 
             # Chromium geometry types.
             'gfx::Point',
+            'gfx::Point3F',
             'gfx::Rect',
             'gfx::RectF',
+            'gfx::RRectF',
             'gfx::Size',
             'gfx::SizeF',
             'gfx::Transform',
@@ -188,6 +220,7 @@ _CONFIG = [
 
             # Selection bounds.
             'cc::LayerSelection',
+            'cc::LayerSelectionBound',
             'gfx::SelectionBound',
 
             # cc::Layers.
@@ -203,6 +236,7 @@ _CONFIG = [
             'cc::ScrollbarLayerInterface',
             'cc::ScrollbarOrientation',
             'cc::ScrollbarPart',
+            'cc::ViewportLayers',
 
             # cc::Layer helper enums.
             'cc::HORIZONTAL',
@@ -213,9 +247,23 @@ _CONFIG = [
             'cc::EventListenerClass',
             'cc::EventListenerProperties',
 
+            # Animation
+            'cc::AnimationHost',
+
             # Scrolling
+            'cc::MainThreadScrollingReason',
+            'cc::ScrollSnapAlign',
+            'cc::ScrollSnapType',
             'cc::ScrollOffsetAnimationCurve',
             'cc::ScrollStateData',
+            'cc::SnapAlignment',
+            'cc::SnapAreaData',
+            'cc::SnapAxis',
+            'cc::SnapContainerData',
+            'cc::SnapFlingClient',
+            'cc::SnapFlingController',
+            'cc::SnapSelectionStrategy',
+            'cc::SnapStrictness',
             'gfx::RectToSkRect',
             'gfx::ScrollOffset',
 
@@ -224,7 +272,6 @@ _CONFIG = [
             'url::.+',
 
             # Nested namespaces under the blink namespace
-            'background_scheduler::.+',
             'canvas_heuristic_parameters::.+',
             'compositor_target_property::.+',
             'cors::.+',
@@ -248,14 +295,16 @@ _CONFIG = [
             'root_scroller_util::.+',
             'scheduler::.+',
             'scroll_customization::.+',
+            'scroll_timeline_util::.+',
             'style_change_extra_data::.+',
             'style_change_reason::.+',
             'svg_path_parser::.+',
-            'trace_event::.+',
             'touch_action_util::.+',
+            'trace_event::.+',
             'unicode::.+',
             'vector_math::.+',
             'web_core_test_support::.+',
+            'worker_pool::.+',
             'xpath::.+',
             '[a-z_]+_names::.+',
 
@@ -303,8 +352,22 @@ _CONFIG = [
             # STL types such as std::unique_ptr are encouraged.
             'std::.+',
 
+            # UI Keyconverter
+            'ui::DomCode',
+            'ui::DomKey',
+            'ui::KeycodeConverter',
+
             # Blink uses UKM for logging e.g. always-on leak detection (crbug/757374)
             'ukm::.+',
+
+            # Permit using crash keys inside Blink without jumping through
+            # hoops.
+            'crash_reporter::.*CrashKey.*',
+
+            # Useful for platform-specific code.
+            'base::mac::(CFToNSCast|NSToCFCast)',
+            'base::mac::Is(AtMost|AtLeast)?OS.+',
+            'base::(scoped_nsobject|ScopedCFTypeRef)',
         ],
         'disallowed': [
             '.+',
@@ -317,10 +380,32 @@ _CONFIG = [
         'allowed': ['gin::.+'],
     },
     {
+        'paths': ['third_party/blink/renderer/bindings/core/v8/script_streamer.cc'],
+        'allowed': [
+            # For the script streaming to be able to block when reading from a
+            # mojo datapipe.
+            'base::ScopedAllowBaseSyncPrimitives',
+            'base::ScopedBlockingCall',
+            'base::BlockingType',
+        ],
+    },
+    {
         'paths': ['third_party/blink/renderer/bindings/core/v8/v8_gc_for_context_dispose.cc'],
         'allowed': [
             # For memory reduction histogram.
             'base::ProcessMetrics',
+        ],
+    },
+    {
+        'paths': ['third_party/blink/renderer/controller/oom_intervention_impl.cc'],
+        'allowed': [
+            'base::BindOnce',
+        ],
+    },
+    {
+        'paths': ['third_party/blink/renderer/controller/user_level_memory_pressure_signal_generator.cc'],
+        'allowed': [
+            'base::MemoryPressureListener',
         ],
     },
     {
@@ -401,6 +486,15 @@ _CONFIG = [
         ],
     },
     {
+        'paths': ['third_party/blink/renderer/core/inspector/inspector_overlay_agent.cc'],
+        'allowed': [
+            # cc painting types.
+            'cc::ContentLayerClient',
+            'cc::DisplayItemList',
+            'cc::DrawRecordOp',
+        ],
+    },
+    {
         'paths': ['third_party/blink/renderer/core/inspector/inspector_performance_agent.cc'],
         'allowed': [
             'base::subtle::TimeTicksNowIgnoringOverride',
@@ -431,6 +525,22 @@ _CONFIG = [
             'gpu::MailboxHolder',
             'display::Display',
         ],
+    },
+    {
+        'paths': [
+            'third_party/blink/renderer/modules/media_capabilities/',
+        ],
+        'allowed': [
+            'media::.+',
+        ]
+    },
+    {
+        'paths': [
+            'third_party/blink/renderer/modules/mediastream/',
+        ],
+        'allowed': [
+            'media::.+',
+        ]
     },
     {
         'paths': [
@@ -548,6 +658,22 @@ _CONFIG = [
             'absl::.+',
             'base::OnTaskRunnerDeleter',
             'sigslot::.+',
+        ],
+    },
+    # TODO(https://crbug.com/704441) : Added temporarily.
+    {
+        'paths': ['third_party/blink/renderer/modules/exported/web_manifest_parser.cc'],
+        'allowed': [
+            'base::StringPiece',
+            'GURL',
+        ],
+    },
+    {
+        'paths': ['third_party/blink/renderer/modules/manifest/'],
+        'allowed': [
+            'base::.+',
+            'net::ParseMimeTypeWithoutParameter',
+            'GURL',
         ],
     }
 ]

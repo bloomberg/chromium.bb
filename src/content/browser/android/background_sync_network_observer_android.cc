@@ -4,6 +4,7 @@
 
 #include "content/browser/android/background_sync_network_observer_android.h"
 
+#include "base/bind.h"
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "jni/BackgroundSyncNetworkObserver_jni.h"
@@ -15,14 +16,14 @@ namespace content {
 // static
 scoped_refptr<BackgroundSyncNetworkObserverAndroid::Observer>
 BackgroundSyncNetworkObserverAndroid::Observer::Create(
-    base::Callback<void(network::mojom::ConnectionType)> callback) {
+    base::RepeatingCallback<void(network::mojom::ConnectionType)> callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   scoped_refptr<BackgroundSyncNetworkObserverAndroid::Observer> observer(
       new BackgroundSyncNetworkObserverAndroid::Observer(callback));
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
-      base::Bind(&BackgroundSyncNetworkObserverAndroid::Observer::Init,
-                 observer));
+      base::BindOnce(&BackgroundSyncNetworkObserverAndroid::Observer::Init,
+                     observer));
   return observer;
 }
 
@@ -52,12 +53,12 @@ void BackgroundSyncNetworkObserverAndroid::Observer::
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
-      base::Bind(callback_, static_cast<network::mojom::ConnectionType>(
-                                new_connection_type)));
+      base::BindOnce(callback_, static_cast<network::mojom::ConnectionType>(
+                                    new_connection_type)));
 }
 
 BackgroundSyncNetworkObserverAndroid::Observer::Observer(
-    base::Callback<void(network::mojom::ConnectionType)> callback)
+    base::RepeatingCallback<void(network::mojom::ConnectionType)> callback)
     : callback_(callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }

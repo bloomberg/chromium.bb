@@ -1,5 +1,5 @@
 <style>
-  div.scroll {
+  div#scroller {
     /* The div displays one line of text at once. */
     line-height: 1.5em;
     height: 1.5em;
@@ -7,7 +7,7 @@
   }
 </style>
 
-<div class="scroll">
+<div id="scroller">
   <a href="#" id="a">a</a><br>
   <a href="#" id="b">b</a>
 </div>
@@ -21,6 +21,7 @@ var resultMap = [
   ["Down", "a"], // Scrolled so no focus change.
   ["Down", "b"],
   ["Down", "c"],
+  ["Up", "scroller"],
   ["Up", "b"],
   ["Up", "b"],   // Scrolled so no focus change.
   ["Up", "a"],

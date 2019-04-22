@@ -16,7 +16,6 @@
 <translation id="152892567002884378">Augmenter le volume</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, puis <ph name="ESC" /></translation>
 <translation id="1652741121070700329">Atteindre le début du mot précédent</translation>
-<translation id="1671169355475348905">Revenir à la méthode de saisie de la langue précédente</translation>
 <translation id="1679841710523778799">Augmenter la luminosité</translation>
 <translation id="168356808214100546">Appuyez de manière prolongée sur <ph name="ALT" />, puis appuyez sur <ph name="TAB" /> pour sélectionner la fenêtre de votre choix et relâchez pour l'ouvrir.</translation>
 <translation id="169515659049020177">Maj</translation>
@@ -33,6 +32,7 @@
 <translation id="2181097965834437145">Afficher ou masquer la barre de favoris</translation>
 <translation id="2185166372312820725">Accéder à l'onglet précédent</translation>
 <translation id="2194790690264064655">Appuyez sur <ph name="CTRL" /> et cliquez sur un lien</translation>
+<translation id="2246352309084894470">Ouvrir/Fermer le Lanceur d'applications en plein écran</translation>
 <translation id="2382644247745281995">Non compatible avec la disposition de clavier actuelle</translation>
 <translation id="2397416548179033562">Afficher le menu Chrome</translation>
 <translation id="2424073332829844142">Activer et désactiver le verrouillage des majuscules</translation>
@@ -44,7 +44,6 @@
 <translation id="2574014812750545982">Réinitialiser le niveau de zoom de la page</translation>
 <translation id="2596078834055697711">Faire une capture de la fenêtre</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, puis <ph name="TAB" /> ou <ph name="RIGHT" /></translation>
-<translation id="2687057317448262550">Passer au mode de saisie de la langue suivante</translation>
 <translation id="2699509451653686398">Enregistrer la page Web active dans les favoris</translation>
 <translation id="2750942583782703988">Actualiser la page active</translation>
 <translation id="2764005613199379871">Mettre en évidence la barre d'adresse et de recherche</translation>
@@ -147,6 +146,7 @@
 <translation id="671928215901716392">Verrouillage d'écran</translation>
 <translation id="6727005317916125192">Volet précédent</translation>
 <translation id="6740781404993465795">Sélectionner la lettre ou le mot suivants</translation>
+<translation id="6755851152783057058">Passer au dernier mode de saisie utilisé</translation>
 <translation id="6760706756348334449">Baisser le volume</translation>
 <translation id="6941333068993625698">Envoyer des commentaires</translation>
 <translation id="6981982820502123353">Accessibilité</translation>
@@ -157,6 +157,7 @@
 <translation id="7237562915163138771">Saisissez une adresse Web dans la barre d'adresse, puis appuyez sur <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /></translation>
 <translation id="7254764037241667478">Mettre l'appareil en mode veille (suspendre)</translation>
 <translation id="7379254767514753910"><ph name="ALT" /> ou <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
+<translation id="7422707470576323858">Passer au mode de saisie disponible suivant</translation>
 <translation id="743754632698445141">Annuler l'épinglage d'une application</translation>
 <translation id="7439718573248533901">Supprimer la lettre suivante (suppression avant)</translation>
 <translation id="7611271430932669992">Passer aux fenêtres pop-up et aux boîtes de dialogue</translation>

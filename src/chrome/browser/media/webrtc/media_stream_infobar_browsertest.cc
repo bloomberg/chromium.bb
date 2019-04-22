@@ -22,12 +22,12 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/media_stream_request.h"
 #include "content/public/common/origin_util.h"
 #include "content/public/test/browser_test_utils.h"
 #include "media/base/media_switches.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "third_party/blink/public/common/mediastream/media_stream_request.h"
 
 // MediaStreamPermissionTest ---------------------------------------------------
 
@@ -74,8 +74,8 @@ class MediaStreamPermissionTest : public WebRtcTestBase {
 
   // Dummy callback for when we deny the current request directly.
   static void OnMediaStreamResponse(
-      const content::MediaStreamDevices& devices,
-      content::MediaStreamRequestResult result,
+      const blink::MediaStreamDevices& devices,
+      blink::MediaStreamRequestResult result,
       std::unique_ptr<content::MediaStreamUI> ui) {}
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamPermissionTest);

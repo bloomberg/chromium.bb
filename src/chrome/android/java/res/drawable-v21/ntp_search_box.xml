@@ -8,6 +8,6 @@
     android:color="@color/modern_grey_400" >
 
     <item
-        android:drawable="@drawable/modern_toolbar_background"/>
+        android:drawable="@drawable/modern_toolbar_text_box_background"/>
 
 </ripple>

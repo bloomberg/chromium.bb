@@ -25,8 +25,8 @@ class CXFA_Box : public CXFA_Node {
  public:
   ~CXFA_Box() override;
 
-  XFA_AttributeEnum GetPresence();
-  std::tuple<XFA_AttributeEnum, bool, float> Get3DStyle();
+  XFA_AttributeValue GetPresence();
+  std::tuple<XFA_AttributeValue, bool, float> Get3DStyle();
 
   int32_t CountEdges();
   CXFA_Edge* GetEdgeIfExists(int32_t nIndex);
@@ -45,12 +45,11 @@ class CXFA_Box : public CXFA_Node {
            uint32_t validPackets,
            XFA_ObjectType oType,
            XFA_Element eType,
-           const PropertyData* properties,
-           const AttributeData* attributes,
-           const WideStringView& elementName,
+           pdfium::span<const PropertyData> properties,
+           pdfium::span<const AttributeData> attributes,
            std::unique_ptr<CJX_Object> js_node);
 
-  XFA_AttributeEnum GetHand();
+  XFA_AttributeValue GetHand();
 
  private:
   bool IsCircular();

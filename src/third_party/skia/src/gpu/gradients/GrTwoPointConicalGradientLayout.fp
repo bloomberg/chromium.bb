@@ -119,14 +119,14 @@ void main() {
         break;
     }
 
-    sk_OutColor = half4(t, v, 0, 0);
+    sk_OutColor = half4(half(t), v, 0, 0);
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
 @header {
     #include "SkTwoPointConicalGradient.h"
-    #include "GrGradientShader.h"
+    #include "../GrGradientShader.h"
 }
 
 // The 2 point conical gradient can reject a pixel so it does change opacity

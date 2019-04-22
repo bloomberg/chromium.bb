@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
@@ -73,7 +73,7 @@ void VersionInfoUpdater::StartUpdate(bool is_official_build) {
         base::Bind(&VersionInfoUpdater::OnVersion,
                    weak_pointer_factory_.GetWeakPtr()));
   } else {
-    UpdateVersionLabel();
+    OnVersion("linux-chromeos");
   }
 
   policy::BrowserPolicyConnectorChromeOS* connector =
@@ -91,13 +91,13 @@ void VersionInfoUpdater::StartUpdate(bool is_official_build) {
   // Watch for changes to the reporting flags.
   base::Closure callback = base::Bind(&VersionInfoUpdater::UpdateEnterpriseInfo,
                                       base::Unretained(this));
-  for (unsigned int i = 0; i < arraysize(kReportingFlags); ++i) {
+  for (unsigned int i = 0; i < base::size(kReportingFlags); ++i) {
     subscriptions_.push_back(
         cros_settings_->AddSettingsObserver(kReportingFlags[i], callback));
   }
 
   // Update device bluetooth info.
-  device::BluetoothAdapterFactory::GetAdapter(base::Bind(
+  device::BluetoothAdapterFactory::GetAdapter(base::BindOnce(
       &VersionInfoUpdater::OnGetAdapter, weak_pointer_factory_.GetWeakPtr()));
 }
 
@@ -112,10 +112,6 @@ void VersionInfoUpdater::UpdateVersionLabel() {
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
       base::UTF8ToUTF16(version_info::GetVersionNumber()),
       base::UTF8ToUTF16(version_text_), base::UTF8ToUTF16(serial_number_text_));
-
-  // Workaround over incorrect width calculation in old fonts.
-  // TODO(glotov): remove the following line when new fonts are used.
-  label_text += ' ';
 
   if (delegate_)
     delegate_->OnOSVersionLabelTextUpdated(label_text);

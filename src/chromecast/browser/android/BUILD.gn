@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//chromecast/chromecast.gni")
 import("//build/config/android/rules.gni")
+import("//chromecast/chromecast.gni")
 import("//media/media_options.gni")
 
 assert(is_android)
@@ -93,7 +93,7 @@ android_library("reactive_android_java") {
   deps = [
     "//base:base_java",
     "//chromecast/base:base_java",
-    "//third_party/android_deps:android_support_core_utils_java",
+    "//third_party/android_deps:com_android_support_support_core_utils_java",
   ]
 }
 
@@ -129,6 +129,7 @@ android_library("cast_shell_java") {
   srcjar_deps = [
     ":cast_shell_build_config_gen",
     ":logs_provider_aidl",
+    "//chromecast/browser:java_enums",
   ]
 
   deps = [
@@ -142,12 +143,13 @@ android_library("cast_shell_java") {
     "//components/crash/android:java",
     "//components/embedder_support/android:content_view_java",
     "//components/embedder_support/android:view_java",
+    "//components/minidump_uploader:minidump_uploader_java",
     "//content/public/android:content_java",
     "//media/base/android:media_java",
     "//net/android:net_java",
 
     # TODO(slan): We may need to pass this in as a parameter.
-    "//third_party/android_deps:android_support_core_utils_java",
+    "//third_party/android_deps:com_android_support_support_core_utils_java",
     "//ui/android:ui_java",
   ]
 
@@ -155,12 +157,31 @@ android_library("cast_shell_java") {
     deps += [ "//chromecast/media/cma/backend/android:audio_track_java" ]
   }
 
-  if (is_android_things_non_public && !build_for_android_things_n) {
-    java_files += [ "$java_src_dir/org/chromium/chromecast/shell/CastSysInfoAndroidThings.java" ]
-    deps += [ "//chromecast/internal/android/prebuilt/things:support_lib_java" ]
+  if (is_android_things_non_public) {
+    deps += [ ":cast_shell_android_things_sys_info_java" ]
     if (enable_assistant) {
       deps += [ "//chromecast/internal/assistant/ui:boot_parameters_java" ]
     }
+  }
+}
+
+if (is_android_things_non_public && !build_for_android_things_n) {
+  android_library("cast_shell_android_things_sys_info_java") {
+    java_files = [ "//chromecast/browser/android/apk/src/org/chromium/chromecast/shell/CastSysInfoAndroidThings.java" ]
+    deps = [
+      "//base:base_java",
+      "//chromecast/internal/android/prebuilt/things:support_lib_java",
+    ]
+  }
+
+  generate_jni("cast_shell_android_things_sys_info_jni_headers") {
+    sources = [
+      "//chromecast/browser/android/apk/src/org/chromium/chromecast/shell/CastSysInfoAndroidThings.java",
+    ]
+    deps = [
+      "//chromecast/internal/android/prebuilt/things:support_lib_java",
+    ]
+    jni_package = "chromecast"
   }
 }
 
@@ -189,7 +210,7 @@ junit_binary("cast_shell_junit_tests") {
     "//base:base_junit_test_support",
     "//chromecast/base:cast_base_test_utils_java",
     "//content/public/android:content_java",
-    "//third_party/android_deps:android_support_core_utils_java",
+    "//third_party/android_deps:com_android_support_support_core_utils_java",
     "//third_party/hamcrest:hamcrest_java",
   ]
 }

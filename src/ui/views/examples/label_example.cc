@@ -6,8 +6,8 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/vector2d.h"
@@ -35,10 +35,8 @@ const char* kAlignments[] = { "Left", "Center", "Right", "Head" };
 // A Label with a clamped preferred width to demonstrate eliding or wrapping.
 class ExamplePreferredSizeLabel : public Label {
  public:
-  ExamplePreferredSizeLabel() : Label() {
-    SetBorder(CreateSolidBorder(1, SK_ColorGRAY));
-  }
-  ~ExamplePreferredSizeLabel() override {}
+  ExamplePreferredSizeLabel() { SetBorder(CreateSolidBorder(1, SK_ColorGRAY)); }
+  ~ExamplePreferredSizeLabel() override = default;
 
   // Label:
   gfx::Size CalculatePreferredSize() const override {
@@ -58,15 +56,7 @@ const char* ExamplePreferredSizeLabel::kElideBehaviors[] = {
 
 }  // namespace
 
-LabelExample::LabelExample()
-    : ExampleBase("Label"),
-      textfield_(NULL),
-      alignment_(NULL),
-      elide_behavior_(NULL),
-      multiline_(NULL),
-      shadows_(NULL),
-      custom_label_(NULL) {
-}
+LabelExample::LabelExample() : ExampleBase("Label") {}
 
 LabelExample::~LabelExample() = default;
 
@@ -143,7 +133,7 @@ void LabelExample::ButtonPressed(Button* button, const ui::Event& event) {
   } else if (button == selectable_) {
     custom_label_->SetSelectable(selectable_->checked());
   }
-  custom_label_->parent()->parent()->Layout();
+  custom_label_->parent()->parent()->InvalidateLayout();
   custom_label_->SchedulePaint();
 }
 
@@ -160,7 +150,7 @@ void LabelExample::OnPerformAction(Combobox* combobox) {
 void LabelExample::ContentsChanged(Textfield* sender,
                                    const base::string16& new_contents) {
   custom_label_->SetText(new_contents);
-  custom_label_->parent()->parent()->Layout();
+  custom_label_->parent()->parent()->InvalidateLayout();
 }
 
 void LabelExample::AddCustomLabel(View* container) {
@@ -181,15 +171,15 @@ void LabelExample::AddCustomLabel(View* container) {
   textfield_ = new Textfield();
   textfield_->SetText(ASCIIToUTF16("Use the provided controls to configure the "
       "content and presentation of this custom label."));
-  textfield_->SetSelectionRange(gfx::Range());
+  textfield_->SetEditableSelectionRange(gfx::Range());
   textfield_->set_controller(this);
   layout->AddView(textfield_);
 
-  alignment_ = AddCombobox(layout, "Alignment: ", kAlignments,
-                           arraysize(kAlignments));
+  alignment_ =
+      AddCombobox(layout, "Alignment: ", kAlignments, base::size(kAlignments));
   elide_behavior_ = AddCombobox(
       layout, "Elide Behavior: ", ExamplePreferredSizeLabel::kElideBehaviors,
-      arraysize(ExamplePreferredSizeLabel::kElideBehaviors));
+      base::size(ExamplePreferredSizeLabel::kElideBehaviors));
 
   column_set = layout->AddColumnSet(1);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::LEADING,

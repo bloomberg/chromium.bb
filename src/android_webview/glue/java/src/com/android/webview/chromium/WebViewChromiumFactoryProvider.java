@@ -8,6 +8,7 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.net.Uri;
 import android.os.Build;
@@ -32,6 +33,8 @@ import com.android.webview.chromium.WebViewDelegateFactory.WebViewDelegate;
 import org.chromium.android_webview.AwAutofillProvider;
 import org.chromium.android_webview.AwBrowserContext;
 import org.chromium.android_webview.AwBrowserProcess;
+import org.chromium.android_webview.AwSettings;
+import org.chromium.android_webview.AwSwitches;
 import org.chromium.android_webview.ResourcesContextWrapperFactory;
 import org.chromium.android_webview.ScopedSysTraceEvent;
 import org.chromium.android_webview.WebViewChromiumRunQueue;
@@ -56,7 +59,6 @@ import java.io.File;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Entry point to the WebView. The system framework talks to this class to get instances of the
@@ -126,7 +128,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
     private SharedPreferences mWebViewPrefs;
     private WebViewDelegate mWebViewDelegate;
 
-    private boolean mShouldDisableThreadChecking;
+    protected boolean mShouldDisableThreadChecking;
 
     // Initialization guarded by mAwInit.getLock()
     private Statics mStaticsAdapter;
@@ -198,6 +200,11 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
                         ScopedSysTraceEvent.scoped("WebViewChromiumFactoryProvider.createAwInit")) {
             return new WebViewChromiumAwInit(this);
         }
+    }
+
+    // Protected to allow downstream to override.
+    protected ContentSettingsAdapter createContentSettingsAdapter(AwSettings settings) {
+        return new ContentSettingsAdapter(settings);
     }
 
     private void deleteContentsOnPackageDowngrade(PackageInfo packageInfo) {
@@ -281,10 +288,20 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
             }
             if (multiProcess) {
                 CommandLine cl = CommandLine.getInstance();
-                cl.appendSwitch("webview-sandboxed-renderer");
+                cl.appendSwitch(AwSwitches.WEBVIEW_SANDBOXED_RENDERER);
             }
 
-            ThreadUtils.setWillOverrideUiThread();
+            int applicationFlags = ContextUtils.getApplicationContext().getApplicationInfo().flags;
+            boolean isAppDebuggable = (applicationFlags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
+            boolean isOsDebuggable = BuildInfo.isDebugAndroid();
+            // Enable logging JS console messages in system logs only if the app is debuggable or
+            // it's a debugable android build.
+            if (isAppDebuggable || isOsDebuggable) {
+                CommandLine cl = CommandLine.getInstance();
+                cl.appendSwitch(AwSwitches.WEBVIEW_LOG_JS_CONSOLE_MESSAGES);
+            }
+
+            ThreadUtils.setWillOverrideUiThread(true);
             BuildInfo.setBrowserPackageInfo(packageInfo);
 
             try (StrictModeContext smc = StrictModeContext.allowDiskWrites()) {
@@ -315,8 +332,8 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
             setSingleton(this);
         }
 
-        TimesHistogramSample histogram = new TimesHistogramSample(
-                "Android.WebView.Startup.CreationTime.Stage1.FactoryInit", TimeUnit.MILLISECONDS);
+        TimesHistogramSample histogram =
+                new TimesHistogramSample("Android.WebView.Startup.CreationTime.Stage1.FactoryInit");
         histogram.record(SystemClock.elapsedRealtime() - startTime);
     }
 
@@ -445,6 +462,10 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
                     public Uri getSafeBrowsingPrivacyPolicyUrl() {
                         return sharedStatics.getSafeBrowsingPrivacyPolicyUrl();
                     }
+
+                    public boolean isMultiProcessEnabled() {
+                        return sharedStatics.isMultiProcessEnabled();
+                    }
                 };
             }
         }
@@ -522,7 +543,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
 
     @Override
     public TokenBindingService getTokenBindingService() {
-        return mAwInit.getTokenBindingService();
+        return null;
     }
 
     @Override

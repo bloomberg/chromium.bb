@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "content/common/content_export.h"
+#include "content/public/common/previews_state.h"
 
 namespace net {
 class HttpRequestHeaders;
@@ -57,11 +58,12 @@ class CONTENT_EXPORT NavigationURLLoader {
   virtual ~NavigationURLLoader() {}
 
   // Called in response to OnRequestRedirected to continue processing the
-  // request.
-  virtual void FollowRedirect(const base::Optional<std::vector<std::string>>&
-                                  to_be_removed_request_headers,
-                              const base::Optional<net::HttpRequestHeaders>&
-                                  modified_request_headers) = 0;
+  // request. |new_previews_state| will be updated for newly created URLLoaders,
+  // but the existing default URLLoader will not see |new_previews_state| unless
+  // the URLLoader happens to be reset.
+  virtual void FollowRedirect(const std::vector<std::string>& removed_headers,
+                              const net::HttpRequestHeaders& modified_headers,
+                              PreviewsState new_previews_state) = 0;
 
   // Called in response to OnResponseStarted to process the response.
   virtual void ProceedWithResponse() = 0;

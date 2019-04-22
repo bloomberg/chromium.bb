@@ -10,15 +10,12 @@ using base::android::JavaParamRef;
 
 namespace ui {
 
-jlong JNI_ResourceFactory_CreateBitmapResource(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& clazz) {
+jlong JNI_ResourceFactory_CreateBitmapResource(JNIEnv* env) {
   return reinterpret_cast<intptr_t>(new Resource());
 }
 
 jlong JNI_ResourceFactory_CreateNinePatchBitmapResource(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     jint padding_left,
     jint padding_top,
     jint padding_right,

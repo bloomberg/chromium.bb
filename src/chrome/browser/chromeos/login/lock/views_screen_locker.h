@@ -12,9 +12,9 @@
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
-#include "chromeos/dbus/media_analytics_client.h"
+#include "chromeos/dbus/media_analytics/media_analytics_client.h"
 #include "chromeos/dbus/media_perception/media_perception.pb.h"
-#include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 
 namespace chromeos {
 
@@ -39,19 +39,14 @@ class ViewsScreenLocker : public LoginScreenClient::Delegate,
   void OnLockScreenReady();
 
   // ScreenLocker::Delegate:
-  void SetPasswordInputEnabled(bool enabled) override;
   void ShowErrorMessage(int error_msg_id,
                         HelpAppLauncher::HelpTopic help_topic_id) override;
   void ClearErrors() override;
-  void OnLockWebUIReady() override;
-  void OnLockBackgroundDisplayed() override;
-  void OnHeaderBarVisible() override;
   void OnAshLockAnimationFinished() override;
   void SetFingerprintState(const AccountId& account_id,
                            ash::mojom::FingerprintState state) override;
   void NotifyFingerprintAuthResult(const AccountId& account_id,
                                    bool success) override;
-  content::WebContents* GetWebContents() override;
 
   // LoginScreenClient::Delegate
   void HandleAuthenticateUserWithPasswordOrPin(
@@ -71,7 +66,6 @@ class ViewsScreenLocker : public LoginScreenClient::Delegate,
   void HandleOnNoPodFocused() override;
   bool HandleFocusLockScreenApps(bool reverse) override;
   void HandleFocusOobeDialog() override;
-  void HandleLoginAsGuest() override;
   void HandleLaunchPublicSession(const AccountId& account_id,
                                  const std::string& locale,
                                  const std::string& input_method) override;

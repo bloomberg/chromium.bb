@@ -65,24 +65,27 @@ void TestUploadDataStreamHandler::Init(JNIEnv* env,
                                        const JavaParamRef<jobject>& jcaller) {
   DCHECK(!network_thread_->BelongsToCurrentThread());
   network_thread_->PostTask(
-      FROM_HERE, base::Bind(&TestUploadDataStreamHandler::InitOnNetworkThread,
-                            base::Unretained(this)));
+      FROM_HERE,
+      base::BindOnce(&TestUploadDataStreamHandler::InitOnNetworkThread,
+                     base::Unretained(this)));
 }
 
 void TestUploadDataStreamHandler::Read(JNIEnv* env,
                                        const JavaParamRef<jobject>& jcaller) {
   DCHECK(!network_thread_->BelongsToCurrentThread());
   network_thread_->PostTask(
-      FROM_HERE, base::Bind(&TestUploadDataStreamHandler::ReadOnNetworkThread,
-                            base::Unretained(this)));
+      FROM_HERE,
+      base::BindOnce(&TestUploadDataStreamHandler::ReadOnNetworkThread,
+                     base::Unretained(this)));
 }
 
 void TestUploadDataStreamHandler::Reset(JNIEnv* env,
                                         const JavaParamRef<jobject>& jcaller) {
   DCHECK(!network_thread_->BelongsToCurrentThread());
   network_thread_->PostTask(
-      FROM_HERE, base::Bind(&TestUploadDataStreamHandler::ResetOnNetworkThread,
-                            base::Unretained(this)));
+      FROM_HERE,
+      base::BindOnce(&TestUploadDataStreamHandler::ResetOnNetworkThread,
+                     base::Unretained(this)));
 }
 
 void TestUploadDataStreamHandler::CheckInitCallbackNotInvoked(
@@ -90,9 +93,9 @@ void TestUploadDataStreamHandler::CheckInitCallbackNotInvoked(
     const JavaParamRef<jobject>& jcaller) {
   DCHECK(!network_thread_->BelongsToCurrentThread());
   network_thread_->PostTask(
-      FROM_HERE, base::Bind(&TestUploadDataStreamHandler::
-                                CheckInitCallbackNotInvokedOnNetworkThread,
-                            base::Unretained(this)));
+      FROM_HERE, base::BindOnce(&TestUploadDataStreamHandler::
+                                    CheckInitCallbackNotInvokedOnNetworkThread,
+                                base::Unretained(this)));
 }
 
 void TestUploadDataStreamHandler::CheckReadCallbackNotInvoked(
@@ -100,9 +103,9 @@ void TestUploadDataStreamHandler::CheckReadCallbackNotInvoked(
     const JavaParamRef<jobject>& jcaller) {
   DCHECK(!network_thread_->BelongsToCurrentThread());
   network_thread_->PostTask(
-      FROM_HERE, base::Bind(&TestUploadDataStreamHandler::
-                                CheckReadCallbackNotInvokedOnNetworkThread,
-                            base::Unretained(this)));
+      FROM_HERE, base::BindOnce(&TestUploadDataStreamHandler::
+                                    CheckReadCallbackNotInvokedOnNetworkThread,
+                                base::Unretained(this)));
 }
 
 void TestUploadDataStreamHandler::InitOnNetworkThread() {

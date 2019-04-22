@@ -14,8 +14,8 @@
 #include "base/logging.h"
 #include "base/mac/scoped_mach_port.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
-#include "base/macros.h"
 #include "base/process/process_metrics.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 
@@ -27,7 +27,7 @@ namespace {
 // system or the empty string on failure.
 std::string GetSysctlValue(const char* key_name) {
   char value[256];
-  size_t len = arraysize(value);
+  size_t len = base::size(value);
   if (sysctlbyname(key_name, &value, &len, nullptr, 0) == 0) {
     DCHECK_GE(len, 1u);
     DCHECK_EQ('\0', value[len - 1]);
@@ -81,6 +81,18 @@ void SysInfo::OperatingSystemVersionNumbers(int32_t* major_version,
     if (num_read < 3)
       *bugfix_version = 0;
   }
+}
+
+// static
+std::string SysInfo::GetIOSBuildNumber() {
+  int mib[2] = {CTL_KERN, KERN_OSVERSION};
+  unsigned int namelen = sizeof(mib) / sizeof(mib[0]);
+  size_t buffer_size = 0;
+  sysctl(mib, namelen, nullptr, &buffer_size, nullptr, 0);
+  char build_number[buffer_size];
+  int result = sysctl(mib, namelen, build_number, &buffer_size, nullptr, 0);
+  DCHECK(result == 0);
+  return build_number;
 }
 
 // static

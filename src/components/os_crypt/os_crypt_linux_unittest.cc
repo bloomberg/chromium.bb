@@ -20,7 +20,7 @@ class OSCryptLinuxTest : public testing::Test {
  public:
   OSCryptLinuxTest() : key_("something") { key_ptr_ = &key_; }
 
-  ~OSCryptLinuxTest() override { key_ptr_ = nullptr; };
+  ~OSCryptLinuxTest() override { key_ptr_ = nullptr; }
 
   void SetUp() override {
     OSCryptMockerLinux::SetUp();

@@ -92,8 +92,8 @@ class CONTENT_EXPORT BrowserPlugin : public blink::WebPlugin,
   // currently attached to, if any.
   void Detach();
 
-  // Returns the last allocated LocalSurfaceId.
-  const viz::LocalSurfaceId& GetLocalSurfaceId() const;
+  // Returns the last allocated LocalSurfaceIdAllocation.
+  const viz::LocalSurfaceIdAllocation& GetLocalSurfaceIdAllocation() const;
 
   const viz::FrameSinkId& frame_sink_id() const { return frame_sink_id_; }
 

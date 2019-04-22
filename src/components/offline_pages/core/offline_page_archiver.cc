@@ -56,8 +56,7 @@ PublishArchiveResult MoveAndRegisterArchive(
   bool moved = base::Move(offline_page.file_path, new_file_path);
   if (!moved) {
     archive_result.move_result = SavePageResult::FILE_MOVE_FAILED;
-    DVLOG(0) << "OfflinePage publishing file move failure errno is " << errno
-             << " " << __func__;
+    DVPLOG(0) << "OfflinePage publishing file move failure " << __func__;
     base::UmaHistogramSparse("OfflinePages.PublishArchive.MoveFileError",
                              errno);
 

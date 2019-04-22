@@ -88,10 +88,6 @@ protected:
     void drawPath(const SkPath& path,
                   const SkPaint& paint,
                   bool pathIsMutable = false) override;
-    void drawBitmap(const SkBitmap& bitmap,
-                    SkScalar x,
-                    SkScalar y,
-                    const SkPaint& paint) override;
     void drawSprite(const SkBitmap& bitmap,
                     int x, int y, const SkPaint& paint) override;
     void drawBitmapRect(const SkBitmap&,
@@ -173,7 +169,7 @@ private:
     HRESULT createXpsImageBrush(
         const SkBitmap& bitmap,
         const SkMatrix& localMatrix,
-        const SkShader::TileMode (&xy)[2],
+        const SkTileMode (&xy)[2],
         const SkAlpha alpha,
         IXpsOMTileBrush** xpsBrush);
 

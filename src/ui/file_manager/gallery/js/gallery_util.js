@@ -23,10 +23,11 @@ GalleryUtil.createEntrySet = function(originalEntries) {
     entriesPromise = parentPromise.then(function(parent) {
       var reader = parent.createReader();
       var readEntries = function() {
-        return new Promise(reader.readEntries.bind(reader)).then(
-            function(entries) {
-              if (entries.length === 0)
+        return new Promise(reader.readEntries.bind(reader))
+            .then(function(entries) {
+              if (entries.length === 0) {
                 return [];
+              }
               return readEntries().then(function(nextEntries) {
                 return entries.concat(nextEntries);
               });

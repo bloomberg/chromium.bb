@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <memory>
 
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
@@ -615,7 +616,7 @@ TEST_P(MojoInProcessInterfacePerfTest, MultiThreadPingPong) {
   client_thread.Start();
   client_thread.task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(base::IgnoreResult(&RunPingPongClient), client_handle));
+      base::BindOnce(base::IgnoreResult(&RunPingPongClient), client_handle));
 
   base::MessageLoop main_message_loop;
   RunPingPongServer(server_handle, "SingleProcess");
@@ -634,10 +635,10 @@ TEST_P(MojoInProcessInterfacePerfTest, SingleThreadPingPong) {
   RunPingPongServer(server_handle, "SingleProcess");
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        MojoInProcessInterfacePerfTest,
-                        testing::Values(InProcessMessageMode::kSerialized,
-                                        InProcessMessageMode::kUnserialized));
+INSTANTIATE_TEST_SUITE_P(,
+                         MojoInProcessInterfacePerfTest,
+                         testing::Values(InProcessMessageMode::kSerialized,
+                                         InProcessMessageMode::kUnserialized));
 
 TEST_P(MojoInProcessInterfacePassingPerfTest, MultiThreadInterfacePassing) {
   MojoHandle server_handle, client_handle;
@@ -646,8 +647,8 @@ TEST_P(MojoInProcessInterfacePassingPerfTest, MultiThreadInterfacePassing) {
   base::Thread client_thread("InterfacePassingClient");
   client_thread.Start();
   client_thread.task_runner()->PostTask(
-      FROM_HERE, base::Bind(base::IgnoreResult(&RunInterfacePassingClient),
-                            client_handle));
+      FROM_HERE, base::BindOnce(base::IgnoreResult(&RunInterfacePassingClient),
+                                client_handle));
 
   base::MessageLoop main_message_loop;
   RunInterfacePassingServer(server_handle, "SingleProcess",
@@ -662,8 +663,8 @@ TEST_P(MojoInProcessInterfacePassingPerfTest,
   base::Thread client_thread("InterfacePassingClient");
   client_thread.Start();
   client_thread.task_runner()->PostTask(
-      FROM_HERE, base::Bind(base::IgnoreResult(&RunInterfacePassingClient),
-                            client_handle));
+      FROM_HERE, base::BindOnce(base::IgnoreResult(&RunInterfacePassingClient),
+                                client_handle));
 
   base::MessageLoop main_message_loop;
   RunInterfacePassingServer(server_handle, "SingleProcess",
@@ -699,10 +700,10 @@ TEST_P(MojoInProcessInterfacePassingPerfTest,
                             true /* associated */);
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        MojoInProcessInterfacePassingPerfTest,
-                        testing::Values(InProcessMessageMode::kSerialized,
-                                        InProcessMessageMode::kUnserialized));
+INSTANTIATE_TEST_SUITE_P(,
+                         MojoInProcessInterfacePassingPerfTest,
+                         testing::Values(InProcessMessageMode::kSerialized,
+                                         InProcessMessageMode::kUnserialized));
 
 class CallbackPerfTest : public testing::Test {
  public:
@@ -718,8 +719,8 @@ class CallbackPerfTest : public testing::Test {
     for (size_t i = 0; i < params.size(); i++) {
       std::string hello("hello");
       client_thread_.task_runner()->PostTask(
-          FROM_HERE,
-          base::Bind(&CallbackPerfTest::Ping, base::Unretained(this), hello));
+          FROM_HERE, base::BindOnce(&CallbackPerfTest::Ping,
+                                    base::Unretained(this), hello));
       message_count_ = count_down_ = params[i].message_count();
       payload_ = std::string(params[i].message_size(), 'a');
 
@@ -729,8 +730,8 @@ class CallbackPerfTest : public testing::Test {
 
   void Ping(const std::string& value) {
     main_message_loop_.task_runner()->PostTask(
-        FROM_HERE,
-        base::Bind(&CallbackPerfTest::OnPong, base::Unretained(this), value));
+        FROM_HERE, base::BindOnce(&CallbackPerfTest::OnPong,
+                                  base::Unretained(this), value));
   }
 
   void OnPong(const std::string& value) {
@@ -753,8 +754,8 @@ class CallbackPerfTest : public testing::Test {
     }
 
     client_thread_.task_runner()->PostTask(
-        FROM_HERE,
-        base::Bind(&CallbackPerfTest::Ping, base::Unretained(this), payload_));
+        FROM_HERE, base::BindOnce(&CallbackPerfTest::Ping,
+                                  base::Unretained(this), payload_));
   }
 
   void RunSingleThreadNoPostTaskPingPongServer() {
@@ -794,8 +795,8 @@ class CallbackPerfTest : public testing::Test {
     for (size_t i = 0; i < params.size(); i++) {
       std::string hello("hello");
       base::MessageLoopCurrent::Get()->task_runner()->PostTask(
-          FROM_HERE, base::Bind(&CallbackPerfTest::SingleThreadPingPostTask,
-                                base::Unretained(this), hello));
+          FROM_HERE, base::BindOnce(&CallbackPerfTest::SingleThreadPingPostTask,
+                                    base::Unretained(this), hello));
       message_count_ = count_down_ = params[i].message_count();
       payload_ = std::string(params[i].message_size(), 'a');
 
@@ -805,8 +806,8 @@ class CallbackPerfTest : public testing::Test {
 
   void SingleThreadPingPostTask(const std::string& value) {
     base::MessageLoopCurrent::Get()->task_runner()->PostTask(
-        FROM_HERE, base::Bind(&CallbackPerfTest::SingleThreadPongPostTask,
-                              base::Unretained(this), value));
+        FROM_HERE, base::BindOnce(&CallbackPerfTest::SingleThreadPongPostTask,
+                                  base::Unretained(this), value));
   }
 
   void SingleThreadPongPostTask(const std::string& value) {
@@ -829,8 +830,8 @@ class CallbackPerfTest : public testing::Test {
     }
 
     base::MessageLoopCurrent::Get()->task_runner()->PostTask(
-        FROM_HERE, base::Bind(&CallbackPerfTest::SingleThreadPingPostTask,
-                              base::Unretained(this), payload_));
+        FROM_HERE, base::BindOnce(&CallbackPerfTest::SingleThreadPingPostTask,
+                                  base::Unretained(this), payload_));
   }
 
  private:

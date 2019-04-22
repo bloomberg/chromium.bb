@@ -29,12 +29,16 @@ struct CORE_EXPORT NGUnpositionedFloat final {
   NGUnpositionedFloat& operator=(NGUnpositionedFloat&&) = default;
   NGUnpositionedFloat& operator=(const NGUnpositionedFloat&) = default;
 
+  bool operator==(const NGUnpositionedFloat& other) const {
+    return node == other.node && token == other.token;
+  }
+
   NGBlockNode node;
   scoped_refptr<const NGBlockBreakToken> token;
 
   // layout_result and margins are used as a cache when measuring the
   // inline_size of a float in an inline context.
-  scoped_refptr<NGLayoutResult> layout_result;
+  scoped_refptr<const NGLayoutResult> layout_result;
   NGBoxStrut margins;
 
   bool IsLineLeft(TextDirection direction) const {

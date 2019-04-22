@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/core/frame/web_feature_forward.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
+#include "third_party/blink/renderer/core/workers/worker_navigator.h"
 #include "third_party/blink/renderer/platform/scheduler/public/worker_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/bit_vector.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
@@ -41,10 +42,14 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
   using SecurityContext::GetSecurityOrigin;
   using SecurityContext::GetContentSecurityPolicy;
 
-  WorkerOrWorkletGlobalScope(v8::Isolate*,
-                             WorkerClients*,
-                             scoped_refptr<WebWorkerFetchContext>,
-                             WorkerReportingProxy&);
+  WorkerOrWorkletGlobalScope(
+      v8::Isolate*,
+      const String& name,
+      const base::UnguessableToken& parent_devtools_token,
+      V8CacheOptions,
+      WorkerClients*,
+      scoped_refptr<WebWorkerFetchContext>,
+      WorkerReportingProxy&);
   ~WorkerOrWorkletGlobalScope() override;
 
   // EventTarget
@@ -91,6 +96,9 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
   // WorkletGlobalScope for the main thread) or after Dispose() is called.
   virtual WorkerThread* GetThread() const = 0;
 
+  // Returns nullptr if this global scope is a WorkletGlobalScope
+  virtual WorkerNavigator* navigator() const { return nullptr; }
+
   ResourceFetcher* Fetcher() const override;
   ResourceFetcher* EnsureFetcher();
 
@@ -103,13 +111,20 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
   // ResourceFetcher, and have dependencies to WorkerOrWorkletGlobalScope. Plumb
   // more data to the outside ResourceFetcher to fix the behavior and reduce the
   // dependencies.
-  ResourceFetcher* CreateOutsideSettingsFetcher(FetchClientSettingsObject*);
+  ResourceFetcher* CreateOutsideSettingsFetcher(
+      const FetchClientSettingsObject&);
+
+  const String Name() const { return name_; }
+  const base::UnguessableToken& GetParentDevToolsToken() {
+    return parent_devtools_token_;
+  }
 
   WorkerClients* Clients() const { return worker_clients_.Get(); }
 
   WorkerOrWorkletScriptController* ScriptController() {
     return script_controller_.Get();
   }
+  V8CacheOptions GetV8CacheOptions() const { return v8_cache_options_; }
 
   WorkerReportingProxy& ReportingProxy() { return reporting_proxy_; }
 
@@ -119,26 +134,33 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType) override;
 
  protected:
-  void InitContentSecurityPolicyFromVector(
-      const Vector<CSPHeaderAndType>& headers);
+  // Sets outside's CSP used for off-main-thread top-level worker script
+  // fetch.
+  void SetOutsideContentSecurityPolicyHeaders(const Vector<CSPHeaderAndType>&);
+
+  // Initializes inside's CSP used for subresource fetch etc.
+  void InitContentSecurityPolicyFromVector(const Vector<CSPHeaderAndType>&);
   virtual void BindContentSecurityPolicyToExecutionContext();
 
-  void FetchModuleScript(
-      const KURL& module_url_record,
-      FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
-      mojom::RequestContextType destination,
-      network::mojom::FetchCredentialsMode,
-      ModuleScriptCustomFetchType,
-      ModuleTreeClient*);
+  void FetchModuleScript(const KURL& module_url_record,
+                         const FetchClientSettingsObjectSnapshot&,
+                         mojom::RequestContextType destination,
+                         network::mojom::FetchCredentialsMode,
+                         ModuleScriptCustomFetchType,
+                         ModuleTreeClient*);
 
   void TasksWerePaused() override;
   void TasksWereUnpaused() override;
 
  private:
   void InitializeWebFetchContextIfNeeded();
-  ResourceFetcher* CreateFetcherInternal(FetchClientSettingsObject*);
+  ResourceFetcher* CreateFetcherInternal(const FetchClientSettingsObject&,
+                                         ContentSecurityPolicy&);
 
   bool web_fetch_context_initialized_ = false;
+
+  const String name_;
+  const base::UnguessableToken parent_devtools_token_;
 
   CrossThreadPersistent<WorkerClients> worker_clients_;
 
@@ -164,6 +186,11 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
   Member<SubresourceFilter> subresource_filter_;
 
   Member<WorkerOrWorkletScriptController> script_controller_;
+  const V8CacheOptions v8_cache_options_;
+
+  // TODO(hiroshige): Pass outsideSettings-CSP via
+  // outsideSettings-FetchClientSettingsObject.
+  Vector<CSPHeaderAndType> outside_content_security_policy_headers_;
 
   WorkerReportingProxy& reporting_proxy_;
 
@@ -172,7 +199,7 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
 
   // LocalDOMWindow::modulator_ workaround equivalent.
   // TODO(kouhei): Remove this.
-  TraceWrapperMember<Modulator> modulator_;
+  Member<Modulator> modulator_;
 };
 
 template <>

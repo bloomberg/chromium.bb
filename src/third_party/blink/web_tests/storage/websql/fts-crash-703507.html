@@ -26,7 +26,7 @@ for (let command of ['optimize', 'offsets', 'snippet']) {
       transaction.executeSql(
           `SELECT ${command}(fts3table) FROM main;`, [],
           testCase.unreached_func(`${command} should not succeed`),
-          () => { testCase.done() });
+          testCase.step_func_done());
     }));
   }, `${command} should error out when used with an FTS3 magic column`);
 }

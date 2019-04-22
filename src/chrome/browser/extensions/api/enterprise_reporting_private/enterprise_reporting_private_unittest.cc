@@ -4,13 +4,13 @@
 
 #include "chrome/browser/extensions/api/enterprise_reporting_private/enterprise_reporting_private_api.h"
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/extension_api_unittest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/policy/browser_dm_token_storage.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -82,20 +82,15 @@ class FakeBrowserDMTokenStorage : public policy::BrowserDMTokenStorage {
 class EnterpriseReportingPrivateUploadChromeDesktopReportTest
     : public ExtensionApiUnittest {
  public:
-  EnterpriseReportingPrivateUploadChromeDesktopReportTest()
-      : test_shared_loader_factory_(
-            base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-                &test_url_loader_factory_)) {}
-
-  void TearDown() override { test_shared_loader_factory_->Detach(); }
+  EnterpriseReportingPrivateUploadChromeDesktopReportTest() {}
 
   UIThreadExtensionFunction* CreateChromeDesktopReportingFunction(
       const std::string& dm_token) {
     EnterpriseReportingPrivateUploadChromeDesktopReportFunction* function =
         EnterpriseReportingPrivateUploadChromeDesktopReportFunction::
-            CreateForTesting(test_shared_loader_factory_);
-    auto client =
-        std::make_unique<MockCloudPolicyClient>(test_shared_loader_factory_);
+            CreateForTesting(test_url_loader_factory_.GetSafeWeakWrapper());
+    auto client = std::make_unique<MockCloudPolicyClient>(
+        test_url_loader_factory_.GetSafeWeakWrapper());
     client_ = client.get();
     function->SetCloudPolicyClientForTesting(std::move(client));
     function->SetRegistrationInfoForTesting(dm_token, kFakeClientId);
@@ -118,8 +113,6 @@ class EnterpriseReportingPrivateUploadChromeDesktopReportTest
 
  private:
   network::TestURLLoaderFactory test_url_loader_factory_;
-  scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
-      test_shared_loader_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(
       EnterpriseReportingPrivateUploadChromeDesktopReportTest);

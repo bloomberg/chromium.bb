@@ -9,7 +9,6 @@
 #include "ash/login/ui/animated_rounded_image_view.h"
 #include "ash/login/ui/hover_notifier.h"
 #include "ash/login/ui/image_parser.h"
-#include "ash/login/ui/login_bubble.h"
 #include "ash/login/ui/login_button.h"
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/login/ui/user_switch_flip_animation.h"
@@ -20,6 +19,7 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/user/rounded_image_view.h"
+#include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/user_manager/user_type.h"
@@ -323,8 +323,8 @@ views::View* LoginUserView::TestApi::dropdown() const {
   return view_->dropdown_;
 }
 
-LoginBubble* LoginUserView::TestApi::menu() const {
-  return view_->menu_.get();
+LoginBaseBubbleView* LoginUserView::TestApi::menu() const {
+  return view_->menu_;
 }
 
 views::View* LoginUserView::TestApi::user_domain() const {
@@ -420,7 +420,6 @@ LoginUserView::LoginUserView(
 
   hover_notifier_ = std::make_unique<HoverNotifier>(
       this, base::Bind(&LoginUserView::OnHover, base::Unretained(this)));
-  menu_ = std::make_unique<LoginBubble>();
 }
 
 LoginUserView::~LoginUserView() = default;
@@ -428,6 +427,20 @@ LoginUserView::~LoginUserView() = default;
 void LoginUserView::UpdateForUser(const mojom::LoginUserInfoPtr& user,
                                   bool animate) {
   current_user_ = user->Clone();
+
+  if (menu_ && menu_->parent()) {
+    menu_->parent()->RemoveChildView(menu_);
+    delete menu_;
+  }
+
+  menu_ = new LoginUserMenuView(
+      base::UTF8ToUTF16(current_user_->basic_user_info->display_name),
+      base::UTF8ToUTF16(current_user_->basic_user_info->display_email),
+      current_user_->basic_user_info->type, current_user_->is_device_owner,
+      dropdown_ /*anchor_view*/, dropdown_ /*bubble_opener*/,
+      current_user_->can_remove /*show_remove_user*/, on_remove_warning_shown_,
+      on_remove_);
+  menu_->SetVisible(false);
 
   if (animate) {
     // Stop any existing animation.
@@ -525,17 +538,29 @@ void LoginUserView::ButtonPressed(views::Button* sender,
   // Handle click on the dropdown arrow.
   if (sender == dropdown_) {
     DCHECK(dropdown_);
-    if (!menu_->IsVisible()) {
-      menu_->ShowUserMenu(
-          base::UTF8ToUTF16(current_user_->basic_user_info->display_name),
-          base::UTF8ToUTF16(current_user_->basic_user_info->display_email),
-          current_user_->basic_user_info->type, current_user_->is_device_owner,
-          dropdown_ /*anchor_view*/, dropdown_ /*bubble_opener*/,
-          current_user_->can_remove /*show_remove_user*/,
-          on_remove_warning_shown_, on_remove_);
-    } else {
-      menu_->Close();
+    DCHECK(menu_);
+
+    // If menu is showing, just close it
+    if (menu_->visible()) {
+      menu_->Hide();
+      return;
     }
+
+    bool opener_focused =
+        menu_->GetBubbleOpener() && menu_->GetBubbleOpener()->HasFocus();
+
+    if (!menu_->parent())
+      login_views_utils::GetTopLevelParentView(this)->AddChildView(menu_);
+
+    // Reset state in case the remove-user button was clicked once previously.
+    menu_->ResetState();
+    menu_->Show();
+
+    // If the menu was opened by pressing Enter on the focused dropdown, focus
+    // should automatically go to the remove-user button (for keyboard
+    // accessibility).
+    if (opener_focused)
+      menu_->RequestFocus();
 
     return;
   }
@@ -620,6 +645,7 @@ void LoginUserView::SetLargeLayout() {
   AddChildView(tap_button_);
   if (dropdown_)
     AddChildView(dropdown_);
+
   if (user_domain_)
     AddChildView(user_domain_);
 

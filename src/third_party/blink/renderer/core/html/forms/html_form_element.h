@@ -48,7 +48,9 @@ class CORE_EXPORT HTMLFormElement final : public HTMLElement {
 
   explicit HTMLFormElement(Document&);
   ~HTMLFormElement() override;
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
+
+  const AttrNameToTrustedType& GetCheckedAttributeTypes() const override;
 
   HTMLFormControlsCollection* elements();
   void GetNamedElements(const AtomicString&, HeapVector<Member<Element>>&);
@@ -57,7 +59,8 @@ class CORE_EXPORT HTMLFormElement final : public HTMLElement {
   HTMLElement* item(unsigned index);
 
   String action() const;
-  void setAction(const AtomicString&);
+  void action(USVStringOrTrustedURL&) const;
+  void setAction(const USVStringOrTrustedURL&, ExceptionState&);
 
   String enctype() const { return attributes_.EncodingType(); }
   void setEnctype(const AtomicString&);
@@ -89,7 +92,7 @@ class CORE_EXPORT HTMLFormElement final : public HTMLElement {
   void setMethod(const AtomicString&);
 
   // Find the 'default button.'
-  // https://html.spec.whatwg.org/multipage/forms.html#default-button
+  // https://html.spec.whatwg.org/C/#default-button
   HTMLFormControlElement* FindDefaultButton() const;
 
   bool checkValidity();
@@ -108,10 +111,10 @@ class CORE_EXPORT HTMLFormElement final : public HTMLElement {
   void InvalidateDefaultButtonStyle() const;
 
   // 'construct the entry list'
-  // https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#constructing-the-form-data-set
-  // Returns false if this form is already running this function.
-  bool ConstructEntryList(HTMLFormControlElement* submit_button,
-                          FormData& form_data);
+  // https://html.spec.whatwg.org/C/#constructing-the-form-data-set
+  // Returns nullptr if this form is already running this function.
+  FormData* ConstructEntryList(HTMLFormControlElement* submit_button,
+                               const WTF::TextEncoding& encoding);
 
   unsigned UniqueRendererFormId() const { return unique_renderer_form_id_; }
 
@@ -144,9 +147,7 @@ class CORE_EXPORT HTMLFormElement final : public HTMLElement {
   // Validates each of the controls, and stores controls of which 'invalid'
   // event was not canceled to the specified vector. Returns true if there
   // are any invalid controls in this form.
-  bool CheckInvalidControlsAndCollectUnhandled(
-      HeapVector<Member<HTMLFormControlElement>>*,
-      CheckValidityEventBehavior);
+  bool CheckInvalidControlsAndCollectUnhandled(ListedElement::List*);
 
   Element* ElementFromPastNamesMap(const AtomicString&);
   void AddToPastNamesMap(Element*, const AtomicString& past_name);
@@ -164,7 +165,7 @@ class CORE_EXPORT HTMLFormElement final : public HTMLElement {
   // Do not access image_elements_ directly. Use ImageElements() instead.
   HeapVector<Member<HTMLImageElement>> image_elements_;
 
-  // https://html.spec.whatwg.org/multipage/forms.html#planned-navigation
+  // https://html.spec.whatwg.org/C/#planned-navigation
   // Unlike the specification, we use this only for web-exposed submit()
   // function in 'submit' event handler.
   Member<FormSubmission> planned_navigation_;

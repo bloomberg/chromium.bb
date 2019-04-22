@@ -14,8 +14,8 @@
 #include "chrome/browser/chromeos/policy/android_management_client.h"
 #include "components/policy/core/common/cloud/mock_device_management_service.h"
 #include "components/policy/proto/device_management_backend.pb.h"
-#include "components/prefs/testing_pref_service.h"
-#include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
+#include "services/identity/public/cpp/identity_manager.h"
+#include "services/identity/public/cpp/identity_test_environment.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -32,7 +32,6 @@ namespace policy {
 namespace {
 
 const char kAccountId[] = "fake-account-id";
-const char kRefreshToken[] = "fake-refresh-token";
 const char kOAuthToken[] = "fake-oauth-token";
 
 MATCHER_P(MatchProto, expected, "matches protobuf") {
@@ -43,7 +42,8 @@ MATCHER_P(MatchProto, expected, "matches protobuf") {
 
 class AndroidManagementClientTest : public testing::Test {
  protected:
-  AndroidManagementClientTest() : token_service_(&pref_service_) {
+  AndroidManagementClientTest()
+      : identity_test_environment_(&url_loader_factory_) {
     android_management_request_.mutable_check_android_management_request();
     android_management_response_.mutable_check_android_management_response();
   }
@@ -54,7 +54,8 @@ class AndroidManagementClientTest : public testing::Test {
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             &url_loader_factory_);
     client_.reset(new AndroidManagementClient(
-        &service_, shared_url_loader_factory_, kAccountId, &token_service_));
+        &service_, shared_url_loader_factory_, kAccountId,
+        identity_test_environment_.identity_manager()));
   }
 
   // Request protobuf is used as extectation for the client requests.
@@ -64,15 +65,13 @@ class AndroidManagementClientTest : public testing::Test {
   em::DeviceManagementResponse android_management_response_;
 
   base::MessageLoop loop_;
-  TestingPrefServiceSimple pref_service_;
   MockDeviceManagementService service_;
   StrictMock<base::MockCallback<AndroidManagementClient::StatusCallback>>
       callback_observer_;
   std::unique_ptr<AndroidManagementClient> client_;
   network::TestURLLoaderFactory url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
-  std::string oauh_token_;
-  FakeProfileOAuth2TokenService token_service_;
+  identity::IdentityTestEnvironment identity_test_environment_;
 };
 
 TEST_F(AndroidManagementClientTest, CheckAndroidManagementCall) {
@@ -91,10 +90,16 @@ TEST_F(AndroidManagementClientTest, CheckAndroidManagementCall) {
               Run(AndroidManagementClient::Result::UNMANAGED))
       .Times(1);
 
-  token_service_.UpdateCredentials(kAccountId, kRefreshToken);
+  // On ChromeOS platform, account_id and email are same.
+  AccountInfo account_info =
+      identity_test_environment_.MakeAccountAvailable(kAccountId);
+
   client_->StartCheckAndroidManagement(callback_observer_.Get());
-  token_service_.IssueAllTokensForAccount(kAccountId, kOAuthToken,
-                                          base::Time::Max());
+
+  identity_test_environment_
+      .WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
+          account_info.account_id, kOAuthToken, base::Time::Max());
+
   ASSERT_LT(client_id.size(), 64U);
 }
 

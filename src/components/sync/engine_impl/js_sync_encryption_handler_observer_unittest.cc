@@ -113,7 +113,7 @@ TEST_F(JsSyncEncryptionHandlerObserverTest, OnEncryptedTypesChanged) {
   auto encrypted_type_values = std::make_unique<base::ListValue>();
   ModelTypeSet encrypted_types;
 
-  for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
+  for (int i = FIRST_REAL_MODEL_TYPE; i < ModelType::NUM_ENTRIES; ++i) {
     ModelType type = ModelTypeFromInt(i);
     encrypted_types.Put(type);
     encrypted_type_values->AppendString(ModelTypeToString(type));

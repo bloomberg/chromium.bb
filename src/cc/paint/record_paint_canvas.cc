@@ -4,13 +4,14 @@
 
 #include "cc/paint/record_paint_canvas.h"
 
+#include <utility>
+
 #include "cc/paint/display_item_list.h"
 #include "cc/paint/paint_image_builder.h"
 #include "cc/paint/paint_record.h"
 #include "cc/paint/paint_recorder.h"
 #include "cc/paint/skottie_wrapper.h"
 #include "third_party/skia/include/core/SkAnnotation.h"
-#include "third_party/skia/include/core/SkMetaData.h"
 #include "third_party/skia/include/utils/SkNWayCanvas.h"
 
 namespace cc {
@@ -22,12 +23,6 @@ RecordPaintCanvas::RecordPaintCanvas(DisplayItemList* list,
 }
 
 RecordPaintCanvas::~RecordPaintCanvas() = default;
-
-SkMetaData& RecordPaintCanvas::getMetaData() {
-  // This could just be SkMetaData owned by RecordPaintCanvas, but since
-  // SkCanvas already has one, we might as well use it directly.
-  return GetCanvas()->getMetaData();
-}
 
 SkImageInfo RecordPaintCanvas::imageInfo() const {
   return GetCanvas()->imageInfo();
@@ -49,7 +44,7 @@ int RecordPaintCanvas::saveLayer(const SkRect* bounds,
       // TODO(enne): maybe more callers should know this and call
       // saveLayerAlpha instead of needing to check here.
       uint8_t alpha = SkColorGetA(flags->getColor());
-      return saveLayerAlpha(bounds, alpha, false);
+      return saveLayerAlpha(bounds, alpha);
     }
 
     // TODO(enne): it appears that image filters affect matrices and color
@@ -63,10 +58,8 @@ int RecordPaintCanvas::saveLayer(const SkRect* bounds,
   return GetCanvas()->saveLayer(bounds, nullptr);
 }
 
-int RecordPaintCanvas::saveLayerAlpha(const SkRect* bounds,
-                                      uint8_t alpha,
-                                      bool preserve_lcd_text_requests) {
-  list_->push<SaveLayerAlphaOp>(bounds, alpha, preserve_lcd_text_requests);
+int RecordPaintCanvas::saveLayerAlpha(const SkRect* bounds, uint8_t alpha) {
+  list_->push<SaveLayerAlphaOp>(bounds, alpha);
   return GetCanvas()->saveLayerAlpha(bounds, alpha);
 }
 
@@ -275,6 +268,14 @@ void RecordPaintCanvas::drawTextBlob(sk_sp<SkTextBlob> blob,
                                      SkScalar y,
                                      const PaintFlags& flags) {
   list_->push<DrawTextBlobOp>(std::move(blob), x, y, flags);
+}
+
+void RecordPaintCanvas::drawTextBlob(sk_sp<SkTextBlob> blob,
+                                     SkScalar x,
+                                     SkScalar y,
+                                     const PaintFlags& flags,
+                                     const NodeHolder& holder) {
+  list_->push<DrawTextBlobOp>(std::move(blob), x, y, flags, holder);
 }
 
 void RecordPaintCanvas::drawPicture(sk_sp<const PaintRecord> record) {

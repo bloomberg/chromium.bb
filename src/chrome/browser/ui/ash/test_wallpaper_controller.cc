@@ -33,8 +33,7 @@ void TestWallpaperController::Init(
     const base::FilePath& user_data_path,
     const base::FilePath& chromeos_wallpapers_path,
     const base::FilePath& chromeos_custom_wallpapers_path,
-    const base::FilePath& device_policy_wallpaper_path,
-    bool is_device_wallpaper_policy_enforced) {
+    const base::FilePath& device_policy_wallpaper_path) {
   was_client_set_ = true;
 }
 
@@ -88,7 +87,8 @@ void TestWallpaperController::SetPolicyWallpaper(
   NOTIMPLEMENTED();
 }
 
-void TestWallpaperController::SetDeviceWallpaperPolicyEnforced(bool enforced) {
+void TestWallpaperController::SetDevicePolicyWallpaperPath(
+    const base::FilePath& device_policy_wallpaper_path) {
   NOTIMPLEMENTED();
 }
 
@@ -129,6 +129,15 @@ void TestWallpaperController::ShowSigninWallpaper() {
 void TestWallpaperController::ShowOneShotWallpaper(
     const gfx::ImageSkia& image) {
   NOTIMPLEMENTED();
+}
+
+void TestWallpaperController::ShowAlwaysOnTopWallpaper(
+    const base::FilePath& image_path) {
+  ++show_always_on_top_wallpaper_count_;
+}
+
+void TestWallpaperController::RemoveAlwaysOnTopWallpaper() {
+  ++remove_always_on_top_wallpaper_count_;
 }
 
 void TestWallpaperController::RemoveUserWallpaper(

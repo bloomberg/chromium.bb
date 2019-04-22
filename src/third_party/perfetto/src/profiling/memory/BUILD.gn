@@ -26,6 +26,7 @@ if (!build_with_chromium) {
 source_set("wire_protocol") {
   public_configs = [ "../../../buildtools:libunwindstack_config" ]
   deps = [
+    ":ring_buffer",
     "../../../buildtools:libunwindstack",
     "../../../gn:default_deps",
     "../../base",
@@ -37,9 +38,59 @@ source_set("wire_protocol") {
   ]
 }
 
+source_set("proc_utils") {
+  deps = [
+    "../../../gn:default_deps",
+    "../../base",
+  ]
+  sources = [
+    "proc_utils.cc",
+    "proc_utils.h",
+  ]
+}
+
+source_set("scoped_spinlock") {
+  deps = [
+    "../../../gn:default_deps",
+    "../../base",
+  ]
+  sources = [
+    "scoped_spinlock.cc",
+    "scoped_spinlock.h",
+  ]
+}
+
+source_set("ring_buffer") {
+  deps = [
+    ":scoped_spinlock",
+    "../../../gn:default_deps",
+    "../../base",
+  ]
+  sources = [
+    "shared_ring_buffer.cc",
+    "shared_ring_buffer.h",
+  ]
+}
+
+source_set("ring_buffer_unittests") {
+  testonly = true
+  deps = [
+    ":ring_buffer",
+    "../../../gn:default_deps",
+    "../../../gn:gtest_deps",
+    "../../base",
+  ]
+  sources = [
+    "shared_ring_buffer_unittest.cc",
+  ]
+}
+
 source_set("daemon") {
   public_configs = [ "../../../buildtools:libunwindstack_config" ]
   deps = [
+    ":proc_utils",
+    ":ring_buffer",
+    ":scoped_spinlock",
     ":wire_protocol",
     "../../../buildtools:libunwindstack",
     "../../../gn:default_deps",
@@ -58,21 +109,20 @@ source_set("daemon") {
     "heapprofd_producer.cc",
     "heapprofd_producer.h",
     "interner.h",
-    "queue_messages.h",
-    "record_reader.cc",
-    "record_reader.h",
-    "socket_listener.cc",
-    "socket_listener.h",
     "system_property.cc",
     "system_property.h",
     "unwinding.cc",
     "unwinding.h",
+    "unwound_messages.h",
   ]
 }
 
 source_set("client") {
   public_configs = [ "../../../buildtools:libunwindstack_config" ]
   deps = [
+    ":proc_utils",
+    ":ring_buffer",
+    ":scoped_spinlock",
     ":wire_protocol",
     "../../../buildtools:libunwindstack",
     "../../../gn:default_deps",
@@ -82,7 +132,6 @@ source_set("client") {
   sources = [
     "client.cc",
     "client.h",
-    "sampler.cc",
     "sampler.h",
   ]
 }
@@ -93,31 +142,54 @@ source_set("unittests") {
   deps = [
     ":client",
     ":daemon",
+    ":proc_utils",
     ":wire_protocol",
     "../../../gn:default_deps",
     "../../../gn:gtest_deps",
     "../../base",
     "../../base:test_support",
+    "../../tracing",
   ]
   sources = [
     "bookkeeping_unittest.cc",
-    "bounded_queue_unittest.cc",
     "client_unittest.cc",
-    "heapprofd_integrationtest.cc",
+    "heapprofd_producer_unittest.cc",
     "interner_unittest.cc",
-    "record_reader_unittest.cc",
+    "proc_utils_unittest.cc",
     "sampler_unittest.cc",
-    "socket_listener_unittest.cc",
     "system_property_unittest.cc",
     "unwinding_unittest.cc",
     "wire_protocol_unittest.cc",
   ]
 }
 
+source_set("end_to_end_tests") {
+  public_configs = [ "../../../buildtools:libunwindstack_config" ]
+  testonly = true
+  deps = [
+    ":client",
+    ":daemon",
+    ":wire_protocol",
+    "../../../gn:default_deps",
+    "../../../gn:gtest_deps",
+    "../../../test:test_helper",
+    "../../base",
+    "../../base:test_support",
+  ]
+  sources = [
+    "heapprofd_end_to_end_test.cc",
+  ]
+  if (start_daemons_for_testing) {
+    defines = [ "PERFETTO_START_DAEMONS_FOR_TESTING" ]
+  }
+}
+
 # This will export publicly visibile symbols for the malloc_hooks.
 source_set("malloc_hooks") {
   deps = [
     ":client",
+    ":proc_utils",
+    ":scoped_spinlock",
     ":wire_protocol",
     "../../../gn:default_deps",
     "../../base",
@@ -133,13 +205,40 @@ source_set("malloc_hooks") {
 }
 
 perfetto_fuzzer_test("unwinding_fuzzer") {
+  testonly = true
   sources = [
     "unwinding_fuzzer.cc",
   ]
   deps = [
     ":daemon",
+    ":ring_buffer",
     ":wire_protocol",
     "../../../gn:default_deps",
-    "../../../src/base",
+    "../../base",
+    "../../tracing",
+  ]
+}
+
+perfetto_fuzzer_test("shared_ring_buffer_fuzzer") {
+  testonly = true
+  sources = [
+    "shared_ring_buffer_fuzzer.cc",
+  ]
+  deps = [
+    ":ring_buffer",
+    "../../../gn:default_deps",
+    "../../base",
+  ]
+}
+
+perfetto_fuzzer_test("shared_ring_buffer_write_fuzzer") {
+  testonly = true
+  sources = [
+    "shared_ring_buffer_write_fuzzer.cc",
+  ]
+  deps = [
+    ":ring_buffer",
+    "../../../gn:default_deps",
+    "../../base",
   ]
 }

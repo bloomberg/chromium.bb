@@ -22,6 +22,8 @@
 
 #include "third_party/blink/renderer/core/dom/text.h"
 
+#include <utility>
+
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/dom/events/scoped_event_queue.h"
 #include "third_party/blink/renderer/core/dom/first_letter_pseudo_element.h"
@@ -31,10 +33,10 @@
 #include "third_party/blink/renderer/core/dom/node_traversal.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/whitespace_attacher.h"
+#include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/layout/layout_text_combine.h"
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_inline_text.h"
 #include "third_party/blink/renderer/core/svg/svg_foreign_object_element.h"
 #include "third_party/blink/renderer/core/svg_names.h"
@@ -258,8 +260,9 @@ static inline bool CanHaveWhitespaceChildren(
 
   if (parent.IsTable() || parent.IsTableRow() || parent.IsTableSection() ||
       parent.IsLayoutTableCol() || parent.IsFrameSet() ||
-      parent.IsFlexibleBox() || parent.IsLayoutGrid() || parent.IsSVGRoot() ||
-      parent.IsSVGContainer() || parent.IsSVGImage() || parent.IsSVGShape()) {
+      parent.IsFlexibleBoxIncludingNG() || parent.IsLayoutGrid() ||
+      parent.IsSVGRoot() || parent.IsSVGContainer() || parent.IsSVGImage() ||
+      parent.IsSVGShape()) {
     if (!context.use_previous_in_flow || !context.previous_in_flow ||
         !context.previous_in_flow->IsText())
       return false;
@@ -324,17 +327,15 @@ static bool IsSVGText(Text* text) {
          !IsSVGForeignObjectElement(*parent_or_shadow_host_node);
 }
 
-LayoutText* Text::CreateTextLayoutObject(const ComputedStyle& style) {
+LayoutText* Text::CreateTextLayoutObject(const ComputedStyle& style,
+                                         LegacyLayout legacy) {
   if (IsSVGText(this))
     return new LayoutSVGInlineText(this, DataImpl());
 
   if (style.HasTextCombine())
     return new LayoutTextCombine(this, DataImpl());
 
-  if (RuntimeEnabledFeatures::LayoutNGEnabled() && !style.ForceLegacyLayout())
-    return new LayoutNGText(this, DataImpl());
-
-  return new LayoutText(this, DataImpl());
+  return LayoutObjectFactory::CreateText(this, DataImpl(), legacy);
 }
 
 void Text::AttachLayoutTree(AttachContext& context) {
@@ -369,44 +370,49 @@ void Text::ReattachLayoutTreeIfNeeded(const AttachContext& context) {
   if (layout_object_is_needed == !!GetLayoutObject())
     return;
 
-  // The following is almost the same as Node::reattachLayoutTree() except that
-  // we create a layoutObject only if needed.  Not calling reattachLayoutTree()
-  // to avoid repeated calls to Text::textLayoutObjectIsNeeded().
   AttachContext reattach_context;
   reattach_context.performing_reattach = true;
 
-  if (GetStyleChangeType() < kNeedsReattachStyleChange)
-    DetachLayoutTree(reattach_context);
   if (layout_object_is_needed) {
+    DCHECK(!GetLayoutObject());
     LayoutTreeBuilderForText(*this, parent_layout_object,
                              style_parent->MutableComputedStyle())
         .CreateLayoutObject();
+  } else {
+    DetachLayoutTree(reattach_context);
   }
   CharacterData::AttachLayoutTree(reattach_context);
 }
 
-void Text::RecalcTextStyle(StyleRecalcChange change) {
+namespace {
+
+bool NeedsWhitespaceLayoutObject(const ComputedStyle& style) {
+  return style.PreserveNewline();
+}
+
+}  // namespace
+
+void Text::RecalcTextStyle(const StyleRecalcChange change) {
+  scoped_refptr<ComputedStyle> new_style =
+      GetDocument().EnsureStyleResolver().StyleForText(this);
   if (LayoutText* layout_text = GetLayoutObject()) {
-    if (change != kNoChange || NeedsStyleRecalc()) {
-      scoped_refptr<ComputedStyle> new_style =
-          GetDocument().EnsureStyleResolver().StyleForText(this);
-      const ComputedStyle* layout_parent_style =
-          GetLayoutObject()->Parent()->Style();
-      if (new_style != layout_parent_style &&
-          !new_style->InheritedEqual(*layout_parent_style)) {
-        // The computed style or the need for an anonymous inline wrapper for a
-        // display:contents text child changed.
-        SetNeedsReattachLayoutTree();
-        return;
-      }
+    const ComputedStyle* layout_parent_style =
+        GetLayoutObject()->Parent()->Style();
+    if (!new_style || (new_style != layout_parent_style &&
+                       !new_style->InheritedEqual(*layout_parent_style))) {
+      // The computed style or the need for an anonymous inline wrapper for a
+      // display:contents text child changed.
+      SetNeedsReattachLayoutTree();
+    } else {
       layout_text->SetStyle(std::move(new_style));
+      if (NeedsStyleRecalc())
+        layout_text->SetText(DataImpl());
     }
-    if (NeedsStyleRecalc())
-      layout_text->SetText(DataImpl());
-    ClearNeedsStyleRecalc();
-  } else if (NeedsStyleRecalc() || NeedsWhitespaceLayoutObject()) {
+  } else if (new_style && (NeedsStyleRecalc() || change.ReattachLayoutTree() ||
+                           NeedsWhitespaceLayoutObject(*new_style))) {
     SetNeedsReattachLayoutTree();
   }
+  ClearNeedsStyleRecalc();
 }
 
 void Text::RebuildTextLayoutTree(WhitespaceAttacher& whitespace_attacher) {
@@ -417,15 +423,6 @@ void Text::RebuildTextLayoutTree(WhitespaceAttacher& whitespace_attacher) {
   ReattachLayoutTree();
   whitespace_attacher.DidReattachText(this);
   ClearNeedsReattachLayoutTree();
-}
-
-// If a whitespace node had no layoutObject and goes through a recalcStyle it
-// may need to create one if the parent style now has white-space: pre.
-bool Text::NeedsWhitespaceLayoutObject() {
-  DCHECK(!GetLayoutObject());
-  if (const ComputedStyle* style = ParentComputedStyle())
-    return style->PreserveNewline();
-  return false;
 }
 
 // Passing both |textNode| and its layout object because repeated calls to
@@ -471,7 +468,7 @@ Text* Text::CloneWithData(Document& factory, const String& data) const {
   return Create(factory, data);
 }
 
-void Text::Trace(blink::Visitor* visitor) {
+void Text::Trace(Visitor* visitor) {
   CharacterData::Trace(visitor);
 }
 

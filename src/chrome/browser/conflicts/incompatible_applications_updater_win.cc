@@ -13,6 +13,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "base/values.h"
 #include "base/win/registry.h"
 #include "base/win/windows_version.h"
@@ -27,6 +28,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace {
@@ -184,6 +186,38 @@ void EnumerateAndTrimIncompatibleApplications(UnaryFunction function) {
   RemoveStaleApplications(stale_application_names);
 }
 
+// Updates the kIncompatibleApplications pref with those contained in
+// |incompatible_applications|.
+void UpdateIncompatibleApplications(
+    bool should_clear_pref,
+    std::vector<IncompatibleApplicationsUpdater::IncompatibleApplication>
+        incompatible_applications) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  // Clear pref if requested.
+  if (should_clear_pref) {
+    g_browser_process->local_state()->ClearPref(
+        prefs::kIncompatibleApplications);
+  }
+
+  // If there is no new incompatible application, there is nothing to do.
+  if (incompatible_applications.empty())
+    return;
+
+  // The conversion of the accumulated applications to a json dictionary takes
+  // care of eliminating duplicates.
+  base::Value new_applications = ConvertToDictionary(incompatible_applications);
+
+  // Update the existing dictionary.
+  DictionaryPrefUpdate update(g_browser_process->local_state(),
+                              prefs::kIncompatibleApplications);
+  base::Value* existing_applications = update.Get();
+  for (auto&& element : new_applications.DictItems()) {
+    existing_applications->SetKey(std::move(element.first),
+                                  std::move(element.second));
+  }
+}
+
 }  // namespace
 
 // -----------------------------------------------------------------------------
@@ -213,16 +247,19 @@ IncompatibleApplicationsUpdater::IncompatibleApplicationsUpdater(
     ModuleDatabaseEventSource* module_database_event_source,
     const CertificateInfo& exe_certificate_info,
     scoped_refptr<ModuleListFilter> module_list_filter,
-    const InstalledApplications& installed_applications)
+    const InstalledApplications& installed_applications,
+    bool module_analysis_disabled)
     : module_database_event_source_(module_database_event_source),
       exe_certificate_info_(exe_certificate_info),
       module_list_filter_(std::move(module_list_filter)),
-      installed_applications_(installed_applications) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+      installed_applications_(installed_applications),
+      module_analysis_disabled_(module_analysis_disabled) {
   module_database_event_source_->AddObserver(this);
 }
 
 IncompatibleApplicationsUpdater::~IncompatibleApplicationsUpdater() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   module_database_event_source_->RemoveObserver(this);
 }
 
@@ -236,7 +273,6 @@ void IncompatibleApplicationsUpdater::RegisterLocalStatePrefs(
 // static
 bool IncompatibleApplicationsUpdater::IsWarningEnabled() {
   return base::win::GetVersion() >= base::win::VERSION_WIN10 &&
-         ModuleDatabase::IsThirdPartyBlockingPolicyEnabled() &&
          base::FeatureList::IsEnabled(
              features::kIncompatibleApplicationsWarning);
 }
@@ -244,6 +280,11 @@ bool IncompatibleApplicationsUpdater::IsWarningEnabled() {
 // static
 bool IncompatibleApplicationsUpdater::HasCachedApplications() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (!ModuleDatabase::IsThirdPartyBlockingPolicyEnabled() ||
+      !IsWarningEnabled()) {
+    return false;
+  }
 
   bool found_valid_application = false;
 
@@ -263,6 +304,8 @@ bool IncompatibleApplicationsUpdater::HasCachedApplications() {
 std::vector<IncompatibleApplicationsUpdater::IncompatibleApplication>
 IncompatibleApplicationsUpdater::GetCachedApplications() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(ModuleDatabase::IsThirdPartyBlockingPolicyEnabled());
+  DCHECK(IsWarningEnabled());
 
   std::vector<IncompatibleApplication> valid_applications;
 
@@ -281,17 +324,30 @@ IncompatibleApplicationsUpdater::GetCachedApplications() {
 void IncompatibleApplicationsUpdater::OnNewModuleFound(
     const ModuleInfoKey& module_key,
     const ModuleInfoData& module_data) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // The module id is always positive.
-  if (module_key.module_id + 1 > module_warning_decisions_.size())
-    module_warning_decisions_.resize(module_key.module_id + 1);
+  // This is meant to create the element in the map if it doesn't exist yet.
+  ModuleWarningDecision& warning_decision =
+      module_warning_decisions_[module_key];
 
   // Only consider loaded modules.
   if ((module_data.module_properties & ModuleInfoData::kPropertyLoadedModule) ==
       0) {
-    module_warning_decisions_[module_key.module_id] =
-        ModuleWarningDecision::kNotLoaded;
+    warning_decision = ModuleWarningDecision::kNotLoaded;
+    return;
+  }
+
+  // Don't check modules if they were never loaded in a process where blocking
+  // is enabled.
+  if (!IsBlockingEnabledInProcessTypes(module_data.process_types)) {
+    warning_decision = ModuleWarningDecision::kAllowedInProcessType;
+    return;
+  }
+
+  // New modules should not cause a warning when the module analysis is
+  // disabled.
+  if (module_analysis_disabled_) {
+    warning_decision = ModuleWarningDecision::kNotAnalyzed;
     return;
   }
 
@@ -300,11 +356,10 @@ void IncompatibleApplicationsUpdater::OnNewModuleFound(
   // Explicitly whitelist modules whose signing cert's Subject field matches the
   // one in the current executable. No attempt is made to check the validity of
   // module signatures or of signing certs.
-  if (exe_certificate_info_.type != CertificateType::NO_CERTIFICATE &&
+  if (exe_certificate_info_.type != CertificateInfo::Type::NO_CERTIFICATE &&
       exe_certificate_info_.subject ==
           module_data.inspection_result->certificate_info.subject) {
-    module_warning_decisions_[module_key.module_id] =
-        ModuleWarningDecision::kAllowedSameCertificate;
+    warning_decision = ModuleWarningDecision::kAllowedSameCertificate;
     return;
   }
 
@@ -312,8 +367,7 @@ void IncompatibleApplicationsUpdater::OnNewModuleFound(
   // attempt is made to check the validity of the certificate.
   if (IsMicrosoftModule(
           module_data.inspection_result->certificate_info.subject)) {
-    module_warning_decisions_[module_key.module_id] =
-        ModuleWarningDecision::kAllowedMicrosoft;
+    warning_decision = ModuleWarningDecision::kAllowedMicrosoft;
     return;
   }
 
@@ -328,15 +382,13 @@ void IncompatibleApplicationsUpdater::OnNewModuleFound(
   base::FilePath exe_path;
   if (base::PathService::Get(base::DIR_EXE, &exe_path) &&
       exe_path.DirName().IsParent(module_key.module_path)) {
-    module_warning_decisions_[module_key.module_id] =
-        ModuleWarningDecision::kAllowedSameDirectory;
+    warning_decision = ModuleWarningDecision::kAllowedSameDirectory;
     return;
   }
 
   // Skip modules whitelisted by the Module List component.
   if (module_list_filter_->IsWhitelisted(module_key, module_data)) {
-    module_warning_decisions_[module_key.module_id] =
-        ModuleWarningDecision::kAllowedWhitelisted;
+    warning_decision = ModuleWarningDecision::kAllowedWhitelisted;
     return;
   }
 
@@ -344,14 +396,12 @@ void IncompatibleApplicationsUpdater::OnNewModuleFound(
   // it is whitelisted, not because it's a shell extension. Thus, check for the
   // module type after.
   if (module_data.module_properties & ModuleInfoData::kPropertyShellExtension) {
-    module_warning_decisions_[module_key.module_id] =
-        ModuleWarningDecision::kAllowedShellExtension;
+    warning_decision = ModuleWarningDecision::kAllowedShellExtension;
     return;
   }
 
   if (module_data.module_properties & ModuleInfoData::kPropertyIme) {
-    module_warning_decisions_[module_key.module_id] =
-        ModuleWarningDecision::kAllowedIME;
+    warning_decision = ModuleWarningDecision::kAllowedIME;
     return;
   }
 
@@ -359,8 +409,7 @@ void IncompatibleApplicationsUpdater::OnNewModuleFound(
   // is going to be blocked on the next Chrome launch.
   if (module_data.module_properties &
       ModuleInfoData::kPropertyAddedToBlacklist) {
-    module_warning_decisions_[module_key.module_id] =
-        ModuleWarningDecision::kAddedToBlacklist;
+    warning_decision = ModuleWarningDecision::kAddedToBlacklist;
     return;
   }
 
@@ -371,13 +420,11 @@ void IncompatibleApplicationsUpdater::OnNewModuleFound(
       module_key.module_path, &associated_applications);
   UMA_HISTOGRAM_BOOLEAN("ThirdPartyModules.Uninstallable", tied_to_app);
   if (!tied_to_app) {
-    module_warning_decisions_[module_key.module_id] =
-        ModuleWarningDecision::kNoTiedApplication;
+    warning_decision = ModuleWarningDecision::kNoTiedApplication;
     return;
   }
 
-  module_warning_decisions_[module_key.module_id] =
-      ModuleWarningDecision::kIncompatible;
+  warning_decision = ModuleWarningDecision::kIncompatible;
 
   std::unique_ptr<chrome::conflicts::BlacklistAction> blacklist_action =
       module_list_filter_->IsBlacklisted(module_key, module_data);
@@ -401,45 +448,38 @@ void IncompatibleApplicationsUpdater::OnNewModuleFound(
 void IncompatibleApplicationsUpdater::OnKnownModuleLoaded(
     const ModuleInfoKey& module_key,
     const ModuleInfoData& module_data) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   // Analyze the module again.
   OnNewModuleFound(module_key, module_data);
 }
 
 void IncompatibleApplicationsUpdater::OnModuleDatabaseIdle() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // On the first call to OnModuleDatabaseIdle(), the previous value must always
-  // be overwritten.
-  if (before_first_idle_)
-    g_browser_process->local_state()->ClearPref(
-        prefs::kIncompatibleApplications);
-  before_first_idle_ = false;
-
-  // If there is no new incompatible application, there is nothing to do.
-  if (incompatible_applications_.empty())
-    return;
-
-  // The conversion of the accumulated applications to a json dictionary takes
-  // care of eliminating duplicates.
-  base::Value new_applications =
-      ConvertToDictionary(incompatible_applications_);
+  // Update the list of incompatible applications on the UI thread. On the first
+  // call to UpdateIncompatibleApplications(), the previous value must always be
+  // overwritten.
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
+      base::BindOnce(&UpdateIncompatibleApplications, before_first_idle_,
+                     std::move(incompatible_applications_)));
   incompatible_applications_.clear();
-
-  // Update the existing dictionary.
-  DictionaryPrefUpdate update(g_browser_process->local_state(),
-                              prefs::kIncompatibleApplications);
-  base::Value* existing_applications = update.Get();
-  for (auto&& element : new_applications.DictItems()) {
-    existing_applications->SetKey(std::move(element.first),
-                                  std::move(element.second));
-  }
+  before_first_idle_ = false;
 }
 
 IncompatibleApplicationsUpdater::ModuleWarningDecision
 IncompatibleApplicationsUpdater::GetModuleWarningDecision(
-    ModuleInfoKey module_key) const {
-  DCHECK(module_warning_decisions_.size() > module_key.module_id);
-  DCHECK_NE(module_warning_decisions_[module_key.module_id],
-            ModuleWarningDecision::kUnknown);
-  return module_warning_decisions_[module_key.module_id];
+    const ModuleInfoKey& module_key) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  auto it = module_warning_decisions_.find(module_key);
+  DCHECK(it != module_warning_decisions_.end());
+  return it->second;
+}
+
+void IncompatibleApplicationsUpdater::DisableModuleAnalysis() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  module_analysis_disabled_ = true;
 }

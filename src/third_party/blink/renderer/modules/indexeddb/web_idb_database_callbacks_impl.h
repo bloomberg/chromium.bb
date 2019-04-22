@@ -28,12 +28,8 @@
 
 #include <memory>
 
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_callbacks.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_error.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_observation.h"
-#include "third_party/blink/public/platform/web_string.h"
-#include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_database_callbacks.h"
+#include "third_party/blink/renderer/modules/indexeddb/web_idb_database_callbacks.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
@@ -43,23 +39,19 @@ class WebIDBDatabaseCallbacksImpl final : public WebIDBDatabaseCallbacks {
   USING_FAST_MALLOC(WebIDBDatabaseCallbacksImpl);
 
  public:
-  static std::unique_ptr<WebIDBDatabaseCallbacksImpl> Create(
-      IDBDatabaseCallbacks*);
-
+  explicit WebIDBDatabaseCallbacksImpl(IDBDatabaseCallbacks*);
   ~WebIDBDatabaseCallbacksImpl() override;
 
   void OnForcedClose() override;
-  void OnVersionChange(long long old_version, long long new_version) override;
-  void OnAbort(long long transaction_id, const WebIDBDatabaseError&) override;
-  void OnComplete(long long transaction_id) override;
+  void OnVersionChange(int64_t old_version, int64_t new_version) override;
+  void OnAbort(int64_t transaction_id, const IDBDatabaseError&) override;
+  void OnComplete(int64_t transaction_id) override;
   void OnChanges(const ObservationIndexMap&,
-                 WebVector<WebIDBObservation> observations,
+                 Vector<Persistent<IDBObservation>> observations,
                  const TransactionMap& transactions) override;
   void Detach() override;
 
  private:
-  explicit WebIDBDatabaseCallbacksImpl(IDBDatabaseCallbacks*);
-
   Persistent<IDBDatabaseCallbacks> callbacks_;
 };
 

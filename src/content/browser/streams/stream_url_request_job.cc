@@ -4,6 +4,7 @@
 
 #include "content/browser/streams/stream_url_request_job.h"
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -183,7 +184,7 @@ void StreamURLRequestJob::NotifyMethodNotSupported() {
   error_code_ = net::ERR_METHOD_NOT_SUPPORTED;
 
   std::string status("HTTP/1.1 ");
-  status.append(base::IntToString(status_code));
+  status.append(base::NumberToString(status_code));
   status.append(" ");
   status.append(net::GetHttpReasonPhrase(status_code));
   status.append("\0\0", 2);

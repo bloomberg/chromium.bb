@@ -29,7 +29,7 @@ class PasswordsCounter : public browsing_data::BrowsingDataCounter,
  protected:
   virtual std::unique_ptr<SyncResult> MakeResult();
 
-  bool is_sync_active() { return sync_tracker_.IsSyncActive(); };
+  bool is_sync_active() { return sync_tracker_.IsSyncActive(); }
   int num_passwords() { return num_passwords_; }
 
  private:

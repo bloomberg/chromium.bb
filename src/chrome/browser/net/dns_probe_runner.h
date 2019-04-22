@@ -10,23 +10,29 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
+#include "base/sequence_checker.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "services/network/public/cpp/resolve_host_client_base.h"
+#include "services/network/public/mojom/host_resolver.mojom.h"
 
-namespace net {
-class DnsClient;
-class DnsResponse;
-class DnsTransaction;
+namespace network {
+namespace mojom {
+class NetworkContext;
 }
+}  // namespace network
 
 namespace chrome_browser_net {
 
-// Runs DNS probes using a single DnsClient and evaluates the responses.
+// Runs DNS probes using a HostResolver and evaluates the responses.
 // (Currently requests A records for google.com and expects at least one IP
 // address in the response.)
 // Used by DnsProbeService to probe the system and public DNS configurations.
-class DnsProbeRunner {
+class DnsProbeRunner : public network::ResolveHostClientBase {
  public:
   static const char kKnownGoodHostname[];
+
+  using NetworkContextGetter =
+      base::RepeatingCallback<network::mojom::NetworkContext*(void)>;
 
   // Used in histograms; add new entries at the bottom, and don't remove any.
   enum Result {
@@ -37,47 +43,53 @@ class DnsProbeRunner {
     UNREACHABLE  // No response received (timeout, network unreachable, etc.).
   };
 
-  DnsProbeRunner();
-  ~DnsProbeRunner();
+  // Creates a probe runner that will use |dns_config_overrides| for the dns
+  // configuration and will use |network_context_getter| to get the
+  // NetworkContext to create the HostResolver.  The |network_context_getter|
+  // may be called multiple times.
+  DnsProbeRunner(net::DnsConfigOverrides dns_config_overrides,
+                 const NetworkContextGetter& network_context_getter);
+  ~DnsProbeRunner() override;
 
-  // Sets the DnsClient that will be used for DNS probes sent by this runner.
-  // Must be called before RunProbe; can be called repeatedly, including during
-  // a probe.  It will not affect an in-flight probe, if one is running.
-  void SetClient(std::unique_ptr<net::DnsClient> client);
-
-  // Starts a probe using the client specified with SetClient, which must have
-  // been called before RunProbe.  |callback| will be called asynchronously
-  // when the result is ready, even if it is ready synchronously.  Must not
-  // be called again until the callback is called, but may be called during the
-  // callback.
-  void RunProbe(const base::Closure& callback);
+  // Starts a probe. |callback| will be called asynchronously when the result
+  // is ready, and will not be called if the DnsProbeRunner is destroyed before
+  // the probe finishes. Must not be called again until the callback is called,
+  // but may be called during the callback.
+  void RunProbe(base::OnceClosure callback);
 
   // Returns true if a probe is running.  Guaranteed to return true after
   // RunProbe returns, and false during and after the callback.
   bool IsRunning() const;
 
   // Returns the result of the last probe.
-  Result result() const { return result_; }
+  Result result() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return result_;
+  }
+
+  // network::ResolveHostClientBase impl:
+  void OnComplete(
+      int32_t result,
+      const base::Optional<net::AddressList>& resolved_addresses) override;
 
  private:
-  void OnTransactionComplete(net::DnsTransaction* transaction,
-                             int net_error,
-                             const net::DnsResponse* response);
-  void CallCallback();
+  void CreateHostResolver();
+  void OnMojoConnectionError();
 
-  std::unique_ptr<net::DnsClient> client_;
+  mojo::Binding<network::mojom::ResolveHostClient> binding_;
+
+  net::DnsConfigOverrides dns_config_overrides_;
+  NetworkContextGetter network_context_getter_;
+
+  network::mojom::HostResolverPtr host_resolver_;
 
   // The callback passed to |RunProbe|.  Cleared right before calling the
   // callback.
-  base::Closure callback_;
-
-  // The transaction started in |RunProbe| for the DNS probe.  Reset once the
-  // results have been examined.
-  std::unique_ptr<net::DnsTransaction> transaction_;
+  base::OnceClosure callback_;
 
   Result result_;
 
-  base::WeakPtrFactory<DnsProbeRunner> weak_factory_;
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(DnsProbeRunner);
 };

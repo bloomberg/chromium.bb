@@ -36,10 +36,6 @@ def Main(args):
        os.path.join(args[1], 'Versions/Current/'),
        output_path])
 
-  # Thin the library to just the required arch.
-  library_path = os.path.join(output_path, 'KeystoneRegistration')
-  subprocess.check_call(
-      ['lipo', '-thin', 'x86_64', library_path, '-o', library_path])
   return 0
 
 

@@ -37,6 +37,7 @@ def RunSwarmingCommand(cmd, swarming_server, is_skylab=False,
                        timeout_secs=None, io_timeout_secs=None,
                        hard_timeout_secs=None, expiration_secs=None,
                        temp_json_path=None, tags=None,
+                       service_account_json=None,
                        *args, **kwargs):
   """Run command via swarming proxy.
 
@@ -60,6 +61,7 @@ def RunSwarmingCommand(cmd, swarming_server, is_skylab=False,
                      run before this task request expires.
     temp_json_path: Where swarming client should dump the result.
     tags: Dict, representing tags to add to the swarming command.
+    service_account_json: Location of the service account json file.
   """
   with osutils.TempDir() as tempdir:
     if temp_json_path is None:
@@ -98,6 +100,9 @@ def RunSwarmingCommand(cmd, swarming_server, is_skylab=False,
     if tags is not None:
       for k, v in tags.items():
         swarming_cmd += ['--tags=%s:%s' % (k, v)]
+
+    if service_account_json:
+      swarming_cmd += ['--auth-service-account-json', service_account_json]
 
     swarming_cmd += ['--']
     swarming_cmd += cmd
@@ -212,6 +217,7 @@ class SwarmingCommandResult(cros_build_lib.CommandResult):
       A dictionary or None if task_summary_json_path doesn't exist.
     """
     if os.path.exists(task_summary_json_path):
+      logging.debug('Loading summary json file: %s', task_summary_json_path)
       with open(task_summary_json_path) as f:
         return json.load(f)
 
@@ -241,8 +247,21 @@ class SwarmingCommandResult(cros_build_lib.CommandResult):
     Returns:
       True if the summary is valid else False.
     """
-    return (self.task_summary_json and self.task_summary_json.get('shards')
-            and self.task_summary_json.get('shards')[0])
+    if not self.task_summary_json:
+      logging.warning('Failed to load task summary json')
+      return False
+
+    if 'shards' not in self.task_summary_json:
+      logging.error('No shards in the invalid task summary json file:\n%r',
+                    self.task_summary_json)
+      return False
+
+    try:
+      return self.task_summary_json.get('shards')[0]
+    except TypeError as e:
+      logging.error('Invalid content in task summary json file:%s\n%r', str(e),
+                    self.task_summary_json)
+      return False
 
 
   def GetValue(self, field, default=None):
@@ -256,5 +275,11 @@ class SwarmingCommandResult(cros_build_lib.CommandResult):
       Value of the field.
     """
     if self.HasValidSummary():
-      return self.task_summary_json.get('shards')[0].get(field)
+      # Hack for crbug.com/951373, will be changed after CL:1159239 is merged.
+      if (field == 'outputs' and
+          field not in self.task_summary_json.get('shards')[0]):
+        res = self.task_summary_json.get('shards')[0].get('output', default)
+        return [res]
+
+      return self.task_summary_json.get('shards')[0].get(field, default)
     return default

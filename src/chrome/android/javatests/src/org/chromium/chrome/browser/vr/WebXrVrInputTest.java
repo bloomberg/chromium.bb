@@ -8,6 +8,7 @@ import static org.chromium.chrome.browser.vr.XrTestFramework.PAGE_LOAD_TIMEOUT_S
 import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_CHECK_INTERVAL_SHORT_MS;
 import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_LONG_MS;
 import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_SHORT_MS;
+import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_SVR;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_NON_DAYDREAM;
@@ -27,7 +28,6 @@ import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.params.ParameterAnnotations.ClassParameter;
 import org.chromium.base.test.params.ParameterAnnotations.UseRunnerDelegate;
 import org.chromium.base.test.params.ParameterSet;
@@ -38,7 +38,6 @@ import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.vr.mock.MockVrDaydreamApi;
 import org.chromium.chrome.browser.vr.rules.XrActivityRestriction;
 import org.chromium.chrome.browser.vr.util.NativeUiUtils;
@@ -50,6 +49,7 @@ import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.content_public.browser.ViewEventSink;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
 
 import java.util.List;
@@ -96,12 +96,14 @@ public class WebXrVrInputTest {
     }
 
     /**
-     * Tests that screen touches are not registered when in VR.
+     * Tests that screen touches are not registered when in VR. Disabled on standalones because
+     * they don't have touchscreens.
      */
     @Test
     @MediumTest
     @DisableIf.
     Build(message = "Flaky on K/L crbug.com/762126", sdk_is_less_than = Build.VERSION_CODES.M)
+    @Restriction(RESTRICTION_TYPE_SVR)
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     public void testScreenTapsNotRegistered() throws InterruptedException {
         screenTapsNotRegisteredImpl(
@@ -110,13 +112,15 @@ public class WebXrVrInputTest {
     }
 
     /**
-     * Tests that screen touches are not registered when in an immersive session.
+     * Tests that screen touches are not registered when in an immersive session. Disabled on
+     * standalones because they don't have touchscreens.
      */
     @Test
     @MediumTest
     @DisableIf
             .Build(message = "Flaky on K/L crbug.com/762126",
                     sdk_is_less_than = Build.VERSION_CODES.M)
+            @Restriction(RESTRICTION_TYPE_SVR)
             @CommandLineFlags
             .Remove({"enable-webvr"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
@@ -230,7 +234,7 @@ public class WebXrVrInputTest {
 
     private long sendScreenTouchDown(final View view, final int x, final int y) {
         long downTime = SystemClock.uptimeMillis();
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             view.dispatchTouchEvent(
                     MotionEvent.obtain(downTime, downTime, MotionEvent.ACTION_DOWN, x, y, 0));
         });
@@ -238,7 +242,7 @@ public class WebXrVrInputTest {
     }
 
     private void sendScreenTouchUp(final View view, final int x, final int y, final long downTime) {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             long now = SystemClock.uptimeMillis();
             view.dispatchTouchEvent(
                     MotionEvent.obtain(downTime, now, MotionEvent.ACTION_UP, x, y, 0));
@@ -273,8 +277,8 @@ public class WebXrVrInputTest {
         mWebVrTestFramework.runJavaScriptOrFail("canStartTest = true;", POLL_TIMEOUT_SHORT_MS);
         // Wait to enter VR
         mWebVrTestFramework.enterSessionWithUserGestureOrFail();
-        int x = mWebVrTestFramework.getFirstTabContentView().getWidth() / 2;
-        int y = mWebVrTestFramework.getFirstTabContentView().getHeight() / 2;
+        int x = mWebVrTestFramework.getCurrentContentView().getWidth() / 2;
+        int y = mWebVrTestFramework.getCurrentContentView().getHeight() / 2;
         // TODO(mthiesse, https://crbug.com/758374): Injecting touch events into the root GvrLayout
         // (VrShell) is flaky. Sometimes the events just don't get routed to the presentation
         // view for no apparent reason. We should figure out why this is and see if it's fixable.
@@ -310,8 +314,8 @@ public class WebXrVrInputTest {
         mWebXrVrTestFramework.runJavaScriptOrFail(
                 "stepSetupListeners(" + String.valueOf(numIterations) + ")", POLL_TIMEOUT_SHORT_MS);
 
-        int x = mWebXrVrTestFramework.getFirstTabContentView().getWidth() / 2;
-        int y = mWebXrVrTestFramework.getFirstTabContentView().getHeight() / 2;
+        int x = mWebXrVrTestFramework.getCurrentContentView().getWidth() / 2;
+        int y = mWebXrVrTestFramework.getCurrentContentView().getHeight() / 2;
         // TODO(mthiesse, https://crbug.com/758374): Injecting touch events into the root GvrLayout
         // (VrShell) is flaky. Sometimes the events just don't get routed to the presentation
         // view for no apparent reason. We should figure out why this is and see if it's fixable.
@@ -330,6 +334,8 @@ public class WebXrVrInputTest {
      */
     @Test
     @MediumTest
+    @DisableIf.
+    Build(message = "K/M https://crbug.com/897259", sdk_is_less_than = Build.VERSION_CODES.N)
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     public void testPresentationLocksFocus() throws InterruptedException {
         presentationLocksFocusImpl(
@@ -475,7 +481,7 @@ public class WebXrVrInputTest {
 
         NativeUiUtils.clickAppButton(UserFriendlyElementName.NONE, new PointF());
         Assert.assertFalse("App button left Chrome",
-                ThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
+                TestThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
                     @Override
                     public Boolean call() throws Exception {
                         return mockApi.getExitFromVrCalled()
@@ -508,7 +514,7 @@ public class WebXrVrInputTest {
                 },
                 "DisplayActivate was never registered", POLL_TIMEOUT_LONG_MS,
                 POLL_CHECK_INTERVAL_SHORT_MS);
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             ViewEventSink.from(mTestRule.getWebContents()).onPauseForTesting();
             Assert.assertFalse(
                     "VR Shell is listening for headset insertion after WebContents paused",
@@ -558,8 +564,8 @@ public class WebXrVrInputTest {
     }
 
     /**
-     * Verifies that a Gamepad API gamepad is not returned when using WebXR and a Daydream View if
-     * WebXRGamepadSupport is not explicitly enabled. Correctness testing for
+     * Verifies that a Gamepad API gamepad is not returned when using WebXR and a Daydream headset
+     * if WebXRGamepadSupport is not explicitly enabled. Correctness testing for
      * https://crbug.com/830935.
      */
     @Test
@@ -594,7 +600,7 @@ public class WebXrVrInputTest {
     }
 
     /**
-     * Verifies that a Gamepad API gamepad is returned when using WebXR  and Daydream View if
+     * Verifies that a Gamepad API gamepad is returned when using WebXR and a Daydream headset if
      * WebXRGamepadSupport is explicitly enabled. Correctness testing for https://crbug.com/830935.
      */
     @Test
@@ -628,7 +634,7 @@ public class WebXrVrInputTest {
 
     /**
      * Verifies that a Gamepad API gamepad is not returned when not using WebXR, WebVR, or the
-     * WebXRGamepadSupport feature with Daydream View. Correctness testing for
+     * WebXRGamepadSupport feature with a Daydream headset. Correctness testing for
      * https://crbug.com/830935.
      */
     @Test
@@ -659,6 +665,13 @@ public class WebXrVrInputTest {
     private void webxrGamepadSupportImpl(int numExpectedGamepads, boolean webxrPresent,
             boolean daydream) throws InterruptedException {
         if (webxrPresent) {
+            // TODO(https://crbug.com/947581): Update the test and remove this when Gamepads are
+            // supported by WebXR again. getGamepads() should always return 0, and the test should
+            // check that too. For now, change the expected value rather than disabling the tests
+            // since we actually expect 0 gamepads in all cases after removing WebXRGamepadSupport
+            // (https://crbug.com/920025).
+            numExpectedGamepads = 0;
+
             mWebXrVrTestFramework.loadUrlAndAwaitInitialization(
                     WebXrVrTestFramework.getFileUrlForHtmlTestFile("test_webxr_gamepad_support"),
                     PAGE_LOAD_TIMEOUT_S);
@@ -678,8 +691,8 @@ public class WebXrVrInputTest {
                 controller.performControllerClick();
             }
         } else {
-            int x = mWebXrVrTestFramework.getFirstTabContentView().getWidth() / 2;
-            int y = mWebXrVrTestFramework.getFirstTabContentView().getHeight() / 2;
+            int x = mWebXrVrTestFramework.getCurrentContentView().getWidth() / 2;
+            int y = mWebXrVrTestFramework.getCurrentContentView().getHeight() / 2;
 
             View presentationView;
             if (webxrPresent) {
@@ -725,11 +738,7 @@ public class WebXrVrInputTest {
             @XrActivityRestriction({XrActivityRestriction.SupportedActivity.CTA})
             public void testAppButtonLongPressDisplaysPermissionsIncognito()
             throws InterruptedException {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            mTestRule.getActivity()
-                    .getTabCreator(true /* incognito */)
-                    .launchUrl("about:blank", TabLaunchType.FROM_LINK);
-        });
+        mWebXrVrTestFramework.openIncognitoTab("about:blank");
         testAppButtonLongPressDisplaysPermissionsImpl();
     }
 
@@ -737,14 +746,25 @@ public class WebXrVrInputTest {
         // Note that we need to pass in the WebContents to use throughout this because automatically
         // using the first tab's WebContents doesn't work in Incognito.
         mWebXrVrTestFramework.loadUrlAndAwaitInitialization(
-                mTestRule.getTestServer().getURL(
-                        WebXrVrTestFramework.getEmbeddedServerPathForHtmlTestFile(
-                                "generic_webxr_permission_page")),
+                mWebXrVrTestFramework.getEmbeddedServerUrlForHtmlTestFile(
+                        "generic_webxr_permission_page"),
                 PAGE_LOAD_TIMEOUT_S);
         WebXrVrTestFramework.runJavaScriptOrFail("requestPermission({audio:true})",
                 POLL_TIMEOUT_SHORT_MS, mTestRule.getWebContents());
-        PermissionUtils.waitForPermissionPrompt();
-        PermissionUtils.acceptPermissionPrompt();
+
+        // Accept the permission prompt. Standalone devices need to be special cased since they
+        // will be in the VR Browser.
+        if (TestVrShellDelegate.isOnStandalone()) {
+            NativeUiUtils.enableMockedInput();
+            NativeUiUtils.performActionAndWaitForVisibilityStatus(
+                    UserFriendlyElementName.BROWSING_DIALOG, true /* visible */, () -> {});
+            NativeUiUtils.waitForUiQuiescence();
+            NativeUiUtils.clickFallbackUiPositiveButton();
+        } else {
+            PermissionUtils.waitForPermissionPrompt();
+            PermissionUtils.acceptPermissionPrompt();
+        }
+
         WebXrVrTestFramework.waitOnJavaScriptStep(mTestRule.getWebContents());
         mWebXrVrTestFramework.enterSessionWithUserGestureOrFail(mTestRule.getWebContents());
         // The permission toasts automatically show for ~5 seconds when entering an immersive
@@ -804,11 +824,7 @@ public class WebXrVrInputTest {
             @CommandLineFlags.Add({"enable-features=WebXR"})
             @XrActivityRestriction({XrActivityRestriction.SupportedActivity.CTA})
             public void testInSessionPermissionRequestsIncognito() throws InterruptedException {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            mTestRule.getActivity()
-                    .getTabCreator(true /* incognito */)
-                    .launchUrl("about:blank", TabLaunchType.FROM_LINK);
-        });
+        mWebXrVrTestFramework.openIncognitoTab("about:blank");
         testInSessionPermissionRequestsImpl();
     }
 
@@ -816,16 +832,17 @@ public class WebXrVrInputTest {
         // Note that we need to pass in the WebContents to use throughout this because automatically
         // using the first tab's WebContents doesn't work in Incognito.
         mWebXrVrTestFramework.loadUrlAndAwaitInitialization(
-                mTestRule.getTestServer().getURL(
-                        WebXrVrTestFramework.getEmbeddedServerPathForHtmlTestFile(
-                                "generic_webxr_permission_page")),
+                mWebXrVrTestFramework.getEmbeddedServerUrlForHtmlTestFile(
+                        "generic_webxr_permission_page"),
                 PAGE_LOAD_TIMEOUT_S);
         mWebXrVrTestFramework.enterSessionWithUserGestureOrFail(mTestRule.getWebContents());
+        NativeUiUtils.enableMockedInput();
         NativeUiUtils.performActionAndWaitForVisibilityStatus(
                 UserFriendlyElementName.WEB_XR_HOSTED_CONTENT, true /* visible */, () -> {
                     WebXrVrTestFramework.runJavaScriptOrFail("requestPermission({audio:true})",
                             POLL_TIMEOUT_SHORT_MS, mTestRule.getWebContents());
                 });
+        NativeUiUtils.waitForUiQuiescence();
         // Click outside the prompt and ensure that it gets dismissed.
         NativeUiUtils.clickElement(
                 UserFriendlyElementName.WEB_XR_HOSTED_CONTENT, new PointF(0.55f, 0.0f));
@@ -837,6 +854,7 @@ public class WebXrVrInputTest {
                     WebXrVrTestFramework.runJavaScriptOrFail("requestPermission({audio:true})",
                             POLL_TIMEOUT_SHORT_MS, mTestRule.getWebContents());
                 });
+        NativeUiUtils.waitForUiQuiescence();
         NativeUiUtils.clickElement(
                 UserFriendlyElementName.WEB_XR_HOSTED_CONTENT, new PointF(0.4f, -0.4f));
         WebXrVrTestFramework.waitOnJavaScriptStep(mTestRule.getWebContents());

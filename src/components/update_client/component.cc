@@ -20,9 +20,12 @@
 #include "components/update_client/action_runner.h"
 #include "components/update_client/component_unpacker.h"
 #include "components/update_client/configurator.h"
+#include "components/update_client/network.h"
+#include "components/update_client/patcher.h"
 #include "components/update_client/protocol_definition.h"
 #include "components/update_client/protocol_serializer.h"
 #include "components/update_client/task_traits.h"
+#include "components/update_client/unzipper.h"
 #include "components/update_client/update_client.h"
 #include "components/update_client/update_client_errors.h"
 #include "components/update_client/update_engine.h"
@@ -151,11 +154,13 @@ void StartInstallOnBlockingTaskRunner(
     const base::FilePath& crx_path,
     const std::string& fingerprint,
     scoped_refptr<CrxInstaller> installer,
-    std::unique_ptr<service_manager::Connector> connector,
+    std::unique_ptr<Unzipper> unzipper_,
+    scoped_refptr<Patcher> patcher_,
     crx_file::VerifierFormat crx_format,
     InstallOnBlockingTaskRunnerCompleteCallback callback) {
   auto unpacker = base::MakeRefCounted<ComponentUnpacker>(
-      pk_hash, crx_path, installer, std::move(connector), crx_format);
+      pk_hash, crx_path, installer, std::move(unzipper_), std::move(patcher_),
+      crx_format);
 
   unpacker->Unpack(base::BindOnce(&UnpackCompleteOnBlockingTaskRunner,
                                   main_task_runner, crx_path, fingerprint,
@@ -620,7 +625,7 @@ void Component::StateDownloadingDiff::DoHandle() {
 
   crx_downloader_ = update_context.crx_downloader_factory(
       component.CanDoBackgroundDownload(),
-      update_context.config->URLLoaderFactory());
+      update_context.config->GetNetworkFetcherFactory());
 
   const auto& id = component.id_;
   crx_downloader_->set_progress_callback(
@@ -685,7 +690,7 @@ void Component::StateDownloading::DoHandle() {
 
   crx_downloader_ = update_context.crx_downloader_factory(
       component.CanDoBackgroundDownload(),
-      update_context.config->URLLoaderFactory());
+      update_context.config->GetNetworkFetcherFactory());
 
   const auto& id = component.id_;
   crx_downloader_->set_progress_callback(
@@ -751,10 +756,6 @@ void Component::StateUpdatingDiff::DoHandle() {
 
   component.NotifyObservers(Events::COMPONENT_UPDATE_READY);
 
-  // Create a fresh connector that can be used on the other task runner.
-  std::unique_ptr<service_manager::Connector> connector =
-      update_context.config->CreateServiceManagerConnector();
-
   base::CreateSequencedTaskRunnerWithTraits(kTaskTraits)
       ->PostTask(
           FROM_HERE,
@@ -763,7 +764,8 @@ void Component::StateUpdatingDiff::DoHandle() {
               base::ThreadTaskRunnerHandle::Get(),
               component.crx_component()->pk_hash, component.crx_path_,
               component.next_fp_, component.crx_component()->installer,
-              std::move(connector),
+              update_context.config->GetUnzipperFactory()->Create(),
+              update_context.config->GetPatcherFactory()->Create(),
               component.crx_component()->crx_format_requirement,
               base::BindOnce(&Component::StateUpdatingDiff::InstallComplete,
                              base::Unretained(this))));
@@ -816,10 +818,6 @@ void Component::StateUpdating::DoHandle() {
 
   component.NotifyObservers(Events::COMPONENT_UPDATE_READY);
 
-  // Create a fresh connector that can be used on the other task runner.
-  std::unique_ptr<service_manager::Connector> connector =
-      update_context.config->CreateServiceManagerConnector();
-
   base::CreateSequencedTaskRunnerWithTraits(kTaskTraits)
       ->PostTask(FROM_HERE,
                  base::BindOnce(
@@ -827,7 +825,8 @@ void Component::StateUpdating::DoHandle() {
                      base::ThreadTaskRunnerHandle::Get(),
                      component.crx_component()->pk_hash, component.crx_path_,
                      component.next_fp_, component.crx_component()->installer,
-                     std::move(connector),
+                     update_context.config->GetUnzipperFactory()->Create(),
+                     update_context.config->GetPatcherFactory()->Create(),
                      component.crx_component()->crx_format_requirement,
                      base::BindOnce(&Component::StateUpdating::InstallComplete,
                                     base::Unretained(this))));

@@ -151,6 +151,10 @@ def SyncGitRepo(url, destination, revision, reclone=False, pathspec=None,
     if url != push_url:
       GitSetRemoteRepo(url, destination, push_url=push_url, logger=logger)
 
+    # TODO(thakis): Remove once https://crbug.com/923062 is done.
+    logger.info('Remotes after cloning:')
+    log_tools.CheckCall(git + ['remote', '-v'], logger=logger, cwd=destination)
+
   # If a git cache URL is supplied, make sure it is setup as a git alternate.
   if git_cache_url:
     git_alternates = [git_cache_url]
@@ -257,7 +261,7 @@ def GitRevInfo(directory):
 def GetAuthenticatedGitURL(url):
   """Returns the authenticated version of a git URL.
 
-  In chromium, there is a special URL that is the "authenticated" version. The
+  In Chromium, there is a special URL that is the "authenticated" version. The
   URLs are identical but the authenticated one has special privileges.
   """
   urlsplit = urlparse.urlsplit(url)

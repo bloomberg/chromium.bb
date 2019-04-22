@@ -24,7 +24,7 @@ class BrailleDisplayPrivateGetDisplayStateFunction : public AsyncApiFunction {
 
 class BrailleDisplayPrivateWriteDotsFunction : public AsyncApiFunction {
   DECLARE_EXTENSION_FUNCTION("brailleDisplayPrivate.writeDots",
-                             BRAILLEDISPLAYPRIVATE_WRITEDOTS);
+                             BRAILLEDISPLAYPRIVATE_WRITEDOTS)
 
  public:
   BrailleDisplayPrivateWriteDotsFunction();

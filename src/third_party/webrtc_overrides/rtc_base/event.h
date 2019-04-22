@@ -24,18 +24,23 @@ class Event {
   void Reset();
 
   // Wait for the event to become signaled, for the specified number of
-  // |milliseconds|.  To wait indefinetly, pass kForever.
-  bool Wait(int milliseconds);
+  // milliseconds.  To wait indefinetly, pass kForever.
+  bool Wait(int give_up_after_ms);
+  bool Wait(int give_up_after_ms, int /*warn_after_ms*/) {
+    return Wait(give_up_after_ms);
+  }
 
  private:
   base::WaitableEvent event_;
   DISALLOW_COPY_AND_ASSIGN(Event);
 };
 
-// Pull ScopedAllowBaseSyncPrimitives into the rtc namespace.
+// Pull ScopedAllowBaseSyncPrimitives(ForTesting) into the rtc namespace.
 // Managing what types in WebRTC are allowed to use
 // ScopedAllowBaseSyncPrimitives, is done via thread_restrictions.h.
-using base::ScopedAllowBaseSyncPrimitives;
+using ScopedAllowBaseSyncPrimitives = base::ScopedAllowBaseSyncPrimitives;
+using ScopedAllowBaseSyncPrimitivesForTesting =
+    base::ScopedAllowBaseSyncPrimitivesForTesting;
 
 }  // namespace rtc
 

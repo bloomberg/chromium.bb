@@ -119,21 +119,24 @@ class SandboxDirectoryDatabaseTest : public testing::Test {
   void MakeHierarchyLink(FileId parent_id,
                          FileId child_id,
                          const base::FilePath::StringType& name) {
-    ASSERT_TRUE(db()->db_->Put(
-        leveldb::WriteOptions(),
-        "CHILD_OF:" + base::Int64ToString(parent_id) + ":" +
-        FilePathToString(base::FilePath(name)),
-        base::Int64ToString(child_id)).ok());
+    ASSERT_TRUE(db()->db_
+                    ->Put(leveldb::WriteOptions(),
+                          "CHILD_OF:" + base::NumberToString(parent_id) + ":" +
+                              FilePathToString(base::FilePath(name)),
+                          base::NumberToString(child_id))
+                    .ok());
   }
 
   // Deletes link from parent of |file_id| to |file_id|.
   void DeleteHierarchyLink(FileId file_id) {
     FileInfo file_info;
     ASSERT_TRUE(db()->GetFileInfo(file_id, &file_info));
-    ASSERT_TRUE(db()->db_->Delete(
-        leveldb::WriteOptions(),
-        "CHILD_OF:" + base::Int64ToString(file_info.parent_id) + ":" +
-        FilePathToString(base::FilePath(file_info.name))).ok());
+    ASSERT_TRUE(
+        db()->db_
+            ->Delete(leveldb::WriteOptions(),
+                     "CHILD_OF:" + base::NumberToString(file_info.parent_id) +
+                         ":" + FilePathToString(base::FilePath(file_info.name)))
+            .ok());
   }
 
  protected:

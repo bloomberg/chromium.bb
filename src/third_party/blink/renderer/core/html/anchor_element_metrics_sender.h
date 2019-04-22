@@ -28,6 +28,7 @@ class CORE_EXPORT AnchorElementMetricsSender final
  public:
   static const char kSupplementName[];
 
+  explicit AnchorElementMetricsSender(Document&);
   virtual ~AnchorElementMetricsSender();
 
   // Returns the anchor element metrics sender of the root document of
@@ -52,11 +53,9 @@ class CORE_EXPORT AnchorElementMetricsSender final
   // Returns the stored |anchor_elements_|.
   const HeapHashSet<Member<HTMLAnchorElement>>& GetAnchorElements() const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
-  explicit AnchorElementMetricsSender(Document&);
-
   // Associates |metrics_host_| with the IPC interface if not already, so it can
   // be used to send messages. Returns true if associated, false otherwise.
   bool AssociateInterface();

@@ -29,6 +29,7 @@ class WindowProxyManager : public GarbageCollected<WindowProxyManager> {
   void ClearForClose();
   void CORE_EXPORT ClearForNavigation();
   void ClearForSwap();
+  void ClearForV8MemoryPurge();
 
   // Global proxies are passed in a vector to maintain their order: global proxy
   // object for the main world is always first. This is needed to prevent bugs
@@ -90,10 +91,6 @@ class WindowProxyManagerImplHelper : public WindowProxyManager {
 class LocalWindowProxyManager
     : public WindowProxyManagerImplHelper<LocalFrame, LocalWindowProxy> {
  public:
-  static LocalWindowProxyManager* Create(LocalFrame& frame) {
-    return MakeGarbageCollected<LocalWindowProxyManager>(frame);
-  }
-
   explicit LocalWindowProxyManager(LocalFrame& frame)
       : WindowProxyManagerImplHelper<LocalFrame, LocalWindowProxy>(
             frame,
@@ -112,10 +109,6 @@ class LocalWindowProxyManager
 class RemoteWindowProxyManager
     : public WindowProxyManagerImplHelper<RemoteFrame, RemoteWindowProxy> {
  public:
-  static RemoteWindowProxyManager* Create(RemoteFrame& frame) {
-    return MakeGarbageCollected<RemoteWindowProxyManager>(frame);
-  }
-
   explicit RemoteWindowProxyManager(RemoteFrame& frame)
       : WindowProxyManagerImplHelper<RemoteFrame, RemoteWindowProxy>(
             frame,

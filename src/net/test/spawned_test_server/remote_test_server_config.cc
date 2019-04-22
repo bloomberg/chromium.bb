@@ -28,8 +28,6 @@ base::FilePath GetTestServerConfigFilePath() {
   base::FilePath dir;
 #if defined(OS_ANDROID)
   base::PathService::Get(base::DIR_ANDROID_EXTERNAL_STORAGE, &dir);
-#elif defined(OS_FUCHSIA)
-  dir = base::FilePath("/test-shared");
 #else
   base::PathService::Get(base::DIR_TEMP, &dir);
 #endif
@@ -61,8 +59,8 @@ RemoteTestServerConfig RemoteTestServerConfig::Load() {
   if (!ReadFileToString(config_path, &config_json))
     LOG(FATAL) << "Failed to read " << config_path.value();
 
-  std::unique_ptr<base::DictionaryValue> config =
-      base::DictionaryValue::From(base::JSONReader::Read(config_json));
+  std::unique_ptr<base::DictionaryValue> config = base::DictionaryValue::From(
+      base::JSONReader::ReadDeprecated(config_json));
   if (!config)
     LOG(FATAL) << "Failed to parse " << config_path.value();
 

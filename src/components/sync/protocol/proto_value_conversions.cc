@@ -252,16 +252,16 @@ class ToValueVisitor {
   }
 
   std::unique_ptr<base::Value> ToValue(int64_t value) const {
-    return std::make_unique<base::Value>(base::Int64ToString(value));
+    return std::make_unique<base::Value>(base::NumberToString(value));
   }
   std::unique_ptr<base::Value> ToValue(uint64_t value) const {
-    return std::make_unique<base::Value>(base::Int64ToString(value));
+    return std::make_unique<base::Value>(base::NumberToString(value));
   }
   std::unique_ptr<base::Value> ToValue(uint32_t value) const {
-    return std::make_unique<base::Value>(base::Int64ToString(value));
+    return std::make_unique<base::Value>(base::NumberToString(value));
   }
   std::unique_ptr<base::Value> ToValue(int32_t value) const {
-    return std::make_unique<base::Value>(base::Int64ToString(value));
+    return std::make_unique<base::Value>(base::NumberToString(value));
   }
 
   std::unique_ptr<base::Value> ToValue(bool value) const {
@@ -343,6 +343,7 @@ IMPLEMENT_PROTO_TO_VALUE(PrinterSpecifics)
 IMPLEMENT_PROTO_TO_VALUE(PriorityPreferenceSpecifics)
 IMPLEMENT_PROTO_TO_VALUE(ReadingListSpecifics)
 IMPLEMENT_PROTO_TO_VALUE(SearchEngineSpecifics)
+IMPLEMENT_PROTO_TO_VALUE(SecurityEventSpecifics)
 IMPLEMENT_PROTO_TO_VALUE(SendTabToSelfSpecifics)
 IMPLEMENT_PROTO_TO_VALUE(SessionHeader)
 IMPLEMENT_PROTO_TO_VALUE(SessionSpecifics)
@@ -355,6 +356,7 @@ IMPLEMENT_PROTO_TO_VALUE(TabNavigation)
 IMPLEMENT_PROTO_TO_VALUE(ThemeSpecifics)
 IMPLEMENT_PROTO_TO_VALUE(TimeRangeDirective)
 IMPLEMENT_PROTO_TO_VALUE(TypedUrlSpecifics)
+IMPLEMENT_PROTO_TO_VALUE(UrlDirective)
 IMPLEMENT_PROTO_TO_VALUE(UserConsentSpecifics)
 IMPLEMENT_PROTO_TO_VALUE(UserEventSpecifics)
 IMPLEMENT_PROTO_TO_VALUE(WalletMaskedCreditCard)

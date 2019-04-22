@@ -550,61 +550,7 @@ public:
 
 		endRenderPass(vk, *m_cmdBuffer);
 
-		// Prepare color image for copy
-		{
-			const VkImageMemoryBarrier barriers[] =
-			{
-				{
-					VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,						// VkStructureType			sType;
-					DE_NULL,													// const void*				pNext;
-					VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,						// VkAccessFlags			outputMask;
-					VK_ACCESS_TRANSFER_READ_BIT,								// VkAccessFlags			inputMask;
-					VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,					// VkImageLayout			oldLayout;
-					VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,						// VkImageLayout			newLayout;
-					VK_QUEUE_FAMILY_IGNORED,									// deUint32					srcQueueFamilyIndex;
-					VK_QUEUE_FAMILY_IGNORED,									// deUint32					destQueueFamilyIndex;
-					*m_colorImage,												// VkImage					image;
-					m_colorSubresourceRange,									// VkImageSubresourceRange	subresourceRange;
-				},
-			};
-
-			vk.cmdPipelineBarrier(*m_cmdBuffer, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0u,
-				0u, DE_NULL, 0u, DE_NULL, DE_LENGTH_OF_ARRAY(barriers), barriers);
-		}
-		// Color image -> host buffer
-		{
-			const VkBufferImageCopy region =
-			{
-				0ull,																		// VkDeviceSize                bufferOffset;
-				0u,																			// uint32_t                    bufferRowLength;
-				0u,																			// uint32_t                    bufferImageHeight;
-				makeImageSubresourceLayers(VK_IMAGE_ASPECT_COLOR_BIT, 0u, 0u, 1u),			// VkImageSubresourceLayers    imageSubresource;
-				makeOffset3D(0, 0, 0),														// VkOffset3D                  imageOffset;
-				makeExtent3D(m_renderSize.x(), m_renderSize.y(), 1u),						// VkExtent3D                  imageExtent;
-			};
-
-			vk.cmdCopyImageToBuffer(*m_cmdBuffer, *m_colorImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, m_colorBuffer, 1u, &region);
-		}
-		// Buffer write barrier
-		{
-			const VkBufferMemoryBarrier barriers[] =
-			{
-				{
-					VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,		// VkStructureType    sType;
-					DE_NULL,										// const void*        pNext;
-					VK_ACCESS_TRANSFER_WRITE_BIT,					// VkAccessFlags      srcAccessMask;
-					VK_ACCESS_HOST_READ_BIT,						// VkAccessFlags      dstAccessMask;
-					VK_QUEUE_FAMILY_IGNORED,						// uint32_t           srcQueueFamilyIndex;
-					VK_QUEUE_FAMILY_IGNORED,						// uint32_t           dstQueueFamilyIndex;
-					m_colorBuffer,									// VkBuffer           buffer;
-					0ull,											// VkDeviceSize       offset;
-					VK_WHOLE_SIZE,									// VkDeviceSize       size;
-				},
-			};
-
-			vk.cmdPipelineBarrier(*m_cmdBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_HOST_BIT, 0u,
-				0u, DE_NULL, DE_LENGTH_OF_ARRAY(barriers), barriers, DE_NULL, 0u);
-		}
+		copyImageToBuffer(vk, *m_cmdBuffer, *m_colorImage, m_colorBuffer, m_renderSize);
 
 		endCommandBuffer(vk, *m_cmdBuffer);
 		submitCommandsAndWait(vk, device, queue, *m_cmdBuffer, 0U, DE_NULL, DE_NULL, 0U, DE_NULL, useDeviceGroups, deviceID);
@@ -720,7 +666,7 @@ public:
 		m_colorBufferAlloc				= bindBuffer(vk, getDevice(), getAllocator(), *m_colorBuffer, MemoryRequirement::HostVisible);
 
 		deMemset(m_colorBufferAlloc->getHostPtr(), 0, static_cast<std::size_t>(m_colorBufferSize));
-		flushMappedMemoryRange(vk, getDevice(), m_colorBufferAlloc->getMemory(), m_colorBufferAlloc->getOffset(), m_colorBufferSize);
+		flushAlloc(vk, getDevice(), *m_colorBufferAlloc);
 	}
 
 protected:
@@ -769,7 +715,7 @@ protected:
 
 	bool isResultImageCorrect (void) const
 	{
-		invalidateMappedMemoryRange(getDeviceInterface(), getDevice(), m_colorBufferAlloc->getMemory(), 0ull, m_colorBufferSize);
+		invalidateAlloc(getDeviceInterface(), getDevice(), *m_colorBufferAlloc);
 
 		const tcu::ConstPixelBufferAccess resultImage (mapVkFormat(m_colorFormat), m_renderSize.x(), m_renderSize.y(), 1u, m_colorBufferAlloc->getHostPtr());
 
@@ -995,7 +941,7 @@ public:
 					for (deUint32 i = 0; i < numBufferEntries; ++i)
 						pData[i] = IVec4(3*i ^ 127, 0, 0, 0);
 
-					flushMappedMemoryRange(vk, getDevice(), stagingBufferAlloc->getMemory(), stagingBufferAlloc->getOffset(), stagingBufferSize);
+					flushAlloc(vk, getDevice(), *stagingBufferAlloc);
 
 					const VkBufferCopy copyRegion =
 					{
@@ -1060,7 +1006,7 @@ public:
 				m_vertexBufferAlloc	= bindBuffer(vk, getDevice(), getAllocator(), *m_vertexBuffer, MemoryRequirement::HostVisible);
 
 				deMemcpy(m_vertexBufferAlloc->getHostPtr(), &vertexData[0], vertexBufferSize);
-				flushMappedMemoryRange(vk, getDevice(), m_vertexBufferAlloc->getMemory(), m_vertexBufferAlloc->getOffset(), vertexBufferSize);
+				flushAlloc(vk, getDevice(), *m_vertexBufferAlloc);
 			}
 
 			// Draw
@@ -1263,7 +1209,7 @@ public:
 
 			// Upload to the sparse buffer
 			{
-				flushMappedMemoryRange(vk, getDevice(), m_stagingBufferAlloc->getMemory(), m_stagingBufferAlloc->getOffset(), m_stagingBufferSize);
+				flushAlloc(vk, getDevice(), *m_stagingBufferAlloc);
 
 				VkDeviceSize	firstChunkOffset	= 0ull;
 				VkDeviceSize	secondChunkOffset	= m_perDrawBufferOffset;
@@ -1415,7 +1361,7 @@ public:
 
 			generateGrid(m_vertexBufferAlloc->getHostPtr(), step, -1.0f, -1.0f, GRID_SIZE, GRID_SIZE);
 
-			flushMappedMemoryRange(vk, getDevice(), m_vertexBufferAlloc->getMemory(), m_vertexBufferAlloc->getOffset(), vertexBufferSize);
+			flushAlloc(vk, getDevice(), *m_vertexBufferAlloc);
 		}
 
 		// Sparse index buffer
@@ -1477,7 +1423,7 @@ public:
 
 		{
 			generateGrid(m_vertexBufferAlloc->getHostPtr(), 2.0f, -1.0f, -1.0f, 1, 1);
-			flushMappedMemoryRange(vk, getDevice(), m_vertexBufferAlloc->getMemory(), m_vertexBufferAlloc->getOffset(), vertexBufferSize);
+			flushAlloc(vk, getDevice(), *m_vertexBufferAlloc);
 		}
 
 		// Indirect buffer

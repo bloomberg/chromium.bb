@@ -4,7 +4,7 @@ import os
 from six import BytesIO
 
 def rel_path_to_url(rel_path, url_base="/"):
-    assert not os.path.isabs(rel_path)
+    assert not os.path.isabs(rel_path), rel_path
     if url_base[0] != "/":
         url_base = "/" + url_base
     if url_base[-1] != "/":
@@ -14,7 +14,10 @@ def rel_path_to_url(rel_path, url_base="/"):
 
 def from_os_path(path):
     assert os.path.sep == "/" or platform.system() == "Windows"
-    rv = path.replace(os.path.sep, "/")
+    if "/" == os.path.sep:
+        rv = path
+    else:
+        rv = path.replace(os.path.sep, "/")
     if "\\" in rv:
         raise ValueError("path contains \\ when separator is %s" % os.path.sep)
     return rv
@@ -24,6 +27,8 @@ def to_os_path(path):
     assert os.path.sep == "/" or platform.system() == "Windows"
     if "\\" in path:
         raise ValueError("normalised path contains \\")
+    if "/" == os.path.sep:
+        return path
     return path.replace("/", os.path.sep)
 
 

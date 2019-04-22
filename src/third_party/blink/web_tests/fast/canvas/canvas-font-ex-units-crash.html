@@ -4,14 +4,15 @@
 <script>
 test(function(t) {
     ctx = document.createElement('canvas').getContext('2d');
-    
+
     ctx.font = "5ex sans-serif";
-    
-    size = parseInt(ctx.font.substr(0, 2));
-    family = ctx.font.substr(5);
-    
+    var words = ctx.font.split(' ');
+
+    size = parseFloat(words[0]);
+    family = words[1];
+
     assert_approx_equals(size, 25, 10);
     assert_equals(family, 'sans-serif');
-}, "Test that setting a font with size in 'ex' units doesn't crash.");
+}, "Test that setting a font with size in 'ex' units doesn't crash and keeps the expected size and family for the font.");
 </script>
 </body>

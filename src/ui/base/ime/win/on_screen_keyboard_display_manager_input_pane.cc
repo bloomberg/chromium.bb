@@ -4,6 +4,7 @@
 
 #include "ui/base/ime/win/on_screen_keyboard_display_manager_input_pane.h"
 
+#include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/win/com_init_util.h"

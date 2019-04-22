@@ -9,9 +9,9 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/values.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/network/network_device_handler.h"
 #include "chromeos/network/network_handler_callbacks.h"
 #include "net/base/ip_endpoint.h"
@@ -19,7 +19,8 @@
 
 namespace chromeos {
 
-class CHROMEOS_EXPORT MockNetworkDeviceHandler : public NetworkDeviceHandler {
+class COMPONENT_EXPORT(CHROMEOS_NETWORK) MockNetworkDeviceHandler
+    : public NetworkDeviceHandler {
  public:
   MockNetworkDeviceHandler();
   virtual ~MockNetworkDeviceHandler();

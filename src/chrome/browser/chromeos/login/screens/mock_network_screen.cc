@@ -9,11 +9,15 @@ namespace chromeos {
 using ::testing::AtLeast;
 using ::testing::_;
 
-MockNetworkScreen::MockNetworkScreen(BaseScreenDelegate* base_screen_delegate,
-                                     NetworkScreenView* view)
-    : NetworkScreen(base_screen_delegate, view) {}
+MockNetworkScreen::MockNetworkScreen(NetworkScreenView* view,
+                                     const ScreenExitCallback& exit_callback)
+    : NetworkScreen(view, exit_callback) {}
 
 MockNetworkScreen::~MockNetworkScreen() = default;
+
+void MockNetworkScreen::ExitScreen(NetworkScreen::Result result) {
+  exit_callback()->Run(result);
+}
 
 MockNetworkScreenView::MockNetworkScreenView() {
   EXPECT_CALL(*this, MockBind(_)).Times(AtLeast(1));

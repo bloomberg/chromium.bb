@@ -494,4 +494,13 @@ TEST_F(PowerNotificationControllerTest, UpdateNotificationState) {
   }
 }
 
+// Test that a notification isn't shown if powerd sends a -1 time-to-empty value
+// to indicate that it couldn't produce an estimate: https://crbug.com/930358
+TEST_F(PowerNotificationControllerTest, IgnoreMissingBatteryEstimates) {
+  PowerSupplyProperties proto = DefaultPowerSupplyProperties();
+  proto.set_battery_time_to_empty_sec(-1);
+  UpdateNotificationState(proto, PowerNotificationController::NOTIFICATION_NONE,
+                          false, false);
+}
+
 }  // namespace ash

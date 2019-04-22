@@ -5,14 +5,39 @@
 module views_bridge_mac.mojom;
 
 import "mojo/public/mojom/base/string16.mojom";
+import "ui/base/accelerators/mojo/accelerator.mojom";
 import "ui/base/mojo/ui_base_types.mojom";
+import "ui/base/mojo/window_open_disposition.mojom";
 import "ui/display/mojo/display.mojom";
 import "ui/events/mojo/event.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/gfx/mojo/ca_layer_params.mojom";
 
-// The interface through which a NativeWidgetMac may interact with an NSWindow
-// in another process.
+struct ValidateUserInterfaceItemResult {
+  // Whether or not the specified sender should be enabled.
+  bool enable;
+
+  // If true, then the item should be disabled if there exists no key equivalent
+  // for the item.
+  bool disable_if_has_no_key_equivalent;
+
+  // The new title to set for the item (unset if the title is not to be
+  // changed).
+  mojo_base.mojom.String16? new_title;
+
+  // Whether or not to change the hidden state for the item, and the new hidden
+  // state to set.
+  bool set_hidden_state;
+  bool new_hidden_state;
+
+  // Whether or not to change the toggled state for the item, and the new toggle
+  // state to set.
+  bool set_toggle_state;
+  bool new_toggle_state;
+};
+
+// The interface through which an NSWindow (possibly in a process separate from
+// the browser process) may interact with a NativeWidgetMac.
 interface BridgedNativeWidgetHost {
   // Update the views::Widget, ui::Compositor and ui::Layer's visibility.
   OnVisibilityChanged(bool visible);
@@ -24,6 +49,11 @@ interface BridgedNativeWidgetHost {
   // frame changing size. Note that this will not necessarily match the content
   // bounds from OnWindowGeometryChanged.
   OnViewSizeChanged(gfx.mojom.Size new_size);
+
+  // The vertical position from which sheets should be anchored, from the top
+  // of the content view.
+  [Sync]
+  GetSheetOffsetY() => (int32 offset_y);
 
   // Indicate if full keyboard accessibility is needed and update focus if
   // needed.
@@ -167,12 +197,39 @@ interface BridgedNativeWidgetHost {
   // Handle "Move focus to the window toolbar" shortcut.
   OnFocusWindowToolbar();
 
-  // Return in |element_token| the token for the AX node for this view. Return
-  // the pid of the browser process to be registered as a remote UI process. Set
-  // the AX node for this view to have the element indicated by |window_token|
-  // as its window and the element indicated by |view_token| as its parent.
+  // Send the token for the NSWindow and NSView for this widget.
+  SetRemoteAccessibilityTokens(
+      array<uint8> window_token, array<uint8> view_token);
+
+  // Return in |element_token| the token for the root views AX node for this
+  // view and in |host_pid| the pid for the host process.
   [Sync]
-  GetAccessibilityTokens(array<uint8> window_token,
-                         array<uint8> view_token) =>
+  GetRootViewAccessibilityToken() =>
       (int64 host_pid, array<uint8> element_token);
+
+  // Return the result for -[NSUserInterfaceValidations
+  // validateUserInterfaceItem] for a given command, along with any state for
+  // that item that should be updated.
+  [Sync]
+  ValidateUserInterfaceItem(int32 command) =>
+      (ValidateUserInterfaceItemResult result);
+
+  // Execute the chrome command |command| with |window_open_disposition|. If
+  // |is_before_first_responder| then only call ExecuteCommand if the command
+  // is reserved and extension shortcut handling is not suspended. Returns in
+  // |was_executed| whether or not ExecuteCommand was called (regardless of what
+  // the return value for ExecuteCommand was).
+  [Sync]
+  ExecuteCommand(int32 command,
+                 ui.mojom.WindowOpenDisposition window_open_disposition,
+                 bool is_before_first_responder) => (bool was_executed);
+
+  // Give the widget's FocusManager a chance to to handle the specified
+  // accelerator. If |require_priority_handler| is true, the only send the
+  // accelerator to the FocusManager if the FocusManager has a priority handler
+  // for the specified accelerator.
+  [Sync]
+  HandleAccelerator(ui.mojom.Accelerator accelerator,
+                    bool require_priority_handler) =>
+      (bool was_handled);
 };

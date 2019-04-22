@@ -60,7 +60,6 @@ base::android::ScopedJavaLocalRef<jobject> ReaderModeInfoBar::GetTab(
 void ReaderModeInfoBar::ProcessButton(int action) {}
 
 void JNI_ReaderModeInfoBar_Create(JNIEnv* env,
-                                  const JavaParamRef<jclass>& j_caller,
                                   const JavaParamRef<jobject>& j_tab) {
   InfoBarService* service = InfoBarService::FromWebContents(
       TabAndroid::GetNativeTab(env, j_tab)->web_contents());

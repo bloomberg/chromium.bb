@@ -122,7 +122,7 @@ bool SessionLengthLimiterTest::GetSessionUserActivitySeenPref() {
 void SessionLengthLimiterTest::SetSessionStartTimePref(
     const base::TimeTicks& session_start_time) {
   local_state_.SetUserPref(prefs::kSessionStartTime,
-                           std::make_unique<base::Value>(base::Int64ToString(
+                           std::make_unique<base::Value>(base::NumberToString(
                                session_start_time.ToInternalValue())));
 }
 

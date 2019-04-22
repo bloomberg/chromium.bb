@@ -43,12 +43,7 @@ public class EmptyBrowserParts implements BrowserParts {
     }
 
     @Override
-    public boolean isActivityDestroyed() {
-        return false;
-    }
-
-    @Override
-    public boolean isActivityFinishing() {
+    public boolean isActivityFinishingOrDestroyed() {
         return false;
     }
 

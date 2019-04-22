@@ -22,15 +22,15 @@ class CORE_EXPORT StylePropertyMapReadOnly
  public:
   virtual CSSStyleValue* get(const ExecutionContext*,
                              const String& property_name,
-                             ExceptionState&) = 0;
+                             ExceptionState&) const = 0;
   virtual CSSStyleValueVector getAll(const ExecutionContext*,
                                      const String& property_name,
-                                     ExceptionState&) = 0;
+                                     ExceptionState&) const = 0;
   virtual bool has(const ExecutionContext*,
                    const String& property_name,
-                   ExceptionState&) = 0;
+                   ExceptionState&) const = 0;
 
-  virtual unsigned int size() = 0;
+  virtual unsigned int size() const = 0;
 };
 
 }  // namespace blink

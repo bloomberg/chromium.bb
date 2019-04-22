@@ -6,20 +6,22 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_MEDIA_CONTROLS_ROTATE_TO_FULLSCREEN_DELEGATE_H_
 
 #include "base/optional.h"
-#include "third_party/blink/renderer/core/dom/events/event_listener.h"
+#include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace blink {
 
 class DeviceOrientationEvent;
 class HTMLVideoElement;
-class ElementVisibilityObserver;
+class IntersectionObserver;
+class IntersectionObserverEntry;
 
 // MediaControlsRotateToFullscreenDelegate automatically enters and exits
 // fullscreen when the device is rotated whilst watching a <video>. It is meant
 // to be created by `MediaControlsImpl` when the feature applies. Once created,
 // it will listen for events.
-class MediaControlsRotateToFullscreenDelegate final : public EventListener {
+class MediaControlsRotateToFullscreenDelegate final
+    : public NativeEventListener {
  public:
   explicit MediaControlsRotateToFullscreenDelegate(HTMLVideoElement&);
 
@@ -33,7 +35,7 @@ class MediaControlsRotateToFullscreenDelegate final : public EventListener {
   void Detach();
 
   // EventListener implementation.
-  bool operator==(const EventListener&) const override;
+  void Invoke(ExecutionContext*, Event*) override;
 
   void Trace(blink::Visitor*) override;
 
@@ -43,11 +45,9 @@ class MediaControlsRotateToFullscreenDelegate final : public EventListener {
   // Represents either screen orientation or video aspect ratio.
   enum class SimpleOrientation { kPortrait, kLandscape, kUnknown };
 
-  // EventListener implementation.
-  void Invoke(ExecutionContext*, Event*) override;
-
   void OnStateChange();
-  void OnVisibilityChange(bool is_visible);
+  void OnIntersectionChange(
+      const HeapVector<Member<IntersectionObserverEntry>>& entries);
   void OnDeviceOrientationAvailable(DeviceOrientationEvent*);
   void OnScreenOrientationChange();
 
@@ -58,12 +58,12 @@ class MediaControlsRotateToFullscreenDelegate final : public EventListener {
 
   SimpleOrientation current_screen_orientation_ = SimpleOrientation::kUnknown;
 
-  // Only valid when visibility_observer_ is active and the first
-  // OnVisibilityChanged has been received; otherwise assume video is hidden.
+  // Only valid when intersection_observer_ is active and the first
+  // OnIntersectionChanged has been received; otherwise assume video is hidden.
   bool is_visible_ = false;
 
   // This is null whenever we're not listening.
-  Member<ElementVisibilityObserver> visibility_observer_ = nullptr;
+  Member<IntersectionObserver> intersection_observer_ = nullptr;
 
   // `video_element_` owns MediaControlsImpl that owns |this|.
   Member<HTMLVideoElement> video_element_;

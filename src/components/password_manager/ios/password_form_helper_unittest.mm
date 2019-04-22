@@ -10,6 +10,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/ios/wait_util.h"
+#include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/password_manager/core/browser/log_manager.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
@@ -30,6 +31,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+using autofill::FormData;
 using autofill::PasswordForm;
 using autofill::PasswordFormFillData;
 using base::test::ios::kWaitForJSCompletionTimeout;
@@ -731,6 +733,53 @@ TEST_F(PasswordFormHelperTest, FindAndFillMultiplePasswordForms) {
       @"u2=john.doe@gmail.com;p2=super!secret;"
        "u3=john.doe@gmail.com;p3=super!secret;",
       result);
+}
+
+// Tests that extractPasswordFormData extracts wanted form on page with mutiple
+// forms.
+TEST_F(PasswordFormHelperTest, ExtractPasswordFormData) {
+  MockJsPasswordManager* mockJsPasswordManager = [[MockJsPasswordManager alloc]
+      initWithReceiver:web_state()->GetJSInjectionReceiver()];
+  [helper_ setJsPasswordManager:mockJsPasswordManager];
+  LoadHtml(@"<form><input id='u1' type='text' name='un1'>"
+            "<input id='p1' type='password' name='pw1'></form>"
+            "<form><input id='u2' type='text' name='un2'>"
+            "<input id='p2' type='password' name='pw2'></form>"
+            "<form><input id='u3' type='text' name='un3'>"
+            "<input id='p3' type='password' name='pw3'></form>");
+  __block int call_counter = 0;
+  __block int success_counter = 0;
+  __block FormData result = FormData();
+  [helper_ extractPasswordFormData:base::SysUTF8ToNSString(GetFormId(1))
+                 completionHandler:^(BOOL complete, const FormData& form) {
+                   ++call_counter;
+                   if (complete) {
+                     ++success_counter;
+                     result = form;
+                   }
+                 }];
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
+    return call_counter == 1;
+  }));
+  EXPECT_EQ(1, success_counter);
+  EXPECT_EQ(result.name, base::ASCIIToUTF16(GetFormId(1)));
+
+  call_counter = 0;
+  success_counter = 0;
+  result = FormData();
+
+  [helper_ extractPasswordFormData:@"unknown"
+                 completionHandler:^(BOOL complete, const FormData& form) {
+                   ++call_counter;
+                   if (complete) {
+                     ++success_counter;
+                     result = form;
+                   }
+                 }];
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
+    return call_counter == 1;
+  }));
+  EXPECT_EQ(0, success_counter);
 }
 
 }  // namespace

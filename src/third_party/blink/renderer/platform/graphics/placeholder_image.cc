@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/stl_util.h"
 #include "third_party/blink/renderer/platform/fonts/font.h"
 #include "third_party/blink/renderer/platform/fonts/font_description.h"
 #include "third_party/blink/renderer/platform/fonts/font_family.h"
@@ -126,7 +127,7 @@ String FormatOriginalResourceSizeBytes(int64_t bytes) {
   // Find the smallest unit that can represent |bytes| in 3 digits or less.
   // Round up to the next higher unit if possible when it would take 4 digits to
   // display the amount, e.g. 1000 KB will be rounded up to 1 MB.
-  for (; units < kUnitsNames + (arraysize(kUnitsNames) - 1) &&
+  for (; units < kUnitsNames + (base::size(kUnitsNames) - 1) &&
          bytes >= denomenator * 1000;
        ++units, denomenator *= 1024) {
   }

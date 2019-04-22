@@ -5,7 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SUGGESTION_TEXT_SUGGESTION_CONTROLLER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SUGGESTION_TEXT_SUGGESTION_CONTROLLER_H_
 
-#include "third_party/blink/public/platform/input_host.mojom-blink.h"
+#include <utility>
+#include "third_party/blink/public/mojom/input/input_host.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/document_shutdown_observer.h"
@@ -44,7 +45,7 @@ class CORE_EXPORT TextSuggestionController final
   void OnSuggestionMenuClosed();
   void SuggestionMenuTimeoutCallback(size_t max_number_of_suggestions);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   friend class TextSuggestionControllerTest;
@@ -63,9 +64,9 @@ class CORE_EXPORT TextSuggestionController final
       const Vector<TextSuggestionInfo>& text_suggestion_infos,
       const String& misspelled_word);
   void ShowSpellCheckMenu(
-      const std::pair<Node*, DocumentMarker*>& node_spelling_marker_pair);
+      const std::pair<const Text*, DocumentMarker*>& node_spelling_marker_pair);
   void ShowSuggestionMenu(
-      const HeapVector<std::pair<Member<Node>, Member<DocumentMarker>>>&
+      const HeapVector<std::pair<Member<const Text>, Member<DocumentMarker>>>&
           node_suggestion_marker_pairs,
       size_t max_number_of_suggestions);
   void ReplaceActiveSuggestionRange(const String&);

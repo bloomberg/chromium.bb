@@ -36,32 +36,6 @@ class Coordinates : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static Coordinates* Create(double latitude,
-                             double longitude,
-                             bool provides_altitude,
-                             double altitude,
-                             double accuracy,
-                             bool provides_altitude_accuracy,
-                             double altitude_accuracy,
-                             bool provides_heading,
-                             double heading,
-                             bool provides_speed,
-                             double speed) {
-    return new Coordinates(latitude, longitude, provides_altitude, altitude,
-                           accuracy, provides_altitude_accuracy,
-                           altitude_accuracy, provides_heading, heading,
-                           provides_speed, speed);
-  }
-
-  double latitude() const { return latitude_; }
-  double longitude() const { return longitude_; }
-  double altitude(bool& is_null) const;
-  double accuracy() const { return accuracy_; }
-  double altitudeAccuracy(bool& is_null) const;
-  double heading(bool& is_null) const;
-  double speed(bool& is_null) const;
-
- private:
   Coordinates(double latitude,
               double longitude,
               bool provides_altitude,
@@ -85,6 +59,15 @@ class Coordinates : public ScriptWrappable {
         can_provide_heading_(provides_heading),
         can_provide_speed_(provides_speed) {}
 
+  double latitude() const { return latitude_; }
+  double longitude() const { return longitude_; }
+  double altitude(bool& is_null) const;
+  double accuracy() const { return accuracy_; }
+  double altitudeAccuracy(bool& is_null) const;
+  double heading(bool& is_null) const;
+  double speed(bool& is_null) const;
+
+ private:
   double latitude_;
   double longitude_;
   double altitude_;

@@ -234,6 +234,7 @@ class VIZ_SERVICE_EXPORT FragmentShader {
   bool has_blend_mode() const { return blend_mode_ != BLEND_MODE_NONE; }
 
   void SetBlendModeFunctions(std::string* shader_string) const;
+  void SetRoundedCornerFunctions(std::string* shader_string) const;
 
   // Settings that are modified by sub-classes.
   AAMode aa_mode_ = NO_AA;
@@ -307,6 +308,11 @@ class VIZ_SERVICE_EXPORT FragmentShader {
   int a_texture_location_ = -1;
   int ya_clamp_rect_location_ = -1;
   int uv_clamp_rect_location_ = -1;
+
+  // Rounded corner locations
+  bool has_rounded_corner_ = false;
+  int rounded_corner_rect_location_ = -1;
+  int rounded_corner_radius_location_ = -1;
 
   // The resource offset and multiplier to adjust for bit depth.
   int resource_multiplier_location_ = -1;

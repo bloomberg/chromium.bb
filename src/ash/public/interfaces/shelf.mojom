@@ -9,6 +9,13 @@ import "mojo/public/mojom/base/string16.mojom";
 import "ui/events/mojo/event.mojom";
 import "ui/gfx/image/mojo/image.mojom";
 
+// These values match ash::ShelfAutoHideBehavior.
+enum ShelfAutoHideBehavior {
+  SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS,  // Always auto-hide.
+  SHELF_AUTO_HIDE_BEHAVIOR_NEVER,   // Never auto-hide.
+  SHELF_AUTO_HIDE_ALWAYS_HIDDEN,    // Always hide.
+};
+
 // The actions that may be performed when a shelf item is selected.
 // These values match ash::ShelfAction.
 enum ShelfAction {
@@ -17,6 +24,7 @@ enum ShelfAction {
   WINDOW_ACTIVATED,  // An existing inactive window was activated.
   WINDOW_MINIMIZED,  // The currently active window was minimized.
   APP_LIST_SHOWN,    // The app list launcher menu was shown.
+  APP_LIST_DISMISSED,// The app list launcher menu was dismissed.
 };
 
 // Represents the status of items in the shelf.
@@ -45,9 +53,10 @@ enum ShelfItemType {
 // Source of the launch or activation request, for tracking.
 // These values match ash::ShelfLaunchSource.
 enum ShelfLaunchSource {
-  UNKNOWN,          // The item was launched from outside the app list.
+  UNKNOWN,          // The item was launched from elsewhere.
   APP_LIST,         // The item was launched from a generic app list view.
   APP_LIST_SEARCH,  // The item was launched from an app list search view.
+  SHELF,            // The item was launched from the shelf.
 };
 
 // The Shelf controller allows clients (eg. Chrome) to control the ash shelf.
@@ -73,6 +82,17 @@ interface ShelfController {
   UpdateShelfItem(ShelfItem item);
   // Sets the |delegate| for the item with |id|.
   SetShelfItemDelegate(ShelfID id, ShelfItemDelegate delegate);
+  // Returns the auto hide behavior. For testing only.
+  // |display_id| represents the display that contains the shelf. |display_id|
+  // must be valid.
+  GetAutoHideBehaviorForTesting(int64 display_id)
+                                => (ShelfAutoHideBehavior behavior);
+  // Sets the auto hide behavior. For testing only.
+  // |display_id| represents the display that contains the shelf. |display_id|
+  // must be valid.
+  // |behavior| is the new behavior.
+  SetAutoHideBehaviorForTesting(int64 display_id,
+                                ShelfAutoHideBehavior behavior) => ();
 };
 
 // A Shelf observer, used to persist profile settings and cache a ShelfModel.

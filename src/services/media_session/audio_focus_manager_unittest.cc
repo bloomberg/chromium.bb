@@ -8,20 +8,20 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/callback.h"
-#include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_command_line.h"
 #include "base/test/scoped_task_environment.h"
+#include "build/build_config.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/media_session/audio_focus_manager_metrics_helper.h"
 #include "services/media_session/media_session_service.h"
-#include "services/media_session/public/cpp/switches.h"
 #include "services/media_session/public/cpp/test/audio_focus_test_util.h"
 #include "services/media_session/public/cpp/test/mock_media_session.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
+#include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -37,30 +37,22 @@ const char kExampleSourceName2[] = "test2";
 // This tests the Audio Focus Manager API. The parameter determines whether
 // audio focus is enabled or not. If it is not enabled it should track the media
 // sessions but not enforce single session focus.
-class AudioFocusManagerTest : public testing::TestWithParam<bool> {
+class AudioFocusManagerTest
+    : public testing::TestWithParam<mojom::EnforcementMode> {
  public:
   AudioFocusManagerTest() = default;
 
   void SetUp() override {
-    if (!GetParam()) {
-      command_line_.GetProcessCommandLine()->AppendSwitchASCII(
-          switches::kEnableAudioFocus, switches::kEnableAudioFocusNoEnforce);
-    }
-
-    ASSERT_EQ(GetParam(), IsAudioFocusEnforcementEnabled());
-
     // Create an instance of the MediaSessionService.
-    connector_factory_ =
-        service_manager::TestConnectorFactory::CreateForUniqueService(
-            MediaSessionService::Create());
-    connector_ = connector_factory_->CreateConnector();
+    service_ = std::make_unique<MediaSessionService>(
+        connector_factory_.RegisterInstance(mojom::kServiceName));
+    connector_factory_.GetDefaultConnector()->BindInterface(mojom::kServiceName,
+                                                            &audio_focus_ptr_);
+    connector_factory_.GetDefaultConnector()->BindInterface(
+        mojom::kServiceName, &audio_focus_debug_ptr_);
 
-    // Bind |audio_focus_ptr_| to AudioFocusManager.
-    connector_->BindInterface("test", mojo::MakeRequest(&audio_focus_ptr_));
-
-    // Bind |audio_focus_debug_ptr_| to AudioFocusManagerDebug.
-    connector_->BindInterface("test",
-                              mojo::MakeRequest(&audio_focus_debug_ptr_));
+    audio_focus_ptr_->SetEnforcementMode(GetParam());
+    audio_focus_ptr_.FlushForTesting();
   }
 
   void TearDown() override {
@@ -84,6 +76,10 @@ class AudioFocusManagerTest : public testing::TestWithParam<bool> {
 
   int GetTransientMaybeDuckCount() {
     return GetCountForType(mojom::AudioFocusType::kGainTransientMayDuck);
+  }
+
+  int GetAmbientCount() {
+    return GetCountForType(mojom::AudioFocusType::kAmbient);
   }
 
   void AbandonAudioFocusNoReset(test::MockMediaSession* session) {
@@ -130,10 +126,9 @@ class AudioFocusManagerTest : public testing::TestWithParam<bool> {
       test::MockMediaSession* session) {
     mojom::MediaSessionInfo::SessionState state = session->GetState();
 
-    if (!GetParam()) {
-      // If audio focus enforcement is disabled then we should never see these
-      // states in the tests.
-      EXPECT_NE(mojom::MediaSessionInfo::SessionState::kSuspended, state);
+    if (!IsEnforcementEnabled()) {
+      // If audio focus enforcement is disabled then we should never see ducking
+      // in the tests.
       EXPECT_NE(mojom::MediaSessionInfo::SessionState::kDucking, state);
     }
 
@@ -156,7 +151,7 @@ class AudioFocusManagerTest : public testing::TestWithParam<bool> {
       mojom::MediaSessionInfo::SessionState state) {
     // If enforcement is enabled then returns the provided state, otherwise
     // returns kActive because without enforcement we did not change state.
-    if (GetParam())
+    if (IsEnforcementEnabled())
       return state;
     return mojom::MediaSessionInfo::SessionState::kActive;
   }
@@ -168,7 +163,8 @@ class AudioFocusManagerTest : public testing::TestWithParam<bool> {
 
   mojom::AudioFocusManagerPtr CreateAudioFocusManagerPtr() {
     mojom::AudioFocusManagerPtr ptr;
-    connector_->BindInterface("test", mojo::MakeRequest(&ptr));
+    connector_factory_.GetDefaultConnector()->BindInterface(
+        mojom::kServiceName, mojo::MakeRequest(&ptr));
     return ptr;
   }
 
@@ -187,6 +183,21 @@ class AudioFocusManagerTest : public testing::TestWithParam<bool> {
     return histogram_tester_
         .GetTotalCountsForPrefix("Media.Session.AudioFocus.")
         .size();
+  }
+
+  bool IsEnforcementEnabled() const {
+#if defined(OS_CHROMEOS)
+    // Enforcement is enabled by default on Chrome OS.
+    if (GetParam() == mojom::EnforcementMode::kDefault)
+      return true;
+#endif
+
+    return GetParam() == mojom::EnforcementMode::kSingleSession ||
+           GetParam() == mojom::EnforcementMode::kSingleGroup;
+  }
+
+  bool IsGroupingEnabled() const {
+    return GetParam() != mojom::EnforcementMode::kSingleSession;
   }
 
  private:
@@ -223,18 +234,17 @@ class AudioFocusManagerTest : public testing::TestWithParam<bool> {
   }
 
   void FlushForTestingIfEnabled() {
-    if (!GetParam())
+    if (!IsEnforcementEnabled())
       return;
 
     audio_focus_ptr_.FlushForTesting();
   }
 
-  base::test::ScopedCommandLine command_line_;
   base::test::ScopedTaskEnvironment task_environment_;
   base::HistogramTester histogram_tester_;
 
-  std::unique_ptr<service_manager::TestConnectorFactory> connector_factory_;
-  std::unique_ptr<service_manager::Connector> connector_;
+  service_manager::TestConnectorFactory connector_factory_;
+  std::unique_ptr<MediaSessionService> service_;
 
   mojom::AudioFocusManagerPtr audio_focus_ptr_;
   mojom::AudioFocusManagerDebugPtr audio_focus_debug_ptr_;
@@ -242,7 +252,13 @@ class AudioFocusManagerTest : public testing::TestWithParam<bool> {
   DISALLOW_COPY_AND_ASSIGN(AudioFocusManagerTest);
 };
 
-INSTANTIATE_TEST_CASE_P(, AudioFocusManagerTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    AudioFocusManagerTest,
+    testing::Values(mojom::EnforcementMode::kDefault,
+                    mojom::EnforcementMode::kNone,
+                    mojom::EnforcementMode::kSingleGroup,
+                    mojom::EnforcementMode::kSingleSession));
 
 TEST_P(AudioFocusManagerTest, RequestAudioFocusGain_ReplaceFocusedEntry) {
   test::MockMediaSession media_session_1;
@@ -420,7 +436,7 @@ TEST_P(AudioFocusManagerTest, AbandonAudioFocus_MultipleCalls) {
   media_session.AbandonAudioFocusFromClient();
 
   EXPECT_EQ(base::UnguessableToken::Null(), GetAudioFocusedSession());
-  EXPECT_TRUE(observer->focus_lost_session_.is_null());
+  EXPECT_TRUE(observer->focus_lost_session().is_null());
 }
 
 TEST_P(AudioFocusManagerTest, AbandonAudioFocus_RemovesTransientMayDuckEntry) {
@@ -435,7 +451,7 @@ TEST_P(AudioFocusManagerTest, AbandonAudioFocus_RemovesTransientMayDuckEntry) {
     media_session.AbandonAudioFocusFromClient();
 
     EXPECT_EQ(0, GetTransientMaybeDuckCount());
-    EXPECT_TRUE(observer->focus_lost_session_.Equals(
+    EXPECT_TRUE(observer->focus_lost_session()->session_info.Equals(
         test::GetMediaSessionInfoSync(&media_session)));
   }
 }
@@ -451,7 +467,7 @@ TEST_P(AudioFocusManagerTest, AbandonAudioFocus_RemovesTransientEntry) {
     media_session.AbandonAudioFocusFromClient();
 
     EXPECT_EQ(0, GetTransientCount());
-    EXPECT_TRUE(observer->focus_lost_session_.Equals(
+    EXPECT_TRUE(observer->focus_lost_session()->session_info.Equals(
         test::GetMediaSessionInfoSync(&media_session)));
   }
 }
@@ -664,8 +680,7 @@ TEST_P(AudioFocusManagerTest, GainDucksForceDuck) {
             GetState(&media_session_1));
 }
 
-TEST_P(AudioFocusManagerTest,
-       AbandoningGainFocusRevokesTopMostForceDuckSession) {
+TEST_P(AudioFocusManagerTest, ForceDuckSessionShouldAlwaysBeDuckedFromGain) {
   test::MockMediaSession media_session_1(true /* force_duck */);
   test::MockMediaSession media_session_2;
   test::MockMediaSession media_session_3;
@@ -686,7 +701,34 @@ TEST_P(AudioFocusManagerTest,
             GetState(&media_session_1));
 
   media_session_3.AbandonAudioFocusFromClient();
-  EXPECT_EQ(GetParam() ? request_id_1 : request_id_2, GetAudioFocusedSession());
+  EXPECT_EQ(request_id_2, GetAudioFocusedSession());
+  EXPECT_EQ(GetStateFromParam(mojom::MediaSessionInfo::SessionState::kDucking),
+            GetState(&media_session_1));
+
+  media_session_2.AbandonAudioFocusFromClient();
+  EXPECT_EQ(request_id_1, GetAudioFocusedSession());
+  EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kActive,
+            GetState(&media_session_1));
+}
+
+TEST_P(AudioFocusManagerTest,
+       ForceDuckSessionShouldAlwaysBeDuckedFromTransient) {
+  test::MockMediaSession media_session_1(true /* force_duck */);
+  test::MockMediaSession media_session_2;
+
+  AudioFocusManager::RequestId request_id_1 =
+      RequestAudioFocus(&media_session_1, mojom::AudioFocusType::kGain);
+  RequestAudioFocus(&media_session_2, mojom::AudioFocusType::kGainTransient);
+
+  EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kActive,
+            GetState(&media_session_2));
+  EXPECT_EQ(GetStateFromParam(mojom::MediaSessionInfo::SessionState::kDucking),
+            GetState(&media_session_1));
+
+  media_session_2.AbandonAudioFocusFromClient();
+  EXPECT_EQ(request_id_1, GetAudioFocusedSession());
+  EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kActive,
+            GetState(&media_session_1));
 }
 
 TEST_P(AudioFocusManagerTest, AudioFocusObserver_RequestNoop) {
@@ -699,8 +741,8 @@ TEST_P(AudioFocusManagerTest, AudioFocusObserver_RequestNoop) {
         RequestAudioFocus(&media_session, mojom::AudioFocusType::kGain);
 
     EXPECT_EQ(request_id, GetAudioFocusedSession());
-    EXPECT_EQ(mojom::AudioFocusType::kGain, observer->focus_gained_type());
-    EXPECT_FALSE(observer->focus_gained_session_.is_null());
+    EXPECT_EQ(mojom::AudioFocusType::kGain,
+              observer->focus_gained_session()->audio_focus_type);
   }
 
   {
@@ -708,7 +750,7 @@ TEST_P(AudioFocusManagerTest, AudioFocusObserver_RequestNoop) {
     RequestAudioFocus(&media_session, mojom::AudioFocusType::kGain);
 
     EXPECT_EQ(request_id, GetAudioFocusedSession());
-    EXPECT_TRUE(observer->focus_gained_session_.is_null());
+    EXPECT_TRUE(observer->focus_gained_session().is_null());
   }
 }
 
@@ -722,8 +764,7 @@ TEST_P(AudioFocusManagerTest, AudioFocusObserver_TransientMayDuck) {
 
     EXPECT_EQ(1, GetTransientMaybeDuckCount());
     EXPECT_EQ(mojom::AudioFocusType::kGainTransientMayDuck,
-              observer->focus_gained_type());
-    EXPECT_FALSE(observer->focus_gained_session_.is_null());
+              observer->focus_gained_session()->audio_focus_type);
   }
 
   {
@@ -731,7 +772,7 @@ TEST_P(AudioFocusManagerTest, AudioFocusObserver_TransientMayDuck) {
     media_session.AbandonAudioFocusFromClient();
 
     EXPECT_EQ(0, GetTransientMaybeDuckCount());
-    EXPECT_TRUE(observer->focus_lost_session_.Equals(
+    EXPECT_TRUE(observer->focus_lost_session()->session_info.Equals(
         test::GetMediaSessionInfoSync(&media_session)));
   }
 }
@@ -943,9 +984,9 @@ TEST_P(AudioFocusManagerTest,
     media_session.AbandonAudioFocusFromClient();
 
     EXPECT_EQ(0, GetTransientMaybeDuckCount());
-    EXPECT_TRUE(observer->focus_lost_session_.Equals(
+    EXPECT_TRUE(observer->focus_lost_session()->session_info.Equals(
         test::GetMediaSessionInfoSync(&media_session)));
-    EXPECT_TRUE(observer->focus_gained_session_.is_null());
+    EXPECT_TRUE(observer->focus_gained_session().is_null());
 
     auto notifications = observer->notifications();
     EXPECT_EQ(1u, notifications.size());
@@ -978,9 +1019,10 @@ TEST_P(AudioFocusManagerTest,
     media_session_2.AbandonAudioFocusFromClient();
 
     EXPECT_EQ(0, GetTransientMaybeDuckCount());
-    EXPECT_TRUE(observer->focus_lost_session_.Equals(
+    EXPECT_TRUE(observer->focus_lost_session()->session_info.Equals(
         test::GetMediaSessionInfoSync(&media_session_2)));
-    EXPECT_TRUE(observer->focus_gained_session_.Equals(media_session_1_info));
+    EXPECT_TRUE(observer->focus_gained_session()->session_info.Equals(
+        media_session_1_info));
 
     // FocusLost should always come before FocusGained so observers always know
     // the current session that has focus.
@@ -993,56 +1035,7 @@ TEST_P(AudioFocusManagerTest,
   }
 }
 
-TEST_P(AudioFocusManagerTest, ObserverActiveSessionChanged) {
-  test::MockMediaSession media_session_1;
-  test::MockMediaSession media_session_2;
-
-  {
-    std::unique_ptr<test::TestAudioFocusObserver> observer = CreateObserver();
-
-    RequestAudioFocus(&media_session_1, mojom::AudioFocusType::kGain);
-    EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kActive,
-              GetState(&media_session_1));
-
-    EXPECT_EQ(media_session_1.GetRequestIdFromClient(),
-              observer->active_session_->request_id);
-  }
-
-  {
-    std::unique_ptr<test::TestAudioFocusObserver> observer = CreateObserver();
-
-    RequestAudioFocus(&media_session_2, mojom::AudioFocusType::kGainTransient);
-    EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kActive,
-              GetState(&media_session_2));
-
-    EXPECT_NE(
-        test::TestAudioFocusObserver::NotificationType::kActiveSessionChanged,
-        observer->notifications().back());
-    EXPECT_TRUE(observer->active_session_.is_null());
-  }
-
-  {
-    std::unique_ptr<test::TestAudioFocusObserver> observer = CreateObserver();
-    media_session_2.AbandonAudioFocusFromClient();
-
-    EXPECT_NE(
-        test::TestAudioFocusObserver::NotificationType::kActiveSessionChanged,
-        observer->notifications().back());
-    EXPECT_TRUE(observer->active_session_.is_null());
-  }
-
-  {
-    std::unique_ptr<test::TestAudioFocusObserver> observer = CreateObserver();
-    media_session_1.AbandonAudioFocusFromClient();
-
-    EXPECT_EQ(
-        test::TestAudioFocusObserver::NotificationType::kActiveSessionChanged,
-        observer->notifications().back());
-    EXPECT_TRUE(observer->active_session_.is_null());
-  }
-}
-
-TEST_P(AudioFocusManagerTest, AudioFocusGrouping_AllowDucking) {
+TEST_P(AudioFocusManagerTest, AudioFocusGrouping_LayeredFocus) {
   test::MockMediaSession media_session_1;
   test::MockMediaSession media_session_2;
   test::MockMediaSession media_session_3;
@@ -1059,11 +1052,20 @@ TEST_P(AudioFocusManagerTest, AudioFocusGrouping_AllowDucking) {
   EXPECT_EQ(GetStateFromParam(mojom::MediaSessionInfo::SessionState::kDucking),
             GetState(&media_session_1));
 
-  RequestGroupedAudioFocus(&media_session_3, mojom::AudioFocusType::kGain,
-                           group_id);
+  // When we request audio focus for media_session_3 the group will take audio
+  // focus and we suspend the ducking session.
+  RequestGroupedAudioFocus(&media_session_3,
+                           mojom::AudioFocusType::kGainTransient, group_id);
   EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kActive,
             GetState(&media_session_3));
-  EXPECT_EQ(GetStateFromParam(mojom::MediaSessionInfo::SessionState::kDucking),
+
+  EXPECT_EQ(
+      GetStateFromParam(mojom::MediaSessionInfo::SessionState::kSuspended),
+      GetState(&media_session_2));
+  EXPECT_EQ(GetStateFromParam(
+                IsGroupingEnabled()
+                    ? mojom::MediaSessionInfo::SessionState::kActive
+                    : mojom::MediaSessionInfo::SessionState::kSuspended),
             GetState(&media_session_1));
 }
 
@@ -1102,7 +1104,14 @@ TEST_P(AudioFocusManagerTest, AudioFocusGrouping_TransientResume) {
 
   media_session_4.AbandonAudioFocusFromClient();
 
-  EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kActive,
+  // TODO(https://crbug.com/916177): This should wait on a more precise
+  // condition than RunLoop idling, but it's not clear exactly what that
+  // should be.
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(IsGroupingEnabled()
+                ? mojom::MediaSessionInfo::SessionState::kActive
+                : mojom::MediaSessionInfo::SessionState::kSuspended,
             GetState(&media_session_1));
   EXPECT_EQ(
       GetStateFromParam(mojom::MediaSessionInfo::SessionState::kSuspended),
@@ -1124,7 +1133,9 @@ TEST_P(AudioFocusManagerTest, AudioFocusGrouping_DoNotSuspendSameGroup) {
 
   RequestGroupedAudioFocus(&media_session_2, mojom::AudioFocusType::kGain,
                            group_id);
-  EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kActive,
+  EXPECT_EQ(IsGroupingEnabled()
+                ? mojom::MediaSessionInfo::SessionState::kActive
+                : mojom::MediaSessionInfo::SessionState::kSuspended,
             GetState(&media_session_1));
   EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kActive,
             GetState(&media_session_2));
@@ -1160,10 +1171,290 @@ TEST_P(AudioFocusManagerTest, AudioFocusGrouping_TransientSameGroup) {
 
   RequestGroupedAudioFocus(&media_session_2,
                            mojom::AudioFocusType::kGainTransient, group_id);
+  EXPECT_EQ(IsGroupingEnabled()
+                ? mojom::MediaSessionInfo::SessionState::kActive
+                : mojom::MediaSessionInfo::SessionState::kSuspended,
+            GetState(&media_session_1));
+  EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kActive,
+            GetState(&media_session_2));
+}
+
+TEST_P(AudioFocusManagerTest, RequestAudioFocus_PreferStop_LossToGain) {
+  test::MockMediaSession media_session_1;
+  test::MockMediaSession media_session_2;
+
+  media_session_1.SetPreferStop(true);
+
+  AudioFocusManager::RequestId request_id_1 =
+      RequestAudioFocus(&media_session_1, mojom::AudioFocusType::kGain);
+  EXPECT_EQ(request_id_1, GetAudioFocusedSession());
+  EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kActive,
+            GetState(&media_session_1));
+
+  AudioFocusManager::RequestId request_id_2 =
+      RequestAudioFocus(&media_session_2, mojom::AudioFocusType::kGain);
+  EXPECT_EQ(request_id_2, GetAudioFocusedSession());
+  EXPECT_EQ(GetStateFromParam(mojom::MediaSessionInfo::SessionState::kInactive),
+            GetState(&media_session_1));
+}
+
+TEST_P(AudioFocusManagerTest,
+       RequestAudioFocus_PreferStop_LossToGainTransient) {
+  test::MockMediaSession media_session_1;
+  test::MockMediaSession media_session_2;
+
+  media_session_1.SetPreferStop(true);
+
+  AudioFocusManager::RequestId request_id_1 =
+      RequestAudioFocus(&media_session_1, mojom::AudioFocusType::kGain);
+  EXPECT_EQ(request_id_1, GetAudioFocusedSession());
+  EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kActive,
+            GetState(&media_session_1));
+
+  RequestAudioFocus(&media_session_2, mojom::AudioFocusType::kGainTransient);
+  EXPECT_EQ(
+      GetStateFromParam(mojom::MediaSessionInfo::SessionState::kSuspended),
+      GetState(&media_session_1));
+}
+
+TEST_P(AudioFocusManagerTest, GainFocusTypeHasEffectEvenIfSuspended) {
+  test::MockMediaSession media_session_1;
+  test::MockMediaSession media_session_2;
+  test::MockMediaSession media_session_3;
+
+  AudioFocusManager::RequestId request_id_1 =
+      RequestAudioFocus(&media_session_1, mojom::AudioFocusType::kGain);
+  EXPECT_EQ(request_id_1, GetAudioFocusedSession());
+
+  RequestAudioFocus(&media_session_2, mojom::AudioFocusType::kGain);
+  EXPECT_EQ(
+      GetStateFromParam(mojom::MediaSessionInfo::SessionState::kSuspended),
+      GetState(&media_session_1));
+
+  // When the second session becomes suspended and that event originated from
+  // the session itself then we should keep the other session suspended.
+  media_session_2.Suspend(mojom::MediaSession::SuspendType::kUI);
+  EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kSuspended,
+            GetState(&media_session_2));
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session_1);
+    observer.WaitForState(
+        GetStateFromParam(mojom::MediaSessionInfo::SessionState::kSuspended));
+  }
+
+  // When the second session is resumed then we should still keep the other
+  // session suspended.
+  media_session_2.Resume(mojom::MediaSession::SuspendType::kUI);
+  EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kActive,
+            GetState(&media_session_2));
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session_1);
+    observer.WaitForState(
+        GetStateFromParam(mojom::MediaSessionInfo::SessionState::kSuspended));
+  }
+
+  // If a new session takes focus then this should suspend all sessions.
+  RequestAudioFocus(&media_session_3, mojom::AudioFocusType::kGainTransient);
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session_2);
+    observer.WaitForState(
+        GetStateFromParam(mojom::MediaSessionInfo::SessionState::kSuspended));
+  }
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session_1);
+    observer.WaitForState(
+        GetStateFromParam(mojom::MediaSessionInfo::SessionState::kSuspended));
+  }
+
+  // If the second session regains focus then it should suspend all sessions.
+  RequestAudioFocus(&media_session_2, mojom::AudioFocusType::kGain);
+  EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kActive,
+            GetState(&media_session_2));
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session_1);
+    observer.WaitForState(
+        GetStateFromParam(mojom::MediaSessionInfo::SessionState::kSuspended));
+  }
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session_3);
+    observer.WaitForState(
+        GetStateFromParam(mojom::MediaSessionInfo::SessionState::kSuspended));
+  }
+}
+
+TEST_P(AudioFocusManagerTest, TransientFocusTypeHasNoEffectIfSuspended) {
+  test::MockMediaSession media_session_1;
+  test::MockMediaSession media_session_2;
+  test::MockMediaSession media_session_3;
+
+  AudioFocusManager::RequestId request_id_1 =
+      RequestAudioFocus(&media_session_1, mojom::AudioFocusType::kGain);
+  EXPECT_EQ(request_id_1, GetAudioFocusedSession());
+
+  RequestAudioFocus(&media_session_2, mojom::AudioFocusType::kGainTransient);
+  EXPECT_EQ(
+      GetStateFromParam(mojom::MediaSessionInfo::SessionState::kSuspended),
+      GetState(&media_session_1));
+
+  // When the transient session becomes suspended and that event originates from
+  // the session itself then we should stop pausing the other session.
+  media_session_2.Suspend(mojom::MediaSession::SuspendType::kUI);
+  EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kSuspended,
+            GetState(&media_session_2));
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session_1);
+    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kActive);
+  }
+
+  // When the transient session is resumed then we should pause the other
+  // session again.
+  media_session_2.Resume(mojom::MediaSession::SuspendType::kUI);
+  EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kActive,
+            GetState(&media_session_2));
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session_1);
+    observer.WaitForState(
+        GetStateFromParam(mojom::MediaSessionInfo::SessionState::kSuspended));
+  }
+
+  // If we have a new session take focus then this should suspend all the other
+  // sessions and the transient session should have no effect.
+  RequestAudioFocus(&media_session_3, mojom::AudioFocusType::kGainTransient);
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session_2);
+    observer.WaitForState(
+        GetStateFromParam(mojom::MediaSessionInfo::SessionState::kSuspended));
+  }
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session_1);
+    observer.WaitForState(
+        GetStateFromParam(mojom::MediaSessionInfo::SessionState::kSuspended));
+  }
+
+  // If the second session regains focus then it should start pausing again.
+  RequestAudioFocus(&media_session_2, mojom::AudioFocusType::kGainTransient);
+  EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kActive,
+            GetState(&media_session_2));
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session_1);
+    observer.WaitForState(
+        GetStateFromParam(mojom::MediaSessionInfo::SessionState::kSuspended));
+  }
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session_3);
+    observer.WaitForState(
+        GetStateFromParam(mojom::MediaSessionInfo::SessionState::kSuspended));
+  }
+}
+
+TEST_P(AudioFocusManagerTest, TransientDuckFocusTypeHasNoEffectIfSuspended) {
+  test::MockMediaSession media_session_1;
+  test::MockMediaSession media_session_2;
+  test::MockMediaSession media_session_3;
+
+  AudioFocusManager::RequestId request_id_1 =
+      RequestAudioFocus(&media_session_1, mojom::AudioFocusType::kGain);
+  EXPECT_EQ(request_id_1, GetAudioFocusedSession());
+
+  RequestAudioFocus(&media_session_2,
+                    mojom::AudioFocusType::kGainTransientMayDuck);
+  EXPECT_EQ(GetStateFromParam(mojom::MediaSessionInfo::SessionState::kDucking),
+            GetState(&media_session_1));
+
+  // When the ducking session becomes suspended and that event originates from
+  // the session itself then we should stop ducking.
+  media_session_2.Suspend(mojom::MediaSession::SuspendType::kUI);
+  EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kSuspended,
+            GetState(&media_session_2));
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session_1);
+    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kActive);
+  }
+
+  // When the ducking session is resumed then we should resume ducking.
+  media_session_2.Resume(mojom::MediaSession::SuspendType::kUI);
+  EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kActive,
+            GetState(&media_session_2));
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session_1);
+    observer.WaitForState(
+        GetStateFromParam(mojom::MediaSessionInfo::SessionState::kDucking));
+  }
+
+  // If we have a new session take focus then this should suspend all the other
+  // sessions and we should not have any ducking from the ducking session (since
+  // it is suspended).
+  RequestAudioFocus(&media_session_3, mojom::AudioFocusType::kGainTransient);
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session_2);
+    observer.WaitForState(
+        GetStateFromParam(mojom::MediaSessionInfo::SessionState::kSuspended));
+  }
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session_1);
+    observer.WaitForState(
+        GetStateFromParam(mojom::MediaSessionInfo::SessionState::kSuspended));
+  }
+
+  // If the ducking session regains focus then it should start ducking again.
+  RequestAudioFocus(&media_session_2,
+                    mojom::AudioFocusType::kGainTransientMayDuck);
+  EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kActive,
+            GetState(&media_session_2));
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session_1);
+    observer.WaitForState(
+        GetStateFromParam(mojom::MediaSessionInfo::SessionState::kDucking));
+  }
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session_3);
+    observer.WaitForState(
+        GetStateFromParam(mojom::MediaSessionInfo::SessionState::kDucking));
+  }
+}
+
+TEST_P(AudioFocusManagerTest, AmbientFocusHasNoEffect) {
+  test::MockMediaSession media_session_1;
+  test::MockMediaSession media_session_2;
+
+  AudioFocusManager::RequestId request_id_1 =
+      RequestAudioFocus(&media_session_1, mojom::AudioFocusType::kGain);
+  EXPECT_EQ(request_id_1, GetAudioFocusedSession());
+  EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kActive,
+            GetState(&media_session_1));
+
+  EXPECT_EQ(0, GetAmbientCount());
+  RequestAudioFocus(&media_session_2, mojom::AudioFocusType::kAmbient);
+
+  EXPECT_EQ(1, GetAmbientCount());
   EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kActive,
             GetState(&media_session_1));
   EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kActive,
             GetState(&media_session_2));
+
+  media_session_2.AbandonAudioFocusFromClient();
+
+  EXPECT_EQ(0, GetAmbientCount());
+  EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kActive,
+            GetState(&media_session_1));
 }
 
 }  // namespace media_session

@@ -72,9 +72,9 @@ class CORE_EXPORT DocumentInit final {
   }
 
   bool HasSecurityContext() const { return MasterDocumentLoader(); }
-  bool ShouldTreatURLAsSrcdocDocument() const;
+  bool IsSrcdocDocument() const;
   bool ShouldSetURL() const;
-  SandboxFlags GetSandboxFlags() const;
+  WebSandboxFlags GetSandboxFlags() const;
   bool IsHostedInReservedIPRange() const;
   WebInsecureRequestPolicy GetInsecureRequestPolicy() const;
   SecurityContext::InsecureNavigationsSet* InsecureNavigationsToUpgrade() const;
@@ -97,14 +97,26 @@ class CORE_EXPORT DocumentInit final {
   DocumentInit& WithOwnerDocument(Document*);
   Document* OwnerDocument() const { return owner_document_.Get(); }
 
+  // Specifies the SecurityOrigin in which the URL was requested. This is
+  // relevant for determining properties of the resulting document's origin
+  // when loading data: and about: schemes.
+  DocumentInit& WithInitiatorOrigin(
+      scoped_refptr<const SecurityOrigin> initiator_origin);
+  const scoped_refptr<const SecurityOrigin>& InitiatorOrigin() const {
+    return initiator_origin_;
+  }
+
+  DocumentInit& WithOriginToCommit(
+      scoped_refptr<SecurityOrigin> origin_to_commit);
+  const scoped_refptr<SecurityOrigin>& OriginToCommit() const {
+    return origin_to_commit_;
+  }
+
+  DocumentInit& WithSrcdocDocument(bool is_srcdoc_document);
+
   DocumentInit& WithRegistrationContext(V0CustomElementRegistrationContext*);
   V0CustomElementRegistrationContext* RegistrationContext(Document*) const;
   DocumentInit& WithNewRegistrationContext();
-
-  DocumentInit& WithPreviousDocumentCSP(const ContentSecurityPolicy*);
-  const ContentSecurityPolicy* PreviousDocumentCSP() const {
-    return previous_csp_.Get();
-  }
 
  private:
   DocumentInit(HTMLImportsController*);
@@ -124,10 +136,32 @@ class CORE_EXPORT DocumentInit final {
   KURL url_;
   Member<Document> owner_document_;
 
+  // Initiator origin is used for calculating the document origin when the
+  // navigation is started in a different process. In such cases, the document
+  // which initiates the navigation sends its origin to the browser process and
+  // it is provided by the browser process here. It is used for cases such as
+  // data: URLs, which inherit their origin from the initiator of the
+  // navigation.
+  // Note: about:blank should also behave this way, however currently it
+  // inherits its origin from the parent frame or opener, regardless of whether
+  // it is the initiator or not.
+  scoped_refptr<const SecurityOrigin> initiator_origin_;
+
+  // The |origin_to_commit_| is to be used directly without calculating the
+  // document origin at initialization time. It is specified by the browser
+  // process for session history navigations. This allows us to preserve
+  // the origin across session history and ensure the exact same origin
+  // is present on such navigations to URLs that inherit their origins (e.g.
+  // about:blank and data: URLs).
+  scoped_refptr<SecurityOrigin> origin_to_commit_;
+
+  // Whether we should treat the new document as "srcdoc" document. This
+  // affects security checks, since srcdoc's content comes directly from
+  // the parent document, not from loading a URL.
+  bool is_srcdoc_document_ = false;
+
   Member<V0CustomElementRegistrationContext> registration_context_;
   bool create_new_registration_context_;
-
-  Member<const ContentSecurityPolicy> previous_csp_;
 };
 
 }  // namespace blink

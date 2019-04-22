@@ -4,6 +4,7 @@
 
 #include "services/network/cors/cors_url_loader.h"
 
+#include "base/bind.h"
 #include "base/stl_util.h"
 #include "net/base/load_flags.h"
 #include "services/network/cors/preflight_controller.h"
@@ -54,8 +55,8 @@ CorsURLLoader::CorsURLLoader(
     mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
     mojom::URLLoaderFactory* network_loader_factory,
-    const base::RepeatingCallback<void(int)>& request_finalizer,
     const OriginAccessList* origin_access_list,
+    const OriginAccessList* factory_bound_origin_access_list,
     PreflightController* preflight_controller)
     : binding_(this, std::move(loader_request)),
       routing_id_(routing_id),
@@ -66,9 +67,9 @@ CorsURLLoader::CorsURLLoader(
       network_client_binding_(this),
       request_(resource_request),
       forwarding_client_(std::move(client)),
-      request_finalizer_(request_finalizer),
       traffic_annotation_(traffic_annotation),
       origin_access_list_(origin_access_list),
+      factory_bound_origin_access_list_(factory_bound_origin_access_list),
       preflight_controller_(preflight_controller),
       weak_factory_(this) {
   binding_.set_connection_error_handler(base::BindOnce(
@@ -100,9 +101,8 @@ void CorsURLLoader::Start() {
 }
 
 void CorsURLLoader::FollowRedirect(
-    const base::Optional<std::vector<std::string>>&
-        to_be_removed_request_headers,
-    const base::Optional<net::HttpRequestHeaders>& modified_request_headers,
+    const std::vector<std::string>& removed_headers,
+    const net::HttpRequestHeaders& modified_headers,
     const base::Optional<GURL>& new_url) {
   if (!network_loader_ || !deferred_redirect_url_) {
     HandleComplete(URLLoaderCompletionStatus(net::ERR_FAILED));
@@ -125,12 +125,9 @@ void CorsURLLoader::FollowRedirect(
     return;
   }
 
-  if (to_be_removed_request_headers) {
-    for (const auto& name : *to_be_removed_request_headers)
-      request_.headers.RemoveHeader(name);
-  }
-  if (modified_request_headers)
-    request_.headers.MergeFrom(*modified_request_headers);
+  for (const auto& name : removed_headers)
+    request_.headers.RemoveHeader(name);
+  request_.headers.MergeFrom(modified_headers);
 
   request_.url = redirect_info_.new_url;
   request_.method = redirect_info_.new_method;
@@ -157,17 +154,14 @@ void CorsURLLoader::FollowRedirect(
   // in net/url_request/redirect_util.cc).
   if ((original_fetch_cors_flag && !NeedsPreflight(request_)) ||
       !fetch_cors_flag_) {
-    response_tainting_ =
-        CalculateResponseTainting(request_.url, request_.fetch_request_mode,
-                                  request_.request_initiator, fetch_cors_flag_);
-    network_loader_->FollowRedirect(to_be_removed_request_headers,
-                                    modified_request_headers, new_url);
+    response_tainting_ = CalculateResponseTainting(
+        request_.url, request_.fetch_request_mode, request_.request_initiator,
+        fetch_cors_flag_, tainted_, origin_access_list_);
+    network_loader_->FollowRedirect(removed_headers, modified_headers, new_url);
     return;
   }
   DCHECK_NE(request_.fetch_request_mode, mojom::FetchRequestMode::kNoCors);
 
-  if (request_finalizer_)
-    request_finalizer_.Run(request_id_);
   network_client_binding_.Unbind();
 
   StartRequest();
@@ -348,7 +342,11 @@ void CorsURLLoader::OnStartLoadingResponseBody(
 void CorsURLLoader::OnComplete(const URLLoaderCompletionStatus& status) {
   DCHECK(network_loader_);
   DCHECK(forwarding_client_);
-  DCHECK(!deferred_redirect_url_);
+
+  // |network_loader_| will call OnComplete at anytime when a problem happens
+  // inside the URLLoader, e.g. on URLLoader::OnConnectionError call. We need
+  // to expect it also happens even during redirect handling.
+  DCHECK(!deferred_redirect_url_ || status.error_code != net::OK);
 
   URLLoaderCompletionStatus modified_status(status);
   if (status.error_code == net::OK)
@@ -388,9 +386,9 @@ void CorsURLLoader::StartRequest() {
     return;
   }
 
-  response_tainting_ =
-      CalculateResponseTainting(request_.url, request_.fetch_request_mode,
-                                request_.request_initiator, fetch_cors_flag_);
+  response_tainting_ = CalculateResponseTainting(
+      request_.url, request_.fetch_request_mode, request_.request_initiator,
+      fetch_cors_flag_, tainted_, origin_access_list_);
 
   if (!CalculateCredentialsFlag(request_.fetch_credentials_mode,
                                 response_tainting_)) {
@@ -407,16 +405,11 @@ void CorsURLLoader::StartRequest() {
     return;
   }
 
-  base::OnceCallback<void()> preflight_finalizer;
-  if (request_finalizer_)
-    preflight_finalizer = base::BindOnce(request_finalizer_, request_id_);
-
   preflight_controller_->PerformPreflightCheck(
       base::BindOnce(&CorsURLLoader::StartNetworkRequest,
                      weak_factory_.GetWeakPtr()),
-      request_id_, request_, tainted_,
-      net::NetworkTrafficAnnotationTag(traffic_annotation_),
-      network_loader_factory_, std::move(preflight_finalizer));
+      request_, tainted_, net::NetworkTrafficAnnotationTag(traffic_annotation_),
+      network_loader_factory_);
 }
 
 void CorsURLLoader::StartNetworkRequest(
@@ -473,9 +466,19 @@ void CorsURLLoader::SetCorsFlagIfNeeded() {
   DCHECK(request_.request_initiator);
 
   // The source origin and destination URL pair may be in the allow list.
-  if (origin_access_list_->IsAllowed(*request_.request_initiator,
-                                     request_.url)) {
-    return;
+  switch (origin_access_list_->CheckAccessState(*request_.request_initiator,
+                                                request_.url)) {
+    case OriginAccessList::AccessState::kAllowed:
+      return;
+    case OriginAccessList::AccessState::kBlocked:
+      break;
+    case OriginAccessList::AccessState::kNotListed:
+      if (factory_bound_origin_access_list_->CheckAccessState(
+              *request_.request_initiator, request_.url) ==
+          OriginAccessList::AccessState::kAllowed) {
+        return;
+      }
+      break;
   }
 
   // When a request is initiated in a unique opaque origin (e.g., in a sandboxed
@@ -500,6 +503,42 @@ void CorsURLLoader::SetCorsFlagIfNeeded() {
   }
 
   fetch_cors_flag_ = true;
+}
+
+// Keep this in sync with the identical function
+// blink::cors::CalculateResponseTainting.
+//
+// static
+mojom::FetchResponseType CorsURLLoader::CalculateResponseTainting(
+    const GURL& url,
+    mojom::FetchRequestMode request_mode,
+    const base::Optional<url::Origin>& origin,
+    bool cors_flag,
+    bool tainted_origin,
+    const OriginAccessList* origin_access_list) {
+  if (url.SchemeIs(url::kDataScheme))
+    return mojom::FetchResponseType::kBasic;
+
+  if (cors_flag) {
+    DCHECK(IsCorsEnabledRequestMode(request_mode));
+    return mojom::FetchResponseType::kCors;
+  }
+
+  if (!origin) {
+    // This is actually not defined in the fetch spec, but in this case CORS
+    // is disabled so no one should care this value.
+    return mojom::FetchResponseType::kBasic;
+  }
+
+  if (request_mode == mojom::FetchRequestMode::kNoCors) {
+    if (tainted_origin ||
+        (!origin->IsSameOriginWith(url::Origin::Create(url)) &&
+         origin_access_list->CheckAccessState(*origin, url) !=
+             OriginAccessList::AccessState::kAllowed)) {
+      return mojom::FetchResponseType::kOpaque;
+    }
+  }
+  return mojom::FetchResponseType::kBasic;
 }
 
 base::Optional<std::string> CorsURLLoader::GetHeaderString(

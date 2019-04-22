@@ -24,10 +24,6 @@ class RuleSet;
 
 class CSSGlobalRuleSet : public GarbageCollectedFinalized<CSSGlobalRuleSet> {
  public:
-  static CSSGlobalRuleSet* Create() {
-    return MakeGarbageCollected<CSSGlobalRuleSet>();
-  }
-
   CSSGlobalRuleSet() = default;
 
   void Dispose();

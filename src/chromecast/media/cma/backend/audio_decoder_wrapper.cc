@@ -5,6 +5,7 @@
 #include "chromecast/media/cma/backend/audio_decoder_wrapper.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/logging.h"
 #include "chromecast/media/cma/backend/media_pipeline_backend_manager.h"
@@ -29,7 +30,8 @@ class RevokedAudioDecoderWrapper : public DestructableAudioDecoder {
   ~RevokedAudioDecoderWrapper() override = default;
 
  private:
-  // CmaBackend::AudioDecoder implementation:
+  // DestructableAudioDecoder implementation:
+  void OnInitialized() override {}
   void SetDelegate(Delegate* delegate) override {}
   BufferStatus PushBuffer(scoped_refptr<DecoderBufferBase> buffer) override {
     return MediaPipelineBackend::kBufferPending;
@@ -60,6 +62,7 @@ ActiveAudioDecoderWrapper::ActiveAudioDecoderWrapper(
       decoder_(backend_decoder),
       content_type_(type),
       buffer_delegate_(buffer_delegate),
+      initialized_(false),
       delegate_active_(false),
       global_volume_multiplier_(1.0f),
       stream_volume_multiplier_(1.0f) {
@@ -78,11 +81,21 @@ ActiveAudioDecoderWrapper::~ActiveAudioDecoderWrapper() {
   backend_manager_->RemoveAudioDecoder(this);
 }
 
+void ActiveAudioDecoderWrapper::OnInitialized() {
+  initialized_ = true;
+  if (!delegate_active_) {
+    float volume = stream_volume_multiplier_ * global_volume_multiplier_;
+    decoder_.SetVolume(volume);
+  }
+}
+
 void ActiveAudioDecoderWrapper::SetGlobalVolumeMultiplier(float multiplier) {
   global_volume_multiplier_ = multiplier;
   if (!delegate_active_) {
     float volume = stream_volume_multiplier_ * global_volume_multiplier_;
-    decoder_.SetVolume(volume);
+    if (initialized_) {
+      decoder_.SetVolume(volume);
+    }
     if (buffer_delegate_) {
       buffer_delegate_->OnSetVolume(volume);
     }
@@ -112,7 +125,12 @@ CmaBackend::BufferStatus ActiveAudioDecoderWrapper::PushBuffer(
       }
     }
   }
-  return decoder_.PushBuffer(buffer.get());
+
+  // Retain the buffer. Backend expects pipeline to hold the buffer until
+  // Decoder::Delegate::OnBufferComplete is called.
+  // TODO: Release the buffer at a proper time.
+  pushed_buffer_ = std::move(buffer);
+  return decoder_.PushBuffer(pushed_buffer_.get());
 }
 
 bool ActiveAudioDecoderWrapper::SetConfig(const AudioConfig& config) {
@@ -129,7 +147,7 @@ bool ActiveAudioDecoderWrapper::SetVolume(float multiplier) {
     buffer_delegate_->OnSetVolume(volume);
   }
 
-  if (delegate_active_) {
+  if (delegate_active_ || !initialized_) {
     return true;
   }
   return decoder_.SetVolume(volume);
@@ -167,6 +185,10 @@ AudioDecoderWrapper::AudioDecoderWrapper(AudioContentType type)
 }
 
 AudioDecoderWrapper::~AudioDecoderWrapper() = default;
+
+void AudioDecoderWrapper::OnInitialized() {
+  audio_decoder_->OnInitialized();
+}
 
 void AudioDecoderWrapper::Revoke() {
   if (!decoder_revoked_) {

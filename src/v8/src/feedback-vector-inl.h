@@ -6,10 +6,11 @@
 #define V8_FEEDBACK_VECTOR_INL_H_
 
 #include "src/feedback-vector.h"
+
 #include "src/globals.h"
 #include "src/heap/factory-inl.h"
-#include "src/heap/heap-inl.h"
-#include "src/heap/heap-write-barrier.h"
+#include "src/heap/heap-write-barrier-inl.h"
+#include "src/objects/code-inl.h"
 #include "src/objects/maybe-object-inl.h"
 #include "src/objects/shared-function-info.h"
 #include "src/objects/smi.h"
@@ -20,41 +21,43 @@
 namespace v8 {
 namespace internal {
 
+OBJECT_CONSTRUCTORS_IMPL(FeedbackVector, HeapObject)
+OBJECT_CONSTRUCTORS_IMPL(FeedbackMetadata, HeapObject)
+OBJECT_CONSTRUCTORS_IMPL(ClosureFeedbackCellArray, FixedArray)
+
+NEVER_READ_ONLY_SPACE_IMPL(FeedbackVector)
+NEVER_READ_ONLY_SPACE_IMPL(ClosureFeedbackCellArray)
+
+CAST_ACCESSOR(FeedbackVector)
+CAST_ACCESSOR(FeedbackMetadata)
+CAST_ACCESSOR(ClosureFeedbackCellArray)
+
 INT32_ACCESSORS(FeedbackMetadata, slot_count, kSlotCountOffset)
+
+INT32_ACCESSORS(FeedbackMetadata, closure_feedback_cell_count,
+                kFeedbackCellCountOffset)
 
 int32_t FeedbackMetadata::synchronized_slot_count() const {
   return base::Acquire_Load(reinterpret_cast<const base::Atomic32*>(
-      FIELD_ADDR(this, kSlotCountOffset)));
-}
-
-// static
-FeedbackMetadata* FeedbackMetadata::cast(Object* obj) {
-  DCHECK(obj->IsFeedbackMetadata());
-  return reinterpret_cast<FeedbackMetadata*>(obj);
+      FIELD_ADDR(*this, kSlotCountOffset)));
 }
 
 int32_t FeedbackMetadata::get(int index) const {
   DCHECK(index >= 0 && index < length());
   int offset = kHeaderSize + index * kInt32Size;
-  return READ_INT32_FIELD(this, offset);
+  return READ_INT32_FIELD(*this, offset);
 }
 
 void FeedbackMetadata::set(int index, int32_t value) {
   DCHECK(index >= 0 && index < length());
   int offset = kHeaderSize + index * kInt32Size;
-  WRITE_INT32_FIELD(this, offset, value);
+  WRITE_INT32_FIELD(*this, offset, value);
 }
 
 bool FeedbackMetadata::is_empty() const { return slot_count() == 0; }
 
 int FeedbackMetadata::length() const {
   return FeedbackMetadata::length(slot_count());
-}
-
-// static
-FeedbackVector* FeedbackVector::cast(Object* obj) {
-  DCHECK(obj->IsFeedbackVector());
-  return reinterpret_cast<FeedbackVector*>(obj);
 }
 
 int FeedbackMetadata::GetSlotSize(FeedbackSlotKind kind) {
@@ -64,7 +67,6 @@ int FeedbackMetadata::GetSlotSize(FeedbackSlotKind kind) {
     case FeedbackSlotKind::kCompareOp:
     case FeedbackSlotKind::kBinaryOp:
     case FeedbackSlotKind::kLiteral:
-    case FeedbackSlotKind::kCreateClosure:
     case FeedbackSlotKind::kTypeProfile:
       return 1;
 
@@ -74,6 +76,7 @@ int FeedbackMetadata::GetSlotSize(FeedbackSlotKind kind) {
     case FeedbackSlotKind::kLoadGlobalInsideTypeof:
     case FeedbackSlotKind::kLoadGlobalNotInsideTypeof:
     case FeedbackSlotKind::kLoadKeyed:
+    case FeedbackSlotKind::kHasKeyed:
     case FeedbackSlotKind::kStoreNamedSloppy:
     case FeedbackSlotKind::kStoreNamedStrict:
     case FeedbackSlotKind::kStoreOwnNamed:
@@ -93,9 +96,15 @@ int FeedbackMetadata::GetSlotSize(FeedbackSlotKind kind) {
   return 1;
 }
 
+Handle<FeedbackCell> ClosureFeedbackCellArray::GetFeedbackCell(int index) {
+  return handle(FeedbackCell::cast(get(index)), GetIsolate());
+}
+
 ACCESSORS(FeedbackVector, shared_function_info, SharedFunctionInfo,
           kSharedFunctionInfoOffset)
 WEAK_ACCESSORS(FeedbackVector, optimized_code_weak_or_smi, kOptimizedCodeOffset)
+ACCESSORS(FeedbackVector, closure_feedback_cell_array, ClosureFeedbackCellArray,
+          kClosureFeedbackCellArrayOffset)
 INT32_ACCESSORS(FeedbackVector, length, kLengthOffset)
 INT32_ACCESSORS(FeedbackVector, invocation_count, kInvocationCountOffset)
 INT32_ACCESSORS(FeedbackVector, profiler_ticks, kProfilerTicksOffset)
@@ -103,7 +112,7 @@ INT32_ACCESSORS(FeedbackVector, deopt_count, kDeoptCountOffset)
 
 bool FeedbackVector::is_empty() const { return length() == 0; }
 
-FeedbackMetadata* FeedbackVector::metadata() const {
+FeedbackMetadata FeedbackVector::metadata() const {
   return shared_function_info()->feedback_metadata();
 }
 
@@ -119,7 +128,7 @@ void FeedbackVector::increment_deopt_count() {
 Code FeedbackVector::optimized_code() const {
   MaybeObject slot = optimized_code_weak_or_smi();
   DCHECK(slot->IsSmi() || slot->IsWeakOrCleared());
-  HeapObject* heap_object;
+  HeapObject heap_object;
   return slot->GetHeapObject(&heap_object) ? Code::cast(heap_object) : Code();
 }
 
@@ -153,8 +162,15 @@ MaybeObject FeedbackVector::Get(FeedbackSlot slot) const {
 MaybeObject FeedbackVector::get(int index) const {
   DCHECK_GE(index, 0);
   DCHECK_LT(index, this->length());
-  int offset = kFeedbackSlotsOffset + index * kPointerSize;
-  return RELAXED_READ_WEAK_FIELD(this, offset);
+  int offset = kFeedbackSlotsOffset + index * kTaggedSize;
+  return RELAXED_READ_WEAK_FIELD(*this, offset);
+}
+
+Handle<FeedbackCell> FeedbackVector::GetClosureFeedbackCell(int index) const {
+  DCHECK_GE(index, 0);
+  ClosureFeedbackCellArray cell_array =
+      ClosureFeedbackCellArray::cast(closure_feedback_cell_array());
+  return cell_array->GetFeedbackCell(index);
 }
 
 void FeedbackVector::Set(FeedbackSlot slot, MaybeObject value,
@@ -165,22 +181,22 @@ void FeedbackVector::Set(FeedbackSlot slot, MaybeObject value,
 void FeedbackVector::set(int index, MaybeObject value, WriteBarrierMode mode) {
   DCHECK_GE(index, 0);
   DCHECK_LT(index, this->length());
-  int offset = kFeedbackSlotsOffset + index * kPointerSize;
-  RELAXED_WRITE_WEAK_FIELD(this, offset, value);
-  CONDITIONAL_WEAK_WRITE_BARRIER(this, offset, value, mode);
+  int offset = kFeedbackSlotsOffset + index * kTaggedSize;
+  RELAXED_WRITE_WEAK_FIELD(*this, offset, value);
+  CONDITIONAL_WEAK_WRITE_BARRIER(*this, offset, value, mode);
 }
 
-void FeedbackVector::Set(FeedbackSlot slot, Object* value,
+void FeedbackVector::Set(FeedbackSlot slot, Object value,
                          WriteBarrierMode mode) {
   set(GetIndex(slot), MaybeObject::FromObject(value), mode);
 }
 
-void FeedbackVector::set(int index, Object* value, WriteBarrierMode mode) {
+void FeedbackVector::set(int index, Object value, WriteBarrierMode mode) {
   set(index, MaybeObject::FromObject(value), mode);
 }
 
 inline MaybeObjectSlot FeedbackVector::slots_start() {
-  return HeapObject::RawMaybeWeakField(this, kFeedbackSlotsOffset);
+  return RawMaybeWeakField(kFeedbackSlotsOffset);
 }
 
 // Helper function to transform the feedback to BinaryOperationHint.
@@ -196,6 +212,12 @@ BinaryOperationHint BinaryOperationHintFromFeedback(int type_feedback) {
       return BinaryOperationHint::kNumber;
     case BinaryOperationFeedback::kNumberOrOddball:
       return BinaryOperationHint::kNumberOrOddball;
+    case BinaryOperationFeedback::kConsOneByteString:
+      return BinaryOperationHint::kConsOneByteString;
+    case BinaryOperationFeedback::kConsTwoByteString:
+      return BinaryOperationHint::kConsTwoByteString;
+    case BinaryOperationFeedback::kConsString:
+      return BinaryOperationHint::kConsString;
     case BinaryOperationFeedback::kString:
       return BinaryOperationHint::kString;
     case BinaryOperationFeedback::kBigInt:
@@ -250,110 +272,6 @@ ForInHint ForInHintFromFeedback(int type_feedback) {
   UNREACHABLE();
 }
 
-void FeedbackVector::ComputeCounts(int* with_type_info, int* generic,
-                                   int* vector_ic_count) {
-  MaybeObject megamorphic_sentinel = MaybeObject::FromObject(
-      *FeedbackVector::MegamorphicSentinel(GetIsolate()));
-  int with = 0;
-  int gen = 0;
-  int total = 0;
-  FeedbackMetadataIterator iter(metadata());
-  while (iter.HasNext()) {
-    FeedbackSlot slot = iter.Next();
-    FeedbackSlotKind kind = iter.kind();
-
-    MaybeObject const obj = Get(slot);
-    AssertNoLegacyTypes(obj);
-    switch (kind) {
-      case FeedbackSlotKind::kCall:
-      case FeedbackSlotKind::kLoadProperty:
-      case FeedbackSlotKind::kLoadGlobalInsideTypeof:
-      case FeedbackSlotKind::kLoadGlobalNotInsideTypeof:
-      case FeedbackSlotKind::kLoadKeyed:
-      case FeedbackSlotKind::kStoreNamedSloppy:
-      case FeedbackSlotKind::kStoreNamedStrict:
-      case FeedbackSlotKind::kStoreOwnNamed:
-      case FeedbackSlotKind::kStoreGlobalSloppy:
-      case FeedbackSlotKind::kStoreGlobalStrict:
-      case FeedbackSlotKind::kStoreKeyedSloppy:
-      case FeedbackSlotKind::kStoreKeyedStrict:
-      case FeedbackSlotKind::kStoreInArrayLiteral:
-      case FeedbackSlotKind::kStoreDataPropertyInLiteral:
-      case FeedbackSlotKind::kTypeProfile: {
-        HeapObject* heap_object;
-        if (obj->IsWeakOrCleared() ||
-            (obj->GetHeapObjectIfStrong(&heap_object) &&
-             (heap_object->IsWeakFixedArray() || heap_object->IsString()))) {
-          with++;
-        } else if (obj == megamorphic_sentinel) {
-          gen++;
-          with++;
-        }
-        total++;
-        break;
-      }
-      case FeedbackSlotKind::kBinaryOp: {
-        int const feedback = obj.ToSmi().value();
-        BinaryOperationHint hint = BinaryOperationHintFromFeedback(feedback);
-        if (hint == BinaryOperationHint::kAny) {
-          gen++;
-        }
-        if (hint != BinaryOperationHint::kNone) {
-          with++;
-        }
-        total++;
-        break;
-      }
-      case FeedbackSlotKind::kCompareOp: {
-        int const feedback = obj.ToSmi().value();
-        CompareOperationHint hint = CompareOperationHintFromFeedback(feedback);
-        if (hint == CompareOperationHint::kAny) {
-          gen++;
-        }
-        if (hint != CompareOperationHint::kNone) {
-          with++;
-        }
-        total++;
-        break;
-      }
-      case FeedbackSlotKind::kForIn: {
-        int const feedback = obj.ToSmi().value();
-        ForInHint hint = ForInHintFromFeedback(feedback);
-        if (hint == ForInHint::kAny) {
-          gen++;
-        }
-        if (hint != ForInHint::kNone) {
-          with++;
-        }
-        total++;
-        break;
-      }
-      case FeedbackSlotKind::kInstanceOf: {
-        if (obj->IsWeakOrCleared()) {
-          with++;
-        } else if (obj == megamorphic_sentinel) {
-          gen++;
-          with++;
-        }
-        total++;
-        break;
-      }
-      case FeedbackSlotKind::kCreateClosure:
-      case FeedbackSlotKind::kLiteral:
-      case FeedbackSlotKind::kCloneObject:
-        break;
-      case FeedbackSlotKind::kInvalid:
-      case FeedbackSlotKind::kKindsNumber:
-        UNREACHABLE();
-        break;
-    }
-  }
-
-  *with_type_info = with;
-  *generic = gen;
-  *vector_ic_count = total;
-}
-
 Handle<Symbol> FeedbackVector::UninitializedSentinel(Isolate* isolate) {
   return isolate->factory()->uninitialized_symbol();
 }
@@ -405,7 +323,7 @@ MaybeObject FeedbackNexus::GetFeedbackExtra() const {
   return vector()->get(extra_index);
 }
 
-void FeedbackNexus::SetFeedback(Object* feedback, WriteBarrierMode mode) {
+void FeedbackNexus::SetFeedback(Object feedback, WriteBarrierMode mode) {
   SetFeedback(MaybeObject::FromObject(feedback));
 }
 
@@ -414,7 +332,7 @@ void FeedbackNexus::SetFeedback(MaybeObject feedback, WriteBarrierMode mode) {
   vector()->Set(slot(), feedback, mode);
 }
 
-void FeedbackNexus::SetFeedbackExtra(Object* feedback_extra,
+void FeedbackNexus::SetFeedbackExtra(Object feedback_extra,
                                      WriteBarrierMode mode) {
 #ifdef DEBUG
   FeedbackSlotKind kind = vector()->GetKind(slot());

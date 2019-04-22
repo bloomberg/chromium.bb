@@ -184,6 +184,26 @@ def _CheckForUseOfLazyInstance(input_api, output_api):
       'base::LazyInstance is deprecated; use a thread safe static.', problems)]
   return []
 
+def _CheckNoLoggingOverrideInHeaders(input_api, output_api):
+  """Checks to make sure no .h files include logging_override_if_enabled.h."""
+  files = []
+  pattern = input_api.re.compile(
+    r'^#include\s*"media/base/logging_override_if_enabled.h"',
+    input_api.re.MULTILINE)
+  for f in input_api.AffectedSourceFiles(input_api.FilterSourceFile):
+    if not f.LocalPath().endswith('.h'):
+      continue
+    contents = input_api.ReadFile(f)
+    if pattern.search(contents):
+      files.append(f)
+
+  if len(files):
+    return [output_api.PresubmitError(
+        'Do not #include "logging_override_if_enabled.h" in header files, '
+        'since it overrides DVLOG() in every file including the header. '
+        'Instead, only include it in source files.',
+        files) ]
+  return []
 
 def _CheckChange(input_api, output_api):
   results = []
@@ -191,6 +211,7 @@ def _CheckChange(input_api, output_api):
   results.extend(_CheckPassByValue(input_api, output_api))
   results.extend(_CheckForHistogramOffByOne(input_api, output_api))
   results.extend(_CheckForUseOfLazyInstance(input_api, output_api))
+  results.extend(_CheckNoLoggingOverrideInHeaders(input_api, output_api))
   return results
 
 

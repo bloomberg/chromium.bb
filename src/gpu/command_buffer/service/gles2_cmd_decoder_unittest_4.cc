@@ -50,8 +50,8 @@ class GLES3DecoderTest4 : public GLES2DecoderTest4 {
   }
 };
 
-INSTANTIATE_TEST_CASE_P(Service, GLES2DecoderTest4, ::testing::Bool());
-INSTANTIATE_TEST_CASE_P(Service, GLES3DecoderTest4, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Service, GLES2DecoderTest4, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Service, GLES3DecoderTest4, ::testing::Bool());
 
 #include "gpu/command_buffer/service/gles2_cmd_decoder_unittest_4_autogen.h"
 

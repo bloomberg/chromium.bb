@@ -29,6 +29,7 @@ class DisplayResourceProvider;
 class StreamVideoDrawQuad;
 class TextureDrawQuad;
 class TileDrawQuad;
+class VideoHoleDrawQuad;
 
 class VIZ_SERVICE_EXPORT OverlayCandidate {
  public:
@@ -70,6 +71,8 @@ class VIZ_SERVICE_EXPORT OverlayCandidate {
   gfx::OverlayTransform transform;
   // Format of the buffer to scanout.
   gfx::BufferFormat format;
+  // ColorSpace of the buffer for scanout.
+  gfx::ColorSpace color_space;
   // Size of the resource, in pixels.
   gfx::Size resource_size_in_pixels;
   // Rect on the display to position the overlay to. Implementer must convert
@@ -86,6 +89,8 @@ class VIZ_SERVICE_EXPORT OverlayCandidate {
   // True if the texture for this overlay should be the same one used by the
   // output surface's main overlay.
   bool use_output_surface_for_resource;
+  // The quad's occluding damage rect is empty.
+  bool no_occluding_damage;
   // Texture resource to present in an overlay.
   unsigned resource_id;
 
@@ -130,6 +135,9 @@ class VIZ_SERVICE_EXPORT OverlayCandidate {
   static bool FromStreamVideoQuad(DisplayResourceProvider* resource_provider,
                                   const StreamVideoDrawQuad* quad,
                                   OverlayCandidate* candidate);
+  static bool FromVideoHoleQuad(DisplayResourceProvider* resource_provider,
+                                const VideoHoleDrawQuad* quad,
+                                OverlayCandidate* candidate);
 };
 
 class VIZ_SERVICE_EXPORT OverlayCandidateList

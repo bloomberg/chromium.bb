@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/component_export.h"
 #include "base/containers/queue.h"
 #include "chromeos/dbus/update_engine_client.h"
 
@@ -16,7 +17,8 @@ namespace chromeos {
 // use set_update_engine_client_status() to set a fake last Status and
 // GetLastStatus() returns the fake with no modification. Other methods do
 // nothing.
-class FakeUpdateEngineClient : public UpdateEngineClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeUpdateEngineClient
+    : public UpdateEngineClient {
  public:
   FakeUpdateEngineClient();
   ~FakeUpdateEngineClient() override;

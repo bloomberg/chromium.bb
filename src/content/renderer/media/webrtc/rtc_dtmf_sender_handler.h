@@ -14,7 +14,7 @@
 #include "content/common/content_export.h"
 #include "third_party/blink/public/platform/web_rtc_dtmf_sender_handler.h"
 #include "third_party/blink/public/platform/web_rtc_dtmf_sender_handler_client.h"
-#include "third_party/webrtc/api/dtmfsenderinterface.h"
+#include "third_party/webrtc/api/dtmf_sender_interface.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -40,8 +40,8 @@ class CONTENT_EXPORT RtcDtmfSenderHandler
   blink::WebString CurrentToneBuffer() override;
   bool CanInsertDTMF() override;
   bool InsertDTMF(const blink::WebString& tones,
-                  long duration,
-                  long interToneGap) override;
+                  int duration,
+                  int interToneGap) override;
 
   void OnToneChange(const std::string& tone);
 

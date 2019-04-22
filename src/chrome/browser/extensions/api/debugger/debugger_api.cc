@@ -13,6 +13,7 @@
 #include <set>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -148,7 +149,8 @@ class ExtensionDevToolsClientHost : public content::DevToolsAgentHostClient,
   bool MayAttachToRenderer(content::RenderFrameHost* render_frame_host,
                            bool is_webui) override;
   bool MayAttachToBrowser() override;
-  bool MayAffectLocalFiles() override;
+  bool MayReadLocalFiles() override;
+  bool MayWriteLocalFiles() override;
 
  private:
   using PendingRequests =
@@ -319,9 +321,12 @@ void ExtensionDevToolsClientHost::DispatchProtocolMessage(
   if (!EventRouter::Get(profile_))
     return;
 
-  std::unique_ptr<base::Value> result = base::JSONReader::Read(message);
-  if (!result || !result->is_dict())
+  std::unique_ptr<base::Value> result = base::JSONReader::ReadDeprecated(
+      message, base::JSON_REPLACE_INVALID_CHARACTERS);
+  if (!result || !result->is_dict()) {
+    LOG(ERROR) << "Tried to send invalid message to extension: " << message;
     return;
+  }
   base::DictionaryValue* dictionary =
       static_cast<base::DictionaryValue*>(result.get());
 
@@ -382,7 +387,11 @@ bool ExtensionDevToolsClientHost::MayAttachToBrowser() {
   return false;
 }
 
-bool ExtensionDevToolsClientHost::MayAffectLocalFiles() {
+bool ExtensionDevToolsClientHost::MayReadLocalFiles() {
+  return util::AllowFileAccess(extension_->id(), profile_);
+}
+
+bool ExtensionDevToolsClientHost::MayWriteLocalFiles() {
   return false;
 }
 
@@ -399,7 +408,7 @@ void DebuggerFunction::FormatErrorMessage(const std::string& format) {
   if (debuggee_.tab_id)
     error_ = ErrorUtils::FormatErrorMessage(
         format, debugger_api_constants::kTabTargetType,
-        base::IntToString(*debuggee_.tab_id));
+        base::NumberToString(*debuggee_.tab_id));
   else if (debuggee_.extension_id)
     error_ = ErrorUtils::FormatErrorMessage(
         format, debugger_api_constants::kBackgroundPageTargetType,
@@ -521,7 +530,7 @@ bool DebuggerAttachFunction::RunAsync() {
       GetProfile(), agent_host_.get(), extension(), debuggee_);
 
   if (!host->Attach()) {
-    FormatErrorMessage(debugger_api_constants::kRestrictedError);
+    error_ = debugger_api_constants::kRestrictedError;
     return false;
   }
 

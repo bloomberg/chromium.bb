@@ -3,22 +3,24 @@
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/util.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_radio_button/cr_radio_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_radio_group/cr_radio_group.html">
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="sync_browser_proxy.html">
 <link rel="import" href="sync_controls.html">
-<link rel="import" href="../icons.html">
 <link rel="import" href="../privacy_page/personalization_options.html">
 <link rel="import" href="../route.html">
 <link rel="import" href="../settings_shared_css.html">
 <link rel="import" href="../settings_vars_css.html">
 
 <if expr="not chromeos">
+<link rel="import" href="sync_account_control.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toast/cr_toast.html">
 </if>
 
@@ -26,16 +28,16 @@
   <template>
     <style include="settings-shared iron-flex">
       h2 {
-        font-size: var(--cr-title-text_-_font-size);
+        @apply --cr-title-text;
       }
 
       #sync-separator {
-        border-bottom: var(--settings-separator-line);
+        border-bottom: var(--cr-separator-line);
       }
 
       #create-password-box {
         /* In order to line up with the encryption radio box text. */
-        margin-inline-start: var(--settings-indent-width);
+        margin-inline-start: var(--cr-section-indent-width);
       }
 
       #create-password-box {
@@ -51,9 +53,10 @@
       }
 
       #existingPassphrase {
-        border-bottom: var(--settings-separator-line);
+        border-bottom: var(--cr-separator-line);
+        border-top: var(--cr-separator-line);
         /* This particular list frame is not indented. */
-        padding-inline-start: var(--settings-box-row-padding);
+        padding-inline-start: var(--cr-section-padding);
       }
 
       #submitExistingPassphrase {
@@ -70,11 +73,11 @@
       }
 
       #other-sync-items > .list-item:not(.first) {
-        border-top: var(--settings-separator-line);
+        border-top: var(--cr-separator-line);
       }
 
       .passphrase-reset-icon {
-        margin-right: 8px;
+        margin-inline-end: 8px;
       }
 
       #disabled-by-admin-icon {
@@ -84,7 +87,6 @@
 
 <if expr="not chromeos">
       #toast {
-        color: white;
         left: 0;
         z-index: 1;
       }
@@ -100,33 +102,32 @@
         unifiedConsentEnabled, syncStatus.syncSystemEnabled,
         syncStatus.signinAllowed)]]">
       <settings-sync-account-control embedded-in-subpage
+          unified-consent-enabled="[[unifiedConsentEnabled]]"
           sync-status="[[syncStatus]]"
-          promo-label-with-account="$i18n{peopleSignInPrompt}"
-          promo-label-with-no-account="$i18n{peopleSignInPrompt}"
-          promo-secondary-label-with-account=
+          promo-label-with-account=
               "$i18n{peopleSignInPromptSecondaryWithAccount}"
-          promo-secondary-label-with-no-account=
-              "$i18n{peopleSignInPromptSecondaryWithNoAccount}">
+          promo-label-with-no-account=
+              "$i18n{peopleSignInPromptSecondaryWithNoAccount}"
+          on-sync-setup-done="onSyncSetupDone_">
       </settings-sync-account-control>
     </template>
 </if>
-
-    <div class="settings-box first" hidden="[[!syncStatus.managed]]">
+    <div class="settings-box first" hidden="[[!syncDisabledByAdmin_]]">
       <iron-icon id="disabled-by-admin-icon" icon="cr20:domain"></iron-icon>
-      <div class="middle">$i18n{syncDisabledByAdministrator}</div>
+      <div class="middle settings-box-text">
+        $i18n{syncDisabledByAdministrator}
+      </div>
     </div>
 
     <template is="dom-if" if="[[shouldShowExistingPassphraseBelowAccount_(
-      unifiedConsentEnabled, syncPrefs.passphraseRequired)]]">
+        unifiedConsentEnabled, syncPrefs.passphraseRequired)]]"
+        notify-dom-change on-dom-change="focusPassphraseInput_">
       <div id="existingPassphrase" class="list-frame">
         <div id="existingPassphraseTitle" class="list-item">
-            <div class="start">
+            <div class="start settings-box-text">
               <div>$i18n{existingPassphraseTitle}</div>
-              <div class="secondary">
-                [[enterPassphrasePrompt_(syncPrefs.passphraseTypeIsCustom)]]
-                <a href="$i18nRaw{syncErrorHelpUrl}" target="_blank">
-                  $i18n{learnMore}
-                </a>
+              <div class="secondary"
+                  inner-h-t-m-l="[[syncPrefs.enterPassphraseBody]]">
               </div>
             </div>
         </div>
@@ -144,7 +145,7 @@
           </cr-input>
         </div>
         <div id="passphraseRecoverHint" class="list-item">
-          <span>$i18nRaw{passphraseRecover}</span>
+          <div class="settings-box-text">$i18nRaw{passphraseRecover}</div>
         </div>
       </div>
     </template>
@@ -156,11 +157,11 @@
         <h2 class="start">$i18n{sync}</h2>
       </div>
 
-      <div id="[[pages_.SPINNER]]" class="settings-box first"
+      <div id="[[pages_.SPINNER]]" class="settings-box first settings-box-text"
           hidden$="[[!isStatus_(pages_.SPINNER, pageStatus_)]]">
         $i18n{syncLoading}
       </div>
-      <div id="[[pages_.TIMEOUT]]" class="settings-box first"
+      <div id="[[pages_.TIMEOUT]]" class="settings-box first settings-box-text"
           hidden$="[[!isStatus_(pages_.TIMEOUT, pageStatus_)]]">
         $i18n{syncTimeout}
       </div>
@@ -169,15 +170,13 @@
         <!-- TODO(http://crbug.com/862983) Remove this section once the Unified
             Consent feature is launched. -->
         <template is="dom-if" if="[[shouldShowExistingPassphraseInSyncSection_(
-            unifiedConsentEnabled, syncPrefs.passphraseRequired)]]">
+            unifiedConsentEnabled, syncPrefs.passphraseRequired)]]"
+            notify-dom-change on-dom-change="focusPassphraseInput_">
           <div id="existingPassphrase" class="list-frame">
             <div class="list-item">
-              <span>
-                [[enterPassphrasePrompt_(syncPrefs.passphraseTypeIsCustom)]]
-                <a href="$i18nRaw{syncErrorHelpUrl}" target="_blank">
-                  $i18n{learnMore}
-                </a>
-              </span>
+              <div class="settings-box-text"
+                  inner-h-t-m-l="[[syncPrefs.enterPassphraseBody]]">
+              </div>
             </div>
             <div id="existingPassphraseContainer" class="list-item">
               <cr-input id="existingPassphraseInput" type="password"
@@ -199,7 +198,7 @@
         </template>
 
         <template is="dom-if" if="[[!unifiedConsentEnabled]]">
-          <settings-sync-controls sync-status="syncStatus">
+          <settings-sync-controls sync-status="[[syncStatus]]">
           </settings-sync-controls>
         </template>
 
@@ -212,13 +211,13 @@
               <div class="start">
                 $i18n{syncAdvancedPageTitle}
               </div>
-              <paper-icon-button-light class="subpage-arrow">
-                <button aria-label="$i18n{syncAdvancedPageTitle}"></button>
-              </paper-icon-button-light>
+              <cr-icon-button class="subpage-arrow"
+                  aria-label="$i18n{syncAdvancedPageTitle}"></cr-icon-button>
             </div>
           </template>
 
-          <template is="dom-if" if="[[driveSuggestAvailable_]]">
+          <template is="dom-if"
+              if="[[shouldShowDriveSuggest_(unifiedConsentEnabled)]]" restamp>
             <settings-toggle-button
                 class$="[[getListItemClass_(unifiedConsentEnabled)]]"
                 pref="{{prefs.documentsuggest.enabled}}"
@@ -231,35 +230,33 @@
               [[getListItemClass_(unifiedConsentEnabled)]]" tabindex="-1"
               target="_blank" href="$i18n{activityControlsUrl}"
               on-click="onActivityControlsTap_">
-            <div class="start">
+            <div class="start settings-box-text">
               $i18n{personalizeGoogleServicesTitle}
             </div>
-            <paper-icon-button-light actionable class="icon-external">
-              <button></button>
-            </paper-icon-button-light>
+            <cr-icon-button actionable class="icon-external"></cr-icon-button>
           </a>
 
-          <a class$="inherit-color no-outline
-              [[getListItemClass_(unifiedConsentEnabled)]]" tabindex="-1"
-              target="_blank" href="$i18n{syncDashboardUrl}">
-            <div class="start">
+          <a id="syncDashboardLink"
+              class$="inherit-color no-outline
+                  [[getListItemClass_(unifiedConsentEnabled)]]"
+              tabindex="-1" target="_blank" href="$i18n{syncDashboardUrl}"
+              hidden="[[syncStatus.supervisedUser]]">
+            <div class="start settings-box-text">
               $i18n{manageSyncedDataTitle}
             </div>
-            <paper-icon-button-light actionable class="icon-external">
-              <button></button>
-            </paper-icon-button-light>
+            <cr-icon-button actionable class="icon-external"></cr-icon-button>
           </a>
 
           <div id="encryptionDescription"
               hidden="[[syncPrefs.passphraseRequired]]"
-              class$="single-column
+              class$="single-column settings-box-text
                   [[getPassphraseHintLines_(syncPrefs.encryptAllData)]]
                   [[getListItemClass_(unifiedConsentEnabled)]]">
             $i18n{encryptionOptionsTitle}
             <div class="secondary">
               $i18n{syncDataEncryptedText}
               <div hidden="[[!syncPrefs.encryptAllData]]">
-                <iron-icon icon="settings:info-outline"
+                <iron-icon icon="cr:info-outline"
                     class="passphrase-reset-icon">
                 </iron-icon>
                 $i18nRaw{passphraseResetHintEncryption}
@@ -269,15 +266,18 @@
 
           <div id="encryptionRadioGroupContainer" class="list-frame"
               hidden="[[syncPrefs.passphraseRequired]]">
-            <cr-radio-group disabled$="[[syncPrefs.encryptAllData]]"
-                selected="[[selectedEncryptionRadio_(
-                    syncPrefs.passphraseTypeIsCustom)]]"
-                on-selected-changed="onEncryptionRadioSelectionChanged_">
+            <cr-radio-group
+                id="encryptionRadioGroup"
+                selected="[[selectedEncryptionRadio_(syncPrefs)]]"
+                on-selected-changed="onEncryptionRadioSelectionChanged_"
+                disabled$="[[disableEncryptionOptions_]]">
               <cr-radio-button name="encrypt-with-google" class="list-item"
-                  aria-label="$i18n{encryptWithGoogleCredentialsLabel}">
+                  aria-label="$i18n{encryptWithGoogleCredentialsLabel}"
+                  disabled$="[[disableEncryptionOptions_]]">
                 $i18n{encryptWithGoogleCredentialsLabel}
               </cr-radio-button>
-              <cr-radio-button name="encrypt-with-passphrase" class="list-item">
+              <cr-radio-button name="encrypt-with-passphrase" class="list-item"
+                  disabled$="[[disableEncryptionOptions_]]">
                 <span hidden="[[!syncPrefs.fullEncryptionBody]]">
                   [[syncPrefs.fullEncryptionBody]]
                 </span>
@@ -325,18 +325,38 @@
         <h2>$i18n{nonPersonalizedServicesSectionLabel}</h2>
       </div>
       <settings-personalization-options class="list-frame" prefs="{{prefs}}"
-          page-visibility="[[pageVisibility]]"
+          page-visibility="[[pageVisibility]]" sync-status="[[syncStatus]]"
           unified-consent-enabled="[[unifiedConsentEnabled]]">
       </settings-personalization-options>
     </template>
 
 <if expr="not chromeos">
-    <cr-toast id="toast" open="[[syncStatus.setupInProgress]]">
-      <div>$i18n{syncWillStart}</div>
-      <paper-button on-click="cancelSyncSetup">
-        $i18n{cancelSync}
-      </paper-button>
-    </cr-toast>
+    <template is="dom-if" if="[[showSetupCancelDialog_]]" restamp>
+      <cr-dialog id="setupCancelDialog" on-close="onSetupCancelDialogClose_"
+          ignore-popstate>
+        <div slot="title">$i18n{syncSetupCancelDialogTitle}</div>
+        <div slot="body">$i18n{syncSetupCancelDialogBody}</div>
+        <div slot="button-container">
+          <paper-button class="cancel-button"
+              on-click="onSetupCancelDialogBack_">
+            $i18n{back}
+          </paper-button>
+          <paper-button class="action-button"
+              on-click="onSetupCancelDialogConfirm_">
+            $i18n{cancelSync}
+          </paper-button>
+        </div>
+      </cr-dialog>
+    </template>
+
+    <template is="dom-if" if="[[!unifiedConsentEnabled]]">
+      <cr-toast id="toast" open="[[syncStatus.setupInProgress]]">
+        <div>$i18n{syncWillStart}</div>
+        <paper-button on-click="onSyncSetupCancel_">
+          $i18n{cancelSync}
+        </paper-button>
+      </cr-toast>
+    </template>
 </if>
   </template>
   <script src="sync_page.js"></script>

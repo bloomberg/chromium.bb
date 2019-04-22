@@ -15,21 +15,20 @@ const CXFA_Node::PropertyData kScriptPropertyData[] = {
     {XFA_Element::Exclude, 1, 0},
     {XFA_Element::CurrentPage, 1, 0},
     {XFA_Element::RunScripts, 1, 0},
-    {XFA_Element::Unknown, 0, 0}};
+};
+
 const CXFA_Node::AttributeData kScriptAttributeData[] = {
     {XFA_Attribute::Id, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Name, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Use, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::ContentType, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::RunAt, XFA_AttributeType::Enum,
-     (void*)XFA_AttributeEnum::Client},
+     (void*)XFA_AttributeValue::Client},
     {XFA_Attribute::Binding, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Usehref, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Desc, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Lock, XFA_AttributeType::Integer, (void*)0},
-    {XFA_Attribute::Unknown, XFA_AttributeType::Integer, nullptr}};
-
-constexpr wchar_t kScriptName[] = L"script";
+};
 
 }  // namespace
 
@@ -42,22 +41,23 @@ CXFA_Script::CXFA_Script(CXFA_Document* doc, XFA_PacketType packet)
           XFA_Element::Script,
           kScriptPropertyData,
           kScriptAttributeData,
-          kScriptName,
           pdfium::MakeUnique<CJX_Script>(this)) {}
 
-CXFA_Script::~CXFA_Script() {}
+CXFA_Script::~CXFA_Script() = default;
 
 CXFA_Script::Type CXFA_Script::GetContentType() {
   Optional<WideString> cData =
       JSObject()->TryCData(XFA_Attribute::ContentType, false);
-  if (!cData || *cData == L"application/x-formcalc")
+  if (!cData.has_value())
     return Type::Formcalc;
-  if (*cData == L"application/x-javascript")
+  if (cData.value().EqualsASCII("application/x-formcalc"))
+    return Type::Formcalc;
+  if (cData.value().EqualsASCII("application/x-javascript"))
     return Type::Javascript;
   return Type::Unknown;
 }
 
-XFA_AttributeEnum CXFA_Script::GetRunAt() {
+XFA_AttributeValue CXFA_Script::GetRunAt() {
   return JSObject()->GetEnum(XFA_Attribute::RunAt);
 }
 

@@ -47,7 +47,7 @@ source_set("unit_tests") {
   configs += [ "//remoting/build/config:version" ]
 
   deps = [
-    "//remoting/host",
+    "//remoting/host:common",
     "//remoting/host:test_support",
     "//remoting/proto",
     "//remoting/resources",

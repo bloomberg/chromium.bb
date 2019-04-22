@@ -9,8 +9,8 @@
 #include "third_party/blink/public/platform/web_connection_type.h"
 #include "third_party/blink/public/platform/web_effective_connection_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
-#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/network/network_state_notifier.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
@@ -27,15 +27,13 @@ class NetworkInformation final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static NetworkInformation* Create(ExecutionContext*);
-
   explicit NetworkInformation(ExecutionContext*);
   ~NetworkInformation() override;
 
   String type() const;
   double downlinkMax() const;
   String effectiveType();
-  unsigned long rtt();
+  uint32_t rtt();
   double downlink();
   bool saveData() const;
 
@@ -61,8 +59,8 @@ class NetworkInformation final
 
   void Trace(blink::Visitor*) override;
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(change, kChange);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(typechange, kTypechange);  // Deprecated
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(change, kChange)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(typechange, kTypechange)  // Deprecated
 
  protected:
   // EventTarget overrides.
@@ -95,7 +93,7 @@ class NetworkInformation final
 
   // HTTP RTT estimate. Rounded off to the nearest 25 msec. Touched only on
   // context thread.
-  unsigned long http_rtt_msec_;
+  uint32_t http_rtt_msec_;
 
   // Downlink throughput estimate. Rounded off to the nearest 25 kbps. Touched
   // only on context thread.

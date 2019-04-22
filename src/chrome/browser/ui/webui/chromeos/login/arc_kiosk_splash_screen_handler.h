@@ -21,7 +21,7 @@ namespace chromeos {
 class ArcKioskSplashScreenHandler : public BaseScreenHandler,
                                     public ArcKioskSplashScreenView {
  public:
-  ArcKioskSplashScreenHandler();
+  explicit ArcKioskSplashScreenHandler(JSCallsContainer* js_calls_container);
   ~ArcKioskSplashScreenHandler() override;
 
  private:

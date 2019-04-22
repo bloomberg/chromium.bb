@@ -4,6 +4,7 @@
 
 #include "chrome/browser/safe_browsing/ui_manager.h"
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"

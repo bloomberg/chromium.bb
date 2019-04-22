@@ -20,7 +20,6 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/favicon/core/favicon_service.h"
-#include "components/sync/driver/sync_client.h"
 #include "components/sync/syncable/change_record.h"
 #include "components/sync/syncable/entry.h"  // TODO(tim): Investigating bug 121587.
 #include "components/sync/syncable/read_node.h"
@@ -42,15 +41,12 @@ namespace sync_bookmarks {
 static const char kMobileBookmarksTag[] = "synced_bookmarks";
 
 BookmarkChangeProcessor::BookmarkChangeProcessor(
-    syncer::SyncClient* sync_client,
     BookmarkModelAssociator* model_associator,
     std::unique_ptr<syncer::DataTypeErrorHandler> err_handler)
     : syncer::ChangeProcessor(std::move(err_handler)),
       bookmark_model_(nullptr),
-      sync_client_(sync_client),
       model_associator_(model_associator) {
   DCHECK(model_associator);
-  DCHECK(sync_client);
   DCHECK(error_handler());
 }
 
@@ -62,7 +58,7 @@ BookmarkChangeProcessor::~BookmarkChangeProcessor() {
 void BookmarkChangeProcessor::StartImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!bookmark_model_);
-  bookmark_model_ = sync_client_->GetBookmarkModel();
+  bookmark_model_ = model_associator_->GetBookmarkModel();
   DCHECK(bookmark_model_->loaded());
   bookmark_model_->AddObserver(this);
 }
@@ -584,7 +580,7 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
 
   // Changes made to the bookmark model due to sync should not be undoable.
   ScopedSuspendBookmarkUndo suspend_undo(
-      sync_client_->GetBookmarkUndoServiceIfExists());
+      model_associator_->GetBookmarkUndoService());
 
   // Notify UI intensive observers of BookmarkModel that we are about to make
   // potentially significant changes to it, so the updates may be batched. For
@@ -702,7 +698,8 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
     if (dst) {
       DCHECK(it->action == ChangeRecord::ACTION_UPDATE)
           << "ACTION_UPDATE should be seen if and only if the node is known.";
-      UpdateBookmarkWithSyncData(src, model, dst, sync_client_);
+      UpdateBookmarkWithSyncData(src, model, dst,
+                                 model_associator_->GetFaviconService());
 
       // Move all modified entries to the right.  We'll fix it later.
       model->Move(dst, parent, parent->child_count());
@@ -710,7 +707,8 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
       DCHECK(it->action == ChangeRecord::ACTION_ADD)
           << "ACTION_ADD should be seen if and only if the node is unknown.";
 
-      dst = CreateBookmarkNode(&src, parent, model, sync_client_,
+      dst = CreateBookmarkNode(&src, parent, model,
+                               model_associator_->GetFaviconService(),
                                parent->child_count());
       if (!dst) {
         // We ignore bookmarks we can't add. Chances are this is caused by
@@ -763,7 +761,7 @@ void BookmarkChangeProcessor::UpdateBookmarkWithSyncData(
     const syncer::BaseNode& sync_node,
     BookmarkModel* model,
     const BookmarkNode* node,
-    syncer::SyncClient* sync_client) {
+    favicon::FaviconService* favicon_service) {
   DCHECK_EQ(sync_node.GetIsFolder(), node->is_folder());
   const sync_pb::BookmarkSpecifics& specifics =
       sync_node.GetBookmarkSpecifics();
@@ -775,7 +773,7 @@ void BookmarkChangeProcessor::UpdateBookmarkWithSyncData(
         node,
         base::Time::FromInternalValue(specifics.creation_time_us()));
   }
-  SetBookmarkFavicon(&sync_node, node, sync_client);
+  SetBookmarkFavicon(&sync_node, node, favicon_service);
   model->SetNodeMetaInfoMap(node, *GetBookmarkMetaInfo(&sync_node));
 }
 
@@ -799,11 +797,11 @@ const BookmarkNode* BookmarkChangeProcessor::CreateBookmarkNode(
     const syncer::BaseNode* sync_node,
     const BookmarkNode* parent,
     BookmarkModel* model,
-    syncer::SyncClient* sync_client,
+    favicon::FaviconService* favicon_service,
     int index) {
   return CreateBookmarkNode(base::UTF8ToUTF16(sync_node->GetTitle()),
                             GURL(sync_node->GetBookmarkSpecifics().url()),
-                            sync_node, parent, model, sync_client, index);
+                            sync_node, parent, model, favicon_service, index);
 }
 
 // static
@@ -815,7 +813,7 @@ const BookmarkNode* BookmarkChangeProcessor::CreateBookmarkNode(
     const syncer::BaseNode* sync_node,
     const BookmarkNode* parent,
     BookmarkModel* model,
-    syncer::SyncClient* sync_client,
+    favicon::FaviconService* favicon_service,
     int index) {
   DCHECK(parent);
 
@@ -834,7 +832,7 @@ const BookmarkNode* BookmarkChangeProcessor::CreateBookmarkNode(
         parent, index, title, url, create_time,
         GetBookmarkMetaInfo(sync_node).get());
     if (node)
-      SetBookmarkFavicon(sync_node, node, sync_client);
+      SetBookmarkFavicon(sync_node, node, favicon_service);
   }
 
   return node;
@@ -845,7 +843,7 @@ const BookmarkNode* BookmarkChangeProcessor::CreateBookmarkNode(
 void BookmarkChangeProcessor::SetBookmarkFavicon(
     const syncer::BaseNode* sync_node,
     const BookmarkNode* bookmark_node,
-    syncer::SyncClient* sync_client) {
+    favicon::FaviconService* favicon_service) {
   const sync_pb::BookmarkSpecifics& specifics =
       sync_node->GetBookmarkSpecifics();
   const std::string& icon_bytes_str = specifics.favicon();
@@ -853,8 +851,8 @@ void BookmarkChangeProcessor::SetBookmarkFavicon(
       new base::RefCountedString());
   icon_bytes->data().assign(icon_bytes_str);
 
-  ApplyBookmarkFavicon(bookmark_node, sync_client, GURL(specifics.icon_url()),
-                       icon_bytes);
+  ApplyBookmarkFavicon(bookmark_node, favicon_service,
+                       GURL(specifics.icon_url()), icon_bytes);
 }
 
 // static
@@ -921,12 +919,10 @@ void BookmarkChangeProcessor::SetSyncNodeMetaInfo(
 // static
 void BookmarkChangeProcessor::ApplyBookmarkFavicon(
     const BookmarkNode* bookmark_node,
-    syncer::SyncClient* sync_client,
+    favicon::FaviconService* favicon_service,
     const GURL& icon_url,
     const scoped_refptr<base::RefCountedMemory>& bitmap_data) {
-  favicon::FaviconService* favicon_service = sync_client->GetFaviconService();
-
-  // Some tests (that use FakeSyncClient) use no services.
+  // Some tests use no services.
   if (favicon_service == nullptr)
     return;
 

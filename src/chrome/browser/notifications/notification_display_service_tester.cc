@@ -17,7 +17,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/keyed_service/content/browser_context_keyed_service_shutdown_notifier_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "ui/base/ui_features.h"
+#include "ui/base/buildflags.h"
 #include "ui/message_center/public/cpp/notification.h"
 
 namespace {
@@ -43,7 +43,7 @@ class MockNotificationPlatformBridge : public NotificationPlatformBridge {
   void Close(Profile* profile, const std::string& notification_id) override {}
   void GetDisplayed(Profile* profile,
                     GetDisplayedNotificationsCallback callback) const override {
-    auto displayed_notifications = std::make_unique<std::set<std::string>>();
+    std::set<std::string> displayed_notifications;
     std::move(callback).Run(std::move(displayed_notifications),
                             false /* supports_synchronization */);
   }
@@ -136,6 +136,11 @@ NotificationDisplayServiceTester* NotificationDisplayServiceTester::Get() {
 void NotificationDisplayServiceTester::SetNotificationAddedClosure(
     base::RepeatingClosure closure) {
   display_service_->SetNotificationAddedClosure(std::move(closure));
+}
+
+void NotificationDisplayServiceTester::SetNotificationClosedClosure(
+    base::RepeatingClosure closure) {
+  display_service_->SetNotificationClosedClosure(std::move(closure));
 }
 
 std::vector<message_center::Notification>

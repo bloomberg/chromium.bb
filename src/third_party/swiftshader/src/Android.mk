@@ -7,7 +7,7 @@ COMMON_C_INCLUDES += \
 	$(LOCAL_PATH)/OpenGL/ \
 	$(LOCAL_PATH)
 
-ifdef REACTOR_USE_SUBZERO
+ifeq ($(REACTOR_USE_SUBZERO),true)
 
 COMMON_C_INCLUDES += \
 	$(LOCAL_PATH)/../third_party/subzero/ \
@@ -17,15 +17,10 @@ COMMON_C_INCLUDES += \
 
 else
 
-ifeq ($(REACTOR_LLVM_VERSION),3)
-COMMON_C_INCLUDES += \
-	$(LOCAL_PATH)/../third_party/LLVM/include
-else
 COMMON_C_INCLUDES += \
 	$(LOCAL_PATH)/../third_party/llvm-7.0/llvm/include \
 	$(LOCAL_PATH)/../third_party/llvm-7.0/configs/android/include \
 	$(LOCAL_PATH)/../third_party/llvm-7.0/configs/common/include
-endif
 
 endif
 
@@ -61,12 +56,13 @@ COMMON_SRC_FILES += \
 	Main/SwiftConfig.cpp
 
 COMMON_SRC_FILES += \
+	Reactor/Reactor.cpp \
 	Reactor/Routine.cpp \
 	Reactor/Debug.cpp \
 	Reactor/DebugAndroid.cpp \
 	Reactor/ExecutableMemory.cpp
 
-ifdef REACTOR_USE_SUBZERO
+ifeq ($(REACTOR_USE_SUBZERO),true)
 COMMON_SRC_FILES += \
 	Reactor/SubzeroReactor.cpp \
 	Reactor/Optimizer.cpp
@@ -128,6 +124,7 @@ COMMON_CFLAGS := \
 	-Wno-unused-value \
 	-Wno-unused-variable \
 	-Wno-implicit-exception-spec-mismatch \
+	-Wno-implicit-fallthrough \
 	-Wno-overloaded-virtual \
 	-Wno-non-virtual-dtor \
 	-Wno-attributes \

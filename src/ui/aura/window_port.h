@@ -79,6 +79,7 @@ class AURA_EXPORT WindowPort {
   virtual void OnWillMoveChild(size_t current_index, size_t dest_index) = 0;
 
   virtual void OnVisibilityChanged(bool visible) = 0;
+  virtual void OnTransparentChanged(bool transparent) = 0;
 
   virtual void OnDidChangeBounds(const gfx::Rect& old_bounds,
                                  const gfx::Rect& new_bounds) = 0;
@@ -148,7 +149,8 @@ class AURA_EXPORT WindowPort {
   static WindowPort* Get(Window* window);
 
   // Returns the ObserverList of a Window.
-  static base::ObserverList<WindowObserver, true>* GetObservers(Window* window);
+  static base::ReentrantObserverList<WindowObserver, true>* GetObservers(
+      Window* window);
 
  private:
   const Type type_;

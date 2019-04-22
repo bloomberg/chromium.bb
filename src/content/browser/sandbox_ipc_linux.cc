@@ -15,11 +15,11 @@
 #include "base/command_line.h"
 #include "base/files/scoped_file.h"
 #include "base/linux_util.h"
-#include "base/macros.h"
 #include "base/memory/shared_memory.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/unix_domain_socket.h"
 #include "base/process/launch.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "content/public/common/content_switches.h"
 #include "sandbox/linux/services/libc_interceptor.h"
@@ -43,7 +43,7 @@ void SandboxIPCHandler::Run() {
   int failed_polls = 0;
   for (;;) {
     const int r =
-        HANDLE_EINTR(poll(pfds, arraysize(pfds), -1 /* no timeout */));
+        HANDLE_EINTR(poll(pfds, base::size(pfds), -1 /* no timeout */));
     // '0' is not a possible return value with no timeout.
     DCHECK_NE(0, r);
     if (r < 0) {

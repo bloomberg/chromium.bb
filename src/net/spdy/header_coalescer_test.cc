@@ -101,7 +101,8 @@ TEST_F(HeaderCoalescerTest, HeaderNameNotValid) {
   base::StringPiece header_name("\x1\x7F\x80\xFF");
   header_coalescer_.OnHeader(header_name, "foo");
   EXPECT_TRUE(header_coalescer_.error_seen());
-  ExpectEntry("%01%7F%80%FF", "foo", "Invalid character in header name.");
+  ExpectEntry("%ESCAPED:\xE2\x80\x8B \x1\x7F%80%FF", "foo",
+              "Invalid character in header name.");
 }
 
 // RFC 7540 Section 8.1.2.6. Uppercase in header name is invalid.
@@ -139,19 +140,19 @@ TEST_F(HeaderCoalescerTest, HeaderValueValid) {
 TEST_F(HeaderCoalescerTest, HeaderValueContainsLF) {
   header_coalescer_.OnHeader("foo", "bar\nbaz");
   EXPECT_TRUE(header_coalescer_.error_seen());
-  ExpectEntry("foo", "bar%0Abaz", "Invalid character 0x0A in header value.");
+  ExpectEntry("foo", "bar\nbaz", "Invalid character 0x0A in header value.");
 }
 
 TEST_F(HeaderCoalescerTest, HeaderValueContainsCR) {
   header_coalescer_.OnHeader("foo", "bar\rbaz");
   EXPECT_TRUE(header_coalescer_.error_seen());
-  ExpectEntry("foo", "bar%0Dbaz", "Invalid character 0x0D in header value.");
+  ExpectEntry("foo", "bar\rbaz", "Invalid character 0x0D in header value.");
 }
 
 TEST_F(HeaderCoalescerTest, HeaderValueContains0x7f) {
   header_coalescer_.OnHeader("foo", "bar\x7f baz");
   EXPECT_TRUE(header_coalescer_.error_seen());
-  ExpectEntry("foo", "bar%7F%20baz", "Invalid character 0x7F in header value.");
+  ExpectEntry("foo", "bar\x7F baz", "Invalid character 0x7F in header value.");
 }
 
 }  // namespace test

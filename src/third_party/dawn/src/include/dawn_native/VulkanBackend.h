@@ -15,24 +15,20 @@
 #ifndef DAWNNATIVE_VULKANBACKEND_H_
 #define DAWNNATIVE_VULKANBACKEND_H_
 
-#include <dawn/dawn.h>
 #include <dawn/dawn_wsi.h>
-#include <dawn_native/dawn_native_export.h>
+#include <dawn_native/DawnNative.h>
 
 #include <vulkan/vulkan.h>
 
 #include <vector>
 
 namespace dawn_native { namespace vulkan {
-    DAWN_NATIVE_EXPORT dawnDevice
-    CreateDevice(const std::vector<const char*>& requiredInstanceExtensions);
+    DAWN_NATIVE_EXPORT VkInstance GetInstance(DawnDevice device);
 
-    DAWN_NATIVE_EXPORT VkInstance GetInstance(dawnDevice device);
-
-    DAWN_NATIVE_EXPORT dawnSwapChainImplementation CreateNativeSwapChainImpl(dawnDevice device,
+    DAWN_NATIVE_EXPORT DawnSwapChainImplementation CreateNativeSwapChainImpl(DawnDevice device,
                                                                              VkSurfaceKHR surface);
-    DAWN_NATIVE_EXPORT dawnTextureFormat
-    GetNativeSwapChainPreferredFormat(const dawnSwapChainImplementation* swapChain);
+    DAWN_NATIVE_EXPORT DawnTextureFormat
+    GetNativeSwapChainPreferredFormat(const DawnSwapChainImplementation* swapChain);
 }}  // namespace dawn_native::vulkan
 
 #endif  // DAWNNATIVE_VULKANBACKEND_H_

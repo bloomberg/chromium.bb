@@ -4,46 +4,37 @@
 
 #include "content/renderer/media/stream/local_media_stream_audio_source.h"
 
-#include "build/build_config.h"
+#include <utility>
+
 #include "content/renderer/media/audio/audio_device_factory.h"
 #include "content/renderer/media/webrtc_logging.h"
 #include "content/renderer/render_frame_impl.h"
 
 namespace content {
 
-// TODO(crbug.com/638081): Like in ProcessedLocalAudioSource::GetBufferSize(),
-// we should re-evaluate whether Android needs special treatment here. Or,
-// perhaps we should just DCHECK_GT(device...frames_per_buffer, 0)?
-#if defined(OS_ANDROID)
-static constexpr int kFallbackAudioLatencyMs = 20;
-#else
-static constexpr int kFallbackAudioLatencyMs = 10;
-#endif
-
-static_assert(kFallbackAudioLatencyMs >= 0,
-              "Audio latency has to be non-negative.");
-static_assert(kFallbackAudioLatencyMs <= kMaxAudioLatencyMs,
-              "Audio latency can cause overflow.");
-
 LocalMediaStreamAudioSource::LocalMediaStreamAudioSource(
     int consumer_render_frame_id,
-    const MediaStreamDevice& device,
-    bool hotword_enabled,
+    const blink::MediaStreamDevice& device,
+    const int* requested_buffer_size,
     bool disable_local_echo,
-    const ConstraintsCallback& started_callback)
-    : MediaStreamAudioSource(true /* is_local_source */,
-                             hotword_enabled,
-                             disable_local_echo),
+    const ConstraintsCallback& started_callback,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    : blink::MediaStreamAudioSource(std::move(task_runner),
+                                    true /* is_local_source */,
+                                    disable_local_echo),
       consumer_render_frame_id_(consumer_render_frame_id),
       started_callback_(started_callback) {
   DVLOG(1) << "LocalMediaStreamAudioSource::LocalMediaStreamAudioSource()";
   SetDevice(device);
 
-  // If the device buffer size was not provided, use a default.
   int frames_per_buffer = device.input.frames_per_buffer();
+  if (requested_buffer_size)
+    frames_per_buffer = *requested_buffer_size;
+
+  // If the device buffer size was not provided, use a default.
   if (frames_per_buffer <= 0) {
     frames_per_buffer =
-        (device.input.sample_rate() * kFallbackAudioLatencyMs) / 1000;
+        (device.input.sample_rate() * blink::kFallbackAudioLatencyMs) / 1000;
   }
 
   SetFormat(media::AudioParameters(
@@ -58,7 +49,7 @@ LocalMediaStreamAudioSource::~LocalMediaStreamAudioSource() {
 }
 
 bool LocalMediaStreamAudioSource::EnsureSourceIsStarted() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (source_)
     return true;
@@ -92,7 +83,7 @@ bool LocalMediaStreamAudioSource::EnsureSourceIsStarted() {
 }
 
 void LocalMediaStreamAudioSource::EnsureSourceIsStopped() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (!source_)
     return;
@@ -107,7 +98,7 @@ void LocalMediaStreamAudioSource::EnsureSourceIsStopped() {
 }
 
 void LocalMediaStreamAudioSource::OnCaptureStarted() {
-  started_callback_.Run(this, MEDIA_DEVICE_OK, "");
+  started_callback_.Run(this, blink::MEDIA_DEVICE_OK, "");
 }
 
 void LocalMediaStreamAudioSource::Capture(const media::AudioBus* audio_bus,
@@ -117,7 +108,7 @@ void LocalMediaStreamAudioSource::Capture(const media::AudioBus* audio_bus,
   DCHECK(audio_bus);
   // TODO(miu): Plumbing is needed to determine the actual capture timestamp
   // of the audio, instead of just snapshotting TimeTicks::Now(), for proper
-  // audio/video sync. http://crbug.com/335335
+  // audio/video sync. https://crbug.com/335335
   DeliverDataToTracks(
       *audio_bus, base::TimeTicks::Now() - base::TimeDelta::FromMilliseconds(
                                                audio_delay_milliseconds));
@@ -133,7 +124,7 @@ void LocalMediaStreamAudioSource::OnCaptureMuted(bool is_muted) {
 }
 
 void LocalMediaStreamAudioSource::ChangeSourceImpl(
-    const MediaStreamDevice& new_device) {
+    const blink::MediaStreamDevice& new_device) {
   WebRtcLogMessage(
       "LocalMediaStreamAudioSource::ChangeSourceImpl(new_device = " +
       new_device.id + ")");

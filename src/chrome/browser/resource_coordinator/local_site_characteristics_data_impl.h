@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_RESOURCE_COORDINATOR_LOCAL_SITE_CHARACTERISTICS_DATA_IMPL_H_
 #define CHROME_BROWSER_RESOURCE_COORDINATOR_LOCAL_SITE_CHARACTERISTICS_DATA_IMPL_H_
 
+#include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -28,7 +29,11 @@ class LocalSiteCharacteristicsDataReaderTest;
 class LocalSiteCharacteristicsDataWriterTest;
 
 FORWARD_DECLARE_TEST(LocalSiteCharacteristicsDataReaderTest,
+                     DestroyingReaderCancelsPendingCallbacks);
+FORWARD_DECLARE_TEST(LocalSiteCharacteristicsDataReaderTest,
                      FreeingReaderDoesntCauseWriteOperation);
+FORWARD_DECLARE_TEST(LocalSiteCharacteristicsDataReaderTest,
+                     OnDataLoadedCallbackInvoked);
 
 namespace internal {
 
@@ -82,6 +87,14 @@ class LocalSiteCharacteristicsDataImpl
   SiteFeatureUsage UpdatesTitleInBackground() const;
   SiteFeatureUsage UsesAudioInBackground() const;
   SiteFeatureUsage UsesNotificationsInBackground() const;
+
+  // Returns true if the most authoritative data has been loaded from the
+  // backing store.
+  bool DataLoaded() const;
+
+  // Registers a callback to be invoked when the data backing this object is
+  // loaded from disk, or otherwise authoritatively initialized.
+  void RegisterDataLoadedCallback(base::OnceClosure&& callback);
 
   // Accessors for load-time performance measurement estimates.
   // If |num_datum| is zero, there's no estimate available.
@@ -173,12 +186,18 @@ class LocalSiteCharacteristicsDataImpl
 
  private:
   FRIEND_TEST_ALL_PREFIXES(LocalSiteCharacteristicsDataImplTest,
+                           FlushingStateToProtoDoesntAffectData);
+  FRIEND_TEST_ALL_PREFIXES(LocalSiteCharacteristicsDataImplTest,
                            LateAsyncReadDoesntBypassClearEvent);
   FRIEND_TEST_ALL_PREFIXES(
       resource_coordinator::LocalSiteCharacteristicsDataReaderTest,
+      DestroyingReaderCancelsPendingCallbacks);
+  FRIEND_TEST_ALL_PREFIXES(
+      resource_coordinator::LocalSiteCharacteristicsDataReaderTest,
       FreeingReaderDoesntCauseWriteOperation);
-  FRIEND_TEST_ALL_PREFIXES(LocalSiteCharacteristicsDataImplTest,
-                           FlushingStateToProtoDoesntAffectData);
+  FRIEND_TEST_ALL_PREFIXES(
+      resource_coordinator::LocalSiteCharacteristicsDataReaderTest,
+      OnDataLoadedCallbackInvoked);
 
   // Add |extra_observation_duration| to the observation window of a given
   // feature if it hasn't been used yet, do nothing otherwise.
@@ -217,6 +236,8 @@ class LocalSiteCharacteristicsDataImpl
   // Updates the proto with the current total observation duration and updates
   // |background_session_begin_| to NowTicks().
   void FlushFeaturesObservationDurationToProto();
+
+  void TransitionToFullyInitialized();
 
   // This site's characteristics, contains the features and other values are
   // measured.
@@ -260,6 +281,10 @@ class LocalSiteCharacteristicsDataImpl
   // Dirty bit, indicates if any of the fields in |site_characteristics_| has
   // changed since it has been initialized.
   bool is_dirty_;
+
+  // A collection of callbacks to be invoked when this object becomes fully
+  // initialized.
+  std::vector<base::OnceClosure> data_loaded_callbacks_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

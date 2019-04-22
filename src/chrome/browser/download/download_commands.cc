@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "base/base64.h"
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
@@ -25,13 +26,11 @@
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/common/safe_browsing/file_type_policies.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/grit/theme_resources.h"
 #include "components/google/core/common/google_util.h"
 #include "components/safe_browsing/proto/csd.pb.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/url_util.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
-#include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/download/download_target_determiner.h"
@@ -65,7 +64,7 @@ class ImageClipboardCopyManager : public ImageDecoder::ImageRequest {
 
   void StartDecoding() {
     base::ScopedBlockingCall scoped_blocking_call(
-        base::BlockingType::WILL_BLOCK);
+        FROM_HERE, base::BlockingType::WILL_BLOCK);
 
     // Re-check the filesize since the file may be modified after downloaded.
     int64_t filesize;
@@ -118,34 +117,6 @@ class ImageClipboardCopyManager : public ImageDecoder::ImageRequest {
   DISALLOW_IMPLICIT_CONSTRUCTORS(ImageClipboardCopyManager);
 };
 
-#if defined(OS_CHROMEOS)
-int GetDownloadNotificationMenuIcon(DownloadCommands::Command command) {
-  switch (command) {
-    case DownloadCommands::PAUSE:
-      return IDR_DOWNLOAD_NOTIFICATION_MENU_PAUSE;
-    case DownloadCommands::RESUME:
-      return IDR_DOWNLOAD_NOTIFICATION_MENU_DOWNLOAD;
-    case DownloadCommands::SHOW_IN_FOLDER:
-      return IDR_DOWNLOAD_NOTIFICATION_MENU_FOLDER;
-    case DownloadCommands::KEEP:
-      return IDR_DOWNLOAD_NOTIFICATION_MENU_DOWNLOAD;
-    case DownloadCommands::DISCARD:
-      return IDR_DOWNLOAD_NOTIFICATION_MENU_DELETE;
-    case DownloadCommands::CANCEL:
-      return IDR_DOWNLOAD_NOTIFICATION_MENU_CANCEL;
-    case DownloadCommands::COPY_TO_CLIPBOARD:
-      return IDR_DOWNLOAD_NOTIFICATION_MENU_COPY_TO_CLIPBOARD;
-    case DownloadCommands::LEARN_MORE_SCANNING:
-      return IDR_DOWNLOAD_NOTIFICATION_MENU_LEARN_MORE;
-    case DownloadCommands::ANNOTATE:
-      return IDR_DOWNLOAD_NOTIFICATION_MENU_ANNOTATE;
-    default:
-      NOTREACHED();
-      return -1;
-  }
-}
-#endif
-
 }  // namespace
 
 DownloadCommands::DownloadCommands(DownloadUIModel* model) : model_(model) {
@@ -154,45 +125,13 @@ DownloadCommands::DownloadCommands(DownloadUIModel* model) : model_(model) {
 
 DownloadCommands::~DownloadCommands() = default;
 
-int DownloadCommands::GetCommandIconId(Command command) const {
-  switch (command) {
-    case PAUSE:
-    case RESUME:
-    case SHOW_IN_FOLDER:
-    case KEEP:
-    case DISCARD:
-    case CANCEL:
-    case COPY_TO_CLIPBOARD:
-    case LEARN_MORE_SCANNING:
-    case ANNOTATE:
-#if defined(OS_CHROMEOS)
-      return GetDownloadNotificationMenuIcon(command);
-#else
-      NOTREACHED();
-      return -1;
-#endif
-    case OPEN_WHEN_COMPLETE:
-    case ALWAYS_OPEN_TYPE:
-    case PLATFORM_OPEN:
-    case LEARN_MORE_INTERRUPTED:
-      return -1;
-  }
-  NOTREACHED();
-  return -1;
-}
-
 GURL DownloadCommands::GetLearnMoreURLForInterruptedDownload() const {
   GURL learn_more_url(chrome::kDownloadInterruptedLearnMoreURL);
   learn_more_url = google_util::AppendGoogleLocaleParam(
       learn_more_url, g_browser_process->GetApplicationLocale());
   return net::AppendQueryParameter(
       learn_more_url, "ctx",
-      base::IntToString(static_cast<int>(model_->download()->GetLastReason())));
-}
-
-gfx::Image DownloadCommands::GetCommandIcon(Command command) {
-  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-  return bundle.GetImageNamed(GetCommandIconId(command));
+      base::NumberToString(model_->download()->GetLastReason()));
 }
 
 bool DownloadCommands::IsCommandEnabled(Command command) const {

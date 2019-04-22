@@ -15,7 +15,7 @@ function runArrayOOMTest() {
 
     try {
         var arr = new Array();
-        for (i=0; i < populate; ++i)
+        for (var i=0; i < populate; ++i)
             arr[i] = 0;
         arr[target] = 0;
     } catch(e) {

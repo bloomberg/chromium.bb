@@ -2,10 +2,13 @@
 
 <link rel="import" href="chrome://resources/html/action_link.html">
 <link rel="import" href="chrome://resources/html/action_link_css.html">
+<link rel="import" href="chrome://resources/html/assert.html">
+<link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="../icons.html">
 <link rel="import" href="../route.html">
 <link rel="import" href="../settings_shared_css.html">
@@ -25,20 +28,24 @@
         padding-inline-end: 0;
       }
 
+      #storageText {
+        display: flex;
+      }
       /* When 'Usage' is omitted, subheadings are removed. Reduce the start
        * padding allowed for lists without headings and add back vertical space
        * that would normally be provided by the subheading. */
       .list-frame.without-heading {
         margin-top: 12px;
-        padding-inline-start: var(--settings-box-row-padding);
+        padding-inline-start: var(--cr-section-padding);
       }
 
-      div#resetSettingsButton {
+      #resetSettingsButton {
         margin-top: 24px;
       }
     </style>
     <!-- Confirm reset settings dialog. -->
-    <cr-dialog id="confirmResetSettings" close-text="$i18n{close}">
+    <cr-dialog id="confirmResetSettings" close-text="$i18n{close}"
+        on-close="onResetSettingsDialogClosed_">
       <div slot="body">
         [[i18n('siteSettingsSiteResetConfirmation', pageTitle)]]
       </div>
@@ -53,7 +60,8 @@
     </cr-dialog>
 
     <!-- Confirm clear storage dialog. -->
-    <cr-dialog id="confirmClearStorage" close-text="$i18n{close}">
+    <cr-dialog id="confirmClearStorage" close-text="$i18n{close}"
+        on-close="onClearStorageDialogClosed_">
       <div slot="title">
         $i18n{siteSettingsSiteClearStorageDialogTitle}
       </div>
@@ -77,17 +85,24 @@
         </div>
         <div class="list-frame">
           <div class="list-item" id="noStorage"
-              hidden$="[[hasUsage_(storedData_)]]">
+              hidden$="[[hasUsage_(storedData_, numCookies_)]]">
             <div class="start">$i18n{siteSettingsUsageNone}</div>
           </div>
-          <div class="list-item" id="storage" hidden$="[[!storedData_]]">
-            <div class="start">[[storedData_]]</div>
-            <paper-button class="secondary-button" role="button"
-                aria-disabled="false" on-click="onConfirmClearStorage_"
+          <div class="list-item" id="storage"
+              hidden$="[[!hasUsage_(storedData_, numCookies_)]]">
+            <div class="start" id="storageText">
+              <div hidden$="[[!storedData_]]">[[storedData_]]</div>
+              <div hidden$="[[!hasDataAndCookies_(storedData_, numCookies_)]]">
+                &nbsp;&middot;&nbsp;
+              </div>
+              <div hidden$="[[!numCookies_]]">[[numCookies_]]</div>
+            </div>
+            <paper-button class="secondary-button" id="clearStorage"
+                role="button" aria-disabled="false"
+                on-click="onConfirmClearStorage_"
                 aria-label="$i18n{siteSettingsDelete}">
               $i18n{siteSettingsDelete}
             </paper-button>
-            </paper-icon-button-light>
           </div>
         </div>
       </div>
@@ -103,15 +118,15 @@
     </template>
     <div class$="list-frame [[permissionListClass_(enableSiteSettings_)]]">
       <site-details-permission category="{{ContentSettingsTypes.GEOLOCATION}}"
-          icon="settings:location-on" id="geolocation"
+          icon="cr:location-on" id="geolocation"
           label="$i18n{siteSettingsLocation}">
       </site-details-permission>
       <site-details-permission category="{{ContentSettingsTypes.CAMERA}}"
-          icon="settings:videocam" id="camera"
+          icon="cr:videocam" id="camera"
           label="$i18n{siteSettingsCamera}">
       </site-details-permission>
       <site-details-permission category="{{ContentSettingsTypes.MIC}}"
-          icon="settings:mic" id="mic"
+          icon="cr:mic" id="mic"
           label="$i18n{siteSettingsMic}">
       </site-details-permission>
       <site-details-permission
@@ -164,6 +179,13 @@
           category="{{ContentSettingsTypes.USB_DEVICES}}" icon="settings:usb"
           id="usbDevices" label="$i18n{siteSettingsUsbDevices}">
       </site-details-permission>
+      <template is="dom-if" if="[[enableExperimentalWebPlatformFeatures_]]">
+        <site-details-permission
+            category="{{ContentSettingsTypes.SERIAL_PORTS}}"
+            icon="settings:serial-port" id="serialPorts"
+            label="$i18n{siteSettingsSerialPorts}">
+        </site-details-permission>
+      </template>
       <site-details-permission
           category="{{ContentSettingsTypes.UNSANDBOXED_PLUGINS}}"
           icon="cr:extension" id="unsandboxedPlugins"
@@ -194,16 +216,14 @@
         <div class="start">
           $i18n{siteSettingsReset}
         </div>
-        <paper-icon-button-light class="subpage-arrow">
-          <button aria-label="$i18n{siteSettingsReset}"
-                  aria-describedby="resetSettingsButton">
-          </button>
-        </paper-icon-button-light>
+        <cr-icon-button class="subpage-arrow"
+            aria-label="$i18n{siteSettingsReset}"
+            aria-describedby="resetSettingsButton"></cr-icon-button>
       </div>
     </template>
     <website-usage-private-api id="usageApi"
         website-data-usage="{{storedData_}}"
-        website-storage-type="{{storageType_}}">
+        website-cookie-usage="{{numCookies_}}">
     </website-usage-private-api>
   </template>
   <script src="site_details.js"></script>

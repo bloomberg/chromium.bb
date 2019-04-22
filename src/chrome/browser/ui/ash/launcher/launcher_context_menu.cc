@@ -93,7 +93,7 @@ void LauncherContextMenu::ExecuteCommand(int command_id, int event_flags) {
     case ash::MENU_OPEN_NEW:
       // Use a copy of the id to avoid crashes, as this menu's owner will be
       // destroyed if LaunchApp replaces the ShelfItemDelegate instance.
-      controller_->LaunchApp(ash::ShelfID(item_.id), ash::LAUNCH_FROM_UNKNOWN,
+      controller_->LaunchApp(ash::ShelfID(item_.id), ash::LAUNCH_FROM_SHELF,
                              ui::EF_NONE, display_id_);
       break;
     case ash::MENU_CLOSE:
@@ -189,7 +189,6 @@ void LauncherContextMenu::AddContextMenuOption(ui::SimpleMenuModel* menu_model,
 const gfx::VectorIcon& LauncherContextMenu::GetCommandIdVectorIcon(
     ash::CommandId type,
     int string_id) const {
-  static const gfx::VectorIcon blank = {};
   switch (type) {
     case ash::MENU_OPEN_NEW:
       if (string_id == IDS_APP_LIST_CONTEXT_MENU_NEW_TAB)
@@ -211,18 +210,26 @@ const gfx::VectorIcon& LauncherContextMenu::GetCommandIdVectorIcon(
     case ash::LAUNCH_TYPE_FULLSCREEN:
     case ash::LAUNCH_TYPE_WINDOW:
       // Check items use a default icon in touchable and default context menus.
-      return blank;
+      return gfx::kNoneIcon;
     case ash::NOTIFICATION_CONTAINER:
       NOTREACHED() << "NOTIFICATION_CONTAINER does not have an icon, and it is "
                       "added to the model by NotificationMenuController.";
-      return blank;
+      return gfx::kNoneIcon;
+    case ash::STOP_APP:
+      if (string_id == IDS_CROSTINI_SHUT_DOWN_LINUX_MENU_ITEM)
+        return views::kLinuxShutdownIcon;
+      return gfx::kNoneIcon;
+    case ash::CROSTINI_USE_HIGH_DENSITY:
+      return views::kLinuxHighDensityIcon;
+    case ash::CROSTINI_USE_LOW_DENSITY:
+      return views::kLinuxLowDensityIcon;
     case ash::LAUNCH_APP_SHORTCUT_FIRST:
     case ash::LAUNCH_APP_SHORTCUT_LAST:
     case ash::COMMAND_ID_COUNT:
       NOTREACHED();
-      return blank;
+      return gfx::kNoneIcon;
     default:
       NOTREACHED();
-      return blank;
+      return gfx::kNoneIcon;
   }
 }

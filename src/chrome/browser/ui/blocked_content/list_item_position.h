@@ -14,13 +14,13 @@
 // framebust and popup UI on desktop platforms to indicate which element was
 // clicked.
 enum class ListItemPosition : int {
-  kOnlyItem,
-  kFirstItem,
-  kMiddleItem,
-  kLastItem,
+  kOnlyItem = 0,
+  kFirstItem = 1,
+  kMiddleItem = 2,
+  kLastItem = 3,
 
   // Any new values should go before this one.
-  kLast,
+  kMaxValue = kLastItem,
 };
 
 // Gets the list item position from the given distance/index and the total size

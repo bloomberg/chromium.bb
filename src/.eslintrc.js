@@ -6,18 +6,26 @@ module.exports = {
   'root': true,
   'env': {
     'browser': true,
-    'es6': true
+    'es6': true,
+  },
+  'parserOptions': {
+    'ecmaVersion': 2017,
   },
   'rules': {
     // Enabled checks.
+    'brace-style': ['error', '1tbs'],
+    'curly': ['error', 'multi-line', 'consistent'],
+    'no-extra-boolean-cast': 'error',
     'no-extra-semi': 'error',
     'no-new-wrappers': 'error',
-    'no-restricted-properties': ['error', {
-      'object': 'document',
-      'property': 'getElementById',
-      'message': 'Use $(\'id\') or getSVGElement(\'id\') ' +
-          'from chrome://resources/js/util.js instead of ' +
-          'document.getElementById(\'id\')',
+    'no-restricted-properties': [
+      'error',
+      {
+        'object': 'document',
+        'property': 'getElementById',
+        'message': 'Use $(\'id\') or getSVGElement(\'id\') ' +
+            'from chrome://resources/js/util.js instead of ' +
+            'document.getElementById(\'id\')',
       },
     ],
     'semi': ['error', 'always'],

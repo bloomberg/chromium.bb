@@ -1,6 +1,8 @@
 #ifndef _RAR_ARCHIVE_
 #define _RAR_ARCHIVE_
 
+namespace third_party_unrar {
+
 class PPack;
 class RawRead;
 class RawWrite;
@@ -19,6 +21,9 @@ enum ADDSUBDATA_FLAGS
   ASDF_CRYPT          = 4, // Encrypt data after subheader if password is set.
   ASDF_CRYPTIFHEADERS = 8  // Encrypt data after subheader only in -hp mode.
 };
+
+// RAR5 headers must not exceed 2 MB.
+#define MAX_HEADER_SIZE_RAR5 0x200000
 
 class Archive:public File
 {
@@ -45,8 +50,6 @@ class Archive:public File
     bool DummyCmd;
     RAROptions *Cmd;
 
-    int64 RecoverySize;
-    int RecoveryPercent;
 
     RarTime LatestTime;
     int LastReadBlock;
@@ -57,9 +60,13 @@ class Archive:public File
     QuickOpen QOpen;
     bool ProhibitQOpen;
 #endif
-#ifdef USE_ARCMEM
-    ArcMemory ArcMem;
+
+#if defined(CHROMIUM_UNRAR)
+    // A handle for a temporary file that should be used when extracting the
+    // archive. This is used to extract the contents while in a sandbox.
+    FileHandle hTempFile;
 #endif
+
   public:
     Archive(RAROptions *InitCmd=NULL);
     ~Archive();
@@ -87,21 +94,23 @@ class Archive:public File
     void AddSubData(byte *SrcData,uint64 DataSize,File *SrcFile,
          const wchar *Name,uint Flags);
     bool ReadSubData(Array<byte> *UnpData,File *DestFile);
-    HEADER_TYPE GetHeaderType() {return CurHeaderType;};
+    HEADER_TYPE GetHeaderType() {return CurHeaderType;}
     RAROptions* GetRAROptions() {return Cmd;}
     void SetSilentOpen(bool Mode) {SilentOpen=Mode;}
 #if 0
     void GetRecoveryInfo(bool Required,int64 *Size,int *Percent);
 #endif
+#ifdef USE_QOPEN
     bool Open(const wchar *Name,uint Mode=FMF_READ);
-    bool Close();
     int Read(void *Data,size_t Size);
     void Seek(int64 Offset,int Method);
     int64 Tell();
-    bool IsOpened();
-#ifdef USE_QOPEN
     void QOpenUnload() {QOpen.Unload();}
     void SetProhibitQOpen(bool Mode) {ProhibitQOpen=Mode;}
+#endif
+#if defined(CHROMIUM_UNRAR)
+    void SetTempFileHandle(FileHandle hF);
+    FileHandle GetTempFileHandle();
 #endif
 
     BaseBlock ShortBlock;
@@ -114,10 +123,7 @@ class Archive:public File
     FileHeader SubHead;
     CommentHeader CommHead;
     ProtectHeader ProtectHead;
-    AVHeader AVHead;
-    SignHeader SignHead;
     UnixOwnersHeader UOHead;
-    MacFInfoHeader MACHead;
     EAHeader EAHead;
     StreamHeader StreamHead;
 
@@ -154,5 +160,6 @@ class Archive:public File
     wchar FirstVolumeName[NM];
 };
 
+}  // namespace third_party_unrar
 
 #endif

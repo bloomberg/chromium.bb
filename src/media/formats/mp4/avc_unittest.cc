@@ -8,8 +8,8 @@
 
 #include <ostream>
 
-#include "base/macros.h"
 #include "base/optional.h"
+#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "media/base/decrypt_config.h"
@@ -361,9 +361,9 @@ TEST_P(AVCConversionTest, ParseEmpty) {
   EXPECT_EQ(0u, buf.size());
 }
 
-INSTANTIATE_TEST_CASE_P(AVCConversionTestValues,
-                        AVCConversionTest,
-                        ::testing::Values(1, 2, 4));
+INSTANTIATE_TEST_SUITE_P(AVCConversionTestValues,
+                         AVCConversionTest,
+                         ::testing::Values(1, 2, 4));
 
 TEST_F(AVCConversionTest, ConvertConfigToAnnexB) {
   AVCDecoderConfigurationRecord avc_config;
@@ -436,7 +436,7 @@ TEST_F(AVCConversionTest, ValidAnnexBConstructs) {
       {"SDC I", false},
   };
 
-  for (size_t i = 0; i < arraysize(test_cases); ++i) {
+  for (size_t i = 0; i < base::size(test_cases); ++i) {
     std::vector<uint8_t> buf;
     std::vector<SubsampleEntry> subsamples;
     StringToAnnexB(test_cases[i].case_string, &buf, NULL);
@@ -484,7 +484,7 @@ TEST_F(AVCConversionTest, InvalidAnnexBConstructs) {
   BitstreamConverter::AnalysisResult expected;
   expected.is_conformant = false;
 
-  for (size_t i = 0; i < arraysize(test_cases); ++i) {
+  for (size_t i = 0; i < base::size(test_cases); ++i) {
     std::vector<uint8_t> buf;
     std::vector<SubsampleEntry> subsamples;
     StringToAnnexB(test_cases[i].case_string, &buf, NULL);
@@ -532,7 +532,7 @@ TEST_F(AVCConversionTest, InsertParamSetsAnnexB) {
   expected.is_conformant = true;
   expected.is_keyframe = true;
 
-  for (size_t i = 0; i < arraysize(test_cases); ++i) {
+  for (size_t i = 0; i < base::size(test_cases); ++i) {
     std::vector<uint8_t> buf;
     std::vector<SubsampleEntry> subsamples;
 

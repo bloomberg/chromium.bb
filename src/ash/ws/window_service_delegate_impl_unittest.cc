@@ -2,22 +2,32 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/display/display_move_window_util.h"
+#include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/desks/desks_util.h"
+#include "ash/wm/resize_shadow.h"
+#include "ash/wm/resize_shadow_controller.h"
 #include "ash/wm/toplevel_window_event_handler.h"
+#include "ash/wm/window_state.h"
+#include "ash/ws/window_service_owner.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "services/ws/event_injector.h"
 #include "services/ws/test_window_tree_client.h"
 #include "services/ws/window_tree_test_helper.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/client/drag_drop_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/hit_test.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/events/test/test_event_handler.h"
 
 namespace ash {
 
@@ -42,6 +52,12 @@ class TestDragDropDelegate : public aura::client::DragDropDelegate {
  private:
   DISALLOW_COPY_AND_ASSIGN(TestDragDropDelegate);
 };
+
+bool IsResizeShadowVisible(ResizeShadow* resize_shadow) {
+  if (!resize_shadow)
+    return false;
+  return resize_shadow->GetLayerForTest()->GetTargetVisibility();
+}
 
 }  // namespace
 
@@ -79,6 +95,8 @@ class WindowServiceDelegateImplTest : public AshTestBase {
   // AshTestBase:
   void SetUp() override {
     AshTestBase::SetUp();
+    Shell::Get()->aura_env()->set_throttle_input_on_resize_for_testing(false);
+    NonClientFrameViewAsh::use_empty_minimum_size_for_test_ = true;
     top_level_ = CreateTestWindow(gfx::Rect(100, 100, 100, 100));
     ASSERT_TRUE(top_level_);
     GetEventGenerator()->PressLeftButton();
@@ -88,6 +106,7 @@ class WindowServiceDelegateImplTest : public AshTestBase {
     // needs to delete |top_level_| before the WindowTree is deleted, otherwise
     // the WindowTree will delete |top_level_|, leading to a double delete.
     top_level_.reset();
+    NonClientFrameViewAsh::use_empty_minimum_size_for_test_ = false;
     AshTestBase::TearDown();
   }
 
@@ -101,8 +120,8 @@ class WindowServiceDelegateImplTest : public AshTestBase {
 
 TEST_F(WindowServiceDelegateImplTest, RunWindowMoveLoop) {
   GetWindowTreeTestHelper()->window_tree()->PerformWindowMove(
-      21, GetTopLevelWindowId(), ws::mojom::MoveLoopSource::MOUSE,
-      gfx::Point());
+      21, GetTopLevelWindowId(), ws::mojom::MoveLoopSource::MOUSE, gfx::Point(),
+      HTCAPTION);
   EXPECT_TRUE(event_handler()->is_drag_in_progress());
   GetEventGenerator()->MoveMouseTo(gfx::Point(5, 6));
   EXPECT_EQ(gfx::Point(105, 106), top_level_->bounds().origin());
@@ -119,7 +138,7 @@ TEST_F(WindowServiceDelegateImplTest, RunWindowMoveWithMultipleDisplays) {
   UpdateDisplay("500x500,500x500");
   GetWindowTreeTestHelper()->window_tree()->PerformWindowMove(
       21, GetTopLevelWindowId(), ws::mojom::MoveLoopSource::MOUSE,
-      top_level_->GetBoundsInScreen().origin());
+      top_level_->GetBoundsInScreen().origin(), HTCAPTION);
   GetEventGenerator()->MoveMouseTo(gfx::Point(501, 1));
   GetWindowTreeClientChanges()->clear();
   GetEventGenerator()->ReleaseLeftButton();
@@ -131,8 +150,8 @@ TEST_F(WindowServiceDelegateImplTest, RunWindowMoveWithMultipleDisplays) {
                      "DisplayChanged window_id=0,1 display_id=2200000001"));
   EXPECT_TRUE(ContainsChange(
       *GetWindowTreeClientChanges(),
-      std::string("BoundsChanged window=0,1 old_bounds=500,0 104x100 "
-                  "new_bounds=500,0 104x100 local_surface_id=*")));
+      std::string("BoundsChanged window=0,1 bounds=500,0 100x100 "
+                  "local_surface_id=*")));
 }
 
 TEST_F(WindowServiceDelegateImplTest, SetWindowBoundsToDifferentDisplay) {
@@ -141,24 +160,19 @@ TEST_F(WindowServiceDelegateImplTest, SetWindowBoundsToDifferentDisplay) {
 
   GetWindowTreeClientChanges()->clear();
   GetWindowTreeTestHelper()->window_tree()->SetWindowBounds(
-      21, GetTopLevelWindowId(), gfx::Rect(600, 100, 100, 100),
-      base::Optional<viz::LocalSurfaceId>());
+      21, GetTopLevelWindowId(), gfx::Rect(600, 100, 100, 100), base::nullopt);
   EXPECT_EQ(gfx::Point(600, 100), top_level_->GetBoundsInScreen().origin());
   EXPECT_EQ(Shell::GetRootWindowForDisplayId(GetSecondaryDisplay().id()),
             top_level_->GetRootWindow());
   EXPECT_TRUE(
       ContainsChange(*GetWindowTreeClientChanges(),
                      "DisplayChanged window_id=0,1 display_id=2200000001"));
-  EXPECT_TRUE(ContainsChange(
-      *GetWindowTreeClientChanges(),
-      std::string("BoundsChanged window=0,1 old_bounds=100,100 100x100 "
-                  "new_bounds=600,100 104x100 local_surface_id=*")));
 }
 
 TEST_F(WindowServiceDelegateImplTest, DeleteWindowWithInProgressRunLoop) {
   GetWindowTreeTestHelper()->window_tree()->PerformWindowMove(
-      29, GetTopLevelWindowId(), ws::mojom::MoveLoopSource::MOUSE,
-      gfx::Point());
+      29, GetTopLevelWindowId(), ws::mojom::MoveLoopSource::MOUSE, gfx::Point(),
+      HTCAPTION);
   EXPECT_TRUE(event_handler()->is_drag_in_progress());
   top_level_.reset();
   EXPECT_FALSE(event_handler()->is_drag_in_progress());
@@ -178,7 +192,7 @@ TEST_F(WindowServiceDelegateImplTest, RunWindowMoveLoopInSecondaryDisplay) {
 
   GetWindowTreeTestHelper()->window_tree()->PerformWindowMove(
       21, GetTopLevelWindowId(), ws::mojom::MoveLoopSource::MOUSE,
-      gfx::Point(605, 106));
+      gfx::Point(605, 106), HTCAPTION);
 
   EXPECT_TRUE(event_handler()->is_drag_in_progress());
   GetEventGenerator()->MoveMouseTo(gfx::Point(615, 120));
@@ -187,8 +201,8 @@ TEST_F(WindowServiceDelegateImplTest, RunWindowMoveLoopInSecondaryDisplay) {
 
 TEST_F(WindowServiceDelegateImplTest, CancelWindowMoveLoop) {
   GetWindowTreeTestHelper()->window_tree()->PerformWindowMove(
-      21, GetTopLevelWindowId(), ws::mojom::MoveLoopSource::MOUSE,
-      gfx::Point());
+      21, GetTopLevelWindowId(), ws::mojom::MoveLoopSource::MOUSE, gfx::Point(),
+      HTCAPTION);
   EXPECT_TRUE(event_handler()->is_drag_in_progress());
   GetEventGenerator()->MoveMouseTo(gfx::Point(5, 6));
   EXPECT_EQ(gfx::Point(105, 106), top_level_->bounds().origin());
@@ -199,6 +213,82 @@ TEST_F(WindowServiceDelegateImplTest, CancelWindowMoveLoop) {
   EXPECT_TRUE(ContainsChange(*GetWindowTreeClientChanges(),
                              "ChangeCompleted id=21 success=false"));
   EXPECT_EQ(gfx::Point(100, 100), top_level_->bounds().origin());
+}
+
+TEST_F(WindowServiceDelegateImplTest, WindowResize) {
+  gfx::Rect bounds = top_level_->bounds();
+  GetWindowTreeTestHelper()->window_tree()->PerformWindowMove(
+      21, GetTopLevelWindowId(), ws::mojom::MoveLoopSource::MOUSE, gfx::Point(),
+      HTTOPLEFT);
+  EXPECT_TRUE(event_handler()->is_drag_in_progress());
+  GetEventGenerator()->MoveMouseBy(5, 6);
+  bounds.Inset(5, 6, 0, 0);
+  EXPECT_EQ(bounds, top_level_->bounds());
+  GetWindowTreeClientChanges()->clear();
+  GetEventGenerator()->ReleaseLeftButton();
+
+  // Releasing the mouse completes the move loop.
+  EXPECT_TRUE(ContainsChange(*GetWindowTreeClientChanges(),
+                             "ChangeCompleted id=21 success=true"));
+  EXPECT_EQ(bounds, top_level_->bounds());
+}
+
+TEST_F(WindowServiceDelegateImplTest, InvalidWindowComponent) {
+  gfx::Rect bounds = top_level_->bounds();
+  GetWindowTreeTestHelper()->window_tree()->PerformWindowMove(
+      21, GetTopLevelWindowId(), ws::mojom::MoveLoopSource::MOUSE,
+      bounds.origin(), HTCLIENT);
+  EXPECT_FALSE(event_handler()->is_drag_in_progress());
+  GetEventGenerator()->MoveMouseTo(5, 6);
+  EXPECT_EQ(bounds, top_level_->bounds());
+  GetEventGenerator()->ReleaseLeftButton();
+}
+
+TEST_F(WindowServiceDelegateImplTest, NestedWindowMoveIsNotAllowed) {
+  GetWindowTreeTestHelper()->window_tree()->PerformWindowMove(
+      21, GetTopLevelWindowId(), ws::mojom::MoveLoopSource::MOUSE, gfx::Point(),
+      HTCAPTION);
+  EXPECT_TRUE(event_handler()->is_drag_in_progress());
+  GetWindowTreeClientChanges()->clear();
+
+  // Intentionally invokes PerformWindowMove to make sure it does not break
+  // anything.
+  GetWindowTreeTestHelper()->window_tree()->PerformWindowMove(
+      22, GetTopLevelWindowId(), ws::mojom::MoveLoopSource::TOUCH, gfx::Point(),
+      HTCAPTION);
+  EXPECT_TRUE(ContainsChange(*GetWindowTreeClientChanges(),
+                             "ChangeCompleted id=22 success=false"));
+
+  GetWindowTreeClientChanges()->clear();
+  GetEventGenerator()->ReleaseLeftButton();
+  EXPECT_TRUE(ContainsChange(*GetWindowTreeClientChanges(),
+                             "ChangeCompleted id=21 success=true"));
+}
+
+TEST_F(WindowServiceDelegateImplTest, SetWindowResizeShadow) {
+  ResizeShadowController* controller = Shell::Get()->resize_shadow_controller();
+
+  GetWindowTreeTestHelper()->window_tree()->SetWindowResizeShadow(
+      GetTopLevelWindowId(), HTNOWHERE);
+  EXPECT_FALSE(IsResizeShadowVisible(
+      controller->GetShadowForWindowForTest(top_level_.get())));
+
+  GetWindowTreeTestHelper()->window_tree()->SetWindowResizeShadow(
+      GetTopLevelWindowId(), HTTOPLEFT);
+  ResizeShadow* shadow =
+      controller->GetShadowForWindowForTest(top_level_.get());
+  EXPECT_TRUE(IsResizeShadowVisible(shadow));
+  EXPECT_EQ(HTTOPLEFT, shadow->GetLastHitTestForTest());
+
+  // Nothing should change for invalid hit-test.
+  GetWindowTreeTestHelper()->window_tree()->SetWindowResizeShadow(
+      GetTopLevelWindowId(), HTCLIENT);
+  EXPECT_TRUE(IsResizeShadowVisible(shadow));
+  EXPECT_EQ(HTTOPLEFT, shadow->GetLastHitTestForTest());
+
+  GetWindowTreeTestHelper()->window_tree()->SetWindowResizeShadow(
+      GetTopLevelWindowId(), HTNOWHERE);
+  EXPECT_FALSE(IsResizeShadowVisible(shadow));
 }
 
 TEST_F(WindowServiceDelegateImplTest, RunDragLoop) {
@@ -311,9 +401,9 @@ TEST_F(WindowServiceDelegateImplTest, CancelDragDropAfterDragLoopRun) {
 TEST_F(WindowServiceDelegateImplTest, ObserveTopmostWindow) {
   std::unique_ptr<aura::Window> window2 =
       CreateTestWindow(gfx::Rect(150, 100, 100, 100));
-  std::unique_ptr<aura::Window> window3(
-      CreateTestWindowInShell(SK_ColorRED, kShellWindowId_DefaultContainer,
-                              gfx::Rect(100, 150, 100, 100)));
+  std::unique_ptr<aura::Window> window3(CreateTestWindowInShell(
+      SK_ColorRED, desks_util::GetActiveDeskContainerId(),
+      gfx::Rect(100, 150, 100, 100)));
 
   // Left button is pressed on SetUp() -- release it first.
   GetEventGenerator()->ReleaseLeftButton();
@@ -373,8 +463,8 @@ TEST_F(WindowServiceDelegateImplTest, MoveAcrossDisplays) {
             screen->GetDisplayNearestWindow(top_level_.get()).id());
 
   GetWindowTreeTestHelper()->window_tree()->PerformWindowMove(
-      21, GetTopLevelWindowId(), ws::mojom::MoveLoopSource::MOUSE,
-      gfx::Point());
+      21, GetTopLevelWindowId(), ws::mojom::MoveLoopSource::MOUSE, gfx::Point(),
+      HTCAPTION);
   EXPECT_TRUE(event_handler()->is_drag_in_progress());
   GetEventGenerator()->MoveMouseTo(gfx::Point(610, 6));
   GetWindowTreeClientChanges()->clear();
@@ -386,6 +476,38 @@ TEST_F(WindowServiceDelegateImplTest, MoveAcrossDisplays) {
       ContainsChange(*GetWindowTreeClientChanges(),
                      std::string("DisplayChanged window_id=0,1 display_id=") +
                          base::NumberToString(display2.id())));
+}
+
+TEST_F(WindowServiceDelegateImplTest, MoveActiveWindowBetweenDisplays) {
+  UpdateDisplay("600x400*2,300+0-400x300");
+
+  // This triggers a SetBounds call in middle of switching displays.
+  wm::GetWindowState(top_level_.get())
+      ->SetPreAutoManageWindowBounds(gfx::Rect(0, 0, 200, 250));
+
+  top_level_->SetBounds(gfx::Rect(0, 0, 100, 150));
+  ASSERT_TRUE(top_level_->CanFocus());
+  top_level_->Focus();
+
+  GetWindowTreeClientChanges()->clear();
+  display_move_window_util::HandleMoveActiveWindowBetweenDisplays();
+
+  ASSERT_TRUE(
+      ContainsChange(*GetWindowTreeClientChanges(),
+                     std::string("DisplayChanged window_id=0,1 display_id=*")));
+  ASSERT_TRUE(ContainsChange(*GetWindowTreeClientChanges(),
+                             std::string("BoundsChanged window=0,1 bounds=*")));
+
+  // Verifies no "BoundsChanged" before "DisplayChanged".
+  bool found_bounds_change = false;
+  for (const auto& change : *GetWindowTreeClientChanges()) {
+    if (change.type == ws::CHANGE_TYPE_NODE_BOUNDS_CHANGED) {
+      found_bounds_change = true;
+    } else if (change.type == ws::CHANGE_TYPE_DISPLAY_CHANGED) {
+      EXPECT_FALSE(found_bounds_change);
+      break;
+    }
+  }
 }
 
 TEST_F(WindowServiceDelegateImplTest, RemoveDisplay) {
@@ -413,8 +535,40 @@ TEST_F(WindowServiceDelegateImplTest, RemoveDisplay) {
                          base::NumberToString(display1.id())));
   EXPECT_TRUE(ContainsChange(
       *GetWindowTreeClientChanges(),
-      std::string("BoundsChanged window=0,1 old_bounds=* "
-                  "new_bounds=100,100 104x100 local_surface_id=*")));
+      std::string("BoundsChanged window=0,1 bounds=100,100 100x100 "
+                  "local_surface_id=*")));
+}
+
+TEST_F(WindowServiceDelegateImplTest, MultiDisplayEventInjector) {
+  UpdateDisplay("500x400,500x400");
+  display::Display display1 = display::Screen::GetScreen()->GetPrimaryDisplay();
+
+  top_level_->SetCapture();
+
+  top_level_->SetBoundsInScreen(gfx::Rect(450, 0, 200, 200),
+                                GetSecondaryDisplay());
+  EXPECT_NE(Shell::GetPrimaryRootWindow(), top_level_->GetRootWindow());
+
+  ws::EventInjector injector(
+      Shell::Get()->window_service_owner()->window_service());
+  base::RunLoop run_loop;
+  ui::test::TestEventHandler handler;
+  top_level_->AddPreTargetHandler(&handler);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindLambdaForTesting([&]() {
+        auto ev = std::make_unique<ui::MouseEvent>(
+            ui::ET_MOUSE_DRAGGED, gfx::Point(470, 10), gfx::Point(470, 10),
+            base::TimeTicks::Now(), 0, 0);
+        static_cast<ws::mojom::EventInjector*>(&injector)->InjectEvent(
+            display1.id(), std::move(ev),
+            base::BindLambdaForTesting([&](bool result) {
+              EXPECT_TRUE(result);
+              run_loop.Quit();
+            }));
+      }));
+  run_loop.Run();
+  EXPECT_EQ(1, handler.num_mouse_events());
+  top_level_->RemovePreTargetHandler(&handler);
 }
 
 }  // namespace ash

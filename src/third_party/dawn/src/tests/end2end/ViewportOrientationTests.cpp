@@ -14,6 +14,7 @@
 
 #include "tests/DawnTest.h"
 
+#include "utils/ComboRenderPipelineDescriptor.h"
 #include "utils/DawnHelpers.h"
 
 class ViewportOrientationTests : public DawnTest {};
@@ -35,22 +36,23 @@ TEST_P(ViewportOrientationTests, OriginAt0x0) {
             fragColor = vec4(0.0f, 1.0f, 0.0f, 1.0f);
         })");
 
-    dawn::RenderPipeline pipeline = device.CreateRenderPipelineBuilder()
-        .SetColorAttachmentFormat(0, renderPass.colorFormat)
-        .SetStage(dawn::ShaderStage::Vertex, vsModule, "main")
-        .SetStage(dawn::ShaderStage::Fragment, fsModule, "main")
-        .SetPrimitiveTopology(dawn::PrimitiveTopology::PointList)
-        .GetResult();
+    utils::ComboRenderPipelineDescriptor descriptor(device);
+    descriptor.cVertexStage.module = vsModule;
+    descriptor.cFragmentStage.module = fsModule;
+    descriptor.primitiveTopology = dawn::PrimitiveTopology::PointList;
+    descriptor.cColorStates[0]->format = renderPass.colorFormat;
 
-    dawn::CommandBufferBuilder builder = device.CreateCommandBufferBuilder();
+    dawn::RenderPipeline pipeline = device.CreateRenderPipeline(&descriptor);
+
+    dawn::CommandEncoder encoder = device.CreateCommandEncoder();
     {
-        dawn::RenderPassEncoder pass = builder.BeginRenderPass(renderPass.renderPassInfo);
-        pass.SetRenderPipeline(pipeline);
-        pass.DrawArrays(1, 1, 0, 0);
+        dawn::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);
+        pass.SetPipeline(pipeline);
+        pass.Draw(1, 1, 0, 0);
         pass.EndPass();
     }
 
-    dawn::CommandBuffer commands = builder.GetResult();
+    dawn::CommandBuffer commands = encoder.Finish();
     queue.Submit(1, &commands);
 
     EXPECT_PIXEL_RGBA8_EQ(RGBA8(0, 255, 0, 255), renderPass.color, 0, 0);
@@ -59,4 +61,4 @@ TEST_P(ViewportOrientationTests, OriginAt0x0) {
     EXPECT_PIXEL_RGBA8_EQ(RGBA8(0, 0, 0, 0), renderPass.color, 1, 1);
 }
 
-DAWN_INSTANTIATE_TEST(ViewportOrientationTests, D3D12Backend, MetalBackend, OpenGLBackend, VulkanBackend)
+DAWN_INSTANTIATE_TEST(ViewportOrientationTests, D3D12Backend, MetalBackend, OpenGLBackend, VulkanBackend);

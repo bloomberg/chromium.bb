@@ -38,7 +38,7 @@ const uint16_t* GetPortFieldFromSockaddr(const struct sockaddr* address,
     return &sockaddr->sin6_port;
   } else {
     NOTREACHED();
-    return NULL;
+    return nullptr;
   }
 }
 
@@ -199,7 +199,7 @@ TEST_F(IPEndPointTest, ToString) {
     ++port;
     IPEndPoint endpoint(test.ip_address, port);
     const std::string result = endpoint.ToString();
-    EXPECT_EQ(test.host_normalized + ":" + base::UintToString(port), result);
+    EXPECT_EQ(test.host_normalized + ":" + base::NumberToString(port), result);
   }
 
   // ToString() shouldn't crash on invalid addresses.

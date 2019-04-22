@@ -12,7 +12,7 @@
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 
 namespace content {
 
@@ -39,7 +39,8 @@ class BackgroundFetchCrossOriginFilterTest : public ::testing::Test {
           response_headers) {
     scoped_refptr<BackgroundFetchRequestInfo> request_info =
         base::MakeRefCounted<BackgroundFetchRequestInfo>(
-            0 /* request_info */, blink::mojom::FetchAPIRequest::New());
+            0 /* request_info */, blink::mojom::FetchAPIRequest::New(),
+            /* has_request_body= */ false);
 
     request_info->response_headers_ = response_headers;
     request_info->url_chain_ = {GURL(response_url)};

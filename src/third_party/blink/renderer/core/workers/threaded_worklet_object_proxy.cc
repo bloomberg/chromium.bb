@@ -36,7 +36,7 @@ void ThreadedWorkletObjectProxy::FetchAndInvokeScript(
   auto* global_scope = To<WorkletGlobalScope>(worker_thread->GlobalScope());
   global_scope->FetchAndInvokeScript(
       module_url_record, credentials_mode,
-      MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
+      *MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
           std::move(outside_settings_object)),
       std::move(outside_settings_task_runner), pending_tasks);
 }

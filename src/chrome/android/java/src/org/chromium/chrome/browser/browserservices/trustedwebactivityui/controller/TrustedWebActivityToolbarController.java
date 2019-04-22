@@ -5,10 +5,10 @@
 package org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller;
 
 import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel.TOOLBAR_HIDDEN;
-import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityVerifier.VERIFICATION_FAILURE;
 
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityVerifier.VerificationState;
+import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityVerifier.VerificationStatus;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.init.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.InflationObserver;
@@ -52,7 +52,7 @@ public class TrustedWebActivityToolbarController implements InflationObserver {
 
     private void handleVerificationUpdate() {
         VerificationState state = mVerifier.getState();
-        boolean shouldHide = state == null || state.status != VERIFICATION_FAILURE;
+        boolean shouldHide = state == null || state.status != VerificationStatus.FAILURE;
         mModel.set(TOOLBAR_HIDDEN, shouldHide);
     }
 }

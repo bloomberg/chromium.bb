@@ -11,13 +11,12 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
-#include "base/single_thread_task_runner.h"
-#include "mojo/public/cpp/bindings/bindings_export.h"
 #include "mojo/public/cpp/bindings/connection_error_callback.h"
 #include "mojo/public/cpp/bindings/filter_chain.h"
 #include "mojo/public/cpp/bindings/interface_endpoint_client.h"
@@ -34,7 +33,7 @@ namespace mojo {
 
 namespace internal {
 
-class MOJO_CPP_BINDINGS_EXPORT BindingStateBase {
+class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) BindingStateBase {
  public:
   BindingStateBase();
   ~BindingStateBase();
@@ -77,13 +76,15 @@ class MOJO_CPP_BINDINGS_EXPORT BindingStateBase {
 
   void FlushForTesting();
 
+  void EnableBatchDispatch();
+
   void EnableTestingMode();
 
   scoped_refptr<internal::MultiplexRouter> RouterForTesting();
 
  protected:
   void BindInternal(ScopedMessagePipeHandle handle,
-                    scoped_refptr<base::SingleThreadTaskRunner> runner,
+                    scoped_refptr<base::SequencedTaskRunner> runner,
                     const char* interface_name,
                     std::unique_ptr<MessageReceiver> request_validator,
                     bool passes_associated_kinds,
@@ -109,7 +110,7 @@ class BindingState : public BindingStateBase {
   ~BindingState() { Close(); }
 
   void Bind(ScopedMessagePipeHandle handle,
-            scoped_refptr<base::SingleThreadTaskRunner> runner) {
+            scoped_refptr<base::SequencedTaskRunner> runner) {
     BindingStateBase::BindInternal(
         std::move(handle), runner, Interface::Name_,
         std::make_unique<typename Interface::RequestValidator_>(),

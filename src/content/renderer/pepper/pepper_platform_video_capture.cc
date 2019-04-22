@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "content/renderer/media/video_capture_impl_manager.h"
+#include "content/renderer/media/video_capture/video_capture_impl_manager.h"
 #include "content/renderer/pepper/pepper_media_device_manager.h"
 #include "content/renderer/pepper/pepper_video_capture_host.h"
 #include "content/renderer/render_frame_impl.h"
@@ -116,20 +116,20 @@ void PepperPlatformVideoCapture::OnDeviceOpened(int request_id,
     handler_->OnInitialized(succeeded);
 }
 
-void PepperPlatformVideoCapture::OnStateUpdate(VideoCaptureState state) {
+void PepperPlatformVideoCapture::OnStateUpdate(blink::VideoCaptureState state) {
   if (!handler_)
     return;
   switch (state) {
-    case VIDEO_CAPTURE_STATE_STARTED:
+    case blink::VIDEO_CAPTURE_STATE_STARTED:
       handler_->OnStarted();
       break;
-    case VIDEO_CAPTURE_STATE_STOPPED:
+    case blink::VIDEO_CAPTURE_STATE_STOPPED:
       handler_->OnStopped();
       break;
-    case VIDEO_CAPTURE_STATE_PAUSED:
+    case blink::VIDEO_CAPTURE_STATE_PAUSED:
       handler_->OnPaused();
       break;
-    case VIDEO_CAPTURE_STATE_ERROR:
+    case blink::VIDEO_CAPTURE_STATE_ERROR:
       handler_->OnError();
       break;
     default:

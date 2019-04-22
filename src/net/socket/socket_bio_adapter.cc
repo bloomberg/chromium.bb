@@ -270,8 +270,8 @@ int SocketBIOAdapter::BIOWrite(const char* in, int len) {
   if (write_error_ != OK && write_error_ != ERR_IO_PENDING &&
       read_result_ == ERR_IO_PENDING) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&SocketBIOAdapter::CallOnReadReady,
-                              weak_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&SocketBIOAdapter::CallOnReadReady,
+                                  weak_factory_.GetWeakPtr()));
   }
 
   return bytes_copied;

@@ -11,6 +11,7 @@
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
@@ -22,6 +23,7 @@
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/clipboard/clipboard_util_mac.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/gfx/canvas.h"
@@ -32,14 +34,6 @@ namespace ui {
 
 namespace {
 
-// Tells us if WebKit was the last to write to the pasteboard. There's no
-// actual data associated with this type.
-NSString* const kWebSmartPastePboardType = @"NeXT smart paste pasteboard type";
-
-// Pepper custom data format type.
-NSString* const kPepperCustomDataPboardType =
-    @"org.chromium.pepper-custom-data";
-
 NSPasteboard* GetPasteboard() {
   // The pasteboard can always be nil, since there is a finite amount of storage
   // that must be shared between all pasteboards.
@@ -48,125 +42,6 @@ NSPasteboard* GetPasteboard() {
 }
 
 }  // namespace
-
-// Clipboard::FormatType implementation.
-Clipboard::FormatType::FormatType() : data_(nil) {
-}
-
-Clipboard::FormatType::FormatType(NSString* native_format)
-    : data_([native_format retain]) {
-}
-
-Clipboard::FormatType::FormatType(const FormatType& other)
-    : data_([other.data_ retain]) {
-}
-
-Clipboard::FormatType& Clipboard::FormatType::operator=(
-    const FormatType& other) {
-  if (this != &other) {
-    [data_ release];
-    data_ = [other.data_ retain];
-  }
-  return *this;
-}
-
-bool Clipboard::FormatType::Equals(const FormatType& other) const {
-  return [data_ isEqualToString:other.data_];
-}
-
-Clipboard::FormatType::~FormatType() {
-  [data_ release];
-}
-
-std::string Clipboard::FormatType::Serialize() const {
-  return base::SysNSStringToUTF8(data_);
-}
-
-// static
-Clipboard::FormatType Clipboard::FormatType::Deserialize(
-    const std::string& serialization) {
-  return FormatType(base::SysUTF8ToNSString(serialization));
-}
-
-bool Clipboard::FormatType::operator<(const FormatType& other) const {
-  return [data_ compare:other.data_] == NSOrderedAscending;
-}
-
-// Various predefined FormatTypes.
-// static
-Clipboard::FormatType Clipboard::GetFormatType(
-    const std::string& format_string) {
-  return FormatType::Deserialize(format_string);
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetUrlFormatType() {
-  static base::NoDestructor<FormatType> type(NSURLPboardType);
-  return *type;
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetUrlWFormatType() {
-  return GetUrlFormatType();
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetPlainTextFormatType() {
-  static base::NoDestructor<FormatType> type(NSPasteboardTypeString);
-  return *type;
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetPlainTextWFormatType() {
-  return GetPlainTextFormatType();
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetFilenameFormatType() {
-  static base::NoDestructor<FormatType> type(NSFilenamesPboardType);
-  return *type;
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetFilenameWFormatType() {
-  return GetFilenameFormatType();
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetHtmlFormatType() {
-  static base::NoDestructor<FormatType> type(NSHTMLPboardType);
-  return *type;
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetRtfFormatType() {
-  static base::NoDestructor<FormatType> type(NSRTFPboardType);
-  return *type;
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetBitmapFormatType() {
-  static base::NoDestructor<FormatType> type(NSTIFFPboardType);
-  return *type;
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetWebKitSmartPasteFormatType() {
-  static base::NoDestructor<FormatType> type(kWebSmartPastePboardType);
-  return *type;
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetWebCustomDataFormatType() {
-  static base::NoDestructor<FormatType> type(kWebCustomDataPboardType);
-  return *type;
-}
-
-// static
-const Clipboard::FormatType& Clipboard::GetPepperCustomDataFormatType() {
-  static base::NoDestructor<FormatType> type(kPepperCustomDataPboardType);
-  return *type;
-}
 
 // Clipboard factory method.
 // static
@@ -193,7 +68,7 @@ uint64_t ClipboardMac::GetSequenceNumber(ClipboardType type) const {
   return [pb changeCount];
 }
 
-bool ClipboardMac::IsFormatAvailable(const FormatType& format,
+bool ClipboardMac::IsFormatAvailable(const ClipboardFormatType& format,
                                      ClipboardType type) const {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
@@ -223,11 +98,11 @@ void ClipboardMac::ReadAvailableTypes(ClipboardType type,
                                       bool* contains_filenames) const {
   DCHECK(CalledOnValidThread());
   types->clear();
-  if (IsFormatAvailable(Clipboard::GetPlainTextFormatType(), type))
+  if (IsFormatAvailable(ClipboardFormatType::GetPlainTextType(), type))
     types->push_back(base::UTF8ToUTF16(kMimeTypeText));
-  if (IsFormatAvailable(Clipboard::GetHtmlFormatType(), type))
+  if (IsFormatAvailable(ClipboardFormatType::GetHtmlType(), type))
     types->push_back(base::UTF8ToUTF16(kMimeTypeHTML));
-  if (IsFormatAvailable(Clipboard::GetRtfFormatType(), type))
+  if (IsFormatAvailable(ClipboardFormatType::GetRtfType(), type))
     types->push_back(base::UTF8ToUTF16(kMimeTypeRTF));
 
   NSPasteboard* pb = GetPasteboard();
@@ -299,7 +174,7 @@ void ClipboardMac::ReadRTF(ClipboardType type, std::string* result) const {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
 
-  return ReadData(GetRtfFormatType(), result);
+  return ReadData(ClipboardFormatType::GetRtfType(), result);
 }
 
 SkBitmap ClipboardMac::ReadImage(ClipboardType type, NSPasteboard* pb) const {
@@ -387,7 +262,7 @@ void ClipboardMac::ReadBookmark(base::string16* title, std::string* url) const {
   }
 }
 
-void ClipboardMac::ReadData(const FormatType& format,
+void ClipboardMac::ReadData(const ClipboardFormatType& format,
                             std::string* result) const {
   DCHECK(CalledOnValidThread());
   NSPasteboard* pb = GetPasteboard();
@@ -433,7 +308,7 @@ void ClipboardMac::WriteHTML(const char* markup_data,
 }
 
 void ClipboardMac::WriteRTF(const char* rtf_data, size_t data_len) {
-  WriteData(GetRtfFormatType(), rtf_data, data_len);
+  WriteData(ClipboardFormatType::GetRtfType(), rtf_data, data_len);
 }
 
 void ClipboardMac::WriteBookmark(const char* title_data,
@@ -475,7 +350,7 @@ void ClipboardMac::WriteBitmap(const SkBitmap& bitmap) {
   }
 }
 
-void ClipboardMac::WriteData(const FormatType& format,
+void ClipboardMac::WriteData(const ClipboardFormatType& format,
                              const char* data_data,
                              size_t data_len) {
   NSPasteboard* pb = GetPasteboard();
@@ -488,7 +363,8 @@ void ClipboardMac::WriteData(const FormatType& format,
 // pasteboard. This flavor has no data.
 void ClipboardMac::WriteWebSmartPaste() {
   NSPasteboard* pb = GetPasteboard();
-  NSString* format = GetWebKitSmartPasteFormatType().ToNSString();
+  NSString* format =
+      ClipboardFormatType::GetWebKitSmartPasteType().ToNSString();
   [pb addTypes:@[ format ] owner:nil];
   [pb setData:nil forType:format];
 }

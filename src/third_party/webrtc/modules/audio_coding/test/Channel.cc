@@ -14,33 +14,32 @@
 #include <iostream>
 
 #include "rtc_base/format_macros.h"
-#include "rtc_base/timeutils.h"
+#include "rtc_base/time_utils.h"
 
 namespace webrtc {
 
-int32_t Channel::SendData(FrameType frameType,
+int32_t Channel::SendData(AudioFrameType frameType,
                           uint8_t payloadType,
                           uint32_t timeStamp,
                           const uint8_t* payloadData,
                           size_t payloadSize,
                           const RTPFragmentationHeader* fragmentation) {
-  WebRtcRTPHeader rtpInfo;
+  RTPHeader rtp_header;
   int32_t status;
   size_t payloadDataSize = payloadSize;
 
-  rtpInfo.header.markerBit = false;
-  rtpInfo.header.ssrc = 0;
-  rtpInfo.header.sequenceNumber =
+  rtp_header.markerBit = false;
+  rtp_header.ssrc = 0;
+  rtp_header.sequenceNumber =
       (external_sequence_number_ < 0)
           ? _seqNo++
           : static_cast<uint16_t>(external_sequence_number_);
-  rtpInfo.header.payloadType = payloadType;
-  rtpInfo.header.timestamp =
-      (external_send_timestamp_ < 0)
-          ? timeStamp
-          : static_cast<uint32_t>(external_send_timestamp_);
+  rtp_header.payloadType = payloadType;
+  rtp_header.timestamp = (external_send_timestamp_ < 0)
+                             ? timeStamp
+                             : static_cast<uint32_t>(external_send_timestamp_);
 
-  if (frameType == kEmptyFrame) {
+  if (frameType == AudioFrameType::kEmptyFrame) {
     // When frame is empty, we should not transmit it. The frame size of the
     // next non-empty frame will be based on the previous frame size.
     _useLastFrameSize = _lastFrameSizeSample > 0;
@@ -75,16 +74,16 @@ int32_t Channel::SendData(FrameType frameType,
       memcpy(_payloadData, payloadData + fragmentation->fragmentationOffset[0],
              fragmentation->fragmentationLength[0]);
       payloadDataSize = fragmentation->fragmentationLength[0];
-      rtpInfo.header.payloadType = fragmentation->fragmentationPlType[0];
+      rtp_header.payloadType = fragmentation->fragmentationPlType[0];
     }
   } else {
     memcpy(_payloadData, payloadData, payloadDataSize);
     if (_isStereo) {
       if (_leftChannel) {
-        memcpy(&_rtpInfo, &rtpInfo, sizeof(WebRtcRTPHeader));
+        _rtp_header = rtp_header;
         _leftChannel = false;
       } else {
-        memcpy(&rtpInfo, &_rtpInfo, sizeof(WebRtcRTPHeader));
+        rtp_header = _rtp_header;
         _leftChannel = true;
       }
     }
@@ -96,7 +95,7 @@ int32_t Channel::SendData(FrameType frameType,
   }
 
   if (!_isStereo) {
-    CalcStatistics(rtpInfo, payloadSize);
+    CalcStatistics(rtp_header, payloadSize);
   }
   _useLastFrameSize = false;
   _lastInTimestamp = timeStamp;
@@ -116,15 +115,16 @@ int32_t Channel::SendData(FrameType frameType,
     return 0;
   }
 
-  status = _receiverACM->IncomingPacket(_payloadData, payloadDataSize, rtpInfo);
+  status =
+      _receiverACM->IncomingPacket(_payloadData, payloadDataSize, rtp_header);
 
   return status;
 }
 
 // TODO(turajs): rewite this method.
-void Channel::CalcStatistics(WebRtcRTPHeader& rtpInfo, size_t payloadSize) {
+void Channel::CalcStatistics(const RTPHeader& rtp_header, size_t payloadSize) {
   int n;
-  if ((rtpInfo.header.payloadType != _lastPayloadType) &&
+  if ((rtp_header.payloadType != _lastPayloadType) &&
       (_lastPayloadType != -1)) {
     // payload-type is changed.
     // we have to terminate the calculations on the previous payload type
@@ -137,12 +137,12 @@ void Channel::CalcStatistics(WebRtcRTPHeader& rtpInfo, size_t payloadSize) {
       }
     }
   }
-  _lastPayloadType = rtpInfo.header.payloadType;
+  _lastPayloadType = rtp_header.payloadType;
 
   bool newPayload = true;
   ACMTestPayloadStats* currentPayloadStr = NULL;
   for (n = 0; n < MAX_NUM_PAYLOADS; n++) {
-    if (rtpInfo.header.payloadType == _payloadStats[n].payloadType) {
+    if (rtp_header.payloadType == _payloadStats[n].payloadType) {
       newPayload = false;
       currentPayloadStr = &_payloadStats[n];
       break;
@@ -153,7 +153,7 @@ void Channel::CalcStatistics(WebRtcRTPHeader& rtpInfo, size_t payloadSize) {
     if (!currentPayloadStr->newPacket) {
       if (!_useLastFrameSize) {
         _lastFrameSizeSample =
-            (uint32_t)((uint32_t)rtpInfo.header.timestamp -
+            (uint32_t)((uint32_t)rtp_header.timestamp -
                        (uint32_t)currentPayloadStr->lastTimestamp);
       }
       assert(_lastFrameSizeSample > 0);
@@ -193,13 +193,13 @@ void Channel::CalcStatistics(WebRtcRTPHeader& rtpInfo, size_t payloadSize) {
             currentPayloadStr->lastPayloadLenByte;
       }
       // store the current values for the next time
-      currentPayloadStr->lastTimestamp = rtpInfo.header.timestamp;
+      currentPayloadStr->lastTimestamp = rtp_header.timestamp;
       currentPayloadStr->lastPayloadLenByte = payloadSize;
     } else {
       currentPayloadStr->newPacket = false;
       currentPayloadStr->lastPayloadLenByte = payloadSize;
-      currentPayloadStr->lastTimestamp = rtpInfo.header.timestamp;
-      currentPayloadStr->payloadType = rtpInfo.header.payloadType;
+      currentPayloadStr->lastTimestamp = rtp_header.timestamp;
+      currentPayloadStr->payloadType = rtp_header.payloadType;
       memset(currentPayloadStr->frameSizeStats, 0,
              MAX_NUM_FRAMESIZES * sizeof(ACMTestFrameSizeStats));
     }
@@ -211,8 +211,8 @@ void Channel::CalcStatistics(WebRtcRTPHeader& rtpInfo, size_t payloadSize) {
     // first packet
     _payloadStats[n].newPacket = false;
     _payloadStats[n].lastPayloadLenByte = payloadSize;
-    _payloadStats[n].lastTimestamp = rtpInfo.header.timestamp;
-    _payloadStats[n].payloadType = rtpInfo.header.payloadType;
+    _payloadStats[n].lastTimestamp = rtp_header.timestamp;
+    _payloadStats[n].payloadType = rtp_header.payloadType;
     memset(_payloadStats[n].frameSizeStats, 0,
            MAX_NUM_FRAMESIZES * sizeof(ACMTestFrameSizeStats));
   }
@@ -285,113 +285,6 @@ void Channel::ResetStats() {
   _beginTime = rtc::TimeMillis();
   _totalBytes = 0;
   _channelCritSect.Leave();
-}
-
-int16_t Channel::Stats(CodecInst& codecInst,
-                       ACMTestPayloadStats& payloadStats) {
-  _channelCritSect.Enter();
-  int n;
-  payloadStats.payloadType = -1;
-  for (n = 0; n < MAX_NUM_PAYLOADS; n++) {
-    if (_payloadStats[n].payloadType == codecInst.pltype) {
-      memcpy(&payloadStats, &_payloadStats[n], sizeof(ACMTestPayloadStats));
-      break;
-    }
-  }
-  if (payloadStats.payloadType == -1) {
-    _channelCritSect.Leave();
-    return -1;
-  }
-  for (n = 0; n < MAX_NUM_FRAMESIZES; n++) {
-    if (payloadStats.frameSizeStats[n].frameSizeSample == 0) {
-      _channelCritSect.Leave();
-      return 0;
-    }
-    payloadStats.frameSizeStats[n].usageLenSec =
-        (double)payloadStats.frameSizeStats[n].totalEncodedSamples /
-        (double)codecInst.plfreq;
-
-    payloadStats.frameSizeStats[n].rateBitPerSec =
-        payloadStats.frameSizeStats[n].totalPayloadLenByte * 8 /
-        payloadStats.frameSizeStats[n].usageLenSec;
-  }
-  _channelCritSect.Leave();
-  return 0;
-}
-
-void Channel::Stats(uint32_t* numPackets) {
-  _channelCritSect.Enter();
-  int k;
-  int n;
-  memset(numPackets, 0, MAX_NUM_PAYLOADS * sizeof(uint32_t));
-  for (k = 0; k < MAX_NUM_PAYLOADS; k++) {
-    if (_payloadStats[k].payloadType == -1) {
-      break;
-    }
-    numPackets[k] = 0;
-    for (n = 0; n < MAX_NUM_FRAMESIZES; n++) {
-      if (_payloadStats[k].frameSizeStats[n].frameSizeSample == 0) {
-        break;
-      }
-      numPackets[k] += _payloadStats[k].frameSizeStats[n].numPackets;
-    }
-  }
-  _channelCritSect.Leave();
-}
-
-void Channel::Stats(uint8_t* payloadType, uint32_t* payloadLenByte) {
-  _channelCritSect.Enter();
-
-  int k;
-  int n;
-  memset(payloadLenByte, 0, MAX_NUM_PAYLOADS * sizeof(uint32_t));
-  for (k = 0; k < MAX_NUM_PAYLOADS; k++) {
-    if (_payloadStats[k].payloadType == -1) {
-      break;
-    }
-    payloadType[k] = (uint8_t)_payloadStats[k].payloadType;
-    payloadLenByte[k] = 0;
-    for (n = 0; n < MAX_NUM_FRAMESIZES; n++) {
-      if (_payloadStats[k].frameSizeStats[n].frameSizeSample == 0) {
-        break;
-      }
-      payloadLenByte[k] +=
-          (uint16_t)_payloadStats[k].frameSizeStats[n].totalPayloadLenByte;
-    }
-  }
-
-  _channelCritSect.Leave();
-}
-
-void Channel::PrintStats(CodecInst& codecInst) {
-  ACMTestPayloadStats payloadStats;
-  Stats(codecInst, payloadStats);
-  printf("%s %d kHz\n", codecInst.plname, codecInst.plfreq / 1000);
-  printf("=====================================================\n");
-  if (payloadStats.payloadType == -1) {
-    printf("No Packets are sent with payload-type %d (%s)\n\n",
-           codecInst.pltype, codecInst.plname);
-    return;
-  }
-  for (int k = 0; k < MAX_NUM_FRAMESIZES; k++) {
-    if (payloadStats.frameSizeStats[k].frameSizeSample == 0) {
-      break;
-    }
-    printf("Frame-size.................... %d samples\n",
-           payloadStats.frameSizeStats[k].frameSizeSample);
-    printf("Average Rate.................. %.0f bits/sec\n",
-           payloadStats.frameSizeStats[k].rateBitPerSec);
-    printf("Maximum Payload-Size.......... %" PRIuS " Bytes\n",
-           payloadStats.frameSizeStats[k].maxPayloadLen);
-    printf("Maximum Instantaneous Rate.... %.0f bits/sec\n",
-           ((double)payloadStats.frameSizeStats[k].maxPayloadLen * 8.0 *
-            (double)codecInst.plfreq) /
-               (double)payloadStats.frameSizeStats[k].frameSizeSample);
-    printf("Number of Packets............. %u\n",
-           (unsigned int)payloadStats.frameSizeStats[k].numPackets);
-    printf("Duration...................... %0.3f sec\n\n",
-           payloadStats.frameSizeStats[k].usageLenSec);
-  }
 }
 
 uint32_t Channel::LastInTimestamp() {

@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/buildflag_header.gni")
+import("//build/config/chromecast_build.gni")
 import("//media/media_options.gni")
 import("//testing/test.gni")
 
@@ -36,9 +37,6 @@ buildflag_header("buildflags") {
         assert(false, "Invalid mojo media service: $service")
       }
     }
-    assert(
-        enable_mojo_renderer || !enable_runtime_media_renderer_selection,
-        "The mojo renderer must be enabled to use runtime media renderer selection.")
 
     if (mojo_media_host == "browser") {
       enable_mojo_media_in_browser_process = true
@@ -52,6 +50,7 @@ buildflag_header("buildflags") {
   }
 
   flags = [
+    "ENABLE_CAST_RENDERER=$enable_cast_renderer",
     "ENABLE_MOJO_MEDIA=$enable_mojo_media",
     "ENABLE_TEST_MOJO_MEDIA_CLIENT=$enable_test_mojo_media_client",
     "ENABLE_MOJO_RENDERER=$enable_mojo_renderer",

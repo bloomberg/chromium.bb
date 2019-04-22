@@ -160,7 +160,13 @@ void AudioWorkletHandler::CheckNumberOfChannelsForInput(AudioNodeInput* input) {
 
 double AudioWorkletHandler::TailTime() const {
   DCHECK(Context()->IsAudioThread());
-  return tail_time_;
+  return 0;
+}
+
+bool AudioWorkletHandler::PropagatesSilence() const {
+  // Can't assume silent inputs produce silent outputs since the behavior
+  // depends on the user-specified script.
+  return false;
 }
 
 void AudioWorkletHandler::SetProcessorOnRenderThread(
@@ -200,7 +206,6 @@ void AudioWorkletHandler::FinishProcessorOnRenderThread() {
   // and ready for GC.
   Context()->NotifySourceNodeFinishedProcessing(this);
   processor_.Clear();
-  tail_time_ = 0;
 }
 
 void AudioWorkletHandler::NotifyProcessorError(
@@ -242,7 +247,7 @@ AudioWorkletNode::AudioWorkletNode(
       }
     }
   }
-  parameter_map_ = new AudioParamMap(audio_param_map);
+  parameter_map_ = MakeGarbageCollected<AudioParamMap>(audio_param_map);
 
   SetHandler(AudioWorkletHandler::Create(*this,
                                          context.sampleRate(),
@@ -258,11 +263,6 @@ AudioWorkletNode* AudioWorkletNode::Create(
     const AudioWorkletNodeOptions* options,
     ExceptionState& exception_state) {
   DCHECK(IsMainThread());
-
-  if (context->IsContextClosed()) {
-    context->ThrowExceptionForClosedState(exception_state);
-    return nullptr;
-  }
 
   if (options->numberOfInputs() == 0 && options->numberOfOutputs() == 0) {
     exception_state.ThrowDOMException(
@@ -289,7 +289,7 @@ AudioWorkletNode* AudioWorkletNode::Create(
           channel_count > BaseAudioContext::MaxNumberOfChannels()) {
         exception_state.ThrowDOMException(
             DOMExceptionCode::kNotSupportedError,
-            ExceptionMessages::IndexOutsideRange<unsigned long>(
+            ExceptionMessages::IndexOutsideRange<uint32_t>(
                 "channel count", channel_count, 1,
                 ExceptionMessages::kInclusiveBound,
                 BaseAudioContext::MaxNumberOfChannels(),
@@ -316,14 +316,14 @@ AudioWorkletNode* AudioWorkletNode::Create(
     return nullptr;
   }
 
-  MessageChannel* channel =
-      MessageChannel::Create(context->GetExecutionContext());
+  auto* channel =
+      MakeGarbageCollected<MessageChannel>(context->GetExecutionContext());
   MessagePortChannel processor_port_channel = channel->port2()->Disentangle();
 
-  AudioWorkletNode* node =
-      new AudioWorkletNode(*context, name, options,
-          context->audioWorklet()->GetParamInfoListForProcessor(name),
-          channel->port1());
+  AudioWorkletNode* node = MakeGarbageCollected<AudioWorkletNode>(
+      *context, name, options,
+      context->audioWorklet()->GetParamInfoListForProcessor(name),
+      channel->port1());
 
   if (!node) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,

@@ -19,7 +19,6 @@ import org.junit.runner.RunWith;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 
@@ -36,6 +35,7 @@ public class AwZoomTest {
     private TestAwContentsClient mContentsClient;
     private AwContents mAwContents;
     private static final float MAXIMUM_SCALE = 2.0f;
+    private static final float EPSILON = 0.00001f;
 
     @Before
     public void setUp() throws Exception {
@@ -109,7 +109,9 @@ public class AwZoomTest {
 
     private void waitForScaleToBecome(final float expectedScale) throws Throwable {
         AwActivityTestRule.pollInstrumentationThread(
-                () -> expectedScale == mActivityTestRule.getScaleOnUiThread(mAwContents));
+                () -> Math.abs(expectedScale
+                                   - mActivityTestRule.getScaleOnUiThread(mAwContents))
+                        < EPSILON);
     }
 
     private void waitUntilCanNotZoom() throws Throwable {
@@ -154,10 +156,8 @@ public class AwZoomTest {
     }
 
     @Test
-    @DisabledTest(message = "crbug.com/800015")
     @SmallTest
     @Feature({"AndroidWebView"})
-    @RetryOnFailure // Flaky (times out). See http://crbug.com/661879.
     public void testMagnification() throws Throwable {
         mActivityTestRule.getAwSettingsOnUiThread(mAwContents).setSupportZoom(true);
         runMagnificationTest();
@@ -166,10 +166,8 @@ public class AwZoomTest {
     // According to Android CTS test, zoomIn/Out must work
     // even if supportZoom is turned off.
     @Test
-    @DisabledTest(message = "crbug.com/800015")
     @SmallTest
     @Feature({"AndroidWebView"})
-    @RetryOnFailure
     public void testMagnificationWithZoomSupportOff() throws Throwable {
         mActivityTestRule.getAwSettingsOnUiThread(mAwContents).setSupportZoom(false);
         runMagnificationTest();
@@ -264,7 +262,7 @@ public class AwZoomTest {
 
         // Now force an orientation change, and try to display the zoom picker
         // again. Make sure that we don't crash when the ZoomPicker registers
-        // it's receiver.
+        // its receiver.
 
         Activity activity = mActivityTestRule.getActivity();
         int orientation = activity.getRequestedOrientation();
@@ -274,7 +272,7 @@ public class AwZoomTest {
         invokeZoomPickerOnUiThread();
 
         // We may crash shortly (as the zoom picker has a short delay in it before
-        // it tries to register it's BroadcastReceiver), so sleep to verify we don't.
+        // it tries to register its BroadcastReceiver), so sleep to verify we don't.
         // The delay is encoded in ZoomButtonsController#ZOOM_CONTROLS_TIMEOUT,
         // if that changes we may need to update this test.
         Thread.sleep(ViewConfiguration.getZoomControlsTimeout());

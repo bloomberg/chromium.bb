@@ -96,6 +96,16 @@ NSAppleEventDescriptor* ValueToAppleEventDescriptor(const base::Value* value) {
       }
       break;
     }
+
+    // TODO(crbug.com/859477): Remove after root cause is found.
+    case base::Value::Type::DEAD:
+      CHECK(false);
+      break;
+
+    // TODO(crbug.com/859477): Remove after root cause is found.
+    default:
+      CHECK(false);
+      break;
   }
 
   return descriptor;

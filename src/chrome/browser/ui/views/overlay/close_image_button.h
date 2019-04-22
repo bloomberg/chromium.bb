@@ -14,7 +14,7 @@ namespace views {
 // with the button, a grey circular background appears as an indicator.
 class CloseImageButton : public views::ImageButton {
  public:
-  explicit CloseImageButton(ButtonListener* listener);
+  explicit CloseImageButton(ButtonListener*);
   ~CloseImageButton() override = default;
 
   // views::Button:

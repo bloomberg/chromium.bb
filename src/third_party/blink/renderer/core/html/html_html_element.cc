@@ -38,7 +38,7 @@ namespace blink {
 
 using namespace html_names;
 
-inline HTMLHtmlElement::HTMLHtmlElement(Document& document)
+HTMLHtmlElement::HTMLHtmlElement(Document& document)
     : HTMLElement(kHTMLTag, document) {}
 
 DEFINE_NODE_FACTORY(HTMLHtmlElement)
@@ -54,6 +54,8 @@ void HTMLHtmlElement::InsertedByParser() {
     return;
 
   MaybeSetupApplicationCache();
+  if (!GetDocument().Parser())
+    return;
 
   GetDocument().Parser()->DocumentElementAvailable();
   if (GetDocument().GetFrame()) {
@@ -84,11 +86,20 @@ void HTMLHtmlElement::MaybeSetupApplicationCache() {
     return;
   }
 
+  ApplicationCacheHost* host = document_loader->GetApplicationCacheHost();
+  DCHECK(host);
+
   if (manifest.IsEmpty())
-    document_loader->GetApplicationCacheHost()->SelectCacheWithoutManifest();
+    host->SelectCacheWithoutManifest();
   else
-    document_loader->GetApplicationCacheHost()->SelectCacheWithManifest(
-        GetDocument().CompleteURL(manifest));
+    host->SelectCacheWithManifest(GetDocument().CompleteURL(manifest));
+  bool app_cache_installed =
+      host->GetStatus() !=
+      blink::mojom::AppCacheStatus::APPCACHE_STATUS_UNCACHED;
+  if (app_cache_installed && manifest.IsEmpty()) {
+    UseCounter::Count(GetDocument(),
+                      WebFeature::kApplicationCacheInstalledButNoManifest);
+  }
 }
 
 }  // namespace blink

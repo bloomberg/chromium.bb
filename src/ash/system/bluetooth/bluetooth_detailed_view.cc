@@ -4,6 +4,10 @@
 
 #include "ash/system/bluetooth/bluetooth_detailed_view.h"
 
+#include <map>
+#include <memory>
+#include <utility>
+
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -167,7 +171,8 @@ void BluetoothDetailedView::UpdateDeviceScrollList(
   for (const auto& device : paired_not_connected_devices)
     paired_not_connected_devices_.push_back(device->Clone());
 
-  std::string focused_device_address = GetFocusedDeviceAddress();
+  base::Optional<BluetoothAddress> focused_device_address =
+      GetFocusedDeviceAddress();
 
   device_map_.clear();
   scroll_content()->RemoveAllChildViews(true);
@@ -200,8 +205,8 @@ void BluetoothDetailedView::UpdateDeviceScrollList(
   }
 
   // Focus the device which was focused before the device-list update.
-  if (!focused_device_address.empty())
-    FocusDeviceByAddress(focused_device_address);
+  if (focused_device_address)
+    FocusDeviceByAddress(focused_device_address.value());
 
   scroll_content()->InvalidateLayout();
 
@@ -242,7 +247,7 @@ void BluetoothDetailedView::AppendSameTypeDevicesToScrollList(
 }
 
 bool BluetoothDetailedView::FoundDevice(
-    const std::string& device_address,
+    const BluetoothAddress& device_address,
     const BluetoothDeviceList& device_list) const {
   for (const auto& device : device_list) {
     if (device->address == device_address)
@@ -252,7 +257,7 @@ bool BluetoothDetailedView::FoundDevice(
 }
 
 void BluetoothDetailedView::UpdateClickedDevice(
-    const std::string& device_address,
+    const BluetoothAddress& device_address,
     views::View* item_container) {
   if (FoundDevice(device_address, paired_not_connected_devices_)) {
     HoverHighlightView* container =
@@ -270,16 +275,17 @@ void BluetoothDetailedView::ShowSettings() {
   }
 }
 
-std::string BluetoothDetailedView::GetFocusedDeviceAddress() const {
+base::Optional<BluetoothAddress>
+BluetoothDetailedView::GetFocusedDeviceAddress() const {
   for (const auto& view_and_address : device_map_) {
     if (view_and_address.first->HasFocus())
       return view_and_address.second;
   }
-  return std::string();
+  return base::nullopt;
 }
 
 void BluetoothDetailedView::FocusDeviceByAddress(
-    const std::string& address) const {
+    const BluetoothAddress& address) const {
   for (auto& view_and_address : device_map_) {
     if (view_and_address.second == address) {
       view_and_address.first->RequestFocus();
@@ -293,12 +299,12 @@ void BluetoothDetailedView::HandleViewClicked(views::View* view) {
   if (helper->GetBluetoothState() != BluetoothSystem::State::kPoweredOn)
     return;
 
-  std::map<views::View*, std::string>::iterator find;
+  std::map<views::View*, BluetoothAddress>::iterator find;
   find = device_map_.find(view);
   if (find == device_map_.end())
     return;
 
-  const std::string device_address = find->second;
+  const BluetoothAddress& device_address = find->second;
   if (FoundDevice(device_address, connecting_devices_))
     return;
 

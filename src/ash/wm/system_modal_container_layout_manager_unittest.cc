@@ -153,14 +153,6 @@ class SystemModalContainerLayoutManagerTest : public AshTestBase {
     AshTestBase::SetUp();
   }
 
-  void ActivateKeyboard() {
-    Shell::Get()->ash_keyboard_controller()->ActivateKeyboard();
-  }
-
-  void DeactivateKeyboard() {
-    Shell::Get()->ash_keyboard_controller()->DeactivateKeyboard();
-  }
-
   aura::Window* OpenToplevelTestWindow(bool modal) {
     views::Widget* widget = views::Widget::CreateWindowWithContext(
         new TestWindow(modal), CurrentContext());
@@ -332,6 +324,17 @@ TEST_F(SystemModalContainerLayoutManagerTest, EventFocusContainers) {
   e1.ClickLeftButton();
   EXPECT_EQ(1, main_delegate->mouse_presses());
 
+  EventTestWindow* status_delegate = new EventTestWindow(false);
+  std::unique_ptr<aura::Window> status(
+      status_delegate->OpenTestWindowWithParent(
+          Shell::GetPrimaryRootWindowController()->GetContainer(
+              ash::kShellWindowId_StatusContainer)));
+  status->SetBounds(main->bounds());
+
+  // Make sure that status window can receive event.
+  e1.ClickLeftButton();
+  EXPECT_EQ(1, status_delegate->mouse_presses());
+
   // Create a modal window for the main window and verify that the main window
   // no longer receives mouse events.
   EventTestWindow* transient_delegate = new EventTestWindow(true);
@@ -339,7 +342,14 @@ TEST_F(SystemModalContainerLayoutManagerTest, EventFocusContainers) {
       transient_delegate->OpenTestWindowWithParent(main.get());
   EXPECT_TRUE(wm::IsActiveWindow(transient));
   e1.ClickLeftButton();
+
+  EXPECT_EQ(0, transient_delegate->mouse_presses());
+  EXPECT_EQ(1, status_delegate->mouse_presses());
+
+  status->Hide();
+  e1.ClickLeftButton();
   EXPECT_EQ(1, transient_delegate->mouse_presses());
+  EXPECT_EQ(1, status_delegate->mouse_presses());
 
   for (int block_reason = FIRST_BLOCK_REASON;
        block_reason < NUMBER_OF_BLOCK_REASONS; ++block_reason) {
@@ -354,9 +364,11 @@ TEST_F(SystemModalContainerLayoutManagerTest, EventFocusContainers) {
     // BlockUserSession could change the workspace size. Make sure |lock| has
     // the same bounds as |main| so that |lock| gets the generated mouse events.
     lock->SetBounds(main->bounds());
+
     EXPECT_TRUE(wm::IsActiveWindow(lock.get()));
     e1.ClickLeftButton();
     EXPECT_EQ(1, lock_delegate->mouse_presses());
+    EXPECT_EQ(1, status_delegate->mouse_presses());
 
     // Make sure that a modal container created by the lock screen can still
     // receive mouse events.
@@ -365,11 +377,25 @@ TEST_F(SystemModalContainerLayoutManagerTest, EventFocusContainers) {
         lock_modal_delegate->OpenTestWindowWithParent(lock.get());
     EXPECT_TRUE(wm::IsActiveWindow(lock_modal));
     e1.ClickLeftButton();
+
     // Verify that none of the other containers received any more mouse presses.
     EXPECT_EQ(1, lock_modal_delegate->mouse_presses());
     EXPECT_EQ(1, lock_delegate->mouse_presses());
+    EXPECT_EQ(1, status_delegate->mouse_presses());
     EXPECT_EQ(1, main_delegate->mouse_presses());
     EXPECT_EQ(1, transient_delegate->mouse_presses());
+
+    // Showing status will block events.
+    status->Show();
+    e1.ClickLeftButton();
+
+    // Verify that none of the other containers received any more mouse presses.
+    EXPECT_EQ(1, lock_modal_delegate->mouse_presses());
+    EXPECT_EQ(1, lock_delegate->mouse_presses());
+    EXPECT_EQ(1, status_delegate->mouse_presses());
+    EXPECT_EQ(1, main_delegate->mouse_presses());
+    EXPECT_EQ(1, transient_delegate->mouse_presses());
+    status->Hide();
 
     // Close |lock| before unlocking so that Shell::OnLockStateChanged does
     // not DCHECK on finding a system modal in Lock layer when unlocked.
@@ -650,7 +676,6 @@ TEST_F(SystemModalContainerLayoutManagerTest, MultiDisplays) {
 // positioned into the visible area.
 TEST_F(SystemModalContainerLayoutManagerTest,
        SystemModalDialogGetPushedFromKeyboard) {
-  ActivateKeyboard();
   const gfx::Rect& container_bounds = GetModalContainer()->bounds();
   // Place the window at the bottom of the screen.
   gfx::Size modal_size(100, 100);
@@ -681,14 +706,12 @@ TEST_F(SystemModalContainerLayoutManagerTest,
   EXPECT_NE(modal_bounds.ToString(), modal_window->bounds().ToString());
   EXPECT_EQ(modal_size.ToString(), modal_window->bounds().size().ToString());
   EXPECT_EQ(modal_origin.x(), modal_window->bounds().x());
-  DeactivateKeyboard();
 }
 
 // Test that windows will not get cropped through the visible virtual keyboard -
 // if centered.
 TEST_F(SystemModalContainerLayoutManagerTest,
        SystemModalDialogGetPushedButNotCroppedFromKeyboard) {
-  ActivateKeyboard();
   const gfx::Rect& container_bounds = GetModalContainer()->bounds();
   const gfx::Size screen_size = Shell::GetPrimaryRootWindow()->bounds().size();
   // Place the window at the bottom of the screen.
@@ -716,14 +739,12 @@ TEST_F(SystemModalContainerLayoutManagerTest,
   EXPECT_EQ(0, modal_window->bounds().y());
 
   ShowKeyboard(false);
-  DeactivateKeyboard();
 }
 
 // Test that windows will not get cropped through the visible virtual keyboard -
 // if not centered.
 TEST_F(SystemModalContainerLayoutManagerTest,
        SystemModalDialogGetPushedButNotCroppedFromKeyboardIfNotCentered) {
-  ActivateKeyboard();
   const gfx::Size screen_size = Shell::GetPrimaryRootWindow()->bounds().size();
   // Place the window at the bottom of the screen.
   gfx::Size modal_size(100, screen_size.height() - 70);
@@ -748,7 +769,6 @@ TEST_F(SystemModalContainerLayoutManagerTest,
   EXPECT_EQ(0, modal_window->bounds().y());
 
   ShowKeyboard(false);
-  DeactivateKeyboard();
 }
 
 TEST_F(SystemModalContainerLayoutManagerTest, UpdateModalType) {

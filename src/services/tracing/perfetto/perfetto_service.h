@@ -9,23 +9,19 @@
 #include <set>
 
 #include "base/macros.h"
-#include "base/sequence_checker.h"
-#include "base/sequenced_task_runner.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/tracing/public/cpp/perfetto/task_runner.h"
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
 
-namespace service_manager {
-struct BindSourceInfo;
-}  // namespace service_manager
-
 namespace perfetto {
 class TracingService;
 }  // namespace perfetto
 
 namespace tracing {
+
+class ConsumerHost;
 
 // This class serves two purposes: It wraps the use of the system-wide
 // perfetto::TracingService instance, and serves as the main Mojo interface for
@@ -39,28 +35,44 @@ class PerfettoService : public mojom::PerfettoService {
 
   static PerfettoService* GetInstance();
 
-  void BindRequest(mojom::PerfettoServiceRequest request,
-                   const service_manager::BindSourceInfo& source_info);
+  void BindRequest(mojom::PerfettoServiceRequest request, uint32_t pid);
 
   // mojom::PerfettoService implementation.
   void ConnectToProducerHost(mojom::ProducerClientPtr producer_client,
                              mojom::ProducerHostRequest producer_host) override;
 
   perfetto::TracingService* GetService() const;
-  scoped_refptr<base::SequencedTaskRunner> task_runner() {
-    return perfetto_task_runner_.task_runner();
+
+  // Called when a ConsumerHost is created/destroyed (i.e. when a consumer
+  // connects/disconnects).
+  void RegisterConsumerHost(ConsumerHost* consumer_host);
+  void UnregisterConsumerHost(ConsumerHost* consumer_host);
+
+  // Called by TracingService to notify the perfetto service of the PIDs of
+  // actively running services (whenever a service starts or stops).
+  void AddActiveServicePid(base::ProcessId pid);
+  void RemoveActiveServicePid(base::ProcessId pid);
+  void SetActiveServicePidsInitialized();
+
+  std::set<base::ProcessId> active_service_pids() const {
+    return active_service_pids_;
+  }
+
+  bool active_service_pids_initialized() const {
+    return active_service_pids_initialized_;
   }
 
  private:
-  void BindOnSequence(mojom::PerfettoServiceRequest request,
-                      const service_manager::Identity& identity);
+  void BindOnSequence(mojom::PerfettoServiceRequest request);
   void CreateServiceOnSequence();
 
   PerfettoTaskRunner perfetto_task_runner_;
   std::unique_ptr<perfetto::TracingService> service_;
-  mojo::BindingSet<mojom::PerfettoService, service_manager::Identity> bindings_;
+  mojo::BindingSet<mojom::PerfettoService, uint32_t> bindings_;
   mojo::StrongBindingSet<mojom::ProducerHost> producer_bindings_;
-  SEQUENCE_CHECKER(sequence_checker_);
+  std::set<ConsumerHost*> consumer_hosts_;  // Not owned.
+  std::set<base::ProcessId> active_service_pids_;
+  bool active_service_pids_initialized_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(PerfettoService);
 };

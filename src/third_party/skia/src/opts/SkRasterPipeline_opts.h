@@ -1066,7 +1066,7 @@ STAGE(white_color, Ctx::None) {
 }
 
 // load registers r,g,b,a from context (mirrors store_rgba)
-STAGE(load_rgba, const float* ptr) {
+STAGE(load_src, const float* ptr) {
     r = unaligned_load<F>(ptr + 0*N);
     g = unaligned_load<F>(ptr + 1*N);
     b = unaligned_load<F>(ptr + 2*N);
@@ -1074,11 +1074,27 @@ STAGE(load_rgba, const float* ptr) {
 }
 
 // store registers r,g,b,a into context (mirrors load_rgba)
-STAGE(store_rgba, float* ptr) {
+STAGE(store_src, float* ptr) {
     unaligned_store(ptr + 0*N, r);
     unaligned_store(ptr + 1*N, g);
     unaligned_store(ptr + 2*N, b);
     unaligned_store(ptr + 3*N, a);
+}
+
+// load registers dr,dg,db,da from context (mirrors store_dst)
+STAGE(load_dst, const float* ptr) {
+    dr = unaligned_load<F>(ptr + 0*N);
+    dg = unaligned_load<F>(ptr + 1*N);
+    db = unaligned_load<F>(ptr + 2*N);
+    da = unaligned_load<F>(ptr + 3*N);
+}
+
+// store registers dr,dg,db,da into context (mirrors load_dst)
+STAGE(store_dst, float* ptr) {
+    unaligned_store(ptr + 0*N, dr);
+    unaligned_store(ptr + 1*N, dg);
+    unaligned_store(ptr + 2*N, db);
+    unaligned_store(ptr + 3*N, da);
 }
 
 // Most blend modes apply the same logic to each channel.
@@ -1315,13 +1331,6 @@ STAGE(clamp_a, Ctx::None) {
     b = min(b, a);
 }
 
-STAGE(clamp_a_dst, Ctx::None) {
-    da = min(da, 1.0f);
-    dr = min(dr, da);
-    dg = min(dg, da);
-    db = min(db, da);
-}
-
 STAGE(clamp_gamut, Ctx::None) {
     // If you're using this stage, a should already be in [0,1].
     r = min(max(r, 0), a);
@@ -1475,6 +1484,13 @@ STAGE(lerp_1_float, const float* c) {
     b = lerp(db, b, *c);
     a = lerp(da, a, *c);
 }
+STAGE(lerp_native, const float scales[]) {
+    auto c = unaligned_load<F>(scales);
+    r = lerp(dr, r, c);
+    g = lerp(dg, g, c);
+    b = lerp(db, b, c);
+    a = lerp(da, a, c);
+}
 STAGE(lerp_u8, const SkRasterPipeline_MemoryCtx* ctx) {
     auto ptr = ptr_at_xy<const uint8_t>(ctx, dx,dy);
 
@@ -1532,13 +1548,13 @@ SI F apply_sign(F x, U32 sign) {
     return bit_cast<F>(sign | bit_cast<U32>(x));
 }
 
-STAGE(parametric, const SkRasterPipeline_ParametricTransferFunction* ctx) {
+STAGE(parametric, const skcms_TransferFunction* ctx) {
     auto fn = [&](F v) {
         U32 sign;
         v = strip_sign(v, &sign);
 
-        F r = if_then_else(v <= ctx->D, mad(ctx->C, v, ctx->F)
-                                      , approx_powf(mad(ctx->A, v, ctx->B), ctx->G) + ctx->E);
+        F r = if_then_else(v <= ctx->d, mad(ctx->c, v, ctx->f)
+                                      , approx_powf(mad(ctx->a, v, ctx->b), ctx->g) + ctx->e);
         return apply_sign(r, sign);
     };
     r = fn(r);
@@ -2330,17 +2346,17 @@ static void start_pipeline(const size_t x0,     const size_t y0,
 // and will have (x,y) geometry and/or (r,g,b,a, dr,dg,db,da) pixel arguments as appropriate.
 
 #if JUMPER_NARROW_STAGES
-    #define STAGE_GG(name, ...)                                                            \
-        SI void name##_k(__VA_ARGS__, size_t dx, size_t dy, size_t tail, F& x, F& y);      \
-        static void ABI name(Params* params, void** program, U16 r, U16 g, U16 b, U16 a) { \
-            auto x = join<F>(r,g),                                                         \
-                 y = join<F>(b,a);                                                         \
-            name##_k(Ctx{program}, params->dx,params->dy,params->tail, x,y);               \
-            split(x, &r,&g);                                                               \
-            split(y, &b,&a);                                                               \
-            auto next = (Stage)load_and_inc(program);                                      \
-            next(params,program, r,g,b,a);                                                 \
-        }                                                                                  \
+    #define STAGE_GG(name, ...)                                                                \
+        SI void name##_k(__VA_ARGS__, size_t dx, size_t dy, size_t tail, F& x, F& y);          \
+        static void ABI name(Params* params, void** program, U16 r, U16 g, U16 b, U16 a) {     \
+            auto x = join<F>(r,g),                                                             \
+                 y = join<F>(b,a);                                                             \
+            name##_k(Ctx{program}, params->dx,params->dy,params->tail, x,y);                   \
+            split(x, &r,&g);                                                                   \
+            split(y, &b,&a);                                                                   \
+            auto next = (Stage)load_and_inc(program);                                          \
+            next(params,program, r,g,b,a);                                                     \
+        }                                                                                      \
         SI void name##_k(__VA_ARGS__, size_t dx, size_t dy, size_t tail, F& x, F& y)
 
     #define STAGE_GP(name, ...)                                                            \
@@ -2608,11 +2624,6 @@ STAGE_PP(clamp_a, Ctx::None) {
     r = min(r, a);
     g = min(g, a);
     b = min(b, a);
-}
-STAGE_PP(clamp_a_dst, Ctx::None) {
-    dr = min(dr, da);
-    dg = min(dg, da);
-    db = min(db, da);
 }
 
 STAGE_PP(clamp_gamut, Ctx::None) {
@@ -2922,10 +2933,12 @@ SI void load_565_(const uint16_t* ptr, size_t tail, U16* r, U16* g, U16* b) {
     from_565(load<U16>(ptr, tail), r,g,b);
 }
 SI void store_565_(uint16_t* ptr, size_t tail, U16 r, U16 g, U16 b) {
-    // Select the top 5,6,5 bits.
-    U16 R = r >> 3,
-        G = g >> 2,
-        B = b >> 3;
+    // Round from [0,255] to [0,31] or [0,63], as if x * (31/255.0f) + 0.5f.
+    // (Don't feel like you need to find some fundamental truth in these...
+    // they were brute-force searched.)
+    U16 R = (r *  9 + 36) / 74,   //  9/74 ≈ 31/255, plus 36/74, about half.
+        G = (g * 21 + 42) / 85,   // 21/85 = 63/255 exactly.
+        B = (b *  9 + 36) / 74;
     // Pack them back into 15|rrrrr gggggg bbbbb|0.
     store(ptr, tail, R << 11
                    | G <<  5
@@ -2967,11 +2980,11 @@ SI void load_4444_(const uint16_t* ptr, size_t tail, U16* r, U16* g, U16* b, U16
     from_4444(load<U16>(ptr, tail), r,g,b,a);
 }
 SI void store_4444_(uint16_t* ptr, size_t tail, U16 r, U16 g, U16 b, U16 a) {
-    // Select the top 4 bits of each.
-    U16 R = r >> 4,
-        G = g >> 4,
-        B = b >> 4,
-        A = a >> 4;
+    // Round from [0,255] to [0,15], producing the same value as (x*(15/255.0f) + 0.5f).
+    U16 R = (r + 8) / 17,
+        G = (g + 8) / 17,
+        B = (b + 8) / 17,
+        A = (a + 8) / 17;
     // Pack them back into 15|rrrr gggg bbbb aaaa|0.
     store(ptr, tail, R << 12
                    | G <<  8
@@ -3036,6 +3049,33 @@ STAGE_PP(luminance_to_alpha, Ctx::None) {
 
 // ~~~~~~ Coverage scales / lerps ~~~~~~ //
 
+STAGE_PP(load_src, const uint16_t* ptr) {
+    r = unaligned_load<U16>(ptr + 0*N);
+    g = unaligned_load<U16>(ptr + 1*N);
+    b = unaligned_load<U16>(ptr + 2*N);
+    a = unaligned_load<U16>(ptr + 3*N);
+}
+STAGE_PP(store_src, uint16_t* ptr) {
+    unaligned_store(ptr + 0*N, r);
+    unaligned_store(ptr + 1*N, g);
+    unaligned_store(ptr + 2*N, b);
+    unaligned_store(ptr + 3*N, a);
+}
+STAGE_PP(load_dst, const uint16_t* ptr) {
+    dr = unaligned_load<U16>(ptr + 0*N);
+    dg = unaligned_load<U16>(ptr + 1*N);
+    db = unaligned_load<U16>(ptr + 2*N);
+    da = unaligned_load<U16>(ptr + 3*N);
+}
+STAGE_PP(store_dst, uint16_t* ptr) {
+    unaligned_store(ptr + 0*N, dr);
+    unaligned_store(ptr + 1*N, dg);
+    unaligned_store(ptr + 2*N, db);
+    unaligned_store(ptr + 3*N, da);
+}
+
+// ~~~~~~ Coverage scales / lerps ~~~~~~ //
+
 STAGE_PP(scale_1_float, const float* f) {
     U16 c = from_float(*f);
     r = div255( r * c );
@@ -3045,6 +3085,13 @@ STAGE_PP(scale_1_float, const float* f) {
 }
 STAGE_PP(lerp_1_float, const float* f) {
     U16 c = from_float(*f);
+    r = lerp(dr, r, c);
+    g = lerp(dg, g, c);
+    b = lerp(db, b, c);
+    a = lerp(da, a, c);
+}
+STAGE_PP(lerp_native, const uint16_t scales[]) {
+    auto c = unaligned_load<U16>(scales);
     r = lerp(dr, r, c);
     g = lerp(dg, g, c);
     b = lerp(db, b, c);
@@ -3262,45 +3309,144 @@ STAGE_PP(srcover_rgba_8888, const SkRasterPipeline_MemoryCtx* ctx) {
     a = a + div255( da*inv(a) );
     store_8888_(ptr, tail, r,g,b,a);
 }
+
+#if defined(SK_DISABLE_LOWP_BILERP_CLAMP_CLAMP_STAGE)
+    static void(*bilerp_clamp_8888)(void) = nullptr;
+#else
+STAGE_GP(bilerp_clamp_8888, const SkRasterPipeline_GatherCtx* ctx) {
+    // (cx,cy) are the center of our sample.
+    F cx = x,
+      cy = y;
+
+    // All sample points are at the same fractional offset (fx,fy).
+    // They're the 4 corners of a logical 1x1 pixel surrounding (x,y) at (0.5,0.5) offsets.
+    F fx = fract(cx + 0.5f),
+      fy = fract(cy + 0.5f);
+
+    // We'll accumulate the color of all four samples into {r,g,b,a} directly.
+    r = g = b = a = 0;
+
+    // The first three sample points will calculate their area using math
+    // just like in the float code above, but the fourth will take up all the rest.
+    //
+    // Logically this is the same as doing the math for the fourth pixel too,
+    // but rounding error makes this a better strategy, keeping opaque opaque, etc.
+    //
+    // We can keep up to 8 bits of fractional precision without overflowing 16-bit,
+    // so our "1.0" area is 256.
+    const uint16_t bias = 256;
+    U16 remaining = bias;
+
+    for (float dy = -0.5f; dy <= +0.5f; dy += 1.0f)
+    for (float dx = -0.5f; dx <= +0.5f; dx += 1.0f) {
+        // (x,y) are the coordinates of this sample point.
+        F x = cx + dx,
+          y = cy + dy;
+
+        // ix_and_ptr() will clamp to the image's bounds for us.
+        const uint32_t* ptr;
+        U32 ix = ix_and_ptr(&ptr, ctx, x,y);
+
+        U16 sr,sg,sb,sa;
+        from_8888(gather<U32>(ptr, ix), &sr,&sg,&sb,&sa);
+
+        // In bilinear interpolation, the 4 pixels at +/- 0.5 offsets from the sample pixel center
+        // are combined in direct proportion to their area overlapping that logical query pixel.
+        // At positive offsets, the x-axis contribution to that rectangle is fx,
+        // or (1-fx) at negative x.  Same deal for y.
+        F sx = (dx > 0) ? fx : 1.0f - fx,
+          sy = (dy > 0) ? fy : 1.0f - fy;
+
+        U16 area = (dy == 0.5f && dx == 0.5f) ? remaining
+                                              : cast<U16>(sx * sy * bias);
+        for (size_t i = 0; i < N; i++) {
+            SkASSERT(remaining[i] >= area[i]);
+        }
+        remaining -= area;
+
+        r += sr * area;
+        g += sg * area;
+        b += sb * area;
+        a += sa * area;
+    }
+
+    r = (r + bias/2) / bias;
+    g = (g + bias/2) / bias;
+    b = (b + bias/2) / bias;
+    a = (a + bias/2) / bias;
+}
+#endif
+
 // Now we'll add null stand-ins for stages we haven't implemented in lowp.
 // If a pipeline uses these stages, it'll boot it out of lowp into highp.
-
-using NotImplemented = void(*)(void);
-
-static NotImplemented
-        callback, load_rgba, store_rgba,
-        unbounded_set_rgb, unbounded_uniform_color,
-        unpremul, dither,
-        from_srgb, from_srgb_dst, to_srgb,
-        load_f16    , load_f16_dst    , store_f16    , gather_f16,
-        load_f32    , load_f32_dst    , store_f32    , gather_f32,
-        load_1010102, load_1010102_dst, store_1010102, gather_1010102,
-        store_u16_be,
-        byte_tables,
-        colorburn, colordodge, softlight, hue, saturation, color, luminosity,
-        matrix_3x3, matrix_3x4, matrix_4x5, matrix_4x3,
-        parametric, gamma,
-        rgb_to_hsl, hsl_to_rgb,
-        gauss_a_to_rgba,
-        mirror_x, repeat_x,
-        mirror_y, repeat_y,
-        negate_x,
-        bilerp_clamp_8888,
-        bilinear_nx, bilinear_ny, bilinear_px, bilinear_py,
-        bicubic_n3x, bicubic_n1x, bicubic_p1x, bicubic_p3x,
-        bicubic_n3y, bicubic_n1y, bicubic_p1y, bicubic_p3y,
-        save_xy, accumulate,
-        xy_to_2pt_conical_well_behaved,
-        xy_to_2pt_conical_strip,
-        xy_to_2pt_conical_focal_on_circle,
-        xy_to_2pt_conical_smaller,
-        xy_to_2pt_conical_greater,
-        xy_to_2pt_conical_compensate_focal,
-        alter_2pt_conical_compensate_focal,
-        alter_2pt_conical_unswap,
-        mask_2pt_conical_nan,
-        mask_2pt_conical_degenerates,
-        apply_vector_mask;
+#define NOT_IMPLEMENTED(st) static void (*st)(void) = nullptr;
+    NOT_IMPLEMENTED(callback)
+    NOT_IMPLEMENTED(unbounded_set_rgb)
+    NOT_IMPLEMENTED(unbounded_uniform_color)
+    NOT_IMPLEMENTED(unpremul)
+    NOT_IMPLEMENTED(dither)  // TODO
+    NOT_IMPLEMENTED(from_srgb)
+    NOT_IMPLEMENTED(to_srgb)
+    NOT_IMPLEMENTED(load_f16)
+    NOT_IMPLEMENTED(load_f16_dst)
+    NOT_IMPLEMENTED(store_f16)
+    NOT_IMPLEMENTED(gather_f16)
+    NOT_IMPLEMENTED(load_f32)
+    NOT_IMPLEMENTED(load_f32_dst)
+    NOT_IMPLEMENTED(store_f32)
+    NOT_IMPLEMENTED(gather_f32)
+    NOT_IMPLEMENTED(load_1010102)
+    NOT_IMPLEMENTED(load_1010102_dst)
+    NOT_IMPLEMENTED(store_1010102)
+    NOT_IMPLEMENTED(gather_1010102)
+    NOT_IMPLEMENTED(store_u16_be)
+    NOT_IMPLEMENTED(byte_tables)  // TODO
+    NOT_IMPLEMENTED(colorburn)
+    NOT_IMPLEMENTED(colordodge)
+    NOT_IMPLEMENTED(softlight)
+    NOT_IMPLEMENTED(hue)
+    NOT_IMPLEMENTED(saturation)
+    NOT_IMPLEMENTED(color)
+    NOT_IMPLEMENTED(luminosity)
+    NOT_IMPLEMENTED(matrix_3x3)
+    NOT_IMPLEMENTED(matrix_3x4)
+    NOT_IMPLEMENTED(matrix_4x5)  // TODO
+    NOT_IMPLEMENTED(matrix_4x3)  // TODO
+    NOT_IMPLEMENTED(parametric)
+    NOT_IMPLEMENTED(gamma)
+    NOT_IMPLEMENTED(rgb_to_hsl)
+    NOT_IMPLEMENTED(hsl_to_rgb)
+    NOT_IMPLEMENTED(gauss_a_to_rgba)  // TODO
+    NOT_IMPLEMENTED(mirror_x)         // TODO
+    NOT_IMPLEMENTED(repeat_x)         // TODO
+    NOT_IMPLEMENTED(mirror_y)         // TODO
+    NOT_IMPLEMENTED(repeat_y)         // TODO
+    NOT_IMPLEMENTED(negate_x)
+    NOT_IMPLEMENTED(bilinear_nx)      // TODO
+    NOT_IMPLEMENTED(bilinear_ny)      // TODO
+    NOT_IMPLEMENTED(bilinear_px)      // TODO
+    NOT_IMPLEMENTED(bilinear_py)      // TODO
+    NOT_IMPLEMENTED(bicubic_n3x)      // TODO
+    NOT_IMPLEMENTED(bicubic_n1x)      // TODO
+    NOT_IMPLEMENTED(bicubic_p1x)      // TODO
+    NOT_IMPLEMENTED(bicubic_p3x)      // TODO
+    NOT_IMPLEMENTED(bicubic_n3y)      // TODO
+    NOT_IMPLEMENTED(bicubic_n1y)      // TODO
+    NOT_IMPLEMENTED(bicubic_p1y)      // TODO
+    NOT_IMPLEMENTED(bicubic_p3y)      // TODO
+    NOT_IMPLEMENTED(save_xy)          // TODO
+    NOT_IMPLEMENTED(accumulate)       // TODO
+    NOT_IMPLEMENTED(xy_to_2pt_conical_well_behaved)
+    NOT_IMPLEMENTED(xy_to_2pt_conical_strip)
+    NOT_IMPLEMENTED(xy_to_2pt_conical_focal_on_circle)
+    NOT_IMPLEMENTED(xy_to_2pt_conical_smaller)
+    NOT_IMPLEMENTED(xy_to_2pt_conical_greater)
+    NOT_IMPLEMENTED(alter_2pt_conical_compensate_focal)
+    NOT_IMPLEMENTED(alter_2pt_conical_unswap)
+    NOT_IMPLEMENTED(mask_2pt_conical_nan)
+    NOT_IMPLEMENTED(mask_2pt_conical_degenerates)
+    NOT_IMPLEMENTED(apply_vector_mask)
+#undef NOT_IMPLEMENTED
 
 #endif//defined(JUMPER_IS_SCALAR) controlling whether we build lowp stages
 }  // namespace lowp

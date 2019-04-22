@@ -36,7 +36,6 @@
 #include "base/macros.h"
 #include "components/safe_browsing/base_blocking_page.h"
 #include "components/safe_browsing/base_ui_manager.h"
-#include "components/signin/core/browser/signin_buildflags.h"
 
 namespace safe_browsing {
 
@@ -68,6 +67,10 @@ class SafeBrowsingBlockingPage : public BaseBlockingPage {
   static void ShowBlockingPage(BaseUIManager* ui_manager,
                                const UnsafeResource& resource);
 
+  // Called when there is user interaction with the interstitial (e.g. user
+  // clicks 'Back to Safety' or 'Proceed anyways').
+  void CommandReceived(const std::string& page_cmd) override;
+
   // Makes the passed |factory| the factory used to instantiate
   // SafeBrowsingBlockingPage objects. Useful for tests.
   static void RegisterFactory(SafeBrowsingBlockingPageFactory* factory) {
@@ -75,12 +78,12 @@ class SafeBrowsingBlockingPage : public BaseBlockingPage {
   }
 
   // InterstitialPageDelegate method:
-  void OverrideRendererPrefs(content::RendererPreferences* prefs) override;
+  void OverrideRendererPrefs(blink::mojom::RendererPreferences* prefs) override;
   content::InterstitialPageDelegate::TypeID GetTypeForTesting() const override;
 
  protected:
   friend class SafeBrowsingBlockingPageFactoryImpl;
-  friend class SafeBrowsingBlockingPageTest;
+  friend class SafeBrowsingBlockingPageTestBase;
   friend class SafeBrowsingBlockingPageBrowserTest;
   friend class SafeBrowsingBlockingQuietPageFactoryImpl;
   friend class SafeBrowsingBlockingQuietPageTest;
@@ -94,7 +97,7 @@ class SafeBrowsingBlockingPage : public BaseBlockingPage {
                            ExtendedReportingNotShownOnSecurePage);
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingBlockingPageTest,
                            MalwareReportsTransitionDisabled);
-  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingBlockingPageTest,
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingBlockingPageIncognitoTest,
                            ExtendedReportingNotShownInIncognito);
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingBlockingPageTest,
                            ExtendedReportingNotShownNotAllowExtendedReporting);
@@ -113,6 +116,10 @@ class SafeBrowsingBlockingPage : public BaseBlockingPage {
   // Called after the user clicks OnProceed(). If the page has malicious
   // subresources, then we show another interstitial.
   void HandleSubresourcesAfterProceed() override;
+
+  // Called when an interstitial is closed, either due to a click through or a
+  // navigation elsewhere.
+  void OnInterstitialClosing() override;
 
   // Called when the interstitial is going away. If there is a
   // pending threat details object, we look at the user's

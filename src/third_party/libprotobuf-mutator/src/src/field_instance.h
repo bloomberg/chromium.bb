@@ -146,6 +146,7 @@ class ConstFieldInstance {
             : reflection().GetEnum(*message_, descriptor_);
     *value = {static_cast<size_t>(value_descriptor->index()),
               static_cast<size_t>(value_descriptor->type()->value_count())};
+    if (value->index < 0 || value->index >= value->count) GetDefault(value);
   }
 
   void Load(std::string* value) const {
@@ -161,6 +162,18 @@ class ConstFieldInstance {
             : reflection().GetMessage(*message_, descriptor_);
     value->reset(source.New());
     (*value)->CopyFrom(source);
+  }
+
+  template <class T>
+  bool CanStore(const T& value) const {
+    return true;
+  }
+
+  bool CanStore(const std::string& value) const {
+    if (!EnforceUtf8()) return true;
+    using protobuf::internal::WireFormatLite;
+    return WireFormatLite::VerifyUtf8String(value.data(), value.length(),
+                                            WireFormatLite::PARSE, "");
   }
 
   std::string name() const { return descriptor_->name(); }
@@ -184,6 +197,12 @@ class ConstFieldInstance {
   }
 
   const protobuf::FieldDescriptor* descriptor() const { return descriptor_; }
+
+  std::string DebugString() const {
+    std::string s = descriptor_->DebugString();
+    if (is_repeated()) s += "[" + std::to_string(index_) + "]";
+    return s + " of\n" + message_->DebugString();
+  }
 
  protected:
   bool is_repeated() const { return descriptor_->is_repeated(); }

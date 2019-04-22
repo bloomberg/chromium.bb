@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "ui/gfx/image/image.h"
 #include "url/gurl.h"
 
 // Helper class returning an URL if the content of the clipboard can be turned
@@ -28,10 +29,17 @@ class ClipboardRecentContent {
   // Sets the global instance of ClipboardRecentContent singleton.
   static void SetInstance(std::unique_ptr<ClipboardRecentContent> new_instance);
 
-  // Returns true if the clipboard contains a recent URL that is appropriate to
-  // be suggested and has not been supressed, and copies it in |url|.
-  // Otherwise, returns false. |url| must not be null.
-  virtual bool GetRecentURLFromClipboard(GURL* url) = 0;
+  // Returns clipboard content as URL, if it has a compatible type,
+  // is recent enough and has not been suppressed.
+  virtual base::Optional<GURL> GetRecentURLFromClipboard() = 0;
+
+  // Returns clipboard content as text, if it has a compatible type,
+  // is recent enough and has not been suppressed.
+  virtual base::Optional<base::string16> GetRecentTextFromClipboard() = 0;
+
+  // Returns clipboard content as image, if it has a compatible type,
+  // is recent enough and has not been suppressed.
+  virtual base::Optional<gfx::Image> GetRecentImageFromClipboard() = 0;
 
   // Returns how old the content of the clipboard is.
   virtual base::TimeDelta GetClipboardContentAge() const = 0;

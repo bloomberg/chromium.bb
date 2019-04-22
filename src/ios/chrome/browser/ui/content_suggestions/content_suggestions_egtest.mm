@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/ios/ios_util.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -300,22 +301,6 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]
       performAction:grey_tap()];
 
-  // Test that the omnibox is visible and taking full width, before any scroll
-  // happen on iPhone.
-  if (!IsRegularXRegularSizeClass()) {
-    // Test that the omnibox is still pinned to the top of the screen and
-    // under the safe area.
-    CGFloat safeAreaTop = ntp_home::CollectionView().safeAreaInsets.top;
-
-    CGFloat contentOffset = ntp_home::CollectionView().contentOffset.y;
-    CGFloat fakeOmniboxOrigin = ntp_home::FakeOmnibox().frame.origin.y;
-    CGFloat pinnedOffset = contentOffset - (fakeOmniboxOrigin - safeAreaTop);
-    [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                            [ContentSuggestionsHeaderItem
-                                                accessibilityIdentifier])]
-        assertWithMatcher:ntp_home::HeaderPinnedOffset(pinnedOffset)];
-  }
-
   // Check that the first items are visible as the collection should be
   // scrolled.
   [[EarlGrey
@@ -439,6 +424,23 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
       performAction:grey_tap()];
 
   // Check the tile is back.
+  ConditionBlock condition = ^{
+    NSError* error = nil;
+    [[EarlGrey
+        selectElementWithMatcher:
+            grey_allOf(
+                chrome_test_util::StaticTextWithAccessibilityLabel(pageTitle),
+                grey_sufficientlyVisible(), nil)]
+        assertWithMatcher:grey_notNil()
+                    error:&error];
+    return error == nil;
+  };
+  NSString* errorMessage =
+      @"The tile wasn't added back after hitting 'Undo' on the snackbar";
+  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
+                 base::test::ios::kWaitForUIElementTimeout, condition),
+             errorMessage);
+
   [[EarlGrey selectElementWithMatcher:
                  grey_allOf(chrome_test_util::StaticTextWithAccessibilityLabel(
                                 pageTitle),

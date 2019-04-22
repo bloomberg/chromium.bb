@@ -120,6 +120,9 @@ class CORE_EXPORT Keyframe : public GarbageCollectedFinalized<Keyframe> {
   class CORE_EXPORT PropertySpecificKeyframe
       : public GarbageCollectedFinalized<PropertySpecificKeyframe> {
    public:
+    PropertySpecificKeyframe(double offset,
+                             scoped_refptr<TimingFunction> easing,
+                             EffectModel::CompositeOperation);
     virtual ~PropertySpecificKeyframe() = default;
     double Offset() const { return offset_; }
     TimingFunction& Easing() const { return *easing_; }
@@ -156,13 +159,9 @@ class CORE_EXPORT Keyframe : public GarbageCollectedFinalized<Keyframe> {
         const PropertyHandle&,
         const Keyframe::PropertySpecificKeyframe& end) const;
 
-    virtual void Trace(Visitor*){};
+    virtual void Trace(Visitor*) {}
 
    protected:
-    PropertySpecificKeyframe(double offset,
-                             scoped_refptr<TimingFunction> easing,
-                             EffectModel::CompositeOperation);
-
     double offset_;
     scoped_refptr<TimingFunction> easing_;
     EffectModel::CompositeOperation composite_;

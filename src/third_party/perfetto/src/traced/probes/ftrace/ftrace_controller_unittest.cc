@@ -20,9 +20,6 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include "perfetto/trace/ftrace/ftrace_event_bundle.pbzero.h"
-#include "perfetto/trace/trace_packet.pb.h"
-#include "perfetto/trace/trace_packet.pbzero.h"
 #include "src/traced/probes/ftrace/cpu_reader.h"
 #include "src/traced/probes/ftrace/ftrace_config.h"
 #include "src/traced/probes/ftrace/ftrace_config_muxer.h"
@@ -30,9 +27,14 @@
 #include "src/traced/probes/ftrace/ftrace_procfs.h"
 #include "src/traced/probes/ftrace/proto_translation_table.h"
 #include "src/tracing/core/trace_writer_for_testing.h"
-
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+
+#include "perfetto/trace/trace_packet.pb.h"
+
+#include "perfetto/trace/ftrace/ftrace_event_bundle.pbzero.h"
+#include "perfetto/trace/ftrace/ftrace_stats.pbzero.h"
+#include "perfetto/trace/trace_packet.pbzero.h"
 
 using testing::_;
 using testing::AnyNumber;
@@ -76,17 +78,24 @@ class MockTaskRunner : public base::TaskRunner {
     task_ = std::move(task);
   }
 
-  void RunLastTask() { TakeTask()(); }
+  void RunLastTask() {
+    auto task = TakeTask();
+    if (task)
+      task();
+  }
 
   std::function<void()> TakeTask() {
     std::unique_lock<std::mutex> lock(lock_);
-    return std::move(task_);
+    auto task(std::move(task_));
+    task_ = std::function<void()>();
+    return task;
   }
 
   MOCK_METHOD1(PostTask, void(std::function<void()>));
   MOCK_METHOD2(PostDelayedTask, void(std::function<void()>, uint32_t delay_ms));
   MOCK_METHOD2(AddFileDescriptorWatch, void(int fd, std::function<void()>));
   MOCK_METHOD1(RemoveFileDescriptorWatch, void(int fd));
+  MOCK_CONST_METHOD0(RunsTasksOnCurrentThread, bool());
 
  private:
   std::mutex lock_;
@@ -216,18 +225,18 @@ class TestFtraceController : public FtraceController,
   uint32_t drain_period_ms() { return GetDrainPeriodMs(); }
 
   std::function<void()> GetDataAvailableCallback(size_t cpu) {
-    base::WeakPtr<FtraceController> weak_this = weak_factory_.GetWeakPtr();
-    size_t generation = generation_;
-    return [this, weak_this, generation, cpu] {
-      OnDataAvailable(weak_this, generation, cpu, GetDrainPeriodMs());
+    int generation = generation_;
+    auto* thread_sync = &thread_sync_;
+    return [cpu, generation, thread_sync] {
+      FtraceController::OnCpuReaderRead(cpu, generation, thread_sync);
     };
   }
 
   void WaitForData(size_t cpu) {
     for (;;) {
       {
-        std::unique_lock<std::mutex> lock(lock_);
-        if (cpus_to_drain_[cpu])
+        std::unique_lock<std::mutex> lock(thread_sync_.mutex);
+        if (thread_sync_.cpus_to_drain[cpu])
           return;
       }
       usleep(5000);
@@ -393,50 +402,6 @@ TEST(FtraceControllerTest, ControllerMayDieFirst) {
   data_source.reset();
 }
 
-TEST(FtraceControllerTest, TaskScheduling) {
-  auto controller = CreateTestController(
-      false /* nice runner */, false /* nice procfs */, 2 /* num cpus */);
-
-  // For this test we don't care about calls to WriteToFile/ClearFile.
-  EXPECT_CALL(*controller->procfs(), WriteToFile(_, _)).Times(AnyNumber());
-  EXPECT_CALL(*controller->procfs(), ClearFile(_)).Times(AnyNumber());
-
-  FtraceConfig config = CreateFtraceConfig({"group/foo"});
-  auto data_source = controller->AddFakeDataSource(config);
-  ASSERT_TRUE(controller->StartDataSource(data_source.get()));
-
-  // Only one call to drain should be scheduled for the next drain period.
-  EXPECT_CALL(*controller->runner(), PostDelayedTask(_, 100));
-
-  // However both CPUs should be drained.
-  EXPECT_CALL(*controller, OnDrainCpuForTesting(_)).Times(2);
-
-  // Finally, another task should be posted to unblock the workers.
-  EXPECT_CALL(*controller->runner(), PostTask(_));
-
-  // Simulate two worker threads reporting available data.
-  auto on_data_available0 = controller->GetDataAvailableCallback(0u);
-  std::thread worker0([on_data_available0] { on_data_available0(); });
-
-  auto on_data_available1 = controller->GetDataAvailableCallback(1u);
-  std::thread worker1([on_data_available1] { on_data_available1(); });
-
-  // Poll until both worker threads have reported available data.
-  controller->WaitForData(0u);
-  controller->WaitForData(1u);
-
-  // Run the task to drain all CPUs.
-  controller->runner()->RunLastTask();
-
-  // Run the task to unblock all workers.
-  controller->runner()->RunLastTask();
-
-  worker0.join();
-  worker1.join();
-
-  data_source.reset();
-}
-
 TEST(FtraceControllerTest, BackToBackEnableDisable) {
   auto controller =
       CreateTestController(false /* nice runner */, false /* nice procfs */);
@@ -447,6 +412,7 @@ TEST(FtraceControllerTest, BackToBackEnableDisable) {
   EXPECT_CALL(*controller->procfs(), ReadOneCharFromFile("/root/tracing_on"))
       .Times(AnyNumber());
 
+  EXPECT_CALL(*controller->runner(), PostTask(_)).Times(2);
   EXPECT_CALL(*controller->runner(), PostDelayedTask(_, 100)).Times(2);
   FtraceConfig config = CreateFtraceConfig({"group/foo"});
   auto data_source = controller->AddFakeDataSource(config);
@@ -460,16 +426,20 @@ TEST(FtraceControllerTest, BackToBackEnableDisable) {
   // It should be a no-op.
   data_source.reset();
   controller->runner()->RunLastTask();
+  controller->runner()->RunLastTask();
   worker.join();
 
   // Register another data source and wait for it to generate data.
   data_source = controller->AddFakeDataSource(config);
   ASSERT_TRUE(controller->StartDataSource(data_source.get()));
+
+  on_data_available = controller->GetDataAvailableCallback(0u);
   std::thread worker2([on_data_available] { on_data_available(); });
   controller->WaitForData(0u);
 
   // This drain should also be a no-op after the data source is unregistered.
   data_source.reset();
+  controller->runner()->RunLastTask();
   controller->runner()->RunLastTask();
   worker2.join();
 }
@@ -484,9 +454,8 @@ TEST(FtraceControllerTest, BufferSize) {
 
   {
     // No buffer size -> good default.
-    // 8192kb = 8mb
     EXPECT_CALL(*controller->procfs(),
-                WriteToFile("/root/buffer_size_kb", "512"));
+                WriteToFile("/root/buffer_size_kb", "2048"));
     FtraceConfig config = CreateFtraceConfig({"group/foo"});
     auto data_source = controller->AddFakeDataSource(config);
     ASSERT_TRUE(controller->StartDataSource(data_source.get()));

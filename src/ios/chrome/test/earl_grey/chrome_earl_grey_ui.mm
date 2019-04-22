@@ -4,19 +4,22 @@
 
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 
+#import <EarlGrey/EarlGrey.h>
+
 #import "base/test/ios/wait_util.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/history/history_ui_constants.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
-#import "ios/chrome/browser/ui/settings/accounts_collection_view_controller.h"
-#import "ios/chrome/browser/ui/settings/clear_browsing_data_ui_constants.h"
+#import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_ui_constants.h"
+#import "ios/chrome/browser/ui/settings/google_services/accounts_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/privacy_table_view_controller.h"
-#import "ios/chrome/browser/ui/settings/settings_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/settings_table_view_controller.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #include "ios/chrome/test/app/navigation_test_util.h"
+#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/web/public/test/earl_grey/js_test_util.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
@@ -26,7 +29,7 @@
 #error "This file requires ARC support."
 #endif
 
-using chrome_test_util::ClearBrowsingDataCollectionView;
+using chrome_test_util::ClearBrowsingDataView;
 using chrome_test_util::SettingsMenuButton;
 using chrome_test_util::ToolsMenuView;
 using base::test::ios::WaitUntilConditionOrTimeout;
@@ -87,8 +90,7 @@ id<GREYAction> ScrollDown() {
       grey_allOf(buttonMatcher, grey_interactable(), nil);
   [[[EarlGrey selectElementWithMatcher:interactableButtonMatcher]
          usingSearchAction:ScrollDown()
-      onElementWithMatcher:ClearBrowsingDataCollectionView()]
-      performAction:grey_tap()];
+      onElementWithMatcher:ClearBrowsingDataView()] performAction:grey_tap()];
 }
 
 + (void)openAndClearBrowsingDataFromHistory {
@@ -150,7 +152,7 @@ id<GREYAction> ScrollDown() {
 + (void)tapAccountsMenuButton:(id<GREYMatcher>)buttonMatcher {
   [[[EarlGrey selectElementWithMatcher:buttonMatcher]
          usingSearchAction:ScrollDown()
-      onElementWithMatcher:grey_accessibilityID(kSettingsAccountsId)]
+      onElementWithMatcher:grey_accessibilityID(kSettingsAccountsTableViewId)]
       performAction:grey_tap()];
 }
 
@@ -198,14 +200,11 @@ id<GREYAction> ScrollDown() {
 }
 
 + (void)openShareMenu {
-  if (IsCompactWidth() && !IsRefreshLocationBarEnabled()) {
-    [ChromeEarlGreyUI openToolsMenu];
-  }
   [[EarlGrey selectElementWithMatcher:chrome_test_util::ShareButton()]
       performAction:grey_tap()];
 }
 
-+ (void)waitForToolbarVisible:(BOOL)isVisible {
++ (NSError*)waitForToolbarVisible:(BOOL)isVisible {
   const NSTimeInterval kWaitForToolbarAnimationTimeout = 1.0;
   ConditionBlock condition = ^{
     NSError* error = nil;
@@ -217,9 +216,13 @@ id<GREYAction> ScrollDown() {
   };
   NSString* errorMessage =
       isVisible ? @"Toolbar was not visible" : @"Toolbar was visible";
-  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
-                 kWaitForToolbarAnimationTimeout, condition),
-             errorMessage);
+
+  if (!base::test::ios::WaitUntilConditionOrTimeout(
+          kWaitForToolbarAnimationTimeout, condition)) {
+    return chrome_test_util::NSErrorWithLocalizedDescription(errorMessage);
+  }
+
+  return nil;
 }
 
 @end

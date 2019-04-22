@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
@@ -49,8 +50,8 @@ TEST_F(PushClientTest, CreateDefaultOffIOThread) {
   base::Thread thread("Non-IO thread");
   EXPECT_TRUE(thread.Start());
   thread.task_runner()->PostTask(
-      FROM_HERE, base::Bind(base::IgnoreResult(&PushClient::CreateDefault),
-                            notifier_options_));
+      FROM_HERE, base::BindOnce(base::IgnoreResult(&PushClient::CreateDefault),
+                                notifier_options_));
   thread.Stop();
 }
 

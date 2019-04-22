@@ -17,10 +17,13 @@ WorkerModuleScriptFetcher::WorkerModuleScriptFetcher(
     WorkerGlobalScope* global_scope)
     : global_scope_(global_scope) {}
 
-// https://html.spec.whatwg.org/multipage/workers.html#worker-processing-model
-void WorkerModuleScriptFetcher::Fetch(FetchParameters& fetch_params,
-                                      ModuleGraphLevel level,
-                                      ModuleScriptFetcher::Client* client) {
+// https://html.spec.whatwg.org/C/#worker-processing-model
+void WorkerModuleScriptFetcher::Fetch(
+    FetchParameters& fetch_params,
+    ResourceFetcher* fetch_client_settings_object_fetcher,
+    const Modulator* modulator_for_built_in_modules,
+    ModuleGraphLevel level,
+    ModuleScriptFetcher::Client* client) {
   DCHECK(global_scope_->IsContextThread());
   client_ = client;
   level_ = level;
@@ -33,8 +36,8 @@ void WorkerModuleScriptFetcher::Fetch(FetchParameters& fetch_params,
   // Step 13.2. "Fetch request, and asynchronously wait to run the remaining
   // steps as part of fetch's process response for the response response." [spec
   // text]
-  ScriptResource::Fetch(fetch_params, global_scope_->EnsureFetcher(), this,
-                        ScriptResource::kNoStreaming);
+  ScriptResource::Fetch(fetch_params, fetch_client_settings_object_fetcher,
+                        this, ScriptResource::kNoStreaming);
 }
 
 void WorkerModuleScriptFetcher::Trace(blink::Visitor* visitor) {
@@ -43,7 +46,7 @@ void WorkerModuleScriptFetcher::Trace(blink::Visitor* visitor) {
   visitor->Trace(global_scope_);
 }
 
-// https://html.spec.whatwg.org/multipage/workers.html#worker-processing-model
+// https://html.spec.whatwg.org/C/#worker-processing-model
 void WorkerModuleScriptFetcher::NotifyFinished(Resource* resource) {
   DCHECK(global_scope_->IsContextThread());
   ClearResource();
@@ -65,18 +68,21 @@ void WorkerModuleScriptFetcher::NotifyFinished(Resource* resource) {
 
     // Ensure redirects don't affect SecurityOrigin.
     const KURL request_url = resource->Url();
-    const KURL response_url = resource->GetResponse().Url();
+    const KURL response_url = resource->GetResponse().CurrentRequestUrl();
     if (request_url != response_url &&
         !global_scope_->GetSecurityOrigin()->IsSameSchemeHostPort(
             SecurityOrigin::Create(response_url).get())) {
       error_messages.push_back(ConsoleMessage::Create(
-          kSecurityMessageSource, kErrorMessageLevel,
+          mojom::ConsoleMessageSource::kSecurity,
+          mojom::ConsoleMessageLevel::kError,
           "Refused to cross-origin redirects of the top-level worker script."));
       client_->NotifyFetchFinished(base::nullopt, error_messages);
       return;
     }
 
     // Step 13.3. "Set worker global scope's url to response's url." [spec text]
+    global_scope_->InitializeURL(response_url);
+
     // Step 13.4. "Set worker global scope's HTTPS state to response's HTTPS
     // state." [spec text]
 
@@ -99,7 +105,8 @@ void WorkerModuleScriptFetcher::NotifyFinished(Resource* resource) {
   }
 
   ModuleScriptCreationParams params(
-      script_resource->GetResponse().Url(), script_resource->SourceText(),
+      script_resource->GetResponse().CurrentRequestUrl(),
+      script_resource->SourceText(), script_resource->CacheHandler(),
       script_resource->GetResourceRequest().GetFetchCredentialsMode());
 
   // Step 13.7. "Asynchronously complete the perform the fetch steps with

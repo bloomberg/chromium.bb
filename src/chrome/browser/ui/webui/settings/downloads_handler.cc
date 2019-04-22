@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/settings/downloads_handler.h"
 
+#include "base/bind.h"
 #include "base/metrics/user_metrics.h"
 #include "base/values.h"
 #include "chrome/browser/download/download_prefs.h"

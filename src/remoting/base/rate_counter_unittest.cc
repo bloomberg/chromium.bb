@@ -5,7 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "remoting/base/rate_counter.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,7 +22,7 @@ TEST(RateCounterTest, OneSecondWindow) {
   base::SimpleTestTickClock tick_clock;
   rate_counter.set_tick_clock_for_tests(&tick_clock);
 
-  for (size_t i = 0; i < arraysize(kTestValues); ++i) {
+  for (size_t i = 0; i < base::size(kTestValues); ++i) {
     tick_clock.Advance(base::TimeDelta::FromSeconds(1));
     rate_counter.Record(kTestValues[i]);
     EXPECT_EQ(static_cast<double>(kTestValues[i]), rate_counter.Rate());
@@ -38,7 +38,7 @@ TEST(RateCounterTest, OneSecondWindowAllSamples) {
   rate_counter.set_tick_clock_for_tests(&tick_clock);
 
   double expected = 0.0;
-  for (size_t i = 0; i < arraysize(kTestValues); ++i) {
+  for (size_t i = 0; i < base::size(kTestValues); ++i) {
     rate_counter.Record(kTestValues[i]);
     expected += kTestValues[i];
   }
@@ -56,7 +56,7 @@ TEST(RateCounterTest, TwoSecondWindow) {
   base::SimpleTestTickClock tick_clock;
   rate_counter.set_tick_clock_for_tests(&tick_clock);
 
-  for (size_t i = 0; i < arraysize(kTestValues); ++i) {
+  for (size_t i = 0; i < base::size(kTestValues); ++i) {
     tick_clock.Advance(base::TimeDelta::FromSeconds(1));
     rate_counter.Record(kTestValues[i]);
     double expected = kTestValues[i];
@@ -70,7 +70,7 @@ TEST(RateCounterTest, TwoSecondWindow) {
 // Sample over a window one second shorter than the number of samples.
 // Rate should be the average of all but the first sample.
 TEST(RateCounterTest, LongWindow) {
-  const size_t kWindowSeconds = arraysize(kTestValues) - 1;
+  const size_t kWindowSeconds = base::size(kTestValues) - 1;
 
   RateCounter rate_counter(base::TimeDelta::FromSeconds(kWindowSeconds));
   EXPECT_EQ(0, rate_counter.Rate());
@@ -79,7 +79,7 @@ TEST(RateCounterTest, LongWindow) {
   rate_counter.set_tick_clock_for_tests(&tick_clock);
 
   double expected = 0.0;
-  for (size_t i = 0; i < arraysize(kTestValues); ++i) {
+  for (size_t i = 0; i < base::size(kTestValues); ++i) {
     tick_clock.Advance(base::TimeDelta::FromSeconds(1));
     rate_counter.Record(kTestValues[i]);
     if (i != 0)

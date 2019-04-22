@@ -8,9 +8,14 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Environment;
 import android.os.StrictMode;
+import android.support.annotation.ColorRes;
+import android.support.annotation.DrawableRes;
+import android.support.v4.graphics.drawable.DrawableCompat;
+import android.support.v7.content.res.AppCompatResources;
 import android.text.TextUtils;
 import android.view.SurfaceView;
 import android.view.View;
@@ -85,10 +90,15 @@ public class UiUtils {
          * @param listener The listener that will be notified of the action the user took in the
          *                 picker.
          * @param allowMultiple Whether to allow multiple contacts to be picked.
-         * @param mimeTypes A list of mime types requested.
+         * @param includeNames Whether to include names of the contacts shared.
+         * @param includeEmails Whether to include emails of the contacts shared.
+         * @param includeTel Whether to include telephone numbers of the contacts shared.
+         * @param formattedOrigin The origin the data will be shared with, formatted for display
+         *                        with the scheme omitted.
          */
         void showContactsPicker(Context context, ContactsPickerListener listener,
-                boolean allowMultiple, List<String> mimeTypes);
+                boolean allowMultiple, boolean includeNames, boolean includeEmails,
+                boolean includeTel, String formattedOrigin);
 
         /**
          * Called when the contacts picker dialog has been dismissed.
@@ -128,23 +138,22 @@ public class UiUtils {
     }
 
     /**
-     * Returns whether a contacts picker should be called.
-     */
-    public static boolean shouldShowContactsPicker() {
-        return sContactsPickerDelegate != null;
-    }
-
-    /**
      * Called to display the contacts picker.
      * @param context  The context to use.
      * @param listener The listener that will be notified of the action the user took in the
      *                 picker.
-     * @param mimeTypes A list of mime types requested.
+     * @param allowMultiple Whether to allow multiple contacts to be selected.
+     * @param includeNames Whether to include names in the contact data returned.
+     * @param includeEmails Whether to include emails in the contact data returned.
+     * @param includeTel Whether to include telephone numbers in the contact data returned.
+     * @param formattedOrigin The origin the data will be shared with.
      */
     public static boolean showContactsPicker(Context context, ContactsPickerListener listener,
-            boolean allowMultiple, List<String> mimeTypes) {
+            boolean allowMultiple, boolean includeNames, boolean includeEmails, boolean includeTel,
+            String formattedOrigin) {
         if (sContactsPickerDelegate == null) return false;
-        sContactsPickerDelegate.showContactsPicker(context, listener, allowMultiple, mimeTypes);
+        sContactsPickerDelegate.showContactsPicker(context, listener, allowMultiple, includeNames,
+                includeEmails, includeTel, formattedOrigin);
         return true;
     }
 
@@ -452,6 +461,22 @@ public class UiUtils {
     }
 
     /**
+     * Gets a drawable from the resources and applies the specified tint to it. Uses Support Library
+     * for vector drawables and tinting on older Android versions.
+     * @param drawableId The resource id for the drawable.
+     * @param tintColorId The resource id for the color or ColorStateList.
+     */
+    public static Drawable getTintedDrawable(
+            Context context, @DrawableRes int drawableId, @ColorRes int tintColorId) {
+        Drawable drawable = AppCompatResources.getDrawable(context, drawableId);
+        assert drawable != null;
+        drawable = DrawableCompat.wrap(drawable).mutate();
+        DrawableCompat.setTintList(
+                drawable, AppCompatResources.getColorStateList(context, tintColorId));
+        return drawable;
+    }
+
+    /**
      * @return Whether the support for theming on a particular device has been completely disabled
      *         due to lack of support by the OEM.
      */
@@ -464,5 +489,23 @@ public class UiUtils {
             }
         }
         return sSystemUiThemingDisabled;
+    }
+
+    /**
+     * Sets the navigation bar icons to dark or light. Note that this is only valid for Android
+     * O_MR1+.
+     * @param rootView The root view used to request updates to the system UI theme.
+     * @param useDarkIcons Whether the navigation bar icons should be dark.
+     */
+    public static void setNavigationBarIconColor(View rootView, boolean useDarkIcons) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O_MR1) return;
+
+        int systemUiVisibility = rootView.getSystemUiVisibility();
+        if (useDarkIcons) {
+            systemUiVisibility |= View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+        } else {
+            systemUiVisibility &= ~View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+        }
+        rootView.setSystemUiVisibility(systemUiVisibility);
     }
 }

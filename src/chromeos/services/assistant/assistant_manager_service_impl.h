@@ -13,6 +13,7 @@
 #include "ash/public/interfaces/ash_message_center_controller.mojom.h"
 #include "ash/public/interfaces/assistant_controller.mojom.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
+#include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "chromeos/assistant/internal/action/cros_action_module.h"
 #include "chromeos/assistant/internal/cros_display_connection.h"
@@ -28,14 +29,19 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "services/device/public/mojom/battery_monitor.mojom.h"
+#include "services/media_session/public/mojom/media_controller.mojom.h"
+#include "services/media_session/public/mojom/media_session.mojom.h"
 #include "ui/accessibility/ax_assistant_structure.h"
 #include "ui/accessibility/mojom/ax_assistant_structure.mojom.h"
 
 namespace assistant_client {
 class AssistantManager;
 class AssistantManagerInternal;
-struct SpeakerIdEnrollmentUpdate;
 }  // namespace assistant_client
+
+namespace network {
+class SharedURLLoaderFactoryInfo;
+}  // namespace network
 
 namespace service_manager {
 class Connector;
@@ -45,6 +51,30 @@ namespace chromeos {
 namespace assistant {
 
 class Service;
+class AssistantMediaSession;
+
+// Enumeration of Assistant query response type, also recorded in histograms.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused. Only append to this enum is allowed
+// if the possible type grows.
+enum class AssistantQueryResponseType {
+  // Query without response.
+  kUnspecified = 0,
+  // Query results in device actions (e.g. turn on bluetooth/WiFi).
+  kDeviceAction = 1,
+  // Query results in answer cards with contents rendered inside the
+  // Assistant UI.
+  kInlineElement = 2,
+  // Query results in searching on Google, indicating that Assistant
+  // doesn't know what to do.
+  kSearchFallback = 3,
+  // Query results in specific actions (e.g. opening a web app such as YouTube
+  // or Facebook, some deeplink actions such as taking a screenshot or opening
+  // chrome settings page), indicating that Assistant knows what to do.
+  kTargetedAction = 4,
+  // Special enumerator value used by histogram macros.
+  kMaxValue = kTargetedAction
+};
 
 // Implementation of AssistantManagerService based on LibAssistant.
 // This is the main class that ineracts with LibAssistant.
@@ -57,57 +87,55 @@ class AssistantManagerServiceImpl
       public AssistantEventObserver,
       public assistant_client::ConversationStateListener,
       public assistant_client::AssistantManagerDelegate,
-      public assistant_client::DeviceStateListener {
+      public assistant_client::DeviceStateListener,
+      public media_session::mojom::MediaControllerObserver {
  public:
   // |service| owns this class and must outlive this class.
   AssistantManagerServiceImpl(
       service_manager::Connector* connector,
       device::mojom::BatteryMonitorPtr battery_monitor,
       Service* service,
-      network::NetworkConnectionTracker* network_connection_tracker);
+      network::NetworkConnectionTracker* network_connection_tracker,
+      std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+          url_loader_factory_info);
 
   ~AssistantManagerServiceImpl() override;
 
   // assistant::AssistantManagerService overrides
-  void Start(const std::string& access_token,
+  void Start(const base::Optional<std::string>& access_token,
              bool enable_hotword,
              base::OnceClosure callback) override;
   void Stop() override;
   State GetState() const override;
   void SetAccessToken(const std::string& access_token) override;
   void EnableListening(bool enable) override;
+  void EnableHotword(bool enable) override;
+  void SetArcPlayStoreEnabled(bool enable) override;
   AssistantSettingsManager* GetAssistantSettingsManager() override;
-  void SendGetSettingsUiRequest(
-      const std::string& selector,
-      GetSettingsUiResponseCallback callback) override;
-  void SendUpdateSettingsUiRequest(
-      const std::string& update,
-      UpdateSettingsUiResponseCallback callback) override;
-  void StartSpeakerIdEnrollment(
-      bool skip_cloud_enrollment,
-      mojom::SpeakerIdEnrollmentClientPtr client) override;
-  void StopSpeakerIdEnrollment(
-      AssistantSettingsManager::StopSpeakerIdEnrollmentCallback callback)
-      override;
 
   // mojom::Assistant overrides:
   void StartCachedScreenContextInteraction() override;
+  void StartEditReminderInteraction(const std::string& client_id) override;
   void StartMetalayerInteraction(const gfx::Rect& region) override;
   void StartTextInteraction(const std::string& query, bool allow_tts) override;
   void StartVoiceInteraction() override;
+  void StartWarmerWelcomeInteraction(int num_warmer_welcome_triggered,
+                                     bool allow_tts) override;
   void StopActiveInteraction(bool cancel_conversation) override;
   void AddAssistantInteractionSubscriber(
       mojom::AssistantInteractionSubscriberPtr subscriber) override;
-  void AddAssistantNotificationSubscriber(
-      mojom::AssistantNotificationSubscriberPtr subscriber) override;
   void RetrieveNotification(mojom::AssistantNotificationPtr notification,
                             int action_index) override;
   void DismissNotification(
       mojom::AssistantNotificationPtr notification) override;
   void CacheScreenContext(CacheScreenContextCallback callback) override;
+  void ClearScreenContextCache() override;
   void OnAccessibilityStatusChanged(bool spoken_feedback_enabled) override;
+  void SendAssistantFeedback(
+      mojom::AssistantFeedbackPtr assistant_feedback) override;
 
   // AssistantActionObserver overrides:
+  void OnScheduleWait(int id, int time_ms) override;
   void OnShowContextualQueryFallback() override;
   void OnShowHtml(const std::string& html,
                   const std::string& fallback) override;
@@ -116,6 +144,10 @@ class AssistantManagerServiceImpl
   void OnShowText(const std::string& text) override;
   void OnOpenUrl(const std::string& url) override;
   void OnShowNotification(const action::Notification& notification) override;
+  void OnOpenAndroidApp(const action::AndroidAppInfo& app_info,
+                        const action::InteractionInfo& interaction) override;
+  void OnVerifyAndroidApp(const std::vector<action::AndroidAppInfo>& apps_info,
+                          const action::InteractionInfo& interaction) override;
 
   // AssistantEventObserver overrides:
   void OnSpeechLevelUpdated(float speech_level) override;
@@ -146,16 +178,30 @@ class AssistantManagerServiceImpl
   void OnTimerSoundingStarted() override;
   void OnTimerSoundingFinished() override;
 
+  void UpdateInternalOptions(
+      assistant_client::AssistantManagerInternal* assistant_manager_internal);
+
+  assistant_client::AssistantManager* assistant_manager() {
+    return assistant_manager_.get();
+  }
+  assistant_client::AssistantManagerInternal* assistant_manager_internal() {
+    return assistant_manager_internal_;
+  }
+
+  // media_session::mojom::MediaControllerObserver overrides:
+  void MediaSessionInfoChanged(
+      media_session::mojom::MediaSessionInfoPtr info) override;
+  void MediaSessionMetadataChanged(
+      const base::Optional<media_session::MediaMetadata>& metadata) override;
+  void MediaSessionActionsChanged(
+      const std::vector<media_session::mojom::MediaSessionAction>& action)
+      override {}
+  void MediaSessionChanged(
+      const base::Optional<base::UnguessableToken>& request_id) override {}
+
  private:
-  std::unique_ptr<assistant_client::AssistantManager> StartAssistantInternal(
-      const std::string& access_token,
-      bool enable_hotword,
-      const std::string& arc_version,
-      const std::string& locale,
-      bool spoken_feedback_enabled);
-  void PostInitAssistant(
-      base::OnceClosure post_init_callback,
-      std::unique_ptr<assistant_client::AssistantManager>* assistant_manager);
+  void StartAssistantInternal(const base::Optional<std::string>& access_token);
+  void PostInitAssistant(base::OnceClosure post_init_callback);
 
   // Update device id, type and locale
   void UpdateDeviceSettings();
@@ -163,17 +209,13 @@ class AssistantManagerServiceImpl
   // Sync speaker id enrollment status.
   void SyncSpeakerIdEnrollmentStatus();
 
-  void HandleGetSettingsResponse(
-      base::RepeatingCallback<void(const std::string&)> callback,
-      const std::string& settings);
-  void HandleUpdateSettingsResponse(
-      base::RepeatingCallback<void(const std::string&)> callback,
-      const std::string& result);
-  void HandleSpeakerIdEnrollmentUpdate(
-      const assistant_client::SpeakerIdEnrollmentUpdate& update);
-  void HandleStopSpeakerIdEnrollment(base::RepeatingCallback<void()> callback);
-  void HandleSpeakerIdEnrollmentStatusSync(
-      const assistant_client::SpeakerIdEnrollmentUpdate& update);
+  void HandleOpenAndroidAppResponse(const action::InteractionInfo& interaction,
+                                    bool app_opened);
+  void HandleVerifyAndroidAppResponse(
+      const action::InteractionInfo& interaction,
+      std::vector<mojom::AndroidAppInfoPtr> apps_info);
+
+  void HandleLaunchMediaIntentResponse(bool app_opened);
 
   void OnConversationTurnStartedOnMainThread(bool is_mic_open);
   void OnConversationTurnFinishedOnMainThread(
@@ -194,9 +236,18 @@ class AssistantManagerServiceImpl
           recognition_result);
   void OnRespondingStartedOnMainThread(bool is_error_response);
   void OnSpeechLevelUpdatedOnMainThread(const float speech_level);
+  void OnAlarmTimerStateChangedOnMainThread();
   void OnModifySettingsAction(const std::string& modify_setting_args_proto);
+  void OnOpenMediaAndroidIntentOnMainThread(
+      const std::string play_media_args_proto,
+      action::AndroidAppInfo* android_app_info);
+  void OnPlayMedia(const std::string play_media_args_proto);
+  void OnMediaControlAction(const std::string& action_name,
+                            const std::string& media_action_args_proto);
 
   void RegisterFallbackMediaHandler();
+  void AddMediaControllerObserver();
+  void RegisterAlarmsTimersListener();
 
   void CacheAssistantStructure(
       base::OnceClosure on_done,
@@ -208,36 +259,48 @@ class AssistantManagerServiceImpl
       const std::vector<uint8_t>& assistant_screenshot);
 
   void SendScreenContextRequest(
-      ax::mojom::AssistantExtraPtr assistant_extra,
-      std::unique_ptr<ui::AssistantTree> assistant_tree,
+      ax::mojom::AssistantExtra* assistant_extra,
+      ui::AssistantTree* assistant_tree,
       const std::vector<uint8_t>& assistant_screenshot);
 
   void FillServerExperimentIds(std::vector<std::string>* server_experiment_ids);
 
+  // Record the response type for each query. Note that query on device
+  // actions (e.g. turn on Bluetooth, turn on WiFi) will cause duplicate
+  // record because it interacts with server twice on on the same query.
+  // The first round interaction checks IsSettingSupported with no responses
+  // sent back and ends normally (will be recorded as kUnspecified), and
+  // settings modification proto along with any text/voice responses would
+  // be sent back in the second round (recorded as kDeviceAction).
+  void RecordQueryResponseTypeUMA();
+
+  void UpdateMediaState();
+
   State state_ = State::STOPPED;
+  std::unique_ptr<AssistantMediaSession> media_session_;
   std::unique_ptr<PlatformApiImpl> platform_api_;
   std::unique_ptr<action::CrosActionModule> action_module_;
-  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   ChromiumApiDelegate chromium_api_delegate_;
+  // NOTE: |display_connection_| is used by |assistant_manager_| and must be
+  // declared before so it will be destructed after.
+  std::unique_ptr<CrosDisplayConnection> display_connection_;
   std::unique_ptr<assistant_client::AssistantManager> assistant_manager_;
   std::unique_ptr<AssistantSettingsManagerImpl> assistant_settings_manager_;
+  // |new_asssistant_manager_| is created on |background_thread_| then posted to
+  // main thread to finish initialization then move to |assistant_manager_|.
+  std::unique_ptr<assistant_client::AssistantManager> new_assistant_manager_;
+  base::Lock new_assistant_manager_lock_;
   // same ownership as assistant_manager_.
   assistant_client::AssistantManagerInternal* assistant_manager_internal_ =
       nullptr;
-  std::unique_ptr<CrosDisplayConnection> display_connection_;
   mojo::InterfacePtrSet<mojom::AssistantInteractionSubscriber>
       interaction_subscribers_;
-  mojo::InterfacePtrSet<mojom::AssistantNotificationSubscriber>
-      notification_subscribers_;
   ash::mojom::AshMessageCenterControllerPtr ash_message_center_controller_;
-  mojom::SpeakerIdEnrollmentClientPtr speaker_id_enrollment_client_;
+  media_session::mojom::MediaControllerPtr media_controller_;
 
   Service* service_;  // unowned.
 
   bool spoken_feedback_enabled_ = false;
-
-  // Whether the speaker id enrollment has complete for the user.
-  bool speaker_id_enrollment_done_ = false;
 
   ax::mojom::AssistantExtraPtr assistant_extra_;
   std::unique_ptr<ui::AssistantTree> assistant_tree_;
@@ -247,6 +310,21 @@ class AssistantManagerServiceImpl
   base::TimeTicks started_time_;
 
   base::Thread background_thread_;
+
+  bool receive_modify_settings_proto_response_ = false;
+  bool receive_inline_response_ = false;
+  std::string receive_url_response_;
+
+  bool is_first_client_discourse_context_query_ = true;
+
+  mojo::Binding<media_session::mojom::MediaControllerObserver>
+      media_controller_observer_binding_;
+
+  // Info associated to the active media session.
+  media_session::mojom::MediaSessionInfoPtr media_session_info_ptr_;
+  // The metadata for the active media session. It can be null to be reset, e.g.
+  // the media that was being played has been stopped.
+  base::Optional<media_session::MediaMetadata> media_metadata_ = base::nullopt;
 
   base::WeakPtrFactory<AssistantManagerServiceImpl> weak_factory_;
 

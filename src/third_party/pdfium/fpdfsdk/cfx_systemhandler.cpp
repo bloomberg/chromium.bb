@@ -22,9 +22,11 @@
 #include "third_party/base/ptr_util.h"
 
 CFX_SystemHandler::CFX_SystemHandler(CPDFSDK_FormFillEnvironment* pFormFillEnv)
-    : m_pFormFillEnv(pFormFillEnv) {}
+    : m_pFormFillEnv(pFormFillEnv) {
+  ASSERT(m_pFormFillEnv);
+}
 
-CFX_SystemHandler::~CFX_SystemHandler() {}
+CFX_SystemHandler::~CFX_SystemHandler() = default;
 
 void CFX_SystemHandler::InvalidateRect(CPDFSDK_Widget* widget,
                                        const CFX_FloatRect& rect) {
@@ -33,11 +35,7 @@ void CFX_SystemHandler::InvalidateRect(CPDFSDK_Widget* widget,
   if (!pPage || !pPageView)
     return;
 
-  CFX_Matrix page2device;
-  pPageView->GetCurrentMatrix(page2device);
-
-  CFX_Matrix device2page = page2device.GetInverse();
-
+  CFX_Matrix device2page = pPageView->GetCurrentMatrix().GetInverse();
   CFX_PointF left_top = device2page.Transform(CFX_PointF(rect.left, rect.top));
   CFX_PointF right_bottom =
       device2page.Transform(CFX_PointF(rect.right, rect.bottom));
@@ -48,7 +46,7 @@ void CFX_SystemHandler::InvalidateRect(CPDFSDK_Widget* widget,
 }
 
 void CFX_SystemHandler::OutputSelectedRect(CFFL_FormFiller* pFormFiller,
-                                           CFX_FloatRect& rect) {
+                                           const CFX_FloatRect& rect) {
   if (!pFormFiller)
     return;
 
@@ -64,9 +62,6 @@ void CFX_SystemHandler::OutputSelectedRect(CFFL_FormFiller* pFormFiller,
 }
 
 bool CFX_SystemHandler::IsSelectionImplemented() const {
-  if (!m_pFormFillEnv)
-    return false;
-
   FPDF_FORMFILLINFO* pInfo = m_pFormFillEnv->GetFormFillInfo();
   return pInfo && pInfo->FFI_OutputSelectedRect;
 }
@@ -81,9 +76,6 @@ bool CFX_SystemHandler::FindNativeTrueTypeFont(ByteString sFontFaceName) {
     return false;
 
   CFX_FontMapper* pFontMapper = pFontMgr->GetBuiltinMapper();
-  if (!pFontMapper)
-    return false;
-
   pFontMapper->LoadInstalledFonts();
 
   for (const auto& font : pFontMapper->m_InstalledTTFonts) {

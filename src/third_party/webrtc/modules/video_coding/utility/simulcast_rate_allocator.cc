@@ -10,14 +10,16 @@
 
 #include "modules/video_coding/utility/simulcast_rate_allocator.h"
 
+#include <stdio.h>
 #include <algorithm>
-#include <memory>
+#include <cstdint>
+#include <numeric>
 #include <string>
-#include <utility>
+#include <tuple>
 #include <vector>
 
-#include "common_types.h"  // NOLINT(build/include)
 #include "rtc_base/checks.h"
+#include "rtc_base/experiments/rate_control_settings.h"
 #include "system_wrappers/include/field_trial.h"
 
 namespace webrtc {
@@ -38,33 +40,6 @@ static const float kBaseHeavy3TlRateAllocation[kMaxTemporalStreams] = {
 
 const uint32_t kLegacyScreenshareTl0BitrateKbps = 200;
 const uint32_t kLegacyScreenshareTl1BitrateKbps = 1000;
-
-double GetHysteresisFactor(const VideoCodec& codec) {
-  double factor = 1.0;
-
-  std::string field_trial_name;
-  switch (codec.mode) {
-    case VideoCodecMode::kRealtimeVideo:
-      field_trial_name = "WebRTC-SimulcastUpswitchHysteresisPercent";
-      // Default to no hysteresis for simulcast video.
-      factor = 1.0;
-      break;
-    case VideoCodecMode::kScreensharing:
-      field_trial_name = "WebRTC-SimulcastScreenshareUpswitchHysteresisPercent";
-      // Default to 35% hysteresis for simulcast screenshare.
-      factor = 1.35;
-      break;
-  }
-
-  std::string group_name = webrtc::field_trial::FindFullName(field_trial_name);
-  int percent = 0;
-  if (!group_name.empty() && sscanf(group_name.c_str(), "%d", &percent) == 1 &&
-      percent >= 0) {
-    factor = 1.0 + (percent / 100.0);
-  }
-
-  return factor;
-}
 }  // namespace
 
 float SimulcastRateAllocator::GetTemporalRateAllocation(int num_layers,
@@ -81,7 +56,9 @@ float SimulcastRateAllocator::GetTemporalRateAllocation(int num_layers,
 }
 
 SimulcastRateAllocator::SimulcastRateAllocator(const VideoCodec& codec)
-    : codec_(codec), hysteresis_factor_(GetHysteresisFactor(codec)) {}
+    : codec_(codec),
+      hysteresis_factor_(RateControlSettings::ParseFromFieldTrials()
+                             .GetSimulcastHysteresisFactor(codec.mode)) {}
 
 SimulcastRateAllocator::~SimulcastRateAllocator() = default;
 
@@ -110,10 +87,21 @@ void SimulcastRateAllocator::DistributeAllocationToSimulcastLayers(
     }
     return;
   }
+
+  // Sort the layers by maxFramerate, they might not always be from smallest
+  // to biggest
+  std::vector<size_t> layer_index(codec_.numberOfSimulcastStreams);
+  std::iota(layer_index.begin(), layer_index.end(), 0);
+  std::stable_sort(layer_index.begin(), layer_index.end(),
+                   [this](size_t a, size_t b) {
+                     return std::tie(codec_.simulcastStream[a].maxBitrate) <
+                            std::tie(codec_.simulcastStream[b].maxBitrate);
+                   });
+
   // Find the first active layer. We don't allocate to inactive layers.
   size_t active_layer = 0;
   for (; active_layer < codec_.numberOfSimulcastStreams; ++active_layer) {
-    if (codec_.simulcastStream[active_layer].active) {
+    if (codec_.simulcastStream[layer_index[active_layer]].active) {
       // Found the first active layer.
       break;
     }
@@ -127,7 +115,8 @@ void SimulcastRateAllocator::DistributeAllocationToSimulcastLayers(
   // active layer. Suspending below min bitrate is controlled outside the
   // codec implementation and is not overridden by this.
   left_to_allocate = std::max(
-      codec_.simulcastStream[active_layer].minBitrate * 1000, left_to_allocate);
+      codec_.simulcastStream[layer_index[active_layer]].minBitrate * 1000,
+      left_to_allocate);
 
   // Begin by allocating bitrate to simulcast streams, putting all bitrate in
   // temporal layer 0. We'll then distribute this bitrate, across potential
@@ -144,15 +133,16 @@ void SimulcastRateAllocator::DistributeAllocationToSimulcastLayers(
   size_t top_active_layer = active_layer;
   // Allocate up to the target bitrate for each active simulcast layer.
   for (; active_layer < codec_.numberOfSimulcastStreams; ++active_layer) {
-    const SimulcastStream& stream = codec_.simulcastStream[active_layer];
+    const SimulcastStream& stream =
+        codec_.simulcastStream[layer_index[active_layer]];
     if (!stream.active) {
-      stream_enabled_[active_layer] = false;
+      stream_enabled_[layer_index[active_layer]] = false;
       continue;
     }
     // If we can't allocate to the current layer we can't allocate to higher
     // layers because they require a higher minimum bitrate.
     uint32_t min_bitrate = stream.minBitrate * 1000;
-    if (!first_allocation && !stream_enabled_[active_layer]) {
+    if (!first_allocation && !stream_enabled_[layer_index[active_layer]]) {
       min_bitrate = std::min(
           static_cast<uint32_t>(hysteresis_factor_ * min_bitrate + 0.5),
           stream.targetBitrate * 1000);
@@ -162,18 +152,19 @@ void SimulcastRateAllocator::DistributeAllocationToSimulcastLayers(
     }
 
     // We are allocating to this layer so it is the current active allocation.
-    top_active_layer = active_layer;
-    stream_enabled_[active_layer] = true;
+    top_active_layer = layer_index[active_layer];
+    stream_enabled_[layer_index[active_layer]] = true;
     uint32_t allocation =
         std::min(left_to_allocate, stream.targetBitrate * 1000);
-    allocated_bitrates_bps->SetBitrate(active_layer, 0, allocation);
+    allocated_bitrates_bps->SetBitrate(layer_index[active_layer], 0,
+                                       allocation);
     RTC_DCHECK_LE(allocation, left_to_allocate);
     left_to_allocate -= allocation;
   }
 
   // All layers above this one are not active.
   for (; active_layer < codec_.numberOfSimulcastStreams; ++active_layer) {
-    stream_enabled_[active_layer] = false;
+    stream_enabled_[layer_index[active_layer]] = false;
   }
 
   // Next, try allocate remaining bitrate, up to max bitrate, in top active

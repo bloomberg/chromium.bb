@@ -133,7 +133,7 @@ struct Error {
 
   /**
    * Cronet internal error code. This may provide more specific error
-   * diagnosis than |error_code|, but the constant values  may change over time.
+   * diagnosis than |error_code|, but the constant values may change over time.
    * See
    * <a href=https://chromium.googlesource.com/chromium/src/+/master/net/base/net_error_list.h>
    * here</a> for the lastest list of values.
@@ -317,6 +317,10 @@ enum RESULT {
    * Params is required
    */
   NULL_POINTER_PARAMS = -311,
+  /**
+   * Executor for RequestFinishedInfoListener is required
+   */
+  NULL_POINTER_REQUEST_FINISHED_INFO_LISTENER_EXECUTOR = -312,
 };
 
 /**
@@ -382,6 +386,30 @@ interface Engine {
    */
   [Sync]
   GetDefaultUserAgent() => (string default_user_agent);
+
+  /**
+   * Registers a listener that gets called after the end of each request after
+   * OnSucceeded(), OnFailed(), or OnCanceled() is called with the {@code
+   * RequestFinishedInfo}.
+   *
+   * The listener is called on {@code executor} -- the same executor may be
+   * used with several listeners.
+   *
+   * Ownership **not** taken for {@code listener} or {@code executor} -- these
+   * may be safely destroyed after a call to RemoveRequestFinishedListener(),
+   * or if the engine has shutdown.
+   *
+   * @param listener the listener for finished requests.
+   * @param executor the executor upon which to run the listener.
+   */
+  AddRequestFinishedListener(RequestFinishedInfoListener listener,
+                             Executor executor);
+
+  /**
+   * Unregisters a RequestFinishedInfoListener, including its association with
+   * its registered Executor.
+   */
+  RemoveRequestFinishedListener(RequestFinishedInfoListener listener);
 };
 
 /**
@@ -835,6 +863,9 @@ interface UrlRequestCallback {
    * Invoked when request is completed successfully. Once invoked, no other
    * UrlRequestCallback methods will be invoked.
    *
+   * Implementations of {@link #OnSucceeded} are allowed to call {@code
+   * Cronet_UrlRequest_Destroy(request)}.
+   *
    * @param request Request that succeeded.
    * @param info Response information.
    */
@@ -844,6 +875,9 @@ interface UrlRequestCallback {
    * Invoked if request failed for any reason after UrlRequest.start().
    * Once invoked, no other UrlRequestCallback methods will be invoked.
    * |error| provides information about the failure.
+   *
+   * Implementations of {@link #OnFailed} are allowed to call {@code
+   * Cronet_UrlRequest_Destroy(request)}.
    *
    * @param request Request that failed.
    * @param info Response information. May be null if no response was
@@ -855,6 +889,9 @@ interface UrlRequestCallback {
   /**
    * Invoked if request was canceled via UrlRequest.cancel(). Once
    * invoked, no other UrlRequestCallback methods will be invoked.
+   *
+   * Implementations of {@link #OnCanceled} are allowed to call {@code
+   * Cronet_UrlRequest_Destroy(request)}.
    *
    * @param request Request that was canceled.
    * @param info Response information. May be null if no response was
@@ -1114,7 +1151,7 @@ struct UrlRequestParams {
 
   /**
    * Marks that the executors this request will use to notify callbacks (for
-   * UploadDataProvider andUrlRequestCallback) is intentionally performing
+   * UploadDataProvider and UrlRequestCallback) is intentionally performing
    * inline execution without switching to another thread.
    *
    * <p><b>Warning:</b> This option makes it easy to accidentally block the network thread.
@@ -1125,14 +1162,191 @@ struct UrlRequestParams {
 
   /**
    * Associates the annotation object with this request. May add more than one.
-   * Passed through to a RequestFinishedInfo.Listener.
+   * Passed through to a RequestFinishedInfoListener.
    */
   array<handle> annotations;
+
+  /**
+   * A listener that gets invoked after {@link
+   * UrlRequestCallback.OnCanceled()}, {@link UrlRequestCallback.OnFailed()} or
+   * {@link UrlRequestCallback.OnSucceeded()} return.
+   *
+   * The listener is invoked with the request finished info on {@code
+   * request_finished_executor}, which must be set.
+   *
+   * Ownership **not** taken for {@code request_finished_listener} or {@code
+   * request_finished_executor} -- these may be safely destroyed after a call
+   * to RemoveRequestFinishedListener(), or if the engine has shutdown.
+   */
+  RequestFinishedInfoListener? request_finished_listener;
+
+  /**
+   * The Executor used to run the {@code request_finished_listener}.
+   */
+  Executor? request_finished_executor;
+};
+
+/**
+ * Represents a date and time expressed as the number of milliseconds since the
+ * UNIX epoch.
+ */
+struct DateTime {
+  /**
+   * Number of milliseconds since the UNIX epoch.
+   */
+  int64 value = 0;
+};
+
+/*
+ * Represents metrics collected for a single request. Most of these metrics are
+ * timestamps for events during the lifetime of the request, which can be used
+ * to build a detailed timeline for investigating performance.
+ *
+ * Events happen in this order:
+ * <ol>
+ * <li>{@link #request_start request start}</li>
+ * <li>{@link #dns_start DNS start}</li>
+ * <li>{@link #dns_end DNS end}</li>
+ * <li>{@link #connect_start connect start}</li>
+ * <li>{@link #ssl_start SSL start}</li>
+ * <li>{@link #ssl_end SSL end}</li>
+ * <li>{@link #connect_end connect end}</li>
+ * <li>{@link #sending_start sending start}</li>
+ * <li>{@link #sending_end sending end}</li>
+ * <li>{@link #response_start response start}</li>
+ * <li>{@link #request_end request end}</li>
+ * </ol>
+ *
+ * Start times are reported as the time when a request started blocking on the
+ * event, not when the event actually occurred, with the exception of push
+ * start and end. If a metric is not meaningful or not available, including
+ * cases when a request finished before reaching that stage, start and end
+ * times will be null. If no time was spent blocking on an event, start and end
+ * will be the same time.
+ *
+ * Timestamps are recorded using a clock that is guaranteed not to run
+ * backwards. All timestamps are correct relative to the system clock at the
+ * time of request start, and taking the difference between two timestamps will
+ * give the correct difference between the events. In order to preserve this
+ * property, timestamps for events other than request start are not guaranteed
+ * to match the system clock at the times they represent.
+ *
+ * Most timing metrics are taken from
+ * <a
+ * href="https://cs.chromium.org/chromium/src/net/base/load_timing_info.h">LoadTimingInfo</a>,
+ * which holds the information for <a href="http://w3c.github.io/navigation-timing/"></a> and
+ * <a href="https://www.w3.org/TR/resource-timing/"></a>.
+ */
+struct Metrics {
+  /**
+   * Time when the request started, which corresponds to calling
+   * Cronet_UrlRequest_Start(). This timestamp will match the system clock at
+   * the time it represents.
+   */
+  DateTime request_start;
+
+  /**
+   * Time when DNS lookup started. This and {@link #dns_end} will be set to
+   * non-null regardless of whether the result came from a DNS server or the
+   * local cache. Will equal null if the socket was reused (see {@link
+   * #socket_reused}).
+   */
+  DateTime? dns_start;
+
+  /**
+   * Time when DNS lookup finished. This and {@link dns_start} will return
+   * non-null regardless of whether the result came from a DNS server or the
+   * local cache. Will equal null if the socket was reused (see {@link
+   * #socket_reused}).
+   */
+  DateTime? dns_end;
+
+  /**
+   * Time when connection establishment started, typically when DNS resolution
+   * finishes. Will equal null if the socket was reused (see {@link
+   * #socket_reused}).
+   */
+  DateTime? connect_start;
+
+  /**
+   * Time when connection establishment finished, after TCP connection is
+   * established and, if using HTTPS, SSL handshake is completed. For QUIC
+   * 0-RTT, this represents the time of handshake confirmation and might happen
+   * later than {@link #sending_start}. Will equal null if the socket was
+   * reused (see {@link #socket_reused}).
+   */
+  DateTime? connect_end;
+
+  /**
+   * Time when SSL handshake started. For QUIC, this will be the same time as
+   * {@link #connect_start}. Will equal null if SSL is not used or if the
+   * socket was reused (see {@link #socket_reused}).
+   */
+  DateTime? ssl_start;
+
+  /**
+   * Time when SSL handshake finished. For QUIC, this will be the same time as
+   * {@link #connect_end}. Will equal null if SSL is not used or if the socket
+   * was reused (see {@link #socket_reused}).
+   */
+  DateTime? ssl_end;
+
+  /**
+   * Time when sending HTTP request headers started.
+   */
+  DateTime sending_start;
+
+  /**
+   * Time when sending HTTP request body finished. (Sending request body
+   * happens after sending request headers.)
+   */
+  DateTime sending_end;
+
+  /**
+   * Time when first byte of HTTP/2 server push was received.  Will equal
+   * null if server push is not used.
+   */
+  DateTime? push_start;
+
+  /**
+   * Time when last byte of HTTP/2 server push was received.  Will equal
+   * null if server push is not used.
+   */
+  DateTime? push_end;
+
+  /**
+   * Time when the end of the response headers was received.
+   */
+  DateTime response_start;
+
+  /**
+   * Time when the request finished.
+   */
+  DateTime request_end;
+
+  /**
+   * True if the socket was reused from a previous request, false otherwise.
+   * In HTTP/2 or QUIC, if streams are multiplexed in a single connection, this
+   * will be {@code true} for all streams after the first.  When {@code true},
+   * DNS, connection, and SSL times will be null.
+   */
+  bool socket_reused = false;
+
+  /**
+   * Returns total bytes sent over the network transport layer, or -1 if not
+   * collected.
+   */
+  int64 sent_byte_count = -1;
+
+  /**
+   * Total bytes received over the network transport layer, or -1 if not
+   * collected. Number of bytes does not include any previous redirects.
+   */
+  int64 received_byte_count = -1;
 };
 
 /**
  * Information about a finished request.
- * TODO(mef): Define this to include metrics.
  */
 struct RequestFinishedInfo {
   /**
@@ -1152,4 +1366,50 @@ struct RequestFinishedInfo {
      */
     CANCELED = 2,
   };
+
+  /**
+   * Metrics collected for this request.
+   */
+  Metrics metrics;
+
+  /**
+   * The objects that the caller has supplied when initiating the request,
+   * using {@link UrlRequestParams.annotations}.
+   *
+   * Annotations can be used to associate a {@link RequestFinishedInfo} with
+   * the original request or type of request.
+   */
+  array<handle> annotations;
+
+  /**
+   * Returns the reason why the request finished.
+   */
+  FINISHED_REASON finished_reason = SUCCEEDED;
+
+  /**
+   * {@link UrlResponseInfo} for the request, if its response had started.
+   */
+  UrlResponseInfo? response_info;
+
+  /**
+   * If the request failed, will be equal to the same {@link Error} provided to
+   * {@link UrlRequestCallback.OnFailed}.
+   */
+  Error? error;
+};
+
+/**
+ * Listens for finished requests for the purpose of collecting metrics.
+ */
+[Abstract]
+interface RequestFinishedInfoListener {
+  /**
+   * Invoked with request info after OnSucceeded(), OnFailed() or OnCanceled()
+   * in UrlRequestCallback. Will be called in a task submitted to the Executor
+   * passed with this RequestFinishedInfoListener.
+   *
+   * @param request_info {@link RequestFinishedInfo} for finished request.
+   * **Not** owned -- this will be destroyed after the call.
+   */
+  OnRequestFinished(RequestFinishedInfo request_info);
 };

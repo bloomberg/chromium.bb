@@ -360,7 +360,7 @@ bool CpuDataCollector::ReadCpuFreqTimeInState(
       return false;
     }
 
-    const std::string state_name = base::IntToString(freq_in_khz / 1000);
+    const std::string state_name = base::NumberToString(freq_in_khz / 1000);
     size_t index = EnsureInVector(state_name, cpu_freq_state_names);
     if (index >= freq_sample->time_in_state.size())
       freq_sample->time_in_state.resize(index + 1);
@@ -407,7 +407,7 @@ bool CpuDataCollector::ReadCpuFreqAllTimeInState(
       return false;
     }
 
-    const std::string state_name = base::IntToString(freq_in_khz / 1000);
+    const std::string state_name = base::NumberToString(freq_in_khz / 1000);
     size_t index = EnsureInVector(state_name, cpu_freq_state_names);
     for (int cpu = 0; cpu < online_cpu_count; ++cpu) {
       // array.size() is previously checked to be equal to online_cpu_count+1.

@@ -10,135 +10,71 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "components/autofill_assistant/browser/payment_information.h"
+#include "components/autofill_assistant/browser/chip.h"
+#include "components/autofill_assistant/browser/details.h"
+#include "components/autofill_assistant/browser/info_box.h"
+#include "components/autofill_assistant/browser/metrics.h"
+#include "components/autofill_assistant/browser/payment_request.h"
 #include "components/autofill_assistant/browser/script.h"
+#include "components/autofill_assistant/browser/state.h"
 #include "components/autofill_assistant/browser/ui_delegate.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
 
 namespace autofill_assistant {
-struct ScriptHandle;
-class DetailsProto;
 
 // Controller to control autofill assistant UI.
+//
+// TODO(crbug/925947): Rename this class to Observer and make treat it as a real
+// observer in the Controller.
 class UiController {
  public:
-  // A choice, for Choose().
-  struct Choice {
-    // Localized string to display.
-    std::string name;
+  UiController();
+  virtual ~UiController();
 
-    // If true, highlight this choice in the UI.
-    bool highlight = false;
+  // Called when the controller has entered a new state.
+  virtual void OnStateChanged(AutofillAssistantState new_state);
 
-    // Opaque data to send back to the callback. Not necessarily a UTF8 string.
-    std::string server_payload;
-  };
+  // Report that the status message has changed.
+  virtual void OnStatusMessageChanged(const std::string& message);
 
-  virtual ~UiController() = default;
-
-  // Set assistant UI delegate called by assistant UI controller.
-  virtual void SetUiDelegate(UiDelegate* ui_delegate) = 0;
-
-  // Show status message on the bottom bar.
-  virtual void ShowStatusMessage(const std::string& message) = 0;
-
-  // Returns the current status message. The purpose of this call is to allow
-  // restoring a previous status message.
-  virtual std::string GetStatusMessage() = 0;
-
-  // Show the overlay.
-  virtual void ShowOverlay() = 0;
-
-  // Hide the overlay.
-  virtual void HideOverlay() = 0;
-
-  // Allows disabling/enabling the soft keyboard.
-  virtual void AllowShowingSoftKeyboard(bool enabled) = 0;
-
-  // Shuts down Autofill Assistant: hide the UI and frees any associated state.
+  // Autofill Assistant is about to be shut down for this tab.
   //
-  // Warning: this indirectly deletes the caller.
-  virtual void Shutdown() = 0;
+  // Pointer to UIDelegate will become invalid as soon as this method has
+  // returned.
+  virtual void WillShutdown(Metrics::DropOutReason reason);
 
-  // Shuts down Autofill Assistant after a small delay.
+  // Report that the set of suggestions has changed.
+  virtual void OnSuggestionsChanged(const std::vector<Chip>& suggestions);
+
+  // Report that the set of actions has changed.
+  virtual void OnActionsChanged(const std::vector<Chip>& actions);
+
+  // Gets or clears request for payment information.
+  virtual void OnPaymentRequestChanged(const PaymentRequestOptions* options);
+
+  // Called when details have changed. Details will be null if they have been
+  // cleared.
+  virtual void OnDetailsChanged(const Details* details);
+
+  // Called when info box has changed. |info_box| will be null if it has been
+  // cleared.
+  virtual void OnInfoBoxChanged(const InfoBox* info_box);
+
+  // Called when the current progress has changed. Progress, is expressed as a
+  // percentage.
+  virtual void OnProgressChanged(int progress);
+
+  // Called when the current progress bar visibility has changed. If |visible|
+  // is true, then the bar is now shown.
+  virtual void OnProgressVisibilityChanged(bool visible);
+
+  // Updates the area of the visible viewport that is accessible when the
+  // overlay state is OverlayState::PARTIAL.
   //
-  // Warning: this indirectly deletes the caller.
-  virtual void ShutdownGracefully() = 0;
-
-  // Shuts down Autofill Assistant and closes Chrome.
-  virtual void Close() = 0;
-
-  // Update the list of scripts in the UI.
-  virtual void UpdateScripts(const std::vector<ScriptHandle>& scripts) = 0;
-
-  // Show UI to ask user to make a choice. Sends the server_payload of the
-  // choice to the callback.
-  virtual void Choose(
-      const std::vector<Choice>& choices,
-      base::OnceCallback<void(const std::string&)> callback) = 0;
-
-  // Cancels a choose action in progress. Calls the registered callback, if any,
-  // with the given server_payload.
-  virtual void ForceChoose(const std::string& server_payload) = 0;
-
-  // Show UI to ask user to choose an address in personal data manager. GUID of
-  // the chosen address will be returned through callback, otherwise empty
-  // string if the user chose to continue manually.
-  // TODO(806868): Return full address object instead of GUID (the GUID can
-  // change after synchronization with the server).
-  virtual void ChooseAddress(
-      base::OnceCallback<void(const std::string&)> callback) = 0;
-
-  // Show UI to ask user to choose a card in personal data manager. GUID of the
-  // chosen card will be returned through callback, otherwise empty string if
-  // the user chose to continue manually.
-  // TODO(806868): Return full card object instead of GUID (the GUID can change
-  // after synchronization with the server).
-  virtual void ChooseCard(
-      base::OnceCallback<void(const std::string&)> callback) = 0;
-
-  // Get payment information (through similar to payment request UX) to fill
-  // forms.
-  virtual void GetPaymentInformation(
-      payments::mojom::PaymentOptionsPtr payment_options,
-      base::OnceCallback<void(std::unique_ptr<PaymentInformation>)> callback,
-      const std::string& title,
-      const std::vector<std::string>& supported_basic_card_networks) = 0;
-
-  // Hide contextual information.
-  virtual void HideDetails() = 0;
-
-  // Show contextual information. Returns false if the contextual information is
-  // not similar to the current one.
-  // TODO(806868): Pass details to the native side instead of comparing on the
-  // Java side.
-  virtual void ShowDetails(const DetailsProto& details,
-                           base::OnceCallback<void(bool)> callback) = 0;
-
-  // Show the progress bar with |message| and set it at |progress|%.
-  virtual void ShowProgressBar(int progress, const std::string& message) = 0;
-
-  // Hide the progress bar.
-  virtual void HideProgressBar() = 0;
-
-  // Updates the area of the visible viewport that is accessible.
-  //
-  // If |enabled| is false, the visible viewport is accessible.
-  //
-  // |areas| is expressed in coordinates relative to the width or height of the
-  // visible viewport, as a number between 0 and 1. It can be empty.
-  virtual void UpdateTouchableArea(bool enabled,
-                                   const std::vector<RectF>& areas) = 0;
-
-  // Returns a string describing the current execution context. This is useful
-  // when analyzing feedback forms and for debugging in general.
-  virtual std::string GetDebugContext() const = 0;
-
-  // Force the bottom sheet to be in the expanded state.
-  virtual void ExpandBottomSheet() = 0;
-
- protected:
-  UiController() = default;
+  // |rectangles| contains one element per configured rectangles, though these
+  // can correspond to empty rectangles. Coordinates are relative to the width
+  // or height of the visible viewport, as a number between 0 and 1.
+  virtual void OnTouchableAreaChanged(const std::vector<RectF>& rectangles);
 };
 }  // namespace autofill_assistant
 #endif  // COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_UI_CONTROLLER_H_

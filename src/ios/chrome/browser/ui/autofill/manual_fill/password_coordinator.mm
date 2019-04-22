@@ -4,32 +4,24 @@
 
 #import "ios/chrome/browser/ui/autofill/manual_fill/password_coordinator.h"
 
+#include "base/mac/foundation_util.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/password_store.h"
+#import "ios/chrome/browser/favicon/favicon_loader.h"
+#include "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/all_password_coordinator.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_injection_handler.h"
-#import "ios/chrome/browser/ui/autofill/manual_fill/password_list_delegate.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/password_list_navigator.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/password_mediator.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/password_view_controller.h"
-#import "ios/chrome/browser/ui/table_view/table_view_animator.h"
-#import "ios/chrome/browser/ui/table_view/table_view_navigation_controller.h"
-#import "ios/chrome/browser/ui/table_view/table_view_presentation_controller.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-namespace manual_fill {
-
-NSString* const PasswordDoneButtonAccessibilityIdentifier =
-    @"kManualFillPasswordDoneButtonAccessibilityIdentifier";
-
-}  // namespace manual_fill
-
-@interface ManualFillPasswordCoordinator ()<
-    PasswordListDelegate,
-    UIViewControllerTransitioningDelegate>
+@interface ManualFillPasswordCoordinator () <PasswordListNavigator>
 
 // Fetches and filters the passwords for the view controller.
 @property(nonatomic, strong) ManualFillPasswordMediator* passwordMediator;
@@ -37,10 +29,6 @@ NSString* const PasswordDoneButtonAccessibilityIdentifier =
 // The view controller presented above the keyboard where the user can select
 // one of their passwords.
 @property(nonatomic, strong) PasswordViewController* passwordViewController;
-
-// The view controller modally presented where the user can select one of their
-// passwords. Owned by the view controllers hierarchy.
-@property(nonatomic, weak) PasswordViewController* allPasswordsViewController;
 
 // Button presenting this coordinator in a popover. Used for continuation after
 // dismissing any presented view controller. iPad only.
@@ -56,10 +44,10 @@ NSString* const PasswordDoneButtonAccessibilityIdentifier =
 @dynamic delegate;
 
 - (instancetype)
-initWithBaseViewController:(UIViewController*)viewController
-              browserState:(ios::ChromeBrowserState*)browserState
-              webStateList:(WebStateList*)webStateList
-          injectionHandler:(ManualFillInjectionHandler*)injectionHandler {
+    initWithBaseViewController:(UIViewController*)viewController
+                  browserState:(ios::ChromeBrowserState*)browserState
+                           URL:(const GURL&)URL
+              injectionHandler:(ManualFillInjectionHandler*)injectionHandler {
   self = [super initWithBaseViewController:viewController
                               browserState:browserState
                           injectionHandler:injectionHandler];
@@ -70,68 +58,32 @@ initWithBaseViewController:(UIViewController*)viewController
 
     auto passwordStore = IOSChromePasswordStoreFactory::GetForBrowserState(
         browserState, ServiceAccessType::EXPLICIT_ACCESS);
-    _passwordMediator =
-        [[ManualFillPasswordMediator alloc] initWithWebStateList:webStateList
-                                                   passwordStore:passwordStore];
+    FaviconLoader* faviconLoader =
+        IOSChromeFaviconLoaderFactory::GetForBrowserState(self.browserState);
+
+    _passwordMediator = [[ManualFillPasswordMediator alloc]
+        initWithPasswordStore:passwordStore
+                faviconLoader:faviconLoader];
+    [_passwordMediator fetchPasswordsForURL:URL];
+    _passwordMediator.actionSectionEnabled = YES;
     _passwordMediator.consumer = _passwordViewController;
-    _passwordMediator.navigationDelegate = self;
+    _passwordMediator.navigator = self;
     _passwordMediator.contentDelegate = injectionHandler;
+
+    _passwordViewController.imageDataSource = _passwordMediator;
   }
   return self;
 }
 
 - (void)stop {
   [super stop];
-  [self.allPasswordsViewController dismissViewControllerAnimated:YES
-                                                      completion:nil];
+  [self.activeChildCoordinator stop];
+  [self.childCoordinators removeAllObjects];
 }
 
 - (void)presentFromButton:(UIButton*)button {
   [super presentFromButton:button];
   self.presentingButton = button;
-}
-
-#pragma mark - UIViewControllerTransitioningDelegate
-
-- (UIPresentationController*)
-presentationControllerForPresentedViewController:(UIViewController*)presented
-                        presentingViewController:(UIViewController*)presenting
-                            sourceViewController:(UIViewController*)source {
-  TableViewPresentationController* presentationController =
-      [[TableViewPresentationController alloc]
-          initWithPresentedViewController:presented
-                 presentingViewController:presenting];
-  return presentationController;
-}
-
-- (id<UIViewControllerAnimatedTransitioning>)
-animationControllerForPresentedController:(UIViewController*)presented
-                     presentingController:(UIViewController*)presenting
-                         sourceController:(UIViewController*)source {
-  UITraitCollection* traitCollection = presenting.traitCollection;
-  if (traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassCompact &&
-      traitCollection.verticalSizeClass != UIUserInterfaceSizeClassCompact) {
-    // Use the default animator for fullscreen presentations.
-    return nil;
-  }
-
-  TableViewAnimator* animator = [[TableViewAnimator alloc] init];
-  animator.presenting = YES;
-  return animator;
-}
-
-- (id<UIViewControllerAnimatedTransitioning>)
-animationControllerForDismissedController:(UIViewController*)dismissed {
-  UITraitCollection* traitCollection = dismissed.traitCollection;
-  if (traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassCompact &&
-      traitCollection.verticalSizeClass != UIUserInterfaceSizeClassCompact) {
-    // Use the default animator for fullscreen presentations.
-    return nil;
-  }
-
-  TableViewAnimator* animator = [[TableViewAnimator alloc] init];
-  animator.presenting = NO;
-  return animator;
 }
 
 #pragma mark - FallbackCoordinator
@@ -140,7 +92,7 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
   return self.passwordViewController;
 }
 
-#pragma mark - PasswordListDelegate
+#pragma mark - PasswordListNavigator
 
 - (void)openAllPasswordsList {
   // On iPad, first dismiss the popover before the new view is presented.
@@ -153,46 +105,32 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
                            }];
     return;
   }
-  UISearchController* searchController =
-      [[UISearchController alloc] initWithSearchResultsController:nil];
-  searchController.searchResultsUpdater = self.passwordMediator;
 
-  PasswordViewController* allPasswordsViewController = [
-      [PasswordViewController alloc] initWithSearchController:searchController];
-  self.passwordMediator.disableFilter = YES;
-  self.passwordMediator.consumer = allPasswordsViewController;
-  UIBarButtonItem* doneButton = [[UIBarButtonItem alloc]
-      initWithBarButtonSystemItem:UIBarButtonSystemItemDone
-                           target:self
-                           action:@selector(dismissPresentedViewController)];
-  doneButton.accessibilityIdentifier =
-      manual_fill::PasswordDoneButtonAccessibilityIdentifier;
-  allPasswordsViewController.navigationItem.rightBarButtonItem = doneButton;
-  self.allPasswordsViewController = allPasswordsViewController;
-
-  TableViewNavigationController* navigationController =
-      [[TableViewNavigationController alloc]
-          initWithTable:allPasswordsViewController];
-  navigationController.transitioningDelegate = self;
-  [navigationController setModalPresentationStyle:UIModalPresentationCustom];
-
-  [self.baseViewController presentViewController:navigationController
-                                        animated:YES
-                                      completion:nil];
+  ManualFillAllPasswordCoordinator* allPasswordCoordinator =
+      [[ManualFillAllPasswordCoordinator alloc]
+          initWithBaseViewController:self.baseViewController
+                        browserState:self.browserState
+                    injectionHandler:self.manualFillInjectionHandler
+                           navigator:self];
+  [allPasswordCoordinator start];
+  [self.childCoordinators addObject:allPasswordCoordinator];
 }
 
 - (void)dismissPresentedViewController {
+  if (self.viewController.presentingViewController) {
+    return;
+  }
+
   // Dismiss the full screen view controller and present the pop over.
   __weak __typeof(self) weakSelf = self;
-  [self.allPasswordsViewController.presentingViewController
+  FallbackCoordinator* activeCoordinator =
+      base::mac::ObjCCast<FallbackCoordinator>(self.activeChildCoordinator);
+  [activeCoordinator.viewController.presentingViewController
       dismissViewControllerAnimated:YES
                          completion:^{
-                           weakSelf.passwordMediator.disableFilter = NO;
-                           weakSelf.passwordMediator.consumer =
-                               weakSelf.passwordViewController;
+                           [weakSelf.childCoordinators removeAllObjects];
                            if (weakSelf.presentingButton) {
-                             [weakSelf
-                                 presentFromButton:weakSelf.presentingButton];
+                             [weakSelf presentFromButton:self.presentingButton];
                            }
                          }];
 }

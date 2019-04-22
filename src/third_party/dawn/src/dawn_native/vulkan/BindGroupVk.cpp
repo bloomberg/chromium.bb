@@ -25,7 +25,8 @@
 
 namespace dawn_native { namespace vulkan {
 
-    BindGroup::BindGroup(BindGroupBuilder* builder) : BindGroupBase(builder) {
+    BindGroup::BindGroup(Device* device, const BindGroupDescriptor* descriptor)
+        : BindGroupBase(device, descriptor) {
         // Create a pool to hold our descriptor set.
         // TODO(cwallez@chromium.org): This horribly inefficient, find a way to be better, for
         // example by having one pool per bind group layout instead.
@@ -40,7 +41,6 @@ namespace dawn_native { namespace vulkan {
         createInfo.poolSizeCount = numPoolSizes;
         createInfo.pPoolSizes = poolSizes.data();
 
-        Device* device = ToBackend(GetDevice());
         if (device->fn.CreateDescriptorPool(device->GetVkDevice(), &createInfo, nullptr, &mPool) !=
             VK_SUCCESS) {
             ASSERT(false);
@@ -82,12 +82,11 @@ namespace dawn_native { namespace vulkan {
             switch (layoutInfo.types[bindingIndex]) {
                 case dawn::BindingType::UniformBuffer:
                 case dawn::BindingType::StorageBuffer: {
-                    BufferViewBase* view = GetBindingAsBufferView(bindingIndex);
-                    Buffer* buffer = ToBackend(view->GetBuffer());
+                    BufferBinding binding = GetBindingAsBufferBinding(bindingIndex);
 
-                    writeBufferInfo[numWrites].buffer = buffer->GetHandle();
-                    writeBufferInfo[numWrites].offset = view->GetOffset();
-                    writeBufferInfo[numWrites].range = view->GetSize();
+                    writeBufferInfo[numWrites].buffer = ToBackend(binding.buffer)->GetHandle();
+                    writeBufferInfo[numWrites].offset = binding.offset;
+                    writeBufferInfo[numWrites].range = binding.size;
 
                     write.pBufferInfo = &writeBufferInfo[numWrites];
                 } break;
@@ -109,6 +108,11 @@ namespace dawn_native { namespace vulkan {
 
                     write.pImageInfo = &writeImageInfo[numWrites];
                 } break;
+
+                case dawn::BindingType::DynamicUniformBuffer:
+                case dawn::BindingType::DynamicStorageBuffer:
+                    UNREACHABLE();
+                    break;
                 default:
                     UNREACHABLE();
             }

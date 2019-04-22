@@ -4,8 +4,10 @@
 
 #include "services/video_capture/device_media_to_mojo_adapter.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/capture/video/scoped_video_capture_jpeg_decoder.h"
 #include "media/capture/video/video_capture_buffer_pool_impl.h"
 #include "media/capture/video/video_capture_buffer_tracker_factory_impl.h"
 #include "media/capture/video/video_capture_jpeg_decoder_impl.h"
@@ -17,12 +19,14 @@ namespace {
 
 std::unique_ptr<media::VideoCaptureJpegDecoder> CreateGpuJpegDecoder(
     scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
-    media::MojoJpegDecodeAcceleratorFactoryCB jpeg_decoder_factory_callback,
+    media::MojoMjpegDecodeAcceleratorFactoryCB jpeg_decoder_factory_callback,
     media::VideoCaptureJpegDecoder::DecodeDoneCB decode_done_cb,
     base::RepeatingCallback<void(const std::string&)> send_log_message_cb) {
-  return std::make_unique<media::VideoCaptureJpegDecoderImpl>(
-      jpeg_decoder_factory_callback, std::move(decoder_task_runner),
-      std::move(decode_done_cb), std::move(send_log_message_cb));
+  return std::make_unique<media::ScopedVideoCaptureJpegDecoder>(
+      std::make_unique<media::VideoCaptureJpegDecoderImpl>(
+          jpeg_decoder_factory_callback, decoder_task_runner,
+          std::move(decode_done_cb), std::move(send_log_message_cb)),
+      decoder_task_runner);
 }
 
 }  // anonymous namespace
@@ -32,7 +36,7 @@ namespace video_capture {
 DeviceMediaToMojoAdapter::DeviceMediaToMojoAdapter(
     std::unique_ptr<service_manager::ServiceContextRef> service_ref,
     std::unique_ptr<media::VideoCaptureDevice> device,
-    media::MojoJpegDecodeAcceleratorFactoryCB jpeg_decoder_factory_callback,
+    media::MojoMjpegDecodeAcceleratorFactoryCB jpeg_decoder_factory_callback,
     scoped_refptr<base::SequencedTaskRunner> jpeg_decoder_task_runner)
     : service_ref_(std::move(service_ref)),
       device_(std::move(device)),
@@ -92,19 +96,6 @@ void DeviceMediaToMojoAdapter::Start(
   device_started_ = true;
 }
 
-void DeviceMediaToMojoAdapter::OnReceiverReportingUtilization(
-    int32_t frame_feedback_id,
-    double utilization) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  device_->OnUtilizationReport(frame_feedback_id, utilization);
-}
-
-void DeviceMediaToMojoAdapter::RequestRefreshFrame() {
-  if (!device_started_)
-    return;
-  device_->RequestRefreshFrame();
-}
-
 void DeviceMediaToMojoAdapter::MaybeSuspend() {
   if (!device_started_)
     return;
@@ -142,7 +133,7 @@ void DeviceMediaToMojoAdapter::TakePhoto(TakePhotoCallback callback) {
 
 void DeviceMediaToMojoAdapter::Stop() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (device_started_ == false)
+  if (!device_started_)
     return;
   device_started_ = false;
   weak_factory_.InvalidateWeakPtrs();

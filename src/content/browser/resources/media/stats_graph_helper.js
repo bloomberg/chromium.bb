@@ -77,8 +77,9 @@ var dataConversionConfig = {
     convertFunction: function(srcDataSeries) {
       var length = srcDataSeries.dataPoints_.length;
       var lastDataPoint = srcDataSeries.dataPoints_[length - 1];
-      if (lastDataPoint.value < 5000)
+      if (lastDataPoint.value < 5000) {
         return lastDataPoint.value * 1000;
+      }
       return lastDataPoint.value;
     }
   }
@@ -100,8 +101,9 @@ var graphViews = {};
 
 // Returns number parsed from |value|, or NaN if the stats name is black-listed.
 function getNumberFromValue(name, value) {
-  if (statsNameBlackList[name])
+  if (statsNameBlackList[name]) {
     return NaN;
+  }
   return parseFloat(value);
 }
 
@@ -111,8 +113,9 @@ function drawSingleReport(peerConnectionElement, report) {
   var reportType = report.type;
   var reportId = report.id;
   var stats = report.stats;
-  if (!stats || !stats.values)
+  if (!stats || !stats.values) {
     return;
+  }
 
   for (var i = 0; i < stats.values.length - 1; i = i + 2) {
     var rawLabel = stats.values[i];
@@ -174,8 +177,9 @@ function drawSingleReport(peerConnectionElement, report) {
     var dataSeries =
         peerConnectionDataStore[peerConnectionElement.id].getDataSeries(
             finalDataSeriesId);
-    if (!graphViews[graphViewId].hasDataSeries(dataSeries))
+    if (!graphViews[graphViewId].hasDataSeries(dataSeries)) {
       graphViews[graphViewId].addDataSeries(dataSeries);
+    }
     graphViews[graphViewId].updateEndDate();
   }
 }
@@ -196,8 +200,9 @@ function addDataSeriesPoints(
       dataSeries.setColor(bweCompoundGraphConfig[label].color);
     }
   }
-  for (var i = 0; i < times.length; ++i)
+  for (var i = 0; i < times.length; ++i) {
     dataSeries.addPoint(times[i], values[i]);
+  }
 }
 
 // Draws the received propagation deltas using the packet group arrival time as
@@ -216,8 +221,9 @@ function drawReceivedPropagationDelta(peerConnectionElement, report, deltas) {
     }
   }
   // Unexpected.
-  if (times == null)
+  if (times == null) {
     return;
+  }
 
   // Convert |deltas| and |times| from strings to arrays of numbers.
   try {
@@ -254,8 +260,9 @@ function drawReceivedPropagationDelta(peerConnectionElement, report, deltas) {
 // can be deduced from existing stats labels. Otherwise empty string for
 // non-SSRC reports or where type (audio/video) can't be deduced.
 function getSsrcReportType(report) {
-  if (report.type != 'ssrc')
+  if (report.type != 'ssrc') {
     return '';
+  }
   if (report.stats && report.stats.values) {
     // Known stats keys for audio send/receive streams.
     if (report.stats.values.indexOf('audioOutputLevel') != -1 ||
@@ -291,8 +298,9 @@ function ensureStatsGraphTopContainer(peerConnectionElement, report) {
     container.firstChild.firstChild.textContent =
         'Stats graphs for ' + report.id + ' (' + report.type + ')';
     var statsType = getSsrcReportType(report);
-    if (statsType != '')
+    if (statsType != '') {
       container.firstChild.firstChild.textContent += ' (' + statsType + ')';
+    }
 
     if (report.type == 'ssrc') {
       var ssrcInfoElement = document.createElement('div');

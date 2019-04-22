@@ -40,12 +40,7 @@ typedef unsigned long  GLuint;
 typedef unrestricted float GLfloat;
 typedef unrestricted float GLclampf;
 
-[
-    // FIXME: [DoNotCheckConstants] should be applied to members and not need to
-    // be put on implementing interface
-    // DoNotCheckConstants, // need to put on implementing interface
-    NoInterfaceObject // Always used on target of 'implements'
-] interface WebGLRenderingContextBase {
+interface mixin WebGLRenderingContextBase {
 
     [ImplementedAs=getHTMLOrOffscreenCanvas] readonly attribute (HTMLCanvasElement or OffscreenCanvas) canvas;
 
@@ -553,7 +548,7 @@ typedef unrestricted float GLclampf;
 
     GLenum getError();
 
-    [CallWith=ScriptState] object? getExtension(DOMString name);
+    [CallWith=ScriptState, HighEntropy, Measure] object? getExtension(DOMString name);
 
     [CallWith=ScriptState] any getFramebufferAttachmentParameter(GLenum target, GLenum attachment, GLenum pname);
     [CallWith=ScriptState] any getParameter(GLenum pname);
@@ -568,7 +563,7 @@ typedef unrestricted float GLclampf;
 
     DOMString?   getShaderSource(WebGLShader shader);
 
-    sequence<DOMString>? getSupportedExtensions();
+    [HighEntropy, Measure] sequence<DOMString>? getSupportedExtensions();
 
     [CallWith=ScriptState] any getTexParameter(GLenum target, GLenum pname);
 
@@ -714,5 +709,5 @@ typedef unrestricted float GLclampf;
     [RuntimeEnabled=OffscreenCanvasCommit] void commit();
 
     // WebXR Device API support
-    [OriginTrialEnabled=WebXR, SecureContext, CallWith=ScriptState] Promise<void> setCompatibleXRDevice(XRDevice device);
+    [RuntimeEnabled=WebXR, SecureContext, CallWith=ScriptState] Promise<void> makeXRCompatible();
 };

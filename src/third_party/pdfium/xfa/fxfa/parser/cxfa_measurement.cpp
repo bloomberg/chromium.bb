@@ -18,7 +18,7 @@ constexpr float kPtToPc = 12;
 
 }  // namespace
 
-CXFA_Measurement::CXFA_Measurement(const WideStringView& wsMeasure) {
+CXFA_Measurement::CXFA_Measurement(WideStringView wsMeasure) {
   SetString(wsMeasure);
 }
 
@@ -30,20 +30,21 @@ CXFA_Measurement::CXFA_Measurement(float fValue, XFA_Unit eUnit) {
   Set(fValue, eUnit);
 }
 
-void CXFA_Measurement::SetString(const WideStringView& wsMeasure) {
+void CXFA_Measurement::SetString(WideStringView wsMeasure) {
   if (wsMeasure.IsEmpty()) {
     m_fValue = 0;
     m_eUnit = XFA_Unit::Unknown;
     return;
   }
 
+  if (wsMeasure[0] == L'=')
+    wsMeasure = wsMeasure.Right(wsMeasure.GetLength() - 1);
+
   int32_t iUsedLen = 0;
-  int32_t iOffset = (wsMeasure[0] == L'=') ? 1 : 0;
-  float fValue = FXSYS_wcstof(wsMeasure.unterminated_c_str() + iOffset,
-                              wsMeasure.GetLength() - iOffset, &iUsedLen);
-  XFA_Unit eUnit = GetUnitFromString(
-      wsMeasure.Right(wsMeasure.GetLength() - (iOffset + iUsedLen)));
-  Set(fValue, eUnit);
+  float fValue = FXSYS_wcstof(wsMeasure.unterminated_c_str(),
+                              wsMeasure.GetLength(), &iUsedLen);
+  wsMeasure = wsMeasure.Right(wsMeasure.GetLength() - iUsedLen);
+  Set(fValue, GetUnitFromString(wsMeasure));
 }
 
 WideString CXFA_Measurement::ToString() const {
@@ -128,22 +129,22 @@ bool CXFA_Measurement::ToUnitInternal(XFA_Unit eUnit, float* fValue) const {
 }
 
 // static
-XFA_Unit CXFA_Measurement::GetUnitFromString(const WideStringView& wsUnit) {
-  if (wsUnit == L"mm")
+XFA_Unit CXFA_Measurement::GetUnitFromString(WideStringView wsUnit) {
+  if (wsUnit.EqualsASCII("mm"))
     return XFA_Unit::Mm;
-  if (wsUnit == L"pt")
+  if (wsUnit.EqualsASCII("pt"))
     return XFA_Unit::Pt;
-  if (wsUnit == L"in")
+  if (wsUnit.EqualsASCII("in"))
     return XFA_Unit::In;
-  if (wsUnit == L"cm")
+  if (wsUnit.EqualsASCII("cm"))
     return XFA_Unit::Cm;
-  if (wsUnit == L"pc")
+  if (wsUnit.EqualsASCII("pc"))
     return XFA_Unit::Pc;
-  if (wsUnit == L"mp")
+  if (wsUnit.EqualsASCII("mp"))
     return XFA_Unit::Mp;
-  if (wsUnit == L"em")
+  if (wsUnit.EqualsASCII("em"))
     return XFA_Unit::Em;
-  if (wsUnit == L"%")
+  if (wsUnit.EqualsASCII("%"))
     return XFA_Unit::Percent;
   return XFA_Unit::Unknown;
 }

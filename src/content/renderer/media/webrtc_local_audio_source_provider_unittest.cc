@@ -5,11 +5,11 @@
 #include <stddef.h>
 
 #include "base/logging.h"
-#include "content/renderer/media/stream/media_stream_audio_track.h"
 #include "content/renderer/media/webrtc_local_audio_source_provider.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_parameters.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_track.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_heap.h"
@@ -21,9 +21,10 @@ class WebRtcLocalAudioSourceProviderTest : public testing::Test {
   void SetUp() override {
     source_params_.Reset(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
                          media::CHANNEL_LAYOUT_MONO, 48000, 480);
+    const int context_sample_rate = 44100;
     sink_params_.Reset(
         media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-        media::CHANNEL_LAYOUT_STEREO, 44100,
+        media::CHANNEL_LAYOUT_STEREO, context_sample_rate,
         WebRtcLocalAudioSourceProvider::kWebAudioRenderBufferSize);
     sink_bus_ = media::AudioBus::Create(sink_params_);
     blink::WebMediaStreamSource audio_source;
@@ -33,8 +34,10 @@ class WebRtcLocalAudioSourceProviderTest : public testing::Test {
                             false /* remote */);
     blink_track_.Initialize(blink::WebString::FromUTF8("audio_track"),
                             audio_source);
-    blink_track_.SetTrackData(new MediaStreamAudioTrack(true));
-    source_provider_.reset(new WebRtcLocalAudioSourceProvider(blink_track_));
+    blink_track_.SetPlatformTrack(
+        std::make_unique<blink::MediaStreamAudioTrack>(true));
+    source_provider_.reset(
+        new WebRtcLocalAudioSourceProvider(blink_track_, context_sample_rate));
     source_provider_->SetSinkParamsForTesting(sink_params_);
     source_provider_->OnSetFormat(source_params_);
   }
@@ -118,13 +121,13 @@ TEST_F(WebRtcLocalAudioSourceProviderTest,
   source_provider_.reset();
 
   // Stop the audio track.
-  MediaStreamAudioTrack::From(blink_track_)->Stop();
+  blink::MediaStreamAudioTrack::From(blink_track_)->Stop();
 }
 
 TEST_F(WebRtcLocalAudioSourceProviderTest,
        StopTrackBeforeDeletingSourceProvider) {
   // Stop the audio track.
-  MediaStreamAudioTrack::From(blink_track_)->Stop();
+  blink::MediaStreamAudioTrack::From(blink_track_)->Stop();
 
   // Delete the source provider.
   source_provider_.reset();

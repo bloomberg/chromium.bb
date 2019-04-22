@@ -39,6 +39,6 @@ bool ViewAccessibilityUtils::IsFocusedChildWidget(Widget* widget,
                                                   const View* focused_view) {
   return widget->IsVisible() &&
          widget->GetContentsView()->Contains(focused_view);
-};
+}
 
 }  // namespace views

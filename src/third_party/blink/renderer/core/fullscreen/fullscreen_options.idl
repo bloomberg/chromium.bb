@@ -11,5 +11,5 @@ enum FullscreenNavigationUI {
 };
 
 dictionary FullscreenOptions {
-    [RuntimeEnabled=FullscreenOptions] FullscreenNavigationUI navigationUI = "auto";
+    FullscreenNavigationUI navigationUI = "auto";
 };

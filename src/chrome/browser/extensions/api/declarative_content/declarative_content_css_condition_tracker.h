@@ -9,12 +9,11 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 #include "base/callback.h"
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "chrome/browser/extensions/api/declarative_content/content_predicate_evaluator.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -100,7 +99,7 @@ class DeclarativeContentCssConditionTracker
 
     void OnWebContentsNavigation(content::NavigationHandle* navigation_handle);
 
-    const base::hash_set<std::string>& matching_css_selectors() const {
+    const std::unordered_set<std::string>& matching_css_selectors() const {
       return matching_css_selectors_;
     }
 
@@ -115,7 +114,7 @@ class DeclarativeContentCssConditionTracker
     const WebContentsDestroyedCallback web_contents_destroyed_;
 
     // We use a hash_set for maximally efficient lookup.
-    base::hash_set<std::string> matching_css_selectors_;
+    std::unordered_set<std::string> matching_css_selectors_;
 
     DISALLOW_COPY_AND_ASSIGN(PerWebContentsTracker);
   };
@@ -153,7 +152,7 @@ class DeclarativeContentCssConditionTracker
       tracked_predicates_;
 
   // Maps WebContents to the tracker for that WebContents state.
-  std::map<content::WebContents*, linked_ptr<PerWebContentsTracker>>
+  std::map<content::WebContents*, std::unique_ptr<PerWebContentsTracker>>
       per_web_contents_tracker_;
 
   // Manages our notification registrations.

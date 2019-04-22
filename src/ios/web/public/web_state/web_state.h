@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 
-#import <CoreGraphics/CoreGraphics.h>
 #include <memory>
 #include <string>
 #include <utility>
@@ -22,7 +21,6 @@
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
-#include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 
 class GURL;
@@ -42,6 +40,7 @@ class Value;
 
 namespace gfx {
 class Image;
+class RectF;
 }
 
 namespace web {
@@ -76,14 +75,22 @@ class WebState : public base::SupportsUserData {
   // Parameters for the OpenURL() method.
   struct OpenURLParams {
     OpenURLParams(const GURL& url,
+                  const GURL& virtual_url,
                   const Referrer& referrer,
                   WindowOpenDisposition disposition,
                   ui::PageTransition transition,
                   bool is_renderer_initiated);
+    OpenURLParams(const GURL& url,
+                  const Referrer& referrer,
+                  WindowOpenDisposition disposition,
+                  ui::PageTransition transition,
+                  bool is_renderer_initiated);
+    OpenURLParams(const OpenURLParams& params);
     ~OpenURLParams();
 
-    // The URL/referrer to be opened.
+    // The URL/virtualURL/referrer to be opened.
     GURL url;
+    GURL virtual_url;
     Referrer referrer;
 
     // The disposition requested by the navigation source.
@@ -125,6 +132,11 @@ class WebState : public base::SupportsUserData {
   virtual void WasShown() = 0;
   virtual void WasHidden() = 0;
 
+  // When |true|, attempt to prevent the WebProcess from suspending. Embedder
+  // must override WebClient::GetWindowedContainer to maintain this
+  // functionality.
+  virtual void SetKeepRenderProcessAlive(bool keep_alive) = 0;
+
   // Gets the BrowserState associated with this WebState. Can never return null.
   virtual BrowserState* GetBrowserState() const = 0;
 
@@ -153,6 +165,15 @@ class WebState : public base::SupportsUserData {
   // Gets the CRWJSInjectionReceiver associated with this WebState.
   virtual CRWJSInjectionReceiver* GetJSInjectionReceiver() const = 0;
 
+  // Loads |data| of type |mime_type| and replaces last committed URL with the
+  // given |url|.
+  virtual void LoadData(NSData* data, NSString* mime_type, const GURL& url) = 0;
+
+  // DISCOURAGED. Prefer using |WebFrame CallJavaScriptFunction| instead because
+  // it restricts JavaScript execution to functions within __gCrWeb and can also
+  // call those functions on any frame in the page. ExecuteJavaScript here can
+  // execute arbitrary JavaScript code, which is not as safe and is retricted to
+  // executing only on the main frame.
   // Runs JavaScript in the main frame's context. If a callback is provided, it
   // will be used to return the result, when the result is available or script
   // execution has failed due to an error.
@@ -220,10 +241,6 @@ class WebState : public base::SupportsUserData {
   // TODO(stuartmorgan): Figure out a clean API for this.
   // See http://crbug.com/457679
   virtual GURL GetCurrentURL(URLVerificationTrustLevel* trust_level) const = 0;
-
-  // Resizes |content_view| to the content area's size and adds it to the
-  // hierarchy.  A navigation will remove the view from the hierarchy.
-  virtual void ShowTransientContentView(CRWContentView* content_view) = 0;
 
   // Returns true if a WebInterstitial is currently displayed.
   virtual bool IsShowingWebInterstitial() const = 0;
@@ -304,13 +321,14 @@ class WebState : public base::SupportsUserData {
   virtual void SetHasOpener(bool has_opener) = 0;
 
   // Callback used to handle snapshots. The parameter is the snapshot image.
-  typedef base::OnceCallback<void(gfx::Image)> SnapshotCallback;
+  typedef base::OnceCallback<void(const gfx::Image&)> SnapshotCallback;
 
   // Takes a snapshot of this WebState with |rect|. |rect| should be specified
   // in the coordinate system of the view returned by GetView(). |callback| is
   // asynchronously invoked after performing the snapshot. Prior to iOS 11, the
   // callback is invoked with a nil snapshot.
-  virtual void TakeSnapshot(CGRect rect, SnapshotCallback callback) = 0;
+  virtual void TakeSnapshot(const gfx::RectF& rect,
+                            SnapshotCallback callback) = 0;
 
   // Adds and removes observers for page navigation notifications. The order in
   // which notifications are sent to observers is undefined. Clients must be

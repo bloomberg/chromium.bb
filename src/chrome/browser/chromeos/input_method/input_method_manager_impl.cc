@@ -15,7 +15,7 @@
 #include "ash/public/cpp/ash_features.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "base/location.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -32,7 +32,7 @@
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/ash/chrome_keyboard_controller_client.h"
+#include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/system/devicemode.h"
@@ -58,50 +58,40 @@ namespace {
 
 enum InputMethodCategory {
   INPUT_METHOD_CATEGORY_UNKNOWN = 0,
-  INPUT_METHOD_CATEGORY_XKB,  // XKB input methods
-  INPUT_METHOD_CATEGORY_ZH,   // Chinese input methods
-  INPUT_METHOD_CATEGORY_JA,   // Japanese input methods
-  INPUT_METHOD_CATEGORY_KO,   // Korean input methods
-  INPUT_METHOD_CATEGORY_M17N, // Multilingualization input methods
-  INPUT_METHOD_CATEGORY_T13N, // Transliteration input methods
+  INPUT_METHOD_CATEGORY_XKB,   // XKB input methods
+  INPUT_METHOD_CATEGORY_ZH,    // Chinese input methods
+  INPUT_METHOD_CATEGORY_JA,    // Japanese input methods
+  INPUT_METHOD_CATEGORY_KO,    // Korean input methods
+  INPUT_METHOD_CATEGORY_M17N,  // Multilingualization input methods
+  INPUT_METHOD_CATEGORY_T13N,  // Transliteration input methods
+  INPUT_METHOD_CATEGORY_ARC,   // ARC input methods
   INPUT_METHOD_CATEGORY_MAX
 };
 
-InputMethodCategory GetInputMethodCategory(const std::string& input_method_id,
-                                           char* first_char = NULL) {
+InputMethodCategory GetInputMethodCategory(const std::string& input_method_id) {
   const std::string component_id =
       extension_ime_util::GetComponentIDByInputMethodID(input_method_id);
   InputMethodCategory category = INPUT_METHOD_CATEGORY_UNKNOWN;
-  char ch = 0;
   if (base::StartsWith(component_id, "xkb:", base::CompareCase::SENSITIVE)) {
-    ch = component_id[4];
     category = INPUT_METHOD_CATEGORY_XKB;
   } else if (base::StartsWith(component_id, "zh-",
                               base::CompareCase::SENSITIVE)) {
-    size_t pos = component_id.find("-t-i0-");
-    if (pos > 0)
-      pos += 6;
-    ch = component_id[pos];
     category = INPUT_METHOD_CATEGORY_ZH;
   } else if (base::StartsWith(component_id, "nacl_mozc_",
                               base::CompareCase::SENSITIVE)) {
-    ch = component_id[10];
     category = INPUT_METHOD_CATEGORY_JA;
   } else if (base::StartsWith(component_id, "hangul_",
                               base::CompareCase::SENSITIVE)) {
-    ch = component_id[7];
     category = INPUT_METHOD_CATEGORY_KO;
   } else if (base::StartsWith(component_id, "vkd_",
                               base::CompareCase::SENSITIVE)) {
-    ch = component_id[4];
     category = INPUT_METHOD_CATEGORY_M17N;
-  } else if (component_id.find("-t-i0-") > 0) {
-    ch = component_id[0];
+  } else if (component_id.find("-t-i0-") != std::string::npos) {
     category = INPUT_METHOD_CATEGORY_T13N;
+  } else if (extension_ime_util::IsArcIME(input_method_id)) {
+    category = INPUT_METHOD_CATEGORY_ARC;
   }
 
-  if (first_char)
-    *first_char = ch;
   return category;
 }
 
@@ -130,7 +120,7 @@ InputMethodManagerImpl::StateImpl::~StateImpl() {
 }
 
 void InputMethodManagerImpl::StateImpl::InitFrom(const StateImpl& other) {
-  previous_input_method = other.previous_input_method;
+  last_used_input_method = other.last_used_input_method;
   current_input_method = other.current_input_method;
 
   active_input_method_ids = other.active_input_method_ids;
@@ -156,8 +146,8 @@ std::string InputMethodManagerImpl::StateImpl::Dump() const {
      << (profile ? profile->GetProfileUserName() : std::string("NULL"))
      << " #################\n";
 
-  os << "previous_input_method: '"
-     << previous_input_method.GetPreferredKeyboardLayout() << "'\n";
+  os << "last_used_input_method: '"
+     << last_used_input_method.GetPreferredKeyboardLayout() << "'\n";
   os << "current_input_method: '"
      << current_input_method.GetPreferredKeyboardLayout() << "'\n";
   os << "active_input_method_ids (size=" << active_input_method_ids.size()
@@ -173,11 +163,8 @@ std::string InputMethodManagerImpl::StateImpl::Dump() const {
   }
   os << "\n";
   os << "extra_input_methods (size=" << extra_input_methods.size() << "):";
-  for (std::map<std::string, InputMethodDescriptor>::const_iterator it =
-           extra_input_methods.begin();
-       it != extra_input_methods.end();
-       ++it) {
-    os << " '" << it->first << "' => '" << it->second.id() << "',\n";
+  for (const auto& entry : extra_input_methods) {
+    os << " '" << entry.first << "' => '" << entry.second.id() << "',\n";
   }
   os << "pending_input_method_id: '" << pending_input_method_id << "'\n";
   os << "input_view_url: '" << input_view_url << "'\n";
@@ -204,8 +191,7 @@ InputMethodManagerImpl::StateImpl::GetActiveInputMethods() const {
     if (descriptor) {
       result->push_back(*descriptor);
     } else {
-      std::map<std::string, InputMethodDescriptor>::const_iterator ix =
-          extra_input_methods.find(input_method_id);
+      const auto ix = extra_input_methods.find(input_method_id);
       if (ix != extra_input_methods.end())
         result->push_back(ix->second);
       else
@@ -236,8 +222,7 @@ InputMethodManagerImpl::StateImpl::GetInputMethodFromId(
   const InputMethodDescriptor* ime =
       manager_->util_.GetInputMethodDescriptorFromId(input_method_id);
   if (!ime) {
-    std::map<std::string, InputMethodDescriptor>::const_iterator ix =
-        extra_input_methods.find(input_method_id);
+    const auto ix = extra_input_methods.find(input_method_id);
     if (ix != extra_input_methods.end())
       ime = &ix->second;
   }
@@ -535,7 +520,7 @@ void InputMethodManagerImpl::StateImpl::ChangeInputMethod(
     pending_input_method_id = input_method_id;
 
   if (descriptor->id() != current_input_method.id()) {
-    previous_input_method = current_input_method;
+    last_used_input_method = current_input_method;
     current_input_method = *descriptor;
     notify_menu = true;
   }
@@ -636,13 +621,10 @@ void InputMethodManagerImpl::StateImpl::RemoveInputMethodExtension(
 
   // Remove the extra input methods with |extension_id|.
   std::map<std::string, InputMethodDescriptor> new_extra_input_methods;
-  for (std::map<std::string, InputMethodDescriptor>::iterator i =
-           extra_input_methods.begin();
-       i != extra_input_methods.end();
-       ++i) {
+  for (const auto& entry : extra_input_methods) {
     if (extension_id !=
-        extension_ime_util::GetExtensionIDFromInputMethodID(i->first))
-      new_extra_input_methods[i->first] = i->second;
+        extension_ime_util::GetExtensionIDFromInputMethodID(entry.first))
+      new_extra_input_methods[entry.first] = entry.second;
   }
   extra_input_methods.swap(new_extra_input_methods);
 
@@ -664,12 +646,10 @@ void InputMethodManagerImpl::StateImpl::GetInputMethodExtensions(
     InputMethodDescriptors* result) {
   // Build the extension input method descriptors from the extra input
   // methods cache |extra_input_methods|.
-  std::map<std::string, InputMethodDescriptor>::iterator iter;
-  for (iter = extra_input_methods.begin(); iter != extra_input_methods.end();
-       ++iter) {
-    if (extension_ime_util::IsExtensionIME(iter->first) ||
-        extension_ime_util::IsArcIME(iter->first)) {
-      result->push_back(iter->second);
+  for (const auto& entry : extra_input_methods) {
+    if (extension_ime_util::IsExtensionIME(entry.first) ||
+        extension_ime_util::IsArcIME(entry.first)) {
+      result->push_back(entry.second);
     }
   }
 }
@@ -682,30 +662,25 @@ void InputMethodManagerImpl::StateImpl::SetEnabledExtensionImes(
   bool active_imes_changed = false;
   bool switch_to_pending = false;
 
-  for (std::map<std::string, InputMethodDescriptor>::iterator extra_iter =
-           extra_input_methods.begin();
-       extra_iter != extra_input_methods.end();
-       ++extra_iter) {
-    if (extension_ime_util::IsComponentExtensionIME(extra_iter->first))
+  for (const auto& entry : extra_input_methods) {
+    if (extension_ime_util::IsComponentExtensionIME(entry.first))
       continue;  // Do not filter component extension.
 
-    if (pending_input_method_id == extra_iter->first)
+    if (pending_input_method_id == entry.first)
       switch_to_pending = true;
 
-    std::vector<std::string>::iterator active_iter =
+    const auto active_iter =
         std::find(active_input_method_ids.begin(),
-                  active_input_method_ids.end(),
-                  extra_iter->first);
+                  active_input_method_ids.end(), entry.first);
 
     bool active = active_iter != active_input_method_ids.end();
-    bool enabled =
-        base::ContainsValue(enabled_extension_imes, extra_iter->first);
+    bool enabled = base::ContainsValue(enabled_extension_imes, entry.first);
 
     if (active && !enabled)
       active_input_method_ids.erase(active_iter);
 
     if (!active && enabled)
-      active_input_method_ids.push_back(extra_iter->first);
+      active_input_method_ids.push_back(entry.first);
 
     if (active == !enabled)
       active_imes_changed = true;
@@ -822,22 +797,21 @@ void InputMethodManagerImpl::StateImpl::SwitchToNextInputMethod() {
                                   current_input_method.id());
 }
 
-void InputMethodManagerImpl::StateImpl::SwitchToPreviousInputMethod() {
+void InputMethodManagerImpl::StateImpl::SwitchToLastUsedInputMethod() {
   if (!CanCycleInputMethod())
     return;
 
-  if (previous_input_method.id().empty() ||
-      previous_input_method.id() == current_input_method.id()) {
+  if (last_used_input_method.id().empty() ||
+      last_used_input_method.id() == current_input_method.id()) {
     SwitchToNextInputMethod();
     return;
   }
 
-  std::vector<std::string>::const_iterator iter =
-      std::find(active_input_method_ids.begin(),
-                active_input_method_ids.end(),
-                previous_input_method.id());
+  const auto iter =
+      std::find(active_input_method_ids.begin(), active_input_method_ids.end(),
+                last_used_input_method.id());
   if (iter == active_input_method_ids.end()) {
-    // previous_input_method is not supported.
+    // last_used_input_method is not supported.
     SwitchToNextInputMethod();
     return;
   }
@@ -846,9 +820,9 @@ void InputMethodManagerImpl::StateImpl::SwitchToPreviousInputMethod() {
 
 void InputMethodManagerImpl::StateImpl::SwitchToNextInputMethodInternal(
     const std::vector<std::string>& input_method_ids,
-    const std::string& current_input_methodid) {
-  std::vector<std::string>::const_iterator iter = std::find(
-      input_method_ids.begin(), input_method_ids.end(), current_input_methodid);
+    const std::string& current_input_method_id) {
+  auto iter = std::find(input_method_ids.begin(), input_method_ids.end(),
+                        current_input_method_id);
   if (iter != input_method_ids.end())
     ++iter;
   if (iter == input_method_ids.end())
@@ -978,8 +952,8 @@ void InputMethodManagerImpl::AddObserver(
     InputMethodManager::Observer* observer) {
   observers_.AddObserver(observer);
   observer->OnExtraInputEnabledStateChange(
-      base::FeatureList::IsEnabled(features::kEHVInputOnImeMenu),
-      features_enabled_state_ & InputMethodManager::FEATURE_EMOJI,
+      // TODO(shuchen): Remove this parameter - ex features::kEHVInputOnImeMenu
+      true, features_enabled_state_ & InputMethodManager::FEATURE_EMOJI,
       features_enabled_state_ & InputMethodManager::FEATURE_HANDWRITING,
       features_enabled_state_ & InputMethodManager::FEATURE_VOICE);
 }
@@ -1109,8 +1083,8 @@ void InputMethodManagerImpl::ChangeInputMethodInternal(
       extension_ime_util::GetExtensionIDFromInputMethodID(descriptor.id());
   const std::string& component_id =
       extension_ime_util::GetComponentIDByInputMethodID(descriptor.id());
-  if (engine_map_.find(profile) == engine_map_.end() ||
-      engine_map_[profile].find(extension_id) == engine_map_[profile].end()) {
+  if (!engine_map_.count(profile) ||
+      !engine_map_[profile].count(extension_id)) {
     LOG_IF(ERROR, base::SysInfo::IsRunningOnChromeOS())
         << "IMEEngine for \"" << extension_id << "\" is not registered";
   }
@@ -1377,17 +1351,14 @@ bool InputMethodManagerImpl::GetImeMenuFeatureEnabled(
 
 void InputMethodManagerImpl::NotifyObserversImeExtraInputStateChange() {
   for (auto& observer : observers_) {
-    const bool is_ehv_enabled =
-        base::FeatureList::IsEnabled(features::kEHVInputOnImeMenu);
     const bool is_emoji_enabled =
         (features_enabled_state_ & InputMethodManager::FEATURE_EMOJI);
     const bool is_handwriting_enabled =
         (features_enabled_state_ & InputMethodManager::FEATURE_HANDWRITING);
     const bool is_voice_enabled =
         (features_enabled_state_ & InputMethodManager::FEATURE_VOICE);
-    observer.OnExtraInputEnabledStateChange(is_ehv_enabled, is_emoji_enabled,
-                                            is_handwriting_enabled,
-                                            is_voice_enabled);
+    observer.OnExtraInputEnabledStateChange(
+        true, is_emoji_enabled, is_handwriting_enabled, is_voice_enabled);
   }
 }
 

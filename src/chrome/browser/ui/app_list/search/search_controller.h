@@ -18,10 +18,14 @@
 class AppListControllerDelegate;
 class AppListModelUpdater;
 class ChromeSearchResult;
+class Profile;
 
 namespace app_list {
 
+class AppSearchResultRanker;
+class RecurrenceRanker;
 class SearchProvider;
+enum class RankingItemType;
 
 // Controller that collects query from given SearchBoxModel, dispatches it
 // to all search providers, then invokes the mixer to mix and to publish the
@@ -29,10 +33,12 @@ class SearchProvider;
 class SearchController {
  public:
   SearchController(AppListModelUpdater* model_updater,
-                   AppListControllerDelegate* list_controller);
+                   AppListControllerDelegate* list_controller,
+                   Profile* profile);
   virtual ~SearchController();
 
   void Start(const base::string16& query);
+  void ViewClosing();
 
   void OpenResult(ChromeSearchResult* result, int event_flags);
   void InvokeResultAction(ChromeSearchResult* result,
@@ -48,8 +54,14 @@ class SearchController {
   ChromeSearchResult* FindSearchResult(const std::string& result_id);
   ChromeSearchResult* GetResultByTitleForTest(const std::string& title);
 
+  // Set a |RecurrenceRanker| to tweak search results.
+  void SetRecurrenceRanker(std::unique_ptr<RecurrenceRanker> ranker);
+
   // Sends training signal to each |providers_|
-  void Train(const std::string& id);
+  void Train(const std::string& id, RankingItemType type);
+
+  // Get the app search result ranker owned by this object.
+  AppSearchResultRanker* GetSearchResultRanker();
 
  private:
   // Invoked when the search results are changed.
@@ -63,6 +75,7 @@ class SearchController {
   using Providers = std::vector<std::unique_ptr<SearchProvider>>;
   Providers providers_;
   std::unique_ptr<Mixer> mixer_;
+  std::unique_ptr<AppSearchResultRanker> ranker_;
   AppListControllerDelegate* list_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchController);

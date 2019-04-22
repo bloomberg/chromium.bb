@@ -2,21 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/clipboard/clipboard.h"
+#include "ui/base/clipboard/clipboard_constants.h"
 
 namespace ui {
 
-const char Clipboard::kMimeTypeText[] = "text/plain";
-const char Clipboard::kMimeTypeURIList[] = "text/uri-list";
-const char Clipboard::kMimeTypeMozillaURL[] = "text/x-moz-url";
-const char Clipboard::kMimeTypeDownloadURL[] = "downloadurl";
-const char Clipboard::kMimeTypeHTML[] = "text/html";
-const char Clipboard::kMimeTypeRTF[] = "text/rtf";
-const char Clipboard::kMimeTypePNG[] = "image/png";
+const char kMimeTypeText[] = "text/plain";
+const char kMimeTypeURIList[] = "text/uri-list";
+const char kMimeTypeMozillaURL[] = "text/x-moz-url";
+const char kMimeTypeDownloadURL[] = "downloadurl";
+const char kMimeTypeHTML[] = "text/html";
+const char kMimeTypeRTF[] = "text/rtf";
+const char kMimeTypePNG[] = "image/png";
 // TODO(dcheng): This name is temporary. See crbug.com/106449.
-const char Clipboard::kMimeTypeWebCustomData[] = "chromium/x-web-custom-data";
-const char Clipboard::kMimeTypeWebkitSmartPaste[] = "chromium/x-webkit-paste";
-const char Clipboard::kMimeTypePepperCustomData[] =
-    "chromium/x-pepper-custom-data";
+const char kMimeTypeWebCustomData[] = "chromium/x-web-custom-data";
+const char kMimeTypeWebkitSmartPaste[] = "chromium/x-webkit-paste";
+const char kMimeTypePepperCustomData[] = "chromium/x-pepper-custom-data";
 
 }  // namespace ui

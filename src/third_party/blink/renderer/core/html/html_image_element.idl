@@ -18,7 +18,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// https://html.spec.whatwg.org/#the-img-element
+// https://html.spec.whatwg.org/C/#the-img-element
 
 [
     ActiveScriptWrappable,
@@ -41,12 +41,13 @@
     readonly attribute DOMString currentSrc;
     [CEReactions, Reflect, ReflectOnly=("","no-referrer","origin","no-referrer-when-downgrade","origin-when-cross-origin","unsafe-url"), ReflectMissing="", ReflectInvalid=""] attribute DOMString referrerPolicy;
     [CEReactions, Reflect, ReflectOnly=("async", "sync", "auto"), ReflectMissing="auto", ReflectInvalid="auto"] attribute DOMString decoding;
-    [CEReactions, RuntimeEnabled=PriorityHints, Reflect, ReflectOnly=("low", "auto", "high"), ReflectMissing="auto", ReflectInvalid="auto"] attribute DOMString importance;
+    [CEReactions, MeasureAs=PriorityHints, RuntimeEnabled=PriorityHints, Reflect, ReflectOnly=("low", "auto", "high"), ReflectMissing="auto", ReflectInvalid="auto"] attribute DOMString importance;
     // https://github.com/ojanvafai/intrinsicsize-attribute/blob/master/README.md
     [RuntimeEnabled=ExperimentalProductivityFeatures, CEReactions, Reflect] attribute DOMString intrinsicSize;
+    [RuntimeEnabled=LazyImageLoading, CEReactions, Reflect, ReflectOnly=("lazy", "eager", "auto"), ReflectMissing="auto", ReflectInvalid="auto"] attribute DOMString loading;
 
     // obsolete members
-    // https://html.spec.whatwg.org/#HTMLImageElement-partial
+    // https://html.spec.whatwg.org/C/#HTMLImageElement-partial
     [CEReactions, Reflect] attribute DOMString name;
     [CEReactions, Reflect, URL] attribute DOMString lowsrc;
     [CEReactions, Reflect] attribute DOMString align;
@@ -61,5 +62,5 @@
     [MeasureAs=HTMLImageElementX] readonly attribute long x;
     [MeasureAs=HTMLImageElementY] readonly attribute long y;
 
-    [CallWith=ScriptState, RaisesException] Promise decode();
+    [CallWith=ScriptState, RaisesException] Promise<void> decode();
 };

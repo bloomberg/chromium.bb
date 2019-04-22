@@ -9,7 +9,7 @@
 
 /**
  * Enum for key codes.
- * @enum {int}
+ * @enum {number}
  * @const
  */
 const KEYCODES = {
@@ -44,15 +44,15 @@ const IDS = {
 const CLASSES = {
   FAILED_FAVICON: 'failed-favicon',  // Applied when the favicon fails to load.
   REORDER: 'reorder',  // Applied to the tile being moved while reordering.
-  REORDERING: 'reordering',  // Applied while we are reordering.
+  REORDERING: 'reordering',      // Applied while we are reordering.
+  MAC_CHROMEOS: 'mac-chromeos',  // Reduces font weight for MacOS and ChromeOS.
   // Material Design classes.
   MD_EMPTY_TILE: 'md-empty-tile',
-  MD_FALLBACK_BACKGROUND: 'md-fallback-background',
+  MD_ICON_BACKGROUND: 'md-icon-background',
   MD_FALLBACK_LETTER: 'md-fallback-letter',
   MD_FAVICON: 'md-favicon',
   MD_ICON: 'md-icon',
   MD_ADD_ICON: 'md-add-icon',
-  MD_ADD_BACKGROUND: 'md-add-background',
   MD_MENU: 'md-menu',
   MD_EDIT_MENU: 'md-edit-menu',
   MD_TILE: 'md-tile',
@@ -156,7 +156,7 @@ const MD_NUM_TILES_ALWAYS_VISIBLE = 6;
  * or 'chrome-search://local-ntp' for the local NTP.
  * @const {string}
  */
-var DOMAIN_ORIGIN = '{{ORIGIN}}';
+const DOMAIN_ORIGIN = '{{ORIGIN}}';
 
 
 /**
@@ -313,8 +313,9 @@ var handleCommand = function(data) {
   if (cmd == 'tile') {
     addTile(data);
   } else if (cmd == 'show') {
-    // TODO(treib): If this happens before we have finished loading the previous
-    // tiles, we probably get into a bad state.
+    // TODO(crbug.com/946225): If this happens before we have finished loading
+    // the previous tiles, we probably get into a bad state. If/when the iframe
+    // is removed this might no longer be a concern.
     showTiles(data);
   } else if (cmd == 'updateTheme') {
     updateTheme(data);
@@ -328,28 +329,31 @@ var handleCommand = function(data) {
 
 /**
  * Handler for the 'show' message from the host page.
- * @param {object} info Data received in the message.
+ * @param {!Object} info Data received in the message.
  */
 var showTiles = function(info) {
   logEvent(LOG_TYPE.NTP_ALL_TILES_RECEIVED);
+  utils.setPlatformClass(document.body);
   countLoad();
 };
 
 
 /**
  * Handler for the 'updateTheme' message from the host page.
- * @param {object} info Data received in the message.
+ * @param {!Object} info Data received in the message.
  */
 var updateTheme = function(info) {
   document.body.style.setProperty('--tile-title-color', info.tileTitleColor);
   document.body.classList.toggle('dark-theme', info.isThemeDark);
   document.body.classList.toggle('using-theme', info.isUsingTheme);
+  document.documentElement.setAttribute('darkmode', info.isDarkMode);
 
   // Reduce font weight on the default(white) background for Mac and CrOS.
-  document.body.classList.toggle('mac-chromeos',
+  document.body.classList.toggle(
+      CLASSES.MAC_CHROMEOS,
       !info.isThemeDark && !info.isUsingTheme &&
-      (navigator.userAgent.indexOf('Mac') > -1 ||
-      navigator.userAgent.indexOf('CrOS') > -1));
+          (navigator.userAgent.indexOf('Mac') > -1 ||
+           navigator.userAgent.indexOf('CrOS') > -1));
 };
 
 
@@ -357,14 +361,15 @@ var updateTheme = function(info) {
  * Handler for 'focusMenu' message from the host page. Focuses the edited tile's
  * menu or the add shortcut tile after closing the custom link edit dialog
  * without saving.
- * @param {object} info Data received in the message.
+ * @param {!Object} info Data received in the message.
  */
 var focusTileMenu = function(info) {
   let tile = document.querySelector(`a.md-tile[data-tid="${info.tid}"]`);
-  if (info.tid === -1 /* Add shortcut tile */)
+  if (info.tid === -1 /* Add shortcut tile */) {
     tile.focus();
-  else
+  } else {
     tile.parentNode.childNodes[1].focus();
+  }
 };
 
 
@@ -397,6 +402,9 @@ var swapInNewTiles = function() {
       'title': queryArgs['addLink'],
       'url': '',
       'isAddButton': true,
+      'dataGenerationTime': new Date(),
+      'tileSource': -1,
+      'tileTitleSource': -1
     };
     tiles.appendChild(renderMaterialDesignTile(data));
   }
@@ -436,7 +444,7 @@ var swapInNewTiles = function() {
   // getComputedStyle causes the initial style (opacity 0) to be applied, so
   // that when we then set it to 1, that triggers the CSS transition.
   if (fadeIn) {
-    window.getComputedStyle(cur).opacity;
+    const style = window.getComputedStyle(cur).opacity;
   }
   cur.style.opacity = 1.0;
 
@@ -453,14 +461,16 @@ var swapInNewTiles = function() {
 function updateTileVisibility() {
   const allTiles = document.querySelectorAll(
       '#' + IDS.MV_TILES + ' .' + CLASSES.MD_TILE_CONTAINER);
-  if (allTiles.length === 0)
+  if (allTiles.length === 0) {
     return;
+  }
 
   // Get the current number of tiles per row. Hide any tile after the first two
   // rows.
   const tilesPerRow = Math.trunc(document.body.offsetWidth / MD_TILE_WIDTH);
-  for (let i = MD_NUM_TILES_ALWAYS_VISIBLE; i < allTiles.length; i++)
+  for (let i = MD_NUM_TILES_ALWAYS_VISIBLE; i < allTiles.length; i++) {
     allTiles[i].style.display = (i < tilesPerRow * 2) ? 'block' : 'none';
+  }
 }
 
 
@@ -468,17 +478,21 @@ function updateTileVisibility() {
  * Handler for the 'show' message from the host page, called when it wants to
  * add a suggestion tile.
  * It's also used to fill up our tiles to |maxNumTiles| if necessary.
- * @param {object} args Data for the tile to be rendered.
+ * @param {?MostVisitedData} args Data for the tile to be rendered.
  */
 var addTile = function(args) {
   if (isFinite(args.rid)) {
     // An actual suggestion. Grab the data from the embeddedSearch API.
     var data =
         chrome.embeddedSearch.newTabPage.getMostVisitedItemData(args.rid);
-    if (!data)
+    if (!data) {
       return;
+    }
 
     data.tid = data.rid;
+    // Use a dark icon if dark mode is enabled. Keep value in sync with
+    // NtpIconSource.
+    data.dark = args.darkMode ? 'dark/' : '';
     if (!data.faviconUrl) {
       data.faviconUrl = 'chrome-search://favicon/size/16@' +
           window.devicePixelRatio + 'x/' + data.renderViewId + '/' + data.tid;
@@ -504,8 +518,9 @@ var blacklistTile = function(tile) {
   } else {
     tile.classList.add('blacklisted');
     tile.addEventListener('transitionend', function(ev) {
-      if (ev.propertyName != 'width')
+      if (ev.propertyName != 'width') {
         return;
+      }
       window.parent.postMessage(
           {cmd: 'tileBlacklisted', tid: Number(tid)}, DOMAIN_ORIGIN);
     });
@@ -557,8 +572,9 @@ function stopReorder(tile) {
   // Update |data-pos| for all tiles and notify EmbeddedSearchAPI that the tile
   // has been moved.
   const allTiles = document.querySelectorAll('#mv-tiles .' + CLASSES.MD_TILE);
-  for (let i = 0; i < allTiles.length; i++)
+  for (let i = 0; i < allTiles.length; i++) {
     allTiles[i].setAttribute('data-pos', i);
+  }
   chrome.embeddedSearch.newTabPage.reorderCustomLink(
       Number(tile.firstChild.getAttribute('data-tid')),
       Number(tile.firstChild.getAttribute('data-pos')));
@@ -582,21 +598,28 @@ function setupReorder(tile) {
 
       // Cancel the timeout if the user drags the mouse off the tile and
       // releases or if the mouse if released.
-      let dragend = document.addEventListener('dragend', () => {
+      let dragend = () => {
         window.clearTimeout(timeout);
-      }, {once: true});
-      let mouseup = document.addEventListener('mouseup', () => {
-        if (event.button == 0 /* LEFT CLICK */)
-          window.clearTimeout(timeout);
-      }, {once: true});
+      };
+      document.addEventListener('dragend', dragend, {once: true});
 
-      // Wait for |REORDER_TIMEOUT_DELAY| before starting the reorder flow.
-      timeout = window.setTimeout(() => {
-        if (!reordering)
+      let mouseup = () => {
+        if (event.button == 0 /* LEFT CLICK */) {
+          window.clearTimeout(timeout);
+        }
+      };
+      document.addEventListener('mouseup', mouseup, {once: true});
+
+      let timeoutFunc = (dragend_in, mouseup_in) => {
+        if (!reordering) {
           startReorder(tile);
-        document.removeEventListener('dragend', dragend);
-        document.removeEventListener('mouseup', mouseup);
-      }, REORDER_TIMEOUT_DELAY);
+        }
+        document.removeEventListener('dragend', dragend_in);
+        document.removeEventListener('mouseup', mouseup_in);
+      };
+      // Wait for |REORDER_TIMEOUT_DELAY| before starting the reorder flow.
+      timeout = window.setTimeout(
+          timeoutFunc.bind(dragend, mouseup), REORDER_TIMEOUT_DELAY);
     }
   });
 
@@ -624,10 +647,11 @@ function setupReorder(tile) {
 
 /**
  * Renders a MostVisited tile to the DOM.
- * @param {object} data Object containing rid, url, title, favicon, thumbnail,
- *     and optionally isAddButton. isAddButton is true if you want to construct
- *     an add custom link button. data is null if you want to construct an
- *     empty tile. isAddButton can only be set if custom links is enabled.
+ * @param {?MostVisitedData} data Object containing rid, url, title, favicon,
+ *     thumbnail, and optionally isAddButton. isAddButton is true if you want to
+ *     construct an add custom link button. data is null if you want to
+ *     construct an empty tile. isAddButton can only be set if custom links is
+ *     enabled.
  */
 var renderTile = function(data) {
   return renderMaterialDesignTile(data);
@@ -636,9 +660,10 @@ var renderTile = function(data) {
 
 /**
  * Renders a MostVisited tile with Material Design styles.
- * @param {object} data Object containing rid, url, title, favicon, and
- *     optionally isAddButton. isAddButton is if you want to construct an add
- *     custom link button. data is null if you want to construct an empty tile.
+ * @param {?MostVisitedData} data Object containing rid, url, title, favicon,
+ *     and optionally isAddButton. isAddButton is if you want to construct an
+ *     add custom link button. data is null if you want to construct an empty
+ *     tile.
  * @return {Element}
  */
 function renderMaterialDesignTile(data) {
@@ -669,7 +694,7 @@ function renderMaterialDesignTile(data) {
 
   mdTile.addEventListener('click', function(ev) {
     if (data.isAddButton) {
-      editCustomLink();
+      editCustomLink(null);
       logEvent(LOG_TYPE.NTP_CUSTOMIZE_ADD_SHORTCUT_CLICKED);
     } else {
       logMostVisitedNavigation(
@@ -708,23 +733,21 @@ function renderMaterialDesignTile(data) {
   let mdIcon = document.createElement('div');
   mdIcon.className = CLASSES.MD_ICON;
 
-  let mdFavicon = document.createElement('div');
-  mdFavicon.className = CLASSES.MD_FAVICON;
   if (data.isAddButton) {
     let mdAdd = document.createElement('div');
     mdAdd.className = CLASSES.MD_ADD_ICON;
     let addBackground = document.createElement('div');
-    addBackground.className = CLASSES.MD_ADD_BACKGROUND;
+    addBackground.className = CLASSES.MD_ICON_BACKGROUND;
 
     addBackground.appendChild(mdAdd);
-    mdFavicon.appendChild(addBackground);
+    mdIcon.appendChild(addBackground);
   } else {
     let fi = document.createElement('img');
     // Set title and alt to empty so screen readers won't say the image name.
     fi.title = '';
     fi.alt = '';
     fi.src = 'chrome-search://ntpicon/size/24@' + window.devicePixelRatio +
-        'x/' + data.url;
+        'x/' + data.dark + data.url;
     loadedCounter += 1;
     fi.addEventListener('load', function(ev) {
       // Store the type for a potential later navigation.
@@ -739,18 +762,15 @@ function renderMaterialDesignTile(data) {
     });
     fi.addEventListener('error', function(ev) {
       let fallbackBackground = document.createElement('div');
-      fallbackBackground.className = CLASSES.MD_FALLBACK_BACKGROUND;
+      fallbackBackground.className = CLASSES.MD_ICON_BACKGROUND;
       let fallbackLetter = document.createElement('div');
       fallbackLetter.className = CLASSES.MD_FALLBACK_LETTER;
-      fallbackLetter.innerText = data.title.charAt(0).toUpperCase();
-      if (navigator.userAgent.indexOf('Windows') > -1) {
-        fallbackLetter.style.fontWeight = 600;
-      }
-      mdFavicon.classList.add(CLASSES.FAILED_FAVICON);
+      fallbackLetter.textContent = data.title.charAt(0).toUpperCase();
+      mdIcon.classList.add(CLASSES.FAILED_FAVICON);
 
       fallbackBackground.appendChild(fallbackLetter);
-      mdFavicon.removeChild(fi);
-      mdFavicon.appendChild(fallbackBackground);
+      mdIcon.removeChild(fi);
+      mdIcon.appendChild(fallbackBackground);
 
       // Store the type for a potential later navigation.
       tileType = TileVisualType.ICON_DEFAULT;
@@ -763,26 +783,23 @@ function renderMaterialDesignTile(data) {
       countLoad();
     });
 
-    mdFavicon.appendChild(fi);
+    mdIcon.appendChild(fi);
   }
 
-  mdIcon.appendChild(mdFavicon);
   mdTileInner.appendChild(mdIcon);
 
   let mdTitleContainer = document.createElement('div');
   mdTitleContainer.className = CLASSES.MD_TITLE_CONTAINER;
   let mdTitle = document.createElement('div');
   mdTitle.className = CLASSES.MD_TITLE;
-  mdTitle.innerText = data.title;
+  let mdTitleTextwrap = document.createElement('span');
+  mdTitleTextwrap.innerText = data.title;
   mdTitle.style.direction = data.direction || 'ltr';
-  // Windows font family fallback to Segoe
-  if (navigator.userAgent.indexOf('Windows') > -1) {
-    mdTitle.style.fontFamily = 'Segoe UI';
-  }
   mdTitleContainer.appendChild(mdTitle);
   mdTileInner.appendChild(mdTitleContainer);
   mdTile.appendChild(mdTileInner);
   mdTileContainer.appendChild(mdTile);
+  mdTitle.appendChild(mdTitleTextwrap);
 
   if (!data.isAddButton) {
     let mdMenu = document.createElement('button');
@@ -813,7 +830,7 @@ function renderMaterialDesignTile(data) {
     // Don't allow the event to bubble out to the containing tile, as that would
     // trigger navigation to the tile URL.
     mdMenu.addEventListener('keydown', function(ev) {
-      event.stopPropagation();
+      ev.stopPropagation();
     });
     utils.disableOutlineOnMouseClick(mdMenu);
 
@@ -845,8 +862,9 @@ var init = function() {
   queryArgs = {};
   for (var i = 0; i < query.length; ++i) {
     var val = query[i].split('=');
-    if (val[0] == '')
+    if (val[0] == '') {
       continue;
+    }
     queryArgs[decodeURIComponent(val[0])] = decodeURIComponent(val[1]);
   }
 
@@ -871,8 +889,9 @@ var init = function() {
   // Throttle the resize event.
   let resizeTimeout;
   window.onresize = () => {
-    if (resizeTimeout)
+    if (resizeTimeout) {
       return;
+    }
     resizeTimeout = window.setTimeout(() => {
       resizeTimeout = null;
       updateTileVisibility();

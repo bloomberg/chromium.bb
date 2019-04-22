@@ -161,12 +161,12 @@ source_set("unit_tests") {
 
   deps = [
     "//ipc",
-    "//remoting/host",
+    "//remoting/host:common",
     "//remoting/host:test_support",
     "//remoting/host/it2me:common",
     "//remoting/host/native_messaging",
     "//remoting/host/security_key:unit_tests",
-    "//remoting/host/setup",
+    "//remoting/host/setup:common",
     "//remoting/proto",
     "//remoting/resources",
     "//skia",
@@ -221,7 +221,19 @@ config("MIDL_config") {
 }
 
 static_library("remoting_lib_ps") {
-  configs += [ ":MIDL_config" ]
+  sources = [
+    "$root_gen_dir/remoting/host/win/chromoting_lib.dlldata.c",
+    "$root_gen_dir/remoting/host/win/chromoting_lib_p.c",
+  ]
+
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [
+    "//build/config/compiler:no_chromium_code",
+
+    # Must be after no_chromium_code so the -Wno flags appear after the /W3
+    # added by no_chromium_code.
+    ":MIDL_config",
+  ]
 
   defines = [
     "ENTRY_PREFIX=Ps",
@@ -230,11 +242,6 @@ static_library("remoting_lib_ps") {
 
   deps = [
     ":remoting_lib_idl",
-  ]
-
-  sources = [
-    "$root_gen_dir/remoting/host/win/chromoting_lib.dlldata.c",
-    "$root_gen_dir/remoting/host/win/chromoting_lib_p.c",
   ]
 }
 
@@ -283,6 +290,7 @@ executable("remoting_console") {
   ]
 
   if (!is_asan) {
+    no_default_deps = true
     ldflags = [
       "/ENTRY:HostEntryPoint",
       # "/NODEFAULTLIB",
@@ -313,6 +321,7 @@ executable("remoting_me2me_host") {
   output_name = "remoting_host"
 
   if (!is_asan) {
+    no_default_deps = true
     ldflags = [
       "/ENTRY:HostEntryPoint",
       # "/NODEFAULTLIB",
@@ -459,6 +468,7 @@ executable("remoting_desktop") {
   ]
 
   if (!is_asan) {
+    no_default_deps = true
     ldflags = [
       "/ENTRY:HostEntryPoint",
       # "/NODEFAULTLIB",

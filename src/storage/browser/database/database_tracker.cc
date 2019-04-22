@@ -5,9 +5,8 @@
 #include "storage/browser/database/database_tracker.h"
 
 #include <stdint.h>
+
 #include <algorithm>
-#include <utility>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/files/file_enumerator.h"
@@ -61,7 +60,7 @@ void OriginInfo::GetAllDatabaseNames(
 int64_t OriginInfo::GetDatabaseSize(const base::string16& database_name) const {
   auto it = database_info_.find(database_name);
   if (it != database_info_.end())
-    return it->second.first;
+    return it->second.size;
   return 0;
 }
 
@@ -69,8 +68,16 @@ base::string16 OriginInfo::GetDatabaseDescription(
     const base::string16& database_name) const {
   auto it = database_info_.find(database_name);
   if (it != database_info_.end())
-    return it->second.second;
+    return it->second.description;
   return base::string16();
+}
+
+base::Time OriginInfo::GetDatabaseLastModified(
+    const base::string16& database_name) const {
+  auto it = database_info_.find(database_name);
+  if (it != database_info_.end())
+    return it->second.last_modified;
+  return base::Time();
 }
 
 OriginInfo::OriginInfo(const std::string& origin_identifier, int64_t total_size)
@@ -273,7 +280,7 @@ base::FilePath DatabaseTracker::GetOriginDirectory(
       origin_directory = it->second;
     } else {
       origin_directory =
-          base::IntToString16(incognito_origin_directories_generator_++);
+          base::NumberToString16(incognito_origin_directories_generator_++);
       incognito_origin_directories_[origin_identifier] = origin_directory;
     }
   }
@@ -295,7 +302,7 @@ base::FilePath DatabaseTracker::GetFullDBFilePath(
     return base::FilePath();
 
   return GetOriginDirectory(origin_identifier)
-      .AppendASCII(base::Int64ToString(id));
+      .AppendASCII(base::NumberToString(id));
 }
 
 bool DatabaseTracker::GetOriginInfo(const std::string& origin_identifier,
@@ -418,7 +425,7 @@ bool DatabaseTracker::DeleteOrigin(const std::string& origin_identifier,
     base::Move(database, new_file);
   }
   base::DeleteFile(origin_dir, true);
-  base::DeleteFile(new_origin_dir, true); // might fail on windows.
+  base::DeleteFile(new_origin_dir, true);  // Might fail on windows.
 
   if (is_incognito_) {
     incognito_origin_directories_.erase(origin_identifier);
@@ -590,6 +597,16 @@ DatabaseTracker::CachedOriginInfo* DatabaseTracker::MaybeGetCachedOriginInfo(
       }
       origin_info.SetDatabaseSize(db.database_name, db_file_size);
       origin_info.SetDatabaseDescription(db.database_name, db.description);
+
+      base::FilePath path =
+          GetFullDBFilePath(origin_identifier, db.database_name);
+      base::File::Info file_info;
+      // TODO(jsbell): Avoid duplicate base::GetFileInfo calls between this and
+      // the GetDBFileSize() call above.
+      if (base::GetFileInfo(path, &file_info)) {
+        origin_info.SetDatabaseLastModified(db.database_name,
+                                            file_info.last_modified);
+      }
     }
   }
 
@@ -744,7 +761,7 @@ int DatabaseTracker::DeleteDataModifiedSince(
   return net::OK;
 }
 
-int DatabaseTracker::DeleteDataForOrigin(const std::string& origin,
+int DatabaseTracker::DeleteDataForOrigin(const url::Origin& origin,
                                          net::CompletionOnceCallback callback) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   if (!LazyInit())
@@ -752,16 +769,18 @@ int DatabaseTracker::DeleteDataForOrigin(const std::string& origin,
 
   DatabaseSet to_be_deleted;
 
+  const std::string identifier = GetIdentifierFromOrigin(origin);
+
   std::vector<DatabaseDetails> details;
-  if (!databases_table_->
-          GetAllDatabaseDetailsForOriginIdentifier(origin, &details))
+  if (!databases_table_->GetAllDatabaseDetailsForOriginIdentifier(identifier,
+                                                                  &details))
     return net::ERR_FAILED;
   for (const auto& db : details) {
     // Check if the database is opened by any renderer.
-    if (database_connections_.IsDatabaseOpened(origin, db.database_name))
-      to_be_deleted[origin].insert(db.database_name);
+    if (database_connections_.IsDatabaseOpened(identifier, db.database_name))
+      to_be_deleted[identifier].insert(db.database_name);
     else
-      DeleteClosedDatabase(origin, db.database_name);
+      DeleteClosedDatabase(identifier, db.database_name);
   }
 
   if (!to_be_deleted.empty()) {

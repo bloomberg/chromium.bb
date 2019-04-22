@@ -24,18 +24,16 @@
  */
 
 #include "third_party/blink/renderer/modules/device_orientation/device_motion_data.h"
-#include "third_party/blink/renderer/modules/device_orientation/device_acceleration.h"
-#include "third_party/blink/renderer/modules/device_orientation/device_acceleration_init.h"
+#include "third_party/blink/renderer/modules/device_orientation/device_motion_event_acceleration.h"
 #include "third_party/blink/renderer/modules/device_orientation/device_motion_event_init.h"
-#include "third_party/blink/renderer/modules/device_orientation/device_rotation_rate.h"
-#include "third_party/blink/renderer/modules/device_orientation/device_rotation_rate_init.h"
+#include "third_party/blink/renderer/modules/device_orientation/device_motion_event_rotation_rate.h"
 
 namespace blink {
 
 DeviceMotionData* DeviceMotionData::Create(
-    DeviceAcceleration* acceleration,
-    DeviceAcceleration* acceleration_including_gravity,
-    DeviceRotationRate* rotation_rate,
+    DeviceMotionEventAcceleration* acceleration,
+    DeviceMotionEventAcceleration* acceleration_including_gravity,
+    DeviceMotionEventRotationRate* rotation_rate,
     double interval) {
   return MakeGarbageCollected<DeviceMotionData>(
       acceleration, acceleration_including_gravity, rotation_rate, interval);
@@ -43,13 +41,16 @@ DeviceMotionData* DeviceMotionData::Create(
 
 DeviceMotionData* DeviceMotionData::Create(const DeviceMotionEventInit* init) {
   return DeviceMotionData::Create(
-      init->hasAcceleration() ? DeviceAcceleration::Create(init->acceleration())
-                              : nullptr,
-      init->hasAccelerationIncludingGravity()
-          ? DeviceAcceleration::Create(init->accelerationIncludingGravity())
+      init->hasAcceleration()
+          ? DeviceMotionEventAcceleration::Create(init->acceleration())
           : nullptr,
-      init->hasRotationRate() ? DeviceRotationRate::Create(init->rotationRate())
-                              : nullptr,
+      init->hasAccelerationIncludingGravity()
+          ? DeviceMotionEventAcceleration::Create(
+                init->accelerationIncludingGravity())
+          : nullptr,
+      init->hasRotationRate()
+          ? DeviceMotionEventRotationRate::Create(init->rotationRate())
+          : nullptr,
       init->interval());
 }
 
@@ -60,9 +61,9 @@ DeviceMotionData* DeviceMotionData::Create() {
 DeviceMotionData::DeviceMotionData() : interval_(0) {}
 
 DeviceMotionData::DeviceMotionData(
-    DeviceAcceleration* acceleration,
-    DeviceAcceleration* acceleration_including_gravity,
-    DeviceRotationRate* rotation_rate,
+    DeviceMotionEventAcceleration* acceleration,
+    DeviceMotionEventAcceleration* acceleration_including_gravity,
+    DeviceMotionEventRotationRate* rotation_rate,
     double interval)
     : acceleration_(acceleration),
       acceleration_including_gravity_(acceleration_including_gravity),

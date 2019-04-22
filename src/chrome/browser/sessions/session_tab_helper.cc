@@ -73,8 +73,8 @@ void SessionTabHelper::NavigationEntryCommitted(
                                               current_entry_index);
   const sessions::SerializedNavigationEntry navigation =
       sessions::ContentSerializedNavigationBuilder::FromNavigationEntry(
-          current_entry_index, *web_contents()->GetController().GetEntryAtIndex(
-                                   current_entry_index));
+          current_entry_index,
+          web_contents()->GetController().GetEntryAtIndex(current_entry_index));
   session_service->UpdateTabNavigation(window_id(), session_id(), navigation);
 }
 
@@ -85,14 +85,8 @@ void SessionTabHelper::NavigationListPruned(
   if (!session_service)
     return;
 
-  if (pruned_details.from_front) {
-    session_service->TabNavigationPathPrunedFromFront(window_id(), session_id(),
-                                                      pruned_details.count);
-  } else {
-    session_service->TabNavigationPathPrunedFromBack(
-        window_id(), session_id(),
-        web_contents()->GetController().GetEntryCount());
-  }
+  session_service->TabNavigationPathPruned(
+      window_id(), session_id(), pruned_details.index, pruned_details.count);
 }
 
 void SessionTabHelper::NavigationEntriesDeleted() {
@@ -113,7 +107,7 @@ void SessionTabHelper::NavigationEntryChanged(
 
   const sessions::SerializedNavigationEntry navigation =
       sessions::ContentSerializedNavigationBuilder::FromNavigationEntry(
-          change_details.index, *change_details.changed_entry);
+          change_details.index, change_details.changed_entry);
   session_service->UpdateTabNavigation(window_id(), session_id(), navigation);
 }
 #endif
@@ -131,3 +125,5 @@ void SessionTabHelper::SetTabExtensionAppID(
 #endif
 }
 #endif
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(SessionTabHelper)

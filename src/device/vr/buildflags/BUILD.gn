@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("buildflags.gni")
 import("//build/buildflag_header.gni")
+import("buildflags.gni")
 
 # Generate a buildflag header for compile-time checking of WebVR support.
 buildflag_header("buildflags") {
@@ -14,5 +14,6 @@ buildflag_header("buildflags") {
     "ENABLE_OCULUS_VR=$enable_oculus_vr",
     "ENABLE_OPENVR=$enable_openvr",
     "ENABLE_VR=$enable_vr",
+    "ENABLE_WINDOWS_MR=$enable_windows_mr",
   ]
 }

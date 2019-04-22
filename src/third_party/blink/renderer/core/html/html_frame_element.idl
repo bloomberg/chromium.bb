@@ -18,11 +18,8 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// https://html.spec.whatwg.org/#htmlframeelement
+// https://html.spec.whatwg.org/C/#htmlframeelement
 
-// The `URLString` reference below is from Trusted Types:
-// https://github.com/WICG/trusted-types/, which is still WIP.
-// https://crbug.com/739170.
 [HTMLConstructor]
 interface HTMLFrameElement : HTMLElement {
     [CEReactions, Reflect] attribute DOMString name;

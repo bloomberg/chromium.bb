@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "crypto/hmac.h"
@@ -20,7 +21,7 @@
 #include "remoting/protocol/webrtc_data_stream_adapter.h"
 #include "remoting/protocol/webrtc_dummy_video_encoder.h"
 #include "remoting/signaling/signal_strategy.h"
-#include "third_party/webrtc/api/peerconnectioninterface.h"
+#include "third_party/webrtc/api/peer_connection_interface.h"
 
 namespace remoting {
 namespace protocol {
@@ -33,6 +34,8 @@ class WebrtcTransport : public Transport {
  public:
   class EventHandler {
    public:
+    virtual ~EventHandler() = default;
+
     // Called after |peer_connection| has been created but before handshake. The
     // handler should create data channels and media streams. Renegotiation will
     // be required in two cases after this method returns:
@@ -57,9 +60,6 @@ class WebrtcTransport : public Transport {
         scoped_refptr<webrtc::MediaStreamInterface> stream) = 0;
     virtual void OnWebrtcTransportMediaStreamRemoved(
         scoped_refptr<webrtc::MediaStreamInterface> stream) = 0;
-
-   protected:
-    virtual ~EventHandler() {}
   };
 
   WebrtcTransport(rtc::Thread* worker_thread,
@@ -82,10 +82,20 @@ class WebrtcTransport : public Transport {
   // Transport interface.
   void Start(Authenticator* authenticator,
              SendTransportInfoCallback send_transport_info_callback) override;
-  bool ProcessTransportInfo(buzz::XmlElement* transport_info) override;
+  bool ProcessTransportInfo(jingle_xmpp::XmlElement* transport_info) override;
   void Close(ErrorCode error);
 
   void ApplySessionOptions(const SessionOptions& options);
+
+  // Called when a new AudioSender has been created from
+  // PeerConnection::AddTrack().
+  void OnAudioSenderCreated(
+      rtc::scoped_refptr<webrtc::RtpSenderInterface> sender);
+
+  // Called when a new VideoSender has been created from
+  // PeerConnection::AddTrack().
+  void OnVideoSenderCreated(
+      rtc::scoped_refptr<webrtc::RtpSenderInterface> sender);
 
  private:
   // PeerConnectionWrapper is responsible for PeerConnection creation,
@@ -121,11 +131,30 @@ class WebrtcTransport : public Transport {
   void OnStatsDelivered(
       const rtc::scoped_refptr<const webrtc::RTCStatsReport>& report);
 
+  // Returns the max bitrate to set for this connection, taking into
+  // account any relay bitrate cap. If the relay status is unknown, this
+  // returns the default maximum bitrate.
+  int MaxBitrateForConnection();
+
+  // Sets bitrates on the PeerConnection.
+  // Called after SetRemoteDescription(), but also called if the relay status
+  // changes.
+  void SetPeerConnectionBitrates(int max_bitrate_bps);
+
+  // Sets bitrates on the (video) sender. Called when the sender is created, but
+  // also called if the relay status changes.
+  void SetSenderBitrates(int max_bitrate_bps);
+
+  void RequestRtcStats();
   void RequestNegotiation();
   void SendOffer();
   void EnsurePendingTransportInfoMessage();
   void SendTransportInfo();
   void AddPendingCandidatesIfPossible();
+
+  // Returns the VideoSender for this connection, or nullptr if it hasn't
+  // been created yet.
+  rtc::scoped_refptr<webrtc::RtpSenderInterface> GetVideoSender();
 
   base::ThreadChecker thread_checker_;
 
@@ -143,9 +172,11 @@ class WebrtcTransport : public Transport {
 
   bool connected_ = false;
 
+  base::Optional<bool> connection_relayed_;
+
   bool want_ice_restart_ = false;
 
-  std::unique_ptr<buzz::XmlElement> pending_transport_info_message_;
+  std::unique_ptr<jingle_xmpp::XmlElement> pending_transport_info_message_;
   base::OneShotTimer transport_info_timer_;
 
   std::vector<std::unique_ptr<webrtc::IceCandidateInterface>>

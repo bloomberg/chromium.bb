@@ -1,18 +1,11 @@
 <!DOCTYPE html>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <script>
 if (window.testRunner) {
   testRunner.dumpAsText();
-  testRunner.waitUntilDone();
   window.onload = function() {
-    testRunner.layoutAndPaintAsyncThen(function() {
-      mutateTree();
-      testRunner.layoutAndPaintAsyncThen(function() {
-        testRunner.notifyDone();
-      });
-    });
+    runAfterLayoutAndPaint(mutateTree, true);
   };
-} else {
-  window.onload = function() { setTimeout(mutateTree, 100); };
 }
 function mutateTree() {
   // A reference from the 'rect' to the pattern cycle.

@@ -8,6 +8,7 @@
 #include <set>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/download/download_service_factory.h"
@@ -70,6 +71,7 @@ OfflinePrefetchDownloadClient::OnDownloadStarted(
 
 void OfflinePrefetchDownloadClient::OnDownloadUpdated(
     const std::string& guid,
+    uint64_t bytes_uploaded,
     uint64_t bytes_downloaded) {}
 
 void OfflinePrefetchDownloadClient::OnDownloadFailed(

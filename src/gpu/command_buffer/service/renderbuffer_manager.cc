@@ -291,21 +291,13 @@ bool RenderbufferManager::ComputeEstimatedRenderbufferSize(
     int internal_format,
     uint32_t* size) const {
   DCHECK(size);
-
-  uint32_t temp = 0;
-  if (!SafeMultiplyUint32(width, height, &temp)) {
-    return false;
-  }
-  if (!SafeMultiplyUint32(temp, (samples == 0 ? 1 : samples), &temp)) {
-    return false;
-  }
   GLenum impl_format = InternalRenderbufferFormatToImplFormat(internal_format);
-  if (!SafeMultiplyUint32(
-      temp, GLES2Util::RenderbufferBytesPerPixel(impl_format), &temp)) {
-    return false;
-  }
-  *size = temp;
-  return true;
+  uint32_t bytes_per_pixel = GLES2Util::RenderbufferBytesPerPixel(impl_format);
+  base::CheckedNumeric<uint32_t> checked_size = width;
+  checked_size *= height;
+  checked_size *= (samples == 0 ? 1 : samples);
+  checked_size *= bytes_per_pixel;
+  return checked_size.AssignIfValid(size);
 }
 
 GLenum RenderbufferManager::InternalRenderbufferFormatToImplFormat(

@@ -1573,7 +1573,13 @@ struct RenderPass
 
 	static Move<VkRenderPass> create (const Environment& env, const Resources&, const Parameters&)
 	{
-		return makeRenderPass(env.vkd, env.device, VK_FORMAT_R8G8B8A8_UNORM, VK_FORMAT_D16_UNORM);
+		return makeRenderPass(env.vkd, env.device, VK_FORMAT_R8G8B8A8_UNORM, VK_FORMAT_D16_UNORM,
+			VK_ATTACHMENT_LOAD_OP_CLEAR,
+			VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+			VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+			VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+			VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+			env.allocationCallbacks);
 	}
 };
 
@@ -2348,6 +2354,7 @@ template<typename Object>	int getCreateCount				(void) { return 100;	}
 // Creating VkDevice and VkInstance can take significantly longer than other object types
 template<>					int getCreateCount<Instance>	(void) { return 20;		}
 template<>					int getCreateCount<Device>		(void) { return 20;		}
+template<>					int getCreateCount<DeviceGroup>	(void) { return 20;		}
 
 template<typename Object>
 class CreateThread : public ThreadGroupThread
@@ -2530,8 +2537,9 @@ tcu::TestStatus createSingleAllocCallbacksTest (Context& context, typename Objec
 	return tcu::TestStatus::pass("Ok");
 }
 
-template<typename Object>	deUint32	getOomIterLimit			(void) { return 1024;	}
-template<>					deUint32	getOomIterLimit<Device>	(void) { return 20;		}
+template<typename Object>	deUint32	getOomIterLimit					(void) { return 1024;	}
+template<>					deUint32	getOomIterLimit<Device>         (void) { return 20;		}
+template<>					deUint32	getOomIterLimit<DeviceGroup>	(void) { return 20;		}
 
 template<typename Object>
 tcu::TestStatus allocCallbackFailTest (Context& context, typename Object::Parameters params)

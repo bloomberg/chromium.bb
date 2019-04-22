@@ -74,9 +74,9 @@ ViewportScroller.prototype = {
    * @private
    */
   dragScrollPage_: function() {
-    var position = this.viewport_.position;
-    var currentFrameTime = Date.now();
-    var timeAdjustment = (currentFrameTime - this.lastFrameTime_) /
+    const position = this.viewport_.position;
+    const currentFrameTime = Date.now();
+    const timeAdjustment = (currentFrameTime - this.lastFrameTime_) /
         ViewportScroller.DRAG_TIMER_INTERVAL_MS_;
     position.y += (this.scrollVelocity_.y * timeAdjustment);
     position.x += (this.scrollVelocity_.x * timeAdjustment);
@@ -93,13 +93,13 @@ ViewportScroller.prototype = {
    * @private
    */
   calculateVelocity_: function(event) {
-    var x =
+    const x =
         Math.min(
             Math.max(
                 -event.offsetX, event.offsetX - this.plugin_.offsetWidth, 0),
             ViewportScroller.MAX_DRAG_SCROLL_DISTANCE_) *
         Math.sign(event.offsetX);
-    var y =
+    const y =
         Math.min(
             Math.max(
                 -event.offsetY, event.offsetY - this.plugin_.offsetHeight, 0),
@@ -117,10 +117,11 @@ ViewportScroller.prototype = {
    */
   onMousemove_: function(event) {
     this.scrollVelocity_ = this.calculateVelocity_(event);
-    if (!this.scrollVelocity_.x && !this.scrollVelocity_.y)
+    if (!this.scrollVelocity_.x && !this.scrollVelocity_.y) {
       this.stopDragScrollTimer_();
-    else if (!this.timerId_)
+    } else if (!this.timerId_) {
       this.startDragScrollTimer_();
+    }
   },
 
   /**
@@ -131,8 +132,9 @@ ViewportScroller.prototype = {
    */
   setEnableScrolling: function(isSelecting) {
     if (isSelecting) {
-      if (!this.mousemoveCallback_)
+      if (!this.mousemoveCallback_) {
         this.mousemoveCallback_ = this.onMousemove_.bind(this);
+      }
       this.plugin_.addEventListener(
           'mousemove', this.mousemoveCallback_, false);
     } else {

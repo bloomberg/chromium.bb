@@ -26,6 +26,37 @@ public class AndroidProtocolHandlerTest {
     @Rule
     public AwActivityTestRule mActivityTestRule = new AwActivityTestRule();
 
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testOpenNullUrl() {
+        Assert.assertNull(AndroidProtocolHandler.open(null));
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testOpenEmptyUrl() {
+        Assert.assertNull(AndroidProtocolHandler.open(""));
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testOpenMalformedUrl() {
+        Assert.assertNull(AndroidProtocolHandler.open("abcdefg"));
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testOpenPathlessUrl() {
+        // These URLs are interesting because android.net.Uri parses them unintuitively:
+        // Uri.getPath() returns "/" but Uri.getLastPathSegment() returns null.
+        Assert.assertNull(AndroidProtocolHandler.open("file:///"));
+        Assert.assertNull(AndroidProtocolHandler.open("content:///"));
+    }
+
     // star.svg and star.svgz contain the same data. AndroidProtocolHandler should decompress the
     // svgz automatically. Load both from assets and assert that they're equal.
     @Test

@@ -4,13 +4,13 @@
 
 #include <memory>
 
+#include "cc/animation/animation_host.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/mutator_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation_client.h"
-#include "third_party/blink/renderer/platform/animation/compositor_animation_host.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation_timeline.h"
 #include "third_party/blink/renderer/platform/animation/compositor_float_animation_curve.h"
 #include "third_party/blink/renderer/platform/animation/compositor_keyframe_model.h"
@@ -33,9 +33,9 @@ class AnimatedLayersTest : public testing::Test,
   ViewportLayersSetup layers_;
 };
 
-INSTANTIATE_TEST_CASE_P(All,
-                        AnimatedLayersTest,
-                        testing::Values(0, kBlinkGenPropertyTrees));
+INSTANTIATE_TEST_SUITE_P(All,
+                         AnimatedLayersTest,
+                         testing::Values(0, kBlinkGenPropertyTrees));
 
 class AnimationForTesting : public CompositorAnimationClient {
  public:
@@ -62,24 +62,21 @@ TEST_P(AnimatedLayersTest, updateLayerShouldFlattenTransformWithAnimations) {
   EXPECT_FALSE(
       mutator->HasTickingKeyframeModelForTesting(cc_layer->element_id()));
 
-  std::unique_ptr<CompositorFloatAnimationCurve> curve =
-      CompositorFloatAnimationCurve::Create();
+  auto curve = std::make_unique<CompositorFloatAnimationCurve>();
   curve->AddKeyframe(
       CompositorFloatKeyframe(0.0, 0.0,
                               *CubicBezierTimingFunction::Preset(
                                   CubicBezierTimingFunction::EaseType::EASE)));
-  std::unique_ptr<CompositorKeyframeModel> float_keyframe_model(
-      CompositorKeyframeModel::Create(
-          *curve, compositor_target_property::OPACITY, 0, 0));
+  auto float_keyframe_model(std::make_unique<CompositorKeyframeModel>(
+      *curve, compositor_target_property::OPACITY, 0, 0));
   int keyframe_model_id = float_keyframe_model->Id();
 
-  std::unique_ptr<CompositorAnimationTimeline> compositor_timeline =
-      CompositorAnimationTimeline::Create();
+  auto compositor_timeline = std::make_unique<CompositorAnimationTimeline>();
   AnimationForTesting animation;
 
-  CompositorAnimationHost host(layers_.animation_host());
+  cc::AnimationHost* host = layers_.animation_host();
 
-  host.AddTimeline(*compositor_timeline);
+  host->AddAnimationTimeline(compositor_timeline->GetAnimationTimeline());
   compositor_timeline->AnimationAttached(animation);
 
   cc_layer->SetElementId(CompositorElementId(cc_layer->id()));
@@ -116,7 +113,7 @@ TEST_P(AnimatedLayersTest, updateLayerShouldFlattenTransformWithAnimations) {
   ASSERT_FALSE(animation.GetCompositorAnimation()->IsElementAttached());
 
   compositor_timeline->AnimationDestroyed(animation);
-  host.RemoveTimeline(*compositor_timeline.get());
+  host->RemoveAnimationTimeline(compositor_timeline->GetAnimationTimeline());
 }
 
 }  // namespace blink

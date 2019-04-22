@@ -106,7 +106,7 @@ class PaymentRequestPaymentAppTest : public PaymentRequestBrowserTestBase {
 
   // Sets a TestDownloader for alicepay.com, bobpay.com and frankpay.com to
   // ServiceWorkerPaymentAppFactory, and ignores port in app scope.
-  void SetDownloaderAndIgnorePortInAppScopeForTesting() {
+  void SetDownloaderAndIgnorePortInOriginComparisonForTesting() {
     content::BrowserContext* context = browser()
                                            ->tab_strip_model()
                                            ->GetActiveWebContents()
@@ -121,7 +121,8 @@ class PaymentRequestPaymentAppTest : public PaymentRequestBrowserTestBase {
     downloader->AddTestServerURL("https://frankpay.com/",
                                  frankpay_.GetURL("frankpay.com", "/"));
     ServiceWorkerPaymentAppFactory::GetInstance()
-        ->SetDownloaderAndIgnorePortInAppScopeForTesting(std::move(downloader));
+        ->SetDownloaderAndIgnorePortInOriginComparisonForTesting(
+            std::move(downloader));
   }
 
  private:
@@ -157,7 +158,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest, NotSupportedError) {
   InstallAlicePayForMethod("https://frankpay.com");
 
   {
-    SetDownloaderAndIgnorePortInAppScopeForTesting();
+    SetDownloaderAndIgnorePortInOriginComparisonForTesting();
 
     NavigateTo("/payment_request_bobpay_test.html");
 
@@ -169,8 +170,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest, NotSupportedError) {
     ExpectBodyContains({"false"});
 
     // A new payment request will be created below, so call
-    // SetDownloaderAndIgnorePortInAppScopeForTesting again.
-    SetDownloaderAndIgnorePortInAppScopeForTesting();
+    // SetDownloaderAndIgnorePortInOriginComparisonForTesting again.
+    SetDownloaderAndIgnorePortInOriginComparisonForTesting();
 
     ResetEventWaiterForSequence({DialogEvent::PROCESSING_SPINNER_SHOWN,
                                  DialogEvent::PROCESSING_SPINNER_HIDDEN,
@@ -182,7 +183,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest, NotSupportedError) {
 
   // Repeat should have identical results.
   {
-    SetDownloaderAndIgnorePortInAppScopeForTesting();
+    SetDownloaderAndIgnorePortInOriginComparisonForTesting();
 
     NavigateTo("/payment_request_bobpay_test.html");
 
@@ -194,8 +195,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest, NotSupportedError) {
     ExpectBodyContains({"false"});
 
     // A new payment request will be created below, so call
-    // SetDownloaderAndIgnorePortInAppScopeForTesting again.
-    SetDownloaderAndIgnorePortInAppScopeForTesting();
+    // SetDownloaderAndIgnorePortInOriginComparisonForTesting again.
+    SetDownloaderAndIgnorePortInOriginComparisonForTesting();
 
     ResetEventWaiterForSequence({DialogEvent::PROCESSING_SPINNER_SHOWN,
                                  DialogEvent::PROCESSING_SPINNER_HIDDEN,
@@ -211,7 +212,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest, PayWithAlicePay) {
   InstallAlicePayForMethod("https://alicepay.com");
 
   {
-    SetDownloaderAndIgnorePortInAppScopeForTesting();
+    SetDownloaderAndIgnorePortInOriginComparisonForTesting();
 
     NavigateTo("/payment_request_bobpay_test.html");
 
@@ -223,8 +224,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest, PayWithAlicePay) {
     ExpectBodyContains({"true"});
 
     // A new payment request will be created below, so call
-    // SetDownloaderAndIgnorePortInAppScopeForTesting again.
-    SetDownloaderAndIgnorePortInAppScopeForTesting();
+    // SetDownloaderAndIgnorePortInOriginComparisonForTesting again.
+    SetDownloaderAndIgnorePortInOriginComparisonForTesting();
 
     InvokePaymentRequestUI();
 
@@ -236,7 +237,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest, PayWithAlicePay) {
 
   // Repeat should have identical results.
   {
-    SetDownloaderAndIgnorePortInAppScopeForTesting();
+    SetDownloaderAndIgnorePortInOriginComparisonForTesting();
 
     NavigateTo("/payment_request_bobpay_test.html");
 
@@ -248,8 +249,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest, PayWithAlicePay) {
     ExpectBodyContains({"true"});
 
     // A new payment request will be created below, so call
-    // SetDownloaderAndIgnorePortInAppScopeForTesting again.
-    SetDownloaderAndIgnorePortInAppScopeForTesting();
+    // SetDownloaderAndIgnorePortInOriginComparisonForTesting again.
+    SetDownloaderAndIgnorePortInOriginComparisonForTesting();
 
     InvokePaymentRequestUI();
 
@@ -266,7 +267,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest, PayWithAlicePayIncognito) {
   InstallAlicePayForMethod("https://alicepay.com");
 
   {
-    SetDownloaderAndIgnorePortInAppScopeForTesting();
+    SetDownloaderAndIgnorePortInOriginComparisonForTesting();
 
     NavigateTo("/payment_request_bobpay_test.html");
 
@@ -278,8 +279,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest, PayWithAlicePayIncognito) {
     ExpectBodyContains({"true"});
 
     // A new payment request will be created below, so call
-    // SetDownloaderAndIgnorePortInAppScopeForTesting again.
-    SetDownloaderAndIgnorePortInAppScopeForTesting();
+    // SetDownloaderAndIgnorePortInOriginComparisonForTesting again.
+    SetDownloaderAndIgnorePortInOriginComparisonForTesting();
 
     InvokePaymentRequestUI();
 
@@ -291,7 +292,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest, PayWithAlicePayIncognito) {
 
   // Repeat should have identical results.
   {
-    SetDownloaderAndIgnorePortInAppScopeForTesting();
+    SetDownloaderAndIgnorePortInOriginComparisonForTesting();
 
     NavigateTo("/payment_request_bobpay_test.html");
 
@@ -303,8 +304,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest, PayWithAlicePayIncognito) {
     ExpectBodyContains({"true"});
 
     // A new payment request will be created below, so call
-    // SetDownloaderAndIgnorePortInAppScopeForTesting again.
-    SetDownloaderAndIgnorePortInAppScopeForTesting();
+    // SetDownloaderAndIgnorePortInOriginComparisonForTesting again.
+    SetDownloaderAndIgnorePortInOriginComparisonForTesting();
 
     InvokePaymentRequestUI();
 
@@ -321,7 +322,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest, BlockAlicePay) {
   BlockAlicePay();
 
   {
-    SetDownloaderAndIgnorePortInAppScopeForTesting();
+    SetDownloaderAndIgnorePortInOriginComparisonForTesting();
 
     NavigateTo("/payment_request_bobpay_test.html");
 
@@ -333,8 +334,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest, BlockAlicePay) {
     ExpectBodyContains({"false"});
 
     // A new payment request will be created below, so call
-    // SetDownloaderAndIgnorePortInAppScopeForTesting again.
-    SetDownloaderAndIgnorePortInAppScopeForTesting();
+    // SetDownloaderAndIgnorePortInOriginComparisonForTesting again.
+    SetDownloaderAndIgnorePortInOriginComparisonForTesting();
 
     ResetEventWaiterForSequence({DialogEvent::PROCESSING_SPINNER_SHOWN,
                                  DialogEvent::PROCESSING_SPINNER_HIDDEN,
@@ -346,7 +347,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest, BlockAlicePay) {
 
   // Repeat should have identical results.
   {
-    SetDownloaderAndIgnorePortInAppScopeForTesting();
+    SetDownloaderAndIgnorePortInOriginComparisonForTesting();
 
     NavigateTo("/payment_request_bobpay_test.html");
 
@@ -358,8 +359,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest, BlockAlicePay) {
     ExpectBodyContains({"false"});
 
     // A new payment request will be created below, so call
-    // SetDownloaderAndIgnorePortInAppScopeForTesting again.
-    SetDownloaderAndIgnorePortInAppScopeForTesting();
+    // SetDownloaderAndIgnorePortInOriginComparisonForTesting again.
+    SetDownloaderAndIgnorePortInOriginComparisonForTesting();
 
     ResetEventWaiterForSequence({DialogEvent::PROCESSING_SPINNER_SHOWN,
                                  DialogEvent::PROCESSING_SPINNER_HIDDEN,
@@ -375,7 +376,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest, CanNotPayWithBobPay) {
   InstallAlicePayForMethod("https://bobpay.com");
 
   {
-    SetDownloaderAndIgnorePortInAppScopeForTesting();
+    SetDownloaderAndIgnorePortInOriginComparisonForTesting();
 
     NavigateTo("/payment_request_bobpay_test.html");
 
@@ -387,8 +388,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest, CanNotPayWithBobPay) {
     ExpectBodyContains({"false"});
 
     // A new payment request will be created below, so call
-    // SetDownloaderAndIgnorePortInAppScopeForTesting again.
-    SetDownloaderAndIgnorePortInAppScopeForTesting();
+    // SetDownloaderAndIgnorePortInOriginComparisonForTesting again.
+    SetDownloaderAndIgnorePortInOriginComparisonForTesting();
 
     ResetEventWaiterForSequence({DialogEvent::PROCESSING_SPINNER_SHOWN,
                                  DialogEvent::PROCESSING_SPINNER_HIDDEN,
@@ -400,7 +401,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest, CanNotPayWithBobPay) {
 
   // Repeat should have identical results.
   {
-    SetDownloaderAndIgnorePortInAppScopeForTesting();
+    SetDownloaderAndIgnorePortInOriginComparisonForTesting();
 
     NavigateTo("/payment_request_bobpay_test.html");
 
@@ -412,8 +413,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest, CanNotPayWithBobPay) {
     ExpectBodyContains({"false"});
 
     // A new payment request will be created below, so call
-    // SetDownloaderAndIgnorePortInAppScopeForTesting again.
-    SetDownloaderAndIgnorePortInAppScopeForTesting();
+    // SetDownloaderAndIgnorePortInOriginComparisonForTesting again.
+    SetDownloaderAndIgnorePortInOriginComparisonForTesting();
 
     ResetEventWaiterForSequence({DialogEvent::PROCESSING_SPINNER_SHOWN,
                                  DialogEvent::PROCESSING_SPINNER_HIDDEN,
@@ -429,7 +430,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest, PayWithBasicCard) {
   InstallAlicePayForMethod("basic-card");
 
   {
-    SetDownloaderAndIgnorePortInAppScopeForTesting();
+    SetDownloaderAndIgnorePortInOriginComparisonForTesting();
 
     NavigateTo(
         "/payment_request_bobpay_and_basic_card_with_modifiers_test.html");
@@ -443,7 +444,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest, PayWithBasicCard) {
 
   // Repeat should have identical results.
   {
-    SetDownloaderAndIgnorePortInAppScopeForTesting();
+    SetDownloaderAndIgnorePortInOriginComparisonForTesting();
 
     NavigateTo(
         "/payment_request_bobpay_and_basic_card_with_modifiers_test.html");
@@ -467,7 +468,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest, SkipUIEnabledWithBobPay) {
   InstallBobPayForMethod("https://bobpay.com");
 
   {
-    SetDownloaderAndIgnorePortInAppScopeForTesting();
+    SetDownloaderAndIgnorePortInOriginComparisonForTesting();
 
     NavigateTo("/payment_request_bobpay_ui_skip_test.html");
 
@@ -499,7 +500,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest,
   InstallBobPayForMethod("https://bobpay.com");
 
   {
-    SetDownloaderAndIgnorePortInAppScopeForTesting();
+    SetDownloaderAndIgnorePortInOriginComparisonForTesting();
 
     NavigateTo("/payment_request_bobpay_test.html");
 
@@ -529,7 +530,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest,
   AddAutofillProfile(profile);
 
   {
-    SetDownloaderAndIgnorePortInAppScopeForTesting();
+    SetDownloaderAndIgnorePortInOriginComparisonForTesting();
 
     NavigateTo("/payment_request_bobpay_ui_skip_test.html");
 

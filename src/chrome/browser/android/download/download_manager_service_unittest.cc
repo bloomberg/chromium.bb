@@ -78,9 +78,9 @@ class DownloadManagerServiceTest : public testing::Test {
         JavaParamRef<jstring>(
             env,
             base::android::ConvertUTF8ToJavaString(env, download_guid).obj()),
-        false);
+        false, false);
     EXPECT_FALSE(success_);
-    service_->OnHistoryQueryComplete();
+    service_->OnManagerInitialized();
     while (!finished_)
       base::RunLoop().RunUntilIdle();
   }

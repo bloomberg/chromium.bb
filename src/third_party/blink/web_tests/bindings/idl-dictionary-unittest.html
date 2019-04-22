@@ -253,6 +253,10 @@ if (window.internals && internals.dictionaryTest) {
     shouldThrow("dictionaryTest.set({elementMember: document})");
     debug('');
 
+    debug('Test for setting invalid callback function value');
+    shouldThrow("dictionaryTest.set({callbackFunctionMember: {}})");
+    debug('');
+
     debug('Test for passing invalid dictionary values');
     shouldThrow("dictionaryTest.set(42)");
     shouldThrow("dictionaryTest.set('string')");

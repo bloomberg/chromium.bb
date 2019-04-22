@@ -15,11 +15,18 @@
 #include "components/component_updater/component_updater_command_line_config_policy.h"
 #include "components/component_updater/configurator_impl.h"
 #include "components/update_client/activity_data_service.h"
+#include "components/update_client/net/network_chromium.h"
+#include "components/update_client/patch/patch_impl.h"
+#include "components/update_client/patcher.h"
 #include "components/update_client/protocol_handler.h"
+#include "components/update_client/unzip/unzip_impl.h"
+#include "components/update_client/unzipper.h"
 #include "components/update_client/update_query_params.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/google/google_brand.h"
 #include "ios/chrome/common/channel_info.h"
+#include "ios/web/public/service_manager_connection.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace component_updater {
@@ -45,10 +52,10 @@ class IOSConfigurator : public update_client::Configurator {
   std::string GetOSLongName() const override;
   base::flat_map<std::string, std::string> ExtraRequestParams() const override;
   std::string GetDownloadPreference() const override;
-  scoped_refptr<network::SharedURLLoaderFactory> URLLoaderFactory()
-      const override;
-  std::unique_ptr<service_manager::Connector> CreateServiceManagerConnector()
-      const override;
+  scoped_refptr<update_client::NetworkFetcherFactory> GetNetworkFetcherFactory()
+      override;
+  scoped_refptr<update_client::UnzipperFactory> GetUnzipperFactory() override;
+  scoped_refptr<update_client::PatcherFactory> GetPatcherFactory() override;
   bool EnabledDeltas() const override;
   bool EnabledComponentUpdates() const override;
   bool EnabledBackgroundDownloader() const override;
@@ -60,11 +67,15 @@ class IOSConfigurator : public update_client::Configurator {
   std::string GetAppGuid() const override;
   std::unique_ptr<update_client::ProtocolHandlerFactory>
   GetProtocolHandlerFactory() const override;
+  update_client::RecoveryCRXElevator GetRecoveryCRXElevator() const override;
 
  private:
   friend class base::RefCountedThreadSafe<IOSConfigurator>;
 
   ConfiguratorImpl configurator_impl_;
+  scoped_refptr<update_client::NetworkFetcherFactory> network_fetcher_factory_;
+  scoped_refptr<update_client::UnzipperFactory> unzip_factory_;
+  scoped_refptr<update_client::PatcherFactory> patch_factory_;
 
   ~IOSConfigurator() override {}
 };
@@ -136,14 +147,32 @@ std::string IOSConfigurator::GetDownloadPreference() const {
   return configurator_impl_.GetDownloadPreference();
 }
 
-scoped_refptr<network::SharedURLLoaderFactory>
-IOSConfigurator::URLLoaderFactory() const {
-  return GetApplicationContext()->GetSharedURLLoaderFactory();
+scoped_refptr<update_client::NetworkFetcherFactory>
+IOSConfigurator::GetNetworkFetcherFactory() {
+  if (!network_fetcher_factory_) {
+    network_fetcher_factory_ =
+        base::MakeRefCounted<update_client::NetworkFetcherChromiumFactory>(
+            GetApplicationContext()->GetSharedURLLoaderFactory());
+  }
+  return network_fetcher_factory_;
 }
 
-std::unique_ptr<service_manager::Connector>
-IOSConfigurator::CreateServiceManagerConnector() const {
-  return nullptr;
+scoped_refptr<update_client::UnzipperFactory>
+IOSConfigurator::GetUnzipperFactory() {
+  if (!unzip_factory_) {
+    unzip_factory_ = base::MakeRefCounted<update_client::UnzipChromiumFactory>(
+        web::ServiceManagerConnection::Get()->GetConnector()->Clone());
+  }
+  return unzip_factory_;
+}
+
+scoped_refptr<update_client::PatcherFactory>
+IOSConfigurator::GetPatcherFactory() {
+  if (!patch_factory_) {
+    patch_factory_ = base::MakeRefCounted<update_client::PatchChromiumFactory>(
+        web::ServiceManagerConnection::Get()->GetConnector()->Clone());
+  }
+  return patch_factory_;
 }
 
 bool IOSConfigurator::EnabledDeltas() const {
@@ -186,6 +215,11 @@ std::string IOSConfigurator::GetAppGuid() const {
 std::unique_ptr<update_client::ProtocolHandlerFactory>
 IOSConfigurator::GetProtocolHandlerFactory() const {
   return configurator_impl_.GetProtocolHandlerFactory();
+}
+
+update_client::RecoveryCRXElevator IOSConfigurator::GetRecoveryCRXElevator()
+    const {
+  return configurator_impl_.GetRecoveryCRXElevator();
 }
 
 }  // namespace

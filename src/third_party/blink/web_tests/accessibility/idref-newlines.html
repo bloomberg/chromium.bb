@@ -2,10 +2,6 @@
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 
-<style>
-  .hideAllContainers .container { display: none; }
-</style>
-
 <div class="container">
   <input
     id="chk1"
@@ -21,9 +17,4 @@ test(function(t) {
   var axCheckbox = accessibilityController.accessibleElementById("chk1");
   assert_equals(axCheckbox.name, "nacho cheese");
 });
-</script>
-
-<script>
-  if (window.testRunner)
-    document.body.className = "hideAllContainers";
 </script>

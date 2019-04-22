@@ -9,7 +9,7 @@ option optimize_for = LITE_RUNTIME;
 package metrics_event;
 
 // Content of signals emitted by Chrome (the ChromeEvent signal in the
-// MetricsEventService) and the anomaly_collector daemon (the AnomalyEvent
+// MetricsEventService) and the anomaly_detector daemon (the AnomalyEvent
 // signal in the AnomalyEventService) to report events of interest for
 // measurements.
 message Event {

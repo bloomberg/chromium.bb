@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 class SkMatrix;
@@ -27,6 +28,8 @@ using cc::PaintRecord;
 // * a mask image, which will be applied to the reflection before the
 //   reflection matrix is applied
 class PLATFORM_EXPORT BoxReflection {
+  DISALLOW_NEW();
+
  public:
   enum ReflectionDirection {
     // Vertically flipped (to appear above or below).

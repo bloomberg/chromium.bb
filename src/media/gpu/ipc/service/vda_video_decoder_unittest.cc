@@ -6,10 +6,11 @@
 
 #include <stdint.h>
 
-#include "base/macros.h"
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
@@ -19,12 +20,13 @@
 #include "media/base/decoder_buffer.h"
 #include "media/base/media_util.h"
 #include "media/base/mock_media_log.h"
+#include "media/base/simple_sync_token_client.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_rotation.h"
 #include "media/base/video_types.h"
-#include "media/gpu/fake_command_buffer_helper.h"
 #include "media/gpu/ipc/service/picture_buffer_manager.h"
+#include "media/gpu/test/fake_command_buffer_helper.h"
 #include "media/video/mock_video_decode_accelerator.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -43,7 +45,7 @@ namespace media {
 namespace {
 
 constexpr uint8_t kData[] = "foo";
-constexpr size_t kDataSize = arraysize(kData);
+constexpr size_t kDataSize = base::size(kData);
 
 scoped_refptr<DecoderBuffer> CreateDecoderBuffer(base::TimeDelta timestamp) {
   scoped_refptr<DecoderBuffer> buffer =
@@ -51,25 +53,6 @@ scoped_refptr<DecoderBuffer> CreateDecoderBuffer(base::TimeDelta timestamp) {
   buffer->set_timestamp(timestamp);
   return buffer;
 }
-
-// TODO(sandersd): Should be part of //media, as it is used by
-// MojoVideoDecoderService (production code) as well.
-class StaticSyncTokenClient : public VideoFrame::SyncTokenClient {
- public:
-  explicit StaticSyncTokenClient(const gpu::SyncToken& sync_token)
-      : sync_token_(sync_token) {}
-
-  void GenerateSyncToken(gpu::SyncToken* sync_token) final {
-    *sync_token = sync_token_;
-  }
-
-  void WaitSyncToken(const gpu::SyncToken& sync_token) final {}
-
- private:
-  gpu::SyncToken sync_token_;
-
-  DISALLOW_COPY_AND_ASSIGN(StaticSyncTokenClient);
-};
 
 VideoDecodeAccelerator::SupportedProfiles GetSupportedProfiles() {
   VideoDecodeAccelerator::SupportedProfiles profiles;
@@ -120,8 +103,8 @@ class VdaVideoDecoderTest : public testing::TestWithParam<bool> {
                        base::Unretained(this)),
         base::BindOnce(&VdaVideoDecoderTest::CreateCommandBufferHelper,
                        base::Unretained(this)),
-        base::BindOnce(&VdaVideoDecoderTest::CreateAndInitializeVda,
-                       base::Unretained(this)),
+        base::BindRepeating(&VdaVideoDecoderTest::CreateAndInitializeVda,
+                            base::Unretained(this)),
         GetCapabilities()));
     client_ = vdavd_.get();
   }
@@ -278,7 +261,7 @@ class VdaVideoDecoderTest : public testing::TestWithParam<bool> {
     gpu::SyncToken sync_token(gpu::GPU_IO,
                               gpu::CommandBufferId::FromUnsafeValue(1),
                               next_release_count_++);
-    StaticSyncTokenClient sync_token_client(sync_token);
+    SimpleSyncTokenClient sync_token_client(sync_token);
     video_frame->UpdateReleaseSyncToken(&sync_token_client);
     return sync_token;
   }
@@ -311,9 +294,7 @@ class VdaVideoDecoderTest : public testing::TestWithParam<bool> {
   testing::NiceMock<MockMediaLog> media_log_;
   testing::StrictMock<base::MockCallback<VideoDecoder::InitCB>> init_cb_;
   testing::StrictMock<base::MockCallback<VideoDecoder::OutputCB>> output_cb_;
-  testing::StrictMock<
-      base::MockCallback<VideoDecoder::WaitingForDecryptionKeyCB>>
-      waiting_cb_;
+  testing::StrictMock<base::MockCallback<WaitingCB>> waiting_cb_;
   testing::StrictMock<base::MockCallback<VideoDecoder::DecodeCB>> decode_cb_;
   testing::StrictMock<base::MockCallback<base::RepeatingClosure>> reset_cb_;
 
@@ -476,8 +457,8 @@ TEST_P(VdaVideoDecoderTest, Flush) {
   NotifyFlushDone();
 }
 
-INSTANTIATE_TEST_CASE_P(VdaVideoDecoder,
-                        VdaVideoDecoderTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(VdaVideoDecoder,
+                         VdaVideoDecoderTest,
+                         ::testing::Values(false, true));
 
 }  // namespace media

@@ -30,7 +30,7 @@ namespace {
 const int kMaxUncompressedBytes = 60 * 1000 * 1000;
 
 void MergePacketEvent(const AggregatedPacketEvent& from,
-    linked_ptr<AggregatedPacketEvent> to) {
+                      AggregatedPacketEvent* to) {
   for (int i = 0; i < from.base_packet_event_size(); i++) {
     const BasePacketEvent& from_base_event = from.base_packet_event(i);
     bool merged = false;
@@ -55,7 +55,7 @@ void MergePacketEvent(const AggregatedPacketEvent& from,
 }
 
 void MergeFrameEvent(const AggregatedFrameEvent& from,
-    linked_ptr<AggregatedFrameEvent> to) {
+                     AggregatedFrameEvent* to) {
   to->mutable_event_type()->MergeFrom(from.event_type());
   to->mutable_event_timestamp_ms()->MergeFrom(from.event_timestamp_ms());
   if (!to->has_encoded_frame_size() && from.has_encoded_frame_size())
@@ -80,7 +80,7 @@ bool PopulateDeserializedLog(base::BigEndianReader* reader,
     if (!reader->ReadU16(&proto_size))
       return false;
 
-    linked_ptr<AggregatedFrameEvent> frame_event(new AggregatedFrameEvent);
+    auto frame_event = std::make_unique<AggregatedFrameEvent>();
     if (!frame_event->ParseFromArray(reader->ptr(), proto_size))
       return false;
     if (!reader->Skip(proto_size))
@@ -97,11 +97,11 @@ bool PopulateDeserializedLog(base::BigEndianReader* reader,
     auto it = frame_event_map.find(relative_rtp_timestamp);
     if (it == frame_event_map.end()) {
       frame_event_map.insert(
-          std::make_pair(relative_rtp_timestamp, frame_event));
+          std::make_pair(relative_rtp_timestamp, std::move(frame_event)));
     } else {
       // Events for the same frame might have been split into more than one
       // proto. Merge them.
-      MergeFrameEvent(*frame_event, it->second);
+      MergeFrameEvent(*frame_event, it->second.get());
     }
   }
 
@@ -113,7 +113,7 @@ bool PopulateDeserializedLog(base::BigEndianReader* reader,
     if (!reader->ReadU16(&proto_size))
       return false;
 
-    linked_ptr<AggregatedPacketEvent> packet_event(new AggregatedPacketEvent);
+    auto packet_event = std::make_unique<AggregatedPacketEvent>();
     if (!packet_event->ParseFromArray(reader->ptr(), proto_size))
       return false;
     if (!reader->Skip(proto_size))
@@ -127,11 +127,11 @@ bool PopulateDeserializedLog(base::BigEndianReader* reader,
     auto it = packet_event_map.find(relative_rtp_timestamp);
     if (it == packet_event_map.end()) {
       packet_event_map.insert(
-          std::make_pair(relative_rtp_timestamp, packet_event));
+          std::make_pair(relative_rtp_timestamp, std::move(packet_event)));
     } else {
       // Events for the same frame might have been split into more than one
       // proto. Merge them.
-      MergePacketEvent(*packet_event, it->second);
+      MergePacketEvent(*packet_event, it->second.get());
     }
   }
 

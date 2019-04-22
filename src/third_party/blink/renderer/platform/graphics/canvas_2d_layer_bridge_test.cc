@@ -58,12 +58,12 @@
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
-#include "third_party/blink/renderer/platform/waitable_event.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
 
 #include <memory>
 
+using testing::_;
 using testing::AnyNumber;
 using testing::AtLeast;
 using testing::InSequence;
@@ -71,7 +71,6 @@ using testing::Pointee;
 using testing::Return;
 using testing::SetArgPointee;
 using testing::Test;
-using testing::_;
 
 namespace blink {
 
@@ -971,8 +970,8 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_PrepareMailboxWhileBackgroundRendering)
   bridge->SetLoggerForTesting(std::move(mock_logger));
 
   // Test entering hibernation
-  std::unique_ptr<WaitableEvent> hibernation_started_event =
-      std::make_unique<WaitableEvent>();
+  std::unique_ptr<base::WaitableEvent> hibernation_started_event =
+      std::make_unique<base::WaitableEvent>();
   EXPECT_CALL(
       *mock_logger_ptr,
       ReportHibernationEvent(Canvas2DLayerBridge::kHibernationScheduled));
@@ -1209,7 +1208,6 @@ TEST_F(Canvas2DLayerBridgeTest, ReleaseGpuMemoryBufferAfterBridgeDestroyed) {
 TEST_F(Canvas2DLayerBridgeTest, EnsureCCImageCacheUse) {
   auto color_params =
       CanvasColorParams(kSRGBCanvasColorSpace, kF16CanvasPixelFormat, kOpaque);
-  ASSERT_FALSE(color_params.NeedsSkColorSpaceXformCanvas());
 
   std::unique_ptr<Canvas2DLayerBridge> bridge =
       MakeBridge(IntSize(300, 300), Canvas2DLayerBridge::kEnableAcceleration,
@@ -1234,8 +1232,6 @@ TEST_F(Canvas2DLayerBridgeTest, EnsureCCImageCacheUse) {
 TEST_F(Canvas2DLayerBridgeTest, EnsureCCImageCacheUseWithColorConversion) {
   auto color_params = CanvasColorParams(kSRGBCanvasColorSpace,
                                         kRGBA8CanvasPixelFormat, kOpaque);
-  ASSERT_TRUE(color_params.NeedsSkColorSpaceXformCanvas());
-
   std::unique_ptr<Canvas2DLayerBridge> bridge =
       MakeBridge(IntSize(300, 300), Canvas2DLayerBridge::kEnableAcceleration,
                  color_params);

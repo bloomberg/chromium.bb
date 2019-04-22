@@ -10,7 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_hglobal.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/clipboard/clipboard.h"
+#include "ui/base/clipboard/clipboard_format_type.h"
 #include "ui/base/dragdrop/file_info.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_win.h"
 #include "url/gurl.h"
@@ -322,7 +322,7 @@ TEST(OSExchangeDataWinTest, CFHtml) {
   expected_cf_html += base::WideToUTF8(html);
   expected_cf_html.append("<!--EndFragment-->\r\n</body>\r\n</html>");
 
-  FORMATETC format = Clipboard::GetHtmlFormatType().ToFormatEtc();
+  FORMATETC format = ClipboardFormatType::GetHtmlType().ToFormatEtc();
   STGMEDIUM medium;
   IDataObject* data_object = OSExchangeDataProviderWin::GetIDataObject(data);
   EXPECT_EQ(S_OK, data_object->GetData(&format, &medium));

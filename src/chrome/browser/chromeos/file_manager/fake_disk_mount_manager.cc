@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "chromeos/disks/disk.h"
 
 namespace file_manager {
@@ -103,20 +104,30 @@ void FakeDiskMountManager::UnmountPath(const std::string& mount_path,
                                        UnmountPathCallback callback) {
   unmount_requests_.emplace_back(mount_path, options);
 
-  MountPointMap::iterator iter = mount_points_.find(mount_path);
-  if (iter == mount_points_.end())
-    return;
+  chromeos::MountError error = chromeos::MOUNT_ERROR_NONE;
+  auto unmount_iter = unmount_errors_.find(mount_path);
+  if (unmount_iter != unmount_errors_.end()) {
+    error = unmount_iter->second;
+    unmount_errors_.erase(unmount_iter);
+  } else {
+    MountPointMap::iterator iter = mount_points_.find(mount_path);
+    if (iter == mount_points_.end())
+      return;
 
-  const MountPointInfo mount_point = iter->second;
-  mount_points_.erase(iter);
-  for (auto& observer : observers_) {
-    observer.OnMountEvent(DiskMountManager::UNMOUNTING,
-                          chromeos::MOUNT_ERROR_NONE, mount_point);
+    const MountPointInfo mount_point = iter->second;
+    mount_points_.erase(iter);
+    for (auto& observer : observers_) {
+      observer.OnMountEvent(DiskMountManager::UNMOUNTING,
+                            chromeos::MOUNT_ERROR_NONE, mount_point);
+    }
   }
 
   // Enqueue callback so that |FakeDiskMountManager::FinishAllUnmountRequest()|
   // can call them.
-  pending_unmount_callbacks_.push(std::move(callback));
+  if (callback) {
+    // Some tests pass a null |callback|.
+    pending_unmount_callbacks_.push(base::BindOnce(std::move(callback), error));
+  }
 }
 
 void FakeDiskMountManager::RemountAllRemovableDrives(
@@ -129,11 +140,15 @@ bool FakeDiskMountManager::FinishAllUnmountPathRequests() {
     return false;
 
   while (!pending_unmount_callbacks_.empty()) {
-    std::move(pending_unmount_callbacks_.front())
-        .Run(chromeos::MOUNT_ERROR_NONE);
+    std::move(pending_unmount_callbacks_.front()).Run();
     pending_unmount_callbacks_.pop();
   }
   return true;
+}
+
+void FakeDiskMountManager::FailUnmountRequest(const std::string& mount_path,
+                                              chromeos::MountError error_code) {
+  unmount_errors_[mount_path] = error_code;
 }
 
 void FakeDiskMountManager::FormatMountedDevice(const std::string& mount_path) {

@@ -13,7 +13,7 @@
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "components/subresource_filter/content/browser/verified_ruleset_dealer.h"
-#include "components/subresource_filter/mojom/subresource_filter.mojom.h"
+#include "components/subresource_filter/core/mojom/subresource_filter.mojom.h"
 #include "content/public/browser/navigation_throttle.h"
 
 namespace subresource_filter {

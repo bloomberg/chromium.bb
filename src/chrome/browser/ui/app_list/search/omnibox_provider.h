@@ -36,9 +36,14 @@ class OmniboxProvider : public SearchProvider,
   // AutocompleteControllerDelegate overrides:
   void OnResultChanged(bool default_match_changed) override;
 
+  void RecordQueryLatencyHistogram();
+
   Profile* profile_;
-  bool is_zero_state_enabled_;
+  bool is_zero_state_enabled_ = false;
+  // True if the input is empty for zero state suggestion.
+  bool is_zero_state_input_ = false;
   AppListControllerDelegate* list_controller_;
+  base::TimeTicks query_start_time_;
 
   // The omnibox AutocompleteController that collects/sorts/dup-
   // eliminates the results as they come in.

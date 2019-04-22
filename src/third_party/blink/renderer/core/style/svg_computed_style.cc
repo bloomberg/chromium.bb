@@ -92,24 +92,21 @@ bool SVGComputedStyle::NonInheritedEqual(const SVGComputedStyle& other) const {
          svg_noninherited_flags == other.svg_noninherited_flags;
 }
 
-void SVGComputedStyle::InheritFrom(const SVGComputedStyle* svg_inherit_parent) {
-  if (!svg_inherit_parent)
-    return;
+void SVGComputedStyle::InheritFrom(const SVGComputedStyle& svg_inherit_parent) {
+  fill = svg_inherit_parent.fill;
+  stroke = svg_inherit_parent.stroke;
+  inherited_resources = svg_inherit_parent.inherited_resources;
 
-  fill = svg_inherit_parent->fill;
-  stroke = svg_inherit_parent->stroke;
-  inherited_resources = svg_inherit_parent->inherited_resources;
-
-  svg_inherited_flags = svg_inherit_parent->svg_inherited_flags;
+  svg_inherited_flags = svg_inherit_parent.svg_inherited_flags;
 }
 
 void SVGComputedStyle::CopyNonInheritedFromCached(
-    const SVGComputedStyle* other) {
-  svg_noninherited_flags = other->svg_noninherited_flags;
-  stops = other->stops;
-  misc = other->misc;
-  geometry = other->geometry;
-  resources = other->resources;
+    const SVGComputedStyle& other) {
+  svg_noninherited_flags = other.svg_noninherited_flags;
+  stops = other.stops;
+  misc = other.misc;
+  geometry = other.geometry;
+  resources = other.resources;
 }
 
 scoped_refptr<SVGDashArray> SVGComputedStyle::InitialStrokeDashArray() {
@@ -117,7 +114,7 @@ scoped_refptr<SVGDashArray> SVGComputedStyle::InitialStrokeDashArray() {
   return initial_dash_array;
 }
 
-StyleDifference SVGComputedStyle::Diff(const SVGComputedStyle* other) const {
+StyleDifference SVGComputedStyle::Diff(const SVGComputedStyle& other) const {
   StyleDifference style_difference;
 
   if (DiffNeedsLayoutAndPaintInvalidation(other)) {
@@ -131,111 +128,120 @@ StyleDifference SVGComputedStyle::Diff(const SVGComputedStyle* other) const {
 }
 
 bool SVGComputedStyle::DiffNeedsLayoutAndPaintInvalidation(
-    const SVGComputedStyle* other) const {
+    const SVGComputedStyle& other) const {
   // If resources change, we need a relayout, as the presence of resources
   // influences the visual rect.
-  if (resources != other->resources)
+  if (resources != other.resources)
     return true;
 
   // If markers change, we need a relayout, as marker boundaries are cached in
   // LayoutSVGPath.
-  if (inherited_resources != other->inherited_resources)
+  if (inherited_resources != other.inherited_resources)
     return true;
 
   // All text related properties influence layout.
   if (svg_inherited_flags.text_anchor !=
-          other->svg_inherited_flags.text_anchor ||
+          other.svg_inherited_flags.text_anchor ||
       svg_inherited_flags.dominant_baseline !=
-          other->svg_inherited_flags.dominant_baseline ||
+          other.svg_inherited_flags.dominant_baseline ||
       svg_noninherited_flags.f.alignment_baseline !=
-          other->svg_noninherited_flags.f.alignment_baseline ||
+          other.svg_noninherited_flags.f.alignment_baseline ||
       svg_noninherited_flags.f.baseline_shift !=
-          other->svg_noninherited_flags.f.baseline_shift)
+          other.svg_noninherited_flags.f.baseline_shift)
     return true;
 
   // Text related properties influence layout.
-  if (misc->baseline_shift_value != other->misc->baseline_shift_value)
+  if (misc->baseline_shift_value != other.misc->baseline_shift_value)
     return true;
 
   // These properties affect the cached stroke bounding box rects.
-  if (svg_inherited_flags.cap_style != other->svg_inherited_flags.cap_style ||
-      svg_inherited_flags.join_style != other->svg_inherited_flags.join_style)
+  if (svg_inherited_flags.cap_style != other.svg_inherited_flags.cap_style ||
+      svg_inherited_flags.join_style != other.svg_inherited_flags.join_style)
     return true;
 
   // vector-effect changes require a re-layout.
   if (svg_noninherited_flags.f.vector_effect !=
-      other->svg_noninherited_flags.f.vector_effect)
+      other.svg_noninherited_flags.f.vector_effect)
     return true;
 
-  // Some stroke properties, requires relayouts, as the cached stroke boundaries
+  // Some stroke properties require relayouts as the cached stroke boundaries
   // need to be recalculated.
-  if (stroke.Get() != other->stroke.Get()) {
-    if (stroke->width != other->stroke->width ||
-        stroke->paint != other->stroke->paint ||
-        stroke->miter_limit != other->stroke->miter_limit ||
-        *stroke->dash_array != *other->stroke->dash_array ||
-        stroke->dash_offset != other->stroke->dash_offset ||
-        stroke->visited_link_paint != other->stroke->visited_link_paint)
+  if (stroke.Get() != other.stroke.Get()) {
+    if (stroke->width != other.stroke->width ||
+        stroke->miter_limit != other.stroke->miter_limit)
+      return true;
+    // If the stroke is toggled from/to 'none' we need to relayout, because the
+    // stroke shape will have changed.
+    if (stroke->paint.IsNone() != other.stroke->paint.IsNone())
+      return true;
+    // If the dash array is toggled from/to 'none' we need to relayout, because
+    // some shapes will decide on which codepath to use based on the presence
+    // of a dash array.
+    if (stroke->dash_array->IsEmpty() != other.stroke->dash_array->IsEmpty())
       return true;
   }
 
   // The geometry properties require a re-layout.
-  if (geometry.Get() != other->geometry.Get() && *geometry != *other->geometry)
+  if (geometry.Get() != other.geometry.Get() && *geometry != *other.geometry)
     return true;
 
   return false;
 }
 
 bool SVGComputedStyle::DiffNeedsPaintInvalidation(
-    const SVGComputedStyle* other) const {
-  if (stroke->opacity != other->stroke->opacity)
-    return true;
+    const SVGComputedStyle& other) const {
+  if (stroke.Get() != other.stroke.Get()) {
+    if (stroke->paint != other.stroke->paint ||
+        stroke->opacity != other.stroke->opacity ||
+        stroke->visited_link_paint != other.stroke->visited_link_paint)
+      return true;
+    // Changes to the dash effect only require a repaint because we don't
+    // include it when computing (approximating) the stroke boundaries during
+    // layout.
+    if (stroke->dash_offset != other.stroke->dash_offset ||
+        *stroke->dash_array != *other.stroke->dash_array)
+      return true;
+  }
 
   // Painting related properties only need paint invalidation.
-  if (misc.Get() != other->misc.Get()) {
-    if (misc->flood_color != other->misc->flood_color ||
+  if (misc.Get() != other.misc.Get()) {
+    if (misc->flood_color != other.misc->flood_color ||
         misc->flood_color_is_current_color !=
-            other->misc->flood_color_is_current_color ||
-        misc->flood_opacity != other->misc->flood_opacity ||
-        misc->lighting_color != other->misc->lighting_color ||
+            other.misc->flood_color_is_current_color ||
+        misc->flood_opacity != other.misc->flood_opacity ||
+        misc->lighting_color != other.misc->lighting_color ||
         misc->lighting_color_is_current_color !=
-            other->misc->lighting_color_is_current_color)
+            other.misc->lighting_color_is_current_color)
       return true;
   }
 
   // If fill changes, we just need to issue paint invalidations. Fill boundaries
   // are not influenced by this, only by the Path, that LayoutSVGPath contains.
-  if (fill.Get() != other->fill.Get()) {
-    if (fill->paint != other->fill->paint ||
-        fill->opacity != other->fill->opacity)
+  if (fill.Get() != other.fill.Get()) {
+    if (fill->paint != other.fill->paint ||
+        fill->opacity != other.fill->opacity)
       return true;
   }
 
   // If gradient stops change, we just need to issue paint invalidations. Style
-  // updates are already handled through LayoutSVGGradientSTop.
-  if (stops != other->stops)
+  // updates are already handled through SVGStopElement.
+  if (stops != other.stops)
     return true;
 
   // Changes of these flags only cause paint invalidations.
-  if (svg_inherited_flags.color_rendering !=
-          other->svg_inherited_flags.color_rendering ||
-      svg_inherited_flags.shape_rendering !=
-          other->svg_inherited_flags.shape_rendering ||
-      svg_inherited_flags.clip_rule != other->svg_inherited_flags.clip_rule ||
-      svg_inherited_flags.fill_rule != other->svg_inherited_flags.fill_rule ||
+  if (svg_inherited_flags.shape_rendering !=
+          other.svg_inherited_flags.shape_rendering ||
+      svg_inherited_flags.clip_rule != other.svg_inherited_flags.clip_rule ||
+      svg_inherited_flags.fill_rule != other.svg_inherited_flags.fill_rule ||
       svg_inherited_flags.color_interpolation !=
-          other->svg_inherited_flags.color_interpolation ||
+          other.svg_inherited_flags.color_interpolation ||
       svg_inherited_flags.color_interpolation_filters !=
-          other->svg_inherited_flags.color_interpolation_filters ||
-      svg_inherited_flags.paint_order != other->svg_inherited_flags.paint_order)
-    return true;
-
-  if (svg_noninherited_flags.f.buffered_rendering !=
-      other->svg_noninherited_flags.f.buffered_rendering)
+          other.svg_inherited_flags.color_interpolation_filters ||
+      svg_inherited_flags.paint_order != other.svg_inherited_flags.paint_order)
     return true;
 
   if (svg_noninherited_flags.f.mask_type !=
-      other->svg_noninherited_flags.f.mask_type)
+      other.svg_noninherited_flags.f.mask_type)
     return true;
 
   return false;

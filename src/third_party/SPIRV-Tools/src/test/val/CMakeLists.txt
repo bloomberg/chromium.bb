@@ -15,6 +15,8 @@
 set(VAL_TEST_COMMON_SRCS
   ${CMAKE_CURRENT_SOURCE_DIR}/../test_fixture.h
   ${CMAKE_CURRENT_SOURCE_DIR}/../unit_spirv.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/val_code_generator.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/val_code_generator.h
   ${CMAKE_CURRENT_SOURCE_DIR}/val_fixtures.h
 )
 
@@ -29,6 +31,7 @@ add_spvtools_unittest(TARGET val_abcde
        val_capability_test.cpp
        val_cfg_test.cpp
        val_composites_test.cpp
+       val_constants_test.cpp
        val_conversion_test.cpp
        val_data_test.cpp
        val_decoration_test.cpp
@@ -45,10 +48,12 @@ add_spvtools_unittest(TARGET val_limits
   SRCS val_limits_test.cpp
        ${VAL_TEST_COMMON_SRCS}
   LIBS ${SPIRV_TOOLS}
+  PCH_FILE pch_test_val
 )
 
-add_spvtools_unittest(TARGET val_ijklmnop
+add_spvtools_unittest(TARGET val_fghijklmnop
   SRCS
+       val_function_test.cpp
        val_id_test.cpp
        val_image_test.cpp
        val_interfaces_test.cpp

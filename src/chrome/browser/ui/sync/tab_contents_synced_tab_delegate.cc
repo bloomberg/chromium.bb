@@ -101,7 +101,7 @@ void TabContentsSyncedTabDelegate::GetSerializedNavigationAtIndex(
     // the page state can be expensive to serialize.
     *serialized_entry =
         sessions::ContentSerializedNavigationBuilder::FromNavigationEntry(
-            i, *entry,
+            i, entry,
             sessions::ContentSerializedNavigationBuilder::EXCLUDE_PAGE_STATE);
   }
 }
@@ -131,7 +131,7 @@ bool TabContentsSyncedTabDelegate::ShouldSync(
     return false;
 
   // Is there a valid NavigationEntry?
-  if (ProfileIsSupervised() && GetBlockedNavigations()->size() > 0)
+  if (ProfileIsSupervised() && !GetBlockedNavigations()->empty())
     return true;
 
   if (IsInitialBlankNavigation())

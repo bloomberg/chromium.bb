@@ -25,7 +25,7 @@ cr.define('cloudprint', function() {
     processInvite(invitation, accept) {}
 
     /** @override */
-    submit(destination, printTicket, documentInfo, data) {}
+    submit(destination, printTicket, documentTitle, data) {}
 
     /** @override */
     printer(printerId, origin, account) {}

@@ -14,9 +14,9 @@
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -129,12 +129,22 @@ DownloadPrefs::DownloadPrefs(Profile* profile) : profile_(profile) {
       prefs::kSaveFileDefaultDirectory,
       prefs::kDownloadDefaultDirectory
   };
-  for (size_t i = 0; i < arraysize(path_pref); ++i) {
+  for (size_t i = 0; i < base::size(path_pref); ++i) {
     const base::FilePath current = prefs->GetFilePath(path_pref[i]);
     base::FilePath migrated;
     if (!current.empty() &&
         file_manager::util::MigratePathFromOldFormat(
-            profile_, current, &migrated)) {
+            profile_, GetDefaultDownloadDirectory(), current, &migrated)) {
+      prefs->SetFilePath(path_pref[i], migrated);
+
+      // In M73 migrate /home/chronos/u-<hash>/Downloads to
+      // /home/chronos/u-<hash>/MyFiles/Downloads.  This code can be removed
+      // when M72 and earlier is no longer supported.
+    } else if (file_manager::util::MigrateFromDownloadsToMyFiles(
+                   profile_, current, &migrated)) {
+      prefs->SetFilePath(path_pref[i], migrated);
+    } else if (file_manager::util::MigrateToDriveFs(profile_, current,
+                                                    &migrated)) {
       prefs->SetFilePath(path_pref[i], migrated);
     }
   }
@@ -267,11 +277,6 @@ base::FilePath DownloadPrefs::GetDefaultDownloadDirectoryForProfile() const {
 }
 
 // static
-void DownloadPrefs::ReinitializeDefaultDownloadDirectoryForTesting() {
-  GetDefaultDownloadDirectorySingleton().Initialize();
-}
-
-// static
 const base::FilePath& DownloadPrefs::GetDefaultDownloadDirectory() {
   return GetDefaultDownloadDirectorySingleton().path();
 }
@@ -298,7 +303,7 @@ DownloadPrefs* DownloadPrefs::FromBrowserContext(
 
 bool DownloadPrefs::IsFromTrustedSource(const download::DownloadItem& item) {
   if (!trusted_sources_manager_)
-    trusted_sources_manager_.reset(TrustedSourcesManager::Create());
+    trusted_sources_manager_ = TrustedSourcesManager::Create();
   return trusted_sources_manager_->IsFromTrustedSource(item.GetURL());
 }
 
@@ -423,6 +428,10 @@ void DownloadPrefs::ResetAutoOpen() {
   SaveAutoOpenState();
 }
 
+void DownloadPrefs::SkipSanitizeDownloadTargetPathForTesting() {
+  skip_sanitize_download_target_path_for_testing_ = true;
+}
+
 void DownloadPrefs::SaveAutoOpenState() {
   std::string extensions;
   for (auto it = auto_open_.begin(); it != auto_open_.end(); ++it) {
@@ -443,13 +452,26 @@ void DownloadPrefs::SaveAutoOpenState() {
 base::FilePath DownloadPrefs::SanitizeDownloadTargetPath(
     const base::FilePath& path) const {
 #if defined(OS_CHROMEOS)
-  // If |path| isn't absolute, fall back to the default directory.
-  base::FilePath profile_download_dir = GetDefaultDownloadDirectoryForProfile();
-  if (!path.IsAbsolute() || path.ReferencesParent())
-    return profile_download_dir;
+  if (skip_sanitize_download_target_path_for_testing_)
+    return path;
 
-  // Allow default download directory and subdirs.
-  if (profile_download_dir == path || profile_download_dir.IsParent(path))
+  base::FilePath migrated_drive_path;
+  // Managed prefs may force a legacy Drive path as the download path. Ensure
+  // the path is valid when DriveFS is enabled.
+  if (file_manager::util::MigrateToDriveFs(profile_, path,
+                                           &migrated_drive_path)) {
+    return SanitizeDownloadTargetPath(migrated_drive_path);
+  }
+
+  // If |path| isn't absolute, fall back to the default directory.
+  base::FilePath profile_myfiles_path =
+      file_manager::util::GetMyFilesFolderForProfile(profile_);
+
+  if (!path.IsAbsolute() || path.ReferencesParent())
+    return profile_myfiles_path;
+
+  // Allow myfiles directory and subdirs.
+  if (profile_myfiles_path == path || profile_myfiles_path.IsParent(path))
     return path;
 
   // Allow paths under the drive mount point.
@@ -475,7 +497,7 @@ base::FilePath DownloadPrefs::SanitizeDownloadTargetPath(
     return path;
 
   // Fall back to the default download directory for all other paths.
-  return profile_download_dir;
+  return GetDefaultDownloadDirectoryForProfile();
 #endif
   return path;
 }

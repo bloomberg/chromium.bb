@@ -86,11 +86,13 @@ object may appear in any order.
 | `artifact_permanent_location` | string | **Optional.** The URI of the root location where the artifacts are stored. If present, any artifact locations are taken to be relative to this location. Currently only the `gs://` scheme is supported. |
 | `build_number` | string | **Optional.** If this test run was produced on a bot, this should be the build number of the run, e.g., "1234". |
 | `builder_name` | string | **Optional.** If this test run was produced on a bot, this should be the builder name of the bot, e.g., "Linux Tests". |
+| `metadata` | dict | **Optional.** It maps to a dictionary that contains all the key value pairs used as metadata. This dictionary also includes the tags, test name prefix and test expectations file paths used during a test run. |
 | `chromium_revision` | string | **Optional.** The revision of the current Chromium checkout, if relevant, e.g. "356123". |
 | `has_pretty_patch` | bool | **Optional, layout test specific, deprecated.** Whether the web tests' output contains PrettyDiff-formatted diffs for test failures. |
 | `has_wdiff` | bool | **Optional, layout test specific, deprecated.** Whether the web tests' output contains wdiff-formatted diffs for test failures. |
 | `layout_tests_dir` | string | **Optional, layout test specific.** Path to the web_tests directory for the test run (used so that we can link to the tests used in the run). |
 | `pixel_tests_enabled` | bool | **Optional, layout test specific.** Whether the web tests' were run with the --pixel-tests flag.  |
+| `flag_name` | string | **Optional, layout test specific.** The flags used when running tests|
 | `fixable` | integer | **Optional, deprecated.** The number of tests that were run but were expected to fail. |
 | `num_flaky` | integer | **Optional, deprecated.** The number of tests that were run more than once and produced different results each time. |
 | `num_passes` | integer | **Optional, deprecated.** The number of successful tests; equivalent to `num_failures_by_type["Pass"]` |

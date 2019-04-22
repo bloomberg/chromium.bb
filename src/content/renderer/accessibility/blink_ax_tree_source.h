@@ -18,6 +18,7 @@
 
 namespace content {
 
+class AXImageAnnotator;
 class BlinkAXTreeSource;
 class RenderFrameImpl;
 
@@ -72,6 +73,13 @@ class BlinkAXTreeSource
     max_image_data_size_ = size;
   }
 
+  // The following methods add or remove an image annotator which is used to
+  // provide automatic labels for images.
+  void AddImageAnnotator(AXImageAnnotator* const annotator) {
+    image_annotator_ = annotator;
+  }
+  void RemoveImageAnnotator() { image_annotator_ = nullptr; }
+
   // Query or update a set of IDs for which we should load inline text boxes.
   bool ShouldLoadInlineTextBoxes(const blink::WebAXObject& obj) const;
   void SetLoadInlineTextBoxesForId(int32_t id);
@@ -110,10 +118,19 @@ class BlinkAXTreeSource
 
   blink::WebAXObject ComputeRoot() const;
 
-  uint32_t kMaxStringAttributeLength = 10000;
-  void TruncateAndAddStringAttribute(AXContentNodeData* dst,
-                                     ax::mojom::StringAttribute attribute,
-                                     const std::string& value) const;
+  // Max length for attributes such as aria-label.
+  static const uint32_t kMaxStringAttributeLength = 10000;
+  // Max length for a static text name.
+  // Length of War and Peace (http://www.gutenberg.org/files/2600/2600-0.txt).
+  static const uint32_t kMaxStaticTextLength = 3227574;
+  void TruncateAndAddStringAttribute(
+      AXContentNodeData* dst,
+      ax::mojom::StringAttribute attribute,
+      const std::string& value,
+      uint32_t max_len = kMaxStringAttributeLength) const;
+
+  void AddImageAnnotations(blink::WebAXObject node,
+                           AXContentNodeData* out_data) const;
 
   RenderFrameImpl* render_frame_;
 
@@ -129,6 +146,12 @@ class BlinkAXTreeSource
   int image_data_node_id_ = -1;
 
   gfx::Size max_image_data_size_;
+
+  AXImageAnnotator* image_annotator_ = nullptr;
+
+  // Whether we should highlight annotation results visually on the page
+  // for debugging.
+  bool image_annotation_debugging_ = false;
 
   // These are updated when calling |Freeze|.
   bool frozen_ = false;

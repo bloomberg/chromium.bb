@@ -24,12 +24,12 @@ bool PositionWindowInScreenCoordinates(aura::Window* window) {
 
 DesktopScreenPositionClient::DesktopScreenPositionClient(
     aura::Window* root_window)
-    : wm::DefaultScreenPositionClient(), root_window_(root_window) {
+    : root_window_(root_window) {
   aura::client::SetScreenPositionClient(root_window_, this);
 }
 
 DesktopScreenPositionClient::~DesktopScreenPositionClient() {
-  aura::client::SetScreenPositionClient(root_window_, NULL);
+  aura::client::SetScreenPositionClient(root_window_, nullptr);
 }
 
 void DesktopScreenPositionClient::SetBounds(aura::Window* window,
@@ -38,12 +38,13 @@ void DesktopScreenPositionClient::SetBounds(aura::Window* window,
   // TODO(jam): Use the 3rd parameter, |display|.
   aura::Window* root = window->GetRootWindow();
 
-  // This method assumes that |window| does not have an associated
-  // DesktopNativeWidgetAura.
   internal::NativeWidgetPrivate* desktop_native_widget =
       DesktopNativeWidgetAura::ForWindow(root);
-  DCHECK(!desktop_native_widget ||
-         desktop_native_widget->GetNativeView() != window);
+  if (desktop_native_widget &&
+      desktop_native_widget->GetNativeView() == window) {
+    desktop_native_widget->SetBounds(bounds);
+    return;
+  }
 
   if (PositionWindowInScreenCoordinates(window)) {
     // The caller expects windows we consider "embedded" to be placed in the

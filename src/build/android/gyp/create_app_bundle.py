@@ -44,6 +44,21 @@ _SHORTEN_LANGUAGE_CODE_MAP = {
   'fil': 'tl',  # Filipino to Tagalog.
 }
 
+# A list of extensions corresponding to files that should never be compressed
+# in the bundle. This used to be handled by bundletool automatically until
+# release 0.8.0, which required that this be passed to the BundleConfig
+# file instead.
+#
+# This is the original list, which was taken from aapt2, with 'webp' added to
+# it (which curiously was missing from the list).
+_UNCOMPRESSED_FILE_EXTS = [
+    '3g2', '3gp', '3gpp', '3gpp2', 'aac', 'amr', 'awb', 'git', 'imy', 'jet',
+    'jpeg', 'jpg', 'm4a', 'm4v', 'mid', 'midi', 'mkv', 'mp2', 'mp3', 'mp4',
+    'mpeg', 'mpg', 'ogg', 'png', 'rtttl', 'smf', 'wav', 'webm', 'webp', 'wmv',
+    'xmf'
+]
+
+
 def _ParseArgs(args):
   parser = argparse.ArgumentParser()
   parser.add_argument('--out-bundle', required=True,
@@ -56,11 +71,23 @@ def _ParseArgs(args):
       '--rtxt-out-path', help='Path to combined R.txt file for bundle.')
   parser.add_argument('--uncompressed-assets', action='append',
                       help='GN-list of uncompressed assets.')
-  parser.add_argument('--uncompress-shared-libraries', action='append',
-                      help='Whether to store native libraries uncompressed. '
-                      'This is a string to allow @FileArg usage.')
+  parser.add_argument(
+      '--compress-shared-libraries',
+      action='store_true',
+      help='Whether to store native libraries compressed.')
   parser.add_argument('--split-dimensions',
                       help="GN-list of split dimensions to support.")
+  parser.add_argument(
+      '--base-module-rtxt-path',
+      help='Optional path to the base module\'s R.txt file, only used with '
+      'language split dimension.')
+  parser.add_argument(
+      '--base-whitelist-rtxt-path',
+      help='Optional path to an R.txt file, string resources '
+      'listed there _and_ in --base-module-rtxt-path will '
+      'be kept in the base bundle module, even if language'
+      ' splitting is enabled.')
+
   parser.add_argument('--keystore-path', help='Keystore path')
   parser.add_argument('--keystore-password', help='Keystore password')
   parser.add_argument('--key-name', help='Keystore key name')
@@ -93,13 +120,6 @@ def _ParseArgs(args):
 
   options.uncompressed_assets = set(uncompressed_list)
 
-  # Merge uncompressed native libs flags, they all must have the same value.
-  if options.uncompress_shared_libraries:
-    uncompressed_libs = set(options.uncompress_shared_libraries)
-    if len(uncompressed_libs) > 1:
-      parser.error('Inconsistent uses of --uncompress-native-libs!')
-    options.uncompress_shared_libraries = 'True' in uncompressed_libs
-
   # Check that all split dimensions are valid
   if options.split_dimensions:
     options.split_dimensions = build_utils.ParseGnList(options.split_dimensions)
@@ -107,6 +127,21 @@ def _ParseArgs(args):
       if dim.upper() not in _ALL_SPLIT_DIMENSIONS:
         parser.error('Invalid split dimension "%s" (expected one of: %s)' % (
             dim, ', '.join(x.lower() for x in _ALL_SPLIT_DIMENSIONS)))
+
+  # As a special case, --base-whitelist-rtxt-path can be empty to indicate
+  # that the module doesn't need such a whitelist. That's because it is easier
+  # to check this condition here than through GN rules :-(
+  if options.base_whitelist_rtxt_path == '':
+    options.base_module_rtxt_path = None
+
+  # Check --base-module-rtxt-path and --base-whitelist-rtxt-path usage.
+  if options.base_module_rtxt_path:
+    if not options.base_whitelist_rtxt_path:
+      parser.error(
+          '--base-module-rtxt-path requires --base-whitelist-rtxt-path')
+    if 'language' not in options.split_dimensions:
+      parser.error('--base-module-rtxt-path is only valid with '
+                   'language-based splits.')
 
   return options
 
@@ -116,16 +151,17 @@ def _MakeSplitDimension(value, enabled):
   return {'value': value, 'negate': not enabled}
 
 
-def _GenerateBundleConfigJson(uncompressed_assets,
-                              uncompress_shared_libraries,
-                              split_dimensions):
+def _GenerateBundleConfigJson(uncompressed_assets, compress_shared_libraries,
+                              split_dimensions, base_master_resource_ids):
   """Generate a dictionary that can be written to a JSON BuildConfig.
 
   Args:
     uncompressed_assets: A list or set of file paths under assets/ that always
       be stored uncompressed.
-    uncompress_shared_libraries: Boolean, whether to uncompress all native libs.
+    compress_shared_libraries: Boolean, whether to compress native libs.
     split_dimensions: list of split dimensions.
+    base_master_resource_ids: Optional list of 32-bit resource IDs to keep
+      inside the base module, even when split dimensions are enabled.
   Returns:
     A dictionary that can be written as a json file.
   """
@@ -138,28 +174,32 @@ def _GenerateBundleConfigJson(uncompressed_assets,
   split_dimensions = [ _MakeSplitDimension(dim, dim in split_dimensions)
                        for dim in _ALL_SPLIT_DIMENSIONS ]
 
-  # Compute uncompressedGlob list.
-  if uncompress_shared_libraries:
-    uncompressed_globs = [
-      'lib/*/*.so',        # All native libraries.
-    ]
-  else:
-    uncompressed_globs = [
-      'lib/*/crazy.*',     # Native libraries loaded by the crazy linker.
-    ]
-
+  # Native libraries loaded by the crazy linker.
+  # Whether other .so files are compressed is controlled by
+  # "uncompressNativeLibraries".
+  uncompressed_globs = ['lib/*/crazy.*']
   uncompressed_globs.extend('assets/' + x for x in uncompressed_assets)
+  # NOTE: Use '**' instead of '*' to work through directories!
+  uncompressed_globs.extend('**.' + ext for ext in _UNCOMPRESSED_FILE_EXTS)
 
   data = {
-    'optimizations': {
-      'splitsConfig': {
-        'splitDimension': split_dimensions,
+      'optimizations': {
+          'splitsConfig': {
+              'splitDimension': split_dimensions,
+          },
+          'uncompressNativeLibraries': {
+              'enabled': not compress_shared_libraries,
+          },
       },
-    },
-    'compression': {
-       'uncompressedGlob': sorted(uncompressed_globs),
-    },
+      'compression': {
+          'uncompressedGlob': sorted(uncompressed_globs),
+      },
   }
+
+  if base_master_resource_ids:
+    data['master_resources'] = {
+        'resource_ids': list(base_master_resource_ids),
+    }
 
   return json.dumps(data, indent=2)
 
@@ -178,8 +218,7 @@ def _RewriteLanguageAssetPath(src_path):
     return [src_path]
 
   locale = src_path[len(_LOCALES_SUBDIR):-4]
-  android_locale = resource_utils.CHROME_TO_ANDROID_LOCALE_MAP.get(
-      locale, locale)
+  android_locale = resource_utils.ToAndroidLocaleName(locale)
 
   # The locale format is <lang>-<region> or <lang>. Extract the language.
   pos = android_locale.find('-')
@@ -247,6 +286,21 @@ def _SplitModuleForAssetTargeting(src_module_zip, tmp_dir, split_dimensions):
     return tmp_zip
 
 
+def _GenerateBaseResourcesWhitelist(base_module_rtxt_path,
+                                    base_whitelist_rtxt_path):
+  """Generate a whitelist of base master resource ids.
+
+  Args:
+    base_module_rtxt_path: Path to base module R.txt file.
+    base_whitelist_rtxt_path: Path to base whitelist R.txt file.
+  Returns:
+    list of resource ids.
+  """
+  ids_map = resource_utils.GenerateStringResourcesWhitelist(
+      base_module_rtxt_path, base_whitelist_rtxt_path)
+  return ids_map.keys()
+
+
 def main(args):
   args = build_utils.ExpandFileArgs(args)
   options = _ParseArgs(args)
@@ -255,13 +309,20 @@ def main(args):
   if options.split_dimensions:
     split_dimensions = [x.upper() for x in options.split_dimensions]
 
-  bundle_config = _GenerateBundleConfigJson(options.uncompressed_assets,
-                                            options.uncompress_shared_libraries,
-                                            split_dimensions)
+
   with build_utils.TempDir() as tmp_dir:
     module_zips = [
         _SplitModuleForAssetTargeting(module, tmp_dir, split_dimensions) \
         for module in options.module_zips]
+
+    base_master_resource_ids = None
+    if options.base_module_rtxt_path:
+      base_master_resource_ids = _GenerateBaseResourcesWhitelist(
+          options.base_module_rtxt_path, options.base_whitelist_rtxt_path)
+
+    bundle_config = _GenerateBundleConfigJson(
+        options.uncompressed_assets, options.compress_shared_libraries,
+        split_dimensions, base_master_resource_ids)
 
     tmp_bundle = os.path.join(tmp_dir, 'tmp_bundle')
 

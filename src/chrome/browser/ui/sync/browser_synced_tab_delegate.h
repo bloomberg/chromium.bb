@@ -32,6 +32,8 @@ class BrowserSyncedTabDelegate
   explicit BrowserSyncedTabDelegate(content::WebContents* web_contents);
   friend class content::WebContentsUserData<BrowserSyncedTabDelegate>;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(BrowserSyncedTabDelegate);
 };
 

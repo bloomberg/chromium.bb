@@ -10,18 +10,6 @@
 
 namespace content {
 
-// Helper class to set the overscroll history navigation mode temporarily in
-// tests.
-class ScopedHistoryNavigationMode {
- public:
-  explicit ScopedHistoryNavigationMode(
-      OverscrollConfig::HistoryNavigationMode mode);
-  ~ScopedHistoryNavigationMode();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ScopedHistoryNavigationMode);
-};
-
 // Helper class to set the pull-to-refresh mode temporarily in tests.
 class ScopedPullToRefreshMode {
  public:

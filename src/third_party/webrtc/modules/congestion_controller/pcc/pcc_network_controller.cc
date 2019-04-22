@@ -10,8 +10,10 @@
 
 #include <algorithm>
 
-#include "absl/memory/memory.h"
+#include "absl/types/optional.h"
+#include "api/units/data_size.h"
 #include "modules/congestion_controller/pcc/pcc_network_controller.h"
+#include "rtc_base/checks.h"
 
 namespace webrtc {
 namespace pcc {
@@ -371,8 +373,6 @@ NetworkControlUpdate PccNetworkController::OnTransportLossReport(
 }
 
 NetworkControlUpdate PccNetworkController::OnStreamsConfig(StreamsConfig msg) {
-  // TODO(srte): Handle unacknowledged rate allocation.
-  RTC_DCHECK(msg.unacknowledged_rate_allocation.IsZero());
   return NetworkControlUpdate();
 }
 

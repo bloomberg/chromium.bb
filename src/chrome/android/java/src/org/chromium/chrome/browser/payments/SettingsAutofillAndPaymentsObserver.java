@@ -5,7 +5,9 @@
 package org.chromium.chrome.browser.payments;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -84,7 +86,7 @@ public class SettingsAutofillAndPaymentsObserver {
      */
     public void notifyOnAddressUpdated(AutofillAddress address) {
         for (Observer observer : sObservers) {
-            ThreadUtils.postOnUiThread(new Runnable() {
+            PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
                 @Override
                 public void run() {
                     observer.onAddressUpdated(address);
@@ -100,7 +102,7 @@ public class SettingsAutofillAndPaymentsObserver {
      */
     public void notifyOnAddressDeleted(String guid) {
         for (Observer observer : sObservers) {
-            ThreadUtils.postOnUiThread(new Runnable() {
+            PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
                 @Override
                 public void run() {
                     observer.onAddressDeleted(guid);
@@ -116,7 +118,7 @@ public class SettingsAutofillAndPaymentsObserver {
      */
     public void notifyOnCreditCardUpdated(CreditCard card) {
         for (Observer observer : sObservers) {
-            ThreadUtils.postOnUiThread(new Runnable() {
+            PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
                 @Override
                 public void run() {
                     observer.onCreditCardUpdated(card);
@@ -132,7 +134,7 @@ public class SettingsAutofillAndPaymentsObserver {
      */
     public void notifyOnCreditCardDeleted(String guid) {
         for (Observer observer : sObservers) {
-            ThreadUtils.postOnUiThread(new Runnable() {
+            PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
                 @Override
                 public void run() {
                     observer.onCreditCardDeleted(guid);

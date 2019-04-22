@@ -10,7 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/tether/disconnect_tethering_request_sender.h"
 #include "chromeos/components/tether/network_configuration_remover.h"
 #include "chromeos/components/tether/tether_disconnector.h"
@@ -67,7 +67,7 @@ void TetherNetworkDisconnectionHandler::NetworkConnectionStateChanged(
 void TetherNetworkDisconnectionHandler::HandleActiveWifiNetworkDisconnection(
     const std::string& network_guid,
     const std::string& network_path) {
-  PA_LOG(VERBOSE) << "Connection to active host (Wi-Fi network GUID "
+  PA_LOG(WARNING) << "Connection to active host (Wi-Fi network GUID "
                   << network_guid << ") has been lost.";
 
   // Check if Wi-Fi is enabled; if it is, this indicates that the connection

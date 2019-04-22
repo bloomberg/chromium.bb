@@ -47,20 +47,7 @@ constexpr int kEditingModifier = FWL_KEYFLAG_Ctrl;
 CFWL_Edit::CFWL_Edit(const CFWL_App* app,
                      std::unique_ptr<CFWL_WidgetProperties> properties,
                      CFWL_Widget* pOuter)
-    : CFWL_Widget(app, std::move(properties), pOuter),
-      m_fVAlignOffset(0.0f),
-      m_fScrollOffsetX(0.0f),
-      m_fScrollOffsetY(0.0f),
-      m_bLButtonDown(false),
-      m_CursorPosition(0),
-      m_nLimit(-1),
-      m_fFontSize(0),
-      m_bSetRange(false),
-      m_iMax(0xFFFFFFF) {
-  m_rtClient.Reset();
-  m_rtEngine.Reset();
-  m_rtStatic.Reset();
-
+    : CFWL_Widget(app, std::move(properties), pOuter) {
   m_EdtEngine.SetDelegate(this);
 }
 
@@ -172,10 +159,16 @@ void CFWL_Edit::SetThemeProvider(IFWL_ThemeProvider* pThemeProvider) {
   m_pProperties->m_pThemeProvider = pThemeProvider;
 }
 
-void CFWL_Edit::SetText(const WideString& wsText,
-                        CFDE_TextEditEngine::RecordOperation op) {
+void CFWL_Edit::SetText(const WideString& wsText) {
   m_EdtEngine.Clear();
-  m_EdtEngine.Insert(0, wsText, op);
+  m_EdtEngine.Insert(0, wsText,
+                     CFDE_TextEditEngine::RecordOperation::kInsertRecord);
+}
+
+void CFWL_Edit::SetTextSkipNotify(const WideString& wsText) {
+  m_EdtEngine.Clear();
+  m_EdtEngine.Insert(0, wsText,
+                     CFDE_TextEditEngine::RecordOperation::kSkipNotify);
 }
 
 int32_t CFWL_Edit::GetTextLength() const {
@@ -355,7 +348,7 @@ void CFWL_Edit::DrawTextBk(CXFA_Graphics* pGraphics,
   param.m_pGraphics = pGraphics;
   param.m_matrix = *pMatrix;
   param.m_rtPart = m_rtClient;
-  pTheme->DrawBackground(&param);
+  pTheme->DrawBackground(param);
 
   if (!IsShowScrollBar(true) || !IsShowScrollBar(false))
     return;
@@ -368,7 +361,7 @@ void CFWL_Edit::DrawTextBk(CXFA_Graphics* pGraphics,
   param.m_bStaticBackground = true;
   param.m_bMaximize = true;
   param.m_rtPart = rtStatic;
-  pTheme->DrawBackground(&param);
+  pTheme->DrawBackground(param);
 }
 
 void CFWL_Edit::DrawContent(CXFA_Graphics* pGraphics,
@@ -411,13 +404,10 @@ void CFWL_Edit::DrawContent(CXFA_Graphics* pGraphics,
     param.m_pWidget = this;
     param.m_iPart = CFWL_Part::Background;
     param.m_pPath = &path;
-    pTheme->DrawBackground(&param);
+    pTheme->DrawBackground(param);
   }
 
   CFX_RenderDevice* pRenderDev = pGraphics->GetRenderDevice();
-  if (!pRenderDev)
-    return;
-
   RenderText(pRenderDev, rtClip, mt);
 
   if (m_pProperties->m_dwStyleExes & FWL_STYLEEXT_EDT_CombText) {
@@ -439,7 +429,7 @@ void CFWL_Edit::DrawContent(CXFA_Graphics* pGraphics,
     param.m_pWidget = this;
     param.m_iPart = CFWL_Part::CombTextLine;
     param.m_pPath = &path;
-    pTheme->DrawBackground(&param);
+    pTheme->DrawBackground(param);
   }
   pGraphics->RestoreGraphState();
 }
@@ -469,13 +459,12 @@ void CFWL_Edit::RenderText(CFX_RenderDevice* pRenderDev,
     if (!rtDocClip.IntersectWith(info.rtPiece))
       continue;
 
-    std::vector<FXTEXT_CHARPOS> char_pos = m_EdtEngine.GetDisplayPos(info);
+    std::vector<TextCharPos> char_pos = m_EdtEngine.GetDisplayPos(info);
     if (char_pos.empty())
       continue;
 
     CFDE_TextOut::DrawString(pRenderDev, m_EdtEngine.GetFontColor(), font,
-                             char_pos.data(), char_pos.size(),
-                             m_EdtEngine.GetFontSize(), &mt);
+                             char_pos, m_EdtEngine.GetFontSize(), &mt);
   }
 }
 
@@ -544,19 +533,19 @@ void CFWL_Edit::UpdateEditParams() {
     m_fFontSize = FWLTHEME_CAPACITY_FontSize;
     return;
   }
-  m_fFontSize = theme->GetFontSize(&part);
+  m_fFontSize = theme->GetFontSize(part);
 
-  RetainPtr<CFGAS_GEFont> pFont = theme->GetFont(&part);
+  RetainPtr<CFGAS_GEFont> pFont = theme->GetFont(part);
   if (!pFont)
     return;
 
   m_EdtEngine.SetFont(pFont);
-  m_EdtEngine.SetFontColor(theme->GetTextColor(&part));
+  m_EdtEngine.SetFontColor(theme->GetTextColor(part));
   m_EdtEngine.SetFontSize(m_fFontSize);
-  m_EdtEngine.SetLineSpace(theme->GetLineHeight(&part));
+  m_EdtEngine.SetLineSpace(theme->GetLineHeight(part));
   m_EdtEngine.SetTabWidth(m_fFontSize);
   m_EdtEngine.SetVisibleLineCount(m_rtEngine.height /
-                                  theme->GetLineHeight(&part));
+                                  theme->GetLineHeight(part));
 }
 
 void CFWL_Edit::UpdateEditLayout() {
@@ -621,7 +610,7 @@ void CFWL_Edit::UpdateVAlignment() {
     CFWL_ThemePart part;
     part.m_pWidget = this;
 
-    CFX_SizeF pSpace = theme->GetSpaceAboveBelow(&part);
+    CFX_SizeF pSpace = theme->GetSpaceAboveBelow(part);
     fSpaceAbove = pSpace.width >= 0.1f ? pSpace.width : 0.0f;
     fSpaceBelow = pSpace.height >= 0.1f ? pSpace.height : 0.0f;
   }
@@ -755,12 +744,12 @@ void CFWL_Edit::Layout() {
   CFWL_ThemePart part;
   if (!m_pOuter) {
     part.m_pWidget = this;
-    CFX_RectF pUIMargin = theme->GetUIMargin(&part);
+    CFX_RectF pUIMargin = theme->GetUIMargin(part);
     m_rtEngine.Deflate(pUIMargin.left, pUIMargin.top, pUIMargin.width,
                        pUIMargin.height);
   } else if (m_pOuter->GetClassID() == FWL_Type::DateTimePicker) {
     part.m_pWidget = m_pOuter;
-    CFX_RectF pUIMargin = theme->GetUIMargin(&part);
+    CFX_RectF pUIMargin = theme->GetUIMargin(part);
     m_rtEngine.Deflate(pUIMargin.left, pUIMargin.top, pUIMargin.width,
                        pUIMargin.height);
   }

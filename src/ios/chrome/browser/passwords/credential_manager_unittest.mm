@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/password_manager/core/browser/password_manager.h"
@@ -143,7 +144,7 @@ bool MockPasswordManagerClient::PromptUserToChooseCredentials(
   const autofill::PasswordForm* form = local_forms[0].get();
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(callback, base::Owned(new autofill::PasswordForm(*form))));
+      base::BindOnce(callback, base::Owned(new autofill::PasswordForm(*form))));
   std::vector<autofill::PasswordForm*> raw_forms(local_forms.size());
   std::transform(local_forms.begin(), local_forms.end(), raw_forms.begin(),
                  [](const std::unique_ptr<autofill::PasswordForm>& form) {

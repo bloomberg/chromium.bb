@@ -17,12 +17,19 @@ namespace ios {
 class ChromeBrowserState;
 }  // namespace ios
 
+// The accessibility identifier for the settings' "Done" button.
+extern NSString* const kSettingsDoneButtonId;
+
 @protocol SettingsControllerProtocol<NSObject>
 
 @optional
 
 // Notifies the controller that the settings screen is being dismissed.
 - (void)settingsWillBeDismissed;
+
+// Notifies the controller that is popped out from the settings navigation
+// controller.
+- (void)viewControllerWasPopped;
 
 @end
 
@@ -46,7 +53,7 @@ class ChromeBrowserState;
 // dismissed. Defaults to YES.
 @property(nonatomic, assign) BOOL shouldCommitSyncChangesOnDismissal;
 
-// Creates a new SettingsCollectionViewController and the chrome around it.
+// Creates a new SettingsTableViewController and the chrome around it.
 // |browserState| is used to personalize some settings aspects and should not be
 // nil nor Off-the-Record. |delegate| may be nil.
 + (SettingsNavigationController*)
@@ -55,7 +62,7 @@ newSettingsMainControllerWithBrowserState:(ios::ChromeBrowserState*)browserState
                                      (id<SettingsNavigationControllerDelegate>)
                                          delegate;
 
-// Creates a new AccountsCollectionViewController and the chrome around it.
+// Creates a new AccountsTableViewController and the chrome around it.
 // |browserState| is used to personalize some settings aspects and should not be
 // nil. |delegate| may be nil.
 + (SettingsNavigationController*)
@@ -104,7 +111,7 @@ newImportDataController:(ios::ChromeBrowserState*)browserState
                 toEmail:(NSString*)toEmail
              isSignedIn:(BOOL)isSignedIn;
 
-// Creates a new AutofillProfileCollectionViewController and the chrome around
+// Creates a new AutofillProfileTableViewController and the chrome around
 // it. |browserState| is used to personalize some settings aspects and should
 // not be nil. |delegate| may be nil.
 + (SettingsNavigationController*)

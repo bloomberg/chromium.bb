@@ -14,6 +14,7 @@
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/time/tick_clock.h"
 #include "base/timer/mock_timer.h"
+#include "base/timer/timer.h"
 #include "base/values.h"
 #include "components/cast_channel/cast_test_util.h"
 #include "net/base/net_errors.h"

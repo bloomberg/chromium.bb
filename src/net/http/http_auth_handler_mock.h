@@ -50,6 +50,7 @@ class HttpAuthHandlerMock : public HttpAuthHandler {
                           CreateReason reason,
                           int nonce_count,
                           const NetLogWithSource& net_log,
+                          HostResolver* host_resolver,
                           std::unique_ptr<HttpAuthHandler>* handler) override;
 
    private:

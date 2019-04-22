@@ -4,56 +4,57 @@
 
 #include "base/sampling_heap_profiler/module_cache.h"
 
-#include "base/no_destructor.h"
+#include <utility>
 
 namespace base {
-
-ModuleCache::Module::Module() : is_valid(false) {}
-
-ModuleCache::Module::Module(uintptr_t base_address,
-                            const std::string& id,
-                            const FilePath& filename)
-    : Module(base_address, id, filename, 0) {}
-
-ModuleCache::Module::Module(uintptr_t base_address,
-                            const std::string& id,
-                            const FilePath& filename,
-                            size_t size)
-    : base_address(base_address),
-      id(id),
-      filename(filename),
-      is_valid(true),
-      size(size) {}
-
-ModuleCache::Module::~Module() = default;
 
 ModuleCache::ModuleCache() = default;
 ModuleCache::~ModuleCache() = default;
 
-const ModuleCache::Module& ModuleCache::GetModuleForAddress(uintptr_t address) {
-  static NoDestructor<Module> invalid_module;
-  auto it = modules_cache_map_.upper_bound(address);
-  if (it != modules_cache_map_.begin()) {
-    DCHECK(!modules_cache_map_.empty());
-    --it;
-    Module& module = it->second;
-    if (address < module.base_address + module.size)
-      return module;
-  }
+const ModuleCache::Module* ModuleCache::GetModuleForAddress(uintptr_t address) {
+  Module* module = FindModuleForAddress(non_native_modules_, address);
+  if (module)
+    return module;
 
-  auto module = CreateModuleForAddress(address);
-  if (!module.is_valid)
-    return *invalid_module;
-  return modules_cache_map_.emplace(module.base_address, std::move(module))
-      .first->second;
+  module = FindModuleForAddress(native_modules_, address);
+  if (module)
+    return module;
+
+  std::unique_ptr<Module> new_module = CreateModuleForAddress(address);
+  if (!new_module)
+    return nullptr;
+  native_modules_.push_back(std::move(new_module));
+  return native_modules_.back().get();
 }
 
 std::vector<const ModuleCache::Module*> ModuleCache::GetModules() const {
   std::vector<const Module*> result;
-  result.reserve(modules_cache_map_.size());
-  for (const auto& it : modules_cache_map_)
-    result.push_back(&it.second);
+  result.reserve(native_modules_.size());
+  for (const std::unique_ptr<Module>& module : native_modules_)
+    result.push_back(module.get());
   return result;
+}
+
+void ModuleCache::AddNonNativeModule(std::unique_ptr<Module> module) {
+  DCHECK(!module->IsNative());
+  non_native_modules_.push_back(std::move(module));
+}
+
+void ModuleCache::InjectModuleForTesting(std::unique_ptr<Module> module) {
+  native_modules_.push_back(std::move(module));
+}
+
+// static
+ModuleCache::Module* ModuleCache::FindModuleForAddress(
+    const std::vector<std::unique_ptr<Module>>& modules,
+    uintptr_t address) {
+  auto it = std::find_if(modules.begin(), modules.end(),
+                         [address](const std::unique_ptr<Module>& module) {
+                           return address >= module->GetBaseAddress() &&
+                                  address < module->GetBaseAddress() +
+                                                module->GetSize();
+                         });
+  return it != modules.end() ? it->get() : nullptr;
 }
 
 }  // namespace base

@@ -12,6 +12,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/no_destructor.h"
@@ -19,6 +20,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
+#include "build/build_config.h"
 #include "components/viz/common/gpu/context_cache_controller.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gles2_trace_implementation.h"
@@ -32,6 +34,7 @@
 #include "gpu/command_buffer/client/webgpu_implementation.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/skia_utils.h"
+#include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/ipc/client/command_buffer_proxy_impl.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "gpu/skia_bindings/gles2_implementation_with_grcontext_support.h"
@@ -157,21 +160,29 @@ gpu::ContextResult ContextProviderCommandBuffer::BindToCurrentThread() {
       return bind_result_;
     }
 
+    // The transfer buffer is used to serialize Dawn commands
+    transfer_buffer_ =
+        std::make_unique<gpu::TransferBuffer>(webgpu_helper.get());
+
     // The WebGPUImplementation exposes the WebGPUInterface, as well as the
     // gpu::ContextSupport interface.
     auto webgpu_impl = std::make_unique<gpu::webgpu::WebGPUImplementation>(
-        webgpu_helper.get());
+        webgpu_helper.get(), transfer_buffer_.get(), command_buffer_.get());
+    bind_result_ = webgpu_impl->Initialize(memory_limits_);
+    if (bind_result_ != gpu::ContextResult::kSuccess) {
+      DLOG(ERROR) << "Failed to initialize WebGPUImplementation.";
+      return bind_result_;
+    }
 
     std::string type_name =
         command_buffer_metrics::ContextTypeToString(context_type_);
     std::string unique_context_name =
         base::StringPrintf("%s-%p", type_name.c_str(), webgpu_impl.get());
 
-    impl_ = nullptr;
+    impl_ = webgpu_impl.get();
     webgpu_interface_ = std::move(webgpu_impl);
     helper_ = std::move(webgpu_helper);
-  } else if (!command_buffer_->channel()->gpu_info().passthrough_cmd_decoder &&
-             attributes_.enable_raster_interface &&
+  } else if (attributes_.enable_raster_interface &&
              !attributes_.enable_gles2_interface) {
     DCHECK(!support_grcontext_);
     // The raster helper writes the command buffer protocol.
@@ -350,7 +361,7 @@ gpu::raster::RasterInterface* ContextProviderCommandBuffer::RasterInterface() {
     return nullptr;
 
   raster_interface_ = std::make_unique<gpu::raster::RasterImplementationGLES>(
-      gles2_impl_.get(), ContextCapabilities());
+      gles2_impl_.get());
   return raster_interface_.get();
 }
 
@@ -481,9 +492,7 @@ bool ContextProviderCommandBuffer::OnMemoryDump(
   DCHECK(bind_tried_);
   DCHECK_EQ(bind_result_, gpu::ContextResult::kSuccess);
 
-  base::Optional<base::AutoLock> hold;
-  if (support_locking_)
-    hold.emplace(context_lock_);
+  base::AutoLockMaybe hold_if_supported(GetLock());
 
   impl_->OnMemoryDump(args, pmd);
   helper_->OnMemoryDump(args, pmd);

@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/time/clock.h"
 #include "components/offline_pages/core/background/request_queue_store.h"
 #include "components/offline_pages/core/background/request_queue_task_test_base.h"
 #include "components/offline_pages/core/background/test_request_queue_store.h"
@@ -34,18 +33,20 @@ class MarkAttemptStartedTaskTest : public RequestQueueTaskTestBase {
   UpdateRequestsResult* last_result() const { return result_.get(); }
 
  private:
-  void AddRequestDone(ItemActionStatus status);
+  static void AddRequestDone(AddRequestResult result) {
+    ASSERT_EQ(AddRequestResult::SUCCESS, result);
+  }
 
   std::unique_ptr<UpdateRequestsResult> result_;
 };
 
 void MarkAttemptStartedTaskTest::AddItemToStore() {
-  base::Time creation_time = OfflineClock()->Now();
+  base::Time creation_time = OfflineTimeNow();
   SavePageRequest request_1(kRequestId1, kUrl1, kClientId1, creation_time,
                             true);
-  store_.AddRequest(request_1,
-                    base::BindOnce(&MarkAttemptStartedTaskTest::AddRequestDone,
-                                   base::Unretained(this)));
+  store_.AddRequest(
+      request_1, RequestQueue::AddOptions(),
+      base::BindOnce(&MarkAttemptStartedTaskTest::AddRequestDone));
   PumpLoop();
 }
 
@@ -54,9 +55,6 @@ void MarkAttemptStartedTaskTest::ChangeRequestsStateCallback(
   result_ = std::make_unique<UpdateRequestsResult>(std::move(result));
 }
 
-void MarkAttemptStartedTaskTest::AddRequestDone(ItemActionStatus status) {
-  ASSERT_EQ(ItemActionStatus::SUCCESS, status);
-}
 
 TEST_F(MarkAttemptStartedTaskTest, MarkAttemptStartedWhenStoreEmpty) {
   InitializeStore();
@@ -85,7 +83,7 @@ TEST_F(MarkAttemptStartedTaskTest, MarkAttemptStartedWhenExists) {
                      base::Unretained(this)));
 
   // Current time for verification.
-  base::Time before_time = OfflineClock()->Now();
+  base::Time before_time = OfflineTimeNow();
   task.Run();
   PumpLoop();
   ASSERT_TRUE(last_result());
@@ -96,7 +94,7 @@ TEST_F(MarkAttemptStartedTaskTest, MarkAttemptStartedWhenExists) {
   EXPECT_EQ(1UL, last_result()->updated_items.size());
   EXPECT_LE(before_time,
             last_result()->updated_items.at(0).last_attempt_time());
-  EXPECT_GE(OfflineClock()->Now(),
+  EXPECT_GE(OfflineTimeNow(),
             last_result()->updated_items.at(0).last_attempt_time());
   EXPECT_EQ(1, last_result()->updated_items.at(0).started_attempt_count());
   EXPECT_EQ(SavePageRequest::RequestState::OFFLINING,

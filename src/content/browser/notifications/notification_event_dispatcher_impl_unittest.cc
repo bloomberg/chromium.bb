@@ -8,13 +8,15 @@
 #include <memory>
 #include <vector>
 
+#include "base/bind_helpers.h"
 #include "base/macros.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/modules/notifications/notification_service.mojom.h"
+#include "third_party/blink/public/mojom/notifications/notification_service.mojom.h"
 
 namespace content {
 
@@ -73,18 +75,15 @@ class TestNotificationListener
 class NotificationEventDispatcherImplTest : public ::testing::Test {
  public:
   NotificationEventDispatcherImplTest()
-      : task_runner_(new base::TestSimpleTaskRunner),
-        handle_(task_runner_),
-        dispatcher_(new NotificationEventDispatcherImpl()) {}
+      : dispatcher_(new NotificationEventDispatcherImpl()) {}
 
   ~NotificationEventDispatcherImplTest() override { delete dispatcher_; }
 
   // Waits until the task runner managing the Mojo connection has finished.
-  void WaitForMojoTasksToComplete() { task_runner_->RunUntilIdle(); }
+  void WaitForMojoTasksToComplete() { scoped_task_environment_.RunUntilIdle(); }
 
  protected:
-  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
-  base::ThreadTaskRunnerHandle handle_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   // Using a raw pointer because NotificationEventDispatcherImpl is a singleton
   // with private constructor and destructor, so unique_ptr is not an option.
@@ -136,6 +135,30 @@ TEST_F(NotificationEventDispatcherImplTest,
 
   EXPECT_EQ(original_listener->on_close_count(), 1);
   EXPECT_EQ(replacement_listener->on_close_count(), 0);
+}
+
+TEST_F(NotificationEventDispatcherImplTest,
+       RegisterNonPersistentListener_SecondListenerGetsOnShow) {
+  auto original_listener = std::make_unique<TestNotificationListener>();
+  dispatcher_->RegisterNonPersistentNotificationListener(
+      kPrimaryUniqueId, original_listener->GetPtr());
+
+  dispatcher_->DispatchNonPersistentShowEvent(kPrimaryUniqueId);
+
+  WaitForMojoTasksToComplete();
+
+  ASSERT_EQ(original_listener->on_show_count(), 1);
+
+  auto replacement_listener = std::make_unique<TestNotificationListener>();
+  dispatcher_->RegisterNonPersistentNotificationListener(
+      kPrimaryUniqueId, replacement_listener->GetPtr());
+
+  dispatcher_->DispatchNonPersistentShowEvent(kPrimaryUniqueId);
+
+  WaitForMojoTasksToComplete();
+
+  ASSERT_EQ(original_listener->on_show_count(), 1);
+  ASSERT_EQ(replacement_listener->on_show_count(), 1);
 }
 
 TEST_F(NotificationEventDispatcherImplTest,

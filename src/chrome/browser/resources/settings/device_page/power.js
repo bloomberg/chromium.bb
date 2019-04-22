@@ -84,8 +84,9 @@ Polymer({
   ready: function() {
     // enablePowerSettings comes from loadTimeData, so it will always be set
     // before attached() is called.
-    if (!this.enablePowerSettings)
+    if (!this.enablePowerSettings) {
       settings.navigateToPreviousRoute();
+    }
   },
 
   /** @override */
@@ -136,10 +137,12 @@ Polymer({
    * @private
    */
   computePowerSourceName_: function(powerSources, lowPowerCharger) {
-    if (lowPowerCharger)
+    if (lowPowerCharger) {
       return this.i18n('powerSourceLowPowerCharger');
-    if (powerSources.length)
+    }
+    if (powerSources.length) {
       return this.i18n('powerSourceAcAdapter');
+    }
     return '';
   },
 

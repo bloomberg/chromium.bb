@@ -9,8 +9,9 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/subresource_filter/content/mojom/subresource_filter_agent.mojom.h"
 #include "components/subresource_filter/content/renderer/ad_resource_tracker.h"
-#include "components/subresource_filter/mojom/subresource_filter.mojom.h"
+#include "components/subresource_filter/core/mojom/subresource_filter.mojom.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
@@ -70,11 +71,12 @@ class SubresourceFilterAgent
 
   // True if the frame has been heuristically determined to be an ad subframe.
   virtual bool IsAdSubframe();
-  virtual void SetIsAdSubframe();
+  virtual void SetIsAdSubframe(blink::mojom::AdFrameType ad_frame_type);
 
   // mojom::SubresourceFilterAgent:
-  void ActivateForNextCommittedLoad(mojom::ActivationStatePtr activation_state,
-                                    bool is_ad_subframe) override;
+  void ActivateForNextCommittedLoad(
+      mojom::ActivationStatePtr activation_state,
+      blink::mojom::AdFrameType ad_frame_type) override;
 
  private:
   // Assumes that the parent will be in a local frame relative to this one, upon
@@ -95,8 +97,6 @@ class SubresourceFilterAgent
   // content::RenderFrameObserver:
   void OnDestruct() override;
   void DidCreateNewDocument() override;
-  void DidCommitProvisionalLoad(bool is_same_document_navigation,
-                                ui::PageTransition transition) override;
   void DidFailProvisionalLoad(const blink::WebURLError& error) override;
   void DidFinishLoad() override;
   void WillCreateWorkerFetchContext(blink::WebWorkerFetchContext*) override;

@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PROPERTIES_COMPUTED_STYLE_UTILS_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PROPERTIES_COMPUTED_STYLE_UTILS_H_
 
+#include "cc/input/scroll_snap_data.h"
 #include "third_party/blink/renderer/core/css/css_border_image_slice_value.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
@@ -30,7 +31,7 @@ class ComputedStyleUtils {
       const Length& length,
       const ComputedStyle& style) {
     if (length.IsAuto())
-      return CSSIdentifierValue::Create(CSSValueAuto);
+      return CSSIdentifierValue::Create(CSSValueID::kAuto);
     return ZoomAdjustedPixelValue(length.Value(), style);
   }
 
@@ -112,7 +113,7 @@ class ComputedStyleUtils {
                                          const LayoutObject*,
                                          const ComputedStyle&);
   static CSSValue* ValueForGridPosition(const GridPosition&);
-  static LayoutRect SizingBox(const LayoutObject&);
+  static FloatSize UsedBoxSize(const LayoutObject&);
   static CSSValue* RenderTextDecorationFlagsToCSSValue(TextDecoration);
   static CSSValue* ValueForTextDecorationStyle(ETextDecorationStyle);
   static CSSValue* ValueForTextDecorationSkipInk(ETextDecorationSkipInk);
@@ -132,6 +133,17 @@ class ComputedStyleUtils {
                                                    const ComputedStyle&);
   static const CSSValue& ValueForBorderRadiusCorner(const LengthSize&,
                                                     const ComputedStyle&);
+  // TODO(fs): For some properties ('transform') we use the pixel snapped
+  // border-box as the reference box. In other cases ('transform-origin') we use
+  // the "unsnapped" border-box. Maybe use the same (the "unsnapped") in both
+  // cases?
+  enum UsePixelSnappedBox {
+    kDontUsePixelSnappedBox,
+    kUsePixelSnappedBox,
+  };
+  static FloatRect ReferenceBoxForTransform(
+      const LayoutObject&,
+      UsePixelSnappedBox = kUsePixelSnappedBox);
   static CSSValue* ComputedTransform(const LayoutObject*, const ComputedStyle&);
   static CSSValue* CreateTransitionPropertyValue(
       const CSSTransitionData::TransitionProperty&);
@@ -153,9 +165,9 @@ class ComputedStyleUtils {
                                       bool use_spread);
   static CSSValue* ValueForFilter(const ComputedStyle&,
                                   const FilterOperations&);
-  static CSSValue* ValueForScrollSnapType(const ScrollSnapType&,
+  static CSSValue* ValueForScrollSnapType(const cc::ScrollSnapType&,
                                           const ComputedStyle&);
-  static CSSValue* ValueForScrollSnapAlign(const ScrollSnapAlign&,
+  static CSSValue* ValueForScrollSnapAlign(const cc::ScrollSnapAlign&,
                                            const ComputedStyle&);
   static CSSValue* ValueForPageBreakBetween(EBreakBetween);
   static CSSValue* ValueForWebkitColumnBreakBetween(EBreakBetween);

@@ -27,15 +27,14 @@ class ExamplePreprocessor {
     kNormalizerIsZero = 64,
   };
 
-  explicit ExamplePreprocessor(const ExamplePreprocessorConfig& config)
-      : config_(config) {}
-
-  // Processes a RankerExample with config_.
+  // Processes a RankerExample with config.
   // Clear up all features except kVectorizedFeatureDefaultName if
   // clear_other_features is set to true.
   // Returns the error code of preprocessing, can be any sum of the error code
   // in PreprocessErrorCode.
-  int Process(RankerExample* example, bool clear_other_features = false) const;
+  static int Process(const ExamplePreprocessorConfig& config,
+                     RankerExample* example,
+                     bool clear_other_features = false);
 
   // Default feature name for missing features.
   static const char kMissingFeatureDefaultName[];
@@ -52,28 +51,31 @@ class ExamplePreprocessor {
                                      const std::string& feature_value = "");
 
  private:
-  // If a feature is specified in config_.missing_features() and missing in
+  // If a feature is specified in config.missing_features() and missing in
   // the example, then the feature name is added as a sparse feature value to
   // the special sparse feature "_MissingFeature" in the example.
   // Always returns kSuccess.
-  int AddMissingFeatures(RankerExample* example) const;
-  // If a numeric feature is specified in config_.bucketizers(), then it is
+  static int AddMissingFeatures(const ExamplePreprocessorConfig& config,
+                                RankerExample* example);
+  // If a numeric feature is specified in config.bucketizers(), then it is
   // bucketized based on the boundaries and reset as a one-hot feature with
   // bucket index as it's string value.
-  int AddBucketizedFeatures(RankerExample* example) const;
+  static int AddBucketizedFeatures(const ExamplePreprocessorConfig& config,
+                                   RankerExample* example);
   // Normalizes numeric features to be within [-1.0, 1.0] as float features.
-  int NormalizeFeatures(RankerExample* example) const;
+  static int NormalizeFeatures(const ExamplePreprocessorConfig& config,
+                               RankerExample* example);
   // Converts any features in |example| that are listed in
-  // |config_.convert_to_string_features()| into string-valued features.
-  int ConvertToStringFeatures(RankerExample* example) const;
+  // |config.convert_to_string_features()| into string-valued features.
+  static int ConvertToStringFeatures(const ExamplePreprocessorConfig& config,
+                                     RankerExample* example);
   // Add a new_float_list feature as kVectorizedFeatureDefaultName, and iterate
   // for all existing features in example.features(), set corresponding
-  // new_float_list.float_value(config_.feature_indices(feature_value_key)) to
+  // new_float_list.float_value(config.feature_indices(feature_value_key)) to
   // be either numeric value (for scalars) or 1.0 (for string values).
-  int Vectorization(RankerExample* example, bool clear_other_features) const;
-
-  // Configuration proto for the preprocessor.
-  const ExamplePreprocessorConfig config_;
+  static int Vectorization(const ExamplePreprocessorConfig& config,
+                           RankerExample* example,
+                           bool clear_other_features);
 };
 
 // An iterator that goes through all features of a RankerExample and converts

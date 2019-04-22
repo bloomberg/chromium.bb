@@ -56,7 +56,7 @@ class FeedSchedulerBridge {
   void OnSuggestionConsumed(JNIEnv* env,
                             const base::android::JavaRef<jobject>& j_this);
 
-  void OnArticlesCleared(JNIEnv* env,
+  bool OnArticlesCleared(JNIEnv* env,
                          const base::android::JavaRef<jobject>& j_this,
                          jboolean j_suppress_refreshes);
 

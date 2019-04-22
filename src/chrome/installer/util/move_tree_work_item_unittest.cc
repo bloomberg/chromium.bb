@@ -12,10 +12,9 @@
 #include "base/base_paths.h"
 #include "base/files/file_util.h"
 #include "base/files/memory_mapped_file.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/installer/util/installer_util_test_common.h"
 #include "chrome/installer/util/work_item.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -47,14 +46,14 @@ std::wstring ReadTextFile(const base::FilePath& path) {
   std::wifstream file;
   file.open(base::UTF16ToASCII(path.value()).c_str());
   EXPECT_TRUE(file.is_open());
-  file.getline(contents, arraysize(contents));
+  file.getline(contents, base::size(contents));
   file.close();
   return std::wstring(contents);
 }
 
 const wchar_t kTextContent1[] = L"Gooooooooooooooooooooogle";
 const wchar_t kTextContent2[] = L"Overwrite Me";
-};  // namespace
+}  // namespace
 
 // Move one directory from source to destination when destination does not
 // exist.
@@ -388,10 +387,10 @@ TEST_F(MoveTreeWorkItemTest, MoveDirectoryDestExistsCheckForDuplicatesFull) {
   CreateTextFile(from_file.value(), kTextContent1);
   ASSERT_TRUE(base::PathExists(from_file));
 
-  // // Create a file hierarchy identical to the one in the source directory.
+  // Create a file hierarchy identical to the one in the source directory.
   base::FilePath to_dir(temp_from_dir_.GetPath());
   to_dir = to_dir.AppendASCII("To_Dir");
-  ASSERT_TRUE(installer::test::CopyFileHierarchy(from_dir1, to_dir));
+  ASSERT_TRUE(base::CopyDirectory(from_dir1, to_dir, true));
 
   // Lock one of the files in the to destination directory to prevent moves.
   base::FilePath orig_to_file(

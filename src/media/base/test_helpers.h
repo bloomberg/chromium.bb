@@ -33,6 +33,7 @@ namespace media {
 class AudioBuffer;
 class AudioBus;
 class DecoderBuffer;
+class MockDemuxerStream;
 
 // Return a callback that expects to be run once.
 base::Closure NewExpectedClosure();
@@ -91,12 +92,12 @@ class TestVideoConfig {
   static VideoDecoderConfig NormalWithColorSpace(
       VideoCodec codec,
       const VideoColorSpace& color_space);
-  static VideoDecoderConfig NormalH264(
-      VideoCodecProfile = VIDEO_CODEC_PROFILE_UNKNOWN);
+  static VideoDecoderConfig NormalH264(VideoCodecProfile = H264PROFILE_MIN);
   static VideoDecoderConfig NormalCodecProfile(
       VideoCodec codec = kCodecVP8,
-      VideoCodecProfile profile = VIDEO_CODEC_PROFILE_UNKNOWN);
-  static VideoDecoderConfig NormalEncrypted(VideoCodec codec = kCodecVP8);
+      VideoCodecProfile profile = VP8PROFILE_MIN);
+  static VideoDecoderConfig NormalEncrypted(VideoCodec codec = kCodecVP8,
+                                            VideoCodecProfile = VP8PROFILE_MIN);
   static VideoDecoderConfig NormalRotated(VideoRotation rotation);
 
   // Returns a configuration that is larger in dimensions than Normal().
@@ -194,6 +195,10 @@ scoped_refptr<DecoderBuffer> CreateFakeVideoBufferForTest(
 bool VerifyFakeVideoBufferForTest(const DecoderBuffer& buffer,
                                   const VideoDecoderConfig& config);
 
+// Create a MockDemuxerStream for testing purposes.
+std::unique_ptr<::testing::StrictMock<MockDemuxerStream>>
+CreateMockDemuxerStream(DemuxerStream::Type type, bool encrypted);
+
 // Compares two {Audio|Video}DecoderConfigs
 MATCHER_P(DecoderConfigEq, config, "") {
   return arg.Matches(config);
@@ -206,6 +211,14 @@ MATCHER_P(HasTimestamp, timestamp_in_ms, "") {
 
 MATCHER(IsEndOfStream, "") {
   return arg.get() && arg->end_of_stream();
+}
+
+MATCHER(EosBeforeHaveMetadata, "") {
+  return CONTAINS_STRING(
+      arg,
+      "MediaSource endOfStream before demuxer initialization completes (before "
+      "HAVE_METADATA) is treated as an error. This may also occur as "
+      "consequence of other MediaSource errors before HAVE_METADATA.");
 }
 
 MATCHER_P(SegmentMissingFrames, track_id, "") {
@@ -242,12 +255,6 @@ MATCHER(StreamParsingFailed, "") {
 
 MATCHER(ParsedBuffersNotInDTSSequence, "") {
   return CONTAINS_STRING(arg, "Parsed buffers not in DTS sequence");
-}
-
-MATCHER(ParsedDTSGreaterThanPTS, "") {
-  return CONTAINS_STRING(arg, "Parsed ") &&
-         CONTAINS_STRING(arg, "frame has DTS ") &&
-         CONTAINS_STRING(arg, ", which is after the frame's PTS");
 }
 
 MATCHER_P2(CodecUnsupportedInContainer, codec, container, "") {
@@ -302,8 +309,8 @@ MATCHER_P2(FrameTypeMismatchesTrackType, frame_type, track_type, "") {
 MATCHER_P2(AudioNonKeyframe, pts_microseconds, dts_microseconds, "") {
   return CONTAINS_STRING(
       arg, std::string("Bytestream with audio frame PTS ") +
-               base::IntToString(pts_microseconds) + "us and DTS " +
-               base::IntToString(dts_microseconds) +
+               base::NumberToString(pts_microseconds) + "us and DTS " +
+               base::NumberToString(dts_microseconds) +
                "us indicated the frame is not a random access point (key "
                "frame). All audio frames are expected to be key frames.");
 }
@@ -314,15 +321,15 @@ MATCHER_P2(SkippingSpliceAtOrBefore,
            "") {
   return CONTAINS_STRING(
       arg, "Skipping splice frame generation: first new buffer at " +
-               base::IntToString(new_microseconds) +
+               base::NumberToString(new_microseconds) +
                "us begins at or before existing buffer at " +
-               base::IntToString(existing_microseconds) + "us.");
+               base::NumberToString(existing_microseconds) + "us.");
 }
 
 MATCHER_P(SkippingSpliceAlreadySpliced, time_microseconds, "") {
   return CONTAINS_STRING(
       arg, "Skipping splice frame generation: overlapped buffers at " +
-               base::IntToString(time_microseconds) +
+               base::NumberToString(time_microseconds) +
                "us are in a previously buffered splice.");
 }
 
@@ -332,8 +339,8 @@ MATCHER_P2(SkippingSpliceTooLittleOverlap,
            "") {
   return CONTAINS_STRING(
       arg, "Skipping audio splice trimming at PTS=" +
-               base::IntToString(pts_microseconds) + "us. Found only " +
-               base::IntToString(overlap_microseconds) +
+               base::NumberToString(pts_microseconds) + "us. Found only " +
+               base::NumberToString(overlap_microseconds) +
                "us of overlap, need at least 1000us. Multiple occurrences may "
                "result in loss of A/V sync.");
 }
@@ -346,7 +353,7 @@ MATCHER(WebMSimpleBlockDurationEstimatedAny, "") {
 
 MATCHER_P(WebMSimpleBlockDurationEstimated, estimated_duration_ms, "") {
   return CONTAINS_STRING(arg, "Estimating WebM block duration=" +
-                                  base::IntToString(estimated_duration_ms));
+                                  base::NumberToString(estimated_duration_ms));
 }
 
 MATCHER_P(WebMNegativeTimecodeOffset, timecode_string, "") {
@@ -369,17 +376,19 @@ MATCHER_P3(TrimmedSpliceOverlap,
            trim_duration_us,
            "") {
   return CONTAINS_STRING(
-      arg, "Audio buffer splice at PTS=" + base::IntToString(splice_time_us) +
-               "us. Trimmed tail of overlapped buffer (PTS=" +
-               base::IntToString(overlapped_start_us) + "us) by " +
-               base::IntToString(trim_duration_us));
+      arg,
+      "Audio buffer splice at PTS=" + base::NumberToString(splice_time_us) +
+          "us. Trimmed tail of overlapped buffer (PTS=" +
+          base::NumberToString(overlapped_start_us) + "us) by " +
+          base::NumberToString(trim_duration_us));
 }
 
 MATCHER_P2(NoSpliceForBadMux, overlapped_buffer_count, splice_time_us, "") {
-  return CONTAINS_STRING(arg, "Media is badly muxed. Detected " +
-                                  base::IntToString(overlapped_buffer_count) +
-                                  " overlapping audio buffers at time " +
-                                  base::IntToString(splice_time_us));
+  return CONTAINS_STRING(arg,
+                         "Media is badly muxed. Detected " +
+                             base::NumberToString(overlapped_buffer_count) +
+                             " overlapping audio buffers at time " +
+                             base::NumberToString(splice_time_us));
 }
 
 MATCHER_P(BufferingByPtsDts, by_pts_bool, "") {
@@ -390,8 +399,8 @@ MATCHER_P(BufferingByPtsDts, by_pts_bool, "") {
 MATCHER_P3(NegativeDtsFailureWhenByDts, frame_type, pts_us, dts_us, "") {
   return CONTAINS_STRING(
       arg, std::string(frame_type) + " frame with PTS " +
-               base::IntToString(pts_us) + "us has negative DTS " +
-               base::IntToString(dts_us) +
+               base::NumberToString(pts_us) + "us has negative DTS " +
+               base::NumberToString(dts_us) +
                "us after applying timestampOffset, handling any discontinuity, "
                "and filtering against append window");
 }
@@ -399,8 +408,8 @@ MATCHER_P3(NegativeDtsFailureWhenByDts, frame_type, pts_us, dts_us, "") {
 MATCHER_P2(DiscardingEmptyFrame, pts_us, dts_us, "") {
   return CONTAINS_STRING(arg,
                          "Discarding empty audio or video coded frame, PTS=" +
-                             base::IntToString(pts_us) +
-                             "us, DTS=" + base::IntToString(dts_us) + "us");
+                             base::NumberToString(pts_us) +
+                             "us, DTS=" + base::NumberToString(dts_us) + "us");
 }
 
 MATCHER_P4(TruncatedFrame,
@@ -420,7 +429,7 @@ MATCHER_P4(TruncatedFrame,
 MATCHER_P2(DroppedFrame, frame_type, pts_us, "") {
   return CONTAINS_STRING(arg,
                          "Dropping " + std::string(frame_type) + " frame") &&
-         CONTAINS_STRING(arg, "PTS " + base::IntToString(pts_us));
+         CONTAINS_STRING(arg, "PTS " + base::NumberToString(pts_us));
 }
 
 MATCHER_P3(DroppedFrameCheckAppendWindow,
@@ -432,8 +441,8 @@ MATCHER_P3(DroppedFrameCheckAppendWindow,
                          "Dropping " + std::string(frame_type) + " frame") &&
          CONTAINS_STRING(
              arg, "outside append window [" +
-                      base::Int64ToString(append_window_start_us) + "us," +
-                      base::Int64ToString(append_window_end_us) + "us");
+                      base::NumberToString(append_window_start_us) + "us," +
+                      base::NumberToString(append_window_end_us) + "us");
 }
 
 }  // namespace media

@@ -29,6 +29,7 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/render_messages.h"
@@ -224,18 +225,13 @@ void TabHelper::DidFinishNavigation(
   ExtensionRegistry* registry = ExtensionRegistry::Get(context);
   const ExtensionSet& enabled_extensions = registry->enabled_extensions();
 
-  if (util::IsNewBookmarkAppsEnabled()) {
-    Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
-    if (browser && browser->is_app()) {
-      const Extension* extension = registry->GetExtensionById(
-          web_app::GetAppIdFromApplicationName(browser->app_name()),
-          ExtensionRegistry::EVERYTHING);
-      if (extension && AppLaunchInfo::GetFullLaunchURL(extension).is_valid())
-        SetExtensionApp(extension);
-    } else {
-      UpdateExtensionAppIcon(
-          enabled_extensions.GetExtensionOrAppByURL(
-              navigation_handle->GetURL()));
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
+  if (browser && browser->is_app()) {
+    const Extension* extension = registry->GetExtensionById(
+        web_app::GetAppIdFromApplicationName(browser->app_name()),
+        ExtensionRegistry::EVERYTHING);
+    if (extension && AppLaunchInfo::GetFullLaunchURL(extension).is_valid()) {
+      SetExtensionApp(extension);
     }
   } else {
     UpdateExtensionAppIcon(
@@ -423,5 +419,7 @@ void TabHelper::SetTabId(content::RenderFrameHost* render_frame_host) {
       render_frame_host->GetRoutingID(),
       SessionTabHelper::IdForTab(web_contents()).id()));
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(TabHelper)
 
 }  // namespace extensions

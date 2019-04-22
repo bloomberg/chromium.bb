@@ -12,9 +12,10 @@
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
+#include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "chromeos/policy/weekly_time/weekly_time.h"
 #include "chromeos/policy/weekly_time/weekly_time_interval.h"
-#include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
@@ -81,11 +82,6 @@ class DeviceAutoUpdateTimeRestrictionsUtilTest : public testing::Test {
 
   void TearDown() override { icu::TimeZone::adoptDefault(timezone_.release()); }
 
-  void SetCrosSettings(const std::string& path, const Value& in_value) {
-    cros_settings_helper_.ReplaceDeviceSettingsProviderWithStub();
-    cros_settings_helper_.Set(path, in_value);
-  }
-
   ListValue GetIntervalsAsList(const vector<WeeklyTimeInterval>& intervals) {
     ListValue list_val;
     for (const auto& interval : intervals) {
@@ -118,11 +114,11 @@ class DeviceAutoUpdateTimeRestrictionsUtilTest : public testing::Test {
   }
 
   base::SimpleTestClock test_clock_;
+  // These initialize CrosSettings and then tear down when the test is done.
+  chromeos::ScopedTestingCrosSettings scoped_testing_cros_settings_;
 
  private:
   std::unique_ptr<icu::TimeZone> timezone_;
-  // These initialize CrosSettings and then tear down when the test is done.
-  chromeos::ScopedCrosSettingsTestHelper cros_settings_helper_;
 };
 
 TEST_F(DeviceAutoUpdateTimeRestrictionsUtilTest,
@@ -135,8 +131,9 @@ TEST_F(DeviceAutoUpdateTimeRestrictionsUtilTest,
           WeeklyTime(kWednesday, 10 * kMillisecondsInHour, kNewYorkOffset),
           WeeklyTime(kWednesday, 15 * kMillisecondsInHour, kNewYorkOffset))};
 
-  SetCrosSettings(chromeos::kDeviceAutoUpdateTimeRestrictions,
-                  GetIntervalsAsList(kExpected));
+  scoped_testing_cros_settings_.device_settings()->Set(
+      chromeos::kDeviceAutoUpdateTimeRestrictions,
+      GetIntervalsAsList(kExpected));
 
   vector<WeeklyTimeInterval> result;
   ASSERT_TRUE(GetDeviceAutoUpdateTimeRestrictionsIntervalsInLocalTimezone(

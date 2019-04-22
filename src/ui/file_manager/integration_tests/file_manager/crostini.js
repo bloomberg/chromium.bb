@@ -3,31 +3,21 @@
 // found in the LICENSE file.
 'use strict';
 
-testcase.mountCrostini = async function() {
+testcase.mountCrostini = async () => {
   const fakeLinuxFiles = '#directory-tree [root-type-icon="crostini"]';
   const realLinxuFiles = '#directory-tree [volume-type-icon="crostini"]';
 
-  const {appId} = await setupAndWaitUntilReady(
-      null, RootPath.DOWNLOADS, null, [ENTRIES.hello], []);
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.hello], []);
 
-  // Add entries to crostini volume, but do not mount.
-  await addEntries(['crostini'], BASIC_CROSTINI_ENTRY_SET);
-
-  // Linux files fake root is shown.
-  await remoteCall.waitForElement(appId, fakeLinuxFiles);
-
-  // Mount crostini, and ensure real root and files are shown.
-  remoteCall.callRemoteTestUtil('fakeMouseClick', appId, [fakeLinuxFiles]);
-  await remoteCall.waitForElement(appId, realLinxuFiles);
-  const files = TestEntryInfo.getExpectedRows(BASIC_CROSTINI_ENTRY_SET);
-  await remoteCall.waitForFiles(appId, files);
+  await mountCrostini(appId);
 
   // Unmount and ensure fake root is shown.
   remoteCall.callRemoteTestUtil('unmount', null, ['crostini']);
   await remoteCall.waitForElement(appId, fakeLinuxFiles);
 };
 
-testcase.sharePathWithCrostini = async function() {
+testcase.sharePathWithCrostini = async () => {
   const fakeLinuxFiles = '#directory-tree [root-type-icon="crostini"]';
   const realLinuxFiles = '#directory-tree [volume-type-icon="crostini"]';
   const downloads = '#directory-tree [volume-type-icon="downloads"]';
@@ -37,8 +27,8 @@ testcase.sharePathWithCrostini = async function() {
   const menuNoShareWithLinux = '#file-context-menu:not([hidden]) ' +
       '[command="#share-with-linux"][hidden][disabled="disabled"]';
 
-  const {appId} = await setupAndWaitUntilReady(
-      null, RootPath.DOWNLOADS, null, [ENTRIES.photos], []);
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.photos], []);
 
   // Ensure fake Linux files root is shown.
   await remoteCall.waitForElement(appId, fakeLinuxFiles);

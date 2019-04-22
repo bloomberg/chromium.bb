@@ -17,8 +17,8 @@ struct JavaScriptConsoleMessage {
   JavaScriptConsoleMessage& operator=(JavaScriptConsoleMessage other);
   ~JavaScriptConsoleMessage();
 
-  // The origin of the frame which sent the message.
-  GURL origin;
+  // The url of the frame which sent the message.
+  GURL url;
 
   // The log level associated with the message. (From console.js, i.e. "log",
   // "debug", "info", "warn", "error")

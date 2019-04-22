@@ -2,10 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/buildflag_header.gni")
 import("//build/config/ui.gni")
 import("//chromecast/chromecast.gni")
 import("//media/media_options.gni")
-import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
 import("//tools/grit/grit_rule.gni")
 
@@ -13,12 +13,39 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
+buildflag_header("browser_buildflags") {
+  header = "browser_buildflags.h"
+  flags = [ "ENABLE_CAST_AUDIO_MANAGER_MIXER=$enable_cast_audio_manager_mixer" ]
+}
+
+cast_source_set("prefs") {
+  sources = [
+    "pref_service_helper.cc",
+    "pref_service_helper.h",
+  ]
+
+  if (chromecast_branding == "public") {
+    sources += [ "pref_service_helper_simple.cc" ]
+  }
+
+  deps = [
+    "//base",
+    "//chromecast:chromecast_buildflags",
+    "//chromecast/base",
+    "//components/prefs",
+  ]
+
+  if (is_android) {
+    deps += [ "//components/cdm/browser" ]
+  }
+}
+
 cast_source_set("browser") {
   sources = [
     "application_media_capabilities.cc",
     "application_media_capabilities.h",
-    "application_session_id_manager.cc",
-    "application_session_id_manager.h",
+    "application_media_info_manager.cc",
+    "application_media_info_manager.h",
     "bluetooth/cast_bluetooth_chooser.cc",
     "bluetooth/cast_bluetooth_chooser.h",
     "cast_browser_context.cc",
@@ -43,10 +70,14 @@ cast_source_set("browser") {
     "cast_navigation_ui_data.h",
     "cast_net_log.cc",
     "cast_net_log.h",
+    "cast_network_contexts.cc",
+    "cast_network_contexts.h",
     "cast_network_delegate.cc",
     "cast_network_delegate.h",
     "cast_network_request_interceptor.cc",
     "cast_network_request_interceptor.h",
+    "cast_overlay_manifests.cc",
+    "cast_overlay_manifests.h",
     "cast_permission_manager.cc",
     "cast_permission_manager.h",
     "cast_quota_permission_context.cc",
@@ -69,22 +100,16 @@ cast_source_set("browser") {
     "devtools/cast_devtools_manager_delegate.h",
     "devtools/remote_debugging_server.cc",
     "devtools/remote_debugging_server.h",
+    "general_audience_browsing_navigation_throttle.cc",
+    "general_audience_browsing_navigation_throttle.h",
+    "general_audience_browsing_service.cc",
+    "general_audience_browsing_service.h",
     "lru_renderer_cache.cc",
     "lru_renderer_cache.h",
     "media/media_caps_impl.cc",
     "media/media_caps_impl.h",
     "media/supported_codec_finder.cc",
     "media/supported_codec_finder.h",
-    "metrics/cast_metrics_prefs.cc",
-    "metrics/cast_metrics_prefs.h",
-    "metrics/cast_metrics_service_client.cc",
-    "metrics/cast_metrics_service_client.h",
-    "metrics/cast_stability_metrics_provider.cc",
-    "metrics/cast_stability_metrics_provider.h",
-    "network_context_manager.cc",
-    "network_context_manager.h",
-    "pref_service_helper.cc",
-    "pref_service_helper.h",
     "renderer_prelauncher.cc",
     "renderer_prelauncher.h",
     "service/cast_service_simple.cc",
@@ -105,15 +130,17 @@ cast_source_set("browser") {
       "cast_browser_main_parts_simple.cc",
       "cast_content_browser_client_simple.cc",
       "cast_network_request_interceptor_simple.cc",
-      "pref_service_helper_simple.cc",
     ]
   }
 
   public_deps = [
+    ":prefs",
     ":public",
+    "//chromecast/browser/metrics",
   ]
 
   deps = [
+    ":browser_buildflags",
     "//base",
     "//base:i18n",
     "//cc",
@@ -124,8 +151,8 @@ cast_source_set("browser") {
     "//chromecast/base",
     "//chromecast/base:cast_sys_info",
     "//chromecast/base:cast_version",
-    "//chromecast/browser:resources",
     "//chromecast/browser/bluetooth/public/mojom",
+    "//chromecast/browser/general_audience_browsing/mojom",
     "//chromecast/common",
     "//chromecast/common/media",
     "//chromecast/common/mojom",
@@ -140,26 +167,30 @@ cast_source_set("browser") {
     "//components/metrics",
     "//components/metrics:gpu",
     "//components/metrics:net",
+    "//components/variations/net",
 
     # TODO(gfhuang): Eliminate this dependency if ScreenInfoMetricsProvider
     # isn't needed. crbug.com/541577
     "//components/metrics:ui",
     "//components/network_hints/browser",
     "//components/network_session_configurator/common",
+    "//components/policy/core/browser",
     "//components/prefs",
     "//components/proxy_config",
+    "//components/safe_search_api",
+    "//components/safe_search_api:safe_search_client",
     "//components/viz/service",
-    "//content",
     "//content/public/browser",
     "//content/public/common",
     "//content/public/common:service_names",
-    "//content/public/utility",
     "//device/bluetooth",
     "//gpu",
     "//ipc",
     "//media",
+    "//media/mojo/services:media_manifest",
     "//net",
-    "//services/network:network_service",
+    "//services/media_session/public/mojom",
+    "//services/service_manager/public/cpp",
     "//ui/base",
     "//ui/compositor",
     "//ui/display",
@@ -199,14 +230,9 @@ cast_source_set("browser") {
       "cast_memory_pressure_monitor.h",
       "memory_pressure_controller_impl.cc",
       "memory_pressure_controller_impl.h",
-      "metrics/external_metrics.cc",
-      "metrics/external_metrics.h",
     ]
 
-    deps += [
-      "//components/metrics:serialization",
-      "//third_party/fontconfig",
-    ]
+    deps += [ "//third_party/fontconfig" ]
   }
 
   if (use_aura) {
@@ -222,6 +248,15 @@ cast_source_set("browser") {
       "//components/crash/content/app",
       "//components/crash/content/browser",
     ]
+
+    # TODO(crbug.com/933142): Fuchsia needs its own methods to bridge with heap
+    # profiling service
+    deps += [
+      "//components/heap_profiling",
+      "//components/services/heap_profiling",
+      "//components/services/heap_profiling/public/cpp",
+      "//components/services/heap_profiling/public/mojom",
+    ]
   }
 
   if (use_ozone) {
@@ -235,20 +270,27 @@ cast_source_set("browser") {
     ]
   }
 
+  if (enable_external_mojo_services) {
+    deps += [ "//chromecast/external_mojo/broker_service" ]
+  }
+
   if (enable_chromecast_extensions) {
     sources += [
       "cast_extension_host.cc",
       "cast_extension_host.h",
       "cast_extension_message_filter.cc",
       "cast_extension_message_filter.h",
-      "cast_web_view_extension.cc",
-      "cast_web_view_extension.h",
+      "cast_extension_url_loader_factory.cc",
+      "cast_extension_url_loader_factory.h",
+      "extension_page.cc",
+      "extension_page.h",
       "extension_request_protocol_handler.cc",
       "extension_request_protocol_handler.h",
       "extensions/api/accessibility_private/accessibility_extension_api.cc",
       "extensions/api/accessibility_private/accessibility_extension_api.h",
       "extensions/api/automation_internal/automation_event_router.cc",
       "extensions/api/automation_internal/automation_event_router.h",
+      "extensions/api/automation_internal/automation_event_router_interface.h",
       "extensions/api/automation_internal/automation_internal_api.cc",
       "extensions/api/automation_internal/automation_internal_api.h",
       "extensions/api/bookmarks/bookmarks_api.cc",
@@ -304,8 +346,6 @@ cast_source_set("browser") {
         "accessibility/touch_exploration_controller.h",
         "accessibility/touch_exploration_manager.cc",
         "accessibility/touch_exploration_manager.h",
-        "cast_web_view_extension.h",
-        "cast_web_view_extension.h",
         "ui/aura/accessibility/automation_manager_aura.cc",
         "ui/aura/accessibility/automation_manager_aura.h",
         "ui/aura/accessibility/ax_tree_source_aura.cc",
@@ -335,16 +375,44 @@ cast_source_set("browser") {
 
   if (enable_cast_wayland_server) {
     sources += [
+      "exo/wayland_server_controller.cc",
+      "exo/wayland_server_controller.h",
       "exo/wm_helper_cast_shell.cc",
       "exo/wm_helper_cast_shell.h",
     ]
     deps += [
       "//components/exo",
       "//components/exo/wayland",
+      "//ui/display/manager",
     ]
   }
 
   configs += [ "//media/audio:platform_config" ]
+
+  if (chromecast_branding != "public") {
+    deps += [
+      "//chromecast/internal/shell/browser:cast_content_browser_internal_manifest_overlay",
+      "//chromecast/internal/shell/browser:cast_content_packaged_services_internal_manifest_overlay",
+      "//chromecast/internal/shell/browser:cast_content_renderer_internal_manifest_overlay",
+    ]
+
+    defines = [ "USE_INTERNAL_OVERLAY_MANIFESTS=1" ]
+  }
+}
+
+cast_source_set("network_context_manager") {
+  sources = [
+    "network_context_manager.cc",
+    "network_context_manager.h",
+  ]
+
+  deps = [
+    "//base",
+    "//components/variations/net",
+    "//content/public/browser",
+    "//net",
+    "//services/network:network_service",
+  ]
 }
 
 # Lightweight target for Cast interfaces that wrap //content/public/browser.
@@ -353,6 +421,7 @@ cast_source_set("public") {
   sources = [
     "cast_content_window.cc",
     "cast_content_window.h",
+    "cast_web_contents.cc",
     "cast_web_contents.h",
     "cast_web_view.cc",
     "cast_web_view.h",
@@ -360,86 +429,16 @@ cast_source_set("public") {
 
   # Need to expose this so that internal public_configs are propagated.
   public_deps = [
+    "//chromecast/common/mojom",
     "//content/public/browser",
   ]
 
   deps = [
     "//base",
     "//chromecast/graphics",
-    "//content",
+    "//content/public/common",
     "//ui/events",
     "//url",
-  ]
-}
-
-# This target generates an "overlay" interface spec, allowing the Cast build to
-# declare specific behavior and requirements for the "content_browser" service.
-# This is accomplished by generating a JSON file, which is packed into
-# cast_shell.pak, and loaded at runtime. This can be used to host additional
-# interfaces in "content_browser".
-#
-# NOTE: Do not add packaged_services here! packaged_services should instead be
-# added to "cast_content_packaged_services_manifest_overlay" below or
-# its internal counterpart. Please see that target for more details.
-service_manifest("cast_content_browser_manifest_overlay") {
-  source = "cast_content_browser_manifest_overlay.json"
-
-  if (chromecast_branding != "public") {
-    overlays = [ "//chromecast/internal/shell/browser:cast_content_browser_internal_manifest_overlay" ]
-  }
-}
-
-# This target generates an "overlay" interface spec, allowing the Cast build to
-# declare specific behavior and requirements for the "content_renderer" service.
-# This is accomplished by generating a JSON file, which is packed into
-# cast_shell.pak, and loaded at runtime. This can be used to host additional
-# interfaces in "content_renderer".
-service_manifest("cast_content_renderer_manifest_overlay") {
-  source = "cast_content_renderer_manifest_overlay.json"
-
-  if (chromecast_branding != "public") {
-    overlays = [ "//chromecast/internal/shell/browser:cast_content_renderer_internal_manifest_overlay" ]
-  }
-}
-
-# This target is for packaged services that will run in the main (browser)
-# process. To host an embedded service, add the service's manifest target to the
-# list of "packaged_services" in this target, like so:
-#
-#   package_services += [ "//path/to/foo/service:foo_manifest" ]
-#
-# You must also register the "foo" service with the content client. See
-# CastContentBrowserClient::RegisterInProcessServices() for details.
-#
-# NOTE: If your service's manifest is in chromecast/internal, do not add it
-# here! Instead, add the service to the internal counterpart, which is
-# referenced below.
-service_manifest("cast_content_packaged_services_manifest_overlay") {
-  source = "cast_content_packaged_services_manifest_overlay.json"
-
-  packaged_services = [ "//media/mojo/services:media_manifest" ]
-
-  if (chromecast_branding != "public") {
-    overlays = [ "//chromecast/internal/shell/browser:cast_content_packaged_services_internal_manifest_overlay" ]
-  }
-}
-
-grit("resources") {
-  visibility = [
-    ":browser",
-    "//chromecast:cast_shell_pak",
-  ]
-  source = "cast_browser_resources.grd"
-  output_dir = "$root_gen_dir/chromecast/browser"
-  outputs = [
-    "grit/cast_browser_resources.h",
-    "cast_browser_resources.pak",
-  ]
-
-  deps = [
-    ":cast_content_browser_manifest_overlay",
-    ":cast_content_packaged_services_manifest_overlay",
-    ":cast_content_renderer_manifest_overlay",
   ]
 }
 
@@ -470,6 +469,7 @@ cast_source_set("browsertests") {
   sources = [
     "cast_content_gesture_handler_test.cc",
     "cast_media_blocker_browsertest.cc",
+    "cast_web_contents_browsertest.cc",
     "renderer_prelauncher_test.cc",
     "test/cast_features_browsertest.cc",
     "test/cast_navigation_browsertest.cc",
@@ -479,15 +479,20 @@ cast_source_set("browsertests") {
 
   deps = [
     ":test_support",
+    "//base",
     "//chromecast:chromecast_buildflags",
     "//chromecast/base",
     "//chromecast/base:chromecast_switches",
     "//chromecast/base/metrics",
     "//components/prefs",
+    "//content/public/browser",
+    "//content/test:test_support",
     "//media:test_support",
+    "//net:test_support",
   ]
 
   data = [
+    "//chromecast/browser/test/data/",
     "//media/test/data/",
   ]
 }
@@ -507,6 +512,7 @@ cast_source_set("unittests") {
 
   deps = [
     ":browser",
+    ":network_context_manager",
     "//base",
     "//chromecast/base",
     "//content/public/browser",
@@ -539,10 +545,16 @@ if (is_android) {
       "android/apk/src/org/chromium/chromecast/shell/CastSysInfoAndroid.java",
     ]
 
-    if (is_android_things_non_public && !build_for_android_things_n) {
+    if (is_android_things_non_public) {
       sources += [ "android/apk/src/org/chromium/chromecast/shell/CastSysInfoAndroidThings.java" ]
     }
 
     jni_package = "chromecast"
+  }
+
+  java_cpp_enum("java_enums") {
+    sources = [
+      "cast_content_window.h",
+    ]
   }
 }

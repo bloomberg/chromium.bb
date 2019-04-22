@@ -27,7 +27,7 @@ using ::testing::NotNull;
 std::unique_ptr<RemoteSuggestion> SnippetFromContentSuggestionJSON(
     const std::string& json,
     const base::Time& fetch_date) {
-  auto json_value = base::JSONReader::Read(json);
+  auto json_value = base::JSONReader::ReadDeprecated(json);
   base::DictionaryValue* json_dict;
   if (!json_value->GetAsDictionary(&json_dict)) {
     return nullptr;
@@ -210,7 +210,7 @@ std::unique_ptr<base::DictionaryValue> ContentSuggestionSnippet() {
       "score": 9001
     }
   )";
-  auto json_value = base::JSONReader::Read(kJsonStr);
+  auto json_value = base::JSONReader::ReadDeprecated(kJsonStr);
   base::DictionaryValue* json_dict;
   CHECK(json_value->GetAsDictionary(&json_dict));
   return json_dict->CreateDeepCopy();
@@ -282,7 +282,6 @@ TEST(RemoteSuggestionTest, ToContentSuggestion) {
   EXPECT_THAT(sugg.score(), Eq(9001));
   EXPECT_THAT(sugg.salient_image_url(),
               Eq(GURL("http://localhost/foobar.jpg")));
-  EXPECT_THAT(sugg.download_suggestion_extra(), IsNull());
   EXPECT_THAT(sugg.notification_extra(), IsNull());
   EXPECT_THAT(sugg.fetch_date(), Eq(fetch_date));
 }
@@ -306,7 +305,6 @@ TEST(RemoteSuggestionTest, ToContentSuggestionWithNotificationInfo) {
   EXPECT_THAT(sugg.publish_date().ToJavaTime(), Eq(1467284497000));
   EXPECT_THAT(sugg.publisher_name(), Eq(base::UTF8ToUTF16("Foo News")));
   EXPECT_THAT(sugg.score(), Eq(9001));
-  EXPECT_THAT(sugg.download_suggestion_extra(), IsNull());
   ASSERT_THAT(sugg.notification_extra(), NotNull());
   EXPECT_THAT(sugg.notification_extra()->deadline.ToJavaTime(),
               Eq(1467291697000));

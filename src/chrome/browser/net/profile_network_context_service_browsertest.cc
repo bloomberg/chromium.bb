@@ -177,13 +177,13 @@ IN_PROC_BROWSER_TEST_P(ProfileNetworkContextServiceDiskCacheDirBrowsertest,
   EXPECT_TRUE(base::PathExists(expected_cache_path));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* No test prefix */,
     ProfileNetworkContextServiceBrowsertest,
     ::testing::Values(NetworkServiceState::kDisabled,
                       NetworkServiceState::kEnabled));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* No test prefix */,
     ProfileNetworkContextServiceDiskCacheDirBrowsertest,
     ::testing::Values(NetworkServiceState::kDisabled,

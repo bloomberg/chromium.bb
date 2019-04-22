@@ -25,7 +25,7 @@ void testing_only_texture_test(skiatest::Reporter* reporter, GrContext* context,
     }
     SkAutoTMalloc<GrColor> dstBuffer(kWidth * kHeight);
 
-    GrGpu* gpu = context->contextPriv().getGpu();
+    GrGpu* gpu = context->priv().getGpu();
 
     GrPixelConfig config = GrColorTypeToPixelConfig(ct, GrSRGBEncoded::kNo);
     if (!gpu->caps()->isConfigTexturable(config)) {
@@ -47,12 +47,11 @@ void testing_only_texture_test(skiatest::Reporter* reporter, GrContext* context,
 
     sk_sp<GrTexture> wrappedTex;
     if (renderTarget) {
-        wrappedTex = gpu->wrapRenderableBackendTexture(backendTex, 1,
-                                                       GrWrapOwnership::kAdopt_GrWrapOwnership);
+        wrappedTex = gpu->wrapRenderableBackendTexture(
+                backendTex, 1, GrWrapOwnership::kAdopt_GrWrapOwnership, GrWrapCacheable::kNo);
     } else {
-        wrappedTex = gpu->wrapBackendTexture(backendTex,
-                                             GrWrapOwnership::kAdopt_GrWrapOwnership,
-                                             false);
+        wrappedTex = gpu->wrapBackendTexture(backendTex, GrWrapOwnership::kAdopt_GrWrapOwnership,
+                                             GrWrapCacheable::kNo, kRead_GrIOType);
     }
     REPORTER_ASSERT(reporter, wrappedTex);
 

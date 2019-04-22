@@ -8,6 +8,7 @@
 #include <string>
 
 #include "content/common/content_export.h"
+#include "third_party/blink/public/mojom/csp/content_security_policy.mojom.h"
 #include "third_party/blink/public/platform/web_content_security_policy.h"
 
 namespace content {
@@ -18,11 +19,11 @@ namespace content {
 struct CONTENT_EXPORT ContentSecurityPolicyHeader {
   ContentSecurityPolicyHeader();
   ContentSecurityPolicyHeader(const std::string& header_value,
-                              blink::WebContentSecurityPolicyType type,
+                              blink::mojom::ContentSecurityPolicyType type,
                               blink::WebContentSecurityPolicySource source);
 
   std::string header_value;
-  blink::WebContentSecurityPolicyType type;
+  blink::mojom::ContentSecurityPolicyType type;
   blink::WebContentSecurityPolicySource source;
 };
 

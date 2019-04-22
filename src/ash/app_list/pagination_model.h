@@ -61,8 +61,8 @@ class APP_LIST_EXPORT PaginationModel : public gfx::AnimationDelegate {
   // Whether the page relative |delta| is valid.
   bool IsValidPageRelative(int delta) const;
 
-  // Immediately completes all queued animations, jumping directly to the final
-  // target page.
+  // Immediately completes all queued animations, jumping directly to the
+  // final target page.
   void FinishAnimation();
 
   void SetTransition(const Transition& transition);
@@ -110,6 +110,8 @@ class APP_LIST_EXPORT PaginationModel : public gfx::AnimationDelegate {
   void NotifyTransitionStarted();
   void NotifyTransitionChanged();
   void NotifyTransitionEnded();
+  void NotifyScrollStarted();
+  void NotifyScrollEnded();
 
   void clear_transition() { SetTransition(Transition(-1, 0)); }
 

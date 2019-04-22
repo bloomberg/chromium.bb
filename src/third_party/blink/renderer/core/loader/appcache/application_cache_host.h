@@ -35,6 +35,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "third_party/blink/public/mojom/appcache/appcache.mojom-blink.h"
 #include "third_party/blink/public/platform/web_application_cache_host_client.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -52,33 +53,9 @@ class CORE_EXPORT ApplicationCacheHost final
     : public GarbageCollectedFinalized<ApplicationCacheHost>,
       public WebApplicationCacheHostClient {
  public:
-  static ApplicationCacheHost* Create(DocumentLoader* loader) {
-    return new ApplicationCacheHost(loader);
-  }
-
+  explicit ApplicationCacheHost(DocumentLoader*);
   ~ApplicationCacheHost() override;
   void DetachFromDocumentLoader();
-
-  // The Status numeric values are specified in the HTML5 spec.
-  enum Status {
-    kUncached = 0,
-    kIdle = 1,
-    kChecking = 2,
-    kDownloading = 3,
-    kUpdateready = 4,
-    kObsolete = 5
-  };
-
-  enum EventID {
-    kCheckingEvent = 0,
-    kErrorEvent,
-    kNoupdateEvent,
-    kDownloadingEvent,
-    kProgressEvent,
-    kUpdatereadyEvent,
-    kCachedEvent,
-    kObsoleteEvent  // Must remain the last value, this is used to size arrays.
-  };
 
   struct CacheInfo {
     STACK_ALLOCATED();
@@ -87,15 +64,18 @@ class CORE_EXPORT ApplicationCacheHost final
     CacheInfo(const KURL& manifest,
               double creation_time,
               double update_time,
-              long long size)
+              int64_t response_sizes,
+              int64_t padding_sizes)
         : manifest_(manifest),
           creation_time_(creation_time),
           update_time_(update_time),
-          size_(size) {}
+          response_sizes_(response_sizes),
+          padding_sizes_(padding_sizes) {}
     KURL manifest_;
     double creation_time_;
     double update_time_;
-    long long size_;
+    int64_t response_sizes_;
+    int64_t padding_sizes_;
   };
 
   struct ResourceInfo {
@@ -106,21 +86,24 @@ class CORE_EXPORT ApplicationCacheHost final
                  bool is_fallback,
                  bool is_foreign,
                  bool is_explicit,
-                 long long size)
+                 int64_t response_size,
+                 int64_t padding_size)
         : resource_(resource),
           is_master_(is_master),
           is_manifest_(is_manifest),
           is_fallback_(is_fallback),
           is_foreign_(is_foreign),
           is_explicit_(is_explicit),
-          size_(size) {}
+          response_size_(response_size),
+          padding_size_(padding_size) {}
     KURL resource_;
     bool is_master_;
     bool is_manifest_;
     bool is_fallback_;
     bool is_foreign_;
     bool is_explicit_;
-    long long size_;
+    int64_t response_size_;
+    int64_t padding_size_;
   };
 
   typedef Vector<ResourceInfo> ResourceInfoList;
@@ -132,22 +115,23 @@ class CORE_EXPORT ApplicationCacheHost final
   // willStartLoadingMainResource if it's for frame resource or
   // willStartLoadingResource for subresource requests.
   void WillStartLoading(ResourceRequest&);
+  void WillStartLoadingMainResource(DocumentLoader*,
+                                    const KURL&,
+                                    const String& method);
 
   void DidReceiveResponseForMainResource(const ResourceResponse&);
   void MainResourceDataReceived(const char* data, size_t length);
-  void FinishedLoadingMainResource();
-  void FailedLoadingMainResource();
 
-  Status GetStatus() const;
+  mojom::AppCacheStatus GetStatus() const;
   bool Update();
   bool SwapCache();
   void Abort();
 
   void SetApplicationCache(ApplicationCache*);
-  void NotifyApplicationCache(EventID,
+  void NotifyApplicationCache(mojom::AppCacheEventID,
                               int progress_total,
                               int progress_done,
-                              WebApplicationCacheHost::ErrorReason,
+                              mojom::AppCacheErrorReason,
                               const String& error_url,
                               int error_status,
                               const String& error_message);
@@ -162,17 +146,13 @@ class CORE_EXPORT ApplicationCacheHost final
   void Trace(blink::Visitor*);
 
  private:
-  explicit ApplicationCacheHost(DocumentLoader*);
-
-  void WillStartLoadingMainResource(const KURL&, const String&);
-
   // WebApplicationCacheHostClient implementation
   void DidChangeCacheAssociation() final;
-  void NotifyEventListener(WebApplicationCacheHost::EventID) final;
+  void NotifyEventListener(mojom::AppCacheEventID) final;
   void NotifyProgressEventListener(const WebURL&,
                                    int progress_total,
                                    int progress_done) final;
-  void NotifyErrorEventListener(WebApplicationCacheHost::ErrorReason,
+  void NotifyErrorEventListener(mojom::AppCacheErrorReason,
                                 const WebURL&,
                                 int status,
                                 const WebString& message) final;
@@ -181,17 +161,17 @@ class CORE_EXPORT ApplicationCacheHost final
   DocumentLoader* GetDocumentLoader() const { return document_loader_; }
 
   struct DeferredEvent {
-    EventID event_id;
+    mojom::AppCacheEventID event_id;
     int progress_total;
     int progress_done;
-    WebApplicationCacheHost::ErrorReason error_reason;
+    mojom::AppCacheErrorReason error_reason;
     String error_url;
     int error_status;
     String error_message;
-    DeferredEvent(EventID id,
+    DeferredEvent(mojom::AppCacheEventID id,
                   int progress_total,
                   int progress_done,
-                  WebApplicationCacheHost::ErrorReason error_reason,
+                  mojom::AppCacheErrorReason error_reason,
                   const String& error_url,
                   int error_status,
                   const String& error_message)
@@ -209,10 +189,10 @@ class CORE_EXPORT ApplicationCacheHost final
   bool defers_events_;  // Events are deferred until after document onload.
   Vector<DeferredEvent> deferred_events_;
 
-  void DispatchDOMEvent(EventID,
+  void DispatchDOMEvent(mojom::AppCacheEventID,
                         int progress_total,
                         int progress_done,
-                        WebApplicationCacheHost::ErrorReason,
+                        mojom::AppCacheErrorReason,
                         const String& error_url,
                         int error_status,
                         const String& error_message);

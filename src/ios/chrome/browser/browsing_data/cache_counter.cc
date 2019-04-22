@@ -10,7 +10,7 @@
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_repeating_callback.h"
 #include "net/base/net_errors.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/http/http_cache.h"
@@ -24,7 +24,7 @@ class IOThreadCacheCounter {
  public:
   IOThreadCacheCounter(
       const scoped_refptr<net::URLRequestContextGetter>& context_getter,
-      const net::Int64CompletionCallback& result_callback)
+      const net::Int64CompletionRepeatingCallback& result_callback)
       : next_step_(STEP_GET_BACKEND),
         context_getter_(context_getter),
         result_callback_(result_callback),
@@ -109,7 +109,7 @@ class IOThreadCacheCounter {
 
   Step next_step_;
   scoped_refptr<net::URLRequestContextGetter> context_getter_;
-  net::Int64CompletionCallback result_callback_;
+  net::Int64CompletionRepeatingCallback result_callback_;
   int64_t result_;
   disk_cache::Backend* backend_;
 };

@@ -31,6 +31,7 @@ namespace rx
 class GLImplFactory;
 class ShaderImpl;
 class ShaderSh;
+class WaitableCompileEvent;
 }  // namespace rx
 
 namespace angle
@@ -41,11 +42,11 @@ class WorkerThreadPool;
 
 namespace gl
 {
-class ContextState;
+class CompileTask;
+class Context;
 struct Limitations;
 class ShaderProgramManager;
-class Context;
-class CompileTask;
+class State;
 
 // We defer the compile until link time, or until properties are queried.
 enum class CompileStatus
@@ -131,7 +132,7 @@ class Shader final : angle::NonCopyable, public LabeledObject
 
     void onDestroy(const Context *context);
 
-    void setLabel(const std::string &label) override;
+    void setLabel(const Context *context, const std::string &label) override;
     const std::string &getLabel() const override;
 
     ShaderType getType() const { return mType; }
@@ -189,6 +190,8 @@ class Shader final : angle::NonCopyable, public LabeledObject
     const std::string &getCompilerResourcesString() const;
 
   private:
+    struct CompilingState;
+
     ~Shader() override;
     static void GetSourceImpl(const std::string &source,
                               GLsizei bufSize,
@@ -208,10 +211,7 @@ class Shader final : angle::NonCopyable, public LabeledObject
 
     // We keep a reference to the translator in order to defer compiles while preserving settings.
     BindingPointer<Compiler> mBoundCompiler;
-    ShCompilerInstance mShCompilerInstance;
-    std::shared_ptr<CompileTask> mCompileTask;
-    std::shared_ptr<angle::WorkerThreadPool> mWorkerPool;
-    std::shared_ptr<angle::WaitableEvent> mCompileEvent;
+    std::unique_ptr<CompilingState> mCompilingState;
     std::string mCompilerResourcesString;
 
     ShaderProgramManager *mResourceManager;

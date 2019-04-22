@@ -5,8 +5,6 @@
 package org.chromium.chrome.browser.tabmodel;
 
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
-import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 
 import java.util.List;
 
@@ -42,11 +40,14 @@ public class EmptyTabModelObserver implements TabModelObserver {
     public void tabClosureCommitted(Tab tab) {}
 
     @Override
-    public void allTabsPendingClosure(List<Tab> tabs) {}
+    public void multipleTabsPendingClosure(List<Tab> tabs, boolean isAllTabs) {}
 
     @Override
     public void allTabsClosureCommitted() {}
 
     @Override
     public void tabRemoved(Tab tab) {}
+
+    @Override
+    public void restoreCompleted() {}
 }

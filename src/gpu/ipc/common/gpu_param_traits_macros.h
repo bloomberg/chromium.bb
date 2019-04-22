@@ -22,7 +22,7 @@
 IPC_ENUM_TRAITS_MAX_VALUE(gpu::SchedulingPriority,
                           gpu::SchedulingPriority::kLast)
 IPC_ENUM_TRAITS_MAX_VALUE(gpu::ContextResult,
-                          gpu::ContextResult::kLastContextResult);
+                          gpu::ContextResult::kLastContextResult)
 
 IPC_STRUCT_TRAITS_BEGIN(gpu::SwapBuffersCompleteParams)
   IPC_STRUCT_TRAITS_MEMBER(ca_layer_params)
@@ -30,6 +30,6 @@ IPC_STRUCT_TRAITS_BEGIN(gpu::SwapBuffersCompleteParams)
   IPC_STRUCT_TRAITS_MEMBER(swap_response)
 IPC_STRUCT_TRAITS_END()
 
-IPC_ENUM_TRAITS_MAX_VALUE(viz::ResourceFormat, viz::RESOURCE_FORMAT_MAX);
+IPC_ENUM_TRAITS_MAX_VALUE(viz::ResourceFormat, viz::RESOURCE_FORMAT_MAX)
 
 #endif  // GPU_IPC_COMMON_GPU_PARAM_TRAITS_MACROS_H_

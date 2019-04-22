@@ -39,6 +39,6 @@ class ChildProcessHostDelegate : public IPC::Listener {
                              mojo::ScopedMessagePipeHandle interface_pipe) {}
 };
 
-};  // namespace content
+}  // namespace content
 
 #endif  // CONTENT_PUBLIC_COMMON_CHILD_PROCESS_HOST_DELEGATE_H_

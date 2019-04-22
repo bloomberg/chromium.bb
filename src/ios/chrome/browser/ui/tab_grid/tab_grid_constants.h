@@ -5,7 +5,8 @@
 #ifndef IOS_CHROME_BROWSER_UI_TAB_GRID_TAB_GRID_CONSTANTS_H_
 #define IOS_CHROME_BROWSER_UI_TAB_GRID_TAB_GRID_CONSTANTS_H_
 
-#import <UIKit/UIKit.h>
+#include <CoreGraphics/CoreGraphics.h>
+#import <Foundation/Foundation.h>
 
 // Accessibility identifiers for automated testing.
 extern NSString* const kTabGridIncognitoTabsPageButtonIdentifier;
@@ -40,8 +41,7 @@ extern const CGFloat kTabGridEmptyStateVerticalInset;
 extern const CGFloat kTabGridEmptyStateHorizontalInset;
 
 // The insets from the edges for the floating button.
-extern const CGFloat kTabGridFloatingButtonVerticalInsetSmall;
-extern const CGFloat kTabGridFloatingButtonVerticalInsetLarge;
+extern const CGFloat kTabGridFloatingButtonVerticalInset;
 extern const CGFloat kTabGridFloatingButtonHorizontalInset;
 
 // Intrinsic heights of the tab grid toolbars.

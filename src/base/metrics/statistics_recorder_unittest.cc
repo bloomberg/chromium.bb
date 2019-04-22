@@ -126,7 +126,7 @@ class StatisticsRecorderTest : public testing::TestWithParam<bool> {
 };
 
 // Run all HistogramTest cases with both heap and persistent memory.
-INSTANTIATE_TEST_CASE_P(Allocator, StatisticsRecorderTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(Allocator, StatisticsRecorderTest, testing::Bool());
 
 TEST_P(StatisticsRecorderTest, NotInitialized) {
   UninitializeStatisticsRecorder();
@@ -359,48 +359,46 @@ TEST_P(StatisticsRecorderTest, ToJSON) {
   std::string json(StatisticsRecorder::ToJSON(JSON_VERBOSITY_LEVEL_FULL));
 
   // Check for valid JSON.
-  std::unique_ptr<Value> root = JSONReader::Read(json);
-  ASSERT_TRUE(root.get());
-
-  DictionaryValue* root_dict = nullptr;
-  ASSERT_TRUE(root->GetAsDictionary(&root_dict));
+  Optional<Value> root = JSONReader::Read(json);
+  ASSERT_TRUE(root);
+  ASSERT_TRUE(root->is_dict());
 
   // No query should be set.
-  ASSERT_FALSE(root_dict->HasKey("query"));
+  ASSERT_FALSE(root->FindKey("query"));
 
-  ListValue* histogram_list = nullptr;
-  ASSERT_TRUE(root_dict->GetList("histograms", &histogram_list));
-  ASSERT_EQ(2u, histogram_list->GetSize());
+  const Value* histogram_list = root->FindListKey("histograms");
+
+  ASSERT_TRUE(histogram_list);
+  ASSERT_EQ(2u, histogram_list->GetList().size());
 
   // Examine the first histogram.
-  DictionaryValue* histogram_dict = nullptr;
-  ASSERT_TRUE(histogram_list->GetDictionary(0, &histogram_dict));
+  const Value& histogram_dict = histogram_list->GetList()[0];
+  ASSERT_TRUE(histogram_dict.is_dict());
 
-  int sample_count;
-  ASSERT_TRUE(histogram_dict->GetInteger("count", &sample_count));
-  EXPECT_EQ(2, sample_count);
+  auto sample_count = histogram_dict.FindIntKey("count");
+  ASSERT_TRUE(sample_count);
+  EXPECT_EQ(2, *sample_count);
 
-  ListValue* buckets_list = nullptr;
-  ASSERT_TRUE(histogram_dict->GetList("buckets", &buckets_list));
+  const Value* buckets_list = histogram_dict.FindListKey("buckets");
+  ASSERT_TRUE(buckets_list);
   EXPECT_EQ(2u, buckets_list->GetList().size());
 
   // Check the serialized JSON with a different verbosity level.
   json = StatisticsRecorder::ToJSON(JSON_VERBOSITY_LEVEL_OMIT_BUCKETS);
   root = JSONReader::Read(json);
-  ASSERT_TRUE(root.get());
-  root_dict = nullptr;
-  ASSERT_TRUE(root->GetAsDictionary(&root_dict));
-  histogram_list = nullptr;
-  ASSERT_TRUE(root_dict->GetList("histograms", &histogram_list));
-  ASSERT_EQ(2u, histogram_list->GetSize());
-  histogram_dict = nullptr;
-  ASSERT_TRUE(histogram_list->GetDictionary(0, &histogram_dict));
-  sample_count = 0;
-  ASSERT_TRUE(histogram_dict->GetInteger("count", &sample_count));
-  EXPECT_EQ(2, sample_count);
-  buckets_list = nullptr;
+  ASSERT_TRUE(root);
+  ASSERT_TRUE(root->is_dict());
+  histogram_list = root->FindListKey("histograms");
+  ASSERT_TRUE(histogram_list);
+  ASSERT_EQ(2u, histogram_list->GetList().size());
+  const Value& histogram_dict2 = histogram_list->GetList()[0];
+  ASSERT_TRUE(histogram_dict2.is_dict());
+  sample_count = histogram_dict2.FindIntKey("count");
+  ASSERT_TRUE(sample_count);
+  EXPECT_EQ(2, *sample_count);
+  buckets_list = histogram_dict2.FindListKey("buckets");
   // Bucket information should be omitted.
-  ASSERT_FALSE(histogram_dict->GetList("buckets", &buckets_list));
+  ASSERT_FALSE(buckets_list);
 }
 
 TEST_P(StatisticsRecorderTest, IterationTest) {
@@ -638,7 +636,8 @@ TEST_P(StatisticsRecorderTest, LogOnShutdownInitialized) {
 
 class TestHistogramProvider : public StatisticsRecorder::HistogramProvider {
  public:
-  TestHistogramProvider(std::unique_ptr<PersistentHistogramAllocator> allocator)
+  explicit TestHistogramProvider(
+      std::unique_ptr<PersistentHistogramAllocator> allocator)
       : allocator_(std::move(allocator)), weak_factory_(this) {
     StatisticsRecorder::RegisterHistogramProvider(weak_factory_.GetWeakPtr());
   }

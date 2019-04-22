@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/json/json_writer.h"
 #include "base/strings/string_util.h"
@@ -88,32 +89,39 @@ bool GetStyleSheet(const base::DictionaryValue& dict,
 base::Optional<OneGoogleBarData> JsonToOGBData(const base::Value& value) {
   const base::DictionaryValue* dict = nullptr;
   if (!value.GetAsDictionary(&dict)) {
-    DLOG(WARNING) << "Parse error: top-level dictionary not found";
+    DVLOG(1) << "Parse error: top-level dictionary not found";
     return base::nullopt;
   }
 
   const base::DictionaryValue* update = nullptr;
   if (!dict->GetDictionary("update", &update)) {
-    DLOG(WARNING) << "Parse error: no update";
+    DVLOG(1) << "Parse error: no update";
     return base::nullopt;
+  }
+
+  const base::Value* language = nullptr;
+  std::string language_code;
+  if (update->Get("language_code", &language)) {
+    language_code = language->GetString();
   }
 
   const base::DictionaryValue* one_google_bar = nullptr;
   if (!update->GetDictionary("ogb", &one_google_bar)) {
-    DLOG(WARNING) << "Parse error: no ogb";
+    DVLOG(1) << "Parse error: no ogb";
     return base::nullopt;
   }
 
   OneGoogleBarData result;
+  result.language_code = language_code;
 
   if (!safe_html::GetHtml(*one_google_bar, "html", &result.bar_html)) {
-    DLOG(WARNING) << "Parse error: no html";
+    DVLOG(1) << "Parse error: no html";
     return base::nullopt;
   }
 
   const base::DictionaryValue* page_hooks = nullptr;
   if (!one_google_bar->GetDictionary("page_hooks", &page_hooks)) {
-    DLOG(WARNING) << "Parse error: no page_hooks";
+    DVLOG(1) << "Parse error: no page_hooks";
     return base::nullopt;
   }
 
@@ -146,7 +154,7 @@ class OneGoogleBarLoaderImpl::AuthenticatedURLLoader {
   void Start();
 
  private:
-  net::HttpRequestHeaders GetRequestHeaders() const;
+  void SetRequestHeaders(network::ResourceRequest* request) const;
 
   void OnURLLoaderComplete(std::unique_ptr<std::string> response_body);
 
@@ -175,11 +183,10 @@ OneGoogleBarLoaderImpl::AuthenticatedURLLoader::AuthenticatedURLLoader(
       callback_(std::move(callback)) {
 }
 
-net::HttpRequestHeaders
-OneGoogleBarLoaderImpl::AuthenticatedURLLoader::GetRequestHeaders() const {
-  net::HttpRequestHeaders headers;
-  variations::AppendVariationHeadersUnknownSignedIn(
-      api_url_, variations::InIncognito::kNo, &headers);
+void OneGoogleBarLoaderImpl::AuthenticatedURLLoader::SetRequestHeaders(
+    network::ResourceRequest* request) const {
+  variations::AppendVariationsHeaderUnknownSignedIn(
+      api_url_, variations::InIncognito::kNo, request);
 #if defined(OS_CHROMEOS)
   signin::ChromeConnectedHeaderHelper chrome_connected_header_helper(
       account_consistency_mirror_required_
@@ -199,11 +206,10 @@ OneGoogleBarLoaderImpl::AuthenticatedURLLoader::GetRequestHeaders() const {
           // Account ID is only needed for (drive|docs).google.com.
           /*account_id=*/std::string(), profile_mode);
   if (!chrome_connected_header_value.empty()) {
-    headers.SetHeader(signin::kChromeConnectedHeader,
-                      chrome_connected_header_value);
+    request->headers.SetHeader(signin::kChromeConnectedHeader,
+                               chrome_connected_header_value);
   }
 #endif
-  return headers;
 }
 
 void OneGoogleBarLoaderImpl::AuthenticatedURLLoader::Start() {
@@ -235,7 +241,7 @@ void OneGoogleBarLoaderImpl::AuthenticatedURLLoader::Start() {
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = api_url_;
   resource_request->load_flags = net::LOAD_DO_NOT_SEND_AUTH_DATA;
-  resource_request->headers = GetRequestHeaders();
+  SetRequestHeaders(resource_request.get());
   resource_request->request_initiator =
       url::Origin::Create(GURL(chrome::kChromeUINewTabURL));
 
@@ -313,7 +319,7 @@ void OneGoogleBarLoaderImpl::LoadDone(
   if (!response_body) {
     // This represents network errors (i.e. the server did not provide a
     // response).
-    DLOG(WARNING) << "Request failed with error: " << simple_loader->NetError();
+    DVLOG(1) << "Request failed with error: " << simple_loader->NetError();
     Respond(Status::TRANSIENT_ERROR, base::nullopt);
     return;
   }
@@ -342,7 +348,7 @@ void OneGoogleBarLoaderImpl::JsonParsed(std::unique_ptr<base::Value> value) {
 }
 
 void OneGoogleBarLoaderImpl::JsonParseFailed(const std::string& message) {
-  DLOG(WARNING) << "Parsing JSON failed: " << message;
+  DVLOG(1) << "Parsing JSON failed: " << message;
   Respond(Status::FATAL_ERROR, base::nullopt);
 }
 

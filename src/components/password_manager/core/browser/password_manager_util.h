@@ -46,6 +46,10 @@ void UpdateMetadataForUsage(autofill::PasswordForm* credential);
 password_manager::SyncState GetPasswordSyncState(
     const syncer::SyncService* sync_service);
 
+// Reports whether passwords are synced with normal encryption, i.e. without a
+// custom passphrase.
+bool IsSyncingWithNormalEncryption(const syncer::SyncService* sync_service);
+
 // Finds the forms with a duplicate sync tags in |forms|. The first one of
 // the duplicated entries stays in |forms|, the others are moved to
 // |duplicates|.
@@ -120,6 +124,18 @@ void FindBestMatches(
     std::map<base::string16, const autofill::PasswordForm*>* best_matches,
     std::vector<const autofill::PasswordForm*>* not_best_matches,
     const autofill::PasswordForm** preferred_match);
+
+// If the user submits a form, they may have used existing credentials, new
+// credentials, or modified existing credentials that should be updated.
+// The function returns a form from |credentials| that is the best candidate to
+// use for an update. Returned value is NULL if |submitted_form| looks like a
+// new credential for the site to be saved.
+// |submitted_form| is the form being submitted.
+// |credentials| are all the credentials relevant for the current site including
+// PSL and Android matches.
+const autofill::PasswordForm* GetMatchForUpdating(
+    const autofill::PasswordForm& submitted_form,
+    const std::map<base::string16, const autofill::PasswordForm*>& credentials);
 
 }  // namespace password_manager_util
 

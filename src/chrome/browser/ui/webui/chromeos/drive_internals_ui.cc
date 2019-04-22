@@ -12,6 +12,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
@@ -32,7 +33,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
-#include "chromeos/chromeos_features.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/drive/drive.pb.h"
 #include "components/drive/drive_api_util.h"
 #include "components/drive/drive_notification_manager.h"
@@ -49,6 +50,7 @@
 #include "google_apis/drive/drive_api_error_codes.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/time_util.h"
+#include "net/base/filename_util.h"
 
 using content::BrowserThread;
 
@@ -758,6 +760,10 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
     base::FilePath log_path = integration_service->GetDriveFsLogPath();
     if (log_path.empty())
       return;
+
+    MaybeCallJavascript(
+        "updateOtherServiceLogsUrl",
+        base::Value(net::FilePathToFileURL(log_path.DirName()).spec()));
 
     base::PostTaskWithTraitsAndReplyWithResult(
         FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},

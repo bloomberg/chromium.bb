@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/stl_util.h"
 #include "chrome/browser/media/router/media_router.h"

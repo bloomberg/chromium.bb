@@ -5,13 +5,22 @@
 #ifndef SERVICES_PROXY_RESOLVER_MOJO_PROXY_RESOLVER_V8_TRACING_BINDINGS_H_
 #define SERVICES_PROXY_RESOLVER_MOJO_PROXY_RESOLVER_V8_TRACING_BINDINGS_H_
 
+#include <memory>
+#include <string>
 #include <utility>
 
+#include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_checker.h"
+#include "net/base/address_family.h"
+#include "net/base/host_port_pair.h"
+#include "net/dns/host_resolver.h"
 #include "net/log/net_log_with_source.h"
+#include "net/proxy_resolution/proxy_host_resolver.h"
+#include "net/proxy_resolution/proxy_resolve_dns_operation.h"
 #include "net/proxy_resolution/proxy_resolver_v8_tracing.h"
 #include "services/proxy_resolver/host_resolver_mojo.h"
+#include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
 
 namespace proxy_resolver {
 
@@ -41,7 +50,7 @@ class MojoProxyResolverV8TracingBindings
     client_->OnError(line_number, base::UTF16ToUTF8(message));
   }
 
-  net::HostResolver* GetHostResolver() override {
+  net::ProxyHostResolver* GetHostResolver() override {
     DCHECK(thread_checker_.CalledOnValidThread());
     return &host_resolver_;
   }
@@ -53,10 +62,11 @@ class MojoProxyResolverV8TracingBindings
 
  private:
   // HostResolverMojo::Impl override.
-  void ResolveDns(std::unique_ptr<net::HostResolver::RequestInfo> request_info,
+  void ResolveDns(const std::string& hostname,
+                  net::ProxyResolveDnsOperation operation,
                   mojom::HostResolverRequestClientPtr client) override {
     DCHECK(thread_checker_.CalledOnValidThread());
-    client_->ResolveDns(std::move(request_info), std::move(client));
+    client_->ResolveDns(hostname, operation, std::move(client));
   }
 
   base::ThreadChecker thread_checker_;

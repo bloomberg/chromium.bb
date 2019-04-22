@@ -3,6 +3,7 @@
 include_directories(
 	..
 	../shaderexecutor
+	../util
 	)
 
 set(DEQP_VK_YCBCR_SRCS
@@ -24,10 +25,12 @@ set(DEQP_VK_YCBCR_SRCS
 
 set(DEQP_VK_YCBCR_LIBS
 	deqp-vk-shaderexecutor
-	deqp-vk-package
+	deqp-vk-util
 	tcutil
 	vkutil
 	)
+
+PCH(DEQP_VK_YCBCR_SRCS ../pch.cpp)
 
 add_library(deqp-vk-ycbcr STATIC ${DEQP_VK_YCBCR_SRCS})
 target_link_libraries(deqp-vk-ycbcr ${DEQP_VK_YCBCR_LIBS})

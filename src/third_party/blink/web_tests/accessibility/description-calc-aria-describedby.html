@@ -2,12 +2,6 @@
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 
-<style>
-.hideAllContainers .container {
-    display: none;
-}
-</style>
-
 <div class="container">
     <div id="div">Div Contents</div>
 </div>
@@ -150,9 +144,4 @@ var axDescribedby7 = accessibilityController.accessibleElementById("describedby7
     assert_equals(axDescribedby7.descriptionElementCount(), 1);
     assert_equals(axDescribedby7.descriptionElementAtIndex(0).role, "AXRole: AXHeading");
 }, "Button with aria-describedby reference to display-none element.");
-</script>
-
-<script>
-if (window.testRunner)
-    document.body.className = "hideAllContainers";
 </script>

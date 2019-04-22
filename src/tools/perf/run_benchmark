@@ -6,7 +6,6 @@
 import sys
 
 from core import path_util
-from core import trybot_command
 sys.path.insert(1, path_util.GetTelemetryDir())
 
 from telemetry import benchmark_runner
@@ -19,8 +18,8 @@ def main():
       benchmark_dirs=[path_util.GetPerfBenchmarksDir(),
                       path_util.GetPerfContribDir()],
       top_level_dir=path_util.GetPerfDir(),
-      expectations_file=path_util.GetExpectationsPath())
-  return benchmark_runner.main(config, [trybot_command.Trybot])
+      expectations_files=[path_util.GetExpectationsPath()])
+  return benchmark_runner.main(config)
 
 
 if __name__ == '__main__':

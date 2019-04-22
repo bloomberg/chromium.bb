@@ -548,6 +548,11 @@ FileSystemOperationRunner::FileSystemOperationRunner(
 void FileSystemOperationRunner::DidFinish(const OperationID id,
                                           StatusCallback callback,
                                           base::File::Error rv) {
+  // Calling the callback or deleting the |operations_| entry in
+  // |FinishOperation| may release the FileSystemContext which owns this runner,
+  // so take a reference to keep both alive until the end of this call.
+  scoped_refptr<FileSystemContext> context(file_system_context_);
+
   if (is_beginning_operation_) {
     finished_operations_.insert(id);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -564,6 +569,11 @@ void FileSystemOperationRunner::DidGetMetadata(
     GetMetadataCallback callback,
     base::File::Error rv,
     const base::File::Info& file_info) {
+  // Calling the callback or deleting the |operations_| entry in
+  // |FinishOperation| may release the FileSystemContext which owns this runner,
+  // so take a reference to keep both alive until the end of this call.
+  scoped_refptr<FileSystemContext> context(file_system_context_);
+
   if (is_beginning_operation_) {
     finished_operations_.insert(id);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -582,6 +592,11 @@ void FileSystemOperationRunner::DidReadDirectory(
     base::File::Error rv,
     std::vector<filesystem::mojom::DirectoryEntry> entries,
     bool has_more) {
+  // Calling the callback or deleting the |operations_| entry in
+  // |FinishOperation| may release the FileSystemContext which owns this runner,
+  // so take a reference to keep both alive until the end of this call.
+  scoped_refptr<FileSystemContext> context(file_system_context_);
+
   if (is_beginning_operation_) {
     finished_operations_.insert(id);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -600,6 +615,11 @@ void FileSystemOperationRunner::DidWrite(const OperationID id,
                                          base::File::Error rv,
                                          int64_t bytes,
                                          bool complete) {
+  // Calling the callback or deleting the |operations_| entry in
+  // |FinishOperation| may release the FileSystemContext which owns this runner,
+  // so take a reference to keep both alive until the end of this call.
+  scoped_refptr<FileSystemContext> context(file_system_context_);
+
   if (is_beginning_operation_) {
     finished_operations_.insert(id);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -618,6 +638,11 @@ void FileSystemOperationRunner::DidOpenFile(
     OpenFileCallback callback,
     base::File file,
     base::OnceClosure on_close_callback) {
+  // Calling the callback or deleting the |operations_| entry in
+  // |FinishOperation| may release the FileSystemContext which owns this runner,
+  // so take a reference to keep both alive until the end of this call.
+  scoped_refptr<FileSystemContext> context(file_system_context_);
+
   if (is_beginning_operation_) {
     finished_operations_.insert(id);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -638,6 +663,11 @@ void FileSystemOperationRunner::DidCreateSnapshot(
     const base::File::Info& file_info,
     const base::FilePath& platform_path,
     scoped_refptr<storage::ShareableFileReference> file_ref) {
+  // Calling the callback or deleting the |operations_| entry in
+  // |FinishOperation| may release the FileSystemContext which owns this runner,
+  // so take a reference to keep both alive until the end of this call.
+  scoped_refptr<FileSystemContext> context(file_system_context_);
+
   if (is_beginning_operation_) {
     finished_operations_.insert(id);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -689,20 +719,12 @@ OperationID FileSystemOperationRunner::BeginOperation(
     std::unique_ptr<FileSystemOperation> operation) {
   OperationID id = next_operation_id_++;
 
-  // TODO(https://crbug.com/864351): Diagnostic to determine whether OperationID
-  // wrap-around is occurring in the wild.
   DCHECK(operations_.find(id) == operations_.end());
-
-  operations_.emplace(id, std::move(operation));
+  operations_[id] = std::move(operation);
   return id;
 }
 
 void FileSystemOperationRunner::FinishOperation(OperationID id) {
-  // Deleting the |operations_| entry may release the FileSystemContext which
-  // owns this runner, so take a reference to keep both alive until the end of
-  // this call.
-  scoped_refptr<FileSystemContext> context(file_system_context_);
-
   auto found = write_target_urls_.find(id);
   if (found != write_target_urls_.end()) {
     const FileSystemURLSet& urls = found->second;

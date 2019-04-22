@@ -118,8 +118,8 @@ guide](https://google.github.io/styleguide/htmlcssguide.html).
     * Do not add JS to element event handlers.
 
 <div class="note">
-Polymer event handlers like <code>on-tap</code> are allowed and often reduce the
-amount of addressing (adding an ID just to wire up event handling).
+Polymer event handlers like <code>on-click</code> are allowed and often reduce
+the amount of addressing (adding an ID just to wire up event handling).
 </div>
 
 ### Body
@@ -248,7 +248,7 @@ compatibility issues are less relevant for Chrome-only code).
   readability.
 
 * Prefer `rgb()` or `rgba()` with decimal values instead of hex notation
-  (`#rrggbb`) because alpha can be more easily added.
+  (`#rrggbb`).
     * Exception: shades of gray (i.e. `#333`)
 
 * If the hex value is `#rrggbb`, use the shorthand notation `#rgb`.
@@ -302,14 +302,13 @@ For properties that don't have an RTL-friendly alternatives, use
 ### Style
 
 See the [Google JavaScript Style
-Guide](https://google.github.io/styleguide/jsguide.html).
+Guide](https://google.github.io/styleguide/jsguide.html) as well as
+[ECMAScript Features in Chromium](es.md).
 
 * Use `$('element-id')` instead of `document.getElementById`
 
 * Use single-quotes instead of double-quotes for all strings.
     * `clang-format` now handles this automatically.
-
-* Omit curly braces for single-line if statements.
 
 * Use ES5 getters and setters
     * Use `@type` (instead of `@return` or `@param`) for JSDoc annotations on
@@ -352,17 +351,13 @@ Guide](https://google.github.io/styleguide/jsguide.html).
     * DO: `Object<T>`
     * DON'T: `Object<string, T>`
 
-### Events
+* Use template types for any class that supports them, for example:
+    * `Array`
+    * `CustomEvent`
+    * `Map`
+    * `Promise`
+    * `Set`
 
-* Use Polymer's `on-tap` for click events instead of `on-click`
-    * `on-tap` handlers should use `stopPropagation()` to prevent parents from
-      handling the event where appropriate.
-
-<div class="note">
-Calling <code>stopPropagation()</code> from an <code>on-tap</code> handler will
-not prevent on-click event handlers, so make sure that <i>on-tap</i> is used
-consistently throughout the page.
-</div>
 
 ## Polymer
 
@@ -395,6 +390,10 @@ fooChanged_: function() {
   this.bar = this.derive(this.foo);
 },
 ```
+
+* Use native `on-click` for click events instead of `on-tap`. 'tap' is a
+  synthetic event provided by Polymer for backward compatibility with some
+  browsers and is not needed by Chrome.
 
 * Make good use of the  [`dom-if` template](
 https://www.polymer-project.org/2.0/docs/devguide/templates#dom-if):

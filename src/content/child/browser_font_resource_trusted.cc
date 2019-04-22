@@ -422,16 +422,11 @@ void BrowserFontResource_Trusted::DrawTextToCanvas(
   // Convert position and clip.
   WebFloatPoint web_position(static_cast<float>(position->x),
                              static_cast<float>(position->y));
-  WebRect web_clip;
-  if (!clip) {
-    // Use entire canvas. PaintCanvas doesn't have a size on it, so we just use
-    // the current clip bounds.
-    SkRect skclip = destination->getLocalClipBounds();
-    web_clip = WebRect(skclip.fLeft, skclip.fTop, skclip.fRight - skclip.fLeft,
-                       skclip.fBottom - skclip.fTop);
-  } else {
-    web_clip = WebRect(clip->point.x, clip->point.y,
-                       clip->size.width, clip->size.height);
+
+  cc::PaintCanvasAutoRestore auto_restore(destination, !!clip);
+  if (clip) {
+    destination->clipRect(SkRect::MakeXYWH(
+        clip->point.x, clip->point.y, clip->size.width, clip->size.height));
   }
 
   TextRunCollection runs(text);
@@ -439,7 +434,7 @@ void BrowserFontResource_Trusted::DrawTextToCanvas(
     int32_t run_begin = 0;
     int32_t run_len = 0;
     WebTextRun run = runs.GetRunAt(i, &run_begin, &run_len);
-    font_->DrawText(destination, run, web_position, color, web_clip);
+    font_->DrawText(destination, run, web_position, color);
 
     // Advance to the next run. Note that we avoid doing this for the last run
     // since it's unnecessary, measuring text is slow, and most of the time

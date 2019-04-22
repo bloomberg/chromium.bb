@@ -133,11 +133,17 @@ std::unique_ptr<base::DictionaryValue> CreateCapabilities(
   } else {
     caps->SetBoolean("setWindowRect", true);
   }
-  caps->SetInteger("timeouts.script", session->script_timeout.InMilliseconds());
-  caps->SetInteger("timeouts.pageLoad",
-                   session->page_load_timeout.InMilliseconds());
-  caps->SetInteger("timeouts.implicit",
-                   session->implicit_wait.InMilliseconds());
+  if (session->script_timeout == base::TimeDelta::Max())
+    caps->SetPath({"timeouts", "script"}, base::Value());
+  else
+    SetSafeInt(caps.get(), "timeouts.script",
+               session->script_timeout.InMilliseconds());
+  SetSafeInt(caps.get(), "timeouts.pageLoad",
+             session->page_load_timeout.InMilliseconds());
+  SetSafeInt(caps.get(), "timeouts.implicit",
+             session->implicit_wait.InMilliseconds());
+  caps->SetBoolean("strictFileInteractability",
+                    session->strict_file_interactability);
   caps->SetString(session->w3c_compliant ? "unhandledPromptBehavior"
                                          : "unexpectedAlertBehaviour",
                   session->unhandled_prompt_behavior);
@@ -233,6 +239,10 @@ bool GetW3CSetting(const base::DictionaryValue& params) {
     }
   }
 
+  if (!params.HasKey("capabilities")) {
+    return false;
+  }
+
   return kW3CDefault;
 }
 
@@ -277,7 +287,8 @@ Status InitSessionHelper(const InitSessionParams& bound_params,
   session->implicit_wait = capabilities.implicit_wait_timeout;
   session->page_load_timeout = capabilities.page_load_timeout;
   session->script_timeout = capabilities.script_timeout;
-
+  session->strict_file_interactability =
+        capabilities.strict_file_interactability;
   Log::Level driver_level = Log::kWarning;
   if (capabilities.logging_prefs.count(WebDriverLog::kDriverType))
     driver_level = capabilities.logging_prefs[WebDriverLog::kDriverType];
@@ -323,8 +334,11 @@ Status InitSessionHelper(const InitSessionParams& bound_params,
       CreateCapabilities(session, capabilities, *desired_caps);
 
   if (session->w3c_compliant) {
+    std::unique_ptr<base::DictionaryValue> capabilities =
+        std::unique_ptr<base::DictionaryValue>(
+            session->capabilities->DeepCopy());
     base::DictionaryValue body;
-    body.SetDictionary("capabilities", std::move(session->capabilities));
+    body.SetDictionary("capabilities", std::move(capabilities));
     body.SetString("sessionId", session->id);
     value->reset(body.DeepCopy());
   } else {
@@ -520,7 +534,7 @@ Status ExecuteLaunchApp(Session* session,
                         std::unique_ptr<base::Value>* value) {
   std::string id;
   if (!params.GetString("id", &id))
-    return Status(kUnknownError, "'id' must be a string");
+    return Status(kInvalidArgument, "'id' must be a string");
 
   ChromeDesktopImpl* desktop = NULL;
   Status status = session->chrome->GetAsDesktop(&desktop);
@@ -550,6 +564,41 @@ Status ExecuteClose(Session* session,
   status = session->GetTargetWindow(&web_view);
   if (status.IsError())
     return status;
+
+  status = web_view->ConnectIfNecessary();
+  if (status.IsError())
+    return status;
+
+  status = web_view->HandleReceivedEvents();
+  if (status.IsError())
+    return status;
+
+
+  JavaScriptDialogManager* dialog_manager =
+      web_view->GetJavaScriptDialogManager();
+  if (dialog_manager->IsDialogOpen()) {
+    std::string alert_text;
+    status = dialog_manager->GetDialogMessage(&alert_text);
+    if (status.IsError())
+      return status;
+
+    // Close the dialog depending on the unexpectedalert behaviour set by user
+    // before returning an error, so that subsequent commands do not fail.
+    const std::string& prompt_behavior = session->unhandled_prompt_behavior;
+
+    if (prompt_behavior == kAccept || prompt_behavior == kAcceptAndNotify)
+      status = dialog_manager->HandleDialog(true, session->prompt_text.get());
+    else if (prompt_behavior == kDismiss ||
+             prompt_behavior == kDismissAndNotify)
+      status = dialog_manager->HandleDialog(false, session->prompt_text.get());
+    if (status.IsError())
+      return status;
+
+    // For backward compatibility, in legacy mode we always notify.
+    if (!session->w3c_compliant || prompt_behavior == kAcceptAndNotify ||
+        prompt_behavior == kDismissAndNotify || prompt_behavior == kIgnore)
+      return Status(kUnexpectedAlertOpen, "{Alert text : " + alert_text + "}");
+  }
 
   status = session->chrome->CloseWebView(web_view->GetId());
   if (status.IsError())
@@ -592,7 +641,7 @@ Status ExecuteSwitchToWindow(Session* session,
       return Status(kInvalidArgument, "'handle' must be a string");
   } else {
     if (!params.GetString("name", &name))
-      return Status(kUnknownError, "'name' must be a string");
+      return Status(kInvalidArgument, "'name' must be a string");
   }
 
   std::list<std::string> web_view_ids;
@@ -687,10 +736,10 @@ Status ExecuteSetTimeoutLegacy(Session* session,
                                std::unique_ptr<base::Value>* value) {
   double ms_double;
   if (!params.GetDouble("ms", &ms_double))
-    return Status(kUnknownError, "'ms' must be a double");
+    return Status(kInvalidArgument, "'ms' must be a double");
   std::string type;
   if (!params.GetString("type", &type))
-    return Status(kUnknownError, "'type' must be a string");
+    return Status(kInvalidArgument, "'type' must be a string");
 
   base::TimeDelta timeout =
       base::TimeDelta::FromMilliseconds(static_cast<int>(ms_double));
@@ -703,7 +752,7 @@ Status ExecuteSetTimeoutLegacy(Session* session,
         ((timeout < base::TimeDelta()) ? Session::kDefaultPageLoadTimeout
                                        : timeout);
   } else {
-    return Status(kUnknownError, "unknown type of timeout:" + type);
+    return Status(kInvalidArgument, "unknown type of timeout:" + type);
   }
   return Status(kOk);
 }
@@ -712,11 +761,22 @@ Status ExecuteSetTimeoutsW3C(Session* session,
                              const base::DictionaryValue& params,
                              std::unique_ptr<base::Value>* value) {
   for (const auto& setting : params.DictItems()) {
-    int timeout_ms;
-    if (!setting.second.GetAsInteger(&timeout_ms) || timeout_ms < 0)
-      return Status(kInvalidArgument, "value must be a non-negative integer");
-    base::TimeDelta timeout = base::TimeDelta::FromMilliseconds(timeout_ms);
+    int64_t timeout_ms_int64 = -1;
+    base::TimeDelta timeout;
     const std::string& type = setting.first;
+    if (setting.second.is_none()) {
+      if (type == "script")
+        timeout = base::TimeDelta::Max();
+      else
+        return Status(kInvalidArgument, "timeout can not be null");
+    } else {
+        if (!GetOptionalSafeInt(&params, setting.first, &timeout_ms_int64)
+            || timeout_ms_int64 < 0)
+            return Status(kInvalidArgument,
+                          "value must be a non-negative integer");
+        else
+            timeout = base::TimeDelta::FromMilliseconds(timeout_ms_int64);
+    }
     if (type == "script") {
       session->script_timeout = timeout;
     } else if (type == "pageLoad") {
@@ -747,9 +807,14 @@ Status ExecuteGetTimeouts(Session* session,
                           const base::DictionaryValue& params,
                           std::unique_ptr<base::Value>* value) {
   base::DictionaryValue timeouts;
-  timeouts.SetInteger("script", session->script_timeout.InMilliseconds());
-  timeouts.SetInteger("pageLoad", session->page_load_timeout.InMilliseconds());
-  timeouts.SetInteger("implicit", session->implicit_wait.InMilliseconds());
+  if (session->script_timeout == base::TimeDelta::Max())
+    timeouts.SetKey("script", base::Value());
+  else
+    SetSafeInt(&timeouts, "script", session->script_timeout.InMilliseconds());
+
+  SetSafeInt(&timeouts, "pageLoad",
+                        session->page_load_timeout.InMilliseconds());
+  SetSafeInt(&timeouts, "implicit", session->implicit_wait.InMilliseconds());
 
   value->reset(timeouts.DeepCopy());
   return Status(kOk);
@@ -760,7 +825,7 @@ Status ExecuteSetScriptTimeout(Session* session,
                                std::unique_ptr<base::Value>* value) {
   double ms;
   if (!params.GetDouble("ms", &ms) || ms < 0)
-    return Status(kUnknownError, "'ms' must be a non-negative number");
+    return Status(kInvalidArgument, "'ms' must be a non-negative number");
   session->script_timeout =
       base::TimeDelta::FromMilliseconds(static_cast<int>(ms));
   return Status(kOk);
@@ -771,7 +836,7 @@ Status ExecuteImplicitlyWait(Session* session,
                              std::unique_ptr<base::Value>* value) {
   double ms;
   if (!params.GetDouble("ms", &ms) || ms < 0)
-    return Status(kUnknownError, "'ms' must be a non-negative number");
+    return Status(kInvalidArgument, "'ms' must be a non-negative number");
   session->implicit_wait =
       base::TimeDelta::FromMilliseconds(static_cast<int>(ms));
   return Status(kOk);
@@ -867,7 +932,7 @@ Status ExecuteSetNetworkConnection(Session* session,
 
   int connection_type;
   if (!params.GetInteger("parameters.type", &connection_type))
-    return Status(kUnknownError, "invalid connection_type");
+    return Status(kInvalidArgument, "invalid connection_type");
 
   desktop->SetNetworkConnection(connection_type);
 
@@ -948,7 +1013,7 @@ Status ExecuteSetWindowPosition(Session* session,
   double x = 0;
   double y = 0;
   if (!params.GetDouble("x", &x) || !params.GetDouble("y", &y))
-    return Status(kUnknownError, "missing or invalid 'x' or 'y'");
+    return Status(kInvalidArgument, "missing or invalid 'x' or 'y'");
 
   return session->chrome->SetWindowPosition(session->window,
                                             static_cast<int>(x),
@@ -979,7 +1044,7 @@ Status ExecuteSetWindowSize(Session* session,
   double height = 0;
   if (!params.GetDouble("width", &width) ||
       !params.GetDouble("height", &height))
-    return Status(kUnknownError, "missing or invalid 'width' or 'height'");
+    return Status(kInvalidArgument, "missing or invalid 'width' or 'height'");
 
   return session->chrome->SetWindowSize(session->window,
                                         static_cast<int>(width),
@@ -1005,7 +1070,7 @@ Status ExecuteGetLog(Session* session,
                      std::unique_ptr<base::Value>* value) {
   std::string log_type;
   if (!params.GetString("type", &log_type)) {
-    return Status(kUnknownError, "missing or invalid 'type'");
+    return Status(kInvalidArgument, "missing or invalid 'type'");
   }
 
   // Evaluate a JavaScript in the renderer process for the current tab, to flush
@@ -1028,7 +1093,7 @@ Status ExecuteGetLog(Session* session,
       return Status(kOk);
     }
   }
-  return Status(kUnknownError, "log type '" + log_type + "' not found");
+  return Status(kInvalidArgument, "log type '" + log_type + "' not found");
 }
 
 Status ExecuteUploadFile(Session* session,
@@ -1036,7 +1101,7 @@ Status ExecuteUploadFile(Session* session,
                          std::unique_ptr<base::Value>* value) {
   std::string base64_zip_data;
   if (!params.GetString("file", &base64_zip_data))
-    return Status(kUnknownError, "missing or invalid 'file'");
+    return Status(kInvalidArgument, "missing or invalid 'file'");
   std::string zip_data;
   if (!Base64Decode(base64_zip_data, &zip_data))
     return Status(kUnknownError, "unable to decode 'file'");
@@ -1073,7 +1138,7 @@ Status ExecuteSetAutoReporting(Session* session,
                                std::unique_ptr<base::Value>* value) {
   bool enabled;
   if (!params.GetBoolean("enabled", &enabled))
-    return Status(kUnknownError, "missing parameter 'enabled'");
+    return Status(kInvalidArgument, "missing parameter 'enabled'");
   session->auto_reporting_enabled = enabled;
   return Status(kOk);
 }

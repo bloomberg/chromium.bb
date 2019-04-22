@@ -4,13 +4,18 @@
 
 #include <string>
 
+#include "ash/public/cpp/ash_features.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/scoped_observer.h"
+#include "base/test/scoped_feature_list.h"
+#include "base/test/test_timeouts.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/screens/gaia_view.h"
+#include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -18,7 +23,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -52,9 +57,8 @@ void GetAccessPointRlzInBackgroundThread(rlz_lib::AccessPoint point,
 
 class LoginUtilsTest : public OobeBaseTest {
  public:
-  LoginUtilsTest() {}
-
-  void RunUntilIdle() { base::RunLoop().RunUntilIdle(); }
+  LoginUtilsTest() = default;
+  ~LoginUtilsTest() override = default;
 
   PrefService* local_state() { return g_browser_process->local_state(); }
 
@@ -74,6 +78,8 @@ class LoginUtilsTest : public OobeBaseTest {
   }
 
  private:
+  FakeGaiaMixin fake_gaia_{&mixin_host_, embedded_test_server()};
+
   DISALLOW_COPY_AND_ASSIGN(LoginUtilsTest);
 };
 

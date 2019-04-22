@@ -8,8 +8,9 @@
         "options": [
             {
                 "domain": "Page",
-                "include": [ "enable", "disable", "setAdBlockingEnabled" ],
-                "include_events": []
+                "include": [ "enable", "disable", "setAdBlockingEnabled", "getInstallabilityErrors" ],
+                "include_events": [],
+                "async": ["getInstallabilityErrors"]
             },
             {
                 "domain": "Browser",
@@ -22,6 +23,10 @@
                 "include_events": []
             },
             {
+                "domain": "Cast",
+                "async": ["startTabMirroring"]
+            },
+            {
                 "domain": "WindowManager"
             }
         ]
@@ -29,6 +34,6 @@
     "lib": {
         "package": "chrome/browser/devtools/protocol",
         "output": "protocol",
-        "string_header": "chrome/browser/devtools/protocol_string.h"
+        "string_header": "chrome/browser/devtools/protocol/base_string_adapter.h"
     }
 }

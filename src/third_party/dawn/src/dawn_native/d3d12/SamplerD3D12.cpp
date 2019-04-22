@@ -15,6 +15,7 @@
 #include "dawn_native/d3d12/SamplerD3D12.h"
 
 #include "dawn_native/d3d12/DeviceD3D12.h"
+#include "dawn_native/d3d12/UtilsD3D12.h"
 
 namespace dawn_native { namespace d3d12 {
 
@@ -82,11 +83,9 @@ namespace dawn_native { namespace d3d12 {
         mSamplerDesc.AddressW = AddressMode(descriptor->addressModeW);
         mSamplerDesc.MipLODBias = 0.f;
         mSamplerDesc.MaxAnisotropy = 1;
-        mSamplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
-        mSamplerDesc.BorderColor[0] = mSamplerDesc.BorderColor[1] = mSamplerDesc.BorderColor[2] =
-            mSamplerDesc.BorderColor[3] = 0;
-        mSamplerDesc.MinLOD = 0;
-        mSamplerDesc.MaxLOD = D3D12_FLOAT32_MAX;
+        mSamplerDesc.ComparisonFunc = ToD3D12ComparisonFunc(descriptor->compareFunction);
+        mSamplerDesc.MinLOD = descriptor->lodMinClamp;
+        mSamplerDesc.MaxLOD = descriptor->lodMaxClamp;
     }
 
     const D3D12_SAMPLER_DESC& Sampler::GetSamplerDescriptor() const {

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <memory>
+#include <vector>
 
 #include "base/barrier_closure.h"
 #include "base/bind.h"
@@ -10,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/no_destructor.h"
 #include "base/process/process.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
@@ -17,26 +19,76 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/constants.h"
 #include "services/service_manager/public/cpp/identity.h"
+#include "services/service_manager/public/cpp/manifest.h"
+#include "services/service_manager/public/cpp/manifest_builder.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_binding.h"
 #include "services/service_manager/public/cpp/test/test_service_manager.h"
 #include "services/service_manager/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/mojom/service_manager.mojom.h"
-#include "services/service_manager/tests/catalog_source.h"
-#include "services/service_manager/tests/lifecycle/lifecycle_unittest.mojom.h"
-#include "services/service_manager/tests/util.h"
+#include "services/service_manager/tests/lifecycle/lifecycle.test-mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace service_manager {
 
 namespace {
 
+const char kTestName[] = "lifecycle_unittest";
 const char kTestAppName[] = "lifecycle_unittest_app";
-const char kTestExeName[] = "lifecycle_unittest_exe";
+const char kTestParentName[] = "lifecycle_unittest_parent";
 const char kTestPackageName[] = "lifecycle_unittest_package";
 const char kTestPackageAppNameA[] = "lifecycle_unittest_package_app_a";
 const char kTestPackageAppNameB[] = "lifecycle_unittest_package_app_b";
-const char kTestName[] = "lifecycle_unittest";
+
+const char kTestLifecycleControlCapability[] = "lifecycle_control";
+const char kTestParentCapability[] = "lifecycle_unittest:parent";
+
+const std::vector<Manifest>& GetTestManifests() {
+  static base::NoDestructor<std::vector<Manifest>> manifests{
+      {ManifestBuilder()
+           .WithServiceName(kTestName)
+           .WithOptions(ManifestOptionsBuilder()
+                            .CanRegisterOtherServiceInstances(true)
+                            .Build())
+           .RequireCapability(kTestParentName, kTestParentCapability)
+           .RequireCapability("*", kTestLifecycleControlCapability)
+           .RequireCapability(mojom::kServiceName,
+                              "service_manager:service_manager")
+           .Build(),
+       ManifestBuilder()
+           .WithServiceName(kTestAppName)
+           .ExposeCapability(
+               kTestLifecycleControlCapability,
+               Manifest::InterfaceList<test::mojom::LifecycleControl>())
+           .Build(),
+       ManifestBuilder()
+           .WithServiceName(kTestParentName)
+           .ExposeCapability(kTestParentCapability,
+                             Manifest::InterfaceList<test::mojom::Parent>())
+           .RequireCapability(kTestAppName, kTestLifecycleControlCapability)
+           .Build(),
+       ManifestBuilder()
+           .WithServiceName(kTestPackageName)
+           .ExposeCapability(
+               kTestLifecycleControlCapability,
+               Manifest::InterfaceList<test::mojom::LifecycleControl>())
+           .PackageService(
+               ManifestBuilder()
+                   .WithServiceName(kTestPackageAppNameA)
+                   .ExposeCapability(
+                       kTestLifecycleControlCapability,
+                       Manifest::InterfaceList<test::mojom::LifecycleControl>())
+                   .Build())
+           .PackageService(
+               ManifestBuilder()
+                   .WithServiceName(kTestPackageAppNameB)
+                   .ExposeCapability(
+                       kTestLifecycleControlCapability,
+                       Manifest::InterfaceList<test::mojom::LifecycleControl>())
+                   .Build())
+           .Build()}};
+  return *manifests;
+}
 
 struct Instance {
   Instance() : pid(0) {}
@@ -135,7 +187,7 @@ class InstanceState : public mojom::ServiceManagerListener {
 class LifecycleTest : public testing::Test {
  public:
   LifecycleTest()
-      : test_service_manager_(test::CreateTestCatalog()),
+      : test_service_manager_(GetTestManifests()),
         test_service_binding_(
             &test_service_,
             test_service_manager_.RegisterInstance(
@@ -164,20 +216,6 @@ class LifecycleTest : public testing::Test {
     connector()->BindInterface(name, &lifecycle);
     PingPong(lifecycle.get());
     return lifecycle;
-  }
-
-  base::Process LaunchProcess() {
-    base::Process process;
-    test::LaunchAndConnectToProcess(
-#if defined(OS_WIN)
-        "lifecycle_unittest_exe.exe",
-#else
-        "lifecycle_unittest_exe",
-#endif
-        Identity(kTestExeName, kSystemInstanceGroup, base::Token{},
-                 base::Token::CreateRandom()),
-        connector(), &process);
-    return process;
   }
 
   void PingPong(test::mojom::LifecycleControl* lifecycle) {
@@ -383,49 +421,6 @@ TEST_F(LifecycleTest, PackagedApp_GracefulQuitPackageQuitsAll) {
   EXPECT_FALSE(instances()->HasInstanceForName(kTestPackageName));
   EXPECT_FALSE(instances()->HasInstanceForName(kTestPackageAppNameA));
   EXPECT_FALSE(instances()->HasInstanceForName(kTestPackageAppNameB));
-  EXPECT_EQ(0u, instances()->GetNewInstanceCount());
-}
-
-TEST_F(LifecycleTest, Exe_GracefulQuit) {
-  base::Process process = LaunchProcess();
-
-  test::mojom::LifecycleControlPtr lifecycle = ConnectTo(kTestExeName);
-
-  EXPECT_TRUE(instances()->HasInstanceForName(kTestExeName));
-  EXPECT_EQ(1u, instances()->GetNewInstanceCount());
-
-  base::RunLoop loop;
-  lifecycle.set_connection_error_handler(loop.QuitClosure());
-  lifecycle->GracefulQuit();
-  loop.Run();
-
-  instances()->WaitForInstanceDestruction();
-  EXPECT_FALSE(instances()->HasInstanceForName(kTestExeName));
-  EXPECT_EQ(0u, instances()->GetNewInstanceCount());
-
-  process.Terminate(9, true);
-}
-
-#if defined(OS_FUCHSIA)
-#define MAYBE_Exe_TerminateProcess DISABLED_Exe_TerminateProcess
-#else
-#define MAYBE_Exe_TerminateProcess Exe_TerminateProcess
-#endif
-TEST_F(LifecycleTest, MAYBE_Exe_TerminateProcess) {
-  base::Process process = LaunchProcess();
-
-  test::mojom::LifecycleControlPtr lifecycle = ConnectTo(kTestExeName);
-
-  EXPECT_TRUE(instances()->HasInstanceForName(kTestExeName));
-  EXPECT_EQ(1u, instances()->GetNewInstanceCount());
-
-  base::RunLoop loop;
-  lifecycle.set_connection_error_handler(loop.QuitClosure());
-  process.Terminate(9, true);
-  loop.Run();
-
-  instances()->WaitForInstanceDestruction();
-  EXPECT_FALSE(instances()->HasInstanceForName(kTestExeName));
   EXPECT_EQ(0u, instances()->GetNewInstanceCount());
 }
 

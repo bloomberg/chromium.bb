@@ -7,8 +7,8 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
-#include "components/cryptauth/remote_device_ref.h"
 
 namespace chromeos {
 
@@ -23,7 +23,7 @@ class HostStatusProvider {
    public:
     HostStatusWithDevice(
         mojom::HostStatus host_status,
-        const base::Optional<cryptauth::RemoteDeviceRef>& host_device);
+        const base::Optional<multidevice::RemoteDeviceRef>& host_device);
     HostStatusWithDevice(const HostStatusWithDevice& other);
     ~HostStatusWithDevice();
 
@@ -34,13 +34,13 @@ class HostStatusProvider {
 
     // If host_status() is kNoEligibleHosts or
     // kEligibleHostExistsButNoHostSet, host_device() is null.
-    const base::Optional<cryptauth::RemoteDeviceRef>& host_device() const {
+    const base::Optional<multidevice::RemoteDeviceRef>& host_device() const {
       return host_device_;
     }
 
    private:
     mojom::HostStatus host_status_;
-    base::Optional<cryptauth::RemoteDeviceRef> host_device_;
+    base::Optional<multidevice::RemoteDeviceRef> host_device_;
   };
 
   class Observer {
@@ -62,7 +62,7 @@ class HostStatusProvider {
 
   void NotifyHostStatusChange(
       mojom::HostStatus host_status,
-      const base::Optional<cryptauth::RemoteDeviceRef>& host_device);
+      const base::Optional<multidevice::RemoteDeviceRef>& host_device);
 
  private:
   base::ObserverList<Observer>::Unchecked observer_list_;

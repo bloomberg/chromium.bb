@@ -595,7 +595,7 @@ const ServerNetworkStats* HttpServerPropertiesImpl::GetServerNetworkStats(
     const url::SchemeHostPort& server) {
   auto it = server_network_stats_map_.Get(server);
   if (it == server_network_stats_map_.end()) {
-    return NULL;
+    return nullptr;
   }
   return &it->second;
 }

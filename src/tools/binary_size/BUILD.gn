@@ -11,5 +11,6 @@ python_library("binary_size_trybot_py") {
   data = [
     "diagnose_bloat.py",
     "trybot_commit_size_checker.py",
+    "//build/android/resource_sizes.py",
   ]
 }

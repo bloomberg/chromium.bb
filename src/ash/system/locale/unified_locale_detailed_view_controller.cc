@@ -5,7 +5,7 @@
 #include "ash/system/locale/unified_locale_detailed_view_controller.h"
 
 #include "ash/system/locale/locale_detailed_view.h"
-#include "ash/system/unified/unified_detailed_view_delegate.h"
+#include "ash/system/tray/detailed_view_delegate.h"
 #include "base/logging.h"
 
 namespace ash {
@@ -13,7 +13,7 @@ namespace ash {
 UnifiedLocaleDetailedViewController::UnifiedLocaleDetailedViewController(
     UnifiedSystemTrayController* tray_controller)
     : detailed_view_delegate_(
-          std::make_unique<UnifiedDetailedViewDelegate>(tray_controller)) {}
+          std::make_unique<DetailedViewDelegate>(tray_controller)) {}
 
 UnifiedLocaleDetailedViewController::~UnifiedLocaleDetailedViewController() =
     default;

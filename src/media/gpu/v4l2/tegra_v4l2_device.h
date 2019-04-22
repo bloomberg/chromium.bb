@@ -11,6 +11,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <vector>
+
 #include "base/macros.h"
 #include "media/gpu/v4l2/v4l2_device.h"
 #include "ui/gl/gl_bindings.h"
@@ -56,7 +58,7 @@ class TegraV4L2Device : public V4L2Device {
   EGLBoolean DestroyEGLImage(EGLDisplay egl_display,
                              EGLImageKHR egl_image) override;
   GLenum GetTextureTarget() override;
-  uint32_t PreferredInputFormat(Type type) override;
+  std::vector<uint32_t> PreferredInputFormat(Type type) override;
 
   std::vector<uint32_t> GetSupportedImageProcessorPixelformats(
       v4l2_buf_type buf_type) override;

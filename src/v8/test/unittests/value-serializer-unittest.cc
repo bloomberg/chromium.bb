@@ -325,6 +325,89 @@ TEST_F(ValueSerializerTest, DecodeOddball) {
   EXPECT_TRUE(value->IsNull());
 }
 
+TEST_F(ValueSerializerTest, EncodeArrayStackOverflow) {
+  InvalidEncodeTest("var a = []; for (var i = 0; i < 1E5; i++) a = [a]; a");
+}
+
+TEST_F(ValueSerializerTest, EncodeObjectStackOverflow) {
+  InvalidEncodeTest("var a = {}; for (var i = 0; i < 1E5; i++) a = {a}; a");
+}
+
+TEST_F(ValueSerializerTest, DecodeArrayStackOverflow) {
+  static const int nesting_level = 1E5;
+  std::vector<uint8_t> payload;
+  // Header.
+  payload.push_back(0xFF);
+  payload.push_back(0x0D);
+
+  // Nested arrays, each with one element.
+  for (int i = 0; i < nesting_level; i++) {
+    payload.push_back(0x41);
+    payload.push_back(0x01);
+  }
+
+  // Innermost array is empty.
+  payload.push_back(0x41);
+  payload.push_back(0x00);
+  payload.push_back(0x24);
+  payload.push_back(0x00);
+  payload.push_back(0x00);
+
+  // Close nesting.
+  for (int i = 0; i < nesting_level; i++) {
+    payload.push_back(0x24);
+    payload.push_back(0x00);
+    payload.push_back(0x01);
+  }
+
+  InvalidDecodeTest(payload);
+}
+
+TEST_F(ValueSerializerTest, DecodeObjectStackOverflow) {
+  static const int nesting_level = 1E5;
+  std::vector<uint8_t> payload;
+  // Header.
+  payload.push_back(0xFF);
+  payload.push_back(0x0D);
+
+  // Nested objects, each with one property 'a'.
+  for (int i = 0; i < nesting_level; i++) {
+    payload.push_back(0x6F);
+    payload.push_back(0x22);
+    payload.push_back(0x01);
+    payload.push_back(0x61);
+  }
+
+  // Innermost array is empty.
+  payload.push_back(0x6F);
+  payload.push_back(0x7B);
+  payload.push_back(0x00);
+
+  // Close nesting.
+  for (int i = 0; i < nesting_level; i++) {
+    payload.push_back(0x7B);
+    payload.push_back(0x01);
+  }
+
+  InvalidDecodeTest(payload);
+}
+
+TEST_F(ValueSerializerTest, DecodeVerifyObjectCount) {
+  static const int nesting_level = 1E5;
+  std::vector<uint8_t> payload;
+  // Header.
+  payload.push_back(0xFF);
+  payload.push_back(0x0D);
+
+  // Repeat SerializationTag:kVerifyObjectCount. This leads to stack overflow.
+  for (int i = 0; i < nesting_level; i++) {
+    payload.push_back(0x3F);
+    payload.push_back(0x01);
+  }
+
+  InvalidDecodeTest(payload);
+}
+
 TEST_F(ValueSerializerTest, RoundTripNumber) {
   Local<Value> value = RoundTripTest(Integer::New(isolate(), 42));
   ASSERT_TRUE(value->IsInt32());
@@ -1878,19 +1961,15 @@ TEST_F(ValueSerializerTest, DecodeDataView) {
 }
 
 TEST_F(ValueSerializerTest, DecodeArrayWithLengthProperty1) {
-  ASSERT_DEATH_IF_SUPPORTED(
-      DecodeTest({0xff, 0x0d, 0x41, 0x03, 0x49, 0x02, 0x49, 0x04,
-                  0x49, 0x06, 0x22, 0x06, 0x6c, 0x65, 0x6e, 0x67,
-                  0x74, 0x68, 0x49, 0x02, 0x24, 0x01, 0x03}),
-      ".*LookupIterator::NOT_FOUND == it.state\\(\\).*");
+  InvalidDecodeTest({0xff, 0x0d, 0x41, 0x03, 0x49, 0x02, 0x49, 0x04,
+                     0x49, 0x06, 0x22, 0x06, 0x6c, 0x65, 0x6e, 0x67,
+                     0x74, 0x68, 0x49, 0x02, 0x24, 0x01, 0x03});
 }
 
 TEST_F(ValueSerializerTest, DecodeArrayWithLengthProperty2) {
-  ASSERT_DEATH_IF_SUPPORTED(
-      DecodeTest({0xff, 0x0d, 0x41, 0x03, 0x49, 0x02, 0x49, 0x04,
-                  0x49, 0x06, 0x22, 0x06, 0x6c, 0x65, 0x6e, 0x67,
-                  0x74, 0x68, 0x6f, 0x7b, 0x00, 0x24, 0x01, 0x03}),
-      ".*LookupIterator::NOT_FOUND == it.state\\(\\).*");
+  InvalidDecodeTest({0xff, 0x0d, 0x41, 0x03, 0x49, 0x02, 0x49, 0x04,
+                     0x49, 0x06, 0x22, 0x06, 0x6c, 0x65, 0x6e, 0x67,
+                     0x74, 0x68, 0x6f, 0x7b, 0x00, 0x24, 0x01, 0x03});
 }
 
 TEST_F(ValueSerializerTest, DecodeInvalidDataView) {
@@ -2393,7 +2472,7 @@ class ValueSerializerTestWithWasm : public ValueSerializerTest {
   class ThrowingSerializer : public ValueSerializer::Delegate {
    public:
     Maybe<uint32_t> GetWasmModuleTransferId(
-        Isolate* isolate, Local<WasmCompiledModule> module) override {
+        Isolate* isolate, Local<WasmModuleObject> module) override {
       isolate->ThrowException(Exception::Error(
           String::NewFromOneByte(
               isolate,
@@ -2409,10 +2488,10 @@ class ValueSerializerTestWithWasm : public ValueSerializerTest {
   class SerializeToTransfer : public ValueSerializer::Delegate {
    public:
     SerializeToTransfer(
-        std::vector<WasmCompiledModule::TransferrableModule>* modules)
+        std::vector<WasmModuleObject::TransferrableModule>* modules)
         : modules_(modules) {}
     Maybe<uint32_t> GetWasmModuleTransferId(
-        Isolate* isolate, Local<WasmCompiledModule> module) override {
+        Isolate* isolate, Local<WasmModuleObject> module) override {
       modules_->push_back(module->GetTransferrableModule());
       return Just(static_cast<uint32_t>(modules_->size()) - 1);
     }
@@ -2420,23 +2499,23 @@ class ValueSerializerTestWithWasm : public ValueSerializerTest {
     void ThrowDataCloneError(Local<String> message) override { UNREACHABLE(); }
 
    private:
-    std::vector<WasmCompiledModule::TransferrableModule>* modules_;
+    std::vector<WasmModuleObject::TransferrableModule>* modules_;
   };
 
   class DeserializeFromTransfer : public ValueDeserializer::Delegate {
    public:
     DeserializeFromTransfer(
-        std::vector<WasmCompiledModule::TransferrableModule>* modules)
+        std::vector<WasmModuleObject::TransferrableModule>* modules)
         : modules_(modules) {}
 
-    MaybeLocal<WasmCompiledModule> GetWasmModuleFromId(Isolate* isolate,
-                                                       uint32_t id) override {
-      return WasmCompiledModule::FromTransferrableModule(isolate,
-                                                         modules_->at(id));
+    MaybeLocal<WasmModuleObject> GetWasmModuleFromId(Isolate* isolate,
+                                                     uint32_t id) override {
+      return WasmModuleObject::FromTransferrableModule(isolate,
+                                                       modules_->at(id));
     }
 
    private:
-    std::vector<WasmCompiledModule::TransferrableModule>* modules_;
+    std::vector<WasmModuleObject::TransferrableModule>* modules_;
   };
 
   ValueSerializer::Delegate* GetSerializerDelegate() override {
@@ -2447,9 +2526,9 @@ class ValueSerializerTestWithWasm : public ValueSerializerTest {
     return current_deserializer_delegate_;
   }
 
-  Local<WasmCompiledModule> MakeWasm() {
+  Local<WasmModuleObject> MakeWasm() {
     Context::Scope scope(serialization_context());
-    return WasmCompiledModule::DeserializeOrCompile(
+    return WasmModuleObject::DeserializeOrCompile(
                isolate(), {nullptr, 0},
                {kIncrementerWasm, sizeof(kIncrementerWasm)})
         .ToLocalChecked();
@@ -2516,7 +2595,7 @@ class ValueSerializerTestWithWasm : public ValueSerializerTest {
 
  private:
   static bool g_saved_flag;
-  std::vector<WasmCompiledModule::TransferrableModule> transfer_modules_;
+  std::vector<WasmModuleObject::TransferrableModule> transfer_modules_;
   SerializeToTransfer serialize_delegate_;
   DeserializeFromTransfer deserialize_delegate_;
   ValueSerializer::Delegate* current_serializer_delegate_ = nullptr;

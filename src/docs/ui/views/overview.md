@@ -127,6 +127,22 @@ client view occupies is sometimes referred to as the Widget's "client area". The
 non-client frame view may be swapped out as the system theme changes without
 affecting the client view.
 
+The overall structure of a Widget and its helper Views looks like this:
+
+```
+(Widget
+  (RootView
+    (NonClientView
+      (NonClientFrameView
+        title
+        non-client buttons, e.g. close button
+        ...)
+      (ClientView
+        contents
+        dialog buttons
+        ...))))
+```
+
 ## Dialogs
 
 A commonly-used type of client view is a **dialog client view**, which has a

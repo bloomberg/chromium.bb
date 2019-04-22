@@ -5,6 +5,8 @@
 #ifndef MOJO_CORE_PORTS_USER_MESSAGE_H_
 #define MOJO_CORE_PORTS_USER_MESSAGE_H_
 
+#include <stddef.h>
+
 #include "base/component_export.h"
 #include "base/macros.h"
 

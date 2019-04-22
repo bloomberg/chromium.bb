@@ -5,7 +5,7 @@
 #include "ui/views/controls/label.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "cc/base/lap_timer.h"
+#include "base/timer/lap_timer.h"
 #include "testing/perf/perf_test.h"
 #include "ui/views/test/views_test_base.h"
 
@@ -28,7 +28,7 @@ TEST_F(LabelPerfTest, GetPreferredSize) {
 
   // The time limit is unused. Use kLaps for the check interval so the time is
   // only measured once.
-  cc::LapTimer timer(kWarmupLaps, base::TimeDelta(), kLaps);
+  base::LapTimer timer(kWarmupLaps, base::TimeDelta(), kLaps);
   for (int i = 0; i < kLaps + kWarmupLaps; ++i) {
     label.SetText(i % 2 == 0 ? string1 : string2);
     label.GetPreferredSize();

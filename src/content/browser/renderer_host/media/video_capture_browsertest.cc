@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
@@ -63,9 +64,9 @@ class MockVideoCaptureControllerEventHandler
 
 class MockMediaStreamProviderListener : public MediaStreamProviderListener {
  public:
-  MOCK_METHOD2(Opened, void(MediaStreamType, int));
-  MOCK_METHOD2(Closed, void(MediaStreamType, int));
-  MOCK_METHOD2(Aborted, void(MediaStreamType, int));
+  MOCK_METHOD2(Opened, void(blink::MediaStreamType, int));
+  MOCK_METHOD2(Closed, void(blink::MediaStreamType, int));
+  MOCK_METHOD2(Aborted, void(blink::MediaStreamType, int));
 };
 
 using DeviceIndex = size_t;
@@ -164,7 +165,7 @@ class VideoCaptureBrowserTest : public ContentBrowserTest,
     command_line->AppendSwitch(switches::kUseFakeUIForMediaStream);
     if (params_.exercise_accelerated_jpeg_decoding) {
       base::CommandLine::ForCurrentProcess()->AppendSwitch(
-          switches::kUseFakeJpegDecodeAccelerator);
+          switches::kUseFakeMjpegDecodeAccelerator);
     } else {
       base::CommandLine::ForCurrentProcess()->AppendSwitch(
           switches::kDisableAcceleratedMjpegDecode);
@@ -185,8 +186,8 @@ class VideoCaptureBrowserTest : public ContentBrowserTest,
       const media::VideoCaptureDeviceDescriptors& descriptors) {
     ASSERT_TRUE(params_.device_index_to_use < descriptors.size());
     const auto& descriptor = descriptors[params_.device_index_to_use];
-    MediaStreamDevice media_stream_device(
-        MEDIA_DEVICE_VIDEO_CAPTURE, descriptor.device_id,
+    blink::MediaStreamDevice media_stream_device(
+        blink::MEDIA_DEVICE_VIDEO_CAPTURE, descriptor.device_id,
         descriptor.display_name(), descriptor.facing);
     session_id_ = video_capture_manager_->Open(media_stream_device);
     media::VideoCaptureParams capture_params;
@@ -227,14 +228,6 @@ class VideoCaptureBrowserTest : public ContentBrowserTest,
 };
 
 IN_PROC_BROWSER_TEST_P(VideoCaptureBrowserTest, StartAndImmediatelyStop) {
-#if defined(OS_ANDROID)
-  // Mojo video capture is currently not supported on Android.
-  // TODO(chfremer): Remove this as soon as https://crbug.com/720500 is
-  // resolved.
-  if (params_.use_mojo_service)
-    return;
-#endif
-
   SetUpRequiringBrowserMainLoopOnMainThread();
   base::RunLoop run_loop;
   auto quit_run_loop_on_current_thread_cb =
@@ -252,7 +245,8 @@ IN_PROC_BROWSER_TEST_P(VideoCaptureBrowserTest, StartAndImmediatelyStop) {
 }
 
 // Flaky on MSAN. https://crbug.com/840294
-#if defined(MEMORY_SANITIZER)
+// Flaky on MacOS 10.12. https://crbug.com/938074
+#if defined(MEMORY_SANITIZER) || defined(MAC_OS_X_VERSION_10_12)
 #define MAYBE_ReceiveFramesFromFakeCaptureDevice \
   DISABLED_ReceiveFramesFromFakeCaptureDevice
 #else
@@ -261,17 +255,6 @@ IN_PROC_BROWSER_TEST_P(VideoCaptureBrowserTest, StartAndImmediatelyStop) {
 #endif
 IN_PROC_BROWSER_TEST_P(VideoCaptureBrowserTest,
                        MAYBE_ReceiveFramesFromFakeCaptureDevice) {
-#if defined(OS_ANDROID)
-  // TODO(chfremer): This test case is flaky on Android. Find out cause of
-  // flakiness and then re-enable. See https://crbug.com/709039.
-  if (params_.exercise_accelerated_jpeg_decoding)
-    return;
-  // Mojo video capture is currently not supported on Android
-  // TODO(chfremer): Remove this as soon as https://crbug.com/720500 is
-  // resolved.
-  if (params_.use_mojo_service)
-    return;
-#endif
   // Only fake device with index 2 delivers MJPEG.
   if (params_.exercise_accelerated_jpeg_decoding &&
       params_.device_index_to_use != 2) {
@@ -353,12 +336,12 @@ IN_PROC_BROWSER_TEST_P(VideoCaptureBrowserTest,
   }
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        VideoCaptureBrowserTest,
-                        Combine(Values(0, 1, 2),             // DeviceIndex
-                                Values(gfx::Size(640, 480),  // Resolution
-                                       gfx::Size(1280, 720)),
-                                Bool(),    // ExerciseAcceleratedJpegDecoding
-                                Bool()));  // UseMojoService
+INSTANTIATE_TEST_SUITE_P(,
+                         VideoCaptureBrowserTest,
+                         Combine(Values(0, 1, 2),             // DeviceIndex
+                                 Values(gfx::Size(640, 480),  // Resolution
+                                        gfx::Size(1280, 720)),
+                                 Bool(),    // ExerciseAcceleratedJpegDecoding
+                                 Bool()));  // UseMojoService
 
 }  // namespace content

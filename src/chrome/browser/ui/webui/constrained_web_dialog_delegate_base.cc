@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/constrained_web_dialog_delegate_base.h"
 
 #include <string>
+#include <utility>
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
@@ -12,8 +13,8 @@
 #include "components/zoom/zoom_controller.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/renderer_preferences.h"
 #include "ipc/ipc_message.h"
+#include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
 
@@ -24,25 +25,26 @@ using ui::WebDialogWebContentsDelegate;
 
 ConstrainedWebDialogDelegateBase::ConstrainedWebDialogDelegateBase(
     content::BrowserContext* browser_context,
-    WebDialogDelegate* delegate,
-    WebDialogWebContentsDelegate* tab_delegate)
-    : WebDialogWebContentsDelegate(browser_context,
-                                   new ChromeWebContentsHandler),
-      web_dialog_delegate_(delegate),
+    std::unique_ptr<WebDialogDelegate> web_dialog_delegate,
+    std::unique_ptr<WebDialogWebContentsDelegate> tab_delegate)
+    : WebDialogWebContentsDelegate(
+          browser_context,
+          std::make_unique<ChromeWebContentsHandler>()),
+      web_dialog_delegate_(std::move(web_dialog_delegate)),
       closed_via_webui_(false) {
-  CHECK(delegate);
+  DCHECK(web_dialog_delegate_);
   web_contents_holder_ =
       WebContents::Create(WebContents::CreateParams(browser_context));
   web_contents_ = web_contents_holder_.get();
   WebContentsObserver::Observe(web_contents_);
   zoom::ZoomController::CreateForWebContents(web_contents_);
   if (tab_delegate) {
-    override_tab_delegate_.reset(tab_delegate);
-    web_contents_->SetDelegate(tab_delegate);
+    override_tab_delegate_ = std::move(tab_delegate);
+    web_contents_->SetDelegate(override_tab_delegate_.get());
   } else {
     web_contents_->SetDelegate(this);
   }
-  content::RendererPreferences* prefs =
+  blink::mojom::RendererPreferences* prefs =
       web_contents_->GetMutableRendererPrefs();
   renderer_preferences_util::UpdateFromSystemSettings(
       prefs, Profile::FromBrowserContext(browser_context));
@@ -52,10 +54,9 @@ ConstrainedWebDialogDelegateBase::ConstrainedWebDialogDelegateBase(
   // Set |this| as a delegate so the ConstrainedWebDialogUI can retrieve it.
   ConstrainedWebDialogUI::SetConstrainedDelegate(web_contents_, this);
 
-  web_contents_->GetController().LoadURL(delegate->GetDialogContentURL(),
-                                         content::Referrer(),
-                                         ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
-                                         std::string());
+  web_contents_->GetController().LoadURL(
+      web_dialog_delegate_->GetDialogContentURL(), content::Referrer(),
+      ui::PAGE_TRANSITION_AUTO_TOPLEVEL, std::string());
 }
 
 ConstrainedWebDialogDelegateBase::~ConstrainedWebDialogDelegateBase() {
@@ -93,7 +94,7 @@ ConstrainedWebDialogDelegateBase::ReleaseWebContents() {
 
 gfx::NativeWindow ConstrainedWebDialogDelegateBase::GetNativeDialog() {
   NOTREACHED();
-  return NULL;
+  return nullptr;
 }
 
 WebContents* ConstrainedWebDialogDelegateBase::GetWebContents() {

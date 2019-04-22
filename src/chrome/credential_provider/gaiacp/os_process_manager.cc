@@ -50,13 +50,6 @@ namespace credential_provider {
 
 namespace {
 
-void InitUnicodeString(const wchar_t* string, UNICODE_STRING* uicode_string) {
-  uicode_string->Buffer = const_cast<wchar_t*>(string);
-  uicode_string->Length =
-      static_cast<USHORT>(wcslen(uicode_string->Buffer) * sizeof(wchar_t));
-  uicode_string->MaximumLength = uicode_string->Length + sizeof(wchar_t);
-}
-
 HRESULT GetTokenLogonSID(const base::win::ScopedHandle& token, PSID* sid) {
   LOGFN(INFO);
   DCHECK(sid);
@@ -208,7 +201,7 @@ HRESULT AllowLogonSIDOnLocalBasedNamedObjects(PSID sid) {
     _snwprintf_s(name_buffer, base::size(name_buffer),
                  L"\\Sessions\\%d\\BaseNamedObjects", session_id);
   }
-  InitUnicodeString(name_buffer, &name);
+  InitWindowsStringWithString(name_buffer, &name);
 
   OBJECT_ATTRIBUTES oa;
   oa.Length = sizeof(oa);
@@ -435,6 +428,11 @@ OSProcessManager* OSProcessManager::Get() {
   return *GetInstanceStorage();
 }
 
+// static
+void OSProcessManager::SetInstanceForTesting(OSProcessManager* instance) {
+  *GetInstanceStorage() = instance;
+}
+
 OSProcessManager::~OSProcessManager() {}
 
 HRESULT OSProcessManager::GetTokenLogonSID(const base::win::ScopedHandle& token,
@@ -475,14 +473,11 @@ HRESULT OSProcessManager::CreateRunningProcess(
     const base::CommandLine& command_line,
     _STARTUPINFOW* startupinfo,
     base::win::ScopedProcessInformation* procinfo) {
-  // CreateProcessWithTokenW() expects the command line to be non-const, so make
-  // a copy here.
-  //
   // command_line.GetCommandLineString() is not used here because it quotes the
   // command line to follow the command line rules of Microsoft C/C++ startup
   // code.  However this function is called to execute rundll32 which parses
-  // command lines in a special same way and fails when the first arg is
-  // double quoted.  Therefore the command line is built manually here.
+  // command lines in a special way and fails when the first arg is double
+  // quoted.  Therefore the command line is built manually here.
   base::string16 unquoted_cmdline;
   base::StringAppendF(&unquoted_cmdline, L"\"%ls\"",
                       command_line.GetProgram().value().c_str());

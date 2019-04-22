@@ -6,7 +6,7 @@
  */
 
 #include "SKPBench.h"
-#include "SkCommandLineFlags.h"
+#include "CommandLineFlags.h"
 #include "SkMultiPictureDraw.h"
 #include "SkSurface.h"
 
@@ -14,11 +14,11 @@
 #include "GrContextPriv.h"
 
 // These CPU tile sizes are not good per se, but they are similar to what Chrome uses.
-DEFINE_int32(CPUbenchTileW, 256, "Tile width  used for CPU SKP playback.");
-DEFINE_int32(CPUbenchTileH, 256, "Tile height used for CPU SKP playback.");
+static DEFINE_int(CPUbenchTileW, 256, "Tile width  used for CPU SKP playback.");
+static DEFINE_int(CPUbenchTileH, 256, "Tile height used for CPU SKP playback.");
 
-DEFINE_int32(GPUbenchTileW, 1600, "Tile width  used for GPU SKP playback.");
-DEFINE_int32(GPUbenchTileH, 512, "Tile height used for GPU SKP playback.");
+static DEFINE_int(GPUbenchTileW, 1600, "Tile width  used for GPU SKP playback.");
+static DEFINE_int(GPUbenchTileH, 512, "Tile height used for GPU SKP playback.");
 
 SKPBench::SKPBench(const char* name, const SkPicture* pic, const SkIRect& clip, SkScalar scale,
                    bool useMultiPictureDraw, bool doLooping)
@@ -152,20 +152,13 @@ void SKPBench::drawPicture() {
 
 #include "GrGpu.h"
 static void draw_pic_for_stats(SkCanvas* canvas, GrContext* context, const SkPicture* picture,
-                               SkTArray<SkString>* keys, SkTArray<double>* values,
-                               const char* tag) {
-    context->contextPriv().resetGpuStats();
+                               SkTArray<SkString>* keys, SkTArray<double>* values) {
+    context->priv().resetGpuStats();
     canvas->drawPicture(picture);
     canvas->flush();
 
-    int offset = keys->count();
-    context->contextPriv().dumpGpuStatsKeyValuePairs(keys, values);
-    context->contextPriv().dumpCacheStatsKeyValuePairs(keys, values);
-
-    // append tag, but only to new tags
-    for (int i = offset; i < keys->count(); i++, offset++) {
-        (*keys)[i].appendf("_%s", tag);
-    }
+    context->priv().dumpGpuStatsKeyValuePairs(keys, values);
+    context->priv().dumpCacheStatsKeyValuePairs(keys, values);
 }
 
 void SKPBench::getGpuStats(SkCanvas* canvas, SkTArray<SkString>* keys, SkTArray<double>* values) {
@@ -179,9 +172,6 @@ void SKPBench::getGpuStats(SkCanvas* canvas, SkTArray<SkString>* keys, SkTArray<
     context->flush();
     context->freeGpuResources();
     context->resetContext();
-    context->contextPriv().getGpu()->resetShaderCacheForTesting();
-    draw_pic_for_stats(canvas, context, fPic.get(), keys, values, "first_frame");
-
-    // draw second frame
-    draw_pic_for_stats(canvas, context, fPic.get(), keys, values, "second_frame");
+    context->priv().getGpu()->resetShaderCacheForTesting();
+    draw_pic_for_stats(canvas, context, fPic.get(), keys, values);
 }

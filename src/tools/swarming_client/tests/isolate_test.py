@@ -157,7 +157,7 @@ class IsolateTest(IsolateBase):
       'path_variables': {},
       'version': isolate.SavedState.EXPECTED_VERSION,
     }
-    saved_state = isolate.SavedState.load(values, self.cwd)
+    saved_state = isolate.SavedState.load(values, 'sha-1', self.cwd)
     self.assertEqual(expected, saved_state.flatten())
 
   def test_savedstate_load(self):
@@ -187,7 +187,7 @@ class IsolateTest(IsolateBase):
       'path_variables': {},
       'version': isolate.SavedState.EXPECTED_VERSION,
     }
-    saved_state = isolate.SavedState.load(values, self.cwd)
+    saved_state = isolate.SavedState.load(values, 'sha-1', self.cwd)
     self.assertEqual(expected, saved_state.flatten())
 
   def test_variable_arg(self):
@@ -271,11 +271,32 @@ class IsolateTest(IsolateBase):
       'read_only': 0,
       'version': isolated_format.ISOLATED_FILE_VERSION,
     }
-    complete_state = isolate.CompleteState(None, isolate.SavedState(self.cwd))
+    complete_state = isolate.CompleteState(
+        None, isolate.SavedState('sha-1', self.cwd))
     complete_state.load_isolate(
         unicode(self.cwd), unicode(isolate_file), {}, {}, {}, None, False,
         False)
     self.assertEqual(expected, complete_state.saved_state.to_isolated())
+
+  if sys.platform == 'darwin':
+    def test_expand_directories_and_symlinks_path_case(self):
+      # Ensures that the resulting path case is fixed on case insensitive file
+      # system. A superset of test_expand_symlinks_path_case.
+      # Create *all* the paths with the wrong path case.
+      basedir = os.path.join(self.cwd, 'baseDir')
+      os.mkdir(basedir.lower())
+      subdir = os.path.join(basedir, 'subDir')
+      os.mkdir(subdir.lower())
+      open(os.path.join(subdir, 'Foo.txt'), 'w').close()
+      os.symlink('subDir', os.path.join(basedir, 'linkdir'))
+      actual = isolate._expand_directories_and_symlinks(
+          self.cwd, [u'baseDir/'], lambda _: None, True, False)
+      expected = [
+        u'basedir/linkdir',
+        u'basedir/subdir/Foo.txt',
+        u'basedir/subdir/Foo.txt',
+      ]
+      self.assertEqual(expected, sorted(actual))
 
 
 class IsolateLoad(IsolateBase):
@@ -315,10 +336,6 @@ class IsolateLoad(IsolateBase):
       # 'm' are not saved in windows.
       for values in expected_isolated['files'].itervalues():
         self.assertTrue(values.pop('m'))
-
-  def _cleanup_saved_state(self, actual_saved_state):
-    for item in actual_saved_state['files'].itervalues():
-      self.assertTrue(item.pop('t'))
 
   def make_tree(self, contents):
     test_utils.make_tree(self.isolate_dir, contents)
@@ -423,7 +440,6 @@ class IsolateLoad(IsolateBase):
       'version': isolate.SavedState.EXPECTED_VERSION,
     }
     self._cleanup_isolated(expected_saved_state)
-    self._cleanup_saved_state(actual_saved_state)
     self.assertEqual(expected_saved_state, actual_saved_state)
 
   def test_subdir(self):
@@ -483,7 +499,6 @@ class IsolateLoad(IsolateBase):
       'version': isolate.SavedState.EXPECTED_VERSION,
     }
     self._cleanup_isolated(expected_saved_state)
-    self._cleanup_saved_state(actual_saved_state)
     self.assertEqual(expected_saved_state, actual_saved_state)
 
   def test_subdir_variable(self):
@@ -555,7 +570,6 @@ class IsolateLoad(IsolateBase):
       'version': isolate.SavedState.EXPECTED_VERSION,
     }
     self._cleanup_isolated(expected_saved_state)
-    self._cleanup_saved_state(actual_saved_state)
     self.assertEqual(expected_saved_state, actual_saved_state)
 
   def test_variable_not_exist(self):
@@ -639,7 +653,6 @@ class IsolateLoad(IsolateBase):
       'version': isolate.SavedState.EXPECTED_VERSION,
     }
     self._cleanup_isolated(expected_saved_state)
-    self._cleanup_saved_state(actual_saved_state)
     self.assertEqual(expected_saved_state, actual_saved_state)
     self.assertEqual([], os.listdir(self.isolated_dir))
 
@@ -740,7 +753,6 @@ class IsolateLoad(IsolateBase):
       'version': isolate.SavedState.EXPECTED_VERSION,
     }
     self._cleanup_isolated(expected_saved_state)
-    self._cleanup_saved_state(actual_saved_state)
     self.assertEqual(expected_saved_state, actual_saved_state)
     self.assertEqual([], os.listdir(self.isolated_dir))
 
@@ -869,7 +881,6 @@ class IsolateLoad(IsolateBase):
       u'version': unicode(isolate.SavedState.EXPECTED_VERSION),
     }
     self._cleanup_isolated(expected_saved_state)
-    self._cleanup_saved_state(actual_saved_state)
     self.assertEqual(expected_saved_state, actual_saved_state)
     self.assertEqual(
         [
@@ -988,7 +999,8 @@ class IsolateLoad(IsolateBase):
           os.mkdir(base)
         open(f, 'wb').close()
 
-      c = isolate.CompleteState(isolated, isolate.SavedState(isolated_dir))
+      c = isolate.CompleteState(
+          isolated, isolate.SavedState('sha-1', isolated_dir))
       config = {
         'OS': config_os,
       }
@@ -1177,7 +1189,8 @@ class IsolateLoad(IsolateBase):
         logging.warn(f)
         open(f, 'wb').close()
 
-      c = isolate.CompleteState(isolated, isolate.SavedState(isolated_dir))
+      c = isolate.CompleteState(
+          isolated, isolate.SavedState('sha-1', isolated_dir))
       config = {
         'OS': config_os,
       }
@@ -1251,7 +1264,7 @@ class IsolateCommand(IsolateBase):
     """Creates a minimalist CompleteState instance without an .isolated
     reference.
     """
-    out = isolate.CompleteState(None, isolate.SavedState(self.cwd))
+    out = isolate.CompleteState(None, isolate.SavedState('sha-1', self.cwd))
     out.saved_state.isolate_file = u'blah.isolate'
     out.saved_state.relative_cwd = u''
     out.saved_state.root_dir = ROOT_DIR

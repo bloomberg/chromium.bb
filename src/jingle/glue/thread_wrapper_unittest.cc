@@ -263,8 +263,8 @@ TEST_F(ThreadWrapperTest, SendToOtherThread) {
       base::WaitableEvent::InitialState::NOT_SIGNALED);
   rtc::Thread* target;
   second_thread.task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&InitializeWrapperForNewThread, &target, &initialized_event));
+      FROM_HERE, base::BindOnce(&InitializeWrapperForNewThread, &target,
+                                &initialized_event));
   initialized_event.Wait();
 
   ASSERT_TRUE(target != NULL);
@@ -294,8 +294,8 @@ TEST_F(ThreadWrapperTest, SendDuringSend) {
       base::WaitableEvent::InitialState::NOT_SIGNALED);
   rtc::Thread* target;
   second_thread.task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&InitializeWrapperForNewThread, &target, &initialized_event));
+      FROM_HERE, base::BindOnce(&InitializeWrapperForNewThread, &target,
+                                &initialized_event));
   initialized_event.Wait();
 
   ASSERT_TRUE(target != NULL);

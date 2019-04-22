@@ -20,6 +20,7 @@ import json
 import urlparse
 import os
 import sys
+import time
 
 from third_party import httplib2
 
@@ -33,6 +34,16 @@ BUILDBUCKET_API_URL = urlparse.urljoin(
 )
 
 
+def add_common_arguments(parser):
+  parser.add_argument(
+    '--response-json',
+    help=(
+      'A path to which the response JSON will be written. '
+      'If no valid JSON is received, nothing will be written.'
+    )
+  )
+
+
 def main(argv):
   parser = argparse.ArgumentParser()
   parser.add_argument(
@@ -41,13 +52,17 @@ def main(argv):
     action='store_true',
   )
   subparsers = parser.add_subparsers(dest='command')
+
   get_parser = subparsers.add_parser('get')
+  add_common_arguments(get_parser)
   get_parser.add_argument(
     '--id',
     help='The ID of the build to get the status of.',
     required=True,
   )
+
   put_parser = subparsers.add_parser('put')
+  add_common_arguments(put_parser)
   put_parser.add_argument(
     '-b',
     '--bucket',
@@ -76,6 +91,15 @@ def main(argv):
       'from another command.'
     ),
   )
+
+  retry_parser = subparsers.add_parser('retry')
+  add_common_arguments(retry_parser)
+  retry_parser.add_argument(
+    '--id',
+    help='The ID of the build to retry.',
+    required=True,
+  )
+
   args = parser.parse_args()
 
   body = None
@@ -117,6 +141,9 @@ def main(argv):
     })
     method = 'PUT'
     url = BUILDBUCKET_API_URL
+  elif args.command == 'retry':
+    method = 'PUT'
+    url = '%s/%s/retry' % (BUILDBUCKET_API_URL, args.id)
 
   authenticator = auth.get_authenticator_for_host(
     BUILDBUCKET_URL,
@@ -124,6 +151,12 @@ def main(argv):
   )
   http = authenticator.authorize(httplib2.Http())
   http.force_exception_to_status_code = True
+
+  if args.verbose:
+    print 'Request URL:', url
+    print 'Request method:', method
+    print 'Request body:', body
+
   response, content = http.request(
     url,
     method,
@@ -132,11 +165,19 @@ def main(argv):
   )
 
   if args.verbose:
-    print content
+    print 'Response:', response
+    print 'Content:', content
 
-  build_url = json.loads(content).get('build', {}).get('url')
-  if build_url:
-    print 'Build triggered on: %s' % build_url
+  try:
+    content_json = json.loads(content)
+    if args.response_json:
+      with open(args.response_json, 'w') as response_json_file:
+        response_json_file.write(content)
+    build_url = content_json['build']['url']
+  except (ValueError, TypeError, KeyError):
+    pass
+  else:
+    print 'Build: %s' % build_url
 
   return response.status != 200
 

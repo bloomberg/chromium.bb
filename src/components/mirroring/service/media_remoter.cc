@@ -5,6 +5,7 @@
 #include "components/mirroring/service/media_remoter.h"
 
 #include "base/base64.h"
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"

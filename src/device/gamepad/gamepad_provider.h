@@ -46,10 +46,11 @@ class DEVICE_GAMEPAD_EXPORT GamepadProvider
   explicit GamepadProvider(
       GamepadConnectionChangeClient* connection_change_client);
 
-  // Manually specifies the data fetcher. Used for testing.
-  explicit GamepadProvider(
-      GamepadConnectionChangeClient* connection_change_client,
-      std::unique_ptr<GamepadDataFetcher> fetcher);
+  // Manually specifies the data fetcher and polling thread. The polling thread
+  // will be created normally if |polling_thread| is nullptr. Used for testing.
+  GamepadProvider(GamepadConnectionChangeClient* connection_change_client,
+                  std::unique_ptr<GamepadDataFetcher> fetcher,
+                  std::unique_ptr<base::Thread> polling_thread);
 
   ~GamepadProvider() override;
 
@@ -113,6 +114,18 @@ class DEVICE_GAMEPAD_EXPORT GamepadProvider
   // Checks the gamepad state to see if the user has interacted with it. Returns
   // true if any user gesture observers were notified.
   bool CheckForUserGesture();
+
+  void PlayEffectOnPollingThread(
+      uint32_t pad_index,
+      mojom::GamepadHapticEffectType,
+      mojom::GamepadEffectParametersPtr,
+      mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback,
+      scoped_refptr<base::SequencedTaskRunner>);
+
+  void ResetVibrationOnPollingThread(
+      uint32_t pad_index,
+      mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback,
+      scoped_refptr<base::SequencedTaskRunner>);
 
   // The duration of the delay between iterations of DoPoll.
   base::TimeDelta sampling_interval_delta_;

@@ -25,6 +25,7 @@ namespace chromeos {
 
 class DeviceSettingsService;
 class OwnerSettingsServiceChromeOS;
+class StubCrosSettingsProvider;
 
 class OwnerSettingsServiceChromeOSFactory
     : public BrowserContextKeyedServiceFactory {
@@ -36,6 +37,9 @@ class OwnerSettingsServiceChromeOSFactory
 
   static void SetDeviceSettingsServiceForTesting(
       DeviceSettingsService* device_settings_service);
+
+  static void SetStubCrosSettingsProviderForTesting(
+      StubCrosSettingsProvider* stub_cros_settings_provider);
 
   scoped_refptr<ownership::OwnerKeyUtil> GetOwnerKeyUtil();
 

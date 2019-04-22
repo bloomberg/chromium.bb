@@ -59,7 +59,8 @@ class TestGomaLogUploader(cros_test_lib.MockTempDirTestCase):
             (remote_dir, filename, kwargs.get('headers'))))
 
     goma_util.GomaLogUploader(self.tempdir, today=datetime.date(2017, 4, 26),
-                              dry_run=True).Upload()
+                              dry_run=True,
+                              cbb_config_name='test_config').Upload()
 
     expect_builderinfo = json.dumps(collections.OrderedDict([
         ('builder', 'builder-name'),
@@ -67,7 +68,74 @@ class TestGomaLogUploader(cros_test_lib.MockTempDirTestCase):
         ('slave', 'slave-name'),
         ('clobber', True),
         ('os', 'chromeos'),
+        ('is_luci', False),
+        ('cbb_config_name', 'test_config'),
     ]))
+    self.assertEqual(
+        copy_log,
+        [('gs://chrome-goma-log/2017/04/26/dummy-host-name',
+          'compiler_proxy-subproc.host.log.INFO.20170426-120000.000000.gz',
+          ['x-goog-meta-builderinfo:' + expect_builderinfo]),
+         ('gs://chrome-goma-log/2017/04/26/dummy-host-name',
+          'compiler_proxy.host.log.INFO.20170426-120000.000000.gz',
+          ['x-goog-meta-builderinfo:' + expect_builderinfo]),
+         ('gs://chrome-goma-log/2017/04/26/dummy-host-name',
+          'gomacc.host.log.INFO.20170426-120100.000000.tar.gz',
+          ['x-goog-meta-builderinfo:' + expect_builderinfo]),
+        ])
+
+  def testUploadLuci(self):
+    self._CreateLogFile(
+        'compiler_proxy', datetime.datetime(2017, 4, 26, 12, 0, 0))
+    self._CreateLogFile(
+        'compiler_proxy-subproc', datetime.datetime(2017, 4, 26, 12, 0, 0))
+    self._CreateLogFile(
+        'gomacc', datetime.datetime(2017, 4, 26, 12, 1, 0))
+    self._CreateLogFile(
+        'gomacc', datetime.datetime(2017, 4, 26, 12, 2, 0))
+
+    # Set env vars.
+    envs = (
+        'BUILDBOT_BUILDERNAME',
+        'BUILDBOT_MASTERNAME',
+        'BUILDBOT_SLAVENAME',
+        'BUILDBOT_CLOBBER',
+    )
+    for env in envs:
+      if env in os.environ:
+        del os.environ[env]
+
+    os.environ.update({
+        'GLOG_log_dir': self.tempdir,
+    })
+
+    self.PatchObject(cros_build_lib, 'GetHostName', lambda: 'dummy-host-name')
+    copy_log = []
+    self.PatchObject(
+        gs.GSContext, 'CopyInto',
+        lambda _, __, remote_dir, filename=None, **kwargs: copy_log.append(
+            (remote_dir, filename, kwargs.get('headers'))))
+
+    goma_util.GomaLogUploader(self.tempdir, today=datetime.date(2017, 4, 26),
+                              dry_run=True,
+                              cbb_config_name='test_config').Upload()
+
+    builderinfo = collections.OrderedDict([
+        ('builder', ''),
+        ('master', ''),
+        ('slave', ''),
+        ('clobber', False),
+        ('os', 'chromeos'),
+        ('is_luci', True),
+        ('cbb_config_name', 'test_config'),
+    ])
+    builderinfo['builder_id'] =collections.OrderedDict([
+        ("project", "chromeos"),
+        ("builder", "Prod"),
+        ("bucket", "general"),
+    ])
+
+    expect_builderinfo = json.dumps(builderinfo)
     self.assertEqual(
         copy_log,
         [('gs://chrome-goma-log/2017/04/26/dummy-host-name',

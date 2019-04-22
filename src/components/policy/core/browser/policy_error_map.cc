@@ -96,7 +96,7 @@ class ListItemPendingError : public SimplePendingError {
 
   base::string16 GetMessage() const override {
     return l10n_util::GetStringFUTF16(IDS_POLICY_LIST_ENTRY_ERROR,
-                                      base::IntToString16(index_),
+                                      base::NumberToString16(index_),
                                       SimplePendingError::GetMessage());
   }
 

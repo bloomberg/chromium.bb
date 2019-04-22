@@ -20,49 +20,15 @@
 // Include GLFW after VulkanBackend so that it declares the Vulkan-specific functions
 #include "GLFW/glfw3.h"
 
+#include <memory>
+
 namespace utils {
-
-    class SwapChainImplVulkan {
-      public:
-        using WSIContext = dawnWSIContextVulkan;
-
-        SwapChainImplVulkan(GLFWwindow* /*window*/) {
-        }
-
-        ~SwapChainImplVulkan() {
-        }
-
-        void Init(dawnWSIContextVulkan*) {
-        }
-
-        dawnSwapChainError Configure(dawnTextureFormat, dawnTextureUsageBit, uint32_t, uint32_t) {
-            return DAWN_SWAP_CHAIN_NO_ERROR;
-        }
-
-        dawnSwapChainError GetNextTexture(dawnSwapChainNextTexture*) {
-            return DAWN_SWAP_CHAIN_NO_ERROR;
-        }
-
-        dawnSwapChainError Present() {
-            return DAWN_SWAP_CHAIN_NO_ERROR;
-        }
-    };
 
     class VulkanBinding : public BackendBinding {
       public:
-        void SetupGLFWWindowHints() override {
-            glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+        VulkanBinding(GLFWwindow* window, DawnDevice device) : BackendBinding(window, device) {
         }
-        dawnDevice CreateDevice() override {
-            uint32_t extensionCount = 0;
-            const char** glfwInstanceExtensions =
-                glfwGetRequiredInstanceExtensions(&extensionCount);
-            std::vector<const char*> requiredExtensions(glfwInstanceExtensions,
-                                                        glfwInstanceExtensions + extensionCount);
 
-            mDevice = dawn_native::vulkan::CreateDevice(requiredExtensions);
-            return mDevice;
-        }
         uint64_t GetSwapChainImplementation() override {
             if (mSwapchainImpl.userData == nullptr) {
                 VkSurfaceKHR surface = VK_NULL_HANDLE;
@@ -75,18 +41,17 @@ namespace utils {
             }
             return reinterpret_cast<uint64_t>(&mSwapchainImpl);
         }
-        dawnTextureFormat GetPreferredSwapChainTextureFormat() override {
+        DawnTextureFormat GetPreferredSwapChainTextureFormat() override {
             ASSERT(mSwapchainImpl.userData != nullptr);
             return dawn_native::vulkan::GetNativeSwapChainPreferredFormat(&mSwapchainImpl);
         }
 
       private:
-        dawnDevice mDevice;
-        dawnSwapChainImplementation mSwapchainImpl = {};
+        DawnSwapChainImplementation mSwapchainImpl = {};
     };
 
-    BackendBinding* CreateVulkanBinding() {
-        return new VulkanBinding;
+    BackendBinding* CreateVulkanBinding(GLFWwindow* window, DawnDevice device) {
+        return new VulkanBinding(window, device);
     }
 
 }  // namespace utils

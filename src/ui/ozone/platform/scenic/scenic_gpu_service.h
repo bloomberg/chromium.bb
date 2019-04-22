@@ -22,10 +22,8 @@ namespace ui {
 // so that surfaces can present to Scenic views managed by the browser.
 class ScenicGpuService : public mojom::ScenicGpuService {
  public:
-  ScenicGpuService();
+  ScenicGpuService(mojom::ScenicGpuHostRequest gpu_host_request);
   ~ScenicGpuService() override;
-
-  mojom::ScenicGpuHost* gpu_host() { return gpu_host_.get(); }
 
   base::RepeatingCallback<void(mojom::ScenicGpuServiceRequest)>
   GetBinderCallback();
@@ -36,7 +34,6 @@ class ScenicGpuService : public mojom::ScenicGpuService {
  private:
   void AddBinding(mojom::ScenicGpuServiceRequest request);
 
-  mojom::ScenicGpuHostPtr gpu_host_;
   mojom::ScenicGpuHostRequest gpu_host_request_;
 
   mojo::BindingSet<mojom::ScenicGpuService> binding_set_;

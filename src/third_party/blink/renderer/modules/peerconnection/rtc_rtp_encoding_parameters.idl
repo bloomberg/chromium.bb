@@ -20,5 +20,5 @@ dictionary RTCRtpEncodingParameters : RTCRtpCodingParameters {
     //TODO(orphis): Missing ptime. https://crbug.com/857046
     unsigned long   maxBitrate;
     //TODO(orphis): Missing maxFramerate. https://crbug.com/857047
-    //TODO(orphis): Missing scaleResolutionDownBy. https://crbug.com/857048
+    double          scaleResolutionDownBy;
 };

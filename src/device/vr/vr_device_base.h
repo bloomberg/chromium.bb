@@ -30,7 +30,9 @@ class DEVICE_VR_EXPORT VRDeviceBase : public mojom::XRRuntime {
       mojom::XRRuntimeEventListenerAssociatedPtrInfo listener,
       mojom::XRRuntime::ListenToDeviceChangesCallback callback) final;
   void SetListeningForActivate(bool is_listening) override;
-  void EnsureInitialized(EnsureInitializedCallback callback) override;
+  void EnsureInitialized(int render_process_id,
+                         int render_frame_id,
+                         EnsureInitializedCallback callback) override;
   void SetInlinePosesEnabled(bool enable) override;
 
   void GetInlineFrameData(

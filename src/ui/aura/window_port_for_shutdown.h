@@ -30,6 +30,7 @@ class WindowPortForShutdown : public WindowPort {
   void OnWillRemoveChild(Window* child) override;
   void OnWillMoveChild(size_t current_index, size_t dest_index) override;
   void OnVisibilityChanged(bool visible) override;
+  void OnTransparentChanged(bool transparent) override;
   void OnDidChangeBounds(const gfx::Rect& old_bounds,
                          const gfx::Rect& new_bounds) override;
   void OnDidChangeTransform(const gfx::Transform& old_transform,

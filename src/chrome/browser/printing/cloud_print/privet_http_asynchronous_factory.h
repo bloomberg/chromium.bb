@@ -26,16 +26,12 @@ class PrivetHTTPClient;
 class PrivetHTTPResolution {
  public:
   using ResultCallback =
-      base::RepeatingCallback<void(std::unique_ptr<PrivetHTTPClient>)>;
+      base::OnceCallback<void(std::unique_ptr<PrivetHTTPClient>)>;
 
   virtual ~PrivetHTTPResolution() {}
 
-  virtual void Start(const ResultCallback& callback) = 0;
-
   virtual void Start(const net::HostPortPair& address,
-                     const ResultCallback& callback) = 0;
-
-  virtual const std::string& GetName() = 0;
+                     ResultCallback callback) = 0;
 };
 
 class PrivetHTTPAsynchronousFactory {

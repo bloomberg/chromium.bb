@@ -14,7 +14,7 @@
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
-#include "chromeos/dbus/fake_session_manager_client.h"
+#include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "components/ownership/mock_owner_key_util.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -25,6 +25,7 @@ class TestingProfile;
 namespace chromeos {
 
 class DBusThreadManagerSetter;
+class FakePowerManagerClient;
 
 // Wraps the singleton device settings and initializes it to the point where it
 // reports OWNERSHIP_NONE for the ownership status.
@@ -47,6 +48,10 @@ class DeviceSettingsTestBase : public testing::Test {
   DeviceSettingsTestBase();
   ~DeviceSettingsTestBase() override;
 
+  // testing::Test:
+  void SetUp() override;
+  void TearDown() override;
+
   // Subclasses that modify the DevicePolicy should call this afterwards.
   void ReloadDevicePolicy();
 
@@ -59,25 +64,29 @@ class DeviceSettingsTestBase : public testing::Test {
 
   void InitOwner(const AccountId& account_id, bool tpm_is_ready);
 
+  FakePowerManagerClient* power_manager_client();
+
   content::TestBrowserThreadBundle thread_bundle_;
 
-  policy::DevicePolicyBuilder device_policy_;
+  std::unique_ptr<policy::DevicePolicyBuilder> device_policy_;
 
   FakeSessionManagerClient session_manager_client_;
   // Note that FakeUserManager is used by ProfileHelper, which some of the
   // tested classes depend on implicitly.
   FakeChromeUserManager* user_manager_;
-  user_manager::ScopedUserManager user_manager_enabler_;
+  std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
   scoped_refptr<ownership::MockOwnerKeyUtil> owner_key_util_;
   // Local DeviceSettingsService instance for tests. Avoid using in combination
   // with the global instance (DeviceSettingsService::Get()).
-  DeviceSettingsService device_settings_service_;
+  std::unique_ptr<DeviceSettingsService> device_settings_service_;
 
   std::unique_ptr<DBusThreadManagerSetter> dbus_setter_;
 
   std::unique_ptr<TestingProfile> profile_;
 
  private:
+  bool teardown_called_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(DeviceSettingsTestBase);
 };
 

@@ -13,6 +13,8 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/pref_names.h"
+#include "ios/chrome/browser/reading_list/features.h"
+#import "ios/chrome/browser/reading_list/offline_page_tab_helper.h"
 #include "ios/chrome/browser/ssl/ios_security_state_tab_helper.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/web/public/navigation_item.h"
@@ -74,17 +76,28 @@ bool LocationBarModelDelegateIOS::ShouldDisplayURL() const {
   return true;
 }
 
-void LocationBarModelDelegateIOS::GetSecurityInfo(
-    security_state::SecurityInfo* result) const {
+security_state::SecurityLevel LocationBarModelDelegateIOS::GetSecurityLevel()
+    const {
   web::WebState* web_state = GetActiveWebState();
   // If there is no active WebState (which can happen during toolbar
   // initialization), assume no security style.
   if (!web_state) {
-    *result = security_state::SecurityInfo();
-    return;
+    return security_state::NONE;
   }
   auto* client = IOSSecurityStateTabHelper::FromWebState(web_state);
-  client->GetSecurityInfo(result);
+  return client->GetSecurityLevel();
+}
+
+std::unique_ptr<security_state::VisibleSecurityState>
+LocationBarModelDelegateIOS::GetVisibleSecurityState() const {
+  web::WebState* web_state = GetActiveWebState();
+  // If there is no active WebState (which can happen during toolbar
+  // initialization), assume no security style.
+  if (!web_state) {
+    return std::make_unique<security_state::VisibleSecurityState>();
+  }
+  auto* client = IOSSecurityStateTabHelper::FromWebState(web_state);
+  return client->GetVisibleSecurityState();
 }
 
 scoped_refptr<net::X509Certificate>
@@ -93,19 +106,6 @@ LocationBarModelDelegateIOS::GetCertificate() const {
   if (item)
     return item->GetSSL().certificate;
   return scoped_refptr<net::X509Certificate>();
-}
-
-bool LocationBarModelDelegateIOS::FailsMalwareCheck() const {
-  web::WebState* web_state = GetActiveWebState();
-  // If there is no active WebState (which can happen during toolbar
-  // initialization), so nothing can fail.
-  if (!web_state)
-    return NO;
-  auto* client = IOSSecurityStateTabHelper::FromWebState(web_state);
-  security_state::SecurityInfo result;
-  client->GetSecurityInfo(&result);
-  return result.malicious_content_status !=
-         security_state::MALICIOUS_CONTENT_STATUS_NONE;
 }
 
 const gfx::VectorIcon* LocationBarModelDelegateIOS::GetVectorIconOverride()
@@ -117,6 +117,10 @@ bool LocationBarModelDelegateIOS::IsOfflinePage() const {
   web::WebState* web_state = GetActiveWebState();
   if (!web_state)
     return false;
+  if (reading_list::IsOfflinePageWithoutNativeContentEnabled()) {
+    return OfflinePageTabHelper::FromWebState(web_state)
+        ->presenting_offline_page();
+  }
   auto* navigationManager = web_state->GetNavigationManager();
   auto* visibleItem = navigationManager->GetVisibleItem();
   if (!visibleItem)

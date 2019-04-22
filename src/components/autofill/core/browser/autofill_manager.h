@@ -26,9 +26,11 @@
 #include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/browser/autofill_handler.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
-#include "components/autofill/core/browser/card_unmask_delegate.h"
 #include "components/autofill/core/browser/field_filler.h"
 #include "components/autofill/core/browser/form_types.h"
+#include "components/autofill/core/browser/metrics/address_form_event_logger.h"
+#include "components/autofill/core/browser/metrics/credit_card_form_event_logger.h"
+#include "components/autofill/core/browser/payments/card_unmask_delegate.h"
 #include "components/autofill/core/browser/payments/full_card_request.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/popup_types.h"
@@ -68,7 +70,8 @@ extern const int kCreditCardSigninPromoImpressionLimit;
 class AutofillManager : public AutofillHandler,
                         public AutofillDownloadManager::Observer,
                         public payments::FullCardRequest::ResultDelegate,
-                        public payments::FullCardRequest::UIDelegate {
+                        public payments::FullCardRequest::UIDelegate,
+                        public AutocompleteHistoryManager::SuggestionsHandler {
  public:
   AutofillManager(AutofillDriver* driver,
                   AutofillClient* client,
@@ -140,6 +143,9 @@ class AutofillManager : public AutofillHandler,
   void RemoveAutocompleteEntry(const base::string16& name,
                                const base::string16& value);
 
+  // Invoked when the user selected |value| in the Autocomplete drop-down.
+  void OnAutocompleteEntrySelected(const base::string16& value);
+
   // Returns true when the Payments card unmask prompt is being displayed.
   bool IsShowingUnmaskPrompt();
 
@@ -170,7 +176,6 @@ class AutofillManager : public AutofillHandler,
   // start.
   virtual bool MaybeStartVoteUploadProcess(
       std::unique_ptr<FormStructure> form_structure,
-      const base::TimeTicks& timestamp,
       bool observed_submission);
 
   // Update the pending form with |form|, possibly processing the current
@@ -199,6 +204,12 @@ class AutofillManager : public AutofillHandler,
   void SelectFieldOptionsDidChange(const FormData& form) override;
   void Reset() override;
 
+  // AutocompleteHistoryManager::SuggestionsHandler:
+  void OnSuggestionsReturned(
+      int query_id,
+      bool autoselect_first_suggestion,
+      const std::vector<Suggestion>& suggestions) override;
+
   // Returns the value of AutofillEnabled pref.
   virtual bool IsAutofillEnabled() const;
 
@@ -224,6 +235,7 @@ class AutofillManager : public AutofillHandler,
   AutofillManager(AutofillDriver* driver,
                   AutofillClient* client,
                   PersonalDataManager* personal_data,
+                  AutocompleteHistoryManager* autocomplete_history_manager,
                   const std::string app_locale = "en-US",
                   AutofillDownloadManagerState enable_download_manager =
                       DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
@@ -259,8 +271,7 @@ class AutofillManager : public AutofillHandler,
   // AutofillHandler:
   void OnFormSubmittedImpl(const FormData& form,
                            bool known_success,
-                           SubmissionSource source,
-                           base::TimeTicks timestamp) override;
+                           SubmissionSource source) override;
   void OnTextFieldDidChangeImpl(const FormData& form,
                                 const FormFieldData& field,
                                 const gfx::RectF& bounding_box,
@@ -424,9 +435,10 @@ class AutofillManager : public AutofillHandler,
   // |FieldTypeGroup|.
   bool FormHasAddressField(const FormData& form) WARN_UNUSED_RESULT;
 
-  // Returns a list of values from the stored profiles that match |type| and the
-  // value of |field| and returns the labels of the matching profiles. |labels|
-  // is filled with the Profile label.
+  // Returns Suggestions corresponding to both the |autofill_field| type and
+  // stored profiles whose values match the contents of |field|. |form| stores
+  // data about the form with which the user is interacting, e.g. the number and
+  // types of form fields.
   std::vector<Suggestion> GetProfileSuggestions(
       const FormStructure& form,
       const FormFieldData& field,
@@ -489,9 +501,6 @@ class AutofillManager : public AutofillHandler,
                           bool should_notify,
                           const base::string16& cvc);
 
-  AutofillMetrics::CardNumberStatus GetCardNumberStatus(
-      CreditCard& credit_card);
-
   // Whether there should be an attemps to refill the form. Returns true if all
   // the following are satisfied:
   //  There have been no refill on that page yet.
@@ -533,16 +542,16 @@ class AutofillManager : public AutofillHandler,
   std::unique_ptr<AutofillDownloadManager> download_manager_;
 
   // Handles single-field autocomplete form data.
-  std::unique_ptr<AutocompleteHistoryManager> autocomplete_history_manager_;
+  // May be NULL.  NULL indicates OTR.
+  base::WeakPtr<AutocompleteHistoryManager> autocomplete_history_manager_;
 
   // Utility for logging URL keyed metrics.
   std::unique_ptr<AutofillMetrics::FormInteractionsUkmLogger>
       form_interactions_ukm_logger_;
 
   // Utilities for logging form events.
-  std::unique_ptr<AutofillMetrics::FormEventLogger> address_form_event_logger_;
-  std::unique_ptr<AutofillMetrics::FormEventLogger>
-      credit_card_form_event_logger_;
+  std::unique_ptr<AddressFormEventLogger> address_form_event_logger_;
+  std::unique_ptr<CreditCardFormEventLogger> credit_card_form_event_logger_;
 
   // Have we logged whether Autofill is enabled for this page load?
   bool has_logged_autofill_enabled_ = false;

@@ -7,9 +7,10 @@ package org.chromium.chrome.browser.infobar;
 import android.os.Bundle;
 
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ResourceId;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
-import org.chromium.chrome.browser.preferences.datareduction.DataReductionPreferences;
+import org.chromium.chrome.browser.preferences.datareduction.DataReductionPreferenceFragment;
 
 /**
  * An InfoBar that lets the user know that Data Saver Lite Mode now also applies to HTTPS pages.
@@ -24,7 +25,8 @@ public class PreviewsLitePageInfoBar extends ConfirmInfoBar {
     }
 
     private PreviewsLitePageInfoBar(int iconDrawbleId, String message, String linkText) {
-        super(iconDrawbleId, null, message, linkText, null, null);
+        super(iconDrawbleId, R.color.infobar_icon_drawable_color, null, message, linkText, null,
+                null);
     }
 
     @Override
@@ -34,6 +36,6 @@ public class PreviewsLitePageInfoBar extends ConfirmInfoBar {
         Bundle fragmentArgs = new Bundle();
         fragmentArgs.putBoolean(FROM_INFOBAR, true);
         PreferencesLauncher.launchSettingsPage(
-                getContext(), DataReductionPreferences.class, fragmentArgs);
+                getContext(), DataReductionPreferenceFragment.class, fragmentArgs);
     }
 }

@@ -22,7 +22,7 @@ content::WebContents* GetWebContentsByFrameID(int render_process_id,
   return content::WebContents::FromRenderFrameHost(render_frame_host);
 }
 
-};  // namespace
+}  // namespace
 
 UnsafeResource::UnsafeResource()
     : is_subresource(false),

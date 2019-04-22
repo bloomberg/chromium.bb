@@ -63,14 +63,6 @@ void SpellCheckHostImpl::RequestTextCheck(const base::string16& text,
 #endif
 }
 
-void SpellCheckHostImpl::ToggleSpellCheck(bool enabled, bool checked) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-#if defined(OS_ANDROID)
-  if (!enabled)
-    session_bridge_.DisconnectSession();
-#endif
-}
-
 void SpellCheckHostImpl::CheckSpelling(const base::string16& word,
                                        int route_id,
                                        CheckSpellingCallback callback) {
@@ -89,3 +81,10 @@ void SpellCheckHostImpl::FillSuggestionList(
   std::move(callback).Run(std::vector<base::string16>());
 }
 #endif  // BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+
+#if defined(OS_ANDROID)
+void SpellCheckHostImpl::DisconnectSessionBridge() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  session_bridge_.DisconnectSession();
+}
+#endif

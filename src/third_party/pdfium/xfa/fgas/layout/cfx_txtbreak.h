@@ -10,14 +10,12 @@
 #include <deque>
 #include <vector>
 
-#include "core/fxcrt/cfx_char.h"
 #include "core/fxcrt/fx_coordinates.h"
 #include "xfa/fgas/layout/cfx_break.h"
+#include "xfa/fgas/layout/cfx_char.h"
 
-class CFDE_TextEditEngine;
 class CFGAS_GEFont;
-class FXTEXT_CHARPOS;
-struct FDE_TEXTEDITPIECE;
+class TextCharPos;
 
 #define FX_TXTCHARSTYLE_ArabicShadda 0x0020
 #define FX_TXTCHARSTYLE_OddBidiLevel 0x0040
@@ -33,28 +31,36 @@ inline bool CFX_BreakTypeNoneOrPiece(CFX_BreakType type) {
   return type == CFX_BreakType::None || type == CFX_BreakType::Piece;
 }
 
-struct FX_TXTRUN {
-  FX_TXTRUN();
-  FX_TXTRUN(const FX_TXTRUN& other);
-  ~FX_TXTRUN();
-
-  CFDE_TextEditEngine* pEdtEngine;
-  WideString wsStr;
-  int32_t* pWidths;
-  int32_t iStart;
-  int32_t iLength;
-  RetainPtr<CFGAS_GEFont> pFont;
-  float fFontSize;
-  uint32_t dwStyles;
-  int32_t iHorizontalScale;
-  int32_t iVerticalScale;
-  uint32_t dwCharStyles;
-  const CFX_RectF* pRect;
-  bool bSkipSpace;
-};
-
 class CFX_TxtBreak final : public CFX_Break {
  public:
+  class Engine {
+   public:
+    virtual ~Engine();
+    virtual wchar_t GetChar(size_t idx) const = 0;
+    // Non-const so we can force a layout if needed.
+    virtual size_t GetWidthOfChar(size_t idx) = 0;
+  };
+
+  struct Run {
+    Run();
+    Run(const Run& other);
+    ~Run();
+
+    CFX_TxtBreak::Engine* pEdtEngine = nullptr;
+    WideString wsStr;
+    int32_t* pWidths = nullptr;
+    int32_t iStart = 0;
+    int32_t iLength = 0;
+    RetainPtr<CFGAS_GEFont> pFont;
+    float fFontSize = 12.0f;
+    uint32_t dwStyles = 0;
+    int32_t iHorizontalScale = 100;
+    int32_t iVerticalScale = 100;
+    uint32_t dwCharStyles = 0;
+    const CFX_RectF* pRect = nullptr;
+    bool bSkipSpace = true;
+  };
+
   CFX_TxtBreak();
   ~CFX_TxtBreak() override;
 
@@ -63,10 +69,8 @@ class CFX_TxtBreak final : public CFX_Break {
   void SetCombWidth(float fCombWidth);
   CFX_BreakType EndBreak(CFX_BreakType dwStatus);
 
-  int32_t GetDisplayPos(const FX_TXTRUN* pTxtRun,
-                        FXTEXT_CHARPOS* pCharPos) const;
-  std::vector<CFX_RectF> GetCharRects(const FX_TXTRUN* pTxtRun,
-                                      bool bCharBBox) const;
+  size_t GetDisplayPos(const Run* pTxtRun, TextCharPos* pCharPos) const;
+  std::vector<CFX_RectF> GetCharRects(const Run* pTxtRun, bool bCharBBox) const;
   CFX_BreakType AppendChar(wchar_t wch);
 
  private:
@@ -82,7 +86,7 @@ class CFX_TxtBreak final : public CFX_Break {
   void EndBreak_Alignment(const std::deque<FX_TPO>& tpos,
                           bool bAllChars,
                           CFX_BreakType dwStatus);
-  int32_t GetBreakPos(std::vector<CFX_Char>& ca,
+  int32_t GetBreakPos(std::vector<CFX_Char>* pChars,
                       bool bAllChars,
                       bool bOnlyBrk,
                       int32_t* pEndPos);

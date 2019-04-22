@@ -43,8 +43,8 @@ Handle<String> MakeName(const char* str, int suffix) {
 template <typename T, typename M>
 bool EQUALS(Isolate* isolate, Handle<T> left, Handle<M> right) {
   if (*left == *right) return true;
-  return JSObject::Equals(isolate, Handle<Object>::cast(left),
-                          Handle<Object>::cast(right))
+  return Object::Equals(isolate, Handle<Object>::cast(left),
+                        Handle<Object>::cast(right))
       .FromJust();
 }
 
@@ -64,6 +64,12 @@ bool EQUALS(Isolate* isolate, T left, Handle<M> right) {
 //
 // Tests
 //
+
+TEST(SystemPointerElementsKind) {
+  CHECK_EQ(ElementsKindToShiftSize(SYSTEM_POINTER_ELEMENTS),
+           kSystemPointerSizeLog2);
+  CHECK_EQ(ElementsKindToByteSize(SYSTEM_POINTER_ELEMENTS), kSystemPointerSize);
+}
 
 TEST(JSObjectAddingProperties) {
   CcTest::InitializeVM();
@@ -107,7 +113,8 @@ TEST(JSObjectInObjectAddingProperties) {
       factory->NewFunctionForTest(factory->empty_string());
   int nof_inobject_properties = 10;
   // force in object properties by changing the expected_nof_properties
-  function->shared()->set_expected_nof_properties(nof_inobject_properties);
+  // (we always reserve 8 inobject properties slack on top).
+  function->shared()->set_expected_nof_properties(nof_inobject_properties - 8);
   Handle<Object> value(Smi::FromInt(42), isolate);
 
   Handle<JSObject> object = factory->NewJSObject(function);

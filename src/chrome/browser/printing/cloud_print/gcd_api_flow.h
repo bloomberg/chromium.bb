@@ -13,8 +13,8 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "google_apis/gaia/oauth2_token_service.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "url/gurl.h"
 
 namespace base {
 class DictionaryValue;

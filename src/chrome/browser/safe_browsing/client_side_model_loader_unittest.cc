@@ -83,7 +83,7 @@ class ModelLoaderTest : public testing::Test {
 
     std::map<std::string, std::string> params;
     params[ModelLoader::kClientModelFinchParam] =
-        base::IntToString(model_number);
+        base::NumberToString(model_number);
 
     ASSERT_TRUE(variations::AssociateVariationParams(
         ModelLoader::kClientModelFinchExperiment, group_name, params));

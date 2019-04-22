@@ -7,6 +7,7 @@
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/common/render_view_messages.h"
 #include "base/android/scoped_java_ref.h"
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -20,8 +21,8 @@
 
 namespace android_webview {
 
-AwRenderViewHostExt::AwRenderViewHostExt(
-    AwRenderViewHostExtClient* client, content::WebContents* contents)
+AwRenderViewHostExt::AwRenderViewHostExt(AwRenderViewHostExtClient* client,
+                                         content::WebContents* contents)
     : content::WebContentsObserver(contents),
       client_(client),
       background_color_(SK_ColorWHITE),
@@ -116,6 +117,17 @@ void AwRenderViewHostExt::SetBackgroundColor(SkColor c) {
   }
 }
 
+void AwRenderViewHostExt::SetWillSuppressErrorPage(bool suppress) {
+  // We need to store state on the browser-side, as state might need to be
+  // synchronized again later (see AwRenderViewHostExt::RenderFrameCreated)
+  if (will_suppress_error_page_ == suppress)
+    return;
+  will_suppress_error_page_ = suppress;
+
+  web_contents()->SendToAllFrames(new AwViewMsg_WillSuppressErrorPage(
+      MSG_ROUTING_NONE, will_suppress_error_page_));
+}
+
 void AwRenderViewHostExt::SetJsOnlineProperty(bool network_up) {
   web_contents()->GetRenderViewHost()->Send(
       new AwViewMsg_SetJsOnlineProperty(network_up));
@@ -123,10 +135,10 @@ void AwRenderViewHostExt::SetJsOnlineProperty(bool network_up) {
 
 void AwRenderViewHostExt::SmoothScroll(int target_x,
                                        int target_y,
-                                       long duration_ms) {
-  web_contents()->GetMainFrame()->Send(new AwViewMsg_SmoothScroll(
-      web_contents()->GetMainFrame()->GetRoutingID(), target_x, target_y,
-      static_cast<int>(duration_ms)));
+                                       uint64_t duration_ms) {
+  web_contents()->GetMainFrame()->Send(
+      new AwViewMsg_SmoothScroll(web_contents()->GetMainFrame()->GetRoutingID(),
+                                 target_x, target_y, duration_ms));
 }
 
 void AwRenderViewHostExt::RenderViewHostChanged(
@@ -152,6 +164,14 @@ void AwRenderViewHostExt::RenderFrameCreated(
     frame_host->Send(new AwViewMsg_SetBackgroundColor(
         frame_host->GetRoutingID(), background_color_));
   }
+
+  // Synchronizing error page suppression state down to the renderer cannot be
+  // done when RenderViewHostChanged is fired (similar to how other settings do
+  // it) because for cross-origin navigations in multi-process mode, the
+  // navigation will already have started then. Also, newly created subframes
+  // need to inherit the state.
+  frame_host->Send(new AwViewMsg_WillSuppressErrorPage(
+      frame_host->GetRoutingID(), will_suppress_error_page_));
 }
 
 void AwRenderViewHostExt::DidFinishNavigation(
@@ -185,7 +205,7 @@ bool AwRenderViewHostExt::OnMessageReceived(
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
-  return handled ? true : WebContentsObserver::OnMessageReceived(message);
+  return handled;
 }
 
 void AwRenderViewHostExt::OnInterfaceRequestFromFrame(

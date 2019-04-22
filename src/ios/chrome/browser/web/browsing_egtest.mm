@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import <EarlGrey/EarlGrey.h>
 #import <XCTest/XCTest.h>
+
 #include <map>
 #include <memory>
 #include <string>
@@ -18,12 +20,12 @@
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #include "ios/chrome/test/scoped_block_popups_pref.h"
+#include "ios/net/url_test_util.h"
 #import "ios/web/public/test/earl_grey/web_view_actions.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
 #include "ios/web/public/test/http_server/data_response_provider.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
-#import "ios/web/public/test/url_test_util.h"
 #import "ios/web/public/web_client.h"
 #include "net/http/http_response_headers.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -228,7 +230,7 @@ id<GREYMatcher> TabWithTitle(const std::string& tab_title) {
 
   // Verify the new tab was opened with the expected URL.
   const std::string omniboxText =
-      web::GetContentAndFragmentForUrl(destinationURL);
+      net::GetContentAndFragmentForUrl(destinationURL);
   [[EarlGrey selectElementWithMatcher:OmniboxText(omniboxText)]
       assertWithMatcher:grey_notNil()];
 }

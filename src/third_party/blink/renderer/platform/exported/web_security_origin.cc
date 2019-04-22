@@ -67,12 +67,12 @@ WebString WebSecurityOrigin::Host() const {
   return private_->Host();
 }
 
-unsigned short WebSecurityOrigin::Port() const {
+uint16_t WebSecurityOrigin::Port() const {
   DCHECK(private_);
   return private_->Port();
 }
 
-unsigned short WebSecurityOrigin::EffectivePort() const {
+uint16_t WebSecurityOrigin::EffectivePort() const {
   DCHECK(private_);
   return private_->EffectivePort();
 }

@@ -4,17 +4,21 @@
 
 #include "chrome/browser/extensions/browsertest_util.h"
 
+#include <memory>
+
 #include "base/files/file_util.h"
 #include "base/path_service.h"
-#include "chrome/browser/extensions/bookmark_app_helper.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/web_applications/components/install_manager.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_provider_base.h"
+#include "chrome/browser/web_applications/components/web_app_tab_helper_base.h"
 #include "chrome/common/web_application_info.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
@@ -26,19 +30,11 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/extensions/updater/local_extension_cache.h"
-#include "chromeos/chromeos_paths.h"
+#include "chromeos/constants/chromeos_paths.h"
 #endif
 
 namespace extensions {
 namespace browsertest_util {
-
-namespace {
-
-ExtensionService* GetExtensionService(Profile* profile) {
-  return ExtensionSystem::Get(profile)->extension_service();
-}
-
-}  // namespace
 
 void CreateAndInitializeLocalCache() {
 #if defined(OS_CHROMEOS)
@@ -58,8 +54,12 @@ const Extension* InstallBookmarkApp(Profile* profile, WebApplicationInfo info) {
   content::WindowedNotificationObserver windowed_observer(
       NOTIFICATION_CRX_INSTALLER_DONE,
       content::NotificationService::AllSources());
-  CreateOrUpdateBookmarkApp(GetExtensionService(profile), &info,
-                            true /* locally_installed */);
+
+  auto* provider = web_app::WebAppProviderBase::GetProviderBase(profile);
+  DCHECK(provider);
+  provider->install_manager().InstallWebAppForTesting(
+      std::make_unique<WebApplicationInfo>(info), base::DoNothing());
+
   windowed_observer.Wait();
 
   EXPECT_EQ(++num_extensions,
@@ -86,6 +86,24 @@ Browser* LaunchAppBrowser(Profile* profile, const Extension* extension_app) {
   EXPECT_TRUE(is_correct_app_browser);
 
   return is_correct_app_browser ? browser : nullptr;
+}
+
+Browser* LaunchBrowserForAppInTab(Profile* profile,
+                                  const Extension* extension_app) {
+  content::WebContents* web_contents = OpenApplication(
+      AppLaunchParams(profile, extension_app, LAUNCH_CONTAINER_TAB,
+                      WindowOpenDisposition::NEW_FOREGROUND_TAB, SOURCE_TEST));
+  DCHECK(web_contents);
+
+  web_app::WebAppTabHelperBase* tab_helper =
+      web_app::WebAppTabHelperBase::FromWebContents(web_contents);
+  DCHECK(tab_helper);
+  DCHECK_EQ(extension_app->id(), tab_helper->app_id());
+
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  DCHECK_EQ(browser, chrome::FindLastActive());
+  DCHECK_EQ(web_contents, browser->tab_strip_model()->GetActiveWebContents());
+  return browser;
 }
 
 }  // namespace browsertest_util

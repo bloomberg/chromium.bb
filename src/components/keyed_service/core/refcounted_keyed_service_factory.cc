@@ -11,23 +11,17 @@
 
 RefcountedKeyedServiceFactory::RefcountedKeyedServiceFactory(
     const char* name,
-    DependencyManager* manager)
-    : KeyedServiceBaseFactory(name, manager) {
-}
+    DependencyManager* manager,
+    Type type)
+    : KeyedServiceBaseFactory(name, manager, type) {}
 
 RefcountedKeyedServiceFactory::~RefcountedKeyedServiceFactory() {
   DCHECK(mapping_.empty());
 }
 
 void RefcountedKeyedServiceFactory::SetTestingFactory(
-    base::SupportsUserData* context,
+    void* context,
     TestingFactory testing_factory) {
-  // Destroying the context may cause us to lose data about whether |context|
-  // has our preferences registered on it (since the context object itself
-  // isn't dead). See if we need to readd it once we've gone through normal
-  // destruction.
-  bool add_context = ArePreferencesSetOn(context);
-
   // Ensure that |context| is not marked as stale (e.g., due to it aliasing an
   // instance that was destroyed in an earlier test) in order to avoid accesses
   // to |context| in |ContextShutdown| from causing
@@ -40,15 +34,12 @@ void RefcountedKeyedServiceFactory::SetTestingFactory(
   ContextShutdown(context);
   ContextDestroyed(context);
 
-  if (add_context)
-    MarkPreferencesSetOn(context);
-
   testing_factories_.emplace(context, std::move(testing_factory));
 }
 
 scoped_refptr<RefcountedKeyedService>
 RefcountedKeyedServiceFactory::SetTestingFactoryAndUse(
-    base::SupportsUserData* context,
+    void* context,
     TestingFactory testing_factory) {
   DCHECK(testing_factory);
   SetTestingFactory(context, std::move(testing_factory));
@@ -56,9 +47,8 @@ RefcountedKeyedServiceFactory::SetTestingFactoryAndUse(
 }
 
 scoped_refptr<RefcountedKeyedService>
-RefcountedKeyedServiceFactory::GetServiceForContext(
-    base::SupportsUserData* context,
-    bool create) {
+RefcountedKeyedServiceFactory::GetServiceForContext(void* context,
+                                                    bool create) {
   context = GetContextToUse(context);
   if (!context)
     return nullptr;
@@ -80,8 +70,6 @@ RefcountedKeyedServiceFactory::GetServiceForContext(
   auto factory_iterator = testing_factories_.find(context);
   if (factory_iterator != testing_factories_.end()) {
     if (factory_iterator->second) {
-      if (!IsOffTheRecord(context))
-        RegisterUserPrefsOnContextForTest(context);
       service = factory_iterator->second.Run(context);
     }
   } else {
@@ -92,15 +80,14 @@ RefcountedKeyedServiceFactory::GetServiceForContext(
 }
 
 scoped_refptr<RefcountedKeyedService> RefcountedKeyedServiceFactory::Associate(
-    base::SupportsUserData* context,
+    void* context,
     scoped_refptr<RefcountedKeyedService> service) {
   DCHECK(!base::ContainsKey(mapping_, context));
   auto iterator = mapping_.emplace(context, std::move(service)).first;
   return iterator->second;
 }
 
-void RefcountedKeyedServiceFactory::Disassociate(
-    base::SupportsUserData* context) {
+void RefcountedKeyedServiceFactory::Disassociate(void* context) {
   // We "merely" drop our reference to the service. Hopefully this will cause
   // the service to be destroyed. If not, oh well.
   auto iterator = mapping_.find(context);
@@ -108,15 +95,13 @@ void RefcountedKeyedServiceFactory::Disassociate(
     mapping_.erase(iterator);
 }
 
-void RefcountedKeyedServiceFactory::ContextShutdown(
-    base::SupportsUserData* context) {
+void RefcountedKeyedServiceFactory::ContextShutdown(void* context) {
   auto iterator = mapping_.find(context);
   if (iterator != mapping_.end() && iterator->second.get())
     iterator->second->ShutdownOnUIThread();
 }
 
-void RefcountedKeyedServiceFactory::ContextDestroyed(
-    base::SupportsUserData* context) {
+void RefcountedKeyedServiceFactory::ContextDestroyed(void* context) {
   Disassociate(context);
 
   // For unit tests, we also remove the factory function both so we don't
@@ -128,17 +113,14 @@ void RefcountedKeyedServiceFactory::ContextDestroyed(
   KeyedServiceBaseFactory::ContextDestroyed(context);
 }
 
-void RefcountedKeyedServiceFactory::SetEmptyTestingFactory(
-    base::SupportsUserData* context) {
+void RefcountedKeyedServiceFactory::SetEmptyTestingFactory(void* context) {
   SetTestingFactory(context, TestingFactory());
 }
 
-bool RefcountedKeyedServiceFactory::HasTestingFactory(
-    base::SupportsUserData* context) {
+bool RefcountedKeyedServiceFactory::HasTestingFactory(void* context) {
   return base::ContainsKey(testing_factories_, context);
 }
 
-void RefcountedKeyedServiceFactory::CreateServiceNow(
-    base::SupportsUserData* context) {
+void RefcountedKeyedServiceFactory::CreateServiceNow(void* context) {
   GetServiceForContext(context, true);
 }

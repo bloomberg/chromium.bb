@@ -22,16 +22,20 @@
 #include "VkFence.hpp"
 #include "VkFramebuffer.hpp"
 #include "VkImage.hpp"
+#include "VkImageView.hpp"
 #include "VkInstance.hpp"
 #include "VkPipeline.hpp"
 #include "VkPipelineCache.hpp"
 #include "VkPipelineLayout.hpp"
 #include "VkPhysicalDevice.hpp"
+#include "VkQueryPool.hpp"
 #include "VkQueue.hpp"
 #include "VkSampler.hpp"
 #include "VkSemaphore.hpp"
 #include "VkShaderModule.hpp"
 #include "VkRenderPass.hpp"
+#include "WSI/VkSurfaceKHR.hpp"
+#include "WSI/VkSwapchainKHR.hpp"
 
 namespace vk
 {

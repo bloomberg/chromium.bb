@@ -45,8 +45,6 @@ int GetLayoutConstant(LayoutConstant constant) {
       // We must limit the size of icons in the title bar to avoid vertically
       // stretching the container view.
       return 16;
-    case LOCATION_BAR_BUBBLE_VERTICAL_PADDING:
-      return 3;
     case LOCATION_BAR_BUBBLE_FONT_VERTICAL_PADDING:
       return 2;
     case LOCATION_BAR_BUBBLE_CORNER_RADIUS:
@@ -56,6 +54,8 @@ int GetLayoutConstant(LayoutConstant constant) {
       return 8;
     case LOCATION_BAR_BUBBLE_ANCHOR_VERTICAL_INSET:
       return 1;
+    case LOCATION_BAR_CHILD_INTERIOR_PADDING:
+      return 3;
     case LOCATION_BAR_ELEMENT_PADDING:
       return touch_ui ? 3 : 2;
     case LOCATION_BAR_HEIGHT:
@@ -99,8 +99,11 @@ gfx::Insets GetLayoutInsets(LayoutInset inset) {
     case TOOLBAR_ACTION_VIEW: {
       // TODO(afakhry): Unify all toolbar button sizes on all platforms.
       // https://crbug.com/822967.
-      return gfx::Insets(touch_ui ? 10 : 2);
+      return gfx::Insets(touch_ui ? 10 : 0);
     }
+
+    case TOOLBAR_INTERIOR_MARGIN:
+      return touch_ui ? gfx::Insets() : gfx::Insets(4, 8, 5, 8);
   }
   NOTREACHED();
   return gfx::Insets();

@@ -5,8 +5,6 @@
 package org.chromium.ui.resources;
 
 import android.content.res.AssetManager;
-import android.os.Handler;
-import android.os.Looper;
 
 import org.chromium.base.BuildConfig;
 import org.chromium.base.BuildInfo;
@@ -17,7 +15,8 @@ import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
-import org.chromium.base.task.AsyncTask;
+import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
 import org.chromium.ui.base.LocalizationUtils;
 
 import java.io.File;
@@ -27,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * Handles extracting the necessary resources bundled in an APK and moving them to a location on
@@ -42,12 +42,37 @@ public class ResourceExtractor {
     private static final String COMPRESSED_LOCALES_FALLBACK_DIR = "fallback-locales";
     private static final int BUFFER_SIZE = 16 * 1024;
 
-    private class ExtractTask extends AsyncTask<Void> {
+    private class ExtractTask implements Runnable {
         private final List<Runnable> mCompletionCallbacks = new ArrayList<Runnable>();
+        private final String mUiLanguage;
+        private final CountDownLatch mLatch = new CountDownLatch(1);
+        private boolean mDone;
+
+        public ExtractTask(String uiLanguage) {
+            mUiLanguage = uiLanguage;
+        }
+
+        @Override
+        public void run() {
+            try (TraceEvent e = TraceEvent.scoped("ResourceExtractor.ExtractTask.doInBackground")) {
+                doInBackgroundImpl();
+            }
+            synchronized (this) {
+                mDone = true;
+            }
+            mLatch.countDown();
+
+            PostTask.postTask(mResultTaskTraits, () -> {
+                try (TraceEvent e =
+                                TraceEvent.scoped("ResourceExtractor.ExtractTask.onPostExecute")) {
+                    onPostExecuteImpl();
+                }
+            });
+        }
 
         private void doInBackgroundImpl() {
             final File outputDir = getOutputDir();
-            String[] assetPaths = detectFilesToExtract();
+            String[] assetPaths = detectFilesToExtract(mUiLanguage);
 
             // Use a suffix for extracted files in order to guarantee that the version of the file
             // on disk matches up with the version of the APK.
@@ -97,36 +122,25 @@ public class ResourceExtractor {
             }
         }
 
-        @Override
-        protected Void doInBackground() {
-            TraceEvent.begin("ResourceExtractor.ExtractTask.doInBackground");
-            try {
-                doInBackgroundImpl();
-            } finally {
-                TraceEvent.end("ResourceExtractor.ExtractTask.doInBackground");
-            }
-            return null;
-        }
-
         private void onPostExecuteImpl() {
+            ThreadUtils.assertOnUiThread();
             for (int i = 0; i < mCompletionCallbacks.size(); i++) {
                 mCompletionCallbacks.get(i).run();
             }
             mCompletionCallbacks.clear();
         }
 
-        @Override
-        protected void onPostExecute(Void result) {
-            TraceEvent.begin("ResourceExtractor.ExtractTask.onPostExecute");
-            try {
-                onPostExecuteImpl();
-            } finally {
-                TraceEvent.end("ResourceExtractor.ExtractTask.onPostExecute");
-            }
+        public void await() throws Exception {
+            mLatch.await();
+        }
+
+        public synchronized boolean isDone() {
+            return mDone;
         }
     }
 
     private ExtractTask mExtractTask;
+    private TaskTraits mResultTaskTraits;
 
     private static ResourceExtractor sInstance;
 
@@ -137,7 +151,7 @@ public class ResourceExtractor {
         return sInstance;
     }
 
-    private static String[] detectFilesToExtract() {
+    private static String[] detectFilesToExtract(String uiLanguage) {
         Locale defaultLocale = Locale.getDefault();
         String androidLanguage = defaultLocale.getLanguage();
         String chromiumLanguage = LocaleUtils.getUpdatedLanguageForChromium(androidLanguage);
@@ -145,7 +159,6 @@ public class ResourceExtractor {
         // NOTE: The UI language will differ from the application's language
         // when the system locale is not directly supported by Chrome's
         // resources.
-        String uiLanguage = LocalizationUtils.getUiLanguageStringForCompressedPak();
         Log.i(TAG, "Using UI locale %s, system locale: %s (Android name: %s)", uiLanguage,
                 chromiumLanguage, androidLanguage);
 
@@ -260,10 +273,17 @@ public class ResourceExtractor {
         }
 
         try {
-            mExtractTask.get();
+            mExtractTask.await();
         } catch (Exception e) {
             assert false;
         }
+    }
+
+    /**
+     * Sets the traits to use for the reply task.
+     */
+    public void setResultTraits(TaskTraits traits) {
+        mResultTaskTraits = traits;
     }
 
     /**
@@ -280,16 +300,14 @@ public class ResourceExtractor {
     public void addCompletionCallback(Runnable callback) {
         ThreadUtils.assertOnUiThread();
 
-        Handler handler = new Handler(Looper.getMainLooper());
         if (shouldSkipPakExtraction()) {
-            handler.post(callback);
+            PostTask.postTask(mResultTaskTraits, callback);
             return;
         }
 
         assert mExtractTask != null;
-        assert !mExtractTask.isCancelled();
-        if (mExtractTask.getStatus() == AsyncTask.Status.FINISHED) {
-            handler.post(callback);
+        if (mExtractTask.isDone()) {
+            PostTask.postTask(mResultTaskTraits, callback);
         } else {
             mExtractTask.mCompletionCallbacks.add(callback);
         }
@@ -299,8 +317,10 @@ public class ResourceExtractor {
      * This will extract the application pak resources in an
      * AsyncTask. Call waitForCompletion() at the point resources
      * are needed to block until the task completes.
+     *
+     * @param uiLanguage The language to extract.
      */
-    public void startExtractingResources() {
+    public void startExtractingResources(String uiLanguage) {
         if (mExtractTask != null) {
             return;
         }
@@ -313,8 +333,8 @@ public class ResourceExtractor {
             return;
         }
 
-        mExtractTask = new ExtractTask();
-        mExtractTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        mExtractTask = new ExtractTask(uiLanguage);
+        PostTask.postTask(TaskTraits.USER_BLOCKING, mExtractTask);
     }
 
     private File getAppDataDir() {

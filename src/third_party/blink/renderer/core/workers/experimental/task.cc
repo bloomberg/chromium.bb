@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/core/workers/experimental/task.h"
 
+#include <utility>
+
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
@@ -23,9 +25,13 @@ class TaskBase::AsyncFunctionCompleted : public ScriptFunction {
   static v8::Local<v8::Function> CreateFunction(ScriptState* script_state,
                                                 TaskBase* task,
                                                 State state) {
-    return (new AsyncFunctionCompleted(script_state, task, state))
+    return (MakeGarbageCollected<AsyncFunctionCompleted>(script_state, task,
+                                                         state))
         ->BindToV8Function();
   }
+
+  AsyncFunctionCompleted(ScriptState* script_state, TaskBase* task, State state)
+      : ScriptFunction(script_state), task_(task), state_(state) {}
 
   ScriptValue Call(ScriptValue v) override {
     task_->TaskCompletedOnWorkerThread(v.V8Value(), state_);
@@ -33,28 +39,44 @@ class TaskBase::AsyncFunctionCompleted : public ScriptFunction {
   }
 
  private:
-  AsyncFunctionCompleted(ScriptState* script_state, TaskBase* task, State state)
-      : ScriptFunction(script_state), task_(task), state_(state) {}
   CrossThreadPersistent<TaskBase> task_;
   const State state_;
 };
 
-TaskBase::TaskBase(TaskType task_type,
-                   ScriptState* script_state,
-                   const ScriptValue& function,
-                   const String& function_name)
+TaskBase::TaskBase(v8::Isolate* isolate,
+                   TaskType task_type,
+                   V8Function* function,
+                   const String& function_name,
+                   ExceptionState& exception_state)
     : task_type_(task_type),
       self_keep_alive_(this),
       function_name_(function_name.IsolatedCopy()) {
   DCHECK(IsMainThread());
   DCHECK(task_type_ == TaskType::kUserInteraction ||
          task_type_ == TaskType::kIdleTask);
-  // TODO(japhet): Handle serialization failures
-  v8::Isolate* isolate = script_state->GetIsolate();
-  if (!function.IsEmpty()) {
-    function_ = SerializedScriptValue::SerializeAndSwallowExceptions(
-        isolate, function.V8Value()->ToString(isolate));
+
+  if (!function)
+    return;  // Nothing to do.
+
+  v8::Local<v8::String> function_string;
+  {
+    v8::TryCatch try_catch(isolate);
+    if (!function->CallbackObject()
+             ->ToString(isolate->GetCurrentContext())
+             .ToLocal(&function_string)) {
+      exception_state.RethrowV8Exception(try_catch.Exception());
+      return;
+    }
   }
+
+  scoped_refptr<SerializedScriptValue> serialized =
+      SerializedScriptValue::Serialize(
+          isolate, function_string, SerializedScriptValue::SerializeOptions(),
+          exception_state);
+  if (exception_state.HadException())
+    return;
+
+  function_ = std::move(serialized);
 }
 
 void TaskBase::InitializeArgumentsOnMainThread(
@@ -168,7 +190,7 @@ scoped_refptr<SerializedScriptValue> TaskBase::GetSerializedResult() {
     DCHECK(v8_result_);
     ScriptState::Scope scope(
         worker_thread_->GlobalScope()->ScriptController()->GetScriptState());
-    v8::Isolate* isolate = ToIsolate(worker_thread_->GlobalScope());
+    v8::Isolate* isolate = worker_thread_->GlobalScope()->GetIsolate();
     serialized_result_ = SerializedScriptValue::SerializeAndSwallowExceptions(
         isolate, v8_result_->GetResult(isolate));
   }
@@ -247,8 +269,8 @@ bool TaskBase::WillStartTaskOnWorkerThread() {
 void TaskBase::TaskCompletedOnWorkerThread(v8::Local<v8::Value> v8_result,
                                            State state) {
   DCHECK(worker_thread_->IsCurrentThread());
-  v8_result_ =
-      new V8ResultHolder(ToIsolate(worker_thread_->GlobalScope()), v8_result);
+  v8_result_ = MakeGarbageCollected<V8ResultHolder>(
+      worker_thread_->GlobalScope()->GetIsolate(), v8_result);
   function_ = nullptr;
   arguments_.clear();
 
@@ -276,7 +298,7 @@ void TaskBase::RunTaskOnWorkerThread() {
   // so no mutex needed while actually running the task.
   WorkerOrWorkletGlobalScope* global_scope = worker_thread_->GlobalScope();
   ScriptState::Scope scope(global_scope->ScriptController()->GetScriptState());
-  v8::Isolate* isolate = ToIsolate(global_scope);
+  v8::Isolate* isolate = global_scope->GetIsolate();
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
 
   v8::Local<v8::Function> script_function;
@@ -320,7 +342,12 @@ void TaskBase::RunTaskOnWorkerThread() {
   v8::MaybeLocal<v8::Value> ret =
       script_function->Call(context, receiver, params.size(), params.data());
   if (block.HasCaught()) {
-    TaskCompletedOnWorkerThread(block.Exception()->ToString(isolate),
+    // ToString can fail in some cases. For example, if the executed javascript
+    // creates an exception that overrides toString and the toString method
+    // throws an exception. We currently don't handle such cases here.
+    TaskCompletedOnWorkerThread(block.Exception()
+                                    ->ToString(isolate->GetCurrentContext())
+                                    .ToLocalChecked(),
                                 State::kFailed);
     return;
   }
@@ -379,11 +406,15 @@ Vector<ScriptValue> GetResolverArgument(ScriptState* script_state, Task* task) {
       ToV8(task, isolate->GetCurrentContext()->Global(), isolate))});
 }
 
-ScriptPromise Task::result(ScriptState* script_state) {
+ScriptPromise Task::result(ScriptState* script_state,
+                           ExceptionState& exception_state) {
   DCHECK(IsMainThread());
   if (!resolve_task_) {
-    resolve_task_ =
-        MakeGarbageCollected<ResolveTask>(script_state, task_type_, this);
+    ResolveTask* resolve_task = MakeGarbageCollected<ResolveTask>(
+        script_state, task_type_, this, exception_state);
+    if (exception_state.HadException())
+      return ScriptPromise();
+    resolve_task_ = resolve_task;
   }
   return resolve_task_->GetPromise();
 }
@@ -399,7 +430,7 @@ void Task::StartTaskOnWorkerThread() {
   DCHECK(worker_thread_->IsCurrentThread());
   if (!WillStartTaskOnWorkerThread()) {
     WorkerOrWorkletGlobalScope* global_scope = worker_thread_->GlobalScope();
-    v8::Isolate* isolate = ToIsolate(global_scope);
+    v8::Isolate* isolate = global_scope->GetIsolate();
     ScriptState::Scope scope(
         global_scope->ScriptController()->GetScriptState());
     TaskCompletedOnWorkerThread(V8String(isolate, "Task aborted"),
@@ -418,10 +449,18 @@ void Task::Trace(Visitor* visitor) {
 
 ResolveTask::ResolveTask(ScriptState* script_state,
                          TaskType task_type,
-                         Task* prerequisite)
-    : TaskBase(task_type, script_state, ScriptValue(), String()),
-      resolver_(ScriptPromiseResolver::Create(script_state)) {
+                         Task* prerequisite,
+                         ExceptionState& exception_state)
+    : TaskBase(script_state->GetIsolate(),
+               task_type,
+               nullptr,
+               String(),
+               exception_state),
+      resolver_(MakeGarbageCollected<ScriptPromiseResolver>(script_state)) {
   DCHECK(IsMainThread());
+  if (exception_state.HadException())
+    return;
+
   // It's safe to pass a nullptr ThreadPoolThreadProivder here because it
   // is only used to select a thread if there are no prerequisites, but a
   // ResolveTask always has exactly one prerequisite.

@@ -73,7 +73,7 @@ class AXHostServiceTest : public testing::Test {
 };
 
 TEST_F(AXHostServiceTest, AddClientThenEnable) {
-  AXHostService service;
+  AXHostService service(nullptr);
   TestAXRemoteHost remote;
   RegisterRemoteHost(&service, &remote);
 
@@ -94,7 +94,7 @@ TEST_F(AXHostServiceTest, AddClientThenEnable) {
 }
 
 TEST_F(AXHostServiceTest, EnableThenAddClient) {
-  AXHostService service;
+  AXHostService service(nullptr);
   AXHostService::SetAutomationEnabled(true);
 
   TestAXRemoteHost remote;
@@ -109,22 +109,22 @@ TEST_F(AXHostServiceTest, EnableThenAddClient) {
 }
 
 TEST_F(AXHostServiceTest, PerformAction) {
-  AXHostService service;
+  AXHostService service(nullptr);
   AXHostService::SetAutomationEnabled(true);
 
   TestAXRemoteHost remote;
   RegisterRemoteHost(&service, &remote);
 
-  // AXHostDelegate was created.
+  // AXActionHandler was created.
   ui::AXTreeID tree_id = remote.tree_id_;
-  ui::AXHostDelegate* delegate =
-      ui::AXTreeIDRegistry::GetInstance()->GetHostDelegate(tree_id);
-  ASSERT_TRUE(delegate);
+  ui::AXActionHandler* action_handler =
+      ui::AXTreeIDRegistry::GetInstance()->GetActionHandler(tree_id);
+  ASSERT_TRUE(action_handler);
 
   // Trigger an action.
   ui::AXActionData action;
   action.action = ax::mojom::Action::kScrollUp;
-  delegate->PerformAction(action);
+  action_handler->PerformAction(action);
   service.FlushForTesting();
 
   // Remote interface received the action.
@@ -133,7 +133,7 @@ TEST_F(AXHostServiceTest, PerformAction) {
 }
 
 TEST_F(AXHostServiceTest, MultipleRemoteHosts) {
-  AXHostService service;
+  AXHostService service(nullptr);
   AXHostService::SetAutomationEnabled(true);
 
   // Connect 2 remote hosts.
@@ -150,9 +150,9 @@ TEST_F(AXHostServiceTest, MultipleRemoteHosts) {
   // Trigger an action on the first remote.
   ui::AXActionData action;
   action.action = ax::mojom::Action::kScrollUp;
-  ui::AXHostDelegate* delegate =
-      ui::AXTreeIDRegistry::GetInstance()->GetHostDelegate(remote1.tree_id_);
-  delegate->PerformAction(action);
+  ui::AXActionHandler* action_handler =
+      ui::AXTreeIDRegistry::GetInstance()->GetActionHandler(remote1.tree_id_);
+  action_handler->PerformAction(action);
   service.FlushForTesting();
 
   // Remote 1 received the action.
@@ -164,7 +164,7 @@ TEST_F(AXHostServiceTest, MultipleRemoteHosts) {
 }
 
 TEST_F(AXHostServiceTest, RemoteHostDisconnect) {
-  AXHostService service;
+  AXHostService service(nullptr);
   AXHostService::SetAutomationEnabled(true);
 
   // Connect 2 remote hosts.
@@ -175,15 +175,15 @@ TEST_F(AXHostServiceTest, RemoteHostDisconnect) {
 
   // Tree IDs exist for both.
   auto* tree_id_registry = ui::AXTreeIDRegistry::GetInstance();
-  EXPECT_TRUE(tree_id_registry->GetHostDelegate(remote1.tree_id_));
-  EXPECT_TRUE(tree_id_registry->GetHostDelegate(remote2.tree_id_));
+  EXPECT_TRUE(tree_id_registry->GetActionHandler(remote1.tree_id_));
+  EXPECT_TRUE(tree_id_registry->GetActionHandler(remote2.tree_id_));
 
   // Simulate remote 1 disconnecting.
   service.OnRemoteHostDisconnected(remote1.tree_id_);
 
   // Tree ID for remote 1 is gone.
-  EXPECT_FALSE(tree_id_registry->GetHostDelegate(remote1.tree_id_));
-  EXPECT_TRUE(tree_id_registry->GetHostDelegate(remote2.tree_id_));
+  EXPECT_FALSE(tree_id_registry->GetActionHandler(remote1.tree_id_));
+  EXPECT_TRUE(tree_id_registry->GetActionHandler(remote2.tree_id_));
 }
 
 }  // namespace

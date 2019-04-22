@@ -7,7 +7,7 @@
 
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
-#include "device/vr/openvr/test/test_hook.h"
+#include "device/vr/test/test_hook.h"
 #include "third_party/openvr/src/headers/openvr.h"
 
 class ID3D11Texture2D;
@@ -18,7 +18,7 @@ struct ProjectionRaw {
   float projection[4];
 };
 
-class TestHelper : public device::TestHookRegistration {
+class TestHelper : public device::ServiceTestHook {
  public:
   // Methods called by mock OpenVR APIs.
   void OnPresentedFrame(ID3D11Texture2D* texture,
@@ -47,11 +47,11 @@ class TestHelper : public device::TestHookRegistration {
   void AttachToCurrentThread();
   void DetachFromCurrentThread();
 
-  // TestHookRegistration
-  void SetTestHook(device::OpenVRTestHook* hook) final;
+  // ServiceTestHook
+  void SetTestHook(device::VRTestHook* hook) final;
 
  private:
-  device::OpenVRTestHook* test_hook_ GUARDED_BY(lock_) = nullptr;
+  device::VRTestHook* test_hook_ GUARDED_BY(lock_) = nullptr;
   base::Lock lock_;
 };
 

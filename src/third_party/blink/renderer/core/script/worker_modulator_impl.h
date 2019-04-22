@@ -17,8 +17,6 @@ class ScriptState;
 // context should be implemented in this class, not in ModulatorImplBase.
 class WorkerModulatorImpl final : public ModulatorImplBase {
  public:
-  static ModulatorImplBase* Create(ScriptState*);
-
   explicit WorkerModulatorImpl(ScriptState*);
 
   // Implements ModulatorImplBase.
@@ -28,6 +26,7 @@ class WorkerModulatorImpl final : public ModulatorImplBase {
  private:
   // Implements ModulatorImplBase.
   bool IsDynamicImportForbidden(String* reason) override;
+  V8CacheOptions GetV8CacheOptions() const override;
 };
 
 }  // namespace blink

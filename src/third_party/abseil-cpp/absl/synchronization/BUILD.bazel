@@ -5,7 +5,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#      https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,7 +15,7 @@
 #
 
 load(
-    "//absl:copts.bzl",
+    "//absl:copts/configure_copts.bzl",
     "ABSL_DEFAULT_COPTS",
     "ABSL_TEST_COPTS",
 )
@@ -69,6 +69,10 @@ cc_library(
         "notification.h",
     ],
     copts = ABSL_DEFAULT_COPTS,
+    linkopts = select({
+        "//absl:windows": [],
+        "//conditions:default": ["-pthread"],
+    }),
     deps = [
         ":graphcycles_internal",
         "//absl/base",
@@ -170,17 +174,30 @@ cc_test(
     ],
 )
 
-cc_test(
-    name = "mutex_benchmark",
+cc_library(
+    name = "mutex_benchmark_common",
+    testonly = 1,
     srcs = ["mutex_benchmark.cc"],
     copts = ABSL_TEST_COPTS,
-    tags = ["benchmark"],
-    visibility = ["//visibility:private"],
+    visibility = [
+        "//absl/synchronization:__pkg__",
+    ],
     deps = [
         ":synchronization",
         ":thread_pool",
         "//absl/base",
         "@com_github_google_benchmark//:benchmark_main",
+    ],
+    alwayslink = 1,
+)
+
+cc_binary(
+    name = "mutex_benchmark",
+    testonly = 1,
+    copts = ABSL_DEFAULT_COPTS,
+    visibility = ["//visibility:private"],
+    deps = [
+        ":mutex_benchmark_common",
     ],
 )
 
@@ -232,10 +249,6 @@ cc_test(
         "lifetime_test.cc",
     ],
     copts = ABSL_TEST_COPTS,
-    linkopts = select({
-        "//absl:windows": [],
-        "//conditions:default": ["-pthread"],
-    }),
     tags = ["no_test_ios_x86_64"],
     deps = [
         ":synchronization",

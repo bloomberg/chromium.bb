@@ -56,13 +56,12 @@ struct BLINK_COMMON_EXPORT Manifest {
     // The special value "any" is represented by gfx::Size(0, 0).
     std::vector<gfx::Size> sizes;
 
-    // Empty if the field was not present or not of type "string". Defaults to
-    // a vector with a single value, IconPurpose::ANY, for all other parsing
-    // exceptions.
+    // Never empty. Defaults to a vector with a single value, IconPurpose::ANY,
+    // if not explicitly specified in the manifest.
     std::vector<Purpose> purpose;
   };
 
-  struct BLINK_COMMON_EXPORT ShareTargetFile {
+  struct BLINK_COMMON_EXPORT FileFilter {
     base::string16 name;
     std::vector<base::string16> accept;
   };
@@ -75,7 +74,7 @@ struct BLINK_COMMON_EXPORT Manifest {
     base::NullableString16 title;
     base::NullableString16 text;
     base::NullableString16 url;
-    std::vector<ShareTargetFile> files;
+    std::vector<FileFilter> files;
   };
 
   // Structure representing how a Web Share target handles an incoming share.
@@ -105,6 +104,9 @@ struct BLINK_COMMON_EXPORT Manifest {
 
     ShareTargetParams params;
   };
+
+  // Structure representing a File Handler's query parameter keys.
+  using FileHandler = std::vector<FileFilter>;
 
   // Structure representing a related application.
   struct BLINK_COMMON_EXPORT RelatedApplication {
@@ -162,6 +164,12 @@ struct BLINK_COMMON_EXPORT Manifest {
   // As such, this field should not be exposed to web contents.
   base::Optional<ShareTarget> share_target;
 
+  // Null if parsing failed or the field was not present.
+  // TODO(harrisjay): This field is non-standard and part of a Chrome
+  // experiment. See:
+  // https://github.com/WICG/file-handling/blob/master/explainer.md
+  base::Optional<FileHandler> file_handler;
+
   // Empty if the parsing failed, the field was not present, empty or all the
   // applications inside the array were invalid. The order of the array
   // indicates the priority of the application to use.
@@ -187,8 +195,17 @@ struct BLINK_COMMON_EXPORT Manifest {
   // Null if parsing failed or the field was not present.
   base::NullableString16 gcm_sender_id;
 
-  // Empty if the parsing failed or the field was not present.
+  // Empty if the parsing failed. Otherwise defaults to the start URL (or
+  // document URL if start URL isn't present) with filename, query, and fragment
+  // removed.
   GURL scope;
+};
+
+struct BLINK_COMMON_EXPORT ManifestError {
+  std::string message;
+  bool critical;
+  uint32_t line;
+  uint32_t column;
 };
 
 }  // namespace blink

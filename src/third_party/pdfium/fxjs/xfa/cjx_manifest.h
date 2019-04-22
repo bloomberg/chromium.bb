@@ -7,8 +7,8 @@
 #ifndef FXJS_XFA_CJX_MANIFEST_H_
 #define FXJS_XFA_CJX_MANIFEST_H_
 
-#include "fxjs/jse_define.h"
 #include "fxjs/xfa/cjx_node.h"
+#include "fxjs/xfa/jse_define.h"
 
 class CXFA_Manifest;
 
@@ -17,14 +17,16 @@ class CJX_Manifest final : public CJX_Node {
   explicit CJX_Manifest(CXFA_Manifest* manifest);
   ~CJX_Manifest() override;
 
-  JSE_METHOD(evaluate, CJX_Manifest);
+  // CJX_Object:
+  bool DynamicTypeIs(TypeTag eType) const override;
 
-  JSE_PROP(defaultValue); /* {default} */
-  JSE_PROP(action);
-  JSE_PROP(use);
-  JSE_PROP(usehref);
+  JSE_METHOD(evaluate);
 
  private:
+  using Type__ = CJX_Manifest;
+  using ParentType__ = CJX_Node;
+
+  static const TypeTag static_type__ = TypeTag::Manifest;
   static const CJX_MethodSpec MethodSpecs[];
 };
 

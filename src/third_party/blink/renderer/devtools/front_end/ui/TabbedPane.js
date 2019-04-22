@@ -46,7 +46,7 @@ UI.TabbedPane = class extends UI.VBox {
     this._tabsElement.addEventListener('keydown', this._keyDown.bind(this), false);
     this._contentElement = this.contentElement.createChild('div', 'tabbed-pane-content');
     this._contentElement.setAttribute('role', 'tabpanel');
-    this._contentElement.createChild('content');
+    this._contentElement.createChild('slot');
     /** @type {!Array.<!UI.TabbedPaneTab>} */
     this._tabs = [];
     /** @type {!Array.<!UI.TabbedPaneTab>} */
@@ -268,15 +268,6 @@ UI.TabbedPane = class extends UI.VBox {
   }
 
   /**
-   * @return {!Array.<string>}
-   */
-  allTabs() {
-    return this._tabs.map(function(tab) {
-      return tab.id;
-    });
-  }
-
-  /**
    * @param {string} id
    * @return {!Array.<string>}
    */
@@ -309,8 +300,8 @@ UI.TabbedPane = class extends UI.VBox {
   }
 
   _viewHasFocus() {
-    if (this.visibleView)
-      return this.visibleView.hasFocus();
+    if (this.visibleView && this.visibleView.hasFocus())
+      return true;
     return this.contentElement === this.contentElement.getComponentRoot().activeElement;
   }
 
@@ -844,7 +835,7 @@ UI.TabbedPane = class extends UI.VBox {
     if (oldIndex < index)
       --index;
     this._tabs.splice(index, 0, tab);
-    this.dispatchEventToListeners(UI.TabbedPane.Events.TabOrderChanged, this._tabs);
+    this.dispatchEventToListeners(UI.TabbedPane.Events.TabOrderChanged, {tabId: tab.id});
   }
 
   /**
@@ -899,7 +890,7 @@ UI.TabbedPane = class extends UI.VBox {
           nextTabElement = this._currentTab.tabElement.parentElement.firstElementChild;
         break;
       case 'Enter':
-      case 'Space':
+      case ' ':
         this._currentTab.view.focus();
         return;
       default:
@@ -1099,6 +1090,7 @@ UI.TabbedPaneTab = class {
     tabElement.id = 'tab-' + this._id;
     UI.ARIAUtils.markAsTab(tabElement);
     UI.ARIAUtils.setSelected(tabElement, false);
+    UI.ARIAUtils.setAccessibleName(tabElement, this.title);
 
     const titleElement = tabElement.createChild('span', 'tabbed-pane-header-tab-title');
     titleElement.textContent = this.title;
@@ -1108,7 +1100,9 @@ UI.TabbedPaneTab = class {
       this._titleElement = titleElement;
 
     if (this._closeable) {
-      tabElement.createChild('div', 'tabbed-pane-close-button', 'dt-close-button').gray = true;
+      const closeButton = tabElement.createChild('div', 'tabbed-pane-close-button', 'dt-close-button');
+      closeButton.gray = true;
+      closeButton.setAccessibleName(ls`Close ${this.title}`);
       tabElement.classList.add('closeable');
     }
 
@@ -1194,7 +1188,7 @@ UI.TabbedPaneTab = class {
      * @this {UI.TabbedPaneTab}
      */
     function closeAll() {
-      this._closeTabs(this._tabbedPane.allTabs());
+      this._closeTabs(this._tabbedPane.tabIds());
     }
 
     /**

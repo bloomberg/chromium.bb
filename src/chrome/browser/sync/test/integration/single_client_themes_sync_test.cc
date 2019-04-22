@@ -11,7 +11,7 @@
 #include "chrome/browser/sync/test/integration/themes_helper.h"
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 #include "chrome/browser/themes/theme_service_factory.h"
-#include "components/browser_sync/profile_sync_service.h"
+#include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "content/public/test/test_utils.h"
 
@@ -104,8 +104,8 @@ IN_PROC_BROWSER_TEST_P(SingleClientThemesSyncTest, DefaultTheme) {
   EXPECT_TRUE(UsingDefaultTheme(verifier()));
 }
 
-INSTANTIATE_TEST_CASE_P(USS,
-                        SingleClientThemesSyncTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(USS,
+                         SingleClientThemesSyncTest,
+                         ::testing::Values(false, true));
 
 }  // namespace

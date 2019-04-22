@@ -47,8 +47,6 @@ class DrawWaiterForTest : public CompositorObserver {
   void OnCompositingStarted(Compositor* compositor,
                             base::TimeTicks start_time) override;
   void OnCompositingEnded(Compositor* compositor) override;
-  void OnCompositingChildResizing(Compositor* compositor) override;
-  void OnCompositingShuttingDown(Compositor* compositor) override;
 
   std::unique_ptr<base::RunLoop> wait_run_loop_;
 

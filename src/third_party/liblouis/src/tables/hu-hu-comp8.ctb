@@ -1,28 +1,43 @@
 # liblouis: Hungarian Computer Braille table
 #
+# -----------
+#-display-name: Hungarian computer braille
+#
+#+locale:hu
+#+type:computer
+#+dots:8
+#
+# TODO: Please correct the metadata above. It is not meant to be
+# accurate nor complete. It hasn't been verified by the table
+# author yet. It is merely an attempt by the liblouis maintainers
+# to get some sensible initial values in place.
+#
+# TODO: Please add a reference to official documentation about
+# the implemented braille code. Preferably submit the documents
+# to https://github.com/liblouis/braille-specs.
+# -----------
+#
 #  Based on the Linux screenreader BRLTTY, copyright (C) 1999-2011 by the BRLTTY Team
 #
-#  Copyright (C) 2012 IT Foundation for the Visually Impaired - Hungary. Homepage: www.infoalap.hu 
-#  All rights reserved
+#  Copyright (C) 2012 Attila Hammer from IT Foundation for the Visually Impaired - Hungary. www.infoalap.hu
 #
-#  This file is free software; you can redistribute it and/or modify it
-#   under the terms of the Lesser or Library GNU General Public License
-#  as published by the
-#  Free Software Foundation; either version 3, or (at your option) any
-#  later version.
+#  This file is part of liblouis.
 #
-#  This file is distributed in the hope that it will be useful, but
+#  liblouis is free software: you can redistribute it and/or modify it
+#  under the terms of the GNU Lesser General Public License as
+#  published by the Free Software Foundation, either version 2.1 of the
+#  License, or (at your option) any later version.
+#
+#  liblouis is distributed in the hope that it will be useful, but
 #  WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  Library GNU General Public License for more details.
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+#  Lesser General Public License for more details.
 #
-#  You should have received a copy of the Library GNU General Public
-#  License along with this program; see the file COPYING.  If not, write
-#  to
-#  the Free Software Foundation, 51 Franklin Street, Fifth Floor,
-#  Boston, MA 02110-1301, USA.
+#  You should have received a copy of the GNU Lesser General Public
+#  License along with liblouis. If not, see
+#  <http://www.gnu.org/licenses/>.
 #
-#  Maintained by Attila Hammer  hammer.attila@infoalap.hu"
+#  Maintained by Attila Hammer  hammer.attila@infoalap.hu
 #
 # If you found bugs with hungarian computer braille table, report it with following address:
 # Attila Hammer <hammer.attila@infoalap.hu>

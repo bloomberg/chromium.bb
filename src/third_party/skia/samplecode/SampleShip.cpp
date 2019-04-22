@@ -5,10 +5,11 @@
  * found in the LICENSE file.
  */
 
-#include "Sample.h"
+#include "AnimTimer.h"
 #include "Resources.h"
-#include "SkAnimTimer.h"
+#include "Sample.h"
 #include "SkCanvas.h"
+#include "SkFont.h"
 #include "SkRSXform.h"
 #include "SkSurface.h"
 #include "Timer.h"
@@ -106,7 +107,9 @@ protected:
         SkPaint paint;
         paint.setFilterQuality(kLow_SkFilterQuality);
         paint.setColor(SK_ColorWHITE);
-        paint.setTextSize(15.0f);
+
+        SkFont font;
+        font.setSize(15.0f);
 
         fTimer.end();
 
@@ -148,12 +151,12 @@ protected:
         paint.setColor(SK_ColorBLACK);
         canvas->drawRect(SkRect::MakeXYWH(0, 0, 200, 24), paint);
         paint.setColor(SK_ColorWHITE);
-        canvas->drawString(outString, 5, 15, paint);
+        canvas->drawString(outString, 5, 15, font, paint);
     }
 
 #if 0
     // TODO: switch over to use this for our animation
-    bool onAnimate(const SkAnimTimer& timer) override {
+    bool onAnimate(const AnimTimer& timer) override {
         SkScalar angle = SkDoubleToScalar(fmod(timer.secs() * 360 / 24, 360));
         fAnimatingDrawable->setSweep(angle);
         return true;

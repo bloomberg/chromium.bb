@@ -109,13 +109,12 @@ static void AddMalwareIpUrlInfo(const std::string& ip,
   DVLOG(2) << "Added url info for bad ip: " << ip;
 }
 
-static void AddNavigationFeatures(
-    const std::string& feature_prefix,
-    const NavigationController& controller,
-    int index,
-    const std::vector<GURL>& redirect_chain,
-    ClientPhishingRequest* request) {
-  NavigationEntry* entry = controller.GetEntryAtIndex(index);
+static void AddNavigationFeatures(const std::string& feature_prefix,
+                                  NavigationController* controller,
+                                  int index,
+                                  const std::vector<GURL>& redirect_chain,
+                                  ClientPhishingRequest* request) {
+  NavigationEntry* entry = controller->GetEntryAtIndex(index);
   bool is_secure_referrer = entry->GetReferrer().url.SchemeIsCryptographic();
   if (!is_secure_referrer) {
     AddFeature(base::StringPrintf("%s%s=%s", feature_prefix.c_str(), kReferrer,
@@ -181,7 +180,7 @@ void BrowserFeatureExtractor::ExtractFeatures(const BrowseInfo* info,
   DCHECK(GURL(request->url()).SchemeIsHTTPOrHTTPS());
   DCHECK(!callback.is_null());
   // Extract features pertaining to this navigation.
-  const NavigationController& controller = tab_->GetController();
+  NavigationController& controller = tab_->GetController();
   int url_index = -1;
   int first_host_index = -1;
 
@@ -216,11 +215,11 @@ void BrowserFeatureExtractor::ExtractFeatures(const BrowseInfo* info,
   //   2) The first url on the same host as the candidate url (assuming that
   //      it's different from the candidate url).
   if (url_index != -1) {
-    AddNavigationFeatures(
-        std::string(), controller, url_index, info->url_redirects, request);
+    AddNavigationFeatures(std::string(), &controller, url_index,
+                          info->url_redirects, request);
   }
   if (first_host_index != -1) {
-    AddNavigationFeatures(kHostPrefix, controller, first_host_index,
+    AddNavigationFeatures(kHostPrefix, &controller, first_host_index,
                           info->host_redirects, request);
   }
 

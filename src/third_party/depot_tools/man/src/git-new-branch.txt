@@ -34,7 +34,7 @@ OPTIONS
 --upstream_current::
   Set the tracking (upstream) branch to the currently-checked-out branch.
 
---uptstream <REF>::
+--upstream <REF>::
   Set the tracking (upstream) branch to <REF>. <REF> may be a local branch,
   remote branch, or a tag.
 

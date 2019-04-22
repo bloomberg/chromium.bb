@@ -13,6 +13,8 @@ import org.chromium.chrome.browser.tab.Tab;
 /**
  * Data that will be used later when a tab is opened via an intent. Often only the necessary
  * subset of the data will be set. All data is removed once the tab finishes initializing.
+ *
+ * TODO(pshmakov): convert to a singleton.
  */
 public class AsyncTabParamsManager {
 

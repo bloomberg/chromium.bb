@@ -8,12 +8,12 @@
 #include <map>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/containers/stack_container.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
 #include "base/synchronization/waitable_event.h"
-#include "mojo/public/cpp/bindings/bindings_export.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/public/cpp/system/wait_set.h"
 
@@ -23,7 +23,7 @@ namespace mojo {
 // to be watched together.
 //
 // This class is thread unsafe.
-class MOJO_CPP_BINDINGS_EXPORT SyncHandleRegistry
+class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) SyncHandleRegistry
     : public base::RefCounted<SyncHandleRegistry> {
  public:
   // Returns a sequence-local object.

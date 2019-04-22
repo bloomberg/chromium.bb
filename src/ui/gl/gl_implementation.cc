@@ -11,7 +11,6 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/protected_memory.h"
 #include "base/memory/protected_memory_cfi.h"
 #include "base/stl_util.h"
@@ -19,8 +18,8 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
+#include "ui/gl/buildflags.h"
 #include "ui/gl/gl_bindings.h"
-#include "ui/gl/gl_features.h"
 #include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_version_info.h"
 
@@ -111,7 +110,7 @@ GLXApi* g_current_glx_context;
 #endif
 
 GLImplementation GetNamedGLImplementation(const std::string& name) {
-  for (size_t i = 0; i < arraysize(kGLImplementationNamePairs); ++i) {
+  for (size_t i = 0; i < base::size(kGLImplementationNamePairs); ++i) {
     if (name == kGLImplementationNamePairs[i].name)
       return kGLImplementationNamePairs[i].implementation;
   }
@@ -124,7 +123,7 @@ GLImplementation GetSoftwareGLImplementation() {
 }
 
 const char* GetGLImplementationName(GLImplementation implementation) {
-  for (size_t i = 0; i < arraysize(kGLImplementationNamePairs); ++i) {
+  for (size_t i = 0; i < base::size(kGLImplementationNamePairs); ++i) {
     if (implementation == kGLImplementationNamePairs[i].implementation)
       return kGLImplementationNamePairs[i].name;
   }
@@ -221,8 +220,8 @@ DisableNullDrawGLBindings::~DisableNullDrawGLBindings() {
   SetNullDrawGLBindingsEnabled(initial_enabled_);
 }
 
-GLWindowSystemBindingInfo::GLWindowSystemBindingInfo()
-    : direct_rendering(true) {}
+GLWindowSystemBindingInfo::GLWindowSystemBindingInfo() {}
+GLWindowSystemBindingInfo::~GLWindowSystemBindingInfo() {}
 
 std::string GetGLExtensionsFromCurrentContext() {
   return GetGLExtensionsFromCurrentContext(g_current_gl_context);

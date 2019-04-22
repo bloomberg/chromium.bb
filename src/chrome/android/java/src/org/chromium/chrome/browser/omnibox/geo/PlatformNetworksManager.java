@@ -17,6 +17,7 @@ import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.Process;
 import android.os.SystemClock;
+import android.support.annotation.Nullable;
 import android.telephony.CellIdentityCdma;
 import android.telephony.CellIdentityGsm;
 import android.telephony.CellIdentityLte;
@@ -29,6 +30,7 @@ import android.telephony.CellInfoWcdma;
 import android.telephony.TelephonyManager;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.BuildInfo;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.omnibox.geo.VisibleNetworks.VisibleCell;
 import org.chromium.chrome.browser.omnibox.geo.VisibleNetworks.VisibleWifi;
@@ -38,8 +40,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-
-import javax.annotation.Nullable;
 
 /**
  * Util methods for platform networking APIs.
@@ -318,6 +318,10 @@ class PlatformNetworksManager {
     }
 
     private static boolean hasLocationPermission(Context context) {
+        if (BuildInfo.isAtLeastQ()) {
+            return hasPermission(context, Manifest.permission.ACCESS_FINE_LOCATION);
+        }
+
         return hasPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION)
                 || hasPermission(context, Manifest.permission.ACCESS_FINE_LOCATION);
     }

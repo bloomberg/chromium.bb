@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/favicon/core/favicon_server_fetcher_params.h"
@@ -35,6 +36,8 @@ constexpr int kDesiredFrameSize = 128;
 // See crbug.com/696563.
 constexpr int kDefaultTileIconMinSizePx = 1;
 constexpr int kDefaultTileIconDesiredSizePx = 96;
+
+const char kImageFetcherUmaClient[] = "IconCacher";
 
 constexpr char kTileIconMinSizePxFieldParam[] = "min_size";
 constexpr char kTileIconDesiredSizePxFieldParam[] = "desired_size";
@@ -79,11 +82,6 @@ IconCacherImpl::IconCacherImpl(
       large_icon_service_(large_icon_service),
       image_fetcher_(std::move(image_fetcher)),
       weak_ptr_factory_(this) {
-  image_fetcher_->SetDataUseServiceName(
-      data_use_measurement::DataUseUserData::NTP_TILES);
-  // For images with multiple frames, prefer one of size 128x128px.
-  image_fetcher_->SetDesiredImageFrameSize(
-      gfx::Size(kDesiredFrameSize, kDesiredFrameSize));
 }
 
 IconCacherImpl::~IconCacherImpl() = default;
@@ -137,18 +135,21 @@ void IconCacherImpl::OnGetFaviconImageForPageURLFinished(
           setting: "This feature cannot be disabled in settings."
           policy_exception_justification: "Not implemented."
         })");
+  image_fetcher::ImageFetcherParams params(traffic_annotation,
+                                           kImageFetcherUmaClient);
+  // For images with multiple frames, prefer one of size 128x128px.
+  params.set_frame_size(gfx::Size(kDesiredFrameSize, kDesiredFrameSize));
   image_fetcher_->FetchImage(
-      std::string(), IconURL(site),
+      IconURL(site),
       base::BindOnce(&IconCacherImpl::OnPopularSitesFaviconDownloaded,
                      base::Unretained(this), site,
                      std::move(preliminary_callback)),
-      traffic_annotation);
+      std::move(params));
 }
 
 void IconCacherImpl::OnPopularSitesFaviconDownloaded(
     PopularSites::Site site,
     std::unique_ptr<CancelableImageCallback> preliminary_callback,
-    const std::string& id,
     const gfx::Image& fetched_image,
     const image_fetcher::RequestMetadata& metadata) {
   if (fetched_image.IsEmpty()) {
@@ -216,7 +217,7 @@ void IconCacherImpl::StartFetchMostLikely(const GURL& page_url,
 
   // Desired size 0 means that we do not want the service to resize the image
   // (as we will not use it anyway).
-  large_icon_service_->GetLargeIconOrFallbackStyle(
+  large_icon_service_->GetLargeIconRawBitmapOrFallbackStyleForPageUrl(
       page_url, GetMinimumFetchingSizeForChromeSuggestionsFaviconsFromServer(),
       /*desired_size_in_pixel=*/0,
       base::Bind(&IconCacherImpl::OnGetLargeIconOrFallbackStyleFinished,

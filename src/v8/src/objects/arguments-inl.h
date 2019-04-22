@@ -19,12 +19,15 @@ namespace v8 {
 namespace internal {
 
 OBJECT_CONSTRUCTORS_IMPL(SloppyArgumentsElements, FixedArray)
+OBJECT_CONSTRUCTORS_IMPL(JSArgumentsObject, JSObject)
+OBJECT_CONSTRUCTORS_IMPL(AliasedArgumentsEntry, Struct)
 
 CAST_ACCESSOR(AliasedArgumentsEntry)
+CAST_ACCESSOR(SloppyArgumentsElements)
 CAST_ACCESSOR(JSArgumentsObject)
-CAST_ACCESSOR2(SloppyArgumentsElements)
 
-SMI_ACCESSORS(AliasedArgumentsEntry, aliased_context_slot, kAliasedContextSlot)
+SMI_ACCESSORS(AliasedArgumentsEntry, aliased_context_slot,
+              kAliasedContextSlotOffset)
 
 Context SloppyArgumentsElements::context() {
   return Context::cast(get(kContextIndex));
@@ -42,11 +45,11 @@ uint32_t SloppyArgumentsElements::parameter_map_length() {
   return length() - kParameterMapStart;
 }
 
-Object* SloppyArgumentsElements::get_mapped_entry(uint32_t entry) {
+Object SloppyArgumentsElements::get_mapped_entry(uint32_t entry) {
   return get(entry + kParameterMapStart);
 }
 
-void SloppyArgumentsElements::set_mapped_entry(uint32_t entry, Object* object) {
+void SloppyArgumentsElements::set_mapped_entry(uint32_t entry, Object object) {
   set(entry + kParameterMapStart, object);
 }
 
@@ -65,7 +68,7 @@ bool JSSloppyArgumentsObject::GetSloppyArgumentsLength(Isolate* isolate,
     return false;
   }
   DCHECK(object->HasFastElements() || object->HasFastArgumentsElements());
-  Object* len_obj =
+  Object len_obj =
       object->InObjectPropertyAt(JSArgumentsObjectWithLength::kLengthIndex);
   if (!len_obj->IsSmi()) return false;
   *out = Max(0, Smi::ToInt(len_obj));

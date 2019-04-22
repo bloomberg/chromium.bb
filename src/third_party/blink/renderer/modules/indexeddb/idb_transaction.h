@@ -31,14 +31,15 @@
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
-#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/dom/dom_string_list.h"
 #include "third_party/blink/renderer/core/dom/events/event_listener.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/event_modules.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_metadata.h"
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database.h"
+#include "third_party/blink/renderer/modules/indexeddb/web_idb_transaction.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
@@ -67,36 +68,31 @@ class MODULES_EXPORT IDBTransaction final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static IDBTransaction* CreateObserver(ExecutionContext*,
-                                        int64_t,
-                                        const HashSet<String>& scope,
-                                        IDBDatabase*);
-
-  static IDBTransaction* CreateNonVersionChange(ScriptState*,
-                                                int64_t,
-                                                const HashSet<String>& scope,
-                                                mojom::IDBTransactionMode,
-                                                IDBDatabase*);
+  static IDBTransaction* CreateNonVersionChange(
+      ScriptState* script_state,
+      std::unique_ptr<WebIDBTransaction> transaction_backend,
+      int64_t transaction_id,
+      const HashSet<String>& scope,
+      mojom::IDBTransactionMode,
+      IDBDatabase* database);
   static IDBTransaction* CreateVersionChange(
       ExecutionContext*,
-      int64_t,
+      std::unique_ptr<WebIDBTransaction> transaction_backend,
+      int64_t transaction_id,
       IDBDatabase*,
       IDBOpenDBRequest*,
       const IDBDatabaseMetadata& old_metadata);
 
-  // For observer transactions.
-  IDBTransaction(ExecutionContext*,
-                 int64_t,
-                 const HashSet<String>& scope,
-                 IDBDatabase*);
   // For non-upgrade transactions.
   IDBTransaction(ScriptState*,
+                 std::unique_ptr<WebIDBTransaction> transaction_backend,
                  int64_t,
                  const HashSet<String>& scope,
                  mojom::IDBTransactionMode,
                  IDBDatabase*);
   // For upgrade transactions.
   IDBTransaction(ExecutionContext*,
+                 std::unique_ptr<WebIDBTransaction> transaction_backend,
                  int64_t,
                  IDBDatabase*,
                  IDBOpenDBRequest*,
@@ -120,6 +116,8 @@ class MODULES_EXPORT IDBTransaction final
   bool IsVersionChange() const {
     return mode_ == mojom::IDBTransactionMode::VersionChange;
   }
+  int64_t NumErrorsHandled() const { return num_errors_handled_; }
+  void IncrementNumErrorsHandled() { ++num_errors_handled_; }
 
   // Implement the IDBTransaction IDL
   const String& mode() const;
@@ -128,6 +126,7 @@ class MODULES_EXPORT IDBTransaction final
   DOMException* error() const { return error_; }
   IDBObjectStore* objectStore(const String& name, ExceptionState&);
   void abort(ExceptionState&);
+  void commit(ExceptionState&);
 
   void RegisterRequest(IDBRequest*);
   void UnregisterRequest(IDBRequest*);
@@ -155,9 +154,9 @@ class MODULES_EXPORT IDBTransaction final
   void SetActive(bool);
   void SetError(DOMException*);
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(abort, kAbort);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(complete, kComplete);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(abort, kAbort)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(complete, kComplete)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError)
 
   void OnAbort(DOMException*);
   void OnComplete();
@@ -180,6 +179,10 @@ class MODULES_EXPORT IDBTransaction final
   // Returns a detailed message to use when throwing TransactionInactiveError,
   // depending on whether the transaction is just inactive or has finished.
   const char* InactiveErrorMessage() const;
+
+  WebIDBTransaction* transaction_backend() {
+    return transaction_backend_.get();
+  }
 
  protected:
   // EventTarget
@@ -204,6 +207,7 @@ class MODULES_EXPORT IDBTransaction final
     kFinished,   // No more events will fire and no new requests may be filed.
   };
 
+  std::unique_ptr<WebIDBTransaction> transaction_backend_;
   const int64_t id_;
   Member<IDBDatabase> database_;
   Member<IDBOpenDBRequest> open_db_request_;
@@ -224,6 +228,7 @@ class MODULES_EXPORT IDBTransaction final
 
   State state_ = kActive;
   bool has_pending_activity_ = true;
+  int64_t num_errors_handled_ = 0;
   Member<DOMException> error_;
 
   HeapListHashSet<Member<IDBRequest>> request_list_;

@@ -11,9 +11,14 @@ import os
 import sys
 
 for idx, arg in enumerate(sys.argv[1:]):
+  filename = None
   if arg == '-o':
     # Hopefully there is an |idx+1|.
     filename = sys.argv[1:][idx+1]
+  if arg.startswith('-out:'):
+    # also handle lld-link argument
+    filename = arg.split(':')[-1]
+  if filename != None:
     # If the file exists, then take no action.
     if not os.path.exists(filename):
       print ("creating fake linker output file: %s" % filename)

@@ -116,10 +116,9 @@ struct DriveUploader::UploadFileInfo {
 
   // Useful for printf debugging.
   std::string DebugString() const {
-    return "file_path=[" + file_path.AsUTF8Unsafe() +
-           "], content_type=[" + content_type +
-           "], content_length=[" + base::Int64ToString(content_length) +
-           "]";
+    return "file_path=[" + file_path.AsUTF8Unsafe() + "], content_type=[" +
+           content_type + "], content_length=[" +
+           base::NumberToString(content_length) + "]";
   }
 
   // Returns the callback to cancel the upload represented by this struct.

@@ -62,6 +62,6 @@ class CONTENT_EXPORT BrowserChildProcessHostTypeIterator
   }
 };
 
-};  // namespace content
+}  // namespace content
 
 #endif  // CONTENT_PUBLIC_BROWSER_BROWSER_CHILD_PROCESS_HOST_ITERATOR_H_

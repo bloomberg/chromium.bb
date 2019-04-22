@@ -25,8 +25,9 @@ remoting.ButterBar = function(writeLogFunction) {
   this.messages_ = [
     {id: /*i18n-content*/'WEBSITE_INVITE_BETA', dismissable: true},
     {id: /*i18n-content*/'WEBSITE_INVITE_STABLE', dismissable: true},
-    {id: /*i18n-content*/'WEBSITE_INVITE_DEPRECATION_1', dismissable: true},
-    {id: /*i18n-content*/'WEBSITE_INVITE_DEPRECATION_2', dismissable: false},
+    {id: /*i18n-content*/'WEBSITE_INVITE_FILE_TRANSFER', dismissable: true},
+    {id: /*i18n-content*/'WEBSITE_INVITE_MULTI_MONITOR', dismissable: true},
+    {id: /*i18n-content*/'WEBSITE_INVITE_DEPRECATION', dismissable: false},
   ];
   // TODO(jamiewalch): Read the message index using metricsPrivate.
   this.currentMessage_ = -1;
@@ -58,16 +59,17 @@ remoting.ButterBar.prototype.init = function() {
     remoting.identity.getEmail(),
   ];
   Promise.all(promises).then(function (results) {
-    /** @type {!remoting.Xhr.Response} */
-    var response = results[0];
-    /** @type {string} */
-    var email = results[1];
-    if (email.toLocaleLowerCase().endsWith('@google.com')) {
-      result.resolve();
-      return;
-    }
     try {
+      /** @type {!remoting.Xhr.Response} */
+      var response = results[0];
       var responseObj = response.getJson();
+      /** @type {string} */
+      var email = results[1];
+      if (email.toLocaleLowerCase().endsWith('@google.com') &&
+          !Boolean(responseObj.includeGooglers)) {
+        result.resolve();
+        return;
+      }
       /** @type {number} The index of the message to display. */
       var index = base.assertNumber(responseObj.index);
       /** @type {string} The URL of the website. */
@@ -155,8 +157,9 @@ remoting.ButterBar.prototype.getMigrationPhase_ = function() {
     case 1:
       return Phase.STABLE;
     case 2:
-      return Phase.DEPRECATION_1;
     case 3:
+      return Phase.DEPRECATION_1;
+    case 4:
       return Phase.DEPRECATION_2;
     default:
       return Phase.UNSPECIFIED_PHASE;
@@ -184,7 +187,7 @@ remoting.ButterBar.prototype.onStateLoaded_ = function(syncValues, url) {
   // it unconditionally.
   var elapsed = remoting.ButterBar.now_() - messageState.timestamp;
   var show =
-      this.currentMessage_ > messageState.index ||
+      this.currentMessage_ != messageState.index ||
       !this.messages_[this.currentMessage_].dismissable ||
       (!messageState.hidden && elapsed <= remoting.ButterBar.kTimeout_);
 

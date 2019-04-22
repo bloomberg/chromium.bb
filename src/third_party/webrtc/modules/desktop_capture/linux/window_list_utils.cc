@@ -10,16 +10,14 @@
 
 #include "modules/desktop_capture/linux/window_list_utils.h"
 
-#include <X11/Xatom.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <string.h>
-
 #include <algorithm>
 
 #include "modules/desktop_capture/linux/x_error_trap.h"
 #include "rtc_base/checks.h"
-#include "rtc_base/constructormagic.h"
+#include "rtc_base/constructor_magic.h"
 #include "rtc_base/logging.h"
 
 namespace webrtc {

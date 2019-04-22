@@ -10,7 +10,7 @@
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -30,8 +30,8 @@ TEST(QuarantineTest, FileCanBeOpenedForReadAfterAnnotation) {
   ASSERT_TRUE(test_dir.CreateUniqueTempDir());
 
   base::FilePath test_file = test_dir.GetPath().AppendASCII("foo.class");
-  ASSERT_EQ(static_cast<int>(arraysize(kTestData)),
-            base::WriteFile(test_file, kTestData, arraysize(kTestData)));
+  ASSERT_EQ(static_cast<int>(base::size(kTestData)),
+            base::WriteFile(test_file, kTestData, base::size(kTestData)));
 
   EXPECT_EQ(QuarantineFileResult::OK,
             QuarantineFile(test_file, GURL(kInternetURL),
@@ -47,8 +47,8 @@ TEST(QuarantineTest, FileCanBeAnnotatedWithNoGUID) {
   ASSERT_TRUE(test_dir.CreateUniqueTempDir());
 
   base::FilePath test_file = test_dir.GetPath().AppendASCII("foo.class");
-  ASSERT_EQ(static_cast<int>(arraysize(kTestData)),
-            base::WriteFile(test_file, kTestData, arraysize(kTestData)));
+  ASSERT_EQ(static_cast<int>(base::size(kTestData)),
+            base::WriteFile(test_file, kTestData, base::size(kTestData)));
 
   EXPECT_EQ(QuarantineFileResult::OK,
             QuarantineFile(test_file, GURL(kInternetURL),

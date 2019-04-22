@@ -69,7 +69,6 @@ import watchlists
 __version__ = '2.0'
 
 COMMIT_BOT_EMAIL = 'commit-bot@chromium.org'
-DEFAULT_SERVER = 'https://codereview.chromium.org'
 POSTUPSTREAM_HOOK = '.git/hooks/post-cl-land'
 DESCRIPTION_BACKUP_FILE = '~/.git_cl_description_backup'
 REFS_THAT_ALIAS_TO_OTHER_REFS = {
@@ -807,7 +806,6 @@ class BuildbucketResponseException(Exception):
 
 class Settings(object):
   def __init__(self):
-    self.default_server = None
     self.cc = None
     self.root = None
     self.tree_status_url = None
@@ -817,8 +815,6 @@ class Settings(object):
     self.squash_gerrit_uploads = None
     self.gerrit_skip_ensure_authenticated = None
     self.git_editor = None
-    self.project = None
-    self.force_https_commit_url = None
 
   def LazyUpdateIfNeeded(self):
     """Updates the settings from a codereview.settings file, if available."""
@@ -834,20 +830,6 @@ class Settings(object):
         LoadCodereviewSettingsFromFile(cr_settings_file)
       self.updated = True
 
-  def GetDefaultServerUrl(self, error_ok=False):
-    if not self.default_server:
-      self.LazyUpdateIfNeeded()
-      self.default_server = gclient_utils.UpgradeToHttps(
-          self._GetRietveldConfig('server', error_ok=True))
-      if error_ok:
-        return self.default_server
-      if not self.default_server:
-        error_message = ('Could not find settings file. You must configure '
-                         'your review setup by running "git cl config".')
-        self.default_server = gclient_utils.UpgradeToHttps(
-            self._GetRietveldConfig('server', error_message=error_message))
-    return self.default_server
-
   @staticmethod
   def GetRelativeRoot():
     return RunGit(['rev-parse', '--show-cdup']).strip()
@@ -857,50 +839,30 @@ class Settings(object):
       self.root = os.path.abspath(self.GetRelativeRoot())
     return self.root
 
-  def GetGitMirror(self, remote='origin'):
-    """If this checkout is from a local git mirror, return a Mirror object."""
-    local_url = RunGit(['config', '--get', 'remote.%s.url' % remote]).strip()
-    if not os.path.isdir(local_url):
-      return None
-    git_cache.Mirror.SetCachePath(os.path.dirname(local_url))
-    remote_url = git_cache.Mirror.CacheDirToUrl(local_url)
-    # Use the /dev/null print_func to avoid terminal spew.
-    mirror = git_cache.Mirror(remote_url, print_func=lambda *args: None)
-    if mirror.exists():
-      return mirror
-    return None
-
   def GetTreeStatusUrl(self, error_ok=False):
     if not self.tree_status_url:
       error_message = ('You must configure your tree status URL by running '
                        '"git cl config".')
-      self.tree_status_url = self._GetRietveldConfig(
-          'tree-status-url', error_ok=error_ok, error_message=error_message)
+      self.tree_status_url = self._GetConfig(
+          'rietveld.tree-status-url', error_ok=error_ok,
+          error_message=error_message)
     return self.tree_status_url
 
   def GetViewVCUrl(self):
     if not self.viewvc_url:
-      self.viewvc_url = self._GetRietveldConfig('viewvc-url', error_ok=True)
+      self.viewvc_url = self._GetConfig('rietveld.viewvc-url', error_ok=True)
     return self.viewvc_url
 
   def GetBugPrefix(self):
-    return self._GetRietveldConfig('bug-prefix', error_ok=True)
-
-  def GetIsSkipDependencyUpload(self, branch_name):
-    """Returns true if specified branch should skip dep uploads."""
-    return self._GetBranchConfig(branch_name, 'skip-deps-uploads',
-                                 error_ok=True)
+    return self._GetConfig('rietveld.bug-prefix', error_ok=True)
 
   def GetRunPostUploadHook(self):
-    run_post_upload_hook = self._GetRietveldConfig(
-        'run-post-upload-hook', error_ok=True)
+    run_post_upload_hook = self._GetConfig(
+        'rietveld.run-post-upload-hook', error_ok=True)
     return run_post_upload_hook == "True"
 
   def GetDefaultCCList(self):
-    return self._GetRietveldConfig('cc', error_ok=True)
-
-  def GetDefaultPrivateFlag(self):
-    return self._GetRietveldConfig('private', error_ok=True)
+    return self._GetConfig('rietveld.cc', error_ok=True)
 
   def GetIsGerrit(self):
     """Return true if this repo is associated with gerrit code review system."""
@@ -946,27 +908,20 @@ class Settings(object):
   def GetGitEditor(self):
     """Return the editor specified in the git config, or None if none is."""
     if self.git_editor is None:
-      self.git_editor = self._GetConfig('core.editor', error_ok=True)
+      # Git requires single quotes for paths with spaces. We need to replace
+      # them with double quotes for Windows to treat such paths as a single
+      # path.
+      self.git_editor = self._GetConfig(
+          'core.editor', error_ok=True).replace('\'', '"')
     return self.git_editor or None
 
   def GetLintRegex(self):
-    return (self._GetRietveldConfig('cpplint-regex', error_ok=True) or
+    return (self._GetConfig('rietveld.cpplint-regex', error_ok=True) or
             DEFAULT_LINT_REGEX)
 
   def GetLintIgnoreRegex(self):
-    return (self._GetRietveldConfig('cpplint-ignore-regex', error_ok=True) or
+    return (self._GetConfig('rietveld.cpplint-ignore-regex', error_ok=True) or
             DEFAULT_LINT_IGNORE_REGEX)
-
-  def GetProject(self):
-    if not self.project:
-      self.project = self._GetRietveldConfig('project', error_ok=True)
-    return self.project
-
-  def _GetRietveldConfig(self, param, **kwargs):
-    return self._GetConfig('rietveld.' + param, **kwargs)
-
-  def _GetBranchConfig(self, branch_name, param, **kwargs):
-    return self._GetConfig('branch.' + branch_name + '.' + param, **kwargs)
 
   def _GetConfig(self, param, **kwargs):
     self.LazyUpdateIfNeeded()
@@ -1095,7 +1050,7 @@ class GerritChangeNotExists(Exception):
 
 
 _CommentSummary = collections.namedtuple(
-    '_CommentSummary', ['date', 'message', 'sender',
+    '_CommentSummary', ['date', 'message', 'sender', 'autogenerated',
                         # TODO(tandrii): these two aren't known in Gerrit.
                         'approval', 'disapproval'])
 
@@ -1159,7 +1114,9 @@ class Changelist(object):
 
   def _load_codereview_impl(self, codereview=None, **kwargs):
     if codereview:
-      assert codereview in _CODEREVIEW_IMPLEMENTATIONS
+      assert codereview in _CODEREVIEW_IMPLEMENTATIONS, (
+          'codereview {} not in {}'.format(codereview,
+                                           _CODEREVIEW_IMPLEMENTATIONS))
       cls = _CODEREVIEW_IMPLEMENTATIONS[codereview]
       self._codereview = codereview
       self._codereview_impl = cls(self, **kwargs)
@@ -1180,9 +1137,9 @@ class Changelist(object):
           self.issue = int(issue)
           return
 
-    # No issue is set for this branch, so decide based on repo-wide settings.
+    # No issue is set for this branch, so default to gerrit.
     return self._load_codereview_impl(
-        codereview='gerrit' if settings.GetIsGerrit() else 'rietveld',
+        codereview='gerrit',
         **kwargs)
 
   def IsGerrit(self):
@@ -1386,11 +1343,39 @@ class Changelist(object):
     remote, _ = self.GetRemoteBranch()
     url = RunGit(['config', 'remote.%s.url' % remote], error_ok=True).strip()
 
-    # If URL is pointing to a local directory, it is probably a git cache.
-    if os.path.isdir(url):
-      url = RunGit(['config', 'remote.%s.url' % remote],
-                   error_ok=True,
-                   cwd=url).strip()
+    # Check if the remote url can be parsed as an URL.
+    host = urlparse.urlparse(url).netloc
+    if host:
+      self._cached_remote_url = (True, url)
+      return url
+
+    # If it cannot be parsed as an url, assume it is a local directory, probably
+    # a git cache.
+    logging.warning('"%s" doesn\'t appear to point to a git host. '
+                    'Interpreting it as a local directory.', url)
+    if not os.path.isdir(url):
+      logging.error(
+          'Remote "%s" for branch "%s" points to "%s", but it doesn\'t exist.',
+          remote, url, self.GetBranch())
+      return None
+
+    cache_path = url
+    url = RunGit(['config', 'remote.%s.url' % remote],
+                 error_ok=True,
+                 cwd=url).strip()
+
+    host = urlparse.urlparse(url).netloc
+    if not host:
+      logging.error(
+          'Remote "%(remote)s" for branch "%(branch)s" points to '
+          '"%(cache_path)s", but it is misconfigured.\n'
+          '"%(cache_path)s" must be a git repo and must have a remote named '
+          '"%(remote)s" pointing to the git host.', {
+              'remote': remote,
+              'cache_path': cache_path,
+              'branch': self.GetBranch()})
+      return None
+
     self._cached_remote_url = (True, url)
     return url
 
@@ -1660,41 +1645,6 @@ class Changelist(object):
         ret = upload_branch_deps(self, orig_args)
     return ret
 
-  def SetLabels(self, enable_auto_submit, use_commit_queue, cq_dry_run):
-    """Sets labels on the change based on the provided flags.
-
-    Sets labels if issue is already uploaded and known, else returns without
-    doing anything.
-
-    Args:
-      enable_auto_submit: Sets Auto-Submit+1 on the change.
-      use_commit_queue: Sets Commit-Queue+2 on the change.
-      cq_dry_run: Sets Commit-Queue+1 on the change. Overrides Commit-Queue+2 if
-                  both use_commit_queue and cq_dry_run are true.
-    """
-    if not self.GetIssue():
-      return
-    try:
-      self._codereview_impl.SetLabels(enable_auto_submit, use_commit_queue,
-                                      cq_dry_run)
-      return 0
-    except KeyboardInterrupt:
-      raise
-    except:
-      labels = []
-      if enable_auto_submit:
-        labels.append('Auto-Submit')
-      if use_commit_queue or cq_dry_run:
-        labels.append('Commit-Queue')
-      print('WARNING: Failed to set label(s) on your change: %s\n'
-            'Either:\n'
-            ' * Your project does not have the above label(s),\n'
-            ' * You don\'t have permission to set the above label(s),\n'
-            ' * There\'s a bug in this code (see stack trace below).\n' %
-            (', '.join(labels)))
-      # Still raise exception so that stack trace is printed.
-      raise
-
   def SetCQState(self, new_state):
     """Updates the CQ state for the latest patchset.
 
@@ -1888,13 +1838,6 @@ class _ChangelistCodereviewBase(object):
     """Uploads a change to codereview."""
     raise NotImplementedError()
 
-  def SetLabels(self, enable_auto_submit, use_commit_queue, cq_dry_run):
-    """Sets labels on the change based on the provided flags.
-
-    Issue must have been already uploaded and known.
-    """
-    raise NotImplementedError()
-
   def SetCQState(self, new_state):
     """Updates the CQ state for the latest patchset.
 
@@ -1948,7 +1891,10 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
 
   def _GetGitHost(self):
     """Returns git host to be used when uploading change to Gerrit."""
-    return urlparse.urlparse(self.GetRemoteUrl()).netloc
+    remote_url = self.GetRemoteUrl()
+    if not remote_url:
+      return None
+    return urlparse.urlparse(remote_url).netloc
 
   def GetCodereviewServer(self):
     if not self._gerrit_server:
@@ -2026,7 +1972,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     # Lazy-loader to identify Gerrit and Git hosts.
     self.GetCodereviewServer()
     git_host = self._GetGitHost()
-    assert self._gerrit_server and self._gerrit_host
+    assert self._gerrit_server and self._gerrit_host and git_host
 
     gerrit_auth = cookie_auth.get_auth_header(self._gerrit_host)
     git_auth = cookie_auth.get_auth_header(git_host)
@@ -2118,6 +2064,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       * 'waiting' - waiting for review
       * 'reply'   - waiting for uploader to reply to review
       * 'lgtm'    - Code-Review label has been set
+      * 'dry-run' - dry-running in the commit queue
       * 'commit'  - in the commit queue
       * 'closed'  - successfully submitted or abandoned
     """
@@ -2133,10 +2080,14 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     if data['status'] in ('ABANDONED', 'MERGED'):
       return 'closed'
 
-    if data['labels'].get('Commit-Queue', {}).get('approved'):
-      # The section will have an "approved" subsection if anyone has voted
-      # the maximum value on the label.
+    cq_label = data['labels'].get('Commit-Queue', {})
+    max_cq_vote = 0
+    for vote in cq_label.get('all', []):
+      max_cq_vote = max(max_cq_vote, vote.get('value', 0))
+    if max_cq_vote == 2:
       return 'commit'
+    if max_cq_vote == 1:
+      return 'dry-run'
 
     if data['labels'].get('Code-Review', {}).get('approved'):
       return 'lgtm'
@@ -2197,10 +2148,23 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
 
   def GetCommentsSummary(self, readable=True):
     # DETAILED_ACCOUNTS is to get emails in accounts.
+    # CURRENT_REVISION is included to get the latest patchset so that
+    # only the robot comments from the latest patchset can be shown.
     messages = self._GetChangeDetail(
-        options=['MESSAGES', 'DETAILED_ACCOUNTS']).get('messages', [])
+        options=['MESSAGES', 'DETAILED_ACCOUNTS',
+                 'CURRENT_REVISION']).get('messages', [])
     file_comments = gerrit_util.GetChangeComments(
         self._GetGerritHost(), self._GerritChangeIdentifier())
+    robot_file_comments = gerrit_util.GetChangeRobotComments(
+        self._GetGerritHost(), self._GerritChangeIdentifier())
+
+    # Add the robot comments onto the list of comments, but only
+    # keep those that are from the latest pachset.
+    latest_patch_set = self.GetMostRecentPatchset()
+    for path, robot_comments in robot_file_comments.iteritems():
+      line_comments = file_comments.setdefault(path, [])
+      line_comments.extend(
+          [c for c in robot_comments if c['patch_set'] == latest_patch_set])
 
     # Build dictionary of file comments for easy access and sorting later.
     # {author+date: {path: {patchset: {line: url+message}}}}
@@ -2208,7 +2172,8 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
         lambda: collections.defaultdict(lambda: collections.defaultdict(dict)))
     for path, line_comments in file_comments.iteritems():
       for comment in line_comments:
-        if comment.get('tag', '').startswith('autogenerated'):
+        tag = comment.get('tag', '')
+        if tag.startswith('autogenerated') and 'robot_id' not in comment:
           continue
         key = (comment['author']['email'], comment['updated'])
         if comment.get('side', 'REVISION') == 'PARENT':
@@ -2222,48 +2187,58 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
              str(line) if line else ''))
         comments[key][path][patchset][line] = (url, comment['message'])
 
-    summary = []
+    summaries = []
     for msg in messages:
-      # Don't bother showing autogenerated messages.
-      if msg.get('tag') and msg.get('tag').startswith('autogenerated'):
-        continue
-      # Gerrit spits out nanoseconds.
-      assert len(msg['date'].split('.')[-1]) == 9
-      date = datetime.datetime.strptime(msg['date'][:-3],
-                                        '%Y-%m-%d %H:%M:%S.%f')
-      message = msg['message']
-      key = (msg['author']['email'], msg['date'])
-      if key in comments:
-        message += '\n'
-      for path, patchsets in sorted(comments.get(key, {}).items()):
-        if readable:
-          message += '\n%s' % path
-        for patchset, lines in sorted(patchsets.items()):
-          for line, (url, content) in sorted(lines.items()):
-            if line:
-              line_str = 'Line %d' % line
-              path_str = '%s:%d:' % (path, line)
-            else:
-              line_str = 'File comment'
-              path_str = '%s:0:' % path
-            if readable:
-              message += '\n  %s, %s: %s' % (patchset, line_str, url)
-              message += '\n  %s\n' % content
-            else:
-              message += '\n%s ' % path_str
-              message += '\n%s\n' % content
+      summary = self._BuildCommentSummary(msg, comments, readable)
+      if summary:
+        summaries.append(summary)
+    return summaries
 
-      summary.append(_CommentSummary(
-        date=date,
-        message=message,
-        sender=msg['author']['email'],
-        # These could be inferred from the text messages and correlated with
-        # Code-Review label maximum, however this is not reliable.
-        # Leaving as is until the need arises.
-        approval=False,
-        disapproval=False,
-      ))
-    return summary
+  @staticmethod
+  def _BuildCommentSummary(msg, comments, readable):
+    key = (msg['author']['email'], msg['date'])
+    # Don't bother showing autogenerated messages that don't have associated
+    # file or line comments. this will filter out most autogenerated
+    # messages, but will keep robot comments like those from Tricium.
+    is_autogenerated = msg.get('tag', '').startswith('autogenerated')
+    if is_autogenerated and not comments.get(key):
+      return None
+    message = msg['message']
+    # Gerrit spits out nanoseconds.
+    assert len(msg['date'].split('.')[-1]) == 9
+    date = datetime.datetime.strptime(msg['date'][:-3],
+                                      '%Y-%m-%d %H:%M:%S.%f')
+    if key in comments:
+      message += '\n'
+    for path, patchsets in sorted(comments.get(key, {}).items()):
+      if readable:
+        message += '\n%s' % path
+      for patchset, lines in sorted(patchsets.items()):
+        for line, (url, content) in sorted(lines.items()):
+          if line:
+            line_str = 'Line %d' % line
+            path_str = '%s:%d:' % (path, line)
+          else:
+            line_str = 'File comment'
+            path_str = '%s:0:' % path
+          if readable:
+            message += '\n  %s, %s: %s' % (patchset, line_str, url)
+            message += '\n  %s\n' % content
+          else:
+            message += '\n%s ' % path_str
+            message += '\n%s\n' % content
+
+    return _CommentSummary(
+      date=date,
+      message=message,
+      sender=msg['author']['email'],
+      autogenerated=is_autogenerated,
+      # These could be inferred from the text messages and correlated with
+      # Code-Review label maximum, however this is not reliable.
+      # Leaving as is until the need arises.
+      approval=False,
+      disapproval=False,
+    )
 
   def CloseIssue(self):
     gerrit_util.AbandonChange(
@@ -2330,17 +2305,27 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       raise
     return data
 
+  def _IsCqConfigured(self):
+    detail = self._GetChangeDetail(['LABELS'])
+    if not u'Commit-Queue' in detail.get('labels', {}):
+      return False
+    # TODO(crbug/753213): Remove temporary hack
+    if ('https://chromium.googlesource.com/chromium/src' ==
+        self._changelist.GetRemoteUrl() and
+        detail['branch'].startswith('refs/branch-heads/')):
+      return False
+    return True
+
   def CMDLand(self, force, bypass_hooks, verbose, parallel):
     if git_common.is_dirty_git_tree('land'):
       return 1
+
     detail = self._GetChangeDetail(['CURRENT_REVISION', 'LABELS'])
-    if u'Commit-Queue' in detail.get('labels', {}):
-      if not force:
-        confirm_or_exit('\nIt seems this repository has a Commit Queue, '
+    if not force and self._IsCqConfigured():
+      confirm_or_exit('\nIt seems this repository has a Commit Queue, '
                         'which can test and land changes for you. '
                         'Are you sure you wish to bypass it?\n',
                         action='bypass CQ')
-
     differs = True
     last_upload = self._GitGetBranchConfigValue('gerritsquashhash')
     # Note: git diff outputs nothing if there is no diff.
@@ -2506,7 +2491,6 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
 
     remote, remote_branch = self.GetRemoteBranch()
     branch = GetTargetRef(remote, remote_branch, options.target_branch)
-
     # This may be None; default fallback value is determined in logic below.
     title = options.title
 
@@ -2717,16 +2701,18 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       # https://gerrit-review.googlesource.com/Documentation/user-upload.html#topic
       refspec_opts.append('topic=%s' % options.topic)
 
-    if not change_desc.get_reviewers(tbr_only=True):
-      # Change is not TBR, so we can inline setting other labels, too.
-      # TODO(crbug.com/877717): make this working for TBR, too, by figuring out
-      # max score for CR label somehow.
-      if options.enable_auto_submit:
-        refspec_opts.append('l=Auto-Submit+1')
-      if options.use_commit_queue:
-        refspec_opts.append('l=Commit-Queue+2')
-      elif options.cq_dry_run:
-        refspec_opts.append('l=Commit-Queue+1')
+    if options.enable_auto_submit:
+      refspec_opts.append('l=Auto-Submit+1')
+    if options.use_commit_queue:
+      refspec_opts.append('l=Commit-Queue+2')
+    elif options.cq_dry_run:
+      refspec_opts.append('l=Commit-Queue+1')
+
+    if change_desc.get_reviewers(tbr_only=True):
+      score = gerrit_util.GetCodeReviewTbrScore(
+          self._GetGerritHost(),
+          self._GetGerritProject())
+      refspec_opts.append('l=Code-Review+%s' % score)
 
     # Gerrit sorts hashtags, so order is not important.
     hashtags = {change_desc.sanitize_hash_tag(t) for t in options.hashtags}
@@ -2742,6 +2728,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     refspec = '%s:refs/for/%s%s' % (ref_to_push, branch, refspec_suffix)
 
     try:
+      push_returncode = 0
       before_push = time_time()
       push_stdout = gclient_utils.CheckCallAndFilter(
           ['git', 'push', self.GetRemoteUrl(), refspec],
@@ -2749,7 +2736,6 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
           # Flush after every line: useful for seeing progress when running as
           # recipe.
           filter_fn=lambda _: sys.stdout.flush())
-      push_returncode = 0
     except subprocess2.CalledProcessError as e:
       push_returncode = e.returncode
       DieWithError('Failed to create a change. Please examine output above '
@@ -2787,20 +2773,6 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
           reviewers, cc,
           notify=bool(options.send_mail))
 
-    if change_desc.get_reviewers(tbr_only=True):
-      labels = self._GetChangeDetail(['LABELS']).get('labels', {})
-      score = 1
-      if 'Code-Review' in labels and 'values' in labels['Code-Review']:
-        score = max([int(x) for x in labels['Code-Review']['values'].keys()])
-      print('Adding self-LGTM (Code-Review +%d) because of TBRs.' % score)
-      gerrit_util.SetReview(
-          self._GetGerritHost(),
-          self._GerritChangeIdentifier(),
-          msg='Self-approving for TBR',
-          labels={'Code-Review': score})
-      # Labels aren't set through refspec only if tbr is set (see check above).
-      self.SetLabels(options.enable_auto_submit, options.use_commit_queue,
-                     options.cq_dry_run)
     return 0
 
   def _ComputeParent(self, remote, upstream_branch, custom_cl_base, force,
@@ -2876,23 +2848,6 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       return new_log_desc
     else:
       DieWithError('ERROR: Gerrit commit-msg hook not installed.')
-
-  def SetLabels(self, enable_auto_submit, use_commit_queue, cq_dry_run):
-    """Sets labels on the change based on the provided flags."""
-    labels = {}
-    notify = None;
-    if enable_auto_submit:
-      labels['Auto-Submit'] = 1
-    if use_commit_queue:
-      labels['Commit-Queue'] = 2
-    elif cq_dry_run:
-      labels['Commit-Queue'] = 1
-      notify = False
-    if labels:
-      gerrit_util.SetReview(
-          self._GetGerritHost(),
-          self._GerritChangeIdentifier(),
-          labels=labels, notify=notify)
 
   def SetCQState(self, new_state):
     """Sets the Commit-Queue label assuming canonical CQ config for Gerrit."""
@@ -3133,8 +3088,8 @@ class ChangeDescription(object):
     ] + self._description_lines)
 
     regexp = re.compile(self.BUG_LINE)
+    prefix = settings.GetBugPrefix()
     if not any((regexp.match(line) for line in self._description_lines)):
-      prefix = settings.GetBugPrefix()
       values = list(_get_bug_line_values(prefix, bug or '')) or [prefix]
       if git_footer:
         self.append_footer('Bug: %s' % ', '.join(values))
@@ -3150,7 +3105,9 @@ class ChangeDescription(object):
 
     # Strip off comments and default inserted "Bug:" line.
     clean_lines = [line.rstrip() for line in lines if not
-                   (line.startswith('#') or line.rstrip() == "Bug:")]
+                   (line.startswith('#') or
+                    line.rstrip() == "Bug:" or
+                    line.rstrip() == "Bug: " + prefix)]
     if not clean_lines:
       DieWithError('No CL description, aborting')
     self.set_description(clean_lines)
@@ -3344,13 +3301,11 @@ def LoadCodereviewSettingsFromFile(fileobj):
   # Only server setting is required. Other settings can be absent.
   # In that case, we ignore errors raised during option deletion attempt.
   SetProperty('cc', 'CC_LIST', unset_error_ok=True)
-  SetProperty('private', 'PRIVATE', unset_error_ok=True)
   SetProperty('tree-status-url', 'STATUS', unset_error_ok=True)
   SetProperty('viewvc-url', 'VIEW_VC', unset_error_ok=True)
   SetProperty('bug-prefix', 'BUG_PREFIX', unset_error_ok=True)
   SetProperty('cpplint-regex', 'LINT_REGEX', unset_error_ok=True)
   SetProperty('cpplint-ignore-regex', 'LINT_IGNORE_REGEX', unset_error_ok=True)
-  SetProperty('project', 'PROJECT', unset_error_ok=True)
   SetProperty('run-post-upload-hook', 'RUN_POST_UPLOAD_HOOK',
               unset_error_ok=True)
 
@@ -3420,43 +3375,6 @@ def DownloadGerritHook(force):
                    'You need to download from\n%s\n'
                    'into .git/hooks/commit-msg and '
                    'chmod +x .git/hooks/commit-msg' % src)
-
-
-def GetRietveldCodereviewSettingsInteractively():
-  """Prompt the user for settings."""
-  server = settings.GetDefaultServerUrl(error_ok=True)
-  prompt = 'Rietveld server (host[:port])'
-  prompt += ' [%s]' % (server or DEFAULT_SERVER)
-  newserver = ask_for_data(prompt + ':')
-  if not server and not newserver:
-    newserver = DEFAULT_SERVER
-  if newserver:
-    newserver = gclient_utils.UpgradeToHttps(newserver)
-    if newserver != server:
-      RunGit(['config', 'rietveld.server', newserver])
-
-  def SetProperty(initial, caption, name, is_url):
-    prompt = caption
-    if initial:
-      prompt += ' ("x" to clear) [%s]' % initial
-    new_val = ask_for_data(prompt + ':')
-    if new_val == 'x':
-      RunGit(['config', '--unset-all', 'rietveld.' + name], error_ok=True)
-    elif new_val:
-      if is_url:
-        new_val = gclient_utils.UpgradeToHttps(new_val)
-      if new_val != initial:
-        RunGit(['config', 'rietveld.' + name, new_val])
-
-  SetProperty(settings.GetDefaultCCList(), 'CC list', 'cc', False)
-  SetProperty(settings.GetDefaultPrivateFlag(),
-              'Private flag (rietveld only)', 'private', False)
-  SetProperty(settings.GetTreeStatusUrl(error_ok=True), 'Tree status URL',
-              'tree-status-url', False)
-  SetProperty(settings.GetViewVCUrl(), 'ViewVC URL', 'viewvc-url', True)
-  SetProperty(settings.GetBugPrefix(), 'Bug Prefix', 'bug-prefix', False)
-  SetProperty(settings.GetRunPostUploadHook(), 'Run Post Upload Hook',
-              'run-post-upload-hook', False)
 
 
 class _GitCookiesChecker(object):
@@ -3766,43 +3684,6 @@ def CMDcreds_check(parser, args):
   return 1
 
 
-@subcommand.usage('[repo root containing codereview.settings]')
-@metrics.collector.collect_metrics('git cl config')
-def CMDconfig(parser, args):
-  """Edits configuration for this tree."""
-
-  print('WARNING: git cl config works for Rietveld only.')
-  # TODO(tandrii): remove this once we switch to Gerrit.
-  # See bugs http://crbug.com/637561 and http://crbug.com/600469.
-  parser.add_option('--activate-update', action='store_true',
-                    help='activate auto-updating [rietveld] section in '
-                         '.git/config')
-  parser.add_option('--deactivate-update', action='store_true',
-                    help='deactivate auto-updating [rietveld] section in '
-                         '.git/config')
-  options, args = parser.parse_args(args)
-
-  if options.deactivate_update:
-    RunGit(['config', 'rietveld.autoupdate', 'false'])
-    return
-
-  if options.activate_update:
-    RunGit(['config', '--unset', 'rietveld.autoupdate'])
-    return
-
-  if len(args) == 0:
-    GetRietveldCodereviewSettingsInteractively()
-    return 0
-
-  url = args[0]
-  if not url.endswith('codereview.settings'):
-    url = os.path.join(url, 'codereview.settings')
-
-  # Load code review settings and download hooks (if available).
-  LoadCodereviewSettingsFromFile(urllib2.urlopen(url))
-  return 0
-
-
 @metrics.collector.collect_metrics('git cl baseurl')
 def CMDbaseurl(parser, args):
   """Gets or sets base-url for this branch."""
@@ -3817,7 +3698,6 @@ def CMDbaseurl(parser, args):
     print('Setting base-url to %s' % args[0])
     return RunGit(['config', 'branch.%s.base-url' % branch, args[0]],
                   error_ok=False).strip()
-
 
 def color_for_status(status):
   """Maps a Changelist status to color, for CMDstatus and other tools."""
@@ -4084,6 +3964,10 @@ def CMDstatus(parser, args):
 
   Also see 'git cl comments'.
   """
+  parser.add_option(
+      '--no-branch-color',
+      action='store_true',
+      help='Disable colorized branch names')
   parser.add_option('--field',
                     help='print only specific field (desc|id|patch|status|url)')
   parser.add_option('-f', '--fast', action='store_true',
@@ -4138,8 +4022,26 @@ def CMDstatus(parser, args):
                            fine_grained=not options.fast,
                            max_processes=options.maxjobs)
 
+  current_branch = GetCurrentBranch()
+
+  def FormatBranchName(branch, colorize=False):
+    """Simulates 'git branch' behavior. Colorizes and prefixes branch name with
+    an asterisk when it is the current branch."""
+
+    asterisk = ""
+    color = Fore.RESET
+    if branch == current_branch:
+      asterisk = "* "
+      color = Fore.GREEN
+    branch_name = ShortBranchName(branch)
+
+    if colorize:
+      return asterisk + color + branch_name + Fore.RESET
+    return asterisk + branch_name
+
   branch_statuses = {}
-  alignment = max(5, max(len(ShortBranchName(c.GetBranch())) for c in changes))
+
+  alignment = max(5, max(len(FormatBranchName(c.GetBranch())) for c in changes))
   for cl in sorted(changes, key=lambda c: c.GetBranch()):
     branch = cl.GetBranch()
     while branch not in branch_statuses:
@@ -4157,16 +4059,19 @@ def CMDstatus(parser, args):
       color = ''
       reset = ''
     status_str = '(%s)' % status if status else ''
-    print('  %*s : %s%s %s%s' % (
-          alignment, ShortBranchName(branch), color, url,
-          status_str, reset))
 
+    branch_display = FormatBranchName(branch)
+    padding = ' ' * (alignment - len(branch_display))
+    if not options.no_branch_color:
+      branch_display = FormatBranchName(branch, colorize=True)
 
-  branch = GetCurrentBranch()
+    print('  %s : %s%s %s%s' % (padding + branch_display, color, url,
+                                status_str, reset))
+
   print()
-  print('Current branch: %s' % branch)
+  print('Current branch: %s' % current_branch)
   for cl in changes:
-    if cl.GetBranch() == branch:
+    if cl.GetBranch() == current_branch:
       break
   if not cl.GetIssue():
     print('No issue assigned.')
@@ -4242,11 +4147,14 @@ def CMDissue(parser, args):
       args = sorted(issue_branch_map.iterkeys())
     result = {}
     for issue in args:
-      if not issue:
+      try:
+        issue_num = int(issue)
+      except ValueError:
+        print('ERROR cannot parse issue number: %s' % issue, file=sys.stderr)
         continue
-      result[int(issue)] = issue_branch_map.get(int(issue))
+      result[issue_num] = issue_branch_map.get(issue_num)
       print('Branch for issue number %s: %s' % (
-          issue, ', '.join(issue_branch_map.get(int(issue)) or ('None',))))
+          issue, ', '.join(issue_branch_map.get(issue_num) or ('None',))))
     if options.json:
       write_json(options.json, result)
     return 0
@@ -4317,6 +4225,8 @@ def CMDcomments(parser, args):
       color = Fore.GREEN
     elif comment.sender == cl.GetIssueOwner():
       color = Fore.MAGENTA
+    elif comment.autogenerated:
+      color = Fore.CYAN
     else:
       color = Fore.BLUE
     print('\n%s%s   %s%s\n%s' % (
@@ -4538,7 +4448,7 @@ def GenerateGerritChangeId(message):
   # entropy.
   lines.append(message)
   change_hash = RunCommand(['git', 'hash-object', '-t', 'commit', '--stdin'],
-                           stdin='\n'.join(lines))
+                           stdin=('\n'.join(lines)).encode())
   return 'I%s' % change_hash.strip()
 
 
@@ -4765,6 +4675,11 @@ def CMDsplit(parser, args):
                          "infrastructure. Try to upload these not during high "
                          "load times (usually 11-3 Mountain View time). Email "
                          "infra-dev@chromium.org with any questions.")
+  parser.add_option('-a', '--enable-auto-submit', action='store_true',
+                    default=True,
+                    help='Sends your change to the CQ after an approval. Only '
+                         'works on repos that have the Auto-Submit label '
+                         'enabled')
   options, _ = parser.parse_args(args)
 
   if not options.description_file:
@@ -4775,7 +4690,7 @@ def CMDsplit(parser, args):
 
   return split_cl.SplitCl(options.description_file, options.comment_file,
                           Changelist, WrappedCMDupload, options.dry_run,
-                          options.cq_dry_run)
+                          options.cq_dry_run, options.enable_auto_submit)
 
 
 @subcommand.usage('DEPRECATED')
@@ -5170,12 +5085,15 @@ def CMDweb(parser, args):
   # allows to hide "Created new window in existing browser session." message
   # from Chrome. Based on https://stackoverflow.com/a/2323563.
   saved_stdout = os.dup(1)
+  saved_stderr = os.dup(2)
   os.close(1)
+  os.close(2)
   os.open(os.devnull, os.O_RDWR)
   try:
     webbrowser.open(issue_url)
   finally:
     os.dup2(saved_stdout, 1)
+    os.dup2(saved_stderr, 2)
   return 0
 
 
@@ -5276,6 +5194,10 @@ def CMDowners(parser, args):
       action='store_true',
       help='Ignore the CL\'s current reviewers and start from scratch.')
   parser.add_option(
+      '--ignore-self',
+      action='store_true',
+      help='Do not consider CL\'s author as an owners.')
+  parser.add_option(
       '--no-color',
       action='store_true',
       help='Use this option to disable color output')
@@ -5314,7 +5236,8 @@ def CMDowners(parser, args):
       [] if options.ignore_current else cl.GetReviewers(),
       fopen=file, os_path=os.path,
       disable_color=options.no_color,
-      override_files=change.OriginalOwnersFiles()).run()
+      override_files=change.OriginalOwnersFiles(),
+      ignore_author=options.ignore_self).run()
 
 
 def BuildGitDiffCmd(diff_type, upstream_commit, args, allow_prefix=False):

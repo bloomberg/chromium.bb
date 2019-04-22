@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -28,7 +29,7 @@ struct Geoposition;
 //
 // Note: this should probably be a singleton to monitor requests rate.
 // But as it is used only from WizardController, it can be owned by it for now.
-class CHROMEOS_EXPORT TimeZoneProvider {
+class COMPONENT_EXPORT(CHROMEOS_TIMEZONE) TimeZoneProvider {
  public:
   TimeZoneProvider(scoped_refptr<network::SharedURLLoaderFactory> factory,
                    const GURL& url);

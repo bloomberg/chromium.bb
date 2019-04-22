@@ -6,8 +6,8 @@
 #define GPU_COMMAND_BUFFER_SERVICE_FRAMEBUFFER_COMPLETENESS_CACHE_H_
 
 #include <string>
+#include <unordered_set>
 
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "gpu/gpu_gles2_export.h"
 
@@ -26,7 +26,7 @@ class GPU_GLES2_EXPORT FramebufferCompletenessCache {
   void SetComplete(const std::string& signature);
 
  private:
-  typedef base::hash_set<std::string> Map;
+  typedef std::unordered_set<std::string> Map;
 
   Map cache_;
 

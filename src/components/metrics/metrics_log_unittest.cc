@@ -18,6 +18,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
+#include "components/metrics/cpu_metrics_provider.h"
 #include "components/metrics/delegating_provider.h"
 #include "components/metrics/environment_recorder.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -164,6 +166,9 @@ TEST_F(MetricsLogTest, BasicRecord) {
   system_profile->mutable_os()->set_build_fingerprint(
       base::android::BuildInfo::GetInstance()->android_build_fp());
   system_profile->set_app_package_name("test app");
+#elif defined(OS_IOS)
+  system_profile->mutable_os()->set_build_number(
+      base::SysInfo::GetIOSBuildNumber());
 #endif
 
   // Hard to mock.
@@ -237,6 +242,8 @@ TEST_F(MetricsLogTest, RecordEnvironment) {
   TestMetricsLog log(kClientId, kSessionId, MetricsLog::ONGOING_LOG, &client);
 
   DelegatingProvider delegating_provider;
+  auto cpu_provider = std::make_unique<metrics::CPUMetricsProvider>();
+  delegating_provider.RegisterMetricsProvider(std::move(cpu_provider));
   log.RecordEnvironment(&delegating_provider);
   // Check that the system profile on the log has the correct values set.
   CheckSystemProfile(log.system_profile());

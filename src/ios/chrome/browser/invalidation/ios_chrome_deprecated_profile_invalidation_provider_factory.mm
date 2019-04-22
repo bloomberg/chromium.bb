@@ -7,15 +7,15 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/callback.h"
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "base/task/post_task.h"
 #include "components/gcm_driver/gcm_profile_service.h"
 #include "components/invalidation/impl/invalidator_storage.h"
 #include "components/invalidation/impl/profile_identity_provider.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/invalidation/impl/ticl_invalidation_service.h"
-#include "components/invalidation/impl/ticl_profile_settings_provider.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry.h"
@@ -69,8 +69,10 @@ IOSChromeDeprecatedProfileInvalidationProviderFactory::GetForBrowserState(
 // static
 IOSChromeDeprecatedProfileInvalidationProviderFactory*
 IOSChromeDeprecatedProfileInvalidationProviderFactory::GetInstance() {
-  return base::Singleton<
-      IOSChromeDeprecatedProfileInvalidationProviderFactory>::get();
+  static base::NoDestructor<
+      IOSChromeDeprecatedProfileInvalidationProviderFactory>
+      instance;
+  return instance.get();
 }
 
 IOSChromeDeprecatedProfileInvalidationProviderFactory::
@@ -98,8 +100,6 @@ IOSChromeDeprecatedProfileInvalidationProviderFactory::BuildServiceInstanceFor(
   std::unique_ptr<TiclInvalidationService> service(new TiclInvalidationService(
       web::GetWebClient()->GetUserAgent(web::UserAgentType::MOBILE),
       identity_provider.get(),
-      std::make_unique<invalidation::TiclProfileSettingsProvider>(
-          browser_state->GetPrefs()),
       IOSChromeGCMProfileServiceFactory::GetForBrowserState(browser_state)
           ->driver(),
       base::BindRepeating(&RequestProxyResolvingSocketFactory, browser_state),

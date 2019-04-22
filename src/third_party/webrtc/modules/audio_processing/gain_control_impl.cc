@@ -18,7 +18,7 @@
 #include "modules/audio_processing/include/audio_processing.h"
 #include "modules/audio_processing/logging/apm_data_dumper.h"
 #include "rtc_base/checks.h"
-#include "rtc_base/constructormagic.h"
+#include "rtc_base/constructor_magic.h"
 
 namespace webrtc {
 
@@ -89,11 +89,8 @@ class GainControlImpl::GainController {
 
 int GainControlImpl::instance_counter_ = 0;
 
-GainControlImpl::GainControlImpl(rtc::CriticalSection* crit_render,
-                                 rtc::CriticalSection* crit_capture)
-    : crit_render_(crit_render),
-      crit_capture_(crit_capture),
-      data_dumper_(new ApmDataDumper(instance_counter_)),
+GainControlImpl::GainControlImpl()
+    : data_dumper_(new ApmDataDumper(instance_counter_)),
       mode_(kAdaptiveAnalog),
       minimum_capture_level_(0),
       maximum_capture_level_(255),
@@ -102,16 +99,12 @@ GainControlImpl::GainControlImpl(rtc::CriticalSection* crit_render,
       compression_gain_db_(9),
       analog_capture_level_(0),
       was_analog_level_set_(false),
-      stream_is_saturated_(false) {
-  RTC_DCHECK(crit_render);
-  RTC_DCHECK(crit_capture);
-}
+      stream_is_saturated_(false) {}
 
 GainControlImpl::~GainControlImpl() {}
 
 void GainControlImpl::ProcessRenderAudio(
     rtc::ArrayView<const int16_t> packed_render_audio) {
-  rtc::CritScope cs_capture(crit_capture_);
   if (!enabled_) {
     return;
   }
@@ -134,8 +127,6 @@ void GainControlImpl::PackRenderAudioBuffer(
 }
 
 int GainControlImpl::AnalyzeCaptureAudio(AudioBuffer* audio) {
-  rtc::CritScope cs(crit_capture_);
-
   if (!enabled_) {
     return AudioProcessing::kNoError;
   }
@@ -181,8 +172,6 @@ int GainControlImpl::AnalyzeCaptureAudio(AudioBuffer* audio) {
 
 int GainControlImpl::ProcessCaptureAudio(AudioBuffer* audio,
                                          bool stream_has_echo) {
-  rtc::CritScope cs(crit_capture_);
-
   if (!enabled_) {
     return AudioProcessing::kNoError;
   }
@@ -238,13 +227,11 @@ int GainControlImpl::ProcessCaptureAudio(AudioBuffer* audio,
 }
 
 int GainControlImpl::compression_gain_db() const {
-  rtc::CritScope cs(crit_capture_);
   return compression_gain_db_;
 }
 
 // TODO(ajm): ensure this is called under kAdaptiveAnalog.
 int GainControlImpl::set_stream_analog_level(int level) {
-  rtc::CritScope cs(crit_capture_);
   data_dumper_->DumpRaw("gain_control_set_stream_analog_level", 1, &level);
 
   was_analog_level_set_ = true;
@@ -256,8 +243,7 @@ int GainControlImpl::set_stream_analog_level(int level) {
   return AudioProcessing::kNoError;
 }
 
-int GainControlImpl::stream_analog_level() {
-  rtc::CritScope cs(crit_capture_);
+int GainControlImpl::stream_analog_level() const {
   data_dumper_->DumpRaw("gain_control_stream_analog_level", 1,
                         &analog_capture_level_);
   // TODO(ajm): enable this assertion?
@@ -267,8 +253,6 @@ int GainControlImpl::stream_analog_level() {
 }
 
 int GainControlImpl::Enable(bool enable) {
-  rtc::CritScope cs_render(crit_render_);
-  rtc::CritScope cs_capture(crit_capture_);
   if (enable && !enabled_) {
     enabled_ = enable;  // Must be set before Initialize() is called.
 
@@ -282,13 +266,10 @@ int GainControlImpl::Enable(bool enable) {
 }
 
 bool GainControlImpl::is_enabled() const {
-  rtc::CritScope cs(crit_capture_);
   return enabled_;
 }
 
 int GainControlImpl::set_mode(Mode mode) {
-  rtc::CritScope cs_render(crit_render_);
-  rtc::CritScope cs_capture(crit_capture_);
   if (MapSetting(mode) == -1) {
     return AudioProcessing::kBadParameterError;
   }
@@ -301,7 +282,6 @@ int GainControlImpl::set_mode(Mode mode) {
 }
 
 GainControl::Mode GainControlImpl::mode() const {
-  rtc::CritScope cs(crit_capture_);
   return mode_;
 }
 
@@ -321,7 +301,6 @@ int GainControlImpl::set_analog_level_limits(int minimum, int maximum) {
   size_t num_proc_channels_local = 0u;
   int sample_rate_hz_local = 0;
   {
-    rtc::CritScope cs(crit_capture_);
 
     minimum_capture_level_ = minimum;
     maximum_capture_level_ = maximum;
@@ -336,17 +315,14 @@ int GainControlImpl::set_analog_level_limits(int minimum, int maximum) {
 }
 
 int GainControlImpl::analog_level_minimum() const {
-  rtc::CritScope cs(crit_capture_);
   return minimum_capture_level_;
 }
 
 int GainControlImpl::analog_level_maximum() const {
-  rtc::CritScope cs(crit_capture_);
   return maximum_capture_level_;
 }
 
 bool GainControlImpl::stream_is_saturated() const {
-  rtc::CritScope cs(crit_capture_);
   return stream_is_saturated_;
 }
 
@@ -354,15 +330,11 @@ int GainControlImpl::set_target_level_dbfs(int level) {
   if (level > 31 || level < 0) {
     return AudioProcessing::kBadParameterError;
   }
-  {
-    rtc::CritScope cs(crit_capture_);
-    target_level_dbfs_ = level;
-  }
+  target_level_dbfs_ = level;
   return Configure();
 }
 
 int GainControlImpl::target_level_dbfs() const {
-  rtc::CritScope cs(crit_capture_);
   return target_level_dbfs_;
 }
 
@@ -370,29 +342,20 @@ int GainControlImpl::set_compression_gain_db(int gain) {
   if (gain < 0 || gain > 90) {
     return AudioProcessing::kBadParameterError;
   }
-  {
-    rtc::CritScope cs(crit_capture_);
-    compression_gain_db_ = gain;
-  }
+  compression_gain_db_ = gain;
   return Configure();
 }
 
 int GainControlImpl::enable_limiter(bool enable) {
-  {
-    rtc::CritScope cs(crit_capture_);
-    limiter_enabled_ = enable;
-  }
+  limiter_enabled_ = enable;
   return Configure();
 }
 
 bool GainControlImpl::is_limiter_enabled() const {
-  rtc::CritScope cs(crit_capture_);
   return limiter_enabled_;
 }
 
 void GainControlImpl::Initialize(size_t num_proc_channels, int sample_rate_hz) {
-  rtc::CritScope cs_render(crit_render_);
-  rtc::CritScope cs_capture(crit_capture_);
   data_dumper_->InitiateNewSetOfRecordings();
 
   num_proc_channels_ = num_proc_channels;
@@ -415,8 +378,6 @@ void GainControlImpl::Initialize(size_t num_proc_channels, int sample_rate_hz) {
 }
 
 int GainControlImpl::Configure() {
-  rtc::CritScope cs_render(crit_render_);
-  rtc::CritScope cs_capture(crit_capture_);
   WebRtcAgcConfig config;
   // TODO(ajm): Flip the sign here (since AGC expects a positive value) if we
   //            change the interface.

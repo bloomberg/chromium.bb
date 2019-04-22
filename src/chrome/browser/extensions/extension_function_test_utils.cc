@@ -51,7 +51,11 @@ class TestFunctionDispatcherDelegate
 namespace extension_function_test_utils {
 
 base::ListValue* ParseList(const std::string& data) {
-  std::unique_ptr<base::Value> result = base::JSONReader::Read(data);
+  std::unique_ptr<base::Value> result = base::JSONReader::ReadDeprecated(data);
+  if (!result) {
+    ADD_FAILURE() << "Failed to parse: " << data;
+    return nullptr;
+  }
   base::ListValue* list = NULL;
   result->GetAsList(&list);
   ignore_result(result.release());

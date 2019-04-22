@@ -6,7 +6,7 @@
 
 #include "xfa/fxfa/parser/cxfa_sourceset.h"
 
-#include "fxjs/xfa/cjx_sourceset.h"
+#include "fxjs/xfa/cjx_model.h"
 #include "third_party/base/ptr_util.h"
 
 namespace {
@@ -16,9 +16,7 @@ const CXFA_Node::AttributeData kSourceSetAttributeData[] = {
     {XFA_Attribute::Name, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Use, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Usehref, XFA_AttributeType::CData, nullptr},
-    {XFA_Attribute::Unknown, XFA_AttributeType::Integer, nullptr}};
-
-constexpr wchar_t kSourceSetName[] = L"sourceSet";
+};
 
 }  // namespace
 
@@ -28,9 +26,8 @@ CXFA_SourceSet::CXFA_SourceSet(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_XDPPACKET_SourceSet,
                 XFA_ObjectType::ModelNode,
                 XFA_Element::SourceSet,
-                nullptr,
+                {},
                 kSourceSetAttributeData,
-                kSourceSetName,
-                pdfium::MakeUnique<CJX_SourceSet>(this)) {}
+                pdfium::MakeUnique<CJX_Model>(this)) {}
 
-CXFA_SourceSet::~CXFA_SourceSet() {}
+CXFA_SourceSet::~CXFA_SourceSet() = default;

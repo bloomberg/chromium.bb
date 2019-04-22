@@ -17,7 +17,7 @@
 
 #include "api/array_view.h"
 #include "modules/audio_processing/test/test_utils.h"
-#include "rtc_base/atomicops.h"
+#include "rtc_base/atomic_ops.h"
 #include "rtc_base/event.h"
 #include "rtc_base/numerics/safe_conversions.h"
 #include "rtc_base/platform_thread.h"
@@ -450,10 +450,10 @@ class CallSimulator : public ::testing::TestWithParam<SimulationConfig> {
                 apm->gain_control()->set_mode(GainControl::kAdaptiveDigital));
       ASSERT_EQ(apm->kNoError, apm->gain_control()->Enable(true));
       ASSERT_EQ(apm->kNoError, apm->noise_suppression()->Enable(true));
-      ASSERT_EQ(apm->kNoError, apm->voice_detection()->Enable(true));
       AudioProcessing::Config apm_config = apm->GetConfig();
       apm_config.echo_canceller.enabled = true;
       apm_config.echo_canceller.mobile_mode = false;
+      apm_config.voice_detection.enabled = true;
       apm->ApplyConfig(apm_config);
     };
 
@@ -465,10 +465,10 @@ class CallSimulator : public ::testing::TestWithParam<SimulationConfig> {
                 apm->gain_control()->set_mode(GainControl::kAdaptiveDigital));
       ASSERT_EQ(apm->kNoError, apm->gain_control()->Enable(true));
       ASSERT_EQ(apm->kNoError, apm->noise_suppression()->Enable(true));
-      ASSERT_EQ(apm->kNoError, apm->voice_detection()->Enable(true));
       AudioProcessing::Config apm_config = apm->GetConfig();
       apm_config.echo_canceller.enabled = true;
       apm_config.echo_canceller.mobile_mode = true;
+      apm_config.voice_detection.enabled = true;
       apm->ApplyConfig(apm_config);
     };
 
@@ -481,9 +481,9 @@ class CallSimulator : public ::testing::TestWithParam<SimulationConfig> {
                 apm->gain_control()->set_mode(GainControl::kAdaptiveDigital));
       ASSERT_EQ(apm->kNoError, apm->gain_control()->Enable(false));
       ASSERT_EQ(apm->kNoError, apm->noise_suppression()->Enable(false));
-      ASSERT_EQ(apm->kNoError, apm->voice_detection()->Enable(false));
       AudioProcessing::Config apm_config = apm->GetConfig();
       apm_config.echo_canceller.enabled = false;
+      apm_config.voice_detection.enabled = false;
       apm->ApplyConfig(apm_config);
     };
 
@@ -621,7 +621,7 @@ TEST_P(CallSimulator, DISABLED_ApiCallDurationTest) {
   EXPECT_TRUE(Run());
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AudioProcessingPerformanceTest,
     CallSimulator,
     ::testing::ValuesIn(SimulationConfig::GenerateSimulationConfigs()));

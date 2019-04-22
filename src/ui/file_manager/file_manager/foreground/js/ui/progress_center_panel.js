@@ -9,36 +9,36 @@
  * @extends {HTMLDivElement}
  */
 function ProgressCenterItemElement(document) {
-  var label = document.createElement('label');
+  const label = document.createElement('label');
   label.className = 'label';
 
-  var progressBarIndicator = document.createElement('div');
+  const progressBarIndicator = document.createElement('div');
   progressBarIndicator.className = 'progress-track';
 
-  var progressBar = document.createElement('div');
+  const progressBar = document.createElement('div');
   progressBar.className = 'progress-bar';
   progressBar.appendChild(progressBarIndicator);
 
-  var progressFrame = document.createElement('div');
+  const progressFrame = document.createElement('div');
   progressFrame.className = 'progress-frame';
   progressFrame.appendChild(label);
   progressFrame.appendChild(progressBar);
 
-  var cancelButton = document.createElement('button');
+  const cancelButton = document.createElement('button');
   cancelButton.className = 'cancel';
   cancelButton.setAttribute('tabindex', '-1');
 
   // Dismiss button is shown for error item.
-  var dismissButton = document.createElement('button');
+  const dismissButton = document.createElement('button');
   dismissButton.classList.add('dismiss');
   dismissButton.setAttribute('tabindex', '-1');
 
-  var buttonFrame = document.createElement('div');
+  const buttonFrame = document.createElement('div');
   buttonFrame.className = 'button-frame';
   buttonFrame.appendChild(cancelButton);
   buttonFrame.appendChild(dismissButton);
 
-  var itemElement = document.createElement('li');
+  const itemElement = document.createElement('li');
   itemElement.appendChild(progressFrame);
   itemElement.appendChild(buttonFrame);
 
@@ -48,18 +48,18 @@ function ProgressCenterItemElement(document) {
 /**
  * Ensures the animation triggers.
  *
- * @param {function()} callback Function to set the transition end properties.
+ * @param {function(?)} callback Function to set the transition end properties.
  * @return {function()} Function to cancel the request.
  * @private
  */
-ProgressCenterItemElement.safelySetAnimation_ = function(callback) {
-  var requestId = window.requestAnimationFrame(function() {
+ProgressCenterItemElement.safelySetAnimation_ = callback => {
+  let requestId = window.requestAnimationFrame(() => {
     // The transition start properties currently set are rendered at this frame.
     // And the transition end properties set by the callback is rendered at the
     // next frame.
     requestId = window.requestAnimationFrame(callback);
   });
-  return function() {
+  return () => {
     window.cancelAnimationFrame(requestId);
   };
 };
@@ -76,13 +76,13 @@ ProgressCenterItemElement.PROGRESS_ANIMATION_END_EVENT = 'progressAnimationEnd';
  * @param {Element} element Item to be decorated.
  * @return {ProgressCenterItemElement} Decorated item.
  */
-ProgressCenterItemElement.decorate = function(element) {
+ProgressCenterItemElement.decorate = element => {
   element.__proto__ = ProgressCenterItemElement.prototype;
   element = /** @type {ProgressCenterItemElement} */ (element);
   element.state_ = ProgressItemState.PROGRESSING;
   element.track_ = element.querySelector('.progress-track');
-  element.track_.addEventListener('transitionend',
-                                  element.onTransitionEnd_.bind(element));
+  element.track_.addEventListener(
+      'transitionend', element.onTransitionEnd_.bind(element));
   element.cancelTransition_ = null;
   return element;
 };
@@ -124,17 +124,20 @@ ProgressCenterItemElement.prototype.update = function(item, animated) {
   }
 
   // Set track width.
-  var setWidth = function(nextWidthFrame) {
-    var currentWidthRate = parseInt(this.track_.style.width, 10);
-    // Prevent assigning the same width to avoid stopping the animation.
-    // animated == false may be intended to cancel the animation, so in that
-    // case, the assignment should be done.
-    if (currentWidthRate === nextWidthFrame && animated)
-      return;
-    this.track_.hidden = false;
-    this.track_.style.width = nextWidthFrame + '%';
-    this.track_.classList.toggle('animated', animated);
-  }.bind(this, item.progressRateInPercent);
+  const setWidth = ((nextWidthFrame) => {
+                     const currentWidthRate =
+                         parseInt(this.track_.style.width, 10);
+                     // Prevent assigning the same width to avoid stopping the
+                     // animation. animated == false may be intended to cancel
+                     // the animation, so in that case, the assignment should be
+                     // done.
+                     if (currentWidthRate === nextWidthFrame && animated) {
+                       return;
+                     }
+                     this.track_.hidden = false;
+                     this.track_.style.width = nextWidthFrame + '%';
+                     this.track_.classList.toggle('animated', animated);
+                   }).bind(null, item.progressRateInPercent);
 
   if (animated) {
     this.cancelTransition_ =
@@ -161,12 +164,12 @@ ProgressCenterItemElement.prototype.reset = function() {
  * @private
  */
 ProgressCenterItemElement.prototype.onTransitionEnd_ = function(event) {
-  if (event.propertyName !== 'width')
+  if (event.propertyName !== 'width') {
     return;
+  }
   this.track_.classList.remove('animated');
   this.dispatchEvent(new Event(
-      ProgressCenterItemElement.PROGRESS_ANIMATION_END_EVENT,
-      {bubbles: true}));
+      ProgressCenterItemElement.PROGRESS_ANIMATION_END_EVENT, {bubbles: true}));
 };
 
 /**
@@ -206,8 +209,8 @@ function ProgressCenterPanel(element) {
    * @type {CSSKeyframesRule}
    * @private
    */
-  this.toggleAnimation_ = ProgressCenterPanel.getToggleAnimation_(
-      element.ownerDocument);
+  this.toggleAnimation_ =
+      ProgressCenterPanel.getToggleAnimation_(element.ownerDocument);
 
   /**
    * Item group for normal priority items.
@@ -228,20 +231,15 @@ function ProgressCenterPanel(element) {
    * @type {Object<string>}
    * @private
    */
-  this.itemQuery_ = Object.preventExtensions({
-    normal: 'li:not(.quiet)',
-    quiet: 'li.quiet'
-  });
+  this.itemQuery_ =
+      Object.preventExtensions({normal: 'li:not(.quiet)', quiet: 'li.quiet'});
 
   /**
    * Timeout IDs of the inactive state of each group.
    * @type {Object<?number>}
    * @private
    */
-  this.timeoutId_ = Object.preventExtensions({
-    normal: null,
-    quiet: null
-  });
+  this.timeoutId_ = Object.preventExtensions({normal: null, quiet: null});
 
   /**
    * Callback to be called with the ID of the progress item when the cancel
@@ -272,13 +270,13 @@ function ProgressCenterPanel(element) {
  * @return {CSSKeyframesRule} Animation rule.
  * @private
  */
-ProgressCenterPanel.getToggleAnimation_ = function(document) {
-  for (var i = 0; i < document.styleSheets.length; i++) {
-    var styleSheet = document.styleSheets[i];
-    for (var j = 0; j < styleSheet.cssRules.length; j++) {
+ProgressCenterPanel.getToggleAnimation_ = document => {
+  for (let i = 0; i < document.styleSheets.length; i++) {
+    const styleSheet = document.styleSheets[i];
+    for (let j = 0; j < styleSheet.cssRules.length; j++) {
       // HACK: closure does not define experimental CSSRules.
-      var keyFramesRule = CSSRule.KEYFRAMES_RULE || 7;
-      var rule = styleSheet.cssRules[j];
+      const keyFramesRule = CSSRule.KEYFRAMES_RULE || 7;
+      const rule = styleSheet.cssRules[j];
       if (rule.type === keyFramesRule &&
           rule.name === 'progress-center-toggle') {
         return rule;
@@ -303,14 +301,14 @@ ProgressCenterPanel.prototype = /** @struct */ {
  * @param {!ProgressCenterItem} item Item including new contents.
  */
 ProgressCenterPanel.prototype.updateItem = function(item) {
-  var targetGroup = this.getGroupForItem_(item);
+  const targetGroup = this.getGroupForItem_(item);
 
   // Update the item.
   targetGroup.update(item);
 
   // Update an open view item.
-  var newItem = targetGroup.getItem(item.id);
-  var itemElement = this.getItemElement_(item.id);
+  const newItem = targetGroup.getItem(item.id);
+  let itemElement = this.getItemElement_(item.id);
   if (newItem) {
     if (!itemElement) {
       itemElement = new ProgressCenterItemElement(this.element_.ownerDocument);
@@ -320,8 +318,9 @@ ProgressCenterPanel.prototype.updateItem = function(item) {
     }
     itemElement.update(newItem, targetGroup.isAnimated(item.id));
   } else {
-    if (itemElement)
+    if (itemElement) {
       itemElement.parentNode.removeChild(itemElement);
+    }
   }
 
   // Update the close view.
@@ -334,17 +333,19 @@ ProgressCenterPanel.prototype.updateItem = function(item) {
  * @private
  */
 ProgressCenterPanel.prototype.onItemAnimationEnd_ = function(event) {
-  var targetGroup = event.target.classList.contains('quiet') ?
-      this.quietItemGroup_ : this.normalItemGroup_;
+  const targetGroup = event.target.classList.contains('quiet') ?
+      this.quietItemGroup_ :
+      this.normalItemGroup_;
   if (event.target === this.closeView_) {
     targetGroup.completeSummarizedItemAnimation();
   } else {
-    var itemId = event.target.getAttribute('data-progress-id');
+    const itemId = event.target.getAttribute('data-progress-id');
     targetGroup.completeItemAnimation(itemId);
-    var newItem = targetGroup.getItem(itemId);
-    var itemElement = this.getItemElement_(itemId);
-    if (!newItem && itemElement)
+    const newItem = targetGroup.getItem(itemId);
+    const itemElement = this.getItemElement_(itemId);
+    if (!newItem && itemElement) {
       itemElement.parentNode.removeChild(itemElement);
+    }
   }
   this.updateCloseView_();
 };
@@ -357,9 +358,10 @@ ProgressCenterPanel.prototype.dismissErrorItem = function(id) {
   this.normalItemGroup_.dismissErrorItem(id);
   this.quietItemGroup_.dismissErrorItem(id);
 
-  var element = this.getItemElement_(id);
-  if (element)
+  const element = this.getItemElement_(id);
+  if (element) {
     this.openView_.removeChild(element);
+  }
   this.updateCloseView_();
 };
 
@@ -369,7 +371,7 @@ ProgressCenterPanel.prototype.dismissErrorItem = function(id) {
  */
 ProgressCenterPanel.prototype.updateCloseView_ = function() {
   // Try to use the normal summarized item.
-  var normalSummarizedItem =
+  const normalSummarizedItem =
       this.normalItemGroup_.getSummarizedItem(this.quietItemGroup_.numErrors);
   if (normalSummarizedItem) {
     // If the quiet animation is overridden by normal summarized item, discard
@@ -379,24 +381,24 @@ ProgressCenterPanel.prototype.updateCloseView_ = function() {
     }
 
     // Update the view state.
-    this.closeView_.update(normalSummarizedItem,
-                           this.normalItemGroup_.isSummarizedAnimated());
+    this.closeView_.update(
+        normalSummarizedItem, this.normalItemGroup_.isSummarizedAnimated());
     this.element_.hidden = false;
     return;
   }
 
   // Try to use the quiet summarized item.
-  var quietSummarizedItem =
+  const quietSummarizedItem =
       this.quietItemGroup_.getSummarizedItem(this.normalItemGroup_.numErrors);
   if (quietSummarizedItem) {
-    this.closeView_.update(quietSummarizedItem,
-                           this.quietItemGroup_.isSummarizedAnimated());
+    this.closeView_.update(
+        quietSummarizedItem, this.quietItemGroup_.isSummarizedAnimated());
     this.element_.hidden = false;
     return;
   }
 
   // Try to use the error summarized item.
-  var errorSummarizedItem = ProgressCenterItemGroup.getSummarizedErrorItem(
+  const errorSummarizedItem = ProgressCenterItemGroup.getSummarizedErrorItem(
       this.normalItemGroup_, this.quietItemGroup_);
   if (errorSummarizedItem) {
     this.closeView_.update(errorSummarizedItem, false);
@@ -417,7 +419,7 @@ ProgressCenterPanel.prototype.updateCloseView_ = function() {
  * @private
  */
 ProgressCenterPanel.prototype.getItemElement_ = function(id) {
-  var query = 'li[data-progress-id="' + id + '"]';
+  const query = 'li[data-progress-id="' + id + '"]';
   return /** @type {ProgressCenterItemElement} */ (
       this.openView_.querySelector(query));
 };
@@ -456,12 +458,13 @@ ProgressCenterPanel.prototype.onClick_ = function(event) {
   if (event.target.classList.contains('open') ||
       event.target.classList.contains('close')) {
     // If the progress center has already animated, just return.
-    if (this.element_.classList.contains('animated'))
+    if (this.element_.classList.contains('animated')) {
       return;
+    }
 
     // Obtains current and target height.
-    var currentHeight;
-    var targetHeight;
+    let currentHeight;
+    let targetHeight;
     if (this.element_.classList.contains('opened')) {
       currentHeight = this.openView_.getBoundingClientRect().height;
       targetHeight = this.closeView_.getBoundingClientRect().height;
@@ -481,16 +484,16 @@ ProgressCenterPanel.prototype.onClick_ = function(event) {
   if (event.target.classList.contains('dismiss')) {
     // To dismiss the error item in all windows, we send this to progress center
     // in background page.
-    var itemElement = event.target.parentNode.parentNode;
-    var id = itemElement.getAttribute('data-progress-id');
+    const itemElement = event.target.parentNode.parentNode;
+    const id = itemElement.getAttribute('data-progress-id');
     this.dismissErrorItemCallback(id);
   }
 
   // Cancel button.
   if (event.target.classList.contains('cancel')) {
-    var itemElement = event.target.parentNode.parentNode;
+    const itemElement = event.target.parentNode.parentNode;
     if (this.cancelCallback) {
-      var id = itemElement.getAttribute('data-progress-id');
+      const id = itemElement.getAttribute('data-progress-id');
       this.cancelCallback(id);
     }
   }

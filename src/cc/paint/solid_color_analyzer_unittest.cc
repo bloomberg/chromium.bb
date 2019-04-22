@@ -6,6 +6,8 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
+#include "base/stl_util.h"
+#include "build/build_config.h"
 #include "cc/paint/display_item_list.h"
 #include "cc/paint/paint_filter.h"
 #include "cc/paint/record_paint_canvas.h"
@@ -41,17 +43,17 @@ class SolidColorAnalyzerTest : public testing::Test {
   }
   RecordPaintCanvas* canvas() { return &*canvas_; }
 
-  bool IsSolidColor() {
+  bool IsSolidColor(int max_ops_to_analyze = 1) {
     Finalize();
-    auto color = SolidColorAnalyzer::DetermineIfSolidColor(buffer_.get(), rect_,
-                                                           1, nullptr);
+    auto color = SolidColorAnalyzer::DetermineIfSolidColor(
+        buffer_.get(), rect_, max_ops_to_analyze, nullptr);
     return !!color;
   }
 
-  SkColor GetColor() {
+  SkColor GetColor(int max_ops_to_analyze = 1) {
     Finalize();
-    auto color = SolidColorAnalyzer::DetermineIfSolidColor(buffer_.get(), rect_,
-                                                           1, nullptr);
+    auto color = SolidColorAnalyzer::DetermineIfSolidColor(
+        buffer_.get(), rect_, max_ops_to_analyze, nullptr);
     EXPECT_TRUE(color);
     return color ? *color : SK_ColorTRANSPARENT;
   }
@@ -95,7 +97,13 @@ TEST_F(SolidColorAnalyzerTest, ClearTranslucent) {
   Initialize();
   SkColor color = SkColorSetARGB(128, 11, 22, 33);
   canvas()->clear(color);
+#if defined(OS_MACOSX)
+  // TODO(andrescj): remove the special treatment of OS_MACOSX once
+  // https://crbug.com/922899 is fixed.
   EXPECT_FALSE(IsSolidColor());
+#else
+  EXPECT_EQ(color, GetColor());
+#endif  // OS_MACOSX
 }
 
 TEST_F(SolidColorAnalyzerTest, DrawColor) {
@@ -280,6 +288,71 @@ TEST_F(SolidColorAnalyzerTest, DrawRectClipPath) {
   EXPECT_FALSE(IsSolidColor());
 }
 
+TEST_F(SolidColorAnalyzerTest, DrawRectTranslucent) {
+  Initialize();
+  PaintFlags flags;
+  SkColor color = SkColorSetARGB(128, 128, 0, 0);
+  flags.setColor(color);
+  SkRect rect = SkRect::MakeWH(100, 100);
+  canvas()->drawRect(rect, flags);
+#if defined(OS_MACOSX)
+  // TODO(andrescj): remove the special treatment of OS_MACOSX once
+  // https://crbug.com/922899 is fixed.
+  EXPECT_FALSE(IsSolidColor());
+#else
+  EXPECT_EQ(color, GetColor());
+#endif  // OS_MACOSX
+}
+
+TEST_F(SolidColorAnalyzerTest, DrawRectTranslucentOverNonSolid) {
+  Initialize();
+  PaintFlags flags;
+  SkColor color = SkColorSetARGB(255, 128, 0, 0);
+  flags.setColor(color);
+  SkRect rect = SkRect::MakeWH(100, 50);
+  canvas()->drawRect(rect, flags);
+  color = SkColorSetARGB(128, 0, 128, 0);
+  flags.setColor(color);
+  rect = SkRect::MakeWH(100, 100);
+  canvas()->drawRect(rect, flags);
+  EXPECT_FALSE(IsSolidColor(2 /* max_ops_to_analyze */));
+}
+
+TEST_F(SolidColorAnalyzerTest, DrawRectOpaqueOccludesNonSolid) {
+  Initialize();
+  PaintFlags flags;
+  SkColor color = SkColorSetARGB(255, 128, 0, 0);
+  flags.setColor(color);
+  SkRect rect = SkRect::MakeWH(100, 50);
+  canvas()->drawRect(rect, flags);
+  color = SkColorSetARGB(255, 0, 128, 0);
+  flags.setColor(color);
+  rect = SkRect::MakeWH(100, 100);
+  canvas()->drawRect(rect, flags);
+  EXPECT_EQ(color, GetColor(2 /* max_ops_to_analyze */));
+}
+
+TEST_F(SolidColorAnalyzerTest, DrawRectSolidWithSrcOverBlending) {
+  Initialize();
+  PaintFlags flags;
+  SkColor color = SkColorSetARGB(64, 40, 50, 60);
+  flags.setColor(color);
+  SkRect rect = SkRect::MakeWH(100, 100);
+  canvas()->drawRect(rect, flags);
+  color = SkColorSetARGB(128, 10, 20, 30);
+  flags.setColor(color);
+  rect = SkRect::MakeWH(100, 100);
+  canvas()->drawRect(rect, flags);
+#if defined(OS_MACOSX)
+  // TODO(andrescj): remove the special treatment of OS_MACOSX once
+  // https://crbug.com/922899 is fixed.
+  EXPECT_FALSE(IsSolidColor());
+#else
+  EXPECT_EQ(SkColorSetARGB(159, 15, 25, 35),
+            GetColor(2 /* max_ops_to_analyze */));
+#endif  // OS_MACOSX
+}
+
 TEST_F(SolidColorAnalyzerTest, SaveLayer) {
   Initialize();
   PaintFlags flags;
@@ -351,7 +424,7 @@ TEST_F(SolidColorAnalyzerTest, ClipRRectCoversCanvas) {
 
   for (int case_scale = 0; case_scale < 2; ++case_scale) {
     bool scaled = case_scale > 0;
-    for (size_t i = 0; i < arraysize(cases); ++i) {
+    for (size_t i = 0; i < base::size(cases); ++i) {
       Reset();
       Initialize(canvas_rect);
 

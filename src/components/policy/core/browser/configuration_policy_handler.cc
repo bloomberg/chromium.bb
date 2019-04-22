@@ -178,9 +178,8 @@ bool IntRangePolicyHandlerBase::EnsureInRange(const base::Value* input,
 
   if (value < min_ || value > max_) {
     if (errors) {
-      errors->AddError(policy_name(),
-                       IDS_POLICY_OUT_OF_RANGE_ERROR,
-                       base::IntToString(value));
+      errors->AddError(policy_name(), IDS_POLICY_OUT_OF_RANGE_ERROR,
+                       base::NumberToString(value));
     }
 
     if (!clamp_)
@@ -228,8 +227,8 @@ void StringMappingListPolicyHandler::ApplyPolicySettings(
   if (!pref_path_)
     return;
   const base::Value* value = policies.GetValue(policy_name());
-  std::unique_ptr<base::ListValue> list(new base::ListValue());
-  if (value && Convert(value, list.get(), nullptr))
+  base::ListValue list;
+  if (value && Convert(value, &list, nullptr))
     prefs->SetValue(pref_path_, std::move(list));
 }
 
@@ -350,7 +349,7 @@ void SimplePolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
     return;
   const base::Value* value = policies.GetValue(policy_name());
   if (value)
-    prefs->SetValue(pref_path_, value->CreateDeepCopy());
+    prefs->SetValue(pref_path_, value->Clone());
 }
 
 
@@ -456,7 +455,7 @@ void SimpleSchemaValidatingPolicyHandler::ApplyPolicySettings(
     return;
   const base::Value* value = policies.GetValue(policy_name());
   if (value)
-    prefs->SetValue(pref_path_, value->CreateDeepCopy());
+    prefs->SetValue(pref_path_, value->Clone());
 }
 
 // SimpleJsonStringSchemaValidatingPolicyHandler implementation ----------------
@@ -572,7 +571,7 @@ bool SimpleJsonStringSchemaValidatingPolicyHandler::ValidateJsonString(
     int index) {
   std::string parse_error;
   std::unique_ptr<base::Value> parsed_value =
-      base::JSONReader::ReadAndReturnError(
+      base::JSONReader::ReadAndReturnErrorDeprecated(
           json_string, base::JSON_ALLOW_TRAILING_COMMAS, nullptr, &parse_error);
   if (errors && !parse_error.empty()) {
     errors->AddError(policy_name_, ErrorPath(index, ""),
@@ -614,7 +613,7 @@ void SimpleJsonStringSchemaValidatingPolicyHandler::ApplyPolicySettings(
     return;
   const base::Value* value = policies.GetValue(policy_name_);
   if (value)
-    prefs->SetValue(pref_path_, value->CreateDeepCopy());
+    prefs->SetValue(pref_path_, value->Clone());
 }
 
 void SimpleJsonStringSchemaValidatingPolicyHandler::RecordJsonError() {

@@ -116,6 +116,22 @@ class ChromiumExportableCommitsTest(unittest.TestCase):
         old_revert = MockChromiumCommit(MockHost(), body='Revert of Message\n> NOEXPORT=true')
         self.assertEqual(get_commit_export_state(old_revert, MockLocalWPT(), github), (CommitExportState.IGNORED, ''))
 
+    def test_commit_with_noexport_is_not_exportable_mixed_casing(self):
+        # Patch is not tested if the commit is ignored based on the message, hence empty MockLocalWPT.
+        # Make sure that the casing of the "No export" message isn't considered.
+
+        commit = MockChromiumCommit(MockHost(), body='Message\nno-EXPORT: true')
+        github = MockWPTGitHub(pull_requests=[])
+        self.assertEqual(get_commit_export_state(commit, MockLocalWPT(), github), (CommitExportState.IGNORED, ''))
+
+        commit = MockChromiumCommit(MockHost(), body='Message\nnoexport=TRUE')
+        github = MockWPTGitHub(pull_requests=[])
+        self.assertEqual(get_commit_export_state(commit, MockLocalWPT(), github), (CommitExportState.IGNORED, ''))
+
+        commit = MockChromiumCommit(MockHost(), body='Message\nNO-exPORT: trUE')
+        github = MockWPTGitHub(pull_requests=[])
+        self.assertEqual(get_commit_export_state(commit, MockLocalWPT(), github), (CommitExportState.IGNORED, ''))
+
     # "Import" in commit message doesn't by itself make a commit exportable,
     # see https://crbug.com/879128.
     def test_commit_that_starts_with_import_is_exportable(self):

@@ -28,7 +28,7 @@ if(WIN32)
     if(MSVC AND NOT MSVC_VERSION LESS 1900)
         # Enable control flow guard
         message(STATUS "Building loader with control flow guard")
-        add_compile_options("/guard:cf")
+        set(MSVC_LOADER_COMPILE_OPTIONS ${MSVC_LOADER_COMPILE_OPTIONS} /guard:cf)
         set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /guard:cf")
         set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /guard:cf")
     endif()
@@ -48,11 +48,6 @@ elseif(UNIX AND NOT APPLE) # i.e.: Linux
     if(BUILD_WSI_WAYLAND_SUPPORT)
         add_definitions(-DVK_USE_PLATFORM_WAYLAND_KHR)
     endif()
-
-    if(BUILD_WSI_MIR_SUPPORT)
-        add_definitions(-DVK_USE_PLATFORM_MIR_KHR)
-        include_directories(${MIR_INCLUDE_DIR})
-    endif()
 else()
     message(FATAL_ERROR "Unsupported Platform!")
 endif()
@@ -60,81 +55,6 @@ endif()
 # DEBUG enables runtime loader ICD verification
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DDEBUG")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
-
-set(NORMAL_LOADER_SRCS
-    extension_manual.c
-    loader.c
-    loader.h
-    vk_loader_platform.h
-    vk_loader_layer.h
-    trampoline.c
-    wsi.c
-    wsi.h
-    debug_utils.c
-    debug_utils.h
-    gpa_helper.h
-    cJSON.c
-    cJSON.h
-    murmurhash.c
-    murmurhash.h)
-
-set(OPT_LOADER_SRCS dev_ext_trampoline.c phys_dev_ext.c)
-
-# Check for assembler support
-set(ASM_FAILURE_MSG "The build will fall back on building with C code\n")
-set(ASM_FAILURE_MSG "${ASM_FAILURE_MSG}Note that this may be unsafe, as the C code requires tail-call optimizations to remove")
-set(ASM_FAILURE_MSG "${ASM_FAILURE_MSG} the stack frame for certain calls. If the compiler does not do this, then unknown device")
-set(ASM_FAILURE_MSG "${ASM_FAILURE_MSG} extensions will suffer from a corrupted stack.")
-if(WIN32)
-    enable_language(ASM_MASM)
-    if(CMAKE_ASM_MASM_COMPILER_WORKS)
-        if(NOT CMAKE_CL_64)
-            set(CMAKE_ASM_MASM_FLAGS ${CMAKE_ASM_MASM_FLAGS} /safeseh)
-        endif()
-        set(OPT_LOADER_SRCS ${OPT_LOADER_SRCS} unknown_ext_chain_masm.asm)
-
-        add_executable(asm_offset asm_offset.c)
-        add_dependencies(asm_offset generate_helper_files loader_gen_files)
-        add_custom_command(OUTPUT gen_defines.asm DEPENDS asm_offset COMMAND asm_offset MASM)
-        add_custom_target(loader_asm_gen_files DEPENDS gen_defines.asm)
-        set_target_properties(loader_asm_gen_files PROPERTIES FOLDER ${LOADER_HELPER_FOLDER})
-    else()
-        message(WARNING "Could not find working MASM assebler\n${ASM_FAILURE_MSG}")
-        set(OPT_LOADER_SRCS ${OPT_LOADER_SRCS} unknown_ext_chain.c)
-        add_custom_target(loader_asm_gen_files)
-    endif()
-elseif(APPLE)
-    # For MacOS, use the C code and force the compiler's tail-call optimization instead of using assembly code.
-    set(OPT_LOADER_SRCS ${OPT_LOADER_SRCS} unknown_ext_chain.c)
-    set_source_files_properties(${OPT_LOADER_SRCS} PROPERTIES COMPILE_FLAGS -O)
-    add_custom_target(loader_asm_gen_files) # This causes no assembly files to be generated.
-else(UNIX AND NOT APPLE) # i.e.: Linux
-    enable_language(ASM-ATT)
-    set(CMAKE_ASM-ATT_COMPILE_FLAGS "${CMAKE_ASM-ATT_COMPILE_FLAGS} $ENV{ASFLAGS}")
-    set(CMAKE_ASM-ATT_COMPILE_FLAGS "${CMAKE_ASM-ATT_COMPILE_FLAGS} -I\"${CMAKE_CURRENT_BINARY_DIR}\"")
-
-    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/asm_test.asm
-               ".intel_syntax noprefix\n.text\n.global sample\nsample:\nmov ecx, [eax + 16]\n")
-    try_compile(ASSEMBLER_WORKS ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_BINARY_DIR}/asm_test.asm)
-    file(REMOVE ${CMAKE_CURRENT_BINARY_DIR}/asm_test.asm)
-    if(ASSEMBLER_WORKS)
-        set(CMAKE_ASM-ATT_FLAGS "$ENV{ASFLAGS} -I\"${CMAKE_CURRENT_BINARY_DIR}\"")
-        set(OPT_LOADER_SRCS ${OPT_LOADER_SRCS} unknown_ext_chain_gas.asm)
-        add_executable(asm_offset asm_offset.c)
-        add_dependencies(asm_offset generate_helper_files loader_gen_files)
-        add_custom_command(OUTPUT gen_defines.asm DEPENDS asm_offset COMMAND asm_offset GAS)
-        add_custom_target(loader_asm_gen_files DEPENDS gen_defines.asm)
-    else()
-        message(WARNING "Could not find working x86 GAS assembler\n${ASM_FAILURE_MSG}")
-        set(OPT_LOADER_SRCS ${OPT_LOADER_SRCS} unknown_ext_chain.c)
-        add_custom_target(loader_asm_gen_files)
-    endif()
-endif()
-
-GenerateFromVkXml(vk_loader_extensions.h loader_extension_generator.py)
-GenerateFromVkXml(vk_loader_extensions.c loader_extension_generator.py)
-add_custom_target(loader_gen_files DEPENDS vk_loader_extensions.h vk_loader_extensions.c)
-set_target_properties(loader_gen_files PROPERTIES FOLDER ${LOADER_HELPER_FOLDER})
 
 if(WIN32)
     # Use static MSVCRT libraries
@@ -173,14 +93,106 @@ if(WIN32)
     separate_arguments(LOCAL_C_FLAGS_DBG WINDOWS_COMMAND ${CMAKE_C_FLAGS_DEBUG})
     set(CMAKE_C_FLAGS_DEBUG " ")
     separate_arguments(LOCAL_C_FLAGS_REL WINDOWS_COMMAND ${CMAKE_C_FLAGS_RELEASE})
+endif()
 
+set(NORMAL_LOADER_SRCS
+    extension_manual.c
+    loader.c
+    loader.h
+    vk_loader_platform.h
+    vk_loader_layer.h
+    trampoline.c
+    wsi.c
+    wsi.h
+    debug_utils.c
+    debug_utils.h
+    gpa_helper.h
+    cJSON.c
+    cJSON.h
+    murmurhash.c
+    murmurhash.h)
+
+set(OPT_LOADER_SRCS dev_ext_trampoline.c phys_dev_ext.c)
+
+# Check for assembler support
+set(ASM_FAILURE_MSG "The build will fall back on building with C code\n")
+set(ASM_FAILURE_MSG "${ASM_FAILURE_MSG}Note that this may be unsafe, as the C code requires tail-call optimizations to remove")
+set(ASM_FAILURE_MSG "${ASM_FAILURE_MSG} the stack frame for certain calls. If the compiler does not do this, then unknown device")
+set(ASM_FAILURE_MSG "${ASM_FAILURE_MSG} extensions will suffer from a corrupted stack.")
+if(WIN32)
+    enable_language(ASM_MASM)
+    if(CMAKE_ASM_MASM_COMPILER_WORKS)
+        if(NOT CMAKE_CL_64)
+            set(CMAKE_ASM_MASM_FLAGS ${CMAKE_ASM_MASM_FLAGS} /safeseh)
+        endif()
+
+        add_executable(asm_offset asm_offset.c)
+        add_dependencies(asm_offset generate_helper_files loader_gen_files)
+        target_link_libraries(asm_offset Vulkan::Headers)
+        add_custom_command(OUTPUT gen_defines.asm DEPENDS asm_offset COMMAND asm_offset MASM)
+        add_custom_target(loader_asm_gen_files DEPENDS gen_defines.asm)
+        set_target_properties(loader_asm_gen_files PROPERTIES FOLDER ${LOADER_HELPER_FOLDER})
+        add_library(loader-unknown-chain OBJECT unknown_ext_chain_masm.asm)
+        add_dependencies(loader-unknown-chain loader_asm_gen_files)
+    else()
+        message(WARNING "Could not find working MASM assebler\n${ASM_FAILURE_MSG}")
+        add_custom_target(loader_asm_gen_files)
+        add_library(loader-unknown-chain OBJECT unknown_ext_chain.c)
+        add_dependencies(loader-unknown-chain generate_helper_files loader_gen_files)
+        target_compile_options(loader-unknown-chain PUBLIC "$<$<CONFIG:DEBUG>:${LOCAL_C_FLAGS_REL}>")
+        target_compile_options(loader-unknown-chain PUBLIC ${MSVC_LOADER_COMPILE_OPTIONS})
+    endif()
+elseif(APPLE)
+    # For MacOS, use the C code and force the compiler's tail-call optimization instead of using assembly code.
+    set(OPT_LOADER_SRCS ${OPT_LOADER_SRCS} unknown_ext_chain.c)
+    set_source_files_properties(${OPT_LOADER_SRCS} PROPERTIES COMPILE_FLAGS -O)
+    add_custom_target(loader_asm_gen_files) # This causes no assembly files to be generated.
+else(UNIX AND NOT APPLE) # i.e.: Linux
+    enable_language(ASM-ATT)
+    set(CMAKE_ASM-ATT_COMPILE_FLAGS "${CMAKE_ASM-ATT_COMPILE_FLAGS} $ENV{ASFLAGS}")
+    set(CMAKE_ASM-ATT_COMPILE_FLAGS "${CMAKE_ASM-ATT_COMPILE_FLAGS} -I\"${CMAKE_CURRENT_BINARY_DIR}\"")
+
+    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/asm_test.asm
+               ".intel_syntax noprefix\n.text\n.global sample\nsample:\nmov ecx, [eax + 16]\n")
+    # try_compile uses the C/C++ linker flags even for ASM,
+    # while they're not valid for ASM and making linking fail.
+    set(TMP_EXE_LINKER_FLAGS ${CMAKE_EXE_LINKER_FLAGS})
+    set(CMAKE_EXE_LINKER_FLAGS "")
+    try_compile(ASSEMBLER_WORKS ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_BINARY_DIR}/asm_test.asm)
+    set(CMAKE_EXE_LINKER_FLAGS ${TMP_EXE_LINKER_FLAGS})
+    file(REMOVE ${CMAKE_CURRENT_BINARY_DIR}/asm_test.asm)
+    if(ASSEMBLER_WORKS)
+        set(CMAKE_ASM-ATT_FLAGS "$ENV{ASFLAGS} -I\"${CMAKE_CURRENT_BINARY_DIR}\"")
+        set(OPT_LOADER_SRCS ${OPT_LOADER_SRCS} unknown_ext_chain_gas.asm)
+        add_executable(asm_offset asm_offset.c)
+        add_dependencies(asm_offset generate_helper_files loader_gen_files)
+        target_link_libraries(asm_offset Vulkan::Headers)
+        add_custom_command(OUTPUT gen_defines.asm DEPENDS asm_offset COMMAND asm_offset GAS)
+        add_custom_target(loader_asm_gen_files DEPENDS gen_defines.asm)
+    else()
+        message(WARNING "Could not find working x86 GAS assembler\n${ASM_FAILURE_MSG}")
+        set(OPT_LOADER_SRCS ${OPT_LOADER_SRCS} unknown_ext_chain.c)
+        add_custom_target(loader_asm_gen_files)
+    endif()
+endif()
+
+GenerateFromVkXml(vk_loader_extensions.h loader_extension_generator.py)
+GenerateFromVkXml(vk_loader_extensions.c loader_extension_generator.py)
+add_custom_target(loader_gen_files DEPENDS vk_loader_extensions.h vk_loader_extensions.c)
+set_target_properties(loader_gen_files PROPERTIES FOLDER ${LOADER_HELPER_FOLDER})
+
+if(WIN32)
     add_library(loader-norm OBJECT ${NORMAL_LOADER_SRCS} dirent_on_windows.c)
     add_dependencies(loader-norm generate_helper_files loader_gen_files)
     target_compile_options(loader-norm PUBLIC "$<$<CONFIG:DEBUG>:${LOCAL_C_FLAGS_DBG}>")
+    target_compile_options(loader-norm PUBLIC ${MSVC_LOADER_COMPILE_OPTIONS})
+    target_include_directories(loader-norm PRIVATE "$<TARGET_PROPERTY:Vulkan::Headers,INTERFACE_INCLUDE_DIRECTORIES>")
 
     add_library(loader-opt OBJECT ${OPT_LOADER_SRCS})
     add_dependencies(loader-opt generate_helper_files loader_gen_files loader_asm_gen_files)
     target_compile_options(loader-opt PUBLIC "$<$<CONFIG:DEBUG>:${LOCAL_C_FLAGS_REL}>")
+    target_compile_options(loader-opt PUBLIC ${MSVC_LOADER_COMPILE_OPTIONS})
+    target_include_directories(loader-opt PRIVATE "$<TARGET_PROPERTY:Vulkan::Headers,INTERFACE_INCLUDE_DIRECTORIES>")
 
     if(NOT ENABLE_STATIC_LOADER)
         target_compile_definitions(loader-norm PUBLIC LOADER_DYNAMIC_LIB)
@@ -190,6 +202,7 @@ if(WIN32)
                     SHARED
                     $<TARGET_OBJECTS:loader-opt>
                     $<TARGET_OBJECTS:loader-norm>
+                    $<TARGET_OBJECTS:loader-unknown-chain>
                     ${CMAKE_CURRENT_SOURCE_DIR}/vulkan-1.def
                     ${CMAKE_CURRENT_SOURCE_DIR}/loader.rc)
         set_target_properties(vulkan
@@ -197,8 +210,13 @@ if(WIN32)
                                          "/ignore:4098"
                                          OUTPUT_NAME
                                          vulkan-1)
+        target_link_libraries(vulkan Vulkan::Headers)
     else()
-        add_library(vulkan STATIC $<TARGET_OBJECTS:loader-opt> $<TARGET_OBJECTS:loader-norm>)
+        add_library(vulkan
+                    STATIC
+                    $<TARGET_OBJECTS:loader-opt>
+                    $<TARGET_OBJECTS:loader-norm>
+                    $<TARGET_OBJECTS:loader-unknown-chain>)
         set_target_properties(vulkan PROPERTIES OUTPUT_NAME VKstatic.1)
     endif()
 
@@ -230,6 +248,7 @@ else()
                                      VERSION
                                      "${VulkanHeaders_VERSION_MAJOR}.${VulkanHeaders_VERSION_MINOR}.${VulkanHeaders_VERSION_PATCH}")
     target_link_libraries(vulkan -ldl -lpthread -lm)
+    target_link_libraries(vulkan Vulkan::Headers)
 
     if(APPLE)
         find_library(COREFOUNDATION_LIBRARY NAMES CoreFoundation)
@@ -245,7 +264,6 @@ else()
             ${VulkanHeaders_INCLUDE_DIRS}/vulkan/vulkan_core.h
             ${VulkanHeaders_INCLUDE_DIRS}/vulkan/vulkan_ios.h
             ${VulkanHeaders_INCLUDE_DIRS}/vulkan/vulkan_macos.h
-            ${VulkanHeaders_INCLUDE_DIRS}/vulkan/vulkan_mir.h
             ${VulkanHeaders_INCLUDE_DIRS}/vulkan/vulkan_vi.h
             ${VulkanHeaders_INCLUDE_DIRS}/vulkan/vulkan_wayland.h
             ${VulkanHeaders_INCLUDE_DIRS}/vulkan/vulkan_win32.h
@@ -258,6 +276,7 @@ else()
         add_dependencies(vulkan-framework generate_helper_files loader_gen_files loader_asm_gen_files)
         target_compile_definitions(vulkan-framework PUBLIC -DLOADER_DYNAMIC_LIB)
         target_link_libraries(vulkan-framework -ldl -lpthread -lm "-framework CoreFoundation")
+        target_link_libraries(vulkan-framework Vulkan::Headers)
 
         # The FRAMEWORK_VERSION needs to be "A" here so that Xcode code-signing works when a user adds their framework to an Xcode
         # project and does "Sign on Copy". It would have been nicer to use "1" to denote Vulkan 1. Although Apple docs say that a
@@ -294,6 +313,9 @@ else()
         endif()
     endif()
 endif()
+
+target_link_libraries(vulkan Vulkan::Headers)
+add_library(Vulkan::Vulkan ALIAS vulkan)
 
 install(TARGETS vulkan
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}

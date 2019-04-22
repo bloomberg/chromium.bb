@@ -40,14 +40,10 @@ TEST_F(DataReductionProxyParamsTest, EverythingDefined) {
   std::vector<DataReductionProxyServer> expected_proxies;
 
   // Both the origin and fallback proxy must have type CORE.
-  expected_proxies.push_back(DataReductionProxyServer(
-      net::ProxyServer::FromURI("https://proxy.googlezip.net:443",
-                                net::ProxyServer::SCHEME_HTTP),
-      ProxyServer::CORE));
-  expected_proxies.push_back(DataReductionProxyServer(
-      net::ProxyServer::FromURI("compress.googlezip.net:80",
-                                net::ProxyServer::SCHEME_HTTP),
-      ProxyServer::CORE));
+  expected_proxies.push_back(DataReductionProxyServer(net::ProxyServer::FromURI(
+      "https://proxy.googlezip.net:443", net::ProxyServer::SCHEME_HTTP)));
+  expected_proxies.push_back(DataReductionProxyServer(net::ProxyServer::FromURI(
+      "compress.googlezip.net:80", net::ProxyServer::SCHEME_HTTP)));
 
   EXPECT_EQ(expected_proxies, params.proxies_for_http());
 
@@ -78,14 +74,10 @@ TEST_F(DataReductionProxyParamsTest, Flags) {
   TestDataReductionProxyParams params;
 
   std::vector<DataReductionProxyServer> expected_proxies;
-  expected_proxies.push_back(DataReductionProxyServer(
-      net::ProxyServer::FromURI("http://ovveride-1.com/",
-                                net::ProxyServer::SCHEME_HTTP),
-      ProxyServer::UNSPECIFIED_TYPE));
-  expected_proxies.push_back(DataReductionProxyServer(
-      net::ProxyServer::FromURI("http://ovveride-2.com/",
-                                net::ProxyServer::SCHEME_HTTP),
-      ProxyServer::UNSPECIFIED_TYPE));
+  expected_proxies.push_back(DataReductionProxyServer(net::ProxyServer::FromURI(
+      "http://ovveride-1.com/", net::ProxyServer::SCHEME_HTTP)));
+  expected_proxies.push_back(DataReductionProxyServer(net::ProxyServer::FromURI(
+      "http://ovveride-2.com/", net::ProxyServer::SCHEME_HTTP)));
 
   EXPECT_EQ(expected_proxies, params.proxies_for_http());
 
@@ -110,46 +102,6 @@ TEST_F(DataReductionProxyParamsTest, Flags) {
   ASSERT_TRUE(second_info);
   EXPECT_EQ(expected_proxies, second_info->proxy_servers);
   EXPECT_EQ(1U, second_info->proxy_index);
-}
-
-TEST_F(DataReductionProxyParamsTest, IsBrotliAcceptEncodingEnabled) {
-  const struct {
-    std::string test_case;
-    std::string trial_group_value;
-    bool expected;
-  } tests[] = {
-      {
-          "Nothing set", "", true,
-      },
-      {
-          "Enabled in experiment", "Enabled", true,
-      },
-      {
-          "Alternate enabled in experiment", "Enabled_Other", true,
-      },
-      {
-          "Control in experiment", "Control", true,
-      },
-      {
-          "Disabled in experiment", "Disabled", false,
-      },
-      {
-          "Disabled in experiment", "Disabled_Other", false,
-      },
-      {
-          "disabled in experiment lower case", "disabled", true,
-      },
-  };
-
-  for (const auto& test : tests) {
-    base::FieldTrialList field_trial_list(nullptr);
-    if (!test.trial_group_value.empty()) {
-      ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-          "DataReductionProxyBrotliAcceptEncoding", test.trial_group_value));
-    }
-    EXPECT_EQ(test.expected, params::IsBrotliAcceptEncodingEnabled())
-        << test.test_case;
-  }
 }
 
 TEST_F(DataReductionProxyParamsTest, AreServerExperimentsEnabled) {
@@ -471,14 +423,12 @@ TEST(DataReductionProxyParamsStandaloneTest, OverrideProxiesForHttp) {
 
   // Overriding proxies must have type UNSPECIFIED_TYPE.
   std::vector<DataReductionProxyServer> expected_override_proxies_for_http;
-  expected_override_proxies_for_http.push_back(DataReductionProxyServer(
-      net::ProxyServer::FromURI("http://override-first.net",
-                                net::ProxyServer::SCHEME_HTTP),
-      ProxyServer::UNSPECIFIED_TYPE));
-  expected_override_proxies_for_http.push_back(DataReductionProxyServer(
-      net::ProxyServer::FromURI("http://override-second.net",
-                                net::ProxyServer::SCHEME_HTTP),
-      ProxyServer::UNSPECIFIED_TYPE));
+  expected_override_proxies_for_http.push_back(
+      DataReductionProxyServer(net::ProxyServer::FromURI(
+          "http://override-first.net", net::ProxyServer::SCHEME_HTTP)));
+  expected_override_proxies_for_http.push_back(
+      DataReductionProxyServer(net::ProxyServer::FromURI(
+          "http://override-second.net", net::ProxyServer::SCHEME_HTTP)));
 
   EXPECT_EQ(expected_override_proxies_for_http, params.proxies_for_http());
 }

@@ -8,6 +8,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
@@ -64,6 +65,7 @@
 #endif
 
 #if defined(OS_WIN)
+#include "base/trace_event/trace_event_etw_export_win.h"
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/windows_version.h"
 #include "media/gpu/windows/dxva_video_decode_accelerator_win.h"
@@ -103,7 +105,7 @@ extern "C" {
 void _LSSetApplicationLaunchServicesServerConnectionStatus(
     uint64_t flags,
     bool (^connection_allowed)(CFDictionaryRef));
-};
+}
 #endif  // defined(OS_MACOSX)
 
 namespace content {
@@ -214,6 +216,8 @@ int GpuMain(const MainFunctionParams& parameters) {
   base::Time start_time = base::Time::Now();
 
 #if defined(OS_WIN)
+  base::trace_event::TraceEventETWExport::EnableETWExport();
+
   // Prevent Windows from displaying a modal dialog on failures like not being
   // able to load a DLL.
   SetErrorMode(
@@ -284,7 +288,7 @@ int GpuMain(const MainFunctionParams& parameters) {
 
   base::PlatformThread::SetName("CrGpuMain");
 
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(USE_OZONE)
   // Set thread priority before sandbox initialization.
   base::PlatformThread::SetCurrentThreadPriority(base::ThreadPriority::DISPLAY);
 #endif
@@ -317,7 +321,7 @@ int GpuMain(const MainFunctionParams& parameters) {
   GetContentClient()->SetGpuInfo(gpu_init->gpu_info());
 
   base::ThreadPriority io_thread_priority = base::ThreadPriority::NORMAL;
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(USE_OZONE)
   io_thread_priority = base::ThreadPriority::DISPLAY;
 #endif
 
@@ -340,7 +344,6 @@ int GpuMain(const MainFunctionParams& parameters) {
   // Setup tracing sampler profiler as early as possible.
   std::unique_ptr<tracing::TracingSamplerProfiler> tracing_sampler_profiler =
       tracing::TracingSamplerProfiler::CreateOnMainThread();
-  tracing_sampler_profiler->OnMessageLoopStarted();
 
 #if defined(OS_ANDROID)
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(

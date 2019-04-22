@@ -5,6 +5,7 @@
 #include "storage/browser/blob/blob_memory_controller.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
@@ -53,7 +54,7 @@ class BlobMemoryControllerTest : public testing::Test {
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     base::ThreadRestrictions::SetIOAllowed(false);
-  };
+  }
 
   void TearDown() override {
     files_created_.clear();
@@ -1167,6 +1168,17 @@ TEST_F(BlobMemoryControllerTest, OnMemoryPressure) {
   EXPECT_EQ(1u, controller.memory_usage());
   EXPECT_EQ(size_to_load - 1, controller.disk_usage());
   return;
+}
+
+TEST_F(BlobMemoryControllerTest, LowMemoryDevice) {
+  BlobMemoryController controller(temp_dir_.GetPath(), nullptr);
+  // Make 1% of physical memory size just less than min_page_file_size
+  controller.set_amount_of_physical_memory_for_testing(
+      controller.limits().min_page_file_size * 99);
+  base::RunLoop loop;
+  controller.CallWhenStorageLimitsAreKnown(loop.QuitClosure());
+  loop.Run();
+  EXPECT_TRUE(controller.limits().IsValid());
 }
 
 }  // namespace storage

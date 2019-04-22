@@ -110,7 +110,8 @@ public class AutofillSaveCardInfoBar extends ConfirmInfoBar {
         // |createContent|. This hides the ImageView that normally shows the icon and gets rid of
         // the left padding of the infobar content.
         super(isGooglePayBrandingEnabled ? 0 : ResourceId.mapToDrawableId(enumeratedIconId),
-                iconBitmap, message, linkText, buttonOk, buttonCancel);
+                isGooglePayBrandingEnabled ? 0 : R.color.infobar_icon_drawable_color, iconBitmap,
+                message, linkText, buttonOk, buttonCancel);
         mIconDrawableId = ResourceId.mapToDrawableId(enumeratedIconId);
         mTitleText = message;
         mIsGooglePayBrandingEnabled = isGooglePayBrandingEnabled;

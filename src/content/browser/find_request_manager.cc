@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
 #include "base/containers/queue.h"
 #include "content/browser/find_in_page_client.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
@@ -39,7 +40,9 @@ std::vector<FrameTreeNode*> GetChildren(FrameTreeNode* node) {
     contents = WebContentsImpl::FromFrameTreeNode(node);
     if (node->IsMainFrame() && contents->GetBrowserPluginEmbedder()) {
       for (auto* inner_contents : contents->GetInnerWebContents()) {
-        children.push_back(inner_contents->GetMainFrame()->frame_tree_node());
+        children.push_back(static_cast<WebContentsImpl*>(inner_contents)
+                               ->GetMainFrame()
+                               ->frame_tree_node());
       }
     }
   }
@@ -665,12 +668,22 @@ RenderFrameHost* FindRequestManager::Traverse(RenderFrameHost* from_rfh,
                                               bool matches_only,
                                               bool wrap) const {
   DCHECK(from_rfh);
+  // If |from_rfh| is being detached, it might already be removed from
+  // its parent's list of children, meaning we can't traverse it correctly.
+  if (!static_cast<RenderFrameHostImpl*>(from_rfh)->is_active())
+    return nullptr;
   FrameTreeNode* node =
       static_cast<RenderFrameHostImpl*>(from_rfh)->frame_tree_node();
-
+  FrameTreeNode* last_node = node;
   while ((node = TraverseNode(node, forward, wrap)) != nullptr) {
-    if (!CheckFrame(node->current_frame_host()))
+    if (!CheckFrame(node->current_frame_host())) {
+      // If we're in the same frame as before, we might got into an infinite
+      // loop.
+      if (last_node == node)
+        break;
+      last_node = node;
       continue;
+    }
     RenderFrameHost* current_rfh = node->current_frame_host();
     if (!matches_only ||
         find_in_page_clients_.find(current_rfh)->second->number_of_matches() ||

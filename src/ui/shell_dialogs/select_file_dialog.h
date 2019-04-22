@@ -141,7 +141,12 @@ class SHELL_DIALOGS_EXPORT SelectFileDialog
     // NATIVE_PATH, the dialog creates a native replica of the non-native file
     // and returns its path, so that the caller can use it without any
     // difference than when it were local.
-    enum AllowedPaths { ANY_PATH, NATIVE_PATH, NATIVE_OR_DRIVE_PATH };
+    enum AllowedPaths {
+      ANY_PATH,
+      NATIVE_PATH,
+      NATIVE_OR_DRIVE_PATH,
+      ANY_PATH_OR_URL
+    };
     AllowedPaths allowed_paths;
   };
 

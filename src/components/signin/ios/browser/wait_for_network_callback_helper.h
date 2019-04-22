@@ -25,10 +25,10 @@ class WaitForNetworkCallbackHelper
 
   // If offline, saves the |callback| to be called later when online. Otherwise,
   // invokes immediately.
-  void HandleCallback(const base::Closure& callback);
+  void HandleCallback(base::OnceClosure callback);
 
  private:
-  std::list<base::Closure> delayed_callbacks_;
+  std::list<base::OnceClosure> delayed_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(WaitForNetworkCallbackHelper);
 };

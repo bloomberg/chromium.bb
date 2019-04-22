@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/memory_dump_manager.h"
@@ -22,9 +23,10 @@ namespace {
 
 void OnGpuMemoryBufferDestroyed(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    const gpu::GpuMemoryBufferImpl::DestructionCallback& callback,
+    gpu::GpuMemoryBufferImpl::DestructionCallback callback,
     const gpu::SyncToken& sync_token) {
-  task_runner->PostTask(FROM_HERE, base::BindOnce(callback, sync_token));
+  task_runner->PostTask(FROM_HERE,
+                        base::BindOnce(std::move(callback), sync_token));
 }
 
 }  // namespace
@@ -209,11 +211,10 @@ HostGpuMemoryBufferManager::CreateGpuMemoryBuffer(
   // onto the |task_runner_| thread to do the real work.
   return gpu_memory_buffer_support_->CreateGpuMemoryBufferImplFromHandle(
       std::move(handle), size, format, usage,
-      base::BindRepeating(
+      base::BindOnce(
           &OnGpuMemoryBufferDestroyed, task_runner_,
-          base::BindRepeating(
-              &HostGpuMemoryBufferManager::DestroyGpuMemoryBuffer, weak_ptr_,
-              id, client_id_)));
+          base::BindOnce(&HostGpuMemoryBufferManager::DestroyGpuMemoryBuffer,
+                         weak_ptr_, id, client_id_)));
 }
 
 void HostGpuMemoryBufferManager::SetDestructionSyncToken(
@@ -312,15 +313,17 @@ void HostGpuMemoryBufferManager::OnGpuMemoryBufferAllocated(
     gfx::GpuMemoryBufferHandle handle) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  // If the current GPU service is different from the one that alloacted the
-  // buffer, the buffer should be considered as stale.
-  bool stale = gpu_service_version_ != gpu_service_version;
+  // If the buffer is allocated by an old gpu service, we can safely ignore it
+  // as we have already requested a new one on the new gpu service in
+  // OnConnectionError().
+  if (gpu_service_version_ != gpu_service_version)
+    return;
 
   auto client_iter = pending_buffers_.find(client_id);
   if (client_iter == pending_buffers_.end()) {
     // The client has been destroyed since the allocation request was made. The
     // callback is already called with null handle.
-    if (!handle.is_null() && !stale) {
+    if (!handle.is_null()) {
       auto* gpu_service = GetGpuService();
       DCHECK(gpu_service);
       gpu_service->DestroyGpuMemoryBuffer(handle.id, client_id,
@@ -333,15 +336,6 @@ void HostGpuMemoryBufferManager::OnGpuMemoryBufferAllocated(
   DCHECK(buffer_iter != client_iter->second.end());
   PendingBufferInfo pending_buffer = std::move(buffer_iter->second);
   client_iter->second.erase(buffer_iter);
-
-  if (stale) {
-    // Try re-allocating buffer on the new GPU service.
-    AllocateGpuMemoryBuffer(id, client_id, pending_buffer.size,
-                            pending_buffer.format, pending_buffer.usage,
-                            pending_buffer.surface_handle,
-                            std::move(pending_buffer.callback));
-    return;
-  }
 
   if (!handle.is_null()) {
     DCHECK(handle.id == id);

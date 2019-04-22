@@ -118,7 +118,7 @@ std::unique_ptr<media::AudioInputDelegate> AudioInputDelegateImpl::Create(
     const media::AudioParameters& audio_parameters,
     EventHandler* subscriber) {
   // Check if we have the permission to open the device and which device to use.
-  const MediaStreamDevice* device =
+  const blink::MediaStreamDevice* device =
       audio_input_device_manager->GetOpenedDeviceById(session_id);
   if (!device) {
     LogMessage(stream_id, "Permission for stream not granted.");
@@ -170,7 +170,7 @@ AudioInputDelegateImpl::AudioInputDelegateImpl(
     int stream_id,
     bool automatic_gain_control,
     EventHandler* subscriber,
-    const MediaStreamDevice* device,
+    const blink::MediaStreamDevice* device,
     std::unique_ptr<media::AudioInputSyncWriter> writer,
     std::unique_ptr<base::CancelableSyncSocket> foreign_socket)
     : subscriber_(subscriber),
@@ -208,7 +208,7 @@ AudioInputDelegateImpl::AudioInputDelegateImpl(
         writer_.get(), user_input_monitor);
     DCHECK(controller_);
     // Only count for captures from desktop media picker dialog.
-    if (device->type == MEDIA_GUM_DESKTOP_AUDIO_CAPTURE)
+    if (device->type == blink::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE)
       IncrementDesktopCaptureCounter(TAB_AUDIO_CAPTURER_CREATED);
   } else {
     controller_ = media::AudioInputController::Create(
@@ -218,7 +218,7 @@ AudioInputDelegateImpl::AudioInputDelegateImpl(
 
     // Only count for captures from desktop media picker dialog and system loop
     // back audio.
-    if (device->type == MEDIA_GUM_DESKTOP_AUDIO_CAPTURE &&
+    if (device->type == blink::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE &&
         (media::AudioDeviceDescription::IsLoopbackDevice(device_id))) {
       IncrementDesktopCaptureCounter(SYSTEM_LOOPBACK_AUDIO_CAPTURER_CREATED);
     }

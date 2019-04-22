@@ -23,6 +23,19 @@ WidgetDelegate::~WidgetDelegate() {
   CHECK(can_delete_this_) << "A WidgetDelegate must outlive its Widget";
 }
 
+void WidgetDelegate::SetCanActivate(bool can_activate) {
+  if (can_activate == can_activate_)
+    return;
+
+  const bool previous_value = CanActivate();
+  can_activate_ = can_activate;
+  if (previous_value != CanActivate()) {
+    Widget* widget = GetWidget();
+    if (widget)
+      widget->OnCanActivateChanged();
+  }
+}
+
 void WidgetDelegate::OnWidgetMove() {
 }
 
@@ -30,6 +43,10 @@ void WidgetDelegate::OnDisplayChanged() {
 }
 
 void WidgetDelegate::OnWorkAreaChanged() {
+}
+
+bool WidgetDelegate::OnCloseRequested(Widget::ClosedReason close_reason) {
+  return true;
 }
 
 View* WidgetDelegate::GetInitiallyFocusedView() {
@@ -75,7 +92,7 @@ ui::ModalType WidgetDelegate::GetModalType() const {
   return ui::MODAL_TYPE_NONE;
 }
 
-ax::mojom::Role WidgetDelegate::GetAccessibleWindowRole() const {
+ax::mojom::Role WidgetDelegate::GetAccessibleWindowRole() {
   return ax::mojom::Role::kWindow;
 }
 
@@ -154,11 +171,11 @@ ClientView* WidgetDelegate::CreateClientView(Widget* widget) {
 }
 
 NonClientFrameView* WidgetDelegate::CreateNonClientFrameView(Widget* widget) {
-  return NULL;
+  return nullptr;
 }
 
 View* WidgetDelegate::CreateOverlayView() {
-  return NULL;
+  return nullptr;
 }
 
 bool WidgetDelegate::WillProcessWorkAreaChange() const {
@@ -169,7 +186,7 @@ bool WidgetDelegate::WidgetHasHitTestMask() const {
   return false;
 }
 
-void WidgetDelegate::GetWidgetHitTestMask(gfx::Path* mask) const {
+void WidgetDelegate::GetWidgetHitTestMask(SkPath* mask) const {
   DCHECK(mask);
 }
 
@@ -194,8 +211,7 @@ WidgetDelegateView::WidgetDelegateView() {
   set_owned_by_client();
 }
 
-WidgetDelegateView::~WidgetDelegateView() {
-}
+WidgetDelegateView::~WidgetDelegateView() = default;
 
 void WidgetDelegateView::DeleteDelegate() {
   delete this;

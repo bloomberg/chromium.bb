@@ -29,16 +29,6 @@ class BrowserContext;
 class KEYED_SERVICE_EXPORT BrowserContextKeyedServiceFactory
     : public KeyedServiceFactory {
  public:
-  // Registers preferences used in this service on the pref service of
-  // |context|. This is the public interface and is safe to be called multiple
-  // times because testing code can have multiple services of the same type
-  // attached to a single |context|. Only test code is allowed to call this
-  // method.
-  // TODO(gab): This method can be removed entirely when
-  // PrefService::DeprecatedGetPrefRegistry() is phased out.
-  void RegisterUserPrefsOnBrowserContextForTest(
-      content::BrowserContext* context);
-
   // A callback that supplies the instance of a KeyedService for a given
   // BrowserContext. This is used primarily for testing, where we want to feed
   // a specific test double into the BCKSF system.
@@ -125,24 +115,23 @@ class KEYED_SERVICE_EXPORT BrowserContextKeyedServiceFactory
  private:
   friend class BrowserContextDependencyManagerUnittests;
 
-  // Registers any user preferences on this service. This is called by
-  // RegisterPrefsIfNecessaryForContext() and should be overriden by any service
-  // that wants to register profile-specific preferences.
+  // Registers any user preferences on this service. This should be overriden by
+  // any service that wants to register profile-specific preferences.
   virtual void RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable* registry) {}
 
   // KeyedServiceFactory:
   std::unique_ptr<KeyedService> BuildServiceInstanceFor(
-      base::SupportsUserData* context) const final;
-  bool IsOffTheRecord(base::SupportsUserData* context) const final;
+      void* context) const final;
+  bool IsOffTheRecord(void* context) const final;
 
   // KeyedServiceBaseFactory:
-  base::SupportsUserData* GetContextToUse(
-      base::SupportsUserData* context) const final;
+  void* GetContextToUse(void* context) const final;
   bool ServiceIsCreatedWithContext() const final;
-  void ContextShutdown(base::SupportsUserData* context) final;
-  void ContextDestroyed(base::SupportsUserData* context) final;
+  void ContextShutdown(void* context) final;
+  void ContextDestroyed(void* context) final;
   void RegisterPrefs(user_prefs::PrefRegistrySyncable* registry) final;
+  void CreateServiceNow(void* context) final;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserContextKeyedServiceFactory);
 };

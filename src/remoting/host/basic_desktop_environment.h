@@ -44,7 +44,7 @@ class BasicDesktopEnvironment : public DesktopEnvironment {
   std::unique_ptr<webrtc::DesktopCapturer> CreateVideoCapturer() override;
   std::unique_ptr<webrtc::MouseCursorMonitor> CreateMouseCursorMonitor()
       override;
-  std::unique_ptr<FileProxyWrapper> CreateFileProxyWrapper() override;
+  std::unique_ptr<FileOperations> CreateFileOperations() override;
   std::string GetCapabilities() const override;
   void SetCapabilities(const std::string& capabilities) override;
   uint32_t GetDesktopSessionId() const override;
@@ -58,6 +58,7 @@ class BasicDesktopEnvironment : public DesktopEnvironment {
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
       ui::SystemInputInjectorFactory* system_input_injector_factory,
+      base::WeakPtr<ClientSessionControl> client_session_control,
       const DesktopEnvironmentOptions& options);
 
   scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner() const {
@@ -109,6 +110,9 @@ class BasicDesktopEnvironment : public DesktopEnvironment {
 
   // Passed to InputInjector.
   ui::SystemInputInjectorFactory* system_input_injector_factory_;
+
+  // Used to send messages directly to the client session.
+  base::WeakPtr<ClientSessionControl> client_session_control_;
 
   DesktopEnvironmentOptions options_;
 

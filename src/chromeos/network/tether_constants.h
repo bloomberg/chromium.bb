@@ -4,7 +4,7 @@
 #ifndef CHROMEOS_NETWORK_TETHER_CONSTANTS_H_
 #define CHROMEOS_NETWORK_TETHER_CONSTANTS_H_
 
-#include "chromeos/chromeos_export.h"
+#include "base/component_export.h"
 
 namespace chromeos {
 
@@ -15,19 +15,20 @@ namespace chromeos {
 // code, so these constants are used primarily as part of NetworkStateHandler.
 
 // Represents the tether network type.
-CHROMEOS_EXPORT extern const char kTypeTether[];
+COMPONENT_EXPORT(CHROMEOS_NETWORK) extern const char kTypeTether[];
 
 // Properties associated with tether networks.
-CHROMEOS_EXPORT extern const char kTetherBatteryPercentage[];
-CHROMEOS_EXPORT extern const char kTetherCarrier[];
-CHROMEOS_EXPORT extern const char kTetherHasConnectedToHost[];
-CHROMEOS_EXPORT extern const char kTetherSignalStrength[];
+COMPONENT_EXPORT(CHROMEOS_NETWORK) extern const char kTetherBatteryPercentage[];
+COMPONENT_EXPORT(CHROMEOS_NETWORK) extern const char kTetherCarrier[];
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+extern const char kTetherHasConnectedToHost[];
+COMPONENT_EXPORT(CHROMEOS_NETWORK) extern const char kTetherSignalStrength[];
 
 // The device path used for the tether DeviceState.
-CHROMEOS_EXPORT extern const char kTetherDevicePath[];
+COMPONENT_EXPORT(CHROMEOS_NETWORK) extern const char kTetherDevicePath[];
 
 // The name used for the tether DeviceState.
-CHROMEOS_EXPORT extern const char kTetherDeviceName[];
+COMPONENT_EXPORT(CHROMEOS_NETWORK) extern const char kTetherDeviceName[];
 
 }  // namespace chromeos
 

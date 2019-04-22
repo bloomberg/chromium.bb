@@ -25,12 +25,13 @@
 #include "media/base/video_decoder.h"
 #include "media/video/picture.h"
 #include "media/video/video_decode_accelerator.h"
+#include "third_party/webrtc/api/video_codecs/sdp_video_format.h"
 #include "third_party/webrtc/modules/video_coding/include/video_codec_interface.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace base {
 class WaitableEvent;
-};  // namespace base
+}  // namespace base
 
 namespace media {
 class GpuVideoAcceleratorFactories;
@@ -57,7 +58,7 @@ class CONTENT_EXPORT RTCVideoDecoder
   // Creates a RTCVideoDecoder on the message loop of |factories|. Returns NULL
   // if failed. The video decoder will run on the message loop of |factories|.
   static std::unique_ptr<RTCVideoDecoder> Create(
-      webrtc::VideoCodecType type,
+      const webrtc::SdpVideoFormat& format,
       media::GpuVideoAcceleratorFactories* factories);
   // Destroys |decoder| on the loop of |factories|
   static void Destroy(webrtc::VideoDecoder* decoder,
@@ -70,7 +71,6 @@ class CONTENT_EXPORT RTCVideoDecoder
   // Called on WebRTC DecodingThread.
   int32_t Decode(const webrtc::EncodedImage& inputImage,
                  bool missingFrames,
-                 const webrtc::CodecSpecificInfo* codecSpecificInfo,
                  int64_t renderTimeMs) override;
   // Called on WebRTC DecodingThread.
   int32_t RegisterDecodeCompleteCallback(
@@ -116,6 +116,7 @@ class CONTENT_EXPORT RTCVideoDecoder
                            GetVDAErrorCounterForRunningOutOfPendingBuffers);
   FRIEND_TEST_ALL_PREFIXES(RTCVideoDecoderTest,
                            GetVDAErrorCounterForSendingFramesWithoutSize);
+  FRIEND_TEST_ALL_PREFIXES(RTCVideoDecoderTest, ParsesVP9CodecProfile);
 
   RTCVideoDecoder(webrtc::VideoCodecType type,
                   media::GpuVideoAcceleratorFactories* factories);

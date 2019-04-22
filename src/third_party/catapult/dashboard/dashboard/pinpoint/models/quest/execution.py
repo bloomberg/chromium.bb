@@ -4,6 +4,10 @@
 
 import traceback
 
+from oauth2client import client
+
+from dashboard.pinpoint.models import errors
+
 
 class Execution(object):
   """Object tracking the execution of a Quest.
@@ -93,6 +97,8 @@ class Execution(object):
 
     try:
       self._Poll()
+    except client.AccessTokenRefreshError:
+      raise errors.RecoverableError()
     except StandardError:
       # StandardError most likely indicates a bug in the code.
       # We should fail fast to aid debugging.

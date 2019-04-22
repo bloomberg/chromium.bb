@@ -54,8 +54,9 @@ TEST(CloudPrintPrinterListTest, Parsing) {
   CloudPrintPrinterList::DeviceList devices;
   EXPECT_CALL(delegate, OnDeviceListReady(_)).WillOnce(SaveArg<0>(&devices));
 
-  std::unique_ptr<base::Value> value =
+  base::Optional<base::Value> value =
       base::JSONReader::Read(kSampleSuccessResponseOAuth);
+  ASSERT_TRUE(value);
   const base::DictionaryValue* dictionary = NULL;
   ASSERT_TRUE(value->GetAsDictionary(&dictionary));
   device_list.OnGCDApiFlowComplete(*dictionary);

@@ -29,6 +29,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/test_util.h"
+#include "services/network/test/test_network_connection_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace drive {
@@ -144,45 +145,46 @@ class JobSchedulerTest : public testing::Test {
   }
 
   void SetUp() override {
-    fake_network_change_notifier_ =
-        std::make_unique<test_util::FakeNetworkChangeNotifier>();
-
     logger_ = std::make_unique<EventLogger>();
 
     fake_drive_service_ = std::make_unique<CancelTestableFakeDriveService>();
     test_util::SetUpTestEntries(fake_drive_service_.get());
 
+    ConnectToWifi();
     scheduler_ = std::make_unique<JobScheduler>(
         pref_service_.get(), logger_.get(), fake_drive_service_.get(),
+        network::TestNetworkConnectionTracker::GetInstance(),
         base::ThreadTaskRunnerHandle::Get().get(), nullptr);
     scheduler_->SetDisableThrottling(true);
   }
 
  protected:
-  // Sets up FakeNetworkChangeNotifier as if it's connected to a network with
+  // Sets up TestNetworkConnectionTracker as if it's connected to a network with
   // the specified connection type.
-  void ChangeConnectionType(net::NetworkChangeNotifier::ConnectionType type) {
-    fake_network_change_notifier_->SetConnectionType(type);
+  void ChangeConnectionType(network::mojom::ConnectionType type) {
+    network::TestNetworkConnectionTracker::GetInstance()->SetConnectionType(
+        type);
   }
 
-  // Sets up FakeNetworkChangeNotifier as if it's connected to wifi network.
+  // Sets up TestNetworkConnectionTracker as if it's connected to wifi network.
   void ConnectToWifi() {
-    ChangeConnectionType(net::NetworkChangeNotifier::CONNECTION_WIFI);
+    ChangeConnectionType(network::mojom::ConnectionType::CONNECTION_WIFI);
   }
 
-  // Sets up FakeNetworkChangeNotifier as if it's connected to cellular network.
+  // Sets up TestNetworkConnectionTracker as if it's connected to cellular
+  // network.
   void ConnectToCellular() {
-    ChangeConnectionType(net::NetworkChangeNotifier::CONNECTION_2G);
+    ChangeConnectionType(network::mojom::ConnectionType::CONNECTION_2G);
   }
 
-  // Sets up FakeNetworkChangeNotifier as if it's connected to wimax network.
+  // Sets up TestNetworkConnectionTracker as if it's connected to wimax network.
   void ConnectToWimax() {
-    ChangeConnectionType(net::NetworkChangeNotifier::CONNECTION_4G);
+    ChangeConnectionType(network::mojom::ConnectionType::CONNECTION_4G);
   }
 
-  // Sets up FakeNetworkChangeNotifier as if it's disconnected.
+  // Sets up TestNetworkConnectionTracker as if it's disconnected.
   void ConnectToNone() {
-    ChangeConnectionType(net::NetworkChangeNotifier::CONNECTION_NONE);
+    ChangeConnectionType(network::mojom::ConnectionType::CONNECTION_NONE);
   }
 
   static int GetMetadataQueueMaxJobCount() {
@@ -191,8 +193,6 @@ class JobSchedulerTest : public testing::Test {
 
   content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
-  std::unique_ptr<test_util::FakeNetworkChangeNotifier>
-      fake_network_change_notifier_;
   std::unique_ptr<EventLogger> logger_;
   std::unique_ptr<CancelTestableFakeDriveService> fake_drive_service_;
   std::unique_ptr<JobScheduler> scheduler_;

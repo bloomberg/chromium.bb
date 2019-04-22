@@ -55,6 +55,44 @@ struct EnumTraits<gfx::mojom::SubpixelRendering,
   }
 };
 
+template <>
+struct EnumTraits<gfx::mojom::Hinting, gfx::FontRenderParams::Hinting> {
+  static gfx::mojom::Hinting ToMojom(gfx::FontRenderParams::Hinting input) {
+    switch (input) {
+      case gfx::FontRenderParams::HINTING_NONE:
+        return gfx::mojom::Hinting::kNone;
+      case gfx::FontRenderParams::HINTING_SLIGHT:
+        return gfx::mojom::Hinting::kSlight;
+      case gfx::FontRenderParams::HINTING_MEDIUM:
+        return gfx::mojom::Hinting::kMedium;
+      case gfx::FontRenderParams::HINTING_FULL:
+        return gfx::mojom::Hinting::kFull;
+    }
+    NOTREACHED();
+    return gfx::mojom::Hinting::kNone;
+  }
+
+  static bool FromMojom(gfx::mojom::Hinting input,
+                        gfx::FontRenderParams::Hinting* out) {
+    switch (input) {
+      case gfx::mojom::Hinting::kNone:
+        *out = gfx::FontRenderParams::HINTING_NONE;
+        return true;
+      case gfx::mojom::Hinting::kSlight:
+        *out = gfx::FontRenderParams::HINTING_SLIGHT;
+        return true;
+      case gfx::mojom::Hinting::kMedium:
+        *out = gfx::FontRenderParams::HINTING_MEDIUM;
+        return true;
+      case gfx::mojom::Hinting::kFull:
+        *out = gfx::FontRenderParams::HINTING_FULL;
+        return true;
+    }
+    NOTREACHED();
+    return false;
+  }
+};
+
 }  // namespace mojo
 
 #endif  // UI_GFX_MOJO_FONT_RENDER_PARAMS_STRUCT_TRAITS_H_

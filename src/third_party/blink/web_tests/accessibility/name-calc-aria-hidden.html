@@ -2,12 +2,6 @@
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 
-<style>
-.hideAllContainers .container {
-    display: none;
-}
-</style>
-
 <div class="container">
     <h3 id="heading1">
         Before
@@ -91,9 +85,4 @@ test(function(t) {
     var axInput5 = accessibilityController.accessibleElementById("input5");
     assert_equals(axInput5.name, "Before After");
 }, "Label can get accessible text from aria-hidden subtree");
-</script>
-
-<script>
-if (window.testRunner)
-    document.body.className = "hideAllContainers";
 </script>

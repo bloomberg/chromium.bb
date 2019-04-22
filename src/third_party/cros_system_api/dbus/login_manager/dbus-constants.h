@@ -17,22 +17,9 @@ const char kSessionManagerSaveLoginPassword[] = "SaveLoginPassword";
 const char kSessionManagerStartSession[] = "StartSession";
 const char kSessionManagerStopSession[] = "StopSession";
 const char kSessionManagerRestartJob[] = "RestartJob";
-const char kSessionManagerStorePolicy[] = "StorePolicy";
 const char kSessionManagerStorePolicyEx[] = "StorePolicyEx";
-const char kSessionManagerStoreUnsignedPolicy[] = "StoreUnsignedPolicy";
 const char kSessionManagerStoreUnsignedPolicyEx[] = "StoreUnsignedPolicyEx";
-const char kSessionManagerRetrievePolicy[] = "RetrievePolicy";
 const char kSessionManagerRetrievePolicyEx[] = "RetrievePolicyEx";
-const char kSessionManagerStorePolicyForUser[] = "StorePolicyForUser";
-const char kSessionManagerStoreUnsignedPolicyForUser[] =
-    "StoreUnsignedPolicyForUser";
-const char kSessionManagerRetrievePolicyForUser[] = "RetrievePolicyForUser";
-const char kSessionManagerRetrievePolicyForUserWithoutSession[] =
-    "RetrievePolicyForUserWithoutSession";
-const char kSessionManagerStoreDeviceLocalAccountPolicy[] =
-    "StoreDeviceLocalAccountPolicy";
-const char kSessionManagerRetrieveDeviceLocalAccountPolicy[] =
-    "RetrieveDeviceLocalAccountPolicy";
 const char kSessionManagerListStoredComponentPolicies[] =
     "ListStoredComponentPolicies";
 const char kSessionManagerRetrieveSessionState[] = "RetrieveSessionState";
@@ -40,8 +27,8 @@ const char kSessionManagerRetrieveActiveSessions[] = "RetrieveActiveSessions";
 const char kSessionManagerRetrievePrimarySession[] = "RetrievePrimarySession";
 const char kSessionManagerStartTPMFirmwareUpdate[] = "StartTPMFirmwareUpdate";
 const char kSessionManagerStartDeviceWipe[] = "StartDeviceWipe";
-const char kSessionManagerClearCheckEnrollmentVpd[] =
-    "ClearCheckEnrollmentVpd";
+const char kSessionManagerClearForcedReEnrollmentVpd[] =
+    "ClearForcedReEnrollmentVpd";
 const char kSessionManagerHandleSupervisedUserCreationStarting[] =
     "HandleSupervisedUserCreationStarting";
 const char kSessionManagerHandleSupervisedUserCreationFinished[] =
@@ -62,7 +49,6 @@ const char kSessionManagerStopArcInstance[] = "StopArcInstance";
 const char kSessionManagerSetArcCpuRestriction[] = "SetArcCpuRestriction";
 const char kSessionManagerEmitArcBooted[] = "EmitArcBooted";
 const char kSessionManagerGetArcStartTimeTicks[] = "GetArcStartTimeTicks";
-const char kSessionManagerRemoveArcData[] = "RemoveArcData";
 const char kSessionManagerStartContainer[] = "StartContainer";
 const char kSessionManagerStopContainer[] = "StopContainer";
 // Signals
@@ -109,6 +95,8 @@ const char kSigEncodeFail[] = INTERFACE ".SigEncodeFail";
 const char kTestingChannelError[] = INTERFACE ".TestingChannelError";
 const char kUnknownPid[] = INTERFACE ".UnknownPid";
 const char kVerifyFail[] = INTERFACE ".VerifyFail";
+const char kSystemPropertyUpdateFailed[] =
+    INTERFACE ".SystemPropertyUpdateFailed";
 const char kVpdUpdateFailed[] = INTERFACE ".VpdUpdateFailed";
 
 #undef INTERFACE

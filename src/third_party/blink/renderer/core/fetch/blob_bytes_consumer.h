@@ -8,9 +8,8 @@
 #include <memory>
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/fetch/bytes_consumer.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/loader/fetch/bytes_consumer.h"
 
 namespace blink {
 
@@ -43,7 +42,7 @@ class CORE_EXPORT BlobBytesConsumer final : public BytesConsumer {
  private:
   Member<ExecutionContext> execution_context_;
   scoped_refptr<BlobDataHandle> blob_data_handle_;
-  TraceWrapperMember<BytesConsumer> nested_consumer_;
+  Member<BytesConsumer> nested_consumer_;
   Member<BytesConsumer::Client> client_;
 };
 

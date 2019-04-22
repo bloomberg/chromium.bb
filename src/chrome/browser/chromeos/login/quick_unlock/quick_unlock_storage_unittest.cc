@@ -7,10 +7,14 @@
 #include <memory>
 
 #include "base/time/time.h"
+#include "chrome/browser/chromeos/login/quick_unlock/auth_token.h"
+#include "chrome/browser/chromeos/login/quick_unlock/fingerprint_storage.h"
+#include "chrome/browser/chromeos/login/quick_unlock/pin_storage_prefs.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_factory.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/login/auth/user_context.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -43,11 +47,12 @@ class QuickUnlockStorageUnitTest : public testing::Test {
   ~QuickUnlockStorageUnitTest() override {}
 
   // testing::Test:
-  void SetUp() override { quick_unlock::EnableForTesting(); }
+  void SetUp() override { quick_unlock::EnabledForTesting(true); }
+  void TearDown() override { quick_unlock::EnabledForTesting(false); }
 
   void ExpireAuthToken() {
     quick_unlock::QuickUnlockFactory::GetForProfile(profile_.get())
-        ->auth_token_->ResetForTest();
+        ->auth_token_->Reset();
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
@@ -163,17 +168,16 @@ TEST_F(QuickUnlockStorageUnitTest,
 TEST_F(QuickUnlockStorageUnitTest, AuthToken) {
   QuickUnlockStorage* quick_unlock_storage =
       quick_unlock::QuickUnlockFactory::GetForProfile(profile_.get());
-  EXPECT_EQ(std::string(), quick_unlock_storage->GetAuthToken());
+  EXPECT_FALSE(quick_unlock_storage->GetAuthToken());
 
   chromeos::UserContext context;
   std::string auth_token = quick_unlock_storage->CreateAuthToken(context);
   EXPECT_NE(std::string(), auth_token);
-  EXPECT_EQ(auth_token, quick_unlock_storage->GetAuthToken());
-  EXPECT_FALSE(quick_unlock_storage->GetAuthTokenExpired());
+  EXPECT_TRUE(quick_unlock_storage->GetAuthToken());
+  EXPECT_EQ(auth_token, quick_unlock_storage->GetAuthToken()->Identifier());
 
   ExpireAuthToken();
-  EXPECT_NE(auth_token, quick_unlock_storage->GetAuthToken());
-  EXPECT_TRUE(quick_unlock_storage->GetAuthTokenExpired());
+  EXPECT_FALSE(quick_unlock_storage->GetAuthToken());
 }
 
 }  // namespace chromeos

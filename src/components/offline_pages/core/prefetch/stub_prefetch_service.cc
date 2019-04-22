@@ -18,6 +18,13 @@ void StubPrefetchService::NewSuggestionsAvailable() {}
 
 void StubPrefetchService::RemoveSuggestion(GURL url) {}
 
+void StubPrefetchService::SetCachedGCMToken(const std::string& gcm_token) {}
+void StubPrefetchService::GetGCMToken(GCMTokenCallback callback) {}
+
+const std::string& StubPrefetchService::GetCachedGCMToken() const {
+  return gcm_token_;
+}
+
 PrefetchGCMHandler* StubPrefetchService::GetPrefetchGCMHandler() {
   return nullptr;
 }
@@ -64,7 +71,7 @@ OfflinePageModel* StubPrefetchService::GetOfflinePageModel() {
   return nullptr;
 }
 
-image_fetcher::ImageFetcher* StubPrefetchService::GetThumbnailImageFetcher() {
+image_fetcher::ImageFetcher* StubPrefetchService::GetImageFetcher() {
   return nullptr;
 }
 

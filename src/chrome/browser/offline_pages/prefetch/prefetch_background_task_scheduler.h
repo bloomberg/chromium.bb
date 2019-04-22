@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_OFFLINE_PAGES_PREFETCH_PREFETCH_BACKGROUND_TASK_SCHEDULER_H_
 #define CHROME_BROWSER_OFFLINE_PAGES_PREFETCH_PREFETCH_BACKGROUND_TASK_SCHEDULER_H_
 
+#include <string>
+
 namespace offline_pages {
 
 class PrefetchBackgroundTaskScheduler {
@@ -12,13 +14,17 @@ class PrefetchBackgroundTaskScheduler {
   // API for interacting with BackgroundTaskScheduler from native.
   // Schedules the default 'NWake' prefetching task.
   // |additional_delay_seconds| is relative to the default 15 minute delay.
+  // |gcm_token| is used so as to not require GCM handler when chrome wakes up
+  //             for the background task.
   // Implemented in platform-specific object files.
-  static void Schedule(int additional_delay_seconds);
+  static void Schedule(int additional_delay_seconds,
+                       const std::string& gcm_token);
 
   // Same as |Schedule| but adapted to when limitless prefetching is enabled so
   // that less restrictions are applied to the scheduling of the background
   // task.
-  static void ScheduleLimitless(int additional_delay_seconds);
+  static void ScheduleLimitless(int additional_delay_seconds,
+                                const std::string& gcm_token);
 
   // Cancels the default 'NWake' prefetching task.
   // Implemented in platform-specific object files.

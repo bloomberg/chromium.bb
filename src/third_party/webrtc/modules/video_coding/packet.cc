@@ -10,7 +10,7 @@
 
 #include "modules/video_coding/packet.h"
 
-#include "modules/include/module_common_types.h"
+#include "api/rtp_headers.h"
 
 namespace webrtc {
 
@@ -23,44 +23,36 @@ VCMPacket::VCMPacket()
       sizeBytes(0),
       markerBit(false),
       timesNacked(-1),
-      frameType(kEmptyFrame),
-      codec(kVideoCodecGeneric),
-      is_first_packet_in_frame(false),
-      is_last_packet_in_frame(false),
+      frameType(VideoFrameType::kEmptyFrame),
       completeNALU(kNaluUnset),
       insertStartCode(false),
-      width(0),
-      height(0),
       video_header(),
       receive_time_ms(0) {
   video_header.playout_delay = {-1, -1};
 }
 
 VCMPacket::VCMPacket(const uint8_t* ptr,
-                     const size_t size,
-                     const WebRtcRTPHeader& rtpHeader)
-    : payloadType(rtpHeader.header.payloadType),
-      timestamp(rtpHeader.header.timestamp),
-      ntp_time_ms_(rtpHeader.ntp_time_ms),
-      seqNum(rtpHeader.header.sequenceNumber),
+                     size_t size,
+                     const RTPHeader& rtp_header,
+                     const RTPVideoHeader& videoHeader,
+                     VideoFrameType frame_type,
+                     int64_t ntp_time_ms)
+    : payloadType(rtp_header.payloadType),
+      timestamp(rtp_header.timestamp),
+      ntp_time_ms_(ntp_time_ms),
+      seqNum(rtp_header.sequenceNumber),
       dataPtr(ptr),
       sizeBytes(size),
-      markerBit(rtpHeader.header.markerBit),
+      markerBit(rtp_header.markerBit),
       timesNacked(-1),
-      frameType(rtpHeader.frameType),
-      codec(rtpHeader.video_header().codec),
-      is_first_packet_in_frame(
-          rtpHeader.video_header().is_first_packet_in_frame),
-      is_last_packet_in_frame(rtpHeader.video_header().is_last_packet_in_frame),
+      frameType(frame_type),
       completeNALU(kNaluIncomplete),
-      insertStartCode(rtpHeader.video_header().codec == kVideoCodecH264 &&
-                      rtpHeader.video_header().is_first_packet_in_frame),
-      width(rtpHeader.video_header().width),
-      height(rtpHeader.video_header().height),
-      video_header(rtpHeader.video_header()) {
-  if (is_first_packet_in_frame && markerBit) {
+      insertStartCode(videoHeader.codec == kVideoCodecH264 &&
+                      videoHeader.is_first_packet_in_frame),
+      video_header(videoHeader) {
+  if (is_first_packet_in_frame() && markerBit) {
     completeNALU = kNaluComplete;
-  } else if (is_first_packet_in_frame) {
+  } else if (is_first_packet_in_frame()) {
     completeNALU = kNaluStart;
   } else if (markerBit) {
     completeNALU = kNaluEnd;
@@ -68,13 +60,9 @@ VCMPacket::VCMPacket(const uint8_t* ptr,
     completeNALU = kNaluIncomplete;
   }
 
-  if (markerBit) {
-    video_header.rotation = rtpHeader.video_header().rotation;
-  }
+  // TODO(nisse): Delete?
   // Playout decisions are made entirely based on first packet in a frame.
-  if (is_first_packet_in_frame) {
-    video_header.playout_delay = rtpHeader.video_header().playout_delay;
-  } else {
+  if (!is_first_packet_in_frame()) {
     video_header.playout_delay = {-1, -1};
   }
 }

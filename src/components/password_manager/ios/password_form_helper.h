@@ -19,6 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 namespace autofill {
 struct PasswordForm;
 struct PasswordFormFillData;
+struct FormData;
 }  // namespace autofill
 
 namespace password_manager {
@@ -66,6 +67,16 @@ class WebState;
 - (void)fillPasswordForm:(const autofill::PasswordFormFillData&)formData
        completionHandler:(nullable void (^)(BOOL))completionHandler;
 
+// Fills new password field for (optional as @"") |newPasswordIdentifier| and
+// for (optional as @"") confirm password field |confirmPasswordIdentifier| in
+// the form identified by |formData|. Invokes |completionHandler| with true if
+// any fields were filled, false otherwise.
+- (void)fillPasswordForm:(NSString*)formName
+        newPasswordIdentifier:(NSString*)newPasswordIdentifier
+    confirmPasswordIdentifier:(NSString*)confirmPasswordIdentifier
+            generatedPassword:(NSString*)generatedPassword
+            completionHandler:(nullable void (^)(BOOL))completionHandler;
+
 // Autofills credentials into the page. Credentials and input fields are
 // specified by |fillData|. Invokes |completionHandler| when finished with YES
 // if successful and NO otherwise.
@@ -78,6 +89,14 @@ class WebState;
                                     password:(NSString*)password
                            completionHandler:
                                (nullable void (^)(BOOL))completionHandler;
+
+// Finds the password form named |formName| and calls
+// |completionHandler| with the populated |FormData| data structure. |found| is
+// YES if the current form was found successfully, NO otherwise.
+- (void)extractPasswordFormData:(NSString*)formName
+              completionHandler:
+                  (void (^)(BOOL found,
+                            const autofill::FormData& form))completionHandler;
 
 // Creates a instance with the given WebState, observer and delegate.
 - (instancetype)initWithWebState:(web::WebState*)webState

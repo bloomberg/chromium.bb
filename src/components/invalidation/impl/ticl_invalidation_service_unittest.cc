@@ -29,32 +29,6 @@
 
 namespace invalidation {
 
-namespace {
-
-class FakeTiclSettingsProvider : public TiclSettingsProvider {
- public:
-  FakeTiclSettingsProvider();
-  ~FakeTiclSettingsProvider() override;
-
-  // TiclSettingsProvider:
-  bool UseGCMChannel() const override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FakeTiclSettingsProvider);
-};
-
-FakeTiclSettingsProvider::FakeTiclSettingsProvider() {
-}
-
-FakeTiclSettingsProvider::~FakeTiclSettingsProvider() {
-}
-
-bool FakeTiclSettingsProvider::UseGCMChannel() const {
-  return false;
-}
-
-}  // namespace
-
 class TiclInvalidationServiceTestDelegate {
  public:
   TiclInvalidationServiceTestDelegate() {}
@@ -74,7 +48,6 @@ class TiclInvalidationServiceTestDelegate {
     DCHECK(identity_provider_);
     invalidation_service_ = std::make_unique<TiclInvalidationService>(
         "TestUserAgent", identity_provider_.get(),
-        std::unique_ptr<TiclSettingsProvider>(new FakeTiclSettingsProvider),
         gcm_driver_.get(),
         base::RepeatingCallback<void(
             base::WeakPtr<TiclInvalidationService>,
@@ -117,9 +90,9 @@ class TiclInvalidationServiceTestDelegate {
   std::unique_ptr<TiclInvalidationService> invalidation_service_;
 };
 
-INSTANTIATE_TYPED_TEST_CASE_P(
-    TiclInvalidationServiceTest, InvalidationServiceTest,
-    TiclInvalidationServiceTestDelegate);
+INSTANTIATE_TYPED_TEST_SUITE_P(TiclInvalidationServiceTest,
+                               InvalidationServiceTest,
+                               TiclInvalidationServiceTestDelegate);
 
 namespace internal {
 

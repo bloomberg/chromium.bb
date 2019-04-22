@@ -10,6 +10,7 @@
 #include <memory>
 #include <string>
 
+#include "base/bind.h"
 #include "base/strings/string16.h"
 #include "base/test/scoped_task_environment.h"
 #include "chrome/browser/extensions/extension_service.h"

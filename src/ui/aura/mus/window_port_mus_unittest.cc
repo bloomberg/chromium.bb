@@ -7,7 +7,9 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "cc/mojo_embedder/async_layer_tree_frame_sink.h"
+#include "components/viz/common/surfaces/child_local_surface_id_allocator.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/client/drag_drop_delegate.h"
 #include "ui/aura/mus/client_surface_embedder.h"
 #include "ui/aura/test/aura_mus_test_base.h"
 #include "ui/aura/test/aura_test_base.h"
@@ -90,16 +92,17 @@ TEST_F(WindowPortMusTest, ClientSurfaceEmbedderUpdatesLayer) {
   Window window(nullptr);
   window.Init(ui::LAYER_NOT_DRAWN);
   window.SetBounds(gfx::Rect(300, 300));
-  window.SetEmbedFrameSinkId(viz::FrameSinkId(0, 1));
+  WindowPortMusTestHelper(&window).SimulateEmbedding();
 
   // Allocate a new LocalSurfaceId. The ui::Layer should be updated.
   window.AllocateLocalSurfaceId();
 
-  auto* window_mus = WindowPortMus::Get(&window);
   viz::LocalSurfaceId local_surface_id =
       window.GetLocalSurfaceIdAllocation().local_surface_id();
-  viz::SurfaceId primary_surface_id =
-      window_mus->client_surface_embedder()->GetSurfaceIdForTesting();
+  ClientSurfaceEmbedder* client_surface_embedder =
+      WindowPortMusTestHelper(&window).GetClientSurfaceEmbedder();
+  ASSERT_TRUE(client_surface_embedder);
+  viz::SurfaceId primary_surface_id = client_surface_embedder->GetSurfaceId();
   EXPECT_EQ(local_surface_id, primary_surface_id.local_surface_id());
 }
 
@@ -110,7 +113,7 @@ TEST_F(WindowPortMusTest,
   window.set_owned_by_parent(false);
   window.SetBounds(gfx::Rect(300, 300));
   // Simulate an embedding.
-  window.SetEmbedFrameSinkId(viz::FrameSinkId(0, 1));
+  WindowPortMusTestHelper(&window).SimulateEmbedding();
   root_window()->AddChild(&window);
 
   // AckAllChanges() so that can verify a bounds change happens from
@@ -132,18 +135,19 @@ TEST_F(WindowPortMusTest,
       parent_allocator->GetCurrentLocalSurfaceIdAllocation());
 
   // Updating the LocalSurfaceId should propagate to the ClientSurfaceEmbedder.
-  auto* window_mus = WindowPortMus::Get(&window);
-  ASSERT_TRUE(window_mus);
-  ASSERT_TRUE(window_mus->client_surface_embedder());
-  EXPECT_EQ(updated_id, window_mus->client_surface_embedder()
-                            ->GetSurfaceIdForTesting()
-                            .local_surface_id());
+  ClientSurfaceEmbedder* client_surface_embedder =
+      WindowPortMusTestHelper(&window).GetClientSurfaceEmbedder();
+  ASSERT_TRUE(client_surface_embedder);
+  EXPECT_EQ(updated_id,
+            client_surface_embedder->GetSurfaceId().local_surface_id());
 
   // The server is notified of a bounds change, so that it sees the new
   // LocalSurfaceId.
   ASSERT_EQ(1u,
             window_tree()->GetChangeCountForType(WindowTreeChangeType::BOUNDS));
   ASSERT_TRUE(window_tree()->last_local_surface_id());
+  auto* window_mus = WindowPortMus::Get(&window);
+  ASSERT_TRUE(window_mus);
   EXPECT_EQ(window_mus->server_id(), window_tree()->window_id());
   EXPECT_EQ(updated_id, *(window_tree()->last_local_surface_id()));
 }
@@ -199,6 +203,89 @@ TEST_F(WindowPortMusTest, LocalOcclusionStateFromVisibility) {
   // Changes to HIDDEN when parent hides.
   parent.Hide();
   EXPECT_EQ(Window::OcclusionState::HIDDEN, window.occlusion_state());
+}
+
+TEST_F(WindowPortMusTest, PrepareForEmbed) {
+  Window window(nullptr);
+  window.Init(ui::LAYER_NOT_DRAWN);
+  window.set_owned_by_parent(false);
+  window.SetBounds(gfx::Rect(400, 300));
+
+  WindowPortMusTestHelper helper(&window);
+  helper.SimulateEmbedding();
+  ClientSurfaceEmbedder* client_surface_embedder =
+      WindowPortMusTestHelper(&window).GetClientSurfaceEmbedder();
+  ASSERT_TRUE(client_surface_embedder);
+  EXPECT_TRUE(client_surface_embedder->GetSurfaceId().is_valid());
+}
+
+class TestDragDropDelegate : public client::DragDropDelegate {
+ public:
+  TestDragDropDelegate() = default;
+  ~TestDragDropDelegate() override = default;
+
+  // client::DragDropDelegate:
+  void OnDragEntered(const ui::DropTargetEvent& event) override {}
+  int OnDragUpdated(const ui::DropTargetEvent& event) override { return 0; }
+  void OnDragExited() override {}
+  int OnPerformDrop(const ui::DropTargetEvent& event) override { return 0; }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestDragDropDelegate);
+};
+
+TEST_F(WindowPortMusTest, CanAcceptDrops) {
+  TestDragDropDelegate test_delegate;
+
+  Window window(nullptr);
+  window.Init(ui::LAYER_NOT_DRAWN);
+  window.set_owned_by_parent(false);
+  window.SetBounds(gfx::Rect(400, 300));
+
+  EXPECT_EQ(0u, window_tree()->get_and_clear_accepts_drops_count());
+
+  // Setting the DragDropDelegate should implicitly call
+  // SetCanAcceptDrops(true).
+  client::SetDragDropDelegate(&window, &test_delegate);
+  EXPECT_EQ(1u, window_tree()->get_and_clear_accepts_drops_count());
+  EXPECT_TRUE(window_tree()->last_accepts_drops());
+
+  // And removing the DragDropDelegate should implicitly call
+  // SetCanAcceptDrops(false).
+  client::SetDragDropDelegate(&window, nullptr);
+  EXPECT_EQ(1u, window_tree()->get_and_clear_accepts_drops_count());
+  EXPECT_FALSE(window_tree()->last_accepts_drops());
+}
+
+TEST_F(WindowPortMusTest, RegisterFrameSinkId) {
+  Window window(nullptr);
+  window.Init(ui::LAYER_NOT_DRAWN);
+  window.set_owned_by_parent(false);
+  window.SetBounds(gfx::Rect(400, 300));
+
+  root_window()->AddChild(&window);
+  window_tree()->AckAllChanges();
+  window.SetEmbedFrameSinkId(viz::FrameSinkId(0, 1));
+
+  // Setting a FrameSinkId should trigger generating LocalSurfaceIds.
+  ASSERT_EQ(1u,
+            window_tree()->GetChangeCountForType(WindowTreeChangeType::BOUNDS));
+  ASSERT_TRUE(window_tree()->last_local_surface_id());
+  EXPECT_EQ(window_tree()->last_local_surface_id(),
+            window.GetLocalSurfaceIdAllocation().local_surface_id());
+  auto local_surface_id =
+      window.GetLocalSurfaceIdAllocation().local_surface_id();
+  window_tree()->AckAllChanges();
+
+  // Changing the bounds should trigger a new LocalSurfaceId.
+  window.SetBounds(gfx::Rect(400, 310));
+  ASSERT_EQ(1u,
+            window_tree()->GetChangeCountForType(WindowTreeChangeType::BOUNDS));
+  ASSERT_TRUE(window_tree()->last_local_surface_id());
+  EXPECT_EQ(window_tree()->last_local_surface_id(),
+            window.GetLocalSurfaceIdAllocation().local_surface_id());
+  EXPECT_NE(local_surface_id,
+            window.GetLocalSurfaceIdAllocation().local_surface_id());
 }
 
 }  // namespace aura

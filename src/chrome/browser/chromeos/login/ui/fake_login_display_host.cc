@@ -12,7 +12,7 @@ namespace chromeos {
 class FakeLoginDisplayHost::FakeBaseScreen : public chromeos::BaseScreen {
  public:
   explicit FakeBaseScreen(chromeos::OobeScreen screen_id)
-      : BaseScreen(nullptr, screen_id) {}
+      : BaseScreen(screen_id) {}
 
   ~FakeBaseScreen() override = default;
 
@@ -93,14 +93,6 @@ void FakeLoginDisplayHost::StartAppLaunch(const std::string& app_id,
 void FakeLoginDisplayHost::StartDemoAppLaunch() {}
 
 void FakeLoginDisplayHost::StartArcKiosk(const AccountId& account_id) {}
-
-void FakeLoginDisplayHost::StartVoiceInteractionOobe() {
-  is_voice_interaction_oobe_ = true;
-}
-
-bool FakeLoginDisplayHost::IsVoiceInteractionOobe() {
-  return is_voice_interaction_oobe_;
-}
 
 void FakeLoginDisplayHost::CompleteLogin(const UserContext& user_context) {}
 

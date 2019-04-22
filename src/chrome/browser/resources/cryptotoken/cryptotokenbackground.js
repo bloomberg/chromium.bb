@@ -77,6 +77,15 @@ function defaultResponseCallback(request, sendResponse, response) {
  * @param {*} response The response to return.
  */
 function sendResponseToActiveTabOnly(request, sender, sendResponse, response) {
+  // For WebAuthn-proxied requests on Windows, dismissing the native Windows
+  // UI after a timeout races with the error being returned here. Hence, skip
+  // the focus check for all timeouts.
+  if (response.responseData &&
+      response.responseData.errorCode == ErrorCodes.TIMEOUT) {
+    defaultResponseCallback(request, sendResponse, response);
+    return;
+  }
+
   tabInForeground(sender.tab.id).then(function(result) {
     // If the tab is no longer in the foreground, drop the result: the user
     // is no longer interacting with the tab that originated the request.

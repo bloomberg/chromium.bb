@@ -6,15 +6,15 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/command_line.h"
+#include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_mock_time_message_loop_task_runner.h"
 #include "chrome/browser/chromeos/login/mock_network_state_helper.h"
-#include "chrome/browser/chromeos/login/screens/mock_base_screen_delegate.h"
-#include "chrome/browser/chromeos/login/screens/mock_model_view_channel.h"
 #include "chrome/browser/chromeos/login/screens/mock_network_screen.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -41,8 +41,9 @@ class NetworkScreenUnitTest : public testing::Test {
 
     // Create the NetworkScreen we will use for testing.
     network_screen_ = std::make_unique<NetworkScreen>(
-        &mock_base_screen_delegate_, &mock_view_);
-    network_screen_->set_model_view_channel(&mock_channel_);
+        &mock_view_,
+        base::BindRepeating(&NetworkScreenUnitTest::HandleScreenExit,
+                            base::Unretained(this)));
     mock_network_state_helper_ = new login::MockNetworkStateHelper();
     network_screen_->SetNetworkStateHelperForTest(mock_network_state_helper_);
   }
@@ -57,27 +58,25 @@ class NetworkScreenUnitTest : public testing::Test {
   // A pointer to the NetworkScreen.
   std::unique_ptr<NetworkScreen> network_screen_;
 
-  // Accessory objects needed by NetworkScreen.
-  MockBaseScreenDelegate mock_base_screen_delegate_;
   login::MockNetworkStateHelper* mock_network_state_helper_ = nullptr;
+  base::Optional<NetworkScreen::Result> last_screen_result_;
 
  private:
+  void HandleScreenExit(NetworkScreen::Result screen_result) {
+    EXPECT_FALSE(last_screen_result_.has_value());
+    last_screen_result_ = screen_result;
+  }
+
   // Test versions of core browser infrastructure.
   content::TestBrowserThreadBundle threads_;
 
   // More accessory objects needed by NetworkScreen.
   MockNetworkScreenView mock_view_;
-  MockModelViewChannel mock_channel_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkScreenUnitTest);
 };
 
 TEST_F(NetworkScreenUnitTest, ContinuesAutomatically) {
-  // Set expectation that NetworkScreen will finish.
-  EXPECT_CALL(mock_base_screen_delegate_,
-              OnExit(ScreenExitCode::NETWORK_CONNECTED))
-      .Times(1);
-
   // Simulate a network connection.
   EXPECT_CALL(*mock_network_state_helper_, IsConnected())
       .Times(AnyNumber())
@@ -86,14 +85,12 @@ TEST_F(NetworkScreenUnitTest, ContinuesAutomatically) {
 
   // Check that we continued once
   EXPECT_EQ(1, network_screen_->continue_attempts_);
+
+  ASSERT_TRUE(last_screen_result_.has_value());
+  EXPECT_EQ(NetworkScreen::Result::CONNECTED, last_screen_result_.value());
 }
 
 TEST_F(NetworkScreenUnitTest, ContinuesOnlyOnce) {
-  // Set expectation that NetworkScreen will finish.
-  EXPECT_CALL(mock_base_screen_delegate_,
-              OnExit(ScreenExitCode::NETWORK_CONNECTED))
-      .Times(1);
-
   // Connect to network "net0".
   EXPECT_CALL(*mock_network_state_helper_, GetCurrentNetworkName())
       .Times(AnyNumber())
@@ -107,6 +104,9 @@ TEST_F(NetworkScreenUnitTest, ContinuesOnlyOnce) {
 
   // Check that we have continued exactly once.
   ASSERT_EQ(1, network_screen_->continue_attempts_);
+
+  ASSERT_TRUE(last_screen_result_.has_value());
+  EXPECT_EQ(NetworkScreen::Result::CONNECTED, last_screen_result_.value());
 
   // Stop waiting for another network, net1.
   network_screen_->StopWaitingForConnection(base::ASCIIToUTF16("net1"));

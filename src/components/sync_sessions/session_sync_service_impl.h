@@ -37,9 +37,6 @@ class SessionSyncServiceImpl : public SessionSyncService {
   SubscribeToForeignSessionsChanged(const base::RepeatingClosure& cb) override
       WARN_UNUSED_RESULT;
 
-  // Schedules garbage collection of foreign sessions.
-  void ScheduleGarbageCollection() override;
-
   // For ProfileSyncService to initialize the controller for SESSIONS.
   base::WeakPtr<syncer::ModelTypeControllerDelegate> GetControllerDelegate()
       override;

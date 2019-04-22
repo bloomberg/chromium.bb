@@ -6,27 +6,26 @@
 
 #include "xfa/fxfa/parser/cxfa_keep.h"
 
-#include "fxjs/xfa/cjx_keep.h"
+#include "fxjs/xfa/cjx_node.h"
 #include "third_party/base/ptr_util.h"
 
 namespace {
 
 const CXFA_Node::PropertyData kKeepPropertyData[] = {
     {XFA_Element::Extras, 1, 0},
-    {XFA_Element::Unknown, 0, 0}};
+};
+
 const CXFA_Node::AttributeData kKeepAttributeData[] = {
     {XFA_Attribute::Id, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Next, XFA_AttributeType::Enum,
-     (void*)XFA_AttributeEnum::None},
+     (void*)XFA_AttributeValue::None},
     {XFA_Attribute::Use, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Previous, XFA_AttributeType::Enum,
-     (void*)XFA_AttributeEnum::None},
+     (void*)XFA_AttributeValue::None},
     {XFA_Attribute::Usehref, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Intact, XFA_AttributeType::Enum,
-     (void*)XFA_AttributeEnum::None},
-    {XFA_Attribute::Unknown, XFA_AttributeType::Integer, nullptr}};
-
-constexpr wchar_t kKeepName[] = L"keep";
+     (void*)XFA_AttributeValue::None},
+};
 
 }  // namespace
 
@@ -38,7 +37,6 @@ CXFA_Keep::CXFA_Keep(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_Element::Keep,
                 kKeepPropertyData,
                 kKeepAttributeData,
-                kKeepName,
-                pdfium::MakeUnique<CJX_Keep>(this)) {}
+                pdfium::MakeUnique<CJX_Node>(this)) {}
 
-CXFA_Keep::~CXFA_Keep() {}
+CXFA_Keep::~CXFA_Keep() = default;

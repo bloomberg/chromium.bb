@@ -71,7 +71,7 @@ class FakePredictor : public BasePredictor {
   // |predictor_config|.
   static std::unique_ptr<FakePredictor> Create(
       PredictorConfig predictor_config);
-  ~FakePredictor() override{};
+  ~FakePredictor() override {}
   // Validation will always succeed.
   static RankerModelStatus ValidateModel(const RankerModel& model) {
     return RankerModelStatus::OK;
@@ -79,7 +79,7 @@ class FakePredictor : public BasePredictor {
 
  protected:
   // Not implementing any inference logic.
-  bool Initialize() override { return true; };
+  bool Initialize() override { return true; }
 
  private:
   FakePredictor(const PredictorConfig& config) : BasePredictor(config) {}

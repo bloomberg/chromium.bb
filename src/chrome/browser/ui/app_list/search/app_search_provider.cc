@@ -21,18 +21,20 @@
 #include "base/callback_list.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/clock.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/extensions/gfx_utils.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -44,13 +46,17 @@
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
 #include "chrome/browser/ui/app_list/extension_app_utils.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
+#include "chrome/browser/ui/app_list/search/app_service_app_result.h"
 #include "chrome/browser/ui/app_list/search/arc_app_result.h"
 #include "chrome/browser/ui/app_list/search/crostini_app_result.h"
 #include "chrome/browser/ui/app_list/search/extension_app_result.h"
 #include "chrome/browser/ui/app_list/search/internal_app_result.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_search_result_ranker.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/services/app_service/public/cpp/app_service_proxy.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync_sessions/session_sync_service.h"
 #include "extensions/browser/extension_prefs.h"
@@ -71,9 +77,14 @@ constexpr size_t kMinimumReservedAppsContainerCapacity = 60U;
 // Relevance threshold to use when Crostini has not yet been enabled. This value
 // is somewhat arbitrary, but is roughly equivalent to the 'ter' in 'terminal'.
 constexpr double kCrostiniTerminalRelevanceThreshold = 0.8;
-// These are added to the localized values for convenience. The leading space
-// is as we just append this to the localized version of 'Linux'.
-constexpr char kExtraCrostiniTerminalKeywords[] = " linux terminal crostini";
+
+// When ranking with the |QueryBasedAppsRanker| is enabled, this boost is
+// added to all apps that the ranker knows about.
+constexpr float kDefaultRankerScoreBoost = 0.0f;
+
+// When ranking with the |QueryBasedAppsRanker| is enabled, its scores are
+// multiplied by this amount.
+constexpr float kDefaultRankerScoreCoefficient = 0.1f;
 
 // Adds |app_result| to |results| only in case no duplicate apps were already
 // added. Duplicate means the same app but for different domain, Chrome and
@@ -116,6 +127,20 @@ float ReRange(const float score, const float min, const float max) {
     return min;
 
   return min + score * (max - min);
+}
+
+// Normalizes app IDs by removing any scheme prefix and trailing slash:
+// "arc://[id]/" to "[id]". This is necessary because apps launched from
+// different parts of the launcher have differently formatted IDs.
+std::string NormalizeID(const std::string& id) {
+  std::string app_id(id);
+  // No existing scheme names include the delimiter string "://".
+  std::size_t delimiter_index = app_id.find("://");
+  if (delimiter_index != std::string::npos)
+    app_id.erase(0, delimiter_index + 3);
+  if (!app_id.empty() && app_id.back() == '/')
+    app_id.pop_back();
+  return app_id;
 }
 
 }  // namespace
@@ -165,13 +190,19 @@ class AppSearchProvider::App {
   bool MatchSearchableText(const TokenizedString& query) {
     if (searchable_text_.empty())
       return false;
-    if (!tokenized_indexed_searchable_text_) {
-      tokenized_indexed_searchable_text_ =
-          std::make_unique<TokenizedString>(searchable_text_);
+    if (tokenized_indexed_searchable_text_.empty()) {
+      for (const base::string16& curr_text : searchable_text_) {
+        tokenized_indexed_searchable_text_.push_back(
+            std::make_unique<TokenizedString>(curr_text));
+      }
     }
     TokenizedStringMatch match;
-    match.Calculate(query, *tokenized_indexed_searchable_text_);
-    return match.relevance() > relevance_threshold();
+    for (auto& curr_text : tokenized_indexed_searchable_text_) {
+      match.Calculate(query, *curr_text);
+      if (match.relevance() > relevance_threshold())
+        return true;
+    }
+    return false;
   }
 
   AppSearchProvider::DataSource* data_source() { return data_source_; }
@@ -186,9 +217,12 @@ class AppSearchProvider::App {
   bool searchable() const { return searchable_; }
   void set_searchable(bool searchable) { searchable_ = searchable; }
 
-  const base::string16& searchable_text() const { return searchable_text_; }
-  void set_searchable_text(const base::string16& searchable_text) {
-    searchable_text_ = searchable_text;
+  const std::vector<base::string16>& searchable_text() const {
+    return searchable_text_;
+  }
+  void AddSearchableText(const base::string16& searchable_text) {
+    DCHECK(tokenized_indexed_searchable_text_.empty());
+    searchable_text_.push_back(searchable_text);
   }
 
   // Relevance must exceed the threshold to appear as a search result. Exact
@@ -203,14 +237,15 @@ class AppSearchProvider::App {
  private:
   AppSearchProvider::DataSource* data_source_;
   std::unique_ptr<TokenizedString> tokenized_indexed_name_;
-  std::unique_ptr<TokenizedString> tokenized_indexed_searchable_text_;
+  std::vector<std::unique_ptr<TokenizedString>>
+      tokenized_indexed_searchable_text_;
   const std::string id_;
   const base::string16 name_;
   const base::Time last_launch_time_;
   const base::Time install_time_;
   bool recommendable_ = true;
   bool searchable_ = true;
-  base::string16 searchable_text_;
+  std::vector<base::string16> searchable_text_;
   float relevance_threshold_ = 0.f;
   // Set to true in case app was installed internally, by sync, policy or as a
   // default app.
@@ -233,6 +268,8 @@ class AppSearchProvider::DataSource {
       AppListControllerDelegate* list_controller,
       bool is_recommended) = 0;
 
+  virtual void ViewClosing() {}
+
  protected:
   Profile* profile() { return profile_; }
   AppSearchProvider* owner() { return owner_; }
@@ -246,6 +283,94 @@ class AppSearchProvider::DataSource {
 };
 
 namespace {
+
+class AppServiceDataSource : public AppSearchProvider::DataSource,
+                             public apps::AppRegistryCache::Observer {
+ public:
+  AppServiceDataSource(Profile* profile, AppSearchProvider* owner)
+      : AppSearchProvider::DataSource(profile, owner),
+        icon_cache_(apps::AppServiceProxyFactory::GetForProfile(profile),
+                    apps::IconCache::GarbageCollectionPolicy::kExplicit) {
+    apps::AppServiceProxy* proxy =
+        apps::AppServiceProxyFactory::GetForProfile(profile);
+    if (proxy) {
+      Observe(&proxy->AppRegistryCache());
+    }
+  }
+
+  ~AppServiceDataSource() override = default;
+
+  // AppSearchProvider::DataSource overrides:
+  void AddApps(AppSearchProvider::Apps* apps_vector) override {
+    apps::AppServiceProxy* proxy =
+        apps::AppServiceProxyFactory::GetForProfile(profile());
+    if (!proxy) {
+      return;
+    }
+    proxy->AppRegistryCache().ForEachApp([this, apps_vector](
+                                             const apps::AppUpdate& update) {
+      if (update.ShowInSearch() != apps::mojom::OptionalBool::kTrue) {
+        return;
+      }
+
+      // TODO(crbug.com/826982): add the "can load in incognito" concept to
+      // the App Service and use it here, similar to ExtensionDataSource.
+
+      apps_vector->emplace_back(std::make_unique<AppSearchProvider::App>(
+          this, update.AppId(), update.ShortName(), update.LastLaunchTime(),
+          update.InstallTime(),
+          update.InstalledInternally() == apps::mojom::OptionalBool::kTrue));
+
+      // Until it's been installed, the Crostini Terminal is hidden and
+      // requires a few characters before being shown in search results.
+      if ((update.AppType() == apps::mojom::AppType::kCrostini) &&
+          (update.AppId() == crostini::kCrostiniTerminalId) &&
+          !crostini::IsCrostiniEnabled(profile())) {
+        apps_vector->back()->set_recommendable(false);
+        apps_vector->back()->set_relevance_threshold(
+            kCrostiniTerminalRelevanceThreshold);
+      }
+
+      for (const std::string& term : update.AdditionalSearchTerms()) {
+        apps_vector->back()->AddSearchableText(base::UTF8ToUTF16(term));
+      }
+    });
+  }
+
+  std::unique_ptr<AppResult> CreateResult(
+      const std::string& app_id,
+      AppListControllerDelegate* list_controller,
+      bool is_recommended) override {
+    return std::make_unique<AppServiceAppResult>(
+        profile(), app_id, list_controller, is_recommended, &icon_cache_);
+  }
+
+  void ViewClosing() override { icon_cache_.SweepReleasedIcons(); }
+
+ private:
+  // apps::AppRegistryCache::Observer overrides:
+  void OnAppUpdate(const apps::AppUpdate& update) override {
+    if (update.Readiness() == apps::mojom::Readiness::kReady) {
+      owner()->RefreshAppsAndUpdateResultsDeferred();
+    } else {
+      owner()->RefreshAppsAndUpdateResults();
+    }
+  }
+
+  // The AppServiceDataSource seems like one (but not the only) good place to
+  // add an App Service icon caching wrapper, because (1) the AppSearchProvider
+  // destroys and creates multiple search results in a short period of time,
+  // while the user is typing, so will clearly benefit from a cache, and (2)
+  // there is an obvious point in time when the cache can be emptied: the user
+  // will obviously stop typing (so stop triggering LoadIcon requests) when the
+  // search box view closes.
+  //
+  // There are reasons to have more than one icon caching layer. See the
+  // comments for the apps::IconCache::GarbageCollectionPolicy enum.
+  apps::IconCache icon_cache_;
+
+  DISALLOW_COPY_AND_ASSIGN(AppServiceDataSource);
+};
 
 class ExtensionDataSource : public AppSearchProvider::DataSource,
                             public extensions::ExtensionRegistryObserver {
@@ -276,13 +401,13 @@ class ExtensionDataSource : public AppSearchProvider::DataSource,
   // extensions::ExtensionRegistryObserver overrides:
   void OnExtensionLoaded(content::BrowserContext* browser_context,
                          const extensions::Extension* extension) override {
-    owner()->RefreshAppsAndUpdateResults(false);
+    owner()->RefreshAppsAndUpdateResultsDeferred();
   }
 
   void OnExtensionUninstalled(content::BrowserContext* browser_context,
                               const extensions::Extension* extension,
                               extensions::UninstallReason reason) override {
-    owner()->RefreshAppsAndUpdateResults(true);
+    owner()->RefreshAppsAndUpdateResults();
   }
 
  private:
@@ -369,21 +494,21 @@ class ArcDataSource : public AppSearchProvider::DataSource,
   // ArcAppListPrefs::Observer overrides:
   void OnAppRegistered(const std::string& app_id,
                        const ArcAppListPrefs::AppInfo& app_info) override {
-    owner()->RefreshAppsAndUpdateResults(false);
+    owner()->RefreshAppsAndUpdateResultsDeferred();
   }
 
   void OnAppStatesChanged(const std::string& app_id,
                           const ArcAppListPrefs::AppInfo& app_info) override {
-    owner()->RefreshAppsAndUpdateResults(false);
+    owner()->RefreshAppsAndUpdateResultsDeferred();
   }
 
   void OnAppRemoved(const std::string& id) override {
-    owner()->RefreshAppsAndUpdateResults(true);
+    owner()->RefreshAppsAndUpdateResults();
   }
 
   void OnAppNameUpdated(const std::string& id,
                         const std::string& name) override {
-    owner()->RefreshAppsAndUpdateResults(false);
+    owner()->RefreshAppsAndUpdateResultsDeferred();
   }
 
  private:
@@ -392,35 +517,37 @@ class ArcDataSource : public AppSearchProvider::DataSource,
 
 class InternalDataSource : public AppSearchProvider::DataSource {
  public:
-  InternalDataSource(Profile* profile, AppSearchProvider* owner)
-      : AppSearchProvider::DataSource(profile, owner) {
+  InternalDataSource(Profile* profile,
+                     AppSearchProvider* owner,
+                     bool just_continue_reading)
+      : AppSearchProvider::DataSource(profile, owner),
+        just_continue_reading_(just_continue_reading) {
     sync_sessions::SessionSyncService* service =
         SessionSyncServiceFactory::GetInstance()->GetForProfile(profile);
-    if (service) {
-      // base::Unretained() is safe below because the subscription itself is a
-      // class member field and handles destruction well.
-      foreign_session_updated_subscription_ =
-          service->SubscribeToForeignSessionsChanged(base::BindRepeating(
-              &AppSearchProvider::RefreshAppsAndUpdateResults,
-              base::Unretained(owner),
-              /*force_inline=*/false));
-    }
+    if (!service)
+      return;
+    // base::Unretained() is safe below because the subscription itself is a
+    // class member field and handles destruction well.
+    foreign_session_updated_subscription_ =
+        service->SubscribeToForeignSessionsChanged(base::BindRepeating(
+            &AppSearchProvider::RefreshAppsAndUpdateResultsDeferred,
+            base::Unretained(owner)));
   }
 
-  ~InternalDataSource() override {}
+  ~InternalDataSource() override = default;
 
   // AppSearchProvider::DataSource overrides:
   void AddApps(AppSearchProvider::Apps* apps) override {
     for (const auto& internal_app : GetInternalAppList(profile())) {
       if (!std::strcmp(internal_app.app_id, kInternalAppIdContinueReading)) {
-        if (!app_list_features::IsContinueReadingEnabled())
-          continue;
-
         sync_sessions::SessionSyncService* service =
             SessionSyncServiceFactory::GetInstance()->GetForProfile(profile());
-        if (!service || !service->GetOpenTabsUIDelegate()) {
+        if (!service || (!service->GetOpenTabsUIDelegate() &&
+                         !owner()->open_tabs_ui_delegate_for_testing())) {
           continue;
         }
+      } else if (just_continue_reading_) {
+        continue;
       }
 
       apps->emplace_back(std::make_unique<AppSearchProvider::App>(
@@ -431,7 +558,7 @@ class InternalDataSource : public AppSearchProvider::DataSource {
       apps->back()->set_recommendable(internal_app.recommendable);
       apps->back()->set_searchable(internal_app.searchable);
       if (internal_app.searchable_string_resource_id != 0) {
-        apps->back()->set_searchable_text(l10n_util::GetStringUTF16(
+        apps->back()->AddSearchableText(l10n_util::GetStringUTF16(
             internal_app.searchable_string_resource_id));
       }
     }
@@ -446,6 +573,15 @@ class InternalDataSource : public AppSearchProvider::DataSource {
   }
 
  private:
+  // Whether InternalDataSource provides just the kInternalAppIdContinueReading
+  // app. If true, other internal apps are provided by AppServiceDataSource.
+  //
+  // TODO(crbug.com/826982): move the "foreign session updated subscription"
+  // into the App Service? Or if, in terms of UI, "continue reading" is exposed
+  // only in the app list search UI, it might make more sense to leave it in
+  // this code. See also built_in_chromeos_apps.cc.
+  bool just_continue_reading_;
+
   std::unique_ptr<base::CallbackList<void()>::Subscription>
       foreign_session_updated_subscription_;
 
@@ -475,17 +611,18 @@ class CrostiniDataSource : public AppSearchProvider::DataSource,
           *registry_service->GetRegistration(app_id);
       if (registration.NoDisplay())
         continue;
-      // Eventually it would be nice to use additional data points, for example
-      // the 'Keywords' desktop entry field and the executable file name.
       apps->emplace_back(std::make_unique<AppSearchProvider::App>(
           this, app_id, registration.Name(), registration.LastLaunchTime(),
           registration.InstallTime(), false /* installed_internally */));
+      const std::string& executable_file_name =
+          registration.ExecutableFileName();
+      if (!executable_file_name.empty())
+        apps->back()->AddSearchableText(
+            base::UTF8ToUTF16(executable_file_name));
+      for (const std::string& keyword : registration.Keywords())
+        apps->back()->AddSearchableText(base::UTF8ToUTF16(keyword));
 
       if (app_id == crostini::kCrostiniTerminalId) {
-        base::string16 searchable_text =
-            l10n_util::GetStringUTF16(IDS_CROSTINI_TERMINAL_APP_SEARCH_TERMS);
-        searchable_text += base::UTF8ToUTF16(kExtraCrostiniTerminalKeywords);
-        apps->back()->set_searchable_text(searchable_text);
         // Until it's been installed, the Terminal is hidden and requires
         // a few characters before being shown in search results.
         if (!crostini::IsCrostiniEnabled(profile())) {
@@ -511,7 +648,10 @@ class CrostiniDataSource : public AppSearchProvider::DataSource,
       const std::vector<std::string>& updated_apps,
       const std::vector<std::string>& removed_apps,
       const std::vector<std::string>& inserted_apps) override {
-    owner()->RefreshAppsAndUpdateResults(!removed_apps.empty());
+    if (removed_apps.empty())
+      owner()->RefreshAppsAndUpdateResultsDeferred();
+    else
+      owner()->RefreshAppsAndUpdateResults();
   }
 
  private:
@@ -523,49 +663,82 @@ class CrostiniDataSource : public AppSearchProvider::DataSource,
 AppSearchProvider::AppSearchProvider(Profile* profile,
                                      AppListControllerDelegate* list_controller,
                                      base::Clock* clock,
-                                     AppListModelUpdater* model_updater)
+                                     AppListModelUpdater* model_updater,
+                                     AppSearchResultRanker* ranker)
     : profile_(profile),
       list_controller_(list_controller),
       model_updater_(model_updater),
       clock_(clock),
-      ranker_(std::make_unique<AppSearchResultRanker>(
-          profile->GetPath(),
-          chromeos::ProfileHelper::IsEphemeralUserProfile(profile))),
+      ranker_(ranker),
+      refresh_apps_factory_(this),
       update_results_factory_(this) {
-  data_sources_.emplace_back(
-      std::make_unique<ExtensionDataSource>(profile, this));
-  if (arc::IsArcAllowedForProfile(profile))
-    data_sources_.emplace_back(std::make_unique<ArcDataSource>(profile, this));
-  if (crostini::IsCrostiniUIAllowedForProfile(profile)) {
+  bool app_service_enabled =
+      base::FeatureList::IsEnabled(features::kAppServiceAsh);
+  if (app_service_enabled) {
     data_sources_.emplace_back(
-        std::make_unique<CrostiniDataSource>(profile, this));
+        std::make_unique<AppServiceDataSource>(profile, this));
+  } else {
+    data_sources_.emplace_back(
+        std::make_unique<ExtensionDataSource>(profile, this));
+    if (arc::IsArcAllowedForProfile(profile)) {
+      data_sources_.emplace_back(
+          std::make_unique<ArcDataSource>(profile, this));
+    }
+    if (crostini::IsCrostiniUIAllowedForProfile(profile)) {
+      data_sources_.emplace_back(
+          std::make_unique<CrostiniDataSource>(profile, this));
+    }
   }
   data_sources_.emplace_back(
-      std::make_unique<InternalDataSource>(profile, this));
+      std::make_unique<InternalDataSource>(profile, this, app_service_enabled));
 }
 
 AppSearchProvider::~AppSearchProvider() {}
 
 void AppSearchProvider::Start(const base::string16& query) {
   query_ = query;
+  query_start_time_ = base::TimeTicks::Now();
+  // We only need to record app search latency for queries started by user.
+  record_query_uma_ = true;
   const bool show_recommendations = query.empty();
   // Refresh list of apps to ensure we have the latest launch time information.
   // This will also cause the results to update.
   if (show_recommendations || apps_.empty())
-    RefreshApps();
-
-  UpdateResults();
+    RefreshAppsAndUpdateResults();
+  else
+    UpdateResults();
 }
 
-void AppSearchProvider::Train(const std::string& id) {
-  ranker_->Train(id);
+void AppSearchProvider::ViewClosing() {
+  ClearResultsSilently();
+  for (auto& data_source : data_sources_)
+    data_source->ViewClosing();
 }
 
-void AppSearchProvider::RefreshApps() {
+void AppSearchProvider::Train(const std::string& id, RankingItemType type) {
+  if (type == RankingItemType::kApp)
+    ranker_->Train(NormalizeID(id));
+}
+
+void AppSearchProvider::RefreshAppsAndUpdateResults() {
+  // Clear any pending requests if any.
+  refresh_apps_factory_.InvalidateWeakPtrs();
+
   apps_.clear();
   apps_.reserve(kMinimumReservedAppsContainerCapacity);
   for (auto& data_source : data_sources_)
     data_source->AddApps(&apps_);
+  UpdateResults();
+}
+
+void AppSearchProvider::RefreshAppsAndUpdateResultsDeferred() {
+  // Check if request is pending.
+  if (refresh_apps_factory_.HasWeakPtrs())
+    return;
+
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&AppSearchProvider::RefreshAppsAndUpdateResults,
+                                refresh_apps_factory_.GetWeakPtr()));
 }
 
 void AppSearchProvider::UpdateRecommendedResults(
@@ -583,10 +756,12 @@ void AppSearchProvider::UpdateRecommendedResults(
 
     base::string16 title = app->name();
     if (app->id() == kInternalAppIdContinueReading) {
-      if (HasRecommendableForeignTab(profile_, &title, nullptr))
-        app->set_searchable_text(title);
-      else
+      if (HasRecommendableForeignTab(profile_, &title, /*url=*/nullptr,
+                                     open_tabs_ui_delegate_for_testing())) {
+        app->AddSearchableText(title);
+      } else {
         continue;
+      }
     }
 
     std::unique_ptr<AppResult> result =
@@ -623,6 +798,8 @@ void AppSearchProvider::UpdateRecommendedResults(
     MaybeAddResult(&new_results, std::move(result), &seen_or_filtered_apps);
   }
 
+  MaybeRecordQueryLatencyHistogram(false /* empty query */);
+
   SwapResults(&new_results);
   update_results_factory_.InvalidateWeakPtrs();
 }
@@ -632,6 +809,26 @@ void AppSearchProvider::UpdateQueriedResults() {
   std::set<std::string> seen_or_filtered_apps;
   const size_t apps_size = apps_.size();
   new_results.reserve(apps_size);
+
+  const bool should_rerank =
+      app_list_features::IsQueryBasedAppsRankerEnabled() &&
+      base::GetFieldTrialParamByFeatureAsBool(
+          app_list_features::kEnableQueryBasedAppsRanker,
+          "rank_app_query_results", false) &&
+      ranker_ != nullptr;
+  // Maps app IDs to their score according to |ranker_|.
+  base::flat_map<std::string, float> ranker_scores;
+  float ranker_score_coefficient = kDefaultRankerScoreCoefficient;
+  float ranker_score_boost = kDefaultRankerScoreBoost;
+  if (should_rerank) {
+    ranker_scores = ranker_->Rank();
+    ranker_score_coefficient = base::GetFieldTrialParamByFeatureAsDouble(
+        app_list_features::kEnableQueryBasedAppsRanker, "app_query_coefficient",
+        ranker_score_coefficient);
+    ranker_score_boost = base::GetFieldTrialParamByFeatureAsDouble(
+        app_list_features::kEnableQueryBasedAppsRanker, "app_query_boost",
+        ranker_score_boost);
+  }
 
   const TokenizedString query_terms(query_);
   for (auto& app : apps_) {
@@ -656,11 +853,39 @@ void AppSearchProvider::UpdateQueriedResults() {
     std::unique_ptr<AppResult> result =
         app->data_source()->CreateResult(app->id(), list_controller_, false);
     result->UpdateFromMatch(*indexed_name, match);
+    if (should_rerank) {
+      const auto find_in_ranker = ranker_scores.find(app->id());
+      if (find_in_ranker != ranker_scores.end()) {
+        result->set_relevance(result->relevance() +
+                              ranker_score_coefficient *
+                                  find_in_ranker->second +
+                              ranker_score_boost);
+      }
+    }
     MaybeAddResult(&new_results, std::move(result), &seen_or_filtered_apps);
   }
 
+  MaybeRecordQueryLatencyHistogram(true /* queried search */);
+
   SwapResults(&new_results);
   update_results_factory_.InvalidateWeakPtrs();
+}
+
+void AppSearchProvider::MaybeRecordQueryLatencyHistogram(
+    bool is_queried_search) {
+  // Record the query latency only if search provider is queried by user
+  // initiating a search or getting zero state suggestions.
+  if (!record_query_uma_)
+    return;
+
+  if (is_queried_search) {
+    UMA_HISTOGRAM_TIMES("Apps.AppList.AppSearchProvider.QueryTime",
+                        base::TimeTicks::Now() - query_start_time_);
+  } else {
+    UMA_HISTOGRAM_TIMES("Apps.AppList.AppSearchProvider.ZeroStateLatency",
+                        base::TimeTicks::Now() - query_start_time_);
+  }
+  record_query_uma_ = false;
 }
 
 void AppSearchProvider::UpdateResults() {
@@ -681,18 +906,8 @@ void AppSearchProvider::UpdateResults() {
   }
 }
 
-void AppSearchProvider::RefreshAppsAndUpdateResults(bool force_inline) {
-  RefreshApps();
-
-  if (force_inline) {
-    UpdateResults();
-  } else {
-    if (!update_results_factory_.HasWeakPtrs()) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(&AppSearchProvider::UpdateResults,
-                                update_results_factory_.GetWeakPtr()));
-    }
-  }
+std::string AppSearchProvider::NormalizeIDForTest(const std::string& id) {
+  return NormalizeID(id);
 }
 
 }  // namespace app_list

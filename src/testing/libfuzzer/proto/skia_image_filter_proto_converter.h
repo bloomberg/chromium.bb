@@ -444,5 +444,5 @@ class Converter {
                             ImageInfo::AlphaType alpha_type) const;
 #endif  // DEVELOPMENT
 };
-};      // namespace skia_image_filter_proto_converter
+}  // namespace skia_image_filter_proto_converter
 #endif  // TESTING_LIBFUZZER_PROTO_SKIA_IMAGE_FILTER_PROTO_CONVERTER_H_

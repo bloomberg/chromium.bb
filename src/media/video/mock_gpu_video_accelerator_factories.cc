@@ -93,8 +93,8 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
 }  // unnamed namespace
 
 MockGpuVideoAcceleratorFactories::MockGpuVideoAcceleratorFactories(
-    gpu::gles2::GLES2Interface* gles2)
-    : gles2_(gles2) {}
+    gpu::SharedImageInterface* sii)
+    : sii_(sii) {}
 
 MockGpuVideoAcceleratorFactories::~MockGpuVideoAcceleratorFactories() = default;
 

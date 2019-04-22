@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "media/base/media_util.h"
 #include "media/base/video_decoder_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -24,7 +24,7 @@ static const gfx::Size kNaturalSize(320, 240);
 TEST(VideoDecoderConfigStructTraitsTest, ConvertVideoDecoderConfig_Normal) {
   const uint8_t kExtraData[] = "config extra data";
   const std::vector<uint8_t> kExtraDataVector(
-      &kExtraData[0], &kExtraData[0] + arraysize(kExtraData));
+      &kExtraData[0], &kExtraData[0] + base::size(kExtraData));
   VideoDecoderConfig input(kCodecVP8, VP8PROFILE_ANY, PIXEL_FORMAT_I420,
                            VideoColorSpace(), VIDEO_ROTATION_0, kCodedSize,
                            kVisibleRect, kNaturalSize, kExtraDataVector,

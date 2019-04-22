@@ -64,8 +64,8 @@ struct PhotoState {
 // https://w3c.github.io/mediacapture-image/#point2d-section
 // TODO(mcasas): use gfx::mojom::PointF after https://crbug.com/640049.
 struct Point2D {
-  float x;
-  float y;
+  double x;
+  double y;
 };
 
 // Equivalent to idl PhotoSettings + MediaTrackSettings/MediaTrackConstraintSet.

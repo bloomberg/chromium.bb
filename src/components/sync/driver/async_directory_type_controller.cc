@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/sync/base/bind_to_task_runner.h"
@@ -31,13 +32,15 @@ AsyncDirectoryTypeController::CreateSharedChangeProcessor() {
 AsyncDirectoryTypeController::AsyncDirectoryTypeController(
     ModelType type,
     const base::Closure& dump_stack,
+    SyncService* sync_service,
     SyncClient* sync_client,
     ModelSafeGroup model_safe_group,
     scoped_refptr<base::SequencedTaskRunner> model_thread)
     : DirectoryDataTypeController(type,
                                   dump_stack,
-                                  sync_client,
+                                  sync_service,
                                   model_safe_group),
+      sync_client_(sync_client),
       user_share_(nullptr),
       processor_factory_(new GenericChangeProcessorFactory()),
       state_(NOT_RUNNING),
@@ -110,8 +113,7 @@ void AsyncDirectoryTypeController::StartAssociating(
 
   // Store UserShare now while on UI thread to avoid potential race
   // condition in StartAssociationWithSharedChangeProcessor.
-  DCHECK(sync_client_->GetSyncService());
-  user_share_ = sync_client_->GetSyncService()->GetUserShare();
+  user_share_ = sync_service()->GetUserShare();
 
   start_callback_ = std::move(start_callback);
   if (!StartAssociationAsync()) {
@@ -163,7 +165,8 @@ AsyncDirectoryTypeController::AsyncDirectoryTypeController()
     : DirectoryDataTypeController(UNSPECIFIED,
                                   base::Closure(),
                                   nullptr,
-                                  GROUP_PASSIVE) {}
+                                  GROUP_PASSIVE),
+      sync_client_(nullptr) {}
 
 AsyncDirectoryTypeController::~AsyncDirectoryTypeController() {}
 
@@ -211,7 +214,7 @@ void AsyncDirectoryTypeController::RecordStartFailure(ConfigureResult result) {
   // TODO(wychen): enum uma should be strongly typed. crbug.com/661401
   UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeStartFailures2",
                             ModelTypeToHistogramInt(type()),
-                            static_cast<int>(MODEL_TYPE_COUNT));
+                            static_cast<int>(ModelType::NUM_ENTRIES));
 #define PER_DATA_TYPE_MACRO(type_str)                                    \
   UMA_HISTOGRAM_ENUMERATION("Sync." type_str "ConfigureFailure", result, \
                             MAX_CONFIGURE_RESULT);

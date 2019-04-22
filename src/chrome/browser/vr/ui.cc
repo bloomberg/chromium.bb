@@ -11,10 +11,12 @@
 
 #include "chrome/browser/vr/ui.h"
 
+#include "base/bind.h"
 #include "base/numerics/math_constants.h"
 #include "base/numerics/ranges.h"
 #include "base/strings/string16.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "chrome/browser/vr/content_input_delegate.h"
 #include "chrome/browser/vr/elements/content_element.h"
 #include "chrome/browser/vr/elements/keyboard.h"
@@ -78,6 +80,10 @@ UiElementName UserFriendlyElementNameToUiElementName(
       return kOmniboxTextField;
     case UserFriendlyElementName::kOmniboxCloseButton:
       return kOmniboxCloseButton;
+    case UserFriendlyElementName::kOmniboxVoiceInputButton:
+      return kOmniboxVoiceSearchButton;
+    case UserFriendlyElementName::kVoiceInputCloseButton:
+      return kSpeechRecognitionListeningCloseButton;
     case UserFriendlyElementName::kAppButtonExitToast:
       return kWebVrExclusiveScreenToast;
     case UserFriendlyElementName::kWebXrAudioIndicator:
@@ -86,6 +92,16 @@ UiElementName UserFriendlyElementNameToUiElementName(
       return kWebVrHostedUiContent;
     case UserFriendlyElementName::kMicrophonePermissionIndicator:
       return kAudioCaptureIndicator;
+    case UserFriendlyElementName::kWebXrExternalPromptNotification:
+      return kWebXrExternalPromptNotification;
+    case UserFriendlyElementName::kCameraPermissionIndicator:
+      return kVideoCaptureIndicator;
+    case UserFriendlyElementName::kLocationPermissionIndicator:
+      return kLocationAccessIndicator;
+    case UserFriendlyElementName::kWebXrLocationPermissionIndicator:
+      return kWebVrLocationAccessIndicator;
+    case UserFriendlyElementName::kWebXrVideoPermissionIndicator:
+      return kWebVrVideoCaptureIndicator;
     default:
       NOTREACHED();
       return kNone;
@@ -282,13 +298,18 @@ void Ui::SetRecognitionResult(const base::string16& result) {
   model_->speech.recognition_result = result;
 }
 
+void Ui::SetHasOrCanRequestRecordAudioPermission(
+    bool const has_or_can_request_record_audio) {
+  model_->speech.has_or_can_request_record_audio_permission =
+      has_or_can_request_record_audio;
+}
+
 void Ui::OnSpeechRecognitionStateChanged(int new_state) {
   model_->speech.speech_recognition_state = new_state;
 }
 
-void Ui::SetOmniboxSuggestions(
-    std::unique_ptr<OmniboxSuggestions> suggestions) {
-  model_->omnibox_suggestions = suggestions->suggestions;
+void Ui::SetOmniboxSuggestions(std::vector<OmniboxSuggestion> suggestions) {
+  model_->omnibox_suggestions = std::move(suggestions);
 }
 
 void Ui::ShowSoftInput(bool show) {
@@ -440,12 +461,15 @@ void Ui::OnMenuButtonClicked() {
   }
 }
 
-void Ui::OnControllerUpdated(const ControllerModel& controller_model,
-                             const ReticleModel& reticle_model) {
-  model_->controller = controller_model;
+void Ui::OnControllersUpdated(
+    const std::vector<ControllerModel>& controller_models,
+    const ReticleModel& reticle_model) {
+  model_->controllers = controller_models;
   model_->reticle = reticle_model;
-  model_->controller.resting_in_viewport =
-      input_manager_->ControllerRestingInViewport();
+  for (auto& controller : model_->controllers) {
+    controller.resting_in_viewport =
+        input_manager_->ControllerRestingInViewport();
+  }
 }
 
 void Ui::OnProjMatrixChanged(const gfx::Transform& proj_matrix) {
@@ -573,8 +597,8 @@ void Ui::SetUiInputManagerForTesting(bool enabled) {
 }
 
 void Ui::InitializeModel(const UiInitialState& ui_initial_state) {
-  model_->speech.has_or_can_request_audio_permission =
-      ui_initial_state.has_or_can_request_audio_permission;
+  model_->speech.has_or_can_request_record_audio_permission =
+      ui_initial_state.has_or_can_request_record_audio_permission;
   model_->ui_modes.clear();
   model_->push_mode(kModeBrowsing);
   if (ui_initial_state.in_web_vr) {
@@ -591,6 +615,7 @@ void Ui::InitializeModel(const UiInitialState& ui_initial_state) {
   model_->standalone_vr_device = ui_initial_state.is_standalone_vr_device;
   model_->use_new_incognito_strings =
       ui_initial_state.use_new_incognito_strings;
+  model_->controllers.push_back(ControllerModel());
 }
 
 void Ui::AcceptDoffPromptForTesting() {
@@ -874,21 +899,24 @@ FovRectangle Ui::GetMinimalFov(const gfx::Transform& view_matrix,
   return FovRectangle{left_degrees, right_degrees, bottom_degrees, top_degrees};
 }
 
-#if defined(FEATURE_MODULES)
-
+#if defined(OS_ANDROID)
 extern "C" {
-Ui* CreateUi(UiBrowserInterface* browser,
-             PlatformInputHandler* content_input_forwarder,
-             std::unique_ptr<KeyboardDelegate> keyboard_delegate,
-             std::unique_ptr<TextInputDelegate> text_input_delegate,
-             std::unique_ptr<AudioDelegate> audio_delegate,
-             const UiInitialState& ui_initial_state) {
+
+// This symbol is retrieved from the VR feature module library via dlsym(),
+// where it's bare address is type-cast to a CreateUiFunction pointer and
+// executed. Any changes to the arguments here must be mirrored in that type.
+__attribute__((visibility("default"))) UiInterface* CreateUi(
+    UiBrowserInterface* browser,
+    PlatformInputHandler* content_input_forwarder,
+    std::unique_ptr<KeyboardDelegate> keyboard_delegate,
+    std::unique_ptr<TextInputDelegate> text_input_delegate,
+    std::unique_ptr<AudioDelegate> audio_delegate,
+    const UiInitialState& ui_initial_state) {
   return new Ui(browser, content_input_forwarder, std::move(keyboard_delegate),
                 std::move(text_input_delegate), std::move(audio_delegate),
                 ui_initial_state);
 }
 }
-
-#endif  // defined(FEATURE_MODULES)
+#endif  // defined(OS_ANDROID
 
 }  // namespace vr

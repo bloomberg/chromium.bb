@@ -68,7 +68,6 @@
 #include "net/url_request/url_request_filter.h"
 #include "services/network/public/cpp/features.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
-#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 
 #if !BUILDFLAG(ENABLE_DICE_SUPPORT)
 #include "components/signin/core/browser/signin_header_helper.h"
@@ -216,30 +215,6 @@ class ChromeResourceDispatcherHostDelegateBrowserTest :
   DISALLOW_COPY_AND_ASSIGN(ChromeResourceDispatcherHostDelegateBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_F(ChromeResourceDispatcherHostDelegateBrowserTest,
-                       NavigationDataProcessed) {
-  // The network service code path doesn't go through ResourceDispatcherHost.
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
-  // Servicified service worker doesn't set NavigationData.
-  if (blink::ServiceWorkerUtils::IsServicificationEnabled())
-    return;
-
-  ui_test_utils::NavigateToURL(browser(), embedded_test_server()->base_url());
-  {
-    DidFinishNavigationObserver nav_observer(
-        browser()->tab_strip_model()->GetActiveWebContents(), false);
-    ui_test_utils::NavigateToURL(
-        browser(), embedded_test_server()->GetURL("/google/google.html"));
-  }
-  SetShouldAddDataReductionProxyData(true);
-  {
-    DidFinishNavigationObserver nav_observer(
-        browser()->tab_strip_model()->GetActiveWebContents(), true);
-    ui_test_utils::NavigateToURL(browser(), embedded_test_server()->base_url());
-  }
-}
-
 // Mirror is not supported on Dice platforms.
 #if !BUILDFLAG(ENABLE_DICE_SUPPORT)
 
@@ -337,8 +312,7 @@ IN_PROC_BROWSER_TEST_F(ChromeResourceDispatcherHostDelegateMirrorBrowserTest,
   ASSERT_TRUE(embedded_test_server()->Start());
 
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  https_server.AddDefaultHandlers(
-      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  https_server.AddDefaultHandlers(GetChromeTestDataDir());
   https_server.RegisterRequestMonitor(base::BindLambdaForTesting(
       [&](const net::test_server::HttpRequest& request) {
         base::AutoLock auto_lock(lock);
@@ -367,20 +341,18 @@ IN_PROC_BROWSER_TEST_F(ChromeResourceDispatcherHostDelegateMirrorBrowserTest,
   // Neither should have the header.
   // Note we need to replace the port of the redirect's URL.
   base::StringPairs replacement_text;
-  std::string replacement_path;
   replacement_text.push_back(std::make_pair(
-      "{{PORT}}", base::UintToString(embedded_test_server()->port())));
-  net::test_server::GetFilePathWithReplacements(
-      "/mirror_request_header/http.www.google.com.html", replacement_text,
-      &replacement_path);
+      "{{PORT}}", base::NumberToString(embedded_test_server()->port())));
+  std::string replacement_path = net::test_server::GetFilePathWithReplacements(
+      "/mirror_request_header/http.www.google.com.html", replacement_text);
   all_tests.push_back(
       {embedded_test_server()->GetURL("www.google.com", replacement_path),
        "/simple.html", false, false, false});
 
   // First one adds the header and transfers it to the second.
-  net::test_server::GetFilePathWithReplacements(
-      "/mirror_request_header/http.www.header_adder.com.html", replacement_text,
-      &replacement_path);
+  replacement_path = net::test_server::GetFilePathWithReplacements(
+      "/mirror_request_header/http.www.header_adder.com.html",
+      replacement_text);
   all_tests.push_back(
       {embedded_test_server()->GetURL("www.header_adder.com", replacement_path),
        "/simple.html", true, true, true});
@@ -388,10 +360,9 @@ IN_PROC_BROWSER_TEST_F(ChromeResourceDispatcherHostDelegateMirrorBrowserTest,
   // First one should have the header, but not transfered to second one.
   replacement_text.clear();
   replacement_text.push_back(
-      std::make_pair("{{PORT}}", base::UintToString(https_server.port())));
-  net::test_server::GetFilePathWithReplacements(
-      "/mirror_request_header/https.www.google.com.html", replacement_text,
-      &replacement_path);
+      std::make_pair("{{PORT}}", base::NumberToString(https_server.port())));
+  replacement_path = net::test_server::GetFilePathWithReplacements(
+      "/mirror_request_header/https.www.google.com.html", replacement_text);
   all_tests.push_back({https_server.GetURL("www.google.com", replacement_path),
                        "/simple.html", false, true, false});
 

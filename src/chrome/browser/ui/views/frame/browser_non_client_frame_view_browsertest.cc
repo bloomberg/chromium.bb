@@ -11,10 +11,14 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/location_bar/custom_tab_bar_view.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/web_applications/bookmark_apps/system_web_app_manager_browsertest.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/ui_test_utils.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "ui/base/theme_provider.h"
 
@@ -24,9 +28,11 @@ class BrowserNonClientFrameViewBrowserTest
   BrowserNonClientFrameViewBrowserTest() = default;
   ~BrowserNonClientFrameViewBrowserTest() override = default;
 
-  void SetUpOnMainThread() override {
-    ExtensionBrowserTest::SetUpOnMainThread();
+  void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(features::kDesktopPWAWindowing);
+    ASSERT_TRUE(embedded_test_server()->Start());
+
+    extensions::ExtensionBrowserTest::SetUp();
   }
 
   // Note: A "bookmark app" is a type of hosted app. All of these tests apply
@@ -42,23 +48,25 @@ class BrowserNonClientFrameViewBrowserTest
     const extensions::Extension* app =
         extensions::browsertest_util::InstallBookmarkApp(browser()->profile(),
                                                          web_app_info);
-    content::TestNavigationObserver navigation_observer(GetAppURL());
-    navigation_observer.StartWatchingNewWebContents();
-    Browser* app_browser = extensions::browsertest_util::LaunchAppBrowser(
+    app_browser_ = extensions::browsertest_util::LaunchAppBrowser(
         browser()->profile(), app);
-    navigation_observer.WaitForNavigationFinished();
+    web_contents_ = app_browser_->tab_strip_model()->GetActiveWebContents();
+    // Ensure the main page has loaded and is ready for ExecJs DOM manipulation.
+    ASSERT_TRUE(content::NavigateToURL(web_contents_, GetAppURL()));
 
     BrowserView* browser_view =
-        BrowserView::GetBrowserViewForBrowser(app_browser);
+        BrowserView::GetBrowserViewForBrowser(app_browser_);
     app_frame_view_ = browser_view->frame()->GetFrameView();
   }
 
  protected:
   base::Optional<SkColor> app_theme_color_ = SK_ColorBLUE;
+  Browser* app_browser_ = nullptr;
+  content::WebContents* web_contents_ = nullptr;
   BrowserNonClientFrameView* app_frame_view_ = nullptr;
 
  private:
-  GURL GetAppURL() { return GURL("https://test.org"); }
+  GURL GetAppURL() { return embedded_test_server()->GetURL("/empty.html"); }
 
   base::test::ScopedFeatureList scoped_feature_list_;
 
@@ -144,9 +152,55 @@ using SystemWebAppNonClientFrameViewBrowserTest =
 // System Web Apps don't get the hosted app buttons.
 IN_PROC_BROWSER_TEST_F(SystemWebAppNonClientFrameViewBrowserTest,
                        HideHostedAppButtonContainer) {
-  Browser* app_browser = InstallAndLaunchSystemApp();
+  Browser* app_browser = WaitForSystemAppInstallAndLaunch();
   EXPECT_EQ(nullptr, BrowserView::GetBrowserViewForBrowser(app_browser)
                          ->frame()
                          ->GetFrameView()
                          ->hosted_app_button_container_for_testing());
+}
+
+// Checks that the title bar for hosted app windows is hidden when in fullscreen
+// for tab mode.
+IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewBrowserTest,
+                       FullscreenForTabTitlebarHeight) {
+  InstallAndLaunchBookmarkApp();
+  EXPECT_GT(app_frame_view_->GetTopInset(false), 0);
+
+  static_cast<content::WebContentsDelegate*>(app_browser_)
+      ->EnterFullscreenModeForTab(web_contents_, web_contents_->GetURL(), {});
+
+  EXPECT_EQ(app_frame_view_->GetTopInset(false), 0);
+}
+
+// Tests that the custom tab bar is visible in fullscreen mode.
+IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewBrowserTest,
+                       CustomTabBarIsVisibleInFullscreen) {
+  InstallAndLaunchBookmarkApp();
+
+  ui_test_utils::NavigateToURL(app_browser_, GURL("http://example.com"));
+
+  static_cast<content::WebContentsDelegate*>(app_browser_)
+      ->EnterFullscreenModeForTab(web_contents_, web_contents_->GetURL(), {});
+
+  EXPECT_TRUE(
+      app_frame_view_->browser_view()->toolbar()->custom_tab_bar()->IsDrawn());
+}
+
+// Tests that hosted app frames reflect the theme color set by HTML meta tags.
+IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewBrowserTest,
+                       HTMLMetaThemeColorOverridesManifest) {
+  // Ensure we're not using the system theme on Linux.
+  ThemeService* theme_service =
+      ThemeServiceFactory::GetForProfile(browser()->profile());
+  theme_service->UseDefaultTheme();
+
+  InstallAndLaunchBookmarkApp();
+  EXPECT_EQ(app_frame_view_->GetFrameColor(), *app_theme_color_);
+
+  EXPECT_TRUE(content::ExecJs(web_contents_, R"(
+      document.documentElement.innerHTML =
+          '<meta name="theme-color" content="yellow">';
+  )"));
+  EXPECT_EQ(app_frame_view_->GetFrameColor(), SK_ColorYELLOW);
+  DCHECK_NE(*app_theme_color_, SK_ColorYELLOW);
 }

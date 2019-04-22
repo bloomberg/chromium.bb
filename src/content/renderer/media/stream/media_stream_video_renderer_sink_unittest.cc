@@ -13,13 +13,14 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "content/child/child_process.h"
-#include "content/renderer/media/stream/media_stream_video_track.h"
 #include "content/renderer/media/stream/mock_media_stream_registry.h"
 #include "content/renderer/media/stream/mock_media_stream_video_source.h"
 #include "media/base/video_frame.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/public/web/web_heap.h"
 
 using ::testing::_;
@@ -43,9 +44,10 @@ class MediaStreamVideoRendererSinkTest : public testing::Test {
                              blink::WebMediaStreamSource::kTypeVideo,
                              blink::WebString::FromASCII("dummy_source_name"),
                              false /* remote */);
-    blink_source_.SetExtraData(mock_source_);
-    blink_track_ = MediaStreamVideoTrack::CreateVideoTrack(
-        mock_source_, MediaStreamSource::ConstraintsCallback(), true);
+    blink_source_.SetPlatformSource(base::WrapUnique(mock_source_));
+    blink_track_ = blink::MediaStreamVideoTrack::CreateVideoTrack(
+        mock_source_,
+        blink::WebPlatformMediaStreamSource::ConstraintsCallback(), true);
     mock_source_->StartMockedSource();
     base::RunLoop().RunUntilIdle();
 
@@ -55,7 +57,8 @@ class MediaStreamVideoRendererSinkTest : public testing::Test {
                    base::Unretained(this)),
         base::Bind(&MediaStreamVideoRendererSinkTest::RepaintCallback,
                    base::Unretained(this)),
-        child_process_->io_task_runner());
+        child_process_->io_task_runner(),
+        blink::scheduler::GetSingleThreadTaskRunnerForTesting());
     base::RunLoop().RunUntilIdle();
 
     EXPECT_TRUE(IsInStoppedState());
@@ -102,7 +105,7 @@ class MediaStreamVideoRendererSinkTest : public testing::Test {
  protected:
   // A ChildProcess is needed to fool the Tracks and Sources into believing they
   // are on the right threads. A ScopedTaskEnvironment must be instantiated
-  // before ChildProcess to prevent it from leaking a TaskScheduler.
+  // before ChildProcess to prevent it from leaking a ThreadPool.
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   const std::unique_ptr<ChildProcess> child_process_;
 
@@ -167,7 +170,8 @@ class MediaStreamVideoRendererSinkTransparencyTest
         base::Bind(&MediaStreamVideoRendererSinkTransparencyTest::
                        VerifyTransparentFrame,
                    base::Unretained(this)),
-        child_process_->io_task_runner());
+        child_process_->io_task_runner(),
+        blink::scheduler::GetSingleThreadTaskRunnerForTesting());
   }
 
   void VerifyTransparentFrame(scoped_refptr<media::VideoFrame> frame) {

@@ -14,26 +14,34 @@
 #include "GrMtlPipelineState.h"
 #include "GrMtlUtil.h"
 
+#include "GrRenderTargetPriv.h"
+
 #import <simd/simd.h>
 
 GrMtlPipelineState* GrMtlPipelineStateBuilder::CreatePipelineState(
+        GrMtlGpu* gpu,
+        GrRenderTarget* renderTarget, GrSurfaceOrigin origin,
         const GrPrimitiveProcessor& primProc,
+        const GrTextureProxy* const primProcProxies[],
         const GrPipeline& pipeline,
-        GrProgramDesc* desc,
-        GrMtlGpu* gpu) {
-    GrMtlPipelineStateBuilder builder(primProc, pipeline, desc, gpu);
+        Desc* desc) {
+    GrMtlPipelineStateBuilder builder(gpu, renderTarget, origin, pipeline, primProc,
+                                      primProcProxies, desc);
 
     if (!builder.emitAndInstallProcs()) {
         return nullptr;
     }
-    return builder.finalize(primProc, pipeline, desc);
+    return builder.finalize(renderTarget, primProc, pipeline, desc);
 }
 
-GrMtlPipelineStateBuilder::GrMtlPipelineStateBuilder(const GrPrimitiveProcessor& primProc,
+GrMtlPipelineStateBuilder::GrMtlPipelineStateBuilder(GrMtlGpu* gpu,
+                                                     GrRenderTarget* renderTarget,
+                                                     GrSurfaceOrigin origin,
                                                      const GrPipeline& pipeline,
-                                                     GrProgramDesc* desc,
-                                                     GrMtlGpu* gpu)
-        : INHERITED(primProc, pipeline, desc)
+                                                     const GrPrimitiveProcessor& primProc,
+                                                     const GrTextureProxy* const primProcProxies[],
+                                                     GrProgramDesc* desc)
+        : INHERITED(renderTarget, origin, primProc, primProcProxies, pipeline, desc)
         , fGpu(gpu)
         , fUniformHandler(this)
         , fVaryingHandler(this) {
@@ -56,16 +64,8 @@ id<MTLLibrary> GrMtlPipelineStateBuilder::createMtlShaderLibrary(
         SkSL::Program::Kind kind,
         const SkSL::Program::Settings& settings,
         GrProgramDesc* desc) {
-    SkString shaderString;
-    for (int i = 0; i < builder.fCompilerStrings.count(); ++i) {
-        if (builder.fCompilerStrings[i]) {
-            shaderString.append(builder.fCompilerStrings[i]);
-            shaderString.append("\n");
-        }
-    }
-
     SkSL::Program::Inputs inputs;
-    id<MTLLibrary> shaderLibrary = GrCompileMtlShaderLibrary(fGpu, shaderString.c_str(),
+    id<MTLLibrary> shaderLibrary = GrCompileMtlShaderLibrary(fGpu, builder.fCompilerString.c_str(),
                                                              kind, settings, &inputs);
     if (shaderLibrary == nil) {
         return nil;
@@ -74,9 +74,7 @@ id<MTLLibrary> GrMtlPipelineStateBuilder::createMtlShaderLibrary(
         this->addRTHeightUniform(SKSL_RTHEIGHT_NAME);
     }
     if (inputs.fFlipY) {
-        desc->setSurfaceOriginKey(GrGLSLFragmentShaderBuilder::KeyForSurfaceOrigin(
-                                                               this->pipeline().proxy()->origin()));
-        desc->finalize();
+        desc->setSurfaceOriginKey(GrGLSLFragmentShaderBuilder::KeyForSurfaceOrigin(this->origin()));
     }
     return shaderLibrary;
 }
@@ -265,12 +263,12 @@ static MTLBlendOperation blend_equation_to_mtl_blend_op(GrBlendEquation equation
 }
 
 static MTLRenderPipelineColorAttachmentDescriptor* create_color_attachment(
-        const GrPipeline& pipeline) {
+        GrPixelConfig config, const GrPipeline& pipeline) {
     auto mtlColorAttachment = [[MTLRenderPipelineColorAttachmentDescriptor alloc] init];
 
     // pixel format
     MTLPixelFormat format;
-    SkAssertResult(GrPixelConfigToMTLFormat(pipeline.renderTarget()->config(), &format));
+    SkAssertResult(GrPixelConfigToMTLFormat(config, &format));
     mtlColorAttachment.pixelFormat = format;
 
     // blending
@@ -301,10 +299,21 @@ static MTLRenderPipelineColorAttachmentDescriptor* create_color_attachment(
     return mtlColorAttachment;
 }
 
-GrMtlPipelineState* GrMtlPipelineStateBuilder::finalize(const GrPrimitiveProcessor& primProc,
+uint32_t buffer_size(uint32_t offset, uint32_t maxAlignment) {
+    // Metal expects the buffer to be padded at the end according to the alignment
+    // of the largest element in the buffer.
+    uint32_t offsetDiff = offset & maxAlignment;
+    if (offsetDiff != 0) {
+        offsetDiff = maxAlignment - offsetDiff + 1;
+    }
+    return offset + offsetDiff;
+}
+
+GrMtlPipelineState* GrMtlPipelineStateBuilder::finalize(GrRenderTarget* renderTarget,
+                                                        const GrPrimitiveProcessor& primProc,
                                                         const GrPipeline& pipeline,
-                                                        GrProgramDesc* desc) {
-    auto pipelineDescriptor = [[MTLRenderPipelineDescriptor alloc] init];
+                                                        Desc* desc) {
+    auto pipelineDescriptor = [MTLRenderPipelineDescriptor new];
 
     fVS.extensions().appendf("#extension GL_ARB_separate_shader_objects : enable\n");
     fFS.extensions().appendf("#extension GL_ARB_separate_shader_objects : enable\n");
@@ -315,10 +324,11 @@ GrMtlPipelineState* GrMtlPipelineStateBuilder::finalize(const GrPrimitiveProcess
 
     SkSL::Program::Settings settings;
     settings.fCaps = this->caps()->shaderCaps();
-    settings.fFlipY = this->pipeline().proxy()->origin() != kTopLeft_GrSurfaceOrigin;
-    settings.fSharpenTextures = fGpu->getContext()->contextPriv().sharpenMipmappedTextures();
+    settings.fFlipY = this->origin() != kTopLeft_GrSurfaceOrigin;
+    settings.fSharpenTextures = fGpu->getContext()->priv().options().fSharpenMipmappedTextures;
     SkASSERT(!this->fragColorIsInOut());
 
+    // TODO: Store shaders in cache
     id<MTLLibrary> vertexLibrary = nil;
     id<MTLLibrary> fragmentLibrary = nil;
     vertexLibrary = this->createMtlShaderLibrary(fVS,
@@ -340,7 +350,12 @@ GrMtlPipelineState* GrMtlPipelineStateBuilder::finalize(const GrPrimitiveProcess
     pipelineDescriptor.vertexFunction = vertexFunction;
     pipelineDescriptor.fragmentFunction = fragmentFunction;
     pipelineDescriptor.vertexDescriptor = create_vertex_descriptor(primProc);
-    pipelineDescriptor.colorAttachments[0] = create_color_attachment(pipeline);
+    pipelineDescriptor.colorAttachments[0] = create_color_attachment(this->config(), pipeline);
+    bool hasStencilAttachment = SkToBool(renderTarget->renderTargetPriv().getStencilAttachment());
+    GrMtlCaps* mtlCaps = (GrMtlCaps*)this->caps();
+    pipelineDescriptor.stencilAttachmentPixelFormat =
+        hasStencilAttachment ? mtlCaps->preferredStencilFormat().fInternalFormat
+                             : MTLPixelFormatInvalid;
 
     SkASSERT(pipelineDescriptor.vertexFunction);
     SkASSERT(pipelineDescriptor.fragmentFunction);
@@ -356,22 +371,60 @@ GrMtlPipelineState* GrMtlPipelineStateBuilder::finalize(const GrPrimitiveProcess
                  [[error localizedDescription] cStringUsingEncoding: NSASCIIStringEncoding]);
         return nullptr;
     }
+    uint32_t geomBufferSize = buffer_size(fUniformHandler.fCurrentGeometryUBOOffset,
+                                          fUniformHandler.fCurrentGeometryUBOMaxAlignment);
+    uint32_t fragBufferSize = buffer_size(fUniformHandler.fCurrentFragmentUBOOffset,
+                                          fUniformHandler.fCurrentFragmentUBOMaxAlignment);
     return new GrMtlPipelineState(fGpu,
                                   pipelineState,
                                   pipelineDescriptor.colorAttachments[0].pixelFormat,
                                   fUniformHandles,
                                   fUniformHandler.fUniforms,
-                                  GrMtlBuffer::Create(fGpu,
-                                                      fUniformHandler.fCurrentGeometryUBOOffset,
-                                                      kVertex_GrBufferType,
-                                                      kStatic_GrAccessPattern),
-                                  GrMtlBuffer::Create(fGpu,
-                                                      fUniformHandler.fCurrentFragmentUBOOffset,
-                                                      kVertex_GrBufferType,
-                                                      kStatic_GrAccessPattern),
+                                  GrMtlBuffer::Make(fGpu,
+                                                    geomBufferSize,
+                                                    GrGpuBufferType::kVertex,
+                                                    kStatic_GrAccessPattern),
+                                  GrMtlBuffer::Make(fGpu,
+                                                    fragBufferSize,
+                                                    GrGpuBufferType::kVertex,
+                                                    kStatic_GrAccessPattern),
                                   (uint32_t)fUniformHandler.numSamplers(),
                                   std::move(fGeometryProcessor),
                                   std::move(fXferProcessor),
                                   std::move(fFragmentProcessors),
                                   fFragmentProcessorCnt);
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+bool GrMtlPipelineStateBuilder::Desc::Build(Desc* desc,
+                                            GrRenderTarget* renderTarget,
+                                            const GrPrimitiveProcessor& primProc,
+                                            const GrPipeline& pipeline,
+                                            GrPrimitiveType primitiveType,
+                                            GrMtlGpu* gpu) {
+    if (!INHERITED::Build(desc, renderTarget, primProc,
+                          GrPrimitiveType::kLines == primitiveType, pipeline, gpu)) {
+        return false;
+    }
+
+    GrProcessorKeyBuilder b(&desc->key());
+
+    int keyLength = desc->key().count();
+    SkASSERT(0 == (keyLength % 4));
+    desc->fShaderKeyLength = SkToU32(keyLength);
+
+    b.add32(renderTarget->config());
+    b.add32(renderTarget->numColorSamples());
+    bool hasStencilAttachment = SkToBool(renderTarget->renderTargetPriv().getStencilAttachment());
+    b.add32(hasStencilAttachment ? gpu->mtlCaps().preferredStencilFormat().fInternalFormat
+                                 : MTLPixelFormatInvalid);
+    b.add32((uint32_t)pipeline.isStencilEnabled());
+    // Stencil samples don't seem to be tracked in the MTLRenderPipeline
+
+    b.add32(pipeline.getBlendInfoKey());
+
+    b.add32((uint32_t)primitiveType);
+
+    return true;
 }

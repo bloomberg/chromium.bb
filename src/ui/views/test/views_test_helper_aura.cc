@@ -25,11 +25,10 @@ ViewsTestHelperAura::ViewsTestHelperAura(
     ui::ContextFactoryPrivate* context_factory_private)
     : context_factory_(context_factory),
       context_factory_private_(context_factory_private) {
-  aura_test_helper_.reset(new aura::test::AuraTestHelper());
+  aura_test_helper_ = std::make_unique<aura::test::AuraTestHelper>();
 }
 
-ViewsTestHelperAura::~ViewsTestHelperAura() {
-}
+ViewsTestHelperAura::~ViewsTestHelperAura() = default;
 
 void ViewsTestHelperAura::EnableMusWithWindowTreeClient(
     aura::WindowTreeClient* window_tree_client) {
@@ -47,7 +46,8 @@ void ViewsTestHelperAura::SetUp() {
   new wm::DefaultActivationClient(root_window);
 
   if (!aura::client::GetScreenPositionClient(root_window)) {
-    screen_position_client_.reset(new wm::DefaultScreenPositionClient);
+    screen_position_client_ =
+        std::make_unique<wm::DefaultScreenPositionClient>();
     aura::client::SetScreenPositionClient(root_window,
                                           screen_position_client_.get());
   }
@@ -76,14 +76,6 @@ void ViewsTestHelperAura::TearDown() {
 }
 
 gfx::NativeWindow ViewsTestHelperAura::GetContext() {
-  if (PlatformTestHelper::IsMus()) {
-    // GetContext() returns the root of a WindowTreeHost associated with a
-    // single display that is intended for an ash like environment. Such a
-    // configuration doesn't make sense for aura-mus-client, where it's testing
-    // DesktopNativeWidgetAura.
-    return nullptr;
-  }
-
   return aura_test_helper_->root_window();
 }
 

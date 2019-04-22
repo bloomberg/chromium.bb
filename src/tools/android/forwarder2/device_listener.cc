@@ -55,8 +55,8 @@ void DeviceListener::Start() {
 void DeviceListener::SetAdbDataSocket(std::unique_ptr<Socket> adb_data_socket) {
   thread_.task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&DeviceListener::OnAdbDataSocketReceivedOnInternalThread,
-                 base::Unretained(this), base::Passed(&adb_data_socket)));
+      base::BindOnce(&DeviceListener::OnAdbDataSocketReceivedOnInternalThread,
+                     base::Unretained(this), std::move(adb_data_socket)));
 }
 
 DeviceListener::DeviceListener(std::unique_ptr<Socket> listener_socket,
@@ -77,9 +77,8 @@ DeviceListener::DeviceListener(std::unique_ptr<Socket> listener_socket,
 
 void DeviceListener::AcceptNextClientSoon() {
   thread_.task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&DeviceListener::AcceptClientOnInternalThread,
-                 base::Unretained(this)));
+      FROM_HERE, base::BindOnce(&DeviceListener::AcceptClientOnInternalThread,
+                                base::Unretained(this)));
 }
 
 void DeviceListener::AcceptClientOnInternalThread() {

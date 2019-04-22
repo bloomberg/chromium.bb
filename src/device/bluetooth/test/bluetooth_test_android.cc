@@ -71,7 +71,7 @@ void BluetoothTestAndroid::PostTaskFromJava(
   // running the Runnable.
   runnable_ref.Reset(env, runnable);
   scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&RunJavaRunnable, runnable_ref));
+      FROM_HERE, base::BindOnce(&RunJavaRunnable, runnable_ref));
 }
 
 bool BluetoothTestAndroid::PlatformSupportsLowEnergy() {

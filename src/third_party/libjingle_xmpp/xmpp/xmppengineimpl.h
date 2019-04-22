@@ -8,8 +8,8 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#ifndef WEBRTC_LIBJINGLE_XMPP_XMPPENGINEIMPL_H_
-#define WEBRTC_LIBJINGLE_XMPP_XMPPENGINEIMPL_H_
+#ifndef THIRD_PARTY_LIBJINGLE_XMPP_XMPP_XMPPENGINEIMPL_H_
+#define THIRD_PARTY_LIBJINGLE_XMPP_XMPP_XMPPENGINEIMPL_H_
 
 #include <memory>
 #include <sstream>
@@ -18,7 +18,7 @@
 #include "third_party/libjingle_xmpp/xmpp/xmppengine.h"
 #include "third_party/libjingle_xmpp/xmpp/xmppstanzaparser.h"
 
-namespace buzz {
+namespace jingle_xmpp {
 
 class XmppLoginTask;
 class XmppEngine;
@@ -262,6 +262,6 @@ class XmppEngineImpl : public XmppEngine {
   std::unique_ptr<std::stringstream> output_;
 };
 
-}  // namespace buzz
+}  // namespace jingle_xmpp
 
-#endif  // WEBRTC_LIBJINGLE_XMPP_XMPPENGINEIMPL_H_
+#endif  // THIRD_PARTY_LIBJINGLE_XMPP_XMPP_XMPPENGINEIMPL_H_

@@ -24,6 +24,7 @@
  */
 
 #include <algorithm>
+#include <limits>
 
 #include "third_party/blink/renderer/modules/webaudio/audio_node_output.h"
 #include "third_party/blink/renderer/modules/webaudio/oscillator_node.h"
@@ -125,7 +126,7 @@ void OscillatorHandler::SetType(const String& type,
   }
 }
 
-bool OscillatorHandler::SetType(unsigned type) {
+bool OscillatorHandler::SetType(uint8_t type) {
   PeriodicWave* periodic_wave = nullptr;
 
   switch (type) {
@@ -489,6 +490,19 @@ bool OscillatorHandler::PropagatesSilence() const {
   return !IsPlayingOrScheduled() || HasFinished() || !periodic_wave_.Get();
 }
 
+void OscillatorHandler::HandleStoppableSourceNode() {
+  double now = Context()->currentTime();
+
+  // If we know the end time, and the source was started and the current time is
+  // definitely past the end time, we can stop this node.  (This handles the
+  // case where the this source is not connected to the destination and we want
+  // to stop it.)
+  if (end_time_ != kUnknownTime && IsPlayingOrScheduled() &&
+      now >= end_time_ + kExtraStopFrames / Context()->sampleRate()) {
+    Finish();
+  }
+}
+
 // ----------------------------------------------------------------
 
 OscillatorNode::OscillatorNode(BaseAudioContext& context,
@@ -512,7 +526,8 @@ OscillatorNode::OscillatorNode(BaseAudioContext& context,
                              AudioParamHandler::AutomationRate::kAudio,
                              AudioParamHandler::AutomationRateMode::kVariable,
                              -1200 * log2f(std::numeric_limits<float>::max()),
-                             1200 * log2f(std::numeric_limits<float>::max()))) {
+                             1200 * log2f(std::numeric_limits<float>::max()))),
+      periodic_wave_(wave_table) {
   SetHandler(OscillatorHandler::Create(
       *this, context.sampleRate(), oscillator_type, wave_table,
       frequency_->Handler(), detune_->Handler()));
@@ -523,11 +538,6 @@ OscillatorNode* OscillatorNode::Create(BaseAudioContext& context,
                                        PeriodicWave* wave_table,
                                        ExceptionState& exception_state) {
   DCHECK(IsMainThread());
-
-  if (context.IsContextClosed()) {
-    context.ThrowExceptionForClosedState(exception_state);
-    return nullptr;
-  }
 
   return MakeGarbageCollected<OscillatorNode>(context, oscillator_type,
                                               wave_table);
@@ -560,6 +570,7 @@ OscillatorNode* OscillatorNode::Create(BaseAudioContext* context,
 void OscillatorNode::Trace(blink::Visitor* visitor) {
   visitor->Trace(frequency_);
   visitor->Trace(detune_);
+  visitor->Trace(periodic_wave_);
   AudioScheduledSourceNode::Trace(visitor);
 }
 
@@ -585,6 +596,7 @@ AudioParam* OscillatorNode::detune() {
 }
 
 void OscillatorNode::setPeriodicWave(PeriodicWave* wave) {
+  periodic_wave_ = wave;
   GetOscillatorHandler().SetPeriodicWave(wave);
 }
 

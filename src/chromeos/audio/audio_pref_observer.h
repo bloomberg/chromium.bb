@@ -5,13 +5,13 @@
 #ifndef CHROMEOS_AUDIO_AUDIO_PREF_OBSERVER_H_
 #define CHROMEOS_AUDIO_AUDIO_PREF_OBSERVER_H_
 
+#include "base/component_export.h"
 #include "base/memory/ref_counted.h"
-#include "chromeos/chromeos_export.h"
 
 namespace chromeos {
 
 // Interface for observing audio preference changes.
-class CHROMEOS_EXPORT AudioPrefObserver {
+class COMPONENT_EXPORT(CHROMEOS_AUDIO) AudioPrefObserver {
  public:
   // Called when audio policy prefs changed.
   virtual void OnAudioPolicyPrefChanged() = 0;

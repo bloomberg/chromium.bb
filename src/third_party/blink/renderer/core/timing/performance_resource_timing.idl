@@ -50,5 +50,5 @@ interface PerformanceResourceTiming : PerformanceEntry {
     [MeasureAs=PerformanceResourceTimingSizes] readonly attribute unsigned long long encodedBodySize;
     [MeasureAs=PerformanceResourceTimingSizes] readonly attribute unsigned long long decodedBodySize;
     readonly attribute FrozenArray<PerformanceServerTiming> serverTiming;
-    serializer = {inherit, attribute};
+    [CallWith=ScriptState, ImplementedAs=toJSONForBinding] object toJSON();
 };

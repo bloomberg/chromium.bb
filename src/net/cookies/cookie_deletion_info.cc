@@ -80,8 +80,8 @@ CookieDeletionInfo::CookieDeletionInfo(base::Time start_time,
   // a particular URL.  These options will make sure that all
   // cookies associated with the URL are deleted.
   cookie_options.set_include_httponly();
-  cookie_options.set_same_site_cookie_mode(
-      net::CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX);
+  cookie_options.set_same_site_cookie_context(
+      net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
 }
 
 CookieDeletionInfo::CookieDeletionInfo(CookieDeletionInfo&& other) = default;
@@ -121,7 +121,8 @@ bool CookieDeletionInfo::Matches(const CanonicalCookie& cookie) const {
   }
 
   if (url.has_value() &&
-      !cookie.IncludeForRequestURL(url.value(), cookie_options)) {
+      cookie.IncludeForRequestURL(url.value(), cookie_options) !=
+          CanonicalCookie::CookieInclusionStatus::INCLUDE) {
     return false;
   }
 

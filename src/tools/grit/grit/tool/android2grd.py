@@ -13,7 +13,7 @@ from xml.dom import Node
 import xml.dom.minidom
 
 import grit.node.empty
-from grit.node import io
+from grit.node import node_io
 from grit.node import message
 
 from grit.tool import interface
@@ -403,7 +403,7 @@ OPTIONS may be any of the following:
     """
     xtb_file = os.path.normpath(os.path.join(
         self.xtb_dir, '%s_%s.xtb' % (self.name, lang)))
-    fnode = io.FileNode()
+    fnode = node_io.FileNode()
     fnode.StartParsing(u'file', translations_node)
     fnode.HandleAttribute('path', xtb_file)
     fnode.HandleAttribute('lang', lang)
@@ -414,11 +414,11 @@ OPTIONS may be any of the following:
   def __CreateCppHeaderOutputNode(self, outputs_node, header_dir):
     """Creates the <output> element corresponding to the generated c header."""
     header_file_name = os.path.join(header_dir, self.name + '.h')
-    header_node = io.OutputNode()
+    header_node = node_io.OutputNode()
     header_node.StartParsing(u'output', outputs_node)
     header_node.HandleAttribute('filename', header_file_name)
     header_node.HandleAttribute('type', 'rc_header')
-    emit_node = io.EmitNode()
+    emit_node = node_io.EmitNode()
     emit_node.StartParsing(u'emit', header_node)
     emit_node.HandleAttribute('emit_type', 'prepend')
     emit_node.EndParsing()
@@ -431,7 +431,7 @@ OPTIONS may be any of the following:
     """Creates the <output> element corresponding to various rc file output."""
     rc_file_name = self.name + '_' + lang + ".rc"
     rc_path = os.path.join(rc_dir, rc_file_name)
-    node = io.OutputNode()
+    node = node_io.OutputNode()
     node.StartParsing(u'output', outputs_node)
     node.HandleAttribute('filename', rc_path)
     node.HandleAttribute('lang', lang)
@@ -459,7 +459,7 @@ OPTIONS may be any of the following:
     xml_path = os.path.normpath(os.path.join(
         xml_res_dir, values, 'strings.xml'))
 
-    node = io.OutputNode()
+    node = node_io.OutputNode()
     node.StartParsing(u'output', outputs_node)
     node.HandleAttribute('filename', xml_path)
     node.HandleAttribute('lang', locale)

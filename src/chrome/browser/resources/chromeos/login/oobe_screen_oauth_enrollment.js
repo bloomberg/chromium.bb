@@ -239,14 +239,6 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
     },
 
     /**
-     * Header text of the screen.
-     * @type {string}
-     */
-    get header() {
-      return loadTimeData.getString('oauthEnrollScreenTitle');
-    },
-
-    /**
      * Event handler that is invoked just before the frame is shown.
      * @param {Object} data Screen init payload, contains the signin frame
      * URL.
@@ -267,7 +259,7 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
 
       $('oauth-enroll-auth-view').partition = data.webviewPartitionName;
 
-      $('login-header-bar').signinUIState = SIGNIN_UI_STATE.ENROLLMENT;
+      Oobe.getInstance().setSigninUIState(SIGNIN_UI_STATE.ENROLLMENT);
       this.classList.remove('saml');
 
       var gaiaParams = {};
@@ -294,11 +286,12 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
       this.navigation_.disabled = false;
 
       this.offlineAdUi_.onBeforeShow();
-      this.showStep(data.attestationBased ? STEP_WORKING : STEP_SIGNIN);
+      if (!this.currentStep_)
+        this.showStep(data.attestationBased ? STEP_WORKING : STEP_SIGNIN);
     },
 
     onBeforeHide: function() {
-      $('login-header-bar').signinUIState = SIGNIN_UI_STATE.HIDDEN;
+      Oobe.getInstance().setSigninUIState(SIGNIN_UI_STATE.HIDDEN);
     },
 
     /**
@@ -456,8 +449,8 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
      */
     setAdJoinConfiguration: function(options) {
       this.offlineAdUi_.disabled = false;
-      this.offlineAdUi_.unlockPasswordStep = false;
       this.offlineAdUi_.setJoinConfigurationOptions(options);
+      this.offlineAdUi_.unlockPasswordStep = false;
     },
 
     /**
@@ -525,7 +518,6 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
       this.navigation_.closeVisible =
           (this.currentStep_ == STEP_ERROR && !this.navigation_.refreshVisible)
           || this.currentStep_ == STEP_LICENSE_TYPE;
-      $('login-header-bar').updateUI_();
     },
 
     /**

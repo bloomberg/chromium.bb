@@ -5,7 +5,7 @@
 #import <Foundation/Foundation.h>
 #include <stddef.h>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -38,7 +38,7 @@ TEST_F(L10nUtilMacTest, FixUpWindowsStyleLabel) {
     { @"foo(&b)...", @"foo\u2026" },
     { @"(&b)foo", @"foo" },
   };
-  for (size_t idx = 0; idx < arraysize(data); ++idx) {
+  for (size_t idx = 0; idx < base::size(data); ++idx) {
     base::string16 input16(base::SysNSStringToUTF16(data[idx].input));
 
     NSString* result = l10n_util::FixUpWindowsStyleLabel(input16);

@@ -45,28 +45,17 @@
 
 namespace blink {
 
-std::unique_ptr<DedicatedWorkerThread> DedicatedWorkerThread::Create(
-    const String& name,
-    ExecutionContext* parent_execution_context,
-    DedicatedWorkerObjectProxy& worker_object_proxy) {
-  return base::WrapUnique(new DedicatedWorkerThread(
-      name, parent_execution_context, worker_object_proxy));
-}
-
 DedicatedWorkerThread::DedicatedWorkerThread(
-    const String& name,
     ExecutionContext* parent_execution_context,
     DedicatedWorkerObjectProxy& worker_object_proxy)
     : WorkerThread(worker_object_proxy),
-      name_(name.IsolatedCopy()),
-      worker_object_proxy_(worker_object_proxy),
-      is_nested_worker_(parent_execution_context->IsWorkerGlobalScope()) {
+      worker_object_proxy_(worker_object_proxy) {
   FrameOrWorkerScheduler* scheduler =
       parent_execution_context ? parent_execution_context->GetScheduler()
                                : nullptr;
-  worker_backing_thread_ =
-      WorkerBackingThread::Create(ThreadCreationParams(GetThreadType())
-                                      .SetFrameOrWorkerScheduler(scheduler));
+  worker_backing_thread_ = std::make_unique<WorkerBackingThread>(
+      ThreadCreationParams(GetThreadType())
+          .SetFrameOrWorkerScheduler(scheduler));
 }
 
 DedicatedWorkerThread::~DedicatedWorkerThread() = default;
@@ -78,7 +67,7 @@ void DedicatedWorkerThread::ClearWorkerBackingThread() {
 WorkerOrWorkletGlobalScope* DedicatedWorkerThread::CreateWorkerGlobalScope(
     std::unique_ptr<GlobalScopeCreationParams> creation_params) {
   return MakeGarbageCollected<DedicatedWorkerGlobalScope>(
-      name_, std::move(creation_params), this, time_origin_);
+      std::move(creation_params), this, time_origin_);
 }
 
 }  // namespace blink

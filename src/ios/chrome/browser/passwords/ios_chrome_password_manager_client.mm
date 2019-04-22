@@ -7,25 +7,29 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/no_destructor.h"
 #include "components/autofill/core/common/password_form.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/log_manager.h"
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_internals_service.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
+#include "components/password_manager/core/browser/password_requirements_service.h"
 #include "components/password_manager/core/browser/store_metrics_reporter.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "components/sync/driver/sync_service.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/experimental_flags.h"
+#include "ios/chrome/browser/passwords/credential_manager_util.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
+#include "ios/chrome/browser/passwords/ios_password_requirements_service_factory.h"
 #include "ios/chrome/browser/passwords/password_manager_internals_service_factory.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
+#include "ios/chrome/browser/system_flags.h"
 #include "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #include "net/cert/cert_status_flags.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
@@ -76,7 +80,7 @@ IOSChromePasswordManagerClient::IOSChromePasswordManagerClient(
 IOSChromePasswordManagerClient::~IOSChromePasswordManagerClient() = default;
 
 SyncState IOSChromePasswordManagerClient::GetPasswordSyncState() const {
-  browser_sync::ProfileSyncService* sync_service =
+  syncer::SyncService* sync_service =
       ProfileSyncServiceFactory::GetForBrowserState(delegate_.browserState);
   return password_manager_util::GetPasswordSyncState(sync_service);
 }
@@ -115,6 +119,13 @@ void IOSChromePasswordManagerClient::HideManualFallbackForSaving() {
   NOTIMPLEMENTED();
 }
 
+void IOSChromePasswordManagerClient::FocusedInputChanged(
+    const url::Origin& last_committed_origin,
+    bool is_fillable,
+    bool is_password_field) {
+  NOTIMPLEMENTED();
+}
+
 void IOSChromePasswordManagerClient::AutomaticPasswordSave(
     std::unique_ptr<PasswordFormManagerForUI> saved_form_manager) {
   NOTIMPLEMENTED();
@@ -127,6 +138,10 @@ bool IOSChromePasswordManagerClient::IsIncognito() const {
 const password_manager::PasswordManager*
 IOSChromePasswordManagerClient::GetPasswordManager() const {
   return delegate_.passwordManager;
+}
+
+bool IOSChromePasswordManagerClient::IsMainFrameSecure() const {
+  return WebStateContentIsSecureHtml(delegate_.webState);
 }
 
 PrefService* IOSChromePasswordManagerClient::GetPrefs() const {
@@ -200,6 +215,12 @@ IOSChromePasswordManagerClient::GetMetricsRecorder() {
   return base::OptionalOrNullptr(metrics_recorder_);
 }
 
+password_manager::PasswordRequirementsService*
+IOSChromePasswordManagerClient::GetPasswordRequirementsService() {
+  return IOSPasswordRequirementsServiceFactory::GetForBrowserState(
+      delegate_.browserState, ServiceAccessType::EXPLICIT_ACCESS);
+}
+
 void IOSChromePasswordManagerClient::PromptUserToEnableAutosignin() {
   // TODO(crbug.com/435048): Implement this method.
 }
@@ -207,4 +228,9 @@ void IOSChromePasswordManagerClient::PromptUserToEnableAutosignin() {
 password_manager::PasswordManager*
 IOSChromePasswordManagerClient::GetPasswordManager() {
   return delegate_.passwordManager;
+}
+
+bool IOSChromePasswordManagerClient::IsIsolationForPasswordSitesEnabled()
+    const {
+  return false;
 }

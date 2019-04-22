@@ -24,7 +24,7 @@
  *
  */
 
-// https://html.spec.whatwg.org/multipage/browsers.html#the-popstateevent-interface
+// https://html.spec.whatwg.org/C/#the-popstateevent-interface
 
 [
     Constructor(DOMString type, optional PopStateEventInit eventInitDict),

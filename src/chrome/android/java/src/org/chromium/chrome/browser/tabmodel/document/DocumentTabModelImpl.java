@@ -9,18 +9,22 @@ import android.content.Context;
 import android.util.SparseArray;
 
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.document.DocumentActivity;
 import org.chromium.chrome.browser.document.DocumentUtils;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabBuilder;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
+import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelJniBridge;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
+import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.common.ResourceRequestBody;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -115,8 +119,9 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
      * Pre-load shared prefs to avoid being blocked on the
      * disk access async task in the future.
      */
-    public static void warmUpSharedPrefs(Context context) {
-        context.getSharedPreferences(PREF_PACKAGE, Context.MODE_PRIVATE);
+    public static void warmUpSharedPrefs() {
+        ContextUtils.getApplicationContext().getSharedPreferences(
+                PREF_PACKAGE, Context.MODE_PRIVATE);
     }
 
     /**
@@ -205,9 +210,7 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
 
         // Return a live tab if the corresponding DocumentActivity is currently alive.
         int tabId = mTabIdList.get(index);
-        List<WeakReference<Activity>> activities = ApplicationStatus.getRunningActivities();
-        for (WeakReference<Activity> activityRef : activities) {
-            Activity activity = activityRef.get();
+        for (Activity activity : ApplicationStatus.getRunningActivities()) {
             if (!(activity instanceof DocumentActivity)
                     || !mActivityDelegate.isValidActivity(isIncognito(), activity.getIntent())) {
                 continue;
@@ -237,7 +240,8 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
 
         // Create a placeholder Tab that just has the ID.
         if (entry.placeholderTab == null) {
-            entry.placeholderTab = new Tab(tabId, isIncognito(), null);
+            entry.placeholderTab =
+                    new TabBuilder().setId(tabId).setIncognito(isIncognito()).build();
         }
 
         return entry.placeholderTab;
@@ -262,15 +266,26 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
     }
 
     @Override
+    public boolean closeTab(
+            Tab tab, Tab recommendedNextTab, boolean animate, boolean uponExit, boolean canUndo) {
+        return closeTab(tab, animate, uponExit, canUndo);
+    }
+
+    @Override
     protected TabDelegate getTabCreator(boolean incognito) {
         return null;
     }
 
     @Override
-    protected boolean createTabWithWebContents(Tab parent, boolean isIncognito,
-            WebContents webContents, int parentTabId) {
+    protected boolean createTabWithWebContents(
+            Tab parent, boolean isIncognito, WebContents webContents) {
         return false;
     }
+
+    @Override
+    public void openNewTab(Tab tab, String url, String initiatorOrigin, String extraHeaders,
+            ResourceRequestBody postData, int disposition, boolean hasParent,
+            boolean isRendererInitiated) {}
 
     @Override
     protected boolean isSessionRestoreInProgress() {
@@ -299,6 +314,9 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
         // Tab may not necessarily exist.
         return null;
     }
+
+    @Override
+    public void closeMultipleTabs(List<Tab> tabs, boolean canUndo) {}
 
     @Override
     public void closeAllTabs() {

@@ -111,8 +111,8 @@ class NodeList : public std::vector<std::unique_ptr<Node>> {
     std::unique_ptr<NodeList> nodes(new NodeList());
 
     base::JSONReader reader;
-    std::unique_ptr<base::Value> value(
-        reader.Read(std::string(reinterpret_cast<const char*>(data), size)));
+    std::unique_ptr<base::Value> value(reader.ReadDeprecated(
+        std::string(reinterpret_cast<const char*>(data), size)));
     if (value) {
       nodes->ParseJson(*value);
     }

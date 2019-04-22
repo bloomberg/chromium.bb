@@ -20,11 +20,14 @@ if (current_toolchain == host_toolchain) {
       sources += [ "mapped_file_unix.cc" ]
     }
 
+    deps = [
+      "//third_party/zlib",
+    ]
+
     # Always build release since this is a build tool.
     if (is_debug) {
       configs -= [ "//build/config:debug" ]
       configs += [ "//build/config:release" ]
     }
-    ldflags = [ "-lz" ]
   }
 }

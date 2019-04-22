@@ -18,6 +18,7 @@ goog.require('BrailleCommandHandler');
 goog.require('ChromeVoxState');
 goog.require('CommandHandler');
 goog.require('DesktopAutomationHandler');
+goog.require('DownloadHandler');
 goog.require('FindHandler');
 goog.require('GestureCommandHandler');
 goog.require('LiveRegions');
@@ -149,8 +150,14 @@ Background = function() {
 
   CommandHandler.init();
   FindHandler.init();
+  DownloadHandler.init();
 
   Notifications.onStartup();
+
+  chrome.accessibilityPrivate.onAnnounceForAccessibility.addListener(
+      (announceText) => {
+        cvox.ChromeVox.tts.speak(announceText.join(' '), cvox.QueueMode.FLUSH);
+      });
 };
 
 Background.prototype = {
@@ -182,7 +189,11 @@ Background.prototype = {
     cvox.ChromeVox.braille.thaw();
 
     if (newRange && !newRange.isValid()) {
-      chrome.accessibilityPrivate.setFocusRing([]);
+      chrome.accessibilityPrivate.setFocusRings([{
+        rects: [],
+        type: chrome.accessibilityPrivate.FocusType.GLOW,
+        color: constants.FOCUS_COLOR
+      }]);
       return;
     }
 
@@ -192,7 +203,11 @@ Background.prototype = {
     });
 
     if (!this.currentRange_) {
-      chrome.accessibilityPrivate.setFocusRing([]);
+      chrome.accessibilityPrivate.setFocusRings([{
+        rects: [],
+        type: chrome.accessibilityPrivate.FocusType.GLOW,
+        color: constants.FOCUS_COLOR
+      }]);
       return;
     }
 
@@ -215,9 +230,11 @@ Background.prototype = {
   /**
    * @override
    */
-  navigateToRange: function(range, opt_focus, opt_speechProps) {
+  navigateToRange: function(
+      range, opt_focus, opt_speechProps, opt_skipSettingSelection) {
     opt_focus = opt_focus === undefined ? true : opt_focus;
     opt_speechProps = opt_speechProps || {};
+    opt_skipSettingSelection = opt_skipSettingSelection || false;
     var prevRange = this.currentRange_;
 
     // Specialization for math output.
@@ -236,7 +253,8 @@ Background.prototype = {
     var selectedRange;
     var msg;
 
-    if (this.pageSel_ && this.pageSel_.isValid() && range.isValid()) {
+    if (this.pageSel_ && this.pageSel_.isValid() && range.isValid() &&
+        !opt_skipSettingSelection) {
       // Suppress hints.
       o.withoutHints();
 
@@ -278,7 +296,7 @@ Background.prototype = {
         if (this.pageSel_)
           this.pageSel_.select();
       }
-    } else {
+    } else if (!opt_skipSettingSelection) {
       // Ensure we don't select the editable when we first encounter it.
       var lca = null;
       if (range.start.node && prevRange.start.node) {
@@ -386,18 +404,16 @@ Background.prototype = {
       cvox.ChromeVox.tts.speak(
           Msgs.getMsg(evt.type, [text]), cvox.QueueMode.QUEUE);
     } else if (evt.type == 'copy' || evt.type == 'cut') {
-      window.setTimeout(function() {
-        this.preventPasteOutput_ = true;
-        var textarea = document.createElement('textarea');
-        document.body.appendChild(textarea);
-        textarea.focus();
-        document.execCommand('paste');
-        var clipboardContent = textarea.value;
-        textarea.remove();
-        cvox.ChromeVox.tts.speak(
-            Msgs.getMsg(evt.type, [clipboardContent]), cvox.QueueMode.FLUSH);
-        ChromeVoxState.instance.pageSel_ = null;
-      }.bind(this), 20);
+      this.preventPasteOutput_ = true;
+      var textarea = document.createElement('textarea');
+      document.body.appendChild(textarea);
+      textarea.focus();
+      document.execCommand('paste');
+      var clipboardContent = textarea.value;
+      textarea.remove();
+      cvox.ChromeVox.tts.speak(
+          Msgs.getMsg(evt.type, [clipboardContent]), cvox.QueueMode.FLUSH);
+      ChromeVoxState.instance.pageSel_ = null;
     }
   },
 

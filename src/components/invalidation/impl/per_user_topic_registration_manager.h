@@ -13,6 +13,7 @@
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "components/invalidation/impl/channels_states.h"
 #include "components/invalidation/impl/per_user_topic_registration_request.h"
 #include "components/invalidation/public/identity_provider.h"
 #include "components/invalidation/public/invalidation_export.h"
@@ -46,14 +47,15 @@ class INVALIDATION_EXPORT PerUserTopicRegistrationManager {
   class Observer {
    public:
     virtual void OnSubscriptionChannelStateChanged(
-        InvalidatorState invalidator_state) = 0;
+        SubscriptionChannelState state) = 0;
   };
 
   PerUserTopicRegistrationManager(
       invalidation::IdentityProvider* identity_provider,
       PrefService* local_state,
       network::mojom::URLLoaderFactory* url_loader_factory,
-      const ParseJSONCallback& parse_json);
+      const ParseJSONCallback& parse_json,
+      const std::string& project_id);
 
   virtual ~PerUserTopicRegistrationManager();
 
@@ -70,6 +72,12 @@ class INVALIDATION_EXPORT PerUserTopicRegistrationManager {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
+  base::DictionaryValue CollectDebugData() const;
+
+  bool HaveAllRequestsFinishedForTest() const {
+    return registration_statuses_.empty();
+  }
+
  private:
   struct RegistrationEntry;
 
@@ -78,6 +86,11 @@ class INVALIDATION_EXPORT PerUserTopicRegistrationManager {
   // Tries to register |id|. No retry in case of failure.
   void StartRegistrationRequest(const Topic& id);
 
+  void ActOnSuccesfullRegistration(
+      const Topic& topic,
+      const std::string& private_topic_name,
+      PerUserTopicRegistrationRequest::RequestType type);
+  void ScheduleRequestForRepetition(const Topic& topic);
   void RegistrationFinishedForTopic(
       Topic topic,
       Status code,
@@ -93,7 +106,8 @@ class INVALIDATION_EXPORT PerUserTopicRegistrationManager {
 
   void DropAllSavedRegistrationsOnTokenChange(
       const std::string& instance_id_token);
-  void NotifySubscriptionChannelStateChange(InvalidatorState invalidator_state);
+  void NotifySubscriptionChannelStateChange(
+      SubscriptionChannelState invalidator_state);
 
   std::map<Topic, std::unique_ptr<RegistrationEntry>> registration_statuses_;
 
@@ -116,7 +130,11 @@ class INVALIDATION_EXPORT PerUserTopicRegistrationManager {
   ParseJSONCallback parse_json_;
   network::mojom::URLLoaderFactory* url_loader_factory_;
 
+  const std::string project_id_;
+
   base::ObserverList<Observer>::Unchecked observers_;
+  SubscriptionChannelState last_issued_state_ =
+      SubscriptionChannelState::NOT_STARTED;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

@@ -46,7 +46,8 @@ namespace blink {
 HTMLImportLoader::HTMLImportLoader(HTMLImportsController* controller)
     : controller_(controller),
       state_(kStateLoading),
-      microtask_queue_(V0CustomElementSyncMicrotaskQueue::Create()) {}
+      microtask_queue_(
+          MakeGarbageCollected<V0CustomElementSyncMicrotaskQueue>()) {}
 
 HTMLImportLoader::~HTMLImportLoader() = default;
 
@@ -61,11 +62,8 @@ void HTMLImportLoader::Dispose() {
   ClearResource();
 }
 
-void HTMLImportLoader::ResponseReceived(
-    Resource* resource,
-    const ResourceResponse& response,
-    std::unique_ptr<WebDataConsumerHandle> handle) {
-  DCHECK(!handle);
+void HTMLImportLoader::ResponseReceived(Resource* resource,
+                                        const ResourceResponse& response) {
   // Resource may already have been loaded with the import loader
   // being added as a client later & now being notified. Fail early.
   if (resource->LoadFailedOrCanceled() || response.HttpStatusCode() >= 400 ||
@@ -76,7 +74,7 @@ void HTMLImportLoader::ResponseReceived(
   SetState(StartWritingAndParsing(response));
 }
 
-void HTMLImportLoader::DataReceived(Resource*,
+void HTMLImportLoader::DataReceived(Resource* resource,
                                     const char* data,
                                     size_t length) {
   document_->Parser()->AppendBytes(data, length);
@@ -100,7 +98,7 @@ HTMLImportLoader::State HTMLImportLoader::StartWritingAndParsing(
   DCHECK(!imports_.IsEmpty());
   document_ = HTMLDocument::Create(
       DocumentInit::CreateWithImportsController(controller_)
-          .WithURL(response.Url()));
+          .WithURL(response.CurrentRequestUrl()));
   document_->OpenForNavigation(kAllowAsynchronousParsing, response.MimeType(),
                                "UTF-8");
 
@@ -201,7 +199,7 @@ V0CustomElementSyncMicrotaskQueue* HTMLImportLoader::MicrotaskQueue() const {
   return microtask_queue_;
 }
 
-void HTMLImportLoader::Trace(blink::Visitor* visitor) {
+void HTMLImportLoader::Trace(Visitor* visitor) {
   visitor->Trace(controller_);
   visitor->Trace(imports_);
   visitor->Trace(document_);

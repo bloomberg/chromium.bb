@@ -296,7 +296,7 @@ bool SyncExtensionHelper::ExtensionStatesMatch(
 }
 
 std::string SyncExtensionHelper::CreateFakeExtensionName(int index) {
-  return extension_name_prefix_ + base::IntToString(index);
+  return extension_name_prefix_ + base::NumberToString(index);
 }
 
 bool SyncExtensionHelper::ExtensionNameToIndex(const std::string& name,

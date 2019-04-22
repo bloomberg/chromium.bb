@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CSSPAINT_PAINT_SIZE_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_CSSPAINT_PAINT_SIZE_H_
 
+#include "base/macros.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -12,14 +13,9 @@
 namespace blink {
 
 class PaintSize : public ScriptWrappable {
-  WTF_MAKE_NONCOPYABLE(PaintSize);
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static PaintSize* Create(FloatSize size) {
-    return MakeGarbageCollected<PaintSize>(size);
-  }
-
   explicit PaintSize(FloatSize size) : size_(size) {}
   ~PaintSize() override = default;
 
@@ -28,6 +24,8 @@ class PaintSize : public ScriptWrappable {
 
  private:
   FloatSize size_;
+
+  DISALLOW_COPY_AND_ASSIGN(PaintSize);
 };
 
 }  // namespace blink

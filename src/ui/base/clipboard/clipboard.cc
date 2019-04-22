@@ -45,7 +45,7 @@ void Clipboard::SetClipboardForCurrentThread(
     // This shouldn't happen. The clipboard should not already exist.
     NOTREACHED();
   }
-  clipboard_map->insert(std::make_pair(id, std::move(platform_clipboard)));
+  clipboard_map->insert({id, std::move(platform_clipboard)});
 }
 
 // static
@@ -59,7 +59,7 @@ Clipboard* Clipboard::GetForCurrentThread() {
     return it->second.get();
 
   Clipboard* clipboard = Clipboard::Create();
-  clipboard_map->insert(std::make_pair(id, base::WrapUnique(clipboard)));
+  clipboard_map->insert({id, base::WrapUnique(clipboard)});
   return clipboard;
 }
 
@@ -156,11 +156,9 @@ void Clipboard::DispatchObject(ObjectType type, const ObjectMapParams& params) {
     }
 
     case CBF_DATA:
-      WriteData(
-          FormatType::Deserialize(
-              std::string(&(params[0].front()), params[0].size())),
-          &(params[1].front()),
-          params[1].size());
+      WriteData(ClipboardFormatType::Deserialize(
+                    std::string(&(params[0].front()), params[0].size())),
+                &(params[1].front()), params[1].size());
       break;
 
     default:

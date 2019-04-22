@@ -73,10 +73,8 @@ scoped_refptr<Image> ImageElementBase::GetSourceImageForCanvas(
   return source_image->ImageForDefaultFrame();
 }
 
-bool ImageElementBase::WouldTaintOrigin(
-    const SecurityOrigin* destination_security_origin) const {
-  return CachedImage() &&
-         !CachedImage()->IsAccessAllowed(destination_security_origin);
+bool ImageElementBase::WouldTaintOrigin() const {
+  return CachedImage() && !CachedImage()->IsAccessAllowed();
 }
 
 FloatSize ImageElementBase::ElementSize(
@@ -114,7 +112,7 @@ bool ImageElementBase::IsAccelerated() const {
 }
 
 const KURL& ImageElementBase::SourceURL() const {
-  return CachedImage()->GetResponse().Url();
+  return CachedImage()->GetResponse().CurrentRequestUrl();
 }
 
 bool ImageElementBase::IsOpaque() const {
@@ -161,9 +159,6 @@ ScriptPromise ImageElementBase::CreateImageBitmap(
               "dimensions, and no resize options or crop region are "
               "specified."));
     }
-  }
-
-  if (IsSVGSource()) {
     return ImageBitmap::CreateAsync(this, crop_rect,
                                     event_target.ToLocalDOMWindow()->document(),
                                     script_state, options);

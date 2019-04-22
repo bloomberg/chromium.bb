@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import <EarlGrey/EarlGrey.h>
+
 #include "base/ios/ios_util.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
@@ -35,22 +37,26 @@ using payments::JourneyLogger;
 
 - (void)addProfiles {
   _profile1 = autofill::test::GetFullProfile();
-  [self addAutofillProfile:_profile1];
+  NSError* profile1Error = [self addAutofillProfile:_profile1];
+  GREYAssertNil(profile1Error, profile1Error.localizedDescription);
 
   _profile2 = autofill::test::GetFullProfile2();
-  [self addAutofillProfile:_profile2];
+  NSError* profile2Error = [self addAutofillProfile:_profile2];
+  GREYAssertNil(profile2Error, profile2Error.localizedDescription);
 }
 
 - (void)addCard1 {
   _creditCard1 = autofill::test::GetCreditCard();
   _creditCard1.set_billing_address_id(_profile1.guid());
-  [self addCreditCard:_creditCard1];
+  NSError* creditCardError = [self addCreditCard:_creditCard1];
+  GREYAssertNil(creditCardError, creditCardError.localizedDescription);
 }
 
 - (void)addCard2 {
   _creditCard2 = autofill::test::GetCreditCard2();
   _creditCard2.set_billing_address_id(_profile2.guid());
-  [self addCreditCard:_creditCard2];
+  NSError* creditCardError = [self addCreditCard:_creditCard2];
+  GREYAssertNil(creditCardError, creditCardError.localizedDescription);
 }
 
 #pragma mark - Tests

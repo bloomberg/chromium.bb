@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
-#include "third_party/blink/public/web/devtools_agent.mojom-blink.h"
+#include "third_party/blink/public/mojom/devtools/devtools_agent.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/inspector/inspector_session_state.h"
 #include "third_party/blink/renderer/core/inspector/protocol/Forward.h"
@@ -55,9 +55,13 @@ class CORE_EXPORT DevToolsSession
   class IOSession;
 
   // mojom::blink::DevToolsSession implementation.
-  void DispatchProtocolCommand(int call_id,
-                               const String& method,
-                               const String& message) override;
+  void DispatchProtocolCommand(
+      int call_id,
+      const String& method,
+      mojom::blink::DevToolsMessagePtr message) override;
+  void DispatchProtocolCommandImpl(int call_id,
+                                   const String& method,
+                                   std::vector<uint8_t> message);
 
   // protocol::FrontendChannel implementation.
   void sendProtocolResponse(
@@ -67,7 +71,7 @@ class CORE_EXPORT DevToolsSession
       std::unique_ptr<protocol::Serializable> message) override;
   void fallThrough(int call_id,
                    const String& method,
-                   const String& message) override;
+                   const protocol::ProtocolMessage& message) override;
   void flushProtocolNotifications() override;
 
   // v8_inspector::V8Inspector::Channel implementation.
@@ -78,7 +82,8 @@ class CORE_EXPORT DevToolsSession
       std::unique_ptr<v8_inspector::StringBuffer> message) override;
 
   bool IsDetached();
-  void SendProtocolResponse(int call_id, const String& message);
+  void SendProtocolResponse(int call_id,
+                            const protocol::ProtocolMessage& message);
 
   Member<DevToolsAgent> agent_;
   mojo::AssociatedBinding<mojom::blink::DevToolsSession> binding_;
@@ -92,6 +97,7 @@ class CORE_EXPORT DevToolsSession
   Vector<std::unique_ptr<Notification>> notification_queue_;
   InspectorAgentState v8_session_state_;
   InspectorAgentState::String v8_session_state_json_;
+  InspectorAgentState::Boolean uses_binary_protocol_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsSession);
 };

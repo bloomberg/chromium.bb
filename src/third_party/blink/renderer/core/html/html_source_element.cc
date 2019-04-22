@@ -53,7 +53,7 @@ class HTMLSourceElement::Listener final : public MediaQueryListListener {
   }
 
   void ClearElement() { element_ = nullptr; }
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(element_);
     MediaQueryListListener::Trace(visitor);
   }
@@ -72,10 +72,11 @@ DEFINE_NODE_FACTORY(HTMLSourceElement)
 
 HTMLSourceElement::~HTMLSourceElement() = default;
 
-const HashSet<AtomicString>& HTMLSourceElement::GetCheckedAttributeNames()
+const AttrNameToTrustedType& HTMLSourceElement::GetCheckedAttributeTypes()
     const {
-  DEFINE_STATIC_LOCAL(HashSet<AtomicString>, attribute_set, ({"src"}));
-  return attribute_set;
+  DEFINE_STATIC_LOCAL(AttrNameToTrustedType, attribute_map,
+                      ({{"src", SpecificTrustedType::kTrustedURL}}));
+  return attribute_map;
 }
 
 void HTMLSourceElement::CreateMediaQueryList(const AtomicString& media) {
@@ -86,7 +87,7 @@ void HTMLSourceElement::CreateMediaQueryList(const AtomicString& media) {
   }
 
   scoped_refptr<MediaQuerySet> set = MediaQuerySet::Create(media);
-  media_query_list_ = MediaQueryList::Create(
+  media_query_list_ = MakeGarbageCollected<MediaQueryList>(
       &GetDocument(), &GetDocument().GetMediaQueryMatcher(), set);
   AddMediaQueryListListener();
 }
@@ -196,7 +197,7 @@ void HTMLSourceElement::NotifyMediaQueryChanged() {
     picture->SourceOrMediaChanged();
 }
 
-void HTMLSourceElement::Trace(blink::Visitor* visitor) {
+void HTMLSourceElement::Trace(Visitor* visitor) {
   visitor->Trace(media_query_list_);
   visitor->Trace(listener_);
   HTMLElement::Trace(visitor);

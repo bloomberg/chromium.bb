@@ -645,8 +645,10 @@ class SymbolGroup(BaseSymbol):
 
   @property
   def flags(self):
-    first = self._symbols[0].flags if self else 0
-    return first if all(s.flags == first for s in self._symbols) else 0
+    ret = 0
+    for s in self._symbols:
+      ret |= s.flags
+    return ret
 
   @property
   def object_path(self):
@@ -802,6 +804,9 @@ class SymbolGroup(BaseSymbol):
 
   def WhereIsTemplate(self):
     return self.Filter(lambda s: s.template_name is not s.name)
+
+  def WhereHasFlag(self, flag):
+    return self.Filter(lambda s: s.flags & flag)
 
   def WhereHasComponent(self):
     return self.Filter(lambda s: s.component)
@@ -971,7 +976,12 @@ class SymbolGroup(BaseSymbol):
         name = re.sub(r'\s+\d+( \(.*\))?$', 's', name)
       # Never cluster symbols that span multiple paths so that all groups return
       # non-None path information.
-      return (symbol.object_path, name)
+      diff_status = None
+      if symbol.IsDelta():
+        diff_status = symbol.diff_status
+      if symbol.object_path or symbol.full_name.startswith('**'):
+        return (symbol.object_path, name, diff_status)
+      return (symbol.address, name, diff_status)
 
     # Use a custom factory to fill in name & template_name.
     def group_factory(token, symbols):

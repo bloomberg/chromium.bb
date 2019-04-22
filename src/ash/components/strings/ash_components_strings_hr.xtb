@@ -16,7 +16,6 @@
 <translation id="152892567002884378">Pojačavanje glasnoće</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, a zatim <ph name="ESC" /></translation>
 <translation id="1652741121070700329">Prelazak na početak prethodne riječi</translation>
-<translation id="1671169355475348905">Prelazak na način unosa prethodnog jezika</translation>
 <translation id="1679841710523778799">Pojačavanje svjetline</translation>
 <translation id="168356808214100546">Pritisnite i zadržite <ph name="ALT" /> te dodirujte stavku <ph name="TAB" /> dok se ne otvori željeni prozor, a zatim otpustite pritisak.</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -33,6 +32,7 @@
 <translation id="2181097965834437145">Prikaz ili sakrivanje trake oznaka</translation>
 <translation id="2185166372312820725">Prelazak na prethodnu karticu</translation>
 <translation id="2194790690264064655">Pritisnite <ph name="CTRL" /> i kliknite vezu</translation>
+<translation id="2246352309084894470">Otvaranje/zatvaranje pokretača cijelog zaslona</translation>
 <translation id="2382644247745281995">Nije podržano uz trenutačni raspored tipkovnice</translation>
 <translation id="2397416548179033562">Prikaži izbornik Chrome</translation>
 <translation id="2424073332829844142">Uključivanje i isključivanje tipke Caps Lock</translation>
@@ -44,7 +44,6 @@
 <translation id="2574014812750545982">Vraćanje razine zumiranja na stranici na zadano</translation>
 <translation id="2596078834055697711">Snimanje snimke zaslona prozora</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, a zatim <ph name="TAB" /> ili <ph name="RIGHT" /></translation>
-<translation id="2687057317448262550">Prelazak na način unosa sljedećeg jezika</translation>
 <translation id="2699509451653686398">Spremanje trenutačne web-stranice kao oznake</translation>
 <translation id="2750942583782703988">Ponovno učitavanje trenutačne stranice</translation>
 <translation id="2764005613199379871">Postavljanje fokusa na adresnu traku za pretraživanje</translation>
@@ -147,6 +146,7 @@
 <translation id="671928215901716392">Zaključaj zaslon</translation>
 <translation id="6727005317916125192">Prethodno okno</translation>
 <translation id="6740781404993465795">Odabir sljedeće riječi ili slova</translation>
+<translation id="6755851152783057058">Prijeđi na posljednji korišteni način unosa</translation>
 <translation id="6760706756348334449">Smanjivanje glasnoće</translation>
 <translation id="6941333068993625698">Slanje povratnih informacija</translation>
 <translation id="6981982820502123353">Pristupačnost</translation>
@@ -157,6 +157,7 @@
 <translation id="7237562915163138771">Unesite web-adresu u adresnu traku, a zatim pritisnite <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /></translation>
 <translation id="7254764037241667478">Postavljanje uređaja u način mirovanja (obustavljanje)</translation>
 <translation id="7379254767514753910"><ph name="ALT" /> ili <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
+<translation id="7422707470576323858">Prelazak na sljedeći dostupni način unosa</translation>
 <translation id="743754632698445141">Otkvačivanje aplikacije</translation>
 <translation id="7439718573248533901">Brisanje sljedećeg slova (brisanje unaprijed)</translation>
 <translation id="7611271430932669992">Premještanje fokusa na skočne prozore i dijaloge</translation>

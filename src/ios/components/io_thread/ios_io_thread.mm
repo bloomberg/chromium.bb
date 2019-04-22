@@ -99,9 +99,10 @@ std::unique_ptr<net::HostResolver> CreateGlobalHostResolver(
     net::NetLog* net_log) {
   TRACE_EVENT0("startup", "IOSIOThread::CreateGlobalHostResolver");
 
+  // TODO(crbug.com/934402): Use a shared HostResolverManager instead of a
+  // single global HostResolver for iOS.
   std::unique_ptr<net::HostResolver> global_host_resolver =
-      net::HostResolver::CreateSystemResolver(net::HostResolver::Options(),
-                                              net_log);
+      net::HostResolver::CreateStandaloneResolver(net_log);
 
   return global_host_resolver;
 }
@@ -213,8 +214,8 @@ void IOSIOThread::ChangedToOnTheRecord() {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   base::PostTaskWithTraits(
       FROM_HERE, {web::WebThread::IO},
-      base::Bind(&IOSIOThread::ChangedToOnTheRecordOnIOThread,
-                 base::Unretained(this)));
+      base::BindOnce(&IOSIOThread::ChangedToOnTheRecordOnIOThread,
+                     base::Unretained(this)));
 }
 
 net::URLRequestContextGetter* IOSIOThread::system_url_request_context_getter() {
@@ -258,9 +259,8 @@ void IOSIOThread::Init() {
   globals_->http_server_properties.reset(new net::HttpServerPropertiesImpl());
   // In-memory cookie store.
   // TODO(crbug.com/801910): Hook up logging by passing in a non-null netlog.
-  globals_->system_cookie_store.reset(new net::CookieMonster(
-      nullptr /* store */, nullptr /* channel_id_service */,
-      nullptr /* netlog */));
+  globals_->system_cookie_store.reset(
+      new net::CookieMonster(nullptr /* store */, nullptr /* netlog */));
   // In-memory channel ID store.
   globals_->system_channel_id_service.reset(
       new net::ChannelIDService(new net::DefaultChannelIDStore(nullptr)));
@@ -322,8 +322,7 @@ void IOSIOThread::CreateDefaultAuthHandlerFactory() {
       std::make_unique<net::HttpAuthPreferences>();
   globals_->http_auth_handler_factory =
       net::HttpAuthHandlerRegistryFactory::Create(
-          globals_->host_resolver.get(), globals_->http_auth_preferences.get(),
-          supported_schemes);
+          globals_->http_auth_preferences.get(), supported_schemes);
 }
 
 void IOSIOThread::ClearHostCache() {

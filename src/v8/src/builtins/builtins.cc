@@ -13,6 +13,7 @@
 #include "src/macro-assembler.h"
 #include "src/objects-inl.h"
 #include "src/objects/fixed-array.h"
+#include "src/ostreams.h"
 #include "src/snapshot/embedded-data.h"
 #include "src/visitors.h"
 
@@ -21,7 +22,7 @@ namespace internal {
 
 // Forward declarations for C++ builtins.
 #define FORWARD_DECLARE(Name) \
-  Object* Builtin_##Name(int argc, Address* args, Isolate* isolate);
+  Address Builtin_##Name(int argc, Address* args, Isolate* isolate);
 BUILTIN_LIST_C(FORWARD_DECLARE)
 #undef FORWARD_DECLARE
 
@@ -31,30 +32,22 @@ namespace {
 struct BuiltinMetadata {
   const char* name;
   Builtins::Kind kind;
-  union {
-    Address cpp_entry;       // For CPP and API builtins.
-    int8_t parameter_count;  // For TFJ builtins.
-  } kind_specific_data;
+  // For CPP and API builtins it's cpp_entry address and for TFJ it's a
+  // parameter count.
+  Address cpp_entry_or_parameter_count;
 };
 
-// clang-format off
-#define DECL_CPP(Name, ...) { #Name, Builtins::CPP, \
-                              { FUNCTION_ADDR(Builtin_##Name) }},
-#define DECL_API(Name, ...) { #Name, Builtins::API, \
-                              { FUNCTION_ADDR(Builtin_##Name) }},
-#ifdef V8_TARGET_BIG_ENDIAN
-#define DECL_TFJ(Name, Count, ...) { #Name, Builtins::TFJ, \
-  { static_cast<Address>(static_cast<uintptr_t>(           \
-                              Count) << (kBitsPerByte * (kPointerSize - 1))) }},
-#else
-#define DECL_TFJ(Name, Count, ...) { #Name, Builtins::TFJ, \
-                              { static_cast<Address>(Count) }},
-#endif
-#define DECL_TFC(Name, ...) { #Name, Builtins::TFC, {} },
-#define DECL_TFS(Name, ...) { #Name, Builtins::TFS, {} },
-#define DECL_TFH(Name, ...) { #Name, Builtins::TFH, {} },
-#define DECL_BCH(Name, ...) { #Name, Builtins::BCH, {} },
-#define DECL_ASM(Name, ...) { #Name, Builtins::ASM, {} },
+#define DECL_CPP(Name, ...) \
+  {#Name, Builtins::CPP, FUNCTION_ADDR(Builtin_##Name)},
+#define DECL_API(Name, ...) \
+  {#Name, Builtins::API, FUNCTION_ADDR(Builtin_##Name)},
+#define DECL_TFJ(Name, Count, ...) \
+  {#Name, Builtins::TFJ, static_cast<Address>(Count)},
+#define DECL_TFC(Name, ...) {#Name, Builtins::TFC, kNullAddress},
+#define DECL_TFS(Name, ...) {#Name, Builtins::TFS, kNullAddress},
+#define DECL_TFH(Name, ...) {#Name, Builtins::TFH, kNullAddress},
+#define DECL_BCH(Name, ...) {#Name, Builtins::BCH, kNullAddress},
+#define DECL_ASM(Name, ...) {#Name, Builtins::ASM, kNullAddress},
 const BuiltinMetadata builtin_metadata[] = {
   BUILTIN_LIST(DECL_CPP, DECL_API, DECL_TFJ, DECL_TFC, DECL_TFS, DECL_TFH,
                DECL_BCH, DECL_ASM)
@@ -67,7 +60,6 @@ const BuiltinMetadata builtin_metadata[] = {
 #undef DECL_TFH
 #undef DECL_BCH
 #undef DECL_ASM
-// clang-format on
 
 }  // namespace
 
@@ -99,18 +91,6 @@ const char* Builtins::Lookup(Address pc) {
     }
   }
   return nullptr;
-}
-
-Handle<Code> Builtins::NewFunctionContext(ScopeType scope_type) {
-  switch (scope_type) {
-    case ScopeType::EVAL_SCOPE:
-      return builtin_handle(kFastNewFunctionContextEval);
-    case ScopeType::FUNCTION_SCOPE:
-      return builtin_handle(kFastNewFunctionContextFunction);
-    default:
-      UNREACHABLE();
-  }
-  return Handle<Code>::null();
 }
 
 Handle<Code> Builtins::NonPrimitiveToPrimitive(ToPrimitiveHint hint) {
@@ -150,7 +130,7 @@ Handle<Code> Builtins::builtin_handle(int index) {
 // static
 int Builtins::GetStackParameterCount(Name name) {
   DCHECK(Builtins::KindOf(name) == TFJ);
-  return builtin_metadata[name].kind_specific_data.parameter_count;
+  return static_cast<int>(builtin_metadata[name].cpp_entry_or_parameter_count);
 }
 
 // static
@@ -166,7 +146,7 @@ Callable Builtins::CallableFor(Isolate* isolate, Name name) {
     break;                                             \
   }
     BUILTIN_LIST(IGNORE_BUILTIN, IGNORE_BUILTIN, IGNORE_BUILTIN, CASE_OTHER,
-                 CASE_OTHER, CASE_OTHER, IGNORE_BUILTIN, IGNORE_BUILTIN)
+                 CASE_OTHER, CASE_OTHER, IGNORE_BUILTIN, CASE_OTHER)
 #undef CASE_OTHER
     default:
       Builtins::Kind kind = Builtins::KindOf(name);
@@ -217,7 +197,7 @@ void Builtins::PrintBuiltinSize() {
 // static
 Address Builtins::CppEntryOf(int index) {
   DCHECK(Builtins::HasCppImplementation(index));
-  return builtin_metadata[index].kind_specific_data.cpp_entry;
+  return builtin_metadata[index].cpp_entry_or_parameter_count;
 }
 
 // static
@@ -233,7 +213,7 @@ bool Builtins::IsBuiltinHandle(Handle<HeapObject> maybe_code,
   Address end = heap->builtin_address(Builtins::builtin_count);
   if (handle_location >= end) return false;
   if (handle_location < start) return false;
-  *index = static_cast<int>(handle_location - start) >> kPointerSizeLog2;
+  *index = static_cast<int>(handle_location - start) >> kSystemPointerSizeLog2;
   DCHECK(Builtins::IsBuiltinId(*index));
   return true;
 }
@@ -265,13 +245,23 @@ bool Builtins::IsWasmRuntimeStub(int index) {
   UNREACHABLE();
 }
 
+// static
+void Builtins::UpdateBuiltinEntryTable(Isolate* isolate) {
+  Heap* heap = isolate->heap();
+  Address* builtin_entry_table = isolate->builtin_entry_table();
+  for (int i = 0; i < builtin_count; i++) {
+    builtin_entry_table[i] = heap->builtin(i)->InstructionStart();
+  }
+}
+
 namespace {
 
 class OffHeapTrampolineGenerator {
  public:
   explicit OffHeapTrampolineGenerator(Isolate* isolate)
       : isolate_(isolate),
-        masm_(isolate, buffer, kBufferSize, CodeObjectRequired::kYes) {}
+        masm_(isolate, CodeObjectRequired::kYes,
+              ExternalAssemblerBuffer(buffer_, kBufferSize)) {}
 
   CodeDesc Generate(Address off_heap_entry) {
     // Generate replacement code that simply tail-calls the off-heap code.
@@ -291,10 +281,12 @@ class OffHeapTrampolineGenerator {
  private:
   Isolate* isolate_;
   // Enough to fit the single jmp.
-  static constexpr size_t kBufferSize = 256;
-  byte buffer[kBufferSize];
+  static constexpr int kBufferSize = 256;
+  byte buffer_[kBufferSize];
   MacroAssembler masm_;
 };
+
+constexpr int OffHeapTrampolineGenerator::kBufferSize;
 
 }  // namespace
 
@@ -319,8 +311,8 @@ Handle<ByteArray> Builtins::GenerateOffHeapTrampolineRelocInfo(
   // generated instruction stream.
   CodeDesc desc = generator.Generate(kNullAddress);
 
-  Handle<ByteArray> reloc_info =
-      isolate->factory()->NewByteArray(desc.reloc_size, TENURED_READ_ONLY);
+  Handle<ByteArray> reloc_info = isolate->factory()->NewByteArray(
+      desc.reloc_size, AllocationType::kReadOnly);
   Code::CopyRelocInfoToByteArray(*reloc_info, desc);
 
   return reloc_info;

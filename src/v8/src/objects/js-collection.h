@@ -6,7 +6,7 @@
 #define V8_OBJECTS_JS_COLLECTION_H_
 
 #include "src/objects.h"
-#include "src/objects/ordered-hash-table.h"
+#include "src/objects/js-collection-iterator.h"
 
 // Has to be the last include (doesn't have include guards):
 #include "src/objects/object-macros.h"
@@ -14,24 +14,23 @@
 namespace v8 {
 namespace internal {
 
+class OrderedHashSet;
+class OrderedHashMap;
+
 class JSCollection : public JSObject {
  public:
+  DECL_CAST(JSCollection)
+
   // [table]: the backing hash table
   DECL_ACCESSORS(table, Object)
 
-// Layout description.
-#define JS_COLLECTION_FIELDS(V) \
-  V(kTableOffset, kTaggedSize)  \
-  /* Header size. */            \
-  V(kSize, 0)
-
-  DEFINE_FIELD_OFFSET_CONSTANTS(JSObject::kHeaderSize, JS_COLLECTION_FIELDS)
-#undef JS_COLLECTION_FIELDS
+  // Layout description.
+  DEFINE_FIELD_OFFSET_CONSTANTS(JSObject::kHeaderSize,
+                                TORQUE_GENERATED_JSCOLLECTION_FIELDS)
 
   static const int kAddFunctionDescriptorIndex = 3;
 
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(JSCollection);
+  OBJECT_CONSTRUCTORS(JSCollection, JSObject);
 };
 
 // The JSSet describes EcmaScript Harmony sets
@@ -46,8 +45,7 @@ class JSSet : public JSCollection {
   DECL_PRINTER(JSSet)
   DECL_VERIFIER(JSSet)
 
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(JSSet);
+  OBJECT_CONSTRUCTORS(JSSet, JSCollection);
 };
 
 class JSSetIterator
@@ -59,8 +57,8 @@ class JSSetIterator
 
   DECL_CAST(JSSetIterator)
 
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(JSSetIterator);
+  OBJECT_CONSTRUCTORS(JSSetIterator,
+                      OrderedHashTableIterator<JSSetIterator, OrderedHashSet>);
 };
 
 // The JSMap describes EcmaScript Harmony maps
@@ -75,8 +73,7 @@ class JSMap : public JSCollection {
   DECL_PRINTER(JSMap)
   DECL_VERIFIER(JSMap)
 
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(JSMap);
+  OBJECT_CONSTRUCTORS(JSMap, JSCollection);
 };
 
 class JSMapIterator
@@ -90,10 +87,10 @@ class JSMapIterator
 
   // Returns the current value of the iterator. This should only be called when
   // |HasMore| returns true.
-  inline Object* CurrentValue();
+  inline Object CurrentValue();
 
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(JSMapIterator);
+  OBJECT_CONSTRUCTORS(JSMapIterator,
+                      OrderedHashTableIterator<JSMapIterator, OrderedHashMap>);
 };
 
 // Base class for both JSWeakMap and JSWeakSet
@@ -105,22 +102,16 @@ class JSWeakCollection : public JSObject {
   DECL_ACCESSORS(table, Object)
 
   static void Initialize(Handle<JSWeakCollection> collection, Isolate* isolate);
-  static void Set(Handle<JSWeakCollection> collection, Handle<Object> key,
-                  Handle<Object> value, int32_t hash);
+  V8_EXPORT_PRIVATE static void Set(Handle<JSWeakCollection> collection,
+                                    Handle<Object> key, Handle<Object> value,
+                                    int32_t hash);
   static bool Delete(Handle<JSWeakCollection> collection, Handle<Object> key,
                      int32_t hash);
   static Handle<JSArray> GetEntries(Handle<JSWeakCollection> holder,
                                     int max_entries);
 
-// Layout description.
-#define JS_WEAK_COLLECTION_FIELDS(V) \
-  V(kTableOffset, kTaggedSize)       \
-  /* Header size. */                 \
-  V(kSize, 0)
-
   DEFINE_FIELD_OFFSET_CONSTANTS(JSObject::kHeaderSize,
-                                JS_WEAK_COLLECTION_FIELDS)
-#undef JS_WEAK_COLLECTION_FIELDS
+                                TORQUE_GENERATED_JSWEAK_COLLECTION_FIELDS)
 
   static const int kAddFunctionDescriptorIndex = 3;
 
@@ -128,10 +119,9 @@ class JSWeakCollection : public JSObject {
   class BodyDescriptorImpl;
 
   // Visit the whole object.
-  typedef BodyDescriptorImpl BodyDescriptor;
+  using BodyDescriptor = BodyDescriptorImpl;
 
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(JSWeakCollection);
+  OBJECT_CONSTRUCTORS(JSWeakCollection, JSObject);
 };
 
 // The JSWeakMap describes EcmaScript Harmony weak maps
@@ -143,8 +133,7 @@ class JSWeakMap : public JSWeakCollection {
   DECL_PRINTER(JSWeakMap)
   DECL_VERIFIER(JSWeakMap)
 
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(JSWeakMap);
+  OBJECT_CONSTRUCTORS(JSWeakMap, JSWeakCollection);
 };
 
 // The JSWeakSet describes EcmaScript Harmony weak sets
@@ -156,8 +145,7 @@ class JSWeakSet : public JSWeakCollection {
   DECL_PRINTER(JSWeakSet)
   DECL_VERIFIER(JSWeakSet)
 
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(JSWeakSet);
+  OBJECT_CONSTRUCTORS(JSWeakSet, JSWeakCollection);
 };
 
 }  // namespace internal

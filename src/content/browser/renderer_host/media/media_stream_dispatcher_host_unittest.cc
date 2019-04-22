@@ -42,6 +42,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/audio/cras_audio_handler.h"
+#include "chromeos/dbus/audio/cras_audio_client.h"
 #endif
 
 using ::testing::_;
@@ -62,15 +63,11 @@ constexpr const char* kRegularVideoDeviceId = "stub_device_0";
 constexpr const char* kDepthVideoDeviceId = "stub_device_1 (depth)";
 constexpr media::VideoCaptureApi kStubCaptureApi =
     media::VideoCaptureApi::LINUX_V4L2_SINGLE_PLANE;
-constexpr double kStubFocalLengthX = 135.0;
-constexpr double kStubFocalLengthY = 135.6;
-constexpr double kStubDepthNear = 0.0;
-constexpr double kStubDepthFar = 65.535;
 
 void AudioInputDevicesEnumerated(base::Closure quit_closure,
                                  media::AudioDeviceDescriptions* out,
                                  const MediaDeviceEnumeration& enumeration) {
-  for (const auto& info : enumeration[MEDIA_DEVICE_TYPE_AUDIO_INPUT]) {
+  for (const auto& info : enumeration[blink::MEDIA_DEVICE_TYPE_AUDIO_INPUT]) {
     out->emplace_back(info.label, info.device_id, info.group_id);
   }
   std::move(quit_closure).Run();
@@ -78,8 +75,9 @@ void AudioInputDevicesEnumerated(base::Closure quit_closure,
 
 }  // anonymous namespace
 
-class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
-                                      public mojom::MediaStreamDeviceObserver {
+class MockMediaStreamDispatcherHost
+    : public MediaStreamDispatcherHost,
+      public blink::mojom::MediaStreamDeviceObserver {
  public:
   MockMediaStreamDispatcherHost(int render_process_id,
                                 int render_frame_id,
@@ -95,13 +93,13 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
                     int audio_array_size,
                     int video_array_size));
   MOCK_METHOD2(OnStreamGenerationFailure,
-               void(int request_id, MediaStreamRequestResult result));
+               void(int request_id, blink::MediaStreamRequestResult result));
   MOCK_METHOD0(OnDeviceStopSuccess, void());
   MOCK_METHOD0(OnDeviceOpenSuccess, void());
 
   // Accessor to private functions.
   void OnGenerateStream(int page_request_id,
-                        const StreamControls& controls,
+                        const blink::StreamControls& controls,
                         const base::Closure& quit_closure) {
     quit_closures_.push(quit_closure);
     MediaStreamDispatcherHost::GenerateStream(
@@ -116,7 +114,7 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
 
   void OnOpenDevice(int page_request_id,
                     const std::string& device_id,
-                    MediaStreamType type,
+                    blink::MediaStreamType type,
                     const base::Closure& quit_closure) {
     quit_closures_.push(quit_closure);
     MediaStreamDispatcherHost::OpenDevice(
@@ -131,34 +129,34 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
 
   // mojom::MediaStreamDeviceObserver implementation.
   void OnDeviceStopped(const std::string& label,
-                       const MediaStreamDevice& device) override {
+                       const blink::MediaStreamDevice& device) override {
     OnDeviceStoppedInternal(label, device);
   }
 
   // mojom::MediaStreamDeviceObserver implementation.
   void OnDeviceChanged(const std::string& label,
-                       const MediaStreamDevice& old_device,
-                       const MediaStreamDevice& new_device) override {}
+                       const blink::MediaStreamDevice& old_device,
+                       const blink::MediaStreamDevice& new_device) override {}
 
-  mojom::MediaStreamDeviceObserverPtr CreateInterfacePtrAndBind() {
-    mojom::MediaStreamDeviceObserverPtr observer;
+  blink::mojom::MediaStreamDeviceObserverPtr CreateInterfacePtrAndBind() {
+    blink::mojom::MediaStreamDeviceObserverPtr observer;
     binding_.Bind(mojo::MakeRequest(&observer));
     return observer;
   }
 
   std::string label_;
-  MediaStreamDevices audio_devices_;
-  MediaStreamDevices video_devices_;
-  MediaStreamDevice opened_device_;
+  blink::MediaStreamDevices audio_devices_;
+  blink::MediaStreamDevices video_devices_;
+  blink::MediaStreamDevice opened_device_;
 
  private:
   // These handler methods do minimal things and delegate to the mock methods.
   void OnStreamGenerated(int request_id,
-                         MediaStreamRequestResult result,
+                         blink::MediaStreamRequestResult result,
                          const std::string& label,
-                         const MediaStreamDevices& audio_devices,
-                         const MediaStreamDevices& video_devices) {
-    if (result != MEDIA_DEVICE_OK) {
+                         const blink::MediaStreamDevices& audio_devices,
+                         const blink::MediaStreamDevices& video_devices) {
+    if (result != blink::MEDIA_DEVICE_OK) {
       OnStreamGenerationFailed(request_id, result);
       return;
     }
@@ -179,7 +177,7 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
   }
 
   void OnStreamGenerationFailed(int request_id,
-                                MediaStreamRequestResult result) {
+                                blink::MediaStreamRequestResult result) {
     OnStreamGenerationFailure(request_id, result);
     if (!quit_closures_.empty()) {
       base::Closure quit_closure = quit_closures_.front();
@@ -191,7 +189,7 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
   }
 
   void OnDeviceStoppedInternal(const std::string& label,
-                               const MediaStreamDevice& device) {
+                               const blink::MediaStreamDevice& device) {
     if (IsVideoInputMediaType(device.type))
       EXPECT_TRUE(device.IsSameDevice(video_devices_[0]));
     if (IsAudioInputMediaType(device.type))
@@ -202,7 +200,7 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
 
   void OnDeviceOpened(bool success,
                       const std::string& label,
-                      const MediaStreamDevice& device) {
+                      const blink::MediaStreamDevice& device) {
     base::Closure quit_closure = quit_closures_.front();
     quit_closures_.pop();
     task_runner_->PostTask(FROM_HERE, base::ResetAndReturn(&quit_closure));
@@ -215,7 +213,7 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
 
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   base::queue<base::Closure> quit_closures_;
-  mojo::Binding<mojom::MediaStreamDeviceObserver> binding_;
+  mojo::Binding<blink::mojom::MediaStreamDeviceObserver> binding_;
 };
 
 class MockMediaStreamUIProxy : public FakeMediaStreamUIProxy {
@@ -224,6 +222,7 @@ class MockMediaStreamUIProxy : public FakeMediaStreamUIProxy {
       : FakeMediaStreamUIProxy(/*tests_use_fake_render_frame_hosts=*/true) {}
   void OnStarted(
       base::OnceClosure stop,
+      base::RepeatingClosure source,
       MediaStreamUIProxy::WindowIdCallback window_id_callback) override {
     // gmock cannot handle move-only types:
     MockOnStarted(base::AdaptCallbackForRepeating(std::move(stop)));
@@ -262,6 +261,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
         host_->CreateInterfacePtrAndBind());
 
 #if defined(OS_CHROMEOS)
+    chromeos::CrasAudioClient::InitializeFake();
     chromeos::CrasAudioHandler::InitializeForTesting();
 #endif
   }
@@ -270,6 +270,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
     audio_manager_->Shutdown();
 #if defined(OS_CHROMEOS)
     chromeos::CrasAudioHandler::Shutdown();
+    chromeos::CrasAudioClient::Shutdown();
 #endif
   }
 
@@ -285,16 +286,6 @@ class MediaStreamDispatcherHostTest : public testing::Test {
                 media::VideoCaptureDeviceInfo info;
                 info.descriptor.device_id = device_id;
                 info.descriptor.capture_api = kStubCaptureApi;
-                if (device_id == kDepthVideoDeviceId) {
-                  info.descriptor.camera_calibration.emplace();
-                  info.descriptor.camera_calibration->focal_length_x =
-                      kStubFocalLengthX;
-                  info.descriptor.camera_calibration->focal_length_y =
-                      kStubFocalLengthY;
-                  info.descriptor.camera_calibration->depth_near =
-                      kStubDepthNear;
-                  info.descriptor.camera_calibration->depth_far = kStubDepthFar;
-                }
                 result.push_back(info);
               }
               base::ResetAndReturn(&result_callback).Run(result);
@@ -302,7 +293,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
 
     base::RunLoop run_loop;
     MediaDevicesManager::BoolDeviceTypes devices_to_enumerate;
-    devices_to_enumerate[MEDIA_DEVICE_TYPE_AUDIO_INPUT] = true;
+    devices_to_enumerate[blink::MEDIA_DEVICE_TYPE_AUDIO_INPUT] = true;
     media_stream_manager_->media_devices_manager()->EnumerateDevices(
         devices_to_enumerate,
         base::BindOnce(&AudioInputDevicesEnumerated, run_loop.QuitClosure(),
@@ -337,7 +328,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
   }
 
   void GenerateStreamAndWaitForResult(int page_request_id,
-                                      const StreamControls& controls) {
+                                      const blink::StreamControls& controls) {
     base::RunLoop run_loop;
     int expected_audio_array_size =
         (controls.audio.requested && !audio_device_descriptions_.empty()) ? 1
@@ -357,8 +348,8 @@ class MediaStreamDispatcherHostTest : public testing::Test {
 
   void GenerateStreamAndWaitForFailure(
       int page_request_id,
-      const StreamControls& controls,
-      MediaStreamRequestResult expected_result) {
+      const blink::StreamControls& controls,
+      blink::MediaStreamRequestResult expected_result) {
     base::RunLoop run_loop;
     EXPECT_CALL(*host_,
                 OnStreamGenerationFailure(page_request_id, expected_result));
@@ -370,7 +361,8 @@ class MediaStreamDispatcherHostTest : public testing::Test {
                                        const std::string& device_id) {
     EXPECT_CALL(*host_, OnDeviceOpenSuccess());
     base::RunLoop run_loop;
-    host_->OnOpenDevice(page_request_id, device_id, MEDIA_DEVICE_VIDEO_CAPTURE,
+    host_->OnOpenDevice(page_request_id, device_id,
+                        blink::MEDIA_DEVICE_VIDEO_CAPTURE,
                         run_loop.QuitClosure());
     run_loop.Run();
     EXPECT_FALSE(DoesContainRawIds(host_->video_devices_));
@@ -381,14 +373,15 @@ class MediaStreamDispatcherHostTest : public testing::Test {
                                         const std::string& device_id) {
     EXPECT_CALL(*host_, OnDeviceOpenSuccess()).Times(0);
     base::RunLoop run_loop;
-    host_->OnOpenDevice(page_request_id, device_id, MEDIA_DEVICE_VIDEO_CAPTURE,
+    host_->OnOpenDevice(page_request_id, device_id,
+                        blink::MEDIA_DEVICE_VIDEO_CAPTURE,
                         run_loop.QuitClosure());
     run_loop.Run();
     EXPECT_FALSE(DoesContainRawIds(host_->video_devices_));
     EXPECT_FALSE(DoesEveryDeviceMapToRawId(host_->video_devices_, origin_));
   }
 
-  bool DoesContainRawIds(const MediaStreamDevices& devices) {
+  bool DoesContainRawIds(const blink::MediaStreamDevices& devices) {
     for (size_t i = 0; i < devices.size(); ++i) {
       if (devices[i].id != media::AudioDeviceDescription::kDefaultDeviceId &&
           devices[i].id !=
@@ -406,7 +399,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
     return false;
   }
 
-  bool DoesEveryDeviceMapToRawId(const MediaStreamDevices& devices,
+  bool DoesEveryDeviceMapToRawId(const blink::MediaStreamDevices& devices,
                                  const url::Origin& origin) {
     for (size_t i = 0; i < devices.size(); ++i) {
       bool found_match = false;
@@ -446,7 +439,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
 };
 
 TEST_F(MediaStreamDispatcherHostTest, GenerateStreamWithVideoOnly) {
-  StreamControls controls(false, true);
+  blink::StreamControls controls(false, true);
 
   SetupFakeUI(true);
   GenerateStreamAndWaitForResult(kPageRequestId, controls);
@@ -456,7 +449,7 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStreamWithVideoOnly) {
 }
 
 TEST_F(MediaStreamDispatcherHostTest, GenerateStreamWithAudioOnly) {
-  StreamControls controls(true, false);
+  blink::StreamControls controls(true, false);
 
   SetupFakeUI(true);
   GenerateStreamAndWaitForResult(kPageRequestId, controls);
@@ -469,14 +462,14 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStreamWithAudioOnly) {
 // MediaStreamManager, so it will create an ordinary one which will not find
 // a RenderFrameHostDelegate. This normally should only be the case at shutdown.
 TEST_F(MediaStreamDispatcherHostTest, GenerateStreamWithNothing) {
-  StreamControls controls(false, false);
+  blink::StreamControls controls(false, false);
 
   GenerateStreamAndWaitForFailure(kPageRequestId, controls,
-                                  MEDIA_DEVICE_FAILED_DUE_TO_SHUTDOWN);
+                                  blink::MEDIA_DEVICE_FAILED_DUE_TO_SHUTDOWN);
 }
 
 TEST_F(MediaStreamDispatcherHostTest, GenerateStreamWithAudioAndVideo) {
-  StreamControls controls(true, true);
+  blink::StreamControls controls(true, true);
 
   SetupFakeUI(true);
   GenerateStreamAndWaitForResult(kPageRequestId, controls);
@@ -487,7 +480,7 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStreamWithAudioAndVideo) {
 
 TEST_F(MediaStreamDispatcherHostTest, GenerateStreamWithDepthVideo) {
   // We specify to generate both audio and video stream.
-  StreamControls controls(true, true);
+  blink::StreamControls controls(true, true);
   std::string source_id = GetHMACForMediaDeviceID(
       browser_context_->GetMediaDeviceIDSalt(), origin_, kDepthVideoDeviceId);
   // |source_id| corresponds to the depth device. As we can generate only one
@@ -503,22 +496,13 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStreamWithDepthVideo) {
   // one audio and one depth video stream.
   EXPECT_EQ(host_->audio_devices_.size(), 1u);
   EXPECT_EQ(host_->video_devices_.size(), 1u);
-  // host_->video_devices_[0] contains the information about generated video
-  // stream device (the depth device).
-  const base::Optional<CameraCalibration> calibration =
-      host_->video_devices_[0].camera_calibration;
-  EXPECT_TRUE(calibration);
-  EXPECT_EQ(calibration->focal_length_x, kStubFocalLengthX);
-  EXPECT_EQ(calibration->focal_length_y, kStubFocalLengthY);
-  EXPECT_EQ(calibration->depth_near, kStubDepthNear);
-  EXPECT_EQ(calibration->depth_far, kStubDepthFar);
 }
 
 // This test generates two streams with video only using the same render frame
 // id. The same capture device with the same device and session id is expected
 // to be used.
 TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsFromSameRenderId) {
-  StreamControls controls(false, true);
+  blink::StreamControls controls(false, true);
 
   // Generate first stream.
   SetupFakeUI(true);
@@ -548,7 +532,7 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsFromSameRenderId) {
 TEST_F(MediaStreamDispatcherHostTest,
        GenerateStreamAndOpenDeviceFromSameRenderFrame) {
   SetupFakeUI(true);
-  StreamControls controls(false, true);
+  blink::StreamControls controls(false, true);
 
   // Generate first stream.
   GenerateStreamAndWaitForResult(kPageRequestId, controls);
@@ -574,7 +558,7 @@ TEST_F(MediaStreamDispatcherHostTest,
 // This test generates two streams with video only using two separate render
 // frame ids. The same device id but different session ids are expected.
 TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsDifferentRenderId) {
-  StreamControls controls(false, true);
+  blink::StreamControls controls(false, true);
 
   // Generate first stream.
   SetupFakeUI(true);
@@ -613,7 +597,7 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsDifferentRenderId) {
 // stream to be generated before requesting the second.
 // The same device id and session ids are expected.
 TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsWithoutWaiting) {
-  StreamControls controls(false, true);
+  blink::StreamControls controls(false, true);
 
   // Generate first stream.
   SetupFakeUI(true);
@@ -646,7 +630,7 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsWithSourceId) {
     std::string source_id = GetHMACForMediaDeviceID(
         browser_context_->GetMediaDeviceIDSalt(), origin_, audio_it->unique_id);
     ASSERT_FALSE(source_id.empty());
-    StreamControls controls(true, true);
+    blink::StreamControls controls(true, true);
     controls.audio.device_id = source_id;
 
     SetupFakeUI(true);
@@ -658,7 +642,7 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsWithSourceId) {
     std::string source_id = GetHMACForMediaDeviceID(
         browser_context_->GetMediaDeviceIDSalt(), origin_, device_id);
     ASSERT_FALSE(source_id.empty());
-    StreamControls controls(true, true);
+    blink::StreamControls controls(true, true);
     controls.video.device_id = source_id;
 
     GenerateStreamAndWaitForResult(kPageRequestId, controls);
@@ -668,42 +652,42 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsWithSourceId) {
 
 // Test that generating a stream with an invalid video source id fail.
 TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsWithInvalidVideoSourceId) {
-  StreamControls controls(true, true);
+  blink::StreamControls controls(true, true);
   controls.video.device_id = "invalid source id";
 
   GenerateStreamAndWaitForFailure(kPageRequestId, controls,
-                                  MEDIA_DEVICE_NO_HARDWARE);
+                                  blink::MEDIA_DEVICE_NO_HARDWARE);
 }
 
 // Test that generating a stream with an invalid audio source id fail.
 TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsWithInvalidAudioSourceId) {
-  StreamControls controls(true, true);
+  blink::StreamControls controls(true, true);
   controls.audio.device_id = "invalid source id";
 
   GenerateStreamAndWaitForFailure(kPageRequestId, controls,
-                                  MEDIA_DEVICE_NO_HARDWARE);
+                                  blink::MEDIA_DEVICE_NO_HARDWARE);
 }
 
 TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsNoAvailableVideoDevice) {
   stub_video_device_ids_.clear();
-  StreamControls controls(true, true);
+  blink::StreamControls controls(true, true);
 
   SetupFakeUI(false);
   GenerateStreamAndWaitForFailure(kPageRequestId, controls,
-                                  MEDIA_DEVICE_NO_HARDWARE);
+                                  blink::MEDIA_DEVICE_NO_HARDWARE);
 }
 
 // Test that if a OnStopStreamDevice message is received for a device that has
 // been opened in a MediaStream and by pepper, the device is only stopped for
 // the MediaStream.
 TEST_F(MediaStreamDispatcherHostTest, StopDeviceInStream) {
-  StreamControls controls(false, true);
+  blink::StreamControls controls(false, true);
 
   SetupFakeUI(true);
   GenerateStreamAndWaitForResult(kPageRequestId, controls);
 
   std::string stream_request_label = host_->label_;
-  MediaStreamDevice video_device = host_->video_devices_.front();
+  blink::MediaStreamDevice video_device = host_->video_devices_.front();
   ASSERT_EQ(
       1u, media_stream_manager_->GetDevicesOpenedByRequest(stream_request_label)
               .size());
@@ -724,13 +708,13 @@ TEST_F(MediaStreamDispatcherHostTest, StopDeviceInStream) {
 }
 
 TEST_F(MediaStreamDispatcherHostTest, StopDeviceInStreamAndRestart) {
-  StreamControls controls(true, true);
+  blink::StreamControls controls(true, true);
 
   SetupFakeUI(true);
   GenerateStreamAndWaitForResult(kPageRequestId, controls);
 
   std::string request_label1 = host_->label_;
-  MediaStreamDevice video_device = host_->video_devices_.front();
+  blink::MediaStreamDevice video_device = host_->video_devices_.front();
   // Expect that 1 audio and 1 video device has been opened.
   EXPECT_EQ(
       2u,
@@ -744,9 +728,9 @@ TEST_F(MediaStreamDispatcherHostTest, StopDeviceInStreamAndRestart) {
   GenerateStreamAndWaitForResult(kPageRequestId, controls);
   std::string request_label2 = host_->label_;
 
-  MediaStreamDevices request1_devices =
+  blink::MediaStreamDevices request1_devices =
       media_stream_manager_->GetDevicesOpenedByRequest(request_label1);
-  MediaStreamDevices request2_devices =
+  blink::MediaStreamDevices request2_devices =
       media_stream_manager_->GetDevicesOpenedByRequest(request_label2);
 
   ASSERT_EQ(1u, request1_devices.size());
@@ -759,7 +743,7 @@ TEST_F(MediaStreamDispatcherHostTest, StopDeviceInStreamAndRestart) {
 
 TEST_F(MediaStreamDispatcherHostTest,
        GenerateTwoStreamsAndStopDeviceWhileWaitingForSecondStream) {
-  StreamControls controls(false, true);
+  blink::StreamControls controls(false, true);
 
   SetupFakeUI(true);
   GenerateStreamAndWaitForResult(kPageRequestId, controls);
@@ -782,7 +766,7 @@ TEST_F(MediaStreamDispatcherHostTest,
 }
 
 TEST_F(MediaStreamDispatcherHostTest, CancelPendingStreams) {
-  StreamControls controls(false, true);
+  blink::StreamControls controls(false, true);
 
   base::RunLoop run_loop;
 
@@ -798,7 +782,7 @@ TEST_F(MediaStreamDispatcherHostTest, CancelPendingStreams) {
 }
 
 TEST_F(MediaStreamDispatcherHostTest, StopGeneratedStreams) {
-  StreamControls controls(false, true);
+  blink::StreamControls controls(false, true);
 
   SetupFakeUI(true);
 
@@ -812,7 +796,7 @@ TEST_F(MediaStreamDispatcherHostTest, StopGeneratedStreams) {
 }
 
 TEST_F(MediaStreamDispatcherHostTest, CloseFromUI) {
-  StreamControls controls(false, true);
+  blink::StreamControls controls(false, true);
 
   base::Closure close_callback;
   media_stream_manager_->UseFakeUIFactoryForTests(base::Bind(
@@ -840,7 +824,7 @@ TEST_F(MediaStreamDispatcherHostTest, CloseFromUI) {
 // Test that the observer is notified if a video device that is in use is
 // being unplugged.
 TEST_F(MediaStreamDispatcherHostTest, VideoDeviceUnplugged) {
-  StreamControls controls(true, true);
+  blink::StreamControls controls(true, true);
   SetupFakeUI(true);
   GenerateStreamAndWaitForResult(kPageRequestId, controls);
   EXPECT_EQ(host_->audio_devices_.size(), 1u);
@@ -861,7 +845,7 @@ TEST_F(MediaStreamDispatcherHostTest, VideoDeviceUnplugged) {
 // invalid device ID result in failure.
 TEST_F(MediaStreamDispatcherHostTest, Salt) {
   SetupFakeUI(true);
-  StreamControls controls(false, true);
+  blink::StreamControls controls(false, true);
 
   // Generate first stream.
   GenerateStreamAndWaitForResult(kPageRequestId, controls);
@@ -897,4 +881,4 @@ TEST_F(MediaStreamDispatcherHostTest, Salt) {
   EXPECT_EQ(group_id2, host_->opened_device_.group_id);
 }
 
-};  // namespace content
+}  // namespace content

@@ -41,10 +41,31 @@
 #endif
 #endif  // !defined(SNAPPY_HAVE_SSSE3)
 
+#if !defined(SNAPPY_HAVE_BMI2)
+// __BMI2__ is defined by GCC and Clang. Visual Studio doesn't target BMI2
+// specifically, but it does define __AVX2__ when AVX2 support is available.
+// Fortunately, AVX2 was introduced in Haswell, just like BMI2.
+//
+// BMI2 is not defined as a subset of AVX2 (unlike SSSE3 and AVX above). So,
+// GCC and Clang can build code with AVX2 enabled but BMI2 disabled, in which
+// case issuing BMI2 instructions results in a compiler error.
+#if defined(__BMI2__) || (defined(_MSC_VER) && defined(__AVX2__))
+#define SNAPPY_HAVE_BMI2 1
+#else
+#define SNAPPY_HAVE_BMI2 0
+#endif
+#endif  // !defined(SNAPPY_HAVE_BMI2)
+
 #if SNAPPY_HAVE_SSSE3
 // Please do not replace with <x86intrin.h>. or with headers that assume more
 // advanced SSE versions without checking with all the OWNERS.
 #include <tmmintrin.h>
+#endif
+
+#if SNAPPY_HAVE_BMI2
+// Please do not replace with <x86intrin.h>. or with headers that assume more
+// advanced SSE versions without checking with all the OWNERS.
+#include <immintrin.h>
 #endif
 
 #include <stdio.h>
@@ -313,10 +334,10 @@ inline char* IncrementalCopy(const char* src, char* op, char* const op_limit,
 
 }  // namespace
 
+template <bool allow_fast_path>
 static inline char* EmitLiteral(char* op,
                                 const char* literal,
-                                int len,
-                                bool allow_fast_path) {
+                                int len) {
   // The vast majority of copies are below 16 bytes, for which a
   // call to memcpy is overkill. This fast path can sometimes
   // copy up to 15 bytes too much, but that is okay in the
@@ -358,8 +379,8 @@ static inline char* EmitLiteral(char* op,
   return op + len;
 }
 
-static inline char* EmitCopyAtMost64(char* op, size_t offset, size_t len,
-                                     bool len_less_than_12) {
+template <bool len_less_than_12>
+static inline char* EmitCopyAtMost64(char* op, size_t offset, size_t len) {
   assert(len <= 64);
   assert(len >= 4);
   assert(offset < 65536);
@@ -380,29 +401,33 @@ static inline char* EmitCopyAtMost64(char* op, size_t offset, size_t len,
   return op;
 }
 
-static inline char* EmitCopy(char* op, size_t offset, size_t len,
-                             bool len_less_than_12) {
+template <bool len_less_than_12>
+static inline char* EmitCopy(char* op, size_t offset, size_t len) {
   assert(len_less_than_12 == (len < 12));
   if (len_less_than_12) {
-    return EmitCopyAtMost64(op, offset, len, true);
+    return EmitCopyAtMost64</*len_less_than_12=*/true>(op, offset, len);
   } else {
     // A special case for len <= 64 might help, but so far measurements suggest
     // it's in the noise.
 
     // Emit 64 byte copies but make sure to keep at least four bytes reserved.
     while (SNAPPY_PREDICT_FALSE(len >= 68)) {
-      op = EmitCopyAtMost64(op, offset, 64, false);
+      op = EmitCopyAtMost64</*len_less_than_12=*/false>(op, offset, 64);
       len -= 64;
     }
 
     // One or two copies will now finish the job.
     if (len > 64) {
-      op = EmitCopyAtMost64(op, offset, 60, false);
+      op = EmitCopyAtMost64</*len_less_than_12=*/false>(op, offset, 60);
       len -= 60;
     }
 
     // Emit remainder.
-    op = EmitCopyAtMost64(op, offset, len, len < 12);
+    if (len < 12) {
+      op = EmitCopyAtMost64</*len_less_than_12=*/true>(op, offset, len);
+    } else {
+      op = EmitCopyAtMost64</*len_less_than_12=*/false>(op, offset, len);
+    }
     return op;
   }
 }
@@ -418,31 +443,43 @@ bool GetUncompressedLength(const char* start, size_t n, size_t* result) {
   }
 }
 
-namespace internal {
-uint16* WorkingMemory::GetHashTable(size_t input_size, int* table_size) {
-  // Use smaller hash table when input.size() is smaller, since we
-  // fill the table, incurring O(hash table size) overhead for
-  // compression, and if the input is short, we won't need that
-  // many hash table entries anyway.
+namespace {
+uint32 CalculateTableSize(uint32 input_size) {
   assert(kMaxHashTableSize >= 256);
-  size_t htsize = 256;
-  while (htsize < kMaxHashTableSize && htsize < input_size) {
-    htsize <<= 1;
+  if (input_size > kMaxHashTableSize) {
+    return kMaxHashTableSize;
   }
-
-  uint16* table;
-  if (htsize <= ARRAYSIZE(small_table_)) {
-    table = small_table_;
-  } else {
-    if (large_table_ == NULL) {
-      large_table_ = new uint16[kMaxHashTableSize];
-    }
-    table = large_table_;
+  if (input_size < 256) {
+    return 256;
   }
+  // This is equivalent to Log2Ceiling(input_size), assuming input_size > 1.
+  // 2 << Log2Floor(x - 1) is equivalent to 1 << (1 + Log2Floor(x - 1)).
+  return 2u << Bits::Log2Floor(input_size - 1);
+}
+}  // namespace
 
+namespace internal {
+WorkingMemory::WorkingMemory(size_t input_size) {
+  const size_t max_fragment_size = std::min(input_size, kBlockSize);
+  const size_t table_size = CalculateTableSize(max_fragment_size);
+  size_ = table_size * sizeof(*table_) + max_fragment_size +
+          MaxCompressedLength(max_fragment_size);
+  mem_ = std::allocator<char>().allocate(size_);
+  table_ = reinterpret_cast<uint16*>(mem_);
+  input_ = mem_ + table_size * sizeof(*table_);
+  output_ = input_ + max_fragment_size;
+}
+
+WorkingMemory::~WorkingMemory() {
+  std::allocator<char>().deallocate(mem_, size_);
+}
+
+uint16* WorkingMemory::GetHashTable(size_t fragment_size,
+                                    int* table_size) const {
+  const size_t htsize = CalculateTableSize(fragment_size);
+  memset(table_, 0, htsize * sizeof(*table_));
   *table_size = htsize;
-  memset(table, 0, htsize * sizeof(*table));
-  return table;
+  return table_;
 }
 }  // end namespace internal
 
@@ -576,7 +613,7 @@ char* CompressFragment(const char* input,
       // than 4 bytes match.  But, prior to the match, input
       // bytes [next_emit, ip) are unmatched.  Emit them as "literal bytes."
       assert(next_emit + 16 <= ip_end);
-      op = EmitLiteral(op, next_emit, ip - next_emit, true);
+      op = EmitLiteral</*allow_fast_path=*/true>(op, next_emit, ip - next_emit);
 
       // Step 3: Call EmitCopy, and then see if another EmitCopy could
       // be our next move.  Repeat until we find no match for the
@@ -599,7 +636,11 @@ char* CompressFragment(const char* input,
         ip += matched;
         size_t offset = base - candidate;
         assert(0 == memcmp(base, candidate, matched));
-        op = EmitCopy(op, offset, matched, p.second);
+        if (p.second) {
+          op = EmitCopy</*len_less_than_12=*/true>(op, offset, matched);
+        } else {
+          op = EmitCopy</*len_less_than_12=*/false>(op, offset, matched);
+        }
         next_emit = ip;
         if (SNAPPY_PREDICT_FALSE(ip >= ip_limit)) {
           goto emit_remainder;
@@ -624,7 +665,8 @@ char* CompressFragment(const char* input,
  emit_remainder:
   // Emit the remaining bytes as a literal
   if (next_emit < ip_end) {
-    op = EmitLiteral(op, next_emit, ip_end - next_emit, false);
+    op = EmitLiteral</*allow_fast_path=*/false>(op, next_emit,
+                                                ip_end - next_emit);
   }
 
   return op;
@@ -675,14 +717,30 @@ static inline void Report(const char *algorithm, size_t compressed_size,
 //   bool TryFastAppend(const char* ip, size_t available, size_t length);
 // };
 
-namespace internal {
+static inline uint32 ExtractLowBytes(uint32 v, int n) {
+  assert(n >= 0);
+  assert(n <= 4);
+  // TODO(b/121042345): Remove !defined(MEMORY_SANITIZER) once MSan
+  // handles _bzhi_u32() correctly.
+#if SNAPPY_HAVE_BMI2 && !defined(MEMORY_SANITIZER)
+  return _bzhi_u32(v, 8 * n);
+#else
+  // This needs to be wider than uint32 otherwise `mask << 32` will be
+  // undefined.
+  uint64 mask = 0xffffffff;
+  return v & ~(mask << (8 * n));
+#endif
+}
 
-// Mapping from i in range [0,4] to a mask to extract the bottom 8*i bits
-static const uint32 wordmask[] = {
-  0u, 0xffu, 0xffffu, 0xffffffu, 0xffffffffu
-};
-
-}  // end namespace internal
+static inline bool LeftShiftOverflows(uint8 value, uint32 shift) {
+  assert(shift < 32);
+  static const uint8 masks[] = {
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  //
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  //
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  //
+      0x00, 0x80, 0xc0, 0xe0, 0xf0, 0xf8, 0xfc, 0xfe};
+  return (value & masks[shift]) != 0;
+}
 
 // Helper class for decompression
 class SnappyDecompressor {
@@ -736,7 +794,7 @@ class SnappyDecompressor {
       const unsigned char c = *(reinterpret_cast<const unsigned char*>(ip));
       reader_->Skip(1);
       uint32 val = c & 0x7f;
-      if (((val << shift) >> shift) != val) return false;
+      if (LeftShiftOverflows(static_cast<uint8>(val), shift)) return false;
       *result |= val << shift;
       if (c < 128) {
         break;
@@ -770,20 +828,6 @@ class SnappyDecompressor {
 #endif
 
     const char* ip = ip_;
-    // For position-independent executables, accessing global arrays can be
-    // slow.  Move wordmask array onto the stack to mitigate this.
-    uint32 wordmask[sizeof(internal::wordmask)/sizeof(uint32)];
-    // Do not use memcpy to copy internal::wordmask to
-    // wordmask.  LLVM converts stack arrays to global arrays if it detects
-    // const stack arrays and this hurts the performance of position
-    // independent code. This change is temporary and can be reverted when
-    // https://reviews.llvm.org/D30759 is approved.
-    wordmask[0] = internal::wordmask[0];
-    wordmask[1] = internal::wordmask[1];
-    wordmask[2] = internal::wordmask[2];
-    wordmask[3] = internal::wordmask[3];
-    wordmask[4] = internal::wordmask[4];
-
     // We could have put this refill fragment only at the beginning of the loop.
     // However, duplicating it at the end of each branch gives the compiler more
     // scope to optimize the <ip_limit_ - ip> expression based on the local
@@ -825,7 +869,8 @@ class SnappyDecompressor {
           // Long literal.
           const size_t literal_length_length = literal_length - 60;
           literal_length =
-              (LittleEndian::Load32(ip) & wordmask[literal_length_length]) + 1;
+              ExtractLowBytes(LittleEndian::Load32(ip), literal_length_length) +
+              1;
           ip += literal_length_length;
         }
 
@@ -848,7 +893,8 @@ class SnappyDecompressor {
         MAYBE_REFILL();
       } else {
         const size_t entry = char_table[c];
-        const size_t trailer = LittleEndian::Load32(ip) & wordmask[entry >> 11];
+        const size_t trailer =
+            ExtractLowBytes(LittleEndian::Load32(ip), entry >> 11);
         const size_t length = entry & 0xff;
         ip += entry >> 11;
 
@@ -964,9 +1010,7 @@ size_t Compress(Source* reader, Sink* writer) {
   writer->Append(ulength, p-ulength);
   written += (p - ulength);
 
-  internal::WorkingMemory wmem;
-  char* scratch = NULL;
-  char* scratch_output = NULL;
+  internal::WorkingMemory wmem(N);
 
   while (N > 0) {
     // Get next block to compress (without copying if possible)
@@ -982,13 +1026,7 @@ size_t Compress(Source* reader, Sink* writer) {
       pending_advance = num_to_read;
       fragment_size = num_to_read;
     } else {
-      // Read into scratch buffer
-      if (scratch == NULL) {
-        // If this is the last iteration, we want to allocate N bytes
-        // of space, otherwise the max possible kBlockSize space.
-        // num_to_read contains exactly the correct value
-        scratch = new char[num_to_read];
-      }
+      char* scratch = wmem.GetScratchInput();
       memcpy(scratch, fragment, bytes_read);
       reader->Skip(bytes_read);
 
@@ -1014,16 +1052,13 @@ size_t Compress(Source* reader, Sink* writer) {
 
     // Need a scratch buffer for the output, in case the byte sink doesn't
     // have room for us directly.
-    if (scratch_output == NULL) {
-      scratch_output = new char[max_output];
-    } else {
-      // Since we encode kBlockSize regions followed by a region
-      // which is <= kBlockSize in length, a previously allocated
-      // scratch_output[] region is big enough for this iteration.
-    }
-    char* dest = writer->GetAppendBuffer(max_output, scratch_output);
-    char* end = internal::CompressFragment(fragment, fragment_size,
-                                           dest, table, table_size);
+
+    // Since we encode kBlockSize regions followed by a region
+    // which is <= kBlockSize in length, a previously allocated
+    // scratch_output[] region is big enough for this iteration.
+    char* dest = writer->GetAppendBuffer(max_output, wmem.GetScratchOutput());
+    char* end = internal::CompressFragment(fragment, fragment_size, dest, table,
+                                           table_size);
     writer->Append(dest, end - dest);
     written += (end - dest);
 
@@ -1032,9 +1067,6 @@ size_t Compress(Source* reader, Sink* writer) {
   }
 
   Report("snappy_compress", written, uncompressed_size);
-
-  delete[] scratch;
-  delete[] scratch_output;
 
   return written;
 }

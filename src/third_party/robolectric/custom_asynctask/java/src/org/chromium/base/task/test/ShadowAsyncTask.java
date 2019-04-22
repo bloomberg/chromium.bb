@@ -1,6 +1,13 @@
 package org.chromium.base.task.test;
 
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
+import org.robolectric.shadows.ShadowApplication;
+
 import org.chromium.base.task.AsyncTask;
+import org.chromium.base.task.BackgroundOnlyAsyncTask;
+
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
@@ -8,10 +15,6 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.RealObject;
-import org.robolectric.shadows.ShadowApplication;
 
 @Implements(AsyncTask.class)
 public class ShadowAsyncTask<Result> {
@@ -20,7 +23,7 @@ public class ShadowAsyncTask<Result> {
 
     private final FutureTask<Result> future;
     private final Callable<Result> worker;
-    private AsyncTask.Status status = AsyncTask.Status.PENDING;
+    private @AsyncTask.Status int status = AsyncTask.Status.PENDING;
 
     public ShadowAsyncTask() {
         worker = new Callable<Result>() {
@@ -41,6 +44,8 @@ public class ShadowAsyncTask<Result> {
                                 new Runnable() {
                                     @Override
                                     public void run() {
+                                        if (realAsyncTask instanceof BackgroundOnlyAsyncTask)
+                                            return;
                                         getBridge().onPostExecute(result);
                                     }
                                 });
@@ -119,7 +124,7 @@ public class ShadowAsyncTask<Result> {
     }
 
     @Implementation
-    public AsyncTask.Status getStatus() {
+    public @AsyncTask.Status int getStatus() {
         return status;
     }
 

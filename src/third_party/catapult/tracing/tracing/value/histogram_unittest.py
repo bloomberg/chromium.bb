@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import copy
 import json
 import math
 import unittest
@@ -12,6 +13,7 @@ from tracing.value.diagnostics import diagnostic
 from tracing.value.diagnostics import diagnostic_ref
 from tracing.value.diagnostics import generic_set
 from tracing.value.diagnostics import related_event_set
+from tracing.value.diagnostics import related_name_map
 from tracing.value.diagnostics import reserved_infos
 from tracing.value.diagnostics import unmergeable_diagnostic_set as ums
 
@@ -164,6 +166,12 @@ class HistogramUnittest(unittest.TestCase):
     hist = histogram.Histogram('', 'n%')
     self.assertEqual(len(hist.bins), 22)
 
+    hist = histogram.Histogram('', 'n%+')
+    self.assertEqual(len(hist.bins), 22)
+
+    hist = histogram.Histogram('', 'n%-')
+    self.assertEqual(len(hist.bins), 22)
+
     hist = histogram.Histogram('', 'sizeInBytes')
     self.assertEqual(len(hist.bins), 102)
 
@@ -191,26 +199,26 @@ class HistogramUnittest(unittest.TestCase):
   def testSerializationSize(self):
     hist = histogram.Histogram('', 'unitless', self.TEST_BOUNDARIES)
     d = hist.AsDict()
-    self.assertEqual(107, len(ToJSON(d)))
+    self.assertEqual(61, len(ToJSON(d)))
     self.assertIsNone(d.get('allBins'))
     self.assertDeepEqual(d, histogram.Histogram.FromDict(d).AsDict())
 
     hist.AddSample(100)
     d = hist.AsDict()
-    self.assertEqual(198, len(ToJSON(d)))
+    self.assertEqual(152, len(ToJSON(d)))
     self.assertIsInstance(d['allBins'], dict)
     self.assertDeepEqual(d, histogram.Histogram.FromDict(d).AsDict())
 
     hist.AddSample(100)
     d = hist.AsDict()
     # SAMPLE_VALUES grew by "100,"
-    self.assertEqual(202, len(ToJSON(d)))
+    self.assertEqual(156, len(ToJSON(d)))
     self.assertIsInstance(d['allBins'], dict)
     self.assertDeepEqual(d, histogram.Histogram.FromDict(d).AsDict())
 
     hist.AddSample(271, {'foo': generic_set.GenericSet(['bar'])})
     d = hist.AsDict()
-    self.assertEqual(268, len(ToJSON(d)))
+    self.assertEqual(222, len(ToJSON(d)))
     self.assertIsInstance(d['allBins'], dict)
     self.assertDeepEqual(d, histogram.Histogram.FromDict(d).AsDict())
 
@@ -219,7 +227,7 @@ class HistogramUnittest(unittest.TestCase):
     for i in range(10, 100):
       hist.AddSample(10 * i)
     d = hist.AsDict()
-    self.assertEqual(697, len(ToJSON(d)))
+    self.assertEqual(651, len(ToJSON(d)))
     self.assertIsInstance(d['allBins'], list)
     self.assertDeepEqual(d, histogram.Histogram.FromDict(d).AsDict())
 
@@ -229,9 +237,41 @@ class HistogramUnittest(unittest.TestCase):
     # retained.
     hist.max_num_sample_values = 10
     d = hist.AsDict()
-    self.assertEqual(389, len(ToJSON(d)))
+    self.assertEqual(343, len(ToJSON(d)))
     self.assertIsInstance(d['allBins'], list)
     self.assertDeepEqual(d, histogram.Histogram.FromDict(d).AsDict())
+
+    # Test the case where 'allBins' isn't a list and we're attempting to index
+    # an invalid bucket.
+    e = copy.deepcopy(d)
+    e['allBins'] = {'1000': {}}
+    with self.assertRaises(histogram.InvalidBucketError):
+      _ = histogram.Histogram.FromDict(e).AsDict()
+
+  def testManyBinsRoundtrip(self):
+    # In this test we want to create a histogram which will have less than half
+    # of the bins populated, so we can force the bin compaction (instead of a
+    # list of bins, use a dictionary of bins) to do the conversion. We ensure
+    # that the dict key ordering is not going to be an issue in the
+    # serialisation and deserialisation roundtrip.
+    hist = histogram.Histogram('', 'unitless', self.TEST_BOUNDARIES)
+
+    # 400 allows us to fit the elements in approximately log10(10000) bins which
+    # should give us more empty bins than there are non-empty bins. We also add
+    # samples from either end of the range, by treating odd numbers in the
+    # beginning and even numbers as negative offsets from the max of the range
+    # (10,000).
+    for sample in xrange(0, 400):
+      hist.AddSample(sample if sample % 2 else 10000 - sample)
+
+    d = hist.AsDict()
+    self.assertIsInstance(d['allBins'], dict)
+    self.assertEqual(400, hist.num_values)
+    self.assertEqual((len(hist.bins) / 2) - 1, len(d['allBins']))
+
+    # Ensure that we can reconstitute a histogram properly from a dict.
+    e = histogram.Histogram.FromDict(d)
+    self.assertEqual(d, e.AsDict())
 
   def testBasic(self):
     hist = histogram.Histogram('', 'unitless', self.TEST_BOUNDARIES)
@@ -439,14 +479,15 @@ class HistogramUnittest(unittest.TestCase):
         'nans': True,
         'geometricMean': True,
         'percentile': [0.5, 1],
+        'ci': [0.01, 0.95],
     })
 
     # Test round-tripping summaryOptions
     hist = hist.Clone()
     stats = hist.statistics_scalars
-    self.assertEqual(stats['nans'].unit, 'count')
+    self.assertEqual(stats['nans'].unit, 'count_smallerIsBetter')
     self.assertEqual(stats['nans'].value, 1)
-    self.assertEqual(stats['count'].unit, 'count')
+    self.assertEqual(stats['count'].unit, 'count_smallerIsBetter')
     self.assertEqual(stats['count'].value, 3)
     self.assertEqual(stats['min'].unit, hist.unit)
     self.assertEqual(stats['min'].value, 50)
@@ -464,6 +505,10 @@ class HistogramUnittest(unittest.TestCase):
     self.assertEqual(stats['pct_100'].value, 70.5)
     self.assertEqual(stats['geometricMean'].unit, hist.unit)
     self.assertLess(abs(stats['geometricMean'].value - 59.439), 1e-3)
+    self.assertLess(stats['ci_095_lower'].value, stats['avg'].value)
+    self.assertLess(stats['avg'].value, stats['ci_095_upper'].value)
+    self.assertEqual(stats['ci_001_lower'].value, stats['avg'].value)
+    self.assertEqual(stats['ci_001_upper'].value, stats['avg'].value)
 
     hist.CustomizeSummaryOptions({
         'count': False,
@@ -475,6 +520,7 @@ class HistogramUnittest(unittest.TestCase):
         'nans': False,
         'geometricMean': False,
         'percentile': [],
+        'ci': [],
     })
     self.assertEqual(0, len(hist.statistics_scalars))
 
@@ -491,21 +537,25 @@ class HistogramUnittest(unittest.TestCase):
         'nans': True,
         'geometricMean': True,
         'percentile': [0, 0.01, 0.1, 0.5, 0.995, 1],
+        'ci': [0.1, 0.8],
     })
     stats = hist.statistics_scalars
     self.assertEqual(stats['nans'].value, 0)
     self.assertEqual(stats['count'].value, 0)
-    self.assertEqual(stats['min'].value, histogram.JS_MAX_VALUE)
-    self.assertEqual(stats['max'].value, -histogram.JS_MAX_VALUE)
-    self.assertEqual(stats['sum'].value, 0)
     self.assertNotIn('avg', stats)
     self.assertNotIn('stddev', stats)
-    self.assertEqual(stats['pct_000'].value, 0)
-    self.assertEqual(stats['pct_001'].value, 0)
-    self.assertEqual(stats['pct_010'].value, 0)
-    self.assertEqual(stats['pct_050'].value, 0)
-    self.assertEqual(stats['pct_099_5'].value, 0)
-    self.assertEqual(stats['pct_100'].value, 0)
+    self.assertNotIn('pct_000', stats)
+    self.assertNotIn('pct_001', stats)
+    self.assertNotIn('pct_010', stats)
+    self.assertNotIn('pct_050', stats)
+    self.assertNotIn('pct_099_5', stats)
+    self.assertNotIn('pct_100', stats)
+    self.assertNotIn('ci_010_lower', stats)
+    self.assertNotIn('ci_010_upper', stats)
+    self.assertNotIn('ci_010', stats)
+    self.assertNotIn('ci_080_lower', stats)
+    self.assertNotIn('ci_080_upper', stats)
+    self.assertNotIn('ci_080', stats)
 
   def testSampleValues(self):
     hist0 = histogram.Histogram('', 'unitless', self.TEST_BOUNDARIES)
@@ -632,8 +682,8 @@ class DiagnosticMapUnittest(unittest.TestCase):
     })
     generic = generic_set.GenericSet(['generic diagnostic'])
     generic2 = generic_set.GenericSet(['generic diagnostic 2'])
-    related_map = histogram.RelatedHistogramMap()
-    related_map.Set('a', histogram.Histogram('histogram', 'count'))
+    related_map = related_name_map.RelatedNameMap()
+    related_map.Set('a', 'histogram')
 
     hist = histogram.Histogram('', 'count')
 

@@ -17,13 +17,15 @@
 #include "base/time/clock.h"
 #include "base/time/tick_clock.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_power_manager_client.h"
-#include "chromeos/dbus/fake_session_manager_client.h"
+#include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/power_manager/idle.pb.h"
+#include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/metrics/arc_metrics_constants.h"
+#include "components/arc/metrics/stability_metrics_manager.h"
 #include "components/arc/test/test_browser_context.h"
+#include "components/prefs/testing_pref_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -114,28 +116,34 @@ class FakeTickClock : public base::TickClock {
   DISALLOW_COPY_AND_ASSIGN(FakeTickClock);
 };
 
-// Helper class that initializes DBusThreadManager for testing, and ensures the
-// lifetime of DBusThreadManager.
+// Helper class that initializes and shuts down dbus clients for testing.
 class DBusThreadManagerLifetimeHelper {
  public:
   DBusThreadManagerLifetimeHelper() {
-    // Get DBusThreadManagerSetter for setting fake DBusThreadManager clients.
-    // This also initializes the global DBusThreadManager instance.
-    std::unique_ptr<chromeos::DBusThreadManagerSetter>
-        dbus_thread_manager_setter =
-            chromeos::DBusThreadManager::GetSetterForTesting();
-
-    // Set fake clients for testing.
-    dbus_thread_manager_setter->SetSessionManagerClient(
-        std::make_unique<chromeos::FakeSessionManagerClient>());
-    dbus_thread_manager_setter->SetPowerManagerClient(
-        std::make_unique<chromeos::FakePowerManagerClient>());
+    chromeos::PowerManagerClient::InitializeFake();
+    chromeos::SessionManagerClient::InitializeFakeInMemory();
   }
 
   ~DBusThreadManagerLifetimeHelper() {
-    // Destroy the global DBusThreadManager instance.
-    chromeos::DBusThreadManager::Shutdown();
+    chromeos::SessionManagerClient::Shutdown();
+    chromeos::PowerManagerClient::Shutdown();
   }
+};
+
+// Helper class that ensures lifetime of StabilityMetricsManager for testing.
+class ScopedStabilityMetricsManager {
+ public:
+  ScopedStabilityMetricsManager() {
+    prefs::RegisterLocalStatePrefs(local_state_.registry());
+    StabilityMetricsManager::Initialize(&local_state_);
+  }
+
+  ~ScopedStabilityMetricsManager() { StabilityMetricsManager::Shutdown(); }
+
+ private:
+  TestingPrefServiceSimple local_state_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedStabilityMetricsManager);
 };
 
 // Initializes dependencies before creating ArcMetricsService instance.
@@ -166,7 +174,7 @@ class ArcMetricsServiceTest : public testing::Test {
       : arc_service_manager_(std::make_unique<ArcServiceManager>()),
         context_(std::make_unique<TestBrowserContext>()),
         service_(CreateArcMetricsService(context_.get())) {
-    GetSessionManagerClient()->set_arc_available(true);
+    chromeos::FakeSessionManagerClient::Get()->set_arc_available(true);
 
     auto fake_arc_window_delegate = std::make_unique<FakeArcWindowDelegate>();
     fake_arc_window_delegate_ = fake_arc_window_delegate.get();
@@ -187,7 +195,8 @@ class ArcMetricsServiceTest : public testing::Test {
     const base::TimeTicks arc_start_time =
         base::TimeDelta::FromMilliseconds(arc_start_time_in_ms) +
         base::TimeTicks();
-    GetSessionManagerClient()->set_arc_start_time(arc_start_time);
+    chromeos::FakeSessionManagerClient::Get()->set_arc_start_time(
+        arc_start_time);
   }
 
   std::vector<mojom::BootProgressEventPtr> GetBootProgressEvents(
@@ -226,23 +235,19 @@ class ArcMetricsServiceTest : public testing::Test {
   FakeTickClock* fake_tick_clock() { return &fake_tick_clock_; }
 
  private:
-  chromeos::FakeSessionManagerClient* GetSessionManagerClient() {
-    return static_cast<chromeos::FakeSessionManagerClient*>(
-        chromeos::DBusThreadManager::Get()->GetSessionManagerClient());
-  }
-
   chromeos::FakePowerManagerClient* GetPowerManagerClient() {
     return static_cast<chromeos::FakePowerManagerClient*>(
-        chromeos::DBusThreadManager::Get()->GetPowerManagerClient());
+        chromeos::PowerManagerClient::Get());
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<ArcServiceManager> arc_service_manager_;
 
-  // DBusThreadManager and SessionManager should outlive TestBrowserContext
-  // which destructs ArcMetricsService in dtor.
+  // DBusThreadManager, SessionManager and StabilityMetricsManager should
+  // outlive TestBrowserContext which destructs ArcMetricsService in dtor.
   DBusThreadManagerLifetimeHelper dbus_thread_manager_lifetime_helper_;
   session_manager::SessionManager session_manager_;
+  ScopedStabilityMetricsManager scoped_stability_metrics_manager_;
   std::unique_ptr<TestBrowserContext> context_;
 
   std::unique_ptr<aura::Window> fake_arc_window_;
@@ -376,46 +381,19 @@ TEST_F(ArcMetricsServiceTest, ReportBootProgress_InvalidBootType) {
 }
 
 TEST_F(ArcMetricsServiceTest, ReportNativeBridge) {
-  EXPECT_EQ(service()->native_bridge_type_for_testing(),
-            ArcMetricsService::NativeBridgeType::UNKNOWN);
+  // SetArcNativeBridgeType should be called once ArcMetricsService is
+  // constructed.
+  EXPECT_EQ(StabilityMetricsManager::Get()->GetArcNativeBridgeType(),
+            NativeBridgeType::UNKNOWN);
   service()->ReportNativeBridge(mojom::NativeBridgeType::NONE);
-  EXPECT_EQ(service()->native_bridge_type_for_testing(),
-            ArcMetricsService::NativeBridgeType::NONE);
+  EXPECT_EQ(StabilityMetricsManager::Get()->GetArcNativeBridgeType(),
+            NativeBridgeType::NONE);
   service()->ReportNativeBridge(mojom::NativeBridgeType::HOUDINI);
-  EXPECT_EQ(service()->native_bridge_type_for_testing(),
-            ArcMetricsService::NativeBridgeType::HOUDINI);
+  EXPECT_EQ(StabilityMetricsManager::Get()->GetArcNativeBridgeType(),
+            NativeBridgeType::HOUDINI);
   service()->ReportNativeBridge(mojom::NativeBridgeType::NDK_TRANSLATION);
-  EXPECT_EQ(service()->native_bridge_type_for_testing(),
-            ArcMetricsService::NativeBridgeType::NDK_TRANSLATION);
-}
-
-TEST_F(ArcMetricsServiceTest, RecordNativeBridgeUMA) {
-  base::HistogramTester tester;
-  service()->RecordNativeBridgeUMA();
-  tester.ExpectUniqueSample(
-      "Arc.NativeBridge",
-      static_cast<int>(ArcMetricsService::NativeBridgeType::UNKNOWN), 1);
-  service()->ReportNativeBridge(mojom::NativeBridgeType::NONE);
-  // Check that ReportNativeBridge doesn't record histograms.
-  tester.ExpectTotalCount("Arc.NativeBridge", 1);
-  service()->RecordNativeBridgeUMA();
-  tester.ExpectBucketCount(
-      "Arc.NativeBridge",
-      static_cast<int>(ArcMetricsService::NativeBridgeType::NONE), 1);
-  service()->ReportNativeBridge(mojom::NativeBridgeType::HOUDINI);
-  tester.ExpectTotalCount("Arc.NativeBridge", 2);
-  service()->RecordNativeBridgeUMA();
-  tester.ExpectBucketCount(
-      "Arc.NativeBridge",
-      static_cast<int>(ArcMetricsService::NativeBridgeType::HOUDINI), 1);
-  service()->ReportNativeBridge(mojom::NativeBridgeType::NDK_TRANSLATION);
-  tester.ExpectTotalCount("Arc.NativeBridge", 3);
-  service()->RecordNativeBridgeUMA();
-  tester.ExpectBucketCount(
-      "Arc.NativeBridge",
-      static_cast<int>(ArcMetricsService::NativeBridgeType::NDK_TRANSLATION),
-      1);
-  tester.ExpectTotalCount("Arc.NativeBridge", 4);
+  EXPECT_EQ(StabilityMetricsManager::Get()->GetArcNativeBridgeType(),
+            NativeBridgeType::NDK_TRANSLATION);
 }
 
 TEST_F(ArcMetricsServiceTest, RecordArcWindowFocusAction) {
@@ -464,6 +442,8 @@ TEST_F(ArcMetricsServiceTest, RecordEngagementTimeSessionLocked) {
   TriggerRecordEngagementTimeToUma();
   tester.ExpectTimeBucketCount("Arc.EngagementTime.Total",
                                base::TimeDelta::FromSeconds(0), 1);
+  tester.ExpectTimeBucketCount("Arc.EngagementTime.ArcTotal",
+                               base::TimeDelta::FromSeconds(0), 1);
   tester.ExpectTimeBucketCount("Arc.EngagementTime.Foreground",
                                base::TimeDelta::FromSeconds(0), 1);
   tester.ExpectTimeBucketCount("Arc.EngagementTime.Background",
@@ -480,6 +460,8 @@ TEST_F(ArcMetricsServiceTest, RecordEngagementTimeSessionActive) {
   TriggerRecordEngagementTimeToUma();
   tester.ExpectTimeBucketCount("Arc.EngagementTime.Total",
                                base::TimeDelta::FromSeconds(1), 1);
+  tester.ExpectTimeBucketCount("Arc.EngagementTime.ArcTotal",
+                               base::TimeDelta::FromSeconds(0), 1);
   tester.ExpectTimeBucketCount("Arc.EngagementTime.Foreground",
                                base::TimeDelta::FromSeconds(0), 1);
   tester.ExpectTimeBucketCount("Arc.EngagementTime.Background",
@@ -496,6 +478,8 @@ TEST_F(ArcMetricsServiceTest, RecordEngagementTimeScreenDimmed) {
 
   TriggerRecordEngagementTimeToUma();
   tester.ExpectTimeBucketCount("Arc.EngagementTime.Total",
+                               base::TimeDelta::FromSeconds(0), 1);
+  tester.ExpectTimeBucketCount("Arc.EngagementTime.ArcTotal",
                                base::TimeDelta::FromSeconds(0), 1);
   tester.ExpectTimeBucketCount("Arc.EngagementTime.Foreground",
                                base::TimeDelta::FromSeconds(0), 1);
@@ -518,6 +502,8 @@ TEST_F(ArcMetricsServiceTest, RecordEngagementTimeArcWindowFocused) {
   TriggerRecordEngagementTimeToUma();
   tester.ExpectTimeBucketCount("Arc.EngagementTime.Total",
                                base::TimeDelta::FromSeconds(1), 1);
+  tester.ExpectTimeBucketCount("Arc.EngagementTime.ArcTotal",
+                               base::TimeDelta::FromSeconds(1), 1);
   tester.ExpectTimeBucketCount("Arc.EngagementTime.Foreground",
                                base::TimeDelta::FromSeconds(1), 1);
   tester.ExpectTimeBucketCount("Arc.EngagementTime.Background",
@@ -538,6 +524,8 @@ TEST_F(ArcMetricsServiceTest, RecordEngagementTimeNonArcWindowFocused) {
   TriggerRecordEngagementTimeToUma();
   tester.ExpectTimeBucketCount("Arc.EngagementTime.Total",
                                base::TimeDelta::FromSeconds(1), 1);
+  tester.ExpectTimeBucketCount("Arc.EngagementTime.ArcTotal",
+                               base::TimeDelta::FromSeconds(0), 1);
   tester.ExpectTimeBucketCount("Arc.EngagementTime.Foreground",
                                base::TimeDelta::FromSeconds(0), 1);
   tester.ExpectTimeBucketCount("Arc.EngagementTime.Background",
@@ -555,6 +543,8 @@ TEST_F(ArcMetricsServiceTest, RecordEngagementTimeAppInBackground) {
 
   TriggerRecordEngagementTimeToUma();
   tester.ExpectTimeBucketCount("Arc.EngagementTime.Total",
+                               base::TimeDelta::FromSeconds(1), 1);
+  tester.ExpectTimeBucketCount("Arc.EngagementTime.ArcTotal",
                                base::TimeDelta::FromSeconds(1), 1);
   tester.ExpectTimeBucketCount("Arc.EngagementTime.Foreground",
                                base::TimeDelta::FromSeconds(0), 1);
@@ -578,6 +568,8 @@ TEST_F(ArcMetricsServiceTest,
 
   TriggerRecordEngagementTimeToUma();
   tester.ExpectTimeBucketCount("Arc.EngagementTime.Total",
+                               base::TimeDelta::FromSeconds(1), 1);
+  tester.ExpectTimeBucketCount("Arc.EngagementTime.ArcTotal",
                                base::TimeDelta::FromSeconds(1), 1);
   tester.ExpectTimeBucketCount("Arc.EngagementTime.Foreground",
                                base::TimeDelta::FromSeconds(1), 1);

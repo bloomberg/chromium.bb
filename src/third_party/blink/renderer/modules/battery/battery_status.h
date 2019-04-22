@@ -6,6 +6,7 @@
 #define BLINK_MODULES_BATTERY_BATTERY_STATUS_H_
 
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 #include <cmath>
@@ -15,6 +16,8 @@ namespace blink {
 
 // Simple struct to hold the battery status.  This class is copyable.
 class MODULES_EXPORT BatteryStatus final {
+  DISALLOW_NEW();
+
  public:
   BatteryStatus()
       : charging_(true),

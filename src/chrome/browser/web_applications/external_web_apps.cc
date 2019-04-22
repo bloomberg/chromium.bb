@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/files/file_enumerator.h"
@@ -19,8 +20,7 @@
 #include "base/task/post_task.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
-#include "chrome/browser/policy/profile_policy_connector.h"
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
+#include "chrome/browser/apps/user_type_filter.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -55,16 +55,6 @@ constexpr char kLaunchContainer[] = "launch_container";
 constexpr char kLaunchContainerTab[] = "tab";
 constexpr char kLaunchContainerWindow[] = "window";
 
-// kUserType is required key that specifies enumeration of user types for which
-// web app is visible. See kUserType* constants
-constexpr char kUserType[] = "user_type";
-
-constexpr char kUserTypeChild[] = "child";
-constexpr char kUserTypeGuest[] = "guest";
-constexpr char kUserTypeManaged[] = "managed";
-constexpr char kUserTypeSupervised[] = "supervised";
-constexpr char kUserTypeUnmanaged[] = "unmanaged";
-
 #if defined(OS_CHROMEOS)
 // The sub-directory of the extensions directory in which to scan for external
 // web apps (as opposed to external extensions or external ARC apps).
@@ -96,16 +86,16 @@ bool IsFeatureEnabled(const std::string& feature_name) {
   return base::FeatureList::IsEnabled(*it->second);
 }
 
-std::vector<web_app::PendingAppManager::AppInfo> ScanDir(
-    const base::FilePath& dir,
-    const std::string& user_type) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+std::vector<web_app::InstallOptions> ScanDir(const base::FilePath& dir,
+                                             const std::string& user_type) {
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   base::FilePath::StringType extension(FILE_PATH_LITERAL(".json"));
   base::FileEnumerator json_files(dir,
                                   false,  // Recursive.
                                   base::FileEnumerator::FILES);
 
-  std::vector<web_app::PendingAppManager::AppInfo> app_infos;
+  std::vector<web_app::InstallOptions> install_options_list;
 
   for (base::FilePath file = json_files.Next(); !file.empty();
        file = json_files.Next()) {
@@ -126,28 +116,15 @@ std::vector<web_app::PendingAppManager::AppInfo> ScanDir(
       continue;
     }
 
-    const base::Value* value =
-        dict->FindKeyOfType(kUserType, base::Value::Type::LIST);
-    if (!value) {
-      LOG(ERROR) << file.value() << " has no user type filter";
-      continue;
-    }
-    bool user_type_match = false;
-    for (const auto& it : value->GetList()) {
-      if (!it.is_string()) {
-        LOG(ERROR) << file.value() << " has invalid user type value";
-        user_type_match = false;
-        break;
-      }
-      user_type_match |= (it.GetString() == user_type);
-    }
-    if (!user_type_match) {
-      VLOG(1) << file.value() << " skip, does not match user type "
-              << user_type;
+    if (!apps::UserTypeMatchesJsonUserType(
+            user_type, file.MaybeAsASCII() /* app_id */, dict.get(),
+            nullptr /* default_user_types */)) {
+      // Already logged.
       continue;
     }
 
-    value = dict->FindKeyOfType(kFeatureName, base::Value::Type::STRING);
+    const base::Value* value =
+        dict->FindKeyOfType(kFeatureName, base::Value::Type::STRING);
     if (value) {
       std::string feature_name = value->GetString();
       VLOG(1) << file.value() << " checking feature " << feature_name;
@@ -194,16 +171,18 @@ std::vector<web_app::PendingAppManager::AppInfo> ScanDir(
       continue;
     }
 
-    web_app::PendingAppManager::AppInfo info(
+    web_app::InstallOptions install_options(
         std::move(app_url), launch_container,
         web_app::InstallSource::kExternalDefault);
-    info.create_shortcuts = create_shortcuts;
-    info.require_manifest = true;
+    install_options.add_to_applications_menu = create_shortcuts;
+    install_options.add_to_desktop = create_shortcuts;
+    install_options.add_to_quick_launch_bar = create_shortcuts;
+    install_options.require_manifest = true;
 
-    app_infos.push_back(std::move(info));
+    install_options_list.push_back(std::move(install_options));
   }
 
-  return app_infos;
+  return install_options_list;
 }
 
 base::FilePath DetermineScanDir(const Profile* profile) {
@@ -230,28 +209,14 @@ base::FilePath DetermineScanDir(const Profile* profile) {
   return dir;
 }
 
-std::string DetermineUserType(Profile* profile) {
-  DCHECK(!profile->IsOffTheRecord());
-  if (profile->IsGuestSession())
-    return kUserTypeGuest;
-  if (profile->IsChild())
-    return kUserTypeChild;
-  if (profile->IsLegacySupervised())
-    return kUserTypeSupervised;
-  if (policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile)
-          ->IsManaged()) {
-    return kUserTypeManaged;
-  }
-  return kUserTypeUnmanaged;
-}
-
 }  // namespace
 
 namespace web_app {
 
-std::vector<web_app::PendingAppManager::AppInfo>
-ScanDirForExternalWebAppsForTesting(const base::FilePath& dir) {
-  return ScanDir(dir, kUserTypeUnmanaged);
+std::vector<web_app::InstallOptions> ScanDirForExternalWebAppsForTesting(
+    const base::FilePath& dir,
+    Profile* profile) {
+  return ScanDir(dir, apps::DetermineUserType(profile));
 }
 
 void ScanForExternalWebApps(Profile* profile,
@@ -259,7 +224,7 @@ void ScanForExternalWebApps(Profile* profile,
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   const base::FilePath dir = DetermineScanDir(profile);
   if (dir.empty()) {
-    std::move(callback).Run(std::vector<web_app::PendingAppManager::AppInfo>());
+    std::move(callback).Run(std::vector<web_app::InstallOptions>());
     return;
   }
   // Do a two-part callback dance, across different TaskRunners.
@@ -269,13 +234,13 @@ void ScanForExternalWebApps(Profile* profile,
   // base::PostTaskWithTraitsAndReplyWithResult will bounce us back to the
   // originating thread (the UI thread).
   //
-  // 2. In |callback|, forward the vector of AppInfo's on to the
+  // 2. In |callback|, forward the vector of InstallOptions on to the
   // pending_app_manager_, which can only be called on the UI thread.
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE,
       {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-      base::BindOnce(&ScanDir, dir, DetermineUserType(profile)),
+      base::BindOnce(&ScanDir, dir, apps::DetermineUserType(profile)),
       std::move(callback));
 }
 

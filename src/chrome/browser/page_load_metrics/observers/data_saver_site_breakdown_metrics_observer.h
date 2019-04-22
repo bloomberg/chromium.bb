@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
+#include "chrome/common/page_load_metrics/page_load_metrics.mojom.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 
 namespace content {
@@ -31,8 +32,14 @@ class DataSaverSiteBreakdownMetricsObserver
                          ukm::SourceId source_id) override;
 
   void OnResourceDataUseObserved(
+      content::RenderFrameHost* rfh,
       const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
           resources) override;
+  void OnNewDeferredResourceCounts(
+      const page_load_metrics::mojom::DeferredResourceCounts&
+          new_deferred_resource_data) override;
+  ObservePolicy ShouldObserveMimeType(
+      const std::string& mime_type) const override;
 
   std::string committed_host_;
 

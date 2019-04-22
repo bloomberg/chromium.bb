@@ -43,14 +43,19 @@
 
 namespace blink {
 
-std::unique_ptr<DummyPageHolder> DummyPageHolder::Create(
-    const IntSize& initial_view_size,
-    Page::PageClients* page_clients,
-    LocalFrameClient* local_frame_client,
-    FrameSettingOverrideFunction setting_overrider) {
-  return base::WrapUnique(new DummyPageHolder(
-      initial_view_size, page_clients, local_frame_client, setting_overrider));
-}
+namespace {
+
+class DummyLocalFrameClient : public EmptyLocalFrameClient {
+ public:
+  DummyLocalFrameClient() = default;
+
+ private:
+  std::unique_ptr<WebURLLoaderFactory> CreateURLLoaderFactory() override {
+    return Platform::Current()->CreateDefaultURLLoaderFactory();
+  }
+};
+
+}  // namespace
 
 DummyPageHolder::DummyPageHolder(
     const IntSize& initial_view_size,
@@ -62,14 +67,14 @@ DummyPageHolder::DummyPageHolder(
     FillWithEmptyClients(page_clients);
   else
     page_clients.chrome_client = page_clients_argument->chrome_client;
-  page_ = Page::Create(page_clients);
+  page_ = Page::CreateNonOrdinary(page_clients);
   Settings& settings = page_->GetSettings();
   if (setting_overrider)
     (*setting_overrider)(settings);
 
   local_frame_client_ = local_frame_client;
   if (!local_frame_client_)
-    local_frame_client_ = EmptyLocalFrameClient::Create();
+    local_frame_client_ = MakeGarbageCollected<DummyLocalFrameClient>();
 
   frame_ = LocalFrame::Create(local_frame_client_.Get(), *page_, nullptr);
   frame_->SetView(LocalFrameView::Create(*frame_, initial_view_size));

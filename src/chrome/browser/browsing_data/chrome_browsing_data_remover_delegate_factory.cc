@@ -8,10 +8,10 @@
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/domain_reliability/service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/web_history_service_factory.h"
-#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -21,10 +21,6 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/buildflags/buildflags.h"
-
-#if defined(OS_ANDROID)
-#include "chrome/browser/offline_pages/offline_page_model_factory.h"
-#endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/activity_log/activity_log.h"
@@ -64,14 +60,13 @@ ChromeBrowsingDataRemoverDelegateFactory::
   DependsOn(WebDataServiceFactory::GetInstance());
   DependsOn(WebHistoryServiceFactory::GetInstance());
 
-#if defined(OS_ANDROID)
-  DependsOn(offline_pages::OfflinePageModelFactory::GetInstance());
-#endif
-
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   DependsOn(extensions::ActivityLog::GetFactoryInstance());
   DependsOn(extensions::ExtensionPrefsFactory::GetInstance());
 #endif
+
+  // In Android, depends on offline_pages::OfflinePageModelFactory in
+  // SimpleDependencyManager.
 
 #if BUILDFLAG(ENABLE_SESSION_SERVICE)
   DependsOn(SessionServiceFactory::GetInstance());

@@ -6,14 +6,14 @@
  * @type {Promise} A promise which is fulfilled when HTML imports for custom
  *   elements for file manager UI are loaded.
  */
-window.importElementsPromise = new Promise(function(resolve, reject) {
-  var startTime = Date.now();
+window.importElementsPromise = new Promise((resolve, reject) => {
+  const startTime = Date.now();
 
-  var link = document.createElement('link');
+  const link = document.createElement('link');
   link.rel = 'import';
   link.href = 'foreground/elements/elements_bundle.html';
   link.setAttribute('async', '');
-  link.onload = function() {
+  link.onload = () => {
     chrome.metricsPrivate.recordTime(
         'FileBrowser.Load.ImportElements', Date.now() - startTime);
     resolve();

@@ -32,17 +32,26 @@
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_PEER_CONNECTION_HANDLER_CLIENT_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/platform/web_common.h"
-#include "third_party/webrtc/api/peerconnectioninterface.h"
+#include "third_party/webrtc/api/peer_connection_interface.h"
+#include "third_party/webrtc/api/sctp_transport_interface.h"
 
 namespace blink {
 
-class WebRTCDataChannelHandler;
 class WebRTCICECandidate;
 class WebRTCRtpReceiver;
 class WebRTCRtpTransceiver;
+
+struct BLINK_PLATFORM_EXPORT WebRTCSctpTransportSnapshot {
+  rtc::scoped_refptr<webrtc::SctpTransportInterface> transport;
+  webrtc::SctpTransportInformation sctp_transport_state =
+      webrtc::SctpTransportInformation(webrtc::SctpTransportState::kNew);
+  webrtc::DtlsTransportInformation dtls_transport_state =
+      webrtc::DtlsTransportInformation(webrtc::DtlsTransportState::kNew);
+};
 
 class BLINK_PLATFORM_EXPORT WebRTCPeerConnectionHandlerClient {
  public:
@@ -57,13 +66,15 @@ class BLINK_PLATFORM_EXPORT WebRTCPeerConnectionHandlerClient {
   virtual void DidChangeIceConnectionState(
       webrtc::PeerConnectionInterface::IceConnectionState) = 0;
   virtual void DidChangePeerConnectionState(
-      webrtc::PeerConnectionInterface::PeerConnectionState){};
+      webrtc::PeerConnectionInterface::PeerConnectionState) {}
   virtual void DidAddReceiverPlanB(std::unique_ptr<WebRTCRtpReceiver>) = 0;
   virtual void DidRemoveReceiverPlanB(std::unique_ptr<WebRTCRtpReceiver>) = 0;
   virtual void DidModifyTransceivers(
       std::vector<std::unique_ptr<WebRTCRtpTransceiver>>,
       bool is_remote_description) = 0;
-  virtual void DidAddRemoteDataChannel(WebRTCDataChannelHandler*) = 0;
+  virtual void DidModifySctpTransport(WebRTCSctpTransportSnapshot) = 0;
+  virtual void DidAddRemoteDataChannel(
+      scoped_refptr<webrtc::DataChannelInterface>) = 0;
   virtual void DidNoteInterestingUsage(int usage_pattern) = 0;
   virtual void ReleasePeerConnectionHandler() = 0;
   virtual void ClosePeerConnection();

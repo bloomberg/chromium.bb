@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
@@ -311,12 +312,12 @@ void GKRMethod::AddLogin(const PasswordForm& form, const char* app_string) {
       "submit_element", UTF16ToUTF8(form.submit_element).c_str(),
       "signon_realm", form.signon_realm.c_str(),
       "preferred", form.preferred,
-      "date_created", base::Int64ToString(date_created).c_str(),
+      "date_created", base::NumberToString(date_created).c_str(),
       "blacklisted_by_user", form.blacklisted_by_user,
       "type", form.type,
       "times_used", form.times_used,
       "scheme", form.scheme,
-      "date_synced", base::Int64ToString(date_synced).c_str(),
+      "date_synced", base::NumberToString(date_synced).c_str(),
       "display_name", UTF16ToUTF8(form.display_name).c_str(),
       "avatar_url", form.icon_url.spec().c_str(),
       // We serialize unique origins as "", in order to make other systems that

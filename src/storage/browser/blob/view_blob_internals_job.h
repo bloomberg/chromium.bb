@@ -7,11 +7,11 @@
 
 #include <string>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "net/base/completion_once_callback.h"
 #include "net/url_request/url_request_simple_job.h"
-#include "storage/browser/storage_browser_export.h"
 
 namespace net {
 class URLRequest;
@@ -24,7 +24,7 @@ class BlobStorageContext;
 
 // A job subclass that implements a protocol to inspect the internal
 // state of blob registry.
-class STORAGE_EXPORT ViewBlobInternalsJob
+class COMPONENT_EXPORT(STORAGE_BROWSER) ViewBlobInternalsJob
     : public net::URLRequestSimpleJob {
  public:
   ViewBlobInternalsJob(net::URLRequest* request,
@@ -49,7 +49,7 @@ class STORAGE_EXPORT ViewBlobInternalsJob
   static void GenerateHTMLForBlobData(const BlobEntry& blob_data,
                                       const std::string& content_type,
                                       const std::string& content_disposition,
-                                      int refcount,
+                                      size_t refcount,
                                       std::string* out);
 
   BlobStorageContext* blob_storage_context_;

@@ -5,9 +5,10 @@
  * found in the LICENSE file.
  */
 
+#include "AnimTimer.h"
 #include "Sample.h"
-#include "SkAnimTimer.h"
 #include "SkCanvas.h"
+#include "SkFont.h"
 #include "SkGradientShader.h"
 #include "SkString.h"
 
@@ -29,7 +30,7 @@ static void draw_gradient2(SkCanvas* canvas, const SkRect& rect, SkScalar delta)
     SkPaint paint;
     paint.setShader(SkGradientShader::MakeTwoPointConical(c0, r0, c1, r1, colors,
                                                           pos, SK_ARRAY_COUNT(pos),
-                                                          SkShader::kClamp_TileMode));
+                                                          SkTileMode::kClamp));
     canvas->drawRect(rect, paint);
 }
 
@@ -68,13 +69,11 @@ protected:
         draw_gradient2(canvas, SkRect::MakeXYWH(l, t, w, h), delta);
         SkString txt;
         txt.appendf("gap at \"tangent\" pt = %f", SkScalarToFloat(delta));
-        SkPaint paint;
-        paint.setAntiAlias(true);
-        paint.setColor(SK_ColorBLACK);
-        canvas->drawString(txt, l + w/2 + w*DELTA_SCALE*delta, t + h + SK_Scalar1 * 10, paint);
+        canvas->drawString(txt, l + w / 2 + w * DELTA_SCALE * delta, t + h + SK_Scalar1 * 10,
+                           SkFont(), SkPaint());
     }
 
-    bool onAnimate(const SkAnimTimer& timer) override {
+    bool onAnimate(const AnimTimer& timer) override {
         fTime = SkDoubleToScalar(timer.secs() / 15);
         return true;
     }

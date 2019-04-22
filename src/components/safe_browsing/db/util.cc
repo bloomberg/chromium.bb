@@ -11,7 +11,6 @@
 #endif
 #include "base/environment.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -29,7 +28,7 @@ namespace safe_browsing {
 namespace {
 
 bool IsKnownList(const std::string& name) {
-  for (size_t i = 0; i < arraysize(kAllLists); ++i) {
+  for (size_t i = 0; i < base::size(kAllLists); ++i) {
     if (!strcmp(kAllLists[i], name.c_str())) {
       return true;
     }

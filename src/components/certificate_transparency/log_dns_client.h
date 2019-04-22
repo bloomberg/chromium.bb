@@ -13,10 +13,11 @@
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_piece.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_change_notifier.h"
 #include "net/log/net_log_with_source.h"
+#include "net/url_request/url_request_context.h"
 
 namespace net {
 class DnsClient;
@@ -49,6 +50,7 @@ class LogDnsClient : public net::NetworkChangeNotifier::DNSObserver {
   // limit will fail with net::TEMPORARILY_THROTTLED. Setting this to 0 will
   // disable this limit.
   LogDnsClient(std::unique_ptr<net::DnsClient> dns_client,
+               net::URLRequestContext* url_request_context,
                const net::NetLogWithSource& net_log,
                size_t max_concurrent_queries);
   // Must be deleted on the same thread that it was created on.
@@ -76,6 +78,10 @@ class LogDnsClient : public net::NetworkChangeNotifier::DNSObserver {
   // The |leaf_hash| is the SHA-256 Merkle leaf hash (see RFC6962, section 2.1).
   // The size of the CT log tree, for which the proof is requested, must be
   // provided in |tree_size|.
+  // The field |lookup_securely| specifies whether DNS lookups should be
+  // performed securely or insecurely. This value should be set according to
+  // whether the hostname lookup was resolved securely or not in order to
+  // help achieve resolver consistency between the hostname and proof lookups.
   // A handle to the query will be placed in |out_query|. The audit proof can be
   // obtained from that once the query completes. Deleting this handle before
   // the query completes will cancel it. It must not outlive the LogDnsClient.
@@ -94,15 +100,16 @@ class LogDnsClient : public net::NetworkChangeNotifier::DNSObserver {
   //   not a SHA-256 hash.
   net::Error QueryAuditProof(base::StringPiece domain_for_log,
                              std::string leaf_hash,
+                             bool lookup_securely,
                              uint64_t tree_size,
                              std::unique_ptr<AuditProofQuery>* out_query,
-                             const net::CompletionCallback& callback);
+                             net::CompletionOnceCallback callback);
 
  private:
   // Invoked when an audit proof query completes.
   // |callback| is the user-provided callback that should be notified.
   // |net_error| is a net::Error indicating success or failure.
-  void QueryAuditProofComplete(const net::CompletionCallback& callback,
+  void QueryAuditProofComplete(net::CompletionOnceCallback callback,
                                int net_error);
 
   // Invoked when an audit proof query is cancelled.
@@ -118,6 +125,8 @@ class LogDnsClient : public net::NetworkChangeNotifier::DNSObserver {
 
   // Used to perform DNS queries.
   std::unique_ptr<net::DnsClient> dns_client_;
+  // Used to perform DoH queries.
+  net::URLRequestContext* url_request_context_;
   // Passed to the DNS client for logging.
   net::NetLogWithSource net_log_;
   // The number of queries that are currently in-flight.

@@ -34,7 +34,7 @@ struct AudioOutputRedirectionConfig {
   bool apply_volume = false;
 
   // Any extra delay to apply to the timestamps sent to the redirected output.
-  // Note that the dealyed timestamp will be used internally for AV sync.
+  // Note that the delayed timestamp will be used internally for AV sync.
   int64_t extra_delay_microseconds = 0;
 
   // Patterns to determine which audio streams should be redirected. If a stream

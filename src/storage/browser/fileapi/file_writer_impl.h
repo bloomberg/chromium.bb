@@ -5,10 +5,10 @@
 #ifndef STORAGE_BROWSER_FILEAPI_FILE_WRITER_IMPL_H_
 #define STORAGE_BROWSER_FILEAPI_FILE_WRITER_IMPL_H_
 
+#include "base/component_export.h"
 #include "base/memory/weak_ptr.h"
 #include "storage/browser/fileapi/file_system_operation_runner.h"
 #include "storage/browser/fileapi/file_system_url.h"
-#include "storage/browser/storage_browser_export.h"
 #include "third_party/blink/public/mojom/filesystem/file_writer.mojom.h"
 
 namespace storage {
@@ -17,7 +17,8 @@ namespace storage {
 // FileSystemOperationRunner and BlobStorageContext so all methods should be
 // called on the sequence those instances live on. In chromium that means all
 // usage has to be on the IO thread.
-class STORAGE_EXPORT FileWriterImpl : public blink::mojom::FileWriter {
+class COMPONENT_EXPORT(STORAGE_BROWSER) FileWriterImpl
+    : public blink::mojom::FileWriter {
  public:
   FileWriterImpl(FileSystemURL url,
                  std::unique_ptr<FileSystemOperationRunner> operation_runner,

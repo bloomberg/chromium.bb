@@ -1,3 +1,4 @@
-reillyg@chromium.org
+file://chrome/browser/usb/OWNERS
 
 # COMPONENT: IO>USB
+# TEAM: device-dev@chromium.org

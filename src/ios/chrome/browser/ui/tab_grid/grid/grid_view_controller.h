@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_consumer.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_theme.h"
 
+@protocol GridEmptyView;
 @protocol GridImageDataSource;
 @class GridTransitionLayout;
 @class GridViewController;
@@ -40,7 +41,7 @@
 // The gridView is accessible to manage the content inset behavior.
 @property(nonatomic, readonly) UIScrollView* gridView;
 // The view that is shown when there are no items.
-@property(nonatomic, strong) UIView* emptyStateView;
+@property(nonatomic, strong) UIView<GridEmptyView>* emptyStateView;
 // Returns YES if the grid has no items.
 @property(nonatomic, readonly, getter=isGridEmpty) BOOL gridEmpty;
 // The visual look of the grid.

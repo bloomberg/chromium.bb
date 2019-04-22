@@ -45,9 +45,9 @@ class ScriptTracker : public ScriptExecutor::Listener {
     //
     // This is not called if a DOM change could make some scripts runnable.
     //
-    // This is not called until some scripts have been reported runnable to
-    // OnRunnableScriptsChanged at least once.
-    virtual void OnNoRunnableScriptsAnymore() = 0;
+    // This is only called when there are scripts. That is, SetScripts was last
+    // passed a non-empty vector.
+    virtual void OnNoRunnableScripts() = 0;
   };
 
   // |delegate| and |listener| should outlive this object and should not be
@@ -66,7 +66,7 @@ class ScriptTracker : public ScriptExecutor::Listener {
   //
   // Calling CheckScripts() while a check is in progress cancels the previously
   // running check and starts a new one right away.
-  void CheckScripts(const base::TimeDelta& max_duration);
+  void CheckScripts();
 
   // Runs a script and reports, when the script has ended, whether the run was
   // successful. Fails immediately if a script is already running.
@@ -86,22 +86,6 @@ class ScriptTracker : public ScriptExecutor::Listener {
   // script running at a time.
   bool running() const { return executor_ != nullptr; }
 
-  // Returns a dictionary describing the current execution context, which
-  // is intended to be serialized as JSON string. The execution context is
-  // useful when analyzing feedback forms and for debugging in general.
-  base::Value GetDebugContext() const;
-
-  // Initiates a script tracker shutdown.
-  //
-  // This function returns false when it needs more time to properly shut down
-  // the script tracker. It usually means that it either has to wait for a
-  // script to find an appropriate moment to suspend execution or wait for a
-  // script checking round to complete.
-  //
-  // A caller is expected to try again later when this function returns false. A
-  // return value of true means that the scrip tracker can safely be destroyed.
-  bool Terminate();
-
  private:
   typedef std::map<Script*, std::unique_ptr<Script>> AvailableScriptMap;
 
@@ -110,18 +94,12 @@ class ScriptTracker : public ScriptExecutor::Listener {
   void OnScriptRun(const std::string& script_path,
                    ScriptExecutor::RunScriptCallback original_callback,
                    const ScriptExecutor::Result& result);
-  void UpdateRunnableScriptsIfNecessary();
-  void OnCheckDone();
 
   // Updates the list of available scripts if there is a pending update from
   // when a script was still being executed.
   void MaybeSwapInScripts();
-
-  // Overrides ScriptExecutor::Listener.
-  void OnServerPayloadChanged(const std::string& global_payload,
-                              const std::string& script_payload) override;
-  void OnScriptListChanged(
-      std::vector<std::unique_ptr<Script>> scripts) override;
+  void OnCheckDone();
+  void UpdateRunnableScriptsIfNecessary();
 
   // Stops running pending checks and cleans up any state used by pending
   // checks. This can safely be called at any time, including when no checks are
@@ -131,6 +109,12 @@ class ScriptTracker : public ScriptExecutor::Listener {
   // Returns true if |runnable_| should be updated.
   bool RunnablesHaveChanged();
   void OnPreconditionCheck(Script* script, bool met_preconditions);
+
+  // Overrides ScriptExecutor::Listener.
+  void OnServerPayloadChanged(const std::string& global_payload,
+                              const std::string& script_payload) override;
+  void OnScriptListChanged(
+      std::vector<std::unique_ptr<Script>> scripts) override;
 
   ScriptExecutorDelegate* const delegate_;
   ScriptTracker::Listener* const listener_;
@@ -144,11 +128,6 @@ class ScriptTracker : public ScriptExecutor::Listener {
   // NOTE 2: Set of runnable scripts should be in sync with what is displayed on
   // the bottom bar.
   std::vector<ScriptHandle> runnable_scripts_;
-
-  // True if OnRunnableScriptsChanged was called at least once - necessarily
-  // with a non-empty set of scripts the first time, since the tracker starts
-  // with an empty set of scripts.
-  bool reported_runnable_scripts_;
 
   // Sets of available scripts. SetScripts resets this and interrupts
   // any pending check.

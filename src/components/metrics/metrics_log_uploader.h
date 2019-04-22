@@ -33,11 +33,18 @@ class MetricsLogUploader {
 
   virtual ~MetricsLogUploader() {}
 
-  // Uploads a log with the specified |compressed_log_data| and |log_hash|.
-  // |log_hash| is expected to be the hex-encoded SHA1 hash of the log data
-  // before compression.
+  // Uploads a log with the specified |compressed_log_data|, a |log_hash| and
+  // |log_signature| for data validation, and |reporting_info|. |log_hash| is
+  // expected to be the hex-encoded SHA1 hash of the log data before compression
+  // and |log_signature| is expected to be a base64-encoded HMAC-SHA256
+  // signature of the log data before compression. When the server receives an
+  // upload it recomputes the hash and signature of the upload and compares it
+  // to the ones inlcuded in the upload. If there is a missmatched, the upload
+  // is flagged. If an Uploader implementation uploads to a server that doesn't
+  // do this validation then |log_hash| and |log_signature| can be ignored.
   virtual void UploadLog(const std::string& compressed_log_data,
                          const std::string& log_hash,
+                         const std::string& log_signature,
                          const ReportingInfo& reporting_info) = 0;
 };
 

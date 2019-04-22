@@ -256,7 +256,7 @@ void AudioOutputDevice::ShutDownOnIOThread() {
   // in which case, we cannot use the message loop to close the thread handle
   // and can't rely on the main thread existing either.
   base::AutoLock auto_lock_(audio_thread_lock_);
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_thread_join;
   audio_thread_.reset();
   audio_callback_.reset();
   stopping_hack_ = false;

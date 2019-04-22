@@ -44,6 +44,9 @@ Polymer({
       reflectToAttribute: true,
     },
 
+    /** Whether to show technology badges on mobile network icons. */
+    showTechnologyBadge: {type: Boolean, value: true},
+
     /**
      * List of all network state data for all visible networks.
      * @private {!Array<!CrOnc.NetworkStateProperties>}
@@ -115,8 +118,9 @@ Polymer({
 
   /** @override */
   detached: function() {
-    if (this.scanIntervalId_ !== null)
+    if (this.scanIntervalId_ !== null) {
       window.clearInterval(this.scanIntervalId_);
+    }
     chrome.networkingPrivate.onNetworkListChanged.removeListener(
         this.networkListChangedListener_);
     chrome.networkingPrivate.onDeviceStateListChanged.removeListener(
@@ -191,8 +195,9 @@ Polymer({
     this.cellularDeviceState_ = deviceStates.find(function(device) {
       return device.Type == CrOnc.Type.CELLULAR;
     });
-    if (this.cellularDeviceState_)
+    if (this.cellularDeviceState_) {
       this.ensureCellularNetwork_(networkStates);
+    }
     this.networkStateList_ = networkStates;
     this.fire('network-list-changed', networkStates);
 
@@ -262,13 +267,15 @@ Polymer({
       }
     }
 
-    if (state.ConnectionState != CrOnc.ConnectionState.NOT_CONNECTED)
+    if (state.ConnectionState != CrOnc.ConnectionState.NOT_CONNECTED) {
       return;
+    }
 
     chrome.networkingPrivate.startConnect(state.GUID, function() {
       const lastError = chrome.runtime.lastError;
-      if (lastError && lastError != 'connecting')
+      if (lastError && lastError != 'connecting') {
         console.error('networkingPrivate.startConnect error: ' + lastError);
+      }
     });
   },
 });

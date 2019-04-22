@@ -6,8 +6,10 @@
  */
 
 #include "GrRegionOp.h"
-#include <GrDrawOpTest.h>
+
+#include "GrCaps.h"
 #include "GrDefaultGeoProcFactory.h"
+#include "GrDrawOpTest.h"
 #include "GrMeshDrawOp.h"
 #include "GrOpFlushState.h"
 #include "GrResourceProvider.h"
@@ -20,11 +22,13 @@ static const int kVertsPerInstance = 4;
 static const int kIndicesPerInstance = 6;
 
 static sk_sp<GrGeometryProcessor> make_gp(const GrShaderCaps* shaderCaps,
-                                          const SkMatrix& viewMatrix) {
+                                          const SkMatrix& viewMatrix,
+                                          bool wideColor) {
     using namespace GrDefaultGeoProcFactory;
-    return GrDefaultGeoProcFactory::Make(shaderCaps, Color::kPremulGrColorAttribute_Type,
-                                         Coverage::kSolid_Type, LocalCoords::kUsePosition_Type,
-                                         viewMatrix);
+    Color::Type colorType =
+        wideColor ? Color::kPremulWideColorAttribute_Type : Color::kPremulGrColorAttribute_Type;
+    return GrDefaultGeoProcFactory::Make(shaderCaps, colorType, Coverage::kSolid_Type,
+                                         LocalCoords::kUsePosition_Type, viewMatrix);
 }
 
 namespace {
@@ -36,7 +40,7 @@ private:
 public:
     DEFINE_OP_CLASS_ID
 
-    static std::unique_ptr<GrDrawOp> Make(GrContext* context,
+    static std::unique_ptr<GrDrawOp> Make(GrRecordingContext* context,
                                           GrPaint&& paint,
                                           const SkMatrix& viewMatrix,
                                           const SkRegion& region,
@@ -83,14 +87,17 @@ public:
 
     FixedFunctionFlags fixedFunctionFlags() const override { return fHelper.fixedFunctionFlags(); }
 
-    RequiresDstTexture finalize(const GrCaps& caps, const GrAppliedClip* clip) override {
-        return fHelper.xpRequiresDstTexture(caps, clip, GrProcessorAnalysisCoverage::kNone,
-                                            &fRegions[0].fColor);
+    GrProcessorSet::Analysis finalize(const GrCaps& caps, const GrAppliedClip* clip,
+                                      GrFSAAType fsaaType, GrClampType clampType) override {
+        return fHelper.finalizeProcessors(caps, clip, fsaaType, clampType,
+                                          GrProcessorAnalysisCoverage::kNone, &fRegions[0].fColor,
+                                          &fWideColor);
     }
 
 private:
     void onPrepareDraws(Target* target) override {
-        sk_sp<GrGeometryProcessor> gp = make_gp(target->caps().shaderCaps(), fViewMatrix);
+        sk_sp<GrGeometryProcessor> gp = make_gp(target->caps().shaderCaps(), fViewMatrix,
+                                                fWideColor);
         if (!gp) {
             SkDebugf("Couldn't create GrGeometryProcessor\n");
             return;
@@ -105,19 +112,22 @@ private:
         if (!numRects) {
             return;
         }
-        sk_sp<const GrBuffer> indexBuffer = target->resourceProvider()->refQuadIndexBuffer();
+        sk_sp<const GrGpuBuffer> indexBuffer = target->resourceProvider()->refQuadIndexBuffer();
+        if (!indexBuffer) {
+            SkDebugf("Could not allocate indices\n");
+            return;
+        }
         PatternHelper helper(target, GrPrimitiveType::kTriangles, gp->vertexStride(),
-                             indexBuffer.get(), kVertsPerInstance, kIndicesPerInstance, numRects);
+                             std::move(indexBuffer), kVertsPerInstance, kIndicesPerInstance,
+                             numRects);
         GrVertexWriter vertices{helper.vertices()};
-        if (!vertices.fPtr || !indexBuffer) {
+        if (!vertices.fPtr) {
             SkDebugf("Could not allocate vertices\n");
             return;
         }
 
         for (int i = 0; i < numRegions; i++) {
-            // TODO4F: Preserve float colors
-            GrColor color = fRegions[i].fColor.toBytes_RGBA();
-
+            GrVertexColor color(fRegions[i].fColor, fWideColor);
             SkRegion::Iterator iter(fRegions[i].fRegion);
             while (!iter.done()) {
                 SkRect rect = SkRect::Make(iter.rect());
@@ -125,8 +135,11 @@ private:
                 iter.next();
             }
         }
-        auto pipe = fHelper.makePipeline(target);
-        helper.recordDraw(target, std::move(gp), pipe.fPipeline, pipe.fFixedDynamicState);
+        helper.recordDraw(target, std::move(gp));
+    }
+
+    void onExecute(GrOpFlushState* flushState, const SkRect& chainBounds) override {
+        fHelper.executeDrawsAndUploads(this, flushState, chainBounds);
     }
 
     CombineResult onCombineIfPossible(GrOp* t, const GrCaps& caps) override {
@@ -140,6 +153,7 @@ private:
         }
 
         fRegions.push_back_n(that->fRegions.count(), that->fRegions.begin());
+        fWideColor |= that->fWideColor;
         return CombineResult::kMerged;
     }
 
@@ -151,6 +165,7 @@ private:
     Helper fHelper;
     SkMatrix fViewMatrix;
     SkSTArray<1, RegionInfo, true> fRegions;
+    bool fWideColor;
 
     typedef GrMeshDrawOp INHERITED;
 };
@@ -159,7 +174,7 @@ private:
 
 namespace GrRegionOp {
 
-std::unique_ptr<GrDrawOp> Make(GrContext* context,
+std::unique_ptr<GrDrawOp> Make(GrRecordingContext* context,
                                GrPaint&& paint,
                                const SkMatrix& viewMatrix,
                                const SkRegion& region,

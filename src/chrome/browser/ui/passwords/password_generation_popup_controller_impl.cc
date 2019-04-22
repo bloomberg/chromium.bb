@@ -9,13 +9,13 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
 #include "base/i18n/rtl.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversion_utils.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "chrome/browser/ui/autofill/popup_constants.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/passwords/password_generation_popup_observer.h"
@@ -27,7 +27,7 @@
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/suggestion.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
-#include "components/password_manager/core/browser/password_generation_manager.h"
+#include "components/password_manager/core/browser/password_generation_frame_helper.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/strings/grit/components_strings.h"
@@ -37,7 +37,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/geometry/rect_conversions.h"
-#include "ui/gfx/range/range.h"
 #include "ui/gfx/text_utils.h"
 
 #if defined(OS_ANDROID)
@@ -57,7 +56,7 @@ PasswordGenerationPopupControllerImpl::GetOrCreate(
     content::WebContents* web_contents,
     gfx::NativeView container_view) {
   if (previous.get() && previous->element_bounds() == bounds &&
-      previous->web_contents_ == web_contents &&
+      previous->web_contents() == web_contents &&
       previous->container_view() == container_view) {
     return previous;
   }
@@ -81,7 +80,8 @@ PasswordGenerationPopupControllerImpl::PasswordGenerationPopupControllerImpl(
     PasswordGenerationPopupObserver* observer,
     content::WebContents* web_contents,
     gfx::NativeView container_view)
-    : view_(nullptr),
+    : content::WebContentsObserver(web_contents),
+      view_(nullptr),
       form_(form),
       driver_(driver),
       observer_(observer),
@@ -94,13 +94,29 @@ PasswordGenerationPopupControllerImpl::PasswordGenerationPopupControllerImpl(
       controller_common_(bounds, base::i18n::LEFT_TO_RIGHT, container_view),
       password_selected_(false),
       state_(kOfferGeneration),
-      web_contents_(web_contents),
       weak_ptr_factory_(this) {
+#if !defined(OS_ANDROID)
+  zoom::ZoomController* zoom_controller =
+      zoom::ZoomController::FromWebContents(web_contents);
+  // There may not always be a ZoomController, e.g. in tests.
+  if (zoom_controller) {
+    zoom_controller->AddObserver(this);
+  }
+#endif  // !defined(OS_ANDROID)
+
   help_text_ = l10n_util::GetStringUTF16(IDS_PASSWORD_GENERATION_PROMPT);
 }
 
 PasswordGenerationPopupControllerImpl::
-    ~PasswordGenerationPopupControllerImpl() {}
+    ~PasswordGenerationPopupControllerImpl() {
+#if !defined(OS_ANDROID)
+  zoom::ZoomController* zoom_controller =
+      zoom::ZoomController::FromWebContents(web_contents());
+  if (zoom_controller) {
+    zoom_controller->RemoveObserver(this);
+  }
+#endif  // !defined(OS_ANDROID)
+}
 
 base::WeakPtr<PasswordGenerationPopupControllerImpl>
 PasswordGenerationPopupControllerImpl::GetWeakPtr() {
@@ -152,14 +168,14 @@ void PasswordGenerationPopupControllerImpl::PasswordAccepted() {
   Hide();
 }
 
-void PasswordGenerationPopupControllerImpl::Show(GenerationState state) {
+void PasswordGenerationPopupControllerImpl::Show(GenerationUIState state) {
   // When switching from editing to generation state, regenerate the password.
   if (state == kOfferGeneration &&
       (state_ != state || current_password_.empty())) {
     uint32_t spec_priority = 0;
     current_password_ =
-        driver_->GetPasswordGenerationManager()->GeneratePassword(
-            web_contents_->GetLastCommittedURL().GetOrigin(), form_signature_,
+        driver_->GetPasswordGenerationHelper()->GeneratePassword(
+            web_contents()->GetLastCommittedURL().GetOrigin(), form_signature_,
             field_signature_, max_length_, &spec_priority);
     if (driver_ && driver_->GetPasswordManager()) {
       driver_->GetPasswordManager()->ReportSpecPriorityForGeneratedPassword(
@@ -199,9 +215,32 @@ void PasswordGenerationPopupControllerImpl::UpdatePassword(
     view_->UpdatePasswordValue();
 }
 
-void PasswordGenerationPopupControllerImpl::HideAndDestroy() {
+void PasswordGenerationPopupControllerImpl::FrameWasScrolled() {
   Hide();
 }
+
+void PasswordGenerationPopupControllerImpl::GenerationElementLostFocus() {
+  Hide();
+}
+
+void PasswordGenerationPopupControllerImpl::GeneratedPasswordRejected() {
+  Hide();
+}
+
+void PasswordGenerationPopupControllerImpl::DidAttachInterstitialPage() {
+  Hide();
+}
+
+void PasswordGenerationPopupControllerImpl::WebContentsDestroyed() {
+  Hide();
+}
+
+#if !defined(OS_ANDROID)
+void PasswordGenerationPopupControllerImpl::OnZoomChanged(
+    const zoom::ZoomController::ZoomChangedEventData& data) {
+  Hide();
+}
+#endif  // !defined(OS_ANDROID)
 
 void PasswordGenerationPopupControllerImpl::Hide() {
   if (driver_) {
@@ -222,10 +261,6 @@ void PasswordGenerationPopupControllerImpl::ViewDestroyed() {
   view_ = NULL;
 
   Hide();
-}
-
-void PasswordGenerationPopupControllerImpl::OnSavedPasswordsLinkClicked() {
-  NOTREACHED();
 }
 
 void PasswordGenerationPopupControllerImpl::SetSelectionAtPoint(
@@ -285,7 +320,7 @@ int PasswordGenerationPopupControllerImpl::GetElidedLabelWidthForRow(int row) {
 }
 #endif
 
-PasswordGenerationPopupController::GenerationState
+PasswordGenerationPopupController::GenerationUIState
 PasswordGenerationPopupControllerImpl::state() const {
   return state_;
 }
@@ -306,8 +341,4 @@ base::string16 PasswordGenerationPopupControllerImpl::SuggestedText() {
 
 const base::string16& PasswordGenerationPopupControllerImpl::HelpText() {
   return help_text_;
-}
-
-gfx::Range PasswordGenerationPopupControllerImpl::HelpTextLinkRange() {
-  return gfx::Range();
 }

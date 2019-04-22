@@ -6,7 +6,10 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/mac/scoped_nsobject.h"
+#include "remoting/base/string_resources.h"
 #include "remoting/host/installer/mac/uninstaller/remoting_uninstaller.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 @implementation RemotingUninstallerAppDelegate
 
@@ -19,13 +22,12 @@
 
 - (void)showSuccess:(bool)success withMessage:(NSString*) message {
   NSString* summary = success ? @"Uninstall succeeded" : @"Uninstall failed";
-  NSAlert* alert = [NSAlert alertWithMessageText:summary
-                                   defaultButton:@"OK"
-                                 alternateButton:nil
-                                     otherButton:nil
-                       informativeTextWithFormat:@"%@", message];
-  [alert setAlertStyle:
-       (success ? NSInformationalAlertStyle : NSCriticalAlertStyle)];
+  base::scoped_nsobject<NSAlert> alert([[NSAlert alloc] init]);
+  [alert setMessageText:summary];
+  [alert setInformativeText:message];
+  [alert setAlertStyle:(success ? NSInformationalAlertStyle
+                                : NSCriticalAlertStyle)];
+  [alert addButtonWithTitle:l10n_util::GetNSString(IDS_OK)];
   [alert runModal];
 }
 

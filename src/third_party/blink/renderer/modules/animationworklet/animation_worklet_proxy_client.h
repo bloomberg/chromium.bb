@@ -34,31 +34,47 @@ class MODULES_EXPORT AnimationWorkletProxyClient
 
  public:
   static const char kSupplementName[];
+  static const int8_t kNumStatelessGlobalScopes;
 
   // This client is hooked to the given |mutatee|, on the given
   // |mutatee_runner|.
   explicit AnimationWorkletProxyClient(
-      int scope_id,
+      int worklet_id,
       base::WeakPtr<AnimationWorkletMutatorDispatcherImpl> compositor_mutatee,
       scoped_refptr<base::SingleThreadTaskRunner> compositor_mutatee_runner,
       base::WeakPtr<AnimationWorkletMutatorDispatcherImpl> main_thread_mutatee,
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_mutatee_runner);
   void Trace(blink::Visitor*) override;
 
-  virtual void SetGlobalScope(WorkletGlobalScope*);
+  virtual void SynchronizeAnimatorName(const String& animator_name);
+  virtual void AddGlobalScope(WorkletGlobalScope*);
   void Dispose();
 
   // AnimationWorkletMutator:
   // These methods are invoked on the animation worklet thread.
-  int GetScopeId() const override { return scope_id_; }
+  int GetWorkletId() const override { return worklet_id_; }
   std::unique_ptr<AnimationWorkletOutput> Mutate(
       std::unique_ptr<AnimationWorkletInput> input) override;
 
-  static AnimationWorkletProxyClient* FromDocument(Document*, int scope_id);
+  void AddGlobalScopeForTesting(WorkletGlobalScope*);
+
+  static AnimationWorkletProxyClient* FromDocument(Document*, int worklet_id);
   static AnimationWorkletProxyClient* From(WorkerClients*);
 
  private:
-  const int scope_id_;
+  friend class AnimationWorkletProxyClientTest;
+  FRIEND_TEST_ALL_PREFIXES(AnimationWorkletProxyClientTest,
+                           AnimationWorkletProxyClientConstruction);
+  FRIEND_TEST_ALL_PREFIXES(AnimationWorkletProxyClientTest,
+                           RegisteredAnimatorNameShouldSyncOnce);
+
+  // The global scope periodically switches in order to enforce stateless
+  // behavior. For stateless animators, prior state is lost on each switch to
+  // global scope. For stateful animators, prior state is transferred to the new
+  // global scope.
+  AnimationWorkletGlobalScope* SelectGlobalScopeAndUpdateAnimatorsIfNecessary();
+
+  const int worklet_id_;
 
   struct MutatorItem {
     base::WeakPtr<AnimationWorkletMutatorDispatcherImpl> mutator_dispatcher;
@@ -71,9 +87,13 @@ class MODULES_EXPORT AnimationWorkletProxyClient
   };
   WTF::Vector<MutatorItem> mutator_items_;
 
-  CrossThreadPersistent<AnimationWorkletGlobalScope> global_scope_;
+  Vector<CrossThreadPersistent<AnimationWorkletGlobalScope>> global_scopes_;
+  HashMap<String, int8_t> registered_animators_;
 
   enum RunState { kUninitialized, kWorking, kDisposed } state_;
+
+  int next_global_scope_switch_countdown_;
+  wtf_size_t current_global_scope_index_;
 };
 
 void MODULES_EXPORT

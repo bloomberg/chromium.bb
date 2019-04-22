@@ -16,9 +16,9 @@
 
 #include <vector>
 
-#include "base/macros.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/process/process_metrics.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl.h"
 #include "sandbox/linux/bpf_dsl/policy.h"
@@ -96,8 +96,8 @@ intptr_t CopySyscallArgsToAux(const struct arch_seccomp_data& args, void* aux) {
   // |aux| is our BPF_AUX pointer.
   std::vector<uint64_t>* const seen_syscall_args =
       static_cast<std::vector<uint64_t>*>(aux);
-  BPF_ASSERT(arraysize(args.args) == 6);
-  seen_syscall_args->assign(args.args, args.args + arraysize(args.args));
+  BPF_ASSERT(base::size(args.args) == 6);
+  seen_syscall_args->assign(args.args, args.args + base::size(args.args));
   return -ENOMEM;
 }
 
@@ -134,7 +134,7 @@ BPF_TEST(Syscall,
   // implementation details of kernel BPF filters and we will need to document
   // the expected behavior very clearly.
   int syscall_args[6];
-  for (size_t i = 0; i < arraysize(syscall_args); ++i) {
+  for (size_t i = 0; i < base::size(syscall_args); ++i) {
     syscall_args[i] = kExpectedValue + i;
   }
 

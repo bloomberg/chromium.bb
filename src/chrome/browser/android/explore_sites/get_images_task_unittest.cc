@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/mock_callback.h"
@@ -21,6 +22,7 @@
 using offline_pages::TaskTestBase;
 
 namespace explore_sites {
+using InitializationStatus = ExploreSitesStore::InitializationStatus;
 
 class ExploreSitesGetImagesTaskTest : public TaskTestBase {
  public:
@@ -88,7 +90,8 @@ VALUES
 }
 
 TEST_F(ExploreSitesGetImagesTaskTest, StoreFailure) {
-  store()->SetInitializationStatusForTest(InitializationStatus::FAILURE);
+  store()->SetInitializationStatusForTesting(InitializationStatus::kFailure,
+                                             false);
 
   GetImagesTask task(store(), 1, StoreResult());
   RunTask(&task);

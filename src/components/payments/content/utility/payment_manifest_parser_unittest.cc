@@ -5,6 +5,7 @@
 #include "components/payments/content/utility/payment_manifest_parser.h"
 
 #include "base/json/json_reader.h"
+#include "base/strings/string_util.h"
 #include "components/payments/core/error_logger.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -20,7 +21,7 @@ void ExpectUnableToParsePaymentMethodManifest(const std::string& input) {
   std::vector<url::Origin> actual_supported_origins;
   bool actual_all_origins_supported = false;
 
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(input);
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(input);
 
   PaymentManifestParser::ParsePaymentMethodManifestIntoVectors(
       std::move(value), ErrorLogger(), &actual_web_app_urls,
@@ -41,7 +42,7 @@ void ExpectParsedPaymentMethodManifest(
   std::vector<url::Origin> actual_supported_origins;
   bool actual_all_origins_supported = false;
 
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(input);
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(input);
 
   PaymentManifestParser::ParsePaymentMethodManifestIntoVectors(
       std::move(value), ErrorLogger(), &actual_web_app_urls,
@@ -275,7 +276,7 @@ TEST(PaymentManifestParserTest,
 // Web app manifest parsing:
 
 void ExpectUnableToParseWebAppManifest(const std::string& input) {
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(input);
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(input);
   std::vector<WebAppManifestSection> sections;
   PaymentManifestParser::ParseWebAppManifestIntoVector(
       std::move(value), ErrorLogger(), &sections);
@@ -287,7 +288,7 @@ void ExpectParsedWebAppManifest(
     const std::string& expected_id,
     int64_t expected_min_version,
     const std::vector<std::vector<uint8_t>>& expected_fingerprints) {
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(input);
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(input);
   std::vector<WebAppManifestSection> sections;
   EXPECT_TRUE(PaymentManifestParser::ParseWebAppManifestIntoVector(
       std::move(value), ErrorLogger(), &sections));
@@ -689,7 +690,7 @@ TEST(PaymentManifestParserTest, TwoDifferentSignaturesWellFormed) {
 }
 
 TEST(PaymentManifestParserTest, TwoRelatedApplicationsWellFormed) {
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(
       "{"
       "  \"related_applications\": [{"
       "    \"platform\": \"play\", "
@@ -743,7 +744,7 @@ TEST(PaymentManifestParserTest, TwoRelatedApplicationsWellFormed) {
 // Web app installation information parsing:
 
 void ExpectUnableToParseInstallInfo(const std::string& input) {
-  auto value = base::JSONReader::Read(input);
+  auto value = base::JSONReader::ReadDeprecated(input);
   auto installation_info = std::make_unique<WebAppInstallationInfo>();
   auto icons =
       std::make_unique<std::vector<PaymentManifestParser::WebAppIcon>>();
@@ -755,7 +756,7 @@ void ExpectParsedInstallInfo(
     const std::string& input,
     const WebAppInstallationInfo& expected_installation_info,
     const std::vector<PaymentManifestParser::WebAppIcon>& expected_icons) {
-  auto value = base::JSONReader::Read(input);
+  auto value = base::JSONReader::ReadDeprecated(input);
   WebAppInstallationInfo actual_installation_info;
   std::vector<PaymentManifestParser::WebAppIcon> actual_icons;
   EXPECT_TRUE(PaymentManifestParser::ParseWebAppInstallationInfoIntoStructs(
@@ -777,6 +778,8 @@ void ExpectParsedInstallInfo(
     EXPECT_EQ(expected_icons[i].sizes, actual_icons[i].sizes);
     EXPECT_EQ(expected_icons[i].type, actual_icons[i].type);
   }
+  EXPECT_EQ(expected_installation_info.preferred_app_ids,
+            actual_installation_info.preferred_app_ids);
 }
 
 TEST(PaymentManifestParserTest, NullInstallInfoIsMalformed) {
@@ -834,6 +837,7 @@ TEST(PaymentManifestParserTest, WellFormedInstallInfo) {
   expected_installation_info.sw_js_url = "sw.js";
   expected_installation_info.sw_scope = "/some/scope/";
   expected_installation_info.sw_use_cache = true;
+  expected_installation_info.preferred_app_ids = {"com.bobpay"};
 
   PaymentManifestParser::WebAppIcon expected_icon;
   expected_icon.src = "bobpay.png";
@@ -862,6 +866,254 @@ TEST(PaymentManifestParserTest, WellFormedInstallInfo) {
       "  }]"
       "}",
       expected_installation_info, expected_icons);
+}
+
+TEST(PaymentManifestParserTest, IgnoreNonBooleanPreferRelatedApplicationField) {
+  WebAppInstallationInfo expected_installation_info;
+  expected_installation_info.sw_js_url = "sw.js";
+  expected_installation_info.sw_scope = "";
+  expected_installation_info.sw_use_cache = false;
+
+  ExpectParsedInstallInfo(
+      "{"
+      "  \"serviceworker\": {"
+      "    \"src\": \"sw.js\""
+      "  },"
+      "  \"prefer_related_applications\": 20"
+      "}",
+      expected_installation_info,
+      std::vector<PaymentManifestParser::WebAppIcon>());
+}
+
+TEST(PaymentManifestParserTest, IgnoreFalsePreferRelatedApplicationField) {
+  WebAppInstallationInfo expected_installation_info;
+  expected_installation_info.sw_js_url = "sw.js";
+  expected_installation_info.sw_scope = "";
+  expected_installation_info.sw_use_cache = false;
+
+  ExpectParsedInstallInfo(
+      "{"
+      "  \"serviceworker\": {"
+      "    \"src\": \"sw.js\""
+      "  },"
+      "  \"prefer_related_applications\": false,"
+      "  \"related_applications\": [{"
+      "      \"platform\": \"play\","
+      "      \"id\": \"com.bobpay\""
+      "  }]"
+      "}",
+      expected_installation_info,
+      std::vector<PaymentManifestParser::WebAppIcon>());
+}
+
+TEST(PaymentManifestParserTest, IgnoreEmptyRelatedApplications) {
+  WebAppInstallationInfo expected_installation_info;
+  expected_installation_info.sw_js_url = "sw.js";
+  expected_installation_info.sw_scope = "";
+  expected_installation_info.sw_use_cache = false;
+
+  ExpectParsedInstallInfo(
+      "{"
+      "  \"serviceworker\": {"
+      "    \"src\": \"sw.js\""
+      "  },"
+      "  \"prefer_related_applications\": true,"
+      "  \"related_applications\": []"
+      "}",
+      expected_installation_info,
+      std::vector<PaymentManifestParser::WebAppIcon>());
+}
+
+TEST(PaymentManifestParserTest, IgnoreNonListRelatedApplications) {
+  WebAppInstallationInfo expected_installation_info;
+  expected_installation_info.sw_js_url = "sw.js";
+  expected_installation_info.sw_scope = "";
+  expected_installation_info.sw_use_cache = false;
+
+  ExpectParsedInstallInfo(
+      "{"
+      "  \"serviceworker\": {"
+      "    \"src\": \"sw.js\""
+      "  },"
+      "  \"prefer_related_applications\": true,"
+      "  \"related_applications\": {"
+      "      \"platform\": \"play\","
+      "      \"id\": \"com.bobpay\""
+      "  }"
+      "}",
+      expected_installation_info,
+      std::vector<PaymentManifestParser::WebAppIcon>());
+}
+
+TEST(PaymentManifestParserTest, IgnoreNonDictionaryRelatedApplicationsItems) {
+  WebAppInstallationInfo expected_installation_info;
+  expected_installation_info.sw_js_url = "sw.js";
+  expected_installation_info.sw_scope = "";
+  expected_installation_info.sw_use_cache = false;
+
+  ExpectParsedInstallInfo(
+      "{"
+      "  \"serviceworker\": {"
+      "    \"src\": \"sw.js\""
+      "  },"
+      "  \"prefer_related_applications\": true,"
+      "  \"related_applications\": ["
+      "      \"com.bobpay\""
+      "  ]"
+      "}",
+      expected_installation_info,
+      std::vector<PaymentManifestParser::WebAppIcon>());
+}
+
+TEST(PaymentManifestParserTest, IgnoreRelatedApplicationsItemsWithoutId) {
+  WebAppInstallationInfo expected_installation_info;
+  expected_installation_info.sw_js_url = "sw.js";
+  expected_installation_info.sw_scope = "";
+  expected_installation_info.sw_use_cache = false;
+
+  ExpectParsedInstallInfo(
+      "{"
+      "  \"serviceworker\": {"
+      "    \"src\": \"sw.js\""
+      "  },"
+      "  \"prefer_related_applications\": true,"
+      "  \"related_applications\": [{"
+      "      \"platform\": \"play\""
+      "  }]"
+      "}",
+      expected_installation_info,
+      std::vector<PaymentManifestParser::WebAppIcon>());
+}
+
+TEST(PaymentManifestParserTest, IgnoreRelatedApplicationsItemsWithoutPlatform) {
+  WebAppInstallationInfo expected_installation_info;
+  expected_installation_info.sw_js_url = "sw.js";
+  expected_installation_info.sw_scope = "";
+  expected_installation_info.sw_use_cache = false;
+
+  ExpectParsedInstallInfo(
+      "{"
+      "  \"serviceworker\": {"
+      "    \"src\": \"sw.js\""
+      "  },"
+      "  \"prefer_related_applications\": true,"
+      "  \"related_applications\": [{"
+      "      \"id\": \"com.bobpay\""
+      "  }]"
+      "}",
+      expected_installation_info,
+      std::vector<PaymentManifestParser::WebAppIcon>());
+}
+
+TEST(PaymentManifestParserTest, IgnoreRelatedApplicationsWithoutPlayPlatform) {
+  WebAppInstallationInfo expected_installation_info;
+  expected_installation_info.sw_js_url = "sw.js";
+  expected_installation_info.sw_scope = "";
+  expected_installation_info.sw_use_cache = false;
+
+  ExpectParsedInstallInfo(
+      "{"
+      "  \"serviceworker\": {"
+      "    \"src\": \"sw.js\""
+      "  },"
+      "  \"prefer_related_applications\": true,"
+      "  \"related_applications\": [{"
+      "      \"platform\": \"web\","
+      "      \"id\": \"12345678890\""
+      "  }]"
+      "}",
+      expected_installation_info,
+      std::vector<PaymentManifestParser::WebAppIcon>());
+}
+
+TEST(PaymentManifestParserTest, OneHundredRelatedApplicationsIsWellFormed) {
+  WebAppInstallationInfo expected_installation_info;
+  expected_installation_info.sw_js_url = "sw.js";
+  expected_installation_info.sw_scope = "";
+  expected_installation_info.sw_use_cache = false;
+  expected_installation_info.preferred_app_ids =
+      std::vector<std::string>(100, "com.bobpay");
+
+  ExpectParsedInstallInfo(
+      "{"
+      "  \"serviceworker\": {"
+      "    \"src\": \"sw.js\""
+      "  },"
+      "  \"prefer_related_applications\": true,"
+      "  \"related_applications\": [" +
+          base::JoinString(
+              std::vector<std::string>(
+                  100, "{\"platform\": \"play\", \"id\": \"com.bobpay\"}"),
+              ",") +
+          "]}",
+      expected_installation_info,
+      std::vector<PaymentManifestParser::WebAppIcon>());
+}
+
+TEST(PaymentManifestParserTest, CapRelatedApplicationsAtOneHundred) {
+  WebAppInstallationInfo expected_installation_info;
+  expected_installation_info.sw_js_url = "sw.js";
+  expected_installation_info.sw_scope = "";
+  expected_installation_info.sw_use_cache = false;
+  expected_installation_info.preferred_app_ids =
+      std::vector<std::string>(100, "com.bobpay");
+
+  ExpectParsedInstallInfo(
+      "{"
+      "  \"serviceworker\": {"
+      "    \"src\": \"sw.js\""
+      "  },"
+      "  \"prefer_related_applications\": true,"
+      "  \"related_applications\": [" +
+          base::JoinString(
+              std::vector<std::string>(
+                  101, "{\"platform\": \"play\", \"id\": \"com.bobpay\"}"),
+              ",") +
+          "]}",
+      expected_installation_info,
+      std::vector<PaymentManifestParser::WebAppIcon>());
+}
+
+TEST(PaymentManifestParserTest, IgnoreEmptyRelatedApplicationId) {
+  WebAppInstallationInfo expected_installation_info;
+  expected_installation_info.sw_js_url = "sw.js";
+  expected_installation_info.sw_scope = "";
+  expected_installation_info.sw_use_cache = false;
+
+  ExpectParsedInstallInfo(
+      "{"
+      "  \"serviceworker\": {"
+      "    \"src\": \"sw.js\""
+      "  },"
+      "  \"prefer_related_applications\": true,"
+      "  \"related_applications\": [{"
+      "      \"platform\": \"play\","
+      "      \"id\": \"\""
+      "  }]"
+      "}",
+      expected_installation_info,
+      std::vector<PaymentManifestParser::WebAppIcon>());
+}
+
+TEST(PaymentManifestParserTest, IgnoreNonASCIIRelatedApplicationId) {
+  WebAppInstallationInfo expected_installation_info;
+  expected_installation_info.sw_js_url = "sw.js";
+  expected_installation_info.sw_scope = "";
+  expected_installation_info.sw_use_cache = false;
+
+  ExpectParsedInstallInfo(
+      "{"
+      "  \"serviceworker\": {"
+      "    \"src\": \"sw.js\""
+      "  },"
+      "  \"prefer_related_applications\": true,"
+      "  \"related_applications\": [{"
+      "      \"platform\": \"play\","
+      "      \"id\": \"😊\""
+      "  }]"
+      "}",
+      expected_installation_info,
+      std::vector<PaymentManifestParser::WebAppIcon>());
 }
 
 }  // namespace

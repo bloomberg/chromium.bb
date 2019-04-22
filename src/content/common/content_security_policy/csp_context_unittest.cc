@@ -57,9 +57,10 @@ class CSPContextTest : public CSPContext {
 ContentSecurityPolicy BuildPolicy(CSPDirective::Name directive_name,
                                   std::vector<CSPSource> sources) {
   return ContentSecurityPolicy(
-      ContentSecurityPolicyHeader(std::string(),  // header
-                                  blink::kWebContentSecurityPolicyTypeEnforce,
-                                  blink::kWebContentSecurityPolicySourceHTTP),
+      ContentSecurityPolicyHeader(
+          std::string(),  // header
+          blink::mojom::ContentSecurityPolicyType::kEnforce,
+          blink::kWebContentSecurityPolicySourceHTTP),
       {CSPDirective(directive_name,
                     CSPSourceList(false, false, false, sources))},
       std::vector<std::string>(), false);  // report_end_points
@@ -202,7 +203,7 @@ TEST(CSPContextTest, CheckCSPDisposition) {
   // Add a report-only policy.
   ContentSecurityPolicy report_only =
       BuildPolicy(CSPDirective::DefaultSrc, {source});
-  report_only.header.type = blink::kWebContentSecurityPolicyTypeReport;
+  report_only.header.type = blink::mojom::ContentSecurityPolicyType::kReport;
   context.AddContentSecurityPolicy(report_only);
 
   // With CHECK_ALL_CSP, both policies should be checked and violations should

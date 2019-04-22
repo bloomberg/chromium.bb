@@ -60,7 +60,7 @@ const char* kImageData[kTotalImages] = {"abcde", "12345", "VWXYZ"};
 const char kDebugLog[] = "Debug Log";
 
 const string GetImageName(int page_num, int image_num) {
-  return base::IntToString(page_num) + "_" + base::IntToString(image_num);
+  return base::NumberToString(page_num) + "_" + base::NumberToString(image_num);
 }
 
 std::unique_ptr<base::Value> CreateDistilledValueReturnedFromJS(

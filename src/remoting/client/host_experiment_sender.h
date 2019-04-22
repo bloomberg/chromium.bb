@@ -22,9 +22,9 @@ class HostExperimentSender : public protocol::SessionPlugin {
   HostExperimentSender(const std::string& experiment_config);
 
   // protocol::SessionPlugin implementation.
-  std::unique_ptr<buzz::XmlElement> GetNextMessage() override;
+  std::unique_ptr<jingle_xmpp::XmlElement> GetNextMessage() override;
 
-  void OnIncomingMessage(const buzz::XmlElement& attachments) override;
+  void OnIncomingMessage(const jingle_xmpp::XmlElement& attachments) override;
  private:
   const std::string experiment_config_;
   bool message_sent_ = false;

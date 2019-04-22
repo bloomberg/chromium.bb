@@ -31,8 +31,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBDATABASE_SQL_TRANSACTION_CLIENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBDATABASE_SQL_TRANSACTION_CLIENT_H_
 
+#include "base/macros.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -41,13 +41,15 @@ class Database;
 // A client to the SQLTransaction class. Allows SQLTransaction to notify
 // interested parties that certain things have happened in a transaction.
 class SQLTransactionClient {
-  WTF_MAKE_NONCOPYABLE(SQLTransactionClient);
   USING_FAST_MALLOC(SQLTransactionClient);
 
  public:
   SQLTransactionClient() = default;
   void DidCommitWriteTransaction(Database*);
   bool DidExceedQuota(Database*);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SQLTransactionClient);
 };
 
 }  // namespace blink

@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace ui {
@@ -24,7 +24,7 @@ TEST(MenuLabelAcceleratorTest, ConvertAcceleratorsFromWindowsStyle) {
     { "&foo &&bar", "_foo &bar" },
     { "&foo &bar", "_foo _bar" },
   };
-  for (size_t i = 0; i < arraysize(cases); ++i) {
+  for (size_t i = 0; i < base::size(cases); ++i) {
     std::string result = ConvertAcceleratorsFromWindowsStyle(cases[i].input);
     EXPECT_EQ(cases[i].output, result);
   }
@@ -43,7 +43,7 @@ TEST(MenuLabelAcceleratorTest, RemoveWindowsStyleAccelerators) {
     { "&foo &&bar", "foo &bar" },
     { "&foo &bar", "foo bar" },
   };
-  for (size_t i = 0; i < arraysize(cases); ++i) {
+  for (size_t i = 0; i < base::size(cases); ++i) {
     std::string result = RemoveWindowsStyleAccelerators(cases[i].input);
     EXPECT_EQ(cases[i].output, result);
   }

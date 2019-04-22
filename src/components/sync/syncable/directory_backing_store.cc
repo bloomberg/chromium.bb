@@ -12,11 +12,13 @@
 #include <vector>
 
 #include "base/base64.h"
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -237,9 +239,9 @@ void OnSqliteError(const base::Closure& catastrophic_error_handler,
 
 string ComposeCreateTableColumnSpecs() {
   const ColumnSpec* begin = g_metas_columns;
-  const ColumnSpec* end = g_metas_columns + arraysize(g_metas_columns);
+  const ColumnSpec* end = g_metas_columns + base::size(g_metas_columns);
   // Verify that the array was fully initialized.
-  DCHECK(g_metas_columns[arraysize(g_metas_columns) - 1].name != nullptr);
+  DCHECK(g_metas_columns[base::size(g_metas_columns) - 1].name != nullptr);
   string query;
   query.reserve(kUpdateStatementBufferSize);
   char separator = '(';
@@ -427,7 +429,9 @@ bool DirectoryBackingStore::OpenInMemory() {
   return db_->OpenInMemory();
 }
 
-bool DirectoryBackingStore::InitializeTables() {
+bool DirectoryBackingStore::InitializeTables(bool* did_start_new) {
+  *did_start_new = false;
+
   if (!UpdatePageSizeIfNecessary())
     return false;
 
@@ -440,6 +444,8 @@ bool DirectoryBackingStore::InitializeTables() {
     DropAllTables();
     if (!CreateTables())
       return false;
+
+    *did_start_new = true;
   }
 
   int version_on_disk = GetVersion();

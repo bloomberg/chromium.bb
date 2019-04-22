@@ -6,9 +6,8 @@
 
 #include <stddef.h>
 
-#include "base/containers/hash_tables.h"
 #include "base/lazy_instance.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "ui/gfx/x/x11.h"
 
 namespace ui {
@@ -812,8 +811,8 @@ const struct {
 class KeySymToUnicode {
  public:
   KeySymToUnicode()
-      : keysym_to_unicode_map_(arraysize(g_keysym_to_unicode_table)) {
-    for (size_t i = 0; i < arraysize(g_keysym_to_unicode_table); ++i) {
+      : keysym_to_unicode_map_(base::size(g_keysym_to_unicode_table)) {
+    for (size_t i = 0; i < base::size(g_keysym_to_unicode_table); ++i) {
       keysym_to_unicode_map_[g_keysym_to_unicode_table[i].keysym] =
           g_keysym_to_unicode_table[i].unicode;
     }
@@ -839,7 +838,7 @@ class KeySymToUnicode {
   }
 
  private:
-  typedef base::hash_map<KeySym, uint16_t> KeySymToUnicodeMap;
+  typedef std::unordered_map<KeySym, uint16_t> KeySymToUnicodeMap;
   KeySymToUnicodeMap keysym_to_unicode_map_;
 
   DISALLOW_COPY_AND_ASSIGN(KeySymToUnicode);

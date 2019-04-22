@@ -13,6 +13,7 @@ namespace cc {
 ScopedRasterFlags::ScopedRasterFlags(const PaintFlags* flags,
                                      ImageProvider* image_provider,
                                      const SkMatrix& ctm,
+                                     int max_texture_size,
                                      uint8_t alpha)
     : original_flags_(flags) {
   if (image_provider) {
@@ -22,7 +23,7 @@ ScopedRasterFlags::ScopedRasterFlags(const PaintFlags* flags,
     DecodeImageShader(ctm);
     if (decode_failed_)
       return;
-    DecodeRecordShader(ctm);
+    DecodeRecordShader(ctm, max_texture_size);
     if (decode_failed_)
       return;
     DecodeFilter();
@@ -64,7 +65,8 @@ void ScopedRasterFlags::DecodeImageShader(const SkMatrix& ctm) {
   MutableFlags()->setShader(decoded_shader);
 }
 
-void ScopedRasterFlags::DecodeRecordShader(const SkMatrix& ctm) {
+void ScopedRasterFlags::DecodeRecordShader(const SkMatrix& ctm,
+                                           int max_texture_size) {
   if (!flags()->HasShader() ||
       flags()->getShader()->shader_type() != PaintShader::Type::kPaintRecord)
     return;
@@ -78,8 +80,8 @@ void ScopedRasterFlags::DecodeRecordShader(const SkMatrix& ctm) {
   }
 
   gfx::SizeF raster_scale(1.f, 1.f);
-  auto decoded_shader =
-      flags()->getShader()->CreateScaledPaintRecord(ctm, &raster_scale);
+  auto decoded_shader = flags()->getShader()->CreateScaledPaintRecord(
+      ctm, max_texture_size, &raster_scale);
   decoded_shader->CreateSkShader(&raster_scale,
                                  &*decode_stashing_image_provider_);
   MutableFlags()->setShader(std::move(decoded_shader));

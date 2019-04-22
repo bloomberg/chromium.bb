@@ -197,6 +197,8 @@ ParsedInstruction MakeParsedInt32TypeInstruction(uint32_t result_id) {
 
 class BinaryParseTest : public spvtest::TextToBinaryTestBase<::testing::Test> {
  protected:
+  ~BinaryParseTest() { spvDiagnosticDestroy(diagnostic_); }
+
   void Parse(const SpirvVector& words, spv_result_t expected_result,
              bool flip_words = false) {
     SpirvVector flipped_words(words);
@@ -308,7 +310,7 @@ TEST_F(BinaryParseTest, SpecifyConsumerNullDiagnosticsForBadParse) {
         EXPECT_STREQ("input", source);
         EXPECT_EQ(0u, position.line);
         EXPECT_EQ(0u, position.column);
-        EXPECT_EQ(5u, position.index);
+        EXPECT_EQ(1u, position.index);
         EXPECT_STREQ("Invalid opcode: 65535", message);
       });
 
@@ -559,7 +561,7 @@ TEST_P(BinaryParseWordsAndCountDiagnosticTest, WordAndCountCases) {
   EXPECT_THAT(diagnostic->error, Eq(GetParam().expected_diagnostic));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     BinaryParseDiagnostic, BinaryParseWordsAndCountDiagnosticTest,
     ::testing::ValuesIn(std::vector<WordsAndCountDiagnosticCase>{
         {nullptr, 0, "Missing module."},
@@ -573,7 +575,7 @@ INSTANTIATE_TEST_CASE_P(
          "Module has incomplete header: only 3 words instead of 5"},
         {kHeaderForBound1, 4,
          "Module has incomplete header: only 4 words instead of 5"},
-    }), );
+    }));
 
 // A binary parser diagnostic test case where a vector of words is
 // provided.  We'll use this to express cases that can't be created
@@ -596,7 +598,7 @@ TEST_P(BinaryParseWordVectorDiagnosticTest, WordVectorCases) {
   EXPECT_THAT(diagnostic->error, Eq(GetParam().expected_diagnostic));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     BinaryParseDiagnostic, BinaryParseWordVectorDiagnosticTest,
     ::testing::ValuesIn(std::vector<WordVectorDiagnosticCase>{
         {Concatenate({ExpectedHeaderForBound(1), {spvOpcodeMake(0, SpvOpNop)}}),
@@ -814,7 +816,7 @@ INSTANTIATE_TEST_CASE_P(
              MakeInstruction(SpvOpConstant, {1, 2, 42}),
          }),
          "Type Id 1 is not a scalar numeric type"},
-    }), );
+    }));
 
 // A binary parser diagnostic case generated from an assembly text input.
 struct AssemblyDiagnosticCase {
@@ -834,7 +836,7 @@ TEST_P(BinaryParseAssemblyDiagnosticTest, AssemblyCases) {
   EXPECT_THAT(diagnostic->error, Eq(GetParam().expected_diagnostic));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     BinaryParseDiagnostic, BinaryParseAssemblyDiagnosticTest,
     ::testing::ValuesIn(std::vector<AssemblyDiagnosticCase>{
         {"%1 = OpConstant !0 42", "Error: Type Id is 0"},
@@ -884,7 +886,7 @@ INSTANTIATE_TEST_CASE_P(
          "Invalid image operand: 32770 has invalid mask component 32768"},
         {"OpSelectionMerge %1 !7",
          "Invalid selection control operand: 7 has invalid mask component 4"},
-    }), );
+    }));
 
 }  // namespace
 }  // namespace spvtools

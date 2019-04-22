@@ -55,6 +55,8 @@ class DownloadCoreServiceImpl : public DownloadCoreService {
   void Shutdown() override;
 
  private:
+  DownloadOfflineContentProvider* CreateDownloadOfflineContentProvider();
+
   bool download_manager_created_;
   Profile* profile_;
 
@@ -64,6 +66,10 @@ class DownloadCoreServiceImpl : public DownloadCoreService {
   std::unique_ptr<ChromeDownloadManagerDelegate> manager_delegate_;
 
   std::unique_ptr<DownloadHistory> download_history_;
+
+  // The download provider is the responsible for supplying offline items to the
+  // UI.
+  std::unique_ptr<DownloadOfflineContentProvider> download_provider_;
 
   // The UI controller is responsible for observing the download manager and
   // notifying the UI of any new downloads. Its lifetime matches that of the
@@ -75,10 +81,6 @@ class DownloadCoreServiceImpl : public DownloadCoreService {
 #if !defined(OS_ANDROID)
   std::unique_ptr<DownloadShelfController> download_shelf_controller_;
 #endif
-
-  // The download provider is the responsible for supplying offline items to the
-  // UI.
-  std::unique_ptr<DownloadOfflineContentProvider> download_provider_;
 
 // On Android, GET downloads are not handled by the DownloadManager.
 // Once we have extensions on android, we probably need the EventRouter

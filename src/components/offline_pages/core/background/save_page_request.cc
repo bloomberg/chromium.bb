@@ -36,7 +36,8 @@ bool SavePageRequest::operator==(const SavePageRequest& other) const {
          completed_attempt_count_ == other.completed_attempt_count_ &&
          last_attempt_time_ == other.last_attempt_time_ &&
          state_ == other.state_ && original_url_ == other.original_url_ &&
-         request_origin_ == other.request_origin_;
+         request_origin_ == other.request_origin_ &&
+         auto_fetch_notification_state_ == other.auto_fetch_notification_state_;
 }
 
 void SavePageRequest::MarkAttemptStarted(const base::Time& start_time) {

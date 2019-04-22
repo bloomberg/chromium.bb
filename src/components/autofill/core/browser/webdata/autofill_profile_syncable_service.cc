@@ -17,6 +17,8 @@
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_profile_comparator.h"
+// TODO(crbug.com/904390): Remove when the investigation is over.
+#include "components/autofill/core/browser/autofill_profile_sync_util.h"
 #include "components/autofill/core/browser/country_names.h"
 #include "components/autofill/core/browser/form_group.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
@@ -76,8 +78,8 @@ void AutofillProfileSyncableService::CreateForWebDataServiceAndBackend(
     const std::string& app_locale) {
   web_data_service->GetDBUserData()->SetUserData(
       AutofillProfileSyncableServiceUserDataKey(),
-      base::WrapUnique(
-          new AutofillProfileSyncableService(webdata_backend, app_locale)));
+      std::make_unique<AutofillProfileSyncableService>(webdata_backend,
+                                                       app_locale));
 }
 
 // static
@@ -91,6 +93,12 @@ AutofillProfileSyncableService::FromWebDataService(
 
 AutofillProfileSyncableService::AutofillProfileSyncableService()
     : webdata_backend_(nullptr), scoped_observer_(this) {}
+
+void AutofillProfileSyncableService::WaitUntilReadyToSync(
+    base::OnceClosure done) {
+  // Not used in the legacy directory-based architecture.
+  NOTREACHED();
+}
 
 syncer::SyncMergeResult
 AutofillProfileSyncableService::MergeDataAndStartSyncing(
@@ -184,6 +192,10 @@ AutofillProfileSyncableService::MergeDataAndStartSyncing(
         syncer::SyncChange(FROM_HERE,
                            syncer::SyncChange::ACTION_ADD,
                            CreateData(*(it.second))));
+
+    // TODO(crbug.com/904390): Remove when the investigation is over.
+    ReportAutofillProfileAddOrUpdateOrigin(
+        AutofillProfileSyncChangeOrigin::kInitial);
     profiles_map_[it.first] = it.second;
   }
 
@@ -192,6 +204,10 @@ AutofillProfileSyncableService::MergeDataAndStartSyncing(
         syncer::SyncChange(FROM_HERE,
                            syncer::SyncChange::ACTION_UPDATE,
                            CreateData(*(bundle.profiles_to_sync_back[i]))));
+
+    // TODO(crbug.com/904390): Remove when the investigation is over.
+    ReportAutofillProfileAddOrUpdateOrigin(
+        AutofillProfileSyncChangeOrigin::kInitial);
   }
 
   if (!new_changes.empty()) {
@@ -592,15 +608,21 @@ AutofillProfileSyncableService::CreateOrUpdateProfile(
 
 void AutofillProfileSyncableService::ActOnChange(
      const AutofillProfileChange& change) {
-  DCHECK(
-      (change.type() == AutofillProfileChange::REMOVE &&
-       !change.data_model()) ||
-      (change.type() != AutofillProfileChange::REMOVE && change.data_model()));
+  DCHECK(change.data_model());
   DCHECK(sync_processor_);
 
-  if (change.data_model() &&
-      change.data_model()->record_type() != AutofillProfile::LOCAL_PROFILE) {
+  if (change.data_model()->record_type() != AutofillProfile::LOCAL_PROFILE) {
     return;
+  }
+
+  // TODO(crbug.com/904390): Remove when the investigation is over.
+  bool is_converted_from_server = false;
+  // |webdata_backend_|, used by GetAutofillTable() may be null in unit-tests.
+  if (webdata_backend_ != nullptr) {
+    std::vector<std::unique_ptr<AutofillProfile>> server_profiles;
+    GetAutofillTable()->GetServerProfiles(&server_profiles);
+    is_converted_from_server = IsLocalProfileEqualToServerProfile(
+        server_profiles, *change.data_model(), app_locale_);
   }
 
   syncer::SyncChangeList new_changes;
@@ -616,6 +638,12 @@ void AutofillProfileSyncableService::ActOnChange(
       profiles_.push_back(
           std::make_unique<AutofillProfile>(*(change.data_model())));
       profiles_map_[change.data_model()->guid()] = profiles_.back().get();
+
+      // TODO(crbug.com/904390): Remove when the investigation is over.
+      ReportAutofillProfileAddOrUpdateOrigin(
+          is_converted_from_server
+              ? AutofillProfileSyncChangeOrigin::kConvertedLocal
+              : AutofillProfileSyncChangeOrigin::kTrulyLocal);
       break;
     case AutofillProfileChange::UPDATE: {
       auto it = profiles_map_.find(change.data_model()->guid());
@@ -625,17 +653,25 @@ void AutofillProfileSyncableService::ActOnChange(
           syncer::SyncChange(FROM_HERE,
                              syncer::SyncChange::ACTION_UPDATE,
                              CreateData(*(change.data_model()))));
+
+      // TODO(crbug.com/904390): Remove when the investigation is over.
+      ReportAutofillProfileAddOrUpdateOrigin(
+          is_converted_from_server
+              ? AutofillProfileSyncChangeOrigin::kConvertedLocal
+              : AutofillProfileSyncChangeOrigin::kTrulyLocal);
       break;
     }
     case AutofillProfileChange::REMOVE: {
-      // Removals have no data_model() so this change can still be for a
-      // SERVER_PROFILE. Rule it out by a lookup in profiles_map_.
       if (profiles_map_.find(change.key()) != profiles_map_.end()) {
-        AutofillProfile empty_profile(change.key(), std::string());
         new_changes.push_back(
             syncer::SyncChange(FROM_HERE, syncer::SyncChange::ACTION_DELETE,
-                               CreateData(empty_profile)));
+                               CreateData(*(change.data_model()))));
         profiles_map_.erase(change.key());
+        // TODO(crbug.com/904390): Remove when the investigation is over.
+        ReportAutofillProfileDeleteOrigin(
+            is_converted_from_server
+                ? AutofillProfileSyncChangeOrigin::kConvertedLocal
+                : AutofillProfileSyncChangeOrigin::kTrulyLocal);
       }
       break;
     }

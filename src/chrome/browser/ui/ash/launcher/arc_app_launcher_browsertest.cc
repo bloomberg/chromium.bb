@@ -9,7 +9,7 @@
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_button.h"
+#include "ash/shelf/shelf_app_button.h"
 #include "ash/shelf/shelf_view_test_api.h"
 #include "ash/shell.h"
 #include "base/macros.h"
@@ -30,10 +30,10 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_test_util.h"
 #include "chrome/browser/ui/ash/launcher/shelf_spinner_controller.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/metrics/arc_metrics_constants.h"
+#include "components/arc/session/arc_bridge_service.h"
 #include "components/arc/test/fake_app_instance.h"
 #include "content/public/test/browser_test_utils.h"
 #include "ui/display/types/display_constants.h"
@@ -331,7 +331,7 @@ IN_PROC_BROWSER_TEST_F(ArcAppDeferredLauncherBrowserTest,
 
   controller->FlushForTesting();
 
-  ash::ShelfButton* const button = test_api.GetButton(item_index);
+  ash::ShelfAppButton* const button = test_api.GetButton(item_index);
   ASSERT_TRUE(button);
 
   views::InkDrop* const ink_drop = button->GetInkDropForTesting();
@@ -444,9 +444,9 @@ IN_PROC_BROWSER_TEST_P(ArcAppDeferredLauncherWithParamsBrowserTest,
   }
 }
 
-INSTANTIATE_TEST_CASE_P(ArcAppDeferredLauncherWithParamsBrowserTestInstance,
-                        ArcAppDeferredLauncherWithParamsBrowserTest,
-                        ::testing::ValuesIn(build_test_parameter));
+INSTANTIATE_TEST_SUITE_P(ArcAppDeferredLauncherWithParamsBrowserTestInstance,
+                         ArcAppDeferredLauncherWithParamsBrowserTest,
+                         ::testing::ValuesIn(build_test_parameter));
 
 // This tests validates pin state on package update and remove.
 IN_PROC_BROWSER_TEST_F(ArcAppLauncherBrowserTest, PinOnPackageUpdateAndRemove) {

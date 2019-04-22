@@ -15,7 +15,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
-#include "base/threading/thread_checker.h"
 #include "device/usb/public/mojom/device.mojom.h"
 #include "device/usb/usb_descriptors.h"
 
@@ -69,8 +68,6 @@ class UsbDeviceHandle : public base::RefCountedThreadSafe<UsbDeviceHandle> {
   virtual void ResetDevice(ResultCallback callback) = 0;
   virtual void ClearHalt(uint8_t endpoint, ResultCallback callback) = 0;
 
-  // The transfer functions may be called from any thread. The provided callback
-  // will be run on the caller's thread.
   virtual void ControlTransfer(UsbTransferDirection direction,
                                UsbControlTransferType request_type,
                                UsbControlTransferRecipient recipient,

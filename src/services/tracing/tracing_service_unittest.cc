@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include <memory>
+#include <utility>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
@@ -21,7 +23,9 @@ class TracingServiceTest : public testing::Test {
  public:
   TracingServiceTest()
       : service_(
-            test_connector_factory_.RegisterInstance(mojom::kServiceName)) {}
+            test_connector_factory_.RegisterInstance(mojom::kServiceName)) {
+    test_connector_factory_.set_ignore_unknown_service_requests(true);
+  }
   ~TracingServiceTest() override {}
 
  protected:
@@ -38,16 +42,18 @@ class TracingServiceTest : public testing::Test {
 };
 
 TEST_F(TracingServiceTest, TracingServiceInstantiate) {
-  mojom::AgentRegistryPtr agent_registry;
+  mojom::CoordinatorPtr coordinator;
   connector()->BindInterface(mojom::kServiceName,
-                             mojo::MakeRequest(&agent_registry));
+                             mojo::MakeRequest(&coordinator));
 
-  MockAgent agent1;
-  agent_registry->RegisterAgent(
-      agent1.CreateAgentPtr(), "FOO", mojom::TraceDataType::STRING,
-      false /*supports_explicit_clock_sync*/, base::kNullProcessId);
-
-  base::RunLoop().RunUntilIdle();
+  base::RunLoop tracing_started;
+  coordinator->IsTracing(base::BindOnce(
+      [](base::OnceClosure callback, bool is_tracing) {
+        EXPECT_FALSE(is_tracing);
+        std::move(callback).Run();
+      },
+      tracing_started.QuitClosure()));
+  tracing_started.Run();
 }
 
 }  // namespace tracing

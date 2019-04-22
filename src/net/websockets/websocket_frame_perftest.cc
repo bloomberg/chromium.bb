@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/test/perf_time_logger.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -19,7 +19,7 @@ const int kIterations = 100000;
 const int kLongPayloadSize = 1 << 16;
 const char kMaskingKey[] = "\xFE\xED\xBE\xEF";
 
-static_assert(arraysize(kMaskingKey) ==
+static_assert(base::size(kMaskingKey) ==
                   WebSocketFrameHeader::kMaskingKeyLength + 1,
               "incorrect masking key size");
 
@@ -44,8 +44,8 @@ class WebSocketFrameTestMaskBenchmark : public ::testing::Test {
 
 TEST_F(WebSocketFrameTestMaskBenchmark, BenchmarkMaskShortPayload) {
   static const char kShortPayload[] = "Short Payload";
-  Benchmark(
-      "Frame_mask_short_payload", kShortPayload, arraysize(kShortPayload));
+  Benchmark("Frame_mask_short_payload", kShortPayload,
+            base::size(kShortPayload));
 }
 
 TEST_F(WebSocketFrameTestMaskBenchmark, BenchmarkMaskLongPayload) {

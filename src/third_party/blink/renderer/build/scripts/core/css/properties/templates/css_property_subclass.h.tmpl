@@ -29,8 +29,38 @@ class {{property_classname}} final : public CSSUnresolvedProperty {
   {% else %}
 class {{property_classname}} final : public {{property.namespace_group}} {
  public:
-  constexpr {{property_classname}}() : {{property.namespace_group}}() {}
+  constexpr {{property_classname}}() : {{property.namespace_group}}(CSSPropertyID::{{property.enum_key}},
+    0
+  {% if property.interpolable %}
+    | kInterpolable
   {% endif %}
+  {% if property.compositable %}
+    | kCompositableProperty
+  {% endif %}
+  {% if property.is_descriptor %}
+    | kDescriptor
+  {% endif %}
+  {% if 'Percent' in property.typedom_types %}
+    | kSupportsPercentage
+  {% endif %}
+  {% if property.is_property %}
+    | kProperty
+  {% endif %}
+  {% if property.valid_for_visited_link %}
+    | kValidForVisitedLink
+  {% endif %}
+  {% if property.inherited %}
+    | kInherited
+  {% endif %}
+    ,
+  {% if property.separator != None %}
+    '{{property.separator}}'
+  {% else %}
+    '\0'
+  {% endif %}
+    ) {}
+  {% endif %}
+
   {% if property.is_internal %}
   bool IsEnabled() const override { return false; }
   {% elif property.runtime_flag %}
@@ -47,7 +77,6 @@ class {{property_classname}} final : public {{property.namespace_group}} {
     return "{{property_classname[0].lower() + property_classname[1:]}}";
   }
   {% if property.alias_for == None %}
-  CSSPropertyID PropertyID() const override { return {{property.property_id}}; }
   {%if property.layout_dependent %}
   bool IsLayoutDependentProperty() const override { return true; }
   bool IsLayoutDependent(const ComputedStyle*, LayoutObject*) const override;
@@ -55,33 +84,10 @@ class {{property_classname}} final : public {{property.namespace_group}} {
   {% for property_method in property.property_methods %}
   {{property_method.return_type}} {{property_method.name}}{{property_method.parameters}} const override;
   {% endfor %}
-  {% if property.interpolable %}
-  bool IsInterpolable() const override { return true; }
-  {% endif %}
-  {% if property.inherited %}
-  bool IsInherited() const override { return true; }
-  {% endif %}
-  {% if property.compositable %}
-  bool IsCompositableProperty() const override { return true; }
-  {% endif %}
   {% if property.separator != None %}
-  bool IsRepeated() const override { return true; }
-  char RepetitionSeparator() const override { return '{{property.separator}}'; }
-  {% endif %}
-  {% if property.is_descriptor %}
-  bool IsDescriptor() const override { return true; }
-  {% endif %}
-  {% if 'Percent' in property.typedom_types %}
-  bool SupportsPercentage() const override { return true; }
-  {% endif %}
-  {% if not property.is_property %}
-  bool IsProperty() const override { return false; }
   {% endif %}
   {% if not property.affected_by_all %}
   bool IsAffectedByAll() const override { return false; }
-  {% endif %}
-  {% if property.valid_for_visited_link %}
-  bool IsValidForVisitedLink() const override { return true; }
   {% endif %}
   {% if property.direction_aware_options %}
   const CSSValue* CSSValueFromComputedStyleInternal(

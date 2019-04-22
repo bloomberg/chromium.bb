@@ -202,6 +202,39 @@ __gCrWeb.passwords['fillPasswordForm'] = function(
 };
 
 /**
+ * Fills all password fields in the form identified by |formName|
+ * with |password|.
+ *
+ * @param {string} formName The name of the form to fill.
+ * @param {string} newPasswordIdentifier The id of password element to fill.
+ * @param {string} confirmPasswordIdentifier The id of confirm password element
+ *   to fill.
+ * @param {string} password The password to fill.
+ * @return {boolean} Whether new password field has been filled.
+*/
+__gCrWeb.passwords['fillPasswordFormWithGeneratedPassword'] = function(
+    formName, newPasswordIdentifier, confirmPasswordIdentifier, password) {
+  var form = __gCrWeb.form.getFormElementFromIdentifier(formName);
+  if (!form)
+    return false;
+  var inputs = getFormInputElements_(form);
+  var newPasswordField =
+      findInputByFieldIdentifier_(inputs, newPasswordIdentifier);
+  if (!newPasswordField)
+    return false;
+  // Avoid resetting if same value, as it moves cursor to the end.
+  if (newPasswordField.value != password) {
+    __gCrWeb.fill.setInputElementValue(password, newPasswordField);
+  }
+  var confirmPasswordField =
+      findInputByFieldIdentifier_(inputs, confirmPasswordIdentifier);
+  if (confirmPasswordField && confirmPasswordField.value != password) {
+    __gCrWeb.fill.setInputElementValue(password, confirmPasswordField);
+  }
+  return true;
+};
+
+/**
  * Given a description of a form (origin, action and input fields),
  * finds that form on the page and fills in the specified username
  * and password.
@@ -241,19 +274,12 @@ var fillPasswordFormWithData_ = function(
     // requested username, fill the form.
     if (usernameInput.readOnly) {
       if (usernameInput.value == username) {
-        passwordInput.value = password;
+        __gCrWeb.fill.setInputElementValue(password, passwordInput);
         filled = true;
       }
     } else {
-      // Setting input fields via .value assignment does not trigger all
-      // the events that a web site can observe. This has the effect of
-      // certain web sites rejecting an autofilled sign in form as not
-      // signed in because the user didn't actually "typed" into the field.
-      // Adding the .focus() works around this problems.
-      usernameInput.focus();
-      usernameInput.value = username;
-      passwordInput.focus();
-      passwordInput.value = password;
+      __gCrWeb.fill.setInputElementValue(username, usernameInput);
+      __gCrWeb.fill.setInputElementValue(password, passwordInput);
       filled = true;
     }
   }

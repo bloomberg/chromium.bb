@@ -7,7 +7,6 @@
 
 #include "SkPaintImageFilter.h"
 #include "SkCanvas.h"
-#include "SkColorSpaceXformer.h"
 #include "SkImageFilterPriv.h"
 #include "SkReadBuffer.h"
 #include "SkSpecialImage.h"
@@ -27,7 +26,7 @@ SkPaintImageFilter::SkPaintImageFilter(const SkPaint& paint, const CropRect* cro
 sk_sp<SkFlattenable> SkPaintImageFilter::CreateProc(SkReadBuffer& buffer) {
     SK_IMAGEFILTER_UNFLATTEN_COMMON(common, 0);
     SkPaint paint;
-    buffer.readPaint(&paint);
+    buffer.readPaint(&paint, nullptr);
     return SkPaintImageFilter::Make(paint, &common.cropRect());
 }
 
@@ -70,14 +69,6 @@ sk_sp<SkSpecialImage> SkPaintImageFilter::onFilterImage(SkSpecialImage* source,
     offset->fX = bounds.fLeft;
     offset->fY = bounds.fTop;
     return surf->makeImageSnapshot();
-}
-
-sk_sp<SkImageFilter> SkPaintImageFilter::onMakeColorSpace(SkColorSpaceXformer* xformer) const {
-    SkPaint paint = xformer->apply(fPaint);
-    if (paint != fPaint) {
-        return SkPaintImageFilter::Make(paint, this->getCropRectIfSet());
-    }
-    return this->refMe();
 }
 
 bool SkPaintImageFilter::affectsTransparentBlack() const {

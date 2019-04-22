@@ -15,7 +15,6 @@ extern const char kAllowHTTPBackgroundPage[];
 extern const char kAllowLegacyExtensionManifests[];
 extern const char kDisableDesktopCaptureAudio[];
 extern const char kDisableExtensionsHttpThrottling[];
-extern const char kDisableTabForDesktopShare[];
 extern const char kEmbeddedExtensionOptions[];
 extern const char kEnableEmbeddedExtensionOptions[];
 extern const char kEnableExperimentalExtensionApis[];
@@ -25,6 +24,7 @@ extern const char kErrorConsole[];
 extern const char kExtensionProcess[];
 extern const char kExtensionsOnChromeURLs[];
 extern const char kForceDevModeHighlighting[];
+extern const char kForceEmptyCorbAllowlist[];
 extern const char kLoadApps[];
 extern const char kLoadExtension[];
 #if defined(CHROMIUM_BUILD)

@@ -6,6 +6,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "device/bluetooth/adapter.h"
 #include "device/bluetooth/device.h"

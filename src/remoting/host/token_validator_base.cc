@@ -219,8 +219,9 @@ void TokenValidatorBase::OnCertificateRequested(
   // give it a WeakPtr for |this|, and ownership of the other parameters.
   client_cert_store->GetClientCerts(
       *cert_request_info,
-      base::Bind(&TokenValidatorBase::OnCertificatesSelected,
-                 weak_factory_.GetWeakPtr(), base::Owned(client_cert_store)));
+      base::BindOnce(&TokenValidatorBase::OnCertificatesSelected,
+                     weak_factory_.GetWeakPtr(),
+                     base::Owned(client_cert_store)));
 }
 
 void TokenValidatorBase::OnCertificatesSelected(
@@ -246,8 +247,8 @@ void TokenValidatorBase::OnCertificatesSelected(
         (*best_match_position)->certificate();
     net::ClientCertIdentity::SelfOwningAcquirePrivateKey(
         std::move(*best_match_position),
-        base::Bind(&TokenValidatorBase::ContinueWithCertificate,
-                   weak_factory_.GetWeakPtr(), std::move(cert)));
+        base::BindOnce(&TokenValidatorBase::ContinueWithCertificate,
+                       weak_factory_.GetWeakPtr(), std::move(cert)));
   }
 }
 
@@ -287,7 +288,7 @@ std::string TokenValidatorBase::ProcessResponse(int net_result) {
   }
 
   // Decode the JSON data from the response.
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(data_);
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(data_);
   base::DictionaryValue* dict;
   if (!value || !value->GetAsDictionary(&dict)) {
     LOG(ERROR) << "Invalid token validation response: '" << data_ << "'";

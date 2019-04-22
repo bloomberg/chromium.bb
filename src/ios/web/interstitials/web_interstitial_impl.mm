@@ -8,11 +8,11 @@
 
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
+#import "ios/web/common/crw_web_view_content_view.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
 #import "ios/web/public/interstitials/web_interstitial_delegate.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/reload_type.h"
-#import "ios/web/public/web_state/ui/crw_web_view_content_view.h"
 #import "ios/web/public/web_view_creation_util.h"
 #import "ios/web/web_state/web_state_impl.h"
 #import "net/base/mac/url_conversions.h"
@@ -189,7 +189,7 @@ void WebInterstitialImpl::CommandReceivedFromWebView(NSString* command) {
 
 void WebInterstitialImpl::ExecuteJavaScript(
     NSString* script,
-    JavaScriptResultBlock completion_handler) {
+    void (^completion_handler)(id, NSError*)) {
   web::ExecuteJavaScript(web_view_, script, completion_handler);
 }
 

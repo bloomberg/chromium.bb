@@ -39,7 +39,6 @@ class AudioResampler;
 
 class PLATFORM_EXPORT AudioResamplerKernel {
   USING_FAST_MALLOC(AudioResamplerKernel);
-  WTF_MAKE_NONCOPYABLE(AudioResamplerKernel);
 
  public:
   AudioResamplerKernel(AudioResampler*);
@@ -80,6 +79,8 @@ class PLATFORM_EXPORT AudioResamplerKernel {
   // there will be no buffered samples.
   float last_values_[2];
   unsigned fill_index_;
+
+  DISALLOW_COPY_AND_ASSIGN(AudioResamplerKernel);
 };
 
 }  // namespace blink

@@ -6,10 +6,12 @@
 
 #include <algorithm>
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/message_center/ash_message_center_lock_screen_controller.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_utils.h"
 #include "base/i18n/number_formatting.h"
@@ -101,10 +103,14 @@ NotificationCounterView::~NotificationCounterView() {
 }
 
 void NotificationCounterView::Update() {
+  SessionController* session_controller = Shell::Get()->session_controller();
   size_t notification_count =
       message_center::MessageCenter::Get()->NotificationCount();
   if (notification_count == 0 ||
-      message_center::MessageCenter::Get()->IsQuietMode()) {
+      message_center::MessageCenter::Get()->IsQuietMode() ||
+      !session_controller->ShouldShowNotificationTray() ||
+      (session_controller->IsScreenLocked() &&
+       !AshMessageCenterLockScreenController::IsEnabled())) {
     SetVisible(false);
     return;
   }

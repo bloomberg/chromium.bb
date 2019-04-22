@@ -10,7 +10,9 @@
 #include "ash/public/cpp/immersive/immersive_focus_watcher.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_delegate.h"
 #include "ash/public/cpp/window_properties.h"
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -25,7 +27,13 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
+DEFINE_UI_CLASS_PROPERTY_TYPE(ash::ImmersiveFullscreenController*)
+
 namespace ash {
+
+DEFINE_UI_CLASS_PROPERTY_KEY(ImmersiveFullscreenController*,
+                             kImmersiveFullscreenControllerKey,
+                             nullptr)
 
 namespace {
 
@@ -108,6 +116,15 @@ void ImmersiveFullscreenController::Init(
   delegate_ = delegate;
   top_container_ = top_container;
   widget_ = widget;
+
+  // A widget can have more than one ImmersiveFullscreenController
+  // (WideFrameView does this), so this key only tracks the first
+  // ImmersiveFullscreenController.
+  if (nullptr == widget->GetNativeWindow()->GetProperty(
+                     kImmersiveFullscreenControllerKey)) {
+    widget->GetNativeWindow()->SetProperty(kImmersiveFullscreenControllerKey,
+                                           this);
+  }
 
   EnableWindowObservers(true);
 }
@@ -271,6 +288,13 @@ void ImmersiveFullscreenController::EnableForWidget(views::Widget* widget,
     widget->GetNativeWindow()->SetProperty(kImmersiveIsActive, enabled);
 }
 
+// static
+ImmersiveFullscreenController* ImmersiveFullscreenController::GetForTest(
+    views::Widget* widget) {
+  return widget->GetNativeWindow()->GetProperty(
+      kImmersiveFullscreenControllerKey);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // private:
 
@@ -297,7 +321,7 @@ void ImmersiveFullscreenController::EnableEventObservers(bool enable) {
 
   aura::Window* window = widget_->GetNativeWindow();
   // For Mash, handle events sent to the Mus client's root window.
-  if (features::IsUsingWindowService())
+  if (window->env()->mode() == aura::Env::Mode::MUS)
     window = window->GetRootWindow();
   aura::Env* env = window->env();
   if (enable) {
@@ -659,6 +683,16 @@ bool ImmersiveFullscreenController::ShouldHandleGestureEvent(
       if (hit_bounds_in_screen[i].Contains(location))
         return true;
     }
+    return false;
+  }
+
+  // Don't perform an immersive reveal when gesture scrolls from the top ought
+  // to be dragging the window.
+  aura::Window* window = widget_->GetNativeWindow();
+  if (window->env()->mode() == aura::Env::Mode::MUS)
+    window = window->GetRootWindow();
+  if (window->GetProperty(
+          aura::client::kGestureDragFromClientAreaTopMovesWindow)) {
     return false;
   }
 

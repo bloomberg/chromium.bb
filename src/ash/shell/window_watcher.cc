@@ -14,6 +14,7 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell/window_watcher_shelf_item_delegate.h"
+#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/window_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -42,19 +43,20 @@ class WindowWatcher::WorkspaceWindowWatcher : public aura::WindowObserver {
   }
 
   void RootWindowAdded(aura::Window* root) {
-    aura::Window* container =
-        root->GetChildById(kShellWindowId_DefaultContainer);
-    container->AddObserver(watcher_);
-    for (aura::Window* window : container->children())
-      watcher_->OnWindowAdded(window);
+    // The shelf is globally observing all active and inactive desks containers.
+    for (aura::Window* container : desks_util::GetDesksContainers(root)) {
+      container->AddObserver(watcher_);
+      for (aura::Window* window : container->children())
+        watcher_->OnWindowAdded(window);
+    }
   }
 
   void RootWindowRemoved(aura::Window* root) {
-    aura::Window* container =
-        root->GetChildById(kShellWindowId_DefaultContainer);
-    container->RemoveObserver(watcher_);
-    for (aura::Window* window : container->children())
-      watcher_->OnWillRemoveWindow(window);
+    for (aura::Window* container : desks_util::GetDesksContainers(root)) {
+      container->RemoveObserver(watcher_);
+      for (aura::Window* window : container->children())
+        watcher_->OnWillRemoveWindow(window);
+    }
   }
 
  private:
@@ -90,7 +92,7 @@ void WindowWatcher::OnWindowAdded(aura::Window* new_window) {
   ShelfItem item;
   item.type = TYPE_APP;
   static int shelf_id = 0;
-  item.id = ShelfID(base::IntToString(shelf_id++));
+  item.id = ShelfID(base::NumberToString(shelf_id++));
   id_to_window_[item.id] = new_window;
 
   SkBitmap icon_bitmap;
@@ -98,7 +100,7 @@ void WindowWatcher::OnWindowAdded(aura::Window* new_window) {
   constexpr SkColor colors[] = {SK_ColorRED, SK_ColorGREEN, SK_ColorBLUE};
   icon_bitmap.eraseColor(colors[shelf_id % 3]);
   item.image = gfx::ImageSkia(gfx::ImageSkiaRep(icon_bitmap, 1.0f));
-  item.title = base::IntToString16(shelf_id);
+  item.title = base::NumberToString16(shelf_id);
   model->Add(item);
 
   model->SetShelfItemDelegate(

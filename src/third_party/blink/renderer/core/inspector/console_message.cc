@@ -12,17 +12,18 @@
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
 // static
 ConsoleMessage* ConsoleMessage::CreateForRequest(
-    MessageSource source,
-    MessageLevel level,
+    mojom::ConsoleMessageSource source,
+    mojom::ConsoleMessageLevel level,
     const String& message,
     const String& url,
     DocumentLoader* loader,
-    unsigned long request_identifier) {
+    uint64_t request_identifier) {
   ConsoleMessage* console_message = ConsoleMessage::Create(
       source, level, message, SourceLocation::Capture(url, 0, 0));
   console_message->request_identifier_ =
@@ -32,16 +33,17 @@ ConsoleMessage* ConsoleMessage::CreateForRequest(
 
 // static
 ConsoleMessage* ConsoleMessage::Create(
-    MessageSource source,
-    MessageLevel level,
+    mojom::ConsoleMessageSource source,
+    mojom::ConsoleMessageLevel level,
     const String& message,
     std::unique_ptr<SourceLocation> location) {
-  return new ConsoleMessage(source, level, message, std::move(location));
+  return MakeGarbageCollected<ConsoleMessage>(source, level, message,
+                                              std::move(location));
 }
 
 // static
-ConsoleMessage* ConsoleMessage::Create(MessageSource source,
-                                       MessageLevel level,
+ConsoleMessage* ConsoleMessage::Create(mojom::ConsoleMessageSource source,
+                                       mojom::ConsoleMessageLevel level,
                                        const String& message) {
   return ConsoleMessage::Create(source, level, message,
                                 SourceLocation::Capture());
@@ -49,19 +51,42 @@ ConsoleMessage* ConsoleMessage::Create(MessageSource source,
 
 // static
 ConsoleMessage* ConsoleMessage::CreateFromWorker(
-    MessageLevel level,
+    mojom::ConsoleMessageLevel level,
     const String& message,
     std::unique_ptr<SourceLocation> location,
     WorkerThread* worker_thread) {
-  ConsoleMessage* console_message = ConsoleMessage::Create(
-      kWorkerMessageSource, level, message, std::move(location));
+  ConsoleMessage* console_message =
+      ConsoleMessage::Create(mojom::ConsoleMessageSource::kWorker, level,
+                             message, std::move(location));
   console_message->worker_id_ =
       IdentifiersFactory::IdFromToken(worker_thread->GetDevToolsWorkerToken());
   return console_message;
 }
 
-ConsoleMessage::ConsoleMessage(MessageSource source,
-                               MessageLevel level,
+ConsoleMessage* ConsoleMessage::CreateFromWebConsoleMessage(
+    const WebConsoleMessage& message,
+    LocalFrame* local_frame) {
+  mojom::ConsoleMessageSource message_source =
+      message.nodes.empty() ? mojom::ConsoleMessageSource::kOther
+                            : mojom::ConsoleMessageSource::kRecommendation;
+
+  ConsoleMessage* console_message = ConsoleMessage::Create(
+      message_source, message.level, message.text,
+      std::make_unique<SourceLocation>(message.url, message.line_number,
+                                       message.column_number, nullptr));
+
+  if (local_frame) {
+    Vector<DOMNodeId> nodes;
+    for (const WebNode& web_node : message.nodes)
+      nodes.push_back(DOMNodeIds::IdForNode(&(*web_node)));
+    console_message->SetNodes(local_frame, std::move(nodes));
+  }
+
+  return console_message;
+}
+
+ConsoleMessage::ConsoleMessage(mojom::ConsoleMessageSource source,
+                               mojom::ConsoleMessageLevel level,
                                const String& message,
                                std::unique_ptr<SourceLocation> location)
     : source_(source),
@@ -85,11 +110,11 @@ double ConsoleMessage::Timestamp() const {
   return timestamp_;
 }
 
-MessageSource ConsoleMessage::Source() const {
+mojom::ConsoleMessageSource ConsoleMessage::Source() const {
   return source_;
 }
 
-MessageLevel ConsoleMessage::Level() const {
+mojom::ConsoleMessageLevel ConsoleMessage::Level() const {
   return level_;
 }
 
@@ -120,10 +145,5 @@ void ConsoleMessage::SetNodes(LocalFrame* frame, Vector<DOMNodeId> nodes) {
 void ConsoleMessage::Trace(blink::Visitor* visitor) {
   visitor->Trace(frame_);
 }
-
-STATIC_ASSERT_ENUM(WebConsoleMessage::kLevelVerbose, kVerboseMessageLevel);
-STATIC_ASSERT_ENUM(WebConsoleMessage::kLevelInfo, kInfoMessageLevel);
-STATIC_ASSERT_ENUM(WebConsoleMessage::kLevelWarning, kWarningMessageLevel);
-STATIC_ASSERT_ENUM(WebConsoleMessage::kLevelError, kErrorMessageLevel);
 
 }  // namespace blink

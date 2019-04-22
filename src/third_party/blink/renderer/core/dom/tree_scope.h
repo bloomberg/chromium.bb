@@ -38,6 +38,7 @@
 namespace blink {
 
 class ContainerNode;
+class CSSStyleSheet;
 class DOMSelection;
 class Document;
 class Element;
@@ -46,7 +47,6 @@ class HitTestResult;
 class IdTargetObserverRegistry;
 class SVGTreeScopeResources;
 class ScopedStyleResolver;
-class StyleSheetList;
 
 // The root node of a document tree (in which case this is a Document) or of a
 // shadow tree (in which case this is a ShadowRoot). Various things, like
@@ -64,8 +64,7 @@ class CORE_EXPORT TreeScope : public GarbageCollectedMixin {
 
   TreeScope* ParentTreeScope() const { return parent_tree_scope_; }
 
-  bool IsInclusiveOlderSiblingShadowRootOrAncestorTreeScopeOf(
-      const TreeScope&) const;
+  bool IsInclusiveAncestorTreeScopeOf(const TreeScope&) const;
 
   Element* AdjustedFocusedElement() const;
   // Finds a retargeted element to the given argument, when the retargeted
@@ -99,7 +98,7 @@ class CORE_EXPORT TreeScope : public GarbageCollectedMixin {
 
   DOMSelection* GetSelection() const;
 
-  Element* Retarget(const Element& target) const;
+  Element& Retarget(const Element& target) const;
 
   Element* AdjustedFocusedElementInternal(const Element& target) const;
 
@@ -124,14 +123,14 @@ class CORE_EXPORT TreeScope : public GarbageCollectedMixin {
   }
 
   bool IsInclusiveAncestorOf(const TreeScope&) const;
-  unsigned short ComparePosition(const TreeScope&) const;
+  uint16_t ComparePosition(const TreeScope&) const;
 
   const TreeScope* CommonAncestorTreeScope(const TreeScope& other) const;
   TreeScope* CommonAncestorTreeScope(TreeScope& other);
 
   Element* GetElementByAccessKey(const String& key) const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   ScopedStyleResolver* GetScopedStyleResolver() const {
     return scoped_style_resolver_.Get();
@@ -142,9 +141,10 @@ class CORE_EXPORT TreeScope : public GarbageCollectedMixin {
   SVGTreeScopeResources& EnsureSVGTreeScopedResources();
 
   bool HasAdoptedStyleSheets() const;
-  StyleSheetList& AdoptedStyleSheets();
-  void SetAdoptedStyleSheets(StyleSheetList*);
-  void SetAdoptedStyleSheets(StyleSheetList*, ExceptionState&);
+  const HeapVector<Member<CSSStyleSheet>>& AdoptedStyleSheets();
+  void SetAdoptedStyleSheets(HeapVector<Member<CSSStyleSheet>>&);
+  void SetAdoptedStyleSheets(HeapVector<Member<CSSStyleSheet>>&,
+                             ExceptionState&);
 
  protected:
   TreeScope(ContainerNode&, Document&);
@@ -176,7 +176,7 @@ class CORE_EXPORT TreeScope : public GarbageCollectedMixin {
 
   Member<SVGTreeScopeResources> svg_tree_scoped_resources_;
 
-  Member<StyleSheetList> adopted_style_sheets_;
+  HeapVector<Member<CSSStyleSheet>> adopted_style_sheets_;
 };
 
 inline bool TreeScope::HasElementWithId(const AtomicString& id) const {

@@ -29,11 +29,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// https://html.spec.whatwg.org/#shared-workers-and-the-sharedworker-interface
+// https://html.spec.whatwg.org/C/#shared-workers-and-the-sharedworker-interface
 
 [
     ActiveScriptWrappable,
-    // TODO(foolip): The name argument should not have a default null value.
+    // TODO(nhiroki): The second argument should be |optional (DOMString or
+    // WorkerOptions) options)|.
     Constructor(DOMString scriptURL, optional DOMString name = null),
     ConstructorCallWith=ExecutionContext,
     // TODO(foolip): Exposed=(Window,Worker),
@@ -43,4 +44,4 @@
     readonly attribute MessagePort port;
 };
 
-SharedWorker implements AbstractWorker;
+SharedWorker includes AbstractWorker;

@@ -12,6 +12,7 @@
 
 #include "base/at_exit.h"
 #include "base/base_paths.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/json/json_writer.h"
@@ -174,7 +175,7 @@ class TransportClient : public media::cast::CastTransport::Client {
 
   void OnStatusChanged(media::cast::CastTransportStatus status) final {
     VLOG(1) << "Transport status: " << status;
-  };
+  }
   void OnLoggingEventsReceived(
       std::unique_ptr<std::vector<media::cast::FrameEvent>> frame_events,
       std::unique_ptr<std::vector<media::cast::PacketEvent>> packet_events)
@@ -182,7 +183,7 @@ class TransportClient : public media::cast::CastTransport::Client {
     DCHECK(log_event_dispatcher_);
     log_event_dispatcher_->DispatchBatchOfEvents(std::move(frame_events),
                                                  std::move(packet_events));
-  };
+  }
   void ProcessRtpPacket(std::unique_ptr<media::cast::Packet> packet) final {}
 
  private:
@@ -314,21 +315,18 @@ int main(int argc, char** argv) {
   const int logging_duration_seconds = 10;
   io_message_loop.task_runner()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&WriteLogsToFileAndDestroySubscribers,
-                 cast_environment,
-                 base::Passed(&video_event_subscriber),
-                 base::Passed(&audio_event_subscriber),
-                 base::Passed(&video_log_file),
-                 base::Passed(&audio_log_file)),
+      base::BindOnce(&WriteLogsToFileAndDestroySubscribers, cast_environment,
+                     std::move(video_event_subscriber),
+                     std::move(audio_event_subscriber),
+                     std::move(video_log_file), std::move(audio_log_file)),
       base::TimeDelta::FromSeconds(logging_duration_seconds));
 
   io_message_loop.task_runner()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&WriteStatsAndDestroySubscribers,
-                 cast_environment,
-                 base::Passed(&video_stats_subscriber),
-                 base::Passed(&audio_stats_subscriber),
-                 base::Passed(&offset_estimator)),
+      base::BindOnce(&WriteStatsAndDestroySubscribers, cast_environment,
+                     std::move(video_stats_subscriber),
+                     std::move(audio_stats_subscriber),
+                     std::move(offset_estimator)),
       base::TimeDelta::FromSeconds(logging_duration_seconds));
 
   // CastSender initialization.
@@ -336,12 +334,12 @@ int main(int argc, char** argv) {
       media::cast::CastSender::Create(cast_environment, transport_sender.get());
   io_message_loop.task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&media::cast::CastSender::InitializeVideo,
-                 base::Unretained(cast_sender.get()),
-                 fake_media_source->get_video_config(),
-                 base::Bind(&QuitLoopOnInitializationResult),
-                 media::cast::CreateDefaultVideoEncodeAcceleratorCallback(),
-                 media::cast::CreateDefaultVideoEncodeMemoryCallback()));
+      base::BindOnce(&media::cast::CastSender::InitializeVideo,
+                     base::Unretained(cast_sender.get()),
+                     fake_media_source->get_video_config(),
+                     base::Bind(&QuitLoopOnInitializationResult),
+                     media::cast::CreateDefaultVideoEncodeAcceleratorCallback(),
+                     media::cast::CreateDefaultVideoEncodeMemoryCallback()));
   base::RunLoop().Run();  // Wait for video initialization.
   io_message_loop.task_runner()->PostTask(
       FROM_HERE,

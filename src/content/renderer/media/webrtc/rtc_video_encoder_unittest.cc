@@ -16,7 +16,7 @@
 #include "third_party/webrtc/api/video/i420_buffer.h"
 #include "third_party/webrtc/api/video_codecs/video_encoder.h"
 #include "third_party/webrtc/modules/video_coding/include/video_codec_interface.h"
-#include "third_party/webrtc/rtc_base/timeutils.h"
+#include "third_party/webrtc/rtc_base/time_utils.h"
 
 using ::testing::_;
 using ::testing::AtLeast;
@@ -53,7 +53,7 @@ class EncodedImageCallbackWrapper : public webrtc::EncodedImageCallback {
       const webrtc::RTPFragmentationHeader* fragmentation) override {
     encoded_callback_.Run(encoded_image, codec_specific_info, fragmentation);
     return Result(Result::OK);
-  };
+  }
 
  private:
   EncodedCallback encoded_callback_;
@@ -224,10 +224,10 @@ TEST_P(RTCVideoEncoderTest, RepeatedInitSucceeds) {
   EXPECT_EQ(WEBRTC_VIDEO_CODEC_OK, rtc_encoder_->InitEncode(&codec, 1, 12345));
 }
 
-INSTANTIATE_TEST_CASE_P(CodecProfiles,
-                        RTCVideoEncoderTest,
-                        Values(webrtc::kVideoCodecVP8,
-                               webrtc::kVideoCodecH264));
+INSTANTIATE_TEST_SUITE_P(CodecProfiles,
+                         RTCVideoEncoderTest,
+                         Values(webrtc::kVideoCodecVP8,
+                                webrtc::kVideoCodecH264));
 
 // Checks that WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE is returned when there is
 // platform error.
@@ -251,18 +251,18 @@ TEST_F(RTCVideoEncoderTest, SoftwareFallbackAfterError) {
   const rtc::scoped_refptr<webrtc::I420Buffer> buffer =
       webrtc::I420Buffer::Create(kInputFrameWidth, kInputFrameHeight);
   FillFrameBuffer(buffer);
-  std::vector<webrtc::FrameType> frame_types;
+  std::vector<webrtc::VideoFrameType> frame_types;
   EXPECT_EQ(WEBRTC_VIDEO_CODEC_OK,
             rtc_encoder_->Encode(
                 webrtc::VideoFrame(buffer, 0, 0, webrtc::kVideoRotation_0),
-                nullptr, &frame_types));
+                &frame_types));
   RunUntilIdle();
 
   // Expect the next frame to return SW fallback.
   EXPECT_EQ(WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE,
             rtc_encoder_->Encode(
                 webrtc::VideoFrame(buffer, 0, 0, webrtc::kVideoRotation_0),
-                nullptr, &frame_types));
+                &frame_types));
 }
 
 TEST_F(RTCVideoEncoderTest, EncodeScaledFrame) {
@@ -278,11 +278,11 @@ TEST_F(RTCVideoEncoderTest, EncodeScaledFrame) {
   const rtc::scoped_refptr<webrtc::I420Buffer> buffer =
       webrtc::I420Buffer::Create(kInputFrameWidth, kInputFrameHeight);
   FillFrameBuffer(buffer);
-  std::vector<webrtc::FrameType> frame_types;
+  std::vector<webrtc::VideoFrameType> frame_types;
   EXPECT_EQ(WEBRTC_VIDEO_CODEC_OK,
             rtc_encoder_->Encode(
                 webrtc::VideoFrame(buffer, 0, 0, webrtc::kVideoRotation_0),
-                nullptr, &frame_types));
+                &frame_types));
 
   const rtc::scoped_refptr<webrtc::I420Buffer> upscaled_buffer =
       webrtc::I420Buffer::Create(2 * kInputFrameWidth, 2 * kInputFrameHeight);
@@ -290,7 +290,7 @@ TEST_F(RTCVideoEncoderTest, EncodeScaledFrame) {
   webrtc::VideoFrame rtc_frame(upscaled_buffer, 0, 0, webrtc::kVideoRotation_0);
   rtc_frame.set_ntp_time_ms(123456);
   EXPECT_EQ(WEBRTC_VIDEO_CODEC_OK,
-            rtc_encoder_->Encode(rtc_frame, nullptr, &frame_types));
+            rtc_encoder_->Encode(rtc_frame, &frame_types));
 }
 
 TEST_F(RTCVideoEncoderTest, PreserveTimestamps) {
@@ -310,7 +310,7 @@ TEST_F(RTCVideoEncoderTest, PreserveTimestamps) {
   const rtc::scoped_refptr<webrtc::I420Buffer> buffer =
       webrtc::I420Buffer::Create(kInputFrameWidth, kInputFrameHeight);
   FillFrameBuffer(buffer);
-  std::vector<webrtc::FrameType> frame_types;
+  std::vector<webrtc::VideoFrameType> frame_types;
   webrtc::VideoFrame rtc_frame(buffer, rtp_timestamp, 0,
                                webrtc::kVideoRotation_0);
   rtc_frame.set_timestamp_us(capture_time_ms * rtc::kNumMicrosecsPerMillisec);
@@ -318,7 +318,7 @@ TEST_F(RTCVideoEncoderTest, PreserveTimestamps) {
   // media::VideoFrame timestamp.
   rtc_frame.set_ntp_time_ms(4567891);
   EXPECT_EQ(WEBRTC_VIDEO_CODEC_OK,
-            rtc_encoder_->Encode(rtc_frame, nullptr, &frame_types));
+            rtc_encoder_->Encode(rtc_frame, &frame_types));
 }
 
 }  // namespace content

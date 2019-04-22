@@ -9,6 +9,7 @@
 
 #include <iosfwd>
 #include <list>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -40,26 +41,6 @@ class AutofillProfile : public AutofillDataModel {
     SERVER_PROFILE,
   };
 
-  enum ValidityState {
-    // The field has not been validated.
-    UNVALIDATED = 0,
-    // The field is empty.
-    EMPTY = 1,
-    // The field is valid.
-    VALID = 2,
-    // The field is invalid.
-    INVALID = 3,
-    // The validation for the field is unsupported.
-    UNSUPPORTED = 4,
-  };
-
-  enum ValidationSource {
-    // The validity state is according to the client validation.
-    CLIENT = 0,
-    // The validity state is according to the server validation.
-    SERVER = 1,
-  };
-
   AutofillProfile(const std::string& guid, const std::string& origin);
 
   // Server profile constructor. The type must be SERVER_PROFILE (this serves
@@ -77,6 +58,9 @@ class AutofillProfile : public AutofillDataModel {
   // AutofillDataModel:
   AutofillMetadata GetMetadata() const override;
   bool SetMetadata(const AutofillMetadata metadata) override;
+  // Returns whether the profile is deletable: if it is not verified and has not
+  // been used for longer than |kDisusedAddressDeletionTimeDelta|.
+  bool IsDeletable() const override;
 
   // FormGroup:
   void GetMatchingTypes(const base::string16& text,
@@ -116,12 +100,14 @@ class AutofillProfile : public AutofillDataModel {
   // themselves.
   int Compare(const AutofillProfile& profile) const;
 
-  // Same as operator==, but ignores differences in origin.
-  bool EqualsSansOrigin(const AutofillProfile& profile) const;
-
   // Same as operator==, but ignores differences in guid and cares about
   // differences in usage stats.
   bool EqualsForSyncPurposes(const AutofillProfile& profile) const;
+
+  bool EqualsForUpdatePurposes(const AutofillProfile& profile) const;
+
+  // Compares the values of kSupportedTypesByClientForValidation fields.
+  bool EqualsForClientValidationPurpose(const AutofillProfile& profile) const;
 
   // Same as operator==, but cares about differences in usage stats.
   bool EqualsIncludingUsageStatsForTesting(
@@ -159,9 +145,6 @@ class AutofillProfile : public AutofillDataModel {
   // |this| and |profile| are similar.
   bool SaveAdditionalInfo(const AutofillProfile& profile,
                           const std::string& app_locale);
-
-  // Returns |true| if |type| accepts multi-values.
-  static bool SupportsMultiValue(ServerFieldType type);
 
   // Creates a differentiating label for each of the |profiles|.
   // Labels consist of the minimal differentiating combination of:
@@ -216,6 +199,24 @@ class AutofillProfile : public AutofillDataModel {
   // use and updates |previous_use_date_| to the last value of |use_date_|.
   void RecordAndLogUse();
 
+  // Returns true if the current profile has greater frescocency than the
+  // |other|. Frescocency is a combination of validation score and frecency to
+  // determine the relevance of the profile. Frescocency is a total order: it
+  // puts all the valid profiles before the invalid ones, and uses frecency
+  // (another total order) in case of tie. Please see
+  // AutofillDataModel::HasGreaterFrecencyThan.
+  bool HasGreaterFrescocencyThan(const AutofillProfile* other,
+                                 base::Time comparison_time,
+                                 bool use_client_validation,
+                                 bool use_server_validation) const;
+
+  // Returns false if the profile has any invalid field, according to the client
+  // source of validation.
+  bool IsValidByClient() const;
+  // Returns false if the profile has any invalid field, according to the server
+  // source of validation.
+  bool IsValidByServer() const;
+
   const base::Time& previous_use_date() const { return previous_use_date_; }
   void set_previous_use_date(const base::Time& time) {
     previous_use_date_ = time;
@@ -227,7 +228,7 @@ class AutofillProfile : public AutofillDataModel {
 
   // Returns the validity state of the specified autofill type.
   ValidityState GetValidityState(ServerFieldType type,
-                                 ValidationSource source) const;
+                                 ValidationSource source) const override;
 
   // Sets the validity state of the specified autofill type.
   // This should only be called from autofill profile validtion API or in tests.
@@ -266,6 +267,10 @@ class AutofillProfile : public AutofillDataModel {
       bool is_client_validity_states_updated) const {
     is_client_validity_states_updated_ = is_client_validity_states_updated;
   }
+
+  // Check for the validity of the data. Leave the field empty if the data is
+  // invalid and the relevant feature is enabled.
+  bool ShouldSkipFillingOrSuggesting(ServerFieldType type) const override;
 
   base::WeakPtr<const AutofillProfile> GetWeakPtr() const {
     return weak_ptr_factory_.GetWeakPtr();

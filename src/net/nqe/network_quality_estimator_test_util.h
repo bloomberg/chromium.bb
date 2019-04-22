@@ -187,12 +187,6 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
     end_to_end_rtt_observation_count_at_last_ect_computation_ = count;
   }
 
-  void SetAccuracyRecordingIntervals(
-      const std::vector<base::TimeDelta>& accuracy_recording_intervals);
-
-  const std::vector<base::TimeDelta>& GetAccuracyRecordingIntervals()
-      const override;
-
   // Returns the number of entries in |net_log_| that have type set to |type|.
   int GetEntriesCount(NetLogEventType type) const;
 
@@ -209,13 +203,17 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
   void NotifyObserversOfRTTOrThroughputEstimatesComputed(
       const net::nqe::internal::NetworkQuality& network_quality);
 
-  // Notifies the registered observers that the network quality estimate has
-  // changed to |network_quality|.
-  void NotifyObserversOfEffectiveConnectionType(EffectiveConnectionType type);
+  // Updates the computed effective connection type to |type| and notifies the
+  // registered observers that the effective connection type has changed to
+  // |type|.
+  void SetAndNotifyObserversOfEffectiveConnectionType(
+      EffectiveConnectionType type);
 
   void SetTransportRTTAtastECTSampleCount(size_t count) {
     transport_rtt_observation_count_last_ect_computation_ = count;
   }
+
+  void SetCurrentSignalStrength(int32_t signal_strength);
 
   // Returns count of ping RTTs received from H2/spdy connections.
   size_t ping_rtt_received_count() const { return ping_rtt_received_count_; }
@@ -258,9 +256,6 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
   NetworkChangeNotifier::ConnectionType current_network_type_;
   std::string current_network_id_;
 
-  bool accuracy_recording_intervals_set_;
-  std::vector<base::TimeDelta> accuracy_recording_intervals_;
-
   // If set, GetRecentHttpRTT() would return one of the set values.
   // |start_time_null_http_rtt_| is returned if the |start_time| is null.
   // Otherwise, |recent_http_rtt_| is returned.
@@ -285,6 +280,8 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
 
   // If set, GetRTTEstimateInternal() would return the set value.
   base::Optional<base::TimeDelta> start_time_null_end_to_end_rtt_;
+
+  int32_t current_cellular_signal_strength_ = INT32_MIN;
 
   LocalHttpTestServer embedded_test_server_;
 

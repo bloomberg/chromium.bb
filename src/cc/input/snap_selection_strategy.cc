@@ -17,8 +17,9 @@ SnapSelectionStrategy::CreateForEndPosition(
 
 std::unique_ptr<SnapSelectionStrategy>
 SnapSelectionStrategy::CreateForDirection(gfx::ScrollOffset current_position,
-                                          gfx::ScrollOffset step) {
-  return std::make_unique<DirectionStrategy>(current_position, step);
+                                          gfx::ScrollOffset step,
+                                          SnapStopAlwaysFilter filter) {
+  return std::make_unique<DirectionStrategy>(current_position, step, filter);
 }
 
 std::unique_ptr<SnapSelectionStrategy>
@@ -27,6 +28,21 @@ SnapSelectionStrategy::CreateForEndAndDirection(
     gfx::ScrollOffset displacement) {
   return std::make_unique<EndAndDirectionStrategy>(current_position,
                                                    displacement);
+}
+
+bool SnapSelectionStrategy::HasIntendedDirection() const {
+  return true;
+}
+
+bool SnapSelectionStrategy::ShouldRespectSnapStop() const {
+  return false;
+}
+
+bool SnapSelectionStrategy::IsValidSnapArea(SearchAxis axis,
+                                            const SnapAreaData& area) const {
+  return axis == SearchAxis::kX
+             ? area.scroll_snap_align.alignment_inline != SnapAlignment::kNone
+             : area.scroll_snap_align.alignment_block != SnapAlignment::kNone;
 }
 
 bool EndPositionStrategy::ShouldSnapOnX() const {
@@ -50,6 +66,10 @@ bool EndPositionStrategy::IsValidSnapPosition(SearchAxis axis,
                                               float position) const {
   return (scrolled_x_ && axis == SearchAxis::kX) ||
          (scrolled_y_ && axis == SearchAxis::kY);
+}
+
+bool EndPositionStrategy::HasIntendedDirection() const {
+  return false;
 }
 
 const base::Optional<SnapSearchResult>& EndPositionStrategy::PickBestResult(
@@ -85,6 +105,13 @@ bool DirectionStrategy::IsValidSnapPosition(SearchAxis axis,
             position > current_position_.y()) ||                 // "Down" arrow
            (step_.y() < 0 && position < current_position_.y());  // "Up" arrow
   }
+}
+
+bool DirectionStrategy::IsValidSnapArea(SearchAxis axis,
+                                        const SnapAreaData& area) const {
+  return SnapSelectionStrategy::IsValidSnapArea(axis, area) &&
+         (snap_stop_always_filter_ == SnapStopAlwaysFilter::kIgnore ||
+          area.must_snap);
 }
 
 const base::Optional<SnapSearchResult>& DirectionStrategy::PickBestResult(
@@ -140,6 +167,10 @@ bool EndAndDirectionStrategy::IsValidSnapPosition(SearchAxis axis,
             position > current_position_.y()) ||                         // Down
            (displacement_.y() < 0 && position < current_position_.y());  // Up
   }
+}
+
+bool EndAndDirectionStrategy::ShouldRespectSnapStop() const {
+  return true;
 }
 
 const base::Optional<SnapSearchResult>& EndAndDirectionStrategy::PickBestResult(

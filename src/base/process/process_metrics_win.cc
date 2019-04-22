@@ -265,7 +265,8 @@ BASE_EXPORT bool GetSystemPerformanceInfo(SystemPerformanceInfo* info) {
   SYSTEM_PERFORMANCE_INFORMATION counters = {};
   {
     // The call to NtQuerySystemInformation might block on a lock.
-    base::ScopedBlockingCall scoped_blocking_call(BlockingType::MAY_BLOCK);
+    base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                  BlockingType::MAY_BLOCK);
     if (query_system_information_ptr(::SystemPerformanceInformation, &counters,
                                      sizeof(SYSTEM_PERFORMANCE_INFORMATION),
                                      nullptr) != STATUS_SUCCESS) {

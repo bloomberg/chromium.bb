@@ -69,6 +69,8 @@ class FakeDemuxerStream : public DemuxerStream {
   // Sets further read requests to return EOS buffers.
   void SeekToEndOfStream();
 
+  base::TimeDelta duration() const { return duration_; }
+
  private:
   void UpdateVideoDecoderConfig();
   void DoRead();

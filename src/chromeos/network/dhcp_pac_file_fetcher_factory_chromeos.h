@@ -7,8 +7,8 @@
 
 #include <memory>
 
+#include "base/component_export.h"
 #include "base/macros.h"
-#include "chromeos/chromeos_export.h"
 #include "net/proxy_resolution/dhcp_pac_file_fetcher_factory.h"
 
 namespace net {
@@ -21,7 +21,7 @@ namespace chromeos {
 // ChromeOS specific implementation of DhcpPacFileFetcherFactory.
 // TODO(mmenke):  This won't work at all with an out-of-process network service.
 // Figure out a way forward there.
-class CHROMEOS_EXPORT DhcpPacFileFetcherFactoryChromeos
+class COMPONENT_EXPORT(CHROMEOS_NETWORK) DhcpPacFileFetcherFactoryChromeos
     : public net::DhcpPacFileFetcherFactory {
  public:
   DhcpPacFileFetcherFactoryChromeos();

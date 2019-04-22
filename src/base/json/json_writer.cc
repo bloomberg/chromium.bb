@@ -69,7 +69,7 @@ bool JSONWriter::BuildJSONString(const Value& node, size_t depth) {
       return true;
 
     case Value::Type::INTEGER:
-      json_string_->append(IntToString(node.GetInt()));
+      json_string_->append(NumberToString(node.GetInt()));
       return true;
 
     case Value::Type::DOUBLE: {
@@ -78,7 +78,7 @@ bool JSONWriter::BuildJSONString(const Value& node, size_t depth) {
           value <= std::numeric_limits<int64_t>::max() &&
           value >= std::numeric_limits<int64_t>::min() &&
           std::floor(value) == value) {
-        json_string_->append(Int64ToString(static_cast<int64_t>(value)));
+        json_string_->append(NumberToString(static_cast<int64_t>(value)));
         return true;
       }
       std::string real = NumberToString(value);
@@ -179,6 +179,11 @@ bool JSONWriter::BuildJSONString(const Value& node, size_t depth) {
       // Successful only if we're allowed to omit it.
       DLOG_IF(ERROR, !omit_binary_values_) << "Cannot serialize binary value.";
       return omit_binary_values_;
+
+    // TODO(crbug.com/859477): Remove after root cause is found.
+    case Value::Type::DEAD:
+      CHECK(false);
+      return false;
   }
 
   // TODO(crbug.com/859477): Revert to NOTREACHED() after root cause is found.

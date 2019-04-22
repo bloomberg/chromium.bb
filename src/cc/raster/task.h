@@ -77,6 +77,8 @@ class CC_EXPORT Task : public base::RefCountedThreadSafe<Task> {
   typedef std::vector<scoped_refptr<Task>> Vector;
 
   TaskState& state() { return state_; }
+  void set_frame_number(int64_t frame_number) { frame_number_ = frame_number; }
+  int64_t frame_number() { return frame_number_; }
 
   // Subclasses should implement this method. RunOnWorkerThread may be called
   // on any thread, and subclasses are responsible for locking and thread
@@ -91,6 +93,7 @@ class CC_EXPORT Task : public base::RefCountedThreadSafe<Task> {
 
  private:
   TaskState state_;
+  int64_t frame_number_ = -1;
 };
 
 // A task dependency graph describes the order in which to execute a set
@@ -109,18 +112,17 @@ struct CC_EXPORT TaskGraph {
          uint16_t category,
          uint16_t priority,
          uint32_t dependencies);
+    Node(const Node&) = delete;
     Node(Node&& other);
     ~Node();
 
+    Node& operator=(const Node&) = delete;
     Node& operator=(Node&& other) = default;
 
     scoped_refptr<Task> task;
     uint16_t category;
     uint16_t priority;
     uint32_t dependencies;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Node);
   };
 
   struct Edge {
@@ -134,17 +136,18 @@ struct CC_EXPORT TaskGraph {
   };
 
   TaskGraph();
+  TaskGraph(const TaskGraph&) = delete;
   TaskGraph(TaskGraph&& other);
   ~TaskGraph();
+
+  TaskGraph& operator=(const TaskGraph&) = delete;
+  TaskGraph& operator=(TaskGraph&&) = default;
 
   void Swap(TaskGraph* other);
   void Reset();
 
   Node::Vector nodes;
   Edge::Vector edges;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TaskGraph);
 };
 
 }  // namespace cc

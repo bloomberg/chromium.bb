@@ -147,8 +147,8 @@ bool GenerateRawDelta(ConstBufferView old_image,
         int num_bytes = reference_bytes_mixer->NumBytes(type_tag.value());
         if (num_bytes) {
           ConstBufferView mixed_ref_bytes = reference_bytes_mixer->Mix(
-              type_tag.value(), old_image.begin(), equivalence.src_offset + i,
-              new_image.begin(), equivalence.dst_offset + i);
+              type_tag.value(), old_image, equivalence.src_offset + i,
+              new_image, equivalence.dst_offset + i);
           for (int j = 0; j < num_bytes; ++j) {
             int8_t diff =
                 mixed_ref_bytes[j] - old_image[equivalence.src_offset + i + j];

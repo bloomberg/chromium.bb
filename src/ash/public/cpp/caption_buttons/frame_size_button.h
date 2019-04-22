@@ -8,10 +8,10 @@
 #include <memory>
 
 #include "ash/public/cpp/ash_public_export.h"
-#include "ash/public/cpp/caption_buttons/frame_caption_button.h"
 #include "ash/public/cpp/caption_buttons/frame_size_button_delegate.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
+#include "ui/views/window/frame_caption_button.h"
 
 namespace ash {
 
@@ -24,7 +24,7 @@ namespace ash {
 // When the drag terminates, the action for the button underneath the mouse
 // is executed. For the sake of simplicity, the size button is the event
 // handler for a click starting on the size button and the entire drag.
-class ASH_PUBLIC_EXPORT FrameSizeButton : public FrameCaptionButton {
+class ASH_PUBLIC_EXPORT FrameSizeButton : public views::FrameCaptionButton {
  public:
   FrameSizeButton(views::ButtonListener* listener,
                   FrameSizeButtonDelegate* delegate);
@@ -39,11 +39,18 @@ class ASH_PUBLIC_EXPORT FrameSizeButton : public FrameCaptionButton {
   void OnMouseMoved(const ui::MouseEvent& event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
 
+  // Cancel the snap opereation if we're currently in snap mode. The snap
+  // preview will be deleted and the button will be set back to its normal mode.
+  void CancelSnap();
+
   void set_delay_to_set_buttons_to_snap_mode(int delay_ms) {
     set_buttons_to_snap_mode_delay_ms_ = delay_ms;
   }
+  bool in_snap_mode_for_testing() { return in_snap_mode_; }
 
  private:
+  class SnappingWindowObserver;
+
   // Starts |set_buttons_to_snap_mode_timer_|.
   void StartSetButtonsToSnapModeTimer(const ui::LocatedEvent& event);
 
@@ -60,7 +67,7 @@ class ASH_PUBLIC_EXPORT FrameSizeButton : public FrameCaptionButton {
 
   // Returns the button which should be hovered (if any) while in "snap mode"
   // for |event|.
-  const FrameCaptionButton* GetButtonToHover(
+  const views::FrameCaptionButton* GetButtonToHover(
       const ui::LocatedEvent& event) const;
 
   // Snaps the window based on |event|. Returns true if a snap occurred, false
@@ -74,6 +81,9 @@ class ASH_PUBLIC_EXPORT FrameSizeButton : public FrameCaptionButton {
 
   // Not owned.
   FrameSizeButtonDelegate* delegate_;
+
+  // The window observer to observe the to-be-snapped window.
+  std::unique_ptr<SnappingWindowObserver> snapping_window_observer_;
 
   // Location of the event which started |set_buttons_to_snap_mode_timer_| in
   // view coordinates.

@@ -5,8 +5,8 @@
 #include "cc/layers/layer.h"
 
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/timer/lap_timer.h"
 #include "cc/animation/animation_host.h"
-#include "cc/base/lap_timer.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/fake_layer_tree_host_client.h"
@@ -53,7 +53,7 @@ class LayerPerfTest : public testing::Test {
   FakeLayerTreeHostClient fake_client_;
   std::unique_ptr<AnimationHost> animation_host_;
   std::unique_ptr<FakeLayerTreeHost> layer_tree_host_;
-  LapTimer timer_;
+  base::LapTimer timer_;
 };
 
 TEST_F(LayerPerfTest, PushPropertiesTo) {

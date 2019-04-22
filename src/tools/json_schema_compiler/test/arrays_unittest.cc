@@ -9,7 +9,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "tools/json_schema_compiler/test/enums.h"
@@ -77,7 +77,7 @@ TEST(JsonSchemaCompilerArrayTest, EnumArrayReference) {
   Enumeration expected_types[] = {ENUMERATION_ONE, ENUMERATION_TWO,
                                   ENUMERATION_THREE};
   EXPECT_EQ(std::vector<Enumeration>(
-                expected_types, expected_types + arraysize(expected_types)),
+                expected_types, expected_types + base::size(expected_types)),
             enum_array_reference.types);
 
   // Test ToValue.
@@ -110,7 +110,7 @@ TEST(JsonSchemaCompilerArrayTest, EnumArrayMixed) {
                                          ENUMERATION_THREE};
   EXPECT_EQ(std::vector<Enumeration>(
                 expected_infile_types,
-                expected_infile_types + arraysize(expected_infile_types)),
+                expected_infile_types + base::size(expected_infile_types)),
             enum_array_mixed.infile_enums);
 
   test::api::enums::Enumeration expected_external_types[] = {
@@ -118,7 +118,7 @@ TEST(JsonSchemaCompilerArrayTest, EnumArrayMixed) {
       test::api::enums::ENUMERATION_THREE};
   EXPECT_EQ(std::vector<test::api::enums::Enumeration>(
                 expected_external_types,
-                expected_external_types + arraysize(expected_external_types)),
+                expected_external_types + base::size(expected_external_types)),
             enum_array_mixed.external_enums);
 
   // Test ToValue.

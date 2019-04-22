@@ -35,7 +35,6 @@ class NET_EXPORT_PRIVATE HttpBasicState {
 
   // Initialize() must be called before using any of the other methods.
   void Initialize(const HttpRequestInfo* request_info,
-                  bool can_send_early,
                   RequestPriority priority,
                   const NetLogWithSource& net_log);
 
@@ -43,7 +42,6 @@ class NET_EXPORT_PRIVATE HttpBasicState {
 
   bool using_proxy() const { return using_proxy_; }
 
-  bool can_send_early() const { return can_send_early_; }
   bool http_09_on_non_default_ports_enabled() const {
     return http_09_on_non_default_ports_enabled_;
   }
@@ -65,16 +63,22 @@ class NET_EXPORT_PRIVATE HttpBasicState {
     return traffic_annotation_;
   }
 
+  // Returns true if the connection has been "reused" as defined by HttpStream -
+  // either actually reused, or has not been used yet, but has been idle for
+  // some time.
+  //
+  // TODO(mmenke): Consider renaming this concept, to avoid confusion with
+  // ClientSocketHandle::is_reused().
+  bool IsConnectionReused() const;
+
  private:
   scoped_refptr<GrowableIOBuffer> read_buf_;
 
-  std::unique_ptr<HttpStreamParser> parser_;
-
   std::unique_ptr<ClientSocketHandle> connection_;
 
-  const bool using_proxy_;
+  std::unique_ptr<HttpStreamParser> parser_;
 
-  bool can_send_early_;
+  const bool using_proxy_;
 
   const bool http_09_on_non_default_ports_enabled_;
 

@@ -44,7 +44,7 @@ Polymer({
    */
   onAriaLabelSet_: function() {
     if (this.hasAttribute('aria-label')) {
-      let ariaLabel = this.ariaLabel;
+      const ariaLabel = this.ariaLabel;
       this.removeAttribute('aria-label');
       this.ariaLabel = ariaLabel;
     }
@@ -75,8 +75,9 @@ Polymer({
    */
   onHostTap_: function(e) {
     e.stopPropagation();
-    if (this.controlDisabled())
+    if (this.controlDisabled()) {
       return;
+    }
 
     this.checked = !this.checked;
     this.notifyChangedByUserInteraction();
@@ -84,11 +85,11 @@ Polymer({
   },
 
   /**
-   * @param {!CustomEvent} e
+   * @param {!CustomEvent<boolean>} e
    * @private
    */
   onChange_: function(e) {
-    this.checked = /** @type {boolean} */ (e.detail);
+    this.checked = e.detail;
     this.notifyChangedByUserInteraction();
   },
 });

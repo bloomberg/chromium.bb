@@ -148,6 +148,9 @@ const base::Feature kDisableIdleSocketsCloseOnMemoryPressure{
     "disable_idle_sockets_close_on_memory_pressure",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kEnableGeneralAudienceBrowsing{
+    "enable_general_audience_browsing", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // End Chromecast Feature definitions.
 const base::Feature* kFeatures[] = {
     &kAllowUserMediaAccess,
@@ -155,6 +158,7 @@ const base::Feature* kFeatures[] = {
     &kTripleBuffer720,
     &kSingleBuffer,
     &kDisableIdleSocketsCloseOnMemoryPressure,
+    &kEnableGeneralAudienceBrowsing,
 };
 
 // An iterator for a base::DictionaryValue. Use an alias for brevity in loops.
@@ -181,7 +185,8 @@ void InitializeFeatureList(const base::DictionaryValue& dcs_features,
                            const base::ListValue& dcs_experiment_ids,
                            const std::string& cmd_line_enable_features,
                            const std::string& cmd_line_disable_features,
-                           const std::string& extra_enable_features) {
+                           const std::string& extra_enable_features,
+                           const std::string& extra_disable_features) {
   DCHECK(!base::FeatureList::GetInstance());
 
   // Set the experiments.
@@ -189,11 +194,13 @@ void InitializeFeatureList(const base::DictionaryValue& dcs_features,
 
   std::string all_enable_features =
       cmd_line_enable_features + "," + extra_enable_features;
+  std::string all_disable_features =
+      cmd_line_disable_features + "," + extra_disable_features;
 
   // Initialize the FeatureList from the command line.
   auto feature_list = std::make_unique<base::FeatureList>();
   feature_list->InitializeFromCommandLine(all_enable_features,
-                                          cmd_line_disable_features);
+                                          all_disable_features);
 
   // Override defaults from the DCS config.
   for (Iterator it(dcs_features); !it.IsAtEnd(); it.Advance()) {
@@ -301,7 +308,7 @@ base::DictionaryValue GetOverriddenFeaturesForStorage(
         if (param_val.GetAsBoolean(&bval)) {
           params->SetString(param_key, bval ? "true" : "false");
         } else if (param_val.GetAsInteger(&ival)) {
-          params->SetString(param_key, base::IntToString(ival));
+          params->SetString(param_key, base::NumberToString(ival));
         } else if (param_val.GetAsDouble(&dval)) {
           params->SetString(param_key, base::NumberToString(dval));
         } else if (param_val.GetAsString(&sval)) {

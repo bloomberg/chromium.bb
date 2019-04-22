@@ -2328,6 +2328,8 @@ dEQP-GLES2.functional.shaders.invalid_implicit_conversions.invalid_implicit_conv
 dEQP-GLES2.functional.shaders.invalid_implicit_conversions.invalid_implicit_conversions.div_vec4_ivec4_vec4_fragment
 dEQP-GLES2.functional.shaders.invalid_implicit_conversions.invalid_implicit_conversions.div_vec4_ivec4_ivec4_vertex
 dEQP-GLES2.functional.shaders.invalid_implicit_conversions.invalid_implicit_conversions.div_vec4_ivec4_ivec4_fragment
+dEQP-GLES2.functional.shaders.misc.compound_assignment.mul_swizzled_vec_by_matrix_vertex
+dEQP-GLES2.functional.shaders.misc.compound_assignment.mul_swizzled_vec_by_matrix_fragment
 dEQP-GLES2.functional.shaders.indexing.varying_array.float_static_write_static_read
 dEQP-GLES2.functional.shaders.indexing.varying_array.float_static_write_static_loop_read
 dEQP-GLES2.functional.shaders.indexing.varying_array.float_static_write_dynamic_loop_read
@@ -12003,6 +12005,7 @@ dEQP-GLES2.functional.rasterization.primitives.lines
 dEQP-GLES2.functional.rasterization.primitives.line_strip
 dEQP-GLES2.functional.rasterization.primitives.line_loop
 dEQP-GLES2.functional.rasterization.primitives.points
+dEQP-GLES2.functional.rasterization.limits.points
 dEQP-GLES2.functional.rasterization.fill_rules.basic_quad
 dEQP-GLES2.functional.rasterization.fill_rules.basic_quad_reverse
 dEQP-GLES2.functional.rasterization.fill_rules.clipped_full

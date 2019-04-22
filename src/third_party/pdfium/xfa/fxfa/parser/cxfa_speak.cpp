@@ -6,7 +6,7 @@
 
 #include "xfa/fxfa/parser/cxfa_speak.h"
 
-#include "fxjs/xfa/cjx_speak.h"
+#include "fxjs/xfa/cjx_textnode.h"
 #include "third_party/base/ptr_util.h"
 
 namespace {
@@ -16,12 +16,10 @@ const CXFA_Node::AttributeData kSpeakAttributeData[] = {
     {XFA_Attribute::Rid, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Use, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Priority, XFA_AttributeType::Enum,
-     (void*)XFA_AttributeEnum::Custom},
+     (void*)XFA_AttributeValue::Custom},
     {XFA_Attribute::Usehref, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Disable, XFA_AttributeType::Boolean, (void*)0},
-    {XFA_Attribute::Unknown, XFA_AttributeType::Integer, nullptr}};
-
-constexpr wchar_t kSpeakName[] = L"speak";
+};
 
 }  // namespace
 
@@ -31,9 +29,8 @@ CXFA_Speak::CXFA_Speak(CXFA_Document* doc, XFA_PacketType packet)
                 (XFA_XDPPACKET_Template | XFA_XDPPACKET_Form),
                 XFA_ObjectType::TextNode,
                 XFA_Element::Speak,
-                nullptr,
+                {},
                 kSpeakAttributeData,
-                kSpeakName,
-                pdfium::MakeUnique<CJX_Speak>(this)) {}
+                pdfium::MakeUnique<CJX_TextNode>(this)) {}
 
-CXFA_Speak::~CXFA_Speak() {}
+CXFA_Speak::~CXFA_Speak() = default;

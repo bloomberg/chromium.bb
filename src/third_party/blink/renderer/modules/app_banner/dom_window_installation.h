@@ -12,9 +12,9 @@ namespace blink {
 
 class DOMWindowInstallation {
  public:
-  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(appinstalled, kAppinstalled);
+  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(appinstalled, kAppinstalled)
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(beforeinstallprompt,
-                                         kBeforeinstallprompt);
+                                         kBeforeinstallprompt)
 };
 
 }  // namespace blink

@@ -27,7 +27,7 @@ jumbo_component("init") {
   deps = [
     "//base",
     "//ui/gfx",
-    "//ui/gl:gl_features",
+    "//ui/gl:buildflags",
   ]
 
   public_deps = [

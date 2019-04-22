@@ -15,7 +15,7 @@ namespace blink {
 
 class CSPSourceTest : public testing::Test {
  public:
-  CSPSourceTest() : csp(ContentSecurityPolicy::Create()) {}
+  CSPSourceTest() : csp(MakeGarbageCollected<ContentSecurityPolicy>()) {}
 
  protected:
   Persistent<ContentSecurityPolicy> csp;
@@ -144,7 +144,8 @@ TEST_F(CSPSourceTest, SchemeIsEmpty) {
 
   // Self scheme is http.
   {
-    Persistent<ContentSecurityPolicy> csp(ContentSecurityPolicy::Create());
+    Persistent<ContentSecurityPolicy> csp(
+        MakeGarbageCollected<ContentSecurityPolicy>());
     csp->SetupSelf(*SecurityOrigin::CreateFromString("http://a.com/"));
     CSPSource source(csp.Get(), "", "a.com", 0, "/", CSPSource::kNoWildcard,
                      CSPSource::kNoWildcard);
@@ -155,7 +156,8 @@ TEST_F(CSPSourceTest, SchemeIsEmpty) {
 
   // Self scheme is https.
   {
-    Persistent<ContentSecurityPolicy> csp(ContentSecurityPolicy::Create());
+    Persistent<ContentSecurityPolicy> csp(
+        MakeGarbageCollected<ContentSecurityPolicy>());
     csp->SetupSelf(*SecurityOrigin::CreateFromString("https://a.com/"));
     CSPSource source(csp.Get(), "", "a.com", 0, "/", CSPSource::kNoWildcard,
                      CSPSource::kNoWildcard);
@@ -166,7 +168,8 @@ TEST_F(CSPSourceTest, SchemeIsEmpty) {
 
   // Self scheme is not in the http familly.
   {
-    Persistent<ContentSecurityPolicy> csp(ContentSecurityPolicy::Create());
+    Persistent<ContentSecurityPolicy> csp(
+        MakeGarbageCollected<ContentSecurityPolicy>());
     csp->SetupSelf(*SecurityOrigin::CreateFromString("ftp://a.com/"));
     CSPSource source(csp.Get(), "", "a.com", 0, "/", CSPSource::kNoWildcard,
                      CSPSource::kNoWildcard);
@@ -176,7 +179,8 @@ TEST_F(CSPSourceTest, SchemeIsEmpty) {
 
   // Self scheme is unique
   {
-    Persistent<ContentSecurityPolicy> csp(ContentSecurityPolicy::Create());
+    Persistent<ContentSecurityPolicy> csp(
+        MakeGarbageCollected<ContentSecurityPolicy>());
     csp->SetupSelf(
         *SecurityOrigin::CreateFromString("non-standard-scheme://a.com/"));
     CSPSource source(csp.Get(), "", "a.com", 0, "/", CSPSource::kNoWildcard,
@@ -222,7 +226,8 @@ TEST_F(CSPSourceTest, InsecureHostSchemePortMatchesSecurePort) {
 
   // source scheme is empty
   {
-    Persistent<ContentSecurityPolicy> csp(ContentSecurityPolicy::Create());
+    Persistent<ContentSecurityPolicy> csp(
+        MakeGarbageCollected<ContentSecurityPolicy>());
     csp->SetupSelf(*SecurityOrigin::CreateFromString("http://example.com"));
     CSPSource source(csp.Get(), "", "example.com", 80, "/",
                      CSPSource::kNoWildcard, CSPSource::kNoWildcard);
@@ -248,7 +253,8 @@ TEST_F(CSPSourceTest, InsecureHostSchemePortMatchesSecurePort) {
 
 TEST_F(CSPSourceTest, HostMatches) {
   KURL base;
-  Persistent<ContentSecurityPolicy> csp(ContentSecurityPolicy::Create());
+  Persistent<ContentSecurityPolicy> csp(
+      MakeGarbageCollected<ContentSecurityPolicy>());
   csp->SetupSelf(*SecurityOrigin::CreateFromString("http://a.com"));
 
   // Host is * (source-expression = "http://*")
@@ -284,6 +290,22 @@ TEST_F(CSPSourceTest, HostMatches) {
     // Please see http://crbug.com/692505
     EXPECT_FALSE(source.Matches(KURL(base, "http://.foo.bar")));
   }
+
+  // Host matching is case-insensitive.
+  {
+    CSPSource source(csp.Get(), "", "FoO.BaR", 0, "", CSPSource::kNoWildcard,
+                     CSPSource::kNoWildcard);
+    EXPECT_TRUE(source.Matches(KURL(base, "http://foo.bar")));
+    EXPECT_FALSE(source.Matches(KURL(base, "http://sub.foo.bar")));
+  }
+
+  // Wildcarded host matching is case-insensitive.
+  {
+    CSPSource source(csp.Get(), "", "FoO.BaR", 0, "", CSPSource::kHasWildcard,
+                     CSPSource::kNoWildcard);
+    EXPECT_TRUE(source.Matches(KURL(base, "http://sub.foo.bar")));
+    EXPECT_FALSE(source.Matches(KURL(base, "http://foo.bar")));
+  }
 }
 
 TEST_F(CSPSourceTest, DoesNotSubsume) {
@@ -306,11 +328,11 @@ TEST_F(CSPSourceTest, DoesNotSubsume) {
       {{"http", "example.com", "/", 443}, {"about", "example.com", "/", 800}},
   };
   for (const auto& test : cases) {
-    CSPSource* returned = new CSPSource(
+    CSPSource* returned = MakeGarbageCollected<CSPSource>(
         csp.Get(), test.a.scheme, test.a.host, test.a.port, test.a.path,
         CSPSource::kNoWildcard, CSPSource::kNoWildcard);
 
-    CSPSource* required = new CSPSource(
+    CSPSource* required = MakeGarbageCollected<CSPSource>(
         csp.Get(), test.b.scheme, test.b.host, test.b.port, test.b.path,
         CSPSource::kNoWildcard, CSPSource::kNoWildcard);
 
@@ -362,11 +384,11 @@ TEST_F(CSPSourceTest, Subsumes) {
   };
 
   for (const auto& test : cases) {
-    CSPSource* returned = new CSPSource(
+    CSPSource* returned = MakeGarbageCollected<CSPSource>(
         csp.Get(), test.a.scheme, "example.com", test.a.port, test.a.path,
         CSPSource::kNoWildcard, CSPSource::kNoWildcard);
 
-    CSPSource* required = new CSPSource(
+    CSPSource* required = MakeGarbageCollected<CSPSource>(
         csp.Get(), test.b.scheme, "example.com", test.b.port, test.b.path,
         CSPSource::kNoWildcard, CSPSource::kNoWildcard);
 
@@ -378,10 +400,10 @@ TEST_F(CSPSourceTest, Subsumes) {
   // When returned CSP has a wildcard but the required csp doesn't, then it is
   // not subsumed.
   for (const auto& test : cases) {
-    CSPSource* returned = new CSPSource(
+    CSPSource* returned = MakeGarbageCollected<CSPSource>(
         csp.Get(), test.a.scheme, "example.com", test.a.port, test.a.path,
         CSPSource::kHasWildcard, CSPSource::kNoWildcard);
-    CSPSource* required = new CSPSource(
+    CSPSource* required = MakeGarbageCollected<CSPSource>(
         csp.Get(), test.b.scheme, "example.com", test.b.port, test.b.path,
         CSPSource::kNoWildcard, CSPSource::kNoWildcard);
 
@@ -389,7 +411,7 @@ TEST_F(CSPSourceTest, Subsumes) {
 
     // If required csp also allows a wildcard in host, then the answer should be
     // as expected.
-    CSPSource* required2 = new CSPSource(
+    CSPSource* required2 = MakeGarbageCollected<CSPSource>(
         csp.Get(), test.b.scheme, "example.com", test.b.port, test.b.path,
         CSPSource::kHasWildcard, CSPSource::kNoWildcard);
     EXPECT_EQ(required2->Subsumes(returned), test.expected);
@@ -460,19 +482,19 @@ TEST_F(CSPSourceTest, WildcardsSubsumes) {
   // There are different cases for wildcards but now also the second CSPSource
   // has a more specific path.
   for (const auto& test : cases) {
-    CSPSource* returned =
-        new CSPSource(csp.Get(), "http", "example.com", 0, "/",
-                      test.a.host_dispotion, test.a.port_dispotion);
-    CSPSource* required =
-        new CSPSource(csp.Get(), "http", "example.com", 0, "/",
-                      test.b.host_dispotion, test.b.port_dispotion);
+    CSPSource* returned = MakeGarbageCollected<CSPSource>(
+        csp.Get(), "http", "example.com", 0, "/", test.a.host_dispotion,
+        test.a.port_dispotion);
+    CSPSource* required = MakeGarbageCollected<CSPSource>(
+        csp.Get(), "http", "example.com", 0, "/", test.b.host_dispotion,
+        test.b.port_dispotion);
     EXPECT_EQ(required->Subsumes(returned), test.expected);
 
     // Wildcards should not matter when required csp is stricter than returned
     // csp.
-    CSPSource* required2 =
-        new CSPSource(csp.Get(), "https", "example.com", 0, "/",
-                      test.b.host_dispotion, test.b.port_dispotion);
+    CSPSource* required2 = MakeGarbageCollected<CSPSource>(
+        csp.Get(), "https", "example.com", 0, "/", test.b.host_dispotion,
+        test.b.port_dispotion);
     EXPECT_FALSE(required2->Subsumes(returned));
   }
 }
@@ -500,12 +522,12 @@ TEST_F(CSPSourceTest, SchemesOnlySubsumes) {
   };
 
   for (const auto& test : cases) {
-    CSPSource* returned =
-        new CSPSource(csp.Get(), test.a_scheme, "example.com", 0, "/",
-                      CSPSource::kNoWildcard, CSPSource::kNoWildcard);
-    CSPSource* required =
-        new CSPSource(csp.Get(), test.b_scheme, "example.com", 0, "/",
-                      CSPSource::kNoWildcard, CSPSource::kNoWildcard);
+    CSPSource* returned = MakeGarbageCollected<CSPSource>(
+        csp.Get(), test.a_scheme, "example.com", 0, "/", CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard);
+    CSPSource* required = MakeGarbageCollected<CSPSource>(
+        csp.Get(), test.b_scheme, "example.com", 0, "/", CSPSource::kNoWildcard,
+        CSPSource::kNoWildcard);
     EXPECT_EQ(required->Subsumes(returned), test.expected);
   }
 }
@@ -603,11 +625,11 @@ TEST_F(CSPSourceTest, IsSimilar) {
   };
 
   for (const auto& test : cases) {
-    CSPSource* returned = new CSPSource(
+    CSPSource* returned = MakeGarbageCollected<CSPSource>(
         csp.Get(), test.a.scheme, test.a.host, test.a.port, test.a.path,
         CSPSource::kNoWildcard, CSPSource::kNoWildcard);
 
-    CSPSource* required = new CSPSource(
+    CSPSource* required = MakeGarbageCollected<CSPSource>(
         csp.Get(), test.b.scheme, test.b.host, test.b.port, test.b.path,
         CSPSource::kNoWildcard, CSPSource::kNoWildcard);
 
@@ -645,24 +667,24 @@ TEST_F(CSPSourceTest, FirstSubsumesSecond) {
       {{"http", "second-example.com", 0, "/"}, "https", false},
   };
 
-  CSPSource* no_wildcards =
-      new CSPSource(csp.Get(), "http", "example.com", 0, "/",
-                    CSPSource::kNoWildcard, CSPSource::kNoWildcard);
-  CSPSource* host_wildcard =
-      new CSPSource(csp.Get(), "http", "third-example.com", 0, "/",
-                    CSPSource::kHasWildcard, CSPSource::kNoWildcard);
-  CSPSource* port_wildcard =
-      new CSPSource(csp.Get(), "http", "third-example.com", 0, "/",
-                    CSPSource::kNoWildcard, CSPSource::kHasWildcard);
-  CSPSource* both_wildcards =
-      new CSPSource(csp.Get(), "http", "third-example.com", 0, "/",
-                    CSPSource::kHasWildcard, CSPSource::kHasWildcard);
-  CSPSource* http_only =
-      new CSPSource(csp.Get(), "http", "", 0, "", CSPSource::kNoWildcard,
-                    CSPSource::kNoWildcard);
-  CSPSource* https_only =
-      new CSPSource(csp.Get(), "https", "", 0, "", CSPSource::kNoWildcard,
-                    CSPSource::kNoWildcard);
+  CSPSource* no_wildcards = MakeGarbageCollected<CSPSource>(
+      csp.Get(), "http", "example.com", 0, "/", CSPSource::kNoWildcard,
+      CSPSource::kNoWildcard);
+  CSPSource* host_wildcard = MakeGarbageCollected<CSPSource>(
+      csp.Get(), "http", "third-example.com", 0, "/", CSPSource::kHasWildcard,
+      CSPSource::kNoWildcard);
+  CSPSource* port_wildcard = MakeGarbageCollected<CSPSource>(
+      csp.Get(), "http", "third-example.com", 0, "/", CSPSource::kNoWildcard,
+      CSPSource::kHasWildcard);
+  CSPSource* both_wildcards = MakeGarbageCollected<CSPSource>(
+      csp.Get(), "http", "third-example.com", 0, "/", CSPSource::kHasWildcard,
+      CSPSource::kHasWildcard);
+  CSPSource* http_only = MakeGarbageCollected<CSPSource>(
+      csp.Get(), "http", "", 0, "", CSPSource::kNoWildcard,
+      CSPSource::kNoWildcard);
+  CSPSource* https_only = MakeGarbageCollected<CSPSource>(
+      csp.Get(), "https", "", 0, "", CSPSource::kNoWildcard,
+      CSPSource::kNoWildcard);
 
   for (const auto& test : cases) {
     // Setup default vectors.
@@ -674,12 +696,12 @@ TEST_F(CSPSourceTest, FirstSubsumesSecond) {
 
     list_a.push_back(no_wildcards);
     // Add CSPSources based on the current test.
-    list_b.push_back(new CSPSource(
+    list_b.push_back(MakeGarbageCollected<CSPSource>(
         csp.Get(), test.source_b.scheme, test.source_b.host, 0,
         test.source_b.path, CSPSource::kNoWildcard, CSPSource::kNoWildcard));
-    list_a.push_back(
-        new CSPSource(csp.Get(), test.scheme_a, "second-example.com", 0, "/",
-                      CSPSource::kNoWildcard, CSPSource::kNoWildcard));
+    list_a.push_back(MakeGarbageCollected<CSPSource>(
+        csp.Get(), test.scheme_a, "second-example.com", 0, "/",
+        CSPSource::kNoWildcard, CSPSource::kNoWildcard));
     // listB contains: ["http://example.com/", test.listB]
     // listA contains: ["http://example.com/",
     // test.schemeA + "://second-example.com/"]
@@ -809,12 +831,12 @@ TEST_F(CSPSourceTest, Intersect) {
   };
 
   for (const auto& test : cases) {
-    CSPSource* a =
-        new CSPSource(csp.Get(), test.a.scheme, test.a.host, test.a.port,
-                      test.a.path, test.a.host_wildcard, test.a.port_wildcard);
-    CSPSource* b =
-        new CSPSource(csp.Get(), test.b.scheme, test.b.host, test.b.port,
-                      test.b.path, test.b.host_wildcard, test.b.port_wildcard);
+    CSPSource* a = MakeGarbageCollected<CSPSource>(
+        csp.Get(), test.a.scheme, test.a.host, test.a.port, test.a.path,
+        test.a.host_wildcard, test.a.port_wildcard);
+    CSPSource* b = MakeGarbageCollected<CSPSource>(
+        csp.Get(), test.b.scheme, test.b.host, test.b.port, test.b.path,
+        test.b.host_wildcard, test.b.port_wildcard);
 
     CSPSource* normalized = a->Intersect(b);
     Source intersect_ab = {
@@ -885,13 +907,13 @@ TEST_F(CSPSourceTest, IntersectSchemesOnly) {
   };
 
   for (const auto& test : cases) {
-    CSPSource* a =
-        new CSPSource(csp.Get(), test.a.scheme, test.a.host, test.a.port,
-                      test.a.path, test.a.host_wildcard, test.a.port_wildcard);
+    CSPSource* a = MakeGarbageCollected<CSPSource>(
+        csp.Get(), test.a.scheme, test.a.host, test.a.port, test.a.path,
+        test.a.host_wildcard, test.a.port_wildcard);
 
-    CSPSource* b =
-        new CSPSource(csp.Get(), test.b.scheme, test.b.host, test.b.port,
-                      test.b.path, test.b.host_wildcard, test.b.port_wildcard);
+    CSPSource* b = MakeGarbageCollected<CSPSource>(
+        csp.Get(), test.b.scheme, test.b.host, test.b.port, test.b.path,
+        test.b.host_wildcard, test.b.port_wildcard);
 
     CSPSource* normalized = a->Intersect(b);
     Source intersect_ab = {
@@ -1020,7 +1042,7 @@ TEST_F(CSPSourceTest, MatchingAsSelf) {
 
   KURL base;
   for (const auto& test : cases) {
-    CSPSource* self_source = new CSPSource(
+    CSPSource* self_source = MakeGarbageCollected<CSPSource>(
         csp.Get(), test.self_source.scheme, test.self_source.host,
         test.self_source.port, test.self_source.path,
         test.self_source.host_wildcard, test.self_source.port_wildcard);

@@ -45,8 +45,9 @@ class AnchorElementMetricsTest : public SimTest {
 
   void SetUp() override {
     SimTest::SetUp();
-    WebView().Resize(WebSize(kViewportWidth, kViewportHeight));
-    feature_list_.InitAndEnableFeature(features::kRecordAnchorMetricsClicked);
+    WebView().MainFrameWidget()->Resize(
+        WebSize(kViewportWidth, kViewportHeight));
+    feature_list_.InitAndEnableFeature(features::kNavigationPredictor);
   }
 
   base::test::ScopedFeatureList feature_list_;
@@ -84,20 +85,18 @@ TEST_F(AnchorElementMetricsTest, FinchControl) {
   HTMLAnchorElement* anchor_element =
       ToHTMLAnchorElement(GetDocument().getElementById("anchor"));
 
-  // With feature kRecordAnchorMetricsClicked disabled, we should not see any
+  // With feature kNavigationPredictor disabled, we should not see any
   // count in histograms.
   base::test::ScopedFeatureList disabled_feature_list;
-  disabled_feature_list.InitAndDisableFeature(
-      features::kRecordAnchorMetricsClicked);
+  disabled_feature_list.InitAndDisableFeature(features::kNavigationPredictor);
   AnchorElementMetrics::MaybeReportClickedMetricsOnClick(anchor_element);
   histogram_tester.ExpectTotalCount("AnchorElementMetrics.Clicked.RatioArea",
                                     0);
 
-  // If we enable feature kRecordAnchorMetricsClicked, we should see count is 1
+  // If we enable feature kNavigationPredictor, we should see count is 1
   // in histograms.
   base::test::ScopedFeatureList enabled_feature_list;
-  enabled_feature_list.InitAndEnableFeature(
-      features::kRecordAnchorMetricsClicked);
+  enabled_feature_list.InitAndEnableFeature(features::kNavigationPredictor);
   AnchorElementMetrics::MaybeReportClickedMetricsOnClick(anchor_element);
   histogram_tester.ExpectTotalCount("AnchorElementMetrics.Clicked.RatioArea",
                                     1);
@@ -121,10 +120,8 @@ TEST_F(AnchorElementMetricsTest, NonHTTPOnClick) {
 
   // Tests that a data page with an HTTPS anchor is not reported when the anchor
   // is clicked.
-  SimRequest data_resource("data://example.com/", "text/html");
-  LoadURL("data://example.com/");
-  data_resource.Complete(
-      "<a id='anchor' href='https://google.com/'>google</a>");
+  LoadURL(
+      "data:text/html,<a id='anchor' href='https://google.com/'>google</a>");
   anchor_element = ToHTMLAnchorElement(GetDocument().getElementById("anchor"));
 
   AnchorElementMetrics::MaybeReportClickedMetricsOnClick(anchor_element);
@@ -240,7 +237,8 @@ TEST_F(AnchorElementMetricsTest, AnchorFeatureExtract) {
 TEST_F(AnchorElementMetricsTest, AnchorFeatureInIframe) {
   SimRequest main_resource("https://example.com/page1", "text/html");
   SimRequest iframe_resource("https://example.com/iframe.html", "text/html");
-  SimRequest image_resource("https://example.com/cat.png", "image/png");
+  SimSubresourceRequest image_resource("https://example.com/cat.png",
+                                       "image/png");
 
   LoadURL("https://example.com/page1");
 
@@ -267,7 +265,7 @@ TEST_F(AnchorElementMetricsTest, AnchorFeatureInIframe) {
   Element* iframe = GetDocument().getElementById("iframe");
   HTMLIFrameElement* iframe_element = ToHTMLIFrameElement(iframe);
   Frame* sub = iframe_element->ContentFrame();
-  LocalFrame* subframe = ToLocalFrame(sub);
+  auto* subframe = To<LocalFrame>(sub);
 
   Element* anchor = subframe->GetDocument()->getElementById("anchor");
   HTMLAnchorElement* anchor_element = ToHTMLAnchorElement(anchor);
@@ -313,7 +311,8 @@ TEST_F(AnchorElementMetricsTest, AnchorFeatureInIframe) {
 TEST_F(AnchorElementMetricsTest, AnchorFeatureInIframeNonHttp) {
   SimRequest main_resource("content://example.com/page1", "text/html");
   SimRequest iframe_resource("https://example.com/iframe.html", "text/html");
-  SimRequest image_resource("https://example.com/cat.png", "image/png");
+  SimSubresourceRequest image_resource("https://example.com/cat.png",
+                                       "image/png");
 
   LoadURL("content://example.com/page1");
 
@@ -340,7 +339,7 @@ TEST_F(AnchorElementMetricsTest, AnchorFeatureInIframeNonHttp) {
   Element* iframe = GetDocument().getElementById("iframe");
   HTMLIFrameElement* iframe_element = ToHTMLIFrameElement(iframe);
   Frame* sub = iframe_element->ContentFrame();
-  LocalFrame* subframe = ToLocalFrame(sub);
+  auto* subframe = To<LocalFrame>(sub);
 
   Element* anchor = subframe->GetDocument()->getElementById("anchor");
   HTMLAnchorElement* anchor_element = ToHTMLAnchorElement(anchor);

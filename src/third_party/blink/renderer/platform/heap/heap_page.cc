@@ -47,7 +47,7 @@
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/web_memory_allocator_dump.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/web_process_memory_dump.h"
-#include "third_party/blink/renderer/platform/memory_coordinator.h"
+#include "third_party/blink/renderer/platform/memory_pressure_listener.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/container_annotations.h"
@@ -99,8 +99,8 @@ void HeapObjectHeader::ZapMagic() {
 void HeapObjectHeader::Finalize(Address object, size_t object_size) {
   HeapAllocHooks::FreeHookIfEnabled(object);
   const GCInfo* gc_info = GCInfoTable::Get().GCInfoFromIndex(GcInfoIndex());
-  if (gc_info->HasFinalizer())
-    gc_info->finalize_(object);
+  if (gc_info->non_trivial_finalizer)
+    gc_info->finalize(object);
 
   ASAN_RETIRE_CONTAINER_ANNOTATION(object, object_size);
 }
@@ -136,9 +136,8 @@ void BaseArena::TakeSnapshot(const String& dump_base_name,
   size_t page_count = 0;
   BasePage::HeapSnapshotInfo heap_info;
   for (BasePage* page = first_unswept_page_; page; page = page->Next()) {
-    String dump_name = dump_base_name +
-                       String::Format("/pages/page_%lu",
-                                      static_cast<unsigned long>(page_count++));
+    String dump_name =
+        dump_base_name + String::Format("/pages/page_%zu", page_count++);
     base::trace_event::MemoryAllocatorDump* page_dump =
         BlinkGCMemoryDumpProvider::Instance()
             ->CreateMemoryAllocatorDumpForCurrentGC(dump_name);
@@ -1237,8 +1236,7 @@ bool FreeList::TakeSnapshot(const String& dump_base_name) {
     }
 
     String dump_name =
-        dump_base_name + String::Format("/buckets/bucket_%lu",
-                                        static_cast<unsigned long>(1 << i));
+        dump_base_name + "/buckets/bucket_" + String::Number(1 << i);
     base::trace_event::MemoryAllocatorDump* bucket_dump =
         BlinkGCMemoryDumpProvider::Instance()
             ->CreateMemoryAllocatorDumpForCurrentGC(dump_name);
@@ -1353,7 +1351,7 @@ bool NormalPage::Sweep() {
 #if !DCHECK_IS_ON() && !defined(LEAK_SANITIZER) && !defined(ADDRESS_SANITIZER)
       // Discarding pages increases page faults and may regress performance.
       // So we enable this only on low-RAM devices.
-      if (MemoryCoordinator::IsLowEndDevice())
+      if (MemoryPressureListenerRegistry::IsLowEndDevice())
         DiscardPages(start_of_gap + sizeof(FreeListEntry), header_address);
 #endif
     }
@@ -1369,7 +1367,7 @@ bool NormalPage::Sweep() {
   if (start_of_gap != Payload() && start_of_gap != PayloadEnd()) {
     page_arena->AddToFreeList(start_of_gap, PayloadEnd() - start_of_gap);
 #if !DCHECK_IS_ON() && !defined(LEAK_SANITIZER) && !defined(ADDRESS_SANITIZER)
-    if (MemoryCoordinator::IsLowEndDevice())
+    if (MemoryPressureListenerRegistry::IsLowEndDevice())
       DiscardPages(start_of_gap + sizeof(FreeListEntry), PayloadEnd());
 #endif
   }
@@ -1581,11 +1579,6 @@ void NormalPage::VerifyObjectStartBitmapIsConsistentWithPayload() {
 }
 
 void NormalPage::VerifyMarking() {
-  DCHECK(!ArenaForNormalPage()
-              ->GetThreadState()
-              ->Heap()
-              .GetStackFrameDepth()
-              .IsSafeToRecurse());
   DCHECK(!ArenaForNormalPage()->CurrentAllocationPoint());
   MarkingVerifier verifier(ArenaForNormalPage()->GetThreadState());
   for (Address header_address = Payload(); header_address < PayloadEnd();) {

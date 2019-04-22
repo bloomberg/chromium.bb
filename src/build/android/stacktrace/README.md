@@ -16,3 +16,8 @@ And have it actually show output without logcat terminating.
 
 Extracts Breakpad microdumps from a log file and uses `stackwalker` to symbolize
 them.
+
+
+# crashpad_stackwalker.py
+
+Fetches Crashpad dumps from a given device, walks and symbolizes the stacks.

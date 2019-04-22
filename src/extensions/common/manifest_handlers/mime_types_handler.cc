@@ -7,7 +7,7 @@
 #include <stddef.h>
 
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -52,7 +52,7 @@ MimeTypesHandlerInfo::~MimeTypesHandlerInfo() {
 // static
 std::vector<std::string> MimeTypesHandler::GetMIMETypeWhitelist() {
   std::vector<std::string> whitelist;
-  for (size_t i = 0; i < arraysize(kMIMETypeHandlersWhitelist); ++i)
+  for (size_t i = 0; i < base::size(kMIMETypeHandlersWhitelist); ++i)
     whitelist.push_back(kMIMETypeHandlersWhitelist[i]);
   return whitelist;
 }
@@ -113,22 +113,20 @@ MimeTypesHandlerParser::~MimeTypesHandlerParser() {
 
 bool MimeTypesHandlerParser::Parse(extensions::Extension* extension,
                                    base::string16* error) {
-  const base::ListValue* mime_types_value = NULL;
-  if (!extension->manifest()->GetList(keys::kMIMETypes,
-                                      &mime_types_value)) {
+  const base::Value* mime_types_value = nullptr;
+  if (!extension->manifest()->GetList(keys::kMIMETypes, &mime_types_value)) {
     *error = base::ASCIIToUTF16(errors::kInvalidMimeTypesHandler);
     return false;
   }
 
-  std::unique_ptr<MimeTypesHandlerInfo> info(new MimeTypesHandlerInfo);
+  auto info = std::make_unique<MimeTypesHandlerInfo>();
   info->handler_.set_extension_id(extension->id());
-  for (size_t i = 0; i < mime_types_value->GetSize(); ++i) {
-    std::string filter;
-    if (!mime_types_value->GetString(i, &filter)) {
+  for (const auto& entry : mime_types_value->GetList()) {
+    if (!entry.is_string()) {
       *error = base::ASCIIToUTF16(errors::kInvalidMIMETypes);
       return false;
     }
-    info->handler_.AddMIMEType(filter);
+    info->handler_.AddMIMEType(entry.GetString());
   }
 
   std::string mime_types_handler;

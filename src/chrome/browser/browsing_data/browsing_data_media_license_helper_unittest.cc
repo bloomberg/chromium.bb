@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
@@ -321,7 +320,7 @@ TEST_F(BrowsingDataMediaLicenseHelperTest, FetchData) {
       ADD_FAILURE() << info.origin.spec() << " isn't an origin we added.";
     }
   }
-  for (size_t i = 0; i < arraysize(test_hosts_found); i++) {
+  for (size_t i = 0; i < base::size(test_hosts_found); i++) {
     EXPECT_TRUE(test_hosts_found[i]);
   }
 }

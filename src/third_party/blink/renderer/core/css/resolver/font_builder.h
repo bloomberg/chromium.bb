@@ -103,13 +103,13 @@ class CORE_EXPORT FontBuilder {
   }
   static FontVariantEastAsian InitialVariantEastAsian() {
     return FontVariantEastAsian();
-  };
+  }
   static FontDescription::VariantLigatures InitialVariantLigatures() {
     return FontDescription::VariantLigatures();
   }
   static FontVariantNumeric InitialVariantNumeric() {
     return FontVariantNumeric();
-  };
+  }
   static LayoutLocale* InitialLocale() { return nullptr; }
   static FontDescription::Kerning InitialKerning() {
     return FontDescription::kAutoKerning;

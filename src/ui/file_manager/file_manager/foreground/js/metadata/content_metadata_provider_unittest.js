@@ -3,24 +3,28 @@
 // found in the LICENSE file.
 
 function makeFileEntryFromDataURL(name, dataUrl) {
-  var mimeString = dataUrl.split(',')[0].split(':')[1].split(';')[0];
-  var data = atob(dataUrl.split('base64,')[1]);
-  var dataArray = [];
-  for (var i = 0; i < data.length; ++i) {
+  const mimeString = dataUrl.split(',')[0].split(':')[1].split(';')[0];
+  const data = atob(dataUrl.split('base64,')[1]);
+  const dataArray = [];
+  for (let i = 0; i < data.length; ++i) {
     dataArray.push(data.charCodeAt(i));
   }
 
-  var blob = new Blob([new Uint8Array(dataArray)], {type: mimeString});
+  const blob = new Blob([new Uint8Array(dataArray)], {type: mimeString});
   return {
     name: name,
     isDirectory: false,
     url: dataUrl,
-    file: function(callback) { callback(blob); },
-    toURL: function() { return dataUrl; }
+    file: function(callback) {
+      callback(blob);
+    },
+    toURL: function() {
+      return dataUrl;
+    }
   };
 }
-
-var entryA = makeFileEntryFromDataURL(
+// clang-format off
+const entryA = makeFileEntryFromDataURL(
     'image.jpg',
     'data:image/jpeg;base64,/9j/4QDcRXhpZgAATU0AKgAAAAgABwESAAMAAAABAA' +
     'EAAAEaAAUAAAABAAAAYgEbAAUAAAABAAAAagEoAAMAAAABAAIAAAEyAAIAAAAUAAA' +
@@ -51,48 +55,51 @@ var entryA = makeFileEntryFromDataURL(
     'd+5n14+zU1Ld23GijHnlPvg6u7gNEKgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' +
     'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' +
     'AAAAAAAAAAAAP/Z');
+// clang-format on
 
-var entryB = makeFileEntryFromDataURL(
-    'empty.jpg',
-    'data:image/jpeg;base64,');
+const entryB = makeFileEntryFromDataURL('empty.jpg', 'data:image/jpeg;base64,');
 
 function testExternalMetadataProviderBasic(callback) {
   // Mocking SharedWorker's port.
-  var port = {
+  const port = /** @type {!MessagePort} */ ({
     postMessage: function(message) {
       if (message.verb === 'request') {
-        this.onmessage({
+        port.onmessage(/** @type {!MessageEvent} */ ({
           data: {
             verb: 'result',
             arguments: [
-              message.arguments[0],
-              {
+              message.arguments[0], {
                 thumbnailURL: message.arguments[0] + ',url',
                 thumbnailTransform: message.arguments[0] + ',transform'
               }
             ]
           }
-        });
+        }));
       }
     },
     start: function() {}
-  };
+  });
+
   // TODO(ryoh): chrome.mediaGalleries API is not available in unit tests.
-  var provider = new ContentMetadataProvider(port);
-  reportPromise(provider.get([
-    new MetadataRequest(
-      entryA, ['contentThumbnailUrl', 'contentThumbnailTransform']),
-    new MetadataRequest(
-      entryB, ['contentThumbnailUrl', 'contentThumbnailTransform']),
-  ]).then(function(results) {
-    assertEquals(2, results.length);
-    assertEquals(entryA.url + ',url', results[0].contentThumbnailUrl);
-    assertEquals(
-        entryA.url + ',transform',
-        results[0].contentThumbnailTransform);
-    assertEquals(entryB.url + ',url', results[1].contentThumbnailUrl);
-    assertEquals(
-        entryB.url + ',transform',
-        results[1].contentThumbnailTransform);
-  }), callback);
+  const provider = new ContentMetadataProvider(port);
+  reportPromise(
+      provider
+          .get([
+            new MetadataRequest(
+                entryA, ['contentThumbnailUrl', 'contentThumbnailTransform']),
+            new MetadataRequest(
+                entryB, ['contentThumbnailUrl', 'contentThumbnailTransform']),
+          ])
+          .then(results => {
+            assertEquals(2, results.length);
+            assertEquals(entryA.url + ',url', results[0].contentThumbnailUrl);
+            assertEquals(
+                entryA.url + ',transform',
+                results[0].contentThumbnailTransform);
+            assertEquals(entryB.url + ',url', results[1].contentThumbnailUrl);
+            assertEquals(
+                entryB.url + ',transform',
+                results[1].contentThumbnailTransform);
+          }),
+      callback);
 }

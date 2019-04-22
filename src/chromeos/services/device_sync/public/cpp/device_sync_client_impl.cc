@@ -8,12 +8,13 @@
 
 #include "chromeos/services/device_sync/public/cpp/device_sync_client_impl.h"
 
+#include "base/bind.h"
 #include "base/no_destructor.h"
-#include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/components/multidevice/expiring_remote_device_cache.h"
+#include "chromeos/components/multidevice/logging/logging.h"
+#include "chromeos/components/multidevice/remote_device.h"
 #include "chromeos/services/device_sync/public/mojom/constants.mojom.h"
 #include "chromeos/services/device_sync/public/mojom/device_sync.mojom.h"
-#include "components/cryptauth/expiring_remote_device_cache.h"
-#include "components/cryptauth/remote_device.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace chromeos {
@@ -55,7 +56,7 @@ DeviceSyncClientImpl::DeviceSyncClientImpl(
     scoped_refptr<base::TaskRunner> task_runner)
     : binding_(this),
       expiring_device_cache_(
-          std::make_unique<cryptauth::ExpiringRemoteDeviceCache>()),
+          std::make_unique<multidevice::ExpiringRemoteDeviceCache>()),
       weak_ptr_factory_(this) {
   connector->BindInterface(mojom::kServiceName, &device_sync_ptr_);
   device_sync_ptr_->AddObserver(GenerateInterfacePtr(), base::OnceClosure());
@@ -96,12 +97,12 @@ void DeviceSyncClientImpl::ForceSyncNow(
   device_sync_ptr_->ForceSyncNow(std::move(callback));
 }
 
-cryptauth::RemoteDeviceRefList DeviceSyncClientImpl::GetSyncedDevices() {
+multidevice::RemoteDeviceRefList DeviceSyncClientImpl::GetSyncedDevices() {
   DCHECK(is_ready());
   return expiring_device_cache_->GetNonExpiredRemoteDevices();
 }
 
-base::Optional<cryptauth::RemoteDeviceRef>
+base::Optional<multidevice::RemoteDeviceRef>
 DeviceSyncClientImpl::GetLocalDeviceMetadata() {
   DCHECK(is_ready());
   return local_device_id_
@@ -111,7 +112,7 @@ DeviceSyncClientImpl::GetLocalDeviceMetadata() {
 
 void DeviceSyncClientImpl::SetSoftwareFeatureState(
     const std::string public_key,
-    cryptauth::SoftwareFeature software_feature,
+    multidevice::SoftwareFeature software_feature,
     bool enabled,
     bool is_exclusive,
     mojom::DeviceSync::SetSoftwareFeatureStateCallback callback) {
@@ -120,7 +121,7 @@ void DeviceSyncClientImpl::SetSoftwareFeatureState(
 }
 
 void DeviceSyncClientImpl::FindEligibleDevices(
-    cryptauth::SoftwareFeature software_feature,
+    multidevice::SoftwareFeature software_feature,
     FindEligibleDevicesCallback callback) {
   device_sync_ptr_->FindEligibleDevices(
       software_feature,
@@ -165,7 +166,7 @@ void DeviceSyncClientImpl::LoadLocalDeviceMetadata() {
 }
 
 void DeviceSyncClientImpl::OnGetSyncedDevicesCompleted(
-    const base::Optional<std::vector<cryptauth::RemoteDevice>>&
+    const base::Optional<std::vector<multidevice::RemoteDevice>>&
         remote_devices) {
   if (!remote_devices) {
     PA_LOG(VERBOSE) << "Tried to fetch synced devices before service was fully "
@@ -193,7 +194,7 @@ void DeviceSyncClientImpl::OnGetSyncedDevicesCompleted(
 }
 
 void DeviceSyncClientImpl::OnGetLocalDeviceMetadataCompleted(
-    const base::Optional<cryptauth::RemoteDevice>& local_device_metadata) {
+    const base::Optional<multidevice::RemoteDevice>& local_device_metadata) {
   if (!local_device_metadata) {
     PA_LOG(VERBOSE) << "Tried to get local device metadata before service was "
                        "fully initialized; waiting for enrollment to complete "
@@ -220,8 +221,8 @@ void DeviceSyncClientImpl::OnFindEligibleDevicesCompleted(
     FindEligibleDevicesCallback callback,
     mojom::NetworkRequestResult result_code,
     mojom::FindEligibleDevicesResponsePtr response) {
-  cryptauth::RemoteDeviceRefList eligible_devices;
-  cryptauth::RemoteDeviceRefList ineligible_devices;
+  multidevice::RemoteDeviceRefList eligible_devices;
+  multidevice::RemoteDeviceRefList ineligible_devices;
 
   if (result_code == mojom::NetworkRequestResult::kSuccess) {
     std::transform(

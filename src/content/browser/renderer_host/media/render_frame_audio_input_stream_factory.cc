@@ -30,11 +30,11 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents_media_capture_id.h"
-#include "content/public/common/media_stream_request.h"
 #include "media/audio/audio_device_description.h"
 #include "media/base/audio_parameters.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/audio/public/mojom/audio_processing.mojom.h"
+#include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "url/origin.h"
 
 namespace content {
@@ -61,7 +61,7 @@ void EnumerateOutputDevices(MediaStreamManager* media_stream_manager,
                             MediaDevicesManager::EnumerationCallback cb) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   MediaDevicesManager::BoolDeviceTypes device_types;
-  device_types[MEDIA_DEVICE_TYPE_AUDIO_OUTPUT] = true;
+  device_types[blink::MEDIA_DEVICE_TYPE_AUDIO_OUTPUT] = true;
   media_stream_manager->media_devices_manager()->EnumerateDevices(
       device_types, std::move(cb));
 }
@@ -71,7 +71,8 @@ void TranslateDeviceId(const std::string& device_id,
                        base::RepeatingCallback<void(const std::string&)> cb,
                        const MediaDeviceEnumeration& device_array) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  for (const auto& device_info : device_array[MEDIA_DEVICE_TYPE_AUDIO_OUTPUT]) {
+  for (const auto& device_info :
+       device_array[blink::MEDIA_DEVICE_TYPE_AUDIO_OUTPUT]) {
     if (MediaStreamManager::DoesMediaDeviceIDMatchHMAC(
             salt_and_origin.device_id_salt, salt_and_origin.origin, device_id,
             device_info.device_id)) {
@@ -89,7 +90,7 @@ void GetSaltOriginAndPermissionsOnUIThread(
                             bool has_access)> cb) {
   auto salt_and_origin = GetMediaDeviceSaltAndOrigin(process_id, frame_id);
   bool access = MediaDevicesPermissionChecker().CheckPermissionOnUIThread(
-      MEDIA_DEVICE_TYPE_AUDIO_OUTPUT, process_id, frame_id);
+      blink::MEDIA_DEVICE_TYPE_AUDIO_OUTPUT, process_id, frame_id);
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(std::move(cb), std::move(salt_and_origin), access));
@@ -228,7 +229,7 @@ void RenderFrameAudioInputStreamFactory::Core::CreateStream(
   if (!forwarding_factory_)
     return;
 
-  const MediaStreamDevice* device =
+  const blink::MediaStreamDevice* device =
       media_stream_manager_->audio_input_device_manager()->GetOpenedDeviceById(
           session_id);
 
@@ -256,7 +257,7 @@ void RenderFrameAudioInputStreamFactory::Core::CreateStream(
             weak_ptr_factory_.GetWeakPtr(), std::move(client), audio_params,
             shared_memory_count, capture_id.disable_local_echo));
 
-    if (device->type == MEDIA_GUM_DESKTOP_AUDIO_CAPTURE)
+    if (device->type == blink::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE)
       IncrementDesktopCaptureCounter(SYSTEM_LOOPBACK_AUDIO_CAPTURER_CREATED);
     return;
   } else {
@@ -267,7 +268,7 @@ void RenderFrameAudioInputStreamFactory::Core::CreateStream(
 
     // Only count for captures from desktop media picker dialog and system loop
     // back audio.
-    if (device->type == MEDIA_GUM_DESKTOP_AUDIO_CAPTURE &&
+    if (device->type == blink::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE &&
         (media::AudioDeviceDescription::IsLoopbackDevice(device->id))) {
       IncrementDesktopCaptureCounter(SYSTEM_LOOPBACK_AUDIO_CAPTURER_CREATED);
     }

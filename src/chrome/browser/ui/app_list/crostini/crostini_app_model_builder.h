@@ -4,6 +4,8 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_CROSTINI_CROSTINI_APP_MODEL_BUILDER_H_
 #define CHROME_BROWSER_UI_APP_LIST_CROSTINI_CROSTINI_APP_MODEL_BUILDER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 #include "chrome/browser/ui/app_list/app_list_model_builder.h"
@@ -20,6 +22,10 @@ class CrostiniAppModelBuilder
   ~CrostiniAppModelBuilder() override;
 
  private:
+  // This observer will be used to update the properties of the crostini folder
+  // when ash creates it.
+  class CrostiniFolderObserver;
+
   // AppListModelBuilder:
   void BuildModel() override;
 
@@ -38,16 +44,12 @@ class CrostiniAppModelBuilder
 
   void OnCrostiniEnabledChanged();
 
-  // Creates root folder for Crostini apps in case it was not created or sync
-  // item does not exist. Once it is created sync item is allocated and it will
-  // be reusedto restore root folder on demand automatically.
-  void MaybeCreateRootFolder();
-
-  // Set to true in case root folder was created on demand.
-  bool root_folder_created_ = false;
-
   // Observer Crostini installation so we can start showing The Terminal app.
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
+
+  // Observer that listens for crostini folder creation and sets its properties
+  // accordingly.
+  std::unique_ptr<AppListModelUpdaterObserver> crostini_folder_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(CrostiniAppModelBuilder);
 };

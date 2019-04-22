@@ -100,14 +100,9 @@ TimeDelta TimerBase::GetCurrentDelay() const {
 }
 
 void TimerBase::SetTaskRunner(scoped_refptr<SequencedTaskRunner> task_runner) {
-  // Do not allow changing the task runner when the Timer is running.
-  // Don't check for |origin_sequence_checker_.CalledOnValidSequence()| here to
-  // allow the use case of constructing the Timer and immediatetly invoking
-  // SetTaskRunner() before starting it (CalledOnValidSequence() would undo the
-  // DetachFromSequence() from the constructor). The |!is_running| check kind of
-  // verifies the same thing (and TSAN should catch callers that do it wrong but
-  // somehow evade all debug checks).
-  DCHECK(!is_running_);
+  DCHECK(origin_sequence_checker_.CalledOnValidSequence());
+  DCHECK(task_runner->RunsTasksInCurrentSequence());
+  DCHECK(!IsRunning());
   task_runner_.swap(task_runner);
 }
 

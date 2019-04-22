@@ -14,12 +14,12 @@ namespace multidevice_setup {
 // Inspects and track pairing state of the Messages for Web PWA.
 class AndroidSmsPairingStateTracker {
  public:
-  class Observer {
+  class Observer : public base::CheckedObserver {
    public:
     virtual void OnPairingStateChanged() = 0;
 
    protected:
-    virtual ~Observer() = default;
+    ~Observer() override = default;
   };
 
   AndroidSmsPairingStateTracker();
@@ -35,7 +35,7 @@ class AndroidSmsPairingStateTracker {
   void NotifyPairingStateChanged();
 
  private:
-  base::ObserverList<Observer>::Unchecked observer_list_;
+  base::ObserverList<Observer> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(AndroidSmsPairingStateTracker);
 };

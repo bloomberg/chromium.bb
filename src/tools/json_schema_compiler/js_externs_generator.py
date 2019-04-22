@@ -133,7 +133,7 @@ class _Generator(object):
     elif is_constructor:
       c.Comment('@constructor', comment_prefix = '', wrap_indent=4)
       c.Comment('@private', comment_prefix = '', wrap_indent=4)
-    else:
+    elif js_type.jsexterns is None:
       self._AppendTypedef(c, js_type.properties)
 
     self._js_util.AppendSeeLink(c, self._namespace.name, 'type',
@@ -159,11 +159,13 @@ class _Generator(object):
   def _AppendTypedef(self, c, properties):
     """Given an OrderedDict of properties, Appends code containing a @typedef.
     """
-    if not properties: return
 
     c.Append('@typedef {')
-    self._js_util.AppendObjectDefinition(c, self._namespace.name, properties,
-                                         new_line=False)
+    if properties:
+        self._js_util.AppendObjectDefinition(
+                c, self._namespace.name, properties, new_line=False)
+    else:
+        c.Append('Object', new_line=False)
     c.Append('}', new_line=False)
 
   def _AppendFunction(self, c, function):

@@ -11,11 +11,13 @@
 #include "base/values.h"
 #include "chrome/browser/ui/ash/ksv/keyboard_shortcut_viewer_util.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/services/assistant/public/features.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/chromeos/events/event_rewriter_chromeos.h"
+#include "ui/chromeos/events/keyboard_layout_util.h"
 #include "ui/events/devices/input_device_manager.h"
 
 namespace {
@@ -86,10 +88,13 @@ void KeyboardHandler::OnJavascriptDisallowed() {
   observer_.RemoveAll();
 }
 
-void KeyboardHandler::OnKeyboardDeviceConfigurationChanged() {
-  AllowJavascript();
-  UpdateShowKeys();
-  UpdateKeyboards();
+void KeyboardHandler::OnInputDeviceConfigurationChanged(
+    uint8_t input_device_types) {
+  if (input_device_types & ui::InputDeviceEventObserver::kKeyboard) {
+    AllowJavascript();
+    UpdateShowKeys();
+    UpdateKeyboards();
+  }
 }
 
 void KeyboardHandler::HandleInitialize(const base::ListValue* args) {
@@ -135,13 +140,9 @@ void KeyboardHandler::UpdateShowKeys() {
                              keyboards_state.has_external_non_apple_keyboard ||
                              !base::CommandLine::ForCurrentProcess()->HasSwitch(
                                  chromeos::switches::kHasChromeOSKeyboard);
-  const bool has_diamond_key =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kHasChromeOSDiamondKey);
 
   base::Value keyboard_params(base::Value::Type::DICTIONARY);
   keyboard_params.SetKey("showCapsLock", base::Value(has_caps_lock));
-  keyboard_params.SetKey("showDiamondKey", base::Value(has_diamond_key));
   keyboard_params.SetKey(
       "showExternalMetaKey",
       base::Value(keyboards_state.has_external_non_apple_keyboard));
@@ -149,6 +150,12 @@ void KeyboardHandler::UpdateShowKeys() {
                          base::Value(keyboards_state.has_apple_keyboard));
   keyboard_params.SetKey("hasInternalKeyboard",
                          base::Value(keyboards_state.has_internal_keyboard));
+
+  const bool show_assistant_key_settings =
+      chromeos::assistant::features::IsKeyRemappingEnabled() &&
+      ui::DeviceKeyboardHasAssistantKey();
+  keyboard_params.SetKey("hasAssistantKey",
+                         base::Value(show_assistant_key_settings));
 
   FireWebUIListener(kShowKeysChangedName, keyboard_params);
 }

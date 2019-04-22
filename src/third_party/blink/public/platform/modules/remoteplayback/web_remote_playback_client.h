@@ -7,8 +7,6 @@
 
 namespace blink {
 
-enum class WebRemotePlaybackAvailability;
-enum class WebRemotePlaybackState;
 class WebURL;
 class WebString;
 
@@ -17,15 +15,6 @@ class WebString;
 class WebRemotePlaybackClient {
  public:
   virtual ~WebRemotePlaybackClient() = default;
-
-  // Notifies the client that the media element state has changed.
-  virtual void StateChanged(WebRemotePlaybackState) = 0;
-
-  // Notifies the client of the remote playback device availability change.
-  virtual void AvailabilityChanged(WebRemotePlaybackAvailability) = 0;
-
-  // Notifies the client that the user cancelled the prompt shown via the API.
-  virtual void PromptCancelled() = 0;
 
   // Returns if the remote playback available for this media element.
   virtual bool RemotePlaybackAvailable() const = 0;
@@ -41,4 +30,4 @@ class WebRemotePlaybackClient {
 
 }  // namespace blink
 
-#endif  // WebRemotePlaybackState_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_REMOTEPLAYBACK_WEB_REMOTE_PLAYBACK_CLIENT_H_

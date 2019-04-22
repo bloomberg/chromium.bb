@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/core/dom/attribute_collection.h"
 #include "third_party/blink/renderer/core/dom/space_split_string.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
@@ -80,7 +81,7 @@ class ElementData : public GarbageCollectedFinalized<ElementData> {
   bool IsUnique() const { return is_unique_; }
 
   void TraceAfterDispatch(blink::Visitor*);
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  protected:
   ElementData();
@@ -107,11 +108,6 @@ class ElementData : public GarbageCollectedFinalized<ElementData> {
 
   UniqueElementData* MakeUniqueCopy() const;
 };
-
-#define DEFINE_ELEMENT_DATA_TYPE_CASTS(thisType, pointerPredicate, \
-                                       referencePredicate)         \
-  DEFINE_TYPE_CASTS(thisType, ElementData, data, pointerPredicate, \
-                    referencePredicate)
 
 #if defined(COMPILER_MSVC)
 #pragma warning(push)
@@ -147,9 +143,10 @@ class ShareableElementData final : public ElementData {
   Attribute attribute_array_[0];
 };
 
-DEFINE_ELEMENT_DATA_TYPE_CASTS(ShareableElementData,
-                               !data->IsUnique(),
-                               !data.IsUnique());
+template <>
+struct DowncastTraits<ShareableElementData> {
+  static bool AllowFrom(const ElementData& data) { return !data.IsUnique(); }
+};
 
 #if defined(COMPILER_MSVC)
 #pragma warning(pop)
@@ -163,7 +160,6 @@ DEFINE_ELEMENT_DATA_TYPE_CASTS(ShareableElementData,
 // attribute will have the same inline style.
 class UniqueElementData final : public ElementData {
  public:
-  static UniqueElementData* Create();
   ShareableElementData* MakeShareableCopy() const;
 
   MutableAttributeCollection Attributes();
@@ -183,21 +179,22 @@ class UniqueElementData final : public ElementData {
   AttributeVector attribute_vector_;
 };
 
-DEFINE_ELEMENT_DATA_TYPE_CASTS(UniqueElementData,
-                               data->IsUnique(),
-                               data.IsUnique());
+template <>
+struct DowncastTraits<UniqueElementData> {
+  static bool AllowFrom(const ElementData& data) { return data.IsUnique(); }
+};
 
 inline const CSSPropertyValueSet* ElementData::PresentationAttributeStyle()
     const {
   if (!is_unique_)
     return nullptr;
-  return ToUniqueElementData(this)->presentation_attribute_style_.Get();
+  return To<UniqueElementData>(this)->presentation_attribute_style_.Get();
 }
 
 inline AttributeCollection ElementData::Attributes() const {
-  if (IsUnique())
-    return ToUniqueElementData(this)->Attributes();
-  return ToShareableElementData(this)->Attributes();
+  if (auto* unique_element_data = DynamicTo<UniqueElementData>(this))
+    return unique_element_data->Attributes();
+  return To<ShareableElementData>(this)->Attributes();
 }
 
 inline AttributeCollection ShareableElementData::Attributes() const {

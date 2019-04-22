@@ -147,12 +147,12 @@ TEST_P(BeaconTest, Location) {
 }
 
 // Run the tests for all combinations of beacon type, scope, and install level.
-INSTANTIATE_TEST_CASE_P(BeaconTest,
-                        BeaconTest,
-                        Combine(Values(BeaconType::FIRST, BeaconType::LAST),
-                                Values(BeaconScope::PER_USER,
-                                       BeaconScope::PER_INSTALL),
-                                Bool()));
+INSTANTIATE_TEST_SUITE_P(BeaconTest,
+                         BeaconTest,
+                         Combine(Values(BeaconType::FIRST, BeaconType::LAST),
+                                 Values(BeaconScope::PER_USER,
+                                        BeaconScope::PER_INSTALL),
+                                 Bool()));
 
 class DefaultBrowserBeaconTest
     : public ::testing::TestWithParam<
@@ -224,32 +224,32 @@ TEST_P(DefaultBrowserBeaconTest, All) {
 
 #if defined(GOOGLE_CHROME_BUILD)
 // Stable supports user and system levels.
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     Stable,
     DefaultBrowserBeaconTest,
     testing::Combine(testing::Values(install_static::STABLE_INDEX),
                      testing::Values("user", "system")));
 // Beta supports user and system levels.
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     Beta,
     DefaultBrowserBeaconTest,
     testing::Combine(testing::Values(install_static::BETA_INDEX),
                      testing::Values("user", "system")));
 // Dev supports user and system levels.
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     Dev,
     DefaultBrowserBeaconTest,
     testing::Combine(testing::Values(install_static::DEV_INDEX),
                      testing::Values("user", "system")));
 // Canary is only at user level.
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     Canary,
     DefaultBrowserBeaconTest,
     testing::Combine(testing::Values(install_static::CANARY_INDEX),
                      testing::Values("user")));
 #else   // GOOGLE_CHROME_BUILD
 // Chromium supports user and system levels.
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     Chromium,
     DefaultBrowserBeaconTest,
     testing::Combine(testing::Values(install_static::CHROMIUM_INDEX),

@@ -28,7 +28,10 @@ enum class StatusCode {
   // Failed with HTTP 401.
   AUTH_FAILURE = 1,
   // The operation failed.
-  FAILED = 2
+  FAILED = 2,
+  // Something is terribly wrong and we shohuldn't retry the requests until
+  // next startup.
+  FAILED_NON_RETRIABLE = 3,
 };
 
 // This struct provides the status code of a request and an optional message
@@ -42,6 +45,7 @@ struct Status {
 
   bool IsSuccess() const { return code == StatusCode::SUCCESS; }
   bool IsAuthFailure() const { return code == StatusCode::AUTH_FAILURE; }
+  bool ShouldRetry() const { return code != StatusCode::FAILED_NON_RETRIABLE; }
 
   StatusCode code;
   // The message is not meant to be displayed to the user.

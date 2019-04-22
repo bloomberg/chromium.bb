@@ -86,8 +86,9 @@ public interface LayoutManagerHost {
     /**
      * Sets the visibility of the content overlays.
      * @param show True if the content overlays should be shown.
+     * @param canBeFocusable Whether the host view can make itself focusable e.g. for accessibility.
      */
-    void setContentOverlayVisibility(boolean show);
+    void setContentOverlayVisibility(boolean show, boolean canBeFocusable);
 
     /**
      * @return The {@link TitleCache} to use to store title bitmaps.

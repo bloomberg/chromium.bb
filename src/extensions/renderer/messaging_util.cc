@@ -42,6 +42,7 @@ const char kOnRequestEvent[] = "extension.onRequest";
 const char kOnRequestExternalEvent[] = "extension.onRequestExternal";
 const char kOnConnectEvent[] = "runtime.onConnect";
 const char kOnConnectExternalEvent[] = "runtime.onConnectExternal";
+const char kOnConnectNativeEvent[] = "runtime.onConnectNative";
 
 const int kNoFrameId = -1;
 

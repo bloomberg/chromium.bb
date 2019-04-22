@@ -7,9 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "components/sync/model/entity_data.h"
 #include "components/sync/protocol/sync.pb.h"
@@ -20,11 +22,10 @@ static const int64_t kUncommittedVersion = -1;
 
 struct CommitRequestData {
   CommitRequestData();
-  CommitRequestData(const CommitRequestData& other);
   ~CommitRequestData();
 
   // Fields sent to the sync server.
-  EntityDataPtr entity;
+  std::unique_ptr<EntityData> entity;
   int64_t base_version = 0;
 
   // Fields not sent to the sync server. However, they are kept to be sent back
@@ -36,6 +37,9 @@ struct CommitRequestData {
   int64_t sequence_number = 0;
   std::string specifics_hash;
   base::Time unsynced_time;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CommitRequestData);
 };
 
 struct CommitResponseData {
@@ -57,18 +61,20 @@ struct CommitResponseData {
 
 struct UpdateResponseData {
   UpdateResponseData();
-  UpdateResponseData(const UpdateResponseData& other);
   ~UpdateResponseData();
 
-  EntityDataPtr entity;
+  std::unique_ptr<EntityData> entity;
 
   int64_t response_version = 0;
   std::string encryption_key_name;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(UpdateResponseData);
 };
 
-using CommitRequestDataList = std::vector<CommitRequestData>;
+using CommitRequestDataList = std::vector<std::unique_ptr<CommitRequestData>>;
 using CommitResponseDataList = std::vector<CommitResponseData>;
-using UpdateResponseDataList = std::vector<UpdateResponseData>;
+using UpdateResponseDataList = std::vector<std::unique_ptr<UpdateResponseData>>;
 
 // Returns the estimate of dynamically allocated memory in bytes.
 size_t EstimateMemoryUsage(const CommitRequestData& value);

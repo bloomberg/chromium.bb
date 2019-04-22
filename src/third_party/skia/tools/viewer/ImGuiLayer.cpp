@@ -10,7 +10,9 @@
 #include "SkCanvas.h"
 #include "SkImage.h"
 #include "SkPixmap.h"
+#include "SkSurface.h"
 #include "SkSwizzle.h"
+#include "SkTime.h"
 #include "SkVertices.h"
 
 #include "imgui.h"
@@ -95,7 +97,12 @@ void ImGuiLayer::skiaWidget(const ImVec2& size, SkiaWidgetFunc func) {
 void ImGuiLayer::onPrePaint() {
     // Update ImGui input
     ImGuiIO& io = ImGui::GetIO();
-    io.DeltaTime = 1.0f / 60.0f;
+
+    static double previousTime = 0.0;
+    double currentTime = SkTime::GetSecs();
+    io.DeltaTime = static_cast<float>(currentTime - previousTime);
+    previousTime = currentTime;
+
     io.DisplaySize.x = static_cast<float>(fWindow->width());
     io.DisplaySize.y = static_cast<float>(fWindow->height());
 
@@ -106,7 +113,7 @@ void ImGuiLayer::onPrePaint() {
     ImGui::NewFrame();
 }
 
-void ImGuiLayer::onPaint(SkCanvas* canvas) {
+void ImGuiLayer::onPaint(SkSurface* surface) {
     // This causes ImGui to rebuild vertex/index data based on all immediate-mode commands
     // (widgets, etc...) that have been issued
     ImGui::Render();
@@ -117,13 +124,15 @@ void ImGuiLayer::onPaint(SkCanvas* canvas) {
     SkTDArray<SkPoint> uv;
     SkTDArray<SkColor> color;
 
+    auto canvas = surface->getCanvas();
+
     for (int i = 0; i < drawData->CmdListsCount; ++i) {
         const ImDrawList* drawList = drawData->CmdLists[i];
 
         // De-interleave all vertex data (sigh), convert to Skia types
         pos.rewind(); uv.rewind(); color.rewind();
-        for (int i = 0; i < drawList->VtxBuffer.size(); ++i) {
-            const ImDrawVert& vert = drawList->VtxBuffer[i];
+        for (int j = 0; j < drawList->VtxBuffer.size(); ++j) {
+            const ImDrawVert& vert = drawList->VtxBuffer[j];
             pos.push_back(SkPoint::Make(vert.pos.x, vert.pos.y));
             uv.push_back(SkPoint::Make(vert.uv.x, vert.uv.y));
             color.push_back(vert.col);
@@ -166,8 +175,8 @@ void ImGuiLayer::onPaint(SkCanvas* canvas) {
                                                          drawCmd->ElemCount,
                                                          drawList->IdxBuffer.begin() + indexOffset);
                     canvas->drawVertices(vertices, SkBlendMode::kModulate, *paint);
-                    indexOffset += drawCmd->ElemCount;
                 }
+                indexOffset += drawCmd->ElemCount;
             }
         }
     }

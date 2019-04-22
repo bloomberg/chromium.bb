@@ -55,18 +55,15 @@ ExtensionFunction::ResponseAction PermissionsContainsFunction::Run() {
       api::permissions::Contains::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  // NOTE: The result is not used to make any security decisions. Therefore,
-  // it is entirely fine to set |allow_file_access| to true below. This will
-  // avoid throwing error when extension() doesn't have access to file://.
-  constexpr bool kAllowFileAccess = true;
-
   std::string error;
   std::unique_ptr<UnpackPermissionSetResult> unpack_result =
       permissions_api_helpers::UnpackPermissionSet(
           params->permissions,
           PermissionsParser::GetRequiredPermissions(extension()),
           PermissionsParser::GetOptionalPermissions(extension()),
-          kAllowFileAccess, &error);
+          ExtensionPrefs::Get(browser_context())
+              ->AllowFileAccess(extension()->id()),
+          &error);
 
   if (!unpack_result)
     return RespondNow(Error(error));
@@ -83,6 +80,9 @@ ExtensionFunction::ResponseAction PermissionsContainsFunction::Run() {
       // Unsupported optional permissions can never be granted, so we know if
       // there are any specified, the extension doesn't actively have them.
       unpack_result->unsupported_optional_apis.empty() &&
+      // Restricted file scheme patterns cannot be active on the extension,
+      // since it doesn't have file access in that case.
+      unpack_result->restricted_file_scheme_patterns.is_empty() &&
       // Otherwise, check each expected location for whether it contains the
       // relevant permissions.
       active_permissions.apis().Contains(unpack_result->optional_apis) &&
@@ -99,6 +99,12 @@ ExtensionFunction::ResponseAction PermissionsContainsFunction::Run() {
 }
 
 ExtensionFunction::ResponseAction PermissionsGetAllFunction::Run() {
+  // TODO(devlin): We should filter out file:-scheme patterns if the extension
+  // doesn't have file access here, so that they don't show up when the
+  // extension calls getAll(). This can either be solved by filtering here or
+  // by not adding file:-scheme patterns to |active_permissions| without file
+  // access (the former is easier, the latter is probably better overall but may
+  // require some investigation).
   std::unique_ptr<Permissions> permissions =
       permissions_api_helpers::PackPermissionSet(
           extension()->permissions_data()->active_permissions());
@@ -150,9 +156,14 @@ ExtensionFunction::ResponseAction PermissionsRemoveFunction::Run() {
     return RespondNow(Error(kCantRemoveRequiredPermissionsError));
   }
 
+  // Note: We don't check |restricted_file_scheme_patterns| here. If there are
+  // any, it means that the extension didn't have file access, but it also means
+  // that it doesn't, effectively, currently have that permission granted (i.e.,
+  // it doesn't actually have access to any file:-scheme URL).
+
   PermissionSet permissions(
-      unpack_result->optional_apis, ManifestPermissionSet(),
-      unpack_result->optional_explicit_hosts, URLPatternSet());
+      std::move(unpack_result->optional_apis), ManifestPermissionSet(),
+      std::move(unpack_result->optional_explicit_hosts), URLPatternSet());
 
   // Only try and remove those permissions that are active on the extension.
   // For backwards compatability with behavior before this check was added, just
@@ -231,22 +242,28 @@ ExtensionFunction::ResponseAction PermissionsRequestFunction::Run() {
               (*unpack_result->unsupported_optional_apis.begin())->name()));
   }
 
+  if (!unpack_result->restricted_file_scheme_patterns.is_empty()) {
+    return RespondNow(Error(
+        "Extension must have file access enabled to request '*'.",
+        unpack_result->restricted_file_scheme_patterns.begin()->GetAsString()));
+  }
+
   const PermissionSet& active_permissions =
       extension()->permissions_data()->active_permissions();
 
   // Determine which of the requested permissions are optional permissions that
   // are "new", i.e. aren't already active on the extension.
   requested_optional_ = std::make_unique<const PermissionSet>(
-      unpack_result->optional_apis, ManifestPermissionSet(),
-      unpack_result->optional_explicit_hosts, URLPatternSet());
+      std::move(unpack_result->optional_apis), ManifestPermissionSet(),
+      std::move(unpack_result->optional_explicit_hosts), URLPatternSet());
   requested_optional_ =
       PermissionSet::CreateDifference(*requested_optional_, active_permissions);
 
   // Do the same for withheld permissions.
   requested_withheld_ = std::make_unique<const PermissionSet>(
       APIPermissionSet(), ManifestPermissionSet(),
-      unpack_result->required_explicit_hosts,
-      unpack_result->required_scriptable_hosts);
+      std::move(unpack_result->required_explicit_hosts),
+      std::move(unpack_result->required_scriptable_hosts));
   requested_withheld_ =
       PermissionSet::CreateDifference(*requested_withheld_, active_permissions);
 

@@ -4,6 +4,7 @@
 
 #include "extensions/renderer/test_native_handler.h"
 
+#include "base/bind.h"
 #include "extensions/renderer/wake_event_page.h"
 
 namespace extensions {
@@ -12,9 +13,9 @@ TestNativeHandler::TestNativeHandler(ScriptContext* context)
     : ObjectBackedNativeHandler(context) {}
 
 void TestNativeHandler::AddRoutes() {
-  RouteHandlerFunction(
-      "GetWakeEventPage", "test",
-      base::Bind(&TestNativeHandler::GetWakeEventPage, base::Unretained(this)));
+  RouteHandlerFunction("GetWakeEventPage", "test",
+                       base::BindRepeating(&TestNativeHandler::GetWakeEventPage,
+                                           base::Unretained(this)));
 }
 
 void TestNativeHandler::GetWakeEventPage(

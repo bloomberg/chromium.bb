@@ -44,7 +44,6 @@ enum ChangeType {
   CHANGE_TYPE_CURSOR_CHANGED,
   CHANGE_TYPE_ON_CHANGE_COMPLETED,
   CHANGE_TYPE_ON_TOP_LEVEL_CREATED,
-  CHANGE_TYPE_OPACITY,
   CHANGE_TYPE_REQUEST_CLOSE,
   CHANGE_TYPE_TRANSFORM_CHANGED,
   CHANGE_TYPE_DISPLAY_CHANGED,
@@ -56,7 +55,7 @@ enum ChangeType {
   CHANGE_TYPE_DRAG_DROP_DONE,
   CHANGE_TYPE_TOPMOST_WINDOW_CHANGED,
   CHANGE_TYPE_ON_PERFORM_DRAG_DROP_COMPLETED,
-  CHANGE_TYPE_ON_OCCLUSION_STATE_CHANGED,
+  CHANGE_TYPE_ON_OCCLUSION_STATES_CHANGED,
 };
 
 // TODO(sky): consider nuking and converting directly to WindowData.
@@ -91,15 +90,14 @@ struct Change {
   Id window_id2 = 0;
   Id window_id3 = 0;
   gfx::Rect bounds;
-  gfx::Rect bounds2;
+  ui::WindowShowState state;
   viz::FrameSinkId frame_sink_id;
-  base::Optional<viz::LocalSurfaceId> local_surface_id;
+  base::Optional<viz::LocalSurfaceIdAllocation> local_surface_id_allocation;
   int32_t event_action = 0;
   bool matches_event_observer = false;
   std::string embed_url;
   mojom::OrderDirection direction;
   bool bool_value = false;
-  float float_value = 0.f;
   std::string property_key;
   std::string property_value;
   ui::CursorType cursor_type = ui::CursorType::kNull;
@@ -111,7 +109,7 @@ struct Change {
   gfx::Point location1;
   base::flat_map<std::string, std::vector<uint8_t>> drag_data;
   uint32_t drag_drop_action = 0u;
-  base::Optional<mojom::OcclusionState> occlusion_state;
+  base::flat_map<Id, mojom::OcclusionState> occlusion_changes;
 };
 
 // The ChangeToDescription related functions convert a Change into a string.
@@ -151,6 +149,10 @@ void WindowDatasToTestWindows(const std::vector<mojom::WindowDataPtr>& data,
 bool ContainsChange(const std::vector<Change>& changes,
                     const std::string& change_description);
 
+std::vector<Change>::const_iterator FirstChangeOfType(
+    const std::vector<Change>& changes,
+    ChangeType type);
+
 // TestChangeTracker is used to record WindowTreeClient functions. It notifies
 // a delegate any time a change is added.
 class TestChangeTracker {
@@ -188,9 +190,10 @@ class TestChangeTracker {
   void OnTransientWindowRemoved(Id window_id, Id transient_window_id);
   void OnWindowBoundsChanged(
       Id window_id,
-      const gfx::Rect& old_bounds,
       const gfx::Rect& new_bounds,
-      const base::Optional<viz::LocalSurfaceId>& local_surface_id);
+      ui::WindowShowState state,
+      const base::Optional<viz::LocalSurfaceIdAllocation>&
+          local_surface_id_allocation);
   void OnWindowTransformChanged(Id window_id);
   void OnWindowHierarchyChanged(Id window_id,
                                 Id old_parent_id,
@@ -201,7 +204,6 @@ class TestChangeTracker {
                          mojom::OrderDirection direction);
   void OnWindowDeleted(Id window_id);
   void OnWindowVisibilityChanged(Id window_id, bool visible);
-  void OnWindowOpacityChanged(Id window_id, float opacity);
   void OnWindowDisplayChanged(Id window_id, int64_t display_id);
   void OnWindowParentDrawnStateChanged(Id window_id, bool drawn);
   void OnWindowInputEvent(Id window_id,
@@ -215,11 +217,14 @@ class TestChangeTracker {
       const std::string& name,
       const base::Optional<std::vector<uint8_t>>& data);
   void OnWindowFocused(Id window_id);
-  void OnWindowCursorChanged(Id window_id, const ui::CursorData& cursor);
+  void OnWindowCursorChanged(Id window_id, const ui::Cursor& cursor);
   void OnChangeCompleted(uint32_t change_id, bool success);
-  void OnTopLevelCreated(uint32_t change_id,
-                         mojom::WindowDataPtr window_data,
-                         bool drawn);
+  void OnTopLevelCreated(
+      uint32_t change_id,
+      mojom::WindowDataPtr window_data,
+      int64_t display_id,
+      bool drawn,
+      const viz::LocalSurfaceIdAllocation& local_surface_id_allocation);
   void OnDragDropStart(
       const base::flat_map<std::string, std::vector<uint8_t>>& drag_data);
   void OnDragEnter(Id window_id);
@@ -232,8 +237,8 @@ class TestChangeTracker {
                                   bool success,
                                   uint32_t action_taken);
   void RequestClose(Id window_id);
-  void OnOcclusionStateChanged(Id window_id,
-                               mojom::OcclusionState occlusion_state);
+  void OnOcclusionStatesChanged(
+      const base::flat_map<Id, mojom::OcclusionState>& occlusion_changes);
 
  private:
   void AddChange(const Change& change);

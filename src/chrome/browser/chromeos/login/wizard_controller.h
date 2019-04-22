@@ -20,23 +20,23 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_controller.h"
+#include "chrome/browser/chromeos/login/enrollment/enrollment_screen.h"
 #include "chrome/browser/chromeos/login/screen_manager.h"
+#include "chrome/browser/chromeos/login/screens/arc_terms_of_service_screen.h"
 #include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
-#include "chrome/browser/chromeos/login/screens/controller_pairing_screen.h"
+#include "chrome/browser/chromeos/login/screens/demo_preferences_screen.h"
+#include "chrome/browser/chromeos/login/screens/demo_setup_screen.h"
+#include "chrome/browser/chromeos/login/screens/enable_debugging_screen.h"
 #include "chrome/browser/chromeos/login/screens/eula_screen.h"
-#include "chrome/browser/chromeos/login/screens/hid_detection_screen.h"
-#include "chrome/browser/chromeos/login/screens/host_pairing_screen.h"
-#include "chrome/browser/chromeos/login/screens/reset_screen.h"
-#include "chrome/browser/chromeos/login/screens/welcome_screen.h"
+#include "chrome/browser/chromeos/login/screens/kiosk_autolaunch_screen.h"
+#include "chrome/browser/chromeos/login/screens/network_screen.h"
+#include "chrome/browser/chromeos/login/screens/recommend_apps_screen.h"
+#include "chrome/browser/chromeos/login/screens/terms_of_service_screen.h"
+#include "chrome/browser/chromeos/login/screens/update_screen.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
 
 class PrefService;
-
-namespace pairing_chromeos {
-class ControllerPairingController;
-class HostPairingController;
-class SharkConnectionListener;
-}  // namespace pairing_chromeos
 
 namespace chromeos {
 
@@ -55,12 +55,7 @@ struct TimeZoneResponseData;
 
 // Class that manages control flow between wizard screens. Wizard controller
 // interacts with screen controllers to move the user between screens.
-class WizardController : public BaseScreenDelegate,
-                         public EulaScreen::Delegate,
-                         public ControllerPairingScreen::Delegate,
-                         public HostPairingScreen::Delegate,
-                         public WelcomeScreen::Delegate,
-                         public HIDDetectionScreen::Delegate {
+class WizardController : public BaseScreenDelegate {
  public:
   WizardController();
   ~WizardController() override;
@@ -91,6 +86,9 @@ class WizardController : public BaseScreenDelegate,
 
   // Skips any enrollment prompts that may be normally shown.
   static void SkipEnrollmentPromptsForTesting();
+
+  // Forces screens that should only appear in chrome branded builds to show.
+  static std::unique_ptr<base::AutoReset<bool>> ForceOfficialBuildForTesting();
 
   // Returns true if OOBE is operating under the
   // Zero-Touch Hands-Off Enrollment Flow.
@@ -123,16 +121,8 @@ class WizardController : public BaseScreenDelegate,
   void SkipToLoginForTesting(const LoginScreenContext& context);
   void SkipToUpdateForTesting();
 
-  // Should be used for testing only.
-  pairing_chromeos::SharkConnectionListener*
-  GetSharkConnectionListenerForTesting();
-
   // Skip update, go straight to enrollment after EULA is accepted.
   void SkipUpdateEnrollAfterEula();
-
-  // TODO(antrim) : temporary hack. Should be removed once screen system is
-  // reworked at hackaton.
-  void EnableUserImageScreenReturnToPreviousHack();
 
   // Returns current DemoSetupController if demo setup flow is in progress or
   // nullptr otherwise.
@@ -156,10 +146,6 @@ class WizardController : public BaseScreenDelegate,
   // Volume percent at which spoken feedback is still audible.
   static const int kMinAudibleOutputVolumePercent;
 
-  // Allocate a given BaseScreen for the given |Screen|. Used by
-  // |screen_manager_|.
-  std::unique_ptr<BaseScreen> CreateScreen(OobeScreen screen);
-
   // Set the current screen. For Test use only.
   void SetCurrentScreenForTesting(BaseScreen* screen);
 
@@ -167,10 +153,12 @@ class WizardController : public BaseScreenDelegate,
       scoped_refptr<network::SharedURLLoaderFactory> factory);
 
  private:
+  // Create BaseScreen instances. These are owned by |screen_manager_|.
+  std::vector<std::unique_ptr<BaseScreen>> CreateScreens();
+
   // Show specific screen.
   void ShowWelcomeScreen();
   void ShowNetworkScreen();
-  void ShowUserImageScreen();
   void ShowEulaScreen();
   void ShowEnrollmentScreen();
   void ShowDemoModeSetupScreen();
@@ -189,12 +177,9 @@ class WizardController : public BaseScreenDelegate,
   void ShowAutoEnrollmentCheckScreen();
   void ShowArcKioskSplashScreen();
   void ShowHIDDetectionScreen();
-  void ShowControllerPairingScreen();
-  void ShowHostPairingScreen();
   void ShowDeviceDisabledScreen();
   void ShowEncryptionMigrationScreen();
-  void ShowVoiceInteractionValuePropScreen();
-  void ShowWaitForContainerReadyScreen();
+  void ShowSupervisionTransitionScreen();
   void ShowUpdateRequiredScreen();
   void ShowAssistantOptInFlowScreen();
   void ShowMultiDeviceSetupScreen();
@@ -204,53 +189,46 @@ class WizardController : public BaseScreenDelegate,
   // Shows images login screen.
   void ShowLoginScreen(const LoginScreenContext& context);
 
-  // Shows previous screen. Should only be called if previous screen exists.
-  void ShowPreviousScreen();
+  // Shared actions to be performed on a screen exit.
+  // |exit_code| is the screen specific exit code reported by the screen.
+  void OnScreenExit(OobeScreen screen, int exit_code);
 
   // Exit handlers:
-  void OnHIDDetectionCompleted();
-  void OnWelcomeContinued();
-  void OnNetworkBack();
-  void OnNetworkConnected();
-  void OnOfflineDemoModeSetup();
-  void OnConnectionFailed();
+  void OnWrongHWIDScreenExit();
+  void OnHidDetectionScreenExit();
+  void OnWelcomeScreenExit();
+  void OnNetworkScreenExit(NetworkScreen::Result result);
+  bool ShowEulaOrArcTosAfterNetworkScreen();
+  void OnEulaScreenExit(EulaScreen::Result result);
+  void OnEulaAccepted(bool usage_statistics_reporting_enabled);
+  void OnUpdateScreenExit(UpdateScreen::Result result);
   void OnUpdateCompleted();
-  void OnUpdateOverCellularRejected();
-  void OnEulaAccepted();
-  void OnEulaBack();
-  void OnUpdateErrorCheckingForUpdate();
-  void OnUpdateErrorUpdating(bool is_critical_update);
-  void OnUserImageSelected();
+  void OnAutoEnrollmentCheckScreenExit();
+  void OnEnrollmentScreenExit(EnrollmentScreen::Result result);
   void OnEnrollmentDone();
-  void OnDeviceModificationCanceled();
-  void OnKioskAutolaunchCanceled();
-  void OnKioskAutolaunchConfirmed();
-  void OnKioskEnableCompleted();
-  void OnWrongHWIDWarningSkipped();
-  void OnTermsOfServiceDeclined();
+  void OnEnableDebuggingScreenExit();
+  void OnKioskEnableScreenExit();
+  void OnKioskAutolaunchScreenExit(KioskAutolaunchScreen::Result result);
+  void OnDemoPreferencesScreenExit(DemoPreferencesScreen::Result result);
+  void OnDemoSetupScreenExit(DemoSetupScreen::Result result);
+  void OnTermsOfServiceScreenExit(TermsOfServiceScreen::Result result);
   void OnTermsOfServiceAccepted();
+  void OnSyncConsentScreenExit();
   void OnSyncConsentFinished();
-  void OnDiscoverScreenFinished();
-  void OnFingerprintSetupFinished();
+  void OnFingerprintSetupScreenExit();
+  void OnDiscoverScreenExit();
+  void OnMarketingOptInScreenExit();
+  void OnArcTermsOfServiceScreenExit(ArcTermsOfServiceScreen::Result result);
   void OnArcTermsOfServiceSkipped();
   void OnArcTermsOfServiceAccepted();
-  void OnArcTermsOfServiceBack();
-  void OnRecommendAppsSkipped();
-  void OnRecommendAppsSelected();
-  void OnAppDownloadingFinished();
-  void OnVoiceInteractionValuePropSkipped();
-  void OnVoiceInteractionValuePropAccepted();
-  void OnControllerPairingFinished();
-  void OnAutoEnrollmentCheckCompleted();
-  void OnDemoSetupFinished();
-  void OnDemoSetupCanceled();
-  void OnDemoPreferencesContinued();
-  void OnDemoPreferencesCanceled();
-  void OnWaitForContainerReadyFinished();
-  void OnAssistantOptInFlowFinished();
-  void OnMultiDeviceSetupFinished();
+  void OnRecommendAppsScreenExit(RecommendAppsScreen::Result result);
+  void OnAppDownloadingScreenExit();
+  void OnAssistantOptInFlowScreenExit();
+  void OnMultiDeviceSetupScreenExit();
+  void OnResetScreenExit();
+  void OnDeviceModificationCanceled();
+  void OnSupervisionTransitionScreenExit();
   void OnOobeFlowFinished();
-  void OnMarketingOptInFinished();
 
   // Callback invoked once it has been determined whether the device is disabled
   // or not.
@@ -274,38 +252,18 @@ class WizardController : public BaseScreenDelegate,
   void PerformOOBECompletedActions();
 
   // Overridden from BaseScreenDelegate:
-  void OnExit(ScreenExitCode exit_code) override;
   void ShowCurrentScreen() override;
-  ErrorScreen* GetErrorScreen() override;
-  void ShowErrorScreen() override;
-  void HideErrorScreen(BaseScreen* parent_screen) override;
+  ErrorScreen* GetErrorScreen();
+  void ShowErrorScreen();
 
-  // Overridden from EulaScreen::Delegate:
-  void SetUsageStatisticsReporting(bool val) override;
-  bool GetUsageStatisticsReporting() const override;
-
-  // Override from ControllerPairingScreen::Delegate:
-  void SetHostNetwork() override;
-  void SetHostConfiguration() override;
-
-  // Override from HostPairingScreen::Delegate:
-  void ConfigureHostRequested(bool accepted_eula,
-                              const std::string& lang,
-                              const std::string& timezone,
-                              bool send_reports,
-                              const std::string& keyboard_layout) override;
-  void AddNetworkRequested(const std::string& onc_spec) override;
-  void RebootHostRequested() override;
-
-  // Override from WelcomeScreen::Delegate:
-  void OnEnableDebuggingScreenRequested() override;
-
-  // Override from HIDDetectionScreen::Delegate
-  void OnHIDScreenNecessityCheck(bool screen_needed) override;
+  void OnHIDScreenNecessityCheck(bool screen_needed);
 
   // Notification of a change in the state of an accessibility setting.
   void OnAccessibilityStatusChanged(
       const AccessibilityStatusEventDetails& details);
+
+  // Notification of Guest Mode policy changes.
+  void OnGuestModePolicyUpdated();
 
   // Switches from one screen to another.
   void SetCurrentScreen(BaseScreen* screen);
@@ -351,31 +309,8 @@ class WizardController : public BaseScreenDelegate,
   // Returns false if timezone has already been resolved.
   bool SetOnTimeZoneResolvedForTesting(const base::Closure& callback);
 
-  // Returns true if kHostPairingOobe perf has been set. If it's set, launch the
-  // pairing remora OOBE from the beginning no matter an eligible controller is
-  // detected or not.
-  bool IsRemoraPairingOobe() const;
-
-  // Returns true if voice interaction value prop should be shown.
-  bool ShouldShowVoiceInteractionValueProp() const;
-
   // Start voice interaction setup wizard in container
   void StartVoiceInteractionSetupWizard();
-
-  // Starts listening for an incoming shark controller connection, if we are
-  // running remora OOBE.
-  void MaybeStartListeningForSharkConnection();
-
-  // Called when a connection to controller has been established. Wizard
-  // controller takes the ownership of |pairing_controller| after that call.
-  void OnSharkConnected(std::unique_ptr<pairing_chromeos::HostPairingController>
-                            pairing_controller);
-
-  // Callback functions for AddNetworkRequested().
-  void OnSetHostNetworkSuccessful();
-  void OnSetHostNetworkFailed(
-      const std::string& error_name,
-      std::unique_ptr<base::DictionaryValue> error_data);
 
   // Start the enrollment screen using the config from
   // |prescribed_enrollment_config_|. If |force_interactive| is true,
@@ -408,11 +343,7 @@ class WizardController : public BaseScreenDelegate,
   BaseScreen* previous_screen_ = nullptr;
 
 // True if running official BUILD.
-#if defined(GOOGLE_CHROME_BUILD)
-  bool is_official_build_ = true;
-#else
-  bool is_official_build_ = false;
-#endif
+  static bool is_official_build_;
 
   // True if full OOBE flow should be shown.
   bool is_out_of_box_ = false;
@@ -421,10 +352,6 @@ class WizardController : public BaseScreenDelegate,
   OobeScreen first_screen_;
 
   base::OneShotTimer smooth_show_timer_;
-
-  // State of Usage stat/error reporting checkbox on EULA screen
-  // during wizard lifetime.
-  bool usage_statistics_reporting_ = true;
 
   // If true then update check is cancelled and enrollment is started after
   // EULA is accepted.
@@ -460,27 +387,19 @@ class WizardController : public BaseScreenDelegate,
   FRIEND_TEST_ALL_PREFIXES(WizardControllerDeviceStateTest,
                            ControlFlowNoForcedReEnrollmentOnFirstBoot);
 
-  friend class DemoSetupTest;
-  friend class EnterpriseEnrollmentConfigurationTest;
-  friend class HandsOffEnrollmentTest;
   friend class WizardControllerBrokenLocalStateTest;
-  friend class WizardControllerDemoSetupTest;
   friend class WizardControllerDeviceStateTest;
   friend class WizardControllerFlowTest;
   friend class WizardControllerOobeConfigurationTest;
   friend class WizardControllerOobeResumeTest;
+  friend class WizardControllerSupervisionTransitionOobeTest;
 
   std::unique_ptr<AccessibilityStatusSubscription> accessibility_subscription_;
+  std::unique_ptr<CrosSettings::ObserverSubscription>
+      guest_mode_policy_subscription_;
 
   std::unique_ptr<SimpleGeolocationProvider> geolocation_provider_;
   std::unique_ptr<TimeZoneProvider> timezone_provider_;
-
-  // Pairing controller for shark devices.
-  std::unique_ptr<pairing_chromeos::ControllerPairingController>
-      shark_controller_;
-
-  // Pairing controller for remora devices.
-  std::unique_ptr<pairing_chromeos::HostPairingController> remora_controller_;
 
   // Helper for network realted operations.
   std::unique_ptr<login::NetworkStateHelper> network_state_helper_;
@@ -490,17 +409,11 @@ class WizardController : public BaseScreenDelegate,
   std::unique_ptr<DemoSetupController> demo_setup_controller_;
 
   // Maps screen names to last time of their shows.
-  std::map<std::string, base::Time> screen_show_times_;
+  std::map<OobeScreen, base::Time> screen_show_times_;
 
   // Tests check result of timezone resolve.
   bool timezone_resolved_ = false;
   base::Closure on_timezone_resolved_for_testing_;
-
-  // Listens for incoming connection from a shark controller if a regular (not
-  // pairing) remora OOBE is active. If connection is established, wizard
-  // conroller swithces to a pairing OOBE.
-  std::unique_ptr<pairing_chromeos::SharkConnectionListener>
-      shark_connection_listener_;
 
   // Configuration (dictionary) for automating OOBE screens.
   base::Value oobe_configuration_;

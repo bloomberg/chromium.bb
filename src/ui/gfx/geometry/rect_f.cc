@@ -32,7 +32,7 @@ static void AdjustAlongAxis(float dst_origin,
     *origin = std::min(dst_origin + dst_size, *origin + *size) - *size;
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(OS_IOS)
 RectF::RectF(const CGRect& r)
     : origin_(r.origin.x, r.origin.y), size_(r.size.width, r.size.height) {
 }

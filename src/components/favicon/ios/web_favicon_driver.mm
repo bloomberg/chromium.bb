@@ -10,7 +10,6 @@
 #include "components/favicon/ios/favicon_url_util.h"
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/favicon_status.h"
-#include "ios/web/public/load_committed_details.h"
 #include "ios/web/public/navigation_item.h"
 #include "ios/web/public/navigation_manager.h"
 #include "ios/web/public/web_state/navigation_context.h"
@@ -23,8 +22,6 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-DEFINE_WEB_STATE_USER_DATA_KEY(favicon::WebFaviconDriver);
 
 // Callback for the download of favicon.
 using ImageDownloadCallback =
@@ -184,5 +181,7 @@ void WebFaviconDriver::WebStateDestroyed(web::WebState* web_state) {
   web_state_->RemoveObserver(this);
   web_state_ = nullptr;
 }
+
+WEB_STATE_USER_DATA_KEY_IMPL(WebFaviconDriver)
 
 }  // namespace favicon

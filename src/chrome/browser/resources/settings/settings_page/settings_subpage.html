@@ -1,24 +1,31 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_search_field/cr_search_field.html">
+<link rel="import" href="chrome://resources/html/find_shortcut_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-resizable-behavior/iron-resizable-behavior.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable-behavior.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-ripple/paper-ripple.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner-lite.html">
-<link rel="import" href="../find_shortcut_behavior.html">
 <link rel="import" href="../icons.html">
 <link rel="import" href="../route.html">
-<link rel="import" href="settings_subpage_search.html">
 <link rel="import" href="../settings_shared_css.html">
 
 <dom-module id="settings-subpage">
   <template>
     <style include="settings-shared">
       :host {
+        background-color: var(--cr-card-background-color);
+        bottom: 0;
         display: block;
+        left: 0;
+        min-height: fit-content;
         padding-bottom: 60px;
+        position: absolute;
+        right: 0;
+        top: 0;
+        @apply --cr-card-elevation;
       }
 
       #headerLine {
@@ -37,7 +44,7 @@
         width: var(--cr-icon-ripple-size);
       }
 
-      paper-icon-button-light {
+      cr-icon-button {
         /* Centers the ripple on the icon with appropriate margin on right. */
         margin-inline-end: 10px;
         margin-inline-start: -10px;
@@ -48,21 +55,18 @@
       }
 
       h1 {
-        color: var(--google-grey-refresh-700);
         flex: 1;  /* Push other items to the end. */
         @apply --cr-title-text;
       }
 
-      settings-subpage-search {
+      cr-search-field {
         /* Keep normal icon spacing from subpage-title-extra controls. */
         margin-inline-start: 16px;
       }
     </style>
     <div class="settings-box first" id="headerLine">
-      <paper-icon-button-light class="icon-arrow-back">
-        <button id="closeButton" on-click="onTapBack_"
-            aria-label="$i18n{back}"></button>
-      </paper-icon-button-light>
+      <cr-icon-button class="icon-arrow-back" id="closeButton"
+          on-click="onTapBack_" aria-label="$i18n{back}"></cr-icon-button>
       <h1>[[pageTitle]]</h1>
       <slot name="subpage-title-extra"></slot>
       <template is="dom-if" if="[[learnMoreUrl]]">
@@ -73,9 +77,9 @@
         </a>
       </template>
       <template is="dom-if" if="[[searchLabel]]">
-        <settings-subpage-search label="[[searchLabel]]"
+        <cr-search-field label="[[searchLabel]]"
             on-search-changed="onSearchChanged_">
-        </settings-subpage-search>
+        </cr-search-field>
       </template>
       <template is="dom-if" if="[[showSpinner]]">
         <paper-spinner-lite active></paper-spinner-lite>

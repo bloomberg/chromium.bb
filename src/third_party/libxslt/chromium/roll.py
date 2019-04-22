@@ -27,13 +27,10 @@ import tempfile
 # Prerequisites:
 #
 # 1. Check out Chromium somewhere on Linux, Mac and Windows.
-# 2. On each machine, add the experimental remote named 'wip':
-#    git remote add -f wip \
-#        https://chromium.googlesource.com/experimental/chromium/src
-# 3. On Linux:
+# 2. On Linux:
 #    a. sudo apt-get install libicu-dev
-#    b. git clone git://git.gnome.org/libxslt somewhere
-# 4. On Mac, install these MacPorts:
+#    b. git clone https://gitlab.gnome.org/GNOME/libxslt.git somewhere
+# 3. On Mac, install these MacPorts:
 #    autoconf automake libtool pkgconfig icu
 #
 # Procedure:
@@ -53,21 +50,18 @@ import tempfile
 #    head; modify the patch files, this script, and
 #    README.chromium; then commit the result and run it again.
 #
-#    b. git push -f wip HEAD:refs/wip/$USER/roll_libxslt
+#    b. Upload a Cl but do not start review
 #
 # 2. On Windows, in the Chromium src directory:
-#    a. git fetch wip refs/wip/$USER/roll_libxslt
-#    b. git checkout FETCH_HEAD
-#    c. third_party\libxslt\chromium\roll.py --win32
-#    d. git push -f wip HEAD:refs/wip/$USER/roll_libxslt
+#    a. git cl patch <Gerrit Issue ID>
+#    b. third_party\libxslt\chromium\roll.py --win32
+#    c. git cl upload
 #
 # 3. On Mac, in the Chromium src directory:
-#    a. git fetch wip refs/wip/$USER/roll_libxslt
-#    b. git checkout -b roll_libxslt_nnnn FETCH_HEAD
-#    c. git branch --set-upstream-to origin/master
-#    d. third_party/libxslt/chromium/roll.py --mac
-#    e. Make and commit any final changes to README.chromium, BUILD.gn, etc.
-#    f. Complete the code review process as usual: git cl upload -d;
+#    a. git cl patch <Gerrit Issue ID>
+#    b. third_party/libxslt/chromium/roll.py --mac
+#    c. Make and commit any final changes to README.chromium, BUILD.gn, etc.
+#    d. Complete the code review process as usual: git cl upload -d;
 #       git cl try-results; etc.
 
 PATCHES = [
@@ -88,6 +82,7 @@ SHARED_XSLT_CONFIGURE_OPTIONS = [
     ('--without-debugger', 'debugger=no'),
     ('--without-mem-debug', 'mem_debug=no'),
     ('--without-plugins', 'modules=no'),
+    ('--without-crypto', 'crypto=no'),
 ]
 
 # These options are only available in configure.ac for Linux and Mac.

@@ -20,8 +20,7 @@ namespace gin {
 class GIN_EXPORT V8Initializer {
  public:
   // This should be called by IsolateHolder::Initialize().
-  static void Initialize(IsolateHolder::ScriptMode mode,
-                         IsolateHolder::V8ExtrasMode v8_extras_mode);
+  static void Initialize(IsolateHolder::ScriptMode mode);
 
   // Get address and size information for currently loaded snapshot.
   // If no snapshot is loaded, the return values are null for addresses

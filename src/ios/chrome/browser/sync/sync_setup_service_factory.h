@@ -8,12 +8,8 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
-
-namespace base {
-template <typename T>
-struct DefaultSingletonTraits;
-}  // namespace base
 
 class SyncSetupService;
 
@@ -33,7 +29,7 @@ class SyncSetupServiceFactory : public BrowserStateKeyedServiceFactory {
   static SyncSetupServiceFactory* GetInstance();
 
  private:
-  friend struct base::DefaultSingletonTraits<SyncSetupServiceFactory>;
+  friend class base::NoDestructor<SyncSetupServiceFactory>;
 
   SyncSetupServiceFactory();
   ~SyncSetupServiceFactory() override;

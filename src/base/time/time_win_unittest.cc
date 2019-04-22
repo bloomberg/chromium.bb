@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <windows.h>
+
 #include <mmsystem.h>
 #include <process.h>
 #include <stdint.h>
@@ -11,6 +12,7 @@
 #include <limits>
 #include <vector>
 
+#include "base/strings/string_piece.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "base/win/registry.h"
@@ -35,9 +37,7 @@ class MockTimeTicks : public TimeTicks {
     ticker_ = -5;
   }
 
-  static void UninstallTicker() {
-    SetMockTickFunction(old_tick_function_);
-  }
+  static void UninstallTicker() { SetMockTickFunction(old_tick_function_); }
 
  private:
   static volatile LONG ticker_;
@@ -65,6 +65,25 @@ unsigned __stdcall RolloverTestThreadMain(void* param) {
     last = now;
   }
   return 0;
+}
+
+#if defined(_M_ARM64) && defined(__clang__)
+#define ReadCycleCounter() _ReadStatusReg(ARM64_PMCCNTR_EL0)
+#else
+#define ReadCycleCounter() __rdtsc()
+#endif
+
+// Measure the performance of the CPU cycle counter so that we can compare it to
+// the overhead of QueryPerformanceCounter. A hard-coded frequency is used
+// because we don't care about the accuracy of the results, we just need to do
+// the work. The amount of work is not exactly the same as in TimeTicks::Now
+// (some steps are skipped) but that doesn't seem to materially affect the
+// results.
+TimeTicks GetTSC() {
+  // Using a fake cycle counter frequency for test purposes.
+  return TimeTicks() +
+         TimeDelta::FromMicroseconds(ReadCycleCounter() *
+                                     Time::kMicrosecondsPerSecond / 10000000);
 }
 
 }  // namespace
@@ -101,9 +120,8 @@ TEST(TimeTicks, MAYBE_WinRollover) {
     for (int index = 0; index < kThreads; index++) {
       void* argument = reinterpret_cast<void*>(kChecks);
       unsigned thread_id;
-      threads[index] = reinterpret_cast<HANDLE>(
-        _beginthreadex(NULL, 0, RolloverTestThreadMain, argument, 0,
-          &thread_id));
+      threads[index] = reinterpret_cast<HANDLE>(_beginthreadex(
+          NULL, 0, RolloverTestThreadMain, argument, 0, &thread_id));
       EXPECT_NE((HANDLE)NULL, threads[index]);
     }
 
@@ -162,8 +180,7 @@ TEST(TimeTicks, TimeGetTimeCaps) {
   EXPECT_GT(static_cast<int>(caps.wPeriodMax), 1);
   EXPECT_GE(static_cast<int>(caps.wPeriodMin), 1);
   EXPECT_GT(static_cast<int>(caps.wPeriodMax), 1);
-  printf("timeGetTime range is %d to %dms\n", caps.wPeriodMin,
-    caps.wPeriodMax);
+  printf("timeGetTime range is %d to %dms\n", caps.wPeriodMin, caps.wPeriodMax);
 }
 
 TEST(TimeTicks, QueryPerformanceFrequency) {
@@ -174,18 +191,18 @@ TEST(TimeTicks, QueryPerformanceFrequency) {
   EXPECT_EQ(TRUE, rv);
   EXPECT_GT(frequency.QuadPart, 1000000);  // Expect at least 1MHz
   printf("QueryPerformanceFrequency is %5.2fMHz\n",
-    frequency.QuadPart / 1000000.0);
+         frequency.QuadPart / 1000000.0);
 }
 
 TEST(TimeTicks, TimerPerformance) {
   // Verify that various timer mechanisms can always complete quickly.
   // Note:  This is a somewhat arbitrary test.
-  const int kLoops = 10000;
+  const int kLoops = 500000;
 
   typedef TimeTicks (*TestFunc)();
   struct TestCase {
     TestFunc func;
-    const char *description;
+    const char* description;
   };
   // Cheating a bit here:  assumes sizeof(TimeTicks) == sizeof(Time)
   // in order to create a single test case list.
@@ -194,11 +211,22 @@ TEST(TimeTicks, TimerPerformance) {
   std::vector<TestCase> cases;
   cases.push_back({reinterpret_cast<TestFunc>(&Time::Now), "Time::Now"});
   cases.push_back({&TimeTicks::Now, "TimeTicks::Now"});
+  cases.push_back({&GetTSC, "CPUCycleCounter"});
 
   if (ThreadTicks::IsSupported()) {
     ThreadTicks::WaitUntilInitialized();
     cases.push_back(
         {reinterpret_cast<TestFunc>(&ThreadTicks::Now), "ThreadTicks::Now"});
+  }
+
+  // Warm up the CPU to its full clock rate so that we get accurate timing
+  // information.
+  DWORD start_tick = GetTickCount();
+  const DWORD kWarmupMs = 50;
+  for (;;) {
+    DWORD elapsed = GetTickCount() - start_tick;
+    if (elapsed > kWarmupMs)
+      break;
   }
 
   for (const auto& test_case : cases) {
@@ -212,8 +240,8 @@ TEST(TimeTicks, TimerPerformance) {
     // The reason to remove the check is because the tests run on many
     // buildbots, some of which are VMs.  These machines can run horribly
     // slow, and there is really no value for checking against a max timer.
-    //const int kMaxTime = 35;  // Maximum acceptible milliseconds for test.
-    //EXPECT_LT((stop - start).InMilliseconds(), kMaxTime);
+    // const int kMaxTime = 35;  // Maximum acceptible milliseconds for test.
+    // EXPECT_LT((stop - start).InMilliseconds(), kMaxTime);
     printf("%s: %1.2fus per call\n", test_case.description,
            (stop - start).InMillisecondsF() * 1000 / kLoops);
   }
@@ -226,11 +254,13 @@ TEST(TimeTicks, TSCTicksPerSecond) {
     // Read the CPU frequency from the registry.
     base::win::RegKey processor_key(
         HKEY_LOCAL_MACHINE,
-        L"Hardware\\Description\\System\\CentralProcessor\\0", KEY_QUERY_VALUE);
+        STRING16_LITERAL("Hardware\\Description\\System\\CentralProcessor\\0"),
+        KEY_QUERY_VALUE);
     ASSERT_TRUE(processor_key.Valid());
     DWORD processor_mhz_from_registry;
     ASSERT_EQ(ERROR_SUCCESS,
-              processor_key.ReadValueDW(L"~MHz", &processor_mhz_from_registry));
+              processor_key.ReadValueDW(STRING16_LITERAL("~MHz"),
+                                        &processor_mhz_from_registry));
 
     // Expect the measured TSC frequency to be similar to the processor
     // frequency from the registry (0.5% error).
@@ -283,7 +313,7 @@ TEST(TimeTicks, FromQPCValue) {
   for (int64_t ticks : test_cases) {
     const double expected_microseconds_since_origin =
         (static_cast<double>(ticks) * Time::kMicrosecondsPerSecond) /
-            ticks_per_second;
+        ticks_per_second;
     const TimeTicks converted_value = TimeTicks::FromQPCValue(ticks);
     const double converted_microseconds_since_origin =
         static_cast<double>((converted_value - TimeTicks()).InMicroseconds());

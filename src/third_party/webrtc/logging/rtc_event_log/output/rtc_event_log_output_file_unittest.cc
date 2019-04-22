@@ -11,13 +11,14 @@
 #include "logging/rtc_event_log/output/rtc_event_log_output_file.h"
 
 #include <fstream>
+#include <iterator>
 #include <memory>
 #include <string>
 
 #include "absl/memory/memory.h"
 #include "rtc_base/checks.h"
 #include "test/gtest.h"
-#include "test/testsupport/fileutils.h"
+#include "test/testsupport/file_utils.h"
 
 namespace webrtc {
 

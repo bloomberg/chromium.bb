@@ -11,7 +11,8 @@
 #include <utility>
 #include <vector>
 
-#include "core/fxge/fx_font.h"
+#include "core/fxcrt/fx_string.h"
+#include "core/fxge/fx_freetype.h"
 
 class CFX_FontMgr;
 class CFX_SubstFont;
@@ -21,6 +22,8 @@ class CFX_FontMapper {
  public:
   explicit CFX_FontMapper(CFX_FontMgr* mgr);
   ~CFX_FontMapper();
+
+  static int GetStandardFontName(ByteString* name);
 
   void SetSystemFontInfo(std::unique_ptr<SystemFontInfoIface> pFontInfo);
   SystemFontInfoIface* GetSystemFontInfo() { return m_pFontInfo.get(); }

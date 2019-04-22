@@ -319,8 +319,8 @@ void FileVideoCaptureDevice::AllocateAndStart(
   capture_thread_.Start();
   capture_thread_.task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&FileVideoCaptureDevice::OnAllocateAndStart,
-                 base::Unretained(this), params, base::Passed(&client)));
+      base::BindOnce(&FileVideoCaptureDevice::OnAllocateAndStart,
+                     base::Unretained(this), params, std::move(client)));
 }
 
 void FileVideoCaptureDevice::StopAndDeAllocate() {

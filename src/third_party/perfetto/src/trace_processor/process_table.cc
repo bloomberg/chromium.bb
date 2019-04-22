@@ -36,12 +36,13 @@ void ProcessTable::RegisterTable(sqlite3* db, const TraceStorage* storage) {
   Table::Register<ProcessTable>(db, storage, "process");
 }
 
-Table::Schema ProcessTable::CreateSchema(int, const char* const*) {
+base::Optional<Table::Schema> ProcessTable::Init(int, const char* const*) {
   return Schema(
       {
           Table::Column(Column::kUpid, "upid", ColumnType::kInt),
           Table::Column(Column::kName, "name", ColumnType::kString),
           Table::Column(Column::kPid, "pid", ColumnType::kUint),
+          Table::Column(Column::kStartTs, "start_ts", ColumnType::kLong),
       },
       {Column::kUpid});
 }
@@ -70,7 +71,7 @@ ProcessTable::Cursor::Cursor(const TraceStorage* storage,
                              sqlite3_value** argv)
     : storage_(storage) {
   min = 0;
-  max = static_cast<uint32_t>(storage_->process_count());
+  max = static_cast<uint32_t>(storage_->process_count()) - 1;
   desc = false;
   current = min;
 
@@ -108,13 +109,21 @@ int ProcessTable::Cursor::Column(sqlite3_context* context, int N) {
     case Column::kName: {
       const auto& process = storage_->GetProcess(current);
       const auto& name = storage_->GetString(process.name_id);
-      sqlite3_result_text(context, name.c_str(),
-                          static_cast<int>(name.length()), nullptr);
+      sqlite3_result_text(context, name.c_str(), -1, kSqliteStatic);
       break;
     }
     case Column::kPid: {
       const auto& process = storage_->GetProcess(current);
       sqlite3_result_int64(context, process.pid);
+      break;
+    }
+    case Column::kStartTs: {
+      const auto& process = storage_->GetProcess(current);
+      if (process.start_ns != 0) {
+        sqlite3_result_int64(context, process.start_ns);
+      } else {
+        sqlite3_result_null(context);
+      }
       break;
     }
     default:

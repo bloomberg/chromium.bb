@@ -14,6 +14,7 @@
 #include "base/json/json_writer.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/optional.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/icu_test_util.h"
@@ -45,10 +46,9 @@ namespace {
 const char kDummyInitiatorName[] = "TestInitiator";
 const char kTestData[] = "abc";
 
-// Array of all printing::PrinterType values.
-const printing::PrinterType kAllTypes[] = {
-    printing::kPrivetPrinter, printing::kExtensionPrinter,
-    printing::kPdfPrinter, printing::kLocalPrinter};
+// Array of all PrinterType values.
+const PrinterType kAllTypes[] = {kPrivetPrinter, kExtensionPrinter, kPdfPrinter,
+                                 kLocalPrinter};
 
 struct PrinterInfo {
   std::string id;
@@ -137,20 +137,15 @@ class TestPrinterHandler : public PrinterHandler {
 
   void StartGetCapability(const std::string& destination_id,
                           GetCapabilityCallback callback) override {
-    std::move(callback).Run(
-        base::DictionaryValue::From(std::make_unique<base::Value>(
-            printer_capabilities_[destination_id]->Clone())));
+    std::move(callback).Run(printer_capabilities_[destination_id]->Clone());
   }
 
   void StartGrantPrinterAccess(const std::string& printer_id,
                                GetPrinterInfoCallback callback) override {}
 
-  void StartPrint(const std::string& destination_id,
-                  const std::string& capability,
-                  const base::string16& job_title,
-                  const std::string& ticket_json,
-                  const gfx::Size& page_size,
-                  const scoped_refptr<base::RefCountedMemory>& print_data,
+  void StartPrint(const base::string16& job_title,
+                  base::Value settings,
+                  scoped_refptr<base::RefCountedMemory> print_data,
                   PrintCallback callback) override {
     std::move(callback).Run(base::Value());
   }
@@ -243,11 +238,12 @@ class TestPrintPreviewHandler : public PrintPreviewHandler {
 
 }  // namespace
 
-}  // namespace printing
-
 class PrintPreviewHandlerTest : public testing::Test {
  public:
-  PrintPreviewHandlerTest() {
+  PrintPreviewHandlerTest() = default;
+  ~PrintPreviewHandlerTest() override = default;
+
+  void SetUp() override {
     TestingProfile::Builder builder;
     profile_ = builder.Build();
     initiator_web_contents_ = content::WebContents::Create(
@@ -255,33 +251,35 @@ class PrintPreviewHandlerTest : public testing::Test {
     content::WebContents* initiator = initiator_web_contents_.get();
     preview_web_contents_ = content::WebContents::Create(
         content::WebContents::CreateParams(profile_.get()));
-    printing::PrintViewManager::CreateForWebContents(initiator);
-    printing::PrintViewManager::FromWebContents(initiator)->PrintPreviewNow(
+    PrintViewManager::CreateForWebContents(initiator);
+    PrintViewManager::FromWebContents(initiator)->PrintPreviewNow(
         initiator->GetMainFrame(), false);
     web_ui_ = std::make_unique<content::TestWebUI>();
     web_ui_->set_web_contents(preview_web_contents_.get());
 
-    printers_.push_back(
-        printing::GetSimplePrinterInfo(printing::kDummyPrinterName, true));
-    auto printer_handler =
-        std::make_unique<printing::TestPrinterHandler>(printers_);
+    printers_.push_back(GetSimplePrinterInfo(kDummyPrinterName, true));
+    auto printer_handler = CreatePrinterHandler(printers_);
     printer_handler_ = printer_handler.get();
 
-    auto preview_handler = std::make_unique<printing::TestPrintPreviewHandler>(
+    auto preview_handler = std::make_unique<TestPrintPreviewHandler>(
         std::move(printer_handler), initiator);
     preview_handler->set_web_ui(web_ui());
     handler_ = preview_handler.get();
 
-    auto preview_ui = std::make_unique<printing::FakePrintPreviewUI>(
+    auto preview_ui = std::make_unique<FakePrintPreviewUI>(
         web_ui(), std::move(preview_handler));
-    preview_ui->SetInitiatorTitle(
-        base::ASCIIToUTF16(printing::kDummyInitiatorName));
+    preview_ui->SetInitiatorTitle(base::ASCIIToUTF16(kDummyInitiatorName));
     web_ui()->SetController(std::move(preview_ui));
   }
 
-  ~PrintPreviewHandlerTest() override {
-    printing::PrintViewManager::FromWebContents(initiator_web_contents_.get())
+  void TearDown() override {
+    PrintViewManager::FromWebContents(initiator_web_contents_.get())
         ->PrintPreviewDone();
+  }
+
+  virtual std::unique_ptr<TestPrinterHandler> CreatePrinterHandler(
+      const std::vector<PrinterInfo>& printers) {
+    return std::make_unique<TestPrinterHandler>(printers);
   }
 
   void Initialize() {
@@ -369,9 +367,9 @@ class PrintPreviewHandlerTest : public testing::Test {
 
     const base::Value* header_footer =
         settings->FindKeyOfType("headerFooter", base::Value::Type::BOOLEAN);
-    EXPECT_EQ(bool(expected_header_footer), bool(header_footer));
-    if (expected_header_footer)
-      EXPECT_EQ(*expected_header_footer, header_footer->GetBool());
+    ASSERT_EQ(expected_header_footer.has_value(), !!header_footer);
+    if (expected_header_footer.has_value())
+      EXPECT_EQ(expected_header_footer.value(), header_footer->GetBool());
   }
 
   IPC::TestSink& initiator_sink() {
@@ -401,9 +399,9 @@ class PrintPreviewHandlerTest : public testing::Test {
   const Profile* profile() { return profile_.get(); }
   PrefService* prefs() { return profile_->GetPrefs(); }
   content::TestWebUI* web_ui() { return web_ui_.get(); }
-  printing::TestPrintPreviewHandler* handler() { return handler_; }
-  printing::TestPrinterHandler* printer_handler() { return printer_handler_; }
-  std::vector<printing::PrinterInfo>& printers() { return printers_; }
+  TestPrintPreviewHandler* handler() { return handler_; }
+  TestPrinterHandler* printer_handler() { return printer_handler_; }
+  std::vector<PrinterInfo>& printers() { return printers_; }
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
@@ -412,9 +410,9 @@ class PrintPreviewHandlerTest : public testing::Test {
   content::RenderViewHostTestEnabler rvh_test_enabler_;
   std::unique_ptr<content::WebContents> preview_web_contents_;
   std::unique_ptr<content::WebContents> initiator_web_contents_;
-  std::vector<printing::PrinterInfo> printers_;
-  printing::TestPrinterHandler* printer_handler_;
-  printing::TestPrintPreviewHandler* handler_;
+  std::vector<PrinterInfo> printers_;
+  TestPrinterHandler* printer_handler_;
+  TestPrintPreviewHandler* handler_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewHandlerTest);
 };
@@ -423,9 +421,8 @@ TEST_F(PrintPreviewHandlerTest, InitialSettingsSimple) {
   Initialize();
 
   // Verify initial settings were sent.
-  ValidateInitialSettings(*web_ui()->call_data().back(),
-                          printing::kDummyPrinterName,
-                          printing::kDummyInitiatorName, base::nullopt);
+  ValidateInitialSettings(*web_ui()->call_data().back(), kDummyPrinterName,
+                          kDummyInitiatorName, {});
 
   // Check that the use-cloud-print event got sent
   AssertWebUIEventFired(*web_ui()->call_data().front(), "use-cloud-print");
@@ -435,18 +432,16 @@ TEST_F(PrintPreviewHandlerTest, InitialSettingsEnableHeaderFooter) {
   // Set a pref that should take priority over StickySettings.
   prefs()->SetBoolean(prefs::kPrintHeaderFooter, true);
   Initialize();
-  ValidateInitialSettings(
-      *web_ui()->call_data().back(), printing::kDummyPrinterName,
-      printing::kDummyInitiatorName, base::Optional<bool>(true));
+  ValidateInitialSettings(*web_ui()->call_data().back(), kDummyPrinterName,
+                          kDummyInitiatorName, true);
 }
 
 TEST_F(PrintPreviewHandlerTest, InitialSettingsDisableHeaderFooter) {
   // Set a pref that should take priority over StickySettings.
   prefs()->SetBoolean(prefs::kPrintHeaderFooter, false);
   Initialize();
-  ValidateInitialSettings(
-      *web_ui()->call_data().back(), printing::kDummyPrinterName,
-      printing::kDummyInitiatorName, base::Optional<bool>(false));
+  ValidateInitialSettings(*web_ui()->call_data().back(), kDummyPrinterName,
+                          kDummyInitiatorName, false);
 }
 
 TEST_F(PrintPreviewHandlerTest, GetPrinters) {
@@ -454,15 +449,14 @@ TEST_F(PrintPreviewHandlerTest, GetPrinters) {
 
   // Check all three printer types that implement
   // PrinterHandler::StartGetPrinters().
-  const printing::PrinterType types[] = {printing::kPrivetPrinter,
-                                         printing::kExtensionPrinter,
-                                         printing::kLocalPrinter};
-  for (size_t i = 0; i < arraysize(types); i++) {
-    printing::PrinterType type = types[i];
+  const PrinterType types[] = {kPrivetPrinter, kExtensionPrinter,
+                               kLocalPrinter};
+  for (size_t i = 0; i < base::size(types); i++) {
+    PrinterType type = types[i];
     handler()->reset_calls();
     base::Value args(base::Value::Type::LIST);
     std::string callback_id_in =
-        "test-callback-id-" + base::UintToString(i + 1);
+        "test-callback-id-" + base::NumberToString(i + 1);
     args.GetList().emplace_back(callback_id_in);
     args.GetList().emplace_back(type);
     std::unique_ptr<base::ListValue> list_args =
@@ -495,7 +489,7 @@ TEST_F(PrintPreviewHandlerTest, GetPrinters) {
 
 TEST_F(PrintPreviewHandlerTest, GetPrinterCapabilities) {
   // Add an empty printer to the handler.
-  printers().push_back(printing::GetEmptyPrinterInfo());
+  printers().push_back(GetEmptyPrinterInfo());
   printer_handler()->SetPrinters(printers());
 
   // Initial settings first to enable javascript.
@@ -503,14 +497,14 @@ TEST_F(PrintPreviewHandlerTest, GetPrinterCapabilities) {
 
   // Check all four printer types that implement
   // PrinterHandler::StartGetCapability().
-  for (size_t i = 0; i < arraysize(printing::kAllTypes); i++) {
-    printing::PrinterType type = printing::kAllTypes[i];
+  for (size_t i = 0; i < base::size(kAllTypes); i++) {
+    PrinterType type = kAllTypes[i];
     handler()->reset_calls();
     base::Value args(base::Value::Type::LIST);
     std::string callback_id_in =
-        "test-callback-id-" + base::UintToString(i + 1);
+        "test-callback-id-" + base::NumberToString(i + 1);
     args.GetList().emplace_back(callback_id_in);
-    args.GetList().emplace_back(printing::kDummyPrinterName);
+    args.GetList().emplace_back(kDummyPrinterName);
     args.GetList().emplace_back(type);
     std::unique_ptr<base::ListValue> list_args =
         base::ListValue::From(base::Value::ToUniquePtrValue(std::move(args)));
@@ -526,19 +520,19 @@ TEST_F(PrintPreviewHandlerTest, GetPrinterCapabilities) {
     CheckWebUIResponse(data, callback_id_in, true);
     const base::Value* settings = data.arg3();
     ASSERT_TRUE(settings);
-    EXPECT_TRUE(settings->FindKeyOfType(printing::kSettingCapabilities,
+    EXPECT_TRUE(settings->FindKeyOfType(kSettingCapabilities,
                                         base::Value::Type::DICTIONARY));
   }
 
   // Run through the loop again, this time with a printer that has no
   // capabilities.
-  for (size_t i = 0; i < arraysize(printing::kAllTypes); i++) {
-    printing::PrinterType type = printing::kAllTypes[i];
+  for (size_t i = 0; i < base::size(kAllTypes); i++) {
+    PrinterType type = kAllTypes[i];
     handler()->reset_calls();
     base::Value args(base::Value::Type::LIST);
     std::string callback_id_in =
         "test-callback-id-" +
-        base::UintToString(i + arraysize(printing::kAllTypes) + 1);
+        base::NumberToString(i + base::size(kAllTypes) + 1);
     args.GetList().emplace_back(callback_id_in);
     args.GetList().emplace_back("EmptyPrinter");
     args.GetList().emplace_back(type);
@@ -547,10 +541,9 @@ TEST_F(PrintPreviewHandlerTest, GetPrinterCapabilities) {
     handler()->HandleGetPrinterCapabilities(list_args.get());
     EXPECT_TRUE(handler()->CalledOnlyForType(type));
 
-    // Start with 2 calls from initial settings plus
-    // arraysize(printing::kAllTypes) from first loop, then add 1 more for each
-    // loop iteration.
-    ASSERT_EQ(2u + arraysize(printing::kAllTypes) + (i + 1),
+    // Start with 2 calls from initial settings plus base::size(kAllTypes) from
+    // first loop, then add 1 more for each loop iteration.
+    ASSERT_EQ(2u + base::size(kAllTypes) + (i + 1),
               web_ui()->call_data().size());
 
     // Verify printer capabilities promise was rejected.
@@ -563,17 +556,16 @@ TEST_F(PrintPreviewHandlerTest, Print) {
   Initialize();
 
   // All four printer types can print, as well as cloud printers.
-  for (size_t i = 0; i <= arraysize(printing::kAllTypes); i++) {
+  for (size_t i = 0; i <= base::size(kAllTypes); i++) {
     // Also check cloud print. Use dummy type value of Privet (will be ignored).
-    bool cloud = i == arraysize(printing::kAllTypes);
-    printing::PrinterType type =
-        cloud ? printing::kPrivetPrinter : printing::kAllTypes[i];
+    bool cloud = i == base::size(kAllTypes);
+    PrinterType type = cloud ? kPrivetPrinter : kAllTypes[i];
     handler()->reset_calls();
     base::Value args(base::Value::Type::LIST);
     std::string callback_id_in =
-        "test-callback-id-" + base::UintToString(i + 1);
+        "test-callback-id-" + base::NumberToString(i + 1);
     args.GetList().emplace_back(callback_id_in);
-    base::Value print_ticket = printing::GetPrintTicket(type, cloud);
+    base::Value print_ticket = GetPrintTicket(type, cloud);
     std::string json;
     base::JSONWriter::Write(print_ticket, &json);
     args.GetList().emplace_back(json);
@@ -598,7 +590,7 @@ TEST_F(PrintPreviewHandlerTest, Print) {
       std::string print_data;
       ASSERT_TRUE(data.arg3()->GetAsString(&print_data));
       std::string expected_data;
-      base::Base64Encode(printing::kTestData, &expected_data);
+      base::Base64Encode(kTestData, &expected_data);
       EXPECT_EQ(print_data, expected_data);
     }
   }
@@ -607,9 +599,9 @@ TEST_F(PrintPreviewHandlerTest, Print) {
 TEST_F(PrintPreviewHandlerTest, GetPreview) {
   Initialize();
 
-  base::Value print_ticket = printing::GetPrintPreviewTicket(false);
+  base::Value print_ticket = GetPrintPreviewTicket(false);
   std::unique_ptr<base::ListValue> list_args =
-      printing::ConstructPreviewArgs("test-callback-id-1", print_ticket);
+      ConstructPreviewArgs("test-callback-id-1", print_ticket);
   handler()->HandleGetPreview(list_args.get());
 
   // Verify that the preview was requested from the renderer with the
@@ -617,7 +609,7 @@ TEST_F(PrintPreviewHandlerTest, GetPreview) {
   base::DictionaryValue preview_params = VerifyPreviewMessage();
   bool preview_id_found = false;
   for (const auto& it : preview_params.DictItems()) {
-    if (it.first == printing::kPreviewUIID) {  // This is added by the handler.
+    if (it.first == kPreviewUIID) {  // This is added by the handler.
       preview_id_found = true;
       continue;
     }
@@ -632,20 +624,19 @@ TEST_F(PrintPreviewHandlerTest, SendPreviewUpdates) {
   Initialize();
 
   const char callback_id_in[] = "test-callback-id-1";
-  base::Value print_ticket = printing::GetPrintPreviewTicket(false);
+  base::Value print_ticket = GetPrintPreviewTicket(false);
   std::unique_ptr<base::ListValue> list_args =
-      printing::ConstructPreviewArgs(callback_id_in, print_ticket);
+      ConstructPreviewArgs(callback_id_in, print_ticket);
   handler()->HandleGetPreview(list_args.get());
   base::DictionaryValue preview_params = VerifyPreviewMessage();
 
   // Read the preview UI ID and request ID
-  const base::Value* request_value =
-      preview_params.FindKey(printing::kPreviewRequestID);
+  const base::Value* request_value = preview_params.FindKey(kPreviewRequestID);
   ASSERT_TRUE(request_value);
   ASSERT_TRUE(request_value->is_int());
   int preview_request_id = request_value->GetInt();
 
-  const base::Value* ui_value = preview_params.FindKey(printing::kPreviewUIID);
+  const base::Value* ui_value = preview_params.FindKey(kPreviewUIID);
   ASSERT_TRUE(ui_value);
   ASSERT_TRUE(ui_value->is_int());
   int preview_ui_id = ui_value->GetInt();
@@ -653,16 +644,16 @@ TEST_F(PrintPreviewHandlerTest, SendPreviewUpdates) {
   // Simulate renderer responses: PageLayoutReady, PageCountReady,
   // PagePreviewReady, and OnPrintPreviewReady will be called in that order.
   base::DictionaryValue layout;
-  layout.SetKey(printing::kSettingMarginTop, base::Value(34.0));
-  layout.SetKey(printing::kSettingMarginLeft, base::Value(34.0));
-  layout.SetKey(printing::kSettingMarginBottom, base::Value(34.0));
-  layout.SetKey(printing::kSettingMarginRight, base::Value(34.0));
-  layout.SetKey(printing::kSettingContentWidth, base::Value(544.0));
-  layout.SetKey(printing::kSettingContentHeight, base::Value(700.0));
-  layout.SetKey(printing::kSettingPrintableAreaX, base::Value(17));
-  layout.SetKey(printing::kSettingPrintableAreaY, base::Value(17));
-  layout.SetKey(printing::kSettingPrintableAreaWidth, base::Value(578));
-  layout.SetKey(printing::kSettingPrintableAreaHeight, base::Value(734));
+  layout.SetKey(kSettingMarginTop, base::Value(34.0));
+  layout.SetKey(kSettingMarginLeft, base::Value(34.0));
+  layout.SetKey(kSettingMarginBottom, base::Value(34.0));
+  layout.SetKey(kSettingMarginRight, base::Value(34.0));
+  layout.SetKey(kSettingContentWidth, base::Value(544.0));
+  layout.SetKey(kSettingContentHeight, base::Value(700.0));
+  layout.SetKey(kSettingPrintableAreaX, base::Value(17));
+  layout.SetKey(kSettingPrintableAreaY, base::Value(17));
+  layout.SetKey(kSettingPrintableAreaWidth, base::Value(578));
+  layout.SetKey(kSettingPrintableAreaHeight, base::Value(734));
   handler()->SendPageLayoutReady(layout, false, preview_request_id);
 
   // Verify that page-layout-ready webUI event was fired.
@@ -697,3 +688,76 @@ TEST_F(PrintPreviewHandlerTest, SendPreviewUpdates) {
   // Handler should have tried to kill the renderer for each of these.
   EXPECT_EQ(handler()->bad_messages(), 3);
 }
+
+class FailingTestPrinterHandler : public TestPrinterHandler {
+ public:
+  explicit FailingTestPrinterHandler(const std::vector<PrinterInfo>& printers)
+      : TestPrinterHandler(printers) {}
+
+  ~FailingTestPrinterHandler() override = default;
+
+  void StartGetCapability(const std::string& destination_id,
+                          GetCapabilityCallback callback) override {
+    std::move(callback).Run(base::Value());
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FailingTestPrinterHandler);
+};
+
+class PrintPreviewHandlerFailingTest : public PrintPreviewHandlerTest {
+ public:
+  PrintPreviewHandlerFailingTest() = default;
+  ~PrintPreviewHandlerFailingTest() override = default;
+
+  std::unique_ptr<TestPrinterHandler> CreatePrinterHandler(
+      const std::vector<PrinterInfo>& printers) override {
+    return std::make_unique<FailingTestPrinterHandler>(printers);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PrintPreviewHandlerFailingTest);
+};
+
+// This test is similar to PrintPreviewHandlerTest.GetPrinterCapabilities, but
+// uses FailingTestPrinterHandler instead of TestPrinterHandler. As a result,
+// StartGetCapability() always fails, to exercise its callback's failure
+// handling path. Failure is different from getting no capabilities.
+TEST_F(PrintPreviewHandlerFailingTest, GetPrinterCapabilities) {
+  // Add an empty printer to the handler.
+  printers().push_back(GetEmptyPrinterInfo());
+  printer_handler()->SetPrinters(printers());
+
+  // Initial settings first to enable javascript.
+  Initialize();
+
+  // Check all four printer types that implement
+  // PrinterHandler::StartGetCapability().
+  for (size_t i = 0; i < base::size(kAllTypes); i++) {
+    PrinterType type = kAllTypes[i];
+    handler()->reset_calls();
+    base::Value args(base::Value::Type::LIST);
+    std::string callback_id_in =
+        "test-callback-id-" + base::NumberToString(i + 1);
+    args.GetList().emplace_back(callback_id_in);
+    args.GetList().emplace_back(kDummyPrinterName);
+    args.GetList().emplace_back(type);
+    std::unique_ptr<base::ListValue> list_args =
+        base::ListValue::From(base::Value::ToUniquePtrValue(std::move(args)));
+    handler()->HandleGetPrinterCapabilities(list_args.get());
+    EXPECT_TRUE(handler()->CalledOnlyForType(type));
+
+    // Start with 2 calls from initial settings, then add 1 more for each loop
+    // iteration.
+    ASSERT_EQ(2u + (i + 1), web_ui()->call_data().size());
+
+    // Verify printer capabilities promise was rejected.
+    const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
+    CheckWebUIResponse(data, callback_id_in, false);
+    const base::Value* settings = data.arg3();
+    ASSERT_TRUE(settings);
+    EXPECT_TRUE(settings->is_none());
+  }
+}
+
+}  // namespace printing

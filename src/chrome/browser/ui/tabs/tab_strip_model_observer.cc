@@ -48,6 +48,17 @@ TabStripModelChange::Delta TabStripModelChange::CreateReplaceDelta(
   return delta;
 }
 
+// static
+TabStripModelChange::Delta TabStripModelChange::CreateGroupChangeDelta(
+    content::WebContents* contents,
+    int index,
+    const TabGroupData* old_group_data,
+    const TabGroupData* new_group_data) {
+  TabStripModelChange::Delta delta;
+  delta.group_change = {contents, index, old_group_data, new_group_data};
+  return delta;
+}
+
 TabStripModelChange::TabStripModelChange() = default;
 
 TabStripModelChange::TabStripModelChange(Type type, const Delta& delta)

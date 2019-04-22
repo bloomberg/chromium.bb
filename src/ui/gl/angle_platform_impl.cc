@@ -66,12 +66,13 @@ TraceEventHandle ANGLEPlatformImpl_addTraceEvent(
     unsigned char flags) {
   base::TimeTicks timestamp_tt =
       base::TimeTicks() + base::TimeDelta::FromSecondsD(timestamp);
+  base::trace_event::TraceArguments args(num_args, arg_names, arg_types,
+                                         arg_values);
   base::trace_event::TraceEventHandle handle =
       TRACE_EVENT_API_ADD_TRACE_EVENT_WITH_THREAD_ID_AND_TIMESTAMP(
           phase, category_group_enabled, name,
           trace_event_internal::kGlobalScope, id, trace_event_internal::kNoId,
-          base::PlatformThread::CurrentId(), timestamp_tt, num_args, arg_names,
-          arg_types, arg_values, nullptr, flags);
+          base::PlatformThread::CurrentId(), timestamp_tt, &args, flags);
   TraceEventHandle result;
   memcpy(&result, &handle, sizeof(result));
   return result;

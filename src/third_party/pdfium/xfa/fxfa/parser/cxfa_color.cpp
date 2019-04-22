@@ -6,23 +6,22 @@
 
 #include "xfa/fxfa/parser/cxfa_color.h"
 
-#include "fxjs/xfa/cjx_color.h"
+#include "fxjs/xfa/cjx_node.h"
 #include "third_party/base/ptr_util.h"
 
 namespace {
 
 const CXFA_Node::PropertyData kColorPropertyData[] = {
     {XFA_Element::Extras, 1, 0},
-    {XFA_Element::Unknown, 0, 0}};
+};
+
 const CXFA_Node::AttributeData kColorAttributeData[] = {
     {XFA_Attribute::Id, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Use, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::CSpace, XFA_AttributeType::CData, (void*)L"SRGB"},
     {XFA_Attribute::Usehref, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Value, XFA_AttributeType::CData, nullptr},
-    {XFA_Attribute::Unknown, XFA_AttributeType::Integer, nullptr}};
-
-constexpr wchar_t kColorName[] = L"color";
+};
 
 }  // namespace
 
@@ -34,10 +33,9 @@ CXFA_Color::CXFA_Color(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_Element::Color,
                 kColorPropertyData,
                 kColorAttributeData,
-                kColorName,
-                pdfium::MakeUnique<CJX_Color>(this)) {}
+                pdfium::MakeUnique<CJX_Node>(this)) {}
 
-CXFA_Color::~CXFA_Color() {}
+CXFA_Color::~CXFA_Color() = default;
 
 FX_ARGB CXFA_Color::GetValue() {
   Optional<WideString> val = JSObject()->TryCData(XFA_Attribute::Value, false);

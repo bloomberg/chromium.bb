@@ -22,7 +22,6 @@ import os
 import urllib
 
 from chromite.cbuildbot import topology
-from chromite.lib.const import waterfall
 from chromite.lib import auth
 from chromite.lib import constants
 from chromite.lib import cros_logging as logging
@@ -40,15 +39,6 @@ SEARCH_LIMIT_DEFAULT = 100
 MAX_BUILDS_LIMIT = 100
 # Default max_builds number
 MAX_BUILDS_DEFAULT = 10
-
-WATERFALL_BUCKET_MAP = {
-    waterfall.WATERFALL_INTERNAL:
-        constants.CHROMEOS_BUILDBUCKET_BUCKET,
-    waterfall.WATERFALL_RELEASE:
-        constants.CHROMEOS_RELEASE_BUILDBUCKET_BUCKET,
-    waterfall.WATERFALL_SWARMING:
-        constants.INTERNAL_SWARMING_BUILDBUCKET_BUCKET,
-}
 
 # A running build on a buildbot should determin the buildbucket
 # instance based on the topology information.

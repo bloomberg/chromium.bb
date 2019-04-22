@@ -4,16 +4,19 @@
 
 #include "third_party/blink/renderer/core/loader/previews_resource_loading_hints.h"
 
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+#include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom-shared.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
-#include "third_party/blink/renderer/core/inspector/console_types.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -48,14 +51,42 @@ PreviewsResourceLoadingHints::PreviewsResourceLoadingHints(
   subresource_patterns_to_block_usage_.assign(
       subresource_patterns_to_block.size(), false);
   blocked_resource_load_priority_counts_.fill(0);
+
+  // Populate which specific resource types are eligible for blocking.
+  // Certain resource types are blocked by default since their blocking
+  // is currently verified by the server verification pipeline. Note that
+  // the blocking of these resource types can be overridden using field trial.
+  block_resource_type_[static_cast<int>(ResourceType::kCSSStyleSheet)] = true;
+  block_resource_type_[static_cast<int>(ResourceType::kScript)] = true;
+  block_resource_type_[static_cast<int>(ResourceType::kRaw)] = true;
+  for (int i = 0; i < static_cast<int>(ResourceType::kLast) + 1; ++i) {
+    // Parameter names are of format: "block_resource_type_%d". The value
+    // should be either "true" or "false".
+    block_resource_type_[i] = base::GetFieldTrialParamByFeatureAsBool(
+        features::kPreviewsResourceLoadingHintsSpecificResourceTypes,
+        String::Format("block_resource_type_%d", i).Ascii().data(),
+        block_resource_type_[i]);
+  }
+
+  // Ensure that the ResourceType enums have not changed. These should not be
+  // changed since the resource type integer values are used as field trial
+  // params.
+  static_assert(static_cast<int>(ResourceType::kImage) == 1 &&
+                    static_cast<int>(ResourceType::kCSSStyleSheet) == 2 &&
+                    static_cast<int>(ResourceType::kScript) == 3,
+                "ResourceType enums can't be changed");
 }
 
 PreviewsResourceLoadingHints::~PreviewsResourceLoadingHints() = default;
 
 bool PreviewsResourceLoadingHints::AllowLoad(
+    ResourceType type,
     const KURL& resource_url,
     ResourceLoadPriority resource_load_priority) const {
   if (!resource_url.ProtocolIsInHTTPFamily())
+    return true;
+
+  if (!block_resource_type_[static_cast<int>(type)])
     return true;
 
   WTF::String resource_url_string = resource_url.GetString();
@@ -98,9 +129,9 @@ bool PreviewsResourceLoadingHints::AllowLoad(
 
 void PreviewsResourceLoadingHints::ReportBlockedLoading(
     const KURL& resource_url) const {
-  execution_context_->AddConsoleMessage(
-      ConsoleMessage::Create(kOtherMessageSource, kWarningMessageLevel,
-                             GetConsoleLogStringForBlockedLoad(resource_url)));
+  execution_context_->AddConsoleMessage(ConsoleMessage::Create(
+      mojom::ConsoleMessageSource::kOther, mojom::ConsoleMessageLevel::kWarning,
+      GetConsoleLogStringForBlockedLoad(resource_url)));
 }
 
 void PreviewsResourceLoadingHints::Trace(blink::Visitor* visitor) {

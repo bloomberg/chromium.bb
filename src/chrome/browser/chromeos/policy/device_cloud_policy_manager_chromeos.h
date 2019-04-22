@@ -63,6 +63,7 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
   // upload tasks.
   DeviceCloudPolicyManagerChromeOS(
       std::unique_ptr<DeviceCloudPolicyStoreChromeOS> store,
+      std::unique_ptr<CloudExternalDataManager> external_data_manager,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner,
       ServerBackedStateKeysBroker* state_keys_broker);
   ~DeviceCloudPolicyManagerChromeOS() override;
@@ -80,6 +81,10 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
   void SetDeviceRequisition(const std::string& requisition);
   bool IsRemoraRequisition() const;
   bool IsSharkRequisition() const;
+
+  // Gets/Sets the sub organization.
+  std::string GetSubOrganization() const;
+  void SetSubOrganization(const std::string& sub_organization);
 
   // If set, the device will start the enterprise enrollment OOBE.
   void SetDeviceEnrollmentAutoStart();
@@ -154,6 +159,10 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
   // Points to the same object as the base CloudPolicyManager::store(), but with
   // actual device policy specific type.
   std::unique_ptr<DeviceCloudPolicyStoreChromeOS> device_store_;
+
+  // Manages external data referenced by device policies.
+  std::unique_ptr<CloudExternalDataManager> external_data_manager_;
+
   ServerBackedStateKeysBroker* state_keys_broker_;
 
   // Helper object that handles updating the server with our current device

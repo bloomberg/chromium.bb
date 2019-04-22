@@ -129,6 +129,24 @@ int WebStateList::GetIndexOfWebState(const web::WebState* web_state) const {
   return kInvalidIndex;
 }
 
+int WebStateList::GetIndexOfWebStateWithURL(const GURL& url) const {
+  for (int index = 0; index < count(); ++index) {
+    if (web_state_wrappers_[index]->web_state()->GetVisibleURL() == url)
+      return index;
+  }
+  return kInvalidIndex;
+}
+
+int WebStateList::GetIndexOfInactiveWebStateWithURL(const GURL& url) const {
+  for (int index = 0; index < count(); ++index) {
+    if (index == active_index_)
+      continue;
+    if (web_state_wrappers_[index]->web_state()->GetVisibleURL() == url)
+      return index;
+  }
+  return kInvalidIndex;
+}
+
 WebStateOpener WebStateList::GetOpenerOfWebStateAt(int index) const {
   DCHECK(ContainsIndex(index));
   return web_state_wrappers_[index]->opener();

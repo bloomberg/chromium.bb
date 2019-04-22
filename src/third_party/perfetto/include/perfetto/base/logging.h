@@ -22,22 +22,31 @@
 #include <stdlib.h>
 #include <string.h>  // For strerror.
 
-#if defined(NDEBUG)
+#if defined(NDEBUG) && !defined(DCHECK_ALWAYS_ON)
 #define PERFETTO_DCHECK_IS_ON() 0
 #else
 #define PERFETTO_DCHECK_IS_ON() 1
 #endif
 
-#if defined(PERFETTO_ENABLE_DLOG)
+#if !defined(PERFETTO_FORCE_DLOG)
 #define PERFETTO_DLOG_IS_ON() PERFETTO_DCHECK_IS_ON()
 #else
-#define PERFETTO_DLOG_IS_ON() 0
+#define PERFETTO_DLOG_IS_ON() PERFETTO_FORCE_DLOG
 #endif
 
 #include "perfetto/base/build_config.h"
 #include "perfetto/base/utils.h"
 
-#if PERFETTO_BUILDFLAG(PERFETTO_OS_ANDROID)
+#if defined(PERFETTO_ANDROID_ASYNC_SAFE_LOG)
+#if !PERFETTO_BUILDFLAG(PERFETTO_OS_ANDROID) || \
+    !PERFETTO_BUILDFLAG(PERFETTO_ANDROID_BUILD)
+#error "Async-safe logging is limited to Android tree builds"
+#endif
+// For binaries which need a very lightweight logging implementation.
+// Note that this header is incompatible with android/log.h.
+#include <async_safe/log.h>
+#elif PERFETTO_BUILDFLAG(PERFETTO_OS_ANDROID)
+// Normal android logging.
 #include <android/log.h>
 #endif
 
@@ -87,9 +96,19 @@ constexpr const char* kLogFmt[] = {"\x1b[2m", "\x1b[39m", "\x1b[32m\x1b[1m",
           ##__VA_ARGS__)
 #endif
 
-// Let android log to both stderr and logcat. When part of the Android tree
-// stderr points to /dev/null so logcat is the only way to get some logging.
-#if PERFETTO_BUILDFLAG(PERFETTO_OS_ANDROID)
+#if PERFETTO_BUILDFLAG(PERFETTO_OS_ANDROID) && \
+    defined(PERFETTO_ANDROID_ASYNC_SAFE_LOG)
+#define PERFETTO_XLOG(level, fmt, ...)                                         \
+  do {                                                                         \
+    async_safe_format_log(                                                     \
+        (ANDROID_LOG_DEBUG + ::perfetto::base::LogLev::level), "perfetto",     \
+        "%s " fmt, ::perfetto::base::Basename(__FILE__ ":" PERFETTO_LOG_LINE), \
+        ##__VA_ARGS__);                                                        \
+  } while (0)
+#elif PERFETTO_BUILDFLAG(PERFETTO_OS_ANDROID)
+// Standard logging marco on Android - log to both stderr and logcat. When part
+// of the Android tree, stderr points to /dev/null so logcat is the only way to
+// get some logging.
 #define PERFETTO_XLOG(level, fmt, ...)                                         \
   do {                                                                         \
     __android_log_print(                                                       \
@@ -136,12 +155,12 @@ constexpr const char* kLogFmt[] = {"\x1b[2m", "\x1b[39m", "\x1b[32m\x1b[1m",
 
 #if PERFETTO_DCHECK_IS_ON()
 
-#define PERFETTO_DCHECK(x)                            \
-  do {                                                \
-    if (PERFETTO_UNLIKELY(!(x))) {                    \
-      PERFETTO_DPLOG("%s", "PERFETTO_CHECK(" #x ")"); \
-      PERFETTO_IMMEDIATE_CRASH();                     \
-    }                                                 \
+#define PERFETTO_DCHECK(x)                           \
+  do {                                               \
+    if (PERFETTO_UNLIKELY(!(x))) {                   \
+      PERFETTO_PLOG("%s", "PERFETTO_CHECK(" #x ")"); \
+      PERFETTO_IMMEDIATE_CRASH();                    \
+    }                                                \
   } while (0)
 
 #define PERFETTO_DFATAL(fmt, ...)      \
@@ -152,7 +171,10 @@ constexpr const char* kLogFmt[] = {"\x1b[2m", "\x1b[39m", "\x1b[32m\x1b[1m",
 
 #else
 
-#define PERFETTO_DCHECK(x) ::perfetto::base::ignore_result(x)
+#define PERFETTO_DCHECK(x) \
+  do {                     \
+  } while (false && (x))
+
 #define PERFETTO_DFATAL(...) ::perfetto::base::ignore_result(__VA_ARGS__)
 
 #endif  // PERFETTO_DCHECK_IS_ON()
@@ -163,7 +185,7 @@ constexpr const char* kLogFmt[] = {"\x1b[2m", "\x1b[39m", "\x1b[32m\x1b[1m",
 #define PERFETTO_CHECK(x)                            \
   do {                                               \
     if (PERFETTO_UNLIKELY(!(x))) {                   \
-      PERFETTO_ELOG("%s", "PERFETTO_CHECK(" #x ")"); \
+      PERFETTO_PLOG("%s", "PERFETTO_CHECK(" #x ")"); \
       PERFETTO_IMMEDIATE_CRASH();                    \
     }                                                \
   } while (0)

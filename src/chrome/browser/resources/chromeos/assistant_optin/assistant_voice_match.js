@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+
+/** Maximum recording index. */
+const MAX_INDEX = 4;
+
 /**
  * @fileoverview Polymer element for displaying material design assistant
  * voice match screen.
@@ -38,20 +42,10 @@ Polymer({
   onAgreeTap_: function() {
     this.removeClass_('intro');
     this.addClass_('recording');
+    this.fire('loading');
     chrome.send(
         'login.AssistantOptInFlowScreen.VoiceMatchScreen.userActed',
         ['record-pressed']);
-  },
-
-  /**
-   * On-tap event handler for done button.
-   *
-   * @private
-   */
-  onDoneTap_: function() {
-    chrome.send(
-        'login.AssistantOptInFlowScreen.VoiceMatchScreen.userActed',
-        ['next-pressed']);
   },
 
   /**
@@ -75,9 +69,28 @@ Polymer({
   },
 
   /**
+   * Reloads voice match flow.
+   */
+  reloadPage: function() {
+    this.removeClass_('recording');
+    this.removeClass_('already-setup');
+    this.removeClass_('completed');
+    this.addClass_('intro');
+    this.$['agree-button'].focus();
+    this.fire('loaded');
+  },
+
+  /**
    * Called when the server is ready to listening for hotword.
    */
   listenForHotword: function() {
+    if (this.currentIndex_ == 0) {
+      this.fire('loaded');
+      announceAccessibleMessage(
+          loadTimeData.getString('assistantVoiceMatchRecording'));
+      announceAccessibleMessage(
+          loadTimeData.getString('assistantVoiceMatchA11yMessage'));
+    }
     var currentEntry = this.$['voice-entry-' + this.currentIndex_];
     currentEntry.setAttribute('active', true);
   },
@@ -90,23 +103,46 @@ Polymer({
     currentEntry.removeAttribute('active');
     currentEntry.setAttribute('completed', true);
     this.currentIndex_++;
-    if (this.currentIndex_ == 4) {
-      this.$['voice-uploading'].setAttribute('active', true);
+    if (this.currentIndex_ == MAX_INDEX) {
+      this.$['voice-match-entries'].hidden = true;
+      this.$['later-button'].hidden = true;
+      this.$['loading-animation'].hidden = false;
+      announceAccessibleMessage(
+          loadTimeData.getString('assistantVoiceMatchUploading'));
+    } else {
+      announceAccessibleMessage(
+          loadTimeData.getString('assistantVoiceMatchComplete'));
     }
   },
 
   voiceMatchDone: function() {
-    this.$['voice-uploading'].removeAttribute('active');
-    this.$['voice-uploading'].setAttribute('completed', true);
-
     this.removeClass_('recording');
-    this.addClass_('completed');
+    this.fire('loaded');
+    announceAccessibleMessage(
+        loadTimeData.getString('assistantVoiceMatchCompleted'));
+    if (this.currentIndex_ != MAX_INDEX) {
+      // Existing voice model found on cloud. No need to train.
+      this.$['later-button'].hidden = true;
+      this.addClass_('already-setup');
+    } else {
+      this.addClass_('completed');
+    }
+
+    window.setTimeout(function() {
+      chrome.send(
+          'login.AssistantOptInFlowScreen.VoiceMatchScreen.userActed',
+          ['voice-match-done']);
+    }, 3000);
   },
 
   /**
    * Signal from host to show the screen.
    */
   onShow: function() {
+    chrome.send('login.AssistantOptInFlowScreen.VoiceMatchScreen.screenShown');
     this.$['agree-button'].focus();
+    if (loadTimeData.getBoolean('hotwordDspAvailable')) {
+      this.$['no-dsp-message'].hidden = true;
+    }
   },
 });

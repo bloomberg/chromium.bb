@@ -82,6 +82,8 @@ namespace memory
 {
 namespace
 {
+
+#define ONE_MEGABYTE 1024*1024
 enum
 {
 	MAX_UNIFORM_BUFFER_SIZE = 1024,
@@ -95,46 +97,6 @@ T divRoundUp (const T& a, const T& b)
 {
 	return (a / b) + (a % b == 0 ? 0 : 1);
 }
-
-enum
-{
-	ALL_PIPELINE_STAGES = vk::VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT
-						| vk::VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT
-						| vk::VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT
-						| vk::VK_PIPELINE_STAGE_VERTEX_INPUT_BIT
-						| vk::VK_PIPELINE_STAGE_VERTEX_SHADER_BIT
-						| vk::VK_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT
-						| vk::VK_PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT
-						| vk::VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT
-						| vk::VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT
-						| vk::VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT
-						| vk::VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT
-						| vk::VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
-						| vk::VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT
-						| vk::VK_PIPELINE_STAGE_TRANSFER_BIT
-						| vk::VK_PIPELINE_STAGE_HOST_BIT
-};
-
-enum
-{
-	ALL_ACCESSES = vk::VK_ACCESS_INDIRECT_COMMAND_READ_BIT
-				 | vk::VK_ACCESS_INDEX_READ_BIT
-				 | vk::VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT
-				 | vk::VK_ACCESS_UNIFORM_READ_BIT
-				 | vk::VK_ACCESS_INPUT_ATTACHMENT_READ_BIT
-				 | vk::VK_ACCESS_SHADER_READ_BIT
-				 | vk::VK_ACCESS_SHADER_WRITE_BIT
-				 | vk::VK_ACCESS_COLOR_ATTACHMENT_READ_BIT
-				 | vk::VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
-				 | vk::VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT
-				 | vk::VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT
-				 | vk::VK_ACCESS_TRANSFER_READ_BIT
-				 | vk::VK_ACCESS_TRANSFER_WRITE_BIT
-				 | vk::VK_ACCESS_HOST_READ_BIT
-				 | vk::VK_ACCESS_HOST_WRITE_BIT
-				 | vk::VK_ACCESS_MEMORY_READ_BIT
-				 | vk::VK_ACCESS_MEMORY_WRITE_BIT
-};
 
 enum Usage
 {
@@ -411,9 +373,6 @@ vk::VkPipelineStageFlags usageToStageFlags (Usage usage)
 			| USAGE_STORAGE_IMAGE))
 	{
 		flags |= (vk::VK_PIPELINE_STAGE_VERTEX_SHADER_BIT
-				| vk::VK_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT
-				| vk::VK_PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT
-				| vk::VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT
 				| vk::VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT
 				| vk::VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT);
 	}
@@ -1354,36 +1313,52 @@ void HostMemoryAccess::prepare (PrepareContext& context)
 
 void HostMemoryAccess::execute (ExecuteContext& context)
 {
-	de::Random		rng	(m_seed);
-	deUint8* const	ptr	= (deUint8*)context.getMapping();
-
 	if (m_read && m_write)
 	{
-		for (size_t pos = 0; pos < m_size; pos++)
+		de::Random		rng	(m_seed);
+		deUint8* const	ptr	= (deUint8*)context.getMapping();
+		if (m_size >= ONE_MEGABYTE)
 		{
-			const deUint8	mask	= rng.getUint8();
-			const deUint8	value	= ptr[pos];
+			deMemcpy(&m_readData[0], ptr, m_size);
+			for (size_t pos = 0; pos < m_size; ++pos)
+			{
+				ptr[pos] = m_readData[pos] ^ rng.getUint8();
+			}
+		}
+		else
+		{
+			for (size_t pos = 0; pos < m_size; ++pos)
+			{
+				const deUint8	mask	= rng.getUint8();
+				const deUint8	value	= ptr[pos];
 
-			m_readData[pos] = value;
-			ptr[pos] = value ^ mask;
+				m_readData[pos] = value;
+				ptr[pos] = value ^ mask;
+			}
 		}
 	}
 	else if (m_read)
 	{
-		for (size_t pos = 0; pos < m_size; pos++)
+		const deUint8* const	ptr = (deUint8*)context.getMapping();
+		if (m_size >= ONE_MEGABYTE)
 		{
-			const deUint8	value	= ptr[pos];
-
-			m_readData[pos] = value;
+			deMemcpy(&m_readData[0], ptr, m_size);
+		}
+		else
+		{
+			for (size_t pos = 0; pos < m_size; ++pos)
+			{
+				m_readData[pos] = ptr[pos];
+			}
 		}
 	}
 	else if (m_write)
 	{
-		for (size_t pos = 0; pos < m_size; pos++)
+		de::Random		rng	(m_seed);
+		deUint8* const	ptr	= (deUint8*)context.getMapping();
+		for (size_t pos = 0; pos < m_size; ++pos)
 		{
-			const deUint8	value	= rng.getUint8();
-
-			ptr[pos] = value;
+			ptr[pos] = rng.getUint8();
 		}
 	}
 	else
@@ -9072,6 +9047,14 @@ de::MovePtr<Command> createCmdCommands (const Memory&	memory,
 
 	try
 	{
+		// Insert a mostly-full barrier to order this work wrt previous command buffer.
+		commands.push_back(new PipelineBarrier(state.cache.getAllowedStages(),
+											   state.cache.getAllowedAcceses(),
+											   state.cache.getAllowedStages(),
+											   state.cache.getAllowedAcceses(),
+											   PipelineBarrier::TYPE_GLOBAL,
+											   tcu::nothing<vk::VkImageLayout>()));
+
 		for (; opNdx < opCount; opNdx++)
 		{
 			vector<Op>	ops;
@@ -9622,7 +9605,7 @@ struct AddPrograms
 				const char* const vertexShader =
 					"#version 310 es\n"
 					"precision highp float;\n"
-					"layout(set=0, binding=0) buffer Block\n"
+					"readonly layout(set=0, binding=0) buffer Block\n"
 					"{\n"
 					"\thighp uvec4 values[];\n"
 					"} block;\n"
@@ -9945,10 +9928,10 @@ tcu::TestCaseGroup* createPipelineBarrierTests (tcu::TestContext& testCtx)
 	de::MovePtr<tcu::TestCaseGroup>	group			(new tcu::TestCaseGroup(testCtx, "pipeline_barrier", "Pipeline barrier tests."));
 	const vk::VkDeviceSize			sizes[]			=
 	{
-		1024,		// 1K
-		8*1024,		// 8K
-		64*1024,	// 64K
-		1024*1024,	// 1M
+		1024,			// 1K
+		8*1024,			// 8K
+		64*1024,		// 64K
+		ONE_MEGABYTE,	// 1M
 	};
 	const Usage						usages[]		=
 	{

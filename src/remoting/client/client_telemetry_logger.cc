@@ -7,6 +7,7 @@
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "remoting/base/telemetry_log_writer.h"
 
@@ -61,6 +62,12 @@ void ClientTelemetryLogger::SetTransportRoute(
     const protocol::TransportRoute& route) {
   DCHECK(thread_checker_.CalledOnValidThread());
   transport_route_ = std::make_unique<protocol::TransportRoute>(route);
+}
+
+void ClientTelemetryLogger::SetSignalStrategyType(
+    ChromotingEvent::SignalStrategyType signal_strategy_type) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  signal_strategy_type_ = signal_strategy_type;
 }
 
 void ClientTelemetryLogger::LogSessionStateChange(
@@ -236,12 +243,16 @@ void ClientTelemetryLogger::FillEventContext(ChromotingEvent* event) const {
         (base::TimeTicks::Now() - session_start_time_).InSeconds();
     event->SetInteger(ChromotingEvent::kSessionDurationKey, session_duration);
   }
+  if (signal_strategy_type_ != ChromotingEvent::SignalStrategyType::NOT_SET) {
+    event->SetInteger(ChromotingEvent::kSignalStrategyTypeKey,
+                      signal_strategy_type_);
+  }
 }
 
 void ClientTelemetryLogger::GenerateSessionId() {
   session_id_.resize(kSessionIdLength);
   for (int i = 0; i < kSessionIdLength; i++) {
-    const int alphabet_size = arraysize(kSessionIdAlphabet) - 1;
+    const int alphabet_size = base::size(kSessionIdAlphabet) - 1;
     session_id_[i] = kSessionIdAlphabet[base::RandGenerator(alphabet_size)];
   }
   session_id_generation_time_ = base::TimeTicks::Now();

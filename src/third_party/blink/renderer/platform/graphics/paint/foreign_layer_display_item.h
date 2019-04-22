@@ -7,6 +7,7 @@
 
 #include "cc/layers/layer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
+#include "third_party/blink/renderer/platform/graphics/paint/property_tree_state.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
@@ -17,7 +18,7 @@ class GraphicsContext;
 // A client supplies a layer which can be unwrapped and inserted into the full
 // layer tree.
 //
-// Before SPv2, this content is not painted, but is instead inserted into the
+// Before CAP, this content is not painted, but is instead inserted into the
 // GraphicsLayer tree.
 class PLATFORM_EXPORT ForeignLayerDisplayItem final : public DisplayItem {
  public:
@@ -27,10 +28,6 @@ class PLATFORM_EXPORT ForeignLayerDisplayItem final : public DisplayItem {
   cc::Layer* GetLayer() const;
 
   // DisplayItem
-  void Replay(GraphicsContext&) const override;
-  void AppendToDisplayItemList(const FloatSize&,
-                               cc::DisplayItemList&) const override;
-  bool DrawsContent() const override;
   bool Equals(const DisplayItem&) const override;
 #if DCHECK_IS_ON()
   void PropertiesAsJSON(JSONObject&) const override;
@@ -39,9 +36,11 @@ class PLATFORM_EXPORT ForeignLayerDisplayItem final : public DisplayItem {
 
 // Records a foreign layer into a GraphicsContext.
 // Use this where you would use a recorder class.
-PLATFORM_EXPORT void RecordForeignLayer(GraphicsContext&,
-                                        DisplayItem::Type,
-                                        scoped_refptr<cc::Layer>);
+PLATFORM_EXPORT void RecordForeignLayer(
+    GraphicsContext&,
+    DisplayItem::Type,
+    scoped_refptr<cc::Layer>,
+    const base::Optional<PropertyTreeState>& = base::nullopt);
 
 }  // namespace blink
 

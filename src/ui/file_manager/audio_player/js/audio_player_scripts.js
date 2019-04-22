@@ -8,10 +8,12 @@
 
 // Hack for polymer, notifying that CSP is enabled here.
 // TODO(yoshiki): Find a way to remove the hack.
-if (!('securityPolicy' in document))
+if (!('securityPolicy' in document)) {
   document['securityPolicy'] = {};
-if (!('allowsEval' in document.securityPolicy))
+}
+if (!('allowsEval' in document.securityPolicy)) {
   document.securityPolicy['allowsEval'] = false;
+}
 
 (function() {
 
@@ -25,6 +27,8 @@ if (!('allowsEval' in document.securityPolicy))
 // <include src="../../file_manager/common/js/async_util.js">
 // <include src="../../file_manager/common/js/file_type.js">
 // <include src="../../file_manager/common/js/util.js">
+// <include src="../../base/js/mediasession_types.js">
+// <include src="../../base/js/app_util.js">
 // <include src="../../base/js/volume_manager_types.js">
 // <include src="../../base/js/filtered_volume_manager.js">
 

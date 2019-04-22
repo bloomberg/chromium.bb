@@ -6,10 +6,10 @@
 #define UI_OZONE_PLATFORM_DRM_GPU_DRM_GPU_DISPLAY_MANAGER_H_
 
 #include <stdint.h>
-
 #include <memory>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
@@ -32,6 +32,10 @@ class DrmGpuDisplayManager {
                        DrmDeviceManager* drm_device_manager);
   ~DrmGpuDisplayManager();
 
+  // Sets a callback that will be notified when display configuration may have
+  // changed to clear the overlay configuration cache.
+  void SetClearOverlayCacheCallback(base::RepeatingClosure callback);
+
   // Returns a list of the connected displays. When this is called the list of
   // displays is refreshed.
   MovableDisplaySnapshots GetDisplays();
@@ -48,6 +52,8 @@ class DrmGpuDisplayManager {
   bool SetHDCPState(int64_t display_id, display::HDCPState state);
   void SetColorMatrix(int64_t display_id,
                       const std::vector<float>& color_matrix);
+  void SetBackgroundColor(int64_t display_id,
+                          const uint64_t background_color);
   void SetGammaCorrection(
       int64_t display_id,
       const std::vector<display::GammaRampRGBEntry>& degamma_lut,
@@ -66,6 +72,8 @@ class DrmGpuDisplayManager {
   DrmDeviceManager* const drm_device_manager_;  // Not owned.
 
   std::vector<std::unique_ptr<DrmDisplay>> displays_;
+
+  base::RepeatingClosure clear_overlay_cache_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(DrmGpuDisplayManager);
 };

@@ -13,27 +13,27 @@
 #include <sstream>
 #include <string>
 
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 #include "third_party/libjingle_xmpp/xmpp/constants.h"
 #include "third_party/libjingle_xmpp/xmpp/plainsaslhandler.h"
 #include "third_party/libjingle_xmpp/xmpp/saslplainmechanism.h"
 #include "third_party/libjingle_xmpp/xmpp/util_unittest.h"
 #include "third_party/libjingle_xmpp/xmpp/xmppengine.h"
-#include "third_party/webrtc/rtc_base/gunit.h"
 
-using buzz::Jid;
-using buzz::QName;
-using buzz::XmlElement;
-using buzz::XmppEngine;
-using buzz::XmppIqCookie;
-using buzz::XmppIqHandler;
-using buzz::XmppTestHandler;
-using buzz::QN_ID;
-using buzz::QN_IQ;
-using buzz::QN_TYPE;
-using buzz::QN_ROSTER_QUERY;
-using buzz::XMPP_RETURN_OK;
-using buzz::XMPP_RETURN_BADARGUMENT;
+using jingle_xmpp::Jid;
+using jingle_xmpp::QName;
+using jingle_xmpp::XmlElement;
+using jingle_xmpp::XmppEngine;
+using jingle_xmpp::XmppIqCookie;
+using jingle_xmpp::XmppIqHandler;
+using jingle_xmpp::XmppTestHandler;
+using jingle_xmpp::QN_ID;
+using jingle_xmpp::QN_IQ;
+using jingle_xmpp::QN_TYPE;
+using jingle_xmpp::QN_ROSTER_QUERY;
+using jingle_xmpp::XMPP_RETURN_OK;
+using jingle_xmpp::XMPP_RETURN_BADARGUMENT;
 
 // XmppEngineTestIqHandler
 //    This class grabs the response to an IQ stanza and stores it in a string.
@@ -68,7 +68,7 @@ class XmppEngineTest : public testing::Test {
     engine_->AddStanzaHandler(handler_.get());
     engine_->SetUser(jid);
     engine_->SetSaslHandler(
-        new buzz::PlainSaslHandler(jid, pass, true));
+        new jingle_xmpp::PlainSaslHandler(jid, pass, true));
   }
   virtual void TearDown() {
     handler_.reset();

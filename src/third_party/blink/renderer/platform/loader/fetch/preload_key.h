@@ -46,7 +46,7 @@ struct PreloadKey final {
   }
 
   KURL url;
-  ResourceType type = ResourceType::kMainResource;
+  ResourceType type = ResourceType::kImage;
 };
 
 }  // namespace blink
@@ -61,6 +61,8 @@ struct DefaultHash<blink::PreloadKey> {
 template <>
 struct HashTraits<blink::PreloadKey>
     : public SimpleClassHashTraits<blink::PreloadKey> {
+  static const bool kEmptyValueIsZero = false;
+
   static bool IsDeletedValue(const blink::PreloadKey& value) {
     return HashTraits<blink::KURL>::IsDeletedValue(value.url);
   }

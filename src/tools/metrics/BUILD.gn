@@ -97,6 +97,7 @@ group("metrics_python_tests") {
     "//tools/metrics/common/path_util.py",
     "//tools/metrics/common/presubmit_util.py",
     "//tools/metrics/common/pretty_print_xml.py",
+    "//tools/metrics/common/etree_util.py",
 
     "//tools/metrics/histograms/extract_histograms.py",
     "//tools/metrics/histograms/generate_expired_histograms_array.py",
@@ -111,6 +112,8 @@ group("metrics_python_tests") {
 
     "//tools/metrics/ukm/ukm_model.py",
     "//tools/metrics/ukm/ukm_model_test.py",
+    "//tools/metrics/ukm/xml_validations.py",
+    "//tools/metrics/ukm/xml_validations_test.py",
 
     "//tools/python/google/path_utils.py",
 
@@ -118,9 +121,12 @@ group("metrics_python_tests") {
     "//tools/variations/fieldtrial_to_struct.py",
     "//tools/variations/fieldtrial_util_unittest.py",
     "//tools/variations/fieldtrial_util.py",
+    "//tools/variations/split_variations_cmd_unittest.py",
+    "//tools/variations/split_variations_cmd.py",
     "//tools/variations/unittest_data/expected_output.cc",
     "//tools/variations/unittest_data/expected_output.h",
     "//tools/variations/unittest_data/test_config.json",
+    "//tools/variations/unittest_data/variations_cmd.txt",
     "//components/variations/field_trial_config/field_trial_testing_config_schema.json",
     "//components/variations/service/generate_ui_string_overrider.py",
     "//components/variations/service/generate_ui_string_overrider_unittest.py",

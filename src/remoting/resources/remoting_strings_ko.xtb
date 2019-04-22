@@ -24,6 +24,7 @@
 <translation id="1520828917794284345">데스크톱 크기 조정</translation>
 <translation id="154040539590487450">원격 액세스 서비스를 시작하지 못했습니다.</translation>
 <translation id="1546934824884762070">예기치 않은 오류가 발생했습니다. 개발자에게 문제를 신고해 주세요.</translation>
+<translation id="1624185583382384493">이제 웹에서 Chrome 원격 데스크톱을 사용할 수 있습니다. 빠른 속도를 자랑하는 무료 <ph name="LINK_BEGIN" />웹 앱<ph name="LINK_END" />을 사용해 보세요. 여러 대의 모니터를 지원하는 기능이 개선되었으며 그밖에도 더 많은 기능을 제공합니다.</translation>
 <translation id="1643640058022401035">이 페이지를 닫으면 Chromoting 세션이 종료됩니다.</translation>
 <translation id="1654128982815600832">컴퓨터의 원격 연결을 사용하도록 설정 중...</translation>
 <translation id="170207782578677537">컴퓨터를 등록하는 데 실패했습니다.</translation>
@@ -138,6 +139,7 @@
 <translation id="3989511127559254552">계속하려면 내 컴퓨터에 확장 액세스 권한을 부여해야 합니다. 이 작업은 한번만 수행하면 됩니다.</translation>
 <translation id="4006787130661126000">Chrome 원격 데스크톱을 사용하여 컴퓨터에 액세스하려면 원격 연결을 사용하도록 설정해야 합니다.</translation>
 <translation id="405887016757208221">원격 컴퓨터가 세션을 초기화하는 데 실패했습니다. 문제가 지속되면 호스트를 다시 구성해 보시기 바랍니다.</translation>
+<translation id="4060747889721220580">파일 다운로드</translation>
 <translation id="4068946408131579958">모든 연결</translation>
 <translation id="409800995205263688">참고: 정책 설정에 따라 네트워크 내에 있는 컴퓨터 간의 연결만 허용됩니다.</translation>
 <translation id="4126409073460786861">설정이 완료된 후 이 페이지를 새로고침하면 기기를 선택하고 PIN을 입력하여 컴퓨터에 액세스할 수 있습니다.</translation>
@@ -242,6 +244,7 @@ PC</translation>
 <translation id="6198252989419008588">PIN 변경</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" />(이전 버전)</translation>
 <translation id="6221358653751391898">Chrome에 로그인하지 않았습니다. 로그인 후 다시 시도하세요.</translation>
+<translation id="6227369581881558336">이제 웹에서 Chrome 원격 데스크톱을 사용할 수 있습니다. 파일 전송 등 새로운 기능도 사용해 보세요. <ph name="LINK_BEGIN" />웹 앱<ph name="LINK_END" />을 확인하세요.</translation>
 <translation id="6284412385303060032">콘솔 로직 화면에서 실행 중인 호스트가 사용자별 세션에서 실행 중인 호스트로 전환하여 커튼 모드를 지원하기 위해 종료되었습니다.</translation>
 <translation id="629730747756840877">계정</translation>
 <translation id="6304318647555713317">클라이언트</translation>
@@ -289,7 +292,6 @@ PC</translation>
 <translation id="7434397035092923453"><ph name="CLIENT_USERNAME" /> 클라이언트의 액세스가 거부되었습니다.</translation>
 <translation id="7444276978508498879">연결된 클라이언트: <ph name="CLIENT_USERNAME" /></translation>
 <translation id="7526139040829362392">계정 변경</translation>
-<translation id="7589941250119944644">이제 웹에서 Chrome 원격 데스크톱을 이용할 수 있습니다. <ph name="LINK_BEGIN" />웹 앱<ph name="LINK_END" />을 사용해 보세요. 이전 앱의 모든 기능을 무료로 더 빠르게 이용할 수 있습니다.</translation>
 <translation id="7606912958770842224">원격 연결 사용</translation>
 <translation id="7628469622942688817">이 기기에 내 PIN을 저장합니다.</translation>
 <translation id="7649070708921625228">도움말</translation>

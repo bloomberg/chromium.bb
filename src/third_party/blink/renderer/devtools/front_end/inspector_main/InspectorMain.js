@@ -9,14 +9,31 @@ InspectorMain.InspectorMain = class extends Common.Object {
   /**
    * @override
    */
-  run() {
-    SDK.initMainConnection(() => {
+  async run() {
+    let firstCall = true;
+    await SDK.initMainConnection(async () => {
       const type = Runtime.queryParam('v8only') ? SDK.Target.Type.Node : SDK.Target.Type.Frame;
-      const target = SDK.targetManager.createTarget('main', Common.UIString('Main'), type, null);
+      const waitForDebuggerInPage = type === SDK.Target.Type.Frame && Runtime.queryParam('panel') === 'sources';
+      const target =
+          SDK.targetManager.createTarget('main', Common.UIString('Main'), type, null, undefined, waitForDebuggerInPage);
+
+      // Only resume target during the first connection,
+      // subsequent connections are due to connection hand-over,
+      // there is no need to pause in debugger.
+      if (!firstCall)
+        return;
+      firstCall = false;
+
+      if (waitForDebuggerInPage) {
+        const debuggerModel = target.model(SDK.DebuggerModel);
+        if (!debuggerModel.isReadyToPause())
+          await debuggerModel.once(SDK.DebuggerModel.Events.DebuggerIsReadyToPause);
+        debuggerModel.pause();
+      }
+
       target.runtimeAgent().runIfWaitingForDebugger();
     }, Components.TargetDetachedDialog.webSocketConnectionLost);
 
-    new InspectorMain.InspectedNodeRevealer();
     new InspectorMain.SourcesPanelIndicator();
     new InspectorMain.BackendSettingsSync();
     new MobileThrottling.NetworkPanelIndicator();
@@ -123,24 +140,6 @@ InspectorMain.SourcesPanelIndicator = class {
       }
       UI.inspectorView.setPanelIcon('sources', icon);
     }
-  }
-};
-
-/**
- * @unrestricted
- */
-InspectorMain.InspectedNodeRevealer = class {
-  constructor() {
-    SDK.targetManager.addModelListener(
-        SDK.OverlayModel, SDK.OverlayModel.Events.InspectNodeRequested, this._inspectNode, this);
-  }
-
-  /**
-   * @param {!Common.Event} event
-   */
-  _inspectNode(event) {
-    const deferredNode = /** @type {!SDK.DeferredDOMNode} */ (event.data);
-    Common.Revealer.reveal(deferredNode);
   }
 };
 

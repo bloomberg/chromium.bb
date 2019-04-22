@@ -4,6 +4,7 @@
 
 #include "chromecast/base/thread_health_checker.h"
 
+#include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_mock_time_task_runner.h"
@@ -24,7 +25,7 @@ class ThreadHealthCheckerTest : public ::testing::Test {
         event_(base::WaitableEvent::ResetPolicy::MANUAL,
                base::WaitableEvent::InitialState::NOT_SIGNALED) {}
 
-  ~ThreadHealthCheckerTest() override{};
+  ~ThreadHealthCheckerTest() override {}
 
   scoped_refptr<base::TestMockTimeTaskRunner> patient_;
   scoped_refptr<base::TestMockTimeTaskRunner> doctor_;

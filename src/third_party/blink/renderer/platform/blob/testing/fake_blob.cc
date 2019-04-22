@@ -6,6 +6,7 @@
 
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
+#include "services/network/public/mojom/data_pipe_getter.mojom-blink.h"
 #include "third_party/blink/public/platform/web_string.h"
 
 namespace blink {

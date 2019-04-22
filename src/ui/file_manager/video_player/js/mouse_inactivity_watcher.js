@@ -52,8 +52,9 @@ function MouseInactivityWatcher(container, opt_timeout, opt_toolsActive) {
   }.bind(this));
   // If pointer goes outside the app window, tools should be hidden immediately.
   document.addEventListener('mouseout', function(event) {
-    if (event.relatedTarget === null)
+    if (event.relatedTarget === null) {
       this.forceTimeout_();
+    }
   }.bind(this));
 }
 
@@ -78,10 +79,11 @@ MouseInactivityWatcher.prototype = {
    */
   set disabled(value) {
     this.disabled_ = value;
-    if (value)
+    if (value) {
       this.kick();
-    else
+    } else {
       this.check();
+    }
   }
 };
 
@@ -89,10 +91,11 @@ MouseInactivityWatcher.prototype = {
  * @param {boolean} on True if show, false if hide.
  */
 MouseInactivityWatcher.prototype.showTools = function(on) {
-  if (on)
+  if (on) {
     this.container_.setAttribute('tools', 'true');
-  else
+  } else {
     this.container_.removeAttribute('tools');
+  }
 };
 
 /**
@@ -115,11 +118,13 @@ MouseInactivityWatcher.prototype.activityStarted_ = function() {
  * @private
  */
 MouseInactivityWatcher.prototype.activityStopped_ = function(opt_timeout) {
-  if (this.disabled_ || this.mouseOverTool_ || this.toolsActive_())
+  if (this.disabled_ || this.mouseOverTool_ || this.toolsActive_()) {
     return;
+  }
 
-  if (this.timeoutID_)
+  if (this.timeoutID_) {
     clearTimeout(this.timeoutID_);
+  }
 
   this.timeoutID_ =
       setTimeout(this.onTimeoutBound_, opt_timeout || this.timeout_);
@@ -139,10 +144,11 @@ MouseInactivityWatcher.prototype.kick = function(opt_timeout) {
  * Check if the tools are active and update the tools visibility accordingly.
  */
 MouseInactivityWatcher.prototype.check = function() {
-  if (this.toolsActive_())
+  if (this.toolsActive_()) {
     this.activityStarted_();
-  else
+  } else {
     this.activityStopped_();
+  }
 };
 
 /**
@@ -160,8 +166,9 @@ MouseInactivityWatcher.prototype.onMouseMove_ = function(e) {
   this.clientX_ = e.clientX;
   this.clientY_ = e.clientY;
 
-  if (this.disabled_)
+  if (this.disabled_) {
     return;
+  }
 
   this.kick();
 };
@@ -174,8 +181,9 @@ MouseInactivityWatcher.prototype.onMouseMove_ = function(e) {
  */
 MouseInactivityWatcher.prototype.onToolMouseOver_ = function(e) {
   this.mouseOverTool_ = true;
-  if (!this.disabled_)
+  if (!this.disabled_) {
     this.kick();
+  }
 };
 
 /**
@@ -186,8 +194,9 @@ MouseInactivityWatcher.prototype.onToolMouseOver_ = function(e) {
  */
 MouseInactivityWatcher.prototype.onToolMouseOut_ = function(e) {
   this.mouseOverTool_ = false;
-  if (!this.disabled_)
+  if (!this.disabled_) {
     this.kick();
+  }
 };
 
 /**
@@ -196,8 +205,9 @@ MouseInactivityWatcher.prototype.onToolMouseOut_ = function(e) {
  */
 MouseInactivityWatcher.prototype.onTimeout_ = function() {
   this.timeoutID_ = null;
-  if (!this.disabled_ && !this.toolsActive_())
+  if (!this.disabled_ && !this.toolsActive_()) {
     this.showTools(false);
+  }
 };
 
 /**

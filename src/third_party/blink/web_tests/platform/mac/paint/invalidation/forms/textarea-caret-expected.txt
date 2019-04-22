@@ -19,22 +19,22 @@
       "paintInvalidations": [
         {
           "object": "LayoutTextControl TEXTAREA id='editor'",
-          "rect": [5, 5, 147, 38],
+          "rect": [5, 5, 167, 44],
           "reason": "chunk appeared"
         },
         {
           "object": "LayoutTextControl TEXTAREA id='editor'",
-          "rect": [5, 5, 147, 38],
+          "rect": [5, 5, 167, 44],
           "reason": "chunk appeared"
         },
         {
           "object": "LayoutBlockFlow HTML",
-          "rect": [8, 8, 141, 32],
+          "rect": [8, 8, 161, 38],
           "reason": "chunk disappeared"
         },
         {
           "object": "LayoutTextControl TEXTAREA id='editor'",
-          "rect": [9, 11, 124, 13],
+          "rect": [9, 11, 159, 16],
           "reason": "chunk appeared"
         }
       ]

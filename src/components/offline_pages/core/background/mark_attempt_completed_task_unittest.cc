@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/time/clock.h"
 #include "components/offline_pages/core/background/request_queue_store.h"
 #include "components/offline_pages/core/background/request_queue_task_test_base.h"
 #include "components/offline_pages/core/background/test_request_queue_store.h"
@@ -33,19 +32,21 @@ class MarkAttemptCompletedTaskTest : public RequestQueueTaskTestBase {
   UpdateRequestsResult* last_result() const { return result_.get(); }
 
  private:
-  void AddRequestDone(ItemActionStatus status);
+  static void AddRequestDone(AddRequestResult result) {
+    ASSERT_EQ(AddRequestResult::SUCCESS, result);
+  }
 
   std::unique_ptr<UpdateRequestsResult> result_;
 };
 
 void MarkAttemptCompletedTaskTest::AddStartedItemToStore() {
-  base::Time creation_time = OfflineClock()->Now();
+  base::Time creation_time = OfflineTimeNow();
   SavePageRequest request_1(kRequestId1, kUrl1, kClientId1, creation_time,
                             true);
-  request_1.MarkAttemptStarted(OfflineClock()->Now());
+  request_1.MarkAttemptStarted(OfflineTimeNow());
   store_.AddRequest(
-      request_1, base::BindOnce(&MarkAttemptCompletedTaskTest::AddRequestDone,
-                                base::Unretained(this)));
+      request_1, RequestQueue::AddOptions(),
+      base::BindOnce(&MarkAttemptCompletedTaskTest::AddRequestDone));
   PumpLoop();
 }
 
@@ -54,9 +55,6 @@ void MarkAttemptCompletedTaskTest::ChangeRequestsStateCallback(
   result_ = std::make_unique<UpdateRequestsResult>(std::move(result));
 }
 
-void MarkAttemptCompletedTaskTest::AddRequestDone(ItemActionStatus status) {
-  ASSERT_EQ(ItemActionStatus::SUCCESS, status);
-}
 
 TEST_F(MarkAttemptCompletedTaskTest, MarkAttemptCompletedWhenExists) {
   InitializeStore();

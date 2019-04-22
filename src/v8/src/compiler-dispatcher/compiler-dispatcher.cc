@@ -15,6 +15,7 @@
 #include "src/parsing/parse-info.h"
 #include "src/parsing/parser.h"
 #include "src/task-utils.h"
+#include "src/zone/zone-list-inl.h"  // crbug.com/v8/8816
 
 namespace v8 {
 namespace internal {
@@ -98,7 +99,7 @@ bool CompilerDispatcher::IsEnqueued(JobId job_id) const {
 }
 
 void CompilerDispatcher::RegisterSharedFunctionInfo(
-    JobId job_id, SharedFunctionInfo* function) {
+    JobId job_id, SharedFunctionInfo function) {
   DCHECK_NE(jobs_.find(job_id), jobs_.end());
 
   if (trace_compiler_dispatcher_) {
@@ -108,8 +109,8 @@ void CompilerDispatcher::RegisterSharedFunctionInfo(
   }
 
   // Make a global handle to the function.
-  Handle<SharedFunctionInfo> function_handle =
-      isolate_->global_handles()->Create(function);
+  Handle<SharedFunctionInfo> function_handle = Handle<SharedFunctionInfo>::cast(
+      isolate_->global_handles()->Create(function));
 
   // Register mapping.
   auto job_it = jobs_.find(job_id);

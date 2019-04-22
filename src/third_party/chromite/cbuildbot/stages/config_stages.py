@@ -10,7 +10,6 @@ from __future__ import print_function
 import errno
 import os
 import re
-import shutil
 import textwrap
 import traceback
 
@@ -25,7 +24,6 @@ from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import path_util
 
-
 GS_GE_TEMPLATE_BUCKET = 'gs://chromeos-build-release-console/'
 GS_GE_TEMPLATE_TOT = GS_GE_TEMPLATE_BUCKET + 'build_config.ToT.json'
 GS_GE_TEMPLATE_RELEASE = GS_GE_TEMPLATE_BUCKET + 'build_config.release-R*'
@@ -38,6 +36,7 @@ class UpdateConfigException(Exception):
 
 class BranchNotFoundException(Exception):
   """Didn't find the corresponding branch."""
+
 
 class ConfigNotFoundException(Exception):
   """Didn't find existing config files in branch."""
@@ -61,9 +60,8 @@ def GetProjectWorkDir(project):
   project_work_dir = GetProjectTmpDir(project)
 
   if not cros_build_lib.IsInsideChroot():
-    project_work_dir = os.path.join(constants.SOURCE_ROOT,
-                                    constants.DEFAULT_CHROOT_DIR,
-                                    project_work_dir)
+    project_work_dir = os.path.join(
+        constants.SOURCE_ROOT, constants.DEFAULT_CHROOT_DIR, project_work_dir)
 
   return project_work_dir
 
@@ -92,9 +90,8 @@ def GetProjectRepoDir(project, project_url, clean_old_dir=False):
   if not os.path.exists(project_dir):
     ref = os.path.join(constants.SOURCE_ROOT, project)
     logging.info('Cloning %s %s to %s', project_url, ref, project_dir)
-    repository.CloneWorkingRepo(dest=project_dir,
-                                url=project_url,
-                                reference=ref)
+    repository.CloneWorkingRepo(
+        dest=project_dir, url=project_url, reference=ref)
 
   return project_dir
 
@@ -124,11 +121,12 @@ class CheckTemplateStage(generic_stages.BuilderStage):
 
   category = constants.CI_INFRA_STAGE
 
-  def __init__(self, builder_run, **kwargs):
-    super(CheckTemplateStage, self).__init__(builder_run, **kwargs)
+  def __init__(self, builder_run, buildstore, **kwargs):
+    super(CheckTemplateStage, self).__init__(builder_run, buildstore, **kwargs)
     self.ctx = gs.GSContext(init_boto=True)
 
   def SortAndGetReleasePaths(self, release_list):
+
     def _GetMilestone(file_name):
       # Given 'build_config.release-R51-8172.B.json',
       # search for milestone number '51'.
@@ -150,7 +148,7 @@ class CheckTemplateStage(generic_stages.BuilderStage):
     if len(release_list) <= 3:
       return [i[1] for i in milestone_path_pairs]
     else:
-      return [i[1] for i in milestone_path_pairs[0: 3]]
+      return [i[1] for i in milestone_path_pairs[0:3]]
 
   def _ListTemplates(self):
     """List and return template files from GS bucket.
@@ -173,8 +171,8 @@ class CheckTemplateStage(generic_stages.BuilderStage):
       if release_gs_paths:
         template_gs_paths.extend(release_gs_paths)
     except gs.GSNoSuchKey as e:
-      logging.warning('No matching objects for %s: %s',
-                      GS_GE_TEMPLATE_RELEASE, e)
+      logging.warning('No matching objects for %s: %s', GS_GE_TEMPLATE_RELEASE,
+                      e)
 
     return template_gs_paths
 
@@ -192,20 +190,25 @@ class CheckTemplateStage(generic_stages.BuilderStage):
     for template_gs_path in template_gs_paths:
       try:
         branch = GetBranchName(os.path.basename(template_gs_path))
-        UpdateConfigStage(self._run, template_gs_path, branch,
-                          chromite_dir, self._run.options.debug,
-                          suffix='_' + branch).Run()
+        UpdateConfigStage(
+            self._run,
+            self.buildstore,
+            template_gs_path,
+            branch,
+            chromite_dir,
+            self._run.options.debug,
+            suffix='_' + branch).Run()
       except Exception as e:
         successful = False
         failed_templates.append(template_gs_path)
-        logging.error('Failed to update configs for %s: %s',
-                      template_gs_path, e)
+        logging.error('Failed to update configs for %s: %s', template_gs_path,
+                      e)
         traceback.print_exc()
 
     # If UpdateConfigStage failures happened, raise a exception
     if not successful:
-      raise UpdateConfigException('Failed to update config for %s' %
-                                  failed_templates)
+      raise UpdateConfigException(
+          'Failed to update config for %s' % failed_templates)
 
 
 class UpdateConfigStage(generic_stages.BuilderStage):
@@ -219,9 +222,9 @@ class UpdateConfigStage(generic_stages.BuilderStage):
 
   category = constants.CI_INFRA_STAGE
 
-  def __init__(self, builder_run, template_gs_path,
-               branch, chromite_dir, dry_run, **kwargs):
-    super(UpdateConfigStage, self).__init__(builder_run, **kwargs)
+  def __init__(self, builder_run, buildstore, template_gs_path, branch,
+               chromite_dir, dry_run, **kwargs):
+    super(UpdateConfigStage, self).__init__(builder_run, buildstore, **kwargs)
     self.template_gs_path = template_gs_path
     self.chromite_dir = chromite_dir
     self.branch = branch
@@ -259,14 +262,12 @@ class UpdateConfigStage(generic_stages.BuilderStage):
     # These are the two directories inside cbuildbot where these files can
     # exist, and order of preference.
     dirs = ('config', 'cbuildbot')
-    files = (GE_BUILD_CONFIG_FILE,
-             'config_dump.json',
+    files = (GE_BUILD_CONFIG_FILE, 'config_dump.json',
              'waterfall_layout_dump.txt')
 
     for d in dirs:
       self.config_dir = d
-      self.config_paths = [os.path.join(self.chromite_dir, d, f)
-                           for f in files]
+      self.config_paths = [os.path.join(self.chromite_dir, d, f) for f in files]
       self.ge_config_local_path = self.config_paths[0]
       if os.path.exists(self.ge_config_local_path):
         logging.info('Found config in %s', self.config_dir)
@@ -286,8 +287,7 @@ class UpdateConfigStage(generic_stages.BuilderStage):
       True if updates exist; otherwise False.
     """
     modifications = git.RunGit(
-        self.chromite_dir,
-        ['status', '--porcelain', '--'] + self.config_paths,
+        self.chromite_dir, ['status', '--porcelain', '--'] + self.config_paths,
         capture_output=True,
         print_cmd=True).output
     if modifications:
@@ -299,8 +299,9 @@ class UpdateConfigStage(generic_stages.BuilderStage):
   def _RunUnitTest(self):
     """Run chromeos_config_unittest on top of the changes."""
     logging.debug("Running chromeos_config_unittest")
-    test_path = path_util.ToChrootPath(os.path.join(
-        self.chromite_dir, self.config_dir, 'chromeos_config_unittest'))
+    test_path = path_util.ToChrootPath(
+        os.path.join(self.chromite_dir, self.config_dir,
+                     'chromeos_config_unittest'))
 
     # Because of --update, this updates our generated files.
     cmd = ['cros_sdk', '--', test_path, '--update']
@@ -315,8 +316,8 @@ class UpdateConfigStage(generic_stages.BuilderStage):
       if e.errno != errno.ENOENT:
         raise
 
-    result = git.RunGit(self.chromite_dir, ['diff'] + self.config_paths,
-                        print_cmd=True)
+    result = git.RunGit(
+        self.chromite_dir, ['diff'] + self.config_paths, print_cmd=True)
     with open(config_change_patch, 'w') as f:
       f.write(result.output)
 
@@ -327,26 +328,24 @@ class UpdateConfigStage(generic_stages.BuilderStage):
     config_change_patch = self._CreateConfigPatch()
 
     # Apply config patch.
-    git.RunGit(constants.CHROMITE_DIR, ['apply', config_change_patch],
-               print_cmd=True)
+    git.RunGit(
+        constants.CHROMITE_DIR, ['apply', config_change_patch], print_cmd=True)
 
-    test_stages.BinhostTestStage(self._run, suffix='_' + self.branch).Run()
+    test_stages.BinhostTestStage(
+        self._run, self.buildstore, suffix='_' + self.branch).Run()
 
     # Clean config patch.
-    git.RunGit(constants.CHROMITE_DIR, ['checkout', '.'],
-               print_cmd=True)
+    git.RunGit(constants.CHROMITE_DIR, ['checkout', '.'], print_cmd=True)
 
   def _PushCommits(self):
     """Commit and push changes to current branch."""
-    git.RunGit(self.chromite_dir, ['add'] + self.config_paths,
-               print_cmd=True)
+    git.RunGit(self.chromite_dir, ['add'] + self.config_paths, print_cmd=True)
     commit_msg = "Update config settings by config-updater."
-    git.RunGit(self.chromite_dir,
-               ['commit', '-m', commit_msg],
-               print_cmd=True)
+    git.RunGit(self.chromite_dir, ['commit', '-m', commit_msg], print_cmd=True)
 
-    git.RunGit(self.chromite_dir, ['config', 'push.default', 'tracking'],
-               print_cmd=True)
+    git.RunGit(
+        self.chromite_dir, ['config', 'push.default', 'tracking'],
+        print_cmd=True)
     git.PushBranch(self.branch, self.chromite_dir, dryrun=self.dry_run)
 
   def PerformStage(self):
@@ -379,70 +378,87 @@ class DeployLuciSchedulerStage(generic_stages.BuilderStage):
 
   category = constants.CI_INFRA_STAGE
 
-  # Where is the LUCI Project config defined.
   PROJECT_URL = os.path.join(constants.INTERNAL_GOB_URL,
-                             'chromeos/manifest-internal')
-  PROJECT_BRANCH = 'infra/config'
+                             'chromeos/infra/config')
+  PROJECT_BRANCH = 'master'
 
-
-  def __init__(self, builder_run, **kwargs):
-    super(DeployLuciSchedulerStage, self).__init__(builder_run, **kwargs)
+  def __init__(self, builder_run, buildstore, **kwargs):
+    super(DeployLuciSchedulerStage, self).__init__(builder_run, buildstore,
+                                                   **kwargs)
+    self.legacy_project_dir = None
     self.project_dir = None
 
   def _RunUnitTest(self):
     """Run chromeos_config_unittest to confirm a clean scheduler config."""
     logging.debug("Running chromeos_config_unittest, to confirm sane state.")
-    test_path = path_util.ToChrootPath(os.path.join(
-        constants.CHROMITE_DIR, 'config', 'chromeos_config_unittest'))
+    test_path = path_util.ToChrootPath(
+        os.path.join(constants.CHROMITE_DIR, 'config',
+                     'chromeos_config_unittest'))
     cmd = ['cros_sdk', '--', test_path]
     cros_build_lib.RunCommand(cmd, cwd=constants.CHROMITE_DIR)
 
+  def _MakeWorkDir(self, name):
+    """Makes and returns the path to a temporary directory.
+
+    Args:
+      name: name to use in the creation of the temporary directory.
+    """
+    path = GetProjectWorkDir(name)
+    osutils.RmDir(path, ignore_missing=True, sudo=True)
+    osutils.SafeMakedirs(path)
+    return path
+
   def _CheckoutLuciProject(self):
-    """Checkout to the corresponding branch in the temp repository.
+    """Checkout the LUCI project config.
 
     Raises:
       BranchNotFoundException if failed to checkout to the branch.
     """
-    self.project_dir = GetProjectWorkDir('luci_config')
-    osutils.RmDir(self.project_dir, ignore_missing=True, sudo=True)
-    osutils.SafeMakedirs(self.project_dir)
+    self.project_dir = self._MakeWorkDir('luci_config')
 
     git.Clone(self.project_dir, self.PROJECT_URL, branch=self.PROJECT_BRANCH)
 
-    logging.info('Checked out %s:%s in %s',
+    logging.info('Checked out luci config %s:%s in %s',
                  self.PROJECT_URL, self.PROJECT_BRANCH, self.project_dir)
 
   def _UpdateLuciProject(self):
-    """Create and return a diff patch file for config changes."""
-    source_file = os.path.join(
-        constants.CHROMITE_DIR, 'config', 'luci-scheduler.cfg')
+    chromite_source_file = os.path.join(constants.CHROMITE_DIR, 'config',
+                                        'luci-scheduler.cfg')
+    generated_source_file = os.path.join(self.project_dir, 'generated',
+                                         'luci-scheduler.cfg')
 
-    target_file = os.path.join(self.project_dir, 'luci-scheduler.cfg')
+    target_file = os.path.join(self.project_dir, 'luci', 'luci-scheduler.cfg')
 
-    if osutils.ReadFile(source_file) == osutils.ReadFile(target_file):
-      logging.PrintBuildbotStepText('luci-scheduler.cfg current: No Update.')
+    concatenated_content = (osutils.ReadFile(chromite_source_file) + "\n\n"
+                            + osutils.ReadFile(generated_source_file))
+
+    if concatenated_content == osutils.ReadFile(target_file):
+      logging.PrintBuildbotStepText(
+          'luci-scheduler.cfg current: No Update.')
       return
 
-    chromite_rev = git.RunGit(constants.CHROMITE_DIR, [
-        'rev-parse', 'HEAD:config/luci-scheduler.cfg']).output.rstrip()
+    chromite_rev = git.RunGit(
+        constants.CHROMITE_DIR,
+        ['rev-parse', 'HEAD:config/luci-scheduler.cfg']).output.rstrip()
 
     message = textwrap.dedent('''\
       luci-scheduler.cfg: Chromite %s
 
-      Auto update to match generated file in chromite.
+      Auto update to match generated file in chromite and luci config.
       ''' % chromite_rev)
 
-    shutil.copyfile(source_file, target_file)
+    with open(target_file, "w") as f:
+      f.write(concatenated_content)
 
     git.RunGit(self.project_dir, ['add', '-A'])
     git.RunGit(self.project_dir, ['commit', '-m', message])
 
-    push_to = git.RemoteRef('origin', 'infra/config')
-    logging.info('Pushing to branch (%s) with message: %s %s',
-                 push_to, message,
+    push_to = git.RemoteRef('origin', self.PROJECT_BRANCH)
+    logging.info('Pushing to branch (%s) with message: %s %s', push_to, message,
                  ' (dryrun)' if self._run.options.debug else '')
-    git.RunGit(self.project_dir, ['config', 'push.default', 'tracking'],
-               print_cmd=True)
+    git.RunGit(
+        self.project_dir, ['config', 'push.default', 'tracking'],
+        print_cmd=True)
     git.PushBranch(self.PROJECT_BRANCH, self.project_dir,
                    dryrun=self._run.options.debug)
     logging.PrintBuildbotStepText('luci-scheduler.cfg: Updated.')

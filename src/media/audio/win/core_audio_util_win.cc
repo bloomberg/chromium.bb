@@ -214,52 +214,65 @@ const char* WaveFormatTagToString(WORD format_tag) {
 // in that order within each block.
 std::string ChannelMaskToString(DWORD channel_mask) {
   std::string ss;
-  if (channel_mask & SPEAKER_FRONT_LEFT)
-    ss += "FRONT_LEFT | ";
-  if (channel_mask & SPEAKER_FRONT_RIGHT)
-    ss += "FRONT_RIGHT | ";
-  if (channel_mask & SPEAKER_FRONT_CENTER)
-    ss += "FRONT_CENTER | ";
-  if (channel_mask & SPEAKER_LOW_FREQUENCY)
-    ss += "LOW_FREQUENCY | ";
-  if (channel_mask & SPEAKER_BACK_LEFT)
-    ss += "BACK_LEFT | ";
-  if (channel_mask & SPEAKER_BACK_RIGHT)
-    ss += "BACK_RIGHT | ";
-  if (channel_mask & SPEAKER_FRONT_LEFT_OF_CENTER)
-    ss += "FRONT_LEFT_OF_CENTER | ";
-  if (channel_mask & SPEAKER_FRONT_RIGHT_OF_CENTER)
-    ss += "RIGHT_OF_CENTER | ";
-  if (channel_mask & SPEAKER_BACK_CENTER)
-    ss += "BACK_CENTER | ";
-  if (channel_mask & SPEAKER_SIDE_LEFT)
-    ss += "SIDE_LEFT | ";
-  if (channel_mask & SPEAKER_SIDE_RIGHT)
-    ss += "SIDE_RIGHT | ";
-  if (channel_mask & SPEAKER_TOP_CENTER)
-    ss += "TOP_CENTER | ";
-  if (channel_mask & SPEAKER_TOP_FRONT_LEFT)
-    ss += "TOP_FRONT_LEFT | ";
-  if (channel_mask & SPEAKER_TOP_FRONT_CENTER)
-    ss += "TOP_FRONT_CENTER | ";
-  if (channel_mask & SPEAKER_TOP_FRONT_RIGHT)
-    ss += "TOP_FRONT_RIGHT | ";
-  if (channel_mask & SPEAKER_TOP_BACK_LEFT)
-    ss += "TOP_BACK_LEFT | ";
-  if (channel_mask & SPEAKER_TOP_BACK_CENTER)
-    ss += "TOP_BACK_CENTER | ";
-  if (channel_mask & SPEAKER_TOP_BACK_RIGHT)
-    ss += "TOP_BACK_RIGHT | ";
+  if (channel_mask == KSAUDIO_SPEAKER_DIRECTOUT)
+    // A very rare channel mask where speaker orientation is "hard coded".
+    // In direct-out mode, the audio device renders the first channel to the
+    // first output connector on the device, the second channel to the second
+    // output on the device, and so on.
+    ss += "DIRECT_OUT";
+  else {
+    if (channel_mask & SPEAKER_FRONT_LEFT)
+      ss += "FRONT_LEFT | ";
+    if (channel_mask & SPEAKER_FRONT_RIGHT)
+      ss += "FRONT_RIGHT | ";
+    if (channel_mask & SPEAKER_FRONT_CENTER)
+      ss += "FRONT_CENTER | ";
+    if (channel_mask & SPEAKER_LOW_FREQUENCY)
+      ss += "LOW_FREQUENCY | ";
+    if (channel_mask & SPEAKER_BACK_LEFT)
+      ss += "BACK_LEFT | ";
+    if (channel_mask & SPEAKER_BACK_RIGHT)
+      ss += "BACK_RIGHT | ";
+    if (channel_mask & SPEAKER_FRONT_LEFT_OF_CENTER)
+      ss += "FRONT_LEFT_OF_CENTER | ";
+    if (channel_mask & SPEAKER_FRONT_RIGHT_OF_CENTER)
+      ss += "RIGHT_OF_CENTER | ";
+    if (channel_mask & SPEAKER_BACK_CENTER)
+      ss += "BACK_CENTER | ";
+    if (channel_mask & SPEAKER_SIDE_LEFT)
+      ss += "SIDE_LEFT | ";
+    if (channel_mask & SPEAKER_SIDE_RIGHT)
+      ss += "SIDE_RIGHT | ";
+    if (channel_mask & SPEAKER_TOP_CENTER)
+      ss += "TOP_CENTER | ";
+    if (channel_mask & SPEAKER_TOP_FRONT_LEFT)
+      ss += "TOP_FRONT_LEFT | ";
+    if (channel_mask & SPEAKER_TOP_FRONT_CENTER)
+      ss += "TOP_FRONT_CENTER | ";
+    if (channel_mask & SPEAKER_TOP_FRONT_RIGHT)
+      ss += "TOP_FRONT_RIGHT | ";
+    if (channel_mask & SPEAKER_TOP_BACK_LEFT)
+      ss += "TOP_BACK_LEFT | ";
+    if (channel_mask & SPEAKER_TOP_BACK_CENTER)
+      ss += "TOP_BACK_CENTER | ";
+    if (channel_mask & SPEAKER_TOP_BACK_RIGHT)
+      ss += "TOP_BACK_RIGHT | ";
 
-  if (!ss.empty()) {
-    // Delete last appended " | " substring.
-    ss.erase(ss.end() - 3, ss.end());
+    if (!ss.empty()) {
+      // Delete last appended " | " substring.
+      ss.erase(ss.end() - 3, ss.end());
+    }
   }
 
-  std::bitset<8 * sizeof(DWORD)> mask(channel_mask);
-  ss += " (";
-  ss += std::to_string(mask.count());
-  ss += ")";
+  // Add number of utilized channels, e.g. "(2)" but exclude this part for
+  // direct output mode since the number of ones in the channel mask does not
+  // reflect the number of channels for this case.
+  if (channel_mask != KSAUDIO_SPEAKER_DIRECTOUT) {
+    std::bitset<8 * sizeof(DWORD)> mask(channel_mask);
+    ss += " (";
+    ss += std::to_string(mask.count());
+    ss += ")";
+  }
   return ss;
 }
 

@@ -8,12 +8,12 @@
 #include <string>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "url/third_party/mozilla/url_parse.h"
 #include "url/url_canon.h"
 #include "url/url_constants.h"
-#include "url/url_export.h"
 
 namespace url {
 
@@ -29,13 +29,13 @@ namespace url {
 // It is OK to call this function more than once, subsequent calls will be
 // no-ops, unless Shutdown was called in the mean time. This will also be a
 // no-op if other calls to the library have forced an initialization beforehand.
-URL_EXPORT void Initialize();
+COMPONENT_EXPORT(URL) void Initialize();
 
 // Cleanup is not required, except some strings may leak. For most user
 // applications, this is fine. If you're using it in a library that may get
 // loaded and unloaded, you'll want to unload to properly clean up your
 // library.
-URL_EXPORT void Shutdown();
+COMPONENT_EXPORT(URL) void Shutdown();
 
 // Schemes ---------------------------------------------------------------------
 
@@ -45,13 +45,13 @@ URL_EXPORT void Shutdown();
 // compatibility, which allows the use of custom schemes: content hosted in
 // Android WebView assumes that one URL with a non-standard scheme will be
 // same-origin to another URL with the same non-standard scheme.
-URL_EXPORT void EnableNonStandardSchemesForAndroidWebView();
+COMPONENT_EXPORT(URL) void EnableNonStandardSchemesForAndroidWebView();
 
 // Whether or not SchemeHostPort and Origin allow non-standard schemes.
-URL_EXPORT bool AllowNonStandardSchemesForAndroidWebView();
+COMPONENT_EXPORT(URL) bool AllowNonStandardSchemesForAndroidWebView();
 
 // A pair for representing a standard scheme name and the SchemeType for it.
-struct URL_EXPORT SchemeWithType {
+struct COMPONENT_EXPORT(URL) SchemeWithType {
   const char* scheme;
   SchemeType type;
 };
@@ -64,53 +64,53 @@ struct URL_EXPORT SchemeWithType {
 // URL schemes. A standard-format scheme adheres to what RFC 3986 calls "generic
 // URI syntax" (https://tools.ietf.org/html/rfc3986#section-3).
 
-URL_EXPORT void AddStandardScheme(const char* new_scheme,
-                                  SchemeType scheme_type);
+COMPONENT_EXPORT(URL)
+void AddStandardScheme(const char* new_scheme, SchemeType scheme_type);
 
 // Adds an application-defined scheme to the internal list of schemes allowed
 // for referrers.
-URL_EXPORT void AddReferrerScheme(const char* new_scheme,
-                                  SchemeType scheme_type);
+COMPONENT_EXPORT(URL)
+void AddReferrerScheme(const char* new_scheme, SchemeType scheme_type);
 
 // Adds an application-defined scheme to the list of schemes that do not trigger
 // mixed content warnings.
-URL_EXPORT void AddSecureScheme(const char* new_scheme);
-URL_EXPORT const std::vector<std::string>& GetSecureSchemes();
+COMPONENT_EXPORT(URL) void AddSecureScheme(const char* new_scheme);
+COMPONENT_EXPORT(URL) const std::vector<std::string>& GetSecureSchemes();
 
 // Adds an application-defined scheme to the list of schemes that normal pages
 // cannot link to or access (i.e., with the same security rules as those applied
 // to "file" URLs).
-URL_EXPORT void AddLocalScheme(const char* new_scheme);
-URL_EXPORT const std::vector<std::string>& GetLocalSchemes();
+COMPONENT_EXPORT(URL) void AddLocalScheme(const char* new_scheme);
+COMPONENT_EXPORT(URL) const std::vector<std::string>& GetLocalSchemes();
 
 // Adds an application-defined scheme to the list of schemes that cause pages
 // loaded with them to not have access to pages loaded with any other URL
 // scheme.
-URL_EXPORT void AddNoAccessScheme(const char* new_scheme);
-URL_EXPORT const std::vector<std::string>& GetNoAccessSchemes();
+COMPONENT_EXPORT(URL) void AddNoAccessScheme(const char* new_scheme);
+COMPONENT_EXPORT(URL) const std::vector<std::string>& GetNoAccessSchemes();
 
 // Adds an application-defined scheme to the list of schemes that can be sent
 // CORS requests.
-URL_EXPORT void AddCorsEnabledScheme(const char* new_scheme);
-URL_EXPORT const std::vector<std::string>& GetCorsEnabledSchemes();
+COMPONENT_EXPORT(URL) void AddCorsEnabledScheme(const char* new_scheme);
+COMPONENT_EXPORT(URL) const std::vector<std::string>& GetCorsEnabledSchemes();
 
 // Adds an application-defined scheme to the list of web schemes that can be
 // used by web to store data (e.g. cookies, local storage, ...). This is
 // to differentiate them from schemes that can store data but are not used on
 // web (e.g. application's internal schemes) or schemes that are used on web but
 // cannot store data.
-URL_EXPORT void AddWebStorageScheme(const char* new_scheme);
-URL_EXPORT const std::vector<std::string>& GetWebStorageSchemes();
+COMPONENT_EXPORT(URL) void AddWebStorageScheme(const char* new_scheme);
+COMPONENT_EXPORT(URL) const std::vector<std::string>& GetWebStorageSchemes();
 
 // Adds an application-defined scheme to the list of schemes that can bypass the
 // Content-Security-Policy(CSP) checks.
-URL_EXPORT void AddCSPBypassingScheme(const char* new_scheme);
-URL_EXPORT const std::vector<std::string>& GetCSPBypassingSchemes();
+COMPONENT_EXPORT(URL) void AddCSPBypassingScheme(const char* new_scheme);
+COMPONENT_EXPORT(URL) const std::vector<std::string>& GetCSPBypassingSchemes();
 
 // Adds an application-defined scheme to the list of schemes that are strictly
 // empty documents, allowing them to commit synchronously.
-URL_EXPORT void AddEmptyDocumentScheme(const char* new_scheme);
-URL_EXPORT const std::vector<std::string>& GetEmptyDocumentSchemes();
+COMPONENT_EXPORT(URL) void AddEmptyDocumentScheme(const char* new_scheme);
+COMPONENT_EXPORT(URL) const std::vector<std::string>& GetEmptyDocumentSchemes();
 
 // Sets a flag to prevent future calls to Add*Scheme from succeeding.
 //
@@ -124,7 +124,7 @@ URL_EXPORT const std::vector<std::string>& GetEmptyDocumentSchemes();
 // We could have had Add*Scheme use a lock instead, but that would add
 // some platform-specific dependencies we don't otherwise have now, and is
 // overkill considering the normal usage is so simple.
-URL_EXPORT void LockSchemeRegistries();
+COMPONENT_EXPORT(URL) void LockSchemeRegistries();
 
 // Locates the scheme in the given string and places it into |found_scheme|,
 // which may be NULL to indicate the caller does not care about the range.
@@ -132,14 +132,16 @@ URL_EXPORT void LockSchemeRegistries();
 // Returns whether the given |compare| scheme matches the scheme found in the
 // input (if any). The |compare| scheme must be a valid canonical scheme or
 // the result of the comparison is undefined.
-URL_EXPORT bool FindAndCompareScheme(const char* str,
-                                     int str_len,
-                                     const char* compare,
-                                     Component* found_scheme);
-URL_EXPORT bool FindAndCompareScheme(const base::char16* str,
-                                     int str_len,
-                                     const char* compare,
-                                     Component* found_scheme);
+COMPONENT_EXPORT(URL)
+bool FindAndCompareScheme(const char* str,
+                          int str_len,
+                          const char* compare,
+                          Component* found_scheme);
+COMPONENT_EXPORT(URL)
+bool FindAndCompareScheme(const base::char16* str,
+                          int str_len,
+                          const char* compare,
+                          Component* found_scheme);
 inline bool FindAndCompareScheme(const std::string& str,
                                  const char* compare,
                                  Component* found_scheme) {
@@ -155,22 +157,27 @@ inline bool FindAndCompareScheme(const base::string16& str,
 
 // Returns true if the given scheme identified by |scheme| within |spec| is in
 // the list of known standard-format schemes (see AddStandardScheme).
-URL_EXPORT bool IsStandard(const char* spec, const Component& scheme);
-URL_EXPORT bool IsStandard(const base::char16* spec, const Component& scheme);
+COMPONENT_EXPORT(URL)
+bool IsStandard(const char* spec, const Component& scheme);
+COMPONENT_EXPORT(URL)
+bool IsStandard(const base::char16* spec, const Component& scheme);
 
 // Returns true if the given scheme identified by |scheme| within |spec| is in
 // the list of allowed schemes for referrers (see AddReferrerScheme).
-URL_EXPORT bool IsReferrerScheme(const char* spec, const Component& scheme);
+COMPONENT_EXPORT(URL)
+bool IsReferrerScheme(const char* spec, const Component& scheme);
 
 // Returns true and sets |type| to the SchemeType of the given scheme
 // identified by |scheme| within |spec| if the scheme is in the list of known
 // standard-format schemes (see AddStandardScheme).
-URL_EXPORT bool GetStandardSchemeType(const char* spec,
-                                      const Component& scheme,
-                                      SchemeType* type);
-URL_EXPORT bool GetStandardSchemeType(const base::char16* spec,
-                                      const Component& scheme,
-                                      SchemeType* type);
+COMPONENT_EXPORT(URL)
+bool GetStandardSchemeType(const char* spec,
+                           const Component& scheme,
+                           SchemeType* type);
+COMPONENT_EXPORT(URL)
+bool GetStandardSchemeType(const base::char16* spec,
+                           const Component& scheme,
+                           SchemeType* type);
 
 // Hosts  ----------------------------------------------------------------------
 
@@ -182,12 +189,13 @@ URL_EXPORT bool GetStandardSchemeType(const base::char16* spec,
 // If either of the input StringPieces is empty, the return value is false. The
 // input domain should match host canonicalization rules. i.e. it should be
 // lowercase except for escape chars.
-URL_EXPORT bool DomainIs(base::StringPiece canonical_host,
-                         base::StringPiece canonical_domain);
+COMPONENT_EXPORT(URL)
+bool DomainIs(base::StringPiece canonical_host,
+              base::StringPiece canonical_domain);
 
 // Returns true if the hostname is an IP address. Note: this function isn't very
 // cheap, as it must re-parse the host to verify.
-URL_EXPORT bool HostIsIPAddress(base::StringPiece host);
+COMPONENT_EXPORT(URL) bool HostIsIPAddress(base::StringPiece host);
 
 // URL library wrappers --------------------------------------------------------
 
@@ -201,18 +209,20 @@ URL_EXPORT bool HostIsIPAddress(base::StringPiece host);
 // Returns true if a valid URL was produced, false if not. On failure, the
 // output and parsed structures will still be filled and will be consistent,
 // but they will not represent a loadable URL.
-URL_EXPORT bool Canonicalize(const char* spec,
-                             int spec_len,
-                             bool trim_path_end,
-                             CharsetConverter* charset_converter,
-                             CanonOutput* output,
-                             Parsed* output_parsed);
-URL_EXPORT bool Canonicalize(const base::char16* spec,
-                             int spec_len,
-                             bool trim_path_end,
-                             CharsetConverter* charset_converter,
-                             CanonOutput* output,
-                             Parsed* output_parsed);
+COMPONENT_EXPORT(URL)
+bool Canonicalize(const char* spec,
+                  int spec_len,
+                  bool trim_path_end,
+                  CharsetConverter* charset_converter,
+                  CanonOutput* output,
+                  Parsed* output_parsed);
+COMPONENT_EXPORT(URL)
+bool Canonicalize(const base::char16* spec,
+                  int spec_len,
+                  bool trim_path_end,
+                  CharsetConverter* charset_converter,
+                  CanonOutput* output,
+                  Parsed* output_parsed);
 
 // Resolves a potentially relative URL relative to the given parsed base URL.
 // The base MUST be valid. The resulting canonical URL and parsed information
@@ -224,67 +234,67 @@ URL_EXPORT bool Canonicalize(const base::char16* spec,
 //
 // Returns true if the output is valid, false if the input could not produce
 // a valid URL.
-URL_EXPORT bool ResolveRelative(const char* base_spec,
-                                int base_spec_len,
-                                const Parsed& base_parsed,
-                                const char* relative,
-                                int relative_length,
-                                CharsetConverter* charset_converter,
-                                CanonOutput* output,
-                                Parsed* output_parsed);
-URL_EXPORT bool ResolveRelative(const char* base_spec,
-                                int base_spec_len,
-                                const Parsed& base_parsed,
-                                const base::char16* relative,
-                                int relative_length,
-                                CharsetConverter* charset_converter,
-                                CanonOutput* output,
-                                Parsed* output_parsed);
+COMPONENT_EXPORT(URL)
+bool ResolveRelative(const char* base_spec,
+                     int base_spec_len,
+                     const Parsed& base_parsed,
+                     const char* relative,
+                     int relative_length,
+                     CharsetConverter* charset_converter,
+                     CanonOutput* output,
+                     Parsed* output_parsed);
+COMPONENT_EXPORT(URL)
+bool ResolveRelative(const char* base_spec,
+                     int base_spec_len,
+                     const Parsed& base_parsed,
+                     const base::char16* relative,
+                     int relative_length,
+                     CharsetConverter* charset_converter,
+                     CanonOutput* output,
+                     Parsed* output_parsed);
 
 // Replaces components in the given VALID input URL. The new canonical URL info
 // is written to output and out_parsed.
 //
 // Returns true if the resulting URL is valid.
-URL_EXPORT bool ReplaceComponents(const char* spec,
-                                  int spec_len,
-                                  const Parsed& parsed,
-                                  const Replacements<char>& replacements,
-                                  CharsetConverter* charset_converter,
-                                  CanonOutput* output,
-                                  Parsed* out_parsed);
-URL_EXPORT bool ReplaceComponents(
-    const char* spec,
-    int spec_len,
-    const Parsed& parsed,
-    const Replacements<base::char16>& replacements,
-    CharsetConverter* charset_converter,
-    CanonOutput* output,
-    Parsed* out_parsed);
+COMPONENT_EXPORT(URL)
+bool ReplaceComponents(const char* spec,
+                       int spec_len,
+                       const Parsed& parsed,
+                       const Replacements<char>& replacements,
+                       CharsetConverter* charset_converter,
+                       CanonOutput* output,
+                       Parsed* out_parsed);
+COMPONENT_EXPORT(URL)
+bool ReplaceComponents(const char* spec,
+                       int spec_len,
+                       const Parsed& parsed,
+                       const Replacements<base::char16>& replacements,
+                       CharsetConverter* charset_converter,
+                       CanonOutput* output,
+                       Parsed* out_parsed);
 
 // String helper functions -----------------------------------------------------
 
-enum class DecodeURLResult {
-  // Did not contain code points greater than 0x7F.
-  kAsciiOnly,
-  // Did UTF-8 decode only.
+enum class DecodeURLMode {
+  // UTF-8 decode only. Invalid byte sequences are replaced with U+FFFD.
   kUTF8,
-  // Did byte to Unicode mapping only.
-  // https://infra.spec.whatwg.org/#isomorphic-decode
-  kIsomorphic,
+  // Try UTF-8 decoding. If the input contains byte sequences invalid
+  // for UTF-8, apply byte to Unicode mapping.
+  kUTF8OrIsomorphic,
 };
 
 // Unescapes the given string using URL escaping rules.
-// This function tries to decode non-ASCII characters in UTF-8 first,
-// then in isomorphic encoding if UTF-8 decoding failed.
-URL_EXPORT DecodeURLResult DecodeURLEscapeSequences(const char* input,
-                                                    int length,
-                                                    CanonOutputW* output);
+COMPONENT_EXPORT(URL)
+void DecodeURLEscapeSequences(const char* input,
+                              int length,
+                              DecodeURLMode mode,
+                              CanonOutputW* output);
 
 // Escapes the given string as defined by the JS method encodeURIComponent. See
 // https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/encodeURIComponent
-URL_EXPORT void EncodeURIComponent(const char* input,
-                                   int length,
-                                   CanonOutput* output);
+COMPONENT_EXPORT(URL)
+void EncodeURIComponent(const char* input, int length, CanonOutput* output);
 
 }  // namespace url
 

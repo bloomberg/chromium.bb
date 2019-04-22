@@ -43,25 +43,33 @@ ActionHandlersHandler::ActionHandlersHandler() = default;
 ActionHandlersHandler::~ActionHandlersHandler() = default;
 
 bool ActionHandlersHandler::Parse(Extension* extension, base::string16* error) {
-  const base::ListValue* entries = nullptr;
+  const base::Value* entries = nullptr;
   if (!extension->manifest()->GetList(keys::kActionHandlers, &entries)) {
     *error = base::ASCIIToUTF16(errors::kInvalidActionHandlersType);
     return false;
   }
 
   auto info = std::make_unique<ActionHandlersInfo>();
-  for (const base::Value& wrapped_value : *entries) {
+  for (const base::Value& wrapped_value : entries->GetList()) {
     std::string value;
     bool enabled_on_lock_screen = false;
-    const base::DictionaryValue* dictionary_value = nullptr;
-    if (wrapped_value.GetAsDictionary(&dictionary_value)) {
-      if (!dictionary_value->GetString(keys::kActionHandlerActionKey, &value)) {
+    if (wrapped_value.is_dict()) {
+      const base::Value* action_value = wrapped_value.FindKeyOfType(
+          keys::kActionHandlerActionKey, base::Value::Type::STRING);
+      if (!action_value) {
         *error = base::ASCIIToUTF16(errors::kInvalidActionHandlerDictionary);
         return false;
       }
-      dictionary_value->GetBoolean(keys::kActionHandlerEnabledOnLockScreenKey,
-                                   &enabled_on_lock_screen);
-    } else if (!wrapped_value.GetAsString(&value)) {
+      value = action_value->GetString();
+      const base::Value* lock_screen_value = wrapped_value.FindKeyOfType(
+          keys::kActionHandlerEnabledOnLockScreenKey,
+          base::Value::Type::BOOLEAN);
+      if (lock_screen_value) {
+        enabled_on_lock_screen = lock_screen_value->GetBool();
+      }
+    } else if (wrapped_value.is_string()) {
+      value = wrapped_value.GetString();
+    } else {
       *error = base::ASCIIToUTF16(errors::kInvalidActionHandlersType);
       return false;
     }

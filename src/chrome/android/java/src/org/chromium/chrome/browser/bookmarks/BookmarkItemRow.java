@@ -34,7 +34,7 @@ public class BookmarkItemRow extends BookmarkRow implements LargeIconCallback {
         super(context, attrs);
         mMinIconSize = (int) getResources().getDimension(R.dimen.default_favicon_min_size);
         mDisplayedIconSize = getResources().getDimensionPixelSize(R.dimen.default_favicon_size);
-        mIconGenerator = ViewUtils.createDefaultRoundedIconGenerator(true);
+        mIconGenerator = ViewUtils.createDefaultRoundedIconGenerator(context.getResources(), true);
     }
 
     // BookmarkRow implementation.

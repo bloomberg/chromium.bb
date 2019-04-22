@@ -45,6 +45,7 @@ class DevToolsDownloadManagerHelper
 
   DownloadBehavior download_behavior_;
   std::string download_path_;
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
 };
 
 }  // namespace protocol

@@ -27,10 +27,9 @@
 #include "extensions/browser/extension_registry_observer.h"
 #endif
 
-struct PolicyStringMap {
-  const char* key;
-  int string_id;
-};
+namespace policy {
+struct PolicyStringMap;
+}  // namespace policy
 
 class PolicyStatusProvider;
 
@@ -46,9 +45,8 @@ class PolicyUIHandler : public content::WebUIMessageHandler,
   PolicyUIHandler();
   ~PolicyUIHandler() override;
 
-
   static void AddLocalizedPolicyStrings(content::WebUIDataSource* source,
-                                        const PolicyStringMap* strings,
+                                        const policy::PolicyStringMap* strings,
                                         size_t count);
 
   static void AddCommonLocalizedStringsToSource(
@@ -75,11 +73,6 @@ class PolicyUIHandler : public content::WebUIMessageHandler,
   void OnSchemaRegistryUpdated(bool has_new_schemas) override;
 
  protected:
-  virtual void AddPolicyName(const std::string& name,
-                             base::DictionaryValue* names) const;
-
-  // Send a dictionary containing the names of all known policies to the UI.
-  virtual void SendPolicyNames() const;
 
   // ui::SelectFileDialog::Listener implementation.
   void FileSelected(const base::FilePath& path,
@@ -88,23 +81,26 @@ class PolicyUIHandler : public content::WebUIMessageHandler,
   void FileSelectionCanceled(void* params) override;
 
  private:
+  base::Value GetPolicyNames() const;
+  base::Value GetPolicyValues() const;
+
+  void HandleExportPoliciesJson(const base::ListValue* args);
+  void HandleListenPoliciesUpdates(const base::ListValue* args);
+  void HandleReloadPolicies(const base::ListValue* args);
+
   // Send information about the current policy values to the UI. For each policy
   // whose value has been set, a dictionary containing the value and additional
   // metadata is sent.
-  void SendPolicyValues() const;
+  void SendPolicies();
 
   // Send the status of cloud policy to the UI. For each scope that has cloud
   // policy enabled (device and/or user), a dictionary containing status
   // information is sent.
-  void SendStatus() const;
+  void SendStatus();
 
   void WritePoliciesToJSONFile(const base::FilePath& path) const;
 
-  void HandleInitialized(const base::ListValue* args);
-  void HandleReloadPolicies(const base::ListValue* args);
-  void HandleExportPoliciesJSON(const base::ListValue* args);
-
-  void OnRefreshPoliciesDone() const;
+  void OnRefreshPoliciesDone();
 
   policy::PolicyService* GetPolicyService() const;
 

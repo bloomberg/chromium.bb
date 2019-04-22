@@ -34,7 +34,16 @@ group("ui") {
     ":index_dist",
     ":scss",
     ":test_scripts",
+    ":typefaces_dist",
     ":wasm_dist",
+  ]
+}
+
+group("query") {
+  deps = [
+    ":query_bundle_dist",
+    ":query_dist",
+    ":ui",
   ]
 }
 
@@ -159,6 +168,14 @@ bundle("engine_bundle") {
   output = "$target_out_dir/engine_bundle.js"
 }
 
+bundle("query_bundle") {
+  deps = [
+    ":transpile_all_ts",
+  ]
+  input = "$target_out_dir/query/index.js"
+  output = "$target_out_dir/query_bundle.js"
+}
+
 # +----------------------------------------------------------------------------+
 # | Protobuf: gen rules to create .js and .d.ts files from protos.             |
 # +----------------------------------------------------------------------------+
@@ -224,6 +241,7 @@ node_bin("transpile_all_ts") {
     "$target_out_dir/frontend/index.js",
     "$target_out_dir/engine/index.js",
     "$target_out_dir/controller/index.js",
+    "$target_out_dir/query/index.js",
   ]
 
   depfile = root_out_dir + "/tsc.d"
@@ -253,6 +271,7 @@ node_bin("transpile_all_ts") {
 
 scss_root = "src/assets/perfetto.scss"
 scss_srcs = [
+  "src/assets/typefaces.scss",
   "src/assets/sidebar.scss",
   "src/assets/topbar.scss",
   "src/assets/record.scss",
@@ -289,10 +308,52 @@ copy("index_dist") {
   ]
 }
 
+copy("typefaces_dist") {
+  sources = [
+    "../buildtools/typefaces/GoogleSans-Medium.woff2",
+    "../buildtools/typefaces/GoogleSans-Regular.woff2",
+    "../buildtools/typefaces/MaterialIcons.woff2",
+    "../buildtools/typefaces/Raleway-Regular.woff2",
+    "../buildtools/typefaces/Raleway-Thin.woff2",
+    "../buildtools/typefaces/RobotoMono-Regular.woff2",
+  ]
+
+  outputs = [
+    "$ui_dir/assets/{{source_file_part}}",
+  ]
+}
+
+copy("query_dist") {
+  sources = [
+    "query.html",
+  ]
+  outputs = [
+    "$ui_dir/query.html",
+  ]
+}
+
 copy("assets_dist") {
   sources = [
               "src/assets/logo-3d.png",
               "src/assets/logo.png",
+              "src/assets/rec_atrace.png",
+              "src/assets/rec_battery_counters.png",
+              "src/assets/rec_board_voltage.png",
+              "src/assets/rec_cpu_coarse.png",
+              "src/assets/rec_cpu_fine.png",
+              "src/assets/rec_cpu_freq.png",
+              "src/assets/rec_cpu_voltage.png",
+              "src/assets/rec_cpu_wakeup.png",
+              "src/assets/rec_ftrace.png",
+              "src/assets/rec_lmk.png",
+              "src/assets/rec_logcat.png",
+              "src/assets/rec_long_trace.png",
+              "src/assets/rec_mem_hifreq.png",
+              "src/assets/rec_meminfo.png",
+              "src/assets/rec_one_shot.png",
+              "src/assets/rec_ps_stats.png",
+              "src/assets/rec_ring_buf.png",
+              "src/assets/rec_vmstat.png",
             ] + [ scss_root ] + scss_srcs
   outputs = [
     "$ui_dir/assets/{{source_file_part}}",
@@ -321,6 +382,14 @@ sorcery("engine_bundle_dist") {
   ]
   input = "$target_out_dir/engine_bundle.js"
   output = "$ui_dir/engine_bundle.js"
+}
+
+sorcery("query_bundle_dist") {
+  deps = [
+    ":query_bundle",
+  ]
+  input = "$target_out_dir/query_bundle.js"
+  output = "$ui_dir/query_bundle.js"
 }
 
 copy("wasm_dist") {

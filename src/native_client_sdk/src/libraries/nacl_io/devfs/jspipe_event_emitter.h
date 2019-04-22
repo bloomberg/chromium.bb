@@ -38,12 +38,8 @@ class JSPipeEventEmitter : public EventEmitter {
   Error Read_Locked(char* data, size_t len, int* out_bytes);
   Error Write_Locked(const char* data, size_t len, int* out_bytes);
 
-  size_t GetOSpace() {
-    return post_message_buffer_size_ - BytesOutstanding();
-  };
-  size_t GetISpace() {
-    return input_fifo_.WriteAvailable();
-  };
+  size_t GetOSpace() { return post_message_buffer_size_ - BytesOutstanding(); }
+  size_t GetISpace() { return input_fifo_.WriteAvailable(); }
   Error SetName(const char* name);
   Error HandleJSMessage(PP_Var message);
 

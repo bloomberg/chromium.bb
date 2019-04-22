@@ -32,7 +32,7 @@ int32_t MinizipIsOpen(void* stream) {
   return MZ_OK;
 }
 
-};  // namespace
+}  // namespace
 
 // vtable for the archive write stream provided to minizip. Only functions which
 // are necessary for compression are implemented.

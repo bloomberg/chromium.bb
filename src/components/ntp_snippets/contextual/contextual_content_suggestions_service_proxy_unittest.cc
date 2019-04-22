@@ -12,7 +12,6 @@
 #include "components/ntp_snippets/contextual/contextual_content_suggestions_service.h"
 #include "components/ntp_snippets/contextual/contextual_suggestions_test_utils.h"
 #include "components/ntp_snippets/contextual/reporting/contextual_suggestions_metrics_reporter.h"
-#include "components/ntp_snippets/remote/cached_image_fetcher.h"
 #include "components/ntp_snippets/remote/remote_suggestions_database.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -26,6 +25,11 @@ namespace {
 
 static constexpr char kTestPeekText[] = "Test peek test";
 static constexpr char kValidFromUrl[] = "http://some.url";
+
+static constexpr char kImageId[] = "id";
+// Keep the string after tbn: in sync with the above constant for image id.
+static constexpr char kImageUrl[] = "http://www.google.com/images?q=tbn:id";
+static constexpr char kFaviconUrl[] = "http://google.com/cats.fav";
 
 class FakeContextualContentSuggestionsService
     : public ContextualContentSuggestionsService {
@@ -50,7 +54,7 @@ class FakeContextualContentSuggestionsService
 
 FakeContextualContentSuggestionsService::
     FakeContextualContentSuggestionsService()
-    : ContextualContentSuggestionsService(nullptr, nullptr, nullptr, nullptr) {}
+    : ContextualContentSuggestionsService(nullptr, nullptr) {}
 
 FakeContextualContentSuggestionsService::
     ~FakeContextualContentSuggestionsService() {}
@@ -88,6 +92,30 @@ TEST_F(ContextualContentSuggestionsServiceProxyTest,
                                   PeekConditions(), ServerExperimentInfos()));
 
   EXPECT_TRUE(mock_cluster_callback.has_run);
+}
+
+TEST_F(ContextualContentSuggestionsServiceProxyTest, GetImageUrl) {
+  auto suggestion = SuggestionBuilder(GURL(kValidFromUrl))
+                        .ImageId(kImageId)
+                        .FaviconImageUrl(kFaviconUrl)
+                        .Build();
+  auto cluster =
+      ClusterBuilder(kValidFromUrl).AddSuggestion(suggestion).Build();
+  MockClustersCallback mock_cluster_callback;
+
+  proxy()->FetchContextualSuggestions(GURL(kValidFromUrl),
+                                      mock_cluster_callback.ToOnceCallback());
+  service()->RunClustersCallback(ContextualSuggestionsResult(
+      kTestPeekText, std::vector<Cluster>({cluster}), PeekConditions(),
+      ServerExperimentInfos()));
+
+  EXPECT_EQ(kImageUrl, proxy()->GetContextualSuggestionImageUrl(suggestion.id));
+  EXPECT_EQ(kFaviconUrl,
+            proxy()->GetContextualSuggestionFaviconUrl(suggestion.id));
+
+  // Id not found.
+  EXPECT_EQ("", proxy()->GetContextualSuggestionImageUrl(""));
+  EXPECT_EQ("", proxy()->GetContextualSuggestionFaviconUrl(""));
 }
 
 // TODO(fgorski): More tests will be added, once we have the suggestions

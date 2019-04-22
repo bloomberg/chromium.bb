@@ -6,26 +6,27 @@ cr.define('downloadInternals', function() {
   'use strict';
 
   /** @type {!downloadInternals.DownloadInternalsBrowserProxy} */
-  var browserProxy =
+  const browserProxy =
       downloadInternals.DownloadInternalsBrowserProxyImpl.getInstance();
 
   /** @type {!Array<ServiceEntry>} */
-  var ongoingServiceEntries = [];
+  const ongoingServiceEntries = [];
 
   /** @type {!Array<ServiceEntry>} */
-  var finishedServiceEntries = [];
+  const finishedServiceEntries = [];
 
   /** @type {!Array<ServiceRequest>} */
-  var serviceRequests = [];
+  const serviceRequests = [];
 
   /**
    * @param {!Array<ServiceEntry>} list A list to remove the entry from.
    * @param {string} guid The guid to remove from the list.
    */
   function removeGuidFromList(list, guid) {
-    var index = list.findIndex(entry => entry.guid == guid);
-    if (index != -1)
+    const index = list.findIndex(entry => entry.guid == guid);
+    if (index != -1) {
       list.splice(index, 1);
+    }
   }
 
   /**
@@ -35,18 +36,19 @@ cr.define('downloadInternals', function() {
    * @param {!ServiceEntry} newEntry The new entry.
    */
   function addOrUpdateEntryByGuid(list, newEntry) {
-    var index = list.findIndex(entry => entry.guid == newEntry.guid);
-    if (index != -1)
+    const index = list.findIndex(entry => entry.guid == newEntry.guid);
+    if (index != -1) {
       list[index] = newEntry;
-    else
+    } else {
       list.unshift(newEntry);
+    }
   }
 
   function updateEntryTables() {
-    var ongoingInput = new JsEvalContext({entries: ongoingServiceEntries});
+    const ongoingInput = new JsEvalContext({entries: ongoingServiceEntries});
     jstProcess(ongoingInput, $('download-service-ongoing-entries-info'));
 
-    var finishedInput = new JsEvalContext({entries: finishedServiceEntries});
+    const finishedInput = new JsEvalContext({entries: finishedServiceEntries});
     jstProcess(finishedInput, $('download-service-finished-entries-info'));
   }
 
@@ -65,8 +67,8 @@ cr.define('downloadInternals', function() {
    *     the download service.
    */
   function onServiceDownloadsAvailable(entries) {
-    for (var i = 0; i < entries.length; i++) {
-      var entry = entries[i];
+    for (let i = 0; i < entries.length; i++) {
+      const entry = entries[i];
       if (entry.state == ServiceEntryState.COMPLETE) {
         finishedServiceEntries.unshift(entry);
       } else {
@@ -109,7 +111,7 @@ cr.define('downloadInternals', function() {
    */
   function onServiceRequestMade(request) {
     serviceRequests.unshift(request);
-    var input = new JsEvalContext({requests: serviceRequests});
+    const input = new JsEvalContext({requests: serviceRequests});
     jstProcess(input, $('download-service-request-info'));
   }
 

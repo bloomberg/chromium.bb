@@ -13,11 +13,12 @@
 #include "ash/system/message_center/arc/arc_notification_surface_manager.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/arc/accessibility/ax_tree_source_arc.h"
+#include "chrome/browser/chromeos/arc/input_method_manager/arc_input_method_manager_service.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "components/arc/common/accessibility_helper.mojom.h"
-#include "components/arc/connection_observer.h"
+#include "components/arc/session/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "ui/accessibility/ax_host_delegate.h"
+#include "ui/accessibility/ax_action_handler.h"
 #include "ui/aura/window_tracker.h"
 #include "ui/wm/public/activation_change_observer.h"
 
@@ -46,6 +47,7 @@ class ArcAccessibilityHelperBridge
       public wm::ActivationChangeObserver,
       public AXTreeSourceArc::Delegate,
       public ArcAppListPrefs::Observer,
+      public arc::ArcInputMethodManagerService::Observer,
       public ash::ArcNotificationSurfaceManager::Observer {
  public:
   // Returns singleton instance for the given BrowserContext,
@@ -74,9 +76,6 @@ class ArcAccessibilityHelperBridge
   void OnConnectionClosed() override;
 
   // mojom::AccessibilityHelperHost overrides.
-  void OnAccessibilityEventDeprecated(
-      mojom::AccessibilityEventType event_type,
-      mojom::AccessibilityNodeInfoDataPtr event_source) override;
   void OnAccessibilityEvent(
       mojom::AccessibilityEventDataPtr event_data) override;
   void OnNotificationStateChanged(
@@ -88,6 +87,9 @@ class ArcAccessibilityHelperBridge
 
   // ArcAppListPrefs::Observer overrides.
   void OnTaskDestroyed(int32_t task_id) override;
+
+  // ArcInputMethodManagerService::Observer overrides.
+  void OnAndroidVirtualKeyboardVisibilityChanged(bool visible) override;
 
   // ArcNotificationSurfaceManager::Observer overrides.
   void OnNotificationSurfaceAdded(
@@ -143,6 +145,7 @@ class ArcAccessibilityHelperBridge
   std::map<int32_t, std::unique_ptr<AXTreeSourceArc>> task_id_to_tree_;
   std::map<std::string, std::unique_ptr<AXTreeSourceArc>>
       notification_key_to_tree_;
+  std::unique_ptr<AXTreeSourceArc> input_method_tree_;
   std::unique_ptr<chromeos::AccessibilityStatusSubscription>
       accessibility_status_subscription_;
   bool use_filter_type_all_for_test_ = false;

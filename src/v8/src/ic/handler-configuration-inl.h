@@ -10,6 +10,7 @@
 #include "src/field-index-inl.h"
 #include "src/handles-inl.h"
 #include "src/objects-inl.h"
+#include "src/objects/data-handler-inl.h"
 #include "src/objects/smi.h"
 
 // Has to be the last include (doesn't have include guards):
@@ -17,6 +18,8 @@
 
 namespace v8 {
 namespace internal {
+
+OBJECT_CONSTRUCTORS_IMPL(LoadHandler, DataHandler)
 
 CAST_ACCESSOR(LoadHandler)
 
@@ -109,6 +112,8 @@ Handle<Smi> LoadHandler::LoadIndexedString(Isolate* isolate,
       AllowOutOfBoundsBits::encode(load_mode == LOAD_IGNORE_OUT_OF_BOUNDS);
   return handle(Smi::FromInt(config), isolate);
 }
+
+OBJECT_CONSTRUCTORS_IMPL(StoreHandler, DataHandler)
 
 CAST_ACCESSOR(StoreHandler)
 

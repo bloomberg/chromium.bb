@@ -19,6 +19,7 @@ import org.chromium.base.annotations.MainDex;
 import org.chromium.media.MediaDrmSessionManager.SessionId;
 import org.chromium.media.MediaDrmSessionManager.SessionInfo;
 
+import java.lang.reflect.Method;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -67,6 +68,7 @@ public class MediaDrmBridge {
     private static final String SESSION_SHARING = "sessionSharing";
     private static final String ENABLE = "enable";
     private static final long INVALID_NATIVE_MEDIA_DRM_BRIDGE = 0;
+    private static final String FIRST_API_LEVEL = "ro.product.first_api_level";
 
     // Scheme UUID for Widevine. See http://dashif.org/identifiers/protection/
     private static final UUID WIDEVINE_UUID =
@@ -401,6 +403,26 @@ public class MediaDrmBridge {
     }
 
     /**
+     * Returns the first API level for this product.
+     *
+     * @return the converted value for FIRST_API_LEVEL if available,
+     * 0 otherwise.
+     */
+    @CalledByNative
+    private static int getFirstApiLevel() {
+        int firstApiLevel = 0;
+        try {
+            final Class<?> systemProperties = Class.forName("android.os.SystemProperties");
+            final Method getInt = systemProperties.getMethod("getInt", String.class, int.class);
+            firstApiLevel = (Integer) getInt.invoke(null, FIRST_API_LEVEL, 0);
+        } catch (Exception e) {
+            Log.e("Exception while getting system property %s. Using default.", FIRST_API_LEVEL, e);
+            firstApiLevel = 0;
+        }
+        return firstApiLevel;
+    }
+
+    /**
      * Create a new MediaDrmBridge from the crypto scheme UUID.
      *
      * @param schemeUUID Crypto scheme UUID.
@@ -499,7 +521,7 @@ public class MediaDrmBridge {
         assert !securityLevel.isEmpty();
 
         String currentSecurityLevel = mMediaDrm.getPropertyString(SECURITY_LEVEL);
-        Log.e(TAG, "Security level: current %s, new %s", currentSecurityLevel, securityLevel);
+        Log.i(TAG, "Security level: current %s, new %s", currentSecurityLevel, securityLevel);
         if (securityLevel.equals(currentSecurityLevel)) {
             // No need to set the same security level again. This is not just
             // a shortcut! Setting the same security level actually causes an
@@ -543,6 +565,50 @@ public class MediaDrmBridge {
         }
 
         return false;
+    }
+
+    /**
+     * Provision the current origin. Normally provisioning will be triggered
+     * automatically when MediaCrypto is needed (in the constructor).
+     * However, this is available to preprovision an origin separately.
+     * nativeOnProvisioningComplete() will be called indicating success/failure.
+     */
+    @CalledByNative
+    private void provision() {
+        // This should only be called if no MediaCrypto needed.
+        assert mMediaDrm != null;
+        assert !mProvisioningPending;
+        assert !mRequiresMediaCrypto;
+
+        // Provision only works for origin isolated storage.
+        if (!mOriginSet) {
+            Log.e(TAG, "Calling provision() without an origin.");
+            nativeOnProvisioningComplete(mNativeMediaDrmBridge, false);
+            return;
+        }
+
+        // The security level used for provisioning cannot be set and is cached from when a need for
+        // provisioning is last detected. So if we call startProvisioning() it will use the default
+        // security level, which may not match the security level needed. As a result this code must
+        // call openSession(), which will result in the security level being cached. We don't care
+        // about the session, so if it opens simply close it.
+        try {
+            // This will throw a NotProvisionedException if provisioning needed. If it succeeds,
+            // assume this origin ID is already provisioned.
+            byte[] drmId = openSession();
+
+            // Provisioning is not required. If a session was actually opened, close it.
+            if (drmId != null) {
+                SessionId sessionId = SessionId.createTemporarySessionId(drmId);
+                closeSessionNoException(sessionId);
+            }
+
+            // Indicate that provisioning succeeded.
+            nativeOnProvisioningComplete(mNativeMediaDrmBridge, true);
+
+        } catch (android.media.NotProvisionedException e) {
+            startProvisioning();
+        }
     }
 
     /**
@@ -1064,7 +1130,7 @@ public class MediaDrmBridge {
             Log.e(TAG, "getSecurityLevel(): MediaDrm is null or security level is not supported.");
             return "";
         }
-        return mMediaDrm.getPropertyString("securityLevel");
+        return mMediaDrm.getPropertyString(SECURITY_LEVEL);
     }
 
     private void startProvisioning() {
@@ -1082,15 +1148,14 @@ public class MediaDrmBridge {
         }
 
         MediaDrm.ProvisionRequest request = mMediaDrm.getProvisionRequest();
-        nativeOnStartProvisioning(
-                mNativeMediaDrmBridge, request.getDefaultUrl(), request.getData());
+        nativeOnProvisionRequest(mNativeMediaDrmBridge, request.getDefaultUrl(), request.getData());
     }
 
     /**
      * Called when the provision response is received.
      *
-     * @param isResponseReceived Flag set to true if commincation with provision server was
-     * successful.
+     * @param isResponseReceived Flag set to true if communication with
+     * provision server was successful.
      * @param response Response data from the provision server.
      */
     @CalledByNative
@@ -1141,17 +1206,24 @@ public class MediaDrmBridge {
     }
 
     /*
-     *  Continue to createMediaCrypto() after provisioning.
+     *  Provisioning complete. Continue to createMediaCrypto() if required.
      *
      * @param success Whether provisioning has succeeded or not.
      */
     void onProvisioned(boolean success) {
+        if (!mRequiresMediaCrypto) {
+            // No MediaCrypto required, so notify provisioning complete.
+            nativeOnProvisioningComplete(mNativeMediaDrmBridge, success);
+            if (!success) {
+                release();
+            }
+            return;
+        }
+
         if (!success) {
             release();
             return;
         }
-
-        assert mRequiresMediaCrypto;
 
         if (!mOriginSet) {
             createMediaCrypto();
@@ -1262,7 +1334,7 @@ public class MediaDrmBridge {
         public void onEvent(
                 MediaDrm mediaDrm, byte[] drmSessionId, int event, int extra, byte[] data) {
             if (drmSessionId == null) {
-                Log.e(TAG, "EventListener: Null session.");
+                Log.e(TAG, "EventListener: No session for event %d.", event);
                 return;
             }
             SessionId sessionId = getSessionIdByDrmId(drmSessionId);
@@ -1409,8 +1481,9 @@ public class MediaDrmBridge {
     private native void nativeOnMediaCryptoReady(
             long nativeMediaDrmBridge, MediaCrypto mediaCrypto);
 
-    private native void nativeOnStartProvisioning(
+    private native void nativeOnProvisionRequest(
             long nativeMediaDrmBridge, String defaultUrl, byte[] requestData);
+    private native void nativeOnProvisioningComplete(long nativeMediaDrmBridge, boolean success);
 
     private native void nativeOnPromiseResolved(long nativeMediaDrmBridge, long promiseId);
     private native void nativeOnPromiseResolvedWithSession(

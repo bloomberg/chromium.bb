@@ -8,7 +8,7 @@
 #define SkPDFFont_DEFINED
 
 #include "SkAdvancedTypefaceMetrics.h"
-#include "SkPDFCanon.h"
+#include "SkPDFDocument.h"
 #include "SkPDFGlyphUse.h"
 #include "SkPDFTypes.h"
 #include "SkStrikeCache.h"
@@ -34,7 +34,7 @@ public:
     SkTypeface* typeface() const { return fTypeface.get(); }
 
     /** Returns the font type represented in this font.  For Type0 fonts,
-     *  returns the type of the decendant font.
+     *  returns the type of the descendant font.
      */
     SkAdvancedTypefaceMetrics::FontType getType() const { return fFontType; }
 
@@ -84,7 +84,7 @@ public:
      *  @param glyphID   Specify which section of a large font is of interest.
      */
     static SkPDFFont* GetFontResource(SkPDFDocument* doc,
-                                      SkGlyphCache* cache,
+                                      SkStrike* cache,
                                       SkTypeface* typeface,
                                       SkGlyphID glyphID);
 
@@ -93,10 +93,10 @@ public:
      *  @return nullptr only when typeface is bad.
      */
     static const SkAdvancedTypefaceMetrics* GetMetrics(const SkTypeface* typeface,
-                                                       SkPDFCanon* canon);
+                                                       SkPDFDocument* canon);
 
     static const std::vector<SkUnichar>& GetUnicodeMap(const SkTypeface* typeface,
-                                                       SkPDFCanon* canon);
+                                                       SkPDFDocument* canon);
 
     void emitSubset(SkPDFDocument*) const;
 
@@ -104,7 +104,7 @@ public:
      *  Return false iff the typeface has its NotEmbeddable flag set.
      *  typeface is not nullptr
      */
-    static bool CanEmbedTypeface(SkTypeface*, SkPDFCanon*);
+    static bool CanEmbedTypeface(SkTypeface*, SkPDFDocument*);
 
     SkGlyphID firstGlyphID() const { return fGlyphUsage.firstNonZero(); }
     SkGlyphID lastGlyphID() const { return fGlyphUsage.lastGlyph(); }

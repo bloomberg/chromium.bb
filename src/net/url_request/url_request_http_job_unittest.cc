@@ -231,7 +231,6 @@ TEST(URLRequestHttpJobWithProxy, TestFailureWithoutProxy) {
 
   EXPECT_THAT(delegate.request_status(), IsError(ERR_CONNECTION_RESET));
   EXPECT_EQ(ProxyServer::Direct(), request->proxy_server());
-  EXPECT_FALSE(request->was_fetched_via_proxy());
   EXPECT_EQ(0, request->received_response_content_length());
   EXPECT_EQ(CountWriteBytes(writes), request->GetTotalSentBytes());
   EXPECT_EQ(CountReadBytes(reads), request->GetTotalReceivedBytes());
@@ -283,7 +282,6 @@ TEST(URLRequestHttpJobWithProxy, TestSuccessfulWithOneProxy) {
   // When request fails due to proxy connection errors, the proxy server should
   // still be set on the |request|.
   EXPECT_EQ(proxy_server, request->proxy_server());
-  EXPECT_FALSE(request->was_fetched_via_proxy());
   EXPECT_EQ(0, request->received_response_content_length());
   EXPECT_EQ(CountWriteBytes(writes), request->GetTotalSentBytes());
   EXPECT_EQ(0, request->GetTotalReceivedBytes());
@@ -336,7 +334,6 @@ TEST(URLRequestHttpJobWithProxy,
 
   EXPECT_THAT(delegate.request_status(), IsOk());
   EXPECT_EQ(ProxyServer::Direct(), request->proxy_server());
-  EXPECT_FALSE(request->was_fetched_via_proxy());
   EXPECT_EQ(12, request->received_response_content_length());
   EXPECT_EQ(CountWriteBytes(writes), request->GetTotalSentBytes());
   EXPECT_EQ(CountReadBytes(reads), request->GetTotalReceivedBytes());
@@ -916,9 +913,9 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest,
   }
 
   for (int priority = 0; priority < net::NUM_PRIORITIES; ++priority) {
-    histograms.ExpectTotalCount(
-        "Net.HttpJob.TotalTimeSuccess.Priority" + base::IntToString(priority),
-        priority + 1);
+    histograms.ExpectTotalCount("Net.HttpJob.TotalTimeSuccess.Priority" +
+                                    base::NumberToString(priority),
+                                priority + 1);
   }
 }
 
@@ -1207,6 +1204,82 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest,
 
   histograms.ExpectTotalCount(kCTComplianceHistogramName, 0);
   histograms.ExpectTotalCount(kCTRequiredHistogramName, 0);
+}
+
+TEST_F(URLRequestHttpJobWithMockSocketsTest, EncodingAdvertisementOnRange) {
+  MockWrite writes[] = {
+      MockWrite("GET / HTTP/1.1\r\n"
+                "Host: www.example.com\r\n"
+                "Connection: keep-alive\r\n"
+                "User-Agent: \r\n"
+                "Accept-Encoding: identity\r\n"
+                "Accept-Language: en-us,fr\r\n"
+                "Range: bytes=0-1023\r\n\r\n")};
+
+  MockRead reads[] = {MockRead("HTTP/1.1 200 OK\r\n"
+                               "Accept-Ranges: bytes\r\n"
+                               "Content-Length: 12\r\n\r\n"),
+                      MockRead("Test Content")};
+
+  StaticSocketDataProvider socket_data(reads, writes);
+  socket_factory_.AddSocketDataProvider(&socket_data);
+
+  TestDelegate delegate;
+  std::unique_ptr<URLRequest> request =
+      context_->CreateRequest(GURL("http://www.example.com"), DEFAULT_PRIORITY,
+                              &delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  // Make the extra header to trigger the change in "Accepted-Encoding"
+  HttpRequestHeaders headers;
+  headers.SetHeader("Range", "bytes=0-1023");
+  request->SetExtraRequestHeaders(headers);
+
+  request->Start();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_THAT(delegate.request_status(), IsOk());
+  EXPECT_EQ(12, request->received_response_content_length());
+  EXPECT_EQ(CountWriteBytes(writes), request->GetTotalSentBytes());
+  EXPECT_EQ(CountReadBytes(reads), request->GetTotalReceivedBytes());
+}
+
+TEST_F(URLRequestHttpJobWithMockSocketsTest, RangeRequestOverrideEncoding) {
+  MockWrite writes[] = {
+      MockWrite("GET / HTTP/1.1\r\n"
+                "Host: www.example.com\r\n"
+                "Connection: keep-alive\r\n"
+                "Accept-Encoding: gzip, deflate\r\n"
+                "User-Agent: \r\n"
+                "Accept-Language: en-us,fr\r\n"
+                "Range: bytes=0-1023\r\n\r\n")};
+
+  MockRead reads[] = {MockRead("HTTP/1.1 200 OK\r\n"
+                               "Accept-Ranges: bytes\r\n"
+                               "Content-Length: 12\r\n\r\n"),
+                      MockRead("Test Content")};
+
+  StaticSocketDataProvider socket_data(reads, writes);
+  socket_factory_.AddSocketDataProvider(&socket_data);
+
+  TestDelegate delegate;
+  std::unique_ptr<URLRequest> request =
+      context_->CreateRequest(GURL("http://www.example.com"), DEFAULT_PRIORITY,
+                              &delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  // Explicitly set "Accept-Encoding" to make sure it's not overridden by
+  // AddExtraHeaders
+  HttpRequestHeaders headers;
+  headers.SetHeader("Accept-Encoding", "gzip, deflate");
+  headers.SetHeader("Range", "bytes=0-1023");
+  request->SetExtraRequestHeaders(headers);
+
+  request->Start();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_THAT(delegate.request_status(), IsOk());
+  EXPECT_EQ(12, request->received_response_content_length());
+  EXPECT_EQ(CountWriteBytes(writes), request->GetTotalSentBytes());
+  EXPECT_EQ(CountReadBytes(reads), request->GetTotalReceivedBytes());
 }
 
 TEST_F(URLRequestHttpJobTest, TestCancelWhileReadingCookies) {

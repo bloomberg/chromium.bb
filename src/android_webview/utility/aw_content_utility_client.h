@@ -18,7 +18,9 @@ class AwContentUtilityClient : public content::ContentUtilityClient {
 
   // content::ContentUtilityClient:
   void UtilityThreadStarted() override;
-  void RegisterServices(StaticServiceMap* services) override;
+  bool HandleServiceRequest(
+      const std::string& service_name,
+      service_manager::mojom::ServiceRequest request) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AwContentUtilityClient);

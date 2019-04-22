@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// NOTE: spawned_test_server is deprecated, since it frequently causes test
+// flakiness. Please consider using embedded_test_server if possible.
+
 #ifndef NET_TEST_SPAWNED_TEST_SERVER_BASE_TEST_SERVER_H_
 #define NET_TEST_SPAWNED_TEST_SERVER_BASE_TEST_SERVER_H_
 
@@ -79,6 +82,14 @@ class BaseTestServer {
       // Causes the testserver to use a hostname that is a domain
       // instead of an IP.
       CERT_COMMON_NAME_IS_DOMAIN,
+
+      // An RSA certificate with the keyUsage extension specifying that the key
+      // is only for encipherment.
+      CERT_KEY_USAGE_RSA_ENCIPHERMENT,
+
+      // An RSA certificate with the keyUsage extension specifying that the key
+      // is only for digital signatures.
+      CERT_KEY_USAGE_RSA_DIGITAL_SIGNATURE,
 
       // A certificate with invalid notBefore and notAfter times. Windows'
       // certificate library will not parse this certificate.

@@ -102,7 +102,8 @@ void PendingInvalidations::ScheduleSiblingInvalidationsAsDescendants(
       pending_invalidations.Descendants().push_back(invalidation_set);
 
     if (DescendantInvalidationSet* descendants =
-            ToSiblingInvalidationSet(*invalidation_set).SiblingDescendants()) {
+            To<SiblingInvalidationSet>(*invalidation_set)
+                .SiblingDescendants()) {
       if (descendants->WholeSubtreeInvalid()) {
         scheduling_parent.SetNeedsStyleRecalc(
             kSubtreeStyleChange, StyleChangeReasonForTracing::Create(
@@ -130,7 +131,8 @@ void PendingInvalidations::RescheduleSiblingInvalidationsAsDescendants(
   for (const auto& invalidation_set : pending_invalidations.Siblings()) {
     invalidation_lists.descendants.push_back(invalidation_set);
     if (DescendantInvalidationSet* descendants =
-            ToSiblingInvalidationSet(*invalidation_set).SiblingDescendants()) {
+            To<SiblingInvalidationSet>(*invalidation_set)
+                .SiblingDescendants()) {
       invalidation_lists.descendants.push_back(descendants);
     }
   }

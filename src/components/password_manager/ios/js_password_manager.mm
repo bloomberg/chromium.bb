@@ -122,5 +122,21 @@ NSString* JSONEscape(NSString* JSONString) {
              }];
 }
 
+- (void)fillPasswordForm:(NSString*)formName
+        newPasswordIdentifier:(NSString*)newPasswordIdentifier
+    confirmPasswordIdentifier:(NSString*)confirmPasswordIdentifier
+            generatedPassword:(NSString*)generatedPassword
+            completionHandler:(void (^)(BOOL))completionHandler {
+  NSString* script = [NSString
+      stringWithFormat:@"__gCrWeb.passwords."
+                       @"fillPasswordFormWithGeneratedPassword(%@, %@, %@, %@)",
+                       JSONEscape(formName), JSONEscape(newPasswordIdentifier),
+                       JSONEscape(confirmPasswordIdentifier),
+                       JSONEscape(generatedPassword)];
+  [_receiver executeJavaScript:script
+             completionHandler:^(id result, NSError*) {
+               completionHandler([result isEqual:@YES]);
+             }];
+}
 
 @end

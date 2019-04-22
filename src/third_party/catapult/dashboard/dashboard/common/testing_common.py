@@ -116,13 +116,14 @@ class TestCase(unittest.TestCase):
             self.ExecuteTaskQueueTasks(handler_name, task_queue_name))
     return responses
 
-  def ExecuteDeferredTasks(self, task_queue_name):
+  def ExecuteDeferredTasks(self, task_queue_name, recurse=True):
     task_queue = self.testbed.get_stub(testbed.TASKQUEUE_SERVICE_NAME)
     tasks = task_queue.GetTasks(task_queue_name)
     task_queue.FlushQueue(task_queue_name)
     for task in tasks:
       deferred.run(base64.b64decode(task['body']))
-      self.ExecuteDeferredTasks(task_queue_name)
+      if recurse:
+        self.ExecuteDeferredTasks(task_queue_name)
 
   def GetTaskQueueTasks(self, task_queue_name):
     task_queue = self.testbed.get_stub(testbed.TASKQUEUE_SERVICE_NAME)
@@ -136,17 +137,17 @@ class TestCase(unittest.TestCase):
         user_id=user_id,
         overwrite=True)
 
-  def SetCurrentUserOAuth(self, user):
-    patch = mock.patch.object(oauth, 'get_current_user', mock.Mock(
-        return_value=user))
+  def PatchObject(self, obj, prop, value):
+    patch = mock.patch.object(obj, prop, value)
     patch.start()
     self.addCleanup(patch.stop)
 
+  def SetCurrentUserOAuth(self, user):
+    self.PatchObject(oauth, 'get_current_user', mock.Mock(
+        return_value=user))
+
   def SetCurrentClientIdOAuth(self, client_id):
-    patch = mock.patch.object(oauth, 'get_client_id',
-                              mock.Mock(return_value=client_id))
-    patch.start()
-    self.addCleanup(patch.stop)
+    self.PatchObject(oauth, 'get_client_id', mock.Mock(return_value=client_id))
 
   def UnsetCurrentUser(self):
     """Sets the user in the environment to have no email and be non-admin."""
@@ -208,10 +209,7 @@ class TestCase(unittest.TestCase):
     def IsInternalUser():
       return bool(utils.GetCachedIsInternalUser(utils.GetEmail()))
 
-    is_internal_user_patcher = mock.patch.object(
-        utils, 'IsInternalUser', IsInternalUser)
-    is_internal_user_patcher.start()
-    self.addCleanup(is_internal_user_patcher.stop)
+    self.PatchObject(utils, 'IsInternalUser', IsInternalUser)
 
 
 def AddTests(masters, bots, tests_dict):

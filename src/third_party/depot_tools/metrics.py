@@ -15,7 +15,11 @@ import tempfile
 import threading
 import time
 import traceback
-import urllib2
+
+try:
+  import urllib2 as urllib
+except ImportError:  # For Py3 compatibility
+  import urllib.request as urllib
 
 import detect_host_arch
 import gclient_utils
@@ -60,9 +64,9 @@ class _Config(object):
       # check if we can reach the page. An external developer would get access
       # denied.
       try:
-        req = urllib2.urlopen(metrics_utils.APP_URL + '/should-upload')
+        req = urllib.urlopen(metrics_utils.APP_URL + '/should-upload')
         self._config['is-googler'] = req.getcode() == 200
-      except (urllib2.URLError, urllib2.HTTPError):
+      except (urllib.URLError, urllib.HTTPError):
         self._config['is-googler'] = False
 
     # Make sure the config variables we need are present, and initialize them to
@@ -224,7 +228,7 @@ class MetricsCollector(object):
 
     self._upload_metrics_data()
     if exception:
-      raise exception[0], exception[1], exception[2]
+      gclient_utils.reraise(exception[0], exception[1], exception[2])
     return result
 
   def collect_metrics(self, command_name):

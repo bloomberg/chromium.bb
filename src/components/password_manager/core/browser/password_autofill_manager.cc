@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
@@ -115,7 +116,7 @@ void AppendSuggestionIfMatching(
             : autofill::Suggestion::SUBSTRING_MATCH;
     suggestion.custom_icon = custom_icon;
     // The UI code will pick up an icon from the resources based on the string.
-    suggestion.icon = base::ASCIIToUTF16("globeIcon");
+    suggestion.icon = "globeIcon";
     suggestions->push_back(suggestion);
   }
 }
@@ -153,10 +154,9 @@ void GetSuggestions(const autofill::PasswordFormFillData& fill_data,
 
 bool ShouldShowManualFallbackForPreLollipop(syncer::SyncService* sync_service) {
 #if defined(OS_ANDROID)
-  return ((base::android::BuildInfo::GetInstance()->sdk_int() >=
-           base::android::SDK_VERSION_LOLLIPOP) ||
-          (password_manager_util::GetPasswordSyncState(sync_service) ==
-           SYNCING_NORMAL_ENCRYPTION));
+  return base::android::BuildInfo::GetInstance()->sdk_int() >=
+             base::android::SDK_VERSION_LOLLIPOP ||
+         password_manager_util::IsSyncingWithNormalEncryption(sync_service);
 #else
   return true;
 #endif
@@ -383,7 +383,6 @@ bool PasswordAutofillManager::PreviewSuggestionForTest(
 // PasswordAutofillManager, private:
 
 bool PasswordAutofillManager::FillSuggestion(const base::string16& username) {
-  autofill::PasswordFormFillData fill_data;
   autofill::PasswordAndRealm password_and_realm;
   if (fill_data_ && GetPasswordAndRealmForUsername(username, *fill_data_,
                                                    &password_and_realm)) {
@@ -400,7 +399,6 @@ bool PasswordAutofillManager::FillSuggestion(const base::string16& username) {
 
 bool PasswordAutofillManager::PreviewSuggestion(
     const base::string16& username) {
-  autofill::PasswordFormFillData fill_data;
   autofill::PasswordAndRealm password_and_realm;
   if (fill_data_ && GetPasswordAndRealmForUsername(username, *fill_data_,
                                                    &password_and_realm)) {

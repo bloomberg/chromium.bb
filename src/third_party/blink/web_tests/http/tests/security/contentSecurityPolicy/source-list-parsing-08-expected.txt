@@ -4,8 +4,6 @@ CONSOLE ERROR: Refused to load the script 'data:application/javascript;base64,dm
 
 Test proper handling of data: URLs.
 
-
-
 --------
 Frame: '<!--framePath //<!--frame0-->-->'
 --------

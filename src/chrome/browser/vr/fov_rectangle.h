@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "chrome/browser/vr/gl_texture_location.h"
-#include "chrome/browser/vr/vr_export.h"
+#include "chrome/browser/vr/vr_base_export.h"
 
 namespace vr {
 

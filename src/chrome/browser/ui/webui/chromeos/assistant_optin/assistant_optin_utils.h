@@ -7,12 +7,14 @@
 
 #include <string>
 
-#include "base/callback.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chromeos/services/assistant/public/mojom/constants.mojom.h"
 #include "chromeos/services/assistant/public/proto/settings_ui.pb.h"
-#include "components/prefs/pref_service.h"
-#include "services/service_manager/public/cpp/connector.h"
+
+class PrefService;
+class Profile;
+
+namespace base {
+class Value;
+}  // namespace base
 
 namespace chromeos {
 
@@ -31,8 +33,12 @@ enum AssistantOptInFlowStatus {
   GET_MORE_CONTINUED = 9,
   READY_SCREEN_SHOWN = 10,
   READY_SCREEN_CONTINUED = 11,
+  VOICE_MATCH_SHOWN = 12,
+  VOICE_MATCH_ENROLLMENT_DONE = 13,
+  VOICE_MATCH_ENROLLMENT_SKIPPED = 14,
+  VOICE_MATCH_ENROLLMENT_ERROR = 15,
   // Magic constant used by the histogram macros.
-  kMaxValue = READY_SCREEN_CONTINUED
+  kMaxValue = VOICE_MATCH_ENROLLMENT_ERROR
 };
 
 void RecordAssistantOptInStatus(AssistantOptInFlowStatus);
@@ -57,7 +63,8 @@ base::Value CreateDisclosureData(const SettingZippyList& disclosure_list);
 
 // Helper method to create get more screen data.
 base::Value CreateGetMoreData(bool email_optin_needed,
-                              const assistant::EmailOptInUi& email_optin_ui);
+                              const assistant::EmailOptInUi& email_optin_ui,
+                              PrefService* prefs);
 
 // Get string constants for settings ui.
 base::Value GetSettingsUiStrings(const assistant::SettingsUi& settings_ui,
@@ -66,6 +73,10 @@ base::Value GetSettingsUiStrings(const assistant::SettingsUi& settings_ui,
 void RecordActivityControlConsent(Profile* profile,
                                   std::string ui_audit_key,
                                   bool opted_in);
+
+bool IsHotwordDspAvailable();
+
+bool IsVoiceMatchEnabled(const PrefService* prefs);
 
 }  // namespace chromeos
 

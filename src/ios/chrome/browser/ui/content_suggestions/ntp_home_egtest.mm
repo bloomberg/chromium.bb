@@ -7,25 +7,33 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/ios/ios_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/test/scoped_command_line.h"
 #include "components/reading_list/core/reading_list_model.h"
+#include "components/search_engines/template_url.h"
+#include "components/search_engines/template_url_service.h"
+#include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_switches.h"
-#include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/notification_promo.h"
 #include "ios/chrome/browser/ntp_snippets/ios_chrome_content_suggestions_service_factory.h"
 #include "ios/chrome/browser/ntp_snippets/ios_chrome_content_suggestions_service_factory_util.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
+#include "ios/chrome/browser/search_engines/template_url_service_factory.h"
+#include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_whats_new_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_provider_test_singleton.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_test_utils.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_coordinator.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
+#import "ios/chrome/browser/ui/settings/settings_table_view_controller.h"
+#import "ios/chrome/browser/ui/tab_grid/tab_grid_egtest_util.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
@@ -39,8 +47,10 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/chrome/test/scoped_eg_synchronization_disabler.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -81,6 +91,8 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 @property(nonatomic, assign, readonly) MockContentSuggestionsProvider* provider;
 // Article category, used by the singleton.
 @property(nonatomic, assign, readonly) ntp_snippets::Category category;
+
+@property(nonatomic, assign) base::string16 defaultSearchEngine;
 
 @end
 
@@ -134,6 +146,13 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
       ReadingListModelFactory::GetForBrowserState(self.browserState);
   readingListModel->DeleteAllEntries();
   [super setUp];
+
+  // Get the default Search Engine.
+  ios::ChromeBrowserState* browser_state =
+      chrome_test_util::GetOriginalBrowserState();
+  TemplateURLService* service =
+      ios::TemplateURLServiceFactory::GetForBrowserState(browser_state);
+  self.defaultSearchEngine = service->GetDefaultSearchProvider()->short_name();
 }
 
 - (void)tearDown {
@@ -141,6 +160,21 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
       self.category, CategoryStatus::ALL_SUGGESTIONS_EXPLICITLY_DISABLED);
   [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationPortrait
                            errorOrNil:nil];
+
+  // Set the search engine back to the default in case the test fails before
+  // cleaning it up.
+  ios::ChromeBrowserState* browser_state =
+      chrome_test_util::GetOriginalBrowserState();
+  TemplateURLService* service =
+      ios::TemplateURLServiceFactory::GetForBrowserState(browser_state);
+  std::vector<TemplateURL*> urls = service->GetTemplateURLs();
+
+  for (auto iter = urls.begin(); iter != urls.end(); ++iter) {
+    if (self.defaultSearchEngine == (*iter)->short_name()) {
+      service->SetUserSelectedDefaultSearchProvider(*iter);
+    }
+  }
+
   [super tearDown];
 }
 
@@ -163,6 +197,61 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 // Tests that all items are accessible on the home page.
 - (void)testAccessibility {
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
+}
+
+// Tests that the collections shortcut are displayed and working.
+- (void)testCollectionShortcuts {
+  // Check the Bookmarks.
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
+                                   IDS_IOS_CONTENT_SUGGESTIONS_BOOKMARKS)]
+      performAction:grey_tap()];
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::HeaderWithAccessibilityLabelId(
+                                   IDS_IOS_CONTENT_SUGGESTIONS_BOOKMARKS)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::NavigationBarDoneButton()]
+      performAction:grey_tap()];
+
+  // Check the ReadingList.
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
+                                   IDS_IOS_CONTENT_SUGGESTIONS_READING_LIST)]
+      performAction:grey_tap()];
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::HeaderWithAccessibilityLabelId(
+                                   IDS_IOS_TOOLS_MENU_READING_LIST)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::NavigationBarDoneButton()]
+      performAction:grey_tap()];
+
+  // Check the RecentTabs.
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
+                                   IDS_IOS_CONTENT_SUGGESTIONS_RECENT_TABS)]
+      performAction:grey_tap()];
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::HeaderWithAccessibilityLabelId(
+                                   IDS_IOS_CONTENT_SUGGESTIONS_RECENT_TABS)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::NavigationBarDoneButton()]
+      performAction:grey_tap()];
+
+  // Check the History.
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
+                                   IDS_IOS_CONTENT_SUGGESTIONS_HISTORY)]
+      performAction:grey_tap()];
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::HeaderWithAccessibilityLabelId(
+                                   IDS_HISTORY_TITLE)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::NavigationBarDoneButton()]
+      performAction:grey_tap()];
 }
 
 // Tests that the fake omnibox width is correctly updated after a rotation.
@@ -273,6 +362,24 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
                                           FakeOmniboxAccessibilityID())]
       assertWithMatcher:grey_not(grey_sufficientlyVisible())];
+}
+
+// Tests that the app doesn't crash when opening multiple tabs.
+- (void)testOpenMultipleTabs {
+  NSInteger numberOfTabs = 10;
+  for (NSInteger i = 0; i < numberOfTabs; i++) {
+    [ChromeEarlGreyUI openNewTab];
+  }
+  id<GREYMatcher> matcher;
+  if (IsIPadIdiom()) {
+    matcher = grey_accessibilityID(@"Enter Tab Switcher");
+  } else {
+    matcher = grey_allOf(grey_accessibilityID(kToolbarStackButtonIdentifier),
+                         grey_sufficientlyVisible(), nil);
+  }
+  [[EarlGrey selectElementWithMatcher:matcher]
+      assertWithMatcher:grey_accessibilityValue([NSString
+                            stringWithFormat:@"%@", @(numberOfTabs + 1)])];
 }
 
 // Tests that the promo is correctly displayed and removed once tapped.
@@ -534,6 +641,85 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
       performAction:grey_tap()];
   [ChromeEarlGrey
       waitForElementWithMatcherSufficientlyVisible:chrome_test_util::Omnibox()];
+}
+
+- (void)testOpeningNewTab {
+  [ChromeEarlGreyUI openNewTab];
+
+  // Check that the fake omnibox is here.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          FakeOmniboxAccessibilityID())]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  id<GREYMatcher> tabGridMatcher = nil;
+  if (IsIPadIdiom()) {
+    tabGridMatcher = grey_accessibilityID(@"Enter Tab Switcher");
+  } else {
+    tabGridMatcher =
+        grey_allOf(grey_accessibilityID(kToolbarStackButtonIdentifier),
+                   grey_sufficientlyVisible(), nil);
+  }
+  [[EarlGrey selectElementWithMatcher:tabGridMatcher]
+      assertWithMatcher:grey_accessibilityValue(
+                            [NSString stringWithFormat:@"%i", 2])];
+
+  // Test the same thing after opening a tab from the tab grid.
+  // TODO(crbug.com/933953) For an unknown reason synchronization doesn't work
+  // well with tapping on the tabgrid button, and instead triggers the long
+  // press gesture recognizer.  Disable this here so the test can be re-enabled.
+  {
+    ScopedSynchronizationDisabler disabler;
+    [[EarlGrey selectElementWithMatcher:tabGridMatcher]
+        performAction:[GREYActions actionForLongPressWithDuration:0.05]];
+  }
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridNewTabButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          FakeOmniboxAccessibilityID())]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey selectElementWithMatcher:tabGridMatcher]
+      assertWithMatcher:grey_accessibilityValue(
+                            [NSString stringWithFormat:@"%i", 3])];
+}
+
+- (void)testFavicons {
+  for (NSInteger index = 0; index < 8; index++) {
+    [[EarlGrey
+        selectElementWithMatcher:
+            grey_accessibilityID([NSString
+                stringWithFormat:
+                    @"%@%li",
+                    kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix,
+                    index])] assertWithMatcher:grey_sufficientlyVisible()];
+  }
+
+  // Change the Search Engine to Yahoo!.
+  [ChromeEarlGreyUI openSettingsMenu];
+  [ChromeEarlGreyUI
+      tapSettingsMenuButton:grey_accessibilityID(kSettingsSearchEngineCellId)];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Yahoo!")]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsDoneButton()]
+      performAction:grey_tap()];
+
+  // Check again the favicons.
+  for (NSInteger index = 0; index < 8; index++) {
+    [[EarlGrey
+        selectElementWithMatcher:
+            grey_accessibilityID([NSString
+                stringWithFormat:
+                    @"%@%li",
+                    kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix,
+                    index])] assertWithMatcher:grey_sufficientlyVisible()];
+  }
+
+  // Change the Search Engine to Google.
+  [ChromeEarlGreyUI openSettingsMenu];
+  [ChromeEarlGreyUI
+      tapSettingsMenuButton:grey_accessibilityID(kSettingsSearchEngineCellId)];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Google")]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsDoneButton()]
+      performAction:grey_tap()];
 }
 
 #pragma mark - Helpers

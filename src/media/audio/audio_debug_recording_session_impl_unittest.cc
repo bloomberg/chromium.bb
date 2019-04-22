@@ -22,9 +22,9 @@ namespace media {
 namespace {
 
 #if defined(OS_WIN)
-#define IntToStringType base::IntToString16
+#define NumberToStringType base::NumberToString16
 #else
-#define IntToStringType base::IntToString
+#define NumberToStringType base::NumberToString
 #endif
 
 const base::FilePath::CharType kBaseFileName[] =
@@ -71,7 +71,7 @@ class AudioDebugRecordingSessionImplTest : public AudioDebugRecordingTest {
   base::FilePath GetFileName(const base::FilePath::StringType& stream_type,
                              uint32_t id) {
     return base_file_path_.AddExtension(stream_type)
-        .AddExtension(IntToStringType(id))
+        .AddExtension(NumberToStringType(id))
         .AddExtension(kWavExtension);
   }
 

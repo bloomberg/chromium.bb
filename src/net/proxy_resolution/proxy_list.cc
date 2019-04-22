@@ -106,7 +106,7 @@ bool ProxyList::Equals(const ProxyList& other) const {
 }
 
 const ProxyServer& ProxyList::Get() const {
-  DCHECK(!proxies_.empty());
+  CHECK(!proxies_.empty());
   return proxies_[0];
 }
 

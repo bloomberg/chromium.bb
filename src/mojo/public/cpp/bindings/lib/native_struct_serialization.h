@@ -10,11 +10,11 @@
 
 #include <limits>
 
+#include "base/component_export.h"
 #include "base/logging.h"
 #include "base/pickle.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_param_traits.h"
-#include "mojo/public/cpp/bindings/bindings_export.h"
 #include "mojo/public/cpp/bindings/lib/array_internal.h"
 #include "mojo/public/cpp/bindings/lib/bindings_internal.h"
 #include "mojo/public/cpp/bindings/lib/serialization_forward.h"
@@ -29,7 +29,7 @@ namespace internal {
 // Serialize/Deserialize for [Native] mojom structs which do not have a
 // registered typemap in the current configuration (i.e. structs that are
 // represented by a raw native::NativeStruct mojom struct in C++ bindings.)
-struct MOJO_CPP_BINDINGS_EXPORT UnmappedNativeStructSerializerImpl {
+struct COMPONENT_EXPORT(MOJO_CPP_BINDINGS) UnmappedNativeStructSerializerImpl {
   static void Serialize(
       const native::NativeStructPtr& input,
       Buffer* buffer,

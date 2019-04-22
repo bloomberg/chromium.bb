@@ -1,8 +1,11 @@
 #include "rar.hpp"
 
+namespace third_party_unrar {
+
 void Unpack::CopyString20(uint Length,uint Distance)
 {
-  LastDist=OldDist[OldDistPtr++ & 3]=Distance;
+  LastDist=OldDist[OldDistPtr++]=Distance;
+  OldDistPtr = OldDistPtr & 3; // Needed if RAR 1.5 file is called after RAR 2.0.
   LastLength=Length;
   DestUnpSize-=Length;
   CopyString(Length,Distance);
@@ -378,3 +381,5 @@ byte Unpack::DecodeAudio(int Delta)
   }
   return (byte)Ch;
 }
+
+}  // namespace third_party_unrar

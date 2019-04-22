@@ -218,6 +218,7 @@ class TriggerManagerWebContentsHelper
 
   // Trigger Manager will be notified of any relevant WebContents events.
   TriggerManager* trigger_manager_;
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
 };
 
 }  // namespace safe_browsing

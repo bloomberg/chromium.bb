@@ -183,7 +183,7 @@ et{
         MF{"Saint-Martin"}
         MG{"Madagaskar"}
         MH{"Marshalli Saared"}
-        MK{"Makedoonia Vabariik"}
+        MK{"Põhja-Makedoonia"}
         ML{"Mali"}
         MM{"Myanmar (Birma)"}
         MN{"Mongoolia"}
@@ -287,6 +287,8 @@ et{
         VU{"Vanuatu"}
         WF{"Wallis ja Futuna"}
         WS{"Samoa"}
+        XA{"pseudo-aktsent"}
+        XB{"pseudo-Bidi"}
         XK{"Kosovo"}
         YE{"Jeemen"}
         YT{"Mayotte"}
@@ -305,7 +307,8 @@ et{
         CG{"Kongo-Brazzaville"}
         CI{"Elevandiluurannik"}
         CZ{"Tšehhia"}
+        SZ{"eSwatini"}
         TL{"Timor-Leste"}
     }
-    Version{"2.1.44.91"}
+    Version{"2.1.48.42"}
 }

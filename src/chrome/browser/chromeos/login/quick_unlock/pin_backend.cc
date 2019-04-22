@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/quick_unlock/pin_backend.h"
 
 #include "base/base64.h"
+#include "base/bind.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/login/quick_unlock/pin_storage_cryptohome.h"
@@ -168,7 +169,7 @@ void PinBackend::Set(const AccountId& account_id,
 
   if (cryptohome_backend_) {
     // If |user_context| is null, then the token timed out.
-    UserContext* user_context = storage->GetUserContext(token);
+    const UserContext* user_context = storage->GetUserContext(token);
     if (!user_context) {
       PostResponse(std::move(did_set), false);
       return;
@@ -200,7 +201,7 @@ void PinBackend::Remove(const AccountId& account_id,
 
   if (cryptohome_backend_) {
     // If |user_context| is null, then the token timed out.
-    UserContext* user_context = storage->GetUserContext(token);
+    const UserContext* user_context = storage->GetUserContext(token);
     if (!user_context) {
       PostResponse(std::move(did_remove), false);
       return;

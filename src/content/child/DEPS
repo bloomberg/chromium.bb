@@ -6,7 +6,6 @@ include_rules = [
   "+components/webcrypto",
   "+components/services/font/public",
 
-  "+content/app/strings/grit",  # For generated headers
   "+content/public/child",
   "+services/device/public/cpp/device_features.h",
   "+services/device/public/cpp/power_monitor",

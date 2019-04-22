@@ -48,15 +48,20 @@ GrGLTexture::GrGLTexture(GrGLGpu* gpu, SkBudgeted budgeted, const GrSurfaceDesc&
         , INHERITED(gpu, desc, TextureTypeFromTarget(idDesc.fInfo.fTarget), mipMapsStatus) {
     this->init(desc, idDesc);
     this->registerWithCache(budgeted);
+    if (GrPixelConfigIsCompressed(desc.fConfig)) {
+        this->setReadOnly();
+    }
 }
 
-GrGLTexture::GrGLTexture(GrGLGpu* gpu, Wrapped, const GrSurfaceDesc& desc,
-                         GrMipMapsStatus mipMapsStatus, const IDDesc& idDesc,
-                         bool purgeImmediately)
+GrGLTexture::GrGLTexture(GrGLGpu* gpu, const GrSurfaceDesc& desc, GrMipMapsStatus mipMapsStatus,
+                         const IDDesc& idDesc, GrWrapCacheable cacheable, GrIOType ioType)
         : GrSurface(gpu, desc)
         , INHERITED(gpu, desc, TextureTypeFromTarget(idDesc.fInfo.fTarget), mipMapsStatus) {
     this->init(desc, idDesc);
-    this->registerWithCacheWrapped(purgeImmediately);
+    this->registerWithCacheWrapped(cacheable);
+    if (ioType == kRead_GrIOType) {
+        this->setReadOnly();
+    }
 }
 
 GrGLTexture::GrGLTexture(GrGLGpu* gpu, const GrSurfaceDesc& desc, const IDDesc& idDesc,
@@ -86,13 +91,11 @@ void GrGLTexture::onRelease() {
         }
         fID = 0;
     }
-    this->invokeReleaseProc();
     INHERITED::onRelease();
 }
 
 void GrGLTexture::onAbandon() {
     fID = 0;
-    this->invokeReleaseProc();
     INHERITED::onAbandon();
 }
 
@@ -111,9 +114,8 @@ GrBackendFormat GrGLTexture::backendFormat() const {
 
 sk_sp<GrGLTexture> GrGLTexture::MakeWrapped(GrGLGpu* gpu, const GrSurfaceDesc& desc,
                                             GrMipMapsStatus mipMapsStatus, const IDDesc& idDesc,
-                                            bool purgeImmediately) {
-    return sk_sp<GrGLTexture>(new GrGLTexture(gpu, kWrapped, desc, mipMapsStatus, idDesc,
-                                              purgeImmediately));
+                                            GrWrapCacheable cacheable, GrIOType ioType) {
+    return sk_sp<GrGLTexture>(new GrGLTexture(gpu, desc, mipMapsStatus, idDesc, cacheable, ioType));
 }
 
 bool GrGLTexture::onStealBackendTexture(GrBackendTexture* backendTexture,

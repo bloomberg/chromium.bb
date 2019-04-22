@@ -34,22 +34,27 @@ bool GrabWindowSnapshot(gfx::NativeWindow window,
   return false;
 }
 
-static void MakeAsyncCopyRequest(
-    gfx::NativeWindow window,
+static std::unique_ptr<viz::CopyOutputRequest> CreateCopyRequest(
+    gfx::NativeView view,
     const gfx::Rect& source_rect,
     viz::CopyOutputRequest::CopyOutputRequestCallback callback) {
-  if (!window->GetCompositor()) {
-    std::move(callback).Run(std::make_unique<viz::CopyOutputResult>(
-        viz::CopyOutputRequest::ResultFormat::RGBA_BITMAP, gfx::Rect()));
-    return;
-  }
   std::unique_ptr<viz::CopyOutputRequest> request =
       std::make_unique<viz::CopyOutputRequest>(
           viz::CopyOutputRequest::ResultFormat::RGBA_BITMAP,
           std::move(callback));
-  float scale = ui::GetScaleFactorForNativeView(window);
+  float scale = ui::GetScaleFactorForNativeView(view);
   request->set_area(gfx::ScaleToEnclosingRect(source_rect, scale));
-  window->GetCompositor()->RequestCopyOfOutputOnRootLayer(std::move(request));
+  return request;
+}
+
+static void MakeAsyncCopyRequest(
+    gfx::NativeWindow window,
+    const gfx::Rect& source_rect,
+    std::unique_ptr<viz::CopyOutputRequest> copy_request) {
+  if (!window->GetCompositor())
+    return;
+  window->GetCompositor()->RequestCopyOfOutputOnRootLayer(
+      std::move(copy_request));
 }
 
 void GrabWindowSnapshotAndScaleAsync(
@@ -57,9 +62,11 @@ void GrabWindowSnapshotAndScaleAsync(
     const gfx::Rect& source_rect,
     const gfx::Size& target_size,
     const GrabWindowSnapshotAsyncCallback& callback) {
-  MakeAsyncCopyRequest(window, source_rect,
-                       base::BindOnce(&SnapshotAsync::ScaleCopyOutputResult,
-                                      callback, target_size));
+  MakeAsyncCopyRequest(
+      window, source_rect,
+      CreateCopyRequest(window, source_rect,
+                        base::BindOnce(&SnapshotAsync::ScaleCopyOutputResult,
+                                       callback, target_size)));
 }
 
 void GrabWindowSnapshotAsync(gfx::NativeWindow window,
@@ -67,17 +74,25 @@ void GrabWindowSnapshotAsync(gfx::NativeWindow window,
                              const GrabWindowSnapshotAsyncCallback& callback) {
   MakeAsyncCopyRequest(
       window, source_rect,
-      base::BindOnce(&SnapshotAsync::RunCallbackWithCopyOutputResult,
-                     callback));
+      CreateCopyRequest(
+          window, source_rect,
+          base::BindOnce(&SnapshotAsync::RunCallbackWithCopyOutputResult,
+                         callback)));
 }
 
 void GrabViewSnapshotAsync(gfx::NativeView view,
                            const gfx::Rect& source_rect,
                            const GrabWindowSnapshotAsyncCallback& callback) {
-  MakeAsyncCopyRequest(
-      view->GetWindowAndroid(), source_rect,
-      base::BindOnce(&SnapshotAsync::RunCallbackWithCopyOutputResult,
-                     callback));
+  std::unique_ptr<viz::CopyOutputRequest> copy_request =
+      view->MaybeRequestCopyOfView(CreateCopyRequest(
+          view, source_rect,
+          base::BindOnce(&SnapshotAsync::RunCallbackWithCopyOutputResult,
+                         callback)));
+  if (!copy_request)
+    return;
+
+  MakeAsyncCopyRequest(view->GetWindowAndroid(), source_rect,
+                       std::move(copy_request));
 }
 
 }  // namespace ui

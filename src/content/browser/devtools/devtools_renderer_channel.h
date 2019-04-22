@@ -5,13 +5,14 @@
 #ifndef CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_RENDERER_CHANNEL_H_
 #define CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_RENDERER_CHANNEL_H_
 
+#include "base/callback.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "third_party/blink/public/web/devtools_agent.mojom.h"
+#include "third_party/blink/public/mojom/devtools/devtools_agent.mojom.h"
 
 namespace gfx {
 class Point;
@@ -54,16 +55,19 @@ class CONTENT_EXPORT DevToolsRendererChannel
       RenderFrameHostImpl* frame_host);
   void AttachSession(DevToolsSession* session);
   void InspectElement(const gfx::Point& point);
+  void ForceDetachWorkerSessions();
 
   void SetReportChildWorkers(protocol::TargetAutoAttacher* attacher,
                              bool report,
-                             bool wait_for_debugger);
+                             bool wait_for_debugger,
+                             base::OnceClosure callback);
 
  private:
   // blink::mojom::DevToolsAgentHost implementation.
   void ChildWorkerCreated(blink::mojom::DevToolsAgentPtr worker_devtools_agent,
                           blink::mojom::DevToolsAgentHostRequest host_request,
                           const GURL& url,
+                          const std::string& name,
                           const base::UnguessableToken& devtools_worker_token,
                           bool waiting_for_debugger) override;
   void ChildWorkerDestroyed(DevToolsAgentHostImpl*);
@@ -72,6 +76,7 @@ class CONTENT_EXPORT DevToolsRendererChannel
   void SetRendererInternal(blink::mojom::DevToolsAgent* agent,
                            int process_id,
                            RenderFrameHostImpl* frame_host);
+  void ReportChildWorkersCallback();
 
   DevToolsAgentHostImpl* owner_;
   mojo::Binding<blink::mojom::DevToolsAgentHost> binding_;
@@ -83,6 +88,7 @@ class CONTENT_EXPORT DevToolsRendererChannel
   base::flat_set<protocol::TargetAutoAttacher*> report_attachers_;
   base::flat_set<protocol::TargetAutoAttacher*> wait_for_debugger_attachers_;
   base::flat_set<WorkerDevToolsAgentHost*> child_workers_;
+  base::OnceClosure set_report_callback_;
   base::WeakPtrFactory<DevToolsRendererChannel> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsRendererChannel);

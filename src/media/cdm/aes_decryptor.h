@@ -62,8 +62,8 @@ class MEDIA_EXPORT AesDecryptor : public ContentDecryptionModule,
   CdmContext* GetCdmContext() override;
 
   // CdmContext implementation.
-  std::unique_ptr<CallbackRegistration> RegisterNewKeyCB(
-      base::RepeatingClosure new_key_cb) override;
+  std::unique_ptr<CallbackRegistration> RegisterEventCB(
+      EventCB event_cb) override;
   Decryptor* GetDecryptor() override;
   int GetCdmId() const override;
 
@@ -84,6 +84,7 @@ class MEDIA_EXPORT AesDecryptor : public ContentDecryptionModule,
                              const VideoDecodeCB& video_decode_cb) override;
   void ResetDecoder(StreamType stream_type) override;
   void DeinitializeDecoder(StreamType stream_type) override;
+  bool CanAlwaysDecrypt() override;
 
  private:
   // Testing classes that needs to manipulate internal states for testing.

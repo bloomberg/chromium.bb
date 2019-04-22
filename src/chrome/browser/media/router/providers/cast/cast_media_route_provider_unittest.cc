@@ -4,15 +4,19 @@
 
 #include "chrome/browser/media/router/providers/cast/cast_media_route_provider.h"
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "chrome/browser/media/router/providers/cast/cast_session_tracker.h"
 #include "chrome/browser/media/router/test/mock_mojo_media_router.h"
 #include "chrome/browser/media/router/test/test_helper.h"
 #include "chrome/common/media_router/test/test_helper.h"
 #include "components/cast_channel/cast_test_util.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "services/data_decoder/data_decoder_service.h"
+#include "services/data_decoder/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -34,11 +38,10 @@ static constexpr base::TimeDelta kRouteTimeout =
 class CastMediaRouteProviderTest : public testing::Test {
  public:
   CastMediaRouteProviderTest()
-      : connector_factory_(
-            service_manager::TestConnectorFactory::CreateForUniqueService(
-                std::make_unique<data_decoder::DataDecoderService>())),
-        connector_(connector_factory_->CreateConnector()),
-        socket_service_(new base::TestSimpleTaskRunner()),
+      : data_decoder_service_(connector_factory_.RegisterInstance(
+            data_decoder::mojom::kServiceName)),
+        socket_service_(base::CreateSingleThreadTaskRunnerWithTraits(
+            {content::BrowserThread::UI})),
         message_handler_(&socket_service_) {}
   ~CastMediaRouteProviderTest() override = default;
 
@@ -47,27 +50,23 @@ class CastMediaRouteProviderTest : public testing::Test {
     router_binding_ = std::make_unique<mojo::Binding<mojom::MediaRouter>>(
         &mock_router_, mojo::MakeRequest(&router_ptr));
 
+    CastSessionTracker::SetInstanceForTest(
+        new CastSessionTracker(&media_sink_service_, &message_handler_,
+                               socket_service_.task_runner()));
+
     EXPECT_CALL(mock_router_, OnSinkAvailabilityUpdated(_, _));
     provider_ = std::make_unique<CastMediaRouteProvider>(
         mojo::MakeRequest(&provider_ptr_), router_ptr.PassInterface(),
         &media_sink_service_, &app_discovery_service_, &message_handler_,
-        connector_.get(), "hash-token", base::SequencedTaskRunnerHandle::Get());
+        connector_factory_.GetDefaultConnector(), "hash-token",
+        base::SequencedTaskRunnerHandle::Get());
 
     base::RunLoop().RunUntilIdle();
   }
 
-  void TearDown() override { provider_.reset(); }
-
-  void ExpectCreateRouteFailure(
-      RouteRequestResult::ResultCode expected_result,
-      const base::Optional<MediaRoute>& route,
-      mojom::RoutePresentationConnectionPtr presentation_connections,
-      const base::Optional<std::string>& error,
-      RouteRequestResult::ResultCode result) {
-    EXPECT_FALSE(route);
-    EXPECT_FALSE(presentation_connections);
-    EXPECT_TRUE(error);
-    EXPECT_EQ(expected_result, result);
+  void TearDown() override {
+    provider_.reset();
+    CastSessionTracker::SetInstanceForTest(nullptr);
   }
 
   void ExpectCreateRouteSuccessAndSetRoute(
@@ -82,6 +81,18 @@ class CastMediaRouteProviderTest : public testing::Test {
     route_ = std::make_unique<MediaRoute>(*route);
   }
 
+  void ExpectCreateRouteFailure(
+      RouteRequestResult::ResultCode expected_result,
+      const base::Optional<MediaRoute>& route,
+      mojom::RoutePresentationConnectionPtr presentation_connections,
+      const base::Optional<std::string>& error,
+      RouteRequestResult::ResultCode result) {
+    EXPECT_FALSE(route);
+    EXPECT_FALSE(presentation_connections);
+    EXPECT_TRUE(error);
+    EXPECT_EQ(expected_result, result);
+  }
+
   void ExpectTerminateRouteSuccess(const base::Optional<std::string>& error,
                                    RouteRequestResult::ResultCode result) {
     EXPECT_FALSE(error);
@@ -90,8 +101,8 @@ class CastMediaRouteProviderTest : public testing::Test {
 
  protected:
   content::TestBrowserThreadBundle thread_bundle_;
-  std::unique_ptr<service_manager::TestConnectorFactory> connector_factory_;
-  std::unique_ptr<service_manager::Connector> connector_;
+  service_manager::TestConnectorFactory connector_factory_;
+  data_decoder::DataDecoderService data_decoder_service_;
 
   mojom::MediaRouteProviderPtr provider_ptr_;
   MockMojoMediaRouter mock_router_;

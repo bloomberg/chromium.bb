@@ -19,7 +19,8 @@ ScriptedTaskQueueController* ScriptedTaskQueueController::From(
   ScriptedTaskQueueController* task_queue_controller =
       Supplement<Document>::From<ScriptedTaskQueueController>(document);
   if (!task_queue_controller) {
-    task_queue_controller = new ScriptedTaskQueueController(&document);
+    task_queue_controller =
+        MakeGarbageCollected<ScriptedTaskQueueController>(&document);
     Supplement<Document>::ProvideTo(document, task_queue_controller);
   }
   return task_queue_controller;
@@ -29,7 +30,7 @@ ScriptedTaskQueueController::ScriptedTaskQueueController(
     ExecutionContext* context)
     : ContextLifecycleObserver(context) {}
 
-void ScriptedTaskQueueController::Trace(blink::Visitor* visitor) {
+void ScriptedTaskQueueController::Trace(Visitor* visitor) {
   visitor->Trace(task_queues_);
   Supplement<Document>::Trace(visitor);
   ScriptWrappable::Trace(visitor);

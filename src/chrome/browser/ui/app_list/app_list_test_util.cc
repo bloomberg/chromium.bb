@@ -25,7 +25,7 @@ void AppListTestBase::SetUp() {
   extensions::ExtensionServiceTestBase::SetUp();
 
   // Load "app_list" extensions test profile.
-  // The test profile has 5 extensions:
+  // The test profile has 4 extensions:
   // - 1 dummy extension (which should not be visible in the launcher)
   // - 2 packaged extension apps
   // - 1 hosted extension app
@@ -36,6 +36,9 @@ void AppListTestBase::SetUp() {
       .Append(chrome::kPreferencesFilename);
   InitializeInstalledExtensionService(pref_path, source_install_dir);
   service_->Init();
+
+  // Let any async services complete their set-up.
+  base::RunLoop().RunUntilIdle();
 
   // There should be 4 extensions in the test profile.
   ASSERT_EQ(4U, registry()->enabled_extensions().size());

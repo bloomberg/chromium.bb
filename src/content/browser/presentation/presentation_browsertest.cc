@@ -17,7 +17,9 @@ using PresentationBrowserTest = ContentBrowserTest;
 // same PresentationRequest does not return an undefined object.
 // TODO(mlamouri,mfoltz), update the test after [SameObject] is used,
 // see https://crbug.com/653131
-IN_PROC_BROWSER_TEST_F(PresentationBrowserTest, AvailabilityNotUndefined) {
+// Broken; see https://crbug.com/940503 .
+IN_PROC_BROWSER_TEST_F(PresentationBrowserTest,
+                       DISABLED_AvailabilityNotUndefined) {
   GURL test_url = GetTestUrl("", "hello.html");
 
   TestNavigationObserver navigation_observer(shell()->web_contents(), 1);
@@ -34,13 +36,15 @@ IN_PROC_BROWSER_TEST_F(PresentationBrowserTest, AvailabilityNotUndefined) {
   ExecuteScriptAndGetValue(shell()->web_contents()->GetMainFrame(),
                            "const p2 = r.getAvailability()");
 
-  bool is_p1_undefined = false;
-  ExecuteScriptAndGetValue(shell()->web_contents()->GetMainFrame(),
-                           "p1 === undefined")->GetAsBoolean(&is_p1_undefined);
+  bool is_p1_undefined =
+      ExecuteScriptAndGetValue(shell()->web_contents()->GetMainFrame(),
+                               "p1 === undefined")
+          .GetBool();
 
-  bool is_p2_undefined = false;
-  ExecuteScriptAndGetValue(shell()->web_contents()->GetMainFrame(),
-                           "p2 === undefined")->GetAsBoolean(&is_p2_undefined);
+  bool is_p2_undefined =
+      ExecuteScriptAndGetValue(shell()->web_contents()->GetMainFrame(),
+                               "p2 === undefined")
+          .GetBool();
 
   EXPECT_FALSE(is_p1_undefined);
   EXPECT_FALSE(is_p2_undefined);

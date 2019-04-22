@@ -8,7 +8,7 @@
 #include <map>
 #include <string>
 
-#include "ash/ash_export.h"
+#include "base/component_export.h"
 #include "base/optional.h"
 
 class GURL;
@@ -22,6 +22,8 @@ enum class DeepLinkType {
   kUnsupported,
   kChromeSettings,
   kFeedback,
+  kLists,
+  kNotes,
   kOnboarding,
   kQuery,
   kReminders,
@@ -33,71 +35,103 @@ enum class DeepLinkType {
 
 // Enumeration of deep link parameters.
 enum class DeepLinkParam {
+  kAction,
+  kClientId,
   kId,
   kPage,
   kQuery,
   kRelaunch,
 };
 
+// Enumeration of deep link parameter reminder action.
+enum class ReminderAction {
+  kCreate,
+  kEdit,
+};
+
+// Returns a deep link to send an Assistant query.
+COMPONENT_EXPORT(ASSISTANT_UTIL)
+GURL CreateAssistantQueryDeepLink(const std::string& query);
+
 // Returns a deep link to top level Assistant Settings.
-ASH_EXPORT GURL CreateAssistantSettingsDeepLink();
+COMPONENT_EXPORT(ASSISTANT_UTIL) GURL CreateAssistantSettingsDeepLink();
 
 // Returns a deep link to initiate a screen context interaction.
-ASH_EXPORT GURL CreateWhatsOnMyScreenDeepLink();
+COMPONENT_EXPORT(ASSISTANT_UTIL) GURL CreateWhatsOnMyScreenDeepLink();
 
 // Returns the parsed parameters for the specified |deep_link|. If the supplied
 // argument is not a supported deep link or if no parameters are found, an empty
 // map is returned.
-ASH_EXPORT std::map<std::string, std::string> GetDeepLinkParams(
-    const GURL& deep_link);
+COMPONENT_EXPORT(ASSISTANT_UTIL)
+std::map<std::string, std::string> GetDeepLinkParams(const GURL& deep_link);
 
 // Returns a specific string |param| from the given parameters. If the desired
 // parameter is not found, and empty value is returned.
-ASH_EXPORT base::Optional<std::string> GetDeepLinkParam(
+COMPONENT_EXPORT(ASSISTANT_UTIL)
+base::Optional<std::string> GetDeepLinkParam(
     const std::map<std::string, std::string>& params,
     DeepLinkParam param);
 
 // Returns a specific bool |param| from the given parameters. If the desired
 // parameter is not found or is not a bool, an empty value is returned.
-ASH_EXPORT base::Optional<bool> GetDeepLinkParamAsBool(
+COMPONENT_EXPORT(ASSISTANT_UTIL)
+base::Optional<bool> GetDeepLinkParamAsBool(
     const std::map<std::string, std::string>& params,
+    DeepLinkParam param);
+
+// Returns a specific ReminderAction |param| from the given parameters. If the
+// desired parameter is not found, an empty value is returned.
+COMPONENT_EXPORT(ASSISTANT_UTIL)
+base::Optional<ReminderAction> GetDeepLinkParamAsRemindersAction(
+    const std::map<std::string, std::string> params,
     DeepLinkParam param);
 
 // Returns the deep link type of the specified |url|. If the specified url is
 // not a supported deep link, DeepLinkType::kUnsupported is returned.
-ASH_EXPORT DeepLinkType GetDeepLinkType(const GURL& url);
+COMPONENT_EXPORT(ASSISTANT_UTIL) DeepLinkType GetDeepLinkType(const GURL& url);
 
 // Returns true if the specified |url| is a deep link of the given |type|.
-ASH_EXPORT bool IsDeepLinkType(const GURL& url, DeepLinkType type);
+COMPONENT_EXPORT(ASSISTANT_UTIL)
+bool IsDeepLinkType(const GURL& url, DeepLinkType type);
 
 // Returns true if the specified |url| is a deep link, false otherwise.
-ASH_EXPORT bool IsDeepLinkUrl(const GURL& url);
+COMPONENT_EXPORT(ASSISTANT_UTIL) bool IsDeepLinkUrl(const GURL& url);
 
-// Returns the URL for the specified Assistant reminder |id|. If id is absent,
-// the returned URL will be for top-level Assistant Reminders.
-ASH_EXPORT GURL GetAssistantRemindersUrl(const base::Optional<std::string>& id);
+// Returns the Assistant URL for the deep link of the specified |type|. A return
+// value will only be present if the deep link type is one of {kLists, kNotes,
+// or kReminders}. If |id| is absent, the returned URL will be for the top-level
+// Assistant URL. Otherwise, the URL will correspond to the resource identified
+// by |id|.
+COMPONENT_EXPORT(ASSISTANT_UTIL)
+base::Optional<GURL> GetAssistantUrl(DeepLinkType type,
+                                     const base::Optional<std::string>& id);
 
 // Returns the URL for the specified Chrome Settings |page|. If page is absent
 // or not allowed, the URL will be for top-level Chrome Settings.
-ASH_EXPORT GURL GetChromeSettingsUrl(const base::Optional<std::string>& page);
+COMPONENT_EXPORT(ASSISTANT_UTIL)
+GURL GetChromeSettingsUrl(const base::Optional<std::string>& page);
 
 // Returns the web URL for the specified |deep_link|. A return value will only
 // be present if |deep_link| is a web deep link as identified by the
 // IsWebDeepLink(GURL) API.
-ASH_EXPORT base::Optional<GURL> GetWebUrl(const GURL& deep_link);
+COMPONENT_EXPORT(ASSISTANT_UTIL)
+base::Optional<GURL> GetWebUrl(const GURL& deep_link);
 
 // Returns the web URL for a deep link of the specified |type| with the given
 // |params|. A return value will only be present if the deep link type is a web
 // deep link type as identified by the IsWebDeepLinkType(DeepLinkType) API.
-ASH_EXPORT base::Optional<GURL> GetWebUrl(
+COMPONENT_EXPORT(ASSISTANT_UTIL)
+base::Optional<GURL> GetWebUrl(
     DeepLinkType type,
     const std::map<std::string, std::string>& params);
 
 // Returns true if the specified |deep_link| is a web deep link.
-ASH_EXPORT bool IsWebDeepLink(const GURL& deep_link);
+COMPONENT_EXPORT(ASSISTANT_UTIL) bool IsWebDeepLink(const GURL& deep_link);
 
 // Returns true if the specified deep link |type| is a web deep link.
-ASH_EXPORT bool IsWebDeepLinkType(DeepLinkType type);
+COMPONENT_EXPORT(ASSISTANT_UTIL)
+bool IsWebDeepLinkType(DeepLinkType type,
+                       const std::map<std::string, std::string>& params);
 
 }  // namespace util
 }  // namespace assistant

@@ -134,8 +134,8 @@ namespace ash {
 BluetoothNotificationController::BluetoothNotificationController()
     : weak_ptr_factory_(this) {
   BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&BluetoothNotificationController::OnGetAdapter,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&BluetoothNotificationController::OnGetAdapter,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 BluetoothNotificationController::~BluetoothNotificationController() {

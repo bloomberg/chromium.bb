@@ -15,12 +15,12 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/values.h"
 #include "chrome/common/chrome_features.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -39,7 +39,6 @@
 #include "services/preferences/public/mojom/preferences.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/constants.h"
-#include "services/service_manager/public/cpp/service_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -154,7 +153,7 @@ class ProfilePrefStoreManagerTest : public testing::Test,
 
     ProfilePrefStoreManager::RegisterProfilePrefs(profile_pref_registry_.get());
     for (const prefs::TrackedPreferenceMetadata* it = kConfiguration;
-         it != kConfiguration + arraysize(kConfiguration); ++it) {
+         it != kConfiguration + base::size(kConfiguration); ++it) {
       if (it->strategy == PrefTrackingStrategy::ATOMIC) {
         profile_pref_registry_->RegisterStringPref(it->name, std::string());
       } else {
@@ -235,7 +234,6 @@ class ProfilePrefStoreManagerTest : public testing::Test,
             std::move(validation_delegate));
     InitializePrefStore(pref_store.get());
     pref_store = nullptr;
-    pref_service_context_.reset();
   }
 
   void DestroyPrefStore() {
@@ -253,7 +251,6 @@ class ProfilePrefStoreManagerTest : public testing::Test,
       // case...
       base::RunLoop().RunUntilIdle();
     }
-    pref_service_context_.reset();
   }
 
   void InitializePrefStore(PersistentPrefStore* pref_store) {
@@ -330,7 +327,7 @@ class ProfilePrefStoreManagerTest : public testing::Test,
       ADD_FAILURE() << "No validation observed for preference: " << pref_path;
   }
 
-  base::MessageLoop main_message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::vector<prefs::mojom::TrackedPreferenceMetadataPtr> configuration_;
   base::ScopedTempDir profile_dir_;
   scoped_refptr<user_prefs::PrefRegistrySyncable> profile_pref_registry_;
@@ -353,21 +350,8 @@ class ProfilePrefStoreManagerTest : public testing::Test,
     reset_recorded_ = true;
   }
 
-  void BindInterface(const std::string& interface_name,
-                     mojo::ScopedMessagePipeHandle handle) {
-    service_manager::BindSourceInfo source(
-        service_manager::Identity(content::mojom::kBrowserServiceName,
-                                  service_manager::kSystemInstanceGroup,
-                                  base::Token{}, base::Token::CreateRandom()),
-        service_manager::CapabilitySet());
-    static_cast<service_manager::mojom::Service*>(pref_service_context_.get())
-        ->OnBindInterface(source, interface_name, std::move(handle),
-                          base::DoNothing());
-  }
-
   base::test::ScopedFeatureList feature_list_;
   bool reset_recorded_;
-  std::unique_ptr<service_manager::ServiceContext> pref_service_context_;
   service_manager::mojom::ConnectorRequest connector_request_;
   mojo::BindingSet<prefs::mojom::ResetOnLoadObserver>
       reset_on_load_observer_bindings_;

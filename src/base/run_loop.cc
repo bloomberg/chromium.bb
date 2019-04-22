@@ -6,8 +6,10 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/cancelable_callback.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop/message_loop.h"
+#include "base/no_destructor.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_local.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -31,7 +33,48 @@ void ProxyToTaskRunner(scoped_refptr<SequencedTaskRunner> task_runner,
   task_runner->PostTask(FROM_HERE, std::move(closure));
 }
 
+ThreadLocalPointer<RunLoop::ScopedRunTimeoutForTest>*
+ScopedRunTimeoutForTestTLS() {
+  static NoDestructor<ThreadLocalPointer<RunLoop::ScopedRunTimeoutForTest>> tls;
+  return tls.get();
+}
+
+void OnRunTimeout(RunLoop* run_loop, OnceClosure on_timeout) {
+  run_loop->Quit();
+  std::move(on_timeout).Run();
+}
+
 }  // namespace
+
+RunLoop::ScopedRunTimeoutForTest::ScopedRunTimeoutForTest(
+    TimeDelta timeout,
+    RepeatingClosure on_timeout)
+    : timeout_(timeout),
+      on_timeout_(std::move(on_timeout)),
+      nested_timeout_(ScopedRunTimeoutForTestTLS()->Get()) {
+  DCHECK_GT(timeout_, TimeDelta());
+  DCHECK(on_timeout_);
+  ScopedRunTimeoutForTestTLS()->Set(this);
+}
+
+RunLoop::ScopedRunTimeoutForTest::~ScopedRunTimeoutForTest() {
+  ScopedRunTimeoutForTestTLS()->Set(nested_timeout_);
+}
+
+// static
+const RunLoop::ScopedRunTimeoutForTest*
+RunLoop::ScopedRunTimeoutForTest::Current() {
+  return ScopedRunTimeoutForTestTLS()->Get();
+}
+
+RunLoop::ScopedDisableRunTimeoutForTest::ScopedDisableRunTimeoutForTest()
+    : nested_timeout_(ScopedRunTimeoutForTestTLS()->Get()) {
+  ScopedRunTimeoutForTestTLS()->Set(nullptr);
+}
+
+RunLoop::ScopedDisableRunTimeoutForTest::~ScopedDisableRunTimeoutForTest() {
+  ScopedRunTimeoutForTestTLS()->Set(nested_timeout_);
+}
 
 RunLoop::Delegate::Delegate() {
   // The Delegate can be created on another thread. It is only bound in
@@ -83,10 +126,26 @@ RunLoop::~RunLoop() {
 }
 
 void RunLoop::Run() {
+  RunWithTimeout(TimeDelta::Max());
+}
+
+void RunLoop::RunWithTimeout(TimeDelta timeout) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!BeforeRun())
     return;
+
+  // If there is a ScopedRunTimeoutForTest active then set the timeout.
+  // TODO(crbug.com/905412): Use real-time for Run() timeouts so that they
+  // can be applied even in tests which mock TimeTicks::Now().
+  CancelableOnceClosure cancelable_timeout;
+  ScopedRunTimeoutForTest* run_timeout = ScopedRunTimeoutForTestTLS()->Get();
+  if (run_timeout) {
+    cancelable_timeout.Reset(
+        BindOnce(&OnRunTimeout, Unretained(this), run_timeout->on_timeout()));
+    ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, cancelable_timeout.callback(), run_timeout->timeout());
+  }
 
   // It is okay to access this RunLoop from another sequence while Run() is
   // active as this RunLoop won't touch its state until after that returns (if
@@ -99,7 +158,7 @@ void RunLoop::Run() {
   const bool application_tasks_allowed =
       delegate_->active_run_loops_.size() == 1U ||
       type_ == Type::kNestableTasksAllowed;
-  delegate_->Run(application_tasks_allowed);
+  delegate_->Run(application_tasks_allowed, timeout);
 
   // Rebind this RunLoop to the current thread after Run().
   DETACH_FROM_SEQUENCE(sequence_checker_);
@@ -122,8 +181,8 @@ void RunLoop::Quit() {
   // proxies through ProxyToTaskRunner() as it can only deref its WeakPtr on
   // |origin_task_runner_|).
   if (!origin_task_runner_->RunsTasksInCurrentSequence()) {
-    origin_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&RunLoop::Quit, Unretained(this)));
+    origin_task_runner_->PostTask(FROM_HERE,
+                                  BindOnce(&RunLoop::Quit, Unretained(this)));
     return;
   }
 
@@ -142,14 +201,14 @@ void RunLoop::QuitWhenIdle() {
   // deref its WeakPtr on |origin_task_runner_|).
   if (!origin_task_runner_->RunsTasksInCurrentSequence()) {
     origin_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&RunLoop::QuitWhenIdle, Unretained(this)));
+        FROM_HERE, BindOnce(&RunLoop::QuitWhenIdle, Unretained(this)));
     return;
   }
 
   quit_when_idle_received_ = true;
 }
 
-base::Closure RunLoop::QuitClosure() {
+Closure RunLoop::QuitClosure() {
   // TODO(gab): Fix bad usage and enable this check, http://crbug.com/715235.
   // DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   allow_quit_current_deprecated_ = false;
@@ -157,11 +216,11 @@ base::Closure RunLoop::QuitClosure() {
   // Need to use ProxyToTaskRunner() as WeakPtrs vended from
   // |weak_factory_| may only be accessed on |origin_task_runner_|.
   // TODO(gab): It feels wrong that QuitClosure() is bound to a WeakPtr.
-  return base::Bind(&ProxyToTaskRunner, origin_task_runner_,
-                    base::Bind(&RunLoop::Quit, weak_factory_.GetWeakPtr()));
+  return Bind(&ProxyToTaskRunner, origin_task_runner_,
+              Bind(&RunLoop::Quit, weak_factory_.GetWeakPtr()));
 }
 
-base::Closure RunLoop::QuitWhenIdleClosure() {
+Closure RunLoop::QuitWhenIdleClosure() {
   // TODO(gab): Fix bad usage and enable this check, http://crbug.com/715235.
   // DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   allow_quit_current_deprecated_ = false;
@@ -169,9 +228,8 @@ base::Closure RunLoop::QuitWhenIdleClosure() {
   // Need to use ProxyToTaskRunner() as WeakPtrs vended from
   // |weak_factory_| may only be accessed on |origin_task_runner_|.
   // TODO(gab): It feels wrong that QuitWhenIdleClosure() is bound to a WeakPtr.
-  return base::Bind(
-      &ProxyToTaskRunner, origin_task_runner_,
-      base::Bind(&RunLoop::QuitWhenIdle, weak_factory_.GetWeakPtr()));
+  return Bind(&ProxyToTaskRunner, origin_task_runner_,
+              Bind(&RunLoop::QuitWhenIdle, weak_factory_.GetWeakPtr()));
 }
 
 // static

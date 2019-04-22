@@ -11,7 +11,7 @@
 
 namespace blink {
 
-// https://html.spec.whatwg.org/multipage/dom.html#html-element-constructors
+// https://html.spec.whatwg.org/C/#html-element-constructors
 class CORE_EXPORT V8HTMLConstructor {
   STATIC_ONLY(V8HTMLConstructor);
 

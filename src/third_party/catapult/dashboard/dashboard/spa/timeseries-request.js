@@ -8,8 +8,20 @@ tr.exportTo('cp', () => {
     XY: 'XY',
     ALERTS: 'ALERTS',
     ANNOTATIONS: 'ANNOTATIONS',
-    HISTOGRAMS: 'HISTOGRAMS',
+    DETAILS: 'DETAILS',
   });
+
+  const DETAILS_COLUMNS = new Set([
+    'revision',
+    'timestamp',
+    'avg', 'std', 'count',  // TODO other statistics
+    'revisions',
+    'annotations',
+    // TODO Uncomment when ready to display these:
+    // 'alert',
+    // 'diagnostics',
+    // 'histogram',
+  ]);
 
   function getColumnsByLevelOfDetail(levelOfDetail, statistic) {
     switch (levelOfDetail) {
@@ -23,8 +35,8 @@ tr.exportTo('cp', () => {
           ...getColumnsByLevelOfDetail(LEVEL_OF_DETAIL.ALERTS, statistic),
           'diagnostics', 'revisions',
         ]);
-      case LEVEL_OF_DETAIL.HISTOGRAMS:
-        return new Set(['revision', 'histogram']);
+      case LEVEL_OF_DETAIL.DETAILS:
+        return DETAILS_COLUMNS;
       default:
         throw new Error(`${levelOfDetail} is not a valid Level Of Detail`);
     }
@@ -34,10 +46,12 @@ tr.exportTo('cp', () => {
     datum.timestamp = new Date(datum.timestamp);
 
     datum.unit = unit;
+    if (!datum.count) datum.count = 1;
     if (datum.avg) datum.avg *= conversionFactor;
     if (datum.std) datum.std *= conversionFactor;
     if (datum.sum) datum.sum *= conversionFactor;
 
+    if (datum.alert) datum.alert = cp.AlertsSection.transformAlert(datum.alert);
     if (datum.diagnostics) {
       datum.diagnostics = tr.v.d.DiagnosticMap.fromDict(datum.diagnostics);
     }
@@ -52,10 +66,10 @@ tr.exportTo('cp', () => {
       super(options);
       this.method_ = 'POST';
       this.body_ = new FormData();
-      this.body_.set('test_suite', options.testSuite);
+      this.body_.set('test_suite', options.suite);
       this.body_.set('measurement', options.measurement);
       this.body_.set('bot', options.bot);
-      if (options.testCase) this.body_.set('test_case', options.testCase);
+      if (options.case) this.body_.set('test_case', options.case);
 
       this.statistic_ = options.statistic || 'avg';
       if (options.statistic) {
@@ -77,10 +91,10 @@ tr.exportTo('cp', () => {
     }
 
     get url_() {
-      return '/api/timeseries2';
+      return TimeseriesRequest.URL;
     }
 
-    postProcess_(response) {
+    postProcess_(response, isFromChannel = false) {
       if (!response) return;
       let unit = tr.b.Unit.byJSONName[response.units];
       let conversionFactor = 1;
@@ -93,12 +107,22 @@ tr.exportTo('cp', () => {
           unit = tr.b.Unit.byName.unitlessNumber;
         }
       }
+
+      // The backend returns denormalized (tabular) data, but
+      // TimeseriesCacheRequest yields normalized (objects) data for speed.
+      // Rely on TimeseriesCacheRequest to merge data from network requests in
+      // with previous data, so this code does not need to worry about merging
+      // across levels of detail.
       return response.data.map(row => transformDatum(
-          cp.normalize(this.columns_, row), unit, conversionFactor));
+          (isFromChannel ? row : cp.normalize(this.columns_, row)),
+          unit, conversionFactor));
     }
   }
 
+  TimeseriesRequest.URL = '/api/timeseries2';
+
   return {
+    getColumnsByLevelOfDetail,
     LEVEL_OF_DETAIL,
     TimeseriesRequest,
   };

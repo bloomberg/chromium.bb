@@ -8,6 +8,7 @@
 #include <iosfwd>
 
 #include "src/compiler/types.h"
+#include "src/feedback-vector.h"
 #include "src/field-index.h"
 #include "src/machine-type.h"
 #include "src/objects.h"
@@ -24,17 +25,15 @@ namespace compiler {
 
 // Forward declarations.
 class CompilationDependencies;
+class ElementAccessFeedback;
 class Type;
 class TypeCache;
 
 // Whether we are loading a property or storing to a property.
 // For a store during literal creation, do not walk up the prototype chain.
-enum class AccessMode { kLoad, kStore, kStoreInLiteral };
+enum class AccessMode { kLoad, kStore, kStoreInLiteral, kHas };
 
 std::ostream& operator<<(std::ostream&, AccessMode);
-
-// Mapping of transition source to transition target.
-typedef std::vector<std::pair<Handle<Map>, Handle<Map>>> MapTransitionList;
 
 // This class encapsulates all information required to access a certain element.
 class ElementAccessInfo final {
@@ -45,13 +44,17 @@ class ElementAccessInfo final {
 
   ElementsKind elements_kind() const { return elements_kind_; }
   MapHandles const& receiver_maps() const { return receiver_maps_; }
-  MapTransitionList& transitions() { return transitions_; }
-  MapTransitionList const& transitions() const { return transitions_; }
+  MapHandles const& transition_sources() const { return transition_sources_; }
+
+  void AddTransitionSource(Handle<Map> map) {
+    CHECK_EQ(receiver_maps_.size(), 1);
+    transition_sources_.push_back(map);
+  }
 
  private:
   ElementsKind elements_kind_;
   MapHandles receiver_maps_;
-  MapTransitionList transitions_;
+  MapHandles transition_sources_;
 };
 
 // This class encapsulates all information required to access a certain
@@ -92,6 +95,7 @@ class PropertyAccessInfo final {
   bool Merge(PropertyAccessInfo const* that, AccessMode access_mode,
              Zone* zone) V8_WARN_UNUSED_RESULT;
 
+  bool IsInvalid() const { return kind() == kInvalid; }
   bool IsNotFound() const { return kind() == kNotFound; }
   bool IsDataConstant() const { return kind() == kDataConstant; }
   bool IsDataField() const { return kind() == kDataField; }
@@ -144,44 +148,54 @@ class PropertyAccessInfo final {
 class AccessInfoFactory final {
  public:
   AccessInfoFactory(JSHeapBroker* broker, CompilationDependencies* dependencies,
-
-                    Handle<Context> native_context, Zone* zone);
+                    Zone* zone);
 
   bool ComputeElementAccessInfo(Handle<Map> map, AccessMode access_mode,
-                                ElementAccessInfo* access_info);
-  bool ComputeElementAccessInfos(MapHandles const& maps, AccessMode access_mode,
-                                 ZoneVector<ElementAccessInfo>* access_infos);
-  bool ComputePropertyAccessInfo(Handle<Map> map, Handle<Name> name,
-                                 AccessMode access_mode,
-                                 PropertyAccessInfo* access_info);
-  bool ComputePropertyAccessInfo(MapHandles const& maps, Handle<Name> name,
-                                 AccessMode access_mode,
-                                 PropertyAccessInfo* access_info);
-  bool ComputePropertyAccessInfos(MapHandles const& maps, Handle<Name> name,
-                                  AccessMode access_mode,
-                                  ZoneVector<PropertyAccessInfo>* access_infos);
+                                ElementAccessInfo* access_info) const;
+  bool ComputeElementAccessInfos(
+      FeedbackNexus nexus, MapHandles const& maps, AccessMode access_mode,
+      ZoneVector<ElementAccessInfo>* access_infos) const;
+
+  PropertyAccessInfo ComputePropertyAccessInfo(Handle<Map> map,
+                                               Handle<Name> name,
+                                               AccessMode access_mode) const;
+  PropertyAccessInfo ComputePropertyAccessInfo(MapHandles const& maps,
+                                               Handle<Name> name,
+                                               AccessMode access_mode) const;
+  void ComputePropertyAccessInfos(
+      MapHandles const& maps, Handle<Name> name, AccessMode access_mode,
+      ZoneVector<PropertyAccessInfo>* access_infos) const;
+
+  // Merge as many of the given {infos} as possible. Return false iff
+  // any of them was invalid.
+  bool FinalizePropertyAccessInfos(
+      ZoneVector<PropertyAccessInfo> infos, AccessMode access_mode,
+      ZoneVector<PropertyAccessInfo>* result) const;
 
  private:
-  bool ConsolidateElementLoad(MapHandles const& maps,
-                              ElementAccessInfo* access_info);
-  bool LookupSpecialFieldAccessor(Handle<Map> map, Handle<Name> name,
-                                  PropertyAccessInfo* access_info);
-  bool LookupTransition(Handle<Map> map, Handle<Name> name,
-                        MaybeHandle<JSObject> holder,
-                        PropertyAccessInfo* access_info);
+  bool ConsolidateElementLoad(ElementAccessFeedback const& processed,
+                              ElementAccessInfo* access_info) const;
+  PropertyAccessInfo LookupSpecialFieldAccessor(Handle<Map> map,
+                                                Handle<Name> name) const;
+  PropertyAccessInfo LookupTransition(Handle<Map> map, Handle<Name> name,
+                                      MaybeHandle<JSObject> holder) const;
+  PropertyAccessInfo ComputeDataFieldAccessInfo(Handle<Map> receiver_map,
+                                                Handle<Map> map,
+                                                MaybeHandle<JSObject> holder,
+                                                int number,
+                                                AccessMode access_mode) const;
+  PropertyAccessInfo ComputeAccessorDescriptorAccessInfo(
+      Handle<Map> receiver_map, Handle<Name> name, Handle<Map> map,
+      MaybeHandle<JSObject> holder, int number, AccessMode access_mode) const;
 
   CompilationDependencies* dependencies() const { return dependencies_; }
   JSHeapBroker* broker() const { return broker_; }
-  Factory* factory() const;
-  Isolate* isolate() const { return isolate_; }
-  Handle<Context> native_context() const { return native_context_; }
+  Isolate* isolate() const { return broker()->isolate(); }
   Zone* zone() const { return zone_; }
 
   JSHeapBroker* const broker_;
   CompilationDependencies* const dependencies_;
-  Handle<Context> const native_context_;
-  Isolate* const isolate_;
-  TypeCache const& type_cache_;
+  TypeCache const* const type_cache_;
   Zone* const zone_;
 
   DISALLOW_COPY_AND_ASSIGN(AccessInfoFactory);

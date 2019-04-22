@@ -4,8 +4,10 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+
+#include "SkFont.h"
+#include "ToolUtils.h"
 #include "gm.h"
-#include "sk_tool_utils.h"
 
 namespace skiagm {
 
@@ -21,6 +23,7 @@ static const char* color_type_name(SkColorType colorType) {
         case kRGBA_1010102_SkColorType: return "1010102";
         case kRGB_101010x_SkColorType:  return "101010x";
         case kGray_8_SkColorType:       return "G8";
+        case kRGBA_F16Norm_SkColorType: return "F16Norm";
         case kRGBA_F16_SkColorType:     return "F16";
         case kRGBA_F32_SkColorType:     return "F32";
     }
@@ -79,21 +82,22 @@ protected:
         draw_checks(&canvasTmp, 40, 40);
 
         for (unsigned i = 0; i < NUM_CONFIGS; ++i) {
-            sk_tool_utils::copy_to(&fDst[i], gColorTypes[i], src);
+            ToolUtils::copy_to(&fDst[i], gColorTypes[i], src);
         }
 
         canvas->clear(0xFFDDDDDD);
         paint.setAntiAlias(true);
-        sk_tool_utils::set_portable_typeface(&paint);
+
+        SkFont font(ToolUtils::create_portable_typeface());
 
         SkScalar width = SkIntToScalar(40);
         SkScalar height = SkIntToScalar(40);
-        if (paint.getFontSpacing() > height) {
-            height = paint.getFontSpacing();
+        if (font.getSpacing() > height) {
+            height = font.getSpacing();
         }
         for (unsigned i = 0; i < NUM_CONFIGS; i++) {
             const char* name = color_type_name(src.colorType());
-            SkScalar textWidth = paint.measureText(name, strlen(name));
+            SkScalar textWidth = font.measureText(name, strlen(name), kUTF8_SkTextEncoding);
             if (textWidth > width) {
                 width = textWidth;
             }
@@ -106,10 +110,10 @@ protected:
             canvas->save();
             // Draw destination config name
             const char* name = color_type_name(fDst[i].colorType());
-            SkScalar textWidth = paint.measureText(name, strlen(name));
+            SkScalar textWidth = font.measureText(name, strlen(name), kUTF8_SkTextEncoding);
             SkScalar x = (width - textWidth) / SkScalar(2);
-            SkScalar y = paint.getFontSpacing() / SkScalar(2);
-            canvas->drawString(name, x, y, paint);
+            SkScalar y = font.getSpacing() / SkScalar(2);
+            canvas->drawSimpleText(name, strlen(name), kUTF8_SkTextEncoding, x, y, font, paint);
 
             // Draw destination bitmap
             canvas->translate(0, vertOffset);
@@ -127,6 +131,5 @@ private:
 
 //////////////////////////////////////////////////////////////////////////////
 
-static GM* MyFactory(void*) { return new BitmapCopyGM; }
-static GMRegistry reg(MyFactory);
+DEF_GM( return new BitmapCopyGM; )
 }

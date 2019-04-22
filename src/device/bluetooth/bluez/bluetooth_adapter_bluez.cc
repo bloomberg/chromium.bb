@@ -50,7 +50,8 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 #if defined(OS_CHROMEOS)
-#include "chromeos/system/devicetype.h"
+#include "chromeos/constants/devicetype.h"
+#include "device/bluetooth/chromeos/bluetooth_utils.h"
 #endif
 
 using device::BluetoothAdapter;
@@ -217,6 +218,9 @@ void BluetoothAdapterBlueZ::Shutdown() {
       this);
   bluez::BluezDBusManager::Get()->GetBluetoothInputClient()->RemoveObserver(
       this);
+  bluez::BluezDBusManager::Get()
+      ->GetBluetoothAgentManagerClient()
+      ->RemoveObserver(this);
 
   BLUETOOTH_LOG(EVENT) << "Unregistering pairing agent";
   bluez::BluezDBusManager::Get()
@@ -266,6 +270,8 @@ void BluetoothAdapterBlueZ::Init() {
       this);
   bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->AddObserver(this);
   bluez::BluezDBusManager::Get()->GetBluetoothInputClient()->AddObserver(this);
+  bluez::BluezDBusManager::Get()->GetBluetoothAgentManagerClient()->AddObserver(
+      this);
 
   // Register the pairing agent.
   dbus::Bus* system_bus = bluez::BluezDBusManager::Get()->GetSystemBus();
@@ -741,6 +747,22 @@ void BluetoothAdapterBlueZ::InputPropertyChanged(
   }
 }
 
+void BluetoothAdapterBlueZ::AgentManagerAdded(
+    const dbus::ObjectPath& object_path) {
+  BLUETOOTH_LOG(DEBUG) << "Registering pairing agent";
+  bluez::BluezDBusManager::Get()
+      ->GetBluetoothAgentManagerClient()
+      ->RegisterAgent(dbus::ObjectPath(kAgentPath),
+                      bluetooth_agent_manager::kKeyboardDisplayCapability,
+                      base::Bind(&BluetoothAdapterBlueZ::OnRegisterAgent,
+                                 weak_ptr_factory_.GetWeakPtr()),
+                      base::Bind(&BluetoothAdapterBlueZ::OnRegisterAgentError,
+                                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void BluetoothAdapterBlueZ::AgentManagerRemoved(
+    const dbus::ObjectPath& object_path) {}
+
 void BluetoothAdapterBlueZ::Released() {
   BLUETOOTH_LOG(EVENT) << "Released";
   if (!IsPresent())
@@ -988,16 +1010,6 @@ void BluetoothAdapterBlueZ::SetAdapter(const dbus::ObjectPath& object_path) {
 
   BLUETOOTH_LOG(EVENT) << object_path_.value() << ": using adapter.";
 
-  BLUETOOTH_LOG(DEBUG) << "Registering pairing agent";
-  bluez::BluezDBusManager::Get()
-      ->GetBluetoothAgentManagerClient()
-      ->RegisterAgent(dbus::ObjectPath(kAgentPath),
-                      bluetooth_agent_manager::kKeyboardDisplayCapability,
-                      base::Bind(&BluetoothAdapterBlueZ::OnRegisterAgent,
-                                 weak_ptr_factory_.GetWeakPtr()),
-                      base::Bind(&BluetoothAdapterBlueZ::OnRegisterAgentError,
-                                 weak_ptr_factory_.GetWeakPtr()));
-
 #if defined(OS_CHROMEOS)
   SetStandardChromeOSAdapterName();
 #endif
@@ -1125,6 +1137,17 @@ void BluetoothAdapterBlueZ::DiscoveringChanged(bool discovering) {
 }
 
 void BluetoothAdapterBlueZ::PresentChanged(bool present) {
+#if defined(OS_CHROMEOS)
+  if (present) {
+    bluez::BluezDBusManager::Get()
+        ->GetBluetoothAdapterClient()
+        ->SetLongTermKeys(
+            object_path_, device::GetBlockedLongTermKeys(),
+            base::Bind(&BluetoothAdapterBlueZ::SetLongTermKeysError,
+                       weak_ptr_factory_.GetWeakPtr()));
+  }
+#endif
+
   for (auto& observer : observers_)
     observer.AdapterPresentChanged(this, present);
 }
@@ -1861,6 +1884,13 @@ void BluetoothAdapterBlueZ::ServiceRecordErrorConnector(
   }
 
   error_callback.Run(code);
+}
+
+void BluetoothAdapterBlueZ::SetLongTermKeysError(
+    const std::string& error_name,
+    const std::string& error_message) {
+  BLUETOOTH_LOG(ERROR) << "Setting long term keys failed: error: " << error_name
+                       << " - " << error_message;
 }
 
 }  // namespace bluez

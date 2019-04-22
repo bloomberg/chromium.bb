@@ -13,6 +13,8 @@
 #include "base/macros.h"
 #include "chromeos/network/network_state_handler.h"
 
+class PrefRegistrySimple;
+
 namespace chromeos {
 class NetworkState;
 }
@@ -54,15 +56,32 @@ class VPNListView : public NetworkStateListDetailedView,
   // VpnList::Observer:
   void OnVPNProvidersChanged() override;
 
+  // See Shell::RegisterProfilePrefs().
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
+
  private:
   // Adds a network to the list.
   void AddNetwork(const chromeos::NetworkState* network);
+
+  // Adds the VPN provider identified by |vpn_provider| to the list, along with
+  // no networks that belong to this provider.
+  void AddProviderAndNetworks(const VPNProvider& vpn_provider);
 
   // Adds the VPN provider identified by |vpn_provider| to the list, along with
   // any networks that belong to this provider.
   void AddProviderAndNetworks(
       const VPNProvider& vpn_provider,
       const chromeos::NetworkStateHandler::NetworkStateList& networks);
+
+  // Finds VPN provider from |providers| that matches given |network|. Then adds
+  // the VPN provider along with any networks that belong to this provider. Will
+  // also remove the match from |providers| to avoid showing duplicate provider
+  // entry in VPN list view.
+  // Returns true if finds a match, returns false otherwise.
+  bool ProcessProviderForNetwork(
+      const chromeos::NetworkState* network,
+      const chromeos::NetworkStateHandler::NetworkStateList& networks,
+      std::vector<VPNProvider>* providers);
 
   // Adds all available VPN providers and networks to the list.
   void AddProvidersAndNetworks(

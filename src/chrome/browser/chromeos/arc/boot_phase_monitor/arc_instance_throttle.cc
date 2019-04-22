@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/arc/boot_phase_monitor/arc_instance_throttle.h"
 
+#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
 #include "components/arc/arc_util.h"
@@ -13,7 +14,17 @@ namespace arc {
 
 namespace {
 
-void ThrottleInstance(aura::Window* active) {
+// Returns true if the window is in the app list window container.
+bool IsAppListWindow(const aura::Window* window) {
+  if (!window)
+    return false;
+
+  const aura::Window* parent = window->parent();
+  return parent &&
+         parent->id() == ash::ShellWindowId::kShellWindowId_AppListContainer;
+}
+
+void ThrottleInstance(const aura::Window* active) {
   SetArcCpuRestriction(!IsArcAppWindow(active));
 }
 
@@ -35,6 +46,21 @@ ArcInstanceThrottle::~ArcInstanceThrottle() {
 void ArcInstanceThrottle::OnWindowActivated(ActivationReason reason,
                                             aura::Window* gained_active,
                                             aura::Window* lost_active) {
+  // On launching an app from the app list on Chrome OS the following events
+  // happen -
+  //
+  // 1. When app list is brought up it's treated as a Chrome window and the
+  // instance is throttled.
+  //
+  // 2. When an app icon is clicked the instance is unthrottled.
+  //
+  // 3. Between the time the app opens there is a narrow slice of time where
+  // this callback is triggered with |lost_active| equal to the app list window
+  // and the gained active possibly a native window. Without the check below the
+  // instance will be throttled again, further delaying the app launch. If the
+  // app was a native one then the instance was throttled anyway in step 1.
+  if (IsAppListWindow(lost_active))
+    return;
   ThrottleInstance(gained_active);
 }
 

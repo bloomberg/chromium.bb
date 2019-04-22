@@ -7,15 +7,16 @@
 
 #include <memory>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "storage/browser/fileapi/local_file_util.h"
-#include "storage/browser/storage_browser_export.h"
 
 namespace storage {
 
 class FileSystemOperationContext;
 
-class STORAGE_EXPORT TransientFileUtil : public LocalFileUtil {
+class COMPONENT_EXPORT(STORAGE_BROWSER) TransientFileUtil
+    : public LocalFileUtil {
  public:
   TransientFileUtil() {}
   ~TransientFileUtil() override {}

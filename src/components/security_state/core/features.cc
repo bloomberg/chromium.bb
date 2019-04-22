@@ -10,12 +10,9 @@ namespace features {
 const base::Feature kMarkHttpAsFeature{"MarkHttpAs",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
 const char kMarkHttpAsFeatureParameterName[] = "treatment";
-const char kMarkHttpAsParameterWarning[] = "warning";
 const char kMarkHttpAsParameterDangerous[] = "dangerous";
 const char kMarkHttpAsParameterWarningAndDangerousOnFormEdits[] =
     "warning-and-dangerous-on-form-edits";
-const char kMarkHttpAsParameterWarningAndDangerousOnPasswordsAndCreditCards[] =
-    "warning-and-dangerous-on-passwords-and-credit-cards";
 
 }  // namespace features
 }  // namespace security_state

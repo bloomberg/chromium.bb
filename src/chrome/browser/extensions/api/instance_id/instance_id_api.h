@@ -34,7 +34,7 @@ class InstanceIDApiFunction : public UIThreadExtensionFunction {
 
 class InstanceIDGetIDFunction : public InstanceIDApiFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("instanceID.getID", INSTANCEID_GETID);
+  DECLARE_EXTENSION_FUNCTION("instanceID.getID", INSTANCEID_GETID)
 
   InstanceIDGetIDFunction();
 
@@ -53,7 +53,7 @@ class InstanceIDGetIDFunction : public InstanceIDApiFunction {
 class InstanceIDGetCreationTimeFunction : public InstanceIDApiFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("instanceID.getCreationTime",
-                             INSTANCEID_GETCREATIONTIME);
+                             INSTANCEID_GETCREATIONTIME)
 
   InstanceIDGetCreationTimeFunction();
 
@@ -71,7 +71,7 @@ class InstanceIDGetCreationTimeFunction : public InstanceIDApiFunction {
 
 class InstanceIDGetTokenFunction : public InstanceIDApiFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("instanceID.getToken", INSTANCEID_GETTOKEN);
+  DECLARE_EXTENSION_FUNCTION("instanceID.getToken", INSTANCEID_GETTOKEN)
 
   InstanceIDGetTokenFunction();
 
@@ -90,7 +90,7 @@ class InstanceIDGetTokenFunction : public InstanceIDApiFunction {
 
 class InstanceIDDeleteTokenFunction : public InstanceIDApiFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("instanceID.deleteToken", INSTANCEID_DELETETOKEN);
+  DECLARE_EXTENSION_FUNCTION("instanceID.deleteToken", INSTANCEID_DELETETOKEN)
 
   InstanceIDDeleteTokenFunction();
 
@@ -108,8 +108,7 @@ class InstanceIDDeleteTokenFunction : public InstanceIDApiFunction {
 
 class InstanceIDDeleteIDFunction : public InstanceIDApiFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("instanceID.deleteID",
-                             INSTANCEID_DELETEID);
+  DECLARE_EXTENSION_FUNCTION("instanceID.deleteID", INSTANCEID_DELETEID)
 
   InstanceIDDeleteIDFunction();
 

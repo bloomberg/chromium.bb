@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "v8/include/v8.h"
 
@@ -55,14 +56,15 @@ struct StubScriptFunction {
    public:
     static v8::Local<v8::Function> CreateFunction(ScriptState* script_state,
                                                   StubScriptFunction& owner) {
-      ScriptFunctionImpl* self = new ScriptFunctionImpl(script_state, owner);
+      ScriptFunctionImpl* self =
+          MakeGarbageCollected<ScriptFunctionImpl>(script_state, owner);
       return self->BindToV8Function();
     }
 
-   private:
     ScriptFunctionImpl(ScriptState* script_state, StubScriptFunction& owner)
         : ScriptFunction(script_state), owner_(owner) {}
 
+   private:
     ScriptValue Call(ScriptValue arg) override {
       owner_.arg_ = arg;
       owner_.call_count_++;
@@ -139,8 +141,10 @@ class ExpectTypeError : public ScriptValueTest {
         error_object->Get(context, V8String(isolate, "message"))
             .ToLocalChecked();
 
-    EXPECT_EQ("TypeError", ToCoreString(name->ToString(isolate)));
-    EXPECT_EQ(expected_message_, ToCoreString(message->ToString(isolate)));
+    EXPECT_EQ("TypeError",
+              ToCoreString(name->ToString(context).ToLocalChecked()));
+    EXPECT_EQ(expected_message_,
+              ToCoreString(message->ToString(context).ToLocalChecked()));
   }
 
  private:
@@ -273,6 +277,8 @@ TEST_F(ServiceWorkerContainerTest, GetRegistration_CrossOriginURLIsRejected) {
 }
 
 class StubWebServiceWorkerProvider {
+  DISALLOW_NEW();
+
  public:
   StubWebServiceWorkerProvider()
       : register_call_count_(0),

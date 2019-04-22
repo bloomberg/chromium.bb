@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
@@ -41,7 +42,7 @@ class GaiaOAuthClient::Core
         num_retries_(0),
         max_retries_(0),
         url_loader_factory_(url_loader_factory),
-        delegate_(NULL),
+        delegate_(nullptr),
         request_type_(NO_PENDING_REQUEST),
         weak_ptr_factory_(this) {
     backoff_policy_.num_errors_to_ignore =
@@ -451,7 +452,8 @@ void GaiaOAuthClient::Core::HandleResponse(std::unique_ptr<std::string> body,
   std::unique_ptr<base::DictionaryValue> response_dict;
   if (response_code == net::HTTP_OK && body) {
     std::string data = std::move(*body);
-    std::unique_ptr<base::Value> message_value = base::JSONReader::Read(data);
+    std::unique_ptr<base::Value> message_value =
+        base::JSONReader::ReadDeprecated(data);
     if (message_value.get() && message_value->is_dict()) {
       response_dict.reset(
           static_cast<base::DictionaryValue*>(message_value.release()));

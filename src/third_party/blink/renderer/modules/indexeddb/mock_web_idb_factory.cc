@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -14,7 +15,14 @@ MockWebIDBFactory::MockWebIDBFactory() = default;
 
 MockWebIDBFactory::~MockWebIDBFactory() = default;
 
-std::unique_ptr<MockWebIDBFactory> MockWebIDBFactory::Create() {
-  return base::WrapUnique(new MockWebIDBFactory());
+void MockWebIDBFactory::GetDatabaseInfo(
+    std::unique_ptr<WebIDBCallbacks> callbacks) {
+  *callbacks_ptr_ = std::move(callbacks);
 }
+
+void MockWebIDBFactory::SetCallbacksPointer(
+    std::unique_ptr<WebIDBCallbacks>* callbacks_ptr) {
+  callbacks_ptr_ = callbacks_ptr;
+}
+
 }  // namespace blink

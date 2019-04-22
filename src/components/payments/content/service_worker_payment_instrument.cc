@@ -4,6 +4,9 @@
 
 #include "components/payments/content/service_worker_payment_instrument.h"
 
+#include <utility>
+
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -12,6 +15,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/payment_app_provider.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "ui/gfx/image/image_skia.h"
 #include "url/origin.h"
 
@@ -35,6 +39,7 @@ ServiceWorkerPaymentInstrument::ServiceWorkerPaymentInstrument(
       delegate_(nullptr),
       payment_request_delegate_(payment_request_delegate),
       can_make_payment_result_(false),
+      has_enrolled_instrument_result_(false),
       needs_installation_(false),
       weak_ptr_factory_(this) {
   DCHECK(browser_context_);
@@ -69,6 +74,7 @@ ServiceWorkerPaymentInstrument::ServiceWorkerPaymentInstrument(
       delegate_(nullptr),
       payment_request_delegate_(payment_request_delegate),
       can_make_payment_result_(false),
+      has_enrolled_instrument_result_(false),
       needs_installation_(true),
       web_contents_(web_contents),
       installable_web_app_info_(std::move(installable_payment_app_info)),
@@ -106,21 +112,21 @@ void ServiceWorkerPaymentInstrument::ValidateCanMakePayment(
     ValidateCanMakePaymentCallback callback) {
   // Returns true for payment app that needs installation.
   if (needs_installation_) {
-    OnCanMakePayment(std::move(callback), true);
+    OnCanMakePaymentEventSkipped(std::move(callback));
     return;
   }
 
   // Returns true if we are in incognito (avoiding sending the event to the
   // payment handler).
   if (payment_request_delegate_->IsIncognito()) {
-    OnCanMakePayment(std::move(callback), true);
+    OnCanMakePaymentEventSkipped(std::move(callback));
     return;
   }
 
   // Do not send CanMakePayment event to payment apps that have not been
   // explicitly verified.
   if (!stored_payment_app_info_->has_explicitly_verified_methods) {
-    OnCanMakePayment(std::move(callback), true);
+    OnCanMakePaymentEventSkipped(std::move(callback));
     return;
   }
 
@@ -130,15 +136,16 @@ void ServiceWorkerPaymentInstrument::ValidateCanMakePayment(
     // This could only happen if this instrument only supports non-url based
     // payment methods of the payment request, then return true
     // and do not send CanMakePaymentEvent to the payment app.
-    OnCanMakePayment(std::move(callback), true);
+    OnCanMakePaymentEventSkipped(std::move(callback));
     return;
   }
 
   content::PaymentAppProvider::GetInstance()->CanMakePayment(
       browser_context_, stored_payment_app_info_->registration_id,
       std::move(event_data),
-      base::BindOnce(&ServiceWorkerPaymentInstrument::OnCanMakePayment,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+      base::BindOnce(
+          &ServiceWorkerPaymentInstrument::OnCanMakePaymentEventResponded,
+          weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 mojom::CanMakePaymentEventDataPtr
@@ -167,7 +174,8 @@ ServiceWorkerPaymentInstrument::CreateCanMakePaymentEventData() {
   event_data->top_origin = top_origin_;
   event_data->payment_request_origin = frame_origin_;
 
-  for (const auto& modifier : spec_->details().modifiers) {
+  DCHECK(spec_->details().modifiers);
+  for (const auto& modifier : *spec_->details().modifiers) {
     if (base::ContainsKey(supported_url_methods,
                           modifier->method_data->supported_method)) {
       event_data->modifiers.emplace_back(modifier.Clone());
@@ -183,13 +191,31 @@ ServiceWorkerPaymentInstrument::CreateCanMakePaymentEventData() {
   return event_data;
 }
 
-void ServiceWorkerPaymentInstrument::OnCanMakePayment(
+void ServiceWorkerPaymentInstrument::OnCanMakePaymentEventSkipped(
+    ValidateCanMakePaymentCallback callback) {
+  can_make_payment_result_ = true;
+  has_enrolled_instrument_result_ = false;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), this, can_make_payment_result_));
+}
+
+void ServiceWorkerPaymentInstrument::OnCanMakePaymentEventResponded(
     ValidateCanMakePaymentCallback callback,
     bool result) {
-  can_make_payment_result_ = result;
-
+  // If hasEnrolledInstrument is supported, always return true for
+  // canMakePayment for any matching payment handler.
+  if (base::FeatureList::IsEnabled(
+          ::features::kPaymentRequestHasEnrolledInstrument)) {
+    can_make_payment_result_ = true;
+    has_enrolled_instrument_result_ = result;
+  } else {
+    can_make_payment_result_ = result;
+    has_enrolled_instrument_result_ = result;
+  }
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), this, result));
+      FROM_HERE,
+      base::BindOnce(std::move(callback), this, can_make_payment_result_));
 }
 
 void ServiceWorkerPaymentInstrument::InvokePaymentApp(Delegate* delegate) {
@@ -238,7 +264,8 @@ ServiceWorkerPaymentInstrument::CreatePaymentRequestEventData() {
     supported_methods.insert(stored_payment_app_info_->enabled_methods.begin(),
                              stored_payment_app_info_->enabled_methods.end());
   }
-  for (const auto& modifier : spec_->details().modifiers) {
+  DCHECK(spec_->details().modifiers);
+  for (const auto& modifier : *spec_->details().modifiers) {
     if (base::ContainsKey(supported_methods,
                           modifier->method_data->supported_method)) {
       event_data->modifiers.emplace_back(modifier.Clone());
@@ -282,6 +309,10 @@ bool ServiceWorkerPaymentInstrument::IsValidForCanMakePayment() const {
   // This instrument should not be used when can_make_payment_result_ is false,
   // so this interface should not be invoked.
   DCHECK(can_make_payment_result_);
+  if (base::FeatureList::IsEnabled(
+          ::features::kPaymentRequestHasEnrolledInstrument)) {
+    return has_enrolled_instrument_result_;
+  }
   return true;
 }
 

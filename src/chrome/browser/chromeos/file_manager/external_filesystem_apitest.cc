@@ -25,8 +25,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
-#include "chromeos/chromeos_features.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_features.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "components/drive/service/fake_drive_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "content/public/browser/browser_context.h"
@@ -554,8 +554,7 @@ class DriveFileSystemExtensionApiTest : public FileSystemExtensionApiTestBase {
         profile, drivefs_mount_point.DirName());
     return new drive::DriveIntegrationService(
         profile, nullptr, fake_drive_service_, "", test_cache_root_.GetPath(),
-        nullptr,
-        fake_drivefs_helper_->CreateFakeDriveFsConnectionDelegateFactory());
+        nullptr, fake_drivefs_helper_->CreateFakeDriveFsListenerFactory());
   }
 
   base::ScopedTempDir test_cache_root_;
@@ -655,7 +654,7 @@ class MultiProfileDriveFileSystemExtensionApiTest :
         std::make_unique<drive::FakeDriveFsHelper>(profile, drivefs_dir);
     return new drive::DriveIntegrationService(
         profile, nullptr, service, std::string(), cache_dir, nullptr,
-        drivefs_helper->CreateFakeDriveFsConnectionDelegateFactory());
+        drivefs_helper->CreateFakeDriveFsListenerFactory());
   }
 
   void AddTestHostedDocuments() {
@@ -753,8 +752,7 @@ class LocalAndDriveFileSystemExtensionApiTest
         profile, drivefs_mount_point.DirName());
     return new drive::DriveIntegrationService(
         profile, nullptr, fake_drive_service_, "", test_cache_root_.GetPath(),
-        nullptr,
-        fake_drivefs_helper_->CreateFakeDriveFsConnectionDelegateFactory());
+        nullptr, fake_drivefs_helper_->CreateFakeDriveFsListenerFactory());
   }
 
  private:
@@ -816,6 +814,13 @@ IN_PROC_BROWSER_TEST_F(LocalFileSystemExtensionApiTest, AppFileHandler) {
       FILE_PATH_LITERAL("manifest.json"),
       "file_browser/app_file_handler",
       FLAGS_USE_FILE_HANDLER)) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(LocalFileSystemExtensionApiTest, DefaultFileHandler) {
+  EXPECT_TRUE(RunFileSystemExtensionApiTest("file_browser/default_file_handler",
+                                            FILE_PATH_LITERAL("manifest.json"),
+                                            "", FLAGS_NONE))
+      << message_;
 }
 
 //
@@ -903,7 +908,6 @@ IN_PROC_BROWSER_TEST_F(MultiProfileDriveFileSystemExtensionApiTest,
 
 //
 // LocalAndDriveFileSystemExtensionApiTests.
-//
 IN_PROC_BROWSER_TEST_F(LocalAndDriveFileSystemExtensionApiTest,
                        AppFileHandlerMulti) {
   EXPECT_TRUE(

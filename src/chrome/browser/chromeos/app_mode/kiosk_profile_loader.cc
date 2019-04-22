@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/app_mode/kiosk_profile_loader.h"
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -20,7 +21,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chromeos/cryptohome/async_method_caller.h"
-#include "chromeos/dbus/cryptohome_client.h"
+#include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/login/auth/auth_status_consumer.h"
 #include "chromeos/login/auth/user_context.h"
@@ -70,10 +71,8 @@ class KioskProfileLoader::CryptohomedChecker
   ~CryptohomedChecker() {}
 
   void StartCheck() {
-    DBusThreadManager::Get()
-        ->GetCryptohomeClient()
-        ->WaitForServiceToBeAvailable(base::Bind(
-            &CryptohomedChecker::OnServiceAvailibityChecked, AsWeakPtr()));
+    CryptohomeClient::Get()->WaitForServiceToBeAvailable(base::Bind(
+        &CryptohomedChecker::OnServiceAvailibityChecked, AsWeakPtr()));
   }
 
  private:
@@ -98,7 +97,7 @@ class KioskProfileLoader::CryptohomedChecker
       return;
     }
 
-    DBusThreadManager::Get()->GetCryptohomeClient()->IsMounted(
+    CryptohomeClient::Get()->IsMounted(
         base::Bind(&CryptohomedChecker::OnCryptohomeIsMounted, AsWeakPtr()));
   }
 

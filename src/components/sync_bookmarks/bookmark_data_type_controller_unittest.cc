@@ -10,8 +10,8 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
@@ -20,7 +20,6 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/sync/driver/configure_context.h"
 #include "components/sync/driver/data_type_controller_mock.h"
-#include "components/sync/driver/fake_sync_client.h"
 #include "components/sync/driver/fake_sync_service.h"
 #include "components/sync/driver/model_associator_mock.h"
 #include "components/sync/driver/sync_api_component_factory_mock.h"
@@ -55,20 +54,9 @@ class HistoryMock : public history::HistoryService {
 
 }  // namespace
 
-class SyncBookmarkDataTypeControllerTest : public testing::Test,
-                                           public syncer::FakeSyncClient {
+class SyncBookmarkDataTypeControllerTest : public testing::Test {
  public:
   SyncBookmarkDataTypeControllerTest() {}
-
-  // FakeSyncClient overrides.
-  BookmarkModel* GetBookmarkModel() override { return bookmark_model_.get(); }
-  history::HistoryService* GetHistoryService() override {
-    return history_service_.get();
-  }
-  syncer::SyncService* GetSyncService() override { return &service_; }
-  syncer::SyncApiComponentFactory* GetSyncApiComponentFactory() override {
-    return &components_factory_;
-  }
 
   void SetUp() override {
     model_associator_deleter_ =
@@ -77,11 +65,14 @@ class SyncBookmarkDataTypeControllerTest : public testing::Test,
         std::make_unique<NiceMock<ChangeProcessorMock>>();
     model_associator_ = model_associator_deleter_.get();
     change_processor_ = change_processor_deleter_.get();
+    bookmark_model_ = std::make_unique<BookmarkModel>(
+        std::make_unique<bookmarks::TestBookmarkClient>());
     history_service_ = std::make_unique<HistoryMock>();
-    bookmark_dtc_ =
-        std::make_unique<BookmarkDataTypeController>(base::DoNothing(), this);
+    bookmark_dtc_ = std::make_unique<BookmarkDataTypeController>(
+        base::DoNothing(), &service_, bookmark_model_.get(),
+        history_service_.get(), &components_factory_);
 
-    ON_CALL(components_factory_, CreateBookmarkSyncComponents(_))
+    ON_CALL(components_factory_, CreateBookmarkSyncComponents(_, _))
         .WillByDefault(testing::InvokeWithoutArgs([=]() {
           syncer::SyncApiComponentFactory::SyncComponents components;
           components.model_associator = std::move(model_associator_deleter_);
@@ -91,21 +82,12 @@ class SyncBookmarkDataTypeControllerTest : public testing::Test,
   }
 
  protected:
-  enum BookmarkLoadPolicy {
-    DONT_LOAD_MODEL,
-    LOAD_MODEL,
-  };
-
-  void CreateBookmarkModel(BookmarkLoadPolicy bookmark_load_policy) {
-    bookmark_model_ = std::make_unique<BookmarkModel>(
-        std::make_unique<bookmarks::TestBookmarkClient>());
-    if (bookmark_load_policy == LOAD_MODEL) {
-      TestingPrefServiceSimple prefs;
-      bookmark_model_->Load(&prefs, base::FilePath(),
-                            base::SequencedTaskRunnerHandle::Get(),
-                            base::SequencedTaskRunnerHandle::Get());
-      bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model_.get());
-    }
+  void LoadBookmarkModel() {
+    TestingPrefServiceSimple prefs;
+    bookmark_model_->Load(&prefs, base::FilePath(),
+                          base::SequencedTaskRunnerHandle::Get(),
+                          base::SequencedTaskRunnerHandle::Get());
+    bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model_.get());
   }
 
   void SetStartExpectations() {
@@ -143,7 +125,7 @@ class SyncBookmarkDataTypeControllerTest : public testing::Test,
     history_service_->NotifyHistoryServiceLoaded();
   }
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
   testing::NiceMock<syncer::SyncApiComponentFactoryMock> components_factory_;
   std::unique_ptr<BookmarkModel> bookmark_model_;
   std::unique_ptr<HistoryMock> history_service_;
@@ -158,7 +140,7 @@ class SyncBookmarkDataTypeControllerTest : public testing::Test,
 };
 
 TEST_F(SyncBookmarkDataTypeControllerTest, StartDependentsReady) {
-  CreateBookmarkModel(LOAD_MODEL);
+  LoadBookmarkModel();
   SetStartExpectations();
   SetAssociateExpectations();
 
@@ -170,7 +152,6 @@ TEST_F(SyncBookmarkDataTypeControllerTest, StartDependentsReady) {
 }
 
 TEST_F(SyncBookmarkDataTypeControllerTest, StartBookmarkModelNotReady) {
-  CreateBookmarkModel(DONT_LOAD_MODEL);
   SetStartExpectations();
   SetAssociateExpectations();
 
@@ -197,7 +178,7 @@ TEST_F(SyncBookmarkDataTypeControllerTest, StartBookmarkModelNotReady) {
 }
 
 TEST_F(SyncBookmarkDataTypeControllerTest, StartHistoryServiceNotReady) {
-  CreateBookmarkModel(LOAD_MODEL);
+  LoadBookmarkModel();
   SetStartExpectations();
   EXPECT_CALL(*history_service_.get(), BackendLoaded())
       .WillRepeatedly(Return(false));
@@ -218,7 +199,7 @@ TEST_F(SyncBookmarkDataTypeControllerTest, StartHistoryServiceNotReady) {
 }
 
 TEST_F(SyncBookmarkDataTypeControllerTest, StartFirstRun) {
-  CreateBookmarkModel(LOAD_MODEL);
+  LoadBookmarkModel();
   SetStartExpectations();
   SetAssociateExpectations();
   EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_))
@@ -228,7 +209,7 @@ TEST_F(SyncBookmarkDataTypeControllerTest, StartFirstRun) {
 }
 
 TEST_F(SyncBookmarkDataTypeControllerTest, StartBusy) {
-  CreateBookmarkModel(LOAD_MODEL);
+  LoadBookmarkModel();
   EXPECT_CALL(*history_service_.get(), BackendLoaded())
       .WillRepeatedly(Return(false));
 
@@ -244,7 +225,7 @@ TEST_F(SyncBookmarkDataTypeControllerTest, StartBusy) {
 }
 
 TEST_F(SyncBookmarkDataTypeControllerTest, StartOk) {
-  CreateBookmarkModel(LOAD_MODEL);
+  LoadBookmarkModel();
   SetStartExpectations();
   SetAssociateExpectations();
   EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_))
@@ -255,7 +236,7 @@ TEST_F(SyncBookmarkDataTypeControllerTest, StartOk) {
 }
 
 TEST_F(SyncBookmarkDataTypeControllerTest, StartAssociationFailed) {
-  CreateBookmarkModel(LOAD_MODEL);
+  LoadBookmarkModel();
   SetStartExpectations();
   // Set up association to fail.
   EXPECT_CALL(*model_associator_, CryptoReadyIfNecessary()).
@@ -276,7 +257,7 @@ TEST_F(SyncBookmarkDataTypeControllerTest, StartAssociationFailed) {
 
 TEST_F(SyncBookmarkDataTypeControllerTest,
        StartAssociationTriggersUnrecoverableError) {
-  CreateBookmarkModel(LOAD_MODEL);
+  LoadBookmarkModel();
   SetStartExpectations();
   // Set up association to fail with an unrecoverable error.
   EXPECT_CALL(*model_associator_, CryptoReadyIfNecessary()).
@@ -290,7 +271,7 @@ TEST_F(SyncBookmarkDataTypeControllerTest,
 }
 
 TEST_F(SyncBookmarkDataTypeControllerTest, StartAborted) {
-  CreateBookmarkModel(LOAD_MODEL);
+  LoadBookmarkModel();
   EXPECT_CALL(*history_service_.get(), BackendLoaded())
       .WillRepeatedly(Return(false));
 
@@ -304,7 +285,7 @@ TEST_F(SyncBookmarkDataTypeControllerTest, StartAborted) {
 }
 
 TEST_F(SyncBookmarkDataTypeControllerTest, Stop) {
-  CreateBookmarkModel(LOAD_MODEL);
+  LoadBookmarkModel();
   SetStartExpectations();
   SetAssociateExpectations();
   SetStopExpectations();

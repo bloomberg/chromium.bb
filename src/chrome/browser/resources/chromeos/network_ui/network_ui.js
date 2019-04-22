@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/**
+ * @fileoverview Builds UI elements shown in chrome://networks debugging page.
+ */
 var networkUI = {};
 
 /** @typedef {CrOnc.NetworkStateProperties|CrOnc.DeviceStateProperties} */
@@ -397,6 +400,23 @@ var NetworkUI = (function() {
   };
 
   /**
+   * Callback invoked by Chrome after a openCellularActivationUi call.
+   * @param {boolean} didOpenActivationUi Whether the activation UI was actually
+   *     opened. If this value is false, it means that no cellular network was
+   *     available to be activated.
+   */
+  var openCellularActivationUiResult = function(didOpenActivationUi) {
+    $('cellular-error-text').hidden = didOpenActivationUi;
+  };
+
+  /**
+   * Requests that the cellular activation UI be displayed.
+   */
+  var openCellularActivationUi = function() {
+    chrome.send('openCellularActivationUi');
+  };
+
+  /**
    * Requests an update of all network info.
    */
   var requestNetworks = function() {
@@ -443,6 +463,7 @@ var NetworkUI = (function() {
       {customItemName: 'Add WiFi', polymerIcon: 'cr:add', customData: 'WiFi'},
       {customItemName: 'Add VPN', polymerIcon: 'cr:add', customData: 'VPN'}
     ];
+    $('cellular-activation-button').onclick = openCellularActivationUi;
     $('refresh').onclick = requestNetworks;
     setRefresh();
     requestNetworks();
@@ -455,6 +476,7 @@ var NetworkUI = (function() {
 
   return {
     getShillNetworkPropertiesResult: getShillNetworkPropertiesResult,
-    getShillDevicePropertiesResult: getShillDevicePropertiesResult
+    getShillDevicePropertiesResult: getShillDevicePropertiesResult,
+    openCellularActivationUiResult: openCellularActivationUiResult
   };
 })();

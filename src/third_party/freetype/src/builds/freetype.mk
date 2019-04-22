@@ -3,7 +3,7 @@
 #
 
 
-# Copyright 1996-2018 by
+# Copyright (C) 1996-2019 by
 # David Turner, Robert Wilhelm, and Werner Lemberg.
 #
 # This file is part of the FreeType project, and may only be used, modified,
@@ -298,21 +298,22 @@ PIP    ?= pip
 
 refdoc:
 	@echo Running docwriter...
-	$(PYTHON) -m docwriter                      \
-			--prefix=ft2                        \
-			--title=FreeType-$(version)         \
-			--output=$(DOC_DIR)                 \
-			$(PUBLIC_DIR)/*.h                   \
-			$(PUBLIC_DIR)/config/*.h            \
-			$(PUBLIC_DIR)/cache/*.h
+	$(PYTHON) -m docwriter \
+                  --prefix=ft2 \
+                  --title=FreeType-$(version) \
+                  --output=$(DOC_DIR) \
+                  $(PUBLIC_DIR)/*.h \
+                  $(PUBLIC_DIR)/config/*.h \
+                  $(PUBLIC_DIR)/cache/*.h
 	@echo Building static site...
 	cd $(DOC_DIR) && mkdocs build
 	@echo Done.
 
-# Variables for running refdoc with Python's `virtualenv'. The env is
-# created in `DOC_DIR/env' and is gitignored.
-# We still need to cd into `DOC_DIR' to build mkdocs because paths in
-# mkdocs.yml are relative to cwd.
+# Variables for running `refdoc' with Python's `virtualenv'.  The
+# environment is created in `DOC_DIR/env' and is gitignored.
+#
+# We still need to cd into `DOC_DIR' to build `mkdocs' because paths in
+# `mkdocs.yml' are relative to the current working directory.
 #
 VENV_NAME  := env
 VENV_DIR   := $(DOC_DIR)$(SEP)$(VENV_NAME)
@@ -325,13 +326,13 @@ refdoc-venv:
 	@echo Installing docwriter...
 	$(ENV_PIP) install docwriter
 	@echo Running docwriter...
-	$(ENV_PYTHON) -m docwriter              \
-			--prefix=ft2                    \
-			--title=FreeType-$(version)     \
-			--output=$(DOC_DIR)             \
-			$(PUBLIC_DIR)/*.h               \
-			$(PUBLIC_DIR)/config/*.h        \
-			$(PUBLIC_DIR)/cache/*.h
+	$(ENV_PYTHON) -m docwriter \
+                      --prefix=ft2 \
+                      --title=FreeType-$(version) \
+                      --output=$(DOC_DIR) \
+                      $(PUBLIC_DIR)/*.h \
+                      $(PUBLIC_DIR)/config/*.h \
+                      $(PUBLIC_DIR)/cache/*.h
 	@echo Building static site...
 	cd $(DOC_DIR) && $(VENV_NAME)$(SEP)$(BIN)$(SEP)python -m mkdocs build
 	@echo Done.

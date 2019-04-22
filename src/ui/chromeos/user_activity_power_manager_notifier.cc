@@ -4,8 +4,7 @@
 
 #include "ui/chromeos/user_activity_power_manager_notifier.h"
 
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/user_activity/user_activity_detector.h"
@@ -79,7 +78,7 @@ void UserActivityPowerManagerNotifier::OnUserActivity(const Event* event) {
 }
 
 void UserActivityPowerManagerNotifier::OnAuthScanDone(
-    uint32_t scan_result,
+    device::mojom::ScanResult scan_result,
     const base::flat_map<std::string, std::vector<std::string>>& matches) {
   MaybeNotifyUserActivity(power_manager::USER_ACTIVITY_OTHER);
 }
@@ -89,7 +88,7 @@ void UserActivityPowerManagerNotifier::OnSessionFailed() {}
 void UserActivityPowerManagerNotifier::OnRestarted() {}
 
 void UserActivityPowerManagerNotifier::OnEnrollScanDone(
-    uint32_t scan_result,
+    device::mojom::ScanResult scan_result,
     bool enroll_session_complete,
     int percent_complete) {
   MaybeNotifyUserActivity(power_manager::USER_ACTIVITY_OTHER);
@@ -102,9 +101,7 @@ void UserActivityPowerManagerNotifier::MaybeNotifyUserActivity(
   // comparison.
   if (last_notify_time_.is_null() ||
       (now - last_notify_time_).InSeconds() >= kNotifyIntervalSec) {
-    chromeos::DBusThreadManager::Get()
-        ->GetPowerManagerClient()
-        ->NotifyUserActivity(user_activity_type);
+    chromeos::PowerManagerClient::Get()->NotifyUserActivity(user_activity_type);
     last_notify_time_ = now;
   }
 }

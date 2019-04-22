@@ -137,30 +137,30 @@ Type::bitset Type::BitsetLub() const {
 template <typename MapRefLike>
 Type::bitset BitsetType::Lub(const MapRefLike& map) {
   switch (map.instance_type()) {
+    case EMPTY_STRING_TYPE:
+      return kEmptyString;
     case CONS_STRING_TYPE:
-    case CONS_ONE_BYTE_STRING_TYPE:
-    case THIN_STRING_TYPE:
-    case THIN_ONE_BYTE_STRING_TYPE:
     case SLICED_STRING_TYPE:
-    case SLICED_ONE_BYTE_STRING_TYPE:
     case EXTERNAL_STRING_TYPE:
-    case EXTERNAL_ONE_BYTE_STRING_TYPE:
-    case EXTERNAL_STRING_WITH_ONE_BYTE_DATA_TYPE:
     case UNCACHED_EXTERNAL_STRING_TYPE:
-    case UNCACHED_EXTERNAL_ONE_BYTE_STRING_TYPE:
-    case UNCACHED_EXTERNAL_STRING_WITH_ONE_BYTE_DATA_TYPE:
     case STRING_TYPE:
+    case THIN_STRING_TYPE:
+      return kNonEmptyTwoByteString;
+    case CONS_ONE_BYTE_STRING_TYPE:
+    case SLICED_ONE_BYTE_STRING_TYPE:
+    case EXTERNAL_ONE_BYTE_STRING_TYPE:
+    case UNCACHED_EXTERNAL_ONE_BYTE_STRING_TYPE:
     case ONE_BYTE_STRING_TYPE:
-      return kString;
+    case THIN_ONE_BYTE_STRING_TYPE:
+      return kNonEmptyOneByteString;
     case EXTERNAL_INTERNALIZED_STRING_TYPE:
-    case EXTERNAL_ONE_BYTE_INTERNALIZED_STRING_TYPE:
-    case EXTERNAL_INTERNALIZED_STRING_WITH_ONE_BYTE_DATA_TYPE:
     case UNCACHED_EXTERNAL_INTERNALIZED_STRING_TYPE:
-    case UNCACHED_EXTERNAL_ONE_BYTE_INTERNALIZED_STRING_TYPE:
-    case UNCACHED_EXTERNAL_INTERNALIZED_STRING_WITH_ONE_BYTE_DATA_TYPE:
     case INTERNALIZED_STRING_TYPE:
+      return kNonEmptyInternalizedTwoByteString;
+    case EXTERNAL_ONE_BYTE_INTERNALIZED_STRING_TYPE:
+    case UNCACHED_EXTERNAL_ONE_BYTE_INTERNALIZED_STRING_TYPE:
     case ONE_BYTE_INTERNALIZED_STRING_TYPE:
-      return kInternalizedString;
+      return kNonEmptyInternalizedOneByteString;
     case SYMBOL_TYPE:
       return kSymbol;
     case BIGINT_TYPE:
@@ -241,9 +241,8 @@ Type::bitset BitsetType::Lub(const MapRefLike& map) {
     case JS_MAP_VALUE_ITERATOR_TYPE:
     case JS_STRING_ITERATOR_TYPE:
     case JS_ASYNC_FROM_SYNC_ITERATOR_TYPE:
-    case JS_WEAK_CELL_TYPE:
-    case JS_WEAK_FACTORY_TYPE:
-    case JS_WEAK_FACTORY_CLEANUP_ITERATOR_TYPE:
+    case JS_FINALIZATION_GROUP_TYPE:
+    case JS_FINALIZATION_GROUP_CLEANUP_ITERATOR_TYPE:
     case JS_WEAK_MAP_TYPE:
     case JS_WEAK_REF_TYPE:
     case JS_WEAK_SET_TYPE:
@@ -254,6 +253,7 @@ Type::bitset BitsetType::Lub(const MapRefLike& map) {
     case WASM_MEMORY_TYPE:
     case WASM_MODULE_TYPE:
     case WASM_TABLE_TYPE:
+    case WEAK_CELL_TYPE:
       DCHECK(!map.is_callable());
       DCHECK(!map.is_undetectable());
       return kOtherObject;
@@ -297,6 +297,7 @@ Type::bitset BitsetType::Lub(const MapRefLike& map) {
     case DESCRIPTOR_ARRAY_TYPE:
     case TRANSITION_ARRAY_TYPE:
     case FEEDBACK_CELL_TYPE:
+    case CLOSURE_FEEDBACK_CELL_ARRAY_TYPE:
     case FEEDBACK_VECTOR_TYPE:
     case PROPERTY_ARRAY_TYPE:
     case FOREIGN_TYPE:
@@ -318,9 +319,9 @@ Type::bitset BitsetType::Lub(const MapRefLike& map) {
     case MODULE_TYPE:
     case MODULE_INFO_ENTRY_TYPE:
     case CELL_TYPE:
-    case PRE_PARSED_SCOPE_DATA_TYPE:
-    case UNCOMPILED_DATA_WITHOUT_PRE_PARSED_SCOPE_TYPE:
-    case UNCOMPILED_DATA_WITH_PRE_PARSED_SCOPE_TYPE:
+    case PREPARSE_DATA_TYPE:
+    case UNCOMPILED_DATA_WITHOUT_PREPARSE_DATA_TYPE:
+    case UNCOMPILED_DATA_WITH_PREPARSE_DATA_TYPE:
       return kOtherInternal;
 
     // Remaining instance types are unsupported for now. If any of them do
@@ -342,8 +343,10 @@ Type::bitset BitsetType::Lub(const MapRefLike& map) {
     case ALIASED_ARGUMENTS_ENTRY_TYPE:
     case PROMISE_CAPABILITY_TYPE:
     case PROMISE_REACTION_TYPE:
+    case CLASS_POSITIONS_TYPE:
     case DEBUG_INFO_TYPE:
     case STACK_FRAME_INFO_TYPE:
+    case STACK_TRACE_FRAME_TYPE:
     case SMALL_ORDERED_HASH_MAP_TYPE:
     case SMALL_ORDERED_HASH_SET_TYPE:
     case SMALL_ORDERED_NAME_DICTIONARY_TYPE:
@@ -351,7 +354,9 @@ Type::bitset BitsetType::Lub(const MapRefLike& map) {
     case INTERPRETER_DATA_TYPE:
     case TUPLE2_TYPE:
     case TUPLE3_TYPE:
+    case ENUM_CACHE_TYPE:
     case WASM_DEBUG_INFO_TYPE:
+    case WASM_EXCEPTION_TAG_TYPE:
     case WASM_EXPORTED_FUNCTION_DATA_TYPE:
     case LOAD_HANDLER_TYPE:
     case STORE_HANDLER_TYPE:
@@ -362,7 +367,7 @@ Type::bitset BitsetType::Lub(const MapRefLike& map) {
     case PROMISE_FULFILL_REACTION_JOB_TASK_TYPE:
     case PROMISE_REJECT_REACTION_JOB_TASK_TYPE:
     case PROMISE_RESOLVE_THENABLE_JOB_TASK_TYPE:
-    case WEAK_FACTORY_CLEANUP_JOB_TASK_TYPE:
+    case FINALIZATION_GROUP_CLEANUP_JOB_TASK_TYPE:
       UNREACHABLE();
   }
   UNREACHABLE();
@@ -398,7 +403,10 @@ size_t BitsetType::BoundariesSize() {
 }
 
 Type::bitset BitsetType::ExpandInternals(Type::bitset bits) {
-  DCHECK_IMPLIES(bits & kOtherString, (bits & kString) == kString);
+  DCHECK_IMPLIES(bits & kOtherOneByteString,
+                 bits & kNonEmptyInternalizedOneByteString);
+  DCHECK_IMPLIES(bits & kOtherTwoByteString,
+                 bits & kNonEmptyInternalizedTwoByteString);
   DisallowHeapAllocation no_allocation;
   if (!(bits & kPlainNumber)) return bits;  // Shortcut.
   const Boundary* boundaries = Boundaries();
@@ -856,7 +864,7 @@ Type Type::NewConstant(JSHeapBroker* broker, Handle<i::Object> value,
     return NewConstant(ref.AsHeapNumber().value(), zone);
   }
   if (ref.IsString() && !ref.IsInternalizedString()) {
-    return Type::String();
+    return For(ref.AsString().map());
   }
   return HeapConstant(ref.AsHeapObject(), zone);
 }

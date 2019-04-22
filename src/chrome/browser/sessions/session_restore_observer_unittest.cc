@@ -7,7 +7,6 @@
 #include <set>
 #include <vector>
 
-#include "base/run_loop.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/resource_coordinator/tab_helper.h"
 #include "chrome/browser/resource_coordinator/tab_load_tracker.h"

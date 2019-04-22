@@ -4,6 +4,9 @@
 
 #include "components/autofill/core/browser/autofill_metadata.h"
 
+#include "components/autofill/core/common/autofill_clock.h"
+#include "components/autofill/core/common/autofill_constants.h"
+
 namespace autofill {
 
 bool AutofillMetadata::operator==(const AutofillMetadata& metadata) const {
@@ -11,6 +14,20 @@ bool AutofillMetadata::operator==(const AutofillMetadata& metadata) const {
          use_date == metadata.use_date &&
          has_converted == metadata.has_converted &&
          billing_address_id == metadata.billing_address_id;
+}
+
+bool AutofillMetadata::operator!=(const AutofillMetadata& metadata) const {
+  return !(*this == metadata);
+}
+
+bool AutofillMetadata::IsDeletable() const {
+  return IsAutofillEntryWithUseDateDeletable(use_date);
+}
+
+std::ostream& operator<<(std::ostream& os, const AutofillMetadata& metadata) {
+  return os << metadata.id << " " << metadata.use_count << " "
+            << metadata.use_date << " " << metadata.has_converted << " "
+            << metadata.billing_address_id;
 }
 
 }  // namespace autofill

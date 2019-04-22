@@ -13,15 +13,17 @@ cr.define('cr.ui', function() {
    *     needs to have a {@code decorate} function.
    */
   function decorate(source, constr) {
-    var elements;
-    if (typeof source == 'string')
+    let elements;
+    if (typeof source == 'string') {
       elements = cr.doc.querySelectorAll(source);
-    else
+    } else {
       elements = [source];
+    }
 
-    for (var i = 0, el; el = elements[i]; i++) {
-      if (!(el instanceof constr))
+    for (let i = 0, el; el = elements[i]; i++) {
+      if (!(el instanceof constr)) {
         constr.decorate(el);
+      }
     }
   }
 
@@ -30,11 +32,12 @@ cr.define('cr.ui', function() {
    */
   function createElementHelper(tagName, opt_bag) {
     // Allow passing in ownerDocument to create in a different document.
-    var doc;
-    if (opt_bag && opt_bag.ownerDocument)
+    let doc;
+    if (opt_bag && opt_bag.ownerDocument) {
       doc = opt_bag.ownerDocument;
-    else
+    } else {
       doc = cr.doc;
+    }
     return doc.createElement(tagName);
   }
 
@@ -61,7 +64,7 @@ cr.define('cr.ui', function() {
    *     {@code decorate} method added to it.
    */
   function define(tagNameOrFunction) {
-    var createFunction, tagName;
+    let createFunction, tagName;
     if (typeof tagNameOrFunction == 'function') {
       createFunction = tagNameOrFunction;
       tagName = '';
@@ -79,9 +82,9 @@ cr.define('cr.ui', function() {
      * @constructor
      */
     function f(opt_propertyBag) {
-      var el = createFunction(tagName, opt_propertyBag);
+      const el = createFunction(tagName, opt_propertyBag);
       f.decorate(el);
-      for (var propertyName in opt_propertyBag) {
+      for (const propertyName in opt_propertyBag) {
         el[propertyName] = opt_propertyBag[propertyName];
       }
       return el;
@@ -112,39 +115,40 @@ cr.define('cr.ui', function() {
   function limitInputWidth(el, parentEl, min, opt_scale) {
     // Needs a size larger than borders
     el.style.width = '10px';
-    var doc = el.ownerDocument;
-    var win = doc.defaultView;
-    var computedStyle = win.getComputedStyle(el);
-    var parentComputedStyle = win.getComputedStyle(parentEl);
-    var rtl = computedStyle.direction == 'rtl';
+    const doc = el.ownerDocument;
+    const win = doc.defaultView;
+    const computedStyle = win.getComputedStyle(el);
+    const parentComputedStyle = win.getComputedStyle(parentEl);
+    const rtl = computedStyle.direction == 'rtl';
 
     // To get the max width we get the width of the treeItem minus the position
     // of the input.
-    var inputRect = el.getBoundingClientRect();  // box-sizing
-    var parentRect = parentEl.getBoundingClientRect();
-    var startPos = rtl ? parentRect.right - inputRect.right :
-                         inputRect.left - parentRect.left;
+    const inputRect = el.getBoundingClientRect();  // box-sizing
+    const parentRect = parentEl.getBoundingClientRect();
+    const startPos = rtl ? parentRect.right - inputRect.right :
+                           inputRect.left - parentRect.left;
 
     // Add up border and padding of the input.
-    var inner = parseInt(computedStyle.borderLeftWidth, 10) +
+    const inner = parseInt(computedStyle.borderLeftWidth, 10) +
         parseInt(computedStyle.paddingLeft, 10) +
         parseInt(computedStyle.paddingRight, 10) +
         parseInt(computedStyle.borderRightWidth, 10);
 
     // We also need to subtract the padding of parent to prevent it to overflow.
-    var parentPadding = rtl ? parseInt(parentComputedStyle.paddingLeft, 10) :
-                              parseInt(parentComputedStyle.paddingRight, 10);
+    const parentPadding = rtl ? parseInt(parentComputedStyle.paddingLeft, 10) :
+                                parseInt(parentComputedStyle.paddingRight, 10);
 
-    var max = parentEl.clientWidth - startPos - inner - parentPadding;
-    if (opt_scale)
+    let max = parentEl.clientWidth - startPos - inner - parentPadding;
+    if (opt_scale) {
       max *= opt_scale;
+    }
 
     function limit() {
       if (el.scrollWidth > max) {
         el.style.width = max + 'px';
       } else {
         el.style.width = 0;
-        var sw = el.scrollWidth;
+        const sw = el.scrollWidth;
         if (sw < min) {
           el.style.width = min + 'px';
         } else {
@@ -164,8 +168,9 @@ cr.define('cr.ui', function() {
    * @return {string} e.g. '16px'.
    */
   function toCssPx(pixels) {
-    if (!window.isFinite(pixels))
+    if (!window.isFinite(pixels)) {
       console.error('Pixel value is not a number: ' + pixels);
+    }
     return Math.round(pixels) + 'px';
   }
 
@@ -176,8 +181,8 @@ cr.define('cr.ui', function() {
    * @param {MouseEvent} e Initial click event.
    */
   function swallowDoubleClick(e) {
-    var doc = e.target.ownerDocument;
-    var counter = Math.min(1, e.detail);
+    const doc = e.target.ownerDocument;
+    let counter = Math.min(1, e.detail);
     function swallow(e) {
       e.stopPropagation();
       e.preventDefault();

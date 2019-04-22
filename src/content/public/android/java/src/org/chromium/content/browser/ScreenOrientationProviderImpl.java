@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.support.annotation.Nullable;
 import android.view.Surface;
 
 import org.chromium.base.Log;
@@ -18,8 +19,6 @@ import org.chromium.content_public.common.ScreenOrientationConstants;
 import org.chromium.content_public.common.ScreenOrientationValues;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.display.DisplayAndroid;
-
-import javax.annotation.Nullable;
 
 /**
  * This is the implementation of the C++ counterpart ScreenOrientationProvider.

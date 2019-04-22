@@ -10,6 +10,7 @@ from __future__ import print_function
 import datetime
 
 from chromite.lib import constants
+from chromite.lib import parallel
 from chromite.cbuildbot.builders import simple_builders
 from chromite.cbuildbot.stages import artifact_stages
 from chromite.cbuildbot.stages import build_stages
@@ -27,9 +28,18 @@ class ChrootSdkBuilder(simple_builders.SimpleBuilder):
     version = datetime.datetime.now().strftime('%Y.%m.%d.%H%M%S')
     self._RunStage(build_stages.UprevStage, boards=[])
     self._RunStage(build_stages.InitSDKStage)
-    self._RunStage(build_stages.SetupBoardStage, constants.CHROOT_BUILDER_BOARD)
-    self._RunStage(chrome_stages.SyncChromeStage)
+
+    # We don't need the Chrome source until SDKTestStage.  Syncing it should
+    # take less time than BuildSDKBoardStage, so lets run in parallel with it.
+    parallel_stages = [
+        lambda: self._RunStage(chrome_stages.SyncChromeStage),
+        lambda: self._RunStage(build_stages.BuildSDKBoardStage,
+                               constants.CHROOT_BUILDER_BOARD),
+    ]
+    parallel.RunParallelSteps(parallel_stages)
+
     self._RunStage(sdk_stages.SDKBuildToolchainsStage)
+
     self._RunStage(sdk_stages.SDKPackageStage, version=version)
     # Note: This produces badly named toolchain tarballs.  Before
     # we re-enable it, make sure we fix that first.  For example:

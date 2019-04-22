@@ -27,8 +27,8 @@ class MockGamingSeatDelegate : public GamingSeatDelegate {
   MOCK_CONST_METHOD1(CanAcceptGamepadEventsForSurface, bool(Surface*));
   MOCK_METHOD0(GamepadAdded, GamepadDelegate*());
   MOCK_METHOD0(Die, void());
-  void OnGamingSeatDestroying(GamingSeat*) override { delete this; };
-  ~MockGamingSeatDelegate() { Die(); };
+  void OnGamingSeatDestroying(GamingSeat*) override { delete this; }
+  ~MockGamingSeatDelegate() { Die(); }
 };
 
 class MockGamepadDelegate : public GamepadDelegate {

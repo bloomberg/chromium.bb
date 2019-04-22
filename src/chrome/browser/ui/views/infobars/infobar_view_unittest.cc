@@ -6,10 +6,7 @@
 
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
-#include "chrome/test/base/testing_profile.h"
-#include "chrome/test/views/chrome_views_test_base.h"
-#include "content/public/test/test_browser_thread_bundle.h"
-#include "content/public/test/test_web_contents_factory.h"
+#include "chrome/test/base/browser_with_test_window_test.h"
 
 class TestInfoBarDelegate : public infobars::InfoBarDelegate {
  public:
@@ -23,17 +20,27 @@ class TestInfoBarDelegate : public infobars::InfoBarDelegate {
   InfoBarIdentifier GetIdentifier() const override { return TEST_INFOBAR; }
 };
 
-class InfoBarViewTest : public ChromeViewsTestBase {
+class InfoBarViewTest : public BrowserWithTestWindowTest {
  public:
-  InfoBarViewTest()
-      : web_contents_(web_contents_factory_.CreateWebContents(&profile_)),
-        infobar_container_view_(nullptr) {
-    InfoBarService::CreateForWebContents(web_contents_);
+  InfoBarViewTest() : infobar_container_view_(nullptr) {}
+  ~InfoBarViewTest() override = default;
+
+  // ChromeViewsTestBase:
+  void SetUp() override {
+    BrowserWithTestWindowTest::SetUp();
+
+    AddTab(browser(), GURL("about:blank"));
     infobar_container_view_.ChangeInfoBarManager(infobar_service());
   }
 
+  void TearDown() override {
+    DetachContainer();
+    BrowserWithTestWindowTest::TearDown();
+  }
+
   InfoBarService* infobar_service() {
-    return InfoBarService::FromWebContents(web_contents_);
+    return InfoBarService::FromWebContents(
+        browser()->tab_strip_model()->GetWebContentsAt(0));
   }
 
   // Detaches |infobar_container_view_| from infobar_service(), so that newly-
@@ -44,11 +51,9 @@ class InfoBarViewTest : public ChromeViewsTestBase {
   }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
-  TestingProfile profile_;
-  content::TestWebContentsFactory web_contents_factory_;
-  content::WebContents* web_contents_;
   InfoBarContainerView infobar_container_view_;
+
+  DISALLOW_COPY_AND_ASSIGN(InfoBarViewTest);
 };
 
 TEST_F(InfoBarViewTest, ShouldDrawSeparator) {

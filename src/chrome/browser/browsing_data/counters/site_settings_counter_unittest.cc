@@ -4,6 +4,7 @@
 
 #include "chrome/browser/browsing_data/counters/site_settings_counter.h"
 
+#include "base/bind.h"
 #include "base/test/simple_test_clock.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -150,6 +151,17 @@ TEST_F(SiteSettingsCounterTest, OnlyCountContentSettings) {
   map()->SetWebsiteSettingDefaultScope(
       GURL("http://maps.google.com"), GURL(),
       CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT, std::string(),
+      std::make_unique<base::DictionaryValue>());
+
+  counter()->Restart();
+  EXPECT_EQ(1, GetResult());
+}
+
+// Tests that the counter counts WebUSB settings
+TEST_F(SiteSettingsCounterTest, CountWebUsbSettings) {
+  map()->SetWebsiteSettingDefaultScope(
+      GURL("http://www.google.com"), GURL("http://www.google.com"),
+      CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA, std::string(),
       std::make_unique<base::DictionaryValue>());
 
   counter()->Restart();

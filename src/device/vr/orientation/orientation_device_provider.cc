@@ -4,7 +4,10 @@
 
 #include "device/vr/orientation/orientation_device_provider.h"
 
+#include "base/bind.h"
 #include "base/callback.h"
+#include "base/feature_list.h"
+#include "device/base/features.h"
 #include "device/vr/orientation/orientation_device.h"
 #include "services/device/public/mojom/sensor_provider.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -26,6 +29,14 @@ void VROrientationDeviceProvider::Initialize(
                                  mojom::XRRuntimePtr)> add_device_callback,
     base::RepeatingCallback<void(mojom::XRDeviceId)> remove_device_callback,
     base::OnceClosure initialization_complete) {
+  if (!base::FeatureList::IsEnabled(device::kWebXrOrientationSensorDevice)) {
+    if (!initialized_) {
+      initialized_ = true;
+      std::move(initialization_complete).Run();
+    }
+    return;
+  }
+
   if (device_ && device_->IsAvailable()) {
     add_device_callback.Run(device_->GetId(), device_->GetVRDisplayInfo(),
                             device_->BindXRRuntimePtr());
@@ -44,7 +55,7 @@ void VROrientationDeviceProvider::Initialize(
 
 bool VROrientationDeviceProvider::Initialized() {
   return initialized_;
-};
+}
 
 void VROrientationDeviceProvider::DeviceInitialized() {
   // This should only be called after the device is initialized.

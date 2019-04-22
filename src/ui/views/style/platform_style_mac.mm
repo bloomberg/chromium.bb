@@ -5,7 +5,7 @@
 #include "ui/views/style/platform_style.h"
 
 #include "base/strings/sys_string_conversions.h"
-#include "ui/base/ui_features.h"
+#include "ui/base/buildflags.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/views/controls/button/label_button.h"
 #import "ui/views/controls/scrollbar/cocoa_scroll_bar.h"
@@ -39,6 +39,7 @@ const bool PlatformStyle::kSelectWordOnRightClick = true;
 const bool PlatformStyle::kSelectAllOnRightClickWhenUnfocused = true;
 const bool PlatformStyle::kTextfieldScrollsToStartOnFocusChange = true;
 const bool PlatformStyle::kTextfieldUsesDragCursorWhenDraggable = false;
+const bool PlatformStyle::kTableViewSupportsKeyboardNavigationByCell = false;
 const bool PlatformStyle::kTreeViewSelectionPaintsEntireRow = true;
 const bool PlatformStyle::kUseRipples = false;
 const bool PlatformStyle::kPreferFocusRings = true;

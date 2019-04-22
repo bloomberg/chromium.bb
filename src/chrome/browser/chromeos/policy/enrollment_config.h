@@ -156,6 +156,9 @@ struct EnrollmentConfig {
   // The realm the device is joined to (if managed by AD).
   std::string management_realm;
 
+  // Enrollment token to use for authentication (for USB-enrollment).
+  std::string enrollment_token;
+
   // The authentication mechanism to use.
   // TODO(drcrash): Change to best available once ZTE is everywhere.
   AuthMechanism auth_mechanism = AUTH_MECHANISM_INTERACTIVE;

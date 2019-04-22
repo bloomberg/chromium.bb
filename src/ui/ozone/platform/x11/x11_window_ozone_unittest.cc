@@ -4,6 +4,8 @@
 
 #include "ui/ozone/platform/x11/x11_window_ozone.h"
 
+#include <memory>
+
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"

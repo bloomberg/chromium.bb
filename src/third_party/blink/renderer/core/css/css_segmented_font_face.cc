@@ -67,7 +67,7 @@ void CSSSegmentedFontFace::FontFaceInvalidated() {
 void CSSSegmentedFontFace::AddFontFace(FontFace* font_face,
                                        bool css_connected) {
   PruneTable();
-  font_face->CssFontFace()->SetSegmentedFontFace(this);
+  font_face->CssFontFace()->AddSegmentedFontFace(this);
   if (css_connected) {
     font_faces_.InsertBefore(first_non_css_connected_face_, font_face);
   } else {
@@ -88,7 +88,7 @@ void CSSSegmentedFontFace::RemoveFontFace(FontFace* font_face) {
   font_faces_.erase(it);
 
   PruneTable();
-  font_face->CssFontFace()->ClearSegmentedFontFace();
+  font_face->CssFontFace()->RemoveSegmentedFontFace(this);
 }
 
 scoped_refptr<FontData> CSSSegmentedFontFace::GetFontData(
@@ -98,8 +98,9 @@ scoped_refptr<FontData> CSSSegmentedFontFace::GetFontData(
 
   const FontSelectionRequest& font_selection_request =
       font_description.GetFontSelectionRequest();
-  FontCacheKey key = font_description.CacheKey(FontFaceCreationParams(),
-                                               font_selection_request);
+  bool is_unique_match = false;
+  FontCacheKey key = font_description.CacheKey(
+      FontFaceCreationParams(), is_unique_match, font_selection_request);
 
   scoped_refptr<SegmentedFontData>& font_data =
       font_data_table_.insert(key, nullptr).stored_value->value;

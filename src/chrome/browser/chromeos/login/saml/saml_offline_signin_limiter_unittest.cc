@@ -86,6 +86,8 @@ SAMLOfflineSigninLimiterTest::~SAMLOfflineSigninLimiterTest() {
   EXPECT_CALL(*user_manager_, Shutdown()).Times(1);
   EXPECT_CALL(*user_manager_, RemoveSessionStateObserver(_)).Times(1);
   profile_.reset();
+  // Finish any pending tasks before deleting the TestingBrowserProcess.
+  thread_bundle_.RunUntilIdle();
   TestingBrowserProcess::DeleteInstance();
 }
 

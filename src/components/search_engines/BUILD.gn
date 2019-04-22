@@ -19,9 +19,6 @@ static_library("search_engines") {
     "keyword_web_data_service.h",
     "search_engine_data_type_controller.cc",
     "search_engine_data_type_controller.h",
-    "search_engine_model_type_controller.cc",
-    "search_engine_model_type_controller.h",
-    "search_engine_type.h",
     "search_engines_pref_names.cc",
     "search_engines_pref_names.h",
     "search_engines_switches.cc",
@@ -52,6 +49,7 @@ static_library("search_engines") {
   ]
 
   public_deps = [
+    ":search_engine_type",
     "//base",
     "//components/google/core/browser",
     "//components/keyed_service/core",
@@ -94,6 +92,12 @@ static_library("search_engines") {
       "//components/policy/core/browser",
     ]
   }
+}
+
+source_set("search_engine_type") {
+  sources = [
+    "search_engine_type.h",
+  ]
 }
 
 static_library("test_support") {
@@ -164,6 +168,9 @@ json_to_struct("prepopulated_engines") {
   source = "prepopulated_engines.json"
   schema_file = "prepopulated_engines_schema.json"
   namespace = "TemplateURLPrepopulateData"
+  deps = [
+    ":search_engine_type",
+  ]
 }
 
 if (is_android) {

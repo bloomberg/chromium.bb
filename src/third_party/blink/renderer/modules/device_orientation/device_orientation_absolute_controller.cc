@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/modules/device_orientation/device_orientation_event_pump.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -41,15 +42,19 @@ void DeviceOrientationAbsoluteController::DidAddEventListener(
   LocalFrame* frame = GetDocument().GetFrame();
   if (frame) {
     if (GetDocument().IsSecureContext()) {
-      UseCounter::Count(frame,
+      UseCounter::Count(GetDocument(),
                         WebFeature::kDeviceOrientationAbsoluteSecureOrigin);
     } else {
       Deprecation::CountDeprecation(
-          frame, WebFeature::kDeviceOrientationAbsoluteInsecureOrigin);
+          GetDocument(), WebFeature::kDeviceOrientationAbsoluteInsecureOrigin);
       // TODO: add rappor logging of insecure origins as in
       // DeviceOrientationController.
       if (frame->GetSettings()->GetStrictPowerfulFeatureRestrictions())
         return;
+      if (RuntimeEnabledFeatures::
+              RestrictDeviceSensorEventsToSecureContextsEnabled()) {
+        return;
+      }
     }
   }
 

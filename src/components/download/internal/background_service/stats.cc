@@ -48,6 +48,8 @@ std::string TaskTypeToHistogramSuffix(DownloadTaskType task_type) {
       return "DownloadTask";
     case DownloadTaskType::CLEANUP_TASK:
       return "CleanUpTask";
+    case DownloadTaskType::DOWNLOAD_AUTO_RESUMPTION_TASK:
+      return "DownloadAutoResumptionTask";
   }
   NOTREACHED();
   return std::string();
@@ -92,6 +94,8 @@ std::string ClientToHistogramSuffix(DownloadClient client) {
       return "Debugging";
     case DownloadClient::MOUNTAIN_INTERNAL:
       return "MountainInternal";
+    case DownloadClient::PLUGIN_VM_IMAGE:
+      return "PluginVmImage";
     case DownloadClient::BOUNDARY:
       NOTREACHED();
       break;
@@ -390,6 +394,10 @@ void LogHasUploadData(DownloadClient client, bool has_upload_data) {
   std::string name("Download.Service.Upload.HasUploadData");
   name.append(".").append(ClientToHistogramSuffix(client));
   base::UmaHistogramBoolean(name, has_upload_data);
+}
+
+void LogHashPresence(bool hash_exists) {
+  UMA_HISTOGRAM_BOOLEAN("Download.Service.Finish.ReportedHash", hash_exists);
 }
 
 }  // namespace stats

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/bookmark_manager_private/bookmark_manager_private_api.h"
 
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
@@ -29,7 +30,7 @@ class BookmarkManagerPrivateApiUnitTest : public ExtensionServiceTestBase {
         model_->AddURL(model_->other_node(), 0, base::ASCIIToUTF16("Goog"),
                        GURL("https://www.google.com"));
     // Store node->id() as we will delete |node| in RunOnDeletedNode().
-    node_id_ = base::Int64ToString(node->id());
+    node_id_ = base::NumberToString(node->id());
   }
 
   std::string node_id() const { return node_id_; }

@@ -1,0 +1,118 @@
+# Copyright 2019 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# Contains flags necessary to keep the VR module compatible with base when VR
+# is specified as an async DFM (when the VR module is proguarded separately).
+# This flags file was generated from the dependencies of Java classes in
+# src/chrome/android/features/vr/java/src/org/chromium/chrome/browser/vr/
+# produced using the jdeps tool. It intentionally keeps all members from these
+# dependencies to ensure compatibility between the async VR module and base.
+
+# TODO(cuianthony): Reduce the scope of these keep rules by parsing information
+# from constant pools of relevant Java classes.
+
+-keep class org.chromium.base.ActivityState { *; }
+-keep class org.chromium.base.ApiCompatibilityUtils { *; }
+-keep class org.chromium.base.ApplicationStatus { *; }
+-keep class org.chromium.base.ApplicationStatus$ActivityStateListener { *; }
+-keep class org.chromium.base.Callback { *; }
+-keep class org.chromium.base.ContextUtils { *; }
+-keep class org.chromium.base.Log { *; }
+-keep class org.chromium.base.PackageUtils { *; }
+-keep class org.chromium.base.StrictModeContext { *; }
+-keep class org.chromium.base.ThreadUtils { *; }
+-keep class org.chromium.base.TraceEvent { *; }
+-keep class org.chromium.base.annotations.JNINamespace { *; }
+-keep class org.chromium.base.library_loader.LibraryLoader { *; }
+-keep class org.chromium.base.metrics.CachedMetrics { *; }
+-keep class org.chromium.base.metrics.CachedMetrics$BooleanHistogramSample { *; }
+-keep class org.chromium.base.metrics.RecordUserAction { *; }
+-keep class org.chromium.base.task.AsyncTask { *; }
+-keep class org.chromium.base.task.PostTask { *; }
+-keep class org.chromium.base.task.TaskTraits { *; }
+-keep class org.chromium.chrome.R { *; }
+-keep class org.chromium.chrome.R$anim { *; }
+-keep class org.chromium.chrome.R$id { *; }
+-keep class org.chromium.chrome.R$layout { *; }
+-keep class org.chromium.chrome.R$string { *; }
+-keep class org.chromium.chrome.R$style { *; }
+-keep class org.chromium.chrome.browser.ApplicationLifetime { *; }
+-keep class org.chromium.chrome.browser.ChromeActivity { *; }
+-keep class org.chromium.chrome.browser.ChromeFeatureList { *; }
+-keep class org.chromium.chrome.browser.ChromeTabbedActivity { *; }
+-keep class org.chromium.chrome.browser.compositor.CompositorSurfaceManager { *; }
+-keep class org.chromium.chrome.browser.compositor.CompositorSurfaceManager$SurfaceManagerCallbackTarget { *; }
+-keep class org.chromium.chrome.browser.compositor.CompositorView { *; }
+-keep class org.chromium.chrome.browser.compositor.CompositorViewHolder { *; }
+-keep class org.chromium.chrome.browser.customtabs.CustomTabActivity { *; }
+-keep class org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager { *; }
+-keep class org.chromium.chrome.browser.help.HelpAndFeedback { *; }
+-keep class org.chromium.chrome.browser.infobar.InfoBarIdentifier { *; }
+-keep class org.chromium.chrome.browser.infobar.SimpleConfirmInfoBarBuilder { *; }
+-keep class org.chromium.chrome.browser.infobar.SimpleConfirmInfoBarBuilder$Listener { *; }
+-keep class org.chromium.chrome.browser.modaldialog.ModalDialogView { *; }
+-keep class org.chromium.chrome.browser.modaldialog.ModalDialogViewBinder { *; }
+-keep class org.chromium.chrome.browser.page_info.PageInfoController { *; }
+-keep class org.chromium.chrome.browser.page_info.PageInfoController$OpenedFromSource { *; }
+-keep class org.chromium.chrome.browser.preferences.ChromePreferenceManager { *; }
+-keep class org.chromium.chrome.browser.profiles.Profile { *; }
+-keep class org.chromium.chrome.browser.tab.EmptyTabObserver { *; }
+-keep class org.chromium.chrome.browser.tab.Tab { *; }
+-keep class org.chromium.chrome.browser.tab.TabObserver { *; }
+-keep class org.chromium.chrome.browser.tab.TabRedirectHandler { *; }
+-keep class org.chromium.chrome.browser.tabmodel.ChromeTabCreator { *; }
+-keep class org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver { *; }
+-keep class org.chromium.chrome.browser.tabmodel.TabCreatorManager { *; }
+-keep class org.chromium.chrome.browser.tabmodel.TabCreatorManager$TabCreator { *; }
+-keep class org.chromium.chrome.browser.tabmodel.TabLaunchType { *; }
+-keep class org.chromium.chrome.browser.tabmodel.TabModel { *; }
+-keep class org.chromium.chrome.browser.tabmodel.TabModelSelector { *; }
+-keep class org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver { *; }
+-keep class org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver { *; }
+-keep class org.chromium.chrome.browser.toolbar.NewTabButton { *; }
+-keep class org.chromium.chrome.browser.toolbar.ToolbarManager { *; }
+-keep class org.chromium.chrome.browser.util.FeatureUtilities { *; }
+-keep class org.chromium.chrome.browser.util.IntentUtils { *; }
+-keep class org.chromium.chrome.browser.vr.OnExitVrRequestListener { *; }
+-keep class org.chromium.chrome.browser.vr.VrDelegate { *; }
+-keep class org.chromium.chrome.browser.vr.VrDelegateProvider { *; }
+-keep class org.chromium.chrome.browser.vr.VrIntentDelegate { *; }
+-keep class org.chromium.chrome.browser.vr.VrModuleProvider { *; }
+-keep class org.chromium.chrome.browser.webapps.WebappActivity { *; }
+-keep class org.chromium.chrome.browser.widget.findinpage.FindToolbarManager { *; }
+-keep class org.chromium.content_public.browser.ImeAdapter { *; }
+-keep class org.chromium.content_public.browser.InputMethodManagerWrapper { *; }
+-keep class org.chromium.content_public.browser.LoadUrlParams { *; }
+-keep class org.chromium.content_public.browser.MotionEventSynthesizer { *; }
+-keep class org.chromium.content_public.browser.ScreenOrientationDelegate { *; }
+-keep class org.chromium.content_public.browser.ScreenOrientationProvider { *; }
+-keep class org.chromium.content_public.browser.UiThreadTaskTraits { *; }
+-keep class org.chromium.content_public.browser.ViewEventSink { *; }
+-keep class org.chromium.content_public.browser.WebContents { *; }
+-keep class org.chromium.content_public.common.BrowserControlsState { *; }
+-keep class org.chromium.ui.UiUtils { *; }
+-keep class org.chromium.ui.base.ActivityWindowAndroid { *; }
+-keep class org.chromium.ui.base.AndroidPermissionDelegate { *; }
+-keep class org.chromium.ui.base.EventForwarder { *; }
+-keep class org.chromium.ui.base.PermissionCallback { *; }
+-keep class org.chromium.ui.base.WindowAndroid { *; }
+-keep class org.chromium.ui.base.WindowAndroid$IntentCallback { *; }
+-keep class org.chromium.ui.display.DisplayAndroid { *; }
+-keep class org.chromium.ui.display.VirtualDisplayAndroid { *; }
+-keep class org.chromium.ui.modaldialog.DialogDismissalCause { *; }
+-keep class org.chromium.ui.modaldialog.ModalDialogManager { *; }
+-keep class org.chromium.ui.modaldialog.ModalDialogManager$ModalDialogType { *; }
+-keep class org.chromium.ui.modaldialog.ModalDialogManager$Presenter { *; }
+-keep class org.chromium.ui.modaldialog.ModalDialogProperties { *; }
+-keep class org.chromium.ui.modaldialog.ModalDialogProperties$ButtonType { *; }
+-keep class org.chromium.ui.modaldialog.ModalDialogProperties$Controller { *; }
+-keep class org.chromium.ui.modelutil.PropertyKey { *; }
+-keep class org.chromium.ui.modelutil.PropertyModel { *; }
+-keep class org.chromium.ui.modelutil.PropertyModel$Builder { *; }
+-keep class org.chromium.ui.modelutil.PropertyModel$ReadableObjectPropertyKey { *; }
+-keep class org.chromium.ui.modelutil.PropertyModel$WritableObjectPropertyKey { *; }
+-keep class org.chromium.ui.modelutil.PropertyModelChangeProcessor { *; }
+-keep class org.chromium.ui.modelutil.PropertyModelChangeProcessor$ViewBinder { *; }
+-keep class org.chromium.ui.modelutil.PropertyObservable { *; }
+-keep class org.chromium.ui.widget.UiWidgetFactory { *; }

@@ -6,7 +6,6 @@ package org.chromium.chrome.browser;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.Application;
 import android.content.SharedPreferences;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
@@ -35,7 +34,7 @@ import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 
-import java.lang.ref.WeakReference;
+import java.util.Locale;
 
 /**
  * Tracks the foreground session state for the Chrome activities.
@@ -52,7 +51,6 @@ public class ChromeActivitySessionTracker {
     // Used to trigger variation changes (such as seed fetches) upon application foregrounding.
     private VariationsSession mVariationsSession;
 
-    private Application mApplication;
     private boolean mIsInitialized;
     private boolean mIsStarted;
     private boolean mIsFinishedCachingNativeFlags;
@@ -72,7 +70,6 @@ public class ChromeActivitySessionTracker {
      * @see #getInstance()
      */
     protected ChromeActivitySessionTracker() {
-        mApplication = (Application) ContextUtils.getApplicationContext();
         mVariationsSession = AppHooks.get().createVariationsSession();
     }
 
@@ -82,7 +79,7 @@ public class ChromeActivitySessionTracker {
      * @param callback Callback that will be called with the param value when available.
      */
     public void getVariationsRestrictModeValue(Callback<String> callback) {
-        mVariationsSession.getRestrictModeValue(mApplication, callback);
+        mVariationsSession.getRestrictModeValue(callback);
     }
 
     /**
@@ -126,7 +123,7 @@ public class ChromeActivitySessionTracker {
     }
 
     /**
-     * Called when a top-level Chrome activity (ChromeTabbedActivity, FullscreenActivity) is
+     * Called when a top-level Chrome activity (ChromeTabbedActivity, CustomTabActivity) is
      * started in foreground. It will not be called again when other Chrome activities take over
      * (see onStart()), that is, when correct activity calls startActivity() for another Chrome
      * activity.
@@ -134,9 +131,10 @@ public class ChromeActivitySessionTracker {
     private void onForegroundSessionStart() {
         UmaUtils.recordForegroundStartTime();
         updatePasswordEchoState();
-        FontSizePrefs.getInstance(mApplication).onSystemFontScaleChanged();
+        FontSizePrefs.getInstance().onSystemFontScaleChanged();
+        recordWhetherSystemAndAppLanguagesDiffer();
         updateAcceptLanguages();
-        mVariationsSession.start(mApplication);
+        mVariationsSession.start();
         mPowerBroadcastReceiver.onForegroundSessionStart();
 
         // Track the ratio of Chrome startups that are caused by notification clicks.
@@ -163,8 +161,7 @@ public class ChromeActivitySessionTracker {
         IntentHandler.clearPendingIncognitoUrl();
 
         int totalTabCount = 0;
-        for (WeakReference<Activity> reference : ApplicationStatus.getRunningActivities()) {
-            Activity activity = reference.get();
+        for (Activity activity : ApplicationStatus.getRunningActivities()) {
             if (activity instanceof ChromeActivity) {
                 TabModelSelector tabModelSelector =
                         ((ChromeActivity) activity).getTabModelSelector();
@@ -232,8 +229,10 @@ public class ChromeActivitySessionTracker {
      * period of time.
      */
     private void updatePasswordEchoState() {
-        boolean systemEnabled = Settings.System.getInt(mApplication.getContentResolver(),
-                Settings.System.TEXT_SHOW_PASSWORD, 1) == 1;
+        boolean systemEnabled =
+                Settings.System.getInt(ContextUtils.getApplicationContext().getContentResolver(),
+                        Settings.System.TEXT_SHOW_PASSWORD, 1)
+                == 1;
         if (PrefServiceBridge.getInstance().getPasswordEchoEnabled() == systemEnabled) return;
 
         PrefServiceBridge.getInstance().setPasswordEchoEnabled(systemEnabled);
@@ -248,6 +247,22 @@ public class ChromeActivitySessionTracker {
         if (mIsFinishedCachingNativeFlags) return;
         FeatureUtilities.cacheNativeFlags();
         mIsFinishedCachingNativeFlags = true;
+    }
+
+    /**
+     * Records whether Chrome was started in a language other than the system language but we
+     * support the system language. That can happen if the user changes the system language and the
+     * required language split cannot be installed in time.
+     */
+    private void recordWhetherSystemAndAppLanguagesDiffer() {
+        String uiLanguage =
+                LocaleUtils.toLanguage(ChromeLocalizationUtils.getUiLocaleStringForCompressedPak());
+        String systemLanguage =
+                LocaleUtils.toLanguage(LocaleUtils.toLanguageTag(Locale.getDefault()));
+        boolean isWrongLanguage = !systemLanguage.equals(uiLanguage)
+                && LocaleUtils.isLanguageSupported(systemLanguage);
+        RecordHistogram.recordBooleanHistogram(
+                "Android.Language.WrongLanguageAfterResume", isWrongLanguage);
     }
 
     /**

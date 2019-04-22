@@ -23,8 +23,8 @@
 #include "api/test/simulated_network.h"
 #include "call/call.h"
 #include "call/simulated_packet_receiver.h"
-#include "rtc_base/constructormagic.h"
-#include "rtc_base/criticalsection.h"
+#include "rtc_base/constructor_magic.h"
+#include "rtc_base/critical_section.h"
 #include "rtc_base/thread_annotations.h"
 
 namespace webrtc {
@@ -77,8 +77,8 @@ class NetworkPacket {
   absl::optional<PacketOptions> packet_options_;
   bool is_rtcp_;
   // If using a PacketReceiver for incoming degradation, populate with
-  // appropriate MediaType and PacketTime. This type/timing will be kept and
-  // forwarded. The PacketTime might be altered to reflect time spent in fake
+  // appropriate MediaType and packet time. This type/timing will be kept and
+  // forwarded. The packet time might be altered to reflect time spent in fake
   // network pipe.
   MediaType media_type_;
   absl::optional<int64_t> packet_time_us_;
@@ -86,8 +86,7 @@ class NetworkPacket {
 
 // Class faking a network link, internally is uses an implementation of a
 // SimulatedNetworkInterface to simulate network behavior.
-class FakeNetworkPipe : public webrtc::SimulatedPacketReceiverInterface,
-                        public Transport {
+class FakeNetworkPipe : public SimulatedPacketReceiverInterface {
  public:
   // Will keep |network_behavior| alive while pipe is alive itself.
   // Use these constructors if you plan to insert packets using DeliverPacket().
@@ -119,13 +118,13 @@ class FakeNetworkPipe : public webrtc::SimulatedPacketReceiverInterface,
   // constructor.
   bool SendRtp(const uint8_t* packet,
                size_t length,
-               const PacketOptions& options) override;
-  bool SendRtcp(const uint8_t* packet, size_t length) override;
+               const PacketOptions& options);
+  bool SendRtcp(const uint8_t* packet, size_t length);
 
   // Implements the PacketReceiver interface. When/if packets are delivered,
   // they will be passed directly to the receiver instance given in
-  // SetReceiver(), without passing through a Demuxer. The receive time in
-  // PacketTime will be increased by the amount of time the packet spent in the
+  // SetReceiver(), without passing through a Demuxer. The receive time
+  // will be increased by the amount of time the packet spent in the
   // fake network pipe.
   PacketReceiver::DeliveryStatus DeliverPacket(MediaType media_type,
                                                rtc::CopyOnWriteBuffer packet,
@@ -138,8 +137,7 @@ class FakeNetworkPipe : public webrtc::SimulatedPacketReceiverInterface,
   // Processes the network queues and trigger PacketReceiver::IncomingPacket for
   // packets ready to be delivered.
   void Process() override;
-  int64_t TimeUntilNextProcess() override;
-  void ProcessThreadAttached(ProcessThread* process_thread) override;
+  absl::optional<int64_t> TimeUntilNextProcess() override;
 
   // Get statistics.
   float PercentageLoss();
@@ -193,10 +191,6 @@ class FakeNetworkPipe : public webrtc::SimulatedPacketReceiverInterface,
   // |process_lock| guards the data structures involved in delay and loss
   // processes, such as the packet queues.
   rtc::CriticalSection process_lock_;
-
-  rtc::CriticalSection process_thread_lock_;
-  ProcessThread* process_thread_ RTC_GUARDED_BY(process_thread_lock_) = nullptr;
-
   // Packets  are added at the back of the deque, this makes the deque ordered
   // by increasing send time. The common case when removing packets from the
   // deque is removing early packets, which will be close to the front of the

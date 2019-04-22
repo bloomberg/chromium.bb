@@ -19,7 +19,7 @@ class DOMStorageMapParamTest : public testing::Test,
   ~DOMStorageMapParamTest() override {}
 };
 
-INSTANTIATE_TEST_CASE_P(_, DOMStorageMapParamTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(_, DOMStorageMapParamTest, ::testing::Bool());
 
 TEST_P(DOMStorageMapParamTest, DOMStorageMapBasics) {
   const base::string16 kKey(ASCIIToUTF16("key"));

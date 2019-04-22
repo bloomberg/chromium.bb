@@ -8,6 +8,7 @@
 
 #include "gpu/command_buffer/service/mocks.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gl/gl_bindings.h"
 
 using ::testing::Return;
 

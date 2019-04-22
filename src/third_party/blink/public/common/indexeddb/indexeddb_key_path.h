@@ -12,6 +12,7 @@
 #include "base/strings/string16.h"
 #include "third_party/blink/public/common/common_export.h"
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-shared.h"
 
 namespace blink {
 
@@ -26,15 +27,15 @@ class BLINK_COMMON_EXPORT IndexedDBKeyPath {
   IndexedDBKeyPath& operator=(const IndexedDBKeyPath& other);
   IndexedDBKeyPath& operator=(IndexedDBKeyPath&& other);
 
-  bool IsNull() const { return type_ == blink::kWebIDBKeyPathTypeNull; }
+  bool IsNull() const { return type_ == blink::mojom::IDBKeyPathType::Null; }
   bool operator==(const IndexedDBKeyPath& other) const;
 
-  blink::WebIDBKeyPathType type() const { return type_; }
+  mojom::IDBKeyPathType type() const { return type_; }
   const std::vector<base::string16>& array() const;
   const base::string16& string() const;
 
  private:
-  blink::WebIDBKeyPathType type_;
+  mojom::IDBKeyPathType type_;
   base::string16 string_;
   std::vector<base::string16> array_;
 };

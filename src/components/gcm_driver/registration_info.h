@@ -10,13 +10,13 @@
 #include <string>
 #include <vector>
 
-#include "base/memory/linked_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 
 namespace gcm  {
 
 // Encapsulates the information needed to register with the server.
-struct RegistrationInfo {
+struct RegistrationInfo : public base::RefCounted<RegistrationInfo> {
   enum RegistrationType {
     GCM_REGISTRATION,
     INSTANCE_ID_TOKEN
@@ -25,13 +25,12 @@ struct RegistrationInfo {
   // Returns the appropriate RegistrationInfo instance based on the serialized
   // key and value.
   // |registration_id| can be NULL if no interest to it.
-  static std::unique_ptr<RegistrationInfo> BuildFromString(
+  static scoped_refptr<RegistrationInfo> BuildFromString(
       const std::string& serialized_key,
       const std::string& serialized_value,
       std::string* registration_id);
 
   RegistrationInfo();
-  virtual ~RegistrationInfo();
 
   // Returns the type of the registration info.
   virtual RegistrationType GetType() const = 0;
@@ -50,12 +49,15 @@ struct RegistrationInfo {
   // Every registration is associated with an application.
   std::string app_id;
   base::Time last_validated;
+
+ protected:
+  friend class base::RefCounted<RegistrationInfo>;
+  virtual ~RegistrationInfo();
 };
 
 // For GCM registration.
-struct GCMRegistrationInfo : public RegistrationInfo {
+struct GCMRegistrationInfo final : public RegistrationInfo {
   GCMRegistrationInfo();
-  ~GCMRegistrationInfo() override;
 
   // Converts from the base type;
   static const GCMRegistrationInfo* FromRegistrationInfo(
@@ -75,12 +77,14 @@ struct GCMRegistrationInfo : public RegistrationInfo {
   // List of IDs of the servers that are allowed to send the messages to the
   // application. These IDs are assigned by the Google API Console.
   std::vector<std::string> sender_ids;
+
+ private:
+  ~GCMRegistrationInfo() override;
 };
 
 // For InstanceID token retrieval.
-struct InstanceIDTokenInfo : public RegistrationInfo {
+struct InstanceIDTokenInfo final : public RegistrationInfo {
   InstanceIDTokenInfo();
-  ~InstanceIDTokenInfo() override;
 
   // Converts from the base type;
   static const InstanceIDTokenInfo* FromRegistrationInfo(
@@ -110,18 +114,20 @@ struct InstanceIDTokenInfo : public RegistrationInfo {
   // associated with the token and may be used in processing the request. These
   // are not serialized/deserialized.
   std::map<std::string, std::string> options;
+
+ private:
+  ~InstanceIDTokenInfo() override;
 };
 
 struct RegistrationInfoComparer {
-  bool operator()(const linked_ptr<RegistrationInfo>& a,
-                  const linked_ptr<RegistrationInfo>& b) const;
+  bool operator()(const scoped_refptr<RegistrationInfo>& a,
+                  const scoped_refptr<RegistrationInfo>& b) const;
 };
 
 // Collection of registration info.
 // Map from RegistrationInfo instance to registration ID.
-typedef std::map<linked_ptr<RegistrationInfo>,
-                std::string,
-                RegistrationInfoComparer> RegistrationInfoMap;
+using RegistrationInfoMap = std::
+    map<scoped_refptr<RegistrationInfo>, std::string, RegistrationInfoComparer>;
 
 // Returns true if a GCM registration for |app_id| exists in |map|.
 bool ExistsGCMRegistrationInMap(const RegistrationInfoMap& map,

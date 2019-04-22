@@ -10,9 +10,8 @@
 #include <vector>
 
 #include "base/base64.h"
+#include "base/hash/sha1.h"
 #include "base/logging.h"
-#include "base/macros.h"
-#include "base/sha1.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/sync/protocol/unique_position.pb.h"
@@ -216,7 +215,7 @@ TEST_F(RelativePositioningTest, ComparisonSanityTest2) {
 // Exercise comparision functions by sorting and re-sorting the list.
 TEST_F(RelativePositioningTest, SortPositions) {
   ASSERT_EQ(kNumPositions, kNumSortedPositions);
-  UniquePosition positions[arraysize(kPositionArray)];
+  UniquePosition positions[base::size(kPositionArray)];
   for (size_t i = 0; i < kNumPositions; ++i) {
     positions[i] = kPositionArray[i];
   }
@@ -232,7 +231,7 @@ TEST_F(RelativePositioningTest, SortPositions) {
 // Some more exercise for the comparison function.
 TEST_F(RelativePositioningTest, ReverseSortPositions) {
   ASSERT_EQ(kNumPositions, kNumSortedPositions);
-  UniquePosition positions[arraysize(kPositionArray)];
+  UniquePosition positions[base::size(kPositionArray)];
   for (size_t i = 0; i < kNumPositions; ++i) {
     positions[i] = kPositionArray[i];
   }
@@ -393,7 +392,7 @@ class SuffixGenerator {
     // This is not entirely realistic, but that should be OK.  The current
     // suffix format is a base64'ed SHA1 hash, which should be fairly close to
     // random anyway.
-    std::string input = cache_guid_ + base::Int64ToString(next_id_--);
+    std::string input = cache_guid_ + base::NumberToString(next_id_--);
     std::string output;
     base::Base64Encode(base::SHA1HashString(input), &output);
     return output;
@@ -411,9 +410,10 @@ static const char kCacheGuidStr2[] = "yaKb7zHtY06aue9a0vlZgw==";
 class PositionScenariosTest : public UniquePositionTest {
  public:
   PositionScenariosTest()
-      : generator1_(std::string(kCacheGuidStr1, arraysize(kCacheGuidStr1) - 1)),
+      : generator1_(
+            std::string(kCacheGuidStr1, base::size(kCacheGuidStr1) - 1)),
         generator2_(
-            std::string(kCacheGuidStr2, arraysize(kCacheGuidStr2) - 1)) {}
+            std::string(kCacheGuidStr2, base::size(kCacheGuidStr2) - 1)) {}
 
   std::string NextClient1Suffix() { return generator1_.NextSuffix(); }
 
@@ -483,15 +483,15 @@ TEST_F(PositionScenariosTest, TwoClientsInsertAtEnd_B) {
   EXPECT_LT(GetLength(pos), 500U);
 }
 
-INSTANTIATE_TEST_CASE_P(MinSuffix,
-                        PositionInsertTest,
-                        ::testing::Values(std::string(kMinSuffix,
-                                                      base::size(kMinSuffix))));
-INSTANTIATE_TEST_CASE_P(MaxSuffix,
-                        PositionInsertTest,
-                        ::testing::Values(std::string(kMaxSuffix,
-                                                      base::size(kMaxSuffix))));
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
+    MinSuffix,
+    PositionInsertTest,
+    ::testing::Values(std::string(kMinSuffix, base::size(kMinSuffix))));
+INSTANTIATE_TEST_SUITE_P(
+    MaxSuffix,
+    PositionInsertTest,
+    ::testing::Values(std::string(kMaxSuffix, base::size(kMaxSuffix))));
+INSTANTIATE_TEST_SUITE_P(
     NormalSuffix,
     PositionInsertTest,
     ::testing::Values(std::string(kNormalSuffix, base::size(kNormalSuffix))));
@@ -499,8 +499,8 @@ INSTANTIATE_TEST_CASE_P(
 class PositionFromIntTest : public UniquePositionTest {
  public:
   PositionFromIntTest()
-      : generator_(std::string(kCacheGuidStr1, arraysize(kCacheGuidStr1) - 1)) {
-  }
+      : generator_(
+            std::string(kCacheGuidStr1, base::size(kCacheGuidStr1) - 1)) {}
 
  protected:
   static const int64_t kTestValues[];
@@ -555,7 +555,7 @@ const int64_t PositionFromIntTest::kTestValues[] = {0LL,
                                                     INT64_MAX - 1};
 
 const size_t PositionFromIntTest::kNumTestValues =
-    arraysize(PositionFromIntTest::kTestValues);
+    base::size(PositionFromIntTest::kTestValues);
 
 TEST_F(PositionFromIntTest, IsValid) {
   for (size_t i = 0; i < kNumTestValues; ++i) {

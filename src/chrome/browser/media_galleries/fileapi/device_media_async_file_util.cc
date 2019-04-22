@@ -8,6 +8,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
@@ -618,7 +619,7 @@ void DeviceMediaAsyncFileUtil::AddWatcher(
     return;
   }
 
-  delegate->AddWatcher(url.origin(), url.path(), recursive, callback,
+  delegate->AddWatcher(url.origin().GetURL(), url.path(), recursive, callback,
                        notification_callback);
 }
 
@@ -633,7 +634,8 @@ void DeviceMediaAsyncFileUtil::RemoveWatcher(
     return;
   }
 
-  delegate->RemoveWatcher(url.origin(), url.path(), recursive, callback);
+  delegate->RemoveWatcher(url.origin().GetURL(), url.path(), recursive,
+                          callback);
 }
 
 DeviceMediaAsyncFileUtil::DeviceMediaAsyncFileUtil(

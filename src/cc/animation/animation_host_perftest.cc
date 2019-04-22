@@ -5,11 +5,11 @@
 #include "cc/animation/animation_host.h"
 
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/timer/lap_timer.h"
 #include "cc/animation/animation_id_provider.h"
 #include "cc/animation/animation_timeline.h"
 #include "cc/animation/keyframe_effect.h"
 #include "cc/animation/single_keyframe_effect_animation.h"
-#include "cc/base/lap_timer.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/fake_layer_tree_host_client.h"
@@ -149,7 +149,7 @@ class AnimationHostPerfTest : public testing::Test {
   int first_animation_id_;
   int last_animation_id_;
 
-  LapTimer timer_;
+  base::LapTimer timer_;
   TestTaskGraphRunner task_graph_runner_;
 };
 

@@ -22,6 +22,8 @@ USE_FAKE_CAMERA_DEVICE = Tag(
 
 # Below are tags for filtering by page sets
 
+BACKDROP_FILTER = Tag(
+    'backdrop_filter', 'Backdrop filter stories')
 IMAGE_DECODING = Tag(
     'image_decoding', 'Stories with accelerated jpeg decoding')
 KEY_DESKTOP_MOVE = Tag(
@@ -44,6 +46,11 @@ POLYMER = Tag(
     'polymer', 'Polymer stories')
 REPAINT_DESKTOP = Tag(
     'repaint_desktop', 'Repaint desktop stories')
+REPRESENTATIVE_MAC_DESKTOP = Tag(
+    'representative_mac_desktop', 'Rendering desktop representatives for mac')
+REPRESENTATIVE_WIN_DESKTOP = Tag(
+    'representative_win_desktop',
+    'Rendering desktop representatives for windows')
 SIMPLE_MOBILE_SITES = Tag(
     'simple_mobile_sites', 'Simple mobile sites')
 TOP_REAL_WORLD_DESKTOP = Tag(
@@ -64,6 +71,8 @@ TOUGH_PATH_RENDERING = Tag(
     'tough_path_rendering', 'Tough path rendering stories')
 TOUGH_PINCH_ZOOM = Tag(
     'tough_pinch_zoom', 'Tough pinch zoom stories (only on Mac for desktop)')
+TOUGH_PINCH_ZOOM_MOBILE = Tag(
+    'tough_pinch_zoom_mobile', 'Tough pinch zoom mobile stories')
 TOUGH_SCHEDULING = Tag(
     'tough_scheduling', 'Tough scheduling stories')
 TOUGH_SCROLLING = Tag(

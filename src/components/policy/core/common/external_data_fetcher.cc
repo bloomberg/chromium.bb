@@ -35,11 +35,11 @@ bool ExternalDataFetcher::Equals(const ExternalDataFetcher* first,
          first->policy_ == second->policy_;
 }
 
-void ExternalDataFetcher::Fetch(const FetchCallback& callback) const {
+void ExternalDataFetcher::Fetch(FetchCallback callback) const {
   if (manager_)
-    manager_->Fetch(policy_, callback);
+    manager_->Fetch(policy_, std::move(callback));
   else
-    callback.Run(std::unique_ptr<std::string>());
+    std::move(callback).Run(nullptr, base::FilePath());
 }
 
 }  // namespace policy

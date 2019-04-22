@@ -24,9 +24,9 @@
 #include "jingle/notifier/listener/send_ping_task.h"
 #include "third_party/libjingle_xmpp/xmpp/xmppclientsettings.h"
 
-namespace buzz {
+namespace jingle_xmpp {
 class XmppTaskParentInterface;
-}  // namespace buzz
+}  // namespace jingle_xmpp
 
 namespace notifier {
 
@@ -56,7 +56,7 @@ class XmppPushClient :
 
   // Login::Delegate implementation.
   void OnConnect(
-      base::WeakPtr<buzz::XmppTaskParentInterface> base_task) override;
+      base::WeakPtr<jingle_xmpp::XmppTaskParentInterface> base_task) override;
   void OnTransientDisconnection() override;
   void OnCredentialsRejected() override;
 
@@ -77,12 +77,12 @@ class XmppPushClient :
 
   // XMPP connection settings.
   SubscriptionList subscriptions_;
-  buzz::XmppClientSettings xmpp_settings_;
+  jingle_xmpp::XmppClientSettings xmpp_settings_;
 
   std::unique_ptr<notifier::Login> login_;
 
   // The XMPP connection.
-  base::WeakPtr<buzz::XmppTaskParentInterface> base_task_;
+  base::WeakPtr<jingle_xmpp::XmppTaskParentInterface> base_task_;
 
   std::vector<Notification> pending_notifications_to_send_;
 

@@ -20,6 +20,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -27,10 +28,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
+using testing::AnyNumber;
 using testing::ElementsAre;
 using testing::Return;
-using PasswordReuseEvent =
-    safe_browsing::LoginReputationClientRequest::PasswordReuseEvent;
 
 namespace {
 
@@ -104,7 +104,7 @@ class TestPasswordProtectionService : public MockPasswordProtectionService {
 
 class PasswordProtectionServiceTest : public ::testing::TestWithParam<bool> {
  public:
-  PasswordProtectionServiceTest(){};
+  PasswordProtectionServiceTest() {}
 
   LoginReputationClientResponse CreateVerdictProto(
       LoginReputationClientResponse::VerdictType verdict,
@@ -263,6 +263,7 @@ class PasswordProtectionServiceTest : public ::testing::TestWithParam<bool> {
   scoped_refptr<PasswordProtectionRequest> request_;
   base::HistogramTester histograms_;
   content::TestBrowserContext browser_context_;
+  content::RenderViewHostTestEnabler rvh_test_enabler_;
 };
 
 TEST_P(PasswordProtectionServiceTest, TestParseInvalidVerdictEntry) {
@@ -1333,11 +1334,35 @@ TEST_P(PasswordProtectionServiceTest, TestPingsForAboutBlank) {
   histograms_.ExpectTotalCount(kPasswordOnFocusRequestOutcomeHistogram, 1);
 }
 
-INSTANTIATE_TEST_CASE_P(Regular,
-                        PasswordProtectionServiceTest,
-                        ::testing::Values(false));
-INSTANTIATE_TEST_CASE_P(SBER,
-                        PasswordProtectionServiceTest,
-                        ::testing::Values(true));
+TEST_P(PasswordProtectionServiceTest,
+       TestVisualFeaturesPopulatedInOnFocusPing) {
+  LoginReputationClientResponse expected_response =
+      CreateVerdictProto(LoginReputationClientResponse::PHISHING, 10 * kMinute,
+                         GURL("about:blank").host());
+  test_url_loader_factory_.AddResponse(url_.spec(),
+                                       expected_response.SerializeAsString());
+  EXPECT_CALL(*password_protection_service_, GetCurrentContentAreaSize())
+      .Times(AnyNumber())
+      .WillOnce(Return(gfx::Size(1000, 1000)));
+  password_protection_service_->StartRequest(
+      GetWebContents(), GURL("about:blank"), GURL(), GURL(),
+      PasswordReuseEvent::SAVED_PASSWORD, {"example.com"},
+      LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE, true);
+  base::RunLoop().RunUntilIdle();
+
+  bool is_sber = GetParam();
+  if (is_sber) {
+    ASSERT_NE(nullptr, password_protection_service_->GetLatestRequestProto());
+    EXPECT_TRUE(password_protection_service_->GetLatestRequestProto()
+                    ->has_visual_features());
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(Regular,
+                         PasswordProtectionServiceTest,
+                         ::testing::Values(false));
+INSTANTIATE_TEST_SUITE_P(SBER,
+                         PasswordProtectionServiceTest,
+                         ::testing::Values(true));
 
 }  // namespace safe_browsing

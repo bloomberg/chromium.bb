@@ -38,11 +38,40 @@ bool g_had_errors = false;
 // testDone results.
 bool g_test_result_ok = false;
 
+// Location of src root.
+base::FilePath g_src_root;
+
 // Location of test data (currently test/data/webui).
 base::FilePath g_test_data_directory;
 
 // Location of generated test data (<(PROGRAM_DIR)/test_data).
 base::FilePath g_gen_test_data_directory;
+
+// Finds the file that is indicated by |library_path|, updates |library_path|
+// to be an absolute path to that file, and returns true.
+// If no file is found, returns false.
+bool FindLibraryFile(base::FilePath* library_path) {
+  if (library_path->IsAbsolute()) {
+    // Absolute file. Only one place to look.
+    return base::PathExists(*library_path);
+  }
+
+  // Look for relative file.
+  base::FilePath possible_path = g_src_root.Append(*library_path);
+  if (!base::PathExists(possible_path)) {
+    possible_path = g_gen_test_data_directory.Append(*library_path);
+    if (!base::PathExists(possible_path)) {
+      possible_path = g_test_data_directory.Append(*library_path);
+      if (!base::PathExists(possible_path)) {
+        return false;  // Couldn't find relative file anywhere.
+      }
+    }
+  }
+
+  *library_path = base::MakeAbsoluteFilePath(possible_path);
+  return true;
+}
+
 
 }  // namespace
 
@@ -64,14 +93,14 @@ bool V8UnitTest::ExecuteJavascriptLibraries() {
        ++user_libraries_iterator) {
     std::string library_content;
     base::FilePath library_file(*user_libraries_iterator);
-    if (!user_libraries_iterator->IsAbsolute()) {
-      base::FilePath gen_file = g_gen_test_data_directory.Append(library_file);
-      library_file = base::PathExists(gen_file) ?
-          gen_file : g_test_data_directory.Append(*user_libraries_iterator);
+
+    if (!FindLibraryFile(&library_file)) {
+      ADD_FAILURE() << "Couldn't find " << library_file.value();
+      return false;
     }
-    library_file = base::MakeAbsoluteFilePath(library_file);
+
     if (!base::ReadFileToString(library_file, &library_content)) {
-      ADD_FAILURE() << library_file.value();
+      ADD_FAILURE() << "Error reading " << library_file.value();
       return false;
     }
     ExecuteScriptInContext(library_content, library_file.MaybeAsASCII());
@@ -97,10 +126,13 @@ bool V8UnitTest::RunJavascriptTestF(const std::string& test_fixture,
   v8::MicrotasksScope microtasks(
       isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
 
-  v8::Local<v8::Value> function_property = context->Global()->Get(
-      v8::String::NewFromUtf8(isolate, "runTest",
-                              v8::NewStringType::kInternalized)
-          .ToLocalChecked());
+  v8::Local<v8::Value> function_property =
+      context->Global()
+          ->Get(context,
+                v8::String::NewFromUtf8(isolate, "runTest",
+                                        v8::NewStringType::kInternalized)
+                    .ToLocalChecked())
+          .ToLocalChecked();
   EXPECT_FALSE(function_property.IsEmpty());
   if (::testing::Test::HasNonfatalFailure())
     return false;
@@ -111,14 +143,20 @@ bool V8UnitTest::RunJavascriptTestF(const std::string& test_fixture,
       v8::Local<v8::Function>::Cast(function_property);
 
   v8::Local<v8::Array> params = v8::Array::New(isolate);
-  params->Set(0, v8::String::NewFromUtf8(isolate, test_fixture.data(),
-                                         v8::NewStringType::kNormal,
-                                         test_fixture.size())
-                     .ToLocalChecked());
-  params->Set(
-      1, v8::String::NewFromUtf8(isolate, test_name.data(),
-                                 v8::NewStringType::kNormal, test_name.size())
-             .ToLocalChecked());
+  params
+      ->Set(context, 0,
+            v8::String::NewFromUtf8(isolate, test_fixture.data(),
+                                    v8::NewStringType::kNormal,
+                                    test_fixture.size())
+                .ToLocalChecked())
+      .Check();
+  params
+      ->Set(
+          context, 1,
+          v8::String::NewFromUtf8(isolate, test_name.data(),
+                                  v8::NewStringType::kNormal, test_name.size())
+              .ToLocalChecked())
+      .Check();
   v8::Local<v8::Value> args[] = {
       v8::Boolean::New(isolate, false),
       v8::String::NewFromUtf8(isolate, "RUN_TEST_F", v8::NewStringType::kNormal)
@@ -147,21 +185,20 @@ void V8UnitTest::InitPathsAndLibraries() {
   ASSERT_TRUE(base::PathService::Get(chrome::DIR_GEN_TEST_DATA,
                                      &g_gen_test_data_directory));
 
-  base::FilePath src_root;
-  ASSERT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &src_root));
+  ASSERT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &g_src_root));
 
-  AddLibrary(src_root.AppendASCII("chrome")
-                     .AppendASCII("third_party")
-                     .AppendASCII("mock4js")
-                     .AppendASCII("mock4js.js"));
+  AddLibrary(g_src_root.AppendASCII("chrome")
+                       .AppendASCII("third_party")
+                       .AppendASCII("mock4js")
+                       .AppendASCII("mock4js.js"));
 
-  AddLibrary(src_root.AppendASCII("third_party")
-                     .AppendASCII("chaijs")
-                     .AppendASCII("chai.js"));
+  AddLibrary(g_src_root.AppendASCII("third_party")
+                       .AppendASCII("chaijs")
+                       .AppendASCII("chai.js"));
 
-  AddLibrary(src_root.AppendASCII("third_party")
-                     .AppendASCII("accessibility-audit")
-                     .AppendASCII("axs_testing.js"));
+  AddLibrary(g_src_root.AppendASCII("third_party")
+                       .AppendASCII("accessibility-audit")
+                       .AppendASCII("axs_testing.js"));
 
   AddLibrary(g_test_data_directory.AppendASCII("test_api.js"));
 }
@@ -224,7 +261,7 @@ void V8UnitTest::SetUp() {
                                       v8::NewStringType::kInternalized)
                   .ToLocalChecked(),
               console->NewInstance(context).ToLocalChecked())
-        .ToChecked();
+        .Check();
   }
 }
 
@@ -234,14 +271,16 @@ void V8UnitTest::SetGlobalStringVar(const std::string& var_name,
   v8::Local<v8::Context> context =
       v8::Local<v8::Context>::New(isolate, context_);
   v8::Context::Scope context_scope(context);
-  context->Global()->Set(
-      v8::String::NewFromUtf8(isolate, var_name.c_str(),
-                              v8::NewStringType::kInternalized,
-                              var_name.length())
-          .ToLocalChecked(),
-      v8::String::NewFromUtf8(isolate, value.c_str(),
-                              v8::NewStringType::kNormal, value.length())
-          .ToLocalChecked());
+  context->Global()
+      ->Set(context,
+            v8::String::NewFromUtf8(isolate, var_name.c_str(),
+                                    v8::NewStringType::kInternalized,
+                                    var_name.length())
+                .ToLocalChecked(),
+            v8::String::NewFromUtf8(isolate, value.c_str(),
+                                    v8::NewStringType::kNormal, value.length())
+                .ToLocalChecked())
+      .Check();
 }
 
 void V8UnitTest::ExecuteScriptInContext(const base::StringPiece& script_source,
@@ -306,10 +345,13 @@ void V8UnitTest::TestFunction(const std::string& function_name) {
   v8::MicrotasksScope microtasks(
       isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
 
-  v8::Local<v8::Value> function_property = context->Global()->Get(
-      v8::String::NewFromUtf8(isolate, function_name.c_str(),
-                              v8::NewStringType::kInternalized)
-          .ToLocalChecked());
+  v8::Local<v8::Value> function_property =
+      context->Global()
+          ->Get(context,
+                v8::String::NewFromUtf8(isolate, function_name.c_str(),
+                                        v8::NewStringType::kInternalized)
+                    .ToLocalChecked())
+          .ToLocalChecked();
   ASSERT_FALSE(function_property.IsEmpty());
   ASSERT_TRUE(function_property->IsFunction());
   v8::Local<v8::Function> function =
@@ -354,9 +396,12 @@ void V8UnitTest::ChromeSend(const v8::FunctionCallbackInfo<v8::Value>& args) {
   EXPECT_EQ(2U, test_result->Length());
   if (::testing::Test::HasNonfatalFailure())
     return;
-  g_test_result_ok = test_result->Get(0)->BooleanValue(isolate);
+  v8::Local<v8::Context> context = isolate->GetCurrentContext();
+  g_test_result_ok =
+      test_result->Get(context, 0).ToLocalChecked()->BooleanValue(isolate);
   if (!g_test_result_ok) {
-    v8::String::Utf8Value message(isolate, test_result->Get(1));
+    v8::String::Utf8Value message(
+        isolate, test_result->Get(context, 1).ToLocalChecked());
     LOG(ERROR) << *message;
   }
 }

@@ -172,15 +172,14 @@ MCSClient::MCSClient(const std::string& version_string,
       android_id_(0),
       security_token_(0),
       connection_factory_(connection_factory),
-      connection_handler_(NULL),
+      connection_handler_(nullptr),
       last_device_to_server_stream_id_received_(0),
       last_server_to_device_stream_id_received_(0),
       stream_id_out_(0),
       stream_id_in_(0),
       gcm_store_(gcm_store),
       recorder_(recorder),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
 MCSClient::~MCSClient() {
 }
@@ -263,19 +262,20 @@ void MCSClient::Initialize(
   for (std::map<uint64_t, google::protobuf::MessageLite*>::iterator iter =
            ordered_messages.begin();
        iter != ordered_messages.end(); ++iter) {
-    ReliablePacketInfo* packet_info = new ReliablePacketInfo();
+    auto packet_info = std::make_unique<ReliablePacketInfo>();
+    auto* packet_info_ptr = packet_info.get();
     packet_info->protobuf.reset(iter->second);
     packet_info->tag = GetMCSProtoTag(*iter->second);
     packet_info->persistent_id = base::NumberToString(iter->first);
-    to_send_.push_back(make_linked_ptr(packet_info));
+    to_send_.push_back(std::move(packet_info));
 
-    if (packet_info->tag == kDataMessageStanzaTag) {
+    if (packet_info_ptr->tag == kDataMessageStanzaTag) {
       mcs_proto::DataMessageStanza* data_message =
           reinterpret_cast<mcs_proto::DataMessageStanza*>(
-              packet_info->protobuf.get());
+              packet_info_ptr->protobuf.get());
       CollapseKey collapse_key(*data_message);
       if (collapse_key.IsValid())
-        collapse_key_map_[collapse_key] = packet_info;
+        collapse_key_map_[collapse_key] = packet_info_ptr;
     }
   }
 
@@ -369,7 +369,7 @@ void MCSClient::SendMessage(const MCSMessage& message) {
     return;
   }
 
-  to_send_.push_back(make_linked_ptr(packet_info.release()));
+  to_send_.push_back(std::move(packet_info));
 
   // Notify that the messages has been succsfully queued for sending.
   // TODO(jianli): We should report QUEUED after writing to GCM store succeeds.
@@ -462,7 +462,7 @@ void MCSClient::ResetStateAndBuildLoginRequest(
     // Ensure that the custom heartbeat interval is communicated to the server.
     mcs_proto::Setting* setting = request->add_setting();
     setting->set_name(kHeartbeatIntervalSettingName);
-    setting->set_value(base::IntToString(
+    setting->set_value(base::NumberToString(
         heartbeat_manager_.GetClientHeartbeatIntervalMs()));
   }
 
@@ -478,7 +478,7 @@ void MCSClient::ResetStateAndBuildLoginRequest(
   // to RMQ, as all messages that reach this point should already have been
   // saved as necessary.
   while (!to_resend_.empty()) {
-    to_send_.push_front(to_resend_.back());
+    to_send_.push_front(std::move(to_resend_.back()));
     to_resend_.pop_back();
   }
 
@@ -489,7 +489,7 @@ void MCSClient::ResetStateAndBuildLoginRequest(
     MCSPacketInternal packet = PopMessageForSend();
     if (GetTTL(*packet->protobuf) > 0 &&
         !HasTTLExpired(*packet->protobuf, clock_)) {
-      new_to_send.push_back(packet);
+      new_to_send.push_back(std::move(packet));
     } else {
       // If the TTL was 0 there is no persistent id, so no need to remove the
       // message from the persistent store.
@@ -539,6 +539,7 @@ void MCSClient::MaybeSendMessage() {
     return;
 
   MCSPacketInternal packet = PopMessageForSend();
+  ReliablePacketInfo* packet_ptr = packet.get();
   if (HasTTLExpired(*packet->protobuf, clock_)) {
     DCHECK(!packet->persistent_id.empty());
     DVLOG(1) << "Dropping expired message " << packet->persistent_id << ".";
@@ -548,15 +549,14 @@ void MCSClient::MaybeSendMessage() {
         base::Bind(&MCSClient::OnGCMUpdateFinished,
                    weak_ptr_factory_.GetWeakPtr()));
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-            FROM_HERE,
-            base::Bind(&MCSClient::MaybeSendMessage,
-                       weak_ptr_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&MCSClient::MaybeSendMessage,
+                                  weak_ptr_factory_.GetWeakPtr()));
     return;
   }
   DVLOG(1) << "Pending output message found, sending.";
   if (!packet->persistent_id.empty())
-    to_resend_.push_back(packet);
-  SendPacketToWire(packet.get());
+    to_resend_.push_back(std::move(packet));
+  SendPacketToWire(packet_ptr);
 }
 
 void MCSClient::SendPacketToWire(ReliablePacketInfo* packet_info) {
@@ -722,15 +722,14 @@ void MCSClient::HandlePacketFromWire(
 
       // Pass the login response on up.
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(message_received_callback_,
-                                MCSMessage(tag, std::move(protobuf))));
+          FROM_HERE, base::BindOnce(message_received_callback_,
+                                    MCSMessage(tag, std::move(protobuf))));
 
       // If there are pending messages, attempt to send one.
       if (!to_send_.empty()) {
         base::ThreadTaskRunnerHandle::Get()->PostTask(
-            FROM_HERE,
-            base::Bind(&MCSClient::MaybeSendMessage,
-                       weak_ptr_factory_.GetWeakPtr()));
+            FROM_HERE, base::BindOnce(&MCSClient::MaybeSendMessage,
+                                      weak_ptr_factory_.GetWeakPtr()));
       }
 
       heartbeat_manager_.Start(
@@ -792,8 +791,8 @@ void MCSClient::HandlePacketFromWire(
 
       DCHECK(protobuf.get());
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(message_received_callback_,
-                                MCSMessage(tag, std::move(protobuf))));
+          FROM_HERE, base::BindOnce(message_received_callback_,
+                                    MCSMessage(tag, std::move(protobuf))));
       return;
     }
     default:
@@ -895,13 +894,12 @@ void MCSClient::HandleSelectiveAck(const PersistentIdList& id_list) {
   // server.
   DVLOG(1) << "Resending " << to_resend_.size() << " messages.";
   while (!to_resend_.empty()) {
-    to_send_.push_front(to_resend_.back());
+    to_send_.push_front(std::move(to_resend_.back()));
     to_resend_.pop_back();
   }
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&MCSClient::MaybeSendMessage,
-                 weak_ptr_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&MCSClient::MaybeSendMessage,
+                                weak_ptr_factory_.GetWeakPtr()));
 }
 
 void MCSClient::HandleServerConfirmedReceipt(StreamId device_stream_id) {
@@ -925,7 +923,7 @@ void MCSClient::HandleServerConfirmedReceipt(StreamId device_stream_id) {
 }
 
 MCSClient::PersistentId MCSClient::GetNextPersistentId() {
-  return base::Int64ToString(base::TimeTicks::Now().ToInternalValue());
+  return base::NumberToString(base::TimeTicks::Now().ToInternalValue());
 }
 
 void MCSClient::OnConnectionResetByHeartbeat(
@@ -956,7 +954,7 @@ void MCSClient::NotifyMessageSendStatus(
 }
 
 MCSClient::MCSPacketInternal MCSClient::PopMessageForSend() {
-  MCSPacketInternal packet = to_send_.front();
+  MCSPacketInternal packet = std::move(to_send_.front());
   to_send_.pop_front();
 
   if (packet->tag == kDataMessageStanzaTag) {

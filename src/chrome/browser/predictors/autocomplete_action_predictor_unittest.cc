@@ -87,6 +87,24 @@ struct TestUrlInfo {
     AutocompleteActionPredictor::ACTION_NONE }
 };
 
+// List of urls sorted by the confidence score in ascending order.
+TestUrlInfo test_url_confidence_db[] = {
+    {GURL("http://www.testsite.com/g.html"), ASCIIToUTF16("Test"), 1,
+     ASCIIToUTF16("test"), 0, 2, AutocompleteActionPredictor::ACTION_NONE},
+    {GURL("http://www.testsite.com/f.html"), ASCIIToUTF16("Test"), 1,
+     ASCIIToUTF16("test"), 1, 2, AutocompleteActionPredictor::ACTION_NONE},
+    {GURL("http://www.testsite.com/e.html"), ASCIIToUTF16("Test"), 1,
+     ASCIIToUTF16("test"), 2, 2, AutocompleteActionPredictor::ACTION_NONE},
+    {GURL("http://www.testsite.com/d.html"), ASCIIToUTF16("Test"), 1,
+     ASCIIToUTF16("test"), 3, 3, AutocompleteActionPredictor::ACTION_NONE},
+    {GURL("http://www.testsite.com/c.html"), ASCIIToUTF16("Test"), 1,
+     ASCIIToUTF16("test"), 3, 2, AutocompleteActionPredictor::ACTION_NONE},
+    {GURL("http://www.testsite.com/b.html"), ASCIIToUTF16("Test"), 1,
+     ASCIIToUTF16("test"), 3, 0, AutocompleteActionPredictor::ACTION_NONE},
+    {GURL("http://www.testsite.com/a.html"), ASCIIToUTF16("Test"), 1,
+     ASCIIToUTF16("test"), 5, 0, AutocompleteActionPredictor::ACTION_NONE},
+};
+
 GURL GenerateTestURL(size_t size) {
   std::string prefix = "http://b/";
   // Cannot generate an URL shorter than |prefix|.
@@ -260,6 +278,12 @@ class AutocompleteActionPredictorTest : public testing::Test {
     predictor_->DeleteOldIdsFromCaches(url_db, id_list);
   }
 
+  void DeleteLowestConfidenceRowsFromCaches(
+      size_t count,
+      std::vector<AutocompleteActionPredictorTable::Row::Id>* id_list) {
+    predictor_->DeleteLowestConfidenceRowsFromCaches(count, id_list);
+  }
+
   AutocompleteActionPredictor* predictor() { return predictor_.get(); }
 
   DBCacheMap* db_cache() { return &predictor_->db_cache_; }
@@ -415,6 +439,53 @@ TEST_F(AutocompleteActionPredictorTest, DeleteOldIdsFromCaches) {
     bool in_expected = base::ContainsValue(expected, *it);
     bool in_list = base::ContainsValue(id_list, *it);
     EXPECT_EQ(in_expected, in_list);
+  }
+}
+
+TEST_F(AutocompleteActionPredictorTest,
+       DeleteLowestConfidenceRowsFromCaches_OneByOne) {
+  std::vector<AutocompleteActionPredictorTable::Row::Id> test_url_ids;
+  for (const auto& info : test_url_confidence_db)
+    test_url_ids.push_back(AddRow(info));
+
+  std::vector<AutocompleteActionPredictorTable::Row::Id> id_list;
+  std::vector<AutocompleteActionPredictorTable::Row::Id> expected;
+
+  for (size_t i = 0; i < base::size(test_url_confidence_db); ++i) {
+    DeleteLowestConfidenceRowsFromCaches(1, &id_list);
+    expected.push_back(test_url_ids[i]);
+    EXPECT_THAT(id_list, ::testing::UnorderedElementsAreArray(expected));
+
+    DBCacheKey deleted_key = {test_url_confidence_db[i].user_text,
+                              test_url_confidence_db[i].url};
+    EXPECT_FALSE(base::ContainsKey(*db_cache(), deleted_key));
+    EXPECT_FALSE(base::ContainsKey(*db_id_cache(), deleted_key));
+  }
+}
+
+TEST_F(AutocompleteActionPredictorTest,
+       DeleteLowestConfidenceRowsFromCaches_Bulk) {
+  std::vector<AutocompleteActionPredictorTable::Row::Id> test_url_ids;
+  for (const auto& info : test_url_confidence_db)
+    test_url_ids.push_back(AddRow(info));
+
+  std::vector<AutocompleteActionPredictorTable::Row::Id> id_list;
+  std::vector<AutocompleteActionPredictorTable::Row::Id> expected;
+
+  const size_t count_to_remove = 4;
+  CHECK_LT(count_to_remove, base::size(test_url_confidence_db));
+
+  for (size_t i = 0; i < count_to_remove; ++i)
+    expected.push_back(test_url_ids[i]);
+
+  DeleteLowestConfidenceRowsFromCaches(count_to_remove, &id_list);
+  ASSERT_THAT(id_list, ::testing::UnorderedElementsAreArray(expected));
+
+  for (size_t i = 0; i < count_to_remove; ++i) {
+    DBCacheKey deleted_key = {test_url_confidence_db[i].user_text,
+                              test_url_confidence_db[i].url};
+    EXPECT_FALSE(base::ContainsKey(*db_cache(), deleted_key));
+    EXPECT_FALSE(base::ContainsKey(*db_id_cache(), deleted_key));
   }
 }
 

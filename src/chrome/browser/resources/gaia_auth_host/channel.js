@@ -66,7 +66,7 @@ Channel.prototype = {
    * the replied object. Useful for message that expects a returned result.
    */
   sendWithCallback: function(msg, callback) {
-    var requestId = this.nextInternalRequestId_++;
+    const requestId = this.nextInternalRequestId_++;
     this.internalRequestCallbacks_[requestId] = callback;
     this.send({
       name: Channel.INTERNAL_REQUEST_MESSAGE,
@@ -80,9 +80,10 @@ Channel.prototype = {
    * @return {*} The return value of the message callback or null.
    */
   invokeMessageCallbacks_: function(msg) {
-    var name = msg.name;
-    if (this.messageCallbacks_[name])
+    const name = msg.name;
+    if (this.messageCallbacks_[name]) {
       return this.messageCallbacks_[name](msg);
+    }
 
     console.error('Error: Unexpected message, name=' + name);
     return null;
@@ -92,20 +93,21 @@ Channel.prototype = {
    * Invoked when a message is received.
    */
   onMessage_: function(msg) {
-    var name = msg.name;
+    const name = msg.name;
     if (name == Channel.INTERNAL_REQUEST_MESSAGE) {
-      var payload = msg.payload;
-      var result = this.invokeMessageCallbacks_(payload);
+      const payload = msg.payload;
+      const result = this.invokeMessageCallbacks_(payload);
       this.send({
         name: Channel.INTERNAL_REPLY_MESSAGE,
         requestId: msg.requestId,
         result: result
       });
     } else if (name == Channel.INTERNAL_REPLY_MESSAGE) {
-      var callback = this.internalRequestCallbacks_[msg.requestId];
+      const callback = this.internalRequestCallbacks_[msg.requestId];
       delete this.internalRequestCallbacks_[msg.requestId];
-      if (callback)
+      if (callback) {
         callback(msg.result);
+      }
     } else {
       this.invokeMessageCallbacks_(msg);
     }

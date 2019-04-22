@@ -14,8 +14,8 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -24,6 +24,7 @@
 #include "ui/base/layout.h"
 #include "ui/base/resource/data_pack.h"
 #include "ui/base/resource/data_pack_literal.h"
+#include "ui/base/resource/mock_resource_bundle_delegate.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/image/image_skia.h"
@@ -37,6 +38,7 @@ using ::testing::Between;
 using ::testing::Property;
 using ::testing::Return;
 using ::testing::ReturnArg;
+using ::testing::SetArgPointee;
 
 namespace ui {
 namespace {
@@ -51,48 +53,14 @@ const unsigned char kPngScaleChunk[12] = { 0x00, 0x00, 0x00, 0x00,
                                            'c', 's', 'C', 'l',
                                            0xc1, 0x30, 0x60, 0x4d };
 
-// Mock for the ResourceBundle::Delegate class.
-class MockResourceBundleDelegate : public ui::ResourceBundle::Delegate {
- public:
-  MockResourceBundleDelegate() {
-  }
-  ~MockResourceBundleDelegate() override {
-  }
-
-  MOCK_METHOD2(GetPathForResourcePack, base::FilePath(
-      const base::FilePath& pack_path, ui::ScaleFactor scale_factor));
-  MOCK_METHOD2(GetPathForLocalePack, base::FilePath(
-      const base::FilePath& pack_path, const std::string& locale));
-  MOCK_METHOD1(GetImageNamed, gfx::Image(int resource_id));
-  MOCK_METHOD1(GetNativeImageNamed, gfx::Image(int resource_id));
-  MOCK_METHOD2(LoadDataResourceBytes,
-      base::RefCountedMemory*(int resource_id, ui::ScaleFactor scale_factor));
-  MOCK_METHOD2(GetRawDataResourceMock, base::StringPiece(
-      int resource_id,
-      ui::ScaleFactor scale_factor));
-  bool GetRawDataResource(int resource_id,
-                          ui::ScaleFactor scale_factor,
-                          base::StringPiece* value) override {
-    *value = GetRawDataResourceMock(resource_id, scale_factor);
-    return true;
-  }
-  MOCK_METHOD1(GetLocalizedStringMock, base::string16(int message_id));
-  bool GetLocalizedString(int message_id,
-                          base::string16* value) override {
-    *value = GetLocalizedStringMock(message_id);
-    return true;
-  }
-};
-
 // Returns |bitmap_data| with |custom_chunk| inserted after the IHDR chunk.
 void AddCustomChunk(const base::StringPiece& custom_chunk,
                     std::vector<unsigned char>* bitmap_data) {
-  EXPECT_LT(arraysize(kPngMagic) + kPngChunkMetadataSize, bitmap_data->size());
-  EXPECT_TRUE(std::equal(
-      bitmap_data->begin(),
-      bitmap_data->begin() + arraysize(kPngMagic),
-      kPngMagic));
-  auto ihdr_start = bitmap_data->begin() + arraysize(kPngMagic);
+  EXPECT_LT(base::size(kPngMagic) + kPngChunkMetadataSize, bitmap_data->size());
+  EXPECT_TRUE(std::equal(bitmap_data->begin(),
+                         bitmap_data->begin() + base::size(kPngMagic),
+                         kPngMagic));
+  auto ihdr_start = bitmap_data->begin() + base::size(kPngMagic);
   char ihdr_length_data[sizeof(uint32_t)];
   for (size_t i = 0; i < sizeof(uint32_t); ++i)
     ihdr_length_data[i] = *(ihdr_start + i);
@@ -268,10 +236,10 @@ TEST_F(ResourceBundleTest, DelegateGetRawDataResource) {
 
   int resource_id = 5;
 
-  EXPECT_CALL(delegate, GetRawDataResourceMock(
-          resource_id, ui::SCALE_FACTOR_NONE))
+  EXPECT_CALL(delegate,
+              GetRawDataResource(resource_id, ui::SCALE_FACTOR_NONE, _))
       .Times(1)
-      .WillOnce(Return(string_piece));
+      .WillOnce(DoAll(SetArgPointee<2>(string_piece), Return(true)));
 
   base::StringPiece result = resource_bundle->GetRawDataResource(
       resource_id);
@@ -285,9 +253,9 @@ TEST_F(ResourceBundleTest, DelegateGetLocalizedString) {
   base::string16 data = base::ASCIIToUTF16("My test data");
   int resource_id = 5;
 
-  EXPECT_CALL(delegate, GetLocalizedStringMock(resource_id))
+  EXPECT_CALL(delegate, GetLocalizedString(resource_id, _))
       .Times(1)
-      .WillOnce(Return(data));
+      .WillOnce(DoAll(SetArgPointee<1>(data), Return(true)));
 
   base::string16 result = resource_bundle->GetLocalizedString(resource_id);
   EXPECT_EQ(data, result);
@@ -330,8 +298,9 @@ TEST_F(ResourceBundleTest, DelegateGetLocalizedStringWithOverride) {
   base::string16 delegate_data = base::ASCIIToUTF16("My delegate data");
   int resource_id = 5;
 
-  EXPECT_CALL(delegate, GetLocalizedStringMock(resource_id)).Times(1).WillOnce(
-      Return(delegate_data));
+  EXPECT_CALL(delegate, GetLocalizedString(resource_id, _))
+      .Times(1)
+      .WillOnce(DoAll(SetArgPointee<1>(delegate_data), Return(true)));
 
   base::string16 override_data = base::ASCIIToUTF16("My override data");
 
@@ -516,9 +485,10 @@ TEST_F(ResourceBundleImageTest, GetImageNamedFallback1x) {
   CreateDataPackWithSingleBitmap(data_path, 10, base::StringPiece());
   // 2x data pack bitmap has custom chunk to indicate that the 2x bitmap is not
   // available and that GRIT fell back to 1x.
-  CreateDataPackWithSingleBitmap(data_2x_path, 10, base::StringPiece(
-      reinterpret_cast<const char*>(kPngScaleChunk),
-      arraysize(kPngScaleChunk)));
+  CreateDataPackWithSingleBitmap(
+      data_2x_path, 10,
+      base::StringPiece(reinterpret_cast<const char*>(kPngScaleChunk),
+                        base::size(kPngScaleChunk)));
 
   // Load the regular and 2x pak files.
   ResourceBundle* resource_bundle = CreateResourceBundleWithEmptyLocalePak();
@@ -554,12 +524,14 @@ TEST_F(ResourceBundleImageTest, GetImageNamedFallback1xRounding) {
 
   CreateDataPackWithSingleBitmap(data_path, 8, base::StringPiece());
   // Mark 140% and 180% images as requiring 1x fallback.
-  CreateDataPackWithSingleBitmap(data_140P_path, 8, base::StringPiece(
-    reinterpret_cast<const char*>(kPngScaleChunk),
-    arraysize(kPngScaleChunk)));
-  CreateDataPackWithSingleBitmap(data_180P_path, 8, base::StringPiece(
-    reinterpret_cast<const char*>(kPngScaleChunk),
-    arraysize(kPngScaleChunk)));
+  CreateDataPackWithSingleBitmap(
+      data_140P_path, 8,
+      base::StringPiece(reinterpret_cast<const char*>(kPngScaleChunk),
+                        base::size(kPngScaleChunk)));
+  CreateDataPackWithSingleBitmap(
+      data_180P_path, 8,
+      base::StringPiece(reinterpret_cast<const char*>(kPngScaleChunk),
+                        base::size(kPngScaleChunk)));
 
   ResourceBundle* resource_bundle = CreateResourceBundleWithEmptyLocalePak();
   resource_bundle->AddDataPackFromPath(data_path, SCALE_FACTOR_100P);

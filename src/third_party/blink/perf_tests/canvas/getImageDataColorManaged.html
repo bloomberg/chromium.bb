@@ -48,7 +48,7 @@ function writeArray(array, accessLocations, arrayName) {
 }
 
 function ImageData_data_AccessTime() {
-    imageDataU8 = ctx.createImageData(dataU8, 1000, 1000, {colorSpace: "srgb"});
+    imageData = ctx.createImageData(dataU8, 1000, 1000, {colorSpace: "srgb"});
     readArray(imageData.data, accessLocations);
     writeArray(imageData.data, accessLocations);
 }
@@ -83,10 +83,3 @@ PerfTestRunner.measureRunsPerSecond({run: ImageData_dataUnionF32_AccessTime, des
 </script>
 </body>
 </html>
-
-
-test(() => {
-  runTest();
-}, "Test ImageData.dataUnion access time");
-</script>
-</body>

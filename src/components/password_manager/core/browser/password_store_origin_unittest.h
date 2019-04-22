@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
@@ -58,7 +59,7 @@ class PasswordStoreOriginTest : public testing::Test {
   T delegate_;
 };
 
-TYPED_TEST_CASE_P(PasswordStoreOriginTest);
+TYPED_TEST_SUITE_P(PasswordStoreOriginTest);
 
 TYPED_TEST_P(PasswordStoreOriginTest,
              RemoveLoginsByURLAndTimeImpl_AllFittingOriginAndTime) {
@@ -161,7 +162,7 @@ TYPED_TEST_P(PasswordStoreOriginTest,
   this->delegate_.store()->RemoveObserver(&observer);
 }
 
-REGISTER_TYPED_TEST_CASE_P(
+REGISTER_TYPED_TEST_SUITE_P(
     PasswordStoreOriginTest,
     RemoveLoginsByURLAndTimeImpl_AllFittingOriginAndTime,
     RemoveLoginsByURLAndTimeImpl_SomeFittingOriginAndTime,

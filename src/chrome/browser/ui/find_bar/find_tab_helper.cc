@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/strings/string_util.h"
@@ -115,6 +116,7 @@ void FindTabHelper::StopFinding(
       previous_find_text_ = find_text_;
   }
   find_text_.clear();
+  last_completed_find_text_.clear();
   find_op_aborted_ = true;
   last_search_result_ = FindNotificationDetails();
 
@@ -185,3 +187,5 @@ void FindTabHelper::HandleFindReply(int request_id,
         content::Details<FindNotificationDetails>(&last_search_result_));
   }
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(FindTabHelper)

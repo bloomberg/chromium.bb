@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "extensions/browser/extension_registry.h"
@@ -32,7 +32,7 @@ const Extension* GetTerminalExtension(Profile* profile) {
 
   const ExtensionSet& extensions =
       ExtensionRegistry::Get(profile)->enabled_extensions();
-  for (size_t i = 0; i < arraysize(kPossibleAppIds); ++i) {
+  for (size_t i = 0; i < base::size(kPossibleAppIds); ++i) {
     const extensions::Extension* extension =
         extensions.GetByID(kPossibleAppIds[i]);
     if (extension)

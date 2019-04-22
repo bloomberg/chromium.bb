@@ -6,19 +6,48 @@
 #define CHROME_BROWSER_BADGING_BADGE_SERVICE_IMPL_H_
 
 #include "base/optional.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
-#include "third_party/blink/public/platform/modules/badging/badging.mojom.h"
+#include "content/public/browser/frame_service_base.h"
+#include "third_party/blink/public/mojom/badging/badging.mojom.h"
 
-class BadgeServiceImpl : public blink::mojom::BadgeService {
+namespace content {
+class RenderFrameHost;
+class BrowserContext;
+class WebContents;
+}  // namespace content
+
+namespace extensions {
+class Extension;
+}
+
+namespace badging {
+class BadgeManager;
+}
+
+// Desktop implementation of the BadgeService mojo service.
+class BadgeServiceImpl
+    : public content::FrameServiceBase<blink::mojom::BadgeService> {
  public:
-  BadgeServiceImpl();
-  ~BadgeServiceImpl() override;
-
-  static void Create(mojo::InterfaceRequest<BadgeService> request);
+  static void Create(blink::mojom::BadgeServiceRequest request,
+                     content::RenderFrameHost* render_frame_host);
 
   // blink::mojom::BadgeService overrides.
-  void SetBadge() override;
+  void SetInteger(uint64_t content) override;
+  void SetFlag() override;
   void ClearBadge() override;
+
+ private:
+  BadgeServiceImpl(content::RenderFrameHost* render_frame_host,
+                   blink::mojom::BadgeServiceRequest request);
+  ~BadgeServiceImpl() override;
+
+  void SetBadge(base::Optional<uint64_t> content);
+  const extensions::Extension* ExtensionFromLastUrl();
+  bool IsInApp();
+
+  content::RenderFrameHost* render_frame_host_;
+  content::BrowserContext* browser_context_;
+  content::WebContents* web_contents_;
+  badging::BadgeManager* badge_manager_;
 };
 
 #endif  // CHROME_BROWSER_BADGING_BADGE_SERVICE_IMPL_H_

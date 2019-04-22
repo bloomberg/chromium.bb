@@ -4,6 +4,8 @@
 
 #include "components/domain_reliability/quic_error_mapping.h"
 
+#include "base/stl_util.h"
+
 namespace domain_reliability {
 
 namespace {
@@ -263,9 +265,6 @@ const struct QuicErrorMapping {
     {quic::QUIC_DECOMPRESSION_FAILURE, "quic.decompression_failure"},
     // Receive a RST_STREAM with offset larger than kMaxStreamLength.
     {quic::QUIC_STREAM_LENGTH_OVERFLOW, "quic.stream_length_overflow"},
-    // APPLICATION_CLOSE frame data is malformed.
-    {quic::QUIC_INVALID_APPLICATION_CLOSE_DATA,
-     "quic.invalid.application_close_data"},
     // Received a MAX DATA frame with errors.
     {quic::QUIC_INVALID_MAX_DATA_FRAME_DATA,
      "quic.invalid.max_data_frame_data"},
@@ -301,17 +300,25 @@ const struct QuicErrorMapping {
     {quic::QUIC_STREAM_ID_BLOCKED_ERROR,
      "quic.stream.id.in.stream_id_blocked.frame"},
     {quic::QUIC_MAX_STREAM_ID_ERROR, "quic.stream.id.in.max_stream_id.frame"},
+    {quic::QUIC_HTTP_DECODER_ERROR, "quic.http.decoder.error"},
+    {quic::QUIC_STALE_CONNECTION_CANCELLED, "quic.stale.connection.cancelled"},
+    {quic::QUIC_IETF_GQUIC_ERROR_MISSING, "quic.ietf.gquic.error_missing"},
+    // QUIC_INVALID_APPLICATION_CLOSE_DATA was code 101. The code has been
+    // deprecated, but to keep the assert below happy, there needs to be
+    // an entry for it, but the symbol is gone.
+    {static_cast<quic::QuicErrorCode>(101),
+     "quic.invalid.application_close_data"},
 
     // No error. Used as bound while iterating.
     {quic::QUIC_LAST_ERROR, "quic.last_error"}};
 
 // Must be updated any time a quic::QuicErrorCode is deprecated in
-// net/quic/core/quic_packets.h.
+// net/third_party/quiche/src/quic/core/quic_error_codes.h.
 const int kDeprecatedQuicErrorCount = 5;
 const int kActiveQuicErrorCount =
     quic::QUIC_LAST_ERROR - kDeprecatedQuicErrorCount;
 
-static_assert(arraysize(kQuicErrorMap) == kActiveQuicErrorCount,
+static_assert(base::size(kQuicErrorMap) == kActiveQuicErrorCount,
               "quic_error_map is not in sync with quic protocol!");
 
 }  // namespace
@@ -322,7 +329,7 @@ bool GetDomainReliabilityBeaconQuicError(quic::QuicErrorCode quic_error,
   if (quic_error != quic::QUIC_NO_ERROR) {
     // Convert a QUIC error.
     // TODO(juliatuttle): Consider sorting and using binary search?
-    for (size_t i = 0; i < arraysize(kQuicErrorMap); i++) {
+    for (size_t i = 0; i < base::size(kQuicErrorMap); i++) {
       if (kQuicErrorMap[i].quic_error == quic_error) {
         *beacon_quic_error_out = kQuicErrorMap[i].beacon_quic_error;
         return true;

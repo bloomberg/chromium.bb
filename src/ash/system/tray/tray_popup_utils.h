@@ -21,7 +21,6 @@ class InkDrop;
 class InkDropRipple;
 class InkDropHighlight;
 class InkDropHostView;
-class InkDropMask;
 class Label;
 class LabelButton;
 class Painter;
@@ -177,12 +176,9 @@ class TrayPopupUtils {
       const views::View* host,
       SkColor color = kTrayPopupInkDropBaseColor);
 
-  // Creates in InkDropMask instance for |host| according to the
-  // |ink_drop_style|. May return null.
-  //
-  // All targetable views in the system menu should delegate
-  // InkDropHost::CreateInkDropMask() calls here.
-  static std::unique_ptr<views::InkDropMask> CreateInkDropMask(
+  // Creates a SkPath matching the TrayPopupInkDropStyle. This path is normally
+  // used to generate the focus ring and ink drop shapes.
+  static std::unique_ptr<SkPath> CreateHighlightPath(
       TrayPopupInkDropStyle ink_drop_style,
       const views::View* host);
 

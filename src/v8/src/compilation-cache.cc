@@ -7,6 +7,7 @@
 #include "src/counters.h"
 #include "src/globals.h"
 #include "src/heap/factory.h"
+#include "src/log.h"
 #include "src/objects-inl.h"
 #include "src/objects/compilation-cache-inl.h"
 #include "src/objects/slots.h"
@@ -69,12 +70,13 @@ void CompilationSubCache::Age() {
 
 void CompilationSubCache::Iterate(RootVisitor* v) {
   v->VisitRootPointers(Root::kCompilationCache, nullptr,
-                       ObjectSlot(&tables_[0]),
-                       ObjectSlot(&tables_[generations_]));
+                       FullObjectSlot(&tables_[0]),
+                       FullObjectSlot(&tables_[generations_]));
 }
 
 void CompilationSubCache::Clear() {
-  MemsetPointer(tables_, ReadOnlyRoots(isolate()).undefined_value(),
+  MemsetPointer(reinterpret_cast<Address*>(tables_),
+                ReadOnlyRoots(isolate()).undefined_value()->ptr(),
                 generations_);
 }
 

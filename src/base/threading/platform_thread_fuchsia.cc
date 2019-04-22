@@ -37,9 +37,7 @@ bool PlatformThread::CanIncreaseThreadPriority(ThreadPriority priority) {
 
 // static
 void PlatformThread::SetCurrentThreadPriorityImpl(ThreadPriority priority) {
-  if (priority != ThreadPriority::NORMAL) {
-    NOTIMPLEMENTED() << "setting ThreadPriority " << static_cast<int>(priority);
-  }
+  // TODO(https://crbug.com/926583): Fuchsia does not currently support this.
 }
 
 // static

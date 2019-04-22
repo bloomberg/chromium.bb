@@ -8,18 +8,17 @@
 
 #include "src/assembler-inl.h"
 #include "src/base/bits.h"
-#include "src/code-stubs.h"
 #include "src/log.h"
 #include "src/macro-assembler.h"
 #include "src/regexp/regexp-macro-assembler.h"
 #include "src/regexp/regexp-stack.h"
+#include "src/snapshot/embedded-data.h"
 #include "src/regexp/s390/regexp-macro-assembler-s390.h"
 #include "src/unicode.h"
 
 namespace v8 {
 namespace internal {
 
-#ifndef V8_INTERPRETED_REGEXP
 /*
  * This assembler uses the following register assignment convention
  * - r6: Temporarily stores the index of capture start after a matching pass
@@ -93,12 +92,14 @@ namespace internal {
 
 #define __ ACCESS_MASM(masm_)
 
+const int RegExpMacroAssemblerS390::kRegExpCodeSize;
+
 RegExpMacroAssemblerS390::RegExpMacroAssemblerS390(Isolate* isolate, Zone* zone,
                                                    Mode mode,
                                                    int registers_to_save)
     : NativeRegExpMacroAssembler(isolate, zone),
-      masm_(new MacroAssembler(isolate, nullptr, kRegExpCodeSize,
-                               CodeObjectRequired::kYes)),
+      masm_(new MacroAssembler(isolate, CodeObjectRequired::kYes,
+                               NewAssemblerBuffer(kRegExpCodeSize))),
       mode_(mode),
       num_registers_(registers_to_save),
       num_saved_registers_(registers_to_save),
@@ -355,7 +356,6 @@ void RegExpMacroAssemblerS390::CheckNotBackReference(int start_reg,
                                                      bool read_backward,
                                                      Label* on_no_match) {
   Label fallthrough;
-  Label success;
 
   // Find length of back-referenced capture.
   __ LoadP(r2, register_location(start_reg));
@@ -901,7 +901,6 @@ Handle<HeapObject> RegExpMacroAssemblerS390::GetCode(Handle<String> source) {
   if (stack_overflow_label_.is_linked()) {
     SafeCallTarget(&stack_overflow_label_);
     // Reached if the backtrack-stack limit has been hit.
-    Label grow_failed;
 
     // Call GrowStack(backtrack_stackpointer(), &stack_base)
     static const int num_arguments = 3;
@@ -1071,7 +1070,10 @@ void RegExpMacroAssemblerS390::WriteStackPointerToRegister(int reg) {
 // Private methods:
 
 void RegExpMacroAssemblerS390::CallCheckStackGuardState(Register scratch) {
-  static const int num_arguments = 3;
+  DCHECK(!isolate()->IsGeneratingEmbeddedBuiltins());
+  DCHECK(!masm_->options().isolate_independent_code);
+
+  static constexpr int num_arguments = 3;
   __ PrepareCallCFunction(num_arguments, scratch);
   // RegExp code frame pointer.
   __ LoadRR(r4, frame_pointer());
@@ -1081,7 +1083,17 @@ void RegExpMacroAssemblerS390::CallCheckStackGuardState(Register scratch) {
   __ lay(r2, MemOperand(sp, kStackFrameRASlot * kPointerSize));
   ExternalReference stack_guard_check =
       ExternalReference::re_check_stack_guard_state(isolate());
-  CallCFunctionUsingStub(stack_guard_check, num_arguments);
+
+  __ mov(ip, Operand(stack_guard_check));
+  __ StoreReturnAddressAndCall(ip);
+
+  if (base::OS::ActivationFrameAlignment() > kPointerSize) {
+    __ LoadP(sp, MemOperand(sp, (kNumRequiredStackFrameSlots * kPointerSize)));
+  } else {
+    __ la(sp, MemOperand(sp, (kNumRequiredStackFrameSlots * kPointerSize)));
+  }
+
+  __ mov(code_pointer(), Operand(masm_->CodeObject()));
 }
 
 // Helper function for reading a value out of a stack frame.
@@ -1103,7 +1115,7 @@ static T* frame_entry_address(Address re_frame, int frame_offset) {
 int RegExpMacroAssemblerS390::CheckStackGuardState(Address* return_address,
                                                    Address raw_code,
                                                    Address re_frame) {
-  Code re_code = Code::cast(ObjectPtr(raw_code));
+  Code re_code = Code::cast(Object(raw_code));
   return NativeRegExpMacroAssembler::CheckStackGuardState(
       frame_entry<Isolate*>(re_frame, kIsolate),
       frame_entry<intptr_t>(re_frame, kStartIndex),
@@ -1278,7 +1290,6 @@ void RegExpMacroAssemblerS390::LoadCurrentCharacterUnchecked(int cp_offset,
 
 #undef __
 
-#endif  // V8_INTERPRETED_REGEXP
 }  // namespace internal
 }  // namespace v8
 

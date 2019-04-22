@@ -73,7 +73,7 @@ ExternalPopupMenu::ExternalPopupMenu(LocalFrame& frame,
 
 ExternalPopupMenu::~ExternalPopupMenu() = default;
 
-void ExternalPopupMenu::Trace(blink::Visitor* visitor) {
+void ExternalPopupMenu::Trace(Visitor* visitor) {
   visitor->Trace(owner_element_);
   visitor->Trace(local_frame_);
   PopupMenu::Trace(visitor);
@@ -213,7 +213,7 @@ void ExternalPopupMenu::DidAcceptIndices(const WebVector<int>& indices) {
   HTMLSelectElement* owner_element = owner_element_;
   owner_element->PopupDidHide();
 
-  if (indices.size() == 0) {
+  if (indices.empty()) {
     owner_element->SelectOptionByPopup(-1);
   } else if (!owner_element->IsMultiple()) {
     owner_element->SelectOptionByPopup(

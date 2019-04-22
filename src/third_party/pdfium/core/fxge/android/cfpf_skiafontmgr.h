@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "core/fxcrt/fx_string.h"
-#include "core/fxge/fx_font.h"
+#include "core/fxge/fx_freetype.h"
 
 class CFPF_SkiaFont;
 class CFPF_SkiaPathFont;
@@ -23,12 +23,12 @@ class CFPF_SkiaFontMgr {
   ~CFPF_SkiaFontMgr();
 
   void LoadSystemFonts();
-  CFPF_SkiaFont* CreateFont(const ByteStringView& bsFamilyname,
+  CFPF_SkiaFont* CreateFont(ByteStringView bsFamilyname,
                             uint8_t uCharset,
                             uint32_t dwStyle);
 
   bool InitFTLibrary();
-  FXFT_Face GetFontFace(const ByteStringView& bsFile, int32_t iFaceIndex);
+  FXFT_Face GetFontFace(ByteStringView bsFile, int32_t iFaceIndex);
 
  private:
   void ScanPath(const ByteString& path);

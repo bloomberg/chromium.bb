@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 
 #include <list>
+#include <utility>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/profiles/profile.h"
@@ -17,12 +19,10 @@
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/metrics/metrics_pref_names.h"
-#include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
-#include "components/prefs/testing_pref_service.h"
 #include "components/safe_browsing/browser/threat_details.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/features.h"
 #include "components/security_interstitials/content/security_interstitial_controller_client.h"
 #include "components/security_interstitials/core/safe_browsing_quiet_error_ui.h"
 #include "components/signin/core/browser/signin_buildflags.h"
@@ -107,9 +107,9 @@ class TestSafeBrowsingBlockingPageFactory
       const GURL& main_frame_url,
       const SafeBrowsingBlockingPage::UnsafeResourceList& unsafe_resources)
       override {
-    Profile* profile =
-        Profile::FromBrowserContext(web_contents->GetBrowserContext());
-    PrefService* prefs = profile->GetPrefs();
+    PrefService* prefs =
+        Profile::FromBrowserContext(web_contents->GetBrowserContext())
+            ->GetPrefs();
     bool is_extended_reporting_opt_in_allowed =
         prefs->GetBoolean(prefs::kSafeBrowsingExtendedReportingOptInAllowed);
     bool is_proceed_anyway_disabled =
@@ -127,14 +127,6 @@ class TestSafeBrowsingBlockingPageFactory
                                             main_frame_url, unsafe_resources,
                                             display_options);
   }
-};
-
-class MockTestingProfile : public TestingProfile {
- public:
-  MockTestingProfile() {}
-  ~MockTestingProfile() override {}
-
-  MOCK_CONST_METHOD0(IsOffTheRecord, bool());
 };
 
 class TestSafeBrowsingBlockingPageQuiet : public SafeBrowsingBlockingPage {
@@ -190,9 +182,9 @@ class TestSafeBrowsingBlockingQuietPageFactory
       const GURL& main_frame_url,
       const SafeBrowsingBlockingPage::UnsafeResourceList& unsafe_resources)
       override {
-    Profile* profile =
-        Profile::FromBrowserContext(web_contents->GetBrowserContext());
-    PrefService* prefs = profile->GetPrefs();
+    PrefService* prefs =
+        Profile::FromBrowserContext(web_contents->GetBrowserContext())
+            ->GetPrefs();
     bool is_extended_reporting_opt_in_allowed =
         prefs->GetBoolean(prefs::kSafeBrowsingExtendedReportingOptInAllowed);
     bool is_proceed_anyway_disabled =
@@ -214,7 +206,11 @@ class TestSafeBrowsingBlockingQuietPageFactory
 
 }  // namespace
 
-class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
+// TODO(crbug.com/940567, carlosil): With committed interstitials, these tests
+// will have to be implemented as browser tests, once that is done they should
+// be deleted from here.
+class SafeBrowsingBlockingPageTestBase
+    : public ChromeRenderViewHostTestHarness {
  public:
   // The decision the user made.
   enum UserResponse {
@@ -223,8 +219,9 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
     CANCEL
   };
 
-  SafeBrowsingBlockingPageTest()
-      : scoped_testing_local_state_(TestingBrowserProcess::GetGlobal()) {
+  explicit SafeBrowsingBlockingPageTestBase(bool is_incognito)
+      : scoped_testing_local_state_(TestingBrowserProcess::GetGlobal()),
+        is_incognito_(is_incognito) {
     ResetUserResponse();
     // The safe browsing UI manager does not need a service for this test.
     ui_manager_ = new TestSafeBrowsingUIManager(NULL);
@@ -232,6 +229,13 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
+
+    if (is_incognito_) {
+      auto incognito_web_contents =
+          content::WebContentsTester::CreateTestWebContents(
+              profile()->GetOffTheRecordProfile(), nullptr);
+      SetContents(std::move(incognito_web_contents));
+    }
 
     system_request_context_getter_ =
         base::MakeRefCounted<net::TestURLRequestContextGetter>(
@@ -257,7 +261,11 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
         Profile::FromBrowserContext(web_contents()->GetBrowserContext());
     safe_browsing_service->AddPrefService(profile->GetPrefs());
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-    test_event_router_ = extensions::CreateAndUseTestEventRouter(profile);
+    // EventRouterFactory redirects incognito context to original profile.
+    test_event_router_ =
+        extensions::CreateAndUseTestEventRouter(profile->GetOriginalProfile());
+    DCHECK(test_event_router_);
+
     extensions::SafeBrowsingPrivateEventRouterFactory::GetInstance()
         ->SetTestingFactory(
             profile, base::BindRepeating(&BuildSafeBrowsingPrivateEventRouter));
@@ -277,19 +285,6 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
     // Clean up singleton reference (crbug.com/110594).
     ThreatDetails::RegisterFactory(NULL);
     ChromeRenderViewHostTestHarness::TearDown();
-  }
-
-  content::BrowserContext* CreateBrowserContext() override {
-    // Set custom profile object so that we can mock calls to IsOffTheRecord.
-    // This needs to happen before we call the parent SetUp() function.  We use
-    // a nice mock because other parts of the code are calling IsOffTheRecord.
-    mock_profile_ = new testing::NiceMock<MockTestingProfile>();
-    return mock_profile_;
-  }
-
-  void SetProfileOffTheRecord() {
-    EXPECT_CALL(*mock_profile_, IsOffTheRecord())
-          .WillRepeatedly(testing::Return(true));
   }
 
   void OnBlockingPageComplete(bool proceed) {
@@ -351,9 +346,6 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
   scoped_refptr<TestSafeBrowsingUIManager> ui_manager_;
   scoped_refptr<net::URLRequestContextGetter> system_request_context_getter_;
 
-  // Owned by TestSafeBrowsingBlockingPage.
-  MockTestingProfile* mock_profile_;
-
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   extensions::TestEventRouter* test_event_router_;
   std::unique_ptr<TestExtensionEventObserver> observer_;
@@ -365,7 +357,7 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
                     const GURL& url,
                     SBThreatType type) {
     resource->callback =
-        base::Bind(&SafeBrowsingBlockingPageTest::OnBlockingPageComplete,
+        base::Bind(&SafeBrowsingBlockingPageTestBase::OnBlockingPageComplete,
                    base::Unretained(this));
     resource->callback_thread = base::CreateSingleThreadTaskRunnerWithTraits(
         {content::BrowserThread::IO});
@@ -382,10 +374,26 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
   ScopedTestingLocalState scoped_testing_local_state_;
   UserResponse user_response_;
   TestSafeBrowsingBlockingPageFactory factory_;
+  const bool is_incognito_;
+};
+
+class SafeBrowsingBlockingPageTest : public SafeBrowsingBlockingPageTestBase {
+ public:
+  SafeBrowsingBlockingPageTest()
+      : SafeBrowsingBlockingPageTestBase(false /*is_incognito*/) {}
+};
+
+class SafeBrowsingBlockingPageIncognitoTest
+    : public SafeBrowsingBlockingPageTestBase {
+ public:
+  SafeBrowsingBlockingPageIncognitoTest()
+      : SafeBrowsingBlockingPageTestBase(true /*is_incognito*/) {}
 };
 
 // Tests showing a blocking page for a malware page and not proceeding.
 TEST_F(SafeBrowsingBlockingPageTest, MalwarePageDontProceed) {
+  if (base::FeatureList::IsEnabled(kCommittedSBInterstitials))
+    return;
   // Enable malware details.
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
@@ -425,6 +433,8 @@ TEST_F(SafeBrowsingBlockingPageTest, MalwarePageDontProceed) {
 
 // Tests showing a blocking page for a malware page and then proceeding.
 TEST_F(SafeBrowsingBlockingPageTest, MalwarePageProceed) {
+  if (base::FeatureList::IsEnabled(kCommittedSBInterstitials))
+    return;
   // Enable malware reports.
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
@@ -468,6 +478,8 @@ TEST_F(SafeBrowsingBlockingPageTest, MalwarePageProceed) {
 // Tests showing a blocking page for a page that contains malware subresources
 // and not proceeding.
 TEST_F(SafeBrowsingBlockingPageTest, PageWithMalwareResourceDontProceed) {
+  if (base::FeatureList::IsEnabled(kCommittedSBInterstitials))
+    return;
   // Enable malware reports.
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
@@ -510,6 +522,8 @@ TEST_F(SafeBrowsingBlockingPageTest, PageWithMalwareResourceDontProceed) {
 // Tests showing a blocking page for a page that contains malware subresources
 // and proceeding.
 TEST_F(SafeBrowsingBlockingPageTest, PageWithMalwareResourceProceed) {
+  if (base::FeatureList::IsEnabled(kCommittedSBInterstitials))
+    return;
   // Enable malware reports.
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
@@ -554,6 +568,8 @@ TEST_F(SafeBrowsingBlockingPageTest, PageWithMalwareResourceProceed) {
 // subresources (which trigger queued interstitial pages) do not break anything.
 TEST_F(SafeBrowsingBlockingPageTest,
        PageWithMultipleMalwareResourceDontProceed) {
+  if (base::FeatureList::IsEnabled(kCommittedSBInterstitials))
+    return;
   // Enable malware reports.
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
@@ -602,6 +618,8 @@ TEST_F(SafeBrowsingBlockingPageTest,
 // subresources and proceeding through the first interstitial, but not the next.
 TEST_F(SafeBrowsingBlockingPageTest,
        PageWithMultipleMalwareResourceProceedThenDontProceed) {
+  if (base::FeatureList::IsEnabled(kCommittedSBInterstitials))
+    return;
   // Enable malware reports.
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
@@ -670,6 +688,8 @@ TEST_F(SafeBrowsingBlockingPageTest,
 // Tests showing a blocking page for a page that contains multiple malware
 // subresources and proceeding through the multiple interstitials.
 TEST_F(SafeBrowsingBlockingPageTest, PageWithMultipleMalwareResourceProceed) {
+  if (base::FeatureList::IsEnabled(kCommittedSBInterstitials))
+    return;
   // Enable malware reports.
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
@@ -732,6 +752,8 @@ TEST_F(SafeBrowsingBlockingPageTest, PageWithMultipleMalwareResourceProceed) {
 // Tests showing a blocking page then navigating back and forth to make sure the
 // controller entries are OK.  http://crbug.com/17627
 TEST_F(SafeBrowsingBlockingPageTest, NavigatingBackAndForth) {
+  if (base::FeatureList::IsEnabled(kCommittedSBInterstitials))
+    return;
   // Enable malware reports.
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
@@ -785,6 +807,8 @@ TEST_F(SafeBrowsingBlockingPageTest, NavigatingBackAndForth) {
 // Tests that calling "don't proceed" after "proceed" has been called doesn't
 // cause problems. http://crbug.com/30079
 TEST_F(SafeBrowsingBlockingPageTest, ProceedThenDontProceed) {
+  if (base::FeatureList::IsEnabled(kCommittedSBInterstitials))
+    return;
   // Enable malware reports.
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
@@ -821,6 +845,8 @@ TEST_F(SafeBrowsingBlockingPageTest, ProceedThenDontProceed) {
 
 // Tests showing a blocking page for a malware page with reports disabled.
 TEST_F(SafeBrowsingBlockingPageTest, MalwareReportsDisabled) {
+  if (base::FeatureList::IsEnabled(kCommittedSBInterstitials))
+    return;
   // Disable malware reports.
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
@@ -856,6 +882,8 @@ TEST_F(SafeBrowsingBlockingPageTest, MalwareReportsDisabled) {
 
 // Test that toggling the checkbox has the anticipated effects.
 TEST_F(SafeBrowsingBlockingPageTest, MalwareReportsToggling) {
+  if (base::FeatureList::IsEnabled(kCommittedSBInterstitials))
+    return;
   // Disable malware reports.
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
@@ -888,13 +916,11 @@ TEST_F(SafeBrowsingBlockingPageTest, MalwareReportsToggling) {
 }
 
 // Test that extended reporting option is not shown in incognito window.
-TEST_F(SafeBrowsingBlockingPageTest,
+TEST_F(SafeBrowsingBlockingPageIncognitoTest,
        ExtendedReportingNotShownInIncognito) {
-  // Make profile in incognito mode.
-  SetProfileOffTheRecord();
   // Enable malware details.
-  Profile* profile = Profile::FromBrowserContext(
-      web_contents()->GetBrowserContext());
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   ASSERT_TRUE(profile->IsOffTheRecord());
   SetExtendedReportingPref(profile->GetPrefs(), true);
 
@@ -928,6 +954,8 @@ TEST_F(SafeBrowsingBlockingPageTest,
 // kSafeBrowsingExtendedReportingOptInAllowed is disabled.
 TEST_F(SafeBrowsingBlockingPageTest,
        ExtendedReportingNotShownNotAllowExtendedReporting) {
+  if (base::FeatureList::IsEnabled(kCommittedSBInterstitials))
+    return;
   // Enable malware details.
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
@@ -962,6 +990,8 @@ TEST_F(SafeBrowsingBlockingPageTest,
 
 // Tests showing a blocking page for billing.
 TEST_F(SafeBrowsingBlockingPageTest, BillingPage) {
+  if (base::FeatureList::IsEnabled(kCommittedSBInterstitials))
+    return;
   // Start a load.
   controller().LoadURL(GURL(kBadURL), content::Referrer(),
                        ui::PAGE_TRANSITION_TYPED, std::string());
@@ -1087,9 +1117,6 @@ class SafeBrowsingBlockingQuietPageTest
 
   scoped_refptr<TestSafeBrowsingUIManager> ui_manager_;
 
-  // Owned by TestSafeBrowsingBlockingQuietPage.
-  MockTestingProfile* mock_profile_;
-
  private:
   void InitResource(security_interstitials::UnsafeResource* resource,
                     bool is_subresource,
@@ -1118,6 +1145,8 @@ class SafeBrowsingBlockingQuietPageTest
 
 // Tests showing a quiet blocking page for a malware page.
 TEST_F(SafeBrowsingBlockingQuietPageTest, MalwarePage) {
+  if (base::FeatureList::IsEnabled(kCommittedSBInterstitials))
+    return;
   // Start a load.
   controller().LoadURL(GURL(kBadURL), content::Referrer(),
                        ui::PAGE_TRANSITION_TYPED, std::string());
@@ -1139,6 +1168,8 @@ TEST_F(SafeBrowsingBlockingQuietPageTest, MalwarePage) {
 
 // Tests showing a quiet blocking page for a phishing page.
 TEST_F(SafeBrowsingBlockingQuietPageTest, PhishingPage) {
+  if (base::FeatureList::IsEnabled(kCommittedSBInterstitials))
+    return;
   // Start a load.
   controller().LoadURL(GURL(kBadURL), content::Referrer(),
                        ui::PAGE_TRANSITION_TYPED, std::string());
@@ -1160,6 +1191,8 @@ TEST_F(SafeBrowsingBlockingQuietPageTest, PhishingPage) {
 
 // Tests showing a quiet blocking page in a giant webview.
 TEST_F(SafeBrowsingBlockingQuietPageTest, GiantWebView) {
+  if (base::FeatureList::IsEnabled(kCommittedSBInterstitials))
+    return;
   // Start a load.
   controller().LoadURL(GURL(kBadURL), content::Referrer(),
                        ui::PAGE_TRANSITION_TYPED, std::string());

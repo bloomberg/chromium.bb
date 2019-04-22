@@ -8,11 +8,28 @@ import android.support.annotation.IntDef;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.List;
 
 /**
  * The callback used to indicate what action the user took in the picker.
  */
 public interface ContactsPickerListener {
+    /**
+     * A container class for exhcanging contact details.
+     */
+    public class Contact {
+        public final List<String> names;
+        public final List<String> emails;
+        public final List<String> tel;
+
+        public Contact(
+                List<String> contactNames, List<String> contactEmails, List<String> contactTel) {
+            names = contactNames;
+            emails = contactEmails;
+            tel = contactTel;
+        }
+    }
+
     /**
      * The action the user took in the picker.
      */
@@ -30,7 +47,7 @@ public interface ContactsPickerListener {
     /**
      * Called when the user has selected an action. For possible actions see above.
      *
-     * @param contacts The contacts that were selected (string contains json format).
+     * @param contacts The list of contacts selected.
      */
-    void onContactsPickerUserAction(@ContactsPickerAction int action, String contacts);
+    void onContactsPickerUserAction(@ContactsPickerAction int action, List<Contact> contacts);
 }

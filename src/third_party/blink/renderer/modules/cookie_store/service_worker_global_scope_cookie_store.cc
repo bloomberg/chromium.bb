@@ -25,8 +25,9 @@ CookieStore* GlobalCookieStoreImpl<WorkerGlobalScope>::BuildCookieStore(
   blink::mojom::blink::CookieStorePtr cookie_store_ptr;
   interface_provider->GetInterface(mojo::MakeRequest(&cookie_store_ptr));
 
-  return CookieStore::Create(execution_context, std::move(cookie_manager_ptr),
-                             std::move(cookie_store_ptr));
+  return MakeGarbageCollected<CookieStore>(execution_context,
+                                           std::move(cookie_manager_ptr),
+                                           std::move(cookie_store_ptr));
 }
 
 CookieStore* ServiceWorkerGlobalScopeCookieStore::cookieStore(

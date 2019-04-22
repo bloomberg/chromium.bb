@@ -36,13 +36,11 @@ base::FilePath DoodleDirectory() {
 
 GoogleLogoService::GoogleLogoService(
     TemplateURLService* template_url_service,
+    identity::IdentityManager* identity_manager,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : LogoServiceImpl(
           DoodleDirectory(),
-          // Personalized Doodles aren't supported on iOS (see
-          // https://crbug.com/711314), so no need to pass a
-          // GaiaCookieManagerService.
-          /*cookie_service=*/nullptr,
+          identity_manager,
           template_url_service,
           image_fetcher::CreateIOSImageDecoder(),
           std::move(url_loader_factory),

@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/platform/fonts/vdmx_parser.h"
 
 #include <SkFont.h>
+#include <SkFontMetrics.h>
 #include <SkTypeface.h>
 
 namespace blink {

@@ -14,6 +14,7 @@
 
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_base.h"
 #include "chrome/browser/chromeos/file_manager/file_tasks.h"
+#include "chrome/browser/extensions/chrome_extension_function_details.h"
 
 namespace base {
 class FilePath;
@@ -28,25 +29,29 @@ class MimeTypeCollector;
 
 // Implements the chrome.fileManagerPrivateInternal.executeTask method.
 class FileManagerPrivateInternalExecuteTaskFunction
-    : public LoggedAsyncExtensionFunction {
+    : public LoggedUIThreadExtensionFunction {
  public:
+  FileManagerPrivateInternalExecuteTaskFunction();
+
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.executeTask",
                              FILEMANAGERPRIVATEINTERNAL_EXECUTETASK)
 
  protected:
   ~FileManagerPrivateInternalExecuteTaskFunction() override = default;
 
-  // ChromeAsyncExtensionFunction overrides.
-  bool RunAsync() override;
+  // UIThreadExtensionFunction overrides.
+  ResponseAction Run() override;
 
  private:
   void OnTaskExecuted(
       extensions::api::file_manager_private::TaskResult success);
+
+  const ChromeExtensionFunctionDetails chrome_details_;
 };
 
 // Implements the chrome.fileManagerPrivateInternal.getFileTasks method.
 class FileManagerPrivateInternalGetFileTasksFunction
-    : public LoggedAsyncExtensionFunction {
+    : public LoggedUIThreadExtensionFunction {
  public:
   FileManagerPrivateInternalGetFileTasksFunction();
 
@@ -56,8 +61,8 @@ class FileManagerPrivateInternalGetFileTasksFunction
  protected:
   ~FileManagerPrivateInternalGetFileTasksFunction() override;
 
-  // ChromeAsyncExtensionFunction overrides.
-  bool RunAsync() override;
+  // UIThreadExtensionFunction overrides.
+  ResponseAction Run() override;
 
  private:
   void OnMimeTypesCollected(
@@ -77,6 +82,7 @@ class FileManagerPrivateInternalGetFileTasksFunction
       mime_type_collector_;
   std::vector<GURL> urls_;
   std::vector<base::FilePath> local_paths_;
+  const ChromeExtensionFunctionDetails chrome_details_;
 };
 
 // Implements the chrome.fileManagerPrivateInternal.setDefaultTask method.

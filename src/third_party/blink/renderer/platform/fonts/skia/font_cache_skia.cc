@@ -38,12 +38,11 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/font_family_names.h"
 #include "third_party/blink/renderer/platform/fonts/alternate_font_family.h"
-#include "third_party/blink/renderer/platform/fonts/bitmap_glyphs_blacklist.h"
+#include "third_party/blink/renderer/platform/fonts/bitmap_glyphs_block_list.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
 #include "third_party/blink/renderer/platform/fonts/font_description.h"
 #include "third_party/blink/renderer/platform/fonts/font_face_creation_params.h"
 #include "third_party/blink/renderer/platform/fonts/font_global_context.h"
-#include "third_party/blink/renderer/platform/fonts/font_unique_name_lookup.h"
 #include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
 #include "third_party/blink/renderer/platform/fonts/skia/sktypeface_factory.h"
 #include "third_party/blink/renderer/platform/language.h"
@@ -56,25 +55,6 @@
 #include "third_party/skia/include/core/SkTypeface.h"
 
 namespace blink {
-
-#if defined(OS_ANDROID) || defined(OS_LINUX)
-namespace {
-
-static sk_sp<SkTypeface> CreateTypefaceFromUniqueName(
-    const FontFaceCreationParams& creation_params,
-    CString& name) {
-  FontUniqueNameLookup* unique_name_lookup =
-      FontGlobalContext::Get()->GetFontUniqueNameLookup();
-  DCHECK(unique_name_lookup);
-  sk_sp<SkTypeface> uniquely_identified_font =
-      unique_name_lookup->MatchUniqueName(creation_params.Family());
-  if (uniquely_identified_font) {
-    return uniquely_identified_font;
-  }
-  return nullptr;
-}
-}  // namespace
-#endif
 
 AtomicString ToAtomicString(const SkString& str) {
   return AtomicString::FromUTF8(str.c_str(), str.size());
@@ -323,7 +303,7 @@ std::unique_ptr<FontPlatformData> FontCache::CreateFontPlatformData(
           font_description.Orientation());
 
   font_platform_data->SetAvoidEmbeddedBitmaps(
-      BitmapGlyphsBlacklist::AvoidEmbeddedBitmapsForTypeface(typeface.get()));
+      BitmapGlyphsBlockList::ShouldAvoidEmbeddedBitmapsForTypeface(*typeface));
 
   return font_platform_data;
 }

@@ -16,8 +16,20 @@ base::Optional<typename OptionalT::value_type> ToBaseOptional(
 }
 
 template <typename OptionalT>
+base::Optional<typename OptionalT::value_type> ToBaseOptional(
+    OptionalT&& optional) {
+  return optional ? base::make_optional(*optional) : base::nullopt;
+}
+
+template <typename OptionalT>
 absl::optional<typename OptionalT::value_type> ToAbslOptional(
     const OptionalT& optional) {
+  return optional ? absl::make_optional(*optional) : absl::nullopt;
+}
+
+template <typename OptionalT>
+absl::optional<typename OptionalT::value_type> ToAbslOptional(
+    OptionalT&& optional) {
   return optional ? absl::make_optional(*optional) : absl::nullopt;
 }
 

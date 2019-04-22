@@ -34,8 +34,7 @@ class FakeReflector : public ui::Reflector {
 }  // namespace
 
 TestImageTransportFactory::TestImageTransportFactory()
-    : enable_viz_(
-          base::FeatureList::IsEnabled(features::kVizDisplayCompositor)),
+    : enable_viz_(features::IsVizDisplayCompositorEnabled()),
       frame_sink_id_allocator_(kDefaultClientId) {
   if (enable_viz_) {
     test_frame_sink_manager_impl_ =
@@ -94,6 +93,12 @@ TestImageTransportFactory::SharedMainThreadContextProvider() {
     shared_main_context_provider_ = nullptr;
 
   return shared_main_context_provider_;
+}
+
+scoped_refptr<viz::RasterContextProvider>
+TestImageTransportFactory::SharedMainThreadRasterContextProvider() {
+  NOTIMPLEMENTED();
+  return nullptr;
 }
 
 gpu::GpuMemoryBufferManager*

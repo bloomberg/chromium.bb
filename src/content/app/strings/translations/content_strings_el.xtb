@@ -19,6 +19,7 @@
 <translation id="1591562245178063882">Αυτόν το μήνα</translation>
 <translation id="1637811476055996098">Επιλογή αρχείων</translation>
 <translation id="1650423536718072820">ελκυστική φράση</translation>
+<translation id="1727886345390570319">απόκρυψη μενού υποτίτλων</translation>
 <translation id="1729654308190250600">Καταχωρίστε μια διεύθυνση ηλεκτρονικού ταχυδρομείου.</translation>
 <translation id="1758486001363313524">Άλλες…</translation>
 <translation id="1806710327868736751">παράθυρο διαλόγου ειδοποιήσεων</translation>
@@ -41,6 +42,7 @@
 <translation id="2291999235780842123">πλαίσιο ελέγχου</translation>
 <translation id="2311842470354187719">αλλαγή σελίδας</translation>
 <translation id="2335594187091864976">εργαλείο επιλογής ημερομηνίας και ώρας</translation>
+<translation id="245932805758469625">χρόνος που απομένει από το βίντεο σε δευτερόλεπτα</translation>
 <translation id="248395913932153421">Ημέρα</translation>
 <translation id="2507943997699731163">Συμπληρώστε αυτό το πεδίο.</translation>
 <translation id="2508569020611168319">λίστα καρτελών</translation>
@@ -50,7 +52,6 @@
 <translation id="2653659639078652383">Υποβολή</translation>
 <translation id="2657045182931379222">αντικείμενο γραφικών</translation>
 <translation id="2674318244760992338">υποσέλιδο</translation>
-<translation id="2706474812903655270">Η αναπαραγωγή αυτού του βίντεο γίνεται στη λειτουργία picture-in-picture</translation>
 <translation id="2709516037105925701">Αυτόματη συμπλήρωση</translation>
 <translation id="2723001399770238859">ήχος</translation>
 <translation id="2746543609216772311">Η τιμή πρέπει να είναι <ph name="MINIMUM_DATE_OR_TIME" /> ή μεταγενέστερη.</translation>
@@ -71,11 +72,10 @@
 <translation id="3450233048674729344">Η τιμή πρέπει να είναι μικρότερη ή ίση του <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">ορισμός</translation>
 <translation id="3557673793733683882">επικεφαλίδα <ph name="HEADING_LEVEL" /></translation>
-<translation id="3639613635497528239">αριθμός δευτερολέπτων της ταινίας που απομένουν</translation>
+<translation id="3685101356851116974">Εικόνα χωρίς ετικέτα</translation>
 <translation id="3706100364254443312">εναλλαγή</translation>
 <translation id="3732799496749320381">μμ</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
-<translation id="3785482301506746191">δείκτης χρόνου ταινίας</translation>
 <translation id="3808586225841795776">όρος</translation>
 <translation id="3822383571486410024">Αυξήστε την έκταση αυτού του κειμένου στους <ph name="MIN_CHARACTERS" /> χαρακτήρες ή περισσότερο (αυτήν τη στιγμή χρησιμοποιείτε <ph name="CURRENT_LENGTH" /> χαρακτήρες).</translation>
 <translation id="383465348367842624">Το τμήμα της διεύθυνσης πριν το σύμβολο "<ph name="ATSIGN" />" δεν πρέπει να περιέχει το σύμβολο "<ph name="INVALIDCHARACTER" />".</translation>
@@ -94,8 +94,10 @@
 <translation id="4360991593054037559">Καταχωρίστε μια έγκυρη τιμή. Οι δύο πιο κοντινές έγκυρες τιμές είναι <ph name="VALID_VALUE_LOW" /> και <ph name="VALID_VALUE_HIGHER" />.</translation>
 <translation id="4384583879834880242">Ερωτήσεις και απαντήσεις</translation>
 <translation id="4413860115965805769">κουμπί μενού</translation>
+<translation id="4444765639179266822">Φαίνεται πως λέει: <ph name="OCR_TEXT" /></translation>
 <translation id="4446524499724042288">αναφορά στο γλωσσάρι</translation>
 <translation id="4522570452068850558">Λεπτομέρειες</translation>
+<translation id="4542388879936266156">χρόνος που απομένει: <ph name="REMAINING_TIME" /></translation>
 <translation id="4597532268155981612">φόρμα</translation>
 <translation id="4661075872484491155">δέντρο</translation>
 <translation id="4664250907885839816">Το τμήμα της διεύθυνσης μετά το σύμβολο "<ph name="ATSIGN" />" δεν πρέπει να περιέχει το σύμβολο "<ph name="INVALIDCHARACTER" />".</translation>
@@ -111,6 +113,7 @@
 <translation id="4992066212339426712">Κατάργηση σίγασης</translation>
 <translation id="49969490063480558">Καταχωρίστε το τμήμα της διεύθυνσης μετά το σύμβολο "<ph name="ATSIGN" />". Η διεύθυνση "<ph name="INVALIDADDRESS" />" δεν είναι πλήρης.</translation>
 <translation id="5034860022980953847">ένδειξη προόδου</translation>
+<translation id="5090250355906949916">δείκτης χρόνου βίντεο</translation>
 <translation id="5093189678851173835">επιγραφή</translation>
 <translation id="5117590920725113268">Εμφάνιση επόμενου μήνα</translation>
 <translation id="512758898067543763">κεφαλίδα σειράς</translation>
@@ -118,6 +121,7 @@
 <translation id="5164977714490026579">Η τιμή πρέπει να είναι μεγαλύτερη ή ίση του <ph name="MINIMUM" />.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">Καταχωρίστε το τμήμα της διεύθυνσης πριν το σύμβολο "<ph name="ATSIGN" />". Η διεύθυνση "<ph name="INVALIDADDRESS" />" δεν είναι πλήρης.</translation>
+<translation id="5334352251556557839">Δεν είναι δυνατή η αναπαραγωγή μέσων.</translation>
 <translation id="5406322316791861025">αριθμός</translation>
 <translation id="5453733299334684579">στοιχείο δέντρου</translation>
 <translation id="5466621249238537318">Επιλέξτε ένα ή περισσότερα αρχεία.</translation>
@@ -144,12 +148,16 @@
 <translation id="6150588977291308318">βιβλιογραφία</translation>
 <translation id="6164829606128959761">μετρητής</translation>
 <translation id="6166809985690652833">επίλογος</translation>
+<translation id="6209276755895393898">Φαίνεται πως είναι: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">γλωσσάρι</translation>
+<translation id="628938136236500310">Αναπαραγωγή στη λειτουργία picture-in-picture</translation>
 <translation id="6398862346408813489">Εμφάνιση παραθύρου επιλογής μήνα</translation>
 <translation id="6404546809543547843">δείκτης χρόνου ήχου</translation>
+<translation id="6443871981718447451">εμφάνιση μενού υποτίτλων</translation>
 <translation id="6453774872122745852">ευχαριστίες</translation>
 <translation id="648732519525291180">εργαλείο επιλογής ώρας</translation>
 <translation id="6550675742724504774">Επιλογές</translation>
+<translation id="6572309429103589720">Μη έγκυρη γραμματική</translation>
 <translation id="658823671542763450">ενεργοποίηση πλήρους οθόνης</translation>
 <translation id="663493177488814956">ροή</translation>
 <translation id="6637586476836377253">αρχείο καταγραφής</translation>
@@ -162,7 +170,6 @@
 <translation id="6820355525329141109">Δεν είναι δυνατή η φόρτωση της προσθήκης.</translation>
 <translation id="6820615603175220800">βιβλιογραφική αναφορά</translation>
 <translation id="6843725295806269523">σίγαση</translation>
-<translation id="6853785296079745596">απόκρυψη υπότιτλων</translation>
 <translation id="6885760532393684712">κατάλογος</translation>
 <translation id="689129560213475294">εκδοτικό σήμα</translation>
 <translation id="6934078000481955284">blockquote</translation>
@@ -170,25 +177,29 @@
 <translation id="6981594929165378967">εισαγωγή</translation>
 <translation id="6989848892321993519">Αυξήστε την έκταση αυτού του κειμένου στους <ph name="MIN_CHARACTERS" /> χαρακτήρες ή περισσότερο (αυτήν τη στιγμή χρησιμοποιείτε 1 χαρακτήρα).</translation>
 <translation id="709897737746224366">Αντιστοιχίστε τη ζητούμενη μορφή.</translation>
+<translation id="7118469954320184356">Δεν υπάρχει διαθέσιμη περιγραφή.</translation>
 <translation id="7139483182332611405">πρόλογος</translation>
-<translation id="7223624360433298498">χρόνος που παρήλθε</translation>
 <translation id="7263440858009898357">Επιλέξτε ένα στοιχείο από τη λίστα.</translation>
 <translation id="727747134524199931">κεφαλίδα στήλης</translation>
+<translation id="7320576522385648310">αποθήκευση στην προσωρινή μνήμη</translation>
 <translation id="7353453495576941748">εύσημα</translation>
 <translation id="7364796246159120393">Επιλογή αρχείου</translation>
 <translation id="739024184232394898">Άλλες…</translation>
 <translation id="7405738980073107433">σημειώσεις τέλους</translation>
+<translation id="7410239719251593705">Φαίνεται να περιέχει περιεχόμενο για ενηλίκους Δεν υπάρχει διαθέσιμη περιγραφή.</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7491962110804786152">καρτέλα</translation>
 <translation id="7514365320538308">Λήψη</translation>
 <translation id="7529102961911894712">σύνδεσμος επιστροφής</translation>
+<translation id="7533959249147584474">Γραφικό χωρίς ετικέτα</translation>
 <translation id="7647456547678091388">συμβουλή</translation>
 <translation id="7661956066982048809">έγγραφο γραφικών</translation>
 <translation id="7673697353781729403">Ώρες</translation>
 <translation id="7681220483256441252">ευρετήριο</translation>
-<translation id="7720026100085573005">χρόνος που απομένει</translation>
 <translation id="7740050170769002709">Περιεχόμενο HTML</translation>
+<translation id="7745230546936012372">Για να λάβετε περιγραφές εικόνων που λείπουν, ανοίξτε το μενού περιβάλλοντος.</translation>
 <translation id="7750228210027921155">Picture in picture</translation>
+<translation id="775297008183122718">Μη έγκυρη καταχώριση</translation>
 <translation id="7789962463072032349">παύση</translation>
 <translation id="7802800022689234070">τρίγωνο εμφάνισης/απόκρυψης</translation>
 <translation id="7888071071722539607">Συμπεριλάβετε το σύμβολο "<ph name="ATSIGN" />" στη διεύθυνση ηλεκτρονικού ταχυδρομείου. Από τη διεύθυνση "<ph name="INVALIDADDRESS" />" λείπει το σύμβολο "<ph name="ATSIGN" />".</translation>
@@ -197,10 +208,13 @@
 <translation id="8053789581856978548">αναζήτηση πεδίου κειμένου</translation>
 <translation id="8057695513531652401">ειδοποίηση</translation>
 <translation id="8105797009065549151">παραπομπή</translation>
+<translation id="811583516810654505">Λήψη περιγραφής…</translation>
 <translation id="8117451130807776954">Αυτήν την εβδομάδα</translation>
 <translation id="8199524924445686405">εεεε</translation>
+<translation id="8261464734335370856">Μη έγκυρη ορθογραφία</translation>
 <translation id="8284326494547611709">Υπότιτλοι</translation>
 <translation id="835897206747267392">Μη έγκυρη τιμή.</translation>
+<translation id="8403857369060869934">χρόνος που παρήλθε: <ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">τμήμα</translation>
 <translation id="8433900881053900389">γραμμή εργαλείων</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES" /> αρχεία</translation>
@@ -225,7 +239,6 @@
 <translation id="8987927404178983737">Μήνας</translation>
 <translation id="901493112792887934">τρέχων χρόνος σε δευτερόλεπτα</translation>
 <translation id="9048119486235211610">πλοήγηση</translation>
-<translation id="9050748414552849310">εμφάνιση υπότιτλων</translation>
 <translation id="9062295712474918030">έγγραφο</translation>
 <translation id="9093215626363556771">έξοδος από τη λειτουργία picture-in-picture</translation>
 <translation id="9108370397979208512">μαθηματικά</translation>

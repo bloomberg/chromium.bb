@@ -59,6 +59,12 @@ void WebFakeThreadScheduler::DidHandleInputEventOnCompositorThread(
     const blink::WebInputEvent& web_input_event,
     InputEventState event_state) {}
 
+void WebFakeThreadScheduler::WillPostInputEventToMainThread(
+    WebInputEvent::Type web_input_event_type) {}
+
+void WebFakeThreadScheduler::WillHandleInputEventOnMainThread(
+    WebInputEvent::Type web_input_event_type) {}
+
 void WebFakeThreadScheduler::DidHandleInputEventOnMainThread(
     const blink::WebInputEvent& web_input_event,
     WebInputEventResult result) {}
@@ -90,9 +96,6 @@ void WebFakeThreadScheduler::Shutdown() {}
 
 void WebFakeThreadScheduler::SetTopLevelBlameContext(
     base::trace_event::BlameContext* blame_context) {}
-
-void WebFakeThreadScheduler::AddRAILModeObserver(
-    WebRAILModeObserver* observer) {}
 
 void WebFakeThreadScheduler::SetRendererProcessType(
     WebRendererProcessType type) {}

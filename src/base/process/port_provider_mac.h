@@ -25,7 +25,7 @@ class BASE_EXPORT PortProvider {
 
   class Observer {
    public:
-    virtual ~Observer() {};
+    virtual ~Observer() {}
     // Called by the PortProvider to notify observers that the task port was
     // received for a given process.
     // No guarantees are made about the thread on which this notification will

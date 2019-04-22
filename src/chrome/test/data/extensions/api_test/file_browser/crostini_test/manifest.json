@@ -4,7 +4,7 @@
   "name": "chrome.fileManagerPrivate tests",
   "version": "0.1",
   "manifest_version": 2,
-  "description": "Tests of chrome.fileManagerPrivate.[isCrostiniEnabled|mountCrostini|sharePathWithCrostini]",
+  "description": "Tests of chrome.fileManagerPrivate crostini-related functions",
   "app": {
     "background": {
       "scripts": ["test.js"]

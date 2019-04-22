@@ -22,25 +22,6 @@
 namespace base {
 namespace trace_event {
 
-namespace {
-
-size_t GetAllocLength(const char* str) { return str ? strlen(str) + 1 : 0; }
-
-// Copies |*member| into |*buffer|, sets |*member| to point to this new
-// location, and then advances |*buffer| by the amount written.
-void CopyTraceEventParameter(char** buffer,
-                             const char** member,
-                             const char* end) {
-  if (*member) {
-    size_t written = strlcpy(*buffer, *member, end - *buffer) + 1;
-    DCHECK_LE(static_cast<int>(written), end - *buffer);
-    *member = *buffer;
-    *buffer += written;
-  }
-}
-
-}  // namespace
-
 bool ConvertableToTraceFormat::AppendToProto(ProtoAppender* appender) {
   return false;
 }
@@ -49,48 +30,19 @@ bool ConvertableToTraceFormat::AppendToProto(ProtoAppender* appender) {
 static_assert(trace_event_internal::kGlobalScope == nullptr,
               "Invalid TraceEvent::scope default initializer value");
 
-TraceEvent::TraceEvent() {
-  for (int i = 0; i < kTraceMaxNumArgs; ++i) {
-    arg_values_[i].as_uint = 0u;
-    arg_names_[i] = nullptr;
-    arg_types_[i] = TRACE_VALUE_TYPE_UINT;
-  }
-}
+TraceEvent::TraceEvent() = default;
 
-TraceEvent::~TraceEvent() = default;
-
-TraceEvent::TraceEvent(TraceEvent&& other) noexcept = default;
-
-#if !defined(__clang__)
-// Clang will crash at runtime when trying to compile the line below
-// with coverage instrumentation enabled (https://crbug.com/908937)
-TraceEvent& TraceEvent::operator=(TraceEvent&& other) noexcept = default;
-#else  // defined(__clang__)
-TraceEvent& TraceEvent::operator=(TraceEvent&& other) noexcept {
-  if (this != &other) {
-    this->~TraceEvent();
-    new (this) TraceEvent(std::move(other));
-  }
-  return *this;
-}
-#endif  // defined(__clang__)
-
-TraceEvent::TraceEvent(
-    int thread_id,
-    TimeTicks timestamp,
-    ThreadTicks thread_timestamp,
-    char phase,
-    const unsigned char* category_group_enabled,
-    const char* name,
-    const char* scope,
-    unsigned long long id,
-    unsigned long long bind_id,
-    int num_args,
-    const char* const* arg_names,
-    const unsigned char* arg_types,
-    const unsigned long long* arg_values,
-    std::unique_ptr<ConvertableToTraceFormat>* convertable_values,
-    unsigned int flags)
+TraceEvent::TraceEvent(int thread_id,
+                       TimeTicks timestamp,
+                       ThreadTicks thread_timestamp,
+                       char phase,
+                       const unsigned char* category_group_enabled,
+                       const char* name,
+                       const char* scope,
+                       unsigned long long id,
+                       unsigned long long bind_id,
+                       TraceArguments* args,
+                       unsigned int flags)
     : timestamp_(timestamp),
       thread_timestamp_(thread_timestamp),
       scope_(scope),
@@ -101,121 +53,33 @@ TraceEvent::TraceEvent(
       flags_(flags),
       bind_id_(bind_id),
       phase_(phase) {
-  InitArgs(num_args, arg_names, arg_types, arg_values, convertable_values,
-           flags);
+  InitArgs(args);
 }
 
-void TraceEvent::InitArgs(
-    int num_args,
-    const char* const* arg_names,
-    const unsigned char* arg_types,
-    const unsigned long long* arg_values,
-    std::unique_ptr<ConvertableToTraceFormat>* convertable_values,
-    unsigned int flags) {
-  // Clamp num_args since it may have been set by a third_party library.
-  num_args = (num_args > kTraceMaxNumArgs) ? kTraceMaxNumArgs : num_args;
-  int i = 0;
-  for (; i < num_args; ++i) {
-    arg_names_[i] = arg_names[i];
-    arg_types_[i] = arg_types[i];
+TraceEvent::~TraceEvent() = default;
 
-    if (arg_types[i] == TRACE_VALUE_TYPE_CONVERTABLE) {
-      convertable_values_[i] = std::move(convertable_values[i]);
-    } else {
-      arg_values_[i].as_uint = arg_values[i];
-      convertable_values_[i].reset();
-    }
-  }
-  for (; i < kTraceMaxNumArgs; ++i) {
-    arg_names_[i] = nullptr;
-    arg_values_[i].as_uint = 0u;
-    convertable_values_[i].reset();
-    arg_types_[i] = TRACE_VALUE_TYPE_UINT;
-  }
-
-  bool copy = !!(flags & TRACE_EVENT_FLAG_COPY);
-  size_t alloc_size = 0;
-  if (copy) {
-    alloc_size += GetAllocLength(name_) + GetAllocLength(scope_);
-    for (i = 0; i < num_args; ++i) {
-      alloc_size += GetAllocLength(arg_names_[i]);
-      if (arg_types_[i] == TRACE_VALUE_TYPE_STRING)
-        arg_types_[i] = TRACE_VALUE_TYPE_COPY_STRING;
-    }
-  }
-
-  bool arg_is_copy[kTraceMaxNumArgs];
-  for (i = 0; i < num_args; ++i) {
-    // No copying of convertable types, we retain ownership.
-    if (arg_types_[i] == TRACE_VALUE_TYPE_CONVERTABLE)
-      continue;
-
-    // We only take a copy of arg_vals if they are of type COPY_STRING.
-    arg_is_copy[i] = (arg_types_[i] == TRACE_VALUE_TYPE_COPY_STRING);
-    if (arg_is_copy[i])
-      alloc_size += GetAllocLength(arg_values_[i].as_string);
-  }
-
-  if (alloc_size) {
-    parameter_copy_storage_.reset(new std::string);
-    parameter_copy_storage_->resize(alloc_size);
-    char* ptr = base::data(*parameter_copy_storage_);
-    const char* end = ptr + alloc_size;
-    if (copy) {
-      CopyTraceEventParameter(&ptr, &name_, end);
-      CopyTraceEventParameter(&ptr, &scope_, end);
-      for (i = 0; i < num_args; ++i) {
-        CopyTraceEventParameter(&ptr, &arg_names_[i], end);
-      }
-    }
-    for (i = 0; i < num_args; ++i) {
-      if (arg_types_[i] == TRACE_VALUE_TYPE_CONVERTABLE)
-        continue;
-      if (arg_is_copy[i])
-        CopyTraceEventParameter(&ptr, &arg_values_[i].as_string, end);
-    }
-    DCHECK_EQ(end, ptr) << "Overrun by " << ptr - end;
-  }
-}
+TraceEvent::TraceEvent(TraceEvent&& other) noexcept = default;
+TraceEvent& TraceEvent::operator=(TraceEvent&& other) noexcept = default;
 
 void TraceEvent::Reset() {
   // Only reset fields that won't be initialized in Reset(int, ...), or that may
   // hold references to other objects.
   duration_ = TimeDelta::FromInternalValue(-1);
-
-  // The following pointers might point into parameter_copy_storage_ so
-  // must be reset to nullptr first.
-  for (int i = 0; i < kTraceMaxNumArgs; ++i) {
-    arg_names_[i] = nullptr;
-    arg_values_[i].as_uint = 0u;
-    arg_types_[i] = TRACE_VALUE_TYPE_UINT;
-  }
-  scope_ = nullptr;
-  name_ = nullptr;
-
-  // It is now safe to reset the storage area.
-  parameter_copy_storage_.reset();
-
-  for (int i = 0; i < kTraceMaxNumArgs; ++i)
-    convertable_values_[i].reset();
+  args_.Reset();
+  parameter_copy_storage_.Reset();
 }
 
-void TraceEvent::Reset(
-    int thread_id,
-    TimeTicks timestamp,
-    ThreadTicks thread_timestamp,
-    char phase,
-    const unsigned char* category_group_enabled,
-    const char* name,
-    const char* scope,
-    unsigned long long id,
-    unsigned long long bind_id,
-    int num_args,
-    const char* const* arg_names,
-    const unsigned char* arg_types,
-    const unsigned long long* arg_values,
-    std::unique_ptr<ConvertableToTraceFormat>* convertable_values,
-    unsigned int flags) {
+void TraceEvent::Reset(int thread_id,
+                       TimeTicks timestamp,
+                       ThreadTicks thread_timestamp,
+                       char phase,
+                       const unsigned char* category_group_enabled,
+                       const char* name,
+                       const char* scope,
+                       unsigned long long id,
+                       unsigned long long bind_id,
+                       TraceArguments* args,
+                       unsigned int flags) {
   Reset();
   timestamp_ = timestamp;
   thread_timestamp_ = thread_timestamp;
@@ -228,8 +92,14 @@ void TraceEvent::Reset(
   bind_id_ = bind_id;
   phase_ = phase;
 
-  InitArgs(num_args, arg_names, arg_types, arg_values, convertable_values,
-           flags);
+  InitArgs(args);
+}
+
+void TraceEvent::InitArgs(TraceArguments* args) {
+  if (args)
+    args_ = std::move(*args);
+  args_.CopyStringsTo(&parameter_copy_storage_,
+                      !!(flags_ & TRACE_EVENT_FLAG_COPY), &name_, &scope_);
 }
 
 void TraceEvent::UpdateDuration(const TimeTicks& now,
@@ -245,80 +115,12 @@ void TraceEvent::UpdateDuration(const TimeTicks& now,
 
 void TraceEvent::EstimateTraceMemoryOverhead(
     TraceEventMemoryOverhead* overhead) {
-  overhead->Add(TraceEventMemoryOverhead::kTraceEvent, sizeof(*this));
+  overhead->Add(TraceEventMemoryOverhead::kTraceEvent,
+                parameter_copy_storage_.EstimateTraceMemoryOverhead());
 
-  if (parameter_copy_storage_)
-    overhead->AddString(*parameter_copy_storage_);
-
-  for (size_t i = 0; i < kTraceMaxNumArgs; ++i) {
-    if (arg_types_[i] == TRACE_VALUE_TYPE_CONVERTABLE)
-      convertable_values_[i]->EstimateTraceMemoryOverhead(overhead);
-  }
-}
-
-// static
-void TraceEvent::AppendValueAsJSON(unsigned char type,
-                                   TraceEvent::TraceValue value,
-                                   std::string* out) {
-  switch (type) {
-    case TRACE_VALUE_TYPE_BOOL:
-      *out += value.as_bool ? "true" : "false";
-      break;
-    case TRACE_VALUE_TYPE_UINT:
-      StringAppendF(out, "%" PRIu64, static_cast<uint64_t>(value.as_uint));
-      break;
-    case TRACE_VALUE_TYPE_INT:
-      StringAppendF(out, "%" PRId64, static_cast<int64_t>(value.as_int));
-      break;
-    case TRACE_VALUE_TYPE_DOUBLE: {
-      // FIXME: base/json/json_writer.cc is using the same code,
-      //        should be made into a common method.
-      std::string real;
-      double val = value.as_double;
-      if (std::isfinite(val)) {
-        real = NumberToString(val);
-        // Ensure that the number has a .0 if there's no decimal or 'e'.  This
-        // makes sure that when we read the JSON back, it's interpreted as a
-        // real rather than an int.
-        if (real.find('.') == std::string::npos &&
-            real.find('e') == std::string::npos &&
-            real.find('E') == std::string::npos) {
-          real.append(".0");
-        }
-        // The JSON spec requires that non-integer values in the range (-1,1)
-        // have a zero before the decimal point - ".52" is not valid, "0.52" is.
-        if (real[0] == '.') {
-          real.insert(0, "0");
-        } else if (real.length() > 1 && real[0] == '-' && real[1] == '.') {
-          // "-.1" bad "-0.1" good
-          real.insert(1, "0");
-        }
-      } else if (std::isnan(val)){
-        // The JSON spec doesn't allow NaN and Infinity (since these are
-        // objects in EcmaScript).  Use strings instead.
-        real = "\"NaN\"";
-      } else if (val < 0) {
-        real = "\"-Infinity\"";
-      } else {
-        real = "\"Infinity\"";
-      }
-      StringAppendF(out, "%s", real.c_str());
-      break;
-    }
-    case TRACE_VALUE_TYPE_POINTER:
-      // JSON only supports double and int numbers.
-      // So as not to lose bits from a 64-bit pointer, output as a hex string.
-      StringAppendF(
-          out, "\"0x%" PRIx64 "\"",
-          static_cast<uint64_t>(reinterpret_cast<uintptr_t>(value.as_pointer)));
-      break;
-    case TRACE_VALUE_TYPE_STRING:
-    case TRACE_VALUE_TYPE_COPY_STRING:
-      EscapeJSONString(value.as_string ? value.as_string : "NULL", true, out);
-      break;
-    default:
-      NOTREACHED() << "Don't know how to print this value";
-      break;
+  for (size_t i = 0; i < arg_size(); ++i) {
+    if (arg_type(i) == TRACE_VALUE_TYPE_CONVERTABLE)
+      arg_value(i).as_convertable->EstimateTraceMemoryOverhead(overhead);
   }
 }
 
@@ -353,7 +155,7 @@ void TraceEvent::AppendAsJSON(
   // approach
   ArgumentNameFilterPredicate argument_name_filter_predicate;
   bool strip_args =
-      arg_names_[0] && !argument_filter_predicate.is_null() &&
+      arg_size() > 0 && arg_name(0) && !argument_filter_predicate.is_null() &&
       !argument_filter_predicate.Run(category_group_name, name_,
                                      &argument_name_filter_predicate);
 
@@ -362,19 +164,16 @@ void TraceEvent::AppendAsJSON(
   } else {
     *out += "{";
 
-    for (int i = 0; i < kTraceMaxNumArgs && arg_names_[i]; ++i) {
+    for (size_t i = 0; i < arg_size() && arg_name(i); ++i) {
       if (i > 0)
         *out += ",";
       *out += "\"";
-      *out += arg_names_[i];
+      *out += arg_name(i);
       *out += "\":";
 
       if (argument_name_filter_predicate.is_null() ||
-          argument_name_filter_predicate.Run(arg_names_[i])) {
-        if (arg_types_[i] == TRACE_VALUE_TYPE_CONVERTABLE)
-          convertable_values_[i]->AppendAsTraceFormat(out);
-        else
-          AppendValueAsJSON(arg_types_[i], arg_values_[i], out);
+          argument_name_filter_predicate.Run(arg_name(i))) {
+        arg_value(i).AppendAsJSON(arg_type(i), out);
       } else {
         *out += "\"__stripped__\"";
       }
@@ -475,19 +274,14 @@ void TraceEvent::AppendPrettyPrinted(std::ostringstream* out) const {
   *out << name_ << "[";
   *out << TraceLog::GetCategoryGroupName(category_group_enabled_);
   *out << "]";
-  if (arg_names_[0]) {
+  if (arg_size() > 0 && arg_name(0)) {
     *out << ", {";
-    for (int i = 0; i < kTraceMaxNumArgs && arg_names_[i]; ++i) {
+    for (size_t i = 0; i < arg_size() && arg_name(i); ++i) {
       if (i > 0)
         *out << ", ";
-      *out << arg_names_[i] << ":";
+      *out << arg_name(i) << ":";
       std::string value_as_text;
-
-      if (arg_types_[i] == TRACE_VALUE_TYPE_CONVERTABLE)
-        convertable_values_[i]->AppendAsTraceFormat(&value_as_text);
-      else
-        AppendValueAsJSON(arg_types_[i], arg_values_[i], &value_as_text);
-
+      arg_value(i).AppendAsJSON(arg_type(i), &value_as_text);
       *out << value_as_text;
     }
     *out << "}";

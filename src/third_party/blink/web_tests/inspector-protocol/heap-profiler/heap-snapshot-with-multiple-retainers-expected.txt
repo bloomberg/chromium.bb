@@ -2,10 +2,13 @@ Test multiple retaining path for an object.
 Took heap snapshot
 Parsed snapshot
 SUCCESS: found leaking
-SUCCESS: immediate retainer is V8EventListener.
-SUCCESS: immediate retainer is EventListener.
-SUCCESS: found single retaining path for v8EventListener.
-SUCCESS: found multiple retaining paths.
-SUCCESS: path1 = [InternalNode, HTMLBodyElement, HTMLHtmlElement, HTMLDocument, Window / file://]
-SUCCESS: path2 = [InternalNode, HTMLDivElement, HTMLBodyElement, HTMLHtmlElement, HTMLDocument, Window / file://]
+path1 = [(Global handles),(GC roots),]
+path2 = [(Global handles),(GC roots),]
+path3 = [V8EventListener,EventListener,InternalNode,InternalNode,HTMLBodyElement,HTMLHtmlElement,HTMLDocument,Window]
+SUCCESS: found a single retaining path for V8EventListener.
+SUCCESS: V8EventListener has an immediate retainer of EventListener.
+path4 = [V8EventListener,EventListener,InternalNode,InternalNode,HTMLDivElement,HTMLBodyElement,HTMLHtmlElement,HTMLDocument,Window]
+SUCCESS: found a single retaining path for V8EventListener.
+SUCCESS: V8EventListener has an immediate retainer of EventListener.
+SUCCESS: found 2 V8EventListeners as retainers.
 

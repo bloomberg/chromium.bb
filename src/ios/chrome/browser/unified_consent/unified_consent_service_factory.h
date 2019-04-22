@@ -5,7 +5,8 @@
 #ifndef IOS_CHROME_BROWSER_UNIFIED_CONSENT_UNIFIED_CONSENT_SERVICE_FACTORY_H_
 #define IOS_CHROME_BROWSER_UNIFIED_CONSENT_UNIFIED_CONSENT_SERVICE_FACTORY_H_
 
-#include "base/memory/singleton.h"
+#include "base/macros.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
 namespace unified_consent {
@@ -26,7 +27,7 @@ class UnifiedConsentServiceFactory : public BrowserStateKeyedServiceFactory {
   static UnifiedConsentServiceFactory* GetInstance();
 
  private:
-  friend struct base::DefaultSingletonTraits<UnifiedConsentServiceFactory>;
+  friend class base::NoDestructor<UnifiedConsentServiceFactory>;
 
   UnifiedConsentServiceFactory();
   ~UnifiedConsentServiceFactory() override;

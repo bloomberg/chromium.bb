@@ -7,14 +7,15 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
@@ -201,20 +202,21 @@ void MockChromeCleanerProcess::Options::AddSwitchesToCommandLine(
 
   if (crash_point() != CrashPoint::kNone) {
     command_line->AppendSwitchASCII(
-        kCrashPointSwitch, base::IntToString(static_cast<int>(crash_point())));
+        kCrashPointSwitch,
+        base::NumberToString(static_cast<int>(crash_point())));
   }
 
   command_line->AppendSwitchASCII(
       kRegistryKeysReportingSwitch,
-      base::IntToString(static_cast<int>(registry_keys_reporting())));
+      base::NumberToString(static_cast<int>(registry_keys_reporting())));
   command_line->AppendSwitchASCII(
       kExtensionsReportingSwitch,
-      base::IntToString(static_cast<int>(extensions_reporting())));
+      base::NumberToString(static_cast<int>(extensions_reporting())));
 
   if (expected_user_response() != PromptAcceptance::UNSPECIFIED) {
     command_line->AppendSwitchASCII(
         kExpectedUserResponseSwitch,
-        base::IntToString(static_cast<int>(expected_user_response())));
+        base::NumberToString(static_cast<int>(expected_user_response())));
   }
 }
 
@@ -361,7 +363,7 @@ int MockChromeCleanerProcess::Run() {
   if (options_.crash_point() == CrashPoint::kAfterConnection)
     exit(kDeliberateCrashExitCode);
 
-  base::MessageLoop message_loop;
+  base::test::ScopedTaskEnvironment scoped_task_environment;
   base::RunLoop run_loop;
   // After the response from the parent process is received, this will post a
   // task to unblock the child process's main thread.
@@ -400,7 +402,7 @@ void MockChromeCleanerProcess::SendScanResults(
     // request is sent to the parent process and before the response gets
     // handled on the IPC thread.
     base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind([]() { exit(kDeliberateCrashExitCode); }));
+        FROM_HERE, base::BindOnce([]() { exit(kDeliberateCrashExitCode); }));
   }
 
   (*chrome_prompt_ptr_)
@@ -425,63 +427,24 @@ void MockChromeCleanerProcess::PromptUserCallback(
   std::move(quit_closure).Run();
 }
 
+// Keep the printable names of these enums short since they're used in tests
+// with very long parameter lists.
+
 std::ostream& operator<<(std::ostream& out, CrashPoint crash_point) {
-  switch (crash_point) {
-    case CrashPoint::kNone:
-      return out << "NoCrash";
-    case CrashPoint::kOnStartup:
-      return out << "CrashOnStartup";
-    case CrashPoint::kAfterConnection:
-      return out << "CrashAfterConnection";
-    case CrashPoint::kAfterRequestSent:
-      return out << "CrashAfterRequestSent";
-    case CrashPoint::kAfterResponseReceived:
-      return out << "CrashAfterResponseReceived";
-    default:
-      NOTREACHED();
-      return out << "UnknownCrashPoint";
-  }
+  return out << "CrPt" << static_cast<int>(crash_point);
 }
 
 std::ostream& operator<<(std::ostream& out, UwsFoundStatus status) {
-  switch (status) {
-    case UwsFoundStatus::kNoUwsFound:
-      return out << "NoUwsFound";
-    case UwsFoundStatus::kUwsFoundRebootRequired:
-      return out << "UwsFoundRebootRequired";
-    case UwsFoundStatus::kUwsFoundNoRebootRequired:
-      return out << "UwsFoundNoRebootRequired";
-    default:
-      NOTREACHED();
-      return out << "UnknownFoundStatus";
-  }
+  return out << "UwS" << static_cast<int>(status);
 }
 
 std::ostream& operator<<(std::ostream& out,
                          ExtensionCleaningFeatureStatus status) {
-  switch (status) {
-    case ExtensionCleaningFeatureStatus::kEnabled:
-      return out << "ExtensionCleaningEnabled";
-    case ExtensionCleaningFeatureStatus::kDisabled:
-      return out << "ExtensionCleaningDisabled";
-    default:
-      NOTREACHED();
-      return out << "UnknownExtensionCleaningStatus";
-  }
+  return out << "Ext" << static_cast<int>(status);
 }
 
 std::ostream& operator<<(std::ostream& out, ItemsReporting items_reporting) {
-  switch (items_reporting) {
-    case ItemsReporting::kUnsupported:
-      return out << "kUnsupported";
-    case ItemsReporting::kNotReported:
-      return out << "kNotReported";
-    case ItemsReporting::kReported:
-      return out << "kReported";
-    default:
-      NOTREACHED();
-      return out << "UnknownItemsReporting";
-  }
+  return out << "Items" << static_cast<int>(items_reporting);
 }
 
 }  // namespace safe_browsing

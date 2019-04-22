@@ -52,6 +52,18 @@ class RequestQueue : public TaskQueue::Delegate {
   // Callback used by |UdpateRequest|.
   typedef base::OnceCallback<void(UpdateRequestResult)> UpdateRequestCallback;
 
+  struct AddOptions {
+    // If non-zero, the request will only be added to the queue if fewer than
+    // this many requests are already in the queue. This only considers other
+    // requests with the same |client_id.name_space|. If there are too many
+    // requests, |AddRequestResult::REQUEST_QUOTA_HIT| will be returned.
+    int maximum_in_flight_requests_for_namespace = 0;
+
+    // If true, the request will only be added to the queue if the URL being
+    // requested is unique for all active requests from the same namespace.
+    bool disallow_duplicate_requests = false;
+  };
+
   explicit RequestQueue(std::unique_ptr<RequestQueueStore> store);
   ~RequestQueue() override;
 
@@ -66,13 +78,22 @@ class RequestQueue : public TaskQueue::Delegate {
   // In case adding the request violates policy, the result will fail with
   // appropriate result. Callback will also return a copy of a request with all
   // fields set.
-  void AddRequest(const SavePageRequest& request, AddRequestCallback callback);
+  void AddRequest(const SavePageRequest& request,
+                  AddOptions options,
+                  AddRequestCallback callback);
 
   // Removes the requests matching the |request_ids|. Result is returned through
   // |callback|.  If a request id cannot be removed, this will still remove the
   // others.
   void RemoveRequests(const std::vector<int64_t>& request_ids,
                       UpdateCallback callback);
+
+  // Invokes |remove_predicate| for all requests in the queue, and removes each
+  // request where |remove_predicate| returns true. Note: |remove_predicate| is
+  // called from a background thread.
+  void RemoveRequestsIf(const base::RepeatingCallback<
+                            bool(const SavePageRequest&)>& remove_predicate,
+                        UpdateCallback done_callback);
 
   // Changes the state to |new_state| for requests matching the
   // |request_ids|. Results are returned through |callback|.
@@ -98,6 +119,12 @@ class RequestQueue : public TaskQueue::Delegate {
   void MarkAttemptCompleted(int64_t request_id,
                             FailState fail_state,
                             UpdateCallback callback);
+
+  // Sets the auto fetch notification state on the request with |request_id|.
+  void SetAutoFetchNotificationState(
+      int64_t request_id,
+      SavePageRequest::AutoFetchNotificationState state,
+      base::OnceCallback<void(bool updated)> callback);
 
   // Make a task to pick the next request, and report our choice to the
   // callbacks.

@@ -18,8 +18,9 @@ CallbackMethodRetriever::CallbackMethodRetriever(
   DCHECK(constructor_->IsConstructor());
 }
 
-void CallbackMethodRetriever::GetPrototypeObject(
+v8::Local<v8::Object> CallbackMethodRetriever::GetPrototypeObject(
     ExceptionState& exception_state) {
+  DCHECK(prototype_object_.IsEmpty()) << "Do not call GetPrototypeObject twice";
   // https://html.spec.whatwg.org/C/custom-elements.html#element-definition
   // step 10.1. Let prototype be Get(constructor, "prototype"). Rethrow any
   //   exceptions.
@@ -29,15 +30,16 @@ void CallbackMethodRetriever::GetPrototypeObject(
            ->Get(current_context_, V8AtomicString(isolate_, "prototype"))
            .ToLocal(&prototype)) {
     exception_state.RethrowV8Exception(try_catch.Exception());
-    return;
+    return v8::Local<v8::Object>();
   }
   // step 10.2. If Type(prototype) is not Object, then throw a TypeError
   //   exception.
   if (!prototype->IsObject()) {
     exception_state.ThrowTypeError("constructor prototype is not an object");
-    return;
+    return v8::Local<v8::Object>();
   }
   prototype_object_ = prototype.As<v8::Object>();
+  return prototype_object_;
 }
 
 v8::Local<v8::Value> CallbackMethodRetriever::GetFunctionOrUndefined(
@@ -59,6 +61,22 @@ v8::Local<v8::Value> CallbackMethodRetriever::GetFunctionOrUndefined(
     return v8::Local<v8::Function>();
   }
   return value;
+}
+
+v8::Local<v8::Function> CallbackMethodRetriever::GetFunctionOrThrow(
+    v8::Local<v8::Object> object,
+    const StringView& property,
+    ExceptionState& exception_state) {
+  v8::Local<v8::Value> value =
+      GetFunctionOrUndefined(object, property, exception_state);
+  if (exception_state.HadException())
+    return v8::Local<v8::Function>();
+  if (value->IsUndefined()) {
+    exception_state.ThrowTypeError(String::Format(
+        "Property \"%s\" doesn't exist", property.Characters8()));
+    return v8::Local<v8::Function>();
+  }
+  return value.As<v8::Function>();
 }
 
 }  // namespace blink

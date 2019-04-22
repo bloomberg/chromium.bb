@@ -16,11 +16,11 @@
 #include "content/browser/renderer_host/media/video_capture_controller_event_handler.h"
 #include "content/browser/renderer_host/media/video_capture_provider.h"
 #include "content/common/content_export.h"
-#include "content/common/media/video_capture.h"
 #include "content/public/browser/video_capture_device_launcher.h"
-#include "content/public/common/media_stream_request.h"
 #include "media/capture/video/video_frame_receiver.h"
 #include "media/capture/video_capture_types.h"
+#include "third_party/blink/public/common/media/video_capture.h"
+#include "third_party/blink/public/common/mediastream/media_stream_request.h"
 
 namespace content {
 
@@ -43,7 +43,7 @@ class CONTENT_EXPORT VideoCaptureController
  public:
   VideoCaptureController(
       const std::string& device_id,
-      MediaStreamType stream_type,
+      blink::MediaStreamType stream_type,
       const media::VideoCaptureParams& params,
       std::unique_ptr<VideoCaptureDeviceLauncher> device_launcher,
       base::RepeatingCallback<void(const std::string&)> emit_log_message_cb);
@@ -78,7 +78,7 @@ class CONTENT_EXPORT VideoCaptureController
   bool ResumeClient(VideoCaptureControllerID id,
                     VideoCaptureControllerEventHandler* event_handler);
 
-  int GetClientCount() const;
+  size_t GetClientCount() const;
 
   // Return true if there is client that isn't paused.
   bool HasActiveClient() const;
@@ -119,6 +119,7 @@ class CONTENT_EXPORT VideoCaptureController
   void OnLog(const std::string& message) override;
   void OnStarted() override;
   void OnStartedUsingGpuDecode() override;
+  void OnStopped() override;
 
   // Implementation of VideoCaptureDeviceLauncher::Callbacks interface:
   void OnDeviceLaunched(
@@ -146,7 +147,7 @@ class CONTENT_EXPORT VideoCaptureController
                                       base::OnceClosure done_cb);
   int serial_id() const { return serial_id_; }
   const std::string& device_id() const { return device_id_; }
-  MediaStreamType stream_type() const { return stream_type_; }
+  blink::MediaStreamType stream_type() const { return stream_type_; }
   const media::VideoCaptureParams& parameters() const { return parameters_; }
 
  private:
@@ -243,7 +244,7 @@ class CONTENT_EXPORT VideoCaptureController
 
   const int serial_id_;
   const std::string device_id_;
-  const MediaStreamType stream_type_;
+  const blink::MediaStreamType stream_type_;
   const media::VideoCaptureParams parameters_;
   std::unique_ptr<VideoCaptureDeviceLauncher> device_launcher_;
   base::RepeatingCallback<void(const std::string&)> emit_log_message_cb_;
@@ -257,7 +258,7 @@ class CONTENT_EXPORT VideoCaptureController
 
   // Takes on only the states 'STARTING', 'STARTED' and 'ERROR'. 'ERROR' is an
   // absorbing state which stops the flow of data to clients.
-  VideoCaptureState state_;
+  blink::VideoCaptureState state_;
 
   FrameDropLogState frame_drop_log_state_;
 

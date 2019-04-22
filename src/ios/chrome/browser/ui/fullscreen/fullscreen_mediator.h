@@ -47,11 +47,16 @@ class FullscreenMediator : public FullscreenModelObserver {
   void EnterFullscreen();
   void ExitFullscreen();
 
+  // Activate or deactivate the offset compensation for the frame changes.
+  void StopFrameChangeCompensation();
+  void StartFrameChangeCompensation();
+
   // Instructs the mediator to stop observing its model.
   void Disconnect();
 
  private:
   // FullscreenModelObserver:
+  void FullscreenModelToolbarHeightsUpdated(FullscreenModel* model) override;
   void FullscreenModelProgressUpdated(FullscreenModel* model) override;
   void FullscreenModelEnabledStateChanged(FullscreenModel* model) override;
   void FullscreenModelScrollEventStarted(FullscreenModel* model) override;

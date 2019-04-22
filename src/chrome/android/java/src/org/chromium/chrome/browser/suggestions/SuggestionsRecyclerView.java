@@ -82,6 +82,8 @@ public class SuggestionsRecyclerView extends RecyclerView {
     /** The context menu manager for this view. */
     private ContextMenuManager mContextMenuManager;
 
+    private boolean mIsCardBeingSwiped;
+
     public SuggestionsRecyclerView(Context context) {
         this(context, null);
     }
@@ -97,6 +99,7 @@ public class SuggestionsRecyclerView extends RecyclerView {
         setFocusable(true);
         setFocusableInTouchMode(true);
         setContentDescription(res.getString(R.string.accessibility_new_tab_page));
+        setClipToPadding(false);
 
         mGestureDetector =
                 new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
@@ -127,6 +130,18 @@ public class SuggestionsRecyclerView extends RecyclerView {
      */
     public void setTouchEnabled(boolean enabled) {
         mTouchEnabled = enabled;
+    }
+
+    /**
+     * Returns the approximate adapter position that the user has scrolled to. The purpose of this
+     * value is that it can be stored and later retrieved to restore a scroll position that is
+     * familiar to the user, showing (part of) the same content the user was previously looking at.
+     * This position is valid for that purpose regardless of device orientation changes. Note that
+     * if the underlying data has changed in the meantime, different content would be shown for this
+     * position.
+     */
+    public int getScrollPosition() {
+        return getLinearLayoutManager().findFirstVisibleItemPosition();
     }
 
     /**
@@ -381,6 +396,8 @@ public class SuggestionsRecyclerView extends RecyclerView {
         @Override
         public void onChildDraw(Canvas c, RecyclerView recyclerView, ViewHolder viewHolder,
                 float dX, float dY, int actionState, boolean isCurrentlyActive) {
+            mIsCardBeingSwiped = isCurrentlyActive && dX != 0.f;
+
             // In some cases a removed child may call this method when unrelated items are
             // interacted with (https://crbug.com/664466, b/32900699), but in that case
             // getSiblingDismissalViewHolders() below will return an empty list.
@@ -391,6 +408,14 @@ public class SuggestionsRecyclerView extends RecyclerView {
                 updateViewStateForDismiss(dX, siblingViewHolder);
             }
         }
+    }
+
+    /**
+     * Tells if one of card views is being swiped now.
+     * @return {@code true} if a card view is being swiped.
+     */
+    public boolean isCardBeingSwiped() {
+        return mIsCardBeingSwiped;
     }
 
     private List<ViewHolder> getDismissalGroupViewHolders(ViewHolder viewHolder) {

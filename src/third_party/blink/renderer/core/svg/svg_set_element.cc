@@ -24,7 +24,7 @@
 
 namespace blink {
 
-inline SVGSetElement::SVGSetElement(Document& document)
+SVGSetElement::SVGSetElement(Document& document)
     : SVGAnimateElement(svg_names::kSetTag, document) {
   SetAnimationMode(kToAnimation);
 }

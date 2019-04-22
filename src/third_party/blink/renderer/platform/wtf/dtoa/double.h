@@ -44,6 +44,8 @@ static double uint64_to_double(uint64_t d64) {
 
 // Helper functions for doubles.
 class Double {
+  STACK_ALLOCATED();
+
  public:
   static const uint64_t kSignMask = UINT64_2PART_C(0x80000000, 00000000);
   static const uint64_t kExponentMask = UINT64_2PART_C(0x7FF00000, 00000000);

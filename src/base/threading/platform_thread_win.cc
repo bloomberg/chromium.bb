@@ -214,7 +214,7 @@ void PlatformThread::SetName(const std::string& name) {
   ThreadIdNameManager::GetInstance()->SetName(name);
 
   // The SetThreadDescription API works even if no debugger is attached.
-  auto set_thread_description_func =
+  static auto set_thread_description_func =
       reinterpret_cast<SetThreadDescription>(::GetProcAddress(
           ::GetModuleHandle(L"Kernel32.dll"), "SetThreadDescription"));
   if (set_thread_description_func) {
@@ -274,9 +274,8 @@ void PlatformThread::Join(PlatformThreadHandle thread_handle) {
   // Record the event that this thread is blocking upon (for hang diagnosis).
   base::debug::ScopedThreadJoinActivity thread_activity(&thread_handle);
 
-  // TODO(https://crbug.com/707362): Make this a
-  // ScopedBlockingCallWithBaseSyncPrimitives.
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::internal::ScopedBlockingCallWithBaseSyncPrimitives scoped_blocking_call(
+      base::BlockingType::MAY_BLOCK);
 
   // Wait for the thread to exit.  It should already have terminated but make
   // sure this assumption is valid.

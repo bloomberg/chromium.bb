@@ -39,13 +39,14 @@
 #include "third_party/blink/renderer/core/trustedtypes/trusted_script.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
 using namespace html_names;
 
-inline HTMLScriptElement::HTMLScriptElement(Document& document,
-                                            const CreateElementFlags flags)
+HTMLScriptElement::HTMLScriptElement(Document& document,
+                                     const CreateElementFlags flags)
     : HTMLElement(kScriptTag, document),
       loader_(InitializeScriptLoader(flags.IsCreatedByParser(),
                                      flags.WasAlreadyStarted())) {}
@@ -55,10 +56,11 @@ HTMLScriptElement* HTMLScriptElement::Create(Document& document,
   return MakeGarbageCollected<HTMLScriptElement>(document, flags);
 }
 
-const HashSet<AtomicString>& HTMLScriptElement::GetCheckedAttributeNames()
+const AttrNameToTrustedType& HTMLScriptElement::GetCheckedAttributeTypes()
     const {
-  DEFINE_STATIC_LOCAL(HashSet<AtomicString>, attribute_set, ({"src", "text"}));
-  return attribute_set;
+  DEFINE_STATIC_LOCAL(AttrNameToTrustedType, attribute_map,
+                      ({{"src", SpecificTrustedType::kTrustedScriptURL}}));
+  return attribute_map;
 }
 
 bool HTMLScriptElement::IsURLAttribute(const Attribute& attribute) const {
@@ -92,6 +94,12 @@ void HTMLScriptElement::ParseAttribute(
     LogUpdateAttributeIfIsolatedWorldAndInDocument("script", params);
   } else if (params.name == kAsyncAttr) {
     loader_->HandleAsyncAttribute();
+  } else if (params.name == kImportanceAttr &&
+             RuntimeEnabledFeatures::PriorityHintsEnabled(&GetDocument())) {
+    // The only thing we need to do for the the importance attribute/Priority
+    // Hints is count usage upon parsing. Processing the value happens when the
+    // element loads.
+    UseCounter::Count(GetDocument(), WebFeature::kPriorityHints);
   } else {
     HTMLElement::ParseAttribute(params);
   }
@@ -99,11 +107,10 @@ void HTMLScriptElement::ParseAttribute(
 
 Node::InsertionNotificationRequest HTMLScriptElement::InsertedInto(
     ContainerNode& insertion_point) {
-  mojom::ScriptType script_type = mojom::ScriptType::kClassic;
   if (insertion_point.isConnected() && HasSourceAttribute() &&
       !ScriptLoader::IsValidScriptTypeAndLanguage(
           TypeAttributeValue(), LanguageAttributeValue(),
-          ScriptLoader::kDisallowLegacyTypeInTypeAttribute, script_type)) {
+          ScriptLoader::kDisallowLegacyTypeInTypeAttribute)) {
     UseCounter::Count(GetDocument(),
                       WebFeature::kScriptElementWithInvalidTypeHasSrc);
   }
@@ -200,6 +207,10 @@ String HTMLScriptElement::ReferrerPolicyAttributeValue() const {
   return getAttribute(kReferrerpolicyAttr);
 }
 
+String HTMLScriptElement::ImportanceAttributeValue() const {
+  return getAttribute(kImportanceAttr);
+}
+
 String HTMLScriptElement::TextFromChildren() {
   return Element::TextFromChildren();
 }
@@ -232,11 +243,10 @@ const AtomicString& HTMLScriptElement::GetNonceForElement() const {
 bool HTMLScriptElement::AllowInlineScriptForCSP(
     const AtomicString& nonce,
     const WTF::OrdinalNumber& context_line,
-    const String& script_content,
-    ContentSecurityPolicy::InlineType inline_type) {
-  return GetDocument().GetContentSecurityPolicy()->AllowInlineScript(
-      this, GetDocument().Url(), nonce, context_line, script_content,
-      inline_type);
+    const String& script_content) {
+  return GetDocument().GetContentSecurityPolicy()->AllowInline(
+      ContentSecurityPolicy::InlineType::kScript, this, script_content, nonce,
+      GetDocument().Url(), context_line);
 }
 
 Document& HTMLScriptElement::GetDocument() const {
@@ -257,15 +267,15 @@ void HTMLScriptElement::SetScriptElementForBinding(
     element.SetHTMLScriptElement(this);
 }
 
-Element* HTMLScriptElement::CloneWithoutAttributesAndChildren(
+Element& HTMLScriptElement::CloneWithoutAttributesAndChildren(
     Document& factory) const {
   CreateElementFlags flags =
       CreateElementFlags::ByCloneNode().SetAlreadyStarted(
           loader_->AlreadyStarted());
-  return factory.CreateElement(TagQName(), flags, IsValue());
+  return *factory.CreateElement(TagQName(), flags, IsValue());
 }
 
-void HTMLScriptElement::Trace(blink::Visitor* visitor) {
+void HTMLScriptElement::Trace(Visitor* visitor) {
   visitor->Trace(loader_);
   HTMLElement::Trace(visitor);
   ScriptElementBase::Trace(visitor);

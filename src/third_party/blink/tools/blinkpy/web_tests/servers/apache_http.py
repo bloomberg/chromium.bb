@@ -26,7 +26,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""Start and stop the Apache HTTP server as it is used by the layout tests."""
+"""Start and stop the Apache HTTP server as it is used by the web tests."""
 
 import logging
 import socket
@@ -45,20 +45,20 @@ class ApacheHTTP(server_base.ServerBase):
         # match old-run-webkit-tests: https://bugs.webkit.org/show_bug.cgi?id=63956
         self._name = 'httpd'
         self._log_prefixes = ('access_log', 'error_log')
-        self._mappings = [{'port': 8000},
-                          {'port': 8080},
-                          {'port': 8443, 'sslcert': True}]
+        self._mappings = [{'port': 8000, 'scheme': 'http'},
+                          {'port': 8080, 'scheme': 'http'},
+                          {'port': 8443, 'scheme': 'https', 'sslcert': True}]
         self._number_of_servers = number_of_servers
 
         self._pid_file = self._filesystem.join(self._runtime_path, '%s.pid' % self._name)
 
         executable = self._port_obj.path_to_apache()
-        server_root = self._filesystem.dirname(self._filesystem.dirname(executable))
 
-        test_dir = self._port_obj.layout_tests_dir()
+        test_dir = self._port_obj.web_tests_dir()
         document_root = self._filesystem.join(test_dir, 'http', 'tests')
         forms_test_resources_dir = self._filesystem.join(test_dir, 'fast', 'forms', 'resources')
         media_resources_dir = self._filesystem.join(test_dir, 'media')
+        reporting_observer_resources_dir = self._filesystem.join(test_dir, 'reporting-observer', 'resources')
         webaudio_resources_dir = self._filesystem.join(test_dir, 'webaudio', 'resources')
         mime_types_path = self._filesystem.join(self._port_obj.apache_config_directory(), 'mime.types')
         cert_file = self._filesystem.join(self._port_obj.apache_config_directory(), 'webkit-httpd.pem')
@@ -74,7 +74,7 @@ class ApacheHTTP(server_base.ServerBase):
         start_cmd = [
             executable,
             '-f', '%s' % self._port_obj.path_to_apache_config_file(),
-            '-C', 'ServerRoot "%s"' % server_root,
+            '-C', 'ServerRoot "%s"' % self._port_obj.apache_server_root(),
             '-C', 'DocumentRoot "%s"' % document_root,
             '-c', 'Alias /js-test-resources "%s/resources"' % test_dir,
             '-c', 'Alias /geolocation-api/js-test-resources "%s/geolocation-api/resources"' % test_dir,
@@ -87,6 +87,7 @@ class ApacheHTTP(server_base.ServerBase):
             '-c', 'Alias /bluetooth-resources "%s/external/wpt/bluetooth/resources"' % test_dir,
             '-c', 'Alias /forms-test-resources "%s"' % forms_test_resources_dir,
             '-c', 'Alias /media-resources "%s"' % media_resources_dir,
+            '-c', 'Alias /reporting-observer-resources "%s"' % reporting_observer_resources_dir,
             '-c', 'Alias /webaudio-resources "%s"' % webaudio_resources_dir,
             '-c', 'Alias /inspector-sources "%s"' % inspector_sources_dir,
             '-c', 'Alias /gen "%s"' % generated_sources_dir,
@@ -178,6 +179,7 @@ class ApacheHTTP(server_base.ServerBase):
 
         proc = self._executive.popen([self._port_obj.path_to_apache(),
                                       '-f', self._port_obj.path_to_apache_config_file(),
+                                      '-C', 'ServerRoot "%s"' % self._port_obj.apache_server_root(),
                                       '-c', 'PidFile "%s"' % self._pid_file,
                                       '-k', 'stop'])
         _, err = proc.communicate()

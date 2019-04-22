@@ -16,6 +16,8 @@ namespace vr {
 enum class UserFriendlyElementName : int {
   kNone = 0,         // A special "element" that causes the controller to point
                      // straight forward.
+  kCurrentPosition,  // A special "element" that causes the controller to
+                     // remain where it is.
   kUrl,              // URL bar
   kBackButton,       // Back button on the URL bar
   kForwardButton,    // Forward button in the overflow menu
@@ -32,14 +34,30 @@ enum class UserFriendlyElementName : int {
   kOmniboxTextField,    // The Omnibox's text input field that shows up when the
                         // URL bar is clicked.
   kOmniboxCloseButton,  // The button the exits the omnibox's text input mode.
-  kAppButtonExitToast,  // The "Press app button to exit" toast when entring
-                        // an immersive session.
+  kOmniboxVoiceInputButton,  // The button next to the omnibox text field that
+                             // enters voice input mode.
+  kVoiceInputCloseButton,  // The button present in voice input mode that brings
+                           // the user back to text entry mode.
+  kAppButtonExitToast,     // The "Press app button to exit" toast when entring
+                           // an immersive session.
   kWebXrAudioIndicator,  // Toast in WebXR indicating the microphone permission
                          // is in use.
   kWebXrHostedContent,   // Hosted content in a WebXR immersive session, e.g.
                          // permission prompts.
-  kMicrophonePermissionIndicator,  // The microphone icon that appears when a
-                                   // page is using the microphone permission.
+  kMicrophonePermissionIndicator,    // The microphone icon that appears when a
+                                     // page is using the microphone permission.
+  kWebXrExternalPromptNotification,  // The notification shown in the headset
+                                     // if a permission is requested while in
+                                     // immersive WebXR session.
+  kCameraPermissionIndicator,    // The camera icon that appears when a page is
+                                 // using the camera permission.
+  kLocationPermissionIndicator,  // The location icon that appears when a page
+                                 // is using the high accuracy location
+                                 // permission.
+  kWebXrLocationPermissionIndicator,  // The location icon that appears when a
+                                      // page is using the location permission.
+  kWebXrVideoPermissionIndicator,     // Toast in WebXR indicating the camera
+                                      // permission is in use.
 };
 
 // These are the types of actions that Java can request callbacks for once
@@ -78,6 +96,8 @@ enum class VrControllerTestAction : int {
   kMove,
   kAppDown,
   kAppUp,
+  kTouchDown,
+  kTouchUp,
 };
 
 // These are used to specify what type of keyboard input should be performed

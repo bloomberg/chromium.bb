@@ -11,7 +11,6 @@
 #include <utility>
 
 #include "base/debug/alias.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/process_memory_dump.h"
@@ -221,7 +220,7 @@ bool OneCopyRasterBufferProvider::IsResourceReadyToDraw(
 
 uint64_t OneCopyRasterBufferProvider::SetReadyToDrawCallback(
     const std::vector<const ResourcePool::InUsePoolResource*>& resources,
-    const base::Closure& callback,
+    base::OnceClosure callback,
     uint64_t pending_callback_id) const {
   gpu::SyncToken latest_sync_token;
   for (const auto* in_use : resources) {
@@ -240,7 +239,7 @@ uint64_t OneCopyRasterBufferProvider::SetReadyToDrawCallback(
     // Use the compositor context because we want this callback on the
     // compositor thread.
     compositor_context_provider_->ContextSupport()->SignalSyncToken(
-        latest_sync_token, callback);
+        latest_sync_token, std::move(callback));
   }
 
   return callback_id;
@@ -293,13 +292,12 @@ void OneCopyRasterBufferProvider::PlaybackToStagingBuffer(
     const RasterSource::PlaybackSettings& playback_settings,
     uint64_t previous_content_id,
     uint64_t new_content_id) {
-  // Allocate GpuMemoryBuffer if necessary. If using partial raster, we
-  // must allocate a buffer with BufferUsage CPU_READ_WRITE_PERSISTENT.
+  // Allocate GpuMemoryBuffer if necessary.
   if (!staging_buffer->gpu_memory_buffer) {
     staging_buffer->gpu_memory_buffer =
         gpu_memory_buffer_manager_->CreateGpuMemoryBuffer(
-            staging_buffer->size, BufferFormat(format), StagingBufferUsage(),
-            gpu::kNullSurfaceHandle);
+            staging_buffer->size, BufferFormat(format),
+            gfx::BufferUsage::GPU_READ_CPU_READ_WRITE, gpu::kNullSurfaceHandle);
   }
 
   gfx::Rect playback_rect = raster_full_rect;
@@ -382,7 +380,8 @@ gpu::SyncToken OneCopyRasterBufferProvider::CopyOnWorkerThread(
   }
 
   if (mailbox->IsZero()) {
-    uint32_t flags = gpu::SHARED_IMAGE_USAGE_RASTER;
+    uint32_t flags =
+        gpu::SHARED_IMAGE_USAGE_DISPLAY | gpu::SHARED_IMAGE_USAGE_RASTER;
     if (mailbox_texture_is_overlay_candidate)
       flags |= gpu::SHARED_IMAGE_USAGE_SCANOUT;
     *mailbox = sii->CreateSharedImage(resource_format, resource_size,
@@ -391,9 +390,11 @@ gpu::SyncToken OneCopyRasterBufferProvider::CopyOnWorkerThread(
 
   // Create staging shared image.
   if (staging_buffer->mailbox.IsZero()) {
-    staging_buffer->mailbox = sii->CreateSharedImage(
-        staging_buffer->gpu_memory_buffer.get(), gpu_memory_buffer_manager_,
-        color_space, gpu::SHARED_IMAGE_USAGE_RASTER);
+    uint32_t flags =
+        gpu::SHARED_IMAGE_USAGE_DISPLAY | gpu::SHARED_IMAGE_USAGE_RASTER;
+    staging_buffer->mailbox =
+        sii->CreateSharedImage(staging_buffer->gpu_memory_buffer.get(),
+                               gpu_memory_buffer_manager_, color_space, flags);
   } else {
     sii->UpdateSharedImage(staging_buffer->sync_token, staging_buffer->mailbox);
   }
@@ -404,12 +405,6 @@ gpu::SyncToken OneCopyRasterBufferProvider::CopyOnWorkerThread(
   DCHECK(ri);
   ri->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
   ri->WaitSyncTokenCHROMIUM(sii->GenUnverifiedSyncToken().GetConstData());
-  GLuint mailbox_texture_id = ri->CreateAndConsumeTexture(
-      mailbox_texture_is_overlay_candidate, gfx::BufferUsage::SCANOUT,
-      resource_format, mailbox->name);
-  GLuint staging_texture_id = ri->CreateAndConsumeTexture(
-      true, StagingBufferUsage(), staging_buffer->format,
-      staging_buffer->mailbox.name);
 
   // Do not use queries unless COMMANDS_COMPLETED queries are supported, or
   // COMMANDS_ISSUED queries are sufficient.
@@ -456,8 +451,9 @@ gpu::SyncToken OneCopyRasterBufferProvider::CopyOnWorkerThread(
     int rows_to_copy = std::min(chunk_size_in_rows, height - y);
     DCHECK_GT(rows_to_copy, 0);
 
-    ri->CopySubTexture(staging_texture_id, mailbox_texture_id, 0, y, 0, y,
-                       rect_to_copy.width(), rows_to_copy);
+    ri->CopySubTexture(staging_buffer->mailbox, *mailbox,
+                       mailbox_texture_target, 0, y, 0, y, rect_to_copy.width(),
+                       rows_to_copy);
     y += rows_to_copy;
 
     // Increment |bytes_scheduled_since_last_flush_| by the amount of memory
@@ -473,9 +469,6 @@ gpu::SyncToken OneCopyRasterBufferProvider::CopyOnWorkerThread(
   if (query_target != GL_NONE)
     ri->EndQueryEXT(query_target);
 
-  GLuint textures_to_delete[] = {mailbox_texture_id, staging_texture_id};
-  ri->DeleteTextures(2, textures_to_delete);
-
   // Generate sync token on the worker context that will be sent to and waited
   // for by the display compositor before using the content generated here.
   // The same sync token is used to synchronize operations on the staging
@@ -487,12 +480,6 @@ gpu::SyncToken OneCopyRasterBufferProvider::CopyOnWorkerThread(
       viz::ClientResourceProvider::GenerateSyncTokenHelper(ri);
   staging_buffer->sync_token = out_sync_token;
   return out_sync_token;
-}
-
-gfx::BufferUsage OneCopyRasterBufferProvider::StagingBufferUsage() const {
-  return use_partial_raster_
-             ? gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT
-             : gfx::BufferUsage::GPU_READ_CPU_READ_WRITE;
 }
 
 bool OneCopyRasterBufferProvider::CheckRasterFinishedQueries() {

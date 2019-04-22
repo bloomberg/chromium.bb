@@ -9,11 +9,13 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/cast_config_controller.h"
 #include "ash/public/interfaces/ime_controller.mojom.h"
 #include "ash/public/interfaces/ime_info.mojom.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "ui/display/display_observer.h"
 
 namespace ui {
 class Accelerator;
@@ -25,7 +27,9 @@ class ModeIndicatorObserver;
 
 // Connects ash IME users (e.g. the system tray) to the IME implementation,
 // which might live in Chrome browser or in a separate mojo service.
-class ASH_EXPORT ImeController : public mojom::ImeController {
+class ASH_EXPORT ImeController : public mojom::ImeController,
+                                 public display::DisplayObserver,
+                                 public CastConfigControllerObserver {
  public:
   class Observer {
    public:
@@ -71,7 +75,7 @@ class ASH_EXPORT ImeController : public mojom::ImeController {
 
   // Wrappers for mojom::ImeControllerClient methods.
   void SwitchToNextIme();
-  void SwitchToPreviousIme();
+  void SwitchToLastUsedIme();
   void SwitchImeById(const std::string& ime_id, bool show_message);
   void ActivateImeMenuItem(const std::string& key);
   void SetCapsLockEnabled(bool caps_enabled);
@@ -104,6 +108,13 @@ class ASH_EXPORT ImeController : public mojom::ImeController {
   // The anchor bounds is in the universal screen coordinates in DIP.
   void ShowModeIndicator(const gfx::Rect& anchor_bounds,
                          const base::string16& ime_short_name) override;
+
+  // display::DisplayObserver:
+  void OnDisplayMetricsChanged(const display::Display& display,
+                               uint32_t changed_metrics) override;
+
+  // CastConfigControllerObserver:
+  void OnDevicesUpdated(std::vector<mojom::SinkAndRoutePtr> devices) override;
 
   // Synchronously returns the cached caps lock state.
   bool IsCapsLockEnabled() const;

@@ -13,7 +13,7 @@
 #include "modules/audio_coding/neteq/tools/neteq_quality_test.h"
 #include "rtc_base/flags.h"
 
-using testing::InitGoogleTest;
+using ::testing::InitGoogleTest;
 
 namespace webrtc {
 namespace test {
@@ -73,7 +73,7 @@ NetEqOpusQualityTest::NetEqOpusQualityTest()
     : NetEqQualityTest(kOpusBlockDurationMs * FLAG_sub_packets,
                        kOpusSamplingKhz,
                        kOpusSamplingKhz,
-                       NetEqDecoder::kDecoderOpus),
+                       SdpAudioFormat("opus", 48000, 2)),
       opus_encoder_(NULL),
       repacketizer_(NULL),
       sub_block_size_samples_(
@@ -103,7 +103,8 @@ NetEqOpusQualityTest::NetEqOpusQualityTest()
 
   // Redefine decoder type if input is stereo.
   if (channels_ > 1) {
-    decoder_type_ = NetEqDecoder::kDecoderOpus_2ch;
+    audio_format_ = SdpAudioFormat(
+        "opus", 48000, 2, std::map<std::string, std::string>{{"stereo", "1"}});
   }
   application_ = FLAG_application;
 }

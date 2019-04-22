@@ -11,14 +11,15 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/containers/circular_deque.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/loader/resource_loader_delegate.h"
 #include "content/browser/loader/test_resource_handler.h"
@@ -95,11 +96,12 @@ class ClientCertStoreStub : public net::ClientCertStore {
 
   // net::ClientCertStore:
   void GetClientCerts(const net::SSLCertRequestInfo& cert_request_info,
-                      const ClientCertListCallback& callback) override {
+                      ClientCertListCallback callback) override {
     *requested_authorities_ = cert_request_info.cert_authorities;
     ++(*request_count_);
 
-    callback.Run(net::FakeClientCertIdentityListFromCertificateList(response_));
+    std::move(callback).Run(
+        net::FakeClientCertIdentityListFromCertificateList(response_));
   }
 
  private:
@@ -121,15 +123,14 @@ class LoaderDestroyingCertStore : public net::ClientCertStore {
         on_loader_deleted_callback_(on_loader_deleted_callback) {}
 
   // net::ClientCertStore:
-  void GetClientCerts(
-      const net::SSLCertRequestInfo& cert_request_info,
-      const ClientCertListCallback& cert_selected_callback) override {
+  void GetClientCerts(const net::SSLCertRequestInfo& cert_request_info,
+                      ClientCertListCallback cert_selected_callback) override {
     // Don't destroy |loader_| while it's on the stack.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&LoaderDestroyingCertStore::DoCallback,
-                       base::Unretained(loader_), cert_selected_callback,
-                       on_loader_deleted_callback_));
+        FROM_HERE, base::BindOnce(&LoaderDestroyingCertStore::DoCallback,
+                                  base::Unretained(loader_),
+                                  std::move(cert_selected_callback),
+                                  on_loader_deleted_callback_));
   }
 
  private:
@@ -137,10 +138,10 @@ class LoaderDestroyingCertStore : public net::ClientCertStore {
   // LoaderDestroyingCertStore (ClientCertStores are actually handles, and not
   // global cert stores).
   static void DoCallback(std::unique_ptr<ResourceLoader>* loader,
-                         const ClientCertListCallback& cert_selected_callback,
+                         ClientCertListCallback cert_selected_callback,
                          const base::Closure& on_loader_deleted_callback) {
     loader->reset();
-    cert_selected_callback.Run(net::ClientCertIdentityList());
+    std::move(cert_selected_callback).Run(net::ClientCertIdentityList());
     on_loader_deleted_callback.Run();
   }
 
@@ -251,7 +252,7 @@ class MockHTTPSJobURLRequestInterceptor : public net::URLRequestInterceptor {
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const override {
     std::string headers =
-        redirect_ ? std::string(kRedirectHeaders, arraysize(kRedirectHeaders))
+        redirect_ ? std::string(kRedirectHeaders, base::size(kRedirectHeaders))
                   : net::URLRequestTestJob::test_headers();
     return new MockHTTPSURLRequestJob(request, network_delegate, headers,
                                       "dummy response", true);
@@ -441,9 +442,9 @@ class ResourceLoaderTest : public testing::Test,
     ResourceRequestInfo::AllocateForTesting(
         request.get(), resource_type, nullptr /* resource_context */,
         rfh->GetProcess()->GetID(), rfh->GetRenderViewHost()->GetRoutingID(),
-        rfh->GetRoutingID(), belongs_to_main_frame, true /* allow_download */,
-        false /* is_async */, PREVIEWS_OFF /* previews_state */,
-        nullptr /* navigation_ui_data */);
+        rfh->GetRoutingID(), belongs_to_main_frame,
+        ResourceInterceptPolicy::kAllowAll, false /* is_async */,
+        PREVIEWS_OFF /* previews_state */, nullptr /* navigation_ui_data */);
     std::unique_ptr<TestResourceHandler> resource_handler(
         new TestResourceHandler(nullptr, nullptr));
     raw_ptr_resource_handler_ = resource_handler.get();
@@ -486,9 +487,9 @@ class ResourceLoaderTest : public testing::Test,
   }
 
   // ResourceLoaderDelegate:
-  scoped_refptr<LoginDelegate> CreateLoginDelegate(
+  std::unique_ptr<LoginDelegate> CreateLoginDelegate(
       ResourceLoader* loader,
-      net::AuthChallengeInfo* auth_info) override {
+      const net::AuthChallengeInfo& auth_info) override {
     return nullptr;
   }
   bool HandleExternalProtocol(ResourceLoader* loader,

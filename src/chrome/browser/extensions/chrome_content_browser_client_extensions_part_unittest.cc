@@ -14,15 +14,6 @@
 
 namespace extensions {
 
-namespace {
-
-void AddPattern(URLPatternSet* set, const std::string& pattern) {
-  int schemes = URLPattern::SCHEME_ALL;
-  set->AddPattern(URLPattern(schemes, pattern));
-}
-
-}  // namespace
-
 typedef testing::Test ChromeContentBrowserClientExtensionsPartTest;
 
 // Check that empty site URLs get recorded properly in ShouldAllowOpenURL
@@ -75,64 +66,6 @@ TEST_F(ChromeContentBrowserClientExtensionsPartTest,
                        test_schemes.size());
   uma.ExpectBucketCount("Extensions.ShouldAllowOpenURL.Failure.Scheme",
                         0 /* SCHEME_UNKNOWN */, 0);
-}
-
-// Verify that DoesOriginMatchAllURLsInWebExtent properly determines when a URL
-// extent is contained entirely within a particular origin.
-TEST_F(ChromeContentBrowserClientExtensionsPartTest,
-       IsolatedOriginsAndHostedAppWebExtents) {
-  auto does_origin_contain_extent = [](const std::string& origin,
-                                       const URLPatternSet& extent) {
-    return ChromeContentBrowserClientExtensionsPart::
-        DoesOriginMatchAllURLsInWebExtent(url::Origin::Create(GURL(origin)),
-                                          extent);
-  };
-
-  {
-    URLPatternSet extent;
-    AddPattern(&extent, "https://mail.google.com/foo/");
-    EXPECT_TRUE(does_origin_contain_extent("https://google.com", extent));
-    EXPECT_TRUE(does_origin_contain_extent("https://mail.google.com", extent));
-    EXPECT_FALSE(
-        does_origin_contain_extent("https://xx.mail.google.com", extent));
-    EXPECT_FALSE(does_origin_contain_extent("https://www.yahoo.com", extent));
-  }
-
-  {
-    URLPatternSet extent;
-    AddPattern(&extent, "https://www.google.com/*");
-    AddPattern(&extent, "https://www.yahoo.com/*");
-    // This extent matches two different origins, and so it is broader than any
-    // one particular origin.
-    EXPECT_FALSE(does_origin_contain_extent("https://google.com", extent));
-    EXPECT_FALSE(does_origin_contain_extent("https://www.google.com", extent));
-    EXPECT_FALSE(does_origin_contain_extent("https://www.yahoo.com", extent));
-  }
-
-  {
-    URLPatternSet extent;
-    AddPattern(&extent, "https://mail.google.com/foo/");
-    AddPattern(&extent, "https://calendar.google.com/bar/");
-    AddPattern(&extent, "https://google.com/baz/qux/");
-    // This extent is contained within google.com, but not in the more specific
-    // subdomains of google.com.
-    EXPECT_TRUE(does_origin_contain_extent("https://google.com", extent));
-    EXPECT_FALSE(does_origin_contain_extent("https://mail.google.com", extent));
-    EXPECT_FALSE(
-        does_origin_contain_extent("https://calendar.google.com", extent));
-  }
-
-  {
-    URLPatternSet extent;
-    AddPattern(&extent, "*://mail.google.com/foo/");
-    // TODO(alexmos): A strict scheme match with the isolated origin is
-    // currently not required to keep hosted apps with scheme wildcards
-    // working. See https://crbug.com/799638 and https://crbug.com/791796.
-    EXPECT_TRUE(does_origin_contain_extent("http://google.com", extent));
-    EXPECT_TRUE(does_origin_contain_extent("http://mail.google.com", extent));
-    EXPECT_TRUE(does_origin_contain_extent("https://google.com", extent));
-    EXPECT_TRUE(does_origin_contain_extent("https://mail.google.com", extent));
-  }
 }
 
 }  // namespace extensions

@@ -14,23 +14,24 @@
 #include <vector>
 
 #include "core/fpdfapi/page/cpdf_contentmarks.h"
-#include "core/fpdfapi/parser/cpdf_stream.h"
 #include "core/fxcrt/fx_number.h"
 #include "core/fxcrt/fx_string.h"
 #include "core/fxge/cfx_pathdata.h"
 
 class CPDF_AllStates;
+class CPDF_ColorSpace;
 class CPDF_Dictionary;
 class CPDF_Document;
 class CPDF_Font;
 class CPDF_Image;
 class CPDF_ImageObject;
+class CPDF_Object;
 class CPDF_PageObject;
 class CPDF_PageObjectHolder;
+class CPDF_Pattern;
+class CPDF_Stream;
 class CPDF_StreamParser;
 class CPDF_TextObject;
-class CPDF_ColorSpace;
-class CPDF_Pattern;
 
 class CPDF_StreamContentParser {
  public:
@@ -58,10 +59,8 @@ class CPDF_StreamContentParser {
   const float* GetType3Data() const { return m_Type3Data; }
   CPDF_Font* FindFont(const ByteString& name);
 
-  static ByteStringView FindKeyAbbreviationForTesting(
-      const ByteStringView& abbr);
-  static ByteStringView FindValueAbbreviationForTesting(
-      const ByteStringView& abbr);
+  static ByteStringView FindKeyAbbreviationForTesting(ByteStringView abbr);
+  static ByteStringView FindValueAbbreviationForTesting(ByteStringView abbr);
 
  private:
   struct ContentParam {
@@ -81,8 +80,8 @@ class CPDF_StreamContentParser {
   using OpCodes = std::map<uint32_t, void (CPDF_StreamContentParser::*)()>;
   static OpCodes InitializeOpCodes();
 
-  void AddNameParam(const ByteStringView& str);
-  void AddNumberParam(const ByteStringView& str);
+  void AddNameParam(ByteStringView str);
+  void AddNumberParam(ByteStringView str);
   void AddObjectParam(std::unique_ptr<CPDF_Object> pObj);
   int GetNextParamPos();
   void ClearAllParams();
@@ -95,7 +94,7 @@ class CPDF_StreamContentParser {
   int GetInteger(uint32_t index) const {
     return static_cast<int>(GetNumber(index));
   }
-  void OnOperator(const ByteStringView& op);
+  void OnOperator(ByteStringView op);
   void AddTextObject(const ByteString* pStrs,
                      float fInitKerning,
                      const std::vector<float>& kernings,

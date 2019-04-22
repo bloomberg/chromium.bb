@@ -20,9 +20,9 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
-#include "chromeos/dbus/fake_cryptohome_client.h"
-#include "chromeos/dbus/fake_session_manager_client.h"
-#include "chromeos/dbus/util/account_identifier_operators.h"
+#include "chromeos/dbus/cryptohome/account_identifier_operators.h"
+#include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
+#include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/network/onc/onc_test_utils.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_store.h"
@@ -347,7 +347,7 @@ TEST_F(UserCloudPolicyStoreChromeOSTest, StoreWithRotationValidationError) {
 
 TEST_F(UserCloudPolicyStoreChromeOSTest, StoreFail) {
   // Let store policy fail.
-  session_manager_client_->set_store_policy_success(false);
+  session_manager_client_->ForceStorePolicyFailure(true);
 
   store_->Store(policy_.policy());
   RunLoopAndExpectError(CloudPolicyStore::STATUS_STORE_ERROR);

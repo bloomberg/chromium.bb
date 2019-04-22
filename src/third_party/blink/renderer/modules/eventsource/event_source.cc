@@ -60,7 +60,7 @@
 
 namespace blink {
 
-const unsigned long long EventSource::kDefaultReconnectDelay = 3000;
+const uint64_t EventSource::kDefaultReconnectDelay = 3000;
 
 inline EventSource::EventSource(ExecutionContext* context,
                                 const KURL& url,
@@ -124,9 +124,9 @@ void EventSource::Connect() {
 
   ExecutionContext& execution_context = *this->GetExecutionContext();
   ResourceRequest request(current_url_);
-  request.SetHTTPMethod(http_names::kGET);
-  request.SetHTTPHeaderField(http_names::kAccept, "text/event-stream");
-  request.SetHTTPHeaderField(http_names::kCacheControl, "no-cache");
+  request.SetHttpMethod(http_names::kGET);
+  request.SetHttpHeaderField(http_names::kAccept, "text/event-stream");
+  request.SetHttpHeaderField(http_names::kCacheControl, "no-cache");
   request.SetRequestContext(mojom::RequestContextType::EVENT_SOURCE);
   request.SetFetchRequestMode(network::mojom::FetchRequestMode::kCors);
   request.SetFetchCredentialsMode(
@@ -143,7 +143,7 @@ void EventSource::Connect() {
     // TODO(davidben): This should be captured in the type of
     // setHTTPHeaderField's arguments.
     CString last_event_id_utf8 = parser_->LastEventId().Utf8();
-    request.SetHTTPHeaderField(
+    request.SetHttpHeaderField(
         http_names::kLastEventID,
         AtomicString(reinterpret_cast<const LChar*>(last_event_id_utf8.data()),
                      last_event_id_utf8.length()));
@@ -152,7 +152,7 @@ void EventSource::Connect() {
   ResourceLoaderOptions resource_loader_options;
   resource_loader_options.data_buffering_policy = kDoNotBufferData;
 
-  probe::willSendEventSourceRequest(&execution_context, this);
+  probe::WillSendEventSourceRequest(&execution_context);
   loader_ = MakeGarbageCollected<ThreadableLoader>(execution_context, this,
                                                    resource_loader_options);
   loader_->Start(request);
@@ -219,17 +219,15 @@ ExecutionContext* EventSource::GetExecutionContext() const {
   return ContextLifecycleObserver::GetExecutionContext();
 }
 
-void EventSource::DidReceiveResponse(
-    unsigned long identifier,
-    const ResourceResponse& response,
-    std::unique_ptr<WebDataConsumerHandle> handle) {
-  DCHECK(!handle);
+void EventSource::DidReceiveResponse(uint64_t identifier,
+                                     const ResourceResponse& response) {
   DCHECK_EQ(kConnecting, state_);
   DCHECK(loader_);
 
   resource_identifier_ = identifier;
-  current_url_ = response.Url();
-  event_stream_origin_ = SecurityOrigin::Create(response.Url())->ToString();
+  current_url_ = response.CurrentRequestUrl();
+  event_stream_origin_ =
+      SecurityOrigin::Create(response.CurrentRequestUrl())->ToString();
   int status_code = response.HttpStatusCode();
   bool mime_type_is_valid = response.MimeType() == "text/event-stream";
   bool response_is_valid = status_code == 200 && mime_type_is_valid;
@@ -245,7 +243,8 @@ void EventSource::DidReceiveResponse(
       message.Append("\") that is not UTF-8. Aborting the connection.");
       // FIXME: We are missing the source line.
       GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
-          kJSMessageSource, kErrorMessageLevel, message.ToString()));
+          mojom::ConsoleMessageSource::kJavaScript,
+          mojom::ConsoleMessageLevel::kError, message.ToString()));
     }
   } else {
     // To keep the signal-to-noise ratio low, we only log 200-response with an
@@ -258,7 +257,8 @@ void EventSource::DidReceiveResponse(
           "\") that is not \"text/event-stream\". Aborting the connection.");
       // FIXME: We are missing the source line.
       GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
-          kJSMessageSource, kErrorMessageLevel, message.ToString()));
+          mojom::ConsoleMessageSource::kJavaScript,
+          mojom::ConsoleMessageLevel::kError, message.ToString()));
     }
   }
 
@@ -284,7 +284,7 @@ void EventSource::DidReceiveData(const char* data, unsigned length) {
   parser_->AddBytes(data, length);
 }
 
-void EventSource::DidFinishLoading(unsigned long) {
+void EventSource::DidFinishLoading(uint64_t) {
   DCHECK_EQ(kOpen, state_);
   DCHECK(loader_);
 
@@ -327,13 +327,13 @@ void EventSource::OnMessageEvent(const AtomicString& event_type,
   e->initMessageEvent(event_type, false, false, data, event_stream_origin_,
                       last_event_id, nullptr, nullptr);
 
-  probe::willDispatchEventSourceEvent(GetExecutionContext(),
+  probe::WillDispatchEventSourceEvent(GetExecutionContext(),
                                       resource_identifier_, event_type,
                                       last_event_id, data);
   DispatchEvent(*e);
 }
 
-void EventSource::OnReconnectionTimeSet(unsigned long long reconnection_time) {
+void EventSource::OnReconnectionTimeSet(uint64_t reconnection_time) {
   reconnect_delay_ = reconnection_time;
 }
 

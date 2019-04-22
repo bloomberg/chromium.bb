@@ -26,9 +26,11 @@
 syntax = "proto3";
 option optimize_for = LITE_RUNTIME;
 
+import "perfetto/common/trace_stats.proto";
 import "perfetto/config/trace_config.proto";
 import "perfetto/trace/clock_snapshot.proto";
-import "perfetto/trace/trace_stats.proto";
+import "perfetto/trace/system_info.proto";
+import "perfetto/trace/trigger.proto";
 
 package perfetto.protos;
 
@@ -36,7 +38,7 @@ package perfetto.protos;
 // by the service (as opposed to the untrusted producers). Note that the field
 // ids here must be kept in sync with TracePacket.
 // This protobuf serves two purposes:
-// 1. Security validation of packets (see trace_packet_validator.cc)
+// 1. Security validation of packets (see packet_stream_validator.cc)
 // 2. Avoid bloating the service binary with symbols for all possible trace
 //    protos. The service doesn't really care about all the protos in the trace,
 //    is just passes them through.
@@ -46,8 +48,16 @@ message TrustedPacket {
   // uid == 0 and uid not set (the writer uses proto2).
   oneof optional_trusted_uid { int32 trusted_uid = 3; };
 
+  oneof optional_trusted_packet_sequence_id {
+    uint32 trusted_packet_sequence_id = 10;
+  }
+
   ClockSnapshot clock_snapshot = 6;
+  uint64 timestamp = 8;
   TraceConfig trace_config = 33;
   TraceStats trace_stats = 35;
   bytes synchronization_marker = 36;
+  bool previous_packet_dropped = 42;
+  SystemInfo system_info = 45;
+  Trigger trigger = 46;
 }

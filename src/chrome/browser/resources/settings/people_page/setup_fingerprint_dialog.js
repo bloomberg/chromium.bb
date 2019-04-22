@@ -39,6 +39,13 @@ Polymer({
     },
 
     /**
+     * Authentication token provided by settings-fingerprint-list
+     */
+    authToken: {
+      type: String,
+      value: '',
+    },
+    /**
      * The problem message to display.
      * @private
      */
@@ -87,7 +94,7 @@ Polymer({
     this.browserProxy_ = settings.FingerprintBrowserProxyImpl.getInstance();
 
     this.$.arc.reset();
-    this.browserProxy_.startEnroll();
+    this.browserProxy_.startEnroll(this.authToken);
     this.$.dialog.showModal();
   },
 
@@ -95,13 +102,15 @@ Polymer({
    * Closes the dialog.
    */
   close: function() {
-    if (this.$.dialog.open)
+    if (this.$.dialog.open) {
       this.$.dialog.close();
+    }
 
     // Note: Reset resets |step_| back to the default, so handle anything that
     // checks |step_| before resetting.
-    if (this.step_ != settings.FingerprintSetupStep.READY)
+    if (this.step_ != settings.FingerprintSetupStep.READY) {
       this.browserProxy_.cancelCurrentEnroll();
+    }
 
     this.reset_();
   },
@@ -130,8 +139,9 @@ Polymer({
    * @private
    */
   onClose_: function() {
-    if (this.$.dialog.open)
+    if (this.$.dialog.open) {
       this.$.dialog.close();
+    }
   },
 
   /**
@@ -226,8 +236,9 @@ Polymer({
    * @private
    */
   getCloseButtonText_: function(step) {
-    if (step == settings.FingerprintSetupStep.READY)
+    if (step == settings.FingerprintSetupStep.READY) {
       return this.i18n('done');
+    }
 
     return this.i18n('cancel');
   },
@@ -237,8 +248,9 @@ Polymer({
    * @private
    */
   getCloseButtonClass_: function(step) {
-    if (step == settings.FingerprintSetupStep.READY)
+    if (step == settings.FingerprintSetupStep.READY) {
       return 'action-button';
+    }
 
     return 'cancel-button';
   },
@@ -262,7 +274,7 @@ Polymer({
     this.reset_();
     this.$.arc.reset();
     this.step_ = settings.FingerprintSetupStep.MOVE_FINGER;
-    this.browserProxy_.startEnroll();
+    this.browserProxy_.startEnroll(this.authToken);
   },
 
   /**
@@ -294,6 +306,18 @@ Polymer({
     }
 
     this.$.arc.setProgress(oldValue, newValue, newValue === 100);
+  },
+
+  /**
+   * Returns the class name for fingerprint scanner animation.
+   * @private
+   */
+  getFingerprintScannerAnimationClass_: function() {
+    if (loadTimeData.getBoolean('fingerprintUnlockEnabled') &&
+        loadTimeData.getBoolean('isFingerprintReaderOnKeyboard')) {
+      return 'fingerprint-scanner-laptop';
+    }
+    return 'fingerprint-scanner-tablet';
   },
 });
 })();

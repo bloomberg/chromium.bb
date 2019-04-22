@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
@@ -17,24 +18,24 @@
 
 namespace syncer {
 
-class LocalDeviceInfoProviderImpl : public LocalDeviceInfoProvider {
+class LocalDeviceInfoProviderImpl : public MutableLocalDeviceInfoProvider {
  public:
-  LocalDeviceInfoProviderImpl(version_info::Channel channel,
-                              const std::string& version,
-                              bool is_tablet);
+  using SigninScopedDeviceIdCallback = base::RepeatingCallback<std::string()>;
+
+  LocalDeviceInfoProviderImpl(
+      version_info::Channel channel,
+      const std::string& version,
+      const SigninScopedDeviceIdCallback& signin_scoped_device_id_callback);
   ~LocalDeviceInfoProviderImpl() override;
 
-  // LocalDeviceInfoProvider implementation.
-  const DeviceInfo* GetLocalDeviceInfo() const override;
-  std::string GetSyncUserAgent() const override;
-  std::string GetLocalSyncCacheGUID() const override;
-
+  // MutableLocalDeviceInfoProvider implementation.
   void Initialize(const std::string& cache_guid,
-                  const std::string& session_name,
-                  const std::string& signin_scoped_device_id) override;
-  std::unique_ptr<Subscription> RegisterOnInitializedCallback(
-      const base::Closure& callback) override;
+                  const std::string& session_name) override;
   void Clear() override;
+  version_info::Channel GetChannel() const override;
+  const DeviceInfo* GetLocalDeviceInfo() const override;
+  std::unique_ptr<Subscription> RegisterOnInitializedCallback(
+      const base::RepeatingClosure& callback) override;
 
  private:
   // The channel (CANARY, DEV, BETA, etc.) of the current client.
@@ -43,11 +44,8 @@ class LocalDeviceInfoProviderImpl : public LocalDeviceInfoProvider {
   // The version string for the current client.
   const std::string version_;
 
-  // Whether this device has a tablet form factor (only used on Android
-  // devices).
-  const bool is_tablet_;
+  const SigninScopedDeviceIdCallback signin_scoped_device_id_callback_;
 
-  std::string cache_guid_;
   std::unique_ptr<DeviceInfo> local_device_info_;
   base::CallbackList<void(void)> callback_list_;
 

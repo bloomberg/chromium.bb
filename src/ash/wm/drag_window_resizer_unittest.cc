@@ -13,6 +13,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/window_factory.h"
 #include "ash/wm/cursor_manager_test_api.h"
+#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/drag_window_controller.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_util.h"
@@ -107,11 +108,6 @@ class DragWindowResizerTest : public AshTestBase {
     ParentWindowInPrimaryRootWindow(transient_parent_.get());
     ::wm::AddTransientChild(transient_parent_.get(), transient_child_);
     transient_parent_->set_id(5);
-
-    panel_window_ = window_factory::NewWindow(&delegate6_);
-    panel_window_->SetType(aura::client::WINDOW_TYPE_PANEL);
-    panel_window_->Init(ui::LAYER_NOT_DRAWN);
-    ParentWindowInPrimaryRootWindow(panel_window_.get());
   }
 
   void TearDown() override {
@@ -119,7 +115,6 @@ class DragWindowResizerTest : public AshTestBase {
     always_on_top_window_.reset();
     system_modal_window_.reset();
     transient_parent_.reset();
-    panel_window_.reset();
     AshTestBase::TearDown();
   }
 
@@ -161,7 +156,6 @@ class DragWindowResizerTest : public AshTestBase {
   std::unique_ptr<aura::Window> window_;
   std::unique_ptr<aura::Window> always_on_top_window_;
   std::unique_ptr<aura::Window> system_modal_window_;
-  std::unique_ptr<aura::Window> panel_window_;
   aura::Window* transient_child_;
   std::unique_ptr<aura::Window> transient_parent_;
 
@@ -232,7 +226,7 @@ TEST_F(DragWindowResizerTest, WindowDragWithMultiDisplays) {
     // Window origin should be adjusted for minimum visibility (25px).
     int expected_x = -50 + wm::kMinimumOnScreenArea;
 
-    EXPECT_EQ(base::IntToString(expected_x) + ",10 50x60",
+    EXPECT_EQ(base::NumberToString(expected_x) + ",10 50x60",
               window_->bounds().ToString());
   }
   // Dropping a window that is larger than the destination work area
@@ -615,11 +609,10 @@ TEST_F(DragWindowResizerTest, CursorDeviceScaleFactor) {
   // Move window from the root window with 2.0 device scale factor to the root
   // window with 1.0 device scale factor.
   {
-    // Make sure the window is on the default container first.
-    aura::Window* default_container =
-        RootWindowController::ForWindow(root_windows[1])
-            ->GetContainer(kShellWindowId_DefaultContainer);
-    default_container->AddChild(window_.get());
+    // Make sure the window is on the active desk container first.
+    aura::Window* active_desk_container =
+        desks_util::GetActiveDeskContainerForRoot(root_windows[1]);
+    active_desk_container->AddChild(window_.get());
     window_->SetBoundsInScreen(
         gfx::Rect(600, 0, 50, 60),
         display::Screen::GetScreen()->GetDisplayNearestWindow(root_windows[1]));
@@ -718,23 +711,6 @@ TEST_F(DragWindowResizerTest, MoveWindowAcrossDisplays) {
   // The parent of transient window can be moved across display.
   {
     aura::Window* window = transient_parent_.get();
-    window->SetBoundsInScreen(
-        gfx::Rect(0, 0, 50, 60),
-        display::Screen::GetScreen()->GetPrimaryDisplay());
-    // Grab (0, 0) of the window.
-    std::unique_ptr<WindowResizer> resizer(
-        CreateDragWindowResizer(window, gfx::Point(), HTCAPTION));
-    ASSERT_TRUE(resizer.get());
-    resizer->Drag(CalculateDragPoint(*resizer, 399, 200), 0);
-    EXPECT_TRUE(TestIfMouseWarpsAt(gfx::Point(399, 200)));
-    EXPECT_EQ("401,200",
-              Shell::Get()->aura_env()->last_mouse_location().ToString());
-    resizer->CompleteDrag();
-  }
-
-  // Panel window can be moved across display.
-  {
-    aura::Window* window = panel_window_.get();
     window->SetBoundsInScreen(
         gfx::Rect(0, 0, 50, 60),
         display::Screen::GetScreen()->GetPrimaryDisplay());

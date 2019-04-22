@@ -74,7 +74,7 @@ class MockInstanceID : public InstanceID {
 
 class MockInstanceIDDriver : public InstanceIDDriver {
  public:
-  MockInstanceIDDriver() : InstanceIDDriver(/*gcm_driver=*/nullptr){};
+  MockInstanceIDDriver() : InstanceIDDriver(/*gcm_driver=*/nullptr) {}
   ~MockInstanceIDDriver() override = default;
 
   MOCK_METHOD1(GetInstanceID, InstanceID*(const std::string& app_id));
@@ -155,9 +155,9 @@ class FCMInvalidationServiceTestDelegate {
   std::unique_ptr<FCMInvalidationService> invalidation_service_;
 };
 
-INSTANTIATE_TYPED_TEST_CASE_P(FCMInvalidationServiceTest,
-                              InvalidationServiceTest,
-                              FCMInvalidationServiceTestDelegate);
+INSTANTIATE_TYPED_TEST_SUITE_P(FCMInvalidationServiceTest,
+                               InvalidationServiceTest,
+                               FCMInvalidationServiceTestDelegate);
 
 namespace internal {
 
@@ -187,7 +187,7 @@ TEST(FCMInvalidationServiceLoggingTest, DetailedStatusCallbacksWork) {
   invalidator->RequestDetailedStatus(
       base::BindRepeating(&internal::FakeCallbackContainer::FakeCallback,
                           fake_container.weak_ptr_factory_.GetWeakPtr()));
-  EXPECT_FALSE(fake_container.called_);
+  EXPECT_TRUE(fake_container.called_);
 
   delegate->InitializeInvalidationService();
 

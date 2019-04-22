@@ -2,4 +2,3 @@ CONSOLE ERROR: line 35: Blocked script execution in 'about:blank' because the do
 Test how sandbox flags get inherited to initial document in subframe.
 
 PASS
-

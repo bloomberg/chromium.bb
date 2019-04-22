@@ -6,6 +6,7 @@
 #define V8_OBJECTS_ALLOCATION_SITE_H_
 
 #include "src/objects.h"
+#include "src/objects/struct.h"
 
 // Has to be the last include (doesn't have include guards):
 #include "src/objects/object-macros.h"
@@ -15,8 +16,9 @@ namespace internal {
 
 enum InstanceType : uint16_t;
 
-class AllocationSite : public Struct, public NeverReadOnlySpaceObject {
+class AllocationSite : public Struct {
  public:
+  NEVER_READ_ONLY_SPACE
   static const uint32_t kMaximumArrayBytesToPretransition = 8 * 1024;
   static const double kPretenureRatio;
   static const int kPretenureMinimumCreated = 100;
@@ -80,7 +82,7 @@ class AllocationSite : public Struct, public NeverReadOnlySpaceObject {
 
   inline void IncrementMementoCreateCount();
 
-  PretenureFlag GetPretenureMode() const;
+  AllocationType GetAllocationType() const;
 
   void ResetPretenureDecision();
 
@@ -157,7 +159,7 @@ class AllocationSite : public Struct, public NeverReadOnlySpaceObject {
  private:
   inline bool PretenuringDecisionMade() const;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(AllocationSite);
+  OBJECT_CONSTRUCTORS(AllocationSite, Struct);
 };
 
 class AllocationMemento : public Struct {
@@ -174,7 +176,7 @@ class AllocationMemento : public Struct {
   DECL_ACCESSORS(allocation_site, Object)
 
   inline bool IsValid() const;
-  inline AllocationSite* GetAllocationSite() const;
+  inline AllocationSite GetAllocationSite() const;
   inline Address GetAllocationSiteUnchecked() const;
 
   DECL_PRINTER(AllocationMemento)
@@ -182,8 +184,7 @@ class AllocationMemento : public Struct {
 
   DECL_CAST(AllocationMemento)
 
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(AllocationMemento);
+  OBJECT_CONSTRUCTORS(AllocationMemento, Struct);
 };
 
 }  // namespace internal

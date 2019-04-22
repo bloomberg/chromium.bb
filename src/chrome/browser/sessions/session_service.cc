@@ -38,6 +38,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "components/sessions/content/content_serialized_navigation_builder.h"
 #include "components/sessions/core/session_command.h"
 #include "components/sessions/core/session_constants.h"
@@ -64,6 +65,18 @@ using sessions::SerializedNavigationEntry;
 
 // Every kWritesPerReset commands triggers recreating the file.
 static const int kWritesPerReset = 250;
+
+namespace {
+
+SessionService::AppType AppTypeForAppName(const std::string& app_name) {
+  if (!web_app::GetAppIdFromApplicationName(app_name).empty())
+    return SessionService::TYPE_WEB_APP;
+  if (!app_name.empty())
+    return SessionService::TYPE_CHROME_APP;
+  return SessionService::TYPE_NORMAL;
+}
+
+}  // namespace
 
 // SessionService -------------------------------------------------------------
 
@@ -235,9 +248,8 @@ void SessionService::WindowOpened(Browser* browser) {
     return;
 
   RestoreIfNecessary(std::vector<GURL>(), browser);
-  SetWindowType(browser->session_id(),
-                browser->type(),
-                browser->is_app() ? TYPE_APP : TYPE_NORMAL);
+  SetWindowType(browser->session_id(), browser->type(),
+                AppTypeForAppName(browser->app_name()));
   SetWindowAppName(browser->session_id(), browser->app_name());
 }
 
@@ -382,32 +394,41 @@ void SessionService::SetWindowAppName(
   ScheduleCommand(sessions::CreateSetWindowAppNameCommand(window_id, app_name));
 }
 
-void SessionService::TabNavigationPathPrunedFromBack(const SessionID& window_id,
-                                                     const SessionID& tab_id,
-                                                     int count) {
+void SessionService::TabNavigationPathPruned(const SessionID& window_id,
+                                             const SessionID& tab_id,
+                                             int index,
+                                             int count) {
   if (!ShouldTrackChangesToWindow(window_id))
     return;
 
-  ScheduleCommand(
-      sessions::CreateTabNavigationPathPrunedFromBackCommand(tab_id, count));
-}
+  DCHECK_GE(index, 0);
+  DCHECK_GT(count, 0);
 
-void SessionService::TabNavigationPathPrunedFromFront(
-    const SessionID& window_id,
-    const SessionID& tab_id,
-    int count) {
-  if (!ShouldTrackChangesToWindow(window_id))
-    return;
-
-  // Update the range of indices.
+  // Update the range of available indices.
   if (tab_to_available_range_.find(tab_id) != tab_to_available_range_.end()) {
     std::pair<int, int>& range = tab_to_available_range_[tab_id];
-    range.first = std::max(0, range.first - count);
-    range.second = std::max(0, range.second - count);
+
+    // if both range.first and range.second are also deleted.
+    if (range.second >= index && range.second < index + count &&
+        range.first >= index && range.first < index + count) {
+      range.first = range.second = 0;
+    } else {
+      // Update range.first
+      if (range.first >= index + count)
+        range.first = range.first - count;
+      else if (range.first >= index && range.first < index + count)
+        range.first = index;
+
+      // Update range.second
+      if (range.second >= index + count)
+        range.second = std::max(range.first, range.second - count);
+      else if (range.second >= index && range.second < index + count)
+        range.second = std::max(range.first, index - 1);
+    }
   }
 
-  ScheduleCommand(
-      sessions::CreateTabNavigationPathPrunedFromFrontCommand(tab_id, count));
+  return ScheduleCommand(
+      sessions::CreateTabNavigationPathPrunedCommand(tab_id, index, count));
 }
 
 void SessionService::TabNavigationPathEntriesDeleted(const SessionID& window_id,
@@ -545,13 +566,17 @@ void SessionService::Init() {
 bool SessionService::ShouldRestoreWindowOfType(
     sessions::SessionWindow::WindowType window_type,
     AppType app_type) const {
+  if (window_type == sessions::SessionWindow::TYPE_POPUP) {
 #if defined(OS_CHROMEOS)
-  // Restore app popups for ChromeOS alone.
-  if (window_type == sessions::SessionWindow::TYPE_POPUP &&
-      app_type == TYPE_APP)
-    return true;
+    // Chrome App popups are only restored on Chrome OS.
+    if (app_type == TYPE_CHROME_APP)
+      return true;
 #endif
 
+    // Web App popups are restored on all platforms.
+    if (app_type == TYPE_WEB_APP)
+      return true;
+  }
   return window_type == sessions::SessionWindow::TYPE_TABBED;
 }
 
@@ -561,8 +586,7 @@ void SessionService::RemoveUnusedRestoreWindows(
   while (i != window_list->end()) {
     sessions::SessionWindow* window = i->get();
     if (!ShouldRestoreWindowOfType(window->type,
-                                   window->app_name.empty() ? TYPE_NORMAL :
-                                                              TYPE_APP)) {
+                                   AppTypeForAppName(window->app_name))) {
       i = window_list->erase(i);
     } else {
       ++i;
@@ -665,13 +689,13 @@ void SessionService::BuildCommandsForTab(const SessionID& window_id,
   }
 
   for (int i = min_index; i < max_index; ++i) {
-    const NavigationEntry* entry = (i == pending_index) ?
-        tab->GetController().GetPendingEntry() :
-        tab->GetController().GetEntryAtIndex(i);
+    NavigationEntry* entry = (i == pending_index)
+                                 ? tab->GetController().GetPendingEntry()
+                                 : tab->GetController().GetEntryAtIndex(i);
     DCHECK(entry);
     if (ShouldTrackURLForRestore(entry->GetVirtualURL())) {
       const SerializedNavigationEntry navigation =
-          ContentSerializedNavigationBuilder::FromNavigationEntry(i, *entry);
+          ContentSerializedNavigationBuilder::FromNavigationEntry(i, entry);
       base_session_service_->AppendRebuildCommand(
           CreateUpdateTabNavigationCommand(session_id, navigation));
     }
@@ -870,7 +894,7 @@ bool SessionService::ShouldTrackBrowser(Browser* browser) const {
     return false;
   }
   return ShouldRestoreWindowOfType(WindowTypeForBrowserType(browser->type()),
-                                   browser->is_app() ? TYPE_APP : TYPE_NORMAL);
+                                   AppTypeForAppName(browser->app_name()));
 }
 
 void SessionService::MaybeDeleteSessionOnlyData() {
@@ -898,4 +922,20 @@ void SessionService::MaybeDeleteSessionOnlyData() {
 
 sessions::BaseSessionService* SessionService::GetBaseSessionServiceForTest() {
   return base_session_service_.get();
+}
+
+void SessionService::SetAvailableRangeForTest(
+    const SessionID& tab_id,
+    const std::pair<int, int>& range) {
+  tab_to_available_range_[tab_id] = range;
+}
+
+bool SessionService::GetAvailableRangeForTest(const SessionID& tab_id,
+                                              std::pair<int, int>* range) {
+  auto i = tab_to_available_range_.find(tab_id);
+  if (i == tab_to_available_range_.end())
+    return false;
+
+  *range = i->second;
+  return true;
 }

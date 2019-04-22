@@ -77,7 +77,7 @@ HeadlessDevToolsClientImpl::HeadlessDevToolsClientImpl()
 HeadlessDevToolsClientImpl::~HeadlessDevToolsClientImpl() {
   if (parent_client_)
     parent_client_->sessions_.erase(session_id_);
-};
+}
 
 void HeadlessDevToolsClientImpl::AttachToExternalHost(
     ExternalHost* external_host) {
@@ -131,7 +131,8 @@ int HeadlessDevToolsClientImpl::GetNextRawDevToolsMessageId() {
 
 void HeadlessDevToolsClientImpl::SendRawDevToolsMessage(
     const std::string& json_message) {
-  std::unique_ptr<base::Value> message = base::JSONReader::Read(json_message);
+  std::unique_ptr<base::Value> message =
+      base::JSONReader::ReadDeprecated(json_message);
   if (!message->is_dict()) {
     LOG(ERROR) << "Malformed raw message";
     return;
@@ -153,7 +154,7 @@ void HeadlessDevToolsClientImpl::ReceiveProtocolMessage(
     const std::string& json_message) {
   // LOG(ERROR) << "[RECV] " << json_message;
   std::unique_ptr<base::Value> message =
-      base::JSONReader::Read(json_message, base::JSON_PARSE_RFC);
+      base::JSONReader::ReadDeprecated(json_message, base::JSON_PARSE_RFC);
   if (!message || !message->is_dict()) {
     NOTREACHED() << "Badly formed reply " << json_message;
     return;

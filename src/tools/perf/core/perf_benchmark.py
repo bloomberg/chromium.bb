@@ -76,13 +76,15 @@ class PerfBenchmark(benchmark.Benchmark):
     """To be overridden by perf benchmarks."""
     pass
 
-  def CustomizeBrowserOptions(self, options):
+  def CustomizeOptions(self, finder_options):
     # Subclass of PerfBenchmark should override  SetExtraBrowserOptions to add
-    # more browser options rather than overriding CustomizeBrowserOptions.
-    super(PerfBenchmark, self).CustomizeBrowserOptions(options)
+    # more browser options rather than overriding CustomizeOptions.
+    super(PerfBenchmark, self).CustomizeOptions(finder_options)
+
+    browser_options = finder_options.browser_options
 
     # Enable taking screen shot on failed pages for all perf benchmarks.
-    options.take_screenshot_for_failed_page = True
+    browser_options.take_screenshot_for_failed_page = True
 
     # The current field trial config is used for an older build in the case of
     # reference. This is a problem because we are then subjecting older builds
@@ -91,34 +93,35 @@ class PerfBenchmark(benchmark.Benchmark):
     #
     # The same logic applies to the ad filtering ruleset, which could be in a
     # binary format that an older build does not expect.
-    if options.browser_type != 'reference' and ('no-field-trials' not in
-        options.compatibility_mode):
-      variations = self._GetVariationsBrowserArgs(options.finder_options)
-      options.AppendExtraBrowserArgs(variations)
+    if (browser_options.browser_type != 'reference' and
+        'no-field-trials' not in browser_options.compatibility_mode):
+      variations = self._GetVariationsBrowserArgs(finder_options)
+      browser_options.AppendExtraBrowserArgs(variations)
 
-      options.profile_files_to_copy.extend(
-          GetAdTaggingProfileFiles(self._GetOutDirectoryEstimate(options)))
+      browser_options.profile_files_to_copy.extend(
+          GetAdTaggingProfileFiles(
+              self._GetOutDirectoryEstimate(finder_options)))
 
     # A non-sandboxed, 15-seconds-delayed gpu process is currently running in
     # the browser to collect gpu info. A command line switch is added here to
     # skip this gpu process for all perf tests to prevent any interference
     # with the test results.
-    options.AppendExtraBrowserArgs(
+    browser_options.AppendExtraBrowserArgs(
         '--disable-gpu-process-for-dx12-vulkan-info-collection')
 
     # TODO(crbug.com/881469): remove this once Webview support surface
     # synchronization and viz.
-    if options.browser_type and 'android-webview' in options.browser_type:
-      options.AppendExtraBrowserArgs(
+    if (browser_options.browser_type and
+        'android-webview' in browser_options.browser_type):
+      browser_options.AppendExtraBrowserArgs(
           '--disable-features=SurfaceSynchronization,VizDisplayCompositor')
 
     # Switch Chrome to use Perfetto instead of TraceLog as the tracing backend,
     # needed until the feature gets turned on by default everywhere.
-    if options.browser_type != 'reference':
-      options.AppendExtraBrowserArgs(
-          '--enable-features=TracingPerfettoBackend')
+    if browser_options.browser_type != 'reference':
+      browser_options.AppendExtraBrowserArgs('--enable-perfetto')
 
-    self.SetExtraBrowserOptions(options)
+    self.SetExtraBrowserOptions(browser_options)
 
   @staticmethod
   def FixupTargetOS(target_os):
@@ -158,7 +161,7 @@ class PerfBenchmark(benchmark.Benchmark):
     return (p for p in possible_directories
             if os.path.basename(p).lower() == browser_type)
 
-  def _GetOutDirectoryEstimate(self, options):
+  def _GetOutDirectoryEstimate(self, finder_options):
     """Gets an estimate of the output directory for this build.
 
     Note that as an estimate, this may be incorrect. Callers should be aware of
@@ -166,12 +169,11 @@ class PerfBenchmark(benchmark.Benchmark):
     incorrect directory, nothing should critically break.
 
     """
-    finder_options = options.finder_options
     if finder_options.chromium_output_dir is not None:
       return finder_options.chromium_output_dir
 
     possible_directories = self._GetPossibleBuildDirectories(
-        finder_options.chrome_root, options.browser_type)
+        finder_options.chrome_root, finder_options.browser_options.browser_type)
     return next((p for p in possible_directories if os.path.exists(p)), None)
 
   @staticmethod

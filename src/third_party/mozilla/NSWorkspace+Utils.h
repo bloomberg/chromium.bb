@@ -43,16 +43,13 @@
 
 - (NSArray*)installedBrowserIdentifiers;    // sort order not specified
 - (NSString*)defaultBrowserIdentifier;
-- (NSURL*)defaultBrowserURL;
 
 - (NSArray*)installedFeedViewerIdentifiers;
 - (NSString*)defaultFeedViewerIdentifier;
-- (NSURL*)defaultFeedViewerURL;
 
 - (void)setDefaultBrowserWithIdentifier:(NSString*)bundleID;
 - (void)setDefaultFeedViewerWithIdentifier:(NSString*)bundleID;
 
-- (NSURL*)urlOfApplicationWithIdentifier:(NSString*)bundleID;
 - (NSString*)identifierForBundle:(NSURL*)inBundleURL;
 - (NSString*)displayNameForFile:(NSURL*)inFileURL;
 

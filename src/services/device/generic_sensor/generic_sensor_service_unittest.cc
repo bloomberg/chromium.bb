@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/barrier_closure.h"
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -154,8 +155,7 @@ class TestSensorClient : public mojom::SensorClient {
 class GenericSensorServiceTest : public DeviceServiceTestBase {
  public:
   GenericSensorServiceTest()
-      : io_thread_task_runner_(io_thread_.task_runner()),
-        io_loop_finished_event_(
+      : io_loop_finished_event_(
             base::WaitableEvent::ResetPolicy::AUTOMATIC,
             base::WaitableEvent::InitialState::NOT_SIGNALED) {}
 
@@ -163,7 +163,7 @@ class GenericSensorServiceTest : public DeviceServiceTestBase {
     scoped_feature_list_.InitWithFeatures(
         {features::kGenericSensor, features::kGenericSensorExtraClasses}, {});
     DeviceServiceTestBase::SetUp();
-    io_thread_task_runner_->PostTask(
+    io_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&GenericSensorServiceTest::SetUpOnIOThread,
                                   base::Unretained(this)));
     io_loop_finished_event_.Wait();
@@ -172,7 +172,7 @@ class GenericSensorServiceTest : public DeviceServiceTestBase {
   }
 
   void TearDown() override {
-    io_thread_task_runner_->PostTask(
+    io_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&GenericSensorServiceTest::TearDownOnIOThread,
                                   base::Unretained(this)));
     io_loop_finished_event_.Wait();
@@ -195,7 +195,6 @@ class GenericSensorServiceTest : public DeviceServiceTestBase {
     io_loop_finished_event_.Signal();
   }
   mojom::SensorProviderPtr sensor_provider_;
-  scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner_;
   base::WaitableEvent io_loop_finished_event_;
   base::test::ScopedFeatureList scoped_feature_list_;
 

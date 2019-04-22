@@ -5,10 +5,13 @@
 #ifndef CHROME_BROWSER_BROWSING_DATA_SITE_DATA_SIZE_COLLECTOR_H_
 #define CHROME_BROWSER_BROWSING_DATA_SITE_DATA_SIZE_COLLECTOR_H_
 
+#include <list>
+#include <string>
+#include <vector>
+
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/browsing_data/browsing_data_appcache_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_cache_storage_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_channel_id_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_cookie_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_database_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_file_system_helper.h"
@@ -19,24 +22,18 @@
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/storage_partition.h"
 
-namespace {
-
-typedef std::list<net::CanonicalCookie> CookieList;
-typedef std::list<BrowsingDataDatabaseHelper::DatabaseInfo> DatabaseInfoList;
-typedef std::list<BrowsingDataLocalStorageHelper::LocalStorageInfo>
-    LocalStorageInfoList;
-typedef std::list<content::StorageUsageInfo> IndexedDBInfoList;
-typedef std::list<BrowsingDataFileSystemHelper::FileSystemInfo>
-    FileSystemInfoList;
-typedef net::ChannelIDStore::ChannelIDList ChannelIDList;
-typedef std::list<content::StorageUsageInfo> ServiceWorkerUsageInfoList;
-typedef std::list<content::StorageUsageInfo> CacheStorageUsageInfoList;
-typedef std::vector<std::string> FlashLSODomainList;
-
-}  // namespace
-
 class SiteDataSizeCollector {
  public:
+  using CookieList = std::list<net::CanonicalCookie>;
+  using DatabaseInfoList = std::list<content::StorageUsageInfo>;
+  using LocalStorageInfoList = std::list<content::StorageUsageInfo>;
+  using IndexedDBInfoList = std::list<content::StorageUsageInfo>;
+  using FileSystemInfoList =
+      std::list<BrowsingDataFileSystemHelper::FileSystemInfo>;
+  using ServiceWorkerUsageInfoList = std::list<content::StorageUsageInfo>;
+  using CacheStorageUsageInfoList = std::list<content::StorageUsageInfo>;
+  using FlashLSODomainList = std::vector<std::string>;
+
   SiteDataSizeCollector(const base::FilePath& default_storage_partition_path,
                         BrowsingDataCookieHelper* cookie_helper,
                         BrowsingDataDatabaseHelper* database_helper,
@@ -44,21 +41,20 @@ class SiteDataSizeCollector {
                         BrowsingDataAppCacheHelper* appcache_helper,
                         BrowsingDataIndexedDBHelper* indexed_db_helper,
                         BrowsingDataFileSystemHelper* file_system_helper,
-                        BrowsingDataChannelIDHelper* channel_id_helper,
                         BrowsingDataServiceWorkerHelper* service_worker_helper,
                         BrowsingDataCacheStorageHelper* cache_storage_helper,
                         BrowsingDataFlashLSOHelper* flash_lso_helper);
   virtual ~SiteDataSizeCollector();
 
-  using FetchCallback = base::Callback<void(int64_t)>;
+  using FetchCallback = base::OnceCallback<void(int64_t)>;
 
   // Requests to fetch the total storage space used by site data.
-  void Fetch(const FetchCallback& callback);
+  void Fetch(FetchCallback callback);
 
  private:
   // Callback methods to be invoked when fetching the data is complete.
   void OnAppCacheModelInfoLoaded(
-      scoped_refptr<content::AppCacheInfoCollection>);
+      const std::list<content::StorageUsageInfo>& info_list);
   void OnCookiesModelInfoLoaded(const net::CookieList& cookie_list);
   void OnDatabaseModelInfoLoaded(const DatabaseInfoList& database_info_list);
   void OnLocalStorageModelInfoLoaded(
@@ -67,7 +63,6 @@ class SiteDataSizeCollector {
       const IndexedDBInfoList& indexed_db_info_list);
   void OnFileSystemModelInfoLoaded(
       const FileSystemInfoList& file_system_info_list);
-  void OnChannelIDModelInfoLoaded(const ChannelIDList& channel_id_list);
   void OnServiceWorkerModelInfoLoaded(
       const ServiceWorkerUsageInfoList& service_worker_info_list);
   void OnCacheStorageModelInfoLoaded(
@@ -88,7 +83,6 @@ class SiteDataSizeCollector {
   scoped_refptr<BrowsingDataLocalStorageHelper> local_storage_helper_;
   scoped_refptr<BrowsingDataIndexedDBHelper> indexed_db_helper_;
   scoped_refptr<BrowsingDataFileSystemHelper> file_system_helper_;
-  scoped_refptr<BrowsingDataChannelIDHelper> channel_id_helper_;
   scoped_refptr<BrowsingDataServiceWorkerHelper> service_worker_helper_;
   scoped_refptr<BrowsingDataCacheStorageHelper> cache_storage_helper_;
   scoped_refptr<BrowsingDataFlashLSOHelper> flash_lso_helper_;

@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -151,10 +152,10 @@ class ChromePromptIPCParentProcess : public ParentProcess {
     if (test_config.with_registry_keys)
       AppendSwitch(kIncludeRegistryKeysSwitch);
     AppendSwitch(kExpectedPromptResultSwitch,
-                 base::IntToString(
+                 base::NumberToString(
                      static_cast<int>(test_config.expected_prompt_acceptance)));
     AppendSwitch(kExpectedParentDisconnectedSwitch,
-                 base::IntToString(static_cast<int>(
+                 base::NumberToString(static_cast<int>(
                      test_config.expected_parent_disconnected)));
   }
 
@@ -380,18 +381,18 @@ TEST_P(ChromePromptIPCTest, Communication) {
   EXPECT_EQ(expected_exit_code, exit_code);
 }
 
-INSTANTIATE_TEST_CASE_P(NoUwSPresent,
-                        ChromePromptIPCTest,
-                        testing::Combine(
-                            /*uws_expected=*/Values(false),
-                            /*uwe_expected=*/Values(false),
-                            /*with_registry_keys=*/Values(false),
-                            Values(mojom::PromptAcceptance::DENIED),
-                            Values(ParentDisconnected::kNone,
-                                   ParentDisconnected::kOnStartup)),
-                        GetParamNameForTest());
+INSTANTIATE_TEST_SUITE_P(NoUwSPresent,
+                         ChromePromptIPCTest,
+                         testing::Combine(
+                             /*uws_expected=*/Values(false),
+                             /*uwe_expected=*/Values(false),
+                             /*with_registry_keys=*/Values(false),
+                             Values(mojom::PromptAcceptance::DENIED),
+                             Values(ParentDisconnected::kNone,
+                                    ParentDisconnected::kOnStartup)),
+                         GetParamNameForTest());
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     UwSPresent,
     ChromePromptIPCTest,
     testing::Combine(

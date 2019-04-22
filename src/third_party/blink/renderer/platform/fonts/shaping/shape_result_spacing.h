@@ -20,7 +20,18 @@ class PLATFORM_EXPORT ShapeResultSpacing final {
   STACK_ALLOCATED();
 
  public:
-  explicit ShapeResultSpacing(const TextContainerType&);
+  explicit ShapeResultSpacing(const TextContainerType& text)
+      : text_(text),
+        letter_spacing_(0),
+        word_spacing_(0),
+        expansion_(0),
+        expansion_per_opportunity_(0),
+        expansion_opportunity_count_(0),
+        text_justify_(TextJustify::kAuto),
+        has_spacing_(false),
+        normalize_space_(false),
+        allow_tabs_(false),
+        is_after_expansion_(false) {}
 
   const TextContainerType& Text() const { return text_; }
   float LetterSpacing() const { return letter_spacing_; }

@@ -129,6 +129,8 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
   // |blocking_page_ready_callback| is null, this function will create a
   // blocking page and call Show() on it. Otherwise, this function creates an
   // interstitial and passes it to |blocking_page_ready_callback|.
+  // |blocking_page_ready_callback| is guaranteed not to be called
+  // synchronously.
   static void HandleSSLError(
       content::WebContents* web_contents,
       int cert_error,
@@ -182,6 +184,7 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
   void StartHandlingError();
 
  private:
+  friend class content::WebContentsUserData<SSLErrorHandler>;
   FRIEND_TEST_ALL_PREFIXES(SSLErrorHandlerTest, CalculateOptionsMask);
 
   void ShowCaptivePortalInterstitial(const GURL& landing_url);
@@ -241,6 +244,8 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
   std::unique_ptr<CommonNameMismatchHandler> common_name_mismatch_handler_;
 
   base::WeakPtrFactory<SSLErrorHandler> weak_ptr_factory_;
+
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(SSLErrorHandler);
 };

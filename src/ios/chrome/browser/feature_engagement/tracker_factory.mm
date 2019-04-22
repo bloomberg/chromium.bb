@@ -4,7 +4,7 @@
 
 #include "ios/chrome/browser/feature_engagement/tracker_factory.h"
 
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "components/feature_engagement/public/tracker.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "ios/chrome/browser/browser_state/browser_state_otr_helper.h"
@@ -19,7 +19,8 @@ namespace feature_engagement {
 
 // static
 TrackerFactory* TrackerFactory::GetInstance() {
-  return base::Singleton<TrackerFactory>::get();
+  static base::NoDestructor<TrackerFactory> instance;
+  return instance.get();
 }
 
 // static

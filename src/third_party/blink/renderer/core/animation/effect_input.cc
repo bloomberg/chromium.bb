@@ -51,8 +51,8 @@
 #include "third_party/blink/renderer/core/frame/frame_console.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
-#include "third_party/blink/renderer/platform/wtf/ascii_ctype.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/text/ascii_ctype.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "v8/include/v8.h"
 
@@ -90,9 +90,9 @@ void SetKeyframeValue(Element* element,
   StyleSheetContents* style_sheet_contents = document.ElementSheet().Contents();
   CSSPropertyID css_property =
       AnimationInputHelpers::KeyframeAttributeToCSSProperty(property, document);
-  if (css_property != CSSPropertyInvalid) {
+  if (css_property != CSSPropertyID::kInvalid) {
     MutableCSSPropertyValueSet::SetResult set_result =
-        css_property == CSSPropertyVariable
+        css_property == CSSPropertyID::kVariable
             ? keyframe.SetCSSPropertyValue(
                   AtomicString(property), document.GetPropertyRegistry(), value,
                   document.GetSecureContextMode(), style_sheet_contents)
@@ -102,7 +102,8 @@ void SetKeyframeValue(Element* element,
     if (!set_result.did_parse && execution_context) {
       if (document.GetFrame()) {
         document.GetFrame()->Console().AddMessage(ConsoleMessage::Create(
-            kJSMessageSource, kWarningMessageLevel,
+            mojom::ConsoleMessageSource::kJavaScript,
+            mojom::ConsoleMessageLevel::kWarning,
             "Invalid keyframe value for property " + property + ": " + value));
       }
     }
@@ -111,7 +112,7 @@ void SetKeyframeValue(Element* element,
   css_property =
       AnimationInputHelpers::KeyframeAttributeToPresentationAttribute(property,
                                                                       element);
-  if (css_property != CSSPropertyInvalid) {
+  if (css_property != CSSPropertyID::kInvalid) {
     keyframe.SetPresentationAttributeValue(
         CSSProperty::Get(css_property), value, document.GetSecureContextMode(),
         style_sheet_contents);
@@ -190,7 +191,7 @@ bool IsAnimatableKeyframeAttribute(const String& property,
                                    const Document& document) {
   CSSPropertyID css_property =
       AnimationInputHelpers::KeyframeAttributeToCSSProperty(property, document);
-  if (css_property != CSSPropertyInvalid) {
+  if (css_property != CSSPropertyID::kInvalid) {
     return !CSSAnimations::IsAnimationAffectingProperty(
         CSSProperty::Get(css_property));
   }
@@ -198,7 +199,7 @@ bool IsAnimatableKeyframeAttribute(const String& property,
   css_property =
       AnimationInputHelpers::KeyframeAttributeToPresentationAttribute(property,
                                                                       element);
-  if (css_property != CSSPropertyInvalid)
+  if (css_property != CSSPropertyID::kInvalid)
     return true;
 
   return !!AnimationInputHelpers::KeyframeAttributeToSVGAttribute(property,
@@ -426,7 +427,7 @@ bool GetPropertyIndexedKeyframeValues(const v8::Local<v8::Object>& keyframe,
 // See https://drafts.csswg.org/web-animations/#processing-a-keyframes-argument
 StringKeyframeVector ConvertObjectForm(Element* element,
                                        Document& document,
-                                       const v8::Local<v8::Object>& keyframe,
+                                       const v8::Local<v8::Object>& v8_keyframe,
                                        ScriptState* script_state,
                                        ExceptionState& exception_state) {
   // We implement much of this procedure out of order from the way the spec is
@@ -437,7 +438,7 @@ StringKeyframeVector ConvertObjectForm(Element* element,
   // to process a keyframe-like object'.
   BasePropertyIndexedKeyframe* property_indexed_keyframe =
       NativeValueTraits<BasePropertyIndexedKeyframe>::NativeValue(
-          script_state->GetIsolate(), keyframe, exception_state);
+          script_state->GetIsolate(), v8_keyframe, exception_state);
   if (exception_state.HadException())
     return {};
 
@@ -466,7 +467,7 @@ StringKeyframeVector ConvertObjectForm(Element* element,
   // object' and step 5.2 of the 'procedure to process a keyframes argument'.
 
   Vector<String> keyframe_properties = GetOwnPropertyNames(
-      script_state->GetIsolate(), keyframe, exception_state);
+      script_state->GetIsolate(), v8_keyframe, exception_state);
   if (exception_state.HadException())
     return {};
 
@@ -496,7 +497,7 @@ StringKeyframeVector ConvertObjectForm(Element* element,
       continue;
 
     Vector<String> values;
-    if (!GetPropertyIndexedKeyframeValues(keyframe, property, script_state,
+    if (!GetPropertyIndexedKeyframeValues(v8_keyframe, property, script_state,
                                           exception_state, values)) {
       return {};
     }

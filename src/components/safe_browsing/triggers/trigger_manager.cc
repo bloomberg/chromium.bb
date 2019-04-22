@@ -4,6 +4,7 @@
 
 #include "components/safe_browsing/triggers/trigger_manager.h"
 
+#include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/base_ui_manager.h"
@@ -36,6 +37,10 @@ bool TriggerNeedsOptInForCollection(const TriggerType trigger_type) {
       return true;
     case TriggerType::SUSPICIOUS_SITE:
       // Suspicious site collection happens in the background so the user must
+      // already be opted in before the trigger is allowed to run.
+      return true;
+    case TriggerType::APK_DOWNLOAD:
+      // APK download collection happens in the background so the user must
       // already be opted in before the trigger is allowed to run.
       return true;
   }
@@ -243,5 +248,7 @@ void TriggerManagerWebContentsHelper::CreateForWebContents(
 void TriggerManagerWebContentsHelper::WebContentsDestroyed() {
   trigger_manager_->WebContentsDestroyed(web_contents());
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(TriggerManagerWebContentsHelper)
 
 }  // namespace safe_browsing

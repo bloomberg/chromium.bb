@@ -10,9 +10,9 @@ import "chrome/chrome_cleaner/interfaces/engine_file_requests.mojom";
 import "chrome/chrome_cleaner/interfaces/pup.mojom";
 import "components/chrome_cleaner/public/interfaces/chrome_prompt.mojom";
 
-// All result_code parameters and return values in these interfaces correspond
-// to ESETResultCode values for the ESET engine, and to
-// EngineOperationStatus::ResultCode values the Urza engine.
+// All result_code parameters and return values in these interfaces are either
+// an EngineResultCode or, if higher than EngineResultCode::kEngineInternal, an
+// engine-specific value.
 
 // This interface passes scan results back from the target process to the
 // broker process.

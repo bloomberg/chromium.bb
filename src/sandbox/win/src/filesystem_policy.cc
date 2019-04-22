@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
 #include "sandbox/win/src/ipc_tags.h"
@@ -415,7 +415,7 @@ base::string16 FixNTPrefixForMatch(const base::string16& name) {
 
   // NT prefix escaped for rule matcher
   const wchar_t kNTPrefixEscaped[] = L"\\/?/?\\";
-  const int kNTPrefixEscapedLen = arraysize(kNTPrefixEscaped) - 1;
+  const int kNTPrefixEscapedLen = base::size(kNTPrefixEscaped) - 1;
 
   if (0 != mod_name.compare(0, kNTPrefixLen, kNTPrefix)) {
     if (0 != mod_name.compare(0, kNTPrefixEscapedLen, kNTPrefixEscaped)) {

@@ -6,6 +6,8 @@
 
 #include <vector>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/macros.h"
@@ -29,7 +31,7 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
-#include "content/test/did_commit_provisional_load_interceptor.h"
+#include "content/test/did_commit_navigation_interceptor.h"
 #include "device/base/features.h"
 #include "device/fido/fake_fido_discovery.h"
 #include "device/fido/fido_discovery_factory.h"
@@ -43,7 +45,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/modules/webauthn/authenticator.mojom.h"
+#include "third_party/blink/public/mojom/webauthn/authenticator.mojom.h"
 
 namespace content {
 
@@ -64,6 +66,10 @@ using TestGetCallbackReceiver = ::device::test::StatusAndValueCallbackReceiver<
     AuthenticatorStatus,
     GetAssertionAuthenticatorResponsePtr>;
 
+constexpr char kPublicKeyErrorMessage[] =
+    "webauth: NotSupportedError: Required parameters missing in "
+    "`options.publicKey`.";
+
 constexpr char kTimeoutErrorMessage[] =
     "webauth: NotAllowedError: The operation either timed out or was not "
     "allowed. See: https://w3c.github.io/webauthn/#sec-assertion-privacy.";
@@ -76,6 +82,16 @@ constexpr char kRelyingPartySecurityErrorMessage[] =
     "webauth: SecurityError: The relying party ID 'localhost' is not a "
     "registrable domain suffix of, nor equal to 'https://www.acme.com";
 
+constexpr char kRelyingPartyUserIconUrlSecurityErrorMessage[] =
+    "webauth: SecurityError: 'user.icon' should be a secure URL";
+
+constexpr char kRelyingPartyRpIconUrlSecurityErrorMessage[] =
+    "webauth: SecurityError: 'rp.icon' should be a secure URL";
+
+constexpr char kInvalidStateError[] =
+    "webauth: InvalidStateError: The user attempted to use an authenticator "
+    "that recognized none of the provided credentials.";
+
 // Templates to be used with base::ReplaceStringPlaceholders. Can be
 // modified to include up to 9 replacements. The default values for
 // any additional replacements added should also be added to the
@@ -83,12 +99,12 @@ constexpr char kRelyingPartySecurityErrorMessage[] =
 constexpr char kCreatePublicKeyTemplate[] =
     "navigator.credentials.create({ publicKey: {"
     "  challenge: new TextEncoder().encode('climb a mountain'),"
-    "  rp: { id: '$3', name: 'Acme' },"
+    "  rp: { id: '$3', name: 'Acme', icon: '$7'},"
     "  user: { "
     "    id: new TextEncoder().encode('1098237235409872'),"
     "    name: 'avery.a.jones@example.com',"
     "    displayName: 'Avery A. Jones', "
-    "    icon: 'https://pics.acme.com/00/p/aBjjjpqPb.png'},"
+    "    icon: '$8'},"
     "  pubKeyCredParams: [{ type: 'public-key', alg: '$4'}],"
     "  timeout: 1000,"
     "  excludeCredentials: [],"
@@ -115,18 +131,22 @@ struct CreateParameters {
   const char* authenticator_attachment = kCrossPlatform;
   const char* algorithm_identifier = "-7";
   const char* attestation = "none";
+  const char* rp_icon = "https://pics.acme.com/00/p/aBjjjpqPb.png";
+  const char* user_icon = "https://pics.acme.com/00/p/aBjjjpqPb.png";
 };
 
 std::string BuildCreateCallWithParameters(const CreateParameters& parameters) {
-  std::vector<std::string> substititions;
-  substititions.push_back(parameters.require_resident_key ? "true" : "false");
-  substititions.push_back(parameters.user_verification);
-  substititions.push_back(parameters.rp_id);
-  substititions.push_back(parameters.algorithm_identifier);
-  substititions.push_back(parameters.authenticator_attachment);
-  substititions.push_back(parameters.attestation);
+  std::vector<std::string> substitutions;
+  substitutions.push_back(parameters.require_resident_key ? "true" : "false");
+  substitutions.push_back(parameters.user_verification);
+  substitutions.push_back(parameters.rp_id);
+  substitutions.push_back(parameters.algorithm_identifier);
+  substitutions.push_back(parameters.authenticator_attachment);
+  substitutions.push_back(parameters.attestation);
+  substitutions.push_back(parameters.rp_icon);
+  substitutions.push_back(parameters.user_icon);
   return base::ReplaceStringPlaceholders(kCreatePublicKeyTemplate,
-                                         substititions, nullptr);
+                                         substitutions, nullptr);
 }
 
 constexpr char kGetPublicKeyTemplate[] =
@@ -159,20 +179,21 @@ std::string BuildGetCallWithParameters(const GetParameters& parameters) {
 // Helper class that executes the given |closure| the very last moment before
 // the next navigation commits in a given WebContents.
 class ClosureExecutorBeforeNavigationCommit
-    : public DidCommitProvisionalLoadInterceptor {
+    : public DidCommitNavigationInterceptor {
  public:
   ClosureExecutorBeforeNavigationCommit(WebContents* web_contents,
                                         base::OnceClosure closure)
-      : DidCommitProvisionalLoadInterceptor(web_contents),
+      : DidCommitNavigationInterceptor(web_contents),
         closure_(std::move(closure)) {}
   ~ClosureExecutorBeforeNavigationCommit() override = default;
 
  protected:
-  bool WillDispatchDidCommitProvisionalLoad(
+  bool WillProcessDidCommitNavigation(
       RenderFrameHost* render_frame_host,
+      NavigationRequest* navigation_request,
       ::FrameHostMsg_DidCommitProvisionalLoad_Params* params,
-      service_manager::mojom::InterfaceProviderRequest*
-          interface_provider_request) override {
+      mojom::DidCommitProvisionalLoadInterfaceParamsPtr* interface_params)
+      override {
     if (closure_)
       std::move(closure_).Run();
     return true;
@@ -268,7 +289,8 @@ class WebAuthBrowserTestContentBrowserClient : public ContentBrowserClient {
 
   std::unique_ptr<AuthenticatorRequestClientDelegate>
   GetWebAuthenticationRequestDelegate(
-      RenderFrameHost* render_frame_host) override {
+      RenderFrameHost* render_frame_host,
+      const std::string& relying_party_id) override {
     test_state_->delegate_create_count++;
     return std::make_unique<WebAuthBrowserTestClientDelegate>(test_state_);
   }
@@ -293,7 +315,7 @@ class WebAuthBrowserTestBase : public content::ContentBrowserTest {
     ContentBrowserTest::SetUpOnMainThread();
 
     host_resolver()->AddRule("*", "127.0.0.1");
-    https_server().ServeFilesFromSourceDirectory("content/test/data");
+    https_server().ServeFilesFromSourceDirectory(GetTestDataFilePath());
     ASSERT_TRUE(https_server().Start());
 
     test_client_.reset(
@@ -350,14 +372,10 @@ class WebAuthLocalClientBrowserTest : public WebAuthBrowserTestBase {
   }
 
   void ConnectToAuthenticator() {
-    auto* interface_provider =
-        static_cast<service_manager::mojom::InterfaceProvider*>(
-            static_cast<RenderFrameHostImpl*>(
-                shell()->web_contents()->GetMainFrame()));
-
-    interface_provider->GetInterface(
-        Authenticator::Name_,
-        mojo::MakeRequest(&authenticator_ptr_).PassMessagePipe());
+    auto* broker = static_cast<blink::mojom::DocumentInterfaceBroker*>(
+        static_cast<RenderFrameHostImpl*>(
+            shell()->web_contents()->GetMainFrame()));
+    broker->GetAuthenticator(mojo::MakeRequest(&authenticator_ptr_));
   }
 
   blink::mojom::PublicKeyCredentialCreationOptionsPtr
@@ -682,6 +700,50 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
             result.substr(0, strlen(kRelyingPartySecurityErrorMessage)));
 }
 
+// Tests that when navigator.credentials.create() is called with a null
+// relying party, we get a NotSupportedError.
+IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
+                       CreatePublicKeyWithNullRp) {
+  CreateParameters parameters;
+  parameters.rp_icon = "";
+  std::string script = BuildCreateCallWithParameters(parameters);
+  const char kExpectedSubstr[] = "{ id: 'acme.com', name: 'Acme', icon: ''}";
+  const std::string::size_type offset = script.find(kExpectedSubstr);
+  ASSERT_TRUE(offset != std::string::npos);
+  script.replace(offset, sizeof(kExpectedSubstr) - 1, "null");
+
+  std::string result;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      shell()->web_contents()->GetMainFrame(), script, &result));
+  ASSERT_EQ(kPublicKeyErrorMessage, result);
+}
+
+// Tests that when navigator.credentials.create() is called with an insecure
+// user icon URL, we get a SecurityError.
+IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
+                       CreatePublicKeyWithInsecureUserIconURL) {
+  CreateParameters parameters;
+  parameters.user_icon = "http://fidoalliance.co.nz/testimages/catimage.png";
+  std::string result;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      shell()->web_contents()->GetMainFrame(),
+      BuildCreateCallWithParameters(parameters), &result));
+  ASSERT_EQ(kRelyingPartyUserIconUrlSecurityErrorMessage, result);
+}
+
+// Tests that when navigator.credentials.create() is called with an insecure
+// Relying Party icon URL, we get a SecurityError.
+IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
+                       CreatePublicKeyWithInsecureRpIconURL) {
+  CreateParameters parameters;
+  parameters.rp_icon = "http://fidoalliance.co.nz/testimages/catimage.png";
+  std::string result;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      shell()->web_contents()->GetMainFrame(),
+      BuildCreateCallWithParameters(parameters), &result));
+  ASSERT_EQ(kRelyingPartyRpIconUrlSecurityErrorMessage, result);
+}
+
 // Tests that when navigator.credentials.create() is called with user
 // verification required, request times out.
 IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
@@ -758,7 +820,10 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
 }
 
 // Tests that when navigator.credentials.get() is called with user verification
-// required, we get a NotSupportedError.
+// required, we get an InvalidStateError because the virtual device isn't
+// configured with UV and GetAssertionRequestHandler will return
+// |kUserConsentButCredentialNotRecognized| when such an authenticator is
+// touched in that case.
 IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
                        GetPublicKeyCredentialUserVerification) {
   for (const auto protocol : kAllProtocols) {
@@ -771,7 +836,7 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
     ASSERT_TRUE(content::ExecuteScriptAndExtractString(
         shell()->web_contents()->GetMainFrame(),
         BuildGetCallWithParameters(parameters), &result));
-    ASSERT_EQ(kTimeoutErrorMessage, result);
+    ASSERT_EQ(kInvalidStateError, result);
   }
 }
 
@@ -836,7 +901,7 @@ base::Optional<std::string> ExecuteScriptAndExtractPrefixedString(
     const std::string& result_prefix) {
   DOMMessageQueue dom_message_queue(web_contents);
   web_contents->GetMainFrame()->ExecuteJavaScriptForTests(
-      base::UTF8ToUTF16(script));
+      base::UTF8ToUTF16(script), base::NullCallback());
 
   for (;;) {
     std::string json;
@@ -845,7 +910,7 @@ base::Optional<std::string> ExecuteScriptAndExtractPrefixedString(
     }
 
     base::JSONReader reader(base::JSON_ALLOW_TRAILING_COMMAS);
-    std::unique_ptr<base::Value> result = reader.ReadToValue(json);
+    std::unique_ptr<base::Value> result = reader.ReadToValueDeprecated(json);
     if (!result) {
       return base::nullopt;
     }

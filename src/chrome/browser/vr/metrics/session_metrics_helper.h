@@ -10,7 +10,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/vr/mode.h"
 #include "chrome/browser/vr/ui_browser_interface.h"
-#include "chrome/browser/vr/vr_export.h"
+#include "chrome/browser/vr/vr_base_export.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -147,15 +147,15 @@ class SessionTracker {
 // metrics that require state monitoring, such as durations, but also tracks
 // data we want attached to that, such as number of videos watched and how the
 // session was started.
-class VR_EXPORT SessionMetricsHelper : public content::WebContentsObserver {
+class VR_BASE_EXPORT SessionMetricsHelper
+    : public content::WebContentsObserver {
  public:
   // Returns the SessionMetricsHelper singleton if it has been created for the
   // WebContents.
   static SessionMetricsHelper* FromWebContents(content::WebContents* contents);
   static SessionMetricsHelper* CreateForWebContents(
       content::WebContents* contents,
-      Mode initial_mode,
-      bool started_with_autopresentation);
+      Mode initial_mode);
 
   ~SessionMetricsHelper() override;
 
@@ -169,16 +169,14 @@ class VR_EXPORT SessionMetricsHelper : public content::WebContentsObserver {
   void ReportRequestPresent();
 
  private:
-  SessionMetricsHelper(content::WebContents* contents,
-                       Mode initial_mode,
-                       bool started_with_autopresentation);
+  SessionMetricsHelper(content::WebContents* contents, Mode initial_mode);
 
   // WebContentObserver
   void MediaStartedPlaying(const MediaPlayerInfo& media_info,
-                           const MediaPlayerId&) override;
+                           const content::MediaPlayerId&) override;
   void MediaStoppedPlaying(
       const MediaPlayerInfo& media_info,
-      const MediaPlayerId&,
+      const content::MediaPlayerId&,
       WebContentsObserver::MediaStoppedReason reason) override;
   void DidStartNavigation(content::NavigationHandle* handle) override;
   void DidFinishNavigation(content::NavigationHandle* handle) override;
@@ -214,7 +212,6 @@ class VR_EXPORT SessionMetricsHelper : public content::WebContentsObserver {
   bool is_fullscreen_ = false;
   bool is_webvr_ = false;
   bool is_vr_enabled_ = false;
-  bool started_with_autopresentation_ = false;
 
   GURL last_requested_url_;
   NavigationMethod last_url_request_method_;

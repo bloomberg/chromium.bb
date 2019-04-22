@@ -113,8 +113,10 @@ template <char list_delimiter>
 class SVGStringList final : public SVGStringListBase {
  public:
   static SVGStringList<list_delimiter>* Create() {
-    return new SVGStringList<list_delimiter>();
+    return MakeGarbageCollected<SVGStringList<list_delimiter>>();
   }
+
+  SVGStringList() = default;
   ~SVGStringList() override = default;
 
   SVGParsingError SetValueAsString(const String& data) override {
@@ -125,9 +127,6 @@ class SVGStringList final : public SVGStringListBase {
   String ValueAsString() const override {
     return SVGStringListBase::ValueAsStringWithDelimiter(list_delimiter);
   }
-
- private:
-  SVGStringList() = default;
 };
 
 }  // namespace blink

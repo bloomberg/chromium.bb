@@ -131,8 +131,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 //
 // Remove these as we update our sites.
 
-#define SK_LEGACY_PLATFORM_MATRIX_PROCS
-
 // Workaround for poor anisotropic mipmap quality,
 // pending Skia ripmap support.
 // (https://bugs.chromium.org/p/skia/issues/detail?id=4863)
@@ -146,15 +144,14 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #define SK_USE_LEGACY_DISTANCE_FIELDS
 #endif
 
-// To stage layout result changes (minor) related to convexity calculations
-#ifndef SK_SUPPORT_LEGACY_CACHE_CONVEXITY
-#define SK_SUPPORT_LEGACY_CACHE_CONVEXITY
+// skbug.com/4783
+#ifndef SK_SUPPORT_LEGACY_DRAWLOOPER
+#define SK_SUPPORT_LEGACY_DRAWLOOPER
 #endif
 
-// Skia is enabling this feature soon. Chrome probably does
-// not want it for M64
-#ifndef SK_DISABLE_EXPLICIT_GPU_RESOURCE_ALLOCATION
-#define SK_DISABLE_EXPLICIT_GPU_RESOURCE_ALLOCATION
+// Chrome should only sort opLists within DDLs
+#ifndef SK_DISABLE_OPLIST_SORTING
+#define SK_DISABLE_OPLIST_SORTING
 #endif
 
 #ifndef SK_IGNORE_LINEONLY_AA_CONVEX_PATH_OPTS
@@ -168,7 +165,15 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #define SK_SUPPORT_LEGACY_AAA_CHOICE
 #endif
 
-#define SK_LEGACY_SRGB_STAGE_CHOICE
+// We're turning this off indefinitely,
+// until we can figure out some fundamental problems with its approach.
+//
+// See chromium:913223, skia:6886.
+#define SK_DISABLE_DAA
+
+// Staging for lowp::bilerp_clamp_8888, and for planned misc. others.
+#define SK_DISABLE_LOWP_BILERP_CLAMP_CLAMP_STAGE
+#define SK_DISABLE_NEXT_BATCH_OF_LOWP_STAGES
 
 ///////////////////////// Imported from BUILD.gn and skia_common.gypi
 

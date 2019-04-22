@@ -88,8 +88,12 @@ class FindBarController : public content::NotificationObserver {
       const gfx::Rect& avoid_overlapping_rect);
 
  private:
-  // Sents an update to the find bar with the tab contents' current result. The
-  // web_contents_ must be non-NULL before this call. Theis handles
+  // Called when we've received notice of a find result for the associated
+  // WebContents.
+  void OnFindResultAvailable();
+
+  // Sends an update to the find bar with the tab contents' current result. The
+  // web_contents_ must be non-NULL before this call. This handles
   // de-flickering in addition to just calling the update function.
   void UpdateFindBarForCurrentResult();
 
@@ -116,12 +120,6 @@ class FindBarController : public content::NotificationObserver {
   // by UpdateFindBarForCurrentResult to avoid flickering.
   int last_reported_matchcount_ = 0;
   int last_reported_ordinal_ = 0;
-
-  // Used to keep track of whether the user has been notified that the find came
-  // up empty. A single find session can result in multiple final updates, if
-  // the document contents change dynamically. It's a nuisance to notify the
-  // user more than once that a search came up empty, however.
-  base::string16 alerted_search_;
 
   DISALLOW_COPY_AND_ASSIGN(FindBarController);
 };

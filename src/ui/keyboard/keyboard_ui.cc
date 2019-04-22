@@ -5,10 +5,12 @@
 #include "ui/keyboard/keyboard_ui.h"
 
 #include "base/command_line.h"
+#include "base/unguessable_token.h"
 #include "ui/aura/window.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/keyboard/keyboard_controller.h"
 
 namespace keyboard {
@@ -31,6 +33,12 @@ void KeyboardUI::HideKeyboardWindow() {
   aura::Window* window = GetKeyboardWindow();
   if (window)
     window->Hide();
+}
+
+void KeyboardUI::KeyboardContentsLoaded(const base::UnguessableToken& token,
+                                        const gfx::Size& size) {
+  NOTREACHED() << "Unexpected call to KeyboardContentsLoaded. Token: " << token
+               << " Size: " << size.ToString();
 }
 
 void KeyboardUI::SetController(KeyboardController* controller) {

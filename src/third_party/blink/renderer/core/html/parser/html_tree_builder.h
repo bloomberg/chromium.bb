@@ -78,7 +78,7 @@ class HTMLTreeBuilder final
                   ParserContentPolicy,
                   const HTMLParserOptions&);
   ~HTMLTreeBuilder();
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
   const HTMLElementStack* OpenElements() const { return tree_.OpenElements(); }
 
@@ -233,7 +233,7 @@ class HTMLTreeBuilder final
       return context_element_stack_item_.Get();
     }
 
-    void Trace(blink::Visitor*);
+    void Trace(Visitor*);
 
    private:
     Member<DocumentFragment> fragment_;
@@ -242,7 +242,7 @@ class HTMLTreeBuilder final
     DISALLOW_COPY_AND_ASSIGN(FragmentParsingContext);
   };
 
-  // https://html.spec.whatwg.org/#frameset-ok-flag
+  // https://html.spec.whatwg.org/C/#frameset-ok-flag
   bool frameset_ok_;
 #if DCHECK_IS_ON()
   bool is_attached_ = true;

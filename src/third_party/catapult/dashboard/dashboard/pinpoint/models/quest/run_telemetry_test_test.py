@@ -6,11 +6,12 @@ import unittest
 
 from dashboard.pinpoint.models.quest import run_performance_test
 from dashboard.pinpoint.models.quest import run_telemetry_test
+from dashboard.pinpoint.models.quest import run_test_test
 
 
 _BASE_ARGUMENTS = {
     'swarming_server': 'server',
-    'dimensions': {'key': 'value'},
+    'dimensions': run_test_test.DIMENSIONS,
     'benchmark': 'speedometer',
     'browser': 'release',
 }
@@ -21,18 +22,53 @@ _COMBINED_DEFAULT_EXTRA_ARGS = (run_telemetry_test._DEFAULT_EXTRA_ARGS
 
 
 _BASE_EXTRA_ARGS = [
-    'speedometer', '--pageset-repeat', '1', '--browser', 'release',
+    '--benchmarks', 'speedometer',
+    '--pageset-repeat', '1', '--browser', 'release',
 ] + _COMBINED_DEFAULT_EXTRA_ARGS
+
+
+_BASE_SWARMING_TAGS = {}
 
 
 class StartTest(unittest.TestCase):
 
   def testStart(self):
     quest = run_telemetry_test.RunTelemetryTest(
-        'server', {'key': 'value'}, ['arg'])
+        'server', run_test_test.DIMENSIONS, ['arg'], _BASE_SWARMING_TAGS)
     execution = quest.Start('change', 'https://isolate.server', 'isolate hash')
     self.assertEqual(execution._extra_args,
                      ['arg', '--results-label', 'change'])
+
+  def testSwarmingTags(self):
+    arguments = dict(_BASE_ARGUMENTS)
+    arguments['browser'] = 'android-webview'
+    quest = run_telemetry_test.RunTelemetryTest.FromDict(arguments)
+    execution = quest.Start('change', 'https://isolate.server', 'isolate hash')
+    self.assertEqual(
+        execution._swarming_tags, {'benchmark': 'speedometer',
+                                   'change': 'change', 'hasfilter': '0'})
+
+  def testSwarmingTagsWithStoryFilter(self):
+    arguments = dict(_BASE_ARGUMENTS)
+    arguments['browser'] = 'android-webview'
+    arguments['story'] = 'sfilter'
+    quest = run_telemetry_test.RunTelemetryTest.FromDict(arguments)
+    execution = quest.Start('change', 'https://isolate.server', 'isolate hash')
+    self.assertEqual(
+        execution._swarming_tags, {'benchmark': 'speedometer',
+                                   'change': 'change', 'hasfilter': '1',
+                                   'storyfilter': 'sfilter'})
+
+  def testSwarmingTagsWithStoryTagFilter(self):
+    arguments = dict(_BASE_ARGUMENTS)
+    arguments['browser'] = 'android-webview'
+    arguments['story_tags'] = 'tfilter'
+    quest = run_telemetry_test.RunTelemetryTest.FromDict(arguments)
+    execution = quest.Start('change', 'https://isolate.server', 'isolate hash')
+    self.assertEqual(
+        execution._swarming_tags, {'benchmark': 'speedometer',
+                                   'change': 'change', 'hasfilter': '1',
+                                   'tagfilter': 'tfilter'})
 
 
 class FromDictTest(unittest.TestCase):
@@ -40,20 +76,23 @@ class FromDictTest(unittest.TestCase):
   def testMinimumArguments(self):
     quest = run_telemetry_test.RunTelemetryTest.FromDict(_BASE_ARGUMENTS)
     expected = run_telemetry_test.RunTelemetryTest(
-        'server', {'key': 'value'}, _BASE_EXTRA_ARGS)
+        'server', run_test_test.DIMENSIONS, _BASE_EXTRA_ARGS,
+        _BASE_SWARMING_TAGS)
     self.assertEqual(quest, expected)
 
   def testAllArguments(self):
     arguments = dict(_BASE_ARGUMENTS)
     arguments['story'] = 'http://www.fifa.com/'
+    arguments['story_tags'] = 'tag1,tag2'
     quest = run_telemetry_test.RunTelemetryTest.FromDict(arguments)
 
     extra_args = [
-        'speedometer', '--story-filter', 'http://www.fifa.com/',
-        '--pageset-repeat', '1', '--browser', 'release',
+        '--benchmarks', 'speedometer', '--story-filter', 'http://www.fifa.com/',
+        '--story-tag-filter', 'tag1,tag2', '--pageset-repeat', '1',
+        '--browser', 'release',
     ] + _COMBINED_DEFAULT_EXTRA_ARGS
     expected = run_telemetry_test.RunTelemetryTest(
-        'server', {'key': 'value'}, extra_args)
+        'server', run_test_test.DIMENSIONS, extra_args, _BASE_SWARMING_TAGS)
     self.assertEqual(quest, expected)
 
   def testMissingBenchmark(self):
@@ -61,15 +100,6 @@ class FromDictTest(unittest.TestCase):
     del arguments['benchmark']
     with self.assertRaises(TypeError):
       run_telemetry_test.RunTelemetryTest.FromDict(arguments)
-
-  def testBenchmarkWithPerformanceTestSuite(self):
-    arguments = dict(_BASE_ARGUMENTS)
-    arguments['target'] = 'performance_test_suite'
-    quest = run_telemetry_test.RunTelemetryTest.FromDict(arguments)
-
-    expected = run_telemetry_test.RunTelemetryTest(
-        'server', {'key': 'value'}, ['--benchmarks'] + _BASE_EXTRA_ARGS)
-    self.assertEqual(quest, expected)
 
   def testMissingBrowser(self):
     arguments = dict(_BASE_ARGUMENTS)
@@ -83,11 +113,11 @@ class FromDictTest(unittest.TestCase):
     quest = run_telemetry_test.RunTelemetryTest.FromDict(arguments)
 
     extra_args = [
-        'start_with_url.warm.startup_pages',
+        '--benchmarks', 'start_with_url.warm.startup_pages',
         '--pageset-repeat', '2', '--browser', 'release',
     ] + _COMBINED_DEFAULT_EXTRA_ARGS
     expected = run_telemetry_test.RunTelemetryTest(
-        'server', {'key': 'value'}, extra_args)
+        'server', run_test_test.DIMENSIONS, extra_args, _BASE_SWARMING_TAGS)
     self.assertEqual(quest, expected)
 
   def testWebviewFlag(self):
@@ -96,10 +126,10 @@ class FromDictTest(unittest.TestCase):
     quest = run_telemetry_test.RunTelemetryTest.FromDict(arguments)
 
     extra_args = [
-        'speedometer', '--pageset-repeat', '1',
+        '--benchmarks', 'speedometer', '--pageset-repeat', '1',
         '--browser', 'android-webview', '--webview-embedder-apk',
         '../../out/Release/apks/SystemWebViewShell.apk',
     ] + _COMBINED_DEFAULT_EXTRA_ARGS
     expected = run_telemetry_test.RunTelemetryTest(
-        'server', {'key': 'value'}, extra_args)
+        'server', run_test_test.DIMENSIONS, extra_args, _BASE_SWARMING_TAGS)
     self.assertEqual(quest, expected)

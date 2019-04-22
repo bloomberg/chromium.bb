@@ -2,12 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import logging
-
 from py_trace_event import trace_event
-
-from telemetry.core import exceptions
-from telemetry.internal.actions import action_runner as action_runner_module
 
 # Export story_test.Failure to this page_test module
 from telemetry.web_perf.story_test import Failure
@@ -55,23 +50,12 @@ class LegacyPageTest(object):
 
     self.options = None
     self._clear_cache_before_each_run = clear_cache_before_each_run
-    self._close_tabs_before_run = True
 
   @property
   def clear_cache_before_each_run(self):
     """When set to True, the browser's disk and memory cache will be cleared
     before each run."""
     return self._clear_cache_before_each_run
-
-  @property
-  def close_tabs_before_run(self):
-    """When set to True, all tabs are closed before running the test for the
-    first time."""
-    return self._close_tabs_before_run
-
-  @close_tabs_before_run.setter
-  def close_tabs_before_run(self, close_tabs):
-    self._close_tabs_before_run = close_tabs
 
   def CustomizeBrowserOptions(self, options):
     """Override to add test-specific options to the BrowserOptions object"""
@@ -100,21 +84,6 @@ class LegacyPageTest(object):
   def DidRunPage(self, platform):
     """Called after the test run method was run, even if it failed."""
 
-  def TabForPage(self, page, browser):   # pylint: disable=unused-argument
-    """Override to select a different tab for the page.  For instance, to
-    create a new tab for every page, return browser.tabs.New()."""
-    try:
-      return browser.tabs[0]
-    # The tab may have gone away in some case, so we create a new tab and retry
-    # (See crbug.com/496280)
-    except exceptions.DevtoolsTargetCrashException as e:
-      logging.error('Tab may have crashed: %s' % str(e))
-      browser.tabs.New()
-      # See comment in shared_page_state.WillRunStory for why this waiting
-      # is needed.
-      browser.tabs[0].WaitForDocumentReadyStateToBeComplete()
-      return browser.tabs[0]
-
   def ValidateAndMeasurePage(self, page, tab, results):
     """Override to check test assertions and perform measurement.
 
@@ -140,13 +109,3 @@ class LegacyPageTest(object):
       results: A telemetry.results.PageTestResults instance.
     """
     raise NotImplementedError
-
-  # Deprecated: do not use this hook. (crbug.com/470147)
-  def RunNavigateSteps(self, page, tab):
-    """Navigates the tab to the page URL attribute.
-
-    Runs the 'navigate_steps' page attribute as a compound action.
-    """
-    action_runner = action_runner_module.ActionRunner(
-        tab, skip_waits=page.skip_waits)
-    page.RunNavigateSteps(action_runner)

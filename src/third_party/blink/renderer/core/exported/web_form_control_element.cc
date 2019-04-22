@@ -117,11 +117,15 @@ bool WebFormControlElement::AutoComplete() const {
 
 void WebFormControlElement::SetValue(const WebString& value, bool send_events) {
   if (auto* input = ToHTMLInputElementOrNull(*private_)) {
-    input->setValue(
-        value, send_events ? kDispatchInputAndChangeEvent : kDispatchNoEvent);
+    input->setValue(value,
+                    send_events
+                        ? TextFieldEventBehavior::kDispatchInputAndChangeEvent
+                        : TextFieldEventBehavior::kDispatchNoEvent);
   } else if (auto* textarea = ToHTMLTextAreaElementOrNull(*private_)) {
     textarea->setValue(
-        value, send_events ? kDispatchInputAndChangeEvent : kDispatchNoEvent);
+        value, send_events
+                   ? TextFieldEventBehavior::kDispatchInputAndChangeEvent
+                   : TextFieldEventBehavior::kDispatchNoEvent);
   } else if (auto* select = ToHTMLSelectElementOrNull(*private_)) {
     select->setValue(value, send_events);
   }
@@ -249,7 +253,7 @@ WebFormControlElement::WebFormControlElement(HTMLFormControlElement* elem)
 
 DEFINE_WEB_NODE_TYPE_CASTS(WebFormControlElement,
                            IsElementNode() &&
-                               ConstUnwrap<Element>()->IsFormControlElement());
+                               ConstUnwrap<Element>()->IsFormControlElement())
 
 WebFormControlElement& WebFormControlElement::operator=(
     HTMLFormControlElement* elem) {

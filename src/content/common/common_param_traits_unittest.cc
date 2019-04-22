@@ -172,7 +172,6 @@ TEST(IPCMessageTest, SSLInfo) {
   in.is_issued_by_known_root = true;
   in.pkp_bypassed = true;
   in.client_cert_sent = true;
-  in.channel_id_sent = true;
   in.handshake_type = net::SSLInfo::HANDSHAKE_FULL;
   const net::SHA256HashValue kCertPublicKeyHashValue = {{0x01, 0x02}};
   in.public_key_hashes.push_back(net::HashValue(kCertPublicKeyHashValue));
@@ -215,7 +214,6 @@ TEST(IPCMessageTest, SSLInfo) {
   ASSERT_EQ(in.is_issued_by_known_root, out.is_issued_by_known_root);
   ASSERT_EQ(in.pkp_bypassed, out.pkp_bypassed);
   ASSERT_EQ(in.client_cert_sent, out.client_cert_sent);
-  ASSERT_EQ(in.channel_id_sent, out.channel_id_sent);
   ASSERT_EQ(in.handshake_type, out.handshake_type);
   ASSERT_EQ(in.public_key_hashes, out.public_key_hashes);
   ASSERT_EQ(in.pinning_failure_log, out.pinning_failure_log);

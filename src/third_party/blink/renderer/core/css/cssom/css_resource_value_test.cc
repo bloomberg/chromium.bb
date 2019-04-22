@@ -25,16 +25,26 @@ class FakeCSSResourceValue : public CSSResourceValue {
 }  // namespace
 
 TEST(CSSResourceValueTest, TestStatus) {
-  EXPECT_EQ((new FakeCSSResourceValue(ResourceStatus::kNotStarted))->state(),
-            "unloaded");
-  EXPECT_EQ((new FakeCSSResourceValue(ResourceStatus::kPending))->state(),
-            "loading");
-  EXPECT_EQ((new FakeCSSResourceValue(ResourceStatus::kCached))->state(),
-            "loaded");
-  EXPECT_EQ((new FakeCSSResourceValue(ResourceStatus::kLoadError))->state(),
-            "error");
-  EXPECT_EQ((new FakeCSSResourceValue(ResourceStatus::kDecodeError))->state(),
-            "error");
+  EXPECT_EQ(
+      (MakeGarbageCollected<FakeCSSResourceValue>(ResourceStatus::kNotStarted))
+          ->state(),
+      "unloaded");
+  EXPECT_EQ(
+      (MakeGarbageCollected<FakeCSSResourceValue>(ResourceStatus::kPending))
+          ->state(),
+      "loading");
+  EXPECT_EQ(
+      (MakeGarbageCollected<FakeCSSResourceValue>(ResourceStatus::kCached))
+          ->state(),
+      "loaded");
+  EXPECT_EQ(
+      (MakeGarbageCollected<FakeCSSResourceValue>(ResourceStatus::kLoadError))
+          ->state(),
+      "error");
+  EXPECT_EQ(
+      (MakeGarbageCollected<FakeCSSResourceValue>(ResourceStatus::kDecodeError))
+          ->state(),
+      "error");
 }
 
 }  // namespace blink

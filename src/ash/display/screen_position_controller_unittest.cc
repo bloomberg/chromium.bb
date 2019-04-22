@@ -12,6 +12,7 @@
 #include "ash/shell_test_api.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/window_factory.h"
+#include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "ui/aura/env.h"
 #include "ui/aura/test/test_window_delegate.h"
@@ -247,7 +248,7 @@ TEST_F(ScreenPositionControllerTest, ConvertHostPointToScreenZoomScale) {
   EXPECT_EQ("37,187", ConvertHostPointToScreen(60, 300));
   // The point is on the 2nd host. Point on 2nd host (60,150) -
   // - screen [+(150,0)]
-  EXPECT_EQ("184,49", ConvertHostPointToScreen(60, 450));
+  EXPECT_EQ("185,50", ConvertHostPointToScreen(60, 450));
 
   // Move |window_| to the 2nd.
   window_->SetBoundsInScreen(gfx::Rect(300, 20, 50, 50),
@@ -304,7 +305,7 @@ class ConvertToScreenEventHandler : public ui::EventHandler {
 TEST_F(ScreenPositionControllerTest,
        ConvertToScreenWhileRemovingSecondaryDisplay) {
   UpdateDisplay("600x600,600x600");
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
 
   // Create a window on the secondary display.
   window_->SetBoundsInScreen(gfx::Rect(600, 0, 400, 400),
@@ -330,7 +331,7 @@ TEST_F(ScreenPositionControllerTest,
   // The secondary root window is not immediately destroyed.
   EXPECT_TRUE(tracker.Contains(root_windows[1]));
 
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
 
   // Check that we waited long enough and that the secondary root window was
   // destroyed.

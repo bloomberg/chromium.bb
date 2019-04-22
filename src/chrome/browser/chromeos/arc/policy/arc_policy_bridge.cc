@@ -26,9 +26,9 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/network/onc/onc_utils.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/arc_prefs.h"
+#include "components/arc/session/arc_bridge_service.h"
 #include "components/onc/onc_constants.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_namespace.h"
@@ -228,7 +228,8 @@ std::string GetFilteredJSONPolicies(const policy::PolicyMap& policy_map,
     std::string app_policy_string;
     app_policy_value->GetAsString(&app_policy_string);
     std::unique_ptr<base::DictionaryValue> app_policy_dict =
-        base::DictionaryValue::From(base::JSONReader::Read(app_policy_string));
+        base::DictionaryValue::From(
+            base::JSONReader::ReadDeprecated(app_policy_string));
     if (app_policy_dict) {
       // Need a deep copy of all values here instead of doing a swap, because
       // JSONReader::Read constructs a dictionary whose StringValues are

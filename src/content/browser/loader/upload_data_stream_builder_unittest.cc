@@ -11,8 +11,8 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -58,7 +58,7 @@ TEST(UploadDataStreamBuilderTest, CreateUploadDataStream) {
     std::unique_ptr<BlobDataHandle> handle =
         context.AddFinishedBlob(std::move(builder));
 
-    request_body->AppendBytes(kData, arraysize(kData) - 1);
+    request_body->AppendBytes(kData, base::size(kData) - 1);
     request_body->AppendFileRange(base::FilePath(kFilePath), kFileOffset,
                                   kFileLength, kFileTime);
     request_body->AppendBlob(kBlob);

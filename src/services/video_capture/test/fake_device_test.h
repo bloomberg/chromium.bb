@@ -6,6 +6,7 @@
 #define SERVICES_VIDEO_CAPTURE_TEST_FAKE_DEVICE_TEST_H_
 
 #include "media/capture/video_capture_types.h"
+#include "services/video_capture/public/mojom/device.mojom.h"
 #include "services/video_capture/test/fake_device_descriptor_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 

@@ -173,8 +173,9 @@ UsbSignHandler.prototype.sendBogusEnroll_ = function(gnubby) {
  * @private
  */
 UsbSignHandler.prototype.enrollCallback_ = function(gnubby, code, infoArray) {
-  if (this.notified_)
+  if (this.notified_) {
     return;
+  }
   switch (code) {
     case DeviceStatusCodes.WAIT_TOUCH_STATUS:
       this.sendBogusEnroll_(gnubby);
@@ -197,8 +198,9 @@ UsbSignHandler.prototype.enrollCallback_ = function(gnubby, code, infoArray) {
  * @private
  */
 UsbSignHandler.prototype.notifySuccess_ = function(gnubby, challenge, info) {
-  if (this.notified_)
+  if (this.notified_) {
     return;
+  }
   this.notified_ = true;
 
   gnubby.closeWhenIdle();
@@ -228,8 +230,9 @@ UsbSignHandler.prototype.notifySuccess_ = function(gnubby, challenge, info) {
  * @private
  */
 UsbSignHandler.prototype.notifyError_ = function(code) {
-  if (this.notified_)
+  if (this.notified_) {
     return;
+  }
   this.notified_ = true;
   this.close();
   var reply = {'type': 'sign_helper_reply', 'code': code};

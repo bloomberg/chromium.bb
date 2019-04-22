@@ -51,7 +51,7 @@ void BluetoothPairingDialogTest::ShowDialog() {
   EXPECT_CALL(*mock_adapter_, GetDevice(testing::_))
       .WillOnce(testing::Return(mock_device_.get()));
 
-  chromeos::BluetoothPairingDialog* dialog =
+  chromeos::SystemWebDialogDelegate* dialog =
       chromeos::BluetoothPairingDialog::ShowDialog(
           mock_device_->GetAddress(), mock_device_->GetNameForDisplay(),
           mock_device_->IsPaired(), mock_device_->IsConnected());

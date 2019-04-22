@@ -23,7 +23,7 @@ class InternalRuntimeFlags : public ScriptWrappable {
 
   InternalRuntimeFlags() {}
 
-  // These are reset between layout tests from Internals::resetToConsistentState
+  // These are reset between web tests from Internals::resetToConsistentState
   // using RuntimeEnabledFeatures::Backup.
   {% for feature in standard_features if feature.settable_from_internals %}
   void set{{feature.name}}Enabled(bool isEnabled) {
@@ -33,7 +33,7 @@ class InternalRuntimeFlags : public ScriptWrappable {
 
   {% for feature in standard_features %}
   bool {{feature.name.to_lower_camel_case()}}Enabled() {
-    {% if feature.origin_trial_feature_name %}
+    {% if feature.in_origin_trial %}
     return RuntimeEnabledFeatures::{{feature.name}}EnabledByRuntimeFlag();
     {% else %}
     return RuntimeEnabledFeatures::{{feature.name}}Enabled();

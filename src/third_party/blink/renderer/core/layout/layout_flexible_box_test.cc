@@ -28,7 +28,7 @@ class LayoutFlexibleBoxTest : public testing::WithParamInterface<bool>,
   }
 };
 
-INSTANTIATE_TEST_CASE_P(All, LayoutFlexibleBoxTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, LayoutFlexibleBoxTest, testing::Bool());
 
 static String CommonStyle() {
   return R"HTML(

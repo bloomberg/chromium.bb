@@ -37,11 +37,11 @@ SyncControlVSyncProvider::SyncControlVSyncProvider() : gfx::VSyncProvider() {
 SyncControlVSyncProvider::~SyncControlVSyncProvider() {}
 
 void SyncControlVSyncProvider::GetVSyncParameters(
-    const UpdateVSyncCallback& callback) {
+    UpdateVSyncCallback callback) {
   base::TimeTicks timebase;
   base::TimeDelta interval;
   if (GetVSyncParametersIfAvailable(&timebase, &interval))
-    callback.Run(timebase, interval);
+    std::move(callback).Run(timebase, interval);
 }
 
 bool SyncControlVSyncProvider::GetVSyncParametersIfAvailable(
@@ -78,8 +78,7 @@ bool SyncControlVSyncProvider::GetVSyncParametersIfAvailable(
             base::TimeTicks::Clock::LINUX_CLOCK_MONOTONIC);
 
   int64_t real_time_in_microseconds =
-      real_time.tv_sec * base::Time::kMicrosecondsPerSecond +
-      real_time.tv_nsec / base::Time::kNanosecondsPerMicrosecond;
+      base::TimeDelta::FromTimeSpec(real_time).InMicroseconds();
   int64_t monotonic_time_in_microseconds =
       monotonic_time.since_origin().InMicroseconds();
 

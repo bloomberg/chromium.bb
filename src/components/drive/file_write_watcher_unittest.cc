@@ -9,8 +9,8 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -50,8 +50,8 @@ void WriteSomethingAfterStartWatch(const base::FilePath& path,
   EXPECT_TRUE(watch_success) << path.value();
 
   const char kDummy[] = "hello";
-  ASSERT_EQ(static_cast<int>(arraysize(kDummy)),
-            base::WriteFile(path, kDummy, arraysize(kDummy)));
+  ASSERT_EQ(static_cast<int>(base::size(kDummy)),
+            base::WriteFile(path, kDummy, base::size(kDummy)));
 }
 
 class FileWriteWatcherTest : public testing::Test {

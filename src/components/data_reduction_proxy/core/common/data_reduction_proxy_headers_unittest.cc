@@ -10,8 +10,8 @@
 #include <memory>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/metrics/field_trial.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
@@ -63,7 +63,7 @@ TEST(DataReductionProxyHeadersTest, IsEmptyImagePreview) {
           false,
       },
   };
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     std::string headers(tests[i].headers);
     HeadersToRaw(&headers);
     scoped_refptr<net::HttpResponseHeaders> parsed(
@@ -132,7 +132,7 @@ TEST(DataReductionProxyHeadersTest, IsLitePagePreview) {
           false,
       },
   };
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     std::string headers(tests[i].headers);
     HeadersToRaw(&headers);
     scoped_refptr<net::HttpResponseHeaders> parsed(
@@ -219,7 +219,7 @@ TEST(DataReductionProxyHeadersTest, GetDataReductionProxyActionValue) {
       "",
     },
   };
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     std::string headers(tests[i].headers);
     HeadersToRaw(&headers);
     scoped_refptr<net::HttpResponseHeaders> parsed(
@@ -469,7 +469,7 @@ TEST(DataReductionProxyHeadersTest, GetProxyBypassInfo) {
       false,
     },
   };
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     std::string headers(tests[i].headers);
     HeadersToRaw(&headers);
     scoped_refptr<net::HttpResponseHeaders> parsed(
@@ -580,7 +580,7 @@ TEST(DataReductionProxyHeadersTest, HasDataReductionProxyViaHeader) {
       false,
     },
   };
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     std::string headers(tests[i].headers);
     HeadersToRaw(&headers);
     scoped_refptr<net::HttpResponseHeaders> parsed(
@@ -602,58 +602,6 @@ TEST(DataReductionProxyHeadersTest, HasDataReductionProxyViaHeader) {
   }
 }
 
-TEST(DataReductionProxyHeadersTest, BypassMissingViaIfExperiment) {
-  const char kWarmupFetchCallbackEnabledParam[] =
-      "warmup_fetch_callback_enabled";
-
-  const struct {
-    const char* headers;
-    std::map<std::string, std::string> feature_parameters;
-    DataReductionProxyBypassType expected_result;
-  } tests[] = {
-      {
-          "HTTP/1.1 200 OK\n",
-          {
-              {kWarmupFetchCallbackEnabledParam, "true"},
-              {params::GetMissingViaBypassParamName(), "true"},
-          },
-          BYPASS_EVENT_TYPE_MAX,
-      },
-      {
-          "HTTP/1.1 200 OK\n",
-          {
-              {kWarmupFetchCallbackEnabledParam, "true"},
-              {params::GetMissingViaBypassParamName(), "false"},
-          },
-          BYPASS_EVENT_TYPE_MISSING_VIA_HEADER_OTHER,
-      },
-      {
-          "HTTP/1.1 200 OK\n",
-          {
-              {kWarmupFetchCallbackEnabledParam, "false"},
-              {params::GetMissingViaBypassParamName(), "false"},
-          },
-          BYPASS_EVENT_TYPE_MISSING_VIA_HEADER_OTHER,
-      },
-  };
-  for (auto test : tests) {
-    std::string headers(test.headers);
-    HeadersToRaw(&headers);
-    scoped_refptr<net::HttpResponseHeaders> parsed(
-        new net::HttpResponseHeaders(headers));
-    DataReductionProxyInfo proxy_info;
-
-    base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitAndEnableFeatureWithParameters(
-        features::kDataReductionProxyRobustConnection, test.feature_parameters);
-
-    EXPECT_EQ(test.expected_result,
-              GetDataReductionProxyBypassType(std::vector<GURL>(), *parsed,
-                                              &proxy_info));
-    if (test.expected_result != BYPASS_EVENT_TYPE_MAX)
-      EXPECT_TRUE(proxy_info.mark_proxies_as_bad);
-  }
-}
 
 TEST(DataReductionProxyHeadersTest, GetDataReductionProxyBypassEventType) {
   const struct {
@@ -774,7 +722,7 @@ TEST(DataReductionProxyHeadersTest, GetDataReductionProxyBypassEventType) {
                    "Via: 1.1 Chrome-Compression-Proxy\n",
                    BYPASS_EVENT_TYPE_MAX,
                }};
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     std::string headers(tests[i].headers);
     HeadersToRaw(&headers);
     scoped_refptr<net::HttpResponseHeaders> parsed(

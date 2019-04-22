@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var webview;
+let webview;
 
 /**
  * Points the webview to the starting URL of a scope authorization
@@ -31,8 +31,9 @@ function loadAuthUrlAndShowWindow(url, win) {
       },
       ['blocking', 'requestHeaders']);
 
-  if (!url.toLowerCase().startsWith('https://accounts.google.com/'))
+  if (!url.toLowerCase().startsWith('https://accounts.google.com/')) {
     document.querySelector('.titlebar').classList.add('titlebar-border');
+  }
 
   webview.src = url;
   if (win) {

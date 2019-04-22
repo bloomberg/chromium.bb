@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -34,7 +35,7 @@ MetricsServicesManager::~MetricsServicesManager() {}
 
 std::unique_ptr<const base::FieldTrial::EntropyProvider>
 MetricsServicesManager::CreateEntropyProvider() {
-  return client_->CreateEntropyProvider();
+  return client_->GetMetricsStateManager()->CreateDefaultEntropyProvider();
 }
 
 metrics::MetricsService* MetricsServicesManager::GetMetricsService() {
@@ -142,9 +143,10 @@ void MetricsServicesManager::UpdateUkmService() {
     return;
 
   bool listeners_active =
-      GetMetricsServiceClient()->AreNotificationListenersEnabledOnAllProfiles();
-  bool sync_enabled = client_->IsMetricsReportingForceEnabled() ||
-                      metrics_service_client_->SyncStateAllowsUkm();
+      metrics_service_client_->AreNotificationListenersEnabledOnAllProfiles();
+  bool sync_enabled =
+      metrics_service_client_->IsMetricsReportingForceEnabled() ||
+      metrics_service_client_->SyncStateAllowsUkm();
   bool is_incognito = client_->IsIncognitoSessionActive();
 
   if (consent_given_ && listeners_active && sync_enabled && !is_incognito) {
@@ -162,7 +164,7 @@ void MetricsServicesManager::UpdateUkmService() {
 }
 
 void MetricsServicesManager::UpdateUploadPermissions(bool may_upload) {
-  if (client_->IsMetricsReportingForceEnabled()) {
+  if (metrics_service_client_->IsMetricsReportingForceEnabled()) {
     UpdatePermissions(true, true, true);
     return;
   }

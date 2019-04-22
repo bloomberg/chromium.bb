@@ -18,8 +18,11 @@ class TabIdTabHelper : public web::WebStateUserData<TabIdTabHelper> {
 
  private:
   friend class web::WebStateUserData<TabIdTabHelper>;
+
   explicit TabIdTabHelper(web::WebState* web_state);
   __strong NSString* tab_id_;
+
+  WEB_STATE_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(TabIdTabHelper);
 };

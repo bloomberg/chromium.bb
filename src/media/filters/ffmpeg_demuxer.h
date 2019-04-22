@@ -341,7 +341,7 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   // Task runner on which all blocking FFmpeg operations are executed; retrieved
-  // from base::TaskScheduler.
+  // from base::ThreadPool.
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
   PipelineStatusCB init_cb_;

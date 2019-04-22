@@ -51,13 +51,13 @@ interface DisplayPrivate {
   // Notifies the display to pause VSync signals. Used for VR.
   [EnableIf=is_android]
   SetVSyncPaused(bool paused);
+
+  // Updates the refresh rate of the associated Display.
+  [EnableIf=is_android]
+  UpdateRefreshRate(float refresh_rate);
 };
 
 interface DisplayClient {
-  // Notifies that a swap has occured after some latency info with snapshot
-  // component reached the display.
-  DidSwapAfterSnapshotRequestReceived(array<ui.mojom.LatencyInfo> latency_info);
-
   [EnableIf=is_mac]
   OnDisplayReceivedCALayerParams(gfx.mojom.CALayerParams ca_layer_params);
 

@@ -13,6 +13,7 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/test/history_service_test_util.h"
 #include "components/history/core/test/test_history_database.h"
+#include "components/offline_pages/core/offline_clock.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -31,7 +32,7 @@ class HistoryStatisticsReporterTest : public testing::Test {
   HistoryStatisticsReporterTest()
       : task_runner_(new base::TestMockTimeTaskRunner(
             base::TestMockTimeTaskRunner::Type::kBoundToThread)) {}
-  ~HistoryStatisticsReporterTest() override{};
+  ~HistoryStatisticsReporterTest() override {}
 
   void SetUp() override {
     HistoryStatisticsReporter::RegisterPrefs(pref_service_.registry());
@@ -135,7 +136,7 @@ TEST_F(HistoryStatisticsReporterTest, HistoryLoadedTimeDelay) {
 TEST_F(HistoryStatisticsReporterTest, HostAddedSimple) {
   ASSERT_TRUE(LoadHistory());
 
-  base::Time time_now = base::Time::Now();
+  base::Time time_now = offline_pages::OfflineTimeNow();
 
   history_service()->AddPage(GURL("http://www.google.com"), time_now,
                              history::VisitSource::SOURCE_BROWSED);
@@ -149,7 +150,7 @@ TEST_F(HistoryStatisticsReporterTest, HostAddedSimple) {
 TEST_F(HistoryStatisticsReporterTest, HostAddedLongAgo) {
   ASSERT_TRUE(LoadHistory());
 
-  base::Time time_now = base::Time::Now();
+  base::Time time_now = offline_pages::OfflineTimeNow();
   base::Time time_29_days_ago = time_now - base::TimeDelta::FromDays(29);
   base::Time time_31_days_ago = time_now - base::TimeDelta::FromDays(31);
 
@@ -169,7 +170,7 @@ TEST_F(HistoryStatisticsReporterTest, HostAddedLongAgo) {
 TEST_F(HistoryStatisticsReporterTest, OneRunPerSession) {
   ASSERT_TRUE(LoadHistory());
 
-  base::Time time_now = base::Time::Now();
+  base::Time time_now = offline_pages::OfflineTimeNow();
 
   history_service()->AddPage(GURL("http://www.google.com"), time_now,
                              history::VisitSource::SOURCE_BROWSED);
@@ -191,8 +192,6 @@ TEST_F(HistoryStatisticsReporterTest, OneRunPerSession) {
 }
 
 TEST_F(HistoryStatisticsReporterTest, OneRunPerWeekSaveTimestamp) {
-  base::Time time_now = task_runner()->GetMockClock()->Now();
-
   ASSERT_TRUE(LoadHistory());
 
   ScheduleReportAndRunUntilIdle();
@@ -201,6 +200,7 @@ TEST_F(HistoryStatisticsReporterTest, OneRunPerWeekSaveTimestamp) {
   histograms().ExpectTotalCount("History.DatabaseMonthlyHostCountTime", 1);
 
   // Reporter should have left the time of request in Prefs.
+  base::Time time_now = task_runner()->GetMockClock()->Now();
   EXPECT_EQ(time_now, prefs()->GetTime(kWeeklyStatsReportingTimestamp));
 }
 
@@ -216,8 +216,6 @@ TEST_F(HistoryStatisticsReporterTest, OneRunPerWeekReadTimestamp) {
 }
 
 TEST_F(HistoryStatisticsReporterTest, OneRunPerWeekReadTimestampAfterWeek) {
-  base::Time time_now = task_runner()->GetMockClock()->Now();
-
   ASSERT_TRUE(LoadHistory());
 
   prefs()->SetTime(
@@ -228,6 +226,7 @@ TEST_F(HistoryStatisticsReporterTest, OneRunPerWeekReadTimestampAfterWeek) {
   // More than a week since last query, should have gone through.
   histograms().ExpectTotalCount("History.DatabaseMonthlyHostCountTime", 1);
   // Reporter should have left the time of request in Prefs.
+  base::Time time_now = task_runner()->GetMockClock()->Now();
   EXPECT_EQ(time_now, prefs()->GetTime(kWeeklyStatsReportingTimestamp));
 }
 

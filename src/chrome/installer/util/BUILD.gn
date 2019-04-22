@@ -2,7 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//base/win/embedded_i18n/generate_embedded_i18n.gni")
 import("//build/config/chrome_build.gni")
+
 import("//testing/test.gni")
 
 # This file deliberately has no default "util" target so dependants have to
@@ -90,6 +92,7 @@ static_library("with_no_strings") {
       # target (which actually compiles and causes the generated code to be
       # linked) from the ":util" target.
       ":generate_strings",
+      "//base:i18n",
       "//base/third_party/dynamic_annotations",
       "//chrome/install_static:install_static_util",
       "//components/base32",
@@ -162,8 +165,6 @@ static_library("with_no_strings") {
       "installation_state.h",
       "l10n_string_util.cc",
       "l10n_string_util.h",
-      "language_selector.cc",
-      "language_selector.h",
       "master_preferences_constants.cc",
       "master_preferences_constants.h",
       "move_tree_work_item.cc",
@@ -202,38 +203,31 @@ group("with_rc_strings") {
   }
 }
 
-action("generate_strings") {
+generate_embedded_i18n("generate_strings") {
   visibility = [
     ":strings",
     ":with_no_strings",
   ]
-  script = "prebuild/create_string_rc.py"
+  extractor_datafile =
+      "//chrome/installer/util/prebuild/create_installer_string_rc.py"
 
+  grdfile_folder = "//chrome/app/"
   if (is_chrome_branded) {
-    grdfile = "//chrome/app/google_chrome_strings.grd"
+    grdfile_name = "google_chrome_strings"
   } else {
-    grdfile = "//chrome/app/chromium_strings.grd"
+    grdfile_name = "chromium_strings"
   }
+  xtb_relative_path = "resources"
+  grd_files_info = [ [
+        grdfile_folder,
+        grdfile_name,
+        xtb_relative_path,
+        default_embedded_i18_locales,
+      ] ]
 
-  inputs = [
-    grdfile,
-  ]
+  output_file_name_base = "installer_util_strings"
 
-  outputs = [
-    "$target_gen_dir/installer_util_strings.h",
-    "$target_gen_dir/installer_util_strings.rc",
-  ]
-
-  args = [
-    "-b",
-    "$branding_path_component",
-    "-i",
-    rebase_path(grdfile, root_build_dir) + ":resources",
-    "-n",
-    "installer_util_strings",
-    "-o",
-    rebase_path(target_gen_dir, root_build_dir),
-  ]
+  branding = branding_path_component
 }
 
 # Compile the generated .rc file.
@@ -278,10 +272,7 @@ if (is_win) {
       "experiment_unittest.cc",
       "google_update_settings_unittest.cc",
       "install_util_unittest.cc",
-      "installer_util_test_common.cc",
-      "installer_util_test_common.h",
       "l10n_string_util_unittest.cc",
-      "language_selector_unittest.cc",
       "logging_installer_unittest.cc",
       "lzma_file_allocator_unittest.cc",
       "lzma_util_unittest.cc",
@@ -308,7 +299,6 @@ if (is_win) {
       ":test_support",
       ":with_rc_strings",
       "//base",
-      "//base:i18n",
       "//base/test:test_support",
       "//chrome:other_version",
       "//chrome/common:constants",

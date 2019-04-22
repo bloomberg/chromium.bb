@@ -19,8 +19,9 @@
 #include "audio/audio_state.h"
 #include "call/audio_receive_stream.h"
 #include "call/syncable.h"
-#include "rtc_base/constructormagic.h"
+#include "rtc_base/constructor_magic.h"
 #include "rtc_base/thread_checker.h"
+#include "system_wrappers/include/clock.h"
 
 namespace webrtc {
 class PacketRouter;
@@ -41,7 +42,8 @@ class AudioReceiveStream final : public webrtc::AudioReceiveStream,
                                  public AudioMixer::Source,
                                  public Syncable {
  public:
-  AudioReceiveStream(RtpStreamReceiverControllerInterface* receiver_controller,
+  AudioReceiveStream(Clock* clock,
+                     RtpStreamReceiverControllerInterface* receiver_controller,
                      PacketRouter* packet_router,
                      ProcessThread* module_process_thread,
                      const webrtc::AudioReceiveStream::Config& config,
@@ -49,6 +51,7 @@ class AudioReceiveStream final : public webrtc::AudioReceiveStream,
                      webrtc::RtcEventLog* event_log);
   // For unit tests, which need to supply a mock channel receive.
   AudioReceiveStream(
+      Clock* clock,
       RtpStreamReceiverControllerInterface* receiver_controller,
       PacketRouter* packet_router,
       const webrtc::AudioReceiveStream::Config& config,
@@ -64,6 +67,8 @@ class AudioReceiveStream final : public webrtc::AudioReceiveStream,
   webrtc::AudioReceiveStream::Stats GetStats() const override;
   void SetSink(AudioSinkInterface* sink) override;
   void SetGain(float gain) override;
+  bool SetBaseMinimumPlayoutDelayMs(int delay_ms) override;
+  int GetBaseMinimumPlayoutDelayMs() const override;
   std::vector<webrtc::RtpSource> GetSources() const override;
 
   // TODO(nisse): We don't formally implement RtpPacketSinkInterface, and this
@@ -86,7 +91,7 @@ class AudioReceiveStream final : public webrtc::AudioReceiveStream,
 
   void AssociateSendStream(AudioSendStream* send_stream);
   void SignalNetworkState(NetworkState state);
-  bool DeliverRtcp(const uint8_t* packet, size_t length);
+  void DeliverRtcp(const uint8_t* packet, size_t length);
   const webrtc::AudioReceiveStream::Config& config() const;
   const AudioSendStream* GetAssociatedSendStreamForTesting() const;
 

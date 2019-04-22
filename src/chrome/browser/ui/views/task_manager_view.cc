@@ -27,6 +27,7 @@
 #include "ui/base/models/table_model_observer.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/table/table_view.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/view.h"
@@ -39,6 +40,7 @@
 #include "chrome/grit/theme_resources.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gfx/image/image_skia.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -102,10 +104,16 @@ task_manager::TaskManagerTableModel* TaskManagerView::Show(Browser* browser) {
   const ash::ShelfID shelf_id(kTaskManagerId);
   window->SetProperty(ash::kShelfIDKey, new std::string(shelf_id.Serialize()));
   window->SetProperty<int>(ash::kShelfItemTypeKey, ash::TYPE_DIALOG);
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  gfx::ImageSkia* icon = rb.GetImageSkiaNamed(IDR_ASH_SHELF_ICON_TASK_MANAGER);
-  // The new gfx::ImageSkia instance is owned by the window itself.
-  window->SetProperty(aura::client::kWindowIconKey, new gfx::ImageSkia(*icon));
+  // For classic Ash, GetWindowIcon() is sufficient. For Mash, the task manager
+  // specifically needs to set a large app icon for the benefit of
+  // ShelfWindowWatcher.
+  if (features::IsUsingWindowService()) {
+    window->GetRootWindow()->SetProperty(
+        aura::client::kAppIconLargeKey,
+        new gfx::ImageSkia(
+            *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+                IDR_ASH_SHELF_ICON_TASK_MANAGER)));
+  }
 #endif
   return g_task_manager_view->table_model_.get();
 }
@@ -183,6 +191,15 @@ base::string16 TaskManagerView::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_TITLE);
 }
 
+gfx::ImageSkia TaskManagerView::GetWindowIcon() {
+#if defined(OS_CHROMEOS)
+  return *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+      IDR_ASH_SHELF_ICON_TASK_MANAGER);
+#else
+  return views::DialogDelegateView::GetWindowIcon();
+#endif
+}
+
 std::string TaskManagerView::GetWindowName() const {
   return prefs::kTaskManagerWindowPlacement;
 }
@@ -256,9 +273,10 @@ void TaskManagerView::OnKeyDown(ui::KeyboardCode keycode) {
     ActivateSelectedTab();
 }
 
-void TaskManagerView::ShowContextMenuForView(views::View* source,
-                                             const gfx::Point& point,
-                                             ui::MenuSourceType source_type) {
+void TaskManagerView::ShowContextMenuForViewImpl(
+    views::View* source,
+    const gfx::Point& point,
+    ui::MenuSourceType source_type) {
   menu_model_.reset(new ui::SimpleMenuModel(this));
 
   for (const auto& table_column : columns_) {
@@ -270,7 +288,7 @@ void TaskManagerView::ShowContextMenuForView(views::View* source,
                                            views::MenuRunner::CONTEXT_MENU));
 
   menu_runner_->RunMenuAt(GetWidget(), nullptr, gfx::Rect(point, gfx::Size()),
-                          views::MENU_ANCHOR_TOPLEFT, source_type);
+                          views::MenuAnchorPosition::kTopLeft, source_type);
 }
 
 bool TaskManagerView::IsCommandIdChecked(int id) const {
@@ -315,17 +333,19 @@ void TaskManagerView::Init() {
   }
 
   // Create the table view.
-  tab_table_ =
-      new views::TableView(nullptr, columns_, views::ICON_AND_TEXT, false);
+  auto tab_table = std::make_unique<views::TableView>(
+      nullptr, columns_, views::ICON_AND_TEXT, false);
+  tab_table_ = tab_table.get();
   table_model_.reset(new TaskManagerTableModel(this));
-  tab_table_->SetModel(table_model_.get());
-  tab_table_->SetGrouper(this);
-  tab_table_->set_observer(this);
-  tab_table_->set_context_menu_controller(this);
+  tab_table->SetModel(table_model_.get());
+  tab_table->SetGrouper(this);
+  tab_table->set_sort_on_paint(true);
+  tab_table->set_observer(this);
+  tab_table->set_context_menu_controller(this);
   set_context_menu_controller(this);
 
-  tab_table_parent_ = tab_table_->CreateParentIfNecessary();
-  AddChildView(tab_table_parent_);
+  tab_table_parent_ = AddChildView(
+      views::TableView::CreateScrollViewWithTable(std::move(tab_table)));
 
   SetLayoutManager(std::make_unique<views::FillLayout>());
 

@@ -36,7 +36,7 @@ class MockBrowsingDataIndexedDBHelper
   bool AllDeleted();
 
   // BrowsingDataIndexedDBHelper.
-  void StartFetching(const FetchCallback& callback) override;
+  void StartFetching(FetchCallback callback) override;
   void DeleteIndexedDB(const GURL& origin) override;
 
  private:

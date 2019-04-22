@@ -108,9 +108,9 @@ void TextToSpeechPlaybackController::WillCloseWebStateAt(
 
 #pragma mark WebStateObserver
 
-void TextToSpeechPlaybackController::NavigationItemCommitted(
+void TextToSpeechPlaybackController::DidFinishNavigation(
     web::WebState* web_state,
-    const web::LoadCommittedDetails& load_details) {
+    web::NavigationContext* navigation_context) {
   [notification_helper_ cancelPlayback];
 }
 

@@ -2,6 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+if (is_android) {
+  import("//build/config/android/config.gni")
+  import("//build/config/android/rules.gni")
+}
+
 source_set("internal") {
   visibility = [
     ":for_tests",
@@ -13,6 +18,7 @@ source_set("internal") {
   ]
 
   sources = [
+    "all_download_event_notifier.cc",
     "base_file.cc",
     "base_file_win.cc",
     "download_create_info.cc",
@@ -28,6 +34,7 @@ source_set("internal") {
     "download_job_factory.cc",
     "download_job_impl.cc",
     "download_job_impl.h",
+    "download_path_reservation_tracker.cc",
     "download_response_handler.cc",
     "download_stats.cc",
     "download_task_runner.cc",
@@ -47,6 +54,8 @@ source_set("internal") {
     "resource_downloader.h",
     "save_package_download_job.cc",
     "save_package_download_job.h",
+    "simple_download_manager.cc",
+    "simple_download_manager_coordinator.cc",
     "stream_handle_input_stream.cc",
     "url_download_handler_factory.cc",
     "url_download_request_handle.cc",
@@ -61,6 +70,7 @@ source_set("internal") {
     "//components/download/database",
     "//components/download/public/common:interfaces",
     "//components/download/quarantine",
+    "//components/filename_generation",
     "//components/leveldb_proto",
     "//mojo/public/c/system",
     "//net",
@@ -68,8 +78,35 @@ source_set("internal") {
     "//services/network/public/cpp",
   ]
 
+  if (is_android) {
+    sources += [
+      "android/download_collection_bridge.cc",
+      "android/download_collection_bridge.h",
+    ]
+
+    deps += [ ":jni_headers" ]
+  }
+
   if (is_posix || is_fuchsia) {
     sources += [ "base_file_posix.cc" ]
+  }
+}
+
+if (is_android) {
+  android_library("internal_java") {
+    java_files = [ "android/java/src/org/chromium/components/download/DownloadCollectionBridge.java" ]
+
+    deps = [
+      "//base:base_java",
+    ]
+  }
+
+  generate_jni("jni_headers") {
+    visibility = [ ":*" ]
+    sources = [
+      "android/java/src/org/chromium/components/download/DownloadCollectionBridge.java",
+    ]
+    jni_package = "components/download/internal/common"
   }
 }
 
@@ -98,6 +135,7 @@ source_set("unit_tests") {
     "download_db_cache_unittest.cc",
     "download_file_unittest.cc",
     "download_item_impl_unittest.cc",
+    "download_path_reservation_tracker_unittest.cc",
     "download_stats_unittest.cc",
     "download_ukm_helper_unittest.cc",
     "parallel_download_job_unittest.cc",

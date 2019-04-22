@@ -12,10 +12,12 @@
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/sequenced_task_runner.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "base/time/clock.h"
 #include "base/trace_event/memory_dump_provider.h"
+#include "content/browser/indexed_db/scopes/leveldb_state.h"
 #include "content/common/content_export.h"
 #include "third_party/leveldatabase/src/include/leveldb/comparator.h"
 #include "third_party/leveldatabase/src/include/leveldb/options.h"
@@ -24,7 +26,6 @@
 namespace leveldb {
 class Comparator;
 class DB;
-class FilterPolicy;
 class Iterator;
 class Env;
 class Snapshot;
@@ -51,15 +52,6 @@ class LevelDBSnapshot {
   DISALLOW_COPY_AND_ASSIGN(LevelDBSnapshot);
 };
 
-class CONTENT_EXPORT LevelDBLock {
- public:
-  LevelDBLock() {}
-  virtual ~LevelDBLock() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(LevelDBLock);
-};
-
 class CONTENT_EXPORT LevelDBDatabase
     : public base::trace_event::MemoryDumpProvider {
  public:
@@ -68,15 +60,11 @@ class CONTENT_EXPORT LevelDBDatabase
   static const size_t kDefaultMaxOpenIteratorsPerDatabase = 50;
 
   // |max_open_cursors| cannot be 0.
-  static leveldb::Status Open(const base::FilePath& file_name,
-                              const LevelDBComparator* comparator,
-                              size_t max_open_cursors,
-                              std::unique_ptr<LevelDBDatabase>* db,
-                              bool* is_disk_full = 0);
+  // All calls to this class should be done on |task_runner|.
+  LevelDBDatabase(scoped_refptr<LevelDBState> level_db_state,
+                  scoped_refptr<base::SequencedTaskRunner> task_runner,
+                  size_t max_open_iterators);
 
-  static std::unique_ptr<LevelDBDatabase> OpenInMemory(
-      const LevelDBComparator* comparator);
-  static leveldb::Status Destroy(const base::FilePath& file_name);
   ~LevelDBDatabase() override;
 
   leveldb::Status Put(const base::StringPiece& key, std::string* value);
@@ -89,7 +77,9 @@ class CONTENT_EXPORT LevelDBDatabase
   // Note: Use DefaultReadOptions() and then adjust any values afterwards.
   std::unique_ptr<LevelDBIterator> CreateIterator(
       const leveldb::ReadOptions& options);
-  const LevelDBComparator* Comparator() const;
+  const LevelDBComparator* Comparator() const {
+    return level_db_state_->idb_comparator();
+  }
   void Compact(const base::StringPiece& start, const base::StringPiece& stop);
   void CompactAll();
 
@@ -100,22 +90,16 @@ class CONTENT_EXPORT LevelDBDatabase
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
-  leveldb::DB* db() { return db_.get(); }
-  leveldb::Env* env() { return env_.get(); }
+  leveldb::DB* db() { return level_db_state_->db(); }
+  leveldb::Env* env() { return level_db_state_->in_memory_env(); }
   base::Time LastModified() const { return last_modified_; }
 
   void SetClockForTesting(std::unique_ptr<base::Clock> clock);
-
- protected:
-  explicit LevelDBDatabase(size_t max_open_iterators);
 
  private:
   friend class LevelDBSnapshot;
   friend class LevelDBIteratorImpl;
   FRIEND_TEST_ALL_PREFIXES(IndexedDBTest, DeleteFailsIfDirectoryLocked);
-
-  static std::unique_ptr<LevelDBLock> LockForTesting(
-      const base::FilePath& file_name);
 
   // Methods for iterator pooling.
   std::unique_ptr<leveldb::Iterator> CreateLevelDBIterator(
@@ -125,11 +109,7 @@ class CONTENT_EXPORT LevelDBDatabase
 
   void CloseDatabase();
 
-  std::unique_ptr<leveldb::Env> env_;
-  std::unique_ptr<leveldb::Comparator> comparator_adapter_;
-  std::unique_ptr<leveldb::DB> db_;
-  std::unique_ptr<const leveldb::FilterPolicy> filter_policy_;
-  const LevelDBComparator* comparator_;
+  scoped_refptr<LevelDBState> level_db_state_;
   base::Time last_modified_;
   std::unique_ptr<base::Clock> clock_;
 

@@ -8,15 +8,11 @@
 #include <stddef.h>
 
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
 #include "ios/web/public/web_state/global_web_state_observer.h"
 #include "ios/web/public/web_state/web_state_observer.h"
-
-namespace base {
-template <typename T>
-struct DefaultSingletonTraits;
-}  // namespace base
 
 namespace web {
 
@@ -32,7 +28,7 @@ class GlobalWebStateEventTracker : public WebStateObserver {
   void RemoveObserver(GlobalWebStateObserver* observer);
 
  private:
-  friend struct base::DefaultSingletonTraits<GlobalWebStateEventTracker>;
+  friend class base::NoDestructor<GlobalWebStateEventTracker>;
   friend class WebStateEventForwarder;
   friend class WebStateImpl;
 
@@ -40,18 +36,10 @@ class GlobalWebStateEventTracker : public WebStateObserver {
   void OnWebStateCreated(WebState* web_state);
 
   // WebStateObserver implementation.
-  void NavigationItemsPruned(WebState* web_state,
-                             size_t pruned_item_count) override;
-  void NavigationItemChanged(WebState* web_state) override;
-  void NavigationItemCommitted(
-      WebState* web_state,
-      const LoadCommittedDetails& load_details) override;
   void DidStartNavigation(WebState* web_state,
                           NavigationContext* navigation_context) override;
   void DidStartLoading(WebState* web_state) override;
   void DidStopLoading(WebState* web_state) override;
-  void PageLoaded(WebState* web_state,
-                  PageLoadCompletionStatus load_completion_status) override;
   void RenderProcessGone(WebState* web_state) override;
   void WebStateDestroyed(WebState* web_state) override;
 

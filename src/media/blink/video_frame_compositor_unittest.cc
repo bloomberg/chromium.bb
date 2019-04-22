@@ -28,17 +28,14 @@ class MockWebVideoFrameSubmitter : public blink::WebVideoFrameSubmitter {
  public:
   // blink::WebVideoFrameSubmitter implementation.
   void StopUsingProvider() override {}
-  MOCK_METHOD3(EnableSubmission,
-               void(viz::SurfaceId,
-                    base::TimeTicks,
-                    blink::WebFrameSinkDestroyedCallback));
+  MOCK_METHOD2(EnableSubmission, void(viz::SurfaceId, base::TimeTicks));
   MOCK_METHOD0(StartRendering, void());
   MOCK_METHOD0(StopRendering, void());
   MOCK_CONST_METHOD0(IsDrivingFrameUpdates, bool(void));
   MOCK_METHOD1(Initialize, void(cc::VideoFrameProvider*));
   MOCK_METHOD1(SetRotation, void(media::VideoRotation));
-  MOCK_METHOD1(SetIsOpaque, void(bool));
-  MOCK_METHOD1(UpdateSubmissionState, void(bool));
+  MOCK_METHOD1(SetIsSurfaceVisible, void(bool));
+  MOCK_METHOD1(SetIsPageVisible, void(bool));
   MOCK_METHOD1(SetForceSubmit, void(bool));
   void DidReceiveFrame() override { ++did_receive_frame_count_; }
 
@@ -77,11 +74,10 @@ class VideoFrameCompositorTest : public VideoRendererSink::RenderCallback,
       EXPECT_CALL(*submitter_,
                   SetRotation(Eq(media::VideoRotation::VIDEO_ROTATION_90)));
       EXPECT_CALL(*submitter_, SetForceSubmit(false));
-      EXPECT_CALL(*submitter_, EnableSubmission(Eq(viz::SurfaceId()), _, _));
-      EXPECT_CALL(*submitter_, SetIsOpaque(true));
+      EXPECT_CALL(*submitter_, EnableSubmission(Eq(viz::SurfaceId()), _));
       compositor_->EnableSubmission(viz::SurfaceId(), base::TimeTicks(),
                                     media::VideoRotation::VIDEO_ROTATION_90,
-                                    false, true, base::BindRepeating([] {}));
+                                    false);
     }
 
     compositor_->set_tick_clock_for_testing(&tick_clock_);
@@ -148,6 +144,32 @@ class VideoFrameCompositorTest : public VideoRendererSink::RenderCallback,
 
 TEST_P(VideoFrameCompositorTest, InitialValues) {
   EXPECT_FALSE(compositor()->GetCurrentFrame().get());
+}
+
+TEST_P(VideoFrameCompositorTest, SetIsSurfaceVisible) {
+  if (!IsSurfaceLayerForVideoEnabled())
+    return;
+
+  auto cb = compositor()->GetUpdateSubmissionStateCallback();
+
+  EXPECT_CALL(*submitter_, SetIsSurfaceVisible(true));
+  cb.Run(true);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_CALL(*submitter_, SetIsSurfaceVisible(false));
+  cb.Run(false);
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_P(VideoFrameCompositorTest, SetIsPageVisible) {
+  if (!IsSurfaceLayerForVideoEnabled())
+    return;
+
+  EXPECT_CALL(*submitter_, SetIsPageVisible(true));
+  compositor()->SetIsPageVisible(true);
+
+  EXPECT_CALL(*submitter_, SetIsPageVisible(false));
+  compositor()->SetIsPageVisible(false);
 }
 
 TEST_P(VideoFrameCompositorTest, PaintSingleFrame) {
@@ -319,8 +341,8 @@ TEST_P(VideoFrameCompositorTest, UpdateCurrentFrameIfStale) {
   StopVideoRendererSink(false);
 }
 
-INSTANTIATE_TEST_CASE_P(SubmitterEnabled,
-                        VideoFrameCompositorTest,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(SubmitterEnabled,
+                         VideoFrameCompositorTest,
+                         ::testing::Bool());
 
 }  // namespace media

@@ -23,10 +23,6 @@
 class PrefService;
 class PrefChangeRegistrar;
 
-namespace prefs {
-class DictionaryValueUpdate;
-}
-
 namespace content_settings {
 
 class RuleIterator;
@@ -72,6 +68,12 @@ class ContentSettingsPref {
 
   // Tries to lock |lock_|. If successful, returns true and releases the lock.
   bool TryLockForTesting() const;
+  void set_allow_resource_identifiers_for_testing() {
+    allow_resource_identifiers_ = true;
+  }
+  void reset_allow_resource_identifiers_for_testing() {
+    allow_resource_identifiers_ = false;
+  }
 
  private:
   // Reads all content settings exceptions from the preference and loads them
@@ -90,9 +92,6 @@ class ContentSettingsPref {
                   const ResourceIdentifier& resource_identifier,
                   const base::Time last_modified,
                   const base::Value* value);
-
-  static void CanonicalizeContentSettingsExceptions(
-      prefs::DictionaryValueUpdate* all_settings_dictionary);
 
   // In the debug mode, asserts that |lock_| is not held by this thread. It's
   // ok if some other thread holds |lock_|, as long as it will eventually
@@ -127,6 +126,10 @@ class ContentSettingsPref {
   mutable base::Lock lock_;
 
   base::ThreadChecker thread_checker_;
+
+  // Used for setting preferences with resource identifiers to simmulate legacy
+  // prefs that did have resource identifiers set.
+  bool allow_resource_identifiers_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingsPref);
 };

@@ -47,6 +47,8 @@ EnumTraits<content::mojom::ResourceType, content::ResourceType>::ToMojom(
       return content::mojom::ResourceType::RESOURCE_TYPE_CSP_REPORT;
     case content::RESOURCE_TYPE_PLUGIN_RESOURCE:
       return content::mojom::ResourceType::RESOURCE_TYPE_PLUGIN_RESOURCE;
+    case content::RESOURCE_TYPE_NAVIGATION_PRELOAD:
+      return content::mojom::ResourceType::RESOURCE_TYPE_NAVIGATION_PRELOAD;
     case content::RESOURCE_TYPE_LAST_TYPE:
       return content::mojom::ResourceType::RESOURCE_TYPE_LAST_TYPE;
   }
@@ -113,6 +115,9 @@ bool EnumTraits<content::mojom::ResourceType, content::ResourceType>::FromMojom(
       return true;
     case content::mojom::ResourceType::RESOURCE_TYPE_PLUGIN_RESOURCE:
       *output = content::RESOURCE_TYPE_PLUGIN_RESOURCE;
+      return true;
+    case content::mojom::ResourceType::RESOURCE_TYPE_NAVIGATION_PRELOAD:
+      *output = content::RESOURCE_TYPE_NAVIGATION_PRELOAD;
       return true;
     case content::mojom::ResourceType::RESOURCE_TYPE_LAST_TYPE:
       *output = content::RESOURCE_TYPE_LAST_TYPE;

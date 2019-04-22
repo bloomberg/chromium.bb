@@ -608,10 +608,15 @@ TEST_F(CompileStringWithOptionsTest, ForcedVersionProfileRedundantProfileStd) {
 TEST_F(CompileStringWithOptionsTest, GenerateDebugInfoBinary) {
   shaderc_compile_options_set_generate_debug_info(options_.get());
   ASSERT_NE(nullptr, compiler_.get_compiler_handle());
-  // The binary output should contain the name of the vector: debug_info_sample.
-  EXPECT_THAT(CompilationOutput(kMinimalDebugInfoShader,
-                                shaderc_glsl_vertex_shader, options_.get()),
-              HasSubstr("debug_info_sample"));
+  const std::string binary_output =
+      CompilationOutput(kMinimalDebugInfoShader,
+                        shaderc_glsl_vertex_shader, options_.get());
+  // The binary output should contain the name of the vector (debug_info_sample)
+  // null-terminated, as well as the whole original source.
+  std::string vector_name("debug_info_sample");
+  vector_name.resize(vector_name.size() + 1);
+  EXPECT_THAT(binary_output, HasSubstr(vector_name));
+  EXPECT_THAT(binary_output, HasSubstr(kMinimalDebugInfoShader));
 }
 
 TEST_F(CompileStringWithOptionsTest, GenerateDebugInfoBinaryClonedOptions) {
@@ -619,11 +624,15 @@ TEST_F(CompileStringWithOptionsTest, GenerateDebugInfoBinaryClonedOptions) {
   compile_options_ptr cloned_options(
       shaderc_compile_options_clone(options_.get()));
   ASSERT_NE(nullptr, compiler_.get_compiler_handle());
-  // The binary output should contain the name of the vector: debug_info_sample.
-  EXPECT_THAT(
-      CompilationOutput(kMinimalDebugInfoShader, shaderc_glsl_vertex_shader,
-                        cloned_options.get()),
-      HasSubstr("debug_info_sample"));
+  const std::string binary_output =
+      CompilationOutput(kMinimalDebugInfoShader,
+                        shaderc_glsl_vertex_shader, cloned_options.get());
+  // The binary output should contain the name of the vector (debug_info_sample)
+  // null-terminated, as well as the whole original source.
+  std::string vector_name("debug_info_sample");
+  vector_name.resize(vector_name.size() + 1);
+  EXPECT_THAT(binary_output, HasSubstr(vector_name));
+  EXPECT_THAT(binary_output, HasSubstr(kMinimalDebugInfoShader));
 }
 
 TEST_F(CompileStringWithOptionsTest, GenerateDebugInfoDisassembly) {
@@ -730,7 +739,7 @@ TEST_F(CompileStringWithOptionsTest,
   const std::string disassembly_text =
       CompilationOutput(kMinimalShader, shaderc_glsl_vertex_shader,
                         options_.get(), OutputType::SpirvAssemblyText);
-  for (const auto& substring : kMinimalShaderDisassemblySubstrings) {
+  for (const auto& substring : kMinimalShaderDebugInfoDisassemblySubstrings) {
     EXPECT_THAT(disassembly_text, HasSubstr(substring));
   }
   // Check that we still have debug instructions.
@@ -747,7 +756,7 @@ TEST_F(CompileStringWithOptionsTest,
   const std::string disassembly_text =
       CompilationOutput(kMinimalShader, shaderc_glsl_vertex_shader,
                         options_.get(), OutputType::SpirvAssemblyText);
-  for (const auto& substring : kMinimalShaderDisassemblySubstrings) {
+  for (const auto& substring : kMinimalShaderDebugInfoDisassemblySubstrings) {
     EXPECT_THAT(disassembly_text, HasSubstr(substring));
   }
   // Check that we still have debug instructions.
@@ -803,7 +812,7 @@ TEST_P(ValidShaderKind, ValidSpvCode) {
       CompilesToValidSpv(compiler, test_case.shader_, test_case.shader_kind_));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CompileStringTest, ValidShaderKind,
     testing::ValuesIn(std::vector<ShaderKindTestCase>{
         // Valid default shader kinds.
@@ -814,6 +823,8 @@ INSTANTIATE_TEST_CASE_P(
         {kTessControlOnlyShader, shaderc_glsl_default_tess_control_shader},
         {kTessEvaluationOnlyShader,
          shaderc_glsl_default_tess_evaluation_shader},
+        {kNVMeshShader, shaderc_glsl_default_mesh_shader},
+        {kNVTaskShader, shaderc_glsl_default_task_shader},
 
         // #pragma annotation overrides default shader kinds.
         {kVertexOnlyShaderWithPragma, shaderc_glsl_default_compute_shader},
@@ -825,6 +836,13 @@ INSTANTIATE_TEST_CASE_P(
         {kGeometryOnlyShaderWithPragma,
          shaderc_glsl_default_tess_evaluation_shader},
         {kComputeOnlyShaderWithPragma, shaderc_glsl_default_geometry_shader},
+        {kNVMeshShaderWithPragma, shaderc_glsl_default_geometry_shader},
+        {kNVTaskShaderWithPragma, shaderc_glsl_default_geometry_shader},
+
+        // Infer from source
+        {kVertexOnlyShaderWithPragma, shaderc_glsl_infer_from_source},
+        {kNVMeshShaderWithPragma, shaderc_glsl_infer_from_source},
+        {kNVTaskShaderWithPragma, shaderc_glsl_infer_from_source},
 
         // Specified non-default shader kind overrides #pragma annotation.
         {kVertexOnlyShaderWithInvalidPragma, shaderc_glsl_vertex_shader},
@@ -840,7 +858,7 @@ TEST_P(InvalidShaderKind, CompilationShouldFail) {
       CompilesToValidSpv(compiler, test_case.shader_, test_case.shader_kind_));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     CompileStringTest, InvalidShaderKind,
     testing::ValuesIn(std::vector<ShaderKindTestCase>{
         // Invalid default shader kind.
@@ -964,7 +982,7 @@ TEST_P(IncluderTests, SetIncluderCallbacksClonedOptions) {
               HasSubstr(test_case.expected_substring()));
 }
 
-INSTANTIATE_TEST_CASE_P(CompileStringTest, IncluderTests,
+INSTANTIATE_TEST_SUITE_P(CompileStringTest, IncluderTests,
                         testing::ValuesIn(std::vector<IncluderTestCase>{
                             IncluderTestCase(
                                 // Fake file system.
@@ -1439,7 +1457,7 @@ TEST_P(ParseVersionProfileTest, FromNullTerminatedString) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     HelperMethods, ParseVersionProfileTest,
     testing::ValuesIn(std::vector<ParseVersionProfileTestCase>{
         // Valid version profiles
@@ -1778,6 +1796,8 @@ TEST_F(CompileStringWithOptionsTest, HlslOffsetsOptionEnableRespected) {
 TEST_F(CompileStringWithOptionsTest, HlslFunctionality1OffByDefault) {
   shaderc_compile_options_set_source_language(options_.get(),
                                               shaderc_source_language_hlsl);
+  // The counter should automatically get a binding.
+  shaderc_compile_options_set_auto_bind_uniforms(options_.get(), true);
   const std::string disassembly_text =
       CompilationOutput(kHlslShaderWithCounterBuffer, shaderc_fragment_shader,
                         options_.get(), OutputType::SpirvAssemblyText);
@@ -1789,6 +1809,8 @@ TEST_F(CompileStringWithOptionsTest, HlslFunctionality1Respected) {
   shaderc_compile_options_set_source_language(options_.get(),
                                               shaderc_source_language_hlsl);
   shaderc_compile_options_set_hlsl_functionality1(options_.get(), true);
+  // The counter should automatically get a binding.
+  shaderc_compile_options_set_auto_bind_uniforms(options_.get(), true);
   const std::string disassembly_text =
       CompilationOutput(kHlslShaderWithCounterBuffer, shaderc_fragment_shader,
                         options_.get(), OutputType::SpirvAssemblyText);
@@ -1799,6 +1821,8 @@ TEST_F(CompileStringWithOptionsTest, HlslFunctionality1SurvivesCloning) {
   shaderc_compile_options_set_source_language(options_.get(),
                                               shaderc_source_language_hlsl);
   shaderc_compile_options_set_hlsl_functionality1(options_.get(), true);
+  // The counter should automatically get a binding.
+  shaderc_compile_options_set_auto_bind_uniforms(options_.get(), true);
   compile_options_ptr cloned_options(
       shaderc_compile_options_clone(options_.get()));
   const std::string disassembly_text =
@@ -1812,7 +1836,9 @@ TEST_F(CompileStringWithOptionsTest, HlslFlexibleMemoryLayoutAllowed) {
                                               shaderc_source_language_hlsl);
   shaderc_compile_options_set_optimization_level(
       options_.get(), shaderc_optimization_level_performance);
-
+  // There is no way to set the counter's binding, so set it automatically.
+  // See https://github.com/KhronosGroup/glslang/issues/1616
+  shaderc_compile_options_set_auto_bind_uniforms(options_.get(), true);
   EXPECT_TRUE(CompilesToValidSpv(compiler_, kHlslMemLayoutResourceSelect,
                                  shaderc_fragment_shader, options_.get()));
 }

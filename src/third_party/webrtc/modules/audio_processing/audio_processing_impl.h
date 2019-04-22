@@ -15,14 +15,14 @@
 #include <memory>
 #include <vector>
 
+#include "api/function_view.h"
 #include "modules/audio_processing/audio_buffer.h"
 #include "modules/audio_processing/include/aec_dump.h"
 #include "modules/audio_processing/include/audio_processing.h"
 #include "modules/audio_processing/include/audio_processing_statistics.h"
 #include "modules/audio_processing/render_queue_item_verifier.h"
 #include "modules/audio_processing/rms_level.h"
-#include "rtc_base/criticalsection.h"
-#include "rtc_base/function_view.h"
+#include "rtc_base/critical_section.h"
 #include "rtc_base/gtest_prod_util.h"
 #include "rtc_base/ignore_wundef.h"
 #include "rtc_base/swap_queue.h"
@@ -84,6 +84,8 @@ class AudioProcessingImpl : public AudioProcessing {
   void set_delay_offset_ms(int offset) override;
   int delay_offset_ms() const override;
   void set_stream_key_pressed(bool key_pressed) override;
+  void set_stream_analog_level(int level) override;
+  int recommended_stream_analog_level() const override;
 
   // Render-side exclusive methods possibly running APM in a
   // multi-threaded manner. Acquire the render lock.
@@ -181,6 +183,7 @@ class AudioProcessingImpl : public AudioProcessing {
                 bool pre_amplifier_enabled,
                 bool echo_controller_enabled,
                 bool voice_activity_detector_enabled,
+                bool private_voice_detector_enabled,
                 bool level_estimator_enabled,
                 bool transient_suppressor_enabled);
     bool CaptureMultiBandSubModulesActive() const;
@@ -207,6 +210,7 @@ class AudioProcessingImpl : public AudioProcessing {
     bool echo_controller_enabled_ = false;
     bool level_estimator_enabled_ = false;
     bool voice_activity_detector_enabled_ = false;
+    bool private_voice_detector_enabled_ = false;
     bool transient_suppressor_enabled_ = false;
     bool first_update_ = true;
   };
@@ -253,6 +257,13 @@ class AudioProcessingImpl : public AudioProcessing {
   void HandleCaptureRuntimeSettings()
       RTC_EXCLUSIVE_LOCKS_REQUIRED(crit_capture_);
   void HandleRenderRuntimeSettings() RTC_EXCLUSIVE_LOCKS_REQUIRED(crit_render_);
+  void ApplyAgc1Config(const Config::GainController1& agc_config)
+      RTC_EXCLUSIVE_LOCKS_REQUIRED(crit_capture_);
+
+  // Returns a direct pointer to the AGC1 submodule: either a GainControlImpl
+  // or GainControlForExperimentalAgc instance.
+  GainControl* agc1();
+  const GainControl* agc1() const;
 
   void EmptyQueuedRenderAudio();
   void AllocateRenderQueue()

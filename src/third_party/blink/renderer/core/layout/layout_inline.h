@@ -213,8 +213,8 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
   using LayoutBoxModelObject::SetContinuation;
 
   bool AlwaysCreateLineBoxes() const {
-    DCHECK(!IsInLayoutNGInlineFormattingContext());
-    return AlwaysCreateLineBoxesForLayoutInline();
+    return AlwaysCreateLineBoxesForLayoutInline() &&
+           !IsInLayoutNGInlineFormattingContext();
   }
   void SetAlwaysCreateLineBoxes(bool always_create_line_boxes = true) {
     DCHECK(!IsInLayoutNGInlineFormattingContext());
@@ -224,10 +224,11 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
 
   // True if this inline box should force creation of NGPhysicalBoxFragment.
   bool ShouldCreateBoxFragment() const {
-    DCHECK(IsInLayoutNGInlineFormattingContext());
-    return AlwaysCreateLineBoxesForLayoutInline();
+    return AlwaysCreateLineBoxesForLayoutInline() &&
+           IsInLayoutNGInlineFormattingContext();
   }
   void SetShouldCreateBoxFragment(bool value = true) {
+    DCHECK(IsInLayoutNGInlineFormattingContext());
     SetAlwaysCreateLineBoxesForLayoutInline(value);
   }
   void UpdateShouldCreateBoxFragment();
@@ -264,9 +265,6 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
   void DeleteLineBoxes();
 
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
-
-  void ComputeSelfHitTestRects(Vector<LayoutRect>& rects,
-                               const LayoutPoint& layer_offset) const override;
 
   void InvalidateDisplayItemClients(PaintInvalidationReason) const override;
 
@@ -341,7 +339,9 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
   LayoutUnit OffsetWidth() const final { return LinesBoundingBox().Width(); }
   LayoutUnit OffsetHeight() const final { return LinesBoundingBox().Height(); }
 
-  LayoutRect VisualRectInDocument() const override;
+  LayoutRect VisualRectInDocument(
+      VisualRectFlags = kDefaultVisualRectFlags) const override;
+
   // This method differs from visualOverflowRect in that it doesn't include the
   // rects for culled inline boxes, which aren't necessary for paint
   // invalidation.

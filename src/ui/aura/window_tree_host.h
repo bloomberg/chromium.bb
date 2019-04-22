@@ -85,6 +85,7 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   Window* window() { return window_; }
   const Window* window() const { return window_; }
 
+  // TODO(msw): Remove this, callers should use GetEventSink().
   ui::EventSink* event_sink();
 
   WindowEventDispatcher* dispatcher() {
@@ -94,6 +95,8 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   const WindowEventDispatcher* dispatcher() const { return dispatcher_.get(); }
 
   ui::Compositor* compositor() { return compositor_.get(); }
+
+  base::WeakPtr<WindowTreeHost> GetWeakPtr();
 
   // Gets/Sets the root window's transform.
   virtual gfx::Transform GetRootTransform() const;
@@ -175,7 +178,10 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   // Overridden from ui::internal::InputMethodDelegate:
   ui::EventDispatchDetails DispatchKeyEventPostIME(
       ui::KeyEvent* event,
-      base::OnceCallback<void(bool)> ack_callback) final;
+      DispatchKeyEventPostIMECallback callback) final;
+
+  // Overridden from ui::EventSource:
+  ui::EventSink* GetEventSink() override;
 
   // Returns the id of the display. Default implementation queries Screen.
   virtual int64_t GetDisplayId();
@@ -242,6 +248,8 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   // observers of the change.
   virtual void SetNativeWindowOcclusionState(Window::OcclusionState state);
 
+  bool holding_pointer_moves() const { return holding_pointer_moves_; }
+
  protected:
   friend class ScopedKeyboardHook;
   friend class TestScreen;  // TODO(beng): see if we can remove/consolidate.
@@ -258,13 +266,15 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   // If frame_sink_id is not passed in, one will be grabbed from
   // ContextFactoryPrivate. |are_events_in_pixels| indicates if events are
   // received in pixels. If |are_events_in_pixels| is false, events are
-  // received in DIPs. See Compositor() for details on |trace_environment_name|.
+  // received in DIPs. See Compositor() for details on |trace_environment_name|
+  // and |automatically_allocate_surface_ids|.
   void CreateCompositor(
       const viz::FrameSinkId& frame_sink_id = viz::FrameSinkId(),
       bool force_software_compositor = false,
-      bool external_begin_frames_enabled = false,
+      ui::ExternalBeginFrameClient* external_begin_frame_client = nullptr,
       bool are_events_in_pixels = true,
-      const char* trace_environment_name = nullptr);
+      const char* trace_environment_name = nullptr,
+      bool automatically_allocate_surface_ids = true);
 
   void InitCompositor();
   void OnAcceleratedWidgetAvailable();
@@ -298,9 +308,6 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   // Hides the WindowTreeHost.
   virtual void HideImpl() = 0;
 
-  // Overridden from ui::EventSource:
-  ui::EventSink* GetEventSink() override;
-
   // display::DisplayObserver implementation.
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t metrics) override;
@@ -318,6 +325,10 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   virtual gfx::Rect GetTransformedRootWindowBoundsInPixels(
       const gfx::Size& size_in_pixels) const;
 
+  // Returns true if a LocalSurfaceId should be allocated when the size changes
+  // and a LocalSurfaceId was not supplied.
+  virtual bool ShouldAllocateLocalSurfaceIdOnResize();
+
   const base::ObserverList<WindowTreeHostObserver>::Unchecked& observers()
       const {
     return observers_;
@@ -332,9 +343,6 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
                             const gfx::Point& host_location);
 
   // Overrided from CompositorObserver:
-  void OnCompositingDidCommit(ui::Compositor* compositor) override;
-  void OnCompositingStarted(ui::Compositor* compositor,
-                            base::TimeTicks start_time) override;
   void OnCompositingEnded(ui::Compositor* compositor) override;
   void OnCompositingChildResizing(ui::Compositor* compositor) override;
   void OnCompositingShuttingDown(ui::Compositor* compositor) override;

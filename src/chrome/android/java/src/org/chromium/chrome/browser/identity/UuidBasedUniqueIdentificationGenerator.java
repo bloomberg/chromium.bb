@@ -6,13 +6,12 @@ package org.chromium.chrome.browser.identity;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.support.annotation.Nullable;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 
 import java.util.UUID;
-
-import javax.annotation.Nullable;
 
 /**
  * Generates unique IDs that are {@link UUID} strings.

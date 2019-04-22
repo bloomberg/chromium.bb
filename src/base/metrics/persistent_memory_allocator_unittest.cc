@@ -10,7 +10,9 @@
 #include "base/files/file_util.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/shared_memory.h"
+#include "base/memory/read_only_shared_memory_region.h"
+#include "base/memory/shared_memory_mapping.h"
+#include "base/memory/writable_shared_memory_region.h"
 #include "base/metrics/histogram.h"
 #include "base/rand_util.h"
 #include "base/strings/safe_sprintf.h"
@@ -608,20 +610,20 @@ TEST(LocalPersistentMemoryAllocatorTest, CreationTest) {
   EXPECT_FALSE(allocator.IsCorrupt());
 }
 
-
-//----- SharedPersistentMemoryAllocator ----------------------------------------
+//----- {Writable,ReadOnly}SharedPersistentMemoryAllocator ---------------------
 
 TEST(SharedPersistentMemoryAllocatorTest, CreationTest) {
-  SharedMemoryHandle shared_handle_1;
-  SharedMemoryHandle shared_handle_2;
+  base::WritableSharedMemoryRegion rw_region =
+      base::WritableSharedMemoryRegion::Create(TEST_MEMORY_SIZE);
+  ASSERT_TRUE(rw_region.IsValid());
 
   PersistentMemoryAllocator::MemoryInfo meminfo1;
   Reference r123, r456, r789;
   {
-    std::unique_ptr<SharedMemory> shmem1(new SharedMemory());
-    ASSERT_TRUE(shmem1->CreateAndMapAnonymous(TEST_MEMORY_SIZE));
-    SharedPersistentMemoryAllocator local(std::move(shmem1), TEST_ID, "",
-                                          false);
+    base::WritableSharedMemoryMapping mapping = rw_region.Map();
+    ASSERT_TRUE(mapping.IsValid());
+    WritableSharedPersistentMemoryAllocator local(std::move(mapping), TEST_ID,
+                                                  "");
     EXPECT_FALSE(local.IsReadonly());
     r123 = local.Allocate(123, 123);
     r456 = local.Allocate(456, 456);
@@ -632,19 +634,20 @@ TEST(SharedPersistentMemoryAllocatorTest, CreationTest) {
     local.GetMemoryInfo(&meminfo1);
     EXPECT_FALSE(local.IsFull());
     EXPECT_FALSE(local.IsCorrupt());
-
-    shared_handle_1 = local.shared_memory()->handle().Duplicate();
-    ASSERT_TRUE(shared_handle_1.IsValid());
-    shared_handle_2 = local.shared_memory()->handle().Duplicate();
-    ASSERT_TRUE(shared_handle_2.IsValid());
   }
 
-  // Read-only test.
-  std::unique_ptr<SharedMemory> shmem2(new SharedMemory(shared_handle_1,
-                                                        /*readonly=*/true));
-  ASSERT_TRUE(shmem2->Map(TEST_MEMORY_SIZE));
+  // Create writable and read-only mappings of the same region.
+  base::WritableSharedMemoryMapping rw_mapping = rw_region.Map();
+  ASSERT_TRUE(rw_mapping.IsValid());
+  base::ReadOnlySharedMemoryRegion ro_region =
+      base::WritableSharedMemoryRegion::ConvertToReadOnly(std::move(rw_region));
+  ASSERT_TRUE(ro_region.IsValid());
+  base::ReadOnlySharedMemoryMapping ro_mapping = ro_region.Map();
+  ASSERT_TRUE(ro_mapping.IsValid());
 
-  SharedPersistentMemoryAllocator shalloc2(std::move(shmem2), 0, "", true);
+  // Read-only test.
+  ReadOnlySharedPersistentMemoryAllocator shalloc2(std::move(ro_mapping), 0,
+                                                   "");
   EXPECT_TRUE(shalloc2.IsReadonly());
   EXPECT_EQ(TEST_ID, shalloc2.Id());
   EXPECT_FALSE(shalloc2.IsFull());
@@ -666,11 +669,8 @@ TEST(SharedPersistentMemoryAllocatorTest, CreationTest) {
   EXPECT_EQ(meminfo1.free, meminfo2.free);
 
   // Read/write test.
-  std::unique_ptr<SharedMemory> shmem3(new SharedMemory(shared_handle_2,
-                                                        /*readonly=*/false));
-  ASSERT_TRUE(shmem3->Map(TEST_MEMORY_SIZE));
-
-  SharedPersistentMemoryAllocator shalloc3(std::move(shmem3), 0, "", false);
+  WritableSharedPersistentMemoryAllocator shalloc3(std::move(rw_mapping), 0,
+                                                   "");
   EXPECT_FALSE(shalloc3.IsReadonly());
   EXPECT_EQ(TEST_ID, shalloc3.Id());
   EXPECT_FALSE(shalloc3.IsFull());

@@ -7,17 +7,21 @@
 #include <utility>
 
 #include "base/mac/foundation_util.h"
+#include "base/strings/sys_string_conversions.h"
+#include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
+#include "ui/base/cocoa/animation_utils.h"
 #include "ui/base/cocoa/remote_accessibility_api.h"
+#include "ui/base/cocoa/remote_layer_api.h"
 #include "ui/base/hit_test.h"
+#include "ui/base/ime/init/input_method_factory.h"
 #include "ui/base/ime/input_method.h"
-#include "ui/base/ime/input_method_factory.h"
-#include "ui/base/models/dialog_model.h"
 #include "ui/compositor/recyclable_compositor_mac.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/mac/coordinate_conversion.h"
 #include "ui/native_theme/native_theme_mac.h"
+#include "ui/views/cocoa/text_input_host.h"
 #include "ui/views/cocoa/tooltip_manager_mac.h"
 #include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/controls/menu/menu_controller.h"
@@ -39,6 +43,151 @@ namespace views {
 
 namespace {
 
+// Dummy implementation of the BridgedNativeWidgetHost interface. This structure
+// exists to work around a bug wherein synchronous mojo calls to an associated
+// interface can hang if the interface request is unbound. This structure is
+// bound to the real host's interface, and then deletes itself only once the
+// underlying connection closes.
+// https://crbug.com/915572
+class BridgedNativeWidgetHostDummy
+    : public views_bridge_mac::mojom::BridgedNativeWidgetHost {
+ public:
+  BridgedNativeWidgetHostDummy() = default;
+  ~BridgedNativeWidgetHostDummy() override = default;
+
+ private:
+  void OnVisibilityChanged(bool visible) override {}
+  void OnWindowNativeThemeChanged() override {}
+  void OnViewSizeChanged(const gfx::Size& new_size) override {}
+  void SetKeyboardAccessible(bool enabled) override {}
+  void OnIsFirstResponderChanged(bool is_first_responder) override {}
+  void OnMouseCaptureActiveChanged(bool capture_is_active) override {}
+  void OnScrollEvent(std::unique_ptr<ui::Event> event) override {}
+  void OnMouseEvent(std::unique_ptr<ui::Event> event) override {}
+  void OnGestureEvent(std::unique_ptr<ui::Event> event) override {}
+  void OnWindowGeometryChanged(
+      const gfx::Rect& window_bounds_in_screen_dips,
+      const gfx::Rect& content_bounds_in_screen_dips) override {}
+  void OnWindowFullscreenTransitionStart(
+      bool target_fullscreen_state) override {}
+  void OnWindowFullscreenTransitionComplete(bool is_fullscreen) override {}
+  void OnWindowMiniaturizedChanged(bool miniaturized) override {}
+  void OnWindowDisplayChanged(const display::Display& display) override {}
+  void OnWindowWillClose() override {}
+  void OnWindowHasClosed() override {}
+  void OnWindowKeyStatusChanged(bool is_key,
+                                bool is_content_first_responder,
+                                bool full_keyboard_access_enabled) override {}
+  void DoDialogButtonAction(ui::DialogButton button) override {}
+  void OnFocusWindowToolbar() override {}
+  void SetRemoteAccessibilityTokens(
+      const std::vector<uint8_t>& window_token,
+      const std::vector<uint8_t>& view_token) override {}
+  void GetSheetOffsetY(GetSheetOffsetYCallback callback) override {
+    float offset_y = 0;
+    std::move(callback).Run(offset_y);
+  }
+  void DispatchKeyEventRemote(
+      std::unique_ptr<ui::Event> event,
+      DispatchKeyEventRemoteCallback callback) override {
+    bool event_handled = false;
+    std::move(callback).Run(event_handled);
+  }
+  void DispatchKeyEventToMenuControllerRemote(
+      std::unique_ptr<ui::Event> event,
+      DispatchKeyEventToMenuControllerRemoteCallback callback) override {
+    ui::KeyEvent* key_event = event->AsKeyEvent();
+    bool event_swallowed = false;
+    std::move(callback).Run(event_swallowed, key_event->handled());
+  }
+  void GetHasMenuController(GetHasMenuControllerCallback callback) override {
+    bool has_menu_controller = false;
+    std::move(callback).Run(has_menu_controller);
+  }
+  void GetIsDraggableBackgroundAt(
+      const gfx::Point& location_in_content,
+      GetIsDraggableBackgroundAtCallback callback) override {
+    bool is_draggable_background = false;
+    std::move(callback).Run(is_draggable_background);
+  }
+  void GetTooltipTextAt(const gfx::Point& location_in_content,
+                        GetTooltipTextAtCallback callback) override {
+    base::string16 new_tooltip_text;
+    std::move(callback).Run(new_tooltip_text);
+  }
+  void GetIsFocusedViewTextual(
+      GetIsFocusedViewTextualCallback callback) override {
+    bool is_textual = false;
+    std::move(callback).Run(is_textual);
+  }
+  void GetWidgetIsModal(GetWidgetIsModalCallback callback) override {
+    bool widget_is_modal = false;
+    std::move(callback).Run(widget_is_modal);
+  }
+  void GetDialogButtonInfo(ui::DialogButton button,
+                           GetDialogButtonInfoCallback callback) override {
+    bool exists = false;
+    base::string16 label;
+    bool is_enabled = false;
+    bool is_default = false;
+    std::move(callback).Run(exists, label, is_enabled, is_default);
+  }
+  void GetDoDialogButtonsExist(
+      GetDoDialogButtonsExistCallback callback) override {
+    bool buttons_exist = false;
+    std::move(callback).Run(buttons_exist);
+  }
+  void GetShouldShowWindowTitle(
+      GetShouldShowWindowTitleCallback callback) override {
+    bool should_show_window_title = false;
+    std::move(callback).Run(should_show_window_title);
+  }
+  void GetCanWindowBecomeKey(GetCanWindowBecomeKeyCallback callback) override {
+    bool can_window_become_key = false;
+    std::move(callback).Run(can_window_become_key);
+  }
+  void GetAlwaysRenderWindowAsKey(
+      GetAlwaysRenderWindowAsKeyCallback callback) override {
+    bool always_render_as_key = false;
+    std::move(callback).Run(always_render_as_key);
+  }
+  void GetCanWindowClose(GetCanWindowCloseCallback callback) override {
+    bool can_window_close = false;
+    std::move(callback).Run(can_window_close);
+  }
+  void GetWindowFrameTitlebarHeight(
+      GetWindowFrameTitlebarHeightCallback callback) override {
+    bool override_titlebar_height = false;
+    float titlebar_height = 0;
+    std::move(callback).Run(override_titlebar_height, titlebar_height);
+  }
+  void GetRootViewAccessibilityToken(
+      GetRootViewAccessibilityTokenCallback callback) override {
+    std::vector<uint8_t> token;
+    int64_t pid = 0;
+    std::move(callback).Run(pid, token);
+  }
+  void ValidateUserInterfaceItem(
+      int32_t command,
+      ValidateUserInterfaceItemCallback callback) override {
+    views_bridge_mac::mojom::ValidateUserInterfaceItemResultPtr result;
+    std::move(callback).Run(std::move(result));
+  }
+  void ExecuteCommand(int32_t command,
+                      WindowOpenDisposition window_open_disposition,
+                      bool is_before_first_responder,
+                      ExecuteCommandCallback callback) override {
+    bool was_executed = false;
+    std::move(callback).Run(was_executed);
+  }
+  void HandleAccelerator(const ui::Accelerator& accelerator,
+                         bool require_priority_handler,
+                         HandleAcceleratorCallback callback) override {
+    bool was_handled = false;
+    std::move(callback).Run(was_handled);
+  }
+};
+
 // Returns true if bounds passed to window in SetBounds should be treated as
 // though they are in screen coordinates.
 bool PositionWindowInScreenCoordinates(Widget* widget,
@@ -59,6 +208,60 @@ std::map<uint64_t, BridgedNativeWidgetHostImpl*>& GetIdToWidgetHostImplMap() {
 uint64_t g_last_bridged_native_widget_id = 0;
 
 }  // namespace
+
+// A gfx::CALayerParams may pass the content to be drawn across processes via
+// either an IOSurface (sent as mach port) or a CAContextID (which is an
+// integer). For historical reasons, software compositing uses IOSurfaces.
+// The mojo connection to the app shim process does not support sending mach
+// ports, which results in nothing being drawn when using software compositing.
+// To work around this issue, this structure creates a CALayer that uses the
+// IOSurface as its contents, and hosts this CALayer in a CAContext that is
+// the gfx::CALayerParams is then pointed to.
+// https://crbug.com/942213
+class BridgedNativeWidgetHostImpl::IOSurfaceToRemoteLayerInterceptor {
+ public:
+  IOSurfaceToRemoteLayerInterceptor() = default;
+  ~IOSurfaceToRemoteLayerInterceptor() = default;
+
+  void UpdateCALayerParams(gfx::CALayerParams* ca_layer_params) {
+    DCHECK(ca_layer_params->io_surface_mach_port);
+    base::ScopedCFTypeRef<IOSurfaceRef> io_surface(
+        IOSurfaceLookupFromMachPort(ca_layer_params->io_surface_mach_port));
+
+    ScopedCAActionDisabler disabler;
+    // Lazily create |io_surface_layer_| and |ca_context_|.
+    if (!io_surface_layer_) {
+      io_surface_layer_.reset([[CALayer alloc] init]);
+      [io_surface_layer_ setContentsGravity:kCAGravityTopLeft];
+      [io_surface_layer_ setAnchorPoint:CGPointMake(0, 0)];
+    }
+    if (!ca_context_) {
+      CGSConnectionID connection_id = CGSMainConnectionID();
+      ca_context_.reset([[CAContext contextWithCGSConnection:connection_id
+                                                     options:@{}] retain]);
+      [ca_context_ setLayer:io_surface_layer_];
+    }
+
+    // Update |io_surface_layer_| to draw the contents of |ca_layer_params|.
+    id new_contents = static_cast<id>(io_surface.get());
+    [io_surface_layer_ setContents:new_contents];
+    gfx::Size bounds_dip = gfx::ConvertSizeToDIP(ca_layer_params->scale_factor,
+                                                 ca_layer_params->pixel_size);
+    [io_surface_layer_
+        setBounds:CGRectMake(0, 0, bounds_dip.width(), bounds_dip.height())];
+    if ([io_surface_layer_ contentsScale] != ca_layer_params->scale_factor)
+      [io_surface_layer_ setContentsScale:ca_layer_params->scale_factor];
+
+    // Change |ca_layer_params| to use |ca_context_| instead of an IOSurface.
+    ca_layer_params->ca_context_id = [ca_context_ contextId];
+    ca_layer_params->io_surface_mach_port.reset();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(IOSurfaceToRemoteLayerInterceptor);
+  base::scoped_nsobject<CAContext> ca_context_;
+  base::scoped_nsobject<CALayer> io_surface_layer_;
+};
 
 // static
 BridgedNativeWidgetHostImpl* BridgedNativeWidgetHostImpl::GetFromNativeWindow(
@@ -91,6 +294,7 @@ BridgedNativeWidgetHostImpl::BridgedNativeWidgetHostImpl(NativeWidgetMac* owner)
       native_widget_mac_(owner),
       root_view_id_(ui::NSViewIds::GetNewId()),
       accessibility_focus_overrider_(this),
+      text_input_host_(new TextInputHost(this)),
       host_mojo_binding_(this) {
   DCHECK(GetIdToWidgetHostImplMap().find(widget_id_) ==
          GetIdToWidgetHostImplMap().end());
@@ -102,9 +306,17 @@ BridgedNativeWidgetHostImpl::~BridgedNativeWidgetHostImpl() {
   DCHECK(children_.empty());
   if (bridge_factory_host_) {
     bridge_ptr_.reset();
-    host_mojo_binding_.Unbind();
     bridge_factory_host_->RemoveObserver(this);
     bridge_factory_host_ = nullptr;
+  }
+
+  // Workaround for https://crbug.com/915572
+  if (host_mojo_binding_.is_bound()) {
+    auto request = host_mojo_binding_.Unbind();
+    if (request.is_pending()) {
+      mojo::MakeStrongAssociatedBinding(
+          std::make_unique<BridgedNativeWidgetHostDummy>(), std::move(request));
+    }
   }
 
   // Ensure that |this| cannot be reached by its id while it is being destroyed.
@@ -152,14 +364,15 @@ BridgedNativeWidgetHostImpl::bridge() const {
 void BridgedNativeWidgetHostImpl::CreateLocalBridge(
     base::scoped_nsobject<NativeWidgetMacNSWindow> window) {
   local_window_ = window;
-  bridge_impl_ =
-      std::make_unique<BridgedNativeWidgetImpl>(widget_id_, this, this);
+  bridge_impl_ = std::make_unique<BridgedNativeWidgetImpl>(
+      widget_id_, this, this, text_input_host_.get());
   bridge_impl_->SetWindow(window);
 }
 
 void BridgedNativeWidgetHostImpl::CreateRemoteBridge(
     BridgeFactoryHost* bridge_factory_host,
     views_bridge_mac::mojom::CreateWindowParamsPtr window_create_params) {
+  accessibility_focus_overrider_.SetAppIsRemote(true);
   bridge_factory_host_ = bridge_factory_host;
   bridge_factory_host_->AddObserver(this);
 
@@ -173,14 +386,19 @@ void BridgedNativeWidgetHostImpl::CreateRemoteBridge(
         local_window_create_params.get());
     [local_window_ setBridgedNativeWidgetId:widget_id_];
     [local_window_ setAlphaValue:0.0];
+    local_view_id_mapping_ = std::make_unique<ui::ScopedNSViewIdMapping>(
+        root_view_id_, [local_window_ contentView]);
   }
 
   // Initialize |bridge_ptr_| to point to a bridge created by |factory|.
   views_bridge_mac::mojom::BridgedNativeWidgetHostAssociatedPtr host_ptr;
   host_mojo_binding_.Bind(mojo::MakeRequest(&host_ptr),
                           ui::WindowResizeHelperMac::Get()->task_runner());
+  views_bridge_mac::mojom::TextInputHostAssociatedPtr text_input_host_ptr;
+  text_input_host_->BindRequest(mojo::MakeRequest(&text_input_host_ptr));
   bridge_factory_host_->GetFactory()->CreateBridgedNativeWidget(
-      widget_id_, mojo::MakeRequest(&bridge_ptr_), host_ptr.PassInterface());
+      widget_id_, mojo::MakeRequest(&bridge_ptr_), host_ptr.PassInterface(),
+      text_input_host_ptr.PassInterface());
 
   // Create the window in its process, and attach it to its parent window.
   bridge()->CreateWindow(std::move(window_create_params));
@@ -237,6 +455,7 @@ void BridgedNativeWidgetHostImpl::InitWindow(const Widget::InitParams& params) {
   // set at all, the creator of the Widget is expected to call SetBounds()
   // before calling Widget::Show() to avoid a kWindowSizeDeterminedLater-sized
   // (i.e. 1x1) window appearing.
+  UpdateLocalWindowFrame(params.bounds);
   bridge()->SetInitialBounds(params.bounds, widget->GetMinimumSize());
 
   // TODO(ccameron): Correctly set these based |local_window_|.
@@ -248,7 +467,24 @@ void BridgedNativeWidgetHostImpl::InitWindow(const Widget::InitParams& params) {
     bridge()->SetVisibilityState(WindowVisibilityState::kShowInactive);
 }
 
+void BridgedNativeWidgetHostImpl::CloseWindowNow() {
+  bool is_out_of_process = !bridge_impl_;
+  // Note that CloseWindowNow may delete |this| for in-process windows.
+  if (bridge())
+    bridge()->CloseWindowNow();
+
+  // If it is out-of-process, then simulate the calls that would have been
+  // during window closure.
+  if (is_out_of_process) {
+    OnWindowWillClose();
+    while (!children_.empty())
+      children_.front()->CloseWindowNow();
+    OnWindowHasClosed();
+  }
+}
+
 void BridgedNativeWidgetHostImpl::SetBounds(const gfx::Rect& bounds) {
+  UpdateLocalWindowFrame(bounds);
   bridge()->SetBounds(bounds,
                       native_widget_mac_->GetWidget()->GetMinimumSize());
 }
@@ -377,6 +613,22 @@ void BridgedNativeWidgetHostImpl::OnWidgetInitDone() {
     dialog->AddObserver(this);
 }
 
+bool BridgedNativeWidgetHostImpl::RedispatchKeyEvent(NSEvent* event) {
+  // If the target window is in-process, then redispatch the event directly,
+  // and give an accurate return value.
+  if (bridge_impl_)
+    return bridge_impl_->RedispatchKeyEvent(event);
+
+  // If the target window is out of process then always report the event as
+  // handled (because it should never be handled in this process).
+  bridge()->RedispatchKeyEvent(
+      [event type], [event modifierFlags], [event timestamp],
+      base::SysNSStringToUTF16([event characters]),
+      base::SysNSStringToUTF16([event charactersIgnoringModifiers]),
+      [event keyCode]);
+  return true;
+}
+
 ui::InputMethod* BridgedNativeWidgetHostImpl::GetInputMethod() {
   if (!input_method_) {
     input_method_ = ui::CreateInputMethod(this, gfx::kNullAcceleratedWidget);
@@ -447,8 +699,10 @@ void BridgedNativeWidgetHostImpl::ClearAssociationForView(const View* view) {
 }
 
 void BridgedNativeWidgetHostImpl::ReorderChildViews() {
-  std::map<NSView*, int> rank;
   Widget* widget = native_widget_mac_->GetWidget();
+  if (!widget->GetRootView())
+    return;
+  std::map<NSView*, int> rank;
   RankNSViewsRecursive(widget->GetRootView(), &rank);
   if (bridge_impl_)
     bridge_impl_->SortSubviews(std::move(rank));
@@ -460,8 +714,15 @@ void BridgedNativeWidgetHostImpl::RankNSViewsRecursive(
   auto it = associated_views_.find(view);
   if (it != associated_views_.end())
     rank->emplace(it->second, rank->size());
-  for (int i = 0; i < view->child_count(); ++i)
-    RankNSViewsRecursive(view->child_at(i), rank);
+  for (View* child : view->children())
+    RankNSViewsRecursive(child, rank);
+}
+
+void BridgedNativeWidgetHostImpl::UpdateLocalWindowFrame(
+    const gfx::Rect& frame) {
+  if (!bridge_ptr_)
+    return;
+  [local_window_ setFrame:gfx::ScreenRectToNSRect(frame) display:NO animate:NO];
 }
 
 // static
@@ -493,13 +754,13 @@ bool BridgedNativeWidgetHostImpl::DispatchKeyEventToMenuController(
   return false;
 }
 
-double BridgedNativeWidgetHostImpl::SheetPositionY() {
-  return native_widget_mac_->SheetPositionY();
-}
-
 views_bridge_mac::DragDropClient*
 BridgedNativeWidgetHostImpl::GetDragDropClient() {
   return drag_drop_client_.get();
+}
+
+ui::TextInputClient* BridgedNativeWidgetHostImpl::GetTextInputClient() {
+  return text_input_host_->GetTextInputClient();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -581,12 +842,19 @@ bool BridgedNativeWidgetHostImpl::GetHasMenuController(
     bool* has_menu_controller) {
   MenuController* menu_controller = MenuController::GetActiveInstance();
   *has_menu_controller = menu_controller && root_view_ &&
-                         menu_controller->owner() == root_view_->GetWidget();
+                         menu_controller->owner() == root_view_->GetWidget() &&
+                         // The editable combobox menu does not swallow keys.
+                         !menu_controller->IsEditableCombobox();
   return true;
 }
 
 void BridgedNativeWidgetHostImpl::OnViewSizeChanged(const gfx::Size& new_size) {
   root_view_->SetSize(new_size);
+}
+
+bool BridgedNativeWidgetHostImpl::GetSheetOffsetY(int32_t* offset_y) {
+  *offset_y = native_widget_mac_->SheetOffsetY();
+  return true;
 }
 
 void BridgedNativeWidgetHostImpl::SetKeyboardAccessible(bool enabled) {
@@ -635,8 +903,7 @@ bool BridgedNativeWidgetHostImpl::GetTooltipTextAt(
     gfx::Point view_point = location_in_content;
     views::View::ConvertPointToScreen(root_view_, &view_point);
     views::View::ConvertPointFromScreen(view, &view_point);
-    if (!view->GetTooltipText(view_point, new_tooltip_text))
-      DCHECK(new_tooltip_text->empty());
+    *new_tooltip_text = view->GetTooltipText(view_point);
   }
   return true;
 }
@@ -686,15 +953,7 @@ bool BridgedNativeWidgetHostImpl::GetIsFocusedViewTextual(bool* is_textual) {
 void BridgedNativeWidgetHostImpl::OnWindowGeometryChanged(
     const gfx::Rect& new_window_bounds_in_screen,
     const gfx::Rect& new_content_bounds_in_screen) {
-  // If we are accessing the BridgedNativeWidget through mojo, then
-  // |local_window_| is not the true window that was just resized. Update
-  // the frame of |local_window_| to keep it in sync for any native calls
-  // that may use it (e.g, for context menu positioning).
-  if (bridge_ptr_) {
-    [local_window_ setFrame:gfx::ScreenRectToNSRect(new_window_bounds_in_screen)
-                    display:NO
-                    animate:NO];
-  }
+  UpdateLocalWindowFrame(new_window_bounds_in_screen);
 
   bool window_has_moved =
       new_window_bounds_in_screen.origin() != window_bounds_in_screen_.origin();
@@ -831,21 +1090,21 @@ bool BridgedNativeWidgetHostImpl::GetDialogButtonInfo(
     bool* is_button_enabled,
     bool* is_button_default) {
   *button_exists = false;
-  ui::DialogModel* model =
+  views::DialogDelegate* dialog =
       root_view_->GetWidget()->widget_delegate()->AsDialogDelegate();
-  if (!model || !(model->GetDialogButtons() & button))
+  if (!dialog || !(dialog->GetDialogButtons() & button))
     return true;
   *button_exists = true;
-  *button_label = model->GetDialogButtonLabel(button);
-  *is_button_enabled = model->IsDialogButtonEnabled(button);
-  *is_button_default = button == model->GetDefaultDialogButton();
+  *button_label = dialog->GetDialogButtonLabel(button);
+  *is_button_enabled = dialog->IsDialogButtonEnabled(button);
+  *is_button_default = button == dialog->GetDefaultDialogButton();
   return true;
 }
 
 bool BridgedNativeWidgetHostImpl::GetDoDialogButtonsExist(bool* buttons_exist) {
-  ui::DialogModel* model =
+  views::DialogDelegate* dialog =
       root_view_->GetWidget()->widget_delegate()->AsDialogDelegate();
-  *buttons_exist = model && model->GetDialogButtons();
+  *buttons_exist = dialog && dialog->GetDialogButtons();
   return true;
 }
 
@@ -893,9 +1152,70 @@ void BridgedNativeWidgetHostImpl::OnFocusWindowToolbar() {
   native_widget_mac_->OnFocusWindowToolbar();
 }
 
+void BridgedNativeWidgetHostImpl::SetRemoteAccessibilityTokens(
+    const std::vector<uint8_t>& window_token,
+    const std::vector<uint8_t>& view_token) {
+  remote_window_accessible_ =
+      ui::RemoteAccessibility::GetRemoteElementFromToken(window_token);
+  remote_view_accessible_ =
+      ui::RemoteAccessibility::GetRemoteElementFromToken(view_token);
+  [remote_view_accessible_ setWindowUIElement:remote_window_accessible_.get()];
+  [remote_view_accessible_
+      setTopLevelUIElement:remote_window_accessible_.get()];
+}
+
+bool BridgedNativeWidgetHostImpl::GetRootViewAccessibilityToken(
+    int64_t* pid,
+    std::vector<uint8_t>* token) {
+  *pid = getpid();
+  id element_id = GetNativeViewAccessible();
+  *token = ui::RemoteAccessibility::GetTokenForLocalElement(element_id);
+  return true;
+}
+
+bool BridgedNativeWidgetHostImpl::ValidateUserInterfaceItem(
+    int32_t command,
+    views_bridge_mac::mojom::ValidateUserInterfaceItemResultPtr* out_result) {
+  *out_result = views_bridge_mac::mojom::ValidateUserInterfaceItemResult::New();
+  native_widget_mac_->ValidateUserInterfaceItem(command, out_result->get());
+  return true;
+}
+
+bool BridgedNativeWidgetHostImpl::ExecuteCommand(
+    int32_t command,
+    WindowOpenDisposition window_open_disposition,
+    bool is_before_first_responder,
+    bool* was_executed) {
+  *was_executed = native_widget_mac_->ExecuteCommand(
+      command, window_open_disposition, is_before_first_responder);
+  return true;
+}
+
+bool BridgedNativeWidgetHostImpl::HandleAccelerator(
+    const ui::Accelerator& accelerator,
+    bool require_priority_handler,
+    bool* was_handled) {
+  *was_handled = false;
+  if (Widget* widget = native_widget_mac_->GetWidget()) {
+    if (require_priority_handler &&
+        !widget->GetFocusManager()->HasPriorityHandler(accelerator)) {
+      return true;
+    }
+    *was_handled = widget->GetFocusManager()->ProcessAccelerator(accelerator);
+  }
+  return true;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // BridgedNativeWidgetHostImpl,
 // views_bridge_mac::mojom::BridgedNativeWidgetHost synchronous callbacks:
+
+void BridgedNativeWidgetHostImpl::GetSheetOffsetY(
+    GetSheetOffsetYCallback callback) {
+  int32_t offset_y = 0;
+  GetSheetOffsetY(&offset_y);
+  std::move(callback).Run(offset_y);
+}
 
 void BridgedNativeWidgetHostImpl::DispatchKeyEventRemote(
     std::unique_ptr<ui::Event> event,
@@ -1004,27 +1324,46 @@ void BridgedNativeWidgetHostImpl::GetWindowFrameTitlebarHeight(
   std::move(callback).Run(override_titlebar_height, titlebar_height);
 }
 
-void BridgedNativeWidgetHostImpl::GetAccessibilityTokens(
-    const std::vector<uint8_t>& window_token,
-    const std::vector<uint8_t>& view_token,
-    GetAccessibilityTokensCallback callback) {
-  remote_window_accessible_ =
-      ui::RemoteAccessibility::GetRemoteElementFromToken(window_token);
-  remote_view_accessible_ =
-      ui::RemoteAccessibility::GetRemoteElementFromToken(view_token);
-  [remote_view_accessible_ setWindowUIElement:remote_window_accessible_.get()];
-  [remote_view_accessible_
-      setTopLevelUIElement:remote_window_accessible_.get()];
+void BridgedNativeWidgetHostImpl::GetRootViewAccessibilityToken(
+    GetRootViewAccessibilityTokenCallback callback) {
+  std::vector<uint8_t> token;
+  int64_t pid;
+  GetRootViewAccessibilityToken(&pid, &token);
+  std::move(callback).Run(pid, token);
+}
 
-  id element_id = GetNativeViewAccessible();
-  std::move(callback).Run(
-      getpid(), ui::RemoteAccessibility::GetTokenForLocalElement(element_id));
+void BridgedNativeWidgetHostImpl::ValidateUserInterfaceItem(
+    int32_t command,
+    ValidateUserInterfaceItemCallback callback) {
+  views_bridge_mac::mojom::ValidateUserInterfaceItemResultPtr result;
+  ValidateUserInterfaceItem(command, &result);
+  std::move(callback).Run(std::move(result));
+}
+
+void BridgedNativeWidgetHostImpl::ExecuteCommand(
+    int32_t command,
+    WindowOpenDisposition window_open_disposition,
+    bool is_before_first_responder,
+    ExecuteCommandCallback callback) {
+  bool was_executed = false;
+  ExecuteCommand(command, window_open_disposition, is_before_first_responder,
+                 &was_executed);
+  std::move(callback).Run(was_executed);
+}
+
+void BridgedNativeWidgetHostImpl::HandleAccelerator(
+    const ui::Accelerator& accelerator,
+    bool require_priority_handler,
+    HandleAcceleratorCallback callback) {
+  bool was_handled = false;
+  HandleAccelerator(accelerator, require_priority_handler, &was_handled);
+  std::move(callback).Run(was_handled);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // BridgedNativeWidgetHostImpl, DialogObserver:
 
-void BridgedNativeWidgetHostImpl::OnDialogModelChanged() {
+void BridgedNativeWidgetHostImpl::OnDialogChanged() {
   // Note it's only necessary to clear the TouchBar. If the OS needs it again,
   // a new one will be created.
   bridge()->ClearTouchBar();
@@ -1040,16 +1379,15 @@ void BridgedNativeWidgetHostImpl::OnDidChangeFocus(View* focused_before,
                                                    View* focused_now) {
   ui::InputMethod* input_method =
       native_widget_mac_->GetWidget()->GetInputMethod();
-  if (input_method) {
-    ui::TextInputClient* input_client = input_method->GetTextInputClient();
-    // Sanity check: When focus moves away from the widget (i.e. |focused_now|
-    // is nil), then the textInputClient will be cleared.
-    DCHECK(!!focused_now || !input_client);
-    // TODO(ccameron): TextInputClient is not handled across process borders
-    // yet.
-    if (bridge_impl_)
-      bridge_impl_->SetTextInputClient(input_client);
-  }
+  if (!input_method)
+    return;
+
+  ui::TextInputClient* new_text_input_client =
+      input_method->GetTextInputClient();
+  // Sanity check: When focus moves away from the widget (i.e. |focused_now|
+  // is nil), then the textInputClient will be cleared.
+  DCHECK(!!focused_now || !new_text_input_client);
+  text_input_host_->SetTextInputClient(new_text_input_client);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1057,13 +1395,13 @@ void BridgedNativeWidgetHostImpl::OnDidChangeFocus(View* focused_before,
 
 ui::EventDispatchDetails BridgedNativeWidgetHostImpl::DispatchKeyEventPostIME(
     ui::KeyEvent* key,
-    base::OnceCallback<void(bool)> ack_callback) {
+    DispatchKeyEventPostIMECallback callback) {
   DCHECK(focus_manager_);
   if (!focus_manager_->OnKeyEvent(*key))
     key->StopPropagation();
   else
     native_widget_mac_->GetWidget()->OnKeyEvent(key);
-  CallDispatchKeyEventPostIMEAck(key, std::move(ack_callback));
+  RunDispatchKeyEventPostIMECallback(key, std::move(callback));
   return ui::EventDispatchDetails();
 }
 
@@ -1089,14 +1427,36 @@ void BridgedNativeWidgetHostImpl::OnDeviceScaleFactorChanged(
       old_device_scale_factor, new_device_scale_factor);
 }
 
+void BridgedNativeWidgetHostImpl::UpdateVisualState() {
+  native_widget_mac_->GetWidget()->LayoutRootViewIfNecessary();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // BridgedNativeWidgetHostImpl, AcceleratedWidgetMac:
 
 void BridgedNativeWidgetHostImpl::AcceleratedWidgetCALayerParamsUpdated() {
   const gfx::CALayerParams* ca_layer_params =
       compositor_->widget()->GetCALayerParams();
-  if (ca_layer_params)
-    bridge()->SetCALayerParams(*ca_layer_params);
+  if (ca_layer_params) {
+    // Replace IOSurface mach ports with CAContextIDs only when using the
+    // out-of-process bridge (to reduce risk, because this workaround is being
+    // merged to late-life-cycle release branches) and when an IOSurface
+    // mach port has been specified (in practice, when software compositing is
+    // enabled).
+    // https://crbug.com/942213
+    if (bridge_ptr_ && ca_layer_params->io_surface_mach_port) {
+      gfx::CALayerParams updated_ca_layer_params = *ca_layer_params;
+      if (!io_surface_to_remote_layer_interceptor_) {
+        io_surface_to_remote_layer_interceptor_ =
+            std::make_unique<IOSurfaceToRemoteLayerInterceptor>();
+      }
+      io_surface_to_remote_layer_interceptor_->UpdateCALayerParams(
+          &updated_ca_layer_params);
+      bridge_ptr_->SetCALayerParams(updated_ca_layer_params);
+    } else {
+      bridge()->SetCALayerParams(*ca_layer_params);
+    }
+  }
 
   // Take this opportunity to update the VSync parameters, if needed.
   if (display_link_) {

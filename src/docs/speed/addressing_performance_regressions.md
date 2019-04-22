@@ -123,6 +123,7 @@ to learn how to use traces to debug performance issues.
 
 * [Memory](https://chromium.googlesource.com/chromium/src/+/master/docs/memory-infra/memory_benchmarks.md)
 * [Android binary size](apk_size_regressions.md)
+* [Micro-benchmarks](microbenchmark_regressions.md)
 
 ### How do I profile?
 

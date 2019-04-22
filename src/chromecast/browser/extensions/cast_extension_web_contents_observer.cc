@@ -21,4 +21,6 @@ void CastExtensionWebContentsObserver::CreateForWebContents(
   FromWebContents(web_contents)->Initialize();
 }
 
+WEB_CONTENTS_USER_DATA_KEY_IMPL(CastExtensionWebContentsObserver)
+
 }  // namespace extensions

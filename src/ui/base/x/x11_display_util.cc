@@ -57,6 +57,50 @@ std::map<RROutput, int> GetMonitors(int version,
   return output_to_monitor;
 }
 
+// Sets the work area on a list of displays.  The work area for each display
+// must already be initialized to the display bounds.  At most one display out
+// of |displays| will be affected.
+void ClipWorkArea(std::vector<display::Display>* displays,
+                  int64_t primary_display_index,
+                  float scale) {
+  XDisplay* xdisplay = gfx::GetXDisplay();
+  GLXWindow x_root_window = DefaultRootWindow(xdisplay);
+
+  std::vector<int> value;
+  if (!ui::GetIntArrayProperty(x_root_window, "_NET_WORKAREA", &value) ||
+      value.size() < 4) {
+    return;
+  }
+  gfx::Rect work_area = gfx::ScaleToEnclosingRect(
+      gfx::Rect(value[0], value[1], value[2], value[3]), 1.0f / scale);
+
+  // If the work area entirely contains exactly one display, assume it's meant
+  // for that display (and so do nothing).
+  if (std::count_if(displays->begin(), displays->end(),
+                    [&](const display::Display& display) {
+                      return work_area.Contains(display.bounds());
+                    }) == 1) {
+    return;
+  }
+
+  // If the work area is entirely contained within exactly one display, assume
+  // it's meant for that display and intersect the work area with only that
+  // display.
+  auto found = std::find_if(displays->begin(), displays->end(),
+                            [&](const display::Display& display) {
+                              return display.bounds().Contains(work_area);
+                            });
+
+  // If the work area spans multiple displays, intersect the work area with the
+  // primary display, like GTK does.
+  display::Display& primary =
+      found == displays->end() ? (*displays)[primary_display_index] : *found;
+
+  work_area.Intersect(primary.work_area());
+  if (!work_area.IsEmpty())
+    primary.set_work_area(work_area);
+}
+
 }  // namespace
 
 int GetXrandrVersion(XDisplay* xdisplay) {
@@ -85,9 +129,15 @@ std::vector<display::Display> GetFallbackDisplayList(float scale) {
       !display::IsDisplaySizeBlackListed(physical_size)) {
     DCHECK_LE(1.0f, scale);
     gfx_display.SetScaleAndBounds(scale, bounds_in_pixels);
+    gfx_display.set_work_area(
+        gfx::ScaleToEnclosingRect(bounds_in_pixels, 1.0f / scale));
+  } else {
+    scale = 1;
   }
 
-  return {gfx_display};
+  std::vector<display::Display> displays{gfx_display};
+  ClipWorkArea(&displays, 0, scale);
+  return displays;
 }
 
 std::vector<display::Display> BuildDisplaysFromXRandRInfo(
@@ -116,15 +166,6 @@ std::vector<display::Display> BuildDisplaysFromXRandRInfo(
   int explicit_primary_display_index = -1;
   int monitor_order_primary_display_index = -1;
 
-  bool has_work_area = false;
-  gfx::Rect work_area_in_pixels;
-  std::vector<int> value;
-  if (ui::GetIntArrayProperty(x_root_window, "_NET_WORKAREA", &value) &&
-      value.size() >= 4) {
-    work_area_in_pixels = gfx::Rect(value[0], value[1], value[2], value[3]);
-    has_work_area = true;
-  }
-
   // As per-display scale factor is not supported right now,
   // the X11 root window's scale factor is always used.
   for (int i = 0; i < resources->noutput; ++i) {
@@ -132,6 +173,10 @@ std::vector<display::Display> BuildDisplaysFromXRandRInfo(
     gfx::XScopedPtr<XRROutputInfo,
                     gfx::XObjectDeleter<XRROutputInfo, void, XRRFreeOutputInfo>>
         output_info(XRRGetOutputInfo(xdisplay, resources.get(), output_id));
+
+    // XRRGetOutputInfo returns null in some cases: https://crbug.com/921490
+    if (!output_info)
+      continue;
 
     bool is_connected = (output_info->connection == RR_Connected);
     if (!is_connected)
@@ -157,20 +202,8 @@ std::vector<display::Display> BuildDisplaysFromXRandRInfo(
 
       if (!display::Display::HasForceDeviceScaleFactor()) {
         display.SetScaleAndBounds(scale, crtc_bounds);
-      }
-
-      if (has_work_area) {
-        gfx::Rect intersection_in_pixels = crtc_bounds;
-        if (is_primary_display) {
-          intersection_in_pixels.Intersect(work_area_in_pixels);
-        }
-        // SetScaleAndBounds() above does the conversion from pixels to DIP for
-        // us, but set_work_area does not, so we need to do it here.
-        display.set_work_area(gfx::Rect(
-            gfx::ScaleToFlooredPoint(intersection_in_pixels.origin(),
-                                     1.0f / display.device_scale_factor()),
-            gfx::ScaleToFlooredSize(intersection_in_pixels.size(),
-                                    1.0f / display.device_scale_factor())));
+        display.set_work_area(
+            gfx::ScaleToEnclosingRect(crtc_bounds, 1.0f / scale));
       }
 
       switch (crtc->rotation) {
@@ -215,6 +248,7 @@ std::vector<display::Display> BuildDisplaysFromXRandRInfo(
   if (displays.empty())
     return GetFallbackDisplayList(scale);
 
+  ClipWorkArea(&displays, *primary_display_index_out, scale);
   return displays;
 }
 

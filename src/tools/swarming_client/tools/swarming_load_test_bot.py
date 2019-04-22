@@ -217,7 +217,7 @@ class FakeSwarmBot(object):
           self._events.put(time.time() - start)
     finally:
       try:
-        # Unregister itself. Otherwise the server will have tons of fake slaves
+        # Unregister itself. Otherwise the server will have tons of fake bots
         # that the admin will have to remove manually.
         response = net.url_read(
             self._swarming + '/delete_machine_stats',
@@ -238,7 +238,7 @@ def main():
   parser.add_option(
       '--suffix', metavar='NAME', default='', help='Bot suffix name to use')
   swarming.add_filter_options(parser)
-  # Use improbable values to reduce the chance of interferring with real slaves.
+  # Use improbable values to reduce the chance of interfering with real bots.
   parser.set_defaults(
       dimensions=[
         ('cpu', ['arm36']),
@@ -248,8 +248,8 @@ def main():
 
   group = optparse.OptionGroup(parser, 'Load generated')
   group.add_option(
-      '--slaves', type='int', default=300, metavar='N',
-      help='Number of swarm bot slaves, default: %default')
+      '--bots', type='int', default=300, metavar='N',
+      help='Number of swarming bots, default: %default')
   group.add_option(
       '-c', '--consume', type='float', default=60., metavar='N',
       help='Duration (s) for consuming a request, default: %default')
@@ -281,8 +281,8 @@ def main():
   swarming.process_filter_options(parser, options)
 
   print(
-      'Running %d slaves, each task lasting %.1fs' % (
-        options.slaves, options.consume))
+      'Running %d bots, each task lasting %.1fs' % (
+        options.bots, options.consume))
   print('Ctrl-C to exit.')
   print('[processing/processed/bots]')
   columns = [('processing', 0), ('processed', 0), ('bots', 0)]
@@ -294,30 +294,30 @@ def main():
   hostname = get_hostname()
   if options.suffix:
     hostname += '-' + options.suffix
-  slaves = [
+  bots = [
     FakeSwarmBot(
       options.swarming, options.dimensions, swarm_bot_version_hash, hostname, i,
       progress, options.consume, events, kill_event)
-    for i in range(options.slaves)
+    for i in range(options.bots)
   ]
   try:
-    # Wait for all the slaves to come alive.
-    while not all(s.is_alive() for s in slaves):
+    # Wait for all the bots to come alive.
+    while not all(s.is_alive() for s in bots):
       time.sleep(0.01)
     progress.update_item('Ready to run')
-    while slaves:
+    while bots:
       progress.print_update()
       time.sleep(0.01)
-      # The slaves could be told to die.
-      slaves = [s for s in slaves if s.is_alive()]
+      # The bots could be told to die.
+      bots = [s for s in bots if s.is_alive()]
   except KeyboardInterrupt:
     kill_event.set()
 
-  progress.update_item('Waiting for slaves to quit.', raw=True)
+  progress.update_item('Waiting for bots to quit.', raw=True)
   progress.update_item('')
-  while slaves:
+  while bots:
     progress.print_update()
-    slaves = [s for s in slaves if s.is_alive()]
+    bots = [s for s in bots if s.is_alive()]
   # At this point, progress is not used anymore.
   print('')
   print('Ran for %.1fs.' % (time.time() - start))

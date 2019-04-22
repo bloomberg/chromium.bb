@@ -104,6 +104,42 @@ message StartVmRequest {
 
   // The owner of the vm.
   string owner_id = 7;
+
+  // Enable GPU in the started Vm.
+  bool enable_gpu = 8;
+
+  // Provide a software-based virtual Trusted Platform Module to the VM. The TPM
+  // is backed by libtpm2's TPM simulator and does not interact with any
+  // physical TPM on the host device. TPM state does not persist across VM
+  // launches. In order for the VM to see the virtual TPM, the guest kernel must
+  // contain a virtio TPM driver.
+  bool software_tpm = 9;
+}
+
+// Information that must be included with every StartPluginVm request.
+message StartPluginVmRequest {
+  // An identifier for this VM.
+  string name = 1;
+
+  // The cryptohome id of the owner of this VM.
+  string owner_id = 2;
+
+  // The number of CPUs to give to the VM.  Cannot be larger than the number of
+  // CPUs on the device and cannot be 0.
+  uint32 cpus = 3;
+
+  // Parameters to pass to the plugin process.
+  repeated string params = 4;
+
+  // The IPv4 address to assign to the VM in network-byte order.  Must be in the
+  // 100.115.92.128/28 subnet and must not be already assigned to another VM.
+  fixed32 guest_ipv4_address = 5;
+
+  // The EUI-48 MAC address to assign to the host side of the ethernet interface
+  // to the VM. Must be exactly 6 bytes and must not be in use by another VM.
+  // Must have the locally administered bit (0x02) set and the multicast bit
+  // (0x01) unset.
+  bytes host_mac_address = 6;
 }
 
 enum VmStatus {
@@ -222,6 +258,7 @@ message CreateDiskImageRequest {
   string disk_path = 2;
 
   // The logical size of the new disk image, in bytes.
+  // If unspecified or 0, a size will be chosen automatically.
   uint64 disk_size = 3;
 
   // The type of disk image to be created.
@@ -424,4 +461,98 @@ message ContainerSshKeysResponse {
   // is equivalent to the contents in the ssh-keygen generated file. This is
   // unique for each container.
   string container_private_key = 5;
+}
+
+// Request to vm_concierge to attach a USB device to a VM.
+message AttachUsbDeviceRequest {
+  // Name of the VM to attach the USB device to.
+  string vm_name = 1;
+
+  // The owner of the VM.
+  string owner_id = 2;
+
+  // The USB bus the USB device is connected to. This value should fit
+  // in a uint8_t.
+  uint32 bus_number = 3;
+
+  // The port number of the USB device on the bus. This value should
+  // fit in a uint8_t.
+  uint32 port_number = 4;
+
+  // Vendor ID of the USB device. This value should fit in a uint16_t.
+  uint32 vendor_id = 5;
+
+  // Produce ID of the USB device. This value should fit in a
+  // uint16_t.
+  uint32 product_id = 6;
+}
+
+// Response sent back by vm_concierge after it receives an
+// AttachUsbDeviceRequest call.
+message AttachUsbDeviceResponse {
+  // Was the USB device successfully attached?
+  bool success = 1;
+
+  // The USB port number that was allocated to the USB device on the guest.
+  uint32 guest_port = 2;
+
+  // The reason for the failure, if there was one.
+  string reason = 3;
+}
+
+// Request sent to remove a USB device from a VM.
+message DetachUsbDeviceRequest {
+  // The name of the VM.
+  string vm_name = 1;
+
+  // The owner of the VM.
+  string owner_id = 2;
+
+  // The USB port the device is attached to on the guest. This value
+  // should fit in a uint8_t.
+  uint32 guest_port = 3;
+}
+
+// Response sent back by vm_concierge after it receives a
+// DetachUsbDeviceRequest call.
+message DetachUsbDeviceResponse {
+  // Was the USB device successfully detached?
+  bool success = 1;
+
+  // The reason for the failure, if there was one.
+  string reason = 2;
+}
+
+// Request sent to get a list of all USB devices attached to a guest VM.
+message ListUsbDeviceRequest {
+  // The name of the VM.
+  string vm_name = 1;
+
+  // The owner of the VM.
+  string owner_id = 2;
+}
+
+// A description of a single USB device.
+message UsbDeviceMessage {
+  // The port it's attached to.
+  uint32 guest_port = 1;
+
+  // The vendor ID of the device.
+  uint32 vendor_id = 2;
+
+  // The product ID of the device.
+  uint32 product_id = 3;
+
+  // The name of the device.
+  string device_name = 4;
+}
+
+// Response sent back by vm_concierge after it receives a
+// ListUsbDeviceRequest call.
+message ListUsbDeviceResponse {
+  // Did the request succeed?
+  bool success = 1;
+
+  // List of USB device descriptors, one for each attached USB device.
+  repeated UsbDeviceMessage usb_devices = 2;
 }

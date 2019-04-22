@@ -94,6 +94,11 @@ class MimeHandlerViewGuest
   void SetBeforeUnloadController(
       mime_handler::BeforeUnloadControlPtrInfo pending_before_unload_control);
 
+  void SetPluginCanSave(bool can_save) { plugin_can_save_ = can_save; }
+
+  // Asks the plugin to do save.
+  bool PluginDoSave();
+
   content::RenderFrameHost* GetEmbedderFrame() const;
 
  protected:
@@ -120,11 +125,13 @@ class MimeHandlerViewGuest
       const content::OpenURLParams& params) final;
   void NavigationStateChanged(content::WebContents* source,
                               content::InvalidateTypes changed_flags) final;
-  bool HandleContextMenu(const content::ContextMenuParams& params) final;
+  bool HandleContextMenu(content::RenderFrameHost* render_frame_host,
+                         const content::ContextMenuParams& params) final;
   bool PreHandleGestureEvent(content::WebContents* source,
                              const blink::WebGestureEvent& event) final;
   content::JavaScriptDialogManager* GetJavaScriptDialogManager(
       content::WebContents* source) final;
+  bool GuestSaveFrame(content::WebContents* guest_web_contents) final;
   bool SaveFrame(const GURL& url, const content::Referrer& referrer) final;
   void OnRenderFrameHostDeleted(int process_id, int routing_id) final;
   void EnterFullscreenModeForTab(
@@ -175,6 +182,7 @@ class MimeHandlerViewGuest
 
   bool is_guest_fullscreen_ = false;
   bool is_embedder_fullscreen_ = false;
+  bool plugin_can_save_ = false;
 
   mime_handler::BeforeUnloadControlPtrInfo pending_before_unload_control_;
 

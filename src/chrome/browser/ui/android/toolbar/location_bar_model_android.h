@@ -31,7 +31,7 @@ class LocationBarModelAndroid : public ChromeLocationBarModelDelegate {
   base::android::ScopedJavaLocalRef<jstring> GetURLForDisplay(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
-  jboolean IsSecurityInfoInitialized(
+  base::android::ScopedJavaLocalRef<jstring> GetDisplaySearchTerms(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
 

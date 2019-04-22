@@ -11,6 +11,8 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/webui/print_preview/printer_handler.h"
 
+namespace printing {
+
 // Implementation of PrinterHandler interface
 class CloudPrinterHandler : public PrinterHandler {
  public:
@@ -24,15 +26,15 @@ class CloudPrinterHandler : public PrinterHandler {
                         GetPrintersDoneCallback done_callback) override;
   void StartGetCapability(const std::string& destination_id,
                           GetCapabilityCallback calback) override;
-  void StartPrint(const std::string& destination_id,
-                  const std::string& capability,
-                  const base::string16& job_title,
-                  const std::string& ticket_json,
-                  const gfx::Size& page_size,
-                  const scoped_refptr<base::RefCountedMemory>& print_data,
+  void StartPrint(const base::string16& job_title,
+                  base::Value settings,
+                  scoped_refptr<base::RefCountedMemory> print_data,
                   PrintCallback callback) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CloudPrinterHandler);
 };
+
+}  // namespace printing
+
 #endif  // CHROME_BROWSER_UI_WEBUI_PRINT_PREVIEW_CLOUD_PRINTER_HANDLER_H_

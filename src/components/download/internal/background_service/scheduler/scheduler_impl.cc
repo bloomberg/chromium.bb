@@ -9,7 +9,7 @@
 #include "components/download/internal/background_service/entry_utils.h"
 #include "components/download/internal/background_service/scheduler/device_status.h"
 #include "components/download/public/background_service/download_params.h"
-#include "components/download/public/background_service/task_scheduler.h"
+#include "components/download/public/task/task_scheduler.h"
 
 namespace download {
 

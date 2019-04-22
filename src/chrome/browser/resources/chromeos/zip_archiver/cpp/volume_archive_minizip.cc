@@ -56,7 +56,7 @@ int32_t MinizipIsOpen(void* stream) {
   return MZ_OK;
 }
 
-};  // namespace
+}  // namespace
 
 // vtable for the archive read stream provided to minizip. Only functions which
 // are necessary to read the archive are provided.

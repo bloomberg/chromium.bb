@@ -19,8 +19,7 @@
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='outer'",
-      "position": [6, 6],
-      "bounds": [340, 282]
+      "bounds": [352, 294]
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV class='content'",
@@ -31,13 +30,12 @@
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='outer' (foreground) Layer",
-      "position": [6, 6],
-      "bounds": [340, 282]
+      "bounds": [352, 294]
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV class='scroller'",
-      "position": [38, 38],
-      "bounds": [278, 218],
+      "position": [32, 32],
+      "bounds": [290, 230],
       "backgroundColor": "#FFFFFF"
     },
     {

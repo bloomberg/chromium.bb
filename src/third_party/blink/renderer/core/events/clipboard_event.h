@@ -35,16 +35,18 @@ class ClipboardEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  ClipboardEvent(const AtomicString& type, DataTransfer* clipboard_data);
+  ClipboardEvent(const AtomicString& type, const ClipboardEventInit*);
   ~ClipboardEvent() override;
 
   static ClipboardEvent* Create(const AtomicString& type,
                                 DataTransfer* data_transfer) {
-    return new ClipboardEvent(type, data_transfer);
+    return MakeGarbageCollected<ClipboardEvent>(type, data_transfer);
   }
 
   static ClipboardEvent* Create(const AtomicString& type,
                                 const ClipboardEventInit* initializer) {
-    return new ClipboardEvent(type, initializer);
+    return MakeGarbageCollected<ClipboardEvent>(type, initializer);
   }
 
   DataTransfer* clipboardData() const { return clipboard_data_.Get(); }
@@ -52,10 +54,6 @@ class ClipboardEvent final : public Event {
   void Trace(blink::Visitor*) override;
 
  private:
-  ClipboardEvent(const AtomicString& type,
-                 DataTransfer* clipboard_data);
-  ClipboardEvent(const AtomicString& type, const ClipboardEventInit*);
-
   const AtomicString& InterfaceName() const override;
   bool IsClipboardEvent() const override;
 

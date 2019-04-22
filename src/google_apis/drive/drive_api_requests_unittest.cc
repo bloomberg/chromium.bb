@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -129,7 +130,6 @@ class DriveApiRequestsTest : public testing::Test {
                                         /*netlog=*/nullptr);
     network::mojom::NetworkContextParamsPtr context_params =
         network::mojom::NetworkContextParams::New();
-    context_params->enable_data_url_support = true;
     network_service_ptr->CreateNetworkContext(
         mojo::MakeRequest(&network_context_), std::move(context_params));
 
@@ -137,7 +137,8 @@ class DriveApiRequestsTest : public testing::Test {
     network_service_client_ =
         std::make_unique<network::TestNetworkServiceClient>(
             mojo::MakeRequest(&network_service_client_ptr));
-    network_service_ptr->SetClient(std::move(network_service_client_ptr));
+    network_service_ptr->SetClient(std::move(network_service_client_ptr),
+                                   network::mojom::NetworkServiceParams::New());
 
     network::mojom::URLLoaderFactoryParamsPtr params =
         network::mojom::URLLoaderFactoryParams::New();
@@ -422,7 +423,7 @@ class DriveApiRequestsTest : public testing::Test {
       // The header is annotated only when at least one byte is received.
       if (received_bytes_ > 0) {
         response->AddCustomHeader(
-            "Range", "bytes=0-" + base::Int64ToString(received_bytes_ - 1));
+            "Range", "bytes=0-" + base::NumberToString(received_bytes_ - 1));
       }
 
       return std::move(response);
@@ -2021,13 +2022,13 @@ TEST_F(DriveApiRequestsTest, PermissionsInsertRequest) {
             http_request_.relative_url);
   EXPECT_EQ("application/json", http_request_.headers["Content-Type"]);
 
-  std::unique_ptr<base::Value> expected = base::JSONReader::Read(
+  std::unique_ptr<base::Value> expected = base::JSONReader::ReadDeprecated(
       "{\"additionalRoles\":[\"commenter\"], \"role\":\"reader\", "
       "\"type\":\"user\",\"value\":\"user@example.com\"}");
   ASSERT_TRUE(expected);
 
   std::unique_ptr<base::Value> result =
-      base::JSONReader::Read(http_request_.content);
+      base::JSONReader::ReadDeprecated(http_request_.content);
   EXPECT_TRUE(http_request_.has_content);
   EXPECT_EQ(*expected, *result);
 
@@ -2054,11 +2055,11 @@ TEST_F(DriveApiRequestsTest, PermissionsInsertRequest) {
             http_request_.relative_url);
   EXPECT_EQ("application/json", http_request_.headers["Content-Type"]);
 
-  expected = base::JSONReader::Read(
+  expected = base::JSONReader::ReadDeprecated(
       "{\"role\":\"writer\", \"type\":\"domain\",\"value\":\"example.com\"}");
   ASSERT_TRUE(expected);
 
-  result = base::JSONReader::Read(http_request_.content);
+  result = base::JSONReader::ReadDeprecated(http_request_.content);
   EXPECT_TRUE(http_request_.has_content);
   EXPECT_EQ(*expected, *result);
 }

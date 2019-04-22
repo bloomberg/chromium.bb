@@ -101,22 +101,8 @@ bool NGInlineBoxState::CanAddTextOfStyle(
   return false;
 }
 
-LayoutObject*
-NGInlineLayoutStateStack::ContainingLayoutObjectForAbsolutePositionObjects()
-    const {
-  for (unsigned i = stack_.size(); i-- > 1;) {
-    const NGInlineBoxState& box = stack_[i];
-    DCHECK(box.style);
-    if (box.style->CanContainAbsolutePositionObjects()) {
-      DCHECK(box.item->GetLayoutObject());
-      return box.item->GetLayoutObject();
-    }
-  }
-  return nullptr;
-}
-
 NGInlineBoxState* NGInlineLayoutStateStack::OnBeginPlaceItems(
-    const ComputedStyle* line_style,
+    const ComputedStyle& line_style,
     FontBaseline baseline_type,
     bool line_height_quirk) {
   if (stack_.IsEmpty()) {
@@ -147,14 +133,14 @@ NGInlineBoxState* NGInlineLayoutStateStack::OnBeginPlaceItems(
 
   // Initialize the box state for the line box.
   NGInlineBoxState& line_box = LineBoxState();
-  if (line_box.style != line_style) {
-    line_box.style = line_style;
+  if (line_box.style != &line_style) {
+    line_box.style = &line_style;
 
     // Use a "strut" (a zero-width inline box with the element's font and
     // line height properties) as the initial metrics for the line box.
     // https://drafts.csswg.org/css2/visudet.html#strut
     if (!line_height_quirk)
-      line_box.ComputeTextMetrics(*line_style, baseline_type);
+      line_box.ComputeTextMetrics(line_style, baseline_type);
   }
 
   return &stack_.back();
@@ -564,7 +550,7 @@ void NGInlineLayoutStateStack::CreateBoxFragments(
     DCHECK_GT(end, start);
     NGLineBoxFragmentBuilder::Child& start_child = (*line_box)[start];
 
-    scoped_refptr<NGLayoutResult> box_fragment =
+    scoped_refptr<const NGLayoutResult> box_fragment =
         box_data.CreateBoxFragment(line_box);
     if (!start_child.HasFragment()) {
       start_child.layout_result = std::move(box_fragment);
@@ -580,7 +566,7 @@ void NGInlineLayoutStateStack::CreateBoxFragments(
   box_data_list_.clear();
 }
 
-scoped_refptr<NGLayoutResult>
+scoped_refptr<const NGLayoutResult>
 NGInlineLayoutStateStack::BoxData::CreateBoxFragment(
     NGLineBoxFragmentBuilder::ChildList* line_box) {
   DCHECK(item);
@@ -608,10 +594,19 @@ NGInlineLayoutStateStack::BoxData::CreateBoxFragment(
       child.layout_result.reset();
     } else if (child.fragment) {
       box.AddChild(std::move(child.fragment), child.offset - offset);
+    } else if (child.out_of_flow_positioned_box) {
+      DCHECK(item->GetLayoutObject()->IsLayoutInline());
+      NGBlockNode oof_box(ToLayoutBox(child.out_of_flow_positioned_box));
+
+      // child.offset is the static position wrt. the linebox. As we are adding
+      // this as a child of an inline level fragment, we adjust the static
+      // position to be relative to this fragment.
+      NGLogicalOffset static_offset = child.offset - offset;
+
+      box.AddOutOfFlowChildCandidate(oof_box, static_offset,
+                                     child.container_direction);
+      child.out_of_flow_positioned_box = nullptr;
     }
-    // Leave out-of-flow fragments. They need to be at the top level so that
-    // NGInlineLayoutAlgorithm can handle them later.
-    DCHECK(!child.HasInFlowFragment());
   }
 
   box.MoveOutOfFlowDescendantCandidatesToDescendants();

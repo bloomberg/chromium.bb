@@ -7,6 +7,7 @@
 #include <cmath>
 #include <memory>
 
+#include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/profiles/profile.h"

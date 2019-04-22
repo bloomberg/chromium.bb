@@ -20,7 +20,11 @@ class WindowTree;
 
 namespace ash {
 
-// Trivially forwards calls to MultiUserWindowManager.
+class MultiUserWindowManager;
+
+// Responsible for forwarding calls to MultiUserWindowManager. In multi-process
+// mash mode *this* owns the MultiUserWindowManager. In all other cases chrome
+// owns the MultiUserWindowManager.
 class MultiUserWindowManagerBridge : public mojom::MultiUserWindowManager,
                                      public ws::WindowManagerInterface {
  public:
@@ -41,6 +45,8 @@ class MultiUserWindowManagerBridge : public mojom::MultiUserWindowManager,
   ws::WindowTree* window_tree_;
   mojo::AssociatedBinding<mojom::MultiUserWindowManager> binding_;
   mojom::MultiUserWindowManagerClientAssociatedPtr client_;
+  // Only valid in MultiUserWindowManager.
+  std::unique_ptr<ash::MultiUserWindowManager> multi_user_window_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiUserWindowManagerBridge);
 };

@@ -1,5 +1,7 @@
 #include "rar.hpp"
 
+namespace third_party_unrar {
+
 static void ListFileHeader(Archive &Arc,FileHeader &hd,bool &TitleShown,bool Verbose,bool Technical,bool Bare);
 static void ListFileAttr(uint A,HOST_SYSTEM_TYPE HostType,wchar *AttrStr,size_t AttrSize);
 
@@ -351,7 +353,8 @@ void ListFileHeader(Archive &Arc,FileHeader &hd,bool &TitleShown,bool Verbose,bo
       mprintf(L"\n%12ls: %ls",St(MListHostOS),HostOS);
 
     mprintf(L"\n%12ls: RAR %ls(v%d) -m%d -md=%d%s",St(MListCompInfo),
-            Format==RARFMT15 ? L"3.0":L"5.0",hd.UnpVer,hd.Method,
+            Format==RARFMT15 ? L"3.0":L"5.0",
+            hd.UnpVer==VER_UNKNOWN ? 0 : hd.UnpVer,hd.Method,
             hd.WinSize>=0x100000 ? hd.WinSize/0x100000:hd.WinSize/0x400,
             hd.WinSize>=0x100000 ? L"M":L"K");
 
@@ -477,3 +480,5 @@ void ListFileAttr(uint A,HOST_SYSTEM_TYPE HostType,wchar *AttrStr,size_t AttrSiz
       break;
   }
 }
+
+}  // namespace third_party_unrar

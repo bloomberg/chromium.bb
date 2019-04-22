@@ -14,9 +14,15 @@ using blink::IndexedDBKey;
 namespace content {
 
 MockIndexedDBCallbacks::MockIndexedDBCallbacks()
-    : IndexedDBCallbacks(nullptr, url::Origin(), nullptr, nullptr) {}
+    : IndexedDBCallbacks(nullptr,
+                         url::Origin(),
+                         nullptr,
+                         base::SequencedTaskRunnerHandle::Get()) {}
 MockIndexedDBCallbacks::MockIndexedDBCallbacks(bool expect_connection)
-    : IndexedDBCallbacks(nullptr, url::Origin(), nullptr, nullptr),
+    : IndexedDBCallbacks(nullptr,
+                         url::Origin(),
+                         nullptr,
+                         base::SequencedTaskRunnerHandle::Get()),
       expect_connection_(expect_connection) {}
 
 MockIndexedDBCallbacks::~MockIndexedDBCallbacks() {

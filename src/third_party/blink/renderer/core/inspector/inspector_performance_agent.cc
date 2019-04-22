@@ -38,7 +38,8 @@ static constexpr const char* kInstanceCounterNames[] = {
 InspectorPerformanceAgent::InspectorPerformanceAgent(
     InspectedFrames* inspected_frames)
     : inspected_frames_(inspected_frames),
-      enabled_(&agent_state_, /*default_value=*/false) {}
+      enabled_(&agent_state_, /*default_value=*/false),
+      use_thread_ticks_(&agent_state_, /*default_value=*/false) {}
 
 InspectorPerformanceAgent::~InspectorPerformanceAgent() = default;
 
@@ -48,13 +49,14 @@ void InspectorPerformanceAgent::Restore() {
 }
 
 void InspectorPerformanceAgent::InnerEnable() {
-  instrumenting_agents_->addInspectorPerformanceAgent(this);
+  instrumenting_agents_->AddInspectorPerformanceAgent(this);
   Thread::Current()->AddTaskTimeObserver(this);
   layout_start_ticks_ = TimeTicks();
   recalc_style_start_ticks_ = TimeTicks();
   task_start_ticks_ = TimeTicks();
   script_start_ticks_ = TimeTicks();
   v8compile_start_ticks_ = TimeTicks();
+  thread_time_origin_ = GetThreadTimeNow();
 }
 
 protocol::Response InspectorPerformanceAgent::enable() {
@@ -69,7 +71,7 @@ protocol::Response InspectorPerformanceAgent::disable() {
   if (!enabled_.Get())
     return Response::OK();
   enabled_.Clear();
-  instrumenting_agents_->removeInspectorPerformanceAgent(this);
+  instrumenting_agents_->RemoveInspectorPerformanceAgent(this);
   Thread::Current()->RemoveTaskTimeObserver(this);
   return Response::OK();
 }
@@ -95,13 +97,13 @@ Response InspectorPerformanceAgent::setTimeDomain(const String& time_domain) {
   using namespace protocol::Performance::SetTimeDomain;
 
   if (time_domain == TimeDomainEnum::TimeTicks) {
-    use_thread_ticks_ = false;
+    use_thread_ticks_.Clear();
   } else if (time_domain == TimeDomainEnum::ThreadTicks) {
     if (!base::ThreadTicks::IsSupported()) {
       return Response::Error("Thread time is not supported on this platform.");
     }
     base::ThreadTicks::WaitUntilInitialized();
-    use_thread_ticks_ = true;
+    use_thread_ticks_.Set(true);
   } else {
     return Response::Error("Invalid time domain specification.");
   }
@@ -110,11 +112,14 @@ Response InspectorPerformanceAgent::setTimeDomain(const String& time_domain) {
 }
 
 TimeTicks InspectorPerformanceAgent::GetTimeTicksNow() {
-  return use_thread_ticks_
-             ? base::TimeTicks() +
-                   base::TimeDelta::FromMicroseconds(
-                       base::ThreadTicks::Now().since_origin().InMicroseconds())
-             : base::subtle::TimeTicksNowIgnoringOverride();
+  return use_thread_ticks_.Get() ? GetThreadTimeNow()
+                                 : base::subtle::TimeTicksNowIgnoringOverride();
+}
+
+TimeTicks InspectorPerformanceAgent::GetThreadTimeNow() {
+  return base::TimeTicks() +
+         base::TimeDelta::FromMicroseconds(
+             base::ThreadTicks::Now().since_origin().InMicroseconds());
 }
 
 Response InspectorPerformanceAgent::getMetrics(
@@ -129,7 +134,7 @@ Response InspectorPerformanceAgent::getMetrics(
       protocol::Array<protocol::Performance::Metric>::create();
 
   AppendMetric(result.get(), "Timestamp",
-               TimeTicksInSeconds(CurrentTimeTicks()));
+               CurrentTimeTicks().since_origin().InSecondsF());
 
   // Renderer instance counters.
   for (size_t i = 0; i < ARRAY_SIZE(kInstanceCounterNames); ++i) {
@@ -170,6 +175,9 @@ Response InspectorPerformanceAgent::getMetrics(
   AppendMetric(result.get(), "TaskOtherDuration",
                other_tasks_duration.InSecondsF());
 
+  TimeDelta thread_time = GetThreadTimeNow() - thread_time_origin_;
+  AppendMetric(result.get(), "ThreadTime", thread_time.InSecondsF());
+
   v8::HeapStatistics heap_statistics;
   V8PerIsolateData::MainThreadIsolate()->GetHeapStatistics(&heap_statistics);
   AppendMetric(result.get(), "JSHeapUsedSize",
@@ -181,14 +189,21 @@ Response InspectorPerformanceAgent::getMetrics(
   Document* document = inspected_frames_->Root()->GetDocument();
   if (document) {
     AppendMetric(result.get(), "FirstMeaningfulPaint",
-                 TimeTicksInSeconds(
-                     PaintTiming::From(*document).FirstMeaningfulPaint()));
-    AppendMetric(
-        result.get(), "DomContentLoaded",
-        TimeTicksInSeconds(document->GetTiming().DomContentLoadedEventStart()));
-    AppendMetric(
-        result.get(), "NavigationStart",
-        TimeTicksInSeconds(document->Loader()->GetTiming().NavigationStart()));
+                 PaintTiming::From(*document)
+                     .FirstMeaningfulPaint()
+                     .since_origin()
+                     .InSecondsF());
+    AppendMetric(result.get(), "DomContentLoaded",
+                 document->GetTiming()
+                     .DomContentLoadedEventStart()
+                     .since_origin()
+                     .InSecondsF());
+    AppendMetric(result.get(), "NavigationStart",
+                 document->Loader()
+                     ->GetTiming()
+                     .NavigationStart()
+                     .since_origin()
+                     .InSecondsF());
   }
 
   *out_result = std::move(result);

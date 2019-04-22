@@ -16,7 +16,7 @@
 #include "base/optional.h"
 #include "base/power_monitor/power_observer.h"
 #include "net/base/completion_once_callback.h"
-#include "net/base/host_port_pair.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/load_states.h"
 #include "net/base/net_error_details.h"
 #include "net/base/net_export.h"
@@ -138,7 +138,7 @@ class NET_EXPORT URLRequestJob : public base::PowerObserver {
   // Gets the remote endpoint that the network stack is currently fetching the
   // URL from. Returns true and fills in |endpoint| if it is available; returns
   // false and leaves |endpoint| unchanged if it is unavailable.
-  virtual bool GetRemoteEndpoint(IPEndPoint* endpoint) const;
+  virtual bool GetTransactionRemoteEndpoint(IPEndPoint* endpoint) const;
 
   // Populates the network error details of the most recent origin that the
   // network stack makes the request to.
@@ -180,9 +180,9 @@ class NET_EXPORT URLRequestJob : public base::PowerObserver {
   // obtaining the credentials passing them to SetAuth.
   virtual bool NeedsAuth();
 
-  // Fills the authentication info with the server's response.
-  virtual void GetAuthChallengeInfo(
-      scoped_refptr<AuthChallengeInfo>* auth_info);
+  // Returns a copy of the authentication challenge that came with the server's
+  // response.
+  virtual std::unique_ptr<AuthChallengeInfo> GetAuthChallengeInfo();
 
   // Resend the request with authentication credentials.
   virtual void SetAuth(const AuthCredentials& credentials);
@@ -198,7 +198,8 @@ class NET_EXPORT URLRequestJob : public base::PowerObserver {
   virtual void ContinueDespiteLastError();
 
   void FollowDeferredRedirect(
-      const base::Optional<net::HttpRequestHeaders>& modified_request_headers);
+      const base::Optional<std::vector<std::string>>& removed_headers,
+      const base::Optional<net::HttpRequestHeaders>& modified_headers);
 
   // Returns true if the Job is done producing response data and has called
   // NotifyDone on the request.
@@ -225,7 +226,7 @@ class NET_EXPORT URLRequestJob : public base::PowerObserver {
 
   // Returns the socket address for the connection.
   // See url_request.h for details.
-  virtual HostPortPair GetSocketAddress() const;
+  virtual IPEndPoint GetResponseRemoteEndpoint() const;
 
   // base::PowerObserver methods:
   // We invoke URLRequestJob::Kill on suspend (crbug.com/4606).
@@ -372,7 +373,8 @@ class NET_EXPORT URLRequestJob : public base::PowerObserver {
   // given redirect destination.
   void FollowRedirect(
       const RedirectInfo& redirect_info,
-      const base::Optional<net::HttpRequestHeaders>& modified_request_headers);
+      const base::Optional<std::vector<std::string>>& removed_headers,
+      const base::Optional<net::HttpRequestHeaders>& modified_headers);
 
   // Called after every raw read. If |bytes_read| is > 0, this indicates
   // a successful read of |bytes_read| unfiltered bytes. If |bytes_read|

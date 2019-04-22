@@ -16,7 +16,9 @@
 
 namespace gpu {
 class CommandBufferTaskExecutor;
+class MailboxManager;
 class Scheduler;
+class SharedImageManager;
 class SyncPointManager;
 
 // Starts a GPU thread and task executor that runs tasks on the GPU thread. This
@@ -39,7 +41,7 @@ class COMPONENT_EXPORT(GPU_THREAD_HOLDER) InProcessGpuThreadHolder
 
   // Returns a task executor that runs commands on the GPU thread. The task
   // executor will be created the first time this is called.
-  scoped_refptr<CommandBufferTaskExecutor> GetTaskExecutor();
+  CommandBufferTaskExecutor* GetTaskExecutor();
 
  private:
   void InitializeOnGpuThread(base::WaitableEvent* completion);
@@ -50,7 +52,9 @@ class COMPONENT_EXPORT(GPU_THREAD_HOLDER) InProcessGpuThreadHolder
 
   std::unique_ptr<SyncPointManager> sync_point_manager_;
   std::unique_ptr<Scheduler> scheduler_;
-  scoped_refptr<CommandBufferTaskExecutor> task_executor_;
+  std::unique_ptr<MailboxManager> mailbox_manager_;
+  std::unique_ptr<SharedImageManager> shared_image_manager_;
+  std::unique_ptr<CommandBufferTaskExecutor> task_executor_;
 
   DISALLOW_COPY_AND_ASSIGN(InProcessGpuThreadHolder);
 };

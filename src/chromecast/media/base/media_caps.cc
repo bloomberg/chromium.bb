@@ -21,7 +21,7 @@ bool MediaCapabilities::g_cur_mode_supports_dv = false;
 gfx::Size MediaCapabilities::g_screen_resolution(0, 0);
 
 void MediaCapabilities::ScreenResolutionChanged(const gfx::Size& res) {
-  VLOG(1) << __FUNCTION__ << " resolution=" << res.ToString();
+  LOG(INFO) << __FUNCTION__ << " resolution=" << res.ToString();
   g_screen_resolution = res;
 
   auto* cmd_line = base::CommandLine::ForCurrentProcess();
@@ -51,12 +51,12 @@ void MediaCapabilities::ScreenInfoChanged(int hdcp_version,
                                           int screen_height_mm,
                                           bool cur_mode_supports_hdr,
                                           bool cur_mode_supports_dv) {
-  VLOG(1) << __FUNCTION__ << " HDCP version=" << hdcp_version
-          << " Supported EOTFs=" << supported_eotfs
-          << " DolbyVision flags=" << dolby_vision_flags
-          << " Screen size(mm): " << screen_width_mm << "x" << screen_height_mm
-          << " cur mode HDR=" << cur_mode_supports_hdr
-          << " cur mode DV=" << cur_mode_supports_dv;
+  LOG(INFO) << __FUNCTION__ << " HDCP version=" << hdcp_version
+            << " Supported EOTFs=" << supported_eotfs
+            << " DolbyVision flags=" << dolby_vision_flags
+            << " Screen size(mm): " << screen_width_mm << "x"
+            << screen_height_mm << " cur mode HDR=" << cur_mode_supports_hdr
+            << " cur mode DV=" << cur_mode_supports_dv;
   g_hdcp_version = hdcp_version;
   g_supported_eotfs = supported_eotfs;
   g_dolby_vision_flags = dolby_vision_flags;

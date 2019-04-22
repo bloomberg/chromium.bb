@@ -16,10 +16,10 @@
 #include "content/browser/webui/web_ui_impl.h"
 #include "content/common/content_export.h"
 #include "content/common/frame_message_enums.h"
+#include "content/public/browser/media_stream_request.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/visibility.h"
 #include "content/public/common/javascript_dialog_type.h"
-#include "content/public/common/media_stream_request.h"
 #include "content/public/common/resource_load_info.mojom.h"
 #include "content/public/common/resource_type.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
@@ -28,6 +28,7 @@
 #include "services/device/public/mojom/geolocation_context.mojom.h"
 #include "services/device/public/mojom/wake_lock.mojom.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
+#include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "ui/base/window_open_disposition.h"
 
 #if defined(OS_WIN)
@@ -169,6 +170,20 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   virtual void DidChangeName(RenderFrameHost* render_frame_host,
                              const std::string& name) {}
 
+  // The sticky user activation bit has been set on the frame. This will not be
+  // called for new RenderFrameHosts whose underlying FrameTreeNode was already
+  // activated.
+  virtual void DidReceiveFirstUserActivation(
+      RenderFrameHost* render_frame_host) {}
+
+  // The display style of the frame has changed.
+  virtual void DidChangeDisplayState(RenderFrameHost* render_frame_host,
+                                     bool is_display_none) {}
+
+  // The size of the frame has changed.
+  virtual void FrameSizeChanged(RenderFrameHost* render_frame_host,
+                                const gfx::Size& frame_size) {}
+
   // The onload handler in the frame has completed. Only called for the top-
   // level frame.
   virtual void DocumentOnLoadCompleted(RenderFrameHost* render_frame_host) {}
@@ -207,12 +222,12 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // or MEDIA_DEVICE_VIDEO_CAPTURE.
   virtual bool CheckMediaAccessPermission(RenderFrameHost* render_frame_host,
                                           const url::Origin& security_origin,
-                                          MediaStreamType type);
+                                          blink::MediaStreamType type);
 
   // Returns the ID of the default device for the given media device |type|.
   // If the returned value is an empty string, it means that there is no
   // default device for the given |type|.
-  virtual std::string GetDefaultMediaDeviceID(MediaStreamType type);
+  virtual std::string GetDefaultMediaDeviceID(blink::MediaStreamType type);
 
   // Get the accessibility mode for the WebContents that owns this frame.
   virtual ui::AXMode GetAccessibilityMode();
@@ -344,6 +359,7 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
       int32_t main_frame_route_id,
       int32_t main_frame_widget_route_id,
       const mojom::CreateNewWindowParams& params,
+      bool has_user_gesture,
       SessionStorageNamespace* session_storage_namespace) {}
 
   // Show a previously created page with the specified disposition and bounds.
@@ -417,9 +433,9 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // Notify observers if WebAudio AudioContext has started (or stopped) playing
   // audible sounds.
   virtual void AudioContextPlaybackStarted(RenderFrameHost* host,
-                                           int context_id){};
+                                           int context_id) {}
   virtual void AudioContextPlaybackStopped(RenderFrameHost* host,
-                                           int context_id){};
+                                           int context_id) {}
 
  protected:
   virtual ~RenderFrameHostDelegate() {}

@@ -55,7 +55,7 @@ class VideoElementResizeDelegate final : public ResizeObserver::Delegate {
         entries[0]->target()->GetLayoutObject());
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(text_track_container_);
     ResizeObserver::Delegate::Trace(visitor);
   }
@@ -69,7 +69,7 @@ class VideoElementResizeDelegate final : public ResizeObserver::Delegate {
 TextTrackContainer::TextTrackContainer(Document& document)
     : HTMLDivElement(document), default_font_size_(0) {}
 
-void TextTrackContainer::Trace(blink::Visitor* visitor) {
+void TextTrackContainer::Trace(Visitor* visitor) {
   visitor->Trace(video_size_observer_);
   HTMLDivElement::Trace(visitor);
 }
@@ -85,7 +85,8 @@ TextTrackContainer* TextTrackContainer::Create(
   return element;
 }
 
-LayoutObject* TextTrackContainer::CreateLayoutObject(const ComputedStyle&) {
+LayoutObject* TextTrackContainer::CreateLayoutObject(const ComputedStyle&,
+                                                     LegacyLayout) {
   // TODO(mstensho): Should use LayoutObjectFactory to create the right type of
   // object here, to enable LayoutNG, but currently we can't, because this will
   // typically be a child of LayoutVideo (a legacy type), and we'll typically
@@ -96,7 +97,7 @@ LayoutObject* TextTrackContainer::CreateLayoutObject(const ComputedStyle&) {
 
 void TextTrackContainer::ObserveSizeChanges(Element& element) {
   video_size_observer_ = ResizeObserver::Create(
-      GetDocument(), new VideoElementResizeDelegate(*this));
+      GetDocument(), MakeGarbageCollected<VideoElementResizeDelegate>(*this));
   video_size_observer_->observe(&element);
 }
 
@@ -108,8 +109,7 @@ void TextTrackContainer::UpdateDefaultFontSize(
   // for lack of per-spec vh/vw support) but the whole media element is used
   // for cue rendering. This is inconsistent. See also the somewhat related
   // spec bug: https://www.w3.org/Bugs/Public/show_bug.cgi?id=28105
-  LayoutSize video_size =
-      ToLayoutVideo(*media_layout_object).ReplacedContentRect().Size();
+  LayoutSize video_size = ToLayoutBox(media_layout_object)->ContentSize();
   LayoutUnit smallest_dimension =
       std::min(video_size.Height(), video_size.Width());
   float font_size = smallest_dimension * 0.05f;
@@ -126,7 +126,7 @@ void TextTrackContainer::UpdateDefaultFontSize(
   current_font_size = font_size;
   if (current_font_size == old_font_size)
     return;
-  SetInlineStyleProperty(CSSPropertyFontSize, default_font_size_,
+  SetInlineStyleProperty(CSSPropertyID::kFontSize, default_font_size_,
                          CSSPrimitiveValue::UnitType::kPixels);
 }
 

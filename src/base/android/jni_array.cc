@@ -124,6 +124,25 @@ BASE_EXPORT ScopedJavaLocalRef<jfloatArray> ToJavaFloatArray(
   return ToJavaFloatArray(env, floats.data(), floats.size());
 }
 
+BASE_EXPORT ScopedJavaLocalRef<jdoubleArray>
+ToJavaDoubleArray(JNIEnv* env, const double* doubles, size_t len) {
+  jdoubleArray double_array = env->NewDoubleArray(len);
+  CheckException(env);
+  DCHECK(double_array);
+
+  env->SetDoubleArrayRegion(double_array, 0, len,
+                            reinterpret_cast<const jdouble*>(doubles));
+  CheckException(env);
+
+  return ScopedJavaLocalRef<jdoubleArray>(env, double_array);
+}
+
+BASE_EXPORT ScopedJavaLocalRef<jdoubleArray> ToJavaDoubleArray(
+    JNIEnv* env,
+    const std::vector<double>& doubles) {
+  return ToJavaDoubleArray(env, doubles.data(), doubles.size());
+}
+
 ScopedJavaLocalRef<jobjectArray> ToJavaArrayOfByteArray(
     JNIEnv* env, const std::vector<std::string>& v) {
   ScopedJavaLocalRef<jclass> byte_array_clazz = GetClass(env, "[B");

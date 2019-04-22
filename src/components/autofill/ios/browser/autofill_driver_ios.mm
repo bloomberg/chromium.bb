@@ -8,10 +8,9 @@
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/ios/browser/autofill_driver_ios_bridge.h"
 #include "components/autofill/ios/browser/autofill_driver_ios_webframe.h"
-#include "components/autofill/ios/browser/autofill_driver_ios_webstate.h"
-#include "components/autofill/ios/browser/autofill_switches.h"
 #include "ios/web/public/browser_state.h"
 #import "ios/web/public/origin_util.h"
+#import "ios/web/public/web_state/web_frame_util.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -30,29 +29,20 @@ void AutofillDriverIOS::PrepareForWebStateWebFrameAndDelegate(
     id<AutofillDriverIOSBridge> bridge,
     const std::string& app_locale,
     AutofillManager::AutofillDownloadManagerState enable_download_manager) {
-  if (autofill::switches::IsAutofillIFrameMessagingEnabled()) {
-    AutofillDriverIOSWebFrameFactory::CreateForWebStateAndDelegate(
-        web_state, client, bridge, app_locale, enable_download_manager);
-    // By the time this method is called, no web_frame is available. This method
-    // only prepare the factory and the AutofillDriverIOS will be created in the
-    // first call to FromWebStateAndWebFrame.
-  } else {
-    AutofillDriverIOSWebState::CreateForWebStateAndDelegate(
-        web_state, client, bridge, app_locale, enable_download_manager);
-  }
+  // By the time this method is called, no web_frame is available. This method
+  // only prepares the factory and the AutofillDriverIOS will be created in the
+  // first call to FromWebStateAndWebFrame.
+  AutofillDriverIOSWebFrameFactory::CreateForWebStateAndDelegate(
+      web_state, client, bridge, app_locale, enable_download_manager);
 }
 
 // static
 AutofillDriverIOS* AutofillDriverIOS::FromWebStateAndWebFrame(
     web::WebState* web_state,
     web::WebFrame* web_frame) {
-  if (autofill::switches::IsAutofillIFrameMessagingEnabled()) {
     return AutofillDriverIOSWebFrameFactory::FromWebState(web_state)
         ->AutofillDriverIOSFromWebFrame(web_frame)
         ->driver();
-  } else {
-    return AutofillDriverIOSWebState::FromWebState(web_state);
-  }
 }
 
 AutofillDriverIOS::AutofillDriverIOS(
@@ -63,10 +53,10 @@ AutofillDriverIOS::AutofillDriverIOS(
     const std::string& app_locale,
     AutofillManager::AutofillDownloadManagerState enable_download_manager)
     : web_state_(web_state),
-      web_frame_(web_frame),
       bridge_(bridge),
       autofill_manager_(this, client, app_locale, enable_download_manager),
       autofill_external_delegate_(&autofill_manager_, this) {
+  web_frame_id_ = web::GetWebFrameId(web_frame);
   autofill_manager_.SetExternalDelegate(&autofill_external_delegate_);
 }
 
@@ -77,7 +67,8 @@ bool AutofillDriverIOS::IsIncognito() const {
 }
 
 bool AutofillDriverIOS::IsInMainFrame() const {
-  return web_frame_ ? web_frame_->IsMainFrame() : true;
+  web::WebFrame* web_frame = web::GetWebFrameWithId(web_state_, web_frame_id_);
+  return web_frame ? web_frame->IsMainFrame() : true;
 }
 
 net::URLRequestContextGetter* AutofillDriverIOS::GetURLRequestContext() {
@@ -98,28 +89,30 @@ void AutofillDriverIOS::SendFormDataToRenderer(
     int query_id,
     RendererFormDataAction action,
     const FormData& data) {
-  [bridge_ fillFormData:data inFrame:web_frame_];
+  web::WebFrame* web_frame = web::GetWebFrameWithId(web_state_, web_frame_id_);
+  if (!web_frame) {
+    return;
+  }
+  [bridge_ fillFormData:data inFrame:web_frame];
 }
 
 void AutofillDriverIOS::PropagateAutofillPredictions(
     const std::vector<autofill::FormStructure*>& forms) {
   autofill_manager_.client()->PropagateAutofillPredictions(nullptr, forms);
-};
+}
 
 void AutofillDriverIOS::SendAutofillTypePredictionsToRenderer(
     const std::vector<FormStructure*>& forms) {
+  web::WebFrame* web_frame = web::GetWebFrameWithId(web_state_, web_frame_id_);
+  if (!web_frame) {
+    return;
+  }
   [bridge_ fillFormDataPredictions:FormStructure::GetFieldTypePredictions(forms)
-                           inFrame:web_frame_];
+                           inFrame:web_frame];
 }
 
 void AutofillDriverIOS::RendererShouldAcceptDataListSuggestion(
     const base::string16& value) {
-}
-
-void AutofillDriverIOS::DidInteractWithCreditCardForm() {
-  if (!web::IsOriginSecure(web_state_->GetLastCommittedURL())) {
-    autofill_manager_.client()->DidInteractWithNonsecureCreditCardInput();
-  }
 }
 
 void AutofillDriverIOS::RendererShouldClearFilledSection() {}

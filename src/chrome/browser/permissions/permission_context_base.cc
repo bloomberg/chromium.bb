@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
@@ -81,7 +82,7 @@ void LogPermissionBlockedMessage(content::WebContents* web_contents,
                                  const char* message,
                                  ContentSettingsType type) {
   web_contents->GetMainFrame()->AddMessageToConsole(
-      content::CONSOLE_MESSAGE_LEVEL_WARNING,
+      blink::mojom::ConsoleMessageLevel::kWarning,
       base::StringPrintf(message,
                          PermissionUtil::GetPermissionString(type).c_str()));
 }
@@ -241,7 +242,7 @@ PermissionResult PermissionContextBase::GetPermissionStatus(
     // actually in the renderer, but the virtual URL is the one
     // seen by the user. This may be very confusing for a user to see in a
     // permissions request.
-    const content::NavigationEntry* entry =
+    content::NavigationEntry* entry =
         web_contents->GetController().GetLastCommittedEntry();
     if (entry) {
       const GURL virtual_url = entry->GetVirtualURL();

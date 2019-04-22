@@ -41,7 +41,7 @@ static const size_t kMaxRegistryLength = 0x3FFF;
 // chrome/browser/safe_browsing/chrome_cleaner/reporter_runner_win.cc
 // TODO(joenotcharles): Move the shared code to components/chrome_cleaner.
 uint32_t GetVersionNumber() {
-  base::Version version(CHROME_VERSION_UTF8_STRING);
+  base::Version version(CHROME_CLEANER_VERSION_UTF8_STRING);
   DCHECK(!version.components().empty());
   // The version number for X.Y.Z is X*256^3+Y*256+Z. If there are additional
   // components, only the first three count, and if there are less than 3, the
@@ -158,7 +158,7 @@ void RegistryLogger::WriteScanTime(UwSId pup_id,
     return;
 
   int64_t scan_time_serialized = scan_time.InMicroseconds();
-  scan_times_key_.WriteValue(base::UintToString16(pup_id).c_str(),
+  scan_times_key_.WriteValue(base::NumberToString16(pup_id).c_str(),
                              &scan_time_serialized,
                              sizeof(scan_time_serialized), REG_QWORD);
 }
@@ -316,7 +316,7 @@ bool RegistryLogger::RemoveLogFilePath(const base::FilePath& log_file) {
 bool RegistryLogger::RecordFoundPUPs(const std::vector<UwSId>& pups_to_store) {
   base::string16 multi_sz_value;
   for (UwSId pup_to_store : pups_to_store) {
-    multi_sz_value += base::UintToString16(pup_to_store);
+    multi_sz_value += base::NumberToString16(pup_to_store);
     multi_sz_value += kMultiSzSeparator;
   }
   multi_sz_value += kMultiSzSeparator;

@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/views/page_info/chosen_object_view.h"
 
+#include <memory>
+#include <utility>
+
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/page_info/chosen_object_view_observer.h"
@@ -64,14 +67,14 @@ ChosenObjectView::ChosenObjectView(
   // Create the chosen object icon.
   icon_ = new views::ImageView();
   layout->AddView(icon_);
+
   // Create the label that displays the chosen object name.
   views::Label* label = new views::Label(
-      l10n_util::GetStringFUTF16(info_->ui_info.label_string_id,
-                                 PageInfoUI::ChosenObjectToUIString(*info_)),
-      CONTEXT_BODY_TEXT_LARGE);
+      PageInfoUI::ChosenObjectToUIString(*info_), CONTEXT_BODY_TEXT_LARGE);
   icon_->SetImage(
       PageInfoUI::GetChosenObjectIcon(*info_, false, label->enabled_color()));
   layout->AddView(label);
+
   // Create the delete button.
   delete_button_ = views::CreateVectorImageButton(this);
   views::SetImageFromVectorIcon(
@@ -87,11 +90,38 @@ ChosenObjectView::ChosenObjectView(
   // Display secondary text underneath the name of the chosen object to describe
   // what the chosen object actually is.
   layout->StartRow(1.0, column_set_id);
-  views::Label* secondary_label = new views::Label(
-      l10n_util::GetStringUTF16(info_->ui_info.secondary_label_string_id));
-  secondary_label->SetEnabledColor(PageInfoUI::GetSecondaryTextColor());
   layout->SkipColumns(1);
-  layout->AddView(secondary_label);
+
+  // Disable the delete button for policy controlled objects and display the
+  // allowed by policy string below for |secondary_label|.
+  views::Label* secondary_label = nullptr;
+  if (info_->chooser_object->source ==
+      content_settings::SettingSource::SETTING_SOURCE_POLICY) {
+    delete_button_->SetEnabled(false);
+    secondary_label = new views::Label(l10n_util::GetStringUTF16(
+        info_->ui_info.allowed_by_policy_description_string_id));
+  } else {
+    secondary_label = new views::Label(
+        l10n_util::GetStringUTF16(info_->ui_info.description_string_id));
+  }
+
+  secondary_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  secondary_label->SetEnabledColor(PageInfoUI::GetSecondaryTextColor());
+  secondary_label->SetMultiLine(true);
+
+  // Long labels that cannot fit in the existing space under the permission
+  // label should be allowed to use up to |kMaxSecondaryLabelWidth| for display.
+  int preferred_width = secondary_label->GetPreferredSize().width();
+  constexpr int kMaxSecondaryLabelWidth = 140;
+  if (preferred_width > kMaxSecondaryLabelWidth) {
+    layout->AddView(secondary_label, /*col_span=*/1, /*row_span=*/1,
+                    views::GridLayout::LEADING, views::GridLayout::CENTER,
+                    kMaxSecondaryLabelWidth, /*pref_height=*/0);
+  } else {
+    layout->AddView(secondary_label, /*col_span=*/1, /*row_span=*/1,
+                    views::GridLayout::FILL, views::GridLayout::CENTER);
+  }
+
   layout->AddPaddingRow(column_set_id, list_item_padding);
 }
 

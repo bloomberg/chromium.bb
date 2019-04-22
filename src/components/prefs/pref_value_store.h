@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_PREFS_PREF_VALUE_STORE_H_
 #define COMPONENTS_PREFS_PREF_VALUE_STORE_H_
 
+#include <functional>
 #include <map>
 #include <memory>
 #include <string>

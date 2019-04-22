@@ -11,15 +11,12 @@
 #include "components/exo/layer_tree_frame_sink_holder.h"
 #include "components/exo/surface.h"
 #include "components/exo/surface_delegate.h"
+#include "components/viz/common/quads/compositor_frame_metadata.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace aura {
 class Window;
 }  // namespace aura
-
-namespace gfx {
-class Path;
-}  // namespace gfx
 
 namespace exo {
 class LayerTreeFrameSinkHolder;
@@ -41,7 +38,7 @@ class SurfaceTreeHost : public SurfaceDelegate,
 
   // Sets |mask| to the path that delineates the hit test region of the hosted
   // surface tree.
-  void GetHitTestMask(gfx::Path* mask) const;
+  void GetHitTestMask(SkPath* mask) const;
 
   // Call this to indicate that the previous CompositorFrame is processed and
   // the surface is being scheduled for a draw.
@@ -64,6 +61,12 @@ class SurfaceTreeHost : public SurfaceDelegate,
     return layer_tree_frame_sink_holder_.get();
   }
 
+  using PresentationCallbacks = std::list<Surface::PresentationCallback>;
+  base::flat_map<uint32_t, PresentationCallbacks>&
+  GetActivePresentationCallbacksForTesting() {
+    return active_presentation_callbacks_;
+  }
+
   // Overridden from SurfaceDelegate:
   void OnSurfaceCommit() override;
   bool IsSurfaceSynchronized() const override;
@@ -77,7 +80,6 @@ class SurfaceTreeHost : public SurfaceDelegate,
 
   // Overridden from ui::ContextFactoryObserver:
   void OnLostSharedContext() override;
-  void OnLostVizProcess() override;
 
  protected:
   // Call this to submit a compositor frame.
@@ -103,12 +105,11 @@ class SurfaceTreeHost : public SurfaceDelegate,
 
   // These lists contains the callbacks to notify the client when surface
   // contents have been presented.
-  using PresentationCallbacks = std::list<Surface::PresentationCallback>;
   PresentationCallbacks presentation_callbacks_;
   base::flat_map<uint32_t, PresentationCallbacks>
       active_presentation_callbacks_;
 
-  uint32_t presentation_token_ = 0;
+  viz::FrameTokenGenerator next_token_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceTreeHost);
 };

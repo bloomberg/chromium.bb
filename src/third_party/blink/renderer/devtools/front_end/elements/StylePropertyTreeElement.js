@@ -126,11 +126,10 @@ Elements.StylePropertyTreeElement = class extends UI.TreeElement {
       return swatch;
     }
 
-    const swatchPopoverHelper = this._parentPane.swatchPopoverHelper();
     const swatch = InlineEditor.ColorSwatch.create();
     swatch.setColor(color);
     swatch.setFormat(Common.Color.detectColorFormat(swatch.color()));
-    this._addColorContrastInfo(new Elements.ColorSwatchPopoverIcon(this, swatchPopoverHelper, swatch));
+    this._addColorContrastInfo(swatch);
 
     return swatch;
   }
@@ -157,24 +156,24 @@ Elements.StylePropertyTreeElement = class extends UI.TreeElement {
       return swatch;
     }
 
-    const swatchPopoverHelper = this._parentPane.swatchPopoverHelper();
     const swatch = InlineEditor.ColorSwatch.create();
     swatch.setColor(color);
     swatch.setFormat(Common.Color.detectColorFormat(swatch.color()));
     swatch.setText(text, computedValue);
-    this._addColorContrastInfo(new Elements.ColorSwatchPopoverIcon(this, swatchPopoverHelper, swatch));
+    this._addColorContrastInfo(swatch);
     return swatch;
   }
 
   /**
-   * @param {!Elements.ColorSwatchPopoverIcon} swatchIcon
+   * @param {!InlineEditor.ColorSwatch} swatch
    */
-  async _addColorContrastInfo(swatchIcon) {
-    if (!Runtime.experiments.isEnabled('colorContrastRatio') || this.property.name !== 'color' ||
-        !this._parentPane.cssModel() || !this.node())
+  async _addColorContrastInfo(swatch) {
+    const swatchPopoverHelper = this._parentPane.swatchPopoverHelper();
+    const swatchIcon = new Elements.ColorSwatchPopoverIcon(this, swatchPopoverHelper, swatch);
+    if (this.property.name !== 'color' || !this._parentPane.cssModel() || !this.node())
       return;
     const cssModel = this._parentPane.cssModel();
-    const contrastInfo = await cssModel.backgroundColorsPromise(this.node().id);
+    const contrastInfo = new ColorPicker.ContrastInfo(await cssModel.backgroundColorsPromise(this.node().id));
     swatchIcon.setContrastInfo(contrastInfo);
   }
 
@@ -604,20 +603,21 @@ Elements.StylePropertyTreeElement = class extends UI.TreeElement {
 
     this._originalPropertyText = this.property.propertyText;
 
-    this._parentPane.setEditingStyle(true);
+    this._parentPane.setEditingStyle(true, this);
     if (selectElement.parentElement)
       selectElement.parentElement.scrollIntoViewIfNeeded(false);
 
     this._prompt = new Elements.StylesSidebarPane.CSSPropertyPrompt(this, isEditingName);
     this._prompt.setAutocompletionTimeout(0);
-    if (section)
-      section.startEditing();
 
     // Do not live-edit "content" property of pseudo elements. crbug.com/433889
     if (!isEditingName && (!this._parentPane.node().pseudoType() || this.name !== 'content'))
       this._prompt.addEventListener(UI.TextPrompt.Events.TextChanged, this._applyFreeFlowStyleTextEdit.bind(this));
 
+    // Attach prompt before `section.startEditing()`, which manually sets height. crbug.com/949383
     const proxyElement = this._prompt.attachAndStartEditing(selectElement, blurListener.bind(this, context));
+    if (section)
+      section.startEditing();
     this._navigateToSource(selectElement, true);
 
     proxyElement.addEventListener('keydown', this._editingNameValueKeyDown.bind(this, context), false);

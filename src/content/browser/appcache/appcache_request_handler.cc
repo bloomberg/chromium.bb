@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "content/browser/appcache/appcache.h"
 #include "content/browser/appcache/appcache_backend_impl.h"
@@ -18,11 +19,12 @@
 #include "content/browser/appcache/appcache_url_loader_job.h"
 #include "content/browser/appcache/appcache_url_loader_request.h"
 #include "content/browser/appcache/appcache_url_request_job.h"
-#include "content/browser/service_worker/service_worker_request_handler.h"
 #include "content/common/navigation_subresource_loader_params.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
 #include "services/network/public/cpp/features.h"
+#include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 
 namespace content {
 
@@ -47,7 +49,7 @@ AppCacheRequestHandler::AppCacheRequestHandler(
       cache_entry_not_found_(false),
       is_delivering_network_response_(false),
       maybe_load_resource_executed_(false),
-      cache_id_(kAppCacheNoCacheId),
+      cache_id_(blink::mojom::kAppCacheNoCacheId),
       service_(host_->service()),
       request_(std::move(request)),
       weak_factory_(this) {
@@ -99,7 +101,7 @@ AppCacheJob* AppCacheRequestHandler::MaybeLoadResource(
   // new resource, any values in those fields are no longer valid.
   found_entry_ = AppCacheEntry();
   found_fallback_entry_ = AppCacheEntry();
-  found_cache_id_ = kAppCacheNoCacheId;
+  found_cache_id_ = blink::mojom::kAppCacheNoCacheId;
   found_manifest_url_ = GURL();
   found_network_namespace_ = false;
 
@@ -115,7 +117,7 @@ AppCacheJob* AppCacheRequestHandler::MaybeLoadResource(
   if (job && job->IsDeliveringNetworkResponse()) {
     DCHECK(!job->IsStarted());
     if (job->AsURLLoaderJob()) {
-      job.release();  // AppCacheURLLoaderJob always deletes itself.
+      job.release()->AsURLLoaderJob()->DeleteIfNeeded();
       job_ = nullptr;
     } else {
       job.reset();
@@ -238,6 +240,15 @@ AppCacheRequestHandler::InitializeForMainResourceNetworkService(
   return handler;
 }
 
+// static
+bool AppCacheRequestHandler::IsMainResourceType(ResourceType type) {
+  // When PlzDedicatedWorker is enabled, a dedicated worker script is considered
+  // to be a main resource.
+  if (type == RESOURCE_TYPE_WORKER)
+    return blink::features::IsPlzDedicatedWorkerEnabled();
+  return IsResourceTypeFrame(type) || type == RESOURCE_TYPE_SHARED_WORKER;
+}
+
 void AppCacheRequestHandler::OnDestructionImminent(AppCacheHost* host) {
   storage()->CancelDelegateCallbacks(this);
   host_ = nullptr;  // no need to RemoveObserver, the host is being deleted
@@ -283,14 +294,14 @@ void AppCacheRequestHandler::DeliverAppCachedResponse(
 
 void AppCacheRequestHandler::DeliverErrorResponse() {
   DCHECK(job_.get() && job_->IsWaiting());
-  DCHECK_EQ(kAppCacheNoCacheId, cache_id_);
+  DCHECK_EQ(blink::mojom::kAppCacheNoCacheId, cache_id_);
   DCHECK(manifest_url_.is_empty());
   job_->DeliverErrorResponse();
 }
 
 void AppCacheRequestHandler::DeliverNetworkResponse() {
   DCHECK(job_.get() && job_->IsWaiting());
-  DCHECK_EQ(kAppCacheNoCacheId, cache_id_);
+  DCHECK_EQ(blink::mojom::kAppCacheNoCacheId, cache_id_);
   DCHECK(manifest_url_.is_empty());
   job_->DeliverNetworkResponse();
 }
@@ -300,7 +311,7 @@ void AppCacheRequestHandler::OnPrepareToRestartURLRequest() {
   DCHECK(job_->IsDeliveringNetworkResponse() || job_->IsCacheEntryNotFound());
 
   // Any information about the source of the response is no longer relevant.
-  cache_id_ = kAppCacheNoCacheId;
+  cache_id_ = blink::mojom::kAppCacheNoCacheId;
   manifest_url_ = GURL();
 
   cache_entry_not_found_ = job_->IsCacheEntryNotFound();
@@ -334,19 +345,6 @@ std::unique_ptr<AppCacheJob> AppCacheRequestHandler::MaybeLoadMainResource(
     net::NetworkDelegate* network_delegate) {
   DCHECK(!job_.get());
   DCHECK(host_);
-
-  // If a page falls into the scope of a ServiceWorker, any matching AppCaches
-  // should be ignored. This depends on the ServiceWorker handler being invoked
-  // prior to the AppCache handler.
-  // TODO(ananta/michaeln)
-  // We need to handle this for AppCache requests initiated for the network
-  // service
-  if (request_->GetURLRequest() &&
-      ServiceWorkerRequestHandler::IsControlledByServiceWorker(
-          request_->GetURLRequest())) {
-    host_->enable_cache_selection(false);
-    return nullptr;
-  }
 
   if (storage()->IsInitialized() &&
       !base::ContainsKey(*service_->storage()->usage_map(),
@@ -398,7 +396,7 @@ void AppCacheRequestHandler::OnMainResponseFound(
       host_->NotifyMainResourceBlocked(manifest_url);
     } else {
       DCHECK_EQ(resource_type_, RESOURCE_TYPE_SHARED_WORKER);
-      host_->frontend()->OnContentBlocked(host_->host_id(), manifest_url);
+      host_->OnContentBlocked(manifest_url);
     }
     DeliverNetworkResponse();
     return;
@@ -411,7 +409,8 @@ void AppCacheRequestHandler::OnMainResponseFound(
     return;
   }
 
-  if (IsMainResourceType(resource_type_) && cache_id != kAppCacheNoCacheId) {
+  if (IsMainResourceType(resource_type_) &&
+      cache_id != blink::mojom::kAppCacheNoCacheId) {
     // AppCacheHost loads and holds a reference to the main resource cache
     // for two reasons, firstly to preload the cache into the working set
     // in advance of subresource loads happening, secondly to prevent the
@@ -572,7 +571,7 @@ void AppCacheRequestHandler::MaybeCreateLoader(
 }
 
 bool AppCacheRequestHandler::MaybeCreateLoaderForResponse(
-    const GURL& request_url,
+    const network::ResourceRequest& request,
     const network::ResourceResponseHead& response,
     network::mojom::URLLoaderPtr* loader,
     network::mojom::URLLoaderClientRequest* client_request,

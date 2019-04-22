@@ -99,7 +99,7 @@ TEST_F(SimpleFeatureTest, IsAvailableNullCase) {
        Feature::UNSPECIFIED_PLATFORM, 25, Feature::IS_AVAILABLE}};
 
   SimpleFeature feature;
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     const IsAvailableTestData& test = tests[i];
     EXPECT_EQ(test.expected_result,
               feature
@@ -511,7 +511,7 @@ TEST_F(SimpleFeatureTest, SessionType) {
        FeatureSessionType::AUTOLAUNCHED_KIOSK,
        {FeatureSessionType::KIOSK}}};
 
-  for (size_t i = 0; i < arraysize(kTestData); ++i) {
+  for (size_t i = 0; i < base::size(kTestData); ++i) {
     std::unique_ptr<base::AutoReset<FeatureSessionType>> current_session(
         ScopedCurrentFeatureSessionType(kTestData[i].current_session_type));
 
@@ -710,13 +710,13 @@ TEST_F(SimpleFeatureTest, IsIdInArray) {
     // aaaabbbbccccddddeeeeffffgggghhhh
     "9A0417016F345C934A1A88F55CA17C05014EEEBA"
   };
-  EXPECT_FALSE(SimpleFeature::IsIdInArray("", kIdArray, arraysize(kIdArray)));
-  EXPECT_FALSE(SimpleFeature::IsIdInArray(
-      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", kIdArray, arraysize(kIdArray)));
-  EXPECT_TRUE(SimpleFeature::IsIdInArray(
-      "bbbbccccdddddddddeeeeeeffffgghhh", kIdArray, arraysize(kIdArray)));
-  EXPECT_TRUE(SimpleFeature::IsIdInArray(
-      "aaaabbbbccccddddeeeeffffgggghhhh", kIdArray, arraysize(kIdArray)));
+  EXPECT_FALSE(SimpleFeature::IsIdInArray("", kIdArray, base::size(kIdArray)));
+  EXPECT_FALSE(SimpleFeature::IsIdInArray("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                                          kIdArray, base::size(kIdArray)));
+  EXPECT_TRUE(SimpleFeature::IsIdInArray("bbbbccccdddddddddeeeeeeffffgghhh",
+                                         kIdArray, base::size(kIdArray)));
+  EXPECT_TRUE(SimpleFeature::IsIdInArray("aaaabbbbccccddddeeeeffffgggghhhh",
+                                         kIdArray, base::size(kIdArray)));
 }
 
 // Tests that all combinations of feature channel and Chrome channel correctly

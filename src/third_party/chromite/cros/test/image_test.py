@@ -376,10 +376,20 @@ class SymbolsTest(image_test_lib.ImageTestCase):
     # All exported symbols.
     exported = set()
 
+    # Whitelist firmware binaries which are mostly provided by various
+    # vendors, some in proprietary format. This is OK because the files are
+    # not executable on the main CPU, so we treat them as blobs that we load
+    # into external hardware/devices. This is ensured by PermissionTest.
+    # TestNoExecutableInFirmwareFolder.
+    permitted_pattern = os.path.join('dir-ROOT-A', 'lib', 'firmware', '*')
+
     for root, _, filenames in os.walk(image_test_lib.ROOT_A):
       for filename in filenames:
         full_name = os.path.join(root, filename)
         if os.path.islink(full_name) or not os.path.isfile(full_name):
+          continue
+
+        if fnmatch.fnmatch(full_name, permitted_pattern):
           continue
 
         try:
@@ -657,25 +667,37 @@ class SymlinkTest(image_test_lib.ImageTestCase):
   # The key is the symlink and the value is the symlink target.
   # Both accept fnmatch style expressions (i.e. globs).
   _ACCEPTABLE_LINKS = {
-      '/etc/localtime': '/var/lib/timezone/localtime',
-      '/etc/machine-id': '/var/lib/dbus/machine-id',
-      '/etc/mtab': '/proc/mounts',
+      '/etc/localtime': {'/var/lib/timezone/localtime'},
+      '/etc/machine-id': {'/var/lib/dbus/machine-id'},
+      '/etc/mtab': {'/proc/mounts'},
 
       # The kip board has a broken/dangling symlink.  Allow it until we can
       # rewrite the code.  Or kip goes EOL.
-      '/lib/firmware/elan_i2c.bin': '/opt/google/touch/firmware/*',
+      '/lib/firmware/elan_i2c.bin': {'/opt/google/touch/firmware/*'},
 
       # Some boards don't set this up properly.  It's not a big deal.
-      '/usr/libexec/editor': '/usr/bin/*',
+      '/usr/libexec/editor': {'/usr/bin/*'},
 
       # These are hacks to make dev images and `dev_install` work.  Normally
       # /usr/local isn't mounted or populated, so it's not too big a deal to
       # let these things always point there.
-      '/etc/env.d/*': '/usr/local/etc/env.d/*',
-      '/usr/bin/python*': '/usr/local/bin/python*',
-      '/usr/lib/portage': '/usr/local/lib/portage',
-      '/usr/lib/python-exec': '/usr/local/lib/python-exec',
-      '/usr/lib/debug': '/usr/local/usr/lib/debug',
+      '/etc/env.d/*': {'/usr/local/etc/env.d/*'},
+      '/usr/bin/python*': {
+          '/usr/local/usr/bin/python*',
+          '/usr/local/bin/python*',
+      },
+      '/usr/lib/portage': {
+          '/usr/local/usr/lib/portage',
+          '/usr/local/lib/portage',
+      },
+      '/usr/lib/python-exec': {
+          '/usr/local/usr/lib/python-exec',
+          '/usr/local/lib/python-exec',
+      },
+      '/usr/lib/debug': {'/usr/local/usr/lib/debug'},
+      # Used by `file` and libmagic.so when the package is in /usr/local.
+      '/usr/share/misc/magic.mgc': {'/usr/local/share/misc/magic.mgc'},
+      '/usr/share/portage': {'/usr/local/share/portage'},
   }
 
   @classmethod
@@ -686,9 +708,9 @@ class SymlinkTest(image_test_lib.ImageTestCase):
       return True
 
     # Scan the allow list.
-    for allow_source, allow_target in cls._ACCEPTABLE_LINKS.items():
+    for allow_source, allow_targets in cls._ACCEPTABLE_LINKS.items():
       if (fnmatch.fnmatch(source, allow_source) and
-          fnmatch.fnmatch(target, allow_target)):
+          any(fnmatch.fnmatch(target, x) for x in allow_targets)):
         return True
 
     # Reject everything else.
@@ -729,3 +751,31 @@ class SymlinkTest(image_test_lib.ImageTestCase):
     for (source, target) in failures:
       logging.error('Insecure symlink: %s -> %s', source, target)
     self.assertEqual(0, len(failures))
+
+
+class PermissionTest(image_test_lib.ImageTestCase):
+  """Verify file permissions."""
+
+  def TestNoExecutableInFirmwareFolder(self):
+    """Ensure all files in ROOT-A/lib/firmware are not executable.
+
+    Files under ROOT-A/lib/firmware will be whitelisted in
+    "TestImportedSymbolsAreAvailable".
+    """
+    firmware_path = os.path.join(image_test_lib.ROOT_A, 'lib', 'firmware')
+
+    success = True
+    for root, _, filenames in os.walk(firmware_path):
+      for filename in filenames:
+        full_name = os.path.join(root, filename)
+        # We check symlinks in SymlinkTest, so no need to recheck here.
+        if os.path.islink(full_name) or not os.path.isfile(full_name):
+          continue
+
+        st = os.stat(full_name)
+        if st.st_mode & 0o111:
+          success = False
+          logging.error('Executable file not allowed in /lib/firmware: %s.',
+                        filename)
+
+    self.assertTrue(success)

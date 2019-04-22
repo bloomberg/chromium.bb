@@ -19,7 +19,9 @@ import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.task.AsyncTask;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.installedapp.mojom.InstalledAppProvider;
 import org.chromium.installedapp.mojom.RelatedApplication;
 import org.chromium.mojo.system.MojoException;
@@ -27,7 +29,6 @@ import org.chromium.mojo.system.MojoException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-
 /**
  * Android implementation of the InstalledAppProvider service defined in
  * installed_app_provider.mojom
@@ -353,6 +354,6 @@ public class InstalledAppProviderImpl implements InstalledAppProvider {
      * @return True if the Runnable was successfully placed into the message queue.
      */
     protected void delayThenRun(Runnable r, long delayMillis) {
-        ThreadUtils.postOnUiThreadDelayed(r, delayMillis);
+        PostTask.postDelayedTask(UiThreadTaskTraits.DEFAULT, r, delayMillis);
     }
 }

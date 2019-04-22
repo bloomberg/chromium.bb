@@ -30,21 +30,20 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/renderer_preferences.h"
 #include "content/public/common/webrtc_ip_handling_policy.h"
-#include "content/shell/browser/layout_test/blink_test_controller.h"
-#include "content/shell/browser/layout_test/layout_test_bluetooth_chooser_factory.h"
-#include "content/shell/browser/layout_test/layout_test_devtools_bindings.h"
-#include "content/shell/browser/layout_test/layout_test_javascript_dialog_manager.h"
-#include "content/shell/browser/layout_test/secondary_test_window_observer.h"
 #include "content/shell/browser/shell_browser_main_parts.h"
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/browser/shell_devtools_frontend.h"
 #include "content/shell/browser/shell_javascript_dialog_manager.h"
-#include "content/shell/common/layout_test/layout_test_switches.h"
-#include "content/shell/common/shell_messages.h"
+#include "content/shell/browser/web_test/blink_test_controller.h"
+#include "content/shell/browser/web_test/secondary_test_window_observer.h"
+#include "content/shell/browser/web_test/web_test_bluetooth_chooser_factory.h"
+#include "content/shell/browser/web_test/web_test_devtools_bindings.h"
+#include "content/shell/browser/web_test/web_test_javascript_dialog_manager.h"
 #include "content/shell/common/shell_switches.h"
+#include "content/shell/common/web_test/web_test_switches.h"
 #include "media/media_buildflags.h"
+#include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "third_party/blink/public/web/web_presentation_receiver_flags.h"
 
 namespace content {
@@ -92,10 +91,12 @@ Shell::Shell(std::unique_ptr<WebContents> web_contents,
     web_contents_->SetDelegate(this);
 
   if (switches::IsRunWebTestsSwitchPresent()) {
-    headless_ = true;
-    // In a headless shell, disable occlusion tracking. Otherwise, WebContents
-    // would always behave as if they were occluded, i.e. would not render
-    // frames and would not receive input events.
+    headless_ = !base::CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kDisableHeadlessMode);
+    // Disable occlusion tracking. In a headless shell WebContents would always
+    // behave as if they were occluded, i.e. would not render frames and would
+    // not receive input events. For non-headless mode we do not want tests
+    // running in parallel to trigger occlusion tracking.
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kDisableBackgroundingOccludedWindowsForTesting);
   }
@@ -122,6 +123,12 @@ Shell::~Shell() {
     }
   }
 
+  // Always destroy WebContents before calling PlatformExit(). WebContents
+  // destruction sequence may depend on the resources destroyed in
+  // PlatformExit() (e.g. the display::Screen singleton).
+  web_contents_->SetDelegate(nullptr);
+  web_contents_.reset();
+
   if (windows_.empty()) {
     if (headless_)
       PlatformExit();
@@ -132,8 +139,6 @@ Shell::~Shell() {
     if (*g_quit_main_message_loop)
       std::move(*g_quit_main_message_loop).Run();
   }
-
-  web_contents_->SetDelegate(nullptr);
 }
 
 Shell* Shell::CreateShell(std::unique_ptr<WebContents> web_contents,
@@ -197,11 +202,10 @@ void Shell::SetShellCreatedCallback(
   shell_created_callback_ = std::move(shell_created_callback);
 }
 
-Shell* Shell::FromRenderViewHost(RenderViewHost* rvh) {
-  for (size_t i = 0; i < windows_.size(); ++i) {
-    if (windows_[i]->web_contents() &&
-        windows_[i]->web_contents()->GetRenderViewHost() == rvh) {
-      return windows_[i];
+Shell* Shell::FromWebContents(WebContents* web_contents) {
+  for (Shell* window : windows_) {
+    if (window->web_contents() && window->web_contents() == web_contents) {
+      return window;
     }
   }
   return nullptr;
@@ -405,11 +409,11 @@ WebContents* Shell::OpenURLFromTab(WebContents* source,
     // Normally, the difference between NEW_POPUP and NEW_WINDOW is that a popup
     // should have no toolbar, no status bar, no menu bar, no scrollbars and be
     // not resizable.  For simplicity and to enable new testing scenarios in
-    // content shell and layout tests, popups don't get special treatment below
+    // content shell and web tests, popups don't get special treatment below
     // (i.e. they will have a toolbar and other things described here).
     case WindowOpenDisposition::NEW_POPUP:
     case WindowOpenDisposition::NEW_WINDOW:
-    // content_shell doesn't really support tabs, but some layout tests use
+    // content_shell doesn't really support tabs, but some web tests use
     // middle click (which translates into kNavigationPolicyNewBackgroundTab),
     // so we treat the cases below just like a NEW_WINDOW disposition.
     case WindowOpenDisposition::NEW_BACKGROUND_TAB:
@@ -429,7 +433,7 @@ WebContents* Shell::OpenURLFromTab(WebContents* source,
     case WindowOpenDisposition::SINGLETON_TAB:
     // No incognito mode in content_shell:
     case WindowOpenDisposition::OFF_THE_RECORD:
-    // TODO(lukasza): Investigate if some layout tests might need support for
+    // TODO(lukasza): Investigate if some web tests might need support for
     // SAVE_TO_DISK disposition.  This would probably require that
     // BlinkTestController always sets up and cleans up a temporary directory
     // as the default downloads destinations for the duration of a test.
@@ -441,6 +445,7 @@ WebContents* Shell::OpenURLFromTab(WebContents* source,
   }
 
   NavigationController::LoadURLParams load_url_params(params.url);
+  load_url_params.initiator_origin = params.initiator_origin;
   load_url_params.source_site_instance = params.source_site_instance;
   load_url_params.transition_type = params.transition;
   load_url_params.frame_tree_node_id = params.frame_tree_node_id;
@@ -451,6 +456,7 @@ WebContents* Shell::OpenURLFromTab(WebContents* source,
   load_url_params.should_replace_current_entry =
       params.should_replace_current_entry;
   load_url_params.blob_url_loader_factory = params.blob_url_loader_factory;
+  load_url_params.reload_type = params.reload_type;
 
   if (params.uses_post) {
     load_url_params.load_type = NavigationController::LOAD_TYPE_HTTP_POST;
@@ -537,7 +543,7 @@ JavaScriptDialogManager* Shell::GetJavaScriptDialogManager(
     WebContents* source) {
   if (!dialog_manager_) {
     dialog_manager_.reset(switches::IsRunWebTestsSwitchPresent()
-                              ? new LayoutTestJavaScriptDialogManager
+                              ? new WebTestJavaScriptDialogManager
                               : new ShellJavaScriptDialogManager);
   }
   return dialog_manager_.get();
@@ -558,6 +564,11 @@ bool Shell::DidAddMessageToConsole(WebContents* source,
                                    int32_t line_no,
                                    const base::string16& source_id) {
   return switches::IsRunWebTestsSwitchPresent();
+}
+
+void Shell::PortalWebContentsCreated(WebContents* portal_web_contents) {
+  if (switches::IsRunWebTestsSwitchPresent())
+    SecondaryTestWindowObserver::CreateForWebContents(portal_web_contents);
 }
 
 void Shell::RendererUnresponsive(
@@ -597,14 +608,15 @@ bool Shell::ShouldAllowRunningInsecureContent(
   BlinkTestController* blink_test_controller = BlinkTestController::Get();
   if (blink_test_controller && switches::IsRunWebTestsSwitchPresent()) {
     const base::DictionaryValue& test_flags =
-        blink_test_controller->accumulated_layout_test_runtime_flags_changes();
+        blink_test_controller->accumulated_web_test_runtime_flags_changes();
     test_flags.GetBoolean("running_insecure_content_allowed", &allowed_by_test);
   }
 
   return allowed_per_prefs || allowed_by_test;
 }
 
-gfx::Size Shell::EnterPictureInPicture(const viz::SurfaceId& surface_id,
+gfx::Size Shell::EnterPictureInPicture(content::WebContents* web_contents,
+                                       const viz::SurfaceId& surface_id,
                                        const gfx::Size& natural_size) {
   // During tests, returning a fake window size (same aspect ratio) to pretend
   // the window was created and allow tests to run accordingly.

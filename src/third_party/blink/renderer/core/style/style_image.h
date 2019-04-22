@@ -89,12 +89,11 @@ class CORE_EXPORT StyleImage : public GarbageCollectedFinalized<StyleImage> {
                               float multiplier,
                               const LayoutSize& default_object_size) const = 0;
 
-  // The <image> does not have any intrinsic dimensions.
-  virtual bool ImageHasRelativeSize() const = 0;
-
-  // The <image> may depend on dimensions from the context the image is used in
-  // (the "container".)
-  virtual bool UsesImageContainerSize() const = 0;
+  // The <image> has intrinsic dimensions.
+  //
+  // If this returns false, then a call to ImageSize() is expected to return
+  // the |default_object_size| argument that it was passed unmodified.
+  virtual bool HasIntrinsicSize() const = 0;
 
   virtual void AddClient(ImageResourceObserver*) = 0;
   virtual void RemoveClient(ImageResourceObserver*) = 0;
@@ -165,14 +164,6 @@ class CORE_EXPORT StyleImage : public GarbageCollectedFinalized<StyleImage> {
                                  float multiplier,
                                  const LayoutSize& default_object_size) const;
 };
-
-#define DEFINE_STYLE_IMAGE_TYPE_CASTS(thisType, function)                   \
-  DEFINE_TYPE_CASTS(thisType, StyleImage, styleImage, styleImage->function, \
-                    styleImage.function);                                   \
-  inline thisType* To##thisType(const Member<StyleImage>& styleImage) {     \
-    return To##thisType(styleImage.Get());                                  \
-  }                                                                         \
-  typedef int NeedsSemiColonAfterDefineStyleImageTypeCasts
 
 }  // namespace blink
 #endif

@@ -14,6 +14,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/focus/focus_manager.h"
+#include "ui/views/widget/widget_delegate.h"
 
 class BrowserView;
 class DropdownBarHostDelegate;
@@ -26,7 +27,6 @@ class SlideAnimation;
 namespace views {
 class ExternalFocusTracker;
 class View;
-class Widget;
 }  // namespace views
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -40,7 +40,8 @@ class Widget;
 ////////////////////////////////////////////////////////////////////////////////
 class DropdownBarHost : public ui::AcceleratorTarget,
                         public views::FocusChangeListener,
-                        public gfx::AnimationDelegate {
+                        public gfx::AnimationDelegate,
+                        public views::WidgetDelegate {
  public:
   explicit DropdownBarHost(BrowserView* browser_view);
   ~DropdownBarHost() override;
@@ -141,6 +142,10 @@ class DropdownBarHost : public ui::AcceleratorTarget,
   gfx::SlideAnimation* animation() {
     return animation_.get();
   }
+
+  // views::WidgetDelegate:
+  views::Widget* GetWidget() override;
+  const views::Widget* GetWidget() const override;
 
  private:
   // Set the view whose position in the |browser_view_| view hierarchy

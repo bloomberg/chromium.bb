@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_HISTORY_CORE_BROWSER_EXPIRE_HISTORY_BACKEND_H_
 #define COMPONENTS_HISTORY_CORE_BROWSER_EXPIRE_HISTORY_BACKEND_H_
 
+#include <map>
 #include <memory>
 #include <set>
 #include <vector>
@@ -57,7 +58,7 @@ class ExpireHistoryBackend {
   // The delegate pointer must be non-null. We will NOT take ownership of it.
   // HistoryBackendClient may be null. The HistoryBackendClient is used when
   // expiring URLS so that we don't remove any URLs or favicons that are
-  // bookmarked (visits are removed though).
+  // bookmarked or have a credential saved on (visits are removed though).
   ExpireHistoryBackend(HistoryBackendNotifier* notifier,
                        HistoryBackendClient* backend_client,
                        scoped_refptr<base::SequencedTaskRunner> task_runner);
@@ -71,16 +72,18 @@ class ExpireHistoryBackend {
   // will continue until the object is deleted.
   void StartExpiringOldStuff(base::TimeDelta expiration_threshold);
 
-  // Deletes everything associated with a URL.
-  void DeleteURL(const GURL& url);
+  // Deletes everything associated with a URL until |end_time|.
+  void DeleteURL(const GURL& url, base::Time end_time);
 
-  // Deletes everything associated with each URL in the list.
-  void DeleteURLs(const std::vector<GURL>& url);
+  // Deletes everything associated with each URL in the list until |end_time|.
+  void DeleteURLs(const std::vector<GURL>& url, base::Time end_time);
 
   // Removes all visits to restrict_urls (or all URLs if empty) in the given
   // time range, updating the URLs accordingly.
   void ExpireHistoryBetween(const std::set<GURL>& restrict_urls,
-                            base::Time begin_time, base::Time end_time);
+                            base::Time begin_time,
+                            base::Time end_time,
+                            bool user_initiated);
 
   // Removes all visits to all URLs with the given times, updating the
   // URLs accordingly.  |times| must be in reverse chronological order
@@ -168,9 +171,9 @@ class ExpireHistoryBackend {
   //
   // Assumes the main_db_ is non-NULL.
   //
-  // NOTE: If the url is bookmarked, we keep the favicons and thumbnails.
+  // NOTE: If the url is pinned, we keep the favicons and thumbnails.
   void DeleteOneURL(const URLRow& url_row,
-                    bool is_bookmarked,
+                    bool is_pinned,
                     DeleteEffects* effects);
 
   // Deletes all favicons associated with |gurl|.
@@ -197,17 +200,6 @@ class ExpireHistoryBackend {
   // any now-unused favicons.
   void ExpireURLsForVisits(const VisitVector& visits, DeleteEffects* effects);
 
-  void ExpireVisitsInternal(const VisitVector& visits,
-                            const DeletionTimeRange& time_range,
-                            const std::set<GURL>& restrict_urls);
-
-  // Deletes the favicons listed in |effects->affected_favicons| if they are
-  // unsued. Fails silently (we don't care about favicons so much, so don't want
-  // to stop everything if it fails). Fills |expired_favicons| with the set of
-  // favicon urls that no longer have associated visits and were therefore
-  // expired.
-  void DeleteFaviconsIfPossible(DeleteEffects* effects);
-
   // Enum representing what type of action resulted in the history DB deletion.
   enum DeletionType {
     // User initiated the deletion from the History UI.
@@ -216,6 +208,18 @@ class ExpireHistoryBackend {
     // old.
     DELETION_EXPIRED
   };
+
+  void ExpireVisitsInternal(const VisitVector& visits,
+                            const DeletionTimeRange& time_range,
+                            const std::set<GURL>& restrict_urls,
+                            DeletionType type);
+
+  // Deletes the favicons listed in |effects->affected_favicons| if they are
+  // unused. Fails silently (we don't care about favicons so much, so don't want
+  // to stop everything if it fails). Fills |expired_favicons| with the set of
+  // favicon urls that no longer have associated visits and were therefore
+  // expired.
+  void DeleteFaviconsIfPossible(DeleteEffects* effects);
 
   // Broadcasts URL modified and deleted notifications.
   void BroadcastNotifications(DeleteEffects* effects,

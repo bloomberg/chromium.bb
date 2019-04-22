@@ -124,3 +124,5 @@ void OutOfMemoryReporter::OnCrashDumpProcessed(
   }
 }
 #endif  // defined(OS_ANDROID)
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(OutOfMemoryReporter)

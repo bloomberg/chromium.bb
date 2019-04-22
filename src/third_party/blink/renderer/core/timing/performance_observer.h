@@ -7,9 +7,8 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/timing/performance_entry.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -37,7 +36,7 @@ class CORE_EXPORT PerformanceObserver final
  public:
   static PerformanceObserver* Create(ScriptState*,
                                      V8PerformanceObserverCallback*);
-  static void ResumeSuspendedObservers();
+  static Vector<AtomicString> supportedEntryTypes(ScriptState*);
 
   PerformanceObserver(ExecutionContext*,
                       Performance*,
@@ -55,14 +54,27 @@ class CORE_EXPORT PerformanceObserver final
   void Trace(blink::Visitor*) override;
 
  private:
+  // This describes the types of parameters that an observer can have in its
+  // observe() function. An observer of type kEntryTypesObserver has already
+  // made a call observe({entryTypes...}) so can only do subsequent observe()
+  // calls with the 'entryTypes' parameter. An observer of type kTypeObserver
+  // has already made a call observe({type...}) so it can only perform
+  // subsequent observe() calls with the 'type' parameter. An observer of type
+  // kUnknown has not called observe().
+  enum class PerformanceObserverType {
+    kEntryTypesObserver,
+    kTypeObserver,
+    kUnknown,
+  };
   void Deliver();
   bool ShouldBeSuspended() const;
 
   Member<ExecutionContext> execution_context_;
-  TraceWrapperMember<V8PerformanceObserverCallback> callback_;
+  Member<V8PerformanceObserverCallback> callback_;
   WeakMember<Performance> performance_;
   PerformanceEntryVector performance_entries_;
   PerformanceEntryTypeMask filter_options_;
+  PerformanceObserverType type_;
   bool is_registered_;
 };
 

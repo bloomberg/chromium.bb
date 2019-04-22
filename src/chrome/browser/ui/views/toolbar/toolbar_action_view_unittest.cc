@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/views/chrome_views_test_base.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_web_contents_factory.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/events/test/event_generator.h"
@@ -78,11 +77,11 @@ class OpenMenuListener : public views::ContextMenuController {
     view_->set_context_menu_controller(nullptr);
   }
 
-  void ShowContextMenuForView(views::View* source,
-                              const gfx::Point& point,
-                              ui::MenuSourceType source_type) override {
+  void ShowContextMenuForViewImpl(views::View* source,
+                                  const gfx::Point& point,
+                                  ui::MenuSourceType source_type) override {
     opened_menu_ = true;
-  };
+  }
 
   bool opened_menu() const { return opened_menu_; }
 
@@ -120,9 +119,6 @@ class ToolbarActionViewUnitTest : public ChromeViewsTestBase {
   views::Widget* widget() { return widget_; }
 
  private:
-  // Web contents need a UI thread and a TaskScheduler.
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
-
   // The widget managed by this test.
   views::Widget* widget_;
 
@@ -216,9 +212,7 @@ TEST_F(ToolbarActionViewUnitTest, BasicToolbarActionViewTest) {
 
   // Check that the tooltip and accessible state of the view match the
   // controller's.
-  base::string16 tooltip_test;
-  EXPECT_TRUE(view.GetTooltipText(gfx::Point(), &tooltip_test));
-  EXPECT_EQ(tooltip, tooltip_test);
+  EXPECT_EQ(tooltip, view.GetTooltipText(gfx::Point()));
   ui::AXNodeData ax_node_data;
   view.GetAccessibleNodeData(&ax_node_data);
   EXPECT_EQ(name, ax_node_data.GetString16Attribute(

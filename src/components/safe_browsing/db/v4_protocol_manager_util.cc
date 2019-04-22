@@ -5,10 +5,10 @@
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
 
 #include "base/base64.h"
-#include "base/hash.h"
+#include "base/hash/hash.h"
+#include "base/hash/sha1.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/rand_util.h"
-#include "base/sha1.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "components/version_info/version_info.h"

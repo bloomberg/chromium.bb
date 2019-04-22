@@ -8,10 +8,17 @@ import("//third_party/closure_compiler/js_unit_tests.gni")
 # TODO(tapted): This entire folder should move to //ui/file_manager/base.
 visibility = [ "//ui/file_manager/*" ]
 
+group("closure_compile") {
+  testonly = true
+  deps = [
+    ":closure_compile_module",
+    ":unit_tests_type_check",
+  ]
+}
+
 js_type_check("closure_compile_module") {
   deps = [
     ":byte_reader",
-    ":closure_compile_externs",
     ":content_metadata_provider",
     ":exif_constants",
     ":exif_parser",
@@ -36,14 +43,6 @@ js_type_check("closure_compile_module") {
   ]
 }
 
-js_library("closure_compile_externs") {
-  sources = []
-  externs_list = [
-    "../../../../externs/app_window_common.js",
-    "../../../../externs/platform.js",
-  ]
-}
-
 js_library("byte_reader") {
 }
 
@@ -55,6 +54,13 @@ js_library("content_metadata_provider") {
   ]
 }
 
+js_unittest("content_metadata_provider_unittest") {
+  deps = [
+    ":content_metadata_provider",
+    "//ui/file_manager/base/js:test_error_reporting",
+  ]
+}
+
 js_library("exif_constants") {
 }
 
@@ -62,20 +68,43 @@ js_library("exif_parser") {
   deps = [
     ":exif_constants",
     ":image_parsers",
-    ":metadata_parser",
   ]
   externs_list = [ "../../../../externs/exif_entry.js" ]
+}
+
+js_unittest("exif_parser_unittest") {
+  deps = [
+    ":exif_parser",
+    "//ui/file_manager/base/js:test_error_reporting",
+    "//ui/file_manager/gallery/js/image_editor:exif_encoder",
+  ]
 }
 
 js_library("external_metadata_provider") {
   deps = [
     ":metadata_provider",
+    "//ui/file_manager/externs:file_manager_private",
+  ]
+}
+
+js_unittest("external_metadata_provider_unittest") {
+  deps = [
+    ":external_metadata_provider",
+    "//ui/file_manager/base/js:mock_chrome",
+    "//ui/file_manager/base/js:test_error_reporting",
   ]
 }
 
 js_library("file_system_metadata_provider") {
   deps = [
     ":metadata_provider",
+  ]
+}
+
+js_unittest("file_system_metadata_provider_unittest") {
+  deps = [
+    ":file_system_metadata_provider",
+    "//ui/file_manager/base/js:test_error_reporting",
   ]
 }
 
@@ -142,10 +171,18 @@ js_library("metadata_cache_set") {
   ]
 }
 
+js_unittest("metadata_cache_set_unittest") {
+  deps = [
+    ":metadata_cache_set",
+    "//ui/file_manager/base/js:test_error_reporting",
+  ]
+}
+
 js_library("metadata_dispatcher") {
   deps = [
     ":metadata_parser",
   ]
+  externs_list = [ "../../../../externs/platform.js" ]
 }
 
 js_library("metadata_item") {
@@ -162,6 +199,13 @@ js_library("metadata_model") {
     ":multi_metadata_provider",
     "../../../common/js:util",
     "//ui/file_manager/externs:volume_manager",
+  ]
+}
+
+js_unittest("metadata_model_unittest") {
+  deps = [
+    ":metadata_model",
+    "//ui/file_manager/base/js:test_error_reporting",
   ]
 }
 
@@ -204,6 +248,13 @@ js_library("multi_metadata_provider") {
   ]
 }
 
+js_unittest("multi_metadata_provider_unittest") {
+  deps = [
+    ":multi_metadata_provider",
+    "//ui/file_manager/base/js:test_error_reporting",
+  ]
+}
+
 js_library("thumbnail_model") {
   deps = [
     ":metadata_model",
@@ -220,16 +271,15 @@ js_unittest("thumbnail_model_unittest") {
 
 js_unit_tests("unit_tests") {
   deps = [
+    ":content_metadata_provider_unittest",
+    ":exif_parser_unittest",
+    ":external_metadata_provider_unittest",
+    ":file_system_metadata_provider_unittest",
     ":image_orientation_unittest",
     ":metadata_cache_item_unittest",
+    ":metadata_cache_set_unittest",
+    ":metadata_model_unittest",
+    ":multi_metadata_provider_unittest",
     ":thumbnail_model_unittest",
-  ]
-}
-
-group("closure_compile") {
-  testonly = true
-  deps = [
-    ":closure_compile_module",
-    ":unit_tests_type_check",
   ]
 }

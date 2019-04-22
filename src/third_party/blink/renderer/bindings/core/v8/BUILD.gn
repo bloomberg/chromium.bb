@@ -36,8 +36,6 @@ bindings_core_generated_union_type_files = [
   "$bindings_core_v8_output_dir/double_or_double_or_null_sequence.h",
   "$bindings_core_v8_output_dir/double_or_internal_enum.cc",
   "$bindings_core_v8_output_dir/double_or_internal_enum.h",
-  "$bindings_core_v8_output_dir/double_or_performance_mark_options.cc",
-  "$bindings_core_v8_output_dir/double_or_performance_mark_options.h",
   "$bindings_core_v8_output_dir/double_or_scroll_timeline_auto_keyword.cc",
   "$bindings_core_v8_output_dir/double_or_scroll_timeline_auto_keyword.h",
   "$bindings_core_v8_output_dir/double_or_string.cc",
@@ -48,6 +46,8 @@ bindings_core_generated_union_type_files = [
   "$bindings_core_v8_output_dir/event_listener_options_or_boolean.h",
   "$bindings_core_v8_output_dir/file_or_usv_string.cc",
   "$bindings_core_v8_output_dir/file_or_usv_string.h",
+  "$bindings_core_v8_output_dir/file_or_usv_string_or_form_data.cc",
+  "$bindings_core_v8_output_dir/file_or_usv_string_or_form_data.h",
   "$bindings_core_v8_output_dir/float_or_string_element_record.cc",
   "$bindings_core_v8_output_dir/float_or_string_element_record.h",
   "$bindings_core_v8_output_dir/html_element_or_long.cc",
@@ -82,10 +82,10 @@ bindings_core_generated_union_type_files = [
   "$bindings_core_v8_output_dir/string_or_css_variable_reference_value.h",
   "$bindings_core_v8_output_dir/string_or_double.cc",
   "$bindings_core_v8_output_dir/string_or_double.h",
-  "$bindings_core_v8_output_dir/string_or_double_or_performance_measure_options.cc",
-  "$bindings_core_v8_output_dir/string_or_double_or_performance_measure_options.h",
   "$bindings_core_v8_output_dir/string_or_element_creation_options.cc",
   "$bindings_core_v8_output_dir/string_or_element_creation_options.h",
+  "$bindings_core_v8_output_dir/string_or_performance_measure_options.cc",
+  "$bindings_core_v8_output_dir/string_or_performance_measure_options.h",
   "$bindings_core_v8_output_dir/string_or_string_sequence.cc",
   "$bindings_core_v8_output_dir/string_or_string_sequence.h",
   "$bindings_core_v8_output_dir/string_or_trusted_html.cc",
@@ -144,14 +144,16 @@ generated_core_callback_function_files = [
   "$bindings_core_v8_output_dir/v8_custom_element_attribute_changed_callback.h",
   "$bindings_core_v8_output_dir/v8_custom_element_constructor.cc",
   "$bindings_core_v8_output_dir/v8_custom_element_constructor.h",
-  "$bindings_core_v8_output_dir/v8_custom_element_disabled_state_changed_callback.cc",
-  "$bindings_core_v8_output_dir/v8_custom_element_disabled_state_changed_callback.h",
   "$bindings_core_v8_output_dir/v8_custom_element_form_associated_callback.cc",
   "$bindings_core_v8_output_dir/v8_custom_element_form_associated_callback.h",
-  "$bindings_core_v8_output_dir/v8_display_lock_callback.cc",
-  "$bindings_core_v8_output_dir/v8_display_lock_callback.h",
+  "$bindings_core_v8_output_dir/v8_custom_element_form_disabled_callback.cc",
+  "$bindings_core_v8_output_dir/v8_custom_element_form_disabled_callback.h",
+  "$bindings_core_v8_output_dir/v8_custom_element_form_state_restore_callback.cc",
+  "$bindings_core_v8_output_dir/v8_custom_element_form_state_restore_callback.h",
   "$bindings_core_v8_output_dir/v8_event_handler_non_null.cc",
   "$bindings_core_v8_output_dir/v8_event_handler_non_null.h",
+  "$bindings_core_v8_output_dir/v8_for_each_iterator_callback.cc",
+  "$bindings_core_v8_output_dir/v8_for_each_iterator_callback.h",
   "$bindings_core_v8_output_dir/v8_frame_request_callback.cc",
   "$bindings_core_v8_output_dir/v8_frame_request_callback.h",
   "$bindings_core_v8_output_dir/v8_function.cc",
@@ -162,10 +164,14 @@ generated_core_callback_function_files = [
   "$bindings_core_v8_output_dir/v8_idle_request_callback.h",
   "$bindings_core_v8_output_dir/v8_intersection_observer_callback.cc",
   "$bindings_core_v8_output_dir/v8_intersection_observer_callback.h",
+  "$bindings_core_v8_output_dir/v8_layout_callback.cc",
+  "$bindings_core_v8_output_dir/v8_layout_callback.h",
   "$bindings_core_v8_output_dir/v8_mojo_watch_callback.cc",
   "$bindings_core_v8_output_dir/v8_mojo_watch_callback.h",
   "$bindings_core_v8_output_dir/v8_mutation_callback.cc",
   "$bindings_core_v8_output_dir/v8_mutation_callback.h",
+  "$bindings_core_v8_output_dir/v8_no_argument_constructor.cc",
+  "$bindings_core_v8_output_dir/v8_no_argument_constructor.h",
   "$bindings_core_v8_output_dir/v8_performance_observer_callback.cc",
   "$bindings_core_v8_output_dir/v8_performance_observer_callback.h",
   "$bindings_core_v8_output_dir/v8_reporting_observer_callback.cc",
@@ -181,8 +187,9 @@ generated_core_callback_function_files = [
 ]
 
 generate_origin_trial_features("bindings_core_origin_trial_features") {
-  sources = core_idl_files + core_idl_with_modules_dependency_files +
-            core_global_constructors_generated_idl_files
+  sources =
+      core_idl_files + core_idl_with_modules_dependency_files +
+      core_global_constructors_generated_idl_files + core_dependency_idl_files
   component = "core"
   output_dir = bindings_core_output_dir + "/v8"
   deps = [
@@ -278,7 +285,7 @@ blink_core_sources("bindings_core_impl") {
 # Compile the test sources generated above. This test target doesn't count
 # as part of the "core" component so shouldn't use the blink_core_sources for
 # linking on Windows.
-source_set("testing") {
+jumbo_source_set("testing") {
   sources = generated_core_testing_dictionary_files +
             generated_core_testing_callback_function_files
 

@@ -6,15 +6,16 @@
 
 #include <Security/Security.h>
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/mac/mac_logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
-#include "base/observer_list_threadsafe.h"
 #include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "crypto/mac_security_services_lock.h"
 #include "net/base/net_errors.h"
 #include "net/cert/x509_certificate.h"
@@ -37,9 +38,8 @@ class CertDatabase::Notifier {
     // Ensure an associated CFRunLoop.
     DCHECK(base::MessageLoopCurrentForUI::IsSet());
     DCHECK(task_runner_->BelongsToCurrentThread());
-    task_runner_->PostTask(FROM_HERE,
-                           base::Bind(&Notifier::Init,
-                                      base::Unretained(this)));
+    task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&Notifier::Init, base::Unretained(this)));
   }
 
   // Should be called from the |task_runner_|'s sequence. Use Shutdown()

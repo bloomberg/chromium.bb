@@ -11,6 +11,7 @@
 #include "src/base/once.h"
 #include "src/base/platform/platform.h"
 #include "src/bootstrapper.h"
+#include "src/cpu-features.h"
 #include "src/debug/debug.h"
 #include "src/deoptimizer.h"
 #include "src/elements.h"
@@ -20,7 +21,6 @@
 #include "src/libsampler/sampler.h"
 #include "src/objects-inl.h"
 #include "src/profiler/heap-profiler.h"
-#include "src/reloc-info.h"
 #include "src/runtime-profiler.h"
 #include "src/simulator.h"
 #include "src/snapshot/natives.h"
@@ -47,15 +47,13 @@ bool V8::Initialize() {
 
 
 void V8::TearDown() {
+  wasm::WasmEngine::GlobalTearDown();
 #if defined(USE_SIMULATOR)
   Simulator::GlobalTearDown();
 #endif
-  wasm::WasmEngine::GlobalTearDown();
   CallDescriptors::TearDown();
-  Bootstrapper::TearDownExtensions();
   ElementsAccessor::TearDown();
   RegisteredExtension::UnregisterAll();
-  sampler::Sampler::TearDown();
   FlagList::ResetAllFlags();  // Frees memory held by string arguments.
 }
 
@@ -80,6 +78,20 @@ void V8::InitializeOncePerProcessImpl() {
                   std::ios_base::trunc);
   }
 
+  // Do not expose wasm in jitless mode.
+  //
+  // Even in interpreter-only mode, wasm currently still creates executable
+  // memory at runtime. Unexpose wasm until this changes.
+  // The correctness fuzzers are a special case: many of their test cases are
+  // built by fetching a random property from the the global object, and thus
+  // the global object layout must not change between configs. That is why we
+  // continue exposing wasm on correctness fuzzers even in jitless mode.
+  // TODO(jgruber): Remove this once / if wasm can run without executable
+  // memory.
+  if (FLAG_jitless && !FLAG_abort_on_stack_or_string_length_overflow) {
+    FLAG_expose_wasm = false;
+  }
+
   base::OS::Initialize(FLAG_hard_abort, FLAG_gc_fake_mmap);
 
   if (FLAG_random_seed) SetRandomMmapSeed(FLAG_random_seed);
@@ -89,7 +101,6 @@ void V8::InitializeOncePerProcessImpl() {
 #if defined(USE_SIMULATOR)
   Simulator::InitializeOncePerProcess();
 #endif
-  sampler::Sampler::SetUp();
   CpuFeatures::Probe(false);
   ElementsAccessor::InitializeOncePerProcess();
   Bootstrapper::InitializeOncePerProcess();

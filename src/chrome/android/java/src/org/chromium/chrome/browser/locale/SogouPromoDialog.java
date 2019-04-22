@@ -36,9 +36,9 @@ import java.lang.annotation.RetentionPolicy;
 public class SogouPromoDialog extends PromoDialog {
     // These constants are here to back a uma histogram. Append new constants at the end of this
     // list (do not rearrange) and don't forget to update NUM_ENTRIES.
-    @Retention(RetentionPolicy.SOURCE)
     @IntDef({UserChoice.USE_SOGOU, UserChoice.KEEP_GOOGLE, UserChoice.SETTINGS,
             UserChoice.BACK_KEY})
+    @Retention(RetentionPolicy.SOURCE)
     private @interface UserChoice {
         int USE_SOGOU = 0;
         int KEEP_GOOGLE = 1;
@@ -51,11 +51,7 @@ public class SogouPromoDialog extends PromoDialog {
     private final Callback<Boolean> mOnDismissedCallback;
 
     private final LocaleManager mLocaleManager;
-    private final ClickableSpan mSpan = new NoUnderlineClickableSpan((widget) -> {
-        mChoice = UserChoice.SETTINGS;
-        PreferencesLauncher.launchSettingsPage(getContext(), SearchEnginePreference.class);
-        dismiss();
-    });
+    private final ClickableSpan mSpan;
 
     @UserChoice
     private int mChoice = UserChoice.BACK_KEY;
@@ -67,6 +63,11 @@ public class SogouPromoDialog extends PromoDialog {
             @Nullable Callback<Boolean> onDismissed) {
         super(activity);
         mLocaleManager = localeManager;
+        mSpan = new NoUnderlineClickableSpan(activity.getResources(), (widget) -> {
+            mChoice = UserChoice.SETTINGS;
+            PreferencesLauncher.launchSettingsPage(getContext(), SearchEnginePreference.class);
+            dismiss();
+        });
         setOnDismissListener(this);
         setCanceledOnTouchOutside(false);
         mOnDismissedCallback = onDismissed;

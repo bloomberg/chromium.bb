@@ -11,6 +11,7 @@ import static org.chromium.android_webview.test.OnlyRunIn.ProcessMode.SINGLE_PRO
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -34,11 +35,11 @@ import org.chromium.android_webview.renderer_priority.RendererPriority;
 import org.chromium.android_webview.test.TestAwContentsClient.OnDownloadStartHelper;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.base.BuildInfo;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -342,9 +343,25 @@ public class AwContentsTest {
     @Feature({"AndroidWebView", "Downloads"})
     @SmallTest
     public void testDownload() throws Throwable {
+        downloadAndCheck(null);
+    }
+
+    @Test
+    @Feature({"AndroidWebView", "Downloads"})
+    @SmallTest
+    public void testDownloadWithCustomUserAgent() throws Throwable {
+        downloadAndCheck("Custom User Agent");
+    }
+
+    private void downloadAndCheck(String customUserAgent) throws Throwable {
         AwTestContainerView testView =
                 mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
         AwContents awContents = testView.getAwContents();
+
+        if (customUserAgent != null) {
+            AwSettings awSettings = mActivityTestRule.getAwSettingsOnUiThread(awContents);
+            awSettings.setUserAgentString(customUserAgent);
+        }
 
         final String data = "download data";
         final String contentDisposition = "attachment;filename=\"download.txt\"";
@@ -369,6 +386,13 @@ public class AwContentsTest {
             Assert.assertEquals(contentDisposition, downloadStartHelper.getContentDisposition());
             Assert.assertEquals(mimeType, downloadStartHelper.getMimeType());
             Assert.assertEquals(data.length(), downloadStartHelper.getContentLength());
+            Assert.assertFalse(downloadStartHelper.getUserAgent().isEmpty());
+            if (customUserAgent != null) {
+                Assert.assertEquals(customUserAgent, downloadStartHelper.getUserAgent());
+            } else {
+                Assert.assertEquals(
+                        downloadStartHelper.getUserAgent(), AwSettings.getDefaultUserAgent());
+            }
         } finally {
             webServer.shutdown();
         }
@@ -511,61 +535,32 @@ public class AwContentsTest {
         Assert.assertTrue(testContainer.isBackedByHardwareView());
     }
 
-    // TODO(hush): more ssl tests. And put the ssl tests into a separate test
-    // class.
     @Test
     @Feature({"AndroidWebView"})
     @SmallTest
-    // If the user allows the ssl error, the same ssl error will not trigger
-    // the onReceivedSslError callback; If the user denies it, the same ssl
-    // error will still trigger the onReceivedSslError callback.
-    public void testSslPreferences() throws Throwable {
-        final AwTestContainerView testContainer =
+    public void testBasicCookieFunctionality() throws Throwable {
+        AwTestContainerView testView =
                 mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
-        final AwContents awContents = testContainer.getAwContents();
-        TestWebServer webServer = TestWebServer.startSsl();
-        final String pagePath = "/hello.html";
-        final String pageUrl =
-                webServer.setResponse(pagePath, "<html><body>hello world</body></html>", null);
-        final CallbackHelper onReceivedSslErrorHelper =
-                mContentsClient.getOnReceivedSslErrorHelper();
-        int onSslErrorCallCount = onReceivedSslErrorHelper.getCallCount();
+        AwContents awContents = testView.getAwContents();
 
-        mActivityTestRule.loadUrlSync(
-                awContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
+        TestWebServer webServer = TestWebServer.start();
+        try {
+            List<Pair<String, String>> responseHeaders = CommonResources.getTextHtmlHeaders(true);
+            final String cookie = "key=value";
+            responseHeaders.add(Pair.create("Set-Cookie", cookie));
+            final String url = webServer.setResponse("/" + CommonResources.ABOUT_FILENAME,
+                    CommonResources.ABOUT_HTML, responseHeaders);
+            AwActivityTestRule.enableJavaScriptOnUiThread(awContents);
+            mActivityTestRule.loadUrlSync(
+                    awContents, mContentsClient.getOnPageFinishedHelper(), url);
 
-        Assert.assertEquals(onSslErrorCallCount + 1, onReceivedSslErrorHelper.getCallCount());
-        Assert.assertEquals(1, webServer.getRequestCount(pagePath));
-
-        // Now load the page again. This time, we expect no ssl error, because
-        // user's decision should be remembered.
-        onSslErrorCallCount = onReceivedSslErrorHelper.getCallCount();
-        mActivityTestRule.loadUrlSync(
-                awContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
-        Assert.assertEquals(onSslErrorCallCount, onReceivedSslErrorHelper.getCallCount());
-
-        // Now clear the ssl preferences then load the same url again. Expect to see
-        // onReceivedSslError getting called again.
-        awContents.clearSslPreferences();
-        onSslErrorCallCount = onReceivedSslErrorHelper.getCallCount();
-        mActivityTestRule.loadUrlSync(
-                awContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
-        Assert.assertEquals(onSslErrorCallCount + 1, onReceivedSslErrorHelper.getCallCount());
-
-        // Now clear the stored decisions and tell the client to deny ssl errors.
-        awContents.clearSslPreferences();
-        mContentsClient.setAllowSslError(false);
-        onSslErrorCallCount = onReceivedSslErrorHelper.getCallCount();
-        mActivityTestRule.loadUrlSync(
-                awContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
-        Assert.assertEquals(onSslErrorCallCount + 1, onReceivedSslErrorHelper.getCallCount());
-
-        // Now load the same page again. This time, we still expect onReceivedSslError,
-        // because we only remember user's decision if it is "allow".
-        onSslErrorCallCount = onReceivedSslErrorHelper.getCallCount();
-        mActivityTestRule.loadUrlSync(
-                awContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
-        Assert.assertEquals(onSslErrorCallCount + 1, onReceivedSslErrorHelper.getCallCount());
+            final String script = "document.cookie";
+            Assert.assertEquals("\"key=value\"",
+                    mActivityTestRule.executeJavaScriptAndWaitForResult(
+                            awContents, mContentsClient, script));
+        } finally {
+            webServer.shutdown();
+        }
     }
 
     /**
@@ -591,7 +586,8 @@ public class AwContentsTest {
 
     private @RendererPriority int getRendererPriorityOnUiThread(final AwContents awContents)
             throws Exception {
-        return ThreadUtils.runOnUiThreadBlocking(() -> awContents.getEffectivePriorityForTesting());
+        return TestThreadUtils.runOnUiThreadBlocking(
+                () -> awContents.getEffectivePriorityForTesting());
     }
 
     private void setRendererPriorityOnUiThread(final AwContents awContents,
@@ -720,7 +716,7 @@ public class AwContentsTest {
 
     private AwRenderProcess getRenderProcessOnUiThread(final AwContents awContents)
             throws Exception {
-        return ThreadUtils.runOnUiThreadBlocking(() -> awContents.getRenderProcess());
+        return TestThreadUtils.runOnUiThreadBlocking(() -> awContents.getRenderProcess());
     }
 
     @Test
@@ -782,6 +778,68 @@ public class AwContentsTest {
         TestAwContentsClient.AddMessageToConsoleHelper consoleHelper =
                 mContentsClient.getAddMessageToConsoleHelper();
         Assert.assertEquals(0, consoleHelper.getMessages().size());
+    }
+
+    @Test
+    @Feature({"AndroidWebView"})
+    @SmallTest
+    public void testHardwareRenderingSmokeTest() throws Throwable {
+        AwTestContainerView testView =
+                mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
+        final AwContents awContents = testView.getAwContents();
+        String html = "<html>"
+                + "  <body style=\""
+                + "       padding: 0;"
+                + "       margin: 0;"
+                + "       display: grid;"
+                + "       display: grid;"
+                + "       grid-template-columns: 50% 50%;"
+                + "       grid-template-rows: 50% 50%;\">"
+                + "   <div style=\"background-color: rgb(255, 0, 0);\"></div>"
+                + "   <div style=\"background-color: rgb(0, 255, 0);\"></div>"
+                + "   <div style=\"background-color: rgb(0, 0, 255);\"></div>"
+                + "   <div style=\"background-color: rgb(128, 128, 128);\"></div>"
+                + "  </body>"
+                + "</html>";
+        mActivityTestRule.loadDataSync(testView.getAwContents(),
+                mContentsClient.getOnPageFinishedHelper(), html, "text/html", false);
+        mActivityTestRule.waitForVisualStateCallback(testView.getAwContents());
+
+        // Poll for 10s in case raster is slow.
+        final Object lock = new Object();
+        final Object[] resultHolder = new Object[1];
+        for (int i = 0; i < 100; ++i) {
+            mActivityTestRule.runOnUiThread(() -> {
+                testView.readbackQuadrantColors((int[] result) -> {
+                    synchronized (lock) {
+                        resultHolder[0] = result;
+                        lock.notifyAll();
+                    }
+                });
+            });
+            int[] quadrantColors;
+            synchronized (lock) {
+                while (resultHolder[0] == null) {
+                    lock.wait();
+                }
+                quadrantColors = (int[]) resultHolder[0];
+            }
+            if (Color.rgb(255, 0, 0) == quadrantColors[0]
+                    && Color.rgb(0, 255, 0) == quadrantColors[1]
+                    && Color.rgb(0, 0, 255) == quadrantColors[2]
+                    && Color.rgb(128, 128, 128) == quadrantColors[3]) {
+                return;
+            }
+            Thread.sleep(100);
+        }
+        // If this test is failing for your CL, then chances are your change is breaking Android
+        // WebView hardware rendering. Please build the "real" webview and check if this is the
+        // case and if so, fix your CL.
+        int[] quadrantColors = (int[]) resultHolder[0];
+        Assert.assertEquals(Color.rgb(255, 0, 0), quadrantColors[0]);
+        Assert.assertEquals(Color.rgb(0, 255, 0), quadrantColors[1]);
+        Assert.assertEquals(Color.rgb(0, 0, 255), quadrantColors[2]);
+        Assert.assertEquals(Color.rgb(128, 128, 128), quadrantColors[3]);
     }
 
     @Test
@@ -867,11 +925,8 @@ public class AwContentsTest {
     }
 
     private int getHistogramSampleCount(String name) throws Throwable {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mHistogramTotalCount = RecordHistogram.getHistogramTotalCountForTesting(name);
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mHistogramTotalCount = RecordHistogram.getHistogramTotalCountForTesting(name);
         });
         return mHistogramTotalCount;
     }

@@ -29,6 +29,8 @@ MAC_BUILD_CONFIGS = {
 ANDROID_BUILD_CONFIGS = {
   'android_debug': ['target_os="android"', 'is_clang=true', 'is_debug=true'],
   'android_release': ['target_os="android"', 'is_clang=true', 'is_debug=false'],
+  'android_release_incl_heapprofd':
+    ['target_os="android"', 'is_clang=true', 'is_debug=false', 'android_api_level=26'],
   'android_asan': ['target_os="android"', 'is_clang=true', 'is_debug=false', 'is_asan=true'],
   'android_lsan': ['target_os="android"', 'is_clang=true', 'is_debug=false', 'is_lsan=true'],
 }
@@ -45,7 +47,7 @@ LINUX_BUILD_CONFIGS = {
   'linux_msan': ['is_clang=true', 'is_debug=false', 'is_msan=true'],
   'linux_tsan': ['is_clang=true', 'is_debug=false', 'is_tsan=true'],
   'linux_ubsan': ['is_clang=true', 'is_debug=false', 'is_ubsan=true'],
-  'linux_fuzzer': ['is_clang=true', 'is_debug=false', 'use_libfuzzer=true',
+  'linux_fuzzer': ['is_clang=true', 'is_debug=false', 'is_fuzzer=true',
                    'is_asan=true'],
 }
 
@@ -82,9 +84,9 @@ def main():
     out_dir = os.path.join(ROOT_DIR, 'out', config_name)
     if not os.path.isdir(out_dir):
       os.mkdir(out_dir)
-    gn_cmd = [gn, 'args', out_dir, '--args=%s' % (' '.join(gn_args)), '--check']
+    gn_cmd = [gn, 'gen', out_dir, '--args=%s' % (' '.join(gn_args)), '--check']
     print ' '.join(gn_cmd)
-    subprocess.check_call(gn_cmd, cwd=ROOT_DIR, env={'EDITOR':'true'})
+    subprocess.check_call(gn_cmd, cwd=ROOT_DIR)
     if args.build:
       ninja = os.path.join(ROOT_DIR, 'tools', 'ninja')
       ninja_cmd = [ninja, '-C', '.', args.build]

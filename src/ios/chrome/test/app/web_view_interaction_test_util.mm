@@ -17,6 +17,11 @@ bool TapWebViewElementWithId(const std::string& element_id) {
   return web::test::TapWebViewElementWithId(GetCurrentWebState(), element_id);
 }
 
+bool TapWebViewElementWithIdInIframe(const std::string& element_id) {
+  return web::test::TapWebViewElementWithIdInIframe(GetCurrentWebState(),
+                                                    element_id);
+}
+
 bool TapWebViewElementWithId(const std::string& element_id,
                              NSError* __autoreleasing* error) {
   return web::test::TapWebViewElementWithId(GetCurrentWebState(), element_id,

@@ -13,6 +13,7 @@
 #include "content/browser/appcache/appcache_storage.h"
 #include "content/browser/appcache/mock_appcache_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 
 namespace content {
 
@@ -21,9 +22,10 @@ class MockAppCacheStorageTest : public testing::Test {
   class MockStorageDelegate : public AppCacheStorage::Delegate {
    public:
     explicit MockStorageDelegate()
-        : loaded_cache_id_(0), stored_group_success_(false),
-          obsoleted_success_(false), found_cache_id_(kAppCacheNoCacheId) {
-    }
+        : loaded_cache_id_(0),
+          stored_group_success_(false),
+          obsoleted_success_(false),
+          found_cache_id_(blink::mojom::kAppCacheNoCacheId) {}
 
     void OnCacheLoaded(AppCache* cache, int64_t cache_id) override {
       loaded_cache_ = cache;
@@ -413,9 +415,10 @@ TEST_F(MockAppCacheStorageTest, FindNoMainResponse) {
   base::RunLoop().RunUntilIdle();  // Do async task execution.
   EXPECT_EQ(url, delegate.found_url_);
   EXPECT_TRUE(delegate.found_manifest_url_.is_empty());
-  EXPECT_EQ(kAppCacheNoCacheId, delegate.found_cache_id_);
-  EXPECT_EQ(kAppCacheNoResponseId, delegate.found_entry_.response_id());
-  EXPECT_EQ(kAppCacheNoResponseId,
+  EXPECT_EQ(blink::mojom::kAppCacheNoCacheId, delegate.found_cache_id_);
+  EXPECT_EQ(blink::mojom::kAppCacheNoResponseId,
+            delegate.found_entry_.response_id());
+  EXPECT_EQ(blink::mojom::kAppCacheNoResponseId,
             delegate.found_fallback_entry_.response_id());
   EXPECT_TRUE(delegate.found_fallback_url_.is_empty());
   EXPECT_EQ(0, delegate.found_entry_.types());
@@ -612,9 +615,10 @@ TEST_F(MockAppCacheStorageTest, FindMainResponseExclusions) {
   base::RunLoop().RunUntilIdle();  // Do async task execution.
   EXPECT_EQ(kEntryUrl, delegate.found_url_);
   EXPECT_TRUE(delegate.found_manifest_url_.is_empty());
-  EXPECT_EQ(kAppCacheNoCacheId, delegate.found_cache_id_);
-  EXPECT_EQ(kAppCacheNoResponseId, delegate.found_entry_.response_id());
-  EXPECT_EQ(kAppCacheNoResponseId,
+  EXPECT_EQ(blink::mojom::kAppCacheNoCacheId, delegate.found_cache_id_);
+  EXPECT_EQ(blink::mojom::kAppCacheNoResponseId,
+            delegate.found_entry_.response_id());
+  EXPECT_EQ(blink::mojom::kAppCacheNoResponseId,
             delegate.found_fallback_entry_.response_id());
   EXPECT_TRUE(delegate.found_fallback_url_.is_empty());
   EXPECT_EQ(0, delegate.found_entry_.types());
@@ -627,9 +631,10 @@ TEST_F(MockAppCacheStorageTest, FindMainResponseExclusions) {
   base::RunLoop().RunUntilIdle();  // Do async task execution.
   EXPECT_EQ(kOnlineNamespaceUrl, delegate.found_url_);
   EXPECT_TRUE(delegate.found_manifest_url_.is_empty());
-  EXPECT_EQ(kAppCacheNoCacheId, delegate.found_cache_id_);
-  EXPECT_EQ(kAppCacheNoResponseId, delegate.found_entry_.response_id());
-  EXPECT_EQ(kAppCacheNoResponseId,
+  EXPECT_EQ(blink::mojom::kAppCacheNoCacheId, delegate.found_cache_id_);
+  EXPECT_EQ(blink::mojom::kAppCacheNoResponseId,
+            delegate.found_entry_.response_id());
+  EXPECT_EQ(blink::mojom::kAppCacheNoResponseId,
             delegate.found_fallback_entry_.response_id());
   EXPECT_TRUE(delegate.found_fallback_url_.is_empty());
   EXPECT_EQ(0, delegate.found_entry_.types());

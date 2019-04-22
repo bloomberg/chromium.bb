@@ -7,6 +7,7 @@
 
 import json
 import os
+import re
 import StringIO
 import sys
 import unittest
@@ -27,6 +28,7 @@ class FakeMBW(mb.MetaBuildWrapper):
       self.platform = 'win32'
       self.executable = 'c:\\python\\python.exe'
       self.sep = '\\'
+      self.cwd = 'c:\\fake_src\\out\\Default'
     else:
       self.chromium_src_dir = '/fake_src'
       self.default_config = '/fake_src/tools/mb/mb_config.pyl'
@@ -34,6 +36,7 @@ class FakeMBW(mb.MetaBuildWrapper):
       self.executable = '/usr/bin/python'
       self.platform = 'linux2'
       self.sep = '/'
+      self.cwd = '/fake_src/out/Default'
 
     self.files = {}
     self.calls = []
@@ -47,21 +50,23 @@ class FakeMBW(mb.MetaBuildWrapper):
     return '$HOME/%s' % path
 
   def Exists(self, path):
-    return self.files.get(path) is not None
+    return self.files.get(self._AbsPath(path)) is not None
 
   def MaybeMakeDirectory(self, path):
-    self.files[path] = True
+    abpath = self._AbsPath(path)
+    self.files[abpath] = True
 
   def PathJoin(self, *comps):
     return self.sep.join(comps)
 
   def ReadFile(self, path):
-    return self.files[path]
+    return self.files[self._AbsPath(path)]
 
   def WriteFile(self, path, contents, force_verbose=False):
     if self.args.dryrun or self.args.verbose or force_verbose:
       self.Print('\nWriting """\\\n%s""" to %s.\n' % (contents, path))
-    self.files[path] = contents
+    abpath = self._AbsPath(path)
+    self.files[abpath] = contents
 
   def Call(self, cmd, env=None, buffer_output=True):
     self.calls.append(cmd)
@@ -82,13 +87,24 @@ class FakeMBW(mb.MetaBuildWrapper):
     return FakeFile(self.files)
 
   def RemoveFile(self, path):
-    del self.files[path]
+    abpath = self._AbsPath(path)
+    self.files[abpath] = None
 
   def RemoveDirectory(self, path):
-    self.rmdirs.append(path)
-    files_to_delete = [f for f in self.files if f.startswith(path)]
+    abpath = self._AbsPath(path)
+    self.rmdirs.append(abpath)
+    files_to_delete = [f for f in self.files if f.startswith(abpath)]
     for f in files_to_delete:
       self.files[f] = None
+
+  def _AbsPath(self, path):
+    if not ((self.platform == 'win32' and path.startswith('c:')) or
+            (self.platform != 'win32' and path.startswith('/'))):
+      path = self.PathJoin(self.cwd, path)
+    if self.sep == '\\':
+      return re.sub(r'\\+', r'\\', path)
+    else:
+      return re.sub('/+', '/', path)
 
 
 class FakeFile(object):
@@ -402,11 +418,20 @@ class UnitTest(unittest.TestCase):
           "  'args': [],"
           "}}\n"
       ),
-      '/fake_src/out/Default/base_unittests.runtime_deps': (
-          "base_unittests\n"
-      ),
     }
+
     mbw = self.fake_mbw(files)
+
+    def fake_call(cmd, env=None, buffer_output=True):
+      del cmd
+      del env
+      del buffer_output
+      mbw.files['/fake_src/out/Default/base_unittests.runtime_deps'] = (
+          'base_unittests\n')
+      return 0, '', ''
+
+    mbw.Call = fake_call
+
     self.check(['gen',
                 '-c', 'debug_goma',
                 '--swarming-targets-file', '/tmp/swarming_targets',
@@ -427,22 +452,64 @@ class UnitTest(unittest.TestCase):
           "  'args': [],"
           "}}\n"
       ),
-      'c:\\fake_src\out\Default\cc_perftests.exe.runtime_deps': (
-          "cc_perftests\n"
-      ),
     }
-    mbw = self.fake_mbw(files=files, win32=True)
+    mbw = self.fake_mbw(files=files)
+
+    def fake_call(cmd, env=None, buffer_output=True):
+      del cmd
+      del env
+      del buffer_output
+      mbw.files['/fake_src/out/Default/cc_perftests.runtime_deps'] = (
+          'cc_perftests\n')
+      return 0, '', ''
+
+    mbw.Call = fake_call
+
     self.check(['gen',
                 '-c', 'debug_goma',
                 '--swarming-targets-file', '/tmp/swarming_targets',
                 '--isolate-map-file',
                 '/fake_src/testing/buildbot/gn_isolate_map.pyl',
                 '//out/Default'], mbw=mbw, ret=0)
-    self.assertIn('c:\\fake_src\\out\\Default\\cc_perftests.isolate',
+    self.assertIn('/fake_src/out/Default/cc_perftests.isolate',
                   mbw.files)
-    self.assertIn('c:\\fake_src\\out\\Default\\cc_perftests.isolated.gen.json',
+    self.assertIn('/fake_src/out/Default/cc_perftests.isolated.gen.json',
                   mbw.files)
 
+  def test_gen_fuzzer(self):
+    files = {
+      '/tmp/swarming_targets': 'cc_perftests_fuzzer\n',
+      '/fake_src/testing/buildbot/gn_isolate_map.pyl': (
+          "{'cc_perftests_fuzzer': {"
+          "  'label': '//cc:cc_perftests_fuzzer',"
+          "  'type': 'fuzzer',"
+          "}}\n"
+      ),
+    }
+
+    mbw = self.fake_mbw(files=files)
+
+    def fake_call(cmd, env=None, buffer_output=True):
+      del cmd
+      del env
+      del buffer_output
+      mbw.files['/fake_src/out/Default/cc_perftests_fuzzer.runtime_deps'] = (
+          'cc_perftests_fuzzer\n')
+      return 0, '', ''
+
+    mbw.Call = fake_call
+
+    self.check(['gen',
+                '-c', 'debug_goma',
+                '--swarming-targets-file', '/tmp/swarming_targets',
+                '--isolate-map-file',
+                '/fake_src/testing/buildbot/gn_isolate_map.pyl',
+                '//out/Default'], mbw=mbw, ret=0)
+    self.assertIn('/fake_src/out/Default/cc_perftests_fuzzer.isolate',
+                  mbw.files)
+    self.assertIn(
+        '/fake_src/out/Default/cc_perftests_fuzzer.isolated.gen.json',
+        mbw.files)
 
   def test_multiple_isolate_maps(self):
     files = {
@@ -461,11 +528,19 @@ class UnitTest(unittest.TestCase):
           "  'args': [],"
           "}}\n"
       ),
-      'c:\\fake_src\out\Default\cc_perftests.exe.runtime_deps': (
-          "cc_perftests\n"
-      ),
     }
-    mbw = self.fake_mbw(files=files, win32=True)
+    mbw = self.fake_mbw(files=files)
+
+    def fake_call(cmd, env=None, buffer_output=True):
+      del cmd
+      del env
+      del buffer_output
+      mbw.files['/fake_src/out/Default/cc_perftests.runtime_deps'] = (
+          'cc_perftests_fuzzer\n')
+      return 0, '', ''
+
+    mbw.Call = fake_call
+
     self.check(['gen',
                 '-c', 'debug_goma',
                 '--swarming-targets-file', '/tmp/swarming_targets',
@@ -474,9 +549,9 @@ class UnitTest(unittest.TestCase):
                 '--isolate-map-file',
                 '/fake_src/testing/buildbot/gn_isolate_map2.pyl',
                 '//out/Default'], mbw=mbw, ret=0)
-    self.assertIn('c:\\fake_src\\out\\Default\\cc_perftests.isolate',
+    self.assertIn('/fake_src/out/Default/cc_perftests.isolate',
                   mbw.files)
-    self.assertIn('c:\\fake_src\\out\\Default\\cc_perftests.isolated.gen.json',
+    self.assertIn('/fake_src/out/Default/cc_perftests.isolated.gen.json',
                   mbw.files)
 
 

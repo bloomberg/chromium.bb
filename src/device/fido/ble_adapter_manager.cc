@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -15,8 +16,8 @@ namespace device {
 
 BleAdapterManager::BleAdapterManager(FidoRequestHandlerBase* request_handler)
     : request_handler_(request_handler), weak_factory_(this) {
-  BluetoothAdapterFactory::Get().GetAdapter(base::BindRepeating(
-      &BleAdapterManager::Start, weak_factory_.GetWeakPtr()));
+  BluetoothAdapterFactory::Get().GetAdapter(
+      base::BindOnce(&BleAdapterManager::Start, weak_factory_.GetWeakPtr()));
 }
 
 BleAdapterManager::~BleAdapterManager() {

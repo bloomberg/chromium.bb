@@ -9,6 +9,7 @@
 #include <memory>
 #include <vector>
 
+#include "constants/form_flags.h"
 #include "core/fpdfapi/page/cpdf_page.h"
 #include "core/fpdfapi/parser/cpdf_document.h"
 #include "core/fpdfdoc/cpdf_interactiveform.h"
@@ -42,7 +43,7 @@ bool CPDFSDK_WidgetHandler::CanAnswer(CPDFSDK_Annot* pAnnot) {
     return false;
 
   int nFieldFlags = pWidget->GetFieldFlags();
-  if ((nFieldFlags & FIELDFLAG_READONLY) == FIELDFLAG_READONLY)
+  if (nFieldFlags & pdfium::form_flags::kReadOnly)
     return false;
 
   if (pWidget->GetFieldType() == FormFieldType::kPushButton)
@@ -237,6 +238,19 @@ bool CPDFSDK_WidgetHandler::OnKillFocus(CPDFSDK_Annot::ObservedPtr* pAnnot,
                                         uint32_t nFlag) {
   return (*pAnnot)->IsSignatureWidget() ||
          m_pFormFiller->OnKillFocus(pAnnot, nFlag);
+}
+
+bool CPDFSDK_WidgetHandler::SetIndexSelected(CPDFSDK_Annot::ObservedPtr* pAnnot,
+                                             int index,
+                                             bool selected) {
+  return !(*pAnnot)->IsSignatureWidget() &&
+         m_pFormFiller->SetIndexSelected(pAnnot, index, selected);
+}
+
+bool CPDFSDK_WidgetHandler::IsIndexSelected(CPDFSDK_Annot::ObservedPtr* pAnnot,
+                                            int index) {
+  return !(*pAnnot)->IsSignatureWidget() &&
+         m_pFormFiller->IsIndexSelected(pAnnot, index);
 }
 
 #ifdef PDF_ENABLE_XFA

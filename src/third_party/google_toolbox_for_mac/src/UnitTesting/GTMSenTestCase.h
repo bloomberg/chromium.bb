@@ -57,6 +57,7 @@
   #if GTM_USING_XCTEST
     #import <XCTest/XCTest.h>
   #else
+    #warning "SenTestingKit is deprecated. Please move to XCTest."
     #import <SenTestingKit/SenTestingKit.h>
   #endif // GTM_USING_XCTEST
   // We don't support our built in testing on MacOS since its always had sentest.
@@ -65,11 +66,15 @@
     #import <XCTest/XCTest.h>
   #else
     #import <Foundation/Foundation.h>
+    NS_DEPRECATED(10_4, 10_8, 1_0, 7_0, "Please move to XCTest")
     GTM_EXTERN NSString *STComposeString(NSString *, ...) NS_FORMAT_FUNCTION(1, 2);
   #endif  // GTM_USING_XCTEST
 #endif  // GTM_MACOS_SDK
 
 #if GTM_USING_XCTEST
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wreserved-id-macro"
 
 #define _XCExceptionFormatString @"throwing \"%@\""
 #define _XCUnknownExceptionString @"throwing an unknown exception"
@@ -80,6 +85,8 @@
 #else
 #define _GTMXCRegisterFailure(expression, format...) _XCTRegisterFailure(expression, format)
 #endif  // defined defined(__IPHONE_8_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_8_0
+
+#pragma clang diagnostic pop
 
 // Generates a failure when a1 != noErr
 //  Args:
@@ -1261,6 +1268,7 @@ do { \
 + (NSArray *)testInvocations;
 @end
 
+NS_CLASS_DEPRECATED(10_4, 10_8, 1_0, 7_0, "Please move to XCTest")
 @interface SenTestCase : NSObject<SenTestCase> {
  @private
   NSInvocation *invocation_;
@@ -1274,12 +1282,11 @@ GTM_EXTERN NSString *const SenTestLineNumberKey;
 
 #endif // GTM_IPHONE_SDK && !GTM_USING_XCTEST
 
-// All unittest cases in GTM should inherit from GTMTestCase. It makes sure
-// to set up our logging system correctly to verify logging calls.
-// See GTMUnitTestDevLog.h for details
+// All unittest cases in GTM should inherit from GTMTestCase.
 #if GTM_USING_XCTEST
 @interface GTMTestCase : XCTestCase
 #else
+NS_CLASS_DEPRECATED(10_4, 10_8, 1_0, 7_0, "Please move to XCTest version of GTMTestCase")
 @interface GTMTestCase : SenTestCase
 #endif
 

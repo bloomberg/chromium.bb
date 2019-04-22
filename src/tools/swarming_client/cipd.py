@@ -388,7 +388,6 @@ def get_client(service_url, package_template, version, cache_dir, timeout=None):
             max_items=300,
             # 3 weeks.
             max_age_secs=21*24*60*60),
-        hashlib.sha1,
         trim=True)
     # Convert (package_name, version) to a string that may be used as a
     # filename in disk cache by hashing it.
@@ -417,7 +416,6 @@ def get_client(service_url, package_template, version, cache_dir, timeout=None):
             max_items=10,
             # 3 weeks.
             max_age_secs=21*24*60*60),
-      hashlib.sha1,
       trim=True)
   if instance_id not in instance_cache:
     logging.info('Fetching CIPD client %s:%s', package_name, instance_id)

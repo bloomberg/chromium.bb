@@ -12,7 +12,6 @@
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -72,7 +71,21 @@ class PLATFORM_EXPORT ShapeResultView final
   // Create a new ShapeResultView from a pre-defined list of segments.
   // The segments list is assumed to be in logical order.
   struct Segment {
+    Segment() = default;
+    Segment(const ShapeResult* result, unsigned start_index, unsigned end_index)
+        : result(result),
+          view(nullptr),
+          start_index(start_index),
+          end_index(end_index) {}
+    Segment(const ShapeResultView* view,
+            unsigned start_index,
+            unsigned end_index)
+        : result(nullptr),
+          view(view),
+          start_index(start_index),
+          end_index(end_index) {}
     const ShapeResult* result;
+    const ShapeResultView* view;
     unsigned start_index;
     unsigned end_index;
   };
@@ -81,6 +94,9 @@ class PLATFORM_EXPORT ShapeResultView final
   // Creates a new ShapeResultView from a single segment.
   static scoped_refptr<ShapeResultView> Create(const ShapeResult*);
   static scoped_refptr<ShapeResultView> Create(const ShapeResult*,
+                                               unsigned start_index,
+                                               unsigned end_index);
+  static scoped_refptr<ShapeResultView> Create(const ShapeResultView*,
                                                unsigned start_index,
                                                unsigned end_index);
 
@@ -126,16 +142,26 @@ class PLATFORM_EXPORT ShapeResultView final
   void GetRunFontData(Vector<ShapeResult::RunFontData>*) const;
 
  private:
-  ShapeResultView(const ShapeResult*);
+  template <class ShapeResultType>
+  ShapeResultView(const ShapeResultType*);
   unsigned ComputeStartIndex() const;
 
   struct RunInfoPart;
-  void CreateViewsForResult(const ShapeResult*,
+  template <class ShapeResultType>
+  void CreateViewsForResult(const ShapeResultType*,
                             unsigned start_index,
                             unsigned end_index);
   void AddSegments(const Segment*, size_t);
   template <bool is_horizontal_run>
   void ComputeBoundsForPart(const RunInfoPart&, float origin);
+
+  unsigned CharacterIndexOffsetForGlyphData(const RunInfoPart&) const;
+
+  // Common signatures with ShapeResult, to templatize algorithms.
+  const Vector<std::unique_ptr<RunInfoPart>, 4>& RunsOrParts() const {
+    return parts_;
+  }
+  unsigned StartIndexOffsetForRun() const { return char_index_offset_; }
 
   scoped_refptr<const SimpleFontData> primary_font_;
 

@@ -123,7 +123,7 @@ class ASH_EXPORT MultiUserWindowManager : public SessionObserver,
   const AccountId& GetCurrentUserForTest() const;
 
  private:
-  friend class MultiUserWindowManagerChromeOSTest;
+  friend class MultiUserWindowManagerClientImplTest;
   friend class UserSwitchAnimator;
 
   class WindowEntry {

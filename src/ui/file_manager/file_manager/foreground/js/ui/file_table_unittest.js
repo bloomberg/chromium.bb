@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 /** @type {!FileTableColumnModel} */
-var model;
+let model;
 
 /** @type {!Array<cr.ui.table.TableColumn>} */
-var columns;
+let columns;
 
 function setUp() {
   columns = [
@@ -25,8 +25,8 @@ function setUp() {
  * @param {!FileTableColumnModel} model
  */
 function getColumnWidths(model) {
-  var widths = [];
-  for (var i = 0; i < model.size; i++) {
+  const widths = [];
+  for (let i = 0; i < model.size; i++) {
     widths[i] = model.getWidth(i);
   }
   return widths;
@@ -36,11 +36,11 @@ function getColumnWidths(model) {
 // setting is toggled.
 function testToggleVisibility() {
   // The column under test.
-  var INDEX = 2;
-  var width = model.getWidth(INDEX);
+  const INDEX = 2;
+  const width = model.getWidth(INDEX);
 
   // All columns should be visible to start.
-  for (var i = 0; i < model.size; i++) {
+  for (let i = 0; i < model.size; i++) {
     assertTrue(model.isVisible(i));
   }
 
@@ -58,16 +58,16 @@ function testToggleVisibility() {
 // and hidden.
 function testToggleVisibilityColumnLayout() {
   // The index of the column under test.
-  var INDEX = 2;
+  const INDEX = 2;
   // Capture column widths.
-  var visibleWidths = getColumnWidths(model);
+  const visibleWidths = getColumnWidths(model);
   // Total width should be invariant throughout.
-  var totalWidth = model.totalWidth;
+  const totalWidth = model.totalWidth;
 
   // Hide a column, check total width.
   model.setVisible(INDEX, false);
   assertEquals(totalWidth, model.totalWidth);
-  var hiddenWidths = getColumnWidths(model);
+  const hiddenWidths = getColumnWidths(model);
 
   // Show the column again, match the column widths to the original state.
   model.setVisible(INDEX, true);
@@ -84,16 +84,16 @@ function testToggleVisibilityColumnLayout() {
 // and then restored, with no hidden columns.
 function testExportAndRestoreColumnConfigWithNoHiddenColumns() {
   // Change some column widths, then capture then.
-  for (var i = 0; i < model.size; i++) {
+  for (let i = 0; i < model.size; i++) {
     model.setWidth(i, i * 50);
   }
-  var expectedWidths = getColumnWidths(model);
-  var expectedTotalWidth = model.totalWidth;
+  const expectedWidths = getColumnWidths(model);
+  const expectedTotalWidth = model.totalWidth;
 
   // Export column config, restore it to the new model.
-  var config = model.exportColumnConfig();
+  const config = model.exportColumnConfig();
 
-  var newModel = new FileTableColumnModel(columns);
+  const newModel = new FileTableColumnModel(columns);
   newModel.restoreColumnConfig(config);
   assertArrayEquals(expectedWidths, getColumnWidths(newModel));
   assertEquals(expectedTotalWidth, newModel.totalWidth);
@@ -103,21 +103,21 @@ function testExportAndRestoreColumnConfigWithNoHiddenColumns() {
 // and then restored, with a hidden column.
 function testExportAndRestoreColumnConfigWithHiddenColumns() {
   // The index of the column under test.
-  var INDEX = 2;
+  const INDEX = 2;
 
   // Change some column widths, then capture then.
-  for (var i = 0; i < model.size; i++) {
-    model.setWidth(i, (i+1) * 50);
+  for (let i = 0; i < model.size; i++) {
+    model.setWidth(i, (i + 1) * 50);
   }
   // Hide a column.
   model.setVisible(INDEX, false);
-  var expectedWidths = getColumnWidths(model);
-  var expectedTotalWidth = model.totalWidth;
+  const expectedWidths = getColumnWidths(model);
+  const expectedTotalWidth = model.totalWidth;
 
   // Export column config, restore it to the new model.
-  var config = model.exportColumnConfig();
+  const config = model.exportColumnConfig();
 
-  var newModel = new FileTableColumnModel(columns);
+  const newModel = new FileTableColumnModel(columns);
   // Hide the same column.
   newModel.setVisible(INDEX, false);
   newModel.restoreColumnConfig(config);
@@ -130,21 +130,21 @@ function testExportAndRestoreColumnConfigWithHiddenColumns() {
 // with a hidden column but then restored with the column visible.
 function testExportAndRestoreColumnConfigWithShowingColumn() {
   // The index of the column under test.
-  var INDEX = 2;
+  const INDEX = 2;
 
   // Change some column widths, then capture then.
-  for (var i = 0; i < model.size; i++) {
-    model.setWidth(i, (i+1) * 50);
+  for (let i = 0; i < model.size; i++) {
+    model.setWidth(i, (i + 1) * 50);
   }
   // Hide a column.
   model.setVisible(INDEX, false);
-  var expectedWidths = getColumnWidths(model);
-  var expectedTotalWidth = model.totalWidth;
+  const expectedWidths = getColumnWidths(model);
+  const expectedTotalWidth = model.totalWidth;
 
   // Export column config, restore it to the new model.
-  var config = model.exportColumnConfig();
+  const config = model.exportColumnConfig();
 
-  var newModel = new FileTableColumnModel(columns);
+  const newModel = new FileTableColumnModel(columns);
   // Restore column config while the test column is shown.
   newModel.setVisible(INDEX, true);
   newModel.restoreColumnConfig(config);
@@ -159,21 +159,21 @@ function testExportAndRestoreColumnConfigWithShowingColumn() {
 // with all columns visible but then restored with a hidden column.
 function testExportAndRestoreColumnConfigWithHidingColumn() {
   // The index of the column under test.
-  var INDEX = 2;
+  const INDEX = 2;
 
   // Change some column widths, then capture then.
-  for (var i = 0; i < model.size; i++) {
-    model.setWidth(i, (i+1) * 50);
+  for (let i = 0; i < model.size; i++) {
+    model.setWidth(i, (i + 1) * 50);
   }
   // Verify the precondition.
   assertTrue(model.isVisible(INDEX));
-  var expectedWidths = getColumnWidths(model);
-  var expectedTotalWidth = model.totalWidth;
+  const expectedWidths = getColumnWidths(model);
+  const expectedTotalWidth = model.totalWidth;
 
   // Export column config, restore it to the new model.
-  var config = model.exportColumnConfig();
+  const config = model.exportColumnConfig();
 
-  var newModel = new FileTableColumnModel(columns);
+  const newModel = new FileTableColumnModel(columns);
   // Restore column config while the test column is hidden.
   newModel.setVisible(INDEX, false);
   newModel.restoreColumnConfig(config);
@@ -185,10 +185,10 @@ function testExportAndRestoreColumnConfigWithHidingColumn() {
 }
 
 function testNormalizeWidth() {
-  var newContentWidth = 150;
-  var expectedWidths = [10, 20, 30, 40, 50];
+  const newContentWidth = 150;
+  const expectedWidths = [10, 20, 30, 40, 50];
 
-  for (var i = 0; i < model.size; i++) {
+  for (let i = 0; i < model.size; i++) {
     model.setWidth(i, expectedWidths[i] * 17);
   }
 
@@ -203,7 +203,7 @@ function testNormalizeWidthWithSmallWidth() {
   model.normalizeWidths(10);  // not enough width to contain all columns
 
   // Should keep the minimum width.
-  getColumnWidths(model).map(function(width) {
+  getColumnWidths(model).map(width => {
     assertEquals(FileTableColumnModel.MIN_WIDTH_, width);
   });
 }
@@ -216,10 +216,10 @@ function testSetWidthAndKeepTotal() {
   model.setWidthAndKeepTotal(2, 400);
 
   // Should keep the minimum width.
-  getColumnWidths(model).map(function(width) {
+  getColumnWidths(model).map(width => {
     assertTrue(width >= FileTableColumnModel.MIN_WIDTH_);
   });
-  var minWidth = FileTableColumnModel.MIN_WIDTH_;
+  const minWidth = FileTableColumnModel.MIN_WIDTH_;
   // Total width = 500.
   const expectedWidths =
       [100, 100, 500 - 100 * 2 - minWidth * 2, minWidth, minWidth];

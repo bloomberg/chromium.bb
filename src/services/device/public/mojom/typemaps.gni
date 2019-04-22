@@ -2,4 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-typemaps = [ "//services/device/public/mojom/sensor.typemap" ]
+typemaps = [
+  "//services/device/public/mojom/sensor.typemap",
+  "//services/device/public/mojom/bluetooth_system.typemap",
+]

@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "components/sessions/content/content_record_password_state.h"
+#include "components/sessions/content/content_record_task_id.h"
 #include "components/sessions/content/content_serialized_navigation_driver.h"
 #include "components/sessions/content/extended_info_handler.h"
 #include "components/sessions/core/serialized_navigation_entry.h"
@@ -39,31 +40,37 @@ ConvertReplacedEntryData(
 SerializedNavigationEntry
 ContentSerializedNavigationBuilder::FromNavigationEntry(
     int index,
-    const content::NavigationEntry& entry,
+    content::NavigationEntry* entry,
     SerializationOptions serialization_options) {
   SerializedNavigationEntry navigation;
   navigation.index_ = index;
-  navigation.unique_id_ = entry.GetUniqueID();
-  navigation.referrer_url_ = entry.GetReferrer().url;
-  navigation.referrer_policy_ = static_cast<int>(entry.GetReferrer().policy);
-  navigation.virtual_url_ = entry.GetVirtualURL();
-  navigation.title_ = entry.GetTitle();
+  navigation.unique_id_ = entry->GetUniqueID();
+  navigation.referrer_url_ = entry->GetReferrer().url;
+  navigation.referrer_policy_ = static_cast<int>(entry->GetReferrer().policy);
+  navigation.virtual_url_ = entry->GetVirtualURL();
+  navigation.title_ = entry->GetTitle();
   if (!(serialization_options & SerializationOptions::EXCLUDE_PAGE_STATE))
-    navigation.encoded_page_state_ = entry.GetPageState().ToEncodedData();
-  navigation.transition_type_ = entry.GetTransitionType();
-  navigation.has_post_data_ = entry.GetHasPostData();
-  navigation.post_id_ = entry.GetPostID();
-  navigation.original_request_url_ = entry.GetOriginalRequestURL();
-  navigation.is_overriding_user_agent_ = entry.GetIsOverridingUserAgent();
-  navigation.timestamp_ = entry.GetTimestamp();
-  navigation.is_restored_ = entry.IsRestored();
-  if (entry.GetFavicon().valid)
-    navigation.favicon_url_ = entry.GetFavicon().url;
-  navigation.http_status_code_ = entry.GetHttpStatusCode();
-  navigation.redirect_chain_ = entry.GetRedirectChain();
+    navigation.encoded_page_state_ = entry->GetPageState().ToEncodedData();
+  navigation.transition_type_ = entry->GetTransitionType();
+  navigation.has_post_data_ = entry->GetHasPostData();
+  navigation.post_id_ = entry->GetPostID();
+  navigation.original_request_url_ = entry->GetOriginalRequestURL();
+  navigation.is_overriding_user_agent_ = entry->GetIsOverridingUserAgent();
+  navigation.timestamp_ = entry->GetTimestamp();
+  navigation.is_restored_ = entry->IsRestored();
+  if (entry->GetFavicon().valid)
+    navigation.favicon_url_ = entry->GetFavicon().url;
+  navigation.http_status_code_ = entry->GetHttpStatusCode();
+  navigation.redirect_chain_ = entry->GetRedirectChain();
   navigation.replaced_entry_data_ =
-      ConvertReplacedEntryData(entry.GetReplacedEntryData());
+      ConvertReplacedEntryData(entry->GetReplacedEntryData());
   navigation.password_state_ = GetPasswordStateFromNavigation(entry);
+  navigation.task_id_ = ContextRecordTaskId::Get(entry)->task_id();
+  navigation.parent_task_id_ =
+      ContextRecordTaskId::Get(entry)->parent_task_id();
+  navigation.root_task_id_ = ContextRecordTaskId::Get(entry)->root_task_id();
+  navigation.children_task_ids_ =
+      ContextRecordTaskId::Get(entry)->children_task_ids();
 
   for (const auto& handler_entry :
        ContentSerializedNavigationDriver::GetInstance()

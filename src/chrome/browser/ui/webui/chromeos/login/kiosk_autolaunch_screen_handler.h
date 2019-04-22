@@ -19,7 +19,7 @@ class KioskAutolaunchScreenHandler : public KioskAutolaunchScreenView,
                                      public KioskAppManagerObserver,
                                      public BaseScreenHandler {
  public:
-  KioskAutolaunchScreenHandler();
+  explicit KioskAutolaunchScreenHandler(JSCallsContainer* js_calls_container);
   ~KioskAutolaunchScreenHandler() override;
 
   // KioskAutolaunchScreenActor implementation:

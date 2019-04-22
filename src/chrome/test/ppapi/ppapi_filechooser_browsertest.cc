@@ -235,17 +235,14 @@ IN_PROC_BROWSER_TEST_F(PPAPIFileChooserTest, FileChooser_SaveAs_Cancel) {
   RunTestViaHTTP("FileChooser_SaveAsCancel");
 }
 
-#if defined(OS_WIN) || defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#if defined(OS_WIN)
 // On Windows, tests that a file downloaded via PPAPI FileChooser API has the
 // mark-of-the-web. The PPAPI FileChooser implementation invokes QuarantineFile
 // in order to mark the file as being downloaded from the web as soon as the
-// file is created. This MOTW prevents the file being opened without due
+// file is created. This MotW prevents the file being opened without due
 // security warnings if the file is executable.
 //
-// On Linux Desktop, the setxattr call is made to set 'user.xdg.origin.url' and
-// the non-standard 'user.xdg.referrer.url' extended attributes to accomplish
-// the same thing. See
-// https://www.freedesktop.org/wiki/CommonExtendedAttributes/.
+// TODO(crbug.com/927074): Enable this test on macOS.
 IN_PROC_BROWSER_TEST_F(PPAPIFileChooserTest, FileChooser_Quarantine) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   base::ScopedTempDir temp_dir;
@@ -265,7 +262,7 @@ IN_PROC_BROWSER_TEST_F(PPAPIFileChooserTest, FileChooser_Quarantine) {
   ASSERT_TRUE(base::PathExists(actual_filename));
   EXPECT_TRUE(download::IsFileQuarantined(actual_filename, GURL(), GURL()));
 }
-#endif  // defined(OS_WIN) || defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#endif  // defined(OS_WIN)
 
 #if defined(FULL_SAFE_BROWSING)
 // These tests only make sense when SafeBrowsing is enabled. They verify

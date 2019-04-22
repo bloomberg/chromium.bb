@@ -4,12 +4,51 @@
 
 #include "cc/paint/solid_color_analyzer.h"
 
+#include <cmath>
+
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "cc/paint/paint_op_buffer.h"
+#include "third_party/skia/include/core/SkTypes.h"
 #include "third_party/skia/include/utils/SkNoDrawCanvas.h"
 
 namespace cc {
 namespace {
+
+SkColor DoSrcOverAlphaBlend(SkColor src, SkColor dst) {
+  if (SkColorGetA(src) == 0)
+    return dst;
+  if (SkColorGetA(src) == 255)
+    return src;
+
+  // Note: using alpha blending formulas adapted from
+  // https://en.wikipedia.org/wiki/Alpha_compositing:
+  //
+  // outA = srcA + dstA * (1 - srcA)
+  // outRGB = srcRGB * (srcA / outA) + dstRGB * [dstA * (1 - srcA) / outA]
+  const float src_alpha = SkColorGetA(src) / 255.0f;
+  const float src_alpha_complement = (255.0f - SkColorGetA(src)) / 255.0f;
+  const float dst_alpha = SkColorGetA(dst) / 255.0f;
+  const float out_alpha = src_alpha + dst_alpha * src_alpha_complement;
+  if (out_alpha == 0.0f)
+    return SK_ColorTRANSPARENT;
+
+  const float inverse_out_alpha = 1.0f / out_alpha;
+  const float src_weight = src_alpha * inverse_out_alpha;
+  const float dst_weight = dst_alpha * src_alpha_complement * inverse_out_alpha;
+  const float out_red =
+      (SkColorGetR(src) * src_weight + SkColorGetR(dst) * dst_weight);
+  const float out_green =
+      (SkColorGetG(src) * src_weight + SkColorGetG(dst) * dst_weight);
+  const float out_blue =
+      (SkColorGetB(src) * src_weight + SkColorGetB(dst) * dst_weight);
+
+  return SkColorSetARGB(static_cast<U8CPU>(std::floor(out_alpha * 255.0f)),
+                        static_cast<U8CPU>(std::floor(out_red)),
+                        static_cast<U8CPU>(std::floor(out_green)),
+                        static_cast<U8CPU>(std::floor(out_blue)));
+}
+
 bool ActsLikeClear(SkBlendMode mode, unsigned src_alpha) {
   switch (mode) {
     case SkBlendMode::kClear:
@@ -27,22 +66,29 @@ bool ActsLikeClear(SkBlendMode mode, unsigned src_alpha) {
   }
 }
 
-bool IsSolidColor(SkColor color, SkBlendMode blendmode) {
-  return SkColorGetA(color) == 255 &&
-         (blendmode == SkBlendMode::kSrc || blendmode == SkBlendMode::kSrcOver);
+bool IsSolidColorBlendMode(SkBlendMode blendmode) {
+  return blendmode == SkBlendMode::kSrc || blendmode == SkBlendMode::kSrcOver;
 }
 
 bool IsSolidColorPaint(const PaintFlags& flags) {
   SkBlendMode blendmode = flags.getBlendMode();
 
   // Paint is solid color if the following holds:
-  // - Alpha is 1.0, style is fill, and there are no special effects
-  // - Xfer mode is either kSrc or kSrcOver (kSrcOver is equivalent
-  //   to kSrc if source alpha is 1.0, which is already checked).
-  return IsSolidColor(flags.getColor(), blendmode) && !flags.HasShader() &&
-         !flags.getLooper() && !flags.getMaskFilter() &&
-         !flags.getColorFilter() && !flags.getImageFilter() &&
-         flags.getStyle() == PaintFlags::kFill_Style;
+  // - Style is fill, and there are no special effects.
+  // - Blend mode is either kSrc or kSrcOver.
+  bool is_solid_color =
+      IsSolidColorBlendMode(blendmode) && !flags.HasShader() &&
+      !flags.getLooper() && !flags.getMaskFilter() && !flags.getColorFilter() &&
+      !flags.getImageFilter() && flags.getStyle() == PaintFlags::kFill_Style;
+
+#if defined(OS_MACOSX)
+  // Additionally, on Mac, we require that the color is opaque due to
+  // https://crbug.com/922899.
+  // TODO(andrescj): remove this condition once that bug is fixed.
+  is_solid_color = (is_solid_color && SkColorGetA(flags.getColor()) == 255);
+#endif  // OS_MACOSX
+
+  return is_solid_color;
 }
 
 // Returns true if the specified |drawn_shape| will cover the entire canvas
@@ -75,6 +121,28 @@ bool IsFullQuad(const SkCanvas& canvas, const T& drawn_shape) {
   return drawn_shape.contains(clip_rect);
 }
 
+void CalculateSolidColor(SkColor src_color,
+                         SkBlendMode blendmode,
+                         SkColor* dst_color,
+                         bool* is_solid_color) {
+  if (blendmode == SkBlendMode::kSrc) {
+    // In the Src mode, we don't have to worry about what's in the canvas
+    // because we'll replace it with |src_color|.
+    *dst_color = src_color;
+    *is_solid_color = true;
+  } else {
+    DCHECK_EQ(SkBlendMode::kSrcOver, blendmode);
+
+    // When using the SrcOver mode, we must ensure that either a) we're
+    // completely occluding what's in the canvas with an opaque color, or
+    // b) whatever is in the canvas is already a solid color.
+    if (SkColorGetA(src_color) == 255 || *is_solid_color) {
+      *dst_color = DoSrcOverAlphaBlend(src_color, *dst_color);
+      *is_solid_color = true;
+    }
+  }
+}
+
 void CheckIfSolidColor(const SkCanvas& canvas,
                        SkColor color,
                        SkBlendMode blendmode,
@@ -95,9 +163,19 @@ void CheckIfSolidColor(const SkCanvas& canvas,
   else if (alpha != 0 || blendmode != SkBlendMode::kSrc)
     *is_transparent = false;
 
-  if (does_cover_canvas && IsSolidColor(color, blendmode)) {
-    *is_solid_color = true;
-    *out_color = color;
+  bool solid_color_candidate =
+      does_cover_canvas && IsSolidColorBlendMode(blendmode);
+
+#if defined(OS_MACOSX)
+  // Additionally, on Mac, we require that the color is opaque due to
+  // https://crbug.com/922899.
+  // TODO(andrescj): remove this condition once that bug is fixed.
+  solid_color_candidate = (solid_color_candidate && alpha == 255);
+#endif  // OS_MACOSX
+
+  if (solid_color_candidate) {
+    CalculateSolidColor(color /* src_color */, blendmode,
+                        out_color /* dst_color */, is_solid_color);
   } else {
     *is_solid_color = false;
   }
@@ -123,8 +201,8 @@ void CheckIfSolidShape(const SkCanvas& canvas,
     *is_transparent = false;
 
   if (does_cover_canvas && IsSolidColorPaint(flags)) {
-    *is_solid_color = true;
-    *color = flags.getColor();
+    CalculateSolidColor(flags.getColor() /* src_color */, flags.getBlendMode(),
+                        color /* dst_color */, is_solid_color);
   } else {
     *is_solid_color = false;
   }
@@ -147,7 +225,7 @@ base::Optional<SkColor> SolidColorAnalyzer::DetermineIfSolidColor(
   if (buffer->size() == 0 || (offsets && offsets->empty()))
     return SK_ColorTRANSPARENT;
 
-  bool is_solid = false;
+  bool is_solid = true;
   bool is_transparent = true;
   SkColor color = SK_ColorTRANSPARENT;
 

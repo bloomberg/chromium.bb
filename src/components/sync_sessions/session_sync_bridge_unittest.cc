@@ -11,15 +11,14 @@
 #include "base/bind_helpers.h"
 #include "base/json/json_writer.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/mock_callback.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/sync/base/hash_util.h"
 #include "components/sync/base/sync_prefs.h"
-#include "components/sync/device_info/device_info.h"
 #include "components/sync/model/data_batch.h"
 #include "components/sync/model/data_type_activation_request.h"
 #include "components/sync/model/metadata_batch.h"
@@ -54,6 +53,7 @@ using syncer::MetadataBatch;
 using syncer::MetadataChangeList;
 using syncer::MockModelTypeChangeProcessor;
 using testing::_;
+using testing::AtLeast;
 using testing::Contains;
 using testing::ElementsAre;
 using testing::Eq;
@@ -78,22 +78,22 @@ MATCHER_P(EntityDataHasSpecifics, session_specifics_matcher, "") {
                                                    result_listener);
 }
 
-syncer::EntityDataPtr SpecificsToEntity(
+std::unique_ptr<syncer::EntityData> SpecificsToEntity(
     const sync_pb::SessionSpecifics& specifics,
     base::Time mtime = base::Time::Now()) {
-  syncer::EntityData data;
-  data.client_tag_hash = syncer::GenerateSyncableHash(
+  auto data = std::make_unique<syncer::EntityData>();
+  data->client_tag_hash = syncer::GenerateSyncableHash(
       syncer::SESSIONS, SessionStore::GetClientTag(specifics));
-  *data.specifics.mutable_session() = specifics;
-  data.modification_time = mtime;
-  return data.PassToPtr();
+  *data->specifics.mutable_session() = specifics;
+  data->modification_time = mtime;
+  return data;
 }
 
-syncer::UpdateResponseData SpecificsToUpdateResponse(
+std::unique_ptr<syncer::UpdateResponseData> SpecificsToUpdateResponse(
     const sync_pb::SessionSpecifics& specifics,
     base::Time mtime = base::Time::Now()) {
-  syncer::UpdateResponseData data;
-  data.entity = SpecificsToEntity(specifics, mtime);
+  auto data = std::make_unique<syncer::UpdateResponseData>();
+  data->entity = SpecificsToEntity(specifics, mtime);
   return data;
 }
 
@@ -106,14 +106,16 @@ std::map<std::string, std::unique_ptr<EntityData>> BatchToEntityDataMap(
   return storage_key_to_data;
 }
 
-syncer::UpdateResponseData CreateTombstone(const std::string& client_tag) {
-  EntityData tombstone;
-  tombstone.client_tag_hash =
+std::unique_ptr<syncer::UpdateResponseData> CreateTombstone(
+    const std::string& client_tag) {
+  auto tombstone = std::make_unique<syncer::EntityData>();
+
+  tombstone->client_tag_hash =
       syncer::GenerateSyncableHash(syncer::SESSIONS, client_tag);
 
-  syncer::UpdateResponseData data;
-  data.entity = tombstone.PassToPtr();
-  data.response_version = 2;
+  auto data = std::make_unique<syncer::UpdateResponseData>();
+  data->entity = std::move(tombstone);
+  data->response_version = 2;
   return data;
 }
 
@@ -159,13 +161,7 @@ sync_pb::SessionSpecifics CreateTabSpecifics(const std::string& session_tag,
 class SessionSyncBridgeTest : public ::testing::Test {
  protected:
   SessionSyncBridgeTest()
-      : local_device_info_("TestCacheGuid",
-                           "Wayne Gretzky's Hacking Box",
-                           "Chromium 10k",
-                           "Chrome 10k",
-                           sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
-                           "device_id"),
-        store_(syncer::ModelTypeStoreTestUtil::CreateInMemoryStoreForTest(
+      : store_(syncer::ModelTypeStoreTestUtil::CreateInMemoryStoreForTest(
             syncer::SESSIONS)),
         session_sync_prefs_(&pref_service_),
         favicon_cache_(/*favicon_service=*/nullptr,
@@ -179,8 +175,6 @@ class SessionSyncBridgeTest : public ::testing::Test {
         .WillByDefault(
             Return(syncer::ModelTypeStoreTestUtil::FactoryForForwardingStore(
                 store_.get())));
-    ON_CALL(mock_sync_sessions_client_, GetLocalDeviceInfo())
-        .WillByDefault(Return(&local_device_info_));
     ON_CALL(mock_sync_sessions_client_, GetSyncedWindowDelegatesGetter())
         .WillByDefault(Return(&window_getter_));
     ON_CALL(mock_sync_sessions_client_, GetLocalSessionEventRouter())
@@ -235,7 +229,7 @@ class SessionSyncBridgeTest : public ::testing::Test {
     for (const SessionSpecifics& specifics : remote_data) {
       initial_updates.push_back(SpecificsToUpdateResponse(specifics));
     }
-    real_processor_->OnUpdateReceived(state, initial_updates);
+    real_processor_->OnUpdateReceived(state, std::move(initial_updates));
   }
 
   std::map<std::string, std::unique_ptr<EntityData>> GetAllData() {
@@ -323,9 +317,10 @@ class SessionSyncBridgeTest : public ::testing::Test {
     return real_processor_.get();
   }
 
+  syncer::ModelTypeStore* underlying_store() { return store_.get(); }
+
  private:
-  base::MessageLoop message_loop_;
-  const syncer::DeviceInfo local_device_info_;
+  base::test::ScopedTaskEnvironment task_environment_;
   const std::unique_ptr<syncer::ModelTypeStore> store_;
 
   // Dependencies.
@@ -882,9 +877,8 @@ TEST_F(SessionSyncBridgeTest, ShouldExposeTabbedWindowAfterCustomTabOnly) {
                               /*tab_node_id=*/1, {"http://bar.com/"})))));
 }
 
-TEST_F(SessionSyncBridgeTest, ShouldRestoreLocalSessionWithFreedTab) {
-  const int kWindowId1 = 1000001;
-  const int kWindowId2 = 1000002;
+TEST_F(SessionSyncBridgeTest, ShouldRecycleTabNodeAfterCommitCompleted) {
+  const int kWindowId = 1000001;
   const int kTabId1 = 1000003;
   const int kTabId2 = 1000004;
   const int kTabId3 = 1000005;
@@ -892,6 +886,107 @@ TEST_F(SessionSyncBridgeTest, ShouldRestoreLocalSessionWithFreedTab) {
   // Zero is the first assigned tab node ID.
   const int kTabNodeId1 = 0;
   const int kTabNodeId2 = 1;
+  const int kTabNodeId3 = 2;
+
+  AddWindow(kWindowId);
+  TestSyncedTabDelegate* tab1 = AddTab(kWindowId, "http://foo.com/", kTabId1);
+
+  const std::string header_storage_key =
+      SessionStore::GetHeaderStorageKey(kLocalSessionTag);
+  const std::string tab_storage_key1 =
+      SessionStore::GetTabStorageKey(kLocalSessionTag, kTabNodeId1);
+  const std::string tab_storage_key2 =
+      SessionStore::GetTabStorageKey(kLocalSessionTag, kTabNodeId2);
+  const std::string tab_storage_key3 =
+      SessionStore::GetTabStorageKey(kLocalSessionTag, kTabNodeId3);
+  const std::string tab_client_tag1 =
+      SessionStore::GetTabClientTagForTest(kLocalSessionTag, kTabNodeId1);
+  const std::string tab_client_tag2 =
+      SessionStore::GetTabClientTagForTest(kLocalSessionTag, kTabNodeId2);
+  const std::string tab_client_tag3 =
+      SessionStore::GetTabClientTagForTest(kLocalSessionTag, kTabNodeId3);
+
+  InitializeBridge();
+  StartSyncing();
+
+  // Mimic a commit completing for the initial sync.
+  ASSERT_TRUE(real_processor()->HasLocalChangesForTest());
+  sync_pb::ModelTypeState state;
+  state.set_initial_sync_done(true);
+  real_processor()->OnCommitCompleted(state,
+                                      {CreateSuccessResponse(kLocalSessionTag),
+                                       CreateSuccessResponse(tab_client_tag1)});
+  ASSERT_FALSE(real_processor()->HasLocalChangesForTest());
+
+  // Open a second tab.
+  AddTab(kWindowId, "http://bar.com/", kTabId2);
+  ASSERT_TRUE(real_processor()->HasLocalChangesForTest());
+
+  // Close |kTabId2| and force reassociation by navigating in the remaining open
+  // tab, leading to a freed tab entity. However, while there are pending
+  // changes to commit, the entity shouldn't be deleted (to prevent history
+  // loss).
+  EXPECT_CALL(mock_processor(), Delete(_, _)).Times(0);
+  CloseTab(kTabId2);
+  tab1->Navigate("http://foo2.com/");
+  EXPECT_TRUE(real_processor()->HasLocalChangesForTest());
+
+  EXPECT_THAT(
+      GetAllData(),
+      UnorderedElementsAre(
+          Pair(header_storage_key,
+               EntityDataHasSpecifics(
+                   MatchesHeader(kLocalSessionTag, {kWindowId}, {kTabId1}))),
+          Pair(tab_storage_key1,
+               EntityDataHasSpecifics(
+                   MatchesTab(kLocalSessionTag, kWindowId, kTabId1, kTabNodeId1,
+                              {"http://foo.com/", "http://foo2.com/"}))),
+          Pair(tab_storage_key2, EntityDataHasSpecifics(MatchesTab(
+                                     kLocalSessionTag, kWindowId, kTabId2,
+                                     kTabNodeId2, {"http://bar.com/"})))));
+
+  // If a new tab is opened, the entity with unsynced changes should not be
+  // recycled.
+  AddTab(kWindowId, "http://baz.com/", kTabId3);
+  EXPECT_THAT(GetAllData(), UnorderedElementsAre(Pair(header_storage_key, _),
+                                                 Pair(tab_storage_key1, _),
+                                                 Pair(tab_storage_key2, _),
+                                                 Pair(tab_storage_key3, _)));
+
+  // Completing the commit for the previously closed tab should issue a
+  // deletion. For that to trigger, we need to trigger the next association,
+  // which we do by navigating in one of the open tabs.
+  EXPECT_CALL(mock_processor(), Delete(tab_storage_key2, _));
+  real_processor()->OnCommitCompleted(state,
+                                      {CreateSuccessResponse(tab_client_tag2)});
+  tab1->Navigate("http://foo3.com/");
+  EXPECT_THAT(GetAllData(), UnorderedElementsAre(Pair(header_storage_key, _),
+                                                 Pair(tab_storage_key1, _),
+                                                 Pair(tab_storage_key3, _)));
+
+  // If yet anothertab is opened, the entity for the closed tab should be
+  // recycled.
+  AddTab(kWindowId, "http://qux.com/", kTabId4);
+  EXPECT_THAT(
+      GetAllData(),
+      UnorderedElementsAre(
+          Pair(header_storage_key, _), Pair(tab_storage_key1, _),
+          Pair(tab_storage_key2, EntityDataHasSpecifics(MatchesTab(
+                                     kLocalSessionTag, kWindowId, kTabId4,
+                                     kTabNodeId2, {"http://qux.com/"}))),
+          Pair(tab_storage_key3, _)));
+}
+
+TEST_F(SessionSyncBridgeTest, ShouldRestoreLocalSessionWithFreedTab) {
+  const int kWindowId1 = 1000001;
+  const int kWindowId2 = 1000002;
+  const int kTabId1 = 1000003;
+  const int kTabId2 = 1000004;
+  const int kTabId3 = 1000005;
+  // Zero is the first assigned tab node ID.
+  const int kTabNodeId1 = 0;
+  const int kTabNodeId2 = 1;
+  const int kTabNodeId3 = 2;
 
   AddWindow(kWindowId1);
   TestSyncedTabDelegate* tab1 = AddTab(kWindowId1, "http://foo.com/", kTabId1);
@@ -903,6 +998,8 @@ TEST_F(SessionSyncBridgeTest, ShouldRestoreLocalSessionWithFreedTab) {
       SessionStore::GetTabStorageKey(kLocalSessionTag, kTabNodeId1);
   const std::string tab_storage_key2 =
       SessionStore::GetTabStorageKey(kLocalSessionTag, kTabNodeId2);
+  const std::string tab_storage_key3 =
+      SessionStore::GetTabStorageKey(kLocalSessionTag, kTabNodeId3);
 
   InitializeBridge();
   StartSyncing();
@@ -914,7 +1011,7 @@ TEST_F(SessionSyncBridgeTest, ShouldRestoreLocalSessionWithFreedTab) {
   // Close |kTabId2| and force reassociation by navigating in the remaining open
   // tab, leading to a freed tab entity.
   CloseTab(kTabId2);
-  tab1->Navigate("http://baz.com/");
+  tab1->Navigate("http://foo2.com/");
 
   ASSERT_THAT(GetData(header_storage_key),
               EntityDataHasSpecifics(
@@ -926,39 +1023,31 @@ TEST_F(SessionSyncBridgeTest, ShouldRestoreLocalSessionWithFreedTab) {
   // The browser gets restarted with a new initial tab, for example because the
   // user chose "Continue where you left off".
   AddWindow(kWindowId2);
-  AddTab(kWindowId2, "http://qux.com/", kTabId3);
+  AddTab(kWindowId2, "http://baz.com/", kTabId3);
 
   // Start the bridge again.
   InitializeBridge();
   StartSyncing();
 
-  // One tab node de should be free at this point. In the current implementation
-  // (subject to change), this is |kTabNodeId1|. This is because |kTabId3| is
-  // assigned |kTabNodeId2|.
+  // Two tab nodes should be free at this point, because both tabs have been
+  // closed. However, they are also unsynced (the commit hasn't completed),
+  // which prevents their recycling, so a new tab node should be created.
   ASSERT_THAT(
       GetAllData(),
       UnorderedElementsAre(
           Pair(header_storage_key,
                EntityDataHasSpecifics(
                    MatchesHeader(kLocalSessionTag, {kWindowId2}, {kTabId3}))),
+          Pair(tab_storage_key1,
+               EntityDataHasSpecifics(MatchesTab(
+                   kLocalSessionTag, kWindowId1, kTabId1, kTabNodeId1,
+                   {"http://foo.com/", "http://foo2.com/"}))),
           Pair(tab_storage_key2, EntityDataHasSpecifics(MatchesTab(
+                                     kLocalSessionTag, kWindowId1, kTabId2,
+                                     kTabNodeId2, {"http://bar.com/"}))),
+          Pair(tab_storage_key3, EntityDataHasSpecifics(MatchesTab(
                                      kLocalSessionTag, kWindowId2, kTabId3,
-                                     kTabNodeId2, {"http://qux.com/"})))));
-
-  // When a new tab is opened (|kTabId4|), |kTabNodeId1| should be reused.
-  AddTab(kWindowId2, "http://quux.com/", kTabId4);
-  EXPECT_THAT(
-      GetAllData(),
-      UnorderedElementsAre(
-          Pair(header_storage_key,
-               EntityDataHasSpecifics(MatchesHeader(
-                   kLocalSessionTag, {kWindowId2}, {kTabId3, kTabId4}))),
-          Pair(tab_storage_key2, EntityDataHasSpecifics(MatchesTab(
-                                     kLocalSessionTag, kWindowId2, kTabId3,
-                                     kTabNodeId2, {"http://qux.com/"}))),
-          Pair(tab_storage_key1, EntityDataHasSpecifics(MatchesTab(
-                                     kLocalSessionTag, kWindowId2, kTabId4,
-                                     kTabNodeId1, {"http://quux.com/"})))));
+                                     kTabNodeId3, {"http://baz.com/"})))));
 }
 
 TEST_F(SessionSyncBridgeTest, ShouldDisableSyncAndReenable) {
@@ -981,7 +1070,6 @@ TEST_F(SessionSyncBridgeTest, ShouldDisableSyncAndReenable) {
   EXPECT_CALL(mock_processor(), ModelReadyToSync(_)).Times(0);
   real_processor()->OnSyncStopping(syncer::CLEAR_METADATA);
 
-  EXPECT_CALL(mock_processor(), ModelReadyToSync(IsEmptyMetadataBatch()));
   StartSyncing();
   ASSERT_THAT(GetData(header_storage_key),
               EntityDataHasSpecifics(
@@ -1139,6 +1227,17 @@ TEST_F(SessionSyncBridgeTest, ShouldHandleRemoteDeletion) {
                          kForeignTabNodeId, "http://baz.com/");
   StartSyncing({foreign_header, foreign_tab});
 
+  sync_pb::ModelTypeState state;
+  state.set_initial_sync_done(true);
+
+  // Mimic receiving a commit ack for the local header entity, to later be able
+  // to verify HasLocalChangesForTest() without interferences from the local
+  // session.
+  ASSERT_TRUE(real_processor()->HasLocalChangesForTest());
+  real_processor()->OnCommitCompleted(
+      state, {CreateSuccessResponse(kLocalSessionTag)});
+  ASSERT_FALSE(real_processor()->HasLocalChangesForTest());
+
   const sessions::SessionTab* foreign_session_tab = nullptr;
   ASSERT_TRUE(bridge()->GetOpenTabsUIDelegate()->GetForeignTab(
       kForeignSessionTag, SessionID::FromSerializedValue(kForeignTabId),
@@ -1152,14 +1251,18 @@ TEST_F(SessionSyncBridgeTest, ShouldHandleRemoteDeletion) {
                   kForeignSessionTag,
                   {{kForeignWindowId, std::vector<int>{kForeignTabId}}})));
   ASSERT_TRUE(real_processor()->IsTrackingMetadata());
+  ASSERT_TRUE(real_processor()->IsTrackingEntityForTest(
+      SessionStore::GetHeaderStorageKey(kForeignSessionTag)));
+  ASSERT_TRUE(real_processor()->IsTrackingEntityForTest(
+      SessionStore::GetTabStorageKey(kForeignSessionTag, kForeignTabNodeId)));
+  ASSERT_FALSE(real_processor()->HasLocalChangesForTest());
 
   // Mimic receiving a remote deletion of the foreign session.
-  sync_pb::ModelTypeState state;
-  state.set_initial_sync_done(true);
-
   EXPECT_CALL(mock_foreign_session_updated_cb(), Run());
-  real_processor()->OnUpdateReceived(
-      state, {CreateTombstone(SessionStore::GetClientTag(foreign_header))});
+  syncer::UpdateResponseDataList updates;
+  updates.push_back(
+      CreateTombstone(SessionStore::GetClientTag(foreign_header)));
+  real_processor()->OnUpdateReceived(state, std::move(updates));
 
   foreign_session_tab = nullptr;
   EXPECT_FALSE(bridge()->GetOpenTabsUIDelegate()->GetForeignTab(
@@ -1168,6 +1271,51 @@ TEST_F(SessionSyncBridgeTest, ShouldHandleRemoteDeletion) {
 
   EXPECT_FALSE(bridge()->GetOpenTabsUIDelegate()->GetAllForeignSessions(
       &foreign_sessions));
+
+  EXPECT_FALSE(real_processor()->HasLocalChangesForTest());
+
+  const std::string header_storage_key =
+      SessionStore::GetHeaderStorageKey(kForeignSessionTag);
+  const std::string tab_storage_key =
+      SessionStore::GetTabStorageKey(kForeignSessionTag, kForeignTabNodeId);
+
+  EXPECT_FALSE(real_processor()->IsTrackingEntityForTest(header_storage_key));
+  EXPECT_FALSE(real_processor()->IsTrackingEntityForTest(tab_storage_key));
+
+  // Verify that both entities have been deleted from storage.
+  {
+    base::RunLoop loop;
+    underlying_store()->ReadData(
+        {header_storage_key, tab_storage_key},
+        base::BindLambdaForTesting(
+            [&](const base::Optional<syncer::ModelError>& error,
+                std::unique_ptr<syncer::ModelTypeStore::RecordList>
+                    data_records,
+                std::unique_ptr<syncer::ModelTypeStore::IdList>
+                    missing_id_list) {
+              EXPECT_THAT(data_records, Pointee(IsEmpty()));
+              EXPECT_THAT(
+                  missing_id_list,
+                  Pointee(ElementsAre(header_storage_key, tab_storage_key)));
+              loop.Quit();
+            }));
+    loop.Run();
+  }
+
+  // Verify that the sync metadata for both entities have been deleted too.
+  {
+    base::RunLoop loop;
+    underlying_store()->ReadAllMetadata(base::BindLambdaForTesting(
+        [&](const base::Optional<syncer::ModelError>& error,
+            std::unique_ptr<syncer::MetadataBatch> metadata_batch) {
+          syncer::EntityMetadataMap entity_metadata_map =
+              metadata_batch->TakeAllMetadata();
+          EXPECT_EQ(0U, entity_metadata_map.count(header_storage_key));
+          EXPECT_EQ(0U, entity_metadata_map.count(tab_storage_key));
+          loop.Quit();
+        }));
+    loop.Run();
+  }
 }
 
 TEST_F(SessionSyncBridgeTest, ShouldIgnoreRemoteDeletionOfLocalTab) {
@@ -1210,8 +1358,10 @@ TEST_F(SessionSyncBridgeTest, ShouldIgnoreRemoteDeletionOfLocalTab) {
 
   // Mimic receiving a remote deletion of both entities.
   EXPECT_CALL(mock_processor(), Put(_, _, _)).Times(0);
-  real_processor()->OnUpdateReceived(state, {CreateTombstone(kLocalSessionTag),
-                                             CreateTombstone(tab_client_tag1)});
+  syncer::UpdateResponseDataList updates;
+  updates.push_back(CreateTombstone(kLocalSessionTag));
+  updates.push_back(CreateTombstone(tab_client_tag1));
+  real_processor()->OnUpdateReceived(state, std::move(updates));
 
   // State should remain unchanged (deletions ignored).
   EXPECT_THAT(
@@ -1409,7 +1559,6 @@ TEST_F(SessionSyncBridgeTest, ShouldDoGarbageCollection) {
       CreateTabSpecifics(kRecentSessionTag, kWindowId, kTabId, kTabNodeId,
                          "http://baz.com/"),
       recent_mtime));
-  real_processor()->OnUpdateReceived(state, updates);
 
   // During garbage collection, we expect |kStaleSessionTag| to be deleted.
   EXPECT_CALL(mock_processor(),
@@ -1417,10 +1566,9 @@ TEST_F(SessionSyncBridgeTest, ShouldDoGarbageCollection) {
   EXPECT_CALL(
       mock_processor(),
       Delete(SessionStore::GetTabStorageKey(kStaleSessionTag, kTabNodeId), _));
-  EXPECT_CALL(mock_foreign_session_updated_cb(), Run());
 
-  bridge()->ScheduleGarbageCollection();
-  base::RunLoop().RunUntilIdle();
+  EXPECT_CALL(mock_foreign_session_updated_cb(), Run()).Times(AtLeast(1));
+  real_processor()->OnUpdateReceived(state, std::move(updates));
 }
 
 }  // namespace

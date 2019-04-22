@@ -61,7 +61,7 @@ class TestRunResults(object):
         self.unexpected_failures = 0
         self.unexpected_timeouts = 0
 
-        # The wall clock time spent running the tests (layout_test_runner.run()).
+        # The wall clock time spent running the tests (web_test_runner.run()).
         self.run_time = 0
 
         # Map of test name to the *last* result for the test.
@@ -365,7 +365,7 @@ def summarize_results(port_obj, expectations, initial_results,
     # Does results.html have enough information to compute this itself? (by
     # checking total number of results vs. total number of tests?)
     results['interrupted'] = initial_results.interrupted
-    results['layout_tests_dir'] = port_obj.layout_tests_dir()
+    results['layout_tests_dir'] = port_obj.web_tests_dir()
     results['seconds_since_epoch'] = int(time.time())
     results['build_number'] = port_obj.get_option('build_number')
     results['builder_name'] = port_obj.get_option('builder_name')

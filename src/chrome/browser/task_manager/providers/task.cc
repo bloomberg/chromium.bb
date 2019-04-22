@@ -191,6 +191,10 @@ int Task::GetKeepaliveCount() const {
   return -1;
 }
 
+bool Task::IsRunningInVM() const {
+  return false;
+}
+
 // static
 gfx::ImageSkia* Task::FetchIcon(int id, gfx::ImageSkia** result_image) {
   if (!*result_image && ui::ResourceBundle::HasSharedInstance()) {

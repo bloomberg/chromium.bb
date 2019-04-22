@@ -55,20 +55,13 @@ class DirectCallback {
 class ScriptPreconditionTest : public testing::Test {
  public:
   void SetUp() override {
+    ON_CALL(mock_web_controller_, OnElementCheck(Eq(Selector({"exists"})), _))
+        .WillByDefault(RunOnceCallback<1>(true));
     ON_CALL(mock_web_controller_,
-            OnElementCheck(kExistenceCheck, Eq(Selector({"exists"})), _))
-        .WillByDefault(RunOnceCallback<2>(true));
-    ON_CALL(
-        mock_web_controller_,
-        OnElementCheck(kExistenceCheck, Eq(Selector({"does_not_exist"})), _))
-        .WillByDefault(RunOnceCallback<2>(false));
+            OnElementCheck(Eq(Selector({"does_not_exist"})), _))
+        .WillByDefault(RunOnceCallback<1>(false));
 
     SetUrl("http://www.example.com/path");
-    ON_CALL(mock_web_controller_, OnGetFieldValue(Eq(Selector({"exists"})), _))
-        .WillByDefault(RunOnceCallback<1>(true, "foo"));
-    ON_CALL(mock_web_controller_,
-            OnGetFieldValue(Eq(Selector({"does_not_exist"})), _))
-        .WillByDefault(RunOnceCallback<1>(false, ""));
   }
 
  protected:
@@ -81,12 +74,10 @@ class ScriptPreconditionTest : public testing::Test {
       return false;
 
     DirectCallback callback;
-    BatchElementChecker batch_checks(&mock_web_controller_);
+    BatchElementChecker batch_checks;
     precondition->Check(url_, &batch_checks, parameters_, executed_scripts_,
                         callback.Get());
-    batch_checks.Run(base::TimeDelta::FromSeconds(0),
-                     /* try_done=*/base::DoNothing(),
-                     /* all_done=*/base::DoNothing());
+    batch_checks.Run(&mock_web_controller_, /* all_done=*/base::DoNothing());
     return callback.GetResultOrDie();
   }
 
@@ -181,9 +172,8 @@ TEST_F(ScriptPreconditionTest, BadPathPattern) {
 }
 
 TEST_F(ScriptPreconditionTest, IgnoreEmptyElementsExist) {
-  EXPECT_CALL(mock_web_controller_,
-              OnElementCheck(kExistenceCheck, Eq(Selector({"exists"})), _))
-      .WillOnce(RunOnceCallback<2>(true));
+  EXPECT_CALL(mock_web_controller_, OnElementCheck(Eq(Selector({"exists"})), _))
+      .WillOnce(RunOnceCallback<1>(true));
 
   ScriptPreconditionProto proto;
   proto.add_elements_exist()->add_selectors("exists");
@@ -314,16 +304,6 @@ TEST_F(ScriptPreconditionTest, MultipleConditions) {
 
   proto.mutable_elements_exist(0)->set_selectors(0, "does_not_exist");
   EXPECT_FALSE(Check(proto)) << "Element can not match.";
-}
-
-TEST_F(ScriptPreconditionTest, FormValueMatch) {
-  ScriptPreconditionProto proto;
-  FormValueMatchProto* match = proto.add_form_value_match();
-  match->mutable_element()->add_selectors("exists");
-  EXPECT_TRUE(Check(proto));
-
-  match->mutable_element()->set_selectors(0, "does_not_exist");
-  EXPECT_FALSE(Check(proto));
 }
 
 }  // namespace

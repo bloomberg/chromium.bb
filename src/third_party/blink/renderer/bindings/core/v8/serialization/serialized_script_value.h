@@ -53,6 +53,8 @@ namespace blink {
 class BlobDataHandle;
 class DOMSharedArrayBuffer;
 class ExceptionState;
+class ExecutionContext;
+class MessagePort;
 class ScriptValue;
 class SharedBuffer;
 class StaticBitmapImage;
@@ -67,12 +69,14 @@ typedef HeapVector<Member<DOMSharedArrayBuffer>> SharedArrayBufferArray;
 
 class CORE_EXPORT SerializedScriptValue
     : public ThreadSafeRefCounted<SerializedScriptValue> {
+  USING_FAST_MALLOC(SerializedScriptValue);
+
  public:
   using ArrayBufferContentsArray = Vector<WTF::ArrayBufferContents, 1>;
   using SharedArrayBufferContentsArray = Vector<WTF::ArrayBufferContents, 1>;
   using ImageBitmapContentsArray = Vector<scoped_refptr<StaticBitmapImage>, 1>;
   using TransferredWasmModulesArray =
-      WTF::Vector<v8::WasmCompiledModule::TransferrableModule>;
+      WTF::Vector<v8::WasmModuleObject::TransferrableModule>;
   using MessagePortChannelArray = Vector<MessagePortChannel>;
 
   // Increment this for each incompatible change to the wire format.
@@ -108,7 +112,7 @@ class CORE_EXPORT SerializedScriptValue
   // This enumeration specifies whether we're serializing a value for storage;
   // e.g. when writing to IndexedDB. This corresponds to the forStorage flag of
   // the HTML spec:
-  // https://html.spec.whatwg.org/multipage/infrastructure.html#safe-passing-of-structured-data
+  // https://html.spec.whatwg.org/C/#safe-passing-of-structured-data
   enum StoragePolicy {
     // Not persisted; used only during the execution of the browser.
     kNotForStorage,
@@ -295,9 +299,22 @@ class CORE_EXPORT SerializedScriptValue
   void TransferReadableStreams(ScriptState*,
                                const ReadableStreamArray&,
                                ExceptionState&);
+  void TransferReadableStream(ScriptState* script_state,
+                              ExecutionContext* execution_context,
+                              ReadableStream* readable_streams,
+                              ExceptionState& exception_state);
   void TransferWritableStreams(ScriptState*,
                                const WritableStreamArray&,
                                ExceptionState&);
+  void TransferWritableStream(ScriptState* script_state,
+                              ExecutionContext* execution_context,
+                              WritableStream* writable_streams,
+                              ExceptionState& exception_state);
+  void TransferTransformStreams(ScriptState*,
+                                const TransformStreamArray&,
+                                ExceptionState&);
+  MessagePort* AddStreamChannel(ExecutionContext*);
+
   void CloneSharedArrayBuffers(SharedArrayBufferArray&);
   DataBufferPtr data_buffer_;
   size_t data_buffer_size_ = 0;

@@ -124,7 +124,7 @@ void LossBasedBandwidthEstimation::UpdateLossStatistics(
     return;
   }
   int loss_count = 0;
-  for (auto pkt : packet_results) {
+  for (const auto& pkt : packet_results) {
     loss_count += pkt.receive_time.IsInfinite() ? 1 : 0;
   }
   last_loss_ratio_ = static_cast<double>(loss_count) / packet_results.size();
@@ -156,9 +156,9 @@ void LossBasedBandwidthEstimation::UpdateAcknowledgedBitrate(
   if (acknowledged_bitrate > acknowledged_bitrate_max_) {
     acknowledged_bitrate_max_ = acknowledged_bitrate;
   } else {
-    acknowledged_bitrate_max_ +=
+    acknowledged_bitrate_max_ -=
         ExponentialUpdate(config_.acknowledged_rate_max_window, time_passed) *
-        (acknowledged_bitrate - acknowledged_bitrate_max_);
+        (acknowledged_bitrate_max_ - acknowledged_bitrate);
   }
 }
 
@@ -210,6 +210,21 @@ void LossBasedBandwidthEstimation::Update(Timestamp at_time,
       loss_based_bitrate_ = new_decreased_bitrate;
     }
   }
+}
+
+void LossBasedBandwidthEstimation::Reset(DataRate bitrate) {
+  loss_based_bitrate_ = bitrate;
+  average_loss_ = 0;
+  average_loss_max_ = 0;
+}
+
+void LossBasedBandwidthEstimation::MaybeReset(DataRate bitrate) {
+  if (config_.allow_resets)
+    Reset(bitrate);
+}
+
+void LossBasedBandwidthEstimation::SetInitialBitrate(DataRate bitrate) {
+  Reset(bitrate);
 }
 
 }  // namespace webrtc

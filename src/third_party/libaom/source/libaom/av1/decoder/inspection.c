@@ -33,7 +33,7 @@ void ifd_clear(insp_frame_data *fd) {
 
 /* TODO(negge) This function may be called by more than one thread when using
                a multi-threaded decoder and this may cause a data race. */
-int ifd_inspect(insp_frame_data *fd, void *decoder) {
+int ifd_inspect(insp_frame_data *fd, void *decoder, int skip_not_transform) {
   struct AV1Decoder *pbi = (struct AV1Decoder *)decoder;
   AV1_COMMON *const cm = &pbi->common;
 
@@ -42,9 +42,9 @@ int ifd_inspect(insp_frame_data *fd, void *decoder) {
     ifd_init_mi_rc(fd, cm->mi_rows, cm->mi_cols);
   }
   fd->show_existing_frame = cm->show_existing_frame;
-  fd->frame_number = cm->current_video_frame;
+  fd->frame_number = cm->current_frame.frame_number;
   fd->show_frame = cm->show_frame;
-  fd->frame_type = cm->frame_type;
+  fd->frame_type = cm->current_frame.frame_type;
   fd->base_qindex = cm->base_qindex;
   // Set width and height of the first tile until generic support can be added
   TileInfo tile_info;
@@ -52,8 +52,8 @@ int ifd_inspect(insp_frame_data *fd, void *decoder) {
   av1_tile_set_col(&tile_info, cm, 0);
   fd->tile_mi_cols = tile_info.mi_col_end - tile_info.mi_col_start;
   fd->tile_mi_rows = tile_info.mi_row_end - tile_info.mi_row_start;
-  fd->delta_q_present_flag = cm->delta_q_present_flag;
-  fd->delta_q_res = cm->delta_q_res;
+  fd->delta_q_present_flag = cm->delta_q_info.delta_q_present_flag;
+  fd->delta_q_res = cm->delta_q_info.delta_q_res;
 #if CONFIG_ACCOUNTING
   fd->accounting = &pbi->accounting;
 #endif
@@ -111,13 +111,19 @@ int ifd_inspect(insp_frame_data *fd, void *decoder) {
       else
         mi->tx_size = mbmi->tx_size;
 
+      if (skip_not_transform && mi->skip) mi->tx_size = -1;
+
       mi->tx_type =
           (mi->skip ? 0 : mbmi->txk_type[av1_get_txk_type_index(bsize, r, c)]);
+      if (skip_not_transform &&
+          (mi->skip || mbmi->tx_skip[av1_get_txk_type_index(bsize, r, c)]))
+        mi->tx_type = -1;
 
-      mi->cdef_level =
-          cm->cdef_strengths[mbmi->cdef_strength] / CDEF_SEC_STRENGTHS;
-      mi->cdef_strength =
-          cm->cdef_strengths[mbmi->cdef_strength] % CDEF_SEC_STRENGTHS;
+      mi->cdef_level = cm->cdef_info.cdef_strengths[mbmi->cdef_strength] /
+                       CDEF_SEC_STRENGTHS;
+      mi->cdef_strength = cm->cdef_info.cdef_strengths[mbmi->cdef_strength] %
+                          CDEF_SEC_STRENGTHS;
+
       mi->cdef_strength += mi->cdef_strength == 3;
       if (mbmi->uv_mode == UV_CFL_PRED) {
         mi->cfl_alpha_idx = mbmi->cfl_alpha_idx;

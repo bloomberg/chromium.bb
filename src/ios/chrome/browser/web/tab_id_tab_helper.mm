@@ -31,3 +31,5 @@ TabIdTabHelper::TabIdTabHelper(web::WebState* web_state) {
 }
 
 TabIdTabHelper::~TabIdTabHelper() = default;
+
+WEB_STATE_USER_DATA_KEY_IMPL(TabIdTabHelper)

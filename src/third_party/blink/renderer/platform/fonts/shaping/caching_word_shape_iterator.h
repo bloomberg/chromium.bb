@@ -38,7 +38,6 @@ namespace blink {
 
 class PLATFORM_EXPORT CachingWordShapeIterator final {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(CachingWordShapeIterator);
 
  public:
   CachingWordShapeIterator(ShapeCache* cache,
@@ -135,7 +134,7 @@ class PLATFORM_EXPORT CachingWordShapeIterator final {
       // ZWJ and modifier check in order not to split those Emoji sequences.
       if (U_GET_GC_MASK(ch) & (U_GC_M_MASK | U_GC_LM_MASK | U_GC_SK_MASK) ||
           ch == kZeroWidthJoinerCharacter || Character::IsModifier(ch) ||
-          Character::IsEmojiFlagSequenceTag(ch))
+          Character::IsEmojiTagSequence(ch) || ch == kCancelTag)
         continue;
       // Avoid delimiting COMMON/INHERITED alone, which makes harder to
       // identify the script.
@@ -211,6 +210,8 @@ class PLATFORM_EXPORT CachingWordShapeIterator final {
   float width_so_far_;  // Used only when allowTabs()
   unsigned start_index_ : 31;
   unsigned shape_by_word_ : 1;
+
+  DISALLOW_COPY_AND_ASSIGN(CachingWordShapeIterator);
 };
 
 }  // namespace blink

@@ -135,9 +135,9 @@ class MediaTest : public testing::WithParamInterface<bool>,
 
   void RunVideoSizeTest(const char* media_file, int width, int height) {
     std::string expected;
-    expected += base::IntToString(width);
+    expected += base::NumberToString(width);
     expected += " ";
-    expected += base::IntToString(height);
+    expected += base::NumberToString(height);
     base::StringPairs query_params;
     query_params.emplace_back("video", media_file);
     RunMediaTestPage("player.html", query_params, expected, false);
@@ -328,7 +328,7 @@ IN_PROC_BROWSER_TEST_F(MediaTest, Navigate) {
   EXPECT_FALSE(shell()->web_contents()->IsCrashed());
 }
 
-INSTANTIATE_TEST_CASE_P(File, MediaTest, ::testing::Values(false));
-INSTANTIATE_TEST_CASE_P(Http, MediaTest, ::testing::Values(true));
+INSTANTIATE_TEST_SUITE_P(File, MediaTest, ::testing::Values(false));
+INSTANTIATE_TEST_SUITE_P(Http, MediaTest, ::testing::Values(true));
 
 }  // namespace content

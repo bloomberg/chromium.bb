@@ -94,15 +94,6 @@ void FakeBluetoothInstance::OnGetGattDB(
       std::make_unique<GattDBResult>(std::move(remote_addr), std::move(db)));
 }
 
-void FakeBluetoothInstance::OnServicesRemoved(
-    mojom::BluetoothAddressPtr remote_addr,
-    uint16_t start_handle,
-    uint16_t end_handle) {}
-
-void FakeBluetoothInstance::OnServicesAdded(
-    mojom::BluetoothAddressPtr remote_addr,
-    std::vector<mojom::BluetoothGattDBElementPtr> db) {}
-
 void FakeBluetoothInstance::OnGattNotify(
     mojom::BluetoothAddressPtr remote_addr,
     mojom::BluetoothGattServiceIDPtr service_id,

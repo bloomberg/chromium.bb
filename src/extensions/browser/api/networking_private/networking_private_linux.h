@@ -20,7 +20,7 @@ class Bus;
 class ObjectPath;
 class ObjectProxy;
 class Response;
-};
+}  // namespace dbus
 
 namespace extensions {
 

@@ -12,12 +12,7 @@
 
 TestToolbarActionViewController::TestToolbarActionViewController(
     const std::string& id)
-    : id_(id),
-      delegate_(nullptr),
-      is_enabled_(true),
-      wants_to_run_(false),
-      disabled_click_opens_menu_(false),
-      execute_action_count_(0) {
+    : id_(id) {
   // Needs a non-empty accessible name to pass accessibility checks.
   SetAccessibleName(base::ASCIIToUTF16("Default name"));
 }
@@ -41,7 +36,7 @@ gfx::Image TestToolbarActionViewController::GetIcon(
 }
 
 base::string16 TestToolbarActionViewController::GetActionName() const {
-  return base::string16();
+  return action_name_;
 }
 
 base::string16 TestToolbarActionViewController::GetAccessibleName(
@@ -69,7 +64,12 @@ bool TestToolbarActionViewController::HasPopup(
   return true;
 }
 
+bool TestToolbarActionViewController::IsShowingPopup() const {
+  return popup_showing_;
+}
+
 void TestToolbarActionViewController::HidePopup() {
+  popup_showing_ = false;
   delegate_->OnPopupClosed();
 }
 
@@ -95,7 +95,14 @@ bool TestToolbarActionViewController::DisabledClickOpensMenu() const {
 }
 
 void TestToolbarActionViewController::ShowPopup(bool by_user) {
+  popup_showing_ = true;
   delegate_->OnPopupShown(by_user);
+}
+
+void TestToolbarActionViewController::SetActionName(
+    const base::string16& name) {
+  action_name_ = name;
+  UpdateDelegate();
 }
 
 void TestToolbarActionViewController::SetAccessibleName(

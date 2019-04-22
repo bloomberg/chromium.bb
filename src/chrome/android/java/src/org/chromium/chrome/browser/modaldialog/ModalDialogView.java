@@ -6,9 +6,10 @@ package org.chromium.chrome.browser.modaldialog;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.support.annotation.IntDef;
+import android.os.Build;
 import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -16,52 +17,22 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.chromium.base.Callback;
+import org.chromium.base.Log;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.browser.widget.BoundedLinearLayout;
 import org.chromium.chrome.browser.widget.FadingEdgeScrollView;
 import org.chromium.ui.UiUtils;
+import org.chromium.ui.modaldialog.ModalDialogProperties;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
+import java.lang.reflect.Field;
 
 /**
  * Generic dialog view for app modal or tab modal alert dialogs.
  */
 public class ModalDialogView extends BoundedLinearLayout implements View.OnClickListener {
-    /**
-     * Interface that controls the actions on the modal dialog.
-     */
-    public interface Controller {
-        /**
-         * Handle click event of the buttons on the dialog.
-         * @param model The dialog model that is associated with this click event.
-         * @param buttonType The type of the button.
-         */
-        void onClick(PropertyModel model, @ButtonType int buttonType);
+    private static final String TAG = "ModalDialogView";
 
-        /**
-         * Handle dismiss event when the dialog is dismissed by actions on the dialog. Note that it
-         * can be dangerous to the {@code dismissalCause} for business logic other than metrics
-         * recording, unless the dismissal cause is fully controlled by the client (e.g. button
-         * clicked), because the dismissal cause can be different values depending on modal dialog
-         * type and mode of presentation (e.g. it could be unknown on VR but a specific value on
-         * non-VR).
-         * @param model The dialog model that is associated with this dismiss event.
-         * @param dismissalCause The reason of the dialog being dismissed.
-         * @see DialogDismissalCause
-         */
-        void onDismiss(PropertyModel model, @DialogDismissalCause int dismissalCause);
-    }
-
-    @IntDef({ButtonType.POSITIVE, ButtonType.NEGATIVE})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface ButtonType {
-        int POSITIVE = 0;
-        int NEGATIVE = 1;
-    }
-
-    private Controller mController;
+    private ModalDialogProperties.Controller mController;
 
     private FadingEdgeScrollView mScrollView;
     private ViewGroup mTitleContainer;
@@ -74,6 +45,7 @@ public class ModalDialogView extends BoundedLinearLayout implements View.OnClick
     private Button mNegativeButton;
     private Callback<Integer> mOnButtonClickedCallback;
     private boolean mTitleScrollable;
+    private boolean mFilterTouchForSecurity;
 
     /**
      * Constructor for inflating from XML.
@@ -116,23 +88,24 @@ public class ModalDialogView extends BoundedLinearLayout implements View.OnClick
     @Override
     public void onClick(View view) {
         if (view == mPositiveButton) {
-            mOnButtonClickedCallback.onResult(ButtonType.POSITIVE);
+            mOnButtonClickedCallback.onResult(ModalDialogProperties.ButtonType.POSITIVE);
         } else if (view == mNegativeButton) {
-            mOnButtonClickedCallback.onResult(ButtonType.NEGATIVE);
+            mOnButtonClickedCallback.onResult(ModalDialogProperties.ButtonType.NEGATIVE);
         }
     }
 
     /**
      * @return The controller that controls the actions on the dialogs.
      */
-    public Controller getController() {
+    public ModalDialogProperties.Controller getController() {
         return mController;
     }
 
     /**
-     * @param controller The {@link Controller} that handles events on user actions.
+     * @param controller The {@link ModalDialogProperties.Controller} that handles events on user
+     *         actions.
      */
-    void setController(Controller controller) {
+    void setController(ModalDialogProperties.Controller controller) {
         mController = controller;
     }
 
@@ -192,6 +165,45 @@ public class ModalDialogView extends BoundedLinearLayout implements View.OnClick
         mCustomViewContainer.setLayoutParams(layoutParams);
     }
 
+    /**
+     * @param filterTouchForSecurity Whether button touch events should be filtered when buttons are
+     *                               obscured by another visible window.
+     */
+    void setFilterTouchForSecurity(boolean filterTouchForSecurity) {
+        if (mFilterTouchForSecurity == filterTouchForSecurity) return;
+
+        mFilterTouchForSecurity = filterTouchForSecurity;
+        if (filterTouchForSecurity) {
+            setupFilterTouchForSecurity();
+        } else {
+            assert false : "Shouldn't remove touch filter after setting it up";
+        }
+    }
+
+    /** Setup touch filters to block events when buttons are obscured by another window. */
+    private void setupFilterTouchForSecurity() {
+        Button positiveButton = getButton(ModalDialogProperties.ButtonType.POSITIVE);
+        Button negativeButton = getButton(ModalDialogProperties.ButtonType.NEGATIVE);
+        View.OnTouchListener onTouchListener = (View v, MotionEvent ev) -> {
+            // Filter touch events based MotionEvent.FLAG_WINDOW_IS_PARTIALLY_OBSCURED which is
+            // introduced on M+.
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return false;
+
+            try {
+                Field field = MotionEvent.class.getField("FLAG_WINDOW_IS_PARTIALLY_OBSCURED");
+                if ((ev.getFlags() & field.getInt(null)) != 0) return true;
+            } catch (NoSuchFieldException | IllegalAccessException e) {
+                Log.e(TAG, "Reflection failure: " + e);
+            }
+            return false;
+        };
+
+        positiveButton.setFilterTouchesWhenObscured(true);
+        positiveButton.setOnTouchListener(onTouchListener);
+        negativeButton.setFilterTouchesWhenObscured(true);
+        negativeButton.setOnTouchListener(onTouchListener);
+    }
+
     /** @param message The message in the dialog content. */
     void setMessage(String message) {
         mMessageView.setText(message);
@@ -214,11 +226,11 @@ public class ModalDialogView extends BoundedLinearLayout implements View.OnClick
     /**
      * @param buttonType Indicates which button should be returned.
      */
-    private Button getButton(@ButtonType int buttonType) {
+    private Button getButton(@ModalDialogProperties.ButtonType int buttonType) {
         switch (buttonType) {
-            case ButtonType.POSITIVE:
+            case ModalDialogProperties.ButtonType.POSITIVE:
                 return mPositiveButton;
-            case ButtonType.NEGATIVE:
+            case ModalDialogProperties.ButtonType.NEGATIVE:
                 return mNegativeButton;
             default:
                 assert false;
@@ -229,19 +241,19 @@ public class ModalDialogView extends BoundedLinearLayout implements View.OnClick
     /**
      * Sets button text for the specified button. If {@code buttonText} is empty or null, the
      * specified button will not be visible.
-     * @param buttonType The {@link ButtonType} of the button.
+     * @param buttonType The {@link ModalDialogProperties.ButtonType} of the button.
      * @param buttonText The text to be set on the specified button.
      */
-    void setButtonText(@ButtonType int buttonType, String buttonText) {
+    void setButtonText(@ModalDialogProperties.ButtonType int buttonType, String buttonText) {
         getButton(buttonType).setText(buttonText);
         updateButtonVisibility();
     }
 
     /**
-     * @param buttonType The {@link ButtonType} of the button.
+     * @param buttonType The {@link ModalDialogProperties.ButtonType} of the button.
      * @param enabled Whether the specified button should be enabled.
      */
-    void setButtonEnabled(@ButtonType int buttonType, boolean enabled) {
+    void setButtonEnabled(@ModalDialogProperties.ButtonType int buttonType, boolean enabled) {
         getButton(buttonType).setEnabled(enabled);
     }
 

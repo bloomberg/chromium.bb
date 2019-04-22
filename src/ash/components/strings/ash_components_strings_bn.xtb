@@ -16,7 +16,6 @@
 <translation id="152892567002884378">ভলিউম বাড়ান</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, তারপর <ph name="ESC" /></translation>
 <translation id="1652741121070700329">আগের শব্দের শুরুতে নিয়ে যান</translation>
-<translation id="1671169355475348905">আগের ভাষার ইনপুট পদ্ধতিতে পাল্টান</translation>
 <translation id="1679841710523778799">উজ্জ্বলতা বাড়ান</translation>
 <translation id="168356808214100546"><ph name="ALT" /> বোতাম টিপে ধরে রেখে যে উইন্ডোটি খুলতে চান সেটি বেছে নেওয়ার জন্য <ph name="TAB" /> বোতাামটি বারবার টিপুন এবং তারপর উইন্ডোটি বেছে নেওয়া হয়ে গেলে আঙুল তুলে নিন।</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -33,6 +32,7 @@
 <translation id="2181097965834437145">বুকমার্ক বার দেখুন অথবা লুকান</translation>
 <translation id="2185166372312820725">আগের ট্যাবে যান</translation>
 <translation id="2194790690264064655"><ph name="CTRL" /> টিপুন এবং একটি লিঙ্কে ক্লিক করুন</translation>
+<translation id="2246352309084894470">ফুলস্ক্রিন লঞ্চার চালু/বন্ধ করুন</translation>
 <translation id="2382644247745281995">বর্তমান কীবোর্ড লেআউট সমর্থিত নয়</translation>
 <translation id="2397416548179033562">Chrome মেনু দেখান</translation>
 <translation id="2424073332829844142">CapsLock চালু এবং বন্ধ করুন</translation>
@@ -44,7 +44,6 @@
 <translation id="2574014812750545982">পৃষ্ঠায় জুম লেভেল রিসেট করুন</translation>
 <translation id="2596078834055697711">উইন্ডো স্ক্রিনশট নিন</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, তারপর <ph name="TAB" /> অথবা <ph name="RIGHT" /></translation>
-<translation id="2687057317448262550">পরবর্তী ভাষার ইনপুট পদ্ধতিতে পাল্টান</translation>
 <translation id="2699509451653686398">আপনার বর্তমান ওয়েব পৃষ্ঠাটি একটি বুকমার্ক হিসেবে সেভ করুন</translation>
 <translation id="2750942583782703988">আপনার বর্তমান পৃষ্ঠাটি আবার লোড করুন</translation>
 <translation id="2764005613199379871">সার্চ অ্যাড্রেস বারে ফোকাস রাখুন</translation>
@@ -147,6 +146,7 @@
 <translation id="671928215901716392">স্ক্রিন লক করুন</translation>
 <translation id="6727005317916125192">পূর্ববর্তী ফলক</translation>
 <translation id="6740781404993465795">পরের শব্দ অথবা অক্ষরটি বেছে নিন</translation>
+<translation id="6755851152783057058">শেষ ব্যবহৃত ইনপুট পদ্ধতিতে পাল্টান</translation>
 <translation id="6760706756348334449">ভলিউম কমান</translation>
 <translation id="6941333068993625698">মতামত জমা দিন</translation>
 <translation id="6981982820502123353">অ্যাক্সেযোগ্যতা</translation>
@@ -157,6 +157,7 @@
 <translation id="7237562915163138771">অ্যাড্রেস বারে ওয়েব অ্যাড্রেস টাইপ করুন, তারপর <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /> টিপুন</translation>
 <translation id="7254764037241667478">ডিভাইসটি স্লিপ মোডে রাখুন (সাসপেন্ড)</translation>
 <translation id="7379254767514753910"><ph name="ALT" /> অথবা <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
+<translation id="7422707470576323858">পরবর্তী উপলভ্য ইনপুট পদ্ধতিতে পাল্টান</translation>
 <translation id="743754632698445141">অ্যাপটি আনপিন করুন</translation>
 <translation id="7439718573248533901">পরের অক্ষরটি মুছুন (সামনের দিকে মুছুন)</translation>
 <translation id="7611271430932669992">পপআপ এবং ডায়ালগগুলিতে ফোকাস সরান</translation>

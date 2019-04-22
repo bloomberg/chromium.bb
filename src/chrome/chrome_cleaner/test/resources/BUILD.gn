@@ -15,6 +15,7 @@ action("compute_sample_dll_digest") {
   deps = [
     "//chrome/chrome_cleaner/proto:file_digest_proto",
     "//chrome/chrome_cleaner/test:empty_dll",
+    "//third_party/protobuf:py_proto",
   ]
 
   inputs = [

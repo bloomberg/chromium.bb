@@ -4,6 +4,7 @@
 
 #include "ios/chrome/browser/ui/authentication/chrome_signin_view_controller.h"
 
+#include "base/bind.h"
 #include "base/mac/foundation_util.h"
 #include "base/memory/ptr_util.h"
 #import "base/strings/sys_string_conversions.h"
@@ -13,15 +14,14 @@
 #include "components/consent_auditor/consent_auditor.h"
 #include "components/consent_auditor/fake_consent_auditor.h"
 #include "components/signin/core/browser/account_consistency_method.h"
-#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/unified_consent/feature.h"
 #include "components/unified_consent/scoped_unified_consent.h"
 #include "components/version_info/version_info.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
-#include "ios/chrome/browser/signin/account_tracker_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service_fake.h"
+#include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/sync/consent_auditor_factory.h"
 #include "ios/chrome/browser/sync/ios_user_event_service_factory.h"
 #include "ios/chrome/browser/unified_consent/unified_consent_service_factory.h"
@@ -30,6 +30,7 @@
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #import "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
@@ -131,9 +132,8 @@ class ChromeSigninViewControllerTest
     ios::FakeChromeIdentityService* identity_service =
         ios::FakeChromeIdentityService::GetInstanceFromChromeProvider();
     identity_service->AddIdentity(identity_);
-    account_tracker_service_ =
-        ios::AccountTrackerServiceFactory::GetForBrowserState(context_.get());
-
+    identity_manager_ =
+        IdentityManagerFactory::GetForBrowserState(context_.get());
     fake_consent_auditor_ = static_cast<consent_auditor::FakeConsentAuditor*>(
         ConsentAuditorFactory::GetForBrowserState(context_.get()));
 
@@ -184,7 +184,7 @@ class ChromeSigninViewControllerTest
       NSString* view_name = NSStringFromClass([view class]);
       // Views that don't display strings.
       NSArray* other_views = @[
-        @"AccountControlCell",
+        @"LegacyAccountControlCell",
         @"CollectionViewFooterCell",
         @"IdentityPickerView",
         @"IdentityView",
@@ -246,9 +246,8 @@ class ChromeSigninViewControllerTest
     if (unified_consent_enabled_) {
       return {
           IDS_IOS_ACCOUNT_UNIFIED_CONSENT_TITLE,
-          IDS_IOS_ACCOUNT_UNIFIED_CONSENT_SYNC_DATA,
-          IDS_IOS_ACCOUNT_UNIFIED_CONSENT_PERSONALIZED,
-          IDS_IOS_ACCOUNT_UNIFIED_CONSENT_BETTER_BROWSER,
+          IDS_IOS_ACCOUNT_UNIFIED_CONSENT_SYNC_TITLE,
+          IDS_IOS_ACCOUNT_UNIFIED_CONSENT_SYNC_SUBTITLE,
           IDS_IOS_ACCOUNT_UNIFIED_CONSENT_SETTINGS,
       };
     }
@@ -372,14 +371,14 @@ class ChromeSigninViewControllerTest
   UIWindow* window_;
   ChromeSigninViewController* vc_;
   consent_auditor::FakeConsentAuditor* fake_consent_auditor_;
-  AccountTrackerService* account_tracker_service_;
+  identity::IdentityManager* identity_manager_;
   base::MockOneShotTimer* mock_timer_ptr_ = nullptr;
   FakeChromeSigninViewControllerDelegate* vc_delegate_;
 };
 
-INSTANTIATE_TEST_CASE_P(,
-                        ChromeSigninViewControllerTest,
-                        ::testing::ValuesIn(kUnifiedConsentParam));
+INSTANTIATE_TEST_SUITE_P(,
+                         ChromeSigninViewControllerTest,
+                         ::testing::ValuesIn(kUnifiedConsentParam));
 
 // Tests that all strings on the screen are either part of the consent string
 // list defined in FakeConsentAuditor::ExpectedConsentStringIds()), or are part
@@ -407,7 +406,7 @@ TEST_P(ChromeSigninViewControllerTest, TestConsentWithOKGOTIT) {
             fake_consent_auditor_->recorded_statuses().at(0));
   EXPECT_EQ(consent_auditor::Feature::CHROME_SYNC,
             fake_consent_auditor_->recorded_features().at(0));
-  EXPECT_EQ(account_tracker_service_->PickAccountIdForAccount(
+  EXPECT_EQ(identity_manager_->PickAccountIdForAccount(
                 base::SysNSStringToUTF8([identity_ gaiaID]),
                 base::SysNSStringToUTF8([identity_ userEmail])),
             fake_consent_auditor_->account_id());
@@ -435,7 +434,7 @@ TEST_P(ChromeSigninViewControllerTest, TestConsentWithSettings) {
             fake_consent_auditor_->recorded_statuses().at(0));
   EXPECT_EQ(consent_auditor::Feature::CHROME_SYNC,
             fake_consent_auditor_->recorded_features().at(0));
-  EXPECT_EQ(account_tracker_service_->PickAccountIdForAccount(
+  EXPECT_EQ(identity_manager_->PickAccountIdForAccount(
                 base::SysNSStringToUTF8([identity_ gaiaID]),
                 base::SysNSStringToUTF8([identity_ userEmail])),
             fake_consent_auditor_->account_id());

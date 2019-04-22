@@ -12,7 +12,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/proxy_resolver/proxy_resolver_factory_impl.h"
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
-#include "services/service_manager/public/cpp/service_context_ref.h"
+#include "services/service_manager/public/cpp/service_keepalive.h"
 
 namespace content {
 
@@ -36,7 +36,7 @@ class TestMojoProxyResolverFactory
       override;
 
  private:
-  service_manager::ServiceContextRefFactory service_ref_factory_;
+  service_manager::ServiceKeepalive service_keepalive_;
   proxy_resolver::ProxyResolverFactoryImpl proxy_resolver_factory_impl_;
 
   proxy_resolver::mojom::ProxyResolverFactoryPtr factory_;

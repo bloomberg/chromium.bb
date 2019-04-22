@@ -11,10 +11,10 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "net/base/chunked_upload_data_stream.h"
 #include "net/base/completion_repeating_callback.h"
@@ -100,7 +100,7 @@ class ThrottlingControllerTestHelper {
     if (with_upload) {
       upload_data_stream_.reset(
           new net::ChunkedUploadDataStream(kUploadIdentifier));
-      upload_data_stream_->AppendData(kUploadData, arraysize(kUploadData),
+      upload_data_stream_->AppendData(kUploadData, base::size(kUploadData),
                                       true);
       request_->upload_data_stream = upload_data_stream_.get();
     }
@@ -292,7 +292,7 @@ TEST(ThrottlingControllerTest, UploadDoesNotFail) {
   int rv = helper.Start(true);
   EXPECT_EQ(rv, net::ERR_INTERNET_DISCONNECTED);
   rv = helper.ReadUploadData();
-  EXPECT_EQ(rv, static_cast<int>(arraysize(kUploadData)));
+  EXPECT_EQ(rv, static_cast<int>(base::size(kUploadData)));
 }
 
 TEST(ThrottlingControllerTest, DownloadOnly) {
@@ -336,7 +336,7 @@ TEST(ThrottlingControllerTest, UploadOnly) {
   EXPECT_EQ(callback->run_count(), 1);
   helper.FastForwardUntilNoTasksRemain();
   EXPECT_EQ(callback->run_count(), 2);
-  EXPECT_EQ(callback->value(), static_cast<int>(arraysize(kUploadData)));
+  EXPECT_EQ(callback->value(), static_cast<int>(base::size(kUploadData)));
 }
 
 }  // namespace network

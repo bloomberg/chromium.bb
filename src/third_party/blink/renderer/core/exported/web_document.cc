@@ -105,8 +105,11 @@ WebString WebDocument::GetReferrer() const {
   return ConstUnwrap<Document>()->referrer();
 }
 
-SkColor WebDocument::ThemeColor() const {
-  return ConstUnwrap<Document>()->ThemeColor().Rgb();
+base::Optional<SkColor> WebDocument::ThemeColor() const {
+  base::Optional<Color> color = ConstUnwrap<Document>()->ThemeColor();
+  if (color)
+    return color->Rgb();
+  return base::nullopt;
 }
 
 WebURL WebDocument::OpenSearchDescriptionURL() const {
@@ -138,6 +141,10 @@ WebURL WebDocument::SiteForCookies() const {
   return ConstUnwrap<Document>()->SiteForCookies();
 }
 
+WebSecurityOrigin WebDocument::TopFrameOrigin() const {
+  return ConstUnwrap<Document>()->TopFrameOrigin();
+}
+
 WebElement WebDocument::DocumentElement() const {
   return WebElement(ConstUnwrap<Document>()->documentElement());
 }
@@ -154,21 +161,11 @@ WebString WebDocument::Title() const {
   return WebString(ConstUnwrap<Document>()->title());
 }
 
-WebString WebDocument::ContentAsTextForTesting(bool use_inner_text) const {
+WebString WebDocument::ContentAsTextForTesting() const {
   Element* document_element = ConstUnwrap<Document>()->documentElement();
   if (!document_element)
     return WebString();
-  if (use_inner_text)
-    return document_element->innerText();
-
-  // TODO(editing-dev): We should use |Element::innerText()|.
-  const_cast<Document*>(ConstUnwrap<Document>())
-      ->UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(document_element);
-  if (!document_element->GetLayoutObject())
-    return document_element->textContent(true);
-  return WebString(
-      PlainText(EphemeralRange::RangeOfContents(*document_element),
-                TextIteratorBehavior::Builder().SetForInnerText(true).Build()));
+  return document_element->innerText();
 }
 
 WebElementCollection WebDocument::All() {
@@ -285,9 +282,21 @@ WebDistillabilityFeatures WebDocument::DistillabilityFeatures() {
   return DocumentStatisticsCollector::CollectStatistics(*Unwrap<Document>());
 }
 
+void WebDocument::SetShowBeforeUnloadDialog(bool show_dialog) {
+  if (!IsHTMLDocument())
+    return;
+  if (!IsPluginDocument() &&
+      !RuntimeEnabledFeatures::MimeHandlerViewInCrossProcessFrameEnabled()) {
+    return;
+  }
+
+  Document* doc = Unwrap<Document>();
+  doc->SetShowBeforeUnloadDialog(show_dialog);
+}
+
 WebDocument::WebDocument(Document* elem) : WebNode(elem) {}
 
-DEFINE_WEB_NODE_TYPE_CASTS(WebDocument, ConstUnwrap<Node>()->IsDocumentNode());
+DEFINE_WEB_NODE_TYPE_CASTS(WebDocument, ConstUnwrap<Node>()->IsDocumentNode())
 
 WebDocument& WebDocument::operator=(Document* elem) {
   private_ = elem;

@@ -11,42 +11,68 @@
 
 #include "ui/accessibility/ax_export.h"
 #include "ui/accessibility/ax_tree.h"
+#include "ui/accessibility/ax_tree_observer.h"
 
 namespace ui {
 
-// Subclass of AXTreeDelegate that automatically generates AXEvents to fire
+// Subclass of AXTreeObserver that automatically generates AXEvents to fire
 // based on changes to an accessibility tree.  Every platform
 // tends to want different events, so this class lets each platform
 // handle the events it wants and ignore the others.
-class AX_EXPORT AXEventGenerator : public AXTreeDelegate {
+class AX_EXPORT AXEventGenerator : public AXTreeObserver {
  public:
   enum class Event : int32_t {
+    ACCESS_KEY_CHANGED,
     ACTIVE_DESCENDANT_CHANGED,
     ALERT,
+    AUTO_COMPLETE_CHANGED,
     CHECKED_STATE_CHANGED,
     CHILDREN_CHANGED,
+    CLASS_NAME_CHANGED,
     COLLAPSED,
+    CONTROLS_CHANGED,
+    DESCRIBED_BY_CHANGED,
     DESCRIPTION_CHANGED,
     DOCUMENT_SELECTION_CHANGED,
     DOCUMENT_TITLE_CHANGED,
+    ENABLED_CHANGED,
     EXPANDED,
+    FLOW_FROM_CHANGED,
+    FLOW_TO_CHANGED,
+    HIERARCHICAL_LEVEL_CHANGED,
+    IMAGE_ANNOTATION_CHANGED,
     INVALID_STATUS_CHANGED,
+    KEY_SHORTCUTS_CHANGED,
+    LABELED_BY_CHANGED,
+    LANGUAGE_CHANGED,
+    LAYOUT_INVALIDATED,   // Fired when aria-busy goes false
     LIVE_REGION_CHANGED,  // Fired on the root of a live region.
     LIVE_REGION_CREATED,
     LIVE_REGION_NODE_CHANGED,  // Fired on a node within a live region.
     LOAD_COMPLETE,
     LOAD_START,
     MENU_ITEM_SELECTED,
+    MULTISELECTABLE_STATE_CHANGED,
     NAME_CHANGED,
     OTHER_ATTRIBUTE_CHANGED,
+    PLACEHOLDER_CHANGED,
+    POSITION_IN_SET_CHANGED,
     RELATED_NODE_CHANGED,
+    READONLY_CHANGED,
+    REQUIRED_STATE_CHANGED,
     ROLE_CHANGED,
     ROW_COUNT_CHANGED,
-    SCROLL_POSITION_CHANGED,
+    SCROLL_HORIZONTAL_POSITION_CHANGED,
+    SCROLL_VERTICAL_POSITION_CHANGED,
     SELECTED_CHANGED,
     SELECTED_CHILDREN_CHANGED,
+    SET_SIZE_CHANGED,
     STATE_CHANGED,
+    SUBTREE_CREATED,
     VALUE_CHANGED,
+    VALUE_MAX_CHANGED,
+    VALUE_MIN_CHANGED,
+    VALUE_STEP_CHANGED,
   };
 
   struct EventParams {
@@ -87,14 +113,14 @@ class AX_EXPORT AXEventGenerator : public AXTreeDelegate {
   // before using this class.
   AXEventGenerator();
 
-  // Automatically registers itself as the delegate of |tree| and
+  // Automatically registers itself as the observer of |tree| and
   // clears it on desctruction. |tree| must be valid for the lifetime
   // of this object.
   explicit AXEventGenerator(AXTree* tree);
 
   ~AXEventGenerator() override;
 
-  // Clears this class as the delegate of the previous tree that was
+  // Clears this class as the observer of the previous tree that was
   // being monitored, if any, and starts monitoring |new_tree|, if not
   // nullptr. Note that |new_tree| must be valid for the lifetime of
   // this object or until you call SetTree again.
@@ -112,7 +138,7 @@ class AX_EXPORT AXEventGenerator : public AXTreeDelegate {
   void ClearEvents();
 
   // This is called automatically based on changes to the tree observed
-  // by AXTreeDelegate, but you can also call it directly to add events
+  // by AXTreeObserver, but you can also call it directly to add events
   // and retrieve them later.
   //
   // Note that events are organized by node and then by event id to
@@ -126,7 +152,7 @@ class AX_EXPORT AXEventGenerator : public AXTreeDelegate {
   }
 
  protected:
-  // AXTreeDelegate overrides.
+  // AXTreeObserver overrides.
   void OnNodeDataWillChange(AXTree* tree,
                             const AXNodeData& old_node_data,
                             const AXNodeData& new_node_data) override;
@@ -163,12 +189,6 @@ class AX_EXPORT AXEventGenerator : public AXTreeDelegate {
       ax::mojom::IntListAttribute attr,
       const std::vector<int32_t>& old_value,
       const std::vector<int32_t>& new_value) override;
-  void OnStringListAttributeChanged(
-      AXTree* tree,
-      AXNode* node,
-      ax::mojom::StringListAttribute attr,
-      const std::vector<std::string>& old_value,
-      const std::vector<std::string>& new_value) override;
   void OnTreeDataChanged(AXTree* tree,
                          const ui::AXTreeData& old_data,
                          const ui::AXTreeData& new_data) override;
@@ -176,9 +196,6 @@ class AX_EXPORT AXEventGenerator : public AXTreeDelegate {
   void OnSubtreeWillBeDeleted(AXTree* tree, AXNode* node) override;
   void OnNodeWillBeReparented(AXTree* tree, AXNode* node) override;
   void OnSubtreeWillBeReparented(AXTree* tree, AXNode* node) override;
-  void OnNodeCreated(AXTree* tree, AXNode* node) override;
-  void OnNodeReparented(AXTree* tree, AXNode* node) override;
-  void OnNodeChanged(AXTree* tree, AXNode* node) override;
   void OnAtomicUpdateFinished(AXTree* tree,
                               bool root_changed,
                               const std::vector<Change>& changes) override;
@@ -188,6 +205,14 @@ class AX_EXPORT AXEventGenerator : public AXTreeDelegate {
   void FireActiveDescendantEvents();
   void FireRelationSourceEvents(AXTree* tree, AXNode* target_node);
   bool ShouldFireLoadEvents(AXNode* node);
+  static void GetRestrictionStates(ax::mojom::Restriction restriction,
+                                   bool* is_enabled,
+                                   bool* is_readonly);
+
+  // Returns a vector of values unique to either |lhs| or |rhs|
+  static std::vector<int32_t> ComputeIntListDifference(
+      const std::vector<int32_t>& lhs,
+      const std::vector<int32_t>& rhs);
 
   AXTree* tree_ = nullptr;  // Not owned.
   std::map<AXNode*, std::set<EventParams>> tree_events_;

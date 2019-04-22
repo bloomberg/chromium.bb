@@ -25,8 +25,9 @@ function openSingleImage(testVolumeName, volumeType) {
         return gallery.callRemoteTestUtil('getWindows', null, []
         ).then(function(windows) {
           var bounds = windows[appId];
-          if (!bounds)
+          if (!bounds) {
             return pending('Window is not ready yet.');
+          }
 
           if (bounds.outerWidth !== WIDTH || bounds.outerHeight !== HEIGHT) {
             return pending(
@@ -69,13 +70,16 @@ function confirmTwoImagesAreLoadedInThumbnailMode(appId) {
       appId, '.gallery[mode="thumbnail"]').then(function() {
     // Confirm that two tiles are shown.
     return repeatUntil(function() {
-      return gallery.callRemoteTestUtil('queryAllElements', appId,
-          ['.thumbnail-view .thumbnail']).then(function(tiles) {
-        if (tiles.length !== 2)
-          return pending('The number of tiles is expected 2, but is %d',
-              tiles.length);
-        return tiles;
-      });
+      return gallery
+          .callRemoteTestUtil(
+              'queryAllElements', appId, ['.thumbnail-view .thumbnail'])
+          .then(function(tiles) {
+            if (tiles.length !== 2) {
+              return pending(
+                  'The number of tiles is expected 2, but is %d', tiles.length);
+            }
+            return tiles;
+          });
     });
   });
 }

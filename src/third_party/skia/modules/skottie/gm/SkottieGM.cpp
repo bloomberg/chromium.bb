@@ -5,15 +5,15 @@
  * found in the LICENSE file.
  */
 
-#include "gm.h"
+#include "AnimTimer.h"
 #include "Resources.h"
 #include "SkAnimCodecPlayer.h"
-#include "SkAnimTimer.h"
 #include "SkColor.h"
 #include "SkMakeUnique.h"
 #include "Skottie.h"
 #include "SkottieProperty.h"
 #include "SkottieUtils.h"
+#include "gm.h"
 
 #include <cmath>
 #include <vector>
@@ -61,16 +61,18 @@ protected:
         }
     }
 
-    void onDraw(SkCanvas* canvas) override {
+    DrawResult onDraw(SkCanvas* canvas, SkString* errorMsg) override {
         if (!fAnimation) {
-            return;
+            *errorMsg = "No animation";
+            return DrawResult::kFail;
         }
 
         auto dest = SkRect::MakeWH(kSize, kSize);
         fAnimation->render(canvas, &dest);
+        return DrawResult::kOk;
     }
 
-    bool onAnimate(const SkAnimTimer& timer) override {
+    bool onAnimate(const AnimTimer& timer) override {
         if (!fAnimation) {
             return false;
         }
@@ -104,25 +106,26 @@ protected:
 
     void onOnceBeforeDraw() override {
         if (auto stream = GetResourceAsStream("skottie/skottie_sample_search.json")) {
-            auto propBuilder = sk_make_sp<CustomPropertyManagerBuilder>();
+            fPropManager = skstd::make_unique<CustomPropertyManager>();
             fAnimation   = Animation::Builder()
-                              .setPropertyObserver(propBuilder)
+                              .setPropertyObserver(fPropManager->getPropertyObserver())
                               .make(stream.get());
-            fPropManager = propBuilder->build();
             fColors      = fPropManager->getColorProps();
         }
     }
 
-    void onDraw(SkCanvas* canvas) override {
+    DrawResult onDraw(SkCanvas* canvas, SkString* errorMsg) override {
         if (!fAnimation) {
-            return;
+            *errorMsg = "No animation";
+            return DrawResult::kFail;
         }
 
         auto dest = SkRect::MakeWH(kSize, kSize);
         fAnimation->render(canvas, &dest);
+        return DrawResult::kOk;
     }
 
-    bool onAnimate(const SkAnimTimer& timer) override {
+    bool onAnimate(const AnimTimer& timer) override {
         if (!fAnimation) {
             return false;
         }
@@ -184,16 +187,18 @@ protected:
         }
     }
 
-    void onDraw(SkCanvas* canvas) override {
+    DrawResult onDraw(SkCanvas* canvas, SkString* errorMsg) override {
         if (!fAnimation) {
-            return;
+            *errorMsg = "No animation";
+            return DrawResult::kFail;
         }
 
         auto dest = SkRect::MakeWH(kSize, kSize);
         fAnimation->render(canvas, &dest);
+        return DrawResult::kOk;
     }
 
-    bool onAnimate(const SkAnimTimer& timer) override {
+    bool onAnimate(const AnimTimer& timer) override {
         if (!fAnimation) {
             return false;
         }

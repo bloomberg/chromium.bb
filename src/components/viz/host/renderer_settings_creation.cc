@@ -8,12 +8,18 @@
 #include "base/feature_list.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
+#include "components/viz/common/display/overlay_strategy.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/features.h"
 #include "ui/base/ui_base_switches.h"
 
 #if defined(OS_MACOSX)
 #include "ui/base/cocoa/remote_layer_api.h"
+#endif
+
+#if defined(USE_OZONE)
+#include "components/viz/common/switches.h"
+#include "ui/ozone/public/ozone_platform.h"
 #endif
 
 namespace viz {
@@ -57,12 +63,11 @@ RendererSettings CreateRendererSettings() {
       command_line->HasSwitch(switches::kTintGlCompositedContent);
   renderer_settings.show_overdraw_feedback =
       command_line->HasSwitch(switches::kShowOverdrawFeedback);
-  renderer_settings.enable_draw_occlusion = features::IsDrawOcclusionEnabled();
   renderer_settings.allow_antialiasing =
       !command_line->HasSwitch(switches::kDisableCompositedAntialiasing);
   renderer_settings.use_skia_renderer = features::IsUsingSkiaRenderer();
-  renderer_settings.use_skia_deferred_display_list =
-      features::IsUsingSkiaDeferredDisplayList();
+  renderer_settings.use_skia_renderer_non_ddl =
+      features::IsUsingSkiaRendererNonDDL();
 #if defined(OS_MACOSX)
   renderer_settings.allow_overlays =
       ui::RemoteLayerAPISupported() &&
@@ -78,6 +83,21 @@ RendererSettings CreateRendererSettings() {
                         kMinSlowDownScaleFactor, kMaxSlowDownScaleFactor,
                         &renderer_settings.slow_down_compositing_scale_factor);
   }
+
+#if defined(USE_OZONE)
+  if (command_line->HasSwitch(switches::kEnableHardwareOverlays)) {
+    renderer_settings.overlay_strategies = ParseOverlayStategies(
+        command_line->GetSwitchValueASCII(switches::kEnableHardwareOverlays));
+  } else {
+    auto& host_properties =
+        ui::OzonePlatform::GetInstance()->GetInitializedHostProperties();
+    if (host_properties.supports_overlays) {
+      renderer_settings.overlay_strategies = {OverlayStrategy::kFullscreen,
+                                              OverlayStrategy::kSingleOnTop,
+                                              OverlayStrategy::kUnderlay};
+    }
+  }
+#endif
 
   return renderer_settings;
 }

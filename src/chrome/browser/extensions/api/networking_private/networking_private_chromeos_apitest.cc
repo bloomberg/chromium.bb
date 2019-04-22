@@ -6,6 +6,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -20,15 +21,15 @@
 #include "chrome/browser/extensions/api/networking_cast_private/chrome_networking_cast_private_delegate.h"
 #include "chrome/browser/extensions/api/networking_private/networking_private_ui_delegate_chromeos.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
-#include "chromeos/dbus/cryptohome_client.h"
+#include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/shill_device_client.h"
-#include "chromeos/dbus/shill_ipconfig_client.h"
-#include "chromeos/dbus/shill_manager_client.h"
-#include "chromeos/dbus/shill_profile_client.h"
-#include "chromeos/dbus/shill_service_client.h"
+#include "chromeos/dbus/shill/shill_device_client.h"
+#include "chromeos/dbus/shill/shill_ipconfig_client.h"
+#include "chromeos/dbus/shill/shill_manager_client.h"
+#include "chromeos/dbus/shill/shill_profile_client.h"
+#include "chromeos/dbus/shill/shill_service_client.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_certificate_handler.h"
 #include "chromeos/network/network_handler.h"
@@ -58,8 +59,6 @@
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/switches.h"
 #include "extensions/common/value_builder.h"
-#include "net/test/cert_test_util.h"
-#include "net/test/test_data_directory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -154,7 +153,8 @@ int UIDelegateStub::s_show_account_details_called_ = 0;
 
 class TestListener : public content::NotificationObserver {
  public:
-  TestListener(const std::string& message, const base::Closure& callback)
+  TestListener(const std::string& message,
+               const base::RepeatingClosure& callback)
       : message_(message), callback_(callback) {
     registrar_.Add(this, extensions::NOTIFICATION_EXTENSION_TEST_MESSAGE,
                    content::NotificationService::AllSources());
@@ -171,7 +171,7 @@ class TestListener : public content::NotificationObserver {
 
  private:
   std::string message_;
-  base::Closure callback_;
+  base::RepeatingClosure callback_;
 
   content::NotificationRegistrar registrar_;
 
@@ -225,7 +225,7 @@ class NetworkingPrivateChromeOSApiTest : public extensions::ExtensionApiTest {
     user_manager::User* user = user_manager->GetActiveUser();
     CHECK(user);
     std::string userhash;
-    DBusThreadManager::Get()->GetCryptohomeClient()->GetSanitizedUsername(
+    CryptohomeClient::Get()->GetSanitizedUsername(
         cryptohome::CreateAccountIdentifierFromAccountId(user->GetAccountId()),
         base::BindOnce(
             [](std::string* out, base::Optional<std::string> result) {
@@ -419,6 +419,8 @@ class NetworkingPrivateChromeOSApiTest : public extensions::ExtensionApiTest {
         base::Value(shill::kTetheringNotDetectedState));
     base::DictionaryValue static_ipconfig;
     static_ipconfig.SetKey(shill::kAddressProperty, base::Value("1.2.3.4"));
+    static_ipconfig.SetKey(shill::kGatewayProperty, base::Value("0.0.0.0"));
+    static_ipconfig.SetKey(shill::kPrefixlenProperty, base::Value(1));
     service_test_->SetServiceProperty(
         kWifi1ServicePath, shill::kStaticIPConfigProperty, static_ipconfig);
     base::ListValue frequencies1;
@@ -488,22 +490,6 @@ class NetworkingPrivateChromeOSApiTest : public extensions::ExtensionApiTest {
   std::unique_ptr<ChromeNetworkingCastPrivateDelegate>
   CreateNetworkingCastPrivateDelegate() {
     return std::make_unique<TestNetworkingCastPrivateDelegate>();
-  }
-
-  bool SetupCertificates() {
-    base::ScopedAllowBlockingForTesting allow_io;
-    net::ScopedCERTCertificateList cert_list =
-        net::CreateCERTCertificateListFromFile(
-            net::GetTestCertsDirectory(), "client_1_ca.pem",
-            net::X509Certificate::FORMAT_AUTO);
-    if (cert_list.empty())
-      return false;
-    // TODO(stevenjb): Figure out a simple way to import a test user cert.
-
-    chromeos::NetworkHandler::Get()
-        ->network_certificate_handler()
-        ->SetCertificatesForTest(cert_list);
-    return true;
   }
 
  protected:
@@ -589,7 +575,9 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,
   EXPECT_TRUE(RunNetworkingSubtest("getVisibleNetworksWifi")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, EnabledNetworkTypes) {
+// TODO(crbug.com/928778): Flaky on CrOS.
+IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,
+                       DISABLED_EnabledNetworkTypes) {
   EXPECT_TRUE(RunNetworkingSubtest("enabledNetworkTypes")) << message_;
 }
 
@@ -815,11 +803,12 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,
 
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,
                        OnCertificateListsChangedEvent) {
-  TestListener listener("eventListenerReady", base::Bind([]() {
-                          chromeos::NetworkHandler::Get()
-                              ->network_certificate_handler()
-                              ->NotifyCertificatsChangedForTest();
-                        }));
+  TestListener listener(
+      "eventListenerReady", base::BindRepeating([]() {
+        chromeos::NetworkHandler::Get()
+            ->network_certificate_handler()
+            ->AddAuthorityCertificateForTest("authority_cert");
+      }));
   EXPECT_TRUE(RunNetworkingSubtest("onCertificateListsChangedEvent"))
       << message_;
 }
@@ -964,7 +953,9 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,
 }
 
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, GetCertificateLists) {
-  ASSERT_TRUE(SetupCertificates());
+  chromeos::NetworkHandler::Get()
+      ->network_certificate_handler()
+      ->AddAuthorityCertificateForTest("authority_cert");
   EXPECT_TRUE(RunNetworkingSubtest("getCertificateLists")) << message_;
 }
 

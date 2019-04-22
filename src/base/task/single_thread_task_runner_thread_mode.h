@@ -11,12 +11,10 @@ enum class SingleThreadTaskRunnerThreadMode {
   // Allow the SingleThreadTaskRunner's thread to be shared with others,
   // allowing for efficient use of thread resources when this
   // SingleThreadTaskRunner is idle. This is the default mode and is
-  // recommended for most code.
+  // recommended for thread-affine code.
   SHARED,
-  // Dedicate a single thread for this SingleThreadTaskRunner. No other tasks
-  // from any other source will run on the thread backing the
-  // SingleThreadTaskRunner. Use sparingly as this reserves an entire thread for
-  // this SingleThreadTaskRunner.
+  // Create a new thread, dedicated to this SingleThreadTaskRunner, and tear it
+  // down when the last reference to the TaskRunner is dropped.
   DEDICATED,
 };
 

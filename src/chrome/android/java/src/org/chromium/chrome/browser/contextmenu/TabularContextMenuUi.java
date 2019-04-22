@@ -5,9 +5,6 @@
 package org.chromium.chrome.browser.contextmenu;
 
 import android.app.Activity;
-import android.content.ClipData;
-import android.content.ClipboardManager;
-import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -33,7 +30,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.ContextMenuDialog;
-import org.chromium.ui.widget.Toast;
+import org.chromium.ui.base.Clipboard;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -93,8 +90,9 @@ public class TabularContextMenuUi implements ContextMenuUi, AdapterView.OnItemCl
         mPagerView = initPagerView(activity, params, itemGroups,
                 (TabularContextMenuViewPager) view.findViewById(R.id.custom_pager));
 
-        final ContextMenuDialog dialog = new ContextMenuDialog(activity, R.style.DialogWhenLarge,
-                touchPointXPx, touchPointYPx, mTopContentOffsetPx, mPagerView);
+        final ContextMenuDialog dialog =
+                new ContextMenuDialog(activity, R.style.Theme_Chromium_DialogWhenLarge,
+                        touchPointXPx, touchPointYPx, mTopContentOffsetPx, mPagerView);
         dialog.setContentView(view);
 
         return dialog;
@@ -207,11 +205,7 @@ public class TabularContextMenuUi implements ContextMenuUi, AdapterView.OnItemCl
         });
         if (TextUtils.isEmpty(params.getUnfilteredLinkUrl())) return;
         headerTextView.setOnLongClickListener(view -> {
-            ClipboardManager clipboard = (ClipboardManager) view.getContext().getSystemService(
-                    Context.CLIPBOARD_SERVICE);
-            ClipData clip = ClipData.newPlainText("url", params.getUnfilteredLinkUrl());
-            clipboard.setPrimaryClip(clip);
-            Toast.makeText(view.getContext(), R.string.url_copied, Toast.LENGTH_SHORT).show();
+            Clipboard.getInstance().copyUrlToClipboard(params.getUnfilteredLinkUrl());
             return true;
         });
     }

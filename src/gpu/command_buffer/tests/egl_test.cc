@@ -520,8 +520,8 @@ void EGLThreadTest::TearDown() {
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
   other_thread_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&EGLThreadTest::OtherThreadTearDown,
-                            base::Unretained(this), &completion));
+      FROM_HERE, base::BindOnce(&EGLThreadTest::OtherThreadTearDown,
+                                base::Unretained(this), &completion));
   completion.Wait();
   other_thread_.Stop();
   EGLSurfaceTest::TearDown();
@@ -563,24 +563,24 @@ TEST_F(EGLThreadTest, Basic) {
 
   EGLBoolean result = EGL_FALSE;
   other_thread_.task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&EGLThreadTest::OtherThreadMakeCurrent, base::Unretained(this),
-                 surface, context, &result, &completion));
+      FROM_HERE, base::BindOnce(&EGLThreadTest::OtherThreadMakeCurrent,
+                                base::Unretained(this), surface, context,
+                                &result, &completion));
   completion.Wait();
   EXPECT_FALSE(result);
   EXPECT_EQ(EGL_SUCCESS, eglGetError());
 
   EGLint error = EGL_NONE;
   other_thread_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&EGLThreadTest::OtherThreadGetError,
-                            base::Unretained(this), &error, &completion));
+      FROM_HERE, base::BindOnce(&EGLThreadTest::OtherThreadGetError,
+                                base::Unretained(this), &error, &completion));
   completion.Wait();
   EXPECT_EQ(EGL_BAD_ACCESS, error);
   EXPECT_EQ(EGL_SUCCESS, eglGetError());
 
   other_thread_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&EGLThreadTest::OtherThreadGetError,
-                            base::Unretained(this), &error, &completion));
+      FROM_HERE, base::BindOnce(&EGLThreadTest::OtherThreadGetError,
+                                base::Unretained(this), &error, &completion));
   completion.Wait();
   EXPECT_EQ(EGL_SUCCESS, error);
 
@@ -588,9 +588,9 @@ TEST_F(EGLThreadTest, Basic) {
       eglMakeCurrent(display_, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT));
 
   other_thread_.task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&EGLThreadTest::OtherThreadMakeCurrent, base::Unretained(this),
-                 surface, context, &result, &completion));
+      FROM_HERE, base::BindOnce(&EGLThreadTest::OtherThreadMakeCurrent,
+                                base::Unretained(this), surface, context,
+                                &result, &completion));
   completion.Wait();
   EXPECT_TRUE(result);
 

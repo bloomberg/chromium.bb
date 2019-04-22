@@ -110,4 +110,19 @@ bool MockBrowsingDataRemoverDelegate::CallParameters::operator==(
   return *a.filter_builder_ == *b.filter_builder_;
 }
 
+std::ostream& operator<<(
+    std::ostream& os,
+    const MockBrowsingDataRemoverDelegate::CallParameters& p) {
+  os << "BrowsingDataFilterBuilder: " << std::endl;
+  os << "  delete_begin: " << p.delete_begin_ << std::endl;
+  os << "  delete_end: " << p.delete_end_ << std::endl;
+  os << "  remove_mask: " << p.remove_mask_ << std::endl;
+  os << "  origin_type_mask: " << p.origin_type_mask_ << std::endl;
+  if (p.should_compare_filter_) {
+    os << "  filter_builder: " << std::endl;
+    os << "    mode: " << p.filter_builder_->GetMode() << std::endl;
+  }
+  return os;
+}
+
 }  // content

@@ -17,6 +17,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/stl_util.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/services/filesystem/public/interfaces/types.mojom.h"
@@ -29,6 +30,7 @@
 #include "storage/browser/test/async_file_test_helper.h"
 #include "storage/browser/test/fileapi_test_file_set.h"
 #include "storage/browser/test/test_file_system_context.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::AsyncFileTestHelper;
@@ -68,9 +70,7 @@ FileSystemURL GetEntryURL(FileSystemContext* file_system_context,
                           const FileSystemURL& dir,
                           const base::FilePath::StringType& name) {
   return file_system_context->CreateCrackedFileSystemURL(
-      dir.origin(),
-      dir.mount_type(),
-      dir.virtual_path().Append(name));
+      dir.origin().GetURL(), dir.mount_type(), dir.virtual_path().Append(name));
 }
 
 base::FilePath GetRelativeVirtualPath(const FileSystemURL& root,
@@ -89,8 +89,7 @@ FileSystemURL GetOtherURL(FileSystemContext* file_system_context,
                           const FileSystemURL& other_root,
                           const FileSystemURL& url) {
   return file_system_context->CreateCrackedFileSystemURL(
-      other_root.origin(),
-      other_root.mount_type(),
+      other_root.origin().GetURL(), other_root.mount_type(),
       other_root.virtual_path().Append(GetRelativeVirtualPath(root, url)));
 }
 
@@ -268,7 +267,7 @@ class DraggedFileUtilTest : public testing::Test {
       // to simulate a drop with multiple directories.
       if (toplevel_root_map_.find(toplevel) == toplevel_root_map_.end()) {
         base::FilePath root = root_path().Append(
-            kRootPaths[(root_path_index++) % arraysize(kRootPaths)]);
+            kRootPaths[(root_path_index++) % base::size(kRootPaths)]);
         toplevel_root_map_[toplevel] = root;
         toplevels.AddPath(root.Append(path), nullptr);
       }
@@ -325,7 +324,7 @@ TEST_F(DraggedFileUtilTest, UnregisteredPathsTest) {
     {false, FILE_PATH_LITERAL("bar"), 20},
   };
 
-  for (size_t i = 0; i < arraysize(kUnregisteredCases); ++i) {
+  for (size_t i = 0; i < base::size(kUnregisteredCases); ++i) {
     SCOPED_TRACE(testing::Message() << "Creating kUnregisteredCases " << i);
     const FileSystemTestCaseRecord& test_case = kUnregisteredCases[i];
 
@@ -340,7 +339,7 @@ TEST_F(DraggedFileUtilTest, UnregisteredPathsTest) {
     ASSERT_EQ(test_case.is_directory, info.is_directory);
   }
 
-  for (size_t i = 0; i < arraysize(kUnregisteredCases); ++i) {
+  for (size_t i = 0; i < base::size(kUnregisteredCases); ++i) {
     SCOPED_TRACE(testing::Message() << "Creating kUnregisteredCases " << i);
     const FileSystemTestCaseRecord& test_case = kUnregisteredCases[i];
     FileSystemURL url = GetFileSystemURL(base::FilePath(test_case.path));
@@ -550,6 +549,70 @@ TEST_F(DraggedFileUtilTest, TruncateTest) {
                                        &info, &platform_path));
     EXPECT_EQ(999, info.size);
   }
+}
+
+TEST_F(DraggedFileUtilTest, EnumerateTest) {
+  FileSystemURL url =
+      GetFileSystemURL(base::FilePath(FILE_PATH_LITERAL("dir a")));
+  auto enumerator = file_util()->CreateFileEnumerator(
+      GetOperationContext().get(), url, false);
+  std::vector<base::FilePath> contents;
+  for (base::FilePath path = enumerator->Next(); !path.empty();
+       path = enumerator->Next()) {
+    base::FilePath relative;
+    root_path()
+        .Append(base::FilePath(FILE_PATH_LITERAL("a")))
+        .AppendRelativePath(path, &relative);
+    contents.push_back(relative);
+  }
+  EXPECT_THAT(contents, testing::UnorderedElementsAre(
+                            base::FilePath(FILE_PATH_LITERAL("dir a/dir A"))
+                                .NormalizePathSeparators(),
+                            base::FilePath(FILE_PATH_LITERAL("dir a/dir d"))
+                                .NormalizePathSeparators(),
+                            base::FilePath(FILE_PATH_LITERAL("dir a/file 0"))
+                                .NormalizePathSeparators()));
+}
+
+TEST_F(DraggedFileUtilTest, EnumerateRecursivelyTest) {
+  FileSystemURL url =
+      GetFileSystemURL(base::FilePath(FILE_PATH_LITERAL("dir a")));
+  auto enumerator =
+      file_util()->CreateFileEnumerator(GetOperationContext().get(), url, true);
+  std::vector<base::FilePath> contents;
+  for (base::FilePath path = enumerator->Next(); !path.empty();
+       path = enumerator->Next()) {
+    base::FilePath relative;
+    root_path()
+        .Append(base::FilePath(FILE_PATH_LITERAL("a")))
+        .AppendRelativePath(path, &relative);
+    contents.push_back(relative);
+  }
+  EXPECT_THAT(
+      contents,
+      testing::UnorderedElementsAre(
+          base::FilePath(FILE_PATH_LITERAL("dir a/dir A"))
+              .NormalizePathSeparators(),
+          base::FilePath(FILE_PATH_LITERAL("dir a/dir d"))
+              .NormalizePathSeparators(),
+          base::FilePath(FILE_PATH_LITERAL("dir a/file 0"))
+              .NormalizePathSeparators(),
+          base::FilePath(FILE_PATH_LITERAL("dir a/dir d/dir e"))
+              .NormalizePathSeparators(),
+          base::FilePath(FILE_PATH_LITERAL("dir a/dir d/dir e/dir f"))
+              .NormalizePathSeparators(),
+          base::FilePath(FILE_PATH_LITERAL("dir a/dir d/dir e/dir g"))
+              .NormalizePathSeparators(),
+          base::FilePath(FILE_PATH_LITERAL("dir a/dir d/dir e/dir g/file 0"))
+              .NormalizePathSeparators(),
+          base::FilePath(FILE_PATH_LITERAL("dir a/dir d/dir e/dir g/file 1"))
+              .NormalizePathSeparators(),
+          base::FilePath(FILE_PATH_LITERAL("dir a/dir d/dir e/dir g/file 2"))
+              .NormalizePathSeparators(),
+          base::FilePath(FILE_PATH_LITERAL("dir a/dir d/dir e/dir g/file 3"))
+              .NormalizePathSeparators(),
+          base::FilePath(FILE_PATH_LITERAL("dir a/dir d/dir e/dir h"))
+              .NormalizePathSeparators()));
 }
 
 }  // namespace content

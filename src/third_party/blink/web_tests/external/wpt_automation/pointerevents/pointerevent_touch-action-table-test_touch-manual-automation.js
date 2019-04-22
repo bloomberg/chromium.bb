@@ -10,6 +10,6 @@ function inject_input() {
   }).then(function() {
     return touchScrollInTarget('#cell3', 'right');
   }).then(function() {
-    touchTapInTarget('#btnComplete');
+    return touchTapInTarget('#btnComplete');
   });
 }

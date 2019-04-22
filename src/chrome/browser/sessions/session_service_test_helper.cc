@@ -121,3 +121,14 @@ void SessionServiceTestHelper::RunTaskOnBackendThread(
       service_->GetBaseSessionServiceForTest());
   test_helper.RunTaskOnBackendThread(from_here, task);
 }
+
+void SessionServiceTestHelper::SetAvailableRange(
+    const SessionID& tab_id,
+    const std::pair<int, int>& range) {
+  service_->SetAvailableRangeForTest(tab_id, range);
+}
+
+bool SessionServiceTestHelper::GetAvailableRange(const SessionID& tab_id,
+                                                 std::pair<int, int>* range) {
+  return service_->GetAvailableRangeForTest(tab_id, range);
+}

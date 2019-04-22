@@ -12,9 +12,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
-#include "content/public/renderer/media_stream_video_sink.h"
 #include "third_party/blink/public/platform/scoped_web_callbacks.h"
 #include "third_party/blink/public/platform/web_image_capture_frame_grabber.h"
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_sink.h"
 
 namespace blink {
 class WebMediaStreamTrack;
@@ -29,7 +29,7 @@ namespace content {
 // OnSkBitmap(). This class is single threaded throughout.
 class CONTENT_EXPORT ImageCaptureFrameGrabber final
     : public blink::WebImageCaptureFrameGrabber,
-      public MediaStreamVideoSink {
+      public blink::MediaStreamVideoSink {
  public:
   using SkImageDeliverCB = base::Callback<void(sk_sp<SkImage>)>;
 
@@ -37,9 +37,10 @@ class CONTENT_EXPORT ImageCaptureFrameGrabber final
   ~ImageCaptureFrameGrabber() override;
 
   // blink::WebImageCaptureFrameGrabber implementation.
-  void GrabFrame(blink::WebMediaStreamTrack* track,
-                 std::unique_ptr<blink::WebImageCaptureGrabFrameCallbacks>
-                     callbacks) override;
+  void GrabFrame(
+      blink::WebMediaStreamTrack* track,
+      std::unique_ptr<blink::WebImageCaptureGrabFrameCallbacks> callbacks,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
 
  private:
   // Internal class to receive, convert and forward one frame.

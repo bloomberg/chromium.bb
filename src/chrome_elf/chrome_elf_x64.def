@@ -11,14 +11,11 @@ EXPORTS
   CrashForException_ExportThunk
   DumpHungProcessWithPtype_ExportThunk
   GetCrashpadDatabasePath_ExportThunk
+  ClearReportsBetween_ExportThunk
   GetCrashReports_ExportThunk
   InjectDumpForHungInput_ExportThunk
   RequestSingleCrashUpload_ExportThunk
   SetUploadConsent_ExportThunk
-
-  ; X64-only exports
-  RegisterNonABICompliantCodeRange_ExportThunk
-  UnregisterNonABICompliantCodeRange_ExportThunk
 
   ; From chrome_elf/crash/crash_helper.cc
   SetMetricsClientId

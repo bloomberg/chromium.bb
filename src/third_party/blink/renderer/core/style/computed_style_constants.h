@@ -49,17 +49,6 @@ inline bool EnumHasFlags(Enum v, Enum mask) {
 // from top.
 enum class BoxSide : unsigned { kTop, kRight, kBottom, kLeft };
 
-// See core/style/stylerecalc.md for an explanation on what each state means
-enum StyleRecalcChange {
-  kNoChange,
-  kNoInherit,
-  kUpdatePseudoElements,
-  kIndependentInherit,
-  kInherit,
-  kForce,
-  kReattach
-};
-
 // Static pseudo styles. Dynamic ones are produced on the fly.
 enum PseudoId {
   // The order must be NOP ID, public IDs, and then internal IDs.

@@ -5,13 +5,13 @@
  * found in the LICENSE file.
  */
 
+#include "AnimTimer.h"
 #include "Sample.h"
-#include "SkAnimTimer.h"
 #include "SkCanvas.h"
 #include "SkDrawable.h"
 #include "SkPath.h"
-#include "SkRandom.h"
 #include "SkRSXform.h"
+#include "SkRandom.h"
 #include "SkSurface.h"
 #include "SkTextUtils.h"
 
@@ -45,20 +45,21 @@ static sk_sp<SkImage> make_atlas(int atlasSize, int cellSize) {
     SkCanvas* canvas = surface->getCanvas();
 
     SkPaint paint;
-    paint.setAntiAlias(true);
     SkRandom rand;
 
     const SkScalar half = cellSize * SK_ScalarHalf;
     const char* s = "01234567890!@#$%^&*=+<>?abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    paint.setTextSize(28);
+    SkFont font(nullptr, 28);
+
     int i = 0;
     for (int y = 0; y < atlasSize; y += cellSize) {
         for (int x = 0; x < atlasSize; x += cellSize) {
             paint.setColor(rand.nextU());
             paint.setAlpha(0xFF);
             int index = i % strlen(s);
-            SkTextUtils::DrawText(canvas, &s[index], 1, x + half, y + half + half/2, paint,
-                                  SkTextUtils::kCenter_Align);
+            SkTextUtils::Draw(canvas, &s[index], 1, kUTF8_SkTextEncoding,
+                              x + half, y + half + half/2, font, paint,
+                              SkTextUtils::kCenter_Align);
             i += 1;
         }
     }
@@ -233,12 +234,10 @@ protected:
         canvas->drawDrawable(fDrawable.get());
     }
 
-    bool onAnimate(const SkAnimTimer&) override {
-        return true;
-    }
+    bool onAnimate(const AnimTimer&) override { return true; }
 #if 0
     // TODO: switch over to use this for our animation
-    bool onAnimate(const SkAnimTimer& timer) override {
+    bool onAnimate(const AnimTimer& timer) override {
         SkScalar angle = SkDoubleToScalar(fmod(timer.secs() * 360 / 24, 360));
         fAnimatingDrawable->setSweep(angle);
         return true;

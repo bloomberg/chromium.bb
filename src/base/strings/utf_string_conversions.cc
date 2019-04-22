@@ -4,8 +4,12 @@
 
 #include "base/strings/utf_string_conversions.h"
 
+#include <limits.h>
 #include <stdint.h>
 
+#include <type_traits>
+
+#include "base/bit_cast.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversion_utils.h"
@@ -59,21 +63,27 @@ constexpr int size_coefficient_v =
 // Function overloads that write code_point to the output string. Output string
 // has to have enough space for the codepoint.
 
-void UnicodeAppendUnsafe(char* out, int32_t* size, uint32_t code_point) {
+// Convenience typedef that checks whether the passed in type is integral (i.e.
+// bool, char, int or their extended versions) and is of the correct size.
+template <typename Char, size_t N>
+using EnableIfBitsAre = std::enable_if_t<std::is_integral<Char>::value &&
+                                             CHAR_BIT * sizeof(Char) == N,
+                                         bool>;
+
+template <typename Char, EnableIfBitsAre<Char, 8> = true>
+void UnicodeAppendUnsafe(Char* out, int32_t* size, uint32_t code_point) {
   CBU8_APPEND_UNSAFE(out, *size, code_point);
 }
 
-void UnicodeAppendUnsafe(char16* out, int32_t* size, uint32_t code_point) {
+template <typename Char, EnableIfBitsAre<Char, 16> = true>
+void UnicodeAppendUnsafe(Char* out, int32_t* size, uint32_t code_point) {
   CBU16_APPEND_UNSAFE(out, *size, code_point);
 }
 
-#if defined(WCHAR_T_IS_UTF32)
-
-void UnicodeAppendUnsafe(wchar_t* out, int32_t* size, uint32_t code_point) {
+template <typename Char, EnableIfBitsAre<Char, 32> = true>
+void UnicodeAppendUnsafe(Char* out, int32_t* size, uint32_t code_point) {
   out[(*size)++] = code_point;
 }
-
-#endif  // defined(WCHAR_T_IS_UTF32)
 
 // DoUTFConversion ------------------------------------------------------------
 // Main driver of UTFConversion specialized for different Src encodings.
@@ -232,21 +242,21 @@ std::string UTF16ToUTF8(StringPiece16 utf16) {
 // When wide == UTF-16 the conversions are a NOP.
 
 bool WideToUTF16(const wchar_t* src, size_t src_len, string16* output) {
-  output->assign(src, src_len);
+  output->assign(src, src + src_len);
   return true;
 }
 
 string16 WideToUTF16(WStringPiece wide) {
-  return wide.as_string();
+  return string16(wide.begin(), wide.end());
 }
 
 bool UTF16ToWide(const char16* src, size_t src_len, std::wstring* output) {
-  output->assign(src, src_len);
+  output->assign(src, src + src_len);
   return true;
 }
 
 std::wstring UTF16ToWide(StringPiece16 utf16) {
-  return utf16.as_string();
+  return std::wstring(utf16.begin(), utf16.end());
 }
 
 #elif defined(WCHAR_T_IS_UTF32)
@@ -297,11 +307,11 @@ std::wstring UTF8ToWide(StringPiece utf8) {
 // Easy case since we can use the "utf" versions we already wrote above.
 
 bool WideToUTF8(const wchar_t* src, size_t src_len, std::string* output) {
-  return UTF16ToUTF8(src, src_len, output);
+  return UTF16ToUTF8(as_u16cstr(src), src_len, output);
 }
 
 std::string WideToUTF8(WStringPiece wide) {
-  return UTF16ToUTF8(wide);
+  return UTF16ToUTF8(StringPiece16(as_u16cstr(wide), wide.size()));
 }
 
 #elif defined(WCHAR_T_IS_UTF32)

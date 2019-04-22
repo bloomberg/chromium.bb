@@ -4,7 +4,7 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/third_party/mozilla/url_parse.h"
 #include "url/url_canon.h"
@@ -199,71 +199,83 @@ TEST_F(URLUtilTest, DecodeURLEscapeSequences) {
   struct DecodeCase {
     const char* input;
     const char* output;
-    DecodeURLResult result;
   } decode_cases[] = {
-      {"hello, world", "hello, world", DecodeURLResult::kAsciiOnly},
+      {"hello, world", "hello, world"},
       {"%01%02%03%04%05%06%07%08%09%0a%0B%0C%0D%0e%0f/",
-       "\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0B\x0C\x0D\x0e\x0f/",
-       DecodeURLResult::kAsciiOnly},
+       "\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0B\x0C\x0D\x0e\x0f/"},
       {"%10%11%12%13%14%15%16%17%18%19%1a%1B%1C%1D%1e%1f/",
-       "\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1B\x1C\x1D\x1e\x1f/",
-       DecodeURLResult::kAsciiOnly},
+       "\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1B\x1C\x1D\x1e\x1f/"},
       {"%20%21%22%23%24%25%26%27%28%29%2a%2B%2C%2D%2e%2f/",
-       " !\"#$%&'()*+,-.//", DecodeURLResult::kAsciiOnly},
-      {"%30%31%32%33%34%35%36%37%38%39%3a%3B%3C%3D%3e%3f/", "0123456789:;<=>?/",
-       DecodeURLResult::kAsciiOnly},
-      {"%40%41%42%43%44%45%46%47%48%49%4a%4B%4C%4D%4e%4f/", "@ABCDEFGHIJKLMNO/",
-       DecodeURLResult::kAsciiOnly},
+       " !\"#$%&'()*+,-.//"},
+      {"%30%31%32%33%34%35%36%37%38%39%3a%3B%3C%3D%3e%3f/",
+       "0123456789:;<=>?/"},
+      {"%40%41%42%43%44%45%46%47%48%49%4a%4B%4C%4D%4e%4f/",
+       "@ABCDEFGHIJKLMNO/"},
       {"%50%51%52%53%54%55%56%57%58%59%5a%5B%5C%5D%5e%5f/",
-       "PQRSTUVWXYZ[\\]^_/", DecodeURLResult::kAsciiOnly},
-      {"%60%61%62%63%64%65%66%67%68%69%6a%6B%6C%6D%6e%6f/", "`abcdefghijklmno/",
-       DecodeURLResult::kAsciiOnly},
+       "PQRSTUVWXYZ[\\]^_/"},
+      {"%60%61%62%63%64%65%66%67%68%69%6a%6B%6C%6D%6e%6f/",
+       "`abcdefghijklmno/"},
       {"%70%71%72%73%74%75%76%77%78%79%7a%7B%7C%7D%7e%7f/",
-       "pqrstuvwxyz{|}~\x7f/", DecodeURLResult::kAsciiOnly},
-      // Test un-UTF-8-ization.
-      {"%e4%bd%a0%e5%a5%bd", "\xe4\xbd\xa0\xe5\xa5\xbd",
-       DecodeURLResult::kUTF8},
+       "pqrstuvwxyz{|}~\x7f/"},
+      {"%e4%bd%a0%e5%a5%bd", "\xe4\xbd\xa0\xe5\xa5\xbd"},
   };
 
-  for (size_t i = 0; i < arraysize(decode_cases); i++) {
+  for (size_t i = 0; i < base::size(decode_cases); i++) {
     const char* input = decode_cases[i].input;
     RawCanonOutputT<base::char16> output;
-    EXPECT_EQ(decode_cases[i].result,
-              DecodeURLEscapeSequences(input, strlen(input), &output));
+    DecodeURLEscapeSequences(input, strlen(input),
+                             DecodeURLMode::kUTF8OrIsomorphic, &output);
     EXPECT_EQ(decode_cases[i].output,
               base::UTF16ToUTF8(base::string16(output.data(),
                                                output.length())));
+
+    RawCanonOutputT<base::char16> output_utf8;
+    DecodeURLEscapeSequences(input, strlen(input), DecodeURLMode::kUTF8,
+                             &output_utf8);
+    EXPECT_EQ(decode_cases[i].output,
+              base::UTF16ToUTF8(
+                  base::string16(output_utf8.data(), output_utf8.length())));
   }
 
   // Our decode should decode %00
   const char zero_input[] = "%00";
   RawCanonOutputT<base::char16> zero_output;
-  DecodeURLEscapeSequences(zero_input, strlen(zero_input), &zero_output);
+  DecodeURLEscapeSequences(zero_input, strlen(zero_input), DecodeURLMode::kUTF8,
+                           &zero_output);
   EXPECT_NE("%00", base::UTF16ToUTF8(
       base::string16(zero_output.data(), zero_output.length())));
 
   // Test the error behavior for invalid UTF-8.
-  {
-    const char invalid_input[] = "%e4%a0%e5%a5%bd";
-    const base::char16 invalid_expected[6] = {0x00e4, 0x00a0, 0x00e5,
-                                              0x00a5, 0x00bd, 0};
-    RawCanonOutputT<base::char16> invalid_output;
-    EXPECT_EQ(DecodeURLResult::kIsomorphic,
-              DecodeURLEscapeSequences(invalid_input, strlen(invalid_input),
-                                       &invalid_output));
-    EXPECT_EQ(base::string16(invalid_expected),
-              base::string16(invalid_output.data(), invalid_output.length()));
-  }
-  {
-    const char invalid_input[] = "%e4%a0%e5%bd";
-    const base::char16 invalid_expected[5] = {0x00e4, 0x00a0, 0x00e5, 0x00bd,
-                                              0};
-    RawCanonOutputT<base::char16> invalid_output;
-    EXPECT_EQ(DecodeURLResult::kIsomorphic,
-              DecodeURLEscapeSequences(invalid_input, strlen(invalid_input),
-                                       &invalid_output));
-    EXPECT_EQ(base::string16(invalid_expected),
-              base::string16(invalid_output.data(), invalid_output.length()));
+  struct Utf8DecodeCase {
+    const char* input;
+    std::vector<base::char16> expected_iso;
+    std::vector<base::char16> expected_utf8;
+  } utf8_decode_cases[] = {
+      // %e5%a5%bd is a valid UTF-8 sequence. U+597D
+      {"%e4%a0%e5%a5%bd",
+       {0x00e4, 0x00a0, 0x00e5, 0x00a5, 0x00bd, 0},
+       {0xfffd, 0x597d, 0}},
+      {"%e5%a5%bd%e4%a0",
+       {0x00e5, 0x00a5, 0x00bd, 0x00e4, 0x00a0, 0},
+       {0x597d, 0xfffd, 0}},
+      {"%e4%a0%e5%bd",
+       {0x00e4, 0x00a0, 0x00e5, 0x00bd, 0},
+       {0xfffd, 0xfffd, 0}},
+  };
+
+  for (const auto& test : utf8_decode_cases) {
+    const char* input = test.input;
+    RawCanonOutputT<base::char16> output_iso;
+    DecodeURLEscapeSequences(input, strlen(input),
+                             DecodeURLMode::kUTF8OrIsomorphic, &output_iso);
+    EXPECT_EQ(base::string16(test.expected_iso.data()),
+              base::string16(output_iso.data(), output_iso.length()));
+
+    RawCanonOutputT<base::char16> output_utf8;
+    DecodeURLEscapeSequences(input, strlen(input), DecodeURLMode::kUTF8,
+                             &output_utf8);
+    EXPECT_EQ(base::string16(test.expected_utf8.data()),
+              base::string16(output_utf8.data(), output_utf8.length()));
   }
 }
 
@@ -291,7 +303,7 @@ TEST_F(URLUtilTest, TestEncodeURIComponent) {
      "pqrstuvwxyz%7B%7C%7D~%7F"},
   };
 
-  for (size_t i = 0; i < arraysize(encode_cases); i++) {
+  for (size_t i = 0; i < base::size(encode_cases); i++) {
     const char* input = encode_cases[i].input;
     RawCanonOutputT<char> buffer;
     EncodeURIComponent(input, strlen(input), &buffer);
@@ -368,7 +380,7 @@ TEST_F(URLUtilTest, TestResolveRelativeWithNonStandardBase) {
       // adding the requested dot doesn't seem wrong either.
       {"aaa://a\\", "aaa:.", true, "aaa://a\\."}};
 
-  for (size_t i = 0; i < arraysize(resolve_non_standard_cases); i++) {
+  for (size_t i = 0; i < base::size(resolve_non_standard_cases); i++) {
     const ResolveRelativeCase& test_data = resolve_non_standard_cases[i];
     Parsed base_parsed;
     ParsePathURL(test_data.base, strlen(test_data.base), false, &base_parsed);

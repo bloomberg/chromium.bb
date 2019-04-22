@@ -4,6 +4,7 @@
 
 #include "extensions/browser/api/system_display/display_info_provider.h"
 
+#include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "extensions/browser/extensions_browser_client.h"
@@ -62,7 +63,7 @@ api::system_display::DisplayUnitInfo DisplayInfoProvider::CreateDisplayUnitInfo(
   api::system_display::DisplayUnitInfo unit;
   const gfx::Rect& bounds = display.bounds();
   const gfx::Rect& work_area = display.work_area();
-  unit.id = base::Int64ToString(display.id());
+  unit.id = base::NumberToString(display.id());
   unit.is_primary = (display.id() == primary_display_id);
   unit.is_internal = display.IsInternal();
   unit.is_enabled = true;

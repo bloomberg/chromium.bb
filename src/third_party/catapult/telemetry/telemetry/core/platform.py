@@ -239,36 +239,9 @@ class Platform(object):
     """Returns whether the platform can launch the given application."""
     return self._platform_backend.CanLaunchApplication(application)
 
-  def InstallApplication(self, application):
+  def InstallApplication(self, application, **kwargs):
     """Installs the given application."""
-    return self._platform_backend.InstallApplication(application)
-
-  def CanCaptureVideo(self):
-    """Returns a bool indicating whether the platform supports video capture."""
-    return self._platform_backend.CanCaptureVideo()
-
-  def StartVideoCapture(self, min_bitrate_mbps):
-    """Starts capturing video.
-
-    Outer framing may be included (from the OS, browser window, and webcam).
-
-    Args:
-      min_bitrate_mbps: The minimum capture bitrate in MegaBits Per Second.
-          The platform is free to deliver a higher bitrate if it can do so
-          without increasing overhead.
-
-    Raises:
-      ValueError if the required |min_bitrate_mbps| can't be achieved.
-    """
-    return self._platform_backend.StartVideoCapture(min_bitrate_mbps)
-
-  def StopVideoCapture(self):
-    """Stops capturing video.
-
-    Returns:
-      A telemetry.core.video.Video object.
-    """
-    return self._platform_backend.StopVideoCapture()
+    return self._platform_backend.InstallApplication(application, **kwargs)
 
   def CanMonitorPower(self):
     """Returns True iff power can be monitored asynchronously via
@@ -342,19 +315,6 @@ class Platform(object):
     # TODO(rnephew): Remove when crbug.com/553601 is solved.
     real_logging.info('IsMonitoringPower: %s', self._is_monitoring_power)
     return self._is_monitoring_power
-
-  def CanMonitorNetworkData(self):
-    """Returns true if network data can be retrieved, false otherwise."""
-    return self._platform_backend.CanMonitorNetworkData()
-
-  def GetNetworkData(self, browser):
-    """Get current network data.
-    Returns:
-      Tuple of (sent_data, received_data) in kb if data can be found,
-      None otherwise.
-    """
-    assert browser.platform == self
-    return self._platform_backend.GetNetworkData(browser)
 
   def IsCooperativeShutdownSupported(self):
     """Indicates whether CooperativelyShutdown, below, is supported.

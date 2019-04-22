@@ -4,7 +4,7 @@
 
 #include "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
 
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "ios/chrome/browser/browser_state/browser_state_otr_helper.h"
@@ -29,7 +29,8 @@ FaviconLoader* IOSChromeFaviconLoaderFactory::GetForBrowserStateIfExists(
 }
 
 IOSChromeFaviconLoaderFactory* IOSChromeFaviconLoaderFactory::GetInstance() {
-  return base::Singleton<IOSChromeFaviconLoaderFactory>::get();
+  static base::NoDestructor<IOSChromeFaviconLoaderFactory> instance;
+  return instance.get();
 }
 
 IOSChromeFaviconLoaderFactory::IOSChromeFaviconLoaderFactory()

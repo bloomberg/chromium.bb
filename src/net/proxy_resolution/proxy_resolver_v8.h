@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "net/base/net_export.h"
+#include "net/proxy_resolution/proxy_resolve_dns_operation.h"
 
 class GURL;
 
@@ -27,13 +28,6 @@ class NET_EXPORT_PRIVATE ProxyResolverV8 {
   // Interface for the javascript bindings.
   class NET_EXPORT_PRIVATE JSBindings {
    public:
-    enum ResolveDnsOperation {
-      DNS_RESOLVE,
-      DNS_RESOLVE_EX,
-      MY_IP_ADDRESS,
-      MY_IP_ADDRESS_EX,
-    };
-
     JSBindings() {}
 
     // Handler for "dnsResolve()", "dnsResolveEx()", "myIpAddress()",
@@ -41,7 +35,7 @@ class NET_EXPORT_PRIVATE ProxyResolverV8 {
     // result. If |*terminate| is set to true, then the script execution will
     // be aborted. Note that termination may not happen right away.
     virtual bool ResolveDns(const std::string& host,
-                            ResolveDnsOperation op,
+                            ProxyResolveDnsOperation op,
                             std::string* output,
                             bool* terminate) = 0;
 

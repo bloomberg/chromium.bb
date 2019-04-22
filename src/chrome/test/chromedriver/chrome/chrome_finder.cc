@@ -15,8 +15,8 @@
 #include "base/environment.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/macros.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -147,7 +147,7 @@ bool FindChrome(base::FilePath* browser_exe) {
   };
 
   std::vector<base::FilePath> browser_exes(
-      browser_exes_array, browser_exes_array + arraysize(browser_exes_array));
+      browser_exes_array, browser_exes_array + base::size(browser_exes_array));
   base::FilePath module_dir;
   if (base::PathService::Get(base::DIR_MODULE, &module_dir)) {
     for (size_t i = 0; i < browser_exes.size(); ++i) {

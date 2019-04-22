@@ -9,7 +9,6 @@
 
 #include "third_party/skia/include/core/SkMatrix44.h"
 #include "ui/display/display_layout.h"
-#include "ui/display/manager/display_configurator.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/manager/touch_device_manager.h"
@@ -281,11 +280,9 @@ gfx::Transform TouchTransformController::GetTouchTransform(
 }
 
 TouchTransformController::TouchTransformController(
-    DisplayConfigurator* display_configurator,
     DisplayManager* display_manager,
     std::unique_ptr<TouchTransformSetter> setter)
-    : display_configurator_(display_configurator),
-      display_manager_(display_manager),
+    : display_manager_(display_manager),
       touch_transform_setter_(std::move(setter)) {}
 
 TouchTransformController::~TouchTransformController() {}

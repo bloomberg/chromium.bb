@@ -12,49 +12,42 @@
 #include "services/tracing/public/cpp/base_agent.h"
 #include "services/tracing/public/mojom/tracing.mojom.h"
 
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
-
 namespace chromecast {
 class SystemTracer;
 }
 
 namespace content {
 
+class CastSystemTracingSession;
+
+// TODO(crbug.com/839086): Remove once we have replaced the legacy tracing
+// service with perfetto.
 class CastTracingAgent : public tracing::BaseAgent {
  public:
-  explicit CastTracingAgent(service_manager::Connector* connector);
+  CastTracingAgent();
   ~CastTracingAgent() override;
 
  private:
+  // tracing::BaseAgent implementation.
+  void GetCategories(std::set<std::string>* category_set) override;
+
   // tracing::mojom::Agent. Called by Mojo internals on the UI thread.
   void StartTracing(const std::string& config,
                     base::TimeTicks coordinator_time,
                     Agent::StartTracingCallback callback) override;
   void StopAndFlush(tracing::mojom::RecorderPtr recorder) override;
-  void GetCategories(Agent::GetCategoriesCallback callback) override;
 
-  void StartTracingOnIO(scoped_refptr<base::TaskRunner> reply_task_runner,
-                        const std::string& categories);
-  void FinishStartOnIO(scoped_refptr<base::TaskRunner> reply_task_runner,
-                       chromecast::SystemTracer::Status status);
-  void FinishStart(chromecast::SystemTracer::Status status);
-  void StopAndFlushOnIO(scoped_refptr<base::TaskRunner> reply_task_runner);
-  void HandleTraceDataOnIO(scoped_refptr<base::TaskRunner> reply_task_runner,
-                           chromecast::SystemTracer::Status,
-                           std::string trace_data);
+  void StartTracingCallbackProxy(Agent::StartTracingCallback callback,
+                                 bool success);
   void HandleTraceData(chromecast::SystemTracer::Status status,
                        std::string trace_data);
-  void CleanupOnIO();
 
-  Agent::StartTracingCallback start_tracing_callback_;
   tracing::mojom::RecorderPtr recorder_;
 
   // Task runner for collecting traces in a worker thread.
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> worker_task_runner_;
 
-  std::unique_ptr<chromecast::SystemTracer> system_tracer_;
+  std::unique_ptr<CastSystemTracingSession> session_;
 
   DISALLOW_COPY_AND_ASSIGN(CastTracingAgent);
 };

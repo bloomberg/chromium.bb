@@ -31,8 +31,8 @@ intptr_t SamplingAllocationObserver::GetNextSampleInterval(uint64_t rate) {
   }
   double u = random_->NextDouble();
   double next = (-base::ieee754::log(u)) * rate;
-  return next < kPointerSize
-             ? kPointerSize
+  return next < kTaggedSize
+             ? kTaggedSize
              : (next > INT_MAX ? INT_MAX : static_cast<intptr_t>(next));
 }
 
@@ -53,14 +53,14 @@ v8::AllocationProfile::Allocation SamplingHeapProfiler::ScaleSample(
 SamplingHeapProfiler::SamplingHeapProfiler(
     Heap* heap, StringsStorage* names, uint64_t rate, int stack_depth,
     v8::HeapProfiler::SamplingFlags flags)
-    : isolate_(heap->isolate()),
+    : isolate_(Isolate::FromHeap(heap)),
       heap_(heap),
       new_space_observer_(new SamplingAllocationObserver(
           heap_, static_cast<intptr_t>(rate), rate, this,
-          heap->isolate()->random_number_generator())),
+          isolate_->random_number_generator())),
       other_spaces_observer_(new SamplingAllocationObserver(
           heap_, static_cast<intptr_t>(rate), rate, this,
-          heap->isolate()->random_number_generator())),
+          isolate_->random_number_generator())),
       names_(names),
       profile_root_(nullptr, "(root)", v8::UnboundScript::kNoScriptId, 0,
                     next_node_id()),
@@ -81,7 +81,7 @@ void SamplingHeapProfiler::SampleObject(Address soon_object, size_t size) {
   DisallowHeapAllocation no_allocation;
 
   HandleScope scope(isolate_);
-  HeapObject* heap_object = HeapObject::FromAddress(soon_object);
+  HeapObject heap_object = HeapObject::FromAddress(soon_object);
   Handle<Object> obj(heap_object, isolate_);
 
   // Mark the new block as FreeSpace to make sure the heap is iterable while we
@@ -149,7 +149,7 @@ SamplingHeapProfiler::AllocationNode* SamplingHeapProfiler::FindOrAddChildNode(
 SamplingHeapProfiler::AllocationNode* SamplingHeapProfiler::AddStack() {
   AllocationNode* node = &profile_root_;
 
-  std::vector<SharedFunctionInfo*> stack;
+  std::vector<SharedFunctionInfo> stack;
   JavaScriptFrameIterator it(isolate_);
   int frames_captured = 0;
   bool found_arguments_marker_frames = false;
@@ -161,7 +161,7 @@ SamplingHeapProfiler::AllocationNode* SamplingHeapProfiler::AddStack() {
     // in the top frames of the stack). The allocations made in this
     // sensitive moment belong to the formerly optimized frame anyway.
     if (frame->unchecked_function()->IsJSFunction()) {
-      SharedFunctionInfo* shared = frame->function()->shared();
+      SharedFunctionInfo shared = frame->function()->shared();
       stack.push_back(shared);
       frames_captured++;
     } else {
@@ -204,11 +204,11 @@ SamplingHeapProfiler::AllocationNode* SamplingHeapProfiler::AddStack() {
   // We need to process the stack in reverse order as the top of the stack is
   // the first element in the list.
   for (auto it = stack.rbegin(); it != stack.rend(); ++it) {
-    SharedFunctionInfo* shared = *it;
+    SharedFunctionInfo shared = *it;
     const char* name = this->names()->GetName(shared->DebugName());
     int script_id = v8::UnboundScript::kNoScriptId;
     if (shared->script()->IsScript()) {
-      Script* script = Script::cast(shared->script());
+      Script script = Script::cast(shared->script());
       script_id = script->id();
     }
     node = FindOrAddChildNode(node, name, script_id, shared->StartPosition());
@@ -282,7 +282,8 @@ v8::AllocationProfile* SamplingHeapProfiler::GetAllocationProfile() {
   std::map<int, Handle<Script>> scripts;
   {
     Script::Iterator iterator(isolate_);
-    while (Script* script = iterator.Next()) {
+    for (Script script = iterator.Next(); !script.is_null();
+         script = iterator.Next()) {
       scripts[script->id()] = handle(script, isolate_);
     }
   }

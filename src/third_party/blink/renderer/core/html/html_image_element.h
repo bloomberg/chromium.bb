@@ -60,7 +60,7 @@ class CORE_EXPORT HTMLImageElement final
   class ViewportChangeListener;
 
   // Returns attributes that should be checked against Trusted Types
-  const HashSet<AtomicString>& GetCheckedAttributeNames() const override;
+  const AttrNameToTrustedType& GetCheckedAttributeTypes() const override;
 
   static HTMLImageElement* Create(Document&);
   static HTMLImageElement* Create(Document&, const CreateElementFlags);
@@ -72,7 +72,7 @@ class CORE_EXPORT HTMLImageElement final
 
   explicit HTMLImageElement(Document&, bool created_by_parser = false);
   ~HTMLImageElement() override;
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   unsigned width();
   unsigned height();
@@ -152,7 +152,7 @@ class CORE_EXPORT HTMLImageElement final
 
   void ForceReload() const;
 
-  FormAssociated* ToFormAssociatedOrNull() override { return this; };
+  FormAssociated* ToFormAssociatedOrNull() override { return this; }
   void AssociateWith(HTMLFormElement*) override;
 
   bool ElementCreatedByParser() const { return element_created_by_parser_; }
@@ -166,9 +166,22 @@ class CORE_EXPORT HTMLImageElement final
     return *visible_load_time_metrics_;
   }
 
+  static bool IsDimensionSmallAndAbsoluteForLazyLoad(
+      const String& attribute_value);
+  static bool IsInlineStyleDimensionsSmall(const CSSPropertyValueSet*);
+
+  // Updates if any optimized image policy is violated. When any policy is
+  // violated, the image should be rendered as a placeholder image.
+  void SetImagePolicyViolated() {
+    is_legacy_format_or_unoptimized_image_ = true;
+  }
+  bool IsImagePolicyViolated() {
+    return is_legacy_format_or_unoptimized_image_;
+  }
+
  protected:
   // Controls how an image element appears in the layout. See:
-  // https://html.spec.whatwg.org/multipage/embedded-content.html#image-request
+  // https://html.spec.whatwg.org/C/#image-request
   enum class LayoutDisposition : uint8_t {
     // Displayed as a partially or completely loaded image. Corresponds to the
     // `current request` state being: `unavailable`, `partially available`, or
@@ -200,7 +213,7 @@ class CORE_EXPORT HTMLImageElement final
   void SetLayoutDisposition(LayoutDisposition, bool force_reattach = false);
 
   void AttachLayoutTree(AttachContext&) override;
-  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout) override;
 
   bool CanStartSelection() const override { return false; }
 
@@ -236,9 +249,12 @@ class CORE_EXPORT HTMLImageElement final
   unsigned form_was_set_by_parser_ : 1;
   unsigned element_created_by_parser_ : 1;
   unsigned is_fallback_image_ : 1;
-  bool should_invert_color_;
   bool sizes_set_width_;
   bool is_default_overridden_intrinsic_size_;
+  // This flag indicates if the image violates one or more optimized image
+  // policies. When any policy is violated, the image should be rendered as a
+  // placeholder image.
+  bool is_legacy_format_or_unoptimized_image_;
 
   network::mojom::ReferrerPolicy referrer_policy_;
 

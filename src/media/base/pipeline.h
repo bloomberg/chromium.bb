@@ -13,6 +13,7 @@
 #include "media/base/buffering_state.h"
 #include "media/base/cdm_context.h"
 #include "media/base/media_export.h"
+#include "media/base/media_status.h"
 #include "media/base/media_track.h"
 #include "media/base/pipeline_metadata.h"
 #include "media/base/pipeline_status.h"
@@ -20,6 +21,7 @@
 #include "media/base/text_track.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_rotation.h"
+#include "media/base/waiting.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace media {
@@ -57,8 +59,8 @@ class MEDIA_EXPORT Pipeline {
     virtual void OnAddTextTrack(const TextTrackConfig& config,
                                 const AddTextTrackDoneCB& done_cb) = 0;
 
-    // Executed whenever the key needed to decrypt the stream is not available.
-    virtual void OnWaitingForDecryptionKey() = 0;
+    // Executed whenever the pipeline is waiting because of |reason|.
+    virtual void OnWaiting(WaitingReason reason) = 0;
 
     // Executed for the first video frame and whenever natural size changes.
     virtual void OnVideoNaturalSizeChange(const gfx::Size& size) = 0;
@@ -78,6 +80,12 @@ class MEDIA_EXPORT Pipeline {
     // during playback.
     virtual void OnAudioDecoderChange(const std::string& name) = 0;
     virtual void OnVideoDecoderChange(const std::string& name) = 0;
+
+    // Executed whenever an important status change has happened, and that this
+    // change was not initiated by Pipeline or Pipeline::Client.
+    // Only used with FlingingRenderer, when an external device pauses/resumes
+    // a video that is playing remotely.
+    virtual void OnRemotePlayStateChange(MediaStatus::State state) = 0;
   };
 
   virtual ~Pipeline() {}

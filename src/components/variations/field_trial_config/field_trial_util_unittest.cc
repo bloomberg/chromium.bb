@@ -16,6 +16,7 @@
 #include "components/variations/field_trial_config/fieldtrial_testing_config.h"
 #include "components/variations/variations_associated_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/device_form_factor.h"
 
 namespace variations {
 namespace {
@@ -29,6 +30,19 @@ class FieldTrialUtilTest : public ::testing::Test {
     // process singletons.
     testing::ClearAllVariationIDs();
     testing::ClearAllVariationParams();
+  }
+
+  // Gets current form factor and converts it from enum DeviceFormFactor to enum
+  // Study_FormFactor.
+  Study::FormFactor _GetCurrentFormFactor() {
+    switch (ui::GetDeviceFormFactor()) {
+      case ui::DEVICE_FORM_FACTOR_PHONE:
+        return Study::PHONE;
+      case ui::DEVICE_FORM_FACTOR_TABLET:
+        return Study::TABLET;
+      case ui::DEVICE_FORM_FACTOR_DESKTOP:
+        return Study::DESKTOP;
+    }
   }
 
  private:
@@ -68,16 +82,16 @@ TEST_F(FieldTrialUtilTest, AssociateParamsFromFieldTrialConfig) {
   const FieldTrialTestingExperimentParams array_kFieldTrialConfig_params_0[] =
       {{"x", "1"}, {"y", "2"}};
   const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments_0[] = {
-      {"TestGroup1", &platform, 1, array_kFieldTrialConfig_params_0, 2,
-       nullptr, 0, nullptr, 0, nullptr},
+      {"TestGroup1", &platform, 1, {}, 0, Study::OPTIONAL_BOOL_MISSING,
+       array_kFieldTrialConfig_params_0, 2, nullptr, 0, nullptr, 0, nullptr},
   };
   const FieldTrialTestingExperimentParams array_kFieldTrialConfig_params_1[] =
       {{"x", "3"}, {"y", "4"}};
   const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments_1[] = {
-      {"TestGroup2", &platform, 1, array_kFieldTrialConfig_params_0, 2,
-       nullptr, 0, nullptr, 0, nullptr},
-      {"TestGroup2-2", &platform, 1, array_kFieldTrialConfig_params_1, 2,
-       nullptr, 0, nullptr, 0, nullptr},
+      {"TestGroup2", &platform, 1, {}, 0, Study::OPTIONAL_BOOL_MISSING,
+       array_kFieldTrialConfig_params_0, 2, nullptr, 0, nullptr, 0, nullptr},
+      {"TestGroup2-2", &platform, 1, {}, 0, Study::OPTIONAL_BOOL_MISSING,
+       array_kFieldTrialConfig_params_1, 2, nullptr, 0, nullptr, 0, nullptr},
   };
   const FieldTrialTestingStudy array_kFieldTrialConfig_studies[] = {
       {"TestTrial1", array_kFieldTrialConfig_experiments_0, 1},
@@ -126,7 +140,7 @@ TEST_F(FieldTrialUtilTest,
   for (size_t i = 0; i < base::size(all_platforms); ++i) {
     const Study::Platform platform = all_platforms[i];
     const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments[] = {
-        {"TestGroup", &platform, 1,
+        {"TestGroup", &platform, 1, {}, 0, Study::OPTIONAL_BOOL_MISSING,
          array_kFieldTrialConfig_params, 2, nullptr, 0, nullptr, 0, nullptr},
     };
     const FieldTrialTestingStudy array_kFieldTrialConfig_studies[] = {
@@ -158,8 +172,8 @@ TEST_F(FieldTrialUtilTest,
   const FieldTrialTestingExperimentParams array_kFieldTrialConfig_params[] =
       {{"x", "1"}, {"y", "2"}};
   const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments[] = {
-      {"TestGroup", &platform, 1, array_kFieldTrialConfig_params, 2, nullptr, 0,
-       nullptr, 0, nullptr},
+      {"TestGroup", &platform, 1, {}, 0, Study::OPTIONAL_BOOL_MISSING,
+       array_kFieldTrialConfig_params, 2, nullptr, 0, nullptr, 0, nullptr},
   };
   const FieldTrialTestingStudy array_kFieldTrialConfig_studies[] =
       {{"TestTrial", array_kFieldTrialConfig_experiments, 1}};
@@ -187,8 +201,8 @@ TEST_F(FieldTrialUtilTest,
   const FieldTrialTestingExperimentParams array_kFieldTrialConfig_params[] =
       {{"x", "1"}, {"y", "2"}};
   const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments[] = {
-      {"TestGroup", platforms, 2, array_kFieldTrialConfig_params, 2, nullptr, 0,
-       nullptr, 0, nullptr},
+      {"TestGroup", platforms, 2, {}, 0, Study::OPTIONAL_BOOL_MISSING,
+       array_kFieldTrialConfig_params, 2, nullptr, 0, nullptr, 0, nullptr},
   };
   const FieldTrialTestingStudy array_kFieldTrialConfig_studies[] =
       {{"TestTrial", array_kFieldTrialConfig_experiments, 1}};
@@ -212,6 +226,109 @@ TEST_F(FieldTrialUtilTest,
   EXPECT_EQ("TestGroup", base::FieldTrialList::FindFullName("TestTrial"));
 }
 
+TEST_F(FieldTrialUtilTest,
+       AssociateParamsFromFieldTrialConfigWithAllFormFactors) {
+  const Study::Platform platform = Study::PLATFORM_WINDOWS;
+  const Study::FormFactor form_factors[] =
+      {Study::DESKTOP, Study::PHONE, Study::TABLET};
+  const FieldTrialTestingExperimentParams array_kFieldTrialConfig_params[] =
+      {{"x", "1"}, {"y", "2"}};
+  const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments[] = {
+      {"TestGroup", &platform, 1, form_factors, 4, Study::OPTIONAL_BOOL_MISSING,
+       array_kFieldTrialConfig_params, 2, nullptr, 0, nullptr, 0, nullptr},
+  };
+  const FieldTrialTestingStudy array_kFieldTrialConfig_studies[] =
+      {{"TestTrial", array_kFieldTrialConfig_experiments, 1}};
+  const FieldTrialTestingConfig kConfig =
+      {array_kFieldTrialConfig_studies, 1};
+
+  // One of the form_factors matches, so trial should be added.
+  base::FeatureList feature_list;
+  AssociateParamsFromFieldTrialConfig(kConfig, &feature_list, platform);
+
+  EXPECT_EQ("1", GetVariationParamValue("TestTrial", "x"));
+  EXPECT_EQ("2", GetVariationParamValue("TestTrial", "y"));
+
+  std::map<std::string, std::string> params;
+  EXPECT_TRUE(GetVariationParams("TestTrial", &params));
+  EXPECT_EQ(2U, params.size());
+  EXPECT_EQ("1", params["x"]);
+  EXPECT_EQ("2", params["y"]);
+
+  EXPECT_EQ("TestGroup", base::FieldTrialList::FindFullName("TestTrial"));
+}
+
+TEST_F(FieldTrialUtilTest,
+       AssociateParamsFromFieldTrialConfigWithSingleFormFactor) {
+  const Study::Platform platform = Study::PLATFORM_WINDOWS;
+  const Study::FormFactor form_factor = _GetCurrentFormFactor();
+  const FieldTrialTestingExperimentParams array_kFieldTrialConfig_params[] =
+        {{"x", "1"}, {"y", "2"}};
+  const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments[] = {
+      {"TestGroup", &platform, 1, &form_factor, 1,
+       Study::OPTIONAL_BOOL_MISSING, array_kFieldTrialConfig_params, 2,
+       nullptr, 0, nullptr, 0, nullptr},
+  };
+  const FieldTrialTestingStudy array_kFieldTrialConfig_studies[] = {
+      {"TestTrial", array_kFieldTrialConfig_experiments, 1}
+  };
+  const FieldTrialTestingConfig kConfig = {
+      array_kFieldTrialConfig_studies, 1
+  };
+
+  // One of the form_factors matches, so trial should be added.
+  base::FeatureList feature_list;
+  AssociateParamsFromFieldTrialConfig(kConfig, &feature_list, platform);
+
+  EXPECT_EQ("1", GetVariationParamValue("TestTrial", "x"));
+  EXPECT_EQ("2", GetVariationParamValue("TestTrial", "y"));
+
+  std::map<std::string, std::string> params;
+  EXPECT_TRUE(GetVariationParams("TestTrial", &params));
+  EXPECT_EQ(2U, params.size());
+  EXPECT_EQ("1", params["x"]);
+  EXPECT_EQ("2", params["y"]);
+
+  EXPECT_EQ("TestGroup", base::FieldTrialList::FindFullName("TestTrial"));
+}
+
+TEST_F(FieldTrialUtilTest,
+       AssociateParamsFromFieldTrialConfigWithDifferentFormFactor) {
+  const Study::Platform platform = Study::PLATFORM_WINDOWS;
+  const Study::FormFactor current_form_factor = _GetCurrentFormFactor();
+  const Study::FormFactor all_form_factors[] =
+      {Study::DESKTOP, Study::PHONE, Study::TABLET};
+  for (size_t i = 0; i < base::size(all_form_factors); ++i) {
+    const Study::FormFactor form_factor = all_form_factors[i];
+    if (form_factor == current_form_factor)
+      continue;
+    const FieldTrialTestingExperimentParams array_kFieldTrialConfig_params[] =
+        {{"x", "1"}, {"y", "2"}};
+    const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments[] = {
+        {"TestGroup", &platform, 1, &form_factor, 1,
+         Study::OPTIONAL_BOOL_MISSING, array_kFieldTrialConfig_params, 2,
+         nullptr, 0, nullptr, 0, nullptr},
+    };
+    const FieldTrialTestingStudy array_kFieldTrialConfig_studies[] =
+        {{"TestTrial", array_kFieldTrialConfig_experiments, 1}};
+    const FieldTrialTestingConfig kConfig =
+        {array_kFieldTrialConfig_studies, 1};
+
+    // The form factor don't match, so trial shouldn't be added.
+    base::FeatureList feature_list;
+    AssociateParamsFromFieldTrialConfig(kConfig, &feature_list,
+                                        Study::PLATFORM_ANDROID_WEBVIEW);
+
+    EXPECT_EQ("", GetVariationParamValue("TestTrial", "x"));
+    EXPECT_EQ("", GetVariationParamValue("TestTrial", "y"));
+
+    std::map<std::string, std::string> params;
+    EXPECT_FALSE(GetVariationParams("TestTrial", &params));
+
+    EXPECT_EQ("", base::FieldTrialList::FindFullName("TestTrial"));
+  }
+}
+
 TEST_F(FieldTrialUtilTest, AssociateFeaturesFromFieldTrialConfig) {
   const base::Feature kFeatureA{"A", base::FEATURE_DISABLED_BY_DEFAULT};
   const base::Feature kFeatureB{"B", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -223,14 +340,14 @@ TEST_F(FieldTrialUtilTest, AssociateFeaturesFromFieldTrialConfig) {
 
   const Study::Platform platform = Study::PLATFORM_LINUX;
   const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments_0[] = {
-      {"TestGroup1", &platform, 1, nullptr, 0, enable_features, 2, nullptr, 0,
-       nullptr},
+      {"TestGroup1", &platform, 1, {}, 0, Study::OPTIONAL_BOOL_MISSING, nullptr,
+       0, enable_features, 2, nullptr, 0, nullptr},
   };
   const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments_1[] = {
-      {"TestGroup2", &platform, 1, nullptr, 0, nullptr, 0, disable_features, 2,
-       nullptr},
-      {"TestGroup2-2", &platform, 1, nullptr, 0, nullptr, 0, nullptr, 0,
-       nullptr},
+      {"TestGroup2", &platform, 1, {}, 0, Study::OPTIONAL_BOOL_MISSING, nullptr,
+       0, nullptr, 0, disable_features, 2, nullptr},
+      {"TestGroup2-2", &platform, 1, {}, 0, Study::OPTIONAL_BOOL_MISSING,
+       nullptr, 0, nullptr, 0, nullptr, 0, nullptr},
   };
 
   const FieldTrialTestingStudy array_kFieldTrialConfig_studies[] = {
@@ -263,21 +380,21 @@ TEST_F(FieldTrialUtilTest, AssociateFeaturesFromFieldTrialConfig) {
 TEST_F(FieldTrialUtilTest, AssociateForcingFlagsFromFieldTrialConfig) {
   const Study::Platform platform = Study::PLATFORM_LINUX;
   const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments_0[] = {
-      {"TestGroup1", &platform, 1, nullptr, 0, nullptr, 0, nullptr, 0, nullptr}
-  };
+      {"TestGroup1", &platform, 1, {}, 0, Study::OPTIONAL_BOOL_MISSING, nullptr,
+       0, nullptr, 0, nullptr, 0, nullptr}};
   const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments_1[] = {
-      {"TestGroup2", &platform, 1, nullptr, 0, nullptr, 0, nullptr, 0,
-       nullptr},
-      {"ForcedGroup2", &platform, 1, nullptr, 0, nullptr, 0, nullptr, 0,
-       "flag-2"},
+      {"TestGroup2", &platform, 1, {}, 0, Study::OPTIONAL_BOOL_MISSING, nullptr,
+       0, nullptr, 0, nullptr, 0, nullptr},
+      {"ForcedGroup2", &platform, 1, {}, 0, Study::OPTIONAL_BOOL_MISSING,
+       nullptr, 0, nullptr, 0, nullptr, 0, "flag-2"},
   };
   const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments_2[] = {
-      {"TestGroup3", &platform, 1, nullptr, 0, nullptr, 0, nullptr, 0,
-       nullptr},
-      {"ForcedGroup3", &platform, 1, nullptr, 0, nullptr, 0, nullptr, 0,
-       "flag-3"},
-      {"ForcedGroup3-2", &platform, 1, nullptr, 0, nullptr, 0, nullptr, 0,
-       "flag-3-2"},
+      {"TestGroup3", &platform, 1, {}, 0, Study::OPTIONAL_BOOL_MISSING, nullptr,
+       0, nullptr, 0, nullptr, 0, nullptr},
+      {"ForcedGroup3", &platform, 1, {}, 0, Study::OPTIONAL_BOOL_MISSING,
+       nullptr, 0, nullptr, 0, nullptr, 0, "flag-3"},
+      {"ForcedGroup3-2", &platform, 1, {}, 0, Study::OPTIONAL_BOOL_MISSING,
+       nullptr, 0, nullptr, 0, nullptr, 0, "flag-3-2"},
   };
   const FieldTrialTestingStudy array_kFieldTrialConfig_studies[] = {
       {"TestTrial1", array_kFieldTrialConfig_experiments_0, 1},

@@ -32,6 +32,7 @@
 #include <memory>
 #include <utility>
 
+#include "media/base/audio_bus.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_audio_latency_hint.h"
 #include "third_party/blink/renderer/platform/audio/audio_utilities.h"
@@ -55,14 +56,16 @@ const size_t kFIFOSize = 96 * 128;
 scoped_refptr<AudioDestination> AudioDestination::Create(
     AudioIOCallback& callback,
     unsigned number_of_output_channels,
-    const WebAudioLatencyHint& latency_hint) {
-  return base::AdoptRef(
-      new AudioDestination(callback, number_of_output_channels, latency_hint));
+    const WebAudioLatencyHint& latency_hint,
+    base::Optional<float> context_sample_rate) {
+  return base::AdoptRef(new AudioDestination(
+      callback, number_of_output_channels, latency_hint, context_sample_rate));
 }
 
 AudioDestination::AudioDestination(AudioIOCallback& callback,
                                    unsigned number_of_output_channels,
-                                   const WebAudioLatencyHint& latency_hint)
+                                   const WebAudioLatencyHint& latency_hint,
+                                   base::Optional<float> context_sample_rate)
     : number_of_output_channels_(number_of_output_channels),
       play_state_(PlayState::kStopped),
       fifo_(
@@ -95,6 +98,54 @@ AudioDestination::AudioDestination(AudioIOCallback& callback,
 
   if (!CheckBufferSize()) {
     NOTREACHED();
+  }
+
+  double scale_factor = 1;
+
+  if (context_sample_rate.has_value() &&
+      context_sample_rate.value() != web_audio_device_->SampleRate()) {
+    scale_factor =
+        context_sample_rate.value() / web_audio_device_->SampleRate();
+
+    resampler_.reset(new MediaMultiChannelResampler(
+        MaxChannelCount(), scale_factor, audio_utilities::kRenderQuantumFrames,
+        ConvertToBaseCallback(
+            CrossThreadBind(&AudioDestination::ProvideResamplerInput,
+                            CrossThreadUnretained(this)))));
+    resampler_bus_ =
+        media::AudioBus::CreateWrapper(render_bus_->NumberOfChannels());
+    for (unsigned int i = 0; i < render_bus_->NumberOfChannels(); ++i) {
+      resampler_bus_->SetChannelData(i, render_bus_->Channel(i)->MutableData());
+    }
+    resampler_bus_->set_frames(render_bus_->length());
+    context_sample_rate_ = context_sample_rate.value();
+  } else {
+    context_sample_rate_ = web_audio_device_->SampleRate();
+  }
+
+  DEFINE_STATIC_LOCAL(SparseHistogram, sample_rate_histogram,
+                      ("WebAudio.AudioContext.HardwareSampleRate"));
+
+  sample_rate_histogram.Sample(web_audio_device_->SampleRate());
+
+  // The actual supplied |sampleRate| is probably a small set including 44100,
+  // 48000, 22050, and 2400 Hz.  Other valid values range from 3000 to 384000
+  // Hz, but are not expected to be used much.
+  DEFINE_STATIC_LOCAL(SparseHistogram, selected_sample_rate_histogram,
+                      ("WebAudio.AudioContextOptions.sampleRate"));
+
+  // From the expected values above and the common HW sample rates, we expect
+  // the most common ratios to be the set 0.5, 44100/48000, and 48000/44100.
+  // Other values are possible but seem unlikely.
+  DEFINE_STATIC_LOCAL(SparseHistogram, sample_rate_ratio_histogram,
+                      ("WebAudio.AudioContextOptions.sampleRateRatio"));
+
+  // Record the selected sample rate and ratio if the sampleRate was given.  The
+  // ratio is recorded as a percentage, rounded to the nearest percent.
+  if (context_sample_rate.has_value()) {
+    selected_sample_rate_histogram.Sample(context_sample_rate.value());
+    sample_rate_ratio_histogram.Sample(
+        static_cast<int32_t>(100 * scale_factor + 0.5));
   }
 }
 
@@ -161,12 +212,15 @@ void AudioDestination::RequestRender(size_t frames_requested,
                delay_timestamp);
 
   frames_elapsed_ -= std::min(frames_elapsed_, prior_frames_skipped);
-  AudioIOPosition output_position;
-  output_position.position =
+  output_position_.position =
       frames_elapsed_ / static_cast<double>(web_audio_device_->SampleRate()) -
       delay;
-  output_position.timestamp = delay_timestamp;
-  base::TimeTicks received_timestamp = base::TimeTicks::Now();
+  output_position_.timestamp = delay_timestamp;
+
+  base::TimeTicks callback_request = base::TimeTicks::Now();
+  metric_.callback_interval =
+      (callback_request - previous_callback_request_).InSecondsF();
+  metric_.render_duration = previous_render_duration_.InSecondsF();
 
   for (size_t pushed_frames = 0; pushed_frames < frames_to_render;
        pushed_frames += audio_utilities::kRenderQuantumFrames) {
@@ -174,22 +228,32 @@ void AudioDestination::RequestRender(size_t frames_requested,
     // we do not want output position to get stuck so we promote it
     // using the elapsed time from the moment it was initially obtained.
     if (callback_buffer_size_ > audio_utilities::kRenderQuantumFrames * 2) {
-      double delta = (base::TimeTicks::Now() - received_timestamp).InSecondsF();
-      output_position.position += delta;
-      output_position.timestamp += delta;
+      double delta = (base::TimeTicks::Now() - callback_request).InSecondsF();
+      output_position_.position += delta;
+      output_position_.timestamp += delta;
     }
 
     // Some implementations give only rough estimation of |delay| so
     // we might have negative estimation |outputPosition| value.
-    if (output_position.position < 0.0)
-      output_position.position = 0.0;
+    if (output_position_.position < 0.0)
+      output_position_.position = 0.0;
 
-    // Process WebAudio graph and push the rendered output to FIFO.
-    callback_.Render(render_bus_.get(), audio_utilities::kRenderQuantumFrames,
-                     output_position);
+    if (resampler_) {
+      resampler_->Resample(audio_utilities::kRenderQuantumFrames,
+                           resampler_bus_.get());
+    } else {
+      // Process WebAudio graph and push the rendered output to FIFO.
+      callback_.Render(render_bus_.get(), audio_utilities::kRenderQuantumFrames,
+                       output_position_, metric_);
+    }
 
     fifo_->Push(render_bus_.get());
   }
+
+  // Update the IO callback metric with information from the current iteration.
+  // They are will be picked up in the next render request.
+  previous_callback_request_ = callback_request;
+  previous_render_duration_ = base::TimeTicks::Now() - callback_request;
 
   frames_elapsed_ += frames_requested;
 }
@@ -246,7 +310,7 @@ void AudioDestination::Resume() {
   }
 }
 
-size_t AudioDestination::CallbackBufferSize() const {
+uint32_t AudioDestination::CallbackBufferSize() const {
   DCHECK(IsMainThread());
   return callback_buffer_size_;
 }
@@ -295,5 +359,11 @@ bool AudioDestination::CheckBufferSize() {
   DCHECK_LE(callback_buffer_size_ + audio_utilities::kRenderQuantumFrames,
             kFIFOSize);
   return is_buffer_size_valid;
+}
+
+void AudioDestination::ProvideResamplerInput(int resampler_frame_delay,
+                                             AudioBus* dest) {
+  callback_.Render(dest, audio_utilities::kRenderQuantumFrames,
+                   output_position_, metric_);
 }
 }  // namespace blink

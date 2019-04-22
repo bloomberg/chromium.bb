@@ -11,11 +11,10 @@
 #include "base/test/scoped_task_environment.h"
 #include "chromeos/components/tether/fake_network_configuration_remover.h"
 #include "chromeos/components/tether/pref_names.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/network_state_test.h"
+#include "chromeos/network/network_state_test_helper.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -75,10 +74,6 @@ class TestNetworkConnectionHandler : public NetworkConnectionHandler {
                         const network_handler::ErrorCallback& error_callback,
                         bool check_error_state,
                         ConnectCallbackMode mode) override {}
-  bool HasConnectingNetwork(const std::string& service_path) override {
-    return false;
-  }
-  bool HasPendingConnectRequest() override { return false; }
   void Init(NetworkStateHandler* network_state_handler,
             NetworkConfigurationHandler* network_configuration_handler,
             ManagedNetworkConfigurationHandler*
@@ -94,15 +89,12 @@ class TestNetworkConnectionHandler : public NetworkConnectionHandler {
 
 }  // namespace
 
-class WifiHotspotDisconnectorImplTest : public NetworkStateTest {
+class WifiHotspotDisconnectorImplTest : public testing::Test {
  public:
   WifiHotspotDisconnectorImplTest() = default;
   ~WifiHotspotDisconnectorImplTest() override = default;
 
   void SetUp() override {
-    DBusThreadManager::Initialize();
-    NetworkStateTest::SetUp();
-
     should_disconnect_successfully_ = true;
 
     test_network_connection_handler_ =
@@ -117,27 +109,24 @@ class WifiHotspotDisconnectorImplTest : public NetworkStateTest {
 
     WifiHotspotDisconnectorImpl::RegisterPrefs(test_pref_service_->registry());
     wifi_hotspot_disconnector_ = std::make_unique<WifiHotspotDisconnectorImpl>(
-        test_network_connection_handler_.get(), network_state_handler(),
+        test_network_connection_handler_.get(), helper_.network_state_handler(),
         test_pref_service_.get(), fake_configuration_remover_.get());
   }
 
   void TearDown() override {
     wifi_hotspot_disconnector_.reset();
-    ShutdownNetworkState();
-    NetworkStateTest::TearDown();
-    DBusThreadManager::Shutdown();
   }
 
   void SimulateConnectionToWifiNetwork() {
-    wifi_service_path_ = ConfigureService(
+    wifi_service_path_ = helper_.ConfigureService(
         CreateConnectedWifiConfigurationJsonString(kWifiNetworkGuid));
     EXPECT_FALSE(wifi_service_path_.empty());
   }
 
   void SetWifiNetworkToDisconnected() {
     EXPECT_FALSE(wifi_service_path_.empty());
-    SetServiceProperty(wifi_service_path_, shill::kStateProperty,
-                       base::Value(shill::kStateIdle));
+    helper_.SetServiceProperty(wifi_service_path_, shill::kStateProperty,
+                               base::Value(shill::kStateIdle));
   }
 
   void SuccessCallback() { disconnection_result_ = kSuccessResult; }
@@ -203,7 +192,13 @@ class WifiHotspotDisconnectorImplTest : public NetworkStateTest {
     return test_pref_service_->GetString(prefs::kDisconnectingWifiNetworkPath);
   }
 
-  const base::test::ScopedTaskEnvironment scoped_task_environment_;
+  std::string GetServiceStringProperty(const std::string& service_path,
+                                       const std::string& key) {
+    return helper_.GetServiceStringProperty(service_path, key);
+  }
+
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  NetworkStateTestHelper helper_{true /* use_default_devices_and_services */};
 
   std::unique_ptr<TestNetworkConnectionHandler>
       test_network_connection_handler_;

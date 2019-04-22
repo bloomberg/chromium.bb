@@ -4,6 +4,7 @@
 
 #include "chrome/browser/android/vr/arcore_device/arcore_permission_helper.h"
 
+#include "base/bind.h"
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_result.h"
 #include "chrome/browser/permissions/permission_update_infobar_delegate_android.h"

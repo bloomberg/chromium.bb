@@ -16,7 +16,7 @@
 namespace network {
 class SharedURLLoaderFactory;
 class TransitionalURLLoaderFactoryOwner;
-};  // namespace network
+}  // namespace network
 
 namespace remoting {
 namespace test {

@@ -48,7 +48,7 @@ class LocaleChangeGuard : public content::NotificationObserver,
   FRIEND_TEST_ALL_PREFIXES(LocaleChangeGuardTest,
                            ShowNotificationLocaleChangedList);
 
-  void ConnectToLocaleNotificationController();
+  void ConnectToLocaleUpdateController();
 
   void Check();
 
@@ -71,8 +71,8 @@ class LocaleChangeGuard : public content::NotificationObserver,
   static const char* const* GetSkipShowNotificationLanguagesForTesting();
   static size_t GetSkipShowNotificationLanguagesSizeForTesting();
 
-  // Ash's mojom::LocaleNotificationController used to display notifications.
-  ash::mojom::LocaleNotificationControllerPtr notification_controller_;
+  // Ash's mojom::LocaleUpdateController used to display notifications.
+  ash::mojom::LocaleUpdateControllerPtr notification_controller_;
 
   std::string from_locale_;
   std::string to_locale_;

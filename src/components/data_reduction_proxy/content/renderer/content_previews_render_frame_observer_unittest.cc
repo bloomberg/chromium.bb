@@ -46,7 +46,7 @@ TEST(ContentPreviewsRenderFrameObserverTest,
 TEST(ContentPreviewsRenderFrameObserverTest,
      ValidatePreviewsStateWithResponseLitePageHeader) {
   blink::WebURLResponse response_with_lite_page;
-  response_with_lite_page.AddHTTPHeaderField("chrome-proxy-content-transform",
+  response_with_lite_page.AddHttpHeaderField("chrome-proxy-content-transform",
                                              "lite-page");
 
   EXPECT_TRUE(
@@ -71,7 +71,7 @@ TEST(ContentPreviewsRenderFrameObserverTest,
 TEST(ContentPreviewsRenderFrameObserverTest,
      ValidatePreviewsStateWithResponsePagePolicyHeader) {
   blink::WebURLResponse response_with_page_policy;
-  response_with_page_policy.AddHTTPHeaderField("Chrome-Proxy",
+  response_with_page_policy.AddHttpHeaderField("Chrome-Proxy",
                                                "Page-Policies=Empty-Image");
 
   EXPECT_TRUE(

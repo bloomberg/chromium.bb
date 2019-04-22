@@ -5,21 +5,21 @@
  * found in the LICENSE file.
  */
 
+#include "AnimTimer.h"
 #include "DecodeFile.h"
 #include "Sample.h"
-#include "SkAnimTimer.h"
 #include "SkCanvas.h"
+#include "SkColorFilter.h"
+#include "SkColorPriv.h"
 #include "SkGradientShader.h"
 #include "SkGraphics.h"
 #include "SkPath.h"
 #include "SkRandom.h"
 #include "SkRegion.h"
 #include "SkShader.h"
-#include "SkUTF.h"
-#include "SkColorPriv.h"
-#include "SkColorFilter.h"
 #include "SkTime.h"
 #include "SkTypeface.h"
+#include "SkUTF.h"
 #include "SkVertices.h"
 
 #include "SkOSFile.h"
@@ -33,8 +33,7 @@ static sk_sp<SkShader> make_shader0(SkIPoint* size) {
 //    decode_file("/skimages/progressivejpg.jpg", &bm);
     decode_file("/skimages/logo.png", &bm);
     size->set(bm.width(), bm.height());
-    return SkShader::MakeBitmapShader(bm, SkShader::kClamp_TileMode,
-                                       SkShader::kClamp_TileMode);
+    return bm.makeShader();
 }
 
 static sk_sp<SkShader> make_shader1(const SkIPoint& size) {
@@ -42,7 +41,7 @@ static sk_sp<SkShader> make_shader1(const SkIPoint& size) {
                       { SkIntToScalar(size.fX), SkIntToScalar(size.fY) } };
     SkColor colors[] = { SK_ColorRED, SK_ColorGREEN, SK_ColorBLUE, SK_ColorRED };
     return SkGradientShader::MakeLinear(pts, colors, nullptr,
-                    SK_ARRAY_COUNT(colors), SkShader::kMirror_TileMode);
+                    SK_ARRAY_COUNT(colors), SkTileMode::kMirror);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -292,7 +291,7 @@ protected:
         drawpatches(canvas, paint, nu, nv, &patch);
     }
 
-    bool onAnimate(const SkAnimTimer& timer) override {
+    bool onAnimate(const AnimTimer& timer) override {
         fAngle = timer.scaled(60, 360);
         return true;
     }
@@ -326,7 +325,205 @@ protected:
 private:
     typedef Sample INHERITED;
 };
+DEF_SAMPLE( return new PatchView(); )
 
 //////////////////////////////////////////////////////////////////////////////
 
-DEF_SAMPLE( return new PatchView(); )
+#include "SkContourMeasure.h"
+#include "SkTDArray.h"
+
+static sk_sp<SkVertices> make_verts(const SkPath& path, SkScalar width) {
+    auto meas = SkContourMeasureIter(path, false).next();
+    if (!meas) {
+        return nullptr;
+    }
+
+    const SkPoint src[2] = {
+        { 0, -width/2 }, { 0, width/2 },
+    };
+    SkTDArray<SkPoint> pts;
+
+    const SkScalar step = 2;
+    for (SkScalar distance = 0; distance < meas->length(); distance += step) {
+        SkMatrix mx;
+        if (!meas->getMatrix(distance, &mx)) {
+            continue;
+        }
+        SkPoint* dst = pts.append(2);
+        mx.mapPoints(dst, src, 2);
+    }
+
+    int vertCount = pts.count();
+    int indexCount = 0; // no texture
+    unsigned flags = SkVertices::kHasColors_BuilderFlag |
+                     SkVertices::kIsNonVolatile_BuilderFlag;
+    SkVertices::Builder builder(SkVertices::kTriangleStrip_VertexMode,
+                                vertCount, indexCount, flags);
+    memcpy(builder.positions(), pts.begin(), vertCount * sizeof(SkPoint));
+    SkRandom rand;
+    for (int i = 0; i < vertCount; ++i) {
+        builder.colors()[i] = rand.nextU() | 0xFF000000;
+    }
+    SkDebugf("vert count = %d\n", vertCount);
+
+    return builder.detach();
+}
+
+class PseudoInkView : public Sample {
+    enum { N = 100 };
+    SkPath            fPath;
+    sk_sp<SkVertices> fVertices[N];
+    SkPaint           fSkeletonP, fStrokeP, fVertsP;
+    bool              fDirty = true;
+
+public:
+    PseudoInkView() {
+        fSkeletonP.setStyle(SkPaint::kStroke_Style);
+        fSkeletonP.setAntiAlias(true);
+
+        fStrokeP.setStyle(SkPaint::kStroke_Style);
+        fStrokeP.setStrokeWidth(30);
+        fStrokeP.setColor(0x44888888);
+    }
+
+protected:
+    bool onQuery(Sample::Event* evt)  override {
+        if (Sample::TitleQ(*evt)) {
+            Sample::TitleR(evt, "PseudoInk");
+            return true;
+        }
+        return this->INHERITED::onQuery(evt);
+    }
+
+    bool onAnimate(const AnimTimer& timer) override { return true; }
+
+    void onDrawContent(SkCanvas* canvas) override {
+        if (fDirty) {
+            for (int i = 0; i < N; ++i) {
+                fVertices[i] = make_verts(fPath, 30);
+            }
+            fDirty = false;
+        }
+        for (int i = 0; i < N; ++i) {
+            canvas->drawVertices(fVertices[i], SkBlendMode::kSrc, fVertsP);
+            canvas->translate(1, 1);
+        }
+//        canvas->drawPath(fPath, fStrokeP);
+ //       canvas->drawPath(fPath, fSkeletonP);
+    }
+
+    Click* onFindClickHandler(SkScalar x, SkScalar y, unsigned modi) override {
+        Click* click = new Click(this);
+        fPath.reset();
+        fPath.moveTo(x, y);
+        return click;
+    }
+
+    bool onClick(Click* click) override {
+        switch (click->fState) {
+            case Click::kMoved_State:
+                fPath.lineTo(click->fCurr);
+                fDirty = true;
+                break;
+            default:
+                break;
+        }
+        return true;
+    }
+
+private:
+    typedef Sample INHERITED;
+};
+DEF_SAMPLE( return new PseudoInkView(); )
+
+#include "SkOpPathEffect.h"
+// Show stroking options using patheffects (and pathops)
+// and why strokeandfill is a hacks
+class ManyStrokesView : public Sample {
+    SkPath              fPath;
+    sk_sp<SkPathEffect> fPE[6];
+
+public:
+    ManyStrokesView() {
+        fPE[0] = SkStrokePathEffect::Make(20, SkPaint::kRound_Join, SkPaint::kRound_Cap);
+
+        auto p0 = SkStrokePathEffect::Make(25, SkPaint::kRound_Join, SkPaint::kRound_Cap);
+        auto p1 = SkStrokePathEffect::Make(20, SkPaint::kRound_Join, SkPaint::kRound_Cap);
+        fPE[1] = SkMergePathEffect::Make(p0, p1, SkPathOp::kDifference_SkPathOp);
+
+        fPE[2] = SkMergePathEffect::Make(nullptr, p1, SkPathOp::kDifference_SkPathOp);
+        fPE[3] = SkMergePathEffect::Make(nullptr, p1, SkPathOp::kUnion_SkPathOp);
+        fPE[4] = SkMergePathEffect::Make(p0, nullptr, SkPathOp::kDifference_SkPathOp);
+        fPE[5] = SkMergePathEffect::Make(p0, nullptr, SkPathOp::kIntersect_SkPathOp);
+    }
+
+protected:
+    bool onQuery(Sample::Event* evt)  override {
+        if (Sample::TitleQ(*evt)) {
+            Sample::TitleR(evt, "ManyStrokes");
+            return true;
+        }
+        return this->INHERITED::onQuery(evt);
+    }
+
+    bool onAnimate(const AnimTimer& timer) override { return true; }
+
+    void dodraw(SkCanvas* canvas, sk_sp<SkPathEffect> pe, SkScalar x, SkScalar y,
+                const SkPaint* ptr = nullptr) {
+        SkPaint paint;
+        paint.setAntiAlias(true);
+        paint.setPathEffect(pe);
+        canvas->save();
+        canvas->translate(x, y);
+        canvas->drawPath(fPath, ptr ? *ptr : paint);
+
+        paint.setPathEffect(nullptr);
+        paint.setStyle(SkPaint::kStroke_Style);
+        paint.setColor(SK_ColorGREEN);
+        canvas->drawPath(fPath, paint);
+
+        canvas->restore();
+    }
+
+    void onDrawContent(SkCanvas* canvas) override {
+        SkPaint p;
+        p.setColor(0);
+        this->dodraw(canvas, nullptr, 0, 0, &p);
+
+        this->dodraw(canvas, fPE[0], 300, 0);
+        this->dodraw(canvas, fPE[1], 0, 300);
+        this->dodraw(canvas, fPE[2], 300, 300);
+        this->dodraw(canvas, fPE[3], 600, 300);
+        this->dodraw(canvas, fPE[4], 900, 0);
+        this->dodraw(canvas, fPE[5], 900, 300);
+
+        p.setColor(SK_ColorBLACK);
+        p.setStyle(SkPaint::kStrokeAndFill_Style);
+        p.setStrokeJoin(SkPaint::kRound_Join);
+        p.setStrokeCap(SkPaint::kRound_Cap);
+        p.setStrokeWidth(20);
+        this->dodraw(canvas, nullptr, 600, 0, &p);
+    }
+
+    Click* onFindClickHandler(SkScalar x, SkScalar y, unsigned modi) override {
+        Click* click = new Click(this);
+        fPath.reset();
+        fPath.moveTo(x, y);
+        return click;
+    }
+
+    bool onClick(Click* click) override {
+        switch (click->fState) {
+            case Click::kMoved_State:
+                fPath.lineTo(click->fCurr);
+                break;
+            default:
+                break;
+        }
+        return true;
+    }
+
+private:
+    typedef Sample INHERITED;
+};
+DEF_SAMPLE( return new ManyStrokesView(); )

@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_COLUMN_BALANCER_H_
 
 #include "third_party/blink/renderer/core/layout/layout_multi_column_set.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -15,6 +16,8 @@ namespace blink {
 // class that just walks the subtree and leaves it to subclasses to actually
 // collect data.
 class ColumnBalancer {
+  STACK_ALLOCATED();
+
  protected:
   ColumnBalancer(const LayoutMultiColumnSet&,
                  LayoutUnit logical_top_in_flow_thread,
@@ -198,8 +201,10 @@ class InitialColumnHeightFinder final : public ColumnBalancer {
   // one single column, and will represent one additional column for each
   // implicit break "inserted" there.
   class ContentRun {
+    DISALLOW_NEW();
+
    public:
-    ContentRun(LayoutUnit break_offset)
+    explicit ContentRun(LayoutUnit break_offset)
         : break_offset_(break_offset), assumed_implicit_breaks_(0) {}
 
     unsigned AssumedImplicitBreaks() const { return assumed_implicit_breaks_; }

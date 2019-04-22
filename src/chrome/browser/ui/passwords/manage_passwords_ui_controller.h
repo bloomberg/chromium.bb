@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/ui/passwords/manage_passwords_state.h"
 #include "chrome/browser/ui/passwords/passwords_client_ui_delegate.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
@@ -256,6 +257,8 @@ class ManagePasswordsUIController
   // with the old bubble.
   // Invalidating all the weak pointers will detach the current bubble.
   base::WeakPtrFactory<ManagePasswordsUIController> weak_ptr_factory_;
+
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(ManagePasswordsUIController);
 };

@@ -43,3 +43,36 @@ source_set("vector_resource") {
     "//ui/display",
   ]
 }
+
+source_set("window_position_in_root_monitor") {
+  sources = [
+    "window_position_in_root_monitor.cc",
+    "window_position_in_root_monitor.h",
+  ]
+
+  deps = [
+    "//base",
+    "//ui/aura",
+  ]
+}
+
+source_set("tests") {
+  testonly = true
+
+  sources = [
+    "window_occlusion_impl_unittest_win.cc",
+    "window_position_in_root_monitor_unittest.cc",
+  ]
+
+  deps = [
+    ":aura_extra",
+    ":window_position_in_root_monitor",
+    "//base",
+    "//base/test:test_support",
+    "//testing/gtest",
+    "//ui/aura",
+    "//ui/aura:test_support",
+    "//ui/gfx/geometry",
+    "//ui/platform_window",
+  ]
+}

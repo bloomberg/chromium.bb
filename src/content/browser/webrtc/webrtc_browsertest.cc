@@ -238,9 +238,9 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest, ApplyConstraints) {
 }
 
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
-                       GetSettingsWhenRemoteDimensionsUnknown) {
+                       GetSettingsReportsValuesForRemoteTracks) {
   MakeTypicalPeerConnectionCall(
-      "testGetSettingsWhenRemoteDimensionsUnknown();");
+      "testGetSettingsReportsValuesForRemoteTracks();");
 }
 
 #if defined(OS_ANDROID) && BUILDFLAG(USE_PROPRIETARY_CODECS)

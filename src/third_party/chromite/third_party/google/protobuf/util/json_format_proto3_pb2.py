@@ -8,7 +8,6 @@ from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
 from google.protobuf import reflection as _reflection
 from google.protobuf import symbol_database as _symbol_database
-from google.protobuf import descriptor_pb2
 # @@protoc_insertion_point(imports)
 
 _sym_db = _symbol_database.Default()
@@ -27,10 +26,10 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='google/protobuf/util/json_format_proto3.proto',
   package='proto3',
   syntax='proto3',
-  serialized_pb=_b('\n-google/protobuf/util/json_format_proto3.proto\x12\x06proto3\x1a\x1egoogle/protobuf/duration.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1egoogle/protobuf/wrappers.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x19google/protobuf/any.proto\x1a google/protobuf/field_mask.proto\x1a\x1egoogle/protobuf/unittest.proto\"\x1c\n\x0bMessageType\x12\r\n\x05value\x18\x01 \x01(\x05\"\x94\x05\n\x0bTestMessage\x12\x12\n\nbool_value\x18\x01 \x01(\x08\x12\x13\n\x0bint32_value\x18\x02 \x01(\x05\x12\x13\n\x0bint64_value\x18\x03 \x01(\x03\x12\x14\n\x0cuint32_value\x18\x04 \x01(\r\x12\x14\n\x0cuint64_value\x18\x05 \x01(\x04\x12\x13\n\x0b\x66loat_value\x18\x06 \x01(\x02\x12\x14\n\x0c\x64ouble_value\x18\x07 \x01(\x01\x12\x14\n\x0cstring_value\x18\x08 \x01(\t\x12\x13\n\x0b\x62ytes_value\x18\t \x01(\x0c\x12$\n\nenum_value\x18\n \x01(\x0e\x32\x10.proto3.EnumType\x12*\n\rmessage_value\x18\x0b \x01(\x0b\x32\x13.proto3.MessageType\x12\x1b\n\x13repeated_bool_value\x18\x15 \x03(\x08\x12\x1c\n\x14repeated_int32_value\x18\x16 \x03(\x05\x12\x1c\n\x14repeated_int64_value\x18\x17 \x03(\x03\x12\x1d\n\x15repeated_uint32_value\x18\x18 \x03(\r\x12\x1d\n\x15repeated_uint64_value\x18\x19 \x03(\x04\x12\x1c\n\x14repeated_float_value\x18\x1a \x03(\x02\x12\x1d\n\x15repeated_double_value\x18\x1b \x03(\x01\x12\x1d\n\x15repeated_string_value\x18\x1c \x03(\t\x12\x1c\n\x14repeated_bytes_value\x18\x1d \x03(\x0c\x12-\n\x13repeated_enum_value\x18\x1e \x03(\x0e\x32\x10.proto3.EnumType\x12\x33\n\x16repeated_message_value\x18\x1f \x03(\x0b\x32\x13.proto3.MessageType\"\xd4\x01\n\tTestOneof\x12\x1b\n\x11oneof_int32_value\x18\x01 \x01(\x05H\x00\x12\x1c\n\x12oneof_string_value\x18\x02 \x01(\tH\x00\x12\x1b\n\x11oneof_bytes_value\x18\x03 \x01(\x0cH\x00\x12,\n\x10oneof_enum_value\x18\x04 \x01(\x0e\x32\x10.proto3.EnumTypeH\x00\x12\x32\n\x13oneof_message_value\x18\x05 \x01(\x0b\x32\x13.proto3.MessageTypeH\x00\x42\r\n\x0boneof_value\"\xe1\x04\n\x07TestMap\x12.\n\x08\x62ool_map\x18\x01 \x03(\x0b\x32\x1c.proto3.TestMap.BoolMapEntry\x12\x30\n\tint32_map\x18\x02 \x03(\x0b\x32\x1d.proto3.TestMap.Int32MapEntry\x12\x30\n\tint64_map\x18\x03 \x03(\x0b\x32\x1d.proto3.TestMap.Int64MapEntry\x12\x32\n\nuint32_map\x18\x04 \x03(\x0b\x32\x1e.proto3.TestMap.Uint32MapEntry\x12\x32\n\nuint64_map\x18\x05 \x03(\x0b\x32\x1e.proto3.TestMap.Uint64MapEntry\x12\x32\n\nstring_map\x18\x06 \x03(\x0b\x32\x1e.proto3.TestMap.StringMapEntry\x1a.\n\x0c\x42oolMapEntry\x12\x0b\n\x03key\x18\x01 \x01(\x08\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\x1a/\n\rInt32MapEntry\x12\x0b\n\x03key\x18\x01 \x01(\x05\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\x1a/\n\rInt64MapEntry\x12\x0b\n\x03key\x18\x01 \x01(\x03\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\x1a\x30\n\x0eUint32MapEntry\x12\x0b\n\x03key\x18\x01 \x01(\r\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\x1a\x30\n\x0eUint64MapEntry\x12\x0b\n\x03key\x18\x01 \x01(\x04\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\x1a\x30\n\x0eStringMapEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\"\x85\x06\n\rTestNestedMap\x12\x34\n\x08\x62ool_map\x18\x01 \x03(\x0b\x32\".proto3.TestNestedMap.BoolMapEntry\x12\x36\n\tint32_map\x18\x02 \x03(\x0b\x32#.proto3.TestNestedMap.Int32MapEntry\x12\x36\n\tint64_map\x18\x03 \x03(\x0b\x32#.proto3.TestNestedMap.Int64MapEntry\x12\x38\n\nuint32_map\x18\x04 \x03(\x0b\x32$.proto3.TestNestedMap.Uint32MapEntry\x12\x38\n\nuint64_map\x18\x05 \x03(\x0b\x32$.proto3.TestNestedMap.Uint64MapEntry\x12\x38\n\nstring_map\x18\x06 \x03(\x0b\x32$.proto3.TestNestedMap.StringMapEntry\x12\x32\n\x07map_map\x18\x07 \x03(\x0b\x32!.proto3.TestNestedMap.MapMapEntry\x1a.\n\x0c\x42oolMapEntry\x12\x0b\n\x03key\x18\x01 \x01(\x08\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\x1a/\n\rInt32MapEntry\x12\x0b\n\x03key\x18\x01 \x01(\x05\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\x1a/\n\rInt64MapEntry\x12\x0b\n\x03key\x18\x01 \x01(\x03\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\x1a\x30\n\x0eUint32MapEntry\x12\x0b\n\x03key\x18\x01 \x01(\r\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\x1a\x30\n\x0eUint64MapEntry\x12\x0b\n\x03key\x18\x01 \x01(\x04\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\x1a\x30\n\x0eStringMapEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\x1a\x44\n\x0bMapMapEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12$\n\x05value\x18\x02 \x01(\x0b\x32\x15.proto3.TestNestedMap:\x02\x38\x01\"\xee\x07\n\x0bTestWrapper\x12.\n\nbool_value\x18\x01 \x01(\x0b\x32\x1a.google.protobuf.BoolValue\x12\x30\n\x0bint32_value\x18\x02 \x01(\x0b\x32\x1b.google.protobuf.Int32Value\x12\x30\n\x0bint64_value\x18\x03 \x01(\x0b\x32\x1b.google.protobuf.Int64Value\x12\x32\n\x0cuint32_value\x18\x04 \x01(\x0b\x32\x1c.google.protobuf.UInt32Value\x12\x32\n\x0cuint64_value\x18\x05 \x01(\x0b\x32\x1c.google.protobuf.UInt64Value\x12\x30\n\x0b\x66loat_value\x18\x06 \x01(\x0b\x32\x1b.google.protobuf.FloatValue\x12\x32\n\x0c\x64ouble_value\x18\x07 \x01(\x0b\x32\x1c.google.protobuf.DoubleValue\x12\x32\n\x0cstring_value\x18\x08 \x01(\x0b\x32\x1c.google.protobuf.StringValue\x12\x30\n\x0b\x62ytes_value\x18\t \x01(\x0b\x32\x1b.google.protobuf.BytesValue\x12\x37\n\x13repeated_bool_value\x18\x0b \x03(\x0b\x32\x1a.google.protobuf.BoolValue\x12\x39\n\x14repeated_int32_value\x18\x0c \x03(\x0b\x32\x1b.google.protobuf.Int32Value\x12\x39\n\x14repeated_int64_value\x18\r \x03(\x0b\x32\x1b.google.protobuf.Int64Value\x12;\n\x15repeated_uint32_value\x18\x0e \x03(\x0b\x32\x1c.google.protobuf.UInt32Value\x12;\n\x15repeated_uint64_value\x18\x0f \x03(\x0b\x32\x1c.google.protobuf.UInt64Value\x12\x39\n\x14repeated_float_value\x18\x10 \x03(\x0b\x32\x1b.google.protobuf.FloatValue\x12;\n\x15repeated_double_value\x18\x11 \x03(\x0b\x32\x1c.google.protobuf.DoubleValue\x12;\n\x15repeated_string_value\x18\x12 \x03(\x0b\x32\x1c.google.protobuf.StringValue\x12\x39\n\x14repeated_bytes_value\x18\x13 \x03(\x0b\x32\x1b.google.protobuf.BytesValue\"n\n\rTestTimestamp\x12)\n\x05value\x18\x01 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x32\n\x0erepeated_value\x18\x02 \x03(\x0b\x32\x1a.google.protobuf.Timestamp\"k\n\x0cTestDuration\x12(\n\x05value\x18\x01 \x01(\x0b\x32\x19.google.protobuf.Duration\x12\x31\n\x0erepeated_value\x18\x02 \x03(\x0b\x32\x19.google.protobuf.Duration\":\n\rTestFieldMask\x12)\n\x05value\x18\x01 \x01(\x0b\x32\x1a.google.protobuf.FieldMask\"e\n\nTestStruct\x12&\n\x05value\x18\x01 \x01(\x0b\x32\x17.google.protobuf.Struct\x12/\n\x0erepeated_value\x18\x02 \x03(\x0b\x32\x17.google.protobuf.Struct\"\\\n\x07TestAny\x12#\n\x05value\x18\x01 \x01(\x0b\x32\x14.google.protobuf.Any\x12,\n\x0erepeated_value\x18\x02 \x03(\x0b\x32\x14.google.protobuf.Any\"b\n\tTestValue\x12%\n\x05value\x18\x01 \x01(\x0b\x32\x16.google.protobuf.Value\x12.\n\x0erepeated_value\x18\x02 \x03(\x0b\x32\x16.google.protobuf.Value\"n\n\rTestListValue\x12)\n\x05value\x18\x01 \x01(\x0b\x32\x1a.google.protobuf.ListValue\x12\x32\n\x0erepeated_value\x18\x02 \x03(\x0b\x32\x1a.google.protobuf.ListValue\"\x89\x01\n\rTestBoolValue\x12\x12\n\nbool_value\x18\x01 \x01(\x08\x12\x34\n\x08\x62ool_map\x18\x02 \x03(\x0b\x32\".proto3.TestBoolValue.BoolMapEntry\x1a.\n\x0c\x42oolMapEntry\x12\x0b\n\x03key\x18\x01 \x01(\x08\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\"+\n\x12TestCustomJsonName\x12\x15\n\x05value\x18\x01 \x01(\x05R\x06@value\"J\n\x0eTestExtensions\x12\x38\n\nextensions\x18\x01 \x01(\x0b\x32$.protobuf_unittest.TestAllExtensions*\x1c\n\x08\x45numType\x12\x07\n\x03\x46OO\x10\x00\x12\x07\n\x03\x42\x41R\x10\x01\x62\x06proto3')
+  serialized_options=_b('\n\030com.google.protobuf.utilB\020JsonFormatProto3'),
+  serialized_pb=_b('\n-google/protobuf/util/json_format_proto3.proto\x12\x06proto3\x1a\x1egoogle/protobuf/duration.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1egoogle/protobuf/wrappers.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x19google/protobuf/any.proto\x1a google/protobuf/field_mask.proto\x1a\x1egoogle/protobuf/unittest.proto\"\x1c\n\x0bMessageType\x12\r\n\x05value\x18\x01 \x01(\x05\"\x94\x05\n\x0bTestMessage\x12\x12\n\nbool_value\x18\x01 \x01(\x08\x12\x13\n\x0bint32_value\x18\x02 \x01(\x05\x12\x13\n\x0bint64_value\x18\x03 \x01(\x03\x12\x14\n\x0cuint32_value\x18\x04 \x01(\r\x12\x14\n\x0cuint64_value\x18\x05 \x01(\x04\x12\x13\n\x0b\x66loat_value\x18\x06 \x01(\x02\x12\x14\n\x0c\x64ouble_value\x18\x07 \x01(\x01\x12\x14\n\x0cstring_value\x18\x08 \x01(\t\x12\x13\n\x0b\x62ytes_value\x18\t \x01(\x0c\x12$\n\nenum_value\x18\n \x01(\x0e\x32\x10.proto3.EnumType\x12*\n\rmessage_value\x18\x0b \x01(\x0b\x32\x13.proto3.MessageType\x12\x1b\n\x13repeated_bool_value\x18\x15 \x03(\x08\x12\x1c\n\x14repeated_int32_value\x18\x16 \x03(\x05\x12\x1c\n\x14repeated_int64_value\x18\x17 \x03(\x03\x12\x1d\n\x15repeated_uint32_value\x18\x18 \x03(\r\x12\x1d\n\x15repeated_uint64_value\x18\x19 \x03(\x04\x12\x1c\n\x14repeated_float_value\x18\x1a \x03(\x02\x12\x1d\n\x15repeated_double_value\x18\x1b \x03(\x01\x12\x1d\n\x15repeated_string_value\x18\x1c \x03(\t\x12\x1c\n\x14repeated_bytes_value\x18\x1d \x03(\x0c\x12-\n\x13repeated_enum_value\x18\x1e \x03(\x0e\x32\x10.proto3.EnumType\x12\x33\n\x16repeated_message_value\x18\x1f \x03(\x0b\x32\x13.proto3.MessageType\"\xd4\x01\n\tTestOneof\x12\x1b\n\x11oneof_int32_value\x18\x01 \x01(\x05H\x00\x12\x1c\n\x12oneof_string_value\x18\x02 \x01(\tH\x00\x12\x1b\n\x11oneof_bytes_value\x18\x03 \x01(\x0cH\x00\x12,\n\x10oneof_enum_value\x18\x04 \x01(\x0e\x32\x10.proto3.EnumTypeH\x00\x12\x32\n\x13oneof_message_value\x18\x05 \x01(\x0b\x32\x13.proto3.MessageTypeH\x00\x42\r\n\x0boneof_value\"\xe1\x04\n\x07TestMap\x12.\n\x08\x62ool_map\x18\x01 \x03(\x0b\x32\x1c.proto3.TestMap.BoolMapEntry\x12\x30\n\tint32_map\x18\x02 \x03(\x0b\x32\x1d.proto3.TestMap.Int32MapEntry\x12\x30\n\tint64_map\x18\x03 \x03(\x0b\x32\x1d.proto3.TestMap.Int64MapEntry\x12\x32\n\nuint32_map\x18\x04 \x03(\x0b\x32\x1e.proto3.TestMap.Uint32MapEntry\x12\x32\n\nuint64_map\x18\x05 \x03(\x0b\x32\x1e.proto3.TestMap.Uint64MapEntry\x12\x32\n\nstring_map\x18\x06 \x03(\x0b\x32\x1e.proto3.TestMap.StringMapEntry\x1a.\n\x0c\x42oolMapEntry\x12\x0b\n\x03key\x18\x01 \x01(\x08\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\x1a/\n\rInt32MapEntry\x12\x0b\n\x03key\x18\x01 \x01(\x05\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\x1a/\n\rInt64MapEntry\x12\x0b\n\x03key\x18\x01 \x01(\x03\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\x1a\x30\n\x0eUint32MapEntry\x12\x0b\n\x03key\x18\x01 \x01(\r\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\x1a\x30\n\x0eUint64MapEntry\x12\x0b\n\x03key\x18\x01 \x01(\x04\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\x1a\x30\n\x0eStringMapEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\"\x85\x06\n\rTestNestedMap\x12\x34\n\x08\x62ool_map\x18\x01 \x03(\x0b\x32\".proto3.TestNestedMap.BoolMapEntry\x12\x36\n\tint32_map\x18\x02 \x03(\x0b\x32#.proto3.TestNestedMap.Int32MapEntry\x12\x36\n\tint64_map\x18\x03 \x03(\x0b\x32#.proto3.TestNestedMap.Int64MapEntry\x12\x38\n\nuint32_map\x18\x04 \x03(\x0b\x32$.proto3.TestNestedMap.Uint32MapEntry\x12\x38\n\nuint64_map\x18\x05 \x03(\x0b\x32$.proto3.TestNestedMap.Uint64MapEntry\x12\x38\n\nstring_map\x18\x06 \x03(\x0b\x32$.proto3.TestNestedMap.StringMapEntry\x12\x32\n\x07map_map\x18\x07 \x03(\x0b\x32!.proto3.TestNestedMap.MapMapEntry\x1a.\n\x0c\x42oolMapEntry\x12\x0b\n\x03key\x18\x01 \x01(\x08\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\x1a/\n\rInt32MapEntry\x12\x0b\n\x03key\x18\x01 \x01(\x05\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\x1a/\n\rInt64MapEntry\x12\x0b\n\x03key\x18\x01 \x01(\x03\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\x1a\x30\n\x0eUint32MapEntry\x12\x0b\n\x03key\x18\x01 \x01(\r\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\x1a\x30\n\x0eUint64MapEntry\x12\x0b\n\x03key\x18\x01 \x01(\x04\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\x1a\x30\n\x0eStringMapEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\x1a\x44\n\x0bMapMapEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12$\n\x05value\x18\x02 \x01(\x0b\x32\x15.proto3.TestNestedMap:\x02\x38\x01\"\xee\x07\n\x0bTestWrapper\x12.\n\nbool_value\x18\x01 \x01(\x0b\x32\x1a.google.protobuf.BoolValue\x12\x30\n\x0bint32_value\x18\x02 \x01(\x0b\x32\x1b.google.protobuf.Int32Value\x12\x30\n\x0bint64_value\x18\x03 \x01(\x0b\x32\x1b.google.protobuf.Int64Value\x12\x32\n\x0cuint32_value\x18\x04 \x01(\x0b\x32\x1c.google.protobuf.UInt32Value\x12\x32\n\x0cuint64_value\x18\x05 \x01(\x0b\x32\x1c.google.protobuf.UInt64Value\x12\x30\n\x0b\x66loat_value\x18\x06 \x01(\x0b\x32\x1b.google.protobuf.FloatValue\x12\x32\n\x0c\x64ouble_value\x18\x07 \x01(\x0b\x32\x1c.google.protobuf.DoubleValue\x12\x32\n\x0cstring_value\x18\x08 \x01(\x0b\x32\x1c.google.protobuf.StringValue\x12\x30\n\x0b\x62ytes_value\x18\t \x01(\x0b\x32\x1b.google.protobuf.BytesValue\x12\x37\n\x13repeated_bool_value\x18\x0b \x03(\x0b\x32\x1a.google.protobuf.BoolValue\x12\x39\n\x14repeated_int32_value\x18\x0c \x03(\x0b\x32\x1b.google.protobuf.Int32Value\x12\x39\n\x14repeated_int64_value\x18\r \x03(\x0b\x32\x1b.google.protobuf.Int64Value\x12;\n\x15repeated_uint32_value\x18\x0e \x03(\x0b\x32\x1c.google.protobuf.UInt32Value\x12;\n\x15repeated_uint64_value\x18\x0f \x03(\x0b\x32\x1c.google.protobuf.UInt64Value\x12\x39\n\x14repeated_float_value\x18\x10 \x03(\x0b\x32\x1b.google.protobuf.FloatValue\x12;\n\x15repeated_double_value\x18\x11 \x03(\x0b\x32\x1c.google.protobuf.DoubleValue\x12;\n\x15repeated_string_value\x18\x12 \x03(\x0b\x32\x1c.google.protobuf.StringValue\x12\x39\n\x14repeated_bytes_value\x18\x13 \x03(\x0b\x32\x1b.google.protobuf.BytesValue\"n\n\rTestTimestamp\x12)\n\x05value\x18\x01 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x32\n\x0erepeated_value\x18\x02 \x03(\x0b\x32\x1a.google.protobuf.Timestamp\"k\n\x0cTestDuration\x12(\n\x05value\x18\x01 \x01(\x0b\x32\x19.google.protobuf.Duration\x12\x31\n\x0erepeated_value\x18\x02 \x03(\x0b\x32\x19.google.protobuf.Duration\":\n\rTestFieldMask\x12)\n\x05value\x18\x01 \x01(\x0b\x32\x1a.google.protobuf.FieldMask\"e\n\nTestStruct\x12&\n\x05value\x18\x01 \x01(\x0b\x32\x17.google.protobuf.Struct\x12/\n\x0erepeated_value\x18\x02 \x03(\x0b\x32\x17.google.protobuf.Struct\"\\\n\x07TestAny\x12#\n\x05value\x18\x01 \x01(\x0b\x32\x14.google.protobuf.Any\x12,\n\x0erepeated_value\x18\x02 \x03(\x0b\x32\x14.google.protobuf.Any\"b\n\tTestValue\x12%\n\x05value\x18\x01 \x01(\x0b\x32\x16.google.protobuf.Value\x12.\n\x0erepeated_value\x18\x02 \x03(\x0b\x32\x16.google.protobuf.Value\"n\n\rTestListValue\x12)\n\x05value\x18\x01 \x01(\x0b\x32\x1a.google.protobuf.ListValue\x12\x32\n\x0erepeated_value\x18\x02 \x03(\x0b\x32\x1a.google.protobuf.ListValue\"\x89\x01\n\rTestBoolValue\x12\x12\n\nbool_value\x18\x01 \x01(\x08\x12\x34\n\x08\x62ool_map\x18\x02 \x03(\x0b\x32\".proto3.TestBoolValue.BoolMapEntry\x1a.\n\x0c\x42oolMapEntry\x12\x0b\n\x03key\x18\x01 \x01(\x08\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\"+\n\x12TestCustomJsonName\x12\x15\n\x05value\x18\x01 \x01(\x05R\x06@value\"J\n\x0eTestExtensions\x12\x38\n\nextensions\x18\x01 \x01(\x0b\x32$.protobuf_unittest.TestAllExtensions\"\x84\x01\n\rTestEnumValue\x12%\n\x0b\x65num_value1\x18\x01 \x01(\x0e\x32\x10.proto3.EnumType\x12%\n\x0b\x65num_value2\x18\x02 \x01(\x0e\x32\x10.proto3.EnumType\x12%\n\x0b\x65num_value3\x18\x03 \x01(\x0e\x32\x10.proto3.EnumType*\x1c\n\x08\x45numType\x12\x07\n\x03\x46OO\x10\x00\x12\x07\n\x03\x42\x41R\x10\x01\x42,\n\x18\x63om.google.protobuf.utilB\x10JsonFormatProto3b\x06proto3')
   ,
   dependencies=[google_dot_protobuf_dot_duration__pb2.DESCRIPTOR,google_dot_protobuf_dot_timestamp__pb2.DESCRIPTOR,google_dot_protobuf_dot_wrappers__pb2.DESCRIPTOR,google_dot_protobuf_dot_struct__pb2.DESCRIPTOR,google_dot_protobuf_dot_any__pb2.DESCRIPTOR,google_dot_protobuf_dot_field__mask__pb2.DESCRIPTOR,google_dot_protobuf_dot_unittest__pb2.DESCRIPTOR,])
-_sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 _ENUMTYPE = _descriptor.EnumDescriptor(
   name='EnumType',
@@ -40,17 +39,17 @@ _ENUMTYPE = _descriptor.EnumDescriptor(
   values=[
     _descriptor.EnumValueDescriptor(
       name='FOO', index=0, number=0,
-      options=None,
+      serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='BAR', index=1, number=1,
-      options=None,
+      serialized_options=None,
       type=None),
   ],
   containing_type=None,
-  options=None,
-  serialized_start=4533,
-  serialized_end=4561,
+  serialized_options=None,
+  serialized_start=4668,
+  serialized_end=4696,
 )
 _sym_db.RegisterEnumDescriptor(_ENUMTYPE)
 
@@ -73,14 +72,14 @@ _MESSAGETYPE = _descriptor.Descriptor(
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -104,161 +103,161 @@ _TESTMESSAGE = _descriptor.Descriptor(
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='int32_value', full_name='proto3.TestMessage.int32_value', index=1,
       number=2, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='int64_value', full_name='proto3.TestMessage.int64_value', index=2,
       number=3, type=3, cpp_type=2, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='uint32_value', full_name='proto3.TestMessage.uint32_value', index=3,
       number=4, type=13, cpp_type=3, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='uint64_value', full_name='proto3.TestMessage.uint64_value', index=4,
       number=5, type=4, cpp_type=4, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='float_value', full_name='proto3.TestMessage.float_value', index=5,
       number=6, type=2, cpp_type=6, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='double_value', full_name='proto3.TestMessage.double_value', index=6,
       number=7, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='string_value', full_name='proto3.TestMessage.string_value', index=7,
       number=8, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='bytes_value', full_name='proto3.TestMessage.bytes_value', index=8,
       number=9, type=12, cpp_type=9, label=1,
       has_default_value=False, default_value=_b(""),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='enum_value', full_name='proto3.TestMessage.enum_value', index=9,
       number=10, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='message_value', full_name='proto3.TestMessage.message_value', index=10,
       number=11, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='repeated_bool_value', full_name='proto3.TestMessage.repeated_bool_value', index=11,
       number=21, type=8, cpp_type=7, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='repeated_int32_value', full_name='proto3.TestMessage.repeated_int32_value', index=12,
       number=22, type=5, cpp_type=1, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='repeated_int64_value', full_name='proto3.TestMessage.repeated_int64_value', index=13,
       number=23, type=3, cpp_type=2, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='repeated_uint32_value', full_name='proto3.TestMessage.repeated_uint32_value', index=14,
       number=24, type=13, cpp_type=3, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='repeated_uint64_value', full_name='proto3.TestMessage.repeated_uint64_value', index=15,
       number=25, type=4, cpp_type=4, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='repeated_float_value', full_name='proto3.TestMessage.repeated_float_value', index=16,
       number=26, type=2, cpp_type=6, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='repeated_double_value', full_name='proto3.TestMessage.repeated_double_value', index=17,
       number=27, type=1, cpp_type=5, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='repeated_string_value', full_name='proto3.TestMessage.repeated_string_value', index=18,
       number=28, type=9, cpp_type=9, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='repeated_bytes_value', full_name='proto3.TestMessage.repeated_bytes_value', index=19,
       number=29, type=12, cpp_type=9, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='repeated_enum_value', full_name='proto3.TestMessage.repeated_enum_value', index=20,
       number=30, type=14, cpp_type=8, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='repeated_message_value', full_name='proto3.TestMessage.repeated_message_value', index=21,
       number=31, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -282,42 +281,42 @@ _TESTONEOF = _descriptor.Descriptor(
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='oneof_string_value', full_name='proto3.TestOneof.oneof_string_value', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='oneof_bytes_value', full_name='proto3.TestOneof.oneof_bytes_value', index=2,
       number=3, type=12, cpp_type=9, label=1,
       has_default_value=False, default_value=_b(""),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='oneof_enum_value', full_name='proto3.TestOneof.oneof_enum_value', index=3,
       number=4, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='oneof_message_value', full_name='proto3.TestOneof.oneof_message_value', index=4,
       number=5, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -344,21 +343,21 @@ _TESTMAP_BOOLMAPENTRY = _descriptor.Descriptor(
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='value', full_name='proto3.TestMap.BoolMapEntry.value', index=1,
       number=2, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=_descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001')),
+  serialized_options=_b('8\001'),
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -381,21 +380,21 @@ _TESTMAP_INT32MAPENTRY = _descriptor.Descriptor(
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='value', full_name='proto3.TestMap.Int32MapEntry.value', index=1,
       number=2, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=_descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001')),
+  serialized_options=_b('8\001'),
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -418,21 +417,21 @@ _TESTMAP_INT64MAPENTRY = _descriptor.Descriptor(
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='value', full_name='proto3.TestMap.Int64MapEntry.value', index=1,
       number=2, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=_descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001')),
+  serialized_options=_b('8\001'),
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -455,21 +454,21 @@ _TESTMAP_UINT32MAPENTRY = _descriptor.Descriptor(
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='value', full_name='proto3.TestMap.Uint32MapEntry.value', index=1,
       number=2, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=_descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001')),
+  serialized_options=_b('8\001'),
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -492,21 +491,21 @@ _TESTMAP_UINT64MAPENTRY = _descriptor.Descriptor(
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='value', full_name='proto3.TestMap.Uint64MapEntry.value', index=1,
       number=2, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=_descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001')),
+  serialized_options=_b('8\001'),
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -529,21 +528,21 @@ _TESTMAP_STRINGMAPENTRY = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='value', full_name='proto3.TestMap.StringMapEntry.value', index=1,
       number=2, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=_descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001')),
+  serialized_options=_b('8\001'),
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -566,49 +565,49 @@ _TESTMAP = _descriptor.Descriptor(
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='int32_map', full_name='proto3.TestMap.int32_map', index=1,
       number=2, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='int64_map', full_name='proto3.TestMap.int64_map', index=2,
       number=3, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='uint32_map', full_name='proto3.TestMap.uint32_map', index=3,
       number=4, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='uint64_map', full_name='proto3.TestMap.uint64_map', index=4,
       number=5, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='string_map', full_name='proto3.TestMap.string_map', index=5,
       number=6, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[_TESTMAP_BOOLMAPENTRY, _TESTMAP_INT32MAPENTRY, _TESTMAP_INT64MAPENTRY, _TESTMAP_UINT32MAPENTRY, _TESTMAP_UINT64MAPENTRY, _TESTMAP_STRINGMAPENTRY, ],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -632,21 +631,21 @@ _TESTNESTEDMAP_BOOLMAPENTRY = _descriptor.Descriptor(
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='value', full_name='proto3.TestNestedMap.BoolMapEntry.value', index=1,
       number=2, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=_descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001')),
+  serialized_options=_b('8\001'),
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -669,21 +668,21 @@ _TESTNESTEDMAP_INT32MAPENTRY = _descriptor.Descriptor(
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='value', full_name='proto3.TestNestedMap.Int32MapEntry.value', index=1,
       number=2, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=_descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001')),
+  serialized_options=_b('8\001'),
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -706,21 +705,21 @@ _TESTNESTEDMAP_INT64MAPENTRY = _descriptor.Descriptor(
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='value', full_name='proto3.TestNestedMap.Int64MapEntry.value', index=1,
       number=2, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=_descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001')),
+  serialized_options=_b('8\001'),
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -743,21 +742,21 @@ _TESTNESTEDMAP_UINT32MAPENTRY = _descriptor.Descriptor(
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='value', full_name='proto3.TestNestedMap.Uint32MapEntry.value', index=1,
       number=2, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=_descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001')),
+  serialized_options=_b('8\001'),
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -780,21 +779,21 @@ _TESTNESTEDMAP_UINT64MAPENTRY = _descriptor.Descriptor(
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='value', full_name='proto3.TestNestedMap.Uint64MapEntry.value', index=1,
       number=2, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=_descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001')),
+  serialized_options=_b('8\001'),
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -817,21 +816,21 @@ _TESTNESTEDMAP_STRINGMAPENTRY = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='value', full_name='proto3.TestNestedMap.StringMapEntry.value', index=1,
       number=2, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=_descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001')),
+  serialized_options=_b('8\001'),
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -854,21 +853,21 @@ _TESTNESTEDMAP_MAPMAPENTRY = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='value', full_name='proto3.TestNestedMap.MapMapEntry.value', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=_descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001')),
+  serialized_options=_b('8\001'),
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -891,56 +890,56 @@ _TESTNESTEDMAP = _descriptor.Descriptor(
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='int32_map', full_name='proto3.TestNestedMap.int32_map', index=1,
       number=2, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='int64_map', full_name='proto3.TestNestedMap.int64_map', index=2,
       number=3, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='uint32_map', full_name='proto3.TestNestedMap.uint32_map', index=3,
       number=4, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='uint64_map', full_name='proto3.TestNestedMap.uint64_map', index=4,
       number=5, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='string_map', full_name='proto3.TestNestedMap.string_map', index=5,
       number=6, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='map_map', full_name='proto3.TestNestedMap.map_map', index=6,
       number=7, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[_TESTNESTEDMAP_BOOLMAPENTRY, _TESTNESTEDMAP_INT32MAPENTRY, _TESTNESTEDMAP_INT64MAPENTRY, _TESTNESTEDMAP_UINT32MAPENTRY, _TESTNESTEDMAP_UINT64MAPENTRY, _TESTNESTEDMAP_STRINGMAPENTRY, _TESTNESTEDMAP_MAPMAPENTRY, ],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -964,133 +963,133 @@ _TESTWRAPPER = _descriptor.Descriptor(
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='int32_value', full_name='proto3.TestWrapper.int32_value', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='int64_value', full_name='proto3.TestWrapper.int64_value', index=2,
       number=3, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='uint32_value', full_name='proto3.TestWrapper.uint32_value', index=3,
       number=4, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='uint64_value', full_name='proto3.TestWrapper.uint64_value', index=4,
       number=5, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='float_value', full_name='proto3.TestWrapper.float_value', index=5,
       number=6, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='double_value', full_name='proto3.TestWrapper.double_value', index=6,
       number=7, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='string_value', full_name='proto3.TestWrapper.string_value', index=7,
       number=8, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='bytes_value', full_name='proto3.TestWrapper.bytes_value', index=8,
       number=9, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='repeated_bool_value', full_name='proto3.TestWrapper.repeated_bool_value', index=9,
       number=11, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='repeated_int32_value', full_name='proto3.TestWrapper.repeated_int32_value', index=10,
       number=12, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='repeated_int64_value', full_name='proto3.TestWrapper.repeated_int64_value', index=11,
       number=13, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='repeated_uint32_value', full_name='proto3.TestWrapper.repeated_uint32_value', index=12,
       number=14, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='repeated_uint64_value', full_name='proto3.TestWrapper.repeated_uint64_value', index=13,
       number=15, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='repeated_float_value', full_name='proto3.TestWrapper.repeated_float_value', index=14,
       number=16, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='repeated_double_value', full_name='proto3.TestWrapper.repeated_double_value', index=15,
       number=17, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='repeated_string_value', full_name='proto3.TestWrapper.repeated_string_value', index=16,
       number=18, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='repeated_bytes_value', full_name='proto3.TestWrapper.repeated_bytes_value', index=17,
       number=19, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -1114,21 +1113,21 @@ _TESTTIMESTAMP = _descriptor.Descriptor(
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='repeated_value', full_name='proto3.TestTimestamp.repeated_value', index=1,
       number=2, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -1152,21 +1151,21 @@ _TESTDURATION = _descriptor.Descriptor(
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='repeated_value', full_name='proto3.TestDuration.repeated_value', index=1,
       number=2, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -1190,14 +1189,14 @@ _TESTFIELDMASK = _descriptor.Descriptor(
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -1221,21 +1220,21 @@ _TESTSTRUCT = _descriptor.Descriptor(
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='repeated_value', full_name='proto3.TestStruct.repeated_value', index=1,
       number=2, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -1259,21 +1258,21 @@ _TESTANY = _descriptor.Descriptor(
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='repeated_value', full_name='proto3.TestAny.repeated_value', index=1,
       number=2, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -1297,21 +1296,21 @@ _TESTVALUE = _descriptor.Descriptor(
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='repeated_value', full_name='proto3.TestValue.repeated_value', index=1,
       number=2, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -1335,21 +1334,21 @@ _TESTLISTVALUE = _descriptor.Descriptor(
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='repeated_value', full_name='proto3.TestListValue.repeated_value', index=1,
       number=2, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -1373,21 +1372,21 @@ _TESTBOOLVALUE_BOOLMAPENTRY = _descriptor.Descriptor(
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='value', full_name='proto3.TestBoolValue.BoolMapEntry.value', index=1,
       number=2, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=_descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001')),
+  serialized_options=_b('8\001'),
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -1410,21 +1409,21 @@ _TESTBOOLVALUE = _descriptor.Descriptor(
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='bool_map', full_name='proto3.TestBoolValue.bool_map', index=1,
       number=2, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[_TESTBOOLVALUE_BOOLMAPENTRY, ],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -1448,14 +1447,14 @@ _TESTCUSTOMJSONNAME = _descriptor.Descriptor(
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, json_name='@value', file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -1479,14 +1478,14 @@ _TESTEXTENSIONS = _descriptor.Descriptor(
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
   nested_types=[],
   enum_types=[
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -1494,6 +1493,51 @@ _TESTEXTENSIONS = _descriptor.Descriptor(
   ],
   serialized_start=4457,
   serialized_end=4531,
+)
+
+
+_TESTENUMVALUE = _descriptor.Descriptor(
+  name='TestEnumValue',
+  full_name='proto3.TestEnumValue',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='enum_value1', full_name='proto3.TestEnumValue.enum_value1', index=0,
+      number=1, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='enum_value2', full_name='proto3.TestEnumValue.enum_value2', index=1,
+      number=2, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='enum_value3', full_name='proto3.TestEnumValue.enum_value3', index=2,
+      number=3, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=4534,
+  serialized_end=4666,
 )
 
 _TESTMESSAGE.fields_by_name['enum_value'].enum_type = _ENUMTYPE
@@ -1578,6 +1622,9 @@ _TESTLISTVALUE.fields_by_name['repeated_value'].message_type = google_dot_protob
 _TESTBOOLVALUE_BOOLMAPENTRY.containing_type = _TESTBOOLVALUE
 _TESTBOOLVALUE.fields_by_name['bool_map'].message_type = _TESTBOOLVALUE_BOOLMAPENTRY
 _TESTEXTENSIONS.fields_by_name['extensions'].message_type = google_dot_protobuf_dot_unittest__pb2._TESTALLEXTENSIONS
+_TESTENUMVALUE.fields_by_name['enum_value1'].enum_type = _ENUMTYPE
+_TESTENUMVALUE.fields_by_name['enum_value2'].enum_type = _ENUMTYPE
+_TESTENUMVALUE.fields_by_name['enum_value3'].enum_type = _ENUMTYPE
 DESCRIPTOR.message_types_by_name['MessageType'] = _MESSAGETYPE
 DESCRIPTOR.message_types_by_name['TestMessage'] = _TESTMESSAGE
 DESCRIPTOR.message_types_by_name['TestOneof'] = _TESTONEOF
@@ -1594,7 +1641,9 @@ DESCRIPTOR.message_types_by_name['TestListValue'] = _TESTLISTVALUE
 DESCRIPTOR.message_types_by_name['TestBoolValue'] = _TESTBOOLVALUE
 DESCRIPTOR.message_types_by_name['TestCustomJsonName'] = _TESTCUSTOMJSONNAME
 DESCRIPTOR.message_types_by_name['TestExtensions'] = _TESTEXTENSIONS
+DESCRIPTOR.message_types_by_name['TestEnumValue'] = _TESTENUMVALUE
 DESCRIPTOR.enum_types_by_name['EnumType'] = _ENUMTYPE
+_sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 MessageType = _reflection.GeneratedProtocolMessageType('MessageType', (_message.Message,), dict(
   DESCRIPTOR = _MESSAGETYPE,
@@ -1820,33 +1869,27 @@ TestExtensions = _reflection.GeneratedProtocolMessageType('TestExtensions', (_me
   ))
 _sym_db.RegisterMessage(TestExtensions)
 
+TestEnumValue = _reflection.GeneratedProtocolMessageType('TestEnumValue', (_message.Message,), dict(
+  DESCRIPTOR = _TESTENUMVALUE,
+  __module__ = 'google.protobuf.util.json_format_proto3_pb2'
+  # @@protoc_insertion_point(class_scope:proto3.TestEnumValue)
+  ))
+_sym_db.RegisterMessage(TestEnumValue)
 
-_TESTMAP_BOOLMAPENTRY.has_options = True
-_TESTMAP_BOOLMAPENTRY._options = _descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001'))
-_TESTMAP_INT32MAPENTRY.has_options = True
-_TESTMAP_INT32MAPENTRY._options = _descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001'))
-_TESTMAP_INT64MAPENTRY.has_options = True
-_TESTMAP_INT64MAPENTRY._options = _descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001'))
-_TESTMAP_UINT32MAPENTRY.has_options = True
-_TESTMAP_UINT32MAPENTRY._options = _descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001'))
-_TESTMAP_UINT64MAPENTRY.has_options = True
-_TESTMAP_UINT64MAPENTRY._options = _descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001'))
-_TESTMAP_STRINGMAPENTRY.has_options = True
-_TESTMAP_STRINGMAPENTRY._options = _descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001'))
-_TESTNESTEDMAP_BOOLMAPENTRY.has_options = True
-_TESTNESTEDMAP_BOOLMAPENTRY._options = _descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001'))
-_TESTNESTEDMAP_INT32MAPENTRY.has_options = True
-_TESTNESTEDMAP_INT32MAPENTRY._options = _descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001'))
-_TESTNESTEDMAP_INT64MAPENTRY.has_options = True
-_TESTNESTEDMAP_INT64MAPENTRY._options = _descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001'))
-_TESTNESTEDMAP_UINT32MAPENTRY.has_options = True
-_TESTNESTEDMAP_UINT32MAPENTRY._options = _descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001'))
-_TESTNESTEDMAP_UINT64MAPENTRY.has_options = True
-_TESTNESTEDMAP_UINT64MAPENTRY._options = _descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001'))
-_TESTNESTEDMAP_STRINGMAPENTRY.has_options = True
-_TESTNESTEDMAP_STRINGMAPENTRY._options = _descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001'))
-_TESTNESTEDMAP_MAPMAPENTRY.has_options = True
-_TESTNESTEDMAP_MAPMAPENTRY._options = _descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001'))
-_TESTBOOLVALUE_BOOLMAPENTRY.has_options = True
-_TESTBOOLVALUE_BOOLMAPENTRY._options = _descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001'))
+
+DESCRIPTOR._options = None
+_TESTMAP_BOOLMAPENTRY._options = None
+_TESTMAP_INT32MAPENTRY._options = None
+_TESTMAP_INT64MAPENTRY._options = None
+_TESTMAP_UINT32MAPENTRY._options = None
+_TESTMAP_UINT64MAPENTRY._options = None
+_TESTMAP_STRINGMAPENTRY._options = None
+_TESTNESTEDMAP_BOOLMAPENTRY._options = None
+_TESTNESTEDMAP_INT32MAPENTRY._options = None
+_TESTNESTEDMAP_INT64MAPENTRY._options = None
+_TESTNESTEDMAP_UINT32MAPENTRY._options = None
+_TESTNESTEDMAP_UINT64MAPENTRY._options = None
+_TESTNESTEDMAP_STRINGMAPENTRY._options = None
+_TESTNESTEDMAP_MAPMAPENTRY._options = None
+_TESTBOOLVALUE_BOOLMAPENTRY._options = None
 # @@protoc_insertion_point(module_scope)

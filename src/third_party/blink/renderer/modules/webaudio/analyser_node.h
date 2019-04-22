@@ -106,6 +106,8 @@ class AnalyserNode final : public AudioBasicInspectorNode {
                               const AnalyserOptions*,
                               ExceptionState&);
 
+  AnalyserNode(BaseAudioContext&);
+
   unsigned fftSize() const;
   void setFftSize(unsigned size, ExceptionState&);
   unsigned frequencyBinCount() const;
@@ -121,7 +123,6 @@ class AnalyserNode final : public AudioBasicInspectorNode {
   void getByteTimeDomainData(NotShared<DOMUint8Array>);
 
  private:
-  AnalyserNode(BaseAudioContext&);
   AnalyserHandler& GetAnalyserHandler() const;
 
   void SetMinMaxDecibels(double min, double max, ExceptionState&);

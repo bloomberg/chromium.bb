@@ -189,7 +189,7 @@ class PLATFORM_EXPORT FontDescription {
   VariantLigatures GetVariantLigatures() const;
   FontVariantNumeric VariantNumeric() const {
     return FontVariantNumeric::InitializeFromUnsigned(fields_.variant_numeric_);
-  };
+  }
   LigaturesState CommonLigaturesState() const {
     return static_cast<LigaturesState>(fields_.common_ligatures_state_);
   }
@@ -252,6 +252,7 @@ class PLATFORM_EXPORT FontDescription {
       const;  // Returns either the computedSize or the computedPixelSize
   FontCacheKey CacheKey(
       const FontFaceCreationParams&,
+      bool is_unique_match,
       const FontSelectionRequest& = FontSelectionRequest()) const;
 
   void SetFamily(const FontFamily& family) { family_list_ = family; }

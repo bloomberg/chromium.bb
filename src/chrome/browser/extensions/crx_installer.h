@@ -106,8 +106,11 @@ class CrxInstaller : public SandboxedUnpackerClient {
       std::unique_ptr<ExtensionInstallPrompt> client,
       const WebstoreInstaller::Approval* approval);
 
-  // Install the crx in |source_file|.
+  // Install the crx in |source_file|. The file must be a CRX3. A publisher
+  // proof in the file is required unless off-webstore installation is allowed.
   void InstallCrx(const base::FilePath& source_file);
+
+  // Install the crx in |source_file|.
   void InstallCrxFile(const CRXFileInfo& source_file);
 
   // Install the unpacked crx in |unpacked_dir|.
@@ -248,8 +251,8 @@ class CrxInstaller : public SandboxedUnpackerClient {
 
  private:
   friend class ::ExtensionServiceTest;
+  friend class BookmarkAppInstallFinalizerTest;
   friend class ExtensionUpdaterTest;
-  friend class BookmarkAppInstallerTest;
 
   CrxInstaller(base::WeakPtr<ExtensionService> service_weak,
                std::unique_ptr<ExtensionInstallPrompt> client,

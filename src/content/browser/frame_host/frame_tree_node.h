@@ -403,10 +403,22 @@ class CONTENT_EXPORT FrameTreeNode {
     return user_activation_state_.IsActive();
   }
 
+  // Transfers user activation state from |source| frame into |this|.
+  void TransferActivationFrom(FrameTreeNode* source);
+
   // Remove history entries for all frames created by script in this frame's
   // subtree. If a frame created by a script is removed, then its history entry
   // will never be reused - this saves memory.
   void PruneChildFrameNavigationEntries(NavigationEntryImpl* entry);
+
+  blink::FrameOwnerElementType frame_owner_element_type() const {
+    return replication_state_.frame_owner_element_type;
+  }
+  // Only meaningful to call on a root frame. The value of |feature_state| will
+  // be nontrivial if there is an opener which is restricted in some of the
+  // feature policies.
+  void SetOpenerFeaturePolicyState(
+      const blink::FeaturePolicy::FeatureState& feature_state);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessFeaturePolicyBrowserTest,
@@ -523,32 +535,8 @@ class CONTENT_EXPORT FrameTreeNode {
 
   bool was_discarded_;
 
-  // The user activation state of the current frame.
-  //
-  // Changes to this state update other FrameTreeNodes as follows: for
-  // notification updates (on user inputs) all ancestor nodes are updated; for
-  // activation consumption calls, the whole frame tree is updated (w/o such
-  // exhaustive consumption, a rouge iframe can cause multiple consumptions per
-  // user activation).
-  //
-  // The user activation state is replicated in the browser process (in
-  // FrameTreeNode) and in the renderer processes (in LocalFrame and
-  // RemoteFrames).  The replicated states across the browser and renderer
-  // processes are kept in sync as follows:
-  //
-  // [A] Consumption of activation state for popups starts in the frame tree of
-  // the browser process and propagate to the renderer trees through direct IPCs
-  // (one IPC sent to each renderer).
-  //
-  // [B] Consumption calls from JS/blink side (e.g. video picture-in-picture)
-  // update the originating renderer's local frame tree and send an IPC to the
-  // browser; the browser updates its frame tree and sends IPCs to all other
-  // renderers each of which then updates its local frame tree.
-  //
-  // [B'] Notification updates on user inputs still follow [B] but they should
-  // really follow [A].  TODO(mustaq): fix through https://crbug.com/848778.
-  //
-  // [C] Expiration of an active state is tracked independently in each process.
+  // The user activation state of the current frame.  See |UserActivationState|
+  // for details on how this state is maintained.
   blink::UserActivationState user_activation_state_;
 
   // A helper for tracing the snapshots of this FrameTreeNode and attributing

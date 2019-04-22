@@ -4,6 +4,8 @@
 
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 
+#include <utility>
+
 #include "base/trace_event/traced_value.h"
 
 namespace viz {
@@ -16,8 +18,6 @@ const char* BeginFrameArgs::TypeToString(BeginFrameArgsType type) {
       return "NORMAL";
     case BeginFrameArgs::MISSED:
       return "MISSED";
-    case BeginFrameArgs::BEGIN_FRAME_ARGS_TYPE_MAX:
-      return "BEGIN_FRAME_ARGS_TYPE_MAX";
   }
   NOTREACHED();
   return "???";
@@ -64,7 +64,6 @@ BeginFrameArgs BeginFrameArgs::Create(BeginFrameArgs::CreationLocation location,
                                       base::TimeDelta interval,
                                       BeginFrameArgs::BeginFrameArgsType type) {
   DCHECK_NE(type, BeginFrameArgs::INVALID);
-  DCHECK_NE(type, BeginFrameArgs::BEGIN_FRAME_ARGS_TYPE_MAX);
 #ifdef NDEBUG
   return BeginFrameArgs(source_id, sequence_number, frame_time, deadline,
                         interval, type);
@@ -97,20 +96,6 @@ void BeginFrameArgs::AsValueInto(base::trace_event::TracedValue* state) const {
 #endif
   state->SetBoolean("on_critical_path", on_critical_path);
   state->SetBoolean("animate_only", animate_only);
-}
-
-// This is a hard-coded deadline adjustment that assumes 60Hz, to be used in
-// cases where a good estimated draw time is not known. Using 1/3 of the vsync
-// as the default adjustment gives the Browser the last 1/3 of a frame to
-// produce output, the Renderer Impl thread the middle 1/3 of a frame to produce
-// ouput, and the Renderer Main thread the first 1/3 of a frame to produce
-// output.
-base::TimeDelta BeginFrameArgs::DefaultEstimatedParentDrawTime() {
-  return base::TimeDelta::FromMicroseconds(16666 / 3);
-}
-
-base::TimeDelta BeginFrameArgs::DefaultInterval() {
-  return base::TimeDelta::FromMicroseconds(16666);
 }
 
 BeginFrameAck::BeginFrameAck()

@@ -6,11 +6,14 @@
 
 #include <vector>
 
+#include "base/android/content_uri_utils.h"
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop_current.h"
+#include "build/build_config.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace {
@@ -19,6 +22,15 @@ using MediaDataCallback =
     SafeMediaMetadataParser::MediaDataSourceFactory::MediaDataCallback;
 using ReadFileCallback = base::OnceCallback<void(bool, std::vector<char>)>;
 
+// Helper method to post |cb| on the |main_task_runner| with read result.
+void OnReadComplete(scoped_refptr<base::SequencedTaskRunner> main_task_runner,
+                    ReadFileCallback cb,
+                    bool success,
+                    std::vector<char> data) {
+  main_task_runner->PostTask(
+      FROM_HERE, base::BindOnce(std::move(cb), success, std::move(data)));
+}
+
 // Reads a chunk of the file on a file thread, and reply the data or error to
 // main thread.
 void ReadFile(const base::FilePath& file_path,
@@ -26,30 +38,38 @@ void ReadFile(const base::FilePath& file_path,
               int64_t length,
               scoped_refptr<base::SequencedTaskRunner> main_task_runner,
               ReadFileCallback cb) {
-  base::File file(file_path,
-                  base::File::Flags::FLAG_OPEN | base::File::Flags::FLAG_READ);
+  base::File file;
+#if defined(OS_ANDROID)
+  if (file_path.IsContentUri()) {
+    file = base::OpenContentUriForRead(file_path);
+    if (!file.IsValid()) {
+      OnReadComplete(main_task_runner, std::move(cb), false /*success*/,
+                     std::vector<char>());
+      return;
+    }
+  }
+#endif  // defined(OS_ANDROID)
+  if (!file.IsValid())
+    file = base::File(file_path, base::File::FLAG_OPEN | base::File::FLAG_READ);
   if (!file.IsValid()) {
-    main_task_runner->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(cb), false /*success*/, std::vector<char>()));
+    OnReadComplete(main_task_runner, std::move(cb), false /*success*/,
+                   std::vector<char>());
     return;
   }
 
   auto buffer = std::vector<char>(length);
   int bytes_read = file.Read(position, buffer.data(), length);
   if (bytes_read == -1) {
-    main_task_runner->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(cb), false /*success*/, std::vector<char>()));
+    OnReadComplete(main_task_runner, std::move(cb), false /*success*/,
+                   std::vector<char>());
     return;
   }
   DCHECK_GE(bytes_read, 0);
   if (bytes_read < length)
     buffer.resize(bytes_read);
 
-  main_task_runner->PostTask(
-      FROM_HERE,
-      base::BindOnce(std::move(cb), true /*success*/, std::move(buffer)));
+  OnReadComplete(main_task_runner, std::move(cb), true /*success*/,
+                 std::move(buffer));
 }
 
 // Read media file incrementally and send data to the utility process to parse

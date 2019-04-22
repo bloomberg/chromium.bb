@@ -19,6 +19,7 @@ class Capabilities;
 class ClientResolution;
 class ExtensionMessage;
 class PairingRequest;
+class SelectDesktopDisplayRequest;
 class VideoControl;
 
 class HostStub {
@@ -45,6 +46,10 @@ class HostStub {
 
   // Deliver an extension message from the client to the host.
   virtual void DeliverClientMessage(const ExtensionMessage& message) = 0;
+
+  // Select the specified host display.
+  virtual void SelectDesktopDisplay(
+      const SelectDesktopDisplayRequest& select_display) = 0;
 
  protected:
   virtual ~HostStub() {}

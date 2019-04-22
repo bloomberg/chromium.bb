@@ -7,8 +7,8 @@
 #include <errno.h>
 
 #include "base/files/file_descriptor_watcher_posix.h"
-#include "base/macros.h"
 #include "base/memory/free_deleter.h"
+#include "base/stl_util.h"
 #include "base/system/sys_info.h"
 #include "build/build_config.h"
 
@@ -117,9 +117,9 @@ BrlapiConnection::ConnectResult BrlapiConnectionImpl::Connect(
       // explicitly accept this command.
       BRLAPI_KEY_TYPE_CMD | BRLAPI_KEY_CMD_PASSDOTS,
   };
-  if (libbrlapi_loader_->brlapi__acceptKeys(
-          handle_.get(), brlapi_rangeType_command, extraKeys,
-          arraysize(extraKeys)) < 0) {
+  if (libbrlapi_loader_->brlapi__acceptKeys(handle_.get(),
+                                            brlapi_rangeType_command, extraKeys,
+                                            base::size(extraKeys)) < 0) {
     LOG(ERROR) << "Couldn't acceptKeys: " << BrlapiStrError();
     Disconnect();
     return CONNECT_ERROR_RETRY;

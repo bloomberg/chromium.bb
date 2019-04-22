@@ -2,9 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//tools/grit/grit_rule.gni")
 import("//third_party/brotli/brotli.gni")
 import("//third_party/inspector_protocol/inspector_protocol.gni")
+import("//third_party/protobuf/proto_library.gni")
+import("//tools/grit/grit_rule.gni")
 
 group("resources") {
   if (!is_android) {
@@ -75,6 +76,10 @@ inspector_protocol_generate("protocol_sources") {
 
   # These are relative to $target_gen_dir.
   outputs = [
+    "protocol/background_service.cc",
+    "protocol/background_service.h",
+    "protocol/base_string_adapter.cc",
+    "protocol/base_string_adapter.h",
     "protocol/browser.cc",
     "protocol/browser.h",
     "protocol/dom.cc",
@@ -94,6 +99,8 @@ inspector_protocol_generate("protocol_sources") {
     "protocol/memory.h",
     "protocol/network.cc",
     "protocol/network.h",
+    "protocol/overlay.cc",
+    "protocol/overlay.h",
     "protocol/page.cc",
     "protocol/page.h",
     "protocol/protocol.cc",
@@ -116,5 +123,24 @@ inspector_protocol_generate("protocol_sources") {
     "protocol/tethering.h",
     "protocol/tracing.cc",
     "protocol/tracing.h",
+  ]
+}
+
+proto_library("devtools_background_services_proto") {
+  sources = [
+    "devtools_background_services.proto",
+  ]
+}
+
+source_set("inspector_protocol_encoding_test") {
+  testonly = true
+  sources = [
+    "../../../third_party/inspector_protocol/encoding/encoding_test.cc",
+  ]
+  deps = [
+    "//base",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/inspector_protocol:encoding",
   ]
 }

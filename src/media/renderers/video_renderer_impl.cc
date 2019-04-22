@@ -4,6 +4,7 @@
 
 #include "media/renderers/video_renderer_impl.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/bind.h"
@@ -131,7 +132,7 @@ VideoRendererImpl::VideoRendererImpl(
       painted_first_frame_(false),
       min_buffered_frames_(limits::kMaxVideoFrames),
       weak_factory_(this),
-      frame_callback_weak_factory_(this) {
+      cancel_on_flush_weak_factory_(this) {
   DCHECK(create_video_decoders_cb_);
 }
 
@@ -175,7 +176,7 @@ void VideoRendererImpl::Flush(const base::Closure& callback) {
   pending_read_ = false;
   if (gpu_memory_buffer_pool_)
     gpu_memory_buffer_pool_->Abort();
-  frame_callback_weak_factory_.InvalidateWeakPtrs();
+  cancel_on_flush_weak_factory_.InvalidateWeakPtrs();
   video_decoder_stream_->Reset(
       base::BindOnce(&VideoRendererImpl::OnVideoDecoderStreamResetDone,
                      weak_factory_.GetWeakPtr()));
@@ -261,7 +262,7 @@ void VideoRendererImpl::Initialize(
       cdm_context,
       base::BindRepeating(&VideoRendererImpl::OnStatisticsUpdate,
                           weak_factory_.GetWeakPtr()),
-      base::BindRepeating(&VideoRendererImpl::OnWaitingForDecryptionKey,
+      base::BindRepeating(&VideoRendererImpl::OnWaiting,
                           weak_factory_.GetWeakPtr()));
 }
 
@@ -269,7 +270,8 @@ scoped_refptr<VideoFrame> VideoRendererImpl::Render(
     base::TimeTicks deadline_min,
     base::TimeTicks deadline_max,
     bool background_rendering) {
-  TRACE_EVENT1("media", "VideoRendererImpl::Render", "id", media_log_->id());
+  TRACE_EVENT_BEGIN1("media", "VideoRendererImpl::Render", "id",
+                     media_log_->id());
   base::AutoLock auto_lock(lock_);
   DCHECK_EQ(state_, kPlaying);
   last_render_time_ = tick_clock_->NowTicks();
@@ -316,6 +318,8 @@ scoped_refptr<VideoFrame> VideoRendererImpl::Render(
                      weak_factory_.GetWeakPtr(), result->format(),
                      result->natural_size()));
 
+  TRACE_EVENT_END1("media", "VideoRendererImpl::Render", "frame",
+                   result->AsHumanReadableString());
   return result;
 }
 
@@ -387,9 +391,9 @@ void VideoRendererImpl::OnBufferingStateChange(BufferingState state) {
   client_->OnBufferingStateChange(state);
 }
 
-void VideoRendererImpl::OnWaitingForDecryptionKey() {
+void VideoRendererImpl::OnWaiting(WaitingReason reason) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  client_->OnWaitingForDecryptionKey();
+  client_->OnWaiting(reason);
 }
 
 void VideoRendererImpl::OnConfigChange(const VideoDecoderConfig& config) {
@@ -497,8 +501,7 @@ void VideoRendererImpl::FrameReady(VideoDecoderStream::Status status,
                             static_cast<int>(VideoFrameColorSpaceUMA::MAX) + 1);
   const bool is_eos =
       frame->metadata()->IsTrue(VideoFrameMetadata::END_OF_STREAM);
-  const bool is_before_start_time =
-      !is_eos && IsBeforeStartTime(frame->timestamp());
+  const bool is_before_start_time = !is_eos && IsBeforeStartTime(*frame);
   const bool cant_read = !video_decoder_stream_->CanReadWithoutStalling();
 
   if (is_eos) {
@@ -657,7 +660,7 @@ void VideoRendererImpl::AttemptRead_Locked() {
       pending_read_ = true;
       video_decoder_stream_->Read(
           base::BindOnce(&VideoRendererImpl::FrameReady,
-                         frame_callback_weak_factory_.GetWeakPtr()));
+                         cancel_on_flush_weak_factory_.GetWeakPtr()));
       return;
     case kUninitialized:
     case kInitializing:
@@ -751,15 +754,36 @@ void VideoRendererImpl::MaybeFireEndedCallback_Locked(bool time_progressing) {
   if (!time_progressing && algorithm_->frames_queued())
     return;
 
-  // Fire ended if we have no more effective frames or only ever had one frame.
-  if (!algorithm_->effective_frames_queued() ||
-      (algorithm_->frames_queued() == 1u &&
-       algorithm_->average_frame_duration().is_zero())) {
-    rendered_end_of_stream_ = true;
-    task_runner_->PostTask(FROM_HERE,
-                           base::BindOnce(&VideoRendererImpl::OnPlaybackEnded,
-                                          weak_factory_.GetWeakPtr()));
+  // Fire ended if we have no more effective frames, only ever had one frame, or
+  // we only have 1 effective frame and there's less than one render interval
+  // left before the ended event should execute.
+  base::TimeDelta ended_event_delay;
+  bool should_render_end_of_stream = false;
+  if (!algorithm_->effective_frames_queued()) {
+    should_render_end_of_stream = true;
+  } else if (algorithm_->frames_queued() == 1u &&
+             algorithm_->average_frame_duration().is_zero()) {
+    should_render_end_of_stream = true;
+  } else if (algorithm_->frames_queued() == 1u &&
+             algorithm_->effective_frames_queued() == 1) {
+    const auto end_delay =
+        std::max(base::TimeDelta(),
+                 algorithm_->last_frame_end_time() - tick_clock_->NowTicks());
+    if (end_delay < algorithm_->render_interval()) {
+      should_render_end_of_stream = true;
+      ended_event_delay = end_delay;
+    }
   }
+
+  if (!should_render_end_of_stream)
+    return;
+
+  rendered_end_of_stream_ = true;
+  task_runner_->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&VideoRendererImpl::OnPlaybackEnded,
+                     cancel_on_flush_weak_factory_.GetWeakPtr()),
+      ended_event_delay);
 }
 
 base::TimeTicks VideoRendererImpl::ConvertMediaTimestamp(
@@ -777,8 +801,15 @@ base::TimeTicks VideoRendererImpl::GetCurrentMediaTimeAsWallClockTime() {
   return current_time[0];
 }
 
-bool VideoRendererImpl::IsBeforeStartTime(base::TimeDelta timestamp) {
-  return timestamp + video_decoder_stream_->AverageDuration() <
+bool VideoRendererImpl::IsBeforeStartTime(const VideoFrame& frame) {
+  // Prefer the actual frame duration over the average if available.
+  base::TimeDelta metadata_frame_duration;
+  if (frame.metadata()->GetTimeDelta(VideoFrameMetadata::FRAME_DURATION,
+                                     &metadata_frame_duration)) {
+    return frame.timestamp() + metadata_frame_duration < start_timestamp_;
+  }
+
+  return frame.timestamp() + video_decoder_stream_->AverageDuration() <
          start_timestamp_;
 }
 

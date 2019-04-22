@@ -8,15 +8,70 @@
 #ifndef SkBlitRow_opts_DEFINED
 #define SkBlitRow_opts_DEFINED
 
+#include "SkVx.h"
 #include "SkColorData.h"
 #include "SkMSAN.h"
 
 #if SK_CPU_SSE_LEVEL >= SK_CPU_SSE_LEVEL_SSE2
-    #include "SkColor_opts_SSE2.h"
     #include <immintrin.h>
+
+    static inline __m128i SkPMSrcOver_SSE2(const __m128i& src, const __m128i& dst) {
+        auto SkAlphaMulQ_SSE2 = [](const __m128i& c, const __m128i& scale) {
+            const __m128i mask = _mm_set1_epi32(0xFF00FF);
+            __m128i s = _mm_or_si128(_mm_slli_epi32(scale, 16), scale);
+
+            // uint32_t rb = ((c & mask) * scale) >> 8
+            __m128i rb = _mm_and_si128(mask, c);
+            rb = _mm_mullo_epi16(rb, s);
+            rb = _mm_srli_epi16(rb, 8);
+
+            // uint32_t ag = ((c >> 8) & mask) * scale
+            __m128i ag = _mm_srli_epi16(c, 8);
+            ag = _mm_mullo_epi16(ag, s);
+
+            // (rb & mask) | (ag & ~mask)
+            ag = _mm_andnot_si128(mask, ag);
+            return _mm_or_si128(rb, ag);
+        };
+        return _mm_add_epi32(src,
+                             SkAlphaMulQ_SSE2(dst, _mm_sub_epi32(_mm_set1_epi32(256),
+                                                                 _mm_srli_epi32(src, 24))));
+    }
 #endif
 
 namespace SK_OPTS_NS {
+
+// Blend constant color over count src pixels, writing into dst.
+inline void blit_row_color32(SkPMColor* dst, const SkPMColor* src, int count, SkPMColor color) {
+    constexpr int N = 4;  // 8, 16 also reasonable choices
+    using U32 = skvx::Vec<  N, uint32_t>;
+    using U16 = skvx::Vec<4*N, uint16_t>;
+    using U8  = skvx::Vec<4*N, uint8_t>;
+
+    auto kernel = [color](U32 src) {
+        unsigned invA = 255 - SkGetPackedA32(color);
+        invA += invA >> 7;
+        SkASSERT(0 < invA && invA < 256);  // We handle alpha == 0 or alpha == 255 specially.
+
+        // (src * invA + (color << 8) + 128) >> 8
+        // Should all fit in 16 bits.
+        U8 s = skvx::bit_pun<U8>(src),
+           a = U8(invA);
+        U16 c = skvx::cast<uint16_t>(skvx::bit_pun<U8>(U32(color))),
+            d = (mull(s,a) + (c << 8) + 128)>>8;
+        return skvx::bit_pun<U32>(skvx::cast<uint8_t>(d));
+    };
+
+    while (count >= N) {
+        kernel(U32::Load(src)).store(dst);
+        src   += N;
+        dst   += N;
+        count -= N;
+    }
+    while (count --> 0) {
+        *dst++ = kernel(U32{*src++})[0];
+    }
+}
 
 #if defined(SK_ARM_HAS_NEON)
 

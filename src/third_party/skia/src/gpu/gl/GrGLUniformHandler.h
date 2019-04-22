@@ -33,13 +33,13 @@ private:
 
     UniformHandle internalAddUniformArray(uint32_t visibility,
                                           GrSLType type,
-                                          GrSLPrecision precision,
                                           const char* name,
                                           bool mangleName,
                                           int arrayCount,
                                           const char** outName) override;
 
-    SamplerHandle addSampler(GrSwizzle, GrTextureType, GrSLPrecision, const char* name) override;
+    SamplerHandle addSampler(const GrTexture*, const GrSamplerState&, const char* name,
+                             const GrShaderCaps*) override;
 
     const GrShaderVar& samplerVariable(SamplerHandle handle) const override {
         return fSamplers[handle.toIndex()].fVariable;

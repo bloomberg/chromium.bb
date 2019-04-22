@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/base64.h"
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
@@ -38,7 +39,7 @@ struct KeyValue {
   std::string value;
 
   explicit KeyValue(const std::string key, const std::string value)
-      : key(key), value(value){};
+      : key(key), value(value) {}
   explicit KeyValue(const KeyValue& other) = default;
 
  private:
@@ -51,11 +52,11 @@ struct ResponseInfo {
   std::vector<KeyValue> key_values;
 
   explicit ResponseInfo(FullHash full_hash, ListIdentifier list_id)
-      : full_hash(full_hash), list_id(list_id){};
+      : full_hash(full_hash), list_id(list_id) {}
   explicit ResponseInfo(const ResponseInfo& other)
       : full_hash(other.full_hash),
         list_id(other.list_id),
-        key_values(other.key_values){};
+        key_values(other.key_values) {}
 
  private:
   ResponseInfo();

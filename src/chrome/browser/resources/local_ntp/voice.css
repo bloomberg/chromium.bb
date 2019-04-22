@@ -41,23 +41,38 @@
 .overlay-dialog {
   background: transparent;
   border: none;
+  height: 100%;
+  left: 0;
+  margin: auto;
+  padding: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 100%;
+}
+
+.overlay-dialog::backdrop {
+  background-color: white;
+}
+
+html[darkmode=true] .overlay-dialog::backdrop {
+  background-color: rgb(41, 42, 45);
 }
 
 /* The background element. */
 .overlay,
 .overlay-hidden {
   background: white;
-  height: 100%;
-  left: 0;
   opacity: 0;
-  overflow: hidden;
-  position: fixed;
-  text-align: left;
-  top: 0;
+  text-align: start;
   transition: visibility 0s linear 218ms, background-color 218ms;
   visibility: hidden;
-  width: 100%;
   z-index: 10000;
+}
+
+html[darkmode=true] .overlay,
+html[darkmode=true] .overlay-hidden {
+  background-color: rgb(41, 42, 45);
 }
 
 /* Full Page visible style for the background element. */
@@ -77,15 +92,20 @@
   margin: 15px;
   opacity: .54;
   padding: 0;
-  position: absolute;
+  position: fixed;
   right: 0;
   top: 0;
   width: 15px;
+  z-index: 1;
 }
 
 html[dir=rtl] .close-button {
   left: 0;
   right: auto;
+}
+
+html[darkmode=true] .close-button {
+  color: rgb(var(--GG200-rgb));
 }
 
 .close-button:hover {
@@ -152,12 +172,18 @@ html[dir=rtl] .close-button {
   transition: background-color 218ms, border 218ms, box-shadow 218ms;
 }
 
+html[darkmode=true] .button {
+  background-color: rgb(var(--GG900-rgb));
+  border-color: rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.3), 0 4px 8px 3px rgba(0, 0, 0, 0.15);
+}
+
 /* Button state when speech recognition is inactive. */
 .overlay-hidden .button {
   opacity: 0;
   pointer-events: none;
   position: absolute;
-  transition-delay: 0;
+  transition-delay: 0s;
 }
 
 /* Button state when speech recognition is active. */
@@ -165,7 +191,7 @@ html[dir=rtl] .close-button {
   opacity: 1;
   pointer-events: auto;
   position: absolute;
-  transition-delay: 0;
+  transition-delay: 0s;
 }
 
 /* Button state when speech input is being received by the microphone. */
@@ -173,6 +199,10 @@ html[dir=rtl] .close-button {
   background-color: var(--light_red);
   border: 0;
   box-shadow: none;
+}
+
+html[darkmode=true] .voice-rs .button {
+  background-color: rgb(var(--GR300-rgb));
 }
 
 /* Vibrating input volume level. */
@@ -189,6 +219,10 @@ html[dir=rtl] .close-button {
   transform: scale(.01);
   transition: opacity 218ms;
   width: 301px;
+}
+
+html[darkmode=true] .level {
+  background-color: rgb(var(--GG700-rgb));
 }
 
 /* Container for scaling and positioning of the button. */
@@ -228,9 +262,17 @@ html[dir=rtl] .overlay-hidden .button-container {
   background-color: var(--dark_red);
 }
 
+html[darkmode=true] .voice-rs .button:active {
+  background-color: rgb(223, 128, 119);
+}
+
 /* Style applied to the button when clicked. */
 .button:active {
   background-color: var(--light_grey);
+}
+
+html[darkmode=true] .button:active {
+  background-color: rgb(53, 54, 57);
 }
 
 /* TEXT */
@@ -242,13 +284,13 @@ html[dir=rtl] .overlay-hidden .button-container {
  *   - voice-text-5l - 5 line style class */
 
 /* Styles applied to the positioning text-container element. */
-.text-container {
+#text-container {
   pointer-events: none;
 }
 
 /* Full Page UI style for the text-container. */
-.overlay .text-container,
-.overlay-hidden .text-container {
+.overlay #text-container,
+.overlay-hidden #text-container {
   position: absolute;
 }
 
@@ -259,23 +301,19 @@ html[dir=rtl] .overlay-hidden .button-container {
   opacity: 0;
   pointer-events: none;
   position: absolute;
-  text-align: left;
-  transition: opacity 100ms ease-in, margin-left 500ms ease-in,
+  text-align: start;
+  transition: opacity 100ms ease-in, margin-inline-start 500ms ease-in,
               top 0s linear 218ms;
-}
-
-html[dir=rtl] .voice-text {
-  text-align: right;
 }
 
 /* Recognition results text hidden in the Full Page UI. */
 .overlay-hidden .voice-text {
-  margin-left: 44px;
+  margin-inline-start: 44px;
 }
 
 html[dir=rtl] .overlay-hidden .voice-text {
-  margin-left: 0;
-  margin-right: 44px;
+  margin-inline-end: 44px;
+  margin-inline-start: 0;
 }
 
 /* Styles applied to the text output elements. Common style for the text area
@@ -297,14 +335,14 @@ html[dir=rtl] .overlay-hidden .voice-text {
 
 /* Common style for when the text areas are made visible. */
 .overlay .voice-text {
-  margin-left: 0;
+  margin-inline-start: 0;
   opacity: 1;
-  transition: opacity 500ms ease-out, margin-left 500ms ease-out;
+  transition: opacity 500ms ease-out, margin-inline-start 500ms ease-out;
 }
 
 html[dir=rtl] .overlay .voice-text {
-  margin-left: auto;
-  margin-right: 0;
+  margin-inline-end: 0;
+  margin-inline-start: auto;
 }
 
 /* Interim (low confidence) text. */
@@ -312,9 +350,17 @@ html[dir=rtl] .overlay .voice-text {
   color: var(--grey);
 }
 
+html[darkmode=true] #voice-text-i {
+  color: rgb(var(--GG500-rgb));
+}
+
 /* Final (high confidence) text. */
 #voice-text-f {
   color: black;
+}
+
+html[darkmode=true] #voice-text-f {
+  color: rgb(var(--GG200-rgb));
 }
 
 /* Text area links. */
@@ -325,6 +371,10 @@ html[dir=rtl] .overlay .voice-text {
   font-weight: 500;
   pointer-events: auto;
   text-decoration: underline;
+}
+
+html[darkmode=true] .voice-text-link {
+  color: rgb(var(--GB300-rgb));
 }
 
 /* Range of motion for the typing animation. */
@@ -410,6 +460,10 @@ html[dir=rtl] .overlay .voice-text {
   width: 24px;
 }
 
+html[darkmode=true] .receiver {
+  background-color: rgb(var(--GG500-rgb));
+}
+
 /* Part 2 of CSS-only microphone icon: the shell and stem wrapper element.
  * Positioned below the audio receiver element. */
 .wrapper {
@@ -435,6 +489,10 @@ html[dir=rtl] .overlay .voice-text {
   z-index: 1; /* z-index is only used to specify position relative to stem. */
 }
 
+html[darkmode=true] .stem {
+  background-color: rgb(var(--GG500-rgb));
+}
+
 /* Part 4 of CSS-only microphone icon: shell that holds the receiver.
  * Positioned below the audio receiver element and above the stem element. */
 .shell {
@@ -448,6 +506,10 @@ html[dir=rtl] .overlay .voice-text {
   z-index: 0; /* z-index is only used to specify position relative to stem. */
 }
 
+html[darkmode=true] .shell {
+  border-color: rgb(var(--GG500-rgb));
+}
+
 /* The .voice-ml style is applied when the UI is in
  * the 'listening for audio' state. */
 .voice-ml .receiver,
@@ -455,8 +517,17 @@ html[dir=rtl] .overlay .voice-text {
   background-color: var(--listening_icon_color);
 }
 
+html[darkmode=true] .voice-ml .receiver,
+html[darkmode=true] .voice-ml .stem {
+  background-color: rgb(var(--GR300-rgb));
+}
+
 .voice-ml .shell {
   border-color: var(--listening_icon_color);
+}
+
+html[darkmode=true] .voice-ml .shell {
+  border-color: rgb(var(--GR300-rgb));
 }
 
 /* The .voice-rs style is applied when the UI is in
@@ -466,6 +537,15 @@ html[dir=rtl] .overlay .voice-text {
   background-color: var(--active_icon_color);
 }
 
+html[darkmode=true] .voice-rs .receiver,
+html[darkmode=true] .voice-rs .stem {
+  background-color: rgb(var(--GG200-rgb));
+}
+
 .voice-rs .shell {
   border-color: var(--active_icon_color);
+}
+
+html[darkmode=true] .voice-rs .shell {
+  border-color: rgb(var(--GG200-rgb));
 }

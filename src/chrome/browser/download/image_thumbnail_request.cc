@@ -6,13 +6,19 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/task/post_task.h"
 #include "base/threading/scoped_blocking_call.h"
+#include "build/build_config.h"
 #include "chrome/browser/download/thumbnail_util.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "skia/ext/image_operations.h"
+
+#if defined(OS_ANDROID)
+#include "base/android/content_uri_utils.h"
+#endif  // defined(OS_ANDROID)
 
 namespace {
 
@@ -20,21 +26,37 @@ namespace {
 const int64_t kMaxImageSize = 10 * 1024 * 1024;  // 10 MB
 
 std::string LoadImageData(const base::FilePath& path) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::WILL_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::WILL_BLOCK);
 
   // Confirm that the file's size is within our threshold.
-  int64_t file_size;
-  if (!base::GetFileSize(path, &file_size) || file_size > kMaxImageSize) {
+  base::File file;
+#if defined(OS_ANDROID)
+  if (path.IsContentUri()) {
+    file = base::OpenContentUriForRead(path);
+    if (!file.IsValid())
+      return std::string();
+  }
+#endif  // defined(OS_ANDROID)
+  if (!file.IsValid())
+    file = base::File(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
+
+  if (!file.IsValid())
+    return std::string();
+
+  int64_t file_size = file.GetLength();
+  if (file_size < 0 || file_size > kMaxImageSize) {
     LOG(ERROR) << "Unexpected file size: " << path.MaybeAsASCII() << ", "
                << file_size;
     return std::string();
   }
 
   std::string data;
-  bool success = base::ReadFileToString(path, &data);
+  data.resize(file_size);
+  int read_bytes = file.Read(0, &data[0], data.size());
 
   // Make sure the file isn't empty.
-  if (!success || data.empty()) {
+  if (read_bytes < 0 || data.empty()) {
     LOG(ERROR) << "Failed to read file: " << path.MaybeAsASCII();
     return std::string();
   }

@@ -53,7 +53,7 @@ class PendingUploadImpl : public TestReportingUploader::PendingUpload {
   const GURL& url() const override { return url_; }
   const std::string& json() const override { return json_; }
   std::unique_ptr<base::Value> GetValue() const override {
-    return base::JSONReader::Read(json_);
+    return base::JSONReader::ReadDeprecated(json_);
   }
 
   void Complete(ReportingUploader::Outcome outcome) override {
@@ -110,6 +110,14 @@ void TestReportingUploader::StartUpload(const url::Origin& report_origin,
   pending_uploads_.push_back(std::make_unique<PendingUploadImpl>(
       report_origin, url, json, std::move(callback),
       base::BindOnce(&ErasePendingUpload, &pending_uploads_)));
+}
+
+void TestReportingUploader::OnShutdown() {
+  pending_uploads_.clear();
+}
+
+int TestReportingUploader::GetPendingUploadCountForTesting() const {
+  return pending_uploads_.size();
 }
 
 TestReportingDelegate::TestReportingDelegate()

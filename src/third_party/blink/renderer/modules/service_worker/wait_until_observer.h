@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICE_WORKER_WAIT_UNTIL_OBSERVER_H_
 
 #include "base/callback.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope_client.h"
 #include "third_party/blink/renderer/platform/timer.h"
@@ -14,14 +15,16 @@
 namespace blink {
 
 class ExceptionState;
-class ExecutionContext;
 class ScriptPromise;
 class ScriptState;
 class ScriptValue;
 
 // Created for each ExtendableEvent instance.
 class MODULES_EXPORT WaitUntilObserver final
-    : public GarbageCollectedFinalized<WaitUntilObserver> {
+    : public GarbageCollectedFinalized<WaitUntilObserver>,
+      public ContextClient {
+  USING_GARBAGE_COLLECTED_MIXIN(WaitUntilObserver);
+
  public:
   using PromiseSettledCallback =
       base::RepeatingCallback<void(const ScriptValue&)>;
@@ -58,13 +61,19 @@ class MODULES_EXPORT WaitUntilObserver final
   void DidDispatchEvent(bool event_dispatch_failed);
 
   // Observes the promise and delays reporting to ServiceWorkerGlobalScopeClient
-  // that the event completed until the given promise is resolved or rejected.
+  // that the event completed until the promise is resolved or rejected.
+  //
   // WaitUntil may be called multiple times. The event is extended until all
   // promises have settled.
+  //
   // If provided, |on_promise_fulfilled| or |on_promise_rejected| is invoked
   // once |script_promise| fulfills or rejects. This enables the caller to do
   // custom handling.
-  void WaitUntil(
+  //
+  // If the event is not active, throws a DOMException and returns false. In
+  // this case the promise is ignored, and |on_promise_fulfilled| and
+  // |on_promise_rejected| will not be called.
+  bool WaitUntil(
       ScriptState*,
       ScriptPromise /* script_promise */,
       ExceptionState&,
@@ -73,9 +82,15 @@ class MODULES_EXPORT WaitUntilObserver final
 
   // Whether the associated event is active.
   // https://w3c.github.io/ServiceWorker/#extendableevent-active.
-  bool IsEventActive(ScriptState* script_state) const;
+  bool IsEventActive() const;
 
-  virtual void Trace(blink::Visitor*);
+  // Whether the event is being dispatched, i.e., the event handler
+  // is being run.
+  // https://dom.spec.whatwg.org/#dispatch-flag
+  // TODO(falken): Can this just use Event::IsBeingDispatched?
+  bool IsDispatchingEvent() const;
+
+  void Trace(blink::Visitor*) override;
 
  private:
   friend class InternalsServiceWorker;
@@ -108,7 +123,6 @@ class MODULES_EXPORT WaitUntilObserver final
 
   void MaybeCompleteEvent();
 
-  Member<ExecutionContext> execution_context_;
   EventType type_;
   int event_id_;
   int pending_promises_ = 0;

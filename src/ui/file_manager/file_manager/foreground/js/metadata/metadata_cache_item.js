@@ -22,14 +22,14 @@ function MetadataCacheItem() {
  * @return {!Array<string>} Property names that need to be loaded.
  */
 MetadataCacheItem.prototype.createRequests = function(names) {
-  var loadRequested = [];
-  for (var i = 0; i < names.length; i++) {
-    var name = names[i];
+  const loadRequested = [];
+  for (let i = 0; i < names.length; i++) {
+    const name = names[i];
     assert(!/Error$/.test(name));
     // Check if the property needs to be updated.
     if (this.properties_[name] &&
         this.properties_[name].state !==
-        MetadataCacheItemPropertyState.INVALIDATED) {
+            MetadataCacheItemPropertyState.INVALIDATED) {
       continue;
     }
     loadRequested.push(name);
@@ -43,11 +43,12 @@ MetadataCacheItem.prototype.createRequests = function(names) {
  * @param {!Array<string>} names
  */
 MetadataCacheItem.prototype.startRequests = function(requestId, names) {
-  for (var i = 0; i < names.length; i++) {
-    var name = names[i];
+  for (let i = 0; i < names.length; i++) {
+    const name = names[i];
     assert(!/Error$/.test(name));
-    if (!this.properties_[name])
+    if (!this.properties_[name]) {
       this.properties_[name] = new MetadataCacheItemProperty();
+    }
     this.properties_[name].requestId = requestId;
     this.properties_[name].state = MetadataCacheItemPropertyState.LOADING;
   }
@@ -60,20 +61,23 @@ MetadataCacheItem.prototype.startRequests = function(requestId, names) {
  * @return {boolean} Whether at least one property is updated or not.
  */
 MetadataCacheItem.prototype.storeProperties = function(requestId, typedObject) {
-  var changed = false;
-  var object = /** @type {!Object} */(typedObject);
-  for (var name in object) {
-    if (/.Error$/.test(name) && object[name])
+  let changed = false;
+  const object = /** @type {!Object} */ (typedObject);
+  for (let name in object) {
+    if (/.Error$/.test(name) && object[name]) {
       object[name.substr(0, name.length - 5)] = undefined;
+    }
   }
-  for (var name in object) {
-    if (/.Error$/.test(name))
+  for (let name in object) {
+    if (/.Error$/.test(name)) {
       continue;
-    if (!this.properties_[name])
+    }
+    if (!this.properties_[name]) {
       this.properties_[name] = new MetadataCacheItemProperty();
+    }
     if (requestId < this.properties_[name].requestId ||
         this.properties_[name].state ===
-        MetadataCacheItemPropertyState.FULFILLED) {
+            MetadataCacheItemPropertyState.FULFILLED) {
       continue;
     }
     changed = true;
@@ -92,7 +96,7 @@ MetadataCacheItem.prototype.storeProperties = function(requestId, typedObject) {
  *     be larger than other requets ID passed to the item before.
  */
 MetadataCacheItem.prototype.invalidate = function(requestId) {
-  for (var name in this.properties_) {
+  for (const name in this.properties_) {
     assert(this.properties_[name].requestId < requestId);
     this.properties_[name].requestId = requestId;
     this.properties_[name].state = MetadataCacheItemPropertyState.INVALIDATED;
@@ -106,16 +110,16 @@ MetadataCacheItem.prototype.invalidate = function(requestId) {
  * @return {!MetadataItem}
  */
 MetadataCacheItem.prototype.get = function(names) {
-  var result = /** @type {!Object} */(new MetadataItem());
-  for (var i = 0; i < names.length; i++) {
-    var name = names[i];
+  const result = /** @type {!Object} */ (new MetadataItem());
+  for (let i = 0; i < names.length; i++) {
+    const name = names[i];
     assert(!/Error$/.test(name));
     if (this.properties_[name]) {
       result[name] = this.properties_[name].value;
       result[name + 'Error'] = this.properties_[name].error;
     }
   }
-  return /** @type {!MetadataItem} */(result);
+  return /** @type {!MetadataItem} */ (result);
 };
 
 /**
@@ -123,9 +127,9 @@ MetadataCacheItem.prototype.get = function(names) {
  * @return {!MetadataCacheItem}
  */
 MetadataCacheItem.prototype.clone = function() {
-  var clonedItem = new MetadataCacheItem();
-  for (var name in this.properties_) {
-    var property = this.properties_[name];
+  const clonedItem = new MetadataCacheItem();
+  for (const name in this.properties_) {
+    const property = this.properties_[name];
     clonedItem.properties_[name] = new MetadataCacheItemProperty();
     clonedItem.properties_[name].value = property.value;
     clonedItem.properties_[name].error = property.error;
@@ -141,10 +145,10 @@ MetadataCacheItem.prototype.clone = function() {
  * @return {boolean}
  */
 MetadataCacheItem.prototype.hasFreshCache = function(names) {
-  for (var i = 0; i < names.length; i++) {
+  for (let i = 0; i < names.length; i++) {
     if (!(this.properties_[names[i]] &&
           this.properties_[names[i]].state ===
-          MetadataCacheItemPropertyState.FULFILLED)) {
+              MetadataCacheItemPropertyState.FULFILLED)) {
       return false;
     }
   }
@@ -154,7 +158,7 @@ MetadataCacheItem.prototype.hasFreshCache = function(names) {
 /**
  * @enum {string}
  */
-var MetadataCacheItemPropertyState = {
+const MetadataCacheItemPropertyState = {
   INVALIDATED: 'invalidated',
   LOADING: 'loading',
   FULFILLED: 'fulfilled'

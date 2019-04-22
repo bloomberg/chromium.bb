@@ -111,8 +111,9 @@ Polymer({
    * @private
    */
   selectPasswordPromptEnterPasswordString_: function(hasPinLogin) {
-    if (hasPinLogin)
+    if (hasPinLogin) {
       return this.i18n('passwordPromptEnterPasswordLoginLock');
+    }
     return this.i18n('passwordPromptEnterPasswordLock');
   },
 });

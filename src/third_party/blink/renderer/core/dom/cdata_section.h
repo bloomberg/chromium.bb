@@ -33,9 +33,9 @@ class CDATASection final : public Text {
  public:
   static CDATASection* Create(Document&, const String&);
 
- private:
   CDATASection(Document&, const String&);
 
+ private:
   String nodeName() const override;
   NodeType getNodeType() const override;
   Text* CloneWithData(Document&, const String&) const override;

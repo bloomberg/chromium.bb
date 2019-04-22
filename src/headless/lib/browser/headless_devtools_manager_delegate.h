@@ -31,7 +31,7 @@ class HeadlessDevToolsManagerDelegate
   // DevToolsManagerDelegate implementation:
   void HandleCommand(content::DevToolsAgentHost* agent_host,
                      content::DevToolsAgentHostClient* client,
-                     std::unique_ptr<base::DictionaryValue> command,
+                     const std::string& method,
                      const std::string& message,
                      NotHandledCallback callback) override;
   scoped_refptr<content::DevToolsAgentHost> CreateNewTarget(

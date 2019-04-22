@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 cr.define('cr.ui', function() {
-  /** @const */ var ArrayDataModel = cr.ui.ArrayDataModel;
-  /** @const */ var List = cr.ui.List;
-  /** @const */ var ListItem = cr.ui.ListItem;
+  /** @const */ const ArrayDataModel = cr.ui.ArrayDataModel;
+  /** @const */ const List = cr.ui.List;
+  /** @const */ const ListItem = cr.ui.ListItem;
 
   /**
    * Creates a new autocomplete list item.
@@ -16,7 +16,7 @@ cr.define('cr.ui', function() {
    * @extends {cr.ui.ListItem}
    */
   function AutocompleteListItem(pageInfo) {
-    var el = cr.doc.createElement('div');
+    const el = cr.doc.createElement('div');
     el.pageInfo_ = pageInfo;
     AutocompleteListItem.decorate(el);
     return el;
@@ -38,18 +38,18 @@ cr.define('cr.ui', function() {
     decorate: function() {
       ListItem.prototype.decorate.call(this);
 
-      var title = this.pageInfo_['title'];
-      var url = this.pageInfo_['displayURL'];
-      var titleEl = this.ownerDocument.createElement('span');
+      const title = this.pageInfo_['title'];
+      const url = this.pageInfo_['displayURL'];
+      const titleEl = this.ownerDocument.createElement('span');
       titleEl.className = 'title';
       titleEl.textContent = title || url;
       this.appendChild(titleEl);
 
       if (title && title.length > 0 && url != title) {
-        var separatorEl = this.ownerDocument.createTextNode(' - ');
+        const separatorEl = this.ownerDocument.createTextNode(' - ');
         this.appendChild(separatorEl);
 
-        var urlEl = this.ownerDocument.createElement('span');
+        const urlEl = this.ownerDocument.createElement('span');
         urlEl.className = 'url';
         urlEl.textContent = url;
         this.appendChild(urlEl);
@@ -62,7 +62,7 @@ cr.define('cr.ui', function() {
    * @constructor
    * @extends {cr.ui.List}
    */
-  var AutocompleteList = cr.ui.define('list');
+  const AutocompleteList = cr.ui.define('list');
 
   AutocompleteList.prototype = {
     __proto__: List.prototype,
@@ -96,13 +96,14 @@ cr.define('cr.ui', function() {
 
       this.itemConstructor = AutocompleteListItem;
       this.textFieldKeyHandler_ = this.handleAutocompleteKeydown_.bind(this);
-      var self = this;
+      const self = this;
       this.textFieldInputHandler_ = function(e) {
         self.requestSuggestions(self.targetInput_.value);
       };
       this.addEventListener('change', function(e) {
-        if (self.selectedItem)
+        if (self.selectedItem) {
           self.handleSelectedSuggestion(self.selectedItem);
+        }
       });
       // Start hidden; adding suggestions will unhide.
       this.hidden = true;
@@ -144,9 +145,10 @@ cr.define('cr.ui', function() {
      * @param {Object} selectedSuggestion
      */
     handleSelectedSuggestion: function(selectedSuggestion) {
-      var input = this.targetInput_;
-      if (!input)
+      const input = this.targetInput_;
+      if (!input) {
         return;
+      }
       input.value = selectedSuggestion['url'];
       // Programatically change the value won't trigger a change event, but
       // clients are likely to want to know when changes happen, so fire one.
@@ -159,8 +161,9 @@ cr.define('cr.ui', function() {
      * @param {HTMLElement} input The input element to attach to.
      */
     attachToInput: function(input) {
-      if (this.targetInput_ == input)
+      if (this.targetInput_ == input) {
         return;
+      }
 
       this.detach();
       this.targetInput_ = input;
@@ -186,9 +189,10 @@ cr.define('cr.ui', function() {
      * Detaches the autocomplete popup from its current input element, if any.
      */
     detach: function() {
-      var input = this.targetInput_;
-      if (!input)
+      const input = this.targetInput_;
+      if (!input) {
         return;
+      }
 
       input.removeEventListener('keydown', this.textFieldKeyHandler_, true);
       input.removeEventListener('input', this.textFieldInputHandler_);
@@ -206,7 +210,7 @@ cr.define('cr.ui', function() {
      * resized.
      */
     syncWidthAndPositionToInput: function() {
-      var input = this.targetInput_;
+      const input = this.targetInput_;
       if (input) {
         this.style.width = input.getBoundingClientRect().width + 'px';
         cr.ui.positionPopupAroundElement(input, this, cr.ui.AnchorType.BELOW);
@@ -235,9 +239,10 @@ cr.define('cr.ui', function() {
      * @private
      */
     handleAutocompleteKeydown_: function(event) {
-      if (this.hidden)
+      if (this.hidden) {
         return;
-      var handled = false;
+      }
+      let handled = false;
       switch (event.key) {
         case 'Escape':
           this.suggestions = [];

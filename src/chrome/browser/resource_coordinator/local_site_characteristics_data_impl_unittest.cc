@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_unittest_utils.h"
 #include "chrome/browser/resource_coordinator/time.h"
@@ -694,6 +695,29 @@ TEST_F(LocalSiteCharacteristicsDataImplTest,
 
   local_site_data->NotifySiteUnloaded(TabVisibility::kBackground);
   local_site_data_ref->NotifySiteUnloaded(TabVisibility::kBackground);
+}
+
+TEST_F(LocalSiteCharacteristicsDataImplTest, DataLoadedCallbackInvoked) {
+  ::testing::StrictMock<MockLocalSiteCharacteristicsDatabase> mock_db;
+  LocalSiteCharacteristicsDatabase::ReadSiteCharacteristicsFromDBCallback
+      read_cb;
+
+  auto local_site_data = GetDataImplAndInterceptReadCallback(
+      kDummyOrigin, &destroy_delegate_, &mock_db, &read_cb);
+
+  EXPECT_FALSE(local_site_data->DataLoaded());
+
+  bool callback_invoked = false;
+  local_site_data->RegisterDataLoadedCallback(
+      base::BindLambdaForTesting([&]() { callback_invoked = true; }));
+
+  // Run the callback to indicate that the initialization has completed.
+  base::Optional<SiteCharacteristicsProto> test_proto =
+      SiteCharacteristicsProto();
+  std::move(read_cb).Run(test_proto);
+
+  EXPECT_TRUE(callback_invoked);
+  EXPECT_TRUE(local_site_data->DataLoaded());
 }
 
 }  // namespace internal

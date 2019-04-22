@@ -33,14 +33,14 @@
           "reason": "disappeared"
         },
         {
-          "object": "LayoutDeprecatedFlexibleBox DIV id='container'",
-          "rect": [8, 29, 285, 24],
-          "reason": "incremental"
+          "object": "EllipsisBox",
+          "rect": [8, 8, 285, 24],
+          "reason": "disappeared"
         },
         {
-          "object": "EllipsisBox",
-          "rect": [8, 8, 285, 21],
-          "reason": "disappeared"
+          "object": "LayoutDeprecatedFlexibleBox DIV id='container'",
+          "rect": [8, 32, 285, 21],
+          "reason": "incremental"
         },
         {
           "object": "LayoutDeprecatedFlexibleBox DIV id='container'",

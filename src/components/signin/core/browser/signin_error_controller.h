@@ -6,17 +6,22 @@
 #define COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_ERROR_CONTROLLER_H_
 
 #include <set>
+#include <string>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/scoped_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 // Keep track of auth errors and expose them to observers in the UI. Services
 // that wish to expose auth errors to the user should register an
 // AuthStatusProvider to report their current authentication state, and should
 // invoke AuthStatusChanged() when their authentication state may have changed.
-class SigninErrorController : public KeyedService {
+class SigninErrorController : public KeyedService,
+                              public identity::IdentityManager::Observer {
  public:
   enum class AccountMode {
     // Signin error controller monitors all the accounts. When multiple accounts
@@ -28,19 +33,6 @@ class SigninErrorController : public KeyedService {
     PRIMARY_ACCOUNT
   };
 
-  class AuthStatusProvider {
-   public:
-    AuthStatusProvider();
-    virtual ~AuthStatusProvider();
-
-    // Returns the account id with the status specified by GetAuthStatus().
-    virtual std::string GetAccountId() const = 0;
-
-    // API invoked by SigninErrorController to get the current auth status of
-    // the various signed in services.
-    virtual GoogleServiceAuthError GetAuthStatus() const = 0;
-  };
-
   // The observer class for SigninErrorController lets the controller notify
   // observers when an error arises or changes.
   class Observer {
@@ -49,25 +41,18 @@ class SigninErrorController : public KeyedService {
     virtual void OnErrorChanged() = 0;
   };
 
-  explicit SigninErrorController(AccountMode mode);
+  SigninErrorController(AccountMode mode,
+                        identity::IdentityManager* identity_manager);
   ~SigninErrorController() override;
 
-  // Adds a provider which the SigninErrorController object will start querying
-  // for auth status.
-  void AddProvider(const AuthStatusProvider* provider);
+  // KeyedService implementation:
+  void Shutdown() override;
 
-  // Removes a provider previously added by SigninErrorController (generally
-  // only called in preparation for shutdown).
-  void RemoveProvider(const AuthStatusProvider* provider);
-
-  // Invoked when the auth status of an AuthStatusProvider has changed.
-  void AuthStatusChanged();
-
-  // True if there exists an error worth elevating to the user.
+  // True if there exists an error worth elevating to the user. Note that
+  // |SigninErrorController| can be running in |AccountMode::ANY_ACCOUNT| mode,
+  // in which case |HasError| can return an error for any account, not just the
+  // Primary Account. See |error_account_id()|.
   bool HasError() const;
-
-  // Sets the primary account id. Only used in the PRIMARY_ACCOUNT account mode.
-  void SetPrimaryAccountID(const std::string& account_id);
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -76,11 +61,35 @@ class SigninErrorController : public KeyedService {
   const GoogleServiceAuthError& auth_error() const { return auth_error_; }
 
  private:
-  const AccountMode account_mode_;
-  std::set<const AuthStatusProvider*> provider_set_;
+  // Invoked when the auth status has changed.
+  void Update();
 
-  // The primary account ID. Only used in the PRIMARY_ACCOUNT account mode.
-  std::string primary_account_id_;
+  // Checks for Secondary Account errors and updates |auth_error_| and
+  // |error_account_id_| accordingly. Does not do anything if no Secondary
+  // Account has any error. Returns true if an error was found in a Secondary
+  // Account, false otherwise.
+  // Note: This function must not be called if |account_mode_| is
+  // |AccountMode::PRIMARY_ACCOUNT|.
+  bool UpdateSecondaryAccountErrors(
+      const std::string& primary_account_id,
+      const std::string& prev_account_id,
+      const GoogleServiceAuthError::State& prev_error_state);
+
+  // identity::IdentityManager::Observer:
+  void OnEndBatchOfRefreshTokenStateChanges() override;
+  void OnErrorStateOfRefreshTokenUpdatedForAccount(
+      const CoreAccountInfo& account_info,
+      const GoogleServiceAuthError& error) override;
+  void OnPrimaryAccountSet(
+      const CoreAccountInfo& primary_account_info) override;
+  void OnPrimaryAccountCleared(
+      const CoreAccountInfo& previous_primary_account_info) override;
+
+  const AccountMode account_mode_;
+  identity::IdentityManager* identity_manager_;
+
+  ScopedObserver<identity::IdentityManager, SigninErrorController>
+      scoped_identity_manager_observer_;
 
   // The account that generated the last auth error.
   std::string error_account_id_;

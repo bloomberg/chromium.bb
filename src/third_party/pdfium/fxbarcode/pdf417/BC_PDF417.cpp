@@ -357,10 +357,10 @@ CBC_BarcodeMatrix* CBC_PDF417::getBarcodeMatrix() {
   return m_barcodeMatrix.get();
 }
 
-bool CBC_PDF417::generateBarcodeLogic(WideString msg,
+bool CBC_PDF417::GenerateBarcodeLogic(WideStringView msg,
                                       int32_t errorCorrectionLevel) {
   int32_t errorCorrectionCodeWords =
-      CBC_PDF417ErrorCorrection::getErrorCorrectionCodewordCount(
+      CBC_PDF417ErrorCorrection::GetErrorCorrectionCodewordCount(
           errorCorrectionLevel);
   if (errorCorrectionCodeWords < 0)
     return false;
@@ -370,7 +370,7 @@ bool CBC_PDF417::generateBarcodeLogic(WideString msg,
   if (!high_level.has_value())
     return false;
 
-  int32_t sourceCodeWords = high_level.value().GetLength();
+  size_t sourceCodeWords = high_level.value().GetLength();
   std::vector<int32_t> dimensions =
       determineDimensions(sourceCodeWords, errorCorrectionCodeWords);
   if (dimensions.size() != 2)
@@ -390,12 +390,12 @@ bool CBC_PDF417::generateBarcodeLogic(WideString msg,
     sb += (wchar_t)900;
 
   WideString dataCodewords(sb);
-  WideString ec;
-  if (!CBC_PDF417ErrorCorrection::generateErrorCorrection(
-          dataCodewords, errorCorrectionLevel, &ec)) {
+  Optional<WideString> ec = CBC_PDF417ErrorCorrection::GenerateErrorCorrection(
+      dataCodewords, errorCorrectionLevel);
+  if (!ec.has_value())
     return false;
-  }
-  WideString fullCodewords = dataCodewords + ec;
+
+  WideString fullCodewords = dataCodewords + ec.value();
   m_barcodeMatrix = pdfium::MakeUnique<CBC_BarcodeMatrix>(cols, rows);
   encodeLowLevel(fullCodewords, cols, rows, errorCorrectionLevel,
                  m_barcodeMatrix.get());
@@ -484,7 +484,7 @@ void CBC_PDF417::encodeLowLevel(WideString fullCodewords,
 }
 
 std::vector<int32_t> CBC_PDF417::determineDimensions(
-    int32_t sourceCodeWords,
+    size_t sourceCodeWords,
     int32_t errorCorrectionCodeWords) const {
   std::vector<int32_t> dimensions;
   float ratio = 0.0f;

@@ -36,7 +36,7 @@ struct SharedMemoryLimits {
 #endif
   }
 
-  int32_t command_buffer_size = 1024 * 1024;
+  uint32_t command_buffer_size = 1024 * 1024;
   uint32_t start_transfer_buffer_size = 64 * 1024;
   uint32_t min_transfer_buffer_size = 64 * 1024;
   uint32_t max_transfer_buffer_size = 16 * 1024 * 1024;
@@ -63,6 +63,15 @@ struct SharedMemoryLimits {
     // further. A 16M max_transfer_buffer_size doesn't make sense if only paint
     // commands are being sent through this buffer, and all large transfers use
     // the transfer cache backed by mapped memory.
+    return limits;
+  }
+
+  static SharedMemoryLimits ForWebGPUContext() {
+    // Most WebGPU commands are sent via transfer buffer, so we use a smaller
+    // command buffer.
+    SharedMemoryLimits limits;
+    limits.command_buffer_size = 64 * 1024;
+
     return limits;
   }
 

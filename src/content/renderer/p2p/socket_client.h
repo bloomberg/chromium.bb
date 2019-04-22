@@ -14,7 +14,7 @@
 
 namespace rtc {
 struct PacketOptions;
-};
+}
 
 namespace content {
 

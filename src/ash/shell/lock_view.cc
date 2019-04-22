@@ -15,6 +15,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/text_utils.h"
 #include "ui/views/controls/button/md_text_button.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/corewm/tooltip_controller.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -26,8 +27,11 @@ class LockView : public views::WidgetDelegateView,
                  public views::ButtonListener {
  public:
   LockView()
-      : unlock_button_(
+      : text_(new views::Label(base::ASCIIToUTF16("LOCKED!"))),
+        unlock_button_(
             views::MdTextButton::Create(this, base::ASCIIToUTF16("Unlock"))) {
+    text_->SetEnabledColor(SK_ColorRED);
+    AddChildView(text_);
     AddChildView(unlock_button_);
   }
   ~LockView() override = default;
@@ -41,23 +45,24 @@ class LockView : public views::WidgetDelegateView,
   // Overridden from views::View:
   void OnPaint(gfx::Canvas* canvas) override {
     canvas->FillRect(GetLocalBounds(), SK_ColorYELLOW);
-    base::string16 text = base::ASCIIToUTF16("LOCKED!");
-    int string_width = gfx::GetStringWidth(text, font_list_);
-    canvas->DrawStringRect(text, font_list_, SK_ColorRED,
-                           gfx::Rect((width() - string_width) / 2,
-                                     (height() - font_list_.GetHeight()) / 2,
-                                     string_width, font_list_.GetHeight()));
   }
+
   void Layout() override {
     gfx::Rect bounds = GetLocalBounds();
+    gfx::Size ts = text_->GetPreferredSize();
+    text_->SetBoundsRect(gfx::Rect((bounds.width() - ts.width()) / 2,
+                                   (bounds.height() - ts.height()) / 2,
+                                   ts.width(), ts.height()));
+
     gfx::Size ps = unlock_button_->GetPreferredSize();
     bounds.set_y(bounds.bottom() - ps.height() - 5);
     bounds.set_x((bounds.width() - ps.width()) / 2);
     bounds.set_size(ps);
     unlock_button_->SetBoundsRect(bounds);
   }
+
   void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) override {
+      const views::ViewHierarchyChangedDetails& details) override {
     if (details.is_add && details.child == this)
       unlock_button_->RequestFocus();
   }
@@ -73,7 +78,7 @@ class LockView : public views::WidgetDelegateView,
     GetWidget()->Close();
   }
 
-  gfx::FontList font_list_;
+  views::Label* text_;
   views::Button* unlock_button_;
 
   DISALLOW_COPY_AND_ASSIGN(LockView);

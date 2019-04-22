@@ -7,13 +7,13 @@
 
 #include <windows.foundation.h>
 #include <windows.graphics.imaging.h>
+#include <wrl/client.h>
 #include <memory>
 #include <utility>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "services/shape_detection/detection_utils_win.h"
 #include "services/shape_detection/face_detection_impl_win.h"
 #include "services/shape_detection/public/mojom/facedetection_provider.mojom.h"
 
@@ -22,10 +22,6 @@ namespace shape_detection {
 class FaceDetectionProviderWin
     : public shape_detection::mojom::FaceDetectionProvider {
  public:
-  using FaceDetector = ABI::Windows::Media::FaceAnalysis::FaceDetector;
-  using IFaceDetector = ABI::Windows::Media::FaceAnalysis::IFaceDetector;
-  using BitmapPixelFormat = ABI::Windows::Graphics::Imaging::BitmapPixelFormat;
-
   FaceDetectionProviderWin();
   ~FaceDetectionProviderWin() override;
 
@@ -44,10 +40,10 @@ class FaceDetectionProviderWin
  private:
   void OnFaceDetectorCreated(
       shape_detection::mojom::FaceDetectionRequest request,
-      BitmapPixelFormat pixel_format,
-      AsyncOperation<FaceDetector>::IAsyncOperationPtr async_op);
+      ABI::Windows::Graphics::Imaging::BitmapPixelFormat pixel_format,
+      Microsoft::WRL::ComPtr<ABI::Windows::Media::FaceAnalysis::IFaceDetector>
+          face_detector);
 
-  FRIEND_TEST_ALL_PREFIXES(FaceDetectionImplWinTest, ScanOneFace);
   mojo::StrongBindingPtr<mojom::FaceDetectionProvider> binding_;
   base::WeakPtrFactory<FaceDetectionProviderWin> weak_factory_;
 

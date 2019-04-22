@@ -12,3 +12,30 @@ static_library("parse_tasks_remaining_counter") {
     "//base:base",
   ]
 }
+
+static_library("command_line_arguments_sanitizer") {
+  sources = [
+    "command_line_arguments_sanitizer.cc",
+    "command_line_arguments_sanitizer.h",
+  ]
+
+  deps = [
+    "//base:base",
+    "//chrome/chrome_cleaner/os:common_os",
+    "//url:url",
+  ]
+}
+
+source_set("unittest_sources") {
+  testonly = true
+  sources = [
+    "command_line_arguments_sanitizer_unittest.cc",
+  ]
+  deps = [
+    ":command_line_arguments_sanitizer",
+    "//base:base",
+    "//chrome/chrome_cleaner/os:common_os",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+}

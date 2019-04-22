@@ -52,8 +52,6 @@ _DALVIK_JNI_THREAD_LINE = re.compile("(\".*\" prio=[0-9]+ tid=[0-9]+ NATIVE.*)")
 _DALVIK_NATIVE_THREAD_LINE = re.compile("(\".*\" sysTid=[0-9]+ nice=[0-9]+.*)")
 _JAVA_STDERR_LINE = re.compile("([0-9]+)\s+[0-9]+\s+.\s+System.err:\s*(.+)")
 
-_WIDTH = '{8}'
-
 # Matches LOG(FATAL) lines, like the following example:
 #   [FATAL:source_file.cc(33)] Check failed: !instances_.empty()
 _LOG_FATAL_LINE = re.compile('(\[FATAL\:.*\].*)$')
@@ -72,17 +70,14 @@ _LOG_FATAL_LINE = re.compile('(\[FATAL\:.*\].*)$')
 _TRACE_LINE = re.compile('(.*)\#(?P<frame>[0-9]+)[ \t]+(..)[ \t]+(0x)?(?P<address>[0-9a-f]{0,16})[ \t]+(?P<lib>[^\r\n \t]*)(?P<symbol_present> \((?P<symbol_name>.*)\))?')  # pylint: disable-msg=C6310
 
 def InitWidthRelatedLineMatchers():
-  global _WIDTH
   global _DEBUG_TRACE_LINE, _VALUE_LINE, _CODE_LINE
-  if symbol.ARCH == 'arm64' or symbol.ARCH == 'x86_64' or symbol.ARCH == 'x64':
-    _WIDTH = '{16}'
   # Matches lines emitted by src/base/debug/stack_trace_android.cc, like:
   #   #00 0x7324d92d /data/app-lib/org.chromium.native_test-1/libbase.cr.so+0x0006992d
   # This pattern includes the unused named capture groups <symbol_present> and
   # <symbol_name> so that it can interoperate with the |_TRACE_LINE| regex.
   _DEBUG_TRACE_LINE = re.compile(
-      '(.*)(?P<frame>\#[0-9]+ 0x[0-9a-f]' + _WIDTH + ') '
-      '(?P<lib>[^+]+)\+0x(?P<address>[0-9a-f]' + _WIDTH + ')'
+      '(.*)(?P<frame>\#[0-9]+ 0x[0-9a-f]{8,16}) '
+      '(?P<lib>[^+]+)\+0x(?P<address>[0-9a-f]{8,16})'
       '(?P<symbol_present>)(?P<symbol_name>)')
 
   # Examples of matched value lines include:
@@ -90,7 +85,7 @@ def InitWidthRelatedLineMatchers():
   #   bea4170c  8018e4e9  /data/data/com.my.project/lib/libmyproject.so (symbol)
   #   03-25 00:51:05.530 I/DEBUG ( 65): bea4170c 8018e4e9 /data/data/com.my.project/lib/libmyproject.so
   # Again, note the spacing differences.
-  _VALUE_LINE = re.compile('(.*)([0-9a-f]' + _WIDTH + ')[ \t]+([0-9a-f]' + _WIDTH + ')[ \t]+([^\r\n \t]*)( \((.*)\))?')
+  _VALUE_LINE = re.compile('(.*)([0-9a-f]{8,16})[ \t]+([0-9a-f]{8,16})[ \t]+([^\r\n \t]*)( \((.*)\))?')
   # Lines from 'code around' sections of the output will be matched before
   # value lines because otheriwse the 'code around' sections will be confused as
   # value lines.
@@ -98,9 +93,9 @@ def InitWidthRelatedLineMatchers():
   # Examples include:
   #   801cf40c ffffc4cc 00b2f2c5 00b2f1c7 00c1e1a8
   #   03-25 00:51:05.530 I/DEBUG ( 65): 801cf40c ffffc4cc 00b2f2c5 00b2f1c7 00c1e1a8
-  _CODE_LINE = re.compile('(.*)[ \t]*[a-f0-9]' + _WIDTH + '[ \t]*[a-f0-9]' + _WIDTH +
-                          '[ \t]*[a-f0-9]' + _WIDTH + '[ \t]*[a-f0-9]' + _WIDTH +
-                          '[ \t]*[a-f0-9]' + _WIDTH + '[ \t]*[ \r\n]')  # pylint: disable-msg=C6310
+  _CODE_LINE = re.compile('(.*)[ \t]*[a-f0-9]{8,16}[ \t]*[a-f0-9]{8,16}' +
+                          '[ \t]*[a-f0-9]{8,16}[ \t]*[a-f0-9]{8,16}' +
+                          '[ \t]*[a-f0-9]{8,16}[ \t]*[ \r\n]')  # pylint: disable-msg=C6310
 
 # This pattern is used to find shared library offset in APK.
 # Example:
@@ -169,6 +164,18 @@ def StreamingConvertTrace(input, load_vaddrs, more_info, fallback_monochrome, ar
   useful_lines = []
   so_dirs = []
   in_stack = False
+  def ConvertStreamingChunk():
+    print "Stack found. Symbolizing..."
+    if so_dirs:
+      UpdateLibrarySearchPath(so_dirs)
+    # if arch isn't defined in command line, find it from log
+    if not arch_defined:
+      arch = _FindAbi(useful_lines)
+      if arch:
+        print ('Find ABI:' + arch)
+        symbol.ARCH = arch
+    ResolveCrashSymbol(list(useful_lines), more_info, llvm_symbolizer)
+
   for line in iter(sys.stdin.readline, b''):
     print line,
     maybe_line, maybe_so_dir = PreProcessLog(load_vaddrs)([line])
@@ -176,22 +183,16 @@ def StreamingConvertTrace(input, load_vaddrs, more_info, fallback_monochrome, ar
     so_dirs.extend(maybe_so_dir)
     if in_stack:
       if not maybe_line:
-        print "Stack found. Symbolizing..."
-        if so_dirs:
-          UpdateLibrarySearchPath(so_dirs)
-        # if arch isn't defined in command line, find it from log
-        if not arch_defined:
-          arch = _FindAbi(useful_lines)
-          if arch:
-            print ('Find ABI:' + arch)
-            symbol.ARCH = arch
-        ResolveCrashSymbol(list(useful_lines), more_info, llvm_symbolizer)
+        ConvertStreamingChunk()
         so_dirs = []
         useful_lines = []
         in_stack = False
     else:
-      if _TRACE_LINE.search(line):
+      if _TRACE_LINE.match(line) or _DEBUG_TRACE_LINE.match(line) or \
+          _VALUE_LINE.match(line) or _CODE_LINE.match(line):
         in_stack = True
+  if in_stack:
+    ConvertStreamingChunk()
 
 def ConvertTrace(lines, load_vaddrs, more_info, fallback_monochrome, arch_defined, llvm_symbolizer):
   """Convert strings containing native crash to a stack."""

@@ -5,6 +5,7 @@
 #ifndef CONTENT_PUBLIC_BROWSER_NAVIGATION_THROTTLE_H_
 #define CONTENT_PUBLIC_BROWSER_NAVIGATION_THROTTLE_H_
 
+#include "base/callback.h"
 #include "base/optional.h"
 #include "content/common/content_export.h"
 #include "net/base/net_errors.h"
@@ -173,6 +174,19 @@ class CONTENT_EXPORT NavigationThrottle {
   // navigation.
   NavigationHandle* navigation_handle() const { return navigation_handle_; }
 
+  // Overrides the default Resume method and replaces it by |callback|. This
+  // should only be used in tests.
+  void set_resume_callback_for_testing(const base::RepeatingClosure& callback) {
+    resume_callback_ = callback;
+  }
+
+  // Overrides the default CancelDeferredNavigation method and replaces it by
+  // |callback|. This should only be used in tests.
+  void set_cancel_deferred_navigation_callback_for_testing(
+      const base::RepeatingCallback<void(ThrottleCheckResult)> callback) {
+    cancel_deferred_navigation_callback_ = callback;
+  }
+
  protected:
   // Resumes a navigation that was previously deferred by this
   // NavigationThrottle.
@@ -191,6 +205,11 @@ class CONTENT_EXPORT NavigationThrottle {
 
  private:
   NavigationHandle* navigation_handle_;
+
+  // Used in tests.
+  base::RepeatingClosure resume_callback_;
+  base::RepeatingCallback<void(ThrottleCheckResult)>
+      cancel_deferred_navigation_callback_;
 };
 
 #if defined(UNIT_TEST)

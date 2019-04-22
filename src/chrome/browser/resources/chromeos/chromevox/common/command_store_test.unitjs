@@ -27,10 +27,10 @@ TEST_F('ChromeVoxCommandStoreUnitTest', 'TableData', function() {
   assertEquals(11, categories.length);
   assertEquals('modifier_keys', categories[0]);
   assertEquals('controlling_speech', categories[1]);
-  assertEquals('help_commands', categories[2]);
-  assertEquals('navigation', categories[3]);
-  assertEquals('actions', categories[4]);
-  assertEquals('information', categories[5]);
+  assertEquals('navigation', categories[2]);
+  assertEquals('actions', categories[3]);
+  assertEquals('information', categories[4]);
+  assertEquals('help_commands', categories[5]);
   assertEquals('overview', categories[6]);
   assertEquals('jump_commands', categories[7]);
   assertEquals('tables', categories[8]);

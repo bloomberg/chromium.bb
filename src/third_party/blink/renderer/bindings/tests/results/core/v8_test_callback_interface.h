@@ -13,6 +13,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/bindings/callback_interface_base.h"
+#include "third_party/blink/renderer/platform/bindings/v8_value_or_script_wrappable_adapter.h"
 
 namespace blink {
 
@@ -20,16 +21,12 @@ class TestInterfaceEmpty;
 
 class CORE_EXPORT V8TestCallbackInterface final : public CallbackInterfaceBase {
  public:
-  // Creates and returns a new instance. Returns nullptr when |callback_object|
-  // is an object in a remote context (e.g. cross origin window object). The
-  // call sites may want to throw a SecurityError in the case.
-  // See also crbug.com/886588
-  static V8TestCallbackInterface* CreateOrNull(v8::Local<v8::Object> callback_object);
+  static V8TestCallbackInterface* Create(v8::Local<v8::Object> callback_object) {
+    return MakeGarbageCollected<V8TestCallbackInterface>(callback_object);
+  }
 
-  explicit V8TestCallbackInterface(
-      v8::Local<v8::Object> callback_object,
-      v8::Local<v8::Context> callback_object_creation_context)
-      : CallbackInterfaceBase(callback_object, callback_object_creation_context,
+  explicit V8TestCallbackInterface(v8::Local<v8::Object> callback_object)
+      : CallbackInterfaceBase(callback_object,
                               kNotSingleOperation) {}
   ~V8TestCallbackInterface() override = default;
 
@@ -38,39 +35,39 @@ class CORE_EXPORT V8TestCallbackInterface final : public CallbackInterfaceBase {
 
   // Performs "call a user object's operation".
   // https://heycam.github.io/webidl/#call-a-user-objects-operation
-  v8::Maybe<void> voidMethod(ScriptWrappable* callback_this_value) WARN_UNUSED_RESULT;
+  v8::Maybe<void> voidMethod(bindings::V8ValueOrScriptWrappableAdapter callback_this_value) WARN_UNUSED_RESULT;
 
   // Performs "call a user object's operation".
   // https://heycam.github.io/webidl/#call-a-user-objects-operation
-  v8::Maybe<bool> booleanMethod(ScriptWrappable* callback_this_value) WARN_UNUSED_RESULT;
+  v8::Maybe<bool> booleanMethod(bindings::V8ValueOrScriptWrappableAdapter callback_this_value) WARN_UNUSED_RESULT;
 
   // Performs "call a user object's operation".
   // https://heycam.github.io/webidl/#call-a-user-objects-operation
-  v8::Maybe<void> voidMethodBooleanArg(ScriptWrappable* callback_this_value, bool boolArg) WARN_UNUSED_RESULT;
+  v8::Maybe<void> voidMethodBooleanArg(bindings::V8ValueOrScriptWrappableAdapter callback_this_value, bool boolArg) WARN_UNUSED_RESULT;
 
   // Performs "call a user object's operation".
   // https://heycam.github.io/webidl/#call-a-user-objects-operation
-  v8::Maybe<void> voidMethodSequenceArg(ScriptWrappable* callback_this_value, const HeapVector<Member<TestInterfaceEmpty>>& sequenceArg) WARN_UNUSED_RESULT;
+  v8::Maybe<void> voidMethodSequenceArg(bindings::V8ValueOrScriptWrappableAdapter callback_this_value, const HeapVector<Member<TestInterfaceEmpty>>& sequenceArg) WARN_UNUSED_RESULT;
 
   // Performs "call a user object's operation".
   // https://heycam.github.io/webidl/#call-a-user-objects-operation
-  v8::Maybe<void> voidMethodFloatArg(ScriptWrappable* callback_this_value, float floatArg) WARN_UNUSED_RESULT;
+  v8::Maybe<void> voidMethodFloatArg(bindings::V8ValueOrScriptWrappableAdapter callback_this_value, float floatArg) WARN_UNUSED_RESULT;
 
   // Performs "call a user object's operation".
   // https://heycam.github.io/webidl/#call-a-user-objects-operation
-  v8::Maybe<void> voidMethodTestInterfaceEmptyArg(ScriptWrappable* callback_this_value, TestInterfaceEmpty* testInterfaceEmptyArg) WARN_UNUSED_RESULT;
+  v8::Maybe<void> voidMethodTestInterfaceEmptyArg(bindings::V8ValueOrScriptWrappableAdapter callback_this_value, TestInterfaceEmpty* testInterfaceEmptyArg) WARN_UNUSED_RESULT;
 
   // Performs "call a user object's operation".
   // https://heycam.github.io/webidl/#call-a-user-objects-operation
-  v8::Maybe<void> voidMethodTestInterfaceEmptyStringArg(ScriptWrappable* callback_this_value, TestInterfaceEmpty* testInterfaceEmptyArg, const String& stringArg) WARN_UNUSED_RESULT;
+  v8::Maybe<void> voidMethodTestInterfaceEmptyStringArg(bindings::V8ValueOrScriptWrappableAdapter callback_this_value, TestInterfaceEmpty* testInterfaceEmptyArg, const String& stringArg) WARN_UNUSED_RESULT;
 
   // Performs "call a user object's operation".
   // https://heycam.github.io/webidl/#call-a-user-objects-operation
-  v8::Maybe<void> callbackWithThisValueVoidMethodStringArg(ScriptWrappable* callback_this_value, const String& stringArg) WARN_UNUSED_RESULT;
+  v8::Maybe<void> callbackWithThisValueVoidMethodStringArg(bindings::V8ValueOrScriptWrappableAdapter callback_this_value, const String& stringArg) WARN_UNUSED_RESULT;
 
   // Performs "call a user object's operation".
   // https://heycam.github.io/webidl/#call-a-user-objects-operation
-  v8::Maybe<void> customVoidMethodTestInterfaceEmptyArg(ScriptWrappable* callback_this_value, TestInterfaceEmpty* testInterfaceEmptyArg) WARN_UNUSED_RESULT;
+  v8::Maybe<void> customVoidMethodTestInterfaceEmptyArg(bindings::V8ValueOrScriptWrappableAdapter callback_this_value, TestInterfaceEmpty* testInterfaceEmptyArg) WARN_UNUSED_RESULT;
 };
 
 template <>
@@ -78,22 +75,21 @@ class V8PersistentCallbackInterface<V8TestCallbackInterface> final : public V8Pe
   using V8CallbackInterface = V8TestCallbackInterface;
 
  public:
-  ~V8PersistentCallbackInterface() override = default;
-
-  CORE_EXPORT v8::Maybe<void> voidMethod(ScriptWrappable* callback_this_value) WARN_UNUSED_RESULT;
-  CORE_EXPORT v8::Maybe<bool> booleanMethod(ScriptWrappable* callback_this_value) WARN_UNUSED_RESULT;
-  CORE_EXPORT v8::Maybe<void> voidMethodBooleanArg(ScriptWrappable* callback_this_value, bool boolArg) WARN_UNUSED_RESULT;
-  CORE_EXPORT v8::Maybe<void> voidMethodSequenceArg(ScriptWrappable* callback_this_value, const HeapVector<Member<TestInterfaceEmpty>>& sequenceArg) WARN_UNUSED_RESULT;
-  CORE_EXPORT v8::Maybe<void> voidMethodFloatArg(ScriptWrappable* callback_this_value, float floatArg) WARN_UNUSED_RESULT;
-  CORE_EXPORT v8::Maybe<void> voidMethodTestInterfaceEmptyArg(ScriptWrappable* callback_this_value, TestInterfaceEmpty* testInterfaceEmptyArg) WARN_UNUSED_RESULT;
-  CORE_EXPORT v8::Maybe<void> voidMethodTestInterfaceEmptyStringArg(ScriptWrappable* callback_this_value, TestInterfaceEmpty* testInterfaceEmptyArg, const String& stringArg) WARN_UNUSED_RESULT;
-  CORE_EXPORT v8::Maybe<void> callbackWithThisValueVoidMethodStringArg(ScriptWrappable* callback_this_value, const String& stringArg) WARN_UNUSED_RESULT;
-  CORE_EXPORT v8::Maybe<void> customVoidMethodTestInterfaceEmptyArg(ScriptWrappable* callback_this_value, TestInterfaceEmpty* testInterfaceEmptyArg) WARN_UNUSED_RESULT;
-
- private:
   explicit V8PersistentCallbackInterface(V8CallbackInterface* callback_interface)
       : V8PersistentCallbackInterfaceBase(callback_interface) {}
+  ~V8PersistentCallbackInterface() override = default;
 
+  CORE_EXPORT v8::Maybe<void> voidMethod(bindings::V8ValueOrScriptWrappableAdapter callback_this_value) WARN_UNUSED_RESULT;
+  CORE_EXPORT v8::Maybe<bool> booleanMethod(bindings::V8ValueOrScriptWrappableAdapter callback_this_value) WARN_UNUSED_RESULT;
+  CORE_EXPORT v8::Maybe<void> voidMethodBooleanArg(bindings::V8ValueOrScriptWrappableAdapter callback_this_value, bool boolArg) WARN_UNUSED_RESULT;
+  CORE_EXPORT v8::Maybe<void> voidMethodSequenceArg(bindings::V8ValueOrScriptWrappableAdapter callback_this_value, const HeapVector<Member<TestInterfaceEmpty>>& sequenceArg) WARN_UNUSED_RESULT;
+  CORE_EXPORT v8::Maybe<void> voidMethodFloatArg(bindings::V8ValueOrScriptWrappableAdapter callback_this_value, float floatArg) WARN_UNUSED_RESULT;
+  CORE_EXPORT v8::Maybe<void> voidMethodTestInterfaceEmptyArg(bindings::V8ValueOrScriptWrappableAdapter callback_this_value, TestInterfaceEmpty* testInterfaceEmptyArg) WARN_UNUSED_RESULT;
+  CORE_EXPORT v8::Maybe<void> voidMethodTestInterfaceEmptyStringArg(bindings::V8ValueOrScriptWrappableAdapter callback_this_value, TestInterfaceEmpty* testInterfaceEmptyArg, const String& stringArg) WARN_UNUSED_RESULT;
+  CORE_EXPORT v8::Maybe<void> callbackWithThisValueVoidMethodStringArg(bindings::V8ValueOrScriptWrappableAdapter callback_this_value, const String& stringArg) WARN_UNUSED_RESULT;
+  CORE_EXPORT v8::Maybe<void> customVoidMethodTestInterfaceEmptyArg(bindings::V8ValueOrScriptWrappableAdapter callback_this_value, TestInterfaceEmpty* testInterfaceEmptyArg) WARN_UNUSED_RESULT;
+
+ private:
   V8CallbackInterface* Proxy() {
     return As<V8CallbackInterface>();
   }

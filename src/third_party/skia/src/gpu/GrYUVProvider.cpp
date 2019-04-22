@@ -6,19 +6,21 @@
  */
 
 #include "GrYUVProvider.h"
+
+#include "GrCaps.h"
 #include "GrClip.h"
 #include "GrColorSpaceXform.h"
-#include "GrContext.h"
-#include "GrContextPriv.h"
 #include "GrProxyProvider.h"
+#include "GrRecordingContext.h"
+#include "GrRecordingContextPriv.h"
 #include "GrRenderTargetContext.h"
 #include "GrTextureProxy.h"
 #include "SkAutoMalloc.h"
 #include "SkCachedData.h"
 #include "SkRefCnt.h"
 #include "SkResourceCache.h"
-#include "SkYUVPlanesCache.h"
 #include "SkYUVAIndex.h"
+#include "SkYUVPlanesCache.h"
 #include "effects/GrYUVtoRGBEffect.h"
 
 sk_sp<SkCachedData> GrYUVProvider::getPlanes(SkYUVASizeInfo* size,
@@ -101,7 +103,7 @@ void GrYUVProvider::YUVGen_DataReleaseProc(const void*, void* data) {
     cachedData->unref();
 }
 
-sk_sp<GrTextureProxy> GrYUVProvider::refAsTextureProxy(GrContext* ctx,
+sk_sp<GrTextureProxy> GrYUVProvider::refAsTextureProxy(GrRecordingContext* ctx,
                                                        const GrBackendFormat& format,
                                                        const GrSurfaceDesc& desc,
                                                        SkColorSpace* srcColorSpace,
@@ -147,8 +149,12 @@ sk_sp<GrTextureProxy> GrYUVProvider::refAsTextureProxy(GrContext* ctx,
         sk_sp<SkImage> yuvImage = SkImage::MakeFromRaster(pixmap, YUVGen_DataReleaseProc,
                                                           dataStoragePtr);
 
-        auto proxyProvider = ctx->contextPriv().proxyProvider();
-        yuvTextureProxies[i] = proxyProvider->createTextureProxy(yuvImage, kNone_GrSurfaceFlags,
+        auto proxyProvider = ctx->priv().proxyProvider();
+        auto clearFlag = kNone_GrSurfaceFlags;
+        if (ctx->priv().caps()->shouldInitializeTextures() && fit == SkBackingFit::kApprox) {
+            clearFlag = kPerformInitialClear_GrSurfaceFlag;
+        }
+        yuvTextureProxies[i] = proxyProvider->createTextureProxy(yuvImage, clearFlag,
                                                                  1, SkBudgeted::kYes, fit);
 
         SkASSERT(yuvTextureProxies[i]->width() == yuvSizeInfo.fSizes[i].fWidth);
@@ -157,7 +163,7 @@ sk_sp<GrTextureProxy> GrYUVProvider::refAsTextureProxy(GrContext* ctx,
 
     // TODO: investigate preallocating mip maps here
     sk_sp<GrRenderTargetContext> renderTargetContext(
-        ctx->contextPriv().makeDeferredRenderTargetContext(
+        ctx->priv().makeDeferredRenderTargetContext(
             format, SkBackingFit::kExact, desc.fWidth, desc.fHeight, desc.fConfig, nullptr,
             desc.fSampleCnt, GrMipMapped::kNo, kTopLeft_GrSurfaceOrigin));
     if (!renderTargetContext) {
@@ -182,7 +188,8 @@ sk_sp<GrTextureProxy> GrYUVProvider::refAsTextureProxy(GrContext* ctx,
     const SkRect r = SkRect::MakeIWH(yuvSizeInfo.fSizes[0].fWidth,
                                      yuvSizeInfo.fSizes[0].fHeight);
 
-    renderTargetContext->drawRect(GrNoClip(), std::move(paint), GrAA::kNo, SkMatrix::I(), r);
+    SkMatrix m = SkEncodedOriginToMatrix(yuvSizeInfo.fOrigin, r.width(), r.height());
+    renderTargetContext->drawRect(GrNoClip(), std::move(paint), GrAA::kNo, m, r);
 
     return renderTargetContext->asTextureProxyRef();
 }

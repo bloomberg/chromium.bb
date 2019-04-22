@@ -56,7 +56,6 @@ class LeakDetectionStorySet(story_module.StorySet):
       'https://www.facebook.com',
       'https://www.baidu.com',
       'https://www.wikipedia.org',
-      'http://www.qq.com',
       'https://world.taobao.com/',
       'https://www.tmall.com/',
       'http://www.amazon.com',
@@ -112,13 +111,13 @@ class LeakDetectionStorySet(story_module.StorySet):
       'https://www.tripadvisor.com/',
       'https://9gag.com/',
       'https://www.expedia.com/',
-      'https://www.hotels.com/',
       'https://www.roblox.com/',
       'https://www.gamespot.com/',
       'https://www.blizzard.com',
       'https://ign.com/',
       'https://www.yelp.com/',
-      'https://gizmodo.com/',
+      # Times out waiting for HasReachedQuiescence - crbug.com/927427
+      # 'https://gizmodo.com/',
       'https://www.gsmarena.com/',
       'https://www.theverge.com/',
       'https://www.nlm.nih.gov/',
@@ -140,7 +139,6 @@ class LeakDetectionStorySet(story_module.StorySet):
       'https://www.weebly.com/',
       'https://www.deviantart.com/',
       'https://www.scribd.com/',
-      'https://www.livejournal.com/',
       'https://www.hulu.com/',
       'https://www.xfinity.com/',
       # India Alexa top websites
@@ -189,9 +187,9 @@ class LeakDetectionStorySet(story_module.StorySet):
       'http://www.airbnb.ch',
       'http://www.livedoor.jp',
       'http://www.blu-ray.com',
-      'http://www.block.io',
+      # TODO(953195): Test times out.
+      # 'http://www.block.io',
       'http://www.hockeybuzz.com',
-      'http://www.benzworld.org',
       'http://www.silverpop.com',
       'http://www.ansa.it',
       'http://www.gulfair.com',
@@ -248,10 +246,11 @@ class LeakDetectionStorySet(story_module.StorySet):
       'http://makfax.com.mk',
       'http://game.co.za',
       'http://www.savaari.com',
-      'http://www.520mojing.com',
       'http://www.railsguides.jp',
     ]
     resource_loading_urls_list = [
+      'https://www.hotels.com/',
+      'https://www.livejournal.com/',
       'https://www.yahoo.com',
       'http://www.quora.com',
       'https://www.macys.com',
@@ -259,6 +258,9 @@ class LeakDetectionStorySet(story_module.StorySet):
       'http://www.listindiario.com',
       'https://www.engadget.com/',
       'https://www.sohu.com/',
+      'http://www.qq.com',
+      'http://www.benzworld.org',
+      'http://www.520mojing.com',
     ]
     for url in urls_list:
       self.AddStory(LeakDetectionPage(url, self, url))

@@ -7,10 +7,11 @@
 #include <memory>
 #include <utility>
 
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/test/test_clipboard.h"
+#include "ui/base/clipboard/test/test_clipboard.h"
 #include "url/gurl.h"
 
 class ClipboardRecentContentGenericTest : public testing::Test {
@@ -62,14 +63,13 @@ TEST_F(ClipboardRecentContentGenericTest, RecognizesURLs) {
 
   ClipboardRecentContentGeneric recent_content;
   base::Time now = base::Time::Now();
-  for (size_t i = 0; i < arraysize(test_data); ++i) {
+  for (size_t i = 0; i < base::size(test_data); ++i) {
     test_clipboard_->WriteText(test_data[i].clipboard.data(),
                                test_data[i].clipboard.length());
     test_clipboard_->SetLastModifiedTime(now -
                                          base::TimeDelta::FromSeconds(10));
-    GURL url;
     EXPECT_EQ(test_data[i].expected_get_recent_url_value,
-              recent_content.GetRecentURLFromClipboard(&url))
+              recent_content.GetRecentURLFromClipboard().has_value())
         << "for input " << test_data[i].clipboard;
   }
 }
@@ -80,11 +80,10 @@ TEST_F(ClipboardRecentContentGenericTest, OlderURLsNotSuggested) {
   std::string text = "http://example.com/";
   test_clipboard_->WriteText(text.data(), text.length());
   test_clipboard_->SetLastModifiedTime(now - base::TimeDelta::FromSeconds(10));
-  GURL url;
-  EXPECT_TRUE(recent_content.GetRecentURLFromClipboard(&url));
+  EXPECT_TRUE(recent_content.GetRecentURLFromClipboard().has_value());
   // If the last modified time is days ago, the URL shouldn't be suggested.
   test_clipboard_->SetLastModifiedTime(now - base::TimeDelta::FromDays(2));
-  EXPECT_FALSE(recent_content.GetRecentURLFromClipboard(&url));
+  EXPECT_FALSE(recent_content.GetRecentURLFromClipboard().has_value());
 }
 
 TEST_F(ClipboardRecentContentGenericTest, GetClipboardContentAge) {
@@ -107,16 +106,15 @@ TEST_F(ClipboardRecentContentGenericTest, SuppressClipboardContent) {
   std::string text = "http://example.com/";
   test_clipboard_->WriteText(text.data(), text.length());
   test_clipboard_->SetLastModifiedTime(now - base::TimeDelta::FromSeconds(10));
-  GURL url;
-  EXPECT_TRUE(recent_content.GetRecentURLFromClipboard(&url));
+  EXPECT_TRUE(recent_content.GetRecentURLFromClipboard().has_value());
 
   // After suppressing it, it shouldn't be suggested.
   recent_content.SuppressClipboardContent();
-  EXPECT_FALSE(recent_content.GetRecentURLFromClipboard(&url));
+  EXPECT_FALSE(recent_content.GetRecentURLFromClipboard().has_value());
 
   // If the clipboard changes, even if to the same thing again, the content
   // should be suggested again.
   test_clipboard_->WriteText(text.data(), text.length());
   test_clipboard_->SetLastModifiedTime(now);
-  EXPECT_TRUE(recent_content.GetRecentURLFromClipboard(&url));
+  EXPECT_TRUE(recent_content.GetRecentURLFromClipboard().has_value());
 }

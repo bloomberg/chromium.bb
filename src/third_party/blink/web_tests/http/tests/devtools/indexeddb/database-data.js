@@ -13,11 +13,17 @@
   var mainFrameId = TestRunner.resourceTreeModel.mainFrame.id;
   var securityOrigin = 'http://127.0.0.1:8000';
   var databaseName = 'testDatabase';
-  var objectStoreName = 'testObjectStore';
+  var objectStoreName1 = 'testObjectStore1';
+  var objectStoreName2 = 'testObjectStore2';
   var indexName = 'testIndexName';
   var databaseId = new Resources.IndexedDBModel.DatabaseId(securityOrigin, databaseName);
 
-  function addIDBValues(count, callback) {
+  /**
+   * @param {number} count
+   * @param {boolean} specifyKey
+   * @param {*} callback
+   */
+  function addIDBValues(count, objectStoreName, specifyKey, callback) {
     var i = 0;
     addValues();
 
@@ -30,8 +36,13 @@
       var id = i < 10 ? '0' + i : i;
       var key = 'key_' + id;
       var value = 'value_' + id;
+      let insertedObject;
+      if (specifyKey)
+        insertedObject = {key: key, value: value};
+      else
+        insertedObject = {value: value};
       ApplicationTestRunner.addIDBValue(
-          mainFrameId, databaseName, objectStoreName, {key: key, value: value}, '', addValues);
+          mainFrameId, databaseName, objectStoreName, insertedObject, '', addValues);
     }
   }
 
@@ -44,9 +55,9 @@
         ', idbKeyRange = ' + idbKeyRangeString);
     if (fromIndex)
       indexedDBModel.loadIndexData(
-          databaseId, objectStoreName, indexName, idbKeyRange, skipCount, pageSize, innerCallback);
+          databaseId, objectStoreName1, indexName, idbKeyRange, skipCount, pageSize, innerCallback);
     else
-      indexedDBModel.loadObjectStoreData(databaseId, objectStoreName, idbKeyRange, skipCount, pageSize, innerCallback);
+      indexedDBModel.loadObjectStoreData(databaseId, objectStoreName1, idbKeyRange, skipCount, pageSize, innerCallback);
 
     function innerCallback(entries, hasMore) {
       var index = 0;
@@ -82,22 +93,45 @@
     ApplicationTestRunner.createDatabase(mainFrameId, databaseName, step2);
 
     function step2() {
-      ApplicationTestRunner.createObjectStore(mainFrameId, databaseName, objectStoreName, 'key', true, step3);
+      ApplicationTestRunner.createObjectStore(
+        mainFrameId, databaseName, objectStoreName1, 'key', true, () => {
+          ApplicationTestRunner.createObjectStore(mainFrameId, databaseName, objectStoreName2, 'key', true, step3);
+        });
     }
 
     function step3() {
       ApplicationTestRunner.createObjectStoreIndex(
-          mainFrameId, databaseName, objectStoreName, indexName, 'value', false, true, step4);
+          mainFrameId, databaseName, objectStoreName1, indexName, 'value', false, true, step4);
     }
 
     function step4() {
-      addIDBValues(6, refreshDatabaseNames);
+      addIDBValues(6, objectStoreName1, true, () => {
+        addIDBValues(6, objectStoreName2, false, postFillingActions);
+      });
     }
-  }
 
-  function refreshDatabaseNames() {
-    TestRunner.addSniffer(Resources.IndexedDBModel.prototype, '_updateOriginDatabaseNames', refreshDatabase, false);
-    indexedDBModel.refreshDatabaseNames();
+    async function postFillingActions() {
+      await new Promise(resolve => {
+        indexedDBModel.getMetadata(
+          databaseId, {name: objectStoreName1, autoIncrement: true}).then(printMetadata);
+        indexedDBModel.getMetadata(
+          databaseId, {name: objectStoreName2, autoIncrement: true}).then(printMetadata);
+        resolve();
+      });
+      TestRunner.addSniffer(Resources.IndexedDBModel.prototype, '_updateOriginDatabaseNames', refreshDatabase, false);
+      indexedDBModel.refreshDatabaseNames();
+
+      function printMetadata(metadata) {
+        if (!metadata) {
+          TestRunner.addResult('backend returns an error response');
+          return;
+        }
+        const entriesCount = metadata.entriesCount;
+        const keyGenNumber = metadata.keyGeneratorValue;
+        TestRunner.addResult('entries count: ' + String(entriesCount));
+        TestRunner.addResult('key gen value: ' + String(keyGenNumber));
+      }
+    }
   }
 
   function refreshDatabase() {
@@ -167,7 +201,7 @@
   }
 
   function runClearTests() {
-    indexedDBModel.clearObjectStore(databaseId, objectStoreName).then(step1);
+    indexedDBModel.clearObjectStore(databaseId, objectStoreName1).then(step1);
     TestRunner.addResult('Cleared data from objectStore');
 
     function step1() {
@@ -185,10 +219,12 @@
   }
 
   function deleteDatabase() {
-    ApplicationTestRunner.deleteObjectStoreIndex(mainFrameId, databaseName, objectStoreName, indexName, step2);
+    ApplicationTestRunner.deleteObjectStoreIndex(mainFrameId, databaseName, objectStoreName1, indexName, step2);
 
     function step2() {
-      ApplicationTestRunner.deleteObjectStore(mainFrameId, databaseName, objectStoreName, step3);
+      ApplicationTestRunner.deleteObjectStore(mainFrameId, databaseName, objectStoreName1, () => {
+        ApplicationTestRunner.deleteObjectStore(mainFrameId, databaseName, objectStoreName2, step3);
+      });
     }
 
     function step3() {

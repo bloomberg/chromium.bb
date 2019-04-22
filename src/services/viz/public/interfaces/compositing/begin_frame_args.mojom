@@ -9,8 +9,7 @@ import "mojo/public/mojom/base/time.mojom";
 enum BeginFrameArgsType {
   INVALID,
   NORMAL,
-  MISSED,
-  BEGIN_FRAME_ARGS_TYPE_MAX
+  MISSED
 };
 
 // See components/viz/common/frame_sinks/begin_frame_args.h.

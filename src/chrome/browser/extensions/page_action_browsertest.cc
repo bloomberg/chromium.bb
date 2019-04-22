@@ -24,8 +24,6 @@ namespace {
 
 const std::string kFeedPage = "/feeds/feed.html";
 const std::string kNoFeedPage = "/feeds/no_feed.html";
-const std::string kLocalization =
-    "/extensions/browsertest/title_localized_pa/simple.html";
 
 const std::string kHashPageA =
     "/extensions/api_test/page_action/hash_change/test_page_A.html";
@@ -170,39 +168,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageActionRefreshCrash) {
   LOG(INFO) << "Test completed         : "
             << (base::TimeTicks::Now() - start_time).InMilliseconds()
             << " ms" << std::flush;
-}
-
-// Tests that tooltips of a page action icon can be specified using UTF8.
-// See http://crbug.com/25349.
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TitleLocalizationPageAction) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  ExtensionRegistry* registry =
-      extensions::ExtensionRegistry::Get(browser()->profile());
-  const size_t size_before = registry->enabled_extensions().size();
-
-  base::FilePath extension_path(test_data_dir_.AppendASCII("browsertest")
-                                        .AppendASCII("title_localized_pa"));
-  const Extension* extension = LoadExtension(extension_path);
-  ASSERT_TRUE(extension);
-
-  // Any navigation prompts the location bar to load the page action.
-  GURL url = embedded_test_server()->GetURL(kLocalization);
-  ui_test_utils::NavigateToURL(browser(), url);
-  ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(1));
-
-  ASSERT_EQ(size_before + 1, registry->enabled_extensions().size());
-
-  EXPECT_STREQ(base::WideToUTF8(L"Hreggvi\u00F0ur: l10n page action").c_str(),
-               extension->description().c_str());
-  EXPECT_STREQ(base::WideToUTF8(L"Hreggvi\u00F0ur is my name").c_str(),
-               extension->name().c_str());
-  int tab_id = ExtensionTabUtil::GetTabId(
-      browser()->tab_strip_model()->GetActiveWebContents());
-  EXPECT_STREQ(base::WideToUTF8(L"Hreggvi\u00F0ur").c_str(),
-               ExtensionActionManager::Get(browser()->profile())->
-               GetPageAction(*extension)->
-               GetTitle(tab_id).c_str());
 }
 
 }  // namespace

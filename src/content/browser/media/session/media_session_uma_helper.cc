@@ -22,8 +22,10 @@ MediaSessionUmaHelper::~MediaSessionUmaHelper()
 
 // static
 void MediaSessionUmaHelper::RecordMediaSessionUserAction(
-    MediaSessionUserAction action) {
+    MediaSessionUserAction action,
+    bool focused) {
   UMA_HISTOGRAM_ENUMERATION("Media.Session.UserAction", action);
+  UMA_HISTOGRAM_BOOLEAN("Media.Session.UserAction.Focus", focused);
 }
 
 void MediaSessionUmaHelper::RecordSessionSuspended(

@@ -192,7 +192,7 @@ void OneTimeMessageHandler::SendMessage(
   IPCMessageSender* ipc_sender = bindings_system_->GetIPCMessageSender();
   ipc_sender->SendOpenMessageChannel(script_context, new_port_id, target,
                                      method_name, include_tls_channel_id);
-  ipc_sender->SendPostMessageToPort(routing_id, new_port_id, message);
+  ipc_sender->SendPostMessageToPort(new_port_id, message);
 
   // If the sender doesn't provide a response callback, we can immediately
   // close the channel. Note: we only do this for extension messages, not
@@ -475,7 +475,7 @@ void OneTimeMessageHandler::OnOneTimeMessageResponse(
     return;
   }
   IPCMessageSender* ipc_sender = bindings_system_->GetIPCMessageSender();
-  ipc_sender->SendPostMessageToPort(routing_id, port_id, *message);
+  ipc_sender->SendPostMessageToPort(port_id, *message);
   bool close_channel = true;
   ipc_sender->SendCloseMessagePort(routing_id, port_id, close_channel);
 }

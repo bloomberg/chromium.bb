@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/stl_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "chromeos/services/secure_channel/connection_details.h"
@@ -296,7 +297,7 @@ class SecureChannelMultiplexedChannelImplTest : public testing::Test {
     sent_message_counters_.insert(message_counter);
   }
 
-  const base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   int next_send_message_counter_ = 0;
   std::unordered_set<int> sent_message_counters_;

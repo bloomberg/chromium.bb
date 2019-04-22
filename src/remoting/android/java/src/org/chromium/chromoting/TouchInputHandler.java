@@ -171,12 +171,12 @@ public class TouchInputHandler {
         }
 
         @Override
-        public RenderStub.InputFeedbackType getShortPressFeedbackType() {
+        public @RenderStub.InputFeedbackType int getShortPressFeedbackType() {
             return RenderStub.InputFeedbackType.NONE;
         }
 
         @Override
-        public RenderStub.InputFeedbackType getLongPressFeedbackType() {
+        public @RenderStub.InputFeedbackType int getLongPressFeedbackType() {
             return RenderStub.InputFeedbackType.NONE;
         }
 
@@ -313,25 +313,25 @@ public class TouchInputHandler {
 
     private void handleInputModeChanged(
             InputModeChangedEventParameter parameter, InputEventSender injector) {
-        final Desktop.InputMode inputMode = parameter.inputMode;
-        final CapabilityManager.HostCapability hostTouchCapability =
-                parameter.hostCapability;
+        final @Desktop.InputMode int inputMode = parameter.inputMode;
+        final @CapabilityManager.HostCapability int hostTouchCapability = parameter.hostCapability;
         // We need both input mode and host input capabilities to select the input
         // strategy.
-        if (!inputMode.isSet() || !hostTouchCapability.isSet()) {
+        if (!CapabilityManager.hostCapabilityIsSet(inputMode)
+                || !CapabilityManager.hostCapabilityIsSet(hostTouchCapability)) {
             return;
         }
 
         switch (inputMode) {
-            case TRACKPAD:
+            case Desktop.InputMode.TRACKPAD:
                 setInputStrategy(new TrackpadInputStrategy(mRenderData, injector));
                 mDesktopCanvas.adjustViewportForSystemUi(true);
                 moveCursorToScreenCenter();
                 break;
 
-            case TOUCH:
+            case Desktop.InputMode.TOUCH:
                 mDesktopCanvas.adjustViewportForSystemUi(false);
-                if (hostTouchCapability.isSupported()) {
+                if (CapabilityManager.hostCapabilityIsSupported(hostTouchCapability)) {
                     setInputStrategy(new TouchInputStrategy(mRenderData, injector));
                 } else {
                     setInputStrategy(

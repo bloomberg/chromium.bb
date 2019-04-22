@@ -18,6 +18,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
+import android.support.annotation.Nullable;
 import android.view.Surface;
 import java.nio.ByteBuffer;
 import java.text.DecimalFormat;
@@ -25,7 +26,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import javax.annotation.Nullable;
 
 /**
  * Implements VideoSink by displaying the video stream on an EGL Surface. This class is intended to
@@ -123,7 +123,7 @@ public class EglRenderer implements VideoSink {
   // EGL and GL resources for drawing YUV/OES textures. After initilization, these are only accessed
   // from the render thread.
   @Nullable private EglBase eglBase;
-  private final VideoFrameDrawer frameDrawer = new VideoFrameDrawer();
+  private final VideoFrameDrawer frameDrawer;
   @Nullable private RendererCommon.GlDrawer drawer;
   private boolean usePresentationTimeStamp;
   private final Matrix drawMatrix = new Matrix();
@@ -136,7 +136,9 @@ public class EglRenderer implements VideoSink {
   private final Object layoutLock = new Object();
   private float layoutAspectRatio;
   // If true, mirrors the video stream horizontally.
-  private boolean mirror;
+  private boolean mirrorHorizontally;
+  // If true, mirrors the video stream vertically.
+  private boolean mirrorVertically;
 
   // These variables are synchronized on |statisticsLock|.
   private final Object statisticsLock = new Object();
@@ -179,7 +181,12 @@ public class EglRenderer implements VideoSink {
    * logging. In order to render something, you must first call init() and createEglSurface.
    */
   public EglRenderer(String name) {
+    this(name, new VideoFrameDrawer());
+  }
+
+  public EglRenderer(String name, VideoFrameDrawer videoFrameDrawer) {
     this.name = name;
+    this.frameDrawer = videoFrameDrawer;
   }
 
   /**
@@ -274,6 +281,8 @@ public class EglRenderer implements VideoSink {
       renderThreadHandler.removeCallbacks(logStatisticsRunnable);
       // Release EGL and GL resources on render thread.
       renderThreadHandler.postAtFrontOfQueue(() -> {
+        // Detach current shader program.
+        GLES20.glUseProgram(/* program= */ 0);
         if (drawer != null) {
           drawer.release();
           drawer = null;
@@ -330,9 +339,9 @@ public class EglRenderer implements VideoSink {
       if (renderThread != null) {
         final StackTraceElement[] renderStackTrace = renderThread.getStackTrace();
         if (renderStackTrace.length > 0) {
-          logD("EglRenderer stack trace:");
+          logW("EglRenderer stack trace:");
           for (StackTraceElement traceElem : renderStackTrace) {
-            logD(traceElem.toString());
+            logW(traceElem.toString());
           }
         }
       }
@@ -340,12 +349,22 @@ public class EglRenderer implements VideoSink {
   }
 
   /**
-   * Set if the video stream should be mirrored or not.
+   * Set if the video stream should be mirrored horizontally or not.
    */
   public void setMirror(final boolean mirror) {
-    logD("setMirror: " + mirror);
+    logD("setMirrorHorizontally: " + mirror);
     synchronized (layoutLock) {
-      this.mirror = mirror;
+      this.mirrorHorizontally = mirror;
+    }
+  }
+
+  /**
+   * Set if the video stream should be mirrored vertically or not.
+   */
+  public void setMirrorVertically(final boolean mirrorVertically) {
+    logD("setMirrorVertically: " + mirrorVertically);
+    synchronized (layoutLock) {
+      this.mirrorVertically = mirrorVertically;
     }
   }
 
@@ -619,8 +638,7 @@ public class EglRenderer implements VideoSink {
 
     drawMatrix.reset();
     drawMatrix.preTranslate(0.5f, 0.5f);
-    if (mirror)
-      drawMatrix.preScale(-1f, 1f);
+    drawMatrix.preScale(mirrorHorizontally ? -1f : 1f, mirrorVertically ? -1f : 1f);
     drawMatrix.preScale(scaleX, scaleY);
     drawMatrix.preTranslate(-0.5f, -0.5f);
 
@@ -655,8 +673,7 @@ public class EglRenderer implements VideoSink {
 
     drawMatrix.reset();
     drawMatrix.preTranslate(0.5f, 0.5f);
-    if (mirror)
-      drawMatrix.preScale(-1f, 1f);
+    drawMatrix.preScale(mirrorHorizontally ? -1f : 1f, mirrorVertically ? -1f : 1f);
     drawMatrix.preScale(1f, -1f); // We want the output to be upside down for Bitmap.
     drawMatrix.preTranslate(-0.5f, -0.5f);
 
@@ -728,5 +745,9 @@ public class EglRenderer implements VideoSink {
 
   private void logD(String string) {
     Logging.d(TAG, name + string);
+  }
+
+  private void logW(String string) {
+    Logging.w(TAG, name + string);
   }
 }

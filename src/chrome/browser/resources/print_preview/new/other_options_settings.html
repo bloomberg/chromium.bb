@@ -6,6 +6,7 @@
 <link rel="import" href="print_preview_shared_css.html">
 <link rel="import" href="settings_behavior.html">
 <link rel="import" href="settings_section.html">
+<link rel="import" href="strings.html">
 
 <dom-module id="print-preview-other-options-settings">
   <template>
@@ -15,8 +16,7 @@
       }
     </style>
     <template is="dom-repeat" items="[[options_]]">
-      <print-preview-settings-section managed="[[item.managed]]"
-          show-policy-on-end hidden$="[[!item.available]]"
+      <print-preview-settings-section hidden$="[[!item.available]]"
           class$="[[getClass_(index, firstIndex_)]]">
         <div slot="title">
           <span class="title">$i18n{optionsLabel}</span>

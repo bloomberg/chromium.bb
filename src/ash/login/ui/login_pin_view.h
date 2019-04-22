@@ -46,16 +46,27 @@ namespace ash {
 //
 class ASH_EXPORT LoginPinView : public NonAccessibleView {
  public:
-  // Size of each button.
-  static const int kButtonSizeDp;
+  // Visual style of PIN keyboard.
+  enum class Style {
+    // Has a layout and look of a telephone keypad. Keys display a combination
+    // of a digit and letters. The letters can be used for mnemonic techniques.
+    kAlphanumeric,
+    // Has a layout of a telephone keypad, but keys display only digits, no
+    // letters.
+    kNumeric,
+  };
 
   class ASH_EXPORT TestApi {
    public:
+    // Returns expected button size for the given PIN keyboard |style|.
+    static gfx::Size GetButtonSize(Style style);
+
     explicit TestApi(LoginPinView* view);
     ~TestApi();
 
     views::View* GetButton(int number) const;
     views::View* GetBackspaceButton() const;
+
     // Sets the timers that are used for backspace auto-submit. |delay_timer| is
     // the initial delay before an auto-submit, and |repeat_timer| fires
     // whenever a new backspace event should run after the initial delay.
@@ -69,10 +80,12 @@ class ASH_EXPORT LoginPinView : public NonAccessibleView {
   using OnPinKey = base::RepeatingCallback<void(int value)>;
   using OnPinBackspace = base::RepeatingClosure;
 
+  // Creates PIN view with the specified |keyboard_style|.
   // |on_key| is called whenever the user taps one of the pin buttons.
   // |on_backspace| is called when the user wants to erase the most recently
   // tapped key. Neither callback can be null.
-  explicit LoginPinView(const OnPinKey& on_key,
+  explicit LoginPinView(Style keyboard_style,
+                        const OnPinKey& on_key,
                         const OnPinBackspace& on_backspace);
   ~LoginPinView() override;
 

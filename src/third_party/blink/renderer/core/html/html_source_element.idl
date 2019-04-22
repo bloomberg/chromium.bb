@@ -23,13 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// https://html.spec.whatwg.org/#the-source-element
+// https://html.spec.whatwg.org/C/#the-source-element
 [HTMLConstructor]
 interface HTMLSourceElement : HTMLElement {
     [CEReactions, Reflect, URL, RaisesException=Setter] attribute URLString src;
     [CEReactions] attribute DOMString type;
 
-    // https://html.spec.whatwg.org/#the-source-element-when-used-with-the-picture-element
+    // https://html.spec.whatwg.org/C/#the-source-element-when-used-with-the-picture-element
     [CEReactions, Reflect] attribute USVString srcset;
     [CEReactions, Reflect] attribute DOMString sizes;
     [CEReactions, Reflect] attribute DOMString media;

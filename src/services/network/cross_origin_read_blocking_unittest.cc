@@ -251,8 +251,9 @@ TEST(CrossOriginReadBlockingTest, GetCanonicalMimeType) {
 
       // Images are allowed cross-site, and SVG is an image, so we should
       // classify SVG as "other" instead of "xml" (even though it technically is
-      // an xml document).
+      // an xml document).  Same argument for DASH video format.
       {"image/svg+xml", MimeType::kOthers},
+      {"application/dash+xml", MimeType::kOthers},
 
       // Javascript should not be blocked.
       {"application/javascript", MimeType::kOthers},

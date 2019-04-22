@@ -24,23 +24,14 @@
 
 namespace blink {
 
-// GCInfo contains meta-data associated with object classes allocated in the
-// Blink heap. This meta-data consists of a function pointer used to trace the
-// pointers in the class instance during garbage collection, an indication of
-// whether or not the instance needs a finalization callback, and a function
-// pointer used to finalize the instance when the garbage collector determines
-// that the instance is no longer reachable. There is a GCInfo struct for each
-// class that directly inherits from GarbageCollected or
-// GarbageCollectedFinalized.
+// GCInfo contains metadata for objects that are instantiated from classes that
+// inherit for GarbageCollected or GarbageCollectedFinalized.
 struct GCInfo {
-  bool HasFinalizer() const { return non_trivial_finalizer_; }
-  bool HasVTable() const { return has_v_table_; }
-
-  TraceCallback trace_;
-  FinalizationCallback finalize_;
-  NameCallback name_;
-  bool non_trivial_finalizer_;
-  bool has_v_table_;
+  const TraceCallback trace;
+  const FinalizationCallback finalize;
+  const NameCallback name;
+  const bool non_trivial_finalizer;
+  const bool has_v_table;
 };
 
 #if DCHECK_IS_ON()
@@ -65,7 +56,7 @@ class PLATFORM_EXPORT GCInfoTable {
 
   inline const GCInfo* GCInfoFromIndex(uint32_t index) {
     DCHECK_GE(index, 1u);
-    DCHECK(index < kMaxIndex);
+    DCHECK_LT(index, kMaxIndex);
     DCHECK(table_);
     const GCInfo* info = table_[index];
     DCHECK(info);
@@ -74,20 +65,20 @@ class PLATFORM_EXPORT GCInfoTable {
 
   uint32_t EnsureGCInfoIndex(const GCInfo*, std::atomic_uint32_t*);
 
-  uint32_t GcInfoIndex() { return current_index_; }
+  uint32_t GcInfoIndex() const { return current_index_; }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(GCInfoTest, InitialEmpty);
   FRIEND_TEST_ALL_PREFIXES(GCInfoTest, ResizeToMaxIndex);
+
+  // Singleton for each process. Retrieved through Get().
+  static GCInfoTable* global_table_;
 
   // Use GCInfoTable::Get() for retrieving the global table outside of testing
   // code.
   GCInfoTable();
 
   void Resize();
-
-  // Singleton for each process. Retrieved through Get().
-  static GCInfoTable* global_table_;
 
   // Holds the per-class GCInfo descriptors; each HeapObjectHeader keeps an
   // index into this table.
@@ -111,10 +102,9 @@ struct GCInfoAtBaseType {
   static uint32_t Index() {
     static_assert(sizeof(T), "T must be fully defined");
     static const GCInfo kGcInfo = {
-        TraceTrait<T>::Trace,          FinalizerTrait<T>::Finalize,
-        NameTrait<T>::GetName,         FinalizerTrait<T>::kNonTrivialFinalizer,
-        std::is_polymorphic<T>::value,
-    };
+        TraceTrait<T>::Trace, FinalizerTrait<T>::Finalize,
+        NameTrait<T>::GetName, FinalizerTrait<T>::kNonTrivialFinalizer,
+        std::is_polymorphic<T>::value};
     // This is more complicated than using threadsafe initialization, but this
     // is instantiated many times (once for every GC type).
     static std::atomic_uint32_t gc_info_index{0};

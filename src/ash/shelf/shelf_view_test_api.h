@@ -20,8 +20,7 @@ class View;
 
 namespace ash {
 class OverflowBubble;
-class OverflowButton;
-class ShelfButton;
+class ShelfAppButton;
 class ShelfButtonPressedMetricTracker;
 class ShelfTooltipManager;
 class ShelfView;
@@ -36,33 +35,21 @@ class ShelfViewTestAPI {
   int GetButtonCount();
 
   // Retrieve the button at |index|, doesn't support the app list button,
-  // because the app list button is not a ShelfButton.
-  ShelfButton* GetButton(int index);
+  // because the app list button is not a ShelfAppButton.
+  ShelfAppButton* GetButton(int index);
 
   // Retrieve the view at |index|.
   views::View* GetViewAt(int index);
 
-  // First visible button index.
-  int GetFirstVisibleIndex();
-
-  // Last visible button index.
-  int GetLastVisibleIndex();
-
   // Gets current/ideal bounds for button at |index|.
   const gfx::Rect& GetBoundsByIndex(int index);
   const gfx::Rect& GetIdealBoundsByIndex(int index);
-
-  // Returns true if overflow button is visible.
-  bool IsOverflowButtonVisible();
 
   // Makes shelf view show its overflow bubble.
   void ShowOverflowBubble();
 
   // Makes shelf view hide its overflow bubble.
   void HideOverflowBubble();
-
-  // Returns true if the overflow bubble is visible.
-  bool IsShowingOverflowBubble() const;
 
   // An accessor for the |bounds_animator_| duration.
   int GetAnimationDuration() const;
@@ -90,9 +77,6 @@ class ShelfViewTestAPI {
 
   // An accessor for overflow bubble.
   OverflowBubble* overflow_bubble();
-
-  // An accessor for overflow button.
-  OverflowButton* overflow_button() const;
 
   // Returns minimum distance before drag starts.
   int GetMinimumDragDistance() const;

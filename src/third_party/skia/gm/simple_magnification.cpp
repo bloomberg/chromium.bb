@@ -16,39 +16,36 @@ static sk_sp<SkImage> make_image(GrContext* context, int size, GrSurfaceOrigin o
         SkImageInfo ii = SkImageInfo::Make(size, size, kN32_SkColorType, kPremul_SkAlphaType);
         sk_sp<SkSurface> surf(SkSurface::MakeRenderTarget(context, SkBudgeted::kYes, ii, 0,
                                                           origin, nullptr));
-        if (!surf) {
-            return nullptr;
+        if (surf) {
+            SkCanvas* canvas = surf->getCanvas();
+
+            canvas->clear(SK_ColorRED);
+            const struct {
+                SkPoint fPt;
+                SkColor fColor;
+            } rec[] = {
+                { { 1.5f, 1.5f }, SK_ColorGREEN },
+                { { 2.5f, 1.5f }, SK_ColorBLUE },
+                { { 1.5f, 2.5f }, SK_ColorCYAN },
+                { { 2.5f, 2.5f }, SK_ColorGRAY },
+            };
+            SkPaint paint;
+            for (const auto& r : rec) {
+                paint.setColor(r.fColor);
+                canvas->drawPoints(SkCanvas::kPoints_PointMode, 1, &r.fPt, paint);
+            }
+            return surf->makeImageSnapshot();
         }
-
-        SkCanvas* canvas = surf->getCanvas();
-
-        canvas->clear(SK_ColorRED);
-        const struct {
-            SkPoint fPt;
-            SkColor fColor;
-        } rec[] = {
-            { { 1.5f, 1.5f }, SK_ColorGREEN },
-            { { 2.5f, 1.5f }, SK_ColorBLUE },
-            { { 1.5f, 2.5f }, SK_ColorCYAN },
-            { { 2.5f, 2.5f }, SK_ColorGRAY },
-        };
-        SkPaint paint;
-        for (const auto& r : rec) {
-            paint.setColor(r.fColor);
-            canvas->drawPoints(SkCanvas::kPoints_PointMode, 1, &r.fPt, paint);
-        }
-        return surf->makeImageSnapshot();
-    } else {
-        SkBitmap bm;
-        bm.allocN32Pixels(size, size);
-        bm.eraseColor(SK_ColorRED);
-        *bm.getAddr32(1, 1) = SkPackARGB32(0xFF, 0x00, 0xFF, 0x00);
-        *bm.getAddr32(2, 1) = SkPackARGB32(0xFF, 0x00, 0x00, 0xFF);
-        *bm.getAddr32(1, 2) = SkPackARGB32(0xFF, 0x00, 0xFF, 0xFF);
-        *bm.getAddr32(2, 2) = SkPackARGB32(0xFF, 0x88, 0x88, 0x88);
-
-        return SkImage::MakeFromBitmap(bm);
     }
+
+    SkBitmap bm;
+    bm.allocN32Pixels(size, size);
+    bm.eraseColor(SK_ColorRED);
+    *bm.getAddr32(1, 1) = SkPackARGB32(0xFF, 0x00, 0xFF, 0x00);
+    *bm.getAddr32(2, 1) = SkPackARGB32(0xFF, 0x00, 0x00, 0xFF);
+    *bm.getAddr32(1, 2) = SkPackARGB32(0xFF, 0x00, 0xFF, 0xFF);
+    *bm.getAddr32(2, 2) = SkPackARGB32(0xFF, 0x88, 0x88, 0x88);
+    return SkImage::MakeFromBitmap(bm);
 }
 
 /*
@@ -99,13 +96,14 @@ protected:
         canvas->restore();
     }
 
-    void onDraw(SkCanvas* canvas) override {
+    DrawResult onDraw(SkCanvas* canvas, SkString* errorMsg) override {
         GrContext* context = canvas->getGrContext();
 
         sk_sp<SkImage> bottomLImg = make_image(context, kImgSize, kBottomLeft_GrSurfaceOrigin);
         sk_sp<SkImage> topLImg = make_image(context, kImgSize, kTopLeft_GrSurfaceOrigin);
         if (!bottomLImg || !topLImg) {
-            return;
+            *errorMsg = "Could not load images. Did you forget to set the resourcePath?";
+            return DrawResult::kFail;
         }
 
         int bigOffset = 2 * kPad + kImgSize;
@@ -114,6 +112,7 @@ protected:
         this->draw(canvas, topLImg, SkIPoint::Make(bigOffset, kPad), 1);
         this->draw(canvas, bottomLImg, SkIPoint::Make(kPad, bigOffset), 7);
         this->draw(canvas, topLImg, SkIPoint::Make(bigOffset, bigOffset), 7);
+        return DrawResult::kOk;
     }
 
 private:

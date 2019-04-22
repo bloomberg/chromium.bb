@@ -5,6 +5,7 @@
 #include "chrome/browser/notifications/notification_interactive_uitest_support.h"
 
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/notifications/notification_permission_context.h"
 #include "chrome/browser/permissions/permission_request_manager.h"

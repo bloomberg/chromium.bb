@@ -9,21 +9,23 @@
  */
 
 #ifndef WEBRTC_WIN
-#include <sys/types.h>
 #include <unistd.h>
 #endif
 
+#include <stdint.h>
 #include <algorithm>
-#include <sstream>
 
-#include "modules/remote_bitrate_estimator/include/remote_bitrate_estimator.h"
+#include "modules/remote_bitrate_estimator/test/bwe.h"
 #include "modules/remote_bitrate_estimator/test/bwe_test.h"
+#include "modules/remote_bitrate_estimator/test/bwe_test_framework.h"
 #include "modules/remote_bitrate_estimator/test/packet_receiver.h"
 #include "modules/remote_bitrate_estimator/test/packet_sender.h"
-#include "rtc_base/constructormagic.h"
+#include "rtc_base/constructor_magic.h"
 #include "rtc_base/random.h"
+#include "system_wrappers/include/clock.h"
 #include "test/field_trial.h"
-#include "test/testsupport/fileutils.h"
+#include "test/gtest.h"
+#include "test/testsupport/file_utils.h"
 
 namespace webrtc {
 namespace testing {
@@ -54,9 +56,9 @@ class BweFeedbackTest
   RTC_DISALLOW_COPY_AND_ASSIGN(BweFeedbackTest);
 };
 
-INSTANTIATE_TEST_CASE_P(VideoSendersTest,
-                        BweFeedbackTest,
-                        ::testing::Values(kRembEstimator, kSendSideEstimator));
+INSTANTIATE_TEST_SUITE_P(VideoSendersTest,
+                         BweFeedbackTest,
+                         ::testing::Values(kRembEstimator, kSendSideEstimator));
 
 TEST_P(BweFeedbackTest, ConstantCapacity) {
   AdaptiveVideoSource source(0, 30, 300, 0, 0);

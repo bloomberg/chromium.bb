@@ -30,6 +30,8 @@ const char kContextualSearchRankerDidPredict[] = "OutcomeRankerDidPredict";
 const char kContextualSearchRankerPrediction[] = "OutcomeRankerPrediction";
 const char kContextualSearchImportantFeature[] = "DidOptIn";
 const char kContextualSearchImportantOutcome[] = "OutcomeWasPanelOpened";
+const char kContextualSearchRankerPredictionScore[] =
+    "OutcomeRankerPredictionScore";
 
 }  // namespace
 
@@ -105,6 +107,13 @@ AssistRankerPrediction ContextualSearchRankerLoggerImpl::RunInference(
     if (was_able_to_predict) {
       LogFeature(kContextualSearchRankerPrediction,
                  static_cast<int>(prediction));
+      // For offline validation also log the prediction score.
+      // TODO(donnd): remove when https://crbug.com/914179 is resolved.
+      float score;
+      bool was_able_to_predict_score =
+          predictor_->PredictScore(*ranker_example_, &score);
+      if (was_able_to_predict_score)
+        LogFeature(kContextualSearchRankerPredictionScore, score);
     }
   }
   AssistRankerPrediction prediction_enum;

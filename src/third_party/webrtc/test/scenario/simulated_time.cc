@@ -9,9 +9,15 @@
  */
 #include "test/scenario/simulated_time.h"
 
+#include <inttypes.h>
+#include <string.h>
 #include <algorithm>
+#include <cstdint>
+#include <utility>
 
-#include "rtc_base/format_macros.h"
+#include "absl/types/optional.h"
+#include "rtc_base/checks.h"
+#include "rtc_base/socket_address.h"
 
 namespace webrtc {
 namespace test {
@@ -105,9 +111,9 @@ rtc::CopyOnWriteBuffer FeedbackToBuffer(
                                 sizeof(RawFeedbackReportPacket));
 }
 
-SimulatedSender::SimulatedSender(NetworkNode* send_node,
-                                 uint64_t send_receiver_id)
-    : send_node_(send_node), send_receiver_id_(send_receiver_id) {}
+SimulatedSender::SimulatedSender(EmulatedNetworkNode* send_node,
+                                 rtc::IPAddress send_receiver_ip)
+    : send_node_(send_node), send_receiver_address_(send_receiver_ip, 0) {}
 
 SimulatedSender::~SimulatedSender() {}
 
@@ -197,23 +203,21 @@ void SimulatedSender::Update(NetworkControlUpdate update) {
 }
 
 SimulatedFeedback::SimulatedFeedback(SimulatedTimeClientConfig config,
-                                     uint64_t return_receiver_id,
-                                     NetworkNode* return_node)
+                                     rtc::IPAddress return_receiver_ip,
+                                     EmulatedNetworkNode* return_node)
     : config_(config),
-      return_receiver_id_(return_receiver_id),
+      return_receiver_address_(return_receiver_ip, 0),
       return_node_(return_node) {}
 
 // Polls receiver side for a feedback report and sends it to the stream sender
 // via return_node_,
-bool SimulatedFeedback::TryDeliverPacket(rtc::CopyOnWriteBuffer packet,
-                                         uint64_t receiver,
-                                         Timestamp at_time) {
+void SimulatedFeedback::OnPacketReceived(EmulatedIpPacket packet) {
   int64_t sequence_number;
   memcpy(&sequence_number, packet.cdata(), sizeof(sequence_number));
-  receive_times_.insert({sequence_number, at_time});
+  receive_times_.insert({sequence_number, packet.arrival_time});
   if (last_feedback_time_.IsInfinite())
-    last_feedback_time_ = at_time;
-  if (at_time >= last_feedback_time_ + config_.feedback.interval) {
+    last_feedback_time_ = packet.arrival_time;
+  if (packet.arrival_time >= last_feedback_time_ + config_.feedback.interval) {
     SimpleFeedbackReportPacket report;
     for (; next_feedback_seq_num_ <= sequence_number;
          ++next_feedback_seq_num_) {
@@ -224,78 +228,81 @@ bool SimulatedFeedback::TryDeliverPacket(rtc::CopyOnWriteBuffer packet,
                                                     it->second});
         receive_times_.erase(it);
       }
-      if (receive_times_.size() >= RawFeedbackReportPacket::MAX_FEEDBACKS) {
-        return_node_->TryDeliverPacket(FeedbackToBuffer(report),
-                                       return_receiver_id_, at_time);
+      if (report.receive_times.size() >=
+          RawFeedbackReportPacket::MAX_FEEDBACKS) {
+        return_node_->OnPacketReceived(
+            EmulatedIpPacket(packet.to, return_receiver_address_,
+                             FeedbackToBuffer(report), packet.arrival_time));
         report = SimpleFeedbackReportPacket();
       }
     }
     if (!report.receive_times.empty())
-      return_node_->TryDeliverPacket(FeedbackToBuffer(report),
-                                     return_receiver_id_, at_time);
-    last_feedback_time_ = at_time;
+      return_node_->OnPacketReceived(
+          EmulatedIpPacket(packet.to, return_receiver_address_,
+                           FeedbackToBuffer(report), packet.arrival_time));
+    last_feedback_time_ = packet.arrival_time;
   }
-  return true;
 }
 
 SimulatedTimeClient::SimulatedTimeClient(
-    std::string log_filename,
+    TimeController* time_controller,
+    std::unique_ptr<LogWriterFactoryInterface> log_writer_factory,
     SimulatedTimeClientConfig config,
     std::vector<PacketStreamConfig> stream_configs,
-    std::vector<NetworkNode*> send_link,
-    std::vector<NetworkNode*> return_link,
-    uint64_t send_receiver_id,
-    uint64_t return_receiver_id,
+    std::vector<EmulatedNetworkNode*> send_link,
+    std::vector<EmulatedNetworkNode*> return_link,
+    rtc::IPAddress send_receiver_ip,
+    rtc::IPAddress return_receiver_ip,
     Timestamp at_time)
-    : network_controller_factory_(log_filename, config.transport),
+    : log_writer_factory_(std::move(log_writer_factory)),
+      network_controller_factory_(time_controller,
+                                  log_writer_factory_.get(),
+                                  config.transport),
       send_link_(send_link),
       return_link_(return_link),
-      sender_(send_link.front(), send_receiver_id),
-      feedback_(config, return_receiver_id, return_link.front()) {
+      sender_(send_link.front(), send_receiver_ip),
+      feedback_(config, return_receiver_ip, return_link.front()) {
   current_contraints_.at_time = at_time;
   current_contraints_.starting_rate = config.transport.rates.start_rate;
   current_contraints_.min_data_rate = config.transport.rates.min_rate;
   current_contraints_.max_data_rate = config.transport.rates.max_rate;
   NetworkControllerConfig initial_config;
   initial_config.constraints = current_contraints_;
+  initial_config.stream_based_config.max_padding_rate =
+      config.transport.rates.max_padding_rate;
   congestion_controller_ = network_controller_factory_.Create(initial_config);
   for (auto& stream_config : stream_configs)
     packet_streams_.emplace_back(new PacketStream(stream_config));
-  NetworkNode::Route(send_receiver_id, send_link, &feedback_);
-  NetworkNode::Route(return_receiver_id, return_link, this);
+  EmulatedNetworkNode::CreateRoute(send_receiver_ip, send_link, &feedback_);
+  EmulatedNetworkNode::CreateRoute(return_receiver_ip, return_link, this);
 
   CongestionProcess(at_time);
   network_controller_factory_.LogCongestionControllerStats(at_time);
-  if (!log_filename.empty()) {
-    std::string packet_log_name = log_filename + ".packets.txt";
-    packet_log_ = fopen(packet_log_name.c_str(), "w");
-    fprintf(packet_log_,
-            "transport_seq packet_size send_time recv_time feed_time\n");
+  if (log_writer_factory_) {
+    packet_log_ = log_writer_factory_->Create(".packets.txt");
+    packet_log_->Write(
+        "transport_seq packet_size send_time recv_time feed_time\n");
   }
 }
 
 // Pulls feedback reports from sender side based on the recieved feedback
 // packet. Updates congestion controller with the resulting report.
-bool SimulatedTimeClient::TryDeliverPacket(rtc::CopyOnWriteBuffer raw_buffer,
-                                           uint64_t receiver,
-                                           Timestamp at_time) {
-  auto report =
-      sender_.PullFeedbackReport(FeedbackFromBuffer(raw_buffer), at_time);
+void SimulatedTimeClient::OnPacketReceived(EmulatedIpPacket packet) {
+  auto report = sender_.PullFeedbackReport(FeedbackFromBuffer(packet.data),
+                                           packet.arrival_time);
   for (PacketResult& feedback : report.packet_feedbacks) {
     if (packet_log_)
-      fprintf(packet_log_, "%" PRId64 " %" PRId64 " %.3lf %.3lf %.3lf\n",
-              feedback.sent_packet.sequence_number,
-              feedback.sent_packet.size.bytes(),
-              feedback.sent_packet.send_time.seconds<double>(),
-              feedback.receive_time.seconds<double>(),
-              at_time.seconds<double>());
+      LogWriteFormat(packet_log_.get(),
+                     "%" PRId64 " %" PRId64 " %.3lf %.3lf %.3lf\n",
+                     feedback.sent_packet.sequence_number,
+                     feedback.sent_packet.size.bytes(),
+                     feedback.sent_packet.send_time.seconds<double>(),
+                     feedback.receive_time.seconds<double>(),
+                     packet.arrival_time.seconds<double>());
   }
   Update(congestion_controller_->OnTransportPacketsFeedback(report));
-  return true;
 }
 SimulatedTimeClient::~SimulatedTimeClient() {
-  if (packet_log_)
-    fclose(packet_log_);
 }
 
 void SimulatedTimeClient::Update(NetworkControlUpdate update) {
@@ -322,9 +329,10 @@ void SimulatedTimeClient::CongestionProcess(Timestamp at_time) {
 
 void SimulatedTimeClient::PacerProcess(Timestamp at_time) {
   ProcessFrames(at_time);
-  for (auto to_send : sender_.PaceAndPullSendPackets(at_time)) {
-    sender_.send_node_->TryDeliverPacket(to_send.data,
-                                         sender_.send_receiver_id_, at_time);
+  for (const auto& to_send : sender_.PaceAndPullSendPackets(at_time)) {
+    sender_.send_node_->OnPacketReceived(EmulatedIpPacket(
+        /*from=*/rtc::SocketAddress(), sender_.send_receiver_address_,
+        to_send.data, at_time));
     Update(congestion_controller_->OnSentPacket(to_send.send_info));
   }
 }
@@ -356,6 +364,10 @@ DataRate SimulatedTimeClient::link_capacity() const {
 
 double SimulatedTimeClient::target_rate_kbps() const {
   return target_rate_.kbps<double>();
+}
+
+DataRate SimulatedTimeClient::padding_rate() const {
+  return sender_.pacer_config_.pad_rate();
 }
 
 }  // namespace test

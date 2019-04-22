@@ -37,6 +37,10 @@ class TestBrowserDialog : public TestBrowserUi {
   // Widget::CanClose() and DialogDelegate::Close().
   virtual bool AlwaysCloseAsynchronously();
 
+  // Get the name of a non-dialog window that should be included in testing.
+  // VerifyUi() only considers dialog windows and windows with a matching name.
+  virtual std::string GetNonDialogName();
+
  private:
 #if defined(TOOLKIT_VIEWS)
   // Stores the current widgets in |widgets_|.

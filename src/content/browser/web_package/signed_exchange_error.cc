@@ -13,23 +13,29 @@ SignedExchangeError::GetFieldFromSignatureVerifierResult(
   switch (verify_result) {
     case SignedExchangeSignatureVerifier::Result::kSuccess:
       return base::nullopt;
-    case SignedExchangeSignatureVerifier::Result::kErrNoCertificate:
-      return base::nullopt;
-    case SignedExchangeSignatureVerifier::Result::kErrNoCertificateSHA256:
-      return Field::kSignatureCertSha256;
     case SignedExchangeSignatureVerifier::Result::kErrCertificateSHA256Mismatch:
       return Field::kSignatureCertSha256;
-    case SignedExchangeSignatureVerifier::Result::kErrInvalidSignatureFormat:
-      return base::nullopt;
     case SignedExchangeSignatureVerifier::Result::
         kErrSignatureVerificationFailed:
       return Field::kSignatureSig;
-    case SignedExchangeSignatureVerifier::Result::kErrInvalidSignatureIntegrity:
-      return Field::kSignatureIintegrity;
-    case SignedExchangeSignatureVerifier::Result::kErrInvalidTimestamp:
-      return Field::kSignatureTimestamps;
     case SignedExchangeSignatureVerifier::Result::kErrUnsupportedCertType:
       return Field::kSignatureCertUrl;
+    case SignedExchangeSignatureVerifier::Result::kErrValidityPeriodTooLong:
+    case SignedExchangeSignatureVerifier::Result::kErrFutureDate:
+    case SignedExchangeSignatureVerifier::Result::kErrExpired:
+      return Field::kSignatureTimestamps;
+
+    // Deprecated error results.
+    case SignedExchangeSignatureVerifier::Result::kErrNoCertificate_deprecated:
+    case SignedExchangeSignatureVerifier::Result::
+        kErrNoCertificateSHA256_deprecated:
+    case SignedExchangeSignatureVerifier::Result::
+        kErrInvalidSignatureFormat_deprecated:
+    case SignedExchangeSignatureVerifier::Result::
+        kErrInvalidSignatureIntegrity_deprecated:
+    case SignedExchangeSignatureVerifier::Result::
+        kErrInvalidTimestamp_deprecated:
+      NOTREACHED();
   }
 
   NOTREACHED();

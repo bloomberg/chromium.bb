@@ -34,14 +34,16 @@ using ScopedPathUnlinker =
 bool CheckFDAccessMode(int fd, int expected_mode) {
   int fd_status = fcntl(fd, F_GETFL);
   if (fd_status == -1) {
-    DPLOG(ERROR) << "fcntl(" << fd << ", F_GETFL) failed";
+    // TODO(crbug.com/838365): convert to DLOG when bug fixed.
+    PLOG(ERROR) << "fcntl(" << fd << ", F_GETFL) failed";
     return false;
   }
 
   int mode = fd_status & O_ACCMODE;
   if (mode != expected_mode) {
-    DLOG(ERROR) << "Descriptor access mode (" << mode
-                << ") differs from expected (" << expected_mode << ")";
+    // TODO(crbug.com/838365): convert to DLOG when bug fixed.
+    LOG(ERROR) << "Descriptor access mode (" << mode
+               << ") differs from expected (" << expected_mode << ")";
     return false;
   }
 
@@ -106,6 +108,16 @@ PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Take(
   }
 
   return PlatformSharedMemoryRegion(std::move(handle), mode, size, guid);
+}
+
+// static
+PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Take(
+    ScopedFD handle,
+    Mode mode,
+    size_t size,
+    const UnguessableToken& guid) {
+  CHECK_NE(mode, Mode::kWritable);
+  return Take(ScopedFDPair(std::move(handle), ScopedFD()), mode, size, guid);
 }
 
 // static
@@ -249,20 +261,33 @@ PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Create(Mode mode,
     }
   }
 
-  // Get current size.
-  struct stat stat = {};
-  if (fstat(fd.get(), &stat) != 0)
+#if defined(OS_LINUX)
+  // Unlike ftruncate(), fallocate() always allocates disk space, so we get an
+  // error if the disk is full. https://crbug.com/951431
+  if (HANDLE_EINTR(fallocate(fd.get(), 0, 0, size)) != 0) {
+    PLOG(ERROR) << "Failed to reserve " << size << " bytes for shared memory.";
     return {};
-  const size_t current_size = stat.st_size;
-  if (current_size != size) {
-    if (HANDLE_EINTR(ftruncate(fd.get(), size)) != 0)
-      return {};
   }
+#else
+  // fallocate() is a Linux-specific syscall, fallback to ftruncate().
+  if (HANDLE_EINTR(ftruncate(fd.get(), size)) != 0) {
+    DPLOG(ERROR) << "ftruncate() failed";
+    return {};
+  }
+#endif
 
   if (readonly_fd.is_valid()) {
+    struct stat stat = {};
+    if (fstat(fd.get(), &stat) != 0) {
+      DPLOG(ERROR) << "fstat(fd) failed";
+      return {};
+    }
+
     struct stat readonly_stat = {};
-    if (fstat(readonly_fd.get(), &readonly_stat))
-      NOTREACHED();
+    if (fstat(readonly_fd.get(), &readonly_stat) != 0) {
+      DPLOG(ERROR) << "fstat(readonly_fd) failed";
+      return {};
+    }
 
     if (stat.st_dev != readonly_stat.st_dev ||
         stat.st_ino != readonly_stat.st_ino) {
@@ -291,7 +316,8 @@ bool PlatformSharedMemoryRegion::CheckPlatformHandlePermissionsCorrespondToMode(
 
   // The second descriptor must be invalid in kReadOnly and kUnsafe modes.
   if (handle.readonly_fd != -1) {
-    DLOG(ERROR) << "The second descriptor must be invalid";
+    // TODO(crbug.com/838365): convert to DLOG when bug fixed.
+    LOG(ERROR) << "The second descriptor must be invalid";
     return false;
   }
 

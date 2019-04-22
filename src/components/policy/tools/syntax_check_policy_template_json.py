@@ -69,6 +69,13 @@ LEGACY_EMBEDDED_JSON_WHITELIST = [
     # complex schemas using stringified JSON - instead, store them as dicts.
 ]
 
+# 100 MiB upper limit on the total device policy external data max size limits
+# due to the security reasons.
+# You can increase this limit if you're introducing new external data type
+# device policy, but be aware that too heavy policies could result in user
+# profiles not having enough space on the device.
+TOTAL_DEVICE_POLICY_EXTERNAL_DATA_MAX_SIZE = 1024 * 1024 * 100
+
 
 class PolicyTemplateChecker(object):
 
@@ -238,6 +245,22 @@ class PolicyTemplateChecker(object):
                    'store it in a dict and define it in "schema".') %
                   policy.get('name'))
 
+  def _CheckTotalDevicePolicyExternalDataMaxSize(self, policy_definitions):
+    total_device_policy_external_data_max_size = 0
+    for policy in policy_definitions:
+      if (policy.get('device_only', False) and
+          self._CheckContains(policy, 'type', str) == 'external'):
+        total_device_policy_external_data_max_size += self._CheckContains(
+            policy, 'max_size', int)
+    if (total_device_policy_external_data_max_size >
+        TOTAL_DEVICE_POLICY_EXTERNAL_DATA_MAX_SIZE):
+      self._Error(
+          ('Total sum of device policy external data maximum size limits ' +
+           'should not exceed %d bytes, current sum is %d bytes.') %
+          (TOTAL_DEVICE_POLICY_EXTERNAL_DATA_MAX_SIZE,
+           total_device_policy_external_data_max_size))
+
+
   # Returns True if the example value for a policy seems to contain JSON
   # embedded inside a string. Simply checks if strings start with '{', so it
   # doesn't flag numbers (which are valid JSON) but it does flag both JSON
@@ -285,8 +308,19 @@ class PolicyTemplateChecker(object):
     # Each policy must have a caption message.
     self._CheckContains(policy, 'caption', str)
 
-    # Each policy must have a description message.
-    self._CheckContains(policy, 'desc', str)
+    # Each policy must have a description message shorter than 4096 characters
+    # in all its translations (ADM format limitation).
+    desc = self._CheckContains(policy, 'desc', str)
+    if len(desc.decode("UTF-8")) > 4096:
+      self._Error(
+          'The length of the description is more than the limit of 4096'
+          ' characters long', 'policy', policy.get('name'))
+    # Warning length picked right above the largest existing policy.
+    elif len(desc.decode("UTF-8")) > 3100:
+      self.warning_count += 1
+      print('In policy %s: Warning: Length of description is more than 3100 '
+            'characters. It might exceed limit of 4096 characters in one of '
+            'its translations.' % (policy.get('name')))
 
     # If 'label' is present, it must be a string.
     self._CheckContains(policy, 'label', str, True)
@@ -686,6 +720,7 @@ class PolicyTemplateChecker(object):
       self._CheckPolicyIDs(policy_ids, deleted_policy_ids)
       if highest_id is not None:
         self._CheckHighestId(policy_ids, highest_id)
+      self._CheckTotalDevicePolicyExternalDataMaxSize(policy_definitions)
 
     # Made it as a dict (policy_name -> True) to reuse _CheckContains.
     policy_names = {

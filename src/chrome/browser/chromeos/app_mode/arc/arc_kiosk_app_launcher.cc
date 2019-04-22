@@ -9,10 +9,13 @@
 
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/window_pin_type.mojom.h"
+#include "ash/shell.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
+#include "components/arc/arc_util.h"
 #include "components/arc/metrics/arc_metrics_constants.h"
 #include "ui/aura/env.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/events/event_constants.h"
 
 namespace chromeos {
@@ -23,7 +26,10 @@ ArcKioskAppLauncher::ArcKioskAppLauncher(content::BrowserContext* context,
                                          Delegate* delegate)
     : app_id_(app_id), prefs_(prefs), delegate_(delegate) {
   prefs_->AddObserver(this);
-  aura::Env::GetInstance()->AddObserver(this);
+  // TODO(mash): Find another way to observe for ARC++ window creation.
+  // https://crbug.com/887156
+  if (!features::IsMultiProcessMash())
+    ash::Shell::Get()->aura_env()->AddObserver(this);
   // Launching the app by app id in landscape mode and in non-touch mode.
   arc::LaunchApp(context, app_id_, ui::EF_NONE,
                  arc::UserInteractionType::NOT_USER_INITIATED);
@@ -77,7 +83,7 @@ void ArcKioskAppLauncher::OnWindowDestroying(aura::Window* window) {
 
 bool ArcKioskAppLauncher::CheckAndPinWindow(aura::Window* const window) {
   DCHECK_GE(task_id_, 0);
-  if (ArcAppWindowLauncherController::GetWindowTaskId(window) != task_id_)
+  if (arc::GetWindowTaskId(window) != task_id_)
     return false;
   // Stop observing as target window is already found.
   StopObserving();
@@ -89,7 +95,8 @@ bool ArcKioskAppLauncher::CheckAndPinWindow(aura::Window* const window) {
 }
 
 void ArcKioskAppLauncher::StopObserving() {
-  aura::Env::GetInstance()->RemoveObserver(this);
+  if (!features::IsMultiProcessMash())
+    ash::Shell::Get()->aura_env()->RemoveObserver(this);
   for (auto* window : windows_)
     window->RemoveObserver(this);
   windows_.clear();

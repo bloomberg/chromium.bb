@@ -33,7 +33,9 @@ class MEDIA_EXPORT DataSource {
                     const DataSource::ReadCB& read_cb) = 0;
 
   // Stops the DataSource. Once this is called all future Read() calls will
-  // return an error.
+  // return an error. This is a synchronous call and may be called from any
+  // thread. Once called, the DataSource may no longer be used and should be
+  // destructed shortly thereafter.
   virtual void Stop() = 0;
 
   // Similar to Stop(), but only aborts current reads and not future reads.
@@ -50,6 +52,12 @@ class MEDIA_EXPORT DataSource {
   // Notify the DataSource of the bitrate of the media.
   // Values of |bitrate| <= 0 are invalid and should be ignored.
   virtual void SetBitrate(int bitrate) = 0;
+
+  // Assume fully bufferred by default.
+  virtual bool AssumeFullyBuffered() const;
+
+  // By default this just returns GetSize().
+  virtual int64_t GetMemoryUsage();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DataSource);

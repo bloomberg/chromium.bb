@@ -17,6 +17,7 @@
 #include "src/tracing/test/mock_consumer.h"
 
 #include "perfetto/tracing/core/trace_config.h"
+#include "perfetto/tracing/core/trace_stats.h"
 #include "src/base/test/test_task_runner.h"
 
 using ::testing::_;
@@ -38,8 +39,8 @@ MockConsumer::~MockConsumer() {
   task_runner_->RunUntilCheckpoint(checkpoint_name);
 }
 
-void MockConsumer::Connect(TracingService* svc) {
-  service_endpoint_ = svc->ConnectConsumer(this);
+void MockConsumer::Connect(TracingService* svc, uid_t uid) {
+  service_endpoint_ = svc->ConnectConsumer(this, uid);
   static int i = 0;
   auto checkpoint_name = "on_consumer_connect_" + std::to_string(i++);
   auto on_connect = task_runner_->CreateCheckpoint(checkpoint_name);
@@ -54,6 +55,10 @@ void MockConsumer::EnableTracing(const TraceConfig& trace_config,
 
 void MockConsumer::StartTracing() {
   service_endpoint_->StartTracing();
+}
+
+void MockConsumer::ChangeTraceConfig(const TraceConfig& trace_config) {
+  service_endpoint_->ChangeTraceConfig(trace_config);
 }
 
 void MockConsumer::DisableTracing() {
@@ -112,6 +117,48 @@ std::vector<protos::TracePacket> MockConsumer::ReadBuffers() {
   service_endpoint_->ReadBuffers();
   task_runner_->RunUntilCheckpoint(checkpoint_name);
   return decoded_packets;
+}
+
+void MockConsumer::GetTraceStats() {
+  service_endpoint_->GetTraceStats();
+}
+
+void MockConsumer::WaitForTraceStats(bool success) {
+  static int i = 0;
+  auto checkpoint_name = "on_trace_stats_" + std::to_string(i++);
+  auto on_trace_stats = task_runner_->CreateCheckpoint(checkpoint_name);
+  auto result_callback = [on_trace_stats](bool, const TraceStats&) {
+    on_trace_stats();
+  };
+  if (success) {
+    EXPECT_CALL(*this,
+                OnTraceStats(true, testing::Property(&TraceStats::total_buffers,
+                                                     testing::Gt(0u))))
+        .WillOnce(Invoke(result_callback));
+  } else {
+    EXPECT_CALL(*this, OnTraceStats(false, _))
+        .WillOnce(Invoke(result_callback));
+  }
+  task_runner_->RunUntilCheckpoint(checkpoint_name);
+}
+
+void MockConsumer::ObserveEvents(uint32_t enabled_event_types) {
+  service_endpoint_->ObserveEvents(enabled_event_types);
+}
+
+ObservableEvents MockConsumer::WaitForObservableEvents() {
+  ObservableEvents events;
+  static int i = 0;
+  std::string checkpoint_name = "on_observable_events_" + std::to_string(i++);
+  auto on_observable_events = task_runner_->CreateCheckpoint(checkpoint_name);
+  EXPECT_CALL(*this, OnObservableEvents(_))
+      .WillOnce(Invoke([&events, on_observable_events](
+                           const ObservableEvents& observable_events) {
+        events = observable_events;
+        on_observable_events();
+      }));
+  task_runner_->RunUntilCheckpoint(checkpoint_name);
+  return events;
 }
 
 }  // namespace perfetto

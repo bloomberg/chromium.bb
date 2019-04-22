@@ -4,7 +4,7 @@
 
 #include "net/ssl/ssl_cipher_suite_names.h"
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -126,7 +126,7 @@ TEST(CipherSuiteNamesTest, ParseSSLCipherStringFails) {
     "0xBEEFY",
   };
 
-  for (size_t i = 0; i < arraysize(cipher_strings); ++i) {
+  for (size_t i = 0; i < base::size(cipher_strings); ++i) {
     uint16_t cipher_suite = 0;
     EXPECT_FALSE(ParseSSLCipherString(cipher_strings[i], &cipher_suite));
   }

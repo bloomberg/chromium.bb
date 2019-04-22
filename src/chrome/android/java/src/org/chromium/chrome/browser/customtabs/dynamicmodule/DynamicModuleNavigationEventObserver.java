@@ -20,7 +20,7 @@ import android.text.TextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.NavigationEntry;
 
@@ -113,7 +113,7 @@ public class DynamicModuleNavigationEventObserver extends EmptyTabObserver {
     }
 
     @Override
-    public void onShown(Tab tab, @TabModel.TabSelectionType int type) {
+    public void onShown(Tab tab, @TabSelectionType int type) {
         notifyOnNavigationEvent(TAB_SHOWN, getExtrasBundleForNavigationEvent(tab));
     }
 

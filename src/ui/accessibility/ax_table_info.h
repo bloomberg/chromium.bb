@@ -6,9 +6,10 @@
 #define UI_ACCESSIBILITY_AX_TABLE_INFO_H_
 
 #include <set>
+#include <unordered_map>
 #include <vector>
 
-#include "base/containers/hash_tables.h"
+#include "base/optional.h"
 #include "ui/accessibility/ax_export.h"
 
 namespace ui {
@@ -62,6 +63,9 @@ class AX_EXPORT AXTableInfo {
   // All header cells.
   std::vector<int32_t> all_headers;
 
+  // The id of the element with the caption tag or ARIA role.
+  int32_t caption_id;
+
   // 2-D array of [row][column] -> cell node ID.
   // This may contain duplicates if there is a rowspan or
   // colspan. The entry is empty (zero) only if the cell
@@ -80,12 +84,15 @@ class AX_EXPORT AXTableInfo {
   std::vector<AXNode*> extra_mac_nodes;
 
   // Map from each cell's node ID to its index in unique_cell_ids.
-  base::hash_map<int32_t, int32_t> cell_id_to_index;
+  std::unordered_map<int32_t, int32_t> cell_id_to_index;
+
+  // Map from each row's node ID to its row index.
+  std::unordered_map<int32_t, int32_t> row_id_to_index;
 
   // The ARIA row count and column count, if any ARIA table or grid
   // attributes are used in the table at all.
-  int32_t aria_row_count = 0;
-  int32_t aria_col_count = 0;
+  base::Optional<int32_t> aria_row_count = 0;
+  base::Optional<int32_t> aria_col_count = 0;
 
  private:
   AXTableInfo(AXTree* tree, AXNode* table_node);

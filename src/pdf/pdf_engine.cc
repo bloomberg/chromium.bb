@@ -6,12 +6,12 @@
 
 namespace chrome_pdf {
 
-PDFEngine::PageFeatures::PageFeatures(){};
+PDFEngine::PageFeatures::PageFeatures() {}
 
 PDFEngine::PageFeatures::PageFeatures(const PageFeatures& other)
     : index(other.index), annotation_types(other.annotation_types) {}
 
-PDFEngine::PageFeatures::~PageFeatures(){};
+PDFEngine::PageFeatures::~PageFeatures() {}
 
 bool PDFEngine::PageFeatures::IsInitialized() const {
   return index >= 0;

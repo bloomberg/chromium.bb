@@ -69,9 +69,6 @@ component("crypto") {
     "symmetric_key.h",
   ]
 
-  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
-
   deps = [
     ":platform",
     "//base",
@@ -153,8 +150,6 @@ test("crypto_unittests") {
       "nss_util_unittest.cc",
     ]
   }
-
-  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
   deps = [
     ":crypto",

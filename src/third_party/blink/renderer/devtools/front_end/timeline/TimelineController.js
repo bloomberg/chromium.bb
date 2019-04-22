@@ -54,9 +54,8 @@ Timeline.TimelineController = class {
       return 'disabled-by-default-' + category;
     }
     const categoriesArray = [
-      '-*', 'devtools.timeline', 'v8.execute', disabledByDefault('devtools.timeline'),
-      disabledByDefault('devtools.timeline.frame'), SDK.TracingModel.TopLevelEventCategory,
-      TimelineModel.TimelineModel.Category.Console, TimelineModel.TimelineModel.Category.UserTiming
+      '-*', 'devtools.timeline', disabledByDefault('devtools.timeline'), disabledByDefault('devtools.timeline.frame'),
+      'v8.execute', TimelineModel.TimelineModel.Category.Console, TimelineModel.TimelineModel.Category.UserTiming
     ];
     categoriesArray.push(TimelineModel.TimelineModel.Category.LatencyInfo);
 
@@ -65,7 +64,7 @@ Timeline.TimelineController = class {
 
     if (Runtime.experiments.isEnabled('timelineV8RuntimeCallStats') && options.enableJSSampling)
       categoriesArray.push(disabledByDefault('v8.runtime_stats_sampling'));
-    if (Runtime.experiments.isEnabled('timelineTracingJSProfile') && options.enableJSSampling) {
+    if (!Runtime.queryParam('timelineTracingJSProfileDisabled') && options.enableJSSampling) {
       categoriesArray.push(disabledByDefault('v8.cpu_profiler'));
       if (Common.moduleSetting('highResolutionCpuProfiling').get())
         categoriesArray.push(disabledByDefault('v8.cpu_profiler.hires'));
@@ -175,7 +174,7 @@ Timeline.TimelineController = class {
    */
   async _startRecordingWithCategories(categories, enableJSSampling) {
     SDK.targetManager.suspendAllTargets();
-    if (enableJSSampling && !Runtime.experiments.isEnabled('timelineTracingJSProfile'))
+    if (enableJSSampling && Runtime.queryParam('timelineTracingJSProfileDisabled'))
       await this._startProfilingOnAllModels();
     if (!this._tracingManager)
       return;

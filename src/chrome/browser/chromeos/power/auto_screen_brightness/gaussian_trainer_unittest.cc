@@ -10,7 +10,7 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/monotone_cubic_spline.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/utils.h"
-#include "chromeos/chromeos_features.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -50,6 +50,7 @@ class GaussianTrainerTest : public testing::Test {
       {"brightness_bound_scale", "100"},
       {"brightness_bound_offset", "100"},
       {"brightness_step_size", "100"},
+      {"model_brightness_step_size", "100"},
       {"sigma", "0.1"},
       {"low_log_lux_threshold", "0"},
       {"min_grad_low_lux", "0"},
@@ -193,6 +194,63 @@ TEST_F(GaussianTrainerTest, BrightnessStepSize) {
   // Next train the curve with a smaller |brightness_step_size|. Hence increase
   // in brightness adjustment is effectively capped.
   params["brightness_step_size"] = "0.2";
+  ResetModelWithParams(params);
+  EXPECT_TRUE(
+      gaussian_trainer_->SetInitialCurves(global_curve_, personal_curve_));
+
+  const MonotoneCubicSpline trained_curve2 = gaussian_trainer_->Train({data});
+  const std::vector<double> new_log_lux2 = trained_curve2.GetControlPointsX();
+  const std::vector<double> new_brightness2 =
+      trained_curve2.GetControlPointsY();
+
+  EXPECT_EQ(new_log_lux1.size(), log_lux_.size());
+  EXPECT_EQ(new_log_lux2.size(), log_lux_.size());
+
+  for (size_t i = 0; i < personal_brightness_.size(); ++i) {
+    EXPECT_DOUBLE_EQ(new_log_lux1[i], log_lux_[i]);
+    EXPECT_DOUBLE_EQ(new_log_lux2[i], log_lux_[i]);
+
+    if (i == ref_index_) {
+      // At |ref_index_| brightness of |trained_curve1| should be strictly
+      // bigger because it has a larger step size.
+      EXPECT_GT(new_brightness1[i], new_brightness2[i]);
+      EXPECT_GT(new_brightness2[i], personal_brightness_[i]);
+    } else {
+      // At other points, |trained_curve1| should be not smaller than
+      // |trained_curve2|. The actual difference depends on |sigma|.
+      EXPECT_GE(new_brightness1[i], new_brightness2[i]);
+      EXPECT_GE(new_brightness2[i], personal_brightness_[i]);
+    }
+  }
+}
+
+// Same as BrightnessStepSize test, except this test checks the effect of
+// |model_brightness_step_size| on the training data point
+// and hence the trained curve. A smaller value would lead to a narrower
+// brightness change that is considered plausible. Hence changes on brightness
+// curve will be smaller too.
+TEST_F(GaussianTrainerTest, ModelBrightnessStepSize) {
+  // Brightness change occurs at a control point (|ref_log_lux_|).
+  const TrainingDataPoint data = {ref_personal_brightness_ + 1,
+                                  ref_personal_brightness_ + 20, ref_log_lux_,
+                                  tick_clock_.NowTicks()};
+
+  // First train the curve with |model_brightness_step_size| = 100. A value of
+  // 100 means the difference between model brightness and target brightness is
+  // essentially unbounded.
+  std::map<std::string, std::string> params = default_params_;
+  ResetModelWithParams(params);
+  EXPECT_TRUE(
+      gaussian_trainer_->SetInitialCurves(global_curve_, personal_curve_));
+
+  const MonotoneCubicSpline trained_curve1 = gaussian_trainer_->Train({data});
+  const std::vector<double> new_log_lux1 = trained_curve1.GetControlPointsX();
+  const std::vector<double> new_brightness1 =
+      trained_curve1.GetControlPointsY();
+
+  // Next train the curve with a smaller |model_brightness_step_size|. Hence
+  // increase in brightness adjustment is effectively capped.
+  params["model_brightness_step_size"] = "0.2";
   ResetModelWithParams(params);
   EXPECT_TRUE(
       gaussian_trainer_->SetInitialCurves(global_curve_, personal_curve_));

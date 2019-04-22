@@ -11,12 +11,12 @@
 #include <string>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/strings/string16.h"
-#include "storage/common/storage_common_export.h"
 
 namespace storage {
 
-class STORAGE_COMMON_EXPORT DatabaseConnections {
+class COMPONENT_EXPORT(STORAGE_COMMON) DatabaseConnections {
  public:
   DatabaseConnections();
   ~DatabaseConnections();

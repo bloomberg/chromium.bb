@@ -8,6 +8,7 @@
 
 #include "base/feature_list.h"
 #include "base/i18n/icu_util.h"
+#include "base/test/test_timeouts.h"
 #include "gin/v8_initializer.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
 
@@ -33,6 +34,7 @@ Env::Env() {
   base::CommandLine::Init(0, nullptr);
   base::FeatureList::InitializeInstance(std::string(), std::string());
   base::i18n::InitializeICU();
+  TestTimeouts::Initialize();
 
   blink::WebRuntimeFeatures::EnableExperimentalFeatures(true);
   blink::WebRuntimeFeatures::EnableTestOnlyFeatures(true);
@@ -42,7 +44,6 @@ Env::Env() {
   gin::V8Initializer::LoadV8Natives();
 #endif
   gin::IsolateHolder::Initialize(gin::IsolateHolder::kStrictMode,
-                                 gin::IsolateHolder::kStableV8Extras,
                                  gin::ArrayBufferAllocator::SharedInstance());
 
   adapter = std::make_unique<RenderViewTestAdapter>();

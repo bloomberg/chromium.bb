@@ -40,6 +40,6 @@ struct GFX_EXPORT DecoratedText {
   std::vector<RangedAttribute> attributes;
 };
 
-};  // namespace gfx
+}  // namespace gfx
 
 #endif  // UI_GFX_DECORATED_TEXT_H_

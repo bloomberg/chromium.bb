@@ -13,6 +13,7 @@
 #include "ash/shell/example_factory.h"
 #include "ash/shell/toplevel_window.h"
 #include "ash/wm/test_child_modal_parent.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -50,7 +51,7 @@ class ModalWindow : public views::WidgetDelegateView,
       : modal_type_(modal_type),
         color_(kColors[g_color_index]),
         open_button_(MdTextButton::Create(this, base::ASCIIToUTF16("Moar!"))) {
-    ++g_color_index %= arraysize(kColors);
+    ++g_color_index %= base::size(kColors);
     AddChildView(open_button_);
   }
   ~ModalWindow() override = default;
@@ -100,7 +101,7 @@ class ModalWindow : public views::WidgetDelegateView,
 class NonModalTransient : public views::WidgetDelegateView {
  public:
   NonModalTransient() : color_(kColors[g_color_index]) {
-    ++g_color_index %= arraysize(kColors);
+    ++g_color_index %= base::size(kColors);
   }
   ~NonModalTransient() override = default;
 
@@ -162,17 +163,21 @@ void AddViewToLayout(views::GridLayout* layout, views::View* view) {
 
 }  // namespace
 
-void InitWindowTypeLauncher(const base::Closure& show_views_examples_callback) {
+void InitWindowTypeLauncher(
+    base::RepeatingClosure show_views_examples_callback,
+    base::RepeatingClosure create_embedded_browser_callback) {
   views::Widget* widget = views::Widget::CreateWindowWithContextAndBounds(
-      new WindowTypeLauncher(show_views_examples_callback),
-      Shell::GetPrimaryRootWindow(), gfx::Rect(120, 150, 300, 410));
+      new WindowTypeLauncher(show_views_examples_callback,
+                             create_embedded_browser_callback),
+      Shell::GetPrimaryRootWindow(), gfx::Rect(120, 120, 300, 410));
   widget->GetNativeView()->SetName("WindowTypeLauncher");
   ::wm::SetShadowElevation(widget->GetNativeView(), kWindowShadowElevation);
   widget->Show();
 }
 
 WindowTypeLauncher::WindowTypeLauncher(
-    const base::Closure& show_views_examples_callback)
+    base::RepeatingClosure show_views_examples_callback,
+    base::RepeatingClosure create_embedded_browser_callback)
     : create_button_(
           MdTextButton::Create(this, base::ASCIIToUTF16("Create Window"))),
       create_nonresizable_button_(MdTextButton::Create(
@@ -206,7 +211,11 @@ WindowTypeLauncher::WindowTypeLauncher(
       show_web_notification_(MdTextButton::Create(
           this,
           base::ASCIIToUTF16("Show a web/app notification"))),
-      show_views_examples_callback_(show_views_examples_callback) {
+      embedded_browser_button_(
+          MdTextButton::Create(this, base::ASCIIToUTF16("Embedded Browser"))),
+      show_views_examples_callback_(std::move(show_views_examples_callback)),
+      create_embedded_browser_callback_(
+          std::move(create_embedded_browser_callback)) {
   views::GridLayout* layout =
       SetLayoutManager(std::make_unique<views::GridLayout>(this));
   SetBorder(views::CreateEmptyBorder(gfx::Insets(5)));
@@ -225,6 +234,7 @@ WindowTypeLauncher::WindowTypeLauncher(
   AddViewToLayout(layout, examples_button_);
   AddViewToLayout(layout, show_hide_window_button_);
   AddViewToLayout(layout, show_web_notification_);
+  AddViewToLayout(layout, embedded_browser_button_);
   set_context_menu_controller(this);
 }
 
@@ -264,6 +274,8 @@ void WindowTypeLauncher::ButtonPressed(views::Button* sender,
     ToplevelWindow::CreateToplevelWindow(params);
   } else if (sender == create_nonresizable_button_) {
     ToplevelWindow::CreateToplevelWindow(ToplevelWindow::CreateParams());
+  } else if (sender == embedded_browser_button_) {
+    create_embedded_browser_callback_.Run();
   } else if (sender == bubble_button_) {
     CreatePointyBubble(sender);
   } else if (sender == lock_button_) {
@@ -303,7 +315,8 @@ void WindowTypeLauncher::ButtonPressed(views::Button* sender,
 void WindowTypeLauncher::ExecuteCommand(int id, int event_flags) {
   switch (id) {
     case COMMAND_NEW_WINDOW:
-      InitWindowTypeLauncher(show_views_examples_callback_);
+      InitWindowTypeLauncher(show_views_examples_callback_,
+                             create_embedded_browser_callback_);
       break;
     case COMMAND_TOGGLE_FULLSCREEN:
       GetWidget()->SetFullscreen(!GetWidget()->IsFullscreen());
@@ -313,7 +326,7 @@ void WindowTypeLauncher::ExecuteCommand(int id, int event_flags) {
   }
 }
 
-void WindowTypeLauncher::ShowContextMenuForView(
+void WindowTypeLauncher::ShowContextMenuForViewImpl(
     views::View* source,
     const gfx::Point& point,
     ui::MenuSourceType source_type) {
@@ -327,7 +340,7 @@ void WindowTypeLauncher::ShowContextMenuForView(
   menu_runner_.reset(new MenuRunner(
       root, MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU));
   menu_runner_->RunMenuAt(GetWidget(), NULL, gfx::Rect(point, gfx::Size()),
-                          views::MENU_ANCHOR_TOPLEFT, source_type);
+                          views::MenuAnchorPosition::kTopLeft, source_type);
 }
 
 }  // namespace shell

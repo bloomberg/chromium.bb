@@ -9,6 +9,18 @@
  */
 function getUnzippedFileListRowEntries() {
   return [
+    ['folder', '--', 'Folder', 'Dec 11, 2018, 5:08 PM'],
+    ['image.png', '272 bytes', 'PNG image', 'Sep 2, 2013, 11:01 PM'],
+    ['text.txt', '51 bytes', 'Plain text', 'Sep 2, 2013, 11:01 PM']
+  ];
+}
+
+/**
+ * Returns the expected file list row entries after opening (unzipping) the
+ * ENTRIES.zipArchiveEncrypted file list entry.
+ */
+function getUnzippedFileListRowEntriesEncrypted() {
+  return [
     ['image.png', '272 bytes', 'PNG image', 'Sep 2, 2013, 10:01 PM'],
     ['text.txt', '51 bytes', 'Plain text', 'Sep 2, 2013, 10:01 PM']
   ];
@@ -76,10 +88,16 @@ function getUnzippedFileListRowEntriesAbsolutePathsSubdir() {
 /**
  * Tests zip file open (aka unzip) from Downloads.
  */
-testcase.zipFileOpenDownloads = async function() {
+testcase.zipFileOpenDownloads = async () => {
+  await sendTestMessage({
+    name: 'expectFileTask',
+    fileNames: [ENTRIES.zipArchive.targetPath],
+    openType: 'launch'
+  });
+
   // Open Files app on Downloads containing a zip file.
-  const {appId} = await setupAndWaitUntilReady(
-      null, RootPath.DOWNLOADS, null, [ENTRIES.zipArchive], []);
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DOWNLOADS, [ENTRIES.zipArchive], []);
 
   // Select the zip file.
   chrome.test.assertTrue(
@@ -101,11 +119,16 @@ testcase.zipFileOpenDownloads = async function() {
 /**
  * Tests zip file, with absolute paths, open (aka unzip) from Downloads.
  */
-testcase.zipFileOpenDownloadsWithAbsolutePaths = async function() {
+testcase.zipFileOpenDownloadsWithAbsolutePaths = async () => {
+  await sendTestMessage({
+    name: 'expectFileTask',
+    fileNames: [ENTRIES.zipArchiveWithAbsolutePaths.targetPath],
+    openType: 'launch'
+  });
+
   // Open Files app on Downloads containing a zip file.
-  const {appId} = await setupAndWaitUntilReady(
-      null, RootPath.DOWNLOADS, null, [ENTRIES.zipArchiveWithAbsolutePaths],
-      []);
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DOWNLOADS, [ENTRIES.zipArchiveWithAbsolutePaths], []);
 
   // Select the zip file.
   chrome.test.assertTrue(
@@ -139,12 +162,126 @@ testcase.zipFileOpenDownloadsWithAbsolutePaths = async function() {
 };
 
 /**
+ * Tests encrypted zip file open, and canceling the passphrase dialog.
+ */
+testcase.zipFileOpenDownloadsEncryptedCancelPassphrase = async () => {
+  await sendTestMessage({
+    name: 'expectFileTask',
+    fileNames: [ENTRIES.zipArchiveEncrypted.targetPath],
+    openType: 'launch'
+  });
+
+  const zipArchiverAppId = 'dmboannefpncccogfdikhmhpmdnddgoe';
+  const zipArchiverPassphraseDialogUrl =
+      'chrome-extension://dmboannefpncccogfdikhmhpmdnddgoe/html/passphrase.html';
+
+  const passphraseCloseScript = `
+      function clickClose() {
+        let dialog = document.querySelector("passphrase-dialog");
+        dialog.shadowRoot.querySelector("#cancelButton").click();
+      }
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", clickClose);
+      } else {
+        clickClose();
+      }
+      `;
+  const cancelPassphraseDialog = windowId => {
+    return sendTestMessage({
+      'name': 'runJsInAppWindow',
+      'windowId': windowId,
+      'script': passphraseCloseScript
+    });
+  };
+
+  const waitForAllPassphraseWindowsClosed = () => {
+    const caller = getCaller();
+
+    const passphraseWindowCountCommand = {
+      'name': 'countAppWindows',
+      'appId': zipArchiverAppId
+    };
+
+    const getPassphraseWindowIdCommand = {
+      'name': 'getAppWindowId',
+      'windowUrl': zipArchiverPassphraseDialogUrl
+    };
+
+    return repeatUntil(async () => {
+      const windowCount = await sendTestMessage(passphraseWindowCountCommand);
+      if (windowCount == 0) {
+        return true;
+      }
+
+      const windowId = await sendTestMessage(getPassphraseWindowIdCommand);
+      if (windowId == 'none') {
+        return true;
+      }
+
+      await cancelPassphraseDialog(windowId);
+      return pending(caller, 'waitForAllPassphraseWindowsClosed');
+    });
+  };
+
+  // Open Files app on Downloads containing a zip file.
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DOWNLOADS, [ENTRIES.zipArchiveEncrypted], []);
+
+  // Select the zip file.
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil(
+          'selectFile', appId, ['encrypted.zip']),
+      'selectFile failed');
+
+  // Press the Enter key.
+  const key = ['#file-list', 'Enter', false, false, false];
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key),
+      'fakeKeyDown failed');
+
+  // Check: the zip file content should be shown (unzip).
+  const files = getUnzippedFileListRowEntriesEncrypted();
+  await remoteCall.waitForFiles(appId, files, {'ignoreLastModifiedTime': true});
+
+  // Select the text file in the ZIP file.
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil('selectFile', appId, ['text.txt']),
+      'selectFile failed');
+
+  // Press the Enter key.
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key),
+      'fakeKeyDown failed');
+
+  // Wait for the external passphrase dialog window to appear.
+  await waitForAppWindow(zipArchiverPassphraseDialogUrl);
+
+  // Close the dialog by pressing the 'Cancel' button. Repeat for any new
+  // dialogs that pop up.
+  chrome.test.assertTrue(
+      !!await waitForAllPassphraseWindowsClosed(),
+      'waitForAllPassphraseWindowsClosed failed');
+
+  // Check: the zip file content should still be shown.
+  const files2 = getUnzippedFileListRowEntriesEncrypted();
+  await remoteCall.waitForFiles(appId, files, {'ignoreLastModifiedTime': true});
+};
+
+/**
  * Tests zip file open (aka unzip) from Google Drive.
  */
-testcase.zipFileOpenDrive = async function() {
+testcase.zipFileOpenDrive = async () => {
+  if (await sendTestMessage({name: 'getDriveFsEnabled'}) === 'true') {
+    await sendTestMessage({
+      name: 'expectFileTask',
+      fileNames: [ENTRIES.zipArchive.targetPath],
+      openType: 'launch'
+    });
+  }
+
   // Open Files app on Drive containing a zip file.
-  const {appId} = await setupAndWaitUntilReady(
-      null, RootPath.DRIVE, null, [], [ENTRIES.zipArchive]);
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DRIVE, [], [ENTRIES.zipArchive]);
 
   // Select the zip file.
   chrome.test.assertTrue(
@@ -166,12 +303,18 @@ testcase.zipFileOpenDrive = async function() {
 /**
  * Tests zip file open (aka unzip) from a removable USB volume.
  */
-testcase.zipFileOpenUsb = async function() {
+testcase.zipFileOpenUsb = async () => {
+  await sendTestMessage({
+    name: 'expectFileTask',
+    fileNames: [ENTRIES.zipArchive.targetPath],
+    openType: 'launch'
+  });
+
   const USB_VOLUME_QUERY = '#directory-tree [volume-type-icon="removable"]';
 
   // Open Files app on Drive.
-  const {appId} = await setupAndWaitUntilReady(
-      null, RootPath.DRIVE, null, [], [ENTRIES.beautiful]);
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DRIVE, [], [ENTRIES.beautiful]);
 
   // Mount empty USB volume in the Drive window.
   await sendTestMessage({name: 'mountFakeUsbEmpty'});
@@ -214,17 +357,23 @@ testcase.zipFileOpenUsb = async function() {
 function getZipSelectionFileListRowEntries() {
   return [
     ['photos', '--', 'Folder', 'Jan 1, 1980, 11:59 PM'],
-    ['photos.zip', '206 bytes', 'Zip archive', 'Oct 21, 1983, 11:55 AM']
+    ['photos.zip', '214 bytes', 'Zip archive', 'Oct 21, 1983, 11:55 AM']
   ];
 }
 
 /**
  * Tests creating a zip file on Downloads.
  */
-testcase.zipCreateFileDownloads = async function() {
+testcase.zipCreateFileDownloads = async () => {
+  await sendTestMessage({
+    name: 'expectFileTask',
+    fileNames: [ENTRIES.photos.targetPath],
+    openType: 'launch'
+  });
+
   // Open Files app on Downloads containing ENTRIES.photos.
-  const {appId} = await setupAndWaitUntilReady(
-      null, RootPath.DOWNLOADS, null, [ENTRIES.photos], []);
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.photos], []);
 
   // Select the file.
   chrome.test.assertTrue(
@@ -254,10 +403,18 @@ testcase.zipCreateFileDownloads = async function() {
 /**
  * Tests creating a zip file on Drive.
  */
-testcase.zipCreateFileDrive = async function() {
+testcase.zipCreateFileDrive = async () => {
+  if (await sendTestMessage({name: 'getDriveFsEnabled'}) === 'true') {
+    await sendTestMessage({
+      name: 'expectFileTask',
+      fileNames: [ENTRIES.photos.targetPath],
+      openType: 'launch'
+    });
+  }
+
   // Open Files app on Drive containing ENTRIES.photos.
-  const {appId} = await setupAndWaitUntilReady(
-      null, RootPath.DRIVE, null, [], [ENTRIES.photos]);
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DRIVE, [], [ENTRIES.photos]);
 
   // Select the file.
   chrome.test.assertTrue(
@@ -287,12 +444,18 @@ testcase.zipCreateFileDrive = async function() {
 /**
  * Tests creating a zip file on a removable USB volume.
  */
-testcase.zipCreateFileUsb = async function() {
+testcase.zipCreateFileUsb = async () => {
+  await sendTestMessage({
+    name: 'expectFileTask',
+    fileNames: [ENTRIES.photos.targetPath],
+    openType: 'launch'
+  });
+
   const USB_VOLUME_QUERY = '#directory-tree [volume-type-icon="removable"]';
 
   // Open Files app on Drive.
-  const {appId} = await setupAndWaitUntilReady(
-      null, RootPath.DRIVE, null, [], [ENTRIES.beautiful]);
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DRIVE, [], [ENTRIES.beautiful]);
 
   // Mount empty USB volume in the Drive window.
   await sendTestMessage({name: 'mountFakeUsbEmpty'});
@@ -340,10 +503,16 @@ testcase.zipCreateFileUsb = async function() {
  * Tests zip file open (aka unzip) from Downloads.
  * The file names are encoded in SJIS.
  */
-testcase.zipFileOpenDownloadsShiftJIS = async function() {
+testcase.zipFileOpenDownloadsShiftJIS = async () => {
+  await sendTestMessage({
+    name: 'expectFileTask',
+    fileNames: [ENTRIES.zipArchiveSJIS.targetPath],
+    openType: 'launch'
+  });
+
   // Open Files app on Downloads containing a zip file.
-  const {appId} = await setupAndWaitUntilReady(
-      null, RootPath.DOWNLOADS, null, [ENTRIES.zipArchiveSJIS], []);
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DOWNLOADS, [ENTRIES.zipArchiveSJIS], []);
 
   // Select the zip file.
   chrome.test.assertTrue(
@@ -381,10 +550,16 @@ testcase.zipFileOpenDownloadsShiftJIS = async function() {
  * Tests zip file open (aka unzip) from Downloads. The file name in the archive
  * is encoded in UTF-8, but the language encoding flag bit is set to 0.
  */
-testcase.zipFileOpenDownloadsMacOs = async function() {
+testcase.zipFileOpenDownloadsMacOs = async () => {
+  await sendTestMessage({
+    name: 'expectFileTask',
+    fileNames: [ENTRIES.zipArchiveMacOs.targetPath],
+    openType: 'launch'
+  });
+
   // Open Files app on Downloads containing a zip file.
-  const {appId} = await setupAndWaitUntilReady(
-      null, RootPath.DOWNLOADS, null, [ENTRIES.zipArchiveMacOs], []);
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DOWNLOADS, [ENTRIES.zipArchiveMacOs], []);
 
   // Select the zip file.
   chrome.test.assertTrue(

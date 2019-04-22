@@ -82,7 +82,7 @@ class CORE_EXPORT CanvasAsyncBlobCreator
   virtual void SignalTaskSwitchInStartTimeoutEventForTesting() {}
   virtual void SignalTaskSwitchInCompleteTimeoutEventForTesting() {}
 
-  virtual void Trace(blink::Visitor*);
+  virtual void Trace(Visitor*);
 
   static sk_sp<SkColorSpace> BlobColorSpaceToSkColorSpace(
       String blob_color_space);

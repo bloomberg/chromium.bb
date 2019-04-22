@@ -9,6 +9,6 @@
     NoInterfaceObject,
     RuntimeEnabled=WritableFiles
 ] interface FileSystemDirectoryIterator {
-  [CallWith=ScriptState] Promise next();
+  [CallWith=ScriptState] Promise<any> next();
   [ImplementedAs=IteratorReturn] void return();
 };

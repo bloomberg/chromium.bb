@@ -65,10 +65,11 @@ Polymer({
           this.address.emailAddresses ? this.address.emailAddresses[0] : '';
 
       this.async(() => {
-        if (this.countryCode_ == this.address.countryCode)
+        if (this.countryCode_ == this.address.countryCode) {
           this.updateAddressWrapper_();
-        else
+        } else {
           this.countryCode_ = this.address.countryCode;
+        }
       });
     });
 
@@ -104,8 +105,9 @@ Polymer({
       this.fire('on-update-address-wrapper');  // For easier testing.
 
       const dialog = /** @type {HTMLDialogElement} */ (this.$.dialog);
-      if (!dialog.open)
+      if (!dialog.open) {
         dialog.showModal();
+      }
     });
   },
 
@@ -162,12 +164,14 @@ Polymer({
    */
   onSaveButtonTap_: function() {
     // The Enter key can call this function even if the button is disabled.
-    if (!this.canSave_)
+    if (!this.canSave_) {
       return;
+    }
 
     // Set a default country if none is set.
-    if (!this.address.countryCode)
+    if (!this.address.countryCode) {
       this.address.countryCode = this.countries_[0].countryCode;
+    }
 
     this.address.phoneNumbers = this.phoneNumber_ ? [this.phoneNumber_] : [];
     this.address.emailAddresses = this.email_ ? [this.email_] : [];

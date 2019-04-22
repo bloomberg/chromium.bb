@@ -34,7 +34,8 @@ public class KitKatWebContentsAccessibility extends WebContentsAccessibilityImpl
     @Override
     protected void setAccessibilityNodeInfoKitKatAttributes(AccessibilityNodeInfo node,
             boolean isRoot, boolean isEditableText, String role, String roleDescription,
-            String hint, int selectionStartIndex, int selectionEndIndex, boolean hasImage) {
+            String hint, int selectionStartIndex, int selectionEndIndex, boolean hasImage,
+            boolean contentInvalid) {
         Bundle bundle = node.getExtras();
         bundle.putCharSequence("AccessibilityNodeInfo.chromeRole", role);
         bundle.putCharSequence("AccessibilityNodeInfo.roleDescription", roleDescription);
@@ -48,6 +49,8 @@ public class KitKatWebContentsAccessibility extends WebContentsAccessibilityImpl
             node.setEditable(true);
             node.setTextSelection(selectionStartIndex, selectionEndIndex);
         }
+
+        node.setContentInvalid(contentInvalid);
     }
 
     @Override

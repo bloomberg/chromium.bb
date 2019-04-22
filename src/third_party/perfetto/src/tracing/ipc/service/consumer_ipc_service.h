@@ -48,6 +48,8 @@ class ConsumerIPCService : public protos::ConsumerPort {
                      DeferredEnableTracingResponse) override;
   void StartTracing(const protos::StartTracingRequest&,
                     DeferredStartTracingResponse) override;
+  void ChangeTraceConfig(const protos::ChangeTraceConfigRequest&,
+                         DeferredChangeTraceConfigResponse) override;
   void DisableTracing(const protos::DisableTracingRequest&,
                       DeferredDisableTracingResponse) override;
   void ReadBuffers(const protos::ReadBuffersRequest&,
@@ -55,6 +57,12 @@ class ConsumerIPCService : public protos::ConsumerPort {
   void FreeBuffers(const protos::FreeBuffersRequest&,
                    DeferredFreeBuffersResponse) override;
   void Flush(const protos::FlushRequest&, DeferredFlushResponse) override;
+  void Detach(const protos::DetachRequest&, DeferredDetachResponse) override;
+  void Attach(const protos::AttachRequest&, DeferredAttachResponse) override;
+  void GetTraceStats(const protos::GetTraceStatsRequest&,
+                     DeferredGetTraceStatsResponse) override;
+  void ObserveEvents(const protos::ObserveEventsRequest&,
+                     DeferredObserveEventsResponse) override;
   void OnClientDisconnected() override;
 
  private:
@@ -72,19 +80,39 @@ class ConsumerIPCService : public protos::ConsumerPort {
     void OnDisconnect() override;
     void OnTracingDisabled() override;
     void OnTraceData(std::vector<TracePacket>, bool has_more) override;
+    void OnDetach(bool) override;
+    void OnAttach(bool, const TraceConfig&) override;
+    void OnTraceStats(bool, const TraceStats&) override;
+    void OnObservableEvents(const ObservableEvents&) override;
+
+    void CloseObserveEventsResponseStream();
 
     // The interface obtained from the core service business logic through
     // TracingService::ConnectConsumer(this). This allows to invoke methods for
     // a specific Consumer on the Service business logic.
     std::unique_ptr<TracingService::ConsumerEndpoint> service_endpoint;
 
-    // After DisableTracing() is invoked, this binds the async callback that
+    // After ReadBuffers() is invoked, this binds the async callback that
     // allows to stream trace packets back to the client.
     DeferredReadBuffersResponse read_buffers_response;
 
     // After EnableTracing() is invoked, this binds the async callback that
     // allows to send the OnTracingDisabled notification.
     DeferredEnableTracingResponse enable_tracing_response;
+
+    // After Detach() is invoked, this binds the async callback that allows to
+    // send the session id to the consumer.
+    DeferredDetachResponse detach_response;
+
+    // As above, but for the Attach() case.
+    DeferredAttachResponse attach_response;
+
+    // As above, but for GetTraceStats().
+    DeferredGetTraceStatsResponse get_trace_stats_response;
+
+    // After ObserveEvents() is invoked, this binds the async callback that
+    // allows to stream ObservableEvents back to the client.
+    DeferredObserveEventsResponse observe_events_response;
   };
 
   // This has to be a container that doesn't invalidate iterators.

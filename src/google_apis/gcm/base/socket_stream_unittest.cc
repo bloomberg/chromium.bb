@@ -12,9 +12,9 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
@@ -35,11 +35,11 @@ typedef std::vector<net::MockRead> ReadList;
 typedef std::vector<net::MockWrite> WriteList;
 
 const char kReadData[] = "read_data";
-const int kReadDataSize = arraysize(kReadData) - 1;
+const int kReadDataSize = base::size(kReadData) - 1;
 const char kReadData2[] = "read_alternate_data";
-const int kReadData2Size = arraysize(kReadData2) - 1;
+const int kReadData2Size = base::size(kReadData2) - 1;
 const char kWriteData[] = "write_data";
-const int kWriteDataSize = arraysize(kWriteData) - 1;
+const int kWriteDataSize = base::size(kWriteData) - 1;
 
 class GCMSocketStreamTest : public testing::Test {
  public:
@@ -116,7 +116,8 @@ GCMSocketStreamTest::GCMSocketStreamTest()
 
   network_context_ = std::make_unique<network::NetworkContext>(
       network_service_.get(), mojo::MakeRequest(&network_context_ptr_),
-      &url_request_context_);
+      &url_request_context_,
+      /*cors_exempt_header_list=*/std::vector<std::string>());
 }
 
 GCMSocketStreamTest::~GCMSocketStreamTest() {}
@@ -143,8 +144,8 @@ void GCMSocketStreamTest::PumpLoop() {
 
 base::StringPiece GCMSocketStreamTest::DoInputStreamRead(int bytes) {
   int total_bytes_read = 0;
-  const void* initial_buffer = NULL;
-  const void* buffer = NULL;
+  const void* initial_buffer = nullptr;
+  const void* buffer = nullptr;
   int size = 0;
 
   do {

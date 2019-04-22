@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "src/api-inl.h"
+#include "src/function-kind.h"
+#include "src/globals.h"
 #include "src/handles-inl.h"
 #include "src/heap/factory.h"
 #include "src/isolate.h"
@@ -15,7 +17,7 @@ namespace internal {
 
 static void CheckObject(Isolate* isolate, Handle<Object> obj,
                         const char* string) {
-  Object* print_string = *Object::NoSideEffectsToString(isolate, obj);
+  Object print_string = *Object::NoSideEffectsToString(isolate, obj);
   CHECK(String::cast(print_string)->IsUtf8EqualTo(CStrVector(string)));
 }
 
@@ -148,7 +150,7 @@ TEST(EnumCache) {
     CHECK_EQ(c->map()->instance_descriptors()->enum_cache(),
              *factory->empty_enum_cache());
 
-    EnumCache* enum_cache = cc->map()->instance_descriptors()->enum_cache();
+    EnumCache enum_cache = cc->map()->instance_descriptors()->enum_cache();
     CHECK_NE(enum_cache, *factory->empty_enum_cache());
     CHECK_EQ(enum_cache->keys()->length(), 3);
     CHECK_EQ(enum_cache->indices()->length(), 3);
@@ -165,7 +167,7 @@ TEST(EnumCache) {
 
     // The enum cache is shared on the descriptor array of maps {a}, {b} and
     // {c} only.
-    EnumCache* enum_cache = a->map()->instance_descriptors()->enum_cache();
+    EnumCache enum_cache = a->map()->instance_descriptors()->enum_cache();
     CHECK_NE(enum_cache, *factory->empty_enum_cache());
     CHECK_NE(cc->map()->instance_descriptors()->enum_cache(),
              *factory->empty_enum_cache());
@@ -193,7 +195,7 @@ TEST(EnumCache) {
     CHECK_EQ(c->map()->EnumLength(), 3);
     CHECK_EQ(cc->map()->EnumLength(), 3);
 
-    EnumCache* enum_cache = c->map()->instance_descriptors()->enum_cache();
+    EnumCache enum_cache = c->map()->instance_descriptors()->enum_cache();
     CHECK_NE(enum_cache, *factory->empty_enum_cache());
     // The keys and indices caches are updated.
     CHECK_EQ(enum_cache, *previous_enum_cache);
@@ -229,7 +231,7 @@ TEST(EnumCache) {
     CHECK_EQ(c->map()->EnumLength(), 3);
     CHECK_EQ(cc->map()->EnumLength(), 3);
 
-    EnumCache* enum_cache = c->map()->instance_descriptors()->enum_cache();
+    EnumCache enum_cache = c->map()->instance_descriptors()->enum_cache();
     CHECK_NE(enum_cache, *factory->empty_enum_cache());
     // The keys and indices caches are not updated.
     CHECK_EQ(enum_cache, *previous_enum_cache);
@@ -250,6 +252,163 @@ TEST(EnumCache) {
     CHECK_EQ(c->map()->instance_descriptors()->enum_cache(), enum_cache);
   }
 }
+
+#define TEST_FUNCTION_KIND(Name)                                \
+  TEST(Name) {                                                  \
+    for (int i = 0; i < FunctionKind::kLastFunctionKind; i++) { \
+      FunctionKind kind = static_cast<FunctionKind>(i);         \
+      CHECK_EQ(FunctionKind##Name(kind), Name(kind));           \
+    }                                                           \
+  }
+
+bool FunctionKindIsArrowFunction(FunctionKind kind) {
+  switch (kind) {
+    case FunctionKind::kArrowFunction:
+    case FunctionKind::kAsyncArrowFunction:
+      return true;
+    default:
+      return false;
+  }
+}
+TEST_FUNCTION_KIND(IsArrowFunction)
+
+bool FunctionKindIsAsyncGeneratorFunction(FunctionKind kind) {
+  switch (kind) {
+    case FunctionKind::kAsyncConciseGeneratorMethod:
+    case FunctionKind::kAsyncGeneratorFunction:
+      return true;
+    default:
+      return false;
+  }
+}
+TEST_FUNCTION_KIND(IsAsyncGeneratorFunction)
+
+bool FunctionKindIsGeneratorFunction(FunctionKind kind) {
+  switch (kind) {
+    case FunctionKind::kConciseGeneratorMethod:
+    case FunctionKind::kAsyncConciseGeneratorMethod:
+    case FunctionKind::kGeneratorFunction:
+    case FunctionKind::kAsyncGeneratorFunction:
+      return true;
+    default:
+      return false;
+  }
+}
+TEST_FUNCTION_KIND(IsGeneratorFunction)
+
+bool FunctionKindIsAsyncFunction(FunctionKind kind) {
+  switch (kind) {
+    case FunctionKind::kAsyncFunction:
+    case FunctionKind::kAsyncArrowFunction:
+    case FunctionKind::kAsyncConciseMethod:
+    case FunctionKind::kAsyncConciseGeneratorMethod:
+    case FunctionKind::kAsyncGeneratorFunction:
+      return true;
+    default:
+      return false;
+  }
+}
+TEST_FUNCTION_KIND(IsAsyncFunction)
+
+bool FunctionKindIsConciseMethod(FunctionKind kind) {
+  switch (kind) {
+    case FunctionKind::kConciseMethod:
+    case FunctionKind::kConciseGeneratorMethod:
+    case FunctionKind::kAsyncConciseMethod:
+    case FunctionKind::kAsyncConciseGeneratorMethod:
+    case FunctionKind::kClassMembersInitializerFunction:
+      return true;
+    default:
+      return false;
+  }
+}
+TEST_FUNCTION_KIND(IsConciseMethod)
+
+bool FunctionKindIsAccessorFunction(FunctionKind kind) {
+  switch (kind) {
+    case FunctionKind::kGetterFunction:
+    case FunctionKind::kSetterFunction:
+      return true;
+    default:
+      return false;
+  }
+}
+TEST_FUNCTION_KIND(IsAccessorFunction)
+
+bool FunctionKindIsDefaultConstructor(FunctionKind kind) {
+  switch (kind) {
+    case FunctionKind::kDefaultBaseConstructor:
+    case FunctionKind::kDefaultDerivedConstructor:
+      return true;
+    default:
+      return false;
+  }
+}
+TEST_FUNCTION_KIND(IsDefaultConstructor)
+
+bool FunctionKindIsBaseConstructor(FunctionKind kind) {
+  switch (kind) {
+    case FunctionKind::kBaseConstructor:
+    case FunctionKind::kDefaultBaseConstructor:
+      return true;
+    default:
+      return false;
+  }
+}
+TEST_FUNCTION_KIND(IsBaseConstructor)
+
+bool FunctionKindIsDerivedConstructor(FunctionKind kind) {
+  switch (kind) {
+    case FunctionKind::kDefaultDerivedConstructor:
+    case FunctionKind::kDerivedConstructor:
+      return true;
+    default:
+      return false;
+  }
+}
+TEST_FUNCTION_KIND(IsDerivedConstructor)
+
+bool FunctionKindIsClassConstructor(FunctionKind kind) {
+  switch (kind) {
+    case FunctionKind::kBaseConstructor:
+    case FunctionKind::kDefaultBaseConstructor:
+    case FunctionKind::kDefaultDerivedConstructor:
+    case FunctionKind::kDerivedConstructor:
+      return true;
+    default:
+      return false;
+  }
+}
+TEST_FUNCTION_KIND(IsClassConstructor)
+
+bool FunctionKindIsConstructable(FunctionKind kind) {
+  switch (kind) {
+    case FunctionKind::kGetterFunction:
+    case FunctionKind::kSetterFunction:
+    case FunctionKind::kArrowFunction:
+    case FunctionKind::kAsyncArrowFunction:
+    case FunctionKind::kAsyncFunction:
+    case FunctionKind::kAsyncConciseMethod:
+    case FunctionKind::kAsyncConciseGeneratorMethod:
+    case FunctionKind::kAsyncGeneratorFunction:
+    case FunctionKind::kGeneratorFunction:
+    case FunctionKind::kConciseGeneratorMethod:
+    case FunctionKind::kConciseMethod:
+    case FunctionKind::kClassMembersInitializerFunction:
+      return false;
+    default:
+      return true;
+  }
+}
+TEST_FUNCTION_KIND(IsConstructable)
+
+bool FunctionKindIsStrictFunctionWithoutPrototype(FunctionKind kind) {
+  return IsArrowFunction(kind) || IsConciseMethod(kind) ||
+         IsAccessorFunction(kind);
+}
+TEST_FUNCTION_KIND(IsStrictFunctionWithoutPrototype)
+
+#undef TEST_FUNCTION_KIND
 
 }  // namespace internal
 }  // namespace v8

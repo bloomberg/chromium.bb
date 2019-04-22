@@ -211,7 +211,7 @@ void NetworkStateNotifier::SetNetworkConnectionInfoOverride(
     bool on_line,
     WebConnectionType type,
     base::Optional<WebEffectiveConnectionType> effective_type,
-    unsigned long http_rtt_msec,
+    int64_t http_rtt_msec,
     double max_bandwidth_mbps) {
   DCHECK(IsMainThread());
   ScopedNotifier notifier(*this);
@@ -431,7 +431,7 @@ double NetworkStateNotifier::GetRandomMultiplier(const String& host) const {
   return random_multiplier;
 }
 
-unsigned long NetworkStateNotifier::RoundRtt(
+uint32_t NetworkStateNotifier::RoundRtt(
     const String& host,
     const base::Optional<TimeDelta>& rtt) const {
   // Limit the size of the buckets and the maximum reported value to reduce

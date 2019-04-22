@@ -49,10 +49,10 @@ std::string GetTouchPointString(
     const TouchCalibrationData::CalibrationPointPairQuad& pts) {
   std::string str = "Failed for point pairs: ";
   for (std::size_t row = 0; row < pts.size(); row++) {
-    str += "{(" + base::IntToString(pts[row].first.x()) + "," +
-           base::IntToString(pts[row].first.y()) + "), (" +
-           base::IntToString(pts[row].second.x()) + "," +
-           base::IntToString(pts[row].second.y()) + ")} ";
+    str += "{(" + base::NumberToString(pts[row].first.x()) + "," +
+           base::NumberToString(pts[row].first.y()) + "), (" +
+           base::NumberToString(pts[row].second.x()) + "," +
+           base::NumberToString(pts[row].second.y()) + ")} ";
   }
   return str;
 }
@@ -126,7 +126,7 @@ class TouchTransformControllerTest : public testing::Test {
     display_manager_ = std::make_unique<DisplayManager>(std::move(screen));
     touch_device_manager_ = display_manager_->touch_device_manager();
     touch_transform_controller_ = std::make_unique<TouchTransformController>(
-        nullptr, display_manager_.get(),
+        display_manager_.get(),
         std::make_unique<DefaultTouchTransformSetter>());
   }
 

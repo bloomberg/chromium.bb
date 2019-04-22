@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/components/tether/tether_host_fetcher.h"
-#include "components/cryptauth/remote_device_ref.h"
 
 namespace chromeos {
 
@@ -18,11 +18,12 @@ namespace tether {
 // Test double for TetherHostFetcher.
 class FakeTetherHostFetcher : public TetherHostFetcher {
  public:
-  FakeTetherHostFetcher(const cryptauth::RemoteDeviceRefList& tether_hosts);
+  explicit FakeTetherHostFetcher(
+      const multidevice::RemoteDeviceRefList& tether_hosts);
   FakeTetherHostFetcher();
   ~FakeTetherHostFetcher() override;
 
-  void set_tether_hosts(const cryptauth::RemoteDeviceRefList& tether_hosts) {
+  void set_tether_hosts(const multidevice::RemoteDeviceRefList& tether_hosts) {
     tether_hosts_ = tether_hosts;
   }
 
@@ -37,7 +38,7 @@ class FakeTetherHostFetcher : public TetherHostFetcher {
       const TetherHostFetcher::TetherHostCallback& callback) override;
 
  private:
-  cryptauth::RemoteDeviceRefList tether_hosts_;
+  multidevice::RemoteDeviceRefList tether_hosts_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeTetherHostFetcher);
 };

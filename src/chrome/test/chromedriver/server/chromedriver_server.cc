@@ -20,7 +20,6 @@
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -30,7 +29,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_local.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -65,14 +64,14 @@ int ListenOnIPv4(net::ServerSocket* socket, uint16_t port, bool allow_remote) {
   std::string binding_ip = net::IPAddress::IPv4Localhost().ToString();
   if (allow_remote)
     binding_ip = net::IPAddress::IPv4AllZeros().ToString();
-  return socket->ListenWithAddressAndPort(binding_ip, port, 1);
+  return socket->ListenWithAddressAndPort(binding_ip, port, 5);
 }
 
 int ListenOnIPv6(net::ServerSocket* socket, uint16_t port, bool allow_remote) {
   std::string binding_ip = net::IPAddress::IPv6Localhost().ToString();
   if (allow_remote)
     binding_ip = net::IPAddress::IPv6AllZeros().ToString();
-  return socket->ListenWithAddressAndPort(binding_ip, port, 1);
+  return socket->ListenWithAddressAndPort(binding_ip, port, 5);
 }
 
 bool RequestIsSafeToServe(const net::HttpServerRequestInfo& info) {
@@ -96,6 +95,27 @@ bool RequestIsSafeToServe(const net::HttpServerRequestInfo& info) {
   }
   return true;
 }
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// Ensure that there is a writable shared memory directory. We use
+// network::SimpleURLLoader to connect to Chrome, and it calls
+// base::subtle::PlatformSharedMemoryRegion::Create to get a shared memory
+// region. network::SimpleURLLoader would fail if the shared memory directory is
+// not accessible. We work around this issue by adding --disable-dev-shm-usage
+// to command line, to use an alternative directory for shared memory.
+// See https://crbug.com/chromedriver/2782.
+void EnsureSharedMemory(base::CommandLine* cmd_line) {
+  if (!cmd_line->HasSwitch("disable-dev-shm-usage")) {
+    base::FilePath directory;
+    if (GetShmemTempDir(false, &directory) &&
+        access(directory.value().c_str(), W_OK | X_OK) < 0) {
+      VLOG(0) << directory
+              << " not writable, adding --disable-dev-shm-usage switch";
+      cmd_line->AppendSwitch("disable-dev-shm-usage");
+    }
+  }
+}
+#endif
 
 class HttpServer : public net::HttpServer::Delegate {
  public:
@@ -142,12 +162,11 @@ class HttpServer : public net::HttpServer::Delegate {
         base::Bind(&HttpServer::OnResponse,
                    weak_factory_.GetWeakPtr(),
                    connection_id,
-                   info.HasHeaderValue("connection", "keep-alive")));
+                   !info.HasHeaderValue("connection", "close")));
   }
   void OnWebSocketRequest(int connection_id,
                           const net::HttpServerRequestInfo& info) override {}
-  void OnWebSocketMessage(int connection_id, const std::string& data) override {
-  }
+  void OnWebSocketMessage(int connection_id, std::string data) override {}
   void OnClose(int connection_id) override {}
 
  private:
@@ -384,33 +403,37 @@ int main(int argc, char *argv[]) {
     std::string options;
     const char* const kOptionAndDescriptions[] = {
         "port=PORT",
-        "port to listen on",
+            "port to listen on",
         "adb-port=PORT",
-        "adb server port",
+            "adb server port",
         "log-path=FILE",
-        "write server log to file instead of stderr, "
-        "increases log level to INFO",
+            "write server log to file instead of stderr, "
+            "increases log level to INFO",
         "log-level=LEVEL",
-        "set log level: ALL, DEBUG, INFO, WARNING, "
-        "SEVERE, OFF",
+            "set log level: ALL, DEBUG, INFO, WARNING, SEVERE, OFF",
         "verbose",
-        "log verbosely (equivalent to --log-level=ALL)",
+            "log verbosely (equivalent to --log-level=ALL)",
         "silent",
-        "log nothing (equivalent to --log-level=OFF)",
+            "log nothing (equivalent to --log-level=OFF)",
         "append-log",
-        "append log file instead of rewriting",
+            "append log file instead of rewriting",
         "replayable",
-        "(experimental) log verbosely and don't truncate long "
-        "strings so that the log can be replayed.",
+            "(experimental) log verbosely and don't truncate long "
+            "strings so that the log can be replayed.",
         "version",
-        "print the version number and exit",
+            "print the version number and exit",
         "url-base",
-        "base URL path prefix for commands, e.g. wd/url",
+            "base URL path prefix for commands, e.g. wd/url",
         "whitelisted-ips",
-        "comma-separated whitelist of remote IP addresses "
-        "which are allowed to connect to ChromeDriver",
+            "comma-separated whitelist of remote IP addresses "
+            "which are allowed to connect to ChromeDriver",
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+        "disable-dev-shm-usage",
+            "do not use /dev/shm "
+            "(add this switch if seeing errors related to shared memory)",
+#endif
     };
-    for (size_t i = 0; i < arraysize(kOptionAndDescriptions) - 1; i += 2) {
+    for (size_t i = 0; i < base::size(kOptionAndDescriptions) - 1; i += 2) {
       options += base::StringPrintf(
           "  --%-30s%s\n",
           kOptionAndDescriptions[i], kOptionAndDescriptions[i + 1]);
@@ -418,10 +441,13 @@ int main(int argc, char *argv[]) {
     printf("Usage: %s [OPTIONS]\n\nOptions\n%s", argv[0], options.c_str());
     return 0;
   }
+  bool early_exit = false;
   if (cmd_line->HasSwitch("v") || cmd_line->HasSwitch("version")) {
     printf("ChromeDriver %s\n", kChromeDriverVersion);
-    return 0;
+    early_exit = true;
   }
+  if (early_exit)
+    return 0;
   if (cmd_line->HasSwitch("port")) {
     int cmd_line_port;
     if (!base::StringToInt(cmd_line->GetSwitchValueASCII("port"),
@@ -497,13 +523,17 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  EnsureSharedMemory(cmd_line);
+#endif
+
   mojo::core::Init();
 
-  base::TaskScheduler::CreateAndStartWithDefaultParams("ChromeDriver");
+  base::ThreadPool::CreateAndStartWithDefaultParams("ChromeDriver");
 
   RunServer(port, allow_remote, whitelisted_ips, url_base, adb_port);
 
   // clean up
-  base::TaskScheduler::GetInstance()->Shutdown();
+  base::ThreadPool::GetInstance()->Shutdown();
   return 0;
 }

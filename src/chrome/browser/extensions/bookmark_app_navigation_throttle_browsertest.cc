@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/extensions/bookmark_app_helper.h"
 #include "chrome/browser/extensions/bookmark_app_navigation_browsertest.h"
 #include "chrome/browser/extensions/bookmark_app_navigation_throttle_utils.h"
 #include "chrome/browser/extensions/launch_util.h"
@@ -386,7 +387,7 @@ class BookmarkAppNavigationThrottleExperimentalTransitionBrowserTest
       public ::testing::WithParamInterface<
           std::tuple<std::string, ui::PageTransition>> {};
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     BookmarkAppNavigationThrottleExperimentalTransitionBrowserTest,
     testing::Combine(
@@ -843,7 +844,7 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleExperimentalLinkBrowserTest,
 IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleExperimentalBrowserTest,
                        PrerenderLinks) {
   prerender::PrerenderManager::SetMode(
-      prerender::PrerenderManager::PRERENDER_MODE_ENABLED);
+      prerender::PrerenderManager::DEPRECATED_PRERENDER_MODE_ENABLED);
 
   InstallTestBookmarkApp();
   NavigateToLaunchingPage();
@@ -1148,7 +1149,7 @@ IN_PROC_BROWSER_TEST_P(
       base::BindOnce(&WindowOpenAndWait, app_web_contents, target_url));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     BookmarkAppNavigationThrottleExperimentalWindowOpenBrowserTest,
     testing::Values(BookmarkAppNavigationBrowserTest::GetAppUrlHost(),
@@ -1249,7 +1250,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleExperimentalBrowserTest,
         1}});
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     BookmarkAppNavigationThrottleExperimentalLinkBrowserTest,
     testing::Values("", "noopener", "noreferrer", "nofollow"));
@@ -1455,7 +1456,7 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleCommonBrowserTest,
 }
 #endif  // OS_CHROMEOS
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     BookmarkAppNavigationThrottleCommonBrowserTest,
     testing::Bool());
@@ -1578,7 +1579,7 @@ IN_PROC_BROWSER_TEST_P(
         1}});
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     BookmarkAppNavigationThrottleCommonFormSubmissionBrowserTest,
     testing::Combine(
@@ -1660,7 +1661,7 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleCommonLinkBrowserTest,
         1}});
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     BookmarkAppNavigationThrottleCommonLinkBrowserTest,
     testing::Combine(

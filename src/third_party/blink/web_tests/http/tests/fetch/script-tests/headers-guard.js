@@ -221,9 +221,9 @@ test(function() {
                             ' must be appended.');
 
               headers.delete(CONTENT_TYPE);
-              assert_equals(headers.get(CONTENT_TYPE), value,
-                            'Content-Type in Headers with request-no-cors ' +
-                             'guard must not be deleted');
+              assert_equals(headers.get(CONTENT_TYPE), null,
+                            'Content-type/' + value +
+                            ' must be deleted.');
 
               var headers = createNewHeaders();
               headers.set(CONTENT_TYPE, value);

@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/inspector/inspector_base_agent.h"
 #include "third_party/blink/renderer/core/inspector/protocol/Page.h"
+#include "third_party/blink/renderer/core/loader/frame_loader_types.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -54,7 +55,6 @@ class DocumentLoader;
 class InspectedFrames;
 class InspectorResourceContentLoader;
 class LocalFrame;
-class ScheduledNavigation;
 class ScriptSourceCode;
 class SharedBuffer;
 enum class ResourceType : uint8_t;
@@ -68,6 +68,7 @@ class CORE_EXPORT InspectorPageAgent final
    public:
     virtual ~Client() = default;
     virtual void PageLayoutInvalidated(bool resized) {}
+    virtual void WaitForDebugger() {}
   };
 
   enum ResourceType {
@@ -87,13 +88,8 @@ class CORE_EXPORT InspectorPageAgent final
     kOtherResource
   };
 
-  static InspectorPageAgent* Create(InspectedFrames*,
-                                    Client*,
-                                    InspectorResourceContentLoader*,
-                                    v8_inspector::V8InspectorSession*);
-
   static HeapVector<Member<Document>> ImportsForFrame(LocalFrame*);
-  static bool CachedResourceContent(Resource*,
+  static bool CachedResourceContent(const Resource*,
                                     String* result,
                                     bool* base64_encoded);
   static bool SharedBufferContent(scoped_refptr<const SharedBuffer>,
@@ -171,18 +167,25 @@ class CORE_EXPORT InspectorPageAgent final
   protocol::Response addCompilationCache(const String& url,
                                          const protocol::Binary& data) override;
   protocol::Response clearCompilationCache() override;
+  protocol::Response waitForDebugger() override;
 
   // InspectorInstrumentation API
   void DidClearDocumentOfWindowObject(LocalFrame*);
   void DidNavigateWithinDocument(LocalFrame*);
-  void DOMContentLoadedEventFired(LocalFrame*);
+  void DomContentLoadedEventFired(LocalFrame*);
   void LoadEventFired(LocalFrame*);
   void WillCommitLoad(LocalFrame*, DocumentLoader*);
   void FrameAttachedToParent(LocalFrame*);
   void FrameDetachedFromParent(LocalFrame*);
   void FrameStartedLoading(LocalFrame*);
   void FrameStoppedLoading(LocalFrame*);
-  void FrameScheduledNavigation(LocalFrame*, ScheduledNavigation*);
+  void FrameRequestedNavigation(LocalFrame*,
+                                const KURL&,
+                                ClientNavigationReason);
+  void FrameScheduledNavigation(LocalFrame*,
+                                const KURL&,
+                                double delay,
+                                ClientNavigationReason);
   void FrameClearedScheduledNavigation(LocalFrame*);
   void WillRunJavaScriptDialog();
   void DidRunJavaScriptDialog();

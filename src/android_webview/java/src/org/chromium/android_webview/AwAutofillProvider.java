@@ -90,7 +90,7 @@ public class AwAutofillProvider extends AutofillProvider {
                                 .addAttribute("id", field.mId);
 
                 switch (field.getControlType()) {
-                    case FormFieldData.TYPE_LIST:
+                    case FormFieldData.ControlType.LIST:
                         child.setAutofillType(View.AUTOFILL_TYPE_LIST);
                         child.setAutofillOptions(field.mOptionContents);
                         int i = findIndex(field.mOptionValues, field.getValue());
@@ -98,11 +98,11 @@ public class AwAutofillProvider extends AutofillProvider {
                             child.setAutofillValue(AutofillValue.forList(i));
                         }
                         break;
-                    case FormFieldData.TYPE_TOGGLE:
+                    case FormFieldData.ControlType.TOGGLE:
                         child.setAutofillType(View.AUTOFILL_TYPE_TOGGLE);
                         child.setAutofillValue(AutofillValue.forToggle(field.isChecked()));
                         break;
-                    case FormFieldData.TYPE_TEXT:
+                    case FormFieldData.ControlType.TEXT:
                         child.setAutofillType(View.AUTOFILL_TYPE_TEXT);
                         child.setAutofillValue(AutofillValue.forText(field.getValue()));
                         if (field.mMaxLength != 0) {
@@ -127,15 +127,15 @@ public class AwAutofillProvider extends AutofillProvider {
                 FormFieldData field = mFormData.mFields.get(index);
                 if (field == null) return false;
                 switch (field.getControlType()) {
-                    case FormFieldData.TYPE_LIST:
+                    case FormFieldData.ControlType.LIST:
                         int j = value.getListValue();
                         if (j < 0 && j >= field.mOptionValues.length) continue;
                         field.setAutofillValue(field.mOptionValues[j]);
                         break;
-                    case FormFieldData.TYPE_TOGGLE:
+                    case FormFieldData.ControlType.TOGGLE:
                         field.setChecked(value.getToggleValue());
                         break;
-                    case FormFieldData.TYPE_TEXT:
+                    case FormFieldData.ControlType.TEXT:
                         field.setAutofillValue((String) value.getTextValue());
                         break;
                     default:
@@ -161,13 +161,13 @@ public class AwAutofillProvider extends AutofillProvider {
             FormFieldData field = mFormData.mFields.get(index);
             if (field == null) return null;
             switch (field.getControlType()) {
-                case FormFieldData.TYPE_LIST:
+                case FormFieldData.ControlType.LIST:
                     int i = findIndex(field.mOptionValues, field.getValue());
                     if (i == -1) return null;
                     return AutofillValue.forList(i);
-                case FormFieldData.TYPE_TOGGLE:
+                case FormFieldData.ControlType.TOGGLE:
                     return AutofillValue.forToggle(field.isChecked());
-                case FormFieldData.TYPE_TEXT:
+                case FormFieldData.ControlType.TEXT:
                     return AutofillValue.forText(field.getValue());
                 default:
                     return null;

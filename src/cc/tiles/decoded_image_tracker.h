@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "cc/cc_export.h"
 #include "cc/tiles/image_controller.h"
@@ -28,13 +29,16 @@ class CC_EXPORT DecodedImageTracker {
   explicit DecodedImageTracker(
       ImageController* controller,
       scoped_refptr<base::SequencedTaskRunner> task_runner);
+  DecodedImageTracker(const DecodedImageTracker&) = delete;
   ~DecodedImageTracker();
+
+  DecodedImageTracker& operator=(const DecodedImageTracker&) = delete;
 
   // Request that the given image be decoded. This issues a callback upon
   // completion. The callback takes a bool indicating whether the decode was
   // successful or not.
   void QueueImageDecode(const PaintImage& image,
-                        const base::Callback<void(bool)>& callback);
+                        base::OnceCallback<void(bool)> callback);
 
   // Unlock all locked images - used to respond to memory pressure or
   // application background.
@@ -44,8 +48,9 @@ class CC_EXPORT DecodedImageTracker {
   // unlock them.
   void OnImagesUsedInDraw(const std::vector<DrawImage>& draw_images);
 
-  using NowFn = base::Callback<base::TimeTicks()>;
-  void SetNowFunctionForTesting(NowFn now_fn) { now_fn_ = now_fn; }
+  void SetTickClockForTesting(const base::TickClock* tick_clock) {
+    tick_clock_ = tick_clock;
+  }
 
   // Test only functions:
   size_t NumLockedImagesForTesting() const { return locked_images_.size(); }
@@ -53,7 +58,7 @@ class CC_EXPORT DecodedImageTracker {
  private:
   friend class DecodedImageTrackerTest;
 
-  void ImageDecodeFinished(const base::Callback<void(bool)>& callback,
+  void ImageDecodeFinished(base::OnceCallback<void(bool)> callback,
                            PaintImage::Id image_id,
                            ImageController::ImageDecodeRequestId request_id,
                            ImageController::ImageDecodeResult result);
@@ -69,25 +74,25 @@ class CC_EXPORT DecodedImageTracker {
     ImageLock(DecodedImageTracker* tracker,
               ImageController::ImageDecodeRequestId request_id,
               base::TimeTicks lock_time);
+    ImageLock(const ImageLock&) = delete;
     ~ImageLock();
+
+    ImageLock& operator=(const ImageLock&) = delete;
     base::TimeTicks lock_time() const { return lock_time_; }
 
    private:
     DecodedImageTracker* tracker_;
     ImageController::ImageDecodeRequestId request_id_;
     base::TimeTicks lock_time_;
-    DISALLOW_COPY_AND_ASSIGN(ImageLock);
   };
   base::flat_map<PaintImage::Id, std::unique_ptr<ImageLock>> locked_images_;
   bool timeout_pending_ = false;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   // Defaults to base::TimeTicks::Now(), but overrideable for testing.
-  NowFn now_fn_;
+  const base::TickClock* tick_clock_;
 
   base::WeakPtrFactory<DecodedImageTracker> weak_ptr_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(DecodedImageTracker);
 };
 
 }  // namespace cc

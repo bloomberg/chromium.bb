@@ -4,6 +4,7 @@
 
 #include "components/safe_browsing/browser/browser_url_loader_throttle.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
 #include "components/safe_browsing/browser/safe_browsing_url_checker_impl.h"
@@ -144,7 +145,7 @@ void BrowserURLLoaderThrottle::OnCompleteCheck(bool slow_check,
     url_checker_.reset();
     pending_checks_ = 0;
     pending_slow_checks_ = 0;
-    delegate_->CancelWithError(net::ERR_ABORTED,
+    delegate_->CancelWithError(GetNetErrorCodeForSafeBrowsing(),
                                kCustomCancelReasonForURLLoader);
   }
 }

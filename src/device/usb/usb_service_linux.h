@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequenced_task_runner.h"
 #include "device/usb/usb_service.h"
 
 namespace device {
@@ -30,14 +31,15 @@ class UsbServiceLinux : public UsbService {
   using DeviceMap =
       std::unordered_map<std::string, scoped_refptr<UsbDeviceLinux>>;
 
-  class FileThreadHelper;
+  class BlockingTaskRunnerHelper;
 
   void OnDeviceAdded(const std::string& device_path,
                      const UsbDeviceDescriptor& descriptor,
                      const std::string& manufacturer,
                      const std::string& product,
                      const std::string& serial_number,
-                     uint8_t active_configuration);
+                     uint8_t active_configuration,
+                     uint32_t bus_number, uint32_t port_number);
   void DeviceReady(scoped_refptr<UsbDeviceLinux> device, bool success);
   void OnDeviceRemoved(const std::string& device_path);
   void HelperStarted();
@@ -55,7 +57,8 @@ class UsbServiceLinux : public UsbService {
   uint32_t first_enumeration_countdown_ = 0;
   std::list<GetDevicesCallback> enumeration_callbacks_;
 
-  std::unique_ptr<FileThreadHelper> helper_;
+  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
+  std::unique_ptr<BlockingTaskRunnerHelper, base::OnTaskRunnerDeleter> helper_;
   DeviceMap devices_by_path_;
 
   base::WeakPtrFactory<UsbServiceLinux> weak_factory_;

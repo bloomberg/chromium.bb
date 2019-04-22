@@ -115,7 +115,7 @@ Follow [standard Chromium
 policies](https://www.chromium.org/for-testers/bug-reporting-guidelines/triage-best-practices).
 *Priority-2* represents wanted for this release but can be punted for a release.
 *Priority-3* are bugs not time sensitive.  There is an even-lower-priority
-state; see the *NextAction=01/08/2019* below.
+state; see the *NextAction=01/07/2020* below.
 
 If you aren't sure of the scope, severity, or implications of an issue, prefer
 to assign it a higher priority (*1* or *2*) and try to assign it to someone
@@ -175,7 +175,7 @@ The subcomponents of omnibox bugs include:
 | UI>Browser>Omnibox>ZeroSuggest | Suggestions displayed on omnibox focus (both contextual and non-contextual). |
 
 If the bug is extremely low priority, set the **NextAction field** to
-**01/08/2019** and mention that we will "reassess" the bug next year.  This
+**01/07/2020** and mention that we will "reassess" the bug next year.  This
 NextAction field is for Priority-3 bugs that are somehow less important than
 other *priority-3* bugs.  These are bugs we’re sure no one on the team intends
 to fix this year (e.g., really unimportant, or mostly unimportant and hard to

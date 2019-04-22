@@ -7,12 +7,12 @@
 
 #include <string>
 
+#include "base/component_export.h"
 #include "base/macros.h"
-#include "chromeos/chromeos_export.h"
 
 namespace chromeos {
 
-class CHROMEOS_EXPORT NetworkTypePattern {
+class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkTypePattern {
  public:
   // Matches any network.
   static NetworkTypePattern Default();

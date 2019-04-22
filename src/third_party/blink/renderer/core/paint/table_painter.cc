@@ -64,10 +64,7 @@ void TablePainter::PaintBoxDecorationBackground(
         .PaintBoxDecorationBackgroundWithRect(paint_info, rect, layout_table_);
   }
 
-  if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled()) {
-    BoxPainter(layout_table_)
-        .RecordHitTestData(paint_info, rect, layout_table_);
-  }
+  BoxPainter(layout_table_).RecordHitTestData(paint_info, rect, layout_table_);
 }
 
 void TablePainter::PaintMask(const PaintInfo& paint_info,

@@ -44,7 +44,8 @@
 namespace media {
 
 class V4L2Queue;
-class V4L2BufferQueueProxy;
+class V4L2BufferRefBase;
+class V4L2BuffersList;
 
 // A unique reference to a buffer for clients to prepare and submit.
 //
@@ -104,6 +105,15 @@ class MEDIA_GPU_EXPORT V4L2WritableBufferRef {
   // Returns the previously-set number of bytes used for |plane|.
   size_t GetPlaneBytesUsed(const size_t plane) const;
 
+  // Return the VideoFrame underlying this buffer. The VideoFrame's layout
+  // will match that of the V4L2 format. This method will *always* return the
+  // same VideoFrame instance for a given V4L2 buffer. Moreover, the VideoFrame
+  // instance will also be the same across V4L2WritableBufferRef and
+  // V4L2ReadableBufferRef if both references point to the same V4L2 buffer.
+  // Note: at the moment, this method is valid for MMAP buffers only. It will
+  // return nullptr for any other buffer type.
+  const scoped_refptr<VideoFrame>& GetVideoFrame() WARN_UNUSED_RESULT;
+
   // Return the V4L2 buffer ID of the underlying buffer.
   // TODO(acourbot) This is used for legacy clients but should be ultimately
   // removed. See crbug/879971
@@ -117,10 +127,10 @@ class MEDIA_GPU_EXPORT V4L2WritableBufferRef {
   bool DoQueue() &&;
 
   V4L2WritableBufferRef(const struct v4l2_buffer* v4l2_buffer,
-                        scoped_refptr<V4L2Queue> queue);
+                        base::WeakPtr<V4L2Queue> queue);
   friend class V4L2BufferRefFactory;
 
-  std::unique_ptr<V4L2BufferQueueProxy> buffer_data_;
+  std::unique_ptr<V4L2BufferRefBase> buffer_data_;
 
   SEQUENCE_CHECKER(sequence_checker_);
   DISALLOW_COPY_AND_ASSIGN(V4L2WritableBufferRef);
@@ -131,8 +141,14 @@ class MEDIA_GPU_EXPORT V4L2WritableBufferRef {
 // Clients use this class to query the buffer state and content, and are
 // guaranteed that the buffer will not be reused until all references are
 // destroyed.
+// All methods of this class must be called from the same sequence, but
+// instances of V4L2ReadableBuffer objects can be destroyed from any sequence.
+// They can even outlive the V4L2 buffers they originate from. This flexibility
+// is required because V4L2ReadableBufferRefs can be embedded into VideoFrames,
+// which are then passed to other threads and not necessarily destroyed before
+// the V4L2Queue buffers are freed.
 class MEDIA_GPU_EXPORT V4L2ReadableBuffer
-    : public base::RefCounted<V4L2ReadableBuffer> {
+    : public base::RefCountedThreadSafe<V4L2ReadableBuffer> {
  public:
   // Returns whether the V4L2_BUF_FLAG_LAST flag is set for this buffer.
   bool IsLast() const;
@@ -148,17 +164,27 @@ class MEDIA_GPU_EXPORT V4L2ReadableBuffer
   // removed. See crbug/879971
   size_t BufferId() const;
 
+  // Return the VideoFrame underlying this buffer. The VideoFrame's layout
+  // will match that of the V4L2 format. This method will *always* return the
+  // same VideoFrame instance for a given V4L2 buffer. Moreover, the VideoFrame
+  // instance will also be the same across V4L2WritableBufferRef and
+  // V4L2ReadableBufferRef if both references point to the same V4L2 buffer.
+  // Note: at the moment, this method is valid for MMAP buffers only. It will
+  // return nullptr for any other buffer type.
+  const scoped_refptr<VideoFrame>& GetVideoFrame() WARN_UNUSED_RESULT;
+
  private:
+  friend class V4L2BufferRefFactory;
+  friend class base::RefCountedThreadSafe<V4L2ReadableBuffer>;
+
   ~V4L2ReadableBuffer();
 
   V4L2ReadableBuffer(const struct v4l2_buffer* v4l2_buffer,
-                     scoped_refptr<V4L2Queue> queue);
-  friend class V4L2BufferRefFactory;
+                     base::WeakPtr<V4L2Queue> queue);
 
-  std::unique_ptr<V4L2BufferQueueProxy> buffer_data_;
+  std::unique_ptr<V4L2BufferRefBase> buffer_data_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-  friend class base::RefCounted<V4L2ReadableBuffer>;
   DISALLOW_COPY_AND_ASSIGN(V4L2ReadableBuffer);
 };
 
@@ -203,6 +229,13 @@ class MEDIA_GPU_EXPORT V4L2Queue
   // references to buffers previously allocated held by the client must be
   // released, or this call will fail.
   bool DeallocateBuffers();
+
+  // Returns the memory usage of v4l2 buffers owned by this V4L2Queue which are
+  // mapped in user space memory.
+  size_t GetMemoryUsage() const;
+
+  // Returns |memory_|, memory type of last buffers allocated by this V4L2Queue.
+  v4l2_memory GetMemoryType() const;
 
   // Return a unique pointer to a free buffer for the caller to prepare and
   // submit, or an empty pointer if no buffer is currently free.
@@ -249,8 +282,6 @@ class MEDIA_GPU_EXPORT V4L2Queue
  private:
   ~V4L2Queue();
 
-  // Called when clients lose their reference to a buffer.
-  void ReturnBuffer(size_t buffer_id);
   // Called when clients request a buffer to be queued.
   bool QueueBuffer(struct v4l2_buffer* v4l2_buffer);
 
@@ -263,7 +294,7 @@ class MEDIA_GPU_EXPORT V4L2Queue
 
   // Buffers that are available for client to get and submit.
   // Buffers in this list are not referenced by anyone else than ourselves.
-  std::set<size_t> free_buffers_;
+  scoped_refptr<V4L2BuffersList> free_buffers_;
   // Buffers that have been queued by the client, and not dequeued yet.
   std::set<size_t> queued_buffers_;
 
@@ -271,11 +302,13 @@ class MEDIA_GPU_EXPORT V4L2Queue
   // Callback to call in this queue's destructor.
   base::OnceClosure destroy_cb_;
 
+  base::WeakPtrFactory<V4L2Queue> weak_this_factory_;
+
   V4L2Queue(scoped_refptr<V4L2Device> dev,
             enum v4l2_buf_type type,
             base::OnceClosure destroy_cb);
   friend class V4L2QueueFactory;
-  friend class V4L2BufferQueueProxy;
+  friend class V4L2BufferRefBase;
   friend class base::RefCountedThreadSafe<V4L2Queue>;
 
   SEQUENCE_CHECKER(sequence_checker_);
@@ -300,15 +333,21 @@ class MEDIA_GPU_EXPORT V4L2Device
       uint32_t pix_fmt,
       bool is_encoder);
   static uint32_t V4L2PixFmtToDrmFormat(uint32_t format);
-  // Convert format requirements requested by a V4L2 device to gfx::Size.
-  static gfx::Size CodedSizeFromV4L2Format(struct v4l2_format format);
+  // Calculates the largest plane's allocation size requested by a V4L2 device.
+  static gfx::Size AllocatedSizeFromV4L2Format(struct v4l2_format format);
 
   // Convert required H264 profile and level to V4L2 enums.
   static int32_t VideoCodecProfileToV4L2H264Profile(VideoCodecProfile profile);
   static int32_t H264LevelIdcToV4L2H264Level(uint8_t level_idc);
 
+  // Converts v4l2_memory to a string.
+  static std::string V4L2MemoryToString(const v4l2_memory memory);
+
   // Composes human readable string of v4l2_format.
   static std::string V4L2FormatToString(const struct v4l2_format& format);
+
+  // Composes human readable string of v4l2_buffer.
+  static std::string V4L2BufferToString(const struct v4l2_buffer& buffer);
 
   // Composes VideoFrameLayout based on v4l2_format.
   // If error occurs, it returns base::nullopt.
@@ -415,8 +454,8 @@ class MEDIA_GPU_EXPORT V4L2Device
   // Returns the supported texture target for the V4L2Device.
   virtual GLenum GetTextureTarget() = 0;
 
-  // Returns the preferred V4L2 input format for |type| or 0 if none.
-  virtual uint32_t PreferredInputFormat(Type type) = 0;
+  // Returns the preferred V4L2 input formats for |type| or empty if none.
+  virtual std::vector<uint32_t> PreferredInputFormat(Type type) = 0;
 
   // NOTE: The below methods to query capabilities have a side effect of
   // closing the previously-open device, if any, and should not be called after

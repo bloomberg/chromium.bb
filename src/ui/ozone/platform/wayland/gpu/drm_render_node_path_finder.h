@@ -13,12 +13,12 @@ namespace ui {
 // A helper class that finds a DRM render node device and returns a path to it.
 class DrmRenderNodePathFinder {
  public:
+  // Triggers FindDrmRenderNodePath.
   DrmRenderNodePathFinder();
   ~DrmRenderNodePathFinder();
 
-  // Returns a path to a drm render node device. If it hasn't been found yet,
-  // triggers FindDrmRenderNodePath and returns the path.
-  base::FilePath GetDrmRenderNodePath();
+  // Returns a path to a drm render node device.
+  base::FilePath GetDrmRenderNodePath() const;
 
  private:
   void FindDrmRenderNodePath();

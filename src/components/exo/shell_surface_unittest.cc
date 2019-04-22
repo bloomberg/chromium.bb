@@ -13,6 +13,7 @@
 #include "ash/wm/wm_event.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"
 #include "ash/wm/workspace_controller_test_api.h"
+#include "base/bind.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/exo/buffer.h"
@@ -25,6 +26,7 @@
 #include "components/exo/test/exo_test_helper.h"
 #include "components/exo/wm_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/client/capture_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/hit_test.h"
@@ -36,7 +38,6 @@
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
 #include "ui/views/widget/widget.h"
-#include "ui/wm/core/capture_controller.h"
 #include "ui/wm/core/window_util.h"
 
 namespace exo {
@@ -651,6 +652,41 @@ TEST_F(ShellSurfaceTest, CycleSnap) {
             shell_surface->GetWidget()->GetWindowBoundsInScreen().width());
 }
 
+TEST_F(ShellSurfaceTest, Transient) {
+  gfx::Size buffer_size(256, 256);
+
+  std::unique_ptr<Buffer> parent_buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> parent_surface(new Surface);
+  parent_surface->Attach(parent_buffer.get());
+  std::unique_ptr<ShellSurface> parent_shell_surface(
+      new ShellSurface(parent_surface.get()));
+  parent_surface->Commit();
+
+  std::unique_ptr<Buffer> child_buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> child_surface(new Surface);
+  child_surface->Attach(child_buffer.get());
+  std::unique_ptr<ShellSurface> child_shell_surface(
+      new ShellSurface(child_surface.get()));
+  // Importantly, a transient window has an associated application.
+  child_surface->SetApplicationId("fake_app_id");
+  child_surface->SetParent(parent_surface.get(), gfx::Point(50, 50));
+  child_surface->Commit();
+
+  aura::Window* parent_window =
+      parent_shell_surface->GetWidget()->GetNativeWindow();
+  aura::Window* child_window =
+      child_shell_surface->GetWidget()->GetNativeWindow();
+  ASSERT_TRUE(parent_window && child_window);
+
+  // The visibility of transient windows is controlled by the parent.
+  parent_window->Hide();
+  EXPECT_FALSE(child_window->IsVisible());
+  parent_window->Show();
+  EXPECT_TRUE(child_window->IsVisible());
+}
+
 TEST_F(ShellSurfaceTest, Popup) {
   gfx::Size buffer_size(256, 256);
   std::unique_ptr<Buffer> buffer(
@@ -676,7 +712,7 @@ TEST_F(ShellSurfaceTest, Popup) {
   // Verify that created shell surface is popup and has capture.
   EXPECT_EQ(aura::client::WINDOW_TYPE_POPUP,
             popup_shell_surface->GetWidget()->GetNativeWindow()->type());
-  EXPECT_EQ(wm::CaptureController::Get()->GetCaptureWindow(),
+  EXPECT_EQ(WMHelper::GetInstance()->GetCaptureClient()->GetCaptureWindow(),
             popup_shell_surface->GetWidget()->GetNativeWindow());
 
   // Setting frame type on popup should have no effect.
@@ -696,7 +732,7 @@ TEST_F(ShellSurfaceTest, Popup) {
             sub_popup_shell_surface->GetWidget()->GetWindowBoundsInScreen());
 
   // The capture should be on sub_popup_shell_surface.
-  EXPECT_EQ(wm::CaptureController::Get()->GetCaptureWindow(),
+  EXPECT_EQ(WMHelper::GetInstance()->GetCaptureClient()->GetCaptureWindow(),
             sub_popup_shell_surface->GetWidget()->GetNativeWindow());
   EXPECT_EQ(aura::client::WINDOW_TYPE_POPUP,
             sub_popup_shell_surface->GetWidget()->GetNativeWindow()->type());
@@ -705,34 +741,30 @@ TEST_F(ShellSurfaceTest, Popup) {
     // Mouse is on the top most popup.
     ui::MouseEvent event(ui::ET_MOUSE_MOVED, gfx::Point(0, 0),
                          gfx::Point(100, 50), ui::EventTimeForNow(), 0, 0);
-    EXPECT_EQ(sub_popup_surface.get(),
-              ShellSurfaceBase::GetTargetSurfaceForLocatedEvent(&event));
+    EXPECT_EQ(sub_popup_surface.get(), GetTargetSurfaceForLocatedEvent(&event));
   }
   {
     // Move the mouse to the parent popup.
     ui::MouseEvent event(ui::ET_MOUSE_MOVED, gfx::Point(-25, 0),
                          gfx::Point(75, 50), ui::EventTimeForNow(), 0, 0);
-    EXPECT_EQ(popup_surface.get(),
-              ShellSurfaceBase::GetTargetSurfaceForLocatedEvent(&event));
+    EXPECT_EQ(popup_surface.get(), GetTargetSurfaceForLocatedEvent(&event));
   }
   {
     // Move the mouse to the main window.
     ui::MouseEvent event(ui::ET_MOUSE_MOVED, gfx::Point(-25, -25),
                          gfx::Point(75, 25), ui::EventTimeForNow(), 0, 0);
-    EXPECT_EQ(surface.get(),
-              ShellSurfaceBase::GetTargetSurfaceForLocatedEvent(&event));
+    EXPECT_EQ(surface.get(), GetTargetSurfaceForLocatedEvent(&event));
   }
 
   // Removing top most popup moves the grab to parent popup.
   sub_popup_shell_surface.reset();
-  EXPECT_EQ(wm::CaptureController::Get()->GetCaptureWindow(),
+  EXPECT_EQ(WMHelper::GetInstance()->GetCaptureClient()->GetCaptureWindow(),
             popup_shell_surface->GetWidget()->GetNativeWindow());
   {
     // Targetting should still work.
     ui::MouseEvent event(ui::ET_MOUSE_MOVED, gfx::Point(0, 0),
                          gfx::Point(50, 50), ui::EventTimeForNow(), 0, 0);
-    EXPECT_EQ(popup_surface.get(),
-              ShellSurfaceBase::GetTargetSurfaceForLocatedEvent(&event));
+    EXPECT_EQ(popup_surface.get(), GetTargetSurfaceForLocatedEvent(&event));
   }
 }
 

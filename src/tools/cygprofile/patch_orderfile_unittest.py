@@ -30,6 +30,36 @@ class TestPatchOrderFile(unittest.TestCase):
 
     self.assertEqual(list(TestIterator()), [1,2,3])
 
+  def testMaxOutlinedIndex(self):
+    self.assertEquals(7, patch_orderfile._GetMaxOutlinedIndex(
+        {'OUTLINED_FUNCTION_{}'.format(idx): None
+         for idx in [1, 2, 3, 7]}))
+    self.assertRaises(AssertionError, patch_orderfile._GetMaxOutlinedIndex,
+                      {'OUTLINED_FUNCTION_{}'.format(idx): None
+                       for idx in [1, 200, 3, 11]})
+    self.assertEquals(None, patch_orderfile._GetMaxOutlinedIndex(
+        {'a': None, 'b': None}))
 
-if __name__ == "__main__":
+  def testPatchedSymbols(self):
+    # From input symbols a b c d, symbols a and d match themselves, symbol
+    # b matches b and x, and symbol c is missing.
+    self.assertEquals(list('abxd'),
+                      list(patch_orderfile._PatchedSymbols(
+                          {'a': 'a', 'b': 'bx', 'd': 'd'},
+                          'abcd', None)))
+
+  def testPatchedSymbolsWithOutlining(self):
+    # As above, but add outlined functions at the end. The aliased outlined
+    # function should be ignored.
+    self.assertEquals(list('abd') +
+                      ['OUTLINED_FUNCTION_{}'.format(i)
+                       for i in xrange(5)],
+                      list(patch_orderfile._PatchedSymbols(
+                          {'a': 'a',
+                           'b': ['b', 'OUTLINED_FUNCTION_4'],
+                           'd': 'd'},
+                          ['a', 'b', 'OUTLINED_FUNCTION_2', 'c', 'd'], 2)))
+
+
+if __name__ == '__main__':
   unittest.main()

@@ -4,6 +4,7 @@
 
 #include "base/process/process.h"
 
+#include "base/clang_coverage_buildflags.h"
 #include "base/debug/activity_tracker.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
@@ -86,7 +87,7 @@ bool Process::CanBackgroundProcesses() {
 
 // static
 void Process::TerminateCurrentProcessImmediately(int exit_code) {
-#if defined(CLANG_COVERAGE)
+#if BUILDFLAG(CLANG_COVERAGE)
   WriteClangCoverageProfile();
 #endif
   ::TerminateProcess(GetCurrentProcess(), exit_code);

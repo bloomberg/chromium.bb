@@ -7,7 +7,6 @@ from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
 from google.protobuf import reflection as _reflection
 from google.protobuf import symbol_database as _symbol_database
-from google.protobuf import descriptor_pb2
 # @@protoc_insertion_point(imports)
 
 _sym_db = _symbol_database.Default()
@@ -22,10 +21,11 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='google/protobuf/internal/descriptor_pool_test2.proto',
   package='google.protobuf.python.internal',
   syntax='proto2',
+  serialized_options=None,
   serialized_pb=_b('\n4google/protobuf/internal/descriptor_pool_test2.proto\x12\x1fgoogle.protobuf.python.internal\x1a\x34google/protobuf/internal/descriptor_pool_test1.proto\x1a,google/protobuf/internal/more_messages.proto\"\xef\x06\n\x13\x44\x65scriptorPoolTest3\x12X\n\x0bnested_enum\x18\x01 \x01(\x0e\x32?.google.protobuf.python.internal.DescriptorPoolTest3.NestedEnum:\x02XI\x12Z\n\x0enested_message\x18\x02 \x01(\x0b\x32\x42.google.protobuf.python.internal.DescriptorPoolTest3.NestedMessage\x1a\xf7\x03\n\rNestedMessage\x12\x66\n\x0bnested_enum\x18\x01 \x01(\x0e\x32M.google.protobuf.python.internal.DescriptorPoolTest3.NestedMessage.NestedEnum:\x02PI\x12\x18\n\x0cnested_field\x18\x02 \x01(\t:\x02nu\x12q\n\x13\x64\x65\x65p_nested_message\x18\x03 \x01(\x0b\x32T.google.protobuf.python.internal.DescriptorPoolTest3.NestedMessage.DeepNestedMessage\x1a\xcd\x01\n\x11\x44\x65\x65pNestedMessage\x12y\n\x0bnested_enum\x18\x01 \x01(\x0e\x32_.google.protobuf.python.internal.DescriptorPoolTest3.NestedMessage.DeepNestedMessage.NestedEnum:\x03RHO\x12\x1b\n\x0cnested_field\x18\x02 \x01(\t:\x05sigma\" \n\nNestedEnum\x12\x07\n\x03RHO\x10\x11\x12\t\n\x05SIGMA\x10\x12\"!\n\nNestedEnum\x12\x0b\n\x07OMICRON\x10\x0f\x12\x06\n\x02PI\x10\x10\"\x1c\n\nNestedEnum\x12\x06\n\x02NU\x10\r\x12\x06\n\x02XI\x10\x0e\x32\x89\x01\n\x14\x64\x65scriptor_pool_test\x12\x34.google.protobuf.python.internal.DescriptorPoolTest1\x18\xe9\x07 \x01(\x0b\x32\x34.google.protobuf.python.internal.DescriptorPoolTest3P\x01')
   ,
-  dependencies=[google_dot_protobuf_dot_internal_dot_descriptor__pool__test1__pb2.DESCRIPTOR,google_dot_protobuf_dot_internal_dot_more__messages__pb2.DESCRIPTOR,])
-_sym_db.RegisterFileDescriptor(DESCRIPTOR)
+  dependencies=[google_dot_protobuf_dot_internal_dot_descriptor__pool__test1__pb2.DESCRIPTOR,google_dot_protobuf_dot_internal_dot_more__messages__pb2.DESCRIPTOR,],
+  public_dependencies=[google_dot_protobuf_dot_internal_dot_more__messages__pb2.DESCRIPTOR,])
 
 
 
@@ -37,15 +37,15 @@ _DESCRIPTORPOOLTEST3_NESTEDMESSAGE_DEEPNESTEDMESSAGE_NESTEDENUM = _descriptor.En
   values=[
     _descriptor.EnumValueDescriptor(
       name='RHO', index=0, number=17,
-      options=None,
+      serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='SIGMA', index=1, number=18,
-      options=None,
+      serialized_options=None,
       type=None),
   ],
   containing_type=None,
-  options=None,
+  serialized_options=None,
   serialized_start=832,
   serialized_end=864,
 )
@@ -59,15 +59,15 @@ _DESCRIPTORPOOLTEST3_NESTEDMESSAGE_NESTEDENUM = _descriptor.EnumDescriptor(
   values=[
     _descriptor.EnumValueDescriptor(
       name='OMICRON', index=0, number=15,
-      options=None,
+      serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='PI', index=1, number=16,
-      options=None,
+      serialized_options=None,
       type=None),
   ],
   containing_type=None,
-  options=None,
+  serialized_options=None,
   serialized_start=866,
   serialized_end=899,
 )
@@ -81,15 +81,15 @@ _DESCRIPTORPOOLTEST3_NESTEDENUM = _descriptor.EnumDescriptor(
   values=[
     _descriptor.EnumValueDescriptor(
       name='NU', index=0, number=13,
-      options=None,
+      serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='XI', index=1, number=14,
-      options=None,
+      serialized_options=None,
       type=None),
   ],
   containing_type=None,
-  options=None,
+  serialized_options=None,
   serialized_start=901,
   serialized_end=929,
 )
@@ -109,14 +109,14 @@ _DESCRIPTORPOOLTEST3_NESTEDMESSAGE_DEEPNESTEDMESSAGE = _descriptor.Descriptor(
       has_default_value=True, default_value=17,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='nested_field', full_name='google.protobuf.python.internal.DescriptorPoolTest3.NestedMessage.DeepNestedMessage.nested_field', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=True, default_value=_b("sigma").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -124,7 +124,7 @@ _DESCRIPTORPOOLTEST3_NESTEDMESSAGE_DEEPNESTEDMESSAGE = _descriptor.Descriptor(
   enum_types=[
     _DESCRIPTORPOOLTEST3_NESTEDMESSAGE_DEEPNESTEDMESSAGE_NESTEDENUM,
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto2',
   extension_ranges=[],
@@ -147,21 +147,21 @@ _DESCRIPTORPOOLTEST3_NESTEDMESSAGE = _descriptor.Descriptor(
       has_default_value=True, default_value=16,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='nested_field', full_name='google.protobuf.python.internal.DescriptorPoolTest3.NestedMessage.nested_field', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=True, default_value=_b("nu").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='deep_nested_message', full_name='google.protobuf.python.internal.DescriptorPoolTest3.NestedMessage.deep_nested_message', index=2,
       number=3, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -169,7 +169,7 @@ _DESCRIPTORPOOLTEST3_NESTEDMESSAGE = _descriptor.Descriptor(
   enum_types=[
     _DESCRIPTORPOOLTEST3_NESTEDMESSAGE_NESTEDENUM,
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto2',
   extension_ranges=[],
@@ -192,14 +192,14 @@ _DESCRIPTORPOOLTEST3 = _descriptor.Descriptor(
       has_default_value=True, default_value=14,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='nested_message', full_name='google.protobuf.python.internal.DescriptorPoolTest3.nested_message', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
     _descriptor.FieldDescriptor(
@@ -208,13 +208,13 @@ _DESCRIPTORPOOLTEST3 = _descriptor.Descriptor(
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=True, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   nested_types=[_DESCRIPTORPOOLTEST3_NESTEDMESSAGE, ],
   enum_types=[
     _DESCRIPTORPOOLTEST3_NESTEDENUM,
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto2',
   extension_ranges=[],
@@ -235,6 +235,7 @@ _DESCRIPTORPOOLTEST3.fields_by_name['nested_enum'].enum_type = _DESCRIPTORPOOLTE
 _DESCRIPTORPOOLTEST3.fields_by_name['nested_message'].message_type = _DESCRIPTORPOOLTEST3_NESTEDMESSAGE
 _DESCRIPTORPOOLTEST3_NESTEDENUM.containing_type = _DESCRIPTORPOOLTEST3
 DESCRIPTOR.message_types_by_name['DescriptorPoolTest3'] = _DESCRIPTORPOOLTEST3
+_sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 DescriptorPoolTest3 = _reflection.GeneratedProtocolMessageType('DescriptorPoolTest3', (_message.Message,), dict(
 

@@ -7,12 +7,13 @@
 #include <memory>
 
 #include "base/android/path_utils.h"
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/android/download/download_controller.h"
-#include "chrome/browser/download/download_path_reservation_tracker.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/android/infobars/duplicate_download_infobar.h"
+#include "components/download/public/common/download_path_reservation_tracker.h"
 #include "components/infobars/core/infobar.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -22,10 +23,10 @@ namespace {
 
 void CreateNewFileDone(
     const DownloadTargetDeterminerDelegate::ConfirmationCallback& callback,
-    PathValidationResult result,
+    download::PathValidationResult result,
     const base::FilePath& target_path) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (result == PathValidationResult::SUCCESS)
+  if (result == download::PathValidationResult::SUCCESS)
     callback.Run(DownloadConfirmationResult::CONFIRMED, target_path);
   else
     callback.Run(DownloadConfirmationResult::FAILED, base::FilePath());
@@ -90,12 +91,10 @@ bool ChromeDuplicateDownloadInfoBarDelegate::Accept() {
     return true;
   }
 
-  DownloadPathReservationTracker::GetReservedPath(
-      download_item_,
-      file_path_,
-      download_dir,
-      true,
-      DownloadPathReservationTracker::UNIQUIFY,
+  download::DownloadPathReservationTracker::GetReservedPath(
+      download_item_, file_path_, download_dir,
+      base::FilePath(), /* fallback_directory */
+      true, download::DownloadPathReservationTracker::UNIQUIFY,
       base::Bind(&CreateNewFileDone, file_selected_callback_));
   RecordDuplicateInfobarType(INFOBAR_CREATE_NEW_FILE);
   return true;

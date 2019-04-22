@@ -17,7 +17,7 @@ window.JSErrorCount = 0;
 /**
  * Count uncaught exceptions.
  */
-window.onerror = function(message, url) {
+window.onerror = (message, url) => {
   window.JSErrorCount++;
 };
 
@@ -36,15 +36,19 @@ window.addEventListener('unhandledrejection', (event) => {
 console.error = (() => {
   const orig = console.error;
   return (...args) => {
+    window.JSErrorCount++;
+    const currentStack = new Error('current stack').stack;
+    const originalStack = args && args[0] && args[0].stack;
     const prefix = '[unhandled-error]: ';
     if (args.length) {
       args[0] = prefix + args[0];
     } else {
       args.push(prefix);
     }
-    const stack = new Error('original stack').stack;
-    args.push(stack);
-    window.JSErrorCount++;
+    args.push([currentStack]);
+    if (originalStack) {
+      args.push('Original stack:\n' + originalStack);
+    }
     return orig.apply(this, [args.join('\n')]);
   };
 })();
@@ -61,8 +65,9 @@ console.assert = (() => {
   return (condition, ...args) => {
     const stack = new Error('original stack').stack;
     args.push(stack);
-    if (!condition)
+    if (!condition) {
       window.JSErrorCount++;
+    }
     return orig.apply(this, [condition].concat(args.join('\n')));
   };
 })();
@@ -95,5 +100,4 @@ Function.prototype.wrap = function(thisObject, ...bindArgs) {
     }
   };
 };
-
 })();

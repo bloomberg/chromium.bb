@@ -11,21 +11,21 @@
 #include <utility>
 
 #include "base/run_loop.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_delegate.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
-#include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
+#include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/chromeos/settings/token_encryptor.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_cryptohome_client.h"
-#include "chromeos/dbus/fake_session_manager_client.h"
+#include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
+#include "chromeos/dbus/session_manager/fake_session_manager_client.h"
+#include "chromeos/tpm/stub_install_attributes.h"
 #include "components/ownership/mock_owner_key_util.h"
 #include "components/prefs/testing_pref_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -53,21 +53,16 @@ class MockOAuth2TokenServiceObserver : public OAuth2TokenService::Observer {
   MOCK_METHOD1(OnRefreshTokenAvailable, void(const std::string&));
 };
 
-MockOAuth2TokenServiceObserver::MockOAuth2TokenServiceObserver() {
-}
+MockOAuth2TokenServiceObserver::MockOAuth2TokenServiceObserver() {}
 
-MockOAuth2TokenServiceObserver::~MockOAuth2TokenServiceObserver() {
-}
+MockOAuth2TokenServiceObserver::~MockOAuth2TokenServiceObserver() {}
 
 }  // namespace
 
 class DeviceOAuth2TokenServiceTest : public testing::Test {
  public:
   DeviceOAuth2TokenServiceTest()
-      : scoped_testing_local_state_(TestingBrowserProcess::GetGlobal()),
-        test_shared_loader_factory_(
-            base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-                &test_url_loader_factory_)) {}
+      : scoped_testing_local_state_(TestingBrowserProcess::GetGlobal()) {}
 
   // Most tests just want a noop crypto impl with a dummy refresh token value in
   // Local State (if the value is an empty string, it will be ignored).
@@ -81,8 +76,8 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
   }
 
   void SetUpWithPendingSalt() {
-    fake_cryptohome_client_->set_system_salt(std::vector<uint8_t>());
-    fake_cryptohome_client_->SetServiceIsAvailable(false);
+    FakeCryptohomeClient::Get()->set_system_salt(std::vector<uint8_t>());
+    FakeCryptohomeClient::Get()->SetServiceIsAvailable(false);
     SetUpDefaultValues();
   }
 
@@ -96,17 +91,14 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
 
   std::unique_ptr<OAuth2TokenService::Request> StartTokenRequest() {
     return oauth2_service_->StartRequest(oauth2_service_->GetRobotAccountId(),
-                                         std::set<std::string>(),
-                                         &consumer_);
+                                         std::set<std::string>(), &consumer_);
   }
 
   void SetUp() override {
-    fake_cryptohome_client_ = new FakeCryptohomeClient;
-    fake_cryptohome_client_->SetServiceIsAvailable(true);
-    fake_cryptohome_client_->set_system_salt(
+    CryptohomeClient::InitializeFake();
+    FakeCryptohomeClient::Get()->SetServiceIsAvailable(true);
+    FakeCryptohomeClient::Get()->set_system_salt(
         FakeCryptohomeClient::GetStubSystemSalt());
-    chromeos::DBusThreadManager::GetSetterForTesting()->SetCryptohomeClient(
-        std::unique_ptr<CryptohomeClient>(fake_cryptohome_client_));
 
     SystemSaltGetter::Initialize();
 
@@ -120,17 +112,17 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
 
   void TearDown() override {
     oauth2_service_.reset();
-    test_shared_loader_factory_->Detach();
-    base::TaskScheduler::GetInstance()->FlushForTesting();
+    base::ThreadPool::GetInstance()->FlushForTesting();
     DeviceSettingsService::Get()->UnsetSessionManager();
     SystemSaltGetter::Shutdown();
-    DBusThreadManager::Shutdown();
+    CryptohomeClient::Shutdown();
     base::RunLoop().RunUntilIdle();
   }
 
   void CreateService() {
     auto delegate = std::make_unique<DeviceOAuth2TokenServiceDelegate>(
-        test_shared_loader_factory_, scoped_testing_local_state_.Get());
+        test_url_loader_factory_.GetSafeWeakWrapper(),
+        scoped_testing_local_state_.Get());
     delegate->max_refresh_token_validation_retries_ = 0;
     oauth2_service_.reset(new DeviceOAuth2TokenService(std::move(delegate)));
     oauth2_service_->set_max_authorization_token_fetch_retries_for_testing(0);
@@ -195,18 +187,16 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
   // base::DefaultDeleter therefore doesn't work. However, the test class is
   // declared friend in DeviceOAuth2TokenService, so this deleter works.
   struct TokenServiceDeleter {
-    inline void operator()(DeviceOAuth2TokenService* ptr) const {
-      delete ptr;
-    }
+    inline void operator()(DeviceOAuth2TokenService* ptr) const { delete ptr; }
   };
 
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
-  ScopedCrosSettingsTestHelper cros_settings_test_helper_;
+  ScopedStubInstallAttributes scoped_stub_install_attributes_;
   ScopedTestingLocalState scoped_testing_local_state_;
+  ScopedTestDeviceSettingsService scoped_device_settings_service_;
+  ScopedTestCrosSettings scoped_test_cros_settings_{
+      scoped_testing_local_state_.Get()};
   network::TestURLLoaderFactory test_url_loader_factory_;
-  scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
-      test_shared_loader_factory_;
-  FakeCryptohomeClient* fake_cryptohome_client_;
   FakeSessionManagerClient session_manager_client_;
   policy::DevicePolicyBuilder device_policy_;
   std::unique_ptr<DeviceOAuth2TokenService, TokenServiceDeleter>
@@ -276,9 +266,9 @@ TEST_F(DeviceOAuth2TokenServiceTest, SaveEncryptedTokenEarly) {
   EXPECT_EQ("test-token", GetRefreshToken());
 
   // Make the system salt available.
-  fake_cryptohome_client_->set_system_salt(
+  FakeCryptohomeClient::Get()->set_system_salt(
       FakeCryptohomeClient::GetStubSystemSalt());
-  fake_cryptohome_client_->SetServiceIsAvailable(true);
+  FakeCryptohomeClient::Get()->SetServiceIsAvailable(true);
   base::RunLoop().RunUntilIdle();
 
   // The original token should still be present.
@@ -307,9 +297,9 @@ TEST_F(DeviceOAuth2TokenServiceTest, RefreshTokenValidation_SuccessAsyncLoad) {
   PerformURLFetches();
   AssertConsumerTokensAndErrors(0, 0);
 
-  fake_cryptohome_client_->set_system_salt(
+  FakeCryptohomeClient::Get()->set_system_salt(
       FakeCryptohomeClient::GetStubSystemSalt());
-  fake_cryptohome_client_->SetServiceIsAvailable(true);
+  FakeCryptohomeClient::Get()->SetServiceIsAvailable(true);
   base::RunLoop().RunUntilIdle();
 
   PerformURLFetches();
@@ -329,8 +319,8 @@ TEST_F(DeviceOAuth2TokenServiceTest, RefreshTokenValidation_Cancel) {
 }
 
 TEST_F(DeviceOAuth2TokenServiceTest, RefreshTokenValidation_NoSalt) {
-  fake_cryptohome_client_->set_system_salt(std::vector<uint8_t>());
-  fake_cryptohome_client_->SetServiceIsAvailable(true);
+  FakeCryptohomeClient::Get()->set_system_salt(std::vector<uint8_t>());
+  FakeCryptohomeClient::Get()->SetServiceIsAvailable(true);
   SetUpDefaultValues();
 
   EXPECT_FALSE(RefreshTokenIsAvailable());

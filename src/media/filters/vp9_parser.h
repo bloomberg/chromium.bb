@@ -440,7 +440,7 @@ class MEDIA_EXPORT Vp9Parser {
   // current frame.
   bool ParseCompressedHeader(const FrameInfo& frame_info, Result* result);
 
-  size_t GetQIndex(const Vp9QuantizationParams& quant, size_t segid) const;
+  int64_t GetQIndex(const Vp9QuantizationParams& quant, size_t segid) const;
   // Returns true if the setup succeeded.
   bool SetupSegmentationDequant();
   void SetupLoopFilter();

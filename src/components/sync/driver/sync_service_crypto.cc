@@ -6,13 +6,13 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/sync/base/nigori.h"
 #include "components/sync/base/sync_prefs.h"
-#include "components/sync/driver/clear_server_data_events.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/engine/sync_string_conversions.h"
@@ -89,15 +89,6 @@ class SyncEncryptionObserverProxy : public SyncEncryptionHandler::Observer {
             observer_, type, passphrase_time));
   }
 
-  void OnLocalSetPassphraseEncryption(
-      const SyncEncryptionHandler::NigoriState& nigori_state) override {
-    task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(
-            &SyncEncryptionHandler::Observer::OnLocalSetPassphraseEncryption,
-            observer_, nigori_state));
-  }
-
  private:
   base::WeakPtr<SyncEncryptionHandler::Observer> observer_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
@@ -169,7 +160,6 @@ bool SyncServiceCrypto::IsUsingSecondaryPassphrase() const {
 
 void SyncServiceCrypto::EnableEncryptEverything() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(IsEncryptEverythingAllowed());
   DCHECK(state_.engine);
 
   // TODO(atwilson): Persist the encryption_pending flag to address the various
@@ -260,17 +250,6 @@ PassphraseType SyncServiceCrypto::GetPassphraseType() const {
   return state_.cached_passphrase_type;
 }
 
-bool SyncServiceCrypto::IsEncryptEverythingAllowed() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return state_.encrypt_everything_allowed;
-}
-
-void SyncServiceCrypto::SetEncryptEverythingAllowed(bool allowed) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(allowed || !state_.engine || !IsEncryptEverythingEnabled());
-  state_.encrypt_everything_allowed = allowed;
-}
-
 ModelTypeSet SyncServiceCrypto::GetEncryptedDataTypes() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(state_.encrypted_types.Has(PASSWORDS));
@@ -332,7 +311,6 @@ void SyncServiceCrypto::OnEncryptedTypesChanged(ModelTypeSet encrypted_types,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   state_.encrypted_types = encrypted_types;
   state_.encrypt_everything = encrypt_everything;
-  DCHECK(state_.encrypt_everything_allowed || !state_.encrypt_everything);
   DVLOG(1) << "Encrypted types changed to "
            << ModelTypeSetToString(state_.encrypted_types)
            << " (encrypt everything is set to "
@@ -366,35 +344,6 @@ void SyncServiceCrypto::OnPassphraseTypeChanged(PassphraseType type,
   state_.cached_passphrase_type = type;
   state_.cached_explicit_passphrase_time = passphrase_time;
   notify_observers_.Run();
-}
-
-void SyncServiceCrypto::OnLocalSetPassphraseEncryption(
-    const SyncEncryptionHandler::NigoriState& nigori_state) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!base::FeatureList::IsEnabled(
-          switches::kSyncClearDataOnPassphraseEncryption)) {
-    return;
-  }
-
-  // At this point the user has set a custom passphrase and we have received the
-  // updated nigori state. Time to cache the nigori state, and catch up the
-  // active data types.
-  UMA_HISTOGRAM_ENUMERATION("Sync.ClearServerDataEvents",
-                            CLEAR_SERVER_DATA_STARTED, CLEAR_SERVER_DATA_MAX);
-  sync_prefs_->SetNigoriSpecificsForPassphraseTransition(
-      nigori_state.nigori_specifics);
-  sync_prefs_->SetPassphraseEncryptionTransitionInProgress(true);
-  BeginConfigureCatchUpBeforeClear();
-}
-
-void SyncServiceCrypto::BeginConfigureCatchUpBeforeClear() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!state_.saved_nigori_state);
-  state_.saved_nigori_state =
-      std::make_unique<SyncEncryptionHandler::NigoriState>();
-  sync_prefs_->GetNigoriSpecificsForPassphraseTransition(
-      &state_.saved_nigori_state->nigori_specifics);
-  reconfigure_.Run(CONFIGURE_REASON_CATCH_UP);
 }
 
 std::unique_ptr<SyncEncryptionHandler::Observer>

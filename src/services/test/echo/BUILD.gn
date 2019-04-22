@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//services/service_manager/public/service_manifest.gni")
-
 source_set("lib") {
   sources = [
     "echo_service.cc",
@@ -16,9 +14,4 @@ source_set("lib") {
     "//services/service_manager/public/mojom",
     "//services/test/echo/public/mojom",
   ]
-}
-
-service_manifest("manifest") {
-  name = "echo"
-  source = "manifest.json"
 }

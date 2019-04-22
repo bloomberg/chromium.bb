@@ -24,7 +24,7 @@ cr.define('device_table', function() {
    * @extends {HTMLTableElement}
    */
   var DeviceTable = cr.ui.define(function() {
-    /** @private {?Array<device_collection.Device>} */
+    /** @private {?Array<bluetooth.mojom.DeviceInfo>} */
     this.devices_ = null;
 
     return document.importNode(
@@ -140,8 +140,9 @@ cr.define('device_table', function() {
 
       for (var i = 0; i < this.headers_.length; i++) {
         // Skip the LINKS column. It has no data-field attribute.
-        if (i === COLUMNS.LINKS)
+        if (i === COLUMNS.LINKS) {
           continue;
+        }
         row.insertCell();
       }
 
@@ -176,7 +177,7 @@ cr.define('device_table', function() {
       this.body_.classList.add('table-body');
 
       for (var i = 0; i < this.devices_.length; i++) {
-        this.insertRow_(this.devices_.item(i));
+        this.insertRow_(this.devices_.item(i), null);
       }
     },
 
@@ -194,16 +195,18 @@ cr.define('device_table', function() {
 
       var forgetLink = row.cells[COLUMNS.LINKS].children[1];
 
-      if (this.inspectionMap_.has(device))
+      if (this.inspectionMap_.has(device)) {
         forgetLink.disabled = !this.inspectionMap_.get(device);
-      else
+      } else {
         forgetLink.disabled = true;
+      }
 
       // Update the properties based on the header field path.
       for (var i = 0; i < this.headers_.length; i++) {
         // Skip the LINKS column. It has no data-field attribute.
-        if (i === COLUMNS.LINKS)
+        if (i === COLUMNS.LINKS) {
           continue;
+        }
 
         var header = this.headers_[i];
         var propName = header.dataset.field;

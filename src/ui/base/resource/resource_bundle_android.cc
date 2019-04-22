@@ -8,6 +8,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "jni/ResourceBundle_jni.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -77,19 +78,30 @@ std::unique_ptr<DataPack> LoadDataPackFromLocalePak(
   return data_pack;
 }
 
+enum class LoadFailureReason {
+  kLocalePakNotFound,
+  kPackLoadFailedPrimary,
+  kPackLoadFailedSecondary,
+  kMaxValue = kPackLoadFailedSecondary,
+};
+
+void LogLoadLocaleFailureReason(LoadFailureReason reason) {
+  UMA_HISTOGRAM_ENUMERATION("Android.ResourceBundle.LoadLocaleFailure", reason);
+}
+
 }  // namespace
 
 void ResourceBundle::LoadCommonResources() {
   base::FilePath disk_path;
   base::PathService::Get(ui::DIR_RESOURCE_PAKS_ANDROID, &disk_path);
   disk_path = disk_path.AppendASCII("chrome_100_percent.pak");
-  if (LoadFromApkOrFile("assets/chrome_100_percent.pak",
-                        &disk_path,
-                        &g_chrome_100_percent_fd,
-                        &g_chrome_100_percent_region)) {
-    AddDataPackFromFileRegion(base::File(g_chrome_100_percent_fd),
-                              g_chrome_100_percent_region, SCALE_FACTOR_100P);
-  }
+  bool success =
+      LoadFromApkOrFile("assets/chrome_100_percent.pak", &disk_path,
+                        &g_chrome_100_percent_fd, &g_chrome_100_percent_region);
+  DCHECK(success);
+
+  AddDataPackFromFileRegion(base::File(g_chrome_100_percent_fd),
+                            g_chrome_100_percent_region, SCALE_FACTOR_100P);
 }
 
 // static
@@ -122,6 +134,7 @@ std::string ResourceBundle::LoadLocaleResources(
     if (locale_file_path.empty()) {
       // It's possible that there is no locale.pak.
       LOG(WARNING) << "locale_file_path.empty() for locale " << app_locale;
+      LogLoadLocaleFailureReason(LoadFailureReason::kLocalePakNotFound);
       return std::string();
     }
     int flags = base::File::FLAG_OPEN | base::File::FLAG_READ;
@@ -132,8 +145,10 @@ std::string ResourceBundle::LoadLocaleResources(
   locale_resources_data_ = LoadDataPackFromLocalePak(
       g_locale_pack_fd, g_locale_pack_region);
 
-  if (!locale_resources_data_.get())
+  if (!locale_resources_data_.get()) {
+    LogLoadLocaleFailureReason(LoadFailureReason::kPackLoadFailedPrimary);
     return std::string();
+  }
 
   // Load secondary locale .pak file if it exists. For debug build monochrome,
   // a secondary locale pak will always be loaded; however, it should be
@@ -146,8 +161,10 @@ std::string ResourceBundle::LoadLocaleResources(
     secondary_locale_resources_data_ = LoadDataPackFromLocalePak(
         g_secondary_locale_pack_fd, g_secondary_locale_pack_region);
 
-    if (!secondary_locale_resources_data_.get())
+    if (!secondary_locale_resources_data_.get()) {
+      LogLoadLocaleFailureReason(LoadFailureReason::kPackLoadFailedSecondary);
       return std::string();
+    }
   }
 
   return app_locale;

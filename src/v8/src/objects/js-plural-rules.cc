@@ -151,12 +151,6 @@ MaybeHandle<JSPluralRules> JSPluralRules::Initialize(
       Intl::ResolveLocale(isolate, JSPluralRules::GetAvailableLocales(),
                           requested_locales, matcher, {});
 
-  // 18. Set collator.[[Locale]] to r.[[locale]].
-  icu::Locale icu_locale = r.icu_locale;
-  DCHECK(!icu_locale.isBogus());
-
-  std::map<std::string, std::string> extensions = r.extensions;
-
   // 12. Set pluralRules.[[Locale]] to the value of r.[[locale]].
   Handle<String> locale_str =
       isolate->factory()->NewStringFromAsciiChecked(r.locale.c_str());
@@ -164,7 +158,7 @@ MaybeHandle<JSPluralRules> JSPluralRules::Initialize(
 
   std::unique_ptr<icu::PluralRules> icu_plural_rules;
   std::unique_ptr<icu::DecimalFormat> icu_decimal_format;
-  InitializeICUPluralRules(isolate, icu_locale, type, &icu_plural_rules,
+  InitializeICUPluralRules(isolate, r.icu_locale, type, &icu_plural_rules,
                            &icu_decimal_format);
   CHECK_NOT_NULL(icu_plural_rules.get());
   CHECK_NOT_NULL(icu_decimal_format.get());
@@ -229,7 +223,7 @@ void CreateDataPropertyForOptions(Isolate* isolate, Handle<JSObject> options,
   // This is a brand new JSObject that shouldn't already have the same
   // key so this shouldn't fail.
   CHECK(JSReceiver::CreateDataProperty(isolate, options, key_str, value,
-                                       kDontThrow)
+                                       Just(kDontThrow))
             .FromJust());
 }
 
@@ -320,16 +314,13 @@ Handle<JSObject> JSPluralRules::ResolvedOptions(
   return options;
 }
 
-std::set<std::string> JSPluralRules::GetAvailableLocales() {
-  int32_t num_locales = 0;
+const std::set<std::string>& JSPluralRules::GetAvailableLocales() {
   // TODO(ftang): For PluralRules, filter out locales that
   // don't support PluralRules.
   // PluralRules is missing an appropriate getAvailableLocales method,
   // so we should filter from all locales, but it's not clear how; see
   // https://ssl.icu-project.org/trac/ticket/12756
-  const icu::Locale* icu_available_locales =
-      icu::Locale::getAvailableLocales(num_locales);
-  return Intl::BuildLocaleSet(icu_available_locales, num_locales);
+  return Intl::GetAvailableLocalesForLocale();
 }
 
 }  // namespace internal

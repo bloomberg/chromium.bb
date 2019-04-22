@@ -13,7 +13,6 @@
 #import "ios/chrome/app/application_delegate/tab_opening.h"
 #import "ios/chrome/app/application_delegate/tab_switching.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
-#import "ios/chrome/browser/ui/main/browser_view_information.h"
 
 @class AppState;
 @class MetricsMediator;
@@ -30,10 +29,6 @@
                                      StartupInformation,
                                      TabOpening,
                                      TabSwitching>
-
-// A BrowserViewInformation object to perform BrowserViewController operations.
-@property(weak, nonatomic, readonly) id<BrowserViewInformation>
-    browserViewInformation;
 
 // The application window.
 @property(nonatomic, strong) UIWindow* window;

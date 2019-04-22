@@ -49,8 +49,9 @@ void LoadMonitoringExtensionHostQueue::StartMonitoring() {
   }
   started_ = true;
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&LoadMonitoringExtensionHostQueue::FinishMonitoring,
-                            weak_ptr_factory_.GetWeakPtr()),
+      FROM_HERE,
+      base::BindOnce(&LoadMonitoringExtensionHostQueue::FinishMonitoring,
+                     weak_ptr_factory_.GetWeakPtr()),
       monitor_time_);
 }
 

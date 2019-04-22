@@ -7,10 +7,9 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/debug/stack_trace.h"
 #include "base/logging.h"
 #include "content/common/input/ime_text_span_conversions.h"
-#include "content/renderer/gpu/layer_tree_view.h"
+#include "content/renderer/compositor/layer_tree_view.h"
 #include "content/renderer/ime_event_guard.h"
 #include "content/renderer/input/widget_input_handler_manager.h"
 #include "content/renderer/render_thread_impl.h"
@@ -26,10 +25,10 @@ FrameInputHandlerImpl::FrameInputHandlerImpl(
     mojom::FrameInputHandlerRequest request)
     : binding_(this),
       render_frame_(render_frame),
-      input_event_queue_(render_frame->GetRenderWidget()->GetInputEventQueue()),
+      input_event_queue_(
+          render_frame->GetLocalRootRenderWidget()->GetInputEventQueue()),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      weak_ptr_factory_(this)
-{
+      weak_ptr_factory_(this) {
   weak_this_ = weak_ptr_factory_.GetWeakPtr();
   // If we have created an input event queue move the mojo request over to the
   // compositor thread.
@@ -80,7 +79,7 @@ void FrameInputHandlerImpl::SetCompositionFromExistingText(
   if (!render_frame_)
     return;
 
-  ImeEventGuard guard(render_frame_->GetRenderWidget());
+  ImeEventGuard guard(render_frame_->GetLocalRootRenderWidget());
 
   render_frame_->GetWebFrame()->SetCompositionFromExistingText(
       start, end, ConvertUiImeTextSpansToBlinkImeTextSpans(ui_ime_text_spans));
@@ -309,7 +308,7 @@ void FrameInputHandlerImpl::SelectWordAroundCaret(
   if (render_frame_) {
     blink::WebLocalFrame* frame = render_frame_->GetWebFrame();
     blink::WebRange initial_range = frame->SelectionRange();
-    render_frame_->GetRenderWidget()->SetHandlingInputEvent(true);
+    render_frame_->GetLocalRootRenderWidget()->SetHandlingInputEvent(true);
     if (!initial_range.IsNull())
       did_select = frame->SelectWordAroundCaret();
     if (did_select) {
@@ -318,7 +317,7 @@ void FrameInputHandlerImpl::SelectWordAroundCaret(
       start_adjust = adjusted_range.StartOffset() - initial_range.StartOffset();
       end_adjust = adjusted_range.EndOffset() - initial_range.EndOffset();
     }
-    render_frame_->GetRenderWidget()->SetHandlingInputEvent(false);
+    render_frame_->GetLocalRootRenderWidget()->SetHandlingInputEvent(false);
   }
 
   // If the mojom channel is registered with compositor thread, we have to run
@@ -399,6 +398,11 @@ void FrameInputHandlerImpl::ScrollFocusedEditableNodeIntoRect(
   if (!render_frame_)
     return;
 
+  // OnSynchronizeVisualProperties does not call DidChangeVisibleViewport
+  // on OOPIFs. Since we are starting a new scroll operation now, call
+  // DidChangeVisibleViewport to ensure that we don't assume the element
+  // is already in view and ignore the scroll.
+  render_frame_->ResetHasScrolledFocusedEditableIntoView();
   render_frame_->ScrollFocusedEditableElementIntoRect(rect);
 }
 
@@ -429,7 +433,7 @@ void FrameInputHandlerImpl::GetWidgetInputHandler(
   }
   if (!render_frame_)
     return;
-  render_frame_->GetRenderWidget()
+  render_frame_->GetLocalRootRenderWidget()
       ->widget_input_handler_manager()
       ->AddAssociatedInterface(std::move(interface_request), std::move(host));
 }

@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "content/public/browser/service_worker_context.h"
+#include "url/gurl.h"
 
 namespace chromeos {
 
@@ -21,8 +22,13 @@ class ConnectionEstablisher {
   virtual ~ConnectionEstablisher() = default;
 
   virtual void EstablishConnection(
-      content::ServiceWorkerContext* service_worker_context,
-      ConnectionMode connection_mode) = 0;
+      const GURL& url,
+      ConnectionMode connection_mode,
+      content::ServiceWorkerContext* service_worker_context) = 0;
+
+  virtual void TearDownConnection(
+      const GURL& url,
+      content::ServiceWorkerContext* service_worker_context) = 0;
 
  protected:
   ConnectionEstablisher() = default;

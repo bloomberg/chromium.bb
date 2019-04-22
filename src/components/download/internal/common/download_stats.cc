@@ -8,9 +8,9 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "net/http/http_content_disposition.h"
@@ -401,8 +401,52 @@ constexpr const base::FilePath::CharType* kDangerousFileTypes[] = {
     FILE_PATH_LITERAL(".settingcontent-ms"),
     FILE_PATH_LITERAL(".oxt"),  // 317
     FILE_PATH_LITERAL(".pyd"),
-    FILE_PATH_LITERAL(".pyo"),      // 319
-    FILE_PATH_LITERAL(".desktop"),  // 320
+    FILE_PATH_LITERAL(".pyo"),              // 319
+    FILE_PATH_LITERAL(".desktop"),          // 320
+    FILE_PATH_LITERAL(".cpi"),              // 321
+    FILE_PATH_LITERAL(".jpg"),              // 322
+    FILE_PATH_LITERAL(".jpeg"),             // 323
+    FILE_PATH_LITERAL(".mp3"),              // 324
+    FILE_PATH_LITERAL(".mp4"),              // 325
+    FILE_PATH_LITERAL(".png"),              // 326
+    FILE_PATH_LITERAL(".xls"),              // 327
+    FILE_PATH_LITERAL(".doc"),              // 328
+    FILE_PATH_LITERAL(".pptx"),             // 329
+    FILE_PATH_LITERAL(".csv"),              // 330
+    FILE_PATH_LITERAL(".ica"),              // 331
+    FILE_PATH_LITERAL(".ppt"),              // 332
+    FILE_PATH_LITERAL(".gif"),              // 333
+    FILE_PATH_LITERAL(".txt"),              // 334
+    FILE_PATH_LITERAL(".package"),          // 335
+    FILE_PATH_LITERAL(".tif"),              // 336
+    FILE_PATH_LITERAL(".rtf"),              // 337
+    FILE_PATH_LITERAL(".webp"),             // 338
+    FILE_PATH_LITERAL(".mkv"),              // 339
+    FILE_PATH_LITERAL(".wav"),              // 340
+    FILE_PATH_LITERAL(".mov"),              // 341
+    FILE_PATH_LITERAL(".dot"),              // 342
+    FILE_PATH_LITERAL(".dotx"),             // 343
+    FILE_PATH_LITERAL(".xlsb"),             // 344
+    FILE_PATH_LITERAL(".xlt"),              // 345
+    FILE_PATH_LITERAL(".xlm"),              // 346
+    FILE_PATH_LITERAL(".xldm"),             // 347
+    FILE_PATH_LITERAL(".xla"),              // 348
+    FILE_PATH_LITERAL(".xlam"),             // 349
+    FILE_PATH_LITERAL(".xll"),              // 350
+    FILE_PATH_LITERAL(".xlw"),              // 351
+    FILE_PATH_LITERAL(".pot"),              // 352
+    FILE_PATH_LITERAL(".potm"),             // 353
+    FILE_PATH_LITERAL(".ppsm"),             // 354
+    FILE_PATH_LITERAL(".pps"),              // 355
+    FILE_PATH_LITERAL(".mobileconfig"),     // 356
+    FILE_PATH_LITERAL(".dylib"),            // 357
+    FILE_PATH_LITERAL(".service"),          // 358
+    FILE_PATH_LITERAL(".definition"),       // 359
+    FILE_PATH_LITERAL(".wflow"),            // 360
+    FILE_PATH_LITERAL(".caction"),          // 361
+    FILE_PATH_LITERAL(".configprofile"),    // 362
+    FILE_PATH_LITERAL(".internetconnect"),  // 363
+    FILE_PATH_LITERAL(".networkconnect"),   // 364
     // NOTE! When you add a type here, please add the UMA value as a comment.
     // These must all match DownloadItem.DangerousFileType in
     // enums.xml. From 263 onward, they should also match
@@ -417,7 +461,7 @@ const int64_t kHighBandwidthBytesPerSecond = 30 * 1024 * 1024;
 
 // Maps extensions to their matching UMA histogram int value.
 int GetDangerousFileType(const base::FilePath& file_path) {
-  for (size_t i = 0; i < arraysize(kDangerousFileTypes); ++i) {
+  for (size_t i = 0; i < base::size(kDangerousFileTypes); ++i) {
     if (file_path.MatchesExtension(kDangerousFileTypes[i]))
       return i + 1;
   }
@@ -1172,6 +1216,11 @@ void RecordDownloadHttpResponseCode(int response_code) {
 
 void RecordInProgressDBCount(InProgressDBCountTypes type) {
   UMA_HISTOGRAM_ENUMERATION("Download.InProgressDB.Counts", type);
+}
+
+void RecordDuplicateInProgressDownloadIdCount(int count) {
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Download.DuplicateInProgressDownloadIdCount",
+                              count, 1, 10, 11);
 }
 
 }  // namespace download

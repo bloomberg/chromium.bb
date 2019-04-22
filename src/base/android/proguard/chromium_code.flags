@@ -20,7 +20,7 @@
 -keep @interface org.chromium.base.annotations.UsedByReflection
 
 # Keeps for class level annotations.
--keep @org.chromium.base.annotations.UsedByReflection class *
+-keep @org.chromium.base.annotations.UsedByReflection class * {}
 
 # Keeps for method level annotations.
 -keepclasseswithmembers class * {

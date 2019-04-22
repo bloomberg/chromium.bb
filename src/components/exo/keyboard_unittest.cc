@@ -599,18 +599,27 @@ TEST_F(KeyboardTest, AckKeyboardKeyExpired) {
       ui::DomCode::US_W);
   generator.PressKey(ui::VKEY_W, ui::EF_CONTROL_DOWN);
 
-  // Keyboard processes pending events as if it's not handled if ack isnt' sent.
+  // Keyboard processes pending events as if it is handled when it expires,
+  // so |AcceleratorPressed()| should not be called.
   EXPECT_CALL(*shell_surface.get(), AcceleratorPressed(ui::Accelerator(
                                         ui::VKEY_W, ui::EF_CONTROL_DOWN,
                                         ui::Accelerator::KeyState::PRESSED)))
-      .WillOnce(testing::Return(true));
+      .Times(0);
+
   // Wait until |ProcessExpiredPendingKeyAcks| is fired.
   base::RunLoop run_loop;
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, run_loop.QuitClosure(),
       base::TimeDelta::FromMilliseconds(1000));
   run_loop.Run();
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
+
+  // Send ack for the key press as if it was not handled. In the normal case,
+  // |AcceleratorPressed()| should be called, but since the timeout passed, the
+  // key should have been treated as handled already and removed from the
+  // pending_key_acks_ map. Since the event is no longer in the map,
+  // |AcceleratorPressed()| should not be called.
+  keyboard->AckKeyboardKey(1, false /* handled */);
 
   // Release the key and reset modifier_flags.
   EXPECT_CALL(delegate, OnKeyboardModifiers(0));
@@ -675,16 +684,19 @@ TEST_F(KeyboardTest, AckKeyboardKeyExpiredWithMovingFocusAccelerator) {
       ui::DomCode::US_W);
   generator.PressKey(ui::VKEY_W, ui::EF_CONTROL_DOWN);
 
-  // Wait until |ProcessExpiredPendingKeyAcks| is fired.
-  // |ProcessExpiredPendingKeyAcks| will call |AcceleratorPressed| and focus
-  // will be moved from the surface.
   EXPECT_CALL(delegate, OnKeyboardLeave(surface.get()));
+
+  // Send ack as unhandled. This will call |AcceleratorPressed| and move the
+  // focus.
+  keyboard->AckKeyboardKey(1, false /* handled */);
+
+  // Wait until |ProcessExpiredPendingKeyAcks| is fired.
   base::RunLoop run_loop;
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, run_loop.QuitClosure(),
       base::TimeDelta::FromMilliseconds(1000));
   run_loop.Run();
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
 
   keyboard.reset();
 }

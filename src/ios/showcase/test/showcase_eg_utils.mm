@@ -4,6 +4,8 @@
 
 #import "ios/showcase/test/showcase_eg_utils.h"
 
+#import <EarlGrey/EarlGrey.h>
+
 #include "base/ios/ios_util.h"
 #import "base/mac/foundation_util.h"
 

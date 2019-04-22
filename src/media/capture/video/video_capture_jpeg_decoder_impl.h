@@ -19,30 +19,25 @@
 #include "media/capture/capture_export.h"
 #include "media/capture/video/video_capture_device_factory.h"
 #include "media/capture/video/video_capture_jpeg_decoder.h"
-#include "media/mojo/clients/mojo_jpeg_decode_accelerator.h"
-
-namespace base {
-class WaitableEvent;
-}
+#include "media/mojo/clients/mojo_mjpeg_decode_accelerator.h"
 
 namespace media {
 
 // Implementation of media::VideoCaptureJpegDecoder that delegates to a
-// media::mojom::JpegDecodeAccelerator. When a frame is received in
+// media::mojom::MjpegDecodeAccelerator. When a frame is received in
 // DecodeCapturedData(), it is copied to |in_shared_memory| for IPC transport
 // to |decoder_|. When the decoder is finished with the frame, |decode_done_cb_|
 // is invoked. Until |decode_done_cb_| is invoked, subsequent calls to
 // DecodeCapturedData() are ignored.
 // The given |decoder_task_runner| must allow blocking on |lock_|.
+// Instances must be destroyed on |decoder_task_runner|, but the
+// media::VideoCaptureJpegDecoder methods may be called from any thread.
 class CAPTURE_EXPORT VideoCaptureJpegDecoderImpl
-    : public media::VideoCaptureJpegDecoder,
-      public media::JpegDecodeAccelerator::Client {
+    : public VideoCaptureJpegDecoder,
+      public MjpegDecodeAccelerator::Client {
  public:
-  // |decode_done_cb| is called on the IO thread when decode succeeds. This can
-  // be on any thread. |decode_done_cb| is never called after
-  // VideoCaptureGpuJpegDecoder is destroyed.
   VideoCaptureJpegDecoderImpl(
-      MojoJpegDecodeAcceleratorFactoryCB jpeg_decoder_factory,
+      MojoMjpegDecodeAcceleratorFactoryCB jpeg_decoder_factory,
       scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
       DecodeDoneCB decode_done_cb,
       base::RepeatingCallback<void(const std::string&)> send_log_message_cb);
@@ -59,11 +54,11 @@ class CAPTURE_EXPORT VideoCaptureJpegDecoderImpl
       base::TimeDelta timestamp,
       media::VideoCaptureDevice::Client::Buffer out_buffer) override;
 
-  // JpegDecodeAccelerator::Client implementation.
-  // These will be called on IO thread.
+  // MjpegDecodeAccelerator::Client implementation.
+  // These will be called on |decoder_task_runner|.
   void VideoFrameReady(int32_t buffer_id) override;
   void NotifyError(int32_t buffer_id,
-                   media::JpegDecodeAccelerator::Error error) override;
+                   media::MjpegDecodeAccelerator::Error error) override;
 
  private:
   void FinishInitialization();
@@ -77,11 +72,11 @@ class CAPTURE_EXPORT VideoCaptureJpegDecoderImpl
 
   void DestroyDecoderOnIOThread(base::WaitableEvent* event);
 
-  MojoJpegDecodeAcceleratorFactoryCB jpeg_decoder_factory_;
+  MojoMjpegDecodeAcceleratorFactoryCB jpeg_decoder_factory_;
   scoped_refptr<base::SequencedTaskRunner> decoder_task_runner_;
 
   // The underlying JPEG decode accelerator.
-  std::unique_ptr<media::JpegDecodeAccelerator> decoder_;
+  std::unique_ptr<media::MjpegDecodeAccelerator> decoder_;
 
   // The callback to run when decode succeeds.
   const DecodeDoneCB decode_done_cb_;

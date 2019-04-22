@@ -236,8 +236,8 @@ class EndToEndInterfacePtrTest : public InterfacePtrTest {
     done_closure_ = run_loop.QuitClosure();
     done_runner_ = base::ThreadTaskRunnerHandle::Get();
     runner->PostTask(FROM_HERE,
-                     base::Bind(&EndToEndInterfacePtrTest::RunTestImpl,
-                                base::Unretained(this)));
+                     base::BindOnce(&EndToEndInterfacePtrTest::RunTestImpl,
+                                    base::Unretained(this)));
     run_loop.Run();
   }
 
@@ -264,7 +264,7 @@ class EndToEndInterfacePtrTest : public InterfacePtrTest {
   }
 
   base::Closure done_closure_;
-  scoped_refptr<base::SingleThreadTaskRunner> done_runner_;
+  scoped_refptr<base::SequencedTaskRunner> done_runner_;
   std::unique_ptr<MathCalculatorUI> calculator_ui_;
   std::unique_ptr<MathCalculatorImpl> calc_impl_;
 };
@@ -977,7 +977,7 @@ TEST_P(InterfacePtrTest, ThreadSafeInterfacePointerWithTaskRunner) {
   thread_safe_ptr = nullptr;
 }
 
-INSTANTIATE_MOJO_BINDINGS_TEST_CASE_P(InterfacePtrTest);
+INSTANTIATE_MOJO_BINDINGS_TEST_SUITE_P(InterfacePtrTest);
 
 }  // namespace
 }  // namespace test

@@ -300,8 +300,9 @@ GeneratedMessageFactory::GeneratedMessageFactory() {}
 GeneratedMessageFactory::~GeneratedMessageFactory() {}
 
 GeneratedMessageFactory* GeneratedMessageFactory::singleton() {
-  ::google::protobuf::GoogleOnceInit(&generated_message_factory_once_init_,
-                 &InitGeneratedMessageFactory);
+  ::google::protobuf::GoogleOnceInit(
+      &GOOGLE_PROTOBUF_GET_ONCE(generated_message_factory_once_init_),
+      &InitGeneratedMessageFactory);
   return generated_message_factory_;
 }
 

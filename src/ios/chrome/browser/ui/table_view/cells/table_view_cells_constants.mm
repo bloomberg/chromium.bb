@@ -8,14 +8,18 @@
 #error "This file requires ARC support."
 #endif
 
-const CGFloat kTableViewHeaderFooterViewHeight = 44.0;
+const CGFloat kTableViewHeaderFooterViewHeight = 48.0;
+const CGFloat kChromeTableViewCellHeight = 48.0;
 const CGFloat kTableViewHorizontalSpacing = 16.0;
+const CGFloat kTableViewOneLabelCellVerticalSpacing = 14.0;
+const CGFloat kTableViewTwoLabelsCellVerticalSpacing = 11.0;
 const CGFloat kTableViewVerticalSpacing = 8.0;
 const CGFloat kTableViewLargeVerticalSpacing = 16.0;
 const CGFloat kTableViewSubViewHorizontalSpacing = 12.0;
 const CGFloat kTableViewCellSelectionAnimationDuration = 0.15;
 const CGFloat kUseDefaultFontSize = 0.0;
 const CGFloat kTableViewLabelVerticalTopSpacing = 13.0;
+const CGFloat kTableViewAccessoryWidth = 40;
 
 const int kTableViewTextLabelColorBlue = 0x1A73E8;
 const int kTableViewTextLabelColorLightGrey = 0x6D6D72;

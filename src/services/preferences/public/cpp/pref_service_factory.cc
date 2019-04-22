@@ -7,6 +7,8 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "components/prefs/overlay_user_pref_store.h"
 #include "components/prefs/persistent_pref_store.h"
@@ -66,8 +68,7 @@ void RegisterRemoteDefaults(PrefRegistry* pref_registry,
                             std::vector<mojom::PrefRegistrationPtr> defaults) {
   for (auto& registration : defaults) {
     pref_registry->SetDefaultForeignPrefValue(
-        registration->key,
-        base::Value::ToUniquePtrValue(std::move(registration->default_value)),
+        registration->key, std::move(registration->default_value),
         registration->flags);
   }
 }

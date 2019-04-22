@@ -8,6 +8,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -351,7 +352,7 @@ IN_PROC_BROWSER_TEST_P(UnmanagedPlatformKeysTest, Permissions) {
   ASSERT_TRUE(RunExtensionTest("permissionTests")) << message_;
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     Unmanaged,
     UnmanagedPlatformKeysTest,
     ::testing::Values(UnmanagedPlatformKeysTestParams(
@@ -401,7 +402,7 @@ IN_PROC_BROWSER_TEST_P(ManagedWithoutPermissionPlatformKeysTest,
       << message_;
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ManagedWithoutPermission,
     ManagedWithoutPermissionPlatformKeysTest,
     ::testing::Values(
@@ -460,7 +461,7 @@ IN_PROC_BROWSER_TEST_P(ManagedWithPermissionPlatformKeysTest,
       << message_;
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     ManagedWithPermission,
     ManagedWithPermissionPlatformKeysTest,
     ::testing::Values(

@@ -55,11 +55,11 @@ Polymer({
   },
 
   /**
-   * @param {!CustomEvent} e Contains the new input value.
+   * @param {!CustomEvent<string>} e Contains the new input value.
    * @private
    */
   onInputChange_: function(e) {
-    this.inputString_ = /** @type {string} */ (e.detail);
+    this.inputString_ = e.detail;
   },
 
   /**
@@ -79,16 +79,19 @@ Polymer({
       return;
     }
 
-    if (e.key == 'Enter')
+    if (e.key == 'Enter') {
       this.onBlur_();
+    }
   },
 
   /** @private */
   onBlur_: function() {
-    if (this.inputString_ == '')
+    if (this.inputString_ == '') {
       this.set('inputString_', this.defaultValue);
-    if (this.$.userValue.value == '')
+    }
+    if (this.$.userValue.value == '') {
       this.$.userValue.value = this.defaultValue;
+    }
   },
 
   /** @private */

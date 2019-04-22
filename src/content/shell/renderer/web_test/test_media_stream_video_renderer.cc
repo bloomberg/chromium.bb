@@ -18,7 +18,7 @@ TestMediaStreamVideoRenderer::TestMediaStreamVideoRenderer(
     const gfx::Size& size,
     const base::TimeDelta& frame_duration,
     const base::Closure& error_cb,
-    const MediaStreamVideoRenderer::RepaintCB& repaint_cb)
+    const blink::WebMediaStreamVideoRenderer::RepaintCB& repaint_cb)
     : task_runner_(blink::scheduler::GetSingleThreadTaskRunnerForTesting()),
       io_task_runner_(io_task_runner),
       size_(size),

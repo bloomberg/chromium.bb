@@ -113,6 +113,13 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
   base::win::RegisterInvalidParamHandler();
   base::win::SetupCRT(*base::CommandLine::ForCurrentProcess());
 
+  // If the program is being run to either enable or disable stats, do that
+  // and exit.
+  if (cmdline->HasSwitch(credential_provider::switches::kEnableStats) ||
+      cmdline->HasSwitch(credential_provider::switches::kDisableStats)) {
+    return credential_provider::EnableStatsCollection(*cmdline);
+  }
+
   base::FilePath gcp_setup_exe_path;
   hr = credential_provider::GetPathToDllFromHandle(hInstance,
                                                    &gcp_setup_exe_path);
@@ -133,8 +140,10 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
   LOGFN(INFO) << "Module: " << gcp_setup_exe_path;
   LOGFN(INFO) << "Args: " << lpCmdLine;
   LOGFN(INFO) << "Version: " << TEXT(CHROME_VERSION_STRING);
+
   LOGFN(INFO) << "Windows: "
-              << base::win::OSInfo::GetInstance()->Kernel32BaseVersion();
+              << base::win::OSInfo::GetInstance()->Kernel32BaseVersion()
+              << " Version:" << credential_provider::GetWindowsVersion();
 
   // If running from omaha, make sure machine install is used.
   if (IsPerUserInstallFromGoogleUpdate()) {

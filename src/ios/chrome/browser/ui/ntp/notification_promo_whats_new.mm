@@ -19,9 +19,9 @@
 #include "base/values.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/prefs/pref_service.h"
-#include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/notification_promo.h"
 #include "ios/chrome/browser/pref_names.h"
+#include "ios/chrome/browser/system_flags.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -99,12 +99,11 @@ bool NotificationPromoWhatsNew::Init() {
   return InitFromNotificationPromo();
 }
 
-bool NotificationPromoWhatsNew::ClearAndInitFromJson(
-    const base::DictionaryValue& json) {
+bool NotificationPromoWhatsNew::ClearAndInitFromJson(base::Value json) {
   // This clears away old promos.
   notification_promo_.MigrateUserPrefs(local_state_);
 
-  notification_promo_.InitFromJson(json);
+  notification_promo_.InitFromJson(std::move(json));
   return InitFromNotificationPromo();
 }
 
@@ -191,20 +190,31 @@ bool NotificationPromoWhatsNew::InitFromNotificationPromo() {
   if (promo_text_.empty())
     return valid_;
 
-  notification_promo_.promo_payload()->GetString("metric_name", &metric_name_);
-  if (metric_name_.empty())
+  const std::string* metric_name =
+      notification_promo_.promo_payload().FindStringKey("metric_name");
+  if (!metric_name || metric_name->empty()) {
     return valid_;
+  }
+  metric_name_ = *metric_name;
 
-  notification_promo_.promo_payload()->GetString("promo_type", &promo_type_);
+  const std::string* promo_type =
+      notification_promo_.promo_payload().FindStringKey("promo_type");
+  if (promo_type)
+    promo_type_ = *promo_type;
+
   if (IsURLPromo()) {
-    std::string url_text;
-    notification_promo_.promo_payload()->GetString("url", &url_text);
-    url_ = GURL(url_text);
+    const std::string* url_text =
+        notification_promo_.promo_payload().FindStringKey("url");
+    url_ = GURL(url_text ? *url_text : std::string());
     if (url_.is_empty() || !url_.is_valid()) {
       return valid_;
     }
   } else if (IsChromeCommandPromo()) {
-    notification_promo_.promo_payload()->GetString("command", &command_);
+    const std::string* command =
+        notification_promo_.promo_payload().FindStringKey("command");
+    if (command)
+      command_ = *command;
+
     // There is only one valid command for NTP Promotions, and that is the
     // test command itself.
     if (command_ != kTestWhatsNewCommand) {
@@ -217,16 +227,17 @@ bool NotificationPromoWhatsNew::InitFromNotificationPromo() {
   valid_ = true;
 
   // Optional values don't need validation.
-  std::string icon_name;
-  notification_promo_.promo_payload()->GetString("icon", &icon_name);
-  icon_ = ParseIconName(icon_name);
+  const std::string* icon_name =
+      notification_promo_.promo_payload().FindStringKey("icon");
+  icon_ = ParseIconName(icon_name ? *icon_name : std::string());
 
-  seconds_since_install_ = 0;
-  notification_promo_.promo_payload()->GetInteger("seconds_since_install",
-                                                  &seconds_since_install_);
-  max_seconds_since_install_ = 0;
-  notification_promo_.promo_payload()->GetInteger("max_seconds_since_install",
-                                                  &max_seconds_since_install_);
+  seconds_since_install_ = notification_promo_.promo_payload()
+                               .FindIntKey("seconds_since_install")
+                               .value_or(0);
+  max_seconds_since_install_ = notification_promo_.promo_payload()
+                                   .FindIntKey("max_seconds_since_install")
+                                   .value_or(0);
+
   return valid_;
 }
 
@@ -247,30 +258,28 @@ void NotificationPromoWhatsNew::InjectFakePromo(const std::string& promo_id,
   replacements.push_back(icon);
   replacements.push_back(promo_id);
 
-  std::string promo_json =
-      "{"
-      "  \"start\":\"1 Jan 1999 0:26:06 GMT\","
-      "  \"end\":\"1 Jan 2199 0:26:06 GMT\","
-      "  \"promo_text\":\"$1\","
-      "  \"max_views\":20,"
-      "  \"payload\":"
-      "     {"
-      "       \"promo_type\":\"$2\","
-      "       \"metric_name\":\"$3\","
-      "       \"command\":\"$4\","
-      "       \"url\":\"$5\","
-      "       \"icon\":\"$6\""
-      "     },"
-      "  \"max_seconds\":259200,"
-      "  \"promo_id\":$7"
-      "}";
+  const char promo_json[] = "{"
+                            "  \"start\":\"1 Jan 1999 0:26:06 GMT\","
+                            "  \"end\":\"1 Jan 2199 0:26:06 GMT\","
+                            "  \"promo_text\":\"$1\","
+                            "  \"max_views\":20,"
+                            "  \"payload\":"
+                            "     {"
+                            "       \"promo_type\":\"$2\","
+                            "       \"metric_name\":\"$3\","
+                            "       \"command\":\"$4\","
+                            "       \"url\":\"$5\","
+                            "       \"icon\":\"$6\""
+                            "     },"
+                            "  \"max_seconds\":259200,"
+                            "  \"promo_id\":$7"
+                            "}";
   std::string promo_json_filled_in =
       base::ReplaceStringPlaceholders(promo_json, replacements, NULL);
 
-  std::unique_ptr<base::Value> value(
-      base::JSONReader::Read(promo_json_filled_in));
-  base::DictionaryValue* dict = NULL;
-  if (value->GetAsDictionary(&dict)) {
-    notification_promo_.InitFromJson(*dict);
-  }
+  base::Optional<base::Value> value =
+      base::JSONReader::Read(promo_json_filled_in);
+  DCHECK(value.has_value());
+  DCHECK(value.value().is_dict());
+  notification_promo_.InitFromJson(std::move(value).value());
 }

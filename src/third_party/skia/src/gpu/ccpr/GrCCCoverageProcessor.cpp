@@ -66,11 +66,12 @@ void GrCCCoverageProcessor::Shader::CalcWind(const GrCCCoverageProcessor& proc,
         // if the max effect it can have on any single pixel is <~ 1/1024, or 1/4 of a bit in 8888.
         s->codeAppend ("float2 bbox_size = max(abs(a), abs(b));");
         s->codeAppend ("float basewidth = max(bbox_size.x + bbox_size.y, 1);");
-        s->codeAppendf("%s = (abs(area_x2 * 1024) > basewidth) ? sign(area_x2) : 0;", outputWind);
+        s->codeAppendf("%s = (abs(area_x2 * 1024) > basewidth) ? sign(half(area_x2)) : 0;",
+                       outputWind);
     } else {
         // We already converted nearly-flat curves to lines on the CPU, so no need to worry about
         // thin curve hulls at this point.
-        s->codeAppendf("%s = sign(area_x2);", outputWind);
+        s->codeAppendf("%s = sign(half(area_x2));", outputWind);
     }
 }
 
@@ -119,7 +120,8 @@ void GrCCCoverageProcessor::Shader::CalcEdgeCoverageAtBloatVertex(GrGLSLVertexGe
     s->codeAppendf("float t = dot(%s, n);", rasterVertexDir);
     // The below conditional guarantees we get exactly 1 on the divide when nwidth=t (in case the
     // GPU divides by multiplying by the reciprocal?) It also guards against NaN when nwidth=0.
-    s->codeAppendf("%s = (abs(t) != nwidth ? t / nwidth : sign(t)) * -.5 - .5;", outputCoverage);
+    s->codeAppendf("%s = half(abs(t) != nwidth ? t / nwidth : sign(t)) * -.5 - .5;",
+                   outputCoverage);
 }
 
 void GrCCCoverageProcessor::Shader::CalcEdgeCoveragesAtBloatVertices(GrGLSLVertexGeoBuilder* s,
@@ -134,7 +136,7 @@ void GrCCCoverageProcessor::Shader::CalcEdgeCoveragesAtBloatVertices(GrGLSLVerte
     s->codeAppend ("float nwidth = abs(n.x) + abs(n.y);");
     s->codeAppendf("float2 t = n * float2x2(%s, %s);", bloatDir1, bloatDir2);
     s->codeAppendf("for (int i = 0; i < 2; ++i) {");
-    s->codeAppendf(    "%s[i] = (abs(t[i]) != nwidth ? t[i] / nwidth : sign(t[i])) * -.5 - .5;",
+    s->codeAppendf(    "%s[i] = half(abs(t[i]) != nwidth ? t[i] / nwidth : sign(t[i])) * -.5 - .5;",
                        outputCoverages);
     s->codeAppendf("}");
 }
@@ -147,13 +149,14 @@ void GrCCCoverageProcessor::Shader::CalcCornerAttenuation(GrGLSLVertexGeoBuilder
     //
     // NOTE: leftDir and rightDir are normalized and point in the same direction the path was
     // defined with, i.e., leftDir points into the corner and rightDir points away from the corner.
-    s->codeAppendf("half obtuseness = max(dot(%s, %s), 0);", leftDir, rightDir);
+    s->codeAppendf("half obtuseness = max(half(dot(%s, %s)), 0);", leftDir, rightDir);
 
     // axis_alignedness = 1 - tan(angle_to_nearest_axis_from_corner_bisector)
     //                    (i.e.,  1  when the corner bisector is aligned with the x- or y-axis
     //                            0  when the corner bisector falls on a 45 degree angle
     //                         0..1  when the corner bisector falls somewhere in between
-    s->codeAppendf("half2 abs_bisect_maybe_transpose = abs((0 == obtuseness) ? %s - %s : %s + %s);",
+    s->codeAppendf("half2 abs_bisect_maybe_transpose = abs((0 == obtuseness) ? half2(%s - %s) : "
+                                                                              "half2(%s + %s));",
                    leftDir, rightDir, leftDir, rightDir);
     s->codeAppend ("half axis_alignedness = "
                            "1 - min(abs_bisect_maybe_transpose.y, abs_bisect_maybe_transpose.x) / "
@@ -181,23 +184,6 @@ void GrCCCoverageProcessor::Shader::CalcCornerAttenuation(GrGLSLVertexGeoBuilder
                    outputAttenuation);
 }
 
-void GrCCCoverageProcessor::getGLSLProcessorKey(const GrShaderCaps&,
-                                                GrProcessorKeyBuilder* b) const {
-    int key = (int)fPrimitiveType << 2;
-    if (GSSubpass::kCorners == fGSSubpass) {
-        key |= 2;
-    }
-    if (Impl::kVertexShader == fImpl) {
-        key |= 1;
-    }
-#ifdef SK_DEBUG
-    uint32_t bloatBits;
-    memcpy(&bloatBits, &fDebugBloat, 4);
-    b->add32(bloatBits);
-#endif
-    b->add32(key);
-}
-
 GrGLSLPrimitiveProcessor* GrCCCoverageProcessor::createGLSLInstance(const GrShaderCaps&) const {
     std::unique_ptr<Shader> shader;
     switch (fPrimitiveType) {
@@ -215,33 +201,23 @@ GrGLSLPrimitiveProcessor* GrCCCoverageProcessor::createGLSLInstance(const GrShad
             shader = skstd::make_unique<GrCCConicShader>();
             break;
     }
-    return Impl::kGeometryShader == fImpl ? this->createGSImpl(std::move(shader))
-                                          : this->createVSImpl(std::move(shader));
+    return this->onCreateGLSLInstance(std::move(shader));
 }
 
-void GrCCCoverageProcessor::Shader::emitFragmentCode(const GrCCCoverageProcessor& proc,
-                                                     GrGLSLFPFragmentBuilder* f,
-                                                     const char* skOutputColor,
-                                                     const char* skOutputCoverage) const {
+void GrCCCoverageProcessor::Shader::emitFragmentCode(
+        const GrCCCoverageProcessor& proc, GrGLSLFPFragmentBuilder* f, const char* skOutputColor,
+        const char* skOutputCoverage) const {
     f->codeAppendf("half coverage = 0;");
     this->onEmitFragmentCode(f, "coverage");
     f->codeAppendf("%s.a = coverage;", skOutputColor);
     f->codeAppendf("%s = half4(1);", skOutputCoverage);
 }
 
-void GrCCCoverageProcessor::draw(GrOpFlushState* flushState, const GrPipeline& pipeline,
-                                 const SkIRect scissorRects[], const GrMesh meshes[], int meshCount,
-                                 const SkRect& drawBounds) const {
+void GrCCCoverageProcessor::draw(
+        GrOpFlushState* flushState, const GrPipeline& pipeline, const SkIRect scissorRects[],
+        const GrMesh meshes[], int meshCount, const SkRect& drawBounds) const {
     GrPipeline::DynamicStateArrays dynamicStateArrays;
     dynamicStateArrays.fScissorRects = scissorRects;
     GrGpuRTCommandBuffer* cmdBuff = flushState->rtCommandBuffer();
     cmdBuff->draw(*this, pipeline, nullptr, &dynamicStateArrays, meshes, meshCount, drawBounds);
-
-    // Geometry shader backend draws primitives in two subpasses.
-    if (Impl::kGeometryShader == fImpl) {
-        SkASSERT(GSSubpass::kHulls == fGSSubpass);
-        GrCCCoverageProcessor cornerProc(*this, GSSubpass::kCorners);
-        cmdBuff->draw(cornerProc, pipeline, nullptr, &dynamicStateArrays, meshes, meshCount,
-                      drawBounds);
-    }
 }

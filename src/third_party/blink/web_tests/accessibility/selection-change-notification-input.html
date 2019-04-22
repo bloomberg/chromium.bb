@@ -1,7 +1,8 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-<script src="../resources/js-test.js"></script>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
 </head>
 <body id="static_eventTarget">
 
@@ -9,10 +10,9 @@
 
 <div id="console"></div>
 <script>
-description("Tests that a 'selected text changed' notification fires on an input element when the user moves the cursor.");
 window.jsTestIsAsync = true;
 
-function runTest() {
+async_test((t) => {
     // This forces building the accessibility tree, because selection change
     // events only fire on elements that already exist.
     accessibilityController.accessibleElementById('dummy');
@@ -24,23 +24,23 @@ function runTest() {
 
     var gotDocumentSelectionChanged = false;
     var gotSelectedTextChanged = false;
-    function succeedIfDone() {
+    succeedIfDone = t.step_func(() => {
         if (gotDocumentSelectionChanged && gotSelectedTextChanged)
-            finishJSTest();
-    }
+            t.done();
+    });
 
     axRootElement.addNotificationListener(function(notification) {
         if (notification == 'DocumentSelectionChanged') {
-            debug('Got DocumentSelectionChanged notification on root element.');
+            console.log('Got DocumentSelectionChanged notification on root element.');
             gotDocumentSelectionChanged = true;
             axRootElement.removeNotificationListener();
             succeedIfDone();
         }
     });
-        
+
     axInputElement.addNotificationListener(function(notification) {
         if (notification == 'SelectedTextChanged') {
-            debug('Got SelectedTextChanged notification on input element.');
+            console.log('Got SelectedTextChanged notification on input element.');
             gotSelectedTextChanged = true;
             axInputElement.removeNotificationListener();
             succeedIfDone();
@@ -48,12 +48,7 @@ function runTest() {
     });
 
     inputElement.setSelectionRange(0, 1);
-}
-
-if (window.testRunner && window.accessibilityController) {
-    testRunner.dumpAsText();
-    window.onload = runTest();
-}
+}, "Tests that a 'selected text changed' notification fires on an input element when the user moves the cursor.");
 
 </script>
 

@@ -27,10 +27,10 @@ public class LogTest {
         Log.d("Foo", "Bar");
 
         List<ShadowLog.LogItem> logs = ShadowLog.getLogs();
-        assertEquals("Only one log should be written", 1, logs.size());
 
-        assertTrue("The origin of the log message (" + logs.get(0).msg + ") looks wrong.",
-                logs.get(0).msg.matches("\\[LogTest.java:\\d+\\].*"));
+        assertTrue("The origin of the log message (" + logs.get(logs.size() - 1).msg
+                        + ") looks wrong.",
+                logs.get(logs.size() - 1).msg.matches("\\[LogTest.java:\\d+\\].*"));
     }
 
     @Test

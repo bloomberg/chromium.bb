@@ -8,8 +8,8 @@
 #include "base/macros.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/common/media_stream_request.h"
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper.h"
+#include "third_party/blink/public/common/mediastream/media_stream_request.h"
 
 namespace extensions {
 
@@ -21,10 +21,9 @@ class WebViewPermissionHelperDelegate : public content::WebContentsObserver {
       WebViewPermissionHelper* web_view_permission_helper);
   ~WebViewPermissionHelperDelegate() override;
 
-  virtual void CanDownload(
-      const GURL& url,
-      const std::string& request_method,
-      const base::Callback<void(bool)>& callback) {}
+  virtual void CanDownload(const GURL& url,
+                           const std::string& request_method,
+                           base::OnceCallback<void(bool)> callback) {}
 
   virtual void RequestPointerLockPermission(
       bool user_gesture,

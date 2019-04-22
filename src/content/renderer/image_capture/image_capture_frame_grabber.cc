@@ -4,6 +4,7 @@
 
 #include "content/renderer/image_capture/image_capture_frame_grabber.h"
 
+#include "base/bind.h"
 #include "cc/paint/paint_canvas.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_frame.h"
@@ -115,11 +116,12 @@ ImageCaptureFrameGrabber::~ImageCaptureFrameGrabber() {
 
 void ImageCaptureFrameGrabber::GrabFrame(
     blink::WebMediaStreamTrack* track,
-    std::unique_ptr<blink::WebImageCaptureGrabFrameCallbacks> callbacks) {
+    std::unique_ptr<blink::WebImageCaptureGrabFrameCallbacks> callbacks,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!!callbacks);
 
-  DCHECK(track && !track->IsNull() && track->GetTrackData());
+  DCHECK(track && !track->IsNull() && track->GetPlatformTrack());
   DCHECK_EQ(blink::WebMediaStreamSource::kTypeVideo, track->Source().GetType());
 
   if (frame_grab_in_progress_) {
@@ -137,14 +139,16 @@ void ImageCaptureFrameGrabber::GrabFrame(
   // is being processed, which might be further held up if UI is busy, see
   // https://crbug.com/623042.
   frame_grab_in_progress_ = true;
-  MediaStreamVideoSink::ConnectToTrack(
+  blink::MediaStreamVideoSink::ConnectToTrack(
       *track,
-      base::Bind(
+      base::BindRepeating(
           &SingleShotFrameHandler::OnVideoFrameOnIOThread,
           base::MakeRefCounted<SingleShotFrameHandler>(),
-          media::BindToCurrentLoop(base::Bind(
-              &ImageCaptureFrameGrabber::OnSkImage, weak_factory_.GetWeakPtr(),
-              base::Passed(&scoped_callbacks)))),
+          media::BindToLoop(
+              std::move(task_runner),
+              base::BindRepeating(&ImageCaptureFrameGrabber::OnSkImage,
+                                  weak_factory_.GetWeakPtr(),
+                                  base::Passed(&scoped_callbacks)))),
       false);
 }
 
@@ -154,7 +158,7 @@ void ImageCaptureFrameGrabber::OnSkImage(
     sk_sp<SkImage> image) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  MediaStreamVideoSink::DisconnectFromTrack();
+  blink::MediaStreamVideoSink::DisconnectFromTrack();
   frame_grab_in_progress_ = false;
   if (image)
     callbacks.PassCallbacks()->OnSuccess(image);

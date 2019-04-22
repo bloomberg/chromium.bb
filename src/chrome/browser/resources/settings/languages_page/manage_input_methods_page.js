@@ -63,10 +63,11 @@ Polymer({
   onCheckboxChange_: function(e) {
     // TODO(michaelpg): Show confirmation dialog for 3rd-party IMEs.
     const id = e.model.item.id;
-    if (e.target.checked)
+    if (e.target.checked) {
       this.languageHelper.addInputMethod(id);
-    else
+    } else {
       this.languageHelper.removeInputMethod(id);
+    }
   },
 
   /**
@@ -78,15 +79,18 @@ Polymer({
    * @private
    */
   enableInputMethodCheckbox_: function(targetInputMethod, change) {
-    if (targetInputMethod.isProhibitedByPolicy)
+    if (targetInputMethod.isProhibitedByPolicy) {
       return false;
+    }
 
-    if (!targetInputMethod.enabled)
+    if (!targetInputMethod.enabled) {
       return true;
+    }
 
     // Third-party IMEs can always be removed.
-    if (!this.languageHelper.isComponentIme(targetInputMethod))
+    if (!this.languageHelper.isComponentIme(targetInputMethod)) {
       return true;
+    }
 
     // Can be removed as long as there is another component IME.
     return this.languages.inputMethods.enabled.some(function(inputMethod) {
@@ -113,12 +117,14 @@ Polymer({
     for (let i = 0; i < this.languages.enabled.length; i++) {
       const languageState = this.languages.enabled[i];
       // Skip the language if we have already included it or its base language.
-      if (usedLanguages.has(languageState.language.code))
+      if (usedLanguages.has(languageState.language.code)) {
         continue;
+      }
       const baseLanguageCode = this.languageHelper.getLanguageCodeWithoutRegion(
           languageState.language.code);
-      if (usedLanguages.has(baseLanguageCode))
+      if (usedLanguages.has(baseLanguageCode)) {
         continue;
+      }
 
       // Find the other languages further down in the preferred languages list
       // which also use this language's base language code.
@@ -135,22 +141,25 @@ Polymer({
           this.getInputMethodsForLanguages(languageFamilyCodes);
 
       // Skip the language if it has no new input methods.
-      if (!combinedInputMethods.length)
+      if (!combinedInputMethods.length) {
         continue;
+      }
 
       // Add the language or base language.
       let displayLanguage = languageState.language;
       if (languageFamilyCodes.length > 1) {
         const baseLanguage = this.languageHelper.getLanguage(baseLanguageCode);
-        if (baseLanguage)
+        if (baseLanguage) {
           displayLanguage = baseLanguage;
+        }
       }
       languageList.push({
         language: displayLanguage,
         inputMethods: combinedInputMethods,
       });
-      for (let k = 0; k < languageFamilyCodes.length; k++)
+      for (let k = 0; k < languageFamilyCodes.length; k++) {
         usedLanguages.add(languageFamilyCodes[k]);
+      }
     }
 
     // Add ARC IMEs to the bottom if any.
@@ -184,8 +193,9 @@ Polymer({
           this.languageHelper.getInputMethodsForLanguage(languageCodes[i]);
       // Get the language's unused input methods and mark them as used.
       const newInputMethods = inputMethods.filter(function(inputMethod) {
-        if (usedInputMethods.has(inputMethod.id))
+        if (usedInputMethods.has(inputMethod.id)) {
           return false;
+        }
         usedInputMethods.add(inputMethod.id);
         return true;
       });

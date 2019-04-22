@@ -57,13 +57,12 @@ class TestOmniboxView : public OmniboxView {
   bool OnInlineAutocompleteTextMaybeChanged(const base::string16& display_text,
                                             size_t user_text_length) override;
   void OnInlineAutocompleteTextCleared() override;
-  void OnRevertTemporaryText() override {}
+  void OnRevertTemporaryText(const base::string16& display_text,
+                             const AutocompleteMatch& match) override {}
   void OnBeforePossibleChange() override {}
   bool OnAfterPossibleChange(bool allow_keyword_ui_change) override;
   gfx::NativeView GetNativeView() const override;
   gfx::NativeView GetRelativeWindowForPopup() const override;
-  int GetTextWidth() const override;
-  int GetWidth() const override;
   bool IsImeComposing() const override;
   int GetOmniboxTextLength() const override;
   void EmphasizeURLComponents() override {}

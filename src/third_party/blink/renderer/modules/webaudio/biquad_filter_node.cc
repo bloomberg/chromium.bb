@@ -103,12 +103,7 @@ BiquadFilterNode* BiquadFilterNode::Create(BaseAudioContext& context,
                                            ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
-  if (context.IsContextClosed()) {
-    context.ThrowExceptionForClosedState(exception_state);
-    return nullptr;
-  }
-
-  return new BiquadFilterNode(context);
+  return MakeGarbageCollected<BiquadFilterNode>(context);
 }
 
 BiquadFilterNode* BiquadFilterNode::Create(BaseAudioContext* context,

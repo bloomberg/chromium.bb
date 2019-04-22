@@ -65,7 +65,7 @@ class UnindexedRulesetTestBuilder {
 
   bool AddUrlRules(int number_of_rules) {
     for (int i = 0; i < number_of_rules; ++i) {
-      std::string url_pattern = "example" + base::IntToString(i) + ".com";
+      std::string url_pattern = "example" + base::NumberToString(i) + ".com";
       if (!AddUrlRule(UrlPattern(url_pattern), testing::kAnyParty, i & 1))
         return false;
     }

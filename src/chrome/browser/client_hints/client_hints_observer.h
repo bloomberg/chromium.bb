@@ -36,6 +36,8 @@ class ClientHintsObserver
   content::WebContentsFrameBindingSet<client_hints::mojom::ClientHints>
       binding_;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(ClientHintsObserver);
 };
 

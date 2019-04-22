@@ -22,12 +22,15 @@ class AutofillClient;
 class AutofillDriver;
 class FormStructure;
 class TestPersonalDataManager;
+class MockAutocompleteHistoryManager;
 
 class TestAutofillManager : public AutofillManager {
  public:
-  TestAutofillManager(AutofillDriver* driver,
-                      AutofillClient* client,
-                      TestPersonalDataManager* personal_data);
+  TestAutofillManager(
+      AutofillDriver* driver,
+      AutofillClient* client,
+      TestPersonalDataManager* personal_data,
+      MockAutocompleteHistoryManager* autocomplete_history_manager);
   ~TestAutofillManager() override;
 
   // AutofillManager overrides.
@@ -38,7 +41,6 @@ class TestAutofillManager : public AutofillManager {
                       bool observed_submission) override;
   bool MaybeStartVoteUploadProcess(
       std::unique_ptr<FormStructure> form_structure,
-      const base::TimeTicks& timestamp,
       bool observed_submission) override;
   void UploadFormDataAsyncCallback(const FormStructure* submitted_form,
                                    const base::TimeTicks& interaction_time,

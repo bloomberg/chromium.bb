@@ -31,10 +31,10 @@ class SVGTextElement final : public SVGTextPositioningElement {
  public:
   DECLARE_NODE_FACTORY(SVGTextElement);
 
- private:
   explicit SVGTextElement(Document&);
 
-  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
+ private:
+  LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout) override;
 };
 
 }  // namespace blink

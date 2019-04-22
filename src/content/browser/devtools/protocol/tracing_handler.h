@@ -46,7 +46,8 @@ namespace protocol {
 class TracingHandler : public DevToolsDomainHandler, public Tracing::Backend {
  public:
   CONTENT_EXPORT TracingHandler(FrameTreeNode* frame_tree_node,
-                                DevToolsIOContext* io_context);
+                                DevToolsIOContext* io_context,
+                                bool use_binary_protocol);
   CONTENT_EXPORT ~TracingHandler() override;
 
   static std::vector<TracingHandler*> ForAgentHost(DevToolsAgentHostImpl* host);
@@ -66,6 +67,7 @@ class TracingHandler : public DevToolsDomainHandler, public Tracing::Backend {
              Maybe<std::string> options,
              Maybe<double> buffer_usage_reporting_interval,
              Maybe<std::string> transfer_mode,
+             Maybe<std::string> transfer_format,
              Maybe<std::string> transfer_compression,
              Maybe<Tracing::TraceConfig> config,
              std::unique_ptr<StartCallback> callback) override;
@@ -81,6 +83,10 @@ class TracingHandler : public DevToolsDomainHandler, public Tracing::Backend {
 
  private:
   friend class TracingHandlerTest;
+
+  class TracingSession;
+  class LegacyTracingSession;
+  class PerfettoTracingSession;
 
   struct TraceDataBufferState {
    public:
@@ -107,6 +113,7 @@ class TracingHandler : public DevToolsDomainHandler, public Tracing::Backend {
       const std::string& trace_fragment);
 
   void SetupTimer(double usage_reporting_interval);
+  void UpdateBufferUsage();
   void StopTracing(
       const scoped_refptr<TracingController::TraceDataEndpoint>& endpoint,
       const std::string& agent_label);
@@ -123,6 +130,7 @@ class TracingHandler : public DevToolsDomainHandler, public Tracing::Backend {
                        std::unordered_set<base::ProcessId>* process_set);
   void OnProcessReady(RenderProcessHost*);
 
+  const bool use_binary_protocol_;
   std::unique_ptr<base::RepeatingTimer> buffer_usage_poll_timer_;
 
   std::unique_ptr<Tracing::Frontend> frontend_;
@@ -131,10 +139,13 @@ class TracingHandler : public DevToolsDomainHandler, public Tracing::Backend {
   bool did_initiate_recording_;
   bool return_as_stream_;
   bool gzip_compression_;
+  bool proto_format_;
+  double buffer_usage_reporting_interval_;
   TraceDataBufferState trace_data_buffer_state_;
   std::unique_ptr<DevToolsVideoConsumer> video_consumer_;
   int number_of_screenshots_from_video_consumer_ = 0;
   base::trace_event::TraceConfig trace_config_;
+  std::unique_ptr<TracingSession> session_;
   base::WeakPtrFactory<TracingHandler> weak_factory_;
 
   FRIEND_TEST_ALL_PREFIXES(TracingHandlerTest,

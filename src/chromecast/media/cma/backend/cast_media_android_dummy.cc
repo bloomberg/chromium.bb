@@ -6,6 +6,7 @@
 #include "chromecast/public/cast_media_shlib.h"
 #include "chromecast/public/media/decoder_config.h"
 #include "chromecast/public/media/media_capabilities_shlib.h"
+#include "chromecast/public/volume_control.h"
 
 namespace chromecast {
 namespace media {
@@ -56,6 +57,37 @@ bool MediaCapabilitiesShlib::IsSupportedAudioConfig(const AudioConfig& config) {
   NOTREACHED() << "Unexpected call to "
                << "MediaCapabilitiesShlib::IsSupportedAudioConfig on Android";
   return false;
+}
+
+void VolumeControl::Initialize(const std::vector<std::string>& argv) {}
+void VolumeControl::Finalize() {}
+void VolumeControl::AddVolumeObserver(VolumeObserver* observer) {}
+void VolumeControl::RemoveVolumeObserver(VolumeObserver* observer) {}
+
+float VolumeControl::GetVolume(AudioContentType type) {
+  return 0.0f;
+}
+
+void VolumeControl::SetVolume(VolumeChangeSource source,
+                              AudioContentType type,
+                              float level) {}
+
+bool VolumeControl::IsMuted(AudioContentType type) {
+  return false;
+}
+
+void VolumeControl::SetMuted(VolumeChangeSource source,
+                             AudioContentType type,
+                             bool muted) {}
+
+void VolumeControl::SetOutputLimit(AudioContentType type, float limit) {}
+
+float VolumeControl::VolumeToDbFS(float volume) {
+  return 0.0f;
+}
+
+float VolumeControl::DbFSToVolume(float db) {
+  return 0.0f;
 }
 
 }  // namespace media

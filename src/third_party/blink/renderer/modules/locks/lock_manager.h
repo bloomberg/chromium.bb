@@ -5,7 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_LOCKS_LOCK_MANAGER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_LOCKS_LOCK_MANAGER_H_
 
-#include "third_party/blink/public/platform/modules/locks/lock_manager.mojom-blink.h"
+#include "base/macros.h"
+#include "third_party/blink/public/mojom/locks/lock_manager.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_string_sequence.h"
 #include "third_party/blink/renderer/modules/locks/lock.h"
 #include "third_party/blink/renderer/modules/locks/lock_options.h"
@@ -21,7 +22,6 @@ class V8LockGrantedCallback;
 
 class LockManager final : public ScriptWrappable,
                           public ContextLifecycleObserver {
-  WTF_MAKE_NONCOPYABLE(LockManager);
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(LockManager);
 
@@ -63,10 +63,12 @@ class LockManager final : public ScriptWrappable,
   void RemovePendingRequest(LockRequestImpl*);
   bool IsPendingRequest(LockRequestImpl*);
 
-  HeapHashSet<TraceWrapperMember<LockRequestImpl>> pending_requests_;
+  HeapHashSet<Member<LockRequestImpl>> pending_requests_;
   HeapHashSet<Member<Lock>> held_locks_;
 
   mojom::blink::LockManagerPtr service_;
+
+  DISALLOW_COPY_AND_ASSIGN(LockManager);
 };
 
 }  // namespace blink

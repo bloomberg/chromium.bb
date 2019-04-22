@@ -9,7 +9,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -127,7 +127,7 @@ TEST(URLMatcherConditionTest, Comparison) {
       {URLMatcherCondition(URLMatcherCondition::HOST_PREFIX, &p1),
        URLMatcherCondition(URLMatcherCondition::HOST_SUFFIX, nullptr)},
   };
-  for (size_t i = 0; i < arraysize(test_smaller); ++i) {
+  for (size_t i = 0; i < base::size(test_smaller); ++i) {
     EXPECT_TRUE(test_smaller[i][0] < test_smaller[i][1])
         << "Test " << i << " of test_smaller failed";
     EXPECT_FALSE(test_smaller[i][1] < test_smaller[i][0])
@@ -139,7 +139,7 @@ TEST(URLMatcherConditionTest, Comparison) {
       {URLMatcherCondition(URLMatcherCondition::HOST_PREFIX, nullptr),
        URLMatcherCondition(URLMatcherCondition::HOST_PREFIX, nullptr)},
   };
-  for (size_t i = 0; i < arraysize(test_equal); ++i) {
+  for (size_t i = 0; i < base::size(test_equal); ++i) {
     EXPECT_FALSE(test_equal[i][0] < test_equal[i][1])
         << "Test " << i << " of test_equal failed";
     EXPECT_FALSE(test_equal[i][1] < test_equal[i][0])

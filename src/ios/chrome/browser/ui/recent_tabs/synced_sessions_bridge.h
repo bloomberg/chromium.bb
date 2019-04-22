@@ -38,7 +38,7 @@ class SyncedSessionsObserverBridge
   ~SyncedSessionsObserverBridge() override;
   // identity::IdentityManager::Observer implementation.
   void OnPrimaryAccountCleared(
-      const AccountInfo& previous_primary_account_info) override;
+      const CoreAccountInfo& previous_primary_account_info) override;
 
   // Returns true if user is signed in.
   bool IsSignedIn();

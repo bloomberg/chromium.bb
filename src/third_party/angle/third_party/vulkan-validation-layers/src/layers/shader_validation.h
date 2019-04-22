@@ -1,7 +1,7 @@
-/* Copyright (c) 2015-2017 The Khronos Group Inc.
- * Copyright (c) 2015-2017 Valve Corporation
- * Copyright (c) 2015-2017 LunarG, Inc.
- * Copyright (C) 2015-2017 Google Inc.
+/* Copyright (c) 2015-2019 The Khronos Group Inc.
+ * Copyright (c) 2015-2019 Valve Corporation
+ * Copyright (c) 2015-2019 LunarG, Inc.
+ * Copyright (C) 2015-2019 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@
 #define VULKAN_SHADER_VALIDATION_H
 
 #include <spirv_tools_commit_id.h>
+#include "spirv-tools/optimizer.hpp"
 
 // A forward iterator over spirv instructions. Provides easy access to len, opcode, and content words
 // without the caller needing to care too much about the physical SPIRV module layout.
@@ -75,12 +76,23 @@ struct shader_module {
     std::unordered_map<unsigned, unsigned> def_index;
     bool has_valid_spirv;
     VkShaderModule vk_shader_module;
+    uint32_t gpu_validation_shader_id;
 
-    shader_module(VkShaderModuleCreateInfo const *pCreateInfo, VkShaderModule shaderModule)
-        : words((uint32_t *)pCreateInfo->pCode, (uint32_t *)pCreateInfo->pCode + pCreateInfo->codeSize / sizeof(uint32_t)),
+    std::vector<uint32_t> PreprocessShaderBinary(uint32_t *src_binary, size_t binary_size, spv_target_env env) {
+        spvtools::Optimizer optimizer(env);
+        optimizer.RegisterPass(spvtools::CreateFlattenDecorationPass());
+        std::vector<uint32_t> optimized_binary;
+        auto result = optimizer.Run(src_binary, binary_size / sizeof(uint32_t), &optimized_binary);
+        return (result ? optimized_binary : std::vector<uint32_t>(src_binary, src_binary + binary_size / sizeof(uint32_t)));
+    }
+
+    shader_module(VkShaderModuleCreateInfo const *pCreateInfo, VkShaderModule shaderModule, spv_target_env env,
+                  uint32_t unique_shader_id)
+        : words(PreprocessShaderBinary((uint32_t *)pCreateInfo->pCode, pCreateInfo->codeSize, env)),
           def_index(),
           has_valid_spirv(true),
-          vk_shader_module(shaderModule) {
+          vk_shader_module(shaderModule),
+          gpu_validation_shader_id(unique_shader_id) {
         BuildDefIndex();
     }
 
@@ -194,10 +206,6 @@ class ValidationCache {
     }
 };
 
-bool ValidateAndCapturePipelineShaderState(layer_data *dev_data, PIPELINE_STATE *pPipeline);
-bool ValidateComputePipeline(layer_data *dev_data, PIPELINE_STATE *pPipeline);
-bool ValidateRaytracingPipelineNVX(layer_data *dev_data, PIPELINE_STATE *pipeline);
 typedef std::pair<unsigned, unsigned> descriptor_slot_t;
-bool PreCallValidateCreateShaderModule(layer_data *dev_data, VkShaderModuleCreateInfo const *pCreateInfo, bool *spirv_valid);
 
 #endif  // VULKAN_SHADER_VALIDATION_H

@@ -22,11 +22,11 @@ NGFieldsetLayoutAlgorithm::NGFieldsetLayoutAlgorithm(
     NGBlockNode node,
     const NGConstraintSpace& space,
     const NGBreakToken* break_token)
-    : NGLayoutAlgorithm(node, space, ToNGBlockBreakToken(break_token)) {
+    : NGLayoutAlgorithm(node, space, To<NGBlockBreakToken>(break_token)) {
   container_builder_.SetIsNewFormattingContext(space.IsNewFormattingContext());
 }
 
-scoped_refptr<NGLayoutResult> NGFieldsetLayoutAlgorithm::Layout() {
+scoped_refptr<const NGLayoutResult> NGFieldsetLayoutAlgorithm::Layout() {
   // TODO(mstensho): Support block fragmentation.
   DCHECK(!BreakToken());
 
@@ -40,10 +40,11 @@ scoped_refptr<NGLayoutResult> NGFieldsetLayoutAlgorithm::Layout() {
   // with the actual fieldset contents. Since scrollbars are handled by the
   // anonymous child box, and since padding is inside the scrollport, padding
   // also needs to be handled by the anonymous child.
-  NGBoxStrut borders = ComputeBorders(ConstraintSpace(), Style());
+  NGBoxStrut borders = ComputeBorders(ConstraintSpace(), Node());
   NGBoxStrut padding = ComputePadding(ConstraintSpace(), Style());
+  NGBoxStrut border_padding = borders + padding;
   NGLogicalSize border_box_size =
-      CalculateBorderBoxSize(ConstraintSpace(), Node());
+      CalculateBorderBoxSize(ConstraintSpace(), Node(), border_padding);
   const auto writing_mode = ConstraintSpace().GetWritingMode();
   LayoutUnit block_start_padding_edge = borders.block_start;
 
@@ -51,9 +52,8 @@ scoped_refptr<NGLayoutResult> NGFieldsetLayoutAlgorithm::Layout() {
     // Lay out the legend. While the fieldset container normally ignores its
     // padding, the legend is laid out within what would have been the content
     // box had the fieldset been a regular block with no weirdness.
-    NGBoxStrut borders_padding = borders + padding;
     NGLogicalSize content_box_size =
-        ShrinkAvailableSize(border_box_size, borders_padding);
+        ShrinkAvailableSize(border_box_size, border_padding);
     auto legend_space =
         CreateConstraintSpaceForLegend(legend, content_box_size);
     auto result = legend.Layout(legend_space, BreakToken());
@@ -67,7 +67,7 @@ scoped_refptr<NGLayoutResult> NGFieldsetLayoutAlgorithm::Layout() {
     // border-box of the legend.
     // TODO(mstensho): inline alignment
     NGLogicalOffset legend_offset = NGLogicalOffset(
-        borders_padding.inline_start + legend_margins.inline_start,
+        border_padding.inline_start + legend_margins.inline_start,
         legend_margins.block_start);
     LayoutUnit legend_margin_box_block_size =
         logical_fragment.BlockSize() + legend_margins.BlockSum();
@@ -114,7 +114,7 @@ scoped_refptr<NGLayoutResult> NGFieldsetLayoutAlgorithm::Layout() {
 
   // Recompute the block-axis size now that we know our content size.
   border_box_size.block_size = ComputeBlockSizeForFragment(
-      ConstraintSpace(), Style(), intrinsic_block_size);
+      ConstraintSpace(), Style(), border_padding, intrinsic_block_size);
 
   // The above computation utility knows nothing about fieldset weirdness. The
   // legend may eat from the available content box block size. Make room for
@@ -131,9 +131,8 @@ scoped_refptr<NGLayoutResult> NGFieldsetLayoutAlgorithm::Layout() {
   container_builder_.SetBorders(borders);
   container_builder_.SetPadding(padding);
 
-  NGOutOfFlowLayoutPart(&container_builder_, Node().IsAbsoluteContainer(),
-                        Node().IsFixedContainer(), borders_with_legend,
-                        ConstraintSpace(), Style())
+  NGOutOfFlowLayoutPart(Node(), ConstraintSpace(), borders_with_legend,
+                        &container_builder_)
       .Run();
 
   return container_builder_.ToBoxFragment();
@@ -163,7 +162,7 @@ base::Optional<MinMaxSize> NGFieldsetLayoutAlgorithm::ComputeMinMaxSize(
     sizes.Encompass(content_minmax);
   }
 
-  sizes += ComputeBorders(ConstraintSpace(), node_.Style()).InlineSum();
+  sizes += ComputeBorders(ConstraintSpace(), node_).InlineSum();
   return sizes;
 }
 

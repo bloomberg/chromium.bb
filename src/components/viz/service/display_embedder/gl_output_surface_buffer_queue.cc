@@ -20,12 +20,10 @@ namespace viz {
 GLOutputSurfaceBufferQueue::GLOutputSurfaceBufferQueue(
     scoped_refptr<VizProcessContextProvider> context_provider,
     gpu::SurfaceHandle surface_handle,
-    SyntheticBeginFrameSource* synthetic_begin_frame_source,
+    UpdateVSyncParametersCallback update_vsync_callback,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-    uint32_t target,
-    uint32_t internalformat,
     gfx::BufferFormat buffer_format)
-    : GLOutputSurface(context_provider, synthetic_begin_frame_source) {
+    : GLOutputSurface(context_provider, std::move(update_vsync_callback)) {
   capabilities_.uses_default_gl_framebuffer = false;
   capabilities_.flipped_output_surface = true;
   // Set |max_frames_pending| to 2 for buffer_queue, which aligns scheduling
@@ -37,15 +35,13 @@ GLOutputSurfaceBufferQueue::GLOutputSurfaceBufferQueue(
   // implementation.
   capabilities_.max_frames_pending = 2;
 
-  buffer_queue_.reset(new BufferQueue(
-      context_provider->ContextGL(), target, internalformat, buffer_format,
-      gpu_memory_buffer_manager, surface_handle));
+  buffer_queue_ = std::make_unique<BufferQueue>(
+      context_provider->ContextGL(), buffer_format, gpu_memory_buffer_manager,
+      surface_handle, context_provider->ContextCapabilities());
   buffer_queue_->Initialize();
 }
 
-GLOutputSurfaceBufferQueue::~GLOutputSurfaceBufferQueue() {
-  // TODO(rjkroege): Support cleanup.
-}
+GLOutputSurfaceBufferQueue::~GLOutputSurfaceBufferQueue() = default;
 
 void GLOutputSurfaceBufferQueue::BindFramebuffer() {
   DCHECK(buffer_queue_);
@@ -69,6 +65,11 @@ void GLOutputSurfaceBufferQueue::Reshape(const gfx::Size& size,
   buffer_queue_->Reshape(size, device_scale_factor, color_space, use_stencil);
 }
 
+void GLOutputSurfaceBufferQueue::SetDrawRectangle(const gfx::Rect& damage) {
+  GLOutputSurface::SetDrawRectangle(damage);
+  buffer_queue_->CopyDamageForCurrentSurface(damage);
+}
+
 void GLOutputSurfaceBufferQueue::SwapBuffers(OutputSurfaceFrame frame) {
   DCHECK(buffer_queue_);
 
@@ -89,7 +90,6 @@ uint32_t GLOutputSurfaceBufferQueue::GetFramebufferCopyTextureFormat() {
 }
 
 bool GLOutputSurfaceBufferQueue::IsDisplayedAsOverlayPlane() const {
-  // TODO(rjkroege): implement remaining overlay functionality.
   return true;
 }
 

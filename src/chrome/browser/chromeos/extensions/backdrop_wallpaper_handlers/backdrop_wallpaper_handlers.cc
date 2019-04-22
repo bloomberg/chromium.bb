@@ -4,10 +4,14 @@
 
 #include "chrome/browser/chromeos/extensions/backdrop_wallpaper_handlers/backdrop_wallpaper_handlers.h"
 
+#include "base/bind.h"
+#include "base/command_line.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/extensions/backdrop_wallpaper_handlers/backdrop_wallpaper.pb.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/common/extensions/api/wallpaper_private.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
 #include "url/gurl.h"
@@ -34,6 +38,17 @@ constexpr char kBackdropSurpriseMeImageUrl[] =
 
 // The label used to return exclusive content or filter unwanted images.
 constexpr char kFilteringLabel[] = "chromebook";
+
+// Returns the corresponding test url if |kTestWallpaperServer| is present,
+// otherwise returns |url| as is. See https://crbug.com/914144.
+std::string MaybeConvertToTestUrl(std::string url) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kTestWallpaperServer)) {
+    base::ReplaceFirstSubstringAfterOffset(&url, 0, "clients3",
+                                           "chromecast-dev.sandbox");
+  }
+  return url;
+}
 
 // Helper function to parse the data from a |backdrop::Image| object and save it
 // to |image_info_out|.
@@ -177,7 +192,8 @@ void CollectionInfoFetcher::Start(OnCollectionsInfoFetched callback) {
   // |base::Unretained| is safe because this instance outlives
   // |backdrop_fetcher_|.
   backdrop_fetcher_->Start(
-      GURL(kBackdropCollectionsUrl), serialized_proto, traffic_annotation,
+      GURL(MaybeConvertToTestUrl(kBackdropCollectionsUrl)), serialized_proto,
+      traffic_annotation,
       base::BindOnce(&CollectionInfoFetcher::OnResponseFetched,
                      base::Unretained(this)));
 }
@@ -254,8 +270,8 @@ void ImageInfoFetcher::Start(OnImagesInfoFetched callback) {
 
   // |base::Unretained| is safe because this instance outlives
   // |backdrop_fetcher_|.
-  backdrop_fetcher_->Start(GURL(kBackdropImagesUrl), serialized_proto,
-                           traffic_annotation,
+  backdrop_fetcher_->Start(GURL(MaybeConvertToTestUrl(kBackdropImagesUrl)),
+                           serialized_proto, traffic_annotation,
                            base::BindOnce(&ImageInfoFetcher::OnResponseFetched,
                                           base::Unretained(this)));
 }
@@ -335,7 +351,8 @@ void SurpriseMeImageFetcher::Start(OnSurpriseMeImageFetched callback) {
   // |base::Unretained| is safe because this instance outlives
   // |backdrop_fetcher_|.
   backdrop_fetcher_->Start(
-      GURL(kBackdropSurpriseMeImageUrl), serialized_proto, traffic_annotation,
+      GURL(MaybeConvertToTestUrl(kBackdropSurpriseMeImageUrl)),
+      serialized_proto, traffic_annotation,
       base::BindOnce(&SurpriseMeImageFetcher::OnResponseFetched,
                      base::Unretained(this)));
 }

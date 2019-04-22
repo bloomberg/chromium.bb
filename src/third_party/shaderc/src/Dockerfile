@@ -27,11 +27,9 @@ RUN apk add --update \
 
 WORKDIR /root
 RUN git clone https://github.com/google/shaderc
+
 WORKDIR shaderc
-RUN git clone https://github.com/google/googletest.git          third_party/googletest
-RUN git clone https://github.com/google/glslang.git             third_party/glslang
-RUN git clone https://github.com/KhronosGroup/SPIRV-Tools.git   third_party/spirv-tools
-RUN git clone https://github.com/KhronosGroup/SPIRV-Headers.git third_party/spirv-tools/external/spirv-headers
+RUN ./utils/git-sync-deps
 
 WORKDIR build
 RUN cmake -GNinja \

@@ -227,8 +227,8 @@ void DesktopProcessTest::DisconnectChannels() {
 
 void DesktopProcessTest::PostDisconnectChannels() {
   message_loop_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&DesktopProcessTest::DisconnectChannels,
-                            base::Unretained(this)));
+      FROM_HERE, base::BindOnce(&DesktopProcessTest::DisconnectChannels,
+                                base::Unretained(this)));
 }
 
 void DesktopProcessTest::RunDesktopProcess() {

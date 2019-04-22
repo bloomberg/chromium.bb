@@ -117,7 +117,7 @@ ScriptPromise ServiceWorkerClients::get(ScriptState* script_state,
   if (!execution_context)
     return ScriptPromise();
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ServiceWorkerGlobalScopeClient::From(execution_context)
       ->GetClient(id, WTF::Bind(&DidGetClient, WrapPersistent(resolver)));
   return resolver->Promise();
@@ -131,7 +131,7 @@ ScriptPromise ServiceWorkerClients::matchAll(
   if (!execution_context)
     return ScriptPromise();
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ServiceWorkerGlobalScopeClient::From(execution_context)
       ->GetClients(
           mojom::blink::ServiceWorkerClientQueryOptions::New(
@@ -147,7 +147,7 @@ ScriptPromise ServiceWorkerClients::claim(ScriptState* script_state) {
   if (!execution_context)
     return ScriptPromise();
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ServiceWorkerGlobalScopeClient::From(execution_context)
       ->Claim(WTF::Bind(&DidClaim, WrapPersistent(resolver)));
   return resolver->Promise();
@@ -155,7 +155,7 @@ ScriptPromise ServiceWorkerClients::claim(ScriptState* script_state) {
 
 ScriptPromise ServiceWorkerClients::openWindow(ScriptState* script_state,
                                                const String& url) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
   ExecutionContext* context = ExecutionContext::From(script_state);
 

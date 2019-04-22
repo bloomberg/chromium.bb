@@ -36,4 +36,7 @@ interface PdfService {
   // current selection.
   SelectionChanged(gfx.mojom.PointF left, int32 left_height,
                    gfx.mojom.PointF right, int32 right_height);
+
+  // Notifies the embedder know the plugin can handle save commands internally.
+  SetPluginCanSave(bool can_save);
 };

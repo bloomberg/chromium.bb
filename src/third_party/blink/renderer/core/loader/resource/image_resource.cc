@@ -43,11 +43,14 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loading_log.h"
+#include "third_party/blink/renderer/platform/loader/fetch/unique_identifier.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
+#include "third_party/blink/renderer/platform/network/network_utils.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_violation_reporting_policy.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 #include "v8/include/v8.h"
@@ -88,6 +91,9 @@ class ImageResource::ImageResourceInfoImpl final
 
  private:
   const KURL& Url() const override { return resource_->Url(); }
+  TimeTicks LoadResponseEnd() const override {
+    return resource_->LoadResponseEnd();
+  }
   bool IsSchedulingReload() const override {
     return resource_->is_scheduling_reload_;
   }
@@ -108,11 +114,10 @@ class ImageResource::ImageResourceInfoImpl final
            resource_->ShouldReloadBrokenPlaceholder();
   }
   bool IsAccessAllowed(
-      const SecurityOrigin* security_origin,
       DoesCurrentFrameHaveSingleSecurityOrigin
           does_current_frame_has_single_security_origin) const override {
     return resource_->IsAccessAllowed(
-        security_origin, does_current_frame_has_single_security_origin);
+        does_current_frame_has_single_security_origin);
   }
   bool HasCacheControlNoStoreHeader() const override {
     return resource_->HasCacheControlNoStoreHeader();
@@ -219,6 +224,7 @@ ImageResource* ImageResource::Create(const ResourceRequest& request) {
 
 ImageResource* ImageResource::CreateForTest(const KURL& url) {
   ResourceRequest request(url);
+  request.SetInspectorId(CreateUniqueIdentifier());
   return Create(request);
 }
 
@@ -313,16 +319,7 @@ void ImageResource::AllClientsAndObserversRemoved() {
   // TODO(hiroshige): Make the CHECK condition cleaner.
   CHECK(is_during_finish_as_error_ || !GetContent()->HasImage() ||
         !ErrorOccurred());
-  // If possible, delay the resetting until back at the event loop. Doing so
-  // after a conservative GC prevents resetAnimation() from upsetting ongoing
-  // animation updates (crbug.com/613709)
-  if (!ThreadHeap::WillObjectBeLazilySwept(this)) {
-    Thread::Current()->GetTaskRunner()->PostTask(
-        FROM_HERE, WTF::Bind(&ImageResourceContent::DoResetAnimation,
-                             WrapWeakPersistent(GetContent())));
-  } else {
-    GetContent()->DoResetAnimation();
-  }
+  GetContent()->DoResetAnimation();
   if (multipart_parser_)
     multipart_parser_->Cancel();
   Resource::AllClientsAndObserversRemoved();
@@ -404,6 +401,7 @@ void ImageResource::DecodeError(bool all_data_received) {
   if (!all_data_received && Loader()) {
     // Observers are notified via ImageResource::finish().
     // TODO(hiroshige): Do not call didFinishLoading() directly.
+    Loader()->AbortResponseBodyLoading();
     Loader()->DidFinishLoading(
         CurrentTimeTicks(), size, size, size, false,
         std::vector<network::cors::PreflightTimingInfo>());
@@ -478,15 +476,16 @@ static bool IsEntireResource(const ResourceResponse& response) {
          first_byte_position == 0 && last_byte_position + 1 == instance_length;
 }
 
-void ImageResource::ResponseReceived(
-    const ResourceResponse& response,
-    std::unique_ptr<WebDataConsumerHandle> handle) {
-  DCHECK(!handle);
+void ImageResource::ResponseReceived(const ResourceResponse& response) {
   DCHECK(!multipart_parser_);
-  // If there's no boundary, just handle the request normally.
-  if (response.IsMultipart() && !response.MultipartBoundary().IsEmpty()) {
-    multipart_parser_ = MakeGarbageCollected<MultipartImageResourceParser>(
-        response, response.MultipartBoundary(), this);
+  if (response.MimeType() == "multipart/x-mixed-replace") {
+    Vector<char> boundary = network_utils::ParseMultipartBoundary(
+        response.HttpHeaderField(http_names::kContentType));
+    // If there's no boundary, just handle the request normally.
+    if (!boundary.IsEmpty()) {
+      multipart_parser_ = MakeGarbageCollected<MultipartImageResourceParser>(
+          response, boundary, this);
+    }
   }
 
   // Notify the base class that a response has been received. Note that after
@@ -494,7 +493,7 @@ void ImageResource::ResponseReceived(
   // ResourceResponse, while |response| might just be a revalidation response
   // (e.g. a 304) with a partial set of updated headers that were folded into
   // the cached response.
-  Resource::ResponseReceived(response, std::move(handle));
+  Resource::ResponseReceived(response);
 
   if (placeholder_option_ ==
           PlaceholderOption::kShowAndReloadPlaceholderAlways &&
@@ -704,20 +703,13 @@ void ImageResource::MultipartDataReceived(const char* bytes, size_t size) {
 }
 
 bool ImageResource::IsAccessAllowed(
-    const SecurityOrigin* security_origin,
     ImageResourceInfo::DoesCurrentFrameHaveSingleSecurityOrigin
         does_current_frame_has_single_security_origin) const {
-  if (GetResponse().WasFetchedViaServiceWorker())
-    return GetResponse().IsCorsSameOrigin();
-
   if (does_current_frame_has_single_security_origin !=
       ImageResourceInfo::kHasSingleSecurityOrigin)
     return false;
 
-  if (GetResponse().IsCorsSameOrigin())
-    return true;
-
-  return security_origin->CanReadContent(GetResponse().Url());
+  return GetResponse().IsCorsSameOrigin();
 }
 
 ImageResourceContent* ImageResource::GetContent() {

@@ -20,6 +20,8 @@ source_set("scenic") {
     "scenic_gpu_service.h",
     "scenic_screen.cc",
     "scenic_screen.h",
+    "scenic_surface.cc",
+    "scenic_surface.h",
     "scenic_surface_factory.cc",
     "scenic_surface_factory.h",
     "scenic_window.cc",
@@ -30,22 +32,23 @@ source_set("scenic") {
     "scenic_window_manager.h",
   ]
 
-  defines = [ "OZONE_IMPLEMENTATION" ]
+  defines = [
+    "OZONE_IMPLEMENTATION",
+    "VK_USE_PLATFORM_FUCHSIA",
+  ]
 
   deps = [
     "//base",
     "//mojo/public/cpp/system",
     "//services/service_manager/public/cpp",
     "//skia",
-    "//third_party/fuchsia-sdk/sdk:gfx",
     "//third_party/fuchsia-sdk/sdk:images",
     "//third_party/fuchsia-sdk/sdk:mem",
-    "//third_party/fuchsia-sdk/sdk:scenic",
     "//third_party/fuchsia-sdk/sdk:scenic_cpp",
-    "//third_party/fuchsia-sdk/sdk:viewsv1",
-    "//third_party/fuchsia-sdk/sdk:viewsv1token",
+    "//third_party/fuchsia-sdk/sdk:ui_gfx",
+    "//third_party/fuchsia-sdk/sdk:ui_scenic",
     "//ui/base",
-    "//ui/display/manager",
+    "//ui/display/fake",
     "//ui/events:dom_keycode_converter",
     "//ui/events/ozone:events_ozone_layout",
     "//ui/gfx/geometry",
@@ -59,7 +62,6 @@ source_set("scenic") {
     sources += [
       "vulkan_implementation_scenic.cc",
       "vulkan_implementation_scenic.h",
-      "vulkan_magma.h",
     ]
     defines += [ "VK_USE_PLATFORM_MAGMA_KHR" ]
   }

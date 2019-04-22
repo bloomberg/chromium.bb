@@ -10,9 +10,11 @@
 
 // TODO(hbos): Consider removing this file, it duplicates wpt tests.
 
-promise_test(function() {
-  let pc = new RTCPeerConnection();
-  let pc2 = new RTCPeerConnection();
+promise_test(async t => {
+  const pc = new RTCPeerConnection();
+  t.add_cleanup(() => pc.close());
+  const pc2 = new RTCPeerConnection();
+  t.add_cleanup(() => pc2.close());
   let eventSequence = [];
   return createStreams({audio:true, video:false}, 1)
     .then(function(streams) {
@@ -33,9 +35,11 @@ promise_test(function() {
     });
 }, 'ontrack fires before negotiation done.');
 
-promise_test(function() {
-  let pc = new RTCPeerConnection();
-  let pc2 = new RTCPeerConnection();
+promise_test(async t => {
+  const pc = new RTCPeerConnection();
+  t.add_cleanup(() => pc.close());
+  const pc2 = new RTCPeerConnection();
+  t.add_cleanup(() => pc2.close());
   let eventSequence = [];
   return createStreams({audio:true, video:false}, 1)
     .then(function(streams) {
@@ -56,9 +60,11 @@ promise_test(function() {
     });
 }, 'onaddstream fires before negotation done.');
 
-promise_test(function() {
-  let pc = new RTCPeerConnection();
-  let pc2 = new RTCPeerConnection();
+promise_test(async t => {
+  const pc = new RTCPeerConnection({sdpSemantics:'plan-b'});
+  t.add_cleanup(() => pc.close());
+  const pc2 = new RTCPeerConnection({sdpSemantics:'plan-b'});
+  t.add_cleanup(() => pc2.close());
   let eventSequence = [];
   return createStreams({audio:true, video:false}, 2)
     .then(function(streams) {
@@ -86,9 +92,11 @@ promise_test(function() {
     });
 }, 'ontrack and onaddstream fires in the expected relative order.');
 
-promise_test(function() {
-  let pc = new RTCPeerConnection();
-  let pc2 = new RTCPeerConnection();
+promise_test(async t => {
+  const pc = new RTCPeerConnection();
+  t.add_cleanup(() => pc.close());
+  const pc2 = new RTCPeerConnection();
+  t.add_cleanup(() => pc2.close());
   let eventSequence = [];
   return createStreams({audio:true, video:false}, 1)
     .then(function(streams) {
@@ -116,9 +124,11 @@ promise_test(function() {
     });
 }, 'ontrack and onaddstream fires in the same task.');
 
-promise_test(function() {
-  let pc = new RTCPeerConnection();
-  let pc2 = new RTCPeerConnection();
+promise_test(async t => {
+  const pc = new RTCPeerConnection();
+  t.add_cleanup(() => pc.close());
+  const pc2 = new RTCPeerConnection();
+  t.add_cleanup(() => pc2.close());
   return createStreams({audio:true, video:false}, 1)
     .then(function(streams) {
       pc.addStream(streams[0]);
@@ -134,9 +144,11 @@ promise_test(function() {
     });
 }, 'ontrack event\'s track matches track in getRemoteStreams().');
 
-promise_test(function() {
-  let pc = new RTCPeerConnection();
-  let pc2 = new RTCPeerConnection();
+promise_test(async t => {
+  const pc = new RTCPeerConnection();
+  t.add_cleanup(() => pc.close());
+  const pc2 = new RTCPeerConnection();
+  t.add_cleanup(() => pc2.close());
   return createStreams({audio:true, video:false}, 1)
     .then(function(streams) {
       pc.addStream(streams[0]);
@@ -151,9 +163,11 @@ promise_test(function() {
     });
 }, 'ontrack event\'s receiver matches getReceivers().');
 
-promise_test(function() {
-  let pc = new RTCPeerConnection();
-  let pc2 = new RTCPeerConnection();
+promise_test(async t => {
+  const pc = new RTCPeerConnection();
+  t.add_cleanup(() => pc.close());
+  const pc2 = new RTCPeerConnection();
+  t.add_cleanup(() => pc2.close());
   return createStreams({audio:true, video:false}, 1)
     .then(function(streams) {
       pc.addStream(streams[0]);
@@ -167,9 +181,11 @@ promise_test(function() {
     });
 }, 'ontrack event\'s streams match getRemoteStreams().');
 
-promise_test(function() {
-  let pc = new RTCPeerConnection();
-  let pc2 = new RTCPeerConnection();
+promise_test(async t => {
+  const pc = new RTCPeerConnection();
+  t.add_cleanup(() => pc.close());
+  const pc2 = new RTCPeerConnection();
+  t.add_cleanup(() => pc2.close());
   let firedForAudioTrack = false;
   let firedForVideoTrack = false;
   return createStreams({audio:true, video:true}, 1)

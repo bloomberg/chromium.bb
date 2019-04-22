@@ -5,6 +5,7 @@
 #ifndef ASH_ASSISTANT_MODEL_ASSISTANT_UI_MODEL_H_
 #define ASH_ASSISTANT_MODEL_ASSISTANT_UI_MODEL_H_
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "ui/gfx/geometry/rect.h"
@@ -25,8 +26,10 @@ enum class AssistantEntryPoint {
   kLongPressLauncher = 5,
   kSetup = 6,
   kStylus = 7,
+  kLauncherSearchResult = 8,
+  kLauncherSearchBoxMic = 9,
   // Special enumerator value used by histogram macros.
-  kMaxValue = kStylus
+  kMaxValue = kLauncherSearchBoxMic
 };
 
 // Enumeration of Assistant exit points. These values are persisted to logs.
@@ -43,8 +46,11 @@ enum class AssistantExitPoint {
   kOutsidePress = 5,
   kSetup = 6,
   kStylus = 7,
+  kBackInLauncher = 8,
+  kLauncherClose = 9,
+  kLauncherOpen = 10,
   // Special enumerator value used by histogram macros.
-  kMaxValue = kStylus
+  kMaxValue = kLauncherOpen
 };
 
 // Enumeration of Assistant UI modes.
@@ -52,6 +58,7 @@ enum class AssistantUiMode {
   kMainUi,
   kMiniUi,
   kWebUi,
+  kLauncherEmbeddedUi,
 };
 
 // Enumeration of Assistant visibility states.
@@ -61,8 +68,22 @@ enum class AssistantVisibility {
   kVisible,  // Assistant UI is visible and a session is in progress.
 };
 
+// Enumeration of Assistant button ID. These values are persisted to logs.
+// Entries should not be renumbered and numeric values should never be reused.
+// Only append to this enum is allowed if more buttons will be added.
+enum class AssistantButtonId {
+  kBack = 1,
+  kClose = 2,
+  kMinimize = 3,
+  kKeyboardInputToggle = 4,
+  kVoiceInputToggle = 5,
+  kSettings = 6,
+  kBackInLauncherDeprecated = 7,
+  kMaxValue = kBackInLauncherDeprecated
+};
+
 // Models the Assistant UI.
-class AssistantUiModel {
+class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantUiModel {
  public:
   AssistantUiModel();
   ~AssistantUiModel();
@@ -105,7 +126,7 @@ class AssistantUiModel {
       base::Optional<AssistantExitPoint> exit_point);
   void NotifyUsableWorkAreaChanged();
 
-  AssistantUiMode ui_mode_ = AssistantUiMode::kMainUi;
+  AssistantUiMode ui_mode_;
 
   AssistantVisibility visibility_ = AssistantVisibility::kClosed;
 

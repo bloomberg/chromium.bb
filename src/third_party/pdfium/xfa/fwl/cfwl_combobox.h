@@ -11,7 +11,6 @@
 
 #include "xfa/fwl/cfwl_comboedit.h"
 #include "xfa/fwl/cfwl_combolist.h"
-#include "xfa/fwl/cfwl_form.h"
 #include "xfa/fwl/cfwl_listbox.h"
 #include "xfa/fxgraphics/cxfa_graphics.h"
 
@@ -60,7 +59,7 @@ class CFWL_ComboBox final : public CFWL_Widget {
   int32_t GetCurSel() const { return m_iCurSel; }
   void SetCurSel(int32_t iSel);
 
-  void AddString(const WideStringView& wsText);
+  void AddString(WideStringView wsText);
   void RemoveAt(int32_t iIndex);
   void RemoveAll();
 
@@ -89,8 +88,6 @@ class CFWL_ComboBox final : public CFWL_Widget {
 
   CFX_RectF GetBBox() const;
   void EditModifyStylesEx(uint32_t dwStylesExAdded, uint32_t dwStylesExRemoved);
-
-  void DrawStretchHandler(CXFA_Graphics* pGraphics, const CFX_Matrix* pMatrix);
   void ShowDropList(bool bActivate);
 
   CFWL_ComboEdit* GetComboEdit() const { return m_pEdit.get(); }

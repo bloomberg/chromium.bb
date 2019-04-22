@@ -9,28 +9,23 @@
 #include "core/fpdfapi/font/cpdf_cidfont.h"
 #include "core/fpdfapi/font/cpdf_font.h"
 #include "core/fxge/cfx_renderdevice.h"
+#include "core/fxge/cfx_substfont.h"
 
-CPDF_CharPosList::CPDF_CharPosList() = default;
-
-CPDF_CharPosList::~CPDF_CharPosList() {
-  FX_Free(m_pCharPos);
-}
-
-void CPDF_CharPosList::Load(const std::vector<uint32_t>& charCodes,
-                            const std::vector<float>& charPos,
-                            CPDF_Font* pFont,
-                            float FontSize) {
-  m_pCharPos = FX_Alloc(FXTEXT_CHARPOS, charCodes.size());
-  m_nChars = 0;
+CPDF_CharPosList::CPDF_CharPosList(const std::vector<uint32_t>& charCodes,
+                                   const std::vector<float>& charPos,
+                                   CPDF_Font* pFont,
+                                   float FontSize) {
+  m_CharPos.reserve(charCodes.size());
   CPDF_CIDFont* pCIDFont = pFont->AsCIDFont();
   bool bVertWriting = pCIDFont && pCIDFont->IsVertWriting();
-  for (size_t iChar = 0; iChar < charCodes.size(); ++iChar) {
-    uint32_t CharCode = charCodes[iChar];
+  for (size_t i = 0; i < charCodes.size(); ++i) {
+    uint32_t CharCode = charCodes[i];
     if (CharCode == static_cast<uint32_t>(-1))
       continue;
 
     bool bVert = false;
-    FXTEXT_CHARPOS& charpos = m_pCharPos[m_nChars++];
+    m_CharPos.emplace_back();
+    TextCharPos& charpos = m_CharPos.back();
     if (pCIDFont)
       charpos.m_bFontStyle = true;
     WideString unicode = pFont->UnicodeFromCharCode(CharCode);
@@ -63,7 +58,7 @@ void CPDF_CharPosList::Load(const std::vector<uint32_t>& charCodes,
     else
       charpos.m_FontCharWidth = 0;
 
-    charpos.m_Origin = CFX_PointF(iChar > 0 ? charPos[iChar - 1] : 0, 0);
+    charpos.m_Origin = CFX_PointF(i > 0 ? charPos[i - 1] : 0, 0);
     charpos.m_bGlyphAdjust = false;
 
     float scalingFactor = 1.0f;
@@ -116,4 +111,14 @@ void CPDF_CharPosList::Load(const std::vector<uint32_t>& charCodes,
       charpos.m_bGlyphAdjust = true;
     }
   }
+}
+
+CPDF_CharPosList::~CPDF_CharPosList() = default;
+
+uint32_t CPDF_CharPosList::GetCount() const {
+  return pdfium::CollectionSize<uint32_t>(m_CharPos);
+}
+
+const TextCharPos& CPDF_CharPosList::GetAt(size_t index) const {
+  return m_CharPos[index];
 }

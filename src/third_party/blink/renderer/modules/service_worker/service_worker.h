@@ -79,7 +79,7 @@ class MODULES_EXPORT ServiceWorker final
 
   String scriptURL() const;
   String state() const;
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange, kStatechange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange, kStatechange)
 
   ServiceWorker* ToServiceWorker() override { return this; }
 
@@ -95,7 +95,7 @@ class MODULES_EXPORT ServiceWorker final
   ScriptPromise InternalsTerminate(ScriptState*);
 
  private:
-  // PausableObject overrides.
+  // ContextLifecycleObserver overrides.
   void ContextDestroyed(ExecutionContext*) override;
 
   bool was_stopped_;

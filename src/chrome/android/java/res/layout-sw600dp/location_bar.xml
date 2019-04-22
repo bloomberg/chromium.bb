@@ -8,31 +8,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <FrameLayout android:id="@+id/location_bar_icon"
-        android:layout_width="@dimen/location_bar_icon_width"
-        android:layout_height="match_parent"
-        android:layout_gravity="start|center_vertical">
-        <ImageView android:id="@+id/navigation_button"
-            style="@style/LocationBarButton"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_gravity="center_vertical"
-            android:src="@drawable/ic_omnibox_page"
-            android:scaleType="center"
-            android:contentDescription="@string/accessibility_toolbar_btn_site_info"/>
-        <org.chromium.ui.widget.ChromeImageButton
-            android:id="@+id/security_button"
-            style="@style/LocationBarButton"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scaleType="center"
-            android:layout_gravity="center"
-            android:alpha="0"
-            android:visibility="invisible"
-            app:tint="@color/dark_mode_tint" />
-    </FrameLayout>
-
-    <include layout="@layout/location_bar_status" />
+    <include layout="@layout/location_status" />
 
     <include
         android:id="@+id/url_bar"

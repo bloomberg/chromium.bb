@@ -12,10 +12,10 @@
  * @throws {Error} In case of non supported markup.
  * @return {DocumentFragment} A document fragment containing the DOM tree.
  */
-var parseHtmlSubset = (function() {
+const parseHtmlSubset = (function() {
   'use strict';
 
-  var allowedAttributes = {
+  const allowedAttributes = {
     'href': function(node, value) {
       // Only allow a[href] starting with chrome:// and https://
       return node.tagName == 'A' &&
@@ -33,16 +33,17 @@ var parseHtmlSubset = (function() {
    * @type {!Array<string>}
    * @const
    */
-  var allowedTags = ['A', 'B', 'SPAN', 'STRONG'];
+  const allowedTags = ['A', 'B', 'SPAN', 'STRONG'];
 
   /** @param {...Object} var_args Objects to merge. */
   function merge(var_args) {
-    var clone = {};
-    for (var i = 0; i < arguments.length; ++i) {
+    const clone = {};
+    for (let i = 0; i < arguments.length; ++i) {
       if (typeof arguments[i] == 'object') {
-        for (var key in arguments[i]) {
-          if (arguments[i].hasOwnProperty(key))
+        for (const key in arguments[i]) {
+          if (arguments[i].hasOwnProperty(key)) {
             clone[key] = arguments[i][key];
+          }
         }
       }
     }
@@ -51,41 +52,43 @@ var parseHtmlSubset = (function() {
 
   function walk(n, f) {
     f(n);
-    for (var i = 0; i < n.childNodes.length; i++) {
+    for (let i = 0; i < n.childNodes.length; i++) {
       walk(n.childNodes[i], f);
     }
   }
 
   function assertElement(tags, node) {
-    if (tags.indexOf(node.tagName) == -1)
+    if (tags.indexOf(node.tagName) == -1) {
       throw Error(node.tagName + ' is not supported');
+    }
   }
 
   function assertAttribute(attrs, attrNode, node) {
-    var n = attrNode.nodeName;
-    var v = attrNode.nodeValue;
-    if (!attrs.hasOwnProperty(n) || !attrs[n](node, v))
+    const n = attrNode.nodeName;
+    const v = attrNode.nodeValue;
+    if (!attrs.hasOwnProperty(n) || !attrs[n](node, v)) {
       throw Error(node.tagName + '[' + n + '="' + v + '"] is not supported');
+    }
   }
 
   return function(s, opt_extraTags, opt_extraAttrs) {
-    var extraTags = (opt_extraTags || []).map(function(str) {
+    const extraTags = (opt_extraTags || []).map(function(str) {
       return str.toUpperCase();
     });
-    var tags = allowedTags.concat(extraTags);
-    var attrs = merge(allowedAttributes, opt_extraAttrs || {});
+    const tags = allowedTags.concat(extraTags);
+    const attrs = merge(allowedAttributes, opt_extraAttrs || {});
 
-    var doc = document.implementation.createHTMLDocument('');
-    var r = doc.createRange();
+    const doc = document.implementation.createHTMLDocument('');
+    const r = doc.createRange();
     r.selectNode(doc.body);
     // This does not execute any scripts because the document has no view.
-    var df = r.createContextualFragment(s);
+    const df = r.createContextualFragment(s);
     walk(df, function(node) {
       switch (node.nodeType) {
         case Node.ELEMENT_NODE:
           assertElement(tags, node);
-          var nodeAttrs = node.attributes;
-          for (var i = 0; i < nodeAttrs.length; ++i) {
+          const nodeAttrs = node.attributes;
+          for (let i = 0; i < nodeAttrs.length; ++i) {
             assertAttribute(attrs, nodeAttrs[i], node);
           }
           break;

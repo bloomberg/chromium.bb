@@ -5,11 +5,12 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_BROADCASTCHANNEL_BROADCAST_CHANNEL_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_BROADCASTCHANNEL_BROADCAST_CHANNEL_H_
 
+#include "base/macros.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
-#include "third_party/blink/public/platform/modules/broadcastchannel/broadcast_channel.mojom-blink.h"
+#include "third_party/blink/public/mojom/broadcastchannel/broadcast_channel.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
-#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
@@ -23,12 +24,13 @@ class BroadcastChannel final : public EventTargetWithInlineData,
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(BroadcastChannel);
   USING_PRE_FINALIZER(BroadcastChannel, Dispose);
-  WTF_MAKE_NONCOPYABLE(BroadcastChannel);
 
  public:
   static BroadcastChannel* Create(ExecutionContext*,
                                   const String& name,
                                   ExceptionState&);
+
+  BroadcastChannel(ExecutionContext*, const String& name);
   ~BroadcastChannel() override;
   void Dispose();
 
@@ -36,8 +38,8 @@ class BroadcastChannel final : public EventTargetWithInlineData,
   String name() const { return name_; }
   void postMessage(const ScriptValue&, ExceptionState&);
   void close();
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(message, kMessage);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(messageerror, kMessageerror);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(message, kMessage)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(messageerror, kMessageerror)
 
   // EventTarget:
   const AtomicString& InterfaceName() const override;
@@ -54,8 +56,6 @@ class BroadcastChannel final : public EventTargetWithInlineData,
   void Trace(blink::Visitor*) override;
 
  private:
-  BroadcastChannel(ExecutionContext*, const String& name);
-
   // mojom::blink::BroadcastChannelClient:
   void OnMessage(BlinkCloneableMessage) override;
 
@@ -67,6 +67,8 @@ class BroadcastChannel final : public EventTargetWithInlineData,
 
   mojo::AssociatedBinding<mojom::blink::BroadcastChannelClient> binding_;
   mojom::blink::BroadcastChannelClientAssociatedPtr remote_client_;
+
+  DISALLOW_COPY_AND_ASSIGN(BroadcastChannel);
 };
 
 }  // namespace blink

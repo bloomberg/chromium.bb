@@ -29,7 +29,7 @@ PepperTrueTypeFontHost::PepperTrueTypeFontHost(
       initialize_completed_(false),
       weak_factory_(this) {
   font_ = PepperTrueTypeFont::Create();
-  // Initialize the font on a TaskScheduler thread. This must complete before
+  // Initialize the font on a ThreadPool thread. This must complete before
   // using |font_|.
   task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
       {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
@@ -45,14 +45,9 @@ PepperTrueTypeFontHost::PepperTrueTypeFontHost(
 }
 
 PepperTrueTypeFontHost::~PepperTrueTypeFontHost() {
-  if (font_.get()) {
-    // Release the font on the task runner in case the implementation requires
-    // long blocking operations.
-    font_->AddRef();
-    PepperTrueTypeFont* raw_font = font_.get();
-    font_ = nullptr;
-    task_runner_->ReleaseSoon(FROM_HERE, raw_font);
-  }
+  // Release the font on the task runner in case the implementation requires
+  // long blocking operations.
+  task_runner_->ReleaseSoon(FROM_HERE, std::move(font_));
 }
 
 int32_t PepperTrueTypeFontHost::OnResourceMessageReceived(

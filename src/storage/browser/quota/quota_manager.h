@@ -17,12 +17,16 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/sequence_checker.h"
 #include "base/stl_util.h"
+#include "base/timer/timer.h"
 #include "storage/browser/quota/quota_callbacks.h"
 #include "storage/browser/quota/quota_client.h"
 #include "storage/browser/quota/quota_database.h"
@@ -30,8 +34,7 @@
 #include "storage/browser/quota/quota_task.h"
 #include "storage/browser/quota/special_storage_policy.h"
 #include "storage/browser/quota/storage_observer.h"
-#include "storage/browser/storage_browser_export.h"
-#include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
+#include "third_party/blink/public/mojom/quota/quota_types.mojom-forward.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -61,7 +64,7 @@ class UsageTracker;
 struct QuotaManagerDeleter;
 
 // An interface called by QuotaTemporaryStorageEvictor.
-class STORAGE_EXPORT QuotaEvictionHandler {
+class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaEvictionHandler {
  public:
   using EvictionRoundInfoCallback =
       base::OnceCallback<void(blink::mojom::QuotaStatusCode status,
@@ -103,10 +106,10 @@ struct UsageInfo {
 //
 // Methods must be called on the IO thread, except for the constructor and
 // proxy().
-class STORAGE_EXPORT QuotaManager
+class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManager
     : public QuotaTaskObserver,
       public QuotaEvictionHandler,
-      public base::RefCountedThreadSafe<QuotaManager, QuotaManagerDeleter> {
+      public base::RefCountedDeleteOnSequence<QuotaManager> {
  public:
   using UsageAndQuotaCallback = base::OnceCallback<
       void(blink::mojom::QuotaStatusCode, int64_t usage, int64_t quota)>;
@@ -177,6 +180,7 @@ class STORAGE_EXPORT QuotaManager
   void NotifyOriginInUse(const url::Origin& origin);
   void NotifyOriginNoLongerInUse(const url::Origin& origin);
   bool IsOriginInUse(const url::Origin& origin) const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return base::ContainsKey(origins_in_use_, origin);
   }
 
@@ -200,6 +204,12 @@ class STORAGE_EXPORT QuotaManager
                       blink::mojom::StorageType type,
                       int quota_client_mask,
                       StatusCallback callback);
+
+  // Instructs each QuotaClient to remove possible traces of deleted
+  // data on the disk.
+  void PerformStorageCleanup(blink::mojom::StorageType type,
+                             int quota_client_mask,
+                             base::OnceClosure callback);
 
   // Called by UI and internal modules.
   void GetPersistentHostQuota(const std::string& host, QuotaCallback callback);
@@ -256,7 +266,7 @@ class STORAGE_EXPORT QuotaManager
 
  private:
   friend class base::DeleteHelper<QuotaManager>;
-  friend class base::RefCountedThreadSafe<QuotaManager, QuotaManagerDeleter>;
+  friend class base::RefCountedDeleteOnSequence<QuotaManager>;
   friend class content::QuotaManagerTest;
   friend class content::StorageMonitorTest;
   friend class content::MockQuotaManager;
@@ -267,13 +277,14 @@ class STORAGE_EXPORT QuotaManager
   friend struct QuotaManagerDeleter;
 
   class EvictionRoundInfoHelper;
-  class UsageAndQuotaHelper;
+  class UsageAndQuotaInfoGatherer;
   class GetUsageInfoTask;
   class OriginDataDeleter;
   class HostDataDeleter;
   class GetModifiedSinceHelper;
   class DumpQuotaTableHelper;
   class DumpOriginInfoTableHelper;
+  class StorageCleanupHelper;
 
   using QuotaTableEntry = QuotaDatabase::QuotaTableEntry;
   using OriginInfoTableEntry = QuotaDatabase::OriginInfoTableEntry;
@@ -359,6 +370,9 @@ class STORAGE_EXPORT QuotaManager
   void ReportHistogram();
   void DidGetTemporaryGlobalUsageForHistogram(int64_t usage,
                                               int64_t unlimited_usage);
+  void DidGetStorageCapacityForHistogram(int64_t usage,
+                                         int64_t total_space,
+                                         int64_t available_space);
   void DidGetPersistentGlobalUsageForHistogram(int64_t usage,
                                                int64_t unlimited_usage);
   void DidDumpOriginInfoTableForHistogram(
@@ -415,7 +429,8 @@ class STORAGE_EXPORT QuotaManager
   const bool is_incognito_;
   const base::FilePath profile_path_;
 
-  scoped_refptr<QuotaManagerProxy> proxy_;
+  // proxy_ can be accessed by any thread so it must be thread-safe
+  const scoped_refptr<QuotaManagerProxy> proxy_;
   bool db_disabled_;
   bool eviction_disabled_;
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_;
@@ -469,15 +484,11 @@ class STORAGE_EXPORT QuotaManager
 
   std::unique_ptr<StorageMonitor> storage_monitor_;
 
+  SEQUENCE_CHECKER(sequence_checker_);
+
   base::WeakPtrFactory<QuotaManager> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(QuotaManager);
-};
-
-struct QuotaManagerDeleter {
-  static void Destruct(const QuotaManager* manager) {
-    manager->DeleteOnCorrectThread();
-  }
 };
 
 }  // namespace storage

@@ -8,8 +8,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/shill_manager_client.h"
+#include "chromeos/dbus/shill/shill_clients.h"
+#include "chromeos/dbus/shill/shill_manager_client.h"
 #include "chromeos/network/geolocation_handler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -23,10 +23,9 @@ class GeolocationChromeOsWifiDataProviderTest : public testing::Test {
             base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
 
   void SetUp() override {
-    chromeos::DBusThreadManager::Initialize();
+    chromeos::shill_clients::InitializeFakes();
     chromeos::NetworkHandler::Initialize();
-    manager_client_ =
-        chromeos::DBusThreadManager::Get()->GetShillManagerClient();
+    manager_client_ = chromeos::ShillManagerClient::Get();
     manager_test_ = manager_client_->GetTestInterface();
     provider_ = new WifiDataProviderChromeOs();
     base::RunLoop().RunUntilIdle();
@@ -35,7 +34,7 @@ class GeolocationChromeOsWifiDataProviderTest : public testing::Test {
   void TearDown() override {
     provider_ = NULL;
     chromeos::NetworkHandler::Shutdown();
-    chromeos::DBusThreadManager::Shutdown();
+    chromeos::shill_clients::Shutdown();
   }
 
   bool GetAccessPointData() { return provider_->GetAccessPointData(&ap_data_); }
@@ -46,8 +45,8 @@ class GeolocationChromeOsWifiDataProviderTest : public testing::Test {
         base::DictionaryValue properties;
         std::string mac_address = base::StringPrintf(
             "%02X:%02X:%02X:%02X:%02X:%02X", i, j, 3, 4, 5, 6);
-        std::string channel = base::IntToString(i * 10 + j);
-        std::string strength = base::IntToString(i * 100 + j);
+        std::string channel = base::NumberToString(i * 10 + j);
+        std::string strength = base::NumberToString(i * 100 + j);
         properties.SetKey(shill::kGeoMacAddressProperty,
                           base::Value(mac_address));
         properties.SetKey(shill::kGeoChannelProperty, base::Value(channel));

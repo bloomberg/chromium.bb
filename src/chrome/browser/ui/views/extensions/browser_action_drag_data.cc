@@ -30,7 +30,7 @@ BrowserActionDragData::BrowserActionDragData(
 }
 
 bool BrowserActionDragData::GetDropFormats(
-    std::set<ui::Clipboard::FormatType>* format_types) {
+    std::set<ui::ClipboardFormatType>* format_types) {
   format_types->insert(GetBrowserActionFormatType());
   return true;
 }
@@ -73,10 +73,10 @@ bool BrowserActionDragData::Read(const ui::OSExchangeData& data) {
 }
 
 // static
-const ui::Clipboard::FormatType&
+const ui::ClipboardFormatType&
 BrowserActionDragData::GetBrowserActionFormatType() {
-  static base::NoDestructor<ui::Clipboard::FormatType> format(
-      ui::Clipboard::GetFormatType(kClipboardFormatString));
+  static base::NoDestructor<ui::ClipboardFormatType> format(
+      ui::ClipboardFormatType::GetType(kClipboardFormatString));
 
   return *format;
 }

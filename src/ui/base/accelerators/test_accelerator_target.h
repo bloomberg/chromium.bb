@@ -55,6 +55,6 @@ class TestAcceleratorTarget : public AcceleratorTarget {
   DISALLOW_COPY_AND_ASSIGN(TestAcceleratorTarget);
 };
 
-};  // namespace ui
+}  // namespace ui
 
 #endif  // UI_BASE_ACCELERATORS_TEST_ACCELERATOR_TARGET_H_

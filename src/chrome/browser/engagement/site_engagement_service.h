@@ -18,7 +18,7 @@
 #include "chrome/browser/engagement/site_engagement_details.mojom.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "third_party/blink/public/platform/site_engagement.mojom.h"
+#include "third_party/blink/public/mojom/site_engagement/site_engagement.mojom.h"
 #include "ui/base/page_transition_types.h"
 
 namespace base {
@@ -126,6 +126,13 @@ class SiteEngagementService : public KeyedService,
   static double GetScoreFromSettings(HostContentSettingsMap* settings,
                                      const GURL& origin);
 
+  // Retrieves all details. Can be called from a background thread. |now| must
+  // be the current timestamp. Takes a scoped_refptr to keep
+  // HostContentSettingsMap alive. See crbug.com/901287.
+  static std::vector<mojom::SiteEngagementDetails> GetAllDetailsInBackground(
+      base::Time now,
+      scoped_refptr<HostContentSettingsMap> map);
+
   explicit SiteEngagementService(Profile* profile);
   ~SiteEngagementService() override;
 
@@ -179,6 +186,7 @@ class SiteEngagementService : public KeyedService,
   void AddPointsForTesting(const GURL& url, double points);
 
  private:
+  friend class BookmarkAppTest;
   friend class SiteEngagementObserver;
   friend class SiteEngagementServiceTest;
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, CheckHistograms);

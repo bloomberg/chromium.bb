@@ -66,7 +66,7 @@ class RemoteSuggestionsFetcherImpl : public RemoteSuggestionsFetcher {
   const GURL& GetFetchUrlForDebugging() const override;
 
   // Overrides internal clock for testing purposes.
-  void SetClockForTesting(base::Clock* clock) { clock_ = clock; }
+  void SetClockForTesting(const base::Clock* clock) { clock_ = clock; }
 
   static void set_skip_api_key_check_for_testing();
 
@@ -83,7 +83,8 @@ class RemoteSuggestionsFetcherImpl : public RemoteSuggestionsFetcher {
 
   void StartTokenRequest();
 
-  void AccessTokenFetchFinished(GoogleServiceAuthError error,
+  void AccessTokenFetchFinished(base::Time token_start_time,
+                                GoogleServiceAuthError error,
                                 identity::AccessTokenInfo access_token_info);
   void AccessTokenError(const GoogleServiceAuthError& error);
 
@@ -100,6 +101,11 @@ class RemoteSuggestionsFetcherImpl : public RemoteSuggestionsFetcher {
                      const std::string& error_details,
                      bool is_authenticated,
                      std::string access_token);
+  void EmitDurationAndInvokeCallback(
+      base::Time start_time,
+      SnippetsAvailableCallback callback,
+      Status status,
+      OptionalFetchedCategories fetched_categories);
 
   // Authentication for signed-in users.
   identity::IdentityManager* identity_manager_;
@@ -126,7 +132,7 @@ class RemoteSuggestionsFetcherImpl : public RemoteSuggestionsFetcher {
   const std::string api_key_;
 
   // Allow for an injectable clock for testing.
-  base::Clock* clock_;
+  const base::Clock* clock_;
 
   // Classifier that tells us how active the user is. Not owned.
   const UserClassifier* user_classifier_;

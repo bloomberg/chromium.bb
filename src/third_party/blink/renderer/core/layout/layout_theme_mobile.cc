@@ -52,14 +52,14 @@ String LayoutThemeMobile::ExtraFullscreenStyleSheet() {
 
 void LayoutThemeMobile::AdjustInnerSpinButtonStyle(ComputedStyle& style) const {
   if (WebTestSupport::IsRunningWebTest()) {
-    // Match Linux spin button style in layout tests.
+    // Match Linux spin button style in web tests.
     // FIXME: Consider removing the conditional if a future Android theme
     // matches this.
     IntSize size = Platform::Current()->ThemeEngine()->GetSize(
         WebThemeEngine::kPartInnerSpinButton);
 
-    style.SetWidth(Length(size.Width(), kFixed));
-    style.SetMinWidth(Length(size.Width(), kFixed));
+    style.SetWidth(Length::Fixed(size.Width()));
+    style.SetMinWidth(Length::Fixed(size.Width()));
   }
 }
 

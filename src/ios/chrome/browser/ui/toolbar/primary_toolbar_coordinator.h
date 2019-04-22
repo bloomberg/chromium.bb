@@ -9,7 +9,6 @@
 #import "ios/chrome/browser/ui/toolbar/public/primary_toolbar_coordinator.h"
 
 @protocol ToolbarCoordinatorDelegate;
-@protocol UrlLoader;
 
 // Coordinator for the primary part, the one containing the omnibox, of the
 // adaptive toolbar.
@@ -19,9 +18,6 @@
 // Delegate for this coordinator.
 // TODO(crbug.com/799446): Change this.
 @property(nonatomic, weak) id<ToolbarCoordinatorDelegate> delegate;
-// URL loader for the toolbar.
-// TODO(crbug.com/799446): Remove this.
-@property(nonatomic, weak) id<UrlLoader> URLLoader;
 
 @end
 

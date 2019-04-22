@@ -69,7 +69,7 @@ ScriptPromise ServiceWorkerRegistrationNotifications::showNotification(
       ("Notifications.PersistentNotificationActionCount", 17));
   notification_count_histogram.Count(options->actions().size());
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   ServiceWorkerRegistrationNotifications::From(execution_context, registration)
@@ -82,13 +82,13 @@ ScriptPromise ServiceWorkerRegistrationNotifications::getNotifications(
     ScriptState* script_state,
     ServiceWorkerRegistration& registration,
     const GetNotificationOptions* options) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   NotificationManager::From(execution_context)
       ->GetNotifications(registration.RegistrationId(), options->tag(),
-                         WrapPersistent(resolver));
+                         options->includeTriggered(), WrapPersistent(resolver));
   return promise;
 }
 

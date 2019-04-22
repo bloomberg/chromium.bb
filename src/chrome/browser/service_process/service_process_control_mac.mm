@@ -12,7 +12,6 @@
 #include "chrome/common/service_process_util_posix.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "third_party/google_toolbox_for_mac/src/Foundation/GTMServiceManagement.h"
 
 using content::BrowserThread;
 
@@ -20,5 +19,5 @@ void ServiceProcessControl::Launcher::DoRun() {
   launched_ = mac::services::SubmitJob(
       GetServiceProcessJobOptions(cmd_line_.get(), false));
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::Bind(&Launcher::Notify, this));
+                           base::BindOnce(&Launcher::Notify, this));
 }

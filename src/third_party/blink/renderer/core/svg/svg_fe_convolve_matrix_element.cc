@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/platform/geometry/int_point.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -78,24 +79,36 @@ inline SVGFEConvolveMatrixElement::SVGFEConvolveMatrixElement(
     Document& document)
     : SVGFilterPrimitiveStandardAttributes(svg_names::kFEConvolveMatrixTag,
                                            document),
-      bias_(SVGAnimatedNumber::Create(this, svg_names::kBiasAttr, 0.0f)),
-      divisor_(SVGAnimatedNumber::Create(this, svg_names::kDivisorAttr, 1)),
-      in1_(SVGAnimatedString::Create(this, svg_names::kInAttr)),
-      edge_mode_(
-          SVGAnimatedEnumeration<EdgeModeType>::Create(this,
-                                                       svg_names::kEdgeModeAttr,
-                                                       EDGEMODE_DUPLICATE)),
-      kernel_matrix_(
-          SVGAnimatedNumberList::Create(this, svg_names::kKernelMatrixAttr)),
-      kernel_unit_length_(SVGAnimatedNumberOptionalNumber::Create(
+      bias_(MakeGarbageCollected<SVGAnimatedNumber>(this,
+                                                    svg_names::kBiasAttr,
+                                                    0.0f)),
+      divisor_(MakeGarbageCollected<SVGAnimatedNumber>(this,
+                                                       svg_names::kDivisorAttr,
+                                                       1)),
+      in1_(MakeGarbageCollected<SVGAnimatedString>(this, svg_names::kInAttr)),
+      edge_mode_(MakeGarbageCollected<SVGAnimatedEnumeration<EdgeModeType>>(
+          this,
+          svg_names::kEdgeModeAttr,
+          EDGEMODE_DUPLICATE)),
+      kernel_matrix_(MakeGarbageCollected<SVGAnimatedNumberList>(
+          this,
+          svg_names::kKernelMatrixAttr)),
+      kernel_unit_length_(MakeGarbageCollected<SVGAnimatedNumberOptionalNumber>(
           this,
           svg_names::kKernelUnitLengthAttr,
           0.0f)),
-      order_(SVGAnimatedOrder::Create(this)),
-      preserve_alpha_(
-          SVGAnimatedBoolean::Create(this, svg_names::kPreserveAlphaAttr)),
-      target_x_(SVGAnimatedInteger::Create(this, svg_names::kTargetXAttr, 0)),
-      target_y_(SVGAnimatedInteger::Create(this, svg_names::kTargetYAttr, 0)) {
+      order_(MakeGarbageCollected<SVGAnimatedOrder>(this)),
+      preserve_alpha_(MakeGarbageCollected<SVGAnimatedBoolean>(
+          this,
+          svg_names::kPreserveAlphaAttr)),
+      target_x_(
+          MakeGarbageCollected<SVGAnimatedInteger>(this,
+                                                   svg_names::kTargetXAttr,
+                                                   0)),
+      target_y_(
+          MakeGarbageCollected<SVGAnimatedInteger>(this,
+                                                   svg_names::kTargetYAttr,
+                                                   0)) {
   AddToPropertyMap(preserve_alpha_);
   AddToPropertyMap(divisor_);
   AddToPropertyMap(bias_);
@@ -206,7 +219,7 @@ FilterEffect* SVGFEConvolveMatrixElement::Build(
       AtomicString(in1_->CurrentValue()->Value()));
   DCHECK(input1);
 
-  FilterEffect* effect = FEConvolveMatrix::Create(
+  auto* effect = MakeGarbageCollected<FEConvolveMatrix>(
       filter, MatrixOrder(), ComputeDivisor(), bias_->CurrentValue()->Value(),
       TargetPoint(), edge_mode_->CurrentValue()->EnumValue(),
       preserve_alpha_->CurrentValue()->Value(),

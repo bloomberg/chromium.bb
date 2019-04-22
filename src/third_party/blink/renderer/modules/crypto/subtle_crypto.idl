@@ -37,16 +37,19 @@ typedef (Dictionary or DOMString) AlgorithmIdentifier;
 [
     Exposed=(Window,Worker)
 ] interface SubtleCrypto {
-    [CallWith=ScriptState, MeasureAs=SubtleCryptoEncrypt] Promise encrypt(AlgorithmIdentifier algorithm, CryptoKey key, BufferSource data);
-    [CallWith=ScriptState, MeasureAs=SubtleCryptoDecrypt] Promise decrypt(AlgorithmIdentifier algorithm, CryptoKey key, BufferSource data);
-    [CallWith=ScriptState, MeasureAs=SubtleCryptoSign] Promise sign(AlgorithmIdentifier algorithm, CryptoKey key, BufferSource data);
-    [CallWith=ScriptState, ImplementedAs=verifySignature, MeasureAs=SubtleCryptoVerify] Promise verify(AlgorithmIdentifier algorithm, CryptoKey key, BufferSource signature, BufferSource data);
-    [CallWith=ScriptState, MeasureAs=SubtleCryptoDigest] Promise digest(AlgorithmIdentifier algorithm, BufferSource data);
-    [CallWith=ScriptState, MeasureAs=SubtleCryptoGenerateKey] Promise generateKey(AlgorithmIdentifier algorithm, boolean extractable, sequence<KeyUsage> keyUsages);
-    [CallWith=ScriptState, MeasureAs=SubtleCryptoImportKey] Promise importKey(KeyFormat format, (ArrayBuffer or ArrayBufferView or Dictionary) keyData, AlgorithmIdentifier algorithm, boolean extractable, sequence<KeyUsage> keyUsages);
-    [CallWith=ScriptState, MeasureAs=SubtleCryptoExportKey] Promise exportKey(KeyFormat format, CryptoKey key);
-    [CallWith=ScriptState, MeasureAs=SubtleCryptoDeriveBits] Promise deriveBits(AlgorithmIdentifier algorithm, CryptoKey baseKey, unsigned long length);
-    [CallWith=ScriptState, MeasureAs=SubtleCryptoDeriveKey] Promise deriveKey(AlgorithmIdentifier algorithm, CryptoKey baseKey, AlgorithmIdentifier derivedKeyType, boolean extractable, sequence<KeyUsage> keyUsages);
-    [CallWith=ScriptState, MeasureAs=SubtleCryptoWrapKey] Promise wrapKey(KeyFormat format, CryptoKey key, CryptoKey wrappingKey, AlgorithmIdentifier wrapAlgorithm);
-    [CallWith=ScriptState, MeasureAs=SubtleCryptoUnwrapKey] Promise unwrapKey(KeyFormat format, BufferSource wrappedKey, CryptoKey unwrappingKey, AlgorithmIdentifier unwrapAlgorithm, AlgorithmIdentifier unwrappedKeyAlgorithm, boolean extractable, sequence<KeyUsage> keyUsages);
+    [CallWith=ScriptState, MeasureAs=SubtleCryptoEncrypt] Promise<any> encrypt(AlgorithmIdentifier algorithm, CryptoKey key, BufferSource data);
+    [CallWith=ScriptState, MeasureAs=SubtleCryptoDecrypt] Promise<any> decrypt(AlgorithmIdentifier algorithm, CryptoKey key, BufferSource data);
+    [CallWith=ScriptState, MeasureAs=SubtleCryptoSign] Promise<any> sign(AlgorithmIdentifier algorithm, CryptoKey key, BufferSource data);
+    [CallWith=ScriptState, ImplementedAs=verifySignature, MeasureAs=SubtleCryptoVerify] Promise<any> verify(AlgorithmIdentifier algorithm, CryptoKey key, BufferSource signature, BufferSource data);
+    [CallWith=ScriptState, MeasureAs=SubtleCryptoDigest] Promise<any> digest(AlgorithmIdentifier algorithm, BufferSource data);
+
+    [CallWith=ScriptState, MeasureAs=SubtleCryptoGenerateKey] Promise<any> generateKey(AlgorithmIdentifier algorithm, boolean extractable, sequence<KeyUsage> keyUsages);
+    [CallWith=ScriptState, MeasureAs=SubtleCryptoDeriveKey] Promise<any> deriveKey(AlgorithmIdentifier algorithm, CryptoKey baseKey, AlgorithmIdentifier derivedKeyType, boolean extractable, sequence<KeyUsage> keyUsages);
+    [CallWith=ScriptState, MeasureAs=SubtleCryptoDeriveBits] Promise<ArrayBuffer> deriveBits(AlgorithmIdentifier algorithm, CryptoKey baseKey, unsigned long length);
+
+    [CallWith=ScriptState, MeasureAs=SubtleCryptoImportKey] Promise<CryptoKey> importKey(KeyFormat format, (ArrayBuffer or ArrayBufferView or Dictionary) keyData, AlgorithmIdentifier algorithm, boolean extractable, sequence<KeyUsage> keyUsages);
+    [CallWith=ScriptState, MeasureAs=SubtleCryptoExportKey] Promise<any> exportKey(KeyFormat format, CryptoKey key);
+
+    [CallWith=ScriptState, MeasureAs=SubtleCryptoWrapKey] Promise<any> wrapKey(KeyFormat format, CryptoKey key, CryptoKey wrappingKey, AlgorithmIdentifier wrapAlgorithm);
+    [CallWith=ScriptState, MeasureAs=SubtleCryptoUnwrapKey] Promise<CryptoKey> unwrapKey(KeyFormat format, BufferSource wrappedKey, CryptoKey unwrappingKey, AlgorithmIdentifier unwrapAlgorithm, AlgorithmIdentifier unwrappedKeyAlgorithm, boolean extractable, sequence<KeyUsage> keyUsages);
 };

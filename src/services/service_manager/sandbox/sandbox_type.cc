@@ -32,13 +32,8 @@ bool IsUnsandboxedSandboxType(SandboxType sandbox_type) {
       return true;
 #endif
     case SANDBOX_TYPE_NETWORK:
-#if defined(OS_WIN)
       return !base::FeatureList::IsEnabled(
-          service_manager::features::kNetworkServiceWindowsSandbox);
-#else
-      return true;
-#endif
-
+          service_manager::features::kNetworkServiceSandbox);
     default:
       return false;
   }
@@ -82,6 +77,9 @@ void SetCommandLineFlagsForSandboxType(base::CommandLine* command_line,
     case SANDBOX_TYPE_XRCOMPOSITING:
 #endif
     case SANDBOX_TYPE_AUDIO:
+#if defined(OS_CHROMEOS)
+    case SANDBOX_TYPE_IME:
+#endif  // defined(OS_CHROMEOS)
       DCHECK(command_line->GetSwitchValueASCII(switches::kProcessType) ==
              switches::kUtilityProcess);
       DCHECK(!command_line->HasSwitch(switches::kServiceSandboxType));
@@ -126,6 +124,11 @@ SandboxType SandboxTypeFromCommandLine(const base::CommandLine& command_line) {
   if (process_type == switches::kPpapiPluginProcess)
     return SANDBOX_TYPE_PPAPI;
 
+#if defined(OS_MACOSX)
+  if (process_type == switches::kNaClLoaderProcess)
+    return SANDBOX_TYPE_NACL_LOADER;
+#endif
+
   // This is a process which we don't know about.
   return SANDBOX_TYPE_INVALID;
 }
@@ -152,6 +155,10 @@ std::string StringFromUtilitySandboxType(SandboxType sandbox_type) {
 #endif
     case SANDBOX_TYPE_AUDIO:
       return switches::kAudioSandbox;
+#if defined(OS_CHROMEOS)
+    case SANDBOX_TYPE_IME:
+      return switches::kImeSandbox;
+#endif  // defined(OS_CHROMEOS)
     default:
       NOTREACHED();
       return std::string();
@@ -184,6 +191,10 @@ SandboxType UtilitySandboxTypeFromString(const std::string& sandbox_string) {
 #endif
   if (sandbox_string == switches::kAudioSandbox)
     return SANDBOX_TYPE_AUDIO;
+#if defined(OS_CHROMEOS)
+  if (sandbox_string == switches::kImeSandbox)
+    return SANDBOX_TYPE_IME;
+#endif  // defined(OS_CHROMEOS)
   return SANDBOX_TYPE_UTILITY;
 }
 

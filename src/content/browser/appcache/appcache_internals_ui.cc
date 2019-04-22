@@ -5,6 +5,7 @@
 #include "content/browser/appcache/appcache_internals_ui.h"
 
 #include <stddef.h>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -29,6 +30,8 @@
 #include "net/base/escape.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/view_cache_helper.h"
+#include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
+#include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 
 namespace content {
 
@@ -52,8 +55,8 @@ int64_t ToInt64(const std::string& str) {
   return i;
 }
 
-bool SortByResourceUrl(const AppCacheResourceInfo& lhs,
-                       const AppCacheResourceInfo& rhs) {
+bool SortByResourceUrl(const blink::mojom::AppCacheResourceInfo& lhs,
+                       const blink::mojom::AppCacheResourceInfo& rhs) {
   return lhs.url.spec() < rhs.url.spec();
 }
 
@@ -64,14 +67,14 @@ std::unique_ptr<base::DictionaryValue> GetDictionaryValueForResponseEnquiry(
       new base::DictionaryValue());
   dict_value->SetString("manifestURL", response_enquiry.manifest_url);
   dict_value->SetString("groupId",
-                        base::Int64ToString(response_enquiry.group_id));
+                        base::NumberToString(response_enquiry.group_id));
   dict_value->SetString("responseId",
-                        base::Int64ToString(response_enquiry.response_id));
+                        base::NumberToString(response_enquiry.response_id));
   return dict_value;
 }
 
 std::unique_ptr<base::DictionaryValue> GetDictionaryValueForAppCacheInfo(
-    const content::AppCacheInfo& appcache_info) {
+    const blink::mojom::AppCacheInfo& appcache_info) {
   std::unique_ptr<base::DictionaryValue> dict_value(
       new base::DictionaryValue());
   dict_value->SetString("manifestURL", appcache_info.manifest_url.spec());
@@ -80,18 +83,26 @@ std::unique_ptr<base::DictionaryValue> GetDictionaryValueForAppCacheInfo(
                         appcache_info.last_update_time.ToJsTime());
   dict_value->SetDouble("lastAccessTime",
                         appcache_info.last_access_time.ToJsTime());
+  dict_value->SetString("responseSizes",
+                        base::UTF16ToUTF8(base::FormatBytesUnlocalized(
+                            appcache_info.response_sizes)));
+  dict_value->SetString("paddingSizes",
+                        base::UTF16ToUTF8(base::FormatBytesUnlocalized(
+                            appcache_info.padding_sizes)));
   dict_value->SetString(
-      "size",
-      base::UTF16ToUTF8(base::FormatBytesUnlocalized(appcache_info.size)));
-  dict_value->SetString("groupId", base::Int64ToString(appcache_info.group_id));
+      "totalSize",
+      base::UTF16ToUTF8(base::FormatBytesUnlocalized(
+          appcache_info.response_sizes + appcache_info.padding_sizes)));
+  dict_value->SetString("groupId",
+                        base::NumberToString(appcache_info.group_id));
 
   return dict_value;
 }
 
 std::unique_ptr<base::ListValue> GetListValueForAppCacheInfoVector(
-    const AppCacheInfoVector& appcache_info_vector) {
+    const std::vector<blink::mojom::AppCacheInfo> appcache_info_vector) {
   std::unique_ptr<base::ListValue> list(new base::ListValue());
-  for (const AppCacheInfo& info : appcache_info_vector)
+  for (const blink::mojom::AppCacheInfo& info : appcache_info_vector)
     list->Append(GetDictionaryValueForAppCacheInfo(info));
   return list;
 }
@@ -111,13 +122,19 @@ std::unique_ptr<base::ListValue> GetListValueFromAppCacheInfoCollection(
 
 std::unique_ptr<base::DictionaryValue>
 GetDictionaryValueForAppCacheResourceInfo(
-    const AppCacheResourceInfo& resource_info) {
+    const blink::mojom::AppCacheResourceInfo& resource_info) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
   dict->SetString("url", resource_info.url.spec());
-  dict->SetString(
-      "size",
-      base::UTF16ToUTF8(base::FormatBytesUnlocalized(resource_info.size)));
-  dict->SetString("responseId", base::Int64ToString(resource_info.response_id));
+  dict->SetString("responseSize",
+                  base::UTF16ToUTF8(base::FormatBytesUnlocalized(
+                      resource_info.response_size)));
+  dict->SetString("paddingSize", base::UTF16ToUTF8(base::FormatBytesUnlocalized(
+                                     resource_info.padding_size)));
+  dict->SetString("totalSize", base::UTF16ToUTF8(base::FormatBytesUnlocalized(
+                                   resource_info.response_size +
+                                   resource_info.padding_size)));
+  dict->SetString("responseId",
+                  base::NumberToString(resource_info.response_id));
   dict->SetBoolean("isExplicit", resource_info.is_explicit);
   dict->SetBoolean("isManifest", resource_info.is_manifest);
   dict->SetBoolean("isMaster", resource_info.is_master);
@@ -129,9 +146,10 @@ GetDictionaryValueForAppCacheResourceInfo(
 }
 
 std::unique_ptr<base::ListValue> GetListValueForAppCacheResourceInfoVector(
-    std::vector<AppCacheResourceInfo>* resource_info_vector) {
+    std::vector<blink::mojom::AppCacheResourceInfo>* resource_info_vector) {
   std::unique_ptr<base::ListValue> list(new base::ListValue);
-  for (const AppCacheResourceInfo& res_info : *resource_info_vector)
+  for (const blink::mojom::AppCacheResourceInfo& res_info :
+       *resource_info_vector)
     list->Append(GetDictionaryValueForAppCacheResourceInfo(res_info));
   return list;
 }
@@ -240,9 +258,11 @@ void AppCacheInternalsUI::Proxy::RequestAppCacheDetails(
 
 void AppCacheInternalsUI::Proxy::OnGroupLoaded(AppCacheGroup* appcache_group,
                                                const GURL& manifest_gurl) {
-  std::unique_ptr<std::vector<AppCacheResourceInfo>> resource_info_vector;
+  std::unique_ptr<std::vector<blink::mojom::AppCacheResourceInfo>>
+      resource_info_vector;
   if (appcache_group && appcache_group->newest_complete_cache()) {
-    resource_info_vector.reset(new std::vector<AppCacheResourceInfo>);
+    resource_info_vector.reset(
+        new std::vector<blink::mojom::AppCacheResourceInfo>);
     appcache_group->newest_complete_cache()->ToResourceInfoVector(
         resource_info_vector.get());
     std::sort(resource_info_vector->begin(), resource_info_vector->end(),
@@ -431,6 +451,7 @@ void AppCacheInternalsUI::OnAllAppCacheInfoReady(
     incognito_path_prefix = "Incognito ";
   web_ui()->CallJavascriptFunctionUnsafe(
       kFunctionOnAllAppCacheInfoReady,
+      base::Value(partition_path.AsUTF8Unsafe()),
       base::Value(incognito_path_prefix + partition_path.AsUTF8Unsafe()),
       *GetListValueFromAppCacheInfoCollection(collection.get()));
 }
@@ -448,7 +469,8 @@ void AppCacheInternalsUI::OnAppCacheInfoDeleted(
 void AppCacheInternalsUI::OnAppCacheDetailsReady(
     const base::FilePath& partition_path,
     const std::string& manifest_url,
-    std::unique_ptr<std::vector<AppCacheResourceInfo>> resource_info_vector) {
+    std::unique_ptr<std::vector<blink::mojom::AppCacheResourceInfo>>
+        resource_info_vector) {
   if (resource_info_vector) {
     web_ui()->CallJavascriptFunctionUnsafe(
         kFunctionOnAppCacheDetailsReady, base::Value(manifest_url),

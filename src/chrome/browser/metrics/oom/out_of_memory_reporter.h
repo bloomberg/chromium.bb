@@ -81,6 +81,8 @@ class OutOfMemoryReporter
                  crash_reporter::CrashMetricsReporter::Observer>
       scoped_observer_;
 #endif
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(OutOfMemoryReporter);
 };
 

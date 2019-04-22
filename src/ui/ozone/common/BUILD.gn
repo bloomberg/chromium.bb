@@ -31,7 +31,7 @@ source_set("common") {
   deps = [
     "//ui/gfx/ipc/color",
     "//ui/gl",
-    "//ui/gl:gl_features",
+    "//ui/gl:buildflags",
   ]
 
   data_deps = [
@@ -39,4 +39,7 @@ source_set("common") {
   ]
 
   visibility = [ "//ui/ozone/platform/*" ]
+
+  # Out of tree platforms can depend on this.
+  visibility += ozone_external_platform_visibility
 }

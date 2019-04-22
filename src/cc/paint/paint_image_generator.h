@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "base/macros.h"
 #include "cc/paint/frame_metadata.h"
 #include "cc/paint/paint_export.h"
 #include "cc/paint/paint_image.h"
@@ -25,7 +24,18 @@ namespace cc {
 // be called from any thread.
 class CC_PAINT_EXPORT PaintImageGenerator : public SkRefCnt {
  public:
+  PaintImageGenerator(const PaintImageGenerator&) = delete;
   ~PaintImageGenerator() override;
+
+  PaintImageGenerator& operator=(const PaintImageGenerator&) = delete;
+
+  // Returns true if we can guarantee that the software decoder hasn't done work
+  // on the image, so it's appropriate to send the encoded image to a hardware
+  // accelerator. False if we can't guarantee this or if not applicable. For
+  // example, if the encoded data comes incrementally, and the software decoder
+  // starts working with partial data, the image shouldn't later be sent to a
+  // hardware decoder.
+  virtual bool IsEligibleForAcceleratedDecoding() const = 0;
 
   // Returns a reference to the encoded content of this image.
   virtual sk_sp<SkData> GetEncodedData() const = 0;
@@ -87,8 +97,6 @@ class CC_PAINT_EXPORT PaintImageGenerator : public SkRefCnt {
   const SkImageInfo info_;
   const PaintImage::ContentId generator_content_id_;
   const std::vector<FrameMetadata> frames_;
-
-  DISALLOW_COPY_AND_ASSIGN(PaintImageGenerator);
 };
 
 }  // namespace cc

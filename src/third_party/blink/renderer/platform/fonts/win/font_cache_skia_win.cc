@@ -35,15 +35,22 @@
 #include <utility>
 
 #include "base/debug/alias.h"
-#include "third_party/blink/renderer/platform/fonts/bitmap_glyphs_blacklist.h"
+#include "base/stl_util.h"
+#include "base/trace_event/trace_event.h"
+#include "third_party/blink/renderer/platform/fonts/bitmap_glyphs_block_list.h"
 #include "third_party/blink/renderer/platform/fonts/font_description.h"
 #include "third_party/blink/renderer/platform/fonts/font_face_creation_params.h"
 #include "third_party/blink/renderer/platform/fonts/font_platform_data.h"
 #include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
 #include "third_party/blink/renderer/platform/fonts/win/font_fallback_win.h"
 #include "third_party/blink/renderer/platform/language.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/skia/include/core/SkFontMgr.h"
+#include "third_party/skia/include/core/SkStream.h"
 #include "third_party/skia/include/ports/SkTypeface_win.h"
+
+#include <ft2build.h>
+#include <freetype/freetype.h>
 
 namespace blink {
 
@@ -65,6 +72,45 @@ int32_t EnsureMinimumFontHeightIfNeeded(int32_t font_height) {
   // Chinese.  Please refer to LayoutThemeFontProviderWin.cpp for more
   // information.
   return (font_height < 12.0f) && (GetACP() == 936) ? 12.0f : font_height;
+}
+
+// Test-only code for matching sideloaded fonts by postscript name. This
+// implementation is incomplete, as it does not match the full font name and
+// only uses FT_Get_Postscript_Name, which returns an ASCII font name. This is
+// intended to pass tests on Windows, where for example src: local(Ahem) is used
+// in @font-face CSS declarations.  Skia does not expose getAdvancedMetrics, so
+// we use FreeType here to parse the font's postscript name.
+sk_sp<SkTypeface> FindUniqueFontNameFromSideloadedFonts(
+    const String& font_name,
+    HashMap<String, sk_sp<SkTypeface>, CaseFoldingHash>* sideloaded_fonts) {
+  CHECK(sideloaded_fonts);
+  FT_Library library;
+  FT_Init_FreeType(&library);
+
+  sk_sp<SkTypeface> return_typeface(nullptr);
+  for (auto& sideloaded_font : sideloaded_fonts->Values()) {
+    // Open ttc index zero as we can assume that we do not sideload TrueType
+    // collections.
+    std::unique_ptr<SkStreamAsset> typeface_stream(
+        sideloaded_font->openStream(nullptr));
+    CHECK(typeface_stream->getMemoryBase());
+    std::string font_family_name;
+    FT_Face font_face;
+    FT_Open_Args open_args = {
+        FT_OPEN_MEMORY,
+        reinterpret_cast<const FT_Byte*>(typeface_stream->getMemoryBase()),
+        typeface_stream->getLength()};
+    CHECK_EQ(FT_Err_Ok, FT_Open_Face(library, &open_args, 0, &font_face));
+    font_family_name = FT_Get_Postscript_Name(font_face);
+    FT_Done_Face(font_face);
+
+    if (font_name.FoldCase() == String(font_family_name.c_str()).FoldCase()) {
+      return_typeface = sideloaded_font;
+      break;
+    }
+  }
+  FT_Done_FreeType(library);
+  return return_typeface;
 }
 
 }  // namespace
@@ -126,6 +172,8 @@ scoped_refptr<SimpleFontData> FontCache::PlatformFallbackFontForCharacter(
     UChar32 character,
     const SimpleFontData* original_font_data,
     FontFallbackPriority fallback_priority) {
+  TRACE_EVENT0("ui", "FontCache::PlatformFallbackFontForCharacter");
+
   // First try the specified font with standard style & weight.
   if (fallback_priority != FontFallbackPriority::kEmojiEmoji &&
       (font_description.Style() == ItalicSlopeValue() ||
@@ -215,10 +263,10 @@ scoped_refptr<SimpleFontData> FontCache::PlatformFallbackFontForCharacter(
   int num_fonts = 0;
   if (script == USCRIPT_HAN) {
     pan_uni_fonts = kCjkFonts;
-    num_fonts = arraysize(kCjkFonts);
+    num_fonts = base::size(kCjkFonts);
   } else {
     pan_uni_fonts = kCommonFonts;
-    num_fonts = arraysize(kCommonFonts);
+    num_fonts = base::size(kCommonFonts);
   }
   // Font returned from getFallbackFamily may not cover |character|
   // because it's based on script to font mapping. This problem is
@@ -294,7 +342,7 @@ static bool TypefacesHasWeightSuffix(const AtomicString& family,
       {L" ultrabold", 10, FontSelectionValue(800)},
       {L" black", 6, FontSelectionValue(900)},
       {L" heavy", 6, FontSelectionValue(900)}};
-  size_t num_variants = arraysize(kVariantForSuffix);
+  size_t num_variants = base::size(kVariantForSuffix);
   for (size_t i = 0; i < num_variants; i++) {
     const FamilyWeightSuffix& entry = kVariantForSuffix[i];
     if (family.EndsWith(entry.suffix, kTextCaseUnicodeInsensitive)) {
@@ -331,7 +379,7 @@ static bool TypefacesHasStretchSuffix(const AtomicString& family,
       {L" expanded", 9, ExpandedWidthValue()},
       {L" extraexpanded", 14, ExtraExpandedWidthValue()},
       {L" ultraexpanded", 14, UltraExpandedWidthValue()}};
-  size_t num_variants = arraysize(kVariantForSuffix);
+  size_t num_variants = base::size(kVariantForSuffix);
   for (size_t i = 0; i < num_variants; i++) {
     const FamilyStretchSuffix& entry = kVariantForSuffix[i];
     if (family.EndsWith(entry.suffix, kTextCaseUnicodeInsensitive)) {
@@ -351,60 +399,82 @@ std::unique_ptr<FontPlatformData> FontCache::CreateFontPlatformData(
     const FontFaceCreationParams& creation_params,
     float font_size,
     AlternateFontName alternate_font_name) {
+  TRACE_EVENT0("ui", "FontCache::CreateFontPlatformData");
+
   DCHECK_EQ(creation_params.CreationType(), kCreateFontByFamily);
+  sk_sp<SkTypeface> typeface;
 
   CString name;
-  sk_sp<SkTypeface> typeface =
-      CreateTypeface(font_description, creation_params, name);
-  // Windows will always give us a valid pointer here, even if the face name
-  // is non-existent. We have to double-check and see if the family name was
-  // really used.
-  if (!typeface ||
-      !TypefacesMatchesFamily(typeface.get(), creation_params.Family())) {
-    AtomicString adjusted_name;
-    FontSelectionValue variant_weight;
-    FontSelectionValue variant_stretch;
 
-    // TODO: crbug.com/627143 LocalFontFaceSource.cpp, which implements
-    // retrieving src: local() font data uses getFontData, which in turn comes
-    // here, to retrieve fonts from the cache and specifies the argument to
-    // local() as family name. So we do not match by full font name or
-    // postscript name as the spec says:
-    // https://drafts.csswg.org/css-fonts-3/#src-desc
+  if (alternate_font_name == AlternateFontName::kLocalUniqueFace &&
+      RuntimeEnabledFeatures::FontSrcLocalMatchingEnabled()) {
+    typeface = CreateTypefaceFromUniqueName(creation_params, name);
 
-    // Prevent one side effect of the suffix translation below where when
-    // matching local("Roboto Regular") it tries to find the closest match even
-    // though that can be a bold font in case of Roboto Bold.
-    if (alternate_font_name == AlternateFontName::kLocalUniqueFace) {
-      return nullptr;
+    if (!typeface && sideloaded_fonts_) {
+      typeface = FindUniqueFontNameFromSideloadedFonts(creation_params.Family(),
+                                                       sideloaded_fonts_);
     }
 
-    if (alternate_font_name == AlternateFontName::kLastResort) {
-      if (!typeface)
-        return nullptr;
-    } else if (TypefacesHasWeightSuffix(creation_params.Family(), adjusted_name,
-                                        variant_weight)) {
-      FontFaceCreationParams adjusted_params(adjusted_name);
-      FontDescription adjusted_font_description = font_description;
-      adjusted_font_description.SetWeight(variant_weight);
-      typeface =
-          CreateTypeface(adjusted_font_description, adjusted_params, name);
-      if (!typeface || !TypefacesMatchesFamily(typeface.get(), adjusted_name)) {
+    // We do not need to try any heuristic around the font name, as below, for
+    // family matching.
+    if (!typeface)
+      return nullptr;
+
+  } else {
+    typeface = CreateTypeface(font_description, creation_params, name);
+
+    // For a family match, Windows will always give us a valid pointer here,
+    // even if the face name is non-existent. We have to double-check and see if
+    // the family name was really used.
+    if (!typeface ||
+        !TypefacesMatchesFamily(typeface.get(), creation_params.Family())) {
+      AtomicString adjusted_name;
+      FontSelectionValue variant_weight;
+      FontSelectionValue variant_stretch;
+
+      // TODO: crbug.com/627143 LocalFontFaceSource.cpp, which implements
+      // retrieving src: local() font data uses getFontData, which in turn comes
+      // here, to retrieve fonts from the cache and specifies the argument to
+      // local() as family name. So we do not match by full font name or
+      // postscript name as the spec says:
+      // https://drafts.csswg.org/css-fonts-3/#src-desc
+
+      // Prevent one side effect of the suffix translation below where when
+      // matching local("Roboto Regular") it tries to find the closest match
+      // even though that can be a bold font in case of Roboto Bold.
+      if (alternate_font_name == AlternateFontName::kLocalUniqueFace) {
         return nullptr;
       }
 
-    } else if (TypefacesHasStretchSuffix(creation_params.Family(),
-                                         adjusted_name, variant_stretch)) {
-      FontFaceCreationParams adjusted_params(adjusted_name);
-      FontDescription adjusted_font_description = font_description;
-      adjusted_font_description.SetStretch(variant_stretch);
-      typeface =
-          CreateTypeface(adjusted_font_description, adjusted_params, name);
-      if (!typeface || !TypefacesMatchesFamily(typeface.get(), adjusted_name)) {
+      if (alternate_font_name == AlternateFontName::kLastResort) {
+        if (!typeface)
+          return nullptr;
+      } else if (TypefacesHasWeightSuffix(creation_params.Family(),
+                                          adjusted_name, variant_weight)) {
+        FontFaceCreationParams adjusted_params(adjusted_name);
+        FontDescription adjusted_font_description = font_description;
+        adjusted_font_description.SetWeight(variant_weight);
+        typeface =
+            CreateTypeface(adjusted_font_description, adjusted_params, name);
+        if (!typeface ||
+            !TypefacesMatchesFamily(typeface.get(), adjusted_name)) {
+          return nullptr;
+        }
+
+      } else if (TypefacesHasStretchSuffix(creation_params.Family(),
+                                           adjusted_name, variant_stretch)) {
+        FontFaceCreationParams adjusted_params(adjusted_name);
+        FontDescription adjusted_font_description = font_description;
+        adjusted_font_description.SetStretch(variant_stretch);
+        typeface =
+            CreateTypeface(adjusted_font_description, adjusted_params, name);
+        if (!typeface ||
+            !TypefacesMatchesFamily(typeface.get(), adjusted_name)) {
+          return nullptr;
+        }
+      } else {
         return nullptr;
       }
-    } else {
-      return nullptr;
     }
   }
 
@@ -418,7 +488,7 @@ std::unique_ptr<FontPlatformData> FontCache::CreateFontPlatformData(
       font_description.Orientation());
 
   result->SetAvoidEmbeddedBitmaps(
-      BitmapGlyphsBlacklist::AvoidEmbeddedBitmapsForTypeface(typeface.get()));
+      BitmapGlyphsBlockList::ShouldAvoidEmbeddedBitmapsForTypeface(*typeface));
 
   return result;
 }

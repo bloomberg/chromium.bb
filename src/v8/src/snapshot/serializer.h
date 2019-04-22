@@ -33,7 +33,7 @@ class CodeAddressMap : public CodeEventLogger {
   }
 
   void CodeDisableOptEvent(AbstractCode code,
-                           SharedFunctionInfo* shared) override {}
+                           SharedFunctionInfo shared) override {}
 
   const char* Lookup(Address address) {
     return address_to_name_map_.Lookup(address);
@@ -114,7 +114,7 @@ class CodeAddressMap : public CodeEventLogger {
     DISALLOW_COPY_AND_ASSIGN(NameMap);
   };
 
-  void LogRecordedBuffer(AbstractCode code, SharedFunctionInfo*,
+  void LogRecordedBuffer(AbstractCode code, SharedFunctionInfo,
                          const char* name, int length) override {
     address_to_name_map_.Insert(code->address(), name, length);
   }
@@ -134,7 +134,7 @@ class ObjectCacheIndexMap {
   // If |obj| is in the map, immediately return true.  Otherwise add it to the
   // map and return false. In either case set |*index_out| to the index
   // associated with the map.
-  bool LookupOrInsert(HeapObject* obj, int* index_out) {
+  bool LookupOrInsert(HeapObject obj, int* index_out) {
     Maybe<uint32_t> maybe_index = map_.Get(obj);
     if (maybe_index.IsJust()) {
       *index_out = maybe_index.FromJust();
@@ -165,8 +165,10 @@ class Serializer : public SerializerDeserializer {
 
   const std::vector<byte>* Payload() const { return sink_.data(); }
 
-  bool ReferenceMapContains(HeapObject* o) {
-    return reference_map()->LookupReference(o).is_valid();
+  bool ReferenceMapContains(HeapObject o) {
+    return reference_map()
+        ->LookupReference(reinterpret_cast<void*>(o->ptr()))
+        .is_valid();
   }
 
   Isolate* isolate() const { return isolate_; }
@@ -189,48 +191,34 @@ class Serializer : public SerializerDeserializer {
   };
 
   void SerializeDeferredObjects();
-  virtual void SerializeObject(HeapObject* o, HowToCode how_to_code,
-                               WhereToPoint where_to_point, int skip) = 0;
+  virtual void SerializeObject(HeapObject o) = 0;
 
-  virtual bool MustBeDeferred(HeapObject* object);
+  virtual bool MustBeDeferred(HeapObject object);
 
-  void VisitRootPointers(Root root, const char* description, ObjectSlot start,
-                         ObjectSlot end) override;
-  void SerializeRootObject(Object* object);
+  void VisitRootPointers(Root root, const char* description,
+                         FullObjectSlot start, FullObjectSlot end) override;
+  void SerializeRootObject(Object object);
 
-  void PutRoot(RootIndex root_index, HeapObject* object, HowToCode how,
-               WhereToPoint where, int skip);
+  void PutRoot(RootIndex root_index, HeapObject object);
   void PutSmi(Smi smi);
-  void PutBackReference(HeapObject* object, SerializerReference reference);
-  void PutAttachedReference(SerializerReference reference,
-                            HowToCode how_to_code, WhereToPoint where_to_point);
+  void PutBackReference(HeapObject object, SerializerReference reference);
+  void PutAttachedReference(SerializerReference reference);
   // Emit alignment prefix if necessary, return required padding space in bytes.
-  int PutAlignmentPrefix(HeapObject* object);
+  int PutAlignmentPrefix(HeapObject object);
   void PutNextChunk(int space);
+  void PutRepeat(int repeat_count);
 
   // Returns true if the object was successfully serialized as a root.
-  bool SerializeRoot(HeapObject* obj, HowToCode how_to_code,
-                     WhereToPoint where_to_point, int skip);
+  bool SerializeRoot(HeapObject obj);
 
   // Returns true if the object was successfully serialized as hot object.
-  bool SerializeHotObject(HeapObject* obj, HowToCode how_to_code,
-                          WhereToPoint where_to_point, int skip);
+  bool SerializeHotObject(HeapObject obj);
 
   // Returns true if the object was successfully serialized as back reference.
-  bool SerializeBackReference(HeapObject* obj, HowToCode how_to_code,
-                              WhereToPoint where_to_point, int skip);
+  bool SerializeBackReference(HeapObject obj);
 
   // Returns true if the given heap object is a bytecode handler code object.
-  bool ObjectIsBytecodeHandler(HeapObject* obj) const;
-
-  static inline void FlushSkip(SnapshotByteSink* sink, int skip) {
-    if (skip != 0) {
-      sink->Put(kSkip, "SkipFromSerializeObject");
-      sink->PutInt(skip, "SkipDistanceFromSerializeObject");
-    }
-  }
-
-  inline void FlushSkip(int skip) { FlushSkip(&sink_, skip); }
+  bool ObjectIsBytecodeHandler(HeapObject obj) const;
 
   ExternalReferenceEncoder::Value EncodeExternalReference(Address addr) {
     return external_reference_encoder_.Encode(addr);
@@ -246,8 +234,9 @@ class Serializer : public SerializerDeserializer {
 
   Code CopyCode(Code code);
 
-  void QueueDeferredObject(HeapObject* obj) {
-    DCHECK(reference_map_.LookupReference(obj).is_back_reference());
+  void QueueDeferredObject(HeapObject obj) {
+    DCHECK(reference_map_.LookupReference(reinterpret_cast<void*>(obj->ptr()))
+               .is_back_reference());
     deferred_objects_.push_back(obj);
   }
 
@@ -258,7 +247,7 @@ class Serializer : public SerializerDeserializer {
 #endif  // OBJECT_PRINT
 
 #ifdef DEBUG
-  void PushStack(HeapObject* o) { stack_.push_back(o); }
+  void PushStack(HeapObject o) { stack_.push_back(o); }
   void PopStack() { stack_.pop_back(); }
   void PrintStack();
 #endif  // DEBUG
@@ -276,7 +265,7 @@ class Serializer : public SerializerDeserializer {
   RootIndexMap root_index_map_;
   CodeAddressMap* code_address_map_ = nullptr;
   std::vector<byte> code_buffer_;
-  std::vector<HeapObject*> deferred_objects_;  // To handle stack overflow.
+  std::vector<HeapObject> deferred_objects_;  // To handle stack overflow.
   int recursion_depth_ = 0;
   SerializerAllocator allocator_;
 
@@ -287,7 +276,7 @@ class Serializer : public SerializerDeserializer {
 #endif  // OBJECT_PRINT
 
 #ifdef DEBUG
-  std::vector<HeapObject*> stack_;
+  std::vector<HeapObject> stack_;
 #endif  // DEBUG
 
   friend class SerializerAllocator;
@@ -299,13 +288,11 @@ class RelocInfoIterator;
 
 class Serializer::ObjectSerializer : public ObjectVisitor {
  public:
-  ObjectSerializer(Serializer* serializer, HeapObject* obj,
-                   SnapshotByteSink* sink, HowToCode how_to_code,
-                   WhereToPoint where_to_point)
+  ObjectSerializer(Serializer* serializer, HeapObject obj,
+                   SnapshotByteSink* sink)
       : serializer_(serializer),
         object_(obj),
         sink_(sink),
-        reference_representation_(how_to_code + where_to_point),
         bytes_processed_so_far_(0) {
 #ifdef DEBUG
     serializer_->PushStack(obj);
@@ -320,19 +307,17 @@ class Serializer::ObjectSerializer : public ObjectVisitor {
   void Serialize();
   void SerializeObject();
   void SerializeDeferred();
-  void VisitPointers(HeapObject* host, ObjectSlot start,
+  void VisitPointers(HeapObject host, ObjectSlot start,
                      ObjectSlot end) override;
-  void VisitPointers(HeapObject* host, MaybeObjectSlot start,
+  void VisitPointers(HeapObject host, MaybeObjectSlot start,
                      MaybeObjectSlot end) override;
   void VisitEmbeddedPointer(Code host, RelocInfo* target) override;
-  void VisitExternalReference(Foreign* host, Address* p) override;
+  void VisitExternalReference(Foreign host, Address* p) override;
   void VisitExternalReference(Code host, RelocInfo* rinfo) override;
   void VisitInternalReference(Code host, RelocInfo* rinfo) override;
   void VisitCodeTarget(Code host, RelocInfo* target) override;
   void VisitRuntimeEntry(Code host, RelocInfo* reloc) override;
   void VisitOffHeapTarget(Code host, RelocInfo* target) override;
-  // Relocation info needs to be visited sorted by target_address_address.
-  void VisitRelocInfo(RelocIterator* it) override;
 
  private:
   void SerializePrologue(AllocationSpace space, int size, Map map);
@@ -342,7 +327,6 @@ class Serializer::ObjectSerializer : public ObjectVisitor {
   void SerializeContent(Map map, int size);
   void OutputRawData(Address up_to);
   void OutputCode(int size);
-  int SkipTo(Address to);
   int32_t SerializeBackingStore(void* backing_store, int32_t byte_length);
   void SerializeJSTypedArray();
   void SerializeJSArrayBuffer();
@@ -350,9 +334,8 @@ class Serializer::ObjectSerializer : public ObjectVisitor {
   void SerializeExternalStringAsSequentialString();
 
   Serializer* serializer_;
-  HeapObject* object_;
+  HeapObject object_;
   SnapshotByteSink* sink_;
-  int reference_representation_;
   int bytes_processed_so_far_;
 };
 

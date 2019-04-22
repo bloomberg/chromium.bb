@@ -79,20 +79,6 @@ bool ManagePasswordsIconViews::OnMousePressed(const ui::MouseEvent& event) {
   return result;
 }
 
-bool ManagePasswordsIconViews::OnKeyPressed(const ui::KeyEvent& event) {
-  // Space is always ignored because otherwise the bubble appears with the
-  // default button down. Releasing the space is equivalent to clicking this
-  // button.
-  if (event.key_code() == ui::VKEY_SPACE)
-    return true;
-  if (event.key_code() == ui::VKEY_RETURN && IsBubbleShowing()) {
-    // If the bubble's open, the icon should transfer its focus to the bubble.
-    // If it still somehow got this key event, the bubble shouldn't be reopened.
-    return true;
-  }
-  return PageActionIconView::OnKeyPressed(event);
-}
-
 const gfx::VectorIcon& ManagePasswordsIconViews::GetVectorIcon() const {
   return kKeyIcon;
 }

@@ -55,7 +55,7 @@ class CORE_EXPORT FileInputType final : public InputType,
 
   FileInputType(HTMLInputElement&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
   using InputType::GetElement;
   static Vector<String> FilesFromFormControlState(const FormControlState&);
   static FileList* CreateFileList(const FileChooserFileInfoList& files,
@@ -74,10 +74,12 @@ class CORE_EXPORT FileInputType final : public InputType,
   bool ValueMissing(const String&) const override;
   String ValueMissingText() const override;
   void HandleDOMActivateEvent(Event&) override;
-  LayoutObject* CreateLayoutObject(const ComputedStyle&) const override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&,
+                                   LegacyLayout) const override;
   bool CanSetStringValue() const override;
   FileList* Files() override;
-  void SetFiles(FileList*) override;
+  bool SetFiles(FileList*) override;
+  void SetFilesAndDispatchEvents(FileList*) override;
   ValueMode GetValueMode() const override;
   bool CanSetValue(const String&) override;
   String ValueInFilenameValueMode() const override;

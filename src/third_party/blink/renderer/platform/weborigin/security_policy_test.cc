@@ -291,7 +291,7 @@ TEST(SecurityPolicyTest, ReferrerPolicyFromHeaderValue) {
   }
 }
 
-TEST(SecurityPolicyTest, TrustworthyWhiteList) {
+TEST(SecurityPolicyTest, TrustworthySafelist) {
   const char* insecure_urls[] = {
       "http://a.test/path/to/file.html", "http://b.test/path/to/file.html",
       "blob:http://c.test/b3aae9c8-7f90-440d-8d7c-43aa20d72fde",
@@ -302,11 +302,11 @@ TEST(SecurityPolicyTest, TrustworthyWhiteList) {
     scoped_refptr<const SecurityOrigin> origin =
         SecurityOrigin::CreateFromString(url);
     EXPECT_FALSE(origin->IsPotentiallyTrustworthy());
-    SecurityPolicy::AddOriginTrustworthyWhiteList(origin->ToString());
+    SecurityPolicy::AddOriginToTrustworthySafelist(origin->ToString());
     EXPECT_TRUE(origin->IsPotentiallyTrustworthy());
   }
 
-  // Tests that adding URLs that have inner-urls to the whitelist
+  // Tests that adding URLs that have inner-urls to the safelist
   // takes effect on the origins of the inner-urls (and vice versa).
   struct TestCase {
     const char* url;
@@ -329,7 +329,7 @@ TEST(SecurityPolicyTest, TrustworthyWhiteList) {
 
     EXPECT_FALSE(origin1->IsPotentiallyTrustworthy());
     EXPECT_FALSE(origin2->IsPotentiallyTrustworthy());
-    SecurityPolicy::AddOriginTrustworthyWhiteList(origin1->ToString());
+    SecurityPolicy::AddOriginToTrustworthySafelist(origin1->ToString());
     EXPECT_TRUE(origin1->IsPotentiallyTrustworthy());
     EXPECT_TRUE(origin2->IsPotentiallyTrustworthy());
   }

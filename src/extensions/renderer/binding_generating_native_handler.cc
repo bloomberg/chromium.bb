@@ -4,8 +4,8 @@
 
 #include "extensions/renderer/binding_generating_native_handler.h"
 
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/timer/elapsed_timer.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/v8_helpers.h"
@@ -87,7 +87,7 @@ v8::Local<v8::Object> BindingGeneratingNativeHandler::NewInstance() {
         v8_context->GetIsolate(), v8::MicrotasksScope::kDoNotRunMicrotasks);
     // TODO(devlin): We should not be using v8::Function::Call() directly here.
     // Instead, we should use JSRunner once it's used outside native bindings.
-    if (!create_binding->Call(v8_context, binding, arraysize(argv), argv)
+    if (!create_binding->Call(v8_context, binding, base::size(argv), argv)
              .ToLocal(&binding_instance_value) ||
         !binding_instance_value->ToObject(v8_context)
              .ToLocal(&binding_instance)) {

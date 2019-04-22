@@ -2,12 +2,6 @@
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 
-<style>
-.hideAllContainers .container {
-    display: none;
-}
-</style>
-
 <div class="container">
   <figure id="figure1">
     <img src="resources/cake.png" alt="cake">
@@ -79,9 +73,4 @@ test(function(t) {
     assert_equals(axFigure5.name, "figure5-aria-labelledby");
     assert_equals(axFigure5.nameFrom, "relatedElement");
 }, "Figure element with figcaption, title, aria-label and aria-labelledby");
-</script>
-
-<script>
-if (window.testRunner)
-    document.body.className = "hideAllContainers";
 </script>

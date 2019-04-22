@@ -25,42 +25,50 @@ class TestAppListClient : public mojom::AppListClient {
   // ash::mojom::AppListClient:
   void StartSearch(const base::string16& trimmed_query) override {}
   void OpenSearchResult(const std::string& result_id,
-                        int event_flags) override {}
+                        int event_flags,
+                        ash::mojom::AppListLaunchedFrom launched_from,
+                        ash::mojom::AppListLaunchType launch_type,
+                        int suggestion_index) override {}
   void InvokeSearchResultAction(const std::string& result_id,
                                 int action_index,
                                 int event_flags) override {}
   void GetSearchResultContextMenuModel(
       const std::string& result_id,
-      GetContextMenuModelCallback callback) override {}
+      GetContextMenuModelCallback callback) override;
   void SearchResultContextMenuItemSelected(const std::string& result_id,
                                            int command_id,
                                            int event_flags) override {}
   void ViewClosing() override {}
   void ViewShown(int64_t display_id) override {}
-  void ActivateItem(const std::string& id, int event_flags) override {}
-  void GetContextMenuModel(const std::string& id,
-                           GetContextMenuModelCallback callback) override {}
-  void ContextMenuItemSelected(const std::string& id,
+  void ActivateItem(int profile_id,
+                    const std::string& id,
+                    int event_flags) override {}
+  void GetContextMenuModel(int profile_id,
+                           const std::string& id,
+                           GetContextMenuModelCallback callback) override;
+  void ContextMenuItemSelected(int profile_id,
+                               const std::string& id,
                                int command_id,
                                int event_flags) override {}
   void OnAppListTargetVisibilityChanged(bool visible) override {}
   void OnAppListVisibilityChanged(bool visible) override {}
-  void OnFolderCreated(mojom::AppListItemMetadataPtr item) override {}
-  void OnFolderDeleted(mojom::AppListItemMetadataPtr item) override {}
-  void OnItemUpdated(mojom::AppListItemMetadataPtr item) override {}
-  void OnPageBreakItemAdded(const std::string& id,
+  void OnFolderCreated(int profile_id,
+                       mojom::AppListItemMetadataPtr item) override {}
+  void OnFolderDeleted(int profile_id,
+                       mojom::AppListItemMetadataPtr item) override {}
+  void OnItemUpdated(int profile_id,
+                     mojom::AppListItemMetadataPtr item) override {}
+  void OnPageBreakItemAdded(int profile_id,
+                            const std::string& id,
                             const syncer::StringOrdinal& position) override {}
-  void OnPageBreakItemDeleted(const std::string& id) override {}
-  void StartVoiceInteractionSession() override;
-  void ToggleVoiceInteractionSession() override;
+  void OnPageBreakItemDeleted(int profile_id, const std::string& id) override {}
   void GetNavigableContentsFactory(
-      content::mojom::NavigableContentsFactoryRequest request) override {}
-
-  size_t voice_session_count() const { return voice_session_count_; }
+      mojo::PendingReceiver<content::mojom::NavigableContentsFactory> receiver)
+      override {}
+  void OnSearchResultVisibilityChanged(const std::string& id,
+                                       bool visibility) override {}
 
  private:
-  size_t voice_session_count_ = 0u;
-
   mojo::Binding<mojom::AppListClient> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(TestAppListClient);

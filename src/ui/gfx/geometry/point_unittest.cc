@@ -4,7 +4,7 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_conversions.h"
@@ -57,7 +57,7 @@ TEST(PointTest, VectorArithmetic) {
     { Point(-10, 9), a - v1 + v2 }
   };
 
-  for (size_t i = 0; i < arraysize(tests); ++i)
+  for (size_t i = 0; i < base::size(tests); ++i)
     EXPECT_EQ(tests[i].expected.ToString(), tests[i].actual.ToString());
 }
 

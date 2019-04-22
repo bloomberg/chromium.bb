@@ -14,7 +14,6 @@ namespace content {
 
 void JNI_GpuProcessCallback_CompleteScopedSurfaceRequest(
     JNIEnv* env,
-    const base::android::JavaParamRef<jclass>& clazz,
     const base::android::JavaParamRef<jobject>& token,
     const base::android::JavaParamRef<jobject>& surface) {
   base::UnguessableToken requestToken =
@@ -36,7 +35,6 @@ void JNI_GpuProcessCallback_CompleteScopedSurfaceRequest(
 base::android::ScopedJavaLocalRef<jobject>
 JNI_GpuProcessCallback_GetViewSurface(
     JNIEnv* env,
-    const base::android::JavaParamRef<jclass>& jcaller,
     jint surface_id) {
   gl::ScopedJavaSurface surface_view =
       gpu::GpuSurfaceTracker::GetInstance()->AcquireJavaSurface(surface_id);

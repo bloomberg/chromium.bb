@@ -28,10 +28,10 @@ import org.chromium.chrome.browser.download.home.StableIds;
 import org.chromium.chrome.browser.download.home.filter.OfflineItemFilterSource;
 import org.chromium.chrome.browser.download.home.list.ListItem.OfflineItemListItem;
 import org.chromium.chrome.browser.download.home.list.ListItem.SectionHeaderListItem;
-import org.chromium.chrome.browser.modelutil.ListObservable.ListObserver;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemFilter;
 import org.chromium.components.offline_items_collection.OfflineItemState;
+import org.chromium.ui.modelutil.ListObservable.ListObserver;
 
 import java.util.Calendar;
 import java.util.Collections;
@@ -58,6 +58,8 @@ public class DateOrderedListMutatorTest {
     public void setUp() {
         mModel = new ListItemModel();
         Map<String, Boolean> testFeatures = new HashMap<>();
+        testFeatures.put(ChromeFeatureList.DOWNLOAD_OFFLINE_CONTENT_PROVIDER, true);
+        testFeatures.put(ChromeFeatureList.DOWNLOAD_RENAME, false);
         ChromeFeatureList.setTestFeatures(testFeatures);
     }
 

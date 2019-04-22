@@ -128,10 +128,10 @@ base::Optional<ModelError> TypedURLSyncBridge::MergeSyncData(
   // Iterate through entity_data and check for all the urls that
   // sync already knows about. MergeURLWithSync() will remove urls that
   // are the same as the synced ones from |new_db_urls|.
-  for (const EntityChange& entity_change : entity_data) {
-    DCHECK(entity_change.data().specifics.has_typed_url());
+  for (const std::unique_ptr<EntityChange>& entity_change : entity_data) {
+    DCHECK(entity_change->data().specifics.has_typed_url());
     const TypedUrlSpecifics& specifics =
-        entity_change.data().specifics.typed_url();
+        entity_change->data().specifics.typed_url();
     if (ShouldIgnoreUrl(GURL(specifics.url())))
       continue;
 
@@ -159,16 +159,16 @@ base::Optional<ModelError> TypedURLSyncBridge::MergeSyncData(
 
   // Update storage key here first, and then send updated typed URL to sync
   // below, otherwise processor will have duplicate entries.
-  for (const EntityChange& entity_change : entity_data) {
-    DCHECK(entity_change.data().specifics.has_typed_url());
-    std::string storage_key =
-        GetStorageKeyInternal(entity_change.data().specifics.typed_url().url());
+  for (const std::unique_ptr<EntityChange>& entity_change : entity_data) {
+    DCHECK(entity_change->data().specifics.has_typed_url());
+    std::string storage_key = GetStorageKeyInternal(
+        entity_change->data().specifics.typed_url().url());
     if (storage_key.empty()) {
       // ignore entity change
       change_processor()->UntrackEntityForClientTagHash(
-          entity_change.data().client_tag_hash);
+          entity_change->data().client_tag_hash);
     } else {
-      change_processor()->UpdateStorageKey(entity_change.data(), storage_key,
+      change_processor()->UpdateStorageKey(entity_change->data(), storage_key,
                                            metadata_change_list.get());
     }
   }
@@ -199,11 +199,11 @@ base::Optional<ModelError> TypedURLSyncBridge::ApplySyncChanges(
   URLRows updated_synced_urls;
   URLRows new_synced_urls;
 
-  for (const EntityChange& entity_change : entity_changes) {
-    if (entity_change.type() == EntityChange::ACTION_DELETE) {
+  for (const std::unique_ptr<EntityChange>& entity_change : entity_changes) {
+    if (entity_change->type() == EntityChange::ACTION_DELETE) {
       URLRow url_row;
       int64_t url_id = TypedURLSyncMetadataDatabase::StorageKeyToURLID(
-          entity_change.storage_key());
+          entity_change->storage_key());
       if (!history_backend_->GetURLByID(url_id, &url_row)) {
         // Ignoring the case that there is no matching URLRow with URLID
         // |url_id|.
@@ -214,9 +214,9 @@ base::Optional<ModelError> TypedURLSyncBridge::ApplySyncChanges(
       continue;
     }
 
-    DCHECK(entity_change.data().specifics.has_typed_url());
+    DCHECK(entity_change->data().specifics.has_typed_url());
     const TypedUrlSpecifics& specifics =
-        entity_change.data().specifics.typed_url();
+        entity_change->data().specifics.typed_url();
 
     GURL url(specifics.url());
 
@@ -240,16 +240,16 @@ base::Optional<ModelError> TypedURLSyncBridge::ApplySyncChanges(
 
   // New entities were either ignored or written to history DB and assigned a
   // storage key. Notify processor about updated storage keys.
-  for (const EntityChange& entity_change : entity_changes) {
-    if (entity_change.type() == EntityChange::ACTION_ADD) {
+  for (const std::unique_ptr<EntityChange>& entity_change : entity_changes) {
+    if (entity_change->type() == EntityChange::ACTION_ADD) {
       std::string storage_key = GetStorageKeyInternal(
-          entity_change.data().specifics.typed_url().url());
+          entity_change->data().specifics.typed_url().url());
       if (storage_key.empty()) {
         // ignore entity change
         change_processor()->UntrackEntityForClientTagHash(
-            entity_change.data().client_tag_hash);
+            entity_change->data().client_tag_hash);
       } else {
-        change_processor()->UpdateStorageKey(entity_change.data(), storage_key,
+        change_processor()->UpdateStorageKey(entity_change->data(), storage_key,
                                              metadata_change_list.get());
       }
     }
@@ -352,6 +352,7 @@ void TypedURLSyncBridge::OnURLVisited(HistoryBackend* history_backend,
                                       base::Time visit_time) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
   DCHECK(sync_metadata_database_);
+  DCHECK_GE(row.typed_count(), 0);
 
   if (processing_syncer_changes_)
     return;  // These are changes originating from us, ignore.
@@ -384,14 +385,10 @@ void TypedURLSyncBridge::OnURLsModified(HistoryBackend* history_backend,
       CreateMetadataChangeList();
 
   for (const auto& row : changed_urls) {
-    // Only care if the modified URL is typed.
-    // TODO(crbug.com/907476): Get rid of this trivial check. Typed_count()
-    // cannot ever be negative.
-    if (row.typed_count() >= 0) {
-      // If there were any errors updating the sync node, just ignore them and
-      // continue on to process the next URL.
-      UpdateSyncFromLocal(row, is_from_expiration, metadata_change_list.get());
-    }
+    DCHECK_GE(row.typed_count(), 0);
+    // If there were any errors updating the sync node, just ignore them and
+    // continue on to process the next URL.
+    UpdateSyncFromLocal(row, is_from_expiration, metadata_change_list.get());
   }
 }
 
@@ -930,8 +927,6 @@ void TypedURLSyncBridge::UpdateSyncFromLocal(
     URLRow row,
     bool is_from_expiration,
     MetadataChangeList* metadata_change_list) {
-  DCHECK_GE(row.typed_count(), 0);
-
   if (ShouldIgnoreUrl(row.url()))
     return;
 
@@ -1099,10 +1094,7 @@ bool TypedURLSyncBridge::ShouldSyncVisit(int typed_count,
   // suggestions. But there are relatively few URLs with > 10 visits, and those
   // tend to be more broadly distributed such that there's no need to sync up
   // every visit to preserve their relative ordering.
-  // TODO(crbug.com/907476): Get rid of the trivial 'typed_count >= 0' check;
-  // typed_count cannot ever be negative.
   return (ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_TYPED) &&
-          typed_count >= 0 &&
           (typed_count < kTypedUrlVisitThrottleThreshold ||
            (typed_count % kTypedUrlVisitThrottleMultiple) == 0));
 }

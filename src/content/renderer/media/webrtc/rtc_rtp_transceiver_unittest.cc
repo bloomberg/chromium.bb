@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
@@ -15,12 +16,12 @@
 #include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "content/child/child_process.h"
-#include "content/renderer/media/stream/media_stream_audio_source.h"
 #include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/mock_peer_connection_impl.h"
 #include "content/renderer/media/webrtc/webrtc_media_stream_track_adapter_map.h"
 #include "content/renderer/media/webrtc/webrtc_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -104,8 +105,8 @@ class RTCRtpTransceiverTest : public ::testing::Test {
   }
 
   rtc::scoped_refptr<FakeRtpTransceiver> CreateWebRtcTransceiver(
-      rtc::scoped_refptr<webrtc::RtpSenderInterface> sender,
-      rtc::scoped_refptr<webrtc::RtpReceiverInterface> receiver,
+      rtc::scoped_refptr<FakeRtpSender> sender,
+      rtc::scoped_refptr<FakeRtpReceiver> receiver,
       base::Optional<std::string> mid,
       bool stopped,
       webrtc::RtpTransceiverDirection direction,
@@ -153,9 +154,11 @@ class RTCRtpTransceiverTest : public ::testing::Test {
     web_source.Initialize(
         blink::WebString::FromUTF8(id), blink::WebMediaStreamSource::kTypeAudio,
         blink::WebString::FromUTF8("local_audio_track"), false);
-    MediaStreamAudioSource* audio_source = new MediaStreamAudioSource(true);
+    blink::MediaStreamAudioSource* audio_source =
+        new blink::MediaStreamAudioSource(
+            blink::scheduler::GetSingleThreadTaskRunnerForTesting(), true);
     // Takes ownership of |audio_source|.
-    web_source.SetExtraData(audio_source);
+    web_source.SetPlatformSource(base::WrapUnique(audio_source));
 
     blink::WebMediaStreamTrack web_track;
     web_track.Initialize(web_source.Id(), web_source);
@@ -303,7 +306,8 @@ TEST_F(RTCRtpTransceiverTest, ModifyTransceiver) {
   EXPECT_FALSE(transceiver.FiredDirection());
 
   // Setting the state should make the transceiver state up-to-date.
-  transceiver.set_state(std::move(modified_transceiver_state));
+  transceiver.set_state(std::move(modified_transceiver_state),
+                        TransceiverStateUpdateMode::kAll);
   EXPECT_EQ(transceiver.Mid(), "MidyMacMidface");
   EXPECT_TRUE(transceiver.Sender());
   EXPECT_TRUE(transceiver.Receiver());
@@ -354,10 +358,65 @@ TEST_F(RTCRtpTransceiverTest, ShallowCopy) {
     EXPECT_FALSE(transceiver_state.is_initialized());
     transceiver_state.Initialize();
     // Set the state of the shallow copy.
-    shallow_copy->set_state(std::move(transceiver_state));
+    shallow_copy->set_state(std::move(transceiver_state),
+                            TransceiverStateUpdateMode::kAll);
   }
   EXPECT_TRUE(shallow_copy->Stopped());
   EXPECT_TRUE(transceiver->Stopped());
+}
+
+TEST_F(RTCRtpTransceiverTest, TransceiverStateUpdateModeSetDescription) {
+  auto local_track_adapter = CreateLocalTrackAndAdapter("local_track");
+  auto remote_track_adapter = CreateRemoteTrackAndAdapter("remote_track");
+  auto webrtc_sender =
+      CreateWebRtcSender(local_track_adapter->webrtc_track(), "local_stream");
+  auto webrtc_receiver = CreateWebRtcReceiver(
+      remote_track_adapter->webrtc_track(), "remote_stream");
+  auto webrtc_transceiver = CreateWebRtcTransceiver(
+      webrtc_sender, webrtc_receiver, base::nullopt, false,
+      webrtc::RtpTransceiverDirection::kSendRecv, base::nullopt);
+
+  // Create initial state.
+  RtpTransceiverState initial_transceiver_state =
+      CreateTransceiverState(webrtc_transceiver, local_track_adapter->Copy(),
+                             remote_track_adapter->Copy());
+  EXPECT_FALSE(initial_transceiver_state.is_initialized());
+  initial_transceiver_state.Initialize();
+
+  // Modify the webrtc transceiver and create a new state object for the
+  // modified state.
+  webrtc_sender->SetTrack(nullptr);
+  *webrtc_transceiver =
+      *CreateWebRtcTransceiver(webrtc_sender, webrtc_receiver, "MidyMacMidface",
+                               true, webrtc::RtpTransceiverDirection::kInactive,
+                               webrtc::RtpTransceiverDirection::kSendRecv);
+  RtpTransceiverState modified_transceiver_state =
+      CreateTransceiverState(webrtc_transceiver, local_track_adapter->Copy(),
+                             remote_track_adapter->Copy());
+  EXPECT_FALSE(modified_transceiver_state.is_initialized());
+  modified_transceiver_state.Initialize();
+
+  // Construct a transceiver from the initial state.
+  RTCRtpTransceiver transceiver(peer_connection_.get(), track_map_,
+                                std::move(initial_transceiver_state));
+  // Setting the state with TransceiverStateUpdateMode::kSetDescription should
+  // make the transceiver state up-to-date, except leaving
+  // "transceiver.direction" and "transceiver.sender.track" unmodified.
+  transceiver.set_state(std::move(modified_transceiver_state),
+                        TransceiverStateUpdateMode::kSetDescription);
+  EXPECT_EQ(transceiver.Mid(), "MidyMacMidface");
+  EXPECT_TRUE(transceiver.Sender());
+  EXPECT_TRUE(transceiver.Receiver());
+  EXPECT_TRUE(transceiver.Stopped());
+  EXPECT_TRUE(transceiver.CurrentDirection() ==
+              webrtc::RtpTransceiverDirection::kSendRecv);
+  EXPECT_FALSE(transceiver.FiredDirection());
+  // The sender still has a track, even though the modified state doesn't.
+  EXPECT_FALSE(transceiver.Sender()->Track().IsNull());
+  // The direction still "sendrecv", even though the modified state has
+  // "inactive".
+  EXPECT_EQ(transceiver.Direction(),
+            webrtc::RtpTransceiverDirection::kSendRecv);
 }
 
 }  // namespace content

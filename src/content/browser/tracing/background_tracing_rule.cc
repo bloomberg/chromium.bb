@@ -12,6 +12,7 @@
 #include "base/rand_util.h"
 #include "base/strings/safe_sprintf.h"
 #include "base/task/post_task.h"
+#include "base/timer/timer.h"
 #include "base/values.h"
 #include "components/tracing/common/tracing_messages.h"
 #include "content/browser/tracing/background_tracing_manager_impl.h"

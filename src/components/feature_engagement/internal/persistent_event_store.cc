@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "components/feature_engagement/internal/stats.h"
+#include "components/leveldb_proto/public/proto_database.h"
 
 namespace feature_engagement {
 namespace {
@@ -62,8 +63,10 @@ void PersistentEventStore::DeleteEvent(const std::string& event_name) {
                      base::BindOnce(&NoopUpdateCallback));
 }
 
-void PersistentEventStore::OnInitComplete(const OnLoadedCallback& callback,
-                                          bool success) {
+void PersistentEventStore::OnInitComplete(
+    const OnLoadedCallback& callback,
+    leveldb_proto::Enums::InitStatus status) {
+  bool success = status == leveldb_proto::Enums::InitStatus::kOK;
   stats::RecordDbInitEvent(success, stats::StoreType::EVENTS_STORE);
 
   if (!success) {

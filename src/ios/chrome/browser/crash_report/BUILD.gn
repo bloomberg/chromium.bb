@@ -80,6 +80,7 @@ source_set("unit_tests") {
     ":crash_report",
     ":crash_report_internal",
     "//base",
+    "//base/test:test_support",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/sessions:serialisation",

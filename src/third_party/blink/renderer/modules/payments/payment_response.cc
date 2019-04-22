@@ -104,7 +104,7 @@ ScriptValue PaymentResponse::toJSONForBinding(ScriptState* script_state) const {
 }
 
 ScriptValue PaymentResponse::details(ScriptState* script_state) const {
-  return ScriptValue::ToWorldSafeScriptValue(script_state, details_);
+  return ScriptValue(script_state, details_.GetAcrossWorld(script_state));
 }
 
 ScriptPromise PaymentResponse::complete(ScriptState* script_state,

@@ -7,28 +7,26 @@
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/script/layered_api.h"
 #include "third_party/blink/renderer/platform/bindings/parkable_string.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
-DocumentModuleScriptFetcher::DocumentModuleScriptFetcher(
-    ResourceFetcher* fetcher)
-    : fetcher_(fetcher) {
-  DCHECK(fetcher_);
-}
-
-void DocumentModuleScriptFetcher::Fetch(FetchParameters& fetch_params,
-                                        ModuleGraphLevel level,
-                                        ModuleScriptFetcher::Client* client) {
+void DocumentModuleScriptFetcher::Fetch(
+    FetchParameters& fetch_params,
+    ResourceFetcher* fetch_client_settings_object_fetcher,
+    const Modulator* modulator_for_built_in_modules,
+    ModuleGraphLevel level,
+    ModuleScriptFetcher::Client* client) {
+  DCHECK(fetch_client_settings_object_fetcher);
   DCHECK(!client_);
   client_ = client;
 
-  if (FetchIfLayeredAPI(fetch_params))
+  if (modulator_for_built_in_modules &&
+      FetchIfLayeredAPI(*modulator_for_built_in_modules, fetch_params))
     return;
 
-  ScriptResource::Fetch(fetch_params, fetcher_, this,
-                        ScriptResource::kNoStreaming);
+  ScriptResource::Fetch(fetch_params, fetch_client_settings_object_fetcher,
+                        this, ScriptResource::kNoStreaming);
 }
 
 void DocumentModuleScriptFetcher::NotifyFinished(Resource* resource) {
@@ -43,20 +41,21 @@ void DocumentModuleScriptFetcher::NotifyFinished(Resource* resource) {
   }
 
   ModuleScriptCreationParams params(
-      script_resource->GetResponse().Url(), script_resource->SourceText(),
+      script_resource->GetResponse().CurrentRequestUrl(),
+      script_resource->SourceText(), script_resource->CacheHandler(),
       script_resource->GetResourceRequest().GetFetchCredentialsMode());
   client_->NotifyFetchFinished(params, error_messages);
 }
 
 void DocumentModuleScriptFetcher::Trace(blink::Visitor* visitor) {
-  visitor->Trace(fetcher_);
   visitor->Trace(client_);
   ResourceClient::Trace(visitor);
 }
 
 bool DocumentModuleScriptFetcher::FetchIfLayeredAPI(
+    const Modulator& modulator_for_built_in_modules,
     FetchParameters& fetch_params) {
-  if (!RuntimeEnabledFeatures::LayeredAPIEnabled())
+  if (!modulator_for_built_in_modules.BuiltInModuleInfraEnabled())
     return false;
 
   KURL layered_api_url = blink::layered_api::GetInternalURL(fetch_params.Url());
@@ -64,19 +63,23 @@ bool DocumentModuleScriptFetcher::FetchIfLayeredAPI(
   if (layered_api_url.IsNull())
     return false;
 
-  String source_text = blink::layered_api::GetSourceText(layered_api_url);
+  String source_text = blink::layered_api::GetSourceText(
+      modulator_for_built_in_modules, layered_api_url);
 
   if (source_text.IsNull()) {
     HeapVector<Member<ConsoleMessage>> error_messages;
     error_messages.push_back(ConsoleMessage::CreateForRequest(
-        kJSMessageSource, kErrorMessageLevel, "Unexpected data error",
+        mojom::ConsoleMessageSource::kJavaScript,
+        mojom::ConsoleMessageLevel::kError, "Unexpected data error",
         fetch_params.Url().GetString(), nullptr, 0));
     client_->NotifyFetchFinished(base::nullopt, error_messages);
     return true;
   }
 
+  // TODO(hiroshige): Support V8 Code Cache for Layered API.
   ModuleScriptCreationParams params(
       layered_api_url, ParkableString(source_text.ReleaseImpl()),
+      nullptr /* cache_handler */,
       fetch_params.GetResourceRequest().GetFetchCredentialsMode());
   client_->NotifyFetchFinished(params, HeapVector<Member<ConsoleMessage>>());
   return true;

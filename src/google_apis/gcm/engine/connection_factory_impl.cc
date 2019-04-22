@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
@@ -24,6 +25,7 @@
 #include "net/socket/client_socket_pool_manager.h"
 #include "net/ssl/ssl_config_service.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/network/public/mojom/tcp_socket.mojom.h"
 
 namespace gcm {
 
@@ -65,7 +67,7 @@ ConnectionFactoryImpl::ConnectionFactoryImpl(
       handshake_in_progress_(false),
       recorder_(recorder),
       network_connection_tracker_(network_connection_tracker),
-      listener_(NULL),
+      listener_(nullptr),
       weak_ptr_factory_(this) {
   DCHECK_GE(mcs_endpoints_.size(), 1U);
 }
@@ -142,8 +144,8 @@ void ConnectionFactoryImpl::ConnectWithBackoff() {
         backoff_entry_->GetTimeUntilRelease().InMilliseconds());
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&ConnectionFactoryImpl::ConnectWithBackoff,
-                   weak_ptr_factory_.GetWeakPtr()),
+        base::BindOnce(&ConnectionFactoryImpl::ConnectWithBackoff,
+                       weak_ptr_factory_.GetWeakPtr()),
         backoff_entry_->GetTimeUntilRelease());
     return;
   }

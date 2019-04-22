@@ -374,6 +374,56 @@ class GoogleDesktopStory(_ArticleBrowsingStory):
     action_runner.Wait(2)
     action_runner.ScrollPage()
 
+class GoogleAmpStory2018(_ArticleBrowsingStory):
+  """ Story for Google's Accelerated Mobile Pages (AMP).
+
+    The main thing we care about measuring here is load, so just query for
+    news articles and then load the first amp link.
+  """
+  NAME = 'browse:search:amp:2018'
+  URL = 'https://www.google.com/search?q=news&hl=en'
+  # Need to find the first card in the news section that has an amp
+  # indicator on it
+  ITEM_SELECTOR = '.sm62ie > a[class*="amp_r"]'
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  TAGS = [story_tags.YEAR_2018]
+
+  def _DidLoadDocument(self, action_runner):
+    # Click on the amp news link and then just wait for it to load.
+    element_function = js_template.Render(
+        'document.querySelectorAll({{ selector }})[{{ index }}]',
+        selector=self.ITEM_SELECTOR, index=0)
+    action_runner.WaitForElement(element_function=element_function)
+    action_runner.ClickElement(element_function=element_function)
+    action_runner.Wait(2)
+
+class GoogleAmpSXGStory2019(_ArticleBrowsingStory):
+  """ Story for Google's Signed Exchange (SXG) Accelerated Mobile Pages (AMP).
+  """
+  NAME = 'browse:search:amp:sxg:2019'
+  # Specific URL for site that supports SXG, travel.yahoo.co.jp
+  # pylint: disable=line-too-long
+  URL='https://www.google.com/search?q=%E5%85%AD%E6%9C%AC%E6%9C%A8%E3%80%80%E3%83%A4%E3%83%95%E3%83%BC%E3%80%80%E3%83%9B%E3%83%86%E3%83%AB&esrch=SignedExchange::Demo'
+  # Need to find the SXG AMPlink in the results
+  ITEM_SELECTOR = 'a > div > span[aria-label="AMP logo"]'
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  TAGS = [story_tags.YEAR_2019]
+
+  def _DidLoadDocument(self, action_runner):
+    # Waiting manually for the search results to load here and below.
+    # Telemetry's action_runner.WaitForNavigate has some difficulty with amp
+    # pages as it waits for a frameId without a parent id.
+    action_runner.Wait(2)
+    # Click on the yahoo amp link and then just wait for it to load.
+    element_function = js_template.Render(
+        'document.querySelectorAll({{ selector }})[{{ index }}]',
+        selector=self.ITEM_SELECTOR, index=0)
+    action_runner.WaitForElement(element_function=element_function)
+    action_runner.ClickElement(element_function=element_function)
+    # Waiting for the document to fully render
+    action_runner.Wait(2)
+
+
 class GoogleDesktopStory2018(_ArticleBrowsingStory):
   """
   A typical google search story:
@@ -612,6 +662,93 @@ class YouTubeDesktopStory2018(_MediaBrowsingStory):
   PLATFORM_SPECIFIC = True
   TAGS = [story_tags.JAVASCRIPT_HEAVY, story_tags.YEAR_2018]
 
+  # TODO(yoichio): Remove this flags when YouTube finish V0 migration.
+  # crbug.com/911943.
+  def __init__(self, story_set, take_memory_measurement):
+    super(YouTubeDesktopStory2018, self).__init__(
+        story_set, take_memory_measurement,
+        extra_browser_args=[
+          '--enable-blink-features=HTMLImports,CustomElementsV0'])
+
+
+class YouTubeTVDesktopStory2019(_MediaBrowsingStory):
+  """Load a typical YouTube TV video then navigate to a next few videos. Stop
+  and watch each video for a few seconds.
+  """
+  NAME = 'browse:media:youtubetv:2019'
+  URL = 'https://www.youtube.com/tv#/watch/ads/control?v=PxrnoGyBw4E&resume'
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+  TAGS = [story_tags.YEAR_2019]
+
+  def WaitIfRecording(self, action_runner):
+    # Uncomment the below if recording to try and reduce network errors.
+    # action_runner.Wait(2)
+    pass
+
+  def WatchThenSkipAd(self, action_runner):
+    skip_button_selector = '.skip-ad-button'
+    action_runner.WaitForElement(selector=skip_button_selector)
+    action_runner.Wait(8)  # Wait until the ad is skippable.
+    action_runner.MouseClick(selector=skip_button_selector)
+    self.WaitIfRecording(action_runner)
+
+  def ShortAttentionSpan(self, action_runner):
+    action_runner.Wait(2)
+
+  def GotoNextVideo(self, action_runner):
+    forward_button_selector = '.skip-forward-button'
+    action_runner.PressKey('ArrowDown')   # Open the menu.
+    action_runner.WaitForElement(selector=forward_button_selector)
+    action_runner.MouseClick(selector=forward_button_selector)
+    self.WaitIfRecording(action_runner)
+
+  def NavigateInMenu(self, action_runner):
+    short_delay_in_ms = 300
+    delay_in_ms = 1000
+    long_delay_in_ms = 3000
+    # Escape to menu, skip the sign-in process.
+    action_runner.PressKey('Backspace', 1, long_delay_in_ms)
+    action_runner.PressKey('ArrowDown', 1, delay_in_ms)
+    action_runner.PressKey('Return', 1, long_delay_in_ms)
+    self.WaitIfRecording(action_runner)
+    # Scroll through categories and back.
+    action_runner.WaitForElement(selector='#guide-logo')
+    action_runner.PressKey('ArrowUp', 1, delay_in_ms)
+    action_runner.PressKey('ArrowRight', 3, delay_in_ms)
+    action_runner.PressKey('ArrowLeft', 3, delay_in_ms)
+    action_runner.PressKey('ArrowDown', 1, delay_in_ms)
+    self.WaitIfRecording(action_runner)
+    # Scroll through a few videos then open the sidebar menu.
+    action_runner.PressKey('ArrowRight', 3, short_delay_in_ms)
+    action_runner.PressKey('ArrowDown', 3, short_delay_in_ms)
+    action_runner.PressKey('Backspace', 2, delay_in_ms)
+    self.WaitIfRecording(action_runner)
+    # Scroll through options and then go to search.
+    action_runner.PressKey('ArrowDown', 3, delay_in_ms)
+    action_runner.PressKey('s', 1, delay_in_ms)
+    self.WaitIfRecording(action_runner)
+    # Search for 'dub stories' and start playing.
+    action_runner.EnterText('dub stories', short_delay_in_ms)
+    action_runner.PressKey('ArrowDown', 1, delay_in_ms)
+    action_runner.PressKey('Return', 2, delay_in_ms)
+    self.WaitIfRecording(action_runner)
+
+  def _DidLoadDocument(self, action_runner):
+    self.WatchThenSkipAd(action_runner)
+    self.ShortAttentionSpan(action_runner)
+    self.GotoNextVideo(action_runner)
+    self.ShortAttentionSpan(action_runner)
+    self.GotoNextVideo(action_runner)
+    self.ShortAttentionSpan(action_runner)
+    self.NavigateInMenu(action_runner)
+
+  # This story is mainly relevant for V8 in jitless mode, but there is no
+  # benchmark that enables this flag. We take the pragmatic solution and set
+  # this flag explicitly for this story.
+  def __init__(self, story_set, take_memory_measurement):
+    super(YouTubeTVDesktopStory2019, self).__init__(
+        story_set, take_memory_measurement,
+        extra_browser_args=['--js-flags="--jitless"'])
 
 class FacebookPhotosMobileStory(_MediaBrowsingStory):
   """Load a photo page from Rihanna's facebook page then navigate a few next
@@ -762,6 +899,29 @@ class PinterestDesktopStory2018(_MediaBrowsingStory):
     action_runner.Wait(1)
     if not self.SKIP_LOGIN:
       action_runner.Wait(2)
+
+class GooglePlayStoreMobileStory(_MediaBrowsingStory):
+  """ Navigate to the movies page of Google Play Store, scroll to the bottom,
+  and click "see more" of a middle category (last before second scroll).
+  """
+  NAME = 'browse:media:googleplaystore:2019'
+  URL = 'https://play.google.com/store/movies'
+  ITEM_SELECTOR = ''
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  IS_SINGLE_PAGE_APP = True
+  TAGS = [story_tags.EMERGING_MARKET, story_tags.YEAR_2019, story_tags.IMAGES]
+  # intends to select the last category of movies and its "see more" button
+  _SEE_MORE_SELECTOR = ('div[class*="cluster-container"]:last-of-type '
+                        'a[class*="see-more"]')
+
+  def _DidLoadDocument(self, action_runner):
+    action_runner.ScrollPage()
+    action_runner.Wait(2)
+    action_runner.ScrollPage()
+    action_runner.Wait(2)
+    action_runner.MouseClick(self._SEE_MORE_SELECTOR)
+    action_runner.Wait(2)
+    action_runner.ScrollPage()
 
 
 class GooglePlayStoreDesktopStory(_MediaBrowsingStory):
@@ -1256,6 +1416,19 @@ class TumblrStory(_InfiniteScrollStory):
   TAGS = [story_tags.INFINITE_SCROLL, story_tags.JAVASCRIPT_HEAVY,
           story_tags.YEAR_2016]
 
+class TumblrStory2018(_InfiniteScrollStory):
+  NAME = 'browse:social:tumblr_infinite_scroll:2018'
+  URL = 'https://techcrunch.tumblr.com/'
+  SCROLL_DISTANCE = 20000
+  TAGS = [story_tags.INFINITE_SCROLL, story_tags.JAVASCRIPT_HEAVY,
+          story_tags.YEAR_2018]
+
+  def _Login(self, action_runner):
+    tumblr_login.LoginDesktopAccount(action_runner, 'tumblr')
+    action_runner.Wait(5)
+    # Without this page reload the mobile version does not correctly
+    # go to the https://techcrunch.tumblr.com
+    action_runner.ReloadPage()
 
 class TwitterScrollDesktopStory(_InfiniteScrollStory):
   NAME = 'browse:social:twitter_infinite_scroll'

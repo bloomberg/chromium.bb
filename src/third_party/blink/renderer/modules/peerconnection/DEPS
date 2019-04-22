@@ -7,8 +7,14 @@ include_rules = [
     "+third_party/blink/renderer/modules/mediastream",
     "+third_party/blink/renderer/modules/modules_export.h",
     "+third_party/blink/renderer/modules/peerconnection",
-    "+net/third_party/quic",
+    "+net/third_party/quiche/src/quic",
     "+net/quic/chromium",
     "+net/quic",
     "+net/test",
 ]
+
+specific_include_rules = {
+    "rtc_data_channel_test\.cc" : [
+        "+base/run_loop.h",
+    ],
+}

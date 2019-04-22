@@ -108,7 +108,7 @@ void DevToolsAgent::AttachDevToolsSession(
     mojom::blink::DevToolsSessionRequest io_session_request,
     mojom::blink::DevToolsSessionStatePtr reattach_session_state) {
   client_->DebuggerTaskStarted();
-  DevToolsSession* session = new DevToolsSession(
+  DevToolsSession* session = MakeGarbageCollected<DevToolsSession>(
       this, std::move(host), std::move(session_request),
       std::move(io_session_request), std::move(reattach_session_state));
   sessions_.insert(session);
@@ -124,21 +124,25 @@ void DevToolsAgent::FlushProtocolNotifications() {
     session->FlushProtocolNotifications();
 }
 
-void DevToolsAgent::ReportChildWorkers(bool report, bool wait_for_debugger) {
+void DevToolsAgent::ReportChildWorkers(bool report,
+                                       bool wait_for_debugger,
+                                       base::OnceClosure callback) {
   report_child_workers_ = report;
   pause_child_workers_on_start_ = wait_for_debugger;
-  if (!report_child_workers_)
-    return;
-  auto workers = std::move(unreported_child_worker_threads_);
-  for (auto& it : workers)
-    ReportChildWorker(std::move(it.value));
+  if (report_child_workers_) {
+    auto workers = std::move(unreported_child_worker_threads_);
+    for (auto& it : workers)
+      ReportChildWorker(std::move(it.value));
+  }
+  std::move(callback).Run();
 }
 
 // static
 std::unique_ptr<WorkerDevToolsParams> DevToolsAgent::WorkerThreadCreated(
     ExecutionContext* parent_context,
     WorkerThread* worker_thread,
-    const KURL& url) {
+    const KURL& url,
+    const String& global_scope_name) {
   auto result = std::make_unique<WorkerDevToolsParams>();
   result->devtools_worker_token = base::UnguessableToken::Create();
 
@@ -152,6 +156,7 @@ std::unique_ptr<WorkerDevToolsParams> DevToolsAgent::WorkerThreadCreated(
   data->host_request = mojo::MakeRequest(&result->agent_host_ptr_info);
   data->devtools_worker_token = result->devtools_worker_token;
   data->waiting_for_debugger = agent->pause_child_workers_on_start_;
+  data->name = global_scope_name;
   result->wait_for_debugger = agent->pause_child_workers_on_start_;
 
   if (agent->report_child_workers_) {
@@ -174,13 +179,13 @@ void DevToolsAgent::ReportChildWorker(std::unique_ptr<WorkerData> data) {
   if (host_ptr_.is_bound()) {
     host_ptr_->ChildWorkerCreated(
         std::move(data->agent_ptr), std::move(data->host_request),
-        std::move(data->url), data->devtools_worker_token,
-        data->waiting_for_debugger);
+        std::move(data->url), std::move(data->name),
+        data->devtools_worker_token, data->waiting_for_debugger);
   } else if (associated_host_ptr_.is_bound()) {
     associated_host_ptr_->ChildWorkerCreated(
         std::move(data->agent_ptr), std::move(data->host_request),
-        std::move(data->url), data->devtools_worker_token,
-        data->waiting_for_debugger);
+        std::move(data->url), std::move(data->name),
+        data->devtools_worker_token, data->waiting_for_debugger);
   }
 }
 

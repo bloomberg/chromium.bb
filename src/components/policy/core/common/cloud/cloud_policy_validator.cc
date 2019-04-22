@@ -9,7 +9,6 @@
 
 #include "base/bind_helpers.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
@@ -337,7 +336,7 @@ void CloudPolicyValidatorBase::RunChecks() {
       {VALIDATE_VALUES, &CloudPolicyValidatorBase::CheckValues},
   };
 
-  for (size_t i = 0; i < arraysize(kCheckFunctions); ++i) {
+  for (size_t i = 0; i < base::size(kCheckFunctions); ++i) {
     if (validation_flags_ & kCheckFunctions[i].flag) {
       status_ = (this->*(kCheckFunctions[i].checkFunction))();
       if (status_ != VALIDATION_OK)

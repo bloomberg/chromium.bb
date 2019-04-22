@@ -29,8 +29,9 @@ Polymer({
    */
   onSettingsChanged_: function() {
     const copies = this.getSetting('copies');
-    if (this.inputValid_)
+    if (this.inputValid_) {
       this.currentValue_ = /** @type {string} */ (copies.value.toString());
+    }
     const collate = this.getSetting('collate');
     this.$.collate.checked = /** @type {boolean} */ (collate.value);
   },

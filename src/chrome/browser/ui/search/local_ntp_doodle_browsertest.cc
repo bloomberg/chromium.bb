@@ -103,6 +103,66 @@ class LocalNTPDoodleTest : public InProcessBrowserTest {
     return base::nullopt;
   }
 
+  void TeardownWindowOpenTest(content::WebContents* tab) {
+    ASSERT_TRUE(content::ExecuteScript(tab, "window.open = windowOpenOld"));
+  }
+
+  void SetupWindowOpenTest(content::WebContents* tab) {
+    ASSERT_TRUE(content::ExecuteScript(tab,
+                                       "var windowOpenOld = window.open; "
+                                       "window.open = (w) => { openedWindow = "
+                                       "w };"));
+  }
+
+  base::Optional<std::string> GetWindowOpenURL(content::WebContents* tab) {
+    std::string target_url;
+    if (instant_test_utils::GetStringFromJS(tab, "openedWindow", &target_url)) {
+      return target_url;
+    }
+    return base::nullopt;
+  }
+
+  void TeardownNavigatorTest(content::WebContents* tab) {
+    ASSERT_TRUE(content::ExecuteScript(tab, "window.navigator = navigatorOld"));
+  }
+
+  void SetupBeaconTest(content::WebContents* tab) {
+    ASSERT_TRUE(content::ExecuteScript(tab,
+                                       "var navigatorOld = window.navigator; "
+                                       "window.navigator = {};"
+                                       "window.navigator.sendBeacon = "
+                                       "(url) => { sentbeacon = url };"));
+  }
+
+  base::Optional<std::string> GetBeaconURL(content::WebContents* tab) {
+    std::string target_url;
+    if (instant_test_utils::GetStringFromJS(tab, "sentbeacon", &target_url)) {
+      return target_url;
+    }
+    return base::nullopt;
+  }
+
+  bool ElementExists(content::WebContents* tab, const std::string& id) {
+    return ExecuteBooleanJS(
+        tab, base::StringPrintf("!!document.getElementById(%s)",
+                                base::GetQuotedJSONString(id).c_str()));
+  }
+
+  bool DialogIsOpen(content::WebContents* tab, const std::string& id) {
+    return ExecuteBooleanJS(
+        tab,
+        base::StringPrintf("!!document.getElementById(%s).hasAttribute('open')",
+                           base::GetQuotedJSONString(id).c_str()));
+  }
+
+  bool ExecuteBooleanJS(content::WebContents* tab, const std::string& js) {
+    bool value;
+    if (instant_test_utils::GetBoolFromJS(tab, js, &value)) {
+      return value;
+    }
+    return false;
+  }
+
   base::Optional<std::string> GetComputedStyle(content::WebContents* tab,
                                                const std::string& id,
                                                const std::string& css_name) {
@@ -194,7 +254,8 @@ class LocalNTPDoodleTest : public InProcessBrowserTest {
  private:
   void SetUp() override {
     feature_list_.InitWithFeatures(
-        {features::kUseGoogleLocalNtp, features::kDoodlesOnLocalNtp}, {});
+        {features::kUseGoogleLocalNtp, features::kDoodlesOnLocalNtp},
+        {features::kRemoveNtpFakebox});
     InProcessBrowserTest::SetUp();
   }
 
@@ -299,8 +360,8 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest, ShouldShowDoodleWhenCached) {
   EXPECT_THAT(GetDimension(active_tab, "fakebox", "top"), Eq(kFakeboxTopPx));
   EXPECT_THAT(GetComputedOpacity(active_tab, "logo-default"), Eq(0.0));
   EXPECT_THAT(GetComputedOpacity(active_tab, "logo-doodle"), Eq(1.0));
-  EXPECT_THAT(GetComputedDisplay(active_tab, "logo-doodle-button"),
-              Eq<std::string>("block"));
+  EXPECT_THAT(GetComputedDisplay(active_tab, "logo-doodle-container"),
+              Eq<std::string>("inline-block"));
   EXPECT_THAT(GetComputedDisplay(active_tab, "logo-doodle-iframe"),
               Eq<std::string>("none"));
   EXPECT_THAT(GetElementProperty(active_tab, "logo-doodle-image", "title"),
@@ -343,14 +404,49 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest, ShouldShowInteractiveLogo) {
   EXPECT_THAT(GetDimension(active_tab, "fakebox", "top"), Eq(kFakeboxTopPx));
   EXPECT_THAT(GetComputedOpacity(active_tab, "logo-default"), Eq(0.0));
   EXPECT_THAT(GetComputedOpacity(active_tab, "logo-doodle"), Eq(1.0));
-  EXPECT_THAT(GetComputedDisplay(active_tab, "logo-doodle-button"),
+  EXPECT_THAT(GetComputedDisplay(active_tab, "logo-doodle-container"),
               Eq<std::string>("none"));
   EXPECT_THAT(GetComputedDisplay(active_tab, "logo-doodle-iframe"),
               Eq<std::string>("block"));
 
-  EXPECT_THAT(
-      GetElementProperty(active_tab, "logo-doodle-iframe", "src"),
-      Eq<std::string>("https://www.chromium.org/interactive?gws_rd=cr"));
+  EXPECT_THAT(GetElementProperty(active_tab, "logo-doodle-iframe", "src"),
+              Eq<std::string>("https://www.chromium.org/interactive"));
+  EXPECT_THAT(GetElementProperty(active_tab, "logo-doodle-iframe", "title"),
+              Eq<std::string>("alt text"));
+}
+
+IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest,
+                       ShouldShowInteractiveLogoWithoutImage) {
+  EncodedLogo cached_logo;
+  cached_logo.encoded_image = nullptr;
+  cached_logo.metadata.type = LogoType::INTERACTIVE;
+  cached_logo.metadata.full_page_url =
+      GURL("https://www.chromium.org/interactive");
+  cached_logo.metadata.alt_text = "alt text";
+  cached_logo.metadata.iframe_width_px = 500;
+  cached_logo.metadata.iframe_height_px = 200;
+
+  EXPECT_CALL(*logo_service(), GetLogoPtr(_))
+      .WillRepeatedly(DoAll(
+          ReturnCachedLogo(LogoCallbackReason::DETERMINED, cached_logo),
+          ReturnFreshLogo(LogoCallbackReason::REVALIDATED, base::nullopt)));
+
+  // Open a new blank tab, then go to NTP.
+  content::WebContents* active_tab =
+      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
+  base::HistogramTester histograms;
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+
+  EXPECT_THAT(GetDimension(active_tab, "fakebox", "top"), Eq(kFakeboxTopPx));
+  EXPECT_THAT(GetComputedOpacity(active_tab, "logo-default"), Eq(0.0));
+  EXPECT_THAT(GetComputedOpacity(active_tab, "logo-doodle"), Eq(1.0));
+  EXPECT_THAT(GetComputedDisplay(active_tab, "logo-doodle-container"),
+              Eq<std::string>("none"));
+  EXPECT_THAT(GetComputedDisplay(active_tab, "logo-doodle-iframe"),
+              Eq<std::string>("block"));
+
+  EXPECT_THAT(GetElementProperty(active_tab, "logo-doodle-iframe", "src"),
+              Eq<std::string>("https://www.chromium.org/interactive"));
   EXPECT_THAT(GetElementProperty(active_tab, "logo-doodle-iframe", "title"),
               Eq<std::string>("alt text"));
 }
@@ -418,8 +514,8 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest,
   EXPECT_THAT(GetDimension(active_tab, "fakebox", "top"), Eq(kFakeboxTopPx));
   EXPECT_THAT(GetComputedOpacity(active_tab, "logo-default"), Eq(0.0));
   EXPECT_THAT(GetComputedOpacity(active_tab, "logo-doodle"), Eq(1.0));
-  EXPECT_THAT(GetComputedDisplay(active_tab, "logo-doodle-button"),
-              Eq<std::string>("block"));
+  EXPECT_THAT(GetComputedDisplay(active_tab, "logo-doodle-container"),
+              Eq<std::string>("inline-block"));
   EXPECT_THAT(GetComputedDisplay(active_tab, "logo-doodle-iframe"),
               Eq<std::string>("none"));
   EXPECT_THAT(GetElementProperty(active_tab, "logo-doodle-image", "title"),
@@ -465,13 +561,12 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest,
   EXPECT_THAT(GetDimension(active_tab, "fakebox", "top"), Eq(kFakeboxTopPx));
   EXPECT_THAT(GetComputedOpacity(active_tab, "logo-default"), Eq(0.0));
   EXPECT_THAT(GetComputedOpacity(active_tab, "logo-doodle"), Eq(1.0));
-  EXPECT_THAT(GetComputedDisplay(active_tab, "logo-doodle-button"),
+  EXPECT_THAT(GetComputedDisplay(active_tab, "logo-doodle-container"),
               Eq<std::string>("none"));
   EXPECT_THAT(GetComputedDisplay(active_tab, "logo-doodle-iframe"),
               Eq<std::string>("block"));
-  EXPECT_THAT(
-      GetElementProperty(active_tab, "logo-doodle-iframe", "src"),
-      Eq<std::string>("https://www.chromium.org/interactive?gws_rd=cr"));
+  EXPECT_THAT(GetElementProperty(active_tab, "logo-doodle-iframe", "src"),
+              Eq<std::string>("https://www.chromium.org/interactive"));
 }
 
 IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest, ShouldNotFadeFromInteractiveDoodle) {
@@ -501,13 +596,12 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest, ShouldNotFadeFromInteractiveDoodle) {
   EXPECT_THAT(GetDimension(active_tab, "fakebox", "top"), Eq(kFakeboxTopPx));
   EXPECT_THAT(GetComputedOpacity(active_tab, "logo-default"), Eq(0.0));
   EXPECT_THAT(GetComputedOpacity(active_tab, "logo-doodle"), Eq(1.0));
-  EXPECT_THAT(GetComputedDisplay(active_tab, "logo-doodle-button"),
+  EXPECT_THAT(GetComputedDisplay(active_tab, "logo-doodle-container"),
               Eq<std::string>("none"));
   EXPECT_THAT(GetComputedDisplay(active_tab, "logo-doodle-iframe"),
               Eq<std::string>("block"));
-  EXPECT_THAT(
-      GetElementProperty(active_tab, "logo-doodle-iframe", "src"),
-      Eq<std::string>("https://www.chromium.org/interactive?gws_rd=cr"));
+  EXPECT_THAT(GetElementProperty(active_tab, "logo-doodle-iframe", "src"),
+              Eq<std::string>("https://www.chromium.org/interactive"));
 }
 
 IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest,
@@ -542,8 +636,8 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest,
   EXPECT_THAT(GetDimension(active_tab, "fakebox", "top"), Eq(kFakeboxTopPx));
   EXPECT_THAT(GetComputedOpacity(active_tab, "logo-default"), Eq(0.0));
   EXPECT_THAT(GetComputedOpacity(active_tab, "logo-doodle"), Eq(1.0));
-  EXPECT_THAT(GetComputedDisplay(active_tab, "logo-doodle-button"),
-              Eq<std::string>("block"));
+  EXPECT_THAT(GetComputedDisplay(active_tab, "logo-doodle-container"),
+              Eq<std::string>("inline-block"));
   EXPECT_THAT(GetComputedDisplay(active_tab, "logo-doodle-iframe"),
               Eq<std::string>("none"));
   EXPECT_THAT(GetElementProperty(active_tab, "logo-doodle-image", "src"),
@@ -596,8 +690,8 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest, ShouldUpdateMetadataWhenChanged) {
   EXPECT_THAT(GetDimension(active_tab, "fakebox", "top"), Eq(kFakeboxTopPx));
   EXPECT_THAT(GetComputedOpacity(active_tab, "logo-default"), Eq(0.0));
   EXPECT_THAT(GetComputedOpacity(active_tab, "logo-doodle"), Eq(1.0));
-  EXPECT_THAT(GetComputedDisplay(active_tab, "logo-doodle-button"),
-              Eq<std::string>("block"));
+  EXPECT_THAT(GetComputedDisplay(active_tab, "logo-doodle-container"),
+              Eq<std::string>("inline-block"));
   EXPECT_THAT(GetComputedDisplay(active_tab, "logo-doodle-iframe"),
               Eq<std::string>("none"));
 
@@ -614,6 +708,380 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest, ShouldUpdateMetadataWhenChanged) {
                                kLogoImpressionStatic, 1);
   histograms.ExpectTotalCount("NewTabPage.LogoShown.Fresh", 0);
   histograms.ExpectTotalCount("NewTabPage.LogoShownTime2", 1);
+}
+
+IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest, ShouldAppendShareButtonWhenCached) {
+  EncodedLogo cached_logo;
+  cached_logo.encoded_image = MakeRefPtr(kCachedB64);
+  cached_logo.metadata.mime_type = "image/png";
+  cached_logo.metadata.on_click_url = GURL("https://www.chromium.org/");
+  cached_logo.metadata.alt_text = "Chromium";
+  cached_logo.metadata.short_link = GURL("https://g.co");
+  cached_logo.metadata.share_button_x = 12;
+  cached_logo.metadata.share_button_y = 39;
+  cached_logo.metadata.share_button_opacity = 0.8;
+  cached_logo.metadata.share_button_icon = "sbimg";
+  cached_logo.metadata.share_button_bg = "#ffff00";
+
+  EXPECT_CALL(*logo_service(), GetLogoPtr(_))
+      .WillRepeatedly(DoAll(
+          ReturnCachedLogo(LogoCallbackReason::DETERMINED, cached_logo),
+          ReturnFreshLogo(LogoCallbackReason::REVALIDATED, base::nullopt)));
+
+  // Open a new blank tab, then go to NTP and listen for console messages.
+  content::WebContents* active_tab =
+      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
+  content::ConsoleObserverDelegate console_observer(active_tab, "*");
+  active_tab->SetDelegate(&console_observer);
+  base::HistogramTester histograms;
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+
+  EXPECT_TRUE(ElementExists(active_tab, "ddlsb"));
+  EXPECT_TRUE(ElementExists(active_tab, "ddlsb-img"));
+  EXPECT_THAT(GetComputedStyle(active_tab, "ddlsb", "left"),
+              Eq<std::string>("12px"));
+  EXPECT_THAT(GetComputedStyle(active_tab, "ddlsb", "top"),
+              Eq<std::string>("39px"));
+  EXPECT_THAT(GetComputedStyle(active_tab, "ddlsb", "background-color"),
+              Eq<std::string>("rgba(255, 255, 0, 0.8)"));
+  EXPECT_THAT(GetElementProperty(active_tab, "ddlsb-img", "src"),
+              Eq<std::string>("data:image/png;base64,sbimg"));
+}
+
+IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest,
+                       ShouldNotAppendShareButtonWhenCacheEmpty) {
+  EncodedLogo cached_logo;
+  cached_logo.encoded_image = MakeRefPtr(kCachedB64);
+  cached_logo.metadata.mime_type = "image/png";
+  cached_logo.metadata.on_click_url = GURL("https://www.chromium.org/");
+  cached_logo.metadata.alt_text = "Chromium";
+  cached_logo.metadata.short_link = GURL("https://g.co");
+  cached_logo.metadata.share_button_x = -1;
+  cached_logo.metadata.share_button_y = -1;
+  cached_logo.metadata.share_button_opacity = 0;
+  cached_logo.metadata.share_button_icon = "";
+  cached_logo.metadata.share_button_bg = "";
+
+  EXPECT_CALL(*logo_service(), GetLogoPtr(_))
+      .WillRepeatedly(DoAll(
+          ReturnCachedLogo(LogoCallbackReason::DETERMINED, cached_logo),
+          ReturnFreshLogo(LogoCallbackReason::REVALIDATED, base::nullopt)));
+
+  // Open a new blank tab, then go to NTP and listen for console messages.
+  content::WebContents* active_tab =
+      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
+  content::ConsoleObserverDelegate console_observer(active_tab, "*");
+  active_tab->SetDelegate(&console_observer);
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+
+  EXPECT_FALSE(ElementExists(active_tab, "ddlsb"));
+  EXPECT_FALSE(ElementExists(active_tab, "ddlsb-img"));
+}
+
+IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest,
+                       ShouldNotAppendShareButtonWhenCacheIncomplete) {
+  EncodedLogo cached_logo;
+  cached_logo.encoded_image = MakeRefPtr(kCachedB64);
+  cached_logo.metadata.mime_type = "image/png";
+  cached_logo.metadata.on_click_url = GURL("https://www.chromium.org/");
+  cached_logo.metadata.alt_text = "Chromium";
+  cached_logo.metadata.short_link = GURL("https://g.co");
+  cached_logo.metadata.share_button_x = 12;
+  cached_logo.metadata.share_button_y = 36;
+  cached_logo.metadata.share_button_opacity = 0.8;
+  cached_logo.metadata.share_button_icon = "";
+  cached_logo.metadata.share_button_bg = "#ffff00";
+
+  EXPECT_CALL(*logo_service(), GetLogoPtr(_))
+      .WillRepeatedly(DoAll(
+          ReturnCachedLogo(LogoCallbackReason::DETERMINED, cached_logo),
+          ReturnFreshLogo(LogoCallbackReason::REVALIDATED, base::nullopt)));
+
+  // Open a new blank tab, then go to NTP and listen for console messages.
+  content::WebContents* active_tab =
+      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
+  content::ConsoleObserverDelegate console_observer(active_tab, "*");
+  active_tab->SetDelegate(&console_observer);
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+
+  EXPECT_FALSE(ElementExists(active_tab, "ddlsb"));
+  EXPECT_FALSE(ElementExists(active_tab, "ddlsb-img"));
+}
+
+IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest,
+                       ShouldShowShareDialogWhenShareButtonClicked) {
+  EncodedLogo cached_logo;
+  cached_logo.encoded_image = MakeRefPtr(kCachedB64);
+  cached_logo.metadata.mime_type = "image/png";
+  cached_logo.metadata.on_click_url = GURL("https://www.chromium.org/");
+  cached_logo.metadata.alt_text = "Chromium";
+  cached_logo.metadata.short_link = GURL("https://g.co");
+  cached_logo.metadata.share_button_x = 12;
+  cached_logo.metadata.share_button_y = 36;
+  cached_logo.metadata.share_button_opacity = 0.8;
+  cached_logo.metadata.share_button_icon = "sbimg";
+  cached_logo.metadata.share_button_bg = "#ffff00";
+
+  EXPECT_CALL(*logo_service(), GetLogoPtr(_))
+      .WillRepeatedly(DoAll(
+          ReturnCachedLogo(LogoCallbackReason::DETERMINED, cached_logo),
+          ReturnFreshLogo(LogoCallbackReason::REVALIDATED, base::nullopt)));
+
+  // Open a new blank tab, then go to NTP and listen for console messages.
+  content::WebContents* active_tab =
+      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
+  content::ConsoleObserverDelegate console_observer(active_tab, "*");
+  active_tab->SetDelegate(&console_observer);
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+
+  EXPECT_FALSE(DialogIsOpen(active_tab, "ddlsd"));
+  ASSERT_TRUE(content::ExecuteScript(
+      active_tab, "document.getElementById('ddlsb').click();"));
+  EXPECT_TRUE(DialogIsOpen(active_tab, "ddlsd"));
+
+  // Check title
+  std::string title;
+  ASSERT_TRUE(instant_test_utils::GetStringFromJS(
+      active_tab, "document.getElementById('ddlsd-title').innerHTML", &title));
+  EXPECT_THAT(title, Eq<std::string>(cached_logo.metadata.alt_text));
+
+  // Check share link inside textbox
+  std::string link;
+  ASSERT_TRUE(instant_test_utils::GetStringFromJS(
+      active_tab, "document.getElementById('ddlsd-text').value", &link));
+  EXPECT_THAT(link, Eq<std::string>("https://g.co/"));
+
+  ASSERT_TRUE(content::ExecuteScript(
+      active_tab, "document.getElementById('ddlsd-close').click();"));
+  EXPECT_FALSE(DialogIsOpen(active_tab, "ddlsd"));
+}
+
+IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest, ShouldOpenFacebookInShareDialog) {
+  EncodedLogo cached_logo;
+  cached_logo.encoded_image = MakeRefPtr(kCachedB64);
+  cached_logo.metadata.mime_type = "image/png";
+  cached_logo.metadata.on_click_url = GURL("https://www.chromium.org/");
+  cached_logo.metadata.alt_text = "Chromium";
+  cached_logo.metadata.short_link = GURL("https://g.co");
+  cached_logo.metadata.share_button_x = 12;
+  cached_logo.metadata.share_button_y = 36;
+  cached_logo.metadata.share_button_opacity = 0.8;
+  cached_logo.metadata.share_button_icon = "sbimg";
+  cached_logo.metadata.share_button_bg = "#ffff00";
+
+  EXPECT_CALL(*logo_service(), GetLogoPtr(_))
+      .WillRepeatedly(DoAll(
+          ReturnCachedLogo(LogoCallbackReason::DETERMINED, cached_logo),
+          ReturnFreshLogo(LogoCallbackReason::REVALIDATED, base::nullopt)));
+
+  // Open a new blank tab, then go to NTP and listen for console messages.
+  content::WebContents* active_tab =
+      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+
+  ASSERT_TRUE(content::ExecuteScript(
+      active_tab, "document.getElementById('ddlsb').click();"));
+  EXPECT_TRUE(DialogIsOpen(active_tab, "ddlsd"));
+  SetupWindowOpenTest(active_tab);
+  ASSERT_TRUE(content::ExecuteScript(
+      active_tab, "document.getElementById('ddlsd-fbb').click();"));
+  EXPECT_THAT(GetWindowOpenURL(active_tab),
+              Eq<std::string>(
+                  "https://www.facebook.com/dialog/share?app_id=738026486351791"
+                  "&href=https%3A%2F%2Fg.co%2F&hashtag=%23GoogleDoodle"));
+}
+
+IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest, ShouldOpenTwitterInShareDialog) {
+  EncodedLogo cached_logo;
+  cached_logo.encoded_image = MakeRefPtr(kCachedB64);
+  cached_logo.metadata.mime_type = "image/png";
+  cached_logo.metadata.on_click_url = GURL("https://www.chromium.org/");
+  cached_logo.metadata.alt_text = "Chromium";
+  cached_logo.metadata.short_link = GURL("https://g.co");
+  cached_logo.metadata.share_button_x = 12;
+  cached_logo.metadata.share_button_y = 36;
+  cached_logo.metadata.share_button_opacity = 0.8;
+  cached_logo.metadata.share_button_icon = "sbimg";
+  cached_logo.metadata.share_button_bg = "#ffff00";
+
+  EXPECT_CALL(*logo_service(), GetLogoPtr(_))
+      .WillRepeatedly(DoAll(
+          ReturnCachedLogo(LogoCallbackReason::DETERMINED, cached_logo),
+          ReturnFreshLogo(LogoCallbackReason::REVALIDATED, base::nullopt)));
+
+  // Open a new blank tab, then go to NTP and listen for console messages.
+  content::WebContents* active_tab =
+      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+
+  ASSERT_TRUE(content::ExecuteScript(
+      active_tab, "document.getElementById('ddlsb').click();"));
+  EXPECT_TRUE(DialogIsOpen(active_tab, "ddlsd"));
+  SetupWindowOpenTest(active_tab);
+  ASSERT_TRUE(content::ExecuteScript(
+      active_tab, "document.getElementById('ddlsd-twb').click();"));
+  EXPECT_THAT(GetWindowOpenURL(active_tab),
+              Eq<std::string>("https://twitter.com/intent/tweet"
+                              "?text=Chromium%0Ahttps%3A%2F%2Fg.co%2F"));
+}
+
+IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest, ShouldCopyLinkInShareDialog) {
+  EncodedLogo cached_logo;
+  cached_logo.encoded_image = MakeRefPtr(kCachedB64);
+  cached_logo.metadata.mime_type = "image/png";
+  cached_logo.metadata.on_click_url = GURL("https://www.chromium.org/");
+  cached_logo.metadata.alt_text = "Chromium";
+  cached_logo.metadata.short_link = GURL("https://g.co");
+  cached_logo.metadata.share_button_x = 12;
+  cached_logo.metadata.share_button_y = 36;
+  cached_logo.metadata.share_button_opacity = 0.8;
+  cached_logo.metadata.share_button_icon = "sbimg";
+  cached_logo.metadata.share_button_bg = "#ffff00";
+
+  EXPECT_CALL(*logo_service(), GetLogoPtr(_))
+      .WillRepeatedly(DoAll(
+          ReturnCachedLogo(LogoCallbackReason::DETERMINED, cached_logo),
+          ReturnFreshLogo(LogoCallbackReason::REVALIDATED, base::nullopt)));
+
+  // Open a new blank tab, then go to NTP and listen for console messages.
+  content::WebContents* active_tab =
+      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+
+  ASSERT_TRUE(content::ExecuteScript(
+      active_tab, "document.getElementById('ddlsb').click();"));
+  EXPECT_TRUE(DialogIsOpen(active_tab, "ddlsd"));
+
+  ASSERT_TRUE(content::ExecuteScript(
+      active_tab, "document.getElementById('ddlsd-copy').click();"));
+  std::string short_link;
+  ASSERT_TRUE(instant_test_utils::GetStringFromJS(
+      active_tab, "window.getSelection().toString()", &short_link));
+  EXPECT_EQ("https://g.co/", short_link);
+}
+
+IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest, ShouldLogShareClicksNoEventId) {
+  EncodedLogo cached_logo;
+  cached_logo.encoded_image = MakeRefPtr(kCachedB64);
+  cached_logo.metadata.mime_type = "image/png";
+  cached_logo.metadata.on_click_url =
+      GURL("https://www.chrotmium.org/?ct=test");
+  cached_logo.metadata.alt_text = "Chromium";
+  cached_logo.metadata.short_link = GURL("https://g.co");
+  cached_logo.metadata.share_button_x = 12;
+  cached_logo.metadata.share_button_y = 36;
+  cached_logo.metadata.share_button_opacity = 0.8;
+  cached_logo.metadata.share_button_icon = "sbimg";
+  cached_logo.metadata.share_button_bg = "#ffff00";
+
+  EXPECT_CALL(*logo_service(), GetLogoPtr(_))
+      .WillRepeatedly(DoAll(
+          ReturnCachedLogo(LogoCallbackReason::DETERMINED, cached_logo),
+          ReturnFreshLogo(LogoCallbackReason::REVALIDATED, base::nullopt)));
+
+  // Open a new blank tab, then go to NTP and listen for console messages.
+  content::WebContents* active_tab =
+      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+
+  // Replace window.open so we stay in the same tab.
+  SetupWindowOpenTest(active_tab);
+  SetupBeaconTest(active_tab);
+
+  ASSERT_TRUE(content::ExecuteScript(
+      active_tab, "document.getElementById('ddlsb').click();"));
+
+  ASSERT_TRUE(content::ExecuteScript(
+      active_tab, "document.getElementById('ddlsd-fbb').click();"));
+  EXPECT_THAT(
+      GetBeaconURL(active_tab),
+      Eq<std::string>("https://www.google.com/gen_204"
+                      "?atyp=i&ct=doodle&cad=sh%2C2%2Cct%3Atest&ntp=1"));
+
+  ASSERT_TRUE(content::ExecuteScript(
+      active_tab, "document.getElementById('ddlsd-twb').click();"));
+  EXPECT_THAT(
+      GetBeaconURL(active_tab),
+      Eq<std::string>("https://www.google.com/gen_204"
+                      "?atyp=i&ct=doodle&cad=sh%2C3%2Cct%3Atest&ntp=1"));
+
+  ASSERT_TRUE(content::ExecuteScript(
+      active_tab, "document.getElementById('ddlsd-emb').click();"));
+  EXPECT_THAT(
+      GetBeaconURL(active_tab),
+      Eq<std::string>("https://www.google.com/gen_204"
+                      "?atyp=i&ct=doodle&cad=sh%2C5%2Cct%3Atest&ntp=1"));
+
+  ASSERT_TRUE(content::ExecuteScript(
+      active_tab, "document.getElementById('ddlsd-copy').click();"));
+  std::string short_link;
+  EXPECT_THAT(
+      GetBeaconURL(active_tab),
+      Eq<std::string>("https://www.google.com/gen_204"
+                      "?atyp=i&ct=doodle&cad=sh%2C6%2Cct%3Atest&ntp=1"));
+}
+
+IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest, ShouldLogShareClicksWithEventId) {
+  EncodedLogo cached_logo;
+  cached_logo.encoded_image = MakeRefPtr(kCachedB64);
+  cached_logo.metadata.mime_type = "image/png";
+  cached_logo.metadata.on_click_url =
+      GURL("https://www.chrotmium.org/?ct=test");
+  cached_logo.metadata.alt_text = "Chromium";
+  cached_logo.metadata.short_link = GURL("https://g.co");
+  cached_logo.metadata.share_button_x = 12;
+  cached_logo.metadata.share_button_y = 36;
+  cached_logo.metadata.share_button_opacity = 0.8;
+  cached_logo.metadata.share_button_icon = "sbimg";
+  cached_logo.metadata.share_button_bg = "#ffff00";
+
+  EXPECT_CALL(*logo_service(), GetLogoPtr(_))
+      .WillRepeatedly(DoAll(
+          ReturnCachedLogo(LogoCallbackReason::DETERMINED, cached_logo),
+          ReturnFreshLogo(LogoCallbackReason::REVALIDATED, base::nullopt)));
+
+  // Open a new blank tab, then go to NTP and listen for console messages.
+  content::WebContents* active_tab =
+      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+
+  // Replace window.open so we stay in the same tab.
+  SetupWindowOpenTest(active_tab);
+  SetupBeaconTest(active_tab);
+
+  ASSERT_TRUE(content::ExecuteScript(active_tab, "doodles.ei = 'test_ei';"));
+
+  ASSERT_TRUE(content::ExecuteScript(
+      active_tab, "document.getElementById('ddlsb').click();"));
+
+  ASSERT_TRUE(content::ExecuteScript(
+      active_tab, "document.getElementById('ddlsd-fbb').click();"));
+  EXPECT_THAT(
+      GetBeaconURL(active_tab),
+      Eq<std::string>("https://www.google.com/gen_204?atyp=i"
+                      "&ct=doodle&cad=sh%2C2%2Cct%3Atest&ntp=1&ei=test_ei"));
+
+  ASSERT_TRUE(content::ExecuteScript(
+      active_tab, "document.getElementById('ddlsd-twb').click();"));
+  EXPECT_THAT(
+      GetBeaconURL(active_tab),
+      Eq<std::string>("https://www.google.com/gen_204?atyp=i"
+                      "&ct=doodle&cad=sh%2C3%2Cct%3Atest&ntp=1&ei=test_ei"));
+
+  ASSERT_TRUE(content::ExecuteScript(
+      active_tab, "document.getElementById('ddlsd-emb').click();"));
+  EXPECT_THAT(
+      GetBeaconURL(active_tab),
+      Eq<std::string>("https://www.google.com/gen_204?atyp=i"
+                      "&ct=doodle&cad=sh%2C5%2Cct%3Atest&ntp=1&ei=test_ei"));
+
+  ASSERT_TRUE(content::ExecuteScript(
+      active_tab, "document.getElementById('ddlsd-copy').click();"));
+  std::string short_link;
+  EXPECT_THAT(
+      GetBeaconURL(active_tab),
+      Eq<std::string>("https://www.google.com/gen_204?atyp=i"
+                      "&ct=doodle&cad=sh%2C6%2Cct%3Atest&ntp=1&ei=test_ei"));
 }
 
 IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest, ShouldAnimateLogoWhenClicked) {
@@ -639,8 +1107,8 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest, ShouldAnimateLogoWhenClicked) {
   EXPECT_THAT(GetDimension(active_tab, "fakebox", "top"), Eq(kFakeboxTopPx));
   EXPECT_THAT(GetComputedOpacity(active_tab, "logo-default"), Eq(0.0));
   EXPECT_THAT(GetComputedOpacity(active_tab, "logo-doodle"), Eq(1.0));
-  EXPECT_THAT(GetComputedDisplay(active_tab, "logo-doodle-button"),
-              Eq<std::string>("block"));
+  EXPECT_THAT(GetComputedDisplay(active_tab, "logo-doodle-container"),
+              Eq<std::string>("inline-block"));
   EXPECT_THAT(GetComputedDisplay(active_tab, "logo-doodle-iframe"),
               Eq<std::string>("none"));
 
@@ -669,19 +1137,55 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest, ShouldAnimateLogoWhenClicked) {
   histograms.ExpectBucketCount("NewTabPage.LogoClick", kLogoClickCta, 1);
 }
 
+IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest,
+                       ShouldAddShareButtonInAnimatedDoodle) {
+  EncodedLogo cached_logo;
+  cached_logo.encoded_image = MakeRefPtr(kCachedB64);
+  cached_logo.metadata.mime_type = "image/png";
+  cached_logo.metadata.type = LogoType::ANIMATED;
+  cached_logo.metadata.animated_url = GURL("data:image/png;base64,cached++");
+  cached_logo.metadata.on_click_url = GURL("https://www.chromium.org/");
+  cached_logo.metadata.alt_text = "alt text";
+  cached_logo.metadata.short_link = GURL("https://g.co");
+  cached_logo.metadata.share_button_x = 12;
+  cached_logo.metadata.share_button_y = 36;
+  cached_logo.metadata.share_button_opacity = 0.8;
+  cached_logo.metadata.share_button_icon = "sbimg";
+  cached_logo.metadata.share_button_bg = "#ffff00";
+
+  EXPECT_CALL(*logo_service(), GetLogoPtr(_))
+      .WillRepeatedly(DoAll(
+          ReturnCachedLogo(LogoCallbackReason::DETERMINED, cached_logo),
+          ReturnFreshLogo(LogoCallbackReason::REVALIDATED, base::nullopt)));
+
+  // Open a new blank tab, then go to NTP.
+  content::WebContents* active_tab =
+      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
+  base::HistogramTester histograms;
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+
+  // Share button should not be present pre-CTA click
+  EXPECT_FALSE(ElementExists(active_tab, "ddlsb"));
+  ASSERT_TRUE(content::ExecuteScript(
+      active_tab, "document.getElementById('logo-doodle-button').click();"));
+
+  // Share button is only added post-CTA click when the animation is playing
+  EXPECT_TRUE(ElementExists(active_tab, "ddlsb"));
+}
+
 std::string WaitForDdllogResponse(content::WebContents* tab,
                                   int expected_ddllog_count) {
   std::string response;
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
       tab,
       base::StringPrintf(R"js(
-        if (numDdllogResponsesReceived == %i) {
-          window.domAutomationController.send(lastDdllogResponse);
+        if (doodles.numDdllogResponsesReceived == %i) {
+          window.domAutomationController.send(doodles.lastDdllogResponse);
         } else {
-          onDdllogResponse = function() {
-            if (numDdllogResponsesReceived == %i) {
-              window.domAutomationController.send(lastDdllogResponse);
-              onDdllogResponse = null;
+          doodles.onDdllogResponse = function() {
+            if (doodles.numDdllogResponsesReceived == %i) {
+              window.domAutomationController.send(doodles.lastDdllogResponse);
+              doodles.onDdllogResponse = null;
             }
           }
         }                )js",

@@ -109,9 +109,13 @@ doesNothing;
       await ConsoleTestRunner.waitUntilMessageReceivedPromise();
       ConsoleTestRunner.dumpConsoleMessages();
 
+      const functionPromise = TestRunner.addSnifferPromise(
+          Console.ConsoleViewMessage.prototype,
+          '_formattedParameterAsFunctionForTest');
       TestRunner.addResult('Run Snippet2..');
       Snippets.evaluateScriptSnippet(uiSourceCode2);
       await ConsoleTestRunner.waitUntilMessageReceivedPromise();
+      await functionPromise;
       ConsoleTestRunner.dumpConsoleMessages();
 
       TestRunner.addResult('Run Snippet1..');

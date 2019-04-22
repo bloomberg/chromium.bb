@@ -29,8 +29,5 @@
     NoInterfaceObject,
     DoNotCheckConstants
 ] interface KHRParallelShaderCompile {
-    const GLenum MAX_SHADER_COMPILER_THREADS_KHR      = 0x91B0;
     const GLenum COMPLETION_STATUS_KHR                = 0x91B1;
-
-    void maxShaderCompilerThreadsKHR(GLuint count);
 };

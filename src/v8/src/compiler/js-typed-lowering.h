@@ -99,9 +99,8 @@ class V8_EXPORT_PRIVATE JSTypedLowering final
 
   JSGraph* jsgraph_;
   JSHeapBroker* broker_;
-  Type empty_string_type_;
   Type pointer_comparable_type_;
-  TypeCache const& type_cache_;
+  TypeCache const* type_cache_;
 };
 
 }  // namespace compiler

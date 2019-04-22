@@ -23,15 +23,21 @@
 
 namespace payments {
 
-class PaymentRequestJourneyLoggerSelectedPaymentInstrumentTest
+class PaymentRequestJourneyLoggerTestBase
     : public PaymentRequestBrowserTestBase {
  protected:
-  PaymentRequestJourneyLoggerSelectedPaymentInstrumentTest() {}
+  PaymentRequestJourneyLoggerTestBase() {
+    feature_list_.InitAndEnableFeature(
+        ::features::kPaymentRequestHasEnrolledInstrument);
+  }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(
-      PaymentRequestJourneyLoggerSelectedPaymentInstrumentTest);
+  base::test::ScopedFeatureList feature_list_;
+  DISALLOW_COPY_AND_ASSIGN(PaymentRequestJourneyLoggerTestBase);
 };
+
+using PaymentRequestJourneyLoggerSelectedPaymentInstrumentTest =
+    PaymentRequestJourneyLoggerTestBase;
 
 // Tests that the selected instrument metric is correctly logged when the
 // Payment Request is completed with a credit card.
@@ -82,15 +88,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestJourneyLoggerSelectedPaymentInstrumentTest,
   EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_SELECTED_OTHER);
 }
 
-class PaymentRequestJourneyLoggerNoSupportedPaymentMethodTest
-    : public PaymentRequestBrowserTestBase {
- protected:
-  PaymentRequestJourneyLoggerNoSupportedPaymentMethodTest() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(
-      PaymentRequestJourneyLoggerNoSupportedPaymentMethodTest);
-};
+using PaymentRequestJourneyLoggerNoSupportedPaymentMethodTest =
+    PaymentRequestJourneyLoggerTestBase;
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestJourneyLoggerNoSupportedPaymentMethodTest,
                        OnlyBobpaySupported) {
@@ -140,14 +139,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestJourneyLoggerNoSupportedPaymentMethodTest,
   EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_SELECTED_OTHER);
 }
 
-class PaymentRequestJourneyLoggerMultipleShowTest
-    : public PaymentRequestBrowserTestBase {
- protected:
-  PaymentRequestJourneyLoggerMultipleShowTest() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PaymentRequestJourneyLoggerMultipleShowTest);
-};
+using PaymentRequestJourneyLoggerMultipleShowTest =
+    PaymentRequestJourneyLoggerTestBase;
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestJourneyLoggerMultipleShowTest,
                        ShowSameRequest) {
@@ -415,14 +408,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestJourneyLoggerMultipleShowTest,
   EXPECT_FALSE(buckets[1].min & JourneyLogger::EVENT_SELECTED_OTHER);
 }
 
-class PaymentRequestJourneyLoggerAllSectionStatsTest
-    : public PaymentRequestBrowserTestBase {
- protected:
-  PaymentRequestJourneyLoggerAllSectionStatsTest() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PaymentRequestJourneyLoggerAllSectionStatsTest);
-};
+using PaymentRequestJourneyLoggerAllSectionStatsTest =
+    PaymentRequestJourneyLoggerTestBase;
 
 // Tests that the correct number of suggestions shown for each section is logged
 // when a Payment Request is completed.
@@ -546,15 +533,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestJourneyLoggerAllSectionStatsTest,
   EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_SELECTED_OTHER);
 }
 
-class PaymentRequestJourneyLoggerNoShippingSectionStatsTest
-    : public PaymentRequestBrowserTestBase {
- protected:
-  PaymentRequestJourneyLoggerNoShippingSectionStatsTest() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(
-      PaymentRequestJourneyLoggerNoShippingSectionStatsTest);
-};
+using PaymentRequestJourneyLoggerNoShippingSectionStatsTest =
+    PaymentRequestJourneyLoggerTestBase;
 
 // Tests that the correct number of suggestions shown for each section is logged
 // when a Payment Request is completed.
@@ -680,15 +660,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestJourneyLoggerNoShippingSectionStatsTest,
   EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_SELECTED_OTHER);
 }
 
-class PaymentRequestJourneyLoggerNoContactDetailSectionStatsTest
-    : public PaymentRequestBrowserTestBase {
- protected:
-  PaymentRequestJourneyLoggerNoContactDetailSectionStatsTest() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(
-      PaymentRequestJourneyLoggerNoContactDetailSectionStatsTest);
-};
+using PaymentRequestJourneyLoggerNoContactDetailSectionStatsTest =
+    PaymentRequestJourneyLoggerTestBase;
 
 // Tests that the correct number of suggestions shown for each section is logged
 // when a Payment Request is completed.
@@ -820,20 +793,16 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_SELECTED_OTHER);
 }
 
-class PaymentRequestNotShownTest : public PaymentRequestBrowserTestBase {
- protected:
-  PaymentRequestNotShownTest() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PaymentRequestNotShownTest);
-};
+using PaymentRequestNotShownTest = PaymentRequestJourneyLoggerTestBase;
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestNotShownTest, OnlyNotShownMetricsLogged) {
   NavigateTo("/payment_request_can_make_payment_metrics_test.html");
   base::HistogramTester histogram_tester;
 
   ResetEventWaiterForSequence({DialogEvent::CAN_MAKE_PAYMENT_CALLED,
-                               DialogEvent::CAN_MAKE_PAYMENT_RETURNED});
+                               DialogEvent::CAN_MAKE_PAYMENT_RETURNED,
+                               DialogEvent::HAS_ENROLLED_INSTRUMENT_CALLED,
+                               DialogEvent::HAS_ENROLLED_INSTRUMENT_RETURNED});
 
   // Initiate a Payment Request without showing it.
   ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(), "queryNoShow();"));
@@ -850,9 +819,9 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestNotShownTest, OnlyNotShownMetricsLogged) {
   std::vector<base::Bucket> buckets =
       histogram_tester.GetAllSamples("PaymentRequest.Events");
   ASSERT_EQ(1U, buckets.size());
-  // Only USER_ABORTED and CAN_MAKE_PAYMENT_FALSE should be logged.
   EXPECT_EQ(JourneyLogger::EVENT_USER_ABORTED |
-                JourneyLogger::EVENT_CAN_MAKE_PAYMENT_FALSE |
+                JourneyLogger::EVENT_CAN_MAKE_PAYMENT_TRUE |
+                JourneyLogger::EVENT_HAS_ENROLLED_INSTRUMENT_FALSE |
                 JourneyLogger::EVENT_REQUEST_METHOD_OTHER |
                 JourneyLogger::EVENT_REQUEST_METHOD_BASIC_CARD,
             buckets[0].min);
@@ -868,14 +837,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestNotShownTest, OnlyNotShownMetricsLogged) {
                                     0);
 }
 
-class PaymentRequestCompleteSuggestionsForEverythingTest
-    : public PaymentRequestBrowserTestBase {
- protected:
-  PaymentRequestCompleteSuggestionsForEverythingTest() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PaymentRequestCompleteSuggestionsForEverythingTest);
-};
+using PaymentRequestCompleteSuggestionsForEverythingTest =
+    PaymentRequestJourneyLoggerTestBase;
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestCompleteSuggestionsForEverythingTest,
                        UserHadCompleteSuggestionsForEverything) {
@@ -1019,7 +982,7 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_FALSE(buckets[0].min & JourneyLogger::EVENT_SELECTED_OTHER);
 }
 
-class PaymentRequestIframeTest : public PaymentRequestBrowserTestBase {
+class PaymentRequestIframeTest : public PaymentRequestJourneyLoggerTestBase {
  protected:
   PaymentRequestIframeTest() {}
 

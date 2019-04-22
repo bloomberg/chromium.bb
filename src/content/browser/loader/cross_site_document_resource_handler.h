@@ -16,6 +16,7 @@
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/resource_type.h"
 #include "services/network/cross_origin_read_blocking.h"
+#include "services/network/public/mojom/fetch_api.mojom.h"
 
 namespace net {
 class URLRequest;
@@ -59,10 +60,14 @@ class CONTENT_EXPORT CrossSiteDocumentResourceHandler
   CrossSiteDocumentResourceHandler(
       std::unique_ptr<ResourceHandler> next_handler,
       net::URLRequest* request,
-      bool is_nocors_plugin_request);
+      network::mojom::FetchRequestMode fetch_request_mode);
   ~CrossSiteDocumentResourceHandler() override;
 
   // LayeredResourceHandler overrides:
+  void OnRequestRedirected(
+      const net::RedirectInfo& redirect_info,
+      network::ResourceResponse* response,
+      std::unique_ptr<ResourceController> controller) override;
   void OnResponseStarted(
       network::ResourceResponse* response,
       std::unique_ptr<ResourceController> controller) override;
@@ -138,12 +143,8 @@ class CONTENT_EXPORT CrossSiteDocumentResourceHandler
   // the response or not.
   std::unique_ptr<network::CrossOriginReadBlocking::ResponseAnalyzer> analyzer_;
 
-  // Indicates whether this request was made by a plugin and was not using CORS.
-  // Such requests are exempt from blocking, while other plugin requests must be
-  // blocked if the CORS check fails.
-  // TODO(creis, nick): Replace this with a plugin process ID check to see if
-  // the plugin has universal access.
-  bool is_nocors_plugin_request_;
+  // Fetch request mode (e.g. 'no-cors' VS 'cors' VS 'same-origin', etc.).
+  network::mojom::FetchRequestMode fetch_request_mode_;
 
   // Tracks whether OnResponseStarted has been called, to ensure that it happens
   // before OnWillRead and OnReadCompleted.
@@ -171,6 +172,11 @@ class CONTENT_EXPORT CrossSiteDocumentResourceHandler
   // Whether |is_initiator_scheme_excluded_| actually prevented blocking from
   // happening.
   bool initiator_scheme_prevented_blocking_ = false;
+
+  // Whether the response is being blocked because of the presence of
+  // Cross-Origin-Resource-Policy header in 'no-cors' mode (in this case the
+  // response should fail with net::ERR_BLOCKED_BY_RESPONSE error code).
+  bool blocked_by_cross_origin_resource_policy_ = false;
 
   base::WeakPtrFactory<CrossSiteDocumentResourceHandler> weak_this_;
 

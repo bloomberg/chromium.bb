@@ -9,8 +9,8 @@ namespace rappor {
 
 class LogUploaderInterface {
  public:
-  LogUploaderInterface() {};
-  virtual ~LogUploaderInterface() {};
+  LogUploaderInterface() {}
+  virtual ~LogUploaderInterface() {}
 
   // Begin uploading logs.
   virtual void Start() = 0;

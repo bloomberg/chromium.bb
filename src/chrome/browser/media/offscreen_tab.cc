@@ -237,15 +237,16 @@ bool OffscreenTab::ShouldFocusPageAfterCrash() {
   return false;
 }
 
-void OffscreenTab::CanDownload(
-    const GURL& url,
-    const std::string& request_method,
-    const base::RepeatingCallback<void(bool)>& callback) {
+void OffscreenTab::CanDownload(const GURL& url,
+                               const std::string& request_method,
+                               base::OnceCallback<void(bool)> callback) {
   // Offscreen tab pages are not allowed to download files.
-  callback.Run(false);
+  std::move(callback).Run(false);
 }
 
-bool OffscreenTab::HandleContextMenu(const content::ContextMenuParams& params) {
+bool OffscreenTab::HandleContextMenu(
+    content::RenderFrameHost* render_frame_host,
+    const content::ContextMenuParams& params) {
   // Context menus should never be shown.  Do nothing, but indicate the context
   // menu was shown so that default implementation in libcontent does not
   // attempt to do so on its own.
@@ -353,11 +354,11 @@ void OffscreenTab::RequestMediaAccessPermission(
 bool OffscreenTab::CheckMediaAccessPermission(
     content::RenderFrameHost* render_frame_host,
     const GURL& security_origin,
-    content::MediaStreamType type) {
+    blink::MediaStreamType type) {
   DCHECK_EQ(offscreen_tab_web_contents_.get(),
             content::WebContents::FromRenderFrameHost(render_frame_host));
-  return type == content::MEDIA_GUM_TAB_AUDIO_CAPTURE ||
-         type == content::MEDIA_GUM_TAB_VIDEO_CAPTURE;
+  return type == blink::MEDIA_GUM_TAB_AUDIO_CAPTURE ||
+         type == blink::MEDIA_GUM_TAB_VIDEO_CAPTURE;
 }
 
 void OffscreenTab::DidShowFullscreenWidget() {

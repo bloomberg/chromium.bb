@@ -55,9 +55,12 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
   void GeneratedPasswordAccepted(const base::string16& password) override;
   void FoundFormsEligibleForGeneration(
       const std::vector<PasswordFormGenerationData>& forms) override;
-  // Sets |generation_element_| to the focused password field and shows a
-  // generation popup at this field.
-  void UserTriggeredGeneratePassword() override;
+  void FoundFormEligibleForGeneration(
+      const NewPasswordFormGenerationData& form) override;
+  // Sets |generation_element_| to the focused password field and responds back
+  // if the generation was triggered successfully.
+  void UserTriggeredGeneratePassword(
+      UserTriggeredGeneratePasswordCallback callback) override;
 
   // Returns true if the field being changed is one where a generated password
   // is being offered. Updates the state of the popup if necessary.
@@ -86,7 +89,9 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
 #if defined(UNIT_TEST)
   // This method requests the autofill::mojom::PasswordManagerClient which binds
   // requests the binding if it wasn't bound yet.
-  void RequestPasswordManagerClientForTesting() { GetPasswordManagerClient(); }
+  void RequestPasswordManagerClientForTesting() {
+    GetPasswordGenerationDriver();
+  }
 #endif
 
  protected:
@@ -109,13 +114,15 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
   // RenderFrameObserver:
   void DidCommitProvisionalLoad(bool is_same_document_navigation,
                                 ui::PageTransition transition) override;
+  void DidChangeScrollOffset() override;
   void DidFinishDocumentLoad() override;
   void DidFinishLoad() override;
   void OnDestruct() override;
 
   const mojom::PasswordManagerDriverAssociatedPtr& GetPasswordManagerDriver();
 
-  const mojom::PasswordManagerClientAssociatedPtr& GetPasswordManagerClient();
+  const mojom::PasswordGenerationDriverAssociatedPtr&
+  GetPasswordGenerationDriver();
 
   // Helper function that will try and populate |password_elements_| and
   // |possible_account_creation_form_|.
@@ -137,10 +144,9 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
   // not be offered.
   void MaybeOfferAutomaticGeneration();
 
-  // Signals the browser that it should offer or rescind automatic password
-  // generation depending whether the user has just focused a form field
-  // suitable for generation or has changed focus from such a field.
-  void AutomaticGenerationStatusChanged(bool available);
+  // Signals the browser that it should offer automatic password generation
+  // as a result of the user focusing a password field eligible for generation.
+  void AutomaticGenerationAvailable();
 
   // Show UI for editing a generated password at |generation_element_|.
   void ShowEditingPopup();
@@ -153,6 +159,13 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
 
   // Stops treating a password as generated.
   void PasswordNoLongerGenerated();
+
+  // Creates |current_generation_item_| for |element| if |element| is a
+  // generation enabled element. If |current_generation_item_| is already
+  // created for |element| it is not recreated.
+  void MaybeCreateCurrentGenerationItem(
+      blink::WebInputElement element,
+      uint32_t confirmation_password_renderer_id);
 
   // Runs HTML parsing based classifier and saves its outcome to proto.
   // TODO(crbug.com/621442): Remove client-side form classifier when server-side
@@ -200,6 +213,10 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
   // the last focused password element.
   blink::WebInputElement last_focused_password_element_;
 
+  // Contains correspondence between generaiton enabled element and data for
+  // generation.
+  std::map<uint32_t, NewPasswordFormGenerationData> generation_enabled_fields_;
+
   // If this feature is enabled. Controlled by Finch.
   bool enabled_;
 
@@ -211,7 +228,7 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
   // in password fields are updated.
   PasswordAutofillAgent* password_agent_;
 
-  mojom::PasswordManagerClientAssociatedPtr password_manager_client_;
+  mojom::PasswordGenerationDriverAssociatedPtr password_generation_client_;
 
   mojo::AssociatedBinding<mojom::PasswordGenerationAgent> binding_;
 

@@ -8,6 +8,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
@@ -49,7 +50,8 @@ base::LazyInstance<GURL>::Leaky g_download_url_for_testing =
 
 // Close the file.
 void CloseDictionary(base::File file) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   file.Close();
 }
 
@@ -57,7 +59,8 @@ void CloseDictionary(base::File file) {
 // returns false.
 bool SaveDictionaryData(std::unique_ptr<std::string> data,
                         const base::FilePath& path) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   size_t bytes_written =
       base::WriteFile(path, data->data(), data->length());
@@ -318,7 +321,8 @@ void SpellcheckHunspellDictionary::DownloadDictionary(GURL url) {
 // static
 SpellcheckHunspellDictionary::DictionaryFile
 SpellcheckHunspellDictionary::OpenDictionaryFile(const base::FilePath& path) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   // The default_dictionary_file can either come from the standard list of
   // hunspell dictionaries (determined in InitializeDictionaryLocation), or it
@@ -370,7 +374,8 @@ SpellcheckHunspellDictionary::OpenDictionaryFile(const base::FilePath& path) {
 SpellcheckHunspellDictionary::DictionaryFile
 SpellcheckHunspellDictionary::InitializeDictionaryLocation(
     const std::string& language) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   // The default place where the spellcheck dictionary resides is
   // chrome::DIR_APP_DICTIONARIES.

@@ -17,6 +17,11 @@
 @protocol PasswordsUiDelegate;
 @class UIViewController;
 
+namespace password_manager {
+class PasswordGenerationFrameHelper;
+class PasswordManager;
+}
+
 // Class binding a PasswordController to a WebState.
 class PasswordTabHelper : public web::WebStateObserver,
                           public web::WebStateUserData<PasswordTabHelper> {
@@ -42,7 +47,15 @@ class PasswordTabHelper : public web::WebStateObserver,
   // Returns the PasswordFormFiller from the PasswordController.
   id<PasswordFormFiller> GetPasswordFormFiller();
 
+  // Returns the PasswordGenerationFrameHelper owned by the PasswordController.
+  password_manager::PasswordGenerationFrameHelper* GetGenerationHelper();
+
+  // Returns the PasswordManager owned by the PasswordController.
+  password_manager::PasswordManager* GetPasswordManager();
+
  private:
+  friend class web::WebStateUserData<PasswordTabHelper>;
+
   explicit PasswordTabHelper(web::WebState* web_state);
 
   // web::WebStateObserver implementation.
@@ -50,6 +63,8 @@ class PasswordTabHelper : public web::WebStateObserver,
 
   // The Objective-C password controller instance.
   __strong PasswordController* controller_;
+
+  WEB_STATE_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(PasswordTabHelper);
 };

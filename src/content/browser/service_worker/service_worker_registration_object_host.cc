@@ -4,6 +4,7 @@
 
 #include "content/browser/service_worker/service_worker_registration_object_host.h"
 
+#include "base/bind.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "content/browser/service_worker/service_worker_consts.h"
@@ -87,9 +88,9 @@ ServiceWorkerRegistrationObjectHost::ServiceWorkerRegistrationObjectHost(
   DCHECK(registration_.get());
   DCHECK(provider_host_);
   registration_->AddListener(this);
-  bindings_.set_connection_error_handler(
-      base::Bind(&ServiceWorkerRegistrationObjectHost::OnConnectionError,
-                 base::Unretained(this)));
+  bindings_.set_connection_error_handler(base::BindRepeating(
+      &ServiceWorkerRegistrationObjectHost::OnConnectionError,
+      base::Unretained(this)));
 }
 
 ServiceWorkerRegistrationObjectHost::~ServiceWorkerRegistrationObjectHost() {
@@ -99,17 +100,10 @@ ServiceWorkerRegistrationObjectHost::~ServiceWorkerRegistrationObjectHost() {
 
 blink::mojom::ServiceWorkerRegistrationObjectInfoPtr
 ServiceWorkerRegistrationObjectHost::CreateObjectInfo() {
-  // |info->options->script_type| is never accessed anywhere, so just set it to
-  // kClassic.
-  // TODO(asamidoi, nhiroki): Remove |options| from
-  // ServiceWorkerRegistrationObjectInfo, since |script_type| is a
-  // non-per-registration property.
-  blink::mojom::ScriptType script_type = blink::mojom::ScriptType::kClassic;
-
   auto info = blink::mojom::ServiceWorkerRegistrationObjectInfo::New();
-  info->options = blink::mojom::ServiceWorkerRegistrationOptions::New(
-      registration_->scope(), script_type, registration_->update_via_cache());
   info->registration_id = registration_->id();
+  info->scope = registration_->scope();
+  info->update_via_cache = registration_->update_via_cache();
   bindings_.AddBinding(this, mojo::MakeRequest(&info->host_ptr_info));
   info->request = mojo::MakeRequest(&remote_registration_);
 

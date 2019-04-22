@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 
 namespace ash {
 
@@ -71,16 +71,29 @@ void VoiceInteractionController::NotifyHotwordEnabled(bool enabled) {
     observer.OnVoiceInteractionHotwordEnabled(enabled);
 }
 
-void VoiceInteractionController::NotifySetupCompleted(bool completed) {
-  if (setup_completed_.has_value() && setup_completed_.value() == completed)
+void VoiceInteractionController::NotifyHotwordAlwaysOn(bool always_on) {
+  if (hotword_always_on_.has_value() && hotword_always_on_.value() == always_on)
     return;
 
-  setup_completed_ = completed;
-  observers_.ForAllPtrs([completed](auto* observer) {
-    observer->OnVoiceInteractionSetupCompleted(completed);
+  hotword_always_on_ = always_on;
+  observers_.ForAllPtrs([always_on](auto* observer) {
+    observer->OnVoiceInteractionHotwordAlwaysOn(always_on);
   });
   for (auto& observer : local_observers_)
-    observer.OnVoiceInteractionSetupCompleted(completed);
+    observer.OnVoiceInteractionHotwordAlwaysOn(always_on);
+}
+
+void VoiceInteractionController::NotifyConsentStatus(
+    mojom::ConsentStatus consent_status) {
+  if (consent_status_.has_value() && consent_status_.value() == consent_status)
+    return;
+
+  consent_status_ = consent_status;
+  observers_.ForAllPtrs([consent_status](auto* observer) {
+    observer->OnVoiceInteractionConsentStatusUpdated(consent_status);
+  });
+  for (auto& observer : local_observers_)
+    observer.OnVoiceInteractionConsentStatusUpdated(consent_status);
 }
 
 void VoiceInteractionController::NotifyFeatureAllowed(
@@ -117,6 +130,20 @@ void VoiceInteractionController::NotifyLaunchWithMicOpen(
   launch_with_mic_open_ = launch_with_mic_open;
 }
 
+void VoiceInteractionController::NotifyArcPlayStoreEnabledChanged(
+    bool enabled) {
+  if (arc_play_store_enabled_ == enabled)
+    return;
+
+  arc_play_store_enabled_ = enabled;
+
+  observers_.ForAllPtrs([enabled](auto* observer) {
+    observer->OnArcPlayStoreEnabledChanged(enabled);
+  });
+  for (auto& observer : local_observers_)
+    observer.OnArcPlayStoreEnabledChanged(enabled);
+}
+
 void VoiceInteractionController::AddObserver(
     mojom::VoiceInteractionObserverPtr observer) {
   InitObserver(observer.get());
@@ -144,12 +171,16 @@ void VoiceInteractionController::InitObserver(
     observer->OnVoiceInteractionContextEnabled(context_enabled_.value());
   if (hotword_enabled_.has_value())
     observer->OnVoiceInteractionHotwordEnabled(hotword_enabled_.value());
-  if (setup_completed_.has_value())
-    observer->OnVoiceInteractionSetupCompleted(setup_completed_.value());
+  if (consent_status_.has_value())
+    observer->OnVoiceInteractionConsentStatusUpdated(consent_status_.value());
+  if (hotword_always_on_.has_value())
+    observer->OnVoiceInteractionHotwordAlwaysOn(hotword_always_on_.value());
   if (allowed_state_.has_value())
     observer->OnAssistantFeatureAllowedChanged(allowed_state_.value());
   if (locale_.has_value())
     observer->OnLocaleChanged(locale_.value());
+  if (arc_play_store_enabled_.has_value())
+    observer->OnArcPlayStoreEnabledChanged(arc_play_store_enabled_.value());
 }
 
 void VoiceInteractionController::FlushForTesting() {

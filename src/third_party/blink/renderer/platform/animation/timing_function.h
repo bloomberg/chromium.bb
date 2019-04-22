@@ -161,14 +161,10 @@ class PLATFORM_EXPORT StepsTimingFunction final : public TimingFunction {
   static StepsTimingFunction* Preset(StepPosition position) {
     DEFINE_STATIC_REF(StepsTimingFunction, start,
                       Create(1, StepPosition::START));
-    DEFINE_STATIC_REF(StepsTimingFunction, middle,
-                      Create(1, StepPosition::MIDDLE));
     DEFINE_STATIC_REF(StepsTimingFunction, end, Create(1, StepPosition::END));
     switch (position) {
       case StepPosition::START:
         return start;
-      case StepPosition::MIDDLE:
-        return middle;
       case StepPosition::END:
         return end;
       default:

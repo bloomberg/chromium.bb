@@ -59,7 +59,8 @@ suite('Multidevice', function() {
     if (authRequired) {
       assertTrue(multidevicePage.showPasswordPromptDialog_);
       // Simulate the user entering a valid password, then closing the dialog.
-      multidevicePage.fire('auth-token-changed', {value: 'validAuthToken'});
+      multidevicePage.$$('#multidevicePasswordPrompt').authToken =
+          'validAuthToken';
       // Simulate closing the password prompt dialog
       multidevicePage.$$('#multidevicePasswordPrompt').fire('close');
       Polymer.dom.flush();
@@ -82,19 +83,15 @@ suite('Multidevice', function() {
   });
 
   setup(function() {
-    settings.navigateTo(settings.routes.MULTIDEVICE);
+    PolymerTest.clearBody();
     browserProxy = new multidevice.TestMultideviceBrowserProxy();
     settings.MultiDeviceBrowserProxyImpl.instance_ = browserProxy;
-    const whenInitialized = browserProxy.whenCalled('getPageContentData');
 
-    PolymerTest.clearBody();
     multidevicePage = document.createElement('settings-multidevice-page');
     assertTrue(!!multidevicePage);
 
     document.body.appendChild(multidevicePage);
-    return whenInitialized.then(() => {
-      Polymer.dom.flush();
-    });
+    return browserProxy.whenCalled('getPageContentData');
   });
 
   teardown(function() {

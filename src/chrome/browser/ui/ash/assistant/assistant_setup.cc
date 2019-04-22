@@ -4,18 +4,26 @@
 
 #include "chrome/browser/ui/ash/assistant/assistant_setup.h"
 
+#include <string>
+#include <utility>
+
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/public/interfaces/assistant_controller.mojom.h"
 #include "ash/public/interfaces/constants.mojom.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/ash/assistant/assistant_pref_util.h"
+#include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/chromeos/assistant_optin/assistant_optin_ui.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/services/assistant/public/mojom/constants.mojom.h"
 #include "chromeos/services/assistant/public/proto/settings_ui.pb.h"
@@ -33,7 +41,6 @@ using chromeos::assistant::ConsentFlowUi;
 namespace {
 
 constexpr char kAssistantDisplaySource[] = "Assistant";
-constexpr char kAssistantSubPage[] = "googleAssistant";
 constexpr char kHotwordNotificationId[] = "assistant/hotword";
 constexpr char kNotifierAssistant[] = "assistant";
 
@@ -64,8 +71,8 @@ class AssistantHotwordNotificationDelegate
 
   void HandleHotwordEnableNotificationResult(bool enable) {
     if (enable) {
-      chrome::ShowSettingsSubPageForProfile(
-          ProfileManager::GetActiveUserProfile(), kAssistantSubPage);
+      chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
+          ProfileManager::GetActiveUserProfile(), chrome::kAssistantSubPage);
     }
     UMA_HISTOGRAM_BOOLEAN("Assistant.HotwordEnableNotification", enable);
   }
@@ -78,7 +85,7 @@ class AssistantHotwordNotificationDelegate
 }  // namespace
 
 AssistantSetup::AssistantSetup(service_manager::Connector* connector)
-    : connector_(connector), binding_(this) {
+    : connector_(connector), binding_(this), weak_factory_(this) {
   // Bind to the AssistantSetupController in ash.
   ash::mojom::AssistantSetupControllerPtr setup_controller;
   connector_->BindInterface(ash::mojom::kServiceName, &setup_controller);
@@ -94,11 +101,14 @@ AssistantSetup::~AssistantSetup() {
 }
 
 void AssistantSetup::StartAssistantOptInFlow(
+    ash::mojom::FlowType type,
     StartAssistantOptInFlowCallback callback) {
-  if (chromeos::AssistantOptInDialog::IsActive())
+  if (chromeos::AssistantOptInDialog::IsActive()) {
+    std::move(callback).Run(false);
     return;
+  }
 
-  chromeos::AssistantOptInDialog::Show(std::move(callback));
+  chromeos::AssistantOptInDialog::Show(type, std::move(callback));
 }
 
 void AssistantSetup::OnStateChanged(ash::mojom::VoiceInteractionState state) {
@@ -141,7 +151,8 @@ void AssistantSetup::OnStateChanged(ash::mojom::VoiceInteractionState state) {
       message_center::SystemNotificationWarningLevel::NORMAL);
 
   NotificationDisplayService::GetForProfile(profile)->Display(
-      NotificationHandler::Type::TRANSIENT, *notification);
+      NotificationHandler::Type::TRANSIENT, *notification,
+      /*metadata=*/nullptr);
 }
 
 void AssistantSetup::SyncActivityControlState() {
@@ -163,7 +174,9 @@ void AssistantSetup::SyncActivityControlState() {
 
 void AssistantSetup::OnGetSettingsResponse(const std::string& settings) {
   chromeos::assistant::SettingsUi settings_ui;
-  settings_ui.ParseFromString(settings);
+  if (!settings_ui.ParseFromString(settings))
+    return;
+
   if (!settings_ui.has_consent_flow_ui()) {
     LOG(ERROR) << "Failed to get activity control status.";
     return;
@@ -177,29 +190,38 @@ void AssistantSetup::OnGetSettingsResponse(const std::string& settings) {
     case ConsentFlowUi::ASK_FOR_CONSENT:
       if (consent_ui.has_activity_control_ui() &&
           consent_ui.activity_control_ui().setting_zippy().size()) {
-        prefs->SetBoolean(arc::prefs::kVoiceInteractionActivityControlAccepted,
-                          false);
+        assistant::prefs::SetConsentStatus(
+            prefs, ash::mojom::ConsentStatus::kNotFound);
       } else {
-        prefs->SetBoolean(arc::prefs::kVoiceInteractionActivityControlAccepted,
-                          true);
+        assistant::prefs::SetConsentStatus(
+            prefs, ash::mojom::ConsentStatus::kActivityControlAccepted);
       }
       break;
     case ConsentFlowUi::ERROR_ACCOUNT:
-      // Show the opted out mode UI for unsupported Account as they are in opted
-      // out mode.
-      // TODO(llin): we should show a error account message in Opted out UI or
-      // in the onboarding flow.
-      prefs->SetBoolean(arc::prefs::kVoiceInteractionActivityControlAccepted,
-                        false);
+      assistant::prefs::SetConsentStatus(
+          prefs, ash::mojom::ConsentStatus::kUnauthorized);
       break;
     case ConsentFlowUi::ALREADY_CONSENTED:
-      prefs->SetBoolean(arc::prefs::kVoiceInteractionActivityControlAccepted,
-                        true);
+      assistant::prefs::SetConsentStatus(
+          prefs, ash::mojom::ConsentStatus::kActivityControlAccepted);
       break;
     case ConsentFlowUi::UNSPECIFIED:
     case ConsentFlowUi::ERROR:
-      prefs->SetBoolean(arc::prefs::kVoiceInteractionActivityControlAccepted,
-                        false);
+      assistant::prefs::SetConsentStatus(prefs,
+                                         ash::mojom::ConsentStatus::kUnknown);
       LOG(ERROR) << "Invalid activity control consent status.";
+  }
+}
+
+void AssistantSetup::MaybeStartAssistantOptInFlow() {
+  auto* pref_service = ProfileManager::GetActiveUserProfile()->GetPrefs();
+  DCHECK(pref_service);
+  if (!pref_service->GetUserPrefValue(
+          assistant::prefs::kAssistantConsentStatus)) {
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&AssistantSetup::StartAssistantOptInFlow,
+                                  weak_factory_.GetWeakPtr(),
+                                  ash::mojom::FlowType::CONSENT_FLOW,
+                                  base::DoNothing::Once<bool>()));
   }
 }

@@ -13,6 +13,7 @@
 #include "chrome/browser/media/router/data_decoder_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "services/data_decoder/data_decoder_service.h"
+#include "services/data_decoder/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -80,10 +81,8 @@ std::string& Replace(std::string& input,
 class SafeDialDeviceDescriptionParserTest : public testing::Test {
  public:
   SafeDialDeviceDescriptionParserTest()
-      : connector_factory_(
-            service_manager::TestConnectorFactory::CreateForUniqueService(
-                std::make_unique<data_decoder::DataDecoderService>())),
-        connector_(connector_factory_->CreateConnector()) {}
+      : data_decoder_service_(connector_factory_.RegisterInstance(
+            data_decoder::mojom::kServiceName)) {}
 
   ParsedDialDeviceDescription Parse(
       const std::string& xml,
@@ -92,7 +91,7 @@ class SafeDialDeviceDescriptionParserTest : public testing::Test {
     ParsedDialDeviceDescription device_description;
     SafeDialDeviceDescriptionParser::ParsingError error;
     base::RunLoop run_loop;
-    DataDecoder data_decoder(connector_.get());
+    DataDecoder data_decoder(connector_factory_.GetDefaultConnector());
     SafeDialDeviceDescriptionParser parser(&data_decoder);
     parser.Parse(
         xml, app_url,
@@ -114,8 +113,9 @@ class SafeDialDeviceDescriptionParserTest : public testing::Test {
 
  private:
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
-  std::unique_ptr<service_manager::TestConnectorFactory> connector_factory_;
-  std::unique_ptr<service_manager::Connector> connector_;
+  service_manager::TestConnectorFactory connector_factory_;
+  data_decoder::DataDecoderService data_decoder_service_;
+
   DISALLOW_COPY_AND_ASSIGN(SafeDialDeviceDescriptionParserTest);
 };
 

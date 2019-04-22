@@ -13,23 +13,23 @@ namespace gfx {
 
 // Return the parameterized function in |fn|, evaluated at |x|. Note that this
 // will clamp output values to the range [0, 1].
-float COLOR_SPACE_EXPORT SkTransferFnEval(const SkColorSpaceTransferFn& fn,
+float COLOR_SPACE_EXPORT SkTransferFnEval(const skcms_TransferFunction& fn,
                                           float x);
 
 // Return the parameterized function in |fn|, evaluated at |x|. This will not
 // clamp output values.
 float COLOR_SPACE_EXPORT
-SkTransferFnEvalUnclamped(const SkColorSpaceTransferFn& fn, float x);
+SkTransferFnEvalUnclamped(const skcms_TransferFunction& fn, float x);
 
-SkColorSpaceTransferFn COLOR_SPACE_EXPORT
-SkTransferFnInverse(const SkColorSpaceTransferFn& fn);
-
-bool COLOR_SPACE_EXPORT
-SkTransferFnsApproximatelyCancel(const SkColorSpaceTransferFn& a,
-                                 const SkColorSpaceTransferFn& b);
+skcms_TransferFunction COLOR_SPACE_EXPORT
+SkTransferFnInverse(const skcms_TransferFunction& fn);
 
 bool COLOR_SPACE_EXPORT
-SkTransferFnIsApproximatelyIdentity(const SkColorSpaceTransferFn& fn);
+SkTransferFnsApproximatelyCancel(const skcms_TransferFunction& a,
+                                 const skcms_TransferFunction& b);
+
+bool COLOR_SPACE_EXPORT
+SkTransferFnIsApproximatelyIdentity(const skcms_TransferFunction& fn);
 
 bool COLOR_SPACE_EXPORT SkMatrixIsApproximatelyIdentity(const SkMatrix44& m);
 

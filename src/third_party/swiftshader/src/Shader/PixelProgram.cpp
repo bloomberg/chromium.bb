@@ -25,6 +25,35 @@ namespace sw
 	extern bool halfIntegerCoordinates;     // Pixel centers are not at integer coordinates
 	extern bool fullPixelPositionRegister;
 
+	PixelProgram::PixelProgram(const PixelProcessor::State &state, const PixelShader *shader) :
+			PixelRoutine(state, shader),
+			r(shader->indirectAddressableTemporaries),
+			aL(shader->getLimits().loops),
+			increment(shader->getLimits().loops),
+			iteration(shader->getLimits().loops),
+			callStack(shader->getLimits().stack)
+	{
+		auto limits = shader->getLimits();
+		ifFalseBlock.resize(limits.ifs);
+		loopRepTestBlock.resize(limits.loops);
+		loopRepEndBlock.resize(limits.loops);
+		labelBlock.resize(limits.maxLabel + 1);
+		isConditionalIf.resize(limits.ifs);
+
+		loopDepth = -1;
+		enableStack[0] = Int4(0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF);
+
+		if(shader->containsBreakInstruction())
+		{
+			enableBreak = Int4(0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF);
+		}
+
+		if(shader->containsContinueInstruction())
+		{
+			enableContinue = Int4(0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF);
+		}
+	}
+
 	void PixelProgram::setBuiltins(Int &x, Int &y, Float4(&z)[4], Float4 &w)
 	{
 		if(shader->getShaderModel() >= 0x0300)
@@ -838,7 +867,7 @@ namespace sw
 			return Int4(0xFFFFFFFF);
 		}
 
-		Int4 enable = instruction->analysisBranch ? Int4(enableStack[enableIndex]) : Int4(0xFFFFFFFF);
+		Int4 enable = instruction->analysisBranch ? Int4(enableStack[Min(enableIndex, Int(MAX_SHADER_ENABLE_STACK_SIZE))]) : Int4(0xFFFFFFFF);
 
 		if(shader->containsBreakInstruction() && instruction->analysisBreak)
 		{
@@ -1353,7 +1382,7 @@ namespace sw
 
 	void PixelProgram::BREAK()
 	{
-		enableBreak = enableBreak & ~enableStack[enableIndex];
+		enableBreak = enableBreak & ~enableStack[Min(enableIndex, Int(MAX_SHADER_ENABLE_STACK_SIZE))];
 	}
 
 	void PixelProgram::BREAKC(Vector4f &src0, Vector4f &src1, Control control)
@@ -1389,14 +1418,14 @@ namespace sw
 
 	void PixelProgram::BREAK(Int4 &condition)
 	{
-		condition &= enableStack[enableIndex];
+		condition &= enableStack[Min(enableIndex, Int(MAX_SHADER_ENABLE_STACK_SIZE))];
 
 		enableBreak = enableBreak & ~condition;
 	}
 
 	void PixelProgram::CONTINUE()
 	{
-		enableContinue = enableContinue & ~enableStack[enableIndex];
+		enableContinue = enableContinue & ~enableStack[Min(enableIndex, Int(MAX_SHADER_ENABLE_STACK_SIZE))];
 	}
 
 	void PixelProgram::TEST()
@@ -1479,7 +1508,7 @@ namespace sw
 			condition = ~condition;
 		}
 
-		condition &= enableStack[enableIndex];
+		condition &= enableStack[Min(enableIndex, Int(MAX_SHADER_ENABLE_STACK_SIZE))];
 
 		if(!labelBlock[labelIndex])
 		{
@@ -1492,7 +1521,7 @@ namespace sw
 		}
 
 		enableIndex++;
-		enableStack[enableIndex] = condition;
+		enableStack[Min(enableIndex, Int(MAX_SHADER_ENABLE_STACK_SIZE))] = condition;
 		Int4 restoreLeave = enableLeave;
 
 		Bool notAllFalse = SignMask(condition) != 0;
@@ -1512,12 +1541,12 @@ namespace sw
 
 		if(isConditionalIf[ifDepth])
 		{
-			Int4 condition = ~enableStack[enableIndex] & enableStack[enableIndex - 1];
+			Int4 condition = ~enableStack[Min(enableIndex, Int(MAX_SHADER_ENABLE_STACK_SIZE))] & enableStack[Min(enableIndex - 1, Int(MAX_SHADER_ENABLE_STACK_SIZE))];
 			Bool notAllFalse = SignMask(condition) != 0;
 
 			branch(notAllFalse, falseBlock, endBlock);
 
-			enableStack[enableIndex] = ~enableStack[enableIndex] & enableStack[enableIndex - 1];
+			enableStack[Min(enableIndex, Int(MAX_SHADER_ENABLE_STACK_SIZE))] = ~enableStack[Min(enableIndex, Int(MAX_SHADER_ENABLE_STACK_SIZE))] & enableStack[Min(enableIndex - 1, Int(MAX_SHADER_ENABLE_STACK_SIZE))];
 		}
 		else
 		{
@@ -1671,10 +1700,10 @@ namespace sw
 
 	void PixelProgram::IF(Int4 &condition)
 	{
-		condition &= enableStack[enableIndex];
+		condition &= enableStack[Min(enableIndex, Int(MAX_SHADER_ENABLE_STACK_SIZE))];
 
 		enableIndex++;
-		enableStack[enableIndex] = condition;
+		enableStack[Min(enableIndex, Int(MAX_SHADER_ENABLE_STACK_SIZE))] = condition;
 
 		BasicBlock *trueBlock = Nucleus::createBasicBlock();
 		BasicBlock *falseBlock = Nucleus::createBasicBlock();
@@ -1778,10 +1807,10 @@ namespace sw
 
 		const Vector4f &src = fetchRegister(temporaryRegister);
 		Int4 condition = As<Int4>(src.x);
-		condition &= enableStack[enableIndex - 1];
+		condition &= enableStack[Min(enableIndex - 1, Int(MAX_SHADER_ENABLE_STACK_SIZE))];
 		if(shader->containsLeaveInstruction()) condition &= enableLeave;
 		if(shader->containsBreakInstruction()) condition &= enableBreak;
-		enableStack[enableIndex] = condition;
+		enableStack[Min(enableIndex, Int(MAX_SHADER_ENABLE_STACK_SIZE))] = condition;
 
 		Bool notAllFalse = SignMask(condition) != 0;
 		branch(notAllFalse, loopBlock, endBlock);
@@ -1854,7 +1883,7 @@ namespace sw
 
 	void PixelProgram::LEAVE()
 	{
-		enableLeave = enableLeave & ~enableStack[enableIndex];
+		enableLeave = enableLeave & ~enableStack[Min(enableIndex, Int(MAX_SHADER_ENABLE_STACK_SIZE))];
 
 		// FIXME: Return from function if all instances left
 		// FIXME: Use enableLeave in other control-flow constructs

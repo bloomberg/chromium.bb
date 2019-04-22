@@ -7,7 +7,9 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/command_line.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -41,9 +43,6 @@
 
 using InstantProcessNavigationTest = ChromeRenderViewTest;
 using ChromeContentRendererClientSearchBoxTest = ChromeRenderViewTest;
-
-const base::FilePath::CharType kDocRoot[] =
-    FILE_PATH_LITERAL("chrome/test/data");
 
 const char kHtmlWithIframe[] ="<iframe srcdoc=\"Nothing here\"></iframe>";
 
@@ -179,7 +178,7 @@ class ChromeContentRendererClientBrowserTest :
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
 
-    https_server_->ServeFilesFromSourceDirectory(base::FilePath(kDocRoot));
+    https_server_->ServeFilesFromSourceDirectory(GetChromeTestDataDir());
     https_server_->RegisterRequestMonitor(base::Bind(
         &ChromeContentRendererClientBrowserTest::MonitorRequestHandler,
         base::Unretained(this)));
@@ -229,7 +228,6 @@ IN_PROC_BROWSER_TEST_P(ChromeContentRendererClientBrowserTest,
   WaitForYouTubeRequest();
 }
 
-INSTANTIATE_TEST_CASE_P(
-    FlashEmbeds,
-    ChromeContentRendererClientBrowserTest,
-    ::testing::ValuesIn(kFlashEmbedsTestData));
+INSTANTIATE_TEST_SUITE_P(FlashEmbeds,
+                         ChromeContentRendererClientBrowserTest,
+                         ::testing::ValuesIn(kFlashEmbedsTestData));

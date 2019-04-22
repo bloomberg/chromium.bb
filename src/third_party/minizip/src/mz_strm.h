@@ -1,5 +1,5 @@
 /* mz_strm.h -- Stream interface
-   Version 2.7.5, November 13, 2018
+   Version 2.8.1, December 1, 2018
    part of the MiniZip project
 
    Copyright (C) 2010-2018 Nathan Moinvaziri
@@ -11,8 +11,6 @@
 
 #ifndef MZ_STREAM_H
 #define MZ_STREAM_H
-
-#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -90,7 +88,6 @@ int32_t mz_stream_write_uint16(void *stream, uint16_t value);
 int32_t mz_stream_write_uint32(void *stream, uint32_t value);
 int32_t mz_stream_write_int64(void *stream, int64_t value);
 int32_t mz_stream_write_uint64(void *stream, uint64_t value);
-int32_t mz_stream_write_chars(void *stream, const char *value, uint8_t null_terminate);
 int32_t mz_stream_copy(void *target, void *source, int32_t len);
 int32_t mz_stream_copy_stream(void *target, mz_stream_write_cb write_cb, void *source, mz_stream_read_cb read_cb, int32_t len);
 int64_t mz_stream_tell(void *stream);

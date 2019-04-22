@@ -28,11 +28,16 @@ function runRepaintTest()
     else
         testRunner.dumpAsText();
 
-    testRunner.layoutAndPaintAsyncThen(function() {
-        internals.startTrackingRepaints(top.document);
-        repaintTest();
-        if (!window.testIsAsync)
-            finishRepaintTest();
+    // This is equivalent to runAfterLayoutAndPaint() in
+    // ../../resources/run-after-layout-and-paint.js. Duplicate it here so that
+    // the callers don't need to include that file.
+    requestAnimationFrame(() => {
+        setTimeout(() => {
+            internals.startTrackingRepaints(top.document);
+            repaintTest();
+            if (!window.testIsAsync)
+                finishRepaintTest();
+        }, 0);
     });
 }
 
@@ -42,21 +47,10 @@ function runRepaintAndPixelTest()
     runRepaintTest();
 }
 
-function forceStyleRecalc()
-{
-    if (document.body)
-        document.body.clientTop;
-    else if (document.documentElement)
-        document.documentElement.clientTop;
-}
-
 function finishRepaintTest()
 {
     if (!window.testRunner || !window.internals)
         return;
-
-    // Force a style recalc.
-    forceStyleRecalc();
 
     var flags = internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS;
 

@@ -11,12 +11,12 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/themes/theme_properties.h"
-#include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
+#include "chrome/browser/ui/web_app_browser_controller.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/theme_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -32,7 +32,7 @@
 #include "ui/views/window/hit_test_utils.h"
 
 #if defined(OS_WIN)
-#include "chrome/browser/ui/views/frame/taskbar_decorator_win.h"
+#include "chrome/browser/taskbar/taskbar_decorator_win.h"
 #endif
 
 // static
@@ -61,7 +61,6 @@ BrowserNonClientFrameView::~BrowserNonClientFrameView() {
 
 void BrowserNonClientFrameView::OnBrowserViewInitViewsComplete() {
   MaybeObserveTabstrip();
-  OnSingleTabModeChanged();
   UpdateMinimumSize();
 }
 
@@ -134,39 +133,41 @@ bool BrowserNonClientFrameView::EverHasVisibleBackgroundTabShapes() const {
 }
 
 bool BrowserNonClientFrameView::CanDrawStrokes() const {
-  return true;
+  // Hosted apps should not draw strokes, as they don't have a tab strip.
+  return !browser_view_->browser()->web_app_controller();
+}
+
+SkColor BrowserNonClientFrameView::GetCaptionColor(
+    ActiveState active_state) const {
+  return color_utils::GetColorWithMaxContrast(GetFrameColor(active_state));
 }
 
 SkColor BrowserNonClientFrameView::GetFrameColor(
     ActiveState active_state) const {
   ThemeProperties::OverwritableByUserThemeProperty color_id;
-  if (ShouldPaintAsSingleTabMode()) {
-    color_id = ThemeProperties::COLOR_TOOLBAR;
-  } else {
-    color_id = ShouldPaintAsActive(active_state)
-                   ? ThemeProperties::COLOR_FRAME
-                   : ThemeProperties::COLOR_FRAME_INACTIVE;
-  }
 
-  // For hosted app windows, if "painting as themed" (which is only true when on
-  // Linux and using the system theme), prefer the system theme color over the
-  // hosted app theme color. The title bar will be painted in the system theme
-  // color (regardless of what we do here), so by returning the system title bar
-  // background color here, we ensure that:
-  // a) The side and bottom borders are painted in the same color as the title
-  // bar background, and
-  // b) The title text is painted in a color that contrasts with the title bar
-  // background.
-  if (ShouldPaintAsThemed())
+  color_id = ShouldPaintAsActive(active_state)
+                 ? ThemeProperties::COLOR_FRAME
+                 : ThemeProperties::COLOR_FRAME_INACTIVE;
+
+  if (frame_->ShouldUseTheme())
     return GetThemeProviderForProfile()->GetColor(color_id);
 
-  extensions::HostedAppBrowserController* hosted_app_controller =
-      browser_view_->browser()->hosted_app_controller();
-  if (hosted_app_controller && hosted_app_controller->GetThemeColor())
-    return *hosted_app_controller->GetThemeColor();
+  WebAppBrowserController* web_app_controller =
+      browser_view_->browser()->web_app_controller();
+  if (web_app_controller && web_app_controller->GetThemeColor())
+    return *web_app_controller->GetThemeColor();
 
   return ThemeProperties::GetDefaultColor(color_id,
                                           browser_view_->IsIncognito());
+}
+
+void BrowserNonClientFrameView::UpdateFrameColor() {
+  // Only hosted app windows support dynamic frame colors set by HTML meta tags.
+  if (!hosted_app_button_container_)
+    return;
+  hosted_app_button_container_->UpdateCaptionColors();
+  SchedulePaint();
 }
 
 SkColor BrowserNonClientFrameView::GetToolbarTopSeparatorColor() const {
@@ -206,8 +207,6 @@ int BrowserNonClientFrameView::GetTabBackgroundResourceId(
   return id;
 }
 
-void BrowserNonClientFrameView::UpdateClientArea() {}
-
 void BrowserNonClientFrameView::UpdateMinimumSize() {}
 
 void BrowserNonClientFrameView::VisibilityChanged(views::View* starting_from,
@@ -233,29 +232,7 @@ int BrowserNonClientFrameView::NonClientHitTest(const gfx::Point& point) {
 
 void BrowserNonClientFrameView::ResetWindowControls() {
   if (hosted_app_button_container_)
-    hosted_app_button_container_->UpdateContentSettingViewsVisibility();
-}
-
-void BrowserNonClientFrameView::OnSingleTabModeChanged() {
-  SchedulePaint();
-}
-
-bool BrowserNonClientFrameView::IsSingleTabModeAvailable() const {
-  // Single-tab mode is only available in when the window is active.  The
-  // special color we use won't be visible if there's a frame image, but since
-  // it's used to determine contrast of other UI elements, the theme color
-  // should be used instead.
-  return base::FeatureList::IsEnabled(features::kSingleTabMode) &&
-         ShouldPaintAsActive() && GetFrameImage().isNull();
-}
-
-bool BrowserNonClientFrameView::ShouldPaintAsSingleTabMode() const {
-  return browser_view_->IsTabStripVisible() &&
-         browser_view_->tabstrip()->SingleTabMode();
-}
-
-bool BrowserNonClientFrameView::ShouldPaintAsThemed() const {
-  return browser_view_->IsBrowserTypeNormal();
+    hosted_app_button_container_->UpdateStatusIconsVisibility();
 }
 
 bool BrowserNonClientFrameView::ShouldPaintAsActive(
@@ -270,8 +247,8 @@ gfx::ImageSkia BrowserNonClientFrameView::GetFrameImage(
   const int frame_image_id = ShouldPaintAsActive(active_state)
                                  ? IDR_THEME_FRAME
                                  : IDR_THEME_FRAME_INACTIVE;
-  return ShouldPaintAsThemed() && (tp->HasCustomImage(frame_image_id) ||
-                                   tp->HasCustomImage(IDR_THEME_FRAME))
+  return frame_->ShouldUseTheme() && (tp->HasCustomImage(frame_image_id) ||
+                                      tp->HasCustomImage(IDR_THEME_FRAME))
              ? *tp->GetImageSkiaNamed(frame_image_id)
              : gfx::ImageSkia();
 }
@@ -302,11 +279,9 @@ void BrowserNonClientFrameView::ActivationChanged(bool active) {
   // "correct" state as an override.
   set_active_state_override(&active);
 
-  // Single-tab mode's availability depends on activation, but even if it's
-  // unavailable for other reasons the inactive tabs' text color still needs to
-  // be recalculated if the frame color changes. SingleTabModeChanged will
-  // handle both cases.
-  browser_view_->tabstrip()->SingleTabModeChanged();
+  // The toolbar top separator color (used as the stroke around the tabs and
+  // the new tab button) needs to be recalculated.
+  browser_view_->tabstrip()->FrameColorsChanged();
 
   set_active_state_override(nullptr);
 
@@ -387,12 +362,18 @@ void BrowserNonClientFrameView::OnProfileWasRemoved(
 
 void BrowserNonClientFrameView::OnProfileAvatarChanged(
     const base::FilePath& profile_path) {
-  UpdateTaskbarDecoration();
+#if defined(OS_WIN)
+  taskbar::UpdateTaskbarDecoration(browser_view()->browser()->profile(),
+                                   frame_->GetNativeWindow());
+#endif
 }
 
 void BrowserNonClientFrameView::OnProfileHighResAvatarLoaded(
     const base::FilePath& profile_path) {
-  UpdateTaskbarDecoration();
+#if defined(OS_WIN)
+  taskbar::UpdateTaskbarDecoration(browser_view()->browser()->profile(),
+                                   frame_->GetNativeWindow());
+#endif
 }
 
 void BrowserNonClientFrameView::MaybeObserveTabstrip() {
@@ -409,50 +390,11 @@ BrowserNonClientFrameView::GetThemeProviderForProfile() const {
   return frame_->GetThemeProvider();
 }
 
-void BrowserNonClientFrameView::UpdateTaskbarDecoration() {
-#if defined(OS_WIN)
-  if (browser_view_->browser()->profile()->IsGuestSession() ||
-      // Browser process and profile manager may be null in tests.
-      (g_browser_process && g_browser_process->profile_manager() &&
-       g_browser_process->profile_manager()
-               ->GetProfileAttributesStorage()
-               .GetNumberOfProfiles() <= 1)) {
-    chrome::DrawTaskbarDecoration(frame_->GetNativeWindow(), nullptr);
-    return;
-  }
-
-  // We need to draw the taskbar decoration. Even though we have an icon on the
-  // window's relaunch details, we draw over it because the user may have
-  // pinned the badge-less Chrome shortcut which will cause Windows to ignore
-  // the relaunch details.
-  // TODO(calamity): ideally this should not be necessary but due to issues
-  // with the default shortcut being pinned, we add the runtime badge for
-  // safety. See crbug.com/313800.
-  gfx::Image decoration;
-  AvatarMenu::ImageLoadStatus status = AvatarMenu::GetImageForMenuButton(
-      browser_view_->browser()->profile()->GetPath(), &decoration);
-
-  UMA_HISTOGRAM_ENUMERATION(
-      "Profile.AvatarLoadStatus", status,
-      static_cast<int>(AvatarMenu::ImageLoadStatus::MAX) + 1);
-
-  // If the user is using a Gaia picture and the picture is still being loaded,
-  // wait until the load finishes. This taskbar decoration will be triggered
-  // again upon the finish of the picture load.
-  if (status == AvatarMenu::ImageLoadStatus::LOADING ||
-      status == AvatarMenu::ImageLoadStatus::PROFILE_DELETED) {
-    return;
-  }
-
-  chrome::DrawTaskbarDecoration(frame_->GetNativeWindow(), &decoration);
-#endif
-}
-
 SkColor BrowserNonClientFrameView::GetThemeOrDefaultColor(int color_id) const {
   // During shutdown, there may no longer be a widget, and thus no theme
   // provider.
   const auto* theme_provider = GetThemeProvider();
-  return ShouldPaintAsThemed() && theme_provider
+  return frame_->ShouldUseTheme() && theme_provider
              ? theme_provider->GetColor(color_id)
              : ThemeProperties::GetDefaultColor(color_id,
                                                 browser_view_->IsIncognito());

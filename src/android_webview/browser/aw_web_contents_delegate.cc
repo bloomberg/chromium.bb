@@ -4,6 +4,8 @@
 
 #include "android_webview/browser/aw_web_contents_delegate.h"
 
+#include <utility>
+
 #include "android_webview/browser/aw_contents.h"
 #include "android_webview/browser/aw_contents_io_thread_client.h"
 #include "android_webview/browser/aw_javascript_dialog_manager.h"
@@ -27,9 +29,9 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/media_stream_request.h"
 #include "jni/AwWebContentsDelegate_jni.h"
 #include "net/base/escape.h"
+#include "third_party/blink/public/common/mediastream/media_stream_request.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF16ToJavaString;
@@ -111,11 +113,11 @@ void AwWebContentsDelegate::FindReply(WebContents* web_contents,
 void AwWebContentsDelegate::CanDownload(
     const GURL& url,
     const std::string& request_method,
-    const base::Callback<void(bool)>& callback) {
+    base::OnceCallback<void(bool)> callback) {
   // Android webview intercepts download in its resource dispatcher host
   // delegate, so should not reach here.
   NOTREACHED();
-  callback.Run(false);
+  std::move(callback).Run(false);
 }
 
 void AwWebContentsDelegate::RunFileChooser(
@@ -272,8 +274,8 @@ void AwWebContentsDelegate::RequestMediaAccessPermission(
     content::MediaResponseCallback callback) {
   AwContents* aw_contents = AwContents::FromWebContents(web_contents);
   if (!aw_contents) {
-    std::move(callback).Run(content::MediaStreamDevices(),
-                            content::MEDIA_DEVICE_FAILED_DUE_TO_SHUTDOWN,
+    std::move(callback).Run(blink::MediaStreamDevices(),
+                            blink::MEDIA_DEVICE_FAILED_DUE_TO_SHUTDOWN,
                             std::unique_ptr<content::MediaStreamUI>());
     return;
   }
@@ -319,7 +321,6 @@ AwWebContentsDelegate::TakeFileSelectListener() {
 
 static void JNI_AwWebContentsDelegate_FilesSelectedInChooser(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     jint process_id,
     jint render_id,
     jint mode_flags,

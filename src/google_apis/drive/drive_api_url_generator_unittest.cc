@@ -7,7 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "google_apis/drive/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -83,7 +83,7 @@ TEST_F(DriveApiUrlGeneratorTest, GetFilePatchUrl) {
       {true, false, "&setModifiedDate=true&updateViewedDate=false"},
   };
 
-  for (size_t i = 0; i < arraysize(kTestPatterns); ++i) {
+  for (size_t i = 0; i < base::size(kTestPatterns); ++i) {
     EXPECT_EQ(
         "https://www.example.com/drive/v2/files/0ADK06pfg"
         "?supportsTeamDrives=true" +
@@ -163,7 +163,7 @@ TEST_F(DriveApiUrlGeneratorTest, GetFilesListUrl) {
       "https://www.example.com/drive/v2/files?supportsTeamDrives=true&"
       "includeTeamDriveItems=true&corpora=default%2CallTeamDrives";
 
-  for (size_t i = 0; i < arraysize(kTestPatterns); ++i) {
+  for (size_t i = 0; i < base::size(kTestPatterns); ++i) {
     EXPECT_EQ(kV2FilesUrlPrefixWithTeamDrives +
                   (kTestPatterns[i].expected_query.empty() ? "" : "&") +
                   kTestPatterns[i].expected_query,
@@ -282,7 +282,7 @@ TEST_F(DriveApiUrlGeneratorTest, GetChangesListUrl) {
   const std::string kV2ChangesUrlPrefixWithTeamDrives =
       "https://www.example.com/drive/v2/changes?"
       "supportsTeamDrives=true&includeTeamDriveItems=true";
-  for (size_t i = 0; i < arraysize(kTestPatterns); ++i) {
+  for (size_t i = 0; i < base::size(kTestPatterns); ++i) {
     EXPECT_EQ(kV2ChangesUrlPrefixWithTeamDrives +
                   (kTestPatterns[i].expected_query.empty() ? "" : "&") +
                   kTestPatterns[i].expected_query,

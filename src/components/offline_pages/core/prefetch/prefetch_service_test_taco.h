@@ -10,6 +10,8 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/prefs/pref_service.h"
+#include "components/prefs/testing_pref_service.h"
 
 namespace image_fetcher {
 class ImageFetcher;
@@ -81,6 +83,12 @@ class PrefetchServiceTestTaco {
   void SetOfflinePageModel(
       std::unique_ptr<OfflinePageModel> offline_page_model);
 
+  // Default type: TestingPrefServiceSimple.
+  // When updating the PrefService, it's up to the caller to make sure that the
+  // PrefetchNetworkRequestFactory and PrefetchDownloader were created with the
+  // same PrefService.
+  void SetPrefService(std::unique_ptr<PrefService> prefs);
+
   // Creates and caches an instance of PrefetchService, using default or
   // overridden test dependencies.
   void CreatePrefetchService();
@@ -97,6 +105,8 @@ class PrefetchServiceTestTaco {
   // Creates and returns the ownership of the created PrefetchService instance.
   // Leaves the taco empty, not usable.
   std::unique_ptr<PrefetchService> CreateAndReturnPrefetchService();
+
+  PrefService* pref_service() const { return pref_service_.get(); }
 
  private:
   std::unique_ptr<OfflineMetricsCollector> metrics_collector_;
@@ -115,6 +125,7 @@ class PrefetchServiceTestTaco {
   std::unique_ptr<OfflinePageModel> offline_page_model_;
   std::unique_ptr<TestDownloadService> download_service_;
   std::unique_ptr<TestDownloadClient> download_client_;
+  std::unique_ptr<PrefService> pref_service_;
 };
 
 }  // namespace offline_pages

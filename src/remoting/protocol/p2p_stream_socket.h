@@ -18,7 +18,7 @@ namespace protocol {
 // Peer-to-peer socket with stream semantics.
 class P2PStreamSocket {
  public:
-  virtual ~P2PStreamSocket() {};
+  virtual ~P2PStreamSocket() {}
 
   // Reads data, up to |buf_len| bytes, from the socket. The number of bytes
   // read is returned, or an error is returned upon failure. ERR_IO_PENDING

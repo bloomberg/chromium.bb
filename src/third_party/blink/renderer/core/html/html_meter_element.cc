@@ -35,7 +35,7 @@ namespace blink {
 using namespace html_names;
 
 HTMLMeterElement::HTMLMeterElement(Document& document)
-    : LabelableElement(kMeterTag, document) {
+    : HTMLElement(kMeterTag, document) {
   UseCounter::Count(document, WebFeature::kMeterElement);
 }
 
@@ -47,7 +47,8 @@ HTMLMeterElement* HTMLMeterElement::Create(Document& document) {
   return meter;
 }
 
-LayoutObject* HTMLMeterElement::CreateLayoutObject(const ComputedStyle& style) {
+LayoutObject* HTMLMeterElement::CreateLayoutObject(const ComputedStyle& style,
+                                                   LegacyLayout legacy) {
   switch (style.Appearance()) {
     case kMeterPart:
       UseCounter::Count(GetDocument(),
@@ -60,7 +61,7 @@ LayoutObject* HTMLMeterElement::CreateLayoutObject(const ComputedStyle& style) {
     default:
       break;
   }
-  return LabelableElement::CreateLayoutObject(style);
+  return HTMLElement::CreateLayoutObject(style, legacy);
 }
 
 void HTMLMeterElement::ParseAttribute(
@@ -70,7 +71,7 @@ void HTMLMeterElement::ParseAttribute(
       name == kLowAttr || name == kHighAttr || name == kOptimumAttr)
     DidElementStateChange();
   else
-    LabelableElement::ParseAttribute(params);
+    HTMLElement::ParseAttribute(params);
 }
 
 double HTMLMeterElement::value() const {
@@ -203,7 +204,7 @@ void HTMLMeterElement::UpdateValueAppearance(double percentage) {
   DEFINE_STATIC_LOCAL(AtomicString, even_less_good_pseudo_id,
                       ("-webkit-meter-even-less-good-value"));
 
-  value_->SetInlineStyleProperty(CSSPropertyWidth, percentage,
+  value_->SetInlineStyleProperty(CSSPropertyID::kWidth, percentage,
                                  CSSPrimitiveValue::UnitType::kPercentage);
   switch (GetGaugeRegion()) {
     case kGaugeRegionOptimum:
@@ -223,9 +224,9 @@ bool HTMLMeterElement::CanContainRangeEndPoint() const {
   return GetComputedStyle() && !GetComputedStyle()->HasAppearance();
 }
 
-void HTMLMeterElement::Trace(blink::Visitor* visitor) {
+void HTMLMeterElement::Trace(Visitor* visitor) {
   visitor->Trace(value_);
-  LabelableElement::Trace(visitor);
+  HTMLElement::Trace(visitor);
 }
 
 }  // namespace blink

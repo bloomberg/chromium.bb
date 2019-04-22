@@ -9,6 +9,7 @@
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/common/frame/user_activation_update_type.h"
+#include "third_party/blink/public/mojom/csp/content_security_policy.mojom-shared.h"
 #include "third_party/blink/public/platform/web_content_security_policy.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/public/platform/web_scroll_types.h"
@@ -51,19 +52,18 @@ class WebRemoteFrame : public WebFrame {
   // beginning.
   virtual WebLocalFrame* CreateLocalChild(WebTreeScopeType,
                                           const WebString& name,
-                                          WebSandboxFlags,
+                                          const FramePolicy&,
                                           WebLocalFrameClient*,
                                           blink::InterfaceRegistry*,
+                                          mojo::ScopedMessagePipeHandle,
                                           WebFrame* previous_sibling,
-                                          const ParsedFeaturePolicy&,
                                           const WebFrameOwnerProperties&,
                                           FrameOwnerElementType,
                                           WebFrame* opener) = 0;
 
   virtual WebRemoteFrame* CreateRemoteChild(WebTreeScopeType,
                                             const WebString& name,
-                                            WebSandboxFlags,
-                                            const ParsedFeaturePolicy&,
+                                            const FramePolicy&,
                                             FrameOwnerElementType,
                                             WebRemoteFrameClient*,
                                             WebFrame* opener) = 0;
@@ -84,13 +84,18 @@ class WebRemoteFrame : public WebFrame {
   // Set frame |name| replicated from another process.
   virtual void SetReplicatedName(const WebString&) = 0;
 
-  virtual void SetReplicatedFeaturePolicyHeader(
-      const ParsedFeaturePolicy& parsed_header) = 0;
+  // Sets the FeaturePolicy header and the FeatureState (from opener) for the
+  // main frame. Once a non-empty |opener_feature_state| is set, it can no
+  // longer be modified (due to the fact that the original opener which passed
+  // down the FeatureState cannot be modified either).
+  virtual void SetReplicatedFeaturePolicyHeaderAndOpenerPolicies(
+      const ParsedFeaturePolicy& parsed_header,
+      const FeaturePolicy::FeatureState& opener_feature_state) = 0;
 
   // Adds |header| to the set of replicated CSP headers.
   virtual void AddReplicatedContentSecurityPolicyHeader(
       const WebString& header_value,
-      WebContentSecurityPolicyType,
+      mojom::ContentSecurityPolicyType,
       WebContentSecurityPolicySource) = 0;
 
   // Resets replicated CSP headers to an empty set.
@@ -106,6 +111,8 @@ class WebRemoteFrame : public WebFrame {
   virtual void ForwardResourceTimingToParent(const WebResourceTimingInfo&) = 0;
 
   virtual void DispatchLoadEventForFrameOwner() = 0;
+
+  virtual void SetNeedsOcclusionTracking(bool) = 0;
 
   virtual void DidStartLoading() = 0;
   virtual void DidStopLoading() = 0;

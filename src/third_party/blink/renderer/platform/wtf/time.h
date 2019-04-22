@@ -55,9 +55,6 @@ WTF_EXPORT TimeTicks CurrentTimeTicks();
 WTF_EXPORT double CurrentTimeTicksInSeconds();
 WTF_EXPORT double CurrentTimeTicksInMilliseconds();
 
-WTF_EXPORT TimeTicks TimeTicksFromSeconds(double);
-WTF_EXPORT double TimeTicksInSeconds(TimeTicks);
-
 }  // namespace WTF
 
 using WTF::CurrentTime;
@@ -70,7 +67,5 @@ using WTF::Time;
 using WTF::TimeDelta;
 using WTF::TimeFunction;
 using WTF::TimeTicks;
-using WTF::TimeTicksFromSeconds;
-using WTF::TimeTicksInSeconds;
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TIME_H_

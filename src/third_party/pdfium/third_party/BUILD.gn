@@ -19,7 +19,10 @@ group("third_party") {
 }
 
 config("pdfium_third_party_config") {
-  configs = [ "..:pdfium_common_config" ]
+  configs = [
+    "..:pdfium_common_config",
+    "..:pdfium_public_config",
+  ]
 }
 
 if (pdf_enable_xfa) {
@@ -384,6 +387,22 @@ group("lcms2") {
   }
 }
 
+if (use_system_libopenjpeg2) {
+  pkg_config("libopenjpeg2_from_pkgconfig") {
+    defines = [ "USE_SYSTEM_LIBOPENJPEG2" ]
+    packages = [ "libopenjp2" ]
+  }
+}
+group("libopenjpeg2") {
+  if (use_system_libopenjpeg2) {
+    public_configs = [ ":libopenjpeg2_from_pkgconfig" ]
+  } else {
+    public_deps = [
+      ":fx_libopenjpeg",
+    ]
+  }
+}
+
 config("fx_libopenjpeg_warnings") {
   visibility = [ ":*" ]
   if (is_win) {
@@ -615,6 +634,13 @@ jumbo_source_set("pdfium_base") {
     "base/sys_byteorder.h",
     "base/template_util.h",
   ]
+
+  if (is_win) {
+    sources += [
+      "base/win/win_util.cc",
+      "base/win/win_util.h",
+    ]
+  }
 }
 
 jumbo_source_set("skia_shared") {

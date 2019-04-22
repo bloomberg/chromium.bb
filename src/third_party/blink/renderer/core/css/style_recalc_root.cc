@@ -27,7 +27,7 @@ Element& StyleRecalcRoot::RootElement() const {
     TreeScope* tree_scope = &root_node->GetTreeScope();
     while (!tree_scope->ParentTreeScope()->RootNode().IsDocumentNode())
       tree_scope = tree_scope->ParentTreeScope();
-    return ToShadowRoot(tree_scope->RootNode()).host();
+    return To<ShadowRoot>(tree_scope->RootNode()).host();
   }
   if (root_node->IsTextNode())
     return *root_node->parentElement();

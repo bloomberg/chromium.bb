@@ -5,14 +5,17 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
 
 #include <memory>
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
 
 void ResourceTimingInfo::AddRedirect(const ResourceResponse& redirect_response,
-                                     bool cross_origin) {
+                                     const KURL& new_url) {
   redirect_chain_.push_back(redirect_response);
   if (has_cross_origin_redirect_)
     return;
+  bool cross_origin = !SecurityOrigin::AreSameSchemeHostPort(
+      redirect_response.CurrentRequestUrl(), new_url);
   if (cross_origin) {
     has_cross_origin_redirect_ = true;
     transfer_size_ = 0;

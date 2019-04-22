@@ -59,18 +59,26 @@ class CXFA_Document final : public CXFA_NodeOwner {
   explicit CXFA_Document(CXFA_FFNotify* notify);
   ~CXFA_Document() override;
 
+  bool HasScriptContext() const { return !!m_pScriptContext; }
   CFXJSE_Engine* InitScriptContext(CJS_Runtime* fxjs_runtime);
 
-  CXFA_Node* GetRoot() const { return m_pRootNode; }
+  // Only safe to call in situations where the context is known to exist,
+  // and always returns non-NULL in those situations. In other words, we have
+  // to call InitScriptContext() first to avoid a situation where the context
+  // won't have an isolate set into it.
+  CFXJSE_Engine* GetScriptContext() const;
+
   CXFA_FFNotify* GetNotify() const { return notify_.Get(); }
   CXFA_LocaleMgr* GetLocaleMgr();
   CXFA_Object* GetXFAObject(XFA_HashCode wsNodeNameHash);
-  CXFA_Node* GetNodeByID(CXFA_Node* pRoot, const WideStringView& wsID) const;
+  CXFA_Node* GetNodeByID(CXFA_Node* pRoot, WideStringView wsID) const;
   CXFA_Node* GetNotBindNode(
       const std::vector<UnownedPtr<CXFA_Object>>& arrayNodes) const;
-  CXFA_LayoutProcessor* GetLayoutProcessor();
-  CFXJSE_Engine* GetScriptContext() const;
 
+  // Creates if not present, never returns NULL.
+  CXFA_LayoutProcessor* GetLayoutProcessor();
+
+  CXFA_Node* GetRoot() const { return m_pRootNode; }
   void SetRoot(CXFA_Node* pNewRoot) { m_pRootNode = pNewRoot; }
 
   bool HasFlag(uint32_t dwFlag) const {
@@ -104,7 +112,7 @@ class CXFA_Document final : public CXFA_NodeOwner {
   std::vector<CXFA_Node*> m_pPendingPageSet;
 
  private:
-  UnownedPtr<CXFA_FFNotify> notify_;
+  UnownedPtr<CXFA_FFNotify> const notify_;
   CXFA_Node* m_pRootNode;
   std::map<uint32_t, CXFA_Node*> m_rgGlobalBinding;
   std::unique_ptr<CFXJSE_Engine> m_pScriptContext;

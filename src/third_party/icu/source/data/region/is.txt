@@ -183,7 +183,7 @@ is{
         MF{"St. Martin"}
         MG{"Madagaskar"}
         MH{"Marshalleyjar"}
-        MK{"Makedónía (Fyrrverandi lýðveldi Júgóslavíu)"}
+        MK{"Norður-Makedónía"}
         ML{"Malí"}
         MM{"Mjanmar (Búrma)"}
         MN{"Mongólía"}
@@ -297,13 +297,17 @@ is{
     }
     Countries%short{
         GB{"Bretland"}
+        HK{"Hong Kong"}
+        MO{"Makaó"}
+        PS{"Palestína"}
         UN{"SÞ"}
         US{"BNA"}
     }
     Countries%variant{
         CD{"Kongó (Lýðstjórnarlýðveldið)"}
         CG{"Kongó (Lýðveldið)"}
+        FK{"Falklandseyjar (Malvinas)"}
         TL{"Austur-Tímor"}
     }
-    Version{"2.1.44.91"}
+    Version{"2.1.49.82"}
 }

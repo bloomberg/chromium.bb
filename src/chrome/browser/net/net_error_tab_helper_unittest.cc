@@ -8,7 +8,7 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/error_page/common/net_error_info.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/navigation_handle.h"
+#include "content/public/test/mock_navigation_handle.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
 #include "net/base/net_errors.h"
@@ -144,13 +144,12 @@ class NetErrorTabHelperTest : public ChromeRenderViewHostTestHarness {
       net_error = net::ERR_NAME_NOT_RESOLVED;
     else
       net_error = net::ERR_TIMED_OUT;
-    std::unique_ptr<content::NavigationHandle> navigation_handle(
-        content::NavigationHandle::CreateNavigationHandleForTesting(
-            bogus_url_,
-            (main_frame == MAIN_FRAME) ? main_rfh() : subframe_,
-            true,
-            net_error));
-    // The destructor will call tab_helper_->DidFinishNavigation.
+    content::MockNavigationHandle navigation_handle(
+        bogus_url_, (main_frame == MAIN_FRAME) ? main_rfh() : subframe_);
+    navigation_handle.set_net_error_code(net_error);
+    navigation_handle.set_has_committed(true);
+    navigation_handle.set_is_error_page(true);
+    tab_helper_->DidFinishNavigation(&navigation_handle);
   }
 
   void FinishProbe(DnsProbeStatus status) { tab_helper_->FinishProbe(status); }

@@ -28,6 +28,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -35,6 +36,8 @@ namespace blink {
 
 class PLATFORM_EXPORT PlatformSpeechSynthesisVoice final
     : public RefCounted<PlatformSpeechSynthesisVoice> {
+  USING_FAST_MALLOC(PlatformSpeechSynthesisVoice);
+
  public:
   static scoped_refptr<PlatformSpeechSynthesisVoice> Create(
       const String& voice_uri,

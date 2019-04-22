@@ -36,15 +36,13 @@ TEST(NumberFormattingTest, FormatNumber) {
 
   test::ScopedRestoreICUDefaultLocale restore_locale;
 
-  for (size_t i = 0; i < arraysize(cases); ++i) {
+  for (const auto& i : cases) {
     i18n::SetICUDefaultLocale("en");
     testing::ResetFormatters();
-    EXPECT_EQ(cases[i].expected_english,
-              UTF16ToUTF8(FormatNumber(cases[i].number)));
+    EXPECT_EQ(i.expected_english, UTF16ToUTF8(FormatNumber(i.number)));
     i18n::SetICUDefaultLocale("de");
     testing::ResetFormatters();
-    EXPECT_EQ(cases[i].expected_german,
-              UTF16ToUTF8(FormatNumber(cases[i].number)));
+    EXPECT_EQ(i.expected_german, UTF16ToUTF8(FormatNumber(i.number)));
   }
 }
 
@@ -82,15 +80,15 @@ TEST(NumberFormattingTest, FormatDouble) {
   };
 
   test::ScopedRestoreICUDefaultLocale restore_locale;
-  for (size_t i = 0; i < arraysize(cases); ++i) {
+  for (const auto& i : cases) {
     i18n::SetICUDefaultLocale("en");
     testing::ResetFormatters();
-    EXPECT_EQ(cases[i].expected_english,
-              UTF16ToUTF8(FormatDouble(cases[i].number, cases[i].frac_digits)));
+    EXPECT_EQ(i.expected_english,
+              UTF16ToUTF8(FormatDouble(i.number, i.frac_digits)));
     i18n::SetICUDefaultLocale("de");
     testing::ResetFormatters();
-    EXPECT_EQ(cases[i].expected_german,
-              UTF16ToUTF8(FormatDouble(cases[i].number, cases[i].frac_digits)));
+    EXPECT_EQ(i.expected_german,
+              UTF16ToUTF8(FormatDouble(i.number, i.frac_digits)));
   }
 }
 
@@ -119,22 +117,17 @@ TEST(NumberFormattingTest, FormatPercent) {
   };
 
   test::ScopedRestoreICUDefaultLocale restore_locale;
-  for (size_t i = 0; i < arraysize(cases); ++i) {
+  for (const auto& i : cases) {
     i18n::SetICUDefaultLocale("en");
-    EXPECT_EQ(ASCIIToUTF16(cases[i].expected_english),
-              FormatPercent(cases[i].number));
+    EXPECT_EQ(ASCIIToUTF16(i.expected_english), FormatPercent(i.number));
     i18n::SetICUDefaultLocale("de");
-    EXPECT_EQ(UTF8ToUTF16(cases[i].expected_german),
-              FormatPercent(cases[i].number));
+    EXPECT_EQ(UTF8ToUTF16(i.expected_german), FormatPercent(i.number));
     i18n::SetICUDefaultLocale("fa");
-    EXPECT_EQ(UTF8ToUTF16(cases[i].expected_persian),
-              FormatPercent(cases[i].number));
+    EXPECT_EQ(UTF8ToUTF16(i.expected_persian), FormatPercent(i.number));
     i18n::SetICUDefaultLocale("ar");
-    EXPECT_EQ(UTF8ToUTF16(cases[i].expected_arabic),
-              FormatPercent(cases[i].number));
+    EXPECT_EQ(UTF8ToUTF16(i.expected_arabic), FormatPercent(i.number));
     i18n::SetICUDefaultLocale("ar-EG");
-    EXPECT_EQ(UTF8ToUTF16(cases[i].expected_arabic_egypt),
-              FormatPercent(cases[i].number));
+    EXPECT_EQ(UTF8ToUTF16(i.expected_arabic_egypt), FormatPercent(i.number));
   }
 }
 

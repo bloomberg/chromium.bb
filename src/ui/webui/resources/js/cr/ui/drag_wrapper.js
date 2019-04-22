@@ -9,7 +9,7 @@
  */
 cr.define('cr.ui', function() {
   /** @interface */
-  var DragWrapperDelegate = function() {};
+  const DragWrapperDelegate = function() {};
 
   // TODO(devlin): The only method this "delegate" actually needs is
   // shouldAcceptDrag(); the rest can be events emitted by the DragWrapper.
@@ -103,8 +103,9 @@ cr.define('cr.ui', function() {
      * @private
      */
     onDragOver_: function(e) {
-      if (!this.target_.classList.contains('drag-target'))
+      if (!this.target_.classList.contains('drag-target')) {
         return;
+      }
       this.delegate_.doDragOver(e);
     },
 
@@ -115,8 +116,9 @@ cr.define('cr.ui', function() {
      */
     onDrop_: function(e) {
       this.dragEnters_ = 0;
-      if (!this.target_.classList.contains('drag-target'))
+      if (!this.target_.classList.contains('drag-target')) {
         return;
+      }
       this.target_.classList.remove('drag-target');
       this.delegate_.doDrop(e);
     },
@@ -127,8 +129,9 @@ cr.define('cr.ui', function() {
      * @private
      */
     onDragLeave_: function(e) {
-      if (--this.dragEnters_ > 0)
+      if (--this.dragEnters_ > 0) {
         return;
+      }
 
       this.target_.classList.remove('drag-target');
       this.delegate_.doDragLeave(e);

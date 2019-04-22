@@ -12,9 +12,11 @@
 namespace content {
 
 TestMojoProxyResolverFactory::TestMojoProxyResolverFactory()
-    : service_ref_factory_(base::DoNothing()), binding_(this) {
+    : service_keepalive_(static_cast<service_manager::ServiceBinding*>(nullptr),
+                         base::nullopt),
+      binding_(this) {
   proxy_resolver_factory_impl_.BindRequest(mojo::MakeRequest(&factory_),
-                                           &service_ref_factory_);
+                                           &service_keepalive_);
 }
 
 TestMojoProxyResolverFactory::~TestMojoProxyResolverFactory() = default;

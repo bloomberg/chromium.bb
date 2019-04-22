@@ -5,7 +5,6 @@
 #include <memory>
 #include <string>
 
-#include "base/guid.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/values_test_util.h"
@@ -20,6 +19,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/common/result_codes.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "net/dns/mock_host_resolver.h"
@@ -116,7 +116,7 @@ void ReportingBrowserTest::SetUpOnMainThread() {
 }
 
 std::unique_ptr<base::Value> ParseReportUpload(const std::string& payload) {
-  auto parsed_payload = base::test::ParseJson(payload);
+  auto parsed_payload = base::test::ParseJsonDeprecated(payload);
   // Clear out any non-reproducible fields.
   for (auto& report : parsed_payload->GetList()) {
     report.RemoveKey("age");
@@ -151,7 +151,7 @@ IN_PROC_BROWSER_TEST_F(ReportingBrowserTest, TestReportingHeadersProcessed) {
 
   // Verify the contents of the report that we received.
   EXPECT_TRUE(actual != nullptr);
-  auto expected = base::test::ParseJson(base::StringPrintf(
+  auto expected = base::test::ParseJsonDeprecated(base::StringPrintf(
       R"json(
         [
           {
@@ -175,12 +175,15 @@ IN_PROC_BROWSER_TEST_F(ReportingBrowserTest, TestReportingHeadersProcessed) {
   EXPECT_EQ(*expected, *actual);
 }
 
-// This test intentionally crashes a render process, and so fails ASan tests.
+// These tests intentionally crash a render process, and so fail ASan tests.
 #if defined(ADDRESS_SANITIZER)
 #define MAYBE_CrashReport DISABLED_CrashReport
+#define MAYBE_CrashReportUnresponsive DISABLED_CrashReportUnresponsive
 #else
 #define MAYBE_CrashReport CrashReport
+#define MAYBE_CrashReportUnresponsive CrashReportUnresponsive
 #endif
+
 IN_PROC_BROWSER_TEST_F(ReportingBrowserTest, MAYBE_CrashReport) {
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -214,11 +217,48 @@ IN_PROC_BROWSER_TEST_F(ReportingBrowserTest, MAYBE_CrashReport) {
   auto report = response->GetList().begin();
   auto* type = report->FindKeyOfType("type", base::Value::Type::STRING);
   auto* url = report->FindKeyOfType("url", base::Value::Type::STRING);
-  auto* id =
-      report->FindPathOfType({"body", "crashId"}, base::Value::Type::STRING);
 
   EXPECT_EQ("crash", type->GetString());
   EXPECT_EQ(base::StringPrintf("https://example.com:%d/original", port()),
             url->GetString());
-  EXPECT_TRUE(base::IsValidGUID(id->GetString()));
+}
+
+IN_PROC_BROWSER_TEST_F(ReportingBrowserTest, MAYBE_CrashReportUnresponsive) {
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::TestNavigationObserver navigation_observer(contents);
+
+  // Navigate to reporting-enabled page.
+  NavigateParams params(browser(), GetReportingEnabledURL(),
+                        ui::PAGE_TRANSITION_LINK);
+  Navigate(&params);
+
+  original_response()->WaitForRequest();
+  original_response()->Send("HTTP/1.1 200 OK\r\n");
+  original_response()->Send(GetReportToHeader());
+  original_response()->Send("\r\n");
+  original_response()->Done();
+  navigation_observer.Wait();
+
+  // Simulate the page being killed due to being unresponsive.
+  contents->GetMainFrame()->GetProcess()->Shutdown(content::RESULT_CODE_HUNG);
+
+  upload_response()->WaitForRequest();
+  auto response = ParseReportUpload(upload_response()->http_request()->content);
+  upload_response()->Send("HTTP/1.1 200 OK\r\n");
+  upload_response()->Send("\r\n");
+  upload_response()->Done();
+
+  // Verify the contents of the report that we received.
+  EXPECT_TRUE(response != nullptr);
+  auto report = response->GetList().begin();
+  auto* type = report->FindKeyOfType("type", base::Value::Type::STRING);
+  auto* url = report->FindKeyOfType("url", base::Value::Type::STRING);
+  auto* body = report->FindKeyOfType("body", base::Value::Type::DICTIONARY);
+  auto* reason = body->FindKeyOfType("reason", base::Value::Type::STRING);
+
+  EXPECT_EQ("crash", type->GetString());
+  EXPECT_EQ(base::StringPrintf("https://example.com:%d/original", port()),
+            url->GetString());
+  EXPECT_EQ("unresponsive", reason->GetString());
 }

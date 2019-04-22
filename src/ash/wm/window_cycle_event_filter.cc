@@ -8,6 +8,7 @@
 #include "ash/shell.h"
 #include "ash/wm/window_cycle_controller.h"
 #include "ash/wm/window_cycle_list.h"
+#include "base/bind.h"
 #include "ui/events/event.h"
 
 namespace ash {

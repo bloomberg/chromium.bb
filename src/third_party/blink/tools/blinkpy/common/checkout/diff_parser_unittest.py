@@ -78,7 +78,7 @@ class DiffParserTest(unittest.TestCase):
         self.assertEqual((87, 90), diff.lines[22][0:2])
 
         # Check if a newly added file is correctly handled.
-        diff = parser.files['LayoutTests/platform/mac/fast/flexbox/box-orient-button-expected.checksum']
+        diff = parser.files['web_tests/platform/mac/fast/flexbox/box-orient-button-expected.checksum']
         self.assertEqual(1, len(diff.lines))
         self.assertEqual((0, 1), diff.lines[0][0:2])
 

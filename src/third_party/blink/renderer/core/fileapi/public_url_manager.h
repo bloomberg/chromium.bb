@@ -29,7 +29,7 @@
 #include "services/network/public/mojom/url_loader_factory.mojom-blink.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
@@ -48,8 +48,6 @@ class CORE_EXPORT PublicURLManager final
   USING_GARBAGE_COLLECTED_MIXIN(PublicURLManager);
 
  public:
-  static PublicURLManager* Create(ExecutionContext*);
-
   explicit PublicURLManager(ExecutionContext*);
 
   // Generates a new Blob URL and registers the URLRegistrable to the

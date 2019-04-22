@@ -4,7 +4,7 @@
  *
  *   FreeType high-level API and common types (specification only).
  *
- * Copyright 1996-2018 by
+ * Copyright (C) 1996-2019 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -308,7 +308,7 @@ FT_BEGIN_HEADER
    *   `horiAdvance` or `vertAdvance`; you have to manually adjust these
    *   values to account for the added width and height.
    *
-   *   FreeType doesn't use the `VORG` table data for CFF fonts because it
+   *   FreeType doesn't use the 'VORG' table data for CFF fonts because it
    *   doesn't have an interface to quickly retrieve the glyph height.  The
    *   y~coordinate of the vertical origin can be simply computed as
    *   `vertBearingY + height` after loading a glyph.
@@ -927,7 +927,7 @@ FT_BEGIN_HEADER
    *     denominator used to list fonts.  Some formats (TrueType & OpenType)
    *     provide localized and Unicode versions of this string.  Applications
    *     should use the format-specific interface to access them.  Can be
-   *     NULL (e.g., in fonts embedded in a PDF file).
+   *     `NULL` (e.g., in fonts embedded in a PDF file).
    *
    *     In case the font doesn't provide a specific family name entry,
    *     FreeType tries to synthesize one, deriving it from other name
@@ -937,7 +937,7 @@ FT_BEGIN_HEADER
    *     The face's style name.  This is an ASCII string, usually in English,
    *     that describes the typeface's style (like 'Italic', 'Bold',
    *     'Condensed', etc).  Not all font formats provide a style name, so
-   *     this field is optional, and can be set to NULL.  As for
+   *     this field is optional, and can be set to `NULL`.  As for
    *     `family_name`, some formats provide localized and Unicode versions
    *     of this string.  Applications should use the format-specific
    *     interface to access them.
@@ -949,7 +949,7 @@ FT_BEGIN_HEADER
    *
    *   available_sizes ::
    *     An array of @FT_Bitmap_Size for all bitmap strikes in the face.  It
-   *     is set to NULL if there is no bitmap strike.
+   *     is set to `NULL` if there is no bitmap strike.
    *
    *     Note that FreeType tries to sanitize the strike data since they are
    *     sometimes sloppy or incorrect, but this can easily fail.
@@ -1032,7 +1032,7 @@ FT_BEGIN_HEADER
    *
    *   For an OpenType variation font, the values of the following fields can
    *   change after a call to @FT_Set_Var_Design_Coordinates (and friends) if
-   *   the font contains an `MVAR` table: `ascender`, `descender`, `height`,
+   *   the font contains an 'MVAR' table: `ascender`, `descender`, `height`,
    *   `underline_position`, and `underline_thickness`.
    *
    *   Especially for TrueType fonts see also the documentation for
@@ -1137,7 +1137,7 @@ FT_BEGIN_HEADER
    *     The face contains kerning information.  If set, the kerning distance
    *     can be retrieved using the function @FT_Get_Kerning.  Otherwise the
    *     function always return the vector (0,0).  Note that FreeType doesn't
-   *     handle kerning data from the SFNT `GPOS` table (as present in many
+   *     handle kerning data from the SFNT 'GPOS' table (as present in many
    *     OpenType fonts).
    *
    *   FT_FACE_FLAG_FAST_GLYPHS ::
@@ -1163,7 +1163,7 @@ FT_BEGIN_HEADER
    *
    *   FT_FACE_FLAG_HINTER ::
    *     The font driver has a hinting machine of its own.  For example, with
-   *     TrueType fonts, it makes sense to use data from the SFNT `gasp`
+   *     TrueType fonts, it makes sense to use data from the SFNT 'gasp'
    *     table only if the native TrueType hinting engine (with the bytecode
    *     interpreter) is available and active.
    *
@@ -1482,7 +1482,7 @@ FT_BEGIN_HEADER
    * @note:
    *   The style information as provided by FreeType is very basic.  More
    *   details are beyond the scope and should be done on a higher level (for
-   *   example, by analyzing various fields of the `OS/2` table in SFNT based
+   *   example, by analyzing various fields of the 'OS/2' table in SFNT based
    *   fonts).
    */
 #define FT_STYLE_FLAG_ITALIC  ( 1 << 0 )
@@ -1836,7 +1836,7 @@ FT_BEGIN_HEADER
    *        and add it to `origin_x'>
    *
    *       origin_x += slot->advance.x;
-   *       origin_x += slot->rsb_delta - slot->lsb_delta;
+   *       origin_x += slot->lsb_delta - slot->rsb_delta;
    *     endfor
    *   ```
    *
@@ -2078,7 +2078,7 @@ FT_BEGIN_HEADER
    *
    *   driver ::
    *     This field is exclusively used by @FT_Open_Face; it simply specifies
-   *     the font driver to use for opening the face.  If set to NULL,
+   *     the font driver to use for opening the face.  If set to `NULL`,
    *     FreeType tries to load the face with each one of the drivers in its
    *     list.
    *
@@ -2149,7 +2149,7 @@ FT_BEGIN_HEADER
    * @output:
    *   aface ::
    *     A handle to a new face object.  If `face_index` is greater than or
-   *     equal to zero, it must be non-NULL.
+   *     equal to zero, it must be non-`NULL`.
    *
    * @return:
    *   FreeType error code.  0~means success.
@@ -2190,7 +2190,7 @@ FT_BEGIN_HEADER
    * @output:
    *   aface ::
    *     A handle to a new face object.  If `face_index` is greater than or
-   *     equal to zero, it must be non-NULL.
+   *     equal to zero, it must be non-`NULL`.
    *
    * @return:
    *   FreeType error code.  0~means success.
@@ -2242,7 +2242,7 @@ FT_BEGIN_HEADER
    *     In general, if the `face_index` argument is negative, the function's
    *     return value is~0 if the font format is recognized, or non-zero
    *     otherwise.  The function allocates a more or less empty face handle
-   *     in `*aface` (if `aface` isn't NULL); the only two useful fields in
+   *     in `*aface` (if `aface` isn't `NULL`); the only two useful fields in
    *     this special case are `face->num_faces` and `face->style_flags`.
    *     For any negative value of `face_index`, `face->num_faces` gives the
    *     number of faces within the font file.  For the negative value
@@ -2255,7 +2255,7 @@ FT_BEGIN_HEADER
    * @output:
    *   aface ::
    *     A handle to a new face object.  If `face_index` is greater than or
-   *     equal to zero, it must be non-NULL.
+   *     equal to zero, it must be non-`NULL`.
    *
    * @return:
    *   FreeType error code.  0~means success.
@@ -2968,19 +2968,19 @@ FT_BEGIN_HEADER
    *     color bitmaps are found, they are converted to 256-level gray
    *     bitmaps, using the @FT_PIXEL_MODE_GRAY format.
    *
-   *     [Since 2.10] If the glyph index contains an entry in the face's
-   *     `COLR` table with a `CPAL` palette table (as defined in the OpenType
-   *     specification), make @FT_Render_Glyph provide a default blending of
-   *     the color glyph layers associated with the glyph index, using the
-   *     same bitmap format as embedded color bitmap images.  This is mainly
-   *     for convenience; for full control of color layers use
+   *     [Since 2.10, experimental] If the glyph index contains an entry in
+   *     the face's 'COLR' table with a 'CPAL' palette table (as defined in
+   *     the OpenType specification), make @FT_Render_Glyph provide a default
+   *     blending of the color glyph layers associated with the glyph index,
+   *     using the same bitmap format as embedded color bitmap images.  This
+   *     is mainly for convenience; for full control of color layers use
    *     @FT_Get_Color_Glyph_Layer and FreeType's color functions like
-   *     @FT_Palette_Select instead of setting FT_LOAD_COLOR for rendering so
-   *     that the client application can handle blending by itself.
+   *     @FT_Palette_Select instead of setting @FT_LOAD_COLOR for rendering
+   *     so that the client application can handle blending by itself.
    *
    *   FT_LOAD_COMPUTE_METRICS ::
    *     [Since 2.6.1] Compute glyph metrics from the glyph data, without the
-   *     use of bundled metrics tables (for example, the `hdmx` table in
+   *     use of bundled metrics tables (for example, the 'hdmx' table in
    *     TrueType fonts).  This flag is mainly used by font validating or
    *     font editing applications, which need to ignore, verify, or edit
    *     those tables.
@@ -3174,10 +3174,10 @@ FT_BEGIN_HEADER
    *
    * @input:
    *   matrix ::
-   *     A pointer to the transformation's 2x2 matrix.  Use NULL for the
+   *     A pointer to the transformation's 2x2 matrix.  Use `NULL` for the
    *     identity matrix.
    *   delta ::
-   *     A pointer to the translation vector.  Use NULL for the null vector.
+   *     A pointer to the translation vector.  Use `NULL` for the null vector.
    *
    * @note:
    *   The transformation is only applied to scalable image formats after the
@@ -3288,11 +3288,12 @@ FT_BEGIN_HEADER
    *     The render mode used to render the glyph image into a bitmap.  See
    *     @FT_Render_Mode for a list of possible values.
    *
-   *     If @FT_RENDER_MODE_NORMAL is used, the flag @FT_LOAD_COLOR can be
-   *     additionally set to make the function provide a default blending of
-   *     colored glyph layers associated with the current glyph slot
-   *     (provided the font contains such layers) instead of rendering the
-   *     glyph slot's outline.  See @FT_LOAD_COLOR for more information.
+   *     If @FT_RENDER_MODE_NORMAL is used, a previous call of @FT_Load_Glyph
+   *     with flag @FT_LOAD_COLOR makes FT_Render_Glyph provide a default
+   *     blending of colored glyph layers associated with the current glyph
+   *     slot (provided the font contains such layers) instead of rendering
+   *     the glyph slot's outline.  This is an experimental feature; see
+   *     @FT_LOAD_COLOR for more information.
    *
    * @return:
    *   FreeType error code.  0~means success.
@@ -3460,7 +3461,7 @@ FT_BEGIN_HEADER
    *   out of the scope of this API function -- they can be implemented
    *   through format-specific interfaces.
    *
-   *   Kerning for OpenType fonts implemented in a `GPOS` table is not
+   *   Kerning for OpenType fonts implemented in a 'GPOS' table is not
    *   supported; use @FT_HAS_KERNING to find out whether a font has data
    *   that can be extracted with `FT_Get_Kerning`.
    */
@@ -3576,7 +3577,7 @@ FT_BEGIN_HEADER
    *     A handle to the source face object.
    *
    * @return:
-   *   A pointer to the face's PostScript name.  NULL if unavailable.
+   *   A pointer to the face's PostScript name.  `NULL` if unavailable.
    *
    * @note:
    *   The returned pointer is owned by the face and is destroyed with it.
@@ -3590,7 +3591,7 @@ FT_BEGIN_HEADER
    *
    *   [Since 2.9] Special PostScript names for named instances are only
    *   returned if the named instance is set with @FT_Set_Named_Instance (and
-   *   the font has corresponding entries in its `fvar` table).  If
+   *   the font has corresponding entries in its 'fvar' table).  If
    *   @FT_IS_VARIATION returns true, the algorithmically derived PostScript
    *   name is provided, not looking up special entries for named instances.
    */
@@ -3841,7 +3842,7 @@ FT_BEGIN_HEADER
    *     provided by the 'cff', 'type1', and 't1cid' modules; see
    *     @random-seed).
    *
-   *   Pass NULL as `data` in @FT_Parameter for a given tag to reset the
+   *   Pass `NULL` as `data` in @FT_Parameter for a given tag to reset the
    *   option and use the library or module default again.
    *
    * @input:
@@ -3858,7 +3859,7 @@ FT_BEGIN_HEADER
    *   FreeType error code.  0~means success.
    *
    * @example:
-   *   Here an example that sets three properties.  You must define
+   *   Here is an example that sets three properties.  You must define
    *   `FT_CONFIG_OPTION_SUBPIXEL_RENDERING` to make the LCD filter examples
    *   work.
    *
@@ -3941,7 +3942,7 @@ FT_BEGIN_HEADER
    *   FT_SUBGLYPH_FLAG_XXX
    *
    * @description:
-   *   A list of constants describing subglyphs.  Please refer to the `glyf`
+   *   A list of constants describing subglyphs.  Please refer to the 'glyf'
    *   table description in the OpenType specification for the meaning of the
    *   various flags (which get synthesized for non-OpenType subglyphs).
    *
@@ -4030,11 +4031,11 @@ FT_BEGIN_HEADER
    *   Glyph Layer Management
    *
    * @abstract:
-   *   Retrieving and manipulating OpenType's `COLR` table data.
+   *   Retrieving and manipulating OpenType's 'COLR' table data.
    *
    * @description:
    *   The functions described here allow access of colored glyph layer data
-   *   in OpenType's `COLR` tables.
+   *   in OpenType's 'COLR' tables.
    */
 
 
@@ -4055,8 +4056,8 @@ FT_BEGIN_HEADER
    *     The current layer.  Will be set by @FT_Get_Color_Glyph_Layer.
    *
    *   p ::
-   *     An opaque pointer into `COLR` table data.  The caller must set this
-   *     to NULL before the first call of @FT_Get_Color_Glyph_Layer.
+   *     An opaque pointer into 'COLR' table data.  The caller must set this
+   *     to `NULL` before the first call of @FT_Get_Color_Glyph_Layer.
    */
   typedef struct  FT_LayerIterator_
   {
@@ -4073,7 +4074,7 @@ FT_BEGIN_HEADER
    *   FT_Get_Color_Glyph_Layer
    *
    * @description:
-   *   This is an interface to the `COLR` table in OpenType fonts to
+   *   This is an interface to the 'COLR' table in OpenType fonts to
    *   iteratively retrieve the colored glyph layers associated with the
    *   current glyph slot.
    *
@@ -4100,8 +4101,8 @@ FT_BEGIN_HEADER
    * @inout:
    *   iterator ::
    *     An @FT_LayerIterator object.  For the first call you should set
-   *     `iterator->p` to NULL.  For all following calls, simply use the same
-   *     object again.
+   *     `iterator->p` to `NULL`.  For all following calls, simply use the
+   *     same object again.
    *
    * @output:
    *   aglyph_index ::
@@ -4126,8 +4127,9 @@ FT_BEGIN_HEADER
    *   objects (like @FT_Get_Glyph or @FT_Glyph_To_Bitmap) don't have access
    *   to this information.
    *
-   *   @FT_Render_Glyph, however, handles colored glyph layers automatically
-   *   if the @FT_LOAD_COLOR flag is passed to it.
+   *   Note that @FT_Render_Glyph is able to handle colored glyph layers
+   *   automatically if the @FT_LOAD_COLOR flag is passed to a previous call
+   *   to @FT_Load_Glyph.  [This is an experimental feature.]
    *
    * @example:
    *   ```
@@ -4422,8 +4424,8 @@ FT_BEGIN_HEADER
    *     A handle to the source face object.
    *
    * @return:
-   *   A pointer to an array of selector code points, or NULL if there is no
-   *   valid variation selector cmap subtable.
+   *   A pointer to an array of selector code points, or `NULL` if there is
+   *   no valid variation selector cmap subtable.
    *
    * @note:
    *   The last item in the array is~0; the array is owned by the @FT_Face
@@ -4455,7 +4457,7 @@ FT_BEGIN_HEADER
    *
    * @return:
    *   A pointer to an array of variation selector code points that are
-   *   active for the given character, or NULL if the corresponding list is
+   *   active for the given character, or `NULL` if the corresponding list is
    *   empty.
    *
    * @note:
@@ -4489,8 +4491,8 @@ FT_BEGIN_HEADER
    *
    * @return:
    *   A list of all the code points that are specified by this selector
-   *   (both default and non-default codes are returned) or NULL if there is
-   *   no valid cmap or the variation selector is invalid.
+   *   (both default and non-default codes are returned) or `NULL` if there
+   *   is no valid cmap or the variation selector is invalid.
    *
    * @note:
    *   The last item in the array is~0; the array is owned by the @FT_Face

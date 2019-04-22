@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/platform/graphics/image_decoding_store.h"
 
 #include <memory>
+#include "base/bind.h"
 #include "third_party/blink/renderer/platform/graphics/image_frame_generator.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/wtf/threading.h"
@@ -40,7 +41,10 @@ static const size_t kDefaultMaxTotalSizeOfHeapEntries = 32 * 1024 * 1024;
 
 ImageDecodingStore::ImageDecodingStore()
     : heap_limit_in_bytes_(kDefaultMaxTotalSizeOfHeapEntries),
-      heap_memory_usage_in_bytes_(0) {}
+      heap_memory_usage_in_bytes_(0),
+      memory_pressure_listener_(
+          base::BindRepeating(&ImageDecodingStore::OnMemoryPressure,
+                              base::Unretained(this))) {}
 
 ImageDecodingStore::~ImageDecodingStore() {
 #if DCHECK_IS_ON()
@@ -104,8 +108,8 @@ void ImageDecodingStore::InsertDecoder(
   // Prune old cache entries to give space for the new one.
   Prune();
 
-  std::unique_ptr<DecoderCacheEntry> new_cache_entry =
-      DecoderCacheEntry::Create(generator, std::move(decoder), client_id);
+  auto new_cache_entry = std::make_unique<DecoderCacheEntry>(
+      generator, 0, std::move(decoder), client_id);
 
   MutexLocker lock(mutex_);
   DCHECK(!decoder_cache_map_.Contains(new_cache_entry->CacheKey()));
@@ -217,6 +221,18 @@ void ImageDecodingStore::Prune() {
 
     // Remove from cache list as well.
     RemoveFromCacheListInternal(cache_entries_to_delete);
+  }
+}
+
+void ImageDecodingStore::OnMemoryPressure(
+    base::MemoryPressureListener::MemoryPressureLevel level) {
+  switch (level) {
+    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE:
+    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE:
+      break;
+    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL:
+      Clear();
+      break;
   }
 }
 

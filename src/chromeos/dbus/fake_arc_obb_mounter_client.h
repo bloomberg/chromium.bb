@@ -12,7 +12,8 @@
 namespace chromeos {
 
 // A fake implementation of ArcObbMounterClient.
-class CHROMEOS_EXPORT FakeArcObbMounterClient : public ArcObbMounterClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeArcObbMounterClient
+    : public ArcObbMounterClient {
  public:
   FakeArcObbMounterClient();
   ~FakeArcObbMounterClient() override;

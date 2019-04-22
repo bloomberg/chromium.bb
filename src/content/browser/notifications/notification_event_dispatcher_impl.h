@@ -13,7 +13,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/notification_database_data.h"
 #include "content/public/browser/notification_event_dispatcher.h"
-#include "third_party/blink/public/platform/modules/notifications/notification_service.mojom.h"
+#include "third_party/blink/public/mojom/notifications/notification_service.mojom.h"
 
 namespace content {
 
@@ -66,13 +66,6 @@ class CONTENT_EXPORT NotificationEventDispatcherImpl
   // been dispatched to the non-persistent notification listener.
   void OnNonPersistentCloseComplete(const std::string& notification_id,
                                     base::OnceClosure completed_closure);
-
-  // Replace listener for existing non-persistent notification.
-  // This method is called after a non-persistent notification has
-  // been replaced and |OnNonPersistentCloseComplete| is executed.
-  void ReplaceNonPersistentNotificationListener(
-      const std::string& notification_id,
-      blink::mojom::NonPersistentNotificationListenerPtr event_listener_ptr);
 
   // Removes all references to the listener registered to receive events
   // from the non-persistent notification identified by |notification_id|.

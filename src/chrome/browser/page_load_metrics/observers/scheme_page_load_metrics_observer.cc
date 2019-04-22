@@ -79,18 +79,27 @@ void SchemePageLoadMetricsObserver::OnFirstContentfulPaintInPage(
          extra_info.url.scheme() == url::kHttpsScheme);
 
   base::TimeDelta fcp = timing.paint_timing->first_contentful_paint.value();
+  base::TimeDelta parse_start_to_fcp =
+      fcp - timing.parse_timing->parse_start.value();
 
   if (extra_info.url.scheme() == url::kHttpScheme) {
     PAGE_LOAD_HISTOGRAM(
         "PageLoad.Clients.Scheme.HTTP.PaintTiming."
         "NavigationToFirstContentfulPaint",
         fcp);
-
+    PAGE_LOAD_HISTOGRAM(
+        "PageLoad.Clients.Scheme.HTTP.PaintTiming."
+        "ParseStartToFirstContentfulPaint",
+        parse_start_to_fcp);
   } else {
     PAGE_LOAD_HISTOGRAM(
         "PageLoad.Clients.Scheme.HTTPS.PaintTiming."
         "NavigationToFirstContentfulPaint",
         fcp);
+    PAGE_LOAD_HISTOGRAM(
+        "PageLoad.Clients.Scheme.HTTPS.PaintTiming."
+        "ParseStartToFirstContentfulPaint",
+        parse_start_to_fcp);
   }
 
   static constexpr char kUnderStatHistogramHttp[] =

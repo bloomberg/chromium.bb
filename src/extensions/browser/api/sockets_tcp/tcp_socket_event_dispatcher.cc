@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -113,7 +114,7 @@ void TCPSocketEventDispatcher::StartRead(const ReadParams& params) {
   if (buffer_size <= 0)
     buffer_size = kDefaultBufferSize;
   socket->Read(buffer_size,
-               base::Bind(&TCPSocketEventDispatcher::ReadCallback, params));
+               base::BindOnce(&TCPSocketEventDispatcher::ReadCallback, params));
 }
 
 // static
@@ -148,7 +149,7 @@ void TCPSocketEventDispatcher::ReadCallback(
     // calling StartReceive at this point would error with ERR_IO_PENDING.
     base::PostTaskWithTraits(
         FROM_HERE, {params.thread_id},
-        base::Bind(&TCPSocketEventDispatcher::StartRead, params));
+        base::BindOnce(&TCPSocketEventDispatcher::StartRead, params));
   } else if (bytes_read == net::ERR_IO_PENDING) {
     // This happens when resuming a socket which already had an
     // active "read" callback.
@@ -184,8 +185,8 @@ void TCPSocketEventDispatcher::PostEvent(const ReadParams& params,
 
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
-      base::Bind(&DispatchEvent, params.browser_context_id, params.extension_id,
-                 base::Passed(std::move(event))));
+      base::BindOnce(&DispatchEvent, params.browser_context_id,
+                     params.extension_id, std::move(event)));
 }
 
 // static

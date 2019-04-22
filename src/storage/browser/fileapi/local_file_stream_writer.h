@@ -12,12 +12,12 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task_runner.h"
 #include "storage/browser/fileapi/file_stream_writer.h"
-#include "storage/browser/storage_browser_export.h"
 
 namespace content {
 class LocalFileStreamWriterTest;
@@ -30,7 +30,8 @@ class FileStream;
 namespace storage {
 
 // This class is a thin wrapper around net::FileStream for writing local files.
-class STORAGE_EXPORT LocalFileStreamWriter : public FileStreamWriter {
+class COMPONENT_EXPORT(STORAGE_BROWSER) LocalFileStreamWriter
+    : public FileStreamWriter {
  public:
   ~LocalFileStreamWriter() override;
 

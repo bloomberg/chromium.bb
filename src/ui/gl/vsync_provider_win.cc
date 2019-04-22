@@ -29,11 +29,11 @@ void VSyncProviderWin::InitializeOneOff() {
   ::LoadLibrary(L"dwmapi.dll");
 }
 
-void VSyncProviderWin::GetVSyncParameters(const UpdateVSyncCallback& callback) {
+void VSyncProviderWin::GetVSyncParameters(UpdateVSyncCallback callback) {
   base::TimeTicks timebase;
   base::TimeDelta interval;
   if (GetVSyncParametersIfAvailable(&timebase, &interval))
-    callback.Run(timebase, interval);
+    std::move(callback).Run(timebase, interval);
 }
 
 bool VSyncProviderWin::GetVSyncParametersIfAvailable(

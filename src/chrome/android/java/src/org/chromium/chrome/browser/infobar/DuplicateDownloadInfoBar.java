@@ -56,7 +56,7 @@ public class DuplicateDownloadInfoBar extends ConfirmInfoBar {
      */
     private DuplicateDownloadInfoBar(Context context, String filePath, boolean isOfflinePage,
             String pageUrl, boolean isIncognito, boolean duplicateRequestExists) {
-        super(R.drawable.infobar_downloading, null, null, null,
+        super(R.drawable.infobar_downloading, R.color.infobar_icon_drawable_color, null, null, null,
                 context.getString(R.string.duplicate_download_infobar_download_button),
                 context.getString(R.string.cancel));
         mFilePath = filePath;
@@ -72,6 +72,7 @@ public class DuplicateDownloadInfoBar extends ConfirmInfoBar {
      * @param template Template of the text to be displayed.
      */
     private CharSequence getDownloadMessageText(final Context context, final String template) {
+        // TODO(qinmin): fix the case that mFilePath is a content Uri.
         final File file = new File(mFilePath);
         final Uri fileUri = Uri.fromFile(file);
         final String mimeType = getMimeTypeFromUri(fileUri);
@@ -88,8 +89,8 @@ public class DuplicateDownloadInfoBar extends ConfirmInfoBar {
                     @Override
                     protected void onPostExecute(Boolean fileExists) {
                         if (fileExists) {
-                            DownloadUtils.openFile(file, mimeType, null, mIsIncognito, null, null,
-                                    DownloadMetrics.DownloadOpenSource.INFO_BAR);
+                            DownloadUtils.openFile(mFilePath, mimeType, null, mIsIncognito, null,
+                                    null, DownloadMetrics.DownloadOpenSource.INFO_BAR);
                         } else {
                             DownloadManagerService.openDownloadsPage(
                                     ContextUtils.getApplicationContext());

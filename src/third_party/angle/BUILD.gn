@@ -1,4 +1,4 @@
-# Copyright 2014-2015 The Chromium Authors. All rights reserved.
+# Copyright 2019 The ANGLE Project Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -10,7 +10,9 @@ import("//testing/libfuzzer/fuzzer_test.gni")
 import("gni/angle.gni")
 if (is_android) {
   # android/rules.gni can only be imported for Android targets
+  import("//build/config/android/config.gni")
   import("//build/config/android/rules.gni")
+  import("android/angle_apk.gni")
 }
 
 declare_args() {
@@ -28,6 +30,7 @@ if (!build_with_chromium) {
     deps = [
       ":angle_shader_translator",
       ":translator_fuzzer",
+      ":xxhash_fuzzer",
       "//samples:all",
       "//src/tests:all",
     ]
@@ -49,13 +52,30 @@ angle_git_is_present = exec_script("src/commit_id.py",
 
 angle_use_commit_id = angle_git_is_present == 1
 
-import("src/libGLESv2.gni")
 import("src/compiler.gni")
+import("src/libGLESv2.gni")
 
 # This config is exported to dependent targets (and also applied to internal
 # ones).
 config("external_config") {
   include_dirs = [ "include" ]
+}
+
+# Prevent the GL headers from redeclaring ANGLE entry points.
+config("no_gl_prototypes") {
+  defines = [
+    "GL_GLES_PROTOTYPES=0",
+    "EGL_EGL_PROTOTYPES=0",
+  ]
+}
+
+config("gl_prototypes") {
+  defines = [
+    "GL_GLES_PROTOTYPES=1",
+    "EGL_EGL_PROTOTYPES=1",
+    "GL_GLEXT_PROTOTYPES",
+    "EGL_EGLEXT_PROTOTYPES",
+  ]
 }
 
 # This config is applied to internal Angle targets (not pushed to dependents).
@@ -65,11 +85,7 @@ config("internal_config") {
     "src",
   ]
 
-  # Prevent the GL headers from redeclaring ANGLE entry points.
-  defines = [
-    "GL_GLEXT_PROTOTYPES",
-    "EGL_EGLEXT_PROTOTYPES",
-  ]
+  defines = []
 
   if (angle_64bit_current_cpu) {
     defines += [ "ANGLE_IS_64_BIT_CPU" ]
@@ -84,6 +100,9 @@ config("internal_config") {
   if (angle_enable_vulkan) {
     if (angle_enable_vulkan_gpu_trace_events) {
       defines += [ "ANGLE_ENABLE_VULKAN_GPU_TRACE_EVENTS=1" ]
+    }
+    if (angle_vulkan_conformant_configs_only) {
+      defines += [ "ANGLE_VULKAN_CONFORMANT_CONFIGS_ONLY=1" ]
     }
   }
 
@@ -101,16 +120,18 @@ config("extra_warnings") {
       "/we4244",  # Conversion: possible loss of data.
       "/we4456",  # Variable shadowing.
       "/we4458",  # declaration hides class member.
+      "/we4715",  # not all control paths return a value
       "/we4800",  # forcing value to bool.
       "/we4838",  # narrowing conversion.
     ]
   }
   if (is_clang) {
     cflags += [
-      # Remove when crbug.com/428099 is resolved.
-      "-Winconsistent-missing-override",
-      "-Wunneeded-internal-declaration",
+      # Enable after anglebug.com/3128 is fixed.
+      # "-Wextra-semi-stmt",
+
       "-Wnon-virtual-dtor",
+      "-Wunneeded-internal-declaration",
     ]
   }
 }
@@ -124,40 +145,50 @@ config("build_id_config") {
   ldflags = [ "-Wl,--build-id" ]
 }
 
-if (is_win) {
+# Windows ARM64 is available since 10.0.16299 so no need to copy
+# d3dcompiler_47.dll because this file is available as inbox.
+if (is_win && target_cpu != "arm64") {
+  # We also ship an older DLL for compatiblity with Windows 7 machines without
+  # the UCRT. This DLL isn't available in the standard SDK distribution.
+  _old_compiler = "$windows_sdk_path/Redist/D3D/$target_cpu/d3dcompiler_old.dll"
+  _has_old_compiler =
+      exec_script("scripts/file_exists.py", [ _old_compiler ], "value")
+
   copy("copy_compiler_dll") {
     sources = [
       "$windows_sdk_path/Redist/D3D/$target_cpu/d3dcompiler_47.dll",
     ]
+
+    if (_has_old_compiler) {
+      sources += [ _old_compiler ]
+    }
+
     outputs = [
-      "$root_out_dir/d3dcompiler_47.dll",
+      "$root_out_dir/{{source_file_part}}",
     ]
   }
 }
 
-angle_undefine_configs = [ "//build/config/compiler:default_include_dirs" ]
-
 # Holds the shared includes so we only need to list them once.
-source_set("includes") {
-  sources = libangle_includes
+config("includes_config") {
+  include_dirs = [ "include" ]
 }
 
-static_library("preprocessor") {
-  sources = angle_preprocessor_sources
+angle_source_set("includes") {
+  sources = libangle_includes
+  public_configs = [ ":includes_config" ]
+}
 
-  configs -= angle_undefine_configs
-  configs += [
-    ":extra_warnings",
-    ":internal_config",
-  ]
+angle_static_library("preprocessor") {
+  sources = angle_preprocessor_sources
 
   public_deps = [
     ":angle_common",
   ]
 }
 
-config("translator_disable_pool_alloc") {
-  defines = [ "ANGLE_TRANSLATOR_DISABLE_POOL_ALLOC" ]
+config("angle_disable_pool_alloc") {
+  defines = [ "ANGLE_DISABLE_POOL_ALLOC" ]
 }
 
 config("debug_annotations_config") {
@@ -179,35 +210,46 @@ config("angle_common_config") {
   }
 }
 
-static_library("angle_common") {
+angle_source_set("angle_system_utils") {
+  sources = angle_system_utils_sources
+}
+
+angle_source_set("xxhash") {
+  sources = xxhash_sources
+  configs -= [ "${angle_root}:extra_warnings" ]
+}
+
+fuzzer_test("xxhash_fuzzer") {
+  sources = [
+    "src/common/third_party/xxhash/xxhash_fuzzer.cpp",
+  ]
+  deps = [
+    ":xxhash",
+  ]
+}
+
+angle_static_library("angle_common") {
   sources = libangle_common_sources
 
-  if (is_linux || is_android || is_fuchsia) {
-    sources += libangle_common_linux_sources
-  }
-
-  if (is_mac) {
-    sources += libangle_common_mac_sources
-  }
-
-  if (is_win) {
-    sources += libangle_common_win_sources
-  }
-
-  configs -= angle_undefine_configs
   configs += [
     ":angle_common_config",
     ":debug_annotations_config",
-    ":extra_warnings",
-    ":internal_config",
+  ]
+
+  deps = [
+    ":xxhash",
   ]
 
   public_deps = [
-    ":commit_id",
+    ":angle_system_utils",
+    ":angle_version",
     ":includes",
   ]
-  public_configs = [ ":angle_common_config" ]
+  public_configs += [ ":angle_common_config" ]
   all_dependent_configs = [ ":angle_release_asserts_config" ]
+  if (use_fuzzing_engine) {
+    all_dependent_configs += [ ":angle_disable_pool_alloc" ]
+  }
 }
 
 config("angle_image_util_config") {
@@ -217,17 +259,9 @@ config("angle_image_util_config") {
   ]
 }
 
-static_library("angle_image_util") {
+angle_static_library("angle_image_util") {
   sources = libangle_image_util_sources
-
-  configs -= angle_undefine_configs
-  configs += [
-    ":internal_config",
-    ":extra_warnings",
-  ]
-
-  public_configs = [ ":angle_image_util_config" ]
-
+  public_configs += [ ":angle_image_util_config" ]
   public_deps = [
     ":angle_common",
   ]
@@ -254,19 +288,11 @@ config("angle_gpu_info_util_config") {
   ]
 }
 
-static_library("angle_gpu_info_util") {
-  configs -= angle_undefine_configs
-  configs += [
-    ":internal_config",
-    ":extra_warnings",
-  ]
-
-  public_configs = [ ":angle_gpu_info_util_config" ]
-
+angle_static_library("angle_gpu_info_util") {
+  public_configs += [ ":angle_gpu_info_util_config" ]
   public_deps = [
     ":angle_common",
   ]
-
   sources = libangle_gpu_info_util_sources
   deps = []
   libs = []
@@ -282,7 +308,7 @@ static_library("angle_gpu_info_util") {
     defines += [ "GPU_INFO_USE_SETUPAPI" ]
   }
 
-  if (is_linux) {
+  if (is_linux || is_fuchsia) {
     sources += libangle_gpu_info_util_linux_sources
 
     if (use_x11) {
@@ -313,7 +339,7 @@ static_library("angle_gpu_info_util") {
   }
 }
 
-static_library("translator") {
+angle_static_library("translator") {
   sources = angle_translator_sources
   defines = []
 
@@ -337,15 +363,7 @@ static_library("translator") {
     defines += [ "ANGLE_ENABLE_VULKAN" ]
   }
 
-  configs -= angle_undefine_configs
-  configs += [
-    ":internal_config",
-    ":extra_warnings",
-  ]
-  public_configs = [ ":external_config" ]
-  if (use_fuzzing_engine) {
-    all_dependent_configs = [ ":translator_disable_pool_alloc" ]
-  }
+  public_configs += [ ":external_config" ]
 
   deps = [
     ":includes",
@@ -363,7 +381,7 @@ static_library("translator") {
   }
 }
 
-source_set("translator_fuzzer") {
+angle_source_set("translator_fuzzer") {
   sources = [
     "src/compiler/fuzz/translator_fuzzer.cpp",
   ]
@@ -380,6 +398,7 @@ source_set("translator_fuzzer") {
 
 config("commit_id_config") {
   include_dirs = [ "$root_gen_dir/angle" ]
+  visibility = [ ":commit_id" ]
 }
 
 commit_id_output_file = "$root_gen_dir/angle/id/commit.h"
@@ -415,12 +434,23 @@ if (angle_use_commit_id) {
   }
 }
 
+angle_source_set("angle_version") {
+  sources = [
+    "src/common/version.h",
+  ]
+  public_deps = [
+    ":commit_id",
+  ]
+}
+
 config("libANGLE_config") {
   cflags = []
   defines = []
   libs = []
+  ldflags = []
   if (angle_enable_d3d9) {
     defines += [ "ANGLE_ENABLE_D3D9" ]
+    ldflags += [ "/DELAYLOAD:d3d9.dll" ]
   }
   if (angle_enable_d3d11) {
     defines += [ "ANGLE_ENABLE_D3D11" ]
@@ -436,6 +466,9 @@ config("libANGLE_config") {
   }
   if (angle_enable_vulkan) {
     defines += [ "ANGLE_ENABLE_VULKAN" ]
+    if (angle_enable_custom_vulkan_cmd_buffers) {
+      defines += [ "ANGLE_USE_CUSTOM_VULKAN_CMD_BUFFERS=1" ]
+    }
   }
   if (angle_enable_null) {
     defines += [ "ANGLE_ENABLE_NULL" ]
@@ -447,7 +480,9 @@ config("libANGLE_config") {
   }
 
   if (is_android && (angle_enable_gl || angle_enable_vulkan)) {
-    if (ndk_supports_nativewindow) {
+    # In API level 26 ANativeWindow APIs were moved from libandroid.so
+    # into a separate library, libnativewindow.so
+    if (ndk_api_level_at_least_26) {
       libs += [ "nativewindow" ]
     } else {
       libs += [ "android" ]
@@ -456,36 +491,51 @@ config("libANGLE_config") {
 }
 
 if (angle_enable_vulkan) {
+  config("vulkan_config") {
+    if (is_android) {
+      libs = [ "vulkan" ]
+    }
+  }
+
   # Use this target to include everything ANGLE needs for Vulkan.
   group("angle_vulkan") {
-    deps = [
-      "$angle_root/third_party/glslang:glslang",
-    ]
     public_deps = [
       "$angle_root/third_party/vulkan-headers:vulkan_headers",
     ]
-    public_configs = [
-      "$angle_root/third_party/glslang:glslang_config",
-      "$angle_root/third_party/vulkan-validation-layers:vulkan_config",
-    ]
+    public_configs = [ ":vulkan_config" ]
     data_deps = []
-    if (!is_android) {
-      deps += [ "$angle_root/third_party/vulkan-loader:libvulkan" ]
+    if (!is_android && !is_fuchsia) {
+      deps = [
+        "$angle_root/third_party/vulkan-loader:libvulkan",
+      ]
       data_deps += [ "$angle_root/third_party/vulkan-tools:VkICD_mock_icd" ]
       public_configs +=
           [ "$angle_root/third_party/vulkan-loader:vulkan_loader_config" ]
     }
+    if (is_fuchsia) {
+      public_deps += [
+        "$angle_root/src/common/fuchsia_egl",
+        "//third_party/fuchsia-sdk:vulkan_base",
+        "//third_party/fuchsia-sdk/sdk:vulkan",
+      ]
+    }
 
     if (angle_enable_vulkan_validation_layers) {
-      data_deps += [ "$angle_root/third_party/vulkan-validation-layers:vulkan_validation_layers" ]
-      if (!is_android) {
-        data_deps += [ "$angle_root/third_party/vulkan-validation-layers:vulkan_gen_json_files" ]
+      if (is_fuchsia) {
+        deps = [
+          "//third_party/fuchsia-sdk:vulkan_validation",
+        ]
+      } else {
+        data_deps += [ "$angle_root/third_party/vulkan-validation-layers:vulkan_validation_layers" ]
+        if (!is_android) {
+          data_deps += [ "$angle_root/third_party/vulkan-validation-layers:vulkan_gen_json_files" ]
+        }
       }
     }
   }
 }
 
-static_library("libANGLE") {
+angle_static_library("libANGLE") {
   sources = libangle_sources
 
   include_dirs = []
@@ -497,14 +547,19 @@ static_library("libANGLE") {
   }
   public_deps = [
     ":angle_common",
-  ]
-  deps = [
     ":angle_gpu_info_util",
-    ":angle_image_util",
-    ":commit_id",
-    ":includes",
+    ":angle_version",
     ":translator",
   ]
+  deps = [
+    ":angle_image_util",
+    ":includes",
+  ]
+
+  # Enable extra Chromium style warnings for libANGLE.
+  if (is_clang) {
+    suppressed_configs -= [ "//build/config/clang:find_bad_constructs" ]
+  }
 
   # Shared D3D sources.
   if (angle_enable_d3d9 || angle_enable_d3d11) {
@@ -577,11 +632,23 @@ static_library("libANGLE") {
     if (is_linux) {
       sources += libangle_vulkan_xcb_sources
     }
+    if (is_fuchsia) {
+      sources += libangle_vulkan_fuchsia_sources
+      deps += [
+        "$angle_root/src/common/fuchsia_egl",
+        "$angle_root/src/common/fuchsia_egl:backend",
+      ]
+    }
     if (is_android) {
       sources += libangle_vulkan_android_sources
       libs += [ "vulkan" ]
     }
-    deps += [ ":angle_vulkan" ]
+    deps += [
+      ":angle_vulkan",
+      "${angle_glslang_dir}:glslang_default_resource_limits_sources",
+      "${angle_glslang_dir}:glslang_sources",
+      "${angle_spirv_tools_dir}:spvtools_val",
+    ]
     public_deps += [ "$angle_root/third_party/vulkan-headers:vulkan_headers" ]
 
     # Include generated shaders.
@@ -597,18 +664,12 @@ static_library("libANGLE") {
     defines += [ "ANGLE_GENERATE_SHADER_DEBUG_INFO" ]
   }
 
-  configs -= angle_undefine_configs
+  configs += [ ":debug_annotations_config" ]
+  public_configs += [ ":libANGLE_config" ]
 
-  configs += [
-    ":commit_id_config",
-    ":debug_annotations_config",
-    ":extra_warnings",
-    ":internal_config",
-  ]
-
-  public_configs = [ ":libANGLE_config" ]
-
-  if (is_win) {
+  # Windows ARM64 is available since 10.0.16299 so no need to copy
+  # d3dcompiler_47.dll because this file is available as inbox.
+  if (is_win && target_cpu != "arm64") {
     data_deps = [
       ":copy_compiler_dll",
     ]
@@ -626,44 +687,35 @@ config("shared_library_public_config") {
   }
 }
 
+config("library_name_config") {
+  defines = [
+    "ANGLE_EGL_LIBRARY_NAME=\"libEGL${angle_libs_suffix}\"",
+    "ANGLE_GLESV2_LIBRARY_NAME=\"libGLESv2${angle_libs_suffix}\"",
+  ]
+}
+
 # This config controls export definitions on ANGLE API calls.
 config("angle_static") {
   defines = [
     "ANGLE_EXPORT=",
+    "ANGLE_UTIL_EXPORT=",
     "EGLAPI=",
     "GL_APICALL=",
     "GL_API=",
   ]
 }
 
-shared_library("libGLESv2${angle_libs_suffix}") {
+angle_shared_library("libGLESv2${angle_libs_suffix}") {
   sources = libglesv2_sources
 
-  if (is_android) {
-    configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
-    configs += [ ":build_id_config" ]
-  }
-
   if (is_win) {
-    ldflags = [ "/DEF:" + rebase_path("src/libGLESv2/libGLESv2_autogen.def",
-                                      root_build_dir) ]
+    sources += [ "src/libGLESv2/libGLESv2_autogen.def" ]
   }
 
-  if (is_mac && !is_component_build) {
-    ldflags = [
-      "-install_name",
-      "@rpath/${target_name}.dylib",
-    ]
-    public_configs = [ ":shared_library_public_config" ]
-  }
-
-  configs -= angle_undefine_configs
   configs += [
     ":angle_gl_visibility_config",
-    ":commit_id_config",
     ":debug_annotations_config",
-    ":extra_warnings",
-    ":internal_config",
+    ":gl_prototypes",
   ]
 
   defines = [ "LIBGLESV2_IMPLEMENTATION" ]
@@ -672,50 +724,31 @@ shared_library("libGLESv2${angle_libs_suffix}") {
     ":includes",
     ":libANGLE",
   ]
+
+  public_deps = [
+    ":angle_version",
+  ]
 }
 
-static_library("libGLESv2_static") {
+angle_static_library("libGLESv2_static") {
   sources = libglesv2_sources
-
-  configs -= angle_undefine_configs
-  configs += [
-    ":commit_id_config",
-    ":debug_annotations_config",
-    ":extra_warnings",
-    ":internal_config",
-  ]
-
-  public_configs = [ ":angle_static" ]
-
+  configs += [ ":debug_annotations_config" ]
+  public_configs += [ ":angle_static" ]
   deps = [
     ":includes",
+  ]
+  public_deps = [
     ":libANGLE",
   ]
 }
 
-shared_library("libGLESv1_CM${angle_libs_suffix}") {
+angle_shared_library("libGLESv1_CM${angle_libs_suffix}") {
   sources = libglesv1_cm_sources
 
-  if (is_android) {
-    configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
-    configs += [ ":build_id_config" ]
-  }
-
-  if (is_mac && !is_component_build) {
-    ldflags = [
-      "-install_name",
-      "@rpath/${target_name}.dylib",
-    ]
-    public_configs = [ ":shared_library_public_config" ]
-  }
-
-  configs -= angle_undefine_configs
   configs += [
     ":angle_gl_visibility_config",
-    ":commit_id_config",
     ":debug_annotations_config",
-    ":extra_warnings",
-    ":internal_config",
+    ":gl_prototypes",
   ]
 
   defines = []
@@ -726,38 +759,42 @@ shared_library("libGLESv1_CM${angle_libs_suffix}") {
   ]
 }
 
-static_library("libGLESv1_CM_static") {
+angle_static_library("libGLESv1_CM_static") {
   sources = libglesv1_cm_sources
-
-  configs -= angle_undefine_configs
-  configs += [
-    ":commit_id_config",
-    ":debug_annotations_config",
-    ":extra_warnings",
-    ":internal_config",
-  ]
-
-  public_configs = [ ":angle_static" ]
-
+  configs += [ ":debug_annotations_config" ]
+  public_configs += [ ":angle_static" ]
   deps = [
     ":includes",
     ":libGLESv2_static",
   ]
 }
 
-shared_library("libEGL${angle_libs_suffix}") {
+config("libEGL_egl_loader_config") {
+  defines = [ "ANGLE_USE_EGL_LOADER" ]
+}
+
+angle_source_set("libEGL_egl_loader") {
+  sources = [
+    "src/libEGL/egl_loader_autogen.cpp",
+    "src/libEGL/egl_loader_autogen.h",
+  ]
+
+  public_configs += [
+    ":libEGL_egl_loader_config",
+    ":gl_prototypes",
+  ]
+
+  deps = [
+    ":includes",
+  ]
+}
+
+angle_shared_library("libEGL${angle_libs_suffix}") {
   sources = libegl_sources
 
-  if (is_android) {
-    configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
-    configs += [ ":build_id_config" ]
-  }
-  configs -= angle_undefine_configs
   configs += [
-    ":commit_id_config",
     ":debug_annotations_config",
-    ":extra_warnings",
-    ":internal_config",
+    ":library_name_config",
   ]
 
   defines = [ "LIBEGL_IMPLEMENTATION" ]
@@ -768,35 +805,33 @@ shared_library("libEGL${angle_libs_suffix}") {
   }
 
   if (is_win) {
-    ldflags = [ "/DEF:" + rebase_path("src/libEGL/libEGL.def", root_build_dir) ]
-  }
-
-  if (is_mac && !is_component_build) {
-    ldflags = [
-      "-install_name",
-      "@rpath/${target_name}.dylib",
-    ]
-    public_configs = [ ":shared_library_public_config" ]
+    sources += [ "src/libEGL/libEGL.def" ]
   }
 
   deps = [
+    ":angle_system_utils",
+    ":angle_version",
+    ":libEGL_egl_loader",
+  ]
+
+  public_deps = [
     ":includes",
+  ]
+
+  data_deps = [
     ":libGLESv2${angle_libs_suffix}",
   ]
 }
 
-static_library("libEGL_static") {
+angle_static_library("libEGL_static") {
   sources = libegl_sources
 
-  configs -= angle_undefine_configs
   configs += [
-    ":commit_id_config",
     ":debug_annotations_config",
-    ":extra_warnings",
-    ":internal_config",
+    ":library_name_config",
   ]
 
-  public_configs = [ ":angle_static" ]
+  public_configs += [ ":angle_static" ]
 
   deps = [
     ":includes",
@@ -806,8 +841,51 @@ static_library("libEGL_static") {
 
 import("util/util.gni")
 
+config("angle_util_loader_config") {
+  defines = [ "ANGLE_USE_UTIL_LOADER" ]
+}
+
+angle_source_set("angle_util_loader_headers") {
+  sources = [
+    "util/egl_loader_autogen.h",
+    "util/gles_loader_autogen.h",
+    "util/util_export.h",
+  ]
+
+  if (is_win) {
+    sources += [ "util/windows/wgl_loader_autogen.h" ]
+  }
+
+  public_deps = [
+    ":includes",
+  ]
+}
+
+angle_source_set("angle_util_loader") {
+  defines = [ "LIBANGLE_UTIL_IMPLEMENTATION" ]
+
+  sources = [
+    "util/egl_loader_autogen.cpp",
+    "util/gles_loader_autogen.cpp",
+  ]
+
+  if (is_win) {
+    sources += [ "util/windows/wgl_loader_autogen.cpp" ]
+  }
+
+  deps = [
+    ":angle_util_loader_headers",
+  ]
+
+  public_configs += [
+    ":angle_util_config",
+    ":angle_util_loader_config",
+    ":no_gl_prototypes",
+  ]
+}
+
 config("angle_util_config") {
-  include_dirs = [ "util" ]
+  include_dirs = [ "." ]
   if (is_linux && use_x11) {
     libs = [ "X11" ]
   }
@@ -819,11 +897,11 @@ foreach(is_shared_library,
           false,
         ]) {
   if (is_shared_library) {
-    library_type = "shared_library"
+    library_type = "angle_shared_library"
     library_name = "angle_util"
     dep_suffix = "${angle_libs_suffix}"
   } else {
-    library_type = "static_library"
+    library_type = "angle_static_library"
     library_name = "angle_util_static"
     dep_suffix = "_static"
   }
@@ -832,7 +910,7 @@ foreach(is_shared_library,
     sources = util_sources
 
     if (is_win) {
-      sources += util_win32_sources
+      sources += util_win_sources
     }
 
     libs = []
@@ -857,10 +935,6 @@ foreach(is_shared_library,
     }
 
     if (is_android) {
-      if (is_shared_library) {
-        configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
-      }
-
       # To prevent linux sources filtering on android
       set_sources_assignment_filter([])
       sources += util_linux_sources
@@ -871,36 +945,53 @@ foreach(is_shared_library,
       ]
     }
 
-    if (use_ozone) {
-      sources += util_ozone_sources
-    }
+    configs += [ ":debug_annotations_config" ]
 
-    configs += [
-      ":debug_annotations_config",
-      ":extra_warnings",
-    ]
-
-    public_configs = [
-      ":angle_util_config",
-      ":internal_config",
-    ]
+    public_configs += [ ":angle_util_config" ]
 
     deps = [
       ":angle_common",
-      ":libEGL${dep_suffix}",
-      ":libGLESv2${dep_suffix}",
+      ":angle_util_loader_headers",
     ]
+
+    public_deps = []
+    if (is_fuchsia) {
+      sources += util_fuchsia_sources
+      public_deps += [
+        "$angle_root/src/common/fuchsia_egl",
+        "//third_party/fuchsia-sdk/sdk:async_loop_cpp",
+        "//third_party/fuchsia-sdk/sdk:fdio",
+        "//third_party/fuchsia-sdk/sdk:images",
+        "//third_party/fuchsia-sdk/sdk:scenic_cpp",
+        "//third_party/fuchsia-sdk/sdk:ui_gfx",
+        "//third_party/fuchsia-sdk/sdk:ui_policy",
+        "//third_party/fuchsia-sdk/sdk:ui_scenic",
+        "//third_party/fuchsia-sdk/sdk:ui_viewsv1",
+      ]
+    } else if (use_ozone) {
+      sources += util_ozone_sources
+    }
 
     if (is_shared_library) {
       defines = [ "LIBANGLE_UTIL_IMPLEMENTATION" ]
 
+      if (is_win) {
+        sources += util_win_shared_sources
+      }
+
+      public_deps += [ ":angle_util_loader" ]
+
       if (is_mac && !is_component_build) {
         ldflags = [
           "-install_name",
-          "@rpath/lib${target_name}.dylib",
+          "@rpath/libangle_util.dylib",
         ]
-        public_configs += [ ":shared_library_public_config" ]
       }
+    } else {
+      public_configs += [
+        ":angle_static",
+        ":gl_prototypes",
+      ]
     }
   }
 }
@@ -908,7 +999,7 @@ foreach(is_shared_library,
 # Convenience targets for some of the samples so they can be built
 # with Chromium's toolchain.
 
-executable("angle_shader_translator") {
+angle_executable("angle_shader_translator") {
   testonly = true
 
   sources = [
@@ -920,73 +1011,111 @@ executable("angle_shader_translator") {
   ]
 }
 
-if (is_android) {
-  config("angle_feature_support_config") {
-    include_dirs = [
-      "include",
-      "src",
-    ]
-    defines = [ "LIBFEATURE_SUPPORT_IMPLEMENTATION" ]
-    if (is_debug) {
-      defines += [ "ANGLE_FEATURE_UTIL_LOG_VERBOSE" ]
-    }
+config("angle_feature_support_config") {
+  include_dirs = [
+    "include",
+    "src",
+  ]
+  defines = [ "LIBFEATURE_SUPPORT_IMPLEMENTATION" ]
+  if (is_debug) {
+    defines += [ "ANGLE_FEATURE_UTIL_LOG_VERBOSE" ]
   }
+}
 
-  shared_library("libfeature_support${angle_libs_suffix}") {
-    configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
-    configs += [ ":build_id_config" ]
-    configs -= angle_undefine_configs
-    configs += [
-      ":internal_config",
-      ":extra_warnings",
-    ]
-
-    public_configs = [
-      ":angle_feature_support_config",
-      "third_party/jsoncpp:jsoncpp_config",
-    ]
-
+angle_shared_library("libfeature_support${angle_libs_suffix}") {
+  if (is_android) {
     libs = [ "log" ]
+  }
 
-    sources = [
-      "src/feature_support_util/angle_feature_support_util.h",
-      "src/feature_support_util/feature_support_util.cpp",
-      "src/feature_support_util/feature_support_util.h",
-    ]
-    deps = [
-      "third_party/jsoncpp:jsoncpp",
+  public_configs += [
+    ":angle_feature_support_config",
+    "${angle_jsoncpp_dir}:jsoncpp_config",
+  ]
+
+  if (is_mac && !is_component_build) {
+    ldflags = [
+      "-install_name",
+      "@rpath/${target_name}.dylib",
     ]
   }
 
-  # Package ANGLE libraries for pre-installed system image
-  android_assets("angle_apk_assets") {
-    disable_compression = true
-    sources = [
-      "src/feature_support_util/a4a_rules.json",
-    ]
-  }
-  android_apk("angle_apk") {
-    deps = [
-      ":angle_apk_assets",
-    ]
-    if (build_apk_secondary_abi && android_64bit_target_cpu) {
-      secondary_abi_shared_libraries = [
-        "//third_party/angle:libEGL${angle_libs_suffix}($android_secondary_abi_toolchain)",
-        "//third_party/angle:libGLESv1_CM${angle_libs_suffix}($android_secondary_abi_toolchain)",
-        "//third_party/angle:libGLESv2${angle_libs_suffix}($android_secondary_abi_toolchain)",
-        "//third_party/angle:libfeature_support${angle_libs_suffix}($android_secondary_abi_toolchain)",
-      ]
+  sources = [
+    "src/feature_support_util/feature_support_util.cpp",
+    "src/feature_support_util/feature_support_util.h",
+  ]
+
+  deps = [
+    ":angle_gpu_info_util",
+    "${angle_jsoncpp_dir}:jsoncpp",
+  ]
+}
+
+if (!is_component_build && is_android && symbol_level != 0) {
+  action_foreach("compressed_symbols") {
+    sources = []
+    foreach(_library, angle_libraries) {
+      sources += [ "${root_out_dir}/lib${_library}${angle_libs_suffix}.so" ]
+    }
+    if (angle_enable_vulkan_validation_layers) {
+      foreach(_layer, vulkan_validation_layers) {
+        sources += [ "${root_out_dir}/lib${_layer}.so" ]
+      }
     }
 
-    android_manifest = "AndroidManifest.xml"
+    script = rebase_path("${root_build_dir}/android/compress_symbols.py",
+                         root_build_dir)
 
-    apk_name = "ANGLEPrebuilt"
-    uncompress_shared_libraries = true
-    shared_libraries = [
-      "//third_party/angle:libEGL${angle_libs_suffix}",
-      "//third_party/angle:libGLESv1_CM${angle_libs_suffix}",
-      "//third_party/angle:libGLESv2${angle_libs_suffix}",
-      "//third_party/angle:libfeature_support${angle_libs_suffix}",
+    deps = []
+    foreach(_library, angle_libraries) {
+      deps += [ "${angle_root}:lib${_library}${angle_libs_suffix}" ]
+    }
+
+    if (angle_enable_vulkan_validation_layers) {
+      foreach(_layer, vulkan_validation_layers) {
+        deps +=
+            [ "${angle_root}/third_party/vulkan-validation-layers:${_layer}" ]
+      }
+    }
+
+    outputs = [
+      "$root_out_dir/lib.compressed/{{source_file_part}}",
+    ]
+
+    android_nm = "${android_tool_prefix}nm"
+
+    args = [
+      "--objcopy",
+      rebase_path(android_objcopy, root_build_dir),
+      "--nm",
+      rebase_path(android_nm, root_build_dir),
+      "--sofile",
+      "{{source}}",
+      "--unstrippedsofile",
+      "{{source_dir}}/lib.unstripped/{{source_file_part}}",
+      "--output",
+      "{{source_dir}}/lib.compressed/{{source_file_part}}",
+    ]
+  }
+}
+
+if (!is_component_build && is_android &&
+    current_toolchain == default_toolchain) {
+  # Package ANGLE libraries for pre-installed system image
+  angle_apk("aosp_apk") {
+    package_name = "com.android.angle"
+    apk_name = "AngleLibraries"
+  }
+
+  group("angle_apks") {
+    deps = [
+      ":aosp_apk",
+    ]
+  }
+
+  # Include a temporary target until we update builders to use angle_apks
+  group("angle_apk") {
+    deps = [
+      ":angle_apks",
     ]
   }
 }

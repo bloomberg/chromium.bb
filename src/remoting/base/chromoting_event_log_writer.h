@@ -11,7 +11,7 @@ class ChromotingEvent;
 
 class ChromotingEventLogWriter {
  public:
-  virtual ~ChromotingEventLogWriter(){};
+  virtual ~ChromotingEventLogWriter() {}
 
   virtual void Log(const ChromotingEvent& entry) = 0;
 };

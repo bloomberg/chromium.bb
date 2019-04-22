@@ -20,12 +20,14 @@ import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChange
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
+import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.infobar.ReaderModeInfoBar;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.Tab.TabHidingType;
-import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
+import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.components.dom_distiller.content.DistillablePageUtils;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
@@ -34,13 +36,13 @@ import org.chromium.components.navigation_interception.NavigationParams;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
+import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Manages UI effects for reader mode including hiding and showing the
@@ -197,6 +199,17 @@ public class ReaderModeManager extends TabModelSelectorTabObserver {
     }
 
     @Override
+    public void onActivityAttachmentChanged(Tab tab, boolean isAttached) {
+        if (isAttached) return;
+
+        // Reset the delegate on tab detached from activity so that the native counterpart doesn't
+        // hold onto the activity implicitly through tab model selector.
+        // TODO(mdjones): Reader mode might not be triggered on this page unless we send a new
+        // delegate.
+        DistillablePageUtils.setDelegate(tab.getWebContents(), null);
+    }
+
+    @Override
     public void onDestroyed(Tab tab) {
         if (tab == null) return;
 
@@ -312,9 +325,8 @@ public class ReaderModeManager extends TabModelSelectorTabObserver {
             private int mLastDistillerPageIndex;
 
             @Override
-            public void didStartNavigation(String url, boolean isInMainFrame,
-                    boolean isSameDocument, boolean isErrorPage) {
-                if (!isInMainFrame || isSameDocument) return;
+            public void didStartNavigation(NavigationHandle navigation) {
+                if (!navigation.isInMainFrame() || navigation.isSameDocument()) return;
 
                 // Reader Mode should not pollute the navigation stack. To avoid this, watch for
                 // navigations and prepare to remove any that are "chrome-distiller" urls.
@@ -331,21 +343,20 @@ public class ReaderModeManager extends TabModelSelectorTabObserver {
                 ReaderModeTabInfo tabInfo = mTabStatusMap.get(readerTabId);
                 if (tabInfo == null) return;
 
-                tabInfo.setUrl(url);
-                if (DomDistillerUrlUtils.isDistilledPage(url)) {
+                tabInfo.setUrl(navigation.getUrl());
+                if (DomDistillerUrlUtils.isDistilledPage(navigation.getUrl())) {
                     tabInfo.setStatus(STARTED);
-                    mReaderModePageUrl = url;
+                    mReaderModePageUrl = navigation.getUrl();
                 }
             }
 
             @Override
-            public void didFinishNavigation(String url, boolean isInMainFrame, boolean isErrorPage,
-                    boolean hasCommitted, boolean isSameDocument, boolean isFragmentNavigation,
-                    boolean isRendererInitiated, boolean isDownload, Integer pageTransition,
-                    int errorCode, String errorDescription, int httpStatusCode) {
+            public void didFinishNavigation(NavigationHandle navigation) {
                 // TODO(cjhopman): This should possibly ignore navigations that replace the entry
                 // (like those from history.replaceState()).
-                if (!hasCommitted || !isInMainFrame || isSameDocument) return;
+                if (!navigation.hasCommitted() || !navigation.isInMainFrame()
+                        || navigation.isSameDocument())
+                    return;
 
                 if (mShouldRemovePreviousNavigation) {
                     mShouldRemovePreviousNavigation = false;
@@ -360,7 +371,7 @@ public class ReaderModeManager extends TabModelSelectorTabObserver {
                 if (tabInfo == null) return;
 
                 tabInfo.setStatus(POSSIBLE);
-                if (!TextUtils.equals(url,
+                if (!TextUtils.equals(navigation.getUrl(),
                             DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(
                                     mReaderModePageUrl))) {
                     tabInfo.setStatus(NOT_POSSIBLE);
@@ -401,8 +412,7 @@ public class ReaderModeManager extends TabModelSelectorTabObserver {
      * @param timeMs The amount of time in ms that the user spent in Reader Mode.
      */
     private void recordReaderModeViewDuration(long timeMs) {
-        RecordHistogram.recordLongTimesHistogram(
-                "DomDistiller.Time.ViewingReaderModePage", timeMs, TimeUnit.MILLISECONDS);
+        RecordHistogram.recordLongTimesHistogram("DomDistiller.Time.ViewingReaderModePage", timeMs);
     }
 
     /**
@@ -453,8 +463,23 @@ public class ReaderModeManager extends TabModelSelectorTabObserver {
         if (info != null) info.onStartedReaderMode();
 
         // Make sure to exit fullscreen mode before navigating.
-        mTabModelSelector.getCurrentTab().exitFullscreenMode();
+        Tab currentTab = mTabModelSelector.getCurrentTab();
+        currentTab.exitFullscreenMode();
+
+        // RenderWidgetHostViewAndroid hides the controls after transitioning to reader mode.
+        // See the long history of the issue in https://crbug.com/825765, https://crbug.com/853686,
+        // https://crbug.com/861618, https://crbug.com/922388.
+        // TODO(pshmakov): find a proper solution instead of this workaround.
+        showControlsTransient(currentTab);
+
         DomDistillerTabUtils.distillCurrentPageAndView(getBasePageWebContents());
+    }
+
+    private void showControlsTransient(Tab tab) {
+        FullscreenManager fullscreenManager = tab.getFullscreenManager();
+        if (!(fullscreenManager instanceof ChromeFullscreenManager)) return;
+        ((ChromeFullscreenManager) fullscreenManager).getBrowserVisibilityDelegate()
+                .showControlsTransient();
     }
 
     private void distillInCustomTab() {

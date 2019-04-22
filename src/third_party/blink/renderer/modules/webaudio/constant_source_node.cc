@@ -104,6 +104,19 @@ bool ConstantSourceHandler::PropagatesSilence() const {
   return !IsPlayingOrScheduled() || HasFinished();
 }
 
+void ConstantSourceHandler::HandleStoppableSourceNode() {
+  double now = Context()->currentTime();
+
+  // If we know the end time, and the source was started and the current time is
+  // definitely past the end time, we can stop this node.  (This handles the
+  // case where the this source is not connected to the destination and we want
+  // to stop it.)
+  if (end_time_ != kUnknownTime && IsPlayingOrScheduled() &&
+      now >= end_time_ + kExtraStopFrames / Context()->sampleRate()) {
+    Finish();
+  }
+}
+
 // ----------------------------------------------------------------
 ConstantSourceNode::ConstantSourceNode(BaseAudioContext& context)
     : AudioScheduledSourceNode(context),
@@ -122,12 +135,7 @@ ConstantSourceNode* ConstantSourceNode::Create(
     ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
-  if (context.IsContextClosed()) {
-    context.ThrowExceptionForClosedState(exception_state);
-    return nullptr;
-  }
-
-  return new ConstantSourceNode(context);
+  return MakeGarbageCollected<ConstantSourceNode>(context);
 }
 
 ConstantSourceNode* ConstantSourceNode::Create(

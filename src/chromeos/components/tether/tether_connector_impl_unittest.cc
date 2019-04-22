@@ -6,13 +6,15 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
+#include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/components/tether/connect_tethering_operation.h"
 #include "chromeos/components/tether/device_id_tether_network_guid_map.h"
 #include "chromeos/components/tether/fake_active_host.h"
-#include "chromeos/components/tether/fake_ble_connection_manager.h"
 #include "chromeos/components/tether/fake_disconnect_tethering_request_sender.h"
 #include "chromeos/components/tether/fake_host_scan_cache.h"
 #include "chromeos/components/tether/fake_notification_presenter.h"
@@ -22,15 +24,12 @@
 #include "chromeos/components/tether/mock_host_connection_metrics_logger.h"
 #include "chromeos/components/tether/mock_tether_host_response_recorder.h"
 #include "chromeos/components/tether/tether_connector.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/network_state_test.h"
+#include "chromeos/network/network_state_test_helper.h"
 #include "chromeos/services/device_sync/public/cpp/fake_device_sync_client.h"
 #include "chromeos/services/secure_channel/public/cpp/client/fake_secure_channel_client.h"
-#include "components/cryptauth/remote_device_ref.h"
-#include "components/cryptauth/remote_device_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
@@ -63,7 +62,7 @@ std::string CreateWifiConfigurationJsonString() {
 class FakeConnectTetheringOperation : public ConnectTetheringOperation {
  public:
   FakeConnectTetheringOperation(
-      cryptauth::RemoteDeviceRef device_to_connect,
+      multidevice::RemoteDeviceRef device_to_connect,
       device_sync::DeviceSyncClient* device_sync_client,
       secure_channel::SecureChannelClient* secure_channel_client,
       TetherHostResponseRecorder* tether_host_response_recorder,
@@ -91,7 +90,7 @@ class FakeConnectTetheringOperation : public ConnectTetheringOperation {
     NotifyObserversOfConnectionFailure(error_code);
   }
 
-  cryptauth::RemoteDeviceRef GetRemoteDevice() {
+  multidevice::RemoteDeviceRef GetRemoteDevice() {
     EXPECT_EQ(1u, remote_devices().size());
     return remote_devices()[0];
   }
@@ -115,7 +114,7 @@ class FakeConnectTetheringOperationFactory
  protected:
   // ConnectTetheringOperation::Factory:
   std::unique_ptr<ConnectTetheringOperation> BuildInstance(
-      cryptauth::RemoteDeviceRef device_to_connect,
+      multidevice::RemoteDeviceRef device_to_connect,
       device_sync::DeviceSyncClient* device_sync_client,
       secure_channel::SecureChannelClient* secure_channel_client,
       TetherHostResponseRecorder* tether_host_response_recorder,
@@ -134,16 +133,14 @@ class FakeConnectTetheringOperationFactory
 
 }  // namespace
 
-class TetherConnectorImplTest : public NetworkStateTest {
+class TetherConnectorImplTest : public testing::Test {
  public:
   TetherConnectorImplTest()
-      : test_devices_(cryptauth::CreateRemoteDeviceRefListForTest(2u)) {}
+      : test_devices_(multidevice::CreateRemoteDeviceRefListForTest(2u)) {}
   ~TetherConnectorImplTest() override = default;
 
   void SetUp() override {
-    DBusThreadManager::Initialize();
-    NetworkStateTest::SetUp();
-    network_state_handler()->SetTetherTechnologyState(
+    helper_.network_state_handler()->SetTetherTechnologyState(
         NetworkStateHandler::TECHNOLOGY_ENABLED);
 
     fake_operation_factory_ =
@@ -155,12 +152,11 @@ class TetherConnectorImplTest : public NetworkStateTest {
         std::make_unique<device_sync::FakeDeviceSyncClient>();
     fake_secure_channel_client_ =
         std::make_unique<secure_channel::FakeSecureChannelClient>();
-    fake_wifi_hotspot_connector_ =
-        std::make_unique<FakeWifiHotspotConnector>(network_state_handler());
+    fake_wifi_hotspot_connector_ = std::make_unique<FakeWifiHotspotConnector>(
+        helper_.network_state_handler());
     fake_active_host_ = std::make_unique<FakeActiveHost>();
     fake_tether_host_fetcher_ =
         std::make_unique<FakeTetherHostFetcher>(test_devices_);
-    fake_ble_connection_manager_ = std::make_unique<FakeBleConnectionManager>();
     mock_tether_host_response_recorder_ =
         std::make_unique<MockTetherHostResponseRecorder>();
     device_id_tether_network_guid_map_ =
@@ -180,7 +176,7 @@ class TetherConnectorImplTest : public NetworkStateTest {
 
     tether_connector_ = base::WrapUnique(new TetherConnectorImpl(
         fake_device_sync_client_.get(), fake_secure_channel_client_.get(),
-        network_state_handler(), fake_wifi_hotspot_connector_.get(),
+        helper_.network_state_handler(), fake_wifi_hotspot_connector_.get(),
         fake_active_host_.get(), fake_tether_host_fetcher_.get(),
         mock_tether_host_response_recorder_.get(),
         device_id_tether_network_guid_map_.get(), fake_host_scan_cache_.get(),
@@ -197,10 +193,6 @@ class TetherConnectorImplTest : public NetworkStateTest {
     // destroyed to ensure that NetworkStateHandler has zero observers by the
     // time it reaches its destructor.
     fake_wifi_hotspot_connector_.reset();
-
-    ShutdownNetworkState();
-    NetworkStateTest::TearDown();
-    DBusThreadManager::Shutdown();
   }
 
   std::string GetTetherNetworkGuid(const std::string& device_id) {
@@ -231,7 +223,7 @@ class TetherConnectorImplTest : public NetworkStateTest {
                                 int signal_strength,
                                 bool has_connected_to_host,
                                 bool setup_required) {
-    network_state_handler()->AddTetherNetworkState(
+    helper_.network_state_handler()->AddTetherNetworkState(
         tether_network_guid, device_name, carrier, battery_percentage,
         signal_strength, has_connected_to_host);
     fake_host_scan_cache_->SetHostScanResult(
@@ -246,7 +238,7 @@ class TetherConnectorImplTest : public NetworkStateTest {
   }
 
   void SuccessfullyJoinWifiNetwork() {
-    ConfigureService(CreateWifiConfigurationJsonString());
+    helper_.ConfigureService(CreateWifiConfigurationJsonString());
     fake_wifi_hotspot_connector_->CallMostRecentCallback(kWifiNetworkGuid);
   }
 
@@ -277,7 +269,7 @@ class TetherConnectorImplTest : public NetworkStateTest {
 
     // test_devices_[0] does not require first-time setup, but test_devices_[1]
     // does require first-time setup. See SetUpTetherNetworks().
-    cryptauth::RemoteDeviceRef test_device =
+    multidevice::RemoteDeviceRef test_device =
         test_devices_[setup_required ? 1 : 0];
 
     CallConnect(GetTetherNetworkGuid(test_device.GetDeviceId()));
@@ -320,8 +312,9 @@ class TetherConnectorImplTest : public NetworkStateTest {
     return result;
   }
 
-  const cryptauth::RemoteDeviceRefList test_devices_;
+  const multidevice::RemoteDeviceRefList test_devices_;
   const base::MessageLoop message_loop_;
+  NetworkStateTestHelper helper_{true /* use_default_devices_and_services */};
 
   std::unique_ptr<FakeConnectTetheringOperationFactory> fake_operation_factory_;
   std::unique_ptr<FakeWifiHotspotConnector> fake_wifi_hotspot_connector_;
@@ -330,7 +323,6 @@ class TetherConnectorImplTest : public NetworkStateTest {
   std::unique_ptr<device_sync::FakeDeviceSyncClient> fake_device_sync_client_;
   std::unique_ptr<secure_channel::SecureChannelClient>
       fake_secure_channel_client_;
-  std::unique_ptr<FakeBleConnectionManager> fake_ble_connection_manager_;
   std::unique_ptr<MockTetherHostResponseRecorder>
       mock_tether_host_response_recorder_;
   // TODO(hansberry): Use a fake for this when a real mapping scheme is created.

@@ -139,9 +139,9 @@ void RendererStartupHelper::InitializeProcess(
   // of the ExtensionSettings policy.
   ExtensionMsg_UpdateDefaultPolicyHostRestrictions_Params params;
   params.default_policy_blocked_hosts =
-      PermissionsData::default_policy_blocked_hosts();
+      PermissionsData::default_policy_blocked_hosts().Clone();
   params.default_policy_allowed_hosts =
-      PermissionsData::default_policy_allowed_hosts();
+      PermissionsData::default_policy_allowed_hosts().Clone();
   process->Send(new ExtensionMsg_UpdateDefaultPolicyHostRestrictions(params));
 
   // Loaded extensions.
@@ -243,14 +243,16 @@ void RendererStartupHelper::OnExtensionLoaded(const Extension& extension) {
   // asynchronously.
   url::Origin extension_origin = url::Origin::Create(extension.url());
   std::vector<network::mojom::CorsOriginPatternPtr> allow_list =
-      CreateCorsOriginAccessAllowList(extension);
+      CreateCorsOriginAccessAllowList(
+          extension,
+          PermissionsData::EffectiveHostPermissionsMode::kOmitTabSpecific);
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     ExtensionsClient::Get()->AddOriginAccessPermissions(extension, true,
                                                         &allow_list);
   }
 
-  content::BrowserContext::SetCorsOriginAccessListsForOrigin(
-      browser_context_, extension_origin, std::move(allow_list),
+  browser_context_->SetCorsOriginAccessListForOrigin(
+      extension_origin, std::move(allow_list),
       CreateCorsOriginAccessBlockList(extension), base::DoNothing::Once());
 
   // We don't need to include tab permisisons here, since the extension
@@ -284,9 +286,8 @@ void RendererStartupHelper::OnExtensionUnloaded(const Extension& extension) {
 
   // Resets registered origin access lists in the BrowserContext asynchronously.
   url::Origin extension_origin = url::Origin::Create(extension.url());
-  content::BrowserContext::SetCorsOriginAccessListsForOrigin(
-      browser_context_, extension_origin,
-      std::vector<network::mojom::CorsOriginPatternPtr>(),
+  browser_context_->SetCorsOriginAccessListForOrigin(
+      extension_origin, std::vector<network::mojom::CorsOriginPatternPtr>(),
       std::vector<network::mojom::CorsOriginPatternPtr>(),
       base::DoNothing::Once());
 

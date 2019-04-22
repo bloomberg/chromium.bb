@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/base64.h"
+#include "base/bind.h"
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -29,7 +30,6 @@
 #include "chrome/browser/plugins/plugin_utils.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
-#include "chrome/browser/prerender/prerender_resource_throttle.h"
 #include "chrome/browser/prerender/prerender_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
@@ -89,6 +89,7 @@
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/api/streams_private/streams_private_api.h"
+#include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_attach_helper.h"
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_urls.h"
@@ -103,16 +104,9 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/download/intercept_download_resource_throttle.h"
-#include "chrome/browser/loader/data_reduction_proxy_resource_throttle_android.h"
-#endif
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/signin/merge_session_resource_throttle.h"
-#include "chrome/browser/chromeos/login/signin/merge_session_throttling_utils.h"
 #endif
 
 using content::BrowserThread;
-using content::LoginDelegate;
 using content::RenderViewHost;
 using content::ResourceRequestInfo;
 using content::ResourceType;
@@ -157,11 +151,11 @@ void UpdatePrerenderNetworkBytesCallback(content::WebContents* web_contents,
 #if BUILDFLAG(ENABLE_NACL)
 void AppendComponentUpdaterThrottles(
     net::URLRequest* request,
-    const ResourceRequestInfo& info,
+    ResourceRequestInfo* info,
     content::ResourceContext* resource_context,
     ResourceType resource_type,
     std::vector<std::unique_ptr<content::ResourceThrottle>>* throttles) {
-  if (info.IsPrerendering())
+  if (info->IsPrerendering())
     return;
 
   const char* crx_id = NULL;
@@ -236,7 +230,7 @@ void NotifyUIThreadOfRequestComplete(
     const content::ResourceRequestInfo::FrameTreeNodeIdGetter&
         frame_tree_node_id_getter,
     const GURL& url,
-    const net::HostPortPair& host_port_pair,
+    const net::IPEndPoint& remote_endpoint,
     const content::GlobalRequestID& request_id,
     int render_process_id,
     int render_frame_id,
@@ -284,7 +278,7 @@ void NotifyUIThreadOfRequestComplete(
       content::RenderFrameHost* render_frame_host_or_null =
           content::RenderFrameHost::FromID(render_process_id, render_frame_id);
       metrics_observer->OnRequestComplete(
-          url, host_port_pair, frame_tree_node_id_getter.Run(), request_id,
+          url, remote_endpoint, frame_tree_node_id_getter.Run(), request_id,
           render_frame_host_or_null, resource_type, was_cached,
           std::move(data_reduction_proxy_data), raw_body_bytes,
           original_content_length, request_creation_time, net_error,
@@ -316,7 +310,7 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES) || BUILDFLAG(ENABLE_NACL)
-  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
+  ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
 #endif
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
@@ -330,38 +324,23 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
                      info->GetResourceType()));
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
 
-#if defined(OS_CHROMEOS)
-  // Check if we need to add merge session throttle. This throttle will postpone
-  // loading of XHR requests.
-  if (resource_type == content::RESOURCE_TYPE_XHR) {
-    // Add interstitial page while merge session process (cookie
-    // reconstruction from OAuth2 refresh token in ChromeOS login) is still in
-    // progress while we are attempting to load a google property.
-    if (!merge_session_throttling_utils::AreAllSessionMergedAlready() &&
-        request->url().SchemeIsHTTPOrHTTPS()) {
-      throttles->push_back(
-          std::make_unique<MergeSessionResourceThrottle>(request));
-    }
-  }
-#endif
-
   // Don't attempt to append headers to requests that have already started.
   // TODO(stevet): Remove this once the request ordering issues are resolved
   // in crbug.com/128048.
   if (!request->is_pending()) {
     net::HttpRequestHeaders headers;
     headers.CopyFrom(request->extra_request_headers());
+    request->SetExtraRequestHeaders(headers);
     bool is_off_the_record = io_data->IsOffTheRecord();
     bool is_signed_in =
         !is_off_the_record &&
         !io_data->google_services_account_id()->GetValue().empty();
-    variations::AppendVariationHeaders(
+    variations::AppendVariationsHeader(
         request->url(),
         is_off_the_record ? variations::InIncognito::kYes
                           : variations::InIncognito::kNo,
         is_signed_in ? variations::SignedIn::kYes : variations::SignedIn::kNo,
-        &headers);
-    request->SetExtraRequestHeaders(headers);
+        request);
   }
 
   signin::ChromeRequestAdapter signin_request_adapter(request);
@@ -373,7 +352,7 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
                                   resource_type,
                                   throttles);
 #if BUILDFLAG(ENABLE_NACL)
-  AppendComponentUpdaterThrottles(request, *info, resource_context,
+  AppendComponentUpdaterThrottles(request, info, resource_context,
                                   resource_type, throttles);
 #endif  // BUILDFLAG(ENABLE_NACL)
 }
@@ -385,8 +364,8 @@ void ChromeResourceDispatcherHostDelegate::DownloadStarting(
     bool must_download,
     bool is_new_request,
     std::vector<std::unique_ptr<content::ResourceThrottle>>* throttles) {
-  const content::ResourceRequestInfo* info =
-        content::ResourceRequestInfo::ForRequest(request);
+  content::ResourceRequestInfo* info =
+      content::ResourceRequestInfo::ForRequest(request);
   // If it's from the web, we don't trust it, so we push the throttle on.
   if (is_content_initiated) {
     throttles->push_back(std::make_unique<DownloadResourceThrottle>(
@@ -426,16 +405,11 @@ void ChromeResourceDispatcherHostDelegate::AppendStandardResourceThrottles(
     std::vector<std::unique_ptr<content::ResourceThrottle>>* throttles) {
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
 
-  // Insert either safe browsing or data reduction proxy throttle at the front
-  // of the list, so one of them gets to decide if the resource is safe.
+  // Insert safe browsing to decide if the resource is safe.
   content::ResourceThrottle* first_throttle = NULL;
-#if defined(OS_ANDROID)
-  first_throttle = DataReductionProxyResourceThrottle::MaybeCreate(
-      request, resource_context, resource_type, safe_browsing_.get());
-#endif  // defined(OS_ANDROID)
 
 #if defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
-  if (!first_throttle && io_data->safe_browsing_enabled()->GetValue() &&
+  if (io_data->safe_browsing_enabled()->GetValue() &&
       !base::FeatureList::IsEnabled(safe_browsing::kCheckByURLLoaderThrottle)) {
     first_throttle = MaybeCreateSafeBrowsingResourceThrottle(
         request, resource_type, safe_browsing_.get(), io_data);
@@ -444,18 +418,6 @@ void ChromeResourceDispatcherHostDelegate::AppendStandardResourceThrottles(
 
   if (first_throttle)
     throttles->push_back(base::WrapUnique(first_throttle));
-
-  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
-  if (info->IsPrerendering()) {
-    // TODO(jam): remove this throttle once http://crbug.com/740130 is fixed and
-    // PrerendererURLLoaderThrottle can be used for frame requests in the
-    // network-service-disabled mode.
-    if (!base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-        content::IsResourceTypeFrame(info->GetResourceType())) {
-      throttles->push_back(
-          std::make_unique<prerender::PrerenderResourceThrottle>(request));
-    }
-  }
 }
 
 bool ChromeResourceDispatcherHostDelegate::ShouldInterceptResourceAsStream(
@@ -464,7 +426,7 @@ bool ChromeResourceDispatcherHostDelegate::ShouldInterceptResourceAsStream(
     GURL* origin,
     std::string* payload) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
+  ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
   std::string extension_id =
       PluginUtils::GetExtensionIdForMimeType(info->GetContext(), mime_type);
   if (!extension_id.empty()) {
@@ -473,6 +435,12 @@ bool ChromeResourceDispatcherHostDelegate::ShouldInterceptResourceAsStream(
     target_info.extension_id = extension_id;
     target_info.view_id = base::GenerateGUID();
     *payload = target_info.view_id;
+    // Provide the MimeHandlerView code a chance to override the payload. This
+    // is the case where the resource is handled by frame-based MimeHandlerView.
+    uint32_t unused_data_pipe_size;
+    extensions::MimeHandlerViewAttachHelper::OverrideBodyForInterceptedResponse(
+        info->GetFrameTreeNodeId(), request->url(), mime_type,
+        target_info.view_id, payload, &unused_data_pipe_size);
     stream_target_info_[request] = target_info;
     return true;
   }
@@ -484,7 +452,7 @@ void ChromeResourceDispatcherHostDelegate::OnStreamCreated(
     net::URLRequest* request,
     std::unique_ptr<content::StreamInfo> stream) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
+  ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
   auto ix = stream_target_info_.find(request);
   CHECK(ix != stream_target_info_.end());
   bool embedded = info->GetResourceType() != content::RESOURCE_TYPE_MAIN_FRAME;
@@ -557,8 +525,7 @@ void ChromeResourceDispatcherHostDelegate::RequestComplete(
   // TODO(maksims): remove this and use net_error argument in RequestComplete
   // once ResourceDispatcherHostDelegate is modified.
   int net_error = url_request->status().error();
-  const ResourceRequestInfo* info =
-      ResourceRequestInfo::ForRequest(url_request);
+  ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(url_request);
 
   ProfileIOData* io_data =
       ProfileIOData::FromResourceContext(info->GetContext());
@@ -580,19 +547,14 @@ void ChromeResourceDispatcherHostDelegate::RequestComplete(
                                                                  lofi_decider)
           : url_request->GetRawBodyBytes();
 
-  net::HostPortPair request_host_port;
+  net::IPEndPoint remote_endpoint;
   // We want to get the IP address of the response if it was returned, and the
   // last endpoint that was checked if it failed.
-  if (url_request->response_headers()) {
-    request_host_port = url_request->GetSocketAddress();
-  }
-  if (request_host_port.IsEmpty()) {
-    net::IPEndPoint request_ip_endpoint;
-    bool was_successful = url_request->GetRemoteEndpoint(&request_ip_endpoint);
-    if (was_successful) {
-      request_host_port =
-          net::HostPortPair::FromIPEndPoint(request_ip_endpoint);
-    }
+  if (url_request->response_headers())
+    remote_endpoint = url_request->GetResponseRemoteEndpoint();
+  if (!remote_endpoint.address().IsValid() &&
+      !url_request->GetTransactionRemoteEndpoint(&remote_endpoint)) {
+    remote_endpoint = net::IPEndPoint();
   }
 
   auto load_timing_info = std::make_unique<net::LoadTimingInfo>();
@@ -604,7 +566,7 @@ void ChromeResourceDispatcherHostDelegate::RequestComplete(
           &NotifyUIThreadOfRequestComplete,
           info->GetWebContentsGetterForRequest(),
           info->GetFrameTreeNodeIdGetterForRequest(), url_request->url(),
-          request_host_port, info->GetGlobalRequestID(), info->GetChildID(),
+          remote_endpoint, info->GetGlobalRequestID(), info->GetChildID(),
           info->GetRenderFrameID(), info->GetResourceType(), info->IsDownload(),
           url_request->was_cached(), std::move(data_reduction_proxy_data),
           net_error, url_request->GetTotalReceivedBytes(),

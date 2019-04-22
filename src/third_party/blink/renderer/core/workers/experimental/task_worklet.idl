@@ -6,6 +6,6 @@
     RuntimeEnabled=WorkerTaskQueue,
     SecureContext
 ] interface TaskWorklet : Worklet {
-    [CallWith=ScriptState] Task postTask(CallbackFunctionTreatedAsScriptValue task, any... arguments);
-    [CallWith=ScriptState] Task postTask(USVString task, any... arguments);
+    [CallWith=ScriptState, RaisesException] Task postTask(Function task, any... arguments);
+    [CallWith=ScriptState, RaisesException] Task postTask(USVString task, any... arguments);
 };

@@ -13,9 +13,9 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
@@ -74,7 +74,7 @@
 #endif
 
 #if defined(OS_WIN)
-#include "base/win/win_util.h"
+#include "base/enterprise_util.h"
 #if BUILDFLAG(ENABLE_RLZ)
 #include "rlz/lib/machine_id.h"
 #endif  // BUILDFLAG(ENABLE_RLZ)
@@ -183,6 +183,10 @@ const prefs::TrackedPreferenceMetadata kTrackedPrefs[] = {
      EnforcementLevel::ENFORCE_ON_LOAD, PrefTrackingStrategy::ATOMIC,
      ValueType::IMPERSONAL},
 #endif
+#if defined(OS_WIN)
+    {31, prefs::kSwReporterReportingEnabled, EnforcementLevel::ENFORCE_ON_LOAD,
+     PrefTrackingStrategy::ATOMIC, ValueType::IMPERSONAL},
+#endif  // defined(OS_WIN)
 
     // See note at top, new items added here also need to be added to
     // histograms.xml's TrackedPreference enum.
@@ -190,7 +194,7 @@ const prefs::TrackedPreferenceMetadata kTrackedPrefs[] = {
 
 // One more than the last tracked preferences ID above.
 const size_t kTrackedPrefsReportingIDsCount =
-    kTrackedPrefs[arraysize(kTrackedPrefs) - 1].reporting_id + 1;
+    kTrackedPrefs[base::size(kTrackedPrefs) - 1].reporting_id + 1;
 
 // Each group enforces a superset of the protection provided by the previous
 // one.
@@ -210,7 +214,7 @@ SettingsEnforcementGroup GetSettingsEnforcementGroup() {
 # if defined(OS_WIN)
   if (!g_disable_domain_check_for_testing) {
     static bool first_call = true;
-    static const bool is_managed = base::win::IsEnterpriseManaged();
+    static const bool is_managed = base::IsMachineExternallyManaged();
     if (first_call) {
       UMA_HISTOGRAM_BOOLEAN("Settings.TrackedPreferencesNoEnforcementOnDomain",
                             is_managed);
@@ -254,7 +258,7 @@ SettingsEnforcementGroup GetSettingsEnforcementGroup() {
           chrome_prefs::internals::kSettingsEnforcementTrialName);
   if (trial) {
     const std::string& group_name = trial->group_name();
-    for (size_t i = 0; i < arraysize(kEnforcementLevelMap); ++i) {
+    for (size_t i = 0; i < base::size(kEnforcementLevelMap); ++i) {
       if (kEnforcementLevelMap[i].group_name == group_name) {
         enforcement_group = kEnforcementLevelMap[i].group;
         group_determined_from_trial = true;
@@ -274,7 +278,7 @@ GetTrackingConfiguration() {
       GetSettingsEnforcementGroup();
 
   std::vector<prefs::mojom::TrackedPreferenceMetadataPtr> result;
-  for (size_t i = 0; i < arraysize(kTrackedPrefs); ++i) {
+  for (size_t i = 0; i < base::size(kTrackedPrefs); ++i) {
     prefs::mojom::TrackedPreferenceMetadataPtr data =
         prefs::ConstructTrackedMetadata(kTrackedPrefs[i]);
 

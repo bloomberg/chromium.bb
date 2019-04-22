@@ -5,15 +5,15 @@
 #ifndef V8_ZONE_ZONE_H_
 #define V8_ZONE_ZONE_H_
 
+#include <algorithm>
 #include <limits>
+#include <vector>
 
 #include "src/base/hashmap.h"
 #include "src/base/logging.h"
-#include "src/base/threaded-list.h"
 #include "src/globals.h"
-#include "src/splay-tree.h"
-#include "src/utils.h"
 #include "src/zone/accounting-allocator.h"
+#include "src/zone/zone-segment.h"
 
 #ifndef ZONE_NAME
 #define STRINGIFY(x) #x
@@ -226,7 +226,7 @@ class ZoneList final {
 
   Vector<T> ToVector() const { return Vector<T>(data_, length_); }
   Vector<T> ToVector(int start, int length) const {
-    return Vector<T>(data_ + start, Min(length_ - start, length));
+    return Vector<T>(data_ + start, std::min(length_ - start, length));
   }
 
   Vector<const T> ToConstVector() const {
@@ -277,7 +277,12 @@ class ZoneList final {
   // Drops all but the first 'pos' elements from the list.
   V8_INLINE void Rewind(int pos);
 
-  inline bool Contains(const T& elm) const;
+  inline bool Contains(const T& elm) const {
+    for (int i = 0; i < length_; i++) {
+      if (data_[i] == elm) return true;
+    }
+    return false;
+  }
 
   // Iterate through all list entries, starting at index 0.
   template <class Visitor>
@@ -335,9 +340,17 @@ class ScopedPtrList final {
     end_ = start_;
   }
 
+  void MergeInto(ScopedPtrList* parent) {
+    DCHECK_EQ(parent->end_, start_);
+    parent->end_ = end_;
+    start_ = end_;
+    DCHECK_EQ(0, length());
+  }
+
   int length() const { return static_cast<int>(end_ - start_); }
   T* at(int i) const {
     size_t index = start_ + i;
+    DCHECK_LE(start_, index);
     DCHECK_LT(index, buffer_.size());
     return reinterpret_cast<T*>(buffer_[index]);
   }
@@ -349,6 +362,15 @@ class ScopedPtrList final {
     target->Initialize(length(), zone);
     T** data = reinterpret_cast<T**>(&buffer_[start_]);
     target->AddAll(Vector<T*>(data, length()), zone);
+  }
+
+  Vector<T*> CopyTo(Zone* zone) {
+    DCHECK_LE(end_, buffer_.size());
+    T** data = zone->NewArray<T*>(length());
+    if (length() != 0) {
+      MemCopy(data, &buffer_[start_], length() * sizeof(T*));
+    }
+    return Vector<T*>(data, length());
   }
 
   void Add(T* value) {
@@ -366,36 +388,18 @@ class ScopedPtrList final {
     end_ += list.length();
   }
 
+  typedef T** iterator;
+  inline iterator begin() const {
+    return reinterpret_cast<T**>(buffer_.data() + start_);
+  }
+  inline iterator end() const {
+    return reinterpret_cast<T**>(buffer_.data() + end_);
+  }
+
  private:
   std::vector<void*>& buffer_;
   size_t start_;
   size_t end_;
-};
-
-// ZoneThreadedList is a special variant of the ThreadedList that can be put
-// into a Zone.
-template <typename T, typename TLTraits = base::ThreadedListTraits<T>>
-using ZoneThreadedList = base::ThreadedListBase<T, ZoneObject, TLTraits>;
-
-// A zone splay tree.  The config type parameter encapsulates the
-// different configurations of a concrete splay tree (see splay-tree.h).
-// The tree itself and all its elements are allocated in the Zone.
-template <typename Config>
-class ZoneSplayTree final : public SplayTree<Config, ZoneAllocationPolicy> {
- public:
-  explicit ZoneSplayTree(Zone* zone)
-      : SplayTree<Config, ZoneAllocationPolicy>(ZoneAllocationPolicy(zone)) {}
-  ~ZoneSplayTree() {
-    // Reset the root to avoid unneeded iteration over all tree nodes
-    // in the destructor.  For a zone-allocated tree, nodes will be
-    // freed by the Zone.
-    SplayTree<Config, ZoneAllocationPolicy>::ResetRoot();
-  }
-
-  void* operator new(size_t size, Zone* zone) { return zone->New(size); }
-
-  void operator delete(void* pointer) { UNREACHABLE(); }
-  void operator delete(void* pointer, Zone* zone) { UNREACHABLE(); }
 };
 
 typedef base::PointerTemplateHashMapImpl<ZoneAllocationPolicy> ZoneHashMap;

@@ -136,6 +136,8 @@ class PDFiumEngine : public PDFEngine,
   void OnDocumentCanceled() override;
   void CancelBrowserDownload() override;
   void KillFormFocus() override;
+  uint32_t GetLoadedByteSize() override;
+  bool ReadLoadedBytes(uint32_t length, void* buffer) override;
 
 #if defined(PDF_ENABLE_XFA)
   void UpdatePageCount();

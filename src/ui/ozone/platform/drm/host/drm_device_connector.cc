@@ -4,11 +4,12 @@
 
 #include "ui/ozone/platform/drm/host/drm_device_connector.h"
 
+#include <utility>
+
+#include "base/bind.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/ws/public/mojom/constants.mojom.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/ozone/platform/drm/host/host_drm_device.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
 
@@ -36,15 +37,16 @@ namespace ui {
 
 DrmDeviceConnector::DrmDeviceConnector(
     service_manager::Connector* connector,
-    scoped_refptr<HostDrmDevice> host_drm_device_)
+    const std::string& service_name,
+    scoped_refptr<HostDrmDevice> host_drm_device)
     : connector_(connector),
-      host_drm_device_(host_drm_device_),
+      service_name_(service_name),
+      host_drm_device_(host_drm_device),
       ws_runner_(base::ThreadTaskRunnerHandle::IsSet()
                      ? base::ThreadTaskRunnerHandle::Get()
-                     : nullptr) {
-}
+                     : nullptr) {}
 
-DrmDeviceConnector::~DrmDeviceConnector() {}
+DrmDeviceConnector::~DrmDeviceConnector() = default;
 
 void DrmDeviceConnector::OnGpuProcessLaunched(
     int host_id,
@@ -114,7 +116,7 @@ void DrmDeviceConnector::OnMessageReceived(const IPC::Message& message) {
 void DrmDeviceConnector::BindInterfaceDrmDevice(
     ui::ozone::mojom::DrmDevicePtr* drm_device_ptr) const {
   if (connector_) {
-    connector_->BindInterface(ws::mojom::kServiceName, drm_device_ptr);
+    connector_->BindInterface(service_name_, drm_device_ptr);
   } else {
     auto request = mojo::MakeRequest(drm_device_ptr);
     BindInterfaceInGpuProcess(std::move(request), binder_callback_);
@@ -124,7 +126,7 @@ void DrmDeviceConnector::BindInterfaceDrmDevice(
 void DrmDeviceConnector::BindInterfaceDeviceCursor(
     ui::ozone::mojom::DeviceCursorPtr* cursor_ptr) const {
   if (connector_) {
-    connector_->BindInterface(ws::mojom::kServiceName, cursor_ptr);
+    connector_->BindInterface(service_name_, cursor_ptr);
   } else {
     auto request = mojo::MakeRequest(cursor_ptr);
     BindInterfaceInGpuProcess(std::move(request), binder_callback_);

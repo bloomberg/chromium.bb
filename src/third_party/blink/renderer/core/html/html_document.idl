@@ -21,7 +21,7 @@
 // FIXME: "For historical reasons, Window objects must also have a
 // writable, configurable, non-enumerable property named HTMLDocument
 // whose value is the Document interface object."
-// https://html.spec.whatwg.org/#the-window-object
+// https://html.spec.whatwg.org/C/#the-window-object
 
 interface HTMLDocument : Document {
 };

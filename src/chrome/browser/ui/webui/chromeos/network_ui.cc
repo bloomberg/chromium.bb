@@ -8,11 +8,13 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/tab_helper.h"
+#include "chrome/browser/ui/webui/chromeos/cellular_setup/cellular_setup_dialog_launcher.h"
 #include "chrome/browser/ui/webui/chromeos/internet_config_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/network_element_localized_strings_provider.h"
 #include "chrome/common/url_constants.h"
@@ -36,8 +38,10 @@ namespace chromeos {
 
 namespace {
 
+constexpr char kAddNetwork[] = "addNetwork";
 constexpr char kGetNetworkProperties[] = "getShillNetworkProperties";
 constexpr char kGetDeviceProperties[] = "getShillDeviceProperties";
+constexpr char kOpenCellularActivationUi[] = "openCellularActivationUi";
 
 bool GetServicePathFromGuid(const std::string& guid,
                             std::string* service_path) {
@@ -83,6 +87,10 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
   // WebUIMessageHandler implementation.
   void RegisterMessages() override {
     web_ui()->RegisterMessageCallback(
+        kAddNetwork,
+        base::BindRepeating(&NetworkConfigMessageHandler::AddNetwork,
+                            base::Unretained(this)));
+    web_ui()->RegisterMessageCallback(
         kGetNetworkProperties,
         base::BindRepeating(
             &NetworkConfigMessageHandler::GetShillNetworkProperties,
@@ -93,9 +101,10 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
             &NetworkConfigMessageHandler::GetShillDeviceProperties,
             base::Unretained(this)));
     web_ui()->RegisterMessageCallback(
-        "addNetwork",
-        base::BindRepeating(&NetworkConfigMessageHandler::AddNetwork,
-                            base::Unretained(this)));
+        kOpenCellularActivationUi,
+        base::BindRepeating(
+            &NetworkConfigMessageHandler::OpenCellularActivationUi,
+            base::Unretained(this)));
   }
 
  private:
@@ -162,6 +171,19 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
             weak_ptr_factory_.GetWeakPtr()),
         base::Bind(&NetworkConfigMessageHandler::ErrorCallback,
                    weak_ptr_factory_.GetWeakPtr(), type, kGetDeviceProperties));
+  }
+
+  void OpenCellularActivationUi(const base::ListValue* arg_list) {
+    const NetworkState* cellular_network =
+        NetworkHandler::Get()->network_state_handler()->FirstNetworkByType(
+            NetworkTypePattern::Cellular());
+    if (cellular_network)
+      cellular_setup::OpenCellularSetupDialog(cellular_network->guid());
+
+    AllowJavascript();
+    CallJavascriptFunction(
+        base::StringPrintf("NetworkUI.%sResult", kOpenCellularActivationUi),
+        base::Value(cellular_network != nullptr));
   }
 
   void GetShillDevicePropertiesSuccess(
@@ -262,6 +284,17 @@ void NetworkUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
       l10n_util::GetStringUTF16(IDS_NETWORK_UI_FAVORITE_NETWORKS));
   localized_strings->SetString(
       "devicesLabel", l10n_util::GetStringUTF16(IDS_NETWORK_UI_DEVICES));
+
+  localized_strings->SetString(
+      "cellularActivationLabel",
+      l10n_util::GetStringUTF16(IDS_NETWORK_UI_NO_CELLULAR_ACTIVATION_LABEL));
+  localized_strings->SetString(
+      "cellularActivationButtonText",
+      l10n_util::GetStringUTF16(
+          IDS_NETWORK_UI_OPEN_CELLULAR_ACTIVATION_BUTTON_TEXT));
+  localized_strings->SetString(
+      "noCellularErrorText",
+      l10n_util::GetStringUTF16(IDS_NETWORK_UI_NO_CELLULAR_ERROR_TEXT));
 }
 
 NetworkUI::NetworkUI(content::WebUI* web_ui)

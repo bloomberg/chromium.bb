@@ -33,7 +33,7 @@ Polymer({
     /**
      * Array of objects representing all potential MultiDevice hosts.
      *
-     * @type {!Array<!chromeos.deviceSync.mojom.RemoteDevice>}
+     * @type {!Array<!chromeos.multidevice.mojom.RemoteDevice>}
      */
     devices: {
       type: Array,
@@ -99,7 +99,7 @@ Polymer({
   },
 
   /**
-   * @param {!Array<!chromeos.deviceSync.mojom.RemoteDevice>} devices
+   * @param {!Array<!chromeos.multidevice.mojom.RemoteDevice>} devices
    * @return {string} Label for devices selection content.
    * @private
    */
@@ -115,7 +115,7 @@ Polymer({
   },
 
   /**
-   * @param {!Array<!chromeos.deviceSync.mojom.RemoteDevice>} devices
+   * @param {!Array<!chromeos.multidevice.mojom.RemoteDevice>} devices
    * @return {boolean} True if there are more than one potential host devices.
    * @private
    */
@@ -124,7 +124,7 @@ Polymer({
   },
 
   /**
-   * @param {!Array<!chromeos.deviceSync.mojom.RemoteDevice>} devices
+   * @param {!Array<!chromeos.multidevice.mojom.RemoteDevice>} devices
    * @return {boolean} True if there is exactly one potential host device.
    * @private
    */
@@ -133,7 +133,7 @@ Polymer({
   },
 
   /**
-   * @param {!Array<!chromeos.deviceSync.mojom.RemoteDevice>} devices
+   * @param {!Array<!chromeos.multidevice.mojom.RemoteDevice>} devices
    * @return {string} Name of the first device in device list if there are any.
    *     Returns an empty string otherwise.
    * @private
@@ -144,8 +144,9 @@ Polymer({
 
   /** @private */
   devicesChanged_: function() {
-    if (this.devices.length > 0)
+    if (this.devices.length > 0) {
       this.selectedDeviceId = this.devices[0].deviceId;
+    }
   },
 
   /** @private */

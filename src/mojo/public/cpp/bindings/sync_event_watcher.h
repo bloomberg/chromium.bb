@@ -8,11 +8,11 @@
 #include <stddef.h>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
 #include "base/synchronization/waitable_event.h"
-#include "mojo/public/cpp/bindings/bindings_export.h"
 #include "mojo/public/cpp/bindings/sync_handle_registry.h"
 
 namespace mojo {
@@ -22,7 +22,7 @@ namespace mojo {
 // sequence to wake up as needed.
 //
 // This class is not thread safe.
-class MOJO_CPP_BINDINGS_EXPORT SyncEventWatcher {
+class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) SyncEventWatcher {
  public:
   SyncEventWatcher(base::WaitableEvent* event, const base::Closure& callback);
 

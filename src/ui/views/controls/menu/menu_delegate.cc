@@ -9,7 +9,7 @@
 
 namespace views {
 
-MenuDelegate::~MenuDelegate() {}
+MenuDelegate::~MenuDelegate() = default;
 
 bool MenuDelegate::IsItemChecked(int id) const {
   return false;
@@ -81,7 +81,7 @@ bool MenuDelegate::CanDrop(MenuItemView* menu, const OSExchangeData& data) {
 bool MenuDelegate::GetDropFormats(
     MenuItemView* menu,
     int* formats,
-    std::set<ui::Clipboard::FormatType>* format_types) {
+    std::set<ui::ClipboardFormatType>* format_types) {
   return false;
 }
 
@@ -125,7 +125,7 @@ MenuItemView* MenuDelegate::GetSiblingMenu(MenuItemView* menu,
                                            MenuAnchorPosition* anchor,
                                            bool* has_mnemonics,
                                            MenuButton** button) {
-  return NULL;
+  return nullptr;
 }
 
 int MenuDelegate::GetMaxWidthForMenu(MenuItemView* menu) {

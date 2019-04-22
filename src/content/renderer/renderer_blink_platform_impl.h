@@ -25,9 +25,10 @@
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/screen_orientation/web_screen_orientation_type.h"
+#include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
+#include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
 #include "third_party/blink/public/mojom/loader/code_cache.mojom.h"
-#include "third_party/blink/public/platform/modules/cache_storage/cache_storage.mojom.h"
-#include "third_party/blink/public/platform/modules/webdatabase/web_database.mojom.h"
+#include "third_party/blink/public/mojom/webdatabase/web_database.mojom.h"
 
 #if defined(OS_LINUX)
 #include "components/services/font/public/cpp/font_loader.h"  // nogncheck
@@ -77,15 +78,15 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   std::unique_ptr<blink::WebSpeechSynthesizer> CreateSpeechSynthesizer(
       blink::WebSpeechSynthesizerClient* client) override;
   virtual bool sandboxEnabled();
-  unsigned long long VisitedLinkHash(const char* canonicalURL,
-                                     size_t length) override;
-  bool IsLinkVisited(unsigned long long linkHash) override;
+  uint64_t VisitedLinkHash(const char* canonicalURL, size_t length) override;
+  bool IsLinkVisited(uint64_t linkHash) override;
   blink::WebPrescientNetworking* PrescientNetworking() override;
   blink::WebString UserAgent() override;
+  blink::UserAgentMetadata UserAgentMetadata() override;
   void CacheMetadata(blink::mojom::CodeCacheType cache_type,
                      const blink::WebURL&,
                      base::Time,
-                     const char*,
+                     const uint8_t*,
                      size_t) override;
   void FetchCachedCode(
       blink::mojom::CodeCacheType cache_type,
@@ -97,7 +98,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   void CacheMetadataInCacheStorage(
       const blink::WebURL&,
       base::Time,
-      const char*,
+      const uint8_t*,
       size_t,
       const blink::WebSecurityOrigin& cacheStorageOrigin,
       const blink::WebString& cacheStorageCacheName) override;
@@ -107,18 +108,17 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       override;
   std::unique_ptr<blink::WebStorageNamespace> CreateSessionStorageNamespace(
       base::StringPiece namespace_id) override;
-  blink::Platform::FileHandle DatabaseOpenFile(
-      const blink::WebString& vfs_file_name,
-      int desired_flags) override;
+  base::File DatabaseOpenFile(const blink::WebString& vfs_file_name,
+                              int desired_flags) override;
   int DatabaseDeleteFile(const blink::WebString& vfs_file_name,
                          bool sync_dir) override;
-  long DatabaseGetFileAttributes(
+  int32_t DatabaseGetFileAttributes(
       const blink::WebString& vfs_file_name) override;
-  long long DatabaseGetFileSize(const blink::WebString& vfs_file_name) override;
-  long long DatabaseGetSpaceAvailableForOrigin(
+  int64_t DatabaseGetFileSize(const blink::WebString& vfs_file_name) override;
+  int64_t DatabaseGetSpaceAvailableForOrigin(
       const blink::WebSecurityOrigin& origin) override;
   bool DatabaseSetFileSize(const blink::WebString& vfs_file_name,
-                           long long size) override;
+                           int64_t size) override;
   blink::WebString DatabaseCreateOriginIdentifier(
       const blink::WebSecurityOrigin& origin) override;
   viz::FrameSinkId GenerateFrameSinkId() override;
@@ -145,9 +145,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
                            const char* audio_file_data,
                            size_t data_size) override;
 
-  std::unique_ptr<blink::WebMIDIAccessor> CreateMIDIAccessor(
-      blink::WebMIDIAccessorClient* client) override;
-
   blink::WebBlobRegistry* GetBlobRegistry() override;
   std::unique_ptr<blink::WebRTCPeerConnectionHandler>
   CreateRTCPeerConnectionHandler(
@@ -163,6 +160,8 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   rtc::Thread* GetWebRtcWorkerThreadRtcThread() override;
   std::unique_ptr<cricket::PortAllocator> CreateWebRtcPortAllocator(
       blink::WebLocalFrame* frame) override;
+  std::unique_ptr<webrtc::AsyncResolverFactory>
+  CreateWebRtcAsyncResolverFactory() override;
   std::unique_ptr<blink::WebCanvasCaptureHandler> CreateCanvasCaptureHandler(
       const blink::WebSize& size,
       double frame_rate,
@@ -173,7 +172,8 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
   void CreateHTMLAudioElementCapturer(
       blink::WebMediaStream* web_media_stream,
-      blink::WebMediaPlayer* web_media_player) override;
+      blink::WebMediaPlayer* web_media_player,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
   std::unique_ptr<blink::WebImageCaptureFrameGrabber>
   CreateImageCaptureFrameGrabber() override;
   std::unique_ptr<webrtc::RtpCapabilities> GetRtpSenderCapabilities(
@@ -181,6 +181,8 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   std::unique_ptr<webrtc::RtpCapabilities> GetRtpReceiverCapabilities(
       const blink::WebString& kind) override;
   void UpdateWebRTCAPICount(blink::WebRTCAPIName api_name) override;
+  base::Optional<double> GetWebRtcMaxCaptureFrameRate() override;
+
   std::unique_ptr<blink::WebGraphicsContext3DProvider>
   CreateOffscreenGraphicsContext3DProvider(
       const blink::Platform::ContextAttributes& attributes,
@@ -202,9 +204,18 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
                     const blink::WebString& sample) override;
   void RecordRapporURL(const char* metric, const blink::WebURL& url) override;
   blink::WebPushProvider* PushProvider() override;
+  blink::WebTransmissionEncodingInfoHandler* TransmissionEncodingInfoHandler()
+      override;
+
+  std::unique_ptr<blink::WebDedicatedWorkerHostFactoryClient>
+  CreateDedicatedWorkerHostFactoryClient(
+      blink::WebDedicatedWorker*,
+      service_manager::InterfaceProvider*) override;
   void DidStartWorkerThread() override;
   void WillStopWorkerThread() override;
   void WorkerContextCreated(const v8::Local<v8::Context>& worker) override;
+
+  void RecordMetricsForBackgroundedRendererPurge() override;
 
   // Disables the WebSandboxSupport implementation for testing.
   // Tests that do not set up a full sandbox environment should call
@@ -229,8 +240,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       scoped_refptr<network::SharedURLLoaderFactory> factory) override;
   std::unique_ptr<blink::WebDataConsumerHandle> CreateDataConsumerHandle(
       mojo::ScopedDataPipeConsumerHandle handle) override;
-  void RequestPurgeMemory() override;
-  void SetMemoryPressureNotificationsSuppressed(bool suppressed) override;
 
   // Returns non-null.
   // It is invalid to call this in an incomplete env where
@@ -299,8 +308,10 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   blink::mojom::CodeCacheHostPtrInfo code_cache_host_info_;
   scoped_refptr<blink::mojom::ThreadSafeCodeCacheHostPtr> code_cache_host_;
 
+  std::unique_ptr<blink::WebTransmissionEncodingInfoHandler>
+      web_transmission_encoding_info_handler_;
+
 #if defined(OS_LINUX)
-  class SandboxSupport;
   sk_sp<font_service::FontLoader> font_loader_;
 #endif
 

@@ -50,9 +50,10 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // left in LTR mode, or the right in RTL mode).
   virtual bool CaptionButtonsOnLeadingEdge() const;
 
-  // Retrieves the bounds, in non-client view coordinates within which the
+  // Retrieves the bounds in non-client view coordinates within which the
   // TabStrip should be laid out.
-  virtual gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const = 0;
+  virtual gfx::Rect GetBoundsForTabStripRegion(
+      const views::View* tabstrip) const = 0;
 
   // Returns the inset of the topmost view in the client view from the top of
   // the non-client view. The topmost view depends on the window type. The
@@ -93,9 +94,17 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // Returns whether tab strokes can be drawn.
   virtual bool CanDrawStrokes() const;
 
+  // Returns the color to use for text, caption buttons, and other title bar
+  // elements.
+  virtual SkColor GetCaptionColor(ActiveState active_state = kUseCurrent) const;
+
   // Returns the color of the browser frame, which is also the color of the
   // tabstrip background.
   SkColor GetFrameColor(ActiveState active_state = kUseCurrent) const;
+
+  // Called by BrowserView to signal the frame color has changed and needs
+  // to be repainted.
+  void UpdateFrameColor();
 
   // Returns COLOR_TOOLBAR_TOP_SEPARATOR[,_INACTIVE] depending on the activation
   // state of the window.
@@ -113,18 +122,8 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // Updates the throbber.
   virtual void UpdateThrobber(bool running) = 0;
 
-  // Provided for mus. Updates the client-area of the WindowTreeHostMus.
-  virtual void UpdateClientArea();
-
-  // Provided for mus to update the minimum window size property.
+  // Provided for mus and macOS to update the minimum window size property.
   virtual void UpdateMinimumSize();
-
-  // Whether the special painting mode for one tab is allowed, regardless of how
-  // many tabs there are right now.
-  virtual bool IsSingleTabModeAvailable() const;
-
-  // Whether the frame should be painted with the special mode for one tab.
-  bool ShouldPaintAsSingleTabMode() const;
 
   // views::NonClientFrameView:
   using views::NonClientFrameView::ShouldPaintAsActive;
@@ -132,19 +131,11 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   int NonClientHitTest(const gfx::Point& point) override;
   void ResetWindowControls() override;
 
-  // TabStripObserver:
-  void OnSingleTabModeChanged() override;
-
   HostedAppButtonContainer* hosted_app_button_container_for_testing() {
     return hosted_app_button_container_;
   }
 
  protected:
-  // Whether the frame should be painted with theming.
-  // By default, tabbed browser windows are themed but popup and app windows are
-  // not.
-  virtual bool ShouldPaintAsThemed() const;
-
   // Converts an ActiveState to a bool representing whether the frame should be
   // treated as active.
   bool ShouldPaintAsActive(ActiveState active_state) const;
@@ -185,9 +176,6 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // Gets a theme provider that should be non-null even before we're added to a
   // view hierarchy.
   const ui::ThemeProvider* GetThemeProviderForProfile() const;
-
-  // Draws a taskbar icon for non-guest sessions, erases it otherwise.
-  void UpdateTaskbarDecoration();
 
   // Returns the color of the given |color_id| from the theme provider or the
   // default theme properties.

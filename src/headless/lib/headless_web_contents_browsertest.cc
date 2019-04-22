@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
@@ -222,9 +223,9 @@ class HeadlessWebContentsScreenshotTest
 HEADLESS_ASYNC_DEVTOOLED_TEST_P(HeadlessWebContentsScreenshotTest);
 
 // Instantiate test case for both software and gpu compositing modes.
-INSTANTIATE_TEST_CASE_P(HeadlessWebContentsScreenshotTests,
-                        HeadlessWebContentsScreenshotTest,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(HeadlessWebContentsScreenshotTests,
+                         HeadlessWebContentsScreenshotTest,
+                         ::testing::Bool());
 
 // Regression test for crbug.com/832138.
 class HeadlessWebContentsScreenshotWindowPositionTest
@@ -258,9 +259,9 @@ HEADLESS_ASYNC_DEVTOOLED_TEST_P(
     HeadlessWebContentsScreenshotWindowPositionTest);
 
 // Instantiate test case for both software and gpu compositing modes.
-INSTANTIATE_TEST_CASE_P(HeadlessWebContentsScreenshotWindowPositionTests,
-                        HeadlessWebContentsScreenshotWindowPositionTest,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(HeadlessWebContentsScreenshotWindowPositionTests,
+                         HeadlessWebContentsScreenshotWindowPositionTest,
+                         ::testing::Bool());
 
 #if BUILDFLAG(ENABLE_PRINTING)
 class HeadlessWebContentsPDFTest : public HeadlessAsyncDevTooledBrowserTest {

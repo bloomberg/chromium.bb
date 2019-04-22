@@ -20,6 +20,6 @@ class ProcessInfo {
  private:
   DISALLOW_COPY_AND_ASSIGN(ProcessInfo);
 };  // class
-};  // namespace
+}  // namespace rlz_lib
 
 #endif  // RLZ_WIN_LIB_PROCESS_INFO_H_

@@ -72,6 +72,8 @@
 
 #include "qtpalette.h"
 
+#define EBML_UNKNOWN_LENGTH  UINT64_MAX /* EBML unknown length, in uint64_t */
+
 typedef enum {
     EBML_NONE,
     EBML_UINT,
@@ -873,7 +875,7 @@ static int ebml_read_length(MatroskaDemuxContext *matroska, AVIOContext *pb,
 {
     int res = ebml_read_num(matroska, pb, 8, number);
     if (res > 0 && *number + 1 == 1ULL << (7 * res))
-        *number = 0xffffffffffffffULL;
+        *number = EBML_UNKNOWN_LENGTH;
     return res;
 }
 
@@ -1053,7 +1055,7 @@ static int ebml_parse_id(MatroskaDemuxContext *matroska, EbmlSyntax *syntax,
             break;
     if (!syntax[i].id && id == MATROSKA_ID_CLUSTER &&
         matroska->num_levels > 0                   &&
-        matroska->levels[matroska->num_levels - 1].length == 0xffffffffffffff)
+        matroska->levels[matroska->num_levels - 1].length == EBML_UNKNOWN_LENGTH)
         return 0;  // we reached the end of an unknown size cluster
     if (!syntax[i].id && id != EBML_ID_VOID && id != EBML_ID_CRC32) {
         av_log(matroska->ctx, AV_LOG_DEBUG, "Unknown entry 0x%"PRIX32"\n", id);
@@ -1201,6 +1203,18 @@ static int ebml_parse_elem(MatroskaDemuxContext *matroska,
                    length, max_lengths[syntax->type], syntax->type);
             return AVERROR_INVALIDDATA;
         }
+        if (matroska->num_levels > 0) {
+            MatroskaLevel *level = &matroska->levels[matroska->num_levels - 1];
+            AVIOContext *pb = matroska->ctx->pb;
+            int64_t pos = avio_tell(pb);
+            if (level->length != EBML_UNKNOWN_LENGTH &&
+                (pos + length) > (level->start + level->length)) {
+                av_log(matroska->ctx, AV_LOG_ERROR,
+                       "Invalid length 0x%"PRIx64" > 0x%"PRIx64" in parent\n",
+                       length, level->start + level->length);
+                return AVERROR_INVALIDDATA;
+            }
+        }
     }
 
     switch (syntax->type) {
@@ -1285,7 +1299,7 @@ static void ebml_free(EbmlSyntax *syntax, void *data)
 /*
  * Autodetecting...
  */
-static int matroska_probe(AVProbeData *p)
+static int matroska_probe(const AVProbeData *p)
 {
     uint64_t total = 0;
     int len_mask = 0x80, size = 1, n = 1, i;
@@ -1602,7 +1616,7 @@ static int matroska_parse_seekhead_entry(MatroskaDemuxContext *matroska,
             ret = AVERROR_INVALIDDATA;
         } else {
             level.start  = 0;
-            level.length = (uint64_t) -1;
+            level.length = EBML_UNKNOWN_LENGTH;
             matroska->levels[matroska->num_levels] = level;
             matroska->num_levels++;
             matroska->current_id                   = 0;
@@ -1612,7 +1626,7 @@ static int matroska_parse_seekhead_entry(MatroskaDemuxContext *matroska,
             /* remove dummy level */
             while (matroska->num_levels) {
                 uint64_t length = matroska->levels[--matroska->num_levels].length;
-                if (length == (uint64_t) -1)
+                if (length == EBML_UNKNOWN_LENGTH)
                     break;
             }
         }
@@ -3558,7 +3572,7 @@ static int matroska_read_packet(AVFormatContext *s, AVPacket *pkt)
             ret = matroska_resync(matroska, pos);
     }
 
-    return ret;
+    return 0;
 }
 
 static int matroska_read_seek(AVFormatContext *s, int stream_index,
@@ -3948,22 +3962,19 @@ static int webm_dash_manifest_cues(AVFormatContext *s, int64_t init_range)
 
     // store cue point timestamps as a comma separated list for checking subsegment alignment in
     // the muxer. assumes that each timestamp cannot be more than 20 characters long.
-    buf = av_malloc_array(s->streams[0]->nb_index_entries, 20 * sizeof(char));
+    buf = av_malloc_array(s->streams[0]->nb_index_entries, 20);
     if (!buf) return -1;
     strcpy(buf, "");
     for (i = 0; i < s->streams[0]->nb_index_entries; i++) {
-        int ret = snprintf(buf + end, 20 * sizeof(char),
-                           "%" PRId64, s->streams[0]->index_entries[i].timestamp);
+        int ret = snprintf(buf + end, 20,
+                           "%" PRId64"%s", s->streams[0]->index_entries[i].timestamp,
+                           i != s->streams[0]->nb_index_entries - 1 ? "," : "");
         if (ret <= 0 || (ret == 20 && i ==  s->streams[0]->nb_index_entries - 1)) {
             av_log(s, AV_LOG_ERROR, "timestamp too long.\n");
             av_free(buf);
             return AVERROR_INVALIDDATA;
         }
         end += ret;
-        if (i != s->streams[0]->nb_index_entries - 1) {
-            strncat(buf, ",", sizeof(char));
-            end++;
-        }
     }
     av_dict_set(&s->streams[0]->metadata, CUE_TIMESTAMPS, buf, 0);
     av_free(buf);

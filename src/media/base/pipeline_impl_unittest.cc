@@ -22,7 +22,7 @@
 #include "base/time/clock.h"
 #include "media/base/fake_text_track_stream.h"
 #include "media/base/gmock_callback_support.h"
-#include "media/base/media_log.h"
+#include "media/base/media_util.h"
 #include "media/base/mock_filters.h"
 #include "media/base/test_helpers.h"
 #include "media/base/text_renderer.h"
@@ -178,7 +178,7 @@ class PipelineImplTest : public ::testing::Test {
 
   void StartPipeline(
       Pipeline::StartType start_type = Pipeline::StartType::kNormal) {
-    EXPECT_CALL(callbacks_, OnWaitingForDecryptionKey()).Times(0);
+    EXPECT_CALL(callbacks_, OnWaiting(_)).Times(0);
     pipeline_->Start(
         start_type, demuxer_.get(), std::move(scoped_renderer_), &callbacks_,
         base::Bind(&CallbackHelper::OnStart, base::Unretained(&callbacks_)));
@@ -322,7 +322,7 @@ class PipelineImplTest : public ::testing::Test {
   StrictMock<CallbackHelper> callbacks_;
   base::SimpleTestTickClock test_tick_clock_;
   base::MessageLoop message_loop_;
-  MediaLog media_log_;
+  NullMediaLog media_log_;
   std::unique_ptr<PipelineImpl> pipeline_;
 
   std::unique_ptr<StrictMock<MockDemuxer>> demuxer_;
@@ -1163,25 +1163,25 @@ class PipelineTeardownTest : public PipelineImplTest {
     RunTest(k##state, k##stop_or_error);                  \
   }
 
-INSTANTIATE_TEARDOWN_TEST(Stop, InitDemuxer);
-INSTANTIATE_TEARDOWN_TEST(Stop, InitRenderer);
-INSTANTIATE_TEARDOWN_TEST(Stop, Flushing);
-INSTANTIATE_TEARDOWN_TEST(Stop, Seeking);
-INSTANTIATE_TEARDOWN_TEST(Stop, Playing);
-INSTANTIATE_TEARDOWN_TEST(Stop, Suspending);
-INSTANTIATE_TEARDOWN_TEST(Stop, Suspended);
-INSTANTIATE_TEARDOWN_TEST(Stop, Resuming);
+INSTANTIATE_TEARDOWN_TEST(Stop, InitDemuxer)
+INSTANTIATE_TEARDOWN_TEST(Stop, InitRenderer)
+INSTANTIATE_TEARDOWN_TEST(Stop, Flushing)
+INSTANTIATE_TEARDOWN_TEST(Stop, Seeking)
+INSTANTIATE_TEARDOWN_TEST(Stop, Playing)
+INSTANTIATE_TEARDOWN_TEST(Stop, Suspending)
+INSTANTIATE_TEARDOWN_TEST(Stop, Suspended)
+INSTANTIATE_TEARDOWN_TEST(Stop, Resuming)
 
-INSTANTIATE_TEARDOWN_TEST(Error, InitDemuxer);
-INSTANTIATE_TEARDOWN_TEST(Error, InitRenderer);
-INSTANTIATE_TEARDOWN_TEST(Error, Flushing);
-INSTANTIATE_TEARDOWN_TEST(Error, Seeking);
-INSTANTIATE_TEARDOWN_TEST(Error, Playing);
-INSTANTIATE_TEARDOWN_TEST(Error, Suspending);
-INSTANTIATE_TEARDOWN_TEST(Error, Suspended);
-INSTANTIATE_TEARDOWN_TEST(Error, Resuming);
+INSTANTIATE_TEARDOWN_TEST(Error, InitDemuxer)
+INSTANTIATE_TEARDOWN_TEST(Error, InitRenderer)
+INSTANTIATE_TEARDOWN_TEST(Error, Flushing)
+INSTANTIATE_TEARDOWN_TEST(Error, Seeking)
+INSTANTIATE_TEARDOWN_TEST(Error, Playing)
+INSTANTIATE_TEARDOWN_TEST(Error, Suspending)
+INSTANTIATE_TEARDOWN_TEST(Error, Suspended)
+INSTANTIATE_TEARDOWN_TEST(Error, Resuming)
 
-INSTANTIATE_TEARDOWN_TEST(ErrorAndStop, Playing);
-INSTANTIATE_TEARDOWN_TEST(ErrorAndStop, Suspended);
+INSTANTIATE_TEARDOWN_TEST(ErrorAndStop, Playing)
+INSTANTIATE_TEARDOWN_TEST(ErrorAndStop, Suspended)
 
 }  // namespace media

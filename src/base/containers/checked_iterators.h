@@ -8,6 +8,7 @@
 #include <iterator>
 #include <memory>
 
+#include "base/containers/util.h"
 #include "base/logging.h"
 
 namespace base {
@@ -42,21 +43,23 @@ class CheckedRandomAccessIterator {
       const CheckedRandomAccessIterator& other) = default;
 
   bool operator==(const CheckedRandomAccessIterator& other) const {
-    CHECK_EQ(start_, other.start_);
-    CHECK_EQ(end_, other.end_);
+    CheckComparable(other);
     return current_ == other.current_;
   }
 
   bool operator!=(const CheckedRandomAccessIterator& other) const {
-    CHECK_EQ(start_, other.start_);
-    CHECK_EQ(end_, other.end_);
+    CheckComparable(other);
     return current_ != other.current_;
   }
 
   bool operator<(const CheckedRandomAccessIterator& other) const {
-    CHECK_EQ(start_, other.start_);
-    CHECK_EQ(end_, other.end_);
+    CheckComparable(other);
     return current_ < other.current_;
+  }
+
+  bool operator<=(const CheckedRandomAccessIterator& other) const {
+    CheckComparable(other);
+    return current_ <= other.current_;
   }
 
   CheckedRandomAccessIterator& operator++() {
@@ -132,7 +135,28 @@ class CheckedRandomAccessIterator {
     return current_;
   }
 
+  static bool IsRangeMoveSafe(const CheckedRandomAccessIterator& from_begin,
+                              const CheckedRandomAccessIterator& from_end,
+                              const CheckedRandomAccessIterator& to)
+      WARN_UNUSED_RESULT {
+    if (from_end < from_begin)
+      return false;
+    const auto from_begin_uintptr = get_uintptr(from_begin.current_);
+    const auto from_end_uintptr = get_uintptr(from_end.current_);
+    const auto to_begin_uintptr = get_uintptr(to.current_);
+    const auto to_end_uintptr =
+        get_uintptr((to + std::distance(from_begin, from_end)).current_);
+
+    return to_begin_uintptr >= from_end_uintptr ||
+           to_end_uintptr <= from_begin_uintptr;
+  }
+
  private:
+  void CheckComparable(const CheckedRandomAccessIterator& other) const {
+    CHECK_EQ(start_, other.start_);
+    CHECK_EQ(end_, other.end_);
+  }
+
   const T* start_ = nullptr;
   T* current_ = nullptr;
   const T* end_ = nullptr;
@@ -174,21 +198,23 @@ class CheckedRandomAccessConstIterator {
       CheckedRandomAccessConstIterator& other) = default;
 
   bool operator==(const CheckedRandomAccessConstIterator& other) const {
-    CHECK_EQ(start_, other.start_);
-    CHECK_EQ(end_, other.end_);
+    CheckComparable(other);
     return current_ == other.current_;
   }
 
   bool operator!=(const CheckedRandomAccessConstIterator& other) const {
-    CHECK_EQ(start_, other.start_);
-    CHECK_EQ(end_, other.end_);
+    CheckComparable(other);
     return current_ != other.current_;
   }
 
   bool operator<(const CheckedRandomAccessConstIterator& other) const {
-    CHECK_EQ(start_, other.start_);
-    CHECK_EQ(end_, other.end_);
+    CheckComparable(other);
     return current_ < other.current_;
+  }
+
+  bool operator<=(const CheckedRandomAccessConstIterator& other) const {
+    CheckComparable(other);
+    return current_ <= other.current_;
   }
 
   CheckedRandomAccessConstIterator& operator++() {
@@ -265,7 +291,28 @@ class CheckedRandomAccessConstIterator {
     return current_;
   }
 
+  static bool IsRangeMoveSafe(
+      const CheckedRandomAccessConstIterator& from_begin,
+      const CheckedRandomAccessConstIterator& from_end,
+      const CheckedRandomAccessConstIterator& to) WARN_UNUSED_RESULT {
+    if (from_end < from_begin)
+      return false;
+    const auto from_begin_uintptr = get_uintptr(from_begin.current_);
+    const auto from_end_uintptr = get_uintptr(from_end.current_);
+    const auto to_begin_uintptr = get_uintptr(to.current_);
+    const auto to_end_uintptr =
+        get_uintptr((to + std::distance(from_begin, from_end)).current_);
+
+    return to_begin_uintptr >= from_end_uintptr ||
+           to_end_uintptr <= from_begin_uintptr;
+  }
+
  private:
+  void CheckComparable(const CheckedRandomAccessConstIterator& other) const {
+    CHECK_EQ(start_, other.start_);
+    CHECK_EQ(end_, other.end_);
+  }
+
   const T* start_ = nullptr;
   const T* current_ = nullptr;
   const T* end_ = nullptr;

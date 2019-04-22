@@ -11,7 +11,7 @@
 
 class Browser;
 
-// The class for the contextual menu for the Media Router action.
+// The class for the contextual menu for the Cast toolbar icon.
 class MediaRouterContextualMenu : public ui::SimpleMenuModel::Delegate {
  public:
   class Observer {
@@ -20,21 +20,13 @@ class MediaRouterContextualMenu : public ui::SimpleMenuModel::Delegate {
     virtual void OnContextMenuHidden() = 0;
   };
 
-  // Creates an instance for a Media Router Action shown in the toolbar.
+  // Creates an instance for a Cast toolbar icon shown in the toolbar.
   // |observer| must outlive the context menu.
-  static std::unique_ptr<MediaRouterContextualMenu> CreateForToolbar(
-      Browser* browser,
-      Observer* observer);
-
-  // Creates an instance for a Media Router Action shown in the overflow menu.
-  // |observer| must outlive the context menu.
-  static std::unique_ptr<MediaRouterContextualMenu> CreateForOverflowMenu(
-      Browser* browser,
-      Observer* observer);
+  static std::unique_ptr<MediaRouterContextualMenu> Create(Browser* browser,
+                                                           Observer* observer);
 
   // Constructor called by the static Create* methods above and tests.
   MediaRouterContextualMenu(Browser* browser,
-                            bool is_action_in_toolbar,
                             bool shown_by_policy,
                             Observer* observer);
   ~MediaRouterContextualMenu() override;
@@ -81,21 +73,13 @@ class MediaRouterContextualMenu : public ui::SimpleMenuModel::Delegate {
   // Opens feedback page loaded from the media router extension.
   void ReportIssue();
 
-  // Gets the ID corresponding to the text for the menu option to change the
-  // visibility of the action (e.g. "Hide in Chrome menu" / "Show in toolbar")
-  // depending on the location of the action.
-  int GetChangeVisibilityTextId();
+  Browser* const browser_;
 
   Observer* const observer_;
-
-  Browser* const browser_;
 
   // TODO(takumif): |menu_model_| is required by MediaRouterAction but not by
   // CastToolbarButton. Remove |menu_model_| when removing MediaRouterAction.
   std::unique_ptr<ui::SimpleMenuModel> menu_model_;
-
-  // Whether the action icon is in the toolbar, as opposed to the overflow menu.
-  const bool is_action_in_toolbar_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterContextualMenu);
 };

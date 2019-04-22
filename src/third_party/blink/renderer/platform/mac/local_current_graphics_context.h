@@ -20,12 +20,13 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_MAC_LOCAL_CURRENT_GRAPHICS_CONTEXT_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_MAC_LOCAL_CURRENT_GRAPHICS_CONTEXT_H_
 
+#include "base/macros.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/mac/graphics_context_canvas.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
-OBJC_CLASS NSGraphicsContext;
+@class NSGraphicsContext;
 
 namespace cc {
 class PaintCanvas;
@@ -37,7 +38,7 @@ class GraphicsContext;
 // This class automatically saves and restores the current NSGraphicsContext for
 // functions which call out into AppKit and rely on the currentContext being set
 class PLATFORM_EXPORT LocalCurrentGraphicsContext {
-  WTF_MAKE_NONCOPYABLE(LocalCurrentGraphicsContext);
+  STACK_ALLOCATED();
 
  public:
   LocalCurrentGraphicsContext(GraphicsContext&, const IntRect& dirty_rect);
@@ -53,6 +54,12 @@ class PLATFORM_EXPORT LocalCurrentGraphicsContext {
   bool did_set_graphics_context_;
   IntRect inflated_dirty_rect_;
   GraphicsContextCanvas graphics_context_canvas_;
+
+  // Inflate an IntRect to account for any bleeding that would happen due to
+  // anti-aliasing.
+  IntRect InflateRectForAA(const IntRect&);
+
+  DISALLOW_COPY_AND_ASSIGN(LocalCurrentGraphicsContext);
 };
 }
 

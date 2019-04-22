@@ -17,6 +17,7 @@
 #include "base/nix/xdg_util.h"
 #endif
 
+class PrefService;
 class Profile;
 
 namespace password_manager {

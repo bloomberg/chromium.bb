@@ -11,7 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
-#include "net/third_party/quic/core/quic_types.h"
+#include "net/third_party/quiche/src/quic/core/quic_types.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_transport.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_transport_factory.h"
 
@@ -56,11 +56,12 @@ class QuicTransportHost final : public P2PQuicTransport::Delegate {
   scoped_refptr<base::SingleThreadTaskRunner> proxy_thread() const;
   scoped_refptr<base::SingleThreadTaskRunner> host_thread() const;
 
-  void Start(
-      std::vector<std::unique_ptr<rtc::SSLFingerprint>> remote_fingerprints);
+  void Start(P2PQuicTransport::StartConfig config);
   void Stop();
 
   void CreateStream(std::unique_ptr<QuicStreamHost> stream_host);
+
+  void GetStats(uint32_t request_id);
 
   // QuicStreamHost callbacks.
   void OnRemoveStream(QuicStreamHost* stream_host_to_remove);
@@ -70,8 +71,10 @@ class QuicTransportHost final : public P2PQuicTransport::Delegate {
   void OnRemoteStopped() override;
   void OnConnectionFailed(const std::string& error_details,
                           bool from_remote) override;
-  void OnConnected() override;
+  void OnConnected(P2PQuicNegotiatedParams negotiated_params) override;
   void OnStream(P2PQuicStream* stream) override;
+  void OnDatagramSent() override;
+  void OnReceivedDatagram(Vector<uint8_t> datagram) override;
 
   std::unique_ptr<P2PQuicTransportFactory> quic_transport_factory_;
   std::unique_ptr<P2PQuicTransport> quic_transport_;

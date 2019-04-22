@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
@@ -215,8 +216,7 @@ class AppContextMenuTest : public AppListTestBase {
     controller_->SetCanShowAppInfo(can_show_app_info);
     controller_->SetExtensionLaunchType(profile(), app_id, launch_type);
     app_list::ExtensionAppContextMenu menu(menu_delegate(), profile(), app_id,
-                                           controller());
-    menu.set_is_platform_app(platform_app);
+                                           controller(), platform_app);
     std::unique_ptr<ui::MenuModel> menu_model = GetMenuModel(&menu);
     ASSERT_NE(nullptr, menu_model);
 
@@ -244,7 +244,8 @@ class AppContextMenuTest : public AppListTestBase {
     controller_ = std::make_unique<FakeAppListControllerDelegate>();
     controller_->SetCanShowAppInfo(can_show_app_info);
     app_list::ExtensionAppContextMenu menu(
-        menu_delegate(), profile(), extension_misc::kChromeAppId, controller());
+        menu_delegate(), profile(), extension_misc::kChromeAppId, controller(),
+        false /* is_platform_app */);
     std::unique_ptr<ui::MenuModel> menu_model = GetMenuModel(&menu);
     ASSERT_NE(nullptr, menu_model);
 
@@ -304,9 +305,9 @@ TEST_F(AppContextMenuTest, ChromeApp) {
 TEST_F(AppContextMenuTest, NonExistingExtensionApp) {
   app_list::ExtensionAppContextMenu::DisableInstalledExtensionCheckForTesting(
       false);
-  app_list::ExtensionAppContextMenu menu(menu_delegate(), profile(),
-                                         "some_non_existing_extension_app",
-                                         controller());
+  app_list::ExtensionAppContextMenu menu(
+      menu_delegate(), profile(), "some_non_existing_extension_app",
+      controller(), false /* is_platform_app */);
   std::unique_ptr<ui::MenuModel> menu_model = GetMenuModel(&menu);
   EXPECT_EQ(nullptr, menu_model);
 }
@@ -319,7 +320,6 @@ TEST_F(AppContextMenuTest, ArcMenu) {
   const std::string app_id = ArcAppTest::GetAppId(app_info);
   controller()->SetAppPinnable(app_id, AppListControllerDelegate::PIN_EDITABLE);
 
-  arc_test.app_instance()->RefreshAppList();
   arc_test.app_instance()->SendRefreshAppList(arc_test.fake_apps());
 
   ArcAppItem item(profile(), nullptr, nullptr, app_id, std::string());
@@ -408,7 +408,6 @@ TEST_F(AppContextMenuTest, ArcMenu) {
     }
 
   // Uninstall all apps.
-  arc_test.app_instance()->RefreshAppList();
   arc_test.app_instance()->SendRefreshAppList(
       std::vector<arc::mojom::AppInfo>());
   controller()->SetAppOpen(app_id, false);
@@ -484,7 +483,6 @@ TEST_F(AppContextMenuTest, ArcMenuStickyItem) {
   ArcAppTest arc_test;
   arc_test.SetUp(profile());
 
-  arc_test.app_instance()->RefreshAppList();
   arc_test.app_instance()->SendRefreshAppList(arc_test.fake_apps());
 
   {
@@ -527,7 +525,6 @@ TEST_F(AppContextMenuTest, ArcMenuSuspendedItem) {
   arc::mojom::AppInfo app = arc_test.fake_apps()[0];
   app.suspended = true;
 
-  arc_test.app_instance()->RefreshAppList();
   arc_test.app_instance()->SendRefreshAppList({app});
 
   const std::string app_id = ArcAppTest::GetAppId(app);

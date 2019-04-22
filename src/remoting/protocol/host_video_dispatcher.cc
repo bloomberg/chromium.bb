@@ -24,8 +24,8 @@ HostVideoDispatcher::~HostVideoDispatcher() = default;
 
 void HostVideoDispatcher::ProcessVideoPacket(
     std::unique_ptr<VideoPacket> packet,
-    const base::Closure& done) {
-  message_pipe()->Send(packet.get(), done);
+    base::OnceClosure done) {
+  message_pipe()->Send(packet.get(), std::move(done));
 }
 
 void HostVideoDispatcher::OnIncomingMessage(

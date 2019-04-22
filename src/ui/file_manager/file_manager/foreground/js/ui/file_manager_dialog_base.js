@@ -9,7 +9,7 @@
  * @extends {cr.ui.dialogs.BaseDialog}
  * @constructor
  */
-var FileManagerDialogBase = function(parentNode) {
+const FileManagerDialogBase = function(parentNode) {
   cr.ui.dialogs.BaseDialog.call(this, parentNode);
 };
 
@@ -48,15 +48,17 @@ FileManagerDialogBase.prototype.showOkCancelDialog = function(
  */
 FileManagerDialogBase.prototype.showImpl_ = function(
     title, message, onOk, onCancel) {
-  if (FileManagerDialogBase.shown)
+  if (FileManagerDialogBase.shown) {
     return false;
+  }
 
   FileManagerDialogBase.shown = true;
 
   // If a dialog is shown, activate the window.
-  var appWindow = chrome.app.window.current();
-  if (appWindow)
+  const appWindow = chrome.app.window.current();
+  if (appWindow) {
     appWindow.focus();
+  }
 
   cr.ui.dialogs.BaseDialog.prototype.showWithTitle.call(
       this, title, message, onOk, onCancel, null);
@@ -96,11 +98,10 @@ FileManagerDialogBase.prototype.showTitleAndTextDialog = function(title, text) {
  * @param {Function=} opt_onHide Called when the dialog is hidden.
  */
 FileManagerDialogBase.prototype.hide = function(opt_onHide) {
-  cr.ui.dialogs.BaseDialog.prototype.hide.call(
-      this,
-      function() {
-        if (opt_onHide)
-          opt_onHide();
-        FileManagerDialogBase.shown = false;
-      });
+  cr.ui.dialogs.BaseDialog.prototype.hide.call(this, () => {
+    if (opt_onHide) {
+      opt_onHide();
+    }
+    FileManagerDialogBase.shown = false;
+  });
 };

@@ -34,11 +34,6 @@ namespace ui_controls {
 // Note: Windows does not currently do anything with the |window| argument for
 // these functions, so passing NULL is ok.
 
-// Send a key press with/without modifier keys.
-//
-// If you're writing a test chances are you want the variant in ui_test_utils.
-// See it for details.
-
 // Per the above comment, these methods can only be called from non-sharded test
 // suites. This method ensures that they're not accidently called by sharded
 // tests.
@@ -48,6 +43,10 @@ void EnableUIControls();
 bool IsUIControlsEnabled();
 #endif
 
+// Send a key press with/without modifier keys.
+//
+// If you're writing a test chances are you want the variant in ui_test_utils.
+// See it for details.
 bool SendKeyPress(gfx::NativeWindow window,
                   ui::KeyboardCode key,
                   bool control,

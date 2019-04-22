@@ -1,6 +1,24 @@
 # liblouis Nemeth character definitions
-# Copyright 2006-2014 ViewPlus Technologies and Abilitiessoft
 #
+#  Copyright (C) 2004-2008 ViewPlus Technologies, Inc. www.viewplus.com
+#  Copyright (C) 2004-2006 JJB Software, Inc. www.jjb-software.com
+#
+#  This file is part of liblouis.
+#
+#  liblouis is free software: you can redistribute it and/or modify it
+#  under the terms of the GNU Lesser General Public License as
+#  published by the Free Software Foundation, either version 2.1 of the
+#  License, or (at your option) any later version.
+#
+#  liblouis is distributed in the hope that it will be useful, but
+#  WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+#  Lesser General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public
+#  License along with liblouis. If not, see
+#  <http://www.gnu.org/licenses/>.
+
 # Spaces must be unbreakable, 0xA0, dot pattern a
 
 math \x200A a
@@ -229,6 +247,7 @@ math \X2209 34-4-15 NOT AN ELEMENT OF
 math \X220B 456-46-1 CONTAINS AS MEMBER 
 math \X220C 34-456-46-1 DOES NOT CONTAIN AS MEMBER 
 math \X220D 4-26 SMALL CONTAINS AS MEMBER 
+math \X220F 46-6-1234 N-ARY PRODUCT 
 math \x22C5 16 dot operator
 math  \x2211 46-6-234 N-ARY SUMMATION 
 math \x2212 36 MINUS SIGN 
@@ -291,7 +310,7 @@ math \X25B3 1246-2345 Triangle
 math \X25B2 1246-456-2345 Filled Triangle
 math \X25BC 456-46-1246 BLACK DOWN-POINTING TRIANGLE 
 math \X25BD 46-1246 WHITE DOWN-POINTING TRIANGLE 
-math \X25CA 1246-456-14 filled Circle
+math \X25CF 1246-456-14 Filled Circle
 math \X25CB 1246-14 Circle
 math \X25A0 1246-456-256 filled Square
 math \X25A1 1246-256 Square

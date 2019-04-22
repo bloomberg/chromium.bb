@@ -15,7 +15,6 @@ import ctypes.util
 import datetime
 import errno
 import glob
-import operator
 import os
 import pwd
 import re
@@ -77,6 +76,15 @@ def IsChildProcess(pid, name=None):
 def ExpandPath(path):
   """Returns path after passing through realpath and expanduser."""
   return os.path.realpath(os.path.expanduser(path))
+
+
+def IsSubPath(path, other):
+  """Returns whether |path| is a sub path of |other|."""
+  path = os.path.abspath(path)
+  other = os.path.abspath(other)
+  if path == other:
+    return True
+  return path.startswith(other + os.sep)
 
 
 def AllocateFile(path, size, makedirs=False):
@@ -324,13 +332,12 @@ class BadPathsException(Exception):
   """Raised by various osutils path manipulation functions on bad input."""
 
 
-def CopyDirContents(from_dir, to_dir, symlink=False):
+def CopyDirContents(from_dir, to_dir, symlink=False, allow_nonempty=False):
   """Copy contents of from_dir to to_dir. Both should exist.
 
   shutil.copytree allows one to copy a rooted directory tree along with the
   containing directory. OTOH, this function copies the contents of from_dir to
-  an existing directory. The target directory must be empty. For example, for
-  the given paths:
+  an existing directory. For example, for the given paths:
 
   from/
     inside/x.py
@@ -354,17 +361,18 @@ def CopyDirContents(from_dir, to_dir, symlink=False):
     from_dir: The directory whose contents should be copied. Must exist.
     to_dir: The directory to which contents should be copied. Must exist.
     symlink: Whether symlinks should be copied.
+    allow_nonempty: If True, do not die when to_dir is nonempty.
 
   Raises:
     BadPathsException: if the source / target directories don't exist, or if
-        target directory is non-empty.
+        target directory is non-empty when allow_nonempty=False.
     OSError: on esoteric permission errors.
   """
   if not os.path.isdir(from_dir):
     raise BadPathsException('Source directory %s does not exist.' % from_dir)
   if not os.path.isdir(to_dir):
     raise BadPathsException('Destination directory %s does not exist.' % to_dir)
-  if os.listdir(to_dir):
+  if os.listdir(to_dir) and not allow_nonempty:
     raise BadPathsException('Destination directory %s is not empty.' % to_dir)
 
   for name in os.listdir(from_dir):
@@ -1075,14 +1083,14 @@ def StatFilesInDirectory(path, recursive=False, to_string=False):
   return msg
 
 
-def MountImagePartition(image_file, part_number, destination, gpt_table=None,
+def MountImagePartition(image_file, part_id, destination, gpt_table=None,
                         sudo=True, makedirs=True, mount_opts=('ro', ),
                         skip_mtab=False):
   """Mount a |partition| from |image_file| to |destination|.
 
   If there is a GPT table (GetImageDiskPartitionInfo), it will be used for
   start offset and size of the selected partition. Otherwise, the GPT will
-  be read again from |image_file|. The GPT table MUST have unit of "B".
+  be read again from |image_file|.
 
   The mount option will be:
 
@@ -1090,9 +1098,9 @@ def MountImagePartition(image_file, part_number, destination, gpt_table=None,
 
   Args:
     image_file: A path to the image file (chromiumos_base_image.bin).
-    part_number: A partition number.
+    part_id: A partition name or number.
     destination: A path to the mount point.
-    gpt_table: A dictionary of PartitionInfo objects. See
+    gpt_table: A list of PartitionInfo objects. See
       cros_build_lib.GetImageDiskPartitionInfo.
     sudo: Same as MountDir.
     makedirs: Same as MountDir.
@@ -1101,16 +1109,15 @@ def MountImagePartition(image_file, part_number, destination, gpt_table=None,
   """
 
   if gpt_table is None:
-    gpt_table = cros_build_lib.GetImageDiskPartitionInfo(image_file, 'B',
-                                                         key_selector='number')
+    gpt_table = cros_build_lib.GetImageDiskPartitionInfo(image_file)
 
-  for _, part in gpt_table.items():
-    if part.number == part_number:
+  for part in gpt_table:
+    if part_id == part.name or part_id == part.number:
       break
   else:
     part = None
-    raise ValueError('Partition number %d not found in the GPT %r.' %
-                     (part_number, gpt_table))
+    raise ValueError('Partition number %s not found in the GPT %r.' %
+                     (part_id, gpt_table))
 
   opts = ['loop', 'offset=%d' % part.start, 'sizelimit=%d' % part.size]
   opts += mount_opts
@@ -1137,9 +1144,14 @@ def ChdirContext(target_dir):
 class MountImageContext(object):
   """A context manager to mount an image."""
 
+  # TODO(lamontjones): convert all users of this class to
+  # image_lib.LoopbackPartitions and remove this class.
   def __init__(self, image_file, destination, part_selects=(1, 3),
                mount_opts=('ro',)):
     """Construct a context manager object to actually do the job.
+
+    This class is deprecated.  Please use image_lib.LoopbackPartition, which
+    implements a superset of this class.  This class will be removed soon.
 
     Specified partitions will be mounted under |destination| according to the
     pattern:
@@ -1167,9 +1179,7 @@ class MountImageContext(object):
       mount_opts: Tuple of options to mount with.
     """
     self._image_file = image_file
-    self._gpt_table = cros_build_lib.GetImageDiskPartitionInfo(
-        self._image_file, 'B', key_selector='number'
-    )
+    self._gpt_table = cros_build_lib.GetImageDiskPartitionInfo(self._image_file)
     # Target dir is absolute path so that we do not have to worry about
     # CWD being changed later.
     self._target_dir = ExpandPath(destination)
@@ -1243,11 +1253,8 @@ class MountImageContext(object):
 
   def __enter__(self):
     for selector in self._part_selects:
-      matcher = operator.attrgetter('number')
-      if not isinstance(selector, int):
-        matcher = operator.attrgetter('name')
-      for _, part in self._gpt_table.items():
-        if matcher(part) == selector:
+      for part in self._gpt_table:
+        if selector == part.name or selector == part.number:
           try:
             self._Mount(part)
           except:

@@ -41,7 +41,7 @@ class GpuMemoryBufferFactoryTest : public testing::Test {
   GpuMemoryBufferFactoryType factory_;
 };
 
-TYPED_TEST_CASE_P(GpuMemoryBufferFactoryTest);
+TYPED_TEST_SUITE_P(GpuMemoryBufferFactoryTest);
 
 TYPED_TEST_P(GpuMemoryBufferFactoryTest, CreateGpuMemoryBuffer) {
   const gfx::GpuMemoryBufferId kBufferId(1);
@@ -51,15 +51,13 @@ TYPED_TEST_P(GpuMemoryBufferFactoryTest, CreateGpuMemoryBuffer) {
   GpuMemoryBufferSupport support;
 
   for (auto format : gfx::GetBufferFormatsForTesting()) {
-    gfx::BufferUsage usages[] = {
-        gfx::BufferUsage::GPU_READ,
-        gfx::BufferUsage::SCANOUT,
-        gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE,
-        gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE,
-        gfx::BufferUsage::SCANOUT_CPU_READ_WRITE,
-        gfx::BufferUsage::SCANOUT_VDA_WRITE,
-        gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
-        gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT};
+    gfx::BufferUsage usages[] = {gfx::BufferUsage::GPU_READ,
+                                 gfx::BufferUsage::SCANOUT,
+                                 gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE,
+                                 gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE,
+                                 gfx::BufferUsage::SCANOUT_CPU_READ_WRITE,
+                                 gfx::BufferUsage::SCANOUT_VDA_WRITE,
+                                 gfx::BufferUsage::GPU_READ_CPU_READ_WRITE};
     for (auto usage : usages) {
       if (!support.IsNativeGpuMemoryBufferConfigurationSupported(format, usage))
         continue;
@@ -76,7 +74,7 @@ TYPED_TEST_P(GpuMemoryBufferFactoryTest, CreateGpuMemoryBuffer) {
 
 // The GpuMemoryBufferFactoryTest test case verifies behavior that is expected
 // from a GpuMemoryBuffer factory in order to be conformant.
-REGISTER_TYPED_TEST_CASE_P(GpuMemoryBufferFactoryTest, CreateGpuMemoryBuffer);
+REGISTER_TYPED_TEST_SUITE_P(GpuMemoryBufferFactoryTest, CreateGpuMemoryBuffer);
 
 }  // namespace gpu
 

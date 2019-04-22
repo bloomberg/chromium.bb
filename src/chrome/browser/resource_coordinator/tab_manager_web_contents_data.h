@@ -39,33 +39,9 @@ class TabManager::WebContentsData
       content::NavigationHandle* navigation_handle) override;
   void WebContentsDestroyed() override;
 
-  // Returns the timestamp of the last time the tab changed became inactive.
-  base::TimeTicks LastInactiveTime();
-
-  // Sets the timestamp of the last time the tab became inactive.
-  void SetLastInactiveTime(base::TimeTicks timestamp);
-
   // Copies the discard state from |old_contents| to |new_contents|.
   static void CopyState(content::WebContents* old_contents,
                         content::WebContents* new_contents);
-
-  // Sets the current purge state.
-  // TODO(tasak): remove this after the logic is moved into
-  // MemoryCoordinator.
-  void set_is_purged(bool state) { is_purged_ = state; }
-
-  // Returns the current state of purge.
-  // TODO(tasak): remove this after the logic is moved into
-  // MemoryCoordinator.
-  bool is_purged() const { return is_purged_; }
-
-  // Sets the time to purge after the tab is backgrounded.
-  void set_time_to_purge(const base::TimeDelta& time_to_purge) {
-    time_to_purge_ = time_to_purge;
-  }
-
-  // Returns the time to first purge after the tab is backgrounded.
-  base::TimeDelta time_to_purge() const { return time_to_purge_; }
 
   // Sets the tab loading state.
   void SetTabLoadingState(LoadingState state) {
@@ -90,6 +66,7 @@ class TabManager::WebContentsData
   }
 
  private:
+  friend class content::WebContentsUserData<TabManager::WebContentsData>;
   // Needed to access tab_data_.
   FRIEND_TEST_ALL_PREFIXES(TabManagerWebContentsDataTest, CopyState);
   FRIEND_TEST_ALL_PREFIXES(TabManagerWebContentsDataTest, TabLoadingState);
@@ -99,8 +76,6 @@ class TabManager::WebContentsData
     bool operator==(const Data& right) const;
     bool operator!=(const Data& right) const;
 
-    // The last time the tab switched from being active to inactive.
-    base::TimeTicks last_inactive_time;
     // Current loading state of this tab.
     LoadingState tab_loading_state;
     // True if the tab was created by session restore. Remains true until the
@@ -113,13 +88,8 @@ class TabManager::WebContentsData
   // Contains all the needed data for the tab.
   Data tab_data_;
 
-  // The time to purge after the tab is backgrounded.
-  base::TimeDelta time_to_purge_;
-
-  // True if the tab has been purged.
-  bool is_purged_;
-
   DISALLOW_COPY_AND_ASSIGN(WebContentsData);
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
 };
 
 }  // namespace resource_coordinator

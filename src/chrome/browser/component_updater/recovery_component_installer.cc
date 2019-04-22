@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include <functional>
 #include <memory>
 #include <string>
 #include <utility>
@@ -29,6 +30,7 @@
 #include "base/process/kill.h"
 #include "base/process/launch.h"
 #include "base/process/process.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -57,7 +59,7 @@ const uint8_t kRecoverySha2Hash[] = {
     0xdf, 0x39, 0x9a, 0x9b, 0x28, 0x3a, 0x9b, 0x0c, 0xbc, 0xc3, 0x4b,
     0x29, 0x12, 0xf3, 0x9e, 0x2c, 0x19, 0x7a, 0x71, 0x4b, 0x0a, 0x7c,
     0x80, 0x1c, 0xf6, 0x29, 0x7c, 0x0a, 0x5f, 0xea, 0x67, 0xb7};
-static_assert(arraysize(kRecoverySha2Hash) == crypto::kSHA256Length,
+static_assert(base::size(kRecoverySha2Hash) == crypto::kSHA256Length,
               "Wrong hash length");
 
 // File name of the recovery binary on different platforms.
@@ -407,7 +409,7 @@ void RecoveryComponentInstaller::Install(
     update_client::CrxInstaller::Callback callback) {
   auto result = update_client::InstallFunctionWrapper(
       base::BindOnce(&RecoveryComponentInstaller::DoInstall,
-                     base::Unretained(this), base::ConstRef(unpack_path)));
+                     base::Unretained(this), std::cref(unpack_path)));
   base::PostTask(FROM_HERE, base::BindOnce(std::move(callback), result));
 }
 

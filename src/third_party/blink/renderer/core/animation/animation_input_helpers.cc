@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/animation/animation_input_helpers.h"
 
+#include "base/stl_util.h"
 #include "third_party/blink/renderer/core/animation/property_handle.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
@@ -32,13 +33,13 @@ static String RemoveSVGPrefix(const String& property) {
 }
 
 static String CSSPropertyToKeyframeAttribute(const CSSProperty& property) {
-  DCHECK_NE(property.PropertyID(), CSSPropertyInvalid);
-  DCHECK_NE(property.PropertyID(), CSSPropertyVariable);
+  DCHECK_NE(property.PropertyID(), CSSPropertyID::kInvalid);
+  DCHECK_NE(property.PropertyID(), CSSPropertyID::kVariable);
 
   switch (property.PropertyID()) {
-    case CSSPropertyFloat:
+    case CSSPropertyID::kFloat:
       return "cssFloat";
-    case CSSPropertyOffset:
+    case CSSPropertyID::kOffset:
       return "cssOffset";
     default:
       return property.GetJSPropertyName();
@@ -57,23 +58,23 @@ CSSPropertyID AnimationInputHelpers::KeyframeAttributeToCSSProperty(
     const String& property,
     const Document& document) {
   if (CSSVariableParser::IsValidVariableName(property))
-    return CSSPropertyVariable;
+    return CSSPropertyID::kVariable;
 
   // Disallow prefixed properties.
   if (property[0] == '-')
-    return CSSPropertyInvalid;
+    return CSSPropertyID::kInvalid;
   if (IsASCIIUpper(property[0]))
-    return CSSPropertyInvalid;
+    return CSSPropertyID::kInvalid;
   if (property == "cssFloat")
-    return CSSPropertyFloat;
+    return CSSPropertyID::kFloat;
   if (property == "cssOffset")
-    return CSSPropertyOffset;
+    return CSSPropertyID::kOffset;
 
   StringBuilder builder;
   for (wtf_size_t i = 0; i < property.length(); ++i) {
     // Disallow hyphenated properties.
     if (property[i] == '-')
-      return CSSPropertyInvalid;
+      return CSSPropertyID::kInvalid;
     if (IsASCIIUpper(property[i]))
       builder.Append('-');
     builder.Append(property[i]);
@@ -86,14 +87,14 @@ CSSPropertyID AnimationInputHelpers::KeyframeAttributeToPresentationAttribute(
     const Element* element) {
   if (!RuntimeEnabledFeatures::WebAnimationsSVGEnabled() || !element ||
       !element->IsSVGElement() || !IsSVGPrefixed(property))
-    return CSSPropertyInvalid;
+    return CSSPropertyID::kInvalid;
 
   String unprefixed_property = RemoveSVGPrefix(property);
   if (SVGElement::IsAnimatableCSSProperty(QualifiedName(
           g_null_atom, AtomicString(unprefixed_property), g_null_atom)))
     return cssPropertyID(unprefixed_property);
 
-  return CSSPropertyInvalid;
+  return CSSPropertyID::kInvalid;
 }
 
 using AttributeNameMap = HashMap<QualifiedName, const QualifiedName*>;
@@ -200,7 +201,7 @@ const AttributeNameMap& GetSupportedAttributes() {
         &svg_names::kYChannelSelectorAttr,
         &svg_names::kZAttr,
     };
-    for (size_t i = 0; i < arraysize(attributes); i++) {
+    for (size_t i = 0; i < base::size(attributes); i++) {
       DCHECK(!SVGElement::IsAnimatableCSSProperty(*attributes[i]));
       supported_attributes.Set(*attributes[i], attributes[i]);
     }
@@ -249,22 +250,21 @@ scoped_refptr<TimingFunction> AnimationInputHelpers::ParseTimingFunction(
   SecureContextMode secure_context_mode =
       document ? document->GetSecureContextMode()
                : SecureContextMode::kInsecureContext;
-  const CSSValue* value =
-      CSSParser::ParseSingleValue(CSSPropertyTransitionTimingFunction, string,
-                                  StrictCSSParserContext(secure_context_mode));
-  if (!value || !value->IsValueList()) {
+  const CSSValue* value = CSSParser::ParseSingleValue(
+      CSSPropertyID::kTransitionTimingFunction, string,
+      StrictCSSParserContext(secure_context_mode));
+  const auto* value_list = DynamicTo<CSSValueList>(value);
+  if (!value_list) {
     DCHECK(!value || value->IsCSSWideKeyword());
     exception_state.ThrowTypeError("'" + string +
                                    "' is not a valid value for easing");
     return nullptr;
   }
-  const CSSValueList* value_list = ToCSSValueList(value);
   if (value_list->length() > 1) {
     exception_state.ThrowTypeError("Easing may not be set to a list of values");
     return nullptr;
   }
-  return CSSToStyleMap::MapAnimationTimingFunction(value_list->Item(0), true,
-                                                   document);
+  return CSSToStyleMap::MapAnimationTimingFunction(value_list->Item(0));
 }
 
 String AnimationInputHelpers::PropertyHandleToKeyframeAttribute(

@@ -7,9 +7,11 @@
 
 #include <vector>
 
+#include "base/feature_list.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -38,9 +40,11 @@ class CORE_EXPORT PreviewsResourceLoadingHints final
       const std::vector<WTF::String>& subresource_patterns_to_block);
   ~PreviewsResourceLoadingHints();
 
-  // Returns true if load of resource with URL |resource_url| and priority
-  // |resource_load_priority| is allowed as per resource loading hints.
-  bool AllowLoad(const KURL& resource_url,
+  // Returns true if load of resource with type |type|, URL |resource_url|
+  // and priority |resource_load_priority| is allowed as per resource loading
+  // hints.
+  bool AllowLoad(ResourceType type,
+                 const KURL& resource_url,
                  ResourceLoadPriority resource_load_priority) const;
 
   virtual void Trace(blink::Visitor*);
@@ -63,6 +67,10 @@ class CORE_EXPORT PreviewsResourceLoadingHints final
   // |subresource_patterns_to_block_|, then that subresource's loading could
   // be blocked.
   const std::vector<WTF::String> subresource_patterns_to_block_;
+
+  // True if resource blocking hints should apply to resource of a given type.
+  bool block_resource_type_[static_cast<int>(ResourceType::kLast) + 1] = {
+      false};
 
   // |subresource_patterns_to_block_usage_| records whether the pattern located
   // at the same index in |subresource_patterns_to_block_| was ever blocked.

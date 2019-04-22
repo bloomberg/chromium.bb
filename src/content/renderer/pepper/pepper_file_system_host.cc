@@ -108,7 +108,7 @@ int32_t PepperFileSystemHost::OnHostMsgOpen(
 
   reply_context_ = context->MakeReplyMessageContext();
   GetFileSystemManager().Open(
-      document_url.GetOrigin(),
+      url::Origin::Create(document_url),
       mojo::ConvertTo<blink::mojom::FileSystemType>(file_system_type),
       base::BindOnce(&PepperFileSystemHost::DidOpenFileSystem, AsWeakPtr()));
   return PP_OK_COMPLETIONPENDING;

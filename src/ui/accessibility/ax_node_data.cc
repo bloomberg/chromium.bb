@@ -144,13 +144,18 @@ bool IsNodeIdIntAttribute(ax::mojom::IntAttribute attr) {
     case ax::mojom::IntAttribute::kInvalidState:
     case ax::mojom::IntAttribute::kCheckedState:
     case ax::mojom::IntAttribute::kRestriction:
+    case ax::mojom::IntAttribute::kListStyle:
     case ax::mojom::IntAttribute::kTextDirection:
     case ax::mojom::IntAttribute::kTextPosition:
     case ax::mojom::IntAttribute::kTextStyle:
+    case ax::mojom::IntAttribute::kTextOverlineStyle:
+    case ax::mojom::IntAttribute::kTextStrikethroughStyle:
+    case ax::mojom::IntAttribute::kTextUnderlineStyle:
     case ax::mojom::IntAttribute::kAriaColumnCount:
     case ax::mojom::IntAttribute::kAriaCellColumnIndex:
     case ax::mojom::IntAttribute::kAriaRowCount:
     case ax::mojom::IntAttribute::kAriaCellRowIndex:
+    case ax::mojom::IntAttribute::kImageAnnotationStatus:
       return false;
   }
 
@@ -206,6 +211,22 @@ AXNodeData::AXNodeData(const AXNodeData& other) {
   stringlist_attributes = other.stringlist_attributes;
   html_attributes = other.html_attributes;
   child_ids = other.child_ids;
+  relative_bounds = other.relative_bounds;
+}
+
+AXNodeData::AXNodeData(AXNodeData&& other) {
+  id = other.id;
+  role = other.role;
+  state = other.state;
+  actions = other.actions;
+  string_attributes.swap(other.string_attributes);
+  int_attributes.swap(other.int_attributes);
+  float_attributes.swap(other.float_attributes);
+  bool_attributes.swap(other.bool_attributes);
+  intlist_attributes.swap(other.intlist_attributes);
+  stringlist_attributes.swap(other.stringlist_attributes);
+  html_attributes.swap(other.html_attributes);
+  child_ids.swap(other.child_ids);
   relative_bounds = other.relative_bounds;
 }
 
@@ -413,39 +434,94 @@ bool AXNodeData::GetHtmlAttribute(
 
 void AXNodeData::AddStringAttribute(ax::mojom::StringAttribute attribute,
                                     const std::string& value) {
+  DCHECK_NE(attribute, ax::mojom::StringAttribute::kNone);
+  if (HasStringAttribute(attribute))
+    RemoveStringAttribute(attribute);
   string_attributes.push_back(std::make_pair(attribute, value));
 }
 
 void AXNodeData::AddIntAttribute(ax::mojom::IntAttribute attribute, int value) {
+  DCHECK_NE(attribute, ax::mojom::IntAttribute::kNone);
+  if (HasIntAttribute(attribute))
+    RemoveIntAttribute(attribute);
   int_attributes.push_back(std::make_pair(attribute, value));
-}
-
-void AXNodeData::RemoveIntAttribute(ax::mojom::IntAttribute attribute) {
-  DCHECK_GE(static_cast<int>(attribute), 0);
-  base::EraseIf(int_attributes, [attribute](const auto& int_attribute) {
-    return int_attribute.first == attribute;
-  });
 }
 
 void AXNodeData::AddFloatAttribute(ax::mojom::FloatAttribute attribute,
                                    float value) {
+  DCHECK_NE(attribute, ax::mojom::FloatAttribute::kNone);
+  if (HasFloatAttribute(attribute))
+    RemoveFloatAttribute(attribute);
   float_attributes.push_back(std::make_pair(attribute, value));
 }
 
 void AXNodeData::AddBoolAttribute(ax::mojom::BoolAttribute attribute,
                                   bool value) {
+  DCHECK_NE(attribute, ax::mojom::BoolAttribute::kNone);
+  if (HasBoolAttribute(attribute))
+    RemoveBoolAttribute(attribute);
   bool_attributes.push_back(std::make_pair(attribute, value));
 }
 
 void AXNodeData::AddIntListAttribute(ax::mojom::IntListAttribute attribute,
                                      const std::vector<int32_t>& value) {
+  DCHECK_NE(attribute, ax::mojom::IntListAttribute::kNone);
+  if (HasIntListAttribute(attribute))
+    RemoveIntListAttribute(attribute);
   intlist_attributes.push_back(std::make_pair(attribute, value));
 }
 
 void AXNodeData::AddStringListAttribute(
     ax::mojom::StringListAttribute attribute,
     const std::vector<std::string>& value) {
+  DCHECK_NE(attribute, ax::mojom::StringListAttribute::kNone);
+  if (HasStringListAttribute(attribute))
+    RemoveStringListAttribute(attribute);
   stringlist_attributes.push_back(std::make_pair(attribute, value));
+}
+
+void AXNodeData::RemoveStringAttribute(ax::mojom::StringAttribute attribute) {
+  DCHECK_NE(attribute, ax::mojom::StringAttribute::kNone);
+  base::EraseIf(string_attributes, [attribute](const auto& string_attribute) {
+    return string_attribute.first == attribute;
+  });
+}
+
+void AXNodeData::RemoveIntAttribute(ax::mojom::IntAttribute attribute) {
+  DCHECK_NE(attribute, ax::mojom::IntAttribute::kNone);
+  base::EraseIf(int_attributes, [attribute](const auto& int_attribute) {
+    return int_attribute.first == attribute;
+  });
+}
+
+void AXNodeData::RemoveFloatAttribute(ax::mojom::FloatAttribute attribute) {
+  DCHECK_NE(attribute, ax::mojom::FloatAttribute::kNone);
+  base::EraseIf(float_attributes, [attribute](const auto& float_attribute) {
+    return float_attribute.first == attribute;
+  });
+}
+
+void AXNodeData::RemoveBoolAttribute(ax::mojom::BoolAttribute attribute) {
+  DCHECK_NE(attribute, ax::mojom::BoolAttribute::kNone);
+  base::EraseIf(bool_attributes, [attribute](const auto& bool_attribute) {
+    return bool_attribute.first == attribute;
+  });
+}
+
+void AXNodeData::RemoveIntListAttribute(ax::mojom::IntListAttribute attribute) {
+  DCHECK_NE(attribute, ax::mojom::IntListAttribute::kNone);
+  base::EraseIf(intlist_attributes, [attribute](const auto& intlist_attribute) {
+    return intlist_attribute.first == attribute;
+  });
+}
+
+void AXNodeData::RemoveStringListAttribute(
+    ax::mojom::StringListAttribute attribute) {
+  DCHECK_NE(attribute, ax::mojom::StringListAttribute::kNone);
+  base::EraseIf(stringlist_attributes,
+                [attribute](const auto& stringlist_attribute) {
+                  return stringlist_attribute.first == attribute;
+                });
 }
 
 void AXNodeData::SetName(const std::string& name) {
@@ -578,6 +654,10 @@ ax::mojom::Action AXNodeData::AddAction(ax::mojom::Action action_enum) {
     case ax::mojom::Action::kScrollLeft:
     case ax::mojom::Action::kScrollRight:
     case ax::mojom::Action::kGetTextLocation:
+    case ax::mojom::Action::kAnnotatePageImages:
+    case ax::mojom::Action::kSignalEndOfTest:
+    case ax::mojom::Action::kHideTooltip:
+    case ax::mojom::Action::kShowTooltip:
       break;
   }
 
@@ -667,6 +747,21 @@ void AXNodeData::SetNameFrom(ax::mojom::NameFrom name_from) {
   }
 }
 
+ax::mojom::DescriptionFrom AXNodeData::GetDescriptionFrom() const {
+  return static_cast<ax::mojom::DescriptionFrom>(
+      GetIntAttribute(ax::mojom::IntAttribute::kDescriptionFrom));
+}
+
+void AXNodeData::SetDescriptionFrom(
+    ax::mojom::DescriptionFrom description_from) {
+  if (HasIntAttribute(ax::mojom::IntAttribute::kDescriptionFrom))
+    RemoveIntAttribute(ax::mojom::IntAttribute::kDescriptionFrom);
+  if (description_from != ax::mojom::DescriptionFrom::kNone) {
+    AddIntAttribute(ax::mojom::IntAttribute::kDescriptionFrom,
+                    static_cast<int32_t>(description_from));
+  }
+}
+
 ax::mojom::TextPosition AXNodeData::GetTextPosition() const {
   return static_cast<ax::mojom::TextPosition>(
       GetIntAttribute(ax::mojom::IntAttribute::kTextPosition));
@@ -678,6 +773,21 @@ void AXNodeData::SetTextPosition(ax::mojom::TextPosition text_position) {
   if (text_position != ax::mojom::TextPosition::kNone) {
     AddIntAttribute(ax::mojom::IntAttribute::kTextPosition,
                     static_cast<int32_t>(text_position));
+  }
+}
+
+ax::mojom::ImageAnnotationStatus AXNodeData::GetImageAnnotationStatus() const {
+  return static_cast<ax::mojom::ImageAnnotationStatus>(
+      GetIntAttribute(ax::mojom::IntAttribute::kImageAnnotationStatus));
+}
+
+void AXNodeData::SetImageAnnotationStatus(
+    ax::mojom::ImageAnnotationStatus status) {
+  if (HasIntAttribute(ax::mojom::IntAttribute::kImageAnnotationStatus))
+    RemoveIntAttribute(ax::mojom::IntAttribute::kImageAnnotationStatus);
+  if (status != ax::mojom::ImageAnnotationStatus::kNone) {
+    AddIntAttribute(ax::mojom::IntAttribute::kImageAnnotationStatus,
+                    static_cast<int32_t>(status));
   }
 }
 
@@ -695,6 +805,20 @@ void AXNodeData::SetRestriction(ax::mojom::Restriction restriction) {
   }
 }
 
+ax::mojom::ListStyle AXNodeData::GetListStyle() const {
+  return static_cast<ax::mojom::ListStyle>(
+      GetIntAttribute(ax::mojom::IntAttribute::kListStyle));
+}
+
+void AXNodeData::SetListStyle(ax::mojom::ListStyle list_style) {
+  if (HasIntAttribute(ax::mojom::IntAttribute::kListStyle))
+    RemoveIntAttribute(ax::mojom::IntAttribute::kListStyle);
+  if (list_style != ax::mojom::ListStyle::kNone) {
+    AddIntAttribute(ax::mojom::IntAttribute::kListStyle,
+                    static_cast<int32_t>(list_style));
+  }
+}
+
 ax::mojom::TextDirection AXNodeData::GetTextDirection() const {
   return static_cast<ax::mojom::TextDirection>(
       GetIntAttribute(ax::mojom::IntAttribute::kTextDirection));
@@ -707,6 +831,17 @@ void AXNodeData::SetTextDirection(ax::mojom::TextDirection text_direction) {
     AddIntAttribute(ax::mojom::IntAttribute::kTextDirection,
                     static_cast<int32_t>(text_direction));
   }
+}
+
+bool AXNodeData::IsReadOnlyOrDisabled() const {
+  switch (GetRestriction()) {
+    case ax::mojom::Restriction::kReadOnly:
+    case ax::mojom::Restriction::kDisabled:
+      return true;
+    case ax::mojom::Restriction::kNone:
+      return false;
+  }
+  return false;
 }
 
 std::string AXNodeData::ToString() const {
@@ -898,6 +1033,30 @@ std::string AXNodeData::ToString() const {
       case ax::mojom::IntAttribute::kColor:
         result += base::StringPrintf(" color=&%X", int_attribute.second);
         break;
+      case ax::mojom::IntAttribute::kListStyle:
+        switch (static_cast<ax::mojom::ListStyle>(int_attribute.second)) {
+          case ax::mojom::ListStyle::kCircle:
+            result += " list_style=circle";
+            break;
+          case ax::mojom::ListStyle::kDisc:
+            result += " list_style=disc";
+            break;
+          case ax::mojom::ListStyle::kImage:
+            result += " list_style=image";
+            break;
+          case ax::mojom::ListStyle::kNumeric:
+            result += " list_style=numeric";
+            break;
+          case ax::mojom::ListStyle::kOther:
+            result += " list_style=other";
+            break;
+          case ax::mojom::ListStyle::kSquare:
+            result += " list_style=square";
+            break;
+          default:
+            break;
+        }
+        break;
       case ax::mojom::IntAttribute::kTextDirection:
         switch (static_cast<ax::mojom::TextDirection>(int_attribute.second)) {
           case ax::mojom::TextDirection::kLtr:
@@ -941,9 +1100,26 @@ std::string AXNodeData::ToString() const {
           text_style_value += "underline,";
         if (HasTextStyle(ax::mojom::TextStyle::kLineThrough))
           text_style_value += "line-through,";
+        if (HasTextStyle(ax::mojom::TextStyle::kOverline))
+          text_style_value += "overline,";
         result += text_style_value.substr(0, text_style_value.size() - 1);
         break;
       }
+      case ax::mojom::IntAttribute::kTextOverlineStyle:
+        result += std::string(" text_overline_style=") +
+                  ui::ToString(static_cast<ax::mojom::TextDecorationStyle>(
+                      int_attribute.second));
+        break;
+      case ax::mojom::IntAttribute::kTextStrikethroughStyle:
+        result += std::string(" text_strikethrough_style=") +
+                  ui::ToString(static_cast<ax::mojom::TextDecorationStyle>(
+                      int_attribute.second));
+        break;
+      case ax::mojom::IntAttribute::kTextUnderlineStyle:
+        result += std::string(" text_underline_style=") +
+                  ui::ToString(static_cast<ax::mojom::TextDecorationStyle>(
+                      int_attribute.second));
+        break;
       case ax::mojom::IntAttribute::kSetSize:
         result += " setsize=" + value;
         break;
@@ -1029,6 +1205,11 @@ std::string AXNodeData::ToString() const {
       case ax::mojom::IntAttribute::kPreviousFocusId:
         result += " previous_focus_id=" + value;
         break;
+      case ax::mojom::IntAttribute::kImageAnnotationStatus:
+        result += std::string(" image_annotation_status=") +
+                  ui::ToString(static_cast<ax::mojom::ImageAnnotationStatus>(
+                      int_attribute.second));
+        break;
       case ax::mojom::IntAttribute::kNone:
         break;
     }
@@ -1048,7 +1229,7 @@ std::string AXNodeData::ToString() const {
         result += " autocomplete=" + value;
         break;
       case ax::mojom::StringAttribute::kChildTreeId:
-        result += " child_tree_id=" + value;
+        result += " child_tree_id=" + value.substr(0, 8);
         break;
       case ax::mojom::StringAttribute::kClassName:
         result += " class_name=" + value;
@@ -1064,6 +1245,9 @@ std::string AXNodeData::ToString() const {
         break;
       case ax::mojom::StringAttribute::kHtmlTag:
         result += " html_tag=" + value;
+        break;
+      case ax::mojom::StringAttribute::kImageAnnotation:
+        result += " image_annotation=" + value;
         break;
       case ax::mojom::StringAttribute::kImageDataUrl:
         result += " image_data_url=(" +
@@ -1100,6 +1284,9 @@ std::string AXNodeData::ToString() const {
       case ax::mojom::StringAttribute::kRoleDescription:
         result += " role_description=" + value;
         break;
+      case ax::mojom::StringAttribute::kTooltip:
+        result += " tooltip=" + value;
+        break;
       case ax::mojom::StringAttribute::kUrl:
         result += " url=" + value;
         break;
@@ -1132,6 +1319,9 @@ std::string AXNodeData::ToString() const {
         break;
       case ax::mojom::FloatAttribute::kFontSize:
         result += " font_size=" + value;
+        break;
+      case ax::mojom::FloatAttribute::kFontWeight:
+        result += " font_weight=" + value;
         break;
       case ax::mojom::FloatAttribute::kNone:
         break;

@@ -9,7 +9,7 @@
 #include <string>
 
 #include "ash/assistant/assistant_controller_observer.h"
-#include "ash/assistant/ui/main_stage/assistant_opt_in_view.h"
+#include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/public/interfaces/assistant_controller.mojom.h"
 #include "ash/public/interfaces/assistant_setup.mojom.h"
 #include "base/macros.h"
@@ -21,7 +21,7 @@ class AssistantController;
 
 class AssistantSetupController : public mojom::AssistantSetupController,
                                  public AssistantControllerObserver,
-                                 public AssistantOptInDelegate {
+                                 public AssistantViewDelegateObserver {
  public:
   explicit AssistantSetupController(AssistantController* assistant_controller);
   ~AssistantSetupController() override;
@@ -32,16 +32,19 @@ class AssistantSetupController : public mojom::AssistantSetupController,
   void SetAssistantSetup(mojom::AssistantSetupPtr assistant_setup) override;
 
   // AssistantControllerObserver:
+  void OnAssistantControllerConstructed() override;
+  void OnAssistantControllerDestroying() override;
   void OnDeepLinkReceived(
       assistant::util::DeepLinkType type,
       const std::map<std::string, std::string>& params) override;
 
-  // AssistantOptInDelegate:
+  // AssistantViewDelegateObserver:
   void OnOptInButtonPressed() override;
 
- private:
-  void StartOnboarding(bool relaunch);
+  void StartOnboarding(bool relaunch,
+                       mojom::FlowType type = mojom::FlowType::CONSENT_FLOW);
 
+ private:
   AssistantController* const assistant_controller_;  // Owned by Shell.
 
   mojo::Binding<mojom::AssistantSetupController> binding_;

@@ -2,10 +2,19 @@
   "Files": {
     "$PROGRAM_FILES\\$CHROME_DIR\\Application\\chrome.exe": {"exists": true},
     "$PROGRAM_FILES\\$CHROME_DIR\\Application\\chrome.VisualElementsManifest.xml": {"exists": true},
+    "$PROGRAM_FILES\\$CHROME_DIR\\Application\\chrome_proxy.exe": {"exists": true},
     "$PROGRAM_FILES\\$CHROME_DIR\\Application\\$MINI_INSTALLER_FILE_VERSION\\chrome.dll":
         {"exists": true},
     "$PROGRAM_FILES\\$CHROME_DIR\\Application\\$MINI_INSTALLER_FILE_VERSION\\chrome_elf.dll":
         {"exists": true},
+    "$PROGRAM_FILES\\$CHROME_DIR\\Application\\$MINI_INSTALLER_FILE_VERSION\\elevation_service.exe": {
+      "condition": "'$CHROME_SHORT_NAME' == 'Chrome'",
+      "exists": true
+    },
+    "$PROGRAM_FILES\\$CHROME_DIR\\Application\\$MINI_INSTALLER_FILE_VERSION\\elevation_service.exe": {
+      "condition": "'$CHROME_SHORT_NAME' != 'Chrome'",
+      "exists": false
+    },
     "$PROGRAM_FILES\\$CHROME_DIR\\Application\\$MINI_INSTALLER_FILE_VERSION\\Installer\\chrome.7z":
         {"exists": true},
     "$PROGRAM_FILES\\$CHROME_DIR\\Application\\$MINI_INSTALLER_FILE_VERSION\\Installer\\setup.exe":

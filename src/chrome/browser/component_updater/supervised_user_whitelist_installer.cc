@@ -321,9 +321,9 @@ void SupervisedUserWhitelistComponentInstallerPolicy::ComponentReady(
     const base::Version& version,
     const base::FilePath& install_dir,
     std::unique_ptr<base::DictionaryValue> manifest) {
-  // TODO(treib): Before getting the title, we should localize the manifest
-  // using extension_l10n_util::LocalizeExtension, but that doesn't exist on
-  // Android. crbug.com/558387
+  // TODO(crbug.com/558387): Before getting the title, we should localize the
+  // manifest using extension_l10n_util::LocalizeExtension, but that doesn't
+  // exist on Android.
   callback_.Run(GetWhitelistTitle(*manifest),
                 GetLargeIconPath(*manifest, install_dir),
                 GetRawWhitelistPath(*manifest, install_dir));

@@ -262,7 +262,7 @@ ExtensionFunction::ResponseAction FontSettingsSetFontFunction::Run() {
 
   PreferenceAPI::Get(profile)->SetExtensionControlledPref(
       extension_id(), pref_path, kExtensionPrefsScopeRegular,
-      new base::Value(params->details.font_id));
+      base::Value(params->details.font_id));
   return RespondNow(NoArguments());
 }
 
@@ -355,7 +355,7 @@ ExtensionFunction::ResponseAction SetFontPrefExtensionFunction::Run() {
 
   PreferenceAPI::Get(profile)->SetExtensionControlledPref(
       extension_id(), GetPrefName(), kExtensionPrefsScopeRegular,
-      value->DeepCopy());
+      value->Clone());
   return RespondNow(NoArguments());
 }
 

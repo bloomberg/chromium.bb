@@ -63,6 +63,7 @@ QuickViewUma.VolumeType = [
   VolumeManagerCommon.VolumeType.MEDIA_VIEW,
   VolumeManagerCommon.VolumeType.CROSTINI,
   VolumeManagerCommon.VolumeType.ANDROID_FILES,
+  VolumeManagerCommon.VolumeType.DOCUMENTS_PROVIDER,
 ];
 
 /**
@@ -73,8 +74,8 @@ QuickViewUma.VolumeType = [
  *
  * @private
  */
-QuickViewUma.prototype.exportFileType_ = function(entry, name) {
-  var extension = FileType.getExtension(entry).toLowerCase();
+QuickViewUma.prototype.exportFileType_ = (entry, name) => {
+  let extension = FileType.getExtension(entry).toLowerCase();
   if (entry.isDirectory) {
     extension = 'directory';
   } else if (extension === '') {
@@ -105,7 +106,7 @@ QuickViewUma.prototype.onOpened = function(entry, wayToOpen) {
   metrics.recordEnum(
       'QuickView.WayToOpen', wayToOpen, QuickViewUma.WayToOpenValues_);
 
-  var volumeType = this.volumeManager_.getVolumeInfo(entry).volumeType;
+  const volumeType = this.volumeManager_.getVolumeInfo(entry).volumeType;
   if (QuickViewUma.VolumeType.includes(volumeType)) {
     metrics.recordEnum(
         'QuickView.VolumeType', volumeType, QuickViewUma.VolumeType);
@@ -114,11 +115,12 @@ QuickViewUma.prototype.onOpened = function(entry, wayToOpen) {
   }
   // Record stats of dialog types. It must be in sync with
   // FileDialogType enum in tools/metrics/histograms/histogram.xml.
-  metrics.recordEnum('QuickView.DialogType', this.dialogType_,
-      [DialogType.SELECT_FOLDER,
-       DialogType.SELECT_UPLOAD_FOLDER,
-       DialogType.SELECT_SAVEAS_FILE,
-       DialogType.SELECT_OPEN_FILE,
-       DialogType.SELECT_OPEN_MULTI_FILE,
-       DialogType.FULL_PAGE]);
+  metrics.recordEnum('QuickView.DialogType', this.dialogType_, [
+    DialogType.SELECT_FOLDER,
+    DialogType.SELECT_UPLOAD_FOLDER,
+    DialogType.SELECT_SAVEAS_FILE,
+    DialogType.SELECT_OPEN_FILE,
+    DialogType.SELECT_OPEN_MULTI_FILE,
+    DialogType.FULL_PAGE,
+  ]);
 };

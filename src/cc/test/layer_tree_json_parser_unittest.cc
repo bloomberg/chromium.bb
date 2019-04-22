@@ -32,8 +32,6 @@ bool LayerTreesMatch(LayerImpl* const layer_impl,
       EXPECT_EQ(layer_impl->test_properties()->children.size(),
                 layer->children().size()));
   RETURN_IF_EXPECTATION_FAILS(EXPECT_EQ(layer_impl->bounds(), layer->bounds()));
-  RETURN_IF_EXPECTATION_FAILS(
-      EXPECT_EQ(layer_impl->position(), layer->position()));
   RETURN_IF_EXPECTATION_FAILS(EXPECT_TRANSFORMATION_MATRIX_EQ(
       layer_impl->test_properties()->transform, layer->transform()));
   RETURN_IF_EXPECTATION_FAILS(EXPECT_EQ(layer_impl->contents_opaque(),
@@ -79,14 +77,14 @@ TEST_F(LayerTreeJsonParserSanityCheck, Basic) {
   translate.Translate(10, 15);
   child->test_properties()->transform = translate;
 
-  parent->SetPosition(gfx::PointF(25.f, 25.f));
+  parent->test_properties()->position = gfx::PointF(25.f, 25.f);
 
   parent->test_properties()->AddChild(std::move(child));
   root_impl->test_properties()->AddChild(std::move(parent));
   tree->SetRootLayerForTesting(std::move(root_impl));
   tree->BuildPropertyTreesForTesting();
 
-  std::string json = host_impl.LayerTreeAsJson();
+  std::string json = tree->LayerTreeAsJson();
   scoped_refptr<Layer> root = ParseTreeFromJson(json, nullptr);
   ASSERT_TRUE(root.get());
   EXPECT_TRUE(LayerTreesMatch(host_impl.active_tree()->root_layer_for_testing(),
@@ -114,7 +112,7 @@ TEST_F(LayerTreeJsonParserSanityCheck, EventHandlerRegions) {
   tree->SetRootLayerForTesting(std::move(root_impl));
   tree->BuildPropertyTreesForTesting();
 
-  std::string json = host_impl.LayerTreeAsJson();
+  std::string json = tree->LayerTreeAsJson();
   scoped_refptr<Layer> root = ParseTreeFromJson(json, nullptr);
   ASSERT_TRUE(root.get());
   EXPECT_TRUE(LayerTreesMatch(host_impl.active_tree()->root_layer_for_testing(),

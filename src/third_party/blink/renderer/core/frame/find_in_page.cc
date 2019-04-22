@@ -166,9 +166,7 @@ bool FindInPage::FindInternal(int identifier,
 
   // Up-to-date, clean tree is required for finding text in page, since it
   // relies on TextIterator to look over the text.
-  frame_->GetFrame()
-      ->GetDocument()
-      ->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  frame_->GetFrame()->GetDocument()->UpdateStyleAndLayout();
 
   return EnsureTextFinder().Find(identifier, search_text, options,
                                  wrap_within_frame, active_now);
@@ -284,7 +282,7 @@ TextFinder& WebLocalFrameImpl::EnsureTextFinder() {
 
 TextFinder& FindInPage::EnsureTextFinder() {
   if (!text_finder_)
-    text_finder_ = TextFinder::Create(*frame_);
+    text_finder_ = MakeGarbageCollected<TextFinder>(*frame_);
 
   return *text_finder_;
 }

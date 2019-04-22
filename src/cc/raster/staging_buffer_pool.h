@@ -11,7 +11,6 @@
 #include <set>
 
 #include "base/containers/circular_deque.h"
-#include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
@@ -81,12 +80,15 @@ struct StagingBuffer {
 class CC_EXPORT StagingBufferPool
     : public base::trace_event::MemoryDumpProvider {
  public:
-  ~StagingBufferPool() final;
-
   StagingBufferPool(scoped_refptr<base::SequencedTaskRunner> task_runner,
                     viz::RasterContextProvider* worker_context_provider,
                     bool use_partial_raster,
                     int max_staging_buffer_usage_in_bytes);
+  StagingBufferPool(const StagingBufferPool&) = delete;
+  ~StagingBufferPool() final;
+
+  StagingBufferPool& operator=(const StagingBufferPool&) = delete;
+
   void Shutdown();
 
   // Overridden from base::trace_event::MemoryDumpProvider:
@@ -136,13 +138,11 @@ class CC_EXPORT StagingBufferPool
   int free_staging_buffer_usage_in_bytes_;
   const base::TimeDelta staging_buffer_expiration_delay_;
   bool reduce_memory_usage_pending_;
-  base::Closure reduce_memory_usage_callback_;
+  base::RepeatingClosure reduce_memory_usage_callback_;
 
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 
   base::WeakPtrFactory<StagingBufferPool> weak_ptr_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(StagingBufferPool);
 };
 
 }  // namespace cc

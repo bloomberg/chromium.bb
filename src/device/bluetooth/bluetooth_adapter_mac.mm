@@ -14,7 +14,6 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
-#include "base/containers/hash_tables.h"
 #include "base/location.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/sdk_forward_declarations.h"
@@ -583,8 +582,8 @@ void BluetoothAdapterMac::PollAdapter() {
 
   ui_task_runner_->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&BluetoothAdapterMac::PollAdapter,
-                 weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&BluetoothAdapterMac::PollAdapter,
+                     weak_ptr_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(kPollIntervalMs));
 }
 
@@ -696,6 +695,23 @@ void BluetoothAdapterMac::LowEnergyDeviceUpdated(
   NSNumber* tx_power =
       [advertisement_data objectForKey:CBAdvertisementDataTxPowerLevelKey];
   int8_t clamped_tx_power = BluetoothDevice::ClampPower([tx_power intValue]);
+
+  // Get the Advertising name
+  NSString* local_name =
+      [advertisement_data objectForKey:CBAdvertisementDataLocalNameKey];
+
+  for (auto& observer : observers_) {
+    base::Optional<std::string> device_name_opt = device_mac->GetName();
+    base::Optional<std::string> local_name_opt =
+        base::SysNSStringToUTF8(local_name);
+
+    observer.DeviceAdvertisementReceived(
+        device_mac->GetAddress(), device_name_opt,
+        local_name == nil ? base::nullopt : local_name_opt, rssi,
+        tx_power == nil ? base::nullopt : base::make_optional(clamped_tx_power),
+        base::nullopt, /* TODO(crbug.com/588083) Implement appearance */
+        advertised_uuids, service_data_map, manufacturer_data_map);
+  }
 
   device_mac->UpdateAdvertisementData(
       BluetoothDevice::ClampPower(rssi), base::nullopt /* flags */,

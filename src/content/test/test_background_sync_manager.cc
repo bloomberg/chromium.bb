@@ -4,8 +4,10 @@
 
 #include "content/test/test_background_sync_manager.h"
 
+#include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "content/browser/devtools/devtools_background_services_context.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -13,8 +15,10 @@
 namespace content {
 
 TestBackgroundSyncManager::TestBackgroundSyncManager(
-    scoped_refptr<ServiceWorkerContextWrapper> service_worker_context)
-    : BackgroundSyncManager(service_worker_context) {}
+    scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
+    scoped_refptr<DevToolsBackgroundServicesContext> devtools_context)
+    : BackgroundSyncManager(std::move(service_worker_context),
+                            std::move(devtools_context)) {}
 
 TestBackgroundSyncManager::~TestBackgroundSyncManager() {}
 
@@ -33,7 +37,7 @@ void TestBackgroundSyncManager::ClearDelayedTask() {
 
 void TestBackgroundSyncManager::StoreDataInBackend(
     int64_t sw_registration_id,
-    const GURL& origin,
+    const url::Origin& origin,
     const std::string& key,
     const std::string& data,
     ServiceWorkerStorage::StatusCallback callback) {
@@ -93,14 +97,14 @@ void TestBackgroundSyncManager::ScheduleDelayedTask(base::OnceClosure callback,
 }
 
 void TestBackgroundSyncManager::HasMainFrameProviderHost(
-    const GURL& origin,
+    const url::Origin& origin,
     BoolCallback callback) {
   std::move(callback).Run(has_main_frame_provider_host_);
 }
 
 void TestBackgroundSyncManager::StoreDataInBackendContinue(
     int64_t sw_registration_id,
-    const GURL& origin,
+    const url::Origin& origin,
     const std::string& key,
     const std::string& data,
     ServiceWorkerStorage::StatusCallback callback) {
@@ -112,6 +116,15 @@ void TestBackgroundSyncManager::GetDataFromBackendContinue(
     const std::string& key,
     ServiceWorkerStorage::GetUserDataForAllRegistrationsCallback callback) {
   BackgroundSyncManager::GetDataFromBackend(key, std::move(callback));
+}
+
+base::TimeDelta TestBackgroundSyncManager::GetSoonestWakeupDelta(
+    blink::mojom::BackgroundSyncType sync_type) {
+  base::TimeDelta soonest_wakeup_delta =
+      BackgroundSyncManager::GetSoonestWakeupDelta(sync_type);
+  if (sync_type == blink::mojom::BackgroundSyncType::ONE_SHOT)
+    soonest_one_shot_wakeup_delta_ = soonest_wakeup_delta;
+  return soonest_wakeup_delta;
 }
 
 }  // namespace content

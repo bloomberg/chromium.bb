@@ -434,8 +434,9 @@ TEST_P(VideoUtilRotationTest, Rotate) {
   EXPECT_EQ(memcmp(dest, GetParam().target, size), 0);
 }
 
-INSTANTIATE_TEST_CASE_P(, VideoUtilRotationTest,
-                        testing::ValuesIn(kVideoRotationTestData));
+INSTANTIATE_TEST_SUITE_P(,
+                         VideoUtilRotationTest,
+                         testing::ValuesIn(kVideoRotationTestData));
 
 // Tests the ComputeLetterboxRegion function.  Also, because of shared code
 // internally, this also tests ScaleSizeToFitWithinTarget().

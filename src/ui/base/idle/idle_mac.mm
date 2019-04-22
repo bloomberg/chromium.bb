@@ -84,11 +84,11 @@ void InitIdleMonitor() {
     g_screenMonitor = [[MacScreenMonitor alloc] init];
 }
 
-void CalculateIdleTime(IdleTimeCallback notify) {
+int CalculateIdleTime() {
   CFTimeInterval idle_time = CGEventSourceSecondsSinceLastEventType(
       kCGEventSourceStateCombinedSessionState,
       kCGAnyInputEventType);
-  notify.Run(static_cast<int>(idle_time));
+  return static_cast<int>(idle_time);
 }
 
 bool CheckIdleStateIsLocked() {

@@ -98,13 +98,16 @@ LSSharedFileListItemRef GetLoginItemForApp() {
   for(NSUInteger i = 0; i < [login_items_array count]; ++i) {
     LSSharedFileListItemRef item =
         reinterpret_cast<LSSharedFileListItemRef>(login_items_array[i]);
-    CFURLRef item_url_ref = NULL;
+    base::ScopedCFTypeRef<CFErrorRef> error;
+    CFURLRef item_url_ref =
+        LSSharedFileListItemCopyResolvedURL(item, 0, error.InitializeInto());
 
-    // It seems that LSSharedFileListItemResolve() can return NULL in
-    // item_url_ref even if the function itself returns noErr. See
-    // https://crbug.com/760989
-    if (LSSharedFileListItemResolve(item, 0, &item_url_ref, NULL) == noErr &&
-        item_url_ref) {
+    // This function previously used LSSharedFileListItemResolve(), which could
+    // return a NULL URL even when returning no error. This caused
+    // <https://crbug.com/760989>. It's not clear one way or the other whether
+    // LSSharedFileListItemCopyResolvedURL() shares this behavior, so this check
+    // remains in place.
+    if (!error && item_url_ref) {
       ScopedCFTypeRef<CFURLRef> item_url(item_url_ref);
       if (CFEqual(item_url, url)) {
         CFRetain(item);
@@ -209,18 +212,20 @@ void SwitchFullScreenModes(FullScreenMode from_mode, FullScreenMode to_mode) {
   SetUIMode();
 }
 
-bool SetFileBackupExclusion(const FilePath& file_path) {
-  NSString* file_path_ns = base::mac::FilePathToNSString(file_path);
-  NSURL* file_url = [NSURL fileURLWithPath:file_path_ns];
+bool GetFileBackupExclusion(const FilePath& file_path) {
+  return CSBackupIsItemExcluded(FilePathToCFURL(file_path), nullptr);
+}
 
+bool SetFileBackupExclusion(const FilePath& file_path) {
   // When excludeByPath is true the application must be running with root
   // privileges (admin for 10.6 and earlier) but the URL does not have to
   // already exist. When excludeByPath is false the URL must already exist but
   // can be used in non-root (or admin as above) mode. We use false so that
   // non-root (or admin) users don't get their TimeMachine drive filled up with
   // unnecessary backups.
-  OSStatus os_err =
-      CSBackupSetItemExcluded(base::mac::NSToCFCast(file_url), TRUE, FALSE);
+  OSStatus os_err = CSBackupSetItemExcluded(FilePathToCFURL(file_path),
+                                            /*exclude=*/TRUE,
+                                            /*excludeByPath=*/FALSE);
   if (os_err != noErr) {
     OSSTATUS_DLOG(WARNING, os_err)
         << "Failed to set backup exclusion for file '"
@@ -420,8 +425,8 @@ int MacOSXMinorVersionInternal() {
   CHECK(darwin_major_version >= 6);
   int mac_os_x_minor_version = darwin_major_version - 4;
   DLOG_IF(WARNING, darwin_major_version > 18)
-      << "Assuming Darwin " << base::IntToString(darwin_major_version)
-      << " is macOS 10." << base::IntToString(mac_os_x_minor_version);
+      << "Assuming Darwin " << base::NumberToString(darwin_major_version)
+      << " is macOS 10." << base::NumberToString(mac_os_x_minor_version);
 
   return mac_os_x_minor_version;
 }

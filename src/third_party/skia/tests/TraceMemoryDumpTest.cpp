@@ -73,17 +73,17 @@ void ValidateMemoryDumps(skiatest::Reporter* reporter, GrContext* context, size_
 
 DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(SkTraceMemoryDump_ownedGLBuffer, reporter, ctxInfo) {
     GrContext* context = ctxInfo.grContext();
-    GrGLGpu* gpu = static_cast<GrGLGpu*>(context->contextPriv().getGpu());
+    GrGLGpu* gpu = static_cast<GrGLGpu*>(context->priv().getGpu());
     const size_t kMemorySize = 1024;
-    sk_sp<GrGLBuffer> buffer(
-            GrGLBuffer::Create(gpu, kMemorySize, kVertex_GrBufferType, kDynamic_GrAccessPattern));
+    sk_sp<GrGLBuffer> buffer =
+            GrGLBuffer::Make(gpu, kMemorySize, GrGpuBufferType::kVertex, kDynamic_GrAccessPattern);
 
     ValidateMemoryDumps(reporter, context, kMemorySize, true /* isOwned */);
 }
 
 DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(SkTraceMemoryDump_ownedGLTexture, reporter, ctxInfo) {
     GrContext* context = ctxInfo.grContext();
-    GrGLGpu* gpu = static_cast<GrGLGpu*>(context->contextPriv().getGpu());
+    GrGLGpu* gpu = static_cast<GrGLGpu*>(context->priv().getGpu());
 
     GrSurfaceDesc desc;
     desc.fFlags = kNone_GrSurfaceFlags;
@@ -109,7 +109,7 @@ DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(SkTraceMemoryDump_ownedGLTexture, reporter
 
 DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(SkTraceMemoryDump_unownedGLTexture, reporter, ctxInfo) {
     GrContext* context = ctxInfo.grContext();
-    GrGLGpu* gpu = static_cast<GrGLGpu*>(context->contextPriv().getGpu());
+    GrGLGpu* gpu = static_cast<GrGLGpu*>(context->priv().getGpu());
 
     GrSurfaceDesc desc;
     desc.fFlags = kNone_GrSurfaceFlags;
@@ -128,14 +128,14 @@ DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(SkTraceMemoryDump_unownedGLTexture, report
     idDesc.fOwnership = GrBackendObjectOwnership::kBorrowed;
 
     auto texture = GrGLTexture::MakeWrapped(gpu, desc, GrMipMapsStatus::kNotAllocated, idDesc,
-                                            false);
+                                            GrWrapCacheable::kNo, kRead_GrIOType);
 
     ValidateMemoryDumps(reporter, context, texture->gpuMemorySize(), false /* isOwned */);
 }
 
 DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(SkTraceMemoryDump_ownedGLRenderTarget, reporter, ctxInfo) {
     GrContext* context = ctxInfo.grContext();
-    GrGLGpu* gpu = static_cast<GrGLGpu*>(context->contextPriv().getGpu());
+    GrGLGpu* gpu = static_cast<GrGLGpu*>(context->priv().getGpu());
 
     GrSurfaceDesc sd;
     sd.fFlags = kRenderTarget_GrSurfaceFlag;
@@ -157,7 +157,7 @@ DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(SkTraceMemoryDump_ownedGLRenderTarget, rep
 
 DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(SkTraceMemoryDump_unownedGLRenderTarget, reporter, ctxInfo) {
     GrContext* context = ctxInfo.grContext();
-    GrGLGpu* gpu = static_cast<GrGLGpu*>(context->contextPriv().getGpu());
+    GrGLGpu* gpu = static_cast<GrGLGpu*>(context->priv().getGpu());
 
     GrSurfaceDesc sd;
     sd.fFlags = kRenderTarget_GrSurfaceFlag;

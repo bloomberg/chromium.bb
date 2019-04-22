@@ -3,9 +3,7 @@
 # found in the LICENSE file.
 
 import("//mojo/public/tools/bindings/mojom.gni")
-import("//services/catalog/public/tools/catalog.gni")
-import("//services/service_manager/public/cpp/service.gni")
-import("//services/service_manager/public/service_manifest.gni")
+import("//services/service_manager/public/cpp/service_executable.gni")
 import("//testing/test.gni")
 
 source_set("lifecycle") {
@@ -20,42 +18,25 @@ source_set("lifecycle") {
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp/test:test_support",
     "//services/service_manager/public/mojom",
-    "//services/service_manager/runner/common",
-    "//services/service_manager/tests:catalog_source",
-    "//services/service_manager/tests:util",
     "//testing/gtest",
   ]
 
   data_deps = [
     ":lifecycle_unittest_app",
     ":lifecycle_unittest_parent",
-    ":lifecycle_unittest_exe",
     ":lifecycle_unittest_package",
   ]
 }
 
 mojom("interfaces") {
+  testonly = true
   sources = [
-    "lifecycle_unittest.mojom",
+    "lifecycle.test-mojom",
   ]
 }
 
-service_manifest("manifest") {
-  name = "lifecycle_unittest"
-  source = "lifecycle_unittest_manifest.json"
-}
-
-service_manifest("lifecycle_unittest_package_app_a_manifest") {
-  name = "lifecycle_unittest_package_app_a"
-  source = "package_app_a_manifest.json"
-}
-
-service_manifest("lifecycle_unittest_package_app_b_manifest") {
-  name = "lifecycle_unittest_package_app_b"
-  source = "package_app_b_manifest.json"
-}
-
 source_set("app_client") {
+  testonly = true
   sources = [
     "app_client.cc",
     "app_client.h",
@@ -68,7 +49,7 @@ source_set("app_client") {
   ]
 }
 
-service("lifecycle_unittest_package") {
+service_executable("lifecycle_unittest_package") {
   testonly = true
   sources = [
     "package.cc",
@@ -82,16 +63,7 @@ service("lifecycle_unittest_package") {
   ]
 }
 
-service_manifest("lifecycle_unittest_package_manifest") {
-  name = "lifecycle_unittest_package"
-  source = "package_manifest.json"
-  packaged_services = [
-    ":lifecycle_unittest_package_app_a_manifest",
-    ":lifecycle_unittest_package_app_b_manifest",
-  ]
-}
-
-service("lifecycle_unittest_app") {
+service_executable("lifecycle_unittest_app") {
   testonly = true
   sources = [
     "app.cc",
@@ -104,12 +76,7 @@ service("lifecycle_unittest_app") {
   ]
 }
 
-service_manifest("lifecycle_unittest_app_manifest") {
-  name = "lifecycle_unittest_app"
-  source = "app_manifest.json"
-}
-
-service("lifecycle_unittest_parent") {
+service_executable("lifecycle_unittest_parent") {
   testonly = true
   sources = [
     "parent.cc",
@@ -118,40 +85,5 @@ service("lifecycle_unittest_parent") {
     ":interfaces",
     "//base",
     "//services/service_manager/public/cpp",
-  ]
-}
-
-service_manifest("lifecycle_unittest_parent_manifest") {
-  name = "lifecycle_unittest_parent"
-  source = "parent_manifest.json"
-}
-
-executable("lifecycle_unittest_exe") {
-  testonly = true
-  sources = [
-    "lifecycle_exe.cc",
-  ]
-  deps = [
-    ":app_client",
-    "//base",
-    "//build/win:default_exe_manifest",
-    "//services/service_manager/public/cpp",
-    "//services/service_manager/public/cpp/standalone_service:main",
-  ]
-}
-
-service_manifest("lifecycle_unittest_exe_manifest") {
-  name = "lifecycle_unittest_exe"
-  source = "exe_manifest.json"
-}
-
-catalog("catalog") {
-  embedded_services = [ ":manifest" ]
-
-  standalone_services = [
-    ":lifecycle_unittest_app_manifest",
-    ":lifecycle_unittest_exe_manifest",
-    ":lifecycle_unittest_package_manifest",
-    ":lifecycle_unittest_parent_manifest",
   ]
 }

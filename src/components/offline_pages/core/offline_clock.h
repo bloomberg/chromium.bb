@@ -7,6 +7,7 @@
 
 namespace base {
 class Clock;
+class Time;
 }
 
 namespace offline_pages {
@@ -18,6 +19,10 @@ base::Clock* OfflineClock();
 // Allows tests to override the clock returned by |OfflineClock()|. For safety,
 // use |TestScopedOfflineClock| instead if possible.
 void SetOfflineClockForTesting(base::Clock* clock);
+
+// Returns the current time given by |OfflineClock|. This used as a shortcut
+// for calls to |OfflineClock()->Now()|
+base::Time OfflineTimeNow();
 
 }  // namespace offline_pages
 

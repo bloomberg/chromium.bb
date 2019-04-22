@@ -23,6 +23,7 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/process/process_metrics.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -40,6 +41,13 @@
 #include "third_party/leveldatabase/leveldb_features.h"
 #include "third_party/leveldatabase/src/include/leveldb/options.h"
 #include "third_party/re2/src/re2/re2.h"
+
+#if defined(OS_WIN)
+#undef DeleteFile
+#define base_DeleteFile base::DeleteFileW
+#else  // defined(OS_WIN)
+#define base_DeleteFile base::DeleteFile
+#endif  // defined(OS_WIN)
 
 using base::FilePath;
 using base::trace_event::MemoryAllocatorDump;
@@ -73,7 +81,8 @@ static const char kDatabaseNameSuffixForRebuildDB[] = "__tmp_for_rebuild";
 static base::File::Error GetDirectoryEntries(const FilePath& dir_param,
                                              std::vector<FilePath>* result) {
   TRACE_EVENT0("leveldb", "ChromiumEnv::GetDirectoryEntries");
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   result->clear();
 #if defined(OS_WIN)
   FilePath dir_filepath = dir_param.Append(FILE_PATH_LITERAL("*"));
@@ -449,18 +458,27 @@ Status ChromiumWritableFile::Flush() {
 Status ChromiumWritableFile::Sync() {
   TRACE_EVENT0("leveldb", "WritableFile::Sync");
 
+  // leveldb's implicit contract for Sync() is that if this instance is for a
+  // manifest file then the directory is also sync'ed, to ensure new files
+  // referred to by the manifest are in the filesystem.
+  //
+  // This needs to happen before the manifest file is flushed to disk, to
+  // avoid crashing in a state where the manifest refers to files that are not
+  // yet on disk.
+  //
+  // See leveldb's env_posix.cc.
+  if (file_type_ == kManifest) {
+    Status status = SyncParent();
+    if (!status.ok())
+      return status;
+  }
+
   if (!file_.Flush()) {
     base::File::Error error = base::File::GetLastFileError();
     uma_logger_->RecordErrorAt(kWritableFileSync);
     return MakeIOError(filename_, base::File::ErrorToString(error),
                        kWritableFileSync, error);
   }
-
-  // leveldb's implicit contract for Sync() is that if this instance is for a
-  // manifest file then the directory is also sync'ed. See leveldb's
-  // env_posix.cc.
-  if (file_type_ == kManifest)
-    return SyncParent();
 
   return Status::OK();
 }
@@ -707,7 +725,7 @@ int GetCorruptionCode(const leveldb::Status& status) {
   const int kOtherError = 0;
   int error = kOtherError;
   const std::string& str_error = status.ToString();
-  const size_t kNumPatterns = arraysize(patterns);
+  const size_t kNumPatterns = base::size(patterns);
   for (size_t i = 0; i < kNumPatterns; ++i) {
     if (str_error.find(patterns[i]) != std::string::npos) {
       error = i + 1;
@@ -720,7 +738,7 @@ int GetCorruptionCode(const leveldb::Status& status) {
 int GetNumCorruptionCodes() {
   // + 1 for the "other" error that is returned when a corruption message
   // doesn't match any of the patterns.
-  return arraysize(patterns) + 1;
+  return base::size(patterns) + 1;
 }
 
 std::string GetCorruptionMessage(const leveldb::Status& status) {
@@ -858,7 +876,7 @@ void ChromiumEnv::DeleteBackupFiles(const FilePath& dir) {
                                   FILE_PATH_LITERAL("*.bak"));
   for (base::FilePath fname = dir_reader.Next(); !fname.empty();
        fname = dir_reader.Next()) {
-    histogram->AddBoolean(base::DeleteFile(fname, false));
+    histogram->AddBoolean(base_DeleteFile(fname, false));
   }
 }
 
@@ -892,7 +910,7 @@ Status ChromiumEnv::DeleteFile(const std::string& fname) {
   Status result;
   FilePath fname_filepath = FilePath::FromUTF8Unsafe(fname);
   // TODO(jorlow): Should we assert this is a file?
-  if (!base::DeleteFile(fname_filepath, false)) {
+  if (!base_DeleteFile(fname_filepath, false)) {
     result = MakeIOError(fname, "Could not delete file.", kDeleteFile);
     RecordErrorAt(kDeleteFile);
   }
@@ -916,7 +934,7 @@ Status ChromiumEnv::CreateDir(const std::string& name) {
 Status ChromiumEnv::DeleteDir(const std::string& name) {
   Status result;
   // TODO(jorlow): Should we assert this is a directory?
-  if (!base::DeleteFile(FilePath::FromUTF8Unsafe(name), false)) {
+  if (!base_DeleteFile(FilePath::FromUTF8Unsafe(name), false)) {
     result = MakeIOError(name, "Could not delete directory.", kDeleteDir);
     RecordErrorAt(kDeleteDir);
   }
@@ -1331,6 +1349,8 @@ class DBTracker::TrackedDBImpl : public base::LinkNode<TrackedDBImpl>,
 
   ~TrackedDBImpl() override {
     tracker_->DatabaseDestroyed(this, shared_read_cache_use_);
+    base::ScopedAllowBaseSyncPrimitives allow_base_sync_primitives;
+    db_.reset();
   }
 
   const std::string& name() const override { return name_; }
@@ -1657,11 +1677,12 @@ leveldb::Status OpenDB(const leveldb_env::Options& options,
 leveldb::Status RewriteDB(const leveldb_env::Options& options,
                           const std::string& name,
                           std::unique_ptr<leveldb::DB>* dbptr) {
+  DCHECK(options.create_if_missing);
   if (!base::FeatureList::IsEnabled(leveldb::kLevelDBRewriteFeature))
     return Status::OK();
   if (leveldb_chrome::IsMemEnv(options.env))
     return Status::OK();
-  TRACE_EVENT0("leveldb", "ChromiumEnv::RewriteDB");
+  TRACE_EVENT1("leveldb", "ChromiumEnv::RewriteDB", "name", name);
   leveldb::Status s;
   std::string tmp_name = DatabaseNameForRewriteDB(name);
   if (options.env->FileExists(tmp_name)) {

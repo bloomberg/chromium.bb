@@ -6,71 +6,42 @@
 #define SERVICES_PROXY_RESOLVER_HOST_RESOLVER_MOJO_H_
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "net/base/completion_once_callback.h"
 #include "net/dns/host_cache.h"
-#include "net/dns/host_resolver.h"
+#include "net/proxy_resolution/proxy_host_resolver.h"
+#include "net/proxy_resolution/proxy_resolve_dns_operation.h"
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
-
-namespace net {
-class AddressList;
-class NetLogWithSource;
-}  // namespace net
 
 namespace proxy_resolver {
 
-// A HostResolver implementation that converts requests to mojo types and
+// A ProxyHostResolver implementation that converts requests to mojo types and
 // forwards them to a mojo Impl interface.
-class HostResolverMojo : public net::HostResolver {
+class HostResolverMojo : public net::ProxyHostResolver {
  public:
   class Impl {
    public:
     virtual ~Impl() = default;
-    virtual void ResolveDns(
-        std::unique_ptr<net::HostResolver::RequestInfo> request_info,
-        mojom::HostResolverRequestClientPtr) = 0;
+    virtual void ResolveDns(const std::string& hostname,
+                            net::ProxyResolveDnsOperation operation,
+                            mojom::HostResolverRequestClientPtr) = 0;
   };
 
   // |impl| must outlive |this|.
   explicit HostResolverMojo(Impl* impl);
   ~HostResolverMojo() override;
 
-  // HostResolver overrides.
-  std::unique_ptr<ResolveHostRequest> CreateRequest(
-      const net::HostPortPair& host,
-      const net::NetLogWithSource& net_log,
-      const base::Optional<ResolveHostParameters>& optional_parameters)
-      override;
-  // Note: |Resolve()| currently ignores |priority|.
-  int Resolve(const RequestInfo& info,
-              net::RequestPriority priority,
-              net::AddressList* addresses,
-              net::CompletionOnceCallback callback,
-              std::unique_ptr<Request>* request,
-              const net::NetLogWithSource& source_net_log) override;
-  int ResolveFromCache(const RequestInfo& info,
-                       net::AddressList* addresses,
-                       const net::NetLogWithSource& source_net_log) override;
-  int ResolveStaleFromCache(
-      const RequestInfo& info,
-      net::AddressList* addresses,
-      net::HostCache::EntryStaleness* stale_info,
-      const net::NetLogWithSource& source_net_log) override;
-  net::HostCache* GetHostCache() override;
-  bool HasCached(base::StringPiece hostname,
-                 net::HostCache::Entry::Source* source_out,
-                 net::HostCache::EntryStaleness* stale_out) const override;
+  // ProxyHostResolver overrides.
+  std::unique_ptr<Request> CreateRequest(
+      const std::string& hostname,
+      net::ProxyResolveDnsOperation operation) override;
 
  private:
   class Job;
   class RequestImpl;
-
-  int ResolveFromCacheInternal(const RequestInfo& info,
-                               const net::HostCache::Key& key,
-                               net::AddressList* addresses);
 
   Impl* const impl_;
 

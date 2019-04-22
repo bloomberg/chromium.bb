@@ -39,9 +39,9 @@ std::unique_ptr<base::DictionaryValue> ChangeRecord::ToValue() const {
       break;
   }
   value->SetString("action", action_str);
-  value->SetString("id", base::Int64ToString(id));
+  value->SetString("id", base::NumberToString(id));
   if (action == ACTION_DELETE) {
-    if (extra.get()) {
+    if (extra.has_value()) {
       value->Set("extra", extra->ToValue());
     }
     value->Set("specifics", EntitySpecificsToValue(specifics));

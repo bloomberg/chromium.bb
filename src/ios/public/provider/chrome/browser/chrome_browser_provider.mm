@@ -89,8 +89,7 @@ AppDistributionProvider* ChromeBrowserProvider::GetAppDistributionProvider()
 }
 
 id<LogoVendor> ChromeBrowserProvider::CreateLogoVendor(
-    ios::ChromeBrowserState* browser_state,
-    id<UrlLoader> loader) const {
+    ios::ChromeBrowserState* browser_state) const {
   return nil;
 }
 
@@ -102,6 +101,10 @@ UserFeedbackProvider* ChromeBrowserProvider::GetUserFeedbackProvider() const {
   return nullptr;
 }
 
+SpecialUserProvider* ChromeBrowserProvider::GetSpecialUserProvider() const {
+  return nullptr;
+}
+
 SpotlightProvider* ChromeBrowserProvider::GetSpotlightProvider() const {
   return nullptr;
 }
@@ -110,11 +113,14 @@ FullscreenProvider* ChromeBrowserProvider::GetFullscreenProvider() const {
   return nullptr;
 }
 
+BrowserURLRewriterProvider*
+ChromeBrowserProvider::GetBrowserURLRewriterProvider() const {
+  return nullptr;
+}
+
 MailtoHandlerProvider* ChromeBrowserProvider::GetMailtoHandlerProvider() const {
   return mailto_handler_provider_.get();
 }
-
-void ChromeBrowserProvider::CheckForFirstPartyApps() const {}
 
 BrandedImageProvider* ChromeBrowserProvider::GetBrandedImageProvider() const {
   return nullptr;

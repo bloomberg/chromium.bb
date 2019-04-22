@@ -50,9 +50,9 @@ void SecurityKeyMessageReader::Start(
 
   // base::Unretained is safe since this class owns the thread running this task
   // which will be destroyed before this instance is.
-  read_task_runner_->PostTask(FROM_HERE,
-                              base::Bind(&SecurityKeyMessageReader::ReadMessage,
-                                         base::Unretained(this)));
+  read_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&SecurityKeyMessageReader::ReadMessage,
+                                base::Unretained(this)));
 }
 
 void SecurityKeyMessageReader::ReadMessage() {
@@ -106,8 +106,8 @@ void SecurityKeyMessageReader::ReadMessage() {
     // Notify callback of the new message received.
     main_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&SecurityKeyMessageReader::InvokeMessageCallback,
-                   weak_factory_.GetWeakPtr(), base::Passed(&message)));
+        base::BindOnce(&SecurityKeyMessageReader::InvokeMessageCallback,
+                       weak_factory_.GetWeakPtr(), std::move(message)));
   }
 }
 
@@ -115,8 +115,8 @@ void SecurityKeyMessageReader::NotifyError() {
   DCHECK(read_task_runner_->RunsTasksInCurrentSequence());
 
   main_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&SecurityKeyMessageReader::InvokeErrorCallback,
-                            weak_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&SecurityKeyMessageReader::InvokeErrorCallback,
+                                weak_factory_.GetWeakPtr()));
 }
 
 void SecurityKeyMessageReader::InvokeMessageCallback(

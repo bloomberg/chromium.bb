@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/stl_util.h"
 #include "third_party/blink/public/common/screen_orientation/web_screen_orientation_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -58,7 +59,7 @@ static ScreenOrientationInfo* OrientationsMap(unsigned& length) {
       {portrait, kWebScreenOrientationLockPortrait},
       {landscape, kWebScreenOrientationLockLandscape},
       {natural, kWebScreenOrientationLockNatural}};
-  length = arraysize(orientation_map);
+  length = base::size(orientation_map);
 
   return orientation_map;
 }
@@ -133,7 +134,7 @@ String ScreenOrientation::type() const {
   return OrientationTypeToString(type_);
 }
 
-unsigned short ScreenOrientation::angle() const {
+uint16_t ScreenOrientation::angle() const {
   return angle_;
 }
 
@@ -141,13 +142,13 @@ void ScreenOrientation::SetType(WebScreenOrientationType type) {
   type_ = type;
 }
 
-void ScreenOrientation::SetAngle(unsigned short angle) {
+void ScreenOrientation::SetAngle(uint16_t angle) {
   angle_ = angle;
 }
 
 ScriptPromise ScreenOrientation::lock(ScriptState* state,
                                       const AtomicString& lock_string) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(state);
   ScriptPromise promise = resolver->Promise();
 
   Document* document = GetFrame() ? GetFrame()->GetDocument() : nullptr;
@@ -160,7 +161,7 @@ ScriptPromise ScreenOrientation::lock(ScriptState* state,
     return promise;
   }
 
-  if (document->IsSandboxed(kSandboxOrientationLock)) {
+  if (document->IsSandboxed(WebSandboxFlags::kOrientationLock)) {
     DOMException* exception =
         DOMException::Create(DOMExceptionCode::kSecurityError,
                              "The document is sandboxed and lacks the "

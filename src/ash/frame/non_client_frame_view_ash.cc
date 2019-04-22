@@ -10,7 +10,6 @@
 
 #include "ash/frame/header_view.h"
 #include "ash/public/cpp/ash_constants.h"
-#include "ash/public/cpp/caption_buttons/frame_caption_button.h"
 #include "ash/public/cpp/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/public/cpp/default_frame_header.h"
 #include "ash/public/cpp/frame_utils.h"
@@ -18,7 +17,7 @@
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_delegate.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
-#include "ash/wm/overview/window_selector_controller.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "ash/wm/window_state.h"
@@ -38,13 +37,13 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
-DEFINE_UI_CLASS_PROPERTY_TYPE(ash::NonClientFrameViewAsh*);
+DEFINE_UI_CLASS_PROPERTY_TYPE(ash::NonClientFrameViewAsh*)
 
 namespace ash {
 
 DEFINE_UI_CLASS_PROPERTY_KEY(NonClientFrameViewAsh*,
                              kNonClientFrameViewAshKey,
-                             nullptr);
+                             nullptr)
 
 ///////////////////////////////////////////////////////////////////////////////
 // NonClientFrameViewAshWindowStateDelegate
@@ -251,18 +250,23 @@ NonClientFrameViewAsh::NonClientFrameViewAsh(views::Widget* frame)
   // NonClientFrameViewAshImmersiveHelper. This is the case for container apps
   // such as ARC++, and in some tests.
   wm::WindowState* window_state = wm::GetWindowState(frame_window);
-  if (!window_state->HasDelegate()) {
+  // A window may be created as a child window of the toplevel (captive portal).
+  // TODO(oshima): It should probably be a transient child rather than normal
+  // child. Investigate if we can remove this check.
+  if (window_state && !window_state->HasDelegate()) {
     immersive_helper_ =
         std::make_unique<NonClientFrameViewAshImmersiveHelper>(frame, this);
   }
-  Shell::Get()->AddShellObserver(this);
+  Shell::Get()->overview_controller()->AddObserver(this);
   Shell::Get()->split_view_controller()->AddObserver(this);
 
   frame_window->SetProperty(kNonClientFrameViewAshKey, this);
+  wm::MakeGestureDraggableInImmersiveMode(frame_window);
 }
 
 NonClientFrameViewAsh::~NonClientFrameViewAsh() {
-  Shell::Get()->RemoveShellObserver(this);
+  if (Shell::Get()->overview_controller())
+    Shell::Get()->overview_controller()->RemoveObserver(this);
   if (Shell::Get()->split_view_controller())
     Shell::Get()->split_view_controller()->RemoveObserver(this);
 }
@@ -343,7 +347,7 @@ int NonClientFrameViewAsh::NonClientHitTest(const gfx::Point& point) {
 }
 
 void NonClientFrameViewAsh::GetWindowMask(const gfx::Size& size,
-                                          gfx::Path* window_mask) {
+                                          SkPath* window_mask) {
   // No window masks in Aura.
 }
 
@@ -456,14 +460,14 @@ SkColor NonClientFrameViewAsh::GetInactiveFrameColorForTest() const {
 void NonClientFrameViewAsh::UpdateHeaderView() {
   SplitViewController* split_view_controller =
       Shell::Get()->split_view_controller();
-  if (in_overview_mode_ && split_view_controller->IsSplitViewModeActive() &&
+  if (in_overview_ && split_view_controller->IsSplitViewModeActive() &&
       split_view_controller->GetDefaultSnappedWindow() ==
           frame_->GetNativeWindow()) {
     // TODO(sammiequon): This works for now, but we may have to check if
     // |frame_|'s native window is in the overview list instead.
     SetShouldPaintHeader(true);
   } else {
-    SetShouldPaintHeader(!in_overview_mode_);
+    SetShouldPaintHeader(!in_overview_);
   }
 }
 
@@ -472,12 +476,12 @@ void NonClientFrameViewAsh::SetShouldPaintHeader(bool paint) {
 }
 
 void NonClientFrameViewAsh::OnOverviewModeStarting() {
-  in_overview_mode_ = true;
+  in_overview_ = true;
   UpdateHeaderView();
 }
 
 void NonClientFrameViewAsh::OnOverviewModeEnded() {
-  in_overview_mode_ = false;
+  in_overview_ = false;
   UpdateHeaderView();
 }
 
@@ -487,7 +491,7 @@ void NonClientFrameViewAsh::OnSplitViewStateChanged(
   UpdateHeaderView();
 }
 
-void NonClientFrameViewAsh::ShowContextMenuForView(
+void NonClientFrameViewAsh::ShowContextMenuForViewImpl(
     views::View* source,
     const gfx::Point& point,
     ui::MenuSourceType source_type) {
@@ -499,7 +503,7 @@ void NonClientFrameViewAsh::ShowContextMenuForView(
       views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU);
   menu_runner_->RunMenuAt(GetWidget(), nullptr,
                           gfx::Rect(point, gfx::Size(0, 0)),
-                          views::MENU_ANCHOR_TOPLEFT, source_type);
+                          views::MenuAnchorPosition::kTopLeft, source_type);
 }
 
 bool NonClientFrameViewAsh::IsCommandIdChecked(int command_id) const {

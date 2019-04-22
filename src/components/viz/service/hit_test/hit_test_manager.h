@@ -16,22 +16,6 @@
 
 namespace viz {
 
-namespace {
-
-struct HitTestAsyncQueriedDebugRegion {
-  HitTestAsyncQueriedDebugRegion();
-  explicit HitTestAsyncQueriedDebugRegion(base::flat_set<FrameSinkId> regions);
-  ~HitTestAsyncQueriedDebugRegion();
-
-  HitTestAsyncQueriedDebugRegion(HitTestAsyncQueriedDebugRegion&&);
-  HitTestAsyncQueriedDebugRegion& operator=(HitTestAsyncQueriedDebugRegion&&);
-
-  base::flat_set<FrameSinkId> regions;
-  base::ElapsedTimer timer;
-};
-
-}  // namespace
-
 class LatestLocalSurfaceIdLookupDelegate;
 
 // HitTestManager manages the collection of HitTestRegionList objects
@@ -40,16 +24,16 @@ class LatestLocalSurfaceIdLookupDelegate;
 class VIZ_SERVICE_EXPORT HitTestManager : public SurfaceObserver {
  public:
   explicit HitTestManager(SurfaceManager* surface_manager);
-  virtual ~HitTestManager();
+  ~HitTestManager() override;
 
   // SurfaceObserver:
   void OnFirstSurfaceActivation(const SurfaceInfo& surface_info) override {}
   void OnSurfaceActivated(const SurfaceId& surface_id,
                           base::Optional<base::TimeDelta> duration) override;
-  void OnSurfaceDestroyed(const SurfaceId& surface_id) override {}
+  void OnSurfaceMarkedForDestruction(const SurfaceId& surface_id) override {}
   bool OnSurfaceDamaged(const SurfaceId& surface_id,
                         const BeginFrameAck& ack) override;
-  void OnSurfaceDiscarded(const SurfaceId& surface_id) override;
+  void OnSurfaceDestroyed(const SurfaceId& surface_id) override;
   void OnSurfaceDamageExpected(const SurfaceId& surface_id,
                                const BeginFrameArgs& args) override {}
 
@@ -78,6 +62,10 @@ class VIZ_SERVICE_EXPORT HitTestManager : public SurfaceObserver {
       const FrameSinkId& root_frame_sink_id,
       const std::vector<FrameSinkId>& hit_test_async_queried_debug_queue);
 
+  uint64_t submit_hit_test_region_list_index() const {
+    return submit_hit_test_region_list_index_;
+  }
+
  private:
   bool ValidateHitTestRegionList(const SurfaceId& surface_id,
                                  HitTestRegionList* hit_test_region_list);
@@ -87,11 +75,29 @@ class VIZ_SERVICE_EXPORT HitTestManager : public SurfaceObserver {
   std::map<SurfaceId, base::flat_map<uint64_t, HitTestRegionList>>
       hit_test_region_lists_;
 
+  struct HitTestAsyncQueriedDebugRegion {
+    HitTestAsyncQueriedDebugRegion();
+    explicit HitTestAsyncQueriedDebugRegion(
+        base::flat_set<FrameSinkId> regions);
+    ~HitTestAsyncQueriedDebugRegion();
+
+    HitTestAsyncQueriedDebugRegion(HitTestAsyncQueriedDebugRegion&&);
+    HitTestAsyncQueriedDebugRegion& operator=(HitTestAsyncQueriedDebugRegion&&);
+
+    base::flat_set<FrameSinkId> regions;
+    base::ElapsedTimer timer;
+  };
+
   // We store the async queried regions for each |root_frame_sink_id|. If viz
   // hit-test debug is enabled, We will highlight the regions red in
   // HitTestAggregator for 2 seconds, or until the next async queried event.
   base::flat_map<FrameSinkId, HitTestAsyncQueriedDebugRegion>
       hit_test_async_queried_debug_regions_;
+
+  // Keeps track of the number of submitted HitTestRegionLists. This allows the
+  // HitTestAggregators to stay in sync with the HitTestManager and only
+  // aggregate when there is new hit-test data.
+  uint64_t submit_hit_test_region_list_index_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(HitTestManager);
 };

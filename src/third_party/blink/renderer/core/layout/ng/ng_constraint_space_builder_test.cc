@@ -38,7 +38,7 @@ TEST(NGConstraintSpaceBuilderTest, AvailableSizeFromHorizontalICB) {
 
   EXPECT_EQ(space.AvailableSize().inline_size, icb_size.height);
   EXPECT_EQ(space.PercentageResolutionInlineSize(), icb_size.height);
-};
+}
 
 // Asserts that indefinite inline length becomes initial containing
 // block height for vertical-lr inside horizontal document.
@@ -67,7 +67,7 @@ TEST(NGConstraintSpaceBuilderTest, AvailableSizeFromVerticalICB) {
 
   EXPECT_EQ(space.AvailableSize().inline_size, icb_size.width);
   EXPECT_EQ(space.PercentageResolutionInlineSize(), icb_size.width);
-};
+}
 
 }  // namespace
 

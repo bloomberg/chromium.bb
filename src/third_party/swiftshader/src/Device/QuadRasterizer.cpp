@@ -18,17 +18,15 @@
 #include "Renderer.hpp"
 #include "Pipeline/Constants.hpp"
 #include "System/Math.hpp"
-#include "System/Debug.hpp"
+#include "Vulkan/VkDebug.hpp"
 
 namespace sw
 {
-	extern bool veryEarlyDepthTest;
-	extern bool complementaryDepthBuffer;
 	extern bool fullPixelPositionRegister;
 
 	extern int clusterCount;
 
-	QuadRasterizer::QuadRasterizer(const PixelProcessor::State &state, const PixelShader *pixelShader) : state(state), shader(pixelShader)
+	QuadRasterizer::QuadRasterizer(const PixelProcessor::State &state, SpirvShader const *spirvShader) : state(state), spirvShader{spirvShader}
 	{
 	}
 
@@ -159,78 +157,6 @@ namespace sw
 				}
 			}
 
-			if(veryEarlyDepthTest && state.multiSample == 1 && !state.depthOverride)
-			{
-				if(!state.stencilActive && state.depthTestActive && (state.depthCompareMode == VK_COMPARE_OP_LESS_OR_EQUAL || state.depthCompareMode == VK_COMPARE_OP_LESS))   // FIXME: Both modes ok?
-				{
-					Float4 xxxx = Float4(Float(x0)) + *Pointer<Float4>(primitive + OFFSET(Primitive,xQuad), 16);
-
-					Pointer<Byte> buffer;
-					Int pitch;
-
-					if(!state.quadLayoutDepthBuffer)
-					{
-						buffer = zBuffer + 4 * x0;
-						pitch = *Pointer<Int>(data + OFFSET(DrawData,depthPitchB));
-					}
-					else
-					{
-						buffer = zBuffer + 8 * x0;
-					}
-
-					For(Int x = x0, x < x1, x += 2)
-					{
-						Float4 z = interpolate(xxxx, Dz[0], z, primitive + OFFSET(Primitive,z), false, false, state.depthClamp);
-
-						Float4 zValue;
-
-						if(!state.quadLayoutDepthBuffer)
-						{
-							// FIXME: Properly optimizes?
-							zValue.xy = *Pointer<Float4>(buffer);
-							zValue.zw = *Pointer<Float4>(buffer + pitch - 8);
-						}
-						else
-						{
-							zValue = *Pointer<Float4>(buffer, 16);
-						}
-
-						Int4 zTest;
-
-						if(complementaryDepthBuffer)
-						{
-							zTest = CmpLE(zValue, z);
-						}
-						else
-						{
-							zTest = CmpNLT(zValue, z);
-						}
-
-						Int zMask = SignMask(zTest);
-
-						If(zMask == 0)
-						{
-							x0 += 2;
-						}
-						Else
-						{
-							x = x1;
-						}
-
-						xxxx += Float4(2);
-
-						if(!state.quadLayoutDepthBuffer)
-						{
-							buffer += 8;
-						}
-						else
-						{
-							buffer += 16;
-						}
-					}
-				}
-			}
-
 			If(x0 < x1)
 			{
 				if(interpolateW())
@@ -238,29 +164,15 @@ namespace sw
 					Dw = *Pointer<Float4>(primitive + OFFSET(Primitive,w.C), 16) + yyyy * *Pointer<Float4>(primitive + OFFSET(Primitive,w.B), 16);
 				}
 
-				for(int interpolant = 0; interpolant < MAX_FRAGMENT_INPUTS; interpolant++)
+				for (int interpolant = 0; interpolant < MAX_INTERFACE_COMPONENTS; interpolant++)
 				{
-					for(int component = 0; component < 4; component++)
+					if (spirvShader->inputs[interpolant].Type == SpirvShader::ATTRIBTYPE_UNUSED)
+						continue;
+
+					Dv[interpolant] = *Pointer<Float4>(primitive + OFFSET(Primitive, V[interpolant].C), 16);
+					if (!spirvShader->inputs[interpolant].Flat)
 					{
-						if(state.interpolant[interpolant].component & (1 << component))
-						{
-							Dv[interpolant][component] = *Pointer<Float4>(primitive + OFFSET(Primitive,V[interpolant][component].C), 16);
-
-							if(!(state.interpolant[interpolant].flat & (1 << component)))
-							{
-								Dv[interpolant][component] += yyyy * *Pointer<Float4>(primitive + OFFSET(Primitive,V[interpolant][component].B), 16);
-							}
-						}
-					}
-				}
-
-				if(state.fog.component)
-				{
-					Df = *Pointer<Float4>(primitive + OFFSET(Primitive,f.C), 16);
-
-					if(!state.fog.flat)
-					{
-						Df += yyyy * *Pointer<Float4>(primitive + OFFSET(Primitive,f.B), 16);
+						Dv[interpolant] += yyyy * *Pointer<Float4>(primitive + OFFSET(Primitive, V[interpolant].B), 16);
 					}
 				}
 
@@ -340,11 +252,11 @@ namespace sw
 
 	bool QuadRasterizer::interpolateZ() const
 	{
-		return state.depthTestActive || (shader && shader->isVPosDeclared() && fullPixelPositionRegister);
+		return state.depthTestActive || (spirvShader && spirvShader->hasBuiltinInput(spv::BuiltInPosition));
 	}
 
 	bool QuadRasterizer::interpolateW() const
 	{
-		return state.perspective || (shader && shader->isVPosDeclared() && fullPixelPositionRegister);
+		return state.perspective || (spirvShader && spirvShader->hasBuiltinInput(spv::BuiltInPosition));
 	}
 }

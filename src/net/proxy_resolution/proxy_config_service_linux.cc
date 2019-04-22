@@ -1004,7 +1004,7 @@ bool ProxyConfigServiceLinux::Delegate::GetProxyFromSettings(
   setting_getter_->GetInt(port_key, &port);
   if (port != 0) {
     // If a port is set and non-zero:
-    host += ":" + base::IntToString(port);
+    host += ":" + base::NumberToString(port);
   }
 
   // gsettings settings do not appear to distinguish between SOCKS version. We
@@ -1268,8 +1268,10 @@ void ProxyConfigServiceLinux::Delegate::SetUpAndFetchInitialConfig(
         SetUpNotifications();
       } else {
         // Post a task to set up notifications. We don't wait for success.
-        required_loop->PostTask(FROM_HERE, base::Bind(
-            &ProxyConfigServiceLinux::Delegate::SetUpNotifications, this));
+        required_loop->PostTask(
+            FROM_HERE,
+            base::BindOnce(
+                &ProxyConfigServiceLinux::Delegate::SetUpNotifications, this));
       }
     }
   }
@@ -1340,8 +1342,8 @@ void ProxyConfigServiceLinux::Delegate::OnCheckProxyConfigSettings() {
     // update |cached_config_|.
     main_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&ProxyConfigServiceLinux::Delegate::SetNewProxyConfig, this,
-                   new_config));
+        base::BindOnce(&ProxyConfigServiceLinux::Delegate::SetNewProxyConfig,
+                       this, new_config));
     // Update the thread-private copy in |reference_config_| as well.
     reference_config_ = new_config;
   } else {
@@ -1373,8 +1375,9 @@ void ProxyConfigServiceLinux::Delegate::PostDestroyTask() {
   } else {
     // Post to shutdown thread. Note that on browser shutdown, we may quit
     // this MessageLoop and exit the program before ever running this.
-    shutdown_loop->PostTask(FROM_HERE, base::Bind(
-        &ProxyConfigServiceLinux::Delegate::OnDestroy, this));
+    shutdown_loop->PostTask(
+        FROM_HERE,
+        base::BindOnce(&ProxyConfigServiceLinux::Delegate::OnDestroy, this));
   }
 }
 void ProxyConfigServiceLinux::Delegate::OnDestroy() {

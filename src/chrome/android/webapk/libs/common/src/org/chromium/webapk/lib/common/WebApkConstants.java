@@ -27,11 +27,12 @@ public final class WebApkConstants {
     // Activity launch time for uma tracking of Chrome web apk startup
     public static final String EXTRA_WEBAPK_LAUNCH_TIME =
             "org.chromium.chrome.browser.webapk_launch_time";
-    // Whether the host browser's activity should be completely transparent till the page
-    // has loaded. This enables the ShellAPK's splash screen to show through the host browser's
-    // activity.
-    public static final String EXTRA_USE_TRANSPARENT_SPLASH =
-            "org.chromium.chrome.browser.webapk.transparent_splash";
+    // Whether the WebAPK provides a splash screen activity which should be launched by the host
+    // browser to hide the web contents while the page is loading.
+    public static final String EXTRA_SPLASH_PROVIDED_BY_WEBAPK =
+            "org.chromium.chrome.browser.webapk.splash_provided_by_webapk";
+    // Tells the host browser to relaunch the WebAPK.
+    public static final String EXTRA_RELAUNCH = "org.chromium.webapk.relaunch";
 
     // Must be kept in sync with chrome/browser/android/shortcut_info.h.
     public static final int SHORTCUT_SOURCE_UNKNOWN = 0;
@@ -40,4 +41,11 @@ public final class WebApkConstants {
 
     /** Name of the shared preferences file. */
     public static final String PREF_PACKAGE = "org.chromium.webapk.shell_apk";
+
+    /**
+     * Action used by host browser to launch splash screen activity to hide web contents while the
+     * page is loading.
+     */
+    public static final String ACTION_SHOW_SPLASH =
+            "org.chromium.webapk.shell_apk.ACTION_SHOW_SPLASH";
 }

@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_cache_transaction.h"
@@ -93,7 +94,7 @@ class WritersTest : public TestWithScopedTaskEnvironment {
   void CreateWriters(const std::string& url) {
     cache_.CreateBackendEntry(kSimpleGET_Transaction.url, &disk_entry_,
                               nullptr);
-    entry_ = std::make_unique<HttpCache::ActiveEntry>(disk_entry_);
+    entry_ = std::make_unique<HttpCache::ActiveEntry>(disk_entry_, false);
     (static_cast<MockDiskEntry*>(disk_entry_))->AddRef();
     writers_ = std::make_unique<HttpCache::Writers>(&test_cache_, entry_.get());
   }

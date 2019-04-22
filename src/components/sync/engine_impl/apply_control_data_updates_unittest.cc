@@ -13,8 +13,8 @@
 #include "base/format_macros.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/sync/base/cryptographer.h"
 #include "components/sync/engine_impl/syncer.h"
 #include "components/sync/engine_impl/syncer_util.h"
@@ -57,7 +57,8 @@ class ApplyControlDataUpdatesTest : public ::testing::Test {
   std::unique_ptr<TestEntryFactory> entry_factory_;
 
  private:
-  base::MessageLoop loop_;  // Needed for directory init.
+  // Needed for directory init.
+  base::test::ScopedTaskEnvironment task_environment_;
   TestDirectorySetterUpper dir_maker_;
 
   DISALLOW_COPY_AND_ASSIGN(ApplyControlDataUpdatesTest);
@@ -92,7 +93,7 @@ TEST_F(ApplyControlDataUpdatesTest, NigoriUpdate) {
                                          true);
   EXPECT_FALSE(cryptographer->has_pending_keys());
 
-  ApplyControlDataUpdates(directory());
+  ApplyNigoriUpdate(directory());
 
   EXPECT_FALSE(cryptographer->is_ready());
   EXPECT_TRUE(cryptographer->has_pending_keys());
@@ -170,7 +171,7 @@ TEST_F(ApplyControlDataUpdatesTest, EncryptUnsyncedChanges) {
     EXPECT_EQ(2 * batch_s + 1, handles.size());
   }
 
-  ApplyControlDataUpdates(directory());
+  ApplyNigoriUpdate(directory());
 
   EXPECT_FALSE(cryptographer->has_pending_keys());
   EXPECT_TRUE(cryptographer->is_ready());
@@ -197,7 +198,7 @@ TEST_F(ApplyControlDataUpdatesTest, EncryptUnsyncedChanges) {
     entry.PutIsUnappliedUpdate(true);
   }
 
-  ApplyControlDataUpdates(directory());
+  ApplyNigoriUpdate(directory());
 
   EXPECT_FALSE(cryptographer->has_pending_keys());
   EXPECT_TRUE(cryptographer->is_ready());
@@ -282,7 +283,7 @@ TEST_F(ApplyControlDataUpdatesTest, CannotEncryptUnsyncedChanges) {
     EXPECT_EQ(2 * batch_s + 1, handles.size());
   }
 
-  ApplyControlDataUpdates(directory());
+  ApplyNigoriUpdate(directory());
 
   EXPECT_FALSE(cryptographer->is_ready());
   EXPECT_TRUE(cryptographer->has_pending_keys());
@@ -356,7 +357,7 @@ TEST_F(ApplyControlDataUpdatesTest,
 
   EXPECT_TRUE(entry_factory_->GetIsUnsyncedForItem(nigori_handle));
   EXPECT_TRUE(entry_factory_->GetIsUnappliedForItem(nigori_handle));
-  ApplyControlDataUpdates(directory());
+  ApplyNigoriUpdate(directory());
   EXPECT_TRUE(entry_factory_->GetIsUnsyncedForItem(nigori_handle));
   EXPECT_FALSE(entry_factory_->GetIsUnappliedForItem(nigori_handle));
 
@@ -433,7 +434,7 @@ TEST_F(ApplyControlDataUpdatesTest,
 
   EXPECT_TRUE(entry_factory_->GetIsUnsyncedForItem(nigori_handle));
   EXPECT_TRUE(entry_factory_->GetIsUnappliedForItem(nigori_handle));
-  ApplyControlDataUpdates(directory());
+  ApplyNigoriUpdate(directory());
   EXPECT_TRUE(entry_factory_->GetIsUnsyncedForItem(nigori_handle));
   EXPECT_FALSE(entry_factory_->GetIsUnappliedForItem(nigori_handle));
 
@@ -504,7 +505,7 @@ TEST_F(ApplyControlDataUpdatesTest, NigoriConflictOldKeys) {
 
   EXPECT_TRUE(entry_factory_->GetIsUnsyncedForItem(nigori_handle));
   EXPECT_TRUE(entry_factory_->GetIsUnappliedForItem(nigori_handle));
-  ApplyControlDataUpdates(directory());
+  ApplyNigoriUpdate(directory());
   EXPECT_TRUE(entry_factory_->GetIsUnsyncedForItem(nigori_handle));
   EXPECT_FALSE(entry_factory_->GetIsUnappliedForItem(nigori_handle));
 
@@ -581,7 +582,7 @@ TEST_F(ApplyControlDataUpdatesTest, NigoriConflictBothMigratedLocalCustom) {
 
   EXPECT_TRUE(entry_factory_->GetIsUnsyncedForItem(nigori_handle));
   EXPECT_TRUE(entry_factory_->GetIsUnappliedForItem(nigori_handle));
-  ApplyControlDataUpdates(directory());
+  ApplyNigoriUpdate(directory());
   EXPECT_TRUE(entry_factory_->GetIsUnsyncedForItem(nigori_handle));
   EXPECT_FALSE(entry_factory_->GetIsUnappliedForItem(nigori_handle));
 
@@ -662,7 +663,7 @@ TEST_F(ApplyControlDataUpdatesTest, NigoriConflictBothMigratedServerCustom) {
 
   EXPECT_TRUE(entry_factory_->GetIsUnsyncedForItem(nigori_handle));
   EXPECT_TRUE(entry_factory_->GetIsUnappliedForItem(nigori_handle));
-  ApplyControlDataUpdates(directory());
+  ApplyNigoriUpdate(directory());
   EXPECT_TRUE(entry_factory_->GetIsUnsyncedForItem(nigori_handle));
   EXPECT_FALSE(entry_factory_->GetIsUnappliedForItem(nigori_handle));
 
@@ -741,7 +742,7 @@ TEST_F(ApplyControlDataUpdatesTest, NigoriConflictLocalMigrated) {
 
   EXPECT_TRUE(entry_factory_->GetIsUnsyncedForItem(nigori_handle));
   EXPECT_TRUE(entry_factory_->GetIsUnappliedForItem(nigori_handle));
-  ApplyControlDataUpdates(directory());
+  ApplyNigoriUpdate(directory());
   EXPECT_TRUE(entry_factory_->GetIsUnsyncedForItem(nigori_handle));
   EXPECT_FALSE(entry_factory_->GetIsUnappliedForItem(nigori_handle));
 
@@ -820,7 +821,7 @@ TEST_F(ApplyControlDataUpdatesTest, NigoriConflictServerMigrated) {
 
   EXPECT_TRUE(entry_factory_->GetIsUnsyncedForItem(nigori_handle));
   EXPECT_TRUE(entry_factory_->GetIsUnappliedForItem(nigori_handle));
-  ApplyControlDataUpdates(directory());
+  ApplyNigoriUpdate(directory());
   EXPECT_TRUE(entry_factory_->GetIsUnsyncedForItem(nigori_handle));
   EXPECT_FALSE(entry_factory_->GetIsUnappliedForItem(nigori_handle));
 
@@ -849,102 +850,6 @@ TEST_F(ApplyControlDataUpdatesTest, NigoriConflictServerMigrated) {
   { syncable::ReadTransaction trans(FROM_HERE, directory()); }
 }
 
-// Check that we can apply a simple control datatype node successfully.
-TEST_F(ApplyControlDataUpdatesTest, ControlApply) {
-  std::string experiment_id = "experiment";
-  sync_pb::EntitySpecifics specifics;
-  specifics.mutable_experiments()->mutable_keystore_encryption()->set_enabled(
-      true);
-  int64_t experiment_handle =
-      entry_factory_->CreateUnappliedNewItem(experiment_id, specifics, false);
-  ApplyControlDataUpdates(directory());
-
-  EXPECT_FALSE(entry_factory_->GetIsUnappliedForItem(experiment_handle));
-  EXPECT_TRUE(entry_factory_->GetLocalSpecificsForItem(experiment_handle)
-                  .experiments()
-                  .keystore_encryption()
-                  .enabled());
-}
-
-// Verify that we apply top level folders before their children.
-TEST_F(ApplyControlDataUpdatesTest, ControlApplyParentBeforeChild) {
-  std::string parent_id = "parent";
-  std::string experiment_id = "experiment";
-  sync_pb::EntitySpecifics specifics;
-  specifics.mutable_experiments()->mutable_keystore_encryption()->set_enabled(
-      true);
-  int64_t experiment_handle = entry_factory_->CreateUnappliedNewItemWithParent(
-      experiment_id, specifics, parent_id);
-  int64_t parent_handle =
-      entry_factory_->CreateUnappliedNewItem(parent_id, specifics, true);
-  ApplyControlDataUpdates(directory());
-
-  EXPECT_FALSE(entry_factory_->GetIsUnappliedForItem(parent_handle));
-  EXPECT_FALSE(entry_factory_->GetIsUnappliedForItem(experiment_handle));
-  EXPECT_TRUE(entry_factory_->GetLocalSpecificsForItem(experiment_handle)
-                  .experiments()
-                  .keystore_encryption()
-                  .enabled());
-}
-
-// Verify that we handle control datatype conflicts by preserving the server
-// data.
-TEST_F(ApplyControlDataUpdatesTest, ControlConflict) {
-  std::string experiment_id = "experiment";
-  sync_pb::EntitySpecifics local_specifics, server_specifics;
-  server_specifics.mutable_experiments()
-      ->mutable_keystore_encryption()
-      ->set_enabled(true);
-  local_specifics.mutable_experiments()
-      ->mutable_keystore_encryption()
-      ->set_enabled(false);
-  int64_t experiment_handle =
-      entry_factory_->CreateSyncedItem(experiment_id, EXPERIMENTS, false);
-  entry_factory_->SetServerSpecificsForItem(experiment_handle,
-                                            server_specifics);
-  entry_factory_->SetLocalSpecificsForItem(experiment_handle, local_specifics);
-  ApplyControlDataUpdates(directory());
-
-  EXPECT_FALSE(entry_factory_->GetIsUnappliedForItem(experiment_handle));
-  EXPECT_TRUE(entry_factory_->GetLocalSpecificsForItem(experiment_handle)
-                  .experiments()
-                  .keystore_encryption()
-                  .enabled());
-}
-
-// Check that applying a EXPERIMENTS update marks the datatype as downloaded.
-TEST_F(ApplyControlDataUpdatesTest, ExperimentsApplyMarksDownloadCompleted) {
-  EXPECT_FALSE(directory()->InitialSyncEndedForType(EXPERIMENTS));
-
-  // Create root node for EXPERIMENTS datatype
-  {
-    syncable::WriteTransaction trans(FROM_HERE, UNITTEST, directory());
-    syncable::ModelNeutralMutableEntry entry(
-        &trans, syncable::CREATE_NEW_TYPE_ROOT, EXPERIMENTS);
-    ASSERT_TRUE(entry.good());
-    entry.PutServerIsDir(true);
-    entry.PutUniqueServerTag(ModelTypeToRootTag(EXPERIMENTS));
-  }
-
-  // Initial sync isn't marked as ended for EXPERIMENTS even though the
-  // root folder exists.
-  EXPECT_FALSE(directory()->InitialSyncEndedForType(EXPERIMENTS));
-
-  std::string experiment_id = "experiment";
-  sync_pb::EntitySpecifics specifics;
-  specifics.mutable_experiments()->mutable_keystore_encryption()->set_enabled(
-      true);
-  entry_factory_->CreateUnappliedNewItem(experiment_id, specifics, false);
-
-  ApplyControlDataUpdates(directory());
-
-  // After applying the updates EXPERIMENTS should be marked as having its
-  // initial sync completed.
-  EXPECT_TRUE(directory()->InitialSyncEndedForType(EXPERIMENTS));
-  // Verify that there is no side effect on another control type.
-  EXPECT_FALSE(directory()->InitialSyncEndedForType(NIGORI));
-}
-
 // Check that applying a NIGORI update marks the datatype as downloaded.
 TEST_F(ApplyControlDataUpdatesTest, NigoriApplyMarksDownloadCompleted) {
   EXPECT_FALSE(directory()->InitialSyncEndedForType(NIGORI));
@@ -966,13 +871,11 @@ TEST_F(ApplyControlDataUpdatesTest, NigoriApplyMarksDownloadCompleted) {
   entry_factory_->CreateUnappliedNewItem(ModelTypeToRootTag(NIGORI), specifics,
                                          true);
 
-  ApplyControlDataUpdates(directory());
+  ApplyNigoriUpdate(directory());
 
   // After applying the updates NIGORI should be marked as having its
   // initial sync completed.
   EXPECT_TRUE(directory()->InitialSyncEndedForType(NIGORI));
-  // Verify that there is no side effect on another control type.
-  EXPECT_FALSE(directory()->InitialSyncEndedForType(EXPERIMENTS));
 }
 
 }  // namespace syncer

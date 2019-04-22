@@ -25,9 +25,9 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
 #include "third_party/blink/public/platform/interface_provider.h"
-#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_http_body.h"
@@ -190,8 +190,7 @@ ResourceType RequestContextToResourceType(
     case blink::mojom::RequestContextType::XML_HTTP_REQUEST:
       return RESOURCE_TYPE_XHR;
 
-    // These should be handled by the FrameType checks at the top of the
-    // function.
+    // Navigation requests should not go through WebURLLoader.
     case blink::mojom::RequestContextType::FORM:
     case blink::mojom::RequestContextType::HYPERLINK:
     case blink::mojom::RequestContextType::LOCATION:
@@ -207,95 +206,22 @@ ResourceType RequestContextToResourceType(
 }
 
 ResourceType WebURLRequestToResourceType(const WebURLRequest& request) {
-  blink::mojom::RequestContextType request_context =
-      request.GetRequestContext();
-  if (request.GetFrameType() !=
-      network::mojom::RequestContextFrameType::kNone) {
-    DCHECK(request_context == blink::mojom::RequestContextType::FORM ||
-           request_context == blink::mojom::RequestContextType::FRAME ||
-           request_context == blink::mojom::RequestContextType::HYPERLINK ||
-           request_context == blink::mojom::RequestContextType::IFRAME ||
-           request_context == blink::mojom::RequestContextType::INTERNAL ||
-           request_context == blink::mojom::RequestContextType::LOCATION);
-    if (request.GetFrameType() ==
-            network::mojom::RequestContextFrameType::kTopLevel ||
-        request.GetFrameType() ==
-            network::mojom::RequestContextFrameType::kAuxiliary) {
-      return RESOURCE_TYPE_MAIN_FRAME;
-    }
-    if (request.GetFrameType() ==
-        network::mojom::RequestContextFrameType::kNested)
-      return RESOURCE_TYPE_SUB_FRAME;
-    NOTREACHED();
-    return RESOURCE_TYPE_SUB_RESOURCE;
-  }
-  return RequestContextToResourceType(request_context);
+  return RequestContextToResourceType(request.GetRequestContext());
 }
 
 net::HttpRequestHeaders GetWebURLRequestHeaders(
     const blink::WebURLRequest& request) {
   net::HttpRequestHeaders headers;
   HttpRequestHeadersVisitor visitor(&headers);
-  request.VisitHTTPHeaderFields(&visitor);
+  request.VisitHttpHeaderFields(&visitor);
   return headers;
 }
 
 std::string GetWebURLRequestHeadersAsString(
     const blink::WebURLRequest& request) {
   HeaderFlattener flattener;
-  request.VisitHTTPHeaderFields(&flattener);
+  request.VisitHttpHeaderFields(&flattener);
   return flattener.GetBuffer();
-}
-
-int GetLoadFlagsForWebURLRequest(const WebURLRequest& request) {
-  int load_flags = net::LOAD_NORMAL;
-
-  GURL url = request.Url();
-  switch (request.GetCacheMode()) {
-    case FetchCacheMode::kNoStore:
-      load_flags |= net::LOAD_DISABLE_CACHE;
-      break;
-    case FetchCacheMode::kValidateCache:
-      load_flags |= net::LOAD_VALIDATE_CACHE;
-      break;
-    case FetchCacheMode::kBypassCache:
-      load_flags |= net::LOAD_BYPASS_CACHE;
-      break;
-    case FetchCacheMode::kForceCache:
-      load_flags |= net::LOAD_SKIP_CACHE_VALIDATION;
-      break;
-    case FetchCacheMode::kOnlyIfCached:
-      load_flags |= net::LOAD_ONLY_FROM_CACHE | net::LOAD_SKIP_CACHE_VALIDATION;
-      break;
-    case FetchCacheMode::kUnspecifiedOnlyIfCachedStrict:
-      load_flags |= net::LOAD_ONLY_FROM_CACHE;
-      break;
-    case FetchCacheMode::kDefault:
-      break;
-    case FetchCacheMode::kUnspecifiedForceCacheMiss:
-      load_flags |= net::LOAD_ONLY_FROM_CACHE | net::LOAD_BYPASS_CACHE;
-      break;
-  }
-
-  if (!request.AllowStoredCredentials()) {
-    load_flags |= net::LOAD_DO_NOT_SAVE_COOKIES;
-    load_flags |= net::LOAD_DO_NOT_SEND_COOKIES;
-    load_flags |= net::LOAD_DO_NOT_SEND_AUTH_DATA;
-  }
-
-  if (request.GetRequestContext() == blink::mojom::RequestContextType::PREFETCH)
-    load_flags |= net::LOAD_PREFETCH;
-
-  if (request.GetExtraData()) {
-    RequestExtraData* extra_data =
-        static_cast<RequestExtraData*>(request.GetExtraData());
-    if (extra_data->is_for_no_state_prefetch())
-      load_flags |= net::LOAD_PREFETCH;
-  }
-  if (request.SupportsAsyncRevalidation())
-    load_flags |= net::LOAD_SUPPORT_ASYNC_REVALIDATION;
-
-  return load_flags;
 }
 
 WebHTTPBody GetWebHTTPBodyForRequestBody(
@@ -313,10 +239,10 @@ WebHTTPBody GetWebHTTPBodyForRequestBodyWithBlobPtrs(
   auto blob_ptr_iter = blob_ptrs.begin();
   for (auto& element : *input.elements()) {
     switch (element.type()) {
-      case network::DataElement::TYPE_BYTES:
+      case network::mojom::DataElementType::kBytes:
         http_body.AppendData(WebData(element.bytes(), element.length()));
         break;
-      case network::DataElement::TYPE_FILE:
+      case network::mojom::DataElementType::kFile:
         http_body.AppendFileRange(
             blink::FilePathToWebString(element.path()), element.offset(),
             (element.length() != std::numeric_limits<uint64_t>::max())
@@ -324,7 +250,7 @@ WebHTTPBody GetWebHTTPBodyForRequestBodyWithBlobPtrs(
                 : -1,
             element.expected_modification_time().ToDoubleT());
         break;
-      case network::DataElement::TYPE_BLOB:
+      case network::mojom::DataElementType::kBlob:
         if (blob_ptrs.empty()) {
           http_body.AppendBlob(WebString::FromASCII(element.blob_uuid()));
         } else {
@@ -334,14 +260,14 @@ WebHTTPBody GetWebHTTPBodyForRequestBodyWithBlobPtrs(
                                element.length(), blob.PassHandle());
         }
         break;
-      case network::DataElement::TYPE_DATA_PIPE: {
+      case network::mojom::DataElementType::kDataPipe: {
         http_body.AppendDataPipe(
             element.CloneDataPipeGetter().PassInterface().PassHandle());
         break;
       }
-      case network::DataElement::TYPE_UNKNOWN:
-      case network::DataElement::TYPE_RAW_FILE:
-      case network::DataElement::TYPE_CHUNKED_DATA_PIPE:
+      case network::mojom::DataElementType::kUnknown:
+      case network::mojom::DataElementType::kRawFile:
+      case network::mojom::DataElementType::kChunkedDataPipe:
         NOTREACHED();
         break;
     }
@@ -354,7 +280,7 @@ std::vector<blink::mojom::BlobPtrInfo> GetBlobPtrsForRequestBody(
   std::vector<blink::mojom::BlobPtrInfo> blob_ptrs;
   blink::mojom::BlobRegistryPtr blob_registry;
   for (auto& element : *input.elements()) {
-    if (element.type() == network::DataElement::TYPE_BLOB) {
+    if (element.type() == network::mojom::DataElementType::kBlob) {
       blink::mojom::BlobPtrInfo blob_ptr;
       if (!blob_registry) {
         blink::Platform::Current()->GetInterfaceProvider()->GetInterface(

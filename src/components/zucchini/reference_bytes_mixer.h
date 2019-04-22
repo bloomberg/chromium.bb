@@ -72,14 +72,14 @@ class ReferenceBytesMixer {
   virtual int NumBytes(uint8_t type) const;
 
   // Computes mixed reference bytes by combining (a) "payload bits" from an
-  // "old" reference of |type| at |old_base[old_offset]| with (b) "operation
-  // bits" from a "new" reference of |type| at |new_base[new_offset]|. Returns
+  // "old" reference of |type| at |old_view[old_offset]| with (b) "operation
+  // bits" from a "new" reference of |type| at |new_view[new_offset]|. Returns
   // the result as ConstBufferView, which is valid only until the next call to
   // Mix().
   virtual ConstBufferView Mix(uint8_t type,
-                              ConstBufferView::const_iterator old_base,
+                              ConstBufferView old_view,
                               offset_t old_offset,
-                              ConstBufferView::const_iterator new_base,
+                              ConstBufferView new_view,
                               offset_t new_offset);
 
  private:

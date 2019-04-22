@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import <EarlGrey/EarlGrey.h>
+
 #include <vector>
 
 #include "base/ios/ios_util.h"
@@ -11,6 +13,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/ui/autofill/card_unmask_prompt_view_bridge.h"
 #import "ios/chrome/browser/ui/payments/payment_request_egtest_base.h"
+#import "ios/chrome/browser/ui/settings/autofill/autofill_profile_table_view_controller.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -154,7 +157,7 @@ const char kNoShippingPage[] =
 
   // Confirm that the Autofill Settings UI is showing.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          @"kAutofillCollectionViewId")]
+                                          kAutofillProfileTableViewID)]
       assertWithMatcher:grey_notNil()];
 
   [self waitForWebViewContainingTexts:{"AbortError", "Request cancelled"}];
@@ -165,10 +168,13 @@ const char kNoShippingPage[] =
 // Promise returned by response.complete() with an appropriate response message.
 - (void)testOpenAndPay {
   autofill::AutofillProfile profile = autofill::test::GetFullProfile();
-  [self addAutofillProfile:profile];
+  NSError* profileError = [self addAutofillProfile:profile];
+  GREYAssertNil(profileError, profileError.localizedDescription);
+
   autofill::CreditCard card = autofill::test::GetCreditCard();
   card.set_billing_address_id(profile.guid());
-  [self addCreditCard:card];
+  NSError* creditCardError = [self addCreditCard:card];
+  GREYAssertNil(creditCardError, creditCardError.localizedDescription);
 
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kNoShippingPage)];
 

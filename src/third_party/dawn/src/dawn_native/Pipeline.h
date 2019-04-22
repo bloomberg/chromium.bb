@@ -15,7 +15,6 @@
 #ifndef DAWNNATIVE_PIPELINE_H_
 #define DAWNNATIVE_PIPELINE_H_
 
-#include "dawn_native/Builder.h"
 #include "dawn_native/Forward.h"
 #include "dawn_native/ObjectBase.h"
 #include "dawn_native/PerStage.h"
@@ -35,55 +34,31 @@ namespace dawn_native {
         Float,
     };
 
-    class PipelineBuilder;
+    MaybeError ValidatePipelineStageDescriptor(DeviceBase* device,
+                                               const PipelineStageDescriptor* descriptor,
+                                               const PipelineLayoutBase* layout,
+                                               dawn::ShaderStage stage);
 
     class PipelineBase : public ObjectBase {
       public:
-        PipelineBase(DeviceBase* device, PipelineLayoutBase* layout, dawn::ShaderStageBit stages);
-        PipelineBase(DeviceBase* device, PipelineBuilder* builder);
-
         struct PushConstantInfo {
             std::bitset<kMaxPushConstants> mask;
             std::array<PushConstantType, kMaxPushConstants> types;
         };
         const PushConstantInfo& GetPushConstants(dawn::ShaderStage stage) const;
         dawn::ShaderStageBit GetStageMask() const;
-
         PipelineLayoutBase* GetLayout();
-        DeviceBase* GetDevice() const;
 
       protected:
+        PipelineBase(DeviceBase* device, PipelineLayoutBase* layout, dawn::ShaderStageBit stages);
+        PipelineBase(DeviceBase* device, ObjectBase::ErrorTag tag);
+
         void ExtractModuleData(dawn::ShaderStage stage, ShaderModuleBase* module);
 
       private:
         dawn::ShaderStageBit mStageMask;
         Ref<PipelineLayoutBase> mLayout;
         PerStage<PushConstantInfo> mPushConstants;
-        DeviceBase* mDevice;
-    };
-
-    class PipelineBuilder {
-      public:
-        PipelineBuilder(BuilderBase* parentBuilder);
-
-        struct StageInfo {
-            std::string entryPoint;
-            Ref<ShaderModuleBase> module;
-        };
-        const StageInfo& GetStageInfo(dawn::ShaderStage stage) const;
-        BuilderBase* GetParentBuilder() const;
-
-        // Dawn API
-        void SetLayout(PipelineLayoutBase* layout);
-        void SetStage(dawn::ShaderStage stage, ShaderModuleBase* module, const char* entryPoint);
-
-      private:
-        friend class PipelineBase;
-
-        BuilderBase* mParentBuilder;
-        Ref<PipelineLayoutBase> mLayout;
-        dawn::ShaderStageBit mStageMask;
-        PerStage<StageInfo> mStages;
     };
 
 }  // namespace dawn_native

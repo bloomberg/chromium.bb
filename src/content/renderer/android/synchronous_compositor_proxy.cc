@@ -5,6 +5,7 @@
 #include "content/renderer/android/synchronous_compositor_proxy.h"
 
 #include "base/auto_reset.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/shared_memory.h"
 #include "content/common/android/sync_compositor_statics.h"
@@ -159,12 +160,15 @@ void SynchronousCompositorProxy::WillSkipDraw() {
 }
 
 struct SynchronousCompositorProxy::SharedMemoryWithSize {
-  base::SharedMemory shm;
+  base::WritableSharedMemoryMapping shared_memory;
   const size_t buffer_size;
   bool zeroed;
 
-  SharedMemoryWithSize(base::SharedMemoryHandle shm_handle, size_t buffer_size)
-      : shm(shm_handle, false), buffer_size(buffer_size), zeroed(true) {}
+  SharedMemoryWithSize(base::WritableSharedMemoryMapping shm_mapping,
+                       size_t buffer_size)
+      : shared_memory(std::move(shm_mapping)),
+        buffer_size(buffer_size),
+        zeroed(true) {}
 };
 
 void SynchronousCompositorProxy::ZeroSharedMemory() {
@@ -174,7 +178,8 @@ void SynchronousCompositorProxy::ZeroSharedMemory() {
   if (software_draw_shm_->zeroed)
     return;
 
-  memset(software_draw_shm_->shm.memory(), 0, software_draw_shm_->buffer_size);
+  memset(software_draw_shm_->shared_memory.memory(), 0,
+         software_draw_shm_->buffer_size);
   software_draw_shm_->zeroed = true;
 }
 
@@ -218,8 +223,10 @@ void SynchronousCompositorProxy::DoDemandDrawSw(
   DCHECK_EQ(software_draw_shm_->buffer_size, buffer_size);
 
   SkBitmap bitmap;
-  if (!bitmap.installPixels(info, software_draw_shm_->shm.memory(), stride))
+  if (!bitmap.installPixels(info, software_draw_shm_->shared_memory.memory(),
+                            stride)) {
     return;
+  }
   SkCanvas canvas(bitmap);
   canvas.clipRect(gfx::RectToSkRect(params.clip));
   canvas.concat(params.transform.matrix());
@@ -280,13 +287,18 @@ void SynchronousCompositorProxy::SetBeginFrameSourcePaused(bool paused) {
     layer_tree_frame_sink_->SetBeginFrameSourcePaused(paused);
 }
 
-void SynchronousCompositorProxy::BeginFrame(const viz::BeginFrameArgs& args) {
+void SynchronousCompositorProxy::BeginFrame(
+    const viz::BeginFrameArgs& args,
+    const viz::PresentationFeedbackMap& presentation_feedbacks) {
   if (needs_begin_frame_for_animate_input_) {
     needs_begin_frame_for_animate_input_ = false;
     input_handler_proxy_->SynchronouslyAnimate(args.frame_time);
   }
-  if (needs_begin_frame_for_frame_sink_ && layer_tree_frame_sink_)
-    layer_tree_frame_sink_->BeginFrame(args);
+  if (layer_tree_frame_sink_) {
+    layer_tree_frame_sink_->DidPresentCompositorFrame(presentation_feedbacks);
+    if (needs_begin_frame_for_frame_sink_)
+      layer_tree_frame_sink_->BeginFrame(args);
+  }
 
   SyncCompositorCommonRendererParams param;
   PopulateCommonParams(&param);
@@ -316,15 +328,15 @@ void SynchronousCompositorProxy::ReclaimResources(
 }
 
 void SynchronousCompositorProxy::SetSharedMemory(
-    const SyncCompositorSetSharedMemoryParams& params,
+    base::WritableSharedMemoryRegion shm_region,
     SetSharedMemoryCallback callback) {
   bool success = false;
   SyncCompositorCommonRendererParams common_renderer_params;
-  if (base::SharedMemory::IsHandleValid(params.shm_handle)) {
-    software_draw_shm_.reset(
-        new SharedMemoryWithSize(params.shm_handle, params.buffer_size));
-    if (software_draw_shm_->shm.Map(params.buffer_size)) {
-      DCHECK(software_draw_shm_->shm.memory());
+  if (shm_region.IsValid()) {
+    base::WritableSharedMemoryMapping shm_mapping = shm_region.Map();
+    if (shm_mapping.IsValid()) {
+      software_draw_shm_ = std::make_unique<SharedMemoryWithSize>(
+          std::move(shm_mapping), shm_mapping.size());
       PopulateCommonParams(&common_renderer_params);
       success = true;
     }

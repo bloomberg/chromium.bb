@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 from gcloud import datastore  # pylint: disable=import-error
+import gcloud  # pylint: disable=import-error
 import json
 
 from chromite.lib import cros_logging as logging

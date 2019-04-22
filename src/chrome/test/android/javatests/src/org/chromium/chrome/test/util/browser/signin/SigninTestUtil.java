@@ -9,15 +9,15 @@ import android.annotation.SuppressLint;
 import android.support.annotation.WorkerThread;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.base.ThreadUtils;
-import org.chromium.chrome.browser.init.ProcessInitializationHandler;
-import org.chromium.chrome.browser.signin.AccountTrackerService;
-import org.chromium.chrome.browser.signin.OAuth2TokenService;
+import org.chromium.chrome.browser.signin.IdentityServicesProvider;
+import org.chromium.chrome.browser.signin.SigninHelper;
 import org.chromium.components.signin.AccountIdProvider;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
+import org.chromium.components.signin.OAuth2TokenService;
 import org.chromium.components.signin.test.util.AccountHolder;
 import org.chromium.components.signin.test.util.FakeAccountManagerDelegate;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -43,13 +43,12 @@ public final class SigninTestUtil {
      */
     @WorkerThread
     public static void setUpAuthForTest() {
-        ThreadUtils.runOnUiThreadBlocking(
-                () -> ProcessInitializationHandler.getInstance().initializePreNative());
         sAccountManager = new FakeAccountManagerDelegate(
                 FakeAccountManagerDelegate.DISABLE_PROFILE_DATA_SOURCE);
         AccountManagerFacade.overrideAccountManagerFacadeForTests(sAccountManager);
         overrideAccountIdProvider();
         resetSigninState();
+        SigninHelper.resetSharedPrefs();
     }
 
     /**
@@ -61,6 +60,8 @@ public final class SigninTestUtil {
             sAccountManager.removeAccountHolderBlocking(accountHolder);
         }
         sAddedAccounts.clear();
+        resetSigninState();
+        SigninHelper.resetSharedPrefs();
     }
 
     /**
@@ -85,8 +86,7 @@ public final class SigninTestUtil {
         AccountHolder accountHolder = AccountHolder.builder(account).alwaysAccept(true).build();
         sAccountManager.addAccountHolderBlocking(accountHolder);
         sAddedAccounts.add(accountHolder);
-        ThreadUtils.runOnUiThreadBlocking(
-                () -> AccountTrackerService.get().invalidateAccountSeedStatus(true));
+        TestThreadUtils.runOnUiThreadBlocking(SigninTestUtil::seedAccounts);
         return account;
     }
 
@@ -95,15 +95,28 @@ public final class SigninTestUtil {
      */
     public static Account addAndSignInTestAccount() {
         Account account = addTestAccount();
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             ChromeSigninController.get().setSignedInAccountName(DEFAULT_ACCOUNT);
-            AccountTrackerService.get().invalidateAccountSeedStatus(true);
+            seedAccounts();
         });
         return account;
     }
 
+    private static void seedAccounts() {
+        AccountIdProvider accountIdProvider = AccountIdProvider.getInstance();
+        Account[] accounts = sAccountManager.getAccountsSyncNoThrow();
+        String[] accountNames = new String[accounts.length];
+        String[] accountIds = new String[accounts.length];
+        for (int i = 0; i < accounts.length; i++) {
+            accountNames[i] = accounts[i].name;
+            accountIds[i] = accountIdProvider.getAccountId(accounts[i].name);
+        }
+        IdentityServicesProvider.getAccountTrackerService().syncForceRefreshForTest(
+                accountIds, accountNames);
+    }
+
     private static void overrideAccountIdProvider() {
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             AccountIdProvider.setInstanceForTest(new AccountIdProvider() {
                 @Override
                 public String getAccountId(String accountName) {

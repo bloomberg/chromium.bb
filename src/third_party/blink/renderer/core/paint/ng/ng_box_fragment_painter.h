@@ -73,8 +73,8 @@ class NGBoxFragmentPainter : public BoxPainterBase {
                                             const LayoutRect&);
   bool BackgroundIsKnownToBeOpaque(const PaintInfo&);
 
-  void PaintAllPhasesAtomically(const PaintInfo&,
-                                bool is_self_painting);
+  void PaintInternal(const PaintInfo&);
+  void PaintAllPhasesAtomically(const PaintInfo&);
   void PaintBlockChildren(const PaintInfo&);
   void PaintLineBoxChildren(NGPaintFragment::ChildList,
                             const PaintInfo&,
@@ -89,9 +89,6 @@ class NGBoxFragmentPainter : public BoxPainterBase {
                                               const PaintInfo&);
   void PaintBlockFlowContents(const PaintInfo&,
                               const LayoutPoint& paint_offset);
-  void PaintInlineChild(const NGPaintFragment&,
-                        const PaintInfo&,
-                        const LayoutPoint& paint_offset);
   void PaintAtomicInlineChild(const NGPaintFragment&, const PaintInfo&);
   void PaintTextChild(const NGPaintFragment&,
                       const PaintInfo&,
@@ -106,13 +103,14 @@ class NGBoxFragmentPainter : public BoxPainterBase {
                        const LayoutRect&,
                        const Color& background_color,
                        BackgroundBleedAvoidance = kBackgroundBleedNone);
-  void PaintSymbol(const NGPaintFragment&,
-                   const PaintInfo&,
-                   const LayoutPoint& paint_offset);
   void PaintCarets(const PaintInfo&, const LayoutPoint& paint_offset);
 
   void RecordHitTestData(const PaintInfo& paint_info,
                          const LayoutPoint& paint_offset);
+
+  void RecordHitTestDataForLine(const PaintInfo& paint_info,
+                                const LayoutPoint& paint_offset,
+                                const NGPaintFragment& line);
 
   bool IsInSelfHitTestingPhase(HitTestAction) const;
   bool VisibleToHitTestRequest(const HitTestRequest&) const;
@@ -165,10 +163,20 @@ class NGBoxFragmentPainter : public BoxPainterBase {
       const LayoutPoint& offset);
 
   const NGPhysicalBoxFragment& PhysicalFragment() const;
+  const NGBorderEdges& BorderEdges() const;
 
   const NGPaintFragment& box_fragment_;
-  NGBorderEdges border_edges_;
+  mutable base::Optional<NGBorderEdges> border_edges_;
 };
+
+inline NGBoxFragmentPainter::NGBoxFragmentPainter(const NGPaintFragment& box)
+    : BoxPainterBase(&box.GetLayoutObject()->GetDocument(),
+                     box.Style(),
+                     box.GetLayoutObject()->GeneratingNode()),
+      box_fragment_(box) {
+  DCHECK(box.PhysicalFragment().IsBox() ||
+         box.PhysicalFragment().IsRenderedLegend());
+}
 
 }  // namespace blink
 

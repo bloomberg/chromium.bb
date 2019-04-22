@@ -23,6 +23,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image_skia_operations.h"
+#include "ui/gfx/render_text.h"
 #include "ui/gfx/shadow_value.h"
 #include "ui/gfx/skia_paint_util.h"
 
@@ -63,54 +64,14 @@ void IconWithBadgeImageSource::SetIcon(const gfx::Image& icon) {
 
 void IconWithBadgeImageSource::SetBadge(std::unique_ptr<Badge> badge) {
   badge_ = std::move(badge);
-}
 
-void IconWithBadgeImageSource::Draw(gfx::Canvas* canvas) {
-  // TODO(https://crbug.com/842856): There should be a cleaner delineation
-  // between what is drawn here and what is handled by the button itself.
-
-  if (icon_.IsEmpty())
-    return;
-
-  if (paint_blocked_actions_decoration_)
-    PaintBlockedActionDecoration(canvas);
-
-  gfx::ImageSkia skia = icon_.AsImageSkia();
-  gfx::ImageSkiaRep rep = skia.GetRepresentation(canvas->image_scale());
-  if (rep.scale() != canvas->image_scale()) {
-    skia.AddRepresentation(ScaleImageSkiaRep(
-        rep, ExtensionAction::ActionIconSize(), canvas->image_scale()));
-  }
-  if (grayscale_)
-    skia = gfx::ImageSkiaOperations::CreateHSLShiftedImage(skia, {-1, 0, 0.75});
-
-  int x_offset =
-      std::floor((size().width() - ExtensionAction::ActionIconSize()) / 2.0);
-  int y_offset =
-      std::floor((size().height() - ExtensionAction::ActionIconSize()) / 2.0);
-  canvas->DrawImageInt(skia, x_offset, y_offset);
-
-  // Draw a badge on the provided browser action icon's canvas.
-  PaintBadge(canvas);
-
-  if (paint_page_action_decoration_)
-    PaintPageActionDecoration(canvas);
-}
-
-// Paints badge with specified parameters to |canvas|.
-void IconWithBadgeImageSource::PaintBadge(gfx::Canvas* canvas) {
   if (!badge_ || badge_->text.empty())
     return;
 
+  // Generate the badge's render text.
   SkColor text_color = SkColorGetA(badge_->text_color) == SK_AlphaTRANSPARENT
                            ? SK_ColorWHITE
                            : badge_->text_color;
-
-  // Make sure the background color is opaque. See http://crbug.com/619499
-  SkColor background_color =
-      SkColorGetA(badge_->background_color) == SK_AlphaTRANSPARENT
-          ? gfx::kGoogleBlue500
-          : SkColorSetA(badge_->background_color, SK_AlphaOPAQUE);
 
   constexpr int kBadgeHeight = 12;
   ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
@@ -124,8 +85,7 @@ void IconWithBadgeImageSource::PaintBadge(gfx::Canvas* canvas) {
   for (size_t i = 0; i < kMaxIncrementAttempts; ++i) {
     int w = 0;
     int h = 0;
-    gfx::FontList bigger_font =
-        base_font.Derive(1, 0, gfx::Font::Weight::NORMAL);
+    gfx::FontList bigger_font = base_font.Derive(1, 0, gfx::Font::Weight::BOLD);
     gfx::Canvas::SizeStringInt(utf16_text, bigger_font, &w, &h, 0,
                                gfx::Canvas::NO_ELLIPSIS);
     if (h > kBadgeHeight)
@@ -134,8 +94,8 @@ void IconWithBadgeImageSource::PaintBadge(gfx::Canvas* canvas) {
   }
 
   constexpr int kMaxTextWidth = 23;
-  const int text_width =
-        std::min(kMaxTextWidth, canvas->GetStringWidth(utf16_text, base_font));
+  const int text_width = std::min(
+      kMaxTextWidth, gfx::Canvas::GetStringWidth(utf16_text, base_font));
   // Calculate badge size. It is clamped to a min width just because it looks
   // silly if it is too skinny.
   constexpr int kPadding = 2;
@@ -157,15 +117,70 @@ void IconWithBadgeImageSource::PaintBadge(gfx::Canvas* canvas) {
                                  ? (icon_area.width() - badge_width) / 2
                                  : icon_area.width() - badge_width;
   const int badge_offset_y = icon_area.height() - kBadgeHeight;
-  gfx::Rect rect(icon_area.x() + badge_offset_x, icon_area.y() + badge_offset_y,
-                 badge_width, kBadgeHeight);
+  badge_background_rect_ =
+      gfx::Rect(icon_area.x() + badge_offset_x, icon_area.y() + badge_offset_y,
+                badge_width, kBadgeHeight);
+  gfx::Rect badge_rect = badge_background_rect_;
+  badge_rect.Inset(std::max(kPadding, (badge_rect.width() - text_width) / 2),
+                   kBadgeHeight - base_font.GetHeight(), kPadding, 0);
+  badge_text_ = gfx::RenderText::CreateHarfBuzzInstance();
+  badge_text_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  badge_text_->SetCursorEnabled(false);
+  badge_text_->SetFontList(base_font);
+  badge_text_->SetColor(text_color);
+  badge_text_->SetText(utf16_text);
+  badge_text_->SetDisplayRect(badge_rect);
+}
+
+void IconWithBadgeImageSource::Draw(gfx::Canvas* canvas) {
+  // TODO(https://crbug.com/842856): There should be a cleaner delineation
+  // between what is drawn here and what is handled by the button itself.
+
+  if (icon_.IsEmpty())
+    return;
+
+  if (paint_blocked_actions_decoration_)
+    PaintBlockedActionDecoration(canvas);
+
+  gfx::ImageSkia skia = icon_.AsImageSkia();
+  gfx::ImageSkiaRep rep = skia.GetRepresentation(canvas->image_scale());
+  if (rep.scale() != canvas->image_scale()) {
+    skia.AddRepresentation(ScaleImageSkiaRep(
+        rep, ExtensionAction::ActionIconSize(), canvas->image_scale()));
+  }
+  if (grayscale_)
+    skia = gfx::ImageSkiaOperations::CreateHSLShiftedImage(skia, {-1, 0, 0.6});
+
+  int x_offset =
+      std::floor((size().width() - ExtensionAction::ActionIconSize()) / 2.0);
+  int y_offset =
+      std::floor((size().height() - ExtensionAction::ActionIconSize()) / 2.0);
+  canvas->DrawImageInt(skia, x_offset, y_offset);
+
+  // Draw a badge on the provided browser action icon's canvas.
+  PaintBadge(canvas);
+
+  if (paint_page_action_decoration_)
+    PaintPageActionDecoration(canvas);
+}
+
+// Paints badge with specified parameters to |canvas|.
+void IconWithBadgeImageSource::PaintBadge(gfx::Canvas* canvas) {
+  if (!badge_text_)
+    return;
+
+  // Make sure the background color is opaque. See http://crbug.com/619499
+  SkColor background_color =
+      SkColorGetA(badge_->background_color) == SK_AlphaTRANSPARENT
+          ? gfx::kGoogleBlue500
+          : SkColorSetA(badge_->background_color, SK_AlphaOPAQUE);
   cc::PaintFlags rect_flags;
   rect_flags.setStyle(cc::PaintFlags::kFill_Style);
   rect_flags.setAntiAlias(true);
   rect_flags.setColor(background_color);
 
   // Clear part of the background icon.
-  gfx::Rect cutout_rect(rect);
+  gfx::Rect cutout_rect(badge_background_rect_);
   cutout_rect.Inset(-1, -1);
   cc::PaintFlags cutout_flags = rect_flags;
   cutout_flags.setBlendMode(SkBlendMode::kClear);
@@ -173,12 +188,11 @@ void IconWithBadgeImageSource::PaintBadge(gfx::Canvas* canvas) {
   canvas->DrawRoundRect(cutout_rect, kOuterCornerRadius, cutout_flags);
 
   // Paint the backdrop.
-  canvas->DrawRoundRect(rect, kOuterCornerRadius - 1, rect_flags);
+  canvas->DrawRoundRect(badge_background_rect_, kOuterCornerRadius - 1,
+                        rect_flags);
 
   // Paint the text.
-  rect.Inset(std::max(kPadding, (rect.width() - text_width) / 2),
-             kBadgeHeight - base_font.GetHeight(), kPadding, 0);
-  canvas->DrawStringRect(utf16_text, base_font, text_color, rect);
+  badge_text_->Draw(canvas);
 }
 
 void IconWithBadgeImageSource::PaintPageActionDecoration(gfx::Canvas* canvas) {

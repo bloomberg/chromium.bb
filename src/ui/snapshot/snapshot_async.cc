@@ -4,6 +4,7 @@
 
 #include "ui/snapshot/snapshot_async.h"
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/task/post_task.h"

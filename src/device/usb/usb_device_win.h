@@ -8,12 +8,8 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/threading/thread_checker.h"
+#include "base/sequence_checker.h"
 #include "device/usb/usb_device.h"
-
-namespace base {
-class SequencedTaskRunner;
-}
 
 namespace device {
 
@@ -28,17 +24,16 @@ class UsbDeviceWin : public UsbDevice {
   friend class UsbServiceWin;
   friend class UsbDeviceHandleWin;
 
-  // Called by UsbServiceWin only;
+  // Called by UsbServiceWin only.
   UsbDeviceWin(const std::string& device_path,
                const std::string& hub_path,
-               int port_number,
-               const std::string& driver_name,
-               scoped_refptr<base::SequencedTaskRunner> task_runner);
+               uint32_t bus_number,
+               uint32_t port_number,
+               const std::string& driver_name);
 
   ~UsbDeviceWin() override;
 
   const std::string& device_path() const { return device_path_; }
-  int port_number() const { return port_number_; }
   const std::string& driver_name() const { return driver_name_; }
 
   // Opens the device's parent hub in order to read the device, configuration
@@ -61,15 +56,11 @@ class UsbDeviceWin : public UsbDevice {
                                const GURL& landing_page);
 
  private:
-  base::ThreadChecker thread_checker_;
+  SEQUENCE_CHECKER(sequence_checker_);
 
   const std::string device_path_;
   const std::string hub_path_;
-  const int port_number_;
   const std::string driver_name_;
-
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(UsbDeviceWin);
 };

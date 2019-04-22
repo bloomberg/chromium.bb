@@ -12,12 +12,14 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"
+#include "base/hash/sha1.h"
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
+#include "base/optional.h"
 #include "base/path_service.h"
-#include "base/sha1.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_path_override.h"
@@ -30,6 +32,7 @@
 #include "chrome/browser/conflicts/module_list_filter_win.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/install_static/install_util.h"
+#include "content/public/common/process_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -44,12 +47,13 @@ constexpr base::FilePath::CharType kDllPath1[] =
 constexpr base::FilePath::CharType kDllPath2[] =
     FILE_PATH_LITERAL("c:\\some\\shellextension.dll");
 
-// Returns a new ModuleInfoData marked as loaded into the process but otherwise
-// empty.
+// Returns a new ModuleInfoData marked as loaded into the browser process but
+// otherwise empty.
 ModuleInfoData CreateLoadedModuleInfoData() {
   ModuleInfoData module_data;
   module_data.module_properties |= ModuleInfoData::kPropertyLoadedModule;
-  module_data.inspection_result = std::make_unique<ModuleInspectionResult>();
+  module_data.process_types |= ProcessTypeToBit(content::PROCESS_TYPE_BROWSER);
+  module_data.inspection_result = base::make_optional<ModuleInspectionResult>();
   return module_data;
 }
 
@@ -59,7 +63,7 @@ ModuleInfoData CreateSignedLoadedModuleInfoData() {
   ModuleInfoData module_data = CreateLoadedModuleInfoData();
 
   module_data.inspection_result->certificate_info.type =
-      CertificateType::CERTIFICATE_IN_FILE;
+      CertificateInfo::Type::CERTIFICATE_IN_FILE;
   module_data.inspection_result->certificate_info.path =
       base::FilePath(kCertificatePath);
   module_data.inspection_result->certificate_info.subject = kCertificateSubject;
@@ -102,7 +106,7 @@ class ModuleBlacklistCacheUpdaterTest : public testing::Test,
         module_list_filter_(CreateModuleListFilter()),
         module_blacklist_cache_path_(
             ModuleBlacklistCacheUpdater::GetModuleBlacklistCachePath()) {
-    exe_certificate_info_.type = CertificateType::CERTIFICATE_IN_FILE;
+    exe_certificate_info_.type = CertificateInfo::Type::CERTIFICATE_IN_FILE;
     exe_certificate_info_.path = base::FilePath(kCertificatePath);
     exe_certificate_info_.subject = kCertificateSubject;
   }
@@ -120,7 +124,8 @@ class ModuleBlacklistCacheUpdaterTest : public testing::Test,
         initial_blacklisted_modules_,
         base::BindRepeating(
             &ModuleBlacklistCacheUpdaterTest::OnModuleBlacklistCacheUpdated,
-            base::Unretained(this)));
+            base::Unretained(this)),
+        false);
   }
 
   void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
@@ -200,7 +205,7 @@ TEST_F(ModuleBlacklistCacheUpdaterTest, OneThirdPartyModule) {
   auto module_blacklist_cache_updater = CreateModuleBlacklistCacheUpdater();
 
   // Simulate some arbitrary module loading into the process.
-  ModuleInfoKey module_key(dll1_, 0, 0, 0);
+  ModuleInfoKey module_key(dll1_, 0, 0);
   module_blacklist_cache_updater->OnNewModuleFound(
       module_key, CreateLoadedModuleInfoData());
   module_blacklist_cache_updater->OnModuleDatabaseIdle();
@@ -243,9 +248,9 @@ TEST_F(ModuleBlacklistCacheUpdaterTest, IgnoreMicrosoftModules) {
   uint32_t time_date_stamp =
       kernel32_image.GetNTHeaders()->FileHeader.TimeDateStamp;
 
-  ModuleInfoKey module_key(module_path, module_size, time_date_stamp, 0);
+  ModuleInfoKey module_key(module_path, module_size, time_date_stamp);
   ModuleInfoData module_data = CreateLoadedModuleInfoData();
-  module_data.inspection_result = InspectModule(StringMapping(), module_key);
+  module_data.inspection_result = InspectModule(module_key.module_path);
 
   module_blacklist_cache_updater->OnNewModuleFound(module_key, module_data);
   module_blacklist_cache_updater->OnModuleDatabaseIdle();
@@ -277,7 +282,7 @@ TEST_F(ModuleBlacklistCacheUpdaterTest, WhitelistMatchingCertificateSubject) {
   auto module_blacklist_cache_updater = CreateModuleBlacklistCacheUpdater();
 
   // Simulate the module loading into the process.
-  ModuleInfoKey module_key(dll1_, 0, 0, 0);
+  ModuleInfoKey module_key(dll1_, 0, 0);
   module_blacklist_cache_updater->OnNewModuleFound(
       module_key, CreateSignedLoadedModuleInfoData());
   module_blacklist_cache_updater->OnModuleDatabaseIdle();
@@ -309,11 +314,11 @@ TEST_F(ModuleBlacklistCacheUpdaterTest, RegisteredModules) {
   auto module_blacklist_cache_updater = CreateModuleBlacklistCacheUpdater();
 
   // Set the respective bit for registered modules.
-  ModuleInfoKey module_key1(dll1_, 123u, 456u, 0);
+  ModuleInfoKey module_key1(dll1_, 123u, 456u);
   ModuleInfoData module_data1 = CreateLoadedModuleInfoData();
   module_data1.module_properties |= ModuleInfoData::kPropertyIme;
 
-  ModuleInfoKey module_key2(dll2_, 456u, 789u, 1);
+  ModuleInfoKey module_key2(dll2_, 456u, 789u);
   ModuleInfoData module_data2 = CreateLoadedModuleInfoData();
   module_data2.module_properties |= ModuleInfoData::kPropertyShellExtension;
 
@@ -355,4 +360,36 @@ TEST_F(ModuleBlacklistCacheUpdaterTest, RegisteredModules) {
                       module_code_id.length(), &expected.code_id_hash[0]);
 
   EXPECT_TRUE(internal::ModuleEqual()(expected, blacklisted_modules[0]));
+}
+
+TEST_F(ModuleBlacklistCacheUpdaterTest, DisableModuleAnalysis) {
+  EXPECT_FALSE(base::PathExists(module_blacklist_cache_path()));
+
+  auto module_blacklist_cache_updater = CreateModuleBlacklistCacheUpdater();
+  module_blacklist_cache_updater->DisableModuleAnalysis();
+
+  // Simulate some arbitrary module loading into the process.
+  ModuleInfoKey module_key(dll1_, 0, 0);
+  module_blacklist_cache_updater->OnNewModuleFound(
+      module_key, CreateLoadedModuleInfoData());
+  module_blacklist_cache_updater->OnModuleDatabaseIdle();
+
+  RunUntilIdle();
+  EXPECT_TRUE(base::PathExists(module_blacklist_cache_path()));
+  EXPECT_TRUE(on_cache_updated_callback_invoked());
+  EXPECT_TRUE(RegistryKeyExists());
+
+  // Check the cache.
+  third_party_dlls::PackedListMetadata metadata;
+  std::vector<third_party_dlls::PackedListModule> blacklisted_modules;
+  base::MD5Digest md5_digest;
+  EXPECT_EQ(ReadResult::kSuccess,
+            ReadModuleBlacklistCache(module_blacklist_cache_path(), &metadata,
+                                     &blacklisted_modules, &md5_digest));
+
+  // The module is not added to the blacklist.
+  EXPECT_EQ(0u, blacklisted_modules.size());
+  ASSERT_EQ(ModuleBlacklistCacheUpdater::ModuleBlockingDecision::kNotAnalyzed,
+            module_blacklist_cache_updater->GetModuleBlockingState(module_key)
+                .blocking_decision);
 }

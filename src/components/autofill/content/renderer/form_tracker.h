@@ -86,13 +86,12 @@ class FormTracker : public content::RenderFrameObserver {
   FRIEND_TEST_ALL_PREFIXES(FormAutocompleteTest,
                            FormSubmittedBySameDocumentNavigation);
 
-  class FormElementObserverCallback;
-
   // content::RenderFrameObserver:
   void DidCommitProvisionalLoad(bool is_same_document_navigation,
                                 ui::PageTransition transition) override;
-  void DidStartProvisionalLoad(blink::WebDocumentLoader* document_loader,
-                               bool is_content_initiated) override;
+  void DidStartNavigation(
+      const GURL& url,
+      base::Optional<blink::WebNavigationType> navigation_type) override;
   void FrameDetached() override;
   void WillSendSubmitEvent(const blink::WebFormElement& form) override;
   void WillSubmitForm(const blink::WebFormElement& form) override;
@@ -111,6 +110,10 @@ class FormTracker : public content::RenderFrameObserver {
   void TrackElement();
 
   void ResetLastInteractedElements();
+
+  // Invoked when the observed element was either removed from the DOM or it's
+  // computed style changed to display: none.
+  void ElementWasHiddenOrRemoved();
 
   base::ObserverList<Observer>::Unchecked observers_;
   bool ignore_control_changes_ = false;

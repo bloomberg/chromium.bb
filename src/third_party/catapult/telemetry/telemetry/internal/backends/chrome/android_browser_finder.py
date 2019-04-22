@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Finds android browsers that can be controlled by telemetry."""
+"""Finds android browsers that can be started and controlled by telemetry."""
 
 import contextlib
 import logging
@@ -17,18 +17,18 @@ from devil.android import flag_changer
 from py_utils import dependency_util
 from py_utils import file_util
 from py_utils import tempfile_ext
-from telemetry import compact_mode_options
+from telemetry import compat_mode_options
 from telemetry import decorators
 from telemetry.core import exceptions
 from telemetry.core import platform
 from telemetry.internal.backends import android_browser_backend_settings
 from telemetry.internal.backends.chrome import android_browser_backend
 from telemetry.internal.backends.chrome import chrome_startup_args
-from telemetry.internal.backends.chrome import gpu_compositing_checker
 from telemetry.internal.browser import browser
 from telemetry.internal.browser import possible_browser
 from telemetry.internal.platform import android_device
 from telemetry.internal.util import binary_manager
+from telemetry.internal.util import format_for_logging
 
 
 ANDROID_BACKEND_SETTINGS = (
@@ -76,7 +76,7 @@ class PossibleAndroidBrowser(possible_browser.PossibleBrowser):
                backend_settings, local_apk=None):
     super(PossibleAndroidBrowser, self).__init__(
         browser_type, 'android', backend_settings.supports_tab_control)
-    assert browser_type in FindAllBrowserTypes(finder_options), (
+    assert browser_type in FindAllBrowserTypes(), (
         'Please add %s to android_browser_finder.FindAllBrowserTypes' %
         browser_type)
     self._platform = android_platform
@@ -85,6 +85,7 @@ class PossibleAndroidBrowser(possible_browser.PossibleBrowser):
     self._backend_settings = backend_settings
     self._local_apk = local_apk
     self._flag_changer = None
+    self._modules_to_install = None
 
     if self._local_apk is None and finder_options.chrome_root is not None:
       self._local_apk = self._backend_settings.FindLocalApk(
@@ -92,6 +93,9 @@ class PossibleAndroidBrowser(possible_browser.PossibleBrowser):
 
     # At this point the local_apk, if any, must exist.
     assert self._local_apk is None or os.path.exists(self._local_apk)
+
+    if self._local_apk and apk_helper.ToHelper(self._local_apk).is_bundle:
+      self._modules_to_install = set(finder_options.modules_to_install)
 
     self._embedder_apk = None
     if self._backend_settings.requires_embedder:
@@ -129,13 +133,14 @@ class PossibleAndroidBrowser(possible_browser.PossibleBrowser):
     # the APK.
     apks = self._platform_backend.device.GetApplicationPaths(
         self._backend_settings.package)
-    # A package can map to multiple APKs iff the package overrides the app on
-    # the system image. Such overrides should not happen on perf bots.
-    assert len(apks) == 1
-    base_apk = apks[0]
-    if not base_apk or not base_apk.endswith('/base.apk'):
-      return None
-    return base_apk[:-9]
+    # A package can map to multiple APKs if the package overrides the app on
+    # the system image. Such overrides should not happen on perf bots. The
+    # package can also map to multiple apks if splits are used. In all cases, we
+    # want the directory that contains base.apk.
+    for apk in apks:
+      if apk.endswith('/base.apk'):
+        return apk[:-9]
+    return None
 
   @property
   def profile_directory(self):
@@ -189,9 +194,12 @@ class PossibleAndroidBrowser(possible_browser.PossibleBrowser):
     # use legacy commandline path if in compatibility mode
     self._flag_changer = flag_changer.FlagChanger(
         device, self._backend_settings.command_line_name, use_legacy_path=
-        compact_mode_options.LEGACY_COMMAND_LINE_PATH in
+        compat_mode_options.LEGACY_COMMAND_LINE_PATH in
         browser_options.compatibility_mode)
-    self._flag_changer.ReplaceFlags(startup_args)
+    self._flag_changer.ReplaceFlags(startup_args, log_flags=False)
+    formatted_args = format_for_logging.ShellFormat(
+        startup_args, trim=browser_options.trim_logs)
+    logging.info('Flags set on device were %s', formatted_args)
     # Stop any existing browser found already running on the device. This is
     # done *after* setting the command line flags, in case some other Android
     # process manages to trigger Chrome's startup before we do.
@@ -208,9 +216,9 @@ class PossibleAndroidBrowser(possible_browser.PossibleBrowser):
       finally:
         self._flag_changer = None
 
-  def Create(self, clear_caches=True):
+  def Create(self):
     """Launch the browser on the device and return a Browser object."""
-    return self._GetBrowserInstance(existing=False, clear_caches=clear_caches)
+    return self._GetBrowserInstance(existing=False)
 
   def FindExistingBrowser(self):
     """Find a browser running on the device and bind a Browser object to it.
@@ -221,24 +229,17 @@ class PossibleAndroidBrowser(possible_browser.PossibleBrowser):
 
     A BrowserGoneException is raised if the browser cannot be found.
     """
-    return self._GetBrowserInstance(existing=True, clear_caches=False)
+    return self._GetBrowserInstance(existing=True)
 
-  def _GetBrowserInstance(self, existing, clear_caches):
+  def _GetBrowserInstance(self, existing):
     browser_backend = android_browser_backend.AndroidBrowserBackend(
         self._platform_backend, self._browser_options,
         self.browser_directory, self.profile_directory,
         self._backend_settings)
-    # TODO(crbug.com/811244): Remove when this is handled by shared state.
-    if clear_caches:
-      self._ClearCachesOnStart()
     try:
-      returned_browser = browser.Browser(
+      return browser.Browser(
           browser_backend, self._platform_backend, startup_args=(),
           find_existing=existing)
-      if self._browser_options.assert_gpu_compositing:
-        gpu_compositing_checker.AssertGpuCompositingEnabled(
-            returned_browser.GetSystemInfo())
-      return returned_browser
     except Exception:
       exc_info = sys.exc_info()
       logging.error(
@@ -256,7 +257,7 @@ class PossibleAndroidBrowser(possible_browser.PossibleBrowser):
     # use the flag `--ignore-certificate-errors` if in compatibility mode
     supports_spki_list = (
         self._backend_settings.supports_spki_list and
-        compact_mode_options.IGNORE_CERTIFICATE_ERROR
+        compat_mode_options.IGNORE_CERTIFICATE_ERROR
         not in browser_options.compatibility_mode)
     startup_args.extend(chrome_startup_args.GetReplayArgs(
         self._platform_backend.network_controller_backend,
@@ -288,7 +289,8 @@ class PossibleAndroidBrowser(possible_browser.PossibleBrowser):
     # TODO(crbug.com/815133): This logic should belong to backend_settings.
     if self._local_apk:
       logging.warn('Installing %s on device if needed.', self._local_apk)
-      self.platform.InstallApplication(self._local_apk)
+      self.platform.InstallApplication(
+          self._local_apk, modules=self._modules_to_install)
 
     if self._embedder_apk:
       logging.warn('Installing %s on device if needed.', self._embedder_apk)
@@ -312,11 +314,15 @@ def CanFindAvailableBrowsers():
 
 
 def _CanPossiblyHandlePath(apk_path):
-  return apk_path and apk_path[-4:].lower() == '.apk'
+  if not apk_path:
+    return False
+  _, ext = os.path.splitext(apk_path)
+  if ext.lower() == '.apk':
+    return True
+  return apk_helper.ToHelper(apk_path).is_bundle
 
 
-def FindAllBrowserTypes(options):
-  del options  # unused
+def FindAllBrowserTypes():
   browser_types = [b.browser_type for b in ANDROID_BACKEND_SETTINGS]
   return browser_types + ['exact', 'reference']
 

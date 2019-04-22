@@ -8,19 +8,21 @@ cr.define('print_preview', function() {
    * Converts DestinationOrigin to PrinterType.
    * @param {!print_preview.DestinationOrigin} origin The printer's
    *     destination origin.
-   * return {?print_preview.PrinterType} The corresponding PrinterType.
-   *     Returns null if no match is found.
+   * return {!print_preview.PrinterType} The corresponding PrinterType.
    */
   const originToType = function(origin) {
     if (origin === print_preview.DestinationOrigin.LOCAL ||
         origin === print_preview.DestinationOrigin.CROS) {
       return print_preview.PrinterType.LOCAL_PRINTER;
     }
-    if (origin === print_preview.DestinationOrigin.PRIVET)
+    if (origin === print_preview.DestinationOrigin.PRIVET) {
       return print_preview.PrinterType.PRIVET_PRINTER;
-    if (origin === print_preview.DestinationOrigin.EXTENSION)
+    }
+    if (origin === print_preview.DestinationOrigin.EXTENSION) {
       return print_preview.PrinterType.EXTENSION_PRINTER;
-    return null;
+    }
+    assert(print_preview.CloudOrigins.includes(origin));
+    return print_preview.PrinterType.CLOUD_PRINTER;
   };
 
   class DestinationMatch {
@@ -49,16 +51,17 @@ cr.define('print_preview', function() {
     }
 
     /**
-     * @param {string} origin Origin to match.
+     * @param {!print_preview.DestinationOrigin} origin Origin to match.
      * @return {boolean} Whether the origin is one of the {@code origins_}.
      */
     matchOrigin(origin) {
-      return arrayContains(this.origins_, origin);
+      return this.origins_.includes(origin);
     }
 
     /**
      * @param {string} id Id of the destination.
-     * @param {string} origin Origin of the destination.
+     * @param {!print_preview.DestinationOrigin} origin Origin of the
+     *     destination.
      * @return {boolean} Whether destination is the same as initial.
      */
     matchIdAndOrigin(id, origin) {
@@ -96,22 +99,19 @@ cr.define('print_preview', function() {
      * @private
      */
     isVirtualDestination_(destination) {
-      if (destination.origin == print_preview.DestinationOrigin.LOCAL) {
-        return arrayContains(
-            [print_preview.Destination.GooglePromotedId.SAVE_AS_PDF],
-            destination.id);
+      if (destination.origin === print_preview.DestinationOrigin.LOCAL) {
+        return destination.id ===
+            print_preview.Destination.GooglePromotedId.SAVE_AS_PDF;
       }
-      return arrayContains(
-          [print_preview.Destination.GooglePromotedId.DOCS], destination.id);
+      return destination.id === print_preview.Destination.GooglePromotedId.DOCS;
     }
 
     /**
-     * @return {!Set<?print_preview.PrinterType>} The printer types that
-     *     correspond to this destination match. A null element in the set
-     *     indicates the match may represent a Cloud destination.
+     * @return {!Set<!print_preview.PrinterType>} The printer types that
+     *     correspond to this destination match.
      */
     getTypes() {
-      return new Set(this.origins_.map(origin => originToType(origin)));
+      return new Set(this.origins_.map(originToType));
     }
   }
 

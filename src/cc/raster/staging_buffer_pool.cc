@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
@@ -137,7 +138,7 @@ StagingBufferPool::StagingBufferPool(
       base::BindRepeating(&StagingBufferPool::OnMemoryPressure,
                           weak_ptr_factory_.GetWeakPtr())));
 
-  reduce_memory_usage_callback_ = base::Bind(
+  reduce_memory_usage_callback_ = base::BindRepeating(
       &StagingBufferPool::ReduceMemoryUsage, weak_ptr_factory_.GetWeakPtr());
 }
 
@@ -404,7 +405,7 @@ void StagingBufferPool::ReleaseBuffersNotUsedSince(base::TimeTicks time) {
     // buffers as soon as we find a buffer that has been used since |time|.
     while (!free_buffers_.empty()) {
       if (free_buffers_.front()->last_usage > time)
-        return;
+        break;
 
       destroyed_buffers = true;
       free_buffers_.front()->DestroyGLResources(ri, sii);
@@ -415,7 +416,7 @@ void StagingBufferPool::ReleaseBuffersNotUsedSince(base::TimeTicks time) {
 
     while (!busy_buffers_.empty()) {
       if (busy_buffers_.front()->last_usage > time)
-        return;
+        break;
 
       destroyed_buffers = true;
       busy_buffers_.front()->DestroyGLResources(ri, sii);

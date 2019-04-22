@@ -33,7 +33,7 @@ class ScrollSnapTest : public SimTest {
 
 void ScrollSnapTest::SetUpForDiv() {
   v8::HandleScope HandleScope(v8::Isolate::GetCurrent());
-  WebView().Resize(WebSize(400, 400));
+  WebView().MainFrameWidget()->Resize(WebSize(400, 400));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(R"HTML(
@@ -91,7 +91,7 @@ void ScrollSnapTest::ScrollBegin(double x,
                                  double hint_y) {
   WebGestureEvent event(WebInputEvent::kGestureScrollBegin,
                         WebInputEvent::kNoModifiers, CurrentTimeTicks(),
-                        WebGestureDevice::kWebGestureDeviceTouchscreen);
+                        WebGestureDevice::kTouchscreen);
   event.SetPositionInWidget(WebFloatPoint(x, y));
   event.SetPositionInScreen(WebFloatPoint(x, y));
   event.data.scroll_begin.delta_x_hint = hint_x;
@@ -108,7 +108,7 @@ void ScrollSnapTest::ScrollUpdate(double x,
                                   bool is_in_inertial_phase) {
   WebGestureEvent event(WebInputEvent::kGestureScrollUpdate,
                         WebInputEvent::kNoModifiers, CurrentTimeTicks(),
-                        WebGestureDevice::kWebGestureDeviceTouchscreen);
+                        WebGestureDevice::kTouchscreen);
   event.SetPositionInWidget(WebFloatPoint(x, y));
   event.SetPositionInScreen(WebFloatPoint(x, y));
   event.data.scroll_update.delta_x = delta_x;
@@ -124,7 +124,7 @@ void ScrollSnapTest::ScrollUpdate(double x,
 void ScrollSnapTest::ScrollEnd(double x, double y, bool is_in_inertial_phase) {
   WebGestureEvent event(WebInputEvent::kGestureScrollEnd,
                         WebInputEvent::kNoModifiers, CurrentTimeTicks(),
-                        WebGestureDevice::kWebGestureDeviceTouchscreen);
+                        WebGestureDevice::kTouchscreen);
   event.SetPositionInWidget(WebFloatPoint(x, y));
   event.SetPositionInScreen(WebFloatPoint(x, y));
   event.data.scroll_end.inertial_phase =
@@ -204,7 +204,7 @@ TEST_F(ScrollSnapTest, AnimateFlingToArriveAtSnapPoint) {
 
 TEST_F(ScrollSnapTest, SnapWhenBodyViewportDefining) {
   v8::HandleScope HandleScope(v8::Isolate::GetCurrent());
-  WebView().Resize(WebSize(300, 300));
+  WebView().MainFrameWidget()->Resize(WebSize(300, 300));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(R"HTML(
@@ -251,7 +251,7 @@ TEST_F(ScrollSnapTest, SnapWhenBodyViewportDefining) {
 
 TEST_F(ScrollSnapTest, SnapWhenHtmlViewportDefining) {
   v8::HandleScope HandleScope(v8::Isolate::GetCurrent());
-  WebView().Resize(WebSize(300, 300));
+  WebView().MainFrameWidget()->Resize(WebSize(300, 300));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(R"HTML(
@@ -301,7 +301,7 @@ TEST_F(ScrollSnapTest, SnapWhenHtmlViewportDefining) {
 
 TEST_F(ScrollSnapTest, SnapWhenBodyOverflowHtmlViewportDefining) {
   v8::HandleScope HandleScope(v8::Isolate::GetCurrent());
-  WebView().Resize(WebSize(300, 300));
+  WebView().MainFrameWidget()->Resize(WebSize(300, 300));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(R"HTML(

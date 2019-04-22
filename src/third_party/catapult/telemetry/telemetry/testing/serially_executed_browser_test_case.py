@@ -11,7 +11,7 @@ from py_utils import cloud_storage
 from telemetry.internal.browser import browser_finder
 from telemetry.internal.browser import browser_finder_exceptions
 from telemetry.testing import browser_test_context
-
+from typ import json_results
 
 DEFAULT_LOG_FORMAT = (
     '(%(levelname)s) %(asctime)s %(module)s.%(funcName)s:%(lineno)d  '
@@ -19,6 +19,12 @@ DEFAULT_LOG_FORMAT = (
 
 
 class SeriallyExecutedBrowserTestCase(unittest.TestCase):
+
+  # Below is a reference to the typ.Runner instance. It will be used in
+  # member functions like GetExpectationsForTest() to get test information
+  # from the typ.Runner instance running the test.
+  _typ_runner = None
+
   def __init__(self, methodName):
     super(SeriallyExecutedBrowserTestCase, self).__init__(methodName)
     self._private_methodname = methodName
@@ -156,6 +162,86 @@ class SeriallyExecutedBrowserTestCase(unittest.TestCase):
   def UrlOfStaticFilePath(cls, file_path):
     return cls.platform.http_server.UrlOf(file_path)
 
+  @classmethod
+  def GenerateTags(cls, finder_options, possible_browser):
+    """This class method is part of the API for all test suites
+    that inherit this class. All test suites that override this function
+    can use the finder_options and possible_browser parameters to generate
+    test expectations file tags.
+
+    Args:
+    finder_options are command line arguments parsed using the parser returned
+    from telemetry.internal.browser.possible_browser.BrowserFinderOptions's
+    CreateParser class method
+
+    possible_browser is an instance of
+    telemetry.internal.browser.possible_browser.PossibleBrowser.
+    It can be used to create an actual browser. For example the code below
+    shows how to create a browser from the possible_browser object
+
+    with possible_browser.BrowserSession(finder_options) as browser:
+      # Do something with the browser.
+
+    Returns:
+    A list of test expectations file tags
+    """
+    del finder_options, possible_browser
+    return []
+
+  @classmethod
+  def ExpectationsFiles(cls):
+    """Subclasses can override this class method to return a list of absolute
+    paths to the test expectations files.
+
+    Returns:
+    A list of test expectations file paths. The paths must be absolute.
+    """
+    return []
+
+  def GetExpectationsForTest(self):
+    """Subclasses can override this method to return a tuple containing a set
+    of expected results and a flag indicating if the test has the RetryOnFailure
+    expectation. Tests members may want to know the test expectation in order to
+    modify its behavior for certain expectations. For instance GPU tests want
+    to avoid symbolizing any crash dumps in the case of expected test failures
+    or when tests are being retried because they are expected to be flaky.
+
+    Returns:
+    A tuple containing set of expected results for a test and a boolean value
+    indicating if the test contains the RetryOnFailure expectation. When there
+    are no expectations files passed to typ, then a tuple of
+    (set(['PASS']), False) should be returned from this function.
+    """
+    return self.__class__._typ_runner.expectations_for(self)
+
+  @classmethod
+  def GetPlatformTags(cls, browser):
+    """This method uses the Browser instances's platform member variable to get
+    the operating system, operating system version and browser type tags.
+    Example tags for  operating system are 'linux' and 'mac'. Example tags
+    for the operating system version are 'mojave' and  'vista'. Example tags
+    for browser type are 'debug' and 'release'. If a None value or empty string
+    is retrieved from the browser's platform member variable, then it will be
+    filtered out.
+
+    Args:
+    Browser instance returned from the possible_browser.BrowserSession() method.
+
+    Returns:
+    A list of tags derived from the Browser instance's platform member variable.
+    """
+    platform = browser.platform
+    tags = [
+        platform.GetOSVersionName(), platform.GetOSName(), browser.browser_type]
+    return [tag.lower() for tag in tags if tag]
+
+  @staticmethod
+  def GetJSONResultsDelimiter():
+    """This method returns the path delimiter that will be used to seperate
+    a test name into parts. By default, the delimiter is '.'
+    """
+    return json_results.DEFAULT_TEST_SEPARATOR
+
 
 def LoadAllTestsInModule(module):
   """ Load all tests & generated browser tests in a given module.
@@ -215,7 +301,7 @@ def _GenerateTestMethod(based_method, args):
 
 
 _TEST_GENERATOR_PREFIX = 'GenerateTestCases_'
-_INVALID_TEST_NAME_RE = re.compile(r'[^a-zA-Z0-9_]')
+_INVALID_TEST_NAME_RE = re.compile(r'[^a-zA-Z0-9_\.\\\/-]')
 
 def _ValidateTestMethodname(test_name):
   assert not bool(_INVALID_TEST_NAME_RE.search(test_name))

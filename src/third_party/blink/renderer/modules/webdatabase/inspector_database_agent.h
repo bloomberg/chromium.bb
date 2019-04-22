@@ -29,12 +29,12 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBDATABASE_INSPECTOR_DATABASE_AGENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBDATABASE_INSPECTOR_DATABASE_AGENT_H_
 
+#include "base/macros.h"
 #include "third_party/blink/renderer/core/inspector/inspector_base_agent.h"
 #include "third_party/blink/renderer/core/inspector/protocol/Database.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -45,13 +45,7 @@ class Page;
 
 class MODULES_EXPORT InspectorDatabaseAgent final
     : public InspectorBaseAgent<protocol::Database::Metainfo> {
-  WTF_MAKE_NONCOPYABLE(InspectorDatabaseAgent);
-
  public:
-  static InspectorDatabaseAgent* Create(Page* page) {
-    return MakeGarbageCollected<InspectorDatabaseAgent>(page);
-  }
-
   explicit InspectorDatabaseAgent(Page*);
   ~InspectorDatabaseAgent() override;
   void Trace(blink::Visitor*) override;
@@ -86,6 +80,8 @@ class MODULES_EXPORT InspectorDatabaseAgent final
       DatabaseResourcesHeapMap;
   DatabaseResourcesHeapMap resources_;
   InspectorAgentState::Boolean enabled_;
+
+  DISALLOW_COPY_AND_ASSIGN(InspectorDatabaseAgent);
 };
 
 }  // namespace blink

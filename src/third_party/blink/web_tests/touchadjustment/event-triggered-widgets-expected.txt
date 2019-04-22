@@ -2,7 +2,6 @@ Test various ways to trigger input-widgets. On a touch interface, all the action
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Testing small direct hits
 PASS adjustedNode.id is element.id
 PASS adjustedNode.id is element.id

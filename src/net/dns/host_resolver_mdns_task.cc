@@ -7,7 +7,9 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
+#include "base/strings/string_util.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/dns/public/dns_protocol.h"
@@ -15,6 +17,20 @@
 #include "net/dns/record_rdata.h"
 
 namespace net {
+
+namespace {
+HostCache::Entry ParseHostnameResult(const std::string& host, uint16_t port) {
+  // Filter out root domain. Depending on the type, it either means no-result
+  // or is simply not a result important to any expected Chrome usecases.
+  if (host.empty()) {
+    return HostCache::Entry(ERR_NAME_NOT_RESOLVED,
+                            HostCache::Entry::SOURCE_UNKNOWN);
+  }
+  return HostCache::Entry(OK,
+                          std::vector<HostPortPair>({HostPortPair(host, port)}),
+                          HostCache::Entry::SOURCE_UNKNOWN);
+}
+}  // namespace
 
 class HostResolverMdnsTask::Transaction {
  public:
@@ -30,7 +46,7 @@ class HostResolverMdnsTask::Transaction {
     DCHECK_EQ(ERR_IO_PENDING, results_.error());
     DCHECK(!async_transaction_);
 
-    // TODO(crbug.com/846423): Use |allow_cached_response| to set the
+    // TODO(crbug.com/926300): Use |allow_cached_response| to set the
     // QUERY_CACHE flag or not.
     int flags = MDnsTransaction::SINGLE_RESULT | MDnsTransaction::QUERY_CACHE |
                 MDnsTransaction::QUERY_NETWORK;
@@ -74,6 +90,7 @@ class HostResolverMdnsTask::Transaction {
     int error = ERR_UNEXPECTED;
     switch (result) {
       case MDnsTransaction::RESULT_RECORD:
+        DCHECK(parsed);
         error = OK;
         break;
       case MDnsTransaction::RESULT_NO_RESULTS:
@@ -85,29 +102,8 @@ class HostResolverMdnsTask::Transaction {
         NOTREACHED();
     }
 
-    if (error == net::OK) {
-      switch (query_type_) {
-        case DnsQueryType::A:
-          results_ = HostCache::Entry(
-              OK,
-              AddressList(
-                  IPEndPoint(parsed->rdata<net::ARecordRdata>()->address(), 0)),
-              HostCache::Entry::SOURCE_UNKNOWN);
-          break;
-        case DnsQueryType::AAAA:
-          results_ = HostCache::Entry(
-              OK,
-              AddressList(IPEndPoint(
-                  parsed->rdata<net::AAAARecordRdata>()->address(), 0)),
-              HostCache::Entry::SOURCE_UNKNOWN);
-          break;
-        default:
-          // TODO(crbug.com/846423): Add result parsing for non-address types.
-          NOTIMPLEMENTED();
-      }
-    } else {
-      results_ = HostCache::Entry(error, HostCache::Entry::SOURCE_UNKNOWN);
-    }
+    results_ = HostResolverMdnsTask::ParseResult(error, query_type_, parsed,
+                                                 task_->hostname_);
 
     // If we don't have a saved async_transaction, it means OnComplete was
     // invoked inline in MDnsTransaction::Start. Callbacks will need to be
@@ -147,6 +143,7 @@ HostResolverMdnsTask::~HostResolverMdnsTask() {
 void HostResolverMdnsTask::Start(base::OnceClosure completion_closure) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!completion_closure_);
+  DCHECK(mdns_client_);
 
   completion_closure_ = std::move(completion_closure);
 
@@ -180,6 +177,50 @@ HostCache::Entry HostResolverMdnsTask::GetResults() const {
   }
 
   return combined_results;
+}
+
+// static
+HostCache::Entry HostResolverMdnsTask::ParseResult(
+    int error,
+    DnsQueryType query_type,
+    const RecordParsed* parsed,
+    const std::string& expected_hostname) {
+  if (error != OK) {
+    return HostCache::Entry(error, HostCache::Entry::SOURCE_UNKNOWN);
+  }
+  DCHECK(parsed);
+
+  // Expected to be validated by MDnsClient.
+  DCHECK_EQ(DnsQueryTypeToQtype(query_type), parsed->type());
+  DCHECK(base::EqualsCaseInsensitiveASCII(expected_hostname, parsed->name()));
+
+  switch (query_type) {
+    case DnsQueryType::UNSPECIFIED:
+      // Should create two separate transactions with specified type.
+      NOTREACHED();
+      return HostCache::Entry(ERR_FAILED, HostCache::Entry::SOURCE_UNKNOWN);
+    case DnsQueryType::A:
+      return HostCache::Entry(
+          OK,
+          AddressList(
+              IPEndPoint(parsed->rdata<net::ARecordRdata>()->address(), 0)),
+          HostCache::Entry::SOURCE_UNKNOWN);
+    case DnsQueryType::AAAA:
+      return HostCache::Entry(
+          OK,
+          AddressList(
+              IPEndPoint(parsed->rdata<net::AAAARecordRdata>()->address(), 0)),
+          HostCache::Entry::SOURCE_UNKNOWN);
+    case DnsQueryType::TXT:
+      return HostCache::Entry(OK, parsed->rdata<net::TxtRecordRdata>()->texts(),
+                              HostCache::Entry::SOURCE_UNKNOWN);
+    case DnsQueryType::PTR:
+      return ParseHostnameResult(parsed->rdata<PtrRecordRdata>()->ptrdomain(),
+                                 0 /* port */);
+    case DnsQueryType::SRV:
+      return ParseHostnameResult(parsed->rdata<SrvRecordRdata>()->target(),
+                                 parsed->rdata<SrvRecordRdata>()->port());
+  }
 }
 
 void HostResolverMdnsTask::CheckCompletion(bool post_needed) {

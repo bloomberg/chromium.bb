@@ -13,10 +13,10 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
-#include "chrome/grit/generated_resources.h"
+#include "components/strings/grit/components_strings.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
+#include "ui/base/buildflags.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/ui_features.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/border.h"
@@ -26,20 +26,34 @@
 
 namespace autofill {
 
-// TODO(crbug.com/831603): Determine how colors should be shared with menus
-// and/or omnibox, and how these should interact (if at all) with native
-// theme colors.
-const SkColor AutofillPopupBaseView::kBackgroundColor = SK_ColorWHITE;
-const SkColor AutofillPopupBaseView::kSelectedBackgroundColor =
-    gfx::kGoogleGrey200;
-const SkColor AutofillPopupBaseView::kFooterBackgroundColor =
-    gfx::kGoogleGrey050;
-const SkColor AutofillPopupBaseView::kSeparatorColor = gfx::kGoogleGrey200;
-const SkColor AutofillPopupBaseView::kWarningColor = gfx::kGoogleRed600;
-
 int AutofillPopupBaseView::GetCornerRadius() {
   return ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
       views::EMPHASIS_MEDIUM);
+}
+
+SkColor AutofillPopupBaseView::GetBackgroundColor() {
+  return GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_MenuBackgroundColor);
+}
+
+SkColor AutofillPopupBaseView::GetSelectedBackgroundColor() {
+  return GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_FocusedHighlightedMenuItemBackgroundColor);
+}
+
+SkColor AutofillPopupBaseView::GetFooterBackgroundColor() {
+  return GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_HighlightedMenuItemBackgroundColor);
+}
+
+SkColor AutofillPopupBaseView::GetSeparatorColor() {
+  return GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_MenuSeparatorColor);
+}
+
+SkColor AutofillPopupBaseView::GetWarningColor() {
+  return GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_AlertSeverityHigh);
 }
 
 AutofillPopupBaseView::AutofillPopupBaseView(
@@ -74,12 +88,10 @@ void AutofillPopupBaseView::DoShow() {
     params.delegate = this;
     params.parent = parent_widget_ ? parent_widget_->GetNativeView()
                                    : delegate_->container_view();
-    AddExtraInitParams(&params);
+    // Ensure the bubble border is not painted on an opaque background.
+    params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+    params.shadow_type = views::Widget::InitParams::SHADOW_TYPE_NONE;
     widget->Init(params);
-
-    std::unique_ptr<views::View> wrapper = CreateWrapperView();
-    if (wrapper)
-      widget->SetContentsView(wrapper.release());
     widget->AddObserver(this);
 
     // No animation for popup appearance (too distracting).
@@ -150,34 +162,10 @@ void AutofillPopupBaseView::RemoveWidgetObservers() {
   views::WidgetFocusManager::GetInstance()->RemoveFocusChangeListener(this);
 }
 
-// TODO(crbug.com/831603): Inline this function once AutofillPopupViewViews is
-// deleted.
-void AutofillPopupBaseView::AddExtraInitParams(
-    views::Widget::InitParams* params) {
-  // Ensure the bubble border is not painted on an opaque background.
-  params->opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
-  params->shadow_type = views::Widget::InitParams::SHADOW_TYPE_NONE;
-}
-
-std::unique_ptr<views::View> AutofillPopupBaseView::CreateWrapperView() {
-  return nullptr;
-}
-
-std::unique_ptr<views::Border> AutofillPopupBaseView::CreateBorder() {
-  auto border = std::make_unique<views::BubbleBorder>(
-      views::BubbleBorder::NONE, views::BubbleBorder::SMALL_SHADOW,
-      SK_ColorWHITE);
-  border->SetCornerRadius(GetCornerRadius());
-  border->set_md_shadow_elevation(
-      ChromeLayoutProvider::Get()->GetShadowElevationMetric(
-          views::EMPHASIS_MEDIUM));
-  return border;
-}
-
 void AutofillPopupBaseView::SetClipPath() {
   SkRect local_bounds = gfx::RectToSkRect(GetLocalBounds());
   SkScalar radius = SkIntToScalar(GetCornerRadius());
-  gfx::Path clip_path;
+  SkPath clip_path;
   clip_path.addRoundRect(local_bounds, radius, radius);
   set_clip_path(clip_path);
 }
@@ -199,13 +187,6 @@ void AutofillPopupBaseView::DoUpdateBoundsAndRedrawPopup() {
   Layout();
   SetClipPath();
   SchedulePaint();
-}
-
-gfx::Rect AutofillPopupBaseView::CalculateClippingBounds() const {
-  if (parent_widget_)
-    return parent_widget_->GetClientAreaBoundsInScreen();
-
-  return PopupViewCommon().GetWindowBounds(delegate_->container_view());
 }
 
 void AutofillPopupBaseView::OnNativeFocusChanged(gfx::NativeView focused_now) {
@@ -355,6 +336,17 @@ void AutofillPopupBaseView::HideController() {
   // This will eventually result in the deletion of |this|, as the delegate
   // will hide |this|. See |DoHide| above for an explanation on why the precise
   // timing of that deletion is tricky.
+}
+
+std::unique_ptr<views::Border> AutofillPopupBaseView::CreateBorder() {
+  auto border = std::make_unique<views::BubbleBorder>(
+      views::BubbleBorder::NONE, views::BubbleBorder::SMALL_SHADOW,
+      SK_ColorWHITE);
+  border->SetCornerRadius(GetCornerRadius());
+  border->set_md_shadow_elevation(
+      ChromeLayoutProvider::Get()->GetShadowElevationMetric(
+          views::EMPHASIS_MEDIUM));
+  return border;
 }
 
 gfx::NativeView AutofillPopupBaseView::container_view() {

@@ -57,23 +57,7 @@ SkRect Text::onRevalidate(InvalidationController*, const SkMatrix&) {
     //  1) SkTextBlob has some trouble computing accurate bounds with alignment.
     //  2) SkPaint::Align is slated for deprecation.
 
-    // First, convert to glyphIDs.
-    SkSTArray<256, SkGlyphID, true> glyphs;
-    glyphs.reset(font.countText(fText.c_str(), fText.size(), kUTF8_SkTextEncoding));
-    SkAssertResult(font.textToGlyphs(fText.c_str(), fText.size(), kUTF8_SkTextEncoding,
-                                     glyphs.begin(), glyphs.count()));
-
-    // Next, build the cached blob.
-    SkTextBlobBuilder builder;
-    const auto& buf = builder.allocRun(font, glyphs.count(), 0, 0, nullptr);
-    if (!buf.glyphs) {
-        fBlob.reset();
-        return SkRect::MakeEmpty();
-    }
-
-    memcpy(buf.glyphs, glyphs.begin(), glyphs.count() * sizeof(SkGlyphID));
-
-    fBlob = builder.make();
+    fBlob = SkTextBlob::MakeFromText(fText.c_str(), fText.size(), font, kUTF8_SkTextEncoding);
     if (!fBlob) {
         return SkRect::MakeEmpty();
     }
@@ -87,6 +71,10 @@ SkRect Text::onRevalidate(InvalidationController*, const SkMatrix&) {
 void Text::onDraw(SkCanvas* canvas, const SkPaint& paint) const {
     const auto aligned_pos = this->alignedPosition(this->bounds().width());
     canvas->drawTextBlob(fBlob, aligned_pos.x(), aligned_pos.y(), paint);
+}
+
+bool Text::onContains(const SkPoint& p) const {
+    return this->asPath().contains(p.x(), p.y());
 }
 
 SkPath Text::onAsPath() const {
@@ -108,11 +96,16 @@ TextBlob::TextBlob(sk_sp<SkTextBlob> blob)
 TextBlob::~TextBlob() = default;
 
 SkRect TextBlob::onRevalidate(InvalidationController*, const SkMatrix&) {
-    return fBlob ? fBlob->bounds() : SkRect::MakeEmpty();
+    return fBlob ? fBlob->bounds().makeOffset(fPosition.x(), fPosition.y())
+                 : SkRect::MakeEmpty();
 }
 
 void TextBlob::onDraw(SkCanvas* canvas, const SkPaint& paint) const {
     canvas->drawTextBlob(fBlob, fPosition.x(), fPosition.y(), paint);
+}
+
+bool TextBlob::onContains(const SkPoint& p) const {
+    return this->asPath().contains(p.x(), p.y());
 }
 
 SkPath TextBlob::onAsPath() const {

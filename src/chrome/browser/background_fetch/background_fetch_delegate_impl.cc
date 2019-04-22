@@ -11,23 +11,31 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/download/download_service_factory.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/offline_items_collection/offline_content_aggregator_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/download/public/background_service/download_params.h"
 #include "components/download/public/background_service/download_service.h"
+#include "components/history/core/browser/history_service.h"
 #include "components/offline_items_collection/core/offline_content_aggregator.h"
 #include "components/offline_items_collection/core/offline_item.h"
 #include "content/public/browser/background_fetch_description.h"
 #include "content/public/browser/background_fetch_response.h"
 #include "content/public/browser/browser_thread.h"
-#include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom.h"
+#include "content/public/browser/web_contents.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
+#include "services/network/public/cpp/features.h"
+#include "services/network/public/mojom/data_pipe_getter.mojom.h"
+#include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image_skia.h"
@@ -65,19 +73,27 @@ download::DownloadService* BackgroundFetchDelegateImpl::GetDownloadService() {
 
 void BackgroundFetchDelegateImpl::Shutdown() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  if (client()) {
-    client()->OnDelegateShutdown();
-  }
 }
+
+BackgroundFetchDelegateImpl::JobDetails::RequestData::RequestData(
+    bool has_upload_data) {
+  if (has_upload_data)
+    status = Status::kIncluded;
+  else
+    status = Status::kAbsent;
+}
+
+BackgroundFetchDelegateImpl::JobDetails::RequestData::~RequestData() = default;
 
 BackgroundFetchDelegateImpl::JobDetails::JobDetails(JobDetails&&) = default;
 
 BackgroundFetchDelegateImpl::JobDetails::JobDetails(
+    base::WeakPtr<Client> client,
     std::unique_ptr<content::BackgroundFetchDescription> fetch_description,
     const std::string& provider_namespace,
     bool is_off_the_record)
-    : offline_item(offline_items_collection::ContentId(
+    : client(std::move(client)),
+      offline_item(offline_items_collection::ContentId(
           provider_namespace,
           fetch_description->job_unique_id)),
       job_state(fetch_description->start_paused
@@ -98,27 +114,34 @@ void BackgroundFetchDelegateImpl::JobDetails::MarkJobAsStarted() {
     job_state = State::kStartedButPaused;
 }
 
-void BackgroundFetchDelegateImpl::JobDetails::UpdateJobOnDownloadComplete() {
-  fetch_description->completed_parts++;
-  in_progress_parts_size = 0u;
-  if (fetch_description->completed_parts == fetch_description->total_parts)
+void BackgroundFetchDelegateImpl::JobDetails::UpdateJobOnDownloadComplete(
+    const std::string& download_guid) {
+  fetch_description->completed_requests++;
+  if (fetch_description->completed_requests ==
+      fetch_description->total_requests) {
     job_state = State::kDownloadsComplete;
+  }
+
+  current_fetch_guids.erase(download_guid);
 }
 
 void BackgroundFetchDelegateImpl::JobDetails::UpdateOfflineItem() {
-  DCHECK_GT(fetch_description->total_parts, 0);
+  DCHECK_GT(fetch_description->total_requests, 0);
 
   if (ShouldReportProgressBySize()) {
-    offline_item.progress.value = GetProcessedDataSize();
-    // If we have completed all downloads, update progress max to
-    // completed_parts_size in case total_parts_size was set too high. This
-    // avoid unnecessary jumping in the progress bar.
-    offline_item.progress.max = job_state == State::kDownloadsComplete
-                                    ? fetch_description->completed_parts_size
-                                    : fetch_description->total_parts_size;
+    offline_item.progress.value = GetProcessedBytes();
+    // If we have completed all downloads, update progress max to the processed
+    // bytes in case the provided totals were set too high. This avoids
+    // unnecessary jumping in the progress bar.
+    uint64_t completed_bytes =
+        fetch_description->downloaded_bytes + fetch_description->uploaded_bytes;
+    uint64_t total_bytes = fetch_description->download_total_bytes +
+                           fetch_description->upload_total_bytes;
+    offline_item.progress.max =
+        job_state == State::kDownloadsComplete ? completed_bytes : total_bytes;
   } else {
-    offline_item.progress.value = fetch_description->completed_parts;
-    offline_item.progress.max = fetch_description->total_parts;
+    offline_item.progress.value = fetch_description->completed_requests;
+    offline_item.progress.max = fetch_description->total_requests;
   }
 
   offline_item.progress.unit =
@@ -144,25 +167,63 @@ void BackgroundFetchDelegateImpl::JobDetails::UpdateOfflineItem() {
     case State::kStartedButPaused:
       offline_item.state = OfflineItemState::PAUSED;
       break;
+    case State::kJobComplete:
+      // There shouldn't be any updates at this point.
+      NOTREACHED();
+      break;
     default:
       offline_item.state = OfflineItemState::IN_PROGRESS;
   }
 }
 
-uint64_t BackgroundFetchDelegateImpl::JobDetails::GetProcessedDataSize() const {
-  return fetch_description->completed_parts_size + in_progress_parts_size;
+uint64_t BackgroundFetchDelegateImpl::JobDetails::GetProcessedBytes() const {
+  return fetch_description->downloaded_bytes +
+         fetch_description->uploaded_bytes + GetInProgressBytes();
+}
+
+uint64_t BackgroundFetchDelegateImpl::JobDetails::GetDownloadedBytes() const {
+  uint64_t bytes = fetch_description->downloaded_bytes;
+  for (const auto& current_fetch : current_fetch_guids)
+    bytes += current_fetch.second.in_progress_downloaded_bytes;
+  return bytes;
+}
+
+uint64_t BackgroundFetchDelegateImpl::JobDetails::GetInProgressBytes() const {
+  uint64_t bytes = 0u;
+  for (const auto& current_fetch : current_fetch_guids) {
+    bytes += current_fetch.second.in_progress_downloaded_bytes +
+             current_fetch.second.in_progress_uploaded_bytes;
+  }
+  return bytes;
+}
+
+void BackgroundFetchDelegateImpl::JobDetails::UpdateInProgressBytes(
+    const std::string& download_guid,
+    uint64_t bytes_uploaded,
+    uint64_t bytes_downloaded) {
+  DCHECK(current_fetch_guids.count(download_guid));
+  auto& request_data = current_fetch_guids.find(download_guid)->second;
+
+  // If we started receiving download bytes then the upload was complete and is
+  // accounted for in |uploaded_bytes|.
+  if (bytes_downloaded > 0u)
+    request_data.in_progress_uploaded_bytes = 0u;
+  else
+    request_data.in_progress_uploaded_bytes = bytes_uploaded;
+
+  request_data.in_progress_downloaded_bytes = bytes_downloaded;
 }
 
 bool BackgroundFetchDelegateImpl::JobDetails::ShouldReportProgressBySize() {
-  if (!fetch_description->total_parts_size) {
-    // total_parts_size was not set. Cannot report by size.
+  if (!fetch_description->download_total_bytes) {
+    // |download_total_bytes| was not set. Cannot report by size.
     return false;
   }
 
-  if (fetch_description->completed_parts < fetch_description->total_parts &&
-      GetProcessedDataSize() >
-          static_cast<uint64_t>(fetch_description->total_parts_size)) {
-    // total_parts_size was set too low.
+  if (fetch_description->completed_requests <
+          fetch_description->total_requests &&
+      GetDownloadedBytes() > fetch_description->download_total_bytes) {
+    // |download_total_bytes| was set too low.
     return false;
   }
 
@@ -247,6 +308,7 @@ void BackgroundFetchDelegateImpl::DidGetPermissionFromDownloadRequestLimiter(
 }
 
 void BackgroundFetchDelegateImpl::CreateDownloadJob(
+    base::WeakPtr<Client> client,
     std::unique_ptr<content::BackgroundFetchDescription> fetch_description) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -254,8 +316,8 @@ void BackgroundFetchDelegateImpl::CreateDownloadJob(
   DCHECK(!job_details_map_.count(job_unique_id));
   job_details_map_.emplace(
       job_unique_id,
-      JobDetails(std::move(fetch_description), provider_namespace_,
-                 profile_->IsOffTheRecord()));
+      JobDetails(std::move(client), std::move(fetch_description),
+                 provider_namespace_, profile_->IsOffTheRecord()));
 }
 
 void BackgroundFetchDelegateImpl::DownloadUrl(
@@ -311,9 +373,8 @@ void BackgroundFetchDelegateImpl::StartDownload(
     bool has_request_body) {
   DCHECK(job_details_map_.count(job_unique_id));
   JobDetails& job_details = job_details_map_.find(job_unique_id)->second;
-  job_details.current_fetch_guids.emplace(
-      params.guid, has_request_body ? JobDetails::UploadData::kIncluded
-                                    : JobDetails::UploadData::kAbsent);
+
+  job_details.current_fetch_guids.emplace(params.guid, has_request_body);
   GetDownloadService()->StartDownload(params);
 }
 
@@ -334,9 +395,67 @@ void BackgroundFetchDelegateImpl::Abort(const std::string& job_unique_id) {
   UpdateOfflineItemAndUpdateObservers(&job_details);
 }
 
+void BackgroundFetchDelegateImpl::
+    RecordBackgroundFetchDeletingRegistrationUkmEvent(
+        const url::Origin& origin,
+        bool user_initiated_abort) {
+  // Log the UKM event anyway, if the origin can be found in the user's
+  // history database.
+  history::HistoryService* history_service =
+      HistoryServiceFactory::GetForProfile(profile_,
+                                           ServiceAccessType::EXPLICIT_ACCESS);
+  DCHECK(history_service);
+  const GURL origin_url = origin.GetURL();
+  history_service->GetVisibleVisitCountToHost(
+      origin_url,
+      base::BindRepeating(&BackgroundFetchDelegateImpl::DidQueryUrl,
+                          weak_ptr_factory_.GetWeakPtr(), origin_url,
+                          user_initiated_abort),
+      &task_tracker_);
+}
+
+void BackgroundFetchDelegateImpl::DidQueryUrl(const GURL& origin_url,
+                                              bool user_initiated_abort,
+                                              bool success,
+                                              int num_visits,
+                                              base::Time first_visit) {
+  // This notifies the tests that the history query has completed.
+  if (history_query_complete_closure_for_testing_) {
+    base::PostTask(FROM_HERE,
+                   std::move(history_query_complete_closure_for_testing_));
+  }
+
+  if (!success || !num_visits)
+    return;
+
+  ukm::SourceId source_id = ukm::UkmRecorder::GetNewSourceID();
+  ukm::UkmRecorder* recorder = ukm::UkmRecorder::Get();
+  DCHECK(recorder);
+
+  // This is OK from a privacy perspective since we have verified that the
+  // origin the background fetch is associated with, is in the history service
+  // database.
+  recorder->UpdateSourceURL(source_id, origin_url);
+
+  ukm::builders::BackgroundFetchDeletingRegistration(source_id)
+      .SetUserInitiatedAbort(user_initiated_abort)
+      .Record(ukm::UkmRecorder::Get());
+}
+
 void BackgroundFetchDelegateImpl::MarkJobComplete(
     const std::string& job_unique_id) {
-  job_details_map_.erase(job_unique_id);
+  auto job_details_iter = job_details_map_.find(job_unique_id);
+  DCHECK(job_details_iter != job_details_map_.end());
+
+  JobDetails& job_details = job_details_iter->second;
+  job_details.job_state = JobDetails::State::kJobComplete;
+
+  RecordBackgroundFetchDeletingRegistrationUkmEvent(
+      job_details.fetch_description->origin, job_details.cancelled_from_ui);
+
+  // Clear the |job_details| internals that are no longer needed.
+  job_details.current_fetch_guids.clear();
+  job_details.fetch_description.reset();
 }
 
 void BackgroundFetchDelegateImpl::UpdateUI(
@@ -368,8 +487,8 @@ void BackgroundFetchDelegateImpl::UpdateUI(
 
   if (!should_update_visuals) {
     // Notify the client that the UI updates have been handed over.
-    if (client())
-      client()->OnUIUpdated(job_unique_id);
+    if (job_details.client)
+      job_details.client->OnUIUpdated(job_unique_id);
   }
 
   UpdateOfflineItemAndUpdateObservers(&job_details);
@@ -388,15 +507,26 @@ void BackgroundFetchDelegateImpl::OnDownloadStarted(
     return;
 
   const std::string& job_unique_id = download_job_unique_id_iter->second;
+  auto& job_details = job_details_map_.find(job_unique_id)->second;
+  if (job_details.client) {
+    job_details.client->OnDownloadStarted(job_unique_id, download_guid,
+                                          std::move(response));
+  }
 
-  if (client()) {
-    client()->OnDownloadStarted(job_unique_id, download_guid,
-                                std::move(response));
+  // Release the request body blob, if any, and update the upload progress.
+  auto it = job_details.current_fetch_guids.find(download_guid);
+  DCHECK(it != job_details.current_fetch_guids.end());
+
+  if (it->second.request_body_blob) {
+    job_details.fetch_description->uploaded_bytes +=
+        it->second.request_body_blob->size;
+    it->second.request_body_blob.reset();
   }
 }
 
 void BackgroundFetchDelegateImpl::OnDownloadUpdated(
     const std::string& download_guid,
+    uint64_t bytes_uploaded,
     uint64_t bytes_downloaded) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   auto download_job_unique_id_iter =
@@ -408,13 +538,14 @@ void BackgroundFetchDelegateImpl::OnDownloadUpdated(
 
   const std::string& job_unique_id = download_job_unique_id_iter->second;
 
-  // This will update the progress bar.
   DCHECK(job_details_map_.count(job_unique_id));
   JobDetails& job_details = job_details_map_.find(job_unique_id)->second;
-  job_details.in_progress_parts_size = bytes_downloaded;
-  if (job_details.fetch_description->total_parts_size &&
-      static_cast<uint64_t>(job_details.fetch_description->total_parts_size) <
-          job_details.GetProcessedDataSize()) {
+
+  job_details.UpdateInProgressBytes(download_guid, bytes_uploaded,
+                                    bytes_downloaded);
+  if (job_details.fetch_description->download_total_bytes &&
+      job_details.fetch_description->download_total_bytes <
+          job_details.GetDownloadedBytes()) {
     // Fail the fetch if total download size was set too low.
     // We only do this if total download size is specified. If not specified,
     // this check is skipped. This is to allow for situations when the
@@ -424,8 +555,9 @@ void BackgroundFetchDelegateImpl::OnDownloadUpdated(
   }
   UpdateOfflineItemAndUpdateObservers(&job_details);
 
-  if (client())
-    client()->OnDownloadUpdated(job_unique_id, download_guid, bytes_downloaded);
+  if (job_details.client)
+    job_details.client->OnDownloadUpdated(job_unique_id, download_guid,
+                                          bytes_uploaded, bytes_downloaded);
 }
 
 void BackgroundFetchDelegateImpl::OnDownloadFailed(
@@ -444,7 +576,7 @@ void BackgroundFetchDelegateImpl::OnDownloadFailed(
   const std::string& job_unique_id = download_job_unique_id_iter->second;
   JobDetails& job_details = job_details_map_.find(job_unique_id)->second;
 
-  job_details.UpdateJobOnDownloadComplete();
+  job_details.UpdateJobOnDownloadComplete(download_guid);
   UpdateOfflineItemAndUpdateObservers(&job_details);
 
   // The client cancelled or aborted the download so no need to notify it.
@@ -453,12 +585,11 @@ void BackgroundFetchDelegateImpl::OnDownloadFailed(
     return;
   }
 
-  if (client()) {
-    client()->OnDownloadComplete(job_unique_id, download_guid,
-                                 std::move(result));
+  if (job_details.client) {
+    job_details.client->OnDownloadComplete(job_unique_id, download_guid,
+                                           std::move(result));
   }
 
-  job_details.current_fetch_guids.erase(download_guid);
   download_job_unique_id_map_.erase(download_guid);
 }
 
@@ -476,20 +607,19 @@ void BackgroundFetchDelegateImpl::OnDownloadSucceeded(
 
   const std::string& job_unique_id = download_job_unique_id_iter->second;
   JobDetails& job_details = job_details_map_.find(job_unique_id)->second;
-  job_details.UpdateJobOnDownloadComplete();
+  job_details.UpdateJobOnDownloadComplete(download_guid);
 
-  job_details.fetch_description->completed_parts_size +=
+  job_details.fetch_description->downloaded_bytes +=
       profile_->IsOffTheRecord() ? result->blob_handle->size()
                                  : result->file_size;
 
   UpdateOfflineItemAndUpdateObservers(&job_details);
 
-  if (client()) {
-    client()->OnDownloadComplete(job_unique_id, download_guid,
-                                 std::move(result));
+  if (job_details.client) {
+    job_details.client->OnDownloadComplete(job_unique_id, download_guid,
+                                           std::move(result));
   }
 
-  job_details.current_fetch_guids.erase(download_guid);
   download_job_unique_id_map_.erase(download_guid);
 }
 
@@ -542,8 +672,17 @@ void BackgroundFetchDelegateImpl::UpdateOfflineItemAndUpdateObservers(
 void BackgroundFetchDelegateImpl::OpenItem(
     offline_items_collection::LaunchLocation location,
     const offline_items_collection::ContentId& id) {
-  if (client())
-    client()->OnUIActivated(id.id);
+  auto job_details_iter = job_details_map_.find(id.id);
+  if (job_details_iter == job_details_map_.end())
+    return;
+
+  JobDetails& job_details = job_details_iter->second;
+  if (job_details.client)
+    job_details.client->OnUIActivated(id.id);
+
+  // No point in keeping the job details around anymore.
+  if (job_details.job_state == JobDetails::State::kJobComplete)
+    job_details_map_.erase(job_details_iter);
 }
 
 void BackgroundFetchDelegateImpl::RemoveItem(
@@ -557,10 +696,11 @@ void BackgroundFetchDelegateImpl::FailFetch(const std::string& job_unique_id) {
   // Save a copy before Abort() deletes the reference.
   const std::string unique_id = job_unique_id;
   Abort(job_unique_id);
-  if (client()) {
-    client()->OnJobCancelled(unique_id,
-                             blink::mojom::BackgroundFetchFailureReason::
-                                 TOTAL_DOWNLOAD_SIZE_EXCEEDED);
+
+  if (auto client = GetClient(unique_id)) {
+    client->OnJobCancelled(
+        unique_id,
+        blink::mojom::BackgroundFetchFailureReason::DOWNLOAD_TOTAL_EXCEEDED);
   }
 }
 
@@ -568,10 +708,22 @@ void BackgroundFetchDelegateImpl::CancelDownload(
     const offline_items_collection::ContentId& id) {
   // Save a copy before Abort() deletes the reference.
   const std::string unique_id = id.id;
+
+  auto job_details_iter = job_details_map_.find(unique_id);
+  DCHECK(job_details_iter != job_details_map_.end());
+
+  auto& job_details = job_details_iter->second;
+  if (job_details.job_state == JobDetails::State::kDownloadsComplete ||
+      job_details.job_state == JobDetails::State::kJobComplete) {
+    // The cancel event arrived after the fetch was complete; ignore it.
+    return;
+  }
+
+  job_details.cancelled_from_ui = true;
   Abort(unique_id);
 
-  if (client()) {
-    client()->OnJobCancelled(
+  if (auto client = GetClient(unique_id)) {
+    client->OnJobCancelled(
         unique_id,
         blink::mojom::BackgroundFetchFailureReason::CANCELLED_FROM_UI);
   }
@@ -584,6 +736,12 @@ void BackgroundFetchDelegateImpl::PauseDownload(
     return;
 
   JobDetails& job_details = job_details_iter->second;
+  if (job_details.job_state == JobDetails::State::kDownloadsComplete ||
+      job_details.job_state == JobDetails::State::kJobComplete) {
+    // The pause event arrived after the fetch was complete; ignore it.
+    return;
+  }
+
   job_details.job_state = JobDetails::State::kStartedButPaused;
   job_details.UpdateOfflineItem();
   for (auto& download_guid_pair : job_details.current_fetch_guids)
@@ -639,9 +797,9 @@ void BackgroundFetchDelegateImpl::GetVisualsForItem(
     visuals->icon =
         gfx::Image::CreateFrom1xBitmap(job_details.fetch_description->icon);
     job_details.offline_item.refresh_visuals = false;
-    if (client() &&
+    if (job_details.client &&
         job_details.job_state == JobDetails::State::kDownloadsComplete) {
-      client()->OnUIUpdated(id.id);
+      job_details.client->OnUIUpdated(id.id);
     }
   }
 
@@ -656,6 +814,13 @@ void BackgroundFetchDelegateImpl::GetShareInfoForItem(
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), id,
                                 nullptr /* OfflineItemShareInfo */));
+}
+
+void BackgroundFetchDelegateImpl::RenameItem(
+    const offline_items_collection::ContentId& id,
+    const std::string& name,
+    RenameCallback callback) {
+  NOTIMPLEMENTED();
 }
 
 void BackgroundFetchDelegateImpl::AddObserver(Observer* observer) {
@@ -725,14 +890,64 @@ void BackgroundFetchDelegateImpl::GetUploadData(
   DCHECK(job_it != download_job_unique_id_map_.end());
 
   JobDetails& job_details = job_details_map_.find(job_it->second)->second;
-  if (job_details.current_fetch_guids[download_guid] ==
-      JobDetails::UploadData::kAbsent) {
+  if (job_details.current_fetch_guids.at(download_guid).status ==
+      JobDetails::RequestData::Status::kAbsent) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(callback), /* request_body= */ nullptr));
     return;
   }
 
-  if (client())
-    client()->GetUploadData(job_it->second, download_guid, std::move(callback));
+  if (job_details.client) {
+    job_details.client->GetUploadData(
+        job_it->second, download_guid,
+        base::BindOnce(&BackgroundFetchDelegateImpl::DidGetUploadData,
+                       weak_ptr_factory_.GetWeakPtr(), job_it->second,
+                       download_guid, std::move(callback)));
+  }
+}
+
+void BackgroundFetchDelegateImpl::DidGetUploadData(
+    const std::string& unique_id,
+    const std::string& download_guid,
+    download::GetUploadDataCallback callback,
+    blink::mojom::SerializedBlobPtr blob) {
+  if (!blob || blob->uuid.empty()) {
+    std::move(callback).Run(/* request_body= */ nullptr);
+    return;
+  }
+
+  auto job_it = job_details_map_.find(unique_id);
+  if (job_it == job_details_map_.end()) {
+    std::move(callback).Run(/* request_body= */ nullptr);
+    return;
+  }
+
+  auto request_body = base::MakeRefCounted<network::ResourceRequestBody>();
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService) ||
+      profile_->IsOffTheRecord()) {
+    // Use a Data Pipe to transfer the blob.
+    network::mojom::DataPipeGetterPtr data_pipe_getter_ptr;
+    blink::mojom::BlobPtr blob_ptr(std::move(blob->blob));
+    blob_ptr->AsDataPipeGetter(MakeRequest(&data_pipe_getter_ptr));
+    request_body->AppendDataPipe(std::move(data_pipe_getter_ptr));
+  } else {
+    // Use the blob itself and store the handle for the duration of the upload.
+    request_body->AppendBlob(blob->uuid);
+
+    auto& job_details = job_it->second;
+    DCHECK(job_details.current_fetch_guids.count(download_guid));
+    job_details.current_fetch_guids.at(download_guid).request_body_blob =
+        std::move(blob);
+  }
+
+  std::move(callback).Run(request_body);
+}
+
+base::WeakPtr<content::BackgroundFetchDelegate::Client>
+BackgroundFetchDelegateImpl::GetClient(const std::string& job_unique_id) {
+  auto it = job_details_map_.find(job_unique_id);
+  if (it == job_details_map_.end())
+    return nullptr;
+  return it->second.client;
 }

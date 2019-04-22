@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -53,6 +54,7 @@ RelaunchNotificationSetting ReadPreference() {
 RelaunchNotificationController::RelaunchNotificationController(
     UpgradeDetector* upgrade_detector)
     : RelaunchNotificationController(upgrade_detector,
+                                     base::DefaultClock::GetInstance(),
                                      base::DefaultTickClock::GetInstance()) {}
 
 RelaunchNotificationController::~RelaunchNotificationController() {
@@ -65,12 +67,13 @@ constexpr base::TimeDelta RelaunchNotificationController::kRelaunchGracePeriod;
 
 RelaunchNotificationController::RelaunchNotificationController(
     UpgradeDetector* upgrade_detector,
+    const base::Clock* clock,
     const base::TickClock* tick_clock)
     : upgrade_detector_(upgrade_detector),
-      tick_clock_(tick_clock),
+      clock_(clock),
       last_notification_style_(NotificationStyle::kNone),
       last_level_(UpgradeDetector::UPGRADE_ANNOYANCE_NONE),
-      timer_(tick_clock_) {
+      timer_(clock_, tick_clock) {
   PrefService* local_state = g_browser_process->local_state();
   if (local_state) {
     pref_change_registrar_.Init(local_state);
@@ -88,7 +91,7 @@ void RelaunchNotificationController::OnUpgradeRecommended() {
   DCHECK_NE(last_notification_style_, NotificationStyle::kNone);
   UpgradeDetector::UpgradeNotificationAnnoyanceLevel current_level =
       upgrade_detector_->upgrade_notification_stage();
-  const base::TimeTicks current_high_deadline =
+  const base::Time current_high_deadline =
       upgrade_detector_->GetHighAnnoyanceDeadline();
 
   // Nothing to do if there has been no change in the level and deadline. If
@@ -180,10 +183,14 @@ void RelaunchNotificationController::StopObservingUpgrades() {
 
 void RelaunchNotificationController::ShowRelaunchNotification(
     UpgradeDetector::UpgradeNotificationAnnoyanceLevel level,
-    base::TimeTicks high_deadline) {
+    base::Time high_deadline) {
   DCHECK_NE(last_notification_style_, NotificationStyle::kNone);
 
   if (last_notification_style_ == NotificationStyle::kRecommended) {
+    // Show the dialog if there has been a level change.
+    if (level != last_level_)
+      NotifyRelaunchRecommended();
+
     // If this is the final showing (the one at the "high" level), start the
     // timer to reshow the bubble at each "elevated to high" interval.
     if (level == UpgradeDetector::UPGRADE_ANNOYANCE_HIGH) {
@@ -193,10 +200,6 @@ void RelaunchNotificationController::ShowRelaunchNotification(
       // lower level.
       timer_.Stop();
     }
-
-    // Show the dialog if there has been a level change.
-    if (level != last_level_)
-      NotifyRelaunchRecommended();
   } else {
     HandleRelaunchRequiredState(level, high_deadline);
   }
@@ -222,26 +225,26 @@ void RelaunchNotificationController::CloseRelaunchNotification() {
 
 void RelaunchNotificationController::HandleRelaunchRequiredState(
     UpgradeDetector::UpgradeNotificationAnnoyanceLevel level,
-    base::TimeTicks high_deadline) {
+    base::Time high_deadline) {
   DCHECK_EQ(last_notification_style_, NotificationStyle::kRequired);
 
   // Make no changes if the new deadline is not in the future and the browser is
   // within the grace period of the previous deadline. The user has already been
   // given the three-minute countdown so just let it go.
-  const base::TimeTicks now = tick_clock_->NowTicks();
+  const base::Time now = clock_->Now();
   if (timer_.IsRunning()) {
-    const base::TimeTicks& desired_run_time = timer_.desired_run_time();
+    const base::Time& desired_run_time = timer_.desired_run_time();
     DCHECK(!desired_run_time.is_null());
     if (high_deadline <= now && desired_run_time - now <= kRelaunchGracePeriod)
       return;
   }
 
   // Compute the new deadline (minimally three minutes into the future).
-  const base::TimeTicks deadline =
+  const base::Time deadline =
       std::max(high_deadline, now) + kRelaunchGracePeriod;
 
   // (re)Start the timer to perform the relaunch when the deadline is reached.
-  timer_.Start(FROM_HERE, deadline - now, this,
+  timer_.Start(FROM_HERE, deadline, this,
                &RelaunchNotificationController::OnRelaunchDeadlineExpired);
 
   if (platform_impl_.IsRequiredNotificationShown()) {
@@ -254,34 +257,15 @@ void RelaunchNotificationController::HandleRelaunchRequiredState(
       NotifyRelaunchRequired();
   }
 }
-
 void RelaunchNotificationController::StartReshowTimer() {
   DCHECK_EQ(last_notification_style_, NotificationStyle::kRecommended);
-  base::TimeDelta delay = upgrade_detector_->GetHighAnnoyanceLevelDelta();
-  if (timer_.IsRunning()) {
-    // Leave well enough alone if the timer is already running with the proper
-    // frequency. This should not happen given the early-exit in
-    // OnUpgradeRecommended when there is no change in the annoyance level or
-    // high annoyance deadline.
-    if (timer_.GetCurrentDelay() == delay)
-      return;
-
-    // Compute the new delay to have the previously-scheduled reshow appear at
-    // the right time.
-    DCHECK(!timer_.desired_run_time().is_null());
-    const base::TimeTicks start_time =
-        timer_.desired_run_time() - timer_.GetCurrentDelay();
-    const base::TimeTicks new_run_time = start_time + delay;
-    const base::TimeTicks now = tick_clock_->NowTicks();
-    if (new_run_time <= now) {
-      // The new delay puts the next reshow in the past. Handle it now.
-      timer_.Stop();
-      OnReshowRelaunchRecommended();
-      return;
-    }
-    delay = new_run_time - now;
-  }
-  timer_.Start(FROM_HERE, delay, this,
+  DCHECK(!last_relaunch_notification_time_.is_null());
+  const auto high_annoyance_delta =
+      upgrade_detector_->GetHighAnnoyanceLevelDelta();
+  // Compute the next time to show the notification.
+  const auto desired_run_time =
+      last_relaunch_notification_time_ + high_annoyance_delta;
+  timer_.Start(FROM_HERE, desired_run_time, this,
                &RelaunchNotificationController::OnReshowRelaunchRecommended);
 }
 
@@ -292,6 +276,11 @@ void RelaunchNotificationController::OnReshowRelaunchRecommended() {
 }
 
 void RelaunchNotificationController::NotifyRelaunchRecommended() {
+  last_relaunch_notification_time_ = clock_->Now();
+  DoNotifyRelaunchRecommended();
+}
+
+void RelaunchNotificationController::DoNotifyRelaunchRecommended() {
   platform_impl_.NotifyRelaunchRecommended(
       upgrade_detector_->upgrade_detected_time());
 }
@@ -299,8 +288,12 @@ void RelaunchNotificationController::NotifyRelaunchRecommended() {
 void RelaunchNotificationController::NotifyRelaunchRequired() {
   DCHECK(timer_.IsRunning());
   DCHECK(!timer_.desired_run_time().is_null());
+  DoNotifyRelaunchRequired(timer_.desired_run_time());
+}
 
-  platform_impl_.NotifyRelaunchRequired(timer_.desired_run_time());
+void RelaunchNotificationController::DoNotifyRelaunchRequired(
+    base::Time deadline) {
+  platform_impl_.NotifyRelaunchRequired(deadline);
 }
 
 void RelaunchNotificationController::Close() {

@@ -7,6 +7,7 @@
 
 #include <utility>
 
+#include "base/enterprise_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -37,7 +38,7 @@ std::unique_ptr<UpdaterState::Attributes> UpdaterState::GetState(
 
 #if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
 void UpdaterState::ReadState() {
-  is_enterprise_managed_ = IsEnterpriseManaged();
+  is_enterprise_managed_ = base::IsMachineExternallyManaged();
 
 #if defined(GOOGLE_CHROME_BUILD)
   updater_name_ = GetUpdaterName();
@@ -75,7 +76,7 @@ UpdaterState::Attributes UpdaterState::BuildAttributes() const {
       is_autoupdate_check_enabled_ ? "1" : "0";
 
   DCHECK((update_policy_ >= 0 && update_policy_ <= 3) || update_policy_ == -1);
-  attributes["updatepolicy"] = base::IntToString(update_policy_);
+  attributes["updatepolicy"] = base::NumberToString(update_policy_);
 
   return attributes;
 }

@@ -5,7 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_COMPOSITING_CHUNK_TO_LAYER_MAPPER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_COMPOSITING_CHUNK_TO_LAYER_MAPPER_H_
 
+#include "SkMatrix.h"
 #include "third_party/blink/renderer/platform/graphics/paint/float_clip_rect.h"
+#include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/property_tree_state.h"
 
 namespace blink {
@@ -19,23 +21,20 @@ class PLATFORM_EXPORT ChunkToLayerMapper {
   DISALLOW_NEW();
 
  public:
-  ChunkToLayerMapper(const PropertyTreeState& layer_state,
-                     const gfx::Vector2dF& layer_offset,
-                     const FloatSize& visual_rect_subpixel_offset = FloatSize())
-      : layer_state_(layer_state.Unalias()),
-        layer_offset_(layer_offset),
-        visual_rect_subpixel_offset_(visual_rect_subpixel_offset),
-        chunk_state_(nullptr, nullptr, nullptr) {}
+  ChunkToLayerMapper(
+      const PropertyTreeState& layer_state,
+      const gfx::Vector2dF& layer_offset,
+      const FloatSize& visual_rect_subpixel_offset = FloatSize());
 
   // This class can map from multiple chunks. Before mapping from a chunk, this
   // method must be called to prepare for the chunk.
   void SwitchToChunk(const PaintChunk&);
 
   // Maps a visual rectangle in the current chunk space into the layer space.
-  IntRect MapVisualRect(const FloatRect&) const;
+  IntRect MapVisualRect(const IntRect&) const;
 
   // Returns the combined transform from the current chunk to the layer.
-  const TransformationMatrix& Transform() const { return transform_; }
+  SkMatrix Transform() const { return translation_2d_or_matrix_.ToSkMatrix(); }
 
   // Returns the combined clip from the current chunk to the layer if it can
   // be calculated (there is no filter that moves pixels), or infinite loose
@@ -45,7 +44,7 @@ class PLATFORM_EXPORT ChunkToLayerMapper {
  private:
   friend class ChunkToLayerMapperTest;
 
-  IntRect MapUsingGeometryMapper(const FloatRect&) const;
+  IntRect MapUsingGeometryMapper(const IntRect&) const;
   void AdjustVisualRectBySubpixelOffset(FloatRect&) const;
 
   const PropertyTreeState layer_state_;
@@ -56,7 +55,7 @@ class PLATFORM_EXPORT ChunkToLayerMapper {
   // SwitchToChunk().
   PropertyTreeState chunk_state_;
   float outset_for_raster_effects_ = 0.f;
-  TransformationMatrix transform_;
+  GeometryMapper::Translation2DOrMatrix translation_2d_or_matrix_;
   FloatClipRect clip_rect_;
   // True if there is any pixel-moving filter between chunk state and layer
   // state, and we will call GeometryMapper for each mapping.

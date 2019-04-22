@@ -9,12 +9,12 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "chromeos/chromeos_export.h"
 
 namespace base {
 class TaskRunner;
@@ -35,7 +35,7 @@ namespace chromeos {
 //     as appropriate to the subclass.
 //   - When the there is no more data to read, the PipeReader calls
 //     |callback|.
-class CHROMEOS_EXPORT PipeReader {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) PipeReader {
  public:
   using CompletionCallback =
       base::OnceCallback<void(base::Optional<std::string> data)>;

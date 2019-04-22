@@ -31,8 +31,8 @@
 #include "net/cert/x509_util_mac.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_platform_key_mac.h"
+#include "ui/base/buildflags.h"
 #include "ui/base/l10n/l10n_util_mac.h"
-#include "ui/base/ui_features.h"
 #include "ui/views/widget/widget_observer.h"
 
 @interface SFChooseIdentityPanel (SystemPrivate)

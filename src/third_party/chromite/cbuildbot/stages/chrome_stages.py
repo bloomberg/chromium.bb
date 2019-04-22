@@ -40,8 +40,8 @@ class SyncChromeStage(generic_stages.BuilderStage,
   option_name = 'managed_chrome'
   category = constants.PRODUCT_CHROME_STAGE
 
-  def __init__(self, builder_run, **kwargs):
-    super(SyncChromeStage, self).__init__(builder_run, **kwargs)
+  def __init__(self, builder_run, buildstore, **kwargs):
+    super(SyncChromeStage, self).__init__(builder_run, buildstore, **kwargs)
     # PerformStage() will fill this out for us.
     # TODO(mtennant): Replace with a run param.
     self.chrome_version = None
@@ -110,8 +110,11 @@ class SyncChromeStage(generic_stages.BuilderStage,
       logging.PrintBuildbotStepText('tag %s' % kwargs['tag'])
 
     useflags = self._run.config.useflags
-    commands.SyncChrome(self._build_root, self._run.options.chrome_root,
-                        useflags, **kwargs)
+    commands.SyncChrome(self._build_root,
+                        self._run.options.chrome_root,
+                        useflags,
+                        git_cache_dir=self._run.options.git_cache_dir,
+                        **kwargs)
     if (self._chrome_rev and not chrome_atom_to_build and
         self._run.options.buildbot and
         self._run.config.build_type == constants.CHROME_PFQ_TYPE):
@@ -198,6 +201,7 @@ class SimpleChromeArtifactsStage(generic_stages.BoardSpecificBuilderStage,
 
       if self._run.config.chrome_sdk_build_chrome:
         test_stage = TestSimpleChromeWorkflowStage(self._run,
+                                                   self.buildstore,
                                                    self._current_board)
         test_stage.Run()
 
@@ -302,6 +306,14 @@ class TestSimpleChromeWorkflowStage(generic_stages.BoardSpecificBuilderStage,
                    '--staging-only', '--staging-dir', tempdir])
       self._VerifyChromeDeployed(tempdir)
 
+  def _VMTest(self, sdk_cmd):
+    """Run cros_run_vm_test."""
+    image_path = os.path.join(self.GetImageDirSymlink(),
+                              constants.VM_IMAGE_BIN)
+    # Run VM test for boards where we've built a VM.
+    if image_path and os.path.exists(image_path):
+      sdk_cmd.VMTest(image_path)
+
   def PerformStage(self):
     with osutils.TempDir(prefix='chrome-sdk-cache') as tempdir:
       cache_dir = os.path.join(tempdir, 'cache')
@@ -331,6 +343,7 @@ class TestSimpleChromeWorkflowStage(generic_stages.BoardSpecificBuilderStage,
           goma=bool(goma), extra_args=extra_args, cache_dir=cache_dir)
       self._BuildChrome(sdk_cmd, goma)
       self._TestDeploy(sdk_cmd)
+      self._VMTest(sdk_cmd)
 
 
 class ChromeLKGMSyncStage(sync_stages.SyncStage):
@@ -341,7 +354,6 @@ class ChromeLKGMSyncStage(sync_stages.SyncStage):
 
   def GetNextManifest(self):
     """Override: Gets the LKGM from the Chrome tree."""
-    _, db = self._run.GetCIDBHandle()
     chrome_lkgm = commands.GetChromeLKGM(self._run.options.chrome_version)
 
     # We need a full buildspecs manager here as we need an initialized manifest
@@ -357,7 +369,7 @@ class ChromeLKGMSyncStage(sync_stages.SyncStage):
         incr_type='build',
         force=False,
         branch=self._run.manifest_branch,
-        db=db)
+        buildstore=self.buildstore)
 
     manifest_manager.BootstrapFromVersion(chrome_lkgm)
     return manifest_manager.GetLocalManifest(chrome_lkgm)

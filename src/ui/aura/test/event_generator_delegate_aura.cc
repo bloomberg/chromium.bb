@@ -4,6 +4,7 @@
 
 #include "ui/aura/test/event_generator_delegate_aura.h"
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "services/service_manager/public/cpp/connector.h"

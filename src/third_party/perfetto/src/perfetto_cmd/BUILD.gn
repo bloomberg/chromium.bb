@@ -26,9 +26,11 @@ source_set("perfetto_cmd") {
     "../../protos/perfetto/config:lite",
     "../base",
     "../protozero",
-    "../tracing:ipc_consumer",
+    "../tracing:ipc",
   ]
   sources = [
+    "config.cc",
+    "config.h",
     "pbtxt_to_pb.cc",
     "pbtxt_to_pb.h",
     "perfetto_cmd.cc",
@@ -36,7 +38,17 @@ source_set("perfetto_cmd") {
     "perfetto_config.descriptor.h",
     "rate_limiter.cc",
     "rate_limiter.h",
+    "trigger_producer.cc",
+    "trigger_producer.h",
   ]
+  if (perfetto_build_with_android) {
+    deps += [ "../base:android_task_runner" ]
+    libs = [
+      "binder",
+      "services",
+      "utils",
+    ]
+  }
 }
 
 proto_library("protos") {
@@ -61,6 +73,7 @@ source_set("unittests") {
     "../../protos/perfetto/config:lite",
   ]
   sources = [
+    "config_unittest.cc",
     "pbtxt_to_pb_unittest.cc",
     "rate_limiter_unittest.cc",
   ]

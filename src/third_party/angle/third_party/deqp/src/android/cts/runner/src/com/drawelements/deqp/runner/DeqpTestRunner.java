@@ -27,6 +27,7 @@ import com.android.tradefed.config.OptionClass;
 import com.android.tradefed.device.DeviceNotAvailableException;
 import com.android.tradefed.device.ITestDevice;
 import com.android.tradefed.log.LogUtil.CLog;
+import com.android.tradefed.metrics.proto.MetricMeasurement.Metric;
 import com.android.tradefed.result.ByteArrayInputStreamSource;
 import com.android.tradefed.result.ITestInvocationListener;
 import com.android.tradefed.result.LogDataType;
@@ -312,7 +313,7 @@ public class DeqpTestRunner implements IBuildReceiver, IDeviceTest,
                         mSink.testLog(testId.getClassName() + "." + testId.getTestName() + "@"
                                 + entry.getKey().getId(), LogDataType.XML, source);
 
-                        source.cancel();
+                        source.close();
                     }
                 }
 
@@ -333,7 +334,7 @@ public class DeqpTestRunner implements IBuildReceiver, IDeviceTest,
                     mSink.testFailed(testId, errorLog.toString());
                 }
 
-                final Map<String, String> emptyMap = Collections.emptyMap();
+                final HashMap<String, Metric> emptyMap = new HashMap<>();
                 mSink.testEnded(testId, emptyMap);
             }
         }
@@ -1615,12 +1616,13 @@ public class DeqpTestRunner implements IBuildReceiver, IDeviceTest,
      * Pass all remaining tests without running them
      */
     private void fakePassTests(ITestInvocationListener listener) {
-        Map <String, String> emptyMap = Collections.emptyMap();
+        HashMap<String, Metric> emptyMap = new HashMap<>();
         for (TestDescription test : mRemainingTests) {
-            CLog.d("Skipping test '%s', Opengl ES version not supported", test.toString());
             listener.testStarted(test);
             listener.testEnded(test, emptyMap);
         }
+        // Log only once all the skipped tests
+        CLog.d("Opengl ES version not supported. Skipping tests '%s'", mRemainingTests);
         mRemainingTests.clear();
     }
 
@@ -1763,29 +1765,6 @@ public class DeqpTestRunner implements IBuildReceiver, IDeviceTest,
     private boolean isLandscapeClassRotation(String rotation) {
         return BatchRunConfiguration.ROTATION_LANDSCAPE.equals(rotation) ||
                 BatchRunConfiguration.ROTATION_REVERSE_LANDSCAPE.equals(rotation);
-    }
-
-    /**
-     * Install dEQP OnDevice Package
-     */
-    private void installTestApk() throws DeviceNotAvailableException {
-        try {
-            File apkFile = new File(mBuildHelper.getTestsDir(), DEQP_ONDEVICE_APK);
-            String[] options = {AbiUtils.createAbiFlag(mAbi.getName())};
-            String errorCode = getDevice().installPackage(apkFile, true, options);
-            if (errorCode != null) {
-                CLog.e("Failed to install %s. Reason: %s", DEQP_ONDEVICE_APK, errorCode);
-            }
-        } catch (FileNotFoundException e) {
-            CLog.e("Could not find test apk %s", DEQP_ONDEVICE_APK);
-        }
-    }
-
-    /**
-     * Uninstall dEQP OnDevice Package
-     */
-    private void uninstallTestApk() throws DeviceNotAvailableException {
-        getDevice().uninstallPackage(DEQP_ONDEVICE_PKG);
     }
 
     /**
@@ -2059,22 +2038,15 @@ public class DeqpTestRunner implements IBuildReceiver, IDeviceTest,
                 // the names of the tests only
                 fakePassTests(listener);
             } else if (!mRemainingTests.isEmpty()) {
-                // Make sure there is no pre-existing package form earlier interrupted test run.
-                uninstallTestApk();
-                installTestApk();
-
                 mInstanceListerner.setSink(listener);
                 mDeviceRecovery.setDevice(mDevice);
                 runTests();
-
-                uninstallTestApk();
             }
         } catch (CapabilityQueryFailureException ex) {
             // Platform is not behaving correctly, for example crashing when trying to create
             // a window. Instead of silenty failing, signal failure by leaving the rest of the
             // test cases in "NotExecuted" state
             CLog.e("Capability query failed - leaving tests unexecuted.");
-            uninstallTestApk();
         } finally {
             listener.testRunEnded(System.currentTimeMillis() - startTime, emptyMap);
         }

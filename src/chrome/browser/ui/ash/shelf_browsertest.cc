@@ -4,15 +4,17 @@
 
 #include "ash/public/cpp/shelf_prefs.h"
 #include "ash/public/interfaces/constants.mojom.h"
-#include "ash/public/interfaces/shelf_test_api.mojom.h"
+#include "ash/public/interfaces/shelf_test_api.test-mojom-test-utils.h"
+#include "ash/public/interfaces/shelf_test_api.test-mojom.h"
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/status_bubble.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/user_names.h"
 #include "content/public/common/service_manager_connection.h"
@@ -41,44 +43,6 @@ class ShelfBrowserTest : public InProcessBrowserTest {
  private:
   DISALLOW_COPY_AND_ASSIGN(ShelfBrowserTest);
 };
-
-// Confirm that a status bubble doesn't cause the shelf to darken.
-IN_PROC_BROWSER_TEST_F(ShelfBrowserTest, StatusBubble) {
-  ash::mojom::ShelfTestApiAsyncWaiter shelf(shelf_test_api_.get());
-  bool shelf_visible = false;
-  shelf.IsVisible(&shelf_visible);
-  EXPECT_TRUE(shelf_visible);
-
-  // Ensure that the browser abuts the shelf.
-  const int shelf_top =
-      display::Screen::GetScreen()->GetPrimaryDisplay().work_area().bottom();
-  gfx::Rect bounds = browser()->window()->GetBounds();
-  bounds.set_height(shelf_top - bounds.y());
-  browser()->window()->SetBounds(bounds);
-  aura::test::WaitForAllChangesToComplete();
-
-  // Browser does not overlap shelf.
-  bool has_overlapping_window = false;
-  shelf.HasOverlappingWindow(&has_overlapping_window);
-  EXPECT_FALSE(has_overlapping_window);
-
-  // Show status, which may overlap the shelf by a pixel.
-  browser()->window()->GetStatusBubble()->SetStatus(
-      base::UTF8ToUTF16("Dummy Status Text"));
-  aura::test::WaitForAllChangesToComplete();
-  shelf.UpdateVisibility();
-
-  // Ensure that status doesn't cause overlap.
-  shelf.HasOverlappingWindow(&has_overlapping_window);
-  EXPECT_FALSE(has_overlapping_window);
-
-  // Ensure that moving the browser slightly down does cause overlap.
-  bounds.Offset(0, 1);
-  browser()->window()->SetBounds(bounds);
-  aura::test::WaitForAllChangesToComplete();
-  shelf.HasOverlappingWindow(&has_overlapping_window);
-  EXPECT_TRUE(has_overlapping_window);
-}
 
 class ShelfGuestSessionBrowserTest : public ShelfBrowserTest {
  protected:

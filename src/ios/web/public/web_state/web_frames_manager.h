@@ -41,6 +41,8 @@ class WebFramesManager : public web::WebStateUserData<WebFramesManager> {
 
   ~WebFramesManager() override {}
 
+  WEB_STATE_USER_DATA_KEY_DECL();
+
  protected:
   WebFramesManager() {}
 

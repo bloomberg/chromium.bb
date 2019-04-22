@@ -169,6 +169,7 @@
       [LanguageSelectionContext contextWithLanguageData:self.infoBarDelegate
                                            initialIndex:selectedRow
                                        unavailableIndex:disabledRow];
+  DCHECK(self.languageSelectionHandler);
   [self.languageSelectionHandler showLanguageSelectorWithContext:context
                                                         delegate:self];
 }

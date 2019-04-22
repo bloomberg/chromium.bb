@@ -4,6 +4,7 @@
 
 #include "components/omnibox/browser/favicon_cache.h"
 
+#include "base/bind.h"
 #include "components/favicon/core/test/mock_favicon_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

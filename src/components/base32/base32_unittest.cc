@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "base/stl_util.h"
 #include "components/base32/base32.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -18,7 +19,7 @@ TEST(Base32Test, EncodesRfcTestVectorsCorrectlyWithoutPadding) {
       "", "MY", "MZXQ", "MZXW6", "MZXW6YQ", "MZXW6YTB", "MZXW6YTBOI"};
 
   // Run the tests, with one more letter in the input every pass.
-  for (size_t i = 0; i < arraysize(expected); ++i) {
+  for (size_t i = 0; i < base::size(expected); ++i) {
     std::string output = Base32Encode(base::StringPiece(test_str, i),
                                       Base32EncodePolicy::OMIT_PADDING);
     EXPECT_EQ(expected[i], output);
@@ -34,7 +35,7 @@ TEST(Base32Test, EncodesRfcTestVectorsCorrectlyWithPadding) {
       "MZXW6YQ=", "MZXW6YTB", "MZXW6YTBOI======"};
 
   // Run the tests, with one more letter in the input every pass.
-  for (size_t i = 0; i < arraysize(expected); ++i) {
+  for (size_t i = 0; i < base::size(expected); ++i) {
     std::string output = Base32Encode(base::StringPiece(test_str, i));
     EXPECT_EQ(expected[i], output);
   }

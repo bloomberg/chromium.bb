@@ -3,6 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 import getopt
 import sys
 import subprocess
@@ -72,25 +74,26 @@ def main(argv):
       cl_errors = cl_results[1]
 
       if cl_status != 0:
-        print >>sys.stderr, 'FAILED: %s\n%s\n' % (' '.join(cl_command),
-                                                  cl_errors)
+        print(
+            'FAILED: %s\n%s\n' % (' '.join(cl_command), cl_errors),
+            file=sys.stderr)
         return cl_status
 
       #
       # Uncomment this if you need to see exactly what the MSVC preprocessor
       # has done to your input file.
-      #print >>sys.stderr, '-------------------------------------'
-      #print >>sys.stderr, '# PREPROCESSOR OUTPUT BEGINS        #'
-      #print >>sys.stderr, '-------------------------------------'
-      #print >>sys.stderr, cl_output
-      #print >>sys.stderr, '-------------------------------------'
-      #print >>sys.stderr, '# PREPROCESSOR OUTPUT ENDS          #'
-      #print >>sys.stderr, '-------------------------------------'
+      #print('-------------------------------------', file=sys.stderr)
+      #print('# PREPROCESSOR OUTPUT BEGINS        #', file=sys.stderr)
+      #print('-------------------------------------', file=sys.stderr)
+      #print(cl_output, file=sys.stderr)
+      #print('-------------------------------------', file=sys.stderr)
+      #print('# PREPROCESSOR OUTPUT ENDS          #', file=sys.stderr)
+      #print('-------------------------------------', file=sys.stderr)
 
       # GNU uses '#<linenum> for line number directives; MSVC uses
       # '#line <linenum>.'
-      foo = re.compile(r'^#line ', re.MULTILINE)
-      cl_output = foo.sub(r'#', cl_output)
+      foo = re.compile(br'^#line ', re.MULTILINE)
+      cl_output = foo.sub(br'#', cl_output)
 
       #
       # Pipe the preprocessor output into the assembler
@@ -108,23 +111,25 @@ def main(argv):
       #
       # massage the assembler stderr into a format that Visual Studio likes
       #
-      as_error = re.sub(r'\{standard input\}', filename, as_error)
-      as_error = re.sub(r':([0-9]+):', r'(\1) :', as_error)
-      as_error = re.sub(r'Error', 'error', as_error)
-      as_error = re.sub(r'Warning', 'warning', as_error)
+      as_error = re.sub(br'\{standard input\}', filename, as_error)
+      as_error = re.sub(br':([0-9]+):', r'(\1) :', as_error)
+      as_error = re.sub(br'Error', 'error', as_error)
+      as_error = re.sub(br'Warning', 'warning', as_error)
 
       if as_error:
-        print >>sys.stderr, as_error
+        print(as_error, file=sys.stderr)
 
       if as_status != 0:
-        print >>sys.stderr, 'FAILED: %s\n' % ' '.join(as_command)
+        print('FAILED: %s\n' % ' '.join(as_command), file=sys.stderr)
         return as_status
 
-  except getopt.error, e:
-    print >>sys.stderr, str(e)
-    print >>sys.stderr, ['Usage: ',
-      argv[0],
-      '-a {Win32|x64} -o output_file [-p native_client_path] input_file']
+  except getopt.error as e:
+    print(str(e), file=sys.stderr)
+    print(
+        'Usage: ',
+        argv[0],
+        '-a {Win32|x64} -o output_file [-p native_client_path] input_file',
+        file=sys.stderr)
 
 
 if __name__ == '__main__':

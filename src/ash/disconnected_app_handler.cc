@@ -8,14 +8,14 @@
 #include "ui/aura/window.h"
 #include "ui/base/class_property.h"
 
-DEFINE_UI_CLASS_PROPERTY_TYPE(ash::DisconnectedAppHandler*);
+DEFINE_UI_CLASS_PROPERTY_TYPE(ash::DisconnectedAppHandler*)
 
 namespace ash {
 namespace {
 
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(DisconnectedAppHandler,
                                    kDisconnectedAppHandlerKey,
-                                   nullptr);
+                                   nullptr)
 
 }  // namespace
 

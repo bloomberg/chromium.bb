@@ -7,7 +7,6 @@ element.style { ()
 [expanded] 
 #element { (keyframes.css:1 -> keyframes.css:1:11)
     animation: animName 1s 2s, mediaAnim 2s, doesNotExist 3s, styleSheetAnim 0s;
-        animation-name: animName, mediaAnim, doesNotExist, styleSheetAnim;
         animation-duration: 1s, 2s, 3s, 0s;
         animation-timing-function: ease, ease, ease, ease;
         animation-delay: 2s, 0s, 0s, 0s;
@@ -15,19 +14,25 @@ element.style { ()
         animation-direction: normal, normal, normal, normal;
         animation-fill-mode: none, none, none, none;
         animation-play-state: running, running, running, running;
+        animation-name: animName, mediaAnim, doesNotExist, styleSheetAnim;
 
 [expanded] 
 div { (user agent stylesheet)
     display: block;
 
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+    color: -internal-root-color;
+
 ======== @keyframes animName ========
 [expanded] 
-0%, 20% { (<style>…</style>)
+0%, 20% { (<style>)
     margin-left: 200px;
     color: red;
 
 [expanded] 
-100% { (<style>…</style>)
+100% { (<style>)
     margin-left: 500px;
 
 ======== @keyframes mediaAnim ========
@@ -59,7 +64,6 @@ element.style { ()
 [expanded] 
 #element { (keyframes.css:1 -> keyframes.css:1:11)
     animation: animName 1s 2s, mediaAnim 2s, doesNotExist 3s, styleSheetAnim 0s;
-        animation-name: animName, mediaAnim, doesNotExist, styleSheetAnim;
         animation-duration: 1s, 2s, 3s, 0s;
         animation-timing-function: ease, ease, ease, ease;
         animation-delay: 2s, 0s, 0s, 0s;
@@ -67,19 +71,25 @@ element.style { ()
         animation-direction: normal, normal, normal, normal;
         animation-fill-mode: none, none, none, none;
         animation-play-state: running, running, running, running;
+        animation-name: animName, mediaAnim, doesNotExist, styleSheetAnim;
 
 [expanded] 
 div { (user agent stylesheet)
     display: block;
 
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+    color: -internal-root-color;
+
 ======== @keyframes animName ========
 [expanded] 
-0%, 20% { (<style>…</style>)
+0%, 20% { (<style>)
     margin-left: 200px;
     color: red;
 
 [expanded] 
-1% { (<style>…</style>)
+1% { (<style>)
     margin-left: 500px;
 
 ======== @keyframes mediaAnim ========
@@ -111,7 +121,6 @@ element.style { ()
 [expanded] 
 #element { (keyframes.css:1 -> keyframes.css:1:11)
     animation: animName 1s 2s, mediaAnim 2s, doesNotExist 3s, styleSheetAnim 0s;
-        animation-name: animName, mediaAnim, doesNotExist, styleSheetAnim;
         animation-duration: 1s, 2s, 3s, 0s;
         animation-timing-function: ease, ease, ease, ease;
         animation-delay: 2s, 0s, 0s, 0s;
@@ -119,19 +128,25 @@ element.style { ()
         animation-direction: normal, normal, normal, normal;
         animation-fill-mode: none, none, none, none;
         animation-play-state: running, running, running, running;
+        animation-name: animName, mediaAnim, doesNotExist, styleSheetAnim;
 
 [expanded] 
 div { (user agent stylesheet)
     display: block;
 
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+    color: -internal-root-color;
+
 ======== @keyframes animName ========
 [expanded] 
-0%, 20% { (<style>…</style>)
+0%, 20% { (<style>)
     margin-left: 200px;
     color: red;
 
 [expanded] 
-100% { (<style>…</style>)
+100% { (<style>)
     margin-left: 500px;
 
 ======== @keyframes mediaAnim ========
@@ -163,7 +178,6 @@ element.style { ()
 [expanded] 
 #element { (keyframes.css:1 -> keyframes.css:1:11)
     animation: animName 1s 2s, mediaAnim 2s, doesNotExist 3s, styleSheetAnim 0s;
-        animation-name: animName, mediaAnim, doesNotExist, styleSheetAnim;
         animation-duration: 1s, 2s, 3s, 0s;
         animation-timing-function: ease, ease, ease, ease;
         animation-delay: 2s, 0s, 0s, 0s;
@@ -171,19 +185,25 @@ element.style { ()
         animation-direction: normal, normal, normal, normal;
         animation-fill-mode: none, none, none, none;
         animation-play-state: running, running, running, running;
+        animation-name: animName, mediaAnim, doesNotExist, styleSheetAnim;
 
 [expanded] 
 div { (user agent stylesheet)
     display: block;
 
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+    color: -internal-root-color;
+
 ======== @keyframes animName ========
 [expanded] 
-0%, 20% { (<style>…</style>)
+0%, 20% { (<style>)
     margin-left: 200px;
     color: red;
 
 [expanded] 
-1% { (<style>…</style>)
+1% { (<style>)
     margin-left: 500px;
 
 ======== @keyframes mediaAnim ========
@@ -215,7 +235,6 @@ element.style { ()
 [expanded] 
 #element { (keyframes.css:1 -> keyframes.css:1:11)
     animation: animName 1s 2s, mediaAnim 2s, doesNotExist 3s, styleSheetAnim 0s;
-        animation-name: animName, mediaAnim, doesNotExist, styleSheetAnim;
         animation-duration: 1s, 2s, 3s, 0s;
         animation-timing-function: ease, ease, ease, ease;
         animation-delay: 2s, 0s, 0s, 0s;
@@ -223,19 +242,25 @@ element.style { ()
         animation-direction: normal, normal, normal, normal;
         animation-fill-mode: none, none, none, none;
         animation-play-state: running, running, running, running;
+        animation-name: animName, mediaAnim, doesNotExist, styleSheetAnim;
 
 [expanded] 
 div { (user agent stylesheet)
     display: block;
 
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+    color: -internal-root-color;
+
 ======== @keyframes animName ========
 [expanded] 
-0%, 20% { (<style>…</style>)
+0%, 20% { (<style>)
     margin-left: 200px;
     color: red;
 
 [expanded] 
-1% { (<style>…</style>)
+1% { (<style>)
     margin-left: 500px;
 
 ======== @keyframes mediaAnim ========

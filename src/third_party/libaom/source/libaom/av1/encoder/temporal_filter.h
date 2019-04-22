@@ -18,6 +18,18 @@ extern "C" {
 
 #define ARNR_FILT_QINDEX 128
 
+// Block size used in temporal filtering
+#define TF_BLOCK BLOCK_32X32
+#define BH 32
+#define BH_LOG2 5
+#define BW 32
+#define BW_LOG2 5
+#define BLK_PELS 1024  // Pixels in the block
+#define THR_SHIFT 2
+#define TF_SUB_BLOCK BLOCK_16X16
+#define SUB_BH 16
+#define SUB_BW 16
+
 void av1_temporal_filter(AV1_COMP *cpi, int distance);
 
 #ifdef __cplusplus

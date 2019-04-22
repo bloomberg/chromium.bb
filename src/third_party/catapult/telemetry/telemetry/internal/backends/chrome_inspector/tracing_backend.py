@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import base64
 import json
 import logging
 import socket
@@ -39,10 +40,18 @@ class ClockSyncResponseException(Exception):
 
 
 class _DevToolsStreamReader(object):
-  def __init__(self, inspector_socket, stream_handle):
+  def __init__(self, inspector_socket, stream_handle, trace_handle):
+    """Constructor for the stream reader that reads trace data over a stream.
+
+    Args:
+      inspector_socket: An inspector_websocket.InspectorWebsocket instance.
+      stream_handle: A handle, as returned by Chrome, from where to read the
+        trace data.
+      trace_handle: A Python file-like object where to write the trace data.
+    """
     self._inspector_websocket = inspector_socket
-    self._handle = stream_handle
-    self._trace_file_handle = None
+    self._stream_handle = stream_handle
+    self._trace_handle = trace_handle
     self._callback = None
 
   def Read(self, callback):
@@ -50,8 +59,6 @@ class _DevToolsStreamReader(object):
     # we only read data sequentially at the moment, so a stream
     # can only be read once.
     assert not self._callback
-    self._trace_file_handle = trace_data_module.TraceFileHandle()
-    self._trace_file_handle.Open()
     self._callback = callback
     self._ReadChunkFromStream()
     # The below is not a typo -- queue one extra read ahead to avoid latency.
@@ -61,28 +68,31 @@ class _DevToolsStreamReader(object):
     # Limit max block size to avoid fragmenting memory in sock.recv(),
     # (see https://github.com/liris/websocket-client/issues/163 for details)
     req = {'method': 'IO.read', 'params': {
-        'handle': self._handle, 'size': 32768}}
+        'handle': self._stream_handle, 'size': 32768}}
     self._inspector_websocket.AsyncRequest(req, self._GotChunkFromStream)
 
   def _GotChunkFromStream(self, response):
     # Quietly discard responses from reads queued ahead after EOF.
-    if self._trace_file_handle is None:
+    if self._trace_handle is None:
       return
     if 'error' in response:
       raise TracingUnrecoverableException(
           'Reading trace failed: %s' % response['error']['message'])
     result = response['result']
-    # Convert the trace data that's receive as UTF32 to its native encoding of
-    # UTF8 in order to reduce its size.
-    self._trace_file_handle.AppendTraceData(result['data'].encode('utf8'))
+    # Convert the obtained unicode trace data to raw bytes..
+    data_chunk = result['data'].encode('utf8')
+    if result.get('base64Encoded', False):
+      data_chunk = base64.b64decode(data_chunk)
+    self._trace_handle.write(data_chunk)
+
     if not result.get('eof', False):
       self._ReadChunkFromStream()
       return
-    req = {'method': 'IO.close', 'params': {'handle': self._handle}}
+    req = {'method': 'IO.close', 'params': {'handle': self._stream_handle}}
     self._inspector_websocket.SendAndIgnoreResponse(req)
-    self._trace_file_handle.Close()
-    self._callback(self._trace_file_handle)
-    self._trace_file_handle = None
+    self._trace_handle.close()
+    self._trace_handle = None
+    self._callback()
 
 
 class TracingBackend(object):
@@ -121,7 +131,11 @@ class TracingBackend(object):
       raise TracingUnsupportedException(
           'Chrome tracing not supported for this app.')
 
-    params = {'transferMode': 'ReturnAsStream'}
+    # Using 'gzip' compression reduces the amount of data transferred over
+    # websocket. This reduces the time waiting for all data to be received,
+    # especially when the test is running on an android device. Using
+    # compression can save upto 10 seconds (or more) for each story.
+    params = {'transferMode': 'ReturnAsStream', 'streamCompression': 'gzip'}
     if self._support_modern_devtools_tracing_start_api:
       params['traceConfig'] = (
           chrome_trace_config.GetChromeTraceConfigForDevTools())
@@ -171,7 +185,8 @@ class TracingBackend(object):
         # Tracing is running but start was not issued so, startup tracing must
         # be in effect. Issue another Tracing.start to update the transfer mode.
         # TODO(caseq): get rid of it when streaming is the default.
-        params = {'transferMode': 'ReturnAsStream', 'traceConfig': {}}
+        params = {'transferMode': 'ReturnAsStream', 'streamCompression': 'gzip',
+                  'traceConfig': {}}
         req = {'method': 'Tracing.start', 'params': params}
         self._inspector_websocket.SendAndIgnoreResponse(req)
 
@@ -290,12 +305,14 @@ class TracingBackend(object):
       if not stream_handle:
         self._has_received_all_tracing_data = True
         return
-      reader = _DevToolsStreamReader(self._inspector_websocket, stream_handle)
+      compressed = res.get('params', {}).get('streamCompression') == 'gzip'
+      trace_handle = self._trace_data_builder.OpenTraceHandleFor(
+          trace_data_module.CHROME_TRACE_PART, compressed=compressed)
+      reader = _DevToolsStreamReader(
+          self._inspector_websocket, stream_handle, trace_handle)
       reader.Read(self._ReceivedAllTraceDataFromStream)
 
-  def _ReceivedAllTraceDataFromStream(self, trace_handle):
-    self._trace_data_builder.AddTraceFor(
-        trace_data_module.CHROME_TRACE_PART, trace_handle)
+  def _ReceivedAllTraceDataFromStream(self):
     self._has_received_all_tracing_data = True
 
   def Close(self):

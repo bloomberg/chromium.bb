@@ -1,2 +1,6 @@
-per-file *.mojom=set noparent
-per-file *.mojom=file://ipc/SECURITY_OWNERS
+file://third_party/blink/common/mediastream/OWNERS
+
+per-file media_stream_audio_processor*=aluebs@chromium.org
+
+# TEAM: media-capture-and-streams@grotations.appspotmail.com
+# COMPONENT: Blink>GetUserMedia

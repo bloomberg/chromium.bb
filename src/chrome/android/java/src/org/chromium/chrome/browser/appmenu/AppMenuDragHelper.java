@@ -24,7 +24,6 @@ import org.chromium.chrome.R;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Handles the drag touch events on AppMenu that start from the menu button.
@@ -167,8 +166,7 @@ class AppMenuDragHelper {
             mAppMenu.dismiss();
             return true;
         } else if (eventActionMasked == MotionEvent.ACTION_UP) {
-            RecordHistogram.recordTimesHistogram(
-                    "WrenchMenu.TouchDuration", timeSinceDown, TimeUnit.MILLISECONDS);
+            RecordHistogram.recordTimesHistogram("WrenchMenu.TouchDuration", timeSinceDown);
         }
 
         mIsSingleTapCanceled |= timeSinceDown > mTapTimeout;

@@ -27,7 +27,6 @@
 #include "build/build_config.h"
 #include "components/metrics/clean_exit_beacon.h"
 #include "components/metrics/delegating_provider.h"
-#include "components/metrics/execution_phase.h"
 #include "components/metrics/metrics_log.h"
 #include "components/metrics/metrics_log_manager.h"
 #include "components/metrics/metrics_log_store.h"
@@ -37,6 +36,8 @@
 
 class PrefService;
 class PrefRegistrySimple;
+FORWARD_DECLARE_TEST(ChromeMetricsServiceClientTest,
+                     TestRegisterMetricsServiceProviders);
 
 namespace base {
 class HistogramSamples;
@@ -134,9 +135,6 @@ class MetricsService : public base::HistogramFlattener {
   // Set the dirty flag, which will require a later call to LogCleanShutdown().
   void LogNeedForCleanShutdown();
 #endif  // defined(OS_ANDROID) || defined(OS_IOS)
-
-  static void SetExecutionPhase(ExecutionPhase execution_phase,
-                                PrefService* local_state);
 
   // Saves in the preferences if the crash report registration was successful.
   // This count is eventually send via UMA logs.
@@ -388,9 +386,8 @@ class MetricsService : public base::HistogramFlattener {
   static ShutdownCleanliness clean_shutdown_status_;
 
   FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, IsPluginProcess);
-  FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest,
-                           PermutedEntropyCacheClearedWhenLowEntropyReset);
-
+  FRIEND_TEST_ALL_PREFIXES(::ChromeMetricsServiceClientTest,
+                           TestRegisterMetricsServiceProviders);
   SEQUENCE_CHECKER(sequence_checker_);
 
   // Weak pointers factory used to post task on different threads. All weak

@@ -36,6 +36,7 @@ namespace net {
 // connect_end
 // send_start
 // send_end
+// receive_headers_start
 // receive_headers_end
 //
 // Times represent when a request starts/stops blocking on an event(*), not the
@@ -54,12 +55,7 @@ namespace net {
 //
 // DNS and SSL times are both times for the host, not the proxy, so DNS times
 // when using proxies are null, and only requests to HTTPS hosts (Not proxies)
-// have SSL times.  One exception to this is when a proxy server itself returns
-// a redirect response.  In this case, the connect times treat the proxy as the
-// host.  The send and receive times will all be null, however.
-// See HttpNetworkTransaction::OnHttpsProxyTunnelResponse.
-// TODO(mmenke):  Is this worth fixing?
-//
+// have SSL times.
 struct NET_EXPORT LoadTimingInfo {
   // Contains the LoadTimingInfo events related to establishing a connection.
   // These are all set by ConnectJobs.
@@ -150,9 +146,10 @@ struct NET_EXPORT LoadTimingInfo {
   base::TimeTicks send_start;
   base::TimeTicks send_end;
 
-  // The time at which the end of the HTTP headers were received.
-  // Corresponds to |responseStart| in ResourceTiming
+  // The time at which the first / last byte of the HTTP headers were received.
+  // |receive_headers_start| corresponds to |responseStart| in ResourceTiming
   // (http://www.w3.org/TR/resource-timing/) for Web-surfacing requests.
+  base::TimeTicks receive_headers_start;
   base::TimeTicks receive_headers_end;
 
   // In case the resource was proactively pushed by the server, these are

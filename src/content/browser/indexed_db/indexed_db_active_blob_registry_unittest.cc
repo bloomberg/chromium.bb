@@ -7,6 +7,7 @@
 #include <set>
 
 #include "base/macros.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "content/browser/indexed_db/indexed_db_active_blob_registry.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
@@ -115,6 +116,7 @@ class IndexedDBActiveBlobRegistryTest : public testing::Test {
   IndexedDBActiveBlobRegistry* registry() const { return registry_.get(); }
 
  private:
+  base::test::ScopedTaskEnvironment task_environment_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   scoped_refptr<RegistryTestMockFactory> factory_;
   scoped_refptr<MockIDBBackingStore> backing_store_;

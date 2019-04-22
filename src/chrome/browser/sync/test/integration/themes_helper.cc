@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync/test/integration/themes_helper.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -22,7 +23,7 @@ namespace {
 
 // Make a name to pass to an extension helper.
 std::string MakeName(int index) {
-  return "faketheme" + base::IntToString(index);
+  return "faketheme" + base::NumberToString(index);
 }
 
 ThemeService* GetThemeService(Profile* profile) {

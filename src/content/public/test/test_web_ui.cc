@@ -70,6 +70,8 @@ void TestWebUI::SetBindings(int bindings) {
 
 void TestWebUI::AddMessageHandler(
     std::unique_ptr<WebUIMessageHandler> handler) {
+  handler->set_web_ui(this);
+  handler->RegisterMessages();
   handlers_.push_back(std::move(handler));
 }
 

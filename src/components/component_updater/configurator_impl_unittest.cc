@@ -105,7 +105,7 @@ TEST_F(ComponentUpdaterConfiguratorImplTest, InitialDelay) {
     bool PingsEnabled() const override { return false; }
     bool TestRequest() const override { return false; }
     GURL UrlSourceOverride() const override { return GURL(); }
-    int InitialDelay() const override { return initial_delay_; };
+    int InitialDelay() const override { return initial_delay_; }
 
     void set_fast_update(bool fast_update) { fast_update_ = fast_update; }
     void set_initial_delay(int initial_delay) {
@@ -152,7 +152,7 @@ TEST_F(ComponentUpdaterConfiguratorImplTest, TestRequest) {
     bool PingsEnabled() const override { return false; }
     bool TestRequest() const override { return test_request_; }
     GURL UrlSourceOverride() const override { return GURL(); }
-    int InitialDelay() const override { return 0; };
+    int InitialDelay() const override { return 0; }
 
     void set_test_request(bool test_request) { test_request_ = test_request; }
 

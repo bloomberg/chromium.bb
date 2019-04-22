@@ -20,6 +20,10 @@ interface MediaController {
   // Sets the client interface.
   SetClient(associated MediaClient client);
 
+  // Forces media shortcut key handling in MediaClient instead of in ash. This
+  // defaults to false and will be reset if the client encounters an error.
+  SetForceMediaClientKeyHandling(bool enabled);
+
   // Called when the media capture state changes on the client, or in response
   // to a RequestCaptureState() request. Returns a map from AccountId to
   // MediaCaptureState representing every user's state.

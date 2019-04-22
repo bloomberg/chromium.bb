@@ -27,13 +27,13 @@ cbor::Value CBORByteString(base::StringPiece str) {
 
 }  // namespace
 
-TEST(SignedExchangeCertificateParseB2Test, Empty) {
+TEST(SignedExchangeCertificateParseTest, Empty) {
   auto parsed = SignedExchangeCertificateChain::Parse(
-      SignedExchangeVersion::kB2, base::span<const uint8_t>(), nullptr);
+      base::span<const uint8_t>(), nullptr);
   EXPECT_FALSE(parsed);
 }
 
-TEST(SignedExchangeCertificateParseB2Test, EmptyChain) {
+TEST(SignedExchangeCertificateParseTest, EmptyChain) {
   cbor::Value::ArrayValue cbor_array;
   cbor_array.push_back(cbor::Value(u8"\U0001F4DC\u26D3"));
 
@@ -41,11 +41,11 @@ TEST(SignedExchangeCertificateParseB2Test, EmptyChain) {
   ASSERT_TRUE(serialized.has_value());
 
   auto parsed = SignedExchangeCertificateChain::Parse(
-      SignedExchangeVersion::kB2, base::make_span(*serialized), nullptr);
+      base::make_span(*serialized), nullptr);
   EXPECT_FALSE(parsed);
 }
 
-TEST(SignedExchangeCertificateParseB2Test, MissingCert) {
+TEST(SignedExchangeCertificateParseTest, MissingCert) {
   cbor::Value::MapValue cbor_map;
   cbor_map[cbor::Value("sct")] = CBORByteString("SCT");
   cbor_map[cbor::Value("ocsp")] = CBORByteString("OCSP");
@@ -58,11 +58,11 @@ TEST(SignedExchangeCertificateParseB2Test, MissingCert) {
   ASSERT_TRUE(serialized.has_value());
 
   auto parsed = SignedExchangeCertificateChain::Parse(
-      SignedExchangeVersion::kB2, base::make_span(*serialized), nullptr);
+      base::make_span(*serialized), nullptr);
   EXPECT_FALSE(parsed);
 }
 
-TEST(SignedExchangeCertificateParseB2Test, OneCert) {
+TEST(SignedExchangeCertificateParseTest, OneCert) {
   net::CertificateList certs;
   ASSERT_TRUE(
       net::LoadCertificateFiles({"subjectAltName_sanity_check.pem"}, &certs));
@@ -83,7 +83,7 @@ TEST(SignedExchangeCertificateParseB2Test, OneCert) {
   ASSERT_TRUE(serialized.has_value());
 
   auto parsed = SignedExchangeCertificateChain::Parse(
-      SignedExchangeVersion::kB2, base::make_span(*serialized), nullptr);
+      base::make_span(*serialized), nullptr);
   ASSERT_TRUE(parsed);
   EXPECT_EQ(cert_der, net::x509_util::CryptoBufferAsStringPiece(
                           parsed->cert()->cert_buffer()));
@@ -92,7 +92,7 @@ TEST(SignedExchangeCertificateParseB2Test, OneCert) {
   EXPECT_EQ(parsed->sct(), base::make_optional<std::string>("SCT"));
 }
 
-TEST(SignedExchangeCertificateParseB2Test, MissingOCSPInFirstCert) {
+TEST(SignedExchangeCertificateParseTest, MissingOCSPInFirstCert) {
   net::CertificateList certs;
   ASSERT_TRUE(
       net::LoadCertificateFiles({"subjectAltName_sanity_check.pem"}, &certs));
@@ -112,11 +112,11 @@ TEST(SignedExchangeCertificateParseB2Test, MissingOCSPInFirstCert) {
   ASSERT_TRUE(serialized.has_value());
 
   auto parsed = SignedExchangeCertificateChain::Parse(
-      SignedExchangeVersion::kB2, base::make_span(*serialized), nullptr);
+      base::make_span(*serialized), nullptr);
   EXPECT_FALSE(parsed);
 }
 
-TEST(SignedExchangeCertificateParseB2Test, TwoCerts) {
+TEST(SignedExchangeCertificateParseTest, TwoCerts) {
   net::CertificateList certs;
   ASSERT_TRUE(net::LoadCertificateFiles(
       {"subjectAltName_sanity_check.pem", "root_ca_cert.pem"}, &certs));
@@ -143,7 +143,7 @@ TEST(SignedExchangeCertificateParseB2Test, TwoCerts) {
   ASSERT_TRUE(serialized.has_value());
 
   auto parsed = SignedExchangeCertificateChain::Parse(
-      SignedExchangeVersion::kB2, base::make_span(*serialized), nullptr);
+      base::make_span(*serialized), nullptr);
   ASSERT_TRUE(parsed);
   EXPECT_EQ(cert1_der, net::x509_util::CryptoBufferAsStringPiece(
                            parsed->cert()->cert_buffer()));
@@ -154,7 +154,7 @@ TEST(SignedExchangeCertificateParseB2Test, TwoCerts) {
   EXPECT_EQ(parsed->sct(), base::make_optional<std::string>("SCT"));
 }
 
-TEST(SignedExchangeCertificateParseB2Test, HavingOCSPInSecondCert) {
+TEST(SignedExchangeCertificateParseTest, HavingOCSPInSecondCert) {
   net::CertificateList certs;
   ASSERT_TRUE(net::LoadCertificateFiles(
       {"subjectAltName_sanity_check.pem", "root_ca_cert.pem"}, &certs));
@@ -182,11 +182,11 @@ TEST(SignedExchangeCertificateParseB2Test, HavingOCSPInSecondCert) {
   ASSERT_TRUE(serialized.has_value());
 
   auto parsed = SignedExchangeCertificateChain::Parse(
-      SignedExchangeVersion::kB2, base::make_span(*serialized), nullptr);
+      base::make_span(*serialized), nullptr);
   EXPECT_FALSE(parsed);
 }
 
-TEST(SignedExchangeCertificateParseB2Test, ParseGoldenFile) {
+TEST(SignedExchangeCertificateParseTest, ParseGoldenFile) {
   base::FilePath path;
   base::PathService::Get(content::DIR_TEST_DATA, &path);
   path =
@@ -195,8 +195,7 @@ TEST(SignedExchangeCertificateParseB2Test, ParseGoldenFile) {
   ASSERT_TRUE(base::ReadFileToString(path, &contents));
 
   auto parsed = SignedExchangeCertificateChain::Parse(
-      SignedExchangeVersion::kB2, base::as_bytes(base::make_span(contents)),
-      nullptr);
+      base::as_bytes(base::make_span(contents)), nullptr);
   ASSERT_TRUE(parsed);
 }
 

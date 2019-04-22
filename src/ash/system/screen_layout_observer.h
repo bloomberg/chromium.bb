@@ -42,6 +42,8 @@ class ASH_EXPORT ScreenLayoutObserver : public WindowTreeHostManager::Observer {
   }
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(ScreenLayoutObserverTestMultiMirroring,
+                           DisplayNotifications);
   friend class ScreenLayoutObserverTest;
 
   using DisplayInfoMap = std::map<int64_t, display::ManagedDisplayInfo>;
@@ -56,9 +58,11 @@ class ASH_EXPORT ScreenLayoutObserver : public WindowTreeHostManager::Observer {
   // |out_message| to empty, which means the notification should be removed. It
   // also sets |out_additional_message| which appears in the notification with
   // the |out_message|.
-  bool GetDisplayMessageForNotification(const DisplayInfoMap& old_info,
-                                        base::string16* out_message,
-                                        base::string16* out_additional_message);
+  bool GetDisplayMessageForNotification(
+      const DisplayInfoMap& old_info,
+      bool should_notify_has_unassociated_display,
+      base::string16* out_message,
+      base::string16* out_additional_message);
 
   // Creates or updates the display notification.
   void CreateOrUpdateNotification(const base::string16& message,
@@ -82,6 +86,8 @@ class ASH_EXPORT ScreenLayoutObserver : public WindowTreeHostManager::Observer {
 
   DisplayMode old_display_mode_ = DisplayMode::SINGLE;
   DisplayMode current_display_mode_ = DisplayMode::SINGLE;
+
+  bool has_unassociated_display_ = false;
 
   // When the UI scale of a display is modified from the Settings UI, we should
   // ignore this change and avoid showing a notification for it.

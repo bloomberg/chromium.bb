@@ -9,7 +9,7 @@
 
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/blink/public/platform/modules/frame_sinks/embedded_frame_sink.mojom-blink.h"
+#include "third_party/blink/public/mojom/frame_sinks/embedded_frame_sink.mojom-blink.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
@@ -29,8 +29,7 @@ class MockEmbeddedFrameSinkProvider
   void CreateCompositorFrameSink(
       const viz::FrameSinkId& frame_sink_id,
       viz::mojom::blink::CompositorFrameSinkClientPtr client,
-      viz::mojom::blink::CompositorFrameSinkRequest sink,
-      mojom::blink::SurfaceEmbedderRequest surface_embedder_request) override {
+      viz::mojom::blink::CompositorFrameSinkRequest sink) override {
     mock_compositor_frame_sink_ = std::make_unique<MockCompositorFrameSink>(
         std::move(sink),
         num_expected_set_needs_begin_frame_on_sink_construction_);
@@ -43,6 +42,9 @@ class MockEmbeddedFrameSinkProvider
                     mojom::blink::EmbeddedFrameSinkClientPtr,
                     viz::mojom::blink::CompositorFrameSinkClientPtr,
                     viz::mojom::blink::CompositorFrameSinkRequest));
+  MOCK_METHOD2(ConnectToEmbedder,
+               void(const viz::FrameSinkId&,
+                    mojom::blink::SurfaceEmbedderRequest));
 
   // Utility method to create a scoped EmbeddedFrameSinkProvider override.
   std::unique_ptr<TestingPlatformSupport::ScopedOverrideMojoInterface>

@@ -35,22 +35,6 @@ using content::WebContents;
 
 namespace android_webview {
 
-// Ownership: The native object is created (if autofill enabled) and owned by
-// AwContents. The native object creates the java peer which handles most
-// autofill functionality at the java side. The java peer is owned by Java
-// AwContents. The native object only maintains a weak ref to it.
-AwAutofillClient::AwAutofillClient(WebContents* contents)
-    : web_contents_(contents) {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> delegate;
-  delegate.Reset(
-      Java_AwAutofillClient_create(env, reinterpret_cast<intptr_t>(this)));
-
-  AwContents* aw_contents = AwContents::FromWebContents(web_contents_);
-  aw_contents->SetAwAutofillClient(delegate);
-  java_ref_ = JavaObjectWeakGlobalRef(env, delegate);
-}
-
 AwAutofillClient::~AwAutofillClient() {
   HideAutofillPopup();
 }
@@ -61,6 +45,16 @@ void AwAutofillClient::SetSaveFormData(bool enabled) {
 
 bool AwAutofillClient::GetSaveFormData() {
   return save_form_data_;
+}
+
+autofill::PersonalDataManager* AwAutofillClient::GetPersonalDataManager() {
+  return nullptr;
+}
+
+autofill::AutocompleteHistoryManager*
+AwAutofillClient::GetAutocompleteHistoryManager() {
+  return AwContentBrowserClient::GetAwBrowserContext()
+      ->GetAutocompleteHistoryManager();
 }
 
 PrefService* AwAutofillClient::GetPrefs() {
@@ -76,15 +70,19 @@ identity::IdentityManager* AwAutofillClient::GetIdentityManager() {
   return nullptr;
 }
 
-autofill::payments::PaymentsClient* AwAutofillClient::GetPaymentsClient() {
-  return nullptr;
-}
-
 autofill::FormDataImporter* AwAutofillClient::GetFormDataImporter() {
   return nullptr;
 }
 
+autofill::payments::PaymentsClient* AwAutofillClient::GetPaymentsClient() {
+  return nullptr;
+}
+
 autofill::LegacyStrikeDatabase* AwAutofillClient::GetLegacyStrikeDatabase() {
+  return nullptr;
+}
+
+autofill::StrikeDatabase* AwAutofillClient::GetStrikeDatabase() {
   return nullptr;
 }
 
@@ -108,17 +106,89 @@ AwAutofillClient::GetSecurityLevelForUmaHistograms() {
   return security_state::SecurityLevel::SECURITY_LEVEL_COUNT;
 }
 
-autofill::PersonalDataManager* AwAutofillClient::GetPersonalDataManager() {
-  return nullptr;
+void AwAutofillClient::ShowAutofillSettings(bool show_credit_card_settings) {
+  NOTIMPLEMENTED();
 }
 
-scoped_refptr<autofill::AutofillWebDataService>
-AwAutofillClient::GetDatabase() {
-  android_webview::AwFormDatabaseService* service =
-      static_cast<android_webview::AwBrowserContext*>(
-          web_contents_->GetBrowserContext())
-          ->GetFormDatabaseService();
-  return service->get_autofill_webdata_service();
+void AwAutofillClient::ShowUnmaskPrompt(
+    const autofill::CreditCard& card,
+    UnmaskCardReason reason,
+    base::WeakPtr<autofill::CardUnmaskDelegate> delegate) {
+  NOTIMPLEMENTED();
+}
+
+void AwAutofillClient::OnUnmaskVerificationResult(PaymentsRpcResult result) {
+  NOTIMPLEMENTED();
+}
+
+void AwAutofillClient::ShowLocalCardMigrationDialog(
+    base::OnceClosure show_migration_dialog_closure) {
+  NOTIMPLEMENTED();
+}
+
+void AwAutofillClient::ConfirmMigrateLocalCardToCloud(
+    std::unique_ptr<base::DictionaryValue> legal_message,
+    const std::string& user_email,
+    const std::vector<autofill::MigratableCreditCard>& migratable_credit_cards,
+    LocalCardMigrationCallback start_migrating_cards_callback) {
+  NOTIMPLEMENTED();
+}
+
+void AwAutofillClient::ShowLocalCardMigrationResults(
+    const bool has_server_error,
+    const base::string16& tip_message,
+    const std::vector<autofill::MigratableCreditCard>& migratable_credit_cards,
+    MigrationDeleteCardCallback delete_local_card_callback) {
+  NOTIMPLEMENTED();
+}
+
+void AwAutofillClient::ConfirmSaveAutofillProfile(
+    const autofill::AutofillProfile& profile,
+    base::OnceClosure callback) {
+  // Since there is no confirmation needed to save an Autofill Profile,
+  // running |callback| will proceed with saving |profile|.
+  std::move(callback).Run();
+}
+
+void AwAutofillClient::ConfirmSaveCreditCardLocally(
+    const autofill::CreditCard& card,
+    SaveCreditCardOptions options,
+    LocalSaveCardPromptCallback callback) {
+  NOTIMPLEMENTED();
+}
+
+void AwAutofillClient::ConfirmAccountNameFixFlow(
+    base::OnceCallback<void(const base::string16&)> callback) {
+  NOTIMPLEMENTED();
+}
+
+void AwAutofillClient::ConfirmExpirationDateFixFlow(
+    const autofill::CreditCard& card,
+    base::OnceCallback<void(const base::string16&, const base::string16&)>
+        callback) {
+  NOTIMPLEMENTED();
+}
+
+void AwAutofillClient::ConfirmSaveCreditCardToCloud(
+    const autofill::CreditCard& card,
+    std::unique_ptr<base::DictionaryValue> legal_message,
+    SaveCreditCardOptions options,
+    UploadSaveCardPromptCallback callback) {
+  NOTIMPLEMENTED();
+}
+
+void AwAutofillClient::ConfirmCreditCardFillAssist(
+    const autofill::CreditCard& card,
+    base::OnceClosure callback) {
+  NOTIMPLEMENTED();
+}
+
+bool AwAutofillClient::HasCreditCardScanFeature() {
+  return false;
+}
+
+void AwAutofillClient::ScanCreditCard(const CreditCardScanCallback& callback) {
+  NOTIMPLEMENTED();
 }
 
 void AwAutofillClient::ShowAutofillPopup(
@@ -138,6 +208,107 @@ void AwAutofillClient::ShowAutofillPopup(
   ShowAutofillPopupImpl(element_bounds_in_screen_space,
                         text_direction == base::i18n::RIGHT_TO_LEFT,
                         suggestions);
+}
+
+void AwAutofillClient::UpdateAutofillPopupDataListValues(
+    const std::vector<base::string16>& values,
+    const std::vector<base::string16>& labels) {
+  // Leaving as an empty method since updating autofill popup window
+  // dynamically does not seem to be a useful feature for android webview.
+  // See crrev.com/18102002 if need to implement.
+}
+
+void AwAutofillClient::HideAutofillPopup() {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return;
+  delegate_.reset();
+  Java_AwAutofillClient_hideAutofillPopup(env, obj);
+}
+
+bool AwAutofillClient::IsAutocompleteEnabled() {
+  bool enabled = GetSaveFormData();
+  if (!autocomplete_uma_recorded_) {
+    UMA_HISTOGRAM_BOOLEAN("Autofill.AutocompleteEnabled", enabled);
+    autocomplete_uma_recorded_ = true;
+  }
+  return enabled;
+}
+
+void AwAutofillClient::PropagateAutofillPredictions(
+    content::RenderFrameHost* rfh,
+    const std::vector<autofill::FormStructure*>& forms) {}
+
+void AwAutofillClient::DidFillOrPreviewField(
+    const base::string16& autofilled_value,
+    const base::string16& profile_full_name) {}
+
+bool AwAutofillClient::IsContextSecure() {
+  content::SSLStatus ssl_status;
+  content::NavigationEntry* navigation_entry =
+      web_contents_->GetController().GetLastCommittedEntry();
+  if (!navigation_entry)
+    return false;
+
+  ssl_status = navigation_entry->GetSSL();
+  // Note: The implementation below is a copy of the one in
+  // ChromeAutofillClient::IsContextSecure, and should be kept in sync
+  // until crbug.com/505388 gets implemented.
+  return navigation_entry->GetURL().SchemeIsCryptographic() &&
+         ssl_status.certificate &&
+         (!net::IsCertStatusError(ssl_status.cert_status) ||
+          net::IsCertStatusMinorError(ssl_status.cert_status)) &&
+         !(ssl_status.content_status &
+           content::SSLStatus::RAN_INSECURE_CONTENT);
+}
+
+bool AwAutofillClient::ShouldShowSigninPromo() {
+  return false;
+}
+
+bool AwAutofillClient::AreServerCardsSupported() {
+  return true;
+}
+
+void AwAutofillClient::ExecuteCommand(int id) {
+  NOTIMPLEMENTED();
+}
+
+void AwAutofillClient::LoadRiskData(
+    base::OnceCallback<void(const std::string&)> callback) {
+  NOTIMPLEMENTED();
+}
+
+void AwAutofillClient::Dismissed(JNIEnv* env,
+                                 const JavaParamRef<jobject>& obj) {
+  anchor_view_.Reset();
+}
+
+void AwAutofillClient::SuggestionSelected(JNIEnv* env,
+                                          const JavaParamRef<jobject>& object,
+                                          jint position) {
+  if (delegate_) {
+    delegate_->DidAcceptSuggestion(suggestions_[position].value,
+                                   suggestions_[position].frontend_id,
+                                   position);
+  }
+}
+
+// Ownership: The native object is created (if autofill enabled) and owned by
+// AwContents. The native object creates the java peer which handles most
+// autofill functionality at the java side. The java peer is owned by Java
+// AwContents. The native object only maintains a weak ref to it.
+AwAutofillClient::AwAutofillClient(WebContents* contents)
+    : web_contents_(contents) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> delegate;
+  delegate.Reset(
+      Java_AwAutofillClient_create(env, reinterpret_cast<intptr_t>(this)));
+
+  AwContents* aw_contents = AwContents::FromWebContents(web_contents_);
+  aw_contents->SetAwAutofillClient(delegate);
+  java_ref_ = JavaObjectWeakGlobalRef(env, delegate);
 }
 
 void AwAutofillClient::ShowAutofillPopupImpl(
@@ -179,170 +350,6 @@ void AwAutofillClient::ShowAutofillPopupImpl(
   Java_AwAutofillClient_showAutofillPopup(env, obj, view, is_rtl, data_array);
 }
 
-void AwAutofillClient::UpdateAutofillPopupDataListValues(
-    const std::vector<base::string16>& values,
-    const std::vector<base::string16>& labels) {
-  // Leaving as an empty method since updating autofill popup window
-  // dynamically does not seem to be a useful feature for android webview.
-  // See crrev.com/18102002 if need to implement.
-}
-
-void AwAutofillClient::HideAutofillPopup() {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
-    return;
-  delegate_.reset();
-  Java_AwAutofillClient_hideAutofillPopup(env, obj);
-}
-
-bool AwAutofillClient::IsAutocompleteEnabled() {
-  bool enabled = GetSaveFormData();
-  if (!autocomplete_uma_recorded_) {
-    UMA_HISTOGRAM_BOOLEAN("Autofill.AutocompleteEnabled", enabled);
-    autocomplete_uma_recorded_ = true;
-  }
-  return enabled;
-}
-
-void AwAutofillClient::PropagateAutofillPredictions(
-    content::RenderFrameHost* rfh,
-    const std::vector<autofill::FormStructure*>& forms) {}
-
-void AwAutofillClient::DidFillOrPreviewField(
-    const base::string16& autofilled_value,
-    const base::string16& profile_full_name) {}
-
-void AwAutofillClient::DidInteractWithNonsecureCreditCardInput() {}
-
-bool AwAutofillClient::IsContextSecure() {
-  content::SSLStatus ssl_status;
-  content::NavigationEntry* navigation_entry =
-      web_contents_->GetController().GetLastCommittedEntry();
-  if (!navigation_entry)
-    return false;
-
-  ssl_status = navigation_entry->GetSSL();
-  // Note: The implementation below is a copy of the one in
-  // ChromeAutofillClient::IsContextSecure, and should be kept in sync
-  // until crbug.com/505388 gets implemented.
-  return navigation_entry->GetURL().SchemeIsCryptographic() &&
-         ssl_status.certificate &&
-         (!net::IsCertStatusError(ssl_status.cert_status) ||
-          net::IsCertStatusMinorError(ssl_status.cert_status)) &&
-         !(ssl_status.content_status &
-           content::SSLStatus::RAN_INSECURE_CONTENT);
-}
-
-bool AwAutofillClient::ShouldShowSigninPromo() {
-  return false;
-}
-
-void AwAutofillClient::ExecuteCommand(int id) {
-  NOTIMPLEMENTED();
-}
-
-bool AwAutofillClient::AreServerCardsSupported() {
-  return true;
-}
-
-void AwAutofillClient::Dismissed(JNIEnv* env,
-                                 const JavaParamRef<jobject>& obj) {
-  anchor_view_.Reset();
-}
-
-void AwAutofillClient::SuggestionSelected(JNIEnv* env,
-                                          const JavaParamRef<jobject>& object,
-                                          jint position) {
-  if (delegate_) {
-    delegate_->DidAcceptSuggestion(suggestions_[position].value,
-                                   suggestions_[position].frontend_id,
-                                   position);
-  }
-}
-
-void AwAutofillClient::ShowAutofillSettings(bool show_credit_card_settings) {
-  NOTIMPLEMENTED();
-}
-
-void AwAutofillClient::ShowUnmaskPrompt(
-    const autofill::CreditCard& card,
-    UnmaskCardReason reason,
-    base::WeakPtr<autofill::CardUnmaskDelegate> delegate) {
-  NOTIMPLEMENTED();
-}
-
-void AwAutofillClient::OnUnmaskVerificationResult(PaymentsRpcResult result) {
-  NOTIMPLEMENTED();
-}
-
-void AwAutofillClient::ShowLocalCardMigrationDialog(
-    base::OnceClosure show_migration_dialog_closure) {
-  NOTIMPLEMENTED();
-}
-
-void AwAutofillClient::ConfirmAccountNameFixFlow(
-    base::OnceCallback<void(const base::string16&)> callback) {
-  NOTIMPLEMENTED();
-}
-
-void AwAutofillClient::ConfirmMigrateLocalCardToCloud(
-    std::unique_ptr<base::DictionaryValue> legal_message,
-    const std::vector<autofill::MigratableCreditCard>& migratable_credit_cards,
-    LocalCardMigrationCallback start_migrating_cards_callback) {
-  NOTIMPLEMENTED();
-}
-
-void AwAutofillClient::ConfirmSaveAutofillProfile(
-    const autofill::AutofillProfile& profile,
-    base::OnceClosure callback) {
-  // Since there is no confirmation needed to save an Autofill Profile,
-  // running |callback| will proceed with saving |profile|.
-  std::move(callback).Run();
-}
-
-void AwAutofillClient::ConfirmSaveCreditCardLocally(
-    const autofill::CreditCard& card,
-    bool show_prompt,
-    base::OnceClosure callback) {
-  NOTIMPLEMENTED();
-}
-
-void AwAutofillClient::ConfirmSaveCreditCardToCloud(
-    const autofill::CreditCard& card,
-    std::unique_ptr<base::DictionaryValue> legal_message,
-    bool should_request_name_from_user,
-    bool should_request_expiration_date_from_user,
-    bool show_prompt,
-    UserAcceptedUploadCallback callback) {
-  NOTIMPLEMENTED();
-}
-
-void AwAutofillClient::ShowLocalCardMigrationResults(
-    const bool has_server_error,
-    const base::string16& tip_message,
-    const std::vector<autofill::MigratableCreditCard>& migratable_credit_cards,
-    MigrationDeleteCardCallback delete_local_card_callback) {
-  NOTIMPLEMENTED();
-}
-
-void AwAutofillClient::ConfirmCreditCardFillAssist(
-    const autofill::CreditCard& card,
-    base::OnceClosure callback) {
-  NOTIMPLEMENTED();
-}
-
-void AwAutofillClient::LoadRiskData(
-    base::OnceCallback<void(const std::string&)> callback) {
-  NOTIMPLEMENTED();
-}
-
-bool AwAutofillClient::HasCreditCardScanFeature() {
-  return false;
-}
-
-void AwAutofillClient::ScanCreditCard(const CreditCardScanCallback& callback) {
-  NOTIMPLEMENTED();
-}
+WEB_CONTENTS_USER_DATA_KEY_IMPL(AwAutofillClient)
 
 }  // namespace android_webview

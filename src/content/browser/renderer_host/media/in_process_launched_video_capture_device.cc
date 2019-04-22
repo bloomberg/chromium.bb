@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/media/in_process_launched_video_capture_device.h"
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/metrics/histogram_macros.h"
 #include "content/public/browser/browser_thread.h"
@@ -75,6 +76,10 @@ void InProcessLaunchedVideoCaptureDevice::SetPhotoOptions(
 void InProcessLaunchedVideoCaptureDevice::TakePhoto(
     media::VideoCaptureDevice::TakePhotoCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  TRACE_EVENT_INSTANT0(TRACE_DISABLED_BY_DEFAULT("video_and_image_capture"),
+                       "InProcessLaunchedVideoCaptureDevice::TakePhoto",
+                       TRACE_EVENT_SCOPE_PROCESS);
+
   // Unretained() is safe to use here because |device| would be null if it
   // was scheduled for shutdown and destruction, and because this task is
   // guaranteed to run before the task that destroys the |device|.

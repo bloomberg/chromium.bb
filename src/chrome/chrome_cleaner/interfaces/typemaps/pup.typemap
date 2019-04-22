@@ -4,10 +4,7 @@
 
 mojom = "//chrome/chrome_cleaner/interfaces/pup.mojom"
 
-public_headers = [
-  "//chrome/chrome_cleaner/os/registry.h",
-  "//chrome/chrome_cleaner/pup_data/pup_data.h",
-]
+public_headers = [ "//chrome/chrome_cleaner/pup_data/pup_data.h" ]
 
 public_deps = [
   "//chrome/chrome_cleaner/os:common_os",
@@ -24,8 +21,6 @@ sources = [
 ]
 
 type_mappings = [
-  "chrome_cleaner.mojom.RegKeyPath=chrome_cleaner::RegKeyPath",
-  "chrome_cleaner.mojom.RegistryFootprint=chrome_cleaner::PUPData::RegistryFootprint",
   "chrome_cleaner.mojom.TraceLocation=chrome_cleaner::UwS::TraceLocation",
   "chrome_cleaner.mojom.PUP=chrome_cleaner::PUPData::PUP",
 ]

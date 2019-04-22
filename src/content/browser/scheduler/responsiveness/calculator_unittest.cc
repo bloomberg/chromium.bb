@@ -17,16 +17,16 @@ constexpr int kJankThresholdInMs = 100;
 
 class FakeCalculator : public Calculator {
  public:
-  std::vector<int>& Emissions() { return janky_slices_; }
+  std::vector<size_t>& Emissions() { return janky_slices_; }
 
-  void EmitResponsiveness(int janky_slices) override {
+  void EmitResponsiveness(size_t janky_slices) override {
     janky_slices_.push_back(janky_slices);
   }
 
   using Calculator::GetLastCalculationTime;
 
  private:
-  std::vector<int> janky_slices_;
+  std::vector<size_t> janky_slices_;
 };
 
 }  // namespace
@@ -74,7 +74,7 @@ TEST_F(ResponsivenessCalculatorTest, ShortJank) {
   TriggerCalculation();
 
   ASSERT_EQ(1u, calculator_->Emissions().size());
-  EXPECT_EQ(1, calculator_->Emissions()[0]);
+  EXPECT_EQ(1u, calculator_->Emissions()[0]);
 }
 
 // A single event of length slightly longer than 10 * kJankThresholdInMs.
@@ -83,7 +83,7 @@ TEST_F(ResponsivenessCalculatorTest, LongJank) {
   TriggerCalculation();
 
   ASSERT_EQ(1u, calculator_->Emissions().size());
-  EXPECT_EQ(10, calculator_->Emissions()[0]);
+  EXPECT_EQ(10u, calculator_->Emissions()[0]);
 }
 
 // Events that last less than 100ms do not jank, regardless of start time.
@@ -100,7 +100,7 @@ TEST_F(ResponsivenessCalculatorTest, NoJank) {
 
   TriggerCalculation();
   ASSERT_EQ(1u, calculator_->Emissions().size());
-  EXPECT_EQ(0, calculator_->Emissions()[0]);
+  EXPECT_EQ(0u, calculator_->Emissions()[0]);
 }
 
 // 10 Jank events, but very closely overlapping. Time slices are discretized and
@@ -115,7 +115,7 @@ TEST_F(ResponsivenessCalculatorTest, OverlappingJank) {
 
   TriggerCalculation();
   ASSERT_EQ(1u, calculator_->Emissions().size());
-  EXPECT_EQ(1, calculator_->Emissions()[0]);
+  EXPECT_EQ(1u, calculator_->Emissions()[0]);
 }
 
 // UI thread has 3 jank events on slices 1, 2, 3
@@ -136,7 +136,7 @@ TEST_F(ResponsivenessCalculatorTest, OverlappingJankMultipleThreads) {
 
   TriggerCalculation();
   ASSERT_EQ(1u, calculator_->Emissions().size());
-  EXPECT_EQ(5, calculator_->Emissions()[0]);
+  EXPECT_EQ(5u, calculator_->Emissions()[0]);
 }
 
 // Three janks, each of length 2, separated by some shorter events.
@@ -151,7 +151,7 @@ TEST_F(ResponsivenessCalculatorTest, SeparatedJanks) {
   TriggerCalculation();
 
   ASSERT_EQ(1u, calculator_->Emissions().size());
-  EXPECT_EQ(6, calculator_->Emissions()[0]);
+  EXPECT_EQ(6u, calculator_->Emissions()[0]);
 }
 
 TEST_F(ResponsivenessCalculatorTest, MultipleTrigger) {
@@ -168,7 +168,7 @@ TEST_F(ResponsivenessCalculatorTest, MultipleTrigger) {
 
   ASSERT_EQ(10u, calculator_->Emissions().size());
   for (int i = 0; i < 10; ++i) {
-    EXPECT_EQ(9, calculator_->Emissions()[i]);
+    EXPECT_EQ(9u, calculator_->Emissions()[i]);
   }
 }
 
@@ -208,8 +208,8 @@ TEST_F(ResponsivenessCalculatorTest, EventCrossesBoundary) {
   AddEventUI(2 * kMeasurementIntervalInMs + 1,
              2 * kMeasurementIntervalInMs + 1);
   ASSERT_EQ(2u, calculator_->Emissions().size());
-  EXPECT_EQ(1, calculator_->Emissions()[0]);
-  EXPECT_EQ(2, calculator_->Emissions()[1]);
+  EXPECT_EQ(1u, calculator_->Emissions()[0]);
+  EXPECT_EQ(2u, calculator_->Emissions()[1]);
 }
 
 // Events may not be ordered by start or end time.
@@ -228,7 +228,7 @@ TEST_F(ResponsivenessCalculatorTest, UnorderedEvents) {
   TriggerCalculation();
 
   ASSERT_EQ(1u, calculator_->Emissions().size());
-  EXPECT_EQ(3, calculator_->Emissions()[0]);
+  EXPECT_EQ(3u, calculator_->Emissions()[0]);
 }
 
 }  // namespace responsiveness

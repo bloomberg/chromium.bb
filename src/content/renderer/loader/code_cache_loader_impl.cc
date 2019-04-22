@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/renderer/loader/code_cache_loader_impl.h"
+#include "base/bind.h"
 #include "base/task/post_task.h"
 #include "third_party/blink/public/platform/platform.h"
 

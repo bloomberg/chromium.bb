@@ -21,6 +21,7 @@ bool AreHeadersEqual(const net::HttpResponseHeaders* h1,
 
 Entry::Entry()
     : bytes_downloaded(0u),
+      bytes_uploaded(0u),
       attempt_count(0),
       resumption_count(0),
       cleanup_attempt_count(0),
@@ -36,6 +37,7 @@ Entry::Entry(const DownloadParams& params)
       scheduling_params(params.scheduling_params),
       request_params(params.request_params),
       bytes_downloaded(0u),
+      bytes_uploaded(0u),
       attempt_count(0),
       resumption_count(0),
       cleanup_attempt_count(0),
@@ -63,6 +65,7 @@ bool Entry::operator==(const Entry& other) const {
          completion_time == other.completion_time &&
          last_cleanup_check_time == other.last_cleanup_check_time &&
          bytes_downloaded == other.bytes_downloaded &&
+         bytes_uploaded == other.bytes_uploaded &&
          attempt_count == other.attempt_count &&
          resumption_count == other.resumption_count &&
          cleanup_attempt_count == other.cleanup_attempt_count &&

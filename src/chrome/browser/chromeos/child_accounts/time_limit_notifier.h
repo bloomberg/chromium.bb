@@ -24,8 +24,9 @@ namespace chromeos {
 class TimeLimitNotifier {
  public:
   // The types of time limits to notify for. kScreenTime is used when the
-  // the screen time limit is about to be used up, and kBedTime is used when
-  // the bed time is approaching.
+  // the screen time limit is about to be used up or when the unlock override
+  // with duration is almost over, and kBedTime is used when the bed time is
+  // approaching.
   enum class LimitType { kScreenTime, kBedTime };
 
   explicit TimeLimitNotifier(content::BrowserContext* context);

@@ -32,7 +32,6 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/node_child_removal_tracker.h"
 #include "third_party/blink/renderer/core/dom/node_list.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -44,19 +43,15 @@ class StaticNodeTypeList final : public NodeList {
  public:
   static StaticNodeTypeList* Adopt(HeapVector<Member<NodeType>>& nodes);
 
-  static StaticNodeTypeList* CreateEmpty() {
-    return MakeGarbageCollected<StaticNodeTypeList>();
-  }
-
   ~StaticNodeTypeList() override;
 
   unsigned length() const override;
   NodeType* item(unsigned index) const override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
-  HeapVector<TraceWrapperMember<NodeType>> nodes_;
+  HeapVector<Member<NodeType>> nodes_;
 };
 
 using StaticNodeList = StaticNodeTypeList<Node>;
@@ -64,7 +59,8 @@ using StaticNodeList = StaticNodeTypeList<Node>;
 template <typename NodeType>
 StaticNodeTypeList<NodeType>* StaticNodeTypeList<NodeType>::Adopt(
     HeapVector<Member<NodeType>>& nodes) {
-  StaticNodeTypeList<NodeType>* node_list = new StaticNodeTypeList<NodeType>;
+  StaticNodeTypeList<NodeType>* node_list =
+      MakeGarbageCollected<StaticNodeTypeList<NodeType>>();
   swap(node_list->nodes_, nodes);
   return node_list;
 }

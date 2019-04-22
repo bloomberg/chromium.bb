@@ -87,7 +87,7 @@ TEST_F(FaviconCallbackTest, ShortcutIconFavicon) {
   EXPECT_EQ(GURL("http://fav.ico"), favicons[0].icon_url);
   EXPECT_EQ(FaviconURL::IconType::kFavicon, favicons[0].icon_type);
   ASSERT_TRUE(favicons[0].icon_sizes.empty());
-};
+}
 
 // Tests page with icon link and no sizes attribute.
 TEST_F(FaviconCallbackTest, IconFavicon) {
@@ -104,7 +104,7 @@ TEST_F(FaviconCallbackTest, IconFavicon) {
   EXPECT_EQ(GURL("http://fav.ico"), favicons[0].icon_url);
   EXPECT_EQ(FaviconURL::IconType::kFavicon, favicons[0].icon_type);
   ASSERT_TRUE(favicons[0].icon_sizes.empty());
-};
+}
 
 // Tests page with apple-touch-icon link.
 TEST_F(FaviconCallbackTest, AppleTouchIconFavicon) {
@@ -125,7 +125,7 @@ TEST_F(FaviconCallbackTest, AppleTouchIconFavicon) {
   EXPECT_EQ(GURL("https://chromium.test/favicon.ico"), favicons[1].icon_url);
   EXPECT_EQ(FaviconURL::IconType::kFavicon, favicons[1].icon_type);
   ASSERT_TRUE(favicons[1].icon_sizes.empty());
-};
+}
 
 // Tests page with apple-touch-icon-precomposed link.
 TEST_F(FaviconCallbackTest, AppleTouchIconPrecomposedFavicon) {
@@ -146,7 +146,7 @@ TEST_F(FaviconCallbackTest, AppleTouchIconPrecomposedFavicon) {
   EXPECT_EQ(GURL("https://chromium.test/favicon.ico"), favicons[1].icon_url);
   EXPECT_EQ(FaviconURL::IconType::kFavicon, favicons[1].icon_type);
   ASSERT_TRUE(favicons[1].icon_sizes.empty());
-};
+}
 
 // Tests page without favicon link.
 TEST_F(FaviconCallbackTest, NoFavicon) {
@@ -163,7 +163,7 @@ TEST_F(FaviconCallbackTest, NoFavicon) {
   EXPECT_EQ(GURL("https://chromium.test/favicon.ico"), favicons[0].icon_url);
   EXPECT_EQ(FaviconURL::IconType::kFavicon, favicons[0].icon_type);
   ASSERT_TRUE(favicons[0].icon_sizes.empty());
-};
+}
 
 // Tests page without favicon link but with a query and a ref in the URL.
 TEST_F(FaviconCallbackTest, NoFaviconWithQuery) {
@@ -181,7 +181,7 @@ TEST_F(FaviconCallbackTest, NoFaviconWithQuery) {
   EXPECT_EQ(GURL("https://chromium.test/favicon.ico"), favicons[0].icon_url);
   EXPECT_EQ(FaviconURL::IconType::kFavicon, favicons[0].icon_type);
   ASSERT_TRUE(favicons[0].icon_sizes.empty());
-};
+}
 
 // Tests page with multiple favicon links.
 TEST_F(FaviconCallbackTest, MultipleFavicons) {
@@ -210,7 +210,7 @@ TEST_F(FaviconCallbackTest, MultipleFavicons) {
   EXPECT_EQ(GURL("http://fav3.ico"), favicons[3].icon_url);
   EXPECT_EQ(FaviconURL::IconType::kTouchPrecomposedIcon, favicons[3].icon_type);
   ASSERT_TRUE(favicons[3].icon_sizes.empty());
-};
+}
 
 // Tests page with invalid favicon url.
 TEST_F(FaviconCallbackTest, InvalidFaviconUrl) {
@@ -228,7 +228,7 @@ TEST_F(FaviconCallbackTest, InvalidFaviconUrl) {
   EXPECT_EQ(GURL("https://chromium.test/favicon.ico"), favicons[0].icon_url);
   EXPECT_EQ(FaviconURL::IconType::kFavicon, favicons[0].icon_type);
   ASSERT_TRUE(favicons[0].icon_sizes.empty());
-};
+}
 
 // Tests page with empty favicon url.
 TEST_F(FaviconCallbackTest, EmptyFaviconUrl) {
@@ -246,7 +246,7 @@ TEST_F(FaviconCallbackTest, EmptyFaviconUrl) {
   EXPECT_EQ(GURL("https://chromium.test/"), favicons[0].icon_url);
   EXPECT_EQ(FaviconURL::IconType::kFavicon, favicons[0].icon_type);
   ASSERT_TRUE(favicons[0].icon_sizes.empty());
-};
+}
 
 // Tests page with icon links and a sizes attribute.
 TEST_F(FaviconCallbackTest, IconFaviconSizes) {
@@ -277,6 +277,6 @@ TEST_F(FaviconCallbackTest, IconFaviconSizes) {
   ASSERT_EQ(1U, favicons[1].icon_sizes.size());
   EXPECT_EQ(10, favicons[1].icon_sizes[0].width());
   EXPECT_EQ(20, favicons[1].icon_sizes[0].height());
-};
+}
 
 }  // namespace web

@@ -10,7 +10,6 @@
 #include "ash/app_list/test/app_list_test_view_delegate.h"
 #include "ash/app_list/test/test_search_result.h"
 #include "ash/app_list/views/search_result_view.h"
-#include "ash/public/cpp/app_list/app_list_constants.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "mojo/public/cpp/bindings/binding.h"

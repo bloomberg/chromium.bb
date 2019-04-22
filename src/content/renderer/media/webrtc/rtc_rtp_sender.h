@@ -16,9 +16,9 @@
 #include "third_party/blink/public/platform/web_rtc_rtp_sender.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_transceiver.h"
 #include "third_party/blink/public/platform/web_rtc_stats.h"
-#include "third_party/webrtc/api/peerconnectioninterface.h"
-#include "third_party/webrtc/api/rtpsenderinterface.h"
-#include "third_party/webrtc/rtc_base/scoped_ref_ptr.h"
+#include "third_party/webrtc/api/peer_connection_interface.h"
+#include "third_party/webrtc/api/rtp_sender_interface.h"
+#include "third_party/webrtc/api/scoped_refptr.h"
 
 namespace content {
 
@@ -80,6 +80,9 @@ class CONTENT_EXPORT RtpSenderState {
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner() const;
   scoped_refptr<base::SingleThreadTaskRunner> signaling_task_runner() const;
   scoped_refptr<webrtc::RtpSenderInterface> webrtc_sender() const;
+  rtc::scoped_refptr<webrtc::DtlsTransportInterface> webrtc_dtls_transport()
+      const;
+  webrtc::DtlsTransportInformation webrtc_dtls_transport_information() const;
   const std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef>&
   track_ref() const;
   void set_track_ref(
@@ -90,6 +93,8 @@ class CONTENT_EXPORT RtpSenderState {
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> signaling_task_runner_;
   scoped_refptr<webrtc::RtpSenderInterface> webrtc_sender_;
+  rtc::scoped_refptr<webrtc::DtlsTransportInterface> webrtc_dtls_transport_;
+  webrtc::DtlsTransportInformation webrtc_dtls_transport_information_;
   bool is_initialized_;
   std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> track_ref_;
   std::vector<std::string> stream_ids_;
@@ -122,6 +127,8 @@ class CONTENT_EXPORT RTCRtpSender : public blink::WebRTCRtpSender {
   // blink::WebRTCRtpSender.
   std::unique_ptr<blink::WebRTCRtpSender> ShallowCopy() const override;
   uintptr_t Id() const override;
+  rtc::scoped_refptr<webrtc::DtlsTransportInterface> DtlsTransport() override;
+  webrtc::DtlsTransportInformation DtlsTransportInformation() override;
   blink::WebMediaStreamTrack Track() const override;
   blink::WebVector<blink::WebString> StreamIds() const override;
   void ReplaceTrack(blink::WebMediaStreamTrack with_track,
@@ -132,8 +139,8 @@ class CONTENT_EXPORT RTCRtpSender : public blink::WebRTCRtpSender {
   void SetParameters(blink::WebVector<webrtc::RtpEncodingParameters>,
                      webrtc::DegradationPreference,
                      blink::WebRTCVoidRequest) override;
-  void GetStats(std::unique_ptr<blink::WebRTCStatsReportCallback>,
-                blink::RTCStatsFilter) override;
+  void GetStats(blink::WebRTCStatsReportCallback,
+                const std::vector<webrtc::NonStandardGroupId>&) override;
 
   // The ReplaceTrack() that takes a blink::WebRTCVoidRequest is implemented on
   // top of this, which returns the result in a callback instead. Allows doing

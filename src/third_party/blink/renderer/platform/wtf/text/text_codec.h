@@ -80,6 +80,11 @@ class WTF_EXPORT TextCodec {
   TextCodec() = default;
   virtual ~TextCodec();
 
+  struct EncodeIntoResult {
+    wtf_size_t code_units_read;
+    wtf_size_t bytes_written;
+  };
+
   String Decode(const char* str,
                 wtf_size_t length,
                 FlushBehavior flush = FlushBehavior::kDoNotFlush) {
@@ -98,6 +103,22 @@ class WTF_EXPORT TextCodec {
   virtual CString Encode(const LChar*,
                          wtf_size_t length,
                          UnencodableHandling) = 0;
+  // EncodeInto is meant only to encode UTF8 bytes into an unsigned char*
+  // buffer; therefore this method is only usefully overridden by TextCodecUTF8.
+  virtual EncodeIntoResult EncodeInto(const LChar*,
+                                      wtf_size_t length,
+                                      unsigned char* destination,
+                                      wtf_size_t capacity) {
+    NOTREACHED();
+    return EncodeIntoResult{0, 0};
+  }
+  virtual EncodeIntoResult EncodeInto(const UChar*,
+                                      wtf_size_t length,
+                                      unsigned char* destination,
+                                      wtf_size_t capacity) {
+    NOTREACHED();
+    return EncodeIntoResult{0, 0};
+  }
 
   // Fills a null-terminated string representation of the given
   // unencodable character into the given replacement buffer.

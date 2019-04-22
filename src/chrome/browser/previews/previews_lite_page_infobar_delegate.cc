@@ -75,7 +75,7 @@ int PreviewsLitePageInfoBarDelegate::GetButtons() const {
 
 #if defined(OS_ANDROID)
 int PreviewsLitePageInfoBarDelegate::GetIconId() const {
-  return IDR_ANDROID_INFOBAR_PREVIEWS;
+  return IDR_ANDROID_INFOBAR_LITE_MODE;
 }
 
 base::string16 PreviewsLitePageInfoBarDelegate::GetLinkText() const {

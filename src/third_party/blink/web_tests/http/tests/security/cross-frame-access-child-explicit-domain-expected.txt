@@ -1,4 +1,3 @@
-
 PASS: Cross frame access to frame explicitly setting document.domain was denied.
 
 

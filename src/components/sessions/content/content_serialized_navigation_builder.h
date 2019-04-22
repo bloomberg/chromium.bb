@@ -38,7 +38,7 @@ class SESSIONS_EXPORT ContentSerializedNavigationBuilder {
   // NavigationEntry.
   static SerializedNavigationEntry FromNavigationEntry(
       int index,
-      const content::NavigationEntry& entry,
+      content::NavigationEntry* entry,
       SerializationOptions serialization_options =
           SerializationOptions::DEFAULT);
 

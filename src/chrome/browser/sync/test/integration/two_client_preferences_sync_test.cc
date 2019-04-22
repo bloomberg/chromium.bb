@@ -25,6 +25,7 @@ using preferences_helper::ChangeBooleanPref;
 using preferences_helper::ChangeIntegerPref;
 using preferences_helper::ChangeListPref;
 using preferences_helper::ChangeStringPref;
+using preferences_helper::ClearPref;
 using preferences_helper::GetPrefs;
 using preferences_helper::GetRegistry;
 using testing::Eq;
@@ -67,6 +68,20 @@ IN_PROC_BROWSER_TEST_P(TwoClientPreferencesSyncTest, E2E_ENABLED(Sanity)) {
   EXPECT_NE(0, histogram_tester.GetBucketCount(
                    "Sync.ModelTypeEntityChange3.PREFERENCE",
                    /*REMOTE_NON_INITIAL_UPDATE=*/4));
+
+  // Metrics below are instrumented for the USS codepath only.
+  if (GetParam()) {
+    EXPECT_EQ(
+        1U,
+        histogram_tester
+            .GetAllSamples(
+                "Sync.NonReflectionUpdateFreshnessPossiblySkewed.PREFERENCE")
+            .size());
+    EXPECT_NE(0U, histogram_tester
+                      .GetAllSamples(
+                          "Sync.NonReflectionUpdateFreshnessPossiblySkewed")
+                      .size());
+  }
 }
 
 IN_PROC_BROWSER_TEST_P(TwoClientPreferencesSyncTest, E2E_ENABLED(BooleanPref)) {
@@ -119,6 +134,16 @@ IN_PROC_BROWSER_TEST_P(TwoClientPreferencesSyncTest, E2E_ENABLED(StringPref)) {
 
   ChangeStringPref(0, prefs::kHomePage, "http://news.google.com");
   ASSERT_TRUE(StringPrefMatchChecker(prefs::kHomePage).Wait());
+}
+
+IN_PROC_BROWSER_TEST_P(TwoClientPreferencesSyncTest, E2E_ENABLED(ClearPref)) {
+  ASSERT_TRUE(SetupSync());
+  ChangeStringPref(0, prefs::kHomePage, "http://news.google.com");
+  ASSERT_TRUE(StringPrefMatchChecker(prefs::kHomePage).Wait());
+
+  ClearPref(0, prefs::kHomePage);
+
+  ASSERT_TRUE(ClearedPrefMatchChecker(prefs::kHomePage).Wait());
 }
 
 IN_PROC_BROWSER_TEST_P(TwoClientPreferencesSyncTest,
@@ -295,12 +320,12 @@ IN_PROC_BROWSER_TEST_P(TwoClientPreferencesSyncTestWithSelfNotifications,
   EXPECT_THAT(GetPrefs(1)->GetString(pref_name), Eq("non-priority value"));
 }
 
-INSTANTIATE_TEST_CASE_P(USS,
-                        TwoClientPreferencesSyncTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(USS,
+                         TwoClientPreferencesSyncTest,
+                         ::testing::Values(false, true));
 
-INSTANTIATE_TEST_CASE_P(USS,
-                        TwoClientPreferencesSyncTestWithSelfNotifications,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(USS,
+                         TwoClientPreferencesSyncTestWithSelfNotifications,
+                         ::testing::Values(false, true));
 
 }  // namespace

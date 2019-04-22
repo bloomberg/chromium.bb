@@ -2,12 +2,6 @@
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 
-<style>
-.hideAllContainers .container {
-    display: none;
-}
-</style>
-
 <div class="container">
   <div role="listbox">
     <div role="option" id="option1"><button>option 1</button></div>
@@ -22,9 +16,4 @@ test(function(t) {
     var axOption2 = accessibilityController.accessibleElementById("option2");
     assert_equals(axOption2.name, "label 2");
 }, "ARIA listbox option with button inside");
-</script>
-
-<script>
-if (window.testRunner)
-    document.body.className = "hideAllContainers";
 </script>

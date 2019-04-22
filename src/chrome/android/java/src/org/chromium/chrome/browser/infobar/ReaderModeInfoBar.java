@@ -44,7 +44,7 @@ public class ReaderModeInfoBar extends InfoBar {
      * Default constructor.
      */
     private ReaderModeInfoBar() {
-        super(R.drawable.infobar_mobile_friendly, null, null);
+        super(R.drawable.infobar_mobile_friendly, R.color.infobar_icon_drawable_color, null, null);
     }
 
     @Override

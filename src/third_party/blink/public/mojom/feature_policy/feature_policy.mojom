@@ -80,10 +80,6 @@ enum FeaturePolicyFeature {
   // Controls the layout size of intrinsically sized images and videos. When
   // disabled, default size (300 x 150) is used to prevent relayout.
   kUnsizedMedia = 21,
-  // Controls which image formats are allowed to be used in the document.
-  kLegacyImageFormats = 22,
-  // When disallowed, requires images to have a reasonable byte-to-pixel ratio.
-  kUnoptimizedImages = 23,
   // When disallowed, restricts source image size to be no more 2x larger than
   // the image's containing block.
   kOversizedImages = 25,
@@ -95,12 +91,50 @@ enum FeaturePolicyFeature {
   // which interfere with document's input stream (document.write(),
   // document.close(), etc.).
   kDocumentWrite = 28,
+  // TODO(ekaramad): kLazyLoad is deprecated; remove.
   // Used to enforce lazyloading for a frame and any nested <iframe> or image.
   kLazyLoad = 29,
   // Restricts the usage of layout-causing animations in a document.
   kLayoutAnimations = 30,
+  // Controls access to WakeLock
+  kWakeLock = 31,
+  // Controls access to font-display attribute in @font-face CSS rule
+  kFontDisplay = 32,
+
+  // These are the defined sandbox features implemented as policy-controlled
+  // features.
+  kTopNavigation = 33,
+  kFormSubmission = 34,
+  kScript = 35,
+  kPopups = 36,
+  kPointerLock = 37,
+  kModals = 38,
+  kOrientationLock = 39,
+  kPresentation = 40,
+  // End of sandbox features.
+
+  // Sample Origin Trial enabled feature. This is used only for testing.
+  kFrobulate = 41,
+  // Controls access to Serial
+  kSerial = 42,
+  // Controls access to WebHID.
+  kHid = 43,
+  // Controls access to Idle Detection
+  kIdleDetection = 44,
+
+  // When disallowed, these policies require images to have a reasonable byte-to-pixel ratio.
+  kUnoptimizedLossyImages = 45,
+  kUnoptimizedLosslessImages = 46,
+  kUnoptimizedLosslessImagesStrict = 47,
+
+  // Loading policies.
+  kLoadingFrameDefaultEager = 48,
+
+  // Implements sandbox flag: allow-downloads-without-user-activation.
+  kDownloadsWithoutUserActivation = 49,
 
   // Don't change assigned numbers of any item, and don't reuse removed slots.
+  // Add new features at the end of the enum.
   // Also, run update_feature_policy_enum.py in
   // chromium/src/tools/metrics/histograms/ to update the UMA mapping.
 };
@@ -112,13 +146,35 @@ enum FeaturePolicyDisposition {
   kReport,
 };
 
+// This enum defines the types of parameters used to specify a feature policy.
+// TODO(loonybear): Add the following types: inc/dec int, inc double, enum, set.
+enum PolicyValueType {
+  kNull,
+  kBool,
+  kDecDouble,
+};
+
+// This union includes all the types that can be used to specify a policy's
+// parameter.
+// TODO(loonybear): Add the following types: inc/dec int, inc double, enum, set.
+union PolicyValueData {
+  bool null_value;
+  bool bool_value;
+  double dec_double_value;
+};
+
+// Defined as a structure so that it can be typemapped with StructTraits.
+struct PolicyValue {
+  PolicyValueData data;
+};
+
 // This struct holds feature policy allowlist data that needs to be replicated
 // between a RenderFrame and any of its associated RenderFrameProxies. A list of
 // these form a ParsedFeaturePolicy.
 // NOTE: These types are used for replication frame state between processes.
 struct ParsedFeaturePolicyDeclaration {
   FeaturePolicyFeature feature;
-  bool matches_all_origins;
-  FeaturePolicyDisposition disposition;
-  array<url.mojom.Origin> origins;
+  map<url.mojom.Origin, PolicyValue> values;
+  PolicyValue fallback_value;
+  PolicyValue opaque_value;
 };

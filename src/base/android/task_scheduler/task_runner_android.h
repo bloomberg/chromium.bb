@@ -10,6 +10,9 @@
 
 namespace base {
 
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.base.task
+enum class TaskRunnerType { BASE, SEQUENCED, SINGLE_THREAD };
+
 // Native implementation backing TaskRunnerImpl.java which posts java tasks onto
 // a C++ TaskRunner.
 class TaskRunnerAndroid {
@@ -17,11 +20,15 @@ class TaskRunnerAndroid {
   explicit TaskRunnerAndroid(scoped_refptr<TaskRunner> task_runner);
   ~TaskRunnerAndroid();
 
-  void Finalize(JNIEnv* env, const base::android::JavaRef<jobject>& caller);
+  void Destroy(JNIEnv* env, const base::android::JavaRef<jobject>& caller);
 
-  void PostTask(JNIEnv* env,
-                const base::android::JavaRef<jobject>& caller,
-                const base::android::JavaRef<jobject>& task);
+  void PostDelayedTask(JNIEnv* env,
+                       const base::android::JavaRef<jobject>& caller,
+                       const base::android::JavaRef<jobject>& task,
+                       jlong delay);
+
+  bool BelongsToCurrentThread(JNIEnv* env,
+                              const base::android::JavaRef<jobject>& caller);
 
  private:
   const scoped_refptr<TaskRunner> task_runner_;

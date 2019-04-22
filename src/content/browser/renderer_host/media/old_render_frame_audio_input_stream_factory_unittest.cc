@@ -22,8 +22,10 @@
 #include "media/audio/mock_audio_manager.h"
 #include "media/audio/test_audio_thread.h"
 #include "media/base/audio_parameters.h"
+#include "media/mojo/interfaces/audio_data_pipe.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/platform_handle.h"
+#include "services/audio/public/mojom/audio_processing.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -55,9 +57,9 @@ class FakeAudioInputDelegate : public media::AudioInputDelegate {
 
   ~FakeAudioInputDelegate() override {}
 
-  int GetStreamId() override { return 0; };
-  void OnRecordStream() override{};
-  void OnSetVolume(double volume) override{};
+  int GetStreamId() override { return 0; }
+  void OnRecordStream() override {}
+  void OnSetVolume(double volume) override {}
   void OnSetOutputDeviceForAec(const std::string& output_device_id) override {}
 
  private:

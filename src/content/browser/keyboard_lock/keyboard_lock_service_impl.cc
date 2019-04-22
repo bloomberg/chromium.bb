@@ -18,8 +18,8 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_widget_host.h"
-#include "content/public/common/console_message_level.h"
 #include "content/public/common/content_features.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 
@@ -64,11 +64,6 @@ void KeyboardLockServiceImpl::RequestKeyboardLock(
   else
     LogKeyboardLockMethodCalled(KeyboardLockMethods::kRequestSomeKeys);
 
-  if (!base::FeatureList::IsEnabled(features::kKeyboardLockAPI)) {
-    std::move(callback).Run(KeyboardLockRequestResult::kSuccess);
-    return;
-  }
-
   if (!render_frame_host_->IsCurrent()) {
     std::move(callback).Run(KeyboardLockRequestResult::kFrameDetachedError);
     return;
@@ -90,7 +85,7 @@ void KeyboardLockServiceImpl::RequestKeyboardLock(
     } else {
       invalid_key_code_found = true;
       render_frame_host_->AddMessageToConsole(
-          ConsoleMessageLevel::CONSOLE_MESSAGE_LEVEL_WARNING,
+          blink::mojom::ConsoleMessageLevel::kWarning,
           "Invalid DOMString passed into keyboard.lock(): '" + code + "'");
     }
   }
@@ -118,9 +113,7 @@ void KeyboardLockServiceImpl::RequestKeyboardLock(
 
 void KeyboardLockServiceImpl::CancelKeyboardLock() {
   LogKeyboardLockMethodCalled(KeyboardLockMethods::kCancelLock);
-
-  if (base::FeatureList::IsEnabled(features::kKeyboardLockAPI))
-    render_frame_host_->GetRenderWidgetHost()->CancelKeyboardLock();
+  render_frame_host_->GetRenderWidgetHost()->CancelKeyboardLock();
 }
 
 void KeyboardLockServiceImpl::GetKeyboardLayoutMap(

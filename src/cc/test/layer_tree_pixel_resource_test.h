@@ -15,6 +15,7 @@ enum PixelResourceTestCase {
   GPU,
   ONE_COPY,
   ZERO_COPY,
+  SKIA_GL,
 };
 
 class LayerTreeHostPixelResourceTest : public LayerTreePixelTest {
@@ -31,6 +32,10 @@ class LayerTreeHostPixelResourceTest : public LayerTreePixelTest {
   void RunPixelResourceTest(scoped_refptr<Layer> content_root,
                             const SkBitmap& expected_bitmap);
 
+  void RunPixelResourceTestWithLayerList(scoped_refptr<Layer> root_layer,
+                                         base::FilePath file_name,
+                                         PropertyTrees* property_trees);
+
  protected:
   PixelResourceTestCase test_case_;
   Layer::LayerMaskType mask_type_;
@@ -39,8 +44,8 @@ class LayerTreeHostPixelResourceTest : public LayerTreePixelTest {
   void InitializeFromTestCase(PixelResourceTestCase test_case);
 };
 
-#define INSTANTIATE_PIXEL_RESOURCE_TEST_CASE_P(framework_name)         \
-  INSTANTIATE_TEST_CASE_P(                                             \
+#define INSTANTIATE_PIXEL_RESOURCE_TEST_SUITE_P(framework_name)        \
+  INSTANTIATE_TEST_SUITE_P(                                            \
       PixelResourceTest, framework_name,                               \
       ::testing::Combine(                                              \
           ::testing::Values(SOFTWARE, GPU, ONE_COPY, ZERO_COPY),       \

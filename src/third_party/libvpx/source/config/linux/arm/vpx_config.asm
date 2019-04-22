@@ -1,6 +1,5 @@
 @ This file was created from a .asm file
 @  using the ads2gas.pl script.
-	.equ DO1STROUNDING, 0
 	.syntax unified
 .equ ARCH_ARM ,  1
 .equ ARCH_MIPS ,  0
@@ -86,7 +85,6 @@
 .equ CONFIG_FP_MB_STATS ,  0
 .equ CONFIG_EMULATE_HARDWARE ,  0
 .equ CONFIG_NON_GREEDY_MV ,  0
-.equ CONFIG_ML_VAR_PARTITION ,  0
 .equ DECODE_WIDTH_LIMIT ,  16384
 .equ DECODE_HEIGHT_LIMIT ,  16384
 	.section	.note.GNU-stack,"",%progbits

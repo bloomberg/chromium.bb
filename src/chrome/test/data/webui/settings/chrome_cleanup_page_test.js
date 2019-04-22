@@ -8,7 +8,6 @@ class TestChromeCleanupProxy extends TestBrowserProxy {
     super([
       'registerChromeCleanerObserver',
       'restartComputer',
-      'setLogsUploadPermission',
       'startCleanup',
       'startScanning',
       'notifyShowDetails',
@@ -26,11 +25,6 @@ class TestChromeCleanupProxy extends TestBrowserProxy {
   /** @override */
   restartComputer() {
     this.methodCalled('restartComputer');
-  }
-
-  /** @override */
-  setLogsUploadPermission(enabled) {
-    this.methodCalled('setLogsUploadPermission', enabled);
   }
 
   /** @override */
@@ -160,7 +154,7 @@ function startCleanupFromInfected(files, registryKeys, extensions) {
     'extensions': extensions
   };
 
-  cr.webUIListenerCallback('chrome-cleanup-upload-permission-change', false);
+  updateReportingEnabledPref(false);
   cr.webUIListenerCallback(
       'chrome-cleanup-on-infected', true /* isPoweredByPartner */,
       scannerResults);
@@ -216,6 +210,21 @@ function startCleanupFromInfected(files, registryKeys, extensions) {
 }
 
 /**
+ * @param {boolean} newValue The new value to set to
+ *     prefs.software_reporter.reporting.
+ */
+function updateReportingEnabledPref(newValue) {
+  chromeCleanupPage.prefs = {
+    software_reporter: {
+      reporting: {
+        type: chrome.settingsPrivate.PrefType.BOOLEAN,
+        value: newValue,
+      },
+    },
+  };
+}
+
+/**
  * @param {boolean} testingScanOffered Whether to test the case where scanning
  *     is offered to the user.
  */
@@ -231,23 +240,21 @@ function testLogsUploading(testingScanOffered) {
   Polymer.dom.flush();
 
   const logsControl = chromeCleanupPage.$$('#chromeCleanupLogsUploadControl');
-  assertTrue(!!logsControl);
 
-  cr.webUIListenerCallback(
-      'chrome-cleanup-upload-permission-change', false, true);
-  Polymer.dom.flush();
+  updateReportingEnabledPref(true);
+  assertTrue(!!logsControl);
   assertTrue(logsControl.checked);
 
-  cr.webUIListenerCallback(
-      'chrome-cleanup-upload-permission-change', false, false);
-  Polymer.dom.flush();
+  logsControl.$.checkbox.click();
   assertFalse(logsControl.checked);
+  assertFalse(chromeCleanupPage.prefs.software_reporter.reporting.value);
 
-  logsControl.$.control.click();
-  return chromeCleanupProxy.whenCalled('setLogsUploadPermission')
-      .then(function(logsUploadEnabled) {
-        assertTrue(logsUploadEnabled);
-      });
+  logsControl.$.checkbox.click();
+  assertTrue(logsControl.checked);
+  assertTrue(chromeCleanupPage.prefs.software_reporter.reporting.value);
+
+  updateReportingEnabledPref(false);
+  assertFalse(logsControl.checked);
 }
 
 /**
@@ -276,6 +283,11 @@ suite('ChromeCleanupHandler', function() {
     PolymerTest.clearBody();
 
     chromeCleanupPage = document.createElement('settings-chrome-cleanup-page');
+    chromeCleanupPage.prefs = {
+      software_reporter: {
+        reporting: {type: chrome.settingsPrivate.PrefType.BOOLEAN, value: true},
+      },
+    };
     document.body.appendChild(chromeCleanupPage);
   });
 
@@ -368,7 +380,7 @@ suite('ChromeCleanupHandler', function() {
   });
 
   test('startScanFromIdle', function() {
-    cr.webUIListenerCallback('chrome-cleanup-upload-permission-change', false);
+    updateReportingEnabledPref(false);
     cr.webUIListenerCallback(
         'chrome-cleanup-on-idle', settings.ChromeCleanupIdleReason.INITIAL);
     Polymer.dom.flush();
@@ -441,7 +453,7 @@ suite('ChromeCleanupHandler', function() {
   });
 
   test('cleanupFailure', function() {
-    cr.webUIListenerCallback('chrome-cleanup-upload-permission-change', false);
+    updateReportingEnabledPref(false);
     cr.webUIListenerCallback(
         'chrome-cleanup-on-cleaning', true /* isPoweredByPartner */,
         defaultScannerResults);
@@ -497,5 +509,49 @@ suite('ChromeCleanupHandler', function() {
   test('onCleaningResultsProvidedByPartner_False', function() {
     return testPartnerLogoShown(
         false /* onInfected */, false /* isPoweredByPartner */);
+  });
+
+  test('logsUploadingState_reporterPolicyDisabled', function() {
+    cr.webUIListenerCallback(
+        'chrome-cleanup-on-idle', settings.ChromeCleanupIdleReason.INITIAL);
+    // prefs.software_reporter.enabled is not a real preference as it can't be
+    // set by the user. ChromeCleanupHandler can notify the JS of changes to the
+    // policy enforcement.
+    cr.webUIListenerCallback('chrome-cleanup-enabled-change', false);
+    Polymer.dom.flush();
+
+    const actionButton = chromeCleanupPage.$$('#action-button');
+    assertTrue(!!actionButton);
+    assertTrue(actionButton.disabled);
+
+    const logsControl = chromeCleanupPage.$$('#chromeCleanupLogsUploadControl');
+    assertTrue(!!logsControl);
+    assertTrue(logsControl.disabled);
+  });
+
+  test('logsUploadingState_reporterReportingPolicyDisabled', function() {
+    cr.webUIListenerCallback(
+        'chrome-cleanup-on-idle', settings.ChromeCleanupIdleReason.INITIAL);
+    Polymer.dom.flush();
+
+    chromeCleanupPage.prefs = {
+      software_reporter: {
+        reporting: {
+          type: chrome.settingsPrivate.PrefType.BOOLEAN,
+          enforcement: chrome.settingsPrivate.Enforcement.ENFORCED,
+          controlledBy: chrome.settingsPrivate.ControlledBy.USER_POLICY,
+          value: false,
+        }
+      },
+    };
+
+    const actionButton = chromeCleanupPage.$$('#action-button');
+    assertTrue(!!actionButton);
+    assertFalse(actionButton.disabled);
+
+    const logsControl = chromeCleanupPage.$$('#chromeCleanupLogsUploadControl');
+    assertTrue(!!logsControl);
+    assertFalse(logsControl.disabled);
+    assertTrue(logsControl.$.checkbox.disabled);
   });
 });

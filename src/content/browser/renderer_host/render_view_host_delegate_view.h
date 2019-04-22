@@ -98,10 +98,10 @@ class CONTENT_EXPORT RenderViewHostDelegateView {
                              int selected_item,
                              const std::vector<MenuItem>& items,
                              bool right_aligned,
-                             bool allow_multiple_selection) {};
+                             bool allow_multiple_selection) {}
 
   // Hides a popup menu opened by ShowPopupMenu().
-  virtual void HidePopupMenu() {};
+  virtual void HidePopupMenu() {}
 #endif
 
 #if defined(OS_ANDROID)

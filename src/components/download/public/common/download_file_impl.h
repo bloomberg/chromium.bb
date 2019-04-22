@@ -23,6 +23,7 @@
 #include "base/task_runner.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "build/build_config.h"
 #include "components/download/public/common/base_file.h"
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/download_save_info.h"
@@ -74,6 +75,16 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadFileImpl : public DownloadFile {
   bool InProgress() const override;
   void Pause() override;
   void Resume() override;
+
+#if defined(OS_ANDROID)
+  void CreateIntermediateUriForPublish(
+      const GURL& original_url,
+      const GURL& referrer_url,
+      const base::FilePath& file_name,
+      const std::string& mime_type,
+      const RenameCompletionCallback& callback) override;
+  void PublishDownload(const RenameCompletionCallback& callback) override;
+#endif  // defined(OS_ANDROID)
 
   // Wrapper of a ByteStreamReader or ScopedDataPipeConsumerHandle, and the meta
   // data needed to write to a slice of the target file.
@@ -212,6 +223,11 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadFileImpl : public DownloadFile {
 
   // Rename file_ based on |parameters|.
   void RenameWithRetryInternal(std::unique_ptr<RenameParameters> parameters);
+
+  // Called after |file_| was renamed.
+  void OnRenameComplete(DownloadInterruptReason reason,
+                        const base::FilePath& content_path,
+                        const RenameCompletionCallback& callback);
 
   // Send an update on our progress.
   void SendUpdate();

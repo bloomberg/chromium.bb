@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/strings/string_number_conversions.h"
 #include "content/public/browser/browser_thread.h"
@@ -147,15 +148,6 @@ void WebRequestEventDetails::DetermineFrameDataOnUI() {
   SetFrameData(frame_data);
 }
 
-void WebRequestEventDetails::DetermineFrameDataOnIO(
-    const DeterminedFrameDataCallback& callback) {
-  std::unique_ptr<WebRequestEventDetails> self(this);
-  ExtensionApiFrameIdMap::Get()->GetFrameDataOnIO(
-      render_process_id_, render_frame_id_,
-      base::Bind(&WebRequestEventDetails::OnDeterminedFrameData,
-                 base::Unretained(this), base::Passed(&self), callback));
-}
-
 std::unique_ptr<base::DictionaryValue> WebRequestEventDetails::GetFilteredDict(
     int extra_info_spec,
     const extensions::InfoMap* extension_info_map,
@@ -182,9 +174,6 @@ std::unique_ptr<base::DictionaryValue> WebRequestEventDetails::GetFilteredDict(
   }
 
   // Only listeners with a permission for the initiator should recieve it.
-  // TODO(karandeepb): This probably shouldn't be needed anymore since we
-  // require the extension to have access to the initiator to intercept a
-  // request.
   if (extension_info_map && initiator_) {
     int tab_id = -1;
     dict_.GetInteger(keys::kTabIdKey, &tab_id);
@@ -234,13 +223,5 @@ WebRequestEventDetails::CreatePublicSessionCopy() {
 
 WebRequestEventDetails::WebRequestEventDetails()
     : extra_info_spec_(0), render_process_id_(0), render_frame_id_(0) {}
-
-void WebRequestEventDetails::OnDeterminedFrameData(
-    std::unique_ptr<WebRequestEventDetails> self,
-    const DeterminedFrameDataCallback& callback,
-    const ExtensionApiFrameIdMap::FrameData& frame_data) {
-  SetFrameData(frame_data);
-  callback.Run(std::move(self));
-}
 
 }  // namespace extensions

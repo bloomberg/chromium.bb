@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/rand_util.h"
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -40,7 +41,7 @@ const FileSystemTestCaseRecord kRegularFileSystemTestCases[] = {
 };
 
 const size_t kRegularFileSystemTestCaseSize =
-    arraysize(kRegularFileSystemTestCases);
+    base::size(kRegularFileSystemTestCases);
 
 void SetUpOneFileSystemTestCase(const base::FilePath& root_path,
                                 const FileSystemTestCaseRecord& test_case) {
@@ -62,7 +63,7 @@ void SetUpOneFileSystemTestCase(const base::FilePath& root_path,
 
 
 void SetUpRegularFileSystemTestCases(const base::FilePath& root_path) {
-  for (size_t i = 0; i < arraysize(kRegularFileSystemTestCases); ++i) {
+  for (size_t i = 0; i < base::size(kRegularFileSystemTestCases); ++i) {
     SCOPED_TRACE(testing::Message() << "Creating kRegularTestCases " << i);
     SetUpOneFileSystemTestCase(root_path, kRegularFileSystemTestCases[i]);
   }

@@ -199,13 +199,11 @@ class LayoutGrid final : public LayoutBlock {
       PositionedLayoutBehavior = kDefaultLayout) override;
   void PopulateGridPositionsForDirection(GridTrackSizingDirection);
 
-  bool GridPositionIsAutoForOutOfFlow(GridPosition,
-                                      GridTrackSizingDirection) const;
   LayoutUnit ResolveAutoStartGridPosition(GridTrackSizingDirection) const;
   LayoutUnit ResolveAutoEndGridPosition(GridTrackSizingDirection) const;
-  LayoutUnit LogicalOffsetForChild(const LayoutBox&,
-                                   GridTrackSizingDirection,
-                                   LayoutUnit) const;
+  LayoutUnit LogicalOffsetForOutOfFlowChild(const LayoutBox&,
+                                            GridTrackSizingDirection,
+                                            LayoutUnit) const;
   LayoutUnit GridAreaBreadthForOutOfFlowChild(const LayoutBox&,
                                               GridTrackSizingDirection);
   void GridAreaPositionForOutOfFlowChild(const LayoutBox&,
@@ -230,7 +228,10 @@ class LayoutGrid final : public LayoutBlock {
       const LayoutUnit& available_free_space,
       unsigned number_of_grid_tracks);
   LayoutPoint GridAreaLogicalPosition(const GridArea&) const;
-  LayoutPoint FindChildLogicalPosition(const LayoutBox&) const;
+  void SetLogicalPositionForChild(LayoutBox&) const;
+  void SetLogicalOffsetForChild(LayoutBox&, GridTrackSizingDirection) const;
+  LayoutUnit LogicalOffsetForChild(const LayoutBox&,
+                                   GridTrackSizingDirection) const;
 
   LayoutUnit GridAreaBreadthForChildIncludingAlignmentOffsets(
       const LayoutBox&,
@@ -296,8 +297,6 @@ class LayoutGrid final : public LayoutBlock {
   static LayoutUnit OverrideContainingBlockContentSizeForChild(
       const LayoutBox& child,
       GridTrackSizingDirection);
-  static LayoutUnit SynthesizedBaselineFromContentBox(const LayoutBox&,
-                                                      LineDirectionMode);
   static LayoutUnit SynthesizedBaselineFromBorderBox(const LayoutBox&,
                                                      LineDirectionMode);
   static const StyleContentAlignmentData& ContentAlignmentNormalBehavior();

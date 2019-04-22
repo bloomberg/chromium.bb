@@ -23,21 +23,34 @@ Are you a Google employee? See
 
 ### Visual Studio
 
-As of September, 2017 (R503915) Chromium requires Visual Studio 2017 (15.7.2)
-to build. The clang-cl compiler is used but Visual Studio's header files,
-libraries, and some tools are required. Visual Studio Community Edition should
-work if its license is appropriate for you. You must install the "Desktop
-development with C++" component and the "MFC and ATL support" sub-component.
-This can be done from the command line by passing these arguments to the Visual
-Studio installer that you download:
+Chromium requires Visual Studio 2017 (>=15.7.2) or 2019 (>=16.0.0) to build.
+The clang-cl compiler is used but Visual Studio's header files, libraries, and
+some tools are required. Visual Studio Community Edition should work if its
+license is appropriate for you. You must install the "Desktop development with
+C++" component and the "MFC/ATL support" sub-components. This can be done from
+the command line by passing these arguments to the Visual Studio installer (see
+below for ARM64 instructions):
 ```shell
---add Microsoft.VisualStudio.Workload.NativeDesktop
-    --add Microsoft.VisualStudio.Component.VC.ATLMFC --includeRecommended
+$ PATH_TO_INSTALLER.EXE ^
+--add Microsoft.VisualStudio.Workload.NativeDesktop ^
+--add Microsoft.VisualStudio.Component.VC.ATLMFC ^
+--includeRecommended
 ```
 
-You must have the version 10.0.17134 Windows 10 SDK installed. This can be
-installed separately or by checking the appropriate box in the Visual Studio
-Installer.
+If you want to build for ARM64 Win32 then some extra arguments are needed. The
+full set for that case is:
+```shell
+$ PATH_TO_INSTALLER.EXE ^
+--add Microsoft.VisualStudio.Workload.NativeDesktop ^
+--add Microsoft.VisualStudio.Component.VC.ATLMFC ^
+--add Microsoft.VisualStudio.Component.VC.Tools.ARM64 ^
+--add Microsoft.VisualStudio.Component.VC.MFC.ARM64 ^
+--includeRecommended
+```
+
+You must have the version 10.0.17134 or higher Windows 10 SDK installed. This
+can be installed separately or by checking the appropriate box in the Visual
+Studio Installer.
 
 The SDK Debugging Tools must also be installed. If the Windows 10 SDK was
 installed via the Visual Studio installer, then they can be installed by going
@@ -230,7 +243,7 @@ needed for local builds.
 * `target_cpu = "x86"` - x86 builds are slightly faster than x64 builds and
 support incremental linking for more targets. Note that if you set this but
 don't' set enable_nacl = false then build times may get worse.
-* `remove_webcore_debug_symbols = true` - turn off source-level debugging for
+* `blink_symbol_level = 0` - turn off source-level debugging for
 blink to reduce build times, appropriate if you don't plan to debug blink.
 
 In order to speed up linking you can set `symbol_level = 1` - this option

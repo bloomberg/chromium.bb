@@ -39,9 +39,14 @@ class CGaiaCredentialProviderModule
   // Indicates if the instance is running in a test.
   void set_is_testing(bool is_testing) { is_testing_ = is_testing; }
 
+  // Performs a one time refresh of all valid token handles to ensure their
+  // validity is up to date.
+  void RefreshTokenHandleValidity();
+
  private:
   std::unique_ptr<base::AtExitManager> exit_manager_;
   bool is_testing_ = false;
+  bool token_handle_validity_refreshed_ = false;
 };
 
 }  // namespace credential_provider

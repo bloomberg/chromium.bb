@@ -10,6 +10,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "device/usb/public/mojom/device.mojom.h"
 
 namespace base {
 class DictionaryValue;
@@ -19,10 +20,6 @@ class Value;
 
 namespace content {
 class BrowserContext;
-}
-
-namespace device {
-class UsbDevice;
 }
 
 namespace extensions {
@@ -81,7 +78,7 @@ class PrinterProviderAPI : public KeyedService {
   // manages printer with id |job.printer_id|.
   // |callback| is passed the print status returned by the extension, and it
   // must not be null.
-  virtual void DispatchPrintRequested(const PrinterProviderPrintJob& job,
+  virtual void DispatchPrintRequested(PrinterProviderPrintJob job,
                                       PrintCallback callback) = 0;
 
   // Returns print job associated with the print request with id |request_id|
@@ -95,7 +92,7 @@ class PrinterProviderAPI : public KeyedService {
   // extension identified by |extension_id|.
   virtual void DispatchGetUsbPrinterInfoRequested(
       const std::string& extension_id,
-      scoped_refptr<device::UsbDevice> device,
+      const device::mojom::UsbDeviceInfo& device,
       GetPrinterInfoCallback callback) = 0;
 };
 

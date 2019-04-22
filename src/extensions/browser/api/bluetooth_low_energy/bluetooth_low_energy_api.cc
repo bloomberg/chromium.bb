@@ -7,6 +7,7 @@
 #include <stdint.h>
 #include <algorithm>
 #include <iterator>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -140,9 +141,9 @@ extensions::BluetoothLowEnergyEventRouter* GetEventRouter(
 }
 
 template <typename T>
-void DoWorkCallback(const base::Callback<T()>& callback) {
+void DoWorkCallback(base::OnceCallback<T()> callback) {
   DCHECK(!callback.is_null());
-  callback.Run();
+  std::move(callback).Run();
 }
 
 std::unique_ptr<device::BluetoothAdvertisement::ManufacturerData>
@@ -373,9 +374,10 @@ ExtensionFunction::ResponseAction BluetoothLowEnergyExtensionFunction::Run() {
     return RespondNow(Error(kErrorPlatformNotSupported));
 
   // It is safe to pass |this| here as ExtensionFunction is refcounted.
-  if (!event_router_->InitializeAdapterAndInvokeCallback(base::Bind(
+  if (!event_router_->InitializeAdapterAndInvokeCallback(base::BindOnce(
           &DoWorkCallback<void>,
-          base::Bind(&BluetoothLowEnergyExtensionFunction::PreDoWork, this)))) {
+          base::BindOnce(&BluetoothLowEnergyExtensionFunction::PreDoWork,
+                         this)))) {
     // DoWork will respond when the adapter gets initialized.
     return RespondNow(Error(kErrorAdapterNotInitialized));
   }
@@ -1048,7 +1050,7 @@ void BluetoothLowEnergyAdvertisementFunction::RemoveAdvertisement(
   advertisements_manager_->Remove(extension_id(), advertisement_id);
 }
 
-const base::hash_set<int>*
+const std::unordered_set<int>*
 BluetoothLowEnergyAdvertisementFunction::GetAdvertisementIds() {
   return advertisements_manager_->GetResourceIds(extension_id());
 }
@@ -1226,7 +1228,7 @@ void BluetoothLowEnergyResetAdvertisingFunction::DoWork() {
     return;
   }
 
-  const base::hash_set<int>* advertisement_ids = GetAdvertisementIds();
+  const std::unordered_set<int>* advertisement_ids = GetAdvertisementIds();
   if (!advertisement_ids || advertisement_ids->empty()) {
     Respond(NoArguments());
     return;
@@ -1234,7 +1236,7 @@ void BluetoothLowEnergyResetAdvertisingFunction::DoWork() {
 
   // Copy the hash set, as RemoveAdvertisement can change advertisement_ids
   // while we are iterating over it.
-  base::hash_set<int> advertisement_ids_tmp = *advertisement_ids;
+  std::unordered_set<int> advertisement_ids_tmp = *advertisement_ids;
   for (int advertisement_id : advertisement_ids_tmp) {
     RemoveAdvertisement(advertisement_id);
   }

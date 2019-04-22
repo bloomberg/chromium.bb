@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var DeviceLogUI = (function() {
+const DeviceLogUI = (function() {
   'use strict';
 
   /**
@@ -11,9 +11,9 @@ var DeviceLogUI = (function() {
    * @param {string} level A string that represents log level.
    * @return {HTMLSpanElement} The created span element.
    */
-  var createLevelTag = function(level) {
-    var levelClassName = 'log-level-' + level.toLowerCase();
-    var tag = document.createElement('span');
+  const createLevelTag = function(level) {
+    const levelClassName = 'log-level-' + level.toLowerCase();
+    const tag = document.createElement('span');
     tag.textContent = level;
     tag.className = 'level-tag ' + levelClassName;
     return tag;
@@ -25,9 +25,9 @@ var DeviceLogUI = (function() {
    * @param {string} level A string that represents log type.
    * @return {HTMLSpanElement} The created span element.
    */
-  var createTypeTag = function(type) {
-    var typeClassName = 'log-type-' + type.toLowerCase();
-    var tag = document.createElement('span');
+  const createTypeTag = function(type) {
+    const typeClassName = 'log-type-' + type.toLowerCase();
+    const tag = document.createElement('span');
     tag.textContent = type;
     tag.className = 'type-tag ' + typeClassName;
     return tag;
@@ -41,27 +41,31 @@ var DeviceLogUI = (function() {
    * @return {?HTMLParagraphElement} The created p element that represents
    *     the log entry, or null if the entry should be skipped.
    */
-  var createLogEntryText = function(logEntry) {
-    var level = logEntry['level'];
-    var levelCheckbox = 'log-level-' + level.toLowerCase();
-    if ($(levelCheckbox) && !$(levelCheckbox).checked)
+  const createLogEntryText = function(logEntry) {
+    const level = logEntry['level'];
+    const levelCheckbox = 'log-level-' + level.toLowerCase();
+    if ($(levelCheckbox) && !$(levelCheckbox).checked) {
       return null;
+    }
 
-    var type = logEntry['type'];
-    var typeCheckbox = 'log-type-' + type.toLowerCase();
-    if ($(typeCheckbox) && !$(typeCheckbox).checked)
+    const type = logEntry['type'];
+    const typeCheckbox = 'log-type-' + type.toLowerCase();
+    if ($(typeCheckbox) && !$(typeCheckbox).checked) {
       return null;
+    }
 
-    var res = document.createElement('p');
-    var textWrapper = document.createElement('span');
-    var fileinfo = '';
-    if ($('log-fileinfo').checked)
+    const res = document.createElement('p');
+    const textWrapper = document.createElement('span');
+    let fileinfo = '';
+    if ($('log-fileinfo').checked) {
       fileinfo = logEntry['file'];
-    var timestamp = '';
-    if ($('log-timedetail').checked)
+    }
+    let timestamp = '';
+    if ($('log-timedetail').checked) {
       timestamp = logEntry['timestamp'];
-    else
+    } else {
       timestamp = logEntry['timestampshort'];
+    }
     textWrapper.textContent = loadTimeData.getStringF(
         'logEntryFormat', timestamp, fileinfo, logEntry['event']);
     res.appendChild(createTypeTag(type));
@@ -76,13 +80,14 @@ var DeviceLogUI = (function() {
    * @param {Array<string>} logEntries An array of strings that represent log
    *     log events in JSON format.
    */
-  var createEventLog = function(logEntries) {
-    var container = $('log-container');
+  const createEventLog = function(logEntries) {
+    const container = $('log-container');
     container.textContent = '';
-    for (var i = 0; i < logEntries.length; ++i) {
-      var entry = createLogEntryText(JSON.parse(logEntries[i]));
-      if (entry)
+    for (let i = 0; i < logEntries.length; ++i) {
+      const entry = createLogEntryText(JSON.parse(logEntries[i]));
+      if (entry) {
         container.appendChild(entry);
+      }
     }
   };
 
@@ -91,11 +96,11 @@ var DeviceLogUI = (function() {
    *
    * @param {Object} data A JSON structure of event log entries.
    */
-  var getLogCallback = function(data) {
+  const getLogCallback = function(data) {
     try {
       createEventLog(JSON.parse(data));
     } catch (e) {
-      var container = $('log-container');
+      const container = $('log-container');
       container.textContent = 'No log entries';
     }
   };
@@ -103,17 +108,18 @@ var DeviceLogUI = (function() {
   /**
    * Requests a log update.
    */
-  var requestLog = function() {
+  const requestLog = function() {
     chrome.send('DeviceLog.getLog');
   };
 
   /**
    * Sets refresh rate if the interval is found in the url.
    */
-  var setRefresh = function() {
-    var interval = parseQueryParams(window.location)['refresh'];
-    if (interval && interval != '')
+  const setRefresh = function() {
+    const interval = parseQueryParams(window.location)['refresh'];
+    if (interval && interval != '') {
       setInterval(requestLog, parseInt(interval) * 1000);
+    }
   };
 
   /**
@@ -127,10 +133,11 @@ var DeviceLogUI = (function() {
     $('log-level-debug').checked = false;
 
     // Show all types by default.
-    var checkboxes = document.querySelectorAll(
+    let checkboxes = document.querySelectorAll(
         '#log-checkbox-container input[type="checkbox"][id*="log-type"]');
-    for (var i = 0; i < checkboxes.length; ++i)
+    for (let i = 0; i < checkboxes.length; ++i) {
       checkboxes[i].checked = true;
+    }
 
     $('log-fileinfo').checked = false;
     $('log-timedetail').checked = false;
@@ -138,8 +145,9 @@ var DeviceLogUI = (function() {
     $('log-refresh').onclick = requestLog;
     checkboxes = document.querySelectorAll(
         '#log-checkbox-container input[type="checkbox"]');
-    for (var i = 0; i < checkboxes.length; ++i)
+    for (let i = 0; i < checkboxes.length; ++i) {
       checkboxes[i].onclick = requestLog;
+    }
 
     setRefresh();
     requestLog();

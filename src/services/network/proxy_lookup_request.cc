@@ -31,7 +31,8 @@ ProxyLookupRequest::~ProxyLookupRequest() {
   // |request_| should be non-null only when the network service is being torn
   // down.
   if (request_)
-    proxy_lookup_client_->OnProxyLookupComplete(base::nullopt);
+    proxy_lookup_client_->OnProxyLookupComplete(net::ERR_ABORTED,
+                                                base::nullopt);
 }
 
 void ProxyLookupRequest::Start(const GURL& url) {
@@ -50,9 +51,12 @@ void ProxyLookupRequest::Start(const GURL& url) {
 }
 
 void ProxyLookupRequest::OnResolveComplete(int result) {
-  proxy_lookup_client_->OnProxyLookupComplete(
-      result == net::OK ? base::Optional<net::ProxyInfo>(std::move(proxy_info_))
-                        : base::nullopt);
+  if (result == net::OK) {
+    proxy_lookup_client_->OnProxyLookupComplete(
+        net::OK, base::Optional<net::ProxyInfo>(std::move(proxy_info_)));
+  } else {
+    proxy_lookup_client_->OnProxyLookupComplete(result, base::nullopt);
+  }
   DestroySelf();
 }
 

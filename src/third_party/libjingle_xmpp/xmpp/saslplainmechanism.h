@@ -8,17 +8,17 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#ifndef WEBRTC_LIBJINGLE_XMPP_SASLPLAINMECHANISM_H_
-#define WEBRTC_LIBJINGLE_XMPP_SASLPLAINMECHANISM_H_
+#ifndef THIRD_PARTY_LIBJINGLE_XMPP_XMPP_SASLPLAINMECHANISM_H_
+#define THIRD_PARTY_LIBJINGLE_XMPP_XMPP_SASLPLAINMECHANISM_H_
 
 #include "third_party/libjingle_xmpp/xmpp/saslmechanism.h"
 
-namespace buzz {
+namespace jingle_xmpp {
 
 class SaslPlainMechanism : public SaslMechanism {
 
 public:
-  SaslPlainMechanism(const buzz::Jid user_jid, const std::string & password) :
+  SaslPlainMechanism(const jingle_xmpp::Jid user_jid, const std::string & password) :
     user_jid_(user_jid), password_(password) {}
 
   virtual std::string GetMechanismName() { return "PLAIN"; }
@@ -44,4 +44,4 @@ private:
 
 }
 
-#endif  // WEBRTC_LIBJINGLE_XMPP_SASLPLAINMECHANISM_H_
+#endif  // THIRD_PARTY_LIBJINGLE_XMPP_XMPP_SASLPLAINMECHANISM_H_

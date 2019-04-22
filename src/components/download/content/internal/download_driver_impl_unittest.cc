@@ -39,9 +39,12 @@ const char kFakeGuid[] = "fake_guid";
 // driver entry.
 MATCHER_P(DriverEntryEqual, entry, "") {
   return entry.guid == arg.guid && entry.state == arg.state &&
-         entry.done == arg.done &&
+         entry.done == arg.done && entry.can_resume == arg.can_resume &&
          entry.bytes_downloaded == arg.bytes_downloaded &&
-         entry.current_file_path.value() == arg.current_file_path.value();
+         entry.expected_total_size == arg.expected_total_size &&
+         entry.current_file_path.value() == arg.current_file_path.value() &&
+         entry.completion_time == arg.completion_time &&
+         entry.hash256 == arg.hash256;
 }
 
 }  // namespace
@@ -56,7 +59,7 @@ class DownloadDriverImplTest : public testing::Test {
   void SetUp() override {
     EXPECT_CALL(mock_client_, IsTrackingDownload(_))
         .WillRepeatedly(Return(true));
-    driver_ = std::make_unique<DownloadDriverImpl>(&mock_manager_);
+    driver_ = std::make_unique<DownloadDriverImpl>(&mock_manager_, nullptr);
   }
 
   // TODO(xingliu): implements test download manager for embedders to test.
@@ -162,6 +165,7 @@ TEST_F(DownloadDriverImplTest, DownloadItemUpdateEvents) {
 
   fake_item.SetReceivedBytes(1024);
   fake_item.SetState(DownloadState::COMPLETE);
+  fake_item.SetHash("01234567ABCDEF");
   entry = DownloadDriverImpl::CreateDriverEntry(&fake_item);
   EXPECT_CALL(mock_client_, OnDownloadSucceeded(DriverEntryEqual(entry)))
       .Times(1)

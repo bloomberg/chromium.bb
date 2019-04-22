@@ -56,38 +56,6 @@ Host.InspectorFrontendHostStub = class {
    * @override
    * @return {string}
    */
-  getSelectionBackgroundColor() {
-    return '#6e86ff';
-  }
-
-  /**
-   * @override
-   * @return {string}
-   */
-  getSelectionForegroundColor() {
-    return '#ffffff';
-  }
-
-  /**
-   * @override
-   * @return {string}
-   */
-  getInactiveSelectionBackgroundColor() {
-    return '#c9c8c8';
-  }
-
-  /**
-   * @override
-   * @return {string}
-   */
-  getInactiveSelectionForegroundColor() {
-    return '#323232';
-  }
-
-  /**
-   * @override
-   * @return {string}
-   */
   platform() {
     let match = navigator.userAgent.match(/Windows NT/);
     if (match)
@@ -250,6 +218,14 @@ Host.InspectorFrontendHostStub = class {
    * @param {number} bucketSize
    */
   recordEnumeratedHistogram(actionName, actionCode, bucketSize) {
+  }
+
+  /**
+   * @override
+   * @param {string} histogramName
+   * @param {number} duration
+   */
+  recordPerformanceHistogram(histogramName, duration) {
   }
 
   /**

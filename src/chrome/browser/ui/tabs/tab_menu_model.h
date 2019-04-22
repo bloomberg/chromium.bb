@@ -18,10 +18,12 @@ class TabMenuModel : public ui::SimpleMenuModel {
   TabMenuModel(ui::SimpleMenuModel::Delegate* delegate,
                TabStripModel* tab_strip,
                int index);
-  ~TabMenuModel() override {}
+  ~TabMenuModel() override;
 
  private:
   void Build(TabStripModel* tab_strip, int index);
+
+  std::unique_ptr<ui::SimpleMenuModel> add_to_existing_group_submenu_;
 
   DISALLOW_COPY_AND_ASSIGN(TabMenuModel);
 };

@@ -21,6 +21,7 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/view_class_properties.h"
 
 namespace ash {
 
@@ -40,6 +41,10 @@ FeaturePodIconButton::FeaturePodIconButton(views::ButtonListener* listener)
   SetBorder(views::CreateEmptyBorder(kUnifiedFeaturePodIconPadding));
   SetImageAlignment(ALIGN_CENTER, ALIGN_MIDDLE);
   TrayPopupUtils::ConfigureTrayPopupButton(this);
+
+  auto path = std::make_unique<SkPath>();
+  path->addOval(gfx::RectToSkRect(gfx::Rect(kUnifiedFeaturePodIconSize)));
+  SetProperty(views::kHighlightPathKey, path.release());
 }
 
 FeaturePodIconButton::~FeaturePodIconButton() = default;
@@ -95,9 +100,7 @@ std::unique_ptr<views::InkDropMask> FeaturePodIconButton::CreateInkDropMask()
 
 void FeaturePodIconButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   ImageButton::GetAccessibleNodeData(node_data);
-  base::string16 name;
-  GetTooltipText(gfx::Point(), &name);
-  node_data->SetName(name);
+  node_data->SetName(GetTooltipText(gfx::Point()));
   node_data->role = ax::mojom::Role::kToggleButton;
   node_data->SetCheckedState(toggled_ ? ax::mojom::CheckedState::kTrue
                                       : ax::mojom::CheckedState::kFalse);
@@ -132,6 +135,8 @@ FeaturePodLabelButton::FeaturePodLabelButton(views::ButtonListener* listener)
 FeaturePodLabelButton::~FeaturePodLabelButton() = default;
 
 void FeaturePodLabelButton::Layout() {
+  DCHECK(focus_ring());
+  focus_ring()->Layout();
   LayoutInCenter(label_, GetContentsBounds().y());
   LayoutInCenter(sub_label_, GetContentsBounds().CenterPoint().y());
 

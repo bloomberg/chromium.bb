@@ -60,11 +60,11 @@
   <tr>
     <td>data</td>
     <th>row head</th>
-    <th>column head</th>
+    <th>row head</th>
   </tr>
   <tr>
-    <th>column head</th>
-    <th>column head</th>
+    <th>row head</th>
+    <th>row head</th>
     <td>data</td>
   </tr>
   <tr>
@@ -184,15 +184,9 @@
 
         var table3 = accessibilityController.accessibleElementById("table3");
         // Row headers
-        shouldBeTrue("table3.rowHeaderAtIndex(0).isEqual(table3.cellForColumnAndRow(1, 0))");
-        shouldBeTrue("table3.rowHeaderAtIndex(1).isEqual(table3.cellForColumnAndRow(0, 2))");
-        shouldBeTrue("table3.rowHeaderAtIndex(2).isEqual(table3.cellForColumnAndRow(2, 2))");
-        shouldBe("table3.rowHeadersCount", "3");
+        shouldBe("table3.rowHeadersCount", "6");
         // Column headers
-        shouldBeTrue("table3.columnHeaderAtIndex(0).isEqual(table3.cellForColumnAndRow(2, 0))");
-        shouldBeTrue("table3.columnHeaderAtIndex(1).isEqual(table3.cellForColumnAndRow(0, 1))");
-        shouldBeTrue("table3.columnHeaderAtIndex(2).isEqual(table3.cellForColumnAndRow(1, 1))");
-        shouldBe("table3.columnHeadersCount", "3");
+        shouldBe("table3.columnHeadersCount", "0");
 
         var table4 = accessibilityController.accessibleElementById("table4");
         // Row headers

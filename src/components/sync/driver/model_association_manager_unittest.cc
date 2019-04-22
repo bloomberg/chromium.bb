@@ -7,8 +7,8 @@
 #include <memory>
 
 #include "base/callback.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/sync/driver/configure_context.h"
 #include "components/sync/driver/fake_data_type_controller.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -54,7 +54,8 @@ class SyncModelAssociationManagerTest : public testing::Test {
   SyncModelAssociationManagerTest() {}
 
  protected:
-  base::MessageLoopForUI ui_loop_;
+  base::test::ScopedTaskEnvironment task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::UI};
   MockModelAssociationManagerDelegate delegate_;
   DataTypeController::TypeMap controllers_;
 };

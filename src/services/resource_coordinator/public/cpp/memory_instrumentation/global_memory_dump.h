@@ -5,6 +5,9 @@
 #ifndef SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_MEMORY_INSTRUMENTATION_GLOBAL_MEMORY_DUMP_H_
 #define SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_MEMORY_INSTRUMENTATION_GLOBAL_MEMORY_DUMP_H_
 
+#include <utility>
+#include <vector>
+
 #include "base/component_export.h"
 #include "base/optional.h"
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
@@ -39,6 +42,25 @@ class COMPONENT_EXPORT(RESOURCE_COORDINATOR_PUBLIC_MEMORY_INSTRUMENTATION)
     DISALLOW_COPY_AND_ASSIGN(ProcessDump);
   };
 
+ public:
+  class COMPONENT_EXPORT(RESOURCE_COORDINATOR_PUBLIC_MEMORY_INSTRUMENTATION)
+      AggregatedMetrics {
+   public:
+    AggregatedMetrics(mojom::AggregatedMetricsPtr aggregated_metrics);
+    ~AggregatedMetrics();
+
+    size_t native_library_resident_kb() const {
+      if (!aggregated_metrics_)
+        return 0;
+      return aggregated_metrics_->native_library_resident_kb;
+    }
+
+   private:
+    mojom::AggregatedMetricsPtr aggregated_metrics_;
+
+    DISALLOW_COPY_AND_ASSIGN(AggregatedMetrics);
+  };
+
   ~GlobalMemoryDump();
 
   // Creates an owned instance of this class wrapping the given mojo struct.
@@ -49,10 +71,14 @@ class COMPONENT_EXPORT(RESOURCE_COORDINATOR_PUBLIC_MEMORY_INSTRUMENTATION)
     return process_dumps_;
   }
 
+  const AggregatedMetrics& aggregated_metrics() { return aggregated_metrics_; }
+
  private:
-  GlobalMemoryDump(std::vector<mojom::ProcessMemoryDumpPtr> process_dumps);
+  GlobalMemoryDump(std::vector<mojom::ProcessMemoryDumpPtr> process_dumps,
+                   mojom::AggregatedMetricsPtr aggregated_metrics);
 
   std::forward_list<ProcessDump> process_dumps_;
+  AggregatedMetrics aggregated_metrics_;
 
   DISALLOW_COPY_AND_ASSIGN(GlobalMemoryDump);
 };

@@ -5,6 +5,8 @@
 #ifndef CHROME_RENDERER_NET_BENCHMARKING_EXTENSION_H_
 #define CHROME_RENDERER_NET_BENCHMARKING_EXTENSION_H_
 
+#include <memory>
+
 namespace v8 {
 class Extension;
 }
@@ -13,7 +15,7 @@ namespace extensions_v8 {
 
 class NetBenchmarkingExtension {
  public:
-  static v8::Extension* Get();
+  static std::unique_ptr<v8::Extension> Get();
 };
 
 }  // namespace extensions_v8

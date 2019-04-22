@@ -7,6 +7,7 @@
 #include <random>
 
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "testing/libfuzzer/fuzzers/color_space_data.h"
 #include "third_party/qcms/src/qcms.h"
 
@@ -18,7 +19,7 @@ static void GeneratePixels(size_t hash) {
   static std::uniform_int_distribution<uint32_t> uniform(0u, ~0u);
 
   std::mt19937_64 random(hash);
-  for (size_t i = 0; i < arraysize(pixels); ++i)
+  for (size_t i = 0; i < base::size(pixels); ++i)
     pixels[i] = uniform(random);
 }
 
@@ -46,9 +47,9 @@ static void ColorTransform(bool input) {
 
 static qcms_profile* SelectProfile(size_t hash) {
   static qcms_profile* profiles[4] = {
-      qcms_profile_from_memory(kSRGBData, arraysize(kSRGBData)),
-      qcms_profile_from_memory(kSRGBPara, arraysize(kSRGBPara)),
-      qcms_profile_from_memory(kAdobeData, arraysize(kAdobeData)),
+      qcms_profile_from_memory(kSRGBData, base::size(kSRGBData)),
+      qcms_profile_from_memory(kSRGBPara, base::size(kSRGBPara)),
+      qcms_profile_from_memory(kAdobeData, base::size(kAdobeData)),
       qcms_profile_sRGB(),
   };
 

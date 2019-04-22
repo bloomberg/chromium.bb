@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://html.spec.whatwg.org/multipage/embedded-content.html#the-trackevent-interface
+// https://html.spec.whatwg.org/C/#the-trackevent-interface
 
 dictionary TrackEventInit : EventInit {
     (VideoTrack or AudioTrack or TextTrack)? track;

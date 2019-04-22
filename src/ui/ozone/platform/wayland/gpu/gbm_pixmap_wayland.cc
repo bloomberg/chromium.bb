@@ -7,6 +7,7 @@
 #include <drm_fourcc.h>
 #include <gbm.h>
 #include <xf86drmMode.h>
+#include <memory>
 
 #include "base/files/platform_file.h"
 #include "base/logging.h"
@@ -20,25 +21,33 @@
 #include "ui/ozone/common/linux/gbm_device.h"
 #include "ui/ozone/platform/wayland/gpu/gbm_surfaceless_wayland.h"
 #include "ui/ozone/platform/wayland/gpu/wayland_connection_proxy.h"
-#include "ui/ozone/platform/wayland/wayland_surface_factory.h"
+#include "ui/ozone/platform/wayland/gpu/wayland_surface_factory.h"
 #include "ui/ozone/public/overlay_plane.h"
 #include "ui/ozone/public/ozone_platform.h"
 
 namespace ui {
 
 GbmPixmapWayland::GbmPixmapWayland(WaylandSurfaceFactory* surface_manager,
-                                   WaylandConnectionProxy* connection)
-    : surface_manager_(surface_manager), connection_(connection) {}
+                                   WaylandConnectionProxy* connection,
+                                   gfx::AcceleratedWidget widget)
+    : surface_manager_(surface_manager),
+      connection_(connection),
+      widget_(widget) {}
 
 GbmPixmapWayland::~GbmPixmapWayland() {
-  connection_->DestroyZwpLinuxDmabuf(GetUniqueId());
+  if (gbm_bo_)
+    connection_->DestroyZwpLinuxDmabuf(widget_, GetUniqueId());
 }
 
 bool GbmPixmapWayland::InitializeBuffer(gfx::Size size,
                                         gfx::BufferFormat format,
                                         gfx::BufferUsage usage) {
-  TRACE_EVENT1("Wayland", "GbmPixmapWayland::InitializeBuffer", "size",
+  TRACE_EVENT1("wayland", "GbmPixmapWayland::InitializeBuffer", "size",
                size.ToString());
+
+  if (!connection_->gbm_device())
+    return false;
+
   uint32_t flags = 0;
   switch (usage) {
     case gfx::BufferUsage::GPU_READ:
@@ -57,7 +66,6 @@ bool GbmPixmapWayland::InitializeBuffer(gfx::Size size,
       flags = GBM_BO_USE_SCANOUT;
       break;
     case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE:
-    case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT:
       flags = GBM_BO_USE_LINEAR;
       break;
     default:
@@ -78,10 +86,6 @@ bool GbmPixmapWayland::InitializeBuffer(gfx::Size size,
 
 bool GbmPixmapWayland::AreDmaBufFdsValid() const {
   return gbm_bo_->AreFdsValid();
-}
-
-size_t GbmPixmapWayland::GetDmaBufFdCount() const {
-  return gbm_bo_->GetFdCount();
 }
 
 int GbmPixmapWayland::GetDmaBufFd(size_t plane) const {
@@ -132,21 +136,22 @@ gfx::NativePixmapHandle GbmPixmapWayland::ExportHandle() {
   gfx::NativePixmapHandle handle;
   gfx::BufferFormat format = GetBufferFormat();
 
-  // TODO(dcastagna): Use gbm_bo_get_num_planes once all the formats we use are
+  // TODO(dcastagna): Use gbm_bo_get_plane_count once all the formats we use are
   // supported by gbm.
-  for (size_t i = 0; i < gfx::NumberOfPlanesForBufferFormat(format); ++i) {
-    // Some formats (e.g: YVU_420) might have less than one fd per plane.
-    if (i < GetDmaBufFdCount()) {
-      base::ScopedFD scoped_fd(HANDLE_EINTR(dup(GetDmaBufFd(i))));
-      if (!scoped_fd.is_valid()) {
-        PLOG(ERROR) << "dup";
-        return gfx::NativePixmapHandle();
-      }
-      handle.fds.emplace_back(
-          base::FileDescriptor(scoped_fd.release(), true /* auto_close */));
+  const size_t num_planes = gfx::NumberOfPlanesForBufferFormat(format);
+  std::vector<base::ScopedFD> scoped_fds(num_planes);
+  for (size_t i = 0; i < num_planes; ++i) {
+    scoped_fds[i] = base::ScopedFD(HANDLE_EINTR(dup(GetDmaBufFd(i))));
+    if (!scoped_fds[i].is_valid()) {
+      PLOG(ERROR) << "dup";
+      return gfx::NativePixmapHandle();
     }
+  }
+
+  for (size_t i = 0; i < num_planes; ++i) {
     handle.planes.emplace_back(GetDmaBufPitch(i), GetDmaBufOffset(i),
-                               gbm_bo_->GetPlaneSize(i), GetDmaBufModifier(i));
+                               gbm_bo_->GetPlaneSize(i),
+                               std::move(scoped_fds[i]), GetDmaBufModifier(i));
   }
   return handle;
 }
@@ -162,8 +167,7 @@ void GbmPixmapWayland::CreateZwpLinuxDmabuf() {
   for (size_t i = 0; i < plane_count; ++i) {
     strides.push_back(GetDmaBufPitch(i));
     offsets.push_back(GetDmaBufOffset(i));
-    if (modifier != DRM_FORMAT_MOD_INVALID)
-      modifiers.push_back(modifier);
+    modifiers.push_back(modifier);
   }
 
   base::ScopedFD fd(HANDLE_EINTR(dup(GetDmaBufFd(0))));

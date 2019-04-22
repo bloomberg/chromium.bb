@@ -28,6 +28,7 @@
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/grit/content_resources.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -47,6 +48,7 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/buffer_format_util.h"
+#include "ui/gfx/buffer_usage_util.h"
 #include "ui/gl/gpu_switching_manager.h"
 
 #if defined(OS_WIN)
@@ -153,7 +155,7 @@ std::unique_ptr<base::ListValue> BasicGpuInfoAsListValue(
   auto basic_info = std::make_unique<base::ListValue>();
   basic_info->Append(NewDescriptionValuePair(
       "Initialization time",
-      base::Int64ToString(gpu_info.initialization_time.InMilliseconds())));
+      base::NumberToString(gpu_info.initialization_time.InMilliseconds())));
   basic_info->Append(NewDescriptionValuePair(
       "In-process GPU",
       std::make_unique<base::Value>(gpu_info.in_process_gpu)));
@@ -274,9 +276,21 @@ std::unique_ptr<base::ListValue> BasicGpuInfoAsListValue(
         ui::IsCompositingManagerPresent() ? "Yes" : "No"));
   }
 #endif
-  std::string direct_rendering = gpu_info.direct_rendering ? "Yes" : "No";
-  basic_info->Append(
-      NewDescriptionValuePair("Direct rendering", direct_rendering));
+  std::string direct_rendering_version;
+  if (gpu_info.direct_rendering_version == "1") {
+    direct_rendering_version = "indirect";
+  } else if (gpu_info.direct_rendering_version == "2") {
+    direct_rendering_version = "direct but version unknown";
+  } else if (base::StartsWith(gpu_info.direct_rendering_version, "2.",
+                              base::CompareCase::INSENSITIVE_ASCII)) {
+    direct_rendering_version = gpu_info.direct_rendering_version;
+    base::ReplaceFirstSubstringAfterOffset(&direct_rendering_version, 0, "2.",
+                                           "DRI");
+  } else {
+    direct_rendering_version = "unknown";
+  }
+  basic_info->Append(NewDescriptionValuePair("Direct rendering version",
+                                             direct_rendering_version));
 
   std::string reset_strategy =
       base::StringPrintf("0x%04x", gpu_info.gl_reset_notification_strategy);
@@ -316,29 +330,6 @@ std::unique_ptr<base::DictionaryValue> GpuInfoAsDictionaryValue() {
   return info;
 }
 
-const char* BufferUsageToString(gfx::BufferUsage usage) {
-  switch (usage) {
-    case gfx::BufferUsage::GPU_READ:
-      return "GPU_READ";
-    case gfx::BufferUsage::SCANOUT:
-      return "SCANOUT";
-    case gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE:
-      return "SCANOUT_CAMERA_READ_WRITE";
-    case gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE:
-      return "CAMERA_AND_CPU_READ_WRITE";
-    case gfx::BufferUsage::SCANOUT_CPU_READ_WRITE:
-      return "SCANOUT_CPU_READ_WRITE";
-    case gfx::BufferUsage::SCANOUT_VDA_WRITE:
-      return "SCANOUT_VDA_WRITE";
-    case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE:
-      return "GPU_READ_CPU_READ_WRITE";
-    case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT:
-      return "GPU_READ_CPU_READ_WRITE_PERSISTENT";
-  }
-  NOTREACHED();
-  return nullptr;
-}
-
 std::unique_ptr<base::ListValue> CompositorInfo() {
   auto compositor_info = std::make_unique<base::ListValue>();
 
@@ -370,7 +361,7 @@ std::unique_ptr<base::ListValue> GpuMemoryBufferInfo() {
         native_usage_support = base::StringPrintf(
             "%s%s %s", native_usage_support.c_str(),
             native_usage_support.empty() ? "" : ",",
-            BufferUsageToString(static_cast<gfx::BufferUsage>(usage)));
+            gfx::BufferUsageToString(static_cast<gfx::BufferUsage>(usage)));
       }
     }
     if (native_usage_support.empty())
@@ -625,7 +616,7 @@ std::unique_ptr<base::DictionaryValue> GpuMessageHandler::OnRequestClientInfo(
 
   auto dict = std::make_unique<base::DictionaryValue>();
 
-  dict->SetString("version", GetContentClient()->GetProduct());
+  dict->SetString("version", GetContentClient()->browser()->GetProduct());
   dict->SetString("command_line",
       base::CommandLine::ForCurrentProcess()->GetCommandLineString());
   dict->SetString("operating_system",

@@ -87,6 +87,10 @@ tr.exportTo('tr.metrics.rendering', function() {
     map.set(key, oldValue + value);
   }
 
+  function categoryShouldHaveBreakdown(category) {
+    return category === 'total_all' || category === 'total_fast_path';
+  }
+
   function* getCategories_(threadName) {
     let isOther = true;
     for (const [category, regexps] of CATEGORY_THREAD_MAP) {
@@ -113,6 +117,7 @@ tr.exportTo('tr.metrics.rendering', function() {
   function addCpuUtilizationHistograms(
       histograms, model, segments, shouldNormalize, segmentCostFunc,
       histogramNameFunc, description, unit) {
+    if (!unit) unit = tr.b.Unit.byName.unitlessNumber;
     const histogramMap = new Map();
     for (const category of ALL_CATEGORIES) {
       const histogram = histograms.createHistogram(
@@ -154,6 +159,7 @@ tr.exportTo('tr.metrics.rendering', function() {
       for (const [threadName, coresPerSec] of threadValues) {
         for (const category of getCategories_(threadName)) {
           addValueToMap_(categoryValues, category, coresPerSec);
+          if (!categoryShouldHaveBreakdown(category)) continue;
           if (!breakdowns.has(category)) {
             breakdowns.set(category, new tr.v.d.Breakdown());
           }
@@ -184,6 +190,7 @@ tr.exportTo('tr.metrics.rendering', function() {
 
   const SUMMARY_OPTIONS = {
     percentile: [0.90, 0.95],
+    ci: [0.95],
   };
 
   return {

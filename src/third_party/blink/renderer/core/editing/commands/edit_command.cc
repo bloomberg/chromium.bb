@@ -90,8 +90,9 @@ bool EditCommand::IsRenderedCharacter(const Position& position) {
 
 void EditCommand::SetParent(CompositeEditCommand* parent) {
   DCHECK((parent && !parent_) || (!parent && parent_));
-  DCHECK(!parent || !IsCompositeEditCommand() ||
-         !ToCompositeEditCommand(this)->GetUndoStep());
+  auto* composite_edit_command = DynamicTo<CompositeEditCommand>(this);
+  DCHECK(!parent || !composite_edit_command ||
+         !composite_edit_command->GetUndoStep());
   parent_ = parent;
 }
 
@@ -100,7 +101,7 @@ void SimpleEditCommand::DoReapply() {
   DoApply(&editing_state);
 }
 
-void EditCommand::Trace(blink::Visitor* visitor) {
+void EditCommand::Trace(Visitor* visitor) {
   visitor->Trace(document_);
   visitor->Trace(parent_);
 }

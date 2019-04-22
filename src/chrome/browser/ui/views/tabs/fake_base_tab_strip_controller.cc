@@ -19,8 +19,11 @@ FakeBaseTabStripController::~FakeBaseTabStripController() {
 void FakeBaseTabStripController::AddTab(int index, bool is_active) {
   num_tabs_++;
   tab_strip_->AddTabAt(index, TabRendererData(), is_active);
+  ui::MouseEvent fake_event =
+      ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::PointF(), gfx::PointF(),
+                     base::TimeTicks::Now(), 0, 0);
   if (is_active)
-    SelectTab(index);
+    SelectTab(index, fake_event);
 }
 
 void FakeBaseTabStripController::AddPinnedTab(int index, bool is_active) {
@@ -42,6 +45,29 @@ void FakeBaseTabStripController::RemoveTab(int index) {
     SetActiveIndex(std::min(active_index_, num_tabs_ - 1));
   }
   tab_strip_->RemoveTabAt(nullptr, index, was_active);
+}
+
+TabGroupData* FakeBaseTabStripController::CreateTabGroup() {
+  groups_.push_back(std::make_unique<TabGroupData>());
+  return groups_.back().get();
+}
+
+void FakeBaseTabStripController::MoveTabIntoGroup(int index,
+                                                  TabGroupData* new_group) {
+  TabGroupData* old_group = tab_to_group_[index];
+  tab_to_group_[index] = new_group;
+  tab_strip_->ChangeTabGroup(index, old_group, new_group);
+}
+
+std::vector<int> FakeBaseTabStripController::ListTabsInGroup(
+    const TabGroupData* group) const {
+  DCHECK(group);
+  std::vector<int> result;
+  for (auto const& tab_header_pair : tab_to_group_) {
+    if (tab_header_pair.second == group)
+      result.push_back(tab_header_pair.first);
+  }
+  return result;
 }
 
 const ui::ListSelectionModel&
@@ -75,7 +101,7 @@ bool FakeBaseTabStripController::IsTabPinned(int index) const {
   return false;
 }
 
-void FakeBaseTabStripController::SelectTab(int index) {
+void FakeBaseTabStripController::SelectTab(int index, const ui::Event& event) {
   if (!IsValidIndex(index) || active_index_ == index)
     return;
 
@@ -89,6 +115,11 @@ void FakeBaseTabStripController::ToggleSelected(int index) {
 }
 
 void FakeBaseTabStripController::AddSelectionFromAnchorTo(int index) {
+}
+
+bool FakeBaseTabStripController::BeforeCloseTab(int index,
+                                                CloseTabSource source) {
+  return true;
 }
 
 void FakeBaseTabStripController::CloseTab(int index, CloseTabSource source) {
@@ -113,11 +144,6 @@ bool FakeBaseTabStripController::IsCompatibleWith(TabStrip* other) const {
   return false;
 }
 
-NewTabButtonPosition FakeBaseTabStripController::GetNewTabButtonPosition()
-    const {
-  return AFTER_TABS;
-}
-
 void FakeBaseTabStripController::CreateNewTab() {
   AddTab(num_tabs_, true);
 }
@@ -127,10 +153,6 @@ void FakeBaseTabStripController::CreateNewTabWithLocation(
 }
 
 void FakeBaseTabStripController::StackedLayoutMaybeChanged() {
-}
-
-bool FakeBaseTabStripController::IsSingleTabModeAvailable() {
-  return false;
 }
 
 void FakeBaseTabStripController::OnStartedDraggingTabs() {}

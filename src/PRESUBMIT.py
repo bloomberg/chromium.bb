@@ -15,7 +15,7 @@ _EXCLUDED_PATHS = (
     r"^native_client_sdk[\\/]src[\\/]tools[\\/].*.mk",
     r"^net[\\/]tools[\\/]spdyshark[\\/].*",
     r"^skia[\\/].*",
-    r"^third_party[\\/](WebKit|blink)[\\/].*",
+    r"^third_party[\\/]blink[\\/].*",
     r"^third_party[\\/]breakpad[\\/].*",
     r"^v8[\\/].*",
     r".*MakeFile$",
@@ -48,6 +48,7 @@ _TEST_CODE_EXCLUDED_PATHS = (
     r'.+_test_(base|support|util)%s' % _IMPLEMENTATION_EXTENSIONS,
     r'.+_(api|browser|eg|int|perf|pixel|unit|ui)?test(_[a-z]+)?%s' %
         _IMPLEMENTATION_EXTENSIONS,
+    r'.+_(fuzz|fuzzer)(_[a-z]+)?%s' % _IMPLEMENTATION_EXTENSIONS,
     r'.+profile_sync_service_harness%s' % _IMPLEMENTATION_EXTENSIONS,
     r'.*[\\/](test|tool(s)?)[\\/].*',
     # content_shell is used for running layout tests.
@@ -58,6 +59,7 @@ _TEST_CODE_EXCLUDED_PATHS = (
     r'testing[\\/]iossim[\\/]iossim\.mm$',
 )
 
+_THIRD_PARTY_EXCEPT_BLINK = 'third_party/(?!blink/)'
 
 _TEST_ONLY_WARNING = (
     'You might be calling functions intended only for testing from\n'
@@ -72,6 +74,10 @@ _INCLUDE_ORDER_WARNING = (
     'cppguide.html#Names_and_Order_of_Includes')
 
 
+# Format: Sequence of tuples containing:
+# * String pattern or, if starting with a slash, a regular expression.
+# * Sequence of strings to show when the pattern matches.
+# * Error flag. True if a match is a presubmit error, otherwise it's a warning.
 _BANNED_JAVA_FUNCTIONS = (
     (
       'StrictMode.allowThreadDiskReads()',
@@ -91,6 +97,10 @@ _BANNED_JAVA_FUNCTIONS = (
     ),
 )
 
+# Format: Sequence of tuples containing:
+# * String pattern or, if starting with a slash, a regular expression.
+# * Sequence of strings to show when the pattern matches.
+# * Error flag. True if a match is a presubmit error, otherwise it's a warning.
 _BANNED_OBJC_FUNCTIONS = (
     (
       'addTrackingRect:',
@@ -184,6 +194,10 @@ _BANNED_OBJC_FUNCTIONS = (
     ),
 )
 
+# Format: Sequence of tuples containing:
+# * String pattern or, if starting with a slash, a regular expression.
+# * Sequence of strings to show when the pattern matches.
+# * Error flag. True if a match is a presubmit error, otherwise it's a warning.
 _BANNED_IOS_OBJC_FUNCTIONS = (
     (
       r'/\bTEST[(]',
@@ -207,10 +221,12 @@ _BANNED_IOS_OBJC_FUNCTIONS = (
 )
 
 
+# Format: Sequence of tuples containing:
+# * String pattern or, if starting with a slash, a regular expression.
+# * Sequence of strings to show when the pattern matches.
+# * Error flag. True if a match is a presubmit error, otherwise it's a warning.
+# * Sequence of paths to *not* check (regexps).
 _BANNED_CPP_FUNCTIONS = (
-    # Make sure that gtest's FRIEND_TEST() macro is not used; the
-    # FRIEND_TEST_ALL_PREFIXES() macro from base/gtest_prod_util.h should be
-    # used instead since that allows for FLAKY_ and DISABLED_ prefixes.
     (
       r'\bNULL\b',
       (
@@ -219,6 +235,9 @@ _BANNED_CPP_FUNCTIONS = (
       True,
       (),
     ),
+    # Make sure that gtest's FRIEND_TEST() macro is not used; the
+    # FRIEND_TEST_ALL_PREFIXES() macro from base/gtest_prod_util.h should be
+    # used instead since that allows for FLAKY_ and DISABLED_ prefixes.
     (
       'FRIEND_TEST(',
       (
@@ -343,6 +362,7 @@ _BANNED_CPP_FUNCTIONS = (
       ),
       True,
       (
+          r'^base[\\/]third_party[\\/]symbolize[\\/].*',
           r'^third_party[\\/]abseil-cpp[\\/].*',
       ),
     ),
@@ -446,6 +466,86 @@ _BANNED_CPP_FUNCTIONS = (
       (),
     ),
     (
+      r'/\bstd::to_string\b',
+      (
+        'std::to_string is locale dependent and slower than alternatives.',
+        'For locale-independent strings, e.g. writing numbers to and from',
+        'disk profiles, use base::NumberToString().',
+        'For user-visible strings, use base::FormatNumber() and',
+        'the related functions in base/i18n/number_formatting.h.',
+      ),
+      False,  # Only a warning for now since it is already used,
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
+    ),
+    (
+      r'/\bstd::shared_ptr\b',
+      (
+        'std::shared_ptr should not be used. Use scoped_refptr instead.',
+      ),
+      True,
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
+    ),
+    (
+      r'/\blong long\b',
+      (
+        'long long is banned. Use stdint.h if you need a 64 bit number.',
+      ),
+      False,  # Only a warning since it is already used.
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
+    ),
+    (
+      r'/\bstd::bind\b',
+      (
+        'std::bind is banned because of lifetime risks.',
+        'Use base::BindOnce or base::BindRepeating instead.',
+      ),
+      True,
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
+    ),
+    (
+      r'/\b#include <chrono>\b',
+      (
+        '<chrono> overlaps with Time APIs in base. Keep using',
+        'base classes.',
+      ),
+      True,
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
+    ),
+    (
+      r'/\b#include <exception>\b',
+      (
+        'Exceptions are banned and disabled in Chromium.',
+      ),
+      True,
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
+    ),
+    (
+      r'/\bstd::function\b',
+      (
+        'std::function is banned. Instead use base::Callback which directly',
+        'supports Chromium\'s weak pointers, ref counting and more.',
+      ),
+      False,  # Only a warning since there are dozens of uses already.
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Do not warn in third_party folders.
+    ),
+    (
+      r'/\b#include <random>\b',
+      (
+        'Do not use any random number engines from <random>. Instead',
+        'use base::RandomBitGenerator.',
+      ),
+      True,
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
+    ),
+    (
+      r'/\bstd::ratio\b',
+      (
+        'std::ratio is banned by the Google Style Guide.',
+      ),
+      True,
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
+    ),
+    (
       (r'/base::ThreadRestrictions::(ScopedAllowIO|AssertIOAllowed|'
        r'DisallowWaiting|AssertWaitAllowed|SetWaitAllowed|ScopedAllowWait)'),
       (
@@ -477,6 +577,15 @@ _BANNED_CPP_FUNCTIONS = (
       (
           'Please consider using base::{Once,Repeating}Closure instead',
           'of base::Closure. (crbug.com/714018)',
+      ),
+      False,
+      (),
+    ),
+    (
+      r'/base::SharedMemory(|Handle)',
+      (
+          'base::SharedMemory is deprecated. Please use',
+          '{Writable,ReadOnly}SharedMemoryRegion instead.',
       ),
       False,
       (),
@@ -535,9 +644,9 @@ _BANNED_CPP_FUNCTIONS = (
       (),
     ),
     (
-      'sqlite3_initialize',
+      'sqlite3_initialize(',
       (
-        'Instead of sqlite3_initialize, depend on //sql, ',
+        'Instead of calling sqlite3_initialize(), depend on //sql, ',
         '#include "sql/initialize.h" and use sql::EnsureSqliteInitialized().',
       ),
       True,
@@ -565,15 +674,6 @@ _BANNED_CPP_FUNCTIONS = (
       ),
     ),
     (
-      r'/\barraysize\b',
-      (
-          "arraysize is deprecated, please use base::size(array) instead ",
-          "(https://crbug.com/837308). ",
-      ),
-      False,
-      (),
-    ),
-    (
       r'std::random_shuffle',
       (
         'std::random_shuffle is deprecated in C++14, and removed in C++17. Use',
@@ -588,6 +688,34 @@ _BANNED_CPP_FUNCTIONS = (
         'web::HTTPserver is deprecated use net::EmbeddedTestServer instead.',
       ),
       False,
+      (),
+    ),
+    (
+      'GetAddressOf',
+      (
+        'Improper use of Microsoft::WRL::ComPtr<T>::GetAddressOf() has been ',
+        'implicated in a few leaks. Use operator& instead.'
+      ),
+      True,
+      (),
+    ),
+    (
+      'DEFINE_TYPE_CASTS',
+      (
+        'DEFINE_TYPE_CASTS is deprecated. Instead, use downcast helpers from ',
+        '//third_party/blink/renderer/platform/casting.h.'
+      ),
+      True,
+      (
+        r'^third_party/blink/renderer/.*\.(cc|h)$',
+      ),
+    ),
+    (
+      r'/\bmojo::DataPipe\b',
+      (
+        'mojo::DataPipe is deprecated. Use mojo::CreateDataPipe instead.',
+      ),
+      True,
       (),
     ),
 )
@@ -651,20 +779,21 @@ _ANDROID_SPECIFIC_PYDEPS_FILES = [
     'android_webview/tools/run_cts.pydeps',
     'base/android/jni_generator/jni_generator.pydeps',
     'base/android/jni_generator/jni_registration_generator.pydeps',
+    'build/android/devil_chromium.pydeps',
     'build/android/gyp/aar.pydeps',
     'build/android/gyp/aidl.pydeps',
     'build/android/gyp/apkbuilder.pydeps',
-    'build/android/gyp/app_bundle_to_apks.pydeps',
+    'build/android/gyp/assert_static_initializers.pydeps',
     'build/android/gyp/bytecode_processor.pydeps',
     'build/android/gyp/compile_resources.pydeps',
+    'build/android/gyp/create_app_bundle_minimal_apks.pydeps',
     'build/android/gyp/create_bundle_wrapper_script.pydeps',
     'build/android/gyp/copy_ex.pydeps',
     'build/android/gyp/create_app_bundle.pydeps',
     'build/android/gyp/create_apk_operations_script.pydeps',
-    'build/android/gyp/create_dist_jar.pydeps',
     'build/android/gyp/create_java_binary_script.pydeps',
+    'build/android/gyp/create_size_info_files.pydeps',
     'build/android/gyp/create_stack_script.pydeps',
-    'build/android/gyp/create_test_runner_script.pydeps',
     'build/android/gyp/create_tool_wrapper.pydeps',
     'build/android/gyp/desugar.pydeps',
     'build/android/gyp/dexsplitter.pydeps',
@@ -676,25 +805,25 @@ _ANDROID_SPECIFIC_PYDEPS_FILES = [
     'build/android/gyp/generate_linker_version_script.pydeps',
     'build/android/gyp/ijar.pydeps',
     'build/android/gyp/java_cpp_enum.pydeps',
+    'build/android/gyp/java_cpp_strings.pydeps',
     'build/android/gyp/javac.pydeps',
     'build/android/gyp/jinja_template.pydeps',
     'build/android/gyp/lint.pydeps',
     'build/android/gyp/main_dex_list.pydeps',
-    'build/android/gyp/merge_jar_info_files.pydeps',
     'build/android/gyp/merge_manifest.pydeps',
     'build/android/gyp/prepare_resources.pydeps',
     'build/android/gyp/proguard.pydeps',
     'build/android/gyp/write_build_config.pydeps',
     'build/android/gyp/write_ordered_libraries.pydeps',
+    'build/android/gyp/zip.pydeps',
     'build/android/incremental_install/generate_android_manifest.pydeps',
     'build/android/incremental_install/write_installer_json.pydeps',
     'build/android/resource_sizes.pydeps',
     'build/android/test_runner.pydeps',
     'build/android/test_wrapper/logdog_wrapper.pydeps',
     'build/protoc_java.pydeps',
-    ('build/secondary/third_party/android_platform/'
-     'development/scripts/stack.pydeps'),
     'net/tools/testserver/testserver.pydeps',
+    'third_party/android_platform/development/scripts/stack.pydeps',
 ]
 
 
@@ -1376,7 +1505,7 @@ def _CheckForVersionControlConflictsInFile(input_api, f):
   pattern = input_api.re.compile('^(?:<<<<<<<|>>>>>>>) |^=======$')
   errors = []
   for line_num, line in f.ChangedContents():
-    if f.LocalPath().endswith('.md'):
+    if f.LocalPath().endswith(('.md', '.rst', '.txt')):
       # First-level headers in markdown look a lot like version control
       # conflict markers. http://daringfireball.net/projects/markdown/basics
       continue
@@ -1551,7 +1680,7 @@ def _CheckAddedDepsHaveTargetApprovals(input_api, output_api):
   virtual_depended_on_files = set()
 
   file_filter = lambda f: not input_api.re.match(
-      r"^third_party[\\/](WebKit|blink)[\\/].*", f.LocalPath())
+      r"^third_party[\\/]blink[\\/].*", f.LocalPath())
   for f in input_api.AffectedFiles(include_deletes=False,
                                    file_filter=file_filter):
     filename = input_api.os_path.basename(f.LocalPath())
@@ -1632,6 +1761,7 @@ def _CheckSpamLogging(input_api, output_api):
                  r"^chrome[\\/]browser[\\/]chrome_browser_main\.cc$",
                  r"^chrome[\\/]browser[\\/]ui[\\/]startup[\\/]"
                      r"startup_browser_creator\.cc$",
+                 r"^chrome[\\/]browser[\\/]browser_switcher[\\/]bho[\\/].*",
                  r"^chrome[\\/]installer[\\/]setup[\\/].*",
                  r"^chrome[\\/]chrome_cleaner[\\/].*",
                  r"chrome[\\/]browser[\\/]diagnostics[\\/]" +
@@ -1652,19 +1782,19 @@ def _CheckSpamLogging(input_api, output_api):
                  r"^courgette[\\/]courgette_minimal_tool\.cc$",
                  r"^courgette[\\/]courgette_tool\.cc$",
                  r"^extensions[\\/]renderer[\\/]logging_native_handler\.cc$",
+                 r"^fuchsia[\\/]engine[\\/]browser[\\/]frame_impl.cc$",
+                 r"^headless[\\/]app[\\/]headless_shell\.cc$",
                  r"^ipc[\\/]ipc_logging\.cc$",
                  r"^native_client_sdk[\\/]",
                  r"^remoting[\\/]base[\\/]logging\.h$",
                  r"^remoting[\\/]host[\\/].*",
                  r"^sandbox[\\/]linux[\\/].*",
+                 r"^storage[\\/]browser[\\/]fileapi[\\/]" +
+                     r"dump_file_system.cc$",
                  r"^tools[\\/]",
                  r"^ui[\\/]base[\\/]resource[\\/]data_pack.cc$",
                  r"^ui[\\/]aura[\\/]bench[\\/]bench_main\.cc$",
-                 r"^ui[\\/]ozone[\\/]platform[\\/]cast[\\/]",
-                 r"^webrunner[\\/]browser[\\/]frame_impl.cc$",
-                 r"^storage[\\/]browser[\\/]fileapi[\\/]" +
-                     r"dump_file_system.cc$",
-                 r"^headless[\\/]app[\\/]headless_shell\.cc$"))
+                 r"^ui[\\/]ozone[\\/]platform[\\/]cast[\\/]"))
   source_file_filter = lambda x: input_api.FilterSourceFile(
       x, white_list=file_inclusion_pattern, black_list=black_list)
 
@@ -2082,7 +2212,8 @@ def _GetOwnersFilesToCheckForIpcOwners(input_api):
   # *.mojom files.
   for f in input_api.AffectedFiles(include_deletes=False):
     # Manifest files don't have a strong naming convention. Instead, scan
-    # affected files for .json files and see if they look like a manifest.
+    # affected files for .json, .cc, and .h files which look like they contain
+    # a manifest definition.
     if (f.LocalPath().endswith('.json') and
         not _MatchesFile(input_api, _KNOWN_INVALID_JSON_FILE_PATTERNS,
                          f.LocalPath())):
@@ -2098,6 +2229,15 @@ def _GetOwnersFilesToCheckForIpcOwners(input_api):
         continue
       if 'interface_provider_specs' in json_content:
         AddPatternToCheck(f, input_api.os_path.basename(f.LocalPath()))
+    else:
+      manifest_pattern = input_api.re.compile('manifests?\.(cc|h)$')
+      test_manifest_pattern = input_api.re.compile('test_manifests?\.(cc|h)')
+      if (manifest_pattern.search(f.LocalPath()) and not
+          test_manifest_pattern.search(f.LocalPath())):
+        # We expect all actual service manifest files to contain at least one
+        # qualified reference to service_manager::Manifest.
+        if 'service_manager::Manifest' in '\n'.join(f.NewContents()):
+          AddPatternToCheck(f, input_api.os_path.basename(f.LocalPath()))
     for pattern in file_patterns:
       if input_api.fnmatch.fnmatch(
           input_api.os_path.basename(f.LocalPath()), pattern):
@@ -2178,9 +2318,7 @@ def _CheckUselessForwardDeclarations(input_api, output_api):
   for f in input_api.AffectedFiles(include_deletes=False):
     if (f.LocalPath().startswith('third_party') and
         not f.LocalPath().startswith('third_party/blink') and
-        not f.LocalPath().startswith('third_party\\blink') and
-        not f.LocalPath().startswith('third_party/WebKit') and
-        not f.LocalPath().startswith('third_party\\WebKit')):
+        not f.LocalPath().startswith('third_party\\blink')):
       continue
 
     if not f.LocalPath().endswith('.h'):
@@ -2212,6 +2350,43 @@ def _CheckUselessForwardDeclarations(input_api, output_api):
 
   return results
 
+def _CheckAndroidDebuggableBuild(input_api, output_api):
+  """Checks that code uses BuildInfo.isDebugAndroid() instead of
+     Build.TYPE.equals('') or ''.equals(Build.TYPE) to check if
+     this is a debuggable build of Android.
+  """
+  build_type_check_pattern = input_api.re.compile(
+      r'\bBuild\.TYPE\.equals\(|\.equals\(\s*\bBuild\.TYPE\)')
+
+  errors = []
+
+  sources = lambda affected_file: input_api.FilterSourceFile(
+      affected_file,
+      black_list=(_EXCLUDED_PATHS +
+                  _TEST_CODE_EXCLUDED_PATHS +
+                  input_api.DEFAULT_BLACK_LIST +
+                  (r"^android_webview[\\/]support_library[\\/]"
+                      "boundary_interfaces[\\/]",
+                   r"^chrome[\\/]android[\\/]webapk[\\/].*",
+                   r'^third_party[\\/].*',
+                   r"tools[\\/]android[\\/]customtabs_benchmark[\\/].*",
+                   r"webview[\\/]chromium[\\/]License.*",)),
+      white_list=[r'.*\.java$'])
+
+  for f in input_api.AffectedSourceFiles(sources):
+    for line_num, line in f.ChangedContents():
+      if build_type_check_pattern.search(line):
+        errors.append("%s:%d" % (f.LocalPath(), line_num))
+
+  results = []
+
+  if errors:
+    results.append(output_api.PresubmitPromptWarning(
+        'Build.TYPE.equals or .equals(Build.TYPE) usage is detected.'
+        ' Please use BuildInfo.isDebugAndroid() instead.',
+        errors))
+
+  return results
 
 # TODO: add unit tests
 def _CheckAndroidToastUsage(input_api, output_api):
@@ -2492,6 +2667,24 @@ def _CheckAndroidWebkitImports(input_api, output_api):
   return results
 
 
+def _CheckAndroidXmlStyle(input_api, output_api, is_check_on_upload):
+  """Checks Android XML styles """
+  import sys
+  original_sys_path = sys.path
+  try:
+    sys.path = sys.path + [input_api.os_path.join(
+        input_api.PresubmitLocalPath(), 'tools', 'android', 'checkxmlstyle')]
+    import checkxmlstyle
+  finally:
+    # Restore sys.path to what it was before.
+    sys.path = original_sys_path
+
+  if is_check_on_upload:
+    return checkxmlstyle.CheckStyleOnUpload(input_api, output_api)
+  else:
+    return checkxmlstyle.CheckStyleOnCommit(input_api, output_api)
+
+
 class PydepsChecker(object):
   def __init__(self, input_api, pydeps_files):
     self._file_cache = {}
@@ -2527,7 +2720,11 @@ class PydepsChecker(object):
     file_to_pydeps_map = None
     for f in self._input_api.AffectedFiles(include_deletes=True):
       local_path = f.LocalPath()
-      if local_path  == 'DEPS':
+      # Changes to DEPS can lead to .pydeps changes if any .py files are in
+      # subrepositories. We can't figure out which files change, so re-check
+      # all files.
+      # Changes to print_python_deps.py affect all .pydeps.
+      if local_path == 'DEPS' or local_path.endswith('print_python_deps.py'):
         return self._pydeps_files
       elif local_path.endswith('.pydeps'):
         if local_path in self._pydeps_files:
@@ -2734,8 +2931,8 @@ def _CheckForRelativeIncludes(input_api, output_api):
   bad_files = {}
   for f in input_api.AffectedFiles(include_deletes=False):
     if (f.LocalPath().startswith('third_party') and
-      not f.LocalPath().startswith('third_party/WebKit') and
-      not f.LocalPath().startswith('third_party\\WebKit')):
+      not f.LocalPath().startswith('third_party/blink') and
+      not f.LocalPath().startswith('third_party\\blink')):
       continue
 
     if not CppChecker.IsCppFile(f.LocalPath()):
@@ -2986,16 +3183,64 @@ def _CheckCorrectProductNameInMessages(input_api, output_api):
   return all_problems
 
 
+def _CheckBuildtoolsRevisionsAreInSync(input_api, output_api):
+  # TODO(crbug.com/941824): We need to make sure the entries in
+  # //buildtools/DEPS are kept in sync with the entries in //DEPS
+  # so that users of //buildtools in other projects get the same tooling
+  # Chromium gets. If we ever fix the referenced bug and add 'includedeps'
+  # support to gclient, we can eliminate the duplication and delete
+  # this presubmit check.
+
+  # Update this regexp if new revisions are added to the files.
+  rev_regexp = input_api.re.compile(
+      "'((clang_format|libcxx|libcxxabi|libunwind)_revision|gn_version)':")
+
+  # If a user is changing one revision, they need to change the same
+  # line in both files. This means that any given change should contain
+  # exactly the same list of changed lines that match the regexps. The
+  # replace(' ', '') call allows us to ignore whitespace changes to the
+  # lines. The 'long_text' parameter to the error will contain the
+  # list of changed lines in both files, which should make it easy enough
+  # to spot the error without going overboard in this implementation.
+  revs_changes = {
+      'DEPS': {},
+      'buildtools/DEPS': {},
+  }
+  long_text = ''
+
+  for f in input_api.AffectedFiles(
+      file_filter=lambda f: f.LocalPath() in ('DEPS', 'buildtools/DEPS')):
+    for line_num, line in f.ChangedContents():
+      if rev_regexp.search(line):
+        revs_changes[f.LocalPath()][line.replace(' ', '')] = line
+        long_text += '%s:%d: %s\n' % (f.LocalPath(), line_num, line)
+
+  if set(revs_changes['DEPS']) != set(revs_changes['buildtools/DEPS']):
+    return [output_api.PresubmitError(
+        'Change buildtools revisions in sync in both //DEPS and '
+        '//buildtools/DEPS.', long_text=long_text + '\n')]
+  else:
+    return []
+
+
 def _AndroidSpecificOnUploadChecks(input_api, output_api):
-  """Groups checks that target android code."""
+  """Groups upload checks that target android code."""
   results = []
   results.extend(_CheckAndroidCrLogUsage(input_api, output_api))
+  results.extend(_CheckAndroidDebuggableBuild(input_api, output_api))
   results.extend(_CheckAndroidNewMdpiAssetLocation(input_api, output_api))
   results.extend(_CheckAndroidToastUsage(input_api, output_api))
   results.extend(_CheckAndroidTestJUnitInheritance(input_api, output_api))
   results.extend(_CheckAndroidTestJUnitFrameworkImport(input_api, output_api))
   results.extend(_CheckAndroidTestAnnotationUsage(input_api, output_api))
   results.extend(_CheckAndroidWebkitImports(input_api, output_api))
+  results.extend(_CheckAndroidXmlStyle(input_api, output_api, True))
+  return results
+
+def _AndroidSpecificOnCommitChecks(input_api, output_api):
+  """Groups commit checks that target android code."""
+  results = []
+  results.extend(_CheckAndroidXmlStyle(input_api, output_api, False))
   return results
 
 
@@ -3063,6 +3308,7 @@ def _CommonChecks(input_api, output_api):
     input_api.canned_checks.CheckVPythonSpec(input_api, output_api)))
   results.extend(_CheckTranslationScreenshots(input_api, output_api))
   results.extend(_CheckCorrectProductNameInMessages(input_api, output_api))
+  results.extend(_CheckBuildtoolsRevisionsAreInSync(input_api, output_api))
 
   for f in input_api.AffectedFiles():
     path, name = input_api.os_path.split(f.LocalPath())
@@ -3173,7 +3419,7 @@ def _CheckForInvalidOSMacrosInFile(input_api, f):
 def _CheckForInvalidOSMacros(input_api, output_api):
   """Check all affected files for invalid OS macros."""
   bad_macros = []
-  for f in input_api.AffectedFiles():
+  for f in input_api.AffectedSourceFiles(None):
     if not f.LocalPath().endswith(('.py', '.js', '.html', '.css', '.md')):
       bad_macros.extend(_CheckForInvalidOSMacrosInFile(input_api, f))
 
@@ -3474,6 +3720,7 @@ def GetTryServerMasterForBot(bot):
 def CheckChangeOnCommit(input_api, output_api):
   results = []
   results.extend(_CommonChecks(input_api, output_api))
+  results.extend(_AndroidSpecificOnCommitChecks(input_api, output_api))
   # Make sure the tree is 'open'.
   results.extend(input_api.canned_checks.CheckTreeIsOpen(
       input_api,

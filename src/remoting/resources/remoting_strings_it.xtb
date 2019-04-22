@@ -24,6 +24,7 @@ Per informazioni sulla privacy, leggi le Norme sulla privacy di Google (http://g
 <translation id="1520828917794284345">Adatta dimensioni desktop</translation>
 <translation id="154040539590487450">Impossibile avviare il servizio di accesso remoto.</translation>
 <translation id="1546934824884762070">Si è verificato un errore imprevisto. Segnala il problema agli sviluppatori.</translation>
+<translation id="1624185583382384493">Chrome Remote Desktop è ora sul Web. Prova la nostra <ph name="LINK_BEGIN" />app web<ph name="LINK_END" />: è veloce e gratuita, con ancora più funzionalità, tra cui il supporto migliorato di più monitor.</translation>
 <translation id="1643640058022401035">Se esci da questa pagina, la sessione Chromoting verrà terminata.</translation>
 <translation id="1654128982815600832">Attivazione connessioni remote per questo computer in corso…</translation>
 <translation id="170207782578677537">Impossibile registrare il computer.</translation>
@@ -138,6 +139,7 @@ Per informazioni sulla privacy, leggi le Norme sulla privacy di Google (http://g
 <translation id="3989511127559254552">Per continuare devi concedere autorizzazioni di accesso esteso per il tuo computer. È necessario eseguire questa operazione solo una volta.</translation>
 <translation id="4006787130661126000">Per accedere a questo computer utilizzando Chrome Remote Desktop devi attivare le connessioni remote.</translation>
 <translation id="405887016757208221">Impossibile inizializzare la sessione sul computer remoto. Se il problema persiste, riprova a configurare l'host.</translation>
+<translation id="4060747889721220580">Scarica file</translation>
 <translation id="4068946408131579958">Tutte le connessioni</translation>
 <translation id="409800995205263688">NOTA. Le impostazioni dei criteri consentono connessioni solo tra computer all'interno della tua rete.</translation>
 <translation id="4126409073460786861">Una volta completata la configurazione, per accedere al computer dovrai scegliere il dispositivo e inserire il codice PIN.</translation>
@@ -242,6 +244,7 @@ Per attivare questa funzionalità, seleziona "<ph name="BUTTON_NAME" />" per vis
 <translation id="6198252989419008588">Modifica PIN</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (obsoleto)</translation>
 <translation id="6221358653751391898">Non hai eseguito l'accesso a Chrome. Accedi e riprova.</translation>
+<translation id="6227369581881558336">Chrome Remote Desktop è ora sul Web con nuove funzionalità, tra cui il trasferimento file. Prova la nostra <ph name="LINK_BEGIN" />app web<ph name="LINK_END" />.</translation>
 <translation id="6284412385303060032">L'esecuzione dell'host nella schermata di accesso alla console si è interrotta per supportare la modalità Curtain, pertanto l'host viene ora eseguito in una sessione specifica dell'utente.</translation>
 <translation id="629730747756840877">Account</translation>
 <translation id="6304318647555713317">Client</translation>
@@ -289,7 +292,6 @@ Per attivare questa funzionalità, seleziona "<ph name="BUTTON_NAME" />" per vis
 <translation id="7434397035092923453">Accesso negato per client: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7444276978508498879">Client connesso: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7526139040829362392">Cambia account</translation>
-<translation id="7589941250119944644">Chrome Remote Desktop si sta trasferendo sul Web. Prova la nostra <ph name="LINK_BEGIN" />app web<ph name="LINK_END" />: è veloce, gratuita e ha le stesse funzioni di prima.</translation>
 <translation id="7606912958770842224">Attiva connessioni remote</translation>
 <translation id="7628469622942688817">Memorizza il PIN su questo dispositivo.</translation>
 <translation id="7649070708921625228">Guida</translation>
@@ -313,7 +315,7 @@ Per attivare questa funzionalità, seleziona "<ph name="BUTTON_NAME" />" per vis
 <translation id="8041721485428375115">Se scarichi il programma di installazione di Chrome Remote Desktop Host, accetti i <ph name="LINK_BEGIN" />Termini di servizio<ph name="LINK_END" /> di Google.</translation>
 <translation id="8060029310790625334">Centro assistenza</translation>
 <translation id="806699900641041263">Connessione a <ph name="HOSTNAME" /> in corso</translation>
-<translation id="8073845705237259513">Per poter utilizzare Chrome Remote Desktop devi aggiungere un account Google sul dispositivo.</translation>
+<translation id="8073845705237259513">Per poter utilizzare Chrome Remote Desktop devi aggiungere un Account Google sul dispositivo.</translation>
 <translation id="80739703311984697">L'host remoto richiede l'autenticazione su un sito web di terze parti. Per continuare, devi concedere a Chromoting ulteriori autorizzazioni per accedere a questo indirizzo:</translation>
 <translation id="809687642899217504">I miei computer</translation>
 <translation id="811307782653349804">Accedi al tuo computer ovunque tu sia.</translation>
@@ -327,7 +329,7 @@ Per attivare questa funzionalità, seleziona "<ph name="BUTTON_NAME" />" per vis
 <translation id="8355326866731426344">Questo codice di accesso scadrà tra <ph name="TIMEOUT" /></translation>
 <translation id="8355485110405946777">Includi log dell'applicazione per aiutarci a risolvere il tuo problema (i log potrebbero includere informazioni private).</translation>
 <translation id="837021510621780684">Da questo computer</translation>
-<translation id="8383794970363966105">Per poter utilizzare Chromoting devi aggiungere un account Google sul dispositivo.</translation>
+<translation id="8383794970363966105">Per poter utilizzare Chromoting devi aggiungere un Account Google sul dispositivo.</translation>
 <translation id="8386846956409881180">L'host è stato configurato con credenziali OAuth non valide.</translation>
 <translation id="8428213095426709021">Impostazioni</translation>
 <translation id="8445362773033888690">Visualizza nel Google Play Store</translation>

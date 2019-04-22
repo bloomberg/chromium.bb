@@ -91,6 +91,8 @@ cc_defaults {
 cc_library_headers {
     name: "swiftshader_platform_headers",
     host_supported: true,
+    device_supported: true,
+    vendor_available: true,
     export_include_dirs: ["include"],
 }
 
@@ -104,6 +106,6 @@ cc_library_headers {
 subdirs = [
     "src",
     "third_party/llvm-subzero",
-    "third_party/LLVM",
+    "third_party/llvm-7.0",
     "third_party/subzero",
 ]

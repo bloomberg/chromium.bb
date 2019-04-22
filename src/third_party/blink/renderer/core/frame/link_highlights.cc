@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "cc/animation/animation_host.h"
 #include "cc/layers/picture_layer.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_layer_tree_view.h"
@@ -15,7 +16,6 @@
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/link_highlight_impl.h"
-#include "third_party/blink/renderer/platform/animation/compositor_animation_host.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation_timeline.h"
 
 namespace blink {
@@ -66,7 +66,7 @@ void LinkHighlights::SetTapHighlights(
     if (!highlight_color.Alpha())
       continue;
 
-    link_highlights_.push_back(LinkHighlightImpl::Create(node));
+    link_highlights_.push_back(std::make_unique<LinkHighlightImpl>(node));
     if (timeline_)
       timeline_->AnimationAttached(*link_highlights_.back());
     node->GetLayoutObject()->SetNeedsPaintPropertyUpdate();
@@ -93,19 +93,19 @@ void LinkHighlights::StartHighlightAnimationIfNeeded() {
 }
 
 void LinkHighlights::LayerTreeViewInitialized(
-    WebLayerTreeView& layer_tree_view) {
+    WebLayerTreeView& layer_tree_view,
+    cc::AnimationHost& animation_host) {
+  animation_host_ = &animation_host;
   if (Platform::Current()->IsThreadedAnimationEnabled()) {
-    timeline_ = CompositorAnimationTimeline::Create();
-    animation_host_ = std::make_unique<CompositorAnimationHost>(
-        layer_tree_view.CompositorAnimationHost());
-    animation_host_->AddTimeline(*timeline_);
+    timeline_ = std::make_unique<CompositorAnimationTimeline>();
+    animation_host_->AddAnimationTimeline(timeline_->GetAnimationTimeline());
   }
 }
 
 void LinkHighlights::WillCloseLayerTreeView(WebLayerTreeView& layer_tree_view) {
   RemoveAllHighlights();
   if (timeline_) {
-    animation_host_->RemoveTimeline(*timeline_);
+    animation_host_->RemoveAnimationTimeline(timeline_->GetAnimationTimeline());
     timeline_.reset();
   }
   animation_host_ = nullptr;
@@ -122,14 +122,10 @@ bool LinkHighlights::NeedsHighlightEffectInternal(
   return false;
 }
 
-CompositorElementId LinkHighlights::element_id(const LayoutObject& object) {
-  for (auto& highlight : link_highlights_) {
-    if (auto* node = highlight->GetNode()) {
-      if (node->GetLayoutObject() == &object)
-        return highlight->element_id();
-    }
-  }
-  return CompositorElementId();
+void LinkHighlights::Paint(GraphicsContext& context) const {
+  DCHECK(RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
+  for (const auto& highlight : link_highlights_)
+    highlight->Paint(context);
 }
 
 }  // namespace blink

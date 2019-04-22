@@ -16,7 +16,6 @@ class WebStateList;
 @protocol OmniboxFocuser;
 @protocol FakeboxFocuser;
 @protocol SnackbarCommands;
-@protocol UrlLoader;
 @protocol NewTabPageControllerDelegate;
 
 // Coordinator handling the NTP.
@@ -32,12 +31,12 @@ class WebStateList;
                               browserState:
                                   (ios::ChromeBrowserState*)browserState
     NS_UNAVAILABLE;
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                                   browser:(Browser*)browser NS_UNAVAILABLE;
 
 // ViewController associated with this coordinator.
 @property(nonatomic, strong, readonly) UIViewController* viewController;
 
-// URL loader to pass to ContentSuggestionsCoordinator.
-@property(nonatomic, weak) id<UrlLoader> URLLoader;
 // The web state list to pass to ContentSuggestionsCoordinator.
 @property(nonatomic, assign) WebStateList* webStateList;
 // The toolbar delegate to pass to ContentSuggestionsCoordinator.
@@ -47,8 +46,7 @@ class WebStateList;
                               BrowserCommands,
                               OmniboxFocuser,
                               FakeboxFocuser,
-                              SnackbarCommands,
-                              UrlLoader>
+                              SnackbarCommands>
     dispatcher;
 
 // Returns |YES| if the coordinator is started.

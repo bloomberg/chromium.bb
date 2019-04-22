@@ -52,6 +52,7 @@ class PaymentInstrument {
   virtual base::string16 GetMissingInfoLabel() const = 0;
   // Returns whether the instrument is valid for the purposes of responding to
   // canMakePayment.
+  // TODO(crbug.com/915907): rename to IsValidForHasEnrolledInstrument.
   virtual bool IsValidForCanMakePayment() const = 0;
   // Records the use of this payment instrument.
   virtual void RecordUse() = 0;

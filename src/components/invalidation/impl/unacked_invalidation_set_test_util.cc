@@ -181,4 +181,4 @@ Matcher<const UnackedInvalidationsMap&> Eq(
 
 }  // namespace test_util
 
-};
+}  // namespace syncer

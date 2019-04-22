@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -23,13 +24,14 @@
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/decoder_client.h"
+#include "gpu/command_buffer/service/program_cache.h"
 #include "gpu/command_buffer/service/sequence_id.h"
 #include "gpu/ipc/common/surface_handle.h"
+#include "gpu/ipc/service/context_url.h"
 #include "gpu/ipc/service/gpu_ipc_service_export.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/gfx/gpu_fence_handle.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/swap_result.h"
 #include "ui/gl/gl_share_group.h"
@@ -38,11 +40,10 @@
 #include "url/gurl.h"
 
 struct GPUCreateCommandBufferConfig;
-struct GpuCommandBufferMsg_CreateImage_Params;
 
 namespace gpu {
 class DecoderContext;
-struct Mailbox;
+class MemoryTracker;
 struct SyncToken;
 struct WaitForCommandState;
 class GpuChannel;
@@ -83,6 +84,8 @@ class GPU_IPC_SERVICE_EXPORT CommandBufferStub
       const GPUCreateCommandBufferConfig& init_params,
       base::UnsafeSharedMemoryRegion shared_state_shm) = 0;
 
+  virtual MemoryTracker* GetMemoryTracker() const = 0;
+
   // IPC::Listener implementation:
   bool OnMessageReceived(const IPC::Message& message) override;
 
@@ -97,12 +100,21 @@ class GPU_IPC_SERVICE_EXPORT CommandBufferStub
   void OnConsoleMessage(int32_t id, const std::string& message) override;
   void CacheShader(const std::string& key, const std::string& shader) override;
   void OnFenceSyncRelease(uint64_t release) override;
-  bool OnWaitSyncToken(const SyncToken& sync_token) override;
   void OnDescheduleUntilFinished() override;
   void OnRescheduleAfterFinished() override;
   void ScheduleGrContextCleanup() override;
+  void HandleReturnData(base::span<const uint8_t> data) override;
 
-  MemoryTracker* GetMemoryTracker() const;
+  using MemoryTrackerFactory =
+      base::RepeatingCallback<std::unique_ptr<MemoryTracker>(
+          const GPUCreateCommandBufferConfig&)>;
+
+  // Overrides the way CreateMemoryTracker() uses to create a MemoryTracker.
+  // This is intended for mocking the MemoryTracker in tests.
+  static void SetMemoryTrackerFactoryForTesting(MemoryTrackerFactory factory);
+
+  scoped_refptr<Buffer> GetTransferBuffer(int32_t id);
+  void RegisterTransferBufferForTest(int32_t id, scoped_refptr<Buffer> buffer);
 
   // Whether this command buffer can currently handle IPC messages.
   bool IsScheduled();
@@ -122,40 +134,38 @@ class GPU_IPC_SERVICE_EXPORT CommandBufferStub
 
   gl::GLSurface* surface() const { return surface_.get(); }
 
+  ContextType context_type() const { return context_type_; }
+
   void AddDestructionObserver(DestructionObserver* observer);
   void RemoveDestructionObserver(DestructionObserver* observer);
 
   void MarkContextLost();
 
-  scoped_refptr<gles2::ContextGroup> context_group() { return context_group_; }
   scoped_refptr<gl::GLShareGroup> share_group() { return share_group_; }
 
  protected:
-  // FastSetActiveURL will shortcut the expensive call to SetActiveURL when the
-  // url_hash matches.
-  static void FastSetActiveURL(const GURL& url,
-                               size_t url_hash,
-                               GpuChannel* channel);
+  virtual bool HandleMessage(const IPC::Message& message) = 0;
 
   std::unique_ptr<MemoryTracker> CreateMemoryTracker(
-      const GPUCreateCommandBufferConfig init_params) const;
+      const GPUCreateCommandBufferConfig& init_params) const;
 
   // Must be called during Initialize(). Takes ownership to co-ordinate
   // teardown in Destroy().
   void set_decoder_context(std::unique_ptr<DecoderContext> decoder_context) {
     decoder_context_ = std::move(decoder_context);
   }
+  void CheckContextLost();
+
+  // Sets |active_url_| as the active GPU process URL.
+  void UpdateActiveUrl();
 
   // The lifetime of objects of this class is managed by a GpuChannel. The
   // GpuChannels destroy all the CommandBufferStubs that they own when
   // they are destroyed. So a raw pointer is safe.
   GpuChannel* const channel_;
 
-  GURL active_url_;
-  size_t active_url_hash_;
-
-  // The group of contexts that share namespaces with this context.
-  scoped_refptr<gles2::ContextGroup> context_group_;
+  ContextType context_type_;
+  ContextUrl active_url_;
 
   bool initialized_;
   const SurfaceHandle surface_handle_;
@@ -177,10 +187,10 @@ class GPU_IPC_SERVICE_EXPORT CommandBufferStub
 
   bool MakeCurrent();
 
+  gles2::ProgramCache::ScopedCacheUse CreateCacheUse();
+
   // Message handlers:
   void OnSetGetBuffer(int32_t shm_id);
-  virtual void OnTakeFrontBuffer(const Mailbox& mailbox) = 0;
-  virtual void OnReturnFrontBuffer(const Mailbox& mailbox, bool is_lost) = 0;
   void OnGetState(IPC::Message* reply_message);
   void OnWaitForTokenInRange(int32_t start,
                              int32_t end,
@@ -189,28 +199,17 @@ class GPU_IPC_SERVICE_EXPORT CommandBufferStub
                                  int32_t start,
                                  int32_t end,
                                  IPC::Message* reply_message);
-  void OnAsyncFlush(int32_t put_offset, uint32_t flush_id);
+  void OnAsyncFlush(int32_t put_offset,
+                    uint32_t flush_id,
+                    const std::vector<SyncToken>& sync_token_fences);
   void OnRegisterTransferBuffer(int32_t id,
                                 base::UnsafeSharedMemoryRegion transfer_buffer);
   void OnDestroyTransferBuffer(int32_t id);
   void OnGetTransferBuffer(int32_t id, IPC::Message* reply_message);
 
-  void OnEnsureBackbuffer();
-
   void OnSignalSyncToken(const SyncToken& sync_token, uint32_t id);
   void OnSignalAck(uint32_t id);
   void OnSignalQuery(uint32_t query, uint32_t id);
-  void OnCreateGpuFenceFromHandle(uint32_t gpu_fence_id,
-                                  const gfx::GpuFenceHandle& handle);
-  void OnGetGpuFenceHandle(uint32_t gpu_fence_id);
-
-  void OnWaitSyncTokenCompleted(const SyncToken& sync_token);
-
-  void OnCreateImage(GpuCommandBufferMsg_CreateImage_Params params);
-  void OnDestroyImage(int32_t id);
-  void OnCreateStreamTexture(uint32_t texture_id,
-                             int32_t stream_id,
-                             bool* succeeded);
 
   void ReportState();
 
@@ -224,20 +223,27 @@ class GPU_IPC_SERVICE_EXPORT CommandBufferStub
   // of delayed work.
   void ScheduleDelayedWork(base::TimeDelta delay);
 
-  bool CheckContextLost();
   void CheckCompleteWaits();
 
   // Set driver bug workarounds and disabled GL extensions to the context.
   static void SetContextGpuFeatureInfo(gl::GLContext* context,
                                        const GpuFeatureInfo& gpu_feature_info);
 
+  static MemoryTrackerFactory GetMemoryTrackerFactory();
+
+  // Overrides the way CreateMemoryTracker() uses to create a MemoryTracker. If
+  // |factory| is base::NullCallback(), it returns the current
+  // MemoryTrackerFactory (initially base::NullCallback() which
+  // CreateMemoryTracker() should interpret as a signal to use the default).
+  // This is intended for mocking the MemoryTracker in tests.
+  static MemoryTrackerFactory SetOrGetMemoryTrackerFactory(
+      MemoryTrackerFactory factory);
+
   std::unique_ptr<DecoderContext> decoder_context_;
 
   uint32_t last_flush_id_;
 
   base::ObserverList<DestructionObserver>::Unchecked destruction_observers_;
-
-  bool waiting_for_sync_point_;
 
   base::TimeTicks process_delayed_work_time_;
   uint32_t previous_processed_num_;

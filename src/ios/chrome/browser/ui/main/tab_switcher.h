@@ -16,6 +16,7 @@
 @class TabModel;
 @protocol TabSwitcher;
 @protocol ToolbarCommands;
+struct UrlLoadParams;
 
 // This delegate is used to drive the TabSwitcher dismissal and execute code
 // when the presentation and dismmiss animations finishes. The main controller
@@ -59,18 +60,16 @@
 // Returns the view controller that displays the tab switcher.
 - (UIViewController*)viewController;
 
-// Create a new tab in |targetModel| with the url |url| at |position|, using
-// page transition |transition|. Implementors are expected to also
-// perform an animation from the selected tab in the tab switcher to the
-// newly created tab in the content area. Objects adopting this protocol should
-// call the following delegate methods:
+// Create a new tab in |targetModel|. Implementors are expected to also perform
+// an animation from the selected tab in the tab switcher to the newly created
+// tab in the content area. Objects adopting this protocol should call the
+// following delegate methods:
 //   |-tabSwitcher:shouldFinishWithActiveModel:|
 //   |-tabSwitcherDismissTransitionDidEnd:|
 // to inform the delegate when this animation begins and ends.
 - (Tab*)dismissWithNewTabAnimationToModel:(TabModel*)targetModel
-                                  withURL:(const GURL&)url
-                                  atIndex:(NSUInteger)position
-                               transition:(ui::PageTransition)transition;
+                        withUrlLoadParams:(const UrlLoadParams&)urlLoadParams
+                                  atIndex:(NSUInteger)position;
 
 // Updates the OTR (Off The Record) tab model. Should only be called when both
 // the current OTR tab model and the new OTR tab model are either nil or contain

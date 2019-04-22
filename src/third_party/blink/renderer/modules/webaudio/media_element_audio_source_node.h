@@ -86,13 +86,14 @@ class MediaElementAudioSourceHandler final : public AudioHandler {
   // zeroes.
   void PrintCorsMessage(const String& message);
 
-  // This Persistent doesn't make a reference cycle. The reference from
-  // HTMLMediaElement to AudioSourceProvideClient, which
-  // MediaElementAudioSourceNode implements, is weak.
+  // The HTMLMediaElement is held alive by MediaElementAudioSourceNode which is
+  // an AudioNode. AudioNode uses pre-finalizers to dispose the handler, so
+  // holding a weak reference is ok here and will not interfer with garbage
+  // collection.
   //
   // It is accessed by both audio and main thread. TODO: we really should
   // try to minimize or avoid the audio thread touching this element.
-  CrossThreadPersistent<HTMLMediaElement> media_element_;
+  CrossThreadWeakPersistent<HTMLMediaElement> media_element_;
   Mutex process_lock_;
 
   unsigned source_number_of_channels_;
@@ -134,6 +135,9 @@ class MediaElementAudioSourceNode final : public AudioNode,
       GetMediaElementAudioSourceHandler().GetProcessLock());
   void unlock() override
       UNLOCK_FUNCTION(GetMediaElementAudioSourceHandler().GetProcessLock());
+
+ private:
+  Member<HTMLMediaElement> media_element_;
 };
 
 }  // namespace blink

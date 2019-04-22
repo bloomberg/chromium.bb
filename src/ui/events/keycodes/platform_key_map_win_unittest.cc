@@ -408,10 +408,10 @@ TEST_P(AltGraphModifierTest, AltGraphModifierBehaviour) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(VerifyAltGraph,
-                        AltGraphModifierTest,
-                        ::testing::Values(KEYBOARD_LAYOUT_ENGLISH_US,
-                                          KEYBOARD_LAYOUT_FRENCH));
+INSTANTIATE_TEST_SUITE_P(VerifyAltGraph,
+                         AltGraphModifierTest,
+                         ::testing::Values(KEYBOARD_LAYOUT_ENGLISH_US,
+                                           KEYBOARD_LAYOUT_FRENCH));
 
 }  // namespace
 

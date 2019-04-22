@@ -42,8 +42,9 @@ CheckQueryResultTask.prototype = {
    */
   onQueryResult_: function(result) {
     // Ignore results after |this| is finished.
-    if (this.isDone())
+    if (this.isDone()) {
       return;
+    }
 
     expectEquals(this.domain_, $(this.inputId_).value);
 
@@ -100,15 +101,12 @@ CheckQueryResultTask.prototype = {
  * @param {bool} stsSubdomains Whether or not the stsSubdomains flag is expected
  *     to be set in the returned results.  Ignored on error and not found
  *     results.
- * @param {number} stsObserved The time the STS policy was observed.
  * @param {QueryResultType} queryResultType The expected result type of the
  *     results of the query.
  * @extends {CheckQueryResultTask}
  */
-function CheckHSTSQueryResultTask(
-    domain, stsSubdomains, stsObserved, queryResultType) {
+function CheckHSTSQueryResultTask(domain, stsSubdomains, queryResultType) {
   this.stsSubdomains_ = stsSubdomains;
-  this.stsObserved_ = stsObserved;
   CheckQueryResultTask.call(
       this, domain, DomainSecurityPolicyView.QUERY_HSTS_INPUT_ID,
       DomainSecurityPolicyView.QUERY_HSTS_OUTPUT_DIV_ID, queryResultType);
@@ -139,8 +137,6 @@ CheckHSTSQueryResultTask.prototype = {
    */
   checkSuccess_: function(result) {
     expectEquals(this.stsSubdomains_, result.dynamic_sts_include_subdomains);
-    // Disabled because of http://crbug.com/397639
-    // expectLE(this.stsObserved_, result.dynamic_sts_observed);
     CheckQueryResultTask.prototype.checkSuccess_.call(this, result);
   }
 };
@@ -153,13 +149,11 @@ CheckHSTSQueryResultTask.prototype = {
  * @param {bool} stsSubdomains Whether the HSTS subdomain checkbox should be
  *     selected. Also the corresponding expected return value, in the success
  *     case.
- * @param {number} stsObserved The time the STS policy was observed.
  * @param {QueryResultType} queryResultType Expected result type.
  * @extends {CheckHSTSQueryResultTask}
  */
-function AddHSTSTask(domain, stsSubdomains, stsObserved, queryResultType) {
-  CheckHSTSQueryResultTask.call(
-      this, domain, stsSubdomains, stsObserved, queryResultType);
+function AddHSTSTask(domain, stsSubdomains, queryResultType) {
+  CheckHSTSQueryResultTask.call(this, domain, stsSubdomains, queryResultType);
 }
 
 AddHSTSTask.prototype = {
@@ -183,9 +177,8 @@ AddHSTSTask.prototype = {
  * query.
  * @extends {CheckHSTSQueryResultTask}
  */
-function QueryHSTSTask(domain, stsSubdomains, stsObserved, queryResultType) {
-  CheckHSTSQueryResultTask.call(
-      this, domain, stsSubdomains, stsObserved, queryResultType);
+function QueryHSTSTask(domain, stsSubdomains, queryResultType) {
+  CheckHSTSQueryResultTask.call(this, domain, stsSubdomains, queryResultType);
 }
 
 QueryHSTSTask.prototype = {
@@ -213,7 +206,7 @@ QueryHSTSTask.prototype = {
 function DeleteTask(domain, queryResultType) {
   expectNotEquals(queryResultType, QueryResultType.SUCCESS);
   this.domain_ = domain;
-  QueryHSTSTask.call(this, domain, false, 0, queryResultType);
+  QueryHSTSTask.call(this, domain, false, queryResultType);
 }
 
 DeleteTask.prototype = {
@@ -424,9 +417,8 @@ TEST_F(
     function() {
       NetInternalsTest.switchToView('hsts');
       taskQueue = new NetInternalsTest.TaskQueue(true);
-      var now = Date.now() / 1000.0;
-      taskQueue.addTask(new QueryHSTSTask(
-          'somewhere.com', false, now, QueryResultType.NOT_FOUND));
+      taskQueue.addTask(
+          new QueryHSTSTask('somewhere.com', false, QueryResultType.NOT_FOUND));
       taskQueue.run();
     });
 
@@ -438,9 +430,8 @@ TEST_F(
     function() {
       NetInternalsTest.switchToView('hsts');
       taskQueue = new NetInternalsTest.TaskQueue(true);
-      var now = Date.now() / 1000.0;
       taskQueue.addTask(
-          new QueryHSTSTask('\u3024', false, now, QueryResultType.ERROR));
+          new QueryHSTSTask('\u3024', false, QueryResultType.ERROR));
       taskQueue.run();
     });
 
@@ -477,9 +468,8 @@ TEST_F(
     function() {
       NetInternalsTest.switchToView('hsts');
       taskQueue = new NetInternalsTest.TaskQueue(true);
-      var now = Date.now() / 1000.0;
-      taskQueue.addTask(new AddHSTSTask(
-          'somewhere.com', false, now, QueryResultType.SUCCESS));
+      taskQueue.addTask(
+          new AddHSTSTask('somewhere.com', false, QueryResultType.SUCCESS));
       taskQueue.addTask(
           new DeleteTask('somewhere.com', QueryResultType.NOT_FOUND));
       taskQueue.run();
@@ -493,11 +483,10 @@ TEST_F(
     function() {
       NetInternalsTest.switchToView('hsts');
       taskQueue = new NetInternalsTest.TaskQueue(true);
-      var now = Date.now() / 1000.0;
       taskQueue.addTask(new AddHSTSTask(
           '0123456789012345678901234567890' +
               '012345678901234567890123456789012345',
-          false, now, QueryResultType.NOT_FOUND));
+          false, QueryResultType.NOT_FOUND));
       taskQueue.run();
     });
 
@@ -510,9 +499,8 @@ TEST_F(
     function() {
       NetInternalsTest.switchToView('hsts');
       taskQueue = new NetInternalsTest.TaskQueue(true);
-      var now = Date.now() / 1000.0;
       taskQueue.addTask(
-          new AddHSTSTask('\u3024', false, now, QueryResultType.ERROR));
+          new AddHSTSTask('\u3024', false, QueryResultType.ERROR));
       taskQueue.run();
     });
 
@@ -524,11 +512,10 @@ TEST_F(
     function() {
       NetInternalsTest.switchToView('hsts');
       taskQueue = new NetInternalsTest.TaskQueue(true);
-      var now = Date.now() / 1000.0;
       taskQueue.addTask(
-          new AddHSTSTask('somewhere.com', true, now, QueryResultType.SUCCESS));
-      taskQueue.addTask(new AddHSTSTask(
-          'somewhere.com', false, now, QueryResultType.SUCCESS));
+          new AddHSTSTask('somewhere.com', true, QueryResultType.SUCCESS));
+      taskQueue.addTask(
+          new AddHSTSTask('somewhere.com', false, QueryResultType.SUCCESS));
       taskQueue.addTask(
           new DeleteTask('somewhere.com', QueryResultType.NOT_FOUND));
       taskQueue.run();
@@ -542,19 +529,18 @@ TEST_F(
     function() {
       NetInternalsTest.switchToView('hsts');
       taskQueue = new NetInternalsTest.TaskQueue(true);
-      var now = Date.now() / 1000.0;
-      taskQueue.addTask(new AddHSTSTask(
-          'somewhere.com', false, now, QueryResultType.SUCCESS));
+      taskQueue.addTask(
+          new AddHSTSTask('somewhere.com', false, QueryResultType.SUCCESS));
       taskQueue.addTask(new QueryHSTSTask(
-          'somewhereelse.com', false, now, QueryResultType.NOT_FOUND));
-      taskQueue.addTask(new AddHSTSTask(
-          'somewhereelse.com', true, now, QueryResultType.SUCCESS));
-      taskQueue.addTask(new QueryHSTSTask(
-          'somewhere.com', false, now, QueryResultType.SUCCESS));
+          'somewhereelse.com', false, QueryResultType.NOT_FOUND));
+      taskQueue.addTask(
+          new AddHSTSTask('somewhereelse.com', true, QueryResultType.SUCCESS));
+      taskQueue.addTask(
+          new QueryHSTSTask('somewhere.com', false, QueryResultType.SUCCESS));
       taskQueue.addTask(
           new DeleteTask('somewhere.com', QueryResultType.NOT_FOUND));
       taskQueue.addTask(new QueryHSTSTask(
-          'somewhereelse.com', true, now, QueryResultType.SUCCESS));
+          'somewhereelse.com', true, QueryResultType.SUCCESS));
       taskQueue.addTask(
           new DeleteTask('somewhereelse.com', QueryResultType.NOT_FOUND));
       taskQueue.run(true);
@@ -582,7 +568,6 @@ TEST_F(
     'netInternalsDomainSecurityPolicyViewExpectCTQueryError', function() {
       NetInternalsTest.switchToView('hsts');
       taskQueue = new NetInternalsTest.TaskQueue(true);
-      var now = Date.now() / 1000.0;
       taskQueue.addTask(
           new QueryExpectCTTask('\u3024', false, '', QueryResultType.ERROR));
       taskQueue.run();

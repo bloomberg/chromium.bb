@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "ash/assistant/model/assistant_query_history.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 
@@ -43,7 +44,7 @@ enum class MicState {
 
 // Models the Assistant interaction. This includes query state, state of speech
 // recognition, as well as a renderable AssistantResponse.
-class AssistantInteractionModel {
+class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantInteractionModel {
  public:
   AssistantInteractionModel();
   ~AssistantInteractionModel();

@@ -4,7 +4,9 @@
 
 from gpu_tests import test_expectations
 
-ANGLE_CONDITIONS = ['d3d9', 'd3d11', 'opengl', 'vulkan', 'no_angle']
+import re
+
+ANGLE_CONDITIONS = ['d3d9', 'd3d11', 'opengl', 'opengles', 'vulkan', 'no_angle']
 CMD_DECODER_CONDITIONS = ['passthrough', 'no_passthrough']
 GPU_CONDITIONS = ['amd', 'arm', 'broadcom', 'hisilicon', 'intel', 'imagination',
                   'nvidia', 'qualcomm', 'vivante']
@@ -124,22 +126,35 @@ class GpuTestExpectations(test_expectations.TestExpectations):
           not expectation.device_id_conditions) or
           gpu_vendor in expectation.gpu_conditions or
           (gpu_vendor, gpu_device_id) in expectation.device_id_conditions)
-      angle_renderer = self._GetANGLERenderer(gpu_info)
+      angle_renderer = self.GetANGLERenderer(gpu_info)
       angle_matches = (
         (not expectation.angle_conditions) or
         angle_renderer in expectation.angle_conditions)
-      cmd_decoder = self._GetCommandDecoder(gpu_info)
+      cmd_decoder = self.GetCommandDecoder(gpu_info)
       cmd_decoder_matches = (
         (not expectation.cmd_decoder_conditions) or
         cmd_decoder in expectation.cmd_decoder_conditions)
 
     return gpu_matches and angle_matches and cmd_decoder_matches
 
+  def _ParseANGLEGpuVendorString(self, device_string):
+    if not device_string:
+      return None
+    # ANGLE's device (renderer) string is of the form:
+    # "ANGLE (vendor_string, renderer_string, gl_version profile)"
+    match = re.search(r'ANGLE \((.*), .*, .*\)', device_string)
+    if match:
+      return match.group(1)
+    else:
+      return None
+
   def _GetGpuVendorString(self, gpu_info):
     if gpu_info:
       primary_gpu = gpu_info.devices[0]
       if primary_gpu:
-        vendor_string = primary_gpu.vendor_string.lower()
+        vendor_string = primary_gpu.vendor_string
+        angle_vendor_string = self._ParseANGLEGpuVendorString(
+          primary_gpu.device_string)
         vendor_id = primary_gpu.vendor_id
         if vendor_id == 0x10DE:
           return 'nvidia'
@@ -147,18 +162,34 @@ class GpuTestExpectations(test_expectations.TestExpectations):
           return 'amd'
         elif vendor_id == 0x8086:
           return 'intel'
+        elif angle_vendor_string:
+          return angle_vendor_string.lower()
         elif vendor_string:
-          return vendor_string.split(' ')[0]
+          return vendor_string.split(' ')[0].lower()
     return 'unknown_gpu'
+
+  def _GetANGLEGpuDeviceId(self, device_string):
+    if not device_string:
+      return None
+    # ANGLE's device (renderer) string is of the form:
+    # "ANGLE (vendor_string, renderer_string, gl_version profile)"
+    match = re.search(r'ANGLE \(.*, (.*), .*\)', device_string)
+    if match:
+      return match.group(1)
+    else:
+      return None
 
   def _GetGpuDeviceId(self, gpu_info):
     if gpu_info:
       primary_gpu = gpu_info.devices[0]
       if primary_gpu:
-        return primary_gpu.device_id or primary_gpu.device_string
+        return primary_gpu.device_id or \
+            self._GetANGLEGpuDeviceId(primary_gpu.device_string) or \
+            primary_gpu.device_string
     return 0
 
-  def _GetANGLERenderer(self, gpu_info):
+  @staticmethod
+  def GetANGLERenderer(gpu_info):
     if gpu_info and gpu_info.aux_attributes:
       gl_renderer = gpu_info.aux_attributes.get('gl_renderer')
       if gl_renderer and 'ANGLE' in gl_renderer:
@@ -166,13 +197,16 @@ class GpuTestExpectations(test_expectations.TestExpectations):
           return 'd3d11'
         elif 'Direct3D9' in gl_renderer:
           return 'd3d9'
+        elif 'OpenGL ES' in gl_renderer:
+          return 'opengles'
         elif 'OpenGL' in gl_renderer:
           return 'opengl'
         elif 'Vulkan' in gl_renderer:
           return 'vulkan'
     return 'no_angle'
 
-  def _GetCommandDecoder(self, gpu_info):
+  @staticmethod
+  def GetCommandDecoder(gpu_info):
     if gpu_info and gpu_info.aux_attributes and \
         gpu_info.aux_attributes.get('passthrough_cmd_decoder', False):
       return 'passthrough'

@@ -23,7 +23,6 @@ namespace content {
 // impact Browser UI.
 void JNI_WebContentsUtils_ReportAllFrameSubmissions(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& jweb_contents,
     jboolean enabled) {
   WebContents* web_contents = WebContents::FromJavaWebContents(jweb_contents);
@@ -35,7 +34,6 @@ void JNI_WebContentsUtils_ReportAllFrameSubmissions(
 
 ScopedJavaLocalRef<jobject> JNI_WebContentsUtils_GetFocusedFrame(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& jweb_contents) {
   WebContents* web_contents = WebContents::FromJavaWebContents(jweb_contents);
   return static_cast<RenderFrameHostImpl*>(web_contents->GetFocusedFrame())
@@ -44,7 +42,6 @@ ScopedJavaLocalRef<jobject> JNI_WebContentsUtils_GetFocusedFrame(
 
 void JNI_WebContentsUtils_EvaluateJavaScriptWithUserGesture(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& jweb_contents,
     const JavaParamRef<jstring>& script) {
   WebContents* web_contents = WebContents::FromJavaWebContents(jweb_contents);

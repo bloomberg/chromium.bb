@@ -208,7 +208,8 @@ public class TabRedirectHandler extends EmptyTabObserver implements UserData {
         if (!isRedirect) {
             if ((pageTransType & PageTransition.FORWARD_BACK) != 0) {
                 isNewLoadingStartedByUser = true;
-            } else if (pageTransitionCore != PageTransition.LINK) {
+            } else if (pageTransitionCore != PageTransition.LINK
+                    && pageTransitionCore != PageTransition.FORM_SUBMIT) {
                 isNewLoadingStartedByUser = true;
             } else if (prevNewUrlLoadingTime == INVALID_TIME || isFromIntent
                     || lastUserInteractionTime > prevNewUrlLoadingTime) {

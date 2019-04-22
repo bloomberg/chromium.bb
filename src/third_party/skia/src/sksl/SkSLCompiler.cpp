@@ -7,6 +7,7 @@
 
 #include "SkSLCompiler.h"
 
+#include "SkSLByteCodeGenerator.h"
 #include "SkSLCFGGenerator.h"
 #include "SkSLCPPCodeGenerator.h"
 #include "SkSLGLSLCodeGenerator.h"
@@ -58,6 +59,10 @@ static const char* SKSL_FP_INCLUDE =
 
 static const char* SKSL_PIPELINE_STAGE_INCLUDE =
 #include "sksl_pipeline.inc"
+;
+
+static const char* SKSL_MIXER_INCLUDE =
+#include "sksl_mixer.inc"
 ;
 
 namespace SkSL {
@@ -1267,6 +1272,13 @@ std::unique_ptr<Program> Compiler::convertProgram(Program::Kind kind, String tex
                                          strlen(SKSL_PIPELINE_STAGE_INCLUDE), *fTypes, &elements);
             fIRGenerator->fSymbolTable->markAllFunctionsBuiltin();
             break;
+        case Program::kMixer_Kind:
+            inherited = nullptr;
+            fIRGenerator->start(&settings, nullptr);
+            fIRGenerator->convertProgram(kind, SKSL_MIXER_INCLUDE, strlen(SKSL_MIXER_INCLUDE),
+                                         *fTypes, &elements);
+            fIRGenerator->fSymbolTable->markAllFunctionsBuiltin();
+            break;
     }
     for (auto& element : elements) {
         if (element->fKind == ProgramElement::kEnum_Kind) {
@@ -1301,7 +1313,26 @@ bool Compiler::optimize(Program& program) {
                 this->scanCFG((FunctionDefinition&) element);
             }
         }
-        fSource = nullptr;
+        if (program.fKind != Program::kFragmentProcessor_Kind) {
+            for (auto iter = program.fElements.begin(); iter != program.fElements.end();) {
+                if ((*iter)->fKind == ProgramElement::kVar_Kind) {
+                    VarDeclarations& vars = (VarDeclarations&) **iter;
+                    for (auto varIter = vars.fVars.begin(); varIter != vars.fVars.end();) {
+                        const Variable& var = *((VarDeclaration&) **varIter).fVar;
+                        if (var.dead()) {
+                            varIter = vars.fVars.erase(varIter);
+                        } else {
+                            ++varIter;
+                        }
+                    }
+                    if (vars.fVars.size() == 0) {
+                        iter = program.fElements.erase(iter);
+                        continue;
+                    }
+                }
+                ++iter;
+            }
+        }
     }
     return fErrorCount == 0;
 }
@@ -1445,6 +1476,18 @@ bool Compiler::toPipelineStage(const Program& program, String* out,
         *out = buffer.str();
     }
     return result;
+}
+
+std::unique_ptr<ByteCode> Compiler::toByteCode(Program& program) {
+    if (!this->optimize(program)) {
+        return nullptr;
+    }
+    std::unique_ptr<ByteCode> result(new ByteCode());
+    ByteCodeGenerator cg(fContext.get(), &program, this, result.get());
+    if (cg.generateCode()) {
+        return result;
+    }
+    return nullptr;
 }
 
 const char* Compiler::OperatorName(Token::Kind kind) {

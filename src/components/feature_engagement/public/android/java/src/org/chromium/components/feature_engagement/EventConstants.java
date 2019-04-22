@@ -83,6 +83,11 @@ public final class EventConstants {
     public static final String DATA_SAVER_DETAIL_OPENED = "data_saver_overview_opened";
 
     /**
+     * The data saver milestone promo was used (tapped).
+     */
+    public static final String DATA_SAVER_MILESTONE_PROMO_OPENED = "data_saver_milestone_promo";
+
+    /**
      * The previews verbose status view was opened.
      */
     public static final String PREVIEWS_VERBOSE_STATUS_OPENED = "previews_verbose_status_opened";
@@ -91,11 +96,6 @@ public final class EventConstants {
      * A page load used a preview.
      */
     public static final String PREVIEWS_PAGE_LOADED = "preview_page_load";
-
-    /**
-     * The download button for a media element was displayed.
-     */
-    public static final String MEDIA_DOWNLOAD_BUTTON_DISPLAYED = "media_download_button_displayed";
 
     /**
      * Contextual Search panel was opened.

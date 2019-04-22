@@ -10,16 +10,6 @@
 
 namespace offline_pages {
 
-TEST(OfflinePageFeatureTest, OfflineBookmarks) {
-  // Enabled by default.
-  EXPECT_TRUE(offline_pages::IsOfflineBookmarksEnabled());
-
-  // Check if helper method works correctly when the features is disabled.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(kOfflineBookmarksFeature);
-  EXPECT_FALSE(offline_pages::IsOfflineBookmarksEnabled());
-}
-
 TEST(OfflinePageFeatureTest, OffliningRecentPages) {
   // Enabled by default.
   EXPECT_TRUE(offline_pages::IsOffliningRecentPagesEnabled());
@@ -28,16 +18,6 @@ TEST(OfflinePageFeatureTest, OffliningRecentPages) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndDisableFeature(kOffliningRecentPagesFeature);
   EXPECT_FALSE(offline_pages::IsOffliningRecentPagesEnabled());
-}
-
-TEST(OfflinePageFeatureTest, OfflinePagesSharing) {
-  // Enabled by default.
-  EXPECT_TRUE(offline_pages::IsOfflinePagesSharingEnabled());
-
-  // Check if helper method works correctly when the features is disabled.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kOfflinePagesSharingFeature);
-  EXPECT_TRUE(offline_pages::IsOfflinePagesSharingEnabled());
 }
 
 TEST(OfflinePageFeatureTest, OfflinePagesLivePageSharing) {
@@ -49,17 +29,6 @@ TEST(OfflinePageFeatureTest, OfflinePagesLivePageSharing) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(kOfflinePagesLivePageSharingFeature);
   EXPECT_TRUE(offline_pages::IsOfflinePagesLivePageSharingEnabled());
-}
-
-TEST(OfflinePageFeatureTest, OfflinePagesSvelteConcurrentLoading) {
-  // Disabled by default.
-  EXPECT_FALSE(offline_pages::IsOfflinePagesSvelteConcurrentLoadingEnabled());
-
-  // Check if helper method works correctly when the features is enabled.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      kOfflinePagesSvelteConcurrentLoadingFeature);
-  EXPECT_TRUE(offline_pages::IsOfflinePagesSvelteConcurrentLoadingEnabled());
 }
 
 TEST(OfflinePageFeatureTest, OfflinePagesLoadSignalCollecting) {
@@ -81,36 +50,6 @@ TEST(OfflinePageFeatureTest, OfflinePagesPrefetching) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(kPrefetchingOfflinePagesFeature);
   EXPECT_TRUE(offline_pages::IsPrefetchingOfflinePagesEnabled());
-}
-
-TEST(OfflinePageFeatureTest, OfflinePagesLimitlessPrefetching) {
-  // Disabled by default.
-  EXPECT_FALSE(offline_pages::IsLimitlessPrefetchingEnabled());
-
-  // This feature depends on the core prefetching feature.
-  {
-    base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitAndEnableFeature(kPrefetchingOfflinePagesFeature);
-    EXPECT_FALSE(offline_pages::IsLimitlessPrefetchingEnabled());
-  }
-  {
-    base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitAndEnableFeature(
-        kOfflinePagesLimitlessPrefetchingFeature);
-    EXPECT_FALSE(offline_pages::IsLimitlessPrefetchingEnabled());
-  }
-
-  // Check if helper method works correctly when all required features are
-  // enabled.
-  // TODO(https://crbug.com/803584): fix limitless mode or fully remove it.
-  {
-    base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitWithFeatures(
-        {kPrefetchingOfflinePagesFeature,
-         kOfflinePagesLimitlessPrefetchingFeature},
-        {});
-    EXPECT_FALSE(offline_pages::IsLimitlessPrefetchingEnabled());
-  }
 }
 
 TEST(OfflinePageFeatureTest, OfflinePagesInDownloadHomeOpenInCct) {

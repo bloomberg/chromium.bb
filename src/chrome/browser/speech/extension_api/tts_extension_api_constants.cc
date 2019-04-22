@@ -7,6 +7,7 @@
 namespace tts_extension_api_constants {
 
 const char kCharIndexKey[] = "charIndex";
+const char kLengthKey[] = "length";
 const char kDesiredEventTypesKey[] = "desiredEventTypes";
 const char kEnqueueKey[] = "enqueue";
 const char kErrorMessageKey[] = "errorMessage";

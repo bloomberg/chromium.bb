@@ -25,6 +25,8 @@ tr.exportTo('tr.v', function() {
 
   const DEFAULT_BOUNDARIES_FOR_UNIT = new Map();
 
+  const DEFAULT_ITERATION_FOR_BOOTSTRAP_RESAMPLING = 500;
+
   const DELTA = String.fromCharCode(916);
   const Z_SCORE_NAME = 'z-score';
   const P_VALUE_NAME = 'p-value';
@@ -102,6 +104,20 @@ tr.exportTo('tr.v', function() {
       this.count += other.count;
     }
 
+    deserialize(data, deserializer) {
+      if (!(data instanceof Array)) {
+        this.count = data;
+        return;
+      }
+      this.count = data[0];
+      for (const sample of data.slice(1)) {
+        // TODO(benjhayden): class Sample
+        if (!(sample instanceof Array)) continue;
+        this.diagnosticMaps.push(tr.v.d.DiagnosticMap.deserialize(
+            sample.slice(1), deserializer));
+      }
+    }
+
     fromDict(dict) {
       this.count = dict[0];
       if (dict.length > 1) {
@@ -109,6 +125,14 @@ tr.exportTo('tr.v', function() {
           this.diagnosticMaps.push(tr.v.d.DiagnosticMap.fromDict(map));
         }
       }
+    }
+
+    serialize(serializer) {
+      if (!this.diagnosticMaps.length) {
+        return this.count;
+      }
+      return [this.count, ...this.diagnosticMaps.map(d => [
+        undefined, ...d.serialize(serializer)])];
     }
 
     asDict() {
@@ -153,17 +177,14 @@ tr.exportTo('tr.v', function() {
    */
   class Histogram {
     constructor(name, unit, opt_binBoundaries) {
+      if (!(unit instanceof tr.b.Unit)) {
+        throw new Error('unit must be a Unit: ' + unit);
+      }
       let binBoundaries = opt_binBoundaries;
       if (!binBoundaries) {
         const baseUnit = unit.baseUnit ? unit.baseUnit : unit;
         binBoundaries = DEFAULT_BOUNDARIES_FOR_UNIT.get(baseUnit.unitName);
       }
-
-      // If this Histogram is being deserialized, then its guid will be set by
-      // fromDict().
-      // If this Histogram is being computed by a metric, then its guid will be
-      // allocated the first time the guid is gotten by asDict().
-      this.guid_ = undefined;
 
       // Serialize binBoundaries here instead of holding a reference to it in
       // case it is modified.
@@ -182,10 +203,11 @@ tr.exportTo('tr.v', function() {
       this.numNans = 0;
       this.running_ = undefined;
       this.sampleValues_ = [];
-      this.shortName = undefined;
+      this.sampleMeans_ = [];
       this.summaryOptions = new Map(DEFAULT_SUMMARY_OPTIONS);
       this.summaryOptions.set('percentile', []);
       this.summaryOptions.set('iprs', []);
+      this.summaryOptions.set('ci', []);
       this.unit = unit;
     }
 
@@ -207,7 +229,6 @@ tr.exportTo('tr.v', function() {
      * @param {!Object|!Map} opt_options.summaryOptions
      * @param {!Object|!Map} opt_options.diagnostics
      * @param {string} opt_options.description
-     * @param {string} opt_options.shortName
      * @return {!tr.v.Histogram}
      */
     static create(name, unit, samples, opt_options) {
@@ -215,7 +236,6 @@ tr.exportTo('tr.v', function() {
       const hist = new Histogram(name, unit, options.binBoundaries);
 
       if (options.description) hist.description = options.description;
-      if (options.shortName) hist.shortName = options.shortName;
 
       if (options.summaryOptions) {
         let summaryOptions = options.summaryOptions;
@@ -233,6 +253,7 @@ tr.exportTo('tr.v', function() {
           diagnostics = Object.entries(diagnostics);
         }
         for (const [name, diagnostic] of diagnostics) {
+          if (!diagnostic) continue;
           hist.diagnostics.set(name, diagnostic);
         }
       }
@@ -272,29 +293,110 @@ tr.exportTo('tr.v', function() {
       return this.name_;
     }
 
-    get guid() {
-      if (this.guid_ === undefined) {
-        this.guid_ = tr.b.GUID.allocateUUID4();
+    deserializeStatistics_() {
+      const statisticsNames = this.diagnostics.get(
+          tr.v.d.RESERVED_NAMES.STATISTICS_NAMES);
+      if (!statisticsNames) return;
+      for (const statName of statisticsNames) {
+        if (statName.startsWith('pct_')) {
+          const percent = percentFromString(statName.substr(4));
+          this.summaryOptions.get('percentile').push(percent);
+        } else if (statName.startsWith('ipr_')) {
+          const lower = percentFromString(statName.substr(4, 3));
+          const upper = percentFromString(statName.substr(8));
+          this.summaryOptions.get('iprs').push(
+              tr.b.math.Range.fromExplicitRange(lower, upper));
+        } else if (statName.startsWith('ci_')) {
+          const percent = percentFromString(
+              statName.replace('_lower', '').replace('_upper', '').substr(3));
+          if (!this.summaryOptions.get('ci').includes(percent)) {
+            this.summaryOptions.get('ci').push(percent);
+          }
+        }
       }
-
-      return this.guid_;
+      for (const statName of this.summaryOptions.keys()) {
+        if (statName === 'percentile' ||
+            statName === 'iprs' ||
+            statName === 'ci') {
+          continue;
+        }
+        this.summaryOptions.set(statName, statisticsNames.has(statName));
+      }
     }
 
-    set guid(guid) {
-      if (this.guid_ !== undefined) {
-        throw new Error('Cannot reset guid');
+    deserializeBin_(i, bin, deserializer) {
+      // Copy HistogramBin on write, share the rest with the other
+      // Histograms that use the same HistogramBinBoundaries.
+      this.allBins[i] = new HistogramBin(this.allBins[i].range);
+      this.allBins[i].deserialize(bin, deserializer);
+
+      // TODO(benjhayden): Remove after class Sample.
+      if (!(bin instanceof Array)) return;
+      for (let sample of bin.slice(1)) {
+        if (sample instanceof Array) {
+          sample = sample[0];
+        }
+        this.sampleValues_.push(sample);
+      }
+    }
+
+    deserializeBins_(bins, deserializer) {
+      if (bins instanceof Array) {
+        for (let i = 0; i < bins.length; ++i) {
+          this.deserializeBin_(i, bins[i], deserializer);
+        }
+      } else {
+        for (const [i, binData] of Object.entries(bins)) {
+          this.deserializeBin_(i, binData, deserializer);
+        }
+      }
+    }
+
+    static deserialize(data, deserializer) {
+      const [name, unit, boundaries, diagnostics, running, bins, nanBin] = data;
+      const hist = new Histogram(
+          deserializer.getObject(name),
+          tr.b.Unit.fromJSON(unit),
+          HistogramBinBoundaries.fromDict(deserializer.getObject(boundaries)));
+
+      hist.diagnostics.deserializeAdd(diagnostics, deserializer);
+
+      const description = hist.diagnostics.get(
+          tr.v.d.RESERVED_NAMES.DESCRIPTION);
+      if (description && description.length) {
+        hist.description = [...description][0];
       }
 
-      this.guid_ = guid;
+      hist.deserializeStatistics_();
+
+      if (running) {
+        hist.running_ = tr.b.math.RunningStatistics.fromDict(running);
+      }
+
+      if (bins) {
+        hist.deserializeBins_(bins, deserializer);
+      }
+
+      if (nanBin) {
+        // TODO(benjhayden): hist.nanBin
+        if (!(nanBin instanceof Array)) {
+          hist.numNans = nanBin;
+        } else {
+          hist.numNans = nanBin[0];
+          for (const sample of nanBin.slice(1)) {
+            if (!(sample instanceof Array)) continue;
+            hist.nanDiagnosticMaps.push(tr.v.d.DiagnosticMap.deserialize(
+                sample.slice(1), deserializer));
+          }
+        }
+      }
+
+      return hist;
     }
 
     static fromDict(dict) {
       const hist = new Histogram(dict.name, tr.b.Unit.fromJSON(dict.unit),
           HistogramBinBoundaries.fromDict(dict.binBoundaries));
-      hist.guid = dict.guid;
-      if (dict.shortName) {
-        hist.shortName = dict.shortName;
-      }
       if (dict.description) {
         hist.description = dict.description;
       }
@@ -311,6 +413,13 @@ tr.exportTo('tr.v', function() {
           }
         } else {
           for (const [i, binDict] of Object.entries(dict.allBins)) {
+            // Check whether i is a valid index before indexing it.
+            if (i >= hist.allBins.length || i < 0) {
+              throw new Error(
+                  'Invalid index "' + i +
+                  '" out of bounds of [0..' + hist.allBins.length + ')');
+            }
+
             hist.allBins[i] = new HistogramBin(hist.allBins[i].range);
             hist.allBins[i].fromDict(binDict);
           }
@@ -459,9 +568,15 @@ tr.exportTo('tr.v', function() {
      * @param {(!Object|!tr.v.d.DiagnosticMap)=} opt_diagnostics
      */
     addSample(value, opt_diagnostics) {
-      if (opt_diagnostics &&
-          !(opt_diagnostics instanceof tr.v.d.DiagnosticMap)) {
-        opt_diagnostics = tr.v.d.DiagnosticMap.fromObject(opt_diagnostics);
+      if (opt_diagnostics) {
+        if (!(opt_diagnostics instanceof tr.v.d.DiagnosticMap)) {
+          opt_diagnostics = tr.v.d.DiagnosticMap.fromObject(opt_diagnostics);
+        }
+        for (const [name, diag] of opt_diagnostics) {
+          if (diag instanceof tr.v.d.Breakdown) {
+            diag.truncate(this.unit);
+          }
+        }
       }
 
       if (typeof(value) !== 'number' || isNaN(value)) {
@@ -474,7 +589,10 @@ tr.exportTo('tr.v', function() {
         if (this.running_ === undefined) {
           this.running_ = new tr.b.math.RunningStatistics();
         }
+        this.sampleMeans_ = [];
         this.running_.add(value);
+
+        value = this.unit.truncate(value);
 
         const binIndex = this.getBinIndexForValue(value);
         let bin = this.allBins[binIndex];
@@ -492,6 +610,37 @@ tr.exportTo('tr.v', function() {
 
       tr.b.math.Statistics.uniformlySampleStream(this.sampleValues_,
           this.numValues + this.numNans, value, this.maxNumSampleValues);
+    }
+
+    resampleMean_(percent) {
+      const filteredSamples = this.sampleValues_.
+          filter(value => typeof(value) === 'number' && !isNaN(value));
+      const sampleCount = filteredSamples.length;
+      if (sampleCount === 0 || percent <= 0.0 || percent >= 1.0) {
+        return [undefined, undefined];
+      } else if (sampleCount === 1) {
+        return [filteredSamples[0], filteredSamples[0]];
+      }
+
+      const iterations = DEFAULT_ITERATION_FOR_BOOTSTRAP_RESAMPLING;
+      if (this.sampleMeans_.length !== iterations) {
+        this.sampleMeans_ = [];
+        for (let i = 0; i < iterations; i++) {
+          let tempSum = 0.0;
+          for (let j = 0; j < sampleCount; j++) {
+            tempSum += filteredSamples[Math.floor(
+                Math.random() * sampleCount)];
+          }
+
+          this.sampleMeans_.push(tempSum / sampleCount);
+        }
+        this.sampleMeans_.sort((a, b) => a - b);
+      }
+
+      return [
+        this.sampleMeans_[Math.floor((iterations - 1) * (0.5 - percent / 2))],
+        this.sampleMeans_[Math.ceil((iterations - 1) * (0.5 + percent / 2))],
+      ];
     }
 
     sampleValuesInto(samples) {
@@ -600,20 +749,7 @@ tr.exportTo('tr.v', function() {
         this.running_ = this.running_.merge(other.running_);
       }
 
-      let mergedFrom = this.diagnostics.get(tr.v.d.RESERVED_NAMES.MERGED_FROM);
-      if (!mergedFrom) {
-        mergedFrom = new tr.v.d.RelatedHistogramMap();
-        this.diagnostics.set(tr.v.d.RESERVED_NAMES.MERGED_FROM, mergedFrom);
-      }
-      mergedFrom.set(mergedFrom.length, other);
-
-      let mergedTo = other.diagnostics.get(tr.v.d.RESERVED_NAMES.MERGED_TO);
-      if (!mergedTo) {
-        mergedTo = new tr.v.d.RelatedHistogramMap();
-        other.diagnostics.set(tr.v.d.RESERVED_NAMES.MERGED_TO, mergedTo);
-      }
-      mergedTo.set(mergedTo.length, this);
-
+      this.sampleMeans_ = [];
       this.diagnostics.addDiagnostics(other.diagnostics);
 
       for (const [stat, option] of other.summaryOptions) {
@@ -631,6 +767,11 @@ tr.exportTo('tr.v', function() {
               if (found) break;
             }
             if (!found) thisIprs.push(ipr);
+          }
+        } else if (stat === 'ci') {
+          const CIs = this.summaryOptions.get(stat);
+          for (const CI of option) {
+            if (!CIs.includes(CI)) CIs.push(CI);
           }
         } else if (option && !this.summaryOptions.get(stat)) {
           this.summaryOptions.set(stat, true);
@@ -654,6 +795,7 @@ tr.exportTo('tr.v', function() {
      * @param {!Array.<number>=} summaryOptions.percentile Numbers in (0,1)
      * @param {!Array.<!tr.b.Range>=} summaryOptions.iprs Ranges of numbers in
      *     (0,1).
+     * @param {!Array.<number>=} summaryOptions.ci Numbers in (0,1)
      */
     customizeSummaryOptions(summaryOptions) {
       for (const [key, value] of Object.entries(summaryOptions)) {
@@ -698,11 +840,27 @@ tr.exportTo('tr.v', function() {
             tr.b.Unit.byName.count_smallerIsBetter, this.numValues);
       }
       if (statName.substr(0, 4) === 'pct_') {
-        const percent = percentFromString(statName.substr(4));
         if (this.numValues === 0) return undefined;
+        const percent = percentFromString(statName.substr(4));
         const percentile = this.getApproximatePercentile(percent);
         if (typeof(percentile) !== 'number') return undefined;
         return new tr.b.Scalar(this.unit, percentile);
+      }
+      if (statName.substr(0, 3) === 'ci_') {
+        const percent = percentFromString(statName.substr(3, 3));
+        const [lowCI, highCI] = this.resampleMean_(percent);
+        if (statName.substr(7) === 'lower') {
+          if (typeof(lowCI) !== 'number') return undefined;
+          return new tr.b.Scalar(this.unit, lowCI);
+        } else if (statName.substr(7) === 'upper') {
+          if (typeof(highCI) !== 'number') return undefined;
+          return new tr.b.Scalar(this.unit, highCI);
+        }
+
+        if (typeof(highCI) !== 'number' || typeof(lowCI) !== 'number') {
+          return undefined;
+        }
+        return new tr.b.Scalar(this.unit, highCI - lowCI);
       }
       if (statName.substr(0, 4) === 'ipr_') {
         let lower = percentFromString(statName.substr(4, 3));
@@ -777,6 +935,13 @@ tr.exportTo('tr.v', function() {
             statisticsNames.add(
                 'ipr_' + tr.v.percentToString(range.min, true) +
                 '_' + tr.v.percentToString(range.max, true));
+          }
+        } else if (statName === 'ci') {
+          for (const CIpctile of option) {
+            const CIpctStr = tr.v.percentToString(CIpctile);
+            statisticsNames.add('ci_' + CIpctStr + '_lower');
+            statisticsNames.add('ci_' + CIpctStr + '_upper');
+            statisticsNames.add('ci_' + CIpctStr);
           }
         } else if (option) {
           statisticsNames.add(statName);
@@ -863,8 +1028,8 @@ tr.exportTo('tr.v', function() {
     }
 
     /**
-     * Create a new Histogram instance that is just like |this| except for its
-     * guid. This is useful when merging Histograms.
+     * Create a new Histogram instance that is just like |this|. This is useful
+     * when merging Histograms.
      * @return {!tr.v.Histogram}
      */
     clone() {
@@ -873,7 +1038,7 @@ tr.exportTo('tr.v', function() {
       const hist = new Histogram(this.name, this.unit, binBoundaries);
       for (const [stat, option] of this.summaryOptions) {
         // Copy arrays, but not ipr Ranges.
-        if (stat === 'percentile' || stat === 'iprs') {
+        if (stat === 'percentile' || stat === 'iprs' || stat === 'ci') {
           hist.summaryOptions.set(stat, Array.from(option));
         } else {
           hist.summaryOptions.set(stat, option);
@@ -887,7 +1052,7 @@ tr.exportTo('tr.v', function() {
      * Produce a Histogram with |this| Histogram's name, unit, description,
      * statistics, summaryOptions, sampleValues, and diagnostics, but with
      * |newBoundaries|.
-     * guid and sample diagnostics are not copied. In-bound Relationship
+     * sample diagnostics are not copied. In-bound Relationship
      * diagnostics are broken.
      *
      * @param {!tr.v.HistogramBinBoundaries} newBoundaries
@@ -905,7 +1070,7 @@ tr.exportTo('tr.v', function() {
       }
       for (const [stat, option] of this.summaryOptions) {
         // Copy the array of percentiles.
-        if (stat === 'percentile') {
+        if (stat === 'percentile' || stat === 'ci') {
           rebinned.summaryOptions.set(stat, Array.from(option));
         } else {
           rebinned.summaryOptions.set(stat, option);
@@ -914,16 +1079,33 @@ tr.exportTo('tr.v', function() {
       return rebinned;
     }
 
+    serialize(serializer) {
+      let nanBin = this.numNans;
+      if (this.nanDiagnosticMaps.length) {
+        nanBin = [nanBin, ...this.nanDiagnosticMaps.map(dm => [
+          undefined, ...dm.serialize(serializer)])];
+      }
+      this.diagnostics.set(tr.v.d.RESERVED_NAMES.STATISTICS_NAMES,
+          new tr.v.d.GenericSet([...this.statisticsNames].sort()));
+      this.diagnostics.set(tr.v.d.RESERVED_NAMES.DESCRIPTION,
+          new tr.v.d.GenericSet([this.description].sort()));
+      return [
+        serializer.getOrAllocateId(this.name),
+        this.unit.asJSON2(),
+        serializer.getOrAllocateId(this.binBoundariesDict_),
+        this.diagnostics.serialize(serializer),
+        this.running_ ? this.running_.asDict() : 0,
+        this.serializeBins_(serializer),
+        nanBin,
+      ];
+    }
+
     asDict() {
       const dict = {};
       dict.name = this.name;
       dict.unit = this.unit.asJSON();
-      dict.guid = this.guid;
       if (this.binBoundariesDict_ !== undefined) {
         dict.binBoundaries = this.binBoundariesDict_;
-      }
-      if (this.shortName) {
-        dict.shortName = this.shortName;
       }
       if (this.description) {
         dict.description = this.description;
@@ -944,6 +1126,7 @@ tr.exportTo('tr.v', function() {
 
       if (this.numValues) {
         dict.sampleValues = this.sampleValues.slice();
+        this.running.truncate(this.unit);
         dict.running = this.running_.asDict();
         dict.allBins = this.allBinsAsDict_();
       }
@@ -959,6 +1142,9 @@ tr.exportTo('tr.v', function() {
           // Use a more compact JSON format than Range supports.
           if (value.length === 0) continue;
           option = value.map(r => [r.min, r.max]);
+        } else if (name === 'ci') {
+          if (value.length === 0) continue;
+          option = Array.from(value);
         } else if (value === DEFAULT_SUMMARY_OPTIONS.get(name)) {
           continue;
         } else {
@@ -972,6 +1158,49 @@ tr.exportTo('tr.v', function() {
       }
 
       return dict;
+    }
+
+    serializeBins_(serializer) {
+      // dict.allBins may be either an array or a dict, whichever is more
+      // efficient.
+      // The overhead of the array form is significant when the histogram is
+      // sparse, and the overhead of the dict form is significant when the
+      // histogram is dense.
+      // The dict form is more efficient when more than half of allBins are
+      // empty. The array form is more efficient when fewer than half of
+      // allBins are empty.
+
+      const numBins = this.allBins.length;
+
+      // If allBins are empty, then don't serialize anything for them.
+      let emptyBins = 0;
+
+      for (let i = 0; i < numBins; ++i) {
+        if (this.allBins[i].count === 0) {
+          ++emptyBins;
+        }
+      }
+
+      if (emptyBins === numBins) {
+        return 0;
+      }
+
+      if (emptyBins > (numBins / 2)) {
+        const allBinsDict = {};
+        for (let i = 0; i < numBins; ++i) {
+          const bin = this.allBins[i];
+          if (bin.count > 0) {
+            allBinsDict[i] = bin.serialize(serializer);
+          }
+        }
+        return allBinsDict;
+      }
+
+      const allBinsArray = [];
+      for (let i = 0; i < numBins; ++i) {
+        allBinsArray.push(this.allBins[i].serialize(serializer));
+      }
+      return allBinsArray;
     }
 
     allBinsAsDict_() {

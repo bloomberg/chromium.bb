@@ -33,7 +33,6 @@
 #include "content/public/common/page_state.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/referrer.h"
-#include "content/public/common/renderer_preferences.h"
 #include "content/public/common/three_d_api_types.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
@@ -43,6 +42,7 @@
 #include "net/base/network_change_notifier.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "third_party/blink/public/common/manifest/web_display_mode.h"
+#include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "third_party/blink/public/web/web_plugin_action.h"
 #include "third_party/blink/public/web/web_text_direction.h"
 #include "ui/base/ime/text_input_mode.h"
@@ -131,9 +131,11 @@ IPC_MESSAGE_ROUTED1(ViewMsg_ReplaceDateTime,
 
 #endif
 
+// Make the RenderWidget background transparent or opaque.
+IPC_MESSAGE_ROUTED1(ViewMsg_SetBackgroundOpaque, bool /* opaque */)
+
 // Sends updated preferences to the renderer.
-IPC_MESSAGE_ROUTED1(ViewMsg_SetRendererPrefs,
-                    content::RendererPreferences)
+IPC_MESSAGE_ROUTED1(ViewMsg_SetRendererPrefs, blink::mojom::RendererPreferences)
 
 // This passes a set of webkit preferences down to the renderer.
 IPC_MESSAGE_ROUTED1(ViewMsg_UpdateWebPreferences,
@@ -223,6 +225,10 @@ IPC_MESSAGE_ROUTED2(ViewMsg_AnimateDoubleTapZoom,
                     gfx::Point /* tap point */,
                     gfx::Rect /* rect_to_zoom */)
 
+// Sent to the main-frame's view to request performing a zoom-to-find-in-page
+// based on the rect provided.
+IPC_MESSAGE_ROUTED1(ViewMsg_ZoomToFindInPageRect, gfx::Rect /*rect_to_zoom */)
+
 // -----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser.
 
@@ -237,6 +243,13 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_ShowWidget,
 // Message to show a full screen widget.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_ShowFullscreenWidget,
                     int /* route_id */)
+
+// Sent from an inactive renderer for the browser to route to the active
+// renderer, instructing it to close.
+//
+// TODO(http://crbug.com/419087): Move this thing to Frame as it's a signal
+// from a swapped out frame to the mainframe of the frame tree.
+IPC_MESSAGE_ROUTED0(ViewHostMsg_RouteCloseEvent)
 
 // Indicates that the current page has been closed, after a ClosePage
 // message.
@@ -261,18 +274,6 @@ IPC_SYNC_MESSAGE_CONTROL1_2(ViewHostMsg_ResolveProxy,
                             GURL /* url */,
                             bool /* result */,
                             std::string /* proxy list */)
-
-// Tells the browser that a specific Appcache manifest in the current page
-// was accessed.
-IPC_MESSAGE_ROUTED2(ViewHostMsg_AppCacheAccessed,
-                    GURL /* manifest url */,
-                    bool /* blocked by policy */)
-
-// Used to go to the session history entry at the given offset (ie, -1 will
-// return the "back" item).
-IPC_MESSAGE_ROUTED2(ViewHostMsg_GoToEntryAtOffset,
-                    int /* offset (from current) of history item to get */,
-                    bool /* has_user_gesture */)
 
 // Notifies that the preferred size of the content changed.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_DidContentsPreferredSizeChange,

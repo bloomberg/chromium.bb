@@ -23,13 +23,13 @@ FAIL Setting `search` to `test` of a `Location` object sans browsing context is 
 FAIL Setting `hash` to `test` of a `Location` object sans browsing context is a no-op assert_equals: expected (string) "" but got (undefined) undefined
 FAIL Setting `hash` to `#` of a `Location` object sans browsing context is a no-op assert_equals: expected (string) "" but got (undefined) undefined
 FAIL Getting `origin` of a `Location` object sans browsing context should be "null" assert_equals: expected (string) "null" but got (undefined) undefined
-FAIL Invoking `assign` with `about:blank` on a `Location` object sans browsing context is a no-op assert_equals: expected (string) "about:blank" but got (undefined) undefined
-FAIL Invoking `assign` with `https://example.com/` on a `Location` object sans browsing context is a no-op assert_equals: expected (string) "about:blank" but got (undefined) undefined
-FAIL Invoking `assign` with `/` on a `Location` object sans browsing context is a no-op assert_equals: expected (string) "about:blank" but got (undefined) undefined
-FAIL Invoking `assign` with `http://test:test/` on a `Location` object sans browsing context is a no-op assert_equals: expected (string) "about:blank" but got (undefined) undefined
-FAIL Invoking `assign` with `test test` on a `Location` object sans browsing context is a no-op assert_equals: expected (string) "about:blank" but got (undefined) undefined
-FAIL Invoking `assign` with `test:test` on a `Location` object sans browsing context is a no-op assert_equals: expected (string) "about:blank" but got (undefined) undefined
-FAIL Invoking `assign` with `chrome:fail` on a `Location` object sans browsing context is a no-op assert_equals: expected (string) "about:blank" but got (undefined) undefined
+FAIL Invoking `assign` with `about:blank` on a `Location` object sans browsing context is a no-op loc[method] is not a function
+FAIL Invoking `assign` with `https://example.com/` on a `Location` object sans browsing context is a no-op loc[method] is not a function
+FAIL Invoking `assign` with `/` on a `Location` object sans browsing context is a no-op loc[method] is not a function
+FAIL Invoking `assign` with `http://test:test/` on a `Location` object sans browsing context is a no-op loc[method] is not a function
+FAIL Invoking `assign` with `test test` on a `Location` object sans browsing context is a no-op loc[method] is not a function
+FAIL Invoking `assign` with `test:test` on a `Location` object sans browsing context is a no-op loc[method] is not a function
+FAIL Invoking `assign` with `chrome:fail` on a `Location` object sans browsing context is a no-op loc[method] is not a function
 FAIL Invoking `replace` with `about:blank` on a `Location` object sans browsing context is a no-op assert_equals: expected (string) "about:blank" but got (undefined) undefined
 FAIL Invoking `replace` with `https://example.com/` on a `Location` object sans browsing context is a no-op assert_equals: expected (string) "about:blank" but got (undefined) undefined
 FAIL Invoking `replace` with `/` on a `Location` object sans browsing context is a no-op assert_equals: expected (string) "about:blank" but got (undefined) undefined

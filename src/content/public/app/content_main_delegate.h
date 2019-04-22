@@ -123,7 +123,7 @@ class CONTENT_EXPORT ContentMainDelegate {
   virtual bool ShouldCreateFeatureList();
 
   // Allows the embedder to perform its own initialization after content
-  // performed its own and already brought up MessageLoop, TaskScheduler, field
+  // performed its own and already brought up MessageLoop, ThreadPool, field
   // trials and FeatureList (by default).
   // |is_running_tests| indicates whether it is running in tests.
   virtual void PostEarlyInitialization(bool is_running_tests) {}

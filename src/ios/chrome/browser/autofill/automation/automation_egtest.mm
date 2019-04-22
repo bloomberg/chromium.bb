@@ -26,7 +26,6 @@
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
 #import "ios/chrome/browser/autofill/form_suggestion_label.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
-#import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/web/public/test/earl_grey/web_view_actions.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
 #include "ios/web/public/test/element_selector.h"
@@ -40,11 +39,14 @@
 
 namespace {
 static const char kAutofillAutomationSwitch[] = "autofillautomation";
+static const int kRecipeRetryLimit = 5;
 }
 
 // The autofill automation test case is intended to run a script against a
 // captured web site. It gets the script from the command line.
 @interface AutofillAutomationTestCase : ChromeTestCase {
+  bool shouldRecordException;
+  GURL startUrl;
   NSMutableArray<AutomationAction*>* actions_;
   std::map<const std::string, autofill::ServerFieldType>
       string_to_field_type_map_;
@@ -78,19 +80,19 @@ static const char kAutofillAutomationSwitch[] = "autofillautomation";
 }
 
 // Loads the recipe file, parse it into Values.
-+ (std::unique_ptr<base::DictionaryValue>)parseRecipeAtPath:
-    (const base::FilePath&)path {
++ (base::Value)parseRecipeAtPath:(const base::FilePath&)path {
   std::string json_text;
 
   bool readSuccess(base::ReadFileToString(path, &json_text));
   GREYAssert(readSuccess, @"Unable to read json file.");
 
-  std::unique_ptr<base::Value> value(base::JSONReader().ReadToValue(json_text));
+  base::Optional<base::Value> value = base::JSONReader::Read(json_text);
 
-  GREYAssert(value, @"Unable to parse json file.");
-  GREYAssert(value->is_dict(), @"Expecting a dictionary in the JSON file.");
+  GREYAssert(value.has_value(), @"Unable to parse json file.");
+  GREYAssert(value.value().is_dict(),
+             @"Expecting a dictionary in the JSON file.");
 
-  return base::DictionaryValue::From(std::move(value));
+  return std::move(value).value();
 }
 
 // Converts a string (from the test recipe) to the autofill ServerFieldType it
@@ -191,6 +193,7 @@ static const char kAutofillAutomationSwitch[] = "autofillautomation";
   autofill::PersonalDataManager* personal_data_manager =
       autofill_manager->client()->GetPersonalDataManager();
 
+  personal_data_manager->ClearAllLocalData();
   personal_data_manager->AddCreditCard(credit_card);
   personal_data_manager->SaveImportedProfile(profile);
 }
@@ -199,28 +202,27 @@ static const char kAutofillAutomationSwitch[] = "autofillautomation";
   [super setUp];
 
   const base::FilePath recipePath = [[self class] recipePath];
-  std::unique_ptr<base::DictionaryValue> recipeRoot =
-      [[self class] parseRecipeAtPath:recipePath];
+  base::Value recipeRoot = [[self class] parseRecipeAtPath:recipePath];
 
   const base::Value* autofillProfile =
-      recipeRoot->FindKeyOfType("autofillProfile", base::Value::Type::LIST);
+      recipeRoot.FindKeyOfType("autofillProfile", base::Value::Type::LIST);
   if (autofillProfile) {
     [self prepareAutofillProfileWithValues:autofillProfile];
   }
 
   // Extract the starting URL.
   base::Value* startUrlValue =
-      recipeRoot->FindKeyOfType("startingURL", base::Value::Type::STRING);
+      recipeRoot.FindKeyOfType("startingURL", base::Value::Type::STRING);
   GREYAssert(startUrlValue, @"Test file is missing startingURL.");
 
   const std::string startUrlString(startUrlValue->GetString());
   GREYAssert(!startUrlString.empty(), @"startingURL is an empty value.");
 
-  const GURL startUrl(startUrlString);
+  startUrl = GURL(startUrlString);
 
   // Extract the actions.
   base::Value* actionValue =
-      recipeRoot->FindKeyOfType("actions", base::Value::Type::LIST);
+      recipeRoot.FindKeyOfType("actions", base::Value::Type::LIST);
   GREYAssert(actionValue, @"Test file is missing actions.");
 
   const base::Value::ListStorage& actionsValues(actionValue->GetList());
@@ -235,15 +237,60 @@ static const char kAutofillAutomationSwitch[] = "autofillautomation";
                                 static_cast<const base::DictionaryValue&>(
                                     actionValue)]];
   }
-
-  // Load the initial page of the recipe.
-  [ChromeEarlGrey loadURL:startUrl];
 }
 
-- (void)testActions {
-  for (AutomationAction* action in actions_) {
-    [action execute];
+// Override the XCTestCase method that records a failure due to an exception.
+// This way we can choose whether to report failures during multiple runs of
+// a recipe, and only fail the test if all the runs of the recipe fail.
+// We still print the failure even when it is not reported.
+- (void)recordFailureWithDescription:(NSString*)description
+                              inFile:(NSString*)filePath
+                              atLine:(NSUInteger)lineNumber
+                            expected:(BOOL)expected {
+  if (self->shouldRecordException) {
+    [super recordFailureWithDescription:description
+                                 inFile:filePath
+                                 atLine:lineNumber
+                               expected:expected];
+  } else {
+    NSLog(@"%@", description);
   }
+}
+
+// Runs the recipe provided multiple times.
+// If any of the runs succeed, the test will be reported as a success.
+- (void)testActions {
+  for (int i = 0; i < kRecipeRetryLimit; i++) {
+    // Only actually report the exception on the last run.
+    // This is because any exception reporting will fail the test.
+    NSLog(@"================================================================");
+    NSLog(@"RECIPE ATTEMPT %d of %d for %@", (i + 1), kRecipeRetryLimit,
+          base::SysUTF8ToNSString(startUrl.GetContent()));
+
+    self->shouldRecordException = (i == (kRecipeRetryLimit - 1));
+
+    if ([self runActionsOnce]) {
+      return;
+    }
+  }
+}
+
+// Tries running the recipe against the target website once.
+// Returns true if the entire recipe succeeds.
+// Returns false if an assertion is raised due to a failure.
+- (bool)runActionsOnce {
+  @try {
+    // Load the initial page of the recipe.
+    [ChromeEarlGrey loadURL:startUrl];
+
+    for (AutomationAction* action in actions_) {
+      [action execute];
+    }
+  } @catch (NSException* e) {
+    return false;
+  }
+
+  return true;
 }
 
 @end

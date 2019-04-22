@@ -57,6 +57,7 @@
 
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "base/stl_util.h"
 
 struct SuddenMotionSensor::GenericMacbookSensor {
   // Name of device to be read.
@@ -338,7 +339,7 @@ bool SuddenMotionSensor::Init() {
 
   // Look for the current model in the supported sensor list.
   base::ScopedCFTypeRef<CFDataRef> board_id_data;
-  const int kNumSensors = arraysize(kSupportedSensors);
+  const int kNumSensors = base::size(kSupportedSensors);
 
   for (int i = 0; i < kNumSensors; ++i) {
     // Check if the supported sensor model name is a prefix

@@ -48,8 +48,11 @@ class RevocableInterfacePtr : public InterfaceInvalidator::Observer {
     other.reset();
   }
 
-  RevocableInterfacePtr(PtrInfoType info, InterfaceInvalidator* invalidator) {
-    Bind(std::move(info), invalidator);
+  RevocableInterfacePtr(
+      PtrInfoType info,
+      InterfaceInvalidator* invalidator,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+    Bind(std::move(info), invalidator, task_runner);
   }
 
   // Takes over the binding of another RevocableInterfacePtr, and closes any

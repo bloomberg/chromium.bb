@@ -4,24 +4,27 @@ tables are in the tables subdirectory of the liblouis distribution. For
 an overview of liblouis see README. 
 
 First, obtain the liblouis source, either by downloading the latest 
-tarball or from the Subversion repository. See HACKING for instructions. 
+tarball or from the Git repository. See HACKING for instructions. 
 If you downloaded the tarball, unpack it.
 
 To build liblouis.dll you will need the Microsoft command-line C/C++ 
-tools. you will also have to set environment variables correctly. You 
-can download the express versions of Visual Studio, MSVC and the 
-Microsoft C/C++ SDK free. All have a batch file that sets environment 
-variables and then displays a command prompt.
+tools. You will also have to set environment variables correctly. You 
+can download the Community version of Microsoft Visual Studio, including 
+Visual C++, and the Microsoft Windows SDK for free. It has a batch file 
+that sets environment variables and then displays a command prompt.
 
-Next, go to the subdirectory windows. Edit the file configure.mk If you 
-want 
-32-bit unicode change the 2 in the line UCS=2 to a 4.
+You might have to add the Visual Studio path 
+(C:\Program Files (x86)\Microsoft Visual Studio\2017\Community) to the 
+"Path" of the environment variables manually.
 
-Now type
+Next, go to the subdirectory windows. Edit the file configure.mk. If you 
+want 32-bit Unicode change the 2 in the line UCS=2 to a 4.
+
+Open the "VS 2017 Developer Command Prompt" from the Start menu and use the 
+"cd" command goto the "\liblouis-x.x.x\windows" folder, then type:
 
 nmake /f Makefile.nmake
 
-The directory will contain liblouis-2.dll and liblouis-2.lib, along with 
-object files.
-
-
+The directory will contain liblouis.dll and liblouis.lib, along with 
+object files. Note that those liblouis.dll and liblouis.lib only are for  
+32-bit usage.

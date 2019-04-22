@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/apps/platform_apps/api/media_galleries/blob_data_source_factory.h"
+#include "base/bind.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/blob_reader.h"
 #include "mojo/public/cpp/bindings/binding.h"

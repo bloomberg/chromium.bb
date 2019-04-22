@@ -34,10 +34,9 @@
 #include "third_party/blink/public/mojom/net/ip_address_space.mojom-blink.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
-#include "third_party/blink/renderer/core/loader/allowed_by_nosniff.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader_client.h"
+#include "third_party/blink/renderer/platform/loader/allowed_by_nosniff.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
@@ -47,6 +46,7 @@
 
 namespace blink {
 
+class ContentSecurityPolicy;
 class ResourceRequest;
 class ResourceResponse;
 class ExecutionContext;
@@ -62,21 +62,26 @@ class CORE_EXPORT WorkerClassicScriptLoader final
 
   // For importScript().
   void LoadSynchronously(ExecutionContext&,
+                         ResourceFetcher* fetch_client_settings_object_fetcher,
                          const KURL&,
                          mojom::RequestContextType,
                          mojom::IPAddressSpace);
 
   // Note that callbacks could be invoked before
   // LoadTopLevelScriptAsynchronously() returns.
-  void LoadTopLevelScriptAsynchronously(ExecutionContext&,
-                                        const KURL&,
-                                        mojom::RequestContextType,
-                                        network::mojom::FetchRequestMode,
-                                        network::mojom::FetchCredentialsMode,
-                                        mojom::IPAddressSpace,
-                                        bool is_nested_worker,
-                                        base::OnceClosure response_callback,
-                                        base::OnceClosure finished_callback);
+  //
+  // |fetch_client_settings_object_fetcher| is different from
+  // ExecutionContext::Fetcher() in off-the-main-thread fetch.
+  void LoadTopLevelScriptAsynchronously(
+      ExecutionContext&,
+      ResourceFetcher* fetch_client_settings_object_fetcher,
+      const KURL&,
+      mojom::RequestContextType,
+      network::mojom::FetchRequestMode,
+      network::mojom::FetchCredentialsMode,
+      mojom::IPAddressSpace,
+      base::OnceClosure response_callback,
+      base::OnceClosure finished_callback);
 
   // This will immediately invoke |finishedCallback| if
   // LoadTopLevelScriptAsynchronously() is in progress.
@@ -87,10 +92,10 @@ class CORE_EXPORT WorkerClassicScriptLoader final
   const KURL& ResponseURL() const;
   bool Failed() const { return failed_; }
   bool Canceled() const { return canceled_; }
-  unsigned long Identifier() const { return identifier_; }
-  long long AppCacheID() const { return app_cache_id_; }
+  uint64_t Identifier() const { return identifier_; }
+  int64_t AppCacheID() const { return app_cache_id_; }
 
-  std::unique_ptr<Vector<char>> ReleaseCachedMetadata() {
+  std::unique_ptr<Vector<uint8_t>> ReleaseCachedMetadata() {
     return std::move(cached_metadata_);
   }
 
@@ -109,12 +114,11 @@ class CORE_EXPORT WorkerClassicScriptLoader final
   }
 
   // ThreadableLoaderClient
-  void DidReceiveResponse(unsigned long /*identifier*/,
-                          const ResourceResponse&,
-                          std::unique_ptr<WebDataConsumerHandle>) override;
+  void DidReceiveResponse(uint64_t /*identifier*/,
+                          const ResourceResponse&) override;
   void DidReceiveData(const char* data, unsigned data_length) override;
   void DidReceiveCachedMetadata(const char*, int /*dataLength*/) override;
-  void DidFinishLoading(unsigned long identifier) override;
+  void DidFinishLoading(uint64_t identifier) override;
   void DidFail(const ResourceError&) override;
   void DidFailRedirectCheck() override;
 
@@ -142,19 +146,20 @@ class CORE_EXPORT WorkerClassicScriptLoader final
   bool canceled_ = false;
   bool need_to_cancel_ = false;
 
-  bool forbid_cross_origin_redirects_ = false;
+  // true when LoadTopLevelScriptAsynchronously() is called,
+  // false when LoadSynchronously() is called i.e. for importScripts().
+  bool is_top_level_script_ = false;
 
-  unsigned long identifier_ = 0;
-  long long app_cache_id_ = 0;
-  std::unique_ptr<Vector<char>> cached_metadata_;
+  uint64_t identifier_ = 0;
+  int64_t app_cache_id_ = 0;
+  std::unique_ptr<Vector<uint8_t>> cached_metadata_;
   Member<ContentSecurityPolicy> content_security_policy_;
-  Member<ExecutionContext> execution_context_;
   mojom::IPAddressSpace response_address_space_;
   std::unique_ptr<Vector<String>> origin_trial_tokens_;
   String referrer_policy_;
 
-  // TODO(nhiroki): Move this to FetchClientSettingsObject.
-  AllowedByNosniff::MimeTypeCheck mime_type_check_mode_;
+  bool is_worker_global_scope_ = false;
+  Member<ResourceFetcher> fetch_client_settings_object_fetcher_;
 };
 
 }  // namespace blink

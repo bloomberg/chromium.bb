@@ -17,10 +17,14 @@ class CC_PAINT_EXPORT DecodeStashingImageProvider : public ImageProvider {
  public:
   // |source_provider| must outlive this class.
   explicit DecodeStashingImageProvider(ImageProvider* source_provider);
+  DecodeStashingImageProvider(const DecodeStashingImageProvider&) = delete;
   ~DecodeStashingImageProvider() override;
 
+  DecodeStashingImageProvider& operator=(const DecodeStashingImageProvider&) =
+      delete;
+
   // ImageProvider implementation.
-  ScopedDecodedDrawImage GetDecodedDrawImage(
+  ImageProvider::ScopedResult GetRasterContent(
       const DrawImage& draw_image) override;
 
   // Releases all stashed images. The caller must ensure that it is safe to
@@ -29,9 +33,7 @@ class CC_PAINT_EXPORT DecodeStashingImageProvider : public ImageProvider {
 
  private:
   ImageProvider* source_provider_;
-  base::StackVector<ScopedDecodedDrawImage, 1> decoded_images_;
-
-  DISALLOW_COPY_AND_ASSIGN(DecodeStashingImageProvider);
+  base::StackVector<ScopedResult, 1> decoded_images_;
 };
 
 }  // namespace cc

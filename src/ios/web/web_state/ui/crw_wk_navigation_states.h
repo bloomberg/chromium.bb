@@ -59,13 +59,14 @@ enum class WKNavigationState : int {
 // Returns state for a given |navigation| or NONE if navigation does not exist.
 - (web::WKNavigationState)stateForNavigation:(WKNavigation*)navigation;
 
-// Removes given |navigation|. Fails if |navigation| does not exist.
-// |navigation| can be null. Cliens don't have to call this method for non-null
-// navigations because non-null navigations are weak and will be automatically
-// removed when system releases finished navigaitons. This method must always be
-// called for completed null navigations because they are not removed
-// automatically.
-- (void)removeNavigation:(WKNavigation*)navigation;
+// Removes given |navigation| and returns ownership of the associated navigation
+// context. Fails if |navigation| does not exist. |navigation| can be null.
+// Cliens don't have to call this method for non-null navigations because
+// non-null navigations are weak and will be automatically removed when system
+// releases finished navigaitons. This method must always be called for
+// completed null navigations because they are not removed automatically.
+- (std::unique_ptr<web::NavigationContextImpl>)removeNavigation:
+    (WKNavigation*)navigation;
 
 // Adds a new navigation if it was not added yet. If navigation was already
 // added then updates context for existing navigation. Updating context does not
@@ -83,6 +84,10 @@ enum class WKNavigationState : int {
 // last added navigation. Returns nil if there are no stored navigations or
 // last navigation was null.
 - (WKNavigation*)lastAddedNavigation;
+
+// WKNavigation which was added the most recently via |setState:forNavigation:|
+// and has associated navigation context with pending item.
+- (WKNavigation*)lastNavigationWithPendingItemInNavigationContext;
 
 // State of WKNavigation which was added the most recently via
 // |setState:forNavigation:|. WKNavigationState::NONE if CRWWKNavigationStates

@@ -6,7 +6,6 @@
 
 #include <lib/async/default.h>
 #include <lib/svc/dir.h>
-#include <lib/zx/channel.h>
 #include <zircon/process.h>
 #include <zircon/processargs.h>
 
@@ -17,11 +16,12 @@
 namespace base {
 namespace fuchsia {
 
-ServiceDirectory::ServiceDirectory(zx::channel directory_request) {
-  zx_status_t status = svc_dir_create(async_get_default_dispatcher(),
-                                      directory_request.release(), &svc_dir_);
-  ZX_CHECK(status == ZX_OK, status);
+ServiceDirectory::ServiceDirectory(
+    fidl::InterfaceRequest<::fuchsia::io::Directory> request) {
+  Initialize(std::move(request));
 }
+
+ServiceDirectory::ServiceDirectory() = default;
 
 ServiceDirectory::~ServiceDirectory() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -33,14 +33,28 @@ ServiceDirectory::~ServiceDirectory() {
 
 // static
 ServiceDirectory* ServiceDirectory::GetDefault() {
-  static base::NoDestructor<ServiceDirectory> directory(
-      zx::channel(zx_take_startup_handle(PA_DIRECTORY_REQUEST)));
+  static NoDestructor<ServiceDirectory> directory(
+      fidl::InterfaceRequest<::fuchsia::io::Directory>(
+          zx::channel(zx_take_startup_handle(PA_DIRECTORY_REQUEST))));
   return directory.get();
 }
 
-void ServiceDirectory::AddService(StringPiece name,
-                                  ConnectServiceCallback connect_callback) {
+void ServiceDirectory::Initialize(
+    fidl::InterfaceRequest<::fuchsia::io::Directory> request) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(!svc_dir_);
+
+  zx_status_t status =
+      svc_dir_create(async_get_default_dispatcher(),
+                     request.TakeChannel().release(), &svc_dir_);
+  ZX_CHECK(status == ZX_OK, status);
+}
+
+void ServiceDirectory::AddServiceUnsafe(
+    StringPiece name,
+    RepeatingCallback<void(zx::channel)> connect_callback) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(svc_dir_);
   DCHECK(services_.find(name) == services_.end());
 
   std::string name_str = name.as_string();
@@ -59,6 +73,7 @@ void ServiceDirectory::AddService(StringPiece name,
 
 void ServiceDirectory::RemoveService(StringPiece name) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(svc_dir_);
 
   std::string name_str = name.as_string();
 

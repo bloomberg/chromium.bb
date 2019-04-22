@@ -10,10 +10,12 @@
 #include <memory>
 
 #include "build/build_config.h"
+#include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/resize_image_dimensions.h"
 
 namespace {
 
@@ -35,6 +37,7 @@ namespace gfx {
 
 // The iOS implementations of the JPEG functions are in image_util_ios.mm.
 #if !defined(OS_IOS)
+
 Image ImageFrom1xJPEGEncodedData(const unsigned char* input,
                                  size_t input_size) {
   std::unique_ptr<SkBitmap> bitmap(gfx::JPEGCodec::Decode(input, input_size));
@@ -42,6 +45,10 @@ Image ImageFrom1xJPEGEncodedData(const unsigned char* input,
     return Image::CreateFrom1xBitmap(*bitmap);
 
   return Image();
+}
+
+Image ResizedImageForSearchByImage(const Image& image) {
+  return ResizedImageForSearchByImageSkiaRepresentation(image);
 }
 
 // The MacOS implementation of this function is in image_utils_mac.mm.
@@ -66,6 +73,26 @@ bool JPEG1xEncodedDataFromSkiaRepresentation(const Image& image,
     return false;
 
   return gfx::JPEGCodec::Encode(bitmap, quality, dst);
+}
+
+Image ResizedImageForSearchByImageSkiaRepresentation(const Image& image) {
+  const gfx::ImageSkiaRep& image_skia_rep =
+      image.AsImageSkia().GetRepresentation(1.0f);
+  if (image_skia_rep.scale() != 1.0f)
+    return image;
+
+  const SkBitmap& bitmap = image_skia_rep.GetBitmap();
+  if (bitmap.height() * bitmap.width() > kSearchByImageMaxImageArea &&
+      (bitmap.width() > kSearchByImageMaxImageWidth ||
+       bitmap.height() > kSearchByImageMaxImageHeight)) {
+    SkBitmap new_bitmap;
+    new_bitmap = skia::ImageOperations::Resize(
+        new_bitmap, skia::ImageOperations::RESIZE_GOOD,
+        kSearchByImageMaxImageWidth, kSearchByImageMaxImageHeight);
+    return Image(ImageSkia(ImageSkiaRep(new_bitmap, 0.0f)));
+  }
+
+  return image;
 }
 #endif  // !defined(OS_IOS)
 

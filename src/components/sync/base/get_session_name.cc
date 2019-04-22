@@ -16,7 +16,7 @@
 #include "build/build_config.h"
 
 #if defined(OS_CHROMEOS)
-#include "chromeos/system/devicetype.h"
+#include "chromeos/constants/devicetype.h"
 #elif defined(OS_LINUX)
 #include "components/sync/base/get_session_name_linux.h"
 #elif defined(OS_IOS)
@@ -32,7 +32,8 @@
 namespace syncer {
 
 std::string GetSessionNameBlocking() {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   std::string session_name;
 #if defined(OS_CHROMEOS)
   switch (chromeos::GetDeviceType()) {

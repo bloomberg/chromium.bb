@@ -5,6 +5,7 @@
  * found in the LICENSE file.
  */
 
+#include "CodecPriv.h"
 #include "FakeStreams.h"
 #include "Resources.h"
 #include "SkBitmap.h"
@@ -40,28 +41,25 @@ static bool create_truth(sk_sp<SkData> data, SkBitmap* dst) {
     return SkCodec::kSuccess == codec->getPixels(info, dst->getPixels(), dst->rowBytes());
 }
 
-static void compare_bitmaps(skiatest::Reporter* r, const SkBitmap& bm1, const SkBitmap& bm2) {
+static bool compare_bitmaps(skiatest::Reporter* r, const SkBitmap& bm1, const SkBitmap& bm2) {
     const SkImageInfo& info = bm1.info();
     if (info != bm2.info()) {
         ERRORF(r, "Bitmaps have different image infos!");
-        return;
+        return false;
     }
     const size_t rowBytes = info.minRowBytes();
     for (int i = 0; i < info.height(); i++) {
         if (memcmp(bm1.getAddr(0, i), bm2.getAddr(0, i), rowBytes)) {
             ERRORF(r, "Bitmaps have different pixels, starting on line %i!", i);
-            return;
+            return false;
         }
     }
+
+    return true;
 }
 
-static void test_partial(skiatest::Reporter* r, const char* name, size_t minBytes = 0) {
-    sk_sp<SkData> file = GetResourceAsData(name);
-    if (!file) {
-        SkDebugf("missing resource %s\n", name);
-        return;
-    }
-
+static void test_partial(skiatest::Reporter* r, const char* name, const sk_sp<SkData>& file,
+                         size_t minBytes, size_t increment) {
     SkBitmap truth;
     if (!create_truth(file, &truth)) {
         ERRORF(r, "Failed to decode %s\n", name);
@@ -69,15 +67,13 @@ static void test_partial(skiatest::Reporter* r, const char* name, size_t minByte
     }
 
     // Now decode part of the file
-    HaltingStream* stream = new HaltingStream(file, SkTMax(file->size() / 2, minBytes));
+    HaltingStream* stream = new HaltingStream(file, minBytes);
 
     // Note that we cheat and hold on to a pointer to stream, though it is owned by
     // partialCodec.
-    std::unique_ptr<SkCodec> partialCodec(SkCodec::MakeFromStream(std::unique_ptr<SkStream>(stream)));
+    auto partialCodec = SkCodec::MakeFromStream(std::unique_ptr<SkStream>(stream));
     if (!partialCodec) {
-        // Technically, this could be a small file where half the file is not
-        // enough.
-        ERRORF(r, "Failed to create codec for %s", name);
+        ERRORF(r, "Failed to create codec for %s with %zu bytes", name, minBytes);
         return;
     }
 
@@ -98,12 +94,14 @@ static void test_partial(skiatest::Reporter* r, const char* name, size_t minByte
             return;
         }
 
-        // Append some data. The size is arbitrary, but deliberately different from
-        // the buffer size used by SkPngCodec.
-        stream->addNewData(1000);
+        stream->addNewData(increment);
     }
 
     while (true) {
+        // This imitates how Chromium calls getFrameCount before resuming a decode.
+        // Without this line, the test passes. With it, it fails when skia_use_wuffs
+        // is true.
+        partialCodec->getFrameCount();
         const SkCodec::Result result = partialCodec->incrementalDecode();
 
         if (result == SkCodec::kSuccess) {
@@ -117,13 +115,23 @@ static void test_partial(skiatest::Reporter* r, const char* name, size_t minByte
             return;
         }
 
-        // Append some data. The size is arbitrary, but deliberately different from
-        // the buffer size used by SkPngCodec.
-        stream->addNewData(1000);
+        stream->addNewData(increment);
     }
 
     // compare to original
     compare_bitmaps(r, truth, incremental);
+}
+
+static void test_partial(skiatest::Reporter* r, const char* name, size_t minBytes = 0) {
+    sk_sp<SkData> file = GetResourceAsData(name);
+    if (!file) {
+        SkDebugf("missing resource %s\n", name);
+        return;
+    }
+
+    // This size is arbitrary, but deliberately different from the buffer size used by SkPngCodec.
+    constexpr size_t kIncrement = 1000;
+    test_partial(r, name, file, SkTMax(file->size() / 2, minBytes), kIncrement);
 }
 
 DEF_TEST(Codec_partial, r) {
@@ -144,6 +152,21 @@ DEF_TEST(Codec_partial, r) {
     test_partial(r, "images/box.gif");
     test_partial(r, "images/randPixels.gif", 215);
     test_partial(r, "images/color_wheel.gif");
+}
+
+DEF_TEST(Codec_partialWuffs, r) {
+    const char* path = "images/alphabetAnim.gif";
+    auto file = GetResourceAsData(path);
+    if (!file) {
+        ERRORF(r, "missing %s", path);
+    } else {
+        // This is the end of the first frame. SkCodec will treat this as a
+        // single frame gif.
+        file = SkData::MakeSubset(file.get(), 0, 153);
+        // Start with 100 to get a partial decode, then add the rest of the
+        // first frame to decode a full image.
+        test_partial(r, path, file, 100, 53);
+    }
 }
 
 // Verify that when decoding an animated gif byte by byte we report the correct
@@ -289,7 +312,14 @@ DEF_TEST(Codec_partialAnim, r) {
         frameInfo = partialCodec->getFrameInfo();
         REPORTER_ASSERT(r, frameInfo.size() == i + 1);
         REPORTER_ASSERT(r, frameInfo[i].fFullyReceived);
-        compare_bitmaps(r, frames[i], frame);
+        if (!compare_bitmaps(r, frames[i], frame)) {
+            ERRORF(r, "\tfailure was on frame %i", i);
+            SkString name = SkStringPrintf("expected_%i", i);
+            write_bm(name.c_str(), frames[i]);
+
+            name = SkStringPrintf("actual_%i", i);
+            write_bm(name.c_str(), frame);
+        }
     }
 }
 

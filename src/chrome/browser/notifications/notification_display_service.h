@@ -35,11 +35,9 @@ class NotificationDisplayService : public KeyedService {
   // ability to query which notifications are still being displayed.
   //
   // TODO(peter): Rename |supports_synchronization| to |supported|.
-  // TODO(peter): Change this to be a base::OnceCallback, remove use of the
-  //              std::unique_ptr<> in favor of move semantics.
   using DisplayedNotificationsCallback =
-      base::Callback<void(std::unique_ptr<std::set<std::string>>,
-                          bool /* supports_synchronization */)>;
+      base::OnceCallback<void(std::set<std::string>,
+                              bool /* supports_synchronization */)>;
 
   // Returns an instance of the display service for the given |profile|.
   static NotificationDisplayService* GetForProfile(Profile* profile);
@@ -50,7 +48,7 @@ class NotificationDisplayService : public KeyedService {
   virtual void Display(
       NotificationHandler::Type notification_type,
       const message_center::Notification& notification,
-      std::unique_ptr<NotificationCommon::Metadata> metadata = nullptr) = 0;
+      std::unique_ptr<NotificationCommon::Metadata> metadata) = 0;
 
   // Closes the notification having |notification_id| of |notification_type|.
   virtual void Close(NotificationHandler::Type notification_type,

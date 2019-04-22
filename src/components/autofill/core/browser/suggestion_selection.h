@@ -34,8 +34,10 @@ std::vector<Suggestion> GetPrefixMatchedSuggestions(
 // Dedupes given suggestions based on if one is a subset of the other.
 // Returns unique_suggestions, and adds the corresponding profiles to
 // |unique_matched_profiles|. At most |kMaxUniqueSuggestionsCount| are returned.
+// |field_types| stores all of the form's ServerFieldTypes, including that of
+// the field on which the user is currently focused.
 std::vector<Suggestion> GetUniqueSuggestions(
-    const std::vector<ServerFieldType>& other_field_types,
+    const std::vector<ServerFieldType>& field_types,
     const std::string app_locale,
     const std::vector<AutofillProfile*> matched_profiles,
     const std::vector<Suggestion>& suggestions,
@@ -56,6 +58,15 @@ bool IsValidSuggestionForFieldContents(base::string16 suggestion_canon,
 void RemoveProfilesNotUsedSinceTimestamp(
     base::Time min_last_used,
     std::vector<AutofillProfile*>* profiles);
+
+// Prepares a collection of Suggestions to show to the user. Adds |labels| to
+// their corresponding |suggestions|. A label corresponds to the suggestion with
+// the same index.
+// |contains_address| determines which icon to add to suggestions in the
+//  autofill-use-improved-label-disambiguation experiment.
+void PrepareSuggestions(bool contains_address,
+                        const std::vector<base::string16>& labels,
+                        std::vector<Suggestion>* suggestions);
 
 }  // namespace suggestion_selection
 }  // namespace autofill

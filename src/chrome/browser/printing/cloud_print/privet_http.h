@@ -161,7 +161,7 @@ class PrivetLocalPrintOperation {
 
   // Optional attributes for /submitdoc. Call before calling Start().
   // |ticket| should be in CJT format.
-  virtual void SetTicket(const std::string& ticket) = 0;
+  virtual void SetTicket(base::Value ticket) = 0;
 
   // |capabilities| should be in CDD format.
   virtual void SetCapabilities(const std::string& capabilities) = 0;

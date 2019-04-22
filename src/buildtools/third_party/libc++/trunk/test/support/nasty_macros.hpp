@@ -1,9 +1,8 @@
 //===----------------------------------------------------------------------===//
 //
-//                     The LLVM Compiler Infrastructure
-//
-// This file is dual licensed under the MIT and the University of Illinois Open
-// Source Licenses. See LICENSE.TXT for details.
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
 #ifndef SUPPORT_NASTY_MACROS_HPP
@@ -49,9 +48,13 @@
 #define _CRPC NASTY_MACRO
 #define _CPC  NASTY_MACRO
 
+// yvals.h on MINGW defines this macro
+#define _C2 NASTY_MACRO
+
 // Test that libc++ doesn't use names reserved by WIN32 API Macros.
 // NOTE: Obviously we can only define these on non-windows platforms.
 #ifndef _WIN32
+#define __allocator NASTY_MACRO
 #define __deallocate NASTY_MACRO
 #define __out NASTY_MACRO
 #endif

@@ -11,10 +11,8 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
-#include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "ui/gfx/buffer_types.h"
-#include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/ozone_export.h"
 
 namespace display {
@@ -40,6 +38,7 @@ class PlatformWindow;
 class PlatformWindowDelegate;
 class SurfaceFactoryOzone;
 class SystemInputInjector;
+class PlatformClipboard;
 
 struct PlatformWindowInitProperties;
 
@@ -83,6 +82,15 @@ class OZONE_EXPORT OzonePlatform {
     // use mojo. Setting this to true requires calling |AddInterfaces|
     // afterwards in the Viz process and providing a connector as part.
     bool using_mojo = false;
+
+    // Setting this to true indicates the display compositor will run in the GPU
+    // process (as part of the viz service). Note this param is currently only
+    // checked in Ozone DRM for overlay support. Other Ozone platforms either
+    // don't need to change anything or assume that VizDisplayCompositor is
+    // always enabled.
+    // TODO(crbug.com/936425): Remove after VizDisplayCompositor feature
+    // launches.
+    bool viz_display_compositor = false;
   };
 
   // Struct used to indicate platform properties.
@@ -102,6 +110,14 @@ class OZONE_EXPORT OzonePlatform {
     // Determines if the platform requires mojo communication for the IPC.
     // Currently used only by the Ozone/Wayland platform.
     bool requires_mojo = false;
+  };
+
+  // Properties available in the host process after initialization.
+  struct InitializedHostProperties {
+    // Whether the underlying platform supports deferring compositing of buffers
+    // via overlays. If overlays are not supported the promotion and validation
+    // logic can be skipped.
+    bool supports_overlays = false;
   };
 
   using StartupCallback = base::OnceCallback<void(OzonePlatform*)>;
@@ -148,14 +164,20 @@ class OZONE_EXPORT OzonePlatform {
   virtual std::unique_ptr<display::NativeDisplayDelegate>
   CreateNativeDisplayDelegate() = 0;
   virtual std::unique_ptr<PlatformScreen> CreateScreen();
+  virtual PlatformClipboard* GetPlatformClipboard();
 
   // Returns true if the specified buffer format is supported.
   virtual bool IsNativePixmapConfigSupported(gfx::BufferFormat format,
                                              gfx::BufferUsage usage) const;
 
   // Returns a struct that contains configuration and requirements for the
-  // current platform implementation.
+  // current platform implementation. This can be called from either host or GPU
+  // process at any time.
   virtual const PlatformProperties& GetPlatformProperties();
+
+  // Returns a struct that contains properties available in the host process
+  // after InitializeForUI() runs.
+  virtual const InitializedHostProperties& GetInitializedHostProperties();
 
   // Returns the message loop type required for OzonePlatform instance that
   // will be initialized for the GPU process.
@@ -182,6 +204,9 @@ class OZONE_EXPORT OzonePlatform {
   // platform implementations to ignore sandboxing and any associated launch
   // ordering issues.
   virtual void AfterSandboxEntry();
+
+ protected:
+  static bool has_initialized_ui();
 
  private:
   virtual void InitializeUI(const InitParams& params) = 0;

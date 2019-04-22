@@ -77,6 +77,25 @@ enum class WebappInstallSource {
   // PWA ambient badge in browser Tab.
   AMBIENT_BADGE_CUSTOM_TAB = 9,
 
+  // Installation via ARC on Chrome OS.
+  ARC = 10,
+
+  // An internal default-installed app on Chrome OS (i.e. triggered from code).
+  INTERNAL_DEFAULT = 11,
+
+  // An external default-installed app on Chrome OS (i.e. triggered from an
+  // external source file).
+  EXTERNAL_DEFAULT = 12,
+
+  // A policy-installed app on Chrome OS.
+  EXTERNAL_POLICY = 13,
+
+  // A system app installed on Chrome OS.
+  SYSTEM_DEFAULT = 14,
+
+  // Install icon in the Omnibox.
+  OMNIBOX_INSTALL_ICON = 15,
+
   // Add any new values above this one.
   COUNT,
 };

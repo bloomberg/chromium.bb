@@ -7,6 +7,7 @@
 #import <Foundation/Foundation.h>
 
 #include "base/memory/ptr_util.h"
+#import "ios/web/navigation/navigation_item_impl.h"
 #include "net/http/http_response_headers.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -129,10 +130,6 @@ void NavigationContextImpl::SetResponseHeaders(
   response_headers_ = response_headers;
 }
 
-void NavigationContextImpl::SetIsRendererInitiated(bool is_renderer_initiated) {
-  is_renderer_initiated_ = is_renderer_initiated;
-}
-
 int NavigationContextImpl::GetNavigationItemUniqueID() const {
   return navigation_item_unique_id_;
 }
@@ -181,6 +178,33 @@ bool NavigationContextImpl::IsPlaceholderNavigation() const {
 
 void NavigationContextImpl::SetPlaceholderNavigation(bool flag) {
   is_placeholder_navigation_ = flag;
+}
+
+void NavigationContextImpl::SetMimeType(NSString* mime_type) {
+  mime_type_ = mime_type;
+}
+
+NSString* NavigationContextImpl::GetMimeType() const {
+  return mime_type_;
+}
+
+NavigationItemImpl* NavigationContextImpl::GetItem() {
+  return item_.get();
+}
+
+std::unique_ptr<NavigationItemImpl> NavigationContextImpl::ReleaseItem() {
+  return std::move(item_);
+}
+
+void NavigationContextImpl::SetItem(std::unique_ptr<NavigationItemImpl> item) {
+  DCHECK(!item_);
+  if (item) {
+    // |item| can be null for same-docuemnt navigations and reloads, where
+    // navigation item is committed and should not be stored in
+    // NavigationContext.
+    DCHECK_EQ(GetNavigationItemUniqueID(), item->GetUniqueID());
+  }
+  item_ = std::move(item);
 }
 
 NavigationContextImpl::NavigationContextImpl(WebState* web_state,

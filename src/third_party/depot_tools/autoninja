@@ -21,6 +21,10 @@ if eval "$command"; then
   "$(dirname -- "$0")/ninjalog_uploader_wrapper.py" --cmd $command
   exit
 fi
+
+# Collect ninjalog from googler.
+"$(dirname -- "$0")/ninjalog_uploader_wrapper.py" --cmd $command
+
 # Return an error code of 1 so that if a developer types:
 # "autoninja chrome && chrome" then chrome won't run if the build fails.
 exit 1

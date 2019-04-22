@@ -14,12 +14,13 @@
 #include <unistd.h>
 
 #include <memory>
-#include <vector>
 
 #include "base/command_line.h"
+#include "base/files/dir_reader_posix.h"
 #include "base/files/file_util.h"
 #include "base/memory/singleton.h"
 #include "base/process/launch.h"
+#include "base/strings/safe_sprintf.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
@@ -74,28 +75,6 @@ class LinuxDistroHelper {
   LinuxDistroState state_;
 };
 #endif  // if defined(OS_LINUX)
-
-bool GetTasksForProcess(pid_t pid, std::vector<pid_t>* tids) {
-  char buf[256];
-  snprintf(buf, sizeof(buf), "/proc/%d/task", pid);
-
-  DIR* task = opendir(buf);
-  if (!task) {
-    DLOG(WARNING) << "Cannot open " << buf;
-    return false;
-  }
-
-  struct dirent* dent;
-  while ((dent = readdir(task))) {
-    char* endptr;
-    const unsigned long int tid_ul = strtoul(dent->d_name, &endptr, 10);
-    if (tid_ul == ULONG_MAX || *endptr)
-      continue;
-    tids->push_back(tid_ul);
-  }
-  closedir(task);
-  return true;
-}
 
 }  // namespace
 
@@ -155,13 +134,35 @@ void SetLinuxDistro(const std::string& distro) {
   strlcpy(g_linux_distro, trimmed_distro.c_str(), kDistroSize);
 }
 
+bool GetThreadsForProcess(pid_t pid, std::vector<pid_t>* tids) {
+  // 25 > strlen("/proc//task") + strlen(std::to_string(INT_MAX)) + 1 = 22
+  char buf[25];
+  base::strings::SafeSPrintf(buf, "/proc/%d/task", pid);
+  DirReaderPosix dir_reader(buf);
+
+  if (!dir_reader.IsValid()) {
+    DLOG(WARNING) << "Cannot open " << buf;
+    return false;
+  }
+
+  while (dir_reader.Next()) {
+    char* endptr;
+    const unsigned long int tid_ul = strtoul(dir_reader.name(), &endptr, 10);
+    if (tid_ul == ULONG_MAX || *endptr)
+      continue;
+    tids->push_back(tid_ul);
+  }
+
+  return true;
+}
+
 pid_t FindThreadIDWithSyscall(pid_t pid, const std::string& expected_data,
                               bool* syscall_supported) {
   if (syscall_supported != nullptr)
     *syscall_supported = false;
 
   std::vector<pid_t> tids;
-  if (!GetTasksForProcess(pid, &tids))
+  if (!GetThreadsForProcess(pid, &tids))
     return -1;
 
   std::unique_ptr<char[]> syscall_data(new char[expected_data.length()]);
@@ -191,7 +192,7 @@ pid_t FindThreadID(pid_t pid, pid_t ns_tid, bool* ns_pid_supported) {
     *ns_pid_supported = false;
 
   std::vector<pid_t> tids;
-  if (!GetTasksForProcess(pid, &tids))
+  if (!GetThreadsForProcess(pid, &tids))
     return -1;
 
   for (pid_t tid : tids) {

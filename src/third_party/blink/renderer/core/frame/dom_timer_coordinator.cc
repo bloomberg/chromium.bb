@@ -24,8 +24,9 @@ int DOMTimerCoordinator::InstallNewTimeout(ExecutionContext* context,
   // FIXME: DOMTimers depends heavily on ExecutionContext. Decouple them.
   DCHECK_EQ(context->Timers(), this);
   int timeout_id = NextID();
-  timers_.insert(timeout_id, DOMTimer::Create(context, action, timeout,
-                                              single_shot, timeout_id));
+  timers_.insert(timeout_id,
+                 MakeGarbageCollected<DOMTimer>(context, action, timeout,
+                                                single_shot, timeout_id));
   return timeout_id;
 }
 

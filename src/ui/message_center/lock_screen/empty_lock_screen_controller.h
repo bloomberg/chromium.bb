@@ -15,7 +15,8 @@ class EmptyLockScreenController : public LockScreenController {
   ~EmptyLockScreenController() override = default;
 
   void DismissLockScreenThenExecute(base::OnceClosure pending_callback,
-                                    base::OnceClosure cancal_callback) override;
+                                    base::OnceClosure cancal_callback,
+                                    int message_id) override;
   bool IsScreenLocked() const override;
 
  private:

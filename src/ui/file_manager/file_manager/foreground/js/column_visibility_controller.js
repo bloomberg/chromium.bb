@@ -16,7 +16,7 @@ function ColumnVisibilityController(ui, directoryModel, volumeManager) {
   this.directoryModel_ = directoryModel;
 
   /** @private {!VolumeManager} */
-  this.volumeManager_  = volumeManager;
+  this.volumeManager_ = volumeManager;
 
   /** @private {!FileManagerUI} */
   this.ui_ = ui;
@@ -36,7 +36,7 @@ ColumnVisibilityController.prototype.onDirectoryChanged_ = function(event) {
   // TODO(kenobi): Once import status is exposed as part of the metadata system,
   // remove this and have the underlying UI determine its own status using
   // metadata.
-  var isImportEligible =
+  const isImportEligible =
       importer.isBeneathMediaDir(event.newDirEntry, this.volumeManager_) &&
       !!this.volumeManager_.getCurrentProfileVolumeInfo(
           VolumeManagerCommon.VolumeType.DRIVE);

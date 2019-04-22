@@ -7,11 +7,11 @@
 
 #include <string>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "chromeos/chromeos_export.h"
-#include "chromeos/login/login_state.h"
+#include "chromeos/login/login_state/login_state.h"
 #include "chromeos/network/client_cert_resolver.h"
 #include "chromeos/network/network_connection_observer.h"
 #include "chromeos/network/network_handler.h"
@@ -20,11 +20,12 @@
 
 namespace chromeos {
 
-class CHROMEOS_EXPORT AutoConnectHandler : public LoginState::Observer,
-                                           public NetworkPolicyObserver,
-                                           public NetworkConnectionObserver,
-                                           public NetworkStateHandlerObserver,
-                                           public ClientCertResolver::Observer {
+class COMPONENT_EXPORT(CHROMEOS_NETWORK) AutoConnectHandler
+    : public LoginState::Observer,
+      public NetworkPolicyObserver,
+      public NetworkConnectionObserver,
+      public NetworkStateHandlerObserver,
+      public ClientCertResolver::Observer {
  public:
   enum AutoConnectReason {
     AUTO_CONNECT_REASON_LOGGED_IN = 1,

@@ -15,6 +15,8 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/sessions/tab_restore_service_factory.h"
+#include "chrome/browser/sessions/tab_restore_service_load_waiter.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -24,22 +26,24 @@
 #include "chrome/browser/ui/tab_modal_confirm_dialog_browsertest.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "components/search_engines/template_url_service.h"
+#include "components/sessions/core/tab_restore_service.h"
+#include "components/sessions/core/tab_restore_service_observer.h"
 #include "components/signin/core/browser/account_consistency_method.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/public/cpp/window_pin_type.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/window_pin_type.mojom.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "ui/aura/window.h"
 #endif
 
 namespace chrome {
 
-class BrowserCommandControllerBrowserTest: public InProcessBrowserTest {
+class BrowserCommandControllerBrowserTest : public InProcessBrowserTest {
  public:
   BrowserCommandControllerBrowserTest() {}
   ~BrowserCommandControllerBrowserTest() override {}
@@ -72,7 +76,7 @@ IN_PROC_BROWSER_TEST_F(BrowserCommandControllerBrowserTest, DisableFind) {
   EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_FIND));
 
   // Switching back to the blocked tab should disable it again.
-  browser()->tab_strip_model()->ActivateTabAt(0, false);
+  browser()->tab_strip_model()->ActivateTabAt(0);
   EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_FIND));
 
   // Closing the constrained window should reenable it.
@@ -113,12 +117,12 @@ IN_PROC_BROWSER_TEST_F(BrowserCommandControllerBrowserTest,
   TemplateURLServiceFactory::GetForProfile(guest)->set_loaded(true);
 
   const CommandUpdater* command_updater = browser->command_controller();
-  #if defined(OS_CHROMEOS)
-    // Chrome OS uses system tray menu to handle multi-profiles.
-    EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_SHOW_AVATAR_MENU));
-  #else
-    EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_SHOW_AVATAR_MENU));
-  #endif
+#if defined(OS_CHROMEOS)
+  // Chrome OS uses system tray menu to handle multi-profiles.
+  EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_SHOW_AVATAR_MENU));
+#else
+  EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_SHOW_AVATAR_MENU));
+#endif
 }
 
 #if defined(OS_CHROMEOS)
@@ -142,11 +146,7 @@ IN_PROC_BROWSER_TEST_F(BrowserCommandControllerBrowserTest, LockedFullscreen) {
   // IDC_EXIT is not enabled in locked fullscreen.
   EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_EXIT));
 
-  constexpr int kWhitelistedIds[] = {
-    IDC_CUT, IDC_COPY, IDC_PASTE,
-    IDC_FIND, IDC_FIND_NEXT, IDC_FIND_PREVIOUS,
-    IDC_ZOOM_PLUS, IDC_ZOOM_NORMAL, IDC_ZOOM_MINUS,
-  };
+  constexpr int kWhitelistedIds[] = {IDC_CUT, IDC_COPY, IDC_PASTE};
 
   // Go through all the command ids and make sure all non-whitelisted commands
   // are disabled.
@@ -157,13 +157,8 @@ IN_PROC_BROWSER_TEST_F(BrowserCommandControllerBrowserTest, LockedFullscreen) {
     EXPECT_FALSE(command_updater->IsCommandEnabled(id));
   }
 
-  // Verify the set of whitelisted commands. All but IDC_ZOOM_NORMAL should be
-  // enabled.
+  // Verify the set of whitelisted commands.
   for (int id : kWhitelistedIds) {
-    if (id == IDC_ZOOM_NORMAL) {
-      EXPECT_FALSE(command_updater->IsCommandEnabled(id));
-      continue;
-    }
     EXPECT_TRUE(command_updater->IsCommandEnabled(id));
   }
 
@@ -176,5 +171,55 @@ IN_PROC_BROWSER_TEST_F(BrowserCommandControllerBrowserTest, LockedFullscreen) {
   EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_EXIT));
 }
 #endif
+
+IN_PROC_BROWSER_TEST_F(BrowserCommandControllerBrowserTest,
+                       TestTabRestoreServiceInitialized) {
+  // Note: The command should start out as enabled as the default.
+  // All the initialization happens before any test code executes,
+  // so we can't validate it.
+
+  // The TabRestoreService should get initialized (Loaded)
+  // automatically upon launch.
+  // Wait for robustness because InProcessBrowserTest::PreRunTestOnMainThread
+  // does not flush the task scheduler.
+  TabRestoreServiceLoadWaiter waiter(browser());
+  waiter.Wait();
+
+  // After initialization, the command should become disabled because there's
+  // nothing to restore.
+  chrome::BrowserCommandController* commandController =
+      browser()->command_controller();
+  ASSERT_EQ(false, commandController->IsCommandEnabled(IDC_RESTORE_TAB));
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserCommandControllerBrowserTest,
+                       PRE_TestTabRestoreCommandEnabled) {
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL("about:"), WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  ASSERT_EQ(2, browser()->tab_strip_model()->count());
+  EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
+  content::WebContents* tab_to_close =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::WebContentsDestroyedWatcher destroyed_watcher(tab_to_close);
+  browser()->tab_strip_model()->CloseSelectedTabs();
+  destroyed_watcher.Wait();
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserCommandControllerBrowserTest,
+                       TestTabRestoreCommandEnabled) {
+  // The TabRestoreService should get initialized (Loaded)
+  // automatically upon launch.
+  // Wait for robustness because InProcessBrowserTest::PreRunTestOnMainThread
+  // does not flush the task scheduler.
+  TabRestoreServiceLoadWaiter waiter(browser());
+  waiter.Wait();
+
+  // After initialization, the command should remain enabled because there's
+  // one tab to restore.
+  chrome::BrowserCommandController* commandController =
+      browser()->command_controller();
+  ASSERT_EQ(true, commandController->IsCommandEnabled(IDC_RESTORE_TAB));
+}
 
 }  // namespace chrome

@@ -76,6 +76,7 @@ class SVGScriptElement final : public SVGElement,
   String ForAttributeValue() const override { return String(); }
   String IntegrityAttributeValue() const override { return String(); }
   String ReferrerPolicyAttributeValue() const override { return String(); }
+  String ImportanceAttributeValue() const override { return String(); }
   String LanguageAttributeValue() const override { return String(); }
   bool NomoduleAttributeValue() const override { return false; }
   String SourceAttributeValue() const override;
@@ -90,22 +91,21 @@ class SVGScriptElement final : public SVGElement,
   }
   bool AllowInlineScriptForCSP(const AtomicString& nonce,
                                const WTF::OrdinalNumber&,
-                               const String& script_content,
-                               ContentSecurityPolicy::InlineType) override;
+                               const String& script_content) override;
   Document& GetDocument() const override;
   void DispatchLoadEvent() override;
   void DispatchErrorEvent() override;
   void SetScriptElementForBinding(
       HTMLScriptElementOrSVGScriptElement&) override;
 
-  Element* CloneWithoutAttributesAndChildren(Document&) const override;
+  Element& CloneWithoutAttributesAndChildren(Document&) const override;
   bool LayoutObjectIsNeeded(const ComputedStyle&) const override {
     return false;
   }
 
   bool have_fired_load_ = false;
 
-  TraceWrapperMember<ScriptLoader> loader_;
+  Member<ScriptLoader> loader_;
 };
 
 }  // namespace blink

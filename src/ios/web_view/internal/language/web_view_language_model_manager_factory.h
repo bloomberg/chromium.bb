@@ -8,12 +8,8 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
-
-namespace base {
-template <typename T>
-struct DefaultSingletonTraits;
-}  // namespace base
 
 namespace language {
 class LanguageModelManager;
@@ -35,8 +31,7 @@ class WebViewLanguageModelManagerFactory
   static WebViewLanguageModelManagerFactory* GetInstance();
 
  private:
-  friend struct base::DefaultSingletonTraits<
-      WebViewLanguageModelManagerFactory>;
+  friend class base::NoDestructor<WebViewLanguageModelManagerFactory>;
 
   WebViewLanguageModelManagerFactory();
   ~WebViewLanguageModelManagerFactory() override = default;

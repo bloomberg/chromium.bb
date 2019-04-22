@@ -5,7 +5,7 @@
 #include <stddef.h>
 
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -194,14 +194,14 @@ TEST(UTFStringConversionsTest, ConvertMultiString) {
     '\0'
   };
   string16 multistring16;
-  memcpy(WriteInto(&multistring16, arraysize(multi16)), multi16,
-                   sizeof(multi16));
-  EXPECT_EQ(arraysize(multi16) - 1, multistring16.length());
+  memcpy(WriteInto(&multistring16, base::size(multi16)), multi16,
+         sizeof(multi16));
+  EXPECT_EQ(base::size(multi16) - 1, multistring16.length());
   std::string expected;
-  memcpy(WriteInto(&expected, arraysize(multi)), multi, sizeof(multi));
-  EXPECT_EQ(arraysize(multi) - 1, expected.length());
+  memcpy(WriteInto(&expected, base::size(multi)), multi, sizeof(multi));
+  EXPECT_EQ(base::size(multi) - 1, expected.length());
   const std::string& converted = UTF16ToUTF8(multistring16);
-  EXPECT_EQ(arraysize(multi) - 1, converted.length());
+  EXPECT_EQ(base::size(multi) - 1, converted.length());
   EXPECT_EQ(expected, converted);
 }
 

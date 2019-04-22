@@ -7,8 +7,8 @@
 #ifndef FXJS_XFA_CJX_EVENTPSEUDOMODEL_H_
 #define FXJS_XFA_CJX_EVENTPSEUDOMODEL_H_
 
-#include "fxjs/jse_define.h"
 #include "fxjs/xfa/cjx_object.h"
+#include "fxjs/xfa/jse_define.h"
 
 class CFXJSE_Value;
 class CScript_EventPseudoModel;
@@ -38,8 +38,11 @@ class CJX_EventPseudoModel final : public CJX_Object {
   explicit CJX_EventPseudoModel(CScript_EventPseudoModel* model);
   ~CJX_EventPseudoModel() override;
 
-  JSE_METHOD(emit, CJX_EventPseudoModel);
-  JSE_METHOD(reset, CJX_EventPseudoModel);
+  // CJX_Object:
+  bool DynamicTypeIs(TypeTag eType) const override;
+
+  JSE_METHOD(emit);
+  JSE_METHOD(reset);
 
   JSE_PROP(cancelAction);
   JSE_PROP(change);
@@ -60,9 +63,13 @@ class CJX_EventPseudoModel final : public CJX_Object {
   JSE_PROP(target);
 
  private:
-  void Property(CFXJSE_Value* pValue, XFA_Event dwFlag, bool bSetting);
+  using Type__ = CJX_EventPseudoModel;
+  using ParentType__ = CJX_Object;
 
+  static const TypeTag static_type__ = TypeTag::EventPseudoModel;
   static const CJX_MethodSpec MethodSpecs[];
+
+  void Property(CFXJSE_Value* pValue, XFA_Event dwFlag, bool bSetting);
 };
 
 #endif  // FXJS_XFA_CJX_EVENTPSEUDOMODEL_H_

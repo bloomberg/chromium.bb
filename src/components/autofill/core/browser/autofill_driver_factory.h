@@ -34,7 +34,7 @@ class AutofillDriverFactory {
   // Handles hiding of the corresponding tab.
   void TabHidden();
 
-  AutofillClient* client() { return client_; };
+  AutofillClient* client() { return client_; }
 
  protected:
   // The API manipulating the drivers map is protected to guarantee subclasses

@@ -10,6 +10,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/version.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_context.h"
@@ -157,10 +158,10 @@ bool UserScriptLoader::ParseMetadataHeader(const base::StringPiece& script_text,
 
 UserScriptLoader::UserScriptLoader(BrowserContext* browser_context,
                                    const HostID& host_id)
-    : user_scripts_(new UserScriptList()),
+    : loaded_scripts_(new UserScriptList()),
       clear_scripts_(false),
       ready_(false),
-      pending_load_(false),
+      queued_load_(false),
       browser_context_(browser_context),
       host_id_(host_id),
       weak_factory_(this) {
@@ -202,7 +203,7 @@ void UserScriptLoader::RemoveScripts(
     removed_script_hosts_.insert(UserScriptIDPair(id_pair.id, id_pair.host_id));
     // TODO(lazyboy): We shouldn't be trying to remove scripts that were never
     // a) added to |added_scripts_map_| or b) being loaded or has done loading
-    // through |user_scripts_|. This would reduce sending redundant IPC.
+    // through |loaded_scripts_|. This would reduce sending redundant IPC.
     added_scripts_map_.erase(id_pair.id);
   }
   AttemptLoad();
@@ -224,7 +225,7 @@ void UserScriptLoader::Observe(int type,
   if (!ExtensionsBrowserClient::Get()->IsSameContext(
           browser_context_, process->GetBrowserContext()))
     return;
-  if (scripts_ready()) {
+  if (initial_load_complete()) {
     SendUpdate(process, shared_memory_.get(),
                std::set<HostID>());  // Include all hosts.
   }
@@ -237,13 +238,13 @@ bool UserScriptLoader::ScriptsMayHaveChanged() const {
   //     scripts that need to be cleared), or
   // (2) The current set of scripts is non-empty (so they need to be cleared).
   return (added_scripts_map_.size() || removed_script_hosts_.size() ||
-          (clear_scripts_ && (is_loading() || user_scripts_->size())));
+          (clear_scripts_ && (is_loading() || loaded_scripts_->size())));
 }
 
 void UserScriptLoader::AttemptLoad() {
   if (ready_ && ScriptsMayHaveChanged()) {
     if (is_loading())
-      pending_load_ = true;
+      queued_load_ = true;
     else
       StartLoad();
   }
@@ -253,22 +254,27 @@ void UserScriptLoader::StartLoad() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!is_loading());
 
-  // If scripts were marked for clearing before adding and removing, then clear
-  // them.
+  // Reload any loaded scripts, and clear out |loaded_scripts_| to indicate that
+  // the scripts aren't currently ready.
+  std::unique_ptr<UserScriptList> scripts_to_load = std::move(loaded_scripts_);
+
   if (clear_scripts_) {
-    user_scripts_->clear();
+    // If scripts were marked for clearing before adding and removing, then
+    // clear them...
+    scripts_to_load->clear();
   } else {
-    for (auto it = user_scripts_->begin(); it != user_scripts_->end();) {
+    // ... otherwise, filter out any scripts that are queued for removal.
+    for (auto it = scripts_to_load->begin(); it != scripts_to_load->end();) {
       UserScriptIDPair id_pair(it->get()->id());
       if (removed_script_hosts_.count(id_pair) > 0u)
-        it = user_scripts_->erase(it);
+        it = scripts_to_load->erase(it);
       else
         ++it;
     }
   }
 
   std::set<int> added_script_ids;
-  user_scripts_->reserve(user_scripts_->size() + added_scripts_map_.size());
+  scripts_to_load->reserve(scripts_to_load->size() + added_scripts_map_.size());
   for (auto& id_and_script : added_scripts_map_) {
     std::unique_ptr<UserScript>& script = id_and_script.second;
     added_script_ids.insert(script->id());
@@ -276,20 +282,52 @@ void UserScriptLoader::StartLoad() {
     // its IPC message. This must be done before we clear |added_scripts_map_|
     // and |removed_script_hosts_| below.
     changed_hosts_.insert(script->host_id());
-    // Move script from |added_scripts_map_| into |user_scripts_|.
-    user_scripts_->push_back(std::move(script));
+    // Move script from |added_scripts_map_| into |scripts_to_load|.
+    scripts_to_load->push_back(std::move(script));
   }
   for (const UserScriptIDPair& id_pair : removed_script_hosts_)
     changed_hosts_.insert(id_pair.host_id);
 
-  LoadScripts(std::move(user_scripts_), changed_hosts_, added_script_ids,
+  LoadScripts(std::move(scripts_to_load), changed_hosts_, added_script_ids,
               base::Bind(&UserScriptLoader::OnScriptsLoaded,
                          weak_factory_.GetWeakPtr()));
 
   clear_scripts_ = false;
   added_scripts_map_.clear();
   removed_script_hosts_.clear();
-  user_scripts_.reset();
+}
+
+bool UserScriptLoader::HasLoadedScripts(const HostID& host_id) const {
+  // If there are no loaded scripts (which can happen if either the initial
+  // load hasn't completed or if the loader is currently re-fetching scripts),
+  // then the scripts have not been loaded.
+  if (!loaded_scripts_)
+    return false;
+
+  // If there is a pending change for scripts associated with the |host_id|
+  // (either addition or removal of a script), the scripts haven't finished
+  // loading.
+  for (const auto& key_value : added_scripts_map_) {
+    if (key_value.second->host_id() == host_id)
+      return false;
+  }
+  for (const UserScriptIDPair& id_pair : removed_script_hosts_) {
+    if (id_pair.host_id == host_id)
+      return false;
+  }
+
+  // Find if we have any scripts associated with the |host_id|.
+  bool has_loaded_script = false;
+  for (const auto& script : *loaded_scripts_) {
+    if (script->host_id() == host_id) {
+      has_loaded_script = true;
+      break;
+    }
+  }
+
+  // Assume that if any script associated with |host_id| is present (and there
+  // aren't any pending changes), then the scripts have successfully loaded.
+  return has_loaded_script;
 }
 
 // static
@@ -362,11 +400,11 @@ void UserScriptLoader::SetReady(bool ready) {
 void UserScriptLoader::OnScriptsLoaded(
     std::unique_ptr<UserScriptList> user_scripts,
     std::unique_ptr<base::SharedMemory> shared_memory) {
-  user_scripts_ = std::move(user_scripts);
-  if (pending_load_) {
+  loaded_scripts_ = std::move(user_scripts);
+  if (queued_load_) {
     // While we were loading, there were further changes. Don't bother
     // notifying about these scripts and instead just immediately reload.
-    pending_load_ = false;
+    queued_load_ = false;
     StartLoad();
     return;
   }

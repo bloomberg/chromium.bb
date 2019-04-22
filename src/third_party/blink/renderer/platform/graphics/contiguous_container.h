@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/compiler.h"
 #include "third_party/blink/renderer/platform/wtf/type_traits.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -167,12 +166,12 @@ class ContiguousContainer : public ContiguousContainerBase {
     return *this;
   }
 
-  using ContiguousContainerBase::size;
-  using ContiguousContainerBase::IsEmpty;
   using ContiguousContainerBase::CapacityInBytes;
-  using ContiguousContainerBase::UsedCapacityInBytes;
+  using ContiguousContainerBase::IsEmpty;
   using ContiguousContainerBase::MemoryUsageInBytes;
   using ContiguousContainerBase::ShrinkToFit;
+  using ContiguousContainerBase::size;
+  using ContiguousContainerBase::UsedCapacityInBytes;
 
   iterator begin() { return iterator(elements_.begin()); }
   iterator end() { return iterator(elements_.end()); }

@@ -66,6 +66,17 @@ for more details on Blink directories and their type usage.
   std::unordered_map<int, std::deque<url::Origin>> origins;
 ```
 
+When interacting with WTF types, use `wtf_size_t` instead of `size_t`.
+
+## Do not use `new` and `delete`
+
+Object lifetime should not be managed using raw `new` and `delete`. Prefer to
+allocate objects instead using `std::make_unique`, `base::MakeRefCounted` or
+`blink::MakeGarbageCollected`, depending on the type, and manage their lifetime
+using appropriate smart pointers and handles (`std::unique_ptr`, `scoped_refptr`
+and strong Blink GC references, respectively). See [How Blink Works](https://docs.google.com/document/d/1aitSOucL0VHZa9Z2vbRJSyAIsAz24kX8LFByQ5xQnUg/edit#heading=h.ekwf97my4bgf)
+for more information.
+
 ## Naming
 
 ### Use `CamelCase` for all function names

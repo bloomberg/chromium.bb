@@ -46,13 +46,6 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
-// There is a bug in MSVC (fixed in VS 2008) that prevents creating a
-// mock for a function with const arguments, so we don't test such
-// cases for MSVC versions older than 2008.
-#if !GTEST_OS_WINDOWS || (_MSC_VER >= 1500)
-# define GMOCK_ALLOWS_CONST_PARAM_FUNCTIONS
-#endif  // !GTEST_OS_WINDOWS || (_MSC_VER >= 1500)
-
 namespace testing {
 namespace gmock_generated_function_mockers_test {
 
@@ -70,6 +63,15 @@ using testing::Return;
 using testing::ReturnRef;
 using testing::TypedEq;
 
+template<typename T>
+class TemplatedCopyable {
+ public:
+  TemplatedCopyable() {}
+
+  template <typename U>
+  TemplatedCopyable(const U& other) {}  // NOLINT
+};
+
 class FooInterface {
  public:
   virtual ~FooInterface() {}
@@ -85,9 +87,7 @@ class FooInterface {
 
   virtual bool TakesNonConstReference(int& n) = 0;  // NOLINT
   virtual std::string TakesConstReference(const int& n) = 0;
-#ifdef GMOCK_ALLOWS_CONST_PARAM_FUNCTIONS
   virtual bool TakesConst(const int x) = 0;
-#endif  // GMOCK_ALLOWS_CONST_PARAM_FUNCTIONS
 
   virtual int OverloadedOnArgumentNumber() = 0;
   virtual int OverloadedOnArgumentNumber(int n) = 0;
@@ -100,6 +100,8 @@ class FooInterface {
 
   virtual int TypeWithHole(int (*func)()) = 0;
   virtual int TypeWithComma(const std::map<int, std::string>& a_map) = 0;
+  virtual int TypeWithTemplatedCopyCtor(
+      const TemplatedCopyable<int>& a_vector) = 0;
 
 #if GTEST_OS_WINDOWS
   STDMETHOD_(int, CTNullary)() = 0;
@@ -136,10 +138,7 @@ class MockFoo : public FooInterface {
 
   MOCK_METHOD1(TakesNonConstReference, bool(int&));  // NOLINT
   MOCK_METHOD1(TakesConstReference, std::string(const int&));
-
-#ifdef GMOCK_ALLOWS_CONST_PARAM_FUNCTIONS
   MOCK_METHOD1(TakesConst, bool(const int));  // NOLINT
-#endif
 
   // Tests that the function return type can contain unprotected comma.
   MOCK_METHOD0(ReturnTypeWithComma, std::map<int, std::string>());
@@ -158,6 +157,8 @@ class MockFoo : public FooInterface {
   MOCK_METHOD1(TypeWithHole, int(int (*)()));  // NOLINT
   MOCK_METHOD1(TypeWithComma,
                int(const std::map<int, std::string>&));  // NOLINT
+  MOCK_METHOD1(TypeWithTemplatedCopyCtor,
+               int(const TemplatedCopyable<int>&));  // NOLINT
 
 #if GTEST_OS_WINDOWS
   MOCK_METHOD0_WITH_CALLTYPE(STDMETHODCALLTYPE, CTNullary, int());
@@ -249,7 +250,6 @@ TEST_F(FunctionMockerTest, MocksFunctionWithConstReferenceArgument) {
   EXPECT_EQ("Hello", foo_->TakesConstReference(a));
 }
 
-#ifdef GMOCK_ALLOWS_CONST_PARAM_FUNCTIONS
 // Tests mocking a function that takes a const variable.
 TEST_F(FunctionMockerTest, MocksFunctionWithConstArgument) {
   EXPECT_CALL(mock_foo_, TakesConst(Lt(10)))
@@ -257,7 +257,6 @@ TEST_F(FunctionMockerTest, MocksFunctionWithConstArgument) {
 
   EXPECT_FALSE(foo_->TakesConst(5));
 }
-#endif  // GMOCK_ALLOWS_CONST_PARAM_FUNCTIONS
 
 // Tests mocking functions overloaded on the number of arguments.
 TEST_F(FunctionMockerTest, MocksFunctionsOverloadedOnArgumentNumber) {
@@ -300,6 +299,11 @@ TEST_F(FunctionMockerTest, MocksReturnTypeWithComma) {
 
   EXPECT_EQ(a_map, mock_foo_.ReturnTypeWithComma());
   EXPECT_EQ(a_map, mock_foo_.ReturnTypeWithComma(42));
+}
+
+TEST_F(FunctionMockerTest, MocksTypeWithTemplatedCopyCtor) {
+  EXPECT_CALL(mock_foo_, TypeWithTemplatedCopyCtor(_)).WillOnce(Return(true));
+  EXPECT_TRUE(foo_->TypeWithTemplatedCopyCtor(TemplatedCopyable<int>()));
 }
 
 #if GTEST_OS_WINDOWS
@@ -531,7 +535,7 @@ TEST(OverloadedMockMethodTest, CanOverloadOnArgNumberInMacroBody) {
 
 #define MY_MOCK_METHODS2_ \
     MOCK_CONST_METHOD1(Overloaded, int(int n)); \
-    MOCK_METHOD1(Overloaded, int(int n));
+    MOCK_METHOD1(Overloaded, int(int n))
 
 class MockOverloadedOnConstness {
  public:
@@ -596,7 +600,6 @@ TEST(MockFunctionTest, WorksFor10Arguments) {
   EXPECT_EQ(2, foo.Call(true, 'a', 0, 0, 0, 0, 0, 'b', 1, false));
 }
 
-#if GTEST_HAS_STD_FUNCTION_
 TEST(MockFunctionTest, AsStdFunction) {
   MockFunction<int(int)> foo;
   auto call = [](const std::function<int(int)> &f, int i) {
@@ -628,7 +631,6 @@ TEST(MockFunctionTest, AsStdFunctionWithReferenceParameter) {
   EXPECT_EQ(-1, call(foo.AsStdFunction(), i));
 }
 
-#endif  // GTEST_HAS_STD_FUNCTION_
 
 struct MockMethodSizes0 {
   MOCK_METHOD0(func, void());

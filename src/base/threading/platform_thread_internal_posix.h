@@ -8,6 +8,7 @@
 #include "base/base_export.h"
 #include "base/optional.h"
 #include "base/threading/platform_thread.h"
+#include "build/build_config.h"
 
 namespace base {
 
@@ -45,6 +46,14 @@ bool SetCurrentThreadPriorityForPlatform(ThreadPriority priority);
 // If non-null, this return value will be used as the platform-specific result
 // of CanIncreaseThreadPriority().
 Optional<ThreadPriority> GetCurrentThreadPriorityForPlatform();
+
+#if defined(OS_LINUX)
+// Current thread id is cached in thread local storage for performance reasons.
+// In some rare cases it's important to clear that cache explicitly (e.g. after
+// going through clone() syscall which does not call pthread_atfork()
+// handlers).
+BASE_EXPORT void ClearTidCache();
+#endif  // defined(OS_LINUX)
 
 }  // namespace internal
 

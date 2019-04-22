@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "services/device/geolocation/fake_location_provider.h"
+#include "services/device/geolocation/fake_position_cache.h"
 #include "services/device/public/cpp/geolocation/geoposition.h"
 #include "services/device/public/cpp/geolocation/location_provider.h"
 #include "services/device/public/mojom/geoposition.mojom.h"
@@ -87,7 +88,8 @@ class TestingLocationArbitrator : public LocationArbitrator {
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
       : LocationArbitrator(provider_getter,
                            std::move(url_loader_factory),
-                           std::string() /* api_key */),
+                           std::string() /* api_key */,
+                           std::make_unique<FakePositionCache>()),
         cell_(nullptr),
         gps_(nullptr) {
     SetUpdateCallback(callback);

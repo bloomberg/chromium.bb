@@ -65,10 +65,6 @@ const char* GetLoFiFlagFieldTrialName();
 // server experiments for the data reduction proxy.
 bool IsIncludedInServerExperimentsFieldTrial();
 
-// Returns true if Chrome should use on-device safe browsing checks, and
-// disable safe browsing checks provided by data saver proxy.
-bool IsIncludedInOnDeviceSafeBrowsingFieldTrial();
-
 // Returns true if this client has the command line switch to enable forced
 // pageload metrics pingbacks on every page load.
 bool IsForcePingbackEnabledViaFlags();
@@ -85,9 +81,6 @@ bool IsIncludedInQuicFieldTrial();
 bool IsQuicEnabledForNonCoreProxies();
 
 const char* GetQuicFieldTrialName();
-
-// Returns true if Brotli should be added to the accept-encoding header.
-bool IsBrotliAcceptEncodingEnabled();
 
 // If the Data Reduction Proxy is used for a page load, the URL for the
 // Data Reduction Proxy Pageload Metrics service.
@@ -144,13 +137,6 @@ bool IsWarmupURL(const GURL& url);
 // unsuccessful.
 bool IsWhitelistedHttpResponseCodeForProbes(int http_response_code);
 
-// Returns the experiment parameter name to disable missing via header bypasses.
-const char* GetMissingViaBypassParamName();
-
-// Returns if site-breakdown metrics should be recorded using the page load
-// metrics harness.
-bool IsDataSaverSiteBreakdownUsingPLMEnabled();
-
 // Returns whether network service is enabled and data reduction proxy should be
 // used.
 bool IsEnabledWithNetworkService();
@@ -158,10 +144,6 @@ bool IsEnabledWithNetworkService();
 // Returns the experiment parameter name to discard the cached result for canary
 // check probe.
 const char* GetDiscardCanaryCheckResultParam();
-
-// Returns true if canary check result should not be cached or reused across
-// network changes.
-bool ShouldDiscardCanaryCheckResult();
 
 // Helper function to locate |proxy_server| in |proxies| if it exists. This
 // function is exposed publicly so that DataReductionProxyParams can use it.

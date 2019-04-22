@@ -5,39 +5,22 @@
 #ifndef COMPONENTS_BROWSER_SYNC_ABSTRACT_PROFILE_SYNC_SERVICE_TEST_H_
 #define COMPONENTS_BROWSER_SYNC_ABSTRACT_PROFILE_SYNC_SERVICE_TEST_H_
 
-#include <stdint.h>
-
 #include <memory>
-#include <string>
 
 #include "base/callback.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/test/scoped_task_environment.h"
-#include "components/browser_sync/profile_sync_test_util.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/driver/profile_sync_service_bundle.h"
 #include "components/sync/syncable/change_record.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace browser_sync {
-
+namespace syncer {
 class TestProfileSyncService;
+}  // namespace syncer
 
-class ProfileSyncServiceTestHelper {
- public:
-  static syncer::ImmutableChangeRecordList MakeSingletonChangeRecordList(
-      int64_t node_id,
-      syncer::ChangeRecord::Action action);
-
-  // Deletions must provide an EntitySpecifics for the deleted data.
-  static syncer::ImmutableChangeRecordList
-  MakeSingletonDeletionChangeRecordList(
-      int64_t node_id,
-      const sync_pb::EntitySpecifics& specifics);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ProfileSyncServiceTestHelper);
-};
+namespace browser_sync {
 
 class AbstractProfileSyncServiceTest : public testing::Test {
  public:
@@ -57,14 +40,9 @@ class AbstractProfileSyncServiceTest : public testing::Test {
 
   base::Thread* data_type_thread() { return &data_type_thread_; }
 
-  TestProfileSyncService* sync_service() { return sync_service_.get(); }
+  syncer::TestProfileSyncService* sync_service() { return sync_service_.get(); }
 
-  // Returns the callback for the FakeSyncClient builder. It is not possible to
-  // just Bind() sync_service(), because of Callback not understanding the
-  // inheritance of its template arguments.
-  base::Callback<syncer::SyncService*(void)> GetSyncServiceCallback();
-
-  ProfileSyncServiceBundle* profile_sync_service_bundle() {
+  syncer::ProfileSyncServiceBundle* profile_sync_service_bundle() {
     return &profile_sync_service_bundle_;
   }
 
@@ -73,8 +51,8 @@ class AbstractProfileSyncServiceTest : public testing::Test {
   base::Thread data_type_thread_;
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  ProfileSyncServiceBundle profile_sync_service_bundle_;
-  std::unique_ptr<TestProfileSyncService> sync_service_;
+  syncer::ProfileSyncServiceBundle profile_sync_service_bundle_;
+  std::unique_ptr<syncer::TestProfileSyncService> sync_service_;
 
   base::ScopedTempDir temp_dir_;  // To pass to the backend host.
 

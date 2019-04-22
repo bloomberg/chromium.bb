@@ -24,6 +24,7 @@ Para sa higit pang impormasyon tungkol sa privacy, pakitingnan ang Patakaran sa 
 <translation id="1520828917794284345">Baguhin ang laki ng desktop upang kumasya</translation>
 <translation id="154040539590487450">Nabigong simulan ang serbisyo ng malayuang pag-access.</translation>
 <translation id="1546934824884762070">May naganap na hindi inaasahang error. Paki-ulat ang problemang ito sa mga developer.</translation>
+<translation id="1624185583382384493">Nasa web na ang Remote na Desktop ng Chrome. Subukan ang aming <ph name="LINK_BEGIN" />web app<ph name="LINK_END" />—mabilis ito at libre, na may mas marami pang feature, kasama na ang pinahusay na suporta sa maraming monitor.</translation>
 <translation id="1643640058022401035">Tatapusin ng pag-alis sa pahinang ito ang iyong session ng Chromoting.</translation>
 <translation id="1654128982815600832">Pinapagana ang mga malayuang koneksyon para sa computer na ito…</translation>
 <translation id="170207782578677537">Nabigong irehistro ang computer na ito.</translation>
@@ -138,6 +139,7 @@ Para sa higit pang impormasyon tungkol sa privacy, pakitingnan ang Patakaran sa 
 <translation id="3989511127559254552">Upang magpatuloy, dapat ka munang magbigay ng mga pahintulot sa pinalawak na access sa iyong computer. Isang beses mo lang ito kailangang gawin.</translation>
 <translation id="4006787130661126000">Dapat mong paganahin ang mga malayuang koneksyon kung nais mong gamitin ang Remote na Desktop ng Chrome upang i-access ang computer na ito.</translation>
 <translation id="405887016757208221">Hindi nasimulan ng remote na computer ang session. Kung ayaw mawala ng problema, pakisubukang i-configure muli ang host.</translation>
+<translation id="4060747889721220580">I-download ang File</translation>
 <translation id="4068946408131579958">Lahat ng koneksyon</translation>
 <translation id="409800995205263688">TANDAAN: Ang pinapayagan ng mga setting ng patakaran ay mga koneksyon lang sa pagitan ng mga computer sa loob ng iyong network.</translation>
 <translation id="4126409073460786861">Pagkatapos ng pag-set up, i-refresh ang page na ito, pagkatapos ay maa-access mo ang computer sa pamamagitan ng pagpili sa iyong device at paglagay ng PIN</translation>
@@ -242,6 +244,7 @@ Para ma-enable ang functionality na ito, piliin ang '<ph name="BUTTON_NAME" />' 
 <translation id="6198252989419008588">Palitan ang PIN</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (luma)</translation>
 <translation id="6221358653751391898">Hindi ka naka-sign in sa Chrome. Mangyaring mag-sign in at subukang muli.</translation>
+<translation id="6227369581881558336">Nasa web na ang Remote na Desktop ng Chrome at may mga bago itong feature kasama na ang paglilipat ng file! Tingnan ang aming <ph name="LINK_BEGIN" />web app<ph name="LINK_END" />.</translation>
 <translation id="6284412385303060032">Nag-shutdown ang host na tumatakbo sa console logic screen upang masuportahan ang curtain mode sa pamamagitan ng paglipat sa isang host na tumatakbo sa isang user-specific session.</translation>
 <translation id="629730747756840877">Account</translation>
 <translation id="6304318647555713317">Client</translation>
@@ -289,11 +292,10 @@ Para ma-enable ang functionality na ito, piliin ang '<ph name="BUTTON_NAME" />' 
 <translation id="7434397035092923453">Tinanggihan ang pag-access para sa client: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7444276978508498879">Nakakonekta ang client: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7526139040829362392">Magpalit ng account</translation>
-<translation id="7589941250119944644">Lilipat na ang Remote na Desktop ng Chrome sa isang bagong home sa web. Subukan ang aming <ph name="LINK_BEGIN" />web app<ph name="LINK_END" />—mabilis at libre ito, at kasama pa rin ang mga dating feature.</translation>
 <translation id="7606912958770842224">Paganahin ang mga malayuang koneksyon</translation>
 <translation id="7628469622942688817">Tandaan ang aking PIN sa device na ito.</translation>
 <translation id="7649070708921625228">Tulong</translation>
-<translation id="7658239707568436148">Ikansela</translation>
+<translation id="7658239707568436148">Kanselahin</translation>
 <translation id="7665369617277396874">Magdagdag ng account</translation>
 <translation id="7672203038394118626">Hindi pinagana ang mga malayuang koneksyon para sa computer na ito.</translation>
 <translation id="7678209621226490279">I-dock sa Kaliwa</translation>
@@ -341,7 +343,7 @@ Para ma-enable ang functionality na ito, piliin ang '<ph name="BUTTON_NAME" />' 
 <translation id="8712909229180978490">Hindi ko makita ang aking mga naka-save file habang on-line sa Google Drive.</translation>
 <translation id="8743328882720071828">Gusto mo bang payagan si <ph name="CLIENT_USERNAME" /> na tingnan at kontrolin ang iyong computer?</translation>
 <translation id="8747048596626351634">Nag-crash o hindi nagsimula ang session. Kung may ~/.chrome-remote-desktop-session sa malayuang computer, tiyaking nagsisimula ito ng matagal na paggana ng proseso sa foreground gaya ng desktop environment o window manager.</translation>
-<translation id="8759753423332885148">Matuto nang higit pa.</translation>
+<translation id="8759753423332885148">Matuto pa.</translation>
 <translation id="8791202241915690908">I-download ang Chromoting Host Installer</translation>
 <translation id="894763922177556086">Malakas</translation>
 <translation id="895780780740011433">Para sa Windows 7 at mas bago</translation>

@@ -49,6 +49,12 @@ enum PolicySource {
   // The policy was set by a platform source.
   POLICY_SOURCE_PLATFORM,
 
+  // The policy was set by a cloud source that has higher priroity.
+  POLICY_SOURCE_PRIORITY_CLOUD,
+
+  // The policy coming from multiple sources and its value has been merged.
+  POLICY_SOURCE_MERGED,
+
   // Number of source types. Has to be the last element.
   POLICY_SOURCE_COUNT
 };

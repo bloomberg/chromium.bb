@@ -200,9 +200,12 @@ bool WaitableEvent::TimedWaitUntil(const TimeTicks& end_time) {
   // again before unlocking it.
 
   for (;;) {
-    const TimeTicks current_time(TimeTicks::Now());
+    // Only sample Now() if waiting for a |finite_time|.
+    Optional<TimeTicks> current_time;
+    if (finite_time)
+      current_time = TimeTicks::Now();
 
-    if (sw.fired() || (finite_time && current_time >= end_time)) {
+    if (sw.fired() || (finite_time && *current_time >= end_time)) {
       const bool return_value = sw.fired();
 
       // We can't acquire @lock_ before releasing the SyncWaiter lock (because
@@ -226,7 +229,7 @@ bool WaitableEvent::TimedWaitUntil(const TimeTicks& end_time) {
     }
 
     if (finite_time) {
-      const TimeDelta max_wait(end_time - current_time);
+      const TimeDelta max_wait(end_time - *current_time);
       sw.cv()->TimedWait(max_wait);
     } else {
       sw.cv()->Wait();

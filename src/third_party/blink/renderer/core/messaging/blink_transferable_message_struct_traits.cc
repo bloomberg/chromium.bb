@@ -10,39 +10,6 @@
 
 namespace mojo {
 
-namespace {
-
-scoped_refptr<blink::StaticBitmapImage> ToStaticBitmapImage(
-    const SkBitmap& sk_bitmap) {
-  auto handle = WTF::ArrayBufferContents::CreateDataHandle(
-      sk_bitmap.computeByteSize(), WTF::ArrayBufferContents::kZeroInitialize);
-  if (!handle)
-    return nullptr;
-
-  WTF::ArrayBufferContents array_buffer_contents(
-      std::move(handle), WTF::ArrayBufferContents::kNotShared);
-  if (!array_buffer_contents.Data())
-    return nullptr;
-
-  SkImageInfo info = sk_bitmap.info();
-  if (!sk_bitmap.readPixels(info, array_buffer_contents.Data(),
-                            info.minRowBytes(), 0, 0))
-    return nullptr;
-
-  return blink::StaticBitmapImage::Create(array_buffer_contents, info);
-}
-
-bool ToSkBitmap(
-    const scoped_refptr<blink::StaticBitmapImage>& static_bitmap_image,
-    SkBitmap& dest) {
-  const sk_sp<SkImage> image =
-      static_bitmap_image->PaintImageForCurrentFrame().GetSkImage();
-  return image && image->asLegacyBitmap(
-                      &dest, SkImage::LegacyBitmapMode::kRO_LegacyBitmapMode);
-}
-
-}  // namespace
-
 Vector<SkBitmap>
 StructTraits<blink::mojom::blink::TransferableMessage::DataView,
              blink::BlinkTransferableMessage>::
@@ -51,11 +18,11 @@ StructTraits<blink::mojom::blink::TransferableMessage::DataView,
   out.ReserveInitialCapacity(
       input.message->GetImageBitmapContentsArray().size());
   for (auto& bitmap_contents : input.message->GetImageBitmapContentsArray()) {
-    SkBitmap bitmap;
-    if (!ToSkBitmap(bitmap_contents, bitmap)) {
+    base::Optional<SkBitmap> bitmap = blink::ToSkBitmap(bitmap_contents);
+    if (!bitmap) {
       return Vector<SkBitmap>();
     }
-    out.push_back(std::move(bitmap));
+    out.push_back(std::move(bitmap.value()));
   }
   return out;
 }
@@ -84,6 +51,7 @@ bool StructTraits<blink::mojom::blink::TransferableMessage::DataView,
       std::make_move_iterator(stream_channels.begin()),
       std::make_move_iterator(stream_channels.end()));
   out->has_user_gesture = data.has_user_gesture();
+  out->transfer_user_activation = data.transfer_user_activation();
 
   out->message->SetArrayBufferContentsArray(
       std::move(array_buffer_contents_array));
@@ -96,7 +64,7 @@ bool StructTraits<blink::mojom::blink::TransferableMessage::DataView,
       image_bitmap_contents_array;
   for (auto& sk_bitmap : sk_bitmaps) {
     const scoped_refptr<blink::StaticBitmapImage> bitmap_contents =
-        ToStaticBitmapImage(sk_bitmap);
+        blink::ToStaticBitmapImage(sk_bitmap);
     if (!bitmap_contents) {
       return false;
     }

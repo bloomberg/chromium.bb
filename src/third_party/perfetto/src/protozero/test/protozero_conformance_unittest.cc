@@ -99,13 +99,13 @@ TEST_F(ProtoZeroConformanceTest, SimpleFieldsNoNesting) {
   msg->add_repeated_int32(2000000);
 
   size_t msg_size = GetNumSerializedBytes();
-  EXPECT_EQ(126u, msg_size);
 
   std::unique_ptr<uint8_t[]> msg_binary(new uint8_t[msg_size]);
   GetSerializedBytes(0, msg_size, msg_binary.get());
 
   pbgold::EveryField gold_msg;
   gold_msg.ParseFromArray(msg_binary.get(), static_cast<int>(msg_size));
+
   EXPECT_EQ(-1, gold_msg.field_int32());
   EXPECT_EQ(-333123456789ll, gold_msg.field_int64());
   EXPECT_EQ(600u, gold_msg.field_uint32());
@@ -129,6 +129,7 @@ TEST_F(ProtoZeroConformanceTest, SimpleFieldsNoNesting) {
   EXPECT_EQ(-1, gold_msg.repeated_int32(1));
   EXPECT_EQ(100, gold_msg.repeated_int32(2));
   EXPECT_EQ(2000000, gold_msg.repeated_int32(3));
+  EXPECT_EQ(msg_size, static_cast<size_t>(gold_msg.ByteSize()));
 }
 
 TEST_F(ProtoZeroConformanceTest, NestedMessages) {
@@ -162,8 +163,7 @@ TEST(ProtoZeroTest, Simple) {
   EXPECT_LE(0u, sizeof(pbtest::TrickyPublicImport));
 }
 
-TEST(ProtoZeroTest, Reflection) {
-  // Tests camel case conversion as well.
+TEST(ProtoZeroTest, FieldNumbers) {
   EXPECT_EQ(1, pbtest::CamelCaseFields::kFooBarBazFieldNumber);
   EXPECT_EQ(2, pbtest::CamelCaseFields::kBarBazFieldNumber);
   EXPECT_EQ(3, pbtest::CamelCaseFields::kMooMooFieldNumber);
@@ -173,17 +173,6 @@ TEST(ProtoZeroTest, Reflection) {
   EXPECT_EQ(7, pbtest::CamelCaseFields::kBigBangFieldNumber);
   EXPECT_EQ(8, pbtest::CamelCaseFields::kU2FieldNumber);
   EXPECT_EQ(9, pbtest::CamelCaseFields::kBangBigFieldNumber);
-
-  const ProtoFieldDescriptor* reflection =
-      pbtest::EveryField::GetFieldDescriptor(
-          pbtest::EveryField::kFieldInt32FieldNumber);
-  EXPECT_STREQ("field_int32", reflection->name());
-  EXPECT_EQ(ProtoFieldDescriptor::Type::TYPE_INT32, reflection->type());
-  EXPECT_EQ(1u, reflection->number());
-  EXPECT_FALSE(reflection->is_repeated());
-  EXPECT_TRUE(reflection->is_valid());
-
-  EXPECT_FALSE(pbtest::TransgalacticParcel::GetFieldDescriptor(42)->is_valid());
 }
 
 }  // namespace

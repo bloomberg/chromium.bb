@@ -22,6 +22,7 @@ ViewportLayersSetup::ViewportLayersSetup() {
   page_scale_layer_ = std::make_unique<FakeGraphicsLayer>(client_);
   graphics_layer_ = std::make_unique<FakeGraphicsLayer>(client_);
   graphics_layer_->SetDrawsContent(true);
+  graphics_layer_->SetHitTestable(true);
   clip_layer_->AddChild(scroll_elasticity_layer_.get());
   scroll_elasticity_layer_->AddChild(page_scale_layer_.get());
   page_scale_layer_->AddChild(graphics_layer_.get());
@@ -32,7 +33,7 @@ ViewportLayersSetup::ViewportLayersSetup() {
   scroll_elasticity_layer_->SetElementId(cc::LayerIdToElementIdForTesting(
       scroll_elasticity_layer_->CcLayer()->id()));
 
-  cc::LayerTreeHost::ViewportLayers viewport_layers;
+  cc::ViewportLayers viewport_layers;
   viewport_layers.overscroll_elasticity_element_id =
       scroll_elasticity_layer_->GetElementId();
   viewport_layers.page_scale = page_scale_layer_->CcLayer();

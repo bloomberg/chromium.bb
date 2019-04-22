@@ -8,10 +8,15 @@
 #include <string>
 #include <vector>
 
+#include "ash/app_list/app_list_metrics.h"
+#include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/public/cpp/ash_public_export.h"
+#include "ash/public/interfaces/app_list.mojom.h"
+#include "ash/public/interfaces/app_list_view.mojom.h"
 #include "ash/public/interfaces/menu.mojom.h"
 #include "base/callback_forward.h"
 #include "base/strings/string16.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/content/public/mojom/navigable_contents_factory.mojom.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ui_base_types.h"
@@ -46,9 +51,31 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   // box by the user.
   virtual void StartSearch(const base::string16& raw_query) = 0;
 
-  // Invoked to open the search result.
+  // Invoked to open the search result and log a click. If the result is
+  // represented by a SuggestedChipView or is a zero state result,
+  // |suggested_index| is the index of the view in the list of suggestions.
+  // |launched_from| values must match the LaunchedFrom enum in
+  // chrome/browser/ui/app_list/app_launch_event_logger.proto. |launch_type| is
+  // either kAppSearchResult or kSearchResult and is used to determine which
+  // histograms to log to.
   virtual void OpenSearchResult(const std::string& result_id,
-                                int event_flags) = 0;
+                                int event_flags,
+                                ash::mojom::AppListLaunchedFrom launched_from,
+                                ash::mojom::AppListLaunchType launch_type,
+                                int suggestion_index) = 0;
+
+  // Called to log UMA metrics for the launch of an item either in the app tile
+  // list or the search result list. The |launch_location| argument determines
+  // which histogram to log to. |suggestion_index| represents the index of the
+  // launched item in its list view, not the overall position in the suggestion
+  // window. For instance, the first launcher result item is index 0, regardless
+  // of if there is an answer card above it.
+  virtual void LogResultLaunchHistogram(
+      app_list::SearchResultLaunchLocation launch_location,
+      int suggestion_index) = 0;
+
+  // Logs the UMA histogram metrics for user's abandonment of launcher search.
+  virtual void LogSearchAbandonHistogram() = 0;
 
   // Called to invoke a custom action on a result with |result_id|.
   // |action_index| corresponds to the index of an icon in
@@ -128,7 +155,23 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   // initialize new NavigableContents objects for embedding web contents into
   // the app list UI.
   virtual void GetNavigableContentsFactory(
-      content::mojom::NavigableContentsFactoryRequest request) = 0;
+      mojo::PendingReceiver<content::mojom::NavigableContentsFactory>
+          receiver) = 0;
+
+  // Returns the AssistantViewDelegate.
+  virtual ash::AssistantViewDelegate* GetAssistantViewDelegate() = 0;
+
+  // Called if a search result has its visibility updated and wants to
+  // be notified (i.e. its notify_visibility_change() returns true).
+  virtual void OnSearchResultVisibilityChanged(const std::string& id,
+                                               bool visibility) = 0;
+
+  // Returns if the Assistant feature is allowed and enabled.
+  virtual bool IsAssistantAllowedAndEnabled() const = 0;
+
+  // Called when the app list view animation is completed.
+  virtual void OnStateTransitionAnimationCompleted(
+      ash::mojom::AppListViewState state) = 0;
 };
 
 }  // namespace app_list

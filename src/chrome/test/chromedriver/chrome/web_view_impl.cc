@@ -17,6 +17,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome/browser_info.h"
+#include "chrome/test/chromedriver/chrome/cast_tracker.h"
 #include "chrome/test/chromedriver/chrome/debugger_tracker.h"
 #include "chrome/test/chromedriver/chrome/devtools_client_impl.h"
 #include "chrome/test/chromedriver/chrome/dom_tracker.h"
@@ -78,11 +79,13 @@ const char* GetAsString(MouseEventType type) {
 const char* GetAsString(TouchEventType type) {
   switch (type) {
     case kTouchStart:
-      return "touchstart";
+      return "touchStart";
     case kTouchEnd:
-      return "touchend";
+      return "touchEnd";
     case kTouchMove:
-      return "touchmove";
+      return "touchMove";
+    case kTouchCancel:
+      return "touchCancel";
     default:
       return "";
   }
@@ -96,6 +99,10 @@ const char* GetAsString(MouseButton button) {
       return "middle";
     case kRightMouseButton:
       return "right";
+    case kBackMouseButton:
+      return "back";
+    case kForwardMouseButton:
+      return "forward";
     case kNoneMouseButton:
       return "none";
     default:
@@ -114,6 +121,18 @@ const char* GetAsString(KeyEventType type) {
     case kCharEventType:
       return "char";
     default:
+      return "";
+  }
+}
+
+const char* GetAsString(PointerType type) {
+  switch (type) {
+    case kMouse:
+      return "mouse";
+    case kPen:
+      return "pen";
+    default:
+      NOTREACHED();
       return "";
   }
 }
@@ -342,7 +361,7 @@ Status WebViewImpl::CallFunction(const std::string& frame,
   std::string w3c = w3c_compliant_ ? "true" : "false";
   // TODO(zachconrad): Second null should be array of shadow host ids.
   std::string expression = base::StringPrintf(
-      "(%s).apply(null, [null, %s, %s, %s])",
+      "(%s).apply(null, [%s, %s, %s])",
       kCallFunctionScript,
       function.c_str(),
       json.c_str(),
@@ -427,6 +446,8 @@ Status WebViewImpl::DispatchTouchEventsForMouseEvents(
           continue;
         params.SetString("type", "touchMove");
         break;
+      default:
+        break;
     }
 
     std::unique_ptr<base::ListValue> touchPoints(new base::ListValue);
@@ -451,15 +472,16 @@ Status WebViewImpl::DispatchMouseEvents(const std::list<MouseEvent>& events,
   if (mobile_emulation_override_manager_->IsEmulatingTouch())
     return DispatchTouchEventsForMouseEvents(events, frame);
 
-  double page_scale_factor = 1.0;
   for (auto it = events.begin(); it != events.end(); ++it) {
     base::DictionaryValue params;
     params.SetString("type", GetAsString(it->type));
-    params.SetInteger("x", it->x * page_scale_factor);
-    params.SetInteger("y", it->y * page_scale_factor);
+    params.SetInteger("x", it->x);
+    params.SetInteger("y", it->y);
     params.SetInteger("modifiers", it->modifiers);
     params.SetString("button", GetAsString(it->button));
+    params.SetInteger("buttons", it->buttons);
     params.SetInteger("clickCount", it->click_count);
+    params.SetString("pointerType", GetAsString(it->pointer_type));
     Status status = client_->SendCommand("Input.dispatchMouseEvent", params);
     if (status.IsError())
       return status;
@@ -468,12 +490,23 @@ Status WebViewImpl::DispatchMouseEvents(const std::list<MouseEvent>& events,
 }
 
 Status WebViewImpl::DispatchTouchEvent(const TouchEvent& event) {
-  base::ListValue args;
-  args.Append(std::make_unique<base::Value>(event.x));
-  args.Append(std::make_unique<base::Value>(event.y));
-  args.Append(std::make_unique<base::Value>(GetAsString(event.type)));
-  std::unique_ptr<base::Value> unused;
-  return CallFunction(std::string(), kDispatchTouchEventScript, args, &unused);
+  base::DictionaryValue params;
+  std::string type = GetAsString(event.type);
+  params.SetString("type", type);
+  std::unique_ptr<base::ListValue> point_list(new base::ListValue);
+  if (type == "touchStart" || type == "touchMove") {
+    std::unique_ptr<base::DictionaryValue> point(new base::DictionaryValue());
+    point->SetInteger("x", event.x);
+    point->SetInteger("y", event.y);
+    point->SetDouble("radiusX", event.radiusX);
+    point->SetDouble("radiusY", event.radiusY);
+    point->SetDouble("rotationAngle", event.rotationAngle);
+    point->SetDouble("force", event.force);
+    point->SetInteger("id", event.id);
+    point_list->Append(std::move(point));
+  }
+  params.Set("touchPoints", std::move(point_list));
+  return client_->SendCommand("Input.dispatchTouchEvent", params);
 }
 
 Status WebViewImpl::DispatchTouchEvents(const std::list<TouchEvent>& events) {
@@ -499,12 +532,28 @@ Status WebViewImpl::DispatchKeyEvents(const std::list<KeyEvent>& events) {
     params.SetString("text", it->modified_text);
     params.SetString("unmodifiedText", it->unmodified_text);
     params.SetInteger("windowsVirtualKeyCode", it->key_code);
-    ui::DomCode dom_code = ui::UsLayoutKeyboardCodeToDomCode(it->key_code);
-    std::string code = ui::KeycodeConverter::DomCodeToCodeString(dom_code);
+    std::string code;
+    if (it->is_from_action) {
+      code = it->code;
+    } else {
+      ui::DomCode dom_code = ui::UsLayoutKeyboardCodeToDomCode(it->key_code);
+      code = ui::KeycodeConverter::DomCodeToCodeString(dom_code);
+    }
     if (!code.empty())
       params.SetString("code", code);
     if (!it->key.empty())
       params.SetString("key", it->key);
+    else if (it->is_from_action)
+      params.SetString("key", it->modified_text);
+    if (it->location != 0) {
+      // The |location| parameter in DevTools protocol only accepts 1 (left
+      // modifiers) and 2 (right modifiers). For location 3 (numeric keypad),
+      // it is necessary to set the |isKeypad| parameter.
+      if (it->location == 3)
+        params.SetBoolean("isKeypad", true);
+      else
+        params.SetInteger("location", it->location);
+    }
     Status status = client_->SendCommand("Input.dispatchKeyEvent", params);
     if (status.IsError())
       return status;
@@ -569,8 +618,8 @@ Status WebViewImpl::AddCookie(const std::string& name,
   params.SetString("path", path);
   params.SetBoolean("secure", secure);
   params.SetBoolean("httpOnly", httpOnly);
-  params.SetDouble("expirationDate", expiry);
-  params.SetDouble("expires", expiry);
+  if (expiry >= 0)
+    params.SetDouble("expires", expiry);
 
   std::unique_ptr<base::DictionaryValue> result;
   Status status =
@@ -644,29 +693,16 @@ Status WebViewImpl::CaptureScreenshot(
   return Status(kOk);
 }
 
-Status WebViewImpl::SetFileInputFiles(
-    const std::string& frame,
-    const base::DictionaryValue& element,
-    const std::vector<base::FilePath>& files) {
+Status WebViewImpl::SetFileInputFiles(const std::string& frame,
+                                      const base::DictionaryValue& element,
+                                      const std::vector<base::FilePath>& files,
+                                      const bool append) {
   WebViewImpl* target = GetTargetForFrame(this, frame);
   if (target != nullptr && target != this) {
     if (target->IsDetached())
       return Status(kTargetDetached);
     WebViewImplHolder target_holder(target);
-    return target->SetFileInputFiles(frame, element, files);
-  }
-
-  base::ListValue file_list;
-  for (size_t i = 0; i < files.size(); ++i) {
-    if (!files[i].IsAbsolute()) {
-      return Status(kUnknownError,
-                    "path is not absolute: " + files[i].AsUTF8Unsafe());
-    }
-    if (files[i].ReferencesParent()) {
-      return Status(kUnknownError,
-                    "path is not canonical: " + files[i].AsUTF8Unsafe());
-    }
-    file_list.AppendString(files[i].value());
+    return target->SetFileInputFiles(frame, element, files, append);
   }
 
   int context_id;
@@ -684,10 +720,97 @@ Status WebViewImpl::SetFileInputFiles(
     return status;
   if (!found_node)
     return Status(kUnknownError, "no node ID for file input");
-  base::DictionaryValue params;
-  params.SetInteger("nodeId", node_id);
-  params.SetKey("files", file_list.Clone());
-  return client_->SendCommand("DOM.setFileInputFiles", params);
+
+  base::ListValue file_list;
+  // if the append flag is true, we need to retrieve the files that
+  // already exist in the element and add them too.
+  // Additionally, we need to add the old files first so that it looks
+  // like we're appending files.
+  if (append) {
+    // Convert the node_id to a Runtime.RemoteObject
+    std::string inputRemoteObjectId;
+    {
+      std::unique_ptr<base::DictionaryValue> cmd_result;
+      base::DictionaryValue params;
+      params.SetInteger("nodeId", node_id);
+      status = client_->SendCommandAndGetResult("DOM.resolveNode", params,
+                                                &cmd_result);
+      if (status.IsError())
+        return status;
+      if (!cmd_result->GetString("object.objectId", &inputRemoteObjectId))
+        return Status(kUnknownError, "DevTools didn't return objectId");
+    }
+
+    // figure out how many files there are
+    int numberOfFiles = 0;
+    {
+      std::unique_ptr<base::DictionaryValue> cmd_result;
+      base::DictionaryValue params;
+      params.SetString("functionDeclaration",
+                       "function() { return this.files.length }");
+      params.SetString("objectId", inputRemoteObjectId);
+      status = client_->SendCommandAndGetResult("Runtime.callFunctionOn",
+                                                params, &cmd_result);
+      if (status.IsError())
+        return status;
+      if (!cmd_result->GetInteger("result.value", &numberOfFiles))
+        return Status(kUnknownError, "DevTools didn't return value");
+    }
+
+    // Ask for each Runtime.RemoteObject and add them to the list
+    for (int i = 0; i < numberOfFiles; i++) {
+      std::string fileObjectId;
+      {
+        std::unique_ptr<base::DictionaryValue> cmd_result;
+        base::DictionaryValue params;
+        params.SetString(
+            "functionDeclaration",
+            "function() { return this.files[" + std::to_string(i) + "] }");
+        params.SetString("objectId", inputRemoteObjectId);
+
+        status = client_->SendCommandAndGetResult("Runtime.callFunctionOn",
+                                                  params, &cmd_result);
+        if (status.IsError())
+          return status;
+        if (!cmd_result->GetString("result.objectId", &fileObjectId))
+          return Status(kUnknownError, "DevTools didn't return objectId");
+      }
+
+      // Now convert each RemoteObject into the full path
+      {
+        base::DictionaryValue params;
+        params.SetString("objectId", fileObjectId);
+        std::unique_ptr<base::DictionaryValue> getFileInfoResult;
+        status = client_->SendCommandAndGetResult("DOM.getFileInfo", params,
+                                                  &getFileInfoResult);
+        if (status.IsError())
+          return status;
+        // Add the full path to the file_list
+        std::string fullPath;
+        if (!getFileInfoResult->GetString("path", &fullPath))
+          return Status(kUnknownError, "DevTools didn't return path");
+        file_list.AppendString(fullPath);
+      }
+    }
+  }
+
+  // Now add the new files
+  for (size_t i = 0; i < files.size(); ++i) {
+    if (!files[i].IsAbsolute()) {
+      return Status(kUnknownError,
+                    "path is not absolute: " + files[i].AsUTF8Unsafe());
+    }
+    if (files[i].ReferencesParent()) {
+      return Status(kUnknownError,
+                    "path is not canonical: " + files[i].AsUTF8Unsafe());
+    }
+    file_list.AppendString(files[i].value());
+  }
+
+  base::DictionaryValue setFilesParams;
+  setFilesParams.SetInteger("nodeId", node_id);
+  setFilesParams.SetKey("files", file_list.Clone());
+  return client_->SendCommand("DOM.setFileInputFiles", setFilesParams);
 }
 
 Status WebViewImpl::TakeHeapSnapshot(std::unique_ptr<base::Value>* snapshot) {
@@ -944,6 +1067,20 @@ bool WebViewImpl::IsDetached() const {
   return is_detached_;
 }
 
+std::unique_ptr<base::Value> WebViewImpl::GetCastSinks() {
+  if (!cast_tracker_)
+    cast_tracker_ = std::make_unique<CastTracker>(client_.get());
+  HandleReceivedEvents();
+  return std::unique_ptr<base::Value>(cast_tracker_->sinks().DeepCopy());
+}
+
+std::unique_ptr<base::Value> WebViewImpl::GetCastIssueMessage() {
+  if (!cast_tracker_)
+    cast_tracker_ = std::make_unique<CastTracker>(client_.get());
+  HandleReceivedEvents();
+  return std::unique_ptr<base::Value>(cast_tracker_->issue().DeepCopy());
+}
+
 WebViewImplHolder::WebViewImplHolder(WebViewImpl* web_view)
     : web_view_(web_view), was_locked_(web_view->Lock()) {}
 
@@ -1077,7 +1214,7 @@ Status GetNodeIdFromFunction(DevToolsClient* client,
   std::string w3c = w3c_compliant ? "true" : "false";
   // TODO(zachconrad): Second null should be array of shadow host ids.
   std::string expression = base::StringPrintf(
-      "(%s).apply(null, [null, %s, %s, %s, true])",
+      "(%s).apply(null, [%s, %s, %s, true])",
       kCallFunctionScript,
       function.c_str(),
       json.c_str(),

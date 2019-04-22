@@ -40,7 +40,7 @@ static HashSet<AtomicString>& SupportedTokensAnchorAndArea() {
 
 bool RelList::ValidateTokenValue(const AtomicString& token_value,
                                  ExceptionState&) const {
-  //  https://html.spec.whatwg.org/multipage/links.html#linkTypes
+  //  https://html.spec.whatwg.org/C/#linkTypes
   if (GetElement().HasTagName(html_names::kLinkTag)) {
     if (SupportedTokensLink().Contains(token_value) ||
         token_value == "modulepreload") {

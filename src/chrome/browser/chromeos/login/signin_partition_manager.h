@@ -20,9 +20,11 @@ class StoragePartition;
 class WebContents;
 }  // namespace content
 
-namespace net {
-class URLRequestContextGetter;
-}
+namespace network {
+namespace mojom {
+class NetworkContext;
+}  // namespace mojom
+}  // namespace network
 
 namespace chromeos {
 namespace login {
@@ -35,8 +37,8 @@ class SigninPartitionManager : public KeyedService {
       base::RepeatingCallback<void(content::StoragePartition* storage_partition,
                                    base::OnceClosure data_cleared)>;
 
-  using GetSystemURLRequestContextGetterTask =
-      base::RepeatingCallback<net::URLRequestContextGetter*()>;
+  using GetSystemNetworkContextTask =
+      base::RepeatingCallback<network::mojom::NetworkContext*()>;
 
   using StartSigninSessionDoneCallback =
       base::OnceCallback<void(const std::string& partition_name)>;
@@ -50,7 +52,7 @@ class SigninPartitionManager : public KeyedService {
   // |embedder_web_contents| is the WebContents instance embedding the webview
   // which will display the sign-in pages.
   // |signin_session_started| will be invoked with the partition name of the
-  // started signin session on completition.
+  // started signin session on completion.
   void StartSigninSession(
       content::WebContents* embedder_web_contents,
       StartSigninSessionDoneCallback signin_session_started);
@@ -81,9 +83,8 @@ class SigninPartitionManager : public KeyedService {
 
   void SetClearStoragePartitionTaskForTesting(
       ClearStoragePartitionTask clear_storage_partition_task);
-  void SetGetSystemURLRequestContextGetterTaskForTesting(
-      GetSystemURLRequestContextGetterTask
-          get_system_url_request_context_getter_task);
+  void SetGetSystemNetworkContextForTesting(
+      GetSystemNetworkContextTask get_system_network_context_task);
 
   class Factory : public BrowserContextKeyedServiceFactory {
    public:
@@ -111,8 +112,7 @@ class SigninPartitionManager : public KeyedService {
   content::BrowserContext* const browser_context_;
 
   ClearStoragePartitionTask clear_storage_partition_task_;
-  GetSystemURLRequestContextGetterTask
-      get_system_url_request_context_getter_task_;
+  GetSystemNetworkContextTask get_system_network_context_task_;
 
   // GuestView StoragePartitions use the host of the embedder site's URL as the
   // domain of their StoragePartition.

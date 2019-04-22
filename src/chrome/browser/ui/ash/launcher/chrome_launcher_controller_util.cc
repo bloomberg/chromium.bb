@@ -7,9 +7,11 @@
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
+#include "chrome/browser/ui/app_list/extension_app_utils.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
-#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_client.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -47,7 +49,7 @@ AppListControllerDelegate::Pinnable GetPinnableForAppID(
     const base::DictionaryValue* app = nullptr;
     std::string app_id_or_package;
     if (pref->GetDictionary(index, &app) &&
-        app->GetString(kPinnedAppsPrefAppIDPath, &app_id_or_package) &&
+        app->GetString(kPinnedAppsPrefAppIDKey, &app_id_or_package) &&
         (app_id == app_id_or_package ||
          arc_app_package_name == app_id_or_package)) {
       if (chromeos::DemoSession::Get() &&
@@ -59,4 +61,10 @@ AppListControllerDelegate::Pinnable GetPinnableForAppID(
     }
   }
   return AppListControllerDelegate::PIN_EDITABLE;
+}
+
+bool IsCameraApp(const std::string& app_id) {
+  return app_id == arc::kCameraAppId || app_id == arc::kLegacyCameraAppId ||
+         app_id == arc::kCameraMigrationAppId ||
+         app_id == extension_misc::kChromeCameraAppId;
 }

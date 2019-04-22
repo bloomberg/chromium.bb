@@ -10,15 +10,14 @@
 #include "SkPathPriv.h"
 
 static void create_ngon(int n, SkPoint* pts, SkScalar width, SkScalar height) {
-    float angleStep = 360.0f / n, angle = 0.0f, sin, cos;
+    float angleStep = 360.0f / n, angle = 0.0f;
     if ((n % 2) == 1) {
         angle = angleStep/2.0f;
     }
 
     for (int i = 0; i < n; ++i) {
-        sin = SkScalarSinCos(SkDegreesToRadians(angle), &cos);
-        pts[i].fX = -sin * width;
-        pts[i].fY = cos * height;
+        pts[i].fX = -SkScalarSin(SkDegreesToRadians(angle)) * width;
+        pts[i].fY =  SkScalarCos(SkDegreesToRadians(angle)) * height;
         angle += angleStep;
     }
 }
@@ -56,9 +55,13 @@ const SkPoint gPoints3[] = {
 const SkPoint gPoints4[] = {
     { -6.0f, -50.0f },
     { 4.0f, -50.0f },
-    { 5.0f, -25.0f },
+#if SK_TREAT_COLINEAR_DIAGONAL_POINTS_AS_CONCAVE == 0
+    { 5.0f, -25.0f },  // remove if collinear diagonal points are not concave
+#endif
     { 6.0f,   0.0f },
-    { 5.0f,  25.0f },
+#if SK_TREAT_COLINEAR_DIAGONAL_POINTS_AS_CONCAVE == 0
+    { 5.0f,  25.0f },  // remove if collinear diagonal points are not concave
+#endif
     { 4.0f,  50.0f },
     { -4.0f,  50.0f }
 };

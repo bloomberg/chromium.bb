@@ -65,8 +65,9 @@ GOOGLE_PROTOBUF_DECLARE_ONCE(default_unknown_field_set_once_init_);
 }
 
 const UnknownFieldSet* UnknownFieldSet::default_instance() {
-  ::google::protobuf::GoogleOnceInit(&default_unknown_field_set_once_init_,
-                 &InitDefaultUnknownFieldSet);
+  ::google::protobuf::GoogleOnceInit(
+      &GOOGLE_PROTOBUF_GET_ONCE(default_unknown_field_set_once_init_),
+      &InitDefaultUnknownFieldSet);
   return default_unknown_field_set_instance_;
 }
 

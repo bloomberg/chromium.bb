@@ -4,16 +4,21 @@
 
 package org.chromium.chrome.browser.browserservices.trustedwebactivityui;
 
+import org.chromium.chrome.browser.browserservices.TrustedWebActivityUmaRecorder;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityDisclosureController;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityOpenTimeRecorder;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityToolbarController;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityVerifier;
+import org.chromium.chrome.browser.browserservices.trustedwebactivityui.splashscreen.SplashScreenController;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.view.TrustedWebActivityDisclosureView;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.view.TrustedWebActivityToolbarView;
-import org.chromium.chrome.browser.customtabs.CloseButtonNavigator;
+import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
+import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 
 import javax.inject.Inject;
+
+import dagger.Lazy;
 
 /**
  * Coordinator for the Trusted Web Activity component.
@@ -29,10 +34,29 @@ public class TrustedWebActivityCoordinator {
             TrustedWebActivityDisclosureView disclosureView,
             TrustedWebActivityOpenTimeRecorder openTimeRecorder,
             TrustedWebActivityVerifier verifier,
-            CloseButtonNavigator closeButtonNavigator) {
+            CustomTabActivityNavigationController navigationController,
+            Lazy<SplashScreenController> splashScreenController,
+            CustomTabIntentDataProvider intentDataProvider,
+            TrustedWebActivityUmaRecorder umaRecorder) {
         // We don't need to do anything with most of the classes above, we just need to resolve them
         // so they start working.
 
-        closeButtonNavigator.setLandingPageCriteria(verifier::isPageOnVerifiedOrigin);
+        navigationController.setLandingPageOnCloseCriterion(verifier::isPageOnVerifiedOrigin);
+
+        initSplashScreen(splashScreenController, intentDataProvider, umaRecorder);
+    }
+
+    private void initSplashScreen(Lazy<SplashScreenController> splashScreenController,
+            CustomTabIntentDataProvider intentDataProvider,
+            TrustedWebActivityUmaRecorder umaRecorder) {
+
+        boolean showSplashScreen = SplashScreenController.intentIsForTwaWithSplashScreen(
+                intentDataProvider.getIntent());
+
+        if (showSplashScreen) {
+            splashScreenController.get();
+        }
+
+        umaRecorder.recordSplashScreenUsage(showSplashScreen);
     }
 }

@@ -14,7 +14,7 @@ namespace pp {
 /// for usage.
 class MessageHandler {
  public:
-  virtual ~MessageHandler() {};
+  virtual ~MessageHandler() {}
 
   /// Invoked as a result of JavaScript invoking postMessage() on the plugin's
   /// DOM element.

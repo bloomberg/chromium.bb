@@ -10,7 +10,7 @@
   <template>
     <style>
       :host {
-        --avatar-size: 48px;
+        --avatar-size: 96px;
         --avatar-spacing: 24px;
         display: inline-flex;
 
@@ -18,27 +18,48 @@
       }
 
       #avatar-grid .avatar {
-        background-color: var(--paper-grey-300);
+        --avatar-focus-color: var(--google-grey-refresh-700);
+        --avatar-gap-color: white;
+        --avatar-gap-width: 2px;
+        --avatar-selected-color: var(--google-blue-500);
+
         background-position: center;
         background-repeat: no-repeat;
-        border: 1px solid rgba(0, 0, 0, .12);
-        border-radius: var(--cr-card-border-radius);
+        border: 1px solid var(--paper-grey-300);
+        border-radius: 100%;
+        box-shadow: 0 0 0 var(--avatar-gap-width) var(--avatar-gap-color),
+            0 0 0 calc(var(--avatar-gap-width) + var(--avatar-outline-width))
+                var(--avatar-outline-color);
         display: flex;
         height: var(--avatar-size);
         margin: calc(var(--avatar-spacing) / 2);
         min-width: 0;
         padding: 0;
+        transition: none !important;  /* Polymer's :host([animated]) rule. */
         width: var(--avatar-size);
 
         @apply --avatar-selector-avatar;
       }
 
-      #avatar-grid .avatar.keyboard-focus {
-        background-color: var(--paper-grey-400);
+      :host-context([dark]) #avatar-grid .avatar {
+        --avatar-focus-color: var(--google-grey-refresh-500);
+        --avatar-gap-color: var(--google-grey-800);
+        --avatar-selected-color: var(--google-blue-refresh-300);
       }
 
       #avatar-grid .avatar.iron-selected {
-        border: 2px solid var(--google-blue-500);
+        --avatar-outline-color: var(--avatar-selected-color);
+        --avatar-outline-width: 2px !important;  /* Overrides rule below. */
+        border-color: var(--avatar-selected-color);
+      }
+
+      #avatar-grid .avatar.keyboard-focus {
+        --avatar-outline-color: var(--avatar-focus-color);
+        --avatar-outline-width: 1px;
+      }
+
+      paper-button {
+        background-size: var(--avatar-size);
       }
     </style>
     <cr-profile-avatar-selector-grid id="avatar-grid"

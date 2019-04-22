@@ -7,15 +7,21 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/media/cast_remoting_connector.h"
+#include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
+#include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "components/mirroring/browser/single_client_video_capture_host.h"
+#include "components/mirroring/mojom/cast_message_channel.mojom.h"
 #include "components/mirroring/mojom/constants.mojom.h"
+#include "components/mirroring/mojom/session_observer.mojom.h"
+#include "components/mirroring/mojom/session_parameters.mojom.h"
 #include "content/public/browser/audio_loopback_stream_creator.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -27,6 +33,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/service_manager_connection.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "services/network/public/mojom/network_service.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -38,7 +45,7 @@ namespace mirroring {
 namespace {
 
 void CreateVideoCaptureHostOnIO(const std::string& device_id,
-                                content::MediaStreamType type,
+                                blink::MediaStreamType type,
                                 media::mojom::VideoCaptureHostRequest request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   scoped_refptr<base::SingleThreadTaskRunner> device_task_runner =
@@ -55,20 +62,20 @@ void CreateVideoCaptureHostOnIO(const std::string& device_id,
       std::move(request));
 }
 
-content::MediaStreamType ConvertVideoStreamType(
+blink::MediaStreamType ConvertVideoStreamType(
     content::DesktopMediaID::Type type) {
   switch (type) {
     case content::DesktopMediaID::TYPE_NONE:
-      return content::MediaStreamType::MEDIA_NO_SERVICE;
+      return blink::MediaStreamType::MEDIA_NO_SERVICE;
     case content::DesktopMediaID::TYPE_WEB_CONTENTS:
-      return content::MediaStreamType::MEDIA_GUM_TAB_VIDEO_CAPTURE;
+      return blink::MediaStreamType::MEDIA_GUM_TAB_VIDEO_CAPTURE;
     case content::DesktopMediaID::TYPE_SCREEN:
     case content::DesktopMediaID::TYPE_WINDOW:
-      return content::MediaStreamType::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE;
+      return blink::MediaStreamType::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE;
   }
 
   // To suppress compiler warning on Windows.
-  return content::MediaStreamType::MEDIA_NO_SERVICE;
+  return blink::MediaStreamType::MEDIA_NO_SERVICE;
 }
 
 // Get the content::WebContents associated with the given |id|.
@@ -205,6 +212,8 @@ void CastMirroringServiceHost::Start(
       std::move(session_params), GetCaptureResolutionConstraint(),
       std::move(observer), std::move(provider), std::move(outbound_channel),
       std::move(inbound_channel));
+
+  ShowCaptureIndicator();
 }
 
 void CastMirroringServiceHost::GetVideoCaptureHost(
@@ -274,6 +283,20 @@ void CastMirroringServiceHost::ConnectToRemotingSource(
 void CastMirroringServiceHost::WebContentsDestroyed() {
   audio_stream_creator_.reset();
   mirroring_service_.reset();
+}
+
+void CastMirroringServiceHost::ShowCaptureIndicator() {
+  if (source_media_id_.type != content::DesktopMediaID::TYPE_WEB_CONTENTS ||
+      !web_contents()) {
+    return;
+  }
+  const blink::MediaStreamDevice device(
+      ConvertVideoStreamType(source_media_id_.type),
+      source_media_id_.ToString(), /* name */ std::string());
+  media_stream_ui_ = MediaCaptureDevicesDispatcher::GetInstance()
+                         ->GetMediaStreamCaptureIndicator()
+                         ->RegisterMediaStream(web_contents(), {device});
+  media_stream_ui_->OnStarted(base::OnceClosure(), base::RepeatingClosure());
 }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)

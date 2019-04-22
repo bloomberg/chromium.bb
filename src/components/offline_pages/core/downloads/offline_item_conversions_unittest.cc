@@ -39,7 +39,7 @@ TEST(OfflineItemConversionsTest, OfflinePageItemConversion) {
 
   OfflinePageItem offline_page_item(kTestUrl, offline_id, client_id, file_path,
                                     file_size, creation_time);
-  offline_page_item.original_url = kTestOriginalUrl;
+  offline_page_item.original_url_if_different = kTestOriginalUrl;
   offline_page_item.title = base::UTF8ToUTF16(title);
   offline_page_item.last_access_time = last_access_time;
   offline_page_item.file_missing_time = base::Time::Now();
@@ -70,18 +70,13 @@ TEST(OfflineItemConversionsTest, OfflinePageItemConversion) {
   EXPECT_EQ(FailState::NO_FAILURE, offline_item.fail_state);
   EXPECT_EQ(PendingState::NOT_PENDING, offline_item.pending_state);
 
-  // Enabled P2P sharing and flag the item as suggested when creating the
-  // OfflineItem. Then check that only the mime type is and is_suggested
-  // information changed.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(kOfflinePagesSharingFeature);
+  // Flag the item as suggested when creating the OfflineItem. Then check that
+  // only is_suggested information changed.
   OfflineItem offline_item_p2p =
       OfflineItemConversions::CreateOfflineItem(offline_page_item, false);
-  EXPECT_EQ("text/html", offline_item_p2p.mime_type);
   EXPECT_FALSE(offline_item_p2p.is_suggested);
 
   // Change offline_item_p2p to match offline_item and check that it does.
-  offline_item_p2p.mime_type = "multipart/related";
   offline_item_p2p.is_suggested = true;
   EXPECT_EQ(offline_item, offline_item_p2p);
 }
@@ -123,16 +118,9 @@ TEST(OfflineItemConversionsTest, SavePageRequestConversion) {
   EXPECT_EQ(FailState::NETWORK_FAILED, offline_item.fail_state);
   EXPECT_EQ(PendingState::NOT_PENDING, offline_item.pending_state);
 
-  // Disable P2P sharing of offline pages and check that only the mime type is
-  // different.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(kOfflinePagesSharingFeature);
+  // Check that the offline item matches one we create.
   OfflineItem offline_item_p2p =
       OfflineItemConversions::CreateOfflineItem(save_page_request);
-  EXPECT_EQ("text/html", offline_item_p2p.mime_type);
-
-  // Change offline_item_p2p to match offline_item and check that it does.
-  offline_item_p2p.mime_type = "multipart/related";
   EXPECT_EQ(offline_item, offline_item_p2p);
 }
 

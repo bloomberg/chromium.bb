@@ -5,7 +5,10 @@
 import("//build/config/chrome_build.gni")
 import("//build/config/chromecast_build.gni")
 import("//build/config/features.gni")
+import("//build/config/jumbo.gni")
+import("//media/gpu/args.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
+import("//third_party/libaom/options.gni")
 
 # Do not expand this list without double-checking with OWNERS, this is a list of
 # all targets which roll up into the //media component. It controls visibility
@@ -62,7 +65,8 @@ declare_args() {
 
   # Enable parsing for the 'cbcs' encryption scheme added by MPEG Common
   # Encryption 3rd Edition (ISO/IEC 23001-7), published 02/15/2016.
-  enable_cbcs_encryption_scheme = is_chromecast || is_mac || is_win || is_linux
+  enable_cbcs_encryption_scheme =
+      is_chromecast || is_mac || is_win || is_linux || is_android
 
   # Enable HEVC/H265 demuxing. Actual decoding must be provided by the
   # platform. Enable by default for Chromecast.
@@ -76,13 +80,31 @@ declare_args() {
   # Enable HLS with SAMPLE-AES decryption.
   enable_hls_sample_aes = proprietary_codecs && is_chromecast
 
-  # If true, use cast CMA backend instead of default chromium media pipeline.
-  # TODO(sanfin): Remove this flag when all builds enable CMA.
-  is_cast_using_cma_backend = true
+  # Enable logging override, e.g. enable DVLOGs at build time. Must not be
+  # enabled when |use_jumbo_build| is true, in which case multiple .cc files
+  # are combined and we could override more logging than expected.
+  enable_logging_override = !use_jumbo_build && is_chromecast
+
+  if (is_win && target_cpu == "arm64") {
+    # TODO: Enable dav1d for Windows ARM64. https://crbug.com/941022
+    enable_dav1d_decoder = false
+  } else if (is_fuchsia) {
+    # TODO: Fix media_unittests for fuchsia X64. https://crbug.com/930300
+    enable_dav1d_decoder = false
+  } else {
+    enable_dav1d_decoder = !is_android && !is_ios
+  }
+}
+
+declare_args() {
+  enable_av1_decoder = enable_dav1d_decoder || enable_libaom_decoder
 }
 
 # enable_hls_sample_aes can only be true if enable_mse_mpeg2ts_stream_parser is.
 assert(enable_mse_mpeg2ts_stream_parser || !enable_hls_sample_aes)
+
+# Logging override must not be enabled in jumbo builds.
+assert(!use_jumbo_build || !enable_logging_override)
 
 if (media_use_ffmpeg) {
   media_subcomponent_deps += [ "//media/ffmpeg" ]
@@ -129,8 +151,9 @@ declare_args() {
   # |mojo_media_services|). When enabled, selected mojo paths will be enabled in
   # the media pipeline and corresponding services will hosted in the selected
   # remote process (e.g. "utility" process, see |mojo_media_host|).
-  enable_mojo_media = is_android || is_chromecast || is_chromeos || is_mac ||
-                      is_win || enable_library_cdms
+  enable_mojo_media =
+      is_android || is_chromecast || is_chromeos || is_mac || is_win ||
+      enable_library_cdms || (is_desktop_linux && use_vaapi)
 
   # Enable the TestMojoMediaClient to be used in mojo MediaService. This is for
   # testing only and will override the default platform MojoMediaClient, if any.
@@ -178,29 +201,18 @@ _default_mojo_media_host = "none"
 # Can be overridden by gn build arguments from the --args command line flag
 # for local testing.
 if (enable_mojo_media) {
-  if (is_chromecast && is_cast_using_cma_backend && !is_android) {
+  if (is_chromecast) {
+    _default_mojo_media_services = cast_mojo_media_services
+    _default_mojo_media_host = cast_mojo_media_host
+  } else if (is_android) {
     _default_mojo_media_services = [
       "cdm",
-      "renderer",
+      "audio_decoder",
+      "video_decoder",
     ]
-    _default_mojo_media_host = "browser"
-  } else if (is_android) {
-    # Both chrome for Android and cast for Android belongs to this case
-    if (is_cast_audio_only) {
-      _default_mojo_media_services = [
-        "cdm",
-        "audio_decoder",
-      ]
-      _default_mojo_media_host = "browser"
-    } else {
-      _default_mojo_media_services = [
-        "cdm",
-        "audio_decoder",
-        "video_decoder",
-      ]
-      _default_mojo_media_host = "gpu"
-    }
-  } else if (is_chromeos || is_mac || is_win) {
+    _default_mojo_media_host = "gpu"
+  } else if (is_chromeos || is_mac || is_win ||
+             (is_desktop_linux && use_vaapi)) {
     _default_mojo_media_services = [ "video_decoder" ]
     _default_mojo_media_host = "gpu"
   }

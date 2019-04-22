@@ -11,17 +11,9 @@
 #import "ios/chrome/app/main_controller.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
 
-@class BrowserViewController;
 @class DeviceSharingManager;
 class GURL;
-@class SettingsNavigationController;
-@class SigninInteractionController;
-@class TabModel;
 @protocol TabSwitcher;
-
-namespace ios {
-class ChromeBrowserState;
-}
 
 // Private methods and protocols that are made visible here for tests.
 @interface MainController ()
@@ -55,10 +47,6 @@ class ChromeBrowserState;
 // Sets the internal startup state to indicate that the launch was triggered
 // by an external app opening the given URL.
 - (void)setStartupParametersWithURL:(const GURL&)launchURL;
-
-// Sets the internal state to indicate that the app has been foregrounded.
-- (void)setUpAsForegroundedWithBrowserState:
-    (ios::ChromeBrowserState*)browserState;
 
 @end
 

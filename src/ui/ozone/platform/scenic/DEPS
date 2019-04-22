@@ -1,5 +1,4 @@
 include_rules = [
   "+mojo/public",
   "+third_party/skia/include",
-  "+ui/base/ime",
 ]

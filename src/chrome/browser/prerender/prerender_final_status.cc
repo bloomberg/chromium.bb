@@ -4,7 +4,7 @@
 
 #include "chrome/browser/prerender/prerender_final_status.h"
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 
 namespace prerender {
@@ -71,16 +71,18 @@ const char* kFinalStatusNames[] = {
     "NoStatePrefetch Finished",
     "Low-End Device",
     "BrowserSwitcher Switch",
+    "GWS Holdback",
+    "Unknown",
     "Max",
 };
-static_assert(arraysize(kFinalStatusNames) == FINAL_STATUS_MAX + 1,
+static_assert(base::size(kFinalStatusNames) == FINAL_STATUS_MAX + 1,
               "status name count mismatch");
 
 }  // namespace
 
 const char* NameFromFinalStatus(FinalStatus final_status) {
   DCHECK_LT(static_cast<unsigned int>(final_status),
-            arraysize(kFinalStatusNames));
+            base::size(kFinalStatusNames));
   return kFinalStatusNames[final_status];
 }
 

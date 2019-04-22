@@ -27,12 +27,11 @@
 #include "content/public/browser/screen_orientation_delegate.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/visibility.h"
-#include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/stop_find_action.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
-#include "third_party/blink/public/mojom/frame/find_in_page.mojom.h"
-#include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom.h"
+#include "third_party/blink/public/mojom/frame/find_in_page.mojom-forward.h"
+#include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom-forward.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_mode.h"
 #include "ui/accessibility/ax_tree_update.h"
@@ -45,8 +44,11 @@
 #endif
 
 namespace blink {
-struct Manifest;
+namespace mojom {
+class RendererPreferences;
 }
+struct Manifest;
+}  // namespace blink
 
 namespace base {
 class TimeTicks;
@@ -80,7 +82,6 @@ struct CustomContextMenuContext;
 struct DropData;
 struct MHTMLGenerationParams;
 struct PageImportanceSignals;
-struct RendererPreferences;
 
 // WebContents is the core class in content/. A WebContents renders web content
 // (usually HTML) in a rectangular area.
@@ -360,8 +361,8 @@ class WebContents : public PageNavigator,
   virtual RenderWidgetHostView* GetFullscreenRenderWidgetHostView() = 0;
 
   // Returns the theme color for the underlying content as set by the
-  // theme-color meta tag.
-  virtual SkColor GetThemeColor() = 0;
+  // theme-color meta tag if any.
+  virtual base::Optional<SkColor> GetThemeColor() = 0;
 
   // Returns the committed WebUI if one exists, otherwise the pending one.
   virtual WebUI* GetWebUI() = 0;
@@ -473,6 +474,10 @@ class WebContents : public PageNavigator,
   // Device.
   virtual bool IsConnectedToBluetoothDevice() = 0;
 
+  // Indicates whether any frame in the WebContents is connected to a serial
+  // port.
+  virtual bool IsConnectedToSerialPort() const = 0;
+
   // Indicates whether a video is in Picture-in-Picture for |this|.
   virtual bool HasPictureInPictureVideo() = 0;
 
@@ -528,11 +533,21 @@ class WebContents : public PageNavigator,
   // potential discard without causing the dialog to appear.
   virtual void DispatchBeforeUnload(bool auto_cancel) = 0;
 
-  // Attaches |current_web_contents| to its container frame
-  // |outer_contents_frame|.
-  virtual void AttachToOuterWebContentsFrame(
-      std::unique_ptr<WebContents> current_web_contents,
-      RenderFrameHost* outer_contents_frame) = 0;
+  // Attaches |inner_web_contents| to the container frame |render_frame_host|,
+  // which should be in this WebContents' FrameTree. This outer WebContents
+  // takes ownership of |inner_web_contents|.
+  // Note: |render_frame_host| will be swapped out and destroyed during the
+  // process. Generally a frame same-process with its parent is the right choice
+  // but ideally it should be "about:blank" to avoid problems with beforeunload.
+  // To ensure sane usage of this API users first should call the async API
+  // RenderFrameHost::PrepareForInnerWebContentsAttach first.
+  virtual void AttachInnerWebContents(
+      std::unique_ptr<WebContents> inner_web_contents,
+      RenderFrameHost* render_frame_host) = 0;
+
+  // Returns the outer WebContents frame, the same frame that this WebContents
+  // was attached in AttachToOuterWebContentsFrame().
+  virtual RenderFrameHost* GetOuterWebContentsFrame() = 0;
 
   // Returns the outer WebContents of this WebContents if any.
   // Otherwise, return nullptr.
@@ -541,6 +556,9 @@ class WebContents : public PageNavigator,
   // Returns the root WebContents of the WebContents tree. Always returns
   // non-null value.
   virtual WebContents* GetOutermostWebContents() = 0;
+
+  // Returns a vector to the inner WebContents within this WebContents.
+  virtual std::vector<WebContents*> GetInnerWebContents() = 0;
 
   // Invoked when visible security state changes.
   virtual void DidChangeVisibleSecurityState() = 0;
@@ -714,7 +732,7 @@ class WebContents : public PageNavigator,
   virtual bool WillNotifyDisconnection() = 0;
 
   // Returns the settings which get passed to the renderer.
-  virtual content::RendererPreferences* GetMutableRendererPrefs() = 0;
+  virtual blink::mojom::RendererPreferences* GetMutableRendererPrefs() = 0;
 
   // Tells the tab to close now. The tab will take care not to close until it's
   // out of nested run loops.
@@ -858,9 +876,6 @@ class WebContents : public PageNavigator,
 
   virtual int GetCurrentlyPlayingVideoCount() = 0;
 
-  // Returns a map containing the sizes of all currently playing videos.
-  using VideoSizeMap =
-      base::flat_map<WebContentsObserver::MediaPlayerId, gfx::Size>;
   virtual base::Optional<gfx::Size> GetFullscreenVideoSize() = 0;
   virtual bool IsFullscreen() = 0;
 
@@ -875,20 +890,6 @@ class WebContents : public PageNavigator,
 
   // Tells the WebContents whether the context menu is showing.
   virtual void SetShowingContextMenu(bool showing) = 0;
-
-  // Pause and unpause scheduled tasks in the page of blink. This function will
-  // suspend page loadings and all background processing like active javascript,
-  // and timers through |blink::Page::SetPaused|. If you want to resume the
-  // paused state, you have to call this function with |false| argument again.
-  // The function with |false| should be called after calling it with |true|. If
-  // not, assertion will happen.
-  //
-  // WARNING: This only pauses the activities in the particular page in the
-  // renderer process, but may indirectly block or break other pages when they
-  // wait for the common backend (e.g. storage) in the browser process.
-  // TODO(gyuyoung): https://crbug.com/822564 - Make this feature safer and fix
-  // bugs.
-  virtual void PausePageScheduledTasks(bool paused) = 0;
 
 #if defined(OS_ANDROID)
   CONTENT_EXPORT static WebContents* FromJavaWebContents(

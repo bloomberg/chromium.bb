@@ -12,7 +12,6 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -109,6 +108,9 @@ class EventRouter : public KeyedService,
                                     const std::string& extension_id,
                                     events::HistogramValue histogram_value,
                                     const std::string& event_name,
+                                    int render_process_id,
+                                    int worker_thread_id,
+                                    int64_t service_worker_version_id,
                                     std::unique_ptr<base::ListValue> event_args,
                                     UserGestureState user_gesture,
                                     const EventFilteringInfo& info);
@@ -305,7 +307,7 @@ class EventRouter : public KeyedService,
   // empty, the event is broadcast.  An event that just came off the pending
   // list may not be delayed again.
   void DispatchEventImpl(const std::string& restrict_to_extension_id,
-                         const linked_ptr<Event>& event);
+                         std::unique_ptr<Event> event);
 
   // Dispatches the event to the specified extension or URL running in
   // |process|.
@@ -314,7 +316,7 @@ class EventRouter : public KeyedService,
                               content::RenderProcessHost* process,
                               int64_t service_worker_version_id,
                               int worker_thread_id,
-                              const linked_ptr<Event>& event,
+                              Event* event,
                               const base::DictionaryValue* listener_filter,
                               bool did_enqueue);
 
@@ -339,20 +341,24 @@ class EventRouter : public KeyedService,
   // Track the dispatched events that have not yet sent an ACK from the
   // renderer.
   void IncrementInFlightEvents(content::BrowserContext* context,
+                               content::RenderProcessHost* process,
                                const Extension* extension,
                                int event_id,
-                               const std::string& event_name);
+                               const std::string& event_name,
+                               int64_t service_worker_version_id);
 
   // static
   static void DoDispatchEventToSenderBookkeepingOnUI(
       void* browser_context_id,
       const std::string& extension_id,
       int event_id,
+      int render_process_id,
+      int64_t service_worker_version_id,
       events::HistogramValue histogram_value,
       const std::string& event_name);
 
   void DispatchPendingEvent(
-      const linked_ptr<Event>& event,
+      std::unique_ptr<Event> event,
       std::unique_ptr<LazyContextTaskQueue::ContextInfo> params);
 
   // Implementation of EventListenerMap::Delegate.
@@ -397,10 +403,10 @@ struct Event {
   // This callback should return true if the event should be dispatched to the
   // given context and extension, and false otherwise.
   using WillDispatchCallback =
-      base::Callback<bool(content::BrowserContext*,
-                          const Extension*,
-                          Event*,
-                          const base::DictionaryValue*)>;
+      base::RepeatingCallback<bool(content::BrowserContext*,
+                                   const Extension*,
+                                   Event*,
+                                   const base::DictionaryValue*)>;
 
   // The identifier for the event, for histograms. In most cases this
   // correlates 1:1 with |event_name|, in some cases events will generate
@@ -462,24 +468,34 @@ struct Event {
 
   ~Event();
 
-  // Makes a deep copy of this instance. Ownership is transferred to the
-  // caller.
-  // TODO(devlin): Have this return a unique_ptr.
-  Event* DeepCopy() const;
+  // Makes a deep copy of this instance.
+  std::unique_ptr<Event> DeepCopy() const;
 };
 
 struct EventListenerInfo {
+  // Constructor for a listener from a non-ServiceWorker context (background
+  // page, popup, tab, etc)
   EventListenerInfo(const std::string& event_name,
                     const std::string& extension_id,
                     const GURL& listener_url,
                     content::BrowserContext* browser_context);
+
+  // Constructor for a listener from a ServiceWorker context.
+  EventListenerInfo(const std::string& event_name,
+                    const std::string& extension_id,
+                    const GURL& listener_url,
+                    content::BrowserContext* browser_context,
+                    int worker_thread_id,
+                    int64_t service_worker_version_id);
+
   // The event name including any sub-event, e.g. "runtime.onStartup" or
   // "webRequest.onCompleted/123".
   const std::string event_name;
-
   const std::string extension_id;
   const GURL listener_url;
   content::BrowserContext* const browser_context;
+  const int worker_thread_id;
+  const int64_t service_worker_version_id;
 };
 
 }  // namespace extensions

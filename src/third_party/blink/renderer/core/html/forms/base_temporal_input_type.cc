@@ -53,9 +53,12 @@ String BaseTemporalInputType::BadInputText() const {
 }
 
 InputTypeView* BaseTemporalInputType::CreateView() {
-  if (RuntimeEnabledFeatures::InputMultipleFieldsUIEnabled())
-    return MultipleFieldsTemporalInputTypeView::Create(GetElement(), *this);
-  return ChooserOnlyTemporalInputTypeView::Create(GetElement(), *this);
+  if (RuntimeEnabledFeatures::InputMultipleFieldsUIEnabled()) {
+    return MakeGarbageCollected<MultipleFieldsTemporalInputTypeView>(
+        GetElement(), *this);
+  }
+  return MakeGarbageCollected<ChooserOnlyTemporalInputTypeView>(GetElement(),
+                                                                *this);
 }
 
 InputType::ValueMode BaseTemporalInputType::GetValueMode() const {

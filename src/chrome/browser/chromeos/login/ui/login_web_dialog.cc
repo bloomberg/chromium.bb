@@ -8,7 +8,7 @@
 #include "base/lazy_instance.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/helper.h"
-#include "chrome/browser/ui/ash/system_tray_client.h"
+#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "content/public/browser/browser_context.h"
@@ -66,14 +66,8 @@ LoginWebDialog::LoginWebDialog(content::BrowserContext* browser_context,
 LoginWebDialog::~LoginWebDialog() {}
 
 void LoginWebDialog::Show() {
-  dialog_window_ = nullptr;
-  if (parent_window_) {
-    dialog_window_ =
-        chrome::ShowWebDialog(parent_window_, browser_context_, this);
-  } else {
-    dialog_window_ = chrome::ShowWebDialogInContainer(
-        SystemTrayClient::GetDialogParentContainerId(), browser_context_, this);
-  }
+  dialog_window_ =
+      chrome::ShowWebDialog(parent_window_, browser_context_, this);
 }
 
 void LoginWebDialog::SetDialogSize(int width, int height) {
@@ -152,6 +146,7 @@ bool LoginWebDialog::ShouldShowDialogTitle() const {
 }
 
 bool LoginWebDialog::HandleContextMenu(
+    content::RenderFrameHost* render_frame_host,
     const content::ContextMenuParams& params) {
   // Disable context menu.
   return true;

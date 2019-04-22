@@ -38,6 +38,7 @@
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/core/common/schema_map.h"
+#include "components/strings/grit/components_strings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::UTF8ToUTF16;
@@ -123,7 +124,7 @@ bool InstallValue(const base::Value& value,
         if (!list->Get(i, &item))
           return false;
         if (!InstallValue(*item, hive, path + kPathSep + name,
-                          base::UintToString16(i + 1))) {
+                          base::NumberToString16(i + 1))) {
           return false;
         }
       }
@@ -132,8 +133,14 @@ bool InstallValue(const base::Value& value,
 
     case base::Value::Type::BINARY:
       return false;
+
+    // TODO(crbug.com/859477): Remove after root cause is found.
+    case base::Value::Type::DEAD:
+      CHECK(false);
+      return false;
   }
-  NOTREACHED();
+  // TODO(crbug.com/859477): Revert to NOTREACHED() after root cause is found.
+  CHECK(false);
   return false;
 }
 
@@ -336,7 +343,7 @@ void RegistryTestHarness::InstallStringListPolicy(
     std::string element_value;
     if (!element->GetAsString(&element_value))
       continue;
-    std::string name(base::IntToString(index++));
+    std::string name(base::NumberToString(index++));
     key.WriteValue(UTF8ToUTF16(name).c_str(),
                    UTF8ToUTF16(element_value).c_str());
   }
@@ -388,16 +395,16 @@ PolicyProviderTestHarness* RegistryTestHarness::CreateHKLM() {
 }  // namespace
 
 // Instantiate abstract test case for basic policy reading tests.
-INSTANTIATE_TEST_CASE_P(PolicyProviderWinTest,
-                        ConfigurationPolicyProviderTest,
-                        testing::Values(RegistryTestHarness::CreateHKCU,
-                                        RegistryTestHarness::CreateHKLM));
+INSTANTIATE_TEST_SUITE_P(PolicyProviderWinTest,
+                         ConfigurationPolicyProviderTest,
+                         testing::Values(RegistryTestHarness::CreateHKCU,
+                                         RegistryTestHarness::CreateHKLM));
 
 // Instantiate abstract test case for 3rd party policy reading tests.
-INSTANTIATE_TEST_CASE_P(ThirdPartyPolicyProviderWinTest,
-                        Configuration3rdPartyPolicyProviderTest,
-                        testing::Values(RegistryTestHarness::CreateHKCU,
-                                        RegistryTestHarness::CreateHKLM));
+INSTANTIATE_TEST_SUITE_P(ThirdPartyPolicyProviderWinTest,
+                         Configuration3rdPartyPolicyProviderTest,
+                         testing::Values(RegistryTestHarness::CreateHKCU,
+                                         RegistryTestHarness::CreateHKLM));
 
 // Test cases for windows policy provider specific functionality.
 class PolicyLoaderWinTest : public PolicyTestBase {
@@ -448,6 +455,16 @@ TEST_F(PolicyLoaderWinTest, HKLMOverHKCU) {
       .Set(test_keys::kKeyString, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
            POLICY_SOURCE_PLATFORM, std::make_unique<base::Value>("hklm"),
            nullptr);
+  expected.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
+      .GetMutable(test_keys::kKeyString)
+      ->AddError(IDS_POLICY_CONFLICT_DIFF_VALUE);
+
+  PolicyMap::Entry conflict(POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                            POLICY_SOURCE_PLATFORM,
+                            std::make_unique<base::Value>("hkcu"), nullptr);
+  expected.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
+      .GetMutable(test_keys::kKeyString)
+      ->AddConflictingPolicy(conflict);
   EXPECT_TRUE(Matches(expected));
 }
 
@@ -500,13 +517,49 @@ TEST_F(PolicyLoaderWinTest, Merge3rdPartyPolicies) {
   expected_policy.Set(
       "a", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE, POLICY_SOURCE_PLATFORM,
       std::make_unique<base::Value>(kMachineMandatory), nullptr);
+  expected_policy.GetMutable("a")->AddError(IDS_POLICY_CONFLICT_DIFF_VALUE);
+  expected_policy.GetMutable("a")->AddError(IDS_POLICY_CONFLICT_DIFF_VALUE);
+  expected_policy.GetMutable("a")->AddError(IDS_POLICY_CONFLICT_DIFF_VALUE);
+
+  PolicyMap::Entry a_conflict_1(
+      POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_MACHINE, POLICY_SOURCE_PLATFORM,
+      std::make_unique<base::Value>(kMachineRecommended), nullptr);
+  PolicyMap::Entry a_conflict_2(
+      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_PLATFORM,
+      std::make_unique<base::Value>(kUserMandatory), nullptr);
+  PolicyMap::Entry a_conflict_3(
+      POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER, POLICY_SOURCE_PLATFORM,
+      std::make_unique<base::Value>(kUserRecommended), nullptr);
+  expected_policy.GetMutable("a")->AddConflictingPolicy(a_conflict_1);
+  expected_policy.GetMutable("a")->AddConflictingPolicy(a_conflict_2);
+  expected_policy.GetMutable("a")->AddConflictingPolicy(a_conflict_3);
+
   expected_policy.Set("b", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                       POLICY_SOURCE_PLATFORM,
                       std::make_unique<base::Value>(kUserMandatory), nullptr);
+  expected_policy.GetMutable("b")->AddError(IDS_POLICY_CONFLICT_DIFF_VALUE);
+  expected_policy.GetMutable("b")->AddError(IDS_POLICY_CONFLICT_DIFF_VALUE);
+
+  PolicyMap::Entry b_conflict_1(
+      POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_MACHINE, POLICY_SOURCE_PLATFORM,
+      std::make_unique<base::Value>(kMachineRecommended), nullptr);
+  PolicyMap::Entry b_conflict_2(
+      POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER, POLICY_SOURCE_PLATFORM,
+      std::make_unique<base::Value>(kUserRecommended), nullptr);
+  expected_policy.GetMutable("b")->AddConflictingPolicy(b_conflict_1);
+  expected_policy.GetMutable("b")->AddConflictingPolicy(b_conflict_2);
+
   expected_policy.Set("c", POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_MACHINE,
                       POLICY_SOURCE_PLATFORM,
                       std::make_unique<base::Value>(kMachineRecommended),
                       nullptr);
+  expected_policy.GetMutable("c")->AddError(IDS_POLICY_CONFLICT_DIFF_VALUE);
+
+  PolicyMap::Entry c_conflict_1(
+      POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER, POLICY_SOURCE_PLATFORM,
+      std::make_unique<base::Value>(kUserRecommended), nullptr);
+  expected_policy.GetMutable("c")->AddConflictingPolicy(c_conflict_1);
+
   expected_policy.Set("d", POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
                       POLICY_SOURCE_PLATFORM,
                       std::make_unique<base::Value>(kUserRecommended), nullptr);

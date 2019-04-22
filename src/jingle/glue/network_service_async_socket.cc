@@ -16,7 +16,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/io_buffer.h"
-#include "third_party/webrtc/rtc_base/socketaddress.h"
 
 namespace jingle_glue {
 
@@ -138,24 +137,22 @@ void NetworkServiceAsyncSocket::OnWriteError(int32_t net_error) {
 
 // STATE_CLOSED -> STATE_CONNECTING
 
-bool NetworkServiceAsyncSocket::Connect(const rtc::SocketAddress& address) {
+bool NetworkServiceAsyncSocket::Connect(const net::HostPortPair& address) {
   if (state_ != STATE_CLOSED) {
     LOG(DFATAL) << "Connect() called on non-closed socket";
     DoNonNetError(ERROR_WRONGSTATE);
     return false;
   }
-  if (address.hostname().empty() || address.port() == 0) {
+  if (address.host().empty() || address.port() == 0) {
     DoNonNetError(ERROR_DNS);
     return false;
   }
 
-  DCHECK_EQ(state_, buzz::AsyncSocket::STATE_CLOSED);
+  DCHECK_EQ(state_, jingle_xmpp::AsyncSocket::STATE_CLOSED);
   DCHECK_EQ(read_state_, IDLE);
   DCHECK_EQ(write_state_, IDLE);
 
   state_ = STATE_CONNECTING;
-
-  net::HostPortPair dest_host_port_pair(address.hostname(), address.port());
 
   get_socket_factory_callback_.Run(mojo::MakeRequest(&socket_factory_));
 
@@ -167,7 +164,7 @@ bool NetworkServiceAsyncSocket::Connect(const rtc::SocketAddress& address) {
   options->use_tls = false;
   options->fake_tls_handshake = use_fake_tls_handshake_;
   socket_factory_->CreateProxyResolvingSocket(
-      GURL("https://" + dest_host_port_pair.ToString()), std::move(options),
+      GURL("https://" + address.ToString()), std::move(options),
       net::MutableNetworkTrafficAnnotationTag(traffic_annotation_),
       mojo::MakeRequest(&socket_), std::move(socket_observer),
       base::BindOnce(&NetworkServiceAsyncSocket::ProcessConnectDone,

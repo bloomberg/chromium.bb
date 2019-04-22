@@ -1,2 +1,1 @@
 Result: load([object SVGImageElement])
-

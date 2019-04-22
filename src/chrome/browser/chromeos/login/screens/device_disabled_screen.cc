@@ -13,22 +13,20 @@
 
 namespace chromeos {
 
-DeviceDisabledScreen::DeviceDisabledScreen(
-    BaseScreenDelegate* base_screen_delegate,
-    DeviceDisabledScreenView* view)
-    : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_DEVICE_DISABLED),
-      view_(view),
-      device_disabling_manager_(
-          g_browser_process->platform_part()->device_disabling_manager()),
-      showing_(false) {
+namespace {
+system::DeviceDisablingManager* DeviceDisablingManager() {
+  return g_browser_process->platform_part()->device_disabling_manager();
+}
+}  // namespace
+
+DeviceDisabledScreen::DeviceDisabledScreen(DeviceDisabledScreenView* view)
+    : BaseScreen(OobeScreen::SCREEN_DEVICE_DISABLED), view_(view) {
   view_->SetDelegate(this);
-  device_disabling_manager_->AddObserver(this);
 }
 
 DeviceDisabledScreen::~DeviceDisabledScreen() {
   if (view_)
     view_->SetDelegate(nullptr);
-  device_disabling_manager_->RemoveObserver(this);
 }
 
 void DeviceDisabledScreen::Show() {
@@ -37,6 +35,9 @@ void DeviceDisabledScreen::Show() {
 
   showing_ = true;
   view_->Show();
+  DeviceDisablingManager()->AddObserver(this);
+  if (!DeviceDisablingManager()->disabled_message().empty())
+    view_->UpdateMessage(DeviceDisablingManager()->disabled_message());
 }
 
 void DeviceDisabledScreen::Hide() {
@@ -46,6 +47,7 @@ void DeviceDisabledScreen::Hide() {
 
   if (view_)
     view_->Hide();
+  DeviceDisablingManager()->RemoveObserver(this);
 }
 
 void DeviceDisabledScreen::OnViewDestroyed(DeviceDisabledScreenView* view) {
@@ -54,15 +56,15 @@ void DeviceDisabledScreen::OnViewDestroyed(DeviceDisabledScreenView* view) {
 }
 
 const std::string& DeviceDisabledScreen::GetEnrollmentDomain() const {
-  return device_disabling_manager_->enrollment_domain();
+  return DeviceDisablingManager()->enrollment_domain();
 }
 
 const std::string& DeviceDisabledScreen::GetMessage() const {
-  return device_disabling_manager_->disabled_message();
+  return DeviceDisablingManager()->disabled_message();
 }
 
 const std::string& DeviceDisabledScreen::GetSerialNumber() const {
-  return device_disabling_manager_->serial_number();
+  return DeviceDisablingManager()->serial_number();
 }
 
 void DeviceDisabledScreen::OnDisabledMessageChanged(

@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -42,6 +43,10 @@ class FeedLoggingMetrics {
   // depend on whether the user actually saw the cards.
   void OnPageShown(const int suggestions_count);
 
+  // The amount of time for the Feed to populate articles. This does not include
+  // time to render but time to populate data in the UI.
+  void OnPagePopulated(base::TimeDelta timeToPopulate);
+
   // Should only be called once per NTP for each suggestion.
   void OnSuggestionShown(int position,
                          base::Time publish_date,
@@ -56,7 +61,7 @@ class FeedLoggingMetrics {
                               base::Time publish_date,
                               float score);
 
-  void OnSuggestionDismissed(int position, const GURL& url);
+  void OnSuggestionDismissed(int position, const GURL& url, bool committed);
 
   void OnSuggestionSwiped();
 
@@ -71,13 +76,34 @@ class FeedLoggingMetrics {
 
   void OnMoreButtonClicked(int position);
 
-  void OnSpinnerShown(base::TimeDelta shown_time);
+  void OnNotInterestedInSource(int position, bool committed);
+
+  void OnNotInterestedInTopic(int position, bool committed);
+
+  void OnSpinnerStarted(int spinner_type);
+
+  void OnSpinnerFinished(base::TimeDelta shown_time, int spinner_type);
+
+  void OnSpinnerDestroyedWithoutCompleting(base::TimeDelta shown_time,
+                                           int spinner_type);
+
+  void OnPietFrameRenderingEvent(std::vector<int> piet_error_codes);
+
+  void OnInternalError(int internal_error);
+
+  void OnTokenCompleted(bool was_synthetic, int content_count, int token_count);
+
+  void OnTokenFailedToComplete(bool was_synthetic, int failure_count);
+
+  void OnServerRequest(int request_reason);
+
+  void OnZeroStateShown(int zero_state_show_reason);
+
+  void OnZeroStateRefreshCompleted(int new_content_count, int new_token_count);
 
   void ReportScrolledAfterOpen();
 
  private:
-  void CheckURLVisitedDone(int position, bool visited);
-
   const HistoryURLCheckCallback history_url_check_callback_;
 
   // Used to access current time, injected for testing.

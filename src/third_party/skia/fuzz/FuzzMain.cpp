@@ -5,10 +5,10 @@
  * found in the LICENSE file.
  */
 
+#include "CommandLineFlags.h"
 #include "Fuzz.h"
 #include "SkCanvas.h"
 #include "SkCodec.h"
-#include "SkCommandLineFlags.h"
 #include "SkData.h"
 #include "SkImage.h"
 #include "SkImageEncoder.h"
@@ -23,24 +23,20 @@
 #include "SkSurface.h"
 #include "SkTextBlob.h"
 
-#if SK_SUPPORT_GPU
-#include "SkSLCompiler.h"
-#endif
-
-#include "sk_tool_utils.h"
+#include "ToolUtils.h"
 
 #include <iostream>
 #include <map>
 #include <regex>
 #include <signal.h>
 
-DEFINE_string2(bytes, b, "", "A path to a file or a directory. If a file, the "
-        "contents will be used as the fuzz bytes. If a directory, all files "
-        "in the directory will be used as fuzz bytes for the fuzzer, one at a "
-        "time.");
-DEFINE_string2(name, n, "", "If --type is 'api', fuzz the API with this name.");
-DEFINE_string2(dump, d, "", "If not empty, dump 'image*' or 'skp' types as a "
-        "PNG with this name.");
+static DEFINE_string2(bytes, b, "", "A path to a file or a directory. If a file, the "
+                      "contents will be used as the fuzz bytes. If a directory, all files "
+                      "in the directory will be used as fuzz bytes for the fuzzer, one at a "
+                      "time.");
+static DEFINE_string2(name, n, "", "If --type is 'api', fuzz the API with this name.");
+static DEFINE_string2(dump, d, "", "If not empty, dump 'image*' or 'skp' types as a "
+                                   "PNG with this name.");
 DEFINE_bool2(verbose, v, false, "Print more information while fuzzing.");
 
 // This cannot be inlined in DEFINE_string2 due to interleaved ifdefs
@@ -60,12 +56,15 @@ static constexpr char g_type_message[] = "How to interpret --bytes, one of:\n"
                                          "region_set_path\n"
                                          "skp\n"
                                          "sksl2glsl\n"
+                                         "sksl2metal\n"
+                                         "sksl2pipeline\n"
+                                         "sksl2spirv\n"
 #if defined(SK_ENABLE_SKOTTIE)
                                          "skottie_json\n"
 #endif
                                          "textblob";
 
-DEFINE_string2(type, t, "", g_type_message);
+static DEFINE_string2(type, t, "", g_type_message);
 
 static int fuzz_file(SkString path, SkString type);
 static uint8_t calculate_option(SkData*);
@@ -84,24 +83,25 @@ static void fuzz_path_deserialize(sk_sp<SkData>);
 static void fuzz_region_deserialize(sk_sp<SkData>);
 static void fuzz_region_set_path(sk_sp<SkData>);
 static void fuzz_skp(sk_sp<SkData>);
+static void fuzz_sksl2glsl(sk_sp<SkData>);
+static void fuzz_sksl2metal(sk_sp<SkData>);
+static void fuzz_sksl2spirv(sk_sp<SkData>);
+static void fuzz_sksl2pipeline(sk_sp<SkData>);
 static void fuzz_textblob_deserialize(sk_sp<SkData>);
 
 static void print_api_names();
-
-#if SK_SUPPORT_GPU
-static void fuzz_sksl2glsl(sk_sp<SkData>);
-#endif
 
 #if defined(SK_ENABLE_SKOTTIE)
 static void fuzz_skottie_json(sk_sp<SkData>);
 #endif
 
 int main(int argc, char** argv) {
-    SkCommandLineFlags::SetUsage("Usage: fuzz -t <type> -b <path/to/file> [-n api-to-fuzz]\n"
-                                 "       fuzz -b <path/to/file>\n"
-                                 "--help lists the valid types. If type is not specified,\n"
-                                 "fuzz will make a guess based on the name of the file.\n");
-    SkCommandLineFlags::Parse(argc, argv);
+    CommandLineFlags::SetUsage(
+            "Usage: fuzz -t <type> -b <path/to/file> [-n api-to-fuzz]\n"
+            "       fuzz -b <path/to/file>\n"
+            "--help lists the valid types. If type is not specified,\n"
+            "fuzz will make a guess based on the name of the file.\n");
+    CommandLineFlags::Parse(argc, argv);
 
     SkString path = SkString(FLAGS_bytes.isEmpty() ? argv[0] : FLAGS_bytes[0]);
     SkString type = SkString(FLAGS_type.isEmpty() ? "" : FLAGS_type[0]);
@@ -207,18 +207,28 @@ static int fuzz_file(SkString path, SkString type) {
         fuzz_skp(bytes);
         return 0;
     }
-    if (type.equals("textblob")) {
-        fuzz_textblob_deserialize(bytes);
-        return 0;
-    }
-#if SK_SUPPORT_GPU
     if (type.equals("sksl2glsl")) {
         fuzz_sksl2glsl(bytes);
         return 0;
     }
-#endif
+    if (type.equals("sksl2metal")) {
+        fuzz_sksl2metal(bytes);
+        return 0;
+    }
+    if (type.equals("sksl2spirv")) {
+        fuzz_sksl2spirv(bytes);
+        return 0;
+    }
+    if (type.equals("sksl2pipeline")) {
+        fuzz_sksl2pipeline(bytes);
+        return 0;
+    }
+    if (type.equals("textblob")) {
+        fuzz_textblob_deserialize(bytes);
+        return 0;
+    }
     SkDebugf("Unknown type %s\n", type.c_str());
-    SkCommandLineFlags::PrintUsage();
+    CommandLineFlags::PrintUsage();
     return 1;
 }
 
@@ -250,6 +260,10 @@ static std::map<std::string, std::string> cf_map = {
     {"region_deserialize", "region_deserialize"},
     {"region_set_path", "region_set_path"},
     {"skjson", "json"},
+    {"sksl2glsl", "sksl2glsl"},
+    {"sksl2metal", "sksl2metal"},
+    {"sksl2spirv", "sksl2spirv"},
+    {"sksl2pipeline", "sksl2pipeline"},
 #if defined(SK_ENABLE_SKOTTIE)
     {"skottie_json", "skottie_json"},
 #endif
@@ -340,7 +354,7 @@ static void fuzz_api(sk_sp<SkData> bytes, SkString name) {
 
 static void dump_png(SkBitmap bitmap) {
     if (!FLAGS_dump.isEmpty()) {
-        sk_tool_utils::EncodeImageToFile(FLAGS_dump[0], bitmap, SkEncodedImageFormat::kPNG, 100);
+        ToolUtils::EncodeImageToFile(FLAGS_dump[0], bitmap, SkEncodedImageFormat::kPNG, 100);
         SkDebugf("Dumped to %s\n", FLAGS_dump[0]);
     }
 }
@@ -706,20 +720,42 @@ static void fuzz_filter_fuzz(sk_sp<SkData> bytes) {
     SkDebugf("[terminated] filter_fuzz didn't crash!\n");
 }
 
-#if SK_SUPPORT_GPU
+bool FuzzSKSL2GLSL(sk_sp<SkData> bytes);
+
 static void fuzz_sksl2glsl(sk_sp<SkData> bytes) {
-    SkSL::Compiler compiler;
-    SkSL::String output;
-    SkSL::Program::Settings settings;
-    sk_sp<GrShaderCaps> caps = SkSL::ShaderCapsFactory::Default();
-    settings.fCaps = caps.get();
-    std::unique_ptr<SkSL::Program> program = compiler.convertProgram(SkSL::Program::kFragment_Kind,
-                                                          SkSL::String((const char*) bytes->data()),
-                                                          settings);
-    if (!program || !compiler.toGLSL(*program, &output)) {
-        SkDebugf("[terminated] Couldn't compile input.\n");
-        return;
+    if (FuzzSKSL2GLSL(bytes)) {
+        SkDebugf("[terminated] Success! Compiled input to GLSL.\n");
+    } else {
+        SkDebugf("[terminated] Could not compile input to GLSL.\n");
     }
-    SkDebugf("[terminated] Success! Compiled input.\n");
 }
-#endif
+
+bool FuzzSKSL2SPIRV(sk_sp<SkData> bytes);
+
+static void fuzz_sksl2spirv(sk_sp<SkData> bytes) {
+    if (FuzzSKSL2SPIRV(bytes)) {
+        SkDebugf("[terminated] Success! Compiled input to SPIRV.\n");
+    } else {
+        SkDebugf("[terminated] Could not compile input to SPIRV.\n");
+    }
+}
+
+bool FuzzSKSL2Metal(sk_sp<SkData> bytes);
+
+static void fuzz_sksl2metal(sk_sp<SkData> bytes) {
+    if (FuzzSKSL2Metal(bytes)) {
+        SkDebugf("[terminated] Success! Compiled input to Metal.\n");
+    } else {
+        SkDebugf("[terminated] Could not compile input to Metal.\n");
+    }
+}
+
+bool FuzzSKSL2Pipeline(sk_sp<SkData> bytes);
+
+static void fuzz_sksl2pipeline(sk_sp<SkData> bytes) {
+    if (FuzzSKSL2Pipeline(bytes)) {
+        SkDebugf("[terminated] Success! Compiled input to pipeline stage.\n");
+    } else {
+        SkDebugf("[terminated] Could not compile input to pipeline stage.\n");
+    }
+}

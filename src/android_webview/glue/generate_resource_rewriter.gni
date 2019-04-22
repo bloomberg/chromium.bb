@@ -23,7 +23,7 @@ template("generate_resource_rewriter") {
 
   _final_target_name = target_name
   _build_config = "$target_gen_dir/${target_name}.build_config"
-  _build_config_target_name = "${target_name}__build_config"
+  _build_config_target_name = "$target_name$build_config_target_suffix"
   _srcjar = "$target_gen_dir/${target_name}.srcjar"
   write_build_config(_build_config_target_name) {
     possible_config_deps = invoker.deps

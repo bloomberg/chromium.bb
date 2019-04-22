@@ -14,20 +14,23 @@ import android.os.Build;
 import android.os.StrictMode;
 import android.os.SystemClock;
 import android.text.TextUtils;
+import android.text.format.DateUtils;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.FileUtils;
 import org.chromium.base.Log;
+import org.chromium.base.PackageUtils;
 import org.chromium.base.PathUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
+import org.chromium.base.task.BackgroundOnlyAsyncTask;
 import org.chromium.chrome.browser.document.DocumentUtils;
 import org.chromium.chrome.browser.metrics.WebApkUma;
+import org.chromium.webapk.lib.common.WebApkConstants;
 
 import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -65,7 +68,7 @@ public class WebappDirectoryManager {
     public void cleanUpDirectories(final Context context, final String currentWebappId) {
         if (mCleanupTask != null) return;
 
-        mCleanupTask = new AsyncTask<Void>() {
+        mCleanupTask = new BackgroundOnlyAsyncTask<Void>() {
             @Override
             protected final Void doInBackground() {
                 recordNumberOfStaleWebApkUpdateRequestFiles();
@@ -135,11 +138,20 @@ public class WebappDirectoryManager {
             }
         }
 
-        // Clean out web app directories no longer corresponding to tasks in Recents.
+        // Clean out web app directories which no longer correspond to a task in recents.
+        // Check if a WebAPK is installed to avoid an issue where
+        // {@link ActivityManager#getAppTasks()} does not return WebAPK tasks when
+        // WebApkActivity is not the root of the task (e.g. when the new-style splash screen
+        // is the root).
         files = webappBaseDirectory.listFiles();
         if (files != null) {
             for (File file : files) {
-                if (!liveWebapps.contains(file.getName())) directoriesToDelete.add(file);
+                String webApkPackageName = getWebApkPackageFromWebappDirectory(file);
+                if ((TextUtils.isEmpty(webApkPackageName)
+                            || !PackageUtils.isPackageInstalled(context, webApkPackageName))
+                        && !liveWebapps.contains(file.getName())) {
+                    directoriesToDelete.add(file);
+                }
             }
         }
     }
@@ -158,7 +170,7 @@ public class WebappDirectoryManager {
                     continue;
                 }
 
-                if (!storage.wasCheckForUpdatesDoneInLastMs(TimeUnit.DAYS.toMillis(1L))) {
+                if (!storage.wasCheckForUpdatesDoneInLastMs(DateUtils.DAY_IN_MILLIS)) {
                     ++count;
                 }
             }
@@ -176,17 +188,29 @@ public class WebappDirectoryManager {
         // Temporarily allowing disk access while fixing. TODO: http://crbug.com/525781
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
         try {
-            long time = SystemClock.elapsedRealtime();
+            long timeMs = SystemClock.elapsedRealtime();
             File webappDirectory = new File(getBaseWebappDirectory(context), webappId);
             if (!webappDirectory.exists() && !webappDirectory.mkdir()) {
                 Log.e(TAG, "Failed to create web app directory.");
             }
-            RecordHistogram.recordTimesHistogram("Android.StrictMode.WebappDir",
-                    SystemClock.elapsedRealtime() - time, TimeUnit.MILLISECONDS);
+            RecordHistogram.recordTimesHistogram(
+                    "Android.StrictMode.WebappDir", SystemClock.elapsedRealtime() - timeMs);
             return webappDirectory;
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
         }
+    }
+
+    /**
+     * Returns the WebAPK package name if the passed-in directory is for a WebAPK. Returns null
+     * otherwise.
+     */
+    private static String getWebApkPackageFromWebappDirectory(File directory) {
+        String name = directory.getName();
+        if (!name.startsWith(WebApkConstants.WEBAPK_ID_PREFIX)) {
+            return null;
+        }
+        return name.substring(WebApkConstants.WEBAPK_ID_PREFIX.length());
     }
 
     /** Returns the directory containing all of Chrome's web app data, creating it if needed. */

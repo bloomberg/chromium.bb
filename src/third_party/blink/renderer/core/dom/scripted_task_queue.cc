@@ -7,48 +7,25 @@
 #include <memory>
 #include <utility>
 
+#include "base/macros.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_task_queue_post_callback.h"
 #include "third_party/blink/renderer/core/dom/abort_signal.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
-namespace {
-
-class TaskQueuePostCallbackWrapper {
- public:
-  static std::unique_ptr<TaskQueuePostCallbackWrapper> Create(
-      int id,
-      ScriptedTaskQueue* task_queue) {
-    return std::unique_ptr<TaskQueuePostCallbackWrapper>(
-        new TaskQueuePostCallbackWrapper(id, task_queue));
-  }
-
-  void TaskFired() {
-    if (task_queue_)
-      task_queue_->CallbackFired(id_);
-  }
-
- private:
-  TaskQueuePostCallbackWrapper(int id, ScriptedTaskQueue* task_queue)
-      : id_(id), task_queue_(task_queue) {}
-
-  int id_;
-  WeakPersistent<ScriptedTaskQueue> task_queue_;
-};
-
-}  // namespace
-
 class ScriptedTaskQueue::WrappedCallback
-    : public GarbageCollected<WrappedCallback> {
-  WTF_MAKE_NONCOPYABLE(WrappedCallback);
-
+    : public GarbageCollectedFinalized<WrappedCallback> {
  public:
   WrappedCallback(V8TaskQueuePostCallback* callback,
-                  ScriptPromiseResolver* resolver)
-      : callback_(callback), resolver_(resolver) {}
+                  ScriptPromiseResolver* resolver,
+                  TaskHandle task_handle)
+      : callback_(callback),
+        resolver_(resolver),
+        task_handle_(std::move(task_handle)) {}
 
   void Trace(Visitor* visitor) {
     visitor->Trace(callback_);
@@ -63,21 +40,23 @@ class ScriptedTaskQueue::WrappedCallback
   void Reject() { resolver_->Reject(); }
 
  private:
-  TraceWrapperMember<V8TaskQueuePostCallback> callback_;
+  Member<V8TaskQueuePostCallback> callback_;
   Member<ScriptPromiseResolver> resolver_;
+  TaskHandle task_handle_;
+
+  DISALLOW_COPY_AND_ASSIGN(WrappedCallback);
 };
 
 ScriptedTaskQueue::ScriptedTaskQueue(ExecutionContext* context,
                                      TaskType task_type)
-    : PausableObject(context) {
+    : ContextLifecycleObserver(context) {
   task_runner_ = GetExecutionContext()->GetTaskRunner(task_type);
-  PauseIfNeeded();
 }
 
-void ScriptedTaskQueue::Trace(blink::Visitor* visitor) {
+void ScriptedTaskQueue::Trace(Visitor* visitor) {
   visitor->Trace(pending_tasks_);
   ScriptWrappable::Trace(visitor);
-  PausableObject::Trace(visitor);
+  ContextLifecycleObserver::Trace(visitor);
 }
 
 ScriptPromise ScriptedTaskQueue::postTask(ScriptState* script_state,
@@ -85,7 +64,7 @@ ScriptPromise ScriptedTaskQueue::postTask(ScriptState* script_state,
                                           AbortSignal* signal) {
   CallbackId id = next_callback_id_++;
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
 
   if (signal) {
     if (signal->aborted()) {
@@ -97,22 +76,17 @@ ScriptPromise ScriptedTaskQueue::postTask(ScriptState* script_state,
         WTF::Bind(&ScriptedTaskQueue::AbortTask, WrapPersistent(this), id));
   }
 
-  pending_tasks_.Set(id, new WrappedCallback(callback, resolver));
+  TaskHandle task_handle = PostCancellableTask(
+      *task_runner_, FROM_HERE,
+      WTF::Bind(&ScriptedTaskQueue::CallbackFired, WrapPersistent(this), id));
 
-  auto callback_wrapper = TaskQueuePostCallbackWrapper::Create(id, this);
-  task_runner_->PostTask(FROM_HERE,
-                         WTF::Bind(&TaskQueuePostCallbackWrapper::TaskFired,
-                                   std::move(callback_wrapper)));
+  pending_tasks_.Set(id, MakeGarbageCollected<WrappedCallback>(
+                             callback, resolver, std::move(task_handle)));
 
   return resolver->Promise();
 }
 
 void ScriptedTaskQueue::CallbackFired(CallbackId id) {
-  if (paused_) {
-    paused_tasks_.push_back(id);
-    return;
-  }
-
   auto task_iter = pending_tasks_.find(id);
   if (task_iter == pending_tasks_.end())
     return;
@@ -134,24 +108,6 @@ void ScriptedTaskQueue::AbortTask(CallbackId id) {
 
 void ScriptedTaskQueue::ContextDestroyed(ExecutionContext*) {
   pending_tasks_.clear();
-  paused_tasks_.clear();
-}
-
-void ScriptedTaskQueue::Pause() {
-  paused_ = true;
-}
-
-void ScriptedTaskQueue::Unpause() {
-  paused_ = false;
-
-  for (auto& task_id : paused_tasks_) {
-    auto callback_wrapper = TaskQueuePostCallbackWrapper::Create(task_id, this);
-    task_runner_->PostTask(FROM_HERE,
-                           WTF::Bind(&TaskQueuePostCallbackWrapper::TaskFired,
-                                     std::move(callback_wrapper)));
-  }
-
-  paused_tasks_.clear();
 }
 
 }  // namespace blink

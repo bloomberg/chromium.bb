@@ -24,17 +24,10 @@ enum AlphaType {
   UNPREMUL,
 };
 
-// Capture of the (simple) gamma of SkColorSpace. Need to eventually
-// serialize the actual colorspace object.
-enum ColorProfileType {
-  LINEAR,
-  SRGB,
-};
-
 struct ImageInfo {
   ColorType color_type;
   AlphaType alpha_type;
-  ColorProfileType profile_type;
+  array<uint8> serialized_color_space;  // Empty means "null" SkColorSpace.
   uint32 width;
   uint32 height;
 };

@@ -309,6 +309,13 @@ message LoginReputationClientRequest {
   // Content area width in DIPs. This field should only be filled for extended
   // reporting users.
   optional int32 content_area_width = 10;
+
+  // Visual features of the current page. This field should only be filled for
+  // extended reporting users.
+  optional VisualFeatures visual_features = 11;
+
+  // DOM features of the current page.
+  optional DomFeatures dom_features = 12;
 }
 
 // The message is used for client response for login reputation requests.
@@ -349,6 +356,78 @@ message LoginReputationClientResponse {
   // A token unique to each request which correlates response and post-warning
   // actions.
   optional bytes verdict_token = 5;
+}
+
+// This message encapsulates all the visual features of the current page.
+message VisualFeatures {
+  // One bin in a color histogram.
+  message ColorHistogramBin {
+    // The average x-coordinate of the pixels in this bin.
+    optional float centroid_x = 1;
+
+    // The average y-coordinate of the pixels in this bin.
+    optional float centroid_y = 2;
+
+    // The quantized R-value for this bin.
+    optional int32 quantized_r = 3;
+
+    // The quantized G-value for this bin.
+    optional int32 quantized_g = 4;
+
+    // The quantized B-value for this bin.
+    optional int32 quantized_b = 5;
+
+    // The normalized weight of this bin.
+    optional float weight = 6;
+  }
+
+  // Represents the color histogram of a login page.
+  message ColorHistogram { repeated ColorHistogramBin bins = 1; }
+
+  // Color histogram of the current page.
+  optional ColorHistogram color_histogram = 1;
+
+  // Represents the blurred, downsampled image of the login page.
+  message BlurredImage {
+    // The width of the image.
+    optional int32 width = 1;
+
+    // The height of the image.
+    optional int32 height = 2;
+
+    // The image data, stored in RGB order. This will have length
+    // 3*width*height. The bytes are stored in row-major order, starting from
+    // the top most row.
+    optional bytes data = 3;
+  }
+
+  // Blurred, downsampled image of the current page.
+  // Using Rec 2020 color space:
+  // https://en.wikipedia.org/wiki/Rec._2020
+  optional BlurredImage image = 2;
+}
+
+// This message encapsulates all the DOM features of the current page.
+message DomFeatures {
+  message Feature {
+    // Feature name. E.g., 'PageHasForms'
+    optional string name = 1;
+
+    // Feature value is always in the range [0.0, 1.0].  Boolean features
+    // have value 1.0.
+    optional double value = 2;
+  }
+
+  // List of features extracted.
+  repeated Feature feature_map = 1;
+
+  // List of shingle hashes we extracted.
+  repeated uint32 shingle_hashes = 2 [packed = true];
+
+  // The model version used to generate these hashes. This is copied from
+  // ClientSideModel.version(). The model sets the term list, which affects
+  // the feature extraction.
+  optional int32 model_version = 3;
 }
 
 message ClientMalwareResponse {
@@ -500,6 +579,8 @@ message ClientDownloadRequest {
     // .rar file that Chrome failed to unpack to the point of finding
     // executables or archives.
     INVALID_RAR = 13;
+    // Office Document or PDF.
+    DOCUMENT = 14;
   }
   optional DownloadType download_type = 10 [default = WIN_EXECUTABLE];
 
@@ -624,7 +705,16 @@ message ClientDownloadRequest {
   }
   repeated DetachedCodeSignature detached_code_signature = 59;
 
-  // next available tag number: 60;
+  // When this is set to true, we expect the server to provide heightened
+  // protection for Advanced Protection users.
+  optional bool request_ap_verdicts = 67;
+
+  // For archives files the number of files and directories contained within the
+  // archive.
+  optional int32 archive_file_count = 68;
+  optional int32 archive_directory_count = 69;
+
+  // next available tag number: 70;
 }
 
 message ReferrerChainOptions {
@@ -1042,7 +1132,7 @@ message DownloadMetadata {
 // A Detailed Safebrowsing Report from clients. Chrome safebrowsing reports are
 // only sent by Chrome users who have opted into extended Safe Browsing.
 // This proto is replacing ClientMalwareReportRequest.
-// Next tag: 24
+// Next tag: 26
 message ClientSafeBrowsingReportRequest {
   // Note: A lot of the "optional" fields would make sense to be
   // "required" instead.  However, having them as optional allows the
@@ -1064,6 +1154,7 @@ message ClientSafeBrowsingReportRequest {
     AD_SAMPLE = 14;
     URL_SUSPICIOUS = 15;
     BILLING = 16;
+    APK_DOWNLOAD = 17;
   }
 
   message HTTPHeader {
@@ -1121,7 +1212,12 @@ message ClientSafeBrowsingReportRequest {
 
   // URL of the page in the address bar.
   optional string url = 1;
+
+  // Must be set if the ReportType is not one of DANGEROUS_DOWNLOAD_RECOVERY,
+  // DANGEROUS_DOWNLOAD_WARNING, DANGEROUS_DOWNLOAD_BY_API,
+  // DANGEROUS_DOWNLOAD_OPENED, URL_PASSWORD_PROTECTION_PHISHING.
   optional string page_url = 2;
+
   optional string referrer_url = 3;
 
   repeated Resource resources = 4;
@@ -1184,6 +1280,27 @@ message ClientSafeBrowsingReportRequest {
   // order, i.e. event url comes first in this list, and landing referrer
   // comes last.
   repeated ReferrerChainEntry referrer_chain = 23;
+
+  message DownloadItemInfo {
+    // URL of the download payload.
+    optional string url = 1;
+
+    // This message contains various binary digests of the download payload.
+    message Digests { optional bytes sha256 = 1; }
+    optional Digests digests = 2;
+
+    // This is the length in bytes of the download payload.
+    optional int64 length = 3;
+
+    // Name of the file where the download would be stored if the
+    // download completes.  E.g., "bla.exe".
+    optional string file_basename = 4;
+  }
+
+  optional DownloadItemInfo download_item_info = 24;
+
+  // The SafetyNet ID of the Android device.
+  optional string safety_net_id = 25;
 }
 
 // An HTML Element on the page (eg: iframe, div, script, etc).
@@ -1208,36 +1325,6 @@ message HTMLElement {
     optional string value = 2;
   }
   repeated Attribute attribute = 6;
-}
-
-// Canonical representation of raster image data.
-message ImageData {
-  // Image bitmap, after downscaling to <= 512x512.
-  optional bytes data = 1;
-
-  // Encoding scheme for the bitmap.
-  optional string mime_type = 2;
-
-  message Dimensions {
-    optional int32 width = 1;
-    optional int32 height = 2;
-  }
-
-  // Dimensions of the image stored in |data|.
-  optional Dimensions dimensions = 3;
-  optional Dimensions original_dimensions = 4;  // iff downscaled
-}
-
-// Reporting protobuf for an image served as part of a browser notification.
-// There is no response (an empty body) to this request.
-message NotificationImageReportRequest {
-  optional string notification_origin = 1;  // Src-origin of the notification.
-  optional ImageData image = 2;             // The bitmap of the image.
-
-  // Note that the image URL is deliberately omitted as it would be untrusted,
-  // since the notification image fetch may be intercepted by a Service Worker
-  // (even if the image URL is cross-origin). Otherwise a website could mislead
-  // Safe Browsing into associating phishing image bitmaps with safe image URLs.
 }
 
 // Protobuf for Chrome extension webstore install request.

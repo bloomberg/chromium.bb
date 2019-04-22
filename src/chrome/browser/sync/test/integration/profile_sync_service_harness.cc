@@ -27,7 +27,7 @@
 #include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/cpp/identity_test_utils.h"
 
-using browser_sync::ProfileSyncService;
+using syncer::ProfileSyncService;
 using syncer::SyncCycleSnapshot;
 
 namespace {
@@ -64,28 +64,39 @@ class EngineInitializeChecker : public SingleClientStatusChangeChecker {
 
 class SyncSetupChecker : public SingleClientStatusChangeChecker {
  public:
-  explicit SyncSetupChecker(ProfileSyncService* service)
-      : SingleClientStatusChangeChecker(service) {}
+  enum class State { kTransportActive, kFeatureActive };
+
+  SyncSetupChecker(ProfileSyncService* service, State wait_for_state)
+      : SingleClientStatusChangeChecker(service),
+        wait_for_state_(wait_for_state) {}
 
   bool IsExitConditionSatisfied() override {
-    syncer::SyncService::TransportState state = service()->GetTransportState();
-    if (state == syncer::SyncService::TransportState::ACTIVE)
+    syncer::SyncService::TransportState transport_state =
+        service()->GetTransportState();
+    if (transport_state == syncer::SyncService::TransportState::ACTIVE &&
+        (wait_for_state_ != State::kFeatureActive ||
+         service()->IsSyncFeatureActive())) {
       return true;
+    }
     // Sync is blocked by an auth error.
-    if (HasAuthError(service()))
+    if (HasAuthError(service())) {
       return true;
-    if (state != syncer::SyncService::TransportState::CONFIGURING)
-      return false;
-    // Sync is blocked because a custom passphrase is required.
-    if (service()->passphrase_required_reason_for_test() ==
+    }
+    if (service()->GetPassphraseRequiredReasonForTest() ==
         syncer::REASON_DECRYPTION) {
-      return true;
+      LOG(FATAL)
+          << "A passphrase is required for decryption but was not provided. "
+             "Waiting for sync to become available won't succeed. Make sure "
+             "to pass it when setting up sync.";
     }
     // Still waiting on sync setup.
     return false;
   }
 
   std::string GetDebugMessage() const override { return "Sync Setup"; }
+
+ private:
+  const State wait_for_state_;
 };
 
 }  // namespace
@@ -106,7 +117,8 @@ ProfileSyncServiceHarness::ProfileSyncServiceHarness(
     const std::string& password,
     SigninType signin_type)
     : profile_(profile),
-      service_(ProfileSyncServiceFactory::GetForProfile(profile)),
+      service_(ProfileSyncServiceFactory::GetAsProfileSyncServiceForProfile(
+          profile)),
       username_(username),
       password_(password),
       signin_type_(signin_type),
@@ -170,8 +182,21 @@ void ProfileSyncServiceHarness::SignOutPrimaryAccount() {
 }
 #endif  // !OS_CHROMEOS
 
+void ProfileSyncServiceHarness::EnterSyncPausedStateForPrimaryAccount() {
+  DCHECK(service_->IsSyncFeatureActive());
+  identity::SetInvalidRefreshTokenForPrimaryAccount(
+      IdentityManagerFactory::GetForProfile(profile_));
+}
+
+void ProfileSyncServiceHarness::ExitSyncPausedStateForPrimaryAccount() {
+  identity::SetRefreshTokenForPrimaryAccount(
+      IdentityManagerFactory::GetForProfile(profile_));
+}
+
 bool ProfileSyncServiceHarness::SetupSync() {
-  bool result = SetupSync(syncer::UserSelectableTypes());
+  bool result =
+      SetupSyncNoWaitForCompletion(syncer::UserSelectableTypeSet::All()) &&
+      AwaitSyncSetupCompletion();
   if (!result) {
     LOG(ERROR) << profile_debug_name_ << ": SetupSync failed. Syncer status:\n"
                << GetServiceStatus();
@@ -181,61 +206,34 @@ bool ProfileSyncServiceHarness::SetupSync() {
   return result;
 }
 
-bool ProfileSyncServiceHarness::SetupSyncForClearingServerData() {
-  bool result = SetupSyncImpl(syncer::UserSelectableTypes(),
-                              /*skip_passphrase_verification=*/true,
-                              /*encryption_passphrase=*/base::nullopt);
-  if (!result) {
-    LOG(ERROR) << profile_debug_name_
-               << ": SetupSyncForClear failed. Syncer status:\n"
-               << GetServiceStatus();
-  } else {
-    DVLOG(1) << profile_debug_name_ << ": SetupSyncForClear successful.";
-  }
-  return result;
-}
-
-bool ProfileSyncServiceHarness::SetupSync(
-    syncer::ModelTypeSet synced_datatypes) {
-  return SetupSyncImpl(synced_datatypes, /*skip_passphrase_verification=*/false,
+bool ProfileSyncServiceHarness::SetupSyncNoWaitForCompletion(
+    syncer::UserSelectableTypeSet selected_types) {
+  return SetupSyncImpl(selected_types, EncryptionSetupMode::kNoEncryption,
                        /*encryption_passphrase=*/base::nullopt);
 }
 
-bool ProfileSyncServiceHarness::SetupSyncWithEncryptionPassphrase(
-    syncer::ModelTypeSet synced_datatypes,
-    const std::string& passphrase) {
-  return SetupSyncImpl(synced_datatypes, /*skip_passphrase_verification=*/false,
+bool ProfileSyncServiceHarness::
+    SetupSyncWithEncryptionPassphraseNoWaitForCompletion(
+        syncer::UserSelectableTypeSet selected_types,
+        const std::string& passphrase) {
+  return SetupSyncImpl(selected_types, EncryptionSetupMode::kEncryption,
                        passphrase);
 }
 
-bool ProfileSyncServiceHarness::SetupSyncWithDecryptionPassphrase(
-    syncer::ModelTypeSet synced_datatypes,
-    const std::string& passphrase) {
-  if (!SetupSyncImpl(synced_datatypes, /*skip_passphrase_verification=*/true,
-                     /*encryption_passphrase=*/base::nullopt)) {
-    return false;
-  }
-
-  DVLOG(1) << "Setting decryption passphrase.";
-  if (!service_->GetUserSettings()->SetDecryptionPassphrase(passphrase)) {
-    // This is not a fatal failure, as some tests intentionally pass an
-    // incorrect passphrase. If this happens, Sync will be set up but will have
-    // encountered cryptographer errors for the passphrase-encrypted datatypes.
-    LOG(INFO) << "SetDecryptionPassphrase() failed.";
-  }
-  // Since SetupSyncImpl() was called with skip_passphrase_verification == true,
-  // it will not have called FinishSyncSetup(). FinishSyncSetup() is in charge
-  // of calling ProfileSyncService::SetFirstSetupComplete(), and without that,
-  // Sync will still be in setup mode and Sync-the-feature will be disabled.
-  // Therefore, we call FinishSyncSetup() here explicitly.
-  FinishSyncSetup();
-  return true;
+bool ProfileSyncServiceHarness::
+    SetupSyncWithDecryptionPassphraseNoWaitForCompletion(
+        syncer::UserSelectableTypeSet selected_types,
+        const std::string& passphrase) {
+  return SetupSyncImpl(selected_types, EncryptionSetupMode::kDecryption,
+                       passphrase);
 }
 
 bool ProfileSyncServiceHarness::SetupSyncImpl(
-    syncer::ModelTypeSet synced_datatypes,
-    bool skip_passphrase_verification,
-    const base::Optional<std::string>& encryption_passphrase) {
+    syncer::UserSelectableTypeSet selected_types,
+    EncryptionSetupMode encryption_mode,
+    const base::Optional<std::string>& passphrase) {
+  DCHECK(encryption_mode == EncryptionSetupMode::kNoEncryption ||
+         passphrase.has_value());
   DCHECK(!profile_->IsLegacySupervised())
       << "SetupSync should not be used for legacy supervised users.";
 
@@ -255,26 +253,27 @@ bool ProfileSyncServiceHarness::SetupSyncImpl(
   // Now that auth is completed, request that sync actually start.
   service()->GetUserSettings()->SetSyncRequested(true);
 
-  if (!AwaitEngineInitialization(skip_passphrase_verification)) {
+  if (!AwaitEngineInitialization()) {
     return false;
   }
   // Choose the datatypes to be synced. If all datatypes are to be synced,
   // set sync_everything to true; otherwise, set it to false.
-  bool sync_everything = (synced_datatypes == syncer::UserSelectableTypes());
-  service()->GetUserSettings()->SetChosenDataTypes(sync_everything,
-                                                   synced_datatypes);
+  bool sync_everything =
+      (selected_types == syncer::UserSelectableTypeSet::All());
+  service()->GetUserSettings()->SetSelectedTypes(sync_everything,
+                                                 selected_types);
 
-  if (encryption_passphrase.has_value()) {
-    service()->GetUserSettings()->SetEncryptionPassphrase(
-        encryption_passphrase.value());
+  if (encryption_mode == EncryptionSetupMode::kEncryption) {
+    service()->GetUserSettings()->SetEncryptionPassphrase(passphrase.value());
+  } else if (encryption_mode == EncryptionSetupMode::kDecryption) {
+    if (!service()->GetUserSettings()->SetDecryptionPassphrase(
+            passphrase.value())) {
+      LOG(ERROR) << "WARNING: provided passphrase could not decrypt locally "
+                    "present data.";
+    }
   }
-
   // Notify ProfileSyncService that we are done with configuration.
-  if (skip_passphrase_verification) {
-    sync_blocker_.reset();
-  } else {
-    FinishSyncSetup();
-  }
+  FinishSyncSetup();
 
   if ((signin_type_ == SigninType::UI_SIGNIN) &&
       !login_ui_test_utils::DismissSyncConfirmationDialog(
@@ -294,18 +293,6 @@ bool ProfileSyncServiceHarness::SetupSyncImpl(
         LoginUIService::SYNC_WITH_DEFAULT_SETTINGS);
   }
 
-  if (!skip_passphrase_verification &&
-      service()->GetUserSettings()->IsUsingSecondaryPassphrase()) {
-    LOG(ERROR) << "A passphrase is required for decryption. Sync cannot proceed"
-                  " until SetDecryptionPassphrase is called.";
-    return false;
-  }
-
-  // Wait for initial sync cycle to be completed.
-  if (!AwaitSyncSetupCompletion(skip_passphrase_verification)) {
-    return false;
-  }
-
   return true;
 }
 
@@ -314,10 +301,14 @@ void ProfileSyncServiceHarness::FinishSyncSetup() {
   service()->GetUserSettings()->SetFirstSetupComplete();
 }
 
-void ProfileSyncServiceHarness::StopSyncService(
-    syncer::SyncService::SyncStopDataFate data_fate) {
-  DVLOG(1) << "Requesting stop for service.";
-  service()->RequestStop(data_fate);
+void ProfileSyncServiceHarness::StopSyncServiceAndClearData() {
+  DVLOG(1) << "Requesting stop for service and clearing data.";
+  service()->StopAndClear();
+}
+
+void ProfileSyncServiceHarness::StopSyncServiceWithoutClearingData() {
+  DVLOG(1) << "Requesting stop for service without clearing data.";
+  service()->GetUserSettings()->SetSyncRequested(false);
 }
 
 bool ProfileSyncServiceHarness::StartSyncService() {
@@ -342,7 +333,7 @@ bool ProfileSyncServiceHarness::StartSyncService() {
   blocker.reset();
   service()->GetUserSettings()->SetFirstSetupComplete();
 
-  if (!AwaitSyncSetupCompletion(/*skip_passphrase_verification=*/false)) {
+  if (!AwaitSyncSetupCompletion()) {
     LOG(FATAL) << "AwaitSyncSetupCompletion failed.";
     return false;
   }
@@ -384,8 +375,7 @@ bool ProfileSyncServiceHarness::AwaitQuiescence(
   return QuiesceStatusChangeChecker(services).Wait();
 }
 
-bool ProfileSyncServiceHarness::AwaitEngineInitialization(
-    bool skip_passphrase_verification) {
+bool ProfileSyncServiceHarness::AwaitEngineInitialization() {
   if (!EngineInitializeChecker(service()).Wait()) {
     LOG(ERROR) << "EngineInitializeChecker timed out.";
     return false;
@@ -396,15 +386,6 @@ bool ProfileSyncServiceHarness::AwaitEngineInitialization(
     return false;
   }
 
-  // Make sure that initial sync wasn't blocked by a missing passphrase.
-  if (!skip_passphrase_verification &&
-      service()->passphrase_required_reason_for_test() ==
-          syncer::REASON_DECRYPTION) {
-    LOG(ERROR) << "A passphrase is required for decryption. Sync cannot proceed"
-                  " until SetDecryptionPassphrase is called.";
-    return false;
-  }
-
   if (HasAuthError(service())) {
     LOG(ERROR) << "Credentials were rejected. Sync cannot proceed.";
     return false;
@@ -413,23 +394,16 @@ bool ProfileSyncServiceHarness::AwaitEngineInitialization(
   return true;
 }
 
-bool ProfileSyncServiceHarness::AwaitSyncSetupCompletion(
-    bool skip_passphrase_verification) {
-  if (!SyncSetupChecker(service()).Wait()) {
+bool ProfileSyncServiceHarness::AwaitSyncSetupCompletion() {
+  CHECK(service()->GetUserSettings()->IsFirstSetupComplete())
+      << "Waiting for setup completion can only succeed after the first setup "
+      << "got marked complete. Did you call SetupSync on this client?";
+  if (!SyncSetupChecker(service(), SyncSetupChecker::State::kFeatureActive)
+           .Wait()) {
     LOG(ERROR) << "SyncSetupChecker timed out.";
     return false;
   }
-
-  // If passphrase verification is not skipped, make sure that initial sync
-  // wasn't blocked by a missing passphrase.
-  if (!skip_passphrase_verification &&
-      service()->passphrase_required_reason_for_test() ==
-          syncer::REASON_DECRYPTION) {
-    LOG(ERROR) << "A passphrase is required for decryption. Sync cannot proceed"
-                  " until SetDecryptionPassphrase is called.";
-    return false;
-  }
-
+  // Signal an error if the initial sync wasn't successful.
   if (HasAuthError(service())) {
     LOG(ERROR) << "Credentials were rejected. Sync cannot proceed.";
     return false;
@@ -438,86 +412,88 @@ bool ProfileSyncServiceHarness::AwaitSyncSetupCompletion(
   return true;
 }
 
-bool ProfileSyncServiceHarness::EnableSyncForDatatype(
-    syncer::ModelType datatype) {
+bool ProfileSyncServiceHarness::AwaitSyncTransportActive() {
+  if (!SyncSetupChecker(service(), SyncSetupChecker::State::kTransportActive)
+           .Wait()) {
+    LOG(ERROR) << "SyncSetupChecker timed out.";
+    return false;
+  }
+  // Signal an error if the initial sync wasn't successful.
+  if (HasAuthError(service())) {
+    LOG(ERROR) << "Credentials were rejected. Sync cannot proceed.";
+    return false;
+  }
+
+  return true;
+}
+
+bool ProfileSyncServiceHarness::EnableSyncForType(
+    syncer::UserSelectableType type) {
   DVLOG(1) << GetClientInfoString(
-      "EnableSyncForDatatype("
-      + std::string(syncer::ModelTypeToString(datatype)) + ")");
+      "EnableSyncForType(" +
+      std::string(syncer::GetUserSelectableTypeName(type)) + ")");
 
   if (!IsSyncEnabledByUser()) {
-    bool result = SetupSync(syncer::ModelTypeSet(datatype));
+    bool result =
+        SetupSyncNoWaitForCompletion({type}) && AwaitSyncSetupCompletion();
     // If SetupSync() succeeded, then Sync must now be enabled.
     DCHECK(!result || IsSyncEnabledByUser());
     return result;
   }
 
   if (service() == nullptr) {
-    LOG(ERROR) << "EnableSyncForDatatype(): service() is null.";
+    LOG(ERROR) << "EnableSyncForType(): service() is null.";
     return false;
   }
 
-  if (!syncer::UserSelectableTypes().Has(datatype)) {
-    LOG(ERROR) << "Can only enable user selectable types, requested "
-               << syncer::ModelTypeToString(datatype);
-    return false;
-  }
-
-  syncer::ModelTypeSet synced_datatypes =
-      service()->GetUserSettings()->GetChosenDataTypes();
-  if (synced_datatypes.Has(datatype)) {
-    DVLOG(1) << "EnableSyncForDatatype(): Sync already enabled for datatype "
-             << syncer::ModelTypeToString(datatype)
-             << " on " << profile_debug_name_ << ".";
+  syncer::UserSelectableTypeSet selected_types =
+      service()->GetUserSettings()->GetSelectedTypes();
+  if (selected_types.Has(type)) {
+    DVLOG(1) << "EnableSyncForType(): Sync already enabled for type "
+             << syncer::GetUserSelectableTypeName(type) << " on "
+             << profile_debug_name_ << ".";
     return true;
   }
 
-  synced_datatypes.Put(syncer::ModelTypeFromInt(datatype));
-  synced_datatypes.RetainAll(syncer::UserSelectableTypes());
-  service()->GetUserSettings()->SetChosenDataTypes(false, synced_datatypes);
-  if (AwaitSyncSetupCompletion(/*skip_passphrase_verification=*/false)) {
-    DVLOG(1) << "EnableSyncForDatatype(): Enabled sync for datatype "
-             << syncer::ModelTypeToString(datatype)
-             << " on " << profile_debug_name_ << ".";
+  selected_types.Put(type);
+  service()->GetUserSettings()->SetSelectedTypes(false, selected_types);
+  if (AwaitSyncSetupCompletion()) {
+    DVLOG(1) << "EnableSyncForType(): Enabled sync for type "
+             << syncer::GetUserSelectableTypeName(type) << " on "
+             << profile_debug_name_ << ".";
     return true;
   }
 
-  DVLOG(0) << GetClientInfoString("EnableSyncForDatatype failed");
+  DVLOG(0) << GetClientInfoString("EnableSyncForType failed");
   return false;
 }
 
-bool ProfileSyncServiceHarness::DisableSyncForDatatype(
-    syncer::ModelType datatype) {
+bool ProfileSyncServiceHarness::DisableSyncForType(
+    syncer::UserSelectableType type) {
   DVLOG(1) << GetClientInfoString(
-      "DisableSyncForDatatype("
-      + std::string(syncer::ModelTypeToString(datatype)) + ")");
+      "DisableSyncForType(" +
+      std::string(syncer::GetUserSelectableTypeName(type)) + ")");
 
   if (service() == nullptr) {
-    LOG(ERROR) << "DisableSyncForDatatype(): service() is null.";
+    LOG(ERROR) << "DisableSyncForType(): service() is null.";
     return false;
   }
 
-  if (!syncer::UserSelectableTypes().Has(datatype)) {
-    LOG(ERROR) << "Can only disable user selectable types, requested "
-               << syncer::ModelTypeToString(datatype);
-    return false;
-  }
-
-  syncer::ModelTypeSet synced_datatypes =
-      service()->GetUserSettings()->GetChosenDataTypes();
-  if (!synced_datatypes.Has(datatype)) {
-    DVLOG(1) << "DisableSyncForDatatype(): Sync already disabled for datatype "
-             << syncer::ModelTypeToString(datatype)
-             << " on " << profile_debug_name_ << ".";
+  syncer::UserSelectableTypeSet selected_types =
+      service()->GetUserSettings()->GetSelectedTypes();
+  if (!selected_types.Has(type)) {
+    DVLOG(1) << "DisableSyncForType(): Sync already disabled for type "
+             << syncer::GetUserSelectableTypeName(type) << " on "
+             << profile_debug_name_ << ".";
     return true;
   }
 
-  synced_datatypes.RetainAll(syncer::UserSelectableTypes());
-  synced_datatypes.Remove(datatype);
-  service()->GetUserSettings()->SetChosenDataTypes(false, synced_datatypes);
-  if (AwaitSyncSetupCompletion(/*skip_passphrase_verification=*/false)) {
-    DVLOG(1) << "DisableSyncForDatatype(): Disabled sync for datatype "
-             << syncer::ModelTypeToString(datatype)
-             << " on " << profile_debug_name_ << ".";
+  selected_types.Remove(type);
+  service()->GetUserSettings()->SetSelectedTypes(false, selected_types);
+  if (AwaitSyncSetupCompletion()) {
+    DVLOG(1) << "DisableSyncForType(): Disabled sync for type "
+             << syncer::GetUserSelectableTypeName(type) << " on "
+             << profile_debug_name_ << ".";
     return true;
   }
 
@@ -540,10 +516,10 @@ bool ProfileSyncServiceHarness::EnableSyncForAllDatatypes() {
     return false;
   }
 
-  service()->GetUserSettings()->SetChosenDataTypes(
-      true, syncer::UserSelectableTypes());
+  service()->GetUserSettings()->SetSelectedTypes(
+      true, syncer::UserSelectableTypeSet::All());
 
-  if (AwaitSyncSetupCompletion(/*skip_passphrase_verification=*/false)) {
+  if (AwaitSyncSetupCompletion()) {
     DVLOG(1) << "EnableSyncForAllDatatypes(): Enabled sync for all datatypes "
              << "on " << profile_debug_name_ << ".";
     return true;
@@ -561,7 +537,7 @@ bool ProfileSyncServiceHarness::DisableSyncForAllDatatypes() {
     return false;
   }
 
-  service()->RequestStop(ProfileSyncService::CLEAR_DATA);
+  service()->StopAndClear();
 
   DVLOG(1) << "DisableSyncForAllDatatypes(): Disabled sync for all "
            << "datatypes on " << profile_debug_name_;
@@ -571,7 +547,7 @@ bool ProfileSyncServiceHarness::DisableSyncForAllDatatypes() {
 SyncCycleSnapshot ProfileSyncServiceHarness::GetLastCycleSnapshot() const {
   DCHECK(service() != nullptr) << "Sync service has not yet been set up.";
   if (service()->IsSyncFeatureActive()) {
-    return service()->GetLastCycleSnapshot();
+    return service()->GetLastCycleSnapshotForDebugging();
   }
   return SyncCycleSnapshot();
 }
@@ -595,7 +571,7 @@ std::string ProfileSyncServiceHarness::GetClientInfoString(
   if (service()) {
     const SyncCycleSnapshot& snap = GetLastCycleSnapshot();
     syncer::SyncStatus status;
-    service()->QueryDetailedSyncStatus(&status);
+    service()->QueryDetailedSyncStatusForDebugging(&status);
     // Capture select info from the sync session snapshot and syncer status.
     os << ", has_unsynced_items: " << snap.has_remaining_local_changes()
        << ", did_commit: "
@@ -609,7 +585,7 @@ std::string ProfileSyncServiceHarness::GetClientInfoString(
        << snap.model_neutral_state().num_updates_downloaded_total
        << ", passphrase_required_reason: "
        << syncer::PassphraseRequiredReasonToString(
-              service()->passphrase_required_reason_for_test())
+              service()->GetPassphraseRequiredReasonForTest())
        << ", notifications_enabled: " << status.notifications_enabled
        << ", service_is_active: " << service()->IsSyncFeatureActive();
   } else {

@@ -16,7 +16,6 @@
 #define DAWNNATIVE_SHADERMODULE_H_
 
 #include "common/Constants.h"
-#include "dawn_native/Builder.h"
 #include "dawn_native/Error.h"
 #include "dawn_native/Forward.h"
 #include "dawn_native/ObjectBase.h"
@@ -39,6 +38,8 @@ namespace dawn_native {
     class ShaderModuleBase : public ObjectBase {
       public:
         ShaderModuleBase(DeviceBase* device, const ShaderModuleDescriptor* descriptor);
+
+        static ShaderModuleBase* MakeError(DeviceBase* device);
 
         void ExtractSpirvInfo(const spirv_cross::Compiler& compiler);
 
@@ -68,6 +69,8 @@ namespace dawn_native {
         bool IsCompatibleWithPipelineLayout(const PipelineLayoutBase* layout);
 
       private:
+        ShaderModuleBase(DeviceBase* device, ObjectBase::ErrorTag tag);
+
         bool IsCompatibleWithBindGroupLayout(size_t group, const BindGroupLayoutBase* layout);
 
         PushConstantInfo mPushConstants = {};

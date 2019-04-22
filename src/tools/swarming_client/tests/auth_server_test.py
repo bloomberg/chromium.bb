@@ -4,6 +4,7 @@
 # that can be found in the LICENSE file.
 
 import contextlib
+import httplib
 import json
 import logging
 import os
@@ -345,7 +346,7 @@ class LocalAuthHttpServiceTest(auto_stub.TestCase):
     sock.close()
     with local_auth_server(token_gen, 'acc_1', rpc_port=port):
       service = self.mocked_http_service(perform_request=handle_request)
-      with self.assertRaises(socket.error):
+      with self.assertRaises(httplib.ResponseNotReady):
         self.assertRaises(service.request(request_url, data={}).read())
 
   def test_expired_token(self):

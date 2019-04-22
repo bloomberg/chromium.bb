@@ -67,10 +67,10 @@ class WebPepperSocketImpl final : public WebPepperSocket {
   void DidReceiveTextMessage(const String& payload);
   void DidReceiveBinaryMessage(std::unique_ptr<Vector<char>> payload);
   void DidError();
-  void DidConsumeBufferedAmount(unsigned long consumed);
+  void DidConsumeBufferedAmount(uint64_t consumed);
   void DidStartClosingHandshake();
   void DidClose(WebSocketChannelClient::ClosingHandshakeCompletionStatus,
-                unsigned short code,
+                uint16_t code,
                 const String& reason);
 
  private:
@@ -80,8 +80,8 @@ class WebPepperSocketImpl final : public WebPepperSocket {
   WebString subprotocol_;
   bool is_closing_or_closed_;
   // |buffered_amount_| includes |buffered_amount_after_close_|.
-  unsigned long buffered_amount_;
-  unsigned long buffered_amount_after_close_;
+  uint64_t buffered_amount_;
+  uint64_t buffered_amount_after_close_;
 };
 
 }  // namespace blink

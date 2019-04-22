@@ -25,8 +25,12 @@ class NetExportTabHelper : public web::WebStateUserData<NetExportTabHelper> {
   void ShowMailComposer(ShowMailComposerContext* context);
 
  private:
+  friend class web::WebStateUserData<NetExportTabHelper>;
+
   explicit NetExportTabHelper(id<NetExportTabHelperDelegate> delegate);
   __weak id<NetExportTabHelperDelegate> delegate_;
+
+  WEB_STATE_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(NetExportTabHelper);
 };

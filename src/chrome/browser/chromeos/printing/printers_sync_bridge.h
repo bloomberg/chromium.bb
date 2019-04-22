@@ -46,7 +46,7 @@ class PrintersSyncBridge : public syncer::ModelTypeSyncBridge {
   std::string GetClientTag(const syncer::EntityData& entity_data) override;
   std::string GetStorageKey(const syncer::EntityData& entity_data) override;
   syncer::ConflictResolution ResolveConflict(
-      const syncer::EntityData& local_data,
+      const std::string& storage_key,
       const syncer::EntityData& remote_data) const override;
 
   // Stores a |printer|.  Overwrites a printer with a matching id if it exists.

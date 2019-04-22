@@ -34,12 +34,7 @@
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
-#include "third_party/blink/renderer/core/editing/iterators/backwards_character_iterator.h"
-#include "third_party/blink/renderer/core/editing/iterators/backwards_text_buffer.h"
 #include "third_party/blink/renderer/core/editing/iterators/character_iterator.h"
-#include "third_party/blink/renderer/core/editing/iterators/forwards_text_buffer.h"
-#include "third_party/blink/renderer/core/editing/iterators/simplified_backwards_text_iterator.h"
-#include "third_party/blink/renderer/core/editing/iterators/text_iterator.h"
 #include "third_party/blink/renderer/core/editing/local_caret_rect.h"
 #include "third_party/blink/renderer/core/editing/position.h"
 #include "third_party/blink/renderer/core/editing/position_iterator.h"
@@ -689,11 +684,11 @@ static PositionTemplate<Strategy> MostBackwardCaretPosition(
       continue;
     const unsigned text_start_offset = text_layout_object->TextStartOffset();
     if (current_node != start_node) {
-      // This assertion fires in layout tests in the case-transform.html test
+      // This assertion fires in web tests in the case-transform.html test
       // because of a mix-up between offsets in the text in the DOM tree with
       // text in the layout tree which can have a different length due to case
       // transformation.
-      // Until we resolve that, disable this so we can run the layout tests!
+      // Until we resolve that, disable this so we can run the web tests!
       // DCHECK_GE(currentOffset, layoutObject->caretMaxOffset());
       return PositionTemplate<Strategy>(
           current_node, layout_object->CaretMaxOffset() + text_start_offset);
@@ -936,9 +931,10 @@ static bool IsVisuallyEquivalentCandidateAlgorithm(
   if (!layout_object->IsSelectable())
     return false;
 
-  if (layout_object->IsLayoutBlockFlow() || layout_object->IsFlexibleBox() ||
+  if (layout_object->IsLayoutBlockFlow() ||
+      layout_object->IsFlexibleBoxIncludingNG() ||
       layout_object->IsLayoutGrid()) {
-    if (ToLayoutBlock(layout_object)->LogicalHeight() ||
+    if (To<LayoutBlock>(layout_object)->LogicalHeight() ||
         anchor_node->GetDocument().body() == anchor_node) {
       if (!HasRenderedNonAnonymousDescendantsWithHeight(layout_object))
         return position.AtFirstEditingPositionForNode();

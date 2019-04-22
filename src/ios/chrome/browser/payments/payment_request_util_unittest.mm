@@ -21,67 +21,70 @@ using PaymentRequestUtilTest = PlatformTest;
 // Tests that serializing a default PaymentResponse yields the expected result.
 TEST_F(PaymentRequestUtilTest,
        PaymentResponseToDictionaryValue_EmptyResponseDictionary) {
-  base::DictionaryValue expected_value;
+  base::Value expected_value(base::Value::Type::DICTIONARY);
 
-  expected_value.SetString("requestId", "");
-  expected_value.SetString("methodName", "");
-  expected_value.Set("details", std::make_unique<base::Value>());
-  expected_value.Set("shippingAddress", std::make_unique<base::Value>());
-  expected_value.SetString("shippingOption", "");
-  expected_value.SetString("payerName", "");
-  expected_value.SetString("payerEmail", "");
-  expected_value.SetString("payerPhone", "");
+  expected_value.SetKey("requestId", base::Value(base::Value::Type::STRING));
+  expected_value.SetKey("methodName", base::Value(base::Value::Type::STRING));
+  expected_value.SetKey("details", base::Value());
+  expected_value.SetKey("shippingAddress", base::Value());
+  expected_value.SetKey("shippingOption",
+                        base::Value(base::Value::Type::STRING));
+  expected_value.SetKey("payerName", base::Value(base::Value::Type::STRING));
+  expected_value.SetKey("payerEmail", base::Value(base::Value::Type::STRING));
+  expected_value.SetKey("payerPhone", base::Value(base::Value::Type::STRING));
 
   payments::PaymentResponse payment_response;
-  EXPECT_TRUE(expected_value.Equals(
-      PaymentResponseToDictionaryValue(payment_response).get()));
+  EXPECT_EQ(expected_value, PaymentResponseToValue(payment_response));
 }
 
 // Tests that serializing a populated PaymentResponse yields the expected
 // result.
 TEST_F(PaymentRequestUtilTest,
        PaymentResponseToDictionaryValue_PopulatedResponseDictionary) {
-  base::DictionaryValue expected_value;
+  base::Value expected_value(base::Value::Type::DICTIONARY);
 
-  auto details = std::make_unique<base::DictionaryValue>();
-  details->SetString("cardNumber", "1111-1111-1111-1111");
-  details->SetString("cardholderName", "Jon Doe");
-  details->SetString("expiryMonth", "02");
-  details->SetString("expiryYear", "2090");
-  details->SetString("cardSecurityCode", "111");
-  auto billing_address = std::make_unique<base::DictionaryValue>();
-  billing_address->SetString("country", "");
-  billing_address->Set("addressLine", std::make_unique<base::ListValue>());
-  billing_address->SetString("region", "");
-  billing_address->SetString("dependentLocality", "");
-  billing_address->SetString("city", "");
-  billing_address->SetString("postalCode", "90210");
-  billing_address->SetString("languageCode", "");
-  billing_address->SetString("sortingCode", "");
-  billing_address->SetString("organization", "");
-  billing_address->SetString("recipient", "");
-  billing_address->SetString("phone", "");
-  details->Set("billingAddress", std::move(billing_address));
-  expected_value.Set("details", std::move(details));
-  expected_value.SetString("requestId", "12345");
-  expected_value.SetString("methodName", "American Express");
-  auto shipping_address = std::make_unique<base::DictionaryValue>();
-  shipping_address->SetString("country", "");
-  shipping_address->Set("addressLine", std::make_unique<base::ListValue>());
-  shipping_address->SetString("region", "");
-  shipping_address->SetString("dependentLocality", "");
-  shipping_address->SetString("city", "");
-  shipping_address->SetString("postalCode", "94115");
-  shipping_address->SetString("languageCode", "");
-  shipping_address->SetString("sortingCode", "");
-  shipping_address->SetString("organization", "");
-  shipping_address->SetString("recipient", "");
-  shipping_address->SetString("phone", "");
-  expected_value.Set("shippingAddress", std::move(shipping_address));
-  expected_value.SetString("shippingOption", "666");
-  expected_value.SetString("payerName", "Jane Doe");
-  expected_value.SetString("payerEmail", "jane@example.com");
-  expected_value.SetString("payerPhone", "1234-567-890");
+  base::Value details(base::Value::Type::DICTIONARY);
+  details.SetKey("cardNumber", base::Value("1111-1111-1111-1111"));
+  details.SetKey("cardholderName", base::Value("Jon Doe"));
+  details.SetKey("expiryMonth", base::Value("02"));
+  details.SetKey("expiryYear", base::Value("2090"));
+  details.SetKey("cardSecurityCode", base::Value("111"));
+  base::Value billing_address(base::Value::Type::DICTIONARY);
+  billing_address.SetKey("country", base::Value(base::Value::Type::STRING));
+  billing_address.SetKey("addressLine", base::Value(base::Value::Type::LIST));
+  billing_address.SetKey("region", base::Value(base::Value::Type::STRING));
+  billing_address.SetKey("dependentLocality",
+                         base::Value(base::Value::Type::STRING));
+  billing_address.SetKey("city", base::Value(base::Value::Type::STRING));
+  billing_address.SetKey("postalCode", base::Value("90210"));
+  billing_address.SetKey("sortingCode", base::Value(base::Value::Type::STRING));
+  billing_address.SetKey("organization",
+                         base::Value(base::Value::Type::STRING));
+  billing_address.SetKey("recipient", base::Value(base::Value::Type::STRING));
+  billing_address.SetKey("phone", base::Value(base::Value::Type::STRING));
+  details.SetKey("billingAddress", std::move(billing_address));
+  expected_value.SetKey("details", std::move(details));
+  expected_value.SetKey("requestId", base::Value("12345"));
+  expected_value.SetKey("methodName", base::Value("American Express"));
+  base::Value shipping_address(base::Value::Type::DICTIONARY);
+  shipping_address.SetKey("country", base::Value(base::Value::Type::STRING));
+  shipping_address.SetKey("addressLine", base::Value(base::Value::Type::LIST));
+  shipping_address.SetKey("region", base::Value(base::Value::Type::STRING));
+  shipping_address.SetKey("dependentLocality",
+                          base::Value(base::Value::Type::STRING));
+  shipping_address.SetKey("city", base::Value(base::Value::Type::STRING));
+  shipping_address.SetKey("postalCode", base::Value("94115"));
+  shipping_address.SetKey("sortingCode",
+                          base::Value(base::Value::Type::STRING));
+  shipping_address.SetKey("organization",
+                          base::Value(base::Value::Type::STRING));
+  shipping_address.SetKey("recipient", base::Value(base::Value::Type::STRING));
+  shipping_address.SetKey("phone", base::Value(base::Value::Type::STRING));
+  expected_value.SetKey("shippingAddress", std::move(shipping_address));
+  expected_value.SetKey("shippingOption", base::Value("666"));
+  expected_value.SetKey("payerName", base::Value("Jane Doe"));
+  expected_value.SetKey("payerEmail", base::Value("jane@example.com"));
+  expected_value.SetKey("payerPhone", base::Value("1234-567-890"));
 
   payments::PaymentResponse payment_response;
   payment_response.payment_request_id = "12345";
@@ -108,8 +111,7 @@ TEST_F(PaymentRequestUtilTest,
   payment_response.payer_name = base::ASCIIToUTF16("Jane Doe");
   payment_response.payer_email = base::ASCIIToUTF16("jane@example.com");
   payment_response.payer_phone = base::ASCIIToUTF16("1234-567-890");
-  EXPECT_TRUE(expected_value.Equals(
-      PaymentResponseToDictionaryValue(payment_response).get()));
+  EXPECT_EQ(expected_value, PaymentResponseToValue(payment_response));
 }
 
 }  // namespace payment_request_util

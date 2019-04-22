@@ -18,6 +18,11 @@ ConfigureGetUpdatesRequestEvent::ConfigureGetUpdatesRequestEvent(
 
 ConfigureGetUpdatesRequestEvent::~ConfigureGetUpdatesRequestEvent() {}
 
+std::unique_ptr<ProtocolEvent> ConfigureGetUpdatesRequestEvent::Clone() const {
+  return std::make_unique<ConfigureGetUpdatesRequestEvent>(timestamp_, origin_,
+                                                           request_);
+}
+
 base::Time ConfigureGetUpdatesRequestEvent::GetTimestamp() const {
   return timestamp_;
 }
@@ -32,13 +37,7 @@ std::string ConfigureGetUpdatesRequestEvent::GetDetails() const {
 
 std::unique_ptr<base::DictionaryValue>
 ConfigureGetUpdatesRequestEvent::GetProtoMessage(bool include_specifics) const {
-  return std::unique_ptr<base::DictionaryValue>(
-      ClientToServerMessageToValue(request_, include_specifics));
-}
-
-std::unique_ptr<ProtocolEvent> ConfigureGetUpdatesRequestEvent::Clone() const {
-  return std::unique_ptr<ProtocolEvent>(
-      new ConfigureGetUpdatesRequestEvent(timestamp_, origin_, request_));
+  return ClientToServerMessageToValue(request_, include_specifics);
 }
 
 }  // namespace syncer

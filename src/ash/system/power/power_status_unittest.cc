@@ -9,7 +9,7 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/gfx/image/image.h"
@@ -47,7 +47,7 @@ class PowerStatusTest : public testing::Test {
   ~PowerStatusTest() override = default;
 
   void SetUp() override {
-    chromeos::DBusThreadManager::Initialize();
+    chromeos::PowerManagerClient::InitializeFake();
     PowerStatus::Initialize();
     power_status_ = PowerStatus::Get();
     test_observer_.reset(new TestObserver);
@@ -58,7 +58,7 @@ class PowerStatusTest : public testing::Test {
     power_status_->RemoveObserver(test_observer_.get());
     test_observer_.reset();
     PowerStatus::Shutdown();
-    chromeos::DBusThreadManager::Shutdown();
+    chromeos::PowerManagerClient::Shutdown();
   }
 
  protected:
@@ -234,6 +234,61 @@ TEST_F(PowerStatusTest, BatteryImageInfoChargeLevel) {
   EXPECT_EQ(100, power_status_->GetBatteryImageInfo().charge_percent);
   gfx::Image image_100 = get_battery_image();
   EXPECT_FALSE(gfx::test::AreImagesEqual(image_99, image_100));
+}
+
+// Tests that positive time-to-full and time-to-empty estimates are honored.
+TEST_F(PowerStatusTest, PositiveBatteryTimeEstimates) {
+  constexpr auto kTime = base::TimeDelta::FromSeconds(120);
+
+  PowerSupplyProperties prop;
+  prop.set_external_power(PowerSupplyProperties::AC);
+  prop.set_battery_state(PowerSupplyProperties::CHARGING);
+  prop.set_battery_time_to_full_sec(kTime.InSeconds());
+  power_status_->SetProtoForTesting(prop);
+  base::Optional<base::TimeDelta> time = power_status_->GetBatteryTimeToFull();
+  ASSERT_TRUE(time);
+  EXPECT_EQ(kTime, *time);
+
+  prop.Clear();
+  prop.set_external_power(PowerSupplyProperties::DISCONNECTED);
+  prop.set_battery_state(PowerSupplyProperties::DISCHARGING);
+  prop.set_battery_time_to_empty_sec(kTime.InSeconds());
+  power_status_->SetProtoForTesting(prop);
+  time = power_status_->GetBatteryTimeToEmpty();
+  ASSERT_TRUE(time);
+  EXPECT_EQ(kTime, *time);
+}
+
+// Tests that missing time-to-full and time-to-empty estimates (which powerd
+// sends when no battery is present) and negative ones (which powerd sends when
+// the battery current is close to zero) are disregarded:
+// https://crbug.com/930358
+TEST_F(PowerStatusTest, MissingBatteryTimeEstimates) {
+  // No battery.
+  PowerSupplyProperties prop;
+  prop.set_external_power(PowerSupplyProperties::AC);
+  prop.set_battery_state(PowerSupplyProperties::NOT_PRESENT);
+  power_status_->SetProtoForTesting(prop);
+  base::Optional<base::TimeDelta> time = power_status_->GetBatteryTimeToFull();
+  EXPECT_FALSE(time) << *time << " returned despite missing battery";
+  time = power_status_->GetBatteryTimeToEmpty();
+  EXPECT_FALSE(time) << *time << " returned despite missing battery";
+
+  // Battery is charging, but negative estimate provided.
+  prop.set_battery_state(PowerSupplyProperties::CHARGING);
+  prop.set_battery_time_to_full_sec(-1);
+  power_status_->SetProtoForTesting(prop);
+  time = power_status_->GetBatteryTimeToFull();
+  EXPECT_FALSE(time) << *time << " returned despite negative estimate";
+
+  // Battery is discharging, but negative estimate provided.
+  prop.Clear();
+  prop.set_external_power(PowerSupplyProperties::DISCONNECTED);
+  prop.set_battery_state(PowerSupplyProperties::DISCHARGING);
+  prop.set_battery_time_to_empty_sec(-1);
+  power_status_->SetProtoForTesting(prop);
+  time = power_status_->GetBatteryTimeToEmpty();
+  EXPECT_FALSE(time) << *time << " returned despite negative estimate";
 }
 
 }  // namespace ash

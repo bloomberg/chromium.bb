@@ -37,7 +37,6 @@
 #include "gpu/ipc/common/gpu_client_ids.h"
 #include "gpu/ipc/in_process_command_buffer.h"
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/constants.mojom.h"
-#include "services/service_manager/runner/common/client_util.h"
 #include "ui/base/ui_base_features.h"
 
 #if defined(OS_MACOSX)
@@ -130,7 +129,8 @@ BrowserGpuChannelHostFactory::EstablishRequest::EstablishRequest(
 void BrowserGpuChannelHostFactory::EstablishRequest::RestartTimeout() {
   BrowserGpuChannelHostFactory* factory =
       BrowserGpuChannelHostFactory::instance();
-  factory->RestartTimeout();
+  if (factory)
+    factory->RestartTimeout();
 }
 
 void BrowserGpuChannelHostFactory::EstablishRequest::EstablishOnIO() {
@@ -274,8 +274,11 @@ BrowserGpuChannelHostFactory::BrowserGpuChannelHostFactory()
               gpu_client_id_, cache_dir));
     }
 
-    if (base::FeatureList::IsEnabled(
-            features::kDefaultEnableOopRasterization)) {
+    bool use_gr_shader_cache =
+        base::FeatureList::IsEnabled(
+            features::kDefaultEnableOopRasterization) ||
+        base::FeatureList::IsEnabled(features::kUseSkiaRenderer);
+    if (use_gr_shader_cache) {
       base::FilePath gr_cache_dir =
           GetContentClient()->browser()->GetGrShaderDiskCacheDirectory();
       if (!gr_cache_dir.empty()) {
@@ -408,7 +411,7 @@ void BrowserGpuChannelHostFactory::RestartTimeout() {
 #endif
   timeout_.Start(FROM_HERE,
                  base::TimeDelta::FromSeconds(kGpuChannelTimeoutInSeconds),
-                 base::Bind(&TimedOut));
+                 base::BindOnce(&TimedOut));
 #endif  // OS_ANDROID
 }
 
@@ -417,7 +420,7 @@ void BrowserGpuChannelHostFactory::InitializeShaderDiskCacheOnIO(
     int gpu_client_id,
     const base::FilePath& cache_dir) {
   GetShaderCacheFactorySingleton()->SetCacheInfo(gpu_client_id, cache_dir);
-  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor)) {
+  if (features::IsVizDisplayCompositorEnabled()) {
     GetShaderCacheFactorySingleton()->SetCacheInfo(
         gpu::kInProcessCommandBufferClientId, cache_dir);
   }

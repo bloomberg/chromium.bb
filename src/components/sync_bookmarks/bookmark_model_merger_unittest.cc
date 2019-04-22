@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/strings/utf_string_conversions.h"
@@ -28,7 +29,7 @@ namespace {
 const char kBookmarkBarId[] = "bookmark_bar_id";
 const char kBookmarkBarTag[] = "bookmark_bar";
 
-syncer::UpdateResponseData CreateUpdateResponseData(
+std::unique_ptr<syncer::UpdateResponseData> CreateUpdateResponseData(
     const std::string& server_id,
     const std::string& parent_id,
     const std::string& title,
@@ -37,37 +38,37 @@ syncer::UpdateResponseData CreateUpdateResponseData(
     const syncer::UniquePosition& unique_position,
     const std::string& icon_url = std::string(),
     const std::string& icon_data = std::string()) {
-  syncer::EntityData data;
-  data.id = server_id;
-  data.parent_id = parent_id;
-  data.unique_position = unique_position.ToProto();
+  auto data = std::make_unique<syncer::EntityData>();
+  data->id = server_id;
+  data->parent_id = parent_id;
+  data->unique_position = unique_position.ToProto();
 
   sync_pb::BookmarkSpecifics* bookmark_specifics =
-      data.specifics.mutable_bookmark();
+      data->specifics.mutable_bookmark();
   bookmark_specifics->set_title(title);
   bookmark_specifics->set_url(url);
   bookmark_specifics->set_icon_url(icon_url);
   bookmark_specifics->set_favicon(icon_data);
 
-  data.is_folder = is_folder;
-  syncer::UpdateResponseData response_data;
-  response_data.entity = data.PassToPtr();
+  data->is_folder = is_folder;
+  auto response_data = std::make_unique<syncer::UpdateResponseData>();
+  response_data->entity = std::move(data);
   // Similar to what's done in the loopback_server.
-  response_data.response_version = 0;
+  response_data->response_version = 0;
   return response_data;
 }
 
-syncer::UpdateResponseData CreateBookmarkBarNodeUpdateData() {
-  syncer::EntityData data;
-  data.id = kBookmarkBarId;
-  data.server_defined_unique_tag = kBookmarkBarTag;
+std::unique_ptr<syncer::UpdateResponseData> CreateBookmarkBarNodeUpdateData() {
+  auto data = std::make_unique<syncer::EntityData>();
+  data->id = kBookmarkBarId;
+  data->server_defined_unique_tag = kBookmarkBarTag;
 
-  data.specifics.mutable_bookmark();
+  data->specifics.mutable_bookmark();
 
-  syncer::UpdateResponseData response_data;
-  response_data.entity = data.PassToPtr();
+  auto response_data = std::make_unique<syncer::UpdateResponseData>();
+  response_data->entity = std::move(data);
   // Similar to what's done in the loopback_server.
-  response_data.response_version = 0;
+  response_data->response_version = 0;
   return response_data;
 }
 
@@ -451,6 +452,101 @@ TEST(BookmarkModelMergerTest, ShouldMergeFaviconsForRemoteNodesOnly) {
   BookmarkModelMerger(&updates, bookmark_model.get(), &favicon_service,
                       &tracker)
       .Merge();
+}
+
+// This tests that canonical titles produced by legacy clients are properly
+// matched. Legacy clients append blank space to empty titles.
+TEST(BookmarkModelMergerTest,
+     ShouldMergeLocalAndRemoteNodesWhenRemoteHasLegacyCanonicalTitle) {
+  const std::string kLocalTitle = "";
+  const std::string kRemoteTitle = " ";
+  const std::string kId = "Id";
+
+  std::unique_ptr<bookmarks::BookmarkModel> bookmark_model =
+      bookmarks::TestBookmarkClient::CreateModel();
+
+  // -------- The local model --------
+  const bookmarks::BookmarkNode* bookmark_bar_node =
+      bookmark_model->bookmark_bar_node();
+  const bookmarks::BookmarkNode* folder = bookmark_model->AddFolder(
+      /*parent=*/bookmark_bar_node, /*index=*/0,
+      base::UTF8ToUTF16(kLocalTitle));
+  ASSERT_TRUE(folder);
+
+  // -------- The remote model --------
+  const std::string suffix = syncer::UniquePosition::RandomSuffix();
+  syncer::UniquePosition pos = syncer::UniquePosition::InitialPosition(suffix);
+
+  syncer::UpdateResponseDataList updates;
+  updates.push_back(CreateBookmarkBarNodeUpdateData());
+  updates.push_back(CreateUpdateResponseData(
+      /*server_id=*/kId, /*parent_id=*/kBookmarkBarId, kRemoteTitle,
+      /*url=*/std::string(),
+      /*is_folder=*/true, /*unique_position=*/pos));
+
+  SyncedBookmarkTracker tracker(std::vector<NodeMetadataPair>(),
+                                std::make_unique<sync_pb::ModelTypeState>());
+  testing::NiceMock<favicon::MockFaviconService> favicon_service;
+  BookmarkModelMerger(&updates, bookmark_model.get(), &favicon_service,
+                      &tracker)
+      .Merge();
+
+  // Both titles should have matched against each other and only node is in the
+  // model and the tracker.
+  EXPECT_THAT(bookmark_bar_node->child_count(), Eq(1));
+  EXPECT_THAT(tracker.TrackedEntitiesCountForTest(), Eq(2U));
+}
+
+// This tests that truncated titles produced by legacy clients are properly
+// matched.
+TEST(BookmarkModelMergerTest,
+     ShouldMergeLocalAndRemoteNodesWhenRemoteHasLegacyTruncatedTitle) {
+  const std::string kLocalLongTitle =
+      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrst"
+      "uvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMN"
+      "OPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefgh"
+      "ijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzAB"
+      "CDEFGHIJKLMNOPQRSTUVWXYZ";
+  const std::string kRemoteTruncatedTitle =
+      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrst"
+      "uvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMN"
+      "OPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefgh"
+      "ijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTU";
+  const std::string kId = "Id";
+
+  std::unique_ptr<bookmarks::BookmarkModel> bookmark_model =
+      bookmarks::TestBookmarkClient::CreateModel();
+
+  // -------- The local model --------
+  const bookmarks::BookmarkNode* bookmark_bar_node =
+      bookmark_model->bookmark_bar_node();
+  const bookmarks::BookmarkNode* folder = bookmark_model->AddFolder(
+      /*parent=*/bookmark_bar_node, /*index=*/0,
+      base::UTF8ToUTF16(kLocalLongTitle));
+  ASSERT_TRUE(folder);
+
+  // -------- The remote model --------
+  const std::string suffix = syncer::UniquePosition::RandomSuffix();
+  syncer::UniquePosition pos = syncer::UniquePosition::InitialPosition(suffix);
+
+  syncer::UpdateResponseDataList updates;
+  updates.push_back(CreateBookmarkBarNodeUpdateData());
+  updates.push_back(CreateUpdateResponseData(
+      /*server_id=*/kId, /*parent_id=*/kBookmarkBarId, kRemoteTruncatedTitle,
+      /*url=*/std::string(),
+      /*is_folder=*/true, /*unique_position=*/pos));
+
+  SyncedBookmarkTracker tracker(std::vector<NodeMetadataPair>(),
+                                std::make_unique<sync_pb::ModelTypeState>());
+  testing::NiceMock<favicon::MockFaviconService> favicon_service;
+  BookmarkModelMerger(&updates, bookmark_model.get(), &favicon_service,
+                      &tracker)
+      .Merge();
+
+  // Both titles should have matched against each other and only node is in the
+  // model and the tracker.
+  EXPECT_THAT(bookmark_bar_node->child_count(), Eq(1));
+  EXPECT_THAT(tracker.TrackedEntitiesCountForTest(), Eq(2U));
 }
 
 }  // namespace sync_bookmarks

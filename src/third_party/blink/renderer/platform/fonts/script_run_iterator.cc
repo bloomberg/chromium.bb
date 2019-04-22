@@ -168,7 +168,7 @@ ScriptRunIterator::ScriptRunIterator(const UChar* text,
 ScriptRunIterator::ScriptRunIterator(const UChar* text, wtf_size_t length)
     : ScriptRunIterator(text, length, ICUScriptData::Instance()) {}
 
-bool ScriptRunIterator::Consume(unsigned& limit, UScriptCode& script) {
+bool ScriptRunIterator::Consume(unsigned* limit, UScriptCode* script) {
   if (current_set_.IsEmpty()) {
     return false;
   }
@@ -188,16 +188,16 @@ bool ScriptRunIterator::Consume(unsigned& limit, UScriptCode& script) {
         break;
     }
     if (!MergeSets()) {
-      limit = pos;
-      script = ResolveCurrentScript();
-      FixupStack(script);
+      *limit = pos;
+      *script = ResolveCurrentScript();
+      FixupStack(*script);
       current_set_ = *next_set_;
       return true;
     }
   }
 
-  limit = length_;
-  script = ResolveCurrentScript();
+  *limit = length_;
+  *script = ResolveCurrentScript();
   current_set_.clear();
   return true;
 }
@@ -214,7 +214,7 @@ void ScriptRunIterator::OpenBracket(UChar32 ch) {
 }
 
 void ScriptRunIterator::CloseBracket(UChar32 ch) {
-  if (brackets_.size() > 0) {
+  if (!brackets_.empty()) {
     UChar32 target = script_data_->GetPairedBracket(ch);
     for (auto it = brackets_.rbegin(); it != brackets_.rend(); ++it) {
       if (it->ch == target) {

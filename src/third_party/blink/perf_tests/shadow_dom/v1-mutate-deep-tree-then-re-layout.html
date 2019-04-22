@@ -28,7 +28,7 @@ PerfTestRunner.measureTime({
       document.body.offsetLeft;
     }
   },
-  done: () => {
+  teardown: () => {
     host.remove();
   }
 });

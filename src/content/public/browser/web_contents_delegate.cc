@@ -5,6 +5,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
@@ -22,8 +23,7 @@
 
 namespace content {
 
-WebContentsDelegate::WebContentsDelegate() {
-}
+WebContentsDelegate::WebContentsDelegate() = default;
 
 WebContents* WebContentsDelegate::OpenURLFromTab(WebContents* source,
                                                  const OpenURLParams& params) {
@@ -76,15 +76,14 @@ bool WebContentsDelegate::TakeFocus(WebContents* source, bool reverse) {
   return false;
 }
 
-void WebContentsDelegate::CanDownload(
-    const GURL& url,
-    const std::string& request_method,
-    const base::Callback<void(bool)>& callback) {
-  callback.Run(true);
+void WebContentsDelegate::CanDownload(const GURL& url,
+                                      const std::string& request_method,
+                                      base::OnceCallback<void(bool)> callback) {
+  std::move(callback).Run(true);
 }
 
-bool WebContentsDelegate::HandleContextMenu(
-    const content::ContextMenuParams& params) {
+bool WebContentsDelegate::HandleContextMenu(RenderFrameHost* render_frame_host,
+                                            const ContextMenuParams& params) {
   return false;
 }
 
@@ -158,7 +157,7 @@ blink::WebDisplayMode WebContentsDelegate::GetDisplayMode(
   return blink::kWebDisplayModeBrowser;
 }
 
-content::ColorChooser* WebContentsDelegate::OpenColorChooser(
+ColorChooser* WebContentsDelegate::OpenColorChooser(
     WebContents* web_contents,
     SkColor color,
     const std::vector<blink::mojom::ColorSuggestionPtr>& suggestions) {
@@ -182,17 +181,18 @@ void WebContentsDelegate::EnumerateDirectory(
 void WebContentsDelegate::RequestMediaAccessPermission(
     WebContents* web_contents,
     const MediaStreamRequest& request,
-    MediaResponseCallback callback) {
+    content::MediaResponseCallback callback) {
   LOG(ERROR) << "WebContentsDelegate::RequestMediaAccessPermission: "
              << "Not supported.";
-  std::move(callback).Run(MediaStreamDevices(), MEDIA_DEVICE_NOT_SUPPORTED,
-                          std::unique_ptr<MediaStreamUI>());
+  std::move(callback).Run(blink::MediaStreamDevices(),
+                          blink::MEDIA_DEVICE_NOT_SUPPORTED,
+                          std::unique_ptr<content::MediaStreamUI>());
 }
 
 bool WebContentsDelegate::CheckMediaAccessPermission(
     RenderFrameHost* render_frame_host,
     const GURL& security_origin,
-    MediaStreamType type) {
+    blink::MediaStreamType type) {
   LOG(ERROR) << "WebContentsDelegate::CheckMediaAccessPermission: "
              << "Not supported.";
   return false;
@@ -200,7 +200,7 @@ bool WebContentsDelegate::CheckMediaAccessPermission(
 
 std::string WebContentsDelegate::GetDefaultMediaDeviceID(
     WebContents* web_contents,
-    MediaStreamType type) {
+    blink::MediaStreamType type) {
   return std::string();
 }
 
@@ -208,16 +208,14 @@ std::string WebContentsDelegate::GetDefaultMediaDeviceID(
 bool WebContentsDelegate::ShouldBlockMediaRequest(const GURL& url) {
   return false;
 }
-
-void WebContentsDelegate::SetOverlayMode(bool use_overlay_mode) {}
 #endif
 
-bool WebContentsDelegate::RequestPpapiBrokerPermission(
+void WebContentsDelegate::RequestPpapiBrokerPermission(
     WebContents* web_contents,
     const GURL& url,
     const base::FilePath& plugin_path,
-    const base::Callback<void(bool)>& callback) {
-  return false;
+    base::OnceCallback<void(bool)> callback) {
+  std::move(callback).Run(false);
 }
 
 WebContentsDelegate::~WebContentsDelegate() {
@@ -247,6 +245,10 @@ bool WebContentsDelegate::IsNeverVisible(WebContents* web_contents) {
   return false;
 }
 
+bool WebContentsDelegate::GuestSaveFrame(WebContents* guest_web_contents) {
+  return false;
+}
+
 bool WebContentsDelegate::SaveFrame(const GURL& url, const Referrer& referrer) {
   return false;
 }
@@ -255,10 +257,6 @@ blink::WebSecurityStyle WebContentsDelegate::GetSecurityStyle(
     WebContents* web_contents,
     SecurityStyleExplanations* security_style_explanations) {
   return blink::kWebSecurityStyleUnknown;
-}
-
-void WebContentsDelegate::RequestAppBannerFromDevTools(
-    content::WebContents* web_contents) {
 }
 
 bool WebContentsDelegate::ShouldAllowRunningInsecureContent(
@@ -282,26 +280,26 @@ bool WebContentsDelegate::DoBrowserControlsShrinkRendererSize(
   return false;
 }
 
-void WebContentsDelegate::SetTopControlsGestureScrollInProgress(
-    bool in_progress) {}
-
-gfx::Size WebContentsDelegate::EnterPictureInPicture(const viz::SurfaceId&,
+gfx::Size WebContentsDelegate::EnterPictureInPicture(WebContents* web_contents,
+                                                     const viz::SurfaceId&,
                                                      const gfx::Size&) {
   return gfx::Size();
-}
-
-void WebContentsDelegate::ExitPictureInPicture() {}
-
-std::unique_ptr<content::WebContents> WebContentsDelegate::SwapWebContents(
-    content::WebContents* old_contents,
-    std::unique_ptr<content::WebContents> new_contents,
-    bool did_start_load,
-    bool did_finish_load) {
-  return new_contents;
 }
 
 bool WebContentsDelegate::ShouldAllowLazyLoad() {
   return true;
 }
 
+std::unique_ptr<WebContents> WebContentsDelegate::SwapWebContents(
+    WebContents* old_contents,
+    std::unique_ptr<WebContents> new_contents,
+    bool did_start_load,
+    bool did_finish_load) {
+  return new_contents;
+}
+
+bool WebContentsDelegate::ShouldShowStaleContentOnEviction(
+    WebContents* source) {
+  return false;
+}
 }  // namespace content

@@ -50,10 +50,10 @@ public class SmartSelectionMetricsLogger implements SelectionMetricsLogger {
     private SelectionIndicesConverter mConverter;
 
     // ActionType, from SmartSelectionEventTracker.SelectionEvent class.
-    @Retention(RetentionPolicy.SOURCE)
     @IntDef({ActionType.OVERTYPE, ActionType.COPY, ActionType.PASTE, ActionType.CUT,
             ActionType.SHARE, ActionType.SMART_SHARE, ActionType.DRAG, ActionType.ABANDON,
             ActionType.OTHER, ActionType.SELECT_ALL, ActionType.RESET})
+    @Retention(RetentionPolicy.SOURCE)
     public @interface ActionType {
         /** User typed over the selection. */
         int OVERTYPE = 100;

@@ -15,17 +15,18 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ShortcutHelper;
-import org.chromium.chrome.browser.metrics.WebappUma;
+import org.chromium.chrome.browser.metrics.SameActivityWebappUmaCache;
 import org.chromium.chrome.browser.tab.TabTestUtils;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
@@ -68,17 +69,23 @@ public class WebappSplashScreenThemeColorTest {
     public void testThemeColorNotUsedIfPagesHasOne() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return;
 
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                TabTestUtils.simulateChangeThemeColor(
-                        mActivityTestRule.getActivity().getActivityTab(), Color.GREEN);
-            }
-        });
+        // Depending on the Android version, the status bar color will either be the same as the
+        // theme color or darker.
+        final int baseColor = Color.GREEN;
+        final int finalColor;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            finalColor = Color.GREEN;
+        } else {
+            finalColor = ColorUtils.getDarkenedColorForStatusBar(Color.GREEN);
+        }
+
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
+                () -> TabTestUtils.simulateChangeThemeColor(
+                                mActivityTestRule.getActivity().getActivityTab(), baseColor));
 
         // Waits for theme-color to change so the test doesn't rely on system timing.
-        CriteriaHelper.pollInstrumentationThread(Criteria.equals(
-                ColorUtils.getDarkenedColorForStatusBar(Color.GREEN), new Callable<Integer>() {
+        CriteriaHelper.pollInstrumentationThread(
+                Criteria.equals(finalColor, new Callable<Integer>() {
                     @Override
                     public Integer call() {
                         return mActivityTestRule.getActivity().getWindow().getStatusBarColor();
@@ -92,7 +99,7 @@ public class WebappSplashScreenThemeColorTest {
     public void testUmaThemeColorCustom() {
         Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
-                        WebappUma.HISTOGRAM_SPLASHSCREEN_THEMECOLOR,
-                        WebappUma.SplashScreenColorStatus.CUSTOM));
+                        SameActivityWebappUmaCache.HISTOGRAM_SPLASHSCREEN_THEMECOLOR,
+                        SameActivityWebappUmaCache.SplashColorStatus.CUSTOM));
     }
 }

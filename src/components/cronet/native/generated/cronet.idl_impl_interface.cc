@@ -289,6 +289,21 @@ Cronet_String Cronet_Engine_GetDefaultUserAgent(Cronet_EnginePtr self) {
   return self->GetDefaultUserAgent();
 }
 
+void Cronet_Engine_AddRequestFinishedListener(
+    Cronet_EnginePtr self,
+    Cronet_RequestFinishedInfoListenerPtr listener,
+    Cronet_ExecutorPtr executor) {
+  DCHECK(self);
+  self->AddRequestFinishedListener(listener, executor);
+}
+
+void Cronet_Engine_RemoveRequestFinishedListener(
+    Cronet_EnginePtr self,
+    Cronet_RequestFinishedInfoListenerPtr listener) {
+  DCHECK(self);
+  self->RemoveRequestFinishedListener(listener);
+}
+
 // Implementation of Cronet_Engine that forwards calls to C functions
 // implemented by the app.
 class Cronet_EngineStub : public Cronet_Engine {
@@ -299,13 +314,19 @@ class Cronet_EngineStub : public Cronet_Engine {
       Cronet_Engine_StopNetLogFunc StopNetLogFunc,
       Cronet_Engine_ShutdownFunc ShutdownFunc,
       Cronet_Engine_GetVersionStringFunc GetVersionStringFunc,
-      Cronet_Engine_GetDefaultUserAgentFunc GetDefaultUserAgentFunc)
+      Cronet_Engine_GetDefaultUserAgentFunc GetDefaultUserAgentFunc,
+      Cronet_Engine_AddRequestFinishedListenerFunc
+          AddRequestFinishedListenerFunc,
+      Cronet_Engine_RemoveRequestFinishedListenerFunc
+          RemoveRequestFinishedListenerFunc)
       : StartWithParamsFunc_(StartWithParamsFunc),
         StartNetLogToFileFunc_(StartNetLogToFileFunc),
         StopNetLogFunc_(StopNetLogFunc),
         ShutdownFunc_(ShutdownFunc),
         GetVersionStringFunc_(GetVersionStringFunc),
-        GetDefaultUserAgentFunc_(GetDefaultUserAgentFunc) {}
+        GetDefaultUserAgentFunc_(GetDefaultUserAgentFunc),
+        AddRequestFinishedListenerFunc_(AddRequestFinishedListenerFunc),
+        RemoveRequestFinishedListenerFunc_(RemoveRequestFinishedListenerFunc) {}
 
   ~Cronet_EngineStub() override {}
 
@@ -330,6 +351,17 @@ class Cronet_EngineStub : public Cronet_Engine {
     return GetDefaultUserAgentFunc_(this);
   }
 
+  void AddRequestFinishedListener(
+      Cronet_RequestFinishedInfoListenerPtr listener,
+      Cronet_ExecutorPtr executor) override {
+    AddRequestFinishedListenerFunc_(this, listener, executor);
+  }
+
+  void RemoveRequestFinishedListener(
+      Cronet_RequestFinishedInfoListenerPtr listener) override {
+    RemoveRequestFinishedListenerFunc_(this, listener);
+  }
+
  private:
   const Cronet_Engine_StartWithParamsFunc StartWithParamsFunc_;
   const Cronet_Engine_StartNetLogToFileFunc StartNetLogToFileFunc_;
@@ -337,6 +369,10 @@ class Cronet_EngineStub : public Cronet_Engine {
   const Cronet_Engine_ShutdownFunc ShutdownFunc_;
   const Cronet_Engine_GetVersionStringFunc GetVersionStringFunc_;
   const Cronet_Engine_GetDefaultUserAgentFunc GetDefaultUserAgentFunc_;
+  const Cronet_Engine_AddRequestFinishedListenerFunc
+      AddRequestFinishedListenerFunc_;
+  const Cronet_Engine_RemoveRequestFinishedListenerFunc
+      RemoveRequestFinishedListenerFunc_;
 
   DISALLOW_COPY_AND_ASSIGN(Cronet_EngineStub);
 };
@@ -347,10 +383,14 @@ Cronet_EnginePtr Cronet_Engine_CreateWith(
     Cronet_Engine_StopNetLogFunc StopNetLogFunc,
     Cronet_Engine_ShutdownFunc ShutdownFunc,
     Cronet_Engine_GetVersionStringFunc GetVersionStringFunc,
-    Cronet_Engine_GetDefaultUserAgentFunc GetDefaultUserAgentFunc) {
-  return new Cronet_EngineStub(StartWithParamsFunc, StartNetLogToFileFunc,
-                               StopNetLogFunc, ShutdownFunc,
-                               GetVersionStringFunc, GetDefaultUserAgentFunc);
+    Cronet_Engine_GetDefaultUserAgentFunc GetDefaultUserAgentFunc,
+    Cronet_Engine_AddRequestFinishedListenerFunc AddRequestFinishedListenerFunc,
+    Cronet_Engine_RemoveRequestFinishedListenerFunc
+        RemoveRequestFinishedListenerFunc) {
+  return new Cronet_EngineStub(
+      StartWithParamsFunc, StartNetLogToFileFunc, StopNetLogFunc, ShutdownFunc,
+      GetVersionStringFunc, GetDefaultUserAgentFunc,
+      AddRequestFinishedListenerFunc, RemoveRequestFinishedListenerFunc);
 }
 
 // C functions of Cronet_UrlRequestStatusListener that forward calls to C++
@@ -872,4 +912,63 @@ Cronet_UrlRequestPtr Cronet_UrlRequest_CreateWith(
   return new Cronet_UrlRequestStub(InitWithParamsFunc, StartFunc,
                                    FollowRedirectFunc, ReadFunc, CancelFunc,
                                    IsDoneFunc, GetStatusFunc);
+}
+
+// C functions of Cronet_RequestFinishedInfoListener that forward calls to C++
+// implementation.
+void Cronet_RequestFinishedInfoListener_Destroy(
+    Cronet_RequestFinishedInfoListenerPtr self) {
+  DCHECK(self);
+  return delete self;
+}
+
+void Cronet_RequestFinishedInfoListener_SetClientContext(
+    Cronet_RequestFinishedInfoListenerPtr self,
+    Cronet_ClientContext client_context) {
+  DCHECK(self);
+  self->set_client_context(client_context);
+}
+
+Cronet_ClientContext Cronet_RequestFinishedInfoListener_GetClientContext(
+    Cronet_RequestFinishedInfoListenerPtr self) {
+  DCHECK(self);
+  return self->client_context();
+}
+
+void Cronet_RequestFinishedInfoListener_OnRequestFinished(
+    Cronet_RequestFinishedInfoListenerPtr self,
+    Cronet_RequestFinishedInfoPtr request_info) {
+  DCHECK(self);
+  self->OnRequestFinished(request_info);
+}
+
+// Implementation of Cronet_RequestFinishedInfoListener that forwards calls to C
+// functions implemented by the app.
+class Cronet_RequestFinishedInfoListenerStub
+    : public Cronet_RequestFinishedInfoListener {
+ public:
+  explicit Cronet_RequestFinishedInfoListenerStub(
+      Cronet_RequestFinishedInfoListener_OnRequestFinishedFunc
+          OnRequestFinishedFunc)
+      : OnRequestFinishedFunc_(OnRequestFinishedFunc) {}
+
+  ~Cronet_RequestFinishedInfoListenerStub() override {}
+
+ protected:
+  void OnRequestFinished(Cronet_RequestFinishedInfoPtr request_info) override {
+    OnRequestFinishedFunc_(this, request_info);
+  }
+
+ private:
+  const Cronet_RequestFinishedInfoListener_OnRequestFinishedFunc
+      OnRequestFinishedFunc_;
+
+  DISALLOW_COPY_AND_ASSIGN(Cronet_RequestFinishedInfoListenerStub);
+};
+
+Cronet_RequestFinishedInfoListenerPtr
+Cronet_RequestFinishedInfoListener_CreateWith(
+    Cronet_RequestFinishedInfoListener_OnRequestFinishedFunc
+        OnRequestFinishedFunc) {
+  return new Cronet_RequestFinishedInfoListenerStub(OnRequestFinishedFunc);
 }

@@ -61,7 +61,7 @@ void DeprecatedStorageInfo::queryUsageAndQuota(
 void DeprecatedStorageInfo::requestQuota(
     ScriptState* script_state,
     int storage_type,
-    unsigned long long new_quota_in_bytes,
+    uint64_t new_quota_in_bytes,
     V8StorageQuotaCallback* success_callback,
     V8StorageErrorCallback* error_callback) {
   // Dispatching the request to DeprecatedStorageQuota, as this interface is
@@ -81,14 +81,16 @@ DeprecatedStorageQuota* DeprecatedStorageInfo::GetStorageQuota(
     int storage_type) {
   switch (storage_type) {
     case kTemporary:
-      if (!temporary_storage_)
-        temporary_storage_ =
-            DeprecatedStorageQuota::Create(DeprecatedStorageQuota::kTemporary);
+      if (!temporary_storage_) {
+        temporary_storage_ = MakeGarbageCollected<DeprecatedStorageQuota>(
+            DeprecatedStorageQuota::kTemporary);
+      }
       return temporary_storage_.Get();
     case kPersistent:
-      if (!persistent_storage_)
-        persistent_storage_ =
-            DeprecatedStorageQuota::Create(DeprecatedStorageQuota::kPersistent);
+      if (!persistent_storage_) {
+        persistent_storage_ = MakeGarbageCollected<DeprecatedStorageQuota>(
+            DeprecatedStorageQuota::kPersistent);
+      }
       return persistent_storage_.Get();
   }
   return nullptr;

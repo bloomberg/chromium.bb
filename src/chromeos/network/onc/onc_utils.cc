@@ -659,8 +659,9 @@ const char kEmptyUnencryptedConfiguration[] =
 
 std::unique_ptr<base::Value> ReadDictionaryFromJson(const std::string& json) {
   std::string error;
-  std::unique_ptr<base::Value> root = base::JSONReader::ReadAndReturnError(
-      json, base::JSON_ALLOW_TRAILING_COMMAS, nullptr, &error);
+  std::unique_ptr<base::Value> root =
+      base::JSONReader::ReadAndReturnErrorDeprecated(
+          json, base::JSON_ALLOW_TRAILING_COMMAS, nullptr, &error);
   if (!root || !root->is_dict()) {
     NET_LOG(ERROR) << "Invalid JSON Dictionary: " << error;
     return nullptr;

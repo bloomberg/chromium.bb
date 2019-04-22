@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 
-#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/settings/stats_reporting_controller.h"
 #include "components/prefs/pref_change_registrar.h"
 
 class PrefService;
@@ -58,7 +58,7 @@ class ArcOptInPreferenceHandler {
   // Used to track backup&restore and location service preference.
   PrefChangeRegistrar pref_change_registrar_;
   // Metrics consent observer.
-  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
+  std::unique_ptr<chromeos::StatsReportingController::ObserverSubscription>
       reporting_consent_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcOptInPreferenceHandler);

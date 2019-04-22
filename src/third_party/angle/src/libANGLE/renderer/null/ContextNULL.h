@@ -33,7 +33,9 @@ class AllocationTrackerNULL : angle::NonCopyable
 class ContextNULL : public ContextImpl
 {
   public:
-    ContextNULL(const gl::ContextState &state, AllocationTrackerNULL *allocationTracker);
+    ContextNULL(const gl::State &state,
+                gl::ErrorSet *errorSet,
+                AllocationTrackerNULL *allocationTracker);
     ~ContextNULL() override;
 
     angle::Result initialize() override;
@@ -56,12 +58,12 @@ class ContextNULL : public ContextImpl
     angle::Result drawElements(const gl::Context *context,
                                gl::PrimitiveMode mode,
                                GLsizei count,
-                               GLenum type,
+                               gl::DrawElementsType type,
                                const void *indices) override;
     angle::Result drawElementsInstanced(const gl::Context *context,
                                         gl::PrimitiveMode mode,
                                         GLsizei count,
-                                        GLenum type,
+                                        gl::DrawElementsType type,
                                         const void *indices,
                                         GLsizei instances) override;
     angle::Result drawRangeElements(const gl::Context *context,
@@ -69,14 +71,14 @@ class ContextNULL : public ContextImpl
                                     GLuint start,
                                     GLuint end,
                                     GLsizei count,
-                                    GLenum type,
+                                    gl::DrawElementsType type,
                                     const void *indices) override;
     angle::Result drawArraysIndirect(const gl::Context *context,
                                      gl::PrimitiveMode mode,
                                      const void *indirect) override;
     angle::Result drawElementsIndirect(const gl::Context *context,
                                        gl::PrimitiveMode mode,
-                                       GLenum type,
+                                       gl::DrawElementsType type,
                                        const void *indirect) override;
 
     // CHROMIUM_path_rendering path drawing methods.
@@ -126,7 +128,7 @@ class ContextNULL : public ContextImpl
                                              const GLfloat *transformValues) override;
 
     // Device loss
-    GLenum getResetStatus() override;
+    gl::GraphicsResetStatus getResetStatus() override;
 
     // Vendor and description strings.
     std::string getVendorString() const override;
@@ -138,7 +140,7 @@ class ContextNULL : public ContextImpl
     void popGroupMarker() override;
 
     // KHR_debug
-    void pushDebugGroup(GLenum source, GLuint id, GLsizei length, const char *message) override;
+    void pushDebugGroup(GLenum source, GLuint id, const std::string &message) override;
     void popDebugGroup() override;
 
     // State sync with dirty bits.
@@ -195,6 +197,9 @@ class ContextNULL : public ContextImpl
     ProgramPipelineImpl *createProgramPipeline(const gl::ProgramPipelineState &data) override;
 
     std::vector<PathImpl *> createPaths(GLsizei range) override;
+
+    // Memory object creation.
+    MemoryObjectImpl *createMemoryObject() override;
 
     angle::Result dispatchCompute(const gl::Context *context,
                                   GLuint numGroupsX,

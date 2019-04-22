@@ -13,19 +13,19 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string_split.h"
+#include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/printing/pwg_raster_converter.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_utils.h"
 #include "components/cloud_devices/common/cloud_device_description.h"
 #include "components/cloud_devices/common/printer_description.h"
-#include "device/base/device_client.h"
-#include "device/usb/usb_device.h"
-#include "device/usb/usb_service.h"
+#include "device/usb/public/mojom/device.mojom.h"
 #include "extensions/browser/api/device_permissions_manager.h"
 #include "extensions/browser/api/printer_provider/printer_provider_api.h"
 #include "extensions/browser/api/printer_provider/printer_provider_api_factory.h"
 #include "extensions/browser/api/printer_provider/printer_provider_print_job.h"
+#include "extensions/browser/api/usb/usb_device_manager.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/api/printer_provider/usb_printer_manifest_data.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -35,14 +35,15 @@
 #include "printing/print_job_constants.h"
 #include "printing/pwg_raster_settings.h"
 
-using device::UsbDevice;
 using extensions::DevicePermissionsManager;
 using extensions::DictionaryBuilder;
 using extensions::Extension;
 using extensions::ExtensionRegistry;
 using extensions::ListBuilder;
+using extensions::UsbDeviceManager;
 using extensions::UsbPrinterManifestData;
-using printing::PwgRasterConverter;
+
+namespace printing {
 
 namespace {
 
@@ -74,10 +75,11 @@ bool HasUsbPrinterProviderPermissions(const Extension* extension) {
             extensions::APIPermission::kUsb);
 }
 
-std::string GenerateProvisionalUsbPrinterId(const Extension* extension,
-                                            const UsbDevice* device) {
+std::string GenerateProvisionalUsbPrinterId(
+    const Extension* extension,
+    const device::mojom::UsbDeviceInfo& device) {
   return base::StringPrintf("%s:%s:%s", kProvisionalUsbLabel,
-                            extension->id().c_str(), device->guid().c_str());
+                            extension->id().c_str(), device.guid.c_str());
 }
 
 bool ParseProvisionalUsbPrinterId(const std::string& printer_id,
@@ -136,9 +138,10 @@ void ExtensionPrinterHandler::StartGetPrinters(
   }
 
   if (extension_supports_usb_printers) {
-    device::UsbService* service = device::DeviceClient::Get()->GetUsbService();
     pending_enumeration_count_++;
-    service->GetDevices(
+    UsbDeviceManager* usb_manager = UsbDeviceManager::Get(profile_);
+    DCHECK(usb_manager);
+    usb_manager->GetDevices(
         base::Bind(&ExtensionPrinterHandler::OnUsbDevicesEnumerated,
                    weak_ptr_factory_.GetWeakPtr(), callback));
   }
@@ -158,20 +161,22 @@ void ExtensionPrinterHandler::StartGetCapability(
 }
 
 void ExtensionPrinterHandler::StartPrint(
-    const std::string& destination_id,
-    const std::string& capability,
     const base::string16& job_title,
-    const std::string& ticket_json,
-    const gfx::Size& page_size,
-    const scoped_refptr<base::RefCountedMemory>& print_data,
+    base::Value settings,
+    scoped_refptr<base::RefCountedMemory> print_data,
     PrintCallback callback) {
   auto print_job = std::make_unique<extensions::PrinterProviderPrintJob>();
-  print_job->printer_id = destination_id;
   print_job->job_title = job_title;
-  print_job->ticket_json = ticket_json;
+  std::string capabilities;
+  gfx::Size page_size;
+  if (!ParseSettings(settings, &print_job->printer_id, &capabilities,
+                     &page_size, &print_job->ticket)) {
+    std::move(callback).Run(base::Value("Invalid settings"));
+    return;
+  }
 
   cloud_devices::CloudDeviceDescription printer_description;
-  printer_description.InitFromString(capability);
+  printer_description.InitFromString(capabilities);
 
   cloud_devices::printer::ContentTypesCapability content_types;
   content_types.LoadFrom(printer_description);
@@ -185,8 +190,8 @@ void ExtensionPrinterHandler::StartPrint(
     return;
   }
 
-  cloud_devices::CloudDeviceDescription ticket;
-  if (!ticket.InitFromString(ticket_json)) {
+  if (!cloud_devices::CloudDeviceDescription::IsValidTicket(
+          print_job->ticket)) {
     WrapPrintCallback(std::move(callback),
                       base::Value(kInvalidTicketPrintError));
     return;
@@ -194,7 +199,7 @@ void ExtensionPrinterHandler::StartPrint(
 
   print_job->content_type = kContentTypePWGRaster;
   ConvertToPWGRaster(
-      print_data, printer_description, ticket, page_size, std::move(print_job),
+      print_data, printer_description, page_size, std::move(print_job),
       base::BindOnce(&ExtensionPrinterHandler::DispatchPrintJob,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
@@ -209,8 +214,11 @@ void ExtensionPrinterHandler::StartGrantPrinterAccess(
     return;
   }
 
-  device::UsbService* service = device::DeviceClient::Get()->GetUsbService();
-  scoped_refptr<UsbDevice> device = service->GetDevice(device_guid);
+  UsbDeviceManager* usb_manager = UsbDeviceManager::Get(profile_);
+  DCHECK(usb_manager);
+
+  const device::mojom::UsbDeviceInfo* device =
+      usb_manager->GetDeviceInfo(device_guid);
   if (!device) {
     std::move(callback).Run(base::DictionaryValue());
     return;
@@ -218,10 +226,10 @@ void ExtensionPrinterHandler::StartGrantPrinterAccess(
 
   DevicePermissionsManager* permissions_manager =
       DevicePermissionsManager::Get(profile_);
-  permissions_manager->AllowUsbDevice(extension_id, device);
+  permissions_manager->AllowUsbDevice(extension_id, *device);
 
   GetPrinterProviderAPI(profile_)->DispatchGetUsbPrinterInfoRequested(
-      extension_id, device,
+      extension_id, *device,
       base::BindOnce(&ExtensionPrinterHandler::WrapGetPrinterInfoCallback,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
@@ -232,17 +240,21 @@ void ExtensionPrinterHandler::SetPwgRasterConverterForTesting(
 }
 
 void ExtensionPrinterHandler::ConvertToPWGRaster(
-    const scoped_refptr<base::RefCountedMemory>& data,
+    scoped_refptr<base::RefCountedMemory> data,
     const cloud_devices::CloudDeviceDescription& printer_description,
-    const cloud_devices::CloudDeviceDescription& ticket,
     const gfx::Size& page_size,
     std::unique_ptr<extensions::PrinterProviderPrintJob> job,
     PrintJobCallback callback) {
   if (!pwg_raster_converter_)
     pwg_raster_converter_ = PwgRasterConverter::CreateDefault();
 
-  printing::PwgRasterSettings bitmap_settings =
+  cloud_devices::CloudDeviceDescription ticket;
+  bool ok = ticket.InitFromValue(std::move(job->ticket));
+  DCHECK(ok);
+  PwgRasterSettings bitmap_settings =
       PwgRasterConverter::GetBitmapSettings(printer_description, ticket);
+  job->ticket = std::move(ticket).ToValue();
+
   pwg_raster_converter_->Start(
       data.get(),
       PwgRasterConverter::GetConversionSettings(printer_description, page_size,
@@ -262,7 +274,7 @@ void ExtensionPrinterHandler::DispatchPrintJob(
   extensions::PrinterProviderAPIFactory::GetInstance()
       ->GetForBrowserContext(profile_)
       ->DispatchPrintRequested(
-          *print_job,
+          std::move(*print_job),
           base::BindOnce(&ExtensionPrinterHandler::WrapPrintCallback,
                          weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
@@ -284,14 +296,12 @@ void ExtensionPrinterHandler::WrapGetPrintersCallback(
 void ExtensionPrinterHandler::WrapGetCapabilityCallback(
     GetCapabilityCallback callback,
     const base::DictionaryValue& capability) {
-  auto capabilities = std::make_unique<base::DictionaryValue>();
-  std::unique_ptr<base::DictionaryValue> cdd =
-      printing::ValidateCddForPrintPreview(capability);
+  base::Value capabilities(base::Value::Type::DICTIONARY);
+  base::Value cdd = ValidateCddForPrintPreview(capability.Clone());
   // Leave |capabilities| empty if |cdd| is empty.
-  if (!cdd->empty()) {
-    capabilities->SetKey(printing::kSettingCapabilities,
-                         base::Value::FromUniquePtrValue(std::move(cdd)));
-  }
+  if (!cdd.DictEmpty())
+    capabilities.SetKey(kSettingCapabilities, std::move(cdd));
+
   std::move(callback).Run(std::move(capabilities));
 }
 
@@ -308,7 +318,7 @@ void ExtensionPrinterHandler::WrapGetPrinterInfoCallback(
 
 void ExtensionPrinterHandler::OnUsbDevicesEnumerated(
     const AddedPrintersCallback& callback,
-    const std::vector<scoped_refptr<UsbDevice>>& devices) {
+    std::vector<device::mojom::UsbDeviceInfoPtr> devices) {
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile_);
   DevicePermissionsManager* permissions_manager =
       DevicePermissionsManager::Get(profile_);
@@ -327,8 +337,8 @@ void ExtensionPrinterHandler::OnUsbDevicesEnumerated(
       if (manifest_data->SupportsDevice(*device)) {
         std::unique_ptr<extensions::UsbDevicePermission::CheckParam> param =
             extensions::UsbDevicePermission::CheckParam::ForUsbDevice(
-                extension.get(), device.get());
-        if (device_permissions->FindUsbDeviceEntry(device) ||
+                extension.get(), *device);
+        if (device_permissions->FindUsbDeviceEntry(*device) ||
             extension->permissions_data()->CheckAPIPermissionWithParam(
                 extensions::APIPermission::kUsbDevice, param.get())) {
           // Skip devices the extension already has permission to access.
@@ -337,13 +347,14 @@ void ExtensionPrinterHandler::OnUsbDevicesEnumerated(
 
         printer_list.Append(
             DictionaryBuilder()
-                .Set("id", GenerateProvisionalUsbPrinterId(extension.get(),
-                                                           device.get()))
+                .Set("id",
+                     GenerateProvisionalUsbPrinterId(extension.get(), *device))
                 .Set("name",
                      DevicePermissionsManager::GetPermissionMessage(
-                         device->vendor_id(), device->product_id(),
-                         device->manufacturer_string(),
-                         device->product_string(), base::string16(), false))
+                         device->vendor_id, device->product_id,
+                         device->manufacturer_name.value_or(base::string16()),
+                         device->product_name.value_or(base::string16()),
+                         base::string16(), false))
                 .Set("extensionId", extension->id())
                 .Set("extensionName", extension->name())
                 .Set("provisional", true)
@@ -360,3 +371,5 @@ void ExtensionPrinterHandler::OnUsbDevicesEnumerated(
   if (pending_enumeration_count_ == 0)
     std::move(done_callback_).Run();
 }
+
+}  // namespace printing

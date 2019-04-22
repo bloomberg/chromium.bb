@@ -37,12 +37,11 @@ TEST(WebRequestConditionTest, CreateCondition) {
   // Test wrong condition name passed.
   error.clear();
   result = WebRequestCondition::Create(
-      NULL,
-      matcher.condition_factory(),
-      *base::test::ParseJson(
-           "{ \"invalid\": \"foobar\", \n"
-           "  \"instanceType\": \"declarativeWebRequest.RequestMatcher\", \n"
-           "}"),
+      NULL, matcher.condition_factory(),
+      *base::test::ParseJsonDeprecated(
+          "{ \"invalid\": \"foobar\", \n"
+          "  \"instanceType\": \"declarativeWebRequest.RequestMatcher\", \n"
+          "}"),
       &error);
   EXPECT_FALSE(error.empty());
   EXPECT_FALSE(result.get());
@@ -50,13 +49,12 @@ TEST(WebRequestConditionTest, CreateCondition) {
   // Test wrong datatype in host_suffix.
   error.clear();
   result = WebRequestCondition::Create(
-      NULL,
-      matcher.condition_factory(),
-      *base::test::ParseJson(
-           "{ \n"
-           "  \"url\": [], \n"
-           "  \"instanceType\": \"declarativeWebRequest.RequestMatcher\", \n"
-           "}"),
+      NULL, matcher.condition_factory(),
+      *base::test::ParseJsonDeprecated(
+          "{ \n"
+          "  \"url\": [], \n"
+          "  \"instanceType\": \"declarativeWebRequest.RequestMatcher\", \n"
+          "}"),
       &error);
   EXPECT_FALSE(error.empty());
   EXPECT_FALSE(result.get());
@@ -64,14 +62,13 @@ TEST(WebRequestConditionTest, CreateCondition) {
   // Test success (can we support multiple criteria?)
   error.clear();
   result = WebRequestCondition::Create(
-      NULL,
-      matcher.condition_factory(),
-      *base::test::ParseJson(
-           "{ \n"
-           "  \"resourceType\": [\"main_frame\"], \n"
-           "  \"url\": { \"hostSuffix\": \"example.com\" }, \n"
-           "  \"instanceType\": \"declarativeWebRequest.RequestMatcher\", \n"
-           "}"),
+      NULL, matcher.condition_factory(),
+      *base::test::ParseJsonDeprecated(
+          "{ \n"
+          "  \"resourceType\": [\"main_frame\"], \n"
+          "  \"url\": { \"hostSuffix\": \"example.com\" }, \n"
+          "  \"instanceType\": \"declarativeWebRequest.RequestMatcher\", \n"
+          "}"),
       &error);
   EXPECT_EQ("", error);
   ASSERT_TRUE(result.get());
@@ -86,12 +83,12 @@ TEST(WebRequestConditionTest, CreateCondition) {
       http_url, net::DEFAULT_PRIORITY, nullptr, TRAFFIC_ANNOTATION_FOR_TESTS));
   content::ResourceRequestInfo::AllocateForTesting(
       match_request.get(), content::RESOURCE_TYPE_MAIN_FRAME,
-      NULL,   // context
-      -1,     // render_process_id
-      -1,     // render_view_id
-      -1,     // render_frame_id
-      true,   // is_main_frame
-      true,   // allow_download
+      NULL,  // context
+      -1,    // render_process_id
+      -1,    // render_view_id
+      -1,    // render_frame_id
+      true,  // is_main_frame
+      content::ResourceInterceptPolicy::kAllowAll,
       false,  // is_async
       content::PREVIEWS_OFF,
       nullptr);  // navigation_ui_data
@@ -112,7 +109,7 @@ TEST(WebRequestConditionTest, CreateCondition) {
       -1,     // render_view_id
       -1,     // render_frame_id
       false,  // is_main_frame
-      true,   // allow_download
+      content::ResourceInterceptPolicy::kAllowAll,
       false,  // is_async
       content::PREVIEWS_OFF,
       nullptr);  // navigation_ui_data
@@ -133,13 +130,12 @@ TEST(WebRequestConditionTest, CreateConditionFirstPartyForCookies) {
   std::unique_ptr<WebRequestCondition> result;
 
   result = WebRequestCondition::Create(
-      NULL,
-      matcher.condition_factory(),
-      *base::test::ParseJson(
-           "{ \n"
-           "  \"firstPartyForCookiesUrl\": { \"hostPrefix\": \"fpfc\"}, \n"
-           "  \"instanceType\": \"declarativeWebRequest.RequestMatcher\", \n"
-           "}"),
+      NULL, matcher.condition_factory(),
+      *base::test::ParseJsonDeprecated(
+          "{ \n"
+          "  \"firstPartyForCookiesUrl\": { \"hostPrefix\": \"fpfc\"}, \n"
+          "  \"instanceType\": \"declarativeWebRequest.RequestMatcher\", \n"
+          "}"),
       &error);
   EXPECT_EQ("", error);
   ASSERT_TRUE(result.get());
@@ -162,12 +158,12 @@ TEST(WebRequestConditionTest, CreateConditionFirstPartyForCookies) {
   EXPECT_EQ(1u, request_data.first_party_url_match_ids.size());
   content::ResourceRequestInfo::AllocateForTesting(
       match_request.get(), content::RESOURCE_TYPE_MAIN_FRAME,
-      NULL,   // context
-      -1,     // render_process_id
-      -1,     // render_view_id
-      -1,     // render_frame_id
-      true,   // is_main_frame
-      true,   // allow_download
+      NULL,  // context
+      -1,    // render_process_id
+      -1,    // render_view_id
+      -1,    // render_frame_id
+      true,  // is_main_frame
+      content::ResourceInterceptPolicy::kAllowAll,
       false,  // is_async
       content::PREVIEWS_OFF,
       nullptr);  // navigation_ui_data
@@ -191,7 +187,7 @@ TEST(WebRequestConditionTest, NoUrlAttributes) {
   std::unique_ptr<WebRequestCondition> condition_empty =
       WebRequestCondition::Create(
           NULL, matcher.condition_factory(),
-          *base::test::ParseJson(
+          *base::test::ParseJsonDeprecated(
               "{ \n"
               "  \"instanceType\": \"declarativeWebRequest.RequestMatcher\", \n"
               "}"),
@@ -204,7 +200,7 @@ TEST(WebRequestConditionTest, NoUrlAttributes) {
   std::unique_ptr<WebRequestCondition> condition_no_url_true =
       WebRequestCondition::Create(
           NULL, matcher.condition_factory(),
-          *base::test::ParseJson(
+          *base::test::ParseJsonDeprecated(
               "{ \n"
               "  \"instanceType\": \"declarativeWebRequest.RequestMatcher\", "
               "\n"
@@ -221,7 +217,7 @@ TEST(WebRequestConditionTest, NoUrlAttributes) {
   std::unique_ptr<WebRequestCondition> condition_no_url_false =
       WebRequestCondition::Create(
           NULL, matcher.condition_factory(),
-          *base::test::ParseJson(
+          *base::test::ParseJsonDeprecated(
               "{ \n"
               "  \"instanceType\": \"declarativeWebRequest.RequestMatcher\", "
               "\n"
@@ -260,7 +256,7 @@ TEST(WebRequestConditionTest, CreateConditionSet) {
   URLMatcher matcher;
 
   WebRequestConditionSet::Values conditions;
-  conditions.push_back(base::test::ParseJson(
+  conditions.push_back(base::test::ParseJsonDeprecated(
       "{ \n"
       "  \"instanceType\": \"declarativeWebRequest.RequestMatcher\", \n"
       "  \"url\": { \n"
@@ -268,7 +264,7 @@ TEST(WebRequestConditionTest, CreateConditionSet) {
       "    \"schemes\": [\"http\"], \n"
       "  }, \n"
       "}"));
-  conditions.push_back(base::test::ParseJson(
+  conditions.push_back(base::test::ParseJsonDeprecated(
       "{ \n"
       "  \"instanceType\": \"declarativeWebRequest.RequestMatcher\", \n"
       "  \"url\": { \n"
@@ -334,7 +330,7 @@ TEST(WebRequestConditionTest, TestPortFilter) {
   URLMatcher matcher;
 
   WebRequestConditionSet::Values conditions;
-  conditions.push_back(base::test::ParseJson(
+  conditions.push_back(base::test::ParseJsonDeprecated(
       "{ \n"
       "  \"instanceType\": \"declarativeWebRequest.RequestMatcher\", \n"
       "  \"url\": { \n"
@@ -403,16 +399,15 @@ TEST(WebRequestConditionTest, ConditionsWithConflictingStages) {
   // Test error on incompatible application stages for involved attributes.
   error.clear();
   result = WebRequestCondition::Create(
-      NULL,
-      matcher.condition_factory(),
-      *base::test::ParseJson(
-           "{ \n"
-           "  \"instanceType\": \"declarativeWebRequest.RequestMatcher\", \n"
-           // Pass a JS array with one empty object to each of the header
-           // filters.
-           "  \"requestHeaders\": [{}], \n"
-           "  \"responseHeaders\": [{}], \n"
-           "}"),
+      NULL, matcher.condition_factory(),
+      *base::test::ParseJsonDeprecated(
+          "{ \n"
+          "  \"instanceType\": \"declarativeWebRequest.RequestMatcher\", \n"
+          // Pass a JS array with one empty object to each of the header
+          // filters.
+          "  \"requestHeaders\": [{}], \n"
+          "  \"responseHeaders\": [{}], \n"
+          "}"),
       &error);
   EXPECT_FALSE(error.empty());
   EXPECT_FALSE(result.get());

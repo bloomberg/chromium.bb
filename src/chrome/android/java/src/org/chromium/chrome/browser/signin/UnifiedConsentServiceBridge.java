@@ -13,16 +13,6 @@ import org.chromium.chrome.browser.profiles.Profile;
 public class UnifiedConsentServiceBridge {
     private UnifiedConsentServiceBridge() {}
 
-    /** Sets whether the user has given unified consent. */
-    public static void setUnifiedConsentGiven(boolean unifiedConsentGiven) {
-        nativeSetUnifiedConsentGiven(Profile.getLastUsedProfile(), unifiedConsentGiven);
-    }
-
-    /** Returns whether the user has given unified consent. */
-    public static boolean isUnifiedConsentGiven() {
-        return nativeIsUnifiedConsentGiven(Profile.getLastUsedProfile());
-    }
-
     /** Returns whether collection of URL-keyed anonymized data is enabled. */
     public static boolean isUrlKeyedAnonymizedDataCollectionEnabled() {
         return nativeIsUrlKeyedAnonymizedDataCollectionEnabled(Profile.getLastUsedProfile());
@@ -38,11 +28,17 @@ public class UnifiedConsentServiceBridge {
         return nativeIsUrlKeyedAnonymizedDataCollectionManaged(Profile.getLastUsedProfile());
     }
 
-    private static native void nativeSetUnifiedConsentGiven(Profile profile, boolean consentGiven);
-    private static native boolean nativeIsUnifiedConsentGiven(Profile profile);
+    /**
+     * Records the sync data types that were turned off during the advanced sync opt-in flow.
+     * See C++ unified_consent::metrics::RecordSyncSetupDataTypesHistrogam for details.
+     */
+    public static void recordSyncSetupDataTypesHistogram() {
+        nativeRecordSyncSetupDataTypesHistogram(Profile.getLastUsedProfile());
+    }
 
     private static native boolean nativeIsUrlKeyedAnonymizedDataCollectionEnabled(Profile profile);
     private static native void nativeSetUrlKeyedAnonymizedDataCollectionEnabled(
             Profile profile, boolean enabled);
     private static native boolean nativeIsUrlKeyedAnonymizedDataCollectionManaged(Profile profile);
+    private static native void nativeRecordSyncSetupDataTypesHistogram(Profile profile);
 }

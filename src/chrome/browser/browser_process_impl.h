@@ -33,7 +33,7 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 #include "services/network/public/cpp/network_quality_tracker.h"
-#include "services/network/public/mojom/network_service.mojom.h"
+#include "services/network/public/mojom/network_service.mojom-forward.h"
 
 class ChromeChildProcessWatcher;
 class ChromeDeviceClient;
@@ -43,6 +43,7 @@ class ChromeResourceDispatcherHostDelegate;
 class DevToolsAutoOpener;
 class RemoteDebuggingServer;
 class PrefRegistrySimple;
+class SiteIsolationPrefsObserver;
 class SystemNotificationHelper;
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -201,9 +202,6 @@ class BrowserProcessImpl : public BrowserProcess,
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
-  // The locale used by the application.
-  std::string actual_locale();
-
  private:
   using WebRtcEventLogManager = webrtc_event_logging::WebRtcEventLogManager;
 
@@ -234,9 +232,6 @@ class BrowserProcessImpl : public BrowserProcess,
 
   void ApplyAllowCrossOriginAuthPromptPolicy();
   void ApplyDefaultBrowserPolicy();
-#if !defined(OS_ANDROID)
-  void ApplyMetricsReportingPolicy();
-#endif
 
   void CacheDefaultWebClientState();
 
@@ -419,6 +414,8 @@ class BrowserProcessImpl : public BrowserProcess,
   std::unique_ptr<resource_coordinator::ResourceCoordinatorParts>
       resource_coordinator_parts_;
   std::unique_ptr<prefs::InProcessPrefServiceFactory> pref_service_factory_;
+
+  std::unique_ptr<SiteIsolationPrefsObserver> site_isolation_prefs_observer_;
 
 #if !defined(OS_ANDROID)
   // Called to signal the process' main message loop to exit.

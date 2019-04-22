@@ -108,4 +108,11 @@ interface VideoCaptureHost {
   // Get the format(s) in use by a device referenced by |session_id|.
   GetDeviceFormatsInUse(int32 device_id, int32 session_id)
     => (array<VideoCaptureFormat> formats_in_use);
+
+  // Notifies the host about a frame being dropped.
+  OnFrameDropped(int32 device_id,
+                 media.mojom.VideoCaptureFrameDropReason reason);
+
+  // Sends a log message to the VideoCaptureHost.
+  OnLog(int32 device_id, string message);
 };

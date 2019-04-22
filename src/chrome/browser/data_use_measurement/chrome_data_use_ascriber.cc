@@ -59,11 +59,6 @@ ChromeDataUseAscriber::~ChromeDataUseAscriber() {
   DCHECK(main_render_frame_entry_map_.empty());
   DCHECK(subframe_to_mainframe_map_.empty());
 
-  if (page_capping_observer_) {
-    // Remove the |page_capping_observer_| before the ObserverList is deleted.
-    RemoveObserver(page_capping_observer_.get());
-  }
-
   // DCHECK(pending_navigation_data_use_map_.empty());
   // DCHECK(data_use_recorders_.empty());
 }
@@ -121,7 +116,7 @@ ChromeDataUseAscriber::GetOrCreateDataUseRecorderEntry(
   if (!request->url().SchemeIsHTTPOrHTTPS())
     return data_use_recorders_.end();
 
-  const content::ResourceRequestInfo* request_info =
+  content::ResourceRequestInfo* request_info =
       content::ResourceRequestInfo::ForRequest(request);
   if (!request_info ||
       request_info->GetGlobalRequestID() == content::GlobalRequestID()) {
@@ -248,7 +243,7 @@ void ChromeDataUseAscriber::OnUrlRequestCompletedOrDestroyed(
   }
 
   {
-    const content::ResourceRequestInfo* request_info =
+    content::ResourceRequestInfo* request_info =
         content::ResourceRequestInfo::ForRequest(request);
     if (request_info &&
         request_info->GetResourceType() == content::RESOURCE_TYPE_MAIN_FRAME &&
@@ -274,7 +269,7 @@ void ChromeDataUseAscriber::OnUrlRequestCompletedOrDestroyed(
   // map.
   bool page_load_is_tracked = frame_is_tracked;
 
-  const content::ResourceRequestInfo* request_info =
+  content::ResourceRequestInfo* request_info =
       content::ResourceRequestInfo::ForRequest(request);
 
   // If the frame is not tracked, but this is a main frame request, it might be

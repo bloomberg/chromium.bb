@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/ios/block_types.h"
@@ -32,16 +33,16 @@
 #import "ios/chrome/browser/tabs/tab_helper_util.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/tabs/tab_private.h"
-#import "ios/chrome/browser/ui/open_in_controller.h"
-#import "ios/chrome/browser/ui/open_in_controller_testing.h"
+#import "ios/chrome/browser/ui/open_in/open_in_controller.h"
+#import "ios/chrome/browser/ui/open_in/open_in_controller_testing.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #include "ios/chrome/test/block_cleanup_test.h"
 #include "ios/chrome/test/ios_chrome_scoped_testing_chrome_browser_state_manager.h"
 #include "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
 #include "ios/public/provider/chrome/browser/test_chrome_browser_provider.h"
 #import "ios/testing/ocmock_complex_type_helper.h"
+#include "ios/web/common/features.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
-#include "ios/web/public/features.h"
 #include "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/referrer.h"
@@ -219,7 +220,7 @@ class TabTest : public BlockCleanupTest,
     tab_ = LegacyTabHelper::GetTabForWebState(web_state_impl_.get());
     web::NavigationManager::WebLoadParams load_params(
         GURL("chrome://version/"));
-    [tab_ navigationManager]->LoadURLWithParams(load_params);
+    web_state_impl_->GetNavigationManager()->LoadURLWithParams(load_params);
 
     // There should be no entries in the history at this point.
     history::QueryResults results;
@@ -272,7 +273,8 @@ class TabTest : public BlockCleanupTest,
     web_state_impl_->SetIsLoading(true);
 
     base::string16 new_title = base::SysNSStringToUTF16(title);
-    [tab_ navigationManager]->GetLastCommittedItem()->SetTitle(new_title);
+    web_state_impl_->GetNavigationManager()->GetLastCommittedItem()->SetTitle(
+        new_title);
 
     web_state_impl_->OnTitleChanged();
     web_state_impl_->SetIsLoading(false);
@@ -286,7 +288,7 @@ class TabTest : public BlockCleanupTest,
     // The only test that uses it is currently disabled.
     web::NavigationManager::WebLoadParams params(url);
     params.transition_type = ui::PAGE_TRANSITION_TYPED;
-    [tab_ navigationManager]->LoadURLWithParams(params);
+    web_state_impl_->GetNavigationManager()->LoadURLWithParams(params);
     web_state_impl_->SetIsLoading(true);
     web_state_impl_->SetIsLoading(false);
     web_state_impl_->OnPageLoaded(url, true);
@@ -317,13 +319,15 @@ class TabTest : public BlockCleanupTest,
   }
 
   void CheckCurrentItem(const GURL& expectedUrl, NSString* expectedTitle) {
-    web::NavigationItem* item = [tab_ navigationManager]->GetVisibleItem();
+    web::NavigationItem* item =
+        web_state_impl_->GetNavigationManager()->GetVisibleItem();
     EXPECT_EQ(expectedUrl, item->GetURL());
     EXPECT_EQ(base::SysNSStringToUTF16(expectedTitle), item->GetTitle());
   }
 
   void CheckCurrentItem(const history::URLResult& historyResult) {
-    web::NavigationItem* item = [tab_ navigationManager]->GetVisibleItem();
+    web::NavigationItem* item =
+        web_state_impl_->GetNavigationManager()->GetVisibleItem();
     CheckHistoryResult(historyResult, item->GetURL(),
                        base::SysUTF16ToNSString(item->GetTitle()));
   }
@@ -439,9 +443,10 @@ TEST_P(TabTest, GetSuggestedFilenameFromDefaultName) {
 
 TEST_P(TabTest, ClosingWebStateDoesNotRemoveSnapshot) {
   id partialMock = OCMPartialMock(
-      SnapshotCacheFactory::GetForBrowserState(tab_.browserState));
-  SnapshotTabHelper::CreateForWebState(tab_.webState, tab_.tabId);
-  [[partialMock reject] removeImageWithSessionID:tab_.tabId];
+      SnapshotCacheFactory::GetForBrowserState(chrome_browser_state_.get()));
+  NSString* tab_id = TabIdTabHelper::FromWebState(tab_.webState)->tab_id();
+  SnapshotTabHelper::CreateForWebState(tab_.webState, tab_id);
+  [[partialMock reject] removeImageWithSessionID:tab_id];
 
   // Use @try/@catch as -reject raises an exception.
   @try {
@@ -456,17 +461,19 @@ TEST_P(TabTest, ClosingWebStateDoesNotRemoveSnapshot) {
 
 TEST_P(TabTest, CallingRemoveSnapshotRemovesSnapshot) {
   id partialMock = OCMPartialMock(
-      SnapshotCacheFactory::GetForBrowserState(tab_.browserState));
-  SnapshotTabHelper::CreateForWebState(tab_.webState, tab_.tabId);
-  OCMExpect([partialMock removeImageWithSessionID:tab_.tabId]);
+      SnapshotCacheFactory::GetForBrowserState(chrome_browser_state_.get()));
+  NSString* tab_id = TabIdTabHelper::FromWebState(tab_.webState)->tab_id();
+
+  SnapshotTabHelper::CreateForWebState(tab_.webState, tab_id);
+  OCMExpect([partialMock removeImageWithSessionID:tab_id]);
 
   SnapshotTabHelper::FromWebState(tab_.webState)->RemoveSnapshot();
   EXPECT_OCMOCK_VERIFY(partialMock);
 }
 
-INSTANTIATE_TEST_CASE_P(ProgrammaticTabTest,
-                        TabTest,
-                        ::testing::Values(NavigationManagerChoice::LEGACY,
-                                          NavigationManagerChoice::WK_BASED));
+INSTANTIATE_TEST_SUITE_P(ProgrammaticTabTest,
+                         TabTest,
+                         ::testing::Values(NavigationManagerChoice::LEGACY,
+                                           NavigationManagerChoice::WK_BASED));
 
 }  // namespace

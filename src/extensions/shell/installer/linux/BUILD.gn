@@ -49,7 +49,8 @@ action("strip_app_shell_binary") {
     stripped_file,
   ]
   args = [
-    rebase_path("//third_party/eu-strip/bin/eu-strip", root_build_dir),
+    rebase_path("//buildtools/third_party/eu-strip/bin/eu-strip",
+                root_build_dir),
     "-o",
     rebase_path(stripped_file, root_build_dir),
     "-f",

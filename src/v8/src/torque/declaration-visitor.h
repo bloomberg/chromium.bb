@@ -45,9 +45,14 @@ class DeclarationVisitor : public FileVisitor {
 
   void Visit(TypeDeclaration* decl);
 
+  void DeclareMethods(AggregateType* container,
+                      const std::vector<Declaration*>& methods);
+  void Visit(StructDeclaration* decl);
+  void Visit(ClassDeclaration* decl);
+
   void Visit(TypeAliasDeclaration* decl) {
     const Type* type = Declarations::GetType(decl->type);
-    type->AddAlias(decl->name);
+    type->AddAlias(decl->name->value);
     Declarations::DeclareType(decl->name, type, true);
   }
 
@@ -80,7 +85,7 @@ class DeclarationVisitor : public FileVisitor {
   void Visit(GenericDeclaration* decl);
   void Visit(SpecializationDeclaration* decl);
   void Visit(ExternConstDeclaration* decl);
-  void Visit(StructDeclaration* decl);
+  void Visit(CppIncludeDeclaration* decl);
 
   Signature MakeSpecializedSignature(const SpecializationKey& key);
   Callable* SpecializeImplicit(const SpecializationKey& key);
@@ -88,8 +93,20 @@ class DeclarationVisitor : public FileVisitor {
                        base::Optional<const CallableNodeSignature*> signature,
                        base::Optional<Statement*> body);
 
+  void FinalizeStructsAndClasses();
+
  private:
   void DeclareSpecializedTypes(const SpecializationKey& key);
+
+  void FinalizeStructFieldsAndMethods(StructType* struct_type,
+                                      StructDeclaration* struct_declaration);
+  void FinalizeClassFieldsAndMethods(ClassType* class_type,
+                                     ClassDeclaration* class_declaration);
+
+  std::vector<std::tuple<Scope*, StructDeclaration*, StructType*>>
+      struct_declarations_;
+  std::vector<std::tuple<Scope*, ClassDeclaration*, ClassType*>>
+      class_declarations_;
 };
 
 }  // namespace torque

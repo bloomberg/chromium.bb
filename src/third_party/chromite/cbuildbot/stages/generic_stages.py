@@ -38,6 +38,7 @@ from chromite.lib import portage_util
 from chromite.lib import results_lib
 from chromite.lib import retry_util
 from chromite.lib import timeout_util
+from chromite.lib.buildstore import BuildIdentifier
 
 
 class BuilderStage(object):
@@ -68,12 +69,18 @@ class BuilderStage(object):
     assert match, 'Class name %s does not end with Stage' % cls.__name__
     return match.group(1)
 
-  def __init__(self, builder_run, suffix=None, attempt=None, max_retry=None,
+  def __init__(self,
+               builder_run,
+               buildstore,
+               suffix=None,
+               attempt=None,
+               max_retry=None,
                build_root=None):
     """Create a builder stage.
 
     Args:
       builder_run: The BuilderRun object for the run this stage is part of.
+      buildstore: BuildStore object to make DB calls.
       suffix: The suffix to append to the buildbot name. Defaults to None.
       attempt: If this build is to be retried, the current attempt number
         (starting from 1). Defaults to None. Is only valid if |max_retry| is
@@ -83,6 +90,7 @@ class BuilderStage(object):
       build_root: Override the builder_run build_root.
     """
     self._run = builder_run
+    self.buildstore = buildstore
 
     self._attempt = attempt
     self._max_retry = max_retry
@@ -130,8 +138,8 @@ class BuilderStage(object):
     if self._run.options.chrome_root:
       self._portage_extra_env['CHROME_ORIGIN'] = 'LOCAL_SOURCE'
 
-    self._latest_toolchain = (self._run.config.latest_toolchain or
-                              self._run.options.latest_toolchain)
+    self._latest_toolchain = (
+        self._run.config.latest_toolchain or self._run.options.latest_toolchain)
     if self._latest_toolchain and self._run.config.gcc_githash:
       useflags.append('git_gcc')
       self._portage_extra_env['GCC_GITHASH'] = self._run.config.gcc_githash
@@ -203,23 +211,28 @@ class BuilderStage(object):
 
     try:
       retry_util.RetryException(perf_uploader.PerfUploadingError, 3,
-                                perf_uploader.UploadPerfValues,
-                                *args, **kwargs)
+                                perf_uploader.UploadPerfValues, *args, **kwargs)
     except perf_uploader.PerfUploadingError:
       logging.exception('Uploading perf data failed')
 
-  def _InsertBuildStageInCIDB(self, **kwargs):
+  def _InsertBuildStageInCIDB(self,
+                              name,
+                              board=None,
+                              status=constants.BUILDER_STATUS_PLANNED):
     """Insert a build stage in cidb.
 
       Expected arguments are the same as cidb.InsertBuildStage, except
       |build_id|, which is populated here.
     """
-    build_id, db = self._run.GetCIDBHandle()
-    if db:
-      kwargs['build_id'] = build_id
-      self._build_stage_id = db.InsertBuildStage(**kwargs)
+    build_identifier, _ = self._run.GetCIDBHandle()
+    build_id = build_identifier.cidb_id
+    if build_id:
+      self._build_stage_id = self.buildstore.InsertBuildStage(
+          build_id, name, board, status)
 
-  def _FinishBuildStageInCIDBAndMonarch(self, stage_result, status,
+  def _FinishBuildStageInCIDBAndMonarch(self,
+                                        stage_result,
+                                        status,
                                         elapsed_time_seconds=0):
     """Mark the stage as finished in cidb.
 
@@ -229,14 +242,15 @@ class BuilderStage(object):
           constants.BUILDER_COMPLETED_STATUSES
       elapsed_time_seconds: (optional) Elapsed time in stage, in seconds.
     """
-    _, db = self._run.GetCIDBHandle()
-    if self._build_stage_id is not None and db is not None:
-      db.FinishBuildStage(self._build_stage_id, status)
+    if self._build_stage_id is not None and self.buildstore.AreClientsReady():
+      self.buildstore.FinishBuildStage(self._build_stage_id, status)
 
-    fields = {'status': status,
-              'name': self.name,
-              'build_config': self._run.config.name,
-              'important': self._run.config.important}
+    fields = {
+        'status': status,
+        'name': self.name,
+        'build_config': self._run.config.name,
+        'important': self._run.config.important
+    }
 
     metrics.CumulativeSecondsDistribution(constants.MON_STAGE_DURATION).add(
         elapsed_time_seconds, fields=fields)
@@ -247,32 +261,33 @@ class BuilderStage(object):
         'tryjob': self.metrics_tryjob,
     }
     duration_metrics_fields = copy.deepcopy(common_metrics_fields)
-    duration_metrics_fields.update({'stage': self.name,
-                                    'status': status})
+    duration_metrics_fields.update({'stage': self.name, 'status': status})
     if self.metrics_branch is not None:
       metrics.FloatMetric(constants.MON_STAGE_INSTANCE_DURATION).set(
           elapsed_time_seconds, fields=duration_metrics_fields)
     if (isinstance(stage_result, BaseException) and
         self._build_stage_id is not None):
       failed_metrics_fields = copy.deepcopy(common_metrics_fields)
-      failed_metrics_fields.update({'failed_stage': self.name,
-                                    'category': self.category})
-      _, db = self._run.GetCIDBHandle()
-      if db:
-        failures_lib.ReportStageFailure(db, self._build_stage_id, stage_result,
-                                        metrics_fields=failed_metrics_fields)
+      failed_metrics_fields.update({
+          'failed_stage': self.name,
+          'category': self.category
+      })
+      if self.buildstore.AreClientsReady():
+        failures_lib.ReportStageFailure(
+            self.buildstore,
+            self._build_stage_id,
+            stage_result,
+            metrics_fields=failed_metrics_fields)
 
   def _StartBuildStageInCIDB(self):
     """Mark the stage as inflight in cidb."""
-    _, db = self._run.GetCIDBHandle()
-    if self._build_stage_id is not None and db is not None:
-      db.StartBuildStage(self._build_stage_id)
+    if self._build_stage_id is not None and self.buildstore.AreClientsReady():
+      self.buildstore.StartBuildStage(self._build_stage_id)
 
   def _WaitBuildStageInCIDB(self):
     """Mark the stage as waiting in cidb."""
-    _, db = self._run.GetCIDBHandle()
-    if self._build_stage_id is not None and db is not None:
-      db.WaitBuildStage(self._build_stage_id)
+    if self._build_stage_id is not None and self.buildstore.AreClientsReady():
+      self.buildstore.WaitBuildStage(self._build_stage_id)
 
   def _TranslateResultToCIDBStatus(self, result):
     """Translates the different result_lib.Result results to builder statuses.
@@ -303,6 +318,8 @@ class BuilderStage(object):
     if manifest_branch is None:
       manifest_branch = self._run.manifest_branch
 
+    kwargs.setdefault('manifest_repo_url', manifest_url)
+    kwargs.setdefault('directory', self._build_root)
     kwargs.setdefault('referenced_repo', self._run.options.reference_repo)
     kwargs.setdefault('branch', manifest_branch)
     kwargs.setdefault('manifest', self._run.config.manifest)
@@ -313,7 +330,7 @@ class BuilderStage(object):
     if hasattr(self._run.options, 'preserve_paths'):
       kwargs.setdefault('preserve_paths', self._run.options.preserve_paths)
 
-    return repository.RepoRepository(manifest_url, self._build_root, **kwargs)
+    return repository.RepoRepository(**kwargs)
 
   def GetBuildbucketClient(self):
     """Build a buildbucket_client instance for Buildbucket related operations.
@@ -324,7 +341,8 @@ class BuilderStage(object):
     """
     if buildbucket_lib.GetServiceAccount(constants.CHROMEOS_SERVICE_ACCOUNT):
       return buildbucket_lib.BuildbucketClient(
-          auth.GetAccessToken, None,
+          auth.GetAccessToken,
+          None,
           service_account_json=constants.CHROMEOS_SERVICE_ACCOUNT)
 
     if self._run.InProduction():
@@ -352,25 +370,27 @@ class BuilderStage(object):
 
     return buildbucket_ids
 
-  def GetBuildFailureMessageFromCIDB(self, build_id, db):
-    """Get message summarizing failures of this build from CIDB.
+  def GetBuildFailureMessageFromBuildStore(self, buildstore, build_identifier):
+    """Get message summarizing failures of this build from BuildStore.
 
     Args:
-      build_id: The build id of the build being inspected.
-      db: An instance of cidb.CIDBConnection.
+      buildstore: An instance of BuildStore to make DB calls.
+      build_identifier: The instance of BuildIdentifier of the current build.
 
     Returns:
       An instance of build_failure_message.BuildFailureMessage.
     """
-    stage_failures = db.GetBuildsFailures([build_id])
+    stage_failures = buildstore.GetBuildsFailures([
+        build_identifier.buildbucket_id])
     failure_msg_manager = failure_message_lib.FailureMessageManager()
     failure_messages = failure_msg_manager.ConstructStageFailureMessages(
         stage_failures)
-    master_build_id = None
-    if stage_failures:
-      master_build_id = stage_failures[0].master_build_id
+    master_build_identifier = BuildIdentifier(
+        self._run.options.master_build_id,
+        self._run.options.master_buildbucket_id)
     aborted = builder_status_lib.BuilderStatusManager.AbortedBySelfDestruction(
-        db, build_id, master_build_id)
+        buildstore, build_identifier.buildbucket_id,
+        master_build_identifier)
 
     return builder_status_lib.BuilderStatusManager.CreateBuildFailureMessage(
         self._run.config.name,
@@ -387,27 +407,27 @@ class BuilderStage(object):
     """
     failure_messages = results_lib.Results.GetStageFailureMessage()
     return builder_status_lib.BuilderStatusManager.CreateBuildFailureMessage(
-        self._run.config.name,
-        self._run.config.overlays,
-        self._run.ConstructDashboardURL(),
-        failure_messages)
+        self._run.config.name, self._run.config.overlays,
+        self._run.ConstructDashboardURL(), failure_messages)
 
   def GetBuildFailureMessage(self):
     """Get message summarizing failure of this build."""
-    build_id, db = self._run.GetCIDBHandle()
-    if db is not None:
-      return self.GetBuildFailureMessageFromCIDB(build_id, db)
+    build_identifier, _ = self._run.GetCIDBHandle()
+    if self.buildstore.AreClientsReady():
+      return self.GetBuildFailureMessageFromBuildStore(
+          self.buildstore, build_identifier)
     else:
       return self.GetBuildFailureMessageFromResults()
 
   def GetJobKeyvals(self):
     """Get job keyvals for the build stage."""
-    build_id, _ = self._run.GetCIDBHandle()
+    build_identifier, _ = self._run.GetCIDBHandle()
+    build_id = build_identifier.cidb_id
     job_keyvals = {
-        constants.JOB_KEYVAL_DATASTORE_PARENT_KEY:
-            ('Build', build_id, 'BuildStage', self._build_stage_id),
-        constants.JOB_KEYVAL_CIDB_BUILD_ID: build_id,
-        constants.JOB_KEYVAL_CIDB_BUILD_STAGE_ID: self._build_stage_id,
+        constants.JOB_KEYVAL_DATASTORE_PARENT_KEY: (
+            'Build', build_id),
+        constants.JOB_KEYVAL_CIDB_BUILD_ID:
+            build_id
     }
     return job_keyvals
 
@@ -449,8 +469,8 @@ class BuilderStage(object):
       The value of the environment variable, as a string. If no such variable
       can be found, return the empty string.
     """
-    return portage_util.PortageqEnvvar(envvar, board=board,
-                                       allow_undefined=True)
+    return portage_util.PortageqEnvvar(
+        envvar, board=board, allow_undefined=True)
 
   def _GetSlaveConfigs(self):
     """Get the slave configs for the current build config.
@@ -490,13 +510,13 @@ class BuilderStage(object):
     """
 
     slave_config_map = self._run.site_config.GetSlaveConfigMapForMaster(
-        self._run.config, self._run.options,
-        important_only=important_only)
+        self._run.config, self._run.options, important_only=important_only)
     if important_only:
       experimental_builders = self._run.attrs.metadata.GetValueWithDefault(
           constants.METADATA_EXPERIMENTAL_BUILDERS, [])
       slave_config_map = {
-          k: v for k, v in slave_config_map.iteritems()
+          k: v
+          for k, v in slave_config_map.iteritems()
           if k not in experimental_builders
       }
     return slave_config_map
@@ -512,8 +532,9 @@ class BuilderStage(object):
       waterfall_name += tag
     logging.PrintBuildbotStepName(waterfall_name)
 
-    self._PrintLoudly('Start Stage %s - %s\n\n%s' % (
-        self.name, cros_build_lib.UserDateTimeFormat(), self.__doc__))
+    self._PrintLoudly(
+        'Start Stage %s - %s\n\n%s' %
+        (self.name, cros_build_lib.UserDateTimeFormat(), self.__doc__))
 
   def Finish(self):
     """Called after a stage has already completed.
@@ -683,8 +704,8 @@ class BuilderStage(object):
       self._WaitBuildStageInCIDB()
       ready = self.WaitUntilReady()
       if not ready:
-        self._PrintLoudly('Stage %s precondition failed while waiting to start.'
-                          % self.name)
+        self._PrintLoudly(
+            'Stage %s precondition failed while waiting to start.' % self.name)
         # If WaitUntilReady is false, mark stage as skipped in Results and CIDB
         result = results_lib.Results.SKIPPED
         return
@@ -732,11 +753,15 @@ class BuilderStage(object):
       if elapsed_time is None:
         elapsed_time = time.time() - start_time
 
-      self._RecordResult(self.name, result, description, prefix=self._prefix,
-                         board=board, time=elapsed_time,
-                         build_stage_id=self._build_stage_id)
-      self._FinishBuildStageInCIDBAndMonarch(result,
-                                             cidb_result, elapsed_time)
+      self._RecordResult(
+          self.name,
+          result,
+          description,
+          prefix=self._prefix,
+          board=board,
+          time=elapsed_time,
+          build_stage_id=None)
+      self._FinishBuildStageInCIDBAndMonarch(result, cidb_result, elapsed_time)
 
       try:
         self.Finish()
@@ -776,20 +801,23 @@ class RetryStage(object):
   """Retry a given stage multiple times to see if it passes."""
   category = constants.UNCATEGORIZED_STAGE
 
-  def __init__(self, builder_run, max_retry, stage, *args, **kwargs):
+  def __init__(self, builder_run, buildstore, max_retry, stage, *args,
+               **kwargs):
     """Create a RetryStage object.
 
     Args:
       builder_run: See arguments to BuilderStage.__init__()
+      buildstore: BuildStore instance to make DB calls with.
       max_retry: The number of times to try the given stage.
       stage: The stage class to create.
       *args: A list of arguments to pass to the stage constructor.
       **kwargs: A list of keyword arguments to pass to the stage constructor.
     """
     self._run = builder_run
+    self.buildstore = buildstore
     self.max_retry = max_retry
     self.stage = stage
-    self.args = (builder_run,) + args
+    self.args = (builder_run, buildstore,) + args
     self.kwargs = kwargs
     self.names = []
     self._build_stage_ids = []
@@ -807,8 +835,11 @@ class RetryStage(object):
     """Run the stage once, incrementing the attempt number as needed."""
     suffix = ' (attempt %d)' % (self.attempt,)
     stage_obj = self.stage(
-        *self.args, attempt=self.attempt, max_retry=self.max_retry,
-        suffix=suffix, **self.kwargs)
+        *self.args,
+        attempt=self.attempt,
+        max_retry=self.max_retry,
+        suffix=suffix,
+        **self.kwargs)
     self.names.extend(stage_obj.GetStageNames())
     self._build_stage_ids.extend(stage_obj.GetBuildStageIDs())
     self.attempt += 1
@@ -817,25 +848,27 @@ class RetryStage(object):
   def Run(self):
     """Retry the given stage multiple times to see if it passes."""
     self.attempt = 1
-    retry_util.RetryException(
-        failures_lib.RetriableStepFailure, self.max_retry, self._PerformStage)
+    retry_util.RetryException(failures_lib.RetriableStepFailure, self.max_retry,
+                              self._PerformStage)
 
 
 class RepeatStage(object):
   """Run a given stage multiple times to see if it fails."""
   category = constants.UNCATEGORIZED_STAGE
 
-  def __init__(self, builder_run, count, stage, *args, **kwargs):
+  def __init__(self, builder_run, buildstore, count, stage, *args, **kwargs):
     """Create a RepeatStage object.
 
     Args:
       builder_run: See arguments to BuilderStage.__init__()
+      buildstore: BuildStore instance to make DB calls with.
       count: The number of times to try the given stage.
       stage: The stage class to create.
       *args: A list of arguments to pass to the stage constructor.
       **kwargs: A list of keyword arguments to pass to the stage constructor.
     """
     self._run = builder_run
+    self.buildstore = buildstore
     self.count = count
     self.stage = stage
     self.args = (builder_run,) + args
@@ -876,7 +909,7 @@ class BoardSpecificBuilderStage(BuilderStage):
     board_runattrs: BoardRunAttributes object for this stage.
   """
 
-  def __init__(self, builder_run, board, suffix=None, **kwargs):
+  def __init__(self, builder_run, buildstore, board, suffix=None, **kwargs):
     if not isinstance(board, basestring):
       raise TypeError('Expected string, got %r' % (board,))
 
@@ -889,37 +922,54 @@ class BoardSpecificBuilderStage(BuilderStage):
     if len(builder_run.config.boards) > 1 or builder_run.config.grouped:
       suffix = self.UpdateSuffix(board, suffix)
 
-    super(BoardSpecificBuilderStage, self).__init__(builder_run, suffix=suffix,
-                                                    **kwargs)
+    super(BoardSpecificBuilderStage, self).__init__(
+        builder_run, buildstore, suffix=suffix, **kwargs)
 
   def _RecordResult(self, *args, **kwargs):
     """Record a successful or failed result."""
     kwargs.setdefault('board', self._current_board)
     super(BoardSpecificBuilderStage, self)._RecordResult(*args, **kwargs)
 
-  def _InsertBuildStageInCIDB(self, **kwargs):
+  def _InsertBuildStageInCIDB(self,
+                              name,
+                              board=None,
+                              status=constants.BUILDER_STATUS_PLANNED):
     """Insert a build stage in cidb."""
-    kwargs.setdefault('board', self._current_board)
-    super(BoardSpecificBuilderStage, self)._InsertBuildStageInCIDB(**kwargs)
+    if not board:
+      board = self._current_board
+    super(BoardSpecificBuilderStage, self)._InsertBuildStageInCIDB(
+        name, board, status)
 
   def GetListOfPackagesToBuild(self):
     """Returns a list of packages to build."""
+
+    # If we have defined explicit packages to build for ChromeOS Findit
+    # integration, add those to the list of _run.config.packages to build.
+    packages = []
+    if self._run.options.cbb_build_packages:
+      logging.info('Adding list of packages to build for ChromeOS Findit: %s',
+                   self._run.options.cbb_build_packages)
+      packages += self._run.options.cbb_build_packages
     if self._run.config.packages:
-      # If the list of packages is set in the config, use it.
-      return self._run.config.packages
+      packages += self._run.config.packages
+
+    # Short circuit if there are any Findit or explicit builds specified.
+    if packages:
+      return packages
 
     # TODO: the logic below is duplicated from the build_packages
     # script. Once we switch to `cros build`, we should consolidate
     # the logic in a shared location.
-    packages = [constants.TARGET_OS_PKG]
+    packages += [constants.TARGET_OS_PKG]
     # Build Dev packages by default.
     packages += [constants.TARGET_OS_DEV_PKG]
     # Build test packages by default.
     packages += [constants.TARGET_OS_TEST_PKG]
     # Build factory packages if requested by config.
     if self._run.config.factory:
-      packages += ['virtual/target-os-factory',
-                   'virtual/target-os-factory-shim']
+      packages += [
+          'virtual/target-os-factory', 'virtual/target-os-factory-shim'
+      ]
 
     if self._run.ShouldBuildAutotest():
       packages += ['chromeos-base/autotest-all']
@@ -951,9 +1001,13 @@ class BoardSpecificBuilderStage(BuilderStage):
     logging.info('Waiting up to %s for %s ...', timeout_str, pretty_name)
     return self.board_runattrs.GetParallel(board_attr, timeout=timeout)
 
-  def GetImageDirSymlink(self, pointer='latest-cbuildbot'):
+  def GetImageDirSymlink(self, pointer='latest-cbuildbot', buildroot=None):
     """Get the location of the current image."""
-    return os.path.join(self._run.buildroot, 'src', 'build', 'images',
+
+    if not buildroot:
+      buildroot = self._run.buildroot
+
+    return os.path.join(buildroot, 'src', 'build', 'images',
                         self._current_board, pointer)
 
 
@@ -1036,22 +1090,26 @@ class ArchivingStageMixin(object):
       The queue to use. This is only useful if you did not supply a queue.
     """
     upload = lambda path: self.UploadArtifact(path, archive, strict)
-    with parallel.BackgroundTaskRunner(upload, queue=queue,
-                                       processes=self.PROCESSES) as bg_queue:
+    with parallel.BackgroundTaskRunner(
+        upload, queue=queue, processes=self.PROCESSES) as bg_queue:
       yield bg_queue
 
   def PrintDownloadLink(self, filename, prefix='', text_to_display=None):
-    """Print a link to an artifact in Google Storage.
+    """Log a link to an artifact in Google Storage and return the URL.
 
     Args:
       filename: The filename of the uploaded file.
       prefix: The prefix to put in front of the filename.
       text_to_display: Text to display. If None, use |prefix| + |filename|.
+
+    Returns:
+      The download URL.
     """
     url = '%s/%s' % (self.download_url.rstrip('/'), filename)
     if not text_to_display:
       text_to_display = '%s%s' % (prefix, filename)
     logging.PrintBuildbotLink(text_to_display, url)
+    return url
 
   def _IsInUploadBlacklist(self, filename):
     """Check if this file is blacklisted to go into a board's extra buckets.
@@ -1077,9 +1135,10 @@ class ArchivingStageMixin(object):
     Returns:
       True is the build should not be copied to this moblab url
     """
-    bot_filter_list = ['paladin', 'trybot', 'pfq', 'pre-cq', 'tryjob']
-    if (url.find('moblab') and
-        any(bot_id.find(filter) != -1 for filter in bot_filter_list)):
+    bot_filter_list = ['paladin', 'trybot', 'pfq', 'pre-cq', 'tryjob',
+                       'postsubmit']
+    if ('moblab' in url and
+        any(filter in bot_id for filter in bot_filter_list)):
       return True
     return False
 
@@ -1104,7 +1163,8 @@ class ArchivingStageMixin(object):
         (hasattr(self, '_current_board') or board)):
       board = board or self._current_board
       custom_artifacts_file = portage_util.ReadOverlayFile(
-          'scripts/artifacts.json', board=board)
+          'scripts/artifacts.json', board=board,
+          buildroot=self._build_root)
       if custom_artifacts_file is not None:
         json_file = json.loads(custom_artifacts_file)
         for url in json_file.get('extra_upload_urls', []):
@@ -1132,8 +1192,12 @@ class ArchivingStageMixin(object):
     upload_urls = self._GetUploadUrls(filename)
     try:
       commands.UploadArchivedFile(
-          self.archive_path, upload_urls, filename, self._run.debug,
-          update_list=True, acl=self.acl)
+          self.archive_path,
+          upload_urls,
+          filename,
+          self._run.options.debug_forced,
+          update_list=True,
+          acl=self.acl)
     except failures_lib.GSUploadFailure as e:
       logging.PrintBuildbotStepText('Upload failed')
       if e.HasFatalFailure(
@@ -1145,9 +1209,10 @@ class ArchivingStageMixin(object):
         # Treat gsutil flake as a warning if it's the only problem.
         self._HandleExceptionAsWarning(sys.exc_info())
 
-
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
-  def UploadMetadata(self, upload_queue=None, filename=constants.METADATA_JSON,
+  def UploadMetadata(self,
+                     upload_queue=None,
+                     filename=constants.METADATA_JSON,
                      export=False):
     """Create and upload JSON file of the builder run's metadata, and to cidb.
 
@@ -1173,8 +1238,11 @@ class ArchivingStageMixin(object):
 
     # Stages may run in parallel, so we have to do atomic updates on this.
     logging.info('Writing metadata to %s.', metadata_json)
-    osutils.WriteFile(metadata_json, self._run.attrs.metadata.GetJSON(),
-                      atomic=True, makedirs=True)
+    osutils.WriteFile(
+        metadata_json,
+        self._run.attrs.metadata.GetJSON(),
+        atomic=True,
+        makedirs=True)
 
     if upload_queue is not None:
       logging.info('Adding metadata file %s to upload queue.', metadata_json)
@@ -1183,11 +1251,12 @@ class ArchivingStageMixin(object):
       logging.info('Uploading metadata file %s now.', metadata_json)
       self.UploadArtifact(filename, archive=False)
 
-    build_id, db = self._run.GetCIDBHandle()
-    if db:
+    build_identifier, _ = self._run.GetCIDBHandle()
+    build_id = build_identifier.cidb_id
+    if self.buildstore.AreClientsReady():
       logging.info('Writing updated metadata to database for build_id %s.',
                    build_id)
-      db.UpdateMetadata(build_id, self._run.attrs.metadata)
+      self.buildstore.UpdateMetadata(build_id, self._run.attrs.metadata)
       if export:
         d = self._run.attrs.metadata.GetDict()
         if constants.METADATA_TAGS in d:
@@ -1196,10 +1265,13 @@ class ArchivingStageMixin(object):
             with tempfile.NamedTemporaryFile() as f:
               logging.info('Export tags to gcloud via %s.', f.name)
               logging.debug('Exporting: %s', d[constants.METADATA_TAGS])
-              osutils.WriteFile(f.name, json.dumps(d[constants.METADATA_TAGS]),
-                                atomic=True, makedirs=True)
-              commands.ExportToGCloud(self._build_root, c_file, f.name,
-                                      caller=type(self).__name__)
+              osutils.WriteFile(
+                  f.name,
+                  json.dumps(d[constants.METADATA_TAGS]),
+                  atomic=True,
+                  makedirs=True)
+              commands.ExportToGCloud(
+                  self._build_root, c_file, f.name, caller=type(self).__name__)
           else:
             logging.warn('No datastore credential file found, Skipping Export')
             return False

@@ -5,6 +5,9 @@
 #ifndef CONTENT_BROWSER_DEVTOOLS_PROTOCOL_INPUT_HANDLER_H_
 #define CONTENT_BROWSER_DEVTOOLS_PROTOCOL_INPUT_HANDLER_H_
 
+#include <memory>
+#include <set>
+
 #include "base/containers/circular_deque.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
@@ -14,6 +17,9 @@
 #include "content/browser/devtools/protocol/devtools_domain_handler.h"
 #include "content/browser/devtools/protocol/input.h"
 #include "content/browser/renderer_host/input/synthetic_gesture.h"
+#include "content/browser/renderer_host/input/synthetic_pointer_driver.h"
+#include "content/browser/renderer_host/render_widget_host_view_base.h"
+#include "content/common/input/synthetic_pointer_action_list_params.h"
 #include "content/common/input/synthetic_smooth_scroll_gesture_params.h"
 #include "content/public/browser/render_widget_host.h"
 #include "third_party/blink/public/platform/web_input_event.h"
@@ -66,9 +72,11 @@ class InputHandler : public DevToolsDomainHandler, public Input::Backend {
       Maybe<int> modifiers,
       Maybe<double> timestamp,
       Maybe<std::string> button,
+      Maybe<int> buttons,
       Maybe<int> click_count,
       Maybe<double> delta_x,
       Maybe<double> delta_y,
+      Maybe<std::string> pointer_type,
       std::unique_ptr<DispatchMouseEventCallback> callback) override;
 
   void DispatchTouchEvent(
@@ -124,8 +132,33 @@ class InputHandler : public DevToolsDomainHandler, public Input::Backend {
  private:
   class InputInjector;
 
+  void DispatchWebTouchEvent(
+      const std::string& type,
+      std::unique_ptr<Array<Input::TouchPoint>> touch_points,
+      protocol::Maybe<int> modifiers,
+      protocol::Maybe<double> timestamp,
+      std::unique_ptr<DispatchTouchEventCallback> callback);
+
+  void DispatchSyntheticPointerActionTouch(
+      const std::string& type,
+      std::unique_ptr<Array<Input::TouchPoint>> touch_points,
+      protocol::Maybe<int> modifiers,
+      protocol::Maybe<double> timestamp,
+      std::unique_ptr<DispatchTouchEventCallback> callback);
+
+  SyntheticPointerActionParams PrepareSyntheticPointerActionParams(
+      SyntheticPointerActionParams::PointerActionType pointer_action_type,
+      int id,
+      const std::string& button_name,
+      double x,
+      double y,
+      int key_modifiers,
+      float radius_x = 1.f,
+      float radius_y = 1.f,
+      float rotation_angle = 0.f,
+      float force = 1.f);
+
   void SynthesizeRepeatingScroll(
-      base::WeakPtr<RenderWidgetHostImpl> widget_host,
       SyntheticSmoothScrollGestureParams gesture_params,
       int repeat_count,
       base::TimeDelta repeat_delay,
@@ -134,7 +167,6 @@ class InputHandler : public DevToolsDomainHandler, public Input::Backend {
       std::unique_ptr<SynthesizeScrollGestureCallback> callback);
 
   void OnScrollFinished(
-      base::WeakPtr<RenderWidgetHostImpl> widget_host,
       SyntheticSmoothScrollGestureParams gesture_params,
       int repeat_count,
       base::TimeDelta repeat_delay,
@@ -149,12 +181,16 @@ class InputHandler : public DevToolsDomainHandler, public Input::Backend {
   RenderWidgetHostImpl* FindTargetWidgetHost(const gfx::PointF& point,
                                              gfx::PointF* transformed);
 
+  RenderWidgetHostViewBase* GetRootView();
+
   RenderFrameHostImpl* host_;
   base::flat_set<std::unique_ptr<InputInjector>, base::UniquePtrComparator>
       injectors_;
   float page_scale_factor_;
   int last_id_;
   bool ignore_input_events_ = false;
+  std::set<int> pointer_ids_;
+  std::unique_ptr<SyntheticPointerDriver> synthetic_pointer_driver_;
   base::flat_map<int, blink::WebTouchPoint> touch_points_;
   base::WeakPtrFactory<InputHandler> weak_factory_;
 

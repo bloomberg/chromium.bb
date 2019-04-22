@@ -15,7 +15,7 @@ import sys
 import generate
 
 UPDATE_TIP = ('To update the generated tests, run:\n'
-              '$ python third_party/WebKit/LayoutTests/bluetooth/generate.py')
+              '$ python third_party/blink/web_tests/bluetooth/generate.py')
 
 
 def main():

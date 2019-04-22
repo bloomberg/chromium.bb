@@ -19,7 +19,7 @@ namespace {
 
 // A property key containing a boolean set to true if the stylus_tool
 // object is associated with surface object.
-DEFINE_UI_CLASS_PROPERTY_KEY(bool, kSurfaceHasStylusToolKey, false);
+DEFINE_UI_CLASS_PROPERTY_KEY(bool, kSurfaceHasStylusToolKey, false)
 
 ////////////////////////////////////////////////////////////////////////////////
 // stylus_tool interface:

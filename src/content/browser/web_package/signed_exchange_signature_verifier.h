@@ -7,6 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
+#include "content/browser/web_package/signed_exchange_consts.h"
 #include "content/common/content_export.h"
 #include "net/cert/x509_certificate.h"
 #include "services/network/ignore_errors_cert_verifier.h"
@@ -36,15 +37,18 @@ class CONTENT_EXPORT SignedExchangeSignatureVerifier final {
   // This enum is used for recording histograms. Treat as append-only.
   enum class Result {
     kSuccess,
-    kErrNoCertificate,
-    kErrNoCertificateSHA256,
+    kErrNoCertificate_deprecated,
+    kErrNoCertificateSHA256_deprecated,
     kErrCertificateSHA256Mismatch,
-    kErrInvalidSignatureFormat,
+    kErrInvalidSignatureFormat_deprecated,
     kErrSignatureVerificationFailed,
-    kErrInvalidSignatureIntegrity,
-    kErrInvalidTimestamp,
+    kErrInvalidSignatureIntegrity_deprecated,
+    kErrInvalidTimestamp_deprecated,
     kErrUnsupportedCertType,
-    kMaxValue = kErrUnsupportedCertType
+    kErrValidityPeriodTooLong,
+    kErrFutureDate,
+    kErrExpired,
+    kMaxValue = kErrExpired
   };
 
   // An utility class which holds a set of certificates which errors should be
@@ -68,7 +72,8 @@ class CONTENT_EXPORT SignedExchangeSignatureVerifier final {
     DISALLOW_COPY_AND_ASSIGN(IgnoreErrorsSPKIList);
   };
 
-  static Result Verify(const SignedExchangeEnvelope& envelope,
+  static Result Verify(SignedExchangeVersion version,
+                       const SignedExchangeEnvelope& envelope,
                        scoped_refptr<net::X509Certificate> certificate,
                        const base::Time& verification_time,
                        SignedExchangeDevToolsProxy* devtools_proxy);

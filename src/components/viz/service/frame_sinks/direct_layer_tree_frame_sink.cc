@@ -12,10 +12,9 @@
 #include "build/build_config.h"
 #include "cc/base/histograms.h"
 #include "cc/trees/layer_tree_frame_sink_client.h"
+#include "components/viz/common/hit_test/hit_test_data_builder.h"
 #include "components/viz/common/hit_test/hit_test_region_list.h"
 #include "components/viz/common/quads/compositor_frame.h"
-#include "components/viz/common/quads/draw_quad.h"
-#include "components/viz/common/quads/surface_draw_quad.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/service/display/display.h"
@@ -112,53 +111,9 @@ void DirectLayerTreeFrameSink::DetachFromClient() {
   cc::LayerTreeFrameSink::DetachFromClient();
 }
 
-static HitTestRegionList CreateHitTestData(const CompositorFrame& frame) {
-  HitTestRegionList hit_test_region_list;
-  hit_test_region_list.flags = HitTestRegionFlags::kHitTestMouse |
-                               HitTestRegionFlags::kHitTestTouch |
-                               HitTestRegionFlags::kHitTestMine;
-  hit_test_region_list.bounds.set_size(frame.size_in_pixels());
-
-  for (const auto& render_pass : frame.render_pass_list) {
-    // Skip the render_pass if the transform is not invertible (i.e. it will not
-    // be able to receive events).
-    gfx::Transform transform_from_root_target;
-    if (!render_pass->transform_to_root_target.GetInverse(
-            &transform_from_root_target)) {
-      continue;
-    }
-
-    for (const DrawQuad* quad : render_pass->quad_list) {
-      if (quad->material == DrawQuad::SURFACE_CONTENT) {
-        const SurfaceDrawQuad* surface_quad =
-            SurfaceDrawQuad::MaterialCast(quad);
-
-        // Skip the quad if the transform is not invertible (i.e. it will not
-        // be able to receive events).
-        gfx::Transform target_to_quad_transform;
-        if (!quad->shared_quad_state->quad_to_target_transform.GetInverse(
-                &target_to_quad_transform)) {
-          continue;
-        }
-
-        hit_test_region_list.regions.emplace_back();
-        HitTestRegion* hit_test_region = &hit_test_region_list.regions.back();
-        hit_test_region->frame_sink_id =
-            surface_quad->surface_range.end().frame_sink_id();
-        hit_test_region->flags = HitTestRegionFlags::kHitTestMouse |
-                                 HitTestRegionFlags::kHitTestTouch |
-                                 HitTestRegionFlags::kHitTestChildSurface;
-        hit_test_region->rect = surface_quad->rect;
-        hit_test_region->transform =
-            target_to_quad_transform * transform_from_root_target;
-      }
-    }
-  }
-  return hit_test_region_list;
-}
-
 void DirectLayerTreeFrameSink::SubmitCompositorFrame(
     CompositorFrame frame,
+    bool hit_test_data_changed,
     bool show_hit_test_borders) {
   DCHECK(frame.metadata.begin_frame_ack.has_damage);
   DCHECK_LE(BeginFrameArgs::kStartingFrameNumber,
@@ -191,7 +146,25 @@ void DirectLayerTreeFrameSink::SubmitCompositorFrame(
                          TRACE_EVENT_FLAG_FLOW_OUT, "step",
                          "SubmitHitTestData");
 
-  HitTestRegionList hit_test_region_list = CreateHitTestData(frame);
+  base::Optional<HitTestRegionList> hit_test_region_list(
+      HitTestDataBuilder::CreateHitTestData(
+          frame, /*root_accepts_events=*/true,
+          /*should_ask_for_child_region=*/false));
+
+  // Do not send duplicate hit-test data.
+  if (!hit_test_data_changed) {
+    if (HitTestRegionList::IsEqual(*hit_test_region_list,
+                                   last_hit_test_data_)) {
+      DCHECK(!HitTestRegionList::IsEqual(*hit_test_region_list,
+                                         HitTestRegionList()));
+      hit_test_region_list = base::nullopt;
+    } else {
+      last_hit_test_data_ = *hit_test_region_list;
+    }
+  } else {
+    last_hit_test_data_ = HitTestRegionList();
+  }
+
   support_->SubmitCompositorFrame(
       parent_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
           .local_surface_id(),
@@ -261,12 +234,6 @@ void DirectLayerTreeFrameSink::DisplayDidCompleteSwapWithSize(
   // Not needed in non-OOP-D mode.
 }
 
-void DirectLayerTreeFrameSink::DidSwapAfterSnapshotRequestReceived(
-    const std::vector<ui::LatencyInfo>& latency_info) {
-  // TODO(samans): Implement this method once the plumbing for latency info also
-  // works for non-OOP-D.
-}
-
 void DirectLayerTreeFrameSink::DidReceiveCompositorFrameAck(
     const std::vector<ReturnedResource>& resources) {
   // Submitting a CompositorFrame can synchronously draw and dispatch a frame
@@ -286,7 +253,7 @@ void DirectLayerTreeFrameSink::DidReceiveCompositorFrameAckInternal(
 
 void DirectLayerTreeFrameSink::OnBeginFrame(
     const BeginFrameArgs& args,
-    const base::flat_map<uint32_t, gfx::PresentationFeedback>& feedbacks) {
+    const PresentationFeedbackMap& feedbacks) {
   for (const auto& pair : feedbacks)
     client_->DidPresentCompositorFrame(pair.first, pair.second);
 
@@ -310,6 +277,20 @@ void DirectLayerTreeFrameSink::OnBeginFrame(
           base::TimeDelta::FromMilliseconds(100), 50);
     }
   }
+  if (!needs_begin_frames_) {
+    TRACE_EVENT_WITH_FLOW1("viz,benchmark", "Graphics.Pipeline",
+                           TRACE_ID_GLOBAL(args.trace_id),
+                           TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
+                           "step", "ReceiveBeginFrameDiscard");
+    // OnBeginFrame() can be called just to deliver presentation feedback, so
+    // report that we didn't use this BeginFrame.
+    DidNotProduceFrame(BeginFrameAck(args, false));
+    return;
+  }
+  TRACE_EVENT_WITH_FLOW1("viz,benchmark", "Graphics.Pipeline",
+                         TRACE_ID_GLOBAL(args.trace_id),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
+                         "step", "ReceiveBeginFrame");
 
   begin_frame_source_->OnBeginFrame(args);
 }
@@ -323,8 +304,9 @@ void DirectLayerTreeFrameSink::OnBeginFramePausedChanged(bool paused) {
   begin_frame_source_->OnSetBeginFrameSourcePaused(paused);
 }
 
-void DirectLayerTreeFrameSink::OnNeedsBeginFrames(bool needs_begin_frame) {
-  support_->SetNeedsBeginFrame(needs_begin_frame);
+void DirectLayerTreeFrameSink::OnNeedsBeginFrames(bool needs_begin_frames) {
+  needs_begin_frames_ = needs_begin_frames;
+  support_->SetNeedsBeginFrame(needs_begin_frames);
 }
 
 void DirectLayerTreeFrameSink::OnContextLost() {

@@ -8,6 +8,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/run_loop.h"
@@ -116,8 +117,8 @@ TEST_F(BlobBytesProviderTest, RequestAsReply) {
 namespace {
 
 struct FileTestData {
-  uint64_t offset;
-  uint64_t size;
+  uint32_t offset;
+  uint32_t size;
 };
 
 void PrintTo(const FileTestData& test, std::ostream* os) {
@@ -255,9 +256,9 @@ const FileTestData file_tests[] = {
     {10, 128 + 64},      // Parts of all three chunks.
 };
 
-INSTANTIATE_TEST_CASE_P(BlobBytesProviderTest,
-                        RequestAsFile,
-                        testing::ValuesIn(file_tests));
+INSTANTIATE_TEST_SUITE_P(BlobBytesProviderTest,
+                         RequestAsFile,
+                         testing::ValuesIn(file_tests));
 
 TEST_F(BlobBytesProviderTest, RequestAsFile_MultipleChunks) {
   auto provider = CreateProvider();

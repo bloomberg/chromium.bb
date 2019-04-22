@@ -29,8 +29,9 @@ MockAPIEvent.prototype.addListener = function(callback) {
  */
 MockAPIEvent.prototype.removeListener = function(callback) {
   var index = this.listeners_.indexOf(callback);
-  if (index < 0)
+  if (index < 0) {
     throw new Error('Tried to remove an unregistered listener.');
+  }
   this.listeners_.splice(index, 1);
 };
 

@@ -89,10 +89,10 @@ bool ConsiderAnimationAsIncompatible(const Animation& animation,
 
 bool IsTransformRelatedCSSProperty(const PropertyHandle property) {
   return property.IsCSSProperty() &&
-         (property.GetCSSProperty().IDEquals(CSSPropertyRotate) ||
-          property.GetCSSProperty().IDEquals(CSSPropertyScale) ||
-          property.GetCSSProperty().IDEquals(CSSPropertyTransform) ||
-          property.GetCSSProperty().IDEquals(CSSPropertyTranslate));
+         (property.GetCSSProperty().IDEquals(CSSPropertyID::kRotate) ||
+          property.GetCSSProperty().IDEquals(CSSPropertyID::kScale) ||
+          property.GetCSSProperty().IDEquals(CSSPropertyID::kTransform) ||
+          property.GetCSSProperty().IDEquals(CSSPropertyID::kTranslate));
 }
 
 bool IsTransformRelatedAnimation(const Element& target_element,
@@ -146,29 +146,28 @@ bool HasIncompatibleAnimations(const Element& target_element,
 CompositorElementIdNamespace CompositorElementNamespaceForProperty(
     CSSPropertyID property) {
   if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
-      !RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+      !RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     // Pre-BlinkGenPropertyTrees, all animations affect the primary
     // ElementId namespace.
     return CompositorElementIdNamespace::kPrimary;
   }
   switch (property) {
-    case CSSPropertyOpacity:
+    case CSSPropertyID::kOpacity:
       return CompositorElementIdNamespace::kPrimaryEffect;
-    case CSSPropertyRotate:
-    case CSSPropertyScale:
-    case CSSPropertyTranslate:
-    case CSSPropertyTransform:
+    case CSSPropertyID::kRotate:
+    case CSSPropertyID::kScale:
+    case CSSPropertyID::kTranslate:
+    case CSSPropertyID::kTransform:
       return CompositorElementIdNamespace::kPrimaryTransform;
-    case CSSPropertyFilter:
-    case CSSPropertyBackdropFilter: {
+    case CSSPropertyID::kFilter:
+    case CSSPropertyID::kBackdropFilter:
       return CompositorElementIdNamespace::kEffectFilter;
-      case CSSPropertyVariable:
-        return CompositorElementIdNamespace::kPrimary;
-      default:
-        NOTREACHED();
-    }
+    case CSSPropertyID::kVariable:
       return CompositorElementIdNamespace::kPrimary;
+    default:
+      NOTREACHED();
   }
+  return CompositorElementIdNamespace::kPrimary;
 }
 
 }  // namespace
@@ -235,12 +234,12 @@ CompositorAnimations::CheckCanStartEffectOnCompositor(
       // FIXME: Determine candidacy based on the CSSValue instead of a snapshot
       // AnimatableValue.
       switch (property.GetCSSProperty().PropertyID()) {
-        case CSSPropertyOpacity:
+        case CSSPropertyID::kOpacity:
           break;
-        case CSSPropertyRotate:
-        case CSSPropertyScale:
-        case CSSPropertyTranslate:
-        case CSSPropertyTransform:
+        case CSSPropertyID::kRotate:
+        case CSSPropertyID::kScale:
+        case CSSPropertyID::kTranslate:
+        case CSSPropertyID::kTransform:
           if (ToAnimatableTransform(keyframe->GetAnimatableValue())
                   ->GetTransformOperations()
                   .DependsOnBoxSize()) {
@@ -249,8 +248,8 @@ CompositorAnimations::CheckCanStartEffectOnCompositor(
                 "size");
           }
           break;
-        case CSSPropertyFilter:
-        case CSSPropertyBackdropFilter: {
+        case CSSPropertyID::kFilter:
+        case CSSPropertyID::kBackdropFilter: {
           const FilterOperations& operations =
               ToAnimatableFilterOperations(keyframe->GetAnimatableValue())
                   ->Operations();
@@ -260,7 +259,7 @@ CompositorAnimations::CheckCanStartEffectOnCompositor(
           }
           break;
         }
-        case CSSPropertyVariable: {
+        case CSSPropertyID::kVariable: {
           DCHECK(RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled());
           if (!keyframe->GetAnimatableValue()->IsDouble()) {
             // TODO(kevers): Extend support to other custom property types.
@@ -327,7 +326,7 @@ CompositorAnimations::CheckCanStartElementOnCompositor(
     return FailureCode::NonActionable("Accelerated animations are disabled");
   }
 
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     // We query paint property tree state below to determine whether the
     // animation is compositable. There is a known lifecycle violation where an
     // animation can be cancelled during style update. See
@@ -504,8 +503,8 @@ void CompositorAnimations::AttachCompositedLayers(
   PaintLayer* layer =
       ToLayoutBoxModelObject(element.GetLayoutObject())->Layer();
 
-  // Composited animations do not depend on a composited layer mapping for SPv2.
-  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  // Composited animations do not depend on a composited layer mapping for CAP.
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     if (!layer->IsAllowedToQueryCompositingState() ||
         !layer->GetCompositedLayerMapping() ||
         !layer->GetCompositedLayerMapping()->MainGraphicsLayer())
@@ -524,7 +523,7 @@ void CompositorAnimations::AttachCompositedLayers(
   // Currently we use the kPrimaryEffect node to know if nodes have been
   // created for animations.
   if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
-      RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+      RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     element_id_namespace = CompositorElementIdNamespace::kPrimaryEffect;
   }
   compositor_animation->AttachElement(CompositorElementIdFromUniqueObjectId(
@@ -658,46 +657,43 @@ void CompositorAnimations::GetAnimationOnCompositor(
     std::unique_ptr<CompositorAnimationCurve> curve;
     DCHECK(timing.timing_function);
     switch (property.GetCSSProperty().PropertyID()) {
-      case CSSPropertyOpacity: {
+      case CSSPropertyID::kOpacity: {
         target_property = compositor_target_property::OPACITY;
-        std::unique_ptr<CompositorFloatAnimationCurve> float_curve =
-            CompositorFloatAnimationCurve::Create();
+        auto float_curve = std::make_unique<CompositorFloatAnimationCurve>();
         AddKeyframesToCurve(*float_curve, values);
         float_curve->SetTimingFunction(*timing.timing_function);
         float_curve->SetScaledDuration(scale);
         curve = std::move(float_curve);
         break;
       }
-      case CSSPropertyFilter:
-      case CSSPropertyBackdropFilter: {
+      case CSSPropertyID::kFilter:
+      case CSSPropertyID::kBackdropFilter: {
         target_property = compositor_target_property::FILTER;
-        std::unique_ptr<CompositorFilterAnimationCurve> filter_curve =
-            CompositorFilterAnimationCurve::Create();
+        auto filter_curve = std::make_unique<CompositorFilterAnimationCurve>();
         AddKeyframesToCurve(*filter_curve, values);
         filter_curve->SetTimingFunction(*timing.timing_function);
         filter_curve->SetScaledDuration(scale);
         curve = std::move(filter_curve);
         break;
       }
-      case CSSPropertyRotate:
-      case CSSPropertyScale:
-      case CSSPropertyTranslate:
-      case CSSPropertyTransform: {
+      case CSSPropertyID::kRotate:
+      case CSSPropertyID::kScale:
+      case CSSPropertyID::kTranslate:
+      case CSSPropertyID::kTransform: {
         target_property = compositor_target_property::TRANSFORM;
-        std::unique_ptr<CompositorTransformAnimationCurve> transform_curve =
-            CompositorTransformAnimationCurve::Create();
+        auto transform_curve =
+            std::make_unique<CompositorTransformAnimationCurve>();
         AddKeyframesToCurve(*transform_curve, values);
         transform_curve->SetTimingFunction(*timing.timing_function);
         transform_curve->SetScaledDuration(scale);
         curve = std::move(transform_curve);
         break;
       }
-      case CSSPropertyVariable: {
+      case CSSPropertyID::kVariable: {
         DCHECK(RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled());
         target_property = compositor_target_property::CSS_CUSTOM_PROPERTY;
         // TODO(kevers): Extend support to non-float types.
-        std::unique_ptr<CompositorFloatAnimationCurve> float_curve =
-            CompositorFloatAnimationCurve::Create();
+        auto float_curve = std::make_unique<CompositorFloatAnimationCurve>();
         AddKeyframesToCurve(*float_curve, values);
         float_curve->SetTimingFunction(*timing.timing_function);
         float_curve->SetScaledDuration(scale);
@@ -710,8 +706,8 @@ void CompositorAnimations::GetAnimationOnCompositor(
     }
     DCHECK(curve.get());
 
-    std::unique_ptr<CompositorKeyframeModel> keyframe_model =
-        CompositorKeyframeModel::Create(*curve, target_property, group, 0);
+    auto keyframe_model = std::make_unique<CompositorKeyframeModel>(
+        *curve, target_property, 0, group);
 
     if (start_time)
       keyframe_model->SetStartTime(start_time.value());

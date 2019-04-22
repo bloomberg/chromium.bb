@@ -3,7 +3,6 @@
 <script>
 testRunner.dumpAsText();
 testRunner.waitUntilDone();
-testRunner.addOriginAccessAllowListEntry("http://localhost:8000", "http", "*.0.0.1", true);
 
 function log(message)
 {
@@ -12,7 +11,7 @@ function log(message)
 
 var iframe = document.createElement("iframe");
 document.body.appendChild(iframe);
-iframe.src = "http://localhost:8000/xmlhttprequest/resources/origin-whitelisting-ip-address-test.html";
+iframe.src = "http://localhost:8000/xmlhttprequest/resources/origin-whitelisting-ip-address-test.html#subdomains";
 window.addEventListener("message", function(e) {
     if (e.data == "DONE")
         testRunner.notifyDone();

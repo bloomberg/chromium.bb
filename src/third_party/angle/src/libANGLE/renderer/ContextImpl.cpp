@@ -13,9 +13,8 @@
 
 namespace rx
 {
-
-ContextImpl::ContextImpl(const gl::ContextState &state)
-    : mState(state), mMemoryProgramCache(nullptr), mErrors(nullptr)
+ContextImpl::ContextImpl(const gl::State &state, gl::ErrorSet *errorSet)
+    : mState(state), mMemoryProgramCache(nullptr), mErrors(errorSet)
 {}
 
 ContextImpl::~ContextImpl() {}
@@ -115,11 +114,6 @@ void ContextImpl::setMemoryProgramCache(gl::MemoryProgramCache *memoryProgramCac
     mMemoryProgramCache = memoryProgramCache;
 }
 
-void ContextImpl::setErrorSet(gl::ErrorSet *errorSet)
-{
-    mErrors = errorSet;
-}
-
 void ContextImpl::handleError(GLenum errorCode,
                               const char *message,
                               const char *file,
@@ -130,4 +124,5 @@ void ContextImpl::handleError(GLenum errorCode,
     errorStream << "Internal error: " << gl::FmtHex(errorCode) << ": " << message;
     mErrors->handleError(errorCode, errorStream.str().c_str(), file, function, line);
 }
+
 }  // namespace rx

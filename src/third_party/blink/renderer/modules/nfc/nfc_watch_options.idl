@@ -8,7 +8,7 @@ enum NFCWatchMode { "web-nfc-only", "any" };
 
 dictionary NFCWatchOptions {
     USVString url = "";
-    NFCRecordType? recordType;
+    NDEFRecordType? recordType;
     USVString mediaType = "";
     NFCWatchMode mode = "web-nfc-only";
 };

@@ -7,60 +7,77 @@ package org.chromium.chrome.browser.omnibox.suggestions;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
-import android.graphics.Bitmap;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
-import android.text.Spannable;
-import android.text.SpannableString;
 import android.text.TextUtils;
-import android.text.style.StyleSpan;
 import android.util.Pair;
-import android.util.TypedValue;
 import android.view.View;
 import android.widget.TextView;
 
 import org.chromium.base.Log;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ActivityTabProvider;
+import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.init.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
-import org.chromium.chrome.browser.modaldialog.DialogDismissalCause;
-import org.chromium.chrome.browser.modaldialog.ModalDialogManager;
-import org.chromium.chrome.browser.modaldialog.ModalDialogProperties;
-import org.chromium.chrome.browser.modaldialog.ModalDialogView;
-import org.chromium.chrome.browser.modelutil.PropertyModel;
+import org.chromium.chrome.browser.lifecycle.StartStopWithNativeObserver;
 import org.chromium.chrome.browser.omnibox.LocationBarVoiceRecognitionHandler;
-import org.chromium.chrome.browser.omnibox.MatchClassificationStyle;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteController.OnSuggestionsReceivedListener;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinator.AutocompleteDelegate;
-import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion.MatchClassification;
-import org.chromium.chrome.browser.omnibox.suggestions.SuggestionView.SuggestionViewDelegate;
-import org.chromium.chrome.browser.omnibox.suggestions.SuggestionViewProperties.SuggestionIcon;
-import org.chromium.chrome.browser.omnibox.suggestions.SuggestionViewProperties.SuggestionTextContainer;
+import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinator.SuggestionProcessor;
+import org.chromium.chrome.browser.omnibox.suggestions.answer.AnswerSuggestionProcessor;
+import org.chromium.chrome.browser.omnibox.suggestions.basic.BasicSuggestionProcessor;
+import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionHost;
+import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewDelegate;
+import org.chromium.chrome.browser.omnibox.suggestions.editurl.EditUrlSuggestionProcessor;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
-import org.chromium.components.omnibox.SuggestionAnswer;
+import org.chromium.components.omnibox.AnswerType;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.ui.modaldialog.DialogDismissalCause;
+import org.chromium.ui.modaldialog.ModalDialogManager;
+import org.chromium.ui.modaldialog.ModalDialogProperties;
+import org.chromium.ui.modelutil.PropertyModel;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Handles updating the model state for the currently visible omnibox suggestions.
  */
-class AutocompleteMediator implements OnSuggestionsReceivedListener {
+class AutocompleteMediator
+        implements OnSuggestionsReceivedListener, SuggestionHost, StartStopWithNativeObserver {
+    /** A struct containing information about the suggestion and its view type. */
+    private static class SuggestionViewInfo {
+        /** The suggestion this info represents. */
+        public final OmniboxSuggestion suggestion;
+
+        /** The model the view uses to render the suggestion. */
+        public final PropertyModel model;
+
+        /** The view type ID. */
+        public final int typeId;
+
+        public SuggestionViewInfo(
+                OmniboxSuggestion omniboxSuggestion, PropertyModel propertyModel, int id) {
+            suggestion = omniboxSuggestion;
+            model = propertyModel;
+            typeId = id;
+        }
+    }
+
     private static final String TAG = "cr_Autocomplete";
 
     // Delay triggering the omnibox results upon key press to allow the location bar to repaint
@@ -71,11 +88,12 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener {
     private final AutocompleteDelegate mDelegate;
     private final UrlBarEditingTextStateProvider mUrlBarEditingTextProvider;
     private final PropertyModel mListPropertyModel;
-    private final List<Pair<OmniboxSuggestion, PropertyModel>> mCurrentModels;
-    private final Map<String, List<PropertyModel>> mPendingAnswerRequestUrls;
-    private final AnswersImageFetcher mImageFetcher;
+    private final List<SuggestionViewInfo> mCurrentModels;
     private final List<Runnable> mDeferredNativeRunnables = new ArrayList<Runnable>();
     private final Handler mHandler;
+    private final BasicSuggestionProcessor mBasicSuggestionProcessor;
+    private EditUrlSuggestionProcessor mEditUrlProcessor;
+    private final AnswerSuggestionProcessor mAnswerSuggestionProcessor;
 
     private ToolbarDataProvider mDataProvider;
     private boolean mNativeInitialized;
@@ -112,15 +130,17 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener {
     private boolean mShowCachedZeroSuggestResults;
     private boolean mShouldPreventOmniboxAutocomplete;
 
-    private boolean mUseDarkColors = true;
-    private int mLayoutDirection;
     private boolean mPreventSuggestionListPropertyChanges;
     private long mLastActionUpTimestamp;
     private boolean mIgnoreOmniboxItemSelection = true;
     private float mMaxRequiredWidth;
     private float mMaxMatchContentsWidth;
+    private boolean mUseDarkColors = true;
+    private boolean mShowSuggestionFavicons;
+    private int mLayoutDirection;
 
     private WindowAndroid mWindowAndroid;
+    private ActivityLifecycleDispatcher mLifecycleDispatcher;
 
     public AutocompleteMediator(Context context, AutocompleteDelegate delegate,
             UrlBarEditingTextStateProvider textProvider, PropertyModel listPropertyModel) {
@@ -129,18 +149,45 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener {
         mUrlBarEditingTextProvider = textProvider;
         mListPropertyModel = listPropertyModel;
         mCurrentModels = new ArrayList<>();
-        mPendingAnswerRequestUrls = new HashMap<>();
-        mImageFetcher = new AnswersImageFetcher();
         mAutocomplete = new AutocompleteController(this);
         mHandler = new Handler();
+        mBasicSuggestionProcessor = new BasicSuggestionProcessor(mContext, this, textProvider);
+        mAnswerSuggestionProcessor = new AnswerSuggestionProcessor(mContext, this, textProvider);
+        mEditUrlProcessor = new EditUrlSuggestionProcessor(
+                delegate, (suggestion) -> onSelection(suggestion, 0));
+    }
+
+    @Override
+    public void onStartWithNative() {}
+
+    @Override
+    public void onStopWithNative() {
+        recordAnswersHistogram();
     }
 
     /**
-     * Clear and notify observers that all suggestions are gone.
+     * Clear all suggestions and update counter of whether AiS Answer was presented (and if so - of
+     * what type). Does not notify any property observers of the change.
      */
-    public void clearSuggestions() {
+    private void clearSuggestions() {
         mCurrentModels.clear();
         notifyPropertyModelsChanged();
+    }
+
+    /**
+     * Record presence of AiS answers.
+     *
+     * Note: At the time of writing this functionality, AiS was offering at most one answer to any
+     * query. If this changes before the metric is expired, the code below may need either
+     * revisiting or a secondary metric telling us how many answer suggestions have been shown.
+     */
+    private void recordAnswersHistogram() {
+        for (SuggestionViewInfo info : mCurrentModels) {
+            if (info.suggestion.hasAnswer()) {
+                RecordHistogram.recordEnumeratedHistogram("Omnibox.AnswerInSuggestShown",
+                        info.suggestion.getAnswer().getType(), AnswerType.TOTAL_COUNT);
+            }
+        }
     }
 
     /**
@@ -159,282 +206,23 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener {
      * @return The suggestion at the given index.
      */
     public OmniboxSuggestion getSuggestionAt(int index) {
-        return mCurrentModels.get(index).first;
+        return mCurrentModels.get(index).suggestion;
     }
 
-    private void notifyPropertyModelsChanged() {
+    @Override
+    public void notifyPropertyModelsChanged() {
         if (mPreventSuggestionListPropertyChanges) return;
         List<Pair<Integer, PropertyModel>> models = new ArrayList<>(mCurrentModels.size());
         for (int i = 0; i < mCurrentModels.size(); i++) {
-            models.add(new Pair<>(OmniboxSuggestionUiType.DEFAULT, mCurrentModels.get(i).second));
+            PropertyModel model = mCurrentModels.get(i).model;
+            models.add(new Pair<>(mCurrentModels.get(i).typeId, model));
         }
         mListPropertyModel.set(SuggestionListProperties.SUGGESTION_MODELS, models);
     }
 
-    private void populateModelForSuggestion(
-            PropertyModel model, OmniboxSuggestion suggestion, int position) {
-        maybeFetchAnswerIcon(suggestion, model);
-
-        model.set(SuggestionViewProperties.SUGGESTION_ICON_TYPE, SuggestionIcon.UNDEFINED);
-        model.set(SuggestionViewProperties.DELEGATE,
-                createSuggestionViewDelegate(suggestion, position));
-        model.set(SuggestionViewProperties.USE_DARK_COLORS, mUseDarkColors);
-        model.set(SuggestionViewProperties.LAYOUT_DIRECTION, mLayoutDirection);
-
-        // Suggestions with attached answers are rendered with rich results regardless of which
-        // suggestion type they are.
-        if (suggestion.hasAnswer()) {
-            setStateForAnswerSuggestion(model, suggestion.getAnswer());
-        } else {
-            setStateForTextSuggestion(model, suggestion);
-        }
-    }
-
-    private static boolean applyHighlightToMatchRegions(
-            Spannable str, List<MatchClassification> classifications) {
-        boolean hasMatch = false;
-        for (int i = 0; i < classifications.size(); i++) {
-            MatchClassification classification = classifications.get(i);
-            if ((classification.style & MatchClassificationStyle.MATCH)
-                    == MatchClassificationStyle.MATCH) {
-                int matchStartIndex = classification.offset;
-                int matchEndIndex;
-                if (i == classifications.size() - 1) {
-                    matchEndIndex = str.length();
-                } else {
-                    matchEndIndex = classifications.get(i + 1).offset;
-                }
-                matchStartIndex = Math.min(matchStartIndex, str.length());
-                matchEndIndex = Math.min(matchEndIndex, str.length());
-
-                hasMatch = true;
-                // Bold the part of the URL that matches the user query.
-                str.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), matchStartIndex,
-                        matchEndIndex, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-            }
-        }
-        return hasMatch;
-    }
-
-    /**
-     * Get the first line for a text based omnibox suggestion.
-     * @param suggestion The item containing the suggestion data.
-     * @param showDescriptionIfPresent Whether to show the description text of the suggestion if
-     *                                 the item contains valid data.
-     * @param shouldHighlight Whether the query should be highlighted.
-     * @return The first line of text.
-     */
-    private Spannable getSuggestedQuery(OmniboxSuggestion suggestion,
-            boolean showDescriptionIfPresent, boolean shouldHighlight) {
-        String userQuery = mUrlBarEditingTextProvider.getTextWithoutAutocomplete();
-        String suggestedQuery = null;
-        List<MatchClassification> classifications;
-        if (showDescriptionIfPresent && !TextUtils.isEmpty(suggestion.getUrl())
-                && !TextUtils.isEmpty(suggestion.getDescription())) {
-            suggestedQuery = suggestion.getDescription();
-            classifications = suggestion.getDescriptionClassifications();
-        } else {
-            suggestedQuery = suggestion.getDisplayText();
-            classifications = suggestion.getDisplayTextClassifications();
-        }
-        if (suggestedQuery == null) {
-            assert false : "Invalid suggestion sent with no displayable text";
-            suggestedQuery = "";
-            classifications = new ArrayList<MatchClassification>();
-            classifications.add(new MatchClassification(0, MatchClassificationStyle.NONE));
-        }
-
-        if (suggestion.getType() == OmniboxSuggestionType.SEARCH_SUGGEST_TAIL) {
-            String fillIntoEdit = suggestion.getFillIntoEdit();
-            // Data sanity checks.
-            if (fillIntoEdit.startsWith(userQuery) && fillIntoEdit.endsWith(suggestedQuery)
-                    && fillIntoEdit.length() < userQuery.length() + suggestedQuery.length()) {
-                final String ellipsisPrefix = "\u2026 ";
-                suggestedQuery = ellipsisPrefix + suggestedQuery;
-
-                // Offset the match classifications by the length of the ellipsis prefix to ensure
-                // the highlighting remains correct.
-                for (int i = 0; i < classifications.size(); i++) {
-                    classifications.set(i,
-                            new MatchClassification(
-                                    classifications.get(i).offset + ellipsisPrefix.length(),
-                                    classifications.get(i).style));
-                }
-                classifications.add(0, new MatchClassification(0, MatchClassificationStyle.NONE));
-            }
-        }
-
-        Spannable str = SpannableString.valueOf(suggestedQuery);
-        if (shouldHighlight) applyHighlightToMatchRegions(str, classifications);
-        return str;
-    }
-
-    private void setStateForTextSuggestion(PropertyModel model, OmniboxSuggestion suggestion) {
-        int suggestionType = suggestion.getType();
-        @SuggestionIcon
-        int suggestionIcon;
-        Spannable textLine1;
-
-        Spannable textLine2;
-        int textLine2Color = 0;
-        int textLine2Direction = View.TEXT_DIRECTION_INHERIT;
-        if (suggestion.isUrlSuggestion()) {
-            suggestionIcon = SuggestionIcon.GLOBE;
-            if (suggestion.isStarred()) {
-                suggestionIcon = SuggestionIcon.BOOKMARK;
-            } else if (suggestionType == OmniboxSuggestionType.HISTORY_URL) {
-                suggestionIcon = SuggestionIcon.HISTORY;
-            }
-            boolean urlHighlighted = false;
-            if (!TextUtils.isEmpty(suggestion.getUrl())) {
-                Spannable str = SpannableString.valueOf(suggestion.getDisplayText());
-                urlHighlighted = applyHighlightToMatchRegions(
-                        str, suggestion.getDisplayTextClassifications());
-                textLine2 = str;
-                textLine2Color = SuggestionViewViewBinder.getStandardUrlColor(
-                        mContext, model.get(SuggestionViewProperties.USE_DARK_COLORS));
-                textLine2Direction = View.TEXT_DIRECTION_LTR;
-            } else {
-                textLine2 = null;
-            }
-            textLine1 = getSuggestedQuery(suggestion, true, !urlHighlighted);
-        } else {
-            suggestionIcon = SuggestionIcon.MAGNIFIER;
-            if (suggestionType == OmniboxSuggestionType.VOICE_SUGGEST) {
-                suggestionIcon = SuggestionIcon.VOICE;
-            } else if ((suggestionType == OmniboxSuggestionType.SEARCH_SUGGEST_PERSONALIZED)
-                    || (suggestionType == OmniboxSuggestionType.SEARCH_HISTORY)) {
-                // Show history icon for suggestions based on user queries.
-                suggestionIcon = SuggestionIcon.HISTORY;
-            }
-            textLine1 = getSuggestedQuery(suggestion, false, true);
-            if ((suggestionType == OmniboxSuggestionType.SEARCH_SUGGEST_ENTITY)
-                    || (suggestionType == OmniboxSuggestionType.SEARCH_SUGGEST_PROFILE)) {
-                textLine2 = SpannableString.valueOf(suggestion.getDescription());
-                textLine2Color = SuggestionViewViewBinder.getStandardFontColor(
-                        mContext, model.get(SuggestionViewProperties.USE_DARK_COLORS));
-                textLine2Direction = View.TEXT_DIRECTION_INHERIT;
-            } else {
-                textLine2 = null;
-            }
-        }
-
-        model.set(SuggestionViewProperties.IS_ANSWER, false);
-        model.set(SuggestionViewProperties.HAS_ANSWER_IMAGE, false);
-        model.set(SuggestionViewProperties.ANSWER_IMAGE, null);
-
-        model.set(
-                SuggestionViewProperties.TEXT_LINE_1_TEXT, new SuggestionTextContainer(textLine1));
-        model.set(SuggestionViewProperties.TEXT_LINE_1_SIZING,
-                Pair.create(TypedValue.COMPLEX_UNIT_PX,
-                        mContext.getResources().getDimension(
-                                R.dimen.omnibox_suggestion_first_line_text_size)));
-
-        model.set(
-                SuggestionViewProperties.TEXT_LINE_2_TEXT, new SuggestionTextContainer(textLine2));
-        model.set(SuggestionViewProperties.TEXT_LINE_2_TEXT_COLOR, textLine2Color);
-        model.set(SuggestionViewProperties.TEXT_LINE_2_TEXT_DIRECTION, textLine2Direction);
-        model.set(SuggestionViewProperties.TEXT_LINE_2_SIZING,
-                Pair.create(TypedValue.COMPLEX_UNIT_PX,
-                        mContext.getResources().getDimension(
-                                R.dimen.omnibox_suggestion_second_line_text_size)));
-        model.set(SuggestionViewProperties.TEXT_LINE_2_MAX_LINES, 1);
-
-        boolean sameAsTyped =
-                mUrlBarEditingTextProvider.getTextWithoutAutocomplete().trim().equalsIgnoreCase(
-                        suggestion.getDisplayText());
-        model.set(SuggestionViewProperties.REFINABLE, !sameAsTyped);
-
-        model.set(SuggestionViewProperties.SUGGESTION_ICON_TYPE, suggestionIcon);
-    }
-
-    private static int parseNumAnswerLines(List<SuggestionAnswer.TextField> textFields) {
-        for (int i = 0; i < textFields.size(); i++) {
-            if (textFields.get(i).hasNumLines()) {
-                return Math.min(3, textFields.get(i).getNumLines());
-            }
-        }
-        return -1;
-    }
-
-    /**
-     * Sets both lines of the Omnibox suggestion based on an Answers in Suggest result.
-     */
-    private void setStateForAnswerSuggestion(PropertyModel model, SuggestionAnswer answer) {
-        float density = mContext.getResources().getDisplayMetrics().density;
-        SuggestionAnswer.ImageLine firstLine = answer.getFirstLine();
-        SuggestionAnswer.ImageLine secondLine = answer.getSecondLine();
-        int numAnswerLines = parseNumAnswerLines(secondLine.getTextFields());
-        if (numAnswerLines == -1) numAnswerLines = 1;
-        model.set(SuggestionViewProperties.IS_ANSWER, true);
-
-        model.set(SuggestionViewProperties.TEXT_LINE_1_SIZING,
-                Pair.create(TypedValue.COMPLEX_UNIT_SP,
-                        (float) AnswerTextBuilder.getMaxTextHeightSp(firstLine)));
-        model.set(SuggestionViewProperties.TEXT_LINE_1_TEXT,
-                new SuggestionTextContainer(AnswerTextBuilder.buildSpannable(firstLine, density)));
-
-        model.set(SuggestionViewProperties.TEXT_LINE_2_SIZING,
-                Pair.create(TypedValue.COMPLEX_UNIT_SP,
-                        (float) AnswerTextBuilder.getMaxTextHeightSp(secondLine)));
-        model.set(SuggestionViewProperties.TEXT_LINE_2_TEXT,
-                new SuggestionTextContainer(AnswerTextBuilder.buildSpannable(secondLine, density)));
-        model.set(SuggestionViewProperties.TEXT_LINE_2_MAX_LINES, numAnswerLines);
-        model.set(SuggestionViewProperties.TEXT_LINE_2_TEXT_COLOR,
-                SuggestionViewViewBinder.getStandardFontColor(
-                        mContext, model.get(SuggestionViewProperties.USE_DARK_COLORS)));
-        model.set(SuggestionViewProperties.TEXT_LINE_2_TEXT_DIRECTION, View.TEXT_DIRECTION_INHERIT);
-
-        model.set(SuggestionViewProperties.HAS_ANSWER_IMAGE, secondLine.hasImage());
-
-        model.set(SuggestionViewProperties.REFINABLE, true);
-        model.set(SuggestionViewProperties.SUGGESTION_ICON_TYPE, SuggestionIcon.MAGNIFIER);
-    }
-
-    private void maybeFetchAnswerIcon(OmniboxSuggestion suggestion, PropertyModel model) {
-        ThreadUtils.assertOnUiThread();
-
-        // Attempting to fetch answer data before we have a profile to request it for.
-        if (mDataProvider == null) return;
-
-        if (!suggestion.hasAnswer()) return;
-        final String url = suggestion.getAnswer().getSecondLine().getImage();
-        if (url == null) return;
-
-        // Do not make duplicate answer image requests for the same URL (to avoid generating
-        // duplicate bitmaps for the same image).
-        if (mPendingAnswerRequestUrls.containsKey(url)) {
-            mPendingAnswerRequestUrls.get(url).add(model);
-            return;
-        }
-
-        List<PropertyModel> models = new ArrayList<>();
-        models.add(model);
-        mPendingAnswerRequestUrls.put(url, models);
-        mImageFetcher.requestAnswersImage(
-                mDataProvider.getProfile(), url, new AnswersImageFetcher.AnswersImageObserver() {
-                    @Override
-                    public void onAnswersImageChanged(Bitmap bitmap) {
-                        ThreadUtils.assertOnUiThread();
-
-                        List<PropertyModel> models = mPendingAnswerRequestUrls.remove(url);
-                        boolean didUpdate = false;
-                        for (int i = 0; i < models.size(); i++) {
-                            PropertyModel model = models.get(i);
-                            if (!isActiveModel(model)) continue;
-                            model.set(SuggestionViewProperties.ANSWER_IMAGE, bitmap);
-                            didUpdate = true;
-                        }
-                        if (didUpdate) notifyPropertyModelsChanged();
-                    }
-                });
-    }
-
-    private boolean isActiveModel(PropertyModel model) {
-        for (int i = 0; i < mCurrentModels.size(); i++) {
-            if (mCurrentModels.get(i).second.equals(model)) return true;
-        }
-        return false;
+    @Override
+    public Profile getCurrentProfile() {
+        return mDataProvider != null ? mDataProvider.getProfile() : null;
     }
 
     /**
@@ -446,7 +234,21 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener {
 
     /** Set the WindowAndroid instance associated with the containing Activity. */
     void setWindowAndroid(WindowAndroid window) {
+        if (mLifecycleDispatcher != null) {
+            mLifecycleDispatcher.unregister(this);
+        }
+
         mWindowAndroid = window;
+        if (window != null && window.getActivity().get() != null
+                && window.getActivity().get() instanceof AsyncInitializationActivity) {
+            mLifecycleDispatcher =
+                    ((AsyncInitializationActivity) mWindowAndroid.getActivity().get())
+                            .getLifecycleDispatcher();
+        }
+
+        if (mLifecycleDispatcher != null) {
+            mLifecycleDispatcher.register(this);
+        }
     }
 
     /**
@@ -456,8 +258,8 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener {
     void setLayoutDirection(int layoutDirection) {
         mLayoutDirection = layoutDirection;
         for (int i = 0; i < mCurrentModels.size(); i++) {
-            PropertyModel model = mCurrentModels.get(i).second;
-            model.set(SuggestionViewProperties.LAYOUT_DIRECTION, mLayoutDirection);
+            PropertyModel model = mCurrentModels.get(i).model;
+            model.set(SuggestionCommonProperties.LAYOUT_DIRECTION, layoutDirection);
         }
         if (!mCurrentModels.isEmpty()) notifyPropertyModelsChanged();
     }
@@ -465,13 +267,14 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener {
     /**
      * Specifies the visual state to be used by the suggestions.
      * @param useDarkColors Whether dark colors should be used for fonts and icons.
+     * @param isIncognito Whether the UI is for incognito mode or not.
      */
-    void setUseDarkColors(boolean useDarkColors) {
+    void updateVisualsForState(boolean useDarkColors, boolean isIncognito) {
         mUseDarkColors = useDarkColors;
-        mListPropertyModel.set(SuggestionListProperties.USE_DARK_BACKGROUND, !useDarkColors);
+        mListPropertyModel.set(SuggestionListProperties.IS_INCOGNITO, isIncognito);
         for (int i = 0; i < mCurrentModels.size(); i++) {
-            PropertyModel model = mCurrentModels.get(i).second;
-            model.set(SuggestionViewProperties.USE_DARK_COLORS, mUseDarkColors);
+            PropertyModel model = mCurrentModels.get(i).model;
+            model.set(SuggestionCommonProperties.USE_DARK_COLORS, useDarkColors);
         }
         if (!mCurrentModels.isEmpty()) notifyPropertyModelsChanged();
     }
@@ -498,10 +301,30 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener {
     void onNativeInitialized() {
         mNativeInitialized = true;
 
+        // The feature is instantiated in the constructor to simplify plumbing. If the feature is
+        // actually disabled, null out the coordinator.
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.SEARCH_READY_OMNIBOX)) {
+            mEditUrlProcessor.destroy();
+            mEditUrlProcessor = null;
+        }
+
+        mShowSuggestionFavicons =
+                ChromeFeatureList.isEnabled(ChromeFeatureList.OMNIBOX_SHOW_SUGGESTION_FAVICONS);
+
         for (Runnable deferredRunnable : mDeferredNativeRunnables) {
             mHandler.post(deferredRunnable);
         }
         mDeferredNativeRunnables.clear();
+        mAnswerSuggestionProcessor.onNativeInitialized();
+        mBasicSuggestionProcessor.onNativeInitialized();
+        if (mEditUrlProcessor != null) mEditUrlProcessor.onNativeInitialized();
+    }
+
+    /**
+     * @param provider A means of accessing the activity tab.
+     */
+    void setActivityTabProvider(ActivityTabProvider provider) {
+        if (mEditUrlProcessor != null) mEditUrlProcessor.setActivityTabProvider(provider);
     }
 
     /** @see org.chromium.chrome.browser.omnibox.UrlFocusChangeListener#onUrlFocusChange(boolean) */
@@ -518,14 +341,20 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener {
                 });
             }
         } else {
+            // Record presence of answers as user stops interacting with omnibox.
+            // This covers actions such as pressing 'back' button or choosing an answer.
+            recordAnswersHistogram();
+
             mSuggestionVisibilityState = SuggestionVisibilityState.DISALLOWED;
             mHasStartedNewOmniboxEditSession = false;
             mNewOmniboxEditSessionTimestamp = -1;
             // Prevent any upcoming omnibox suggestions from showing once a URL is loaded (and as
             // a consequence the omnibox is unfocused).
             hideSuggestions();
-            mImageFetcher.clearCache();
         }
+        if (mEditUrlProcessor != null) mEditUrlProcessor.onUrlFocusChange(hasFocus);
+        mAnswerSuggestionProcessor.onUrlFocusChange(hasFocus);
+        mBasicSuggestionProcessor.onUrlFocusChange(hasFocus);
     }
 
     /**
@@ -544,6 +373,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener {
      */
     void setAutocompleteProfile(Profile profile) {
         mAutocomplete.setProfile(profile);
+        mBasicSuggestionProcessor.setProfile(profile);
     }
 
     /**
@@ -568,7 +398,9 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener {
         return mAutocomplete.getCurrentNativeAutocompleteResult();
     }
 
-    private SuggestionViewDelegate createSuggestionViewDelegate(
+    // TODO(mdjones): This should only exist in the BasicSuggestionProcessor.
+    @Override
+    public SuggestionViewDelegate createSuggestionViewDelegate(
             OmniboxSuggestion suggestion, int position) {
         return new SuggestionViewDelegate() {
             @Override
@@ -624,6 +456,14 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener {
                                 : Math.max(maxTextWidth - maxMatchContentsWidth, 0));
             }
         };
+    }
+
+    @Override
+    public boolean isActiveModel(PropertyModel model) {
+        for (int i = 0; i < mCurrentModels.size(); i++) {
+            if (mCurrentModels.get(i).model.equals(model)) return true;
+        }
+        return false;
     }
 
     /**
@@ -683,14 +523,14 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener {
             return;
         }
 
-        ModalDialogView.Controller dialogController = new ModalDialogView.Controller() {
+        ModalDialogProperties.Controller dialogController = new ModalDialogProperties.Controller() {
             @Override
             public void onClick(PropertyModel model, int buttonType) {
-                if (buttonType == ModalDialogView.ButtonType.POSITIVE) {
+                if (buttonType == ModalDialogProperties.ButtonType.POSITIVE) {
                     RecordUserAction.record("MobileOmniboxDeleteRequested");
                     mAutocomplete.deleteSuggestion(position, suggestion.hashCode());
                     manager.dismissDialog(model, DialogDismissalCause.POSITIVE_BUTTON_CLICKED);
-                } else if (buttonType == ModalDialogView.ButtonType.NEGATIVE) {
+                } else if (buttonType == ModalDialogProperties.ButtonType.NEGATIVE) {
                     manager.dismissDialog(model, DialogDismissalCause.NEGATIVE_BUTTON_CLICKED);
                 }
             }
@@ -858,6 +698,20 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener {
         mDelegate.onUrlTextChanged();
     }
 
+    /**
+     * @param suggestion The suggestion to be processed.
+     * @return The appropriate suggestion processor for the provided suggestion.
+     */
+    private SuggestionProcessor getProcessorForSuggestion(OmniboxSuggestion suggestion) {
+        if (mAnswerSuggestionProcessor.doesProcessSuggestion(suggestion)) {
+            return mAnswerSuggestionProcessor;
+        } else if (mEditUrlProcessor != null
+                && mEditUrlProcessor.doesProcessSuggestion(suggestion)) {
+            return mEditUrlProcessor;
+        }
+        return mBasicSuggestionProcessor;
+    }
+
     @Override
     public void onSuggestionsReceived(
             List<OmniboxSuggestion> newSuggestions, String inlineAutocompleteText) {
@@ -876,7 +730,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener {
         if (mDeferredOnSelection != null) {
             mDeferredOnSelection.setShouldLog(newSuggestions.size() > mDeferredOnSelection.mPosition
                     && mDeferredOnSelection.mSuggestion.equals(
-                               newSuggestions.get(mDeferredOnSelection.mPosition)));
+                            newSuggestions.get(mDeferredOnSelection.mPosition)));
             mDeferredOnSelection.run();
             mDeferredOnSelection = null;
         }
@@ -886,7 +740,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener {
         if (mCurrentModels.size() == newSuggestions.size()) {
             boolean sameSuggestions = true;
             for (int i = 0; i < mCurrentModels.size(); i++) {
-                if (!mCurrentModels.get(i).first.equals(newSuggestions.get(i))) {
+                if (!mCurrentModels.get(i).suggestion.equals(newSuggestions.get(i))) {
                     sameSuggestions = false;
                     break;
                 }
@@ -900,13 +754,22 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener {
         mPreventSuggestionListPropertyChanges = true;
         mCurrentModels.clear();
         for (int i = 0; i < newSuggestions.size(); i++) {
-            PropertyModel model = new PropertyModel(SuggestionViewProperties.ALL_KEYS);
             OmniboxSuggestion suggestion = newSuggestions.get(i);
-            mCurrentModels.add(Pair.create(suggestion, model));
+            SuggestionProcessor processor = getProcessorForSuggestion(suggestion);
+            PropertyModel model = processor.createModelForSuggestion(suggestion);
+            model.set(SuggestionCommonProperties.LAYOUT_DIRECTION, mLayoutDirection);
+            model.set(SuggestionCommonProperties.USE_DARK_COLORS, mUseDarkColors);
+            model.set(SuggestionCommonProperties.SHOW_SUGGESTION_ICONS,
+                    mShowSuggestionFavicons
+                            || DeviceFormFactor.isNonMultiDisplayContextOnTablet(mContext));
+
             // Before populating the model, add it to the list of current models.  If the suggestion
             // has an image and the image was already cached, it will be updated synchronously and
             // the model will only have the image populated if it is tracked as a current model.
-            populateModelForSuggestion(model, suggestion, i);
+            mCurrentModels.add(
+                    new SuggestionViewInfo(suggestion, model, processor.getViewTypeId()));
+
+            processor.populateModel(suggestion, model, i);
         }
         mPreventSuggestionListPropertyChanges = false;
         notifyPropertyModelsChanged();

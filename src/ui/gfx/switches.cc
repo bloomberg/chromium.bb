@@ -7,11 +7,6 @@
 
 namespace switches {
 
-#if defined(OS_WIN)
-// Disables DirectWrite font rendering for general UI elements.
-const char kDisableDirectWriteForUI[] = "disable-directwrite-for-ui";
-#endif
-
 // Force disables font subpixel positioning. This affects the character glyph
 // sharpness, kerning, hinting and layout.
 const char kDisableFontSubpixelPositioning[] =
@@ -23,13 +18,6 @@ const char kHeadless[] = "headless";
 }  // namespace switches
 
 namespace features {
-
-// Enables or disables an experimental Bidi URL rendering algorithm where the
-// URL components are always shown in order from left to right, regardless of
-// any RTL characters. (The contents of each component are still rendered with
-// the normal Bidi algorithm.)
-const base::Feature kLeftToRightUrls{"LeftToRightUrls",
-                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables the use of cc::PaintRecords as a backing store for
 // ImageSkiaReps. This may reduce load on the UI thread by moving rasterization

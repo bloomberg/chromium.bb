@@ -4,7 +4,7 @@
  *
  *   FreeType API for accessing BDF-specific strings (specification).
  *
- * Copyright 2002-2018 by
+ * Copyright (C) 2002-2019 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -106,8 +106,8 @@ FT_BEGIN_HEADER
    *      The property type.
    *
    *    u.atom ::
-   *      The atom string, if type is @BDF_PROPERTY_TYPE_ATOM.  May be NULL,
-   *      indicating an empty string.
+   *      The atom string, if type is @BDF_PROPERTY_TYPE_ATOM.  May be
+   *      `NULL`, indicating an empty string.
    *
    *    u.integer ::
    *      A signed integer, if type is @BDF_PROPERTY_TYPE_INTEGER.

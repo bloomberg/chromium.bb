@@ -8,9 +8,9 @@
 #include <stdint.h>
 
 #include <memory>
+#include <unordered_map>
 #include <vector>
 
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -33,7 +33,6 @@ namespace gpu {
 class ImageFactory;
 struct GpuPreferences;
 class MailboxManager;
-class TransferBufferManager;
 class SharedImageManager;
 class SharedImageRepresentationFactory;
 class ServiceDiscardableManager;
@@ -199,10 +198,6 @@ class GPU_GLES2_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
     return shader_manager_.get();
   }
 
-  TransferBufferManager* transfer_buffer_manager() const {
-    return transfer_buffer_manager_.get();
-  }
-
   SamplerManager* sampler_manager() const {
     return sampler_manager_.get();
   }
@@ -228,7 +223,7 @@ class GPU_GLES2_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
   }
 
   bool GetSyncServiceId(GLuint client_id, GLsync* service_id) const {
-    base::hash_map<GLuint, GLsync>::const_iterator iter =
+    std::unordered_map<GLuint, GLsync>::const_iterator iter =
         syncs_id_map_.find(client_id);
     if (iter == syncs_id_map_.end())
       return false;
@@ -274,7 +269,6 @@ class GPU_GLES2_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
   std::unique_ptr<MemoryTracker> memory_tracker_;
   ShaderTranslatorCache* shader_translator_cache_;
   FramebufferCompletenessCache* framebuffer_completeness_cache_;
-  std::unique_ptr<TransferBufferManager> transfer_buffer_manager_;
 
   bool enforce_gl_minimums_;
   bool bind_generates_resource_;
@@ -324,7 +318,7 @@ class GPU_GLES2_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
   std::vector<base::WeakPtr<DecoderContext>> decoders_;
 
   // Mappings from client side IDs to service side IDs.
-  base::hash_map<GLuint, GLsync> syncs_id_map_;
+  std::unordered_map<GLuint, GLsync> syncs_id_map_;
 
   bool use_passthrough_cmd_decoder_;
   std::unique_ptr<PassthroughResources> passthrough_resources_;

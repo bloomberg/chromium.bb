@@ -18,6 +18,7 @@ source_set("fuzzer_support") {
   ]
   public_deps = [
     "//base",
+    "//base/test:test_config",
     "//content/renderer:for_content_tests",
     "//content/shell:content_shell_lib",
     "//content/test:test_support",
@@ -45,6 +46,8 @@ fuzzer_test("origin_policy_parser_fuzzer") {
     "origin_policy_parser_fuzzer.cc",
   ]
   deps = [
+    "//base",
+    "//base:i18n",
     "//content/test:test_support",
   ]
   dict =
@@ -68,7 +71,6 @@ fuzzer_test("renderer_tree_fuzzer") {
   deps = [
     ":fuzzer_support",
   ]
-  additional_configs = [ "//testing/libfuzzer:no_clusterfuzz" ]
 }
 
 fuzzer_test("clear_site_data_fuzzer") {
@@ -90,7 +92,6 @@ fuzzer_test("renderer_proto_tree_fuzzer") {
     ":html_tree_proto",
     "//third_party/libprotobuf-mutator",
   ]
-  additional_configs = [ "//testing/libfuzzer:no_clusterfuzz" ]
 }
 
 proto_library("html_tree_proto") {
@@ -111,15 +112,14 @@ fuzzer_test("signed_exchange_envelope_fuzzer") {
   seed_corpus = "//content/test/data/sxg/"
 }
 
-fuzzer_test("signed_exchange_signature_header_field_fuzzer") {
+fuzzer_test("http_structured_header_fuzzer") {
   sources = [
-    "signed_exchange_signature_header_field_fuzzer.cc",
+    "http_structured_header_fuzzer.cc",
   ]
   deps = [
-    "//base:i18n",
     "//content/test:test_support",
   ]
-  seed_corpus = "//content/test/data/fuzzer_corpus/signed_exchange_signature_header_field_data/"
+  seed_corpus = "//content/test/data/fuzzer_corpus/http_structured_header_data/"
 }
 
 fuzzer_test("signed_exchange_certificate_chain_fuzzer") {
@@ -163,6 +163,7 @@ fuzzer_test("merkle_integrity_source_stream_fuzzer") {
     "//net:test_support",
   ]
   dict = "//content/test/data/fuzzer_dictionaries/merkle_integrity_source_stream_fuzzer.dict"
+  environment_variables = [ "AFL_DRIVER_DONT_DEFER=1" ]
 }
 
 proto_library("appcache_fuzzer_proto") {
@@ -191,4 +192,35 @@ fuzzer_test("appcache_fuzzer") {
     "//storage/browser:test_support",
     "//third_party/libprotobuf-mutator",
   ]
+}
+
+# Note: this compiles and runs on Mac but may cause
+# system instability; if you try it out, close other
+# programs and then reboot afterwards. It should be
+# possible to make it work on Linux if you use the
+# --enable-speech-dispatcher flag.
+if (is_win) {
+  fuzzer_test("tts_platform_fuzzer") {
+    sources = [
+      "../../browser/speech/mock_tts_controller.cc",
+      "../../browser/speech/tts_mac.mm",
+      "../../browser/speech/tts_platform_fuzzer.cc",
+      "../../browser/speech/tts_platform_impl.cc",
+      "../../browser/speech/tts_platform_impl.h",
+      "../../browser/speech/tts_win.cc",
+      "../../public/browser/tts_controller.h",
+      "../../public/browser/tts_platform.h",
+      "//content/common/content_export.h",
+    ]
+
+    # TODO(https://crbug.com/927728): Refactor target to not require this.
+    check_includes = false
+
+    deps = [
+      "//base",
+      "//base/test:test_support",
+      "//ui/base",
+      "//url:url",
+    ]
+  }
 }

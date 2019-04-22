@@ -4,14 +4,17 @@
 
 #include "components/language/content/browser/geo_language_provider.h"
 
+#include "base/bind.h"
 #include "base/memory/singleton.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "components/language/content/browser/language_code_locator_provider.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/device/public/mojom/constants.mojom.h"
+#include "services/device/public/mojom/geoposition.mojom.h"
 #include "services/device/public/mojom/public_ip_address_geolocation_provider.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -90,7 +93,7 @@ void GeoLanguageProvider::BackgroundStartUp() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(background_sequence_checker_);
 
   // Initialize location->language lookup library.
-  language_code_locator_ = std::make_unique<language::LanguageCodeLocator>();
+  language_code_locator_ = GetLanguageCodeLocator(prefs_);
 
   // Make initial query.
   QueryNextPosition();
@@ -151,8 +154,8 @@ void GeoLanguageProvider::OnIpGeolocationResponse(
   DCHECK_CALLED_ON_VALID_SEQUENCE(background_sequence_checker_);
 
   const std::vector<std::string> languages =
-      language_code_locator_->GetLanguageCode(geoposition->latitude,
-                                              geoposition->longitude);
+      language_code_locator_->GetLanguageCodes(geoposition->latitude,
+                                               geoposition->longitude);
 
   // Update current languages on UI thread.
   creation_task_runner_->PostTask(

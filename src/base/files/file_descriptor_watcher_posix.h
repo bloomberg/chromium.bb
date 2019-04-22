@@ -9,6 +9,7 @@
 
 #include "base/base_export.h"
 #include "base/callback.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -83,9 +84,10 @@ class BASE_EXPORT FileDescriptorWatcher {
 
   // Registers |io_thread_task_runner| to watch file descriptors for which
   // callbacks are registered from the current thread via WatchReadable() or
-  // WatchWritable(). |io_thread_task_runner| may run on another thread.
-  // |io_thread_task_runner| must post tasks to a thread which runs
-  // a MessagePumpForIO.
+  // WatchWritable(). |io_thread_task_runner| must post tasks to a thread which
+  // runs a MessagePumpForIO. If it is not the current thread, it must be highly
+  // responsive (i.e. not used to run other expensive tasks such as potentially
+  // blocking I/O) since ~Controller waits for a task posted to it.
   explicit FileDescriptorWatcher(
       scoped_refptr<SingleThreadTaskRunner> io_thread_task_runner);
   ~FileDescriptorWatcher();
@@ -95,12 +97,22 @@ class BASE_EXPORT FileDescriptorWatcher {
   // returned Controller is deleted (deletion must happen on the current
   // sequence). To call these methods, a FileDescriptorWatcher must have been
   // instantiated on the current thread and SequencedTaskRunnerHandle::IsSet()
-  // must return true (these conditions are met at least on all TaskScheduler
-  // threads as well as on threads backed by a MessageLoopForIO).
+  // must return true (these conditions are met at least on all ThreadPool
+  // threads as well as on threads backed by a MessageLoopForIO). |fd| must
+  // outlive the returned Controller.
   static std::unique_ptr<Controller> WatchReadable(int fd,
                                                    const Closure& callback);
   static std::unique_ptr<Controller> WatchWritable(int fd,
                                                    const Closure& callback);
+
+  // Asserts that usage of this API is allowed on this thread.
+  static void AssertAllowed()
+#if DCHECK_IS_ON()
+      ;
+#else
+  {
+  }
+#endif
 
  private:
   scoped_refptr<SingleThreadTaskRunner> io_thread_task_runner() const {

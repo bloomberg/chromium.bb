@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/text/hyphenation.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
@@ -23,6 +24,8 @@ namespace blink {
 enum class LineBreakIteratorMode { kDefault, kNormal, kStrict, kLoose };
 
 class PLATFORM_EXPORT LayoutLocale : public RefCounted<LayoutLocale> {
+  USING_FAST_MALLOC(LayoutLocale);
+
  public:
   static const LayoutLocale* Get(const AtomicString& locale);
   static const LayoutLocale& GetDefault();

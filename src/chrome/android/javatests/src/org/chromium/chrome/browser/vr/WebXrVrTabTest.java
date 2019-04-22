@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.vr;
 
 import static org.chromium.chrome.browser.vr.XrTestFramework.PAGE_LOAD_TIMEOUT_S;
 import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_SHORT_MS;
+import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_SVR;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE;
 
 import android.os.Build;
@@ -17,7 +18,6 @@ import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.params.ParameterAnnotations.ClassParameter;
 import org.chromium.base.test.params.ParameterAnnotations.UseRunnerDelegate;
 import org.chromium.base.test.params.ParameterSet;
@@ -26,12 +26,12 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.vr.util.NativeUiUtils;
 import org.chromium.chrome.browser.vr.util.PermissionUtils;
 import org.chromium.chrome.browser.vr.util.VrTestRuleUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
+import org.chromium.content_public.browser.WebContents;
 
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -66,10 +66,13 @@ public class WebXrVrTabTest {
     }
 
     /**
-     * Tests that non-focused tabs cannot get pose information.
+     * Tests that non-focused tabs cannot get pose information. Disabled on standalones because
+     * they will always be in the VR Browser, and thus shouldn't be getting inline poses even
+     * if the tab is focused.
      */
     @Test
     @MediumTest
+    @Restriction(RESTRICTION_TYPE_SVR)
     public void testPoseDataUnfocusedTab() throws InterruptedException {
         testPoseDataUnfocusedTabImpl(
                 WebVrTestFramework.getFileUrlForHtmlTestFile("test_pose_data_unfocused_tab"),
@@ -77,10 +80,13 @@ public class WebXrVrTabTest {
     }
 
     /**
-     * Tests that non-focused tabs don't get WebXR rAFs called.
+     * Tests that non-focused tabs don't get WebXR rAFs called. Disabled on standalones because
+     * they will always be in the VR Browser, and thus shouldn't be getting inline poses even
+     * if the tab is focused.
      */
     @Test
     @MediumTest
+    @Restriction(RESTRICTION_TYPE_SVR)
     @CommandLineFlags
             .Remove({"enable-webvr"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
@@ -94,11 +100,13 @@ public class WebXrVrTabTest {
             throws InterruptedException {
         framework.loadUrlAndAwaitInitialization(url, PAGE_LOAD_TIMEOUT_S);
         framework.executeStepAndWait("stepCheckFrameDataWhileFocusedTab()");
+        WebContents firstTabContents = framework.getCurrentWebContents();
 
         mTestRule.loadUrlInNewTab("about:blank");
 
-        framework.executeStepAndWait("stepCheckFrameDataWhileNonFocusedTab()");
-        framework.endTest();
+        WebXrVrTestFramework.executeStepAndWait(
+                "stepCheckFrameDataWhileNonFocusedTab()", firstTabContents);
+        WebXrVrTestFramework.endTest(firstTabContents);
     }
 
     /**
@@ -127,26 +135,32 @@ public class WebXrVrTabTest {
 
     private void testPermissionsInOtherTabImpl(boolean incognito) throws InterruptedException {
         mWebXrVrTestFramework.loadUrlAndAwaitInitialization(
-                mTestRule.getTestServer().getURL(
-                        WebXrVrTestFramework.getEmbeddedServerPathForHtmlTestFile(
-                                "generic_webxr_permission_page")),
+                mWebXrVrTestFramework.getEmbeddedServerUrlForHtmlTestFile(
+                        "generic_webxr_permission_page"),
                 PAGE_LOAD_TIMEOUT_S);
         // Be sure to store the stream we're given so that the permission is actually in use, as
         // otherwise the toast doesn't show up since another tab isn't actually using the
         // permission.
-        WebXrVrTestFramework.runJavaScriptOrFail(
-                "requestPermission({audio:true}, true /* storeValue */)", POLL_TIMEOUT_SHORT_MS,
-                mTestRule.getWebContents());
-        PermissionUtils.waitForPermissionPrompt();
-        PermissionUtils.acceptPermissionPrompt();
-        WebXrVrTestFramework.waitOnJavaScriptStep(mTestRule.getWebContents());
+        mWebXrVrTestFramework.runJavaScriptOrFail(
+                "requestPermission({audio:true}, true /* storeValue */)", POLL_TIMEOUT_SHORT_MS);
+
+        // Accept the permission prompt. Standalone devices need to be special cased since they
+        // will be in the VR Browser.
+        if (TestVrShellDelegate.isOnStandalone()) {
+            NativeUiUtils.enableMockedInput();
+            NativeUiUtils.performActionAndWaitForVisibilityStatus(
+                    UserFriendlyElementName.BROWSING_DIALOG, true /* visible */, () -> {});
+            NativeUiUtils.waitForUiQuiescence();
+            NativeUiUtils.clickFallbackUiPositiveButton();
+        } else {
+            PermissionUtils.waitForPermissionPrompt();
+            PermissionUtils.acceptPermissionPrompt();
+        }
+
+        mWebXrVrTestFramework.waitOnJavaScriptStep();
 
         if (incognito) {
-            ThreadUtils.runOnUiThreadBlocking(() -> {
-                mTestRule.getActivity()
-                        .getTabCreator(true /* incognito */)
-                        .launchUrl("about:blank", TabLaunchType.FROM_LINK);
-            });
+            mWebXrVrTestFramework.openIncognitoTab("about:blank");
         } else {
             mTestRule.loadUrlInNewTab("about:blank");
         }
@@ -154,7 +168,7 @@ public class WebXrVrTabTest {
         mWebXrVrTestFramework.loadUrlAndAwaitInitialization(
                 WebXrVrTestFramework.getFileUrlForHtmlTestFile("generic_webxr_page"),
                 PAGE_LOAD_TIMEOUT_S);
-        mWebXrVrTestFramework.enterSessionWithUserGestureOrFail(mTestRule.getWebContents());
+        mWebXrVrTestFramework.enterSessionWithUserGestureOrFail();
         NativeUiUtils.performActionAndWaitForVisibilityStatus(
                 UserFriendlyElementName.WEB_XR_AUDIO_INDICATOR, true /* visible */, () -> {});
     }

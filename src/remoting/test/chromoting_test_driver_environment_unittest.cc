@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "remoting/test/fake_access_token_fetcher.h"
 #include "remoting/test/fake_host_list_fetcher.h"
-#include "remoting/test/fake_refresh_token_store.h"
+#include "remoting/test/fake_test_token_storage.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -47,7 +47,7 @@ class ChromotingTestDriverEnvironmentTest : public ::testing::Test {
   HostInfo CreateFakeHostInfo();
 
   FakeAccessTokenFetcher fake_access_token_fetcher_;
-  FakeRefreshTokenStore fake_token_store_;
+  FakeTestTokenStorage fake_token_store_;
   FakeHostListFetcher fake_host_list_fetcher_;
 
   std::unique_ptr<ChromotingTestDriverEnvironment> environment_object_;
@@ -76,7 +76,7 @@ void ChromotingTestDriverEnvironmentTest::SetUp() {
 
   environment_object_->SetAccessTokenFetcherForTest(
       &fake_access_token_fetcher_);
-  environment_object_->SetRefreshTokenStoreForTest(&fake_token_store_);
+  environment_object_->SetTestTokenStorageForTest(&fake_token_store_);
   environment_object_->SetHostListFetcherForTest(&fake_host_list_fetcher_);
 }
 

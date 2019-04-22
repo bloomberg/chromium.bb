@@ -7,7 +7,7 @@ common_data = [
   "./android_vr_perf_test.py",
   "./vr_perf_test.py",
   "./vr_test_arg_parser.py",
-  "//third_party/android_tools/sdk/platform-tools/adb",
+  "//third_party/android_sdk/public/platform-tools/adb",
   "//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk",
 ]
 

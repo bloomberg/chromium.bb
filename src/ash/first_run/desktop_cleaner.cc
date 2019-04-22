@@ -8,6 +8,8 @@
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
+#include "ash/wm/desks/desks_util.h"
+#include "base/stl_util.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_observer.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -18,12 +20,20 @@
 namespace ash {
 namespace {
 
-const int kContainerIdsToHide[] = {
-    kShellWindowId_DefaultContainer, kShellWindowId_AlwaysOnTopContainer,
-    // TODO(dzhioev): uncomment this when issue with BrowserView::CanActivate
-    // will be fixed.
-    // kShellWindowId_SystemModalContainer
-};
+std::vector<int> GetContainerIdsToHide() {
+  return std::vector<int>{
+      // Hide the active desk container. The inactive ones are already hidden.
+      // TODO(afakhry): Define the behavior of Virtual Desks during the first
+      // run tutorial whether it should be disabled or locked to the currently
+      // active desk.
+      desks_util::GetActiveDeskContainerId(),
+
+      kShellWindowId_AlwaysOnTopContainer,
+      // TODO(dzhioev): uncomment this when issue with BrowserView::CanActivate
+      // will be fixed.
+      // kShellWindowId_SystemModalContainer
+  };
+}
 
 }  // namespace
 
@@ -93,9 +103,8 @@ class NotificationBlocker : public message_center::NotificationBlocker {
 DesktopCleaner::DesktopCleaner() {
   // TODO(dzhioev): Add support for secondary displays.
   aura::Window* root_window = Shell::Get()->GetPrimaryRootWindow();
-  for (size_t i = 0; i < arraysize(kContainerIdsToHide); ++i) {
-    aura::Window* container =
-        Shell::GetContainer(root_window, kContainerIdsToHide[i]);
+  for (int id : GetContainerIdsToHide()) {
+    aura::Window* container = Shell::GetContainer(root_window, id);
     container_hiders_.push_back(std::make_unique<ContainerHider>(container));
   }
   notification_blocker_.reset(new NotificationBlocker());
@@ -105,8 +114,7 @@ DesktopCleaner::~DesktopCleaner() = default;
 
 // static
 std::vector<int> DesktopCleaner::GetContainersToHideForTest() {
-  return std::vector<int>(kContainerIdsToHide,
-                          kContainerIdsToHide + arraysize(kContainerIdsToHide));
+  return GetContainerIdsToHide();
 }
 
 }  // namespace ash

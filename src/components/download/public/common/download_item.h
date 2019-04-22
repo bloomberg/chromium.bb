@@ -86,9 +86,20 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItem : public base::SupportsUserData {
     TYPE_SAVE_PAGE_AS
   };
 
+  // Result of a rename attempt for a download item.
+  enum DownloadRenameResult {
+    SUCCESS = 0,
+    FAILURE_NAME_CONFLICT = 1,
+    FAILURE_NAME_TOO_LONG = 2,
+    FAILURE_NAME_INVALID = 3,
+    FAILURE_UNAVAILABLE = 4,
+    FAILURE_UNKNOWN = 5,
+    RESULT_MAX = FAILURE_UNKNOWN
+  };
+
   // Callback used with AcquireFileAndDeleteDownload().
   typedef base::Callback<void(const base::FilePath&)> AcquireFileCallback;
-
+  using RenameDownloadCallback = base::OnceCallback<void(DownloadRenameResult)>;
   // Used to represent an invalid download ID.
   static const uint32_t kInvalidId;
 
@@ -161,7 +172,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItem : public base::SupportsUserData {
   // Resume a download that has been paused or interrupted. Will have no effect
   // if the download is neither. Only does something if CanResume() returns
   // true.
-  virtual void Resume() = 0;
+  virtual void Resume(bool user_resume) = 0;
 
   // Cancel the download operation.
   //
@@ -181,6 +192,12 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItem : public base::SupportsUserData {
 
   // Show the download via the OS shell.
   virtual void ShowDownloadInShell() = 0;
+
+  // Rename a downloaded item to |new_name|, implementer should post and reply
+  // the result. Do not pass the full file path, just pass the file name portion
+  // instead.
+  virtual void Rename(const base::FilePath& new_name,
+                      RenameDownloadCallback callback) = 0;
 
   // State accessors -----------------------------------------------------------
 
@@ -205,9 +222,14 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItem : public base::SupportsUserData {
   // reason.
   virtual DownloadInterruptReason GetLastReason() const = 0;
 
-  // The download is currently paused. Calling Resume() will transition out of
-  // this paused state.
+  // Returns whether download is currently paused explicitly by the user. The
+  // download state should be checked in conjunction with this method to
+  // determine whether the download was truly paused. Calling Resume() will
+  // transition out of this paused state.
   virtual bool IsPaused() const = 0;
+
+  // Whether the download should be allowed to proceed in a metered network.
+  virtual bool AllowMetered() const = 0;
 
   // DEPRECATED. True if this is a temporary download and should not be
   // persisted.
@@ -225,6 +247,10 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItem : public base::SupportsUserData {
 
   // Returns the calculated number of bytes wasted (if any).
   virtual int64_t GetBytesWasted() const = 0;
+
+  // Returns the number of times the download has been auto-resumed since last
+  // user triggered resumption.
+  virtual int32_t GetAutoResumeCount() const = 0;
 
   //    Origin State accessors -------------------------------------------------
 

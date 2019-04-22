@@ -20,7 +20,7 @@ class FakeOAuthTokenGetter : public OAuthTokenGetter {
   ~FakeOAuthTokenGetter() override;
 
   // OAuthTokenGetter interface.
-  void CallWithToken(const TokenCallback& on_access_token) override;
+  void CallWithToken(TokenCallback on_access_token) override;
   void InvalidateCache() override;
 
  private:

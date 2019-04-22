@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "ppapi/cpp/host_resolver.h"
 #include "ppapi/utility/completion_callback_factory.h"
-#include "third_party/webrtc/rtc_base/asyncresolverinterface.h"
+#include "third_party/webrtc/rtc_base/async_resolver_interface.h"
 
 namespace remoting {
 

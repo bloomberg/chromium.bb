@@ -23,7 +23,7 @@ struct AV1_COMP;
 struct AV1Common;
 struct ThreadData;
 
-typedef enum {
+enum {
   // Search all the partition types in this plane.
   SEARCH_FULL_PLANE = 0,
   // Only search none_partition coding block.
@@ -32,12 +32,14 @@ typedef enum {
   SEARCH_SAME_PLANE = 2,
   // Skip search partition on this plane. Go split directly.
   SPLIT_PLANE = 3,
-} CB_TREE_SEARCH;
+} UENUM1BYTE(CB_TREE_SEARCH);
 
 // Structure to hold snapshot of coding context during the mode picking process
 typedef struct {
   MB_MODE_INFO mic;
   MB_MODE_INFO_EXT mbmi_ext;
+  int64_t dist;
+  int64_t rdcost;
   uint8_t *color_index_map[2];
   uint8_t *blk_skip;
 
@@ -62,11 +64,10 @@ typedef struct {
   // TODO(jingning) Use RD_COST struct here instead. This involves a boarder
   // scope of refactoring.
   int rate;
-  int64_t dist;
-  int64_t rdcost;
+
   int rd_mode_is_ready;  // Flag to indicate whether rd pick mode decision has
                          // been made.
-
+  int mode_selected;
 #if CONFIG_ONE_PASS_SVM
   // Features for one pass svm early term
   int seg_feat;
@@ -86,21 +87,19 @@ typedef struct {
   // mode as well as the mode of GLOBALMV, more ref/mode combos could be
   // skipped.
   MV_REFERENCE_FRAME ref_selected[2];
-  int mode_selected;
 } PICK_MODE_CONTEXT;
 
 typedef struct {
+  int64_t rdcost;
+  int64_t sub_block_rdcost[4];
   int valid;
   int split;
-  int skip;
-  int64_t rdcost;
   int sub_block_split[4];
   int sub_block_skip[4];
-  int64_t sub_block_rdcost[4];
+  int skip;
 } PC_TREE_STATS;
 
 typedef struct PC_TREE {
-  int index;
   PARTITION_TYPE partitioning;
   BLOCK_SIZE block_size;
   PICK_MODE_CONTEXT none;
@@ -112,9 +111,11 @@ typedef struct PC_TREE {
   PICK_MODE_CONTEXT verticalb[3];
   PICK_MODE_CONTEXT horizontal4[4];
   PICK_MODE_CONTEXT vertical4[4];
-  CB_TREE_SEARCH cb_search_range;
   struct PC_TREE *split[4];
   PC_TREE_STATS pc_tree_stats;
+  CB_TREE_SEARCH cb_search_range;
+  int index;
+  MV mv_ref_fulls[REF_FRAMES];
 } PC_TREE;
 
 void av1_setup_pc_tree(struct AV1Common *cm, struct ThreadData *td);

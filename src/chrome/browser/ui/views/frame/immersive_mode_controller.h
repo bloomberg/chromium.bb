@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_FRAME_IMMERSIVE_MODE_CONTROLLER_H_
 #define CHROME_BROWSER_UI_VIEWS_FRAME_IMMERSIVE_MODE_CONTROLLER_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -43,12 +45,6 @@ class ImmersiveModeController {
     ANIMATE_REVEAL_NO
   };
 
-  // TODO(sky): remove this, temporary while supporting both ash and mash.
-  enum class Type {
-    ASH,
-    STUB,
-  };
-
   class Observer {
    public:
     // Called when a reveal of the top-of-window views has been initiated.
@@ -67,7 +63,7 @@ class ImmersiveModeController {
     virtual ~Observer() {}
   };
 
-  explicit ImmersiveModeController(Type type);
+  ImmersiveModeController();
   virtual ~ImmersiveModeController();
 
   // Must initialize after browser view has a Widget and native window.
@@ -117,8 +113,6 @@ class ImmersiveModeController {
   // in which case we should stay in immersive mode.
   virtual bool ShouldStayImmersiveAfterExitingFullscreen() = 0;
 
-  Type type() const { return type_; }
-
   // Called by browser view to indicate the widget activation has changed.
   // Immersive mode should be enabled/disabled if the widget is
   // active/nonactive when the auto hide title bars in tablet mode feature is
@@ -133,15 +127,13 @@ class ImmersiveModeController {
   base::ObserverList<Observer>::Unchecked observers_;
 
  private:
-  const Type type_;
-
   DISALLOW_COPY_AND_ASSIGN(ImmersiveModeController);
 };
 
 namespace chrome {
 
 // Implemented in immersive_mode_controller_factory.cc.
-ImmersiveModeController* CreateImmersiveModeController();
+std::unique_ptr<ImmersiveModeController> CreateImmersiveModeController();
 
 }  // namespace chrome
 

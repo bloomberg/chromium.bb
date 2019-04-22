@@ -4,6 +4,7 @@
 
 #include "ios/chrome/browser/metrics/ios_chrome_metrics_services_manager_client.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/strings/string16.h"
@@ -87,9 +88,16 @@ IOSChromeMetricsServicesManagerClient::CreateMetricsServiceClient() {
   return IOSChromeMetricsServiceClient::Create(GetMetricsStateManager());
 }
 
-std::unique_ptr<const base::FieldTrial::EntropyProvider>
-IOSChromeMetricsServicesManagerClient::CreateEntropyProvider() {
-  return GetMetricsStateManager()->CreateDefaultEntropyProvider();
+metrics::MetricsStateManager*
+IOSChromeMetricsServicesManagerClient::GetMetricsStateManager() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!metrics_state_manager_) {
+    metrics_state_manager_ = metrics::MetricsStateManager::Create(
+        local_state_, enabled_state_provider_.get(), base::string16(),
+        base::Bind(&PostStoreMetricsClientInfo),
+        base::Bind(&LoadMetricsClientInfo));
+  }
+  return metrics_state_manager_.get();
 }
 
 scoped_refptr<network::SharedURLLoaderFactory>
@@ -105,22 +113,6 @@ bool IOSChromeMetricsServicesManagerClient::IsMetricsConsentGiven() {
   return enabled_state_provider_->IsConsentGiven();
 }
 
-metrics::MetricsStateManager*
-IOSChromeMetricsServicesManagerClient::GetMetricsStateManager() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (!metrics_state_manager_) {
-    metrics_state_manager_ = metrics::MetricsStateManager::Create(
-        local_state_, enabled_state_provider_.get(), base::string16(),
-        base::Bind(&PostStoreMetricsClientInfo),
-        base::Bind(&LoadMetricsClientInfo));
-  }
-  return metrics_state_manager_.get();
-}
-
 bool IOSChromeMetricsServicesManagerClient::IsIncognitoSessionActive() {
   return TabModelList::IsOffTheRecordSessionActive();
-}
-
-bool IOSChromeMetricsServicesManagerClient::IsMetricsReportingForceEnabled() {
-  return IOSChromeMetricsServiceClient::IsMetricsReportingForceEnabled();
 }

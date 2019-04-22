@@ -176,9 +176,9 @@ class ProxyResolvingSocketTest : public ProxyResolvingSocketTestBase,
   DISALLOW_COPY_AND_ASSIGN(ProxyResolvingSocketTest);
 };
 
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        ProxyResolvingSocketTest,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         ProxyResolvingSocketTest,
+                         ::testing::Bool());
 
 // Tests that the connection is established to the proxy.
 TEST_P(ProxyResolvingSocketTest, ConnectToProxy) {

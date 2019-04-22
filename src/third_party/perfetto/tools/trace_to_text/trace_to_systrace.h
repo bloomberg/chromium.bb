@@ -26,6 +26,10 @@ int TraceToSystrace(std::istream* input,
                     std::ostream* output,
                     bool wrap_in_json);
 
+int TraceToSystraceLegacy(std::istream* input,
+                          std::ostream* output,
+                          bool wrap_in_json);
+
 }  // namespace trace_to_text
 }  // namespace perfetto
 

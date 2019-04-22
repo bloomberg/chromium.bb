@@ -52,28 +52,20 @@ Polymer({
     },
 
     /** @private */
-    enableClipboardContentSetting_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('enableClipboardContentSetting');
-      }
-    },
-
-    /** @private */
-    enableSoundContentSetting_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('enableSoundContentSetting');
-      }
-    },
-
-    /** @private */
     enableSensorsContentSetting_: {
       type: Boolean,
       readOnly: true,
       value: function() {
         return loadTimeData.getBoolean('enableSensorsContentSetting');
       }
+    },
+
+    /** @private */
+    enableExperimentalWebPlatformFeatures_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('enableExperimentalWebPlatformFeatures');
+      },
     },
 
     /** @private */
@@ -130,14 +122,17 @@ Polymer({
       [R.SITE_SETTINGS_SENSORS, 'sensors'],
     ];
 
-    if (this.enablePaymentHandlerContentSetting_)
+    if (this.enablePaymentHandlerContentSetting_) {
       pairs.push([R.SITE_SETTINGS_PAYMENT_HANDLER, 'paymentHandler']);
+    }
 
-    pairs.forEach(pair => {
-      const route = pair[0];
-      const id = pair[1];
+    if (this.enableExperimentalWebPlatformFeatures_) {
+      pairs.push([R.SITE_SETTINGS_SERIAL_PORTS, 'serial-ports']);
+    }
+
+    pairs.forEach(([route, id]) => {
       this.focusConfig.set(route.path, () => this.async(() => {
-        cr.ui.focusWithoutInk(assert(this.$$(`#${id} .subpage-arrow button`)));
+        cr.ui.focusWithoutInk(assert(this.$$(`#${id}`)));
       }));
     });
   },
@@ -151,8 +146,9 @@ Polymer({
     for (let i = 0; i < keys.length; ++i) {
       const key = settings.ContentSettingsTypes[keys[i]];
       // Default labels are not applicable to ZOOM.
-      if (key == settings.ContentSettingsTypes.ZOOM_LEVELS)
+      if (key == settings.ContentSettingsTypes.ZOOM_LEVELS) {
         continue;
+      }
       // Protocol handlers are not available (and will DCHECK) in guest mode.
       if (this.isGuest_ &&
           key == settings.ContentSettingsTypes.PROTOCOL_HANDLERS) {
@@ -160,8 +156,9 @@ Polymer({
       }
       // Similarly, protected content is only available in CrOS.
       // <if expr="not chromeos">
-      if (key == settings.ContentSettingsTypes.PROTECTED_CONTENT)
+      if (key == settings.ContentSettingsTypes.PROTECTED_CONTENT) {
         continue;
+      }
       // </if>
       this.updateDefaultValueLabel_(key);
     }
@@ -182,12 +179,15 @@ Polymer({
    * @private
    */
   defaultSettingLabel_: function(setting, enabled, disabled, other) {
-    if (setting == settings.ContentSetting.BLOCK)
+    if (setting == settings.ContentSetting.BLOCK) {
       return disabled;
-    if (setting == settings.ContentSetting.ALLOW)
+    }
+    if (setting == settings.ContentSetting.ALLOW) {
       return enabled;
-    if (other)
+    }
+    if (other) {
       return other;
+    }
     return enabled;
   },
 

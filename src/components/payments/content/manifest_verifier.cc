@@ -18,8 +18,8 @@
 #include "components/webdata/common/web_data_results.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/console_message_level.h"
 #include "net/base/url_util.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -213,6 +213,7 @@ void ManifestVerifier::OnWebDataServiceRequestDone(
 
 void ManifestVerifier::OnPaymentMethodManifestDownloaded(
     const GURL& method_manifest_url,
+    const GURL& unused_method_manifest_url_after_redirects,
     const std::string& content) {
   DCHECK_LT(0U, number_of_manifests_to_download_);
 

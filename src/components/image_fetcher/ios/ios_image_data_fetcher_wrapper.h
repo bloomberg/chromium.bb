@@ -20,6 +20,8 @@ class GURL;
 
 namespace image_fetcher {
 
+using DataUseServiceName = data_use_measurement::DataUseUserData::ServiceName;
+
 class IOSImageDataFetcherWrapper {
  public:
   // The TaskRunner is used to decode the image if it is WebP-encoded.

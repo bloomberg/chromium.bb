@@ -39,8 +39,7 @@ bool ImagesShareDimensionsAndColor(const SkBitmap& lhs, const SkBitmap& rhs) {
 TEST(NotificationStructTraitsTest, NotificationDataRoundtrip) {
   PlatformNotificationData notification_data;
   notification_data.title = base::ASCIIToUTF16("Title of my notification");
-  notification_data.direction =
-      PlatformNotificationData::Direction::DIRECTION_AUTO;
+  notification_data.direction = mojom::NotificationDirection::AUTO;
   notification_data.lang = "test-lang";
   notification_data.body = base::ASCIIToUTF16("Notification body.");
   notification_data.tag = "notification-tag";
@@ -56,6 +55,7 @@ TEST(NotificationStructTraitsTest, NotificationDataRoundtrip) {
   notification_data.renotify = true;
   notification_data.silent = true;
   notification_data.require_interaction = true;
+  notification_data.show_trigger_timestamp = base::Time::Now();
 
   const char data[] = "mock binary notification data";
   notification_data.data.assign(data, data + base::size(data));
@@ -111,6 +111,8 @@ TEST(NotificationStructTraitsTest, NotificationDataRoundtrip) {
     EXPECT_EQ(notification_data.actions[i].placeholder,
               roundtrip_notification_data.actions[i].placeholder);
   }
+  EXPECT_EQ(roundtrip_notification_data.show_trigger_timestamp,
+            notification_data.show_trigger_timestamp);
 }
 
 // Check upper bound on vibration entries (99).

@@ -19,7 +19,7 @@
 
 namespace base {
 class DictionaryValue;
-}  // namespace
+}  // namespace base
 
 namespace invalidation {
 class ObjectId;
@@ -39,7 +39,7 @@ enum class HandlerOwnerType {
   kChildAccount = 6,
   kNotificationPrinter = 7,
   kInvalidatorShim = 8,
-  kSyncBackendHostImpl = 9,
+  kSyncEngineImpl = 9,
   kUnknown = 10,
   kMaxValue = kUnknown,
 };

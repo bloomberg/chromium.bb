@@ -6,8 +6,6 @@
 
 #include <stdint.h>
 
-#include <utility>
-
 #include "base/feature_list.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/autofill/core/browser/field_types.h"
@@ -73,18 +71,17 @@ void AutofillField::set_server_type(ServerFieldType type) {
 }
 
 void AutofillField::add_possible_types_validities(
-    const std::map<ServerFieldType, AutofillProfile::ValidityState>&
-        possible_types_validities) {
+    const ServerFieldTypeValidityStateMap& possible_types_validities) {
   for (const auto& possible_type_validity : possible_types_validities) {
     possible_types_validities_[possible_type_validity.first].push_back(
         possible_type_validity.second);
   }
 }
 
-std::vector<AutofillProfile::ValidityState>
+std::vector<AutofillDataModel::ValidityState>
 AutofillField::get_validities_for_possible_type(ServerFieldType type) {
   if (possible_types_validities_.find(type) == possible_types_validities_.end())
-    return {AutofillProfile::UNVALIDATED};
+    return {AutofillDataModel::UNVALIDATED};
   return possible_types_validities_[type];
 }
 
@@ -172,7 +169,7 @@ FieldSignature AutofillField::GetFieldSignature() const {
 }
 
 std::string AutofillField::FieldSignatureAsStr() const {
-  return base::UintToString(GetFieldSignature());
+  return base::NumberToString(GetFieldSignature());
 }
 
 bool AutofillField::IsFieldFillable() const {
@@ -187,7 +184,7 @@ void AutofillField::NormalizePossibleTypesValidities() {
   for (const auto& possible_type : possible_types_) {
     if (possible_types_validities_[possible_type].empty()) {
       possible_types_validities_[possible_type].push_back(
-          AutofillProfile::UNVALIDATED);
+          AutofillDataModel::UNVALIDATED);
     }
   }
 }

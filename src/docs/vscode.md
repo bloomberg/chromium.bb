@@ -55,6 +55,39 @@ terminal. The argument to `code` is the base directory of the workspace. VS
 Code does not require project or solution files. However, it does store
 workspace settings in a `.vscode` folder in your base directory.
 
+### Fixes for Known Issues
+
+#### Git on Windows
+
+If you only have the `depot_tools` Git installed on your machine, even though it
+is in your PATH, VS Code will ignore it as it seems to be looking for `git.exe`.
+You will have to add the following to your settings in order for the Git
+integration to work:
+
+```json
+{
+  "git.path": "C:\\src\\depot_tools\\git.bat"
+}
+```
+
+#### Rendering of underscore on Linux
+
+As mentioned in [#35901](https://github.com/Microsoft/vscode/issues/35901), VS
+Code will not show underscore (`_`) properly on Linux by default. You can work
+around this issue by forcing another font such as the default `monospace` or
+changing the font size in your settings:
+
+```json
+{
+  // If you want to use the default "monospace" font:
+  //"terminal.integrated.fontFamily": "monospace"
+  // If you would rather just increase the size of the font:
+  //"terminal.integrated.fontSize": 15
+  // If you would rather decrease the size of the font:
+  //"terminal.integrated.fontSize": 15
+}
+```
+
 ### Useful Extensions
 
 Up to now, you have a basic version of VS Code without much language support.
@@ -117,6 +150,16 @@ The following extensions might be useful for you as well:
     format-on-save (see `C_Cpp.clang_format_formatOnSave` setting). This
     extension adds the ability to format a document or the current selection on
     demand.
+*   ***vscode-clangd*** -
+    If you do not plan to use VSCode for debugging, vscode-clangd is a great
+    alternative to C/C++ IntelliSense. It knows about how to compile Chromium,
+    enabling it to provide smarter autocomplete than C/C++ IntelliSense as well
+    as allowing you to jump from functions to their definitions. See
+    [clangd.md](clangd.md) for details.
+
+    If you need to debug, disable the vscode-clangd extension, enable C/C++
+    Intellisense, and restart VSCode.
+
 
 Also be sure to take a look at the
 [VS Code marketplace](https://marketplace.visualstudio.com/VSCode) to check out other
@@ -218,6 +261,10 @@ wholesale, enter the following command into your terminal:
 ```
 $ cp tools/vscode/keybindings.json5 .vscode/keybindings.json
 ```
+
+### Snippets
+There are some useful snippets provided in
+[//tools/vscode/cpp.json5](/tools/vscode/cpp.json5).
 
 ### Tips
 

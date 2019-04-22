@@ -206,21 +206,17 @@ def activity_logging_world_check(member):
 
 # [CallWith]
 CALL_WITH_ARGUMENTS = {
+    'Isolate': 'info.GetIsolate()',
     'ScriptState': 'script_state',
     'ExecutionContext': 'execution_context',
-    'ScriptArguments': 'script_arguments',
-    'CurrentWindow': 'CurrentDOMWindow(info.GetIsolate())',
-    'EnteredWindow': 'EnteredDOMWindow(info.GetIsolate())',
     'Document': 'document',
     'ThisValue': 'ScriptValue(script_state, info.Holder())',
 }
 # List because key order matters, as we want arguments in deterministic order
 CALL_WITH_VALUES = [
+    'Isolate',
     'ScriptState',
     'ExecutionContext',
-    'ScriptArguments',
-    'CurrentWindow',
-    'EnteredWindow',
     'Document',
     'ThisValue',
 ]
@@ -352,14 +348,27 @@ def secure_context(member, interface):
     """Returns C++ code that checks whether an interface/method/attribute/etc. is exposed
     to the current context. Requires that the surrounding code defines an |is_secure_context|
     variable prior to this check."""
-    if 'SecureContext' in member.extended_attributes or 'SecureContext' in interface.extended_attributes:
-        conditions = ['is_secure_context']
-        if 'SecureContext' in member.extended_attributes and member.extended_attributes['SecureContext'] is not None:
-            conditions.append('!%s' % runtime_enabled_function(member.extended_attributes['SecureContext']))
-        if 'SecureContext' in interface.extended_attributes and interface.extended_attributes['SecureContext'] is not None:
-            conditions.append('!%s' % runtime_enabled_function(interface.extended_attributes['SecureContext']))
-        return ' || '.join(conditions)
-    return None
+    member_is_secure_context = 'SecureContext' in member.extended_attributes
+    interface_is_secure_context = ((member.defined_in is None or
+                                    member.defined_in == interface.name) and
+                                   'SecureContext' in interface.extended_attributes)
+
+    if not (member_is_secure_context or interface_is_secure_context):
+        return None
+
+    conditions = ['is_secure_context']
+
+    if member_is_secure_context:
+        conditional = member.extended_attributes['SecureContext']
+        if conditional:
+            conditions.append('!{}'.format(runtime_enabled_function(conditional)))
+
+    if interface_is_secure_context:
+        conditional = interface.extended_attributes['SecureContext']
+        if conditional:
+            conditions.append('!{}'.format(runtime_enabled_function(conditional)))
+
+    return ' || '.join(conditions)
 
 
 # [ImplementedAs]
@@ -402,18 +411,46 @@ def measure_as(definition_or_member, interface):
     return None
 
 
+# [HighEntropy]
+def high_entropy(definition_or_member):
+    extended_attributes = definition_or_member.extended_attributes
+    if 'HighEntropy' in extended_attributes:
+        includes.add('core/frame/dactyloscoper.h')
+        if not ('Measure' in extended_attributes or 'MeasureAs' in extended_attributes):
+            raise Exception('%s specified [HighEntropy], but does not include '
+                            'either [Measure] or [MeasureAs]'
+                            % definition_or_member.name)
+        return True
+    return False
+
+
 # [OriginTrialEnabled]
-def origin_trial_feature_name(definition_or_member):
-    """Returns the name of the feature for the OriginTrialEnabled attribute.
+def _is_origin_trial_feature(feature_name, runtime_features):
+    assert feature_name in runtime_features, feature_name + ' is not a runtime feature.'
+    feature = runtime_features[feature_name]
+    return feature['in_origin_trial']
 
-    An exception is raised if OriginTrialEnabled is used in conjunction with any
-    of the following (which must be mutually exclusive with origin trials):
-      - RuntimeEnabled
 
-    If the OriginTrialEnabled extended attribute is found, the includes are
-    also updated as a side-effect.
+def origin_trial_feature_name(definition_or_member, runtime_features):
+    """
+    Returns the name of the origin trial feature if found, None otherwise.
+    Looks for origin trial feature specified by either OriginTrialEnabled or
+    RuntimeEnabled attributes.
+
+    An exception is raised if OriginTrialEnabled is used in conjunction with
+    RuntimeEnabled attribute.
+
+    If the feature name is found, the includes are also updated as a side-effect.
     """
     extended_attributes = definition_or_member.extended_attributes
+    feature_name = extended_attributes.get('RuntimeEnabled')
+    if feature_name and _is_origin_trial_feature(feature_name, runtime_features):
+        return feature_name
+
+    # TODO(yashard): Remove this part.
+    # This part handles the deprecated OriginTrialEnabled attribute. Remove this
+    # logic after the support for origin trial features through RuntimeEnabled
+    # attribute is added.
     feature_name = extended_attributes.get('OriginTrialEnabled')
 
     if feature_name and 'RuntimeEnabled' in extended_attributes:
@@ -426,7 +463,7 @@ def origin_trial_feature_name(definition_or_member):
 
 def origin_trial_function_call(feature_name, execution_context=None):
     """Returns a function call to determine if an origin trial is enabled."""
-    return 'origin_trials::{feature_name}Enabled({context})'.format(
+    return 'RuntimeEnabledFeatures::{feature_name}Enabled({context})'.format(
         feature_name=feature_name,
         context=execution_context if execution_context else "execution_context")
 
@@ -447,23 +484,17 @@ def rcs_counter_name(member, generic_counter_name):
 
 
 # [RuntimeEnabled]
-def runtime_enabled_feature_name(definition_or_member):
+def runtime_enabled_feature_name(definition_or_member, runtime_features):
     extended_attributes = definition_or_member.extended_attributes
-    if 'RuntimeEnabled' not in extended_attributes:
-        return None
-    includes.add('platform/runtime_enabled_features.h')
-    return extended_attributes['RuntimeEnabled']
+    feature_name = extended_attributes.get('RuntimeEnabled')
+    if feature_name and not _is_origin_trial_feature(feature_name, runtime_features):
+        includes.add('platform/runtime_enabled_features.h')
+        return feature_name
 
 
 # [Unforgeable]
 def is_unforgeable(member):
     return 'Unforgeable' in member.extended_attributes
-
-
-# [LegacyInterfaceTypeChecking]
-def is_legacy_interface_type_checking(interface, member):
-    return ('LegacyInterfaceTypeChecking' in interface.extended_attributes or
-            'LegacyInterfaceTypeChecking' in member.extended_attributes)
 
 
 # [Unforgeable], [Global]

@@ -19,7 +19,6 @@
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context_factory.h"
 #include "third_party/blink/renderer/core/html/canvas/image_data.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
-#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_dispatcher.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
@@ -46,9 +45,6 @@ OffscreenCanvas* OffscreenCanvas::Create(unsigned width, unsigned height) {
 }
 
 OffscreenCanvas::~OffscreenCanvas() {
-  CanvasRenderingContextHost::RecordCanvasSizeToUMA(
-      Size().Width(), Size().Height(),
-      CanvasRenderingContextHost::HostType::kOffscreenCanvasHost);
   v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(
       -memory_usage_);
 }
@@ -57,6 +53,8 @@ void OffscreenCanvas::Commit(scoped_refptr<CanvasResource> canvas_resource,
                              const SkIRect& damage_rect) {
   if (!HasPlaceholderCanvas() || !canvas_resource)
     return;
+  RecordCanvasSizeToUMA(
+      Size(), CanvasRenderingContextHost::HostType::kOffscreenCanvasHost);
 
   base::TimeTicks commit_start_time = WTF::CurrentTimeTicks();
   current_frame_damage_rect_.join(damage_rect);
@@ -68,6 +66,9 @@ void OffscreenCanvas::Commit(scoped_refptr<CanvasResource> canvas_resource,
 }
 
 void OffscreenCanvas::Dispose() {
+  // We need to drop frame dispatcher, to prevent mojo calls from completing.
+  frame_dispatcher_ = nullptr;
+
   if (context_) {
     context_->DetachHost();
     context_ = nullptr;
@@ -218,7 +219,7 @@ CanvasRenderingContext* OffscreenCanvas::GetCanvasRenderingContext(
   // Unknown type.
   if (context_type == CanvasRenderingContext::kContextTypeUnknown ||
       (context_type == CanvasRenderingContext::kContextXRPresent &&
-       !origin_trials::WebXREnabled(execution_context))) {
+       !RuntimeEnabledFeatures::WebXREnabled(execution_context))) {
     return nullptr;
   }
 

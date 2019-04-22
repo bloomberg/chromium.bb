@@ -10,6 +10,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/animation/css_number_interpolation_type.h"
 #include "third_party/blink/renderer/core/animation/interpolation_value.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
@@ -50,7 +51,7 @@ InterpolationValue CreateInterpolableList(
   return ListInterpolationFunctions::CreateList(
       values.size(), [&values](size_t i) {
         return InterpolationValue(
-            InterpolableNumber::Create(values[i].first),
+            std::make_unique<InterpolableNumber>(values[i].first),
             TestNonInterpolableValue::Create(values[i].second));
       });
 }
@@ -58,10 +59,11 @@ InterpolationValue CreateInterpolableList(
 // Creates an InterpolationValue which contains a list of interpolable values,
 // but a non-interpolable list of nullptrs.
 InterpolationValue CreateInterpolableList(const std::vector<double>& values) {
-  return ListInterpolationFunctions::CreateList(values.size(), [&values](
-                                                                   size_t i) {
-    return InterpolationValue(InterpolableNumber::Create(values[i]), nullptr);
-  });
+  return ListInterpolationFunctions::CreateList(
+      values.size(), [&values](size_t i) {
+        return InterpolationValue(
+            std::make_unique<InterpolableNumber>(values[i]), nullptr);
+      });
 }
 
 bool NonInterpolableValuesAreCompatible(const NonInterpolableValue* a,

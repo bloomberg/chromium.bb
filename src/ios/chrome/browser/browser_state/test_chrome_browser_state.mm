@@ -5,6 +5,8 @@
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 
 #include "base/base_paths.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -205,7 +207,7 @@ void TestChromeBrowserState::Init() {
         static_cast<user_prefs::PrefRegistrySyncable*>(
             prefs_->DeprecatedGetPrefRegistry());
     BrowserStateDependencyManager::GetInstance()
-        ->RegisterBrowserStatePrefsForServices(this, pref_registry);
+        ->RegisterBrowserStatePrefsForServices(pref_registry);
   }
 
   BrowserStateDependencyManager::GetInstance()

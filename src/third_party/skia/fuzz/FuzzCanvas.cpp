@@ -9,9 +9,9 @@
 #include "FuzzCommon.h"
 
 // CORE
+#include "DebugCanvas.h"
 #include "SkCanvas.h"
 #include "SkColorFilter.h"
-#include "SkDebugCanvas.h"
 #include "SkFontMgr.h"
 #include "SkImageFilter.h"
 #include "SkMaskFilter.h"
@@ -63,7 +63,7 @@
 #include "SkXfermodeImageFilter.h"
 
 // SRC
-#include "SkCommandLineFlags.h"
+#include "CommandLineFlags.h"
 #include "SkUTF.h"
 
 #if SK_SUPPORT_GPU
@@ -79,7 +79,7 @@
 #include <iostream>
 #include <utility>
 
-DEFINE_bool2(gpuInfo, g, false, "Display GPU information on relevant targets.");
+static DEFINE_bool2(gpuInfo, g, false, "Display GPU information on relevant targets.");
 
 // TODO:
 //   SkTextBlob with Unicode
@@ -115,7 +115,7 @@ static sk_sp<SkColorFilter> make_fuzz_colorfilter(Fuzz* fuzz, int depth) {
             SkBlendMode mode;
             fuzz->next(&color);
             fuzz->nextRange(&mode, 0, SkBlendMode::kLastMode);
-            return SkColorFilter::MakeModeFilter(color, mode);
+            return SkColorFilters::Blend(color, mode);
         }
         case 2: {
             sk_sp<SkColorFilter> outer = make_fuzz_colorfilter(fuzz, depth - 1);
@@ -129,7 +129,7 @@ static sk_sp<SkColorFilter> make_fuzz_colorfilter(Fuzz* fuzz, int depth) {
         case 3: {
             SkScalar array[20];
             fuzz->nextN(array, SK_ARRAY_COUNT(array));
-            return SkColorFilter::MakeMatrixFilterRowMajor255(array);
+            return SkColorFilters::MatrixRowMajor255(array);
         }
         case 4: {
             SkColor mul, add;
@@ -190,7 +190,7 @@ static sk_sp<SkShader> make_fuzz_shader(Fuzz* fuzz, int depth) {
     sk_sp<SkColorFilter> colorFilter(nullptr);
     SkBitmap bitmap;
     sk_sp<SkImage> img;
-    SkShader::TileMode tmX, tmY;
+    SkTileMode tmX, tmY;
     bool useMatrix;
     SkColor color;
     SkMatrix matrix;
@@ -204,14 +204,14 @@ static sk_sp<SkShader> make_fuzz_shader(Fuzz* fuzz, int depth) {
         case 0:
             return nullptr;
         case 1:
-            return SkShader::MakeEmptyShader();
+            return SkShaders::Empty();
         case 2:
             fuzz->next(&color);
-            return SkShader::MakeColorShader(color);
+            return SkShaders::Color(color);
         case 3:
             img = make_fuzz_image(fuzz);
-            fuzz->nextRange(&tmX, 0, SkShader::TileMode::kLast_TileMode);
-            fuzz->nextRange(&tmY, 0, SkShader::TileMode::kLast_TileMode);
+            fuzz->nextRange(&tmX, 0, SkTileMode::kLastTileMode);
+            fuzz->nextRange(&tmY, 0, SkTileMode::kLastTileMode);
             fuzz->next(&useMatrix);
             if (useMatrix) {
                 FuzzNiceMatrix(fuzz, &matrix);
@@ -219,13 +219,13 @@ static sk_sp<SkShader> make_fuzz_shader(Fuzz* fuzz, int depth) {
             return img->makeShader(tmX, tmY, useMatrix ? &matrix : nullptr);
         case 4:
             bitmap = make_fuzz_bitmap(fuzz);
-            fuzz->nextRange(&tmX, 0, SkShader::TileMode::kLast_TileMode);
-            fuzz->nextRange(&tmY, 0, SkShader::TileMode::kLast_TileMode);
+            fuzz->nextRange(&tmX, 0, SkTileMode::kLastTileMode);
+            fuzz->nextRange(&tmY, 0, SkTileMode::kLastTileMode);
             fuzz->next(&useMatrix);
             if (useMatrix) {
                 FuzzNiceMatrix(fuzz, &matrix);
             }
-            return SkShader::MakeBitmapShader(bitmap, tmX, tmY, useMatrix ? &matrix : nullptr);
+            return bitmap.makeShader(tmX, tmY, useMatrix ? &matrix : nullptr);
         case 5:
             shader1 = make_fuzz_shader(fuzz, depth - 1);  // limit recursion.
             FuzzNiceMatrix(fuzz, &matrix);
@@ -238,13 +238,13 @@ static sk_sp<SkShader> make_fuzz_shader(Fuzz* fuzz, int depth) {
             shader1 = make_fuzz_shader(fuzz, depth - 1);  // limit recursion.
             shader2 = make_fuzz_shader(fuzz, depth - 1);
             fuzz->nextRange(&blendMode, 0, SkBlendMode::kLastMode);
-            return SkShader::MakeComposeShader(std::move(shader1), std::move(shader2), blendMode);
+            return SkShaders::Blend(blendMode, std::move(shader1), std::move(shader2));
         case 8: {
             auto pic = make_fuzz_picture(fuzz, depth - 1);
             bool useTile;
             SkRect tile;
-            fuzz->nextRange(&tmX, 0, SkShader::TileMode::kLast_TileMode);
-            fuzz->nextRange(&tmY, 0, SkShader::TileMode::kLast_TileMode);
+            fuzz->nextRange(&tmX, 0, SkTileMode::kLastTileMode);
+            fuzz->nextRange(&tmY, 0, SkTileMode::kLastTileMode);
             fuzz->next(&useMatrix, &useTile);
             if (useMatrix) {
                 FuzzNiceMatrix(fuzz, &matrix);
@@ -252,9 +252,7 @@ static sk_sp<SkShader> make_fuzz_shader(Fuzz* fuzz, int depth) {
             if (useTile) {
                 fuzz->next(&tile);
             }
-            return SkShader::MakePictureShader(std::move(pic), tmX, tmY,
-                                               useMatrix ? &matrix : nullptr,
-                                               useTile ? &tile : nullptr);
+            return pic->makeShader(tmX, tmY, useMatrix ? &matrix : nullptr, useTile ? &tile : nullptr);
         }
         // EFFECTS:
         case 9:
@@ -270,7 +268,7 @@ static sk_sp<SkShader> make_fuzz_shader(Fuzz* fuzz, int depth) {
             fuzz->nextN(pts, 2);
             fuzz->nextRange(&colorCount, 2, kMaxColors);
             fuzz->nextN(colors, colorCount);
-            fuzz->nextRange(&tmX, 0, SkShader::TileMode::kLast_TileMode);
+            fuzz->nextRange(&tmX, 0, SkTileMode::kLastTileMode);
             fuzz->next(&useMatrix, &usePos);
             if (useMatrix) {
                 FuzzNiceMatrix(fuzz, &matrix);
@@ -289,7 +287,7 @@ static sk_sp<SkShader> make_fuzz_shader(Fuzz* fuzz, int depth) {
             bool usePos;
             SkColor colors[kMaxColors];
             SkScalar pos[kMaxColors];
-            fuzz->nextRange(&tmX, 0, SkShader::TileMode::kLast_TileMode);
+            fuzz->nextRange(&tmX, 0, SkTileMode::kLastTileMode);
             fuzz->next(&useMatrix, &usePos, &center, &radius);
             fuzz->nextRange(&colorCount, 2, kMaxColors);
             fuzz->nextN(colors, colorCount);
@@ -310,7 +308,7 @@ static sk_sp<SkShader> make_fuzz_shader(Fuzz* fuzz, int depth) {
             bool usePos;
             SkColor colors[kMaxColors];
             SkScalar pos[kMaxColors];
-            fuzz->nextRange(&tmX, 0, SkShader::TileMode::kLast_TileMode);
+            fuzz->nextRange(&tmX, 0, SkTileMode::kLastTileMode);
             fuzz->next(&useMatrix, &usePos, &startRadius, &endRadius, &start, &end);
             fuzz->nextRange(&colorCount, 2, kMaxColors);
             fuzz->nextN(colors, colorCount);
@@ -903,8 +901,7 @@ constexpr int kMaxGlyphCount = 30;
 static SkTDArray<uint8_t> make_fuzz_text(Fuzz* fuzz, const SkFont& font, SkTextEncoding encoding) {
     SkTDArray<uint8_t> array;
     if (kGlyphID_SkTextEncoding == encoding) {
-        int glyphRange = font.getTypeface() ? font.getTypeface()->countGlyphs()
-                                             : SkTypeface::MakeDefault()->countGlyphs();
+        int glyphRange = font.getTypefaceOrDefault()->countGlyphs();
         if (glyphRange == 0) {
             // Some fuzzing environments have no fonts, so empty array is the best
             // we can do.
@@ -974,11 +971,6 @@ static SkTDArray<uint8_t> make_fuzz_text(Fuzz* fuzz, const SkFont& font, SkTextE
     return array;
 }
 
-static SkTDArray<uint8_t> make_fuzz_text(Fuzz* fuzz, const SkPaint& paint) {
-    return make_fuzz_text(fuzz, SkFont::LEGACY_ExtractFromPaint(paint),
-                          (SkTextEncoding)paint.getTextEncoding());
-}
-
 static sk_sp<SkTextBlob> make_fuzz_textblob(Fuzz* fuzz) {
     SkTextBlobBuilder textBlobBuilder;
     int8_t runCount;
@@ -994,24 +986,26 @@ static sk_sp<SkTextBlob> make_fuzz_textblob(Fuzz* fuzz) {
         const SkTextBlobBuilder::RunBuffer* buffer;
         uint8_t runType;
         fuzz->nextRange(&runType, (uint8_t)0, (uint8_t)2);
+        const void* textPtr = text.begin();
+        size_t textLen =  SkToSizeT(text.count());
         switch (runType) {
             case 0:
                 fuzz->next(&x, &y);
                 // TODO: Test other variations of this.
                 buffer = &textBlobBuilder.allocRun(font, glyphCount, x, y);
-                memcpy(buffer->glyphs, text.begin(), SkToSizeT(text.count()));
+                (void)font.textToGlyphs(textPtr, textLen, encoding, buffer->glyphs, glyphCount);
                 break;
             case 1:
                 fuzz->next(&y);
                 // TODO: Test other variations of this.
                 buffer = &textBlobBuilder.allocRunPosH(font, glyphCount, y);
-                memcpy(buffer->glyphs, text.begin(), SkToSizeT(text.count()));
+                (void)font.textToGlyphs(textPtr, textLen, encoding, buffer->glyphs, glyphCount);
                 fuzz->nextN(buffer->pos, glyphCount);
                 break;
             case 2:
                 // TODO: Test other variations of this.
                 buffer = &textBlobBuilder.allocRunPos(font, glyphCount);
-                memcpy(buffer->glyphs, text.begin(), SkToSizeT(text.count()));
+                (void)font.textToGlyphs(textPtr, textLen, encoding, buffer->glyphs, glyphCount);
                 fuzz->nextN(buffer->pos, glyphCount * 2);
                 break;
             default:
@@ -1022,20 +1016,11 @@ static sk_sp<SkTextBlob> make_fuzz_textblob(Fuzz* fuzz) {
     return textBlobBuilder.make();
 }
 
-extern std::atomic<bool> gSkUseDeltaAA;
-extern std::atomic<bool> gSkForceDeltaAA;
-
 static void fuzz_canvas(Fuzz* fuzz, SkCanvas* canvas, int depth = 9) {
     if (!fuzz || !canvas || depth <= 0) {
         return;
     }
     SkAutoCanvasRestore autoCanvasRestore(canvas, false);
-    bool useDAA;
-    fuzz->next(&useDAA);
-    if (useDAA) {
-        gSkForceDeltaAA = true;
-        gSkUseDeltaAA = true;
-    }
     unsigned N;
     fuzz->nextRange(&N, 0, 2000);
     for (unsigned i = 0; i < N; ++i) {
@@ -1475,59 +1460,14 @@ static void fuzz_canvas(Fuzz* fuzz, SkCanvas* canvas, int depth = 9) {
                                        font, paint);
                 break;
             }
-#ifdef SK_SUPPORT_LEGACY_FONTMETRICS_IN_PAINT
             case 46: {
-                fuzz_paint(fuzz, &paint, depth - 1);
-                font = fuzz_font(fuzz);
-                SkTextEncoding encoding = fuzz_paint_text_encoding(fuzz);
-                SkTDArray<uint8_t> text = make_fuzz_text(fuzz, font, encoding);
-                int glyphCount = font.countText(text.begin(), SkToSizeT(text.count()), encoding);
-                if (glyphCount < 1) {
-                    break;
-                }
-                SkAutoTMalloc<SkPoint> pos(glyphCount);
-                SkAutoTMalloc<SkScalar> widths(glyphCount);
-                font.LEGACY_applyToPaint(&paint);
-                paint.setTextEncoding(encoding);
-                paint.getTextWidths(text.begin(), SkToSizeT(text.count()), widths.get());
-                pos[0] = {0, 0};
-                for (int i = 1; i < glyphCount; ++i) {
-                    float y;
-                    fuzz->nextRange(&y, -0.5f * paint.getTextSize(), 0.5f * paint.getTextSize());
-                    pos[i] = {pos[i - 1].x() + widths[i - 1], y};
-                }
-                canvas->drawPosText(text.begin(), SkToSizeT(text.count()), pos.get(), paint);
+                // was drawPosText
                 break;
             }
             case 47: {
-                fuzz_paint(fuzz, &paint, depth - 1);
-                font = fuzz_font(fuzz);
-                SkTextEncoding encoding = fuzz_paint_text_encoding(fuzz);
-                SkTDArray<uint8_t> text = make_fuzz_text(fuzz, font, encoding);
-                int glyphCount = font.countText(text.begin(), SkToSizeT(text.count()), encoding);
-                SkAutoTMalloc<SkScalar> widths(glyphCount);
-                if (glyphCount < 1) {
-                    break;
-                }
-                font.LEGACY_applyToPaint(&paint);
-                paint.setTextEncoding(encoding);
-                paint.getTextWidths(text.begin(), SkToSizeT(text.count()), widths.get());
-                SkScalar x = widths[0];
-                for (int i = 0; i < glyphCount; ++i) {
-                    using std::swap;
-                    swap(x, widths[i]);
-                    x += widths[i];
-                    SkScalar offset;
-                    fuzz->nextRange(&offset, -0.125f * paint.getTextSize(),
-                                    0.125f * paint.getTextSize());
-                    widths[i] += offset;
-                }
-                SkScalar y;
-                fuzz->next(&y);
-                canvas->drawPosTextH(text.begin(), SkToSizeT(text.count()), widths.get(), y, paint);
+                // was drawPosTextH
                 break;
             }
-#endif
             case 48: {
                 // was drawtextonpath
                 break;
@@ -1536,29 +1476,10 @@ static void fuzz_canvas(Fuzz* fuzz, SkCanvas* canvas, int depth = 9) {
                 // was drawtextonpath
                 break;
             }
-#ifdef SK_SUPPORT_LEGACY_FONTMETRICS_IN_PAINT
             case 50: {
-                fuzz_paint(fuzz, &paint, depth - 1);
-                font = fuzz_font(fuzz);
-                SkTextEncoding encoding = fuzz_paint_text_encoding(fuzz);
-                SkTDArray<uint8_t> text = make_fuzz_text(fuzz, paint);
-                SkRSXform rSXform[kMaxGlyphCount];
-                int glyphCount = font.countText(text.begin(), SkToSizeT(text.count()), encoding);
-                SkASSERT(glyphCount <= kMaxGlyphCount);
-                fuzz->nextN(rSXform, glyphCount);
-                SkRect cullRect;
-                bool useCullRect;
-                fuzz->next(&useCullRect);
-                if (useCullRect) {
-                    fuzz->next(&cullRect);
-                }
-                font.LEGACY_applyToPaint(&paint);
-                paint.setTextEncoding(encoding);
-                canvas->drawTextRSXform(text.begin(), SkToSizeT(text.count()), rSXform,
-                                        useCullRect ? &cullRect : nullptr, paint);
+                // was drawTextRSXform
                 break;
             }
-#endif
             case 51: {
                 sk_sp<SkTextBlob> blob = make_fuzz_textblob(fuzz);
                 fuzz_paint(fuzz, &paint, depth - 1);
@@ -1676,6 +1597,12 @@ DEF_FUZZ(ImageFilter, fuzz) {
 #define SK_ADD_RANDOM_BIT_FLIPS
 
 DEF_FUZZ(SerializedImageFilter, fuzz) {
+    SkBitmap bitmap;
+    if (!bitmap.tryAllocN32Pixels(256, 256)) {
+        SkDEBUGF("Could not allocate 256x256 bitmap in SerializedImageFilter");
+        return;
+    }
+
     auto filter = make_fuzz_imageFilter(fuzz, 20);
     if (!filter) {
         return;
@@ -1725,15 +1652,16 @@ DEF_FUZZ(SerializedImageFilter, fuzz) {
 
     SkPaint paint;
     paint.setImageFilter(deserializedFil);
-    SkBitmap bitmap;
+
     SkCanvas canvas(bitmap);
-    canvas.saveLayer(SkRect::MakeWH(500, 500), &paint);
+    canvas.saveLayer(SkRect::MakeWH(256, 256), &paint);
+    canvas.restore();
 }
 
 #if SK_SUPPORT_GPU
 
 static void dump_GPU_info(GrContext* context) {
-    const GrGLInterface* gl = static_cast<GrGLGpu*>(context->contextPriv().getGpu())
+    const GrGLInterface* gl = static_cast<GrGLGpu*>(context->priv().getGpu())
                                     ->glInterface();
     const GrGLubyte* output;
     GR_GL_CALL_RET(gl, output, GetString(GR_GL_RENDERER));
@@ -1768,13 +1696,6 @@ DEF_FUZZ(NativeGLCanvas, fuzz) {
     fuzz_ganesh(fuzz, context);
 }
 
-// This target is deprecated, NullGLContext is not well maintained.
-// Please use MockGPUCanvas instead.
-DEF_FUZZ(NullGLCanvas, fuzz) {
-    sk_gpu_test::GrContextFactory f;
-    fuzz_ganesh(fuzz, f.get(sk_gpu_test::GrContextFactory::kNullGL_ContextType));
-}
-
 DEF_FUZZ(MockGPUCanvas, fuzz) {
     sk_gpu_test::GrContextFactory f;
     fuzz_ganesh(fuzz, f.get(sk_gpu_test::GrContextFactory::kMock_ContextType));
@@ -1790,10 +1711,16 @@ DEF_FUZZ(PDFCanvas, fuzz) {
 
 // not a "real" thing to fuzz, used to debug errors found while fuzzing.
 DEF_FUZZ(_DumpCanvas, fuzz) {
-    SkDebugCanvas debugCanvas(kCanvasSize.width(), kCanvasSize.height());
+    DebugCanvas debugCanvas(kCanvasSize.width(), kCanvasSize.height());
     fuzz_canvas(fuzz, &debugCanvas);
     std::unique_ptr<SkCanvas> nullCanvas = SkMakeNullCanvas();
     UrlDataManager dataManager(SkString("data"));
-    Json::Value json = debugCanvas.toJSON(dataManager, debugCanvas.getSize(), nullCanvas.get());
-    Json::StyledStreamWriter("  ").write(std::cout, json);
+    SkDynamicMemoryWStream stream;
+    SkJSONWriter writer(&stream, SkJSONWriter::Mode::kPretty);
+    writer.beginObject(); // root
+    debugCanvas.toJSON(writer, dataManager, debugCanvas.getSize(), nullCanvas.get());
+    writer.endObject(); // root
+    writer.flush();
+    sk_sp<SkData> json = stream.detachAsData();
+    fwrite(json->data(), json->size(), 1, stdout);
 }

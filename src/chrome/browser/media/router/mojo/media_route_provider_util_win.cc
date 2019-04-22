@@ -4,6 +4,7 @@
 
 #include "chrome/browser/media/router/mojo/media_route_provider_util_win.h"
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/logging.h"

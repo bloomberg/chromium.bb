@@ -41,10 +41,5 @@
     [Custom] void showContextMenuAtPoint(float x, float y, any items, optional Document document);
     void sendMessageToEmbedder(DOMString message);
 
-    DOMString getSelectionBackgroundColor();
-    DOMString getSelectionForegroundColor();
-    DOMString getInactiveSelectionBackgroundColor();
-    DOMString getInactiveSelectionForegroundColor();
-
     boolean isHostedMode();
 };

@@ -4,6 +4,8 @@
 
 #include "components/metrics/call_stack_profile_builder.h"
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/sampling_heap_profiler/module_cache.h"
 #include "base/test/bind_test_util.h"
@@ -14,12 +16,32 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/metrics_proto/sampled_profile.pb.h"
 
-using Frame = base::StackSamplingProfiler::Frame;
-using Module = base::ModuleCache::Module;
-
 namespace metrics {
 
 namespace {
+
+// Stub module for testing.
+class TestModule : public base::ModuleCache::Module {
+ public:
+  TestModule(uintptr_t base_address = 0,
+             const std::string& id = "",
+             const base::FilePath& debug_basename = base::FilePath())
+      : base_address_(base_address), id_(id), debug_basename_(debug_basename) {}
+
+  TestModule(const TestModule&) = delete;
+  TestModule& operator=(const TestModule&) = delete;
+
+  uintptr_t GetBaseAddress() const override { return base_address_; }
+  std::string GetId() const override { return id_; }
+  base::FilePath GetDebugBasename() const override { return debug_basename_; }
+  size_t GetSize() const override { return 0; }
+  bool IsNative() const override { return true; }
+
+ private:
+  uintptr_t base_address_;
+  std::string id_;
+  base::FilePath debug_basename_;
+};
 
 constexpr CallStackProfileParams kProfileParams = {
     CallStackProfileParams::BROWSER_PROCESS,
@@ -30,6 +52,8 @@ class TestingCallStackProfileBuilder : public CallStackProfileBuilder {
  public:
   TestingCallStackProfileBuilder(
       const CallStackProfileParams& profile_params,
+      const WorkIdRecorder* work_id_recorder = nullptr,
+      const MetadataRecorder* metadata_recorder = nullptr,
       base::OnceClosure completed_callback = base::OnceClosure());
 
   ~TestingCallStackProfileBuilder() override;
@@ -47,8 +71,13 @@ class TestingCallStackProfileBuilder : public CallStackProfileBuilder {
 
 TestingCallStackProfileBuilder::TestingCallStackProfileBuilder(
     const CallStackProfileParams& profile_params,
+    const WorkIdRecorder* work_id_recorder,
+    const MetadataRecorder* metadata_recorder,
     base::OnceClosure completed_callback)
-    : CallStackProfileBuilder(profile_params, std::move(completed_callback)) {}
+    : CallStackProfileBuilder(profile_params,
+                              work_id_recorder,
+                              metadata_recorder,
+                              std::move(completed_callback)) {}
 
 TestingCallStackProfileBuilder::~TestingCallStackProfileBuilder() = default;
 
@@ -65,7 +94,7 @@ TEST(CallStackProfileBuilderTest, ProfilingCompleted) {
   EXPECT_CALL(mock_closure, Run()).Times(1);
 
   auto profile_builder = std::make_unique<TestingCallStackProfileBuilder>(
-      kProfileParams, mock_closure.Get());
+      kProfileParams, nullptr, nullptr, mock_closure.Get());
 
 #if defined(OS_WIN)
   uint64_t module_md5 = 0x46C3E4166659AC02ULL;
@@ -76,21 +105,23 @@ TEST(CallStackProfileBuilderTest, ProfilingCompleted) {
 #endif
 
   const uintptr_t module_base_address1 = 0x1000;
-  Module module1 = {module_base_address1, "1", module_path};
-  Frame frame1 = {module_base_address1 + 0x10, module1};
+  TestModule module1(module_base_address1, "1", module_path);
+  base::Frame frame1 = {module_base_address1 + 0x10, &module1};
 
   const uintptr_t module_base_address2 = 0x1100;
-  Module module2 = {module_base_address2, "2", module_path};
-  Frame frame2 = {module_base_address2 + 0x10, module2};
+  TestModule module2(module_base_address2, "2", module_path);
+  base::Frame frame2 = {module_base_address2 + 0x10, &module2};
 
   const uintptr_t module_base_address3 = 0x1010;
-  Module module3 = {module_base_address3, "3", module_path};
-  Frame frame3 = {module_base_address3 + 0x10, module3};
+  TestModule module3(module_base_address3, "3", module_path);
+  base::Frame frame3 = {module_base_address3 + 0x10, &module3};
 
-  std::vector<Frame> frames1 = {frame1, frame2};
-  std::vector<Frame> frames2 = {frame3};
+  std::vector<base::Frame> frames1 = {frame1, frame2};
+  std::vector<base::Frame> frames2 = {frame3};
 
+  profile_builder->RecordMetadata();
   profile_builder->OnSampleCompleted(frames1);
+  profile_builder->RecordMetadata();
   profile_builder->OnSampleCompleted(frames2);
   profile_builder->OnProfileCompleted(base::TimeDelta::FromMilliseconds(500),
                                       base::TimeDelta::FromMilliseconds(100));
@@ -133,7 +164,9 @@ TEST(CallStackProfileBuilderTest, ProfilingCompleted) {
 
   ASSERT_EQ(2, profile.stack_sample_size());
   EXPECT_EQ(0, profile.stack_sample(0).stack_index());
+  EXPECT_FALSE(profile.stack_sample(0).has_continued_work());
   EXPECT_EQ(1, profile.stack_sample(1).stack_index());
+  EXPECT_FALSE(profile.stack_sample(1).has_continued_work());
 
   ASSERT_TRUE(profile.has_profile_duration_ms());
   EXPECT_EQ(500, profile.profile_duration_ms());
@@ -145,25 +178,19 @@ TEST(CallStackProfileBuilderTest, StacksDeduped) {
   auto profile_builder =
       std::make_unique<TestingCallStackProfileBuilder>(kProfileParams);
 
-#if defined(OS_WIN)
-  base::FilePath module_path(L"c:\\some\\path\\to\\chrome.exe");
-#else
-  base::FilePath module_path("/some/path/to/chrome");
-#endif
+  TestModule module1;
+  base::Frame frame1 = {0x10, &module1};
 
-  const uintptr_t module_base_address1 = 0x1000;
-  Module module1 = {module_base_address1, "1", module_path};
-  Frame frame1 = {module_base_address1 + 0x10, module1};
+  TestModule module2;
+  base::Frame frame2 = {0x20, &module2};
 
-  const uintptr_t module_base_address2 = 0x1100;
-  Module module2 = {module_base_address2, "2", module_path};
-  Frame frame2 = {module_base_address2 + 0x10, module2};
-
-  std::vector<Frame> frames = {frame1, frame2};
+  std::vector<base::Frame> frames = {frame1, frame2};
 
   // Two stacks are completed with the same frames therefore they are deduped
   // to one.
+  profile_builder->RecordMetadata();
   profile_builder->OnSampleCompleted(frames);
+  profile_builder->RecordMetadata();
   profile_builder->OnSampleCompleted(frames);
 
   profile_builder->OnProfileCompleted(base::TimeDelta(), base::TimeDelta());
@@ -189,25 +216,19 @@ TEST(CallStackProfileBuilderTest, StacksNotDeduped) {
   auto profile_builder =
       std::make_unique<TestingCallStackProfileBuilder>(kProfileParams);
 
-#if defined(OS_WIN)
-  base::FilePath module_path(L"c:\\some\\path\\to\\chrome.exe");
-#else
-  base::FilePath module_path("/some/path/to/chrome");
-#endif
+  TestModule module1;
+  base::Frame frame1 = {0x10, &module1};
 
-  const uintptr_t module_base_address1 = 0x1000;
-  Module module1 = {module_base_address1, "1", module_path};
-  Frame frame1 = {module_base_address1 + 0x10, module1};
+  TestModule module2;
+  base::Frame frame2 = {0x20, &module2};
 
-  const uintptr_t module_base_address2 = 0x1100;
-  Module module2 = {module_base_address2, "2", module_path};
-  Frame frame2 = {module_base_address2 + 0x10, module2};
-
-  std::vector<Frame> frames1 = {frame1};
-  std::vector<Frame> frames2 = {frame2};
+  std::vector<base::Frame> frames1 = {frame1};
+  std::vector<base::Frame> frames2 = {frame2};
 
   // Two stacks are completed with the different frames therefore not deduped.
+  profile_builder->RecordMetadata();
   profile_builder->OnSampleCompleted(frames1);
+  profile_builder->RecordMetadata();
   profile_builder->OnSampleCompleted(frames2);
 
   profile_builder->OnProfileCompleted(base::TimeDelta(), base::TimeDelta());
@@ -233,9 +254,8 @@ TEST(CallStackProfileBuilderTest, Modules) {
   auto profile_builder =
       std::make_unique<TestingCallStackProfileBuilder>(kProfileParams);
 
-  const uintptr_t module_base_address1 = 0x1000;
-  Module module1;  // module1 has no information hence invalid.
-  Frame frame1 = {module_base_address1 + 0x10, module1};
+  // A frame with no module.
+  base::Frame frame1 = {0x1010, nullptr};
 
   const uintptr_t module_base_address2 = 0x1100;
 #if defined(OS_WIN)
@@ -245,11 +265,12 @@ TEST(CallStackProfileBuilderTest, Modules) {
   uint64_t module_md5 = 0x554838A8451AC36CULL;
   base::FilePath module_path("/some/path/to/chrome");
 #endif
-  Module module2 = {module_base_address2, "2", module_path};
-  Frame frame2 = {module_base_address2 + 0x10, module2};
+  TestModule module2(module_base_address2, "2", module_path);
+  base::Frame frame2 = {module_base_address2 + 0x10, &module2};
 
-  std::vector<Frame> frames = {frame1, frame2};
+  std::vector<base::Frame> frames = {frame1, frame2};
 
+  profile_builder->RecordMetadata();
   profile_builder->OnSampleCompleted(frames);
   profile_builder->OnProfileCompleted(base::TimeDelta(), base::TimeDelta());
 
@@ -293,14 +314,13 @@ TEST(CallStackProfileBuilderTest, DedupModules) {
   base::FilePath module_path("/some/path/to/chrome");
 #endif
 
-  Module module1 = {module_base_address, "1", module_path};
-  Frame frame1 = {module_base_address + 0x10, module1};
+  TestModule module(module_base_address, "1", module_path);
+  base::Frame frame1 = {module_base_address + 0x10, &module};
+  base::Frame frame2 = {module_base_address + 0x20, &module};
 
-  Module module2 = {module_base_address, "1", module_path};
-  Frame frame2 = {module_base_address + 0x20, module2};
+  std::vector<base::Frame> frames = {frame1, frame2};
 
-  std::vector<Frame> frames = {frame1, frame2};
-
+  profile_builder->RecordMetadata();
   profile_builder->OnSampleCompleted(frames);
   profile_builder->OnProfileCompleted(base::TimeDelta(), base::TimeDelta());
 
@@ -315,8 +335,8 @@ TEST(CallStackProfileBuilderTest, DedupModules) {
   ASSERT_EQ(1, profile.stack_size());
   ASSERT_EQ(2, profile.stack(0).frame_size());
 
-  // Since module1 and module2 have the same base address, they are considered
-  // the same module and therefore deduped.
+  // The two frames share the same module, which should be deduped in the
+  // output.
   ASSERT_TRUE(profile.stack(0).frame(0).has_module_id_index());
   EXPECT_EQ(0, profile.stack(0).frame(0).module_id_index());
   ASSERT_TRUE(profile.stack(0).frame(0).has_address());
@@ -332,6 +352,108 @@ TEST(CallStackProfileBuilderTest, DedupModules) {
   EXPECT_EQ("1", profile.module_id(0).build_id());
   ASSERT_TRUE(profile.module_id(0).has_name_md5_prefix());
   EXPECT_EQ(module_md5, profile.module_id(0).name_md5_prefix());
+}
+
+TEST(CallStackProfileBuilderTest, WorkIds) {
+  class TestWorkIdRecorder : public WorkIdRecorder {
+   public:
+    unsigned int RecordWorkId() const override { return current_id; }
+
+    unsigned int current_id = 0;
+  };
+
+  TestWorkIdRecorder work_id_recorder;
+  auto profile_builder = std::make_unique<TestingCallStackProfileBuilder>(
+      kProfileParams, &work_id_recorder);
+
+  TestModule module;
+  base::Frame frame = {0x10, &module};
+
+  // Id 0 means the message loop hasn't been started yet, so the sample should
+  // not have continued_work set.
+  profile_builder->RecordMetadata();
+  profile_builder->OnSampleCompleted({frame});
+
+  // The second sample with the same id should have continued_work set.
+  work_id_recorder.current_id = 1;
+  profile_builder->RecordMetadata();
+  profile_builder->OnSampleCompleted({frame});
+  profile_builder->RecordMetadata();
+  profile_builder->OnSampleCompleted({frame});
+
+  // Ids are in general non-contiguous across multiple samples.
+  work_id_recorder.current_id = 10;
+  profile_builder->RecordMetadata();
+  profile_builder->OnSampleCompleted({frame});
+  profile_builder->RecordMetadata();
+  profile_builder->OnSampleCompleted({frame});
+
+  profile_builder->OnProfileCompleted(base::TimeDelta::FromMilliseconds(500),
+                                      base::TimeDelta::FromMilliseconds(100));
+
+  const SampledProfile& proto = profile_builder->test_sampled_profile();
+
+  ASSERT_TRUE(proto.has_call_stack_profile());
+  const CallStackProfile& profile = proto.call_stack_profile();
+
+  ASSERT_EQ(5, profile.stack_sample_size());
+  EXPECT_FALSE(profile.stack_sample(0).has_continued_work());
+  EXPECT_FALSE(profile.stack_sample(1).has_continued_work());
+  EXPECT_TRUE(profile.stack_sample(2).continued_work());
+  EXPECT_FALSE(profile.stack_sample(3).has_continued_work());
+  EXPECT_TRUE(profile.stack_sample(4).continued_work());
+}
+
+TEST(CallStackProfileBuilderTest, MetadataRecorder) {
+  MetadataRecorder metadata_recorder;
+  auto profile_builder = std::make_unique<TestingCallStackProfileBuilder>(
+      kProfileParams, nullptr, &metadata_recorder);
+
+  TestModule module;
+  base::Frame frame = {0x10, &module};
+
+  metadata_recorder.Set(100, 10);
+  metadata_recorder.Set(200, 20);
+  metadata_recorder.Set(300, 30);
+  profile_builder->RecordMetadata();
+  profile_builder->OnSampleCompleted({frame});
+  metadata_recorder.Remove(300);
+  metadata_recorder.Set(200, 21);
+  metadata_recorder.Set(400, 40);
+  profile_builder->RecordMetadata();
+  profile_builder->OnSampleCompleted({frame});
+
+  profile_builder->OnProfileCompleted(base::TimeDelta::FromMilliseconds(500),
+                                      base::TimeDelta::FromMilliseconds(100));
+
+  const SampledProfile& proto = profile_builder->test_sampled_profile();
+
+  ASSERT_TRUE(proto.has_call_stack_profile());
+  const CallStackProfile& profile = proto.call_stack_profile();
+
+  ASSERT_EQ(4, profile.metadata_name_hash_size());
+  EXPECT_EQ(100u, profile.metadata_name_hash(0));
+  EXPECT_EQ(200u, profile.metadata_name_hash(1));
+  EXPECT_EQ(300u, profile.metadata_name_hash(2));
+  EXPECT_EQ(400u, profile.metadata_name_hash(3));
+
+  ASSERT_EQ(2, profile.stack_sample_size());
+
+  ASSERT_EQ(3, profile.stack_sample(0).metadata_size());
+  EXPECT_EQ(0, profile.stack_sample(0).metadata(0).name_hash_index());
+  EXPECT_EQ(10, profile.stack_sample(0).metadata(0).value());
+  EXPECT_EQ(1, profile.stack_sample(0).metadata(1).name_hash_index());
+  EXPECT_EQ(20, profile.stack_sample(0).metadata(1).value());
+  EXPECT_EQ(2, profile.stack_sample(0).metadata(2).name_hash_index());
+  EXPECT_EQ(30, profile.stack_sample(0).metadata(2).value());
+
+  ASSERT_EQ(3, profile.stack_sample(1).metadata_size());
+  EXPECT_EQ(0, profile.stack_sample(1).metadata(0).name_hash_index());
+  EXPECT_EQ(10, profile.stack_sample(1).metadata(0).value());
+  EXPECT_EQ(1, profile.stack_sample(1).metadata(1).name_hash_index());
+  EXPECT_EQ(21, profile.stack_sample(1).metadata(1).value());
+  EXPECT_EQ(3, profile.stack_sample(1).metadata(2).name_hash_index());
+  EXPECT_EQ(40, profile.stack_sample(1).metadata(2).value());
 }
 
 }  // namespace metrics

@@ -15,23 +15,19 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "services/shape_detection/detection_utils_win.h"
 #include "services/shape_detection/public/mojom/textdetection.mojom.h"
 
 class SkBitmap;
 
 namespace shape_detection {
 
-using ABI::Windows::Graphics::Imaging::ISoftwareBitmapStatics;
-using ABI::Windows::Media::Ocr::IOcrEngine;
-using ABI::Windows::Media::Ocr::IOcrResult;
-using ABI::Windows::Media::Ocr::OcrResult;
-
 class TextDetectionImplWin : public mojom::TextDetection {
  public:
   TextDetectionImplWin(
-      Microsoft::WRL::ComPtr<IOcrEngine> ocr_engine,
-      Microsoft::WRL::ComPtr<ISoftwareBitmapStatics> bitmap_factory);
+      Microsoft::WRL::ComPtr<ABI::Windows::Media::Ocr::IOcrEngine> ocr_engine,
+      Microsoft::WRL::ComPtr<
+          ABI::Windows::Graphics::Imaging::ISoftwareBitmapStatics>
+          bitmap_factory);
   ~TextDetectionImplWin() override;
 
   // mojom::TextDetection implementation.
@@ -43,16 +39,20 @@ class TextDetectionImplWin : public mojom::TextDetection {
   }
 
  private:
-  Microsoft::WRL::ComPtr<IOcrEngine> ocr_engine_;
-  Microsoft::WRL::ComPtr<ISoftwareBitmapStatics> bitmap_factory_;
+  Microsoft::WRL::ComPtr<ABI::Windows::Media::Ocr::IOcrEngine> ocr_engine_;
+  Microsoft::WRL::ComPtr<
+      ABI::Windows::Graphics::Imaging::ISoftwareBitmapStatics>
+      bitmap_factory_;
   DetectCallback recognize_text_callback_;
   mojo::StrongBindingPtr<mojom::TextDetection> binding_;
 
   HRESULT BeginDetect(const SkBitmap& bitmap);
   std::vector<mojom::TextDetectionResultPtr> BuildTextDetectionResult(
-      AsyncOperation<OcrResult>::IAsyncOperationPtr async_op);
-  void OnTextDetected(Microsoft::WRL::ComPtr<ISoftwareBitmap> win_bitmap,
-                      AsyncOperation<OcrResult>::IAsyncOperationPtr async_op);
+      Microsoft::WRL::ComPtr<ABI::Windows::Media::Ocr::IOcrResult> ocr_result);
+  void OnTextDetected(
+      Microsoft::WRL::ComPtr<ABI::Windows::Graphics::Imaging::ISoftwareBitmap>
+          win_bitmap,
+      Microsoft::WRL::ComPtr<ABI::Windows::Media::Ocr::IOcrResult> ocr_result);
 
   base::WeakPtrFactory<TextDetectionImplWin> weak_factory_;
 

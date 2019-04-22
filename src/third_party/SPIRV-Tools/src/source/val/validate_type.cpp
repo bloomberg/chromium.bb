@@ -17,6 +17,7 @@
 #include "source/val/validate.h"
 
 #include "source/opcode.h"
+#include "source/spirv_target_env.h"
 #include "source/val/instruction.h"
 #include "source/val/validation_state.h"
 
@@ -106,6 +107,14 @@ spv_result_t ValidateTypeArray(ValidationState_t& _, const Instruction* inst) {
            << "' is a void type.";
   }
 
+  if (spvIsVulkanOrWebGPUEnv(_.context()->target_env) &&
+      element_type->opcode() == SpvOpTypeRuntimeArray) {
+    return _.diag(SPV_ERROR_INVALID_ID, inst)
+           << "OpTypeArray Element Type <id> '" << _.getIdName(element_type_id)
+           << "' is not valid in "
+           << spvLogStringForEnv(_.context()->target_env) << " environments.";
+  }
+
   const auto length_index = 2;
   const auto length_id = inst->GetOperandAs<uint32_t>(length_index);
   const auto length = _.FindDef(length_id);
@@ -161,6 +170,14 @@ spv_result_t ValidateTypeRuntimeArray(ValidationState_t& _,
            << _.getIdName(element_id) << "' is a void type.";
   }
 
+  if (spvIsVulkanOrWebGPUEnv(_.context()->target_env) &&
+      element_type->opcode() == SpvOpTypeRuntimeArray) {
+    return _.diag(SPV_ERROR_INVALID_ID, inst)
+           << "OpTypeRuntimeArray Element Type <id> '"
+           << _.getIdName(element_id) << "' is not valid in "
+           << spvLogStringForEnv(_.context()->target_env) << " environments.";
+  }
+
   return SPV_SUCCESS;
 }
 
@@ -184,18 +201,13 @@ spv_result_t ValidateTypeStruct(ValidationState_t& _, const Instruction* inst) {
       return _.diag(SPV_ERROR_INVALID_ID, inst)
              << "Structure <id> " << _.getIdName(member_type_id)
              << " contains members with BuiltIn decoration. Therefore this "
-                "structure may not be contained as a member of another "
-                "structure "
-                "type. Structure <id> "
-             << _.getIdName(struct_id) << " contains structure <id> "
-             << _.getIdName(member_type_id) << ".";
+             << "structure may not be contained as a member of another "
+             << "structure "
+             << "type. Structure <id> " << _.getIdName(struct_id)
+             << " contains structure <id> " << _.getIdName(member_type_id)
+             << ".";
     }
     if (_.IsForwardPointer(member_type_id)) {
-      if (member_type->opcode() != SpvOpTypePointer) {
-        return _.diag(SPV_ERROR_INVALID_ID, inst)
-               << "Found a forward reference to a non-pointer "
-                  "type in OpTypeStruct instruction.";
-      }
       // If we're dealing with a forward pointer:
       // Find out the type that the pointer is pointing to (must be struct)
       // word 3 is the <id> of the type being pointed to.
@@ -211,7 +223,43 @@ spv_result_t ValidateTypeStruct(ValidationState_t& _, const Instruction* inst) {
                << ".";
       }
     }
+
+    if (spvIsVulkanOrWebGPUEnv(_.context()->target_env) &&
+        member_type->opcode() == SpvOpTypeRuntimeArray) {
+      const bool is_last_member =
+          member_type_index == inst->operands().size() - 1;
+      if (!is_last_member) {
+        return _.diag(SPV_ERROR_INVALID_ID, inst)
+               << "In " << spvLogStringForEnv(_.context()->target_env)
+               << ", OpTypeRuntimeArray must only be used for the last member "
+                  "of an OpTypeStruct";
+      }
+    }
   }
+
+  bool has_nested_blockOrBufferBlock_struct = false;
+  // Struct members start at word 2 of OpTypeStruct instruction.
+  for (size_t word_i = 2; word_i < inst->words().size(); ++word_i) {
+    auto member = inst->word(word_i);
+    auto memberTypeInstr = _.FindDef(member);
+    if (memberTypeInstr && SpvOpTypeStruct == memberTypeInstr->opcode()) {
+      if (_.HasDecoration(memberTypeInstr->id(), SpvDecorationBlock) ||
+          _.HasDecoration(memberTypeInstr->id(), SpvDecorationBufferBlock) ||
+          _.GetHasNestedBlockOrBufferBlockStruct(memberTypeInstr->id()))
+        has_nested_blockOrBufferBlock_struct = true;
+    }
+  }
+
+  _.SetHasNestedBlockOrBufferBlockStruct(inst->id(),
+                                         has_nested_blockOrBufferBlock_struct);
+  if (_.GetHasNestedBlockOrBufferBlockStruct(inst->id()) &&
+      (_.HasDecoration(inst->id(), SpvDecorationBufferBlock) ||
+       _.HasDecoration(inst->id(), SpvDecorationBlock))) {
+    return _.diag(SPV_ERROR_INVALID_ID, inst)
+           << "rules: A Block or BufferBlock cannot be nested within another "
+              "Block or BufferBlock. ";
+  }
+
   std::unordered_set<uint32_t> built_in_members;
   for (auto decoration : _.id_decorations(struct_id)) {
     if (decoration.dec_type() == SpvDecorationBuiltIn &&
@@ -224,9 +272,9 @@ spv_result_t ValidateTypeStruct(ValidationState_t& _, const Instruction* inst) {
   if (num_builtin_members > 0 && num_builtin_members != num_struct_members) {
     return _.diag(SPV_ERROR_INVALID_ID, inst)
            << "When BuiltIn decoration is applied to a structure-type member, "
-              "all members of that structure type must also be decorated with "
-              "BuiltIn (No allowed mixing of built-in variables and "
-              "non-built-in variables within a single structure). Structure id "
+           << "all members of that structure type must also be decorated with "
+           << "BuiltIn (No allowed mixing of built-in variables and "
+           << "non-built-in variables within a single structure). Structure id "
            << struct_id << " does not meet this requirement.";
   }
   if (num_builtin_members > 0) {
@@ -237,12 +285,28 @@ spv_result_t ValidateTypeStruct(ValidationState_t& _, const Instruction* inst) {
 
 spv_result_t ValidateTypePointer(ValidationState_t& _,
                                  const Instruction* inst) {
-  const auto type_id = inst->GetOperandAs<uint32_t>(2);
-  const auto type = _.FindDef(type_id);
+  auto type_id = inst->GetOperandAs<uint32_t>(2);
+  auto type = _.FindDef(type_id);
   if (!type || !spvOpcodeGeneratesType(type->opcode())) {
     return _.diag(SPV_ERROR_INVALID_ID, inst)
            << "OpTypePointer Type <id> '" << _.getIdName(type_id)
            << "' is not a type.";
+  }
+  // See if this points to a storage image.
+  const auto storage_class = inst->GetOperandAs<SpvStorageClass>(1);
+  if (storage_class == SpvStorageClassUniformConstant) {
+    // Unpack an optional level of arraying.
+    if (type->opcode() == SpvOpTypeArray ||
+        type->opcode() == SpvOpTypeRuntimeArray) {
+      type_id = type->GetOperandAs<uint32_t>(1);
+      type = _.FindDef(type_id);
+    }
+    if (type->opcode() == SpvOpTypeImage) {
+      const auto sampled = type->GetOperandAs<uint32_t>(6);
+      // 2 indicates this image is known to be be used without a sampler, i.e.
+      // a storage image.
+      if (sampled == 2) _.RegisterPointerToStorageImage(inst->id());
+    }
   }
   return SPV_SUCCESS;
 }
@@ -283,10 +347,12 @@ spv_result_t ValidateTypeFunction(ValidationState_t& _,
            << num_args << " arguments.";
   }
 
-  // The only valid uses of OpTypeFunction are in an OpFunction instruction.
+  // The only valid uses of OpTypeFunction are in an OpFunction, debugging, or
+  // decoration instruction.
   for (auto& pair : inst->uses()) {
     const auto* use = pair.first;
-    if (use->opcode() != SpvOpFunction) {
+    if (use->opcode() != SpvOpFunction && !spvOpcodeIsDebug(use->opcode()) &&
+        !spvOpcodeIsDecoration(use->opcode())) {
       return _.diag(SPV_ERROR_INVALID_ID, use)
              << "Invalid use of function type result id "
              << _.getIdName(inst->id()) << ".";
@@ -296,10 +362,79 @@ spv_result_t ValidateTypeFunction(ValidationState_t& _,
   return SPV_SUCCESS;
 }
 
+spv_result_t ValidateTypeForwardPointer(ValidationState_t& _,
+                                        const Instruction* inst) {
+  const auto pointer_type_id = inst->GetOperandAs<uint32_t>(0);
+  const auto pointer_type_inst = _.FindDef(pointer_type_id);
+  if (pointer_type_inst->opcode() != SpvOpTypePointer) {
+    return _.diag(SPV_ERROR_INVALID_ID, inst)
+           << "Pointer type in OpTypeForwardPointer is not a pointer type.";
+  }
+
+  if (inst->GetOperandAs<uint32_t>(1) !=
+      pointer_type_inst->GetOperandAs<uint32_t>(1)) {
+    return _.diag(SPV_ERROR_INVALID_ID, inst)
+           << "Storage class in OpTypeForwardPointer does not match the "
+           << "pointer definition.";
+  }
+
+  return SPV_SUCCESS;
+}
+
+spv_result_t ValidateTypeCooperativeMatrixNV(ValidationState_t& _,
+                                             const Instruction* inst) {
+  const auto component_type_index = 1;
+  const auto component_type_id =
+      inst->GetOperandAs<uint32_t>(component_type_index);
+  const auto component_type = _.FindDef(component_type_id);
+  if (!component_type || (SpvOpTypeFloat != component_type->opcode() &&
+                          SpvOpTypeInt != component_type->opcode())) {
+    return _.diag(SPV_ERROR_INVALID_ID, inst)
+           << "OpTypeCooperativeMatrixNV Component Type <id> '"
+           << _.getIdName(component_type_id)
+           << "' is not a scalar numerical type.";
+  }
+
+  const auto scope_index = 2;
+  const auto scope_id = inst->GetOperandAs<uint32_t>(scope_index);
+  const auto scope = _.FindDef(scope_id);
+  if (!scope || !_.IsIntScalarType(scope->type_id()) ||
+      !spvOpcodeIsConstant(scope->opcode())) {
+    return _.diag(SPV_ERROR_INVALID_ID, inst)
+           << "OpTypeCooperativeMatrixNV Scope <id> '" << _.getIdName(scope_id)
+           << "' is not a constant instruction with scalar integer type.";
+  }
+
+  const auto rows_index = 3;
+  const auto rows_id = inst->GetOperandAs<uint32_t>(rows_index);
+  const auto rows = _.FindDef(rows_id);
+  if (!rows || !_.IsIntScalarType(rows->type_id()) ||
+      !spvOpcodeIsConstant(rows->opcode())) {
+    return _.diag(SPV_ERROR_INVALID_ID, inst)
+           << "OpTypeCooperativeMatrixNV Rows <id> '" << _.getIdName(rows_id)
+           << "' is not a constant instruction with scalar integer type.";
+  }
+
+  const auto cols_index = 4;
+  const auto cols_id = inst->GetOperandAs<uint32_t>(cols_index);
+  const auto cols = _.FindDef(cols_id);
+  if (!cols || !_.IsIntScalarType(cols->type_id()) ||
+      !spvOpcodeIsConstant(cols->opcode())) {
+    return _.diag(SPV_ERROR_INVALID_ID, inst)
+           << "OpTypeCooperativeMatrixNV Cols <id> '" << _.getIdName(rows_id)
+           << "' is not a constant instruction with scalar integer type.";
+  }
+
+  return SPV_SUCCESS;
+}
+
 }  // namespace
 
 spv_result_t TypePass(ValidationState_t& _, const Instruction* inst) {
-  if (!spvOpcodeGeneratesType(inst->opcode())) return SPV_SUCCESS;
+  if (!spvOpcodeGeneratesType(inst->opcode()) &&
+      inst->opcode() != SpvOpTypeForwardPointer) {
+    return SPV_SUCCESS;
+  }
 
   if (auto error = ValidateUniqueness(_, inst)) return error;
 
@@ -324,6 +459,12 @@ spv_result_t TypePass(ValidationState_t& _, const Instruction* inst) {
       break;
     case SpvOpTypeFunction:
       if (auto error = ValidateTypeFunction(_, inst)) return error;
+      break;
+    case SpvOpTypeForwardPointer:
+      if (auto error = ValidateTypeForwardPointer(_, inst)) return error;
+      break;
+    case SpvOpTypeCooperativeMatrixNV:
+      if (auto error = ValidateTypeCooperativeMatrixNV(_, inst)) return error;
       break;
     default:
       break;

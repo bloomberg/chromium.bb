@@ -7,7 +7,9 @@
 
 #include "base/files/file_enumerator.h"
 #include "base/path_service.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/autofill/automated_tests/cache_replayer.h"
 #include "chrome/browser/autofill/captured_sites_test_utils.h"
 #include "chrome/browser/password_manager/password_manager_test_base.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
@@ -18,6 +20,9 @@
 #include "content/public/test/test_utils.h"
 
 namespace {
+
+constexpr base::TimeDelta kWaitForSaveFallbackInterval =
+    base::TimeDelta::FromSeconds(5);
 
 struct TestParams {
   std::string scenarioDir;
@@ -31,8 +36,11 @@ struct TestParams {
 base::FilePath GetReplayFilesRootDirectory() {
   base::FilePath src_dir;
   if (base::PathService::Get(base::DIR_SOURCE_ROOT, &src_dir)) {
-    return src_dir.Append(
-        FILE_PATH_LITERAL("chrome/test/data/password/captured_sites"));
+    return src_dir.AppendASCII("chrome")
+        .AppendASCII("test")
+        .AppendASCII("data")
+        .AppendASCII("password")
+        .AppendASCII("captured_sites");
   }
 
   ADD_FAILURE() << "Unable to obtain the Chromium src directory!";
@@ -81,6 +89,10 @@ struct GetParamAsString {
 }  // namespace
 
 namespace password_manager {
+
+using autofill::test::ServerCacheReplayer;
+using autofill::test::ServerUrlLoader;
+
 // Harness for running password manager scenarios on captured real-world sites.
 // Test params:
 //  - string Recipe: the name of the captured site file and the test recipe
@@ -140,6 +152,14 @@ class CapturedSitesPasswordManagerBrowserTest
     return false;
   }
 
+  bool WaitForSaveFallback() override {
+    BubbleObserver bubble_observer(WebContents());
+    if (bubble_observer.WaitForFallbackForSaving(kWaitForSaveFallbackInterval))
+      return true;
+    ADD_FAILURE() << "Chrome did not show the save fallback icon!";
+    return false;
+  }
+
   bool HasChromeShownSavePasswordPrompt() override {
     BubbleObserver bubble_observer(WebContents());
     return bubble_observer.IsSavePromptShownAutomatically();
@@ -183,6 +203,15 @@ class CapturedSitesPasswordManagerBrowserTest
         std::make_unique<captured_sites_test_utils::TestRecipeReplayer>(
             browser(), this);
     recipe_replayer()->Setup();
+
+    base::FilePath capture_file_path =
+        GetReplayFilesRootDirectory()
+            .AppendASCII(GetParam().scenarioDir.c_str())
+            .AppendASCII(GetParam().siteName.c_str());
+    SetServerUrlLoader(std::make_unique<ServerUrlLoader>(
+        absl::make_unique<ServerCacheReplayer>(
+            capture_file_path,
+            ServerCacheReplayer::kOptionFailOnInvalidJsonRecord)));
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -191,7 +220,19 @@ class CapturedSitesPasswordManagerBrowserTest
         command_line);
   }
 
-  void TearDownOnMainThread() override { recipe_replayer()->Cleanup(); }
+  void SetServerUrlLoader(std::unique_ptr<ServerUrlLoader> server_url_loader) {
+    server_url_loader_ = std::move(server_url_loader);
+  }
+
+  void TearDownOnMainThread() override {
+    recipe_replayer()->Cleanup();
+    // Need to delete the URL loader and its underlying interceptor on the main
+    // thread. Will result in a fatal crash otherwise. The pointer  has its
+    // memory cleaned up twice: first time in that single thread, a second time
+    // when the fixture's destructor is called, which will have no effect since
+    // the raw pointer will be nullptr.
+    server_url_loader_.reset(nullptr);
+  }
 
   captured_sites_test_utils::TestRecipeReplayer* recipe_replayer() {
     return recipe_replayer_.get();
@@ -206,6 +247,7 @@ class CapturedSitesPasswordManagerBrowserTest
   std::unique_ptr<captured_sites_test_utils::TestRecipeReplayer>
       recipe_replayer_;
   content::WebContents* web_contents_ = nullptr;
+  std::unique_ptr<ServerUrlLoader> server_url_loader_;
 
   DISALLOW_COPY_AND_ASSIGN(CapturedSitesPasswordManagerBrowserTest);
 };
@@ -230,8 +272,8 @@ IN_PROC_BROWSER_TEST_P(CapturedSitesPasswordManagerBrowserTest, Recipe) {
       recipe_replayer()->ReplayTest(capture_file_path, recipe_file_path));
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        CapturedSitesPasswordManagerBrowserTest,
-                        testing::ValuesIn(GetCapturedSites()),
-                        GetParamAsString());
+INSTANTIATE_TEST_SUITE_P(,
+                         CapturedSitesPasswordManagerBrowserTest,
+                         testing::ValuesIn(GetCapturedSites()),
+                         GetParamAsString());
 }  // namespace password_manager

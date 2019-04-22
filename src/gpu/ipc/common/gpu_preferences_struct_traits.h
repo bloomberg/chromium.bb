@@ -56,8 +56,6 @@ template <>
 struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
   static bool Read(gpu::mojom::GpuPreferencesDataView prefs,
                    gpu::GpuPreferences* out) {
-    out->single_process = prefs.single_process();
-    out->in_process_gpu = prefs.in_process_gpu();
     out->disable_accelerated_video_decode =
         prefs.disable_accelerated_video_decode();
     out->disable_accelerated_video_encode =
@@ -121,21 +119,17 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
     out->enable_oop_rasterization = prefs.enable_oop_rasterization();
     out->disable_oop_rasterization = prefs.disable_oop_rasterization();
     out->enable_oop_rasterization_ddl = prefs.enable_oop_rasterization_ddl();
-    out->enable_raster_to_sk_image = prefs.enable_raster_to_sk_image();
     out->watchdog_starts_backgrounded = prefs.watchdog_starts_backgrounded();
     out->enable_vulkan = prefs.enable_vulkan();
+    out->disable_vulkan_surface = prefs.disable_vulkan_surface();
+    out->disable_vulkan_fallback_to_gl_for_testing =
+        prefs.disable_vulkan_fallback_to_gl_for_testing();
     out->enable_gpu_benchmarking_extension =
         prefs.enable_gpu_benchmarking_extension();
     out->enable_webgpu = prefs.enable_webgpu();
     return true;
   }
 
-  static bool single_process(const gpu::GpuPreferences& prefs) {
-    return prefs.single_process;
-  }
-  static bool in_process_gpu(const gpu::GpuPreferences& prefs) {
-    return prefs.in_process_gpu;
-  }
   static bool disable_accelerated_video_decode(
       const gpu::GpuPreferences& prefs) {
     return prefs.disable_accelerated_video_decode;
@@ -266,14 +260,18 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
   static bool enable_oop_rasterization_ddl(const gpu::GpuPreferences& prefs) {
     return prefs.enable_oop_rasterization_ddl;
   }
-  static bool enable_raster_to_sk_image(const gpu::GpuPreferences& prefs) {
-    return prefs.enable_raster_to_sk_image;
-  }
   static bool watchdog_starts_backgrounded(const gpu::GpuPreferences& prefs) {
     return prefs.watchdog_starts_backgrounded;
   }
   static bool enable_vulkan(const gpu::GpuPreferences& prefs) {
     return prefs.enable_vulkan;
+  }
+  static bool disable_vulkan_surface(const gpu::GpuPreferences& prefs) {
+    return prefs.disable_vulkan_surface;
+  }
+  static bool disable_vulkan_fallback_to_gl_for_testing(
+      const gpu::GpuPreferences& prefs) {
+    return prefs.disable_vulkan_fallback_to_gl_for_testing;
   }
   static bool enable_gpu_benchmarking_extension(
       const gpu::GpuPreferences& prefs) {

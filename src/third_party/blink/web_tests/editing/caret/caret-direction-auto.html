@@ -91,9 +91,18 @@ test(() => {
   assert_less_than(caretPositions[4].x, caretPositions[5].x, '4-4');
   assert_less_than(caretPositions[5].x, caretPositions[6].x, '4-5');
   assert_less_than(caretPositions[6].x, caretPositions[7].x, '4-6');
-  assert_less_than(caretPositions[7].x, caretPositions[8].x, '4-7');
-  assert_less_than(caretPositions[8].x, caretPositions[9].x, '4-8');
-  assert_less_than(caretPositions[9].x, caretPositions[10].x, '4-9');
+  if (!internals.runtimeFlags.bidiCaretAffinityEnabled) {
+    assert_less_than(caretPositions[7].x, caretPositions[8].x, '4-7');
+    assert_less_than(caretPositions[8].x, caretPositions[9].x, '4-8');
+    assert_less_than(caretPositions[9].x, caretPositions[10].x, '4-9');
+  } else {
+    // The downstream caret positions are at:
+    //  h e l l o C B    b  y  e  _
+    // 3 4 5 6 7 X 9 8&10 11 12 13
+    assert_less_than(caretPositions[7].x, caretPositions[9].x, '4-7');
+    assert_less_than(caretPositions[9].x, caretPositions[8].x, '4-9');
+    assert_less_than_equal(caretPositions[8].x, caretPositions[10].x, '4-8');
+  }
   assert_less_than(caretPositions[10].x, caretPositions[11].x, '4-10');
   assert_less_than(caretPositions[11].x, caretPositions[12].x, '4-11');
   assert_less_than(caretPositions[12].x, caretPositions[13].x, '4-12');

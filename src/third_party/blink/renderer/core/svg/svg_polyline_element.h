@@ -31,10 +31,9 @@ class SVGPolylineElement final : public SVGPolyElement {
  public:
   DECLARE_NODE_FACTORY(SVGPolylineElement);
 
-  Path AsPath() const override;
-
- private:
   explicit SVGPolylineElement(Document&);
+
+  Path AsPath() const override;
 };
 
 }  // namespace blink

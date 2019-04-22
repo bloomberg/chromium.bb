@@ -14,6 +14,7 @@ namespace offline_pages {
 const char kPrefetchServer[] = "https://offlinepages-pa.googleapis.com/";
 const char kPrefetchExperimentHeaderName[] = "X-Offline-Prefetch-Experiment";
 const char kPrefetchOperationHeaderName[] = "X-Offline-Prefetch-Operation";
+const char kPrefetchTestingHeaderName[] = "X-Offline-Prefetch-Testing";
 
 namespace {
 

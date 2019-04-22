@@ -1,4 +1,4 @@
-per-file headless_browser_manifest_overlay.json=set noparent
-per-file headless_browser_manifest_overlay.json=file://ipc/SECURITY_OWNERS
-per-file headless_packaged_services_manifest_overlay.json=set noparent
-per-file headless_packaged_services_manifest_overlay.json=file://ipc/SECURITY_OWNERS
+per-file headless_overlay_manifests.cc=set noparent
+per-file headless_overlay_manifests.cc=file://ipc/SECURITY_OWNERS
+per-file headless_overlay_manifests.h=set noparent
+per-file headless_overlay_manifests.h=file://ipc/SECURITY_OWNERS

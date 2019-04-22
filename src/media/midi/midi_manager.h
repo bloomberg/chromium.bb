@@ -118,6 +118,10 @@ class MIDI_EXPORT MidiManager {
                                     const std::vector<uint8_t>& data,
                                     base::TimeTicks timestamp);
 
+  // This method ends all sessions by detaching and removing all registered
+  // clients. This method can be called from any thread.
+  void EndAllSessions();
+
  protected:
   friend class MidiManagerUsb;
 
@@ -179,7 +183,7 @@ class MIDI_EXPORT MidiManager {
   mojom::Result result_ = mojom::Result::NOT_INITIALIZED;
 
   // Keeps track of all clients who are waiting for CompleteStartSession().
-  std::set<MidiManagerClient*> pending_clients_;
+  std::set<MidiManagerClient*> pending_clients_ GUARDED_BY(lock_);
 
   // Keeps track of all clients who wish to receive MIDI data.
   std::set<MidiManagerClient*> clients_ GUARDED_BY(lock_);

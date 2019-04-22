@@ -28,7 +28,7 @@ String::String(const String& other) {
   InitFrom(other.ptr_, other.size_);
 }
 
-String::String(String&& other)
+String::String(String&& other) noexcept
     : ptr_(other.ptr_), size_(other.size_), capacity_(other.capacity_) {
   other.Init();
 }
@@ -52,7 +52,7 @@ String::String(const char* str, size_t len) {
   InitFrom(str, len);
 }
 
-String& String::operator=(String&& other) {
+String& String::operator=(String&& other) noexcept {
   if (this != &other) {
     this->~String();  // Free pointer if needed.
     ptr_ = other.ptr_;
@@ -127,12 +127,12 @@ VectorBase::~VectorBase() {
   ::free(data_);
 }
 
-VectorBase::VectorBase(VectorBase&& other)
+VectorBase::VectorBase(VectorBase&& other) noexcept
     : data_(other.data_), count_(other.count_), capacity_(other.capacity_) {
   other.DoReset();
 }
 
-VectorBase& VectorBase::operator=(VectorBase&& other) {
+VectorBase& VectorBase::operator=(VectorBase&& other) noexcept {
   if (&other != this) {
     ::free(data_);
     data_ = other.data_;

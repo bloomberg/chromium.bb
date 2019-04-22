@@ -31,6 +31,8 @@
 #include "third_party/blink/renderer/platform/image-decoders/webp/webp_image_decoder.h"
 
 #include <memory>
+
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_size.h"
@@ -127,7 +129,7 @@ TEST(AnimatedWebPTests, verifyAnimationParametersTransparentImage) {
        true},
   };
 
-  for (size_t i = 0; i < arraysize(kFrameParameters); ++i) {
+  for (size_t i = 0; i < base::size(kFrameParameters); ++i) {
     const ImageFrame* const frame = decoder->DecodeFrameBufferAtIndex(i);
     EXPECT_EQ(ImageFrame::kFrameComplete, frame->GetStatus());
     EXPECT_EQ(kCanvasWidth, frame->Bitmap().width());
@@ -143,7 +145,7 @@ TEST(AnimatedWebPTests, verifyAnimationParametersTransparentImage) {
     EXPECT_EQ(kFrameParameters[i].has_alpha, frame->HasAlpha());
   }
 
-  EXPECT_EQ(arraysize(kFrameParameters), decoder->FrameCount());
+  EXPECT_EQ(base::size(kFrameParameters), decoder->FrameCount());
   EXPECT_EQ(kAnimationLoopInfinite, decoder->RepetitionCount());
 }
 
@@ -174,7 +176,7 @@ TEST(AnimatedWebPTests,
        true},
   };
 
-  for (size_t i = 0; i < arraysize(kFrameParameters); ++i) {
+  for (size_t i = 0; i < base::size(kFrameParameters); ++i) {
     const ImageFrame* const frame = decoder->DecodeFrameBufferAtIndex(i);
     EXPECT_EQ(ImageFrame::kFrameComplete, frame->GetStatus());
     EXPECT_EQ(kCanvasWidth, frame->Bitmap().width());
@@ -190,7 +192,7 @@ TEST(AnimatedWebPTests,
     EXPECT_EQ(kFrameParameters[i].has_alpha, frame->HasAlpha());
   }
 
-  EXPECT_EQ(arraysize(kFrameParameters), decoder->FrameCount());
+  EXPECT_EQ(base::size(kFrameParameters), decoder->FrameCount());
   EXPECT_EQ(kAnimationLoopInfinite, decoder->RepetitionCount());
 }
 
@@ -216,7 +218,7 @@ TEST(AnimatedWebPTests, verifyAnimationParametersBlendOverwrite) {
        ImageFrame::kBlendAtopBgcolor, TimeDelta::FromMilliseconds(1000), true},
   };
 
-  for (size_t i = 0; i < arraysize(kFrameParameters); ++i) {
+  for (size_t i = 0; i < base::size(kFrameParameters); ++i) {
     const ImageFrame* const frame = decoder->DecodeFrameBufferAtIndex(i);
     EXPECT_EQ(ImageFrame::kFrameComplete, frame->GetStatus());
     EXPECT_EQ(kCanvasWidth, frame->Bitmap().width());
@@ -232,7 +234,7 @@ TEST(AnimatedWebPTests, verifyAnimationParametersBlendOverwrite) {
     EXPECT_EQ(kFrameParameters[i].has_alpha, frame->HasAlpha());
   }
 
-  EXPECT_EQ(arraysize(kFrameParameters), decoder->FrameCount());
+  EXPECT_EQ(base::size(kFrameParameters), decoder->FrameCount());
   EXPECT_EQ(kAnimationLoopInfinite, decoder->RepetitionCount());
 }
 

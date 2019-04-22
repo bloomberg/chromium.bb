@@ -79,8 +79,8 @@ class BenchmarkingWrapper : public v8::Extension {
   }
 };
 
-v8::Extension* BenchmarkingExtension::Get() {
-  return new BenchmarkingWrapper();
+std::unique_ptr<v8::Extension> BenchmarkingExtension::Get() {
+  return std::make_unique<BenchmarkingWrapper>();
 }
 
 }  // namespace extensions_v8

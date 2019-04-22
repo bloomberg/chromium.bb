@@ -7,7 +7,8 @@ package org.chromium.chrome.browser.ntp.cards;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
-import org.chromium.base.ThreadUtils;
+import org.chromium.base.task.PostTask;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 /**
  * The ScrollToLoadListener requests fetching more items when the user approaches the end of their
@@ -77,7 +78,7 @@ public class ScrollToLoadListener extends RecyclerView.OnScrollListener {
         if (sentinelBecameVisible || sentinelVisibleButTooFewItemsFetched) {
             mPreviousItemCount = mAdapter.getItemCount();
             // We need to post this since onScrolled may run during a measure & layout pass.
-            ThreadUtils.postOnUiThread(mSections::fetchMore);
+            PostTask.postTask(UiThreadTaskTraits.DEFAULT, mSections::fetchMore);
         }
 
         mSentinelPreviouslyVisible = sentinelVisible;

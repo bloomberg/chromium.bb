@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "cc/base/rolling_time_delta_history.h"
 #include "cc/cc_export.h"
 #include "cc/tiles/tile_priority.h"
@@ -21,6 +20,7 @@ class TracedValue;
 
 namespace cc {
 
+class CompositorFrameReportingController;
 class RenderingStatsInstrumentation;
 
 class CC_EXPORT CompositorTimingHistory {
@@ -35,8 +35,13 @@ class CC_EXPORT CompositorTimingHistory {
   CompositorTimingHistory(
       bool using_synchronous_renderer_compositor,
       UMACategory uma_category,
-      RenderingStatsInstrumentation* rendering_stats_instrumentation);
+      RenderingStatsInstrumentation* rendering_stats_instrumentation,
+      CompositorFrameReportingController*
+          compositor_frame_reporting_controller);
+  CompositorTimingHistory(const CompositorTimingHistory&) = delete;
   virtual ~CompositorTimingHistory();
+
+  CompositorTimingHistory& operator=(const CompositorTimingHistory&) = delete;
 
   void AsValueInto(base::trace_event::TracedValue* state) const;
 
@@ -58,9 +63,8 @@ class CC_EXPORT CompositorTimingHistory {
   void DidCreateAndInitializeLayerTreeFrameSink();
 
   // Events to be timed.
-  void WillBeginImplFrame(bool new_active_tree_is_likely,
-                          base::TimeTicks frame_time,
-                          viz::BeginFrameArgs::BeginFrameArgsType frame_type,
+  void WillBeginImplFrame(const viz::BeginFrameArgs& args,
+                          bool new_active_tree_is_likely,
                           base::TimeTicks now);
   void WillFinishImplFrame(bool needs_redraw);
   void BeginImplFrameNotExpectedSoon();
@@ -85,6 +89,7 @@ class CC_EXPORT CompositorTimingHistory {
                bool current_frame_had_raf,
                bool next_frame_has_pending_raf);
   void DidSubmitCompositorFrame();
+  void DidNotProduceFrame();
   void DidReceiveCompositorFrameAck();
   void WillInvalidateOnImplSide();
   void SetTreePriority(TreePriority priority);
@@ -158,7 +163,13 @@ class CC_EXPORT CompositorTimingHistory {
   bool submit_ack_watchdog_enabled_;
 
   std::unique_ptr<UMAReporter> uma_reporter_;
+
+  // Owned by LayerTreeHost and is destroyed when LayerTreeHost is destroyed.
   RenderingStatsInstrumentation* rendering_stats_instrumentation_;
+
+  // Owned by LayerTreeHostImpl and is destroyed when LayerTreeHostImpl is
+  // destroyed.
+  CompositorFrameReportingController* compositor_frame_reporting_controller_;
 
   // Used only for reporting animation targeted UMA.
   bool previous_frame_had_composited_animations_ = false;
@@ -166,9 +177,6 @@ class CC_EXPORT CompositorTimingHistory {
   bool previous_frame_had_raf_ = false;
 
   TreePriority tree_priority_ = SAME_PRIORITY_FOR_BOTH_TREES;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CompositorTimingHistory);
 };
 
 }  // namespace cc

@@ -55,6 +55,8 @@ class LoadingPredictorTabHelper
   // Owned by profile.
   base::WeakPtr<LoadingPredictor> predictor_;
 
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(LoadingPredictorTabHelper);
 };
 

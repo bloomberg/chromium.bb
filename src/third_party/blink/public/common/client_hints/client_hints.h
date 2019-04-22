@@ -6,17 +6,19 @@
 #define THIRD_PARTY_BLINK_PUBLIC_COMMON_CLIENT_HINTS_CLIENT_HINTS_H_
 
 #include <stddef.h>
+#include <string>
 
 #include "third_party/blink/public/common/common_export.h"
 
 namespace blink {
 
-// Mapping from WebClientHintsType to the header value for enabling the
-// corresponding client hint. The ordering should match the ordering of enums in
+// Mapping from WebClientHintsType to the hint's name in header values (e.g.
+// kLang => "lang"), and to the hint's outgoing header (e.g. kLang =>
+// "sec-ch-lang"). The ordering matches the ordering of enums in
 // third_party/blink/public/platform/web_client_hints_type.h.
+BLINK_COMMON_EXPORT extern const char* const kClientHintsNameMapping[];
 BLINK_COMMON_EXPORT extern const char* const kClientHintsHeaderMapping[];
-
-BLINK_COMMON_EXPORT extern const size_t kClientHintsHeaderMappingCount;
+BLINK_COMMON_EXPORT extern const size_t kClientHintsMappingsCount;
 
 // Mapping from WebEffectiveConnectionType to the header value. This value is
 // sent to the origins and is returned by the JavaScript API. The ordering
@@ -28,6 +30,12 @@ BLINK_COMMON_EXPORT extern const char* const
     kWebEffectiveConnectionTypeMapping[];
 
 BLINK_COMMON_EXPORT extern const size_t kWebEffectiveConnectionTypeMappingCount;
+
+// Given a comma-separated, ordered list of language codes, return the list
+// formatted as a structured header, as described in
+// https://tools.ietf.org/html/draft-west-lang-client-hint-00#section-2.1
+std::string BLINK_COMMON_EXPORT
+SerializeLangClientHint(const std::string& raw_language_list);
 
 }  // namespace blink
 

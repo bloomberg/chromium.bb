@@ -18,18 +18,14 @@
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/native_theme/native_theme.h"
-#include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop.h"
-#include "ui/views/animation/ink_drop_highlight.h"
-#include "ui/views/animation/ink_drop_impl.h"
-#include "ui/views/animation/square_ink_drop_ripple.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/button/label_button_label.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/painter.h"
 #include "ui/views/style/platform_style.h"
-#include "ui/views/view_properties.h"
+#include "ui/views/view_class_properties.h"
 #include "ui/views/window/dialog_delegate.h"
 
 namespace views {
@@ -52,7 +48,6 @@ LabelButton::LabelButton(ButtonListener* listener,
           style::GetFont(button_context, style::STYLE_PRIMARY)),
       cached_default_button_font_list_(
           style::GetFont(button_context, style::STYLE_DIALOG_BUTTON_DEFAULT)),
-      button_state_images_(),
       button_state_colors_(),
       explicitly_set_colors_(),
       is_default_(false),
@@ -75,12 +70,9 @@ LabelButton::LabelButton(ButtonListener* listener,
   AddChildView(label_);
   label_->SetAutoColorReadabilityEnabled(false);
   label_->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
-
-  // Inset the button focus rect from the actual border; roughly match Windows.
-  SetFocusPainter(Painter::CreateDashedFocusPainterWithInsets(gfx::Insets(3)));
 }
 
-LabelButton::~LabelButton() {}
+LabelButton::~LabelButton() = default;
 
 gfx::ImageSkia LabelButton::GetImage(ButtonState for_state) const {
   if (for_state != STATE_NORMAL && button_state_images_[for_state].isNull())
@@ -345,10 +337,6 @@ gfx::Rect LabelButton::GetChildAreaBounds() {
   return GetLocalBounds();
 }
 
-bool LabelButton::ShouldUseFloodFillInkDrop() const {
-  return !GetText().empty();
-}
-
 void LabelButton::OnFocus() {
   Button::OnFocus();
   // Typically the border renders differently when focused.
@@ -385,39 +373,6 @@ void LabelButton::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
   ink_drop_container_->RemoveInkDropLayer(ink_drop_layer);
 }
 
-std::unique_ptr<InkDrop> LabelButton::CreateInkDrop() {
-  return ShouldUseFloodFillInkDrop() ? CreateDefaultFloodFillInkDropImpl()
-                                     : Button::CreateInkDrop();
-}
-
-std::unique_ptr<views::InkDropRipple> LabelButton::CreateInkDropRipple() const {
-  // Views that use a highlight path use the base style and do not need the
-  // overrides in this file.
-  if (GetProperty(views::kHighlightPathKey))
-    return InkDropHostView::CreateInkDropRipple();
-  return ShouldUseFloodFillInkDrop()
-             ? std::make_unique<views::FloodFillInkDropRipple>(
-                   size(), GetInkDropCenterBasedOnLastEvent(),
-                   GetInkDropBaseColor(), ink_drop_visible_opacity())
-             : CreateDefaultInkDropRipple(
-                   image()->GetMirroredBounds().CenterPoint());
-}
-
-std::unique_ptr<views::InkDropHighlight> LabelButton::CreateInkDropHighlight()
-    const {
-  // Views that use a highlight path use the base style and do not need the
-  // overrides in this file.
-  if (GetProperty(views::kHighlightPathKey))
-    return InkDropHostView::CreateInkDropHighlight();
-  return ShouldUseFloodFillInkDrop()
-             ? std::make_unique<views::InkDropHighlight>(
-                   size(), ink_drop_small_corner_radius(),
-                   gfx::RectF(GetLocalBounds()).CenterPoint(),
-                   GetInkDropBaseColor())
-             : CreateDefaultInkDropHighlight(
-                   gfx::RectF(image()->GetMirroredBounds()).CenterPoint());
-}
-
 void LabelButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   if (is_default())
     node_data->AddState(ax::mojom::State::kDefault);
@@ -430,7 +385,8 @@ void LabelButton::StateChanged(ButtonState old_state) {
   ResetLabelEnabledColor();
   label_->SetEnabled(state() != STATE_DISABLED);
   if (image_->GetPreferredSize() != previous_image_size)
-    Layout();
+    InvalidateLayout();
+  Button::StateChanged(old_state);
 }
 
 void LabelButton::GetExtraParams(ui::NativeTheme::ExtraParams* params) const {
@@ -524,7 +480,6 @@ void LabelButton::SetTextInternal(const base::string16& text) {
 void LabelButton::ChildPreferredSizeChanged(View* child) {
   ResetCachedPreferredSize();
   PreferredSizeChanged();
-  Layout();
 }
 
 ui::NativeTheme::Part LabelButton::GetThemePart() const {

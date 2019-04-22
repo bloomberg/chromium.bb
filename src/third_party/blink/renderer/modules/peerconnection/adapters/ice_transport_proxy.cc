@@ -22,8 +22,10 @@ IceTransportProxy::IceTransportProxy(
       host_thread_(std::move(host_thread)),
       host_(nullptr, base::OnTaskRunnerDeleter(host_thread_)),
       delegate_(delegate),
-      connection_handle_for_scheduler_(
-          frame.GetFrameScheduler()->OnActiveConnectionCreated()),
+      feature_handle_for_scheduler_(frame.GetFrameScheduler()->RegisterFeature(
+          SchedulingPolicy::Feature::kWebRTC,
+          {SchedulingPolicy::DisableAggressiveThrottling(),
+           SchedulingPolicy::DisableBackForwardCache()})),
       weak_ptr_factory_(this) {
   DCHECK(host_thread_);
   DCHECK(delegate_);
@@ -136,7 +138,7 @@ void IceTransportProxy::OnCandidateGathered(
   delegate_->OnCandidateGathered(candidate);
 }
 
-void IceTransportProxy::OnStateChanged(cricket::IceTransportState new_state) {
+void IceTransportProxy::OnStateChanged(webrtc::IceTransportState new_state) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   delegate_->OnStateChanged(new_state);
 }

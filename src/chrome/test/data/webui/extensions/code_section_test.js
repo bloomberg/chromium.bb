@@ -43,6 +43,7 @@ cr.define('extension_code_section_tests', function() {
       expectTrue(testIsVisible('#no-code'));
 
       codeSection.code = code;
+      codeSection.isActive = true;
       expectTrue(testIsVisible('#main'));
       expectFalse(testIsVisible('#no-code'));
 
@@ -70,10 +71,12 @@ cr.define('extension_code_section_tests', function() {
           afterHighlight: '',
           message: 'Highlight message',
         };
-        for (let i = 0; i < beforeLineCount; i++)
+        for (let i = 0; i < beforeLineCount; i++) {
           code.beforeHighlight += 'a\n';
-        for (let i = 0; i < afterLineCount; i++)
+        }
+        for (let i = 0; i < afterLineCount; i++) {
           code.afterHighlight += 'a\n';
+        }
       }
 
       setCodeContent(0, 2000);

@@ -17,12 +17,7 @@ namespace {
 bool g_force_official_enabled_test = false;
 
 bool IsMetricsReportingEnabledForOfficialBuild(PrefService* pref_service) {
-  // In official builds, disable metrics when reporting field trials are
-  // forced; otherwise, use the value of the user's preference to determine
-  // whether to enable metrics reporting.
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kForceFieldTrials) &&
-         pref_service->GetBoolean(prefs::kMetricsReportingEnabled);
+  return pref_service->GetBoolean(prefs::kMetricsReportingEnabled);
 }
 
 }  // namespace

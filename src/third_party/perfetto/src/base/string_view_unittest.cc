@@ -28,6 +28,7 @@ namespace base {
 namespace {
 
 TEST(StringViewTest, BasicCases) {
+  EXPECT_EQ(StringView(), StringView(""));
   EXPECT_EQ(StringView(""), StringView(""));
   EXPECT_EQ(StringView(""), StringView("", 0));
   EXPECT_EQ(StringView("ab"), StringView("ab", 2));
@@ -38,6 +39,8 @@ TEST(StringViewTest, BasicCases) {
   EXPECT_TRUE(StringView("x") != StringView(""));
   EXPECT_TRUE(StringView("") != StringView("y"));
   EXPECT_TRUE(StringView("a") != StringView("b"));
+  EXPECT_EQ(StringView().size(), 0ul);
+  EXPECT_EQ(StringView().data(), nullptr);
   EXPECT_EQ(StringView("").size(), 0ul);
   EXPECT_NE(StringView("").data(), nullptr);
   EXPECT_TRUE(StringView("").empty());
@@ -52,6 +55,80 @@ TEST(StringViewTest, BasicCases) {
     EXPECT_TRUE(x == StringView("abc"));
     EXPECT_TRUE(x != StringView("abcd"));
   }
+
+  // Test find().
+  EXPECT_EQ(StringView().find('x'), StringView::npos);
+  EXPECT_EQ(StringView("").find('x'), StringView::npos);
+  EXPECT_EQ(StringView("foo").find('x'), StringView::npos);
+  EXPECT_EQ(StringView("foo").find('f'), 0u);
+  EXPECT_EQ(StringView("foo").find('o'), 1u);
+
+  // Test rfind().
+  EXPECT_EQ(StringView().rfind('x'), StringView::npos);
+  EXPECT_EQ(StringView("").rfind('x'), StringView::npos);
+  EXPECT_EQ(StringView("foo").rfind('x'), StringView::npos);
+  EXPECT_EQ(StringView("foo").rfind('f'), 0u);
+  EXPECT_EQ(StringView("foo").rfind('o'), 2u);
+
+  // Test substr().
+  EXPECT_EQ(StringView().substr(0, 0).ToStdString(), "");
+  EXPECT_EQ(StringView().substr(3, 1).ToStdString(), "");
+  EXPECT_EQ(StringView("foo").substr(3, 1).ToStdString(), "");
+  EXPECT_EQ(StringView("foo").substr(4, 0).ToStdString(), "");
+  EXPECT_EQ(StringView("foo").substr(4, 1).ToStdString(), "");
+  EXPECT_EQ(StringView("foo").substr(0, 1).ToStdString(), "f");
+  EXPECT_EQ(StringView("foo").substr(0, 3).ToStdString(), "foo");
+  EXPECT_EQ(StringView("foo").substr(0, 99).ToStdString(), "foo");
+  EXPECT_EQ(StringView("foo").substr(1, 2).ToStdString(), "oo");
+  EXPECT_EQ(StringView("foo").substr(1, 3).ToStdString(), "oo");
+  EXPECT_EQ(StringView("foo").substr(1, 99).ToStdString(), "oo");
+  EXPECT_EQ(StringView("xyz").substr(0).ToStdString(), "xyz");
+  EXPECT_EQ(StringView("xyz").substr(2).ToStdString(), "z");
+  EXPECT_EQ(StringView("xyz").substr(3).ToStdString(), "");
+
+  // Test the < operator.
+  EXPECT_FALSE(StringView() < StringView());
+  EXPECT_FALSE(StringView() < StringView(""));
+  EXPECT_TRUE(StringView() < StringView("foo"));
+  EXPECT_TRUE(StringView("") < StringView("foo"));
+  EXPECT_FALSE(StringView() < StringView("foo", 0));
+  EXPECT_FALSE(StringView("foo") < StringView("foo"));
+  EXPECT_TRUE(StringView("foo") < StringView("fooo"));
+  EXPECT_FALSE(StringView("fooo") < StringView("foo"));
+  EXPECT_TRUE(StringView("bar") < StringView("foo"));
+
+  // Test the <= operator.
+  EXPECT_TRUE(StringView() <= StringView());
+  EXPECT_TRUE(StringView() <= StringView(""));
+  EXPECT_TRUE(StringView() <= StringView("foo"));
+  EXPECT_TRUE(StringView("") <= StringView("foo"));
+  EXPECT_TRUE(StringView() <= StringView("foo", 0));
+  EXPECT_TRUE(StringView("foo") <= StringView("foo"));
+  EXPECT_TRUE(StringView("foo") <= StringView("fooo"));
+  EXPECT_FALSE(StringView("fooo") <= StringView("foo"));
+  EXPECT_TRUE(StringView("bar") <= StringView("foo"));
+
+  // Test the > operator.
+  EXPECT_FALSE(StringView() > StringView());
+  EXPECT_FALSE(StringView() > StringView(""));
+  EXPECT_FALSE(StringView() > StringView("foo"));
+  EXPECT_FALSE(StringView("") > StringView("foo"));
+  EXPECT_FALSE(StringView() > StringView("foo", 0));
+  EXPECT_FALSE(StringView("foo") > StringView("foo"));
+  EXPECT_FALSE(StringView("foo") > StringView("fooo"));
+  EXPECT_TRUE(StringView("fooo") > StringView("foo"));
+  EXPECT_FALSE(StringView("bar") > StringView("foo"));
+
+  // Test the >= operator.
+  EXPECT_TRUE(StringView() >= StringView());
+  EXPECT_TRUE(StringView() >= StringView(""));
+  EXPECT_FALSE(StringView() >= StringView("foo"));
+  EXPECT_FALSE(StringView("") >= StringView("foo"));
+  EXPECT_TRUE(StringView() >= StringView("foo", 0));
+  EXPECT_TRUE(StringView("foo") >= StringView("foo"));
+  EXPECT_FALSE(StringView("foo") >= StringView("fooo"));
+  EXPECT_TRUE(StringView("fooo") >= StringView("foo"));
+  EXPECT_FALSE(StringView("bar") >= StringView("foo"));
 }
 
 TEST(StringViewTest, HashCollisions) {

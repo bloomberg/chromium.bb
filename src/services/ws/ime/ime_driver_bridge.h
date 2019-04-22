@@ -22,13 +22,18 @@ class IMEDriverBridge : public mojom::IMEDriver {
   void SetDriver(mojom::IMEDriverPtr driver);
 
  private:
+  // Holds the params to start an IME session.
+  struct Request;
+
   // mojom::IMEDriver:
-  void StartSession(mojom::StartSessionDetailsPtr details) override;
+  void StartSession(mojom::InputMethodRequest input_method_request,
+                    mojom::TextInputClientPtr client,
+                    mojom::SessionDetailsPtr details) override;
 
   mojo::BindingSet<mojom::IMEDriver> bindings_;
   mojom::IMEDriverPtr driver_;
 
-  base::queue<mojom::StartSessionDetailsPtr> pending_requests_;
+  base::queue<Request> pending_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(IMEDriverBridge);
 };

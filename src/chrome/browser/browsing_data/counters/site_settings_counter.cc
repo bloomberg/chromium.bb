@@ -49,30 +49,43 @@ void SiteSettingsCounter::Count() {
   base::Time period_start = GetPeriodStart();
   base::Time period_end = GetPeriodEnd();
 
+  auto iterate_content_settings_list =
+      [&](ContentSettingsType content_type,
+          const ContentSettingsForOneType& content_settings_list) {
+        for (const auto& content_setting : content_settings_list) {
+          // TODO(crbug.com/762560): Check the conceptual SettingSource instead
+          // of ContentSettingPatternSource.source
+          if (content_setting.source == "preference" ||
+              content_setting.source == "notification_android" ||
+              content_setting.source == "ephemeral") {
+            base::Time last_modified = map_->GetSettingLastModifiedDate(
+                content_setting.primary_pattern,
+                content_setting.secondary_pattern, content_type);
+            if (last_modified >= period_start && last_modified < period_end) {
+              if (content_setting.primary_pattern.GetHost().empty())
+                empty_host_pattern++;
+              else
+                hosts.insert(content_setting.primary_pattern.GetHost());
+            }
+          }
+        }
+      };
+
   auto* registry = content_settings::ContentSettingsRegistry::GetInstance();
   for (const content_settings::ContentSettingsInfo* info : *registry) {
     ContentSettingsType type = info->website_settings_info()->type();
     ContentSettingsForOneType content_settings_list;
     map_->GetSettingsForOneType(type, content_settings::ResourceIdentifier(),
                                 &content_settings_list);
-    for (const auto& content_setting : content_settings_list) {
-      // TODO(crbug.com/762560): Check the conceptual SettingSource instead of
-      // ContentSettingPatternSource.source
-      if (content_setting.source == "preference" ||
-          content_setting.source == "notification_android" ||
-          content_setting.source == "ephemeral") {
-        base::Time last_modified = map_->GetSettingLastModifiedDate(
-            content_setting.primary_pattern, content_setting.secondary_pattern,
-            type);
-        if (last_modified >= period_start && last_modified < period_end) {
-          if (content_setting.primary_pattern.GetHost().empty())
-            empty_host_pattern++;
-          else
-            hosts.insert(content_setting.primary_pattern.GetHost());
-        }
-      }
-    }
+    iterate_content_settings_list(type, content_settings_list);
   }
+
+  ContentSettingsForOneType content_settings_list_for_usb_chooser;
+  map_->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA,
+                              content_settings::ResourceIdentifier(),
+                              &content_settings_list_for_usb_chooser);
+  iterate_content_settings_list(CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA,
+                                content_settings_list_for_usb_chooser);
 
 #if !defined(OS_ANDROID)
   for (const auto& zoom_level : zoom_map_->GetAllZoomLevels()) {

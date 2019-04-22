@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/sync/model_impl/model_type_store_service_impl.h"
 #include "ios/chrome/browser/browser_state/browser_state_otr_helper.h"
@@ -14,7 +14,8 @@
 
 // static
 ModelTypeStoreServiceFactory* ModelTypeStoreServiceFactory::GetInstance() {
-  return base::Singleton<ModelTypeStoreServiceFactory>::get();
+  static base::NoDestructor<ModelTypeStoreServiceFactory> instance;
+  return instance.get();
 }
 
 // static

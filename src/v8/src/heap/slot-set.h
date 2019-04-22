@@ -11,6 +11,8 @@
 #include "src/allocation.h"
 #include "src/base/atomic-utils.h"
 #include "src/base/bits.h"
+#include "src/objects/compressed-slots.h"
+#include "src/objects/slots.h"
 #include "src/utils.h"
 
 namespace v8 {
@@ -202,7 +204,7 @@ class SlotSet : public Malloced {
             while (cell) {
               int bit_offset = base::bits::CountTrailingZeros(cell);
               uint32_t bit_mask = 1u << bit_offset;
-              uint32_t slot = (cell_offset + bit_offset) << kPointerSizeLog2;
+              uint32_t slot = (cell_offset + bit_offset) << kTaggedSizeLog2;
               if (callback(MaybeObjectSlot(page_start_ + slot)) == KEEP_SLOT) {
                 ++in_bucket_count;
               } else {
@@ -263,8 +265,8 @@ class SlotSet : public Malloced {
   }
 
  private:
-  typedef uint32_t* Bucket;
-  static const int kMaxSlots = (1 << kPageSizeBits) / kPointerSize;
+  using Bucket = uint32_t*;
+  static const int kMaxSlots = (1 << kPageSizeBits) / kTaggedSize;
   static const int kCellsPerBucket = 32;
   static const int kCellsPerBucketLog2 = 5;
   static const int kBitsPerCell = 32;
@@ -370,8 +372,8 @@ class SlotSet : public Malloced {
   // Converts the slot offset into bucket/cell/bit index.
   void SlotToIndices(int slot_offset, int* bucket_index, int* cell_index,
                      int* bit_index) {
-    DCHECK_EQ(slot_offset % kPointerSize, 0);
-    int slot = slot_offset >> kPointerSizeLog2;
+    DCHECK(IsAligned(slot_offset, kTaggedSize));
+    int slot = slot_offset >> kTaggedSizeLog2;
     DCHECK(slot >= 0 && slot <= kMaxSlots);
     *bucket_index = slot >> kBitsPerBucketLog2;
     *cell_index = (slot >> kBitsPerCellLog2) & (kCellsPerBucket - 1);
@@ -399,21 +401,19 @@ enum SlotType {
 // encoded (slot type, slot offset) pairs.
 // There is no duplicate detection and we do not expect many duplicates because
 // typed slots contain V8 internal pointers that are not directly exposed to JS.
-class TypedSlots {
+class V8_EXPORT_PRIVATE TypedSlots {
  public:
   static const int kMaxOffset = 1 << 29;
   TypedSlots() = default;
   virtual ~TypedSlots();
-  V8_EXPORT_PRIVATE void Insert(SlotType type, uint32_t host_offset,
-                                uint32_t offset);
-  V8_EXPORT_PRIVATE void Merge(TypedSlots* other);
+  void Insert(SlotType type, uint32_t offset);
+  void Merge(TypedSlots* other);
 
  protected:
   class OffsetField : public BitField<int, 0, 29> {};
   class TypeField : public BitField<SlotType, 29, 3> {};
   struct TypedSlot {
     uint32_t type_and_offset;
-    uint32_t host_offset;
   };
   struct Chunk {
     Chunk* next;
@@ -471,8 +471,7 @@ class V8_EXPORT_PRIVATE TypedSlotSet : public TypedSlots {
         if (type != CLEARED_SLOT) {
           uint32_t offset = OffsetField::decode(slot.type_and_offset);
           Address addr = page_start_ + offset;
-          Address host_addr = page_start_ + slot.host_offset;
-          if (callback(type, host_addr, addr) == KEEP_SLOT) {
+          if (callback(type, addr) == KEEP_SLOT) {
             new_count++;
             empty = false;
           } else {
@@ -519,20 +518,13 @@ class V8_EXPORT_PRIVATE TypedSlotSet : public TypedSlots {
     base::AsAtomicPointer::Relaxed_Store(&head_, chunk);
   }
   TypedSlot LoadTypedSlot(TypedSlot* slot) {
-    // Order is important here and should match that of ClearTypedSlot. The
-    // order guarantees that type != CLEARED_SLOT implies valid host_offset.
-    TypedSlot result;
-    result.host_offset = base::AsAtomic32::Acquire_Load(&slot->host_offset);
-    result.type_and_offset =
-        base::AsAtomic32::Relaxed_Load(&slot->type_and_offset);
-    return result;
+    return TypedSlot{base::AsAtomic32::Relaxed_Load(&slot->type_and_offset)};
   }
   void ClearTypedSlot(TypedSlot* slot) {
     // Order is important here and should match that of LoadTypedSlot.
     base::AsAtomic32::Relaxed_Store(
         &slot->type_and_offset,
         TypeField::encode(CLEARED_SLOT) | OffsetField::encode(0));
-    base::AsAtomic32::Release_Store(&slot->host_offset, 0);
   }
 
   Address page_start_;

@@ -27,16 +27,14 @@
 #define HTMLToken_h
 
 #include <stddef.h>
-
 #include <vector>
 
+#include "base/macros.h"
 #include "ios/third_party/blink/src/html_tokenizer_adapter.h"
 
 namespace WebCore {
 
 class HTMLToken {
-    WTF_MAKE_NONCOPYABLE(HTMLToken);
-
 public:
     enum Type {
         Uninitialized,
@@ -134,6 +132,8 @@ public:
 private:
     Type m_type;
     std::vector<LChar> m_data;
+
+    DISALLOW_COPY_AND_ASSIGN(HTMLToken);
 };
 }
 

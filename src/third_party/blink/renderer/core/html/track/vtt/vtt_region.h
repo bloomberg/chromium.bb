@@ -88,7 +88,7 @@ class VTTRegion final : public ScriptWrappable {
   void DisplayLastVTTCueBox();
   void WillRemoveVTTCueBox(VTTCueBox*);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void PrepareRegionDisplayTree();

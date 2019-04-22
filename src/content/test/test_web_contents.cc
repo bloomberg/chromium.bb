@@ -50,7 +50,8 @@ TestWebContents::TestWebContents(BrowserContext* browser_context)
       delegate_view_override_(nullptr),
       expect_set_history_offset_and_length_(false),
       expect_set_history_offset_and_length_history_length_(0),
-      pause_subresource_loading_called_(false) {
+      pause_subresource_loading_called_(false),
+      audio_group_id_(base::UnguessableToken::Create()) {
   if (!RenderProcessHostImpl::get_render_process_host_factory_for_testing()) {
     // Most unit tests should prefer to create a generic MockRenderProcessHost
     // (instead of a real RenderProcessHostImpl).  Tests that need to use a
@@ -82,11 +83,17 @@ TestWebContents::~TestWebContents() {
 }
 
 TestRenderFrameHost* TestWebContents::GetMainFrame() {
-  return static_cast<TestRenderFrameHost*>(WebContentsImpl::GetMainFrame());
+  auto* instance = WebContentsImpl::GetMainFrame();
+  DCHECK(instance->IsTestRenderFrameHost())
+      << "You may want to instantiate RenderViewHostTestEnabler.";
+  return static_cast<TestRenderFrameHost*>(instance);
 }
 
 TestRenderViewHost* TestWebContents::GetRenderViewHost() {
-  return static_cast<TestRenderViewHost*>(WebContentsImpl::GetRenderViewHost());
+  auto* instance = WebContentsImpl::GetRenderViewHost();
+  DCHECK(instance->IsTestRenderViewHost())
+      << "You may want to instantiate RenderViewHostTestEnabler.";
+  return static_cast<TestRenderViewHost*>(instance);
 }
 
 TestRenderFrameHost* TestWebContents::GetPendingMainFrame() {
@@ -177,8 +184,7 @@ void TestWebContents::TestDidNavigateWithSequenceNumber(
   params.original_request_url = GURL();
   params.is_overriding_user_agent = false;
   params.history_list_was_cleared = false;
-  params.render_view_routing_id = 0;
-  params.origin = url::Origin();
+  params.origin = url::Origin::Create(url);
   params.insecure_request_policy = blink::kLeaveInsecureRequestsAlone;
   params.has_potentially_trustworthy_unique_origin = false;
 
@@ -274,7 +280,7 @@ bool TestWebContents::CreateRenderViewForRenderManager(
 std::unique_ptr<WebContents> TestWebContents::Clone() {
   std::unique_ptr<WebContentsImpl> contents =
       Create(GetBrowserContext(), SiteInstance::Create(GetBrowserContext()));
-  contents->GetController().CopyStateFrom(controller_, true);
+  contents->GetController().CopyStateFrom(&controller_, true);
   return contents;
 }
 
@@ -319,44 +325,11 @@ void TestWebContents::TestSetIsLoading(bool value) {
 }
 
 void TestWebContents::CommitPendingNavigation() {
-  const NavigationEntry* entry = GetController().GetPendingEntry();
+  NavigationEntry* entry = GetController().GetPendingEntry();
   DCHECK(entry);
 
-  TestRenderFrameHost* old_rfh = GetMainFrame();
-  NavigationRequest* request = old_rfh->frame_tree_node()->navigation_request();
-
-  // PlzNavigate: the pending RenderFrameHost is not created before the
-  // navigation commit, so it is necessary to simulate the IO thread response
-  // here to commit in the proper renderer. It is necessary to call
-  // PrepareForCommit before getting the main and the pending frame because when
-  // we are trying to navigate to a webui from a new tab, a RenderFrameHost is
-  // created to display it that is committed immediately (since it is a new
-  // tab). Therefore the main frame is replaced without a pending frame being
-  // created, and we don't get the right values for the RenderFrameHost to
-  // navigate: we try to use the old one that has been deleted in the meantime.
-  // Note that for some synchronous navigations (about:blank, javascript urls,
-  // etc.), no simulation of the network stack is required.
-  old_rfh->PrepareForCommitIfNecessary();
-
-  TestRenderFrameHost* rfh = GetPendingMainFrame();
-  if (!rfh)
-    rfh = old_rfh;
-  CHECK(rfh->is_loading() || IsRendererDebugURL(entry->GetURL()));
-  CHECK(!rfh->frame_tree_node()->navigation_request());
-
-  if (request && !request->navigation_handle()->IsSameDocument()) {
-    rfh->SimulateCommitProcessed(
-        request->navigation_handle()->GetNavigationId(),
-        true /* was successful */);
-  }
-
-  rfh->SendNavigateWithTransition(entry->GetUniqueID(),
-                                  GetController().GetPendingEntryIndex() == -1,
-                                  entry->GetURL(), entry->GetTransitionType());
-  // Simulate the SwapOut_ACK. This is needed when cross-site navigation
-  // happens.
-  if (old_rfh != rfh)
-    old_rfh->OnSwappedOut();
+  auto navigation = NavigationSimulator::CreateFromPending(this);
+  navigation->Commit();
 }
 
 RenderViewHostDelegateView* TestWebContents::GetDelegateView() {
@@ -417,6 +390,7 @@ void TestWebContents::CreateNewWindow(
     int32_t main_frame_route_id,
     int32_t main_frame_widget_route_id,
     const mojom::CreateNewWindowParams& params,
+    bool has_user_gesture,
     SessionStorageNamespace* session_storage_namespace) {}
 
 void TestWebContents::CreateNewWidget(int32_t render_process_id,
@@ -472,6 +446,10 @@ void TestWebContents::SetPageImportanceSignals(PageImportanceSignals signals) {
 
 void TestWebContents::SetLastActiveTime(base::TimeTicks last_active_time) {
   last_active_time_ = last_active_time;
+}
+
+base::UnguessableToken TestWebContents::GetAudioGroupId() {
+  return audio_group_id_;
 }
 
 }  // namespace content

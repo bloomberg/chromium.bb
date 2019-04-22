@@ -27,14 +27,14 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/location.h"
-#include "base/memory/shared_memory.h"
+#include "base/memory/shared_memory_mapping.h"
 #include "base/metrics/persistent_memory_allocator.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_runner.h"
 #include "base/threading/platform_thread.h"
-#include "base/threading/thread_local_storage.h"
+#include "base/threading/thread_local.h"
 
 namespace base {
 
@@ -801,12 +801,12 @@ class BASE_EXPORT GlobalActivityTracker {
   // records it's important to ensure that what is returned was created before
   // the |exit_stamp|. Movement of |process_data| information is allowed.
   using ProcessExitCallback =
-      Callback<void(int64_t process_id,
-                    int64_t exit_stamp,
-                    int exit_code,
-                    ProcessPhase exit_phase,
-                    std::string&& command_line,
-                    ActivityUserData::Snapshot&& process_data)>;
+      RepeatingCallback<void(int64_t process_id,
+                             int64_t exit_stamp,
+                             int exit_code,
+                             ProcessPhase exit_phase,
+                             std::string&& command_line,
+                             ActivityUserData::Snapshot&& process_data)>;
 
   // This structure contains information about a loaded module, as shown to
   // users of the tracker.
@@ -907,19 +907,11 @@ class BASE_EXPORT GlobalActivityTracker {
                                     int64_t process_id);
 
   // Like above but internally creates an allocator using a shared-memory
-  // segment. The segment must already be mapped into the local memory space.
-  static bool CreateWithSharedMemory(std::unique_ptr<SharedMemory> shm,
+  // segment that is already mapped into the local memory space.
+  static bool CreateWithSharedMemory(base::WritableSharedMemoryMapping mapping,
                                      uint64_t id,
                                      StringPiece name,
                                      int stack_depth);
-
-  // Like above but takes a handle to an existing shared memory segment and
-  // maps it before creating the tracker.
-  static bool CreateWithSharedMemoryHandle(const SharedMemoryHandle& handle,
-                                           size_t size,
-                                           uint64_t id,
-                                           StringPiece name,
-                                           int stack_depth);
 
   // Gets the global activity-tracker or null if none exists.
   static GlobalActivityTracker* Get() {
@@ -953,7 +945,7 @@ class BASE_EXPORT GlobalActivityTracker {
     if (base::ThreadLocalStorage::HasBeenDestroyed())
       return nullptr;
 
-    return reinterpret_cast<ThreadActivityTracker*>(this_thread_tracker_.Get());
+    return this_thread_tracker_.Get();
   }
 
   // Gets the thread's activity-tracker or creates one if none exists. This
@@ -1200,7 +1192,7 @@ class BASE_EXPORT GlobalActivityTracker {
   const int64_t process_id_;
 
   // The activity tracker for the currently executing thread.
-  ThreadLocalStorage::Slot this_thread_tracker_;
+  ThreadLocalOwnedPointer<ThreadActivityTracker> this_thread_tracker_;
 
   // The number of thread trackers currently active.
   std::atomic<int> thread_tracker_count_;

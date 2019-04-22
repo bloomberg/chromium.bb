@@ -13,8 +13,8 @@
 #include <vector>
 
 #include "base/containers/flat_map.h"
-#include "cc/paint/color_space_transfer_cache_entry.h"
 #include "cc/paint/display_item_list.h"
+#include "cc/paint/image_provider.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/client_test_helper.h"
@@ -206,7 +206,7 @@ class ContextSupportStub : public ContextSupport {
       uint32_t texture_id) override {
     return false;
   }
-  void* MapTransferCacheEntry(size_t serialized_size) override {
+  void* MapTransferCacheEntry(uint32_t serialized_size) override {
     mapped_transfer_cache_entry_.reset(new char[serialized_size]);
     return mapped_transfer_cache_entry_.get();
   }
@@ -220,6 +220,10 @@ class ContextSupportStub : public ContextSupport {
       const std::vector<std::pair<uint32_t, uint32_t>>& entries) override {}
   void DeleteTransferCacheEntry(uint32_t type, uint32_t id) override {}
   unsigned int GetTransferBufferFreeSize() const override { return 0; }
+  bool CanDecodeWithHardwareAcceleration(
+      base::span<const uint8_t> encoded_data) const override {
+    return false;
+  }
   bool HasGrContextSupport() const override { return false; }
   void SetGrContext(GrContext* gr) override {}
   void WillCallGLFromSkia() override {}
@@ -232,9 +236,8 @@ class ContextSupportStub : public ContextSupport {
 class ImageProviderStub : public cc::ImageProvider {
  public:
   ~ImageProviderStub() override {}
-  ScopedDecodedDrawImage GetDecodedDrawImage(
-      const cc::DrawImage& draw_image) override {
-    return ScopedDecodedDrawImage();
+  ScopedResult GetRasterContent(const cc::DrawImage& draw_image) override {
+    return ScopedResult();
   }
 };
 
@@ -244,15 +247,10 @@ class RasterImplementationGLESTest : public testing::Test {
 
   void SetUp() override {
     gl_ = std::make_unique<RasterMockGLES2Interface>();
-    ri_ = std::make_unique<RasterImplementationGLES>(gl_.get(),
-                                                     gpu::Capabilities());
+    ri_ = std::make_unique<RasterImplementationGLES>(gl_.get());
   }
 
   void TearDown() override {}
-
-  void SetUpWithCapabilities(const gpu::Capabilities& capabilities) {
-    ri_.reset(new RasterImplementationGLES(gl_.get(), capabilities));
-  }
 
   void ExpectBindTexture(GLenum target, GLuint texture_id) {
     if (bound_texture_ != texture_id) {
@@ -286,13 +284,6 @@ TEST_F(RasterImplementationGLESTest, ShallowFlushCHROMIUM) {
 TEST_F(RasterImplementationGLESTest, OrderingBarrierCHROMIUM) {
   EXPECT_CALL(*gl_, OrderingBarrierCHROMIUM()).Times(1);
   ri_->OrderingBarrierCHROMIUM();
-}
-
-TEST_F(RasterImplementationGLESTest, GenSyncTokenCHROMIUM) {
-  GLbyte sync_token_data[GL_SYNC_TOKEN_SIZE_CHROMIUM] = {};
-
-  EXPECT_CALL(*gl_, GenSyncTokenCHROMIUM(sync_token_data)).Times(1);
-  ri_->GenSyncTokenCHROMIUM(sync_token_data);
 }
 
 TEST_F(RasterImplementationGLESTest, GenUnverifiedSyncTokenCHROMIUM) {
@@ -385,36 +376,28 @@ TEST_F(RasterImplementationGLESTest, GetQueryObjectuivEXT) {
   ri_->GetQueryObjectuivEXT(kQueryId, kQueryParam, &result);
 }
 
-TEST_F(RasterImplementationGLESTest, DeleteTextures) {
-  const GLsizei kNumTextures = 2;
-  GLuint texture_ids[kNumTextures] = {2, 3};
+TEST_F(RasterImplementationGLESTest, DeleteGpuRasterTexture) {
+  GLuint texture_id = 3;
   gpu::Mailbox mailbox;
 
   EXPECT_CALL(*gl_, CreateAndConsumeTextureCHROMIUM(mailbox.name))
-      .WillOnce(Return(texture_ids[0]))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, CreateAndConsumeTextureCHROMIUM(mailbox.name))
-      .WillOnce(Return(texture_ids[1]))
+      .WillOnce(Return(texture_id))
       .RetiresOnSaturation();
 
-  ri_->CreateAndConsumeTexture(false, gfx::BufferUsage::GPU_READ,
-                               viz::RGBA_8888, mailbox.name);
-  ri_->CreateAndConsumeTexture(false, gfx::BufferUsage::GPU_READ,
-                               viz::RGBA_8888, mailbox.name);
+  EXPECT_EQ(texture_id, ri_->CreateAndConsumeForGpuRaster(mailbox.name));
 
-  EXPECT_CALL(*gl_, DeleteTextures(kNumTextures, texture_ids)).Times(1);
-  ri_->DeleteTextures(kNumTextures, texture_ids);
+  EXPECT_CALL(*gl_, DeleteTextures(1, _)).Times(1);
+  ri_->DeleteGpuRasterTexture(texture_id);
 }
 
-TEST_F(RasterImplementationGLESTest, CreateAndConsumeTexture) {
+TEST_F(RasterImplementationGLESTest, CreateAndConsumeForGpuRaster) {
   const GLuint kTextureId = 23;
   GLuint texture_id = 0;
   gpu::Mailbox mailbox;
 
   EXPECT_CALL(*gl_, CreateAndConsumeTextureCHROMIUM(mailbox.name))
       .WillOnce(Return(kTextureId));
-  texture_id = ri_->CreateAndConsumeTexture(false, gfx::BufferUsage::GPU_READ,
-                                            viz::RGBA_8888, mailbox.name);
+  texture_id = ri_->CreateAndConsumeForGpuRaster(mailbox.name);
   EXPECT_EQ(kTextureId, texture_id);
 }
 

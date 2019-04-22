@@ -6,10 +6,6 @@
 
 namespace blink {
 
-EventTargetImpl* EventTargetImpl::Create(ScriptState* script_state) {
-  return MakeGarbageCollected<EventTargetImpl>(script_state);
-}
-
 const AtomicString& EventTargetImpl::InterfaceName() const {
   return event_target_names::kEventTargetImpl;
 }
@@ -18,7 +14,7 @@ ExecutionContext* EventTargetImpl::GetExecutionContext() const {
   return ContextLifecycleObserver::GetExecutionContext();
 }
 
-void EventTargetImpl::Trace(blink::Visitor* visitor) {
+void EventTargetImpl::Trace(Visitor* visitor) {
   EventTargetWithInlineData::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
 }

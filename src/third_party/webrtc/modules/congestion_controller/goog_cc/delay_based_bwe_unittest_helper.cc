@@ -10,8 +10,7 @@
 #include "modules/congestion_controller/goog_cc/delay_based_bwe_unittest_helper.h"
 
 #include <algorithm>
-#include <limits>
-#include <utility>
+#include <cstdint>
 
 #include "absl/memory/memory.h"
 #include "modules/congestion_controller/goog_cc/delay_based_bwe.h"
@@ -153,9 +152,11 @@ DelayBasedBweTest::DelayBasedBweTest()
     : field_trial(),
       clock_(100000000),
       acknowledged_bitrate_estimator_(
-          absl::make_unique<AcknowledgedBitrateEstimator>()),
+          absl::make_unique<AcknowledgedBitrateEstimator>(
+              &field_trial_config_)),
       probe_bitrate_estimator_(new ProbeBitrateEstimator(nullptr)),
-      bitrate_estimator_(new DelayBasedBwe(nullptr)),
+      bitrate_estimator_(
+          new DelayBasedBwe(&field_trial_config_, nullptr, nullptr)),
       stream_generator_(new test::StreamGenerator(1e6,  // Capacity.
                                                   clock_.TimeInMicroseconds())),
       arrival_time_offset_ms_(0),
@@ -166,9 +167,11 @@ DelayBasedBweTest::DelayBasedBweTest(const std::string& field_trial_string)
           absl::make_unique<test::ScopedFieldTrials>(field_trial_string)),
       clock_(100000000),
       acknowledged_bitrate_estimator_(
-          absl::make_unique<AcknowledgedBitrateEstimator>()),
+          absl::make_unique<AcknowledgedBitrateEstimator>(
+              &field_trial_config_)),
       probe_bitrate_estimator_(new ProbeBitrateEstimator(nullptr)),
-      bitrate_estimator_(new DelayBasedBwe(nullptr)),
+      bitrate_estimator_(
+          new DelayBasedBwe(&field_trial_config_, nullptr, nullptr)),
       stream_generator_(new test::StreamGenerator(1e6,  // Capacity.
                                                   clock_.TimeInMicroseconds())),
       arrival_time_offset_ms_(0),
@@ -209,6 +212,7 @@ void DelayBasedBweTest::IncomingFeedback(int64_t arrival_time_ms,
       bitrate_estimator_->IncomingPacketFeedbackVector(
           packets, acknowledged_bitrate_estimator_->bitrate(),
           probe_bitrate_estimator_->FetchAndResetLastEstimatedBitrate(),
+          /*network_estimate*/ absl::nullopt, /*in_alr*/ false,
           Timestamp::ms(clock_.TimeInMilliseconds()));
   const uint32_t kDummySsrc = 0;
   if (result.updated) {
@@ -250,6 +254,7 @@ bool DelayBasedBweTest::GenerateAndProcessFrame(uint32_t ssrc,
       bitrate_estimator_->IncomingPacketFeedbackVector(
           packets, acknowledged_bitrate_estimator_->bitrate(),
           probe_bitrate_estimator_->FetchAndResetLastEstimatedBitrate(),
+          /*network_estimate*/ absl::nullopt, /*in_alr*/ false,
           Timestamp::ms(clock_.TimeInMilliseconds()));
   const uint32_t kDummySsrc = 0;
   if (result.updated) {

@@ -5,8 +5,8 @@
 #include "crypto/mock_apple_keychain.h"
 
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/time/time.h"
 
 namespace {
@@ -42,7 +42,7 @@ OSStatus MockAppleKeychain::FindGenericPassword(
     // The function to free this data is mocked so the cast is fine.
     *passwordData = const_cast<char*>(kPassword);
     DCHECK(passwordLength);
-    *passwordLength = arraysize(kPassword);
+    *passwordLength = base::size(kPassword);
     password_data_count_++;
   }
 

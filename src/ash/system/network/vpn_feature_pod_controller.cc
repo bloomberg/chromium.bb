@@ -9,8 +9,8 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/network/network_icon.h"
-#include "ash/system/network/tray_vpn.h"
 #include "ash/system/network/vpn_list.h"
+#include "ash/system/network/vpn_util.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/feature_pod_button.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
@@ -63,14 +63,14 @@ void VPNFeaturePodController::Update() {
   if (!chromeos::NetworkHandler::IsInitialized())
     return;
 
-  button_->SetVisible(tray::IsVPNVisibleInSystemTray());
+  button_->SetVisible(vpn_util::IsVPNVisibleInSystemTray());
   if (!button_->visible())
     return;
 
   button_->SetSubLabel(l10n_util::GetStringUTF16(
-      tray::IsVPNConnected() ? IDS_ASH_STATUS_TRAY_VPN_CONNECTED_SHORT
-                             : IDS_ASH_STATUS_TRAY_VPN_DISCONNECTED_SHORT));
-  button_->SetToggled(tray::IsVPNEnabled() && tray::IsVPNConnected());
+      vpn_util::IsVPNConnected() ? IDS_ASH_STATUS_TRAY_VPN_CONNECTED_SHORT
+                                 : IDS_ASH_STATUS_TRAY_VPN_DISCONNECTED_SHORT));
+  button_->SetToggled(vpn_util::IsVPNEnabled() && vpn_util::IsVPNConnected());
 }
 
 }  // namespace ash

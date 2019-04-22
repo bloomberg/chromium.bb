@@ -98,7 +98,6 @@ FidoDiscoveryFactory::MaybeCreateWinWebAuthnApiDiscovery() {
     return nullptr;
   }
   return std::make_unique<WinWebAuthnApiAuthenticatorDiscovery>(
-      WinWebAuthnApi::GetDefault(),
       // TODO(martinkr): Inject the window from which the request
       // originated. Windows uses this parameter to center the
       // dialog over the parent. The dialog should be centered

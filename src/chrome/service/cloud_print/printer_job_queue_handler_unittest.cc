@@ -8,8 +8,8 @@
 
 #include <set>
 
-#include "base/json/json_reader.h"
 #include "base/memory/ptr_util.h"
+#include "base/test/values_test_util.h"
 #include "base/values.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -68,15 +68,12 @@ class PrinterJobQueueHandlerWithMockedTime : public PrinterJobQueueHandler {
 
 class PrinterJobQueueHandlerTest : public ::testing::Test {
  protected:
-  void SetUp() override {
-    base::JSONReader json_reader;
-    data_ = base::DictionaryValue::From(json_reader.Read(kJobListResponse));
-  }
+  void SetUp() override { data_ = base::test::ParseJson(kJobListResponse); }
 
-  const base::DictionaryValue& GetDictionary() const { return *data_; }
+  const base::Value& GetDictionary() const { return data_; }
 
  private:
-  std::unique_ptr<base::DictionaryValue> data_;
+  base::Value data_;
 };
 
 TEST_F(PrinterJobQueueHandlerTest, BasicJobReadTest) {

@@ -6,12 +6,11 @@
 
 #include <algorithm>
 #include <map>
+#include <numeric>
 
-#include "ash/assistant/assistant_controller.h"
-#include "ash/assistant/assistant_interaction_controller.h"
-#include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/model/assistant_query.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
+#include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/ui/main_stage/assistant_footer_view.h"
 #include "ash/assistant/ui/main_stage/assistant_header_view.h"
 #include "ash/assistant/ui/main_stage/assistant_progress_indicator.h"
@@ -139,32 +138,30 @@ class StackLayout : public views::LayoutManager {
   }
 
   gfx::Size GetPreferredSize(const views::View* host) const override {
-    gfx::Size preferred_size;
-
-    for (int i = 0; i < host->child_count(); ++i)
-      preferred_size.SetToMax(host->child_at(i)->GetPreferredSize());
-    return preferred_size;
+    return std::accumulate(host->children().cbegin(), host->children().cend(),
+                           gfx::Size(), [](gfx::Size size, const auto* v) {
+                             size.SetToMax(v->GetPreferredSize());
+                             return size;
+                           });
   }
 
   int GetPreferredHeightForWidth(const views::View* host,
                                  int width) const override {
-    int preferred_height = 0;
-
-    for (int i = 0; i < host->child_count(); ++i) {
-      preferred_height = std::max(host->child_at(i)->GetHeightForWidth(width),
-                                  preferred_height);
-    }
-
-    return preferred_height;
+    const auto& children = host->children();
+    if (children.empty())
+      return 0;
+    std::vector<int> heights(children.size());
+    std::transform(
+        children.cbegin(), children.cend(), heights.begin(),
+        [width](const views::View* v) { return v->GetHeightForWidth(width); });
+    return *std::max_element(heights.cbegin(), heights.cend());
   }
 
   void Layout(views::View* host) override {
     const int host_width = host->GetContentsBounds().width();
     const int host_height = host->GetContentsBounds().height();
 
-    for (int i = 0; i < host->child_count(); ++i) {
-      views::View* child = host->child_at(i);
-
+    for (auto* child : host->children()) {
       int child_width = host_width;
       int child_height = host_height;
 
@@ -197,9 +194,8 @@ class StackLayout : public views::LayoutManager {
 
 // AssistantMainStage ----------------------------------------------------------
 
-AssistantMainStage::AssistantMainStage(
-    AssistantController* assistant_controller)
-    : assistant_controller_(assistant_controller),
+AssistantMainStage::AssistantMainStage(AssistantViewDelegate* delegate)
+    : delegate_(delegate),
       active_query_exit_animation_observer_(
           std::make_unique<ui::CallbackLayerAnimationObserver>(
               /*animation_ended_callback=*/base::BindRepeating(
@@ -216,15 +212,15 @@ AssistantMainStage::AssistantMainStage(
   InitLayout();
 
   // The view hierarchy will be destructed before Shell, which owns
-  // AssistantController, so AssistantController is guaranteed to outlive the
-  // AssistantMainStage.
-  assistant_controller_->interaction_controller()->AddModelObserver(this);
-  assistant_controller_->ui_controller()->AddModelObserver(this);
+  // AssistantViewDelegate, so AssistantViewDelegate is guaranteed to outlive
+  // the AssistantMainStage.
+  delegate_->AddInteractionModelObserver(this);
+  delegate_->AddUiModelObserver(this);
 }
 
 AssistantMainStage::~AssistantMainStage() {
-  assistant_controller_->ui_controller()->RemoveModelObserver(this);
-  assistant_controller_->interaction_controller()->RemoveModelObserver(this);
+  delegate_->RemoveUiModelObserver(this);
+  delegate_->RemoveInteractionModelObserver(this);
 }
 
 const char* AssistantMainStage::GetClassName() const {
@@ -254,7 +250,8 @@ void AssistantMainStage::OnViewPreferredSizeChanged(views::View* view) {
   PreferredSizeChanged();
 }
 
-void AssistantMainStage::OnViewVisibilityChanged(views::View* view) {
+void AssistantMainStage::OnViewVisibilityChanged(views::View* view,
+                                                 views::View* starting_view) {
   PreferredSizeChanged();
 }
 
@@ -285,11 +282,11 @@ void AssistantMainStage::InitContentLayoutContainer() {
               views::BoxLayout::Orientation::kVertical));
 
   // Header.
-  header_ = new AssistantHeaderView(assistant_controller_);
+  header_ = new AssistantHeaderView(delegate_);
   content_layout_container_->AddChildView(header_);
 
   // UI element container.
-  ui_element_container_ = new UiElementContainerView(assistant_controller_);
+  ui_element_container_ = new UiElementContainerView(delegate_);
   ui_element_container_->AddObserver(this);
   content_layout_container_->AddChildView(ui_element_container_);
 
@@ -304,7 +301,7 @@ void AssistantMainStage::InitContentLayoutContainer() {
   views::View* footer_container = new views::View();
   footer_container->SetLayoutManager(std::make_unique<views::FillLayout>());
 
-  footer_ = new AssistantFooterView(assistant_controller_);
+  footer_ = new AssistantFooterView(delegate_);
   footer_->AddObserver(this);
 
   // The footer will be animated on its own layer.
@@ -431,6 +428,9 @@ void AssistantMainStage::OnActivateQuery() {
   using assistant::util::CreateLayerAnimationSequence;
   using assistant::util::CreateOpacityElement;
   using assistant::util::CreateTransformElement;
+
+  if (!committed_query_view_)
+    return;
 
   // Clear the previously active query.
   OnActiveQueryCleared();
@@ -618,9 +618,7 @@ void AssistantMainStage::OnUiVisibilityChanged(
     footer_->layer()->SetOpacity(0.f);
 
     const AssistantQuery& pending_query =
-        assistant_controller_->interaction_controller()
-            ->model()
-            ->pending_query();
+        delegate_->GetInteractionModel()->pending_query();
 
     // We only animate in the footer when a pending query is absent. Otherwise
     // the footer should be hidden to make room for the pending query view.

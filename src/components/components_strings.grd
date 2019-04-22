@@ -15,8 +15,8 @@
     <output filename="components_strings_da.pak" type="data_package" lang="da" />
     <output filename="components_strings_de.pak" type="data_package" lang="de" />
     <output filename="components_strings_el.pak" type="data_package" lang="el" />
-    <output filename="components_strings_en-GB.pak" type="data_package" lang="en-GB" />
     <output filename="components_strings_en-US.pak" type="data_package" lang="en" />
+    <output filename="components_strings_en-GB.pak" type="data_package" lang="en-GB" />
     <output filename="components_strings_es.pak" type="data_package" lang="es" />
     <if expr="is_ios">
       <!-- iOS uses es-MX for es-419 -->
@@ -81,6 +81,7 @@
       <output filename="java/res/values-am/components_strings.xml" lang="am" type="android" context="android_java" />
       <output filename="java/res/values-ar/components_strings.xml" lang="ar" type="android" context="android_java" />
       <output filename="java/res/values-bg/components_strings.xml" lang="bg" type="android" context="android_java" />
+      <output filename="java/res/values-bn/components_strings.xml" lang="bn" type="android" context="android_java" />
       <output filename="java/res/values-ca/components_strings.xml" lang="ca" type="android" context="android_java" />
       <output filename="java/res/values-cs/components_strings.xml" lang="cs" type="android" context="android_java" />
       <output filename="java/res/values-da/components_strings.xml" lang="da" type="android" context="android_java" />
@@ -90,20 +91,26 @@
       <output filename="java/res/values-en-rGB/components_strings.xml" lang="en-GB" type="android" context="android_java" />
       <output filename="java/res/values-es/components_strings.xml" lang="es" type="android" context="android_java" />
       <output filename="java/res/values-es-rUS/components_strings.xml" lang="es-419" type="android" context="android_java" />
+      <output filename="java/res/values-et/components_strings.xml" lang="et" type="android" context="android_java" />
       <output filename="java/res/values-fa/components_strings.xml" lang="fa" type="android" context="android_java" />
       <output filename="java/res/values-fi/components_strings.xml" lang="fi" type="android" context="android_java" />
       <output filename="java/res/values-tl/components_strings.xml" lang="fil" type="android" context="android_java" />
       <output filename="java/res/values-fr/components_strings.xml" lang="fr" type="android" context="android_java" />
+      <output filename="java/res/values-gu/components_strings.xml" lang="gu" type="android" context="android_java" />
+      <output filename="java/res/values-iw/components_strings.xml" lang="he" type="android" context="android_java" />
       <output filename="java/res/values-hi/components_strings.xml" lang="hi" type="android" context="android_java" />
       <output filename="java/res/values-hr/components_strings.xml" lang="hr" type="android" context="android_java" />
       <output filename="java/res/values-hu/components_strings.xml" lang="hu" type="android" context="android_java" />
       <output filename="java/res/values-in/components_strings.xml" lang="id" type="android" context="android_java" />
       <output filename="java/res/values-it/components_strings.xml" lang="it" type="android" context="android_java" />
-      <output filename="java/res/values-iw/components_strings.xml" lang="he" type="android" context="android_java" />
       <output filename="java/res/values-ja/components_strings.xml" lang="ja" type="android" context="android_java" />
+      <output filename="java/res/values-kn/components_strings.xml" lang="kn" type="android" context="android_java" />
       <output filename="java/res/values-ko/components_strings.xml" lang="ko" type="android" context="android_java" />
       <output filename="java/res/values-lt/components_strings.xml" lang="lt" type="android" context="android_java" />
       <output filename="java/res/values-lv/components_strings.xml" lang="lv" type="android" context="android_java" />
+      <output filename="java/res/values-ml/components_strings.xml" lang="ml" type="android" context="android_java" />
+      <output filename="java/res/values-mr/components_strings.xml" lang="mr" type="android" context="android_java" />
+      <output filename="java/res/values-ms/components_strings.xml" lang="ms" type="android" context="android_java" />
       <output filename="java/res/values-nl/components_strings.xml" lang="nl" type="android" context="android_java" />
       <output filename="java/res/values-nb/components_strings.xml" lang="no" type="android" context="android_java" />
       <output filename="java/res/values-pl/components_strings.xml" lang="pl" type="android" context="android_java" />
@@ -116,6 +123,8 @@
       <output filename="java/res/values-sr/components_strings.xml" lang="sr" type="android" context="android_java" />
       <output filename="java/res/values-sv/components_strings.xml" lang="sv" type="android" context="android_java" />
       <output filename="java/res/values-sw/components_strings.xml" lang="sw" type="android" context="android_java" />
+      <output filename="java/res/values-ta/components_strings.xml" lang="ta" type="android" context="android_java" />
+      <output filename="java/res/values-te/components_strings.xml" lang="te" type="android" context="android_java" />
       <output filename="java/res/values-th/components_strings.xml" lang="th" type="android" context="android_java" />
       <output filename="java/res/values-tr/components_strings.xml" lang="tr" type="android" context="android_java" />
       <output filename="java/res/values-uk/components_strings.xml" lang="uk" type="android" context="android_java" />
@@ -183,8 +192,9 @@
   <release seq="1" allow_pseudo="false">
     <messages fallback_to_english="true">
       <part file="app_modal_strings.grdp" />
-      <part file="autofill_strings.grdp" />
       <part file="autofill_assistant_strings.grdp" />
+      <part file="autofill_payments_strings.grdp" />
+      <part file="autofill_strings.grdp" />
       <part file="bookmark_bar_strings.grdp" />
       <part file="bookmark_component_strings.grdp" />
       <part file="browsing_data_strings.grdp" />
@@ -204,6 +214,7 @@
       <part file="payments_strings.grdp" />
       <part file="pdf_strings.grdp" />
       <part file="policy_strings.grdp" />
+      <part file="print_media_strings.grdp" />
       <part file="printing_component_strings.grdp" />
       <part file="reset_password_strings.grdp" />
       <part file="safe_browsing_strings.grdp" />

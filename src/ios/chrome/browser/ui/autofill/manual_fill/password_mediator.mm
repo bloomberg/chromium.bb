@@ -10,25 +10,30 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/password_manager/core/browser/password_store.h"
 #import "ios/chrome/browser/autofill/manual_fill/passwords_fetcher.h"
+#import "ios/chrome/browser/favicon/favicon_loader.h"
+#include "ios/chrome/browser/passwords/password_manager_features.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/action_cell.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/credential.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/credential_password_form.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_content_delegate.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_password_cell.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/password_consumer.h"
-#import "ios/chrome/browser/ui/autofill/manual_fill/password_list_delegate.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/password_list_navigator.h"
 #import "ios/chrome/browser/ui/list_model/list_model.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
-#import "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/chrome/grit/ios_strings.h"
-#import "ios/web/public/web_state/web_state.h"
-#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+#include "ui/gfx/favicon_size.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+namespace {
+// Minimum favicon size to retrieve.
+const CGFloat kMinFaviconSizePt = 8.0;
+}  // namespace
 
 namespace manual_fill {
 
@@ -36,6 +41,8 @@ NSString* const ManagePasswordsAccessibilityIdentifier =
     @"kManualFillManagePasswordsAccessibilityIdentifier";
 NSString* const OtherPasswordsAccessibilityIdentifier =
     @"kManualFillOtherPasswordsAccessibilityIdentifier";
+NSString* const SuggestPasswordAccessibilityIdentifier =
+    @"kManualFillSuggestPasswordAccessibilityIdentifier";
 
 }  // namespace manual_fill
 
@@ -52,8 +59,11 @@ BOOL AreCredentialsAtIndexesConnected(
       isEqualToString:credentials[secondIndex].host];
 }
 
-@interface ManualFillPasswordMediator ()<ManualFillContentDelegate,
-                                         PasswordFetcherDelegate>
+@interface ManualFillPasswordMediator () <ManualFillContentDelegate,
+                                          PasswordFetcherDelegate> {
+  // The interface for getting and manipulating a user's saved passwords.
+  scoped_refptr<password_manager::PasswordStore> _passwordStore;
+}
 
 // The |WebStateList| containing the active web state. Used to filter the list
 // of credentials based on the active web state.
@@ -62,13 +72,12 @@ BOOL AreCredentialsAtIndexesConnected(
 // The password fetcher to query the user profile.
 @property(nonatomic, strong) PasswordFetcher* passwordFetcher;
 
+// The favicon loader used in TableViewFaviconDataSource.
+@property(nonatomic, assign) FaviconLoader* faviconLoader;
+
 // A cache of the credentials fetched from the store, not synced. Useful to
 // reuse the mediator.
 @property(nonatomic, strong) NSArray<ManualFillCredential*>* credentials;
-
-// If the filter is disabled, the "Show All Passwords" button is not included
-// in the model.
-@property(nonatomic, assign, readonly) BOOL isAllPasswordButtonEnabled;
 
 // YES if the password fetcher has completed at least one fetch.
 @property(nonatomic, assign) BOOL passwordFetcherDidFetch;
@@ -77,32 +86,37 @@ BOOL AreCredentialsAtIndexesConnected(
 
 @implementation ManualFillPasswordMediator
 
-- (instancetype)initWithWebStateList:(WebStateList*)webStateList
-                       passwordStore:
-                           (scoped_refptr<password_manager::PasswordStore>)
-                               passwordStore {
+- (instancetype)initWithPasswordStore:
+                    (scoped_refptr<password_manager::PasswordStore>)
+                        passwordStore
+                        faviconLoader:(FaviconLoader*)faviconLoader {
   self = [super init];
   if (self) {
     _credentials = @[];
-    _webStateList = webStateList;
-    _passwordFetcher =
-        [[PasswordFetcher alloc] initWithPasswordStore:passwordStore
-                                              delegate:self];
+    _passwordStore = passwordStore;
+    _faviconLoader = faviconLoader;
   }
   return self;
+}
+
+- (void)fetchPasswordsForURL:(const GURL&)URL {
+  self.credentials = @[];
+  self.passwordFetcher =
+      [[PasswordFetcher alloc] initWithPasswordStore:_passwordStore
+                                            delegate:self
+                                                 URL:URL];
 }
 
 #pragma mark - PasswordFetcherDelegate
 
 - (void)passwordFetcher:(PasswordFetcher*)passwordFetcher
       didFetchPasswords:
-          (std::vector<std::unique_ptr<autofill::PasswordForm>>&)passwords {
+          (std::vector<std::unique_ptr<autofill::PasswordForm>>)passwords {
   NSMutableArray<ManualFillCredential*>* credentials =
       [[NSMutableArray alloc] initWithCapacity:passwords.size()];
-  for (auto it = passwords.begin(); it != passwords.end(); ++it) {
-    autofill::PasswordForm& form = **it;
+  for (const auto& form : passwords) {
     ManualFillCredential* credential =
-        [[ManualFillCredential alloc] initWithPasswordForm:form];
+        [[ManualFillCredential alloc] initWithPasswordForm:*form];
     [credentials addObject:credential];
   }
   self.credentials = credentials;
@@ -149,31 +163,7 @@ BOOL AreCredentialsAtIndexesConnected(
   if (!self.consumer) {
     return;
   }
-  if (self.disableFilter) {
-    auto credentials = [self createItemsForCredentials:self.credentials];
-    [self.consumer presentCredentials:credentials];
-    return;
-  }
-  web::WebState* currentWebState = self.webStateList->GetActiveWebState();
-  if (!currentWebState) {
-    return;
-  }
-  GURL visibleURL = currentWebState->GetVisibleURL();
-  std::string site_name =
-      net::registry_controlled_domains::GetDomainAndRegistry(
-          visibleURL.host(),
-          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
-  // Sometimes the site_name can be empty. i.e. if the host is an IP address.
-  if (site_name.empty()) {
-    site_name = visibleURL.host();
-  }
-  NSString* siteName = base::SysUTF8ToNSString(site_name);
-
-  NSPredicate* predicate =
-      [NSPredicate predicateWithFormat:@"siteName = %@", siteName];
-  NSArray* filteredCredentials =
-      [self.credentials filteredArrayUsingPredicate:predicate];
-  auto credentials = [self createItemsForCredentials:filteredCredentials];
+  auto credentials = [self createItemsForCredentials:self.credentials];
   [self.consumer presentCredentials:credentials];
 }
 
@@ -202,20 +192,26 @@ BOOL AreCredentialsAtIndexesConnected(
   if (!self.consumer) {
     return;
   }
-  if (self.isAllPasswordButtonEnabled) {
-    NSString* otherPasswordsTitleString = l10n_util::GetNSString(
-        IDS_IOS_MANUAL_FALLBACK_USE_OTHER_PASSWORD_WITH_DOTS);
+  if (self.isActionSectionEnabled) {
+    NSMutableArray<ManualFillActionItem*>* actions =
+        [[NSMutableArray alloc] init];
     __weak __typeof(self) weakSelf = self;
 
-    auto otherPasswordsItem = [[ManualFillActionItem alloc]
-        initWithTitle:otherPasswordsTitleString
-               action:^{
-                 base::RecordAction(base::UserMetricsAction(
-                     "ManualFallback_Password_OpenOtherPassword"));
-                 [weakSelf.navigationDelegate openAllPasswordsList];
-               }];
-    otherPasswordsItem.accessibilityIdentifier =
-        manual_fill::OtherPasswordsAccessibilityIdentifier;
+    // TODO(crbug.com/908776): fix or wait until iOS 11.2- is deprecated.
+    if (@available(iOS 11.3, *)) {
+      NSString* otherPasswordsTitleString = l10n_util::GetNSString(
+          IDS_IOS_MANUAL_FALLBACK_USE_OTHER_PASSWORD_WITH_DOTS);
+      auto otherPasswordsItem = [[ManualFillActionItem alloc]
+          initWithTitle:otherPasswordsTitleString
+                 action:^{
+                   base::RecordAction(base::UserMetricsAction(
+                       "ManualFallback_Password_OpenOtherPassword"));
+                   [weakSelf.navigator openAllPasswordsList];
+                 }];
+      otherPasswordsItem.accessibilityIdentifier =
+          manual_fill::OtherPasswordsAccessibilityIdentifier;
+      [actions addObject:otherPasswordsItem];
+    }
 
     NSString* managePasswordsTitle =
         l10n_util::GetNSString(IDS_IOS_MANUAL_FALLBACK_MANAGE_PASSWORDS);
@@ -224,26 +220,14 @@ BOOL AreCredentialsAtIndexesConnected(
                action:^{
                  base::RecordAction(base::UserMetricsAction(
                      "ManualFallback_Password_OpenManagePassword"));
-                 [weakSelf.navigationDelegate openPasswordSettings];
+                 [weakSelf.navigator openPasswordSettings];
                }];
     managePasswordsItem.accessibilityIdentifier =
         manual_fill::ManagePasswordsAccessibilityIdentifier;
-    if (@available(iOS 11.3, *)) {
-      [self.consumer
-          presentActions:@[ otherPasswordsItem, managePasswordsItem ]];
-    } else {
-      // TODO(crbug.com/908776): fix or wait until iOS 11.2- is deprecated.
-      [self.consumer presentActions:@[ managePasswordsItem ]];
-    }
-  } else {
-    [self.consumer presentActions:@[]];
+    [actions addObject:managePasswordsItem];
+
+    [self.consumer presentActions:actions];
   }
-}
-
-#pragma mark - Getters
-
-- (BOOL)isAllPasswordButtonEnabled {
-  return !self.disableFilter;
 }
 
 #pragma mark - Setters
@@ -267,10 +251,22 @@ BOOL AreCredentialsAtIndexesConnected(
 - (void)userDidPickContent:(NSString*)content
              passwordField:(BOOL)passwordField
              requiresHTTPS:(BOOL)requiresHTTPS {
-  [self.navigationDelegate dismissPresentedViewController];
+  [self.navigator dismissPresentedViewController];
   [self.contentDelegate userDidPickContent:content
                              passwordField:passwordField
                              requiresHTTPS:requiresHTTPS];
+}
+
+#pragma mark - TableViewFaviconDataSource
+
+- (FaviconAttributes*)faviconForURL:(const GURL&)URL
+                         completion:(void (^)(FaviconAttributes*))completion {
+  DCHECK(completion);
+  FaviconAttributes* cachedAttributes = self.faviconLoader->FaviconForPageUrl(
+      URL, gfx::kFaviconSize, kMinFaviconSizePt,
+      /*fallback_to_google_server=*/false, completion);
+  DCHECK(cachedAttributes);
+  return cachedAttributes;
 }
 
 @end

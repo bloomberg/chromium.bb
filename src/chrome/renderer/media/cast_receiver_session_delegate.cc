@@ -55,7 +55,7 @@ void CastReceiverSessionDelegate::StartAudio(
 void CastReceiverSessionDelegate::OnDecodedAudioFrame(
     std::unique_ptr<media::AudioBus> audio_bus,
     const base::TimeTicks& playout_time,
-    bool is_continous) {
+    bool is_continuous) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   if (!audio_valve_)
     return;
@@ -72,20 +72,20 @@ void CastReceiverSessionDelegate::OnDecodedAudioFrame(
 }
 
 void CastReceiverSessionDelegate::StartVideo(
-    content::VideoCaptureDeliverFrameCB video_callback) {
+    blink::VideoCaptureDeliverFrameCB video_callback) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   frame_callback_ = video_callback;
   cast_receiver_->RequestDecodedVideoFrame(on_video_decoded_cb_);
 }
 
 void  CastReceiverSessionDelegate::StopVideo() {
-  frame_callback_ = content::VideoCaptureDeliverFrameCB();
+  frame_callback_ = blink::VideoCaptureDeliverFrameCB();
 }
 
 void CastReceiverSessionDelegate::OnDecodedVideoFrame(
     const scoped_refptr<media::VideoFrame>& video_frame,
     const base::TimeTicks& playout_time,
-    bool is_continous) {
+    bool is_continuous) {
   if (frame_callback_.is_null())
     return;
   frame_callback_.Run(video_frame, playout_time);

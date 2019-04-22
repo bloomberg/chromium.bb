@@ -7,6 +7,7 @@
 #include <set>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/debug/leak_annotations.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
@@ -178,7 +179,7 @@ class MockDisplayInfoProvider : public DisplayInfoProvider {
       const display::Display& display,
       extensions::api::system_display::DisplayUnitInfo* unit) override {
     int64_t id = display.id();
-    unit->name = "DISPLAY NAME FOR " + base::Int64ToString(id);
+    unit->name = "DISPLAY NAME FOR " + base::NumberToString(id);
     if (id == 1)
       unit->mirroring_source_id = "0";
     unit->is_primary = id == 0 ? true : false;

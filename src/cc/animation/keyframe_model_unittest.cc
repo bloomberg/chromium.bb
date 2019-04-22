@@ -350,7 +350,7 @@ TEST(KeyframeModelTest, TrimTimeStartTimeReverse) {
   std::unique_ptr<KeyframeModel> keyframe_model(CreateKeyframeModel(1));
   keyframe_model->set_start_time(TicksFromSecondsF(4));
   keyframe_model->set_direction(KeyframeModel::Direction::REVERSE);
-  EXPECT_EQ(0,
+  EXPECT_EQ(1.0,
             keyframe_model->TrimTimeToCurrentIteration(TicksFromSecondsF(0.0))
                 .InSecondsF());
   EXPECT_EQ(1.0,
@@ -399,9 +399,6 @@ TEST(KeyframeModelTest, TrimTimeTimeOffsetReverse) {
   EXPECT_EQ(0,
             keyframe_model->TrimTimeToCurrentIteration(TicksFromSecondsF(1.0))
                 .InSecondsF());
-  EXPECT_EQ(0,
-            keyframe_model->TrimTimeToCurrentIteration(TicksFromSecondsF(1.0))
-                .InSecondsF());
 }
 
 TEST(KeyframeModelTest, TrimTimeNegativeTimeOffset) {
@@ -427,7 +424,7 @@ TEST(KeyframeModelTest, TrimTimeNegativeTimeOffsetReverse) {
   keyframe_model->set_time_offset(TimeDelta::FromMilliseconds(-4000));
   keyframe_model->set_direction(KeyframeModel::Direction::REVERSE);
 
-  EXPECT_EQ(0,
+  EXPECT_EQ(1.0,
             keyframe_model->TrimTimeToCurrentIteration(TicksFromSecondsF(0.0))
                 .InSecondsF());
   EXPECT_EQ(1.0,
@@ -441,16 +438,67 @@ TEST(KeyframeModelTest, TrimTimeNegativeTimeOffsetReverse) {
                 .InSecondsF());
 }
 
+TEST(KeyframeModelTest, TrimTimePauseBasic) {
+  std::unique_ptr<KeyframeModel> keyframe_model(CreateKeyframeModel(1));
+  keyframe_model->set_fill_mode(KeyframeModel::FillMode::NONE);
+
+  keyframe_model->Pause(base::TimeDelta::FromSecondsD(0.5));
+  // When paused, the time returned is always the pause time
+  EXPECT_EQ(0.5,
+            keyframe_model->TrimTimeToCurrentIteration(TicksFromSecondsF(-1))
+                .InSecondsF());
+  EXPECT_EQ(0.5,
+            keyframe_model->TrimTimeToCurrentIteration(TicksFromSecondsF(0.2))
+                .InSecondsF());
+  EXPECT_EQ(0.5,
+            keyframe_model->TrimTimeToCurrentIteration(TicksFromSecondsF(2))
+                .InSecondsF());
+}
+
+TEST(KeyframeModelTest, TrimTimePauseAffectedByDelay) {
+  std::unique_ptr<KeyframeModel> keyframe_model(CreateKeyframeModel(1));
+  keyframe_model->set_fill_mode(KeyframeModel::FillMode::NONE);
+  // Pause time is in local time so delay should apply on top of it.
+  keyframe_model->set_time_offset(TimeDelta::FromSecondsD(-0.2));
+  keyframe_model->Pause(base::TimeDelta::FromSecondsD(0.5));
+  EXPECT_EQ(0.3,
+            keyframe_model->TrimTimeToCurrentIteration(TicksFromSecondsF(0.1))
+                .InSecondsF());
+
+  keyframe_model->set_time_offset(TimeDelta::FromSecondsD(0.2));
+  keyframe_model->Pause(base::TimeDelta::FromSecondsD(0.5));
+  EXPECT_EQ(0.7,
+            keyframe_model->TrimTimeToCurrentIteration(TicksFromSecondsF(0.1))
+                .InSecondsF());
+}
+
+TEST(KeyframeModelTest, TrimTimePauseNotAffectedByStartTime) {
+  std::unique_ptr<KeyframeModel> keyframe_model(CreateKeyframeModel(1));
+  keyframe_model->set_fill_mode(KeyframeModel::FillMode::NONE);
+  // Pause time is in local time so start time should not affect it.
+  keyframe_model->set_start_time(TicksFromSecondsF(0.2));
+  keyframe_model->Pause(base::TimeDelta::FromSecondsD(0.5));
+  EXPECT_EQ(0.5,
+            keyframe_model->TrimTimeToCurrentIteration(TicksFromSecondsF(0.1))
+                .InSecondsF());
+
+  keyframe_model->set_start_time(TicksFromSecondsF(0.4));
+  keyframe_model->Pause(base::TimeDelta::FromSecondsD(0.5));
+  EXPECT_EQ(0.5,
+            keyframe_model->TrimTimeToCurrentIteration(TicksFromSecondsF(0.1))
+                .InSecondsF());
+}
+
 TEST(KeyframeModelTest, TrimTimePauseResume) {
   std::unique_ptr<KeyframeModel> keyframe_model(CreateKeyframeModel(1));
   keyframe_model->SetRunState(KeyframeModel::RUNNING, TicksFromSecondsF(0.0));
   EXPECT_EQ(0,
             keyframe_model->TrimTimeToCurrentIteration(TicksFromSecondsF(0.0))
                 .InSecondsF());
-  EXPECT_EQ(0.5,
-            keyframe_model->TrimTimeToCurrentIteration(TicksFromSecondsF(0.5))
+  EXPECT_EQ(0.4,
+            keyframe_model->TrimTimeToCurrentIteration(TicksFromSecondsF(0.4))
                 .InSecondsF());
-  keyframe_model->SetRunState(KeyframeModel::PAUSED, TicksFromSecondsF(0.5));
+  keyframe_model->Pause(base::TimeDelta::FromSecondsD(0.5));
   EXPECT_EQ(
       0.5, keyframe_model->TrimTimeToCurrentIteration(TicksFromSecondsF(1024.0))
                .InSecondsF());
@@ -462,6 +510,15 @@ TEST(KeyframeModelTest, TrimTimePauseResume) {
   EXPECT_EQ(
       1, keyframe_model->TrimTimeToCurrentIteration(TicksFromSecondsF(1024.5))
              .InSecondsF());
+  keyframe_model->Pause(base::TimeDelta::FromSecondsD(0.6));
+  EXPECT_EQ(
+      0.6, keyframe_model->TrimTimeToCurrentIteration(TicksFromSecondsF(2000.0))
+               .InSecondsF());
+  keyframe_model->SetRunState(KeyframeModel::RUNNING,
+                              TicksFromSecondsF(2000.0));
+  EXPECT_EQ(
+      0.7, keyframe_model->TrimTimeToCurrentIteration(TicksFromSecondsF(2000.1))
+               .InSecondsF());
 }
 
 TEST(KeyframeModelTest, TrimTimePauseResumeReverse) {
@@ -474,7 +531,7 @@ TEST(KeyframeModelTest, TrimTimePauseResumeReverse) {
   EXPECT_EQ(0.5,
             keyframe_model->TrimTimeToCurrentIteration(TicksFromSecondsF(0.5))
                 .InSecondsF());
-  keyframe_model->SetRunState(KeyframeModel::PAUSED, TicksFromSecondsF(0.25));
+  keyframe_model->Pause(base::TimeDelta::FromSecondsD(0.25));
   EXPECT_EQ(0.75, keyframe_model
                       ->TrimTimeToCurrentIteration(TicksFromSecondsF(1024.0))
                       .InSecondsF());
@@ -739,11 +796,12 @@ TEST(KeyframeModelTest, TrimTimePlaybackFast) {
 
 TEST(KeyframeModelTest, TrimTimePlaybackNormalReverse) {
   std::unique_ptr<KeyframeModel> keyframe_model(CreateKeyframeModel(1, 2, -1));
-  EXPECT_EQ(0,
+  EXPECT_EQ(2.0,
             keyframe_model->TrimTimeToCurrentIteration(TicksFromSecondsF(-1.0))
                 .InSecondsF());
-  EXPECT_EQ(2, keyframe_model->TrimTimeToCurrentIteration(TicksFromSecondsF(0))
-                   .InSecondsF());
+  EXPECT_EQ(2.0,
+            keyframe_model->TrimTimeToCurrentIteration(TicksFromSecondsF(0))
+                .InSecondsF());
   EXPECT_EQ(1.5,
             keyframe_model->TrimTimeToCurrentIteration(TicksFromSecondsF(0.5))
                 .InSecondsF());
@@ -764,11 +822,12 @@ TEST(KeyframeModelTest, TrimTimePlaybackNormalReverse) {
 TEST(KeyframeModelTest, TrimTimePlaybackSlowReverse) {
   std::unique_ptr<KeyframeModel> keyframe_model(
       CreateKeyframeModel(1, 2, -0.5));
-  EXPECT_EQ(0,
+  EXPECT_EQ(2.0,
             keyframe_model->TrimTimeToCurrentIteration(TicksFromSecondsF(-1.0))
                 .InSecondsF());
-  EXPECT_EQ(2, keyframe_model->TrimTimeToCurrentIteration(TicksFromSecondsF(0))
-                   .InSecondsF());
+  EXPECT_EQ(2.0,
+            keyframe_model->TrimTimeToCurrentIteration(TicksFromSecondsF(0))
+                .InSecondsF());
   EXPECT_EQ(1.75,
             keyframe_model->TrimTimeToCurrentIteration(TicksFromSecondsF(0.5))
                 .InSecondsF());
@@ -799,11 +858,12 @@ TEST(KeyframeModelTest, TrimTimePlaybackSlowReverse) {
 
 TEST(KeyframeModelTest, TrimTimePlaybackFastReverse) {
   std::unique_ptr<KeyframeModel> keyframe_model(CreateKeyframeModel(1, 2, -2));
-  EXPECT_EQ(0,
+  EXPECT_EQ(2.0,
             keyframe_model->TrimTimeToCurrentIteration(TicksFromSecondsF(-1.0))
                 .InSecondsF());
-  EXPECT_EQ(2, keyframe_model->TrimTimeToCurrentIteration(TicksFromSecondsF(0))
-                   .InSecondsF());
+  EXPECT_EQ(2.0,
+            keyframe_model->TrimTimeToCurrentIteration(TicksFromSecondsF(0))
+                .InSecondsF());
   EXPECT_EQ(1.5,
             keyframe_model->TrimTimeToCurrentIteration(TicksFromSecondsF(0.25))
                 .InSecondsF());
@@ -927,7 +987,7 @@ TEST(KeyframeModelTest, TrimTimeAlternateTwoIterationsPlaybackFast) {
 TEST(KeyframeModelTest, TrimTimeAlternateTwoIterationsPlaybackFastReverse) {
   std::unique_ptr<KeyframeModel> keyframe_model(CreateKeyframeModel(2, 2, 2));
   keyframe_model->set_direction(KeyframeModel::Direction::ALTERNATE_REVERSE);
-  EXPECT_EQ(0.0,
+  EXPECT_EQ(2.0,
             keyframe_model->TrimTimeToCurrentIteration(TicksFromSecondsF(-1.0))
                 .InSecondsF());
   EXPECT_EQ(2.0,
@@ -1193,13 +1253,39 @@ TEST(KeyframeModelTest,
 TEST(KeyframeModelTest, InEffectFillMode) {
   std::unique_ptr<KeyframeModel> keyframe_model(CreateKeyframeModel(1));
   keyframe_model->set_fill_mode(KeyframeModel::FillMode::NONE);
+  // Effect before start is not InEffect
   EXPECT_FALSE(keyframe_model->InEffect(TicksFromSecondsF(-1.0)));
+  // Effect at start is InEffect
   EXPECT_TRUE(keyframe_model->InEffect(TicksFromSecondsF(0.0)));
-  EXPECT_TRUE(keyframe_model->InEffect(TicksFromSecondsF(1.0)));
+  // Effect at end is not InEffect
+  EXPECT_FALSE(keyframe_model->InEffect(TicksFromSecondsF(1.0)));
 
   keyframe_model->set_fill_mode(KeyframeModel::FillMode::FORWARDS);
   EXPECT_FALSE(keyframe_model->InEffect(TicksFromSecondsF(-1.0)));
   EXPECT_TRUE(keyframe_model->InEffect(TicksFromSecondsF(0.0)));
+  EXPECT_TRUE(keyframe_model->InEffect(TicksFromSecondsF(1.0)));
+
+  keyframe_model->set_fill_mode(KeyframeModel::FillMode::BACKWARDS);
+  EXPECT_TRUE(keyframe_model->InEffect(TicksFromSecondsF(-1.0)));
+  EXPECT_TRUE(keyframe_model->InEffect(TicksFromSecondsF(0.0)));
+  EXPECT_FALSE(keyframe_model->InEffect(TicksFromSecondsF(1.0)));
+
+  keyframe_model->set_fill_mode(KeyframeModel::FillMode::BOTH);
+  EXPECT_TRUE(keyframe_model->InEffect(TicksFromSecondsF(-1.0)));
+  EXPECT_TRUE(keyframe_model->InEffect(TicksFromSecondsF(0.0)));
+  EXPECT_TRUE(keyframe_model->InEffect(TicksFromSecondsF(1.0)));
+}
+
+TEST(KeyframeModelTest, InEffectFillModeNoneWithNegativePlaybackRate) {
+  std::unique_ptr<KeyframeModel> keyframe_model(CreateKeyframeModel(1, 1, -1));
+  keyframe_model->set_fill_mode(KeyframeModel::FillMode::NONE);
+  EXPECT_FALSE(keyframe_model->InEffect(TicksFromSecondsF(-1.0)));
+  EXPECT_FALSE(keyframe_model->InEffect(TicksFromSecondsF(0.0)));
+  EXPECT_TRUE(keyframe_model->InEffect(TicksFromSecondsF(1.0)));
+
+  keyframe_model->set_fill_mode(KeyframeModel::FillMode::FORWARDS);
+  EXPECT_FALSE(keyframe_model->InEffect(TicksFromSecondsF(-1.0)));
+  EXPECT_FALSE(keyframe_model->InEffect(TicksFromSecondsF(0.0)));
   EXPECT_TRUE(keyframe_model->InEffect(TicksFromSecondsF(1.0)));
 
   keyframe_model->set_fill_mode(KeyframeModel::FillMode::BACKWARDS);
@@ -1213,27 +1299,78 @@ TEST(KeyframeModelTest, InEffectFillMode) {
   EXPECT_TRUE(keyframe_model->InEffect(TicksFromSecondsF(1.0)));
 }
 
-TEST(KeyframeModelTest, InEffectFillModePlayback) {
-  std::unique_ptr<KeyframeModel> keyframe_model(CreateKeyframeModel(1, 1, -1));
+TEST(KeyframeModelTest, InEffectFillModeWithIterations) {
+  std::unique_ptr<KeyframeModel> keyframe_model(CreateKeyframeModel(2, 1));
   keyframe_model->set_fill_mode(KeyframeModel::FillMode::NONE);
   EXPECT_FALSE(keyframe_model->InEffect(TicksFromSecondsF(-1.0)));
   EXPECT_TRUE(keyframe_model->InEffect(TicksFromSecondsF(0.0)));
   EXPECT_TRUE(keyframe_model->InEffect(TicksFromSecondsF(1.0)));
+  EXPECT_FALSE(keyframe_model->InEffect(TicksFromSecondsF(2.0)));
 
   keyframe_model->set_fill_mode(KeyframeModel::FillMode::FORWARDS);
   EXPECT_FALSE(keyframe_model->InEffect(TicksFromSecondsF(-1.0)));
   EXPECT_TRUE(keyframe_model->InEffect(TicksFromSecondsF(0.0)));
-  EXPECT_TRUE(keyframe_model->InEffect(TicksFromSecondsF(1.0)));
+  EXPECT_TRUE(keyframe_model->InEffect(TicksFromSecondsF(2.0)));
 
   keyframe_model->set_fill_mode(KeyframeModel::FillMode::BACKWARDS);
   EXPECT_TRUE(keyframe_model->InEffect(TicksFromSecondsF(-1.0)));
   EXPECT_TRUE(keyframe_model->InEffect(TicksFromSecondsF(0.0)));
-  EXPECT_TRUE(keyframe_model->InEffect(TicksFromSecondsF(1.0)));
+  EXPECT_FALSE(keyframe_model->InEffect(TicksFromSecondsF(2.0)));
 
   keyframe_model->set_fill_mode(KeyframeModel::FillMode::BOTH);
   EXPECT_TRUE(keyframe_model->InEffect(TicksFromSecondsF(-1.0)));
   EXPECT_TRUE(keyframe_model->InEffect(TicksFromSecondsF(0.0)));
+  EXPECT_TRUE(keyframe_model->InEffect(TicksFromSecondsF(2.0)));
+}
+
+TEST(KeyframeModelTest, InEffectFillModeWithInfiniteIterations) {
+  std::unique_ptr<KeyframeModel> keyframe_model(CreateKeyframeModel(-1, 1));
+  keyframe_model->set_fill_mode(KeyframeModel::FillMode::NONE);
+  EXPECT_FALSE(keyframe_model->InEffect(TicksFromSecondsF(-1.0)));
+  EXPECT_TRUE(keyframe_model->InEffect(TicksFromSecondsF(0.0)));
   EXPECT_TRUE(keyframe_model->InEffect(TicksFromSecondsF(1.0)));
+  EXPECT_TRUE(keyframe_model->InEffect(TicksFromSecondsF(2.0)));
+
+  keyframe_model->set_fill_mode(KeyframeModel::FillMode::FORWARDS);
+  EXPECT_FALSE(keyframe_model->InEffect(TicksFromSecondsF(-1.0)));
+  EXPECT_TRUE(keyframe_model->InEffect(TicksFromSecondsF(0.0)));
+  EXPECT_TRUE(keyframe_model->InEffect(TicksFromSecondsF(2.0)));
+
+  keyframe_model->set_fill_mode(KeyframeModel::FillMode::BACKWARDS);
+  EXPECT_TRUE(keyframe_model->InEffect(TicksFromSecondsF(-1.0)));
+  EXPECT_TRUE(keyframe_model->InEffect(TicksFromSecondsF(0.0)));
+  EXPECT_TRUE(keyframe_model->InEffect(TicksFromSecondsF(2.0)));
+
+  keyframe_model->set_fill_mode(KeyframeModel::FillMode::BOTH);
+  EXPECT_TRUE(keyframe_model->InEffect(TicksFromSecondsF(-1.0)));
+  EXPECT_TRUE(keyframe_model->InEffect(TicksFromSecondsF(0.0)));
+  EXPECT_TRUE(keyframe_model->InEffect(TicksFromSecondsF(2.0)));
+}
+
+TEST(KeyframeModelTest, InEffectReverseWithIterations) {
+  std::unique_ptr<KeyframeModel> keyframe_model(CreateKeyframeModel(2, 1));
+  keyframe_model->set_fill_mode(KeyframeModel::FillMode::NONE);
+  // KeyframeModel::direction_ doesn't affect InEffect.
+  keyframe_model->set_direction(KeyframeModel::Direction::REVERSE);
+  EXPECT_FALSE(keyframe_model->InEffect(TicksFromSecondsF(-1.0)));
+  EXPECT_TRUE(keyframe_model->InEffect(TicksFromSecondsF(0.0)));
+  EXPECT_TRUE(keyframe_model->InEffect(TicksFromSecondsF(1.0)));
+  EXPECT_FALSE(keyframe_model->InEffect(TicksFromSecondsF(2.0)));
+}
+
+// CalculatePhase uses -time_offset_ which may cause integer overflow when
+// time_offset_ is set to min(). This test makes sure that the code handles it
+// correctly. See https://crbug.com/921454.
+TEST(KeyframeModelTest, CalculatePhaseWithMinTimeOffset) {
+  std::unique_ptr<KeyframeModel> keyframe_model(CreateKeyframeModel(1));
+  keyframe_model->set_time_offset(
+      TimeDelta::FromMilliseconds(std::numeric_limits<int64_t>::min()));
+
+  // Setting the time_offset_ to min implies that the effect has a max start
+  // delay and any local time will fall into the BEFORE phase.
+  EXPECT_EQ(
+      keyframe_model->CalculatePhaseForTesting(TimeDelta::FromSecondsD(1.0)),
+      KeyframeModel::Phase::BEFORE);
 }
 
 TEST(KeyframeModelTest, ToString) {

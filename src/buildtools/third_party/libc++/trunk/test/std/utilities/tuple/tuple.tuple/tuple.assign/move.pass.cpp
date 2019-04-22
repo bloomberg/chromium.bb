@@ -1,9 +1,8 @@
 //===----------------------------------------------------------------------===//
 //
-//                     The LLVM Compiler Infrastructure
-//
-// This file is dual licensed under the MIT and the University of Illinois Open
-// Source Licenses. See LICENSE.TXT for details.
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
 
@@ -15,6 +14,7 @@
 
 // UNSUPPORTED: c++98, c++03
 
+#include <memory>
 #include <tuple>
 #include <utility>
 #include <cassert>
@@ -48,7 +48,7 @@ int CountAssign::copied = 0;
 int CountAssign::moved = 0;
 
 
-int main()
+int main(int, char**)
 {
     {
         typedef std::tuple<> T;
@@ -122,4 +122,6 @@ int main()
         assert(CountAssign::copied == 1);
         assert(CountAssign::moved == 0);
     }
+
+  return 0;
 }

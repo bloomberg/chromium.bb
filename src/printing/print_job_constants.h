@@ -5,8 +5,6 @@
 #ifndef PRINTING_PRINT_JOB_CONSTANTS_H_
 #define PRINTING_PRINT_JOB_CONSTANTS_H_
 
-#include "build/build_config.h"
-#include "printing/buildflags/buildflags.h"
 #include "printing/printing_export.h"
 
 namespace printing {
@@ -55,8 +53,10 @@ PRINTING_EXPORT extern const char kSettingPageRangeTo[];
 PRINTING_EXPORT extern const char kSettingPageWidth[];
 PRINTING_EXPORT extern const char kSettingPageHeight[];
 PRINTING_EXPORT extern const char kSettingPagesPerSheet[];
+PRINTING_EXPORT extern const char kSettingPinValue[];
 PRINTING_EXPORT extern const char kSettingPolicies[];
 PRINTING_EXPORT extern const char kSettingPreviewModifiable[];
+PRINTING_EXPORT extern const char kSettingPrintToGoogleDrive[];
 PRINTING_EXPORT extern const char kSettingPrintToPDF[];
 PRINTING_EXPORT extern const char kSettingPrintWithPrivet[];
 PRINTING_EXPORT extern const char kSettingPrintWithExtension[];
@@ -70,9 +70,11 @@ PRINTING_EXPORT extern const char kSettingPrinterOptions[];
 PRINTING_EXPORT extern const char kSettingRasterizePdf[];
 PRINTING_EXPORT extern const char kSettingScaleFactor[];
 PRINTING_EXPORT extern const char kSettingTicket[];
+PRINTING_EXPORT extern const char kSettingSendUserInfo[];
 PRINTING_EXPORT extern const char kSettingShouldPrintBackgrounds[];
 PRINTING_EXPORT extern const char kSettingShouldPrintSelectionOnly[];
 PRINTING_EXPORT extern const char kSettingShowSystemDialog[];
+PRINTING_EXPORT extern const char kSettingUsername[];
 
 PRINTING_EXPORT extern const int FIRST_PAGE_INDEX;
 PRINTING_EXPORT extern const int COMPLETE_PREVIEW_DOCUMENT_INDEX;

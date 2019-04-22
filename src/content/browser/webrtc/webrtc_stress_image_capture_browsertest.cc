@@ -115,7 +115,7 @@ const TargetVideoCaptureImplementation
 #endif
 };
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     UsingRealWebcam,  // This prefix can be used with --gtest_filter to
                       // distinguish the tests using a real camera from the ones
                       // that don't.

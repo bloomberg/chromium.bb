@@ -80,7 +80,9 @@ void UiPixelTest::DrawUi(const gfx::Vector3dF& laser_direction,
   EXPECT_TRUE(ui_->OnBeginFrame(base::TimeTicks(), render_info.head_pose));
   ui_->HandleInput(MsToTicks(1), render_info, controller_model, &reticle_model,
                    &input_event_list);
-  ui_->OnControllerUpdated(controller_model, reticle_model);
+  std::vector<ControllerModel> controllers;
+  controllers.push_back(controller_model);
+  ui_->OnControllersUpdated(controllers, reticle_model);
   ui_->Draw(render_info);
 
   // We produce GL errors while rendering. Clear them all so that we can check

@@ -11,8 +11,8 @@
 #include "base/files/file_util.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
@@ -196,7 +196,7 @@ ComponentExtensionIMEManagerImpl::GetManifest(
 
 // static
 bool ComponentExtensionIMEManagerImpl::IsIMEExtensionID(const std::string& id) {
-  for (size_t i = 0; i < arraysize(whitelisted_component_extension); ++i) {
+  for (size_t i = 0; i < base::size(whitelisted_component_extension); ++i) {
     if (base::LowerCaseEqualsASCII(id, whitelisted_component_extension[i].id))
       return true;
   }
@@ -309,7 +309,7 @@ bool ComponentExtensionIMEManagerImpl::ReadExtensionInfo(
 void ComponentExtensionIMEManagerImpl::ReadComponentExtensionsInfo(
     std::vector<ComponentExtensionIME>* out_imes) {
   DCHECK(out_imes);
-  for (size_t i = 0; i < arraysize(whitelisted_component_extension); ++i) {
+  for (size_t i = 0; i < base::size(whitelisted_component_extension); ++i) {
     ComponentExtensionIME component_ime;
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     component_ime.manifest =

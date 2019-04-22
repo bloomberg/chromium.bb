@@ -137,7 +137,7 @@ public class InstalledAppProviderTest {
         ShadowPackageManager packageManager =
                 Shadows.shadowOf(RuntimeEnvironment.application.getPackageManager());
         packageManager.addPackage(packageInfo);
-        packageManager.resources.put(packageInfo.packageName, resources);
+        ShadowPackageManager.resources.put(packageInfo.packageName, resources);
     }
 
     /**

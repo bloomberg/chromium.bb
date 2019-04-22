@@ -20,6 +20,7 @@ from devil.android import flag_changer
 from devil.android.sdk import shared_prefs
 from devil.android import logcat_monitor
 from devil.android.tools import system_app
+from devil.android.tools import webview_app
 from devil.utils import reraiser_thread
 from incremental_install import installer
 from pylib import constants
@@ -128,6 +129,7 @@ class LocalDeviceInstrumentationTestRun(
     self._flag_changers = {}
     self._replace_package_contextmanager = None
     self._shared_prefs_to_restore = []
+    self._use_webview_contextmanager = None
 
   #override
   def TestPackage(self):
@@ -162,6 +164,27 @@ class LocalDeviceInstrumentationTestRun(
           # pylint: enable=no-member
 
         steps.append(replace_package)
+
+      if self._test_instance.use_webview_provider:
+        @trace_event.traced
+        def use_webview_provider(dev):
+          # We need the context manager to be applied before modifying any
+          # shared preference files in case the replacement APK needs to be
+          # set up, and it needs to be applied while the test is running.
+          # Thus, it needs to be applied early during setup, but must still be
+          # applied during _RunTest, which isn't possible using 'with' without
+          # applying the context manager up in test_runner. Instead, we
+          # manually invoke its __enter__ and __exit__ methods in setup and
+          # teardown.
+          self._use_webview_contextmanager = webview_app.UseWebViewProvider(
+              dev, self._test_instance.use_webview_provider)
+          # Pylint is not smart enough to realize that this field has
+          # an __enter__ method, and will complain loudly.
+          # pylint: disable=no-member
+          self._use_webview_contextmanager.__enter__()
+          # pylint: enable=no-member
+
+        steps.append(use_webview_provider)
 
       def install_helper(apk, permissions):
         @instrumentation_tracing.no_tracing
@@ -235,6 +258,19 @@ class LocalDeviceInstrumentationTestRun(
           shared_preference_utils.ApplySharedPreferenceSetting(
               shared_pref, setting)
 
+      @trace_event.traced
+      def set_vega_permissions(dev):
+        # Normally, installation of VrCore automatically grants storage
+        # permissions. However, since VrCore is part of the system image on
+        # the Vega standalone headset, we don't install the APK as part of test
+        # setup. Instead, grant the permissions here so that it can take
+        # screenshots.
+        if dev.product_name == 'vega':
+          dev.GrantPermissions('com.google.vr.vrcore', [
+              'android.permission.WRITE_EXTERNAL_STORAGE',
+              'android.permission.READ_EXTERNAL_STORAGE'
+          ])
+
       @instrumentation_tracing.no_tracing
       def push_test_data(dev):
         device_root = posixpath.join(dev.GetExternalStoragePath(),
@@ -262,8 +298,10 @@ class LocalDeviceInstrumentationTestRun(
         valgrind_tools.SetChromeTimeoutScale(
             dev, self._test_instance.timeout_scale)
 
-      steps += [set_debug_app, edit_shared_prefs, push_test_data,
-                create_flag_changer]
+      steps += [
+          set_debug_app, edit_shared_prefs, push_test_data, create_flag_changer,
+          set_vega_permissions
+      ]
 
       def bind_crash_handler(step, dev):
         return lambda: crash_handler.RetryOnSystemCrash(step, dev)
@@ -333,8 +371,16 @@ class LocalDeviceInstrumentationTestRun(
       for pref_to_restore in self._shared_prefs_to_restore:
         pref_to_restore.Commit(force_commit=True)
 
+      # Context manager exit handlers are applied in reverse order
+      # of the enter handlers
+      if self._use_webview_contextmanager:
+        # See pylint-related comment above with __enter__()
+        # pylint: disable=no-member
+        self._use_webview_contextmanager.__exit__(*sys.exc_info())
+        # pylint: enable=no-member
+
       if self._replace_package_contextmanager:
-        # See pylint-related commend above with __enter__()
+        # See pylint-related comment above with __enter__()
         # pylint: disable=no-member
         self._replace_package_contextmanager.__exit__(*sys.exc_info())
         # pylint: enable=no-member
@@ -343,8 +389,16 @@ class LocalDeviceInstrumentationTestRun(
 
   def _CreateFlagChangerIfNeeded(self, device):
     if str(device) not in self._flag_changers:
+      cmdline_file = 'test-cmdline-file'
+      if self._test_instance.use_apk_under_test_flags_file:
+        if self._test_instance.package_info:
+          cmdline_file = self._test_instance.package_info.cmdline_file
+        else:
+          logging.warning(
+              'No PackageInfo found, falling back to using flag file %s',
+              cmdline_file)
       self._flag_changers[str(device)] = flag_changer.FlagChanger(
-        device, "test-cmdline-file")
+          device, cmdline_file)
 
   #override
   def _CreateShards(self, tests):
@@ -708,7 +762,8 @@ class LocalDeviceInstrumentationTestRun(
             host_file = os.path.join(host_dir, 'list_tests.json')
             dev.PullFile(dev_test_list_json.name, host_file)
             with open(host_file, 'r') as host_file:
-                return json.load(host_file)
+              return json.load(host_file)
+
       return crash_handler.RetryOnSystemCrash(_run, d)
 
     raw_test_lists = self._env.parallel_devices.pMap(list_tests).pGet(None)
@@ -786,19 +841,19 @@ class LocalDeviceInstrumentationTestRun(
 
   def _SaveScreenshot(self, device, screenshot_device_file, test_name, results,
                       link_name):
-      screenshot_filename = '%s-%s.png' % (
-          test_name, time.strftime('%Y%m%dT%H%M%S-UTC', time.gmtime()))
-      if device.FileExists(screenshot_device_file.name):
-        with self._env.output_manager.ArchivedTempfile(
-            screenshot_filename, 'screenshot',
-            output_manager.Datatype.PNG) as screenshot_host_file:
-          try:
-            device.PullFile(screenshot_device_file.name,
-                            screenshot_host_file.name)
-          finally:
-            screenshot_device_file.close()
-        for result in results:
-          result.SetLink(link_name, screenshot_host_file.Link())
+    screenshot_filename = '%s-%s.png' % (
+        test_name, time.strftime('%Y%m%dT%H%M%S-UTC', time.gmtime()))
+    if device.FileExists(screenshot_device_file.name):
+      with self._env.output_manager.ArchivedTempfile(
+          screenshot_filename, 'screenshot',
+          output_manager.Datatype.PNG) as screenshot_host_file:
+        try:
+          device.PullFile(screenshot_device_file.name,
+                          screenshot_host_file.name)
+        finally:
+          screenshot_device_file.close()
+      for result in results:
+        result.SetLink(link_name, screenshot_host_file.Link())
 
   def _ProcessRenderTestResults(
       self, device, render_tests_device_output_dir, results):

@@ -67,8 +67,9 @@ bool FooterCommand::operator==(const FooterCommand& fc) const {
   return display_text_ == fc.display_text_;
 }
 
-AccessorySheetData::AccessorySheetData(const base::string16& title)
-    : title_(title) {}
+AccessorySheetData::AccessorySheetData(FallbackSheetType sheet_type,
+                                       const base::string16& title)
+    : sheet_type_(sheet_type), title_(title) {}
 
 AccessorySheetData::AccessorySheetData(const AccessorySheetData& data) =
     default;

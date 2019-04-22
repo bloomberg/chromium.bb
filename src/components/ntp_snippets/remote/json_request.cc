@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "base/metrics/histogram_functions.h"
@@ -116,7 +117,7 @@ std::string GetUserClassString(UserClassifier::UserClass user_class) {
 
 JsonRequest::JsonRequest(
     base::Optional<Category> exclusive_category,
-    base::Clock* clock,  // Needed until destruction of the request.
+    const base::Clock* clock,  // Needed until destruction of the request.
     const ParseJSONCallback& callback)
     : exclusive_category_(exclusive_category),
       clock_(clock),
@@ -249,7 +250,7 @@ JsonRequest::Builder& JsonRequest::Builder::SetParseJsonCallback(
   return *this;
 }
 
-JsonRequest::Builder& JsonRequest::Builder::SetClock(base::Clock* clock) {
+JsonRequest::Builder& JsonRequest::Builder::SetClock(const base::Clock* clock) {
   clock_ = clock;
   return *this;
 }
@@ -288,8 +289,8 @@ JsonRequest::Builder::BuildResourceRequest() const {
   // Add X-Client-Data header with experiment IDs from field trials.
   // TODO: We should call AppendVariationHeaders with explicit
   // variations::SignedIn::kNo If the auth_header_ is empty
-  variations::AppendVariationHeadersUnknownSignedIn(
-      url_, variations::InIncognito::kNo, &resource_request->headers);
+  variations::AppendVariationsHeaderUnknownSignedIn(
+      url_, variations::InIncognito::kNo, resource_request.get());
   return resource_request;
 }
 

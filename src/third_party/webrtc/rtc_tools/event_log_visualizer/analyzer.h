@@ -18,7 +18,7 @@
 #include <utility>
 #include <vector>
 
-#include "logging/rtc_event_log/rtc_event_log_parser_new.h"
+#include "logging/rtc_event_log/rtc_event_log_parser.h"
 #include "modules/audio_coding/neteq/tools/neteq_stats_getter.h"
 #include "rtc_base/strings/string_builder.h"
 #include "rtc_tools/event_log_visualizer/plot_base.h"
@@ -26,14 +26,40 @@
 
 namespace webrtc {
 
+class AnalyzerConfig {
+ public:
+  float GetCallTimeSec(int64_t timestamp_us) const {
+    int64_t offset = normalize_time_ ? begin_time_ : 0;
+    return static_cast<float>(timestamp_us - offset) / 1000000;
+  }
+
+  float CallBeginTimeSec() const { return GetCallTimeSec(begin_time_); }
+
+  float CallEndTimeSec() const { return GetCallTimeSec(end_time_); }
+
+  // Window and step size used for calculating moving averages, e.g. bitrate.
+  // The generated data points will be |step_| microseconds apart.
+  // Only events occuring at most |window_duration_| microseconds before the
+  // current data point will be part of the average.
+  int64_t window_duration_;
+  int64_t step_;
+
+  // First and last events of the log.
+  int64_t begin_time_;
+  int64_t end_time_;
+  bool normalize_time_;
+};
+
 class EventLogAnalyzer {
  public:
   // The EventLogAnalyzer keeps a reference to the ParsedRtcEventLogNew for the
   // duration of its lifetime. The ParsedRtcEventLogNew must not be destroyed or
   // modified while the EventLogAnalyzer is being used.
-  EventLogAnalyzer(const ParsedRtcEventLogNew& log, bool normalize_time);
+  EventLogAnalyzer(const ParsedRtcEventLog& log, bool normalize_time);
 
   void CreatePacketGraph(PacketDirection direction, Plot* plot);
+
+  void CreateRtcpTypeGraph(PacketDirection direction, Plot* plot);
 
   void CreateAccumulatedPacketsGraph(PacketDirection direction, Plot* plot);
 
@@ -55,7 +81,9 @@ class EventLogAnalyzer {
                                        bool show_alr_state = false);
 
   void CreateStreamBitrateGraph(PacketDirection direction, Plot* plot);
+  void CreateBitrateAllocationGraph(PacketDirection direction, Plot* plot);
 
+  void CreateGoogCcSimulationGraph(Plot* plot);
   void CreateSendSideBweSimulationGraph(Plot* plot);
   void CreateReceiveSideBweSimulationGraph(Plot* plot);
 
@@ -99,10 +127,32 @@ class EventLogAnalyzer {
   void CreateIceCandidatePairConfigGraph(Plot* plot);
   void CreateIceConnectivityCheckGraph(Plot* plot);
 
+  void CreateDtlsTransportStateGraph(Plot* plot);
+  void CreateDtlsWritableStateGraph(Plot* plot);
+
   void CreateTriageNotifications();
   void PrintNotifications(FILE* file);
 
  private:
+  struct LayerDescription {
+    LayerDescription(uint32_t ssrc,
+                     uint8_t spatial_layer,
+                     uint8_t temporal_layer)
+        : ssrc(ssrc),
+          spatial_layer(spatial_layer),
+          temporal_layer(temporal_layer) {}
+    bool operator<(const LayerDescription& other) const {
+      if (ssrc != other.ssrc)
+        return ssrc < other.ssrc;
+      if (spatial_layer != other.spatial_layer)
+        return spatial_layer < other.spatial_layer;
+      return temporal_layer < other.temporal_layer;
+    }
+    uint32_t ssrc;
+    uint8_t spatial_layer;
+    uint8_t temporal_layer;
+  };
+
   bool IsRtxSsrc(PacketDirection direction, uint32_t ssrc) const {
     if (direction == kIncomingPacket) {
       return parsed_log_.incoming_rtx_ssrcs().find(ssrc) !=
@@ -171,8 +221,13 @@ class EventLogAnalyzer {
     return name.str();
   }
 
-  int64_t ToCallTimeUs(int64_t timestamp) const;
-  float ToCallTimeSec(int64_t timestamp) const;
+  std::string GetLayerName(LayerDescription layer) const {
+    char buffer[100];
+    rtc::SimpleStringBuilder name(buffer);
+    name << "SSRC " << layer.ssrc << " sl " << layer.spatial_layer << ", tl "
+         << layer.temporal_layer;
+    return name.str();
+  }
 
   void Alert_RtpLogTimeGap(PacketDirection direction,
                            float time_seconds,
@@ -220,7 +275,7 @@ class EventLogAnalyzer {
 
   std::string GetCandidatePairLogDescriptionFromId(uint32_t candidate_pair_id);
 
-  const ParsedRtcEventLogNew& parsed_log_;
+  const ParsedRtcEventLog& parsed_log_;
 
   // A list of SSRCs we are interested in analysing.
   // If left empty, all SSRCs will be considered relevant.
@@ -242,20 +297,7 @@ class EventLogAnalyzer {
 
   std::map<uint32_t, std::string> candidate_pair_desc_by_id_;
 
-  // Window and step size used for calculating moving averages, e.g. bitrate.
-  // The generated data points will be |step_| microseconds apart.
-  // Only events occuring at most |window_duration_| microseconds before the
-  // current data point will be part of the average.
-  int64_t window_duration_;
-  int64_t step_;
-
-  // First and last events of the log.
-  int64_t begin_time_;
-  int64_t end_time_;
-  const bool normalize_time_;
-
-  // Duration (in seconds) of log file.
-  float call_duration_s_;
+  AnalyzerConfig config_;
 };
 
 }  // namespace webrtc

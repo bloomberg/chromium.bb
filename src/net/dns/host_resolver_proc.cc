@@ -14,6 +14,7 @@
 #include "net/base/sys_addrinfo.h"
 #include "net/dns/dns_reloader.h"
 #include "net/dns/dns_util.h"
+#include "net/dns/host_resolver.h"
 
 #if defined(OS_OPENBSD)
 #define AI_ADDRCONFIG 0
@@ -26,7 +27,7 @@ namespace {
 bool IsAllLocalhostOfOneFamily(const struct addrinfo* ai) {
   bool saw_v4_localhost = false;
   bool saw_v6_localhost = false;
-  for (; ai != NULL; ai = ai->ai_next) {
+  for (; ai != nullptr; ai = ai->ai_next) {
     switch (ai->ai_family) {
       case AF_INET: {
         const struct sockaddr_in* addr_in =
@@ -58,7 +59,7 @@ bool IsAllLocalhostOfOneFamily(const struct addrinfo* ai) {
 
 }  // namespace
 
-HostResolverProc* HostResolverProc::default_proc_ = NULL;
+HostResolverProc* HostResolverProc::default_proc_ = nullptr;
 
 HostResolverProc::HostResolverProc(HostResolverProc* previous) {
   SetPreviousProc(previous);
@@ -88,7 +89,7 @@ int HostResolverProc::ResolveUsingPrevious(
 
 void HostResolverProc::SetPreviousProc(HostResolverProc* proc) {
   HostResolverProc* current_previous = previous_proc_.get();
-  previous_proc_ = NULL;
+  previous_proc_ = nullptr;
   // Now that we've guaranteed |this| is the last proc in a chain, we can
   // detect potential cycles using GetLastProc().
   previous_proc_ = (GetLastProc(proc) == this) ? current_previous : proc;
@@ -100,10 +101,10 @@ void HostResolverProc::SetLastProc(HostResolverProc* proc) {
 
 // static
 HostResolverProc* HostResolverProc::GetLastProc(HostResolverProc* proc) {
-  if (proc == NULL)
-    return NULL;
+  if (proc == nullptr)
+    return nullptr;
   HostResolverProc* last_proc = proc;
-  while (last_proc->previous_proc_.get() != NULL)
+  while (last_proc->previous_proc_.get() != nullptr)
     last_proc = last_proc->previous_proc_.get();
   return last_proc;
 }
@@ -132,7 +133,7 @@ int SystemHostResolverCall(const std::string& host,
   if (os_error)
     *os_error = 0;
 
-  struct addrinfo* ai = NULL;
+  struct addrinfo* ai = nullptr;
   struct addrinfo hints = {0};
 
   switch (address_family) {
@@ -193,13 +194,14 @@ int SystemHostResolverCall(const std::string& host,
   // This function can block for a long time. Use ScopedBlockingCall to increase
   // the current thread pool's capacity and thus avoid reducing CPU usage by the
   // current process during that time.
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::WILL_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::WILL_BLOCK);
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_OPENBSD) && \
     !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
   DnsReloaderMaybeReload();
 #endif
-  int err = getaddrinfo(host.c_str(), NULL, &hints, &ai);
+  int err = getaddrinfo(host.c_str(), nullptr, &hints, &ai);
   bool should_retry = false;
   // If the lookup was restricted (either by address family, or address
   // detection), and the results where all localhost of a single family,
@@ -217,11 +219,11 @@ int SystemHostResolverCall(const std::string& host,
     }
   }
   if (should_retry) {
-    if (ai != NULL) {
+    if (ai != nullptr) {
       freeaddrinfo(ai);
-      ai = NULL;
+      ai = nullptr;
     }
-    err = getaddrinfo(host.c_str(), NULL, &hints, &ai);
+    err = getaddrinfo(host.c_str(), nullptr, &hints, &ai);
   }
 
   if (err) {
@@ -258,7 +260,7 @@ int SystemHostResolverCall(const std::string& host,
   return OK;
 }
 
-SystemHostResolverProc::SystemHostResolverProc() : HostResolverProc(NULL) {}
+SystemHostResolverProc::SystemHostResolverProc() : HostResolverProc(nullptr) {}
 
 int SystemHostResolverProc::Resolve(const std::string& hostname,
                                     AddressFamily address_family,
@@ -273,5 +275,24 @@ int SystemHostResolverProc::Resolve(const std::string& hostname,
 }
 
 SystemHostResolverProc::~SystemHostResolverProc() = default;
+
+const base::TimeDelta ProcTaskParams::kDnsDefaultUnresponsiveDelay =
+    base::TimeDelta::FromSeconds(6);
+
+ProcTaskParams::ProcTaskParams(HostResolverProc* resolver_proc,
+                               size_t max_retry_attempts)
+    : resolver_proc(resolver_proc),
+      max_retry_attempts(max_retry_attempts),
+      unresponsive_delay(kDnsDefaultUnresponsiveDelay),
+      retry_factor(2) {
+  // Maximum of 4 retry attempts for host resolution.
+  static const size_t kDefaultMaxRetryAttempts = 4u;
+  if (max_retry_attempts == HostResolver::kDefaultRetryAttempts)
+    max_retry_attempts = kDefaultMaxRetryAttempts;
+}
+
+ProcTaskParams::ProcTaskParams(const ProcTaskParams& other) = default;
+
+ProcTaskParams::~ProcTaskParams() = default;
 
 }  // namespace net

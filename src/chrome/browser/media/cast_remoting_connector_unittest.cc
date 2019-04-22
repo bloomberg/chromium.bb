@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/media/router/test/mock_media_router.h"
 #include "chrome/common/media_router/media_route.h"
 #include "chrome/common/media_router/media_source.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "media/mojo/interfaces/mirror_service_remoting.mojom.h"
@@ -256,7 +258,7 @@ class CastRemotingConnectorTest : public ::testing::Test {
   void CreateConnector(bool remoting_allowed) {
     connector_.reset();  // Call dtor first if there is one created.
     connector_.reset(new CastRemotingConnector(
-        &media_router_, kRemotingTabId,
+        &media_router_, &pref_service_, kRemotingTabId,
         base::BindRepeating(
             [](bool remoting_allowed,
                CastRemotingConnector::PermissionResultCallback
@@ -277,6 +279,7 @@ class CastRemotingConnectorTest : public ::testing::Test {
  private:
   content::TestBrowserThreadBundle browser_thread_bundle_;
   FakeMediaRouter media_router_;
+  sync_preferences::TestingPrefServiceSyncable pref_service_;
   std::unique_ptr<CastRemotingConnector> connector_;
 };
 
@@ -624,13 +627,13 @@ TEST_P(CastRemotingConnectorFullSessionTest, GoesThroughAllTheMotions) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        CastRemotingConnectorFullSessionTest,
-                        ::testing::Values(SOURCE_TERMINATES,
-                                          MOJO_PIPE_CLOSES,
-                                          ROUTE_TERMINATES,
-                                          EXTERNAL_FAILURE,
-                                          USER_DISABLED));
+INSTANTIATE_TEST_SUITE_P(,
+                         CastRemotingConnectorFullSessionTest,
+                         ::testing::Values(SOURCE_TERMINATES,
+                                           MOJO_PIPE_CLOSES,
+                                           ROUTE_TERMINATES,
+                                           EXTERNAL_FAILURE,
+                                           USER_DISABLED));
 
 // TODO(xjz): Remove the following tests after Mirroring Service is launched.
 TEST_F(CastRemotingConnectorTest,
@@ -935,10 +938,10 @@ TEST_P(DeprecatedCastRemotingConnectorFullSessionTest,
   }
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        DeprecatedCastRemotingConnectorFullSessionTest,
-                        ::testing::Values(SOURCE_TERMINATES,
-                                          MOJO_PIPE_CLOSES,
-                                          ROUTE_TERMINATES,
-                                          EXTERNAL_FAILURE,
-                                          USER_DISABLED));
+INSTANTIATE_TEST_SUITE_P(,
+                         DeprecatedCastRemotingConnectorFullSessionTest,
+                         ::testing::Values(SOURCE_TERMINATES,
+                                           MOJO_PIPE_CLOSES,
+                                           ROUTE_TERMINATES,
+                                           EXTERNAL_FAILURE,
+                                           USER_DISABLED));

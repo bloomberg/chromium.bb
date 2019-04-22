@@ -28,6 +28,7 @@
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_param.h"
 #include "third_party/blink/renderer/platform/audio/audio_bus.h"
@@ -39,14 +40,14 @@ class AudioNodeInput;
 
 // AudioNodeOutput represents a single output for an AudioNode.
 // It may be connected to one or more AudioNodeInputs.
-class AudioNodeOutput final {
+class MODULES_EXPORT AudioNodeOutput final {
   USING_FAST_MALLOC(AudioNodeOutput);
 
  public:
   // It's OK to pass 0 for numberOfChannels in which case
   // setNumberOfChannels() must be called later on.
-  static std::unique_ptr<AudioNodeOutput> Create(AudioHandler*,
-                                                 unsigned number_of_channels);
+  AudioNodeOutput(AudioHandler*, unsigned number_of_channels);
+
   void Dispose();
 
   // Causes our AudioNode to process if it hasn't already for this render
@@ -69,7 +70,6 @@ class AudioNodeOutput final {
   void DisconnectAll();
 
   // Disconnect a specific input or AudioParam.
-  void DisconnectInput(AudioNodeInput&);
   void DisconnectAudioParam(AudioParamHandler&);
 
   void SetNumberOfChannels(unsigned);
@@ -77,10 +77,6 @@ class AudioNodeOutput final {
   bool IsChannelCountKnown() const { return NumberOfChannels() > 0; }
 
   bool IsConnected() { return FanOutCount() > 0 || ParamFanOutCount() > 0; }
-
-  // Probe if the output node is connected with a certain input or AudioParam
-  bool IsConnectedToInput(AudioNodeInput&);
-  bool IsConnectedToAudioParam(AudioParamHandler&);
 
   // Disable/Enable happens when there are still JavaScript references to a
   // node, but it has otherwise "finished" its work.  For example, when a note
@@ -95,26 +91,15 @@ class AudioNodeOutput final {
   void UpdateRenderingState();
 
  private:
-  AudioNodeOutput(AudioHandler*, unsigned number_of_channels);
   // Can be called from any thread.
   AudioHandler& Handler() const { return handler_; }
   DeferredTaskHandler& GetDeferredTaskHandler() const {
-    return handler_.Context()->GetDeferredTaskHandler();
+    return handler_.GetDeferredTaskHandler();
   }
 
   // This reference is safe because the AudioHandler owns this AudioNodeOutput
   // object.
   AudioHandler& handler_;
-
-  friend class AudioNodeInput;
-  friend class AudioParamHandler;
-
-  // These are called from AudioNodeInput.
-  // They must be called with the context's graph lock.
-  void AddInput(AudioNodeInput&);
-  void RemoveInput(AudioNodeInput&);
-  void AddParam(AudioParamHandler&);
-  void RemoveParam(AudioParamHandler&);
 
   // fanOutCount() is the number of AudioNodeInputs that we're connected to.
   // This method should not be called in audio thread rendering code, instead
@@ -179,6 +164,8 @@ class AudioNodeOutput final {
   // This collection of raw pointers is safe because they are retained by
   // AudioParam objects retained by m_connectedParams of the owner AudioNode.
   HashSet<AudioParamHandler*> params_;
+
+  friend class AudioNodeWiring;
 };
 
 }  // namespace blink

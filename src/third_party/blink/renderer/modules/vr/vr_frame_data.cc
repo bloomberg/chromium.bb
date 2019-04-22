@@ -165,7 +165,7 @@ bool MatrixInvert(DOMFloat32Array* out_array) {
   out[15] = (a20 * b03 - a21 * b01 + a22 * b00) * det;
 
   return true;
-};
+}
 
 VRFrameData::VRFrameData() {
   left_projection_matrix_ = DOMFloat32Array::Create(16);

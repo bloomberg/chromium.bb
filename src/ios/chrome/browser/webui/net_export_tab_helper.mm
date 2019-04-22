@@ -33,3 +33,5 @@ NetExportTabHelper::~NetExportTabHelper() = default;
 void NetExportTabHelper::ShowMailComposer(ShowMailComposerContext* context) {
   [delegate_ netExportTabHelper:this showMailComposerWithContext:context];
 }
+
+WEB_STATE_USER_DATA_KEY_IMPL(NetExportTabHelper)

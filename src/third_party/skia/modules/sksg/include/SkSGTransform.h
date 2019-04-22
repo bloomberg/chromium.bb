@@ -11,61 +11,100 @@
 #include "SkSGEffectNode.h"
 
 #include "SkMatrix.h"
+#include "SkMatrix44.h"
 
 namespace sksg {
 
 /**
- * Concrete node, wrapping an SkMatrix, with an optional parent Matrix (to allow chaining):
- *
- *    M' = parent x M
+ * Transformations base class.
  */
-class Matrix : public Node {
+class Transform : public Node {
 public:
-    static sk_sp<Matrix> Make(const SkMatrix& m, sk_sp<Matrix> parent = nullptr);
-
-    SG_ATTRIBUTE(Matrix, SkMatrix, fMatrix)
-
-    virtual const SkMatrix& getTotalMatrix() const;
+    // Compose T = A x B
+    static sk_sp<Transform> MakeConcat(sk_sp<Transform> a, sk_sp<Transform> b);
 
 protected:
-    explicit Matrix(const SkMatrix&);
+    Transform();
 
-    SkRect onRevalidate(InvalidationController*, const SkMatrix&) override;
+    virtual bool is44() const = 0;
+
+    virtual SkMatrix   asMatrix  () const = 0;
+    virtual SkMatrix44 asMatrix44() const = 0;
 
 private:
-    SkMatrix fMatrix;
+    friend class TransformPriv;
 
-    typedef Node INHERITED;
+    using INHERITED = Node;
 };
 
 /**
- * Concrete Effect node, binding a Matrix to a RenderNode.
+ * Concrete, matrix-backed Transform.
+ *
+ * Supported instantiations: SkMatrix, SkMatrix44.
+ *
+ * Sample use:
+ *
+ *   auto m33 = Matrix<SkMatrix>::Make(SkMatrix::I());
+ *   ...
+ *   m33->setMatrix(SkMatrix::MakeTrans(10, 10));
+ *
  */
-class Transform final : public EffectNode {
+template <typename T>
+class Matrix final : public Transform {
 public:
-    static sk_sp<Transform> Make(sk_sp<RenderNode> child, sk_sp<Matrix> matrix) {
-        return child && matrix
-            ? sk_sp<Transform>(new Transform(std::move(child), std::move(matrix)))
+    template <typename = std::enable_if<std::is_same<T, SkMatrix  >::value ||
+                                        std::is_same<T, SkMatrix44>::value>>
+    static sk_sp<Matrix> Make(const T& m) { return sk_sp<Matrix>(new Matrix(m)); }
+
+    SG_ATTRIBUTE(Matrix, T, fMatrix)
+
+protected:
+    explicit Matrix(const T& m) : fMatrix(m) {}
+
+    SkRect onRevalidate(InvalidationController*, const SkMatrix&) override {
+        return SkRect::MakeEmpty();
+    }
+
+    bool is44() const override { return std::is_same<T, SkMatrix44>::value; }
+
+    SkMatrix   asMatrix  () const override { return fMatrix; }
+    SkMatrix44 asMatrix44() const override { return fMatrix; }
+
+private:
+    T fMatrix;
+
+    using INHERITED = Transform;
+};
+
+/**
+ * Concrete Effect node, binding a Transform to a RenderNode.
+ */
+class TransformEffect final : public EffectNode {
+public:
+    static sk_sp<TransformEffect> Make(sk_sp<RenderNode> child, sk_sp<Transform> transform) {
+        return child && transform
+            ? sk_sp<TransformEffect>(new TransformEffect(std::move(child), std::move(transform)))
             : nullptr;
     }
 
-    static sk_sp<Transform> Make(sk_sp<RenderNode> child, const SkMatrix& m) {
-        return Make(std::move(child), Matrix::Make(m));
+    static sk_sp<TransformEffect> Make(sk_sp<RenderNode> child, const SkMatrix& m) {
+        return Make(std::move(child), Matrix<SkMatrix>::Make(m));
     }
 
-    ~Transform() override;
+    ~TransformEffect() override;
 
-    const sk_sp<Matrix>& getMatrix() const { return fMatrix; }
+    const sk_sp<Transform>& getTransform() const { return fTransform; }
 
 protected:
     void onRender(SkCanvas*, const RenderContext*) const override;
+    const RenderNode* onNodeAt(const SkPoint&)     const override;
 
     SkRect onRevalidate(InvalidationController*, const SkMatrix&) override;
 
 private:
-    Transform(sk_sp<RenderNode>, sk_sp<Matrix>);
+    TransformEffect(sk_sp<RenderNode>, sk_sp<Transform>);
 
-    const sk_sp<Matrix> fMatrix;
+    const sk_sp<Transform> fTransform;
 
     typedef EffectNode INHERITED;
 };

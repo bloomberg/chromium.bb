@@ -15,7 +15,8 @@
 enum MouseEventType {
   kPressedMouseEventType = 0,
   kReleasedMouseEventType,
-  kMovedMouseEventType
+  kMovedMouseEventType,
+  kPauseMouseEventType
 };
 
 // Specifies the mouse buttons.
@@ -28,13 +29,21 @@ enum MouseButton {
   kNoneMouseButton
 };
 
+// Specifies the event's pointer type.
+enum PointerType { kMouse = 0, kPen };
+
+// Specifies the origin of pointer location.
+enum OriginType { kViewPort, kPointer, kElement };
+
 struct MouseEvent {
   MouseEvent(MouseEventType type,
              MouseButton button,
              int x,
              int y,
              int modifiers,
+             int buttons,
              int click_count);
+  MouseEvent(const MouseEvent& other);
   ~MouseEvent();
 
   MouseEventType type;
@@ -42,8 +51,12 @@ struct MouseEvent {
   int x;
   int y;
   int modifiers;
+  int buttons;
   // |click_count| should not be negative.
   int click_count;
+  OriginType origin;
+  std::string element_id;
+  PointerType pointer_type;
 };
 
 // Specifies the type of the touch event.
@@ -51,17 +64,28 @@ enum TouchEventType {
   kTouchStart = 0,
   kTouchEnd,
   kTouchMove,
+  kTouchCancel,
+  kPause
 };
 
 struct TouchEvent {
   TouchEvent(TouchEventType type,
              int x,
              int y);
+  TouchEvent(const TouchEvent& other);
   ~TouchEvent();
 
   TouchEventType type;
   int x;
   int y;
+  OriginType origin;
+  double radiusX;
+  double radiusY;
+  double rotationAngle;
+  double force;
+  int id;
+  std::string element_id;
+  bool dispatch;
 };
 
 // Specifies the type of the keyboard event.
@@ -70,6 +94,7 @@ enum KeyEventType {
   kKeyUpEventType,
   kRawKeyDownEventType,
   kCharEventType,
+  kPauseEventType,
   kInvalidEventType  // used by KeyEventBuilder
 };
 
@@ -96,6 +121,9 @@ struct KeyEvent {
   std::string unmodified_text;
   std::string key;
   ui::KeyboardCode key_code;
+  int location;
+  std::string code;
+  bool is_from_action;
 };
 
 class KeyEventBuilder {
@@ -109,6 +137,10 @@ class KeyEventBuilder {
   KeyEventBuilder* SetText(const std::string& unmodified_text,
                            const std::string& modified_text);
   KeyEventBuilder* SetKeyCode(ui::KeyboardCode key_code);
+  KeyEventBuilder* SetLocation(int location);
+  KeyEventBuilder* SetDefaultKey(const std::string& key);
+  KeyEventBuilder* SetCode(const std::string& key);
+  KeyEventBuilder* SetIsFromAction();
   KeyEvent Build();
   void Generate(std::list<KeyEvent>* key_events);
 

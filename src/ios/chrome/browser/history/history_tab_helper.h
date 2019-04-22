@@ -12,7 +12,7 @@
 #include "components/history/core/browser/history_context.h"
 #include "components/history/core/browser/history_types.h"
 #include "ios/web/public/web_state/web_state_observer.h"
-#include "ios/web/public/web_state/web_state_user_data.h"
+#import "ios/web/public/web_state/web_state_user_data.h"
 
 namespace history {
 class HistoryService;
@@ -82,6 +82,8 @@ class HistoryTabHelper : public history::Context,
   // a certain time period after the page load is complete will be saved to the
   // history system. Only applies to the main frame of the page.
   base::TimeTicks last_load_completion_;
+
+  WEB_STATE_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(HistoryTabHelper);
 };

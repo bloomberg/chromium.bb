@@ -296,8 +296,8 @@ class PlatformSensorAndProviderTestWin : public ::testing::Test {
           if (this->run_loop_) {
             scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
                 FROM_HERE,
-                base::Bind(&PlatformSensorAndProviderTestWin::QuitInnerLoop,
-                           base::Unretained(this)));
+                base::BindOnce(&PlatformSensorAndProviderTestWin::QuitInnerLoop,
+                               base::Unretained(this)));
           }
           return S_OK;
         }));
@@ -310,8 +310,8 @@ class PlatformSensorAndProviderTestWin : public ::testing::Test {
           if (this->run_loop_) {
             scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
                 FROM_HERE,
-                base::Bind(&PlatformSensorAndProviderTestWin::QuitInnerLoop,
-                           base::Unretained(this)));
+                base::BindOnce(&PlatformSensorAndProviderTestWin::QuitInnerLoop,
+                               base::Unretained(this)));
           }
           return S_OK;
         }));

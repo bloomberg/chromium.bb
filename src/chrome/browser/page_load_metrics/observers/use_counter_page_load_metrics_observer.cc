@@ -4,59 +4,32 @@
 
 #include "chrome/browser/page_load_metrics/observers/use_counter_page_load_metrics_observer.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/page_load_metrics/observers/use_counter/ukm_features.h"
+#include "content/public/browser/render_frame_host.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 
-using WebFeature = blink::mojom::WebFeature;
 using Features = page_load_metrics::mojom::PageLoadFeatures;
+using UkmFeatureList = UseCounterPageLoadMetricsObserver::UkmFeatureList;
+using WebFeature = blink::mojom::WebFeature;
+using WebFeatureBitSet =
+    std::bitset<static_cast<size_t>(WebFeature::kNumberOfFeatures)>;
+using CSSSampleId = int32_t;
 
-UseCounterPageLoadMetricsObserver::UseCounterPageLoadMetricsObserver() {}
-UseCounterPageLoadMetricsObserver::~UseCounterPageLoadMetricsObserver() {}
+namespace {
 
-page_load_metrics::PageLoadMetricsObserver::ObservePolicy
-UseCounterPageLoadMetricsObserver::OnCommit(
-    content::NavigationHandle* navigation_handle,
-    ukm::SourceId source_id) {
-  // Verify that no feature usage is observed before commit
-  DCHECK(features_recorded_.count() <= 0);
-  ukm::builders::Blink_UseCounter(source_id)
-      .SetFeature(static_cast<int64_t>(WebFeature::kPageVisits))
-      .Record(ukm::UkmRecorder::Get());
-  UMA_HISTOGRAM_ENUMERATION(internal::kFeaturesHistogramName,
-                            WebFeature::kPageVisits,
-                            WebFeature::kNumberOfFeatures);
-  UMA_HISTOGRAM_ENUMERATION(internal::kCssPropertiesHistogramName,
-                            blink::mojom::kTotalPagesMeasuredCSSSampleId,
-                            blink::mojom::kMaximumCSSSampleId);
-  UMA_HISTOGRAM_ENUMERATION(internal::kAnimatedCssPropertiesHistogramName,
-                            blink::mojom::kTotalPagesMeasuredCSSSampleId,
-                            blink::mojom::kMaximumCSSSampleId);
-  features_recorded_.set(static_cast<size_t>(WebFeature::kPageVisits));
-  return CONTINUE_OBSERVING;
-}
-
-void UseCounterPageLoadMetricsObserver::OnFeaturesUsageObserved(
-    const Features& features,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  for (WebFeature feature : features.features) {
-    // Verify that kPageVisits is observed at most once per observer.
-    if (feature == WebFeature::kPageVisits) {
-      mojo::ReportBadMessage(
-          "kPageVisits should not be passed to "
-          "PageLoadMetricsObserver::OnFeaturesUsageObserved");
-      return;
-    }
-    // The usage of each feature should be only measured once. With OOPIF,
-    // multiple child frames may send the same feature to the browser, skip if
-    // feature has already been measured.
-    if (features_recorded_.test(static_cast<size_t>(feature)))
+void RecordUkmFeatures(const UkmFeatureList& features,
+                       const WebFeatureBitSet& features_recorded,
+                       const WebFeatureBitSet& main_frame_features_recorded,
+                       std::set<size_t>* ukm_features_recorded,
+                       ukm::SourceId source_id) {
+  for (auto feature : features) {
+    if (!features_recorded.test(static_cast<size_t>(feature)))
       continue;
-    UMA_HISTOGRAM_ENUMERATION(internal::kFeaturesHistogramName, feature,
-                              WebFeature::kNumberOfFeatures);
-    features_recorded_.set(static_cast<size_t>(feature));
+    if (ukm_features_recorded->find(static_cast<size_t>(feature)) !=
+        ukm_features_recorded->end())
+      continue;
     // TODO(kochi): https://crbug.com/806671 https://843080
     // as ElementCreateShadowRoot is ~8% and
     // DocumentRegisterElement is ~5% as of May, 2018, to meet UKM's data
@@ -67,11 +40,122 @@ void UseCounterPageLoadMetricsObserver::OnFeaturesUsageObserved(
          feature == WebFeature::kDocumentRegisterElement) &&
         base::RandGenerator(kSamplingFactor) != 0)
       continue;
-    if (IsAllowedUkmFeature(feature)) {
-      ukm::builders::Blink_UseCounter(extra_info.source_id)
-          .SetFeature(static_cast<int64_t>(feature))
-          .Record(ukm::UkmRecorder::Get());
+
+    ukm::builders::Blink_UseCounter(source_id)
+        .SetFeature(static_cast<size_t>(feature))
+        .SetIsMainFrameFeature(
+            main_frame_features_recorded.test(static_cast<size_t>(feature)))
+        .Record(ukm::UkmRecorder::Get());
+    ukm_features_recorded->insert(static_cast<size_t>(feature));
+  }
+}
+
+// It's always recommended to use the deprecation API in blink. If the feature
+// was logged from the browser (or from both blink and the browser) where the
+// deprecation API is not available, use this method for the console warning.
+// Note that this doesn't generate the deprecation report.
+void PossiblyWarnFeatureDeprecation(content::RenderFrameHost* rfh,
+                                    WebFeature feature) {
+  switch (feature) {
+    case WebFeature::kDownloadInSandboxWithoutUserGesture:
+      rfh->AddMessageToConsole(
+          blink::mojom::ConsoleMessageLevel::kWarning,
+          "[Deprecation] Download in sandbox without user activation is "
+          "deprecated and will be removed in M76, around July 2019. You may "
+          "consider adding "
+          "'allow-downloads-without-user-activation' to the sandbox attribute "
+          "list. See https://www.chromestatus.com/feature/5706745674465280 for "
+          "more details.");
+      return;
+    case WebFeature::kDownloadInAdFrameWithoutUserGesture:
+      rfh->AddMessageToConsole(
+          blink::mojom::ConsoleMessageLevel::kWarning,
+          "[Deprecation] Download in ad frame without user activation is "
+          "deprecated and will be removed in M76, around July 2019. See "
+          "https://www.chromestatus.com/feature/6311883621531648 for more "
+          "details.");
+      return;
+
+    default:
+      return;
+  }
+}
+
+void RecordMainFrameFeature(blink::mojom::WebFeature feature) {
+  UMA_HISTOGRAM_ENUMERATION(internal::kFeaturesHistogramMainFrameName, feature);
+}
+
+void RecordFeature(blink::mojom::WebFeature feature) {
+  UMA_HISTOGRAM_ENUMERATION(internal::kFeaturesHistogramName, feature);
+}
+
+void RecordCssProperty(CSSSampleId property) {
+  UMA_HISTOGRAM_ENUMERATION(internal::kCssPropertiesHistogramName, property,
+                            blink::mojom::kMaximumCSSSampleId);
+}
+
+void RecordAnimatedCssProperty(CSSSampleId animated_property) {
+  UMA_HISTOGRAM_ENUMERATION(internal::kAnimatedCssPropertiesHistogramName,
+                            animated_property,
+                            blink::mojom::kMaximumCSSSampleId);
+}
+
+}  // namespace
+
+UseCounterPageLoadMetricsObserver::UseCounterPageLoadMetricsObserver() {}
+UseCounterPageLoadMetricsObserver::~UseCounterPageLoadMetricsObserver() {}
+
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+UseCounterPageLoadMetricsObserver::OnCommit(
+    content::NavigationHandle* navigation_handle,
+    ukm::SourceId source_id) {
+  // Verify that no feature usage is observed before commit
+  DCHECK_LE(features_recorded_.count(), 0ul);
+  DCHECK_LE(main_frame_features_recorded_.count(), 0ul);
+
+  ukm::builders::Blink_UseCounter(source_id)
+      .SetFeature(static_cast<size_t>(WebFeature::kPageVisits))
+      .SetIsMainFrameFeature(1)
+      .Record(ukm::UkmRecorder::Get());
+  ukm_features_recorded_.insert(static_cast<size_t>(WebFeature::kPageVisits));
+  RecordFeature(WebFeature::kPageVisits);
+  RecordMainFrameFeature(WebFeature::kPageVisits);
+  RecordCssProperty(blink::mojom::kTotalPagesMeasuredCSSSampleId);
+  RecordAnimatedCssProperty(blink::mojom::kTotalPagesMeasuredCSSSampleId);
+  features_recorded_.set(static_cast<size_t>(WebFeature::kPageVisits));
+  main_frame_features_recorded_.set(
+      static_cast<size_t>(WebFeature::kPageVisits));
+  return CONTINUE_OBSERVING;
+}
+
+void UseCounterPageLoadMetricsObserver::OnFeaturesUsageObserved(
+    content::RenderFrameHost* rfh,
+    const Features& features,
+    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+  for (WebFeature feature : features.features) {
+    // Verify that kPageVisits is observed at most once per observer.
+    if (feature == WebFeature::kPageVisits) {
+      mojo::ReportBadMessage(
+          "kPageVisits should not be passed to "
+          "PageLoadMetricsObserver::OnFeaturesUsageObserved");
+      return;
     }
+
+    // Record feature usage in main frame.
+    // If a feature is already recorded in the main frame, it is also recorded
+    // on the page.
+    if (main_frame_features_recorded_.test(static_cast<size_t>(feature)))
+      continue;
+    if (rfh->GetParent() == nullptr) {
+      RecordMainFrameFeature(feature);
+      main_frame_features_recorded_.set(static_cast<size_t>(feature));
+    }
+
+    if (features_recorded_.test(static_cast<size_t>(feature)))
+      continue;
+    PossiblyWarnFeatureDeprecation(rfh, feature);
+    RecordFeature(feature);
+    features_recorded_.set(static_cast<size_t>(feature));
   }
 
   for (int css_property : features.css_properties) {
@@ -101,8 +185,7 @@ void UseCounterPageLoadMetricsObserver::OnFeaturesUsageObserved(
     // acquire/release of a base::Lock to protect the map during each update.
     // Overal it is still better to use a vector histogram here since it is
     // faster to access and merge and uses about same amount of memory.
-    UMA_HISTOGRAM_ENUMERATION(internal::kCssPropertiesHistogramName,
-                              css_property, blink::mojom::kMaximumCSSSampleId);
+    RecordCssProperty(css_property);
     css_properties_recorded_.set(css_property);
   }
 
@@ -126,11 +209,36 @@ void UseCounterPageLoadMetricsObserver::OnFeaturesUsageObserved(
       continue;
     // See comments above (in the css property section) for reasoning of using
     // a vector histogram here instead of a sparse histogram.
-    UMA_HISTOGRAM_ENUMERATION(internal::kAnimatedCssPropertiesHistogramName,
-                              animated_css_property,
-                              blink::mojom::kMaximumCSSSampleId);
+    RecordAnimatedCssProperty(animated_css_property);
     animated_css_properties_recorded_.set(animated_css_property);
   }
+}
+
+void UseCounterPageLoadMetricsObserver::OnComplete(
+    const page_load_metrics::mojom::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+  RecordUkmFeatures(GetAllowedUkmFeatures(), features_recorded_,
+                    main_frame_features_recorded_, &ukm_features_recorded_,
+                    extra_info.source_id);
+}
+
+void UseCounterPageLoadMetricsObserver::OnFailedProvisionalLoad(
+    const page_load_metrics::FailedProvisionalLoadInfo&
+        failed_provisional_load_info,
+    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+  RecordUkmFeatures(GetAllowedUkmFeatures(), features_recorded_,
+                    main_frame_features_recorded_, &ukm_features_recorded_,
+                    extra_info.source_id);
+}
+
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+UseCounterPageLoadMetricsObserver::FlushMetricsOnAppEnterBackground(
+    const page_load_metrics::mojom::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+  RecordUkmFeatures(GetAllowedUkmFeatures(), features_recorded_,
+                    main_frame_features_recorded_, &ukm_features_recorded_,
+                    extra_info.source_id);
+  return CONTINUE_OBSERVING;
 }
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy

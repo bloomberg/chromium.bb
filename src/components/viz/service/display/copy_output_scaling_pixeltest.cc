@@ -155,7 +155,7 @@ class CopyOutputScalingPixelTest
           base::BindOnce(
               [](bool* dummy_ran,
                  std::unique_ptr<CopyOutputResult>* test_result,
-                 const base::Closure& quit_closure,
+                 const base::RepeatingClosure& quit_closure,
                  std::unique_ptr<CopyOutputResult> result_from_renderer) {
                 EXPECT_TRUE(*dummy_ran);
                 *test_result = std::move(result_from_renderer);
@@ -297,14 +297,21 @@ using GLCopyOutputScalingPixelTest = CopyOutputScalingPixelTest<GLRenderer>;
 TEST_P(GLCopyOutputScalingPixelTest, ScaledCopyOfDrawnFrame) {
   RunTest();
 }
-INSTANTIATE_TEST_CASE_P(, GLCopyOutputScalingPixelTest, kParameters);
+INSTANTIATE_TEST_SUITE_P(, GLCopyOutputScalingPixelTest, kParameters);
+
+// TODO(crbug.com/939442): Enable this test for SkiaRenderer.
+using SkiaCopyOutputScalingPixelTest = CopyOutputScalingPixelTest<SkiaRenderer>;
+TEST_P(SkiaCopyOutputScalingPixelTest, DISABLED_ScaledCopyOfDrawnFrame) {
+  RunTest();
+}
+INSTANTIATE_TEST_SUITE_P(, SkiaCopyOutputScalingPixelTest, kParameters);
 
 using SoftwareCopyOutputScalingPixelTest =
     CopyOutputScalingPixelTest<SoftwareRenderer>;
 TEST_P(SoftwareCopyOutputScalingPixelTest, ScaledCopyOfDrawnFrame) {
   RunTest();
 }
-INSTANTIATE_TEST_CASE_P(, SoftwareCopyOutputScalingPixelTest, kParameters);
+INSTANTIATE_TEST_SUITE_P(, SoftwareCopyOutputScalingPixelTest, kParameters);
 
 }  // namespace
 }  // namespace viz

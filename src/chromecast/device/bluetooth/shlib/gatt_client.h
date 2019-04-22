@@ -19,6 +19,8 @@ class GattClient {
   virtual void SetDelegate(Gatt::Client::Delegate* delegate) = 0;
   virtual bool Connect(const Addr& addr) = 0;
   virtual bool Disconnect(const Addr& addr) = 0;
+  virtual bool CreateBond(const Addr& addr) = 0;
+  virtual bool RemoveBond(const Addr& addr) = 0;
   virtual bool ReadCharacteristic(const Addr& addr,
                                   const Gatt::Characteristic& characteristic,
                                   Gatt::Client::AuthReq auth_req) = 0;

@@ -137,7 +137,7 @@ void AuthService::StartAuthentication(const AuthStatusCallback& callback) {
   if (HasAccessToken()) {
     // We already have access token. Give it back to the caller asynchronously.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, HTTP_SUCCESS, access_token_));
+        FROM_HERE, base::BindOnce(callback, HTTP_SUCCESS, access_token_));
   } else if (HasRefreshToken()) {
     // We have refresh token, let's get an access token.
     new AuthRequest(identity_manager_, account_id_, url_loader_factory_,
@@ -146,7 +146,7 @@ void AuthService::StartAuthentication(const AuthStatusCallback& callback) {
                     scopes_);
   } else {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, DRIVE_NOT_READY, std::string()));
+        FROM_HERE, base::BindOnce(callback, DRIVE_NOT_READY, std::string()));
   }
 }
 
@@ -201,8 +201,7 @@ void AuthService::RemoveObserver(AuthServiceObserver* observer) {
 }
 
 void AuthService::OnRefreshTokenUpdatedForAccount(
-    const AccountInfo& account_info,
-    bool is_valid) {
+    const CoreAccountInfo& account_info) {
   if (account_info.account_id == account_id_)
     OnHandleRefreshToken(true);
 }

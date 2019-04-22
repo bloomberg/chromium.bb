@@ -7,13 +7,19 @@
 namespace android_webview {
 
 AwContentGpuClient::AwContentGpuClient(
-    const GetSyncPointManagerCallback& sync_point_manager_callback)
-    : sync_point_manager_callback_(sync_point_manager_callback) {}
+    const GetSyncPointManagerCallback& sync_point_manager_callback,
+    const GetSharedImageManagerCallback& shared_image_manager_callback)
+    : sync_point_manager_callback_(sync_point_manager_callback),
+      shared_image_manager_callback_(shared_image_manager_callback) {}
 
 AwContentGpuClient::~AwContentGpuClient() {}
 
 gpu::SyncPointManager* AwContentGpuClient::GetSyncPointManager() {
   return sync_point_manager_callback_.Run();
+}
+
+gpu::SharedImageManager* AwContentGpuClient::GetSharedImageManager() {
+  return shared_image_manager_callback_.Run();
 }
 
 }  // namespace android_webview

@@ -4,6 +4,7 @@
 
 #include "ui/aura/test/aura_test_helper.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "ui/aura/client/default_capture_client.h"
@@ -26,8 +27,8 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_targeter.h"
-#include "ui/base/ime/input_method_factory.h"
-#include "ui/base/ime/input_method_initializer.h"
+#include "ui/base/ime/init/input_method_factory.h"
+#include "ui/base/ime/init/input_method_initializer.h"
 #include "ui/base/platform_window_defaults.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer_animator.h"

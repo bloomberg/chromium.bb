@@ -9,6 +9,7 @@
 
 #include "base/android/callback_android.h"
 #include "base/android/jni_string.h"
+#include "base/bind.h"
 #include "base/callback.h"
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
@@ -66,8 +67,7 @@ static jlong JNI_ContextualSuggestionsBridge_Init(
 }
 
 static jboolean JNI_ContextualSuggestionsBridge_IsDisabledByEnterprisePolicy(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& clazz) {
+    JNIEnv* env) {
   Profile* profile = ProfileManager::GetLastUsedProfile()->GetOriginalProfile();
   if (!profile)
     return false;
@@ -115,30 +115,27 @@ void ContextualSuggestionsBridge::FetchSuggestions(
                           ScopedJavaGlobalRef<jobject>(j_callback)));
 }
 
-void ContextualSuggestionsBridge::FetchSuggestionImage(
+base::android::ScopedJavaLocalRef<jstring>
+ContextualSuggestionsBridge::GetImageUrl(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jstring>& j_suggestion_id,
-    const JavaParamRef<jobject>& j_callback) {
+    const JavaParamRef<jstring>& j_suggestion_id) {
   std::string suggestion_id(ConvertJavaStringToUTF8(env, j_suggestion_id));
-  service_proxy_->FetchContextualSuggestionImage(
-      suggestion_id,
-      base::BindOnce(&ContextualSuggestionsBridge::OnImageFetched,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     ScopedJavaGlobalRef<jobject>(j_callback)));
+  std::string image_url =
+      service_proxy_->GetContextualSuggestionImageUrl(suggestion_id);
+  return image_url.empty() ? nullptr : ConvertUTF8ToJavaString(env, image_url);
 }
 
-void ContextualSuggestionsBridge::FetchSuggestionFavicon(
+base::android::ScopedJavaLocalRef<jstring>
+ContextualSuggestionsBridge::GetFaviconUrl(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jstring>& j_suggestion_id,
-    const JavaParamRef<jobject>& j_callback) {
+    const JavaParamRef<jstring>& j_suggestion_id) {
   std::string suggestion_id(ConvertJavaStringToUTF8(env, j_suggestion_id));
-  service_proxy_->FetchContextualSuggestionFavicon(
-      suggestion_id,
-      base::BindOnce(&ContextualSuggestionsBridge::OnImageFetched,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     ScopedJavaGlobalRef<jobject>(j_callback)));
+  std::string favicon_url =
+      service_proxy_->GetContextualSuggestionFaviconUrl(suggestion_id);
+  return favicon_url.empty() ? nullptr
+                             : ConvertUTF8ToJavaString(env, favicon_url);
 }
 
 void ContextualSuggestionsBridge::ClearState(JNIEnv* env,

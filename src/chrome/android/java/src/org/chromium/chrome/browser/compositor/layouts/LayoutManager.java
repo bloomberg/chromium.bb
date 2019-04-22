@@ -36,21 +36,24 @@ import org.chromium.chrome.browser.compositor.scene_layer.ToolbarSceneLayer;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManagementDelegate;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
+import org.chromium.chrome.browser.native_page.NativePageFactory;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.Tab.TabHidingType;
+import org.chromium.chrome.browser.tab.TabFullscreenHandler;
 import org.chromium.chrome.browser.tab.TabThemeColorHelper;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
+import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
-import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
+import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.base.SPenSupport;
@@ -88,9 +91,12 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
     // External Dependencies
     private TabModelSelector mTabModelSelector;
 
-    private TabModelObserver mTabModelObserver;
     private TabModelSelectorObserver mTabModelSelectorObserver;
     private TabModelSelectorTabObserver mTabModelSelectorTabObserver;
+
+    // An observer for watching TabModelFilters changes events.
+    private TabModelObserver mTabModelFilterObserver;
+
     private ViewGroup mContentContainer;
 
     // External Observers
@@ -139,35 +145,33 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
      * need to override any related calls to add new functionality */
     protected class LayoutManagerTabModelObserver extends EmptyTabModelObserver {
         @Override
-        public void didSelectTab(Tab tab, @TabModel.TabSelectionType int type, int lastId) {
+        public void didSelectTab(Tab tab, @TabSelectionType int type, int lastId) {
             if (tab.getId() != lastId) tabSelected(tab.getId(), lastId, tab.isIncognito());
         }
 
         @Override
-        public void willAddTab(Tab tab, @TabModel.TabLaunchType int type) {
+        public void willAddTab(Tab tab, @TabLaunchType int type) {
             // Open the new tab
-            if (type == TabModel.TabLaunchType.FROM_RESTORE
-                    || type == TabModel.TabLaunchType.FROM_REPARENTING
-                    || type == TabModel.TabLaunchType.FROM_EXTERNAL_APP
-                    || type == TabModel.TabLaunchType.FROM_LAUNCHER_SHORTCUT)
+            if (type == TabLaunchType.FROM_RESTORE || type == TabLaunchType.FROM_REPARENTING
+                    || type == TabLaunchType.FROM_EXTERNAL_APP
+                    || type == TabLaunchType.FROM_LAUNCHER_SHORTCUT)
                 return;
 
             tabCreating(getTabModelSelector().getCurrentTabId(), tab.getUrl(), tab.isIncognito());
         }
 
         @Override
-        public void didAddTab(Tab tab, @TabModel.TabLaunchType int launchType) {
+        public void didAddTab(Tab tab, @TabLaunchType int launchType) {
             int tabId = tab.getId();
-            if (launchType == TabModel.TabLaunchType.FROM_RESTORE) {
+            if (launchType == TabLaunchType.FROM_RESTORE) {
                 getActiveLayout().onTabRestored(time(), tabId);
             } else {
                 boolean incognito = tab.isIncognito();
-                boolean willBeSelected =
-                        launchType != TabModel.TabLaunchType.FROM_LONGPRESS_BACKGROUND
+                boolean willBeSelected = launchType != TabLaunchType.FROM_LONGPRESS_BACKGROUND
                         || (!getTabModelSelector().isIncognitoSelected() && incognito);
                 float lastTapX = LocalizationUtils.isLayoutRtl() ? mHost.getWidth() * mPxToDp : 0.f;
                 float lastTapY = 0.f;
-                if (launchType != TabModel.TabLaunchType.FROM_CHROME_UI) {
+                if (launchType != TabLaunchType.FROM_CHROME_UI) {
                     float heightDelta = mHost.getHeightMinusBrowserControls() * mPxToDp;
                     lastTapX = mPxToDp * mLastTapX;
                     lastTapY = mPxToDp * mLastTapY - heightDelta;
@@ -442,8 +446,9 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
         selector.addObserver(mTabModelSelectorObserver);
         selector.setCloseAllTabsDelegate(this);
 
-        mTabModelObserver = createTabModelObserver();
-        for (TabModel model : selector.getModels()) model.addObserver(mTabModelObserver);
+        mTabModelFilterObserver = createTabModelObserver();
+        getTabModelSelector().getTabModelFilterProvider().addTabModelFilterObserver(
+                mTabModelFilterObserver);
     }
 
     /**
@@ -454,14 +459,14 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
         mSceneChangeObservers.clear();
         if (mStaticLayout != null) mStaticLayout.destroy();
         if (mOverlayPanelManager != null) mOverlayPanelManager.destroy();
+        if (mEphemeralTabPanel != null) mEphemeralTabPanel.destroy();
         if (mTabModelSelectorTabObserver != null) mTabModelSelectorTabObserver.destroy();
         if (mTabModelSelectorObserver != null) {
             getTabModelSelector().removeObserver(mTabModelSelectorObserver);
         }
-        if (mTabModelObserver != null) {
-            for (TabModel model : getTabModelSelector().getModels()) {
-                model.removeObserver(mTabModelObserver);
-            }
+        if (mTabModelFilterObserver != null) {
+            getTabModelSelector().getTabModelFilterProvider().removeTabModelFilterObserver(
+                    mTabModelFilterObserver);
         }
     }
 
@@ -505,8 +510,7 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
     @Override
     public void releaseOverlayPanelContent() {
         if (getTabModelSelector() == null) return;
-        Tab tab = getTabModelSelector().getCurrentTab();
-        if (tab != null) tab.updateFullscreenEnabledState();
+        TabFullscreenHandler.updateEnabledState(getTabModelSelector().getCurrentTab());
     }
 
     /**
@@ -571,7 +575,7 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
      * @param originX        The x coordinate of the action that created this tab in dp.
      * @param originY        The y coordinate of the action that created this tab in dp.
      */
-    protected void tabCreated(int id, int sourceId, @TabModel.TabLaunchType int launchType,
+    protected void tabCreated(int id, int sourceId, @TabLaunchType int launchType,
             boolean incognito, boolean willBeSelected, float originX, float originY) {
         int newIndex = TabModelUtils.getTabIndexById(getTabModelSelector().getModel(incognito), id);
         getActiveLayout().onTabCreated(
@@ -645,15 +649,22 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
 
         boolean isNtp = tab.getNativePage() instanceof NewTabPage;
         boolean isLocationBarShownInNtp =
-                isNtp ? ((NewTabPage) tab.getNativePage()).isLocationBarShownInNTP() : false;
-        boolean needsUpdate = layoutTab.initFromHost(tab.getBackgroundColor(), tab.shouldStall(),
-                canUseLiveTexture, themeColor,
+                isNtp && ((NewTabPage) tab.getNativePage()).isLocationBarShownInNTP();
+
+        boolean needsUpdate = layoutTab.initFromHost(TabThemeColorHelper.getBackgroundColor(tab),
+                shouldStall(tab), canUseLiveTexture, ColorUtils.getToolbarSceneLayerBackground(tab),
                 ColorUtils.getTextBoxColorForToolbarBackground(
                         mContext.getResources(), isLocationBarShownInNtp, themeColor),
                 ColorUtils.getTextBoxAlphaForToolbarBackground(tab));
         if (needsUpdate) requestUpdate();
 
         mHost.requestRender();
+    }
+
+    // Whether the tab is ready to display or it should be faded in as it loads.
+    private static boolean shouldStall(Tab tab) {
+        return (tab.isFrozen() || tab.needsReload())
+                && !NativePageFactory.isNativePageUrl(tab.getUrl(), tab.isIncognito());
     }
 
     @Override
@@ -809,7 +820,8 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
 
         onViewportChanged();
         getActiveLayout().show(time(), animate);
-        mHost.setContentOverlayVisibility(getActiveLayout().shouldDisplayContentOverlay());
+        mHost.setContentOverlayVisibility(getActiveLayout().shouldDisplayContentOverlay(),
+                getActiveLayout().canHostBeFocusable());
         mHost.requestRender();
 
         // Notify observers about the new scene.
@@ -897,7 +909,7 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
         if (tab != null) mTabCache.put(tabId, tab);
     }
 
-    private int getOrientation() {
+    private @Orientation int getOrientation() {
         return mHost.getWidth() > mHost.getHeight() ? Orientation.LANDSCAPE : Orientation.PORTRAIT;
     }
 

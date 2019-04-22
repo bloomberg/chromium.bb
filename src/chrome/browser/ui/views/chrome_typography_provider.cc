@@ -15,7 +15,6 @@
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
-#include "ui/gfx/platform_font_win.h"
 #include "ui/native_theme/native_theme_win.h"
 #endif
 
@@ -26,14 +25,32 @@
 
 namespace {
 
-// If the default foreground color from the native theme isn't black, the rest
-// of the Harmony spec isn't going to work. Also skip Harmony if a Windows
-// High Contrast theme is enabled. One of the four standard High Contrast themes
-// in Windows 10 still has black text, but (since the user wants high contrast)
-// the grey text shades in Harmony should not be used.
+#if defined(OS_MACOSX)
+constexpr char kDefaultMonospacedTypeface[] = "Menlo";
+#elif defined(OS_WIN)
+constexpr char kDefaultMonospacedTypeface[] = "Consolas";
+#else
+constexpr char kDefaultMonospacedTypeface[] = "DejaVu Sans Mono";
+#endif
+constexpr char kUnspecifiedTypeface[] = "";
+
+// If the default foreground color from the native theme isn't black and dark
+// mode is not on the rest of the Harmony spec isn't going to work. Also skip
+// Harmony if a Windows High Contrast theme is enabled. One of the four standard
+// High Contrast themes in Windows 10 still has black text, but (since the user
+// wants high contrast) the grey text shades in Harmony should not be used.
 bool ShouldIgnoreHarmonySpec(const ui::NativeTheme& theme) {
+  // Mac provides users limited ways to customize the UI, including dark and
+  // high contrast modes; all these are addressed elsewhere, so there's no need
+  // for Mac to try to detect non-Harmony cases as Windows and Linux need to,
+  // and dark mode can interfere with the detection below.
+#if defined(OS_MACOSX)
+  return false;
+#else
   if (theme.UsesHighContrastColors())
     return true;
+  if (theme.SystemDarkModeEnabled())
+    return false;
 
   // TODO(pbos): Revisit this check. Both GG900 and black are considered
   // "default black" as the common theme uses GG900 as primary color.
@@ -42,6 +59,7 @@ bool ShouldIgnoreHarmonySpec(const ui::NativeTheme& theme) {
   const bool label_color_is_black =
       test_color == SK_ColorBLACK || test_color == gfx::kGoogleGrey900;
   return !label_color_is_black;
+#endif  // defined(OS_MACOSX)
 }
 
 // Returns a color for a possibly inverted or high-contrast OS color theme.
@@ -92,19 +110,18 @@ SkColor GetHarmonyTextColorForNonStandardNativeTheme(
 #if defined(OS_WIN)
 // static
 int ChromeTypographyProvider::GetPlatformFontHeight(int font_context) {
-  const bool direct_write_enabled =
-      gfx::PlatformFontWin::IsDirectWriteEnabled();
   const bool windows_10 = base::win::GetVersion() >= base::win::VERSION_WIN10;
   switch (font_context) {
     case CONTEXT_HEADLINE:
-      return windows_10 && direct_write_enabled ? 27 : 28;
+      return windows_10 ? 27 : 28;
     case views::style::CONTEXT_DIALOG_TITLE:
-      return windows_10 || !direct_write_enabled ? 20 : 21;
+      return windows_10 ? 20 : 21;
     case CONTEXT_BODY_TEXT_LARGE:
+    case CONTEXT_TAB_HOVER_CARD_TITLE:
     case views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT:
-      return direct_write_enabled ? 18 : 17;
+      return 18;
     case CONTEXT_BODY_TEXT_SMALL:
-      return windows_10 && direct_write_enabled ? 16 : 15;
+      return windows_10 ? 16 : 15;
   }
   NOTREACHED();
   return 0;
@@ -120,6 +137,7 @@ const gfx::FontList& ChromeTypographyProvider::GetFont(int context,
   constexpr int kBodyTextLargeSize = 13;
   constexpr int kDefaultSize = 12;
 
+  std::string typeface = kUnspecifiedTypeface;
   int size_delta = kDefaultSize - gfx::PlatformFont::kDefaultBaseFontSize;
   gfx::Font::Weight font_weight = gfx::Font::Weight::NORMAL;
 
@@ -141,6 +159,7 @@ const gfx::FontList& ChromeTypographyProvider::GetFont(int context,
           kTouchableLabelSize - gfx::PlatformFont::kDefaultBaseFontSize;
       break;
     case CONTEXT_BODY_TEXT_LARGE:
+    case CONTEXT_TAB_HOVER_CARD_TITLE:
     case views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT:
       size_delta = kBodyTextLargeSize - gfx::PlatformFont::kDefaultBaseFontSize;
       break;
@@ -149,6 +168,11 @@ const gfx::FontList& ChromeTypographyProvider::GetFont(int context,
       break;
     default:
       break;
+  }
+
+  if (context == CONTEXT_TAB_HOVER_CARD_TITLE) {
+    DCHECK_EQ(views::style::STYLE_PRIMARY, style);
+    font_weight = gfx::Font::Weight::SEMIBOLD;
   }
 
   // Use a bold style for emphasized text in body contexts, and ignore |style|
@@ -166,13 +190,21 @@ const gfx::FontList& ChromeTypographyProvider::GetFont(int context,
     }
   }
 
-  return ui::ResourceBundle::GetSharedInstance().GetFontListWithDelta(
-      size_delta, gfx::Font::NORMAL, font_weight);
+  if (style == STYLE_PRIMARY_MONOSPACED ||
+      style == STYLE_SECONDARY_MONOSPACED) {
+    typeface = kDefaultMonospacedTypeface;
+  }
+
+  return ui::ResourceBundle::GetSharedInstance()
+      .GetFontListWithTypefaceAndDelta(typeface, size_delta, gfx::Font::NORMAL,
+                                       font_weight);
 }
 
 SkColor ChromeTypographyProvider::GetColor(const views::View& view,
                                            int context,
                                            int style) const {
+  // TODO(lgrey): Remove anything that could be using native theme
+  // colors from here after UX review of divergences.
   const ui::NativeTheme* native_theme = view.GetNativeTheme();
   DCHECK(native_theme);
   if (ShouldIgnoreHarmonySpec(*native_theme)) {
@@ -183,39 +215,52 @@ SkColor ChromeTypographyProvider::GetColor(const views::View& view,
   if (context == views::style::CONTEXT_BUTTON_MD) {
     switch (style) {
       case views::style::STYLE_DIALOG_BUTTON_DEFAULT:
-        return SK_ColorWHITE;
+        return native_theme->SystemDarkModeEnabled() ? gfx::kGoogleGrey900
+                                                     : SK_ColorWHITE;
       case views::style::STYLE_DISABLED:
-        return SkColorSetRGB(0x9e, 0x9e, 0x9e);
+        return gfx::kGoogleGrey600;
       default:
-        return SkColorSetRGB(0x75, 0x75, 0x75);
+        return native_theme->SystemDarkModeEnabled() ? gfx::kGoogleBlue300
+                                                     : gfx::kGoogleBlue600;
     }
   }
 
   // Use the secondary style instead of primary for message box body text.
-  if (context == views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT &&
-      style == views::style::STYLE_PRIMARY) {
-    style = STYLE_SECONDARY;
+  if (context == views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT) {
+    if (style == views::style::STYLE_PRIMARY) {
+      style = STYLE_SECONDARY;
+    } else if (style == STYLE_PRIMARY_MONOSPACED) {
+      style = STYLE_SECONDARY_MONOSPACED;
+    }
   }
 
   switch (style) {
     case views::style::STYLE_DIALOG_BUTTON_DEFAULT:
       return SK_ColorWHITE;
     case views::style::STYLE_DISABLED:
-      return SkColorSetRGB(0x9e, 0x9e, 0x9e);
+      return native_theme->SystemDarkModeEnabled()
+                 ? gfx::kGoogleGrey800
+                 : SkColorSetRGB(0x9e, 0x9e, 0x9e);
     case views::style::STYLE_LINK:
       return gfx::kGoogleBlue700;
     case STYLE_SECONDARY:
+    case STYLE_SECONDARY_MONOSPACED:
     case STYLE_EMPHASIZED_SECONDARY:
     case STYLE_HINT:
-      return gfx::kGoogleGrey700;
+      return native_theme->SystemDarkModeEnabled() ? gfx::kGoogleGrey500
+                                                   : gfx::kGoogleGrey700;
     case STYLE_RED:
-      return gfx::kGoogleRed700;
+      return native_theme->SystemDarkModeEnabled() ? gfx::kGoogleRed300
+                                                   : gfx::kGoogleRed700;
     case STYLE_GREEN:
-      return gfx::kGoogleGreen700;
+      return native_theme->SystemDarkModeEnabled() ? gfx::kGoogleGreen300
+                                                   : gfx::kGoogleGreen700;
   }
 
-  // Use GoogleGrey900 as primary color for everything else.
-  return gfx::kGoogleGrey900;
+  // Use default primary color for everything else.
+  return native_theme->SystemDarkModeEnabled()
+             ? SkColorSetA(SK_ColorWHITE, 0xDD)
+             : gfx::kGoogleGrey900;
 }
 
 int ChromeTypographyProvider::GetLineHeight(int context, int style) const {
@@ -282,6 +327,7 @@ int ChromeTypographyProvider::GetLineHeight(int context, int style) const {
     case views::style::CONTEXT_DIALOG_TITLE:
       return title_height;
     case CONTEXT_BODY_TEXT_LARGE:
+    case CONTEXT_TAB_HOVER_CARD_TITLE:
     case views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT:
     case views::style::CONTEXT_TABLE_ROW:
       return body_large_height;

@@ -2,7 +2,7 @@
 <html>
 <body>
 <script>
-testRunner.setIsolatedWorldSecurityOrigin(2, 'chrome-extension://123');
+testRunner.setIsolatedWorldInfo(2, 'chrome-extension://123', null);
 runTestInWorld(2, 'accessParentDocument');
 
 function runTestInWorld(worldId, funcName)

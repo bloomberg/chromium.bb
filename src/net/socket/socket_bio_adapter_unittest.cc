@@ -164,11 +164,11 @@ class SocketBIOAdapterTest : public testing::TestWithParam<ReadIfReadySupport>,
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        SocketBIOAdapterTest,
-                        testing::Values(READ_IF_READY_ENABLED_SUPPORTED,
-                                        READ_IF_READY_ENABLED_NOT_SUPPORTED,
-                                        READ_IF_READY_DISABLED));
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         SocketBIOAdapterTest,
+                         testing::Values(READ_IF_READY_ENABLED_SUPPORTED,
+                                         READ_IF_READY_ENABLED_NOT_SUPPORTED,
+                                         READ_IF_READY_DISABLED));
 
 // Test that data can be read synchronously.
 TEST_P(SocketBIOAdapterTest, ReadSync) {

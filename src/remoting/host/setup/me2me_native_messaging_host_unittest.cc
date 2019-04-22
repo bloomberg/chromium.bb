@@ -11,10 +11,10 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -313,9 +313,8 @@ void Me2MeNativeMessagingHostTest::SetUp() {
                  base::Unretained(this)));
 
   host_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&Me2MeNativeMessagingHostTest::StartHost,
-                 base::Unretained(this)));
+      FROM_HERE, base::BindOnce(&Me2MeNativeMessagingHostTest::StartHost,
+                                base::Unretained(this)));
 
   // Wait until the host finishes starting.
   test_run_loop_->Run();
@@ -380,9 +379,8 @@ void Me2MeNativeMessagingHostTest::StopHost() {
 void Me2MeNativeMessagingHostTest::ExitTest() {
   if (!test_message_loop_->task_runner()->RunsTasksInCurrentSequence()) {
     test_message_loop_->task_runner()->PostTask(
-        FROM_HERE,
-        base::Bind(&Me2MeNativeMessagingHostTest::ExitTest,
-                   base::Unretained(this)));
+        FROM_HERE, base::BindOnce(&Me2MeNativeMessagingHostTest::ExitTest,
+                                  base::Unretained(this)));
     return;
   }
   test_run_loop_->Quit();
@@ -423,7 +421,8 @@ Me2MeNativeMessagingHostTest::ReadMessageFromOutputPipe() {
       return nullptr;
     }
 
-    std::unique_ptr<base::Value> message = base::JSONReader::Read(message_json);
+    std::unique_ptr<base::Value> message =
+        base::JSONReader::ReadDeprecated(message_json);
     if (!message || !message->is_dict()) {
       return nullptr;
     }
@@ -542,7 +541,7 @@ TEST_F(Me2MeNativeMessagingHostTest, All) {
       &VerifyStartDaemonResponse,
       &VerifyGetCredentialsFromAuthCodeResponse,
   };
-  ASSERT_EQ(arraysize(verify_routines), static_cast<size_t>(next_id));
+  ASSERT_EQ(base::size(verify_routines), static_cast<size_t>(next_id));
 
   // Read all responses from output pipe, and verify them.
   for (int i = 0; i < next_id; ++i) {

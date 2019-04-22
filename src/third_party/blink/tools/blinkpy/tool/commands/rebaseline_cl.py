@@ -21,7 +21,7 @@ _log = logging.getLogger(__name__)
 class RebaselineCL(AbstractParallelRebaselineCommand):
     name = 'rebaseline-cl'
     help_text = 'Fetches new baselines for a CL from test runs on try bots.'
-    long_help = ('This command downloads new baselines for failing layout '
+    long_help = ('This command downloads new baselines for failing web '
                  'tests from archived try job test results. Cross-platform '
                  'baselines are deduplicated after downloading.  Without '
                  'positional parameters or --test-name-file, all failing tests '
@@ -222,7 +222,7 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
             jobs: A dict mapping Build objects to TryJobStatus objects.
 
         Returns:
-            A dict mapping Build to LayoutTestResults for all completed jobs.
+            A dict mapping Build to WebTestResults for all completed jobs.
         """
         buildbot = self._tool.buildbot
         results = {}
@@ -234,15 +234,15 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
                 continue
             if status != TryJobStatus('COMPLETED', 'FAILURE'):
                 # Only completed failed builds will contain actual failed
-                # layout tests to download baselines for.
+                # web tests to download baselines for.
                 continue
             results_url = buildbot.results_url(build.builder_name, build.build_number)
-            layout_test_results = buildbot.fetch_results(build)
-            if layout_test_results is None:
+            web_test_results = buildbot.fetch_results(build)
+            if web_test_results is None:
                 _log.info('Failed to fetch results for "%s".', build.builder_name)
                 _log.info('Results URL: %s/results.html', results_url)
                 continue
-            results[build] = layout_test_results
+            results[build] = web_test_results
         return results
 
     def _make_test_baseline_set_from_file(self, filename, builds_to_results):
@@ -266,7 +266,7 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
 
         Args:
             tests: A list of tests.
-            builds_to_results: A dict mapping Builds to LayoutTestResults.
+            builds_to_results: A dict mapping Builds to WebTestResults.
 
         Returns:
             A TestBaselineSet object.
@@ -284,7 +284,7 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
         modified tests will be rebaselined (depending on only_changed_tests).
 
         Args:
-            builds_to_results: A dict mapping Builds to LayoutTestResults.
+            builds_to_results: A dict mapping Builds to WebTestResults.
             only_changed_tests: Whether to only include baselines for tests that
                are changed in this CL. If False, all new baselines for failing
                tests will be downloaded, even for tests that were not modified.
@@ -311,26 +311,26 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
         return test_baseline_set
 
     def _test_base_path(self):
-        """Returns the relative path from the repo root to the layout tests."""
+        """Returns the relative path from the repo root to the web tests."""
         finder = PathFinder(self._tool.filesystem)
         return self._tool.filesystem.relpath(
-            finder.layout_tests_dir(),
+            finder.web_tests_dir(),
             finder.path_from_chromium_base()) + '/'
 
-    def _tests_to_rebaseline(self, build, layout_test_results):
+    def _tests_to_rebaseline(self, build, web_test_results):
         """Fetches a list of tests that should be rebaselined for some build.
 
         Args:
             build: A Build instance.
-            layout_test_results: A LayoutTestResults instance or None.
+            web_test_results: A WebTestResults instance or None.
 
         Returns:
             A sorted list of tests to rebaseline for this build.
         """
-        if layout_test_results is None:
+        if web_test_results is None:
             return []
 
-        unexpected_results = layout_test_results.didnt_run_as_expected_results()
+        unexpected_results = web_test_results.didnt_run_as_expected_results()
         tests = sorted(
             r.test_name() for r in unexpected_results
             if r.is_missing_baseline() or r.has_mismatch_result())

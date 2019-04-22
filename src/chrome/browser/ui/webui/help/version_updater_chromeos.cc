@@ -19,7 +19,7 @@
 #include "chrome/browser/ui/webui/help/help_utils_chromeos.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -218,8 +218,8 @@ void VersionUpdaterCros::OnSetUpdateOverCellularOneTimePermission(
     // One time permission is set successfully, so we can proceed to update.
     CheckForUpdate(callback_, VersionUpdater::PromoteCallback());
   } else {
-    // TODO(weidongg/691108): invoke callback to signal about page to show
-    // appropriate error message.
+    // TODO(https://crbug.com/927452): invoke callback to signal about page to
+    // show appropriate error message.
     LOG(ERROR) << "Error setting update over cellular one time permission.";
     callback_.Run(VersionUpdater::FAILED, 0, false, std::string(), 0,
                   base::string16());

@@ -18,7 +18,7 @@
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler_client.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_transceiver.h"
 #include "third_party/blink/public/platform/web_rtc_session_description.h"
-#include "third_party/webrtc/api/peerconnectioninterface.h"
+#include "third_party/webrtc/api/peer_connection_interface.h"
 
 namespace blink {
 class WebLocalFrame;
@@ -187,6 +187,10 @@ class CONTENT_EXPORT PeerConnectionTracker
       RTCPeerConnectionHandler* pc_handler, Action action,
       const std::string& type, const std::string& value);
 
+  // Sends an update when the session description's ID is set.
+  virtual void TrackSessionId(RTCPeerConnectionHandler* pc_handler,
+                              const std::string& session_id);
+
   // Sends an update when onRenegotiationNeeded is called.
   virtual void TrackOnRenegotiationNeeded(RTCPeerConnectionHandler* pc_handler);
 
@@ -222,18 +226,11 @@ class CONTENT_EXPORT PeerConnectionTracker
   // Called when the browser process reports a suspend event from the OS.
   void OnSuspend();
 
-  // TODO(eladalon): Remove OnStartEventLogFile() and then rename
-  // OnStartEventLogOutput() to OnStartEventLog(). https://crbug.com/775415
-
-  // IPC Message handler for starting event log (file).
-  void OnStartEventLogFile(int peer_connection_id,
-                           IPC::PlatformFileForTransit file);
-
-  // IPC Message handler for starting event log (output).
-  void OnStartEventLogOutput(int peer_connection_id, int output_period_ms);
+  // IPC Message handler for starting event log.
+  void OnStartEventLog(int peer_connection_local_id, int output_period_ms);
 
   // IPC Message handler for stopping event log.
-  void OnStopEventLog(int peer_connection_id);
+  void OnStopEventLog(int peer_connection_local_id);
 
   // Called to deliver an update to the host (PeerConnectionTrackerHost).
   // |local_id| - The id of the registered RTCPeerConnectionHandler.
@@ -255,8 +252,8 @@ class CONTENT_EXPORT PeerConnectionTracker
   GetPeerConnectionTrackerHost();
 
   // This map stores the local ID assigned to each RTCPeerConnectionHandler.
-  typedef std::map<RTCPeerConnectionHandler*, int> PeerConnectionIdMap;
-  PeerConnectionIdMap peer_connection_id_map_;
+  typedef std::map<RTCPeerConnectionHandler*, int> PeerConnectionLocalIdMap;
+  PeerConnectionLocalIdMap peer_connection_local_id_map_;
 
   // This keeps track of the next available local ID.
   int next_local_id_;

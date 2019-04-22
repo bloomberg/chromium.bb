@@ -50,11 +50,11 @@ std::string NotificationIdGenerator::GenerateForPersistentNotification(
   stream << origin;
   stream << kNotificationTagSeparator;
 
-  stream << base::IntToString(!tag.empty());
+  stream << base::NumberToString(!tag.empty());
   if (tag.size())
     stream << tag;
   else
-    stream << base::Int64ToString(persistent_notification_id);
+    stream << base::NumberToString(persistent_notification_id);
 
   return stream.str();
 }

@@ -49,87 +49,117 @@ bool TransformOperations::operator==(const TransformOperations& o) const {
   return true;
 }
 
-bool TransformOperations::OperationsMatch(
-    const TransformOperations& other) const {
-  wtf_size_t num_operations = Operations().size();
-  if (num_operations != other.Operations().size())
-    return false;
+void TransformOperations::ApplyRemaining(const FloatSize& border_box_size,
+                                         wtf_size_t start,
+                                         TransformationMatrix& t) const {
+  for (wtf_size_t i = start; i < operations_.size(); i++) {
+    operations_[i]->Apply(t, border_box_size);
+  }
+}
 
+wtf_size_t TransformOperations::MatchingPrefixLength(
+    const TransformOperations& other) const {
+  wtf_size_t num_operations =
+      std::min(Operations().size(), other.Operations().size());
   for (wtf_size_t i = 0; i < num_operations; ++i) {
     if (Operations()[i]->PrimitiveType() !=
         other.Operations()[i]->PrimitiveType()) {
-      return false;
+      // Remaining operations in each operations list require matrix/matrix3d
+      // interpolation.
+      return i;
     }
   }
-  return true;
+  // If the operations match to the length of the shorter list, then pad its
+  // length with the matching identity operations.
+  // https://drafts.csswg.org/css-transforms/#transform-function-lists
+  return std::max(Operations().size(), other.Operations().size());
 }
 
-TransformOperations TransformOperations::BlendByMatchingOperations(
+TransformOperations TransformOperations::BlendPrefixByMatchingOperations(
     const TransformOperations& from,
-    const double& progress) const {
+    wtf_size_t matching_prefix_length,
+    double progress,
+    bool* success) const {
   TransformOperations result;
-
   wtf_size_t from_size = from.Operations().size();
   wtf_size_t to_size = Operations().size();
-  wtf_size_t size = std::max(from_size, to_size);
-  for (wtf_size_t i = 0; i < size; i++) {
+  for (wtf_size_t i = 0; i < matching_prefix_length; i++) {
     scoped_refptr<TransformOperation> from_operation =
         (i < from_size) ? from.Operations()[i].get() : nullptr;
     scoped_refptr<TransformOperation> to_operation =
         (i < to_size) ? Operations()[i].get() : nullptr;
+
     scoped_refptr<TransformOperation> blended_operation =
         to_operation
             ? to_operation->Blend(from_operation.get(), progress)
             : (from_operation ? from_operation->Blend(nullptr, progress, true)
                               : nullptr);
+
     if (blended_operation)
       result.Operations().push_back(blended_operation);
     else {
-      scoped_refptr<TransformOperation> identity_operation =
-          IdentityTransformOperation::Create();
-      if (progress > 0.5)
-        result.Operations().push_back(to_operation ? to_operation
-                                                   : identity_operation);
-      else
-        result.Operations().push_back(from_operation ? from_operation
-                                                     : identity_operation);
+      *success = false;
+      return result;
     }
   }
-
   return result;
 }
 
 scoped_refptr<TransformOperation>
-TransformOperations::BlendByUsingMatrixInterpolation(
+TransformOperations::BlendRemainingByUsingMatrixInterpolation(
     const TransformOperations& from,
+    wtf_size_t matching_prefix_length,
     double progress) const {
-  if (DependsOnBoxSize() || from.DependsOnBoxSize())
-    return InterpolatedTransformOperation::Create(from, *this, progress);
+  // Not safe to use a cached transform if any of the operations are size
+  // dependent.
+  if (DependsOnBoxSize() || from.DependsOnBoxSize()) {
+    return InterpolatedTransformOperation::Create(
+        from, *this, matching_prefix_length, progress);
+  }
 
   // Evaluate blended matrix here to avoid creating a nested data structure of
   // unbounded depth.
   TransformationMatrix from_transform;
   TransformationMatrix to_transform;
-  from.Apply(FloatSize(), from_transform);
-  Apply(FloatSize(), to_transform);
+  from.ApplyRemaining(FloatSize(), matching_prefix_length, from_transform);
+  ApplyRemaining(FloatSize(), matching_prefix_length, to_transform);
+
+  // Fallback to discrete interpolation if either transform matrix is singular.
+  if (!(from_transform.IsInvertible() && to_transform.IsInvertible())) {
+    return nullptr;
+  }
+
   to_transform.Blend(from_transform, progress);
   return Matrix3DTransformOperation::Create(to_transform);
 }
 
 // https://drafts.csswg.org/css-transforms-1/#interpolation-of-transforms
+// TODO(crbug.com/914397): Consolidate blink and cc implementations of transform
+// interpolation.
 TransformOperations TransformOperations::Blend(const TransformOperations& from,
                                                double progress) const {
   if (from == *this || (!from.size() && !size()))
     return *this;
 
-  // If either list is empty, use blendByMatchingOperations which has special
-  // logic for this case.
-  if (!from.size() || !size() || from.OperationsMatch(*this))
-    return BlendByMatchingOperations(from, progress);
+  wtf_size_t matching_prefix_length = MatchingPrefixLength(from);
+  wtf_size_t max_path_length =
+      std::max(Operations().size(), from.Operations().size());
 
-  TransformOperations result;
-  result.Operations().push_back(
-      BlendByUsingMatrixInterpolation(from, progress));
+  bool success = true;
+  TransformOperations result = BlendPrefixByMatchingOperations(
+      from, matching_prefix_length, progress, &success);
+  if (success && matching_prefix_length < max_path_length) {
+    scoped_refptr<TransformOperation> matrix_op =
+        BlendRemainingByUsingMatrixInterpolation(from, matching_prefix_length,
+                                                 progress);
+    if (matrix_op)
+      result.Operations().push_back(matrix_op);
+    else
+      success = false;
+  }
+  if (!success) {
+    return progress < 0.5 ? from : *this;
+  }
   return result;
 }
 
@@ -172,7 +202,7 @@ static void BoundingBoxForArc(const FloatPoint3D& point,
   if (axis.Dot(to_transform.Axis()) < 0)
     to_degrees *= -1;
 
-  from_degrees = Blend(from_degrees, to_transform.Angle(), min_progress);
+  from_degrees = Blend(from_degrees, to_degrees, min_progress);
   to_degrees = Blend(to_degrees, from_transform.Angle(), 1.0 - max_progress);
   if (from_degrees > to_degrees)
     std::swap(from_degrees, to_degrees);
@@ -185,14 +215,13 @@ static void BoundingBoxForArc(const FloatPoint3D& point,
                      to_degrees);
 
   FloatPoint3D from_point = from_matrix.MapPoint(point);
-  FloatPoint3D to_point = to_matrix.MapPoint(point);
 
   if (box.IsEmpty())
     box.SetOrigin(from_point);
   else
     box.ExpandTo(from_point);
 
-  box.ExpandTo(to_point);
+  box.ExpandTo(to_matrix.MapPoint(point));
 
   switch (from_transform.GetType()) {
     case TransformOperation::kRotateX:
@@ -385,14 +414,14 @@ bool TransformOperations::BlendedBoundsForBox(const FloatBox& box,
 
         FloatBox from_box = *bounds;
         bool first = true;
-        for (size_t i = 0; i < 2; ++i) {
-          for (size_t j = 0; j < 2; ++j) {
-            for (size_t k = 0; k < 2; ++k) {
+        for (size_t j = 0; j < 2; ++j) {
+          for (size_t k = 0; k < 2; ++k) {
+            for (size_t m = 0; m < 2; ++m) {
               FloatBox bounds_for_arc;
               FloatPoint3D corner(from_box.X(), from_box.Y(), from_box.Z());
               corner +=
-                  FloatPoint3D(i * from_box.Width(), j * from_box.Height(),
-                               k * from_box.Depth());
+                  FloatPoint3D(j * from_box.Width(), k * from_box.Height(),
+                               m * from_box.Depth());
               BoundingBoxForArc(corner, *from_rotation, *to_rotation,
                                 min_progress, max_progress, bounds_for_arc);
               if (first) {

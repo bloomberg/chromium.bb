@@ -66,6 +66,10 @@ SyncEncryptionHandler* TestUserShare::encryption_handler() {
   return dir_maker_->encryption_handler();
 }
 
+KeystoreKeysHandler* TestUserShare::keystore_keys_handler() {
+  return dir_maker_->keystore_keys_handler();
+}
+
 syncable::TestTransactionObserver* TestUserShare::transaction_observer() {
   return dir_maker_->transaction_observer();
 }

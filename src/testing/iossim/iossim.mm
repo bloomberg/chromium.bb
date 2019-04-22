@@ -190,6 +190,17 @@ NSString* GetDeviceBySDKAndName(NSDictionary* simctl_list,
                                 NSString* sdk_version) {
   NSString* sdk = [@"iOS " stringByAppendingString:sdk_version];
   NSArray* devices = [simctl_list[@"devices"] objectForKey:sdk];
+  // Pre-Xcode 10.2's simulator, xcrun simctl -j returned "devices" that looked
+  // like "iOS 12.1".  Now they look like
+  // com.apple.CoreSimulator.SimRuntime.iOS-12-1. Only use this block when all
+  // bots move to Xcode 10.2+
+  if (devices == nil || [devices count] == 0) {
+    sdk_version = [sdk_version stringByReplacingOccurrencesOfString:@"."
+                                                         withString:@"-"];
+    NSString* sdk = [@"com.apple.CoreSimulator.SimRuntime.iOS-"
+        stringByAppendingString:sdk_version];
+    devices = [simctl_list[@"devices"] objectForKey:sdk];
+  }
   for (NSDictionary* device in devices) {
     if ([device[@"name"] isEqualToString:device_name]) {
       return device[@"udid"];
@@ -273,11 +284,8 @@ int RunApplication(NSString* app_path,
 
   if (xctest_path) {
     [testTargetName setValue:xctest_path forKey:@"TestBundlePath"];
-    NSString* inject =
-        @"__PLATFORMS__/iPhoneSimulator.platform/Developer/Library/"
-        @"PrivateFrameworks/IDEBundleInjection.framework/"
-        @"IDEBundleInjection:__PLATFORMS__/iPhoneSimulator.platform/Developer/"
-        @"usr/lib/libXCTestBundleInject.dylib";
+    NSString* inject = @"__PLATFORMS__/iPhoneSimulator.platform/Developer/"
+                       @"usr/lib/libXCTestBundleInject.dylib";
     [testingEnvironmentVariables setValue:inject
                                    forKey:@"DYLD_INSERT_LIBRARIES"];
     [testingEnvironmentVariables
@@ -306,11 +314,11 @@ int RunApplication(NSString* app_path,
                      forKey:@"TestingEnvironmentVariables"];
   [xctestrun setObject:testTargetName forKey:@"TestTargetName"];
 
-  NSString* error;
   NSData* data = [NSPropertyListSerialization
-      dataFromPropertyList:xctestrun
+      dataWithPropertyList:xctestrun
                     format:NSPropertyListXMLFormat_v1_0
-          errorDescription:&error];
+                   options:0
+                     error:nil];
   [data writeToFile:tempFilePath atomically:YES];
   XCRunTask* task = [[[XCRunTask alloc] initWithArguments:@[
     @"xcodebuild", @"-xctestrun", tempFilePath, @"-destination",

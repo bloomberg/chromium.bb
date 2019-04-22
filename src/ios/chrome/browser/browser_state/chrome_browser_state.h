@@ -11,7 +11,6 @@
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "ios/chrome/browser/net/net_types.h"
 #include "ios/web/public/browser_state.h"
@@ -122,6 +121,8 @@ class ChromeBrowserState : public web::BrowserState {
 
   // web::BrowserState
   net::URLRequestContextGetter* GetRequestContext() override;
+  void UpdateCorsExemptHeader(
+      network::mojom::NetworkContextParams* params) override;
 
  protected:
   explicit ChromeBrowserState(

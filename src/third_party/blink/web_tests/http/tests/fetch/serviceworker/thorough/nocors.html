@@ -12,7 +12,7 @@ var host_info = get_host_info();
 function start(t) {
   service_worker_test(
     '/fetch/script-tests/thorough/nocors.js?',
-    'nocors');
+    'nocors-serviceworker');
   t.done();
 }
 function init(test) {

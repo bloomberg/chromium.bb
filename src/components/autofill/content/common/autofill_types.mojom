@@ -102,6 +102,18 @@ enum FillingStatus {
   ERROR_NOT_ALLOWED,
 };
 
+// autofill::ButtonTitleType
+enum ButtonTitleType {
+  NONE,
+  BUTTON_ELEMENT_SUBMIT_TYPE,
+  BUTTON_ELEMENT_BUTTON_TYPE,
+  INPUT_ELEMENT_SUBMIT_TYPE,
+  INPUT_ELEMENT_BUTTON_TYPE,
+  HYPERLINK,
+  DIV,
+  SPAN
+};
+
 // autofill::FormFieldData
 struct FormFieldData {
   mojo_base.mojom.String16 label;
@@ -136,14 +148,18 @@ struct FormFieldData {
   LabelSource label_source;
 };
 
+struct ButtonTitleInfo {
+  mojo_base.mojom.String16 title;
+  ButtonTitleType type;
+};
+
 // autofill::FormData
 struct FormData {
   mojo_base.mojom.String16 id_attribute;
   mojo_base.mojom.String16 name_attribute;
   mojo_base.mojom.String16 name;
-  mojo_base.mojom.String16 button_title;
-  // TODO(crbug.com/788181): Either change type to Origin or rename to URL.
-  url.mojom.Url origin;
+  array<ButtonTitleInfo> button_titles;
+  url.mojom.Url url;
   url.mojom.Url action;
   url.mojom.Origin main_frame_origin;
   bool is_form_tag;
@@ -200,6 +216,12 @@ struct PasswordFormGenerationData {
   uint32 confirmation_field_signature;
 };
 
+// autofill::NewPasswordFormGenerationData
+struct NewPasswordFormGenerationData {
+   uint32 new_password_renderer_id;
+   uint32 confirmation_password_renderer_id;
+};
+
 // autofill::password_generation::PasswordGenerationUIData
 struct PasswordGenerationUIData {
   gfx.mojom.RectF bounds;
@@ -251,7 +273,7 @@ struct PasswordForm {
   bool is_public_suffix_match;
   bool is_affiliation_based_match;
   SubmissionIndicatorEvent submission_event;
-  bool only_for_fallback_saving;
+  bool only_for_fallback;
   bool is_gaia_with_skip_save_password_form;
 };
 

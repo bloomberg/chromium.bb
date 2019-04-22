@@ -35,6 +35,7 @@ def main(argv):
       robo_setup.InstallPrereqs(robo_configuration)
       robo_setup.EnsureToolchains(robo_configuration)
       robo_setup.EnsureASANDirWorks(robo_configuration)
+      robo_setup.EnsureChromiumNasm(robo_configuration)
     elif opt == "--test":
       robo_build.BuildAndImportFFmpegConfigForHost(robo_configuration)
       robo_build.RunTests(robo_configuration)
@@ -67,17 +68,14 @@ def main(argv):
         log("Skipping config build since already committed")
       else:
         robo_build.BuildAndImportAllFFmpegConfigs(robo_configuration)
-        # TODO: This currently requires the user to re-start after manually
-        # handling any autorename conflicts.  However, since we haven't written
-        # the gn config commit yet, we'll rebuild everything.  Consider making
-        # this a separate commit after the gn configs, or (preferably) doing it
-        # automatically here.
-        robo_branch.HandleAutorename(robo_configuration)
         # Run sanity checks on the merge before we commit.
         robo_branch.CheckMerge(robo_configuration)
         # Write the config changes to help the reviewer.
         robo_branch.WriteConfigChangesFile(robo_configuration)
         # TODO(liberato): Add the 'autodetect' regex too.
+        # Handle autorenames last, so that we don't stage things and then fail.
+        # While it's probably okay, it's nicer if we don't.
+        robo_branch.HandleAutorename(robo_configuration)
         robo_branch.AddAndCommit(robo_configuration,
                                  robo_configuration.gn_commit_title())
 

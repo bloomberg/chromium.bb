@@ -7,22 +7,24 @@ import("//build/config/android/rules.gni")
 java_strings_grd("autofill_strings_grd") {
   grd_file = "java/strings/autofill_strings.grd"
   outputs = [
+    "values/autofill_strings.xml",
     "values-am/autofill_strings.xml",
     "values-ar/autofill_strings.xml",
     "values-bg/autofill_strings.xml",
+    "values-bn/autofill_strings.xml",
     "values-ca/autofill_strings.xml",
     "values-cs/autofill_strings.xml",
     "values-da/autofill_strings.xml",
     "values-de/autofill_strings.xml",
     "values-el/autofill_strings.xml",
-    "values/autofill_strings.xml",
     "values-en-rGB/autofill_strings.xml",
     "values-es/autofill_strings.xml",
     "values-es-rUS/autofill_strings.xml",
+    "values-et/autofill_strings.xml",
     "values-fa/autofill_strings.xml",
     "values-fi/autofill_strings.xml",
-    "values-tl/autofill_strings.xml",
     "values-fr/autofill_strings.xml",
+    "values-gu/autofill_strings.xml",
     "values-hi/autofill_strings.xml",
     "values-hr/autofill_strings.xml",
     "values-hu/autofill_strings.xml",
@@ -30,11 +32,15 @@ java_strings_grd("autofill_strings_grd") {
     "values-it/autofill_strings.xml",
     "values-iw/autofill_strings.xml",
     "values-ja/autofill_strings.xml",
+    "values-kn/autofill_strings.xml",
     "values-ko/autofill_strings.xml",
     "values-lt/autofill_strings.xml",
     "values-lv/autofill_strings.xml",
-    "values-nl/autofill_strings.xml",
+    "values-ml/autofill_strings.xml",
+    "values-mr/autofill_strings.xml",
+    "values-ms/autofill_strings.xml",
     "values-nb/autofill_strings.xml",
+    "values-nl/autofill_strings.xml",
     "values-pl/autofill_strings.xml",
     "values-pt-rBR/autofill_strings.xml",
     "values-pt-rPT/autofill_strings.xml",
@@ -45,7 +51,10 @@ java_strings_grd("autofill_strings_grd") {
     "values-sr/autofill_strings.xml",
     "values-sv/autofill_strings.xml",
     "values-sw/autofill_strings.xml",
+    "values-ta/autofill_strings.xml",
+    "values-te/autofill_strings.xml",
     "values-th/autofill_strings.xml",
+    "values-tl/autofill_strings.xml",
     "values-tr/autofill_strings.xml",
     "values-uk/autofill_strings.xml",
     "values-vi/autofill_strings.xml",
@@ -65,6 +74,7 @@ android_resources("autofill_java_resources") {
 
 java_cpp_enum("autofill_core_browser_java_enums") {
   sources = [
+    "../core/browser/accessory_sheet_data.h",
     "../core/browser/popup_item_ids.h",
   ]
 }
@@ -97,7 +107,7 @@ android_library("provider_java") {
   deps = [
     "//base:base_java",
     "//content/public/android:content_java",
-    "//third_party/android_deps:android_support_annotations_java",
+    "//third_party/android_deps:com_android_support_support_annotations_java",
   ]
   java_files = [
     "java/src/org/chromium/components/autofill/AutofillProvider.java",

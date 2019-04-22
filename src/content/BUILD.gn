@@ -2,9 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//tools/grit/grit_rule.gni")
 import("//build/config/nacl/config.gni")
 import("//ppapi/buildflags/buildflags.gni")
+import("//tools/grit/grit_rule.gni")
 
 # Applied by targets internal to content.
 config("content_implementation") {
@@ -14,6 +14,8 @@ config("content_implementation") {
     "//build/config/compiler:wexit_time_destructors",
   ]
 }
+
+assert(!is_ios, "Chromium/iOS shouldn't use anything in //content")
 
 # When targets depend on, e.g. //content/public/browser, what happens? To
 # facilitate the complexity here, the "public" targets are groups that forward
@@ -122,13 +124,6 @@ grit("resources") {
   ]
   deps = [
     "//content/browser/process_internals:mojo_bindings_js",
-    "//content/public/app:browser_manifest",
-    "//content/public/app:gpu_manifest",
-    "//content/public/app:packaged_services_manifest",
-    "//content/public/app:plugin_manifest",
-    "//content/public/app:renderer_manifest",
-    "//content/public/app:utility_manifest",
-    "//services/catalog:manifest",
   ]
 }
 

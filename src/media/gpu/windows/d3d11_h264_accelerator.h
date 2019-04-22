@@ -62,6 +62,24 @@ class D3D11H264Accelerator : public H264Decoder::H264Accelerator {
   void Reset() override;
   bool OutputPicture(const scoped_refptr<H264Picture>& pic) override;
 
+  // Gets a pic params struct with the constant fields set.
+  void FillPicParamsWithConstants(DXVA_PicParams_H264* pic_param);
+
+  // Populate the pic params with fields from the SPS structure.
+  void PicParamsFromSPS(DXVA_PicParams_H264* pic_param,
+                        const H264SPS* sps,
+                        bool field_pic);
+
+  // Populate the pic params with fields from the PPS structure.
+  bool PicParamsFromPPS(DXVA_PicParams_H264* pic_param, const H264PPS* pps);
+
+  // Populate the pic params with fields from the slice header structure.
+  void PicParamsFromSliceHeader(DXVA_PicParams_H264* pic_param,
+                                const H264SliceHeader* pps);
+
+  void PicParamsFromPic(DXVA_PicParams_H264* pic_param,
+                        const scoped_refptr<H264Picture>& pic);
+
  private:
   bool SubmitSliceData();
   bool RetrieveBitstreamBuffer();

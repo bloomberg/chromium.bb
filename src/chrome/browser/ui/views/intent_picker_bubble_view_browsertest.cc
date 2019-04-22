@@ -2,10 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/bookmark_app_navigation_browsertest.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/intent_picker_bubble_view.h"
+#include "chrome/browser/ui/views/location_bar/intent_picker_view.h"
+#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/common/chrome_features.h"
 #include "url/gurl.h"
 
@@ -14,12 +18,12 @@ class IntentPickerBubbleViewBrowserTest
       public ::testing::WithParamInterface<std::string> {
  public:
   void SetUp() override {
-    extensions::test::BookmarkAppNavigationBrowserTest::SetUp();
-
     // Link capturing disables showing the intent picker.
     scoped_feature_list_.InitWithFeatures(
-        {features::kDesktopPWAWindowing},
+        {features::kDesktopPWAWindowing, features::kIntentPicker},
         {features::kDesktopPWAsLinkCapturing});
+
+    extensions::test::BookmarkAppNavigationBrowserTest::SetUp();
   }
 
  private:
@@ -27,7 +31,8 @@ class IntentPickerBubbleViewBrowserTest
 };
 
 // Tests that clicking a link from a tabbed browser to within the scope of an
-// installed app shows the intent picker with the installed app details.
+// installed app shows the intent picker icon in Omnibox. The intent picker
+// bubble will only show up for android apps which is too hard to test.
 IN_PROC_BROWSER_TEST_P(IntentPickerBubbleViewBrowserTest,
                        NavigationToInScopeLinkShowsIntentPicker) {
   InstallTestBookmarkApp();
@@ -41,13 +46,15 @@ IN_PROC_BROWSER_TEST_P(IntentPickerBubbleViewBrowserTest,
       in_scope_url, base::BindOnce(&ClickLinkAndWait, web_contents,
                                    in_scope_url, LinkTarget::SELF, GetParam()));
 
+  IntentPickerView* intent_picker_view =
+      BrowserView::GetBrowserViewForBrowser(browser())
+          ->GetLocationBarView()
+          ->intent_picker_view();
+  EXPECT_TRUE(intent_picker_view->visible());
+
   IntentPickerBubbleView* intent_picker =
       IntentPickerBubbleView::intent_picker_bubble();
-  EXPECT_TRUE(intent_picker);
-  EXPECT_EQ(web_contents, intent_picker->web_contents());
-  EXPECT_EQ(1u, intent_picker->GetAppInfoForTesting().size());
-  EXPECT_EQ(GetAppName(),
-            intent_picker->GetAppInfoForTesting()[0].display_name);
+  EXPECT_FALSE(intent_picker);
 }
 
 // Tests that clicking a link from a tabbed browser to outside the scope of an
@@ -152,7 +159,7 @@ IN_PROC_BROWSER_TEST_P(
   }
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     IntentPickerBubbleViewBrowserTest,
     testing::Values("", "noopener", "noreferrer", "nofollow"));

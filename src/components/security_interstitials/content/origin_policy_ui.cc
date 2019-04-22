@@ -4,36 +4,60 @@
 
 #include "components/security_interstitials/content/origin_policy_ui.h"
 
-#include "components/grit/components_resources.h"
-#include "third_party/zlib/google/compression_utils.h"
-#include "ui/base/resource/resource_bundle.h"
-#include "ui/base/template_expressions.h"
+#include <string>
+#include <utility>
+
+#include "base/logging.h"
+#include "base/optional.h"
+#include "components/security_interstitials/content/origin_policy_interstitial_page.h"
+#include "components/security_interstitials/content/security_interstitial_tab_helper.h"
+#include "components/security_interstitials/core/metrics_helper.h"
+#include "content/public/browser/navigation_handle.h"
 #include "url/gurl.h"
-#include "url/origin.h"
 
 namespace security_interstitials {
 
-base::Optional<std::string> OriginPolicyUI::GetErrorPage(
+namespace {
+
+std::unique_ptr<SecurityInterstitialPage> GetErrorPageImpl(
     content::OriginPolicyErrorReason error_reason,
-    const url::Origin& origin,
+    content::WebContents* web_contents,
     const GURL& url) {
-  const base::StringPiece raw_interstitial_page_resource =
-      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_SECURITY_INTERSTITIAL_ORIGIN_POLICY_HTML);
+  MetricsHelper::ReportDetails report_details;
+  report_details.metric_prefix = "origin_policy";
+  std::unique_ptr<SecurityInterstitialControllerClient> controller =
+      std::make_unique<SecurityInterstitialControllerClient>(
+          web_contents,
+          std::make_unique<MetricsHelper>(url, report_details, nullptr),
+          nullptr, /* pref service: can be null */
+          "", GURL());
+  return std::make_unique<security_interstitials::OriginPolicyInterstitialPage>(
+      web_contents, url, std::move(controller), error_reason);
+}
 
-  // The resource is gzip compressed.
-  std::string interstitial_page_resource;
-  interstitial_page_resource.resize(
-      compression::GetUncompressedSize(raw_interstitial_page_resource));
-  base::StringPiece buffer(interstitial_page_resource.c_str(),
-                           interstitial_page_resource.size());
-  CHECK(compression::GzipUncompress(raw_interstitial_page_resource, buffer));
+}  // namespace
 
-  ui::TemplateReplacements params;
-  params["url"] = url.spec();
-  params["origin"] = origin.Serialize();
+base::Optional<std::string> OriginPolicyUI::GetErrorPageAsHTML(
+    content::OriginPolicyErrorReason error_reason,
+    content::NavigationHandle* handle) {
+  DCHECK(handle);
+  std::unique_ptr<SecurityInterstitialPage> page(GetErrorPageImpl(
+      error_reason, handle->GetWebContents(), handle->GetURL()));
+  std::string html = page->GetHTMLContents();
 
-  return ui::ReplaceTemplateExpressions(interstitial_page_resource, params);
+  // The page object is "associated" with the web contents, and this is how
+  // the interstitial infrastructure will find this instance again.
+  security_interstitials::SecurityInterstitialTabHelper::AssociateBlockingPage(
+      handle->GetWebContents(), handle->GetNavigationId(), std::move(page));
+
+  return html;
+}
+
+SecurityInterstitialPage* OriginPolicyUI::GetBlockingPage(
+    content::OriginPolicyErrorReason error_reason,
+    content::WebContents* web_contents,
+    const GURL& url) {
+  return GetErrorPageImpl(error_reason, web_contents, url).release();
 }
 
 }  // namespace security_interstitials

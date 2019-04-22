@@ -12,7 +12,7 @@
 #include "components/infobars/core/infobar.h"
 #import "ios/chrome/browser/infobars/infobar_controller_delegate.h"
 
-@class InfoBarController;
+@protocol InfobarUIDelegate;
 namespace infobars {
 class InfoBarDelegate;
 }
@@ -20,12 +20,15 @@ class InfoBarDelegate;
 // The iOS version of infobars::InfoBar.
 class InfoBarIOS : public infobars::InfoBar, public InfoBarControllerDelegate {
  public:
-  InfoBarIOS(InfoBarController* controller,
+  InfoBarIOS(id<InfobarUIDelegate> controller,
              std::unique_ptr<infobars::InfoBarDelegate> delegate);
   ~InfoBarIOS() override;
 
   // Returns the infobar view holding contents of this infobar.
-  UIView* view();
+  UIView* View();
+
+  // Returns the InfobarUIDelegate associated to this Infobar.
+  id<InfobarUIDelegate> InfobarUIDelegate();
 
   // Remove the infobar view from infobar container view.
   void RemoveView();
@@ -35,7 +38,7 @@ class InfoBarIOS : public infobars::InfoBar, public InfoBarControllerDelegate {
   bool IsOwned() override;
   void RemoveInfoBar() override;
 
-  InfoBarController* controller_;
+  id<InfobarUIDelegate> controller_;
   DISALLOW_COPY_AND_ASSIGN(InfoBarIOS);
 };
 

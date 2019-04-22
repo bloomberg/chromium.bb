@@ -43,7 +43,8 @@ public class Connector implements ConnectionErrorHandler {
 
         org.chromium.service_manager.mojom.Connector.BindInterfaceResponse callback =
                 new ConnectorBindInterfaceResponseImpl();
-        mConnector.bindInterface(filter, interfaceName, request.passHandle(), callback);
+        mConnector.bindInterface(filter, interfaceName, request.passHandle(),
+                org.chromium.service_manager.mojom.BindInterfacePriority.IMPORTANT, callback);
     }
 
     @Override

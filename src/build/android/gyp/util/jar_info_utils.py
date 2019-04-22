@@ -32,21 +32,20 @@ def ParseJarInfoFile(info_path):
   return info_data
 
 
-def WriteJarInfoFile(info_path, info_data, source_file_map=None):
+def WriteJarInfoFile(output_obj, info_data, source_file_map=None):
   """Generate a .jar.info file from a given dictionary.
 
   Args:
-    info_path: output file path.
+    output_obj: output file object.
     info_data: a mapping of fully qualified Java class names to filepaths.
     source_file_map: an optional mapping from java source file paths to the
       corresponding source .srcjar. This is because info_data may contain the
       path of Java source files that where extracted from an .srcjar into a
       temporary location.
   """
-  with open(info_path, 'w') as info_file:
-    for fully_qualified_name, path in info_data.iteritems():
-      if source_file_map and path in source_file_map:
-        path = source_file_map[path]
-        assert not path.startswith('/tmp'), (
-            'Java file path should not be in temp dir: {}'.format(path))
-      info_file.write('{},{}\n'.format(fully_qualified_name, path))
+  for fully_qualified_name, path in sorted(info_data.iteritems()):
+    if source_file_map and path in source_file_map:
+      path = source_file_map[path]
+      assert not path.startswith('/tmp'), (
+          'Java file path should not be in temp dir: {}'.format(path))
+    output_obj.write('{},{}\n'.format(fully_qualified_name, path))

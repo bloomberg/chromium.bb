@@ -116,6 +116,7 @@ source_file_types = {
   '.cc': 'cxx',
   '.cpp': 'cxx',
   '.cxx': 'cxx',
+  '.mm': 'cxx',
   '.c': 'c',
   '.s': 'asm',
   '.S': 'asm',
@@ -141,7 +142,7 @@ cmake_target_types = {
   'executable': CMakeTargetType('add_executable', None, 'RUNTIME', True),
   'loadable_module': CMakeTargetType('add_library', 'MODULE', 'LIBRARY', True),
   'shared_library': CMakeTargetType('add_library', 'SHARED', 'LIBRARY', True),
-  'static_library': CMakeTargetType('add_library', 'STATIC', 'ARCHIVE', False),
+  'static_library': CMakeTargetType('add_library', 'STATIC', 'ARCHIVE', True),
   'source_set': CMakeTargetType('add_library', 'OBJECT', None, False),
   'copy': CMakeTargetType.custom,
   'action': CMakeTargetType.custom,
@@ -372,8 +373,15 @@ def WriteCopy(out, target, project, sources, synthetic_dependencies):
   out.write('\n')
 
   for src, dst in zip(inputs, outputs):
-    out.write('  COMMAND ${CMAKE_COMMAND} -E copy "')
-    out.write(CMakeStringEscape(project.GetAbsolutePath(src)))
+    abs_src_path = CMakeStringEscape(project.GetAbsolutePath(src))
+    # CMake distinguishes between copying files and copying directories but
+    # gn does not. We assume if the src has a period in its name then it is
+    # a file and otherwise a directory.
+    if "." in os.path.basename(abs_src_path):
+      out.write('  COMMAND ${CMAKE_COMMAND} -E copy "')
+    else:
+      out.write('  COMMAND ${CMAKE_COMMAND} -E copy_directory "')
+    out.write(abs_src_path)
     out.write('" "')
     out.write(CMakeStringEscape(dst))
     out.write('"\n')

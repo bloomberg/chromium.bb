@@ -7,8 +7,8 @@
 
 #include "third_party/blink/public/web/web_navigation_type.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/dom/dom_high_res_time_stamp.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/loader/frame_loader_types.h"
 #include "third_party/blink/renderer/core/timing/performance_resource_timing.h"
 
@@ -53,7 +53,7 @@ class CORE_EXPORT PerformanceNavigationTiming final
   DOMHighResTimeStamp loadEventStart() const;
   DOMHighResTimeStamp loadEventEnd() const;
   AtomicString type() const;
-  unsigned short redirectCount() const;
+  uint16_t redirectCount() const;
 
   // PerformanceResourceTiming overrides:
   DOMHighResTimeStamp fetchStart() const override;
@@ -78,9 +78,9 @@ class CORE_EXPORT PerformanceNavigationTiming final
   ResourceLoadTiming* GetResourceLoadTiming() const override;
   bool AllowTimingDetails() const override;
   bool DidReuseConnection() const override;
-  unsigned long long GetTransferSize() const override;
-  unsigned long long GetEncodedBodySize() const override;
-  unsigned long long GetDecodedBodySize() const override;
+  uint64_t GetTransferSize() const override;
+  uint64_t GetEncodedBodySize() const override;
+  uint64_t GetDecodedBodySize() const override;
 
   bool GetAllowRedirectDetails() const;
 

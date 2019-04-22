@@ -15,46 +15,39 @@
 #include <unordered_map>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/containers/flat_map.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
-#include "ui/base/ui_base_export.h"
 
 namespace base {
 class Pickle;
 }
 
-#if defined(OS_MACOSX)
-#ifdef __OBJC__
-@class NSString;
-#else
-class NSString;
-#endif
-#endif  // defined(OS_MACOSX)
-
 namespace ui {
 
-#if defined(OS_MACOSX) && !defined(USE_AURA)
-UI_BASE_EXPORT extern NSString* const kWebCustomDataPboardType;
-#endif
-
-UI_BASE_EXPORT void ReadCustomDataTypes(const void* data,
-                                        size_t data_length,
-                                        std::vector<base::string16>* types);
-UI_BASE_EXPORT void ReadCustomDataForType(const void* data,
-                                          size_t data_length,
-                                          const base::string16& type,
-                                          base::string16* result);
-UI_BASE_EXPORT void ReadCustomDataIntoMap(
+COMPONENT_EXPORT(BASE_CLIPBOARD)
+void ReadCustomDataTypes(const void* data,
+                         size_t data_length,
+                         std::vector<base::string16>* types);
+COMPONENT_EXPORT(BASE_CLIPBOARD)
+void ReadCustomDataForType(const void* data,
+                           size_t data_length,
+                           const base::string16& type,
+                           base::string16* result);
+COMPONENT_EXPORT(BASE_CLIPBOARD)
+void ReadCustomDataIntoMap(
     const void* data,
     size_t data_length,
     std::unordered_map<base::string16, base::string16>* result);
 
-UI_BASE_EXPORT void WriteCustomDataToPickle(
+COMPONENT_EXPORT(BASE_CLIPBOARD)
+void WriteCustomDataToPickle(
     const std::unordered_map<base::string16, base::string16>& data,
     base::Pickle* pickle);
 
-UI_BASE_EXPORT void WriteCustomDataToPickle(
+COMPONENT_EXPORT(BASE_CLIPBOARD)
+void WriteCustomDataToPickle(
     const base::flat_map<base::string16, base::string16>& data,
     base::Pickle* pickle);
 

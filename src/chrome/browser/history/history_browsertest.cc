@@ -25,6 +25,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/history_service.h"
+#include "components/history/core/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -38,17 +39,10 @@
 
 using content::BrowserThread;
 
-namespace {
-
-const base::FilePath::CharType kDocRoot[] =
-    FILE_PATH_LITERAL("chrome/test/data");
-
-}  // namespace
-
 class HistoryBrowserTest : public InProcessBrowserTest {
  protected:
   HistoryBrowserTest() : test_server_() {
-    test_server_.ServeFilesFromSourceDirectory(base::FilePath(kDocRoot));
+    test_server_.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
   }
 
   void SetUpOnMainThread() override {
@@ -300,7 +294,7 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest,
 }
 
 // TODO(crbug.com/22111): Disabled because of flakiness and because for a while
-// MD history didn't support #q=searchTerm. Now that it does support these type
+// history didn't support #q=searchTerm. Now that it does support these type
 // of URLs (crbug.com/619799), this test could be re-enabled if somebody goes
 // through the effort to wait for the various stages of the page loading.
 // The loading strategy of the new, Polymer version of chrome://history is

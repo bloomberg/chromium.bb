@@ -35,31 +35,31 @@ class CORE_EXPORT ScrollState final : public ScriptWrappable {
   // Pops the first element off of |m_scrollChain| and calls |distributeScroll|
   // on it.
   void distributeToScrollChainDescendant();
-  int positionX() { return data_->position_x; };
-  int positionY() { return data_->position_y; };
+  int positionX() { return data_->position_x; }
+  int positionY() { return data_->position_y; }
   // Positive when scrolling right.
-  double deltaX() const { return data_->delta_x; };
+  double deltaX() const { return data_->delta_x; }
   // Positive when scrolling down.
-  double deltaY() const { return data_->delta_y; };
+  double deltaY() const { return data_->delta_y; }
   // Positive when scrolling right.
-  double deltaXHint() const { return data_->delta_x_hint; };
+  double deltaXHint() const { return data_->delta_x_hint; }
   // Positive when scrolling down.
-  double deltaYHint() const { return data_->delta_y_hint; };
+  double deltaYHint() const { return data_->delta_y_hint; }
   // Indicates the smallest delta the input device can produce. 0 for
   // unquantized inputs.
-  double deltaGranularity() const { return data_->delta_granularity; };
+  double deltaGranularity() const { return data_->delta_granularity; }
   // Positive if moving right.
-  double velocityX() const { return data_->velocity_x; };
+  double velocityX() const { return data_->velocity_x; }
   // Positive if moving down.
-  double velocityY() const { return data_->velocity_y; };
+  double velocityY() const { return data_->velocity_y; }
   // True for events dispatched after the users's gesture has finished.
-  bool inInertialPhase() const { return data_->is_in_inertial_phase; };
+  bool inInertialPhase() const { return data_->is_in_inertial_phase; }
   // True if this is the first event for this scroll.
-  bool isBeginning() const { return data_->is_beginning; };
+  bool isBeginning() const { return data_->is_beginning; }
   // True if this is the last event for this scroll.
-  bool isEnding() const { return data_->is_ending; };
+  bool isEnding() const { return data_->is_ending; }
   // True if this scroll is the direct result of user input.
-  bool fromUserInput() const { return data_->from_user_input; };
+  bool fromUserInput() const { return data_->from_user_input; }
   // True if this scroll is the result of the user interacting directly with
   // the screen, e.g., via touch.
   bool isDirectManipulation() const { return data_->is_direct_manipulation; }

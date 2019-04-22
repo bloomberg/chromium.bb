@@ -84,7 +84,10 @@ int WebStateListOrderController::DetermineNewActiveIndex(
 
 int WebStateListOrderController::GetValidIndex(int index,
                                                int removing_index) const {
-  if (removing_index < index)
-    return std::min(0, index - 1);
+  DCHECK_GE(removing_index, 0);
+  if (removing_index < index) {
+    DCHECK_GE(index, 1);
+    return index - 1;
+  }
   return index;
 }

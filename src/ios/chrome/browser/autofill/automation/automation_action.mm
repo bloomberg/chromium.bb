@@ -30,8 +30,6 @@
 #error "This file requires ARC support."
 #endif
 
-using web::test::ElementSelector;
-
 @interface AutomationAction () {
   std::unique_ptr<const base::DictionaryValue> actionDictionary_;
 }
@@ -201,7 +199,7 @@ using web::test::ElementSelector;
 
 // A shared flow across many actions, this waits for the target element to be
 // visible, scrolls it into view, then taps on it.
-- (void)tapOnTarget:(web::test::ElementSelector)selector {
+- (void)tapOnTarget:(ElementSelector*)selector {
   web::WebState* web_state = chrome_test_util::GetCurrentWebState();
 
   // Wait for the element to be visible on the page.
@@ -226,12 +224,11 @@ using web::test::ElementSelector;
 }
 
 // Creates a selector targeting the element specified in the action.
-- (web::test::ElementSelector)selectorForTarget {
+- (ElementSelector*)selectorForTarget {
   const std::string xpath = [self getStringFromDictionaryWithKey:"selector"];
 
   // Creates a selector from the action dictionary.
-  web::test::ElementSelector selector(
-      ElementSelector::ElementSelectorXPath(xpath));
+  ElementSelector* selector = [ElementSelector selectorWithXPathQuery:xpath];
   return selector;
 }
 
@@ -265,7 +262,7 @@ using web::test::ElementSelector;
 // by the name "target", so example JS code is like:
 // return target.value
 - (id)executeJavascript:(std::string)function
-               onTarget:(web::test::ElementSelector)selector {
+               onTarget:(ElementSelector*)selector {
   NSError* error;
 
   id result = chrome_test_util::ExecuteJavaScript(
@@ -278,8 +275,7 @@ using web::test::ElementSelector;
                             "     "
                             "    })();",
                            base::SysUTF8ToNSString(function),
-                           base::SysUTF8ToNSString(
-                               selector.GetSelectorScript())],
+                           selector.selectorScript],
       &error);
 
   if (error) {
@@ -294,7 +290,7 @@ using web::test::ElementSelector;
 @implementation AutomationActionClick
 
 - (void)execute {
-  web::test::ElementSelector selector = [self selectorForTarget];
+  ElementSelector* selector = [self selectorForTarget];
   [self tapOnTarget:selector];
 }
 
@@ -370,7 +366,7 @@ using web::test::ElementSelector;
   // The autofill profile is configured in
   // automation_egtest::prepareAutofillProfileWithValues.
 
-  web::test::ElementSelector selector = [self selectorForTarget];
+  ElementSelector* selector = [self selectorForTarget];
   [self tapOnTarget:selector];
 
   // Tap on the autofill suggestion to perform the actual autofill.
@@ -385,7 +381,7 @@ using web::test::ElementSelector;
 @implementation AutomationActionValidateField
 
 - (void)execute {
-  web::test::ElementSelector selector = [self selectorForTarget];
+  ElementSelector* selector = [self selectorForTarget];
 
   // Wait for the element to be visible on the page.
   [ChromeEarlGrey waitForWebViewContainingElement:selector];
@@ -415,7 +411,7 @@ using web::test::ElementSelector;
 @implementation AutomationActionSelectDropdown
 
 - (void)execute {
-  web::test::ElementSelector selector = [self selectorForTarget];
+  ElementSelector* selector = [self selectorForTarget];
 
   // Wait for the element to be visible on the page.
   [ChromeEarlGrey waitForWebViewContainingElement:selector];
@@ -446,7 +442,7 @@ using web::test::ElementSelector;
 @implementation AutomationActionType
 
 - (void)execute {
-  web::test::ElementSelector selector = [self selectorForTarget];
+  ElementSelector* selector = [self selectorForTarget];
   std::string value = [self getStringFromDictionaryWithKey:"value"];
   [self executeJavascript:
             base::SysNSStringToUTF8([NSString

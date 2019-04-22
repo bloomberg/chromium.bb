@@ -31,10 +31,10 @@ static constexpr int kSize = 8;
 // SkImages and SkSurfaces
 DEF_GPUTEST_FOR_RENDERING_CONTEXTS(GrWrappedMipMappedTest, reporter, ctxInfo) {
     GrContext* context = ctxInfo.grContext();
-    if (!context->contextPriv().caps()->mipMapSupport()) {
+    if (!context->priv().caps()->mipMapSupport()) {
         return;
     }
-    GrGpu* gpu = context->contextPriv().getGpu();
+    GrGpu* gpu = context->priv().getGpu();
 
     for (auto mipMapped : {GrMipMapped::kNo, GrMipMapped::kYes}) {
         for (auto isRT : {false, true}) {
@@ -64,7 +64,7 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(GrWrappedMipMappedTest, reporter, ctxInfo) {
                                                  kRGBA_8888_SkColorType,
                                                  kPremul_SkAlphaType, nullptr,
                                                  nullptr, nullptr);
-                proxy = as_IB(image)->asTextureProxyRef();
+                proxy = as_IB(image)->asTextureProxyRef(context);
             }
             REPORTER_ASSERT(reporter, proxy);
             if (!proxy) {
@@ -100,10 +100,10 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(GrWrappedMipMappedTest, reporter, ctxInfo) {
 // based on if we will use mips in the draw and the mip status of the GrBackendTexture.
 DEF_GPUTEST_FOR_RENDERING_CONTEXTS(GrBackendTextureImageMipMappedTest, reporter, ctxInfo) {
     GrContext* context = ctxInfo.grContext();
-    if (!context->contextPriv().caps()->mipMapSupport()) {
+    if (!context->priv().caps()->mipMapSupport()) {
         return;
     }
-    GrGpu* gpu = context->contextPriv().getGpu();
+    GrGpu* gpu = context->priv().getGpu();
 
     for (auto mipMapped : {GrMipMapped::kNo, GrMipMapped::kYes}) {
         for (auto willUseMips : {false, true}) {
@@ -154,9 +154,9 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(GrBackendTextureImageMipMappedTest, reporter,
             }
 
             if (GrSurfaceProxy::LazyState::kNot != genProxy->lazyInstantiationState()) {
-                genProxy->priv().doLazyInstantiation(context->contextPriv().resourceProvider());
+                genProxy->priv().doLazyInstantiation(context->priv().resourceProvider());
             } else if (!genProxy->isInstantiated()) {
-                genProxy->instantiate(context->contextPriv().resourceProvider());
+                genProxy->instantiate(context->priv().resourceProvider());
             }
 
             REPORTER_ASSERT(reporter, genProxy->isInstantiated());
@@ -204,6 +204,22 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(GrBackendTextureImageMipMappedTest, reporter,
                     ERRORF(reporter, "Failed to get GrVkImageInfo");
                 }
 #endif
+#ifdef SK_METAL
+            } else if (GrBackendApi::kMetal == genBackendTex.backend()) {
+                GrMtlTextureInfo genImageInfo;
+                GrMtlTextureInfo origImageInfo;
+                if (genBackendTex.getMtlTextureInfo(&genImageInfo) &&
+                    backendTex.getMtlTextureInfo(&origImageInfo)) {
+                    if (willUseMips && GrMipMapped::kNo == mipMapped) {
+                        // We did a copy so the texture IDs should be different
+                        REPORTER_ASSERT(reporter, origImageInfo.fTexture != genImageInfo.fTexture);
+                    } else {
+                        REPORTER_ASSERT(reporter, origImageInfo.fTexture == genImageInfo.fTexture);
+                    }
+                } else {
+                    ERRORF(reporter, "Failed to get GrMtlTextureInfo");
+                }
+#endif
             } else {
                 REPORTER_ASSERT(reporter, false);
             }
@@ -222,12 +238,12 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(GrBackendTextureImageMipMappedTest, reporter,
 // resource we took the snapshot of.
 DEF_GPUTEST_FOR_RENDERING_CONTEXTS(GrImageSnapshotMipMappedTest, reporter, ctxInfo) {
     GrContext* context = ctxInfo.grContext();
-    if (!context->contextPriv().caps()->mipMapSupport()) {
+    if (!context->priv().caps()->mipMapSupport()) {
         return;
     }
 
-    auto resourceProvider = context->contextPriv().resourceProvider();
-    GrGpu* gpu = context->contextPriv().getGpu();
+    auto resourceProvider = context->priv().resourceProvider();
+    GrGpu* gpu = context->priv().getGpu();
 
     for (auto willUseMips : {false, true}) {
         for (auto isWrapped : {false, true}) {
@@ -287,7 +303,7 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(GrImageSnapshotMipMappedTest, reporter, ctxIn
 // to use mips. This test passes by not crashing or hitting asserts in code.
 DEF_GPUTEST_FOR_RENDERING_CONTEXTS(Gr1x1TextureMipMappedTest, reporter, ctxInfo) {
     GrContext* context = ctxInfo.grContext();
-    if (!context->contextPriv().caps()->mipMapSupport()) {
+    if (!context->priv().caps()->mipMapSupport()) {
         return;
     }
 

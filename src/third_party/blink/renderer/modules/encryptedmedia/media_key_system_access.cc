@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/public/platform/web_content_decryption_module.h"
 #include "third_party/blink/public/platform/web_encrypted_media_types.h"
@@ -32,8 +33,6 @@ namespace {
 // All other complete methods are not expected to be called, and will
 // reject the promise.
 class NewCdmResultPromise : public ContentDecryptionModuleResultPromise {
-  WTF_MAKE_NONCOPYABLE(NewCdmResultPromise);
-
  public:
   NewCdmResultPromise(
       ScriptState* script_state,
@@ -56,7 +55,7 @@ class NewCdmResultPromise : public ContentDecryptionModuleResultPromise {
       return;
 
     // 2.9. Let media keys be a new MediaKeys object.
-    MediaKeys* media_keys = MediaKeys::Create(
+    auto* media_keys = MakeGarbageCollected<MediaKeys>(
         GetExecutionContext(), supported_session_types_, base::WrapUnique(cdm));
 
     // 2.10. Resolve promise with media keys.
@@ -65,6 +64,8 @@ class NewCdmResultPromise : public ContentDecryptionModuleResultPromise {
 
  private:
   WebVector<WebEncryptedMediaSessionType> supported_session_types_;
+
+  DISALLOW_COPY_AND_ASSIGN(NewCdmResultPromise);
 };
 
 // These methods are the inverses of those with the same names in
@@ -126,13 +127,13 @@ MediaKeySystemConfiguration* MediaKeySystemAccess::getConfiguration() const {
   MediaKeySystemConfiguration* result = MediaKeySystemConfiguration::Create();
   // |initDataTypes|, |audioCapabilities|, and |videoCapabilities| can only be
   // empty if they were not present in the requested configuration.
-  if (!configuration.init_data_types.IsEmpty())
+  if (!configuration.init_data_types.empty())
     result->setInitDataTypes(
         ConvertInitDataTypes(configuration.init_data_types));
-  if (!configuration.audio_capabilities.IsEmpty())
+  if (!configuration.audio_capabilities.empty())
     result->setAudioCapabilities(
         ConvertCapabilities(configuration.audio_capabilities));
-  if (!configuration.video_capabilities.IsEmpty())
+  if (!configuration.video_capabilities.empty())
     result->setVideoCapabilities(
         ConvertCapabilities(configuration.video_capabilities));
 
@@ -160,9 +161,9 @@ ScriptPromise MediaKeySystemAccess::createMediaKeys(ScriptState* script_state) {
   WebMediaKeySystemConfiguration configuration = access_->GetConfiguration();
 
   // 1. Let promise be a new promise.
-  NewCdmResultPromise* helper =
-      new NewCdmResultPromise(script_state, configuration.session_types,
-                              "MediaKeySystemAccess", "createMediaKeys");
+  NewCdmResultPromise* helper = MakeGarbageCollected<NewCdmResultPromise>(
+      script_state, configuration.session_types, "MediaKeySystemAccess",
+      "createMediaKeys");
   ScriptPromise promise = helper->Promise();
 
   // 2. Asynchronously create and initialize the MediaKeys object.
@@ -171,7 +172,9 @@ ScriptPromise MediaKeySystemAccess::createMediaKeys(ScriptState* script_state) {
   // 2.3 If cdm fails to load or initialize, reject promise with a new
   //     DOMException whose name is the appropriate error name.
   //     (Done if completeWithException() called).
-  access_->CreateContentDecryptionModule(helper->Result());
+  access_->CreateContentDecryptionModule(
+      helper->Result(), ExecutionContext::From(script_state)
+                            ->GetTaskRunner(TaskType::kInternalMedia));
 
   // 3. Return promise.
   return promise;

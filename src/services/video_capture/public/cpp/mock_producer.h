@@ -5,6 +5,7 @@
 #ifndef SERVICES_VIDEO_CAPTURE_PUBLIC_CPP_MOCK_PRODUCER_H_
 #define SERVICES_VIDEO_CAPTURE_PUBLIC_CPP_MOCK_PRODUCER_H_
 
+#include "media/capture/mojom/video_capture_types.mojom.h"
 #include "media/mojo/interfaces/media_types.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/video_capture/public/mojom/producer.mojom.h"

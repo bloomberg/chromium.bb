@@ -2,10 +2,7 @@
 
 #include "arccmt.cpp"
 
-
-#ifdef USE_ARCMEM
-#include "arcmem.cpp"
-#endif
+namespace third_party_unrar {
 
 Archive::Archive(RAROptions *InitCmd)
 {
@@ -34,8 +31,6 @@ Archive::Archive(RAROptions *InitCmd)
   CurBlockPos=0;
   NextBlockPos=0;
 
-  RecoverySize=-1;
-  RecoveryPercent=-1;
 
   memset(&MainHead,0,sizeof(MainHead));
   memset(&CryptHead,0,sizeof(CryptHead));
@@ -202,6 +197,7 @@ bool Archive::IsArchive(bool EnableBroken)
 #endif
 
   bool HeadersLeft; // Any headers left to read.
+  bool StartFound=false; // Main or encryption headers found.
   // Skip the archive encryption header if any and read the main header.
   while ((HeadersLeft=(ReadHeader()!=0))==true) // Additional parentheses to silence Clang.
   {
@@ -210,7 +206,8 @@ bool Archive::IsArchive(bool EnableBroken)
     HEADER_TYPE Type=GetHeaderType();
     // In RAR 5.0 we need to quit after reading HEAD_CRYPT if we wish to
     // avoid the password prompt.
-    if (Type==HEAD_MAIN || (SilentOpen && Type==HEAD_CRYPT))
+    StartFound=Type==HEAD_MAIN || (SilentOpen && Type==HEAD_CRYPT);
+    if (StartFound)
       break;
   }
 
@@ -220,9 +217,10 @@ bool Archive::IsArchive(bool EnableBroken)
   if (FailedHeaderDecryption && !EnableBroken)
     return false;
 
-  if (BrokenHeader) // Main archive header is corrupt.
+  if (BrokenHeader || !StartFound) // Main archive header is corrupt or missing.
   {
-    uiMsg(UIERROR_MHEADERBROKEN,FileName);
+    if (!FailedHeaderDecryption) // If not reported a wrong password already.
+      uiMsg(UIERROR_MHEADERBROKEN,FileName);
     if (!EnableBroken)
       return false;
   }
@@ -304,92 +302,50 @@ uint Archive::FullHeaderSize(size_t Size)
 
 
 
+#ifdef USE_QOPEN
 bool Archive::Open(const wchar *Name,uint Mode)
 {
-#ifdef USE_QOPEN
   // Important if we reuse Archive object and it has virtual QOpen
   // file position not matching real. For example, for 'l -v volname'.
   QOpen.Unload();
-#endif
-
-#ifdef USE_ARCMEM
-  if (Cmd->ArcInMem)
-  {
-    wcsncpyz(FileName,Name,ASIZE(FileName));
-    ArcMem.Load(Cmd->ArcMemData,Cmd->ArcMemSize);
-    Cmd->SetArcInMem(NULL,0); // Return in memory data for first volume only, not for next volumes.
-    return true;
-  }
-#endif
 
   return File::Open(Name,Mode);
 }
 
 
-
-bool Archive::Close()
-{
-#ifdef USE_ARCMEM
-  if (ArcMem.Unload())
-    return true;
-#endif
-  return File::Close();
-}
-
-
-
 int Archive::Read(void *Data,size_t Size)
 {
-#ifdef USE_QOPEN
-  size_t QResult;
-  if (QOpen.Read(Data,Size,QResult))
-    return (int)QResult;
-#endif
-#ifdef USE_ARCMEM
-  size_t AResult;
-  if (ArcMem.Read(Data,Size,AResult))
-    return (int)AResult;
-#endif
+  size_t Result;
+  if (QOpen.Read(Data,Size,Result))
+    return (int)Result;
   return File::Read(Data,Size);
 }
 
 
 void Archive::Seek(int64 Offset,int Method)
 {
-#ifdef USE_QOPEN
-  if (QOpen.Seek(Offset,Method))
-    return;
-#endif
-#ifdef USE_ARCMEM
-  if (ArcMem.Seek(Offset,Method))
-    return;
-#endif
-  File::Seek(Offset,Method);
+  if (!QOpen.Seek(Offset,Method))
+    File::Seek(Offset,Method);
 }
 
 
 int64 Archive::Tell()
 {
-#ifdef USE_QOPEN
   int64 QPos;
   if (QOpen.Tell(&QPos))
     return QPos;
-#endif
-#ifdef USE_ARCMEM
-  int64 APos;
-  if (ArcMem.Tell(&APos))
-    return APos;
-#endif
   return File::Tell();
 }
-
-
-
-bool Archive::IsOpened()
-{
-#ifdef USE_ARCMEM
-  if (ArcMem.IsLoaded())
-    return true;
 #endif
-  return File::IsOpened();
-};
+
+#if defined(CHROMIUM_UNRAR)
+void Archive::SetTempFileHandle(FileHandle hF) {
+  hTempFile = hF;
+}
+
+FileHandle Archive::GetTempFileHandle() {
+  return hTempFile;
+}
+#endif
+
+}  // namespace third_party_unrar

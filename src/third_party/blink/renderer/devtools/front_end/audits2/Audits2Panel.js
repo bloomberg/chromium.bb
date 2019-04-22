@@ -8,7 +8,7 @@
 Audits2.Audits2Panel = class extends UI.Panel {
   constructor() {
     super('audits2');
-    this.registerRequiredCSS('audits2/lighthouse/report-styles.css');
+    this.registerRequiredCSS('audits2/lighthouse/report.css');
     this.registerRequiredCSS('audits2/audits2Panel.css');
 
     this._protocolService = new Audits2.ProtocolService();
@@ -225,6 +225,7 @@ Audits2.Audits2Panel = class extends UI.Panel {
       await this._resetEmulationAndProtocolConnection();
       this._buildReportUI(lighthouseResponse.lhr, lighthouseResponse.artifacts);
     } catch (err) {
+      await this._resetEmulationAndProtocolConnection();
       if (err instanceof Error)
         this._statusView.renderBugReport(err);
     }

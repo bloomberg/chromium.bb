@@ -138,5 +138,16 @@ TEST_F(PDFResourceTest, SelectionChanged) {
       PpapiHostMsg_PDF_SelectionChanged::ID, &params, &msg));
 }
 
+TEST_F(PDFResourceTest, SetPluginCanSave) {
+  const PPB_PDF* pdf_iface = thunk::GetPPB_PDF_Thunk();
+
+  pdf_iface->SetPluginCanSave(pp_instance(), true);
+
+  ResourceMessageCallParams params;
+  IPC::Message msg;
+  ASSERT_TRUE(sink().GetFirstResourceCallMatching(
+      PpapiHostMsg_PDF_SetPluginCanSave::ID, &params, &msg));
+}
+
 }  // namespace proxy
 }  // namespace ppapi

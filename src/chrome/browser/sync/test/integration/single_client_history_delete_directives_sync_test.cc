@@ -35,10 +35,9 @@ int64_t TimeToUnixUsec(base::Time time) {
 class HistoryDeleteDirectivesEqualityChecker
     : public SingleClientStatusChangeChecker {
  public:
-  HistoryDeleteDirectivesEqualityChecker(
-      browser_sync::ProfileSyncService* service,
-      fake_server::FakeServer* fake_server,
-      size_t num_expected_directives)
+  HistoryDeleteDirectivesEqualityChecker(syncer::ProfileSyncService* service,
+                                         fake_server::FakeServer* fake_server,
+                                         size_t num_expected_directives)
       : SingleClientStatusChangeChecker(service),
         fake_server_(fake_server),
         num_expected_directives_(num_expected_directives) {}
@@ -111,7 +110,7 @@ class SingleClientHistoryDeleteDirectivesSyncTest : public FeatureToggler,
 };
 
 IN_PROC_BROWSER_TEST_P(SingleClientHistoryDeleteDirectivesSyncTest,
-                       ShouldCommitDeleteDirective) {
+                       ShouldCommitTimeRangeDeleteDirective) {
   const GURL kPageUrl = GURL("http://foo.com");
   const base::Time kHistoryEntryTime = base::Time::Now();
   base::CancelableTaskTracker task_tracker;
@@ -123,10 +122,27 @@ IN_PROC_BROWSER_TEST_P(SingleClientHistoryDeleteDirectivesSyncTest,
   history_service->AddPage(kPageUrl, kHistoryEntryTime,
                            history::SOURCE_BROWSED);
 
-  history_service->ExpireLocalAndRemoteHistoryBetween(
-      WebHistoryServiceFactory::GetForProfile(GetProfile(0)), std::set<GURL>(),
+  history_service->DeleteLocalAndRemoteHistoryBetween(
+      WebHistoryServiceFactory::GetForProfile(GetProfile(0)),
       /*begin_time=*/base::Time(), /*end_time=*/base::Time(), base::DoNothing(),
       &task_tracker);
+
+  EXPECT_TRUE(WaitForHistoryDeleteDirectives(1));
+}
+
+IN_PROC_BROWSER_TEST_P(SingleClientHistoryDeleteDirectivesSyncTest,
+                       ShouldCommitUrlDeleteDirective) {
+  const GURL kPageUrl = GURL("http://foo.com");
+  const base::Time kHistoryEntryTime = base::Time::Now();
+  ASSERT_TRUE(SetupSync());
+
+  history::HistoryService* history_service =
+      HistoryServiceFactory::GetForProfileWithoutCreating(GetProfile(0));
+  history_service->AddPage(kPageUrl, kHistoryEntryTime,
+                           history::SOURCE_BROWSED);
+
+  history_service->DeleteLocalAndRemoteUrl(
+      WebHistoryServiceFactory::GetForProfile(GetProfile(0)), kPageUrl);
 
   EXPECT_TRUE(WaitForHistoryDeleteDirectives(1));
 }
@@ -154,8 +170,9 @@ IN_PROC_BROWSER_TEST_P(SingleClientHistoryDeleteDirectivesSyncTest,
                                           1);
 
   fake_server_->InjectEntity(
-      syncer::PersistentUniqueClientEntity::CreateFromEntitySpecifics(
-          "name", specifics, /*creation_time=*/0, /*last_modified_time=*/0));
+      syncer::PersistentUniqueClientEntity::CreateFromSpecificsForTesting(
+          "non_unique_name", "client_tag", specifics, /*creation_time=*/0,
+          /*last_modified_time=*/0));
   EXPECT_TRUE(WaitForHistoryDeleteDirectives(1));
 
   // Verify history exists prior to starting sync.
@@ -173,8 +190,8 @@ IN_PROC_BROWSER_TEST_P(SingleClientHistoryDeleteDirectivesSyncTest,
   EXPECT_TRUE(WaitForHistoryDeleteDirectives(1));
 }
 
-INSTANTIATE_TEST_CASE_P(USS,
-                        SingleClientHistoryDeleteDirectivesSyncTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(USS,
+                         SingleClientHistoryDeleteDirectivesSyncTest,
+                         ::testing::Values(false, true));
 
 }  // namespace

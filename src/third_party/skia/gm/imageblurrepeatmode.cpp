@@ -5,14 +5,14 @@
  * found in the LICENSE file.
  */
 
-#include "gm.h"
-#include "sk_tool_utils.h"
-#include "SkSurface.h"
 #include "SkBlurImageFilter.h"
+#include "SkSurface.h"
+#include "ToolUtils.h"
+#include "gm.h"
 
 static sk_sp<SkImage> make_image(SkCanvas* canvas, int direction) {
     SkImageInfo info = SkImageInfo::MakeN32Premul(250, 200);
-    auto surface = sk_tool_utils::makeSurface(canvas, info);
+    auto        surface = ToolUtils::makeSurface(canvas, info);
     SkCanvas* c = surface->getCanvas();
     SkPaint paint;
     paint.setAntiAlias(true);
@@ -28,7 +28,7 @@ static sk_sp<SkImage> make_image(SkCanvas* canvas, int direction) {
         for (int x = 0; x < info.width(); x += width) {
             paint.setColor(colors[x/width % 5]);
             if (yDirection) {
-                paint.setAlpha(127);
+                paint.setAlphaf(0.5f);
             }
             c->drawRect(SkRect::MakeXYWH(x, 0, width, info.height()), paint);
         }
@@ -38,7 +38,7 @@ static sk_sp<SkImage> make_image(SkCanvas* canvas, int direction) {
         for (int y = 0; y < info.height(); y += width) {
             paint.setColor(colors[y/width % 5]);
             if (xDirection) {
-                paint.setAlpha(127);
+                paint.setAlphaf(0.5f);
             }
             c->drawRect(SkRect::MakeXYWH(0, y, info.width(), width), paint);
         }

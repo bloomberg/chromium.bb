@@ -4,6 +4,7 @@
 
 #include "remoting/base/socket_reader.h"
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
@@ -60,8 +61,8 @@ void SocketReader::HandleReadResult(int result) {
       read_buffer_ = NULL;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&SocketReader::CallCallback, weak_factory_.GetWeakPtr(),
-                   read_buffer_, result));
+        base::BindOnce(&SocketReader::CallCallback, weak_factory_.GetWeakPtr(),
+                       read_buffer_, result));
   }
 }
 

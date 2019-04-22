@@ -80,10 +80,10 @@ class CONTENT_EXPORT GestureEventQueue {
                     const Config& config);
   ~GestureEventQueue();
 
-  // Uses fling controller to filter the gesture event. Returns true if the
-  // event was filtered by the fling controller and shouldn't be further
+  // Allow the fling controller to observe the gesture event. Returns true if
+  // the event was filtered by the fling controller and shouldn't be further
   // forwarded.
-  bool FlingControllerFilterEvent(const GestureEventWithLatencyInfo&);
+  bool PassToFlingController(const GestureEventWithLatencyInfo&);
 
   // Filter the event for debouncing or forward it to the renderer. Returns
   // true if the event was forwarded, false if was filtered for debouncing.
@@ -200,6 +200,10 @@ class CONTENT_EXPORT GestureEventQueue {
   // events that happen immediately after touchscreen/touchpad fling canceling
   // taps.
   FlingController fling_controller_;
+
+  // True when the last GSE event is either in the debouncing_deferral_queue_ or
+  // pushed to the queue and dropped from it later on.
+  bool scroll_end_filtered_by_deboucing_deferral_queue_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(GestureEventQueue);
 };

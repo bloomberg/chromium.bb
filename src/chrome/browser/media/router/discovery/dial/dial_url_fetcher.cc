@@ -4,6 +4,8 @@
 
 #include "chrome/browser/media/router/discovery/dial/dial_url_fetcher.h"
 
+#include "base/bind.h"
+#include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/system_network_context_manager.h"

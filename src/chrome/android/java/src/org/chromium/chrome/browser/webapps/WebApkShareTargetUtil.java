@@ -17,6 +17,7 @@ import org.json.JSONException;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.StrictModeContext;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.net.MimeTypeFilter;
 import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
@@ -165,26 +166,28 @@ public class WebApkShareTargetUtil {
         ArrayList<String> shareFilenames = new ArrayList<>();
         ArrayList<String> shareTypes = new ArrayList<>();
 
-        for (Uri fileUri : fileUris) {
-            String fileType = getFileTypeFromContentUri(fileUri);
-            String fileName = getFileNameFromContentUri(fileUri);
+        try (StrictModeContext strictModeContextUnused = StrictModeContext.allowDiskReads()) {
+            for (Uri fileUri : fileUris) {
+                String fileType = getFileTypeFromContentUri(fileUri);
+                String fileName = getFileNameFromContentUri(fileUri);
 
-            if (fileType == null || fileName == null) {
-                continue;
-            }
+                if (fileType == null || fileName == null) {
+                    continue;
+                }
 
-            for (int i = 0; i < names.size(); i++) {
-                List<String> mimeTypeList = accepts.get(i);
-                MimeTypeFilter mimeTypeFilter = new MimeTypeFilter(mimeTypeList, false);
-                if (mimeTypeFilter.accept(fileUri, fileType)) {
-                    byte[] fileContent = readStringFromContentUri(fileUri);
-                    if (fileContent != null) {
-                        shareNames.add(names.get(i));
-                        shareValues.add(fileContent);
-                        shareFilenames.add(fileName);
-                        shareTypes.add(fileType);
+                for (int i = 0; i < names.size(); i++) {
+                    List<String> mimeTypeList = accepts.get(i);
+                    MimeTypeFilter mimeTypeFilter = new MimeTypeFilter(mimeTypeList, false);
+                    if (mimeTypeFilter.accept(fileUri, fileType)) {
+                        byte[] fileContent = readStringFromContentUri(fileUri);
+                        if (fileContent != null) {
+                            shareNames.add(names.get(i));
+                            shareValues.add(fileContent);
+                            shareFilenames.add(fileName);
+                            shareTypes.add(fileType);
+                        }
+                        break;
                     }
-                    break;
                 }
             }
         }

@@ -27,10 +27,14 @@ EXCEPTION_MODEL_TYPES = [
   'SUPERVISED_USER_WHITELISTS',  # See previous.
 
   # Deprecated types:
+  'DEPRECATED_APP_NOTIFICATIONS',
+  'DEPRECATED_ARTICLES',
   'DEPRECATED_SUPERVISED_USERS',
   'DEPRECATED_SUPERVISED_USER_SHARED_SETTINGS',
-  'DEPRECATED_ARTICLES',
-  'DEPRECATED_WIFI_CREDENTIALS']
+  'DEPRECATED_SYNCED_NOTIFICATIONS',
+  'DEPRECATED_SYNCED_NOTIFICATION_APP_INFO',
+  'DEPRECATED_WIFI_CREDENTIALS',
+  'DEPRECATED_EXPERIMENTS']
 
 # Root tags are used as prefixes when creating storage keys, so certain strings
 # are blacklisted in order to prevent prefix collision.
@@ -168,8 +172,9 @@ def ParseModelTypeEntries(input_api, model_type_cc_path):
   end_pattern = input_api.re.compile(MODEL_TYPE_END_PATTERN)
   results, definition_strings, definition_lines = [], [], []
   inside_enum = False
-  current_line_number = 1
+  current_line_number = 0
   for line in file_contents.splitlines():
+    current_line_number += 1
     if line.strip().startswith('//'):
         # Ignore comments.
         continue
@@ -186,7 +191,6 @@ def ParseModelTypeEntries(input_api, model_type_cc_path):
         results.append(ModelTypeEnumEntry(definition_strings, definition_lines))
         definition_strings = []
         definition_lines = []
-    current_line_number += 1
   return results
 
 

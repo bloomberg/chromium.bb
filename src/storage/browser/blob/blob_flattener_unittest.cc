@@ -70,20 +70,20 @@ class BlobFlattenerTest : public testing::Test {
 
   scoped_refptr<BlobDataItem> CreateDataDescriptionItem(size_t size) {
     return BlobDataItem::CreateBytesDescription(size);
-  };
+  }
 
   scoped_refptr<BlobDataItem> CreateDataItem(const char* memory, size_t size) {
     return BlobDataItem::CreateBytes(base::make_span(memory, size));
-  };
+  }
 
   scoped_refptr<BlobDataItem> CreateFileItem(size_t offset, size_t size) {
     return BlobDataItem::CreateFile(fake_file_path_, offset, size,
                                     base::Time::Max());
-  };
+  }
 
   scoped_refptr<BlobDataItem> CreateFutureFileItem(size_t offset, size_t size) {
     return BlobDataItem::CreateFutureFile(offset, size, 0);
-  };
+  }
 
   std::unique_ptr<BlobDataHandle> SetupBasicBlob(const std::string& id) {
     auto builder = std::make_unique<BlobDataBuilder>(id);

@@ -227,6 +227,20 @@ enum ResultCodeValues : ResultCode {
   // result, we don't allow it.
   RESULT_CODE_WRONG_ARCHITECTURE = 56,
 
+  // The process failed to complete in a reasonable amount of time and our
+  // watchdog terminated the process. At that time the engine was scanning the
+  // registry.
+  RESULT_CODE_WATCHDOG_TIMEOUT_WHILE_SCANNING_REGISTRY = 57,
+
+  // The process failed to complete in a reasonable amount of time and our
+  // watchdog terminated the process. At that time the engine was scanning the
+  // file system.
+  RESULT_CODE_WATCHDOG_TIMEOUT_WHILE_SCANNING_FILES = 58,
+
+  // The target process for the test engine sandbox disconnected from the IPC
+  // while the pipe was still needed by the broker process.
+  RESULT_CODE_TEST_ENGINE_SANDBOX_DISCONNECTED_TOO_SOON = 59,
+
   // WHEN YOU ADD NEW EXIT CODES, DON'T FORGET TO UPDATE THE MONITORING RULES.
   // See http://go/chrome-cleaner-exit-codes. (Google internal only - external
   // contributors please ask one of the OWNERS to do the update.)

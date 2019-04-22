@@ -42,10 +42,6 @@ class Document;
 
 class VisitedLinkState : public GarbageCollectedFinalized<VisitedLinkState> {
  public:
-  static VisitedLinkState* Create(const Document& document) {
-    return MakeGarbageCollected<VisitedLinkState>(document);
-  }
-
   explicit VisitedLinkState(const Document&);
 
   void InvalidateStyleForAllLinks(bool invalidate_visited_link_hashes);
@@ -57,7 +53,7 @@ class VisitedLinkState : public GarbageCollectedFinalized<VisitedLinkState> {
     return EInsideLink::kNotInsideLink;
   }
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   const Document& GetDocument() const { return *document_; }

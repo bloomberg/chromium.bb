@@ -14,6 +14,7 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
+#include "build/build_config.h"
 #include "components/download/public/common/download_file.h"
 #include "components/download/public/common/input_stream.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -66,6 +67,15 @@ class MockDownloadFile : public DownloadFile {
   MOCK_CONST_METHOD0(DebugString, std::string());
   MOCK_METHOD0(Pause, void());
   MOCK_METHOD0(Resume, void());
+#if defined(OS_ANDROID)
+  MOCK_METHOD5(CreateIntermediateUriForPublish,
+               void(const GURL& original_url,
+                    const GURL& referrer_url,
+                    const base::FilePath& file_name,
+                    const std::string& mime_type,
+                    const RenameCompletionCallback& callback));
+  MOCK_METHOD1(PublishDownload, void(const RenameCompletionCallback& callback));
+#endif  // defined(OS_ANDROID)
 };
 
 }  // namespace download

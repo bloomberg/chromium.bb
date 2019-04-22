@@ -10,13 +10,6 @@ StubCredentialsFilter::StubCredentialsFilter() = default;
 
 StubCredentialsFilter::~StubCredentialsFilter() = default;
 
-std::vector<std::unique_ptr<autofill::PasswordForm>>
-StubCredentialsFilter::FilterResults(
-    std::vector<std::unique_ptr<autofill::PasswordForm>> results) const {
-  FilterResultsPtr(&results);
-  return results;
-}
-
 bool StubCredentialsFilter::ShouldSave(
     const autofill::PasswordForm& form) const {
   return true;
@@ -39,8 +32,5 @@ bool StubCredentialsFilter::IsSyncAccountEmail(
     const std::string& username) const {
   return false;
 }
-
-void StubCredentialsFilter::FilterResultsPtr(
-    std::vector<std::unique_ptr<autofill::PasswordForm>>* results) const {}
 
 }  // namespace password_manager

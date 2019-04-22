@@ -68,7 +68,7 @@ static const char* kAudioTestFiles[] {
 
 // For simplicity we only test codecs with above 2% daily usage as measured by
 // the Media.AudioCodec histogram.
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     ClocklessAudioPipelineIntegrationPerfTest,
     testing::ValuesIn(kAudioTestFiles));

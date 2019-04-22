@@ -46,7 +46,7 @@ GrTextureRenderTargetProxy::GrTextureRenderTargetProxy(LazyInstantiateCallback&&
         // Since we have virtual inheritance, we initialize GrSurfaceProxy directly. Send null
         // callbacks to the texture and RT proxies simply to route to the appropriate constructors.
         , GrRenderTargetProxy(LazyInstantiateCallback(), lazyType, format, desc, origin, fit,
-                              budgeted, surfaceFlags)
+                              budgeted, surfaceFlags, WrapsVkSecondaryCB::kNo)
         , GrTextureProxy(LazyInstantiateCallback(), lazyType, format, desc, origin, mipMapped,
                          fit, budgeted, surfaceFlags) {}
 
@@ -75,7 +75,8 @@ size_t GrTextureRenderTargetProxy::onUninstantiatedGpuMemorySize() const {
                                   !this->priv().isExact());
 }
 
-bool GrTextureRenderTargetProxy::instantiate(GrResourceProvider* resourceProvider) {
+bool GrTextureRenderTargetProxy::instantiate(GrResourceProvider* resourceProvider,
+                                             bool dontForceNoPendingIO) {
     if (LazyState::kNot != this->lazyInstantiationState()) {
         return false;
     }
@@ -84,7 +85,8 @@ bool GrTextureRenderTargetProxy::instantiate(GrResourceProvider* resourceProvide
     const GrUniqueKey& key = this->getUniqueKey();
 
     if (!this->instantiateImpl(resourceProvider, this->numStencilSamples(), this->needsStencil(),
-                               kDescFlags, this->mipMapped(), key.isValid() ? &key : nullptr)) {
+                               kDescFlags, this->mipMapped(), key.isValid() ? &key : nullptr,
+                               dontForceNoPendingIO)) {
         return false;
     }
     if (key.isValid()) {
@@ -99,11 +101,13 @@ bool GrTextureRenderTargetProxy::instantiate(GrResourceProvider* resourceProvide
 
 sk_sp<GrSurface> GrTextureRenderTargetProxy::createSurface(
                                                     GrResourceProvider* resourceProvider) const {
+    SkASSERT(resourceProvider->explicitlyAllocateGPUResources());
+
     static constexpr GrSurfaceDescFlags kDescFlags = kRenderTarget_GrSurfaceFlag;
 
     sk_sp<GrSurface> surface = this->createSurfaceImpl(resourceProvider, this->numStencilSamples(),
                                                        this->needsStencil(), kDescFlags,
-                                                       this->mipMapped());
+                                                       this->mipMapped(), true);
     if (!surface) {
         return nullptr;
     }
@@ -124,11 +128,19 @@ void GrTextureRenderTargetProxy::onValidateSurface(const GrSurface* surface) {
     SkASSERT(surface->asRenderTarget());
     SkASSERT(surface->asRenderTarget()->numStencilSamples() == this->numStencilSamples());
 
+    SkASSERT(surface->asTexture()->texturePriv().textureType() == this->textureType());
+
     GrInternalSurfaceFlags proxyFlags = fSurfaceFlags;
     GrInternalSurfaceFlags surfaceFlags = surface->surfacePriv().flags();
+
+    // Only non-RT textures can be read only.
+    SkASSERT(!(proxyFlags & GrInternalSurfaceFlags::kReadOnly));
+    SkASSERT(!(surfaceFlags & GrInternalSurfaceFlags::kReadOnly));
+
     SkASSERT((proxyFlags & GrInternalSurfaceFlags::kRenderTargetMask) ==
              (surfaceFlags & GrInternalSurfaceFlags::kRenderTargetMask));
-    SkASSERT(surface->asTexture()->texturePriv().textureType() == this->textureType());
+    SkASSERT((proxyFlags & GrInternalSurfaceFlags::kTextureMask) ==
+             (surfaceFlags & GrInternalSurfaceFlags::kTextureMask));
 }
 #endif
 

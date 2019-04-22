@@ -19,6 +19,7 @@
 <translation id="1591562245178063882">Aktueller Monat</translation>
 <translation id="1637811476055996098">Dateien auswählen</translation>
 <translation id="1650423536718072820">Textzitat</translation>
+<translation id="1727886345390570319">Untertitelmenü ausblenden</translation>
 <translation id="1729654308190250600">Geben Sie eine E-Mail-Adresse ein.</translation>
 <translation id="1758486001363313524">Andere...</translation>
 <translation id="1806710327868736751">alert_dialog</translation>
@@ -41,6 +42,7 @@
 <translation id="2291999235780842123">Kästchen</translation>
 <translation id="2311842470354187719">Seitenumbruch</translation>
 <translation id="2335594187091864976">Datums- und Uhrzeitauswahl</translation>
+<translation id="245932805758469625">verbleibende Videozeit in Sekunden</translation>
 <translation id="248395913932153421">Tag</translation>
 <translation id="2507943997699731163">Füllen Sie dieses Feld aus.</translation>
 <translation id="2508569020611168319">Tabliste</translation>
@@ -50,7 +52,6 @@
 <translation id="2653659639078652383">Senden</translation>
 <translation id="2657045182931379222">Grafikobjekt</translation>
 <translation id="2674318244760992338">Fußzeile</translation>
-<translation id="2706474812903655270">Dieses Video wird im Bild-in-Bild-Modus wiedergegeben</translation>
 <translation id="2709516037105925701">AutoFill</translation>
 <translation id="2723001399770238859">Audio</translation>
 <translation id="2746543609216772311">Verwenden Sie <ph name="MINIMUM_DATE_OR_TIME" /> oder einen späteren Wert.</translation>
@@ -71,11 +72,10 @@
 <translation id="3450233048674729344">Wert muss kleiner als oder gleich <ph name="MAXIMUM" /> sein.</translation>
 <translation id="3486220673238053218">Definition</translation>
 <translation id="3557673793733683882">Überschrift <ph name="HEADING_LEVEL" /></translation>
-<translation id="3639613635497528239">verbleibende Dauer des Films in Sekunden</translation>
+<translation id="3685101356851116974">Bild ohne Label</translation>
 <translation id="3706100364254443312">wechseln</translation>
 <translation id="3732799496749320381">mm</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
-<translation id="3785482301506746191">Video-Zeitachse</translation>
 <translation id="3808586225841795776">Begriff</translation>
 <translation id="3822383571486410024">Verlängern Sie diesen Text auf mindestens <ph name="MIN_CHARACTERS" /> Zeichen. Derzeit verwenden Sie <ph name="CURRENT_LENGTH" /> Zeichen.</translation>
 <translation id="383465348367842624">Vor dem <ph name="ATSIGN" />-Zeichen darf das Zeichen "<ph name="INVALIDCHARACTER" />" nicht verwendet werden.</translation>
@@ -94,8 +94,10 @@
 <translation id="4360991593054037559">Geben Sie einen gültigen Wert ein. Die zwei nächstliegenden gültigen Werte sind <ph name="VALID_VALUE_LOW" /> und <ph name="VALID_VALUE_HIGHER" />.</translation>
 <translation id="4384583879834880242">Fragen und Antworten</translation>
 <translation id="4413860115965805769">Menüschaltfläche</translation>
+<translation id="4444765639179266822">Es sieht aus wie: <ph name="OCR_TEXT" /></translation>
 <translation id="4446524499724042288">Glossarreferenz</translation>
 <translation id="4522570452068850558">Details</translation>
+<translation id="4542388879936266156">verbleibende Zeit: <ph name="REMAINING_TIME" /></translation>
 <translation id="4597532268155981612">Formular</translation>
 <translation id="4661075872484491155">tree</translation>
 <translation id="4664250907885839816">Nach dem <ph name="ATSIGN" />-Zeichen darf das Zeichen "<ph name="INVALIDCHARACTER" />" nicht verwendet werden.</translation>
@@ -111,6 +113,7 @@
 <translation id="4992066212339426712">Stummschaltung aufheben</translation>
 <translation id="49969490063480558">Geben Sie etwas nach dem <ph name="ATSIGN" />-Zeichen ein. Die Angabe "<ph name="INVALIDADDRESS" />" ist unvollständig.</translation>
 <translation id="5034860022980953847">Fortschrittsanzeige</translation>
+<translation id="5090250355906949916">Video-Zeitachse</translation>
 <translation id="5093189678851173835">Motto</translation>
 <translation id="5117590920725113268">Nächsten Monat anzeigen</translation>
 <translation id="512758898067543763">Zeilenüberschrift</translation>
@@ -118,6 +121,7 @@
 <translation id="5164977714490026579">Wert muss größer als oder gleich <ph name="MINIMUM" /> sein.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">Geben Sie etwas vor dem <ph name="ATSIGN" />-Zeichen ein. Die Angabe "<ph name="INVALIDADDRESS" />" ist unvollständig.</translation>
+<translation id="5334352251556557839">Medien können nicht abgespielt werden.</translation>
 <translation id="5406322316791861025">Zahl</translation>
 <translation id="5453733299334684579">Baumelement</translation>
 <translation id="5466621249238537318">Wählen Sie eine oder mehrere Dateien aus.</translation>
@@ -144,12 +148,16 @@
 <translation id="6150588977291308318">Bibliografie</translation>
 <translation id="6164829606128959761">Messinstrument</translation>
 <translation id="6166809985690652833">Nachwort</translation>
+<translation id="6209276755895393898">Anscheinend ist es: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">Glossar</translation>
+<translation id="628938136236500310">Bild-im-Bild-Modus aktiv</translation>
 <translation id="6398862346408813489">Auswahlbereich für Monatsanzeige</translation>
 <translation id="6404546809543547843">Audio-Zeitachse</translation>
+<translation id="6443871981718447451">Untertitelmenü einblenden</translation>
 <translation id="6453774872122745852">Danksagung</translation>
 <translation id="648732519525291180">Uhrzeitauswahl</translation>
 <translation id="6550675742724504774">Optionen</translation>
+<translation id="6572309429103589720">Ungültige Grammatik</translation>
 <translation id="658823671542763450">Vollbildmodus aktivieren</translation>
 <translation id="663493177488814956">Feed</translation>
 <translation id="6637586476836377253">log</translation>
@@ -162,7 +170,6 @@
 <translation id="6820355525329141109">Plug-in konnte nicht geladen werden.</translation>
 <translation id="6820615603175220800">Bibliografiereferenz</translation>
 <translation id="6843725295806269523">Stumm</translation>
-<translation id="6853785296079745596">Untertitel ausblenden</translation>
 <translation id="6885760532393684712">Verzeichnis</translation>
 <translation id="689129560213475294">Kolophon</translation>
 <translation id="6934078000481955284">blockquote</translation>
@@ -170,25 +177,29 @@
 <translation id="6981594929165378967">Einfügen</translation>
 <translation id="6989848892321993519">Verlängern Sie diesen Text auf mindestens <ph name="MIN_CHARACTERS" /> Zeichen. Derzeit verwenden Sie 1 Zeichen.</translation>
 <translation id="709897737746224366">Ihre Eingabe muss mit dem geforderten Format übereinstimmen.</translation>
+<translation id="7118469954320184356">Keine Beschreibung verfügbar.</translation>
 <translation id="7139483182332611405">Vorbemerkung</translation>
-<translation id="7223624360433298498">Vergangene Zeit</translation>
 <translation id="7263440858009898357">Wählen Sie ein Element in der Liste aus.</translation>
 <translation id="727747134524199931">Spaltenüberschrift</translation>
+<translation id="7320576522385648310">Wird zwischengespeichert</translation>
 <translation id="7353453495576941748">Danksagung</translation>
 <translation id="7364796246159120393">Datei auswählen</translation>
 <translation id="739024184232394898">Andere...</translation>
 <translation id="7405738980073107433">Endnoten</translation>
+<translation id="7410239719251593705">Enthält offenbar Inhalte nur für Erwachsene. Keine Beschreibung verfügbar.</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7491962110804786152">tab</translation>
 <translation id="7514365320538308">Herunterladen</translation>
 <translation id="7529102961911894712">Rückverweis</translation>
+<translation id="7533959249147584474">Grafik ohne Label</translation>
 <translation id="7647456547678091388">Tipp</translation>
 <translation id="7661956066982048809">Grafikdokument</translation>
 <translation id="7673697353781729403">Stunden</translation>
 <translation id="7681220483256441252">Index</translation>
-<translation id="7720026100085573005">Verbleibende Zeit</translation>
 <translation id="7740050170769002709">HTML-Inhalte</translation>
+<translation id="7745230546936012372">Wenn Sie fehlende Bildbeschreibungen abrufen möchten, öffnen Sie das Kontextmenü.</translation>
 <translation id="7750228210027921155">Bild-in-Bild</translation>
+<translation id="775297008183122718">Ungültiger Eintrag</translation>
 <translation id="7789962463072032349">Pausieren</translation>
 <translation id="7802800022689234070">Aufklappdreieck</translation>
 <translation id="7888071071722539607">Die E-Mail-Adresse muss ein <ph name="ATSIGN" />-Zeichen enthalten. In der Angabe "<ph name="INVALIDADDRESS" />" fehlt ein <ph name="ATSIGN" />-Zeichen.</translation>
@@ -197,10 +208,13 @@
 <translation id="8053789581856978548">Feld für den Suchtext</translation>
 <translation id="8057695513531652401">Bemerkung</translation>
 <translation id="8105797009065549151">Hinweisreferenz</translation>
+<translation id="811583516810654505">Beschreibung wird abgerufen…</translation>
 <translation id="8117451130807776954">Diese Woche</translation>
 <translation id="8199524924445686405">jjjj</translation>
+<translation id="8261464734335370856">Ungültige Schreibweise</translation>
 <translation id="8284326494547611709">Untertitel</translation>
 <translation id="835897206747267392">Ungültiger Wert.</translation>
+<translation id="8403857369060869934">verstrichene Zeit: <ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">Teil</translation>
 <translation id="8433900881053900389">Symbolleiste</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES" /> Dateien</translation>
@@ -225,7 +239,6 @@
 <translation id="8987927404178983737">Monat</translation>
 <translation id="901493112792887934">Aktuelle Dauer in Sekunden</translation>
 <translation id="9048119486235211610">Navigation</translation>
-<translation id="9050748414552849310">Untertitel anzeigen</translation>
 <translation id="9062295712474918030">Dokument</translation>
 <translation id="9093215626363556771">Bild-im-Bild-Modus beenden</translation>
 <translation id="9108370397979208512">math</translation>

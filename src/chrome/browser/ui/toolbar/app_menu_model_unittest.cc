@@ -9,7 +9,6 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/prefs/browser_prefs.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/global_error/global_error.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
@@ -23,6 +22,8 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/default_theme_provider.h"
+#include "ui/native_theme/native_theme.h"
 
 namespace {
 
@@ -60,6 +61,15 @@ class FakeIconDelegate : public AppMenuIconController::Delegate {
   // AppMenuIconController::Delegate:
   void UpdateTypeAndSeverity(
       AppMenuIconController::TypeAndSeverity type_and_severity) override {}
+  const ui::ThemeProvider* GetViewThemeProvider() const override {
+    return &theme_provider_;
+  }
+  ui::NativeTheme* GetViewNativeTheme() override {
+    return ui::NativeTheme::GetInstanceForNativeUi();
+  }
+
+ private:
+  ui::DefaultThemeProvider theme_provider_;
 };
 
 } // namespace
@@ -188,7 +198,6 @@ TEST_F(AppMenuModelTest, GlobalError) {
   // Make sure services required for tests are initialized.
   GlobalErrorService* service =
       GlobalErrorServiceFactory::GetForProfile(browser()->profile());
-  ProfileOAuth2TokenServiceFactory::GetForProfile(browser()->profile());
   const int command1 = 1234567;
   MenuError* error1 = new MenuError(command1);
   service->AddGlobalError(base::WrapUnique(error1));

@@ -7,8 +7,10 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/wm_event.h"
 #include "ui/aura/window.h"
 #include "ui/display/screen.h"
+#include "ui/wm/core/window_util.h"
 
 namespace ash {
 namespace wm {
@@ -20,6 +22,31 @@ std::string GetAdjustedBounds(const gfx::Rect& visible,
   AdjustBoundsToEnsureMinimumWindowVisibility(visible, &to_be_adjusted);
   return to_be_adjusted.ToString();
 }
+
+class FakeWindowState : public WindowState::State {
+ public:
+  explicit FakeWindowState() = default;
+  ~FakeWindowState() override = default;
+
+  // WindowState::State overrides:
+  void OnWMEvent(WindowState* window_state, const WMEvent* event) override {
+    if (event->type() == WM_EVENT_MINIMIZE)
+      was_visible_on_minimize_ = window_state->window()->IsVisible();
+  }
+  mojom::WindowStateType GetType() const override {
+    return mojom::WindowStateType::NORMAL;
+  }
+  void AttachState(WindowState* window_state,
+                   WindowState::State* previous_state) override {}
+  void DetachState(WindowState* window_state) override {}
+
+  bool was_visible_on_minimize() { return was_visible_on_minimize_; }
+
+ private:
+  bool was_visible_on_minimize_ = true;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeWindowState);
+};
 
 }  // namespace
 
@@ -139,6 +166,54 @@ TEST_F(WindowUtilTest, MoveWindowToDisplay) {
             screen->GetDisplayNearestWindow(window.get()).id());
   EXPECT_EQ(original_container_id, window->parent()->id());
   EXPECT_EQ(original_root, window->GetRootWindow());
+}
+
+TEST_F(WindowUtilTest, RemoveTransientDescendants) {
+  // Create two windows which have no transient children or parents. Test that
+  // neither of them get removed when running RemoveTransientDescendants.
+  auto window1 = CreateTestWindow();
+  auto window2 = CreateTestWindow();
+  std::vector<aura::Window*> window_list = {window1.get(), window2.get()};
+  RemoveTransientDescendants(&window_list);
+  ASSERT_EQ(2u, window_list.size());
+
+  // Create two windows whose transient roots are |window1|. One is a direct
+  // transient child and one is a transient descendant. Test that both get
+  // removed when calling RemoveTransientDescendants.
+  auto descendant1 = CreateTestWindow();
+  auto descendant2 = CreateTestWindow();
+  ::wm::AddTransientChild(descendant1.get(), descendant2.get());
+  ::wm::AddTransientChild(window1.get(), descendant1.get());
+  window_list.push_back(descendant1.get());
+  window_list.push_back(descendant2.get());
+  RemoveTransientDescendants(&window_list);
+  ASSERT_EQ(2u, window_list.size());
+  ASSERT_TRUE(base::ContainsValue(window_list, window1.get()));
+  ASSERT_TRUE(base::ContainsValue(window_list, window2.get()));
+
+  // Create a window which has a transient parent that is not in |window_list|.
+  // Test that the window is not removed when calling
+  // RemoveTransientDescendants.
+  auto window3 = CreateTestWindow();
+  auto descendant3 = CreateTestWindow();
+  ::wm::AddTransientChild(window3.get(), descendant3.get());
+  window_list.push_back(descendant3.get());
+  RemoveTransientDescendants(&window_list);
+  EXPECT_EQ(3u, window_list.size());
+}
+
+TEST_F(WindowUtilTest,
+       HideAndMaybeMinimizeWithoutAnimationMinimizesArcWindowsBeforeHiding) {
+  auto window = CreateTestWindow();
+  auto* state = new FakeWindowState();
+  GetWindowState(window.get())
+      ->SetStateObject(std::unique_ptr<WindowState::State>(state));
+
+  std::vector<aura::Window*> windows = {window.get()};
+  HideAndMaybeMinimizeWithoutAnimation(windows, /*minimize=*/true);
+
+  EXPECT_FALSE(window->IsVisible());
+  EXPECT_TRUE(state->was_visible_on_minimize());
 }
 
 }  // namespace wm

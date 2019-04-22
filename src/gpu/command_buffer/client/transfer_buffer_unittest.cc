@@ -33,9 +33,9 @@ class TransferBufferTest : public testing::Test {
   static const int32_t kNumCommandEntries = 400;
   static const int32_t kCommandBufferSizeBytes =
       kNumCommandEntries * sizeof(CommandBufferEntry);
-  static const unsigned int kStartingOffset = 64;
-  static const unsigned int kAlignment = 4;
-  static const size_t kTransferBufferSize = 256;
+  static const uint32_t kStartingOffset = 64;
+  static const uint32_t kAlignment = 4;
+  static const uint32_t kTransferBufferSize = 256;
 
   TransferBufferTest()
       : transfer_buffer_id_(0) {
@@ -91,9 +91,9 @@ void TransferBufferTest::TearDown() {
 #ifndef _MSC_VER
 const int32_t TransferBufferTest::kNumCommandEntries;
 const int32_t TransferBufferTest::kCommandBufferSizeBytes;
-const unsigned int TransferBufferTest::kStartingOffset;
-const unsigned int TransferBufferTest::kAlignment;
-const size_t TransferBufferTest::kTransferBufferSize;
+const uint32_t TransferBufferTest::kStartingOffset;
+const uint32_t TransferBufferTest::kAlignment;
+const uint32_t TransferBufferTest::kTransferBufferSize;
 #endif
 
 TEST_F(TransferBufferTest, Basic) {
@@ -159,7 +159,7 @@ TEST_F(TransferBufferTest, Free) {
   EXPECT_EQ(base::UnguessableToken(), transfer_buffer_->shared_memory_guid());
 
   // See that it gets reallocated.
-  unsigned int size = 0;
+  uint32_t size = 0;
   void* data = transfer_buffer_->AllocUpTo(1, &size);
   EXPECT_TRUE(data != nullptr);
   EXPECT_TRUE(transfer_buffer_->HaveBuffer());
@@ -206,7 +206,7 @@ TEST_F(TransferBufferTest, TooLargeAllocation) {
   void* ptr = transfer_buffer_->Alloc(kTransferBufferSize + 1);
   EXPECT_TRUE(ptr == nullptr);
   // Check we if we try to allocate larger than max we get max.
-  unsigned int size_allocated = 0;
+  uint32_t size_allocated = 0;
   ptr = transfer_buffer_->AllocUpTo(
       kTransferBufferSize + 1, &size_allocated);
   ASSERT_TRUE(ptr != nullptr);
@@ -231,9 +231,9 @@ class MockClientCommandBufferCanFail : public MockClientCommandBufferMockFlush {
   ~MockClientCommandBufferCanFail() override = default;
 
   MOCK_METHOD2(CreateTransferBuffer,
-               scoped_refptr<Buffer>(size_t size, int32_t* id));
+               scoped_refptr<Buffer>(uint32_t size, int32_t* id));
 
-  scoped_refptr<gpu::Buffer> RealCreateTransferBuffer(size_t size,
+  scoped_refptr<gpu::Buffer> RealCreateTransferBuffer(uint32_t size,
                                                       int32_t* id) {
     return MockClientCommandBufferMockFlush::CreateTransferBuffer(size, id);
   }
@@ -244,11 +244,11 @@ class TransferBufferExpandContractTest : public testing::Test {
   static const int32_t kNumCommandEntries = 400;
   static const int32_t kCommandBufferSizeBytes =
       kNumCommandEntries * sizeof(CommandBufferEntry);
-  static const unsigned int kStartingOffset = 64;
-  static const unsigned int kAlignment = 4;
-  static const size_t kStartTransferBufferSize = 256;
-  static const size_t kMaxTransferBufferSize = 1024;
-  static const size_t kMinTransferBufferSize = 128;
+  static const uint32_t kStartingOffset = 64;
+  static const uint32_t kAlignment = 4;
+  static const uint32_t kStartTransferBufferSize = 256;
+  static const uint32_t kMaxTransferBufferSize = 1024;
+  static const uint32_t kMinTransferBufferSize = 128;
 
   TransferBufferExpandContractTest()
       : transfer_buffer_id_(0) {
@@ -321,11 +321,11 @@ void TransferBufferExpandContractTest::TearDown() {
 #ifndef _MSC_VER
 const int32_t TransferBufferExpandContractTest::kNumCommandEntries;
 const int32_t TransferBufferExpandContractTest::kCommandBufferSizeBytes;
-const unsigned int TransferBufferExpandContractTest::kStartingOffset;
-const unsigned int TransferBufferExpandContractTest::kAlignment;
-const size_t TransferBufferExpandContractTest::kStartTransferBufferSize;
-const size_t TransferBufferExpandContractTest::kMaxTransferBufferSize;
-const size_t TransferBufferExpandContractTest::kMinTransferBufferSize;
+const uint32_t TransferBufferExpandContractTest::kStartingOffset;
+const uint32_t TransferBufferExpandContractTest::kAlignment;
+const uint32_t TransferBufferExpandContractTest::kStartTransferBufferSize;
+const uint32_t TransferBufferExpandContractTest::kMaxTransferBufferSize;
+const uint32_t TransferBufferExpandContractTest::kMinTransferBufferSize;
 #endif
 
 TEST_F(TransferBufferExpandContractTest, ExpandWithSmallAllocations) {
@@ -352,7 +352,7 @@ TEST_F(TransferBufferExpandContractTest, ExpandWithSmallAllocations) {
       transfer_buffer_->GetCurrentMaxAllocationWithoutRealloc());
 
   // Fill the free space.
-  unsigned int size_allocated = 0;
+  uint32_t size_allocated = 0;
   void* ptr = transfer_buffer_->AllocUpTo(transfer_buffer_->GetFreeSize(),
                                           &size_allocated);
   transfer_buffer_->FreePendingToken(ptr, token);
@@ -399,9 +399,9 @@ TEST_F(TransferBufferExpandContractTest, NoExpandWithInUseAllocation) {
             transfer_buffer_->GetCurrentMaxAllocationWithoutRealloc());
 
   // Fill the free space in two blocks.
-  unsigned int block_size_1 = transfer_buffer_->GetFreeSize() / 2;
-  unsigned int block_size_2 = transfer_buffer_->GetFreeSize() - block_size_1;
-  unsigned int size_allocated = 0;
+  uint32_t block_size_1 = transfer_buffer_->GetFreeSize() / 2;
+  uint32_t block_size_2 = transfer_buffer_->GetFreeSize() - block_size_1;
+  uint32_t size_allocated = 0;
   void* block1 = transfer_buffer_->AllocUpTo(block_size_1, &size_allocated);
   EXPECT_EQ(block_size_1, size_allocated);
   void* block2 = transfer_buffer_->AllocUpTo(block_size_2, &size_allocated);
@@ -448,7 +448,7 @@ TEST_F(TransferBufferExpandContractTest, ExpandWithLargeAllocations) {
             transfer_buffer_->GetCurrentMaxAllocationWithoutRealloc());
 
   // Allocate one byte more than the free space to force expansion.
-  unsigned int size_allocated = 0;
+  uint32_t size_allocated = 0;
   ExpectCreateTransferBuffer(kStartTransferBufferSize * 2);
   void* ptr = transfer_buffer_->AllocUpTo(transfer_buffer_->GetFreeSize() + 1,
                                           &size_allocated);
@@ -456,7 +456,7 @@ TEST_F(TransferBufferExpandContractTest, ExpandWithLargeAllocations) {
 
   // Expand again.
   ExpectCreateTransferBuffer(kStartTransferBufferSize * 4);
-  unsigned int size_requested = transfer_buffer_->GetFreeSize() + 1;
+  uint32_t size_requested = transfer_buffer_->GetFreeSize() + 1;
   ptr = transfer_buffer_->AllocUpTo(size_requested, &size_allocated);
   ASSERT_TRUE(ptr != nullptr);
   EXPECT_EQ(size_requested, size_allocated);
@@ -500,7 +500,7 @@ TEST_F(TransferBufferExpandContractTest, ShrinkRingBuffer) {
   transfer_buffer_->FreePendingToken(ptr, token);
 
   // We shouldn't shrink before we reach the allocation threshold.
-  for (size_t allocated = kMaxTransferBufferSize - kStartingOffset;
+  for (uint32_t allocated = kMaxTransferBufferSize - kStartingOffset;
        allocated < (kStartTransferBufferSize + kStartingOffset) *
                        (TransferBuffer::kShrinkThreshold);) {
     ptr = transfer_buffer_->Alloc(kStartTransferBufferSize);
@@ -545,9 +545,9 @@ TEST_F(TransferBufferExpandContractTest, Contract) {
           &MockClientCommandBufferCanFail::RealCreateTransferBuffer))
       .RetiresOnSaturation();
 
-  const size_t kSize1 = 256 - kStartingOffset;
-  const size_t kSize2 = 128 - kStartingOffset;
-  unsigned int size_allocated = 0;
+  const uint32_t kSize1 = 256 - kStartingOffset;
+  const uint32_t kSize2 = 128 - kStartingOffset;
+  uint32_t size_allocated = 0;
   void* ptr = transfer_buffer_->AllocUpTo(kSize1, &size_allocated);
   ASSERT_TRUE(ptr != nullptr);
   EXPECT_EQ(kSize2, size_allocated);
@@ -602,8 +602,8 @@ TEST_F(TransferBufferExpandContractTest, OutOfMemory) {
            DoAll(SetArgPointee<1>(-1), Return(scoped_refptr<gpu::Buffer>())))
       .RetiresOnSaturation();
 
-  const size_t kSize1 = 512 - kStartingOffset;
-  unsigned int size_allocated = 0;
+  const uint32_t kSize1 = 512 - kStartingOffset;
+  uint32_t size_allocated = 0;
   void* ptr = transfer_buffer_->AllocUpTo(kSize1, &size_allocated);
   ASSERT_TRUE(ptr == nullptr);
   EXPECT_FALSE(transfer_buffer_->HaveBuffer());
@@ -638,9 +638,9 @@ TEST_F(TransferBufferExpandContractTest, ReallocsToDefault) {
 }
 
 TEST_F(TransferBufferExpandContractTest, Shrink) {
-  unsigned int alloc_size = transfer_buffer_->GetFreeSize();
+  uint32_t alloc_size = transfer_buffer_->GetFreeSize();
   EXPECT_EQ(kStartTransferBufferSize - kStartingOffset, alloc_size);
-  unsigned int size_allocated = 0;
+  uint32_t size_allocated = 0;
   void* ptr = transfer_buffer_->AllocUpTo(alloc_size, &size_allocated);
 
   ASSERT_NE(ptr, nullptr);
@@ -649,13 +649,13 @@ TEST_F(TransferBufferExpandContractTest, Shrink) {
   EXPECT_EQ(0u, transfer_buffer_->GetFreeSize());
 
   // Shrink once.
-  const unsigned int shrink_size1 = 64;
+  const uint32_t shrink_size1 = 64;
   EXPECT_LT(shrink_size1, alloc_size);
   transfer_buffer_->ShrinkLastBlock(shrink_size1 - kAlignment + 1);
   EXPECT_EQ(alloc_size - shrink_size1, transfer_buffer_->GetFreeSize());
 
   // Shrink again.
-  const unsigned int shrink_size2 = 32;
+  const uint32_t shrink_size2 = 32;
   EXPECT_LT(shrink_size2, shrink_size1);
   transfer_buffer_->ShrinkLastBlock(shrink_size2);
   EXPECT_EQ(alloc_size - shrink_size2, transfer_buffer_->GetFreeSize());
@@ -669,10 +669,10 @@ TEST_F(TransferBufferExpandContractTest, Shrink) {
 
 TEST_F(TransferBufferTest, MultipleAllocsAndFrees) {
   // An arbitrary size, but is aligned so no padding needed.
-  constexpr size_t kArbitrarySize = 16;
+  constexpr uint32_t kArbitrarySize = 16;
 
   Initialize();
-  size_t original_free_size = transfer_buffer_->GetFreeSize();
+  uint32_t original_free_size = transfer_buffer_->GetFreeSize();
   EXPECT_EQ(transfer_buffer_->GetSize(), original_free_size);
   EXPECT_EQ(transfer_buffer_->GetFragmentedFreeSize(), original_free_size);
 
@@ -742,7 +742,7 @@ TEST_F(TransferBufferTest, MultipleAllocsAndFrees) {
   EXPECT_EQ(transfer_buffer_->GetFragmentedFreeSize(), original_free_size);
 }
 
-#if defined(GTEST_HAS_DEATH_TEST)
+#if defined(GTEST_HAS_DEATH_TEST) && DCHECK_IS_ON()
 
 TEST_F(TransferBufferTest, ResizeDuringScopedResultPtr) {
   Initialize();
@@ -750,19 +750,18 @@ TEST_F(TransferBufferTest, ResizeDuringScopedResultPtr) {
   // If an attempt is made to resize the transfer buffer while a result
   // pointer exists, we should hit a CHECK. Allocate just enough to force a
   // resize.
-  unsigned int size_allocated;
+  uint32_t size_allocated;
   ASSERT_DEATH(transfer_buffer_->AllocUpTo(transfer_buffer_->GetFreeSize() + 1,
                                            &size_allocated),
                "outstanding_result_pointer_");
 }
 
-#if DCHECK_IS_ON()
 TEST_F(TransferBufferTest, AllocDuringScopedResultPtr) {
   Initialize();
   ScopedResultPtr<int> ptr(transfer_buffer_.get());
   // If an attempt is made to allocate any amount in the transfer buffer while a
   // result pointer exists, we should hit a DCHECK.
-  unsigned int size_allocated;
+  uint32_t size_allocated;
   ASSERT_DEATH(transfer_buffer_->AllocUpTo(transfer_buffer_->GetFreeSize() + 1,
                                            &size_allocated),
                "outstanding_result_pointer_");
@@ -776,7 +775,6 @@ TEST_F(TransferBufferTest, TwoScopedResultPtrs) {
                "outstanding_result_pointer_");
 }
 
-#endif  // DCHECK_IS_ON()
-#endif  // defined(GTEST_HAS_DEATH_TEST)
+#endif  // defined(GTEST_HAS_DEATH_TEST) && DCHECK_IS_ON()
 
 }  // namespace gpu

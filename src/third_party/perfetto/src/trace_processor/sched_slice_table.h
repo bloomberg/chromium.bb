@@ -17,30 +17,55 @@
 #ifndef SRC_TRACE_PROCESSOR_SCHED_SLICE_TABLE_H_
 #define SRC_TRACE_PROCESSOR_SCHED_SLICE_TABLE_H_
 
-#include "src/trace_processor/storage_schema.h"
-#include "src/trace_processor/table.h"
-#include "src/trace_processor/trace_storage.h"
+#include "src/trace_processor/ftrace_utils.h"
+#include "src/trace_processor/storage_table.h"
 
 namespace perfetto {
 namespace trace_processor {
 
 // The implementation of the SQLite table containing slices of CPU time with the
 // metadata for those slices.
-class SchedSliceTable : public Table {
+class SchedSliceTable : public StorageTable {
  public:
   SchedSliceTable(sqlite3*, const TraceStorage* storage);
 
   static void RegisterTable(sqlite3* db, const TraceStorage* storage);
 
-  // Table implementation.
-  Table::Schema CreateSchema(int argc, const char* const* argv) override;
-  std::unique_ptr<Table::Cursor> CreateCursor(
-      const QueryConstraints& query_constraints,
-      sqlite3_value** argv) override;
+  // StorageTable implementation.
+  StorageSchema CreateStorageSchema() override;
+  uint32_t RowCount() override;
   int BestIndex(const QueryConstraints&, BestIndexInfo*) override;
 
  private:
-  StorageSchema schema_;
+  uint32_t EstimateQueryCost(const QueryConstraints& cs);
+
+  class EndStateColumn : public StorageColumn {
+   public:
+    EndStateColumn(std::string col_name,
+                   const std::deque<ftrace_utils::TaskState>* deque);
+    ~EndStateColumn() override;
+
+    void ReportResult(sqlite3_context*, uint32_t row) const override;
+
+    void Filter(int op, sqlite3_value*, FilteredRowIndex*) const override;
+
+    Comparator Sort(const QueryConstraints::OrderBy&) const override;
+
+    Table::ColumnType GetType() const override;
+
+   private:
+    static constexpr uint16_t kNumStateStrings =
+        ftrace_utils::TaskState::kMaxState + 1;
+    std::array<ftrace_utils::TaskState::TaskStateStr, kNumStateStrings>
+        state_strings_;
+
+    void FilterOnState(int op,
+                       sqlite3_value* value,
+                       FilteredRowIndex* index) const;
+
+    const std::deque<ftrace_utils::TaskState>* deque_ = nullptr;
+  };
+
   const TraceStorage* const storage_;
 };
 

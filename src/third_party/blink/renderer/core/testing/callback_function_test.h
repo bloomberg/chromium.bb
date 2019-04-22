@@ -24,8 +24,6 @@ class CallbackFunctionTest final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static CallbackFunctionTest* Create() { return new CallbackFunctionTest(); }
-
   String testCallback(V8TestCallback*,
                       const String&,
                       const String&,

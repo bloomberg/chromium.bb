@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ssl/common_name_mismatch_handler.h"
 
+#include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"

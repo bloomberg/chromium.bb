@@ -133,7 +133,6 @@ DOMWrapperWorld::~DOMWrapperWorld() {
 }
 
 void DOMWrapperWorld::Dispose() {
-  dom_object_holders_.clear();
   dom_data_store_.reset();
   DCHECK(GetWorldMap().Contains(world_id_));
   GetWorldMap().erase(world_id_);
@@ -205,26 +204,6 @@ void DOMWrapperWorld::SetNonMainWorldHumanReadableName(
   DCHECK(!IsMainWorldId(world_id));
 #endif
   IsolatedWorldHumanReadableNames().Set(world_id, human_readable_name);
-}
-
-void DOMWrapperWorld::RegisterDOMObjectHolderInternal(
-    std::unique_ptr<DOMObjectHolderBase> holder_base) {
-  DCHECK(!dom_object_holders_.Contains(holder_base.get()));
-  holder_base->SetWorld(this);
-  holder_base->SetWeak(&DOMWrapperWorld::WeakCallbackForDOMObjectHolder);
-  dom_object_holders_.insert(std::move(holder_base));
-}
-
-void DOMWrapperWorld::UnregisterDOMObjectHolder(
-    DOMObjectHolderBase* holder_base) {
-  DCHECK(dom_object_holders_.Contains(holder_base));
-  dom_object_holders_.erase(holder_base);
-}
-
-void DOMWrapperWorld::WeakCallbackForDOMObjectHolder(
-    const v8::WeakCallbackInfo<DOMObjectHolderBase>& data) {
-  DOMObjectHolderBase* holder_base = data.GetParameter();
-  holder_base->World()->UnregisterDOMObjectHolder(holder_base);
 }
 
 // static

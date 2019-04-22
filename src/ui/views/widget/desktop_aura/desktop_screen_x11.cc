@@ -4,6 +4,7 @@
 
 #include "ui/views/widget/desktop_aura/desktop_screen_x11.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
@@ -185,7 +186,7 @@ display::Display DesktopScreenX11::GetDisplayNearestPoint(
 display::Display DesktopScreenX11::GetDisplayMatching(
     const gfx::Rect& match_rect) const {
   int max_area = 0;
-  const display::Display* matching = NULL;
+  const display::Display* matching = nullptr;
   for (auto it = displays_.begin(); it != displays_.end(); ++it) {
     gfx::Rect intersect = gfx::IntersectRects(it->bounds(), match_rect);
     int area = intersect.width() * intersect.height();
@@ -260,7 +261,7 @@ DesktopScreenX11::DesktopScreenX11(
 }
 
 void DesktopScreenX11::RestartDelayedConfigurationTask() {
-  delayed_configuration_task_.Reset(base::Bind(
+  delayed_configuration_task_.Reset(base::BindOnce(
       &DesktopScreenX11::UpdateDisplays, weak_factory_.GetWeakPtr()));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, delayed_configuration_task_.callback());

@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_UI_HUNG_PLUGIN_TAB_HELPER_H_
 
 #include <map>
+#include <memory>
 
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
@@ -58,7 +58,6 @@ class HungPluginTabHelper
   friend class content::WebContentsUserData<HungPluginTabHelper>;
 
   struct PluginState;
-  typedef std::map<int, linked_ptr<PluginState> > PluginStateMap;
 
   explicit HungPluginTabHelper(content::WebContents* contents);
 
@@ -74,10 +73,12 @@ class HungPluginTabHelper
   void CloseBar(PluginState* state);
 
   // All currently hung plugins.
-  PluginStateMap hung_plugins_;
+  std::map<int, std::unique_ptr<PluginState>> hung_plugins_;
 
   ScopedObserver<infobars::InfoBarManager, infobars::InfoBarManager::Observer>
       infobar_observer_;
+
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(HungPluginTabHelper);
 };

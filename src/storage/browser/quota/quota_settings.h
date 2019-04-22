@@ -6,12 +6,14 @@
 #define STORAGE_BROWSER_QUOTA_QUOTA_SETTINGS_H_
 
 #include <stdint.h>
+#include <memory>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/optional.h"
 #include "base/time/time.h"
-#include "storage/browser/storage_browser_export.h"
+#include "storage/browser/quota/quota_disk_info_helper.h"
 
 namespace storage {
 
@@ -74,9 +76,10 @@ using GetQuotaSettingsFunc =
 // interval is 60 seconds to accomodate changes to the size of the volume.
 // Except, in the case of incognito, the poolize and quota values are based
 // on the amount of physical memory and the rerfresh interval is max'd out.
-STORAGE_EXPORT
+COMPONENT_EXPORT(STORAGE_BROWSER)
 void GetNominalDynamicSettings(const base::FilePath& partition_path,
                                bool is_incognito,
+                               QuotaDiskInfoHelper* diskInfoHelper,
                                OptionalQuotaSettingsCallback callback);
 
 // Returns settings with a poolsize of zero and no per host quota.
@@ -91,6 +94,10 @@ inline QuotaSettings GetHardCodedSettings(int64_t per_host_quota) {
                        per_host_quota, per_host_quota);
 }
 
+// Returns object that can fetch actual total disk space; instance lives
+// as long as the process is a live.
+COMPONENT_EXPORT(STORAGE_BROWSER)
+QuotaDiskInfoHelper* GetDefaultDiskInfoHelper();
 }  // namespace storage
 
 #endif  // STORAGE_BROWSER_QUOTA_QUOTA_MANAGER_H_

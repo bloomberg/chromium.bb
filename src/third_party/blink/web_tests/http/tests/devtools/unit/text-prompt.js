@@ -3,7 +3,12 @@
 
   var suggestions = ["heyoo", "hey it's a suggestion", "hey another suggestion"].map(s => ({text: s}));
   var prompt = new UI.TextPrompt();
-  prompt.initialize(() => Promise.resolve(suggestions));
+  let expression, query;
+  prompt.initialize(async (e, q) => {
+    expression = e;
+    query = q;
+    return suggestions;
+  });
   var div = document.createElement("div");
   UI.inspectorView.element.appendChild(div);
   prompt.attachAndStartEditing(div);
@@ -31,6 +36,14 @@
   await prompt.complete();
   TestRunner.addResult("Text:" + prompt.text());
   TestRunner.addResult("TextWithCurrentSuggestion:" + prompt.textWithCurrentSuggestion());
+
+  TestRunner.addResult("\nTest expression and query")
+  prompt.setText("the expression and query");
+  await prompt.complete();
+  TestRunner.addResult("Text:" + prompt.text());
+  TestRunner.addResult("Expression:" + expression);
+  TestRunner.addResult("Query:" + query);
+
 
   TestRunner.completeTest();
 })();

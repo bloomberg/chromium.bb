@@ -9,6 +9,7 @@
 
 #include <set>
 
+#include "base/cancelable_callback.h"
 #include "base/containers/queue.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -20,7 +21,7 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browsing_data_remover.h"
-#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -43,7 +44,7 @@ class CONTENT_EXPORT BrowsingDataRemoverImpl
       BrowsingDataRemoverDelegate* embedder_delegate) override;
   bool DoesOriginMatchMask(
       int origin_type_mask,
-      const GURL& origin,
+      const url::Origin& origin,
       storage::SpecialStoragePolicy* special_storage_policy) const override;
   void Remove(const base::Time& delete_begin,
               const base::Time& delete_end,
@@ -97,6 +98,24 @@ class CONTENT_EXPORT BrowsingDataRemoverImpl
   // Testing the private RemovalTask.
   FRIEND_TEST_ALL_PREFIXES(BrowsingDataRemoverImplTest, MultipleTasks);
 
+  // For debugging purposes. Please add new deletion tasks at the end.
+  // This enum is recorded in a histogram, so don't change or reuse ids.
+  // Entries must also be added to BrowsingDataRemoverTasks in enums.xml.
+  enum class TracingDataType {
+    kSynchronous = 1,
+    kEmbedderData = 2,
+    kStoragePartition = 3,
+    kHttpCache = 4,
+    kHttpAndMediaCaches = 5,
+    kReportingCache = 6,
+    kChannelIds = 7,
+    kNetworkHistory = 8,
+    kAuthCache = 9,
+    kCodeCaches = 10,
+    kNetworkErrorLogging = 11,
+    kMaxValue = kNetworkErrorLogging,
+  };
+
   // Represents a single removal task. Contains all parameters needed to execute
   // it and a pointer to the observer that added it. CONTENT_EXPORTed to be
   // visible in tests.
@@ -144,19 +163,23 @@ class CONTENT_EXPORT BrowsingDataRemoverImpl
   // Notifies observers and transitions to the idle state.
   void Notify();
 
-  // Called by the closures returned by CreatePendingTaskCompletionClosure().
+  // Called by the closures returned by CreateTaskCompletionClosure().
   // Checks if all tasks have completed, and if so, calls Notify().
-  void OnTaskComplete();
+  void OnTaskComplete(TracingDataType data_type);
 
   // Increments the number of pending tasks by one, and returns a OnceClosure
   // that calls OnTaskComplete(). The Remover is complete once all the closures
   // created by this method have been invoked.
-  base::OnceClosure CreatePendingTaskCompletionClosure();
+  base::OnceClosure CreateTaskCompletionClosure(TracingDataType data_type);
 
-  // Same as CreatePendingTaskCompletionClosure() but guarantees that
+  // Same as CreateTaskCompletionClosure() but guarantees that
   // OnTaskComplete() is called if the task is dropped. That can typically
   // happen when the connection is closed while an interface call is made.
-  base::OnceClosure CreatePendingTaskCompletionClosureForMojo();
+  base::OnceClosure CreateTaskCompletionClosureForMojo(
+      TracingDataType data_type);
+
+  // Records unfinished tasks from |pending_sub_tasks_| after a delay.
+  void RecordUnfinishedSubTasks();
 
   // Like GetWeakPtr(), but returns a weak pointer to BrowsingDataRemoverImpl
   // for internal purposes.
@@ -192,7 +215,12 @@ class CONTENT_EXPORT BrowsingDataRemoverImpl
   base::Callback<void(const base::Closure& continue_to_completion)>
       would_complete_callback_;
 
-  int num_pending_tasks_ = 0;
+  // Records which tasks of a deletion are currently active.
+  std::set<TracingDataType> pending_sub_tasks_;
+
+  // Fires after some time to track slow tasks. Cancelled when all tasks
+  // are finished.
+  base::CancelableClosure slow_pending_tasks_closure_;
 
   // Observers of the global state and individual tasks.
   base::ObserverList<Observer, true>::Unchecked observer_list_;

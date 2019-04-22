@@ -24,14 +24,40 @@ using base::android::ToJavaByteArray;
 namespace net {
 namespace android {
 
-std::string GetPrivateKeyClassName(const base::android::JavaRef<jobject>& key) {
+std::string GetPrivateKeyClassName(const JavaRef<jobject>& key) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jstring> name =
       Java_AndroidKeyStore_getPrivateKeyClassName(env, key);
   return ConvertJavaStringToUTF8(env, name);
 }
 
-bool SignWithPrivateKey(const base::android::JavaRef<jobject>& private_key_ref,
+bool PrivateKeySupportsSignature(const base::android::JavaRef<jobject>& key,
+                                 base::StringPiece algorithm) {
+  JNIEnv* env = AttachCurrentThread();
+
+  ScopedJavaLocalRef<jstring> algorithm_ref =
+      ConvertUTF8ToJavaString(env, algorithm);
+  DCHECK(!algorithm_ref.is_null());
+
+  jboolean result =
+      Java_AndroidKeyStore_privateKeySupportsSignature(env, key, algorithm_ref);
+  return !HasException(env) && result;
+}
+
+bool PrivateKeySupportsCipher(const base::android::JavaRef<jobject>& key,
+                              base::StringPiece algorithm) {
+  JNIEnv* env = AttachCurrentThread();
+
+  ScopedJavaLocalRef<jstring> algorithm_ref =
+      ConvertUTF8ToJavaString(env, algorithm);
+  DCHECK(!algorithm_ref.is_null());
+
+  jboolean result =
+      Java_AndroidKeyStore_privateKeySupportsCipher(env, key, algorithm_ref);
+  return !HasException(env) && result;
+}
+
+bool SignWithPrivateKey(const JavaRef<jobject>& private_key_ref,
                         base::StringPiece algorithm,
                         base::span<const uint8_t> input,
                         std::vector<uint8_t>* signature) {
@@ -58,28 +84,31 @@ bool SignWithPrivateKey(const base::android::JavaRef<jobject>& private_key_ref,
   return true;
 }
 
-AndroidEVP_PKEY* GetOpenSSLSystemHandleForPrivateKey(
-    const JavaRef<jobject>& private_key_ref) {
+bool EncryptWithPrivateKey(const JavaRef<jobject>& private_key_ref,
+                           base::StringPiece algorithm,
+                           base::span<const uint8_t> input,
+                           std::vector<uint8_t>* ciphertext) {
   JNIEnv* env = AttachCurrentThread();
-  // Note: the pointer is passed as a jint here because that's how it
-  // is stored in the Java object. Java doesn't have a primitive type
-  // like intptr_t that matches the size of pointers on the host
-  // machine, and Android only runs on 32-bit CPUs.
-  //
-  // Given that this routine shall only be called on Android < 4.2,
-  // this won't be a problem in the far future (e.g. when Android gets
-  // ported to 64-bit environments, if ever).
-  long pkey =
-      Java_AndroidKeyStore_getOpenSSLHandleForPrivateKey(env, private_key_ref);
-  return reinterpret_cast<AndroidEVP_PKEY*>(pkey);
-}
 
-ScopedJavaLocalRef<jobject> GetOpenSSLEngineForPrivateKey(
-    const JavaRef<jobject>& private_key_ref) {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> engine =
-      Java_AndroidKeyStore_getOpenSSLEngineForPrivateKey(env, private_key_ref);
-  return engine;
+  ScopedJavaLocalRef<jstring> algorithm_ref =
+      ConvertUTF8ToJavaString(env, algorithm);
+  DCHECK(!algorithm_ref.is_null());
+
+  // Convert message to byte[] array.
+  ScopedJavaLocalRef<jbyteArray> input_ref =
+      ToJavaByteArray(env, input.data(), input.size());
+  DCHECK(!input_ref.is_null());
+
+  // Invoke platform API
+  ScopedJavaLocalRef<jbyteArray> ciphertext_ref =
+      Java_AndroidKeyStore_encryptWithPrivateKey(env, private_key_ref,
+                                                 algorithm_ref, input_ref);
+  if (HasException(env) || ciphertext_ref.is_null())
+    return false;
+
+  // Write ciphertext to string.
+  JavaByteArrayToByteVector(env, ciphertext_ref, ciphertext);
+  return true;
 }
 
 }  // namespace android

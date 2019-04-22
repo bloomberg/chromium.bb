@@ -54,7 +54,7 @@ class BadClockBlockingPage : public SSLBlockingPageBase {
   // InterstitialPageDelegate implementation:
   void CommandReceived(const std::string& command) override;
   void OverrideEntry(content::NavigationEntry* entry) override;
-  void OverrideRendererPrefs(content::RendererPreferences* prefs) override;
+  void OverrideRendererPrefs(blink::mojom::RendererPreferences* prefs) override;
   void OnDontProceed() override;
 
   // SecurityInterstitialPage implementation:

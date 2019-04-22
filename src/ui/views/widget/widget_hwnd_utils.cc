@@ -54,13 +54,6 @@ void CalculateWindowStylesFromInitParams(
 
   // Set type-dependent style attributes.
   switch (params.type) {
-    case Widget::InitParams::TYPE_PANEL:
-      *ex_style |= WS_EX_TOPMOST;
-      if (params.remove_standard_frame) {
-        *style |= WS_POPUP;
-        break;
-      }
-      FALLTHROUGH;
     case Widget::InitParams::TYPE_WINDOW: {
       // WS_OVERLAPPEDWINDOW is equivalent to:
       //   WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU |
@@ -126,6 +119,12 @@ void CalculateWindowStylesFromInitParams(
 bool DidClientAreaSizeChange(const WINDOWPOS* window_pos) {
   return !(window_pos->flags & SWP_NOSIZE) ||
          window_pos->flags & SWP_FRAMECHANGED;
+}
+
+bool DidMinimizedChange(UINT old_size_param, UINT new_size_param) {
+  return (
+      (old_size_param == SIZE_MINIMIZED && new_size_param != SIZE_MINIMIZED) ||
+      (old_size_param != SIZE_MINIMIZED && new_size_param == SIZE_MINIMIZED));
 }
 
 void ConfigureWindowStyles(

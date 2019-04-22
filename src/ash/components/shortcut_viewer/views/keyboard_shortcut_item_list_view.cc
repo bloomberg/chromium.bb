@@ -8,6 +8,7 @@
 #include "ui/base/default_style.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
@@ -57,6 +58,7 @@ KeyboardShortcutItemListView::KeyboardShortcutItemListView() {
   SetLayoutManager(std::move(layout));
   SetBorder(
       views::CreateEmptyBorder(gfx::Insets(0, kLeftPadding, 0, kRightPadding)));
+  GetViewAccessibility().OverrideRole(ax::mojom::Role::kList);
 }
 
 void KeyboardShortcutItemListView::AddCategoryLabel(

@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
-#include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/tether/connection_preserver.h"
 #include "chromeos/components/tether/device_id_tether_network_guid_map.h"
 #include "chromeos/components/tether/device_status_util.h"
@@ -17,7 +17,6 @@
 #include "chromeos/components/tether/master_host_scan_cache.h"
 #include "chromeos/components/tether/tether_host_fetcher.h"
 #include "chromeos/network/network_state.h"
-#include "components/cryptauth/remote_device_loader.h"
 #include "components/session_manager/core/session_manager.h"
 
 namespace chromeos {
@@ -88,7 +87,7 @@ void HostScannerImpl::StopScan() {
 }
 
 void HostScannerImpl::OnTetherHostsFetched(
-    const cryptauth::RemoteDeviceRefList& tether_hosts) {
+    const multidevice::RemoteDeviceRefList& tether_hosts) {
   is_fetching_hosts_ = false;
 
   if (tether_hosts.empty()) {
@@ -118,7 +117,7 @@ void HostScannerImpl::OnTetherHostsFetched(
 void HostScannerImpl::OnTetherAvailabilityResponse(
     const std::vector<HostScannerOperation::ScannedDeviceInfo>&
         scanned_device_list_so_far,
-    const cryptauth::RemoteDeviceRefList&
+    const multidevice::RemoteDeviceRefList&
         gms_core_notifications_disabled_devices,
     bool is_final_scan_result) {
   if (scanned_device_list_so_far.empty() && !is_final_scan_result) {
@@ -138,7 +137,7 @@ void HostScannerImpl::OnTetherAvailabilityResponse(
              NotificationPresenter::PotentialHotspotNotificationState::
                  MULTIPLE_HOTSPOTS_NEARBY_SHOWN ||
          is_final_scan_result)) {
-      cryptauth::RemoteDeviceRef remote_device =
+      multidevice::RemoteDeviceRef remote_device =
           scanned_device_list_so_far.at(0).remote_device;
       int32_t signal_strength;
       NormalizeDeviceStatus(scanned_device_list_so_far.at(0).device_status,
@@ -180,7 +179,8 @@ void HostScannerImpl::OnSessionStateChanged() {
 void HostScannerImpl::SetCacheEntry(
     const HostScannerOperation::ScannedDeviceInfo& scanned_device_info) {
   const DeviceStatus& status = scanned_device_info.device_status;
-  cryptauth::RemoteDeviceRef remote_device = scanned_device_info.remote_device;
+  multidevice::RemoteDeviceRef remote_device =
+      scanned_device_info.remote_device;
 
   std::string carrier;
   int32_t battery_percentage;

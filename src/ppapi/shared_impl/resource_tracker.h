@@ -9,8 +9,8 @@
 
 #include <memory>
 #include <set>
+#include <unordered_map>
 
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
@@ -106,7 +106,7 @@ class PPAPI_SHARED_EXPORT ResourceTracker {
     // going away (otherwise, they may crash if they outlive the instance).
     ResourceSet resources;
   };
-  typedef base::hash_map<PP_Instance, std::unique_ptr<InstanceData>>
+  typedef std::unordered_map<PP_Instance, std::unique_ptr<InstanceData>>
       InstanceMap;
 
   InstanceMap instance_map_;
@@ -120,7 +120,7 @@ class PPAPI_SHARED_EXPORT ResourceTracker {
   //
   // A resource will be in this list as long as the object is alive.
   typedef std::pair<Resource*, int> ResourceAndRefCount;
-  typedef base::hash_map<PP_Resource, ResourceAndRefCount> ResourceMap;
+  typedef std::unordered_map<PP_Resource, ResourceAndRefCount> ResourceMap;
   ResourceMap live_resources_;
 
   int32_t last_resource_value_;

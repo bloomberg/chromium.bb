@@ -57,7 +57,7 @@ BookmarkCodec::BookmarkCodec()
           BookmarkNode::kInvalidSyncTransactionVersion) {
 }
 
-BookmarkCodec::~BookmarkCodec() {}
+BookmarkCodec::~BookmarkCodec() = default;
 
 std::unique_ptr<base::Value> BookmarkCodec::Encode(
     BookmarkModel* model,
@@ -86,7 +86,7 @@ std::unique_ptr<base::Value> BookmarkCodec::Encode(
   if (sync_transaction_version !=
       BookmarkNode::kInvalidSyncTransactionVersion) {
     roots->SetString(kSyncTransactionVersion,
-                     base::Int64ToString(sync_transaction_version));
+                     base::NumberToString(sync_transaction_version));
   }
   auto main = std::make_unique<base::DictionaryValue>();
   main->SetInteger(kVersionKey, kCurrentVersion);
@@ -99,7 +99,8 @@ std::unique_ptr<base::Value> BookmarkCodec::Encode(
   if (!sync_metadata_str.empty()) {
     std::string sync_metadata_str_base64;
     base::Base64Encode(sync_metadata_str, &sync_metadata_str_base64);
-    main->SetString(kSyncMetadata, std::move(sync_metadata_str_base64));
+    main->SetKey(kSyncMetadata,
+                 base::Value(std::move(sync_metadata_str_base64)));
   }
   return std::move(main);
 }
@@ -130,12 +131,12 @@ bool BookmarkCodec::Decode(const base::Value& value,
 std::unique_ptr<base::Value> BookmarkCodec::EncodeNode(
     const BookmarkNode* node) {
   std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue());
-  std::string id = base::Int64ToString(node->id());
+  std::string id = base::NumberToString(node->id());
   value->SetString(kIdKey, id);
   const base::string16& title = node->GetTitle();
   value->SetString(kNameKey, title);
   value->SetString(kDateAddedKey,
-                   base::Int64ToString(node->date_added().ToInternalValue()));
+                   base::NumberToString(node->date_added().ToInternalValue()));
   if (node->is_url()) {
     value->SetString(kTypeKey, kTypeURL);
     std::string url = node->url().possibly_invalid_spec();
@@ -145,7 +146,7 @@ std::unique_ptr<base::Value> BookmarkCodec::EncodeNode(
     value->SetString(kTypeKey, kTypeFolder);
     value->SetString(
         kDateModifiedKey,
-        base::Int64ToString(node->date_folder_modified().ToInternalValue()));
+        base::NumberToString(node->date_folder_modified().ToInternalValue()));
     UpdateChecksumWithFolderNode(id, title);
 
     auto child_values = std::make_unique<base::ListValue>();
@@ -159,7 +160,7 @@ std::unique_ptr<base::Value> BookmarkCodec::EncodeNode(
   if (node->sync_transaction_version() !=
       BookmarkNode::kInvalidSyncTransactionVersion) {
     value->SetString(kSyncTransactionVersion,
-                     base::Int64ToString(node->sync_transaction_version()));
+                     base::NumberToString(node->sync_transaction_version()));
   }
   return std::move(value);
 }
@@ -167,8 +168,8 @@ std::unique_ptr<base::Value> BookmarkCodec::EncodeNode(
 std::unique_ptr<base::Value> BookmarkCodec::EncodeMetaInfo(
     const BookmarkNode::MetaInfoMap& meta_info_map) {
   auto meta_info = std::make_unique<base::DictionaryValue>();
-  for (auto it = meta_info_map.begin(); it != meta_info_map.end(); ++it) {
-    meta_info->SetKey(it->first, base::Value(it->second));
+  for (const auto& item : meta_info_map) {
+    meta_info->SetKey(item.first, base::Value(item.second));
   }
   return std::move(meta_info);
 }
@@ -315,7 +316,7 @@ bool BookmarkCodec::DecodeNode(const base::DictionaryValue& value,
 
   std::string date_added_string;
   if (!value.GetString(kDateAddedKey, &date_added_string))
-    date_added_string = base::Int64ToString(Time::Now().ToInternalValue());
+    date_added_string = base::NumberToString(Time::Now().ToInternalValue());
   int64_t internal_time;
   base::StringToInt64(date_added_string, &internal_time);
 
@@ -344,7 +345,7 @@ bool BookmarkCodec::DecodeNode(const base::DictionaryValue& value,
   } else {
     std::string last_modified_date;
     if (!value.GetString(kDateModifiedKey, &last_modified_date))
-      last_modified_date = base::Int64ToString(Time::Now().ToInternalValue());
+      last_modified_date = base::NumberToString(Time::Now().ToInternalValue());
 
     const base::Value* child_values;
     if (!value.Get(kChildrenKey, &child_values))

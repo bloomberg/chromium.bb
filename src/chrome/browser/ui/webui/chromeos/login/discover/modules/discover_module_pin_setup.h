@@ -30,7 +30,8 @@ class DiscoverModulePinSetup : public DiscoverModule {
 
   // DiscoverModule:
   bool IsCompleted() const override;
-  std::unique_ptr<DiscoverHandler> CreateWebUIHandler() override;
+  std::unique_ptr<DiscoverHandler> CreateWebUIHandler(
+      JSCallsContainer* js_calls_container) override;
 
  private:
   std::string primary_user_password_;

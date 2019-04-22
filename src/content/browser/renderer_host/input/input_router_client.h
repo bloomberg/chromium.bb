@@ -68,9 +68,21 @@ class CONTENT_EXPORT InputRouterClient {
   // Called to see if there is an ongoing wheel scroll sequence on the client.
   virtual bool IsWheelScrollInProgress() = 0;
 
+  // Called to see if the mouse has entered the autoscroll mode. Note that when
+  // this function returns true it does not necessarily mean that a GSB with
+  // autoscroll source is sent since the GSB gets sent on the first mouse move
+  // in autoscroll mode rather than on middle click/mouse-down.
+  virtual bool IsAutoscrollInProgress() = 0;
+
   // Called to toggle whether the RenderWidgetHost should capture all mouse
   // input.
   virtual void SetMouseCapture(bool capture) = 0;
+
+  virtual void FallbackCursorModeLockCursor(bool left,
+                                            bool right,
+                                            bool up,
+                                            bool down) = 0;
+  virtual void FallbackCursorModeSetCursorVisibility(bool visible) = 0;
 };
 
 } // namespace content

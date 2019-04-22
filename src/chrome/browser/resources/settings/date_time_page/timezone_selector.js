@@ -78,11 +78,13 @@ Polymer({
     }
 
     // Only fetch the list once.
-    if (this.timeZoneList_.length > 1 || !CrSettingsPrefs.isInitialized)
+    if (this.timeZoneList_.length > 1 || !CrSettingsPrefs.isInitialized) {
       return;
+    }
 
-    if (this.getTimeZonesRequestSent_)
+    if (this.getTimeZonesRequestSent_) {
       return;
+    }
 
     // If auto-detect is enabled, we only need the current time zone.
     if (this.getPref('generated.resolve_timezone_by_geolocation_on_off')
@@ -147,8 +149,9 @@ Polymer({
   updateActiveTimeZoneName_: function(activeTimeZoneId) {
     const activeTimeZone = this.timeZoneList_.find(
         (timeZone) => timeZone.value == activeTimeZoneId);
-    if (activeTimeZone)
+    if (activeTimeZone) {
       this.activeTimeZoneDisplayName = activeTimeZone.name;
+    }
   },
 
 

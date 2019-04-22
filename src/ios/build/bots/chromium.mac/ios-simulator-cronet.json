@@ -25,77 +25,56 @@
       "app": "cronet_unittests_ios",
       "device type": "iPhone 5s",
       "os": "9.3",
-      "dimensions": [
-        { "os": "Mac-10.13.4", "pool": "Chrome" },
-        { "os": "Mac-10.13.5", "pool": "Chrome" },
-        { "os": "Mac-10.13.6", "pool": "Chrome" }
-      ],
+      "host os": "Mac-10.13.6",
+      "pool": "Chrome",
       "priority": 30
     },
     {
       "app": "cronet_unittests_ios",
       "device type": "iPhone 5s",
       "os": "11.4",
-      "dimensions": [
-        { "os": "Mac-10.13.4", "pool": "Chrome" },
-        { "os": "Mac-10.13.5", "pool": "Chrome" },
-        { "os": "Mac-10.13.6", "pool": "Chrome" }
-      ],
+      "host os": "Mac-10.13.6",
+      "pool": "Chrome",
       "priority": 30
     },
     {
       "app": "cronet_unittests_ios",
       "device type": "iPhone 5s",
       "os": "12.1",
-      "dimensions": [
-        { "os": "Mac-10.13.4", "pool": "Chrome" },
-        { "os": "Mac-10.13.5", "pool": "Chrome" },
-        { "os": "Mac-10.13.6", "pool": "Chrome" }
-      ],
+      "host os": "Mac-10.13.6",
+      "pool": "Chrome",
       "priority": 30
     },
     {
       "app": "cronet_test",
       "device type": "iPhone 5s",
       "os": "9.3",
-      "dimensions": [
-        { "os": "Mac-10.13.4", "pool": "Chrome" },
-        { "os": "Mac-10.13.5", "pool": "Chrome" },
-        { "os": "Mac-10.13.6", "pool": "Chrome" }
-      ],
+      "host os": "Mac-10.13.6",
+      "pool": "Chrome",
       "priority": 30
     },
     {
       "app": "cronet_test",
       "device type": "iPad Air 2",
       "os": "11.4",
-      "dimensions": [
-        { "os": "Mac-10.13.4", "pool": "Chrome" },
-        { "os": "Mac-10.13.5", "pool": "Chrome" },
-        { "os": "Mac-10.13.6", "pool": "Chrome" }
-      ],
+      "host os": "Mac-10.13.6",
+      "pool": "Chrome",
       "priority": 30
     },
     {
       "app": "cronet_test",
       "device type": "iPad Air 2",
       "os": "10.3",
-      "dimensions": [
-        { "os": "Mac-10.13.4", "pool": "Chrome" },
-        { "os": "Mac-10.13.5", "pool": "Chrome" },
-        { "os": "Mac-10.13.6", "pool": "Chrome" }
-      ],
+      "host os": "Mac-10.13.6",
+      "pool": "Chrome",
       "priority": 30
     },
     {
       "app": "cronet_test",
       "device type": "iPad Air 2",
       "os": "12.1",
-      "dimensions": [
-        { "os": "Mac-10.13.4", "pool": "Chrome" },
-        { "os": "Mac-10.13.5", "pool": "Chrome" },
-        { "os": "Mac-10.13.6", "pool": "Chrome" }
-      ],
+      "host os": "Mac-10.13.6",
+      "pool": "Chrome",
       "priority": 30
     }
   ]

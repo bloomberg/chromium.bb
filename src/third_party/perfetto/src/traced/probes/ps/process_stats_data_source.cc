@@ -108,6 +108,12 @@ ProcessStatsDataSource::ProcessStatsDataSource(
                   poll_period_ms_);
     poll_period_ms_ = 100;
   }
+
+  if (poll_period_ms_ > 0) {
+    auto proc_stats_ttl_ms = ps_config.proc_stats_cache_ttl_ms();
+    process_stats_cache_ttl_ticks_ =
+        std::max(proc_stats_ttl_ms / poll_period_ms_, 1u);
+  }
 }
 
 ProcessStatsDataSource::~ProcessStatsDataSource() = default;
@@ -128,6 +134,7 @@ base::WeakPtr<ProcessStatsDataSource> ProcessStatsDataSource::GetWeakPtr()
 }
 
 void ProcessStatsDataSource::WriteAllProcesses() {
+  PERFETTO_METATRACE("WriteAllProcesses", 0);
   PERFETTO_DCHECK(!cur_ps_tree_);
   base::ScopedDir proc_dir = OpenProcDir();
   if (!proc_dir)
@@ -139,10 +146,18 @@ void ProcessStatsDataSource::WriteAllProcesses() {
     base::ScopedDir task_dir(opendir(task_path));
     if (!task_dir)
       continue;
+
     while (int32_t tid = ReadNextNumericDir(*task_dir)) {
       if (tid == pid)
         continue;
-      WriteProcessOrThread(tid);
+      if (record_thread_names_) {
+        WriteProcessOrThread(tid);
+      } else {
+        // If we are not interested in thread names, there is no need to open
+        // a proc file for each thread. We can save time and directly write the
+        // thread record.
+        WriteThread(tid, pid, /*optional_name=*/nullptr);
+      }
     }
   }
   FinalizeCurPacket();
@@ -166,6 +181,7 @@ void ProcessStatsDataSource::Flush(FlushRequestID,
   // We shouldn't get this in the middle of WriteAllProcesses() or OnPids().
   PERFETTO_DCHECK(!cur_ps_tree_);
   PERFETTO_DCHECK(!cur_ps_stats_);
+  PERFETTO_DCHECK(!cur_ps_stats_process_);
   writer_->Flush(callback);
 }
 
@@ -180,7 +196,10 @@ void ProcessStatsDataSource::WriteProcessOrThread(int32_t pid) {
     WriteProcess(tgid, proc_status);
   if (pid != tgid) {
     PERFETTO_DCHECK(!seen_pids_.count(pid));
-    WriteThread(pid, tgid, proc_status);
+    std::string thread_name;
+    if (record_thread_names_)
+      thread_name = ReadProcStatusEntry(proc_status, "Name:");
+    WriteThread(pid, tgid, thread_name.empty() ? nullptr : thread_name.c_str());
   }
 }
 
@@ -205,12 +224,12 @@ void ProcessStatsDataSource::WriteProcess(int32_t pid,
 
 void ProcessStatsDataSource::WriteThread(int32_t tid,
                                          int32_t tgid,
-                                         const std::string& proc_status) {
+                                         const char* optional_name) {
   auto* thread = GetOrCreatePsTree()->add_threads();
   thread->set_tid(tid);
   thread->set_tgid(tgid);
-  if (record_thread_names_)
-    thread->set_name(ReadProcStatusEntry(proc_status, "Name:").c_str());
+  if (optional_name)
+    thread->set_name(optional_name);
   seen_pids_.emplace(tid);
 }
 
@@ -257,6 +276,7 @@ protos::pbzero::ProcessTree* ProcessStatsDataSource::GetOrCreatePsTree() {
   if (!cur_ps_tree_)
     cur_ps_tree_ = cur_packet_->set_process_tree();
   cur_ps_stats_ = nullptr;
+  cur_ps_stats_process_ = nullptr;
   return cur_ps_tree_;
 }
 
@@ -265,7 +285,17 @@ protos::pbzero::ProcessStats* ProcessStatsDataSource::GetOrCreateStats() {
   if (!cur_ps_stats_)
     cur_ps_stats_ = cur_packet_->set_process_stats();
   cur_ps_tree_ = nullptr;
+  cur_ps_stats_process_ = nullptr;
   return cur_ps_stats_;
+}
+
+protos::pbzero::ProcessStats_Process*
+ProcessStatsDataSource::GetOrCreateStatsProcess(int32_t pid) {
+  if (cur_ps_stats_process_)
+    return cur_ps_stats_process_;
+  cur_ps_stats_process_ = GetOrCreateStats()->add_processes();
+  cur_ps_stats_process_->set_pid(pid);
+  return cur_ps_stats_process_;
 }
 
 void ProcessStatsDataSource::FinalizeCurPacket() {
@@ -273,6 +303,7 @@ void ProcessStatsDataSource::FinalizeCurPacket() {
   PERFETTO_DCHECK(!cur_ps_stats_ || cur_packet_);
   cur_ps_tree_ = nullptr;
   cur_ps_stats_ = nullptr;
+  cur_ps_stats_process_ = nullptr;
   cur_packet_ = TraceWriter::TracePacketHandle{};
 }
 
@@ -287,6 +318,12 @@ void ProcessStatsDataSource::Tick(
   thiz.task_runner_->PostDelayedTask(
       std::bind(&ProcessStatsDataSource::Tick, weak_this), delay_ms);
   thiz.WriteAllProcessStats();
+
+  // We clear the cache every process_stats_cache_ttl_ticks_ ticks.
+  if (++thiz.ticks_ == thiz.process_stats_cache_ttl_ticks_) {
+    thiz.ticks_ = 0;
+    thiz.process_stats_cache_.clear();
+  }
 }
 
 void ProcessStatsDataSource::WriteAllProcessStats() {
@@ -300,21 +337,36 @@ void ProcessStatsDataSource::WriteAllProcessStats() {
     return;
   std::vector<int32_t> pids;
   while (int32_t pid = ReadNextNumericDir(*proc_dir)) {
+    cur_ps_stats_process_ = nullptr;
+
     uint32_t pid_u = static_cast<uint32_t>(pid);
-    if (pids_to_skip_.size() > pid_u && pids_to_skip_[pid_u])
+    if (skip_stats_for_pids_.size() > pid_u && skip_stats_for_pids_[pid_u])
       continue;
+
     std::string proc_status = ReadProcPidFile(pid, "status");
     if (proc_status.empty())
       continue;
-    if (!WriteProcessStats(pid, proc_status)) {
-      // If WriteProcessStats() fails the pid is very likely a kernel thread
+
+    if (!WriteMemCounters(pid, proc_status)) {
+      // If WriteMemCounters() fails the pid is very likely a kernel thread
       // that has a valid /proc/[pid]/status but no memory values. In this
       // case avoid keep polling it over and over.
-      if (pids_to_skip_.size() <= pid_u)
-        pids_to_skip_.resize(pid_u + 1);
-      pids_to_skip_[pid_u] = true;
+      if (skip_stats_for_pids_.size() <= pid_u)
+        skip_stats_for_pids_.resize(pid_u + 1);
+      skip_stats_for_pids_[pid_u] = true;
       continue;
     }
+
+    std::string oom_score_adj = ReadProcPidFile(pid, "oom_score_adj");
+    if (!oom_score_adj.empty()) {
+      CachedProcessStats& cached = process_stats_cache_[pid];
+      auto counter = ToInt(oom_score_adj);
+      if (counter != cached.oom_score_adj) {
+        GetOrCreateStatsProcess(pid)->set_oom_score_adj(counter);
+        cached.oom_score_adj = counter;
+      }
+    }
+
     pids.push_back(pid);
   }
   FinalizeCurPacket();
@@ -327,21 +379,10 @@ void ProcessStatsDataSource::WriteAllProcessStats() {
 // Returns true if the stats for the given |pid| have been written, false it
 // it failed (e.g., |pid| was a kernel thread and, as such, didn't report any
 // memory counters).
-bool ProcessStatsDataSource::WriteProcessStats(int32_t pid,
-                                               const std::string& proc_status) {
-  // The MemCounters entry for a process is created lazily on the first call.
-  // This is to prevent creating empty entries that have only a pid for
-  // kernel threads and other /proc/[pid] entries that have no counters
-  // associated.
+bool ProcessStatsDataSource::WriteMemCounters(int32_t pid,
+                                              const std::string& proc_status) {
   bool proc_status_has_mem_counters = false;
-  protos::pbzero::ProcessStats::MemCounters* mem_counters = nullptr;
-  auto get_counters_lazy = [this, &mem_counters, pid] {
-    if (!mem_counters) {
-      mem_counters = GetOrCreateStats()->add_mem_counters();
-      mem_counters->set_pid(pid);
-    }
-    return mem_counters;
-  };
+  CachedProcessStats& cached = process_stats_cache_[pid];
 
   // Parse /proc/[pid]/status, which looks like this:
   // Name:   cat
@@ -366,21 +407,54 @@ bool ProcessStatsDataSource::WriteProcessStats(int32_t pid,
       if (strcmp(key.data(), "VmSize") == 0) {
         // Assume that if we see VmSize we'll see also the others.
         proc_status_has_mem_counters = true;
-        get_counters_lazy()->set_vm_size_kb(ToU32(value.data()));
+
+        auto counter = ToU32(value.data());
+        if (counter != cached.vm_size_kb) {
+          GetOrCreateStatsProcess(pid)->set_vm_size_kb(counter);
+          cached.vm_size_kb = counter;
+        }
       } else if (strcmp(key.data(), "VmLck") == 0) {
-        get_counters_lazy()->set_vm_locked_kb(ToU32(value.data()));
+        auto counter = ToU32(value.data());
+        if (counter != cached.vm_locked_kb) {
+          GetOrCreateStatsProcess(pid)->set_vm_locked_kb(counter);
+          cached.vm_locked_kb = counter;
+        }
       } else if (strcmp(key.data(), "VmHWM") == 0) {
-        get_counters_lazy()->set_vm_hwm_kb(ToU32(value.data()));
+        auto counter = ToU32(value.data());
+        if (counter != cached.vm_hvm_kb) {
+          GetOrCreateStatsProcess(pid)->set_vm_hwm_kb(counter);
+          cached.vm_hvm_kb = counter;
+        }
       } else if (strcmp(key.data(), "VmRSS") == 0) {
-        get_counters_lazy()->set_vm_rss_kb(ToU32(value.data()));
+        auto counter = ToU32(value.data());
+        if (counter != cached.vm_rss_kb) {
+          GetOrCreateStatsProcess(pid)->set_vm_rss_kb(counter);
+          cached.vm_rss_kb = counter;
+        }
       } else if (strcmp(key.data(), "RssAnon") == 0) {
-        get_counters_lazy()->set_rss_anon_kb(ToU32(value.data()));
+        auto counter = ToU32(value.data());
+        if (counter != cached.rss_anon_kb) {
+          GetOrCreateStatsProcess(pid)->set_rss_anon_kb(counter);
+          cached.rss_anon_kb = counter;
+        }
       } else if (strcmp(key.data(), "RssFile") == 0) {
-        get_counters_lazy()->set_rss_file_kb(ToU32(value.data()));
+        auto counter = ToU32(value.data());
+        if (counter != cached.rss_file_kb) {
+          GetOrCreateStatsProcess(pid)->set_rss_file_kb(counter);
+          cached.rss_file_kb = counter;
+        }
       } else if (strcmp(key.data(), "RssShmem") == 0) {
-        get_counters_lazy()->set_rss_shmem_kb(ToU32(value.data()));
+        auto counter = ToU32(value.data());
+        if (counter != cached.rss_shmem_kb) {
+          GetOrCreateStatsProcess(pid)->set_rss_shmem_kb(counter);
+          cached.rss_shmem_kb = counter;
+        }
       } else if (strcmp(key.data(), "VmSwap") == 0) {
-        get_counters_lazy()->set_vm_swap_kb(ToU32(value.data()));
+        auto counter = ToU32(value.data());
+        if (counter != cached.vm_swap_kb) {
+          GetOrCreateStatsProcess(pid)->set_vm_swap_kb(counter);
+          cached.vm_swap_kb = counter;
+        }
       }
 
       key.clear();

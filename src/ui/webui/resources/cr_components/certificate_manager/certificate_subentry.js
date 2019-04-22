@@ -144,7 +144,7 @@ Polymer({
 
   /** @private */
   onDotsTap_: function() {
-    var actionMenu = /** @type {!CrActionMenuElement} */ (this.$.menu.get());
+    const actionMenu = /** @type {!CrActionMenuElement} */ (this.$.menu.get());
     actionMenu.showAt(this.$.dots);
   },
 

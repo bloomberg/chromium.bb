@@ -6,6 +6,7 @@
 #define GPU_IPC_SERVICE_GPU_CHANNEL_TEST_COMMON_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/unsafe_shared_memory_region.h"
@@ -25,18 +26,24 @@ class GpuChannel;
 class GpuChannelManager;
 class Scheduler;
 class SyncPointManager;
+class SharedImageManager;
 class TestGpuChannelManagerDelegate;
 
 class GpuChannelTestCommon : public testing::Test {
  public:
-  GpuChannelTestCommon();
+  explicit GpuChannelTestCommon(bool use_stub_bindings);
   // Constructor which allows a custom set of GPU driver bug workarounds.
-  explicit GpuChannelTestCommon(std::vector<int32_t> enabled_workarounds);
+  GpuChannelTestCommon(std::vector<int32_t> enabled_workarounds,
+                       bool use_stub_bindings);
   ~GpuChannelTestCommon() override;
 
  protected:
-  GpuChannelManager* channel_manager() { return channel_manager_.get(); }
-  base::TestSimpleTaskRunner* task_runner() { return task_runner_.get(); }
+  Scheduler* scheduler() const { return scheduler_.get(); }
+  GpuChannelManager* channel_manager() const { return channel_manager_.get(); }
+  base::TestSimpleTaskRunner* task_runner() const { return task_runner_.get(); }
+  base::TestSimpleTaskRunner* io_task_runner() const {
+    return io_task_runner_.get();
+  }
 
   GpuChannel* CreateChannel(int32_t client_id, bool is_gpu_host);
 
@@ -49,6 +56,7 @@ class GpuChannelTestCommon : public testing::Test {
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   scoped_refptr<base::TestSimpleTaskRunner> io_task_runner_;
   std::unique_ptr<SyncPointManager> sync_point_manager_;
+  std::unique_ptr<SharedImageManager> shared_image_manager_;
   std::unique_ptr<Scheduler> scheduler_;
   std::unique_ptr<TestGpuChannelManagerDelegate> channel_manager_delegate_;
   std::unique_ptr<GpuChannelManager> channel_manager_;

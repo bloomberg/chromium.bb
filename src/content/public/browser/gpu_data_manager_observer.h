@@ -24,6 +24,6 @@ class CONTENT_EXPORT GpuDataManagerObserver {
   virtual ~GpuDataManagerObserver() {}
 };
 
-};  // namespace content
+}  // namespace content
 
 #endif  // CONTENT_PUBLIC_BROWSER_GPU_DATA_MANAGER_OBSERVER_H_

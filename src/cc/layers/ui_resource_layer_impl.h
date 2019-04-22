@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "cc/cc_export.h"
 #include "cc/layers/layer_impl.h"
@@ -31,7 +30,10 @@ class CC_EXPORT UIResourceLayerImpl : public LayerImpl {
                                                      int id) {
     return base::WrapUnique(new UIResourceLayerImpl(tree_impl, id));
   }
+  UIResourceLayerImpl(const UIResourceLayerImpl&) = delete;
   ~UIResourceLayerImpl() override;
+
+  UIResourceLayerImpl& operator=(const UIResourceLayerImpl&) = delete;
 
   void SetUIResourceId(UIResourceId uid);
 
@@ -52,7 +54,7 @@ class CC_EXPORT UIResourceLayerImpl : public LayerImpl {
   void AppendQuads(viz::RenderPass* render_pass,
                    AppendQuadsData* append_quads_data) override;
 
-  std::unique_ptr<base::DictionaryValue> LayerAsJson() override;
+  std::unique_ptr<base::DictionaryValue> LayerAsJson() const override;
 
  protected:
   UIResourceLayerImpl(LayerTreeImpl* tree_impl, int id);
@@ -68,8 +70,6 @@ class CC_EXPORT UIResourceLayerImpl : public LayerImpl {
 
  private:
   const char* LayerTypeAsString() const override;
-
-  DISALLOW_COPY_AND_ASSIGN(UIResourceLayerImpl);
 };
 
 }  // namespace cc

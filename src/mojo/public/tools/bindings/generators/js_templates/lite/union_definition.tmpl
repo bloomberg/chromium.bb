@@ -1,6 +1,9 @@
+{%  if generate_closure_exports -%}
+goog.provide('{{module.namespace}}.{{union.name}}');
+{% endif %}
 
-mojo.mojom.Union(
-    {{union.name}}, '{{union.name}}',
+mojo.internal.Union(
+    {{module.namespace}}.{{union.name}}Spec.$, '{{union.name}}',
     {
 {%- for field in union.fields %}
       '{{field.name}}': {
@@ -12,3 +15,12 @@ mojo.mojom.Union(
       },
 {%- endfor %}
     });
+
+/**
+ * @typedef { {
+{%- for field in union.fields %}
+ *   {{field.name}}: ({{field.kind|lite_closure_type_with_nullability}}|undefined),
+{%-  endfor %}
+ * } }
+ */
+{{module.namespace}}.{{union.name}};

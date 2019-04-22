@@ -27,8 +27,8 @@ def build(out_dir, build_target, extra_options=''):
 
 
 def install(out_dir):
-  cmd = 'build/android/adb_install_apk.py ' + out_dir + '/apks/{0}'
-  return run(cmd.format('CronetTest.apk')) or \
+  cmd = 'BUILDTYPE=' + out_dir[4:] + ' build/android/adb_install_apk.py {0}'
+  return run(cmd.format('CronetTestInstrumentation.apk')) or \
     run(cmd.format('ChromiumNetTestSupport.apk'))
 
 
@@ -160,7 +160,8 @@ def main():
     test_target = 'cronet_test_instrumentation_apk'
     unit_target = 'cronet_unittests_android'
     gn_args = get_mobile_gn_args('android', options.release) + \
-              'use_errorprone_java_compiler=true enable_reporting=true '
+              'use_errorprone_java_compiler=true enable_reporting=true ' + \
+              'use_hashed_jni_names=true '
     gn_extra = ''
     out_dir_suffix = ''
     if options.x86:

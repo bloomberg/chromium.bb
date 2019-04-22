@@ -77,7 +77,7 @@ IN_PROC_BROWSER_TEST_P(BrowserTestParam,
                         "test_browser_app", true /* trusted_source */,
                         gfx::Rect(), browser()->profile(), true)
                   : Browser::CreateParams(browser()->profile(), true);
-  gfx::Rect original_bounds(gfx::Rect(150, 250, 400, 100));
+  gfx::Rect original_bounds(gfx::Rect(150, 250, 510, 150));
   params.initial_show_state = ui::SHOW_STATE_NORMAL;
   params.initial_bounds = original_bounds;
   Browser* browser = new Browser(params);
@@ -125,6 +125,6 @@ IN_PROC_BROWSER_TEST_P(BrowserTestParam,
       << (is_test_app ? "for app window" : "for tabbed browser window");
 }
 
-INSTANTIATE_TEST_CASE_P(BrowserTestTabbedOrApp,
-                        BrowserTestParam,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(BrowserTestTabbedOrApp,
+                         BrowserTestParam,
+                         testing::Bool());

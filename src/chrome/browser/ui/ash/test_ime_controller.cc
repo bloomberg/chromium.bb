@@ -8,8 +8,6 @@
 #include <string>
 #include <utility>
 
-#include "ash/public/interfaces/ime_controller.mojom.h"
-
 TestImeController::TestImeController() : binding_(this) {}
 TestImeController::~TestImeController() = default;
 

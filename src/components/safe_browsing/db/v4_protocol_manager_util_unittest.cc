@@ -212,7 +212,7 @@ TEST_F(V4ProtocolManagerUtilTest, CanonicalizeUrl) {
       {"javascript:alert()", "", "", ""},
       {"mailto:abc@example.com", "", "", ""},
   };
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     SCOPED_TRACE(base::StringPrintf("Test: %s", tests[i].input_url));
     GURL url(tests[i].input_url);
 

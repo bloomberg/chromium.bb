@@ -11,6 +11,7 @@
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
@@ -61,7 +62,7 @@ WebView::WebView(content::BrowserContext* browser_context)
 }
 
 WebView::~WebView() {
-  SetWebContents(NULL);  // Make sure all necessary tear-down takes place.
+  SetWebContents(nullptr);  // Make sure all necessary tear-down takes place.
 }
 
 content::WebContents* WebView::GetWebContents() {
@@ -74,6 +75,7 @@ content::WebContents* WebView::GetWebContents() {
 }
 
 void WebView::SetWebContents(content::WebContents* replacement) {
+  TRACE_EVENT0("views", "WebView::SetWebContents");
   if (replacement == web_contents())
     return;
   SetCrashedOverlayView(nullptr);
@@ -117,10 +119,6 @@ void WebView::EnableSizingFromWebContents(const gfx::Size& min_size,
   min_size_ = min_size;
   max_size_ = max_size;
   MaybeEnableAutoResize();
-}
-
-void WebView::SetResizeBackgroundColor(SkColor resize_background_color) {
-  holder_->set_resize_background_color(resize_background_color);
 }
 
 void WebView::SetCrashedOverlayView(View* crashed_overlay_view) {
@@ -253,7 +251,7 @@ void WebView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->SetNameExplicitlyEmpty();
   if (child_ax_tree_id_ != ui::AXTreeIDUnknown()) {
     node_data->AddStringAttribute(ax::mojom::StringAttribute::kChildTreeId,
-                                  child_ax_tree_id_);
+                                  child_ax_tree_id_.ToString());
   }
 }
 
@@ -351,6 +349,7 @@ void WebView::ResizeDueToAutoResize(content::WebContents* source,
 // WebView, private:
 
 void WebView::AttachWebContents() {
+  TRACE_EVENT0("views", "WebView::AttachWebContents");
   // Prevents attachment if the WebView isn't already in a Widget, or it's
   // already attached.
   if (!GetWidget() || !web_contents())
@@ -365,6 +364,10 @@ void WebView::AttachWebContents() {
 
   holder_->Attach(view_to_attach);
 
+  // We set the parent accessible of the native view to be our parent.
+  if (parent())
+    holder_->SetParentAccessible(parent()->GetNativeViewAccessible());
+
   // The WebContents is not focused automatically when attached, so we need to
   // tell the WebContents it has focus if this has focus.
   if (HasFocus())
@@ -374,8 +377,10 @@ void WebView::AttachWebContents() {
 }
 
 void WebView::DetachWebContents() {
-  if (web_contents())
+  TRACE_EVENT0("views", "WebView::DetachWebContents");
+  if (web_contents()) {
     holder_->Detach();
+  }
 }
 
 void WebView::ReattachForFullscreenChange(bool enter_fullscreen) {
@@ -414,10 +419,7 @@ void WebView::UpdateCrashedOverlayView() {
 void WebView::NotifyAccessibilityWebContentsChanged() {
   content::RenderFrameHost* rfh =
       web_contents() ? web_contents()->GetMainFrame() : nullptr;
-  if (rfh)
-    child_ax_tree_id_ = rfh->GetAXTreeID();
-  else
-    child_ax_tree_id_ = ui::AXTreeIDUnknown();
+  child_ax_tree_id_ = rfh ? rfh->GetAXTreeID() : ui::AXTreeIDUnknown();
   NotifyAccessibilityEvent(ax::mojom::Event::kChildrenChanged, false);
 }
 
@@ -429,8 +431,7 @@ std::unique_ptr<content::WebContents> WebView::CreateWebContents(
   }
 
   if (!contents) {
-    content::WebContents::CreateParams create_params(
-        browser_context, NULL);
+    content::WebContents::CreateParams create_params(browser_context, nullptr);
     return content::WebContents::Create(create_params);
   }
 

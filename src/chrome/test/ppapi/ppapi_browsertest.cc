@@ -6,10 +6,11 @@
 
 #include <vector>
 
+#include "base/bind.h"
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/optional.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
@@ -31,6 +32,7 @@
 #include "components/nacl/common/nacl_switches.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/network_service_util.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
@@ -327,13 +329,13 @@ TEST_PPAPI_NACL(ImageData)
 
 // Split tests into multiple tests, making it easier to isolate which tests are
 // failing, and reducing chance of timeout.
-PPAPI_SOCKET_TEST(TCPSocket_Connect);
-PPAPI_SOCKET_TEST(TCPSocket_ReadWrite);
-PPAPI_SOCKET_TEST(TCPSocket_SetOption);
-PPAPI_SOCKET_TEST(TCPSocket_Listen);
-PPAPI_SOCKET_TEST(TCPSocket_Backlog);
-PPAPI_SOCKET_TEST(TCPSocket_Interface_1_0);
-PPAPI_SOCKET_TEST(TCPSocket_UnexpectedCalls);
+PPAPI_SOCKET_TEST(TCPSocket_Connect)
+PPAPI_SOCKET_TEST(TCPSocket_ReadWrite)
+PPAPI_SOCKET_TEST(TCPSocket_SetOption)
+PPAPI_SOCKET_TEST(TCPSocket_Listen)
+PPAPI_SOCKET_TEST(TCPSocket_Backlog)
+PPAPI_SOCKET_TEST(TCPSocket_Interface_1_0)
+PPAPI_SOCKET_TEST(TCPSocket_UnexpectedCalls)
 
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(TCPServerSocketPrivate_Listen)
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(TCPServerSocketPrivate_Backlog)
@@ -358,7 +360,7 @@ TEST_PPAPI_OUT_OF_PROCESS_WITH_SSL_SERVER(TCPSocketPrivateTrusted)
 
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, TCPSocketPrivateCrash_Resolve) {
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService) ||
-      content::IsNetworkServiceRunningInProcess())
+      content::IsInProcessNetworkService())
     return;
 
   network::mojom::NetworkServiceTestPtr network_service_test;
@@ -874,136 +876,136 @@ class MockNetworkContext : public network::TestNetworkContext {
 
 TCP_SOCKET_FAILURE_TEST(TCPSocket_ConnectClosePipe,
                         TCPSocket_ConnectFails,
-                        TCPFailureType::kConnectClosePipe);
+                        TCPFailureType::kConnectClosePipe)
 TCP_SOCKET_FAILURE_TEST(TCPSocket_ConnectError,
                         TCPSocket_ConnectFails,
-                        TCPFailureType::kConnectError);
+                        TCPFailureType::kConnectError)
 TCP_SOCKET_FAILURE_TEST(TCPSocket_ConnectHangs,
                         TCPSocket_ConnectHangs,
-                        TCPFailureType::kConnectHangs);
+                        TCPFailureType::kConnectHangs)
 TCP_SOCKET_FAILURE_TEST(TCPSocket_WriteClosePipe,
                         TCPSocket_WriteFails,
-                        TCPFailureType::kWriteClosePipe);
+                        TCPFailureType::kWriteClosePipe)
 TCP_SOCKET_FAILURE_TEST(TCPSocket_WriteError,
                         TCPSocket_WriteFails,
-                        TCPFailureType::kWriteError);
+                        TCPFailureType::kWriteError)
 TCP_SOCKET_FAILURE_TEST(TCPSocket_ReadClosePipe,
                         TCPSocket_ReadFails,
-                        TCPFailureType::kReadClosePipe);
+                        TCPFailureType::kReadClosePipe)
 TCP_SOCKET_FAILURE_TEST(TCPSocket_ReadError,
                         TCPSocket_ReadFails,
-                        TCPFailureType::kReadError);
+                        TCPFailureType::kReadError)
 
 TCP_SOCKET_FAILURE_TEST(TCPSocket_SetSendBufferSizeClosePipe,
                         TCPSocket_SetSendBufferSizeFails,
-                        TCPFailureType::kSetOptionsClosePipe);
+                        TCPFailureType::kSetOptionsClosePipe)
 TCP_SOCKET_FAILURE_TEST(TCPSocket_SetSendBufferSizeError,
                         TCPSocket_SetSendBufferSizeFails,
-                        TCPFailureType::kSetOptionsError);
+                        TCPFailureType::kSetOptionsError)
 TCP_SOCKET_FAILURE_TEST(TCPSocket_SetReceiveBufferSizeClosePipe,
                         TCPSocket_SetReceiveBufferSizeFails,
-                        TCPFailureType::kSetOptionsClosePipe);
+                        TCPFailureType::kSetOptionsClosePipe)
 TCP_SOCKET_FAILURE_TEST(TCPSocket_SetReceiveBufferSizeError,
                         TCPSocket_SetReceiveBufferSizeFails,
-                        TCPFailureType::kSetOptionsError);
+                        TCPFailureType::kSetOptionsError)
 TCP_SOCKET_FAILURE_TEST(TCPSocket_SetNoDelayClosePipe,
                         TCPSocket_SetNoDelayFails,
-                        TCPFailureType::kSetOptionsClosePipe);
+                        TCPFailureType::kSetOptionsClosePipe)
 TCP_SOCKET_FAILURE_TEST(TCPSocket_SetNoDelayError,
                         TCPSocket_SetNoDelayFails,
-                        TCPFailureType::kSetOptionsError);
+                        TCPFailureType::kSetOptionsError)
 
 // Can't use TCPSocket_BindFailsConnectSucceeds for this one, because
 // BindClosePipe has to close the NetworkContext pipe.
 TCP_SOCKET_FAILURE_TEST(TCPSocket_BindClosePipe,
                         TCPSocket_BindFails,
-                        TCPFailureType::kBindClosePipe);
+                        TCPFailureType::kBindClosePipe)
 TCP_SOCKET_FAILURE_TEST(TCPSocket_BindError,
                         TCPSocket_BindFailsConnectSucceeds,
-                        TCPFailureType::kBindError);
+                        TCPFailureType::kBindError)
 TCP_SOCKET_FAILURE_TEST(TCPSocket_BindHangs,
                         TCPSocket_BindHangs,
-                        TCPFailureType::kBindHangs);
+                        TCPFailureType::kBindHangs)
 TCP_SOCKET_FAILURE_TEST(TCPSocket_ListenClosePipe,
                         TCPSocket_ListenFails,
-                        TCPFailureType::kCreateTCPServerSocketClosePipe);
+                        TCPFailureType::kCreateTCPServerSocketClosePipe)
 TCP_SOCKET_FAILURE_TEST(TCPSocket_ListenError,
                         TCPSocket_ListenFails,
-                        TCPFailureType::kCreateTCPServerSocketError);
+                        TCPFailureType::kCreateTCPServerSocketError)
 TCP_SOCKET_FAILURE_TEST(TCPSocket_ListenHangs,
                         TCPSocket_ListenHangs,
-                        TCPFailureType::kCreateTCPServerSocketHangs);
+                        TCPFailureType::kCreateTCPServerSocketHangs)
 TCP_SOCKET_FAILURE_TEST(TCPSocket_AcceptClosePipe,
                         TCPSocket_AcceptFails,
-                        TCPFailureType::kAcceptDropPipe);
+                        TCPFailureType::kAcceptDropPipe)
 TCP_SOCKET_FAILURE_TEST(TCPSocket_AcceptError,
                         TCPSocket_AcceptFails,
-                        TCPFailureType::kAcceptError);
+                        TCPFailureType::kAcceptError)
 TCP_SOCKET_FAILURE_TEST(TCPSocket_AcceptHangs,
                         TCPSocket_AcceptHangs,
-                        TCPFailureType::kAcceptHangs);
+                        TCPFailureType::kAcceptHangs)
 TCP_SOCKET_FAILURE_TEST(TCPSocket_AcceptedSocketWriteClosePipe,
                         TCPSocket_AcceptedSocketWriteFails,
-                        TCPFailureType::kWriteClosePipe);
+                        TCPFailureType::kWriteClosePipe)
 TCP_SOCKET_FAILURE_TEST(TCPSocket_AcceptedSocketWriteError,
                         TCPSocket_AcceptedSocketWriteFails,
-                        TCPFailureType::kWriteError);
+                        TCPFailureType::kWriteError)
 TCP_SOCKET_FAILURE_TEST(TCPSocket_AcceptedSocketReadClosePipe,
                         TCPSocket_AcceptedSocketReadFails,
-                        TCPFailureType::kReadClosePipe);
+                        TCPFailureType::kReadClosePipe)
 TCP_SOCKET_FAILURE_TEST(TCPSocket_AcceptedSocketReadError,
                         TCPSocket_AcceptedSocketReadFails,
-                        TCPFailureType::kReadError);
+                        TCPFailureType::kReadError)
 TCP_SOCKET_FAILURE_TEST(TCPSocket_BindConnectClosePipe,
                         TCPSocket_BindConnectFails,
-                        TCPFailureType::kConnectClosePipe);
+                        TCPFailureType::kConnectClosePipe)
 TCP_SOCKET_FAILURE_TEST(TCPSocket_BindConnectError,
                         TCPSocket_BindConnectFails,
-                        TCPFailureType::kConnectError);
+                        TCPFailureType::kConnectError)
 TCP_SOCKET_FAILURE_TEST(TCPSocket_BindConnectHangs,
                         TCPSocket_BindConnectHangs,
-                        TCPFailureType::kConnectHangs);
+                        TCPFailureType::kConnectHangs)
 
 TCP_SOCKET_FAILURE_TEST(TCPSocketPrivate_SSLHandshakeClosePipe,
                         TCPSocketPrivate_SSLHandshakeFails,
-                        TCPFailureType::kUpgradeToTLSClosePipe);
+                        TCPFailureType::kUpgradeToTLSClosePipe)
 TCP_SOCKET_FAILURE_TEST(TCPSocketPrivate_SSLHandshakeError,
                         TCPSocketPrivate_SSLHandshakeFails,
-                        TCPFailureType::kUpgradeToTLSError);
+                        TCPFailureType::kUpgradeToTLSError)
 TCP_SOCKET_FAILURE_TEST(TCPSocketPrivate_SSLHandshakeHangs,
                         TCPSocketPrivate_SSLHandshakeHangs,
-                        TCPFailureType::kUpgradeToTLSHangs);
+                        TCPFailureType::kUpgradeToTLSHangs)
 TCP_SOCKET_FAILURE_TEST(TCPSocketPrivate_SSLWriteClosePipe,
                         TCPSocketPrivate_SSLWriteFails,
-                        TCPFailureType::kSSLWriteClosePipe);
+                        TCPFailureType::kSSLWriteClosePipe)
 TCP_SOCKET_FAILURE_TEST(TCPSocketPrivate_SSLWriteError,
                         TCPSocketPrivate_SSLWriteFails,
-                        TCPFailureType::kSSLWriteError);
+                        TCPFailureType::kSSLWriteError)
 TCP_SOCKET_FAILURE_TEST(TCPSocketPrivate_SSLReadClosePipe,
                         TCPSocketPrivate_SSLReadFails,
-                        TCPFailureType::kSSLReadClosePipe);
+                        TCPFailureType::kSSLReadClosePipe)
 TCP_SOCKET_FAILURE_TEST(TCPSocketPrivate_SSLReadError,
                         TCPSocketPrivate_SSLReadFails,
-                        TCPFailureType::kSSLReadError);
+                        TCPFailureType::kSSLReadError)
 
 TCP_SOCKET_FAILURE_TEST(TCPServerSocketPrivate_ListenClosePipe,
                         TCPServerSocketPrivate_ListenFails,
-                        TCPFailureType::kCreateTCPServerSocketClosePipe);
+                        TCPFailureType::kCreateTCPServerSocketClosePipe)
 TCP_SOCKET_FAILURE_TEST(TCPServerSocketPrivate_ListenError,
                         TCPServerSocketPrivate_ListenFails,
-                        TCPFailureType::kCreateTCPServerSocketError);
+                        TCPFailureType::kCreateTCPServerSocketError)
 TCP_SOCKET_FAILURE_TEST(TCPServerSocketPrivate_ListenHangs,
                         TCPServerSocketPrivate_ListenHangs,
-                        TCPFailureType::kCreateTCPServerSocketHangs);
+                        TCPFailureType::kCreateTCPServerSocketHangs)
 TCP_SOCKET_FAILURE_TEST(TCPServerSocketPrivate_AcceptClosePipe,
                         TCPServerSocketPrivate_AcceptFails,
-                        TCPFailureType::kAcceptDropPipe);
+                        TCPFailureType::kAcceptDropPipe)
 TCP_SOCKET_FAILURE_TEST(TCPServerSocketPrivate_AcceptError,
                         TCPServerSocketPrivate_AcceptFails,
-                        TCPFailureType::kAcceptError);
+                        TCPFailureType::kAcceptError)
 TCP_SOCKET_FAILURE_TEST(TCPServerSocketPrivate_AcceptHangs,
                         TCPServerSocketPrivate_AcceptHangs,
-                        TCPFailureType::kAcceptHangs);
+                        TCPFailureType::kAcceptHangs)
 
 // UDPSocket tests.
 
@@ -1215,33 +1217,33 @@ void TestCreateUDPSocketCallback(
 
 UDPSOCKET_FAILURE_TEST(UDPSocket_BindError,
                        UDPSocket_BindFails,
-                       WrappedUDPSocket::FailureType::kBindError);
+                       WrappedUDPSocket::FailureType::kBindError)
 UDPSOCKET_FAILURE_TEST(UDPSocket_BindDropPipe,
                        UDPSocket_BindFails,
-                       WrappedUDPSocket::FailureType::kBindDropPipe);
+                       WrappedUDPSocket::FailureType::kBindDropPipe)
 UDPSOCKET_FAILURE_TEST(UDPSocket_SetBroadcastError,
                        UDPSocket_SetBroadcastFails,
-                       WrappedUDPSocket::FailureType::kBroadcastError);
+                       WrappedUDPSocket::FailureType::kBroadcastError)
 UDPSOCKET_FAILURE_TEST(UDPSocket_SetBroadcastDropPipe,
                        UDPSocket_SetBroadcastFails,
-                       WrappedUDPSocket::FailureType::kBroadcastDropPipe);
+                       WrappedUDPSocket::FailureType::kBroadcastDropPipe)
 UDPSOCKET_FAILURE_TEST(UDPSocket_SendToBeforeDropPipeFails,
                        UDPSocket_SendToFails,
-                       WrappedUDPSocket::FailureType::kSendToDropPipe);
+                       WrappedUDPSocket::FailureType::kSendToDropPipe)
 UDPSOCKET_FAILURE_TEST(UDPSocket_DropPipeAfterBindSendToFails,
                        UDPSocket_SendToFails,
-                       WrappedUDPSocket::FailureType::kSendToError);
+                       WrappedUDPSocket::FailureType::kSendToError)
 UDPSOCKET_FAILURE_TEST(UDPSocket_ReadError,
                        UDPSocket_ReadFails,
-                       WrappedUDPSocket::FailureType::kReadError);
+                       WrappedUDPSocket::FailureType::kReadError)
 UDPSOCKET_FAILURE_TEST(
     UDPSocket_DropReceiverPipeOnConstruction,
     UDPSocket_ReadFails,
-    WrappedUDPSocket::FailureType::kDropReceiverPipeOnConstruction);
+    WrappedUDPSocket::FailureType::kDropReceiverPipeOnConstruction)
 UDPSOCKET_FAILURE_TEST(
     UDPSocket_DropReceiverPipeOnReceiveMore,
     UDPSocket_ReadFails,
-    WrappedUDPSocket::FailureType::kDropReceiverPipeOnReceiveMore);
+    WrappedUDPSocket::FailureType::kDropReceiverPipeOnReceiveMore)
 
 // Disallowed socket tests.
 TEST_PPAPI_NACL_DISALLOWED_SOCKETS(HostResolverPrivateDisallowed)
@@ -1259,7 +1261,7 @@ TEST_PPAPI_NACL_DISALLOWED_SOCKETS(UDPSocketPrivateDisallowed)
 
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, HostResolverCrash_Basic) {
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService) ||
-      content::IsNetworkServiceRunningInProcess())
+      content::IsInProcessNetworkService())
     return;
 
   network::mojom::NetworkServiceTestPtr network_service_test;
@@ -1934,14 +1936,14 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest,
   RUN_AUDIO_THREAD_CREATOR_SUBTESTS;
 }
 
-TEST_PPAPI_OUT_OF_PROCESS(View_CreatedVisible);
+TEST_PPAPI_OUT_OF_PROCESS(View_CreatedVisible)
 #if defined(OS_MACOSX)
 // http://crbug.com/474399
 #define MAYBE_View_CreatedVisible DISABLED_View_CreatedVisible
 #else
 #define MAYBE_View_CreatedVisible View_CreatedVisible
 #endif
-TEST_PPAPI_NACL(MAYBE_View_CreatedVisible);
+TEST_PPAPI_NACL(MAYBE_View_CreatedVisible)
 
 // This test ensures that plugins created in a background tab have their
 // initial visibility set to false. We don't bother testing in-process for this
@@ -1982,7 +1984,8 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, DISABLED_View_PageHideShow) {
   observer.Reset();
 
   // Switch back to the test tab.
-  browser()->tab_strip_model()->ActivateTabAt(0, true);
+  browser()->tab_strip_model()->ActivateTabAt(
+      0, {TabStripModel::GestureType::kOther});
 
   ASSERT_TRUE(observer.Run()) << handler.error_message();
   EXPECT_STREQ("PASS", handler.message().c_str());
@@ -1997,7 +2000,7 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, InputEvent_AcceptTouchEvent) {
                                    "InputEvent_AcceptTouchEvent_4"
                                  };
 
-  for (size_t i = 0; i < arraysize(positive_tests); ++i) {
+  for (size_t i = 0; i < base::size(positive_tests); ++i) {
     RunTest(positive_tests[i]);
     RenderViewHost* host = browser()->tab_strip_model()->
         GetActiveWebContents()->GetRenderViewHost();

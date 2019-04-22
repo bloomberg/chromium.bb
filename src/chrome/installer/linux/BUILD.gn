@@ -171,7 +171,8 @@ action("strip_chrome_binary") {
     stripped_file,
   ]
   args = [
-    rebase_path("//third_party/eu-strip/bin/eu-strip", root_build_dir),
+    rebase_path("//buildtools/third_party/eu-strip/bin/eu-strip",
+                root_build_dir),
     "-o",
     rebase_path(stripped_file, root_build_dir),
     "-f",
@@ -248,7 +249,7 @@ copy("common_packaging_files") {
     ]
   }
 
-  sources += [ "//third_party/eu-strip/bin/eu-strip" ]
+  sources += [ "//buildtools/third_party/eu-strip/bin/eu-strip" ]
 
   outputs = [
     "$root_out_dir/installer/common/{{source_file_part}}",

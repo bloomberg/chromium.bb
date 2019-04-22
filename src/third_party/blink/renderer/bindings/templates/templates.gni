@@ -28,7 +28,5 @@ code_generator_template_files =
                     "union_container.cc.tmpl",
                     "union_container.h.tmpl",
                     "utilities.cc.tmpl",
-                    "web_agent_api_interface.cc.tmpl",
-                    "web_agent_api_interface.h.tmpl",
                   ],
                   "abspath")

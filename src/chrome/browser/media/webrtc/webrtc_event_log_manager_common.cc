@@ -10,6 +10,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -59,6 +60,18 @@ const char kStartRemoteLoggingFailureGeneric[] = "Unspecified error.";
 
 const BrowserContextId kNullBrowserContextId =
     reinterpret_cast<BrowserContextId>(nullptr);
+
+void UmaRecordWebRtcEventLoggingApi(WebRtcEventLoggingApiUma result) {
+  base::UmaHistogramEnumeration("WebRtcEventLogging.Api", result);
+}
+
+void UmaRecordWebRtcEventLoggingUpload(WebRtcEventLoggingUploadUma result) {
+  base::UmaHistogramEnumeration("WebRtcEventLogging.Upload", result);
+}
+
+void UmaRecordWebRtcEventLoggingNetErrorType(int net_error) {
+  base::UmaHistogramSparse("WebRtcEventLogging.NetError", net_error);
+}
 
 namespace {
 

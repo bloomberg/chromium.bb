@@ -4,11 +4,12 @@
 
 #include "chrome/test/base/in_process_browser_test.h"
 
+#include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/hash/sha1.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
@@ -27,10 +28,14 @@ namespace {
 constexpr char kPdfToPwgRasterColorTestFile[] = "pdf_to_pwg_raster_test_32.pwg";
 constexpr char kPdfToPwgRasterMonoTestFile[] =
     "pdf_to_pwg_raster_mono_test_32.pwg";
+constexpr char kPdfToPwgRasterLongEdgeTestFile[] =
+    "pdf_to_pwg_raster_long_edge_test_32.pwg";
 #else
 constexpr char kPdfToPwgRasterColorTestFile[] = "pdf_to_pwg_raster_test.pwg";
 constexpr char kPdfToPwgRasterMonoTestFile[] =
     "pdf_to_pwg_raster_mono_test.pwg";
+constexpr char kPdfToPwgRasterLongEdgeTestFile[] =
+    "pdf_to_pwg_raster_long_edge_test.pwg";
 #endif
 
 void ResultCallbackImpl(bool* called,
@@ -122,6 +127,7 @@ IN_PROC_BROWSER_TEST_F(PdfToPwgRasterBrowserTest, TestSuccessColor) {
                                  /*use_color=*/true,
                                  PdfRenderSettings::Mode::NORMAL);
   PwgRasterSettings pwg_settings;
+  pwg_settings.duplex_mode = DuplexMode::SIMPLEX;
   pwg_settings.odd_page_transform = PwgRasterTransformType::TRANSFORM_NORMAL;
   pwg_settings.rotate_all_pages = false;
   pwg_settings.reverse_page_order = false;
@@ -149,6 +155,7 @@ IN_PROC_BROWSER_TEST_F(PdfToPwgRasterBrowserTest, TestSuccessMono) {
                                  /*use_color=*/false,
                                  PdfRenderSettings::Mode::NORMAL);
   PwgRasterSettings pwg_settings;
+  pwg_settings.duplex_mode = DuplexMode::SIMPLEX;
   pwg_settings.odd_page_transform = PwgRasterTransformType::TRANSFORM_NORMAL;
   pwg_settings.rotate_all_pages = false;
   pwg_settings.reverse_page_order = false;
@@ -160,6 +167,34 @@ IN_PROC_BROWSER_TEST_F(PdfToPwgRasterBrowserTest, TestSuccessMono) {
 
   base::FilePath expected_pwg_file =
       test_data_dir.AppendASCII(kPdfToPwgRasterMonoTestFile);
+  ComparePwgOutput(expected_pwg_file, std::move(pwg_region));
+}
+
+IN_PROC_BROWSER_TEST_F(PdfToPwgRasterBrowserTest, TestSuccessLongDuplex) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+
+  base::FilePath test_data_dir;
+  scoped_refptr<base::RefCountedString> pdf_data;
+  GetPdfData("pdf_to_pwg_raster_test.pdf", &test_data_dir, &pdf_data);
+
+  PdfRenderSettings pdf_settings(gfx::Rect(0, 0, 500, 500), gfx::Point(0, 0),
+                                 /*dpi=*/gfx::Size(1000, 1000),
+                                 /*autorotate=*/false,
+                                 /*use_color=*/false,
+                                 PdfRenderSettings::Mode::NORMAL);
+  PwgRasterSettings pwg_settings;
+  pwg_settings.duplex_mode = DuplexMode::LONG_EDGE;
+  pwg_settings.odd_page_transform = PwgRasterTransformType::TRANSFORM_NORMAL;
+  pwg_settings.rotate_all_pages = false;
+  pwg_settings.reverse_page_order = false;
+  pwg_settings.use_color = false;
+
+  base::ReadOnlySharedMemoryRegion pwg_region;
+  Convert(pdf_data.get(), pdf_settings, pwg_settings,
+          /*expect_success=*/true, &pwg_region);
+
+  base::FilePath expected_pwg_file =
+      test_data_dir.AppendASCII(kPdfToPwgRasterLongEdgeTestFile);
   ComparePwgOutput(expected_pwg_file, std::move(pwg_region));
 }
 

@@ -47,7 +47,6 @@ Console.ConsoleView = class extends UI.VBox {
     this._sidebar.addEventListener(Console.ConsoleSidebar.Events.FilterSelected, this._onFilterChanged.bind(this));
     this._isSidebarOpen = false;
     this._filter = new Console.ConsoleViewFilter(this._onFilterChanged.bind(this));
-    this._isBelowPromptEnabled = Runtime.experiments.isEnabled('consoleBelowPrompt');
 
     const consoleToolbarContainer = this.element.createChild('div', 'console-toolbar-container');
     this._splitWidget =
@@ -105,10 +104,8 @@ Console.ConsoleView = class extends UI.VBox {
     toolbar.appendSeparator();
     toolbar.appendToolbarItem(this._consoleContextSelector.toolbarItem());
     toolbar.appendSeparator();
-    if (Runtime.experiments.isEnabled('pinnedExpressions')) {
-      toolbar.appendToolbarItem(UI.Toolbar.createActionButton(
-          /** @type {!UI.Action }*/ (UI.actionRegistry.action('console.create-pin'))));
-    }
+    toolbar.appendToolbarItem(UI.Toolbar.createActionButton(
+        /** @type {!UI.Action }*/ (UI.actionRegistry.action('console.create-pin'))));
     toolbar.appendSeparator();
     toolbar.appendToolbarItem(this._filter._textFilterUI);
     toolbar.appendToolbarItem(this._filter._levelMenuButton);
@@ -145,31 +142,25 @@ Console.ConsoleView = class extends UI.VBox {
     const settingsToolbarRight = new UI.Toolbar('', settingsPane.element);
     settingsToolbarRight.makeVertical();
     settingsToolbarRight.appendToolbarItem(new UI.ToolbarSettingCheckbox(monitoringXHREnabledSetting));
-    if (this._isBelowPromptEnabled) {
-      const eagerEvalCheckbox = new UI.ToolbarSettingCheckbox(
-          Common.settings.moduleSetting('consoleEagerEval'), ls`Eagerly evaluate text in the prompt`);
-      settingsToolbarRight.appendToolbarItem(eagerEvalCheckbox);
-    } else {
-      settingsToolbarRight.appendToolbarItem(new UI.ToolbarSettingCheckbox(this._timestampsSetting));
-    }
+    const eagerEvalCheckbox = new UI.ToolbarSettingCheckbox(
+        Common.settings.moduleSetting('consoleEagerEval'), ls`Eagerly evaluate text in the prompt`);
+    settingsToolbarRight.appendToolbarItem(eagerEvalCheckbox);
     settingsToolbarRight.appendToolbarItem(new UI.ToolbarSettingCheckbox(this._consoleHistoryAutocompleteSetting));
     if (!this._showSettingsPaneSetting.get())
       settingsPane.element.classList.add('hidden');
     this._showSettingsPaneSetting.addChangeListener(
         () => settingsPane.element.classList.toggle('hidden', !this._showSettingsPaneSetting.get()));
 
-    if (Runtime.experiments.isEnabled('pinnedExpressions')) {
-      this._pinPane = new Console.ConsolePinPane();
-      this._pinPane.element.classList.add('console-view-pinpane');
-      this._pinPane.show(this._contentsElement);
-      this._pinPane.element.addEventListener('keydown', event => {
-        if ((event.key === 'Enter' && UI.KeyboardShortcut.eventHasCtrlOrMeta(/** @type {!KeyboardEvent} */ (event))) ||
-            event.keyCode === UI.KeyboardShortcut.Keys.Esc.code) {
-          this._prompt.focus();
-          event.consume();
-        }
-      });
-    }
+    this._pinPane = new Console.ConsolePinPane();
+    this._pinPane.element.classList.add('console-view-pinpane');
+    this._pinPane.show(this._contentsElement);
+    this._pinPane.element.addEventListener('keydown', event => {
+      if ((event.key === 'Enter' && UI.KeyboardShortcut.eventHasCtrlOrMeta(/** @type {!KeyboardEvent} */ (event))) ||
+          event.keyCode === UI.KeyboardShortcut.Keys.Esc.code) {
+        this._prompt.focus();
+        event.consume();
+      }
+    });
 
     this._viewport = new Console.ConsoleViewport(this);
     this._viewport.setStickToBottom(true);
@@ -183,13 +174,13 @@ Console.ConsoleView = class extends UI.VBox {
     this._messagesElement.addEventListener('clipboard-paste', this._messagesPasted.bind(this), true);
 
     this._viewportThrottler = new Common.Throttler(50);
+    this._pendingBatchResize = false;
+    this._onMessageResizedBound = this._onMessageResized.bind(this);
 
     this._topGroup = Console.ConsoleGroup.createTopGroup();
     this._currentGroup = this._topGroup;
 
     this._promptElement = this._messagesElement.createChild('div', 'source-code');
-    const promptIcon = UI.Icon.create('smallicon-text-prompt', 'console-prompt-icon');
-    this._promptElement.appendChild(promptIcon);
     this._promptElement.id = 'console-prompt';
 
     // FIXME: This is a workaround for the selection machinery bug. See crbug.com/410899
@@ -214,9 +205,11 @@ Console.ConsoleView = class extends UI.VBox {
     this._prompt.element.addEventListener('keydown', this._promptKeyDown.bind(this), true);
     this._prompt.addEventListener(Console.ConsolePrompt.Events.TextChanged, this._promptTextChanged, this);
 
-    this._keyboardNavigationEnabled = Runtime.experiments.isEnabled('consoleKeyboardNavigation');
-    if (this._keyboardNavigationEnabled)
-      this._messagesElement.addEventListener('keydown', this._messagesKeyDown.bind(this), false);
+    this._messagesElement.addEventListener('keydown', this._messagesKeyDown.bind(this), false);
+    this._prompt.element.addEventListener('focusin', () => {
+      if (this._isScrolledToBottom())
+        this._viewport.setStickToBottom(true);
+    });
 
     this._consoleHistoryAutocompleteSetting.addChangeListener(this._consoleHistoryAutocompleteChanged, this);
 
@@ -388,9 +381,18 @@ Console.ConsoleView = class extends UI.VBox {
    * @override
    */
   focus() {
+    if (this._viewport.hasVirtualSelection())
+      this._viewport.contentElement().focus();
+    else
+      this._focusPrompt();
+  }
+
+  _focusPrompt() {
     if (!this._prompt.hasFocus()) {
+      const oldStickToBottom = this._viewport.stickToBottom();
       const oldScrollTop = this._viewport.element.scrollTop;
       this._prompt.focus();
+      this._viewport.setStickToBottom(oldStickToBottom);
       this._viewport.element.scrollTop = oldScrollTop;
     }
   }
@@ -465,7 +467,7 @@ Console.ConsoleView = class extends UI.VBox {
   _updateFilterStatus() {
     if (this._hiddenByFilterCount === this._lastShownHiddenByFilterCount)
       return;
-    this._filterStatusText.setText(Common.UIString(this._hiddenByFilterCount + ' hidden'));
+    this._filterStatusText.setText(ls`${this._hiddenByFilterCount} hidden`);
     this._filterStatusText.setVisible(!!this._hiddenByFilterCount);
     this._lastShownHiddenByFilterCount = this._hiddenByFilterCount;
   }
@@ -625,16 +627,39 @@ Console.ConsoleView = class extends UI.VBox {
     const nestingLevel = this._currentGroup.nestingLevel();
     switch (message.type) {
       case SDK.ConsoleMessage.MessageType.Command:
-        return new Console.ConsoleCommand(message, this._linkifier, this._badgePool, nestingLevel);
+        return new Console.ConsoleCommand(
+            message, this._linkifier, this._badgePool, nestingLevel, this._onMessageResizedBound);
       case SDK.ConsoleMessage.MessageType.Result:
-        return new Console.ConsoleCommandResult(message, this._linkifier, this._badgePool, nestingLevel);
+        return new Console.ConsoleCommandResult(
+            message, this._linkifier, this._badgePool, nestingLevel, this._onMessageResizedBound);
       case SDK.ConsoleMessage.MessageType.StartGroupCollapsed:
       case SDK.ConsoleMessage.MessageType.StartGroup:
         return new Console.ConsoleGroupViewMessage(
-            message, this._linkifier, this._badgePool, nestingLevel, this._updateMessageList.bind(this));
+            message, this._linkifier, this._badgePool, nestingLevel, this._updateMessageList.bind(this),
+            this._onMessageResizedBound);
       default:
-        return new Console.ConsoleViewMessage(message, this._linkifier, this._badgePool, nestingLevel);
+        return new Console.ConsoleViewMessage(
+            message, this._linkifier, this._badgePool, nestingLevel, this._onMessageResizedBound);
     }
+  }
+
+  /**
+   * @param {!Common.Event} event
+   * @return {!Promise}
+   */
+  async _onMessageResized(event) {
+    const treeElement = /** @type {!UI.TreeElement} */ (event.data);
+    if (this._pendingBatchResize || !treeElement.treeOutline)
+      return;
+    this._pendingBatchResize = true;
+    await Promise.resolve();
+    const treeOutlineElement = treeElement.treeOutline.element;
+    this._viewport.setStickToBottom(this._isScrolledToBottom());
+    // Scroll, in case mutations moved the element below the visible area.
+    if (treeOutlineElement.offsetHeight <= this._messagesElement.offsetHeight)
+      treeOutlineElement.scrollIntoViewIfNeeded();
+
+    this._pendingBatchResize = false;
   }
 
   _consoleCleared() {
@@ -863,15 +888,9 @@ Console.ConsoleView = class extends UI.VBox {
     if (!this._messagesElement.hasSelection()) {
       const clickedOutsideMessageList =
           target === this._messagesElement || this._prompt.belowEditorElement().isSelfOrAncestor(target);
-      if (this._keyboardNavigationEnabled) {
-        if (clickedOutsideMessageList) {
-          this._prompt.moveCaretToEndOfPrompt();
-          this.focus();
-        }
-      } else {
-        if (clickedOutsideMessageList)
-          this._prompt.moveCaretToEndOfPrompt();
-        this.focus();
+      if (clickedOutsideMessageList) {
+        this._prompt.moveCaretToEndOfPrompt();
+        this._focusPrompt();
       }
     }
   }
@@ -884,7 +903,7 @@ Console.ConsoleView = class extends UI.VBox {
     if (hasActionModifier || event.key.length !== 1 || UI.isEditing() || this._messagesElement.hasSelection())
       return;
     this._prompt.moveCaretToEndOfPrompt();
-    this.focus();
+    this._focusPrompt();
   }
 
   /**
@@ -1194,7 +1213,11 @@ Console.ConsoleView = class extends UI.VBox {
   }
 
   _promptTextChanged() {
-    this._viewport.setStickToBottom(this._isScrolledToBottom());
+    const oldStickToBottom = this._viewport.stickToBottom();
+    const willStickToBottom = this._isScrolledToBottom();
+    this._viewport.setStickToBottom(willStickToBottom);
+    if (willStickToBottom && !oldStickToBottom)
+      this._scheduleViewportRefresh();
     this._promptTextChangedForTest();
   }
 
@@ -1206,8 +1229,6 @@ Console.ConsoleView = class extends UI.VBox {
    * @return {boolean}
    */
   _isScrolledToBottom() {
-    if (!this._isBelowPromptEnabled)
-      return this._messagesElement.isScrolledToBottom();
     const distanceToPromptEditorBottom = this._messagesElement.scrollHeight - this._messagesElement.scrollTop -
         this._messagesElement.clientHeight - this._prompt.belowEditorElement().offsetHeight;
     return distanceToPromptEditorBottom <= 2;
@@ -1395,16 +1416,6 @@ Console.ConsoleViewFilter = class {
  */
 Console.ConsoleCommand = class extends Console.ConsoleViewMessage {
   /**
-   * @param {!SDK.ConsoleMessage} message
-   * @param {!Components.Linkifier} linkifier
-   * @param {!ProductRegistry.BadgePool} badgePool
-   * @param {number} nestingLevel
-   */
-  constructor(message, linkifier, badgePool, nestingLevel) {
-    super(message, linkifier, badgePool, nestingLevel);
-  }
-
-  /**
    * @override
    * @return {!Element}
    */
@@ -1445,16 +1456,6 @@ Console.ConsoleCommand = class extends Console.ConsoleViewMessage {
 Console.ConsoleCommand.MaxLengthToIgnoreHighlighter = 10000;
 
 Console.ConsoleCommandResult = class extends Console.ConsoleViewMessage {
-  /**
-   * @param {!SDK.ConsoleMessage} message
-   * @param {!Components.Linkifier} linkifier
-   * @param {!ProductRegistry.BadgePool} badgePool
-   * @param {number} nestingLevel
-   */
-  constructor(message, linkifier, badgePool, nestingLevel) {
-    super(message, linkifier, badgePool, nestingLevel);
-  }
-
   /**
    * @override
    * @return {!Element}
@@ -1528,6 +1529,7 @@ Console.ConsoleView.ActionDelegate = class {
       case 'console.show':
         InspectorFrontendHost.bringToFront();
         Common.console.show();
+        Console.ConsoleView.instance()._focusPrompt();
         return true;
       case 'console.clear':
         Console.ConsoleView.clearConsole();
@@ -1536,10 +1538,8 @@ Console.ConsoleView.ActionDelegate = class {
         Console.ConsoleView.instance()._clearHistory();
         return true;
       case 'console.create-pin':
-        if (Runtime.experiments.isEnabled('pinnedExpressions')) {
-          Console.ConsoleView.instance()._pinPane.addPin('', true /* userGesture */);
-          return true;
-        }
+        Console.ConsoleView.instance()._pinPane.addPin('', true /* userGesture */);
+        return true;
     }
     return false;
   }

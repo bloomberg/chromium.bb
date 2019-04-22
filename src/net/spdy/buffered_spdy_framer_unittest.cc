@@ -48,7 +48,8 @@ class TestBufferedSpdyVisitor : public BufferedSpdyFramerVisitorInterface {
                  spdy::SpdyStreamId parent_stream_id,
                  bool exclusive,
                  bool fin,
-                 spdy::SpdyHeaderBlock headers) override {
+                 spdy::SpdyHeaderBlock headers,
+                 base::TimeTicks recv_first_byte_time) override {
     header_stream_id_ = stream_id;
     headers_frame_count_++;
     headers_ = std::move(headers);

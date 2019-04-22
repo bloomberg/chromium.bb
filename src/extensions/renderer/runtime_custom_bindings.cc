@@ -9,12 +9,7 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/values.h"
-#include "content/public/renderer/render_frame.h"
-#include "content/public/renderer/v8_value_converter.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/extension_messages.h"
-#include "extensions/common/manifest.h"
 #include "extensions/renderer/extension_frame_helper.h"
 #include "extensions/renderer/script_context.h"
 
@@ -27,19 +22,9 @@ RuntimeCustomBindings::~RuntimeCustomBindings() {}
 
 void RuntimeCustomBindings::AddRoutes() {
   RouteHandlerFunction(
-      "GetManifest",
-      base::Bind(&RuntimeCustomBindings::GetManifest, base::Unretained(this)));
-  RouteHandlerFunction("GetExtensionViews",
-                       base::Bind(&RuntimeCustomBindings::GetExtensionViews,
-                                  base::Unretained(this)));
-}
-
-void RuntimeCustomBindings::GetManifest(
-    const v8::FunctionCallbackInfo<v8::Value>& args) {
-  CHECK(context()->extension());
-
-  args.GetReturnValue().Set(content::V8ValueConverter::Create()->ToV8Value(
-      context()->extension()->manifest()->value(), context()->v8_context()));
+      "GetExtensionViews",
+      base::BindRepeating(&RuntimeCustomBindings::GetExtensionViews,
+                          base::Unretained(this)));
 }
 
 void RuntimeCustomBindings::GetExtensionViews(

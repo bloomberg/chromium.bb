@@ -16,8 +16,8 @@ EventTarget::EventTarget() = default;
 
 EventTarget::~EventTarget() = default;
 
-void EventTarget::ConvertEventToTarget(EventTarget* target,
-                                       LocatedEvent* event) {}
+void EventTarget::ConvertEventToTarget(const EventTarget* target,
+                                       LocatedEvent* event) const {}
 
 gfx::PointF EventTarget::GetScreenLocationF(
     const ui::LocatedEvent& event) const {

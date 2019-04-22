@@ -7,13 +7,9 @@
 #include "ui/aura/window.h"
 #include "ui/base/class_property.h"
 
-DEFINE_UI_CLASS_PROPERTY_TYPE(Profile*);
+DEFINE_UI_CLASS_PROPERTY_TYPE(Profile*)
 
-namespace {
-
-DEFINE_UI_CLASS_PROPERTY_KEY(Profile*, kThemeProfileKey, nullptr);
-
-}  // anonymous namespace
+DEFINE_UI_CLASS_PROPERTY_KEY(Profile*, kThemeProfileKey, nullptr)
 
 void SetThemeProfileForWindow(aura::Window* window, Profile* profile) {
   window->SetProperty(kThemeProfileKey, profile);

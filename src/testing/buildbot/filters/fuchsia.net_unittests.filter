@@ -11,22 +11,12 @@
 -SupportedVersion/QuicConnectionTest.TooManySentPackets/*
 -RangeOfTreeSizes/CTLogVerifierTestUsingGenerator.VerifiesValidConsistencyProof/*
 
-# Flaky, https://crbug.com/784448.
--DiskCacheBackendTest.InvalidEntry5
-
 # Flaky, https://crbug.com/793176.
 -NetworkQualityEstimatorTest.RecordAccuracy
-
-# Flaky, https://crbug.com/810521.
--DiskCacheEntryTest.ExternalAsyncIONoBuffer
 
 # Flaky, https://crbug.com/813631.
 -URLRequestQuicTest.CancelPushIfCached_*
 -URLRequestQuicTest.DoNotCancelPushIfNotFoundInCache
 
-# Flaky, https://crbug.com/814811.
--URLRequestTest.NetworkDelegateProxyError
-
-# SocketPosix::IsConnected has a different behavior on Fuchsia.
-# https://crbug.com/887587.
--TCPSocketTest.BeforeConnectCallback
+# Flaky hangs, https://crbug.com/913037.
+-URLRequestTestHTTP.Redirect30*

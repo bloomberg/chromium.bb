@@ -42,7 +42,7 @@ class TestOptionsProvider : public ImageProvider,
 
   SkStrikeServer* strike_server() { return &strike_server_; }
   SkStrikeClient* strike_client() { return &strike_client_; }
-  SkColorSpace* color_space() { return color_space_.get(); }
+  sk_sp<SkColorSpace> color_space() { return color_space_; }
   bool can_use_lcd_text() const { return can_use_lcd_text_; }
   bool context_supports_distance_field_text() const {
     return context_supports_distance_field_text_;
@@ -61,7 +61,7 @@ class TestOptionsProvider : public ImageProvider,
   class DiscardableManager;
 
   // ImageProvider implementation.
-  ScopedDecodedDrawImage GetDecodedDrawImage(
+  ImageProvider::ScopedResult GetRasterContent(
       const DrawImage& draw_image) override;
 
   testing::StrictMock<MockCanvas> canvas_;
@@ -78,6 +78,7 @@ class TestOptionsProvider : public ImageProvider,
 
   ServicePaintCache service_paint_cache_;
   ClientPaintCache client_paint_cache_;
+  std::vector<uint8_t> scratch_buffer_;
 
   PaintOp::SerializeOptions serialize_options_;
   PaintOp::DeserializeOptions deserialize_options_;

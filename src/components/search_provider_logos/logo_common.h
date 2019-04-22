@@ -73,6 +73,9 @@ struct LogoMetadata {
   // there is one, or the only image otherwise). May be empty.
   GURL log_url;
 
+  // The URL used for sharing doodles.
+  GURL short_link;
+
   // SIMPLE, ANIMATED: ignored
   // INTERACTIVE: appropriate dimensions for the iframe.
   int iframe_width_px = 0;
@@ -91,6 +94,23 @@ struct LogoMetadata {
   // When the logo expires. After this time, the logo will not be used and will
   // be deleted.
   base::Time expiration_time;
+
+  // Used by the Optional Doodle Share Button ---------------------------------
+
+  // Share button x position
+  int share_button_x = -1;
+
+  // Share button y position
+  int share_button_y = -1;
+
+  // Share button opacity
+  double share_button_opacity = 0;
+
+  // Share button icon image, uses Data URI format.
+  std::string share_button_icon;
+
+  // Share button background color, uses hex format.
+  std::string share_button_bg;
 };
 
 enum class LogoCallbackReason {

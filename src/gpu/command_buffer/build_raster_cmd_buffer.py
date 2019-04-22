@@ -4,6 +4,7 @@
 # found in the LICENSE file.
 """code generator for raster command buffers."""
 
+import filecmp
 import os
 import os.path
 import sys
@@ -106,7 +107,6 @@ _NAMED_TYPE_INFO = {
       'gfx::BufferUsage::GPU_READ',
       'gfx::BufferUsage::SCANOUT',
       'gfx::BufferUsage::GPU_READ_CPU_READ_WRITE',
-      'gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT',
     ],
     'invalid': [
       'gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE',
@@ -181,39 +181,13 @@ _NAMED_TYPE_INFO = {
 # not_shared:   For GENn types, True if objects can't be shared between contexts
 
 _FUNCTION_INFO = {
-  'CreateAndConsumeTexture': {
-    'type': 'NoCommand',
-    'trace_level': 2,
-  },
-  'CreateAndConsumeTextureINTERNAL': {
-    'decoder_func': 'DoCreateAndConsumeTextureINTERNAL',
+  'CopySubTextureINTERNAL': {
+    'decoder_func': 'DoCopySubTextureINTERNAL',
     'internal': True,
     'type': 'PUT',
-    'count': 16,  # GL_MAILBOX_SIZE_CHROMIUM
+    'count': 32,  # GL_MAILBOX_SIZE_CHROMIUM x2
     'unit_test': False,
     'trace_level': 2,
-  },
-  'CreateImageCHROMIUM': {
-    'type': 'NoCommand',
-    'cmd_args':
-        'ClientBuffer buffer, GLsizei width, GLsizei height, '
-        'GLenum internalformat',
-    'result': ['GLuint'],
-    'trace_level': 1,
-  },
-  'CopySubTexture': {
-    'decoder_func': 'DoCopySubTexture',
-    'unit_test': False,
-    'trace_level': 2,
-  },
-  'DestroyImageCHROMIUM': {
-    'type': 'NoCommand',
-    'trace_level': 1,
-  },
-  'DeleteTextures': {
-    'type': 'DELn',
-    'resource_type': 'Texture',
-    'resource_types': 'Textures',
   },
   'Finish': {
     'impl_func': False,
@@ -235,40 +209,6 @@ _FUNCTION_INFO = {
   },
   'GetGraphicsResetStatusKHR': {
     'type': 'NoCommand',
-    'trace_level': 1,
-  },
-  'GetIntegerv': {
-    'type': 'GETn',
-    'result': ['SizedResult<GLint>'],
-    'decoder_func': 'DoGetIntegerv',
-    'client_test': False,
-  },
-  'ProduceTextureDirect': {
-    'decoder_func': 'DoProduceTextureDirect',
-    'impl_func': False,
-    'type': 'PUT',
-    'count': 16,  # GL_MAILBOX_SIZE_CHROMIUM
-    'unit_test': False,
-    'client_test': False,
-    'trace_level': 1,
-  },
-  'TexParameteri': {
-    'decoder_func': 'DoTexParameteri',
-    'unit_test' : False,
-    'valid_args': {
-      '2': 'GL_NEAREST'
-    },
-  },
-  'TexStorage2D': {
-    'decoder_func': 'DoTexStorage2D',
-    'unit_test': False,
-  },
-  'WaitSync': {
-    'type': 'Custom',
-    'cmd_args': 'GLuint sync, GLbitfieldSyncFlushFlags flags, '
-                'GLuint64 timeout',
-    'impl_func': False,
-    'client_test': False,
     'trace_level': 1,
   },
   'GenQueriesEXT': {
@@ -304,14 +244,6 @@ _FUNCTION_INFO = {
     'type': 'NoCommand',
     'gl_test_func': 'glGetQueryObjectuiv',
   },
-  'BindTexImage2DCHROMIUM': {
-    'decoder_func': 'DoBindTexImage2DCHROMIUM',
-    'unit_test': False,
-  },
-  'ReleaseTexImage2DCHROMIUM': {
-    'decoder_func': 'DoReleaseTexImage2DCHROMIUM',
-    'unit_test': False,
-  },
   'ShallowFlushCHROMIUM': {
     'type': 'NoCommand',
   },
@@ -338,53 +270,10 @@ _FUNCTION_INFO = {
     'client_test': False,
     'cmd_args': 'GLuint url_bucket_id',
   },
-  'InsertFenceSyncCHROMIUM': {
-    'type': 'Custom',
-    'internal': True,
-    'impl_func': False,
-    'cmd_args': 'GLuint64 release_count',
-    'trace_level': 1,
-  },
   'LoseContextCHROMIUM': {
     'decoder_func': 'DoLoseContextCHROMIUM',
     'unit_test': False,
     'trace_level': 1,
-  },
-  'GenSyncTokenCHROMIUM': {
-    'type': 'NoCommand',
-  },
-  'GenUnverifiedSyncTokenCHROMIUM': {
-    'type': 'NoCommand',
-  },
-  'VerifySyncTokensCHROMIUM' : {
-    'type': 'NoCommand',
-  },
-  'WaitSyncTokenCHROMIUM': {
-    'type': 'Custom',
-    'impl_func': False,
-    'cmd_args': 'GLint namespace_id, '
-                'GLuint64 command_buffer_id, '
-                'GLuint64 release_count',
-    'client_test': False,
-  },
-  'InitializeDiscardableTextureCHROMIUM': {
-    'type': 'Custom',
-    'cmd_args': 'GLuint texture_id, uint32_t shm_id, '
-                'uint32_t shm_offset',
-    'impl_func': False,
-    'client_test': False,
-  },
-  'UnlockDiscardableTextureCHROMIUM': {
-    'type': 'Custom',
-    'cmd_args': 'GLuint texture_id',
-    'impl_func': False,
-    'client_test': False,
-  },
-  'LockDiscardableTextureCHROMIUM': {
-    'type': 'Custom',
-    'cmd_args': 'GLuint texture_id',
-    'impl_func': False,
-    'client_test': False,
   },
   'BeginRasterCHROMIUM': {
     'decoder_func': 'DoBeginRasterCHROMIUM',
@@ -451,29 +340,6 @@ _FUNCTION_INFO = {
     'client_test': False,
     'unit_test': False,
   },
-  'CreateTexture': {
-    'type': 'Create',
-    'resource_type': 'Texture',
-    'resource_types': 'Textures',
-    'decoder_func': 'DoCreateTexture',
-    'not_shared': 'True',
-    'unit_test': False,
-  },
-  'SetColorSpaceMetadata': {
-    'type': 'Custom',
-    'impl_func': False,
-    'client_test': False,
-    'cmd_args': 'GLuint texture_id, GLuint shm_id, GLuint shm_offset, '
-                'GLsizei color_space_size',
-  },
-  'UnpremultiplyAndDitherCopyCHROMIUM': {
-    'decoder_func': 'DoUnpremultiplyAndDitherCopyCHROMIUM',
-    'cmd_args': 'GLuint source_id, GLuint dest_id, GLint x, GLint y, '
-                'GLsizei width, GLsizei height',
-    'client_test': False,
-    'unit_test': False,
-    'impl_func': True,
-  },
 }
 
 
@@ -482,27 +348,35 @@ def main(argv):
   parser = OptionParser()
   parser.add_option(
       "--output-dir",
-      help="base directory for resulting files, under chrome/src. default is "
-      "empty. Use this if you want the result stored under gen.")
+      help="Output directory for generated files. Defaults to chromium root "
+      "directory.")
   parser.add_option(
-      "-v", "--verbose", action="store_true",
-      help="prints more output.")
+      "-v", "--verbose", action="store_true", help="Verbose logging output.")
+  parser.add_option(
+      "-c", "--check", action="store_true",
+      help="Check if output files match generated files in chromium root "
+      "directory.  Use this in PRESUBMIT scripts with --output-dir.")
 
   (options, _) = parser.parse_args(args=argv)
 
-  # This script lives under gpu/command_buffer, cd to base directory.
-  os.chdir(os.path.dirname(__file__) + "/../..")
-  base_dir = os.getcwd()
+  # This script lives under src/gpu/command_buffer.
+  script_dir = os.path.dirname(os.path.abspath(__file__))
+  assert script_dir.endswith(os.path.normpath("src/gpu/command_buffer"))
+  # os.path.join doesn't do the right thing with relative paths.
+  chromium_root_dir = os.path.abspath(script_dir + "/../..")
+
+  # Support generating files under gen/ and for PRESUBMIT.
+  if options.output_dir:
+    output_dir = options.output_dir
+  else:
+    output_dir = chromium_root_dir
+  os.chdir(output_dir)
+
   build_cmd_buffer_lib.InitializePrefix("Raster")
-  gen = build_cmd_buffer_lib.GLGenerator(options.verbose, "2018",
-                                         _FUNCTION_INFO, _NAMED_TYPE_INFO)
+  gen = build_cmd_buffer_lib.GLGenerator(
+      options.verbose, "2018", _FUNCTION_INFO, _NAMED_TYPE_INFO,
+      chromium_root_dir)
   gen.ParseGLH("gpu/command_buffer/raster_cmd_buffer_functions.txt")
-
-  # Support generating files under gen/
-  if options.output_dir != None:
-    os.chdir(options.output_dir)
-
-  os.chdir(base_dir)
 
   gen.WriteCommandIds("gpu/command_buffer/common/raster_cmd_ids_autogen.h")
   gen.WriteFormat("gpu/command_buffer/common/raster_cmd_format_autogen.h")
@@ -528,11 +402,27 @@ def main(argv):
     "gpu/command_buffer/service/"
     "raster_cmd_validation_implementation_autogen.h")
 
-  build_cmd_buffer_lib.Format(gen.generated_cpp_filenames)
+  build_cmd_buffer_lib.Format(gen.generated_cpp_filenames, output_dir,
+                              chromium_root_dir)
 
   if gen.errors > 0:
-    print "%d errors" % gen.errors
+    print "build_raster_cmd_buffer.py: Failed with %d errors" % gen.errors
     return 1
+
+  check_failed_filenames = []
+  if options.check:
+    for filename in gen.generated_cpp_filenames:
+      if not filecmp.cmp(os.path.join(output_dir, filename),
+                         os.path.join(chromium_root_dir, filename)):
+        check_failed_filenames.append(filename)
+
+  if len(check_failed_filenames) > 0:
+    print 'Please run gpu/command_buffer/build_raster_cmd_buffer.py'
+    print 'Failed check on autogenerated command buffer files:'
+    for filename in check_failed_filenames:
+      print filename
+    return 1
+
   return 0
 
 

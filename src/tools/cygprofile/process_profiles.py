@@ -232,7 +232,7 @@ class SymbolOffsetProcessor(object):
       get: (lambda item) As described above.
       update: (lambda item, int) As described above.
     """
-    dump_offset_to_symbol_info = self._GetDumpOffsetToSymbolInfo()
+    dump_offset_to_symbol_info = self.GetDumpOffsetToSymbolInfo()
     for i in items:
       dump_offset = get(i)
       idx = dump_offset / 2
@@ -243,7 +243,7 @@ class SymbolOffsetProcessor(object):
           'to any symbol'.format(dump_offset))
       update(i, symbol_info.offset)
 
-  def _GetDumpOffsetToSymbolInfo(self):
+  def GetDumpOffsetToSymbolInfo(self):
     """Computes an array mapping each word in .text to a symbol.
 
     Returns:

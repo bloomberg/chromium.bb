@@ -27,7 +27,7 @@ final class UndoUiUtils {
     public static String getTemplateTextFor(Collection<OfflineItem> items) {
         Context context = ContextUtils.getApplicationContext();
         return items.size() == 1
-                ? context.getString(R.string.undo_bar_delete_message)
+                ? context.getString(R.string.delete_message)
                 : context.getString(R.string.undo_bar_multiple_downloads_delete_message);
     }
 }

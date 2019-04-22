@@ -25,9 +25,8 @@ const uint8_t kInvertedConnectionFlag = 0x01;
 const char kDeviceId[] = "deviceId";
 const char kLocalDeviceId[] = "localDeviceId";
 
-std::unique_ptr<cryptauth::DataWithTimestamp> GenerateAdvertisementData() {
-  return std::make_unique<cryptauth::DataWithTimestamp>("advertisement1", 1000L,
-                                                        2000L);
+std::unique_ptr<DataWithTimestamp> GenerateAdvertisementData() {
+  return std::make_unique<DataWithTimestamp>("advertisement1", 1000L, 2000L);
 }
 
 }  // namespace
@@ -47,8 +46,7 @@ class SecureChannelErrorTolerantBleAdvertisementImplTest
     advertisement_ =
         ErrorTolerantBleAdvertisementImpl::Factory::Get()->BuildInstance(
             DeviceIdPair(kDeviceId, kLocalDeviceId),
-            std::make_unique<cryptauth::DataWithTimestamp>(
-                *fake_advertisement_data_),
+            std::make_unique<DataWithTimestamp>(*fake_advertisement_data_),
             fake_synchronizer_.get());
 
     VerifyServiceDataMatches(0u /* command_index */);
@@ -118,7 +116,7 @@ class SecureChannelErrorTolerantBleAdvertisementImplTest
                  INVALID_ADVERTISEMENT_ERROR_CODE);
   }
 
-  const std::unique_ptr<cryptauth::DataWithTimestamp> fake_advertisement_data_;
+  const std::unique_ptr<DataWithTimestamp> fake_advertisement_data_;
 
   std::unique_ptr<FakeBleSynchronizer> fake_synchronizer_;
 

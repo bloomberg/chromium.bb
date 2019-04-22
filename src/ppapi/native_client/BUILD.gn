@@ -37,7 +37,7 @@ if (is_nacl) {
       # Skia is one of the easiest dependencies to accidentally add since a
       # bunch of graphics and GPU code uses it.
       "//skia/*",
-      "//third_party/WebKit/*",
+      "//third_party/blink/*",
     ]
   }
 

@@ -31,10 +31,11 @@ Polymer({
       type: Object,
       value: function() {
         const map = new Map();
-        if (settings.routes.MULTIDEVICE_FEATURES)
+        if (settings.routes.MULTIDEVICE_FEATURES) {
           map.set(
               settings.routes.MULTIDEVICE_FEATURES.path,
               '#multidevice-item .subpage-arrow');
+        }
         return map;
       },
     },
@@ -69,7 +70,6 @@ Polymer({
   },
 
   listeners: {
-    'auth-token-changed': 'onAuthTokenChanged_',
     'close': 'onDialogClose_',
     'feature-toggle-clicked': 'onFeatureToggleClicked_',
     'forget-device-requested': 'onForgetDeviceRequested_',
@@ -123,8 +123,9 @@ Polymer({
    * @private
    */
   getSubLabelInnerHtml_: function() {
-    if (!this.isSuiteAllowedByPolicy())
+    if (!this.isSuiteAllowedByPolicy()) {
       return this.i18nAdvanced('multideviceSetupSummary');
+    }
     switch (this.pageContentData.mode) {
       case settings.MultiDeviceSettingsMode.NO_ELIGIBLE_HOSTS:
         return this.i18nAdvanced('multideviceNoHostText');
@@ -205,8 +206,9 @@ Polymer({
       return;
     }
 
-    if (!this.isHostSet())
+    if (!this.isHostSet()) {
       return;
+    }
 
     settings.navigateTo(settings.routes.MULTIDEVICE_FEATURES);
   },
@@ -234,8 +236,10 @@ Polymer({
 
   onDialogClose_: function(event) {
     event.stopPropagation();
-    if (event.path.some(element => element.id === 'multidevicePasswordPrompt'))
+    if (event.path.some(
+            element => element.id === 'multidevicePasswordPrompt')) {
       this.onPasswordPromptDialogClose_();
+    }
   },
 
   /** @private */
@@ -268,24 +272,19 @@ Polymer({
   },
 
   /**
-   * @param {!{detail: !Object}} event
-   * @private
-   */
-  onAuthTokenChanged_: function(event) {
-    this.authToken_ = event.detail.value;
-  },
-
-  /**
    * Attempt to enable the provided feature. If not authenticated (i.e.,
    * |authToken_| is invalid), display the password prompt to begin the
    * authentication process.
    *
-   * @param {!{detail: !Object}} event
+   * @param {!CustomEvent<!{
+   *     feature: !settings.MultiDeviceFeature,
+   *     enabled: boolean
+   * }>} event
    * @private
    */
   onFeatureToggleClicked_: function(event) {
-    let feature = event.detail.feature;
-    let enabled = event.detail.enabled;
+    const feature = event.detail.feature;
+    const enabled = event.detail.enabled;
 
     // Disabling any feature does not require authentication, and enable some
     // features does not require authentication.
@@ -308,13 +307,15 @@ Polymer({
    */
   isAuthenticationRequiredToEnable_: function(feature) {
     // Enabling SmartLock always requires authentication.
-    if (feature == settings.MultiDeviceFeature.SMART_LOCK)
+    if (feature == settings.MultiDeviceFeature.SMART_LOCK) {
       return true;
+    }
 
     // Enabling any feature besides SmartLock and the Better Together suite does
     // not require authentication.
-    if (feature != settings.MultiDeviceFeature.BETTER_TOGETHER_SUITE)
+    if (feature != settings.MultiDeviceFeature.BETTER_TOGETHER_SUITE) {
       return false;
+    }
 
     const smartLockState =
         this.getFeatureState(settings.MultiDeviceFeature.SMART_LOCK);
@@ -343,8 +344,9 @@ Polymer({
    */
   leaveNestedPageIfNoHostIsSet_: function() {
     // Wait for data to arrive.
-    if (!this.pageContentData)
+    if (!this.pageContentData) {
       return;
+    }
 
     // If the user gets to the a nested page without a host (e.g. by clicking a
     // stale 'existing user' notifications after forgetting their host) we

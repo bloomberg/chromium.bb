@@ -35,12 +35,11 @@ int ReferenceBytesMixer::NumBytes(uint8_t type) const {
 }
 
 // Base class implementation is a stub that should not be called.
-ConstBufferView ReferenceBytesMixer::Mix(
-    uint8_t type,
-    ConstBufferView::const_iterator old_base,
-    offset_t old_offset,
-    ConstBufferView::const_iterator new_base,
-    offset_t new_offset) {
+ConstBufferView ReferenceBytesMixer::Mix(uint8_t type,
+                                         ConstBufferView old_view,
+                                         offset_t old_offset,
+                                         ConstBufferView new_view,
+                                         offset_t new_offset) {
   NOTREACHED() << "Stub.";
   return ConstBufferView();
 }

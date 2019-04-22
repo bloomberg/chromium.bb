@@ -2,12 +2,6 @@
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 
-<style>
-.hideAllContainers .container {
-    display: none;
-}
-</style>
-
 <div class="container">
     <button id="labelOnly" aria-label="Label">Contents</button>
 </div>
@@ -103,9 +97,4 @@ test(function(t) {
     assert_equals(axLabelledby4.nameElementCount(), 1);
     assert_equals(axLabelledby4.nameElementAtIndex(0).role, "AXRole: AXGenericContainer");
 }, "Recursive aria-labelledby references aren't followed even in presence of aria-label, even though aria-labelledby normally trumps aria-label.");
-</script>
-
-<script>
-if (window.testRunner)
-    document.body.className = "hideAllContainers";
 </script>

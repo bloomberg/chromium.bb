@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
@@ -147,14 +148,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsManagerDelegateTest, NormalToMinimizedWindow) {
   CheckIsMinimized(true);
 }
 
-#if defined(OS_MACOSX)
-// https://crbug.com/828031
-#define MAYBE_NormalToFullscreenWindow DISABLED_NormalToFullscreenWindow
-#else
-#define MAYBE_NormalToFullscreenWindow NormalToFullscreenWindow
-#endif
-IN_PROC_BROWSER_TEST_F(DevToolsManagerDelegateTest,
-                       MAYBE_NormalToFullscreenWindow) {
+IN_PROC_BROWSER_TEST_F(DevToolsManagerDelegateTest, NormalToFullscreenWindow) {
 #if defined(OS_MACOSX)
   ui::test::ScopedFakeNSWindowFullscreen faker;
 #endif
@@ -183,7 +177,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsManagerDelegateTest,
 }
 
 #if defined(OS_MACOSX)
-// https://crbug.com/828031
+// MacViews does not yet implement maximized windows: https://crbug.com/836327
 #define MAYBE_MaximizedToFullscreenWindow DISABLED_MaximizedToFullscreenWindow
 #else
 #define MAYBE_MaximizedToFullscreenWindow MaximizedToFullscreenWindow
@@ -193,14 +187,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsManagerDelegateTest,
   browser()->window()->Maximize();
   CheckIsMaximized(true);
 
-#if defined(OS_MACOSX)
-  ui::test::ScopedFakeNSWindowFullscreen faker;
-#endif
   CheckIsFullscreen(false);
   SendCommand("fullscreen");
-#if defined(OS_MACOSX)
-  faker.FinishTransition();
-#endif
   CheckIsFullscreen(true);
 }
 
@@ -225,14 +213,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsManagerDelegateTest,
   CheckIsMaximized(false);
 }
 
-#if defined(OS_MACOSX)
-// https://crbug.com/828031
-#define MAYBE_ExitFullscreenWindow DISABLED_ExitFullscreenWindow
-#else
-#define MAYBE_ExitFullscreenWindow ExitFullscreenWindow
-#endif
-IN_PROC_BROWSER_TEST_F(DevToolsManagerDelegateTest,
-                       MAYBE_ExitFullscreenWindow) {
+IN_PROC_BROWSER_TEST_F(DevToolsManagerDelegateTest, ExitFullscreenWindow) {
 #if defined(OS_MACOSX)
   ui::test::ScopedFakeNSWindowFullscreen faker;
 #endif

@@ -12,11 +12,13 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/offline_pages/core/offline_page_feature.h"
+#include "components/offline_pages/core/prefetch/prefetch_prefs.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_downloader_quota.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store_test_util.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store_utils.h"
 #include "components/offline_pages/core/prefetch/tasks/prefetch_task_test_base.h"
 #include "components/offline_pages/core/prefetch/test_prefetch_downloader.h"
+#include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace offline_pages {
@@ -74,8 +76,8 @@ int64_t DownloadArchivesTaskTest::InsertItemToDownload(int64_t archive_size) {
 
 TEST_F(DownloadArchivesTaskTest, StoreFailure) {
   store_util()->SimulateInitializationError();
-  RunTask(
-      std::make_unique<DownloadArchivesTask>(store(), prefetch_downloader()));
+  RunTask(std::make_unique<DownloadArchivesTask>(store(), prefetch_downloader(),
+                                                 prefs()));
 }
 
 TEST_F(DownloadArchivesTaskTest, NoArchivesToDownload) {
@@ -88,8 +90,8 @@ TEST_F(DownloadArchivesTaskTest, NoArchivesToDownload) {
   EXPECT_EQ(10U, store_util()->GetAllItems(&items_before_run));
 
   base::HistogramTester histogram_tester;
-  RunTask(
-      std::make_unique<DownloadArchivesTask>(store(), prefetch_downloader()));
+  RunTask(std::make_unique<DownloadArchivesTask>(store(), prefetch_downloader(),
+                                                 prefs()));
 
   std::set<PrefetchItem> items_after_run;
   EXPECT_EQ(10U, store_util()->GetAllItems(&items_after_run));
@@ -108,8 +110,8 @@ TEST_F(DownloadArchivesTaskTest, SingleArchiveToDownload) {
   EXPECT_EQ(2U, store_util()->GetAllItems(&items_before_run));
 
   base::HistogramTester histogram_tester;
-  RunTask(
-      std::make_unique<DownloadArchivesTask>(store(), prefetch_downloader()));
+  RunTask(std::make_unique<DownloadArchivesTask>(store(), prefetch_downloader(),
+                                                 prefs()));
 
   std::set<PrefetchItem> items_after_run;
   EXPECT_EQ(2U, store_util()->GetAllItems(&items_after_run));
@@ -156,8 +158,8 @@ TEST_F(DownloadArchivesTaskTest, MultipleArchivesToDownload) {
   EXPECT_EQ(3U, store_util()->GetAllItems(&items_before_run));
 
   base::HistogramTester histogram_tester;
-  RunTask(
-      std::make_unique<DownloadArchivesTask>(store(), prefetch_downloader()));
+  RunTask(std::make_unique<DownloadArchivesTask>(store(), prefetch_downloader(),
+                                                 prefs()));
 
   std::set<PrefetchItem> items_after_run;
   EXPECT_EQ(3U, store_util()->GetAllItems(&items_after_run));
@@ -207,8 +209,8 @@ TEST_F(DownloadArchivesTaskTest, MultipleLargeArchivesToDownload) {
   EXPECT_EQ(3U, store_util()->GetAllItems(&items_before_run));
 
   base::HistogramTester histogram_tester;
-  RunTask(
-      std::make_unique<DownloadArchivesTask>(store(), prefetch_downloader()));
+  RunTask(std::make_unique<DownloadArchivesTask>(store(), prefetch_downloader(),
+                                                 prefs()));
 
   std::set<PrefetchItem> items_after_run;
   EXPECT_EQ(3U, store_util()->GetAllItems(&items_after_run));
@@ -258,8 +260,8 @@ TEST_F(DownloadArchivesTaskTest, TooManyArchivesToDownload) {
             store_util()->GetAllItems(&items_before_run));
 
   base::HistogramTester histogram_tester;
-  RunTask(
-      std::make_unique<DownloadArchivesTask>(store(), prefetch_downloader()));
+  RunTask(std::make_unique<DownloadArchivesTask>(store(), prefetch_downloader(),
+                                                 prefs()));
 
   std::set<PrefetchItem> items_after_run;
   EXPECT_EQ(static_cast<size_t>(total_items),
@@ -300,25 +302,20 @@ TEST_F(DownloadArchivesTaskTest, TooManyArchivesToDownload) {
       kSmallArchiveSize / 1024, DownloadArchivesTask::kMaxConcurrentDownloads);
 }
 
-// TODO(https://crbug.com/803584): fix limitless mode or fully remove it.
 TEST_F(DownloadArchivesTaskTest,
-       DISABLED_ManyLargeArchivesToDownloadWithLimitlessEnabled) {
+       ManyLargeArchivesToDownloadWithLimitlessEnabled) {
   // Enable limitless prefetching.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {kPrefetchingOfflinePagesFeature,
-       kOfflinePagesLimitlessPrefetchingFeature},
-      {});
+  prefetch_prefs::SetLimitlessPrefetchingEnabled(prefs(), true);
 
-  // Check the concurrent downloads limit is greater for limitless.
-  ASSERT_GT(DownloadArchivesTask::kMaxConcurrentDownloadsForLimitless,
-            DownloadArchivesTask::kMaxConcurrentDownloads);
+  // Configure max concurrent downloads.
+  const size_t limitless_max_concurrent_downloads =
+      DownloadArchivesTask::kMaxConcurrentDownloads + 1;
+  prefetch_downloader()->SetMaxConcurrentDownloads(
+      limitless_max_concurrent_downloads);
 
   // Create more archives than we allow to download in parallel with limitless
   // and put them in the fresher |item_ids| in front.
-  const size_t max_concurrent_downloads = base::checked_cast<size_t>(
-      DownloadArchivesTask::kMaxConcurrentDownloadsForLimitless);
-  const size_t total_items = max_concurrent_downloads + 2;
+  const size_t total_items = limitless_max_concurrent_downloads + 1;
   std::vector<int64_t> item_ids;
   for (size_t i = 0; i < total_items; ++i)
     item_ids.insert(item_ids.begin(), InsertItemToDownload(kLargeArchiveSize));
@@ -327,19 +324,19 @@ TEST_F(DownloadArchivesTaskTest,
   EXPECT_EQ(total_items, store_util()->GetAllItems(&items_before_run));
 
   base::HistogramTester histogram_tester;
-  RunTask(
-      std::make_unique<DownloadArchivesTask>(store(), prefetch_downloader()));
+  RunTask(std::make_unique<DownloadArchivesTask>(store(), prefetch_downloader(),
+                                                 prefs()));
 
   std::set<PrefetchItem> items_after_run;
   EXPECT_EQ(total_items, store_util()->GetAllItems(&items_after_run));
 
   const TestPrefetchDownloader::RequestMap& requested_downloads =
       prefetch_downloader()->requested_downloads();
-  EXPECT_EQ(max_concurrent_downloads, requested_downloads.size());
+  EXPECT_EQ(limitless_max_concurrent_downloads, requested_downloads.size());
 
-  // The freshest |kMaxConcurrentDownloadsForLimitless| items should be started
+  // The freshest |limitless_max_concurrent_downloads| items should be started
   // as with limitless enabled there's no download size restrictions.
-  for (size_t i = 0; i < max_concurrent_downloads; ++i) {
+  for (size_t i = 0; i < limitless_max_concurrent_downloads; ++i) {
     const PrefetchItem* download_item =
         FindPrefetchItemByOfflineId(items_after_run, item_ids[i]);
     ASSERT_TRUE(download_item);
@@ -351,7 +348,7 @@ TEST_F(DownloadArchivesTaskTest,
   }
 
   // Remaining items shouldn't have been started.
-  for (size_t i = max_concurrent_downloads; i < total_items; ++i) {
+  for (size_t i = limitless_max_concurrent_downloads; i < total_items; ++i) {
     const PrefetchItem* download_item_before =
         FindPrefetchItemByOfflineId(items_before_run, item_ids[i]);
     const PrefetchItem* download_item_after =
@@ -364,7 +361,7 @@ TEST_F(DownloadArchivesTaskTest,
 
   histogram_tester.ExpectUniqueSample(
       "OfflinePages.Prefetching.DownloadExpectedFileSize",
-      kLargeArchiveSize / 1024, max_concurrent_downloads);
+      kLargeArchiveSize / 1024, limitless_max_concurrent_downloads);
 }
 
 TEST_F(DownloadArchivesTaskTest, SingleArchiveSecondAttempt) {
@@ -379,8 +376,8 @@ TEST_F(DownloadArchivesTaskTest, SingleArchiveSecondAttempt) {
   EXPECT_EQ(1U, store_util()->GetAllItems(&items_before_run));
 
   base::HistogramTester histogram_tester;
-  RunTask(
-      std::make_unique<DownloadArchivesTask>(store(), prefetch_downloader()));
+  RunTask(std::make_unique<DownloadArchivesTask>(store(), prefetch_downloader(),
+                                                 prefs()));
 
   std::set<PrefetchItem> items_after_run;
   EXPECT_EQ(1U, store_util()->GetAllItems(&items_after_run));

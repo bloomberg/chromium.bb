@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_PLUGINS_PLUGIN_INFOBAR_DELEGATES_H_
 #define CHROME_BROWSER_PLUGINS_PLUGIN_INFOBAR_DELEGATES_H_
 
+#include <memory>
+#include <string>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "build/build_config.h"
@@ -18,7 +21,7 @@ class InfoBarService;
 class PluginInstaller;
 class PluginMetadata;
 
-// Infobar that's shown when a plugin is out of date.
+// Infobar that's shown when a plugin is out of date or deprecated.
 class OutdatedPluginInfoBarDelegate : public ConfirmInfoBarDelegate,
                                       public WeakPluginInstallerObserver {
  public:
@@ -28,17 +31,11 @@ class OutdatedPluginInfoBarDelegate : public ConfirmInfoBarDelegate,
                      PluginInstaller* installer,
                      std::unique_ptr<PluginMetadata> metadata);
 
-  // Replaces |infobar|, which must currently be owned, with an infobar asking
-  // the user to update a particular plugin.
-  static void Replace(infobars::InfoBar* infobar,
-                      PluginInstaller* installer,
-                      std::unique_ptr<PluginMetadata> plugin_metadata,
-                      const base::string16& message);
-
  private:
-  OutdatedPluginInfoBarDelegate(PluginInstaller* installer,
-                                std::unique_ptr<PluginMetadata> metadata,
-                                const base::string16& message);
+  OutdatedPluginInfoBarDelegate(
+      PluginInstaller* installer,
+      std::unique_ptr<PluginMetadata> metadata,
+      const base::string16& message_override = base::string16());
   ~OutdatedPluginInfoBarDelegate() override;
 
   // ConfirmInfoBarDelegate:
@@ -46,6 +43,7 @@ class OutdatedPluginInfoBarDelegate : public ConfirmInfoBarDelegate,
   void InfoBarDismissed() override;
   const gfx::VectorIcon& GetVectorIcon() const override;
   base::string16 GetMessageText() const override;
+  int GetButtons() const override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;
   bool Accept() override;
   bool Cancel() override;

@@ -142,8 +142,8 @@ NetworkingPrivateLinux::NetworkingPrivateLinux()
 
   dbus_thread_.StartWithOptions(thread_options);
   dbus_thread_.task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&NetworkingPrivateLinux::Initialize, base::Unretained(this)));
+      FROM_HERE, base::BindOnce(&NetworkingPrivateLinux::Initialize,
+                                base::Unretained(this)));
 }
 
 NetworkingPrivateLinux::~NetworkingPrivateLinux() {
@@ -1219,8 +1219,8 @@ void NetworkingPrivateLinux::PostOnNetworksChangedToUIThread(
 
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::UI},
-      base::Bind(&NetworkingPrivateLinux::OnNetworksChangedEventTask,
-                 base::Unretained(this), base::Passed(&guid_list)));
+      base::BindOnce(&NetworkingPrivateLinux::OnNetworksChangedEventTask,
+                     base::Unretained(this), std::move(guid_list)));
 }
 
 void NetworkingPrivateLinux::OnNetworksChangedEventTask(

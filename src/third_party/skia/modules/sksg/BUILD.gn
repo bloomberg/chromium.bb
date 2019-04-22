@@ -3,11 +3,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("../../gn/skia.gni")
+
 config("public_config") {
   include_dirs = [ "include" ]
 }
 
 component("sksg") {
+  check_includes = false
   import("sksg.gni")
   public_configs = [ ":public_config" ]
   sources = skia_sksg_sources
@@ -17,7 +20,7 @@ component("sksg") {
   ]
 }
 
-if (defined(is_skia_standalone)) {
+if (defined(is_skia_standalone) && skia_enable_tools) {
   source_set("tests") {
     testonly = true
 

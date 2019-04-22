@@ -238,16 +238,16 @@ void av1_convolve_2d_copy_sr_c(const uint8_t *src, int src_stride, uint8_t *dst,
   (void)conv_params;
 
   for (int y = 0; y < h; ++y) {
-    memcpy(dst + y * dst_stride, src + y * src_stride, w * sizeof(src[0]));
+    memmove(dst + y * dst_stride, src + y * src_stride, w * sizeof(src[0]));
   }
 }
 
-void av1_jnt_convolve_2d_c(const uint8_t *src, int src_stride, uint8_t *dst8,
-                           int dst8_stride, int w, int h,
-                           const InterpFilterParams *filter_params_x,
-                           const InterpFilterParams *filter_params_y,
-                           const int subpel_x_q4, const int subpel_y_q4,
-                           ConvolveParams *conv_params) {
+void av1_dist_wtd_convolve_2d_c(const uint8_t *src, int src_stride,
+                                uint8_t *dst8, int dst8_stride, int w, int h,
+                                const InterpFilterParams *filter_params_x,
+                                const InterpFilterParams *filter_params_y,
+                                const int subpel_x_q4, const int subpel_y_q4,
+                                ConvolveParams *conv_params) {
   CONV_BUF_TYPE *dst = conv_params->dst;
   int dst_stride = conv_params->dst_stride;
   int16_t im_block[(MAX_SB_SIZE + MAX_FILTER_TAP - 1) * MAX_SB_SIZE];
@@ -290,7 +290,7 @@ void av1_jnt_convolve_2d_c(const uint8_t *src, int src_stride, uint8_t *dst8,
       CONV_BUF_TYPE res = ROUND_POWER_OF_TWO(sum, conv_params->round_1);
       if (conv_params->do_average) {
         int32_t tmp = dst[y * dst_stride + x];
-        if (conv_params->use_jnt_comp_avg) {
+        if (conv_params->use_dist_wtd_comp_avg) {
           tmp = tmp * conv_params->fwd_offset + res * conv_params->bck_offset;
           tmp = tmp >> DIST_PRECISION_BITS;
         } else {
@@ -308,12 +308,12 @@ void av1_jnt_convolve_2d_c(const uint8_t *src, int src_stride, uint8_t *dst8,
   }
 }
 
-void av1_jnt_convolve_y_c(const uint8_t *src, int src_stride, uint8_t *dst8,
-                          int dst8_stride, int w, int h,
-                          const InterpFilterParams *filter_params_x,
-                          const InterpFilterParams *filter_params_y,
-                          const int subpel_x_q4, const int subpel_y_q4,
-                          ConvolveParams *conv_params) {
+void av1_dist_wtd_convolve_y_c(const uint8_t *src, int src_stride,
+                               uint8_t *dst8, int dst8_stride, int w, int h,
+                               const InterpFilterParams *filter_params_x,
+                               const InterpFilterParams *filter_params_y,
+                               const int subpel_x_q4, const int subpel_y_q4,
+                               ConvolveParams *conv_params) {
   CONV_BUF_TYPE *dst = conv_params->dst;
   int dst_stride = conv_params->dst_stride;
   const int fo_vert = filter_params_y->taps / 2 - 1;
@@ -341,7 +341,7 @@ void av1_jnt_convolve_y_c(const uint8_t *src, int src_stride, uint8_t *dst8,
 
       if (conv_params->do_average) {
         int32_t tmp = dst[y * dst_stride + x];
-        if (conv_params->use_jnt_comp_avg) {
+        if (conv_params->use_dist_wtd_comp_avg) {
           tmp = tmp * conv_params->fwd_offset + res * conv_params->bck_offset;
           tmp = tmp >> DIST_PRECISION_BITS;
         } else {
@@ -358,12 +358,12 @@ void av1_jnt_convolve_y_c(const uint8_t *src, int src_stride, uint8_t *dst8,
   }
 }
 
-void av1_jnt_convolve_x_c(const uint8_t *src, int src_stride, uint8_t *dst8,
-                          int dst8_stride, int w, int h,
-                          const InterpFilterParams *filter_params_x,
-                          const InterpFilterParams *filter_params_y,
-                          const int subpel_x_q4, const int subpel_y_q4,
-                          ConvolveParams *conv_params) {
+void av1_dist_wtd_convolve_x_c(const uint8_t *src, int src_stride,
+                               uint8_t *dst8, int dst8_stride, int w, int h,
+                               const InterpFilterParams *filter_params_x,
+                               const InterpFilterParams *filter_params_y,
+                               const int subpel_x_q4, const int subpel_y_q4,
+                               ConvolveParams *conv_params) {
   CONV_BUF_TYPE *dst = conv_params->dst;
   int dst_stride = conv_params->dst_stride;
   const int fo_horiz = filter_params_x->taps / 2 - 1;
@@ -391,7 +391,7 @@ void av1_jnt_convolve_x_c(const uint8_t *src, int src_stride, uint8_t *dst8,
 
       if (conv_params->do_average) {
         int32_t tmp = dst[y * dst_stride + x];
-        if (conv_params->use_jnt_comp_avg) {
+        if (conv_params->use_dist_wtd_comp_avg) {
           tmp = tmp * conv_params->fwd_offset + res * conv_params->bck_offset;
           tmp = tmp >> DIST_PRECISION_BITS;
         } else {
@@ -408,12 +408,11 @@ void av1_jnt_convolve_x_c(const uint8_t *src, int src_stride, uint8_t *dst8,
   }
 }
 
-void av1_jnt_convolve_2d_copy_c(const uint8_t *src, int src_stride,
-                                uint8_t *dst8, int dst8_stride, int w, int h,
-                                const InterpFilterParams *filter_params_x,
-                                const InterpFilterParams *filter_params_y,
-                                const int subpel_x_q4, const int subpel_y_q4,
-                                ConvolveParams *conv_params) {
+void av1_dist_wtd_convolve_2d_copy_c(
+    const uint8_t *src, int src_stride, uint8_t *dst8, int dst8_stride, int w,
+    int h, const InterpFilterParams *filter_params_x,
+    const InterpFilterParams *filter_params_y, const int subpel_x_q4,
+    const int subpel_y_q4, ConvolveParams *conv_params) {
   CONV_BUF_TYPE *dst = conv_params->dst;
   int dst_stride = conv_params->dst_stride;
   const int bits =
@@ -434,7 +433,7 @@ void av1_jnt_convolve_2d_copy_c(const uint8_t *src, int src_stride,
 
       if (conv_params->do_average) {
         int32_t tmp = dst[y * dst_stride + x];
-        if (conv_params->use_jnt_comp_avg) {
+        if (conv_params->use_dist_wtd_comp_avg) {
           tmp = tmp * conv_params->fwd_offset + res * conv_params->bck_offset;
           tmp = tmp >> DIST_PRECISION_BITS;
         } else {
@@ -511,7 +510,7 @@ void av1_convolve_2d_scale_c(const uint8_t *src, int src_stride, uint8_t *dst8,
       if (conv_params->is_compound) {
         if (conv_params->do_average) {
           int32_t tmp = dst16[y * dst16_stride + x];
-          if (conv_params->use_jnt_comp_avg) {
+          if (conv_params->use_dist_wtd_comp_avg) {
             tmp = tmp * conv_params->fwd_offset + res * conv_params->bck_offset;
             tmp = tmp >> DIST_PRECISION_BITS;
           } else {
@@ -632,7 +631,7 @@ void av1_highbd_convolve_2d_copy_sr_c(
   (void)bd;
 
   for (int y = 0; y < h; ++y) {
-    memcpy(dst + y * dst_stride, src + y * src_stride, w * sizeof(src[0]));
+    memmove(dst + y * dst_stride, src + y * src_stride, w * sizeof(src[0]));
   }
 }
 
@@ -748,13 +747,11 @@ void av1_highbd_convolve_2d_sr_c(const uint16_t *src, int src_stride,
   }
 }
 
-void av1_highbd_jnt_convolve_2d_c(const uint16_t *src, int src_stride,
-                                  uint16_t *dst16, int dst16_stride, int w,
-                                  int h,
-                                  const InterpFilterParams *filter_params_x,
-                                  const InterpFilterParams *filter_params_y,
-                                  const int subpel_x_q4, const int subpel_y_q4,
-                                  ConvolveParams *conv_params, int bd) {
+void av1_highbd_dist_wtd_convolve_2d_c(
+    const uint16_t *src, int src_stride, uint16_t *dst16, int dst16_stride,
+    int w, int h, const InterpFilterParams *filter_params_x,
+    const InterpFilterParams *filter_params_y, const int subpel_x_q4,
+    const int subpel_y_q4, ConvolveParams *conv_params, int bd) {
   int x, y, k;
   int16_t im_block[(MAX_SB_SIZE + MAX_FILTER_TAP - 1) * MAX_SB_SIZE];
   CONV_BUF_TYPE *dst = conv_params->dst;
@@ -799,7 +796,7 @@ void av1_highbd_jnt_convolve_2d_c(const uint16_t *src, int src_stride,
       CONV_BUF_TYPE res = ROUND_POWER_OF_TWO(sum, conv_params->round_1);
       if (conv_params->do_average) {
         int32_t tmp = dst[y * dst_stride + x];
-        if (conv_params->use_jnt_comp_avg) {
+        if (conv_params->use_dist_wtd_comp_avg) {
           tmp = tmp * conv_params->fwd_offset + res * conv_params->bck_offset;
           tmp = tmp >> DIST_PRECISION_BITS;
         } else {
@@ -817,13 +814,11 @@ void av1_highbd_jnt_convolve_2d_c(const uint16_t *src, int src_stride,
   }
 }
 
-void av1_highbd_jnt_convolve_x_c(const uint16_t *src, int src_stride,
-                                 uint16_t *dst16, int dst16_stride, int w,
-                                 int h,
-                                 const InterpFilterParams *filter_params_x,
-                                 const InterpFilterParams *filter_params_y,
-                                 const int subpel_x_q4, const int subpel_y_q4,
-                                 ConvolveParams *conv_params, int bd) {
+void av1_highbd_dist_wtd_convolve_x_c(
+    const uint16_t *src, int src_stride, uint16_t *dst16, int dst16_stride,
+    int w, int h, const InterpFilterParams *filter_params_x,
+    const InterpFilterParams *filter_params_y, const int subpel_x_q4,
+    const int subpel_y_q4, ConvolveParams *conv_params, int bd) {
   CONV_BUF_TYPE *dst = conv_params->dst;
   int dst_stride = conv_params->dst_stride;
   const int fo_horiz = filter_params_x->taps / 2 - 1;
@@ -851,7 +846,7 @@ void av1_highbd_jnt_convolve_x_c(const uint16_t *src, int src_stride,
 
       if (conv_params->do_average) {
         int32_t tmp = dst[y * dst_stride + x];
-        if (conv_params->use_jnt_comp_avg) {
+        if (conv_params->use_dist_wtd_comp_avg) {
           tmp = tmp * conv_params->fwd_offset + res * conv_params->bck_offset;
           tmp = tmp >> DIST_PRECISION_BITS;
         } else {
@@ -868,13 +863,11 @@ void av1_highbd_jnt_convolve_x_c(const uint16_t *src, int src_stride,
   }
 }
 
-void av1_highbd_jnt_convolve_y_c(const uint16_t *src, int src_stride,
-                                 uint16_t *dst16, int dst16_stride, int w,
-                                 int h,
-                                 const InterpFilterParams *filter_params_x,
-                                 const InterpFilterParams *filter_params_y,
-                                 const int subpel_x_q4, const int subpel_y_q4,
-                                 ConvolveParams *conv_params, int bd) {
+void av1_highbd_dist_wtd_convolve_y_c(
+    const uint16_t *src, int src_stride, uint16_t *dst16, int dst16_stride,
+    int w, int h, const InterpFilterParams *filter_params_x,
+    const InterpFilterParams *filter_params_y, const int subpel_x_q4,
+    const int subpel_y_q4, ConvolveParams *conv_params, int bd) {
   CONV_BUF_TYPE *dst = conv_params->dst;
   int dst_stride = conv_params->dst_stride;
   const int fo_vert = filter_params_y->taps / 2 - 1;
@@ -902,7 +895,7 @@ void av1_highbd_jnt_convolve_y_c(const uint16_t *src, int src_stride,
 
       if (conv_params->do_average) {
         int32_t tmp = dst[y * dst_stride + x];
-        if (conv_params->use_jnt_comp_avg) {
+        if (conv_params->use_dist_wtd_comp_avg) {
           tmp = tmp * conv_params->fwd_offset + res * conv_params->bck_offset;
           tmp = tmp >> DIST_PRECISION_BITS;
         } else {
@@ -919,7 +912,7 @@ void av1_highbd_jnt_convolve_y_c(const uint16_t *src, int src_stride,
   }
 }
 
-void av1_highbd_jnt_convolve_2d_copy_c(
+void av1_highbd_dist_wtd_convolve_2d_copy_c(
     const uint16_t *src, int src_stride, uint16_t *dst16, int dst16_stride,
     int w, int h, const InterpFilterParams *filter_params_x,
     const InterpFilterParams *filter_params_y, const int subpel_x_q4,
@@ -943,7 +936,7 @@ void av1_highbd_jnt_convolve_2d_copy_c(
       res += round_offset;
       if (conv_params->do_average) {
         int32_t tmp = dst[y * dst_stride + x];
-        if (conv_params->use_jnt_comp_avg) {
+        if (conv_params->use_dist_wtd_comp_avg) {
           tmp = tmp * conv_params->fwd_offset + res * conv_params->bck_offset;
           tmp = tmp >> DIST_PRECISION_BITS;
         } else {
@@ -1019,7 +1012,7 @@ void av1_highbd_convolve_2d_scale_c(const uint16_t *src, int src_stride,
       if (conv_params->is_compound) {
         if (conv_params->do_average) {
           int32_t tmp = dst16[y * dst16_stride + x];
-          if (conv_params->use_jnt_comp_avg) {
+          if (conv_params->use_dist_wtd_comp_avg) {
             tmp = tmp * conv_params->fwd_offset + res * conv_params->bck_offset;
             tmp = tmp >> DIST_PRECISION_BITS;
           } else {

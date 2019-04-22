@@ -2,22 +2,13 @@
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 
-<style>
-.hideAllContainers .container { display: none; }
-
-button {
-  display: block;
-}
-</style>
-
 <div class="container" id="container1" role="group" aria-label="Container">
     <div id="heading1" role="heading" aria-owns="menu1">heading</div>
     <div id="menu1" role="menu">menu</div>
 </div>
 
 <script>
-test(function(t)
-{
+test(function(t) {
     // No problem with using aria-owns to put a menu inside a heading.
     var axHeading1 = accessibilityController.accessibleElementById("heading1");
     assert_equals(axHeading1.name, "heading");
@@ -64,7 +55,7 @@ test(function(t)
     var axContainer3 = accessibilityController.accessibleElementById("container3");
     assert_equals(axContainer3.childrenCount, 2);
     assert_equals(axContainer3.childAtIndex(0).role, "AXRole: AXTextField");
-    // An input element naturally gets 1 child that corresponds to the anonymous 
+    // An input element naturally gets 1 child that corresponds to the anonymous
     // inner editor element.
     assert_equals(axContainer3.childAtIndex(0).childrenCount, 1);
     assert_equals(axContainer3.childAtIndex(1).role, "AXRole: AXMenu");
@@ -107,9 +98,4 @@ test(function(t)
     assert_equals(axContainer5.childAtIndex(0).childrenCount, 0);
     assert_equals(axContainer5.childAtIndex(1).role, "AXRole: AXMenu");
 }, "Aria-owns doesn't create children of a contenteditable element.");
-</script>
-
-<script>
-if (window.testRunner)
-    document.body.className = "hideAllContainers";
 </script>

@@ -71,7 +71,7 @@ void ArcRobotAuthCodeFetcher::Fetch(FetchCallback callback) {
   enterprise_management::DeviceServiceApiAccessRequest* request =
       fetch_request_job_->GetRequest()->mutable_service_api_access_request();
   request->set_oauth2_client_id(kAndoidClientId);
-  request->add_auth_scope(GaiaConstants::kAnyApiOAuth2Scope);
+  request->add_auth_scopes(GaiaConstants::kAnyApiOAuth2Scope);
   request->set_device_type(
       enterprise_management::DeviceServiceApiAccessRequest::ANDROID_OS);
 

@@ -8,12 +8,11 @@
 #include <string>
 
 #include "base/callback_helpers.h"
-#include "base/containers/hash_tables.h"
-#include "base/hash.h"
+#include "base/component_export.h"
+#include "base/hash/hash.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "storage/browser/blob/blob_memory_controller.h"
-#include "storage/browser/storage_browser_export.h"
 
 namespace storage {
 class BlobDataItem;
@@ -25,7 +24,7 @@ class BlobDataItem;
 // RAM vs file backed).
 // We also allow the storage of a memory quota allocation object which is used
 // for memory quota reclamation.
-class STORAGE_EXPORT ShareableBlobDataItem
+class COMPONENT_EXPORT(STORAGE_BROWSER) ShareableBlobDataItem
     : public base::RefCounted<ShareableBlobDataItem> {
  public:
   enum State {
@@ -69,8 +68,9 @@ class STORAGE_EXPORT ShareableBlobDataItem
   friend class BlobMemoryControllerTest;
   friend class BlobStorageContext;
   friend class base::RefCounted<ShareableBlobDataItem>;
-  friend STORAGE_EXPORT void PrintTo(const ShareableBlobDataItem& x,
-                                     ::std::ostream* os);
+  friend COMPONENT_EXPORT(STORAGE_BROWSER) void PrintTo(
+      const ShareableBlobDataItem& x,
+      ::std::ostream* os);
 
   ~ShareableBlobDataItem();
 
@@ -90,10 +90,10 @@ class STORAGE_EXPORT ShareableBlobDataItem
   DISALLOW_COPY_AND_ASSIGN(ShareableBlobDataItem);
 };
 
-STORAGE_EXPORT bool operator==(const ShareableBlobDataItem& a,
-                               const ShareableBlobDataItem& b);
-STORAGE_EXPORT bool operator!=(const ShareableBlobDataItem& a,
-                               const ShareableBlobDataItem& b);
+COMPONENT_EXPORT(STORAGE_BROWSER)
+bool operator==(const ShareableBlobDataItem& a, const ShareableBlobDataItem& b);
+COMPONENT_EXPORT(STORAGE_BROWSER)
+bool operator!=(const ShareableBlobDataItem& a, const ShareableBlobDataItem& b);
 
 }  // namespace storage
 #endif  // STORAGE_BROWSER_BLOB_SHAREABLE_BLOB_DATA_ITEM_H_

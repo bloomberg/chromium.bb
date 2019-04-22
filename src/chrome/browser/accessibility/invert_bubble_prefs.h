@@ -9,6 +9,10 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
+namespace accessibility_prefs {
+
 void RegisterInvertBubbleUserPrefs(user_prefs::PrefRegistrySyncable* registry);
+
+}  // namespace accessibility_prefs
 
 #endif  // CHROME_BROWSER_ACCESSIBILITY_INVERT_BUBBLE_PREFS_H_

@@ -82,12 +82,11 @@ void foo() {
 ## Requirements
 
 The ScopedLogger class and associated macros are defined in
-[Assertions.h](Assertions.h), which most Blink source files already include
-indirectly.  ScopedLogger can't be used outside of Blink code yet.
+[scoped_logger.h](scoped_logger.h).  ScopedLogger can't be used outside of
+Blink code yet.
 
 The ScopedLogger macros work in debug builds by default.  They are compiled out
-of release builds, unless your `GYP_DEFINES` or GN args file includes one of the
-following:
+of release builds, unless your GN args file includes one of the following:
 
 * `dcheck_always_on`: enables assertions and ScopedLogger
 

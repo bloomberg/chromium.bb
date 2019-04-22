@@ -16,6 +16,7 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "media/base/audio_decoder_config.h"
@@ -256,6 +257,35 @@ TEST_F(MP4StreamParserTest, UnalignedAppend) {
   // incremental append system)
   InitializeParser();
   ParseMP4File("bear-1280x720-av_frag.mp4", 512);
+}
+
+constexpr char kShakaPackagerUMA[] = "Media.MSE.DetectedShakaPackagerInMp4";
+
+TEST_F(MP4StreamParserTest, DidNotUseShakaPackager) {
+  // Encrypted files have non-zero duration and are treated as recorded streams.
+  auto params = GetDefaultInitParametersExpectations();
+  params.duration = base::TimeDelta::FromMicroseconds(2736066);
+  params.liveness = DemuxerStream::LIVENESS_RECORDED;
+  params.detected_audio_track_count = 0;
+  InitializeParserWithInitParametersExpectations(params);
+
+  base::HistogramTester tester;
+
+  // Test file has ID32 box, but no shaka player metadata.
+  ParseMP4File("bear-640x360-v_frag-cenc-senc-no-saiz-saio.mp4", 512);
+  tester.ExpectUniqueSample(kShakaPackagerUMA, 0, 1);
+}
+
+TEST_F(MP4StreamParserTest, UsedShakaPackager) {
+  auto params = GetDefaultInitParametersExpectations();
+  params.duration = base::TimeDelta::FromMicroseconds(2736000);
+  params.liveness = DemuxerStream::LIVENESS_RECORDED;
+  params.detected_audio_track_count = 0;
+  InitializeParserWithInitParametersExpectations(params);
+
+  base::HistogramTester tester;
+  ParseMP4File("bear-320x240-v_frag-vp9.mp4", 512);
+  tester.ExpectUniqueSample(kShakaPackagerUMA, 1, 1);
 }
 
 TEST_F(MP4StreamParserTest, BytewiseAppend) {
@@ -753,9 +783,9 @@ MatrixRotationTestCaseParam rotation_test_cases[6] = {
     {1, 1, VIDEO_ROTATION_0},     // Error case
     {5, 5, VIDEO_ROTATION_0},     // Error case
 };
-INSTANTIATE_TEST_CASE_P(CheckMath,
-                        MP4StreamParserRotationMatrixEvaluatorTest,
-                        testing::ValuesIn(rotation_test_cases));
+INSTANTIATE_TEST_SUITE_P(CheckMath,
+                         MP4StreamParserRotationMatrixEvaluatorTest,
+                         testing::ValuesIn(rotation_test_cases));
 
 }  // namespace mp4
 }  // namespace media

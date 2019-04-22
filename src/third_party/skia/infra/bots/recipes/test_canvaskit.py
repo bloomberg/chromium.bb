@@ -6,6 +6,7 @@
 
 DEPS = [
   'checkout',
+  'env',
   'infra',
   'recipe_engine/file',
   'recipe_engine/path',
@@ -17,7 +18,7 @@ DEPS = [
 ]
 
 
-DOCKER_IMAGE = 'gcr.io/skia-public/gold-karma-chrome-tests:68.0.3440.106_v6'
+DOCKER_IMAGE = 'gcr.io/skia-public/gold-karma-chrome-tests:72.0.3626.121_v1'
 INNER_KARMA_SCRIPT = '/SRC/skia/infra/canvaskit/test_canvaskit.sh'
 
 
@@ -32,7 +33,7 @@ def RunSteps(api):
 
   # The karma script is configured to look in ./canvaskit/bin/ for
   # the test files to load, so we must copy them there (see Set up for docker).
-  copy_dest = checkout_root.join('skia', 'experimental', 'canvaskit',
+  copy_dest = checkout_root.join('skia', 'modules', 'canvaskit',
                                  'canvaskit', 'bin')
 
   base_dir = api.vars.build_dir
@@ -65,7 +66,7 @@ except OSError as e:
     raise
 
 # Copy binaries (canvaskit.js and canvaskit.wasm) to where the karma tests
-# expect them ($SKIA_ROOT/experimental/canvaskit/canvaskit/bin/)
+# expect them ($SKIA_ROOT/modules/canvaskit/canvaskit/bin/)
 dest = os.path.join(copy_dest, 'canvaskit.js')
 shutil.copyfile(os.path.join(base_dir, 'canvaskit.js'), dest)
 os.chmod(dest, 0o644) # important, otherwise non-privileged docker can't read.
@@ -106,10 +107,13 @@ os.chmod(out_dir, 0o777) # important, otherwise non-privileged docker can't writ
       '--patchset',      api.vars.patchset,
     ])
 
-  api.run(
-    api.step,
-    'Test CanvasKit with Docker',
-    cmd=cmd)
+  # Override DOCKER_CONFIG set by Kitchen.
+  env = {'DOCKER_CONFIG': '/home/chrome-bot/.docker'}
+  with api.env(env):
+    api.run(
+        api.step,
+        'Test CanvasKit with Docker',
+        cmd=cmd)
 
 
 def GenTests(api):

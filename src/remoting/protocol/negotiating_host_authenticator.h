@@ -50,9 +50,9 @@ class NegotiatingHostAuthenticator : public NegotiatingAuthenticatorBase {
       scoped_refptr<TokenValidatorFactory> token_validator_factory);
 
   // Overriden from Authenticator.
-  void ProcessMessage(const buzz::XmlElement* message,
+  void ProcessMessage(const jingle_xmpp::XmlElement* message,
                       const base::Closure& resume_callback) override;
-  std::unique_ptr<buzz::XmlElement> GetNextMessage() override;
+  std::unique_ptr<jingle_xmpp::XmlElement> GetNextMessage() override;
 
  private:
   NegotiatingHostAuthenticator(const std::string& local_id,

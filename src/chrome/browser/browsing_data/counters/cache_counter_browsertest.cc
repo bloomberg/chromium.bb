@@ -10,6 +10,7 @@
 
 #include "chrome/browser/browsing_data/counters/cache_counter.h"
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"

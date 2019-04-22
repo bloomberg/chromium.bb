@@ -123,7 +123,7 @@ bool ParseListAccountsData(const std::string& data,
     signed_out_accounts->clear();
 
   // Parse returned data and make sure we have data.
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(data);
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(data);
   if (!value)
     return false;
 
@@ -140,7 +140,7 @@ bool ParseListAccountsData(const std::string& data,
   // account in the list is the primary account.
   for (size_t i = 0; i < account_list->GetSize(); ++i) {
     base::ListValue* account;
-    if (account_list->GetList(i, &account) && account != NULL) {
+    if (account_list->GetList(i, &account) && account != nullptr) {
       std::string email;
       // Canonicalize the email since ListAccounts returns "display email".
       if (account->GetString(3, &email) && !email.empty()) {

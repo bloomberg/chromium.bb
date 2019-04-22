@@ -308,10 +308,8 @@ DBusHandlerResult ObjectManager::HandleMessage(DBusConnection* connection,
     // |signal| to NotifyPropertiesChanged, which will handle the clean up.
     Signal* released_signal = signal.release();
     bus_->GetOriginTaskRunner()->PostTask(
-        FROM_HERE,
-        base::Bind(&ObjectManager::NotifyPropertiesChanged,
-                   this, path,
-                   released_signal));
+        FROM_HERE, base::BindOnce(&ObjectManager::NotifyPropertiesChanged, this,
+                                  path, released_signal));
   } else {
     // If the D-Bus thread is not used, just call the callback on the
     // current thread. Transfer the ownership of |signal| to
@@ -334,8 +332,7 @@ void ObjectManager::NotifyPropertiesChanged(
 
   // Delete the message on the D-Bus thread. See comments in HandleMessage.
   bus_->GetDBusTaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(&base::DeletePointer<Signal>, signal));
+      FROM_HERE, base::BindOnce(&base::DeletePointer<Signal>, signal));
 }
 
 void ObjectManager::NotifyPropertiesChangedHelper(

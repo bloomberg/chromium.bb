@@ -77,7 +77,8 @@ class P2PQuicStream {
   // for reading and writing and deleted by the quic::QuicSession.
   virtual void WriteData(Vector<uint8_t> data, bool fin) = 0;
 
-  // Sets the delegate object, which must outlive the P2PQuicStream.
+  // Sets the delegate object. In the case that the Delegate does not outlive
+  // the P2PQuicStream object, it must unset itself before destructing.
   virtual void SetDelegate(Delegate* delegate) = 0;
 };
 

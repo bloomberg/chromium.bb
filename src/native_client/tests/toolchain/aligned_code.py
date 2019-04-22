@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 import subprocess
 import sys
 import re
@@ -45,11 +47,11 @@ def Main(args):
         p_memsz = int(match2.group(2), 16)
         break
   if proc.wait() != 0:
-    print 'Command failed: %s' % objdump_args
+    print('Command failed: %s' % objdump_args)
     sys.exit(1)
 
   if p_off is None:
-    print 'Failed to find executable segment in output of %s' % objdump_args
+    print('Failed to find executable segment in output of %s' % objdump_args)
     sys.exit(1)
 
   failures = []
@@ -64,7 +66,7 @@ def Main(args):
 
   if failures:
     failures = '\n'.join(failures)
-    print failures
+    print(failures)
     sys.exit(1)
 
   if outfile is not None:

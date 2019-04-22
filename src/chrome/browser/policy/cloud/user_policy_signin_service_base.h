@@ -86,7 +86,7 @@ class UserPolicySigninServiceBase : public KeyedService,
 
   // identity::IdentityManager::Observer implementation:
   void OnPrimaryAccountCleared(
-      const AccountInfo& previous_primary_account_info) override;
+      const CoreAccountInfo& previous_primary_account_info) override;
 
   // content::NotificationObserver implementation:
   void Observe(int type,

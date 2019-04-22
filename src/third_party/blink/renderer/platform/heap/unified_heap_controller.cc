@@ -4,13 +4,13 @@
 
 #include "third_party/blink/renderer/platform/heap/unified_heap_controller.h"
 
-#include "third_party/blink/renderer/platform/bindings/active_script_wrappable_base.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/bindings/wrapper_type_info.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/heap_stats_collector.h"
 #include "third_party/blink/renderer/platform/heap/marking_visitor.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -53,19 +53,16 @@ void UnifiedHeapController::EnterFinalPause(EmbedderStackState stack_state) {
   ThreadHeapStatsCollector::Scope stats_scope(
       thread_state_->Heap().stats_collector(),
       ThreadHeapStatsCollector::kAtomicPhase);
-
-  // ActiveScriptWrappable may not have persistents keeping them alive but rely
-  // on explicit tracing to be kept alive.
-  // TODO(mlippautz): Move to root scanning after stabilizing unified garbage
-  // collection.
-  ActiveScriptWrappableBase::TraceActiveScriptWrappables(
-      isolate_, thread_state_->CurrentVisitor());
-
   thread_state_->EnterAtomicPause();
   thread_state_->EnterGCForbiddenScope();
-  thread_state_->AtomicPauseMarkPrologue(ToBlinkGCStackState(stack_state),
-                                         BlinkGC::kIncrementalMarking,
-                                         BlinkGC::GCReason::kUnifiedHeapGC);
+  {
+    ThreadHeapStatsCollector::Scope mark_prologue_scope(
+        thread_state_->Heap().stats_collector(),
+        ThreadHeapStatsCollector::kUnifiedMarkingAtomicPrologue);
+    thread_state_->AtomicPauseMarkPrologue(ToBlinkGCStackState(stack_state),
+                                           BlinkGC::kIncrementalMarking,
+                                           BlinkGC::GCReason::kUnifiedHeapGC);
+  }
 }
 
 void UnifiedHeapController::TraceEpilogue() {
@@ -116,6 +113,9 @@ void UnifiedHeapController::RegisterV8References(
 
 bool UnifiedHeapController::AdvanceTracing(double deadline_in_ms) {
   VLOG(2) << "UnifiedHeapController::AdvanceTracing";
+  ThreadHeapStatsCollector::Scope advance_tracing_scope(
+      thread_state_->Heap().stats_collector(),
+      ThreadHeapStatsCollector::kUnifiedMarkingStep);
 
   if (!thread_state_->in_atomic_pause()) {
     // V8 calls into embedder tracing from its own marking to ensure
@@ -133,6 +133,33 @@ bool UnifiedHeapController::AdvanceTracing(double deadline_in_ms) {
 
 bool UnifiedHeapController::IsTracingDone() {
   return is_tracing_done_;
+}
+
+bool UnifiedHeapController::IsRootForNonTracingGCInternal(
+    const v8::TracedGlobal<v8::Value>& handle) {
+  const uint16_t class_id = handle.WrapperClassId();
+  // Stand-alone TracedGlobal reference or kCustomWrappableId. Keep as root as
+  // we don't know better.
+  if (class_id != WrapperTypeInfo::kNodeClassId &&
+      class_id != WrapperTypeInfo::kObjectClassId)
+    return true;
+
+  const v8::TracedGlobal<v8::Object>& traced = handle.As<v8::Object>();
+  if (ToWrapperTypeInfo(traced)->IsActiveScriptWrappable() &&
+      ToScriptWrappable(traced)->HasPendingActivity()) {
+    return true;
+  }
+
+  if (ToScriptWrappable(traced)->HasEventListeners()) {
+    return true;
+  }
+
+  return false;
+}
+
+bool UnifiedHeapController::IsRootForNonTracingGC(
+    const v8::TracedGlobal<v8::Value>& handle) {
+  return IsRootForNonTracingGCInternal(handle);
 }
 
 }  // namespace blink

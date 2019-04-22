@@ -5,6 +5,7 @@
 #include "ui/aura/test/mus/window_tree_client_test_api.h"
 
 #include "base/unguessable_token.h"
+#include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "ui/aura/mus/embed_root.h"
 #include "ui/aura/mus/in_flight_change.h"
 #include "ui/aura/mus/window_port_mus.h"
@@ -57,12 +58,19 @@ void WindowTreeClientTestApi::CallOnCaptureChanged(Window* new_capture,
       old_capture ? WindowPortMus::Get(old_capture)->server_id() : 0);
 }
 
-void WindowTreeClientTestApi::CallOnEmbedFromToken(EmbedRoot* embed_root) {
+void WindowTreeClientTestApi::CallOnEmbedFromToken(
+    EmbedRoot* embed_root,
+    bool visible,
+    const viz::LocalSurfaceIdAllocation& lsia) {
   embed_root->OnScheduledEmbedForExistingClient(
       base::UnguessableToken::Create());
-  tree_client_impl_->OnEmbedFromToken(embed_root->token(),
-                                      CreateWindowDataForEmbed(), kDisplayId,
-                                      base::Optional<viz::LocalSurfaceId>());
+  viz::ParentLocalSurfaceIdAllocator parent_local_surface_id_allocator;
+  parent_local_surface_id_allocator.GenerateId();
+  tree_client_impl_->OnEmbedFromToken(
+      embed_root->token(), CreateWindowDataForEmbed(visible), kDisplayId,
+      lsia.IsValid() ? lsia
+                     : parent_local_surface_id_allocator
+                           .GetCurrentLocalSurfaceIdAllocation());
 }
 
 void WindowTreeClientTestApi::SetTree(ws::mojom::WindowTree* window_tree) {
@@ -103,11 +111,12 @@ bool WindowTreeClientTestApi::HasChangeInFlightOfType(ChangeType type) {
   return false;
 }
 
-void WindowTreeClientTestApi::FlushForTesting() {
-  tree_client_impl_->binding_.FlushForTesting();
+DragDropControllerMus* WindowTreeClientTestApi::GetDragDropController() {
+  return tree_client_impl_->drag_drop_controller_.get();
 }
 
-ws::mojom::WindowDataPtr WindowTreeClientTestApi::CreateWindowDataForEmbed() {
+ws::mojom::WindowDataPtr WindowTreeClientTestApi::CreateWindowDataForEmbed(
+    bool visible) {
   ws::mojom::WindowDataPtr root_data(ws::mojom::WindowData::New());
   root_data->parent_id = 0;
   // OnEmbed() is passed windows the client doesn't own. Use a |client_id| of 1
@@ -117,8 +126,13 @@ ws::mojom::WindowDataPtr WindowTreeClientTestApi::CreateWindowDataForEmbed() {
   const ws::Id client_id = 1;
   root_data->window_id =
       (client_id << 32) | tree_client_impl_->GetRoots().size();
-  root_data->visible = true;
+  root_data->visible = visible;
+  root_data->bounds = gfx::Rect(1, 2, 3, 4);
   return root_data;
+}
+
+void WindowTreeClientTestApi::FlushForTesting() {
+  tree_client_impl_->binding_.FlushForTesting();
 }
 
 }  // namespace aura

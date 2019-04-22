@@ -8,18 +8,19 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "chromeos/services/device_sync/proto/cryptauth_api.pb.h"
 #include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
-#include "components/cryptauth/proto/cryptauth_api.pb.h"
 
 namespace base {
 class OneShotTimer;
 }  // namespace base
 
-namespace cryptauth {
-class GcmDeviceInfoProvider;
-}  // namespace cryptauth
 
 namespace chromeos {
+
+namespace device_sync {
+class GcmDeviceInfoProvider;
+}  // namespace device_sync
 
 namespace multidevice_setup {
 
@@ -60,7 +61,7 @@ class DeviceReenroller : public device_sync::DeviceSyncClient::Observer {
     virtual ~Factory();
     virtual std::unique_ptr<DeviceReenroller> BuildInstance(
         device_sync::DeviceSyncClient* device_sync_client,
-        const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider,
+        const device_sync::GcmDeviceInfoProvider* gcm_device_info_provider,
         std::unique_ptr<base::OneShotTimer> timer =
             std::make_unique<base::OneShotTimer>());
 
@@ -73,7 +74,7 @@ class DeviceReenroller : public device_sync::DeviceSyncClient::Observer {
  private:
   DeviceReenroller(
       device_sync::DeviceSyncClient* device_sync_client,
-      const cryptauth::GcmDeviceInfoProvider* gcm_device_info_provider,
+      const device_sync::GcmDeviceInfoProvider* gcm_device_info_provider,
       std::unique_ptr<base::OneShotTimer> timer);
 
   void AttemptReenrollmentIfNecessary();

@@ -10,7 +10,6 @@ from __future__ import print_function
 import json
 
 from chromite.lib import auth
-from chromite.lib import constants
 from chromite.lib import cros_logging as logging
 from chromite.lib import retry_util
 from chromite.cbuildbot import topology
@@ -19,6 +18,9 @@ from chromite.cbuildbot import topology
 # Methods
 GET_METHOD = 'GET'
 POST_METHOD = 'POST'
+
+# Sheriff-o-Matic tree which Chrome OS alerts are posted to.
+_SOM_TREE = 'chromeos'
 
 
 # The following classes are intended to marshal into json matching
@@ -154,7 +156,7 @@ class SheriffOMaticClient(object):
     return retry_util.GenericRetry(lambda e: isinstance(e, Exception), 3,
                                    try_method)
 
-  def SendAlerts(self, summary_json, tree=constants.SOM_TREE, dryrun=False):
+  def SendAlerts(self, summary_json, tree=_SOM_TREE, dryrun=False):
     """Upload alerts summary to Sheriff-o-matic.
 
     Args:
@@ -172,8 +174,7 @@ class SheriffOMaticClient(object):
     }
     return self.SendRequest(url, POST_METHOD, summary_json, dryrun=dryrun)
 
-  def SendAlert(self, alert_json, key=None, tree=constants.SOM_TREE,
-                dryrun=False):
+  def SendAlert(self, alert_json, key=None, tree=_SOM_TREE, dryrun=False):
     """Upload alert to Sheriff-o-matic.
 
     Args:
@@ -197,7 +198,7 @@ class SheriffOMaticClient(object):
     return self.SendRequest(url, POST_METHOD, alert_json, dryrun=dryrun)
 
   def ResolveAlert(self, key, resolved=True, xsrf_token=None,
-                   tree=constants.SOM_TREE, dryrun=False):
+                   tree=_SOM_TREE, dryrun=False):
     """Resolve alert in Sheriff-o-matic.
 
     Args:

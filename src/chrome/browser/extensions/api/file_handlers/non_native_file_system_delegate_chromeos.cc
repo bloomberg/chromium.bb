@@ -24,6 +24,13 @@ bool NonNativeFileSystemDelegateChromeOS::IsUnderNonNativeLocalPath(
       Profile::FromBrowserContext(context), path);
 }
 
+bool NonNativeFileSystemDelegateChromeOS::HasNonNativeMimeTypeProvider(
+    content::BrowserContext* context,
+    const base::FilePath& path) {
+  return file_manager::util::HasNonNativeMimeTypeProvider(
+      Profile::FromBrowserContext(context), path);
+}
+
 void NonNativeFileSystemDelegateChromeOS::GetNonNativeLocalPathMimeType(
     content::BrowserContext* context,
     const base::FilePath& path,

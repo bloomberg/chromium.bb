@@ -155,7 +155,7 @@ class MobileMemorySystemHealth(_MemorySystemHealthBenchmark):
     # has anomalous results. This option causes us to flush caches
     # each time before Chrome starts so we effect even the first story
     # - avoiding the bug.
-    options.clear_sytem_cache_for_browser_and_profile_on_start = True
+    options.flush_os_page_caches_on_start = True
 
   @classmethod
   def Name(cls):

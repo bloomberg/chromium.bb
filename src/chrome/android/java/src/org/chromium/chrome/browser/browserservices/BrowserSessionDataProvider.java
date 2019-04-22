@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.customtabs.CustomTabsIntent;
 import android.support.customtabs.CustomTabsSessionToken;
 
@@ -56,6 +57,7 @@ public class BrowserSessionDataProvider {
     /**
      * @return The session specified in the intent, or null.
      */
+    @Nullable
     public CustomTabsSessionToken getSession() {
         return mSession;
     }

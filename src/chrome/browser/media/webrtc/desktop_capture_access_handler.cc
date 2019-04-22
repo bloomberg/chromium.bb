@@ -6,15 +6,20 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/media/webrtc/desktop_capture_devices_util.h"
+#include "chrome/browser/media/webrtc/desktop_media_picker_factory_impl.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
+#include "chrome/browser/media/webrtc/native_desktop_media_list.h"
+#include "chrome/browser/media/webrtc/tab_desktop_media_list.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -23,11 +28,15 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/desktop_capture.h"
 #include "content/public/browser/desktop_streams_registry.h"
+#include "content/public/browser/media_stream_request.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/media_stream_request.h"
 #include "content/public/common/origin_util.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
@@ -35,6 +44,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/switches.h"
 #include "net/base/url_util.h"
+#include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capture_types.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -73,7 +83,6 @@ bool ShouldDisplayNotification(const extensions::Extension* extension) {
             extension->location() == extensions::Manifest::EXTERNAL_COMPONENT));
 }
 
-
 #if !defined(OS_ANDROID)
 // Find browser or app window from a given |web_contents|.
 gfx::NativeWindow FindParentWindowForWebContents(
@@ -96,21 +105,48 @@ gfx::NativeWindow FindParentWindowForWebContents(
 
 }  // namespace
 
-DesktopCaptureAccessHandler::DesktopCaptureAccessHandler() {
+// Holds pending request information so that we display one picker UI at a time
+// for each content::WebContents.
+struct DesktopCaptureAccessHandler::PendingAccessRequest {
+  PendingAccessRequest(std::unique_ptr<DesktopMediaPicker> picker,
+                       const content::MediaStreamRequest& request,
+                       content::MediaResponseCallback callback,
+                       const extensions::Extension* extension)
+      : picker(std::move(picker)),
+        request(request),
+        callback(std::move(callback)),
+        extension(extension) {}
+  ~PendingAccessRequest() = default;
+
+  std::unique_ptr<DesktopMediaPicker> picker;
+  content::MediaStreamRequest request;
+  content::MediaResponseCallback callback;
+  const extensions::Extension* extension;
+};
+
+DesktopCaptureAccessHandler::DesktopCaptureAccessHandler()
+    : picker_factory_(new DesktopMediaPickerFactoryImpl()),
+      display_notification_(true) {
+  AddNotificationObserver();
 }
 
-DesktopCaptureAccessHandler::~DesktopCaptureAccessHandler() {
+DesktopCaptureAccessHandler::DesktopCaptureAccessHandler(
+    std::unique_ptr<DesktopMediaPickerFactory> picker_factory)
+    : picker_factory_(std::move(picker_factory)), display_notification_(false) {
+  AddNotificationObserver();
 }
+
+DesktopCaptureAccessHandler::~DesktopCaptureAccessHandler() = default;
 
 void DesktopCaptureAccessHandler::ProcessScreenCaptureAccessRequest(
     content::WebContents* web_contents,
     const content::MediaStreamRequest& request,
     content::MediaResponseCallback callback,
     const extensions::Extension* extension) {
-  content::MediaStreamDevices devices;
+  blink::MediaStreamDevices devices;
   std::unique_ptr<content::MediaStreamUI> ui;
 
-  DCHECK_EQ(request.video_type, content::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE);
+  DCHECK_EQ(request.video_type, blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE);
 
   UpdateExtensionTrusted(request, extension);
 
@@ -138,15 +174,14 @@ void DesktopCaptureAccessHandler::ProcessScreenCaptureAccessRequest(
   // it after checking permission.
   // TODO(grunell): It would be good to change this result for something else,
   // probably a new one.
-  content::MediaStreamRequestResult result =
-      content::MEDIA_DEVICE_INVALID_STATE;
+  blink::MediaStreamRequestResult result = blink::MEDIA_DEVICE_INVALID_STATE;
 
 #if defined(OS_CHROMEOS)
   if (features::IsMultiProcessMash()) {
     // TODO(crbug.com/806366): Screen capture support for mash.
     NOTIMPLEMENTED() << "Screen capture not yet implemented in --mash";
     screen_capture_enabled = false;
-    result = content::MEDIA_DEVICE_NOT_SUPPORTED;
+    result = blink::MEDIA_DEVICE_NOT_SUPPORTED;
   }
 #endif  // defined(OS_CHROMEOS)
 
@@ -178,7 +213,7 @@ void DesktopCaptureAccessHandler::ProcessScreenCaptureAccessRequest(
       if (extension)
         application_name = base::UTF8ToUTF16(extension->name());
       base::string16 confirmation_text = l10n_util::GetStringFUTF16(
-          request.audio_type == content::MEDIA_NO_SERVICE
+          request.audio_type == blink::MEDIA_NO_SERVICE
               ? IDS_MEDIA_SCREEN_CAPTURE_CONFIRMATION_TEXT
               : IDS_MEDIA_SCREEN_AND_AUDIO_CAPTURE_CONFIRMATION_TEXT,
           application_name);
@@ -193,7 +228,7 @@ void DesktopCaptureAccessHandler::ProcessScreenCaptureAccessRequest(
     if (is_approved) {
       content::DesktopMediaID screen_id;
 #if defined(OS_CHROMEOS)
-      screen_id = content::DesktopMediaID::RegisterAuraWindow(
+      screen_id = content::DesktopMediaID::RegisterNativeWindow(
           content::DesktopMediaID::TYPE_SCREEN,
           ash::Shell::Get()->GetPrimaryRootWindow());
 #else   // defined(OS_CHROMEOS)
@@ -202,16 +237,17 @@ void DesktopCaptureAccessHandler::ProcessScreenCaptureAccessRequest(
 #endif  // !defined(OS_CHROMEOS)
 
       bool capture_audio =
-          (request.audio_type == content::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE &&
+          (request.audio_type == blink::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE &&
            loopback_audio_supported);
 
       // Determine if the extension is required to display a notification.
-      const bool display_notification = ShouldDisplayNotification(extension);
+      const bool display_notification =
+          display_notification_ && ShouldDisplayNotification(extension);
 
       ui = GetDevicesForDesktopCapture(
           web_contents, &devices, screen_id,
-          content::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE,
-          content::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE, capture_audio,
+          blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE,
+          blink::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE, capture_audio,
           request.disable_local_echo, display_notification, application_title,
           application_title);
       DCHECK(!devices.empty());
@@ -219,8 +255,8 @@ void DesktopCaptureAccessHandler::ProcessScreenCaptureAccessRequest(
 
     // The only case when devices can be empty is if the user has denied
     // permission.
-    result = devices.empty() ? content::MEDIA_DEVICE_PERMISSION_DENIED
-                             : content::MEDIA_DEVICE_OK;
+    result = devices.empty() ? blink::MEDIA_DEVICE_PERMISSION_DENIED
+                             : blink::MEDIA_DEVICE_OK;
   }
 
   std::move(callback).Run(devices, result, std::move(ui));
@@ -236,16 +272,16 @@ bool DesktopCaptureAccessHandler::IsDefaultApproved(
 
 bool DesktopCaptureAccessHandler::SupportsStreamType(
     content::WebContents* web_contents,
-    const content::MediaStreamType type,
+    const blink::MediaStreamType type,
     const extensions::Extension* extension) {
-  return type == content::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE ||
-         type == content::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE;
+  return type == blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE ||
+         type == blink::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE;
 }
 
 bool DesktopCaptureAccessHandler::CheckMediaAccessPermission(
     content::RenderFrameHost* render_frame_host,
     const GURL& security_origin,
-    content::MediaStreamType type,
+    blink::MediaStreamType type,
     const extensions::Extension* extension) {
   return false;
 }
@@ -255,12 +291,18 @@ void DesktopCaptureAccessHandler::HandleRequest(
     const content::MediaStreamRequest& request,
     content::MediaResponseCallback callback,
     const extensions::Extension* extension) {
-  content::MediaStreamDevices devices;
+  blink::MediaStreamDevices devices;
   std::unique_ptr<content::MediaStreamUI> ui;
 
-  if (request.video_type != content::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE) {
-    std::move(callback).Run(devices, content::MEDIA_DEVICE_INVALID_STATE,
+  if (request.video_type != blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE) {
+    std::move(callback).Run(devices, blink::MEDIA_DEVICE_INVALID_STATE,
                             std::move(ui));
+    return;
+  }
+
+  if (request.request_type == blink::MEDIA_DEVICE_UPDATE) {
+    ProcessChangeSourceRequest(web_contents, request, std::move(callback),
+                               extension);
     return;
   }
 
@@ -272,8 +314,6 @@ void DesktopCaptureAccessHandler::HandleRequest(
     return;
   }
 
-  // The extension name that the stream is registered with.
-  std::string original_extension_name;
   // Resolve DesktopMediaID for the specified device id.
   content::DesktopMediaID media_id;
   // TODO(miu): Replace "main RenderFrame" IDs with the request's actual
@@ -290,13 +330,13 @@ void DesktopCaptureAccessHandler::HandleRequest(
         content::DesktopStreamsRegistry::GetInstance()->RequestMediaForStreamId(
             request.requested_video_device_id,
             main_frame->GetProcess()->GetID(), main_frame->GetRoutingID(),
-            request.security_origin, &original_extension_name,
+            request.security_origin, nullptr,
             content::kRegistryStreamTypeDesktop);
   }
 
   // Received invalid device id.
   if (media_id.type == content::DesktopMediaID::TYPE_NONE) {
-    std::move(callback).Run(devices, content::MEDIA_DEVICE_INVALID_STATE,
+    std::move(callback).Run(devices, blink::MEDIA_DEVICE_INVALID_STATE,
                             std::move(ui));
     return;
   }
@@ -313,7 +353,7 @@ void DesktopCaptureAccessHandler::HandleRequest(
 
   // This value essentially from whether getUserMedia requests audio stream.
   const bool audio_requested =
-      request.audio_type == content::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE;
+      request.audio_type == blink::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE;
 
   // This value shows for a given capture type, whether the system or our code
   // can support audio sharing. Currently audio is only supported for screen and
@@ -331,15 +371,175 @@ void DesktopCaptureAccessHandler::HandleRequest(
       audio_supported;
 
   // Determine if the extension is required to display a notification.
-  const bool display_notification = ShouldDisplayNotification(extension);
+  const bool display_notification =
+      display_notification_ && ShouldDisplayNotification(extension);
 
-  ui = GetDevicesForDesktopCapture(web_contents, &devices, media_id,
-                                   content::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE,
-                                   content::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE,
-                                   capture_audio, request.disable_local_echo,
-                                   display_notification,
-                                   GetApplicationTitle(web_contents, extension),
-                                   base::UTF8ToUTF16(original_extension_name));
+  ui = GetDevicesForDesktopCapture(
+      web_contents, &devices, media_id, blink::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE,
+      blink::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE, capture_audio,
+      request.disable_local_echo, display_notification,
+      GetApplicationTitle(web_contents, extension),
+      GetApplicationTitle(web_contents, extension));
   UpdateExtensionTrusted(request, extension);
-  std::move(callback).Run(devices, content::MEDIA_DEVICE_OK, std::move(ui));
+  std::move(callback).Run(devices, blink::MEDIA_DEVICE_OK, std::move(ui));
+}
+
+void DesktopCaptureAccessHandler::ProcessChangeSourceRequest(
+    content::WebContents* web_contents,
+    const content::MediaStreamRequest& request,
+    content::MediaResponseCallback callback,
+    const extensions::Extension* extension) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  std::unique_ptr<DesktopMediaPicker> picker = picker_factory_->CreatePicker();
+  if (!picker) {
+    std::move(callback).Run(blink::MediaStreamDevices(),
+                            blink::MEDIA_DEVICE_INVALID_STATE, nullptr);
+    return;
+  }
+
+  RequestsQueue& queue = pending_requests_[web_contents];
+  queue.push_back(std::make_unique<PendingAccessRequest>(
+      std::move(picker), request, std::move(callback), extension));
+  // If this is the only request then pop picker UI.
+  if (queue.size() == 1)
+    ProcessQueuedAccessRequest(queue, web_contents);
+}
+
+void DesktopCaptureAccessHandler::UpdateMediaRequestState(
+    int render_process_id,
+    int render_frame_id,
+    int page_request_id,
+    blink::MediaStreamType stream_type,
+    content::MediaRequestState state) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (state != content::MEDIA_REQUEST_STATE_DONE &&
+      state != content::MEDIA_REQUEST_STATE_CLOSING) {
+    return;
+  }
+
+  if (state == content::MEDIA_REQUEST_STATE_CLOSING) {
+    DeletePendingAccessRequest(render_process_id, render_frame_id,
+                               page_request_id);
+  }
+  CaptureAccessHandlerBase::UpdateMediaRequestState(
+      render_process_id, render_frame_id, page_request_id, stream_type, state);
+
+  // This method only gets called with the above checked states when all
+  // requests are to be canceled. Therefore, we don't need to process the
+  // next queued request.
+}
+
+void DesktopCaptureAccessHandler::ProcessQueuedAccessRequest(
+    const RequestsQueue& queue,
+    content::WebContents* web_contents) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  const PendingAccessRequest& pending_request = *queue.front();
+
+  std::vector<content::DesktopMediaID::Type> media_types = {
+      content::DesktopMediaID::TYPE_WEB_CONTENTS};
+  auto source_lists = picker_factory_->CreateMediaList(media_types);
+
+  DesktopMediaPicker::DoneCallback done_callback =
+      base::BindRepeating(&DesktopCaptureAccessHandler::OnPickerDialogResults,
+                          base::Unretained(this), web_contents);
+  DesktopMediaPicker::Params picker_params;
+  picker_params.web_contents = web_contents;
+  gfx::NativeWindow parent_window = web_contents->GetTopLevelNativeWindow();
+  picker_params.context = parent_window;
+  picker_params.parent = parent_window;
+  picker_params.app_name =
+      GetApplicationTitle(web_contents, pending_request.extension);
+  picker_params.target_name = picker_params.app_name;
+  picker_params.request_audio =
+      (pending_request.request.audio_type == blink::MEDIA_NO_SERVICE) ? false
+                                                                      : true;
+  pending_request.picker->Show(picker_params, std::move(source_lists),
+                               done_callback);
+
+  // Focus on the tab with the picker for easy access.
+  if (auto* delegate = web_contents->GetDelegate())
+    delegate->ActivateContents(web_contents);
+}
+
+void DesktopCaptureAccessHandler::OnPickerDialogResults(
+    content::WebContents* web_contents,
+    content::DesktopMediaID media_id) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(web_contents);
+
+  auto it = pending_requests_.find(web_contents);
+  if (it == pending_requests_.end())
+    return;
+  RequestsQueue& queue = it->second;
+  if (queue.empty()) {
+    // UpdateMediaRequestState() called with MEDIA_REQUEST_STATE_CLOSING. Don't
+    // need to do anything.
+    return;
+  }
+
+  PendingAccessRequest& pending_request = *queue.front();
+  blink::MediaStreamDevices devices;
+  blink::MediaStreamRequestResult request_result =
+      blink::MEDIA_DEVICE_PERMISSION_DENIED;
+  const extensions::Extension* extension = pending_request.extension;
+  std::unique_ptr<content::MediaStreamUI> ui;
+  if (media_id.is_null()) {
+    request_result = blink::MEDIA_DEVICE_PERMISSION_DENIED;
+  } else {
+    request_result = blink::MEDIA_DEVICE_OK;
+    // Determine if the extension is required to display a notification.
+    const bool display_notification =
+        display_notification_ && ShouldDisplayNotification(extension);
+    ui = GetDevicesForDesktopCapture(
+        web_contents, &devices, media_id, pending_request.request.video_type,
+        pending_request.request.audio_type, media_id.audio_share,
+        pending_request.request.disable_local_echo, display_notification,
+        GetApplicationTitle(web_contents, extension),
+        GetApplicationTitle(web_contents, extension));
+  }
+
+  std::move(pending_request.callback)
+      .Run(devices, request_result, std::move(ui));
+  queue.pop_front();
+
+  if (!queue.empty())
+    ProcessQueuedAccessRequest(queue, web_contents);
+}
+
+void DesktopCaptureAccessHandler::AddNotificationObserver() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  notifications_registrar_.Add(this,
+                               content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                               content::NotificationService::AllSources());
+}
+
+void DesktopCaptureAccessHandler::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_EQ(content::NOTIFICATION_WEB_CONTENTS_DESTROYED, type);
+
+  pending_requests_.erase(content::Source<content::WebContents>(source).ptr());
+}
+
+void DesktopCaptureAccessHandler::DeletePendingAccessRequest(
+    int render_process_id,
+    int render_frame_id,
+    int page_request_id) {
+  for (auto& queue_it : pending_requests_) {
+    RequestsQueue& queue = queue_it.second;
+    for (auto it = queue.begin(); it != queue.end(); ++it) {
+      const PendingAccessRequest& pending_request = **it;
+      if (pending_request.request.render_process_id == render_process_id &&
+          pending_request.request.render_frame_id == render_frame_id &&
+          pending_request.request.page_request_id == page_request_id) {
+        queue.erase(it);
+        return;
+      }
+    }
+  }
 }

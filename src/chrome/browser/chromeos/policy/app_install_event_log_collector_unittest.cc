@@ -17,10 +17,10 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_power_manager_client.h"
-#include "chromeos/dbus/shill_service_client.h"
+#include "chromeos/dbus/power/fake_power_manager_client.h"
+#include "chromeos/dbus/shill/shill_service_client.h"
 #include "chromeos/network/network_handler.h"
 #include "components/arc/common/app.mojom.h"
 #include "components/policy/proto/device_management_backend.pb.h"
@@ -111,13 +111,9 @@ class AppInstallEventLogCollectorTest : public testing::Test {
   void SetUp() override {
     RegisterLocalState(pref_service_.registry());
     TestingBrowserProcess::GetGlobal()->SetLocalState(&pref_service_);
-    std::unique_ptr<chromeos::FakePowerManagerClient> power_manager_client =
-        std::make_unique<chromeos::FakePowerManagerClient>();
-    power_manager_client_ = power_manager_client.get();
-    chromeos::DBusThreadManager::GetSetterForTesting()->SetPowerManagerClient(
-        std::move(power_manager_client));
 
     chromeos::DBusThreadManager::Initialize();
+    chromeos::PowerManagerClient::InitializeFake();
     chromeos::NetworkHandler::Initialize();
     profile_ = std::make_unique<TestingProfile>();
 
@@ -140,6 +136,7 @@ class AppInstallEventLogCollectorTest : public testing::Test {
 
     profile_.reset();
     chromeos::NetworkHandler::Shutdown();
+    chromeos::PowerManagerClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
     TestingBrowserProcess::GetGlobal()->SetLocalState(nullptr);
   }
@@ -172,9 +169,6 @@ class AppInstallEventLogCollectorTest : public testing::Test {
 
   TestingProfile* profile() { return profile_.get(); }
   FakeAppInstallEventLogCollectorDelegate* delegate() { return &delegate_; }
-  chromeos::FakePowerManagerClient* power_manager_client() {
-    return power_manager_client_;
-  }
   ArcAppListPrefs* app_prefs() { return arc_app_test_.arc_app_list_prefs(); }
 
   const std::set<std::string> packages_ = {kPackageName};
@@ -186,7 +180,6 @@ class AppInstallEventLogCollectorTest : public testing::Test {
   std::unique_ptr<TestingProfile> profile_;
   FakeAppInstallEventLogCollectorDelegate delegate_;
   TestingPrefServiceSimple pref_service_;
-  chromeos::FakePowerManagerClient* power_manager_client_ = nullptr;
   ArcAppTest arc_app_test_;
 
   DISALLOW_COPY_AND_ASSIGN(AppInstallEventLogCollectorTest);
@@ -273,7 +266,7 @@ TEST_F(AppInstallEventLogCollectorTest, SuspendResume) {
       std::make_unique<AppInstallEventLogCollector>(delegate(), profile(),
                                                     packages_);
 
-  power_manager_client()->SendSuspendImminent(
+  chromeos::FakePowerManagerClient::Get()->SendSuspendImminent(
       power_manager::SuspendImminent_Reason_OTHER);
   EXPECT_EQ(1, delegate()->add_for_all_count());
   EXPECT_EQ(em::AppInstallReportLogEvent::SESSION_STATE_CHANGE,
@@ -281,7 +274,7 @@ TEST_F(AppInstallEventLogCollectorTest, SuspendResume) {
   EXPECT_EQ(em::AppInstallReportLogEvent::SUSPEND,
             delegate()->last_event().session_state_change_type());
 
-  power_manager_client()->SendSuspendDone();
+  chromeos::FakePowerManagerClient::Get()->SendSuspendDone();
   EXPECT_EQ(2, delegate()->add_for_all_count());
   EXPECT_EQ(em::AppInstallReportLogEvent::SESSION_STATE_CHANGE,
             delegate()->last_event().event_type());

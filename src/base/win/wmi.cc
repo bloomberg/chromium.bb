@@ -10,6 +10,8 @@
 #include <stdint.h>
 #include <utility>
 
+#include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_variant.h"
 
@@ -28,9 +30,9 @@ bool CreateLocalWmiConnection(bool set_blanket,
     return false;
 
   ComPtr<IWbemServices> wmi_services_r;
-  hr =
-      wmi_locator->ConnectServer(ScopedBstr(L"ROOT\\CIMV2"), nullptr, nullptr,
-                                 nullptr, 0, nullptr, nullptr, &wmi_services_r);
+  hr = wmi_locator->ConnectServer(ScopedBstr(STRING16_LITERAL("ROOT\\CIMV2")),
+                                  nullptr, nullptr, nullptr, 0, nullptr,
+                                  nullptr, &wmi_services_r);
   if (FAILED(hr))
     return false;
 
@@ -47,8 +49,8 @@ bool CreateLocalWmiConnection(bool set_blanket,
 }
 
 bool CreateWmiClassMethodObject(IWbemServices* wmi_services,
-                                const StringPiece16& class_name,
-                                const StringPiece16& method_name,
+                                StringPiece16 class_name,
+                                StringPiece16 method_name,
                                 ComPtr<IWbemClassObject>* class_instance) {
   // We attempt to instantiate a COM object that represents a WMI object plus
   // a method rolled into one entity.
@@ -76,13 +78,6 @@ bool CreateWmiClassMethodObject(IWbemServices* wmi_services,
   return SUCCEEDED(hr);
 }
 
-bool SetWmiClassMethodParameter(IWbemClassObject* class_method,
-                                const StringPiece16& parameter_name,
-                                VARIANT* parameter) {
-  HRESULT hr = class_method->Put(parameter_name.data(), 0, parameter, 0);
-  return SUCCEEDED(hr);
-}
-
 // The code in Launch() basically calls the Create Method of the Win32_Process
 // CIM class is documented here:
 // http://msdn2.microsoft.com/en-us/library/aa389388(VS.85).aspx
@@ -94,18 +89,18 @@ bool WmiLaunchProcess(const string16& command_line, int* process_id) {
   if (!CreateLocalWmiConnection(true, &wmi_local))
     return false;
 
-  static constexpr wchar_t class_name[] = L"Win32_Process";
-  static constexpr wchar_t method_name[] = L"Create";
+  static constexpr char16 class_name[] = STRING16_LITERAL("Win32_Process");
+  static constexpr char16 method_name[] = STRING16_LITERAL("Create");
   ComPtr<IWbemClassObject> process_create;
   if (!CreateWmiClassMethodObject(wmi_local.Get(), class_name, method_name,
                                   &process_create)) {
     return false;
   }
 
-  ScopedVariant b_command_line(command_line.c_str());
+  ScopedVariant b_command_line(as_wcstr(command_line));
 
-  if (!SetWmiClassMethodParameter(process_create.Get(), L"CommandLine",
-                                  b_command_line.AsInput())) {
+  if (FAILED(process_create->Put(L"CommandLine", 0, b_command_line.AsInput(),
+                                 0))) {
     return false;
   }
 
@@ -150,14 +145,14 @@ WmiComputerSystemInfo WmiComputerSystemInfo::Get() {
 
 void WmiComputerSystemInfo::PopulateModelAndManufacturer(
     const ComPtr<IWbemServices>& services) {
-  static constexpr base::StringPiece16 query_computer_system(
-      L"SELECT Manufacturer,Model FROM Win32_ComputerSystem");
+  static constexpr StringPiece16 query_computer_system =
+      STRING16_LITERAL("SELECT Manufacturer,Model FROM Win32_ComputerSystem");
 
   ComPtr<IEnumWbemClassObject> enumerator_computer_system;
-  HRESULT hr =
-      services->ExecQuery(ScopedBstr(L"WQL"), ScopedBstr(query_computer_system),
-                          WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY,
-                          nullptr, &enumerator_computer_system);
+  HRESULT hr = services->ExecQuery(
+      ScopedBstr(STRING16_LITERAL("WQL")), ScopedBstr(query_computer_system),
+      WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, nullptr,
+      &enumerator_computer_system);
   if (FAILED(hr) || !enumerator_computer_system.Get())
     return;
 
@@ -171,25 +166,27 @@ void WmiComputerSystemInfo::PopulateModelAndManufacturer(
   ScopedVariant manufacturer;
   hr = class_object->Get(L"Manufacturer", 0, manufacturer.Receive(), 0, 0);
   if (SUCCEEDED(hr) && manufacturer.type() == VT_BSTR) {
-    manufacturer_.assign(V_BSTR(manufacturer.ptr()),
-                         ::SysStringLen(V_BSTR(manufacturer.ptr())));
+    WideToUTF16(V_BSTR(manufacturer.ptr()),
+                ::SysStringLen(V_BSTR(manufacturer.ptr())), &manufacturer_);
   }
   ScopedVariant model;
   hr = class_object->Get(L"Model", 0, model.Receive(), 0, 0);
-  if (SUCCEEDED(hr) && model.type() == VT_BSTR)
-    model_.assign(V_BSTR(model.ptr()), ::SysStringLen(V_BSTR(model.ptr())));
+  if (SUCCEEDED(hr) && model.type() == VT_BSTR) {
+    WideToUTF16(V_BSTR(model.ptr()), ::SysStringLen(V_BSTR(model.ptr())),
+                &model_);
+  }
 }
 
 void WmiComputerSystemInfo::PopulateSerialNumber(
     const ComPtr<IWbemServices>& services) {
-  static constexpr base::StringPiece16 query_bios(
-      L"SELECT SerialNumber FROM Win32_Bios");
+  static constexpr StringPiece16 query_bios =
+      STRING16_LITERAL("SELECT SerialNumber FROM Win32_Bios");
 
   ComPtr<IEnumWbemClassObject> enumerator_bios;
-  HRESULT hr =
-      services->ExecQuery(ScopedBstr(L"WQL"), ScopedBstr(query_bios),
-                          WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY,
-                          nullptr, &enumerator_bios);
+  HRESULT hr = services->ExecQuery(
+      ScopedBstr(STRING16_LITERAL("WQL")), ScopedBstr(query_bios),
+      WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, nullptr,
+      &enumerator_bios);
   if (FAILED(hr) || !enumerator_bios.Get())
     return;
 
@@ -202,8 +199,8 @@ void WmiComputerSystemInfo::PopulateSerialNumber(
   ScopedVariant serial_number;
   hr = class_obj->Get(L"SerialNumber", 0, serial_number.Receive(), 0, 0);
   if (SUCCEEDED(hr) && serial_number.type() == VT_BSTR) {
-    serial_number_.assign(V_BSTR(serial_number.ptr()),
-                          ::SysStringLen(V_BSTR(serial_number.ptr())));
+    WideToUTF16(V_BSTR(serial_number.ptr()),
+                ::SysStringLen(V_BSTR(serial_number.ptr())), &serial_number_);
   }
 }
 

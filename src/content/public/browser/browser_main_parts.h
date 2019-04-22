@@ -99,9 +99,6 @@ class CONTENT_EXPORT BrowserMainParts {
   // threads are stopped.
   virtual void PostMainMessageLoopRun() {}
 
-  // Called when shutdown is about to begin.
-  virtual void PreShutdown() {}
-
   // Called as the very last part of shutdown, after threads have been
   // stopped and destroyed.
   virtual void PostDestroyThreads() {}

@@ -12,8 +12,7 @@ DEFINE_UI_CLASS_PROPERTY_TYPE(wm::WindowMoveClient*)
 namespace wm {
 
 // A property key to store a client that handles window moves.
-DEFINE_LOCAL_UI_CLASS_PROPERTY_KEY(
-    WindowMoveClient*, kWindowMoveClientKey, NULL);
+DEFINE_UI_CLASS_PROPERTY_KEY(WindowMoveClient*, kWindowMoveClientKey, nullptr)
 
 void SetWindowMoveClient(aura::Window* window, WindowMoveClient* client) {
   window->SetProperty(kWindowMoveClientKey, client);

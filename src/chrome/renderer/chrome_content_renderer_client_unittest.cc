@@ -13,9 +13,7 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/metrics/histogram_samples.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/metrics/histogram_tester.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/renderer/searchbox/search_bouncer.h"
@@ -66,9 +64,6 @@ const bool kHostedApp = true;
 #if BUILDFLAG(ENABLE_NACL)
 const char kExtensionUrl[] = "chrome-extension://extension_id/background.html";
 
-const char kChatManifestFS[] = "filesystem:https://talkgadget.google.com/foo";
-
-const char kChatAppURL[] = "https://talkgadget.google.com/hangouts/foo";
 #endif
 
 void AddContentTypeHandler(content::WebPluginInfo* info,
@@ -160,7 +155,6 @@ TEST_F(ChromeContentRendererClientTest, NaClRestriction) {
     WebPluginParams params;
     EXPECT_TRUE(ChromeContentRendererClient::IsNaClAllowed(
         GURL(),
-        GURL(),
         kNaClUnrestricted,
         CreateExtension(kExtensionNotFromWebStore).get(),
         &params));
@@ -169,7 +163,6 @@ TEST_F(ChromeContentRendererClientTest, NaClRestriction) {
   {
     WebPluginParams params;
     EXPECT_TRUE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(),
         GURL(kExtensionUrl),
         kNaClRestricted,
         CreateExtensionWithLocation(extensions::Manifest::UNPACKED,
@@ -180,7 +173,6 @@ TEST_F(ChromeContentRendererClientTest, NaClRestriction) {
   {
     WebPluginParams params;
     EXPECT_TRUE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(),
         GURL(kExtensionUrl),
         kNaClRestricted,
         CreateExtensionWithLocation(extensions::Manifest::COMPONENT,
@@ -190,7 +182,6 @@ TEST_F(ChromeContentRendererClientTest, NaClRestriction) {
   {
     WebPluginParams params;
     EXPECT_TRUE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(),
         GURL(kExtensionUrl),
         kNaClRestricted,
         CreateExtensionWithLocation(extensions::Manifest::EXTERNAL_COMPONENT,
@@ -202,14 +193,12 @@ TEST_F(ChromeContentRendererClientTest, NaClRestriction) {
   {
     WebPluginParams params;
     EXPECT_TRUE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(),
         GURL(kExtensionUrl),
         kNaClRestricted,
         CreateExtensionWithLocation(extensions::Manifest::EXTERNAL_POLICY,
                                     kExtensionNotFromWebStore).get(),
         &params));
     EXPECT_TRUE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(),
         GURL(kExtensionUrl),
         kNaClRestricted,
         CreateExtensionWithLocation(
@@ -222,79 +211,39 @@ TEST_F(ChromeContentRendererClientTest, NaClRestriction) {
   {
     WebPluginParams params;
     EXPECT_TRUE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(),
         GURL(kExtensionUrl),
         kNaClRestricted,
         CreateExtension(kExtensionFromWebStore).get(),
         &params));
   }
-
-  // Whitelisted URLs are allowed without --enable-nacl. There is a whitelist
-  // for the app URL and the manifest URL.
-  {
-    WebPluginParams params;
-    // Whitelisted Chat app is allowed.
-    EXPECT_TRUE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(kChatManifestFS),
-        GURL(kChatAppURL),
-        kNaClRestricted,
-        nullptr,
-        &params));
-
-    // Whitelisted manifest URL, bad app URLs, NOT allowed.
-    EXPECT_FALSE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(kChatManifestFS),
-        GURL("http://plus.google.com/foo"),  // http scheme
-        kNaClRestricted, nullptr, &params));
-    EXPECT_FALSE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(kChatManifestFS),
-        GURL("http://plus.sandbox.google.com/foo"),  // http scheme
-        kNaClRestricted, nullptr, &params));
-    EXPECT_FALSE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(kChatManifestFS),
-        GURL("https://plus.google.evil.com/foo"),  // bad host
-        kNaClRestricted, nullptr, &params));
-    // Whitelisted app URL, bad manifest URL, NOT allowed.
-    EXPECT_FALSE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL("http://ssl.gstatic.com/s2/oz/nacl/foo"),  // http scheme
-        GURL(kChatAppURL), kNaClRestricted, nullptr, &params));
-    EXPECT_FALSE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL("https://ssl.gstatic.evil.com/s2/oz/nacl/foo"),  // bad host
-        GURL(kChatAppURL), kNaClRestricted, nullptr, &params));
-    EXPECT_FALSE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL("https://ssl.gstatic.com/wrong/s2/oz/nacl/foo"),  // bad path
-        GURL(kChatAppURL), kNaClRestricted, nullptr, &params));
-  }
-  // Non-whitelisted URLs are blocked without --enable-nacl.
+  // Other URLs (including previously-whitelisted URLs) are blocked
+  // without --enable-nacl.
   {
     WebPluginParams params;
     EXPECT_FALSE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(),
-        GURL("https://plus.google.com.evil.com/foo1"),
-        kNaClRestricted,
-        nullptr,
+        GURL("https://plus.google.com.evil.com/foo1"), kNaClRestricted, nullptr,
         &params));
+    EXPECT_FALSE(ChromeContentRendererClient::IsNaClAllowed(
+        GURL("https://talkgadget.google.com/hangouts/foo1"), kNaClRestricted,
+        nullptr, &params));
   }
   // Non chrome-extension:// URLs belonging to hosted apps are allowed for
   // webstore installed hosted apps.
   {
     WebPluginParams params;
     EXPECT_TRUE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(),
         GURL("http://example.com/test.html"),
         kNaClRestricted,
         CreateHostedApp(kExtensionFromWebStore,
                         "http://example.com/").get(),
         &params));
     EXPECT_FALSE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(),
         GURL("http://example.com/test.html"),
         kNaClRestricted,
         CreateHostedApp(kExtensionNotFromWebStore,
                         "http://example.com/").get(),
         &params));
     EXPECT_FALSE(ChromeContentRendererClient::IsNaClAllowed(
-        GURL(),
         GURL("http://example.evil.com/test.html"),
         kNaClRestricted,
         CreateHostedApp(kExtensionNotFromWebStore,
@@ -328,7 +277,7 @@ TEST_F(ChromeContentRendererClientTest, ShouldTrackUseCounter) {
 TEST_F(ChromeContentRendererClientTest, AddImageContextMenuPropertiesForLoFi) {
   ChromeContentRendererClient client;
   blink::WebURLResponse web_url_response;
-  web_url_response.AddHTTPHeaderField(
+  web_url_response.AddHttpHeaderField(
       blink::WebString::FromUTF8(
           data_reduction_proxy::chrome_proxy_content_transform_header()),
       blink::WebString::FromUTF8(
@@ -355,265 +304,3 @@ TEST_F(ChromeContentRendererClientTest,
       properties
           [data_reduction_proxy::chrome_proxy_content_transform_header()]);
 }
-
-TEST_F(ChromeContentRendererClientTest, RewriteEmbed) {
-  struct TestData {
-    std::string original;
-    std::string expected;
-  } test_data[] = {
-      // { original, expected }
-      {"youtube.com", ""},
-      {"www.youtube.com", ""},
-      {"http://www.youtube.com", ""},
-      {"https://www.youtube.com", ""},
-      {"http://www.foo.youtube.com", ""},
-      {"https://www.foo.youtube.com", ""},
-      // Non-YouTube domains shouldn't be modified
-      {"http://www.plus.google.com", ""},
-      // URL isn't using Flash
-      {"http://www.youtube.com/embed/deadbeef", ""},
-      // URL isn't using Flash, no www
-      {"http://youtube.com/embed/deadbeef", ""},
-      // URL isn't using Flash, invalid parameter construct
-      {"http://www.youtube.com/embed/deadbeef&start=4", ""},
-      // URL is using Flash, no www
-      {"http://youtube.com/v/deadbeef", "http://youtube.com/embed/deadbeef"},
-      // URL is using Flash, is valid, https
-      {"https://www.youtube.com/v/deadbeef",
-       "https://www.youtube.com/embed/deadbeef"},
-      // URL is using Flash, is valid, http
-      {"http://www.youtube.com/v/deadbeef",
-       "http://www.youtube.com/embed/deadbeef"},
-      // URL is using Flash, is valid, not a complete URL, no www or protocol
-      {"youtube.com/v/deadbeef", ""},
-      // URL is using Flash, is valid, not a complete URL,or protocol
-      {"www.youtube.com/v/deadbeef", ""},
-      // URL is using Flash, valid
-      {"https://www.foo.youtube.com/v/deadbeef",
-       "https://www.foo.youtube.com/embed/deadbeef"},
-      // URL is using Flash, is valid, has one parameter
-      {"http://www.youtube.com/v/deadbeef?start=4",
-       "http://www.youtube.com/embed/deadbeef?start=4"},
-      // URL is using Flash, is valid, has multiple parameters
-      {"http://www.youtube.com/v/deadbeef?start=4&fs=1",
-       "http://www.youtube.com/embed/deadbeef?start=4&fs=1"},
-      // URL is using Flash, invalid parameter construct, has one parameter
-      {"http://www.youtube.com/v/deadbeef&start=4",
-       "http://www.youtube.com/embed/deadbeef?start=4"},
-      // URL is using Flash, invalid parameter construct, has multiple
-      // parameters
-      {"http://www.youtube.com/v/deadbeef&start=4&fs=1?foo=bar",
-       "http://www.youtube.com/embed/deadbeef?start=4&fs=1&foo=bar"},
-      // URL is using Flash, invalid parameter construct, has multiple
-      // parameters
-      {"http://www.youtube.com/v/deadbeef&start=4&fs=1",
-       "http://www.youtube.com/embed/deadbeef?start=4&fs=1"},
-      // Invalid parameter construct
-      {"http://www.youtube.com/abcd/v/deadbeef", ""},
-      // Invalid parameter construct
-      {"http://www.youtube.com/v/abcd/", "http://www.youtube.com/embed/abcd/"},
-      // Invalid parameter construct
-      {"http://www.youtube.com/v/123/", "http://www.youtube.com/embed/123/"},
-      // youtube-nocookie.com
-      {"http://www.youtube-nocookie.com/v/123/",
-       "http://www.youtube-nocookie.com/embed/123/"},
-      // youtube-nocookie.com, isn't using flash
-      {"http://www.youtube-nocookie.com/embed/123/", ""},
-      // youtube-nocookie.com, has one parameter
-      {"http://www.youtube-nocookie.com/v/123?start=foo",
-       "http://www.youtube-nocookie.com/embed/123?start=foo"},
-      // youtube-nocookie.com, has multiple parameters
-      {"http://www.youtube-nocookie.com/v/123?start=foo&bar=baz",
-       "http://www.youtube-nocookie.com/embed/123?start=foo&bar=baz"},
-      // youtube-nocookie.com, invalid parameter construct, has one parameter
-      {"http://www.youtube-nocookie.com/v/123&start=foo",
-       "http://www.youtube-nocookie.com/embed/123?start=foo"},
-      // youtube-nocookie.com, invalid parameter construct, has multiple
-      // parameters
-      {"http://www.youtube-nocookie.com/v/123&start=foo&bar=baz",
-       "http://www.youtube-nocookie.com/embed/123?start=foo&bar=baz"},
-      // youtube-nocookie.com, https
-      {"https://www.youtube-nocookie.com/v/123/",
-       "https://www.youtube-nocookie.com/embed/123/"},
-      // URL isn't using Flash, has JS API enabled
-      {"http://www.youtube.com/embed/deadbeef?enablejsapi=1", ""},
-      // URL is using Flash, has JS API enabled
-      {"http://www.youtube.com/v/deadbeef?enablejsapi=1",
-       "http://www.youtube.com/embed/deadbeef?enablejsapi=1"},
-      // youtube-nocookie.com, has JS API enabled
-      {"http://www.youtube-nocookie.com/v/123?enablejsapi=1",
-       "http://www.youtube-nocookie.com/embed/123?enablejsapi=1"},
-      // URL is using Flash, has JS API enabled, invalid parameter construct
-      {"http://www.youtube.com/v/deadbeef&enablejsapi=1",
-       "http://www.youtube.com/embed/deadbeef?enablejsapi=1"},
-      // URL is using Flash, has JS API enabled, invalid parameter construct,
-      // has multiple parameters
-      {"http://www.youtube.com/v/deadbeef&start=4&enablejsapi=1",
-       "http://www.youtube.com/embed/deadbeef?start=4&enablejsapi=1"},
-  };
-
-  ChromeContentRendererClient client;
-
-  for (const auto& data : test_data)
-    EXPECT_EQ(GURL(data.expected),
-              client.OverrideFlashEmbedWithHTML(GURL(data.original)));
-}
-
-class ChromeContentRendererClientMetricsTest : public testing::Test {
- public:
-  ChromeContentRendererClientMetricsTest() = default;
-
-  void SetUp() override {
-    // Ensure that this looks like the renderer process based on the command
-    // line.
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kProcessType, switches::kRendererProcess);
-    client_ = std::make_unique<ChromeContentRendererClient>();
-  }
-
-  std::unique_ptr<base::HistogramSamples> GetHistogramSamples() {
-    return histogram_tester_.GetHistogramSamplesSinceCreation(
-        internal::kFlashYouTubeRewriteUMA);
-  }
-
-  void OverrideFlashEmbed(const GURL& gurl) {
-    client_->OverrideFlashEmbedWithHTML(gurl);
-  }
-
- private:
-  std::unique_ptr<ChromeContentRendererClient> client_;
-  base::HistogramTester histogram_tester_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeContentRendererClientMetricsTest);
-};
-
-TEST_F(ChromeContentRendererClientMetricsTest, RewriteEmbedIneligibleURL) {
-  std::unique_ptr<base::HistogramSamples> samples = GetHistogramSamples();
-  EXPECT_EQ(0, samples->TotalCount());
-
-  const std::string test_data[] = {
-      // HTTP, www, no flash
-      "http://www.youtube.com",
-      // No flash, subdomain
-      "http://www.foo.youtube.com",
-      // No flash
-      "youtube.com",
-      // Not youtube
-      "http://www.plus.google.com",
-      // Already using HTML5
-      "http://youtube.com/embed/deadbeef",
-      // Already using HTML5, enablejsapi=1
-      "http://www.youtube.com/embed/deadbeef?enablejsapi=1"};
-
-  for (const auto& data : test_data) {
-    GURL gurl = GURL(data);
-    OverrideFlashEmbed(gurl);
-    samples = GetHistogramSamples();
-    EXPECT_EQ(0, samples->GetCount(internal::SUCCESS));
-    EXPECT_EQ(0, samples->TotalCount());
-  }
-}
-
-TEST_F(ChromeContentRendererClientMetricsTest, RewriteEmbedSuccess) {
-  ChromeContentRendererClient client;
-
-  std::unique_ptr<base::HistogramSamples> samples = GetHistogramSamples();
-  auto total_count = 0;
-  EXPECT_EQ(total_count, samples->TotalCount());
-
-  const std::string test_data[] = {
-      // HTTP, www, flash
-      "http://www.youtube.com/v/deadbeef",
-      // HTTP, no www, flash
-      "http://youtube.com/v/deadbeef",
-      // HTTPS, www, flash
-      "https://www.youtube.com/v/deadbeef",
-      // HTTPS, no www, flash
-      "https://youtube.com/v/deadbeef",
-      // Invalid parameter construct
-      "http://www.youtube.com/v/abcd/",
-      // Invalid parameter construct
-      "http://www.youtube.com/v/1234/",
-  };
-
-  for (const auto& data : test_data) {
-    ++total_count;
-    GURL gurl = GURL(data);
-    OverrideFlashEmbed(gurl);
-    samples = GetHistogramSamples();
-    EXPECT_EQ(total_count, samples->GetCount(internal::SUCCESS));
-    EXPECT_EQ(total_count, samples->TotalCount());
-  }
-
-  // Invalid parameter construct
-  GURL gurl = GURL("http://www.youtube.com/abcd/v/deadbeef");
-  samples = GetHistogramSamples();
-  EXPECT_EQ(total_count, samples->GetCount(internal::SUCCESS));
-  EXPECT_EQ(total_count, samples->TotalCount());
-}
-
-// Crashes on Mac/Win only. http://crbug.com/879644
-#if defined(OS_WIN) || defined(OS_MACOSX)
-#define MAYBE_RewriteEmbedSuccessRewrite DISABLED_RewriteEmbedSuccessRewrite
-#else
-#define MAYBE_RewriteEmbedSuccessRewrite RewriteEmbedSuccessRewrite
-#endif
-
-TEST_F(ChromeContentRendererClientMetricsTest, MAYBE_RewriteEmbedSuccessRewrite) {
-  ChromeContentRendererClient client;
-
-  std::unique_ptr<base::HistogramSamples> samples = GetHistogramSamples();
-  auto total_count = 0;
-  EXPECT_EQ(total_count, samples->TotalCount());
-
-  const std::string test_data[] = {
-      // Invalid parameter construct, one parameter
-      "http://www.youtube.com/v/deadbeef&start=4",
-      // Invalid parameter construct, has multiple parameters
-      "http://www.youtube.com/v/deadbeef&start=4&fs=1?foo=bar",
-  };
-
-  for (const auto& data : test_data) {
-    ++total_count;
-    GURL gurl = GURL(data);
-    client.OverrideFlashEmbedWithHTML(gurl);
-    samples = GetHistogramSamples();
-    EXPECT_EQ(total_count, samples->GetCount(internal::SUCCESS_PARAMS_REWRITE));
-    EXPECT_EQ(total_count, samples->TotalCount());
-  }
-
-  // Invalid parameter construct, not flash
-  GURL gurl = GURL("http://www.youtube.com/embed/deadbeef&start=4");
-  OverrideFlashEmbed(gurl);
-  samples = GetHistogramSamples();
-  EXPECT_EQ(total_count, samples->GetCount(internal::SUCCESS_PARAMS_REWRITE));
-  EXPECT_EQ(total_count, samples->TotalCount());
-}
-
-TEST_F(ChromeContentRendererClientMetricsTest, RewriteEmbedJSAPI) {
-  ChromeContentRendererClient client;
-
-  std::unique_ptr<base::HistogramSamples> samples = GetHistogramSamples();
-  auto total_count = 0;
-  EXPECT_EQ(total_count, samples->TotalCount());
-
-  const std::string test_data[] = {
-      // Valid parameter construct, one parameter
-      "http://www.youtube.com/v/deadbeef?enablejsapi=1",
-      // Valid parameter construct, has multiple parameters
-      "http://www.youtube.com/v/deadbeef?enablejsapi=1&foo=2",
-      // Invalid parameter construct, one parameter
-      "http://www.youtube.com/v/deadbeef&enablejsapi=1",
-      // Invalid parameter construct, has multiple parameters
-      "http://www.youtube.com/v/deadbeef&enablejsapi=1&foo=2"};
-
-  for (const auto& data : test_data) {
-    ++total_count;
-    GURL gurl = GURL(data);
-    OverrideFlashEmbed(gurl);
-    samples = GetHistogramSamples();
-    EXPECT_EQ(total_count, samples->GetCount(internal::SUCCESS_ENABLEJSAPI));
-    EXPECT_EQ(total_count, samples->TotalCount());
-  }
-}
-

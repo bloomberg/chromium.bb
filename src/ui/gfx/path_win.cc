@@ -7,8 +7,8 @@
 #include <memory>
 
 #include "base/win/scoped_gdi_object.h"
+#include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkRegion.h"
-#include "ui/gfx/path.h"
 
 namespace gfx {
 

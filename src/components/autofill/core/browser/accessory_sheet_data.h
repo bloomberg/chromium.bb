@@ -87,14 +87,20 @@ class FooterCommand {
   base::string16 display_text_;
 };
 
+// GENERATED_JAVA_ENUM_PACKAGE: (
+//   org.chromium.chrome.browser.autofill.keyboard_accessory)
+enum class FallbackSheetType {
+  // Indicates the data type to which an AccessorySheetData object corresponds.
+  PASSWORD,
+  CREDIT_CARD
+};
+
 // Represents the contents of a bottom sheet tab below the keyboard accessory,
 // which can correspond to passwords, credit cards, or profiles data.
-//
-// TODO(crbug.com/902425): Add a field to indicate if this corresponds to
-//                         password, profile, or credit card data.
 class AccessorySheetData {
  public:
-  explicit AccessorySheetData(const base::string16& title);
+  explicit AccessorySheetData(FallbackSheetType sheet_type,
+                              const base::string16& title);
   AccessorySheetData(const AccessorySheetData& data);
   AccessorySheetData(AccessorySheetData&& data);
 
@@ -104,6 +110,7 @@ class AccessorySheetData {
   AccessorySheetData& operator=(AccessorySheetData&& data);
 
   const base::string16& title() const { return title_; }
+  FallbackSheetType get_sheet_type() const { return sheet_type_; }
 
   void add_user_info(UserInfo user_info) {
     user_info_list_.emplace_back(std::move(user_info));
@@ -126,6 +133,7 @@ class AccessorySheetData {
   bool operator==(const AccessorySheetData& data) const;
 
  private:
+  FallbackSheetType sheet_type_;
   base::string16 title_;
   std::vector<UserInfo> user_info_list_;
   std::vector<FooterCommand> footer_commands_;

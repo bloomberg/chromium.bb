@@ -698,7 +698,10 @@
       "os": {
         "type": "linux"
       },
-      "direct_rendering": false,
+      "direct_rendering_version": {
+        "op" : ">=",
+        "value": "2"
+      },
       "features": [
         "test_feature_1"
       ]
@@ -811,6 +814,15 @@
         "op": "<=",
         "value": "8.15.10.2702"
       },
+      "features": [
+        "test_feature_0"
+      ]
+    },
+    {
+      "id": 68,
+      "description": "GpuControlListEntryTest.HardwareOverlay",
+      "vendor_id": "0x8086",
+      "hardware_overlay": "unsupported",
       "features": [
         "test_feature_0"
       ]

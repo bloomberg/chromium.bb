@@ -6,9 +6,11 @@
 
 #include "base/logging.h"
 #include "build/build_config.h"
+#include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -16,6 +18,7 @@
 #include "components/offline_pages/buildflags/buildflags.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/prefs/pref_service.h"
+#include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "components/security_state/core/security_state.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -31,6 +34,13 @@
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
 #include "chrome/browser/offline_pages/offline_page_utils.h"
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "extensions/browser/extension_registry.h"
+
+// Id for extension that enables users to report sites to Safe Browsing.
+const char kPreventElisionExtensionId[] = "jknemblkbdhdcpllfgbfekkdciegfboi";
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 ChromeLocationBarModelDelegate::ChromeLocationBarModelDelegate() {}
 
@@ -61,6 +71,17 @@ bool ChromeLocationBarModelDelegate::GetURL(GURL* url) const {
   return true;
 }
 
+bool ChromeLocationBarModelDelegate::ShouldPreventElision() const {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  Profile* const profile = GetProfile();
+  return profile && extensions::ExtensionRegistry::Get(profile)
+                        ->enabled_extensions()
+                        .Contains(kPreventElisionExtensionId);
+#else
+  return false;
+#endif
+}
+
 bool ChromeLocationBarModelDelegate::ShouldDisplayURL() const {
   // Note: The order here is important.
   // - The WebUI test must come before the extension scheme test because there
@@ -72,6 +93,12 @@ bool ChromeLocationBarModelDelegate::ShouldDisplayURL() const {
   content::NavigationEntry* entry = GetNavigationEntry();
   if (!entry)
     return true;
+
+  security_interstitials::SecurityInterstitialTabHelper* tab_helper =
+      security_interstitials::SecurityInterstitialTabHelper::FromWebContents(
+          GetActiveWebContents());
+  if (tab_helper && tab_helper->IsDisplayingInterstitial())
+    return tab_helper->ShouldDisplayURL();
 
   if (entry->IsViewSourceMode() ||
       entry->GetPageType() == content::PAGE_TYPE_INTERSTITIAL) {
@@ -91,17 +118,28 @@ bool ChromeLocationBarModelDelegate::ShouldDisplayURL() const {
   return !profile || !search::IsInstantNTPURL(url, profile);
 }
 
-void ChromeLocationBarModelDelegate::GetSecurityInfo(
-    security_state::SecurityInfo* result) const {
+security_state::SecurityLevel ChromeLocationBarModelDelegate::GetSecurityLevel()
+    const {
   content::WebContents* web_contents = GetActiveWebContents();
   // If there is no active WebContents (which can happen during toolbar
   // initialization), assume no security style.
   if (!web_contents) {
-    *result = security_state::SecurityInfo();
-    return;
+    return security_state::NONE;
   }
   auto* helper = SecurityStateTabHelper::FromWebContents(web_contents);
-  helper->GetSecurityInfo(result);
+  return helper->GetSecurityLevel();
+}
+
+std::unique_ptr<security_state::VisibleSecurityState>
+ChromeLocationBarModelDelegate::GetVisibleSecurityState() const {
+  content::WebContents* web_contents = GetActiveWebContents();
+  // If there is no active WebContents (which can happen during toolbar
+  // initialization), assume no security info.
+  if (!web_contents) {
+    return std::make_unique<security_state::VisibleSecurityState>();
+  }
+  auto* helper = SecurityStateTabHelper::FromWebContents(web_contents);
+  return helper->GetVisibleSecurityState();
 }
 
 scoped_refptr<net::X509Certificate>
@@ -110,33 +148,6 @@ ChromeLocationBarModelDelegate::GetCertificate() const {
   if (!entry)
     return scoped_refptr<net::X509Certificate>();
   return entry->GetSSL().certificate;
-}
-
-bool ChromeLocationBarModelDelegate::FailsBillingCheck() const {
-  content::WebContents* web_contents = GetActiveWebContents();
-  // If there is no active WebContents (which can happen during toolbar
-  // initialization), nothing can fail.
-  if (!web_contents)
-    return false;
-  security_state::SecurityInfo security_info;
-  SecurityStateTabHelper::FromWebContents(web_contents)
-      ->GetSecurityInfo(&security_info);
-  return security_info.malicious_content_status ==
-         security_state::MALICIOUS_CONTENT_STATUS_BILLING;
-}
-
-bool ChromeLocationBarModelDelegate::FailsMalwareCheck() const {
-  content::WebContents* web_contents = GetActiveWebContents();
-  // If there is no active WebContents (which can happen during toolbar
-  // initialization), nothing can fail.
-  if (!web_contents)
-    return false;
-  security_state::SecurityInfo security_info;
-  SecurityStateTabHelper::FromWebContents(web_contents)
-      ->GetSecurityInfo(&security_info);
-  const auto status = security_info.malicious_content_status;
-  return status != security_state::MALICIOUS_CONTENT_STATUS_BILLING &&
-         status != security_state::MALICIOUS_CONTENT_STATUS_NONE;
 }
 
 const gfx::VectorIcon* ChromeLocationBarModelDelegate::GetVectorIconOverride()
@@ -180,4 +191,16 @@ Profile* ChromeLocationBarModelDelegate::GetProfile() const {
   return controller
              ? Profile::FromBrowserContext(controller->GetBrowserContext())
              : nullptr;
+}
+
+AutocompleteClassifier*
+ChromeLocationBarModelDelegate::GetAutocompleteClassifier() {
+  Profile* const profile = GetProfile();
+  return profile ? AutocompleteClassifierFactory::GetForProfile(profile)
+                 : nullptr;
+}
+
+TemplateURLService* ChromeLocationBarModelDelegate::GetTemplateURLService() {
+  Profile* const profile = GetProfile();
+  return profile ? TemplateURLServiceFactory::GetForProfile(profile) : nullptr;
 }

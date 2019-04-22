@@ -12,7 +12,8 @@
 
 // static
 UrlLanguageHistogramFactory* UrlLanguageHistogramFactory::GetInstance() {
-  return base::Singleton<UrlLanguageHistogramFactory>::get();
+  static base::NoDestructor<UrlLanguageHistogramFactory> instance;
+  return instance.get();
 }
 
 // static

@@ -17,11 +17,13 @@
 #include "components/unified_consent/feature.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
+#include "ios/chrome/browser/sessions/session_util.h"
 #include "ios/chrome/browser/sessions/tab_restore_service_delegate_impl_ios.h"
 #include "ios/chrome/browser/sessions/tab_restore_service_delegate_impl_ios_factory.h"
 #include "ios/chrome/browser/sync/session_sync_service_factory.h"
-#import "ios/chrome/browser/ui/authentication/signin_promo_view_configurator.h"
-#import "ios/chrome/browser/ui/authentication/signin_promo_view_consumer.h"
+#import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_configurator.h"
+#import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_consumer.h"
+#import "ios/chrome/browser/ui/authentication/cells/table_view_signin_promo_item.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
 #include "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
@@ -31,26 +33,32 @@
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_presentation_delegate.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_table_view_controller_delegate.h"
 #include "ios/chrome/browser/ui/recent_tabs/synced_sessions.h"
-#import "ios/chrome/browser/ui/settings/sync_utils/sync_presenter.h"
-#import "ios/chrome/browser/ui/settings/sync_utils/sync_util.h"
+#import "ios/chrome/browser/ui/settings/sync/utils/sync_presenter.h"
+#import "ios/chrome/browser/ui/settings/sync/utils/sync_util.h"
 #import "ios/chrome/browser/ui/signin_interaction/public/signin_presenter.h"
-#import "ios/chrome/browser/ui/table_view/cells/table_view_accessory_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_activity_indicator_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_disclosure_header_footer_item.h"
-#import "ios/chrome/browser/ui/table_view/cells/table_view_signin_promo_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_image_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_button_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
 #import "ios/chrome/browser/ui/table_view/table_view_favicon_data_source.h"
-#import "ios/chrome/browser/ui/url_loader.h"
 #import "ios/chrome/browser/ui/util/top_view_controller.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/url_loading/url_loading_params.h"
+#import "ios/chrome/browser/url_loading/url_loading_service.h"
+#import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
+#import "ios/chrome/browser/url_loading/url_loading_util.h"
+#include "ios/chrome/browser/web_state_list/web_state_list.h"
+#include "ios/chrome/browser/web_state_list/web_state_opener.h"
 #import "ios/chrome/common/favicon/favicon_attributes.h"
 #import "ios/chrome/common/favicon/favicon_view.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/web/public/web_state/context_menu_params.h"
+#import "ios/web/public/web_state/web_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
 
@@ -118,17 +126,6 @@ const int kRecentlyClosedTabsSectionIndex = 0;
 @end
 
 @implementation RecentTabsTableViewController : ChromeTableViewController
-@synthesize browserState = _browserState;
-@synthesize contextMenuCoordinator = _contextMenuCoordinator;
-@synthesize delegate = delegate_;
-@synthesize dispatcher = _dispatcher;
-@synthesize presentationDelegate = _presentationDelegate;
-@synthesize imageDataSource = _imageDataSource;
-@synthesize loader = _loader;
-@synthesize sessionState = _sessionState;
-@synthesize signinPromoViewMediator = _signinPromoViewMediator;
-@synthesize updatesTableView = _updatesTableView;
-@synthesize tabRestoreService = _tabRestoreService;
 
 #pragma mark - Public Interface
 
@@ -138,6 +135,7 @@ const int kRecentlyClosedTabsSectionIndex = 0;
   if (self) {
     _sessionState = SessionsSyncUserState::USER_SIGNED_OUT;
     _syncedSessions.reset(new synced_sessions::SyncedSessions());
+    _restoredTabDisposition = WindowOpenDisposition::CURRENT_TAB;
   }
   return self;
 }
@@ -222,11 +220,12 @@ const int kRecentlyClosedTabsSectionIndex = 0;
   [self addRecentlyClosedTabItems];
 
   // Add show full history item last.
-  TableViewAccessoryItem* historyItem =
-      [[TableViewAccessoryItem alloc] initWithType:ItemTypeShowFullHistory];
+  TableViewImageItem* historyItem =
+      [[TableViewImageItem alloc] initWithType:ItemTypeShowFullHistory];
   historyItem.title = l10n_util::GetNSString(IDS_HISTORY_SHOWFULLHISTORY_LINK);
   historyItem.image = [UIImage imageNamed:@"show_history"];
-  historyItem.cellAccessibilityIdentifier =
+  historyItem.textColor = UIColorFromRGB(kTableViewTextLabelColorBlue);
+  historyItem.accessibilityIdentifier =
       kRecentTabsShowFullHistoryCellAccessibilityIdentifier;
   [model addItem:historyItem
       toSectionWithIdentifier:SectionIdentifierRecentlyClosedTabs];
@@ -868,7 +867,25 @@ const int kRecentlyClosedTabsSectionIndex = 0;
         "MobileRecentTabManagerTabFromOtherDeviceOpened"));
     new_tab_page_uma::RecordAction(
         self.browserState, new_tab_page_uma::ACTION_OPENED_FOREIGN_SESSION);
-    [self.loader loadSessionTab:toLoad];
+    std::unique_ptr<web::WebState> web_state =
+        session_util::CreateWebStateWithNavigationEntries(
+            self.browserState, toLoad->current_navigation_index,
+            toLoad->navigations);
+    switch (self.restoredTabDisposition) {
+      case WindowOpenDisposition::CURRENT_TAB:
+        self.webStateList->ReplaceWebStateAt(self.webStateList->active_index(),
+                                             std::move(web_state));
+        break;
+      case WindowOpenDisposition::NEW_FOREGROUND_TAB:
+        self.webStateList->InsertWebState(
+            self.webStateList->count(), std::move(web_state),
+            (WebStateList::INSERT_FORCE_INDEX | WebStateList::INSERT_ACTIVATE),
+            WebStateOpener());
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
   }
   [self.presentationDelegate showActiveRegularTabFromRecentTabs];
 }
@@ -881,7 +898,7 @@ const int kRecentlyClosedTabsSectionIndex = 0;
       base::UserMetricsAction("MobileRecentTabManagerRecentTabOpened"));
   new_tab_page_uma::RecordAction(
       self.browserState, new_tab_page_uma::ACTION_OPENED_RECENTLY_CLOSED_ENTRY);
-  [self.loader restoreTabWithSessionID:entry->id];
+  RestoreTab(entry->id, self.restoredTabDisposition, self.browserState);
   [self.presentationDelegate showActiveRegularTabFromRecentTabs];
 }
 
@@ -913,7 +930,7 @@ const int kRecentlyClosedTabsSectionIndex = 0;
           sectionIsCollapsed:[self.tableViewModel
                                  sectionIdentifierForSection:section]];
       DisclosureDirection direction =
-          collapsed ? DisclosureDirectionUp : DisclosureDirectionDown;
+          collapsed ? DisclosureDirectionTrailing : DisclosureDirectionDown;
 
       [disclosureHeaderView animateHighlightAndRotateToDirection:direction];
       disclosureItem.collapsed = collapsed;
@@ -1021,14 +1038,12 @@ const int kRecentlyClosedTabsSectionIndex = 0;
   synced_sessions::DistantSession const* session =
       [self sessionForSection:section];
   for (auto const& tab : session->tabs) {
-    OpenNewTabCommand* command =
-        [[OpenNewTabCommand alloc] initWithURL:tab->virtual_url
-                                      referrer:web::Referrer()
-                                   inIncognito:[self isIncognito]
-                                  inBackground:YES
-                                      appendTo:kLastTab];
-
-    [self.loader webPageOrderedOpen:command];
+    UrlLoadParams params = UrlLoadParams::InNewTab(tab->virtual_url);
+    params.SetInBackground(YES);
+    params.web_params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
+    params.load_strategy = self.loadStrategy;
+    params.in_incognito = self.isIncognito;
+    UrlLoadingServiceFactory::GetForBrowserState(_browserState)->Load(params);
   }
   [self.presentationDelegate showActiveRegularTabFromRecentTabs];
 }
@@ -1099,11 +1114,19 @@ const int kRecentlyClosedTabsSectionIndex = 0;
 }
 
 - (void)showSyncSettings {
-  [self.dispatcher showSyncSettingsFromViewController:self];
+  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
+    [self.dispatcher showGoogleServicesSettingsFromViewController:self];
+  } else {
+    [self.dispatcher showSyncSettingsFromViewController:self];
+  }
 }
 
 - (void)showSyncPassphraseSettings {
   [self.dispatcher showSyncPassphraseSettingsFromViewController:self];
+}
+
+- (void)showGoogleServicesSettings {
+  [self.dispatcher showGoogleServicesSettingsFromViewController:self];
 }
 
 #pragma mark - SigninPresenter

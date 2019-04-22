@@ -14,7 +14,6 @@
 
 class AutocompleteResult;
 class GURL;
-class QueryInOmnibox;
 class SessionID;
 class TemplateURL;
 class TemplateURLService;
@@ -28,6 +27,8 @@ class BookmarkModel;
 namespace gfx {
 class Image;
 }
+
+class OmniboxControllerEmitter;
 
 using BitmapFetchedCallback =
     base::RepeatingCallback<void(int result_index, const SkBitmap& bitmap)>;
@@ -91,10 +92,10 @@ class OmniboxClient {
   virtual const SessionID& GetSessionID() const = 0;
 
   virtual bookmarks::BookmarkModel* GetBookmarkModel();
+  virtual OmniboxControllerEmitter* GetOmniboxControllerEmitter();
   virtual TemplateURLService* GetTemplateURLService();
   virtual const AutocompleteSchemeClassifier& GetSchemeClassifier() const = 0;
   virtual AutocompleteClassifier* GetAutocompleteClassifier();
-  virtual QueryInOmnibox* GetQueryInOmnibox();
 
   // Returns the icon corresponding to |match| if match is an extension match
   // and an empty icon otherwise.
@@ -143,6 +144,9 @@ class OmniboxClient {
       const GURL& page_url,
       FaviconFetchedCallback on_favicon_fetched);
   virtual gfx::Image GetFaviconForDefaultSearchProvider(
+      FaviconFetchedCallback on_favicon_fetched);
+  virtual gfx::Image GetFaviconForKeywordSearchProvider(
+      const TemplateURL* template_url,
       FaviconFetchedCallback on_favicon_fetched);
 
   // Called when the current autocomplete match has changed.

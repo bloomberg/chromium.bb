@@ -8,11 +8,15 @@
 #include <memory>
 #include <string>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/autofill/manual_filling_view_interface.h"
 #include "chrome/browser/password_manager/password_accessory_controller.h"
+#include "chrome/browser/password_manager/password_generation_controller.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -21,6 +25,7 @@ using testing::_;
 using testing::AnyNumber;
 using testing::NiceMock;
 using testing::StrictMock;
+using FillingSource = ManualFillingController::FillingSource;
 
 constexpr char kExampleSite[] = "https://example.com";
 
@@ -30,26 +35,27 @@ class MockPasswordAccessoryController : public PasswordAccessoryController {
       SavePasswordsForOrigin,
       void(const std::map<base::string16, const autofill::PasswordForm*>&,
            const url::Origin&));
-  MOCK_METHOD3(
-      OnAutomaticGenerationStatusChanged,
-      void(bool,
-           const base::Optional<
-               autofill::password_generation::PasswordGenerationUIData>&,
-           const base::WeakPtr<password_manager::PasswordManagerDriver>&));
   MOCK_METHOD1(OnFilledIntoFocusedField, void(autofill::FillingStatus));
   MOCK_METHOD3(RefreshSuggestionsForField,
                void(const url::Origin&, bool, bool));
   MOCK_METHOD0(DidNavigateMainFrame, void());
-  MOCK_METHOD0(ShowWhenKeyboardIsVisible, void());
-  MOCK_METHOD0(Hide, void());
   MOCK_METHOD2(GetFavicon,
                void(int, base::OnceCallback<void(const gfx::Image&)>));
   MOCK_METHOD2(OnFillingTriggered, void(bool, const base::string16&));
   MOCK_CONST_METHOD1(OnOptionSelected, void(const base::string16&));
+};
+
+class MockPasswordGenerationController : public PasswordGenerationController {
+ public:
+  MOCK_METHOD2(
+      OnAutomaticGenerationAvailable,
+      void(const autofill::password_generation::PasswordGenerationUIData&,
+           const base::WeakPtr<password_manager::PasswordManagerDriver>&));
+  MOCK_METHOD0(OnGenerationElementLostFocus, void());
   MOCK_METHOD0(OnGenerationRequested, void());
   MOCK_METHOD1(GeneratedPasswordAccepted, void(const base::string16&));
   MOCK_METHOD0(GeneratedPasswordRejected, void());
-  MOCK_CONST_METHOD0(native_window, gfx::NativeWindow());
+  MOCK_CONST_METHOD0(top_level_native_window, gfx::NativeWindow());
 };
 
 // The mock view mocks the platform-specific implementation. That also means
@@ -75,6 +81,7 @@ class MockPasswordAccessoryView : public ManualFillingViewInterface {
 autofill::AccessorySheetData dummy_accessory_sheet_data() {
   constexpr char kExampleAccessorySheetDataTitle[] = "Example title";
   return autofill::AccessorySheetData(
+      autofill::FallbackSheetType::CREDIT_CARD,
       base::ASCIIToUTF16(kExampleAccessorySheetDataTitle));
 }
 
@@ -89,6 +96,7 @@ class ManualFillingControllerTest : public ChromeRenderViewHostTestHarness {
     NavigateAndCommit(GURL(kExampleSite));
     ManualFillingControllerImpl::CreateForWebContentsForTesting(
         web_contents(), mock_pwd_controller_.AsWeakPtr(),
+        &mock_pwd_generation_controller_,
         std::make_unique<StrictMock<MockPasswordAccessoryView>>());
     NavigateAndCommit(GURL(kExampleSite));
   }
@@ -103,6 +111,7 @@ class ManualFillingControllerTest : public ChromeRenderViewHostTestHarness {
 
  protected:
   NiceMock<MockPasswordAccessoryController> mock_pwd_controller_;
+  NiceMock<MockPasswordGenerationController> mock_pwd_generation_controller_;
 };
 
 TEST_F(ManualFillingControllerTest, IsNotRecreatedForSameWebContents) {
@@ -155,9 +164,29 @@ TEST_F(ManualFillingControllerTest, ClosesViewOnSuccessfullFillingOnly) {
 
 TEST_F(ManualFillingControllerTest, RelaysShowAndHideKeyboardAccessory) {
   EXPECT_CALL(*view(), ShowWhenKeyboardIsVisible());
-  controller()->ShowWhenKeyboardIsVisible();
+  controller()->ShowWhenKeyboardIsVisible(FillingSource::PASSWORD_FALLBACKS);
   EXPECT_CALL(*view(), Hide());
-  controller()->Hide();
+  controller()->Hide(FillingSource::PASSWORD_FALLBACKS);
+}
+
+TEST_F(ManualFillingControllerTest, HidesAccessoryWhenAllSourcesRequestedIt) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      autofill::features::kAutofillKeyboardAccessory);
+  EXPECT_CALL(*view(), ShowWhenKeyboardIsVisible()).Times(3);
+  controller()->ShowWhenKeyboardIsVisible(FillingSource::PASSWORD_FALLBACKS);
+  controller()->ShowWhenKeyboardIsVisible(FillingSource::AUTOFILL);
+  // This duplicate call accounts for a single, visible source.
+  controller()->ShowWhenKeyboardIsVisible(FillingSource::PASSWORD_FALLBACKS);
+
+  // Hiding just one of two active filling sources won't have any effect.
+  EXPECT_CALL(*view(), Hide()).Times(0);
+  controller()->Hide(FillingSource::PASSWORD_FALLBACKS);
+  testing::Mock::VerifyAndClearExpectations(view());
+
+  // Hiding the remaining second source will result in the view being hidden.
+  EXPECT_CALL(*view(), Hide()).Times(1);
+  controller()->Hide(FillingSource::AUTOFILL);
 }
 
 TEST_F(ManualFillingControllerTest, OnAutomaticGenerationStatusChanged) {
@@ -180,7 +209,7 @@ TEST_F(ManualFillingControllerTest, OnFillingTriggered) {
 }
 
 TEST_F(ManualFillingControllerTest, OnGenerationRequested) {
-  EXPECT_CALL(mock_pwd_controller_, OnGenerationRequested());
+  EXPECT_CALL(mock_pwd_generation_controller_, OnGenerationRequested());
   controller()->OnGenerationRequested();
 }
 

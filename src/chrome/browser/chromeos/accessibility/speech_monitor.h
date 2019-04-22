@@ -8,7 +8,7 @@
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/speech/tts_platform.h"
+#include "content/public/browser/tts_platform.h"
 #include "content/public/test/test_utils.h"
 
 // TODO(katie): This may need to move into Content as part of the TTS refactor.
@@ -18,7 +18,7 @@ namespace chromeos {
 // For testing purpose installs itself as the platform speech synthesis engine,
 // allowing it to intercept all speech calls, and then provides a method to
 // block until the next utterance is spoken.
-class SpeechMonitor : public TtsPlatform {
+class SpeechMonitor : public content::TtsPlatform {
  public:
   SpeechMonitor();
   virtual ~SpeechMonitor();
@@ -51,10 +51,9 @@ class SpeechMonitor : public TtsPlatform {
   void Pause() override {}
   void Resume() override {}
   void WillSpeakUtteranceWithVoice(
-      const content::Utterance* utterance,
+      const content::TtsUtterance* utterance,
       const content::VoiceData& voice_data) override;
-  bool LoadBuiltInTtsExtension(
-      content::BrowserContext* browser_context) override;
+  bool LoadBuiltInTtsEngine(content::BrowserContext* browser_context) override;
   std::string GetError() override;
   void ClearError() override;
   void SetError(const std::string& error) override;

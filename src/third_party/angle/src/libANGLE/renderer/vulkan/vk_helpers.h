@@ -33,6 +33,7 @@ class DynamicBuffer : angle::NonCopyable
 {
   public:
     DynamicBuffer(VkBufferUsageFlags usage, size_t minSize, bool hostVisible);
+    DynamicBuffer(DynamicBuffer &&other);
     ~DynamicBuffer();
 
     // Init is called after the buffer creation so that the alignment can be specified later.
@@ -64,7 +65,10 @@ class DynamicBuffer : angle::NonCopyable
     // This frees resources immediately.
     void destroy(VkDevice device);
 
-    BufferHelper *getCurrentBuffer() { return mBuffer; };
+    BufferHelper *getCurrentBuffer() { return mBuffer; }
+
+    size_t getAlignment() { return mAlignment; }
+    void updateAlignment(RendererVk *renderer, size_t alignment);
 
     // For testing only!
     void setMinimumSizeForTesting(size_t minSize);
@@ -122,8 +126,8 @@ class DescriptorPoolHelper
     Serial mMostRecentSerial;
 };
 
-using SharedDescriptorPoolHelper  = RefCounted<DescriptorPoolHelper>;
-using SharedDescriptorPoolBinding = BindingPointer<DescriptorPoolHelper>;
+using RefCountedDescriptorPoolHelper  = RefCounted<DescriptorPoolHelper>;
+using RefCountedDescriptorPoolBinding = BindingPointer<DescriptorPoolHelper>;
 
 class DynamicDescriptorPool final : angle::NonCopyable
 {
@@ -144,7 +148,7 @@ class DynamicDescriptorPool final : angle::NonCopyable
     angle::Result allocateSets(Context *context,
                                const VkDescriptorSetLayout *descriptorSetLayout,
                                uint32_t descriptorSetCount,
-                               SharedDescriptorPoolBinding *bindingOut,
+                               RefCountedDescriptorPoolBinding *bindingOut,
                                VkDescriptorSet *descriptorSetsOut);
 
     // For testing only!
@@ -155,7 +159,7 @@ class DynamicDescriptorPool final : angle::NonCopyable
 
     uint32_t mMaxSetsPerPool;
     size_t mCurrentPoolIndex;
-    std::vector<SharedDescriptorPoolHelper *> mDescriptorPools;
+    std::vector<RefCountedDescriptorPoolHelper *> mDescriptorPools;
     std::vector<VkDescriptorPoolSize> mPoolSizes;
 };
 
@@ -220,7 +224,7 @@ class DynamicQueryPool final : public DynamicallyGrowingPool<QueryPool>
 {
   public:
     DynamicQueryPool();
-    ~DynamicQueryPool();
+    ~DynamicQueryPool() override;
 
     angle::Result init(Context *context, VkQueryType type, uint32_t poolSize);
     void destroy(VkDevice device);
@@ -251,7 +255,7 @@ class DynamicQueryPool final : public DynamicallyGrowingPool<QueryPool>
 // of a fixed size as needed and allocates indices within those pools.
 //
 // The QueryHelper class below keeps the pool and index pair together.
-class QueryHelper final : public QueryGraphResource
+class QueryHelper final
 {
   public:
     QueryHelper();
@@ -271,10 +275,18 @@ class QueryHelper final : public QueryGraphResource
     // Used only by DynamicQueryPool.
     size_t getQueryPoolIndex() const { return mQueryPoolIndex; }
 
+    void beginQuery(vk::Context *context);
+    void endQuery(vk::Context *context);
+    void writeTimestamp(vk::Context *context);
+
+    Serial getStoredQueueSerial() { return mMostRecentSerial; }
+    bool hasPendingWork(RendererVk *renderer);
+
   private:
     const DynamicQueryPool *mDynamicQueryPool;
     size_t mQueryPoolIndex;
     uint32_t mQuery;
+    Serial mMostRecentSerial;
 };
 
 // DynamicSemaphorePool allocates semaphores as needed.  It uses a std::vector
@@ -290,7 +302,7 @@ class DynamicSemaphorePool final : public DynamicallyGrowingPool<std::vector<Sem
 {
   public:
     DynamicSemaphorePool();
-    ~DynamicSemaphorePool();
+    ~DynamicSemaphorePool() override;
 
     angle::Result init(Context *context, uint32_t poolSize);
     void destroy(VkDevice device);
@@ -346,28 +358,28 @@ class LineLoopHelper final : angle::NonCopyable
     angle::Result getIndexBufferForDrawArrays(ContextVk *contextVk,
                                               uint32_t clampedVertexCount,
                                               GLint firstVertex,
-                                              VkBuffer *bufferHandleOut,
+                                              vk::BufferHelper **bufferOut,
                                               VkDeviceSize *offsetOut);
 
     angle::Result getIndexBufferForElementArrayBuffer(ContextVk *contextVk,
                                                       BufferVk *elementArrayBufferVk,
-                                                      GLenum glIndexType,
+                                                      gl::DrawElementsType glIndexType,
                                                       int indexCount,
                                                       intptr_t elementArrayOffset,
-                                                      VkBuffer *bufferHandleOut,
+                                                      vk::BufferHelper **bufferOut,
                                                       VkDeviceSize *bufferOffsetOut);
 
     angle::Result streamIndices(ContextVk *contextVk,
-                                GLenum glIndexType,
+                                gl::DrawElementsType glIndexType,
                                 GLsizei indexCount,
                                 const uint8_t *srcPtr,
-                                VkBuffer *bufferHandleOut,
+                                vk::BufferHelper **bufferOut,
                                 VkDeviceSize *bufferOffsetOut);
 
     void release(RendererVk *renderer);
     void destroy(VkDevice device);
 
-    static void Draw(uint32_t count, CommandBuffer *commandBuffer);
+    static void Draw(uint32_t count, vk::CommandBuffer *commandBuffer);
 
   private:
     DynamicBuffer mDynamicIndexBuffer;
@@ -375,11 +387,11 @@ class LineLoopHelper final : angle::NonCopyable
 
 class FramebufferHelper;
 
-class BufferHelper final : public RecordableGraphResource
+class BufferHelper final : public CommandGraphResource
 {
   public:
     BufferHelper();
-    ~BufferHelper();
+    ~BufferHelper() override;
 
     angle::Result init(Context *context,
                        const VkBufferCreateInfo &createInfo,
@@ -391,25 +403,39 @@ class BufferHelper final : public RecordableGraphResource
     const Buffer &getBuffer() const { return mBuffer; }
     const DeviceMemory &getDeviceMemory() const { return mDeviceMemory; }
 
-    // Helper for setting the graph dependencies *and* setting the appropriate barrier.
-    void onFramebufferRead(FramebufferHelper *framebuffer, VkAccessFlagBits accessType);
+    // Helpers for setting the graph dependencies *and* setting the appropriate barrier.
+    ANGLE_INLINE void onRead(CommandGraphResource *reader, VkAccessFlagBits readAccessType)
+    {
+        addReadDependency(reader);
+
+        if (mCurrentWriteAccess != 0 && (mCurrentReadAccess & readAccessType) == 0)
+        {
+            reader->addGlobalMemoryBarrier(mCurrentWriteAccess, readAccessType);
+            mCurrentReadAccess |= readAccessType;
+        }
+    }
+
+    void onWrite(VkAccessFlagBits writeAccessType);
 
     // Also implicitly sets up the correct barriers.
     angle::Result copyFromBuffer(Context *context,
                                  const Buffer &buffer,
                                  const VkBufferCopy &copyRegion);
 
-    angle::Result getBufferView(Context *context, const Format &format, BufferView **bufferViewOut)
-    {
-        // Note: currently only one view is allowed.  If needs be, multiple views can be created
-        // based on format.
-        if (!mBufferView.valid())
-        {
-            ANGLE_TRY(initBufferView(context, format));
-        }
+    // Note: currently only one view is allowed.  If needs be, multiple views can be created
+    // based on format.
+    angle::Result initBufferView(Context *context, const Format &format);
 
-        *bufferViewOut = &mBufferView;
-        return angle::Result::Continue();
+    const BufferView &getBufferView() const
+    {
+        ASSERT(mBufferView.valid());
+        return mBufferView;
+    }
+
+    const Format &getViewFormat() const
+    {
+        ASSERT(mViewFormat);
+        return *mViewFormat;
     }
 
     angle::Result map(Context *context, uint8_t **ptrOut)
@@ -419,7 +445,7 @@ class BufferHelper final : public RecordableGraphResource
             ANGLE_TRY(mapImpl(context));
         }
         *ptrOut = mMappedMemory;
-        return angle::Result::Continue();
+        return angle::Result::Continue;
     }
     void unmap(VkDevice device);
 
@@ -431,7 +457,6 @@ class BufferHelper final : public RecordableGraphResource
 
   private:
     angle::Result mapImpl(Context *context);
-    angle::Result initBufferView(Context *context, const Format &format);
 
     // Vulkan objects.
     Buffer mBuffer;
@@ -442,18 +467,68 @@ class BufferHelper final : public RecordableGraphResource
     VkMemoryPropertyFlags mMemoryPropertyFlags;
     VkDeviceSize mSize;
     uint8_t *mMappedMemory;
+    const Format *mViewFormat;
 
     // For memory barriers.
     VkFlags mCurrentWriteAccess;
     VkFlags mCurrentReadAccess;
 };
 
-class ImageHelper final : public RecordableGraphResource
+// Imagine an image going through a few layout transitions:
+//
+//           srcStage 1    dstStage 2          srcStage 2     dstStage 3
+//  Layout 1 ------Transition 1-----> Layout 2 ------Transition 2------> Layout 3
+//           srcAccess 1  dstAccess 2          srcAccess 2   dstAccess 3
+//   \_________________  ___________________/
+//                     \/
+//               A transition
+//
+// Every transition requires 6 pieces of information: from/to layouts, src/dst stage masks and
+// src/dst access masks.  At the moment we decide to transition the image to Layout 2 (i.e.
+// Transition 1), we need to have Layout 1, srcStage 1 and srcAccess 1 stored as history of the
+// image.  To perform the transition, we need to know Layout 2, dstStage 2 and dstAccess 2.
+// Additionally, we need to know srcStage 2 and srcAccess 2 to retain them for the next transition.
+//
+// That is, with the history kept, on every new transition we need 5 pieces of new information:
+// layout/dstStage/dstAccess to transition into the layout, and srcStage/srcAccess for the future
+// transition out from it.  Given the small number of possible combinations of these values, an
+// enum is used were each value encapsulates these 5 pieces of information:
+//
+//                       +--------------------------------+
+//           srcStage 1  | dstStage 2          srcStage 2 |   dstStage 3
+//  Layout 1 ------Transition 1-----> Layout 2 ------Transition 2------> Layout 3
+//           srcAccess 1 |dstAccess 2          srcAccess 2|  dstAccess 3
+//                       +---------------  ---------------+
+//                                       \/
+//                                 One enum value
+//
+// Note that, while generally dstStage for the to-transition and srcStage for the from-transition
+// are the same, they may occasionally be BOTTOM_OF_PIPE and TOP_OF_PIPE respectively.
+enum class ImageLayout
+{
+    Undefined              = 0,
+    ExternalPreInitialized = 1,
+    TransferSrc            = 2,
+    TransferDst            = 3,
+    ComputeShaderReadOnly  = 4,
+    ComputeShaderWrite     = 5,
+    FragmentShaderReadOnly = 6,
+    ColorAttachment        = 7,
+    DepthStencilAttachment = 8,
+    Present                = 9,
+
+    InvalidEnum = 10,
+    EnumCount   = 10,
+};
+
+class ImageHelper final : public CommandGraphResource
 {
   public:
     ImageHelper();
     ImageHelper(ImageHelper &&other);
-    ~ImageHelper();
+    ~ImageHelper() override;
+
+    void initStagingBuffer(RendererVk *renderer, const vk::Format &format);
 
     angle::Result init(Context *context,
                        gl::TextureType textureType,
@@ -461,15 +536,33 @@ class ImageHelper final : public RecordableGraphResource
                        const Format &format,
                        GLint samples,
                        VkImageUsageFlags usage,
-                       uint32_t mipLevels);
+                       uint32_t mipLevels,
+                       uint32_t layerCount);
+    angle::Result initExternal(Context *context,
+                               gl::TextureType textureType,
+                               const gl::Extents &extents,
+                               const Format &format,
+                               GLint samples,
+                               VkImageUsageFlags usage,
+                               ImageLayout initialLayout,
+                               const void *externalImageCreateInfo,
+                               uint32_t mipLevels,
+                               uint32_t layerCount);
     angle::Result initMemory(Context *context,
                              const MemoryProperties &memoryProperties,
                              VkMemoryPropertyFlags flags);
+    angle::Result initExternalMemory(Context *context,
+                                     const MemoryProperties &memoryProperties,
+                                     const VkMemoryRequirements &memoryRequirements,
+                                     const void *extraAllocationInfo,
+                                     uint32_t currentQueueFamilyIndex,
+                                     VkMemoryPropertyFlags flags);
     angle::Result initLayerImageView(Context *context,
                                      gl::TextureType textureType,
                                      VkImageAspectFlags aspectMask,
                                      const gl::SwizzleState &swizzleMap,
                                      ImageView *imageViewOut,
+                                     uint32_t baseMipLevel,
                                      uint32_t levelCount,
                                      uint32_t baseArrayLayer,
                                      uint32_t layerCount);
@@ -478,14 +571,21 @@ class ImageHelper final : public RecordableGraphResource
                                 VkImageAspectFlags aspectMask,
                                 const gl::SwizzleState &swizzleMap,
                                 ImageView *imageViewOut,
+                                uint32_t baseMipLevel,
                                 uint32_t levelCount);
+    // Create a 2D[Array] for staging purposes.  Used by:
+    //
+    // - TextureVk::copySubImageImplWithDraw
+    //
     angle::Result init2DStaging(Context *context,
                                 const MemoryProperties &memoryProperties,
-                                const Format &format,
                                 const gl::Extents &extent,
-                                StagingUsage usage);
+                                const Format &format,
+                                VkImageUsageFlags usage,
+                                uint32_t layerCount);
 
-    void release(RendererVk *renderer);
+    void releaseImage(RendererVk *renderer);
+    void releaseStagingBuffer(RendererVk *renderer);
 
     bool valid() const { return mImage.valid(); }
 
@@ -499,37 +599,28 @@ class ImageHelper final : public RecordableGraphResource
                              GLint samples);
     void resetImageWeakReference();
 
-    const Image &getImage() const;
-    const DeviceMemory &getDeviceMemory() const;
+    const Image &getImage() const { return mImage; }
+    const DeviceMemory &getDeviceMemory() const { return mDeviceMemory; }
 
-    const gl::Extents &getExtents() const;
-    const Format &getFormat() const;
-    GLint getSamples() const;
+    const gl::Extents &getExtents() const { return mExtents; }
+    uint32_t getLayerCount() const { return mLayerCount; }
+    uint32_t getLevelCount() const { return mLevelCount; }
+    const Format &getFormat() const { return *mFormat; }
+    GLint getSamples() const { return mSamples; }
 
-    VkImageLayout getCurrentLayout() const { return mCurrentLayout; }
+    VkImageLayout getCurrentLayout() const;
 
-    void changeLayoutWithStages(VkImageAspectFlags aspectMask,
-                                VkImageLayout newLayout,
-                                VkPipelineStageFlags srcStageMask,
-                                VkPipelineStageFlags dstStageMask,
-                                CommandBuffer *commandBuffer);
+    // Helper function to calculate the extents of a render target created for a certain mip of the
+    // image.
+    gl::Extents getLevelExtents2D(uint32_t level) const;
 
-    void clearColor(const VkClearColorValue &color,
-                    uint32_t baseMipLevel,
-                    uint32_t levelCount,
-                    CommandBuffer *commandBuffer);
+    // Clear either color or depth/stencil based on image format.
+    void clear(const VkClearValue &value,
+               uint32_t mipLevel,
+               uint32_t baseArrayLayer,
+               uint32_t layerCount,
+               vk::CommandBuffer *commandBuffer);
 
-    void clearColorLayer(const VkClearColorValue &color,
-                         uint32_t baseMipLevel,
-                         uint32_t levelCount,
-                         uint32_t baseArrayLayer,
-                         uint32_t layerCount,
-                         CommandBuffer *commandBuffer);
-
-    void clearDepthStencil(VkImageAspectFlags imageAspectFlags,
-                           VkImageAspectFlags clearAspectFlags,
-                           const VkClearDepthStencilValue &depthStencil,
-                           CommandBuffer *commandBuffer);
     gl::Extents getSize(const gl::ImageIndex &index) const;
 
     static void Copy(ImageHelper *srcImage,
@@ -537,12 +628,176 @@ class ImageHelper final : public RecordableGraphResource
                      const gl::Offset &srcOffset,
                      const gl::Offset &dstOffset,
                      const gl::Extents &copySize,
-                     VkImageAspectFlags aspectMask,
-                     CommandBuffer *commandBuffer);
+                     const VkImageSubresourceLayers &srcSubresources,
+                     const VkImageSubresourceLayers &dstSubresources,
+                     vk::CommandBuffer *commandBuffer);
 
     angle::Result generateMipmapsWithBlit(ContextVk *contextVk, GLuint maxLevel);
 
+    // Data staging
+    void removeStagedUpdates(RendererVk *renderer, const gl::ImageIndex &index);
+
+    angle::Result stageSubresourceUpdate(ContextVk *contextVk,
+                                         const gl::ImageIndex &index,
+                                         const gl::Extents &extents,
+                                         const gl::Offset &offset,
+                                         const gl::InternalFormat &formatInfo,
+                                         const gl::PixelUnpackState &unpack,
+                                         GLenum type,
+                                         const uint8_t *pixels,
+                                         const vk::Format &vkFormat);
+
+    angle::Result stageSubresourceUpdateAndGetData(ContextVk *contextVk,
+                                                   size_t allocationSize,
+                                                   const gl::ImageIndex &imageIndex,
+                                                   const gl::Extents &extents,
+                                                   const gl::Offset &offset,
+                                                   uint8_t **destData);
+
+    angle::Result stageSubresourceUpdateFromFramebuffer(const gl::Context *context,
+                                                        const gl::ImageIndex &index,
+                                                        const gl::Rectangle &sourceArea,
+                                                        const gl::Offset &dstOffset,
+                                                        const gl::Extents &dstExtent,
+                                                        const gl::InternalFormat &formatInfo,
+                                                        FramebufferVk *framebufferVk);
+
+    void stageSubresourceUpdateFromImage(vk::ImageHelper *image,
+                                         const gl::ImageIndex &index,
+                                         const gl::Offset &destOffset,
+                                         const gl::Extents &extents);
+
+    // Stage a clear operation to a clear value based on WebGL requirements.
+    void stageSubresourceRobustClear(const gl::ImageIndex &index, const angle::Format &format);
+
+    // Stage a clear operation to a clear value that initializes emulated channels to the desired
+    // values.
+    void stageSubresourceEmulatedClear(const gl::ImageIndex &index, const angle::Format &format);
+
+    // If the image has emulated channels, we clear them once so as not to leave garbage on those
+    // channels.
+    angle::Result clearIfEmulatedFormat(Context *context,
+                                        const gl::ImageIndex &index,
+                                        const Format &format);
+
+    // This will use the underlying dynamic buffer to allocate some memory to be used as a src or
+    // dst.
+    angle::Result allocateStagingMemory(ContextVk *contextVk,
+                                        size_t sizeInBytes,
+                                        uint8_t **ptrOut,
+                                        VkBuffer *handleOut,
+                                        VkDeviceSize *offsetOut,
+                                        bool *newBufferAllocatedOut);
+
+    // Flushes staged updates to a range of levels and layers from start to (but not including) end.
+    // Due to the nature of updates (done wholly to a VkImageSubresourceLayers), some unsolicited
+    // layers may also be updated.
+    angle::Result flushStagedUpdates(Context *context,
+                                     uint32_t levelStart,
+                                     uint32_t levelEnd,
+                                     uint32_t layerStart,
+                                     uint32_t layerEnd,
+                                     vk::CommandBuffer *commandBuffer);
+    // Creates a command buffer and flushes all staged updates.  This is used for one-time
+    // initialization of resources that we don't expect to accumulate further staged updates, such
+    // as with renderbuffers or surface images.
+    angle::Result flushAllStagedUpdates(Context *context);
+
+    bool hasStagedUpdates() const { return !mSubresourceUpdates.empty(); }
+
+    // changeLayout automatically skips the layout change if it's unnecessary.  This function can be
+    // used to prevent creating a command graph node and subsequently a command buffer for the sole
+    // purpose of performing a transition (which may then not be issued).
+    bool isLayoutChangeNecessary(ImageLayout newLayout) const;
+
+    void changeLayout(VkImageAspectFlags aspectMask,
+                      ImageLayout newLayout,
+                      vk::CommandBuffer *commandBuffer);
+
+    bool isQueueChangeNeccesary(uint32_t newQueueFamilyIndex) const
+    {
+        return mCurrentQueueFamilyIndex != newQueueFamilyIndex;
+    }
+
+    void changeLayoutAndQueue(VkImageAspectFlags aspectMask,
+                              ImageLayout newLayout,
+                              uint32_t newQueueFamilyIndex,
+                              vk::CommandBuffer *commandBuffer);
+
   private:
+    void forceChangeLayoutAndQueue(VkImageAspectFlags aspectMask,
+                                   ImageLayout newLayout,
+                                   uint32_t newQueueFamilyIndex,
+                                   vk::CommandBuffer *commandBuffer);
+
+    void stageSubresourceClear(const gl::ImageIndex &index,
+                               const angle::Format &format,
+                               const VkClearColorValue &colorValue,
+                               const VkClearDepthStencilValue &depthStencilValue);
+
+    void clearColor(const VkClearColorValue &color,
+                    uint32_t baseMipLevel,
+                    uint32_t levelCount,
+                    uint32_t baseArrayLayer,
+                    uint32_t layerCount,
+                    vk::CommandBuffer *commandBuffer);
+
+    void clearDepthStencil(VkImageAspectFlags imageAspectFlags,
+                           VkImageAspectFlags clearAspectFlags,
+                           const VkClearDepthStencilValue &depthStencil,
+                           vk::CommandBuffer *commandBuffer);
+
+    struct SubresourceUpdate
+    {
+        SubresourceUpdate();
+        SubresourceUpdate(VkBuffer bufferHandle, const VkBufferImageCopy &copyRegion);
+        SubresourceUpdate(vk::ImageHelper *image, const VkImageCopy &copyRegion);
+        SubresourceUpdate(const VkClearValue &clearValue, const gl::ImageIndex &imageIndex);
+        SubresourceUpdate(const SubresourceUpdate &other);
+
+        void release(RendererVk *renderer);
+
+        const VkImageSubresourceLayers &dstSubresource() const
+        {
+            ASSERT(updateSource == UpdateSource::Buffer || updateSource == UpdateSource::Image);
+            return updateSource == UpdateSource::Buffer ? buffer.copyRegion.imageSubresource
+                                                        : image.copyRegion.dstSubresource;
+        }
+        bool isUpdateToLayerLevel(uint32_t layerIndex, uint32_t levelIndex) const;
+
+        enum class UpdateSource
+        {
+            Clear,
+            Buffer,
+            Image,
+        };
+        struct ClearUpdate
+        {
+            VkClearValue value;
+            uint32_t levelIndex;
+            uint32_t layerIndex;
+            uint32_t layerCount;
+        };
+        struct BufferUpdate
+        {
+            VkBuffer bufferHandle;
+            VkBufferImageCopy copyRegion;
+        };
+        struct ImageUpdate
+        {
+            vk::ImageHelper *image;
+            VkImageCopy copyRegion;
+        };
+
+        UpdateSource updateSource;
+        union
+        {
+            ClearUpdate clear;
+            BufferUpdate buffer;
+            ImageUpdate image;
+        };
+    };
+
     // Vulkan objects.
     Image mImage;
     DeviceMemory mDeviceMemory;
@@ -553,17 +808,23 @@ class ImageHelper final : public RecordableGraphResource
     GLint mSamples;
 
     // Current state.
-    VkImageLayout mCurrentLayout;
+    ImageLayout mCurrentLayout;
+    uint32_t mCurrentQueueFamilyIndex;
 
     // Cached properties.
     uint32_t mLayerCount;
+    uint32_t mLevelCount;
+
+    // Staging buffer
+    vk::DynamicBuffer mStagingBuffer;
+    std::vector<SubresourceUpdate> mSubresourceUpdates;
 };
 
-class FramebufferHelper : public RecordableGraphResource
+class FramebufferHelper : public CommandGraphResource
 {
   public:
     FramebufferHelper();
-    ~FramebufferHelper();
+    ~FramebufferHelper() override;
 
     angle::Result init(ContextVk *contextVk, const VkFramebufferCreateInfo &createInfo);
     void release(RendererVk *renderer);
@@ -609,11 +870,33 @@ class ShaderProgramHelper : angle::NonCopyable
     void setShader(gl::ShaderType shaderType, RefCounted<ShaderAndSerial> *shader);
 
     // For getting a vk::Pipeline and from the pipeline cache.
-    angle::Result getGraphicsPipeline(Context *context,
-                                      const PipelineLayout &pipelineLayout,
-                                      const GraphicsPipelineDesc &pipelineDesc,
-                                      const gl::AttributesMask &activeAttribLocationsMask,
-                                      PipelineAndSerial **pipelineOut);
+    ANGLE_INLINE angle::Result getGraphicsPipeline(
+        Context *context,
+        RenderPassCache *renderPassCache,
+        const PipelineCache &pipelineCache,
+        Serial currentQueueSerial,
+        const PipelineLayout &pipelineLayout,
+        const GraphicsPipelineDesc &pipelineDesc,
+        const gl::AttributesMask &activeAttribLocationsMask,
+        const vk::GraphicsPipelineDesc **descPtrOut,
+        PipelineHelper **pipelineOut)
+    {
+        // Pull in a compatible RenderPass.
+        vk::RenderPass *compatibleRenderPass = nullptr;
+        ANGLE_TRY(renderPassCache->getCompatibleRenderPass(
+            context, currentQueueSerial, pipelineDesc.getRenderPassDesc(), &compatibleRenderPass));
+
+        ShaderModule *vertexShader   = &mShaders[gl::ShaderType::Vertex].get().get();
+        ShaderModule *fragmentShader = mShaders[gl::ShaderType::Fragment].valid()
+                                           ? &mShaders[gl::ShaderType::Fragment].get().get()
+                                           : nullptr;
+
+        return mGraphicsPipelines.getPipeline(context, pipelineCache, *compatibleRenderPass,
+                                              pipelineLayout, activeAttribLocationsMask,
+                                              vertexShader, fragmentShader, pipelineDesc,
+                                              descPtrOut, pipelineOut);
+    }
+
     angle::Result getComputePipeline(Context *context,
                                      const PipelineLayout &pipelineLayout,
                                      PipelineAndSerial **pipelineOut);
@@ -621,6 +904,8 @@ class ShaderProgramHelper : angle::NonCopyable
   private:
     gl::ShaderMap<BindingPointer<ShaderAndSerial>> mShaders;
     GraphicsPipelineCache mGraphicsPipelines;
+
+    // We should probably use PipelineHelper here so we can remove PipelineAndSerial.
     PipelineAndSerial mComputePipeline;
 };
 }  // namespace vk

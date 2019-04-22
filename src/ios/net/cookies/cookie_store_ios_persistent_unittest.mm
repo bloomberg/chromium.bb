@@ -8,6 +8,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
@@ -55,18 +56,18 @@ struct PersistentCookieStoreIOSTestTraits {
   base::MessageLoop loop_;
 };
 
-INSTANTIATE_TYPED_TEST_CASE_P(PersistentCookieStoreIOS,
-                              CookieStoreTest,
-                              PersistentCookieStoreIOSTestTraits);
-INSTANTIATE_TYPED_TEST_CASE_P(PersistentCookieStoreIOS,
-                              CookieStoreChangeGlobalTest,
-                              PersistentCookieStoreIOSTestTraits);
-INSTANTIATE_TYPED_TEST_CASE_P(PersistentCookieStoreIOS,
-                              CookieStoreChangeUrlTest,
-                              PersistentCookieStoreIOSTestTraits);
-INSTANTIATE_TYPED_TEST_CASE_P(PersistentCookieStoreIOS,
-                              CookieStoreChangeNamedTest,
-                              PersistentCookieStoreIOSTestTraits);
+INSTANTIATE_TYPED_TEST_SUITE_P(PersistentCookieStoreIOS,
+                               CookieStoreTest,
+                               PersistentCookieStoreIOSTestTraits);
+INSTANTIATE_TYPED_TEST_SUITE_P(PersistentCookieStoreIOS,
+                               CookieStoreChangeGlobalTest,
+                               PersistentCookieStoreIOSTestTraits);
+INSTANTIATE_TYPED_TEST_SUITE_P(PersistentCookieStoreIOS,
+                               CookieStoreChangeUrlTest,
+                               PersistentCookieStoreIOSTestTraits);
+INSTANTIATE_TYPED_TEST_SUITE_P(PersistentCookieStoreIOS,
+                               CookieStoreChangeNamedTest,
+                               PersistentCookieStoreIOSTestTraits);
 
 namespace {
 

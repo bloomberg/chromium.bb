@@ -12,6 +12,7 @@
 namespace tts_extension_api_constants {
 
 extern const char kCharIndexKey[];
+extern const char kLengthKey[];
 extern const char kDesiredEventTypesKey[];
 extern const char kEnqueueKey[];
 extern const char kErrorMessageKey[];

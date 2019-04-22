@@ -19,6 +19,10 @@ const base::Feature kOverrideTranslateTriggerInIndia{
     "OverrideTranslateTriggerInIndia", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kExplicitLanguageAsk{"ExplicitLanguageAsk",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kImprovedGeoLanguageData{"ImprovedGeoLanguageData",
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kUseFluentLanguageModel{"UseFluentLanguageModel",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Params:
 const char kBackoffThresholdKey[] = "backoff_threshold";
@@ -33,6 +37,11 @@ OverrideLanguageModel GetOverrideLanguageModel() {
   bool should_override_model = base::GetFieldTrialParamsByFeature(
       kOverrideTranslateTriggerInIndia, &params);
 
+  // The model overrides ordering is important as it allows us to
+  // have concurrent overrides in experiment without having to partition them
+  // explicitly. For example, we may have a FLUENT experiment globally and a
+  // GEO experiment in India only.
+
   if (base::FeatureList::IsEnabled(kUseHeuristicLanguageModel) ||
       (should_override_model &&
        params[kOverrideModelKey] == kOverrideModelHeuristicValue)) {
@@ -42,6 +51,10 @@ OverrideLanguageModel GetOverrideLanguageModel() {
   if (should_override_model &&
       params[kOverrideModelKey] == kOverrideModelGeoValue) {
     return OverrideLanguageModel::GEO;
+  }
+
+  if (base::FeatureList::IsEnabled(kUseFluentLanguageModel)) {
+    return OverrideLanguageModel::FLUENT;
   }
 
   return OverrideLanguageModel::DEFAULT;

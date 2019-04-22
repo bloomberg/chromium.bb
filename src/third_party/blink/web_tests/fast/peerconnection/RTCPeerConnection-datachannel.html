@@ -90,9 +90,13 @@ function pc_ondatachannel(e) {
     shouldNotThrow("dc.send('xyzzy');");
 }
 
+var pc_has_connected = false;
 function pc_onicechange() {
-    if (pc.iceConnectionState === "completed") {
+    if ((pc.iceConnectionState === "connected" ||
+        pc.iceConnectionState === "completed") &&
+        !pc_has_connected) {
         testPassed("pc is connected");
+        pc_has_connected = true;
     }
 }
 

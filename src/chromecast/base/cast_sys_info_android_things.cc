@@ -56,8 +56,7 @@ std::string CastSysInfoAndroidThings::GetSystemReleaseChannel() {
 #endif
 }
 
-// static
-std::vector<std::string> CastSysInfo::GetFactoryLocaleList() {
+std::vector<std::string> CastSysInfoAndroidThings::GetFactoryLocaleList() {
   std::vector<std::string> locale_list;
 #if BUILDFLAG(IS_ANDROID_THINGS_NON_PUBLIC)
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -65,6 +64,9 @@ std::vector<std::string> CastSysInfo::GetFactoryLocaleList() {
       env, Java_CastSysInfoAndroidThings_getFactoryLocaleList(env),
       &locale_list);
 #endif
+  if (locale_list.empty()) {
+      locale_list = CastSysInfoAndroid::GetFactoryLocaleList();
+  }
   return locale_list;
 }
 

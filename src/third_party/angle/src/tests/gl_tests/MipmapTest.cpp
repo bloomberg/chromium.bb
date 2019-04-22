@@ -58,10 +58,10 @@ class MipmapTest : public BaseMipmapTest
           mCubeProgram(0),
           mTexture2D(0),
           mTextureCube(0),
-          mLevelZeroBlueInitData(nullptr),
-          mLevelZeroWhiteInitData(nullptr),
-          mLevelOneGreenInitData(nullptr),
-          mLevelTwoRedInitData(nullptr),
+          mLevelZeroBlueInitData(),
+          mLevelZeroWhiteInitData(),
+          mLevelOneGreenInitData(),
+          mLevelTwoRedInitData(),
           mOffscreenFramebuffer(0)
     {
         setWindowWidth(128);
@@ -75,56 +75,51 @@ class MipmapTest : public BaseMipmapTest
     void setUp2DProgram()
     {
         // Vertex Shader source
-        const std::string vs =
-            R"(attribute vec4 position;
-            varying vec2 vTexCoord;
+        constexpr char kVS[] = R"(attribute vec4 position;
+varying vec2 vTexCoord;
 
-            void main()
-            {
-                gl_Position = position;
-                vTexCoord   = (position.xy * 0.5) + 0.5;
-            })";
+void main()
+{
+    gl_Position = position;
+    vTexCoord   = (position.xy * 0.5) + 0.5;
+})";
 
         // Fragment Shader source
-        const std::string fs =
-            R"(precision mediump float;
+        constexpr char kFS[] = R"(precision mediump float;
+uniform sampler2D uTexture;
+varying vec2 vTexCoord;
 
-            uniform sampler2D uTexture;
-            varying vec2 vTexCoord;
+void main()
+{
+    gl_FragColor = texture2D(uTexture, vTexCoord);
+})";
 
-            void main()
-            {
-                gl_FragColor = texture2D(uTexture, vTexCoord);
-            })";
-
-        m2DProgram = CompileProgram(vs, fs);
+        m2DProgram = CompileProgram(kVS, kFS);
         ASSERT_NE(0u, m2DProgram);
     }
 
     void setUpCubeProgram()
     {
         // A simple vertex shader for the texture cube
-        const std::string cubeVS =
-            R"(attribute vec4 position;
-            varying vec4 vPosition;
-            void main()
-            {
-                gl_Position = position;
-                vPosition = position;
-            })";
+        constexpr char kVS[] = R"(attribute vec4 position;
+varying vec4 vPosition;
+void main()
+{
+    gl_Position = position;
+    vPosition = position;
+})";
 
         // A very simple fragment shader to sample from the negative-Y face of a texture cube.
-        const std::string cubeFS =
-            R"(precision mediump float;
-            uniform samplerCube uTexture;
-            varying vec4 vPosition;
+        constexpr char kFS[] = R"(precision mediump float;
+uniform samplerCube uTexture;
+varying vec4 vPosition;
 
-            void main()
-            {
-                gl_FragColor = textureCube(uTexture, vec3(vPosition.x, -1, vPosition.y));
-            })";
+void main()
+{
+    gl_FragColor = textureCube(uTexture, vec3(vPosition.x, -1, vPosition.y));
+})";
 
-        mCubeProgram = CompileProgram(cubeVS, cubeFS);
+        mCubeProgram = CompileProgram(kVS, kFS);
         ASSERT_NE(0u, mCubeProgram);
     }
 
@@ -162,7 +157,7 @@ class MipmapTest : public BaseMipmapTest
         glBindTexture(GL_TEXTURE_CUBE_MAP, mTextureCube);
         TexImageCubeMapFaces(0, GL_RGB, getWindowWidth(), GL_RGB, GL_UNSIGNED_BYTE, nullptr);
         glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, GL_RGB, getWindowWidth(), getWindowWidth(),
-                     0, GL_RGB, GL_UNSIGNED_BYTE, mLevelZeroBlueInitData);
+                     0, GL_RGB, GL_UNSIGNED_BYTE, mLevelZeroBlueInitData.data());
 
         // Complete the texture cube without mipmaps to start with.
         glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -179,17 +174,12 @@ class MipmapTest : public BaseMipmapTest
         glDeleteTextures(1, &mTexture2D);
         glDeleteTextures(1, &mTextureCube);
 
-        SafeDeleteArray(mLevelZeroBlueInitData);
-        SafeDeleteArray(mLevelZeroWhiteInitData);
-        SafeDeleteArray(mLevelOneGreenInitData);
-        SafeDeleteArray(mLevelTwoRedInitData);
-
         ANGLETest::TearDown();
     }
 
-    GLubyte *createRGBInitData(GLint width, GLint height, GLint r, GLint g, GLint b)
+    std::vector<GLubyte> createRGBInitData(GLint width, GLint height, GLint r, GLint g, GLint b)
     {
-        GLubyte *data = new GLubyte[3 * width * height];
+        std::vector<GLubyte> data(3 * width * height);
 
         for (int i = 0; i < width * height; i += 1)
         {
@@ -221,10 +211,10 @@ class MipmapTest : public BaseMipmapTest
     GLuint mTexture2D;
     GLuint mTextureCube;
 
-    GLubyte *mLevelZeroBlueInitData;
-    GLubyte *mLevelZeroWhiteInitData;
-    GLubyte *mLevelOneGreenInitData;
-    GLubyte *mLevelTwoRedInitData;
+    std::vector<GLubyte> mLevelZeroBlueInitData;
+    std::vector<GLubyte> mLevelZeroWhiteInitData;
+    std::vector<GLubyte> mLevelOneGreenInitData;
+    std::vector<GLubyte> mLevelTwoRedInitData;
 
   private:
     GLuint mOffscreenFramebuffer;
@@ -251,40 +241,39 @@ class MipmapTestES3 : public BaseMipmapTest
         setConfigAlphaBits(8);
     }
 
-    std::string vertexShaderSource()
+    const char *vertexShaderSource()
     {
         // Don't put "#version ..." on its own line. See [cpp]p1:
         // "If there are sequences of preprocessing tokens within the list of arguments that
         //  would otherwise act as preprocessing directives, the behavior is undefined"
         return
             R"(#version 300 es
-            precision highp float;
-            in vec4 position;
-            out vec2 texcoord;
+precision highp float;
+in vec4 position;
+out vec2 texcoord;
 
-            void main()
-            {
-                gl_Position = vec4(position.xy, 0.0, 1.0);
-                texcoord = (position.xy * 0.5) + 0.5;
-            })";
+void main()
+{
+    gl_Position = vec4(position.xy, 0.0, 1.0);
+    texcoord = (position.xy * 0.5) + 0.5;
+})";
     }
 
     void setUpArrayProgram()
     {
-        const std::string fragmentShaderSourceArray =
-            R"(#version 300 es
-            precision highp float;
-            uniform highp sampler2DArray tex;
-            uniform int slice;
-            in vec2 texcoord;
-            out vec4 out_FragColor;
+        constexpr char kFS[] = R"(#version 300 es
+precision highp float;
+uniform highp sampler2DArray tex;
+uniform int slice;
+in vec2 texcoord;
+out vec4 out_FragColor;
 
-            void main()
-            {
-                out_FragColor = texture(tex, vec3(texcoord, float(slice)));
-            })";
+void main()
+{
+    out_FragColor = texture(tex, vec3(texcoord, float(slice)));
+})";
 
-        mArrayProgram = CompileProgram(vertexShaderSource(), fragmentShaderSourceArray);
+        mArrayProgram = CompileProgram(vertexShaderSource(), kFS);
         if (mArrayProgram == 0)
         {
             FAIL() << "shader compilation failed.";
@@ -300,21 +289,20 @@ class MipmapTestES3 : public BaseMipmapTest
 
     void setUp3DProgram()
     {
-        const std::string fragmentShaderSource3D =
-            R"(#version 300 es
-            precision highp float;
-            uniform highp sampler3D tex;
-            uniform float slice;
-            uniform float lod;
-            in vec2 texcoord;
-            out vec4 out_FragColor;
+        constexpr char kFS[] = R"(#version 300 es
+precision highp float;
+uniform highp sampler3D tex;
+uniform float slice;
+uniform float lod;
+in vec2 texcoord;
+out vec4 out_FragColor;
 
-            void main()
-            {
-                out_FragColor = textureLod(tex, vec3(texcoord, slice), lod);
-            })";
+void main()
+{
+    out_FragColor = textureLod(tex, vec3(texcoord, slice), lod);
+})";
 
-        m3DProgram = CompileProgram(vertexShaderSource(), fragmentShaderSource3D);
+        m3DProgram = CompileProgram(vertexShaderSource(), kFS);
         if (m3DProgram == 0)
         {
             FAIL() << "shader compilation failed.";
@@ -334,19 +322,18 @@ class MipmapTestES3 : public BaseMipmapTest
 
     void setUp2DProgram()
     {
-        const std::string fragmentShaderSource2D =
-            R"(#version 300 es
-            precision highp float;
-            uniform highp sampler2D tex;
-            in vec2 texcoord;
-            out vec4 out_FragColor;
+        constexpr char kFS[] = R"(#version 300 es
+precision highp float;
+uniform highp sampler2D tex;
+in vec2 texcoord;
+out vec4 out_FragColor;
 
-            void main()
-            {
-                out_FragColor = texture(tex, texcoord);
-            })";
+void main()
+{
+    out_FragColor = texture(tex, texcoord);
+})";
 
-        m2DProgram = CompileProgram(vertexShaderSource(), fragmentShaderSource2D);
+        m2DProgram = CompileProgram(vertexShaderSource(), kFS);
         ASSERT_NE(0u, m2DProgram);
 
         ASSERT_GL_NO_ERROR();
@@ -355,19 +342,18 @@ class MipmapTestES3 : public BaseMipmapTest
     void setUpCubeProgram()
     {
         // A very simple fragment shader to sample from the negative-Y face of a texture cube.
-        const std::string cubeFS =
-            R"(#version 300 es
-            precision mediump float;
-            uniform samplerCube uTexture;
-            in vec2 texcoord;
-            out vec4 out_FragColor;
+        constexpr char kFS[] = R"(#version 300 es
+precision mediump float;
+uniform samplerCube uTexture;
+in vec2 texcoord;
+out vec4 out_FragColor;
 
-            void main()
-            {
-                out_FragColor = texture(uTexture, vec3(texcoord.x, -1, texcoord.y));
-            })";
+void main()
+{
+    out_FragColor = texture(uTexture, vec3(texcoord.x, -1, texcoord.y));
+})";
 
-        mCubeProgram = CompileProgram(vertexShaderSource(), cubeFS);
+        mCubeProgram = CompileProgram(vertexShaderSource(), kFS);
         ASSERT_NE(0u, mCubeProgram);
 
         ASSERT_GL_NO_ERROR();
@@ -421,7 +407,7 @@ TEST_P(MipmapTest, DISABLED_ThreeLevelsInitData)
     // Pass in level zero init data.
     glBindTexture(GL_TEXTURE_2D, mTexture2D);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, getWindowWidth(), getWindowHeight(), 0, GL_RGB,
-                 GL_UNSIGNED_BYTE, mLevelZeroBlueInitData);
+                 GL_UNSIGNED_BYTE, mLevelZeroBlueInitData.data());
     ASSERT_GL_NO_ERROR();
 
     // Disable mips.
@@ -451,7 +437,7 @@ TEST_P(MipmapTest, DISABLED_ThreeLevelsInitData)
 
     // Pass in level one init data.
     glTexImage2D(GL_TEXTURE_2D, 1, GL_RGB, getWindowWidth() / 2, getWindowHeight() / 2, 0, GL_RGB,
-                 GL_UNSIGNED_BYTE, mLevelOneGreenInitData);
+                 GL_UNSIGNED_BYTE, mLevelOneGreenInitData.data());
     ASSERT_GL_NO_ERROR();
 
     // Draw a full-sized quad, and check it's blue.
@@ -477,7 +463,7 @@ TEST_P(MipmapTest, DISABLED_ThreeLevelsInitData)
 
     // Pass in level two init data.
     glTexImage2D(GL_TEXTURE_2D, 2, GL_RGB, getWindowWidth() / 4, getWindowHeight() / 4, 0, GL_RGB,
-                 GL_UNSIGNED_BYTE, mLevelTwoRedInitData);
+                 GL_UNSIGNED_BYTE, mLevelTwoRedInitData.data());
     ASSERT_GL_NO_ERROR();
 
     // Draw a full-sized quad, and check it's blue.
@@ -505,7 +491,7 @@ TEST_P(MipmapTest, DISABLED_ThreeLevelsInitData)
     // Now reset level 0 to white, keeping mipmaps disabled. Then, render various sized quads. They
     // should be white.
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, getWindowWidth(), getWindowHeight(), 0, GL_RGB,
-                 GL_UNSIGNED_BYTE, mLevelZeroWhiteInitData);
+                 GL_UNSIGNED_BYTE, mLevelZeroWhiteInitData.data());
     ASSERT_GL_NO_ERROR();
 
     clearAndDrawQuad(m2DProgram, getWindowWidth(), getWindowHeight());
@@ -537,7 +523,7 @@ TEST_P(MipmapTest, GenerateMipmapFromInitDataThenRender)
     // Pass in initial data so the texture is blue.
     glBindTexture(GL_TEXTURE_2D, mTexture2D);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, getWindowWidth(), getWindowHeight(), 0, GL_RGB,
-                 GL_UNSIGNED_BYTE, mLevelZeroBlueInitData);
+                 GL_UNSIGNED_BYTE, mLevelZeroBlueInitData.data());
 
     // Then generate the mips.
     glGenerateMipmap(GL_TEXTURE_2D);
@@ -690,9 +676,10 @@ TEST_P(MipmapTest, DefineValidExtraLevelAndUseItLater)
 {
     glBindTexture(GL_TEXTURE_2D, mTexture2D);
 
-    GLubyte *levels[] = {mLevelZeroBlueInitData, mLevelOneGreenInitData, mLevelTwoRedInitData};
+    GLubyte *levels[] = {mLevelZeroBlueInitData.data(), mLevelOneGreenInitData.data(),
+                         mLevelTwoRedInitData.data()};
 
-    int maxLevel = 1 + floor(log2(std::max(getWindowWidth(), getWindowHeight())));
+    int maxLevel = 1 + static_cast<int>(floor(log2(std::max(getWindowWidth(), getWindowHeight()))));
 
     for (int i = 0; i < maxLevel; i++)
     {
@@ -701,10 +688,10 @@ TEST_P(MipmapTest, DefineValidExtraLevelAndUseItLater)
     }
 
     // Define an extra level that won't be used for now
-    GLubyte *magentaExtraLevelData =
+    std::vector<GLubyte> magentaExtraLevelData =
         createRGBInitData(getWindowWidth() * 2, getWindowHeight() * 2, 255, 0, 255);
     glTexImage2D(GL_TEXTURE_2D, maxLevel, GL_RGB, 1, 1, 0, GL_RGB, GL_UNSIGNED_BYTE,
-                 magentaExtraLevelData);
+                 magentaExtraLevelData.data());
 
     ASSERT_GL_NO_ERROR();
 
@@ -728,11 +715,11 @@ TEST_P(MipmapTest, DefineValidExtraLevelAndUseItLater)
     EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
 
     // Now redefine everything above level 8 to be a mipcomplete chain again.
-    GLubyte *levelDoubleSizeYellowInitData =
+    std::vector<GLubyte> levelDoubleSizeYellowInitData =
         createRGBInitData(getWindowWidth() * 2, getWindowHeight() * 2, 255, 255, 0);
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, getWindowWidth() * 2, getWindowHeight() * 2, 0, GL_RGB,
-                 GL_UNSIGNED_BYTE, levelDoubleSizeYellowInitData);  // 256
+                 GL_UNSIGNED_BYTE, levelDoubleSizeYellowInitData.data());  // 256
 
     for (int i = 0; i < maxLevel - 1; i++)
     {
@@ -790,9 +777,11 @@ TEST_P(MipmapTest, MipMapGenerationD3D9Bug)
 // level zero.
 TEST_P(MipmapTest, TextureCubeGeneralLevelZero)
 {
-    // This test seems to fail only on Android Vulkan.
-    // TODO(jmadill): Diagnose and fix. http://anglebug.com/2817
-    ANGLE_SKIP_TEST_IF(IsVulkan() && IsAndroid());
+    // http://anglebug.com/3145
+    ANGLE_SKIP_TEST_IF(IsFuchsia() && IsIntel() && IsVulkan());
+
+    // http://anglebug.com/2822
+    ANGLE_SKIP_TEST_IF(IsWindows() && IsIntel() && IsVulkan());
 
     glBindTexture(GL_TEXTURE_CUBE_MAP, mTextureCube);
 
@@ -833,6 +822,12 @@ TEST_P(MipmapTest, TextureCubeGeneralLevelZero)
 // This test ensures that rendering to level-zero of a TextureCube works as expected.
 TEST_P(MipmapTest, TextureCubeRenderToLevelZero)
 {
+    // http://anglebug.com/3145
+    ANGLE_SKIP_TEST_IF(IsFuchsia() && IsIntel() && IsVulkan());
+
+    // http://anglebug.com/2822
+    ANGLE_SKIP_TEST_IF(IsWindows() && IsIntel() && IsVulkan());
+
     glBindTexture(GL_TEXTURE_CUBE_MAP, mTextureCube);
 
     // Draw. Since the negative-Y face's is blue, this should be blue.
@@ -1227,8 +1222,10 @@ TEST_P(MipmapTestES3, BaseLevelTextureBug)
     // Probably not Intel.
     ANGLE_SKIP_TEST_IF(IsOSX() && (IsNVIDIA() || IsIntel()));
 
+    std::vector<GLColor> texDataRed(2u * 2u, GLColor::red);
+
     glBindTexture(GL_TEXTURE_2D, mTexture);
-    glTexImage2D(GL_TEXTURE_2D, 2, GL_RGBA, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, &GLColor::red);
+    glTexImage2D(GL_TEXTURE_2D, 2, GL_RGBA, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, texDataRed.data());
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 2);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);

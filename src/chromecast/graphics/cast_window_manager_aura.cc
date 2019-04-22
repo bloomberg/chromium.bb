@@ -19,8 +19,8 @@
 #include "ui/aura/null_window_targeter.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host_platform.h"
+#include "ui/base/ime/init/input_method_factory.h"
 #include "ui/base/ime/input_method.h"
-#include "ui/base/ime/input_method_factory.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/ozone/public/ozone_platform.h"
@@ -316,12 +316,6 @@ void CastWindowManagerAura::CastWindowManagerAura::RemoveGestureHandler(
     CastGestureHandler* handler) {
   DCHECK(system_gesture_event_handler_);
   system_gesture_dispatcher_->RemoveGestureHandler(handler);
-}
-
-void CastWindowManagerAura::CastWindowManagerAura::SetColorInversion(
-    bool enable) {
-  DCHECK(window_tree_host_);
-  window_tree_host_->window()->layer()->SetLayerInverted(enable);
 }
 
 CastGestureHandler* CastWindowManagerAura::GetGestureHandler() const {

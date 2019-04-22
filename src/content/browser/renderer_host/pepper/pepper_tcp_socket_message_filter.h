@@ -29,6 +29,7 @@
 #include "ppapi/c/private/ppb_net_address_private.h"
 #include "ppapi/host/resource_message_filter.h"
 #include "ppapi/shared_impl/ppb_tcp_socket_shared.h"
+#include "services/network/public/cpp/resolve_host_client_base.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/tcp_socket.mojom.h"
 #include "services/network/public/mojom/tls_socket.mojom.h"
@@ -57,7 +58,7 @@ class ContentBrowserPepperHostFactory;
 class CONTENT_EXPORT PepperTCPSocketMessageFilter
     : public ppapi::host::ResourceMessageFilter,
       public BrowserPpapiHostImpl::InstanceObserver,
-      public network::mojom::ResolveHostClient,
+      public network::ResolveHostClientBase,
       public network::mojom::SocketObserver {
  public:
   // |factory| must be non-nullptr unless the consumer immediately calls

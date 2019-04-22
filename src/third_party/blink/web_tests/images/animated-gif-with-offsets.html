@@ -4,6 +4,7 @@
 doesn't crash, we're good.
 <img src="resources/animated-gif-with-offsets.gif">
 </body>
+<script src="../resources/run-after-layout-and-paint.js"></script>
 <script>
 
 // Delay 50ms for each frame.
@@ -17,7 +18,7 @@ var count = 3;
 function displayOneFrame() {
   delay();
   if (--count >= 0)
-    testRunner.layoutAndPaintAsyncThen(displayOneFrame);
+    runAfterLayoutAndPaint(displayOneFrame);
   else
     testRunner.notifyDone();
 }

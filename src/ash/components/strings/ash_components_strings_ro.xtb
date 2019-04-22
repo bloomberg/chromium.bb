@@ -16,7 +16,6 @@
 <translation id="152892567002884378">Mărește volumul</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, apoi <ph name="ESC" /></translation>
 <translation id="1652741121070700329">Mută cursorul la începutul cuvântului anterior</translation>
-<translation id="1671169355475348905">Comută la metoda de introducere a textului pentru limba anterioară</translation>
 <translation id="1679841710523778799">Mărește luminozitatea</translation>
 <translation id="168356808214100546">Apasă lung pe <ph name="ALT" />, apăsă pe <ph name="TAB" /> până când ajungi la fereastra pe care dorești să o deschizi, apoi eliberează.</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -33,6 +32,7 @@
 <translation id="2181097965834437145">Afișează sau ascunde bara de marcaje</translation>
 <translation id="2185166372312820725">Accesează fila anterioară</translation>
 <translation id="2194790690264064655">Apasă pe <ph name="CTRL" /> și dă clic pe un link</translation>
+<translation id="2246352309084894470">Deschide/închide lansatorul în ecran complet</translation>
 <translation id="2382644247745281995">Nu se acceptă pentru structura actuală a tastaturii</translation>
 <translation id="2397416548179033562">Afișează meniul Chrome</translation>
 <translation id="2424073332829844142">Activează și dezactivează Caps Lock</translation>
@@ -44,7 +44,6 @@
 <translation id="2574014812750545982">Resetează nivelul de zoom al paginii</translation>
 <translation id="2596078834055697711">Realizează o captură de ecran a ferestrei</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, apoi <ph name="TAB" /> sau <ph name="RIGHT" /></translation>
-<translation id="2687057317448262550">Comută la metoda de introducere a textului pentru următoarea limbă</translation>
 <translation id="2699509451653686398">Salvează pagina web curentă ca marcaj</translation>
 <translation id="2750942583782703988">Reîncarcă pagina curentă</translation>
 <translation id="2764005613199379871">Focalizează pe bara de adrese pentru căutare</translation>
@@ -147,6 +146,7 @@
 <translation id="671928215901716392">Blocați ecranul</translation>
 <translation id="6727005317916125192">Panoul anterior</translation>
 <translation id="6740781404993465795">Selectează următorul cuvânt sau următoarea literă</translation>
+<translation id="6755851152783057058">Comută la ultima metodă de introducere a textului</translation>
 <translation id="6760706756348334449">Redu volumul</translation>
 <translation id="6941333068993625698">Trimite feedback</translation>
 <translation id="6981982820502123353">Accesibilitate</translation>
@@ -157,6 +157,7 @@
 <translation id="7237562915163138771">Introdu o adresă web în bara de adrese, apoi apasă pe <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /></translation>
 <translation id="7254764037241667478">Treci dispozitivul în modul inactiv (suspendă)</translation>
 <translation id="7379254767514753910"><ph name="ALT" /> sau <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
+<translation id="7422707470576323858">Comută la următoarea metodă disponibilă de introducere a textului</translation>
 <translation id="743754632698445141">Anulează fixarea unei aplicații</translation>
 <translation id="7439718573248533901">Șterge litera următoare (ștergere înainte)</translation>
 <translation id="7611271430932669992">Mută focalizarea pe ferestrele pop-up și pe dialoguri</translation>

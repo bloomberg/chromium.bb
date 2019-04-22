@@ -13,6 +13,7 @@ COMMON_CFLAGS := \
 	-Wno-unused-function \
 	-Wno-unused-parameter \
 	-Wno-implicit-exception-spec-mismatch \
+	-Wno-implicit-fallthrough \
 	-Wno-overloaded-virtual \
 	-Wno-attributes \
 	-Wno-unknown-attributes \
@@ -31,7 +32,8 @@ COMMON_SRC_FILES := \
 	Display.cpp \
 	Surface.cpp \
 	libEGL.cpp \
-	main.cpp
+	main.cpp \
+	../../Common/SharedLibrary.cpp
 
 COMMON_C_INCLUDES := \
 	bionic \

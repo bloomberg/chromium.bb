@@ -24,12 +24,17 @@ Running: dumpDisabledText
 element.style { ()
 
 [expanded] 
-#inspected { (disable-propert…y-update.css:1 -> disable-property-workingcopy-update.css:1:13)
+#inspected { (disable-pro…pdate.css:1 -> disable-property-workingcopy-update.css:1:13)
 /-- overloaded --/ /-- disabled --/     /* font-weight: bold; */
 
 [expanded] 
 div { (user agent stylesheet)
     display: block;
+
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+    color: -internal-root-color;
 
 
 Running: togglePropertyOn
@@ -45,11 +50,16 @@ Running: dumpEnabledText
 element.style { ()
 
 [expanded] 
-#inspected { (disable-propert…y-update.css:1 -> disable-property-workingcopy-update.css:1:13)
+#inspected { (disable-pro…pdate.css:1 -> disable-property-workingcopy-update.css:1:13)
     font-weight: bold;
 
 [expanded] 
 div { (user agent stylesheet)
     display: block;
+
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+    color: -internal-root-color;
 
 

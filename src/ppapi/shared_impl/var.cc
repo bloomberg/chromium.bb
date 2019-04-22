@@ -31,7 +31,7 @@ std::string Var::PPVarToLogString(PP_Var var) {
     case PP_VARTYPE_BOOL:
       return var.value.as_bool ? "[True]" : "[False]";
     case PP_VARTYPE_INT32:
-      return base::IntToString(var.value.as_int);
+      return base::NumberToString(var.value.as_int);
     case PP_VARTYPE_DOUBLE:
       return base::NumberToString(var.value.as_double);
     case PP_VARTYPE_STRING: {

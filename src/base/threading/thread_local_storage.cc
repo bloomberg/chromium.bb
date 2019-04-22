@@ -378,8 +378,11 @@ void ThreadLocalStorage::Slot::Set(void* value) {
       PlatformThreadLocalStorage::GetTLSValue(
           base::subtle::NoBarrier_Load(&g_native_tls_key)));
   DCHECK_NE(tls_data, kDestroyed);
-  if (!tls_data)
+  if (!tls_data) {
+    if (!value)
+      return;
     tls_data = ConstructTlsVector();
+  }
   DCHECK_NE(slot_, kInvalidSlotValue);
   DCHECK_LT(slot_, kThreadLocalStorageSize);
   tls_data[slot_].data = value;

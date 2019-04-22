@@ -12,7 +12,6 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/time/clock.h"
 #include "base/time/time.h"
 #include "components/offline_pages/core/offline_clock.h"
 #include "components/offline_pages/core/offline_store_utils.h"
@@ -55,9 +54,10 @@ bool CreatePrefetchItemSync(sql::Database* db,
   static const char kSql[] =
       "INSERT INTO prefetch_items"
       " (offline_id, requested_url, client_namespace, client_id, creation_time,"
-      " freshness_time, title, thumbnail_url)"
+      " freshness_time, title, thumbnail_url, favicon_url, snippet,"
+      " attribution)"
       " VALUES"
-      " (?, ?, ?, ?, ?, ?, ?, ?)";
+      " (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt64(0, store_utils::GenerateOfflineId());
@@ -68,6 +68,9 @@ bool CreatePrefetchItemSync(sql::Database* db,
   statement.BindInt64(5, now_db_time);
   statement.BindString16(6, prefetch_url.title);
   statement.BindString(7, prefetch_url.thumbnail_url.spec());
+  statement.BindString(8, prefetch_url.favicon_url.spec());
+  statement.BindString(9, prefetch_url.snippet);
+  statement.BindString(10, prefetch_url.attribution);
 
   return statement.Run();
 }
@@ -103,7 +106,7 @@ Result AddUniqueUrlsSync(
       GetAllUrlsAndIdsFromNamespaceSync(db, name_space);
   std::set<std::string> added_urls;
   int added_row_count = 0;
-  base::Time now = OfflineClock()->Now();
+  base::Time now = OfflineTimeNow();
   // Insert rows in reverse order to ensure that the beginning of the list has
   // the most recent timestamps so that it is prefetched first.
   for (auto candidate_iter = candidate_prefetch_urls.rbegin();

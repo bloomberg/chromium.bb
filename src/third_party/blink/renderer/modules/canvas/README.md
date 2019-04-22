@@ -50,10 +50,10 @@ rendering context API. Used by `CanvasRenderingContext2D`,
 
 ### Final classes
 
-`CanvasRenderingContext2D` - 2D context for HTML Canvas element. [[spec](https://html.spec.whatwg.org/multipage/scripting.html#2dcontext)]
+`CanvasRenderingContext2D` - 2D context for HTML Canvas element. [[spec](https://html.spec.whatwg.org/C/#2dcontext)]
 
 `OffscreenCanvasRenderingContext2D` - 2D context for OffscreenCanvas.
-[[spec](https://html.spec.whatwg.org/multipage/scripting.html#the-offscreen-2d-rendering-context)]
+[[spec](https://html.spec.whatwg.org/C/#the-offscreen-2d-rendering-context)]
 
 `WebGLRenderingContext` - WebGL context for both HTML and Offscreen canvas.
 [[spec](https://www.khronos.org/registry/webgl/specs/latest/1.0/#5.14)]
@@ -62,7 +62,7 @@ rendering context API. Used by `CanvasRenderingContext2D`,
 [[spec](https://www.khronos.org/registry/webgl/specs/latest/2.0/#3.7)]
 
 `ImageBitmapRenderingContext` - The rendering context provided by `ImageBitmap`.
-[[spec](https://html.spec.whatwg.org/multipage/scripting.html#the-imagebitmap-rendering-context)]
+[[spec](https://html.spec.whatwg.org/C/#the-imagebitmap-rendering-context)]
 
 `PaintRenderingContext2D` - Rendering context for CSS Painting.
 [[spec](https://www.w3.org/TR/css-paint-api-1/)]

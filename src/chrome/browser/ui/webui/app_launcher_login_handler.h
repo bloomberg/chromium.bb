@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 class Profile;
@@ -48,10 +49,17 @@ class AppLauncherLoginHandler : public content::WebUIMessageHandler {
   // passed from JS and should be an empty list.
   void HandleInitializeSyncLogin(const base::ListValue* args);
 
+#if !defined(OS_CHROMEOS)
   // Called from JS when the user clicks the login container. It shows the
   // appropriate UI based on the current sync state. |args| is the list of
   // arguments passed from JS and should be an empty list.
   void HandleShowSyncLoginUI(const base::ListValue* args);
+
+  // Called from JS when the user clicks on the advanced link the sync promo NTP
+  // bubble. Use use this to navigate to the sync settings page. |args| is the
+  // list of arguments passed from JS and should be an empty list.
+  void HandleShowAdvancedLoginUI(const base::ListValue* args);
+#endif
 
   // Records actions in SyncPromo.NTPPromo histogram.
   void RecordInHistogram(NTPSignInPromoBuckets type);
@@ -59,11 +67,6 @@ class AppLauncherLoginHandler : public content::WebUIMessageHandler {
   // Called from JS when the sync promo NTP bubble has been displayed. |args| is
   // the list of arguments passed from JS and should be an empty list.
   void HandleLoginMessageSeen(const base::ListValue* args);
-
-  // Called from JS when the user clicks on the advanced link the sync promo NTP
-  // bubble. Use use this to navigate to the sync settings page. |args| is the
-  // list of arguments passed from JS and should be an empty list.
-  void HandleShowAdvancedLoginUI(const base::ListValue* args);
 
   // Internal helper method
   void UpdateLogin();

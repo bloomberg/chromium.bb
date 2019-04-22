@@ -25,8 +25,9 @@ CacheStorageScheduler::~CacheStorageScheduler() {}
 
 void CacheStorageScheduler::ScheduleOperation(CacheStorageSchedulerOp op_type,
                                               base::OnceClosure closure) {
-  CACHE_STORAGE_SCHEDULER_UMA(COUNTS_10000, "QueueLength", client_type_,
-                              op_type, pending_operations_.size());
+  RecordCacheStorageSchedulerUMA(CacheStorageSchedulerUMA::kQueueLength,
+                                 client_type_, op_type,
+                                 pending_operations_.size());
 
   pending_operations_.push_back(std::make_unique<CacheStorageOperation>(
       std::move(closure), client_type_, op_type,
@@ -51,8 +52,8 @@ void CacheStorageScheduler::RunOperationIfIdle() {
     running_operation_ = std::move(pending_operations_.front());
     pending_operations_.pop_front();
 
-    CACHE_STORAGE_SCHEDULER_UMA(
-        LONG_TIMES, "QueueDuration2", client_type_,
+    RecordCacheStorageSchedulerUMA(
+        CacheStorageSchedulerUMA::kQueueDuration, client_type_,
         running_operation_->op_type(),
         base::TimeTicks::Now() - running_operation_->creation_ticks());
 

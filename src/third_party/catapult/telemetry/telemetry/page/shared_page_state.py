@@ -4,12 +4,10 @@
 
 import logging
 import os
-import sys
 
+from telemetry.core import exceptions
 from telemetry.core import platform as platform_module
-from telemetry import decorators
-from telemetry.internal.browser import browser_finder
-from telemetry.internal.browser import browser_finder_exceptions
+from telemetry.internal.backends.chrome import gpu_compositing_checker
 from telemetry.internal.browser import browser_info as browser_info_module
 from telemetry.internal.browser import browser_interval_profiling_controller
 from telemetry.page import cache_temperature
@@ -17,14 +15,6 @@ from telemetry.page import legacy_page_test
 from telemetry.page import traffic_setting
 from telemetry import story as story_module
 from telemetry.util import screenshot
-
-
-def _PrepareFinderOptions(finder_options, test, device_type):
-  browser_options = finder_options.browser_options
-  # Set up user agent.
-  browser_options.browser_user_agent_type = device_type
-
-  test.CustomizeBrowserOptions(finder_options.browser_options)
 
 
 class SharedPageState(story_module.SharedState):
@@ -35,33 +25,40 @@ class SharedPageState(story_module.SharedState):
 
   _device_type = None
 
-  def __init__(self, test, finder_options, story_set):
-    super(SharedPageState, self).__init__(test, finder_options, story_set)
-    if not issubclass(type(test), legacy_page_test.LegacyPageTest):
-      # This is to avoid the cyclic-import caused by timeline_based_page_test.
-      from telemetry.web_perf import timeline_based_page_test
-      self._test = timeline_based_page_test.TimelineBasedPageTest()
-    else:
-      self._test = test
+  def __init__(self, test, finder_options, story_set, possible_browser):
+    super(SharedPageState, self).__init__(
+        test, finder_options, story_set, possible_browser)
+    self._page_test = None
+    if issubclass(type(test), legacy_page_test.LegacyPageTest):
+      # We only need a page_test for legacy measurements that involve running
+      # some commands before/after starting the browser or navigating to a page.
+      # This is not needed for newer timeline (tracing) based benchmarks which
+      # just collect a trace, then measurements are done after the fact by
+      # analysing the trace itself.
+      self._page_test = test
 
     if (self._device_type == 'desktop' and
         platform_module.GetHostPlatform().GetOSName() == 'chromeos'):
       self._device_type = 'chromeos'
 
-    _PrepareFinderOptions(finder_options, self._test, self._device_type)
+    browser_options = finder_options.browser_options
+    browser_options.browser_user_agent_type = self._device_type
+
+    if self._page_test:
+      self._page_test.CustomizeBrowserOptions(browser_options)
+
     self._browser = None
     self._finder_options = finder_options
-    self._possible_browser = self._GetPossibleBrowser(
-        self._test, finder_options)
 
     self._first_browser = True
     self._previous_page = None
     self._current_page = None
     self._current_tab = None
 
-    self._test.SetOptions(self._finder_options)
+    if self._page_test:
+      self._page_test.SetOptions(self._finder_options)
 
-    self._extra_wpr_args = self._finder_options.browser_options.extra_wpr_args
+    self._extra_wpr_args = browser_options.extra_wpr_args
 
     profiling_mod = browser_interval_profiling_controller
     self._interval_profiling_controller = (
@@ -69,7 +66,8 @@ class SharedPageState(story_module.SharedState):
             possible_browser=self._possible_browser,
             process_name=finder_options.interval_profiling_target,
             periods=finder_options.interval_profiling_periods,
-            frequency=finder_options.interval_profiling_frequency))
+            frequency=finder_options.interval_profiling_frequency,
+            profiler_options=finder_options.interval_profiler_options))
 
     self.platform.SetFullPerformanceModeEnabled(
         finder_options.full_performance_mode)
@@ -81,38 +79,8 @@ class SharedPageState(story_module.SharedState):
     return self._interval_profiling_controller
 
   @property
-  def possible_browser(self):
-    return self._possible_browser
-
-  @property
   def browser(self):
     return self._browser
-
-  def _FindBrowser(self, finder_options):
-    possible_browser = browser_finder.FindBrowser(finder_options)
-    if not possible_browser:
-      raise browser_finder_exceptions.BrowserFinderException(
-          'Cannot find browser of type %s. \n\nAvailable browsers:\n%s\n' % (
-              finder_options.browser_options.browser_type,
-              '\n'.join(browser_finder.GetAllAvailableBrowserTypes(
-                  finder_options))))
-    return possible_browser
-
-  def _GetPossibleBrowser(self, test, finder_options):
-    """Return a possible_browser with the given options for |test|. """
-    possible_browser = self._FindBrowser(finder_options)
-    finder_options.browser_options.browser_type = (
-        possible_browser.browser_type)
-
-    enabled, msg = decorators.IsEnabled(test, possible_browser)
-    if not enabled and not finder_options.run_disabled_tests:
-      logging.warning(msg)
-      logging.warning('You are trying to run a disabled test.')
-
-    if possible_browser.IsRemote():
-      possible_browser.RunRemote()
-      sys.exit(0)
-    return possible_browser
 
   def DumpStateUponFailure(self, page, results):
     # Dump browser standard output and log.
@@ -179,19 +147,31 @@ class SharedPageState(story_module.SharedState):
     assert self._browser is None
     self._AllowInteractionForStage('before-start-browser')
 
-    self._test.WillStartBrowser(self.platform)
+    if self._page_test:
+      self._page_test.WillStartBrowser(self.platform)
     # Create a deep copy of browser_options so that we can add page-level
     # arguments and url to it without polluting the run for the next page.
     browser_options = self._finder_options.browser_options.Copy()
-    if page.startup_url:
-      browser_options.startup_url = page.startup_url
     browser_options.AppendExtraBrowserArgs(page.extra_browser_args)
     self._possible_browser.SetUpEnvironment(browser_options)
+
+    # Clear caches before starting browser.
+    self.platform.FlushDnsCache()
+    if browser_options.flush_os_page_caches_on_start:
+      self._possible_browser.FlushOsPageCaches()
+
     self._browser = self._possible_browser.Create()
-    self._test.DidStartBrowser(self.browser)
+    if self._page_test:
+      self._page_test.DidStartBrowser(self.browser)
+
+    if browser_options.assert_gpu_compositing:
+      gpu_compositing_checker.AssertGpuCompositingEnabled(
+          self._browser.GetSystemInfo())
 
     if self._first_browser:
       self._first_browser = False
+      # Cut back on mostly redundant logs length per crbug.com/943650.
+      self._finder_options.browser_options.trim_logs = True
     self._AllowInteractionForStage('after-start-browser')
 
   def WillRunStory(self, page):
@@ -205,12 +185,6 @@ class SharedPageState(story_module.SharedState):
     page_set = page.page_set
     self._current_page = page
 
-    if self._browser and page.startup_url:
-      assert not self.platform.tracing_controller.is_tracing_running, (
-          'Should not restart browser when tracing is already running. For '
-          'TimelineBasedMeasurement (TBM) benchmarks, you should not use '
-          'startup_url.')
-      self._StopBrowser()
     started_browser = not self.browser
 
     archive_path = page_set.WprFilePathForStory(page, self.platform.GetOSName())
@@ -224,7 +198,7 @@ class SharedPageState(story_module.SharedState):
 
     if not self.browser:
       self._StartBrowser(page)
-    if self.browser.supports_tab_control and self._test.close_tabs_before_run:
+    if self.browser.supports_tab_control:
       # Create a tab if there's none.
       if len(self.browser.tabs) == 0:
         self.browser.tabs.New()
@@ -233,15 +207,24 @@ class SharedPageState(story_module.SharedState):
       while len(self.browser.tabs) > 1:
         self.browser.tabs[-1].Close()
 
+      # Don't close the last tab on android as some tests require the last tab
+      # not to be closed.
+      should_close_last_tab = self.platform.GetOSName() != 'android'
+
+      # If we didn't start the browser, then there is a single tab left from the
+      # previous story. The tab may have some state that may effect the next
+      # story. Close it to reset the state. Tab.Close(), when there is only one
+      # tab left, creates a new tab and closes the old tab.
+      if not started_browser and should_close_last_tab:
+        self.browser.tabs[-1].Close()
+
       # Must wait for tab to commit otherwise it can commit after the next
       # navigation has begun and RenderFrameHostManager::DidNavigateMainFrame()
       # will cancel the next navigation because it's pending. This manifests as
       # the first navigation in a PageSet freezing indefinitely because the
       # navigation was silently canceled when |self.browser.tabs[0]| was
-      # committed. Only do this when we just started the browser, otherwise
-      # there are cases where previous pages in a PageSet never complete
-      # loading so we'll wait forever.
-      if started_browser:
+      # committed.
+      if started_browser or should_close_last_tab:
         self.browser.tabs[0].WaitForDocumentReadyStateToBeComplete()
 
     # Reset traffic shaping to speed up cache temperature setup.
@@ -273,14 +256,26 @@ class SharedPageState(story_module.SharedState):
     del browser_info, page  # unused
     return True
 
+  def _GetCurrentTab(self):
+    try:
+      return self.browser.tabs[0]
+    # The tab may have gone away in some case, so we create a new tab and retry
+    # (See crbug.com/496280)
+    except exceptions.DevtoolsTargetCrashException as e:
+      logging.error('Tab may have crashed: %s' % str(e))
+      self.browser.tabs.New()
+      # See below in WillRunStory for why this waiting is needed.
+      self.browser.tabs[0].WaitForDocumentReadyStateToBeComplete()
+      return self.browser.tabs[0]
+
   def _PreparePage(self):
-    self._current_tab = self._test.TabForPage(self._current_page, self.browser)
+    self._current_tab = self._GetCurrentTab()
     if self._current_page.is_file:
       self.platform.SetHTTPServerDirectories(
           self._current_page.page_set.serving_dirs |
           set([self._current_page.serving_dir]))
 
-    if self._test.clear_cache_before_each_run:
+    if self._page_test and self._page_test.clear_cache_before_each_run:
       self._current_tab.ClearCache(force=True)
 
   @property
@@ -291,15 +286,23 @@ class SharedPageState(story_module.SharedState):
   def current_tab(self):
     return self._current_tab
 
-  @property
-  def page_test(self):
-    return self._test
+  def NavigateToPage(self, action_runner, page):
+    # Method called by page.Run(), lives in shared_state to avoid exposing
+    # references to the legacy self._page_test object.
+    if self._page_test:
+      self._page_test.WillNavigateToPage(page, action_runner.tab)
+    with self.interval_profiling_controller.SamplePeriod(
+        'navigation', action_runner):
+      page.RunNavigateSteps(action_runner)
+    if self._page_test:
+      self._page_test.DidNavigateToPage(page, action_runner.tab)
 
   def RunStory(self, results):
     self._PreparePage()
     self._current_page.Run(self)
-    self._test.ValidateAndMeasurePage(
-        self._current_page, self._current_tab, results)
+    if self._page_test:
+      self._page_test.ValidateAndMeasurePage(
+          self._current_page, self._current_tab, results)
 
   def TearDownState(self):
     self._StopBrowser()

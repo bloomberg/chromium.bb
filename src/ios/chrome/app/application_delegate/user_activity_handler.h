@@ -7,7 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
-@protocol BrowserViewInformation;
+@protocol BrowserInterfaceProvider;
 @protocol StartupInformation;
 @protocol TabOpening;
 
@@ -31,8 +31,8 @@
                    completionHandler:(void (^)(BOOL succeeded))completionHandler
                            tabOpener:(id<TabOpening>)tabOpener
                   startupInformation:(id<StartupInformation>)startupInformation
-              browserViewInformation:
-                  (id<BrowserViewInformation>)browserViewInformation;
+                   interfaceProvider:
+                       (id<BrowserInterfaceProvider>)interfaceProvider;
 
 // Returns YES if Chrome is passing a Handoff to itself or if it is an opening
 // from Spotlight.
@@ -42,8 +42,8 @@
 + (void)handleStartupParametersWithTabOpener:(id<TabOpening>)tabOpener
                           startupInformation:
                               (id<StartupInformation>)startupInformation
-                      browserViewInformation:
-                          (id<BrowserViewInformation>)browserViewInformation;
+                           interfaceProvider:
+                               (id<BrowserInterfaceProvider>)interfaceProvider;
 
 @end
 

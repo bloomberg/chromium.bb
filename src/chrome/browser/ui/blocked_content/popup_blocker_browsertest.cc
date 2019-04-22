@@ -4,6 +4,7 @@
 
 #include <stdint.h>
 
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/history/history_test_utils.h"
+#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/blocked_content/list_item_position.h"
@@ -31,6 +33,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
@@ -44,6 +47,10 @@
 #include "components/omnibox/browser/autocomplete_result.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_view.h"
+#include "components/policy/core/browser/browser_policy_connector.h"
+#include "components/policy/core/common/mock_configuration_policy_provider.h"
+#include "components/policy/core/common/policy_map.h"
+#include "components/policy/policy_constants.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_registrar.h"
@@ -427,9 +434,6 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
   ASSERT_EQ(1, GetBlockedContentsCount());
 }
 
-// Popups during page unloading is a feature being put behind a policy and
-// needing an easily-mergeable change. See https://crbug.com/936080 .
-#if 0
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, NoPopupsLaunchWhenTabIsClosed) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisablePopupBlocking);
@@ -443,7 +447,51 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, NoPopupsLaunchWhenTabIsClosed) {
   // Expect no popup.
   ASSERT_EQ(1u, chrome::GetBrowserCount(browser()->profile()));
 }
+
+// This only exists for the AllowPopupsWhenTabIsClosedWithSpecialPolicy test.
+// Remove this in Chrome 82. https://crbug.com/937569
+class PopupBlockerSpecialPolicyBrowserTest : public PopupBlockerBrowserTest {
+ public:
+  PopupBlockerSpecialPolicyBrowserTest() {}
+  ~PopupBlockerSpecialPolicyBrowserTest() override {}
+
+ protected:
+  void SetUpInProcessBrowserTestFixture() override {
+    policy::PolicyMap policy_map;
+
+    policy_map.Set(policy::key::kAllowPopupsDuringPageUnload,
+                   policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+                   policy::POLICY_SOURCE_CLOUD,
+                   std::make_unique<base::Value>(true), nullptr);
+    policy_provider_.UpdateChromePolicy(policy_map);
+
+#if defined(OS_CHROMEOS)
+    policy::BrowserPolicyConnector::SetPolicyProviderForTesting(
+        &policy_provider_);
+#else
+    policy::ProfilePolicyConnectorFactory::GetInstance()
+        ->PushProviderForTesting(&policy_provider_);
 #endif
+  }
+
+ private:
+  policy::MockConfigurationPolicyProvider policy_provider_;
+
+  DISALLOW_COPY_AND_ASSIGN(PopupBlockerSpecialPolicyBrowserTest);
+};
+
+// Remove this in Chrome 82. https://crbug.com/937569
+IN_PROC_BROWSER_TEST_F(PopupBlockerSpecialPolicyBrowserTest,
+                       AllowPopupsWhenTabIsClosedWithSpecialPolicy) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kDisablePopupBlocking);
+  GURL url(
+      embedded_test_server()->GetURL("/popup_blocker/popup-on-unload.html"));
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  NavigateAndCheckPopupShown(embedded_test_server()->GetURL("/popup_blocker/"),
+                             kExpectPopup);
+}
 
 // Verify that when you unblock popup, the popup shows in history and omnibox.
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
@@ -547,13 +595,13 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, ClosableAfterNavigation) {
   // Navigate it elsewhere.
   content::TestNavigationObserver nav_observer(popup);
   popup->GetMainFrame()->ExecuteJavaScriptForTests(
-      base::UTF8ToUTF16("location.href = '/empty.html'"));
+      base::UTF8ToUTF16("location.href = '/empty.html'"), base::NullCallback());
   nav_observer.Wait();
 
   // Have it close itself.
   CloseObserver close_observer(popup);
   popup->GetMainFrame()->ExecuteJavaScriptForTests(
-      base::UTF8ToUTF16("window.close()"));
+      base::UTF8ToUTF16("window.close()"), base::NullCallback());
   close_observer.Wait();
 }
 

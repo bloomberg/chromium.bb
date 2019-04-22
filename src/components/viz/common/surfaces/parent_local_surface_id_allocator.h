@@ -56,6 +56,8 @@ class VIZ_COMMON_EXPORT ParentLocalSurfaceIdAllocator {
 
   static const LocalSurfaceIdAllocation& InvalidLocalSurfaceIdAllocation();
 
+  const base::UnguessableToken& GetEmbedToken() const;
+
   bool is_allocation_suppressed() const { return is_allocation_suppressed_; }
 
  private:

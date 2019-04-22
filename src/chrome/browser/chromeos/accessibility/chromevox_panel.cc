@@ -7,6 +7,7 @@
 #include "ash/public/interfaces/accessibility_controller.mojom.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/service_manager_connection.h"
 #include "extensions/common/constants.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -69,12 +70,12 @@ void ChromeVoxPanel::EnterFullscreen() {
 
 void ChromeVoxPanel::ExitFullscreen() {
   GetWidget()->Deactivate();
-  GetWidget()->widget_delegate()->set_can_activate(false);
+  GetWidget()->widget_delegate()->SetCanActivate(false);
   SetAccessibilityPanelFullscreen(false);
 }
 
 void ChromeVoxPanel::Focus() {
-  GetWidget()->widget_delegate()->set_can_activate(true);
+  GetWidget()->widget_delegate()->SetCanActivate(true);
   GetWidget()->Activate();
   GetContentsView()->RequestFocus();
 }

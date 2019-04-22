@@ -53,6 +53,7 @@ source_set("unit_tests") {
 
   deps = [
     "//base",
+    "//base/test:test_support",
     "//components/autofill/core/browser:test_support",
     "//components/password_manager/core/common",
     "//mojo/public/cpp/bindings",

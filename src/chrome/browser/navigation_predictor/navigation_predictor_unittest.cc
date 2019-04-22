@@ -29,8 +29,7 @@ class TestNavigationPredictor : public NavigationPredictor {
       : NavigationPredictor(render_frame_host), binding_(this) {
     binding_.Bind(std::move(request));
     const std::vector<base::Feature> features = {
-        blink::features::kRecordAnchorMetricsVisible,
-        blink::features::kRecordAnchorMetricsClicked};
+        blink::features::kNavigationPredictor};
     feature_list_.InitWithFeatures(features, {});
   }
 
@@ -116,14 +115,14 @@ class NavigationPredictorTest : public ChromeRenderViewHostTestHarness {
     std::map<std::string, std::string> params;
     if (preconnect_origin_score_threshold.has_value()) {
       params["preconnect_origin_score_threshold"] =
-          base::IntToString(preconnect_origin_score_threshold.value());
+          base::NumberToString(preconnect_origin_score_threshold.value());
     }
     if (prefetch_url_score_threshold.has_value()) {
       params["prefetch_url_score_threshold"] =
-          base::IntToString(prefetch_url_score_threshold.value());
+          base::NumberToString(prefetch_url_score_threshold.value());
     }
     scoped_feature_list.InitAndEnableFeatureWithParameters(
-        blink::features::kRecordAnchorMetricsVisible, params);
+        blink::features::kNavigationPredictor, params);
   }
 
   blink::mojom::AnchorElementMetricsHostPtr predictor_service_;
@@ -237,6 +236,97 @@ TEST_F(NavigationPredictorTest,
 
   histogram_tester.ExpectTotalCount(
       "AnchorElementMetrics.Visible.HighestNavigationScore", 0);
+}
+
+TEST_F(NavigationPredictorTest, Merge_UniqueAnchorElements) {
+  base::HistogramTester histogram_tester;
+
+  const std::string source = "https://example.com";
+  const std::string href_xlarge = "https://example.com/xlarge";
+  const std::string href_large = "https://google.com/large";
+  const std::string href_medium = "https://google.com/medium";
+  const std::string href_small = "https://google.com/small";
+  const std::string href_xsmall = "https://google.com/xsmall";
+
+  std::vector<blink::mojom::AnchorElementMetricsPtr> metrics;
+  metrics.push_back(CreateMetricsPtr(source, href_xsmall, 0.01));
+  metrics.push_back(CreateMetricsPtr(source, href_large, 0.01));
+  metrics.push_back(CreateMetricsPtr(source, href_xlarge, 0.01));
+  metrics.push_back(CreateMetricsPtr(source, href_small, 0.01));
+  metrics.push_back(CreateMetricsPtr(source, href_medium, 0.01));
+
+  int number_of_metrics_sent = metrics.size();
+  predictor_service()->ReportAnchorElementMetricsOnLoad(std::move(metrics));
+  base::RunLoop().RunUntilIdle();
+
+  histogram_tester.ExpectUniqueSample(
+      "AnchorElementMetrics.Visible.NumberOfAnchorElements",
+      number_of_metrics_sent, 1);
+  histogram_tester.ExpectUniqueSample(
+      "AnchorElementMetrics.Visible.NumberOfAnchorElementsAfterMerge",
+      number_of_metrics_sent, 1);
+}
+
+TEST_F(NavigationPredictorTest, Merge_DuplicateAnchorElements) {
+  base::HistogramTester histogram_tester;
+
+  const std::string source = "https://example.com";
+  const std::string href = "https://example.com/xlarge";
+  // URLs that differ only in ref fragments should be merged.
+  const std::string href_ref_1 = "https://example.com/xlarge#";
+  const std::string href_ref_2 = "https://example.com/xlarge#ref_foo";
+  const std::string href_query_1 = "https://example.com/xlarge?q=foo";
+  const std::string href_query_ref = "https://example.com/xlarge?q=foo#ref_bar";
+
+  std::vector<blink::mojom::AnchorElementMetricsPtr> metrics;
+  metrics.push_back(CreateMetricsPtr(source, href, 0.01));
+  metrics.push_back(CreateMetricsPtr(source, href_ref_1, 0.01));
+  metrics.push_back(CreateMetricsPtr(source, href_ref_2, 0.01));
+  metrics.push_back(CreateMetricsPtr(source, href_query_1, 0.01));
+  metrics.push_back(CreateMetricsPtr(source, href_query_ref, 0.01));
+
+  int number_of_metrics_sent = metrics.size();
+  predictor_service()->ReportAnchorElementMetricsOnLoad(std::move(metrics));
+  base::RunLoop().RunUntilIdle();
+
+  histogram_tester.ExpectUniqueSample(
+      "AnchorElementMetrics.Visible.NumberOfAnchorElements",
+      number_of_metrics_sent, 1);
+
+  // Only two anchor elements are unique: |href| and |href_query_1|.
+  histogram_tester.ExpectUniqueSample(
+      "AnchorElementMetrics.Visible.NumberOfAnchorElementsAfterMerge", 2, 1);
+}
+
+TEST_F(NavigationPredictorTest, Merge_AnchorElementSameAsDocumentURL) {
+  base::HistogramTester histogram_tester;
+
+  const std::string source = "https://example.com/";
+  const std::string href = "https://example.com/";
+  // URLs that differ only in ref fragments should be merged.
+  const std::string href_ref_1 = "https://example.com/#ref=foo";
+  const std::string href_ref_2 = "https://example.com/xlarge#ref=foo";
+  const std::string href_query_1 = "https://example.com/xlarge?q=foo";
+  const std::string href_query_ref = "https://example.com/xlarge?q=foo#ref_bar";
+
+  std::vector<blink::mojom::AnchorElementMetricsPtr> metrics;
+  metrics.push_back(CreateMetricsPtr(source, href, 0.01));
+  metrics.push_back(CreateMetricsPtr(source, href_ref_1, 0.01));
+  metrics.push_back(CreateMetricsPtr(source, href_ref_2, 0.01));
+  metrics.push_back(CreateMetricsPtr(source, href_query_1, 0.01));
+  metrics.push_back(CreateMetricsPtr(source, href_query_ref, 0.01));
+
+  int number_of_metrics_sent = metrics.size();
+  predictor_service()->ReportAnchorElementMetricsOnLoad(std::move(metrics));
+  base::RunLoop().RunUntilIdle();
+
+  histogram_tester.ExpectUniqueSample(
+      "AnchorElementMetrics.Visible.NumberOfAnchorElements",
+      number_of_metrics_sent, 1);
+  // Only two anchor elements are unique and different from the document URL:
+  // |href_ref_2| and |href_query_1|.
+  histogram_tester.ExpectUniqueSample(
+      "AnchorElementMetrics.Visible.NumberOfAnchorElementsAfterMerge", 2, 1);
 }
 
 // In this test, multiple anchor element metrics are sent to

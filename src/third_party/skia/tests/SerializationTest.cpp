@@ -19,9 +19,9 @@
 #include "SkMatrixPriv.h"
 #include "SkNormalSource.h"
 #include "SkOSFile.h"
-#include "SkReadBuffer.h"
 #include "SkPicturePriv.h"
 #include "SkPictureRecorder.h"
+#include "SkReadBuffer.h"
 #include "SkShaderBase.h"
 #include "SkTableColorFilter.h"
 #include "SkTemplates.h"
@@ -29,8 +29,8 @@
 #include "SkTypeface.h"
 #include "SkWriteBuffer.h"
 #include "SkXfermodeImageFilter.h"
-#include "sk_tool_utils.h"
 #include "Test.h"
+#include "ToolUtils.h"
 
 static const uint32_t kArraySize = 64;
 static const int kBitmapSize = 256;
@@ -341,11 +341,10 @@ static void compare_bitmaps(skiatest::Reporter* reporter,
 static void serialize_and_compare_typeface(sk_sp<SkTypeface> typeface, const char* text,
                                            skiatest::Reporter* reporter)
 {
-    // Create a paint with the typeface.
+    // Create a font with the typeface.
     SkPaint paint;
     paint.setColor(SK_ColorGRAY);
-    paint.setTextSize(SkIntToScalar(30));
-    paint.setTypeface(std::move(typeface));
+    SkFont font(std::move(typeface), 30);
 
     // Paint some text.
     SkPictureRecorder recorder;
@@ -354,7 +353,7 @@ static void serialize_and_compare_typeface(sk_sp<SkTypeface> typeface, const cha
                                                SkIntToScalar(canvasRect.height()),
                                                nullptr, 0);
     canvas->drawColor(SK_ColorWHITE);
-    canvas->drawText(text, 2, 24, 32, paint);
+    canvas->drawString(text, 24, 32, font, paint);
     sk_sp<SkPicture> picture(recorder.finishRecordingAsPicture());
 
     // Serlialize picture and create its clone from stream.
@@ -392,7 +391,7 @@ static void TestPictureTypefaceSerialization(skiatest::Reporter* reporter) {
             if (!typeface) {
                 INFOF(reporter, "Could not run fontstream test because Distortable.ttf not created.");
             } else {
-                serialize_and_compare_typeface(std::move(typeface), "abc", reporter);
+                serialize_and_compare_typeface(std::move(typeface), "ab", reporter);
             }
         }
     }
@@ -441,8 +440,10 @@ static void draw_something(SkCanvas* canvas) {
     paint.setColor(SK_ColorRED);
     canvas->drawCircle(SkIntToScalar(kBitmapSize/2), SkIntToScalar(kBitmapSize/2), SkIntToScalar(kBitmapSize/3), paint);
     paint.setColor(SK_ColorBLACK);
-    paint.setTextSize(SkIntToScalar(kBitmapSize/3));
-    canvas->drawString("Picture", SkIntToScalar(kBitmapSize/2), SkIntToScalar(kBitmapSize/4), paint);
+
+    SkFont font;
+    font.setSize(kBitmapSize/3);
+    canvas->drawString("Picture", SkIntToScalar(kBitmapSize/2), SkIntToScalar(kBitmapSize/4), font, paint);
 }
 
 DEF_TEST(Serialization, reporter) {
@@ -587,11 +588,8 @@ DEF_TEST(Serialization, reporter) {
 
         sk_sp<SkLights> fLights = builder.finish();
 
-        SkBitmap diffuse = sk_tool_utils::create_checkerboard_bitmap(
-                kTexSize, kTexSize,
-                0x00000000,
-                sk_tool_utils::color_to_565(0xFF804020),
-                8);
+        SkBitmap diffuse = ToolUtils::create_checkerboard_bitmap(
+                kTexSize, kTexSize, 0x00000000, ToolUtils::color_to_565(0xFF804020), 8);
 
         SkRect bitmapBounds = SkRect::MakeIWH(diffuse.width(), diffuse.height());
 
@@ -604,13 +602,11 @@ DEF_TEST(Serialization, reporter) {
         SkBitmap normals;
         normals.allocN32Pixels(kTexSize, kTexSize);
 
-        sk_tool_utils::create_frustum_normal_map(&normals, SkIRect::MakeWH(kTexSize, kTexSize));
-        sk_sp<SkShader> normalMap = SkShader::MakeBitmapShader(normals, SkShader::kClamp_TileMode,
-                SkShader::kClamp_TileMode, &matrix);
+        ToolUtils::create_frustum_normal_map(&normals, SkIRect::MakeWH(kTexSize, kTexSize));
+        sk_sp<SkShader> normalMap = normals.makeShader(&matrix);
         sk_sp<SkNormalSource> normalSource = SkNormalSource::MakeFromNormalMap(std::move(normalMap),
                                                                                ctm);
-        sk_sp<SkShader> diffuseShader = SkShader::MakeBitmapShader(diffuse,
-                SkShader::kClamp_TileMode, SkShader::kClamp_TileMode, &matrix);
+        sk_sp<SkShader> diffuseShader = diffuse.makeShader(&matrix);
 
         sk_sp<SkShader> lightingShader = SkLightingShader::Make(diffuseShader,
                                                                 normalSource,

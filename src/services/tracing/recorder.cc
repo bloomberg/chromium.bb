@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "services/tracing/public/mojom/tracing.mojom.h"

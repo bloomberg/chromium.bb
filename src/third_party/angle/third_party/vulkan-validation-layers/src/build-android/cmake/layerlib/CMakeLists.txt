@@ -62,10 +62,15 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DVK_USE_PLATFORM_ANDROID_KHR \
                      -fvisibility=hidden")
 add_library(VkLayer_core_validation SHARED
         ${SRC_DIR}/layers/core_validation.cpp
+        ${SRC_DIR}/layers/convert_to_renderpass2.cpp
         ${SRC_DIR}/layers/descriptor_sets.cpp
         ${SRC_DIR}/layers/buffer_validation.cpp
         ${SRC_DIR}/layers/shader_validation.cpp
-	    ${SRC_DIR}/layers/xxhash.c)
+        ${SRC_DIR}/layers/gpu_validation.cpp
+        ${COMMON_DIR}/include/layer_chassis_dispatch.cpp
+        ${COMMON_DIR}/include/chassis.cpp
+        ${SRC_DIR}/layers/xxhash.c)
+target_compile_definitions(VkLayer_core_validation PUBLIC "BUILD_CORE_VALIDATION")
 target_include_directories(VkLayer_core_validation PRIVATE
         ${SRC_DIR}/include
         ${SRC_DIR}/layers
@@ -75,10 +80,22 @@ target_include_directories(VkLayer_core_validation PRIVATE
         ${EXTERNAL_DIR}/spirv-tools/include)
 target_link_libraries(VkLayer_core_validation PRIVATE
         log layer_utils SPIRV-Tools-prebuilt)
+if (NOT BUILD_IN_NDK)
+    set(SPIRV_OPT_LIB
+        "${SRC_DIR}/build-android/third_party/shaderc/android_test/obj/local/${ANDROID_ABI}/libSPIRV-Tools-opt.a")
+    add_library(SPIRV-Tools-opt-prebuilt STATIC IMPORTED)
+    set_target_properties(SPIRV-Tools-opt-prebuilt PROPERTIES IMPORTED_LOCATION
+        ${SPIRV_OPT_LIB})
+    target_link_libraries(VkLayer_core_validation PRIVATE
+        SPIRV-Tools-opt-prebuilt)
+endif()
 
 add_library(VkLayer_parameter_validation SHARED
         ${COMMON_DIR}/include/parameter_validation.cpp
+        ${COMMON_DIR}/include/layer_chassis_dispatch.cpp
+        ${COMMON_DIR}/include/chassis.cpp
         ${SRC_DIR}/layers/parameter_validation_utils.cpp)
+target_compile_definitions(VkLayer_parameter_validation PUBLIC "BUILD_PARAMETER_VALIDATION")
 target_include_directories(VkLayer_parameter_validation PRIVATE
         ${SRC_DIR}/include
         ${COMMON_DIR}/include
@@ -88,7 +105,10 @@ target_link_libraries(VkLayer_parameter_validation PRIVATE log layer_utils)
 
 add_library(VkLayer_object_tracker SHARED
         ${COMMON_DIR}/include/object_tracker.cpp
+        ${COMMON_DIR}/include/layer_chassis_dispatch.cpp
+        ${COMMON_DIR}/include/chassis.cpp
         ${SRC_DIR}/layers/object_tracker_utils.cpp)
+target_compile_definitions(VkLayer_object_tracker PUBLIC "BUILD_OBJECT_TRACKER")
 target_include_directories(VkLayer_object_tracker PRIVATE
         ${SRC_DIR}/include
         ${SRC_DIR}/layers
@@ -97,7 +117,10 @@ target_include_directories(VkLayer_object_tracker PRIVATE
 target_link_libraries(VkLayer_object_tracker PRIVATE log layer_utils)
 
 add_library(VkLayer_threading SHARED
-        ${SRC_DIR}/layers/threading.cpp)
+        ${COMMON_DIR}/include/thread_safety.cpp
+        ${COMMON_DIR}/include/layer_chassis_dispatch.cpp
+        ${COMMON_DIR}/include/chassis.cpp
+target_compile_definitions(VkLayer_threading PUBLIC "BUILD_THREAD_SAFETY")
 target_include_directories(VkLayer_threading PRIVATE
         ${SRC_DIR}/include
         ${SRC_DIR}/layers
@@ -106,7 +129,9 @@ target_include_directories(VkLayer_threading PRIVATE
 target_link_libraries(VkLayer_threading PRIVATE log layer_utils)
 
 add_library(VkLayer_unique_objects SHARED
-        ${SRC_DIR}/layers/unique_objects.cpp)
+        ${COMMON_DIR}/include/layer_chassis_dispatch.cpp)
+        ${COMMON_DIR}/include/chassis.cpp)
+target_compile_definitions(VkLayer_object_tracker PUBLIC "LAYER_CHASSIS_CAN_WRAP_HANDLES")
 target_include_directories(VkLayer_unique_objects PRIVATE
         ${SRC_DIR}/include
         ${SRC_DIR}/layers

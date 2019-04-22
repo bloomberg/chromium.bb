@@ -16,6 +16,8 @@ import {Animation} from './animation';
 import Timer = NodeJS.Timer;
 import {DragGestureHandler} from './drag_gesture_handler';
 import {globals} from './globals';
+import {handleKey} from './keyboard_event_handler';
+import {TRACK_SHELL_WIDTH} from './track_constants';
 
 const ZOOM_RATIO_PER_FRAME = 0.008;
 const KEYBOARD_PAN_PX_PER_FRAME = 8;
@@ -64,6 +66,8 @@ export class PanAndZoomHandler {
   private boundOnWheel = this.onWheel.bind(this);
   private boundOnKeyDown = this.onKeyDown.bind(this);
   private boundOnKeyUp = this.onKeyUp.bind(this);
+  private shiftDown = false;
+  private dragStartPx = -1;
   private panning: Pan = Pan.None;
   private zooming: Zoom = Zoom.None;
   private cancelPanTimeout?: Timer;
@@ -75,17 +79,20 @@ export class PanAndZoomHandler {
   private contentOffsetX: number;
   private onPanned: (movedPx: number) => void;
   private onZoomed: (zoomPositionPx: number, zoomRatio: number) => void;
+  private onDragSelect: (selectStartPx: number, selectEndPx: number) => void;
 
-  constructor({element, contentOffsetX, onPanned, onZoomed}: {
+  constructor({element, contentOffsetX, onPanned, onZoomed, onDragSelect}: {
     element: HTMLElement,
     contentOffsetX: number,
     onPanned: (movedPx: number) => void,
     onZoomed: (zoomPositionPx: number, zoomRatio: number) => void,
+    onDragSelect: (selectStartPx: number, selectEndPx: number) => void
   }) {
     this.element = element;
     this.contentOffsetX = contentOffsetX;
     this.onPanned = onPanned;
     this.onZoomed = onZoomed;
+    this.onDragSelect = onDragSelect;
 
     document.body.addEventListener('keydown', this.boundOnKeyDown);
     document.body.addEventListener('keyup', this.boundOnKeyUp);
@@ -94,9 +101,20 @@ export class PanAndZoomHandler {
 
     let lastX = -1;
     new DragGestureHandler(this.element, x => {
-      this.onPanned(lastX - x);
+      if (this.shiftDown && this.dragStartPx !== -1) {
+        this.onDragSelect(this.dragStartPx, x);
+      } else {
+        this.onPanned(lastX - x);
+      }
       lastX = x;
-    }, x => lastX = x);
+    }, x => {
+      lastX = x;
+      if (this.shiftDown) {
+        this.dragStartPx = x;
+      }
+    }, () => {
+      this.dragStartPx = -1;
+    });
   }
 
   shutdown() {
@@ -121,7 +139,14 @@ export class PanAndZoomHandler {
   }
 
   private onMouseMove(e: MouseEvent) {
-    this.mousePositionX = e.clientX - this.contentOffsetX;
+    // TODO(taylori): Content offset is 6px off, why?
+    this.mousePositionX = e.clientX - this.contentOffsetX - 6;
+    if (this.shiftDown) {
+      const pos = this.mousePositionX - TRACK_SHELL_WIDTH;
+      const ts =
+        globals.frontendLocalState.timeScale.pxToTime(pos);
+      globals.frontendLocalState.setHoveredTimestamp(ts);
+    }
   }
 
   private onWheel(e: WheelEvent) {
@@ -137,6 +162,7 @@ export class PanAndZoomHandler {
   }
 
   private onKeyDown(e: KeyboardEvent) {
+    this.updateShift(e.shiftKey);
     if (keyToPan(e) !== Pan.None) {
       this.panning = keyToPan(e);
       const animationTime = e.repeat ?
@@ -154,9 +180,13 @@ export class PanAndZoomHandler {
       this.zoomAnimation.start(animationTime);
       clearTimeout(this.cancelZoomTimeout!);
     }
+
+    // Handle key events that are not pan or zoom.
+    handleKey(e.key, true);
   }
 
   private onKeyUp(e: KeyboardEvent) {
+    this.updateShift(e.shiftKey);
     if (keyToPan(e) === this.panning) {
       const minEndTime = this.panAnimation.startTimeMs + TAP_ANIMATION_TIME;
       const t = minEndTime - performance.now();
@@ -167,5 +197,26 @@ export class PanAndZoomHandler {
       const t = minEndTime - performance.now();
       this.cancelZoomTimeout = setTimeout(() => this.zoomAnimation.stop(), t);
     }
+
+    // Handle key events that are not pan or zoom.
+    handleKey(e.key, false);
+  }
+
+  private updateShift(down: boolean) {
+    if (down === this.shiftDown) return;
+    this.shiftDown = down;
+    if (this.shiftDown) {
+      if (this.mousePositionX) {
+        this.element.style.cursor = 'text';
+        const pos = this.mousePositionX - TRACK_SHELL_WIDTH;
+        const ts = globals.frontendLocalState.timeScale.pxToTime(pos);
+        globals.frontendLocalState.setHoveredTimestamp(ts);
+      }
+    } else {
+      globals.frontendLocalState.setHoveredTimestamp(-1);
+      this.element.style.cursor = 'default';
+    }
+
+    globals.frontendLocalState.setShowTimeSelectPreview(this.shiftDown);
   }
 }

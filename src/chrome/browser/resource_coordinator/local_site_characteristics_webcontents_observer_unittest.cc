@@ -13,9 +13,9 @@
 #include "chrome/browser/resource_coordinator/site_characteristics_data_store.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "chrome/browser/resource_coordinator/time.h"
-#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/favicon_url.h"
+#include "content/public/test/mock_navigation_handle.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -95,8 +95,6 @@ class LocalSiteCharacteristicsWebContentsObserverTest
         browser_context(), base::BindRepeating(&BuildMockDataStoreForContext));
 
     TabLoadTracker::Get()->StartTracking(web_contents());
-    LocalSiteCharacteristicsWebContentsObserver::
-        SkipObserverRegistrationForTesting();
     observer_ = std::make_unique<LocalSiteCharacteristicsWebContentsObserver>(
         web_contents());
     observer()->SetPageSignalReceiverForTesting(&receiver_);
@@ -160,10 +158,9 @@ TEST_F(LocalSiteCharacteristicsWebContentsObserverTest,
 
   // Navigate to a different origin but don't set the |committed| bit, this
   // shouldn't affect the writer.
-  auto navigation_handle =
-      content::NavigationHandle::CreateNavigationHandleForTesting(
-          kTestUrl2, web_contents()->GetMainFrame(), false);
-  observer()->DidFinishNavigation(navigation_handle.get());
+  content::MockNavigationHandle navigation_handle(
+      kTestUrl2, web_contents()->GetMainFrame());
+  observer()->DidFinishNavigation(&navigation_handle);
   ::testing::Mock::VerifyAndClear(mock_writer);
 
   // Set the |committed| bit and ensure that the navigation event cause the
@@ -191,6 +188,7 @@ TEST_F(LocalSiteCharacteristicsWebContentsObserverTest,
   observer()->DidUpdateFaviconURL({});
   observer()->TitleWasSet(nullptr);
 
+  EXPECT_CALL(*mock_writer, NotifySiteLoaded());
   TabLoadTracker::Get()->TransitionStateForTesting(web_contents(),
                                                    LoadingState::LOADED);
   EXPECT_CALL(*mock_writer,
@@ -362,6 +360,7 @@ TEST_F(LocalSiteCharacteristicsWebContentsObserverTest, LoadEvent) {
 TEST_F(LocalSiteCharacteristicsWebContentsObserverTest,
        LateNotificationUsageSignalIsIgnored) {
   MockDataWriter* mock_writer = NavigateAndReturnMockWriter(kTestUrl1);
+  EXPECT_CALL(*mock_writer, NotifySiteLoaded());
   TabLoadTracker::Get()->TransitionStateForTesting(web_contents(),
                                                    LoadingState::LOADED);
 
@@ -395,6 +394,7 @@ TEST_F(LocalSiteCharacteristicsWebContentsObserverTest,
 TEST_F(LocalSiteCharacteristicsWebContentsObserverTest,
        OnLoadTimePerformanceMeasurement) {
   MockDataWriter* mock_writer = NavigateAndReturnMockWriter(kTestUrl1);
+  EXPECT_CALL(*mock_writer, NotifySiteLoaded());
   TabLoadTracker::Get()->TransitionStateForTesting(web_contents(),
                                                    LoadingState::LOADED);
 

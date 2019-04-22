@@ -4,7 +4,7 @@
 
 #include <stdint.h>
 
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "chrome_elf/dll_hash/dll_hash.h"
 
 int DllNameToHash(const std::string& dll_name) {

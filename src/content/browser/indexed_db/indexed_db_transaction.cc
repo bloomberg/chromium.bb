@@ -4,6 +4,9 @@
 
 #include "content/browser/indexed_db/indexed_db_transaction.h"
 
+#include <utility>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -16,7 +19,6 @@
 #include "content/browser/indexed_db/indexed_db_database.h"
 #include "content/browser/indexed_db/indexed_db_database_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"
-#include "content/browser/indexed_db/indexed_db_transaction_coordinator.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_exception.h"
 #include "third_party/leveldatabase/env_chromium.h"
 
@@ -117,6 +119,8 @@ IndexedDBTransaction::IndexedDBTransaction(
   IDB_ASYNC_TRACE_BEGIN("IndexedDBTransaction::lifetime", this);
   callbacks_ = connection_->callbacks();
   database_ = connection_->database();
+  if (database_)
+    database_->TransactionCreated();
 
   diagnostics_.tasks_scheduled = 0;
   diagnostics_.tasks_completed = 0;
@@ -175,9 +179,28 @@ void IndexedDBTransaction::RunTasksIfStarted() {
                                 ptr_factory_.GetWeakPtr()));
 }
 
+void IndexedDBTransaction::ForcePendingCommit() {
+  IDB_TRACE1("IndexedDBTransaction::ForceCommit", "txn.id", id());
+  DCHECK(is_commit_pending_);
+  if (state_ == FINISHED)
+    return;
+
+  should_process_queue_ = true;
+  state_ = STARTED;
+  if (!task_queue_.empty()) {
+    // Commits when completed.
+    ProcessTaskQueue();
+  } else {
+    leveldb::Status result = Commit();
+    if (!result.ok())
+      database_->ReportError(result);
+  }
+}
+
 void IndexedDBTransaction::Abort(const IndexedDBDatabaseError& error) {
-  IDB_TRACE1("IndexedDBTransaction::Abort", "txn.id", id());
   DCHECK(!processing_event_queue_);
+  DCHECK(!is_commit_pending_);
+
   if (state_ == FINISHED)
     return;
 
@@ -199,27 +222,33 @@ void IndexedDBTransaction::Abort(const IndexedDBDatabaseError& error) {
 
   preemptive_task_queue_.clear();
   pending_preemptive_events_ = 0;
-  task_queue_.clear();
 
   // Backing store resources (held via cursors) must be released
   // before script callbacks are fired, as the script callbacks may
   // release references and allow the backing store itself to be
   // released, and order is critical.
-  CloseOpenCursors();
+  CloseOpenCursorBindings();
+
+  // Open cursors have to be deleted before we clear the task queue.
+  // If we clear the task queue and closures exist in it that refer
+  // to callbacks associated with the cursor mojo bindings, the callback
+  // deletion will fail due to a mojo assert.  |CloseOpenCursorBindings()|
+  // above will clear the binding, which also deletes the owned
+  // |IndexedDBCursor| objects.  After that, we can safely clear the
+  // task queue.
+  task_queue_.clear();
+
   transaction_->Reset();
 
   // Transactions must also be marked as completed before the
   // front-end is notified, as the transaction completion unblocks
   // operations like closing connections.
-  database_->transaction_coordinator().DidFinishTransaction(this);
-#ifndef NDEBUG
-  DCHECK(!database_->transaction_coordinator().IsActive(this));
-#endif
+  locks_.clear();
 
   if (callbacks_.get())
     callbacks_->OnAbort(*this, error);
 
-  database_->TransactionFinished(this, false);
+  database_->TransactionFinished(mode_, false);
 
   // RemoveTransaction will delete |this|.
   // Note: During force-close situations, the connection can be destroyed during
@@ -244,14 +273,15 @@ void IndexedDBTransaction::UnregisterOpenCursor(IndexedDBCursor* cursor) {
   open_cursors_.erase(cursor);
 }
 
-void IndexedDBTransaction::Start() {
+void IndexedDBTransaction::Start(std::vector<ScopeLock> locks) {
   // TransactionCoordinator has started this transaction.
   DCHECK_EQ(CREATED, state_);
   state_ = STARTED;
+  locks_ = std::move(locks);
   diagnostics_.start_time = base::Time::Now();
 
   if (!used_) {
-    if (commit_pending_) {
+    if (is_commit_pending_) {
       // The transaction has never had requests issued against it, but the
       // front-end previously requested a commit; do the commit now, but not
       // re-entrantly as that may renter the coordinator.
@@ -263,12 +293,11 @@ void IndexedDBTransaction::Start() {
 
   RunTasksIfStarted();
 }
-
-void IndexedDBTransaction::GrabSnapshotThenStart() {
-  DCHECK(!backing_store_transaction_begun_);
-  transaction_->Begin();
-  backing_store_transaction_begun_ = true;
-  Start();
+void IndexedDBTransaction::EnsureBackingStoreTransactionBegun() {
+  if (!backing_store_transaction_begun_) {
+    transaction_->Begin();
+    backing_store_transaction_begun_ = true;
+  }
 }
 
 class BlobWriteCallbackImpl : public IndexedDBBackingStore::BlobWriteCallback {
@@ -332,8 +361,7 @@ leveldb::Status IndexedDBTransaction::Commit() {
     return leveldb::Status::OK();
   DCHECK_NE(state_, COMMITTING);
 
-  DCHECK(!used_ || state_ == STARTED);
-  commit_pending_ = true;
+  is_commit_pending_ = true;
 
   // Front-end has requested a commit, but this transaction is blocked by
   // other transactions. The commit will be initiated when the transaction
@@ -346,6 +374,16 @@ leveldb::Status IndexedDBTransaction::Commit() {
   // but are processed asynchronously.
   if (HasPendingTasks())
     return leveldb::Status::OK();
+
+  // If a transaction is being committed but it has sent more errors to the
+  // front end than have been handled at this point, the transaction should be
+  // aborted as it is unknown whether or not any errors unaccounted for will be
+  // properly handled.
+  if (num_errors_sent_ != num_errors_handled_) {
+    is_commit_pending_ = false;
+    Abort(IndexedDBDatabaseError(blink::kWebIDBDatabaseExceptionUnknownError));
+    return leveldb::Status::OK();
+  }
 
   state_ = COMMITTING;
 
@@ -419,7 +457,7 @@ leveldb::Status IndexedDBTransaction::CommitPhaseTwo() {
   // Transactions must also be marked as completed before the
   // front-end is notified, as the transaction completion unblocks
   // operations like closing connections.
-  database_->transaction_coordinator().DidFinishTransaction(this);
+  locks_.clear();
 
   if (committed) {
     abort_task_stack_.clear();
@@ -439,7 +477,7 @@ leveldb::Status IndexedDBTransaction::CommitPhaseTwo() {
     if (!pending_observers_.empty() && connection_)
       connection_->ActivatePendingObservers(std::move(pending_observers_));
 
-    database_->TransactionFinished(this, true);
+    database_->TransactionFinished(mode_, true);
     // RemoveTransaction will delete |this|.
     connection_->RemoveTransaction(id_);
     return s;
@@ -458,7 +496,9 @@ leveldb::Status IndexedDBTransaction::CommitPhaseTwo() {
                                  "Internal error committing transaction.");
     }
     callbacks_->OnAbort(*this, error);
-    database_->TransactionFinished(this, false);
+    database_->TransactionFinished(mode_, false);
+    // RemoveTransaction will delete |this|.
+    connection_->RemoveTransaction(id_);
   }
   return s;
 }
@@ -477,10 +517,7 @@ void IndexedDBTransaction::ProcessTaskQueue() {
   DCHECK(!IsTaskQueueEmpty());
   should_process_queue_ = false;
 
-  if (!backing_store_transaction_begun_) {
-    transaction_->Begin();
-    backing_store_transaction_begun_ = true;
-  }
+  EnsureBackingStoreTransactionBegun();
 
   TaskQueue* task_queue =
       pending_preemptive_events_ ? &preemptive_task_queue_ : &task_queue_;
@@ -505,7 +542,7 @@ void IndexedDBTransaction::ProcessTaskQueue() {
 
   // If there are no pending tasks, we haven't already committed/aborted,
   // and the front-end requested a commit, it is now safe to do so.
-  if (!HasPendingTasks() && state_ != FINISHED && commit_pending_) {
+  if (!HasPendingTasks() && state_ != FINISHED && is_commit_pending_) {
     processing_event_queue_ = false;
     // This can delete |this|.
     leveldb::Status result = Commit();
@@ -541,6 +578,14 @@ void IndexedDBTransaction::Timeout() {
   Abort(IndexedDBDatabaseError(
       blink::kWebIDBDatabaseExceptionTimeoutError,
       base::ASCIIToUTF16("Transaction timed out due to inactivity.")));
+}
+
+void IndexedDBTransaction::CloseOpenCursorBindings() {
+  IDB_TRACE1("IndexedDBTransaction::CloseOpenCursorBindings", "txn.id", id());
+  std::vector<IndexedDBCursor*> cursor_ptrs(open_cursors_.begin(),
+                                            open_cursors_.end());
+  for (auto* cursor_ptr : cursor_ptrs)
+    cursor_ptr->RemoveBinding();
 }
 
 void IndexedDBTransaction::CloseOpenCursors() {

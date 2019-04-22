@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {Actions} from '../../common/actions';
+import {cropText} from '../../common/canvas_utils';
 import {TrackState} from '../../common/state';
 import {checkerboardExcept} from '../../frontend/checkerboard';
 import {globals} from '../../frontend/globals';
@@ -21,7 +21,7 @@ import {trackRegistry} from '../../frontend/track_registry';
 
 import {Config, Data, SLICE_TRACK_KIND} from './common';
 
-const SLICE_HEIGHT = 30;
+const SLICE_HEIGHT = 20;
 const TRACK_PADDING = 5;
 
 function hash(s: string): number {
@@ -33,12 +33,6 @@ function hash(s: string): number {
   return hash & 0xff;
 }
 
-function getCurResolution() {
-  // Truncate the resolution to the closest power of 10.
-  const resolution = globals.frontendLocalState.timeScale.deltaPxToDuration(1);
-  return Math.pow(10, Math.floor(Math.log10(resolution)));
-}
-
 class ChromeSliceTrack extends Track<Config, Data> {
   static readonly kind = SLICE_TRACK_KIND;
   static create(trackState: TrackState): ChromeSliceTrack {
@@ -46,24 +40,9 @@ class ChromeSliceTrack extends Track<Config, Data> {
   }
 
   private hoveredTitleId = -1;
-  private reqPending = false;
 
   constructor(trackState: TrackState) {
     super(trackState);
-  }
-
-  reqDataDeferred() {
-    const {visibleWindowTime} = globals.frontendLocalState;
-    const reqStart = visibleWindowTime.start - visibleWindowTime.duration;
-    const reqEnd = visibleWindowTime.end + visibleWindowTime.duration;
-    const reqRes = getCurResolution();
-    this.reqPending = false;
-    globals.dispatch(Actions.reqTrackData({
-      trackId: this.trackState.id,
-      start: reqStart,
-      end: reqEnd,
-      resolution: reqRes
-    }));
   }
 
   renderCanvas(ctx: CanvasRenderingContext2D): void {
@@ -78,11 +57,8 @@ class ChromeSliceTrack extends Track<Config, Data> {
         (visibleWindowTime.start >= data.start &&
          visibleWindowTime.end <= data.end);
     if (!inRange || data === undefined ||
-        data.resolution > getCurResolution()) {
-      if (!this.reqPending) {
-        this.reqPending = true;
-        setTimeout(() => this.reqDataDeferred(), 50);
-      }
+        data.resolution > globals.getCurResolution()) {
+      globals.requestTrackData(this.trackState.id);
       if (data === undefined) return;  // Can't possibly draw anything.
     }
 
@@ -99,7 +75,7 @@ class ChromeSliceTrack extends Track<Config, Data> {
     ctx.textAlign = 'center';
 
     // measuretext is expensive so we only use it once.
-    const charWidth = ctx.measureText('abcdefghij').width / 10;
+    const charWidth = ctx.measureText('ACBDLqsdfg').width / 10;
     const pxEnd = timeScale.timeToPx(visibleWindowTime.end);
 
     for (let i = 0; i < data.starts.length; i++) {
@@ -122,23 +98,12 @@ class ChromeSliceTrack extends Track<Config, Data> {
       const hue = hash(cat);
       const saturation = Math.min(20 + depth * 10, 70);
       ctx.fillStyle = `hsl(${hue}, ${saturation}%, ${hovered ? 30 : 65}%)`;
-
       ctx.fillRect(rectXStart, rectYStart, rectWidth, SLICE_HEIGHT);
 
-      const nameLength = title.length * charWidth;
       ctx.fillStyle = 'white';
-      const maxTextWidth = rectWidth - 15;
-      let displayText = '';
-      if (nameLength < maxTextWidth) {
-        displayText = title;
-      } else {
-        // -3 for the 3 ellipsis.
-        const displayedChars = Math.floor(maxTextWidth / charWidth) - 3;
-        if (displayedChars > 3) {
-          displayText = title.substring(0, displayedChars) + '...';
-        }
-      }
+      const displayText = cropText(title, charWidth, rectWidth);
       const rectXCenter = rectXStart + rectWidth / 2;
+      ctx.textBaseline = "middle";
       ctx.fillText(displayText, rectXCenter, rectYStart + SLICE_HEIGHT / 2);
     }
   }

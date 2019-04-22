@@ -395,6 +395,11 @@ static const CurveTest kCurveTests[] = {
     { SSL_CURVE_SECP256R1 },
   },
   {
+    "P-256:CECPQ2",
+    { SSL_CURVE_SECP256R1, SSL_CURVE_CECPQ2 },
+  },
+
+  {
     "P-256:P-384:P-521:X25519",
     {
       SSL_CURVE_SECP256R1,
@@ -835,8 +840,8 @@ static void ExpectDefaultVersion(uint16_t min_version, uint16_t max_version,
                                  const SSL_METHOD *(*method)(void)) {
   bssl::UniquePtr<SSL_CTX> ctx(SSL_CTX_new(method()));
   ASSERT_TRUE(ctx);
-  EXPECT_EQ(min_version, ctx->conf_min_version);
-  EXPECT_EQ(max_version, ctx->conf_max_version);
+  EXPECT_EQ(min_version, SSL_CTX_get_min_proto_version(ctx.get()));
+  EXPECT_EQ(max_version, SSL_CTX_get_max_proto_version(ctx.get()));
 }
 
 TEST(SSLTest, DefaultVersion) {
@@ -845,9 +850,9 @@ TEST(SSLTest, DefaultVersion) {
   ExpectDefaultVersion(TLS1_VERSION, TLS1_VERSION, &TLSv1_method);
   ExpectDefaultVersion(TLS1_1_VERSION, TLS1_1_VERSION, &TLSv1_1_method);
   ExpectDefaultVersion(TLS1_2_VERSION, TLS1_2_VERSION, &TLSv1_2_method);
-  ExpectDefaultVersion(TLS1_1_VERSION, TLS1_2_VERSION, &DTLS_method);
-  ExpectDefaultVersion(TLS1_1_VERSION, TLS1_1_VERSION, &DTLSv1_method);
-  ExpectDefaultVersion(TLS1_2_VERSION, TLS1_2_VERSION, &DTLSv1_2_method);
+  ExpectDefaultVersion(DTLS1_VERSION, DTLS1_2_VERSION, &DTLS_method);
+  ExpectDefaultVersion(DTLS1_VERSION, DTLS1_VERSION, &DTLSv1_method);
+  ExpectDefaultVersion(DTLS1_2_VERSION, DTLS1_2_VERSION, &DTLSv1_2_method);
 }
 
 TEST(SSLTest, CipherProperties) {
@@ -1645,11 +1650,11 @@ class SSLVersionTest : public ::testing::TestWithParam<VersionParam> {
   bssl::UniquePtr<EVP_PKEY> key_;
 };
 
-INSTANTIATE_TEST_CASE_P(WithVersion, SSLVersionTest,
-                        testing::ValuesIn(kAllVersions),
-                        [](const testing::TestParamInfo<VersionParam> &i) {
-                          return i.param.name;
-                        });
+INSTANTIATE_TEST_SUITE_P(WithVersion, SSLVersionTest,
+                         testing::ValuesIn(kAllVersions),
+                         [](const testing::TestParamInfo<VersionParam> &i) {
+                           return i.param.name;
+                         });
 
 TEST_P(SSLVersionTest, SequenceNumber) {
   ASSERT_TRUE(Connect());
@@ -2612,21 +2617,16 @@ TEST(SSLTest, SetVersion) {
 
   // Zero is the default version.
   EXPECT_TRUE(SSL_CTX_set_max_proto_version(ctx.get(), 0));
-  EXPECT_EQ(TLS1_2_VERSION, ctx->conf_max_version);
+  EXPECT_EQ(TLS1_2_VERSION, SSL_CTX_get_max_proto_version(ctx.get()));
   EXPECT_TRUE(SSL_CTX_set_min_proto_version(ctx.get(), 0));
-  EXPECT_EQ(TLS1_VERSION, ctx->conf_min_version);
+  EXPECT_EQ(TLS1_VERSION, SSL_CTX_get_min_proto_version(ctx.get()));
 
   // TLS 1.3 is available, but not by default.
   EXPECT_TRUE(SSL_CTX_set_max_proto_version(ctx.get(), TLS1_3_VERSION));
-  EXPECT_EQ(TLS1_3_VERSION, ctx->conf_max_version);
+  EXPECT_EQ(TLS1_3_VERSION, SSL_CTX_get_max_proto_version(ctx.get()));
 
   // SSL 3.0 is not available.
   EXPECT_FALSE(SSL_CTX_set_min_proto_version(ctx.get(), SSL3_VERSION));
-
-  // TLS1_3_DRAFT_VERSION is not an API-level version.
-  EXPECT_FALSE(
-      SSL_CTX_set_max_proto_version(ctx.get(), TLS1_3_DRAFT23_VERSION));
-  ERR_clear_error();
 
   ctx.reset(SSL_CTX_new(DTLS_method()));
   ASSERT_TRUE(ctx);
@@ -2646,9 +2646,9 @@ TEST(SSLTest, SetVersion) {
   EXPECT_FALSE(SSL_CTX_set_min_proto_version(ctx.get(), 0x1234));
 
   EXPECT_TRUE(SSL_CTX_set_max_proto_version(ctx.get(), 0));
-  EXPECT_EQ(TLS1_2_VERSION, ctx->conf_max_version);
+  EXPECT_EQ(DTLS1_2_VERSION, SSL_CTX_get_max_proto_version(ctx.get()));
   EXPECT_TRUE(SSL_CTX_set_min_proto_version(ctx.get(), 0));
-  EXPECT_EQ(TLS1_1_VERSION, ctx->conf_min_version);
+  EXPECT_EQ(DTLS1_VERSION, SSL_CTX_get_min_proto_version(ctx.get()));
 }
 
 static const char *GetVersionName(uint16_t version) {
@@ -3574,7 +3574,7 @@ std::string TicketAEADMethodParamToString(
   return ret;
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     TicketAEADMethodTests, TicketAEADMethodTest,
     testing::Combine(testing::Values(TLS1_2_VERSION, TLS1_3_VERSION),
                      testing::Values(0, 1, 2),
@@ -4353,6 +4353,35 @@ TEST(SSLTest, ApplyHandoffRemovesUnsupportedCurves) {
   EXPECT_EQ(1u, server->config->supported_group_list.size());
 }
 
+TEST(SSLTest, ZeroSizedWiteFlushesHandshakeMessages) {
+  // If there are pending handshake mesages, an |SSL_write| of zero bytes should
+  // flush them.
+  bssl::UniquePtr<SSL_CTX> server_ctx(SSL_CTX_new(TLS_method()));
+  EXPECT_TRUE(SSL_CTX_set_max_proto_version(server_ctx.get(), TLS1_3_VERSION));
+  EXPECT_TRUE(SSL_CTX_set_min_proto_version(server_ctx.get(), TLS1_3_VERSION));
+  bssl::UniquePtr<X509> cert = GetTestCertificate();
+  bssl::UniquePtr<EVP_PKEY> key = GetTestKey();
+  ASSERT_TRUE(cert);
+  ASSERT_TRUE(key);
+  ASSERT_TRUE(SSL_CTX_use_certificate(server_ctx.get(), cert.get()));
+  ASSERT_TRUE(SSL_CTX_use_PrivateKey(server_ctx.get(), key.get()));
+
+  bssl::UniquePtr<SSL_CTX> client_ctx(SSL_CTX_new(TLS_method()));
+  EXPECT_TRUE(SSL_CTX_set_max_proto_version(client_ctx.get(), TLS1_3_VERSION));
+  EXPECT_TRUE(SSL_CTX_set_min_proto_version(client_ctx.get(), TLS1_3_VERSION));
+
+  bssl::UniquePtr<SSL> client, server;
+  ASSERT_TRUE(ConnectClientAndServer(&client, &server, client_ctx.get(),
+                                     server_ctx.get()));
+
+  BIO *client_wbio = SSL_get_wbio(client.get());
+  EXPECT_EQ(0u, BIO_wpending(client_wbio));
+  EXPECT_TRUE(SSL_key_update(client.get(), SSL_KEY_UPDATE_NOT_REQUESTED));
+  EXPECT_EQ(0u, BIO_wpending(client_wbio));
+  EXPECT_EQ(0, SSL_write(client.get(), nullptr, 0));
+  EXPECT_NE(0u, BIO_wpending(client_wbio));
+}
+
 TEST_P(SSLVersionTest, VerifyBeforeCertRequest) {
   // Configure the server to request client certificates.
   SSL_CTX_set_custom_verify(
@@ -4515,6 +4544,65 @@ TEST(SSLTest, GetCertificateThreads) {
 
   EXPECT_EQ(cert2, cert2_thread);
   EXPECT_EQ(0, X509_cmp(cert.get(), cert2));
+}
+
+// Functions which access properties on the negotiated session are thread-safe
+// where needed. Prior to TLS 1.3, clients resuming sessions and servers
+// performing stateful resumption will share an underlying SSL_SESSION object,
+// potentially across threads.
+TEST_P(SSLVersionTest, SessionPropertiesThreads) {
+  if (version() == TLS1_3_VERSION) {
+    // Our TLS 1.3 implementation does not support stateful resumption.
+    ASSERT_FALSE(CreateClientSession(client_ctx_.get(), server_ctx_.get()));
+    return;
+  }
+
+  SSL_CTX_set_options(server_ctx_.get(), SSL_OP_NO_TICKET);
+  SSL_CTX_set_session_cache_mode(client_ctx_.get(), SSL_SESS_CACHE_BOTH);
+  SSL_CTX_set_session_cache_mode(server_ctx_.get(), SSL_SESS_CACHE_BOTH);
+
+  ASSERT_TRUE(UseCertAndKey(client_ctx_.get()));
+  ASSERT_TRUE(UseCertAndKey(server_ctx_.get()));
+
+  // Configure mutual authentication, so we have more session state.
+  SSL_CTX_set_custom_verify(
+      client_ctx_.get(), SSL_VERIFY_PEER,
+      [](SSL *ssl, uint8_t *out_alert) { return ssl_verify_ok; });
+  SSL_CTX_set_custom_verify(
+      server_ctx_.get(), SSL_VERIFY_PEER,
+      [](SSL *ssl, uint8_t *out_alert) { return ssl_verify_ok; });
+
+  // Establish a client session to test with.
+  bssl::UniquePtr<SSL_SESSION> session =
+      CreateClientSession(client_ctx_.get(), server_ctx_.get());
+  ASSERT_TRUE(session);
+
+  // Resume with it twice.
+  UniquePtr<SSL> ssls[4];
+  ClientConfig config;
+  config.session = session.get();
+  ASSERT_TRUE(ConnectClientAndServer(&ssls[0], &ssls[1], client_ctx_.get(),
+                                     server_ctx_.get(), config));
+  ASSERT_TRUE(ConnectClientAndServer(&ssls[2], &ssls[3], client_ctx_.get(),
+                                     server_ctx_.get(), config));
+
+  // Read properties in parallel.
+  auto read_properties = [](const SSL *ssl) {
+    EXPECT_TRUE(SSL_get_peer_cert_chain(ssl));
+    bssl::UniquePtr<X509> peer(SSL_get_peer_certificate(ssl));
+    EXPECT_TRUE(peer);
+    EXPECT_TRUE(SSL_get_current_cipher(ssl));
+    EXPECT_TRUE(SSL_get_curve_id(ssl));
+  };
+
+  std::vector<std::thread> threads;
+  for (const auto &ssl_ptr : ssls) {
+    const SSL *ssl = ssl_ptr.get();
+    threads.emplace_back([=] { read_properties(ssl); });
+  }
+  for (auto &thread : threads) {
+    thread.join();
+  }
 }
 #endif
 

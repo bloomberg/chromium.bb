@@ -5,8 +5,8 @@
 #ifndef IOS_CHROME_BROWSER_AUTOFILL_AUTOFILL_PROFILE_VALIDATOR_FACTORY_H_
 #define IOS_CHROME_BROWSER_AUTOFILL_AUTOFILL_PROFILE_VALIDATOR_FACTORY_H_
 
-#include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "components/autofill/core/browser/autofill_profile_validator.h"
 
 namespace autofill {
@@ -17,7 +17,7 @@ class AutofillProfileValidatorFactory {
   static AutofillProfileValidator* GetInstance();
 
  private:
-  friend struct base::LazyInstanceTraitsBase<AutofillProfileValidatorFactory>;
+  friend class base::NoDestructor<AutofillProfileValidatorFactory>;
 
   AutofillProfileValidatorFactory();
   ~AutofillProfileValidatorFactory();

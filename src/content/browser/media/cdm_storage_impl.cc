@@ -9,6 +9,7 @@
 #include <tuple>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
 #include "content/browser/media/cdm_file_impl.h"

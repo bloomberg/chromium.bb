@@ -12,11 +12,11 @@
 #include <utility>
 #include <vector>
 
-#include "core/fpdfapi/parser/cpdf_object.h"
 #include "core/fxcodec/fx_codec_def.h"
 #include "core/fxcodec/jbig2/JBig2_Page.h"
 #include "core/fxcodec/jbig2/JBig2_Segment.h"
 #include "core/fxcrt/fx_safe_types.h"
+#include "core/fxcrt/retain_ptr.h"
 
 class CJBig2_ArithDecoder;
 class CJBig2_GRDProc;
@@ -53,8 +53,6 @@ class CJBig2_Context {
 
  private:
   JBig2_Result DecodeSequential(PauseIndicatorIface* pPause);
-  JBig2_Result DecodeRandomFirstPage(PauseIndicatorIface* pPause);
-  JBig2_Result DecodeRandom(PauseIndicatorIface* pPause);
 
   CJBig2_Segment* FindSegmentByNumber(uint32_t dwNumber);
   CJBig2_Segment* FindReferredTableSegmentByIndex(CJBig2_Segment* pSegment,
@@ -87,7 +85,6 @@ class CJBig2_Context {
   std::vector<std::unique_ptr<JBig2PageInfo>> m_PageInfoList;
   std::unique_ptr<CJBig2_Image> m_pPage;
   std::vector<std::unique_ptr<CJBig2_HuffmanTable>> m_HuffmanTables;
-  size_t m_nSegmentDecoded;
   bool m_bInPage;
   bool m_bBufSpecified;
   int32_t m_PauseStep;

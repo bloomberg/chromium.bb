@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
@@ -193,8 +194,8 @@ void HeartbeatManager::RestartTimer() {
   // Linux so we need to poll to check for missed heartbeats.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&HeartbeatManager::CheckForMissedHeartbeat,
-                 weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&HeartbeatManager::CheckForMissedHeartbeat,
+                     weak_ptr_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(kHeartbeatMissedCheckMs));
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 }
@@ -216,8 +217,8 @@ void HeartbeatManager::CheckForMissedHeartbeat() {
   // Otherwise check again later.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&HeartbeatManager::CheckForMissedHeartbeat,
-                 weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&HeartbeatManager::CheckForMissedHeartbeat,
+                     weak_ptr_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(kHeartbeatMissedCheckMs));
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 }

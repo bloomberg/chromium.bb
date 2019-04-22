@@ -85,8 +85,9 @@ Polymer({
    * @private
    */
   getConnectionStatusText_: function(device) {
-    if (!this.hasConnectionStatusText_(device))
+    if (!this.hasConnectionStatusText_(device)) {
       return '';
+    }
     return this.i18n(
         device.connected ? 'bluetoothConnected' : 'bluetoothNotConnected');
   },
@@ -122,14 +123,14 @@ Polymer({
   getDeviceIcon_: function(device) {
     switch (device.type) {
       case 'computer':
-        return 'settings:computer';
+        return 'cr:computer';
       case 'phone':
         return 'settings:smartphone';
       case 'audio':
       case 'carAudio':
         return 'settings:headset';
       case 'video':
-        return 'settings:videocam';
+        return 'cr:videocam';
       case 'joystick':
       case 'gamepad':
         return 'settings:gamepad';

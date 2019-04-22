@@ -66,7 +66,7 @@ class SecureChannelPendingBleInitiatorConnectionRequestTest
   }
 
  private:
-  const base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   std::unique_ptr<FakePendingConnectionRequestDelegate>
       fake_pending_connection_request_delegate_;

@@ -41,6 +41,10 @@ namespace corewm {
 class TooltipWin;
 }
 
+namespace test {
+class DesktopWindowTreeHostWinTestApi;
+}
+
 class VIEWS_EXPORT DesktopWindowTreeHostWin
     : public DesktopWindowTreeHost,
       public wm::AnimationHost,
@@ -169,7 +173,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
   int GetInitialShowState() const override;
   bool WillProcessWorkAreaChange() const override;
   int GetNonClientComponent(const gfx::Point& point) const override;
-  void GetWindowMask(const gfx::Size& size, gfx::Path* path) override;
+  void GetWindowMask(const gfx::Size& size, SkPath* path) override;
   bool GetClientAreaInsets(gfx::Insets* insets,
                            HMONITOR monitor) const override;
   bool GetDwmFrameInsetsInPixels(gfx::Insets* insets) const override;
@@ -197,6 +201,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
   void HandleWorkAreaChanged() override;
   void HandleVisibilityChanging(bool visible) override;
   void HandleVisibilityChanged(bool visible) override;
+  void HandleWindowMinimizedOrRestored(bool restored) override;
   void HandleClientSizeChanged(const gfx::Size& new_size) override;
   void HandleFrameChanged() override;
   void HandleNativeFocus(HWND last_focused_window) override;
@@ -231,6 +236,8 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
   HWND GetHWND() const;
 
  private:
+  friend class ::views::test::DesktopWindowTreeHostWinTestApi;
+
   void SetWindowTransparency();
 
   // Returns true if a modal window is active in the current root window chain.

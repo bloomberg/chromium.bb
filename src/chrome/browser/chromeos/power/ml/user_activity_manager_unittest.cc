@@ -9,8 +9,12 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
+#include "base/cancelable_callback.h"
+#include "base/sequenced_task_runner.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/test_mock_time_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/time/clock.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
@@ -27,15 +31,16 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/test_browser_window_aura.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/chromeos_features.h"
-#include "chromeos/dbus/fake_power_manager_client.h"
+#include "chromeos/constants/chromeos_features.h"
+#include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/power_manager/idle.pb.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
-#include "chromeos/dbus/power_manager_client.h"
 #include "components/session_manager/session_manager_types.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_utils.h"
 #include "content/public/test/web_contents_tester.h"
 #include "services/metrics/public/cpp/ukm_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -100,7 +105,9 @@ class TestingUserActivityUkmLogger : public UserActivityUkmLogger {
 // Testing smart dim model.
 class FakeSmartDimModel : public SmartDimModel {
  public:
-  FakeSmartDimModel() = default;
+  explicit FakeSmartDimModel(
+      const scoped_refptr<base::SequencedTaskRunner> runner)
+      : task_runner_(runner) {}
   ~FakeSmartDimModel() override = default;
 
   void set_inactivity_score(const int inactivity_score) {
@@ -111,9 +118,8 @@ class FakeSmartDimModel : public SmartDimModel {
     decision_threshold_ = decision_threshold;
   }
 
-  // SmartDimModel overrides:
   UserActivityEvent::ModelPrediction ShouldDim(
-      const UserActivityEvent::Features& features) override {
+      const UserActivityEvent::Features& input_features) {
     UserActivityEvent::ModelPrediction model_prediction;
     // If either of these two values are set outside of the legal range [0,100],
     // return an error code.
@@ -123,21 +129,40 @@ class FakeSmartDimModel : public SmartDimModel {
         decision_threshold_ < 0 || decision_threshold_ > 100) {
       model_prediction.set_response(
           UserActivityEvent::ModelPrediction::MODEL_ERROR);
-      return model_prediction;
-    }
-    model_prediction.set_decision_threshold(decision_threshold_);
-    model_prediction.set_inactivity_score(inactivity_score_);
-    if (inactivity_score_ < decision_threshold_) {
-      model_prediction.set_response(UserActivityEvent::ModelPrediction::NO_DIM);
     } else {
-      model_prediction.set_response(UserActivityEvent::ModelPrediction::DIM);
+      model_prediction.set_decision_threshold(decision_threshold_);
+      model_prediction.set_inactivity_score(inactivity_score_);
+      if (inactivity_score_ < decision_threshold_) {
+        model_prediction.set_response(
+            UserActivityEvent::ModelPrediction::NO_DIM);
+      } else {
+        model_prediction.set_response(UserActivityEvent::ModelPrediction::DIM);
+      }
     }
     return model_prediction;
   }
 
+  // SmartDimModel overrides:
+  void RequestDimDecision(const UserActivityEvent::Features& features,
+                          DimDecisionCallback dim_callback) override {
+    // Cancel previously assigned callbacks and set it to the new callback.
+    cancelable_callback_.Reset(std::move(dim_callback));
+    base::PostTaskAndReplyWithResult(
+        task_runner_.get(), FROM_HERE,
+        base::BindOnce(&FakeSmartDimModel::ShouldDim, base::Unretained(this),
+                       features),
+        base::BindOnce(cancelable_callback_.callback()));
+  }
+
+  // TODO(crbug.com/893425): Add unit tests that test this API.
+  void CancelPreviousRequest() override { cancelable_callback_.Cancel(); }
+
  private:
   int inactivity_score_ = -1;
   int decision_threshold_ = -1;
+  const scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  base::CancelableOnceCallback<void(UserActivityEvent::ModelPrediction)>
+      cancelable_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSmartDimModel);
 };
@@ -145,22 +170,38 @@ class FakeSmartDimModel : public SmartDimModel {
 class UserActivityManagerTest : public ChromeRenderViewHostTestHarness {
  public:
   UserActivityManagerTest()
-      : task_runner_(base::MakeRefCounted<base::TestMockTimeTaskRunner>()) {
-    fake_power_manager_client_.Init(nullptr);
+      : ChromeRenderViewHostTestHarness(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI_MOCK_TIME,
+            base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED),
+        model_(thread_bundle()->GetMainThreadTaskRunner()) {}
+
+  ~UserActivityManagerTest() override = default;
+
+  // ChromeRenderViewHostTestHarness:
+  void SetUp() override {
+    ChromeRenderViewHostTestHarness::SetUp();
+
+    PowerManagerClient::InitializeFake();
     viz::mojom::VideoDetectorObserverPtr observer;
     idle_event_notifier_ = std::make_unique<IdleEventNotifier>(
-        &fake_power_manager_client_, &user_activity_detector_,
+        PowerManagerClient::Get(), &user_activity_detector_,
         mojo::MakeRequest(&observer));
     activity_logger_ = std::make_unique<UserActivityManager>(
         &delegate_, idle_event_notifier_.get(), &user_activity_detector_,
-        &fake_power_manager_client_, &session_manager_,
+        PowerManagerClient::Get(), &session_manager_,
         mojo::MakeRequest(&observer), &fake_user_manager_, &model_);
     activity_logger_->SetTaskRunnerForTesting(
-        task_runner_, std::make_unique<FakeBootClock>(
-                          task_runner_, base::TimeDelta::FromSeconds(10)));
+        thread_bundle()->GetMainThreadTaskRunner(),
+        std::make_unique<FakeBootClock>(thread_bundle(),
+                                        base::TimeDelta::FromSeconds(10)));
   }
 
-  ~UserActivityManagerTest() override = default;
+  void TearDown() override {
+    activity_logger_.reset();
+    idle_event_notifier_.reset();
+    PowerManagerClient::Shutdown();
+    ChromeRenderViewHostTestHarness::TearDown();
+  }
 
  protected:
   void ReportUserActivity(const ui::Event* event) {
@@ -172,7 +213,8 @@ class UserActivityManagerTest : public ChromeRenderViewHostTestHarness {
   }
 
   void ReportLidEvent(chromeos::PowerManagerClient::LidState state) {
-    fake_power_manager_client_.SetLidState(state, base::TimeTicks::UnixEpoch());
+    FakePowerManagerClient::Get()->SetLidState(state,
+                                               base::TimeTicks::UnixEpoch());
   }
 
   void ReportPowerChangeEvent(
@@ -181,12 +223,12 @@ class UserActivityManagerTest : public ChromeRenderViewHostTestHarness {
     power_manager::PowerSupplyProperties proto;
     proto.set_external_power(power);
     proto.set_battery_percent(battery_percent);
-    fake_power_manager_client_.UpdatePowerProperties(proto);
+    FakePowerManagerClient::Get()->UpdatePowerProperties(proto);
   }
 
   void ReportTabletModeEvent(chromeos::PowerManagerClient::TabletMode mode) {
-    fake_power_manager_client_.SetTabletMode(mode,
-                                             base::TimeTicks::UnixEpoch());
+    FakePowerManagerClient::Get()->SetTabletMode(mode,
+                                                 base::TimeTicks::UnixEpoch());
   }
 
   void ReportVideoStart() { activity_logger_->OnVideoActivityStarted(); }
@@ -195,7 +237,7 @@ class UserActivityManagerTest : public ChromeRenderViewHostTestHarness {
     power_manager::ScreenIdleState proto;
     proto.set_dimmed(screen_dim);
     proto.set_off(screen_off);
-    fake_power_manager_client_.SendScreenIdleStateChanged(proto);
+    FakePowerManagerClient::Get()->SendScreenIdleStateChanged(proto);
   }
 
   void ReportScreenLocked() {
@@ -204,9 +246,9 @@ class UserActivityManagerTest : public ChromeRenderViewHostTestHarness {
 
   void ReportSuspend(power_manager::SuspendImminent::Reason reason,
                      base::TimeDelta sleep_duration) {
-    fake_power_manager_client_.SendSuspendImminent(reason);
-    GetTaskRunner()->FastForwardBy(sleep_duration);
-    fake_power_manager_client_.SendSuspendDone(sleep_duration);
+    FakePowerManagerClient::Get()->SendSuspendImminent(reason);
+    thread_bundle()->FastForwardBy(sleep_duration);
+    FakePowerManagerClient::Get()->SendSuspendDone(sleep_duration);
   }
 
   void ReportInactivityDelays(base::TimeDelta screen_dim_delay,
@@ -214,11 +256,11 @@ class UserActivityManagerTest : public ChromeRenderViewHostTestHarness {
     power_manager::PowerManagementPolicy::Delays proto;
     proto.set_screen_dim_ms(screen_dim_delay.InMilliseconds());
     proto.set_screen_off_ms(screen_off_delay.InMilliseconds());
-    fake_power_manager_client_.SetInactivityDelays(proto);
+    FakePowerManagerClient::Get()->SetInactivityDelays(proto);
   }
 
   int GetNumberOfDeferredDims() {
-    return fake_power_manager_client_.num_defer_screen_dim_calls();
+    return FakePowerManagerClient::Get()->num_defer_screen_dim_calls();
   }
 
   TabProperty UpdateOpenTabURL() {
@@ -271,17 +313,13 @@ class UserActivityManagerTest : public ChromeRenderViewHostTestHarness {
     content::WebContents* contents =
         tab_activity_simulator_.AddWebContentsAndNavigate(tab_strip_model, url);
     if (is_active) {
-      tab_strip_model->ActivateTabAt(tab_strip_model->count() - 1, false);
+      tab_strip_model->ActivateTabAt(tab_strip_model->count() - 1);
     }
     if (!mime_type.empty())
       WebContentsTester::For(contents)->SetMainFrameMimeType(mime_type);
 
     WebContentsTester::For(contents)->TestSetIsLoading(false);
     return ukm::GetSourceIdForWebContentsDocument(contents);
-  }
-
-  const scoped_refptr<base::TestMockTimeTaskRunner>& GetTaskRunner() {
-    return task_runner_;
   }
 
   TestingUserActivityUkmLogger delegate_;
@@ -297,11 +335,8 @@ class UserActivityManagerTest : public ChromeRenderViewHostTestHarness {
   const GURL url4_ = GURL("https://example4.com/");
 
  private:
-  scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
-
   ui::UserActivityDetector user_activity_detector_;
   std::unique_ptr<IdleEventNotifier> idle_event_notifier_;
-  chromeos::FakePowerManagerClient fake_power_manager_client_;
   session_manager::SessionManager session_manager_;
   std::unique_ptr<UserActivityManager> activity_logger_;
 
@@ -311,10 +346,13 @@ class UserActivityManagerTest : public ChromeRenderViewHostTestHarness {
 // After an idle event, we have a ui::Event, we should expect one
 // UserActivityEvent.
 TEST_F(UserActivityManagerTest, LogAfterIdleEvent) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(features::kUserActivityPrediction);
+
   // Trigger an idle event.
   const IdleEventNotifier::ActivityData data;
   ReportIdleEvent(data);
-  GetTaskRunner()->FastForwardBy(base::TimeDelta::FromSeconds(2));
+  thread_bundle()->FastForwardBy(base::TimeDelta::FromSeconds(2));
   ReportUserActivity(nullptr);
 
   const std::vector<UserActivityEvent>& events = delegate_.events();
@@ -335,6 +373,9 @@ TEST_F(UserActivityManagerTest, LogAfterIdleEvent) {
 
 // Get a user event before an idle event, we should not log it.
 TEST_F(UserActivityManagerTest, LogBeforeIdleEvent) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(features::kUserActivityPrediction);
+
   ReportUserActivity(nullptr);
   // Trigger an idle event.
   const IdleEventNotifier::ActivityData data;
@@ -346,6 +387,9 @@ TEST_F(UserActivityManagerTest, LogBeforeIdleEvent) {
 // Get a user event, then an idle event, then another user event,
 // we should log the last one.
 TEST_F(UserActivityManagerTest, LogSecondEvent) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(features::kUserActivityPrediction);
+
   ReportUserActivity(nullptr);
   // Trigger an idle event.
   const IdleEventNotifier::ActivityData data;
@@ -371,6 +415,9 @@ TEST_F(UserActivityManagerTest, LogSecondEvent) {
 
 // Log multiple events.
 TEST_F(UserActivityManagerTest, LogMultipleEvents) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(features::kUserActivityPrediction);
+
   // Trigger the 1st idle event.
   const IdleEventNotifier::ActivityData data;
   ReportIdleEvent(data);
@@ -380,18 +427,18 @@ TEST_F(UserActivityManagerTest, LogMultipleEvents) {
   // Trigger the 2nd idle event.
   ReportIdleEvent(data);
   // Second user event.
-  GetTaskRunner()->FastForwardBy(base::TimeDelta::FromSeconds(2));
+  thread_bundle()->FastForwardBy(base::TimeDelta::FromSeconds(2));
   ReportUserActivity(nullptr);
 
   // Trigger the 3rd idle event.
   ReportIdleEvent(data);
-  GetTaskRunner()->FastForwardBy(base::TimeDelta::FromSeconds(3));
+  thread_bundle()->FastForwardBy(base::TimeDelta::FromSeconds(3));
   ReportSuspend(power_manager::SuspendImminent_Reason_IDLE,
                 base::TimeDelta::FromSeconds(10));
 
   // Trigger the 4th idle event.
   ReportIdleEvent(data);
-  GetTaskRunner()->FastForwardBy(base::TimeDelta::FromSeconds(4));
+  thread_bundle()->FastForwardBy(base::TimeDelta::FromSeconds(4));
   ReportSuspend(power_manager::SuspendImminent_Reason_IDLE,
                 base::TimeDelta::FromSeconds(10));
 
@@ -453,18 +500,24 @@ TEST_F(UserActivityManagerTest, LogMultipleEvents) {
 }
 
 TEST_F(UserActivityManagerTest, UserCloseLid) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(features::kUserActivityPrediction);
+
   ReportLidEvent(chromeos::PowerManagerClient::LidState::OPEN);
   // Trigger an idle event.
   const IdleEventNotifier::ActivityData data;
   ReportIdleEvent(data);
 
-  GetTaskRunner()->FastForwardBy(base::TimeDelta::FromSeconds(2));
+  thread_bundle()->FastForwardBy(base::TimeDelta::FromSeconds(2));
   ReportLidEvent(chromeos::PowerManagerClient::LidState::CLOSED);
   const std::vector<UserActivityEvent>& events = delegate_.events();
   EXPECT_TRUE(events.empty());
 }
 
 TEST_F(UserActivityManagerTest, PowerChangeActivity) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(features::kUserActivityPrediction);
+
   ReportPowerChangeEvent(power_manager::PowerSupplyProperties::AC, 23.0f);
   // Trigger an idle event.
   const IdleEventNotifier::ActivityData data;
@@ -488,6 +541,9 @@ TEST_F(UserActivityManagerTest, PowerChangeActivity) {
 }
 
 TEST_F(UserActivityManagerTest, VideoActivity) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(features::kUserActivityPrediction);
+
   // Trigger an idle event.
   const IdleEventNotifier::ActivityData data;
   ReportIdleEvent(data);
@@ -509,12 +565,15 @@ TEST_F(UserActivityManagerTest, VideoActivity) {
 // System remains idle, screen is dimmed then turned off, and system is finally
 // suspended.
 TEST_F(UserActivityManagerTest, SystemIdleSuspend) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(features::kUserActivityPrediction);
+
   // Trigger an idle event.
   const IdleEventNotifier::ActivityData data;
   ReportIdleEvent(data);
-  GetTaskRunner()->FastForwardBy(base::TimeDelta::FromSeconds(20));
+  thread_bundle()->FastForwardBy(base::TimeDelta::FromSeconds(20));
   ReportScreenIdleState(true /* screen_dim */, false /* screen_off */);
-  GetTaskRunner()->FastForwardBy(base::TimeDelta::FromSeconds(30));
+  thread_bundle()->FastForwardBy(base::TimeDelta::FromSeconds(30));
   ReportScreenIdleState(true /* screen_dim */, true /* screen_off */);
   ReportSuspend(power_manager::SuspendImminent_Reason_IDLE,
                 base::TimeDelta::FromSeconds(10));
@@ -535,14 +594,17 @@ TEST_F(UserActivityManagerTest, SystemIdleSuspend) {
 // System remains idle, screen is dimmed then turned off, but system is not
 // suspended.
 TEST_F(UserActivityManagerTest, SystemIdleNotSuspend) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(features::kUserActivityPrediction);
+
   // Trigger an idle event.
   const IdleEventNotifier::ActivityData data;
   ReportIdleEvent(data);
-  GetTaskRunner()->FastForwardBy(base::TimeDelta::FromSeconds(20));
+  thread_bundle()->FastForwardBy(base::TimeDelta::FromSeconds(20));
   ReportScreenIdleState(true /* screen_dim */, false /* screen_off */);
-  GetTaskRunner()->FastForwardBy(base::TimeDelta::FromSeconds(30));
+  thread_bundle()->FastForwardBy(base::TimeDelta::FromSeconds(30));
   ReportScreenIdleState(true /* screen_dim */, true /* screen_off */);
-  GetTaskRunner()->FastForwardUntilNoTasksRemain();
+  thread_bundle()->RunUntilIdle();
 
   const std::vector<UserActivityEvent>& events = delegate_.events();
   ASSERT_EQ(0U, events.size());
@@ -551,18 +613,21 @@ TEST_F(UserActivityManagerTest, SystemIdleNotSuspend) {
 // Test system idle interrupt by user activity.
 // We should only observe user activity.
 TEST_F(UserActivityManagerTest, SystemIdleInterrupted) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(features::kUserActivityPrediction);
+
   // Trigger an idle event.
   const IdleEventNotifier::ActivityData data;
   ReportIdleEvent(data);
 
-  GetTaskRunner()->FastForwardBy(base::TimeDelta::FromSeconds(20));
+  thread_bundle()->FastForwardBy(base::TimeDelta::FromSeconds(20));
   ReportScreenIdleState(true /* screen_dim */, false /* screen_off */);
-  GetTaskRunner()->FastForwardBy(base::TimeDelta::FromSeconds(30));
+  thread_bundle()->FastForwardBy(base::TimeDelta::FromSeconds(30));
   ReportScreenIdleState(true /* screen_dim */, true /* screen_off */);
-  GetTaskRunner()->FastForwardBy(base::TimeDelta::FromSeconds(1));
+  thread_bundle()->FastForwardBy(base::TimeDelta::FromSeconds(1));
 
   ReportUserActivity(nullptr);
-  GetTaskRunner()->FastForwardUntilNoTasksRemain();
+  thread_bundle()->RunUntilIdle();
 
   const std::vector<UserActivityEvent>& events = delegate_.events();
   ASSERT_EQ(1U, events.size());
@@ -578,6 +643,9 @@ TEST_F(UserActivityManagerTest, SystemIdleInterrupted) {
 }
 
 TEST_F(UserActivityManagerTest, ScreenLockNoSuspend) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(features::kUserActivityPrediction);
+
   // Trigger an idle event.
   const IdleEventNotifier::ActivityData data;
   ReportIdleEvent(data);
@@ -588,6 +656,9 @@ TEST_F(UserActivityManagerTest, ScreenLockNoSuspend) {
 }
 
 TEST_F(UserActivityManagerTest, ScreenLockWithSuspend) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(features::kUserActivityPrediction);
+
   // Trigger an idle event.
   const IdleEventNotifier::ActivityData data;
   ReportIdleEvent(data);
@@ -612,11 +683,14 @@ TEST_F(UserActivityManagerTest, ScreenLockWithSuspend) {
 // As we log when SuspendImminent is received, sleep duration from SuspendDone
 // doesn't make any difference.
 TEST_F(UserActivityManagerTest, SuspendIdleShortSleepDuration) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(features::kUserActivityPrediction);
+
   // Trigger an idle event.
   const IdleEventNotifier::ActivityData data;
   ReportIdleEvent(data);
 
-  GetTaskRunner()->FastForwardBy(base::TimeDelta::FromSeconds(20));
+  thread_bundle()->FastForwardBy(base::TimeDelta::FromSeconds(20));
   ReportSuspend(power_manager::SuspendImminent_Reason_IDLE,
                 base::TimeDelta::FromSeconds(1));
   const std::vector<UserActivityEvent>& events = delegate_.events();
@@ -633,6 +707,9 @@ TEST_F(UserActivityManagerTest, SuspendIdleShortSleepDuration) {
 }
 
 TEST_F(UserActivityManagerTest, SuspendLidClosed) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(features::kUserActivityPrediction);
+
   // Trigger an idle event.
   const IdleEventNotifier::ActivityData data;
   ReportIdleEvent(data);
@@ -653,6 +730,9 @@ TEST_F(UserActivityManagerTest, SuspendLidClosed) {
 }
 
 TEST_F(UserActivityManagerTest, SuspendOther) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(features::kUserActivityPrediction);
+
   // Trigger an idle event.
   const IdleEventNotifier::ActivityData data;
   ReportIdleEvent(data);
@@ -674,6 +754,9 @@ TEST_F(UserActivityManagerTest, SuspendOther) {
 
 // Test feature extraction.
 TEST_F(UserActivityManagerTest, FeatureExtraction) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(features::kUserActivityPrediction);
+
   ReportLidEvent(chromeos::PowerManagerClient::LidState::OPEN);
   ReportTabletModeEvent(chromeos::PowerManagerClient::TabletMode::UNSUPPORTED);
   ReportPowerChangeEvent(power_manager::PowerSupplyProperties::AC, 23.0f);
@@ -721,6 +804,9 @@ TEST_F(UserActivityManagerTest, FeatureExtraction) {
 }
 
 TEST_F(UserActivityManagerTest, ManagedDevice) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(features::kUserActivityPrediction);
+
   fake_user_manager_.set_is_enterprise_managed(true);
 
   const IdleEventNotifier::ActivityData data;
@@ -735,6 +821,9 @@ TEST_F(UserActivityManagerTest, ManagedDevice) {
 }
 
 TEST_F(UserActivityManagerTest, DimAndOffDelays) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(features::kUserActivityPrediction);
+
   ReportInactivityDelays(
       base::TimeDelta::FromMilliseconds(2000) /* screen_dim_delay */,
       base::TimeDelta::FromMilliseconds(3000) /* screen_off_delay */);
@@ -751,6 +840,9 @@ TEST_F(UserActivityManagerTest, DimAndOffDelays) {
 }
 
 TEST_F(UserActivityManagerTest, DimDelays) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(features::kUserActivityPrediction);
+
   ReportInactivityDelays(
       base::TimeDelta::FromMilliseconds(2000) /* screen_dim_delay */,
       base::TimeDelta() /* screen_off_delay */);
@@ -767,6 +859,9 @@ TEST_F(UserActivityManagerTest, DimDelays) {
 }
 
 TEST_F(UserActivityManagerTest, OffDelays) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(features::kUserActivityPrediction);
+
   ReportInactivityDelays(
       base::TimeDelta() /* screen_dim_delay */,
       base::TimeDelta::FromMilliseconds(4000) /* screen_off_delay */);
@@ -785,6 +880,9 @@ TEST_F(UserActivityManagerTest, OffDelays) {
 // Screen is off when idle event is reported. No subsequent change in screen
 // state.
 TEST_F(UserActivityManagerTest, InitialScreenOff) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(features::kUserActivityPrediction);
+
   ReportScreenIdleState(true /* screen_dim */, true /* screen_off */);
 
   const IdleEventNotifier::ActivityData data;
@@ -792,7 +890,7 @@ TEST_F(UserActivityManagerTest, InitialScreenOff) {
 
   ReportScreenIdleState(false /* screen_dim */, true /* screen_off */);
 
-  GetTaskRunner()->FastForwardBy(base::TimeDelta::FromSeconds(7));
+  thread_bundle()->FastForwardBy(base::TimeDelta::FromSeconds(7));
   ReportUserActivity(nullptr);
 
   const std::vector<UserActivityEvent>& events = delegate_.events();
@@ -814,13 +912,16 @@ TEST_F(UserActivityManagerTest, InitialScreenOff) {
 // Screen is off when idle event is reported. No subsequent change in screen
 // state.
 TEST_F(UserActivityManagerTest, InitialScreenStateFlipped) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(features::kUserActivityPrediction);
+
   ReportScreenIdleState(true /* screen_dim */, false /* screen_off */);
 
   const IdleEventNotifier::ActivityData data;
   ReportIdleEvent(data);
 
   ReportScreenIdleState(false /* screen_dim */, false /* screen_off */);
-  GetTaskRunner()->FastForwardBy(base::TimeDelta::FromSeconds(7));
+  thread_bundle()->FastForwardBy(base::TimeDelta::FromSeconds(7));
   ReportScreenIdleState(true /* screen_dim */, true /* screen_off */);
 
   ReportUserActivity(nullptr);
@@ -844,12 +945,15 @@ TEST_F(UserActivityManagerTest, InitialScreenStateFlipped) {
 // Screen is off when idle event is reported. No subsequent change in screen
 // state.
 TEST_F(UserActivityManagerTest, ScreenOffStateChanged) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(features::kUserActivityPrediction);
+
   const IdleEventNotifier::ActivityData data;
   ReportIdleEvent(data);
 
   ReportScreenIdleState(true /* screen_dim */, false /* screen_off */);
   ReportScreenIdleState(true /* screen_dim */, true /* screen_off */);
-  GetTaskRunner()->FastForwardBy(base::TimeDelta::FromSeconds(7));
+  thread_bundle()->FastForwardBy(base::TimeDelta::FromSeconds(7));
   ReportScreenIdleState(false /* screen_dim */, false /* screen_off */);
   ReportUserActivity(nullptr);
 
@@ -870,6 +974,7 @@ TEST_F(UserActivityManagerTest, ScreenOffStateChanged) {
 }
 
 TEST_F(UserActivityManagerTest, ScreenDimDeferredWithFinalEvent) {
+  base::HistogramTester histogram_tester;
   const std::map<std::string, std::string> params = {
       {"dim_threshold", "0.651"}};
   base::test::ScopedFeatureList scoped_feature_list;
@@ -881,8 +986,12 @@ TEST_F(UserActivityManagerTest, ScreenDimDeferredWithFinalEvent) {
 
   const IdleEventNotifier::ActivityData data;
   ReportIdleEvent(data);
+  thread_bundle()->RunUntilIdle();
   ReportUserActivity(nullptr);
   EXPECT_EQ(1, GetNumberOfDeferredDims());
+
+  std::string histogram("PowerML.SmartDimModel.RequestCompleteDuration");
+  histogram_tester.ExpectTotalCount(histogram, 1);
 
   const std::vector<UserActivityEvent>& events = delegate_.events();
   ASSERT_EQ(1U, events.size());
@@ -905,6 +1014,7 @@ TEST_F(UserActivityManagerTest, ScreenDimDeferredWithFinalEvent) {
 }
 
 TEST_F(UserActivityManagerTest, ScreenDimDeferredWithoutFinalEvent) {
+  base::HistogramTester histogram_tester;
   const std::map<std::string, std::string> params = {
       {"dim_threshold", "0.651"}};
   base::test::ScopedFeatureList scoped_feature_list;
@@ -916,13 +1026,95 @@ TEST_F(UserActivityManagerTest, ScreenDimDeferredWithoutFinalEvent) {
 
   const IdleEventNotifier::ActivityData data;
   ReportIdleEvent(data);
+  thread_bundle()->RunUntilIdle();
   EXPECT_EQ(1, GetNumberOfDeferredDims());
+
+  std::string histogram("PowerML.SmartDimModel.RequestCompleteDuration");
+  histogram_tester.ExpectTotalCount(histogram, 1);
 
   const std::vector<UserActivityEvent>& events = delegate_.events();
   EXPECT_TRUE(events.empty());
 }
 
+// Tests the cancellation of a Smart Dim decision request, immediately after it
+// has been requested.
+TEST_F(UserActivityManagerTest, ScreenDimRequestCanceled) {
+  base::HistogramTester histogram_tester;
+  const std::map<std::string, std::string> params = {
+      {"dim_threshold", "0.651"}};
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      features::kUserActivityPrediction, params);
+
+  model_.set_inactivity_score(60);
+  model_.set_decision_threshold(65);
+
+  const IdleEventNotifier::ActivityData data;
+  ReportIdleEvent(data);
+  // Report user activity immediately after the idle event, so that
+  // the SmartDimModel doesn't get a chance to run.
+  ReportUserActivity(nullptr);
+  thread_bundle()->RunUntilIdle();
+  EXPECT_EQ(0, GetNumberOfDeferredDims());
+
+  std::string hist_complete("PowerML.SmartDimModel.RequestCompleteDuration");
+  histogram_tester.ExpectTotalCount(hist_complete, 0);
+  std::string hist_cancel("PowerML.SmartDimModel.RequestCanceledDuration");
+  histogram_tester.ExpectTotalCount(hist_cancel, 1);
+
+  // Since the pending SmartDim decision request was canceled, we shouldn't
+  // have any UserActivityEvent generated.
+  const std::vector<UserActivityEvent>& events = delegate_.events();
+  ASSERT_EQ(0U, events.size());
+}
+
+// Tests the cancellation of a Smart Dim decision request, when two idle events
+// occur in quick succession. This verifies that only one request is serviced.
+TEST_F(UserActivityManagerTest, ScreenDimConsecutiveRequests) {
+  base::HistogramTester histogram_tester;
+  const std::map<std::string, std::string> params = {
+      {"dim_threshold", "0.651"}};
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      features::kUserActivityPrediction, params);
+
+  model_.set_inactivity_score(60);
+  model_.set_decision_threshold(65);
+
+  const IdleEventNotifier::ActivityData data;
+  ReportIdleEvent(data);
+  ReportIdleEvent(data);
+  thread_bundle()->RunUntilIdle();
+  ReportUserActivity(nullptr);
+  EXPECT_EQ(1, GetNumberOfDeferredDims());
+
+  std::string hist_complete("PowerML.SmartDimModel.RequestCompleteDuration");
+  histogram_tester.ExpectTotalCount(hist_complete, 1);
+  std::string hist_cancel("PowerML.SmartDimModel.RequestCanceledDuration");
+  histogram_tester.ExpectTotalCount(hist_cancel, 1);
+
+  const std::vector<UserActivityEvent>& events = delegate_.events();
+  ASSERT_EQ(1U, events.size());
+
+  UserActivityEvent::Event expected_event;
+  expected_event.set_type(UserActivityEvent::Event::REACTIVATE);
+  expected_event.set_reason(UserActivityEvent::Event::USER_ACTIVITY);
+  expected_event.set_log_duration_sec(0);
+  expected_event.set_screen_dim_occurred(false);
+  expected_event.set_screen_off_occurred(false);
+  expected_event.set_screen_lock_occurred(false);
+  EqualEvent(expected_event, events[0].event());
+
+  UserActivityEvent::ModelPrediction expected_prediction;
+  expected_prediction.set_decision_threshold(65);
+  expected_prediction.set_inactivity_score(60);
+  expected_prediction.set_model_applied(true);
+  expected_prediction.set_response(UserActivityEvent::ModelPrediction::NO_DIM);
+  EqualModelPrediction(expected_prediction, events[0].model_prediction());
+}
+
 TEST_F(UserActivityManagerTest, ScreenDimNotDeferred) {
+  base::HistogramTester histogram_tester;
   const std::map<std::string, std::string> params = {
       {"dim_threshold", base::NumberToString(0.5)}};
   base::test::ScopedFeatureList scoped_feature_list;
@@ -934,8 +1126,12 @@ TEST_F(UserActivityManagerTest, ScreenDimNotDeferred) {
 
   const IdleEventNotifier::ActivityData data;
   ReportIdleEvent(data);
+  thread_bundle()->RunUntilIdle();
   ReportUserActivity(nullptr);
   EXPECT_EQ(0, GetNumberOfDeferredDims());
+
+  std::string histogram("PowerML.SmartDimModel.RequestCompleteDuration");
+  histogram_tester.ExpectTotalCount(histogram, 1);
 
   const std::vector<UserActivityEvent>& events = delegate_.events();
   ASSERT_EQ(1U, events.size());
@@ -950,6 +1146,7 @@ TEST_F(UserActivityManagerTest, ScreenDimNotDeferred) {
 }
 
 TEST_F(UserActivityManagerTest, TwoScreenDimImminentWithEventInBetween) {
+  base::HistogramTester histogram_tester;
   const std::map<std::string, std::string> params = {
       {"dim_threshold", base::NumberToString(0.5)}};
   base::test::ScopedFeatureList scoped_feature_list;
@@ -962,20 +1159,25 @@ TEST_F(UserActivityManagerTest, TwoScreenDimImminentWithEventInBetween) {
 
   const IdleEventNotifier::ActivityData data;
   ReportIdleEvent(data);
+  thread_bundle()->RunUntilIdle();
   EXPECT_EQ(1, GetNumberOfDeferredDims());
 
-  GetTaskRunner()->FastForwardBy(base::TimeDelta::FromSeconds(6));
+  thread_bundle()->FastForwardBy(base::TimeDelta::FromSeconds(6));
   ReportSuspend(power_manager::SuspendImminent_Reason_IDLE,
                 base::TimeDelta::FromSeconds(3));
 
   // 2nd ScreenDimImminent is not deferred despite model score says so.
   model_.set_inactivity_score(20);
-  GetTaskRunner()->FastForwardBy(base::TimeDelta::FromSeconds(10));
+  thread_bundle()->FastForwardBy(base::TimeDelta::FromSeconds(10));
   ReportIdleEvent(data);
+  thread_bundle()->RunUntilIdle();
   EXPECT_EQ(1, GetNumberOfDeferredDims());
 
+  std::string histogram("PowerML.SmartDimModel.RequestCompleteDuration");
+  histogram_tester.ExpectTotalCount(histogram, 2);
+
   // Log when a SuspendImminent is received
-  GetTaskRunner()->FastForwardBy(base::TimeDelta::FromSeconds(20));
+  thread_bundle()->FastForwardBy(base::TimeDelta::FromSeconds(20));
   ReportSuspend(power_manager::SuspendImminent_Reason_IDLE,
                 base::TimeDelta::FromSeconds(3));
 
@@ -1019,6 +1221,7 @@ TEST_F(UserActivityManagerTest, TwoScreenDimImminentWithEventInBetween) {
 }
 
 TEST_F(UserActivityManagerTest, TwoScreenDimImminentWithoutEventInBetween) {
+  base::HistogramTester histogram_tester;
   const std::map<std::string, std::string> params = {
       {"dim_threshold", base::NumberToString(0.5)}};
   base::test::ScopedFeatureList scoped_feature_list;
@@ -1030,16 +1233,21 @@ TEST_F(UserActivityManagerTest, TwoScreenDimImminentWithoutEventInBetween) {
   model_.set_inactivity_score(40);
   const IdleEventNotifier::ActivityData data;
   ReportIdleEvent(data);
+  thread_bundle()->RunUntilIdle();
   EXPECT_EQ(1, GetNumberOfDeferredDims());
 
   // 2nd ScreenDimImminent is not deferred despite model score says so.
   model_.set_inactivity_score(20);
-  GetTaskRunner()->FastForwardBy(base::TimeDelta::FromSeconds(10));
+  thread_bundle()->FastForwardBy(base::TimeDelta::FromSeconds(10));
   ReportIdleEvent(data);
+  thread_bundle()->RunUntilIdle();
   EXPECT_EQ(1, GetNumberOfDeferredDims());
 
+  std::string histogram("PowerML.SmartDimModel.RequestCompleteDuration");
+  histogram_tester.ExpectTotalCount(histogram, 2);
+
   // Log when a SuspendImminent is received
-  GetTaskRunner()->FastForwardBy(base::TimeDelta::FromSeconds(20));
+  thread_bundle()->FastForwardBy(base::TimeDelta::FromSeconds(20));
   ReportSuspend(power_manager::SuspendImminent_Reason_IDLE,
                 base::TimeDelta::FromSeconds(3));
 
@@ -1078,6 +1286,7 @@ TEST_F(UserActivityManagerTest, TwoScreenDimImminentWithoutEventInBetween) {
 }
 
 TEST_F(UserActivityManagerTest, ModelError) {
+  base::HistogramTester histogram_tester;
   const std::map<std::string, std::string> params = {
       {"dim_threshold", "0.651"}};
   base::test::ScopedFeatureList scoped_feature_list;
@@ -1090,8 +1299,12 @@ TEST_F(UserActivityManagerTest, ModelError) {
 
   const IdleEventNotifier::ActivityData data;
   ReportIdleEvent(data);
+  thread_bundle()->RunUntilIdle();
   ReportUserActivity(nullptr);
   EXPECT_EQ(0, GetNumberOfDeferredDims());
+
+  std::string histogram("PowerML.SmartDimModel.RequestCompleteDuration");
+  histogram_tester.ExpectTotalCount(histogram, 1);
 
   const std::vector<UserActivityEvent>& events = delegate_.events();
   ASSERT_EQ(1U, events.size());
@@ -1112,7 +1325,11 @@ TEST_F(UserActivityManagerTest, ModelError) {
   EqualModelPrediction(expected_prediction, events[0].model_prediction());
 }
 
-TEST_F(UserActivityManagerTest, BasicTabs) {
+// Test is flaky. See https://crbug.com/938055.
+TEST_F(UserActivityManagerTest, DISABLED_BasicTabs) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(features::kUserActivityPrediction);
+
   std::unique_ptr<Browser> browser =
       CreateTestBrowser(true /* is_visible */, true /* is_focused */);
   BrowserList::GetInstance()->SetLastActive(browser.get());
@@ -1140,7 +1357,11 @@ TEST_F(UserActivityManagerTest, BasicTabs) {
   tab_strip_model->CloseAllTabs();
 }
 
-TEST_F(UserActivityManagerTest, MultiBrowsersAndTabs) {
+// Test is flaky. See https://crbug.com/938141.
+TEST_F(UserActivityManagerTest, DISABLED_MultiBrowsersAndTabs) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(features::kUserActivityPrediction);
+
   // Simulates three browsers:
   //  - browser1 is the last active but minimized and so not visible.
   //  - browser2 and browser3 are both visible but browser2 is the topmost.
@@ -1185,6 +1406,9 @@ TEST_F(UserActivityManagerTest, MultiBrowsersAndTabs) {
 }
 
 TEST_F(UserActivityManagerTest, Incognito) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(features::kUserActivityPrediction);
+
   std::unique_ptr<Browser> browser = CreateTestBrowser(
       true /* is_visible */, true /* is_focused */, true /* is_incognito */);
   BrowserList::GetInstance()->SetLastActive(browser.get());
@@ -1210,6 +1434,9 @@ TEST_F(UserActivityManagerTest, Incognito) {
 }
 
 TEST_F(UserActivityManagerTest, NoOpenTabs) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(features::kUserActivityPrediction);
+
   std::unique_ptr<Browser> browser =
       CreateTestBrowser(true /* is_visible */, true /* is_focused */);
 

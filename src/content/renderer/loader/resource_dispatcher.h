@@ -15,14 +15,13 @@
 #include <vector>
 
 #include "base/containers/circular_deque.h"
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
+#include "content/public/common/previews_state.h"
 #include "content/public/common/resource_load_info.mojom.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/url_loader_throttle.h"
@@ -46,7 +45,6 @@ struct RedirectInfo;
 }
 
 namespace network {
-struct ResourceResponseInfo;
 struct ResourceRequest;
 struct ResourceResponseHead;
 struct URLLoaderCompletionStatus;
@@ -130,12 +128,11 @@ class CONTENT_EXPORT ResourceDispatcher {
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
       std::unique_ptr<NavigationResponseOverrideParameters>
-          response_override_params,
-      base::OnceClosure* continue_navigation_function);
+          response_override_params);
 
   // Removes a request from the |pending_requests_| list, returning true if the
   // request was found and removed.
-  bool RemovePendingRequest(
+  virtual bool RemovePendingRequest(
       int request_id,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
@@ -183,8 +180,6 @@ class CONTENT_EXPORT ResourceDispatcher {
                        ResourceType resource_type,
                        int render_frame_id,
                        const GURL& request_url,
-                       const std::string& method,
-                       const GURL& referrer,
                        std::unique_ptr<NavigationResponseOverrideParameters>
                            response_override_params);
 
@@ -199,29 +194,23 @@ class CONTENT_EXPORT ResourceDispatcher {
     // The url, method and referrer of the latest response even in case of
     // redirection.
     GURL response_url;
-    std::string response_method;
-    GURL response_referrer;
     bool has_pending_redirect = false;
     base::TimeTicks local_request_start;
     base::TimeTicks local_response_start;
     base::TimeTicks remote_request_start;
     net::LoadTimingInfo load_timing_info;
-    linked_ptr<base::SharedMemory> buffer;
-    int buffer_size;
-    net::HostPortPair host_port_pair;
-    bool network_accessed = false;
-    std::string mime_type;
     std::unique_ptr<NavigationResponseOverrideParameters>
         navigation_response_override;
     bool should_follow_redirect = true;
-    bool always_access_network = false;
     bool redirect_requires_loader_restart = false;
     // Network error code the request completed with, or net::ERR_IO_PENDING if
     // it's not completed. Used both to distinguish completion from
     // cancellation, and to log histograms.
     int net_error = net::ERR_IO_PENDING;
+    PreviewsState previews_state = PreviewsTypes::PREVIEWS_UNSPECIFIED;
 
-    std::vector<content::mojom::RedirectInfoPtr> redirect_info_chain;
+    // These stats will be sent to the browser process.
+    mojom::ResourceLoadInfoPtr resource_load_info;
 
     // For mojo loading.
     std::unique_ptr<ThrottlingURLLoader> url_loader;
@@ -251,10 +240,10 @@ class CONTENT_EXPORT ResourceDispatcher {
   void OnRequestComplete(int request_id,
                          const network::URLLoaderCompletionStatus& status);
 
-  void ToResourceResponseInfo(
+  void ToResourceResponseHead(
       const PendingRequestInfo& request_info,
       const network::ResourceResponseHead& browser_info,
-      network::ResourceResponseInfo* renderer_info) const;
+      network::ResourceResponseHead* renderer_info) const;
 
   void ContinueForNavigation(int request_id);
 

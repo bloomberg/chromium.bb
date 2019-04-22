@@ -11,14 +11,14 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "base/component_export.h"
 #include "base/files/scoped_file.h"
-#include "chromeos/chromeos_export.h"
 
 namespace chromeos {
 
 // This class works with the Chrome OS permission broker to open a port in the
 // system firewall. It is closed on destruction.
-class CHROMEOS_EXPORT FirewallHole {
+class COMPONENT_EXPORT(CHROMEOS_NETWORK) FirewallHole {
  public:
   enum class PortType {
     UDP,

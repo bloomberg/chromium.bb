@@ -86,17 +86,13 @@ TouchEventContext& TreeScopeEventContext::EnsureTouchEventContext() {
   return *touch_event_context_;
 }
 
-TreeScopeEventContext* TreeScopeEventContext::Create(TreeScope& tree_scope) {
-  return MakeGarbageCollected<TreeScopeEventContext>(tree_scope);
-}
-
 TreeScopeEventContext::TreeScopeEventContext(TreeScope& tree_scope)
     : tree_scope_(tree_scope),
       containing_closed_shadow_tree_(nullptr),
       pre_order_(-1),
       post_order_(-1) {}
 
-void TreeScopeEventContext::Trace(blink::Visitor* visitor) {
+void TreeScopeEventContext::Trace(Visitor* visitor) {
   visitor->Trace(tree_scope_);
   visitor->Trace(target_);
   visitor->Trace(related_target_);
@@ -110,8 +106,9 @@ int TreeScopeEventContext::CalculateTreeOrderAndSetNearestAncestorClosedTree(
     int order_number,
     TreeScopeEventContext* nearest_ancestor_closed_tree_scope_event_context) {
   pre_order_ = order_number;
+  auto* shadow_root = DynamicTo<ShadowRoot>(&RootNode());
   containing_closed_shadow_tree_ =
-      (RootNode().IsShadowRoot() && !ToShadowRoot(RootNode()).IsOpenOrV0())
+      (shadow_root && !shadow_root->IsOpenOrV0())
           ? this
           : nearest_ancestor_closed_tree_scope_event_context;
   for (const auto& context : children_) {

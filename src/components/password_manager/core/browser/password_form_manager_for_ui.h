@@ -63,8 +63,6 @@ class PasswordFormManagerForUI {
   // editing is implemented.
   virtual bool IsPasswordOverridden() const = 0;
 
-  virtual const autofill::PasswordForm* GetPreferredMatch() const = 0;
-
   // Handles save-as-new or update of the form managed by this manager.
   virtual void Save() = 0;
 
@@ -143,10 +141,6 @@ class PasswordFormManagerInterface : public PasswordFormManagerForUI {
   // True if we consider this form to be a change password form without username
   // field. We use only client heuristics, so it could include signup forms.
   virtual bool IsPossibleChangePasswordFormWithoutUsername() const = 0;
-
-  // A form is considered to be "retry" password if it has only one field which
-  // is a current password field.
-  virtual bool RetryPasswordFormPasswordUpdate() const = 0;
 
   // Helper function that determines whether update or save prompt should be
   // shown for credentials in |provisional_save_manager|.

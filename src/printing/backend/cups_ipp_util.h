@@ -7,6 +7,7 @@
 #ifndef PRINTING_BACKEND_CUPS_IPP_UTIL_H_
 #define PRINTING_BACKEND_CUPS_IPP_UTIL_H_
 
+#include <memory>
 #include <vector>
 
 #include "printing/backend/cups_printer.h"
@@ -20,9 +21,15 @@ extern const char kIppCopies[];
 extern const char kIppColor[];
 extern const char kIppMedia[];
 extern const char kIppDuplex[];
+extern const char kIppDocumentName[];
+extern const char kIppRequestingUserName[];
+extern const char kIppPin[];
+extern const char kIppPinEncryption[];
 
 extern const char kCollated[];
 extern const char kUncollated[];
+
+extern const char kPinEncryptionNone[];
 
 // Smart ptr wrapper for CUPS ipp_t
 using ScopedIppPtr = std::unique_ptr<ipp_t, void (*)(ipp_t*)>;
@@ -38,7 +45,7 @@ PrinterSemanticCapsAndDefaults::Paper DefaultPaper(
     const CupsOptionProvider& printer);
 
 // Returns the list of papers supported by the |printer|.
-std::vector<PrinterSemanticCapsAndDefaults::Paper> SupportedPapers(
+PrinterSemanticCapsAndDefaults::Papers SupportedPapers(
     const CupsOptionProvider& printer);
 
 // Retrieves the supported number of copies from |printer| and writes the

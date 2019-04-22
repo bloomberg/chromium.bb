@@ -32,9 +32,9 @@
 #include "base/trace_event/memory_dump_provider.h"
 #endif  // BUILDFLAG(DEVTOOLS_INSTRUMENTATION_DUMPING)
 
-#if !defined(ARCH_CPU_ARMEL)
-#error Only supported on ARM.
-#endif  // !defined(ARCH_CPU_ARMEL)
+#if !BUILDFLAG(SUPPORTS_CODE_ORDERING)
+#error Only supported on architectures supporting code ordering (arm/arm64).
+#endif  // !BUILDFLAG(SUPPORTS_CODE_ORDERING)
 
 // Must be applied to all functions within this file.
 #define NO_INSTRUMENT_FUNCTION __attribute__((no_instrument_function))

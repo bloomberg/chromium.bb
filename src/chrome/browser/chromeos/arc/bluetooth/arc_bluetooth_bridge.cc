@@ -15,6 +15,7 @@
 
 #include "ash/public/cpp/ash_pref_names.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/containers/queue.h"
@@ -30,10 +31,10 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/bluetooth_pairing_dialog.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/bluetooth/bluetooth_type_converters.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
+#include "components/arc/session/arc_bridge_service.h"
 #include "components/device_event_log/device_event_log.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
@@ -449,7 +450,7 @@ ArcBluetoothBridge::ArcBluetoothBridge(content::BrowserContext* context,
 
   if (BluetoothAdapterFactory::IsBluetoothSupported()) {
     VLOG(1) << "Registering bluetooth adapter.";
-    BluetoothAdapterFactory::GetAdapter(base::Bind(
+    BluetoothAdapterFactory::GetAdapter(base::BindOnce(
         &ArcBluetoothBridge::OnAdapterInitialized, weak_factory_.GetWeakPtr()));
   } else {
     VLOG(1) << "Bluetooth not supported.";
@@ -1009,7 +1010,7 @@ void ArcBluetoothBridge::OnSetDiscoverable(bool discoverable,
 void ArcBluetoothBridge::SetDiscoverable(bool discoverable, uint32_t timeout) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(bluetooth_adapter_);
-  DCHECK(!discoverable || timeout == 0);
+  DCHECK(!discoverable || timeout != 0);
 
   bool currently_discoverable = bluetooth_adapter_->IsDiscoverable();
 
@@ -1058,7 +1059,7 @@ void ArcBluetoothBridge::SetAdapterProperty(
   if (property->is_discovery_timeout()) {
     uint32_t discovery_timeout = property->get_discovery_timeout();
     if (discovery_timeout > 0) {
-      SetDiscoverable(true, discovery_timeout);
+      discoverable_off_timeout_ = discovery_timeout;
     } else {
       OnSetAdapterProperty(mojom::BluetoothStatus::PARM_INVALID,
                            std::move(property));
@@ -1074,14 +1075,14 @@ void ArcBluetoothBridge::SetAdapterProperty(
                    weak_factory_.GetWeakPtr(), mojom::BluetoothStatus::FAIL,
                    base::Passed(&property_clone)));
   } else if (property->is_adapter_scan_mode()) {
-    // Android will set adapter scan mode in these 3 situations.
-    // 1) Set to BT_SCAN_MODE_NONE just before turning BT off.
-    // 2) Set to BT_SCAN_MODE_CONNECTABLE just after turning on.
-    // 3) Set to BT_SCAN_MODE_CONNECTABLE_DISCOVERABLE just before set the
-    //    discoverable timeout.
-    // Since turning BT off/on implied scan mode none/connectable and setting
-    // discovery timeout implied scan mode discoverable, we don't need to
-    // do anything here. We will just call success callback in this case.
+    // Only set the BT scan mode to discoverable if requested and Android has
+    // set a discovery timeout previously.
+    if (property->get_adapter_scan_mode() ==
+        mojom::BluetoothScanMode::CONNECTABLE_DISCOVERABLE) {
+      SetDiscoverable(discoverable_off_timeout_ > 0, discoverable_off_timeout_);
+    } else {
+      SetDiscoverable(/*discoverable=*/false, /*timeout=*/0);
+    }
     OnSetAdapterProperty(mojom::BluetoothStatus::SUCCESS, std::move(property));
   } else {
     // Android does not set any other property type.

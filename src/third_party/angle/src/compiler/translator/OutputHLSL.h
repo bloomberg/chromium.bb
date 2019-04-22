@@ -47,7 +47,8 @@ class OutputHLSL : public TIntermTraverser
                ShCompileOptions compileOptions,
                sh::WorkGroupSize workGroupSize,
                TSymbolTable *symbolTable,
-               PerformanceDiagnostics *perfDiagnostics);
+               PerformanceDiagnostics *perfDiagnostics,
+               const std::vector<InterfaceBlock> &shaderStorageBlocks);
 
     ~OutputHLSL();
 
@@ -56,6 +57,9 @@ class OutputHLSL : public TIntermTraverser
     const std::map<std::string, unsigned int> &getShaderStorageBlockRegisterMap() const;
     const std::map<std::string, unsigned int> &getUniformBlockRegisterMap() const;
     const std::map<std::string, unsigned int> &getUniformRegisterMap() const;
+    unsigned int getReadonlyImage2DRegisterIndex() const;
+    unsigned int getImage2DRegisterIndex() const;
+    const std::set<std::string> &getUsedImage2DFunctionNames() const;
 
     TInfoSinkBase &getInfoSink()
     {

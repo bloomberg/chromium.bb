@@ -51,7 +51,7 @@ WebSelectElement::WebSelectElement(HTMLSelectElement* element)
     : WebFormControlElement(element) {}
 
 DEFINE_WEB_NODE_TYPE_CASTS(WebSelectElement,
-                           IsHTMLSelectElement(ConstUnwrap<Node>()));
+                           IsHTMLSelectElement(ConstUnwrap<Node>()))
 
 WebSelectElement& WebSelectElement::operator=(HTMLSelectElement* element) {
   private_ = element;

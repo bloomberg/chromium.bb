@@ -694,13 +694,9 @@ Shader MyInstance::CreateProgram(const char* vertex_shader,
       context_->pp_resource(), pos_location, 2, GL_FLOAT, GL_FALSE, 0, 0);
   gles2_if_->EnableVertexAttribArray(context_->pp_resource(), tc_location);
   gles2_if_->VertexAttribPointer(
-      context_->pp_resource(),
-      tc_location,
-      2,
-      GL_FLOAT,
-      GL_FALSE,
-      0,
-      static_cast<float*>(0) + 8);  // Skip position coordinates.
+      context_->pp_resource(), tc_location, 2, GL_FLOAT, GL_FALSE, 0,
+      reinterpret_cast<void*>(8 *
+                              sizeof(GLfloat)));  // Skip position coordinates.
 
   gles2_if_->UseProgram(context_->pp_resource(), 0);
   assertNoGLError();

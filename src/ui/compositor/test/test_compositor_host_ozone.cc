@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "ui/compositor/compositor.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
@@ -72,6 +73,7 @@ class TestCompositorHostOzone : public TestCompositorHost {
   ui::Compositor compositor_;
   std::unique_ptr<PlatformWindow> window_;
   StubPlatformWindowDelegate window_delegate_;
+  viz::ParentLocalSurfaceIdAllocator allocator_;
 
   DISALLOW_COPY_AND_ASSIGN(TestCompositorHostOzone);
 };
@@ -85,7 +87,6 @@ TestCompositorHostOzone::TestCompositorHostOzone(
                   context_factory,
                   context_factory_private,
                   base::ThreadTaskRunnerHandle::Get(),
-                  false /* enable_surface_synchronization */,
                   false /* enable_pixel_canvas */) {}
 
 TestCompositorHostOzone::~TestCompositorHostOzone() {
@@ -103,9 +104,10 @@ void TestCompositorHostOzone::Show() {
   window_->Show();
   DCHECK_NE(window_delegate_.widget(), gfx::kNullAcceleratedWidget);
 
+  allocator_.GenerateId();
   compositor_.SetAcceleratedWidget(window_delegate_.widget());
   compositor_.SetScaleAndSize(1.0f, bounds_.size(),
-                              viz::LocalSurfaceIdAllocation());
+                              allocator_.GetCurrentLocalSurfaceIdAllocation());
   compositor_.SetVisible(true);
 }
 

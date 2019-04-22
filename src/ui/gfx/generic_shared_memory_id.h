@@ -8,8 +8,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "base/containers/hash_tables.h"
-#include "base/hash.h"
+#include <functional>
+
+#include "base/hash/hash.h"
 #include "base/trace_event/memory_allocator_dump.h"
 #include "ui/gfx/gfx_export.h"
 
@@ -49,12 +50,12 @@ GetGenericSharedGpuMemoryGUIDForTracing(
 
 }  // namespace gfx
 
-namespace BASE_HASH_NAMESPACE {
+namespace std {
 
 template <>
 struct hash<gfx::GenericSharedMemoryId> {
   size_t operator()(gfx::GenericSharedMemoryId key) const {
-    return BASE_HASH_NAMESPACE::hash<int>()(key.id);
+    return std::hash<int>()(key.id);
   }
 };
 
@@ -66,6 +67,6 @@ struct hash<std::pair<gfx::GenericSharedMemoryId, Second>> {
   }
 };
 
-}  // namespace BASE_HASH_NAMESPACE
+}  // namespace std
 
 #endif  // UI_GFX_GENERIC_SHARED_MEMORY_ID_H_

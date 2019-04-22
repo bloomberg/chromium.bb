@@ -77,7 +77,7 @@ class CORE_EXPORT DocumentLifecycle {
 
     // In InPaint step, paint artifacts are generated and raster invalidations
     // are issued.
-    // In SPv2, composited layers are generated/updated.
+    // In CAP, composited layers are generated/updated.
     kInPaint,
     kPaintClean,
 
@@ -186,6 +186,8 @@ class CORE_EXPORT DocumentLifecycle {
   // layout or style computation is allowed.
   // This class should never be used outside of debugging.
   class PostponeTransitionScope {
+    USING_FAST_MALLOC(PostponeTransitionScope);
+
    public:
     explicit PostponeTransitionScope(DocumentLifecycle& document_lifecycle)
         : document_lifecycle_(document_lifecycle) {
@@ -287,7 +289,7 @@ inline bool DocumentLifecycle::StateAllowsDetach() const {
          state_ == kInPreLayout || state_ == kLayoutClean ||
          state_ == kCompositingInputsClean || state_ == kCompositingClean ||
          state_ == kPrePaintClean || state_ == kPaintClean ||
-         state_ == kStopping;
+         state_ == kStopping || state_ == kInactive;
 }
 
 inline bool DocumentLifecycle::StateAllowsLayoutInvalidation() const {

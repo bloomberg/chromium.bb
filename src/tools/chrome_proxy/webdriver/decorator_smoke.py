@@ -5,6 +5,7 @@
 import sys
 
 from decorators import AndroidOnly
+from decorators import ChromeVersionBetweenInclusiveM
 from decorators import ChromeVersionEqualOrAfterM
 from decorators import ChromeVersionBeforeM
 from decorators import SkipIfForcedBrowserArg
@@ -31,6 +32,15 @@ class DecoratorSmokeTest(IntegrationTest):
   def testVersionBeforeDecorator(self):
     self.fail('This function should not be called when the Chrome Milestone is '
       'greater than 0')
+
+  @ChromeVersionBetweenInclusiveM(0, 999999999)
+  def testVersionBetweenDecorator(self):
+    pass
+
+  @ChromeVersionBetweenInclusiveM(0, 1)
+  def testVersionBetweenDecorator(self):
+    self.fail('This function should not be called when the Chrome Milestone is '
+      'outside the range [0, 1].')
 
   @ChromeVersionEqualOrAfterM(999999999)
   def testVersionAfterDecorator(self):

@@ -28,7 +28,7 @@ class FakeSyncService : public SyncService {
   const syncer::SyncUserSettings* GetUserSettings() const override;
   int GetDisableReasons() const override;
   TransportState GetTransportState() const override;
-  AccountInfo GetAuthenticatedAccountInfo() const override;
+  CoreAccountInfo GetAuthenticatedAccountInfo() const override;
   bool IsAuthenticatedAccountPrimary() const override;
   bool IsLocalSyncEnabled() const override;
   void TriggerRefresh(const ModelTypeSet& types) override;
@@ -37,48 +37,39 @@ class FakeSyncService : public SyncService {
   void RemoveObserver(SyncServiceObserver* observer) override;
   bool HasObserver(const SyncServiceObserver* observer) const override;
   void OnDataTypeRequestsSyncStartup(ModelType type) override;
-  void RequestStop(SyncService::SyncStopDataFate data_fate) override;
+  void StopAndClear() override;
+  ModelTypeSet GetRegisteredDataTypes() const override;
   ModelTypeSet GetPreferredDataTypes() const override;
   std::unique_ptr<SyncSetupInProgressHandle> GetSetupInProgressHandle()
       override;
   bool IsSetupInProgress() const override;
-  const GoogleServiceAuthError& GetAuthError() const override;
-  bool IsPassphraseRequiredForDecryption() const override;
-  base::Time GetExplicitPassphraseTime() const override;
-  bool IsUsingSecondaryPassphrase() const override;
-  void EnableEncryptEverything() override;
-  bool IsEncryptEverythingEnabled() const override;
-  void SetEncryptionPassphrase(const std::string& passphrase) override;
-  bool SetDecryptionPassphrase(const std::string& passphrase) override;
+  GoogleServiceAuthError GetAuthError() const override;
+  base::Time GetAuthErrorTime() const override;
+  bool RequiresClientUpgrade() const override;
   UserShare* GetUserShare() const override;
-  void ReenableDatatype(ModelType type) override;
   void ReadyForStartChanged(syncer::ModelType type) override;
   SyncTokenStatus GetSyncTokenStatus() const override;
-  bool QueryDetailedSyncStatus(SyncStatus* result) const override;
-  base::Time GetLastSyncedTime() const override;
-  SyncCycleSnapshot GetLastCycleSnapshot() const override;
-  std::unique_ptr<base::Value> GetTypeStatusMap() override;
-  const GURL& sync_service_url() const override;
-  std::string unrecoverable_error_message() const override;
-  base::Location unrecoverable_error_location() const override;
+  bool QueryDetailedSyncStatusForDebugging(SyncStatus* result) const override;
+  base::Time GetLastSyncedTimeForDebugging() const override;
+  SyncCycleSnapshot GetLastCycleSnapshotForDebugging() const override;
+  std::unique_ptr<base::Value> GetTypeStatusMapForDebugging() override;
+  const GURL& GetSyncServiceUrlForDebugging() const override;
+  std::string GetUnrecoverableErrorMessageForDebugging() const override;
+  base::Location GetUnrecoverableErrorLocationForDebugging() const override;
   void AddProtocolEventObserver(ProtocolEventObserver* observer) override;
   void RemoveProtocolEventObserver(ProtocolEventObserver* observer) override;
   void AddTypeDebugInfoObserver(TypeDebugInfoObserver* observer) override;
   void RemoveTypeDebugInfoObserver(TypeDebugInfoObserver* observer) override;
   base::WeakPtr<JsController> GetJsController() override;
-  void GetAllNodes(const base::Callback<void(std::unique_ptr<base::ListValue>)>&
-                       callback) override;
+  void GetAllNodesForDebugging(
+      const base::Callback<void(std::unique_ptr<base::ListValue>)>& callback)
+      override;
   void SetInvalidationsForSessionsEnabled(bool enabled) override;
-
-  // DataTypeEncryptionHandler implementation.
-  bool IsPassphraseRequired() const override;
-  ModelTypeSet GetEncryptedDataTypes() const override;
 
   // KeyedService implementation.
   void Shutdown() override;
 
  private:
-  GoogleServiceAuthError error_;
   GURL sync_service_url_;
   std::unique_ptr<UserShare> user_share_;
 };

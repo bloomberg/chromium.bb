@@ -25,28 +25,12 @@ void LayoutNGTableCell::UpdateBlockLayout(bool relayout_children) {
   NGConstraintSpace constraint_space =
       NGConstraintSpace::CreateFromLayoutObject(*this);
 
-  scoped_refptr<NGLayoutResult> result =
+  scoped_refptr<const NGLayoutResult> result =
       NGBlockNode(this).Layout(constraint_space);
 
   for (NGOutOfFlowPositionedDescendant descendant :
        result->OutOfFlowPositionedDescendants())
     descendant.node.UseOldOutOfFlowPositioning();
-
-  const NGPhysicalBoxFragment* fragment =
-      ToNGPhysicalBoxFragment(result->PhysicalFragment());
-
-  const LayoutBox* section = LocationContainer();
-  NGPhysicalOffset physical_offset;
-  if (section) {
-    NGPhysicalSize section_size(section->Size().Width(),
-                                section->Size().Height());
-    NGLogicalOffset logical_offset(LogicalLeft() + section->Location().X(),
-                                   LogicalTop() + section->Location().Y());
-    physical_offset = logical_offset.ConvertToPhysical(
-        constraint_space.GetWritingMode(), constraint_space.Direction(),
-        section_size, fragment->Size());
-  }
-  result->SetOffset(physical_offset);
 }
 
 }  // namespace blink

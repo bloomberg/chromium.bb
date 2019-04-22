@@ -8,6 +8,10 @@ if (is_android) {
 
 static_library("task") {
   sources = [
+    "closure_task.cc",
+    "closure_task.h",
+    "sql_store_base.cc",
+    "sql_store_base.h",
     "task.cc",
     "task.h",
     "task_queue.cc",
@@ -16,6 +20,7 @@ static_library("task") {
 
   deps = [
     "//base",
+    "//sql",
   ]
 }
 

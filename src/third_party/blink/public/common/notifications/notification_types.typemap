@@ -13,6 +13,5 @@ deps = [
 ]
 type_mappings = [
   "blink.mojom.NotificationData=blink::PlatformNotificationData",
-  "blink.mojom.NotificationDirection=blink::PlatformNotificationData::Direction",
   "blink.mojom.NotificationResources=blink::NotificationResources",
 ]

@@ -57,7 +57,7 @@ SearchController.prototype = {
    * @private
    */
   get currentLocationInfo_() {
-    var entry = this.directoryModel_.getCurrentDirEntry();
+    const entry = this.directoryModel_.getCurrentDirEntry();
     return entry && this.volumeManager_.getLocationInfo(entry);
   },
 
@@ -66,7 +66,7 @@ SearchController.prototype = {
    * @private
    */
   get isOnDrive_() {
-    var currentLocationInfo = this.currentLocationInfo_;
+    const currentLocationInfo = this.currentLocationInfo_;
     return currentLocationInfo && currentLocationInfo.isDriveBased;
   }
 };
@@ -94,7 +94,7 @@ SearchController.prototype.clear = function(opt_event) {
  * @private
  */
 SearchController.prototype.onTextChange_ = function() {
-  var searchString = this.searchBox_.inputElement.value.trimLeft();
+  const searchString = this.searchBox_.inputElement.value.trimLeft();
 
   // On drive, incremental search is not invoked since we have an auto-
   // complete suggestion instead.
@@ -108,7 +108,7 @@ SearchController.prototype.onTextChange_ = function() {
   // {@code DirectoryModel.search()}.
   if (this.directoryModel_.isSearching() &&
       this.directoryModel_.getLastSearchQuery() != searchString) {
-    this.directoryModel_.search('', function() {}, function() {});
+    this.directoryModel_.search('', () => {}, () => {});
   }
 
   this.requestAutocompleteSuggestions_();
@@ -122,10 +122,11 @@ SearchController.prototype.requestAutocompleteSuggestions_ = function() {
   // Remember the most recent query. If there is an other request in progress,
   // then it's result will be discarded and it will call a new request for
   // this query.
-  var searchString = this.searchBox_.inputElement.value.trimLeft();
+  const searchString = this.searchBox_.inputElement.value.trimLeft();
   this.lastAutocompleteQuery_ = searchString;
-  if (this.autocompleteSuggestionsBusy_)
+  if (this.autocompleteSuggestionsBusy_) {
     return;
+  }
 
   // Clear search if the query empty.
   if (!searchString) {
@@ -134,7 +135,7 @@ SearchController.prototype.requestAutocompleteSuggestions_ = function() {
   }
 
   // Add header item.
-  var headerItem = /** @type {SearchItem} */ (
+  const headerItem = /** @type {SearchItem} */ (
       {isHeaderItem: true, searchQuery: searchString});
   if (!this.searchBox_.autocompleteList.dataModel ||
       this.searchBox_.autocompleteList.dataModel.length == 0) {
@@ -153,9 +154,9 @@ SearchController.prototype.requestAutocompleteSuggestions_ = function() {
       {
         query: searchString,
         types: 'ALL',
-        maxResults: 4
+        maxResults: 4,
       },
-      function(suggestions) {
+      suggestions => {
         this.autocompleteSuggestionsBusy_ = false;
 
         // Discard results for previous requests and fire a new search
@@ -168,7 +169,7 @@ SearchController.prototype.requestAutocompleteSuggestions_ = function() {
         // Keeps the items in the suggestion list.
         this.searchBox_.autocompleteList.suggestions =
             [headerItem].concat(suggestions);
-      }.bind(this));
+      });
 };
 
 /**
@@ -176,7 +177,7 @@ SearchController.prototype.requestAutocompleteSuggestions_ = function() {
  * @private
  */
 SearchController.prototype.onItemSelect_ = function() {
-  var selectedItem = this.searchBox_.autocompleteList.selectedItem;
+  const selectedItem = this.searchBox_.autocompleteList.selectedItem;
 
   // Clear the current auto complete list.
   this.lastAutocompleteQuery_ = '';
@@ -185,8 +186,8 @@ SearchController.prototype.onItemSelect_ = function() {
   // If the entry is the search item or no entry is selected, just change to
   // the search result.
   if (!selectedItem || selectedItem.isHeaderItem) {
-    var query = selectedItem ?
-        selectedItem.searchQuery : this.searchBox_.inputElement.value;
+    const query = selectedItem ? selectedItem.searchQuery :
+                                 this.searchBox_.inputElement.value;
     this.search_(query);
     return;
   }
@@ -199,7 +200,7 @@ SearchController.prototype.onItemSelect_ = function() {
   this.clear();
 
   // If the entry is a directory, just change the directory.
-  var entry = selectedItem.entry;
+  const entry = selectedItem.entry;
   if (entry.isDirectory) {
     this.directoryModel_.changeDirectoryEntry(entry);
     return;
@@ -211,10 +212,10 @@ SearchController.prototype.onItemSelect_ = function() {
   // requires the entry to be in the current directory model. For
   // consistency, the current directory is always changed regardless of
   // the file type.
-  entry.getParent(function(parentEntry) {
+  entry.getParent(parentEntry => {
     // Check if the parent entry points /drive/other or not.
     // If so it just opens the file.
-    var locationInfo = this.volumeManager_.getLocationInfo(parentEntry);
+    const locationInfo = this.volumeManager_.getLocationInfo(parentEntry);
     if (!locationInfo ||
         (locationInfo.isRootEntry &&
          locationInfo.rootType === VolumeManagerCommon.RootType.DRIVE_OTHER)) {
@@ -222,13 +223,11 @@ SearchController.prototype.onItemSelect_ = function() {
       return;
     }
     // If the parent entry can be /drive/other.
-    this.directoryModel_.changeDirectoryEntry(
-        parentEntry,
-        function() {
-          this.directoryModel_.selectEntry(entry);
-          this.taskController_.executeEntryTask(entry);
-        }.bind(this));
-  }.bind(this));
+    this.directoryModel_.changeDirectoryEntry(parentEntry, () => {
+      this.directoryModel_.selectEntry(entry);
+      this.taskController_.executeEntryTask(entry);
+    });
+  });
 };
 
 /**
@@ -237,27 +236,24 @@ SearchController.prototype.onItemSelect_ = function() {
  * @private
  */
 SearchController.prototype.search_ = function(searchString) {
-
-  var onSearchRescan = function() {
+  const onSearchRescan = function() {
     // If the current location is somewhere in Drive, all files in Drive can
     // be listed as search results regardless of current location.
     // In this case, showing current location is confusing, so use the Drive
     // root "My Drive" as the current location.
     if (this.isOnDrive_) {
-      var locationInfo = this.currentLocationInfo_;
-      var rootEntry = locationInfo.volumeInfo.displayRoot;
-      if (rootEntry)
+      const locationInfo = this.currentLocationInfo_;
+      const rootEntry = locationInfo.volumeInfo.displayRoot;
+      if (rootEntry) {
         this.locationLine_.show(rootEntry);
+      }
     }
   };
 
-  var onClearSearch = function() {
-    this.locationLine_.show(
-        this.directoryModel_.getCurrentDirEntry());
+  const onClearSearch = function() {
+    this.locationLine_.show(this.directoryModel_.getCurrentDirEntry());
   };
 
   this.directoryModel_.search(
-      searchString,
-      onSearchRescan.bind(this),
-      onClearSearch.bind(this));
+      searchString, onSearchRescan.bind(this), onClearSearch.bind(this));
 };

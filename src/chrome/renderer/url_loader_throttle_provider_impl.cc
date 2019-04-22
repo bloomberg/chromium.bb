@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/message_loop/message_loop_current.h"
@@ -36,6 +37,10 @@
 #include "extensions/renderer/extension_throttle_manager.h"
 #include "extensions/renderer/guest_view/mime_handler_view/mime_handler_view_container.h"
 #endif
+
+#if defined(OS_CHROMEOS)
+#include "chrome/renderer/chromeos_merge_session_loader_throttle.h"
+#endif  // defined(OS_CHROMEOS)
 
 namespace {
 
@@ -271,6 +276,12 @@ URLLoaderThrottleProviderImpl::CreateThrottles(
   throttles.push_back(std::make_unique<GoogleURLLoaderThrottle>(
       ChromeRenderThreadObserver::is_incognito_process(),
       ChromeRenderThreadObserver::GetDynamicParams()));
+
+#if defined(OS_CHROMEOS)
+  throttles.push_back(std::make_unique<MergeSessionLoaderThrottle>(
+      chrome_content_renderer_client_->GetChromeObserver()
+          ->chromeos_listener()));
+#endif  // defined(OS_CHROMEOS)
 
   return throttles;
 }

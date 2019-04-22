@@ -8,19 +8,21 @@
 #include <stddef.h>
 
 #include <memory>
+#include <string>
 
 #include "base/callback_forward.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
-#include "content/public/common/console_message_level.h"
 #include "content/public/common/previews_state.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "third_party/blink/public/mojom/page/page_visibility_state.mojom.h"
+#include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
+#include "third_party/blink/public/mojom/frame/document_interface_broker.mojom.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/web/web_navigation_policy.h"
 #include "third_party/blink/public/web/web_triggering_event_info.h"
@@ -56,6 +58,7 @@ namespace content {
 class ContextMenuClient;
 class PluginInstanceThrottler;
 class RenderAccessibility;
+struct RenderFrameMediaPlaybackOptions;
 class RenderFrameVisitor;
 class RenderView;
 struct ContextMenuParams;
@@ -164,6 +167,11 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   // interfaces exposed to it by the application running in this frame.
   virtual service_manager::InterfaceProvider* GetRemoteInterfaces() = 0;
 
+  // Returns the DocumentInterfaceBroker that this process can use to bind
+  // interfaces exposed to it by the application running in this frame.
+  virtual blink::mojom::DocumentInterfaceBroker*
+  GetDocumentInterfaceBroker() = 0;
+
   // Returns the AssociatedInterfaceRegistry this frame can use to expose
   // frame-specific Channel-associated interfaces to the remote RenderFrameHost.
   virtual blink::AssociatedInterfaceRegistry*
@@ -203,7 +211,7 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
       const url::Origin& main_frame_origin,
       const url::Origin& content_origin,
       const gfx::Size& unobscured_size,
-      RecordPeripheralDecision record_decision) const = 0;
+      RecordPeripheralDecision record_decision) = 0;
 
   // Whitelists a |content_origin| so its content will never be throttled in
   // this RenderFrame. Whitelist is cleared by top level navigation.
@@ -235,10 +243,10 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   virtual void SetZoomLevel(double zoom_level) = 0;
 
   // Returns the page's zoom level from the frame's RenderView.
-  virtual double GetZoomLevel() const = 0;
+  virtual double GetZoomLevel() = 0;
 
   // Adds |message| to the DevTools console.
-  virtual void AddMessageToConsole(ConsoleMessageLevel level,
+  virtual void AddMessageToConsole(blink::mojom::ConsoleMessageLevel level,
                                    const std::string& message) = 0;
 
   // Sets the PreviewsState of this frame, a bitmask of potentially several
@@ -247,15 +255,10 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
 
   // Returns the PreviewsState of this frame, a bitmask of potentially several
   // Previews optimizations.
-  virtual PreviewsState GetPreviewsState() const = 0;
+  virtual PreviewsState GetPreviewsState() = 0;
 
   // Whether or not this frame is currently pasting.
-  virtual bool IsPasting() const = 0;
-
-  // Returns true if the current visibility of the frame is to be overridden
-  // from the state requested from brower visibility IPCs. If true, then the
-  // kPrerender visibility state should replace it.
-  virtual bool ShouldOverrideVisibilityAsPrerender() const = 0;
+  virtual bool IsPasting() = 0;
 
   // Loads specified |html| to this frame. |base_url| is used to resolve
   // relative urls in the document.
@@ -279,13 +282,35 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
 
   // Bitwise-ORed set of extra bindings that have been enabled.  See
   // BindingsPolicy for details.
-  virtual int GetEnabledBindings() const = 0;
+  virtual int GetEnabledBindings() = 0;
 
   // Set the accessibility mode to force creation of RenderAccessibility.
   virtual void SetAccessibilityModeForTest(ui::AXMode new_mode) = 0;
 
   virtual scoped_refptr<network::SharedURLLoaderFactory>
   GetURLLoaderFactory() = 0;
+
+  // Per-frame media playback options passed to each WebMediaPlayer.
+  virtual const RenderFrameMediaPlaybackOptions&
+  GetRenderFrameMediaPlaybackOptions() = 0;
+  virtual void SetRenderFrameMediaPlaybackOptions(
+      const RenderFrameMediaPlaybackOptions& opts) = 0;
+
+  // Requests that fetches initiated by |initiator_origin| should go through the
+  // provided |url_loader_factory|.  This method should be called before
+  // executing scripts in a isolated world - such scripts are typically
+  // associated with a security origin different from the main world (and
+  // therefore fetches from such scripts set |request_initiator| that is
+  // incompatible with |request_initiator_site_lock|.
+  virtual void MarkInitiatorAsRequiringSeparateURLLoaderFactory(
+      const url::Origin& initiator_origin,
+      network::mojom::URLLoaderFactoryPtr url_loader_factory) = 0;
+
+  // Synchronously performs the complete set of document lifecycle phases,
+  // including updates to the compositor state and rasterization, then sending
+  // a frame to the viz display compositor. Does nothing if RenderFrame is not
+  // a local root.
+  virtual void UpdateAllLifecyclePhasesAndCompositeForTesting() = 0;
 
  protected:
   ~RenderFrame() override {}

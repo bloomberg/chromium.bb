@@ -11,6 +11,10 @@ namespace previews {
 // UpdateHints().
 extern const char kPreviewsOptimizationGuideUpdateHintsResultHistogramString[];
 
+// The local histogram used by PreviewsOptimizationGuide to record that a hint
+// finished loading.
+extern const char kPreviewsOptimizationGuideOnLoadedHintResultHistogramString[];
+
 }  // namespace previews
 
 #endif  // COMPONENTS_PREVIEWS_CORE_PREVIEWS_CONSTANTS_H_

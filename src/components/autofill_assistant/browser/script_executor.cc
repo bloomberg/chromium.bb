@@ -4,18 +4,23 @@
 
 #include "components/autofill_assistant/browser/script_executor.h"
 
+#include <ostream>
 #include <string>
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill_assistant/browser/actions/action.h"
 #include "components/autofill_assistant/browser/batch_element_checker.h"
 #include "components/autofill_assistant/browser/client_memory.h"
+#include "components/autofill_assistant/browser/client_status.h"
 #include "components/autofill_assistant/browser/protocol_utils.h"
+#include "components/autofill_assistant/browser/self_delete_full_card_requester.h"
 #include "components/autofill_assistant/browser/service.h"
 #include "components/autofill_assistant/browser/ui_controller.h"
 #include "components/autofill_assistant/browser/web_controller.h"
@@ -29,6 +34,40 @@ namespace {
 // to show up.
 constexpr base::TimeDelta kShortWaitForElementDeadline =
     base::TimeDelta::FromSeconds(2);
+
+// Time between two element checks.
+static constexpr base::TimeDelta kPeriodicElementCheck =
+    base::TimeDelta::FromSeconds(1);
+
+std::ostream& operator<<(std::ostream& out,
+                         const ScriptExecutor::AtEnd& at_end) {
+#ifdef NDEBUG
+  out << static_cast<int>(at_end);
+  return out;
+#else
+  switch (at_end) {
+    case ScriptExecutor::CONTINUE:
+      out << "CONTINUE";
+      break;
+    case ScriptExecutor::SHUTDOWN:
+      out << "SHUTDOWN";
+      break;
+    case ScriptExecutor::SHUTDOWN_GRACEFULLY:
+      out << "SHUTDOWN_GRACEFULLY";
+      break;
+    case ScriptExecutor::CLOSE_CUSTOM_TAB:
+      out << "CLOSE_CUSTOM_TAB";
+      break;
+    case ScriptExecutor::RESTART:
+      out << "RESTART";
+      break;
+      // Intentionally no default case to make compilation fail if a new value
+      // was added to the enum but not to this list.
+  }
+  return out;
+#endif  // NDEBUG
+}
+
 }  // namespace
 
 ScriptExecutor::ScriptExecutor(
@@ -55,201 +94,316 @@ ScriptExecutor::ScriptExecutor(
   DCHECK(delegate_);
   DCHECK(ordered_interrupts_);
 }
-ScriptExecutor::~ScriptExecutor() {}
+
+ScriptExecutor::~ScriptExecutor() {
+  delegate_->RemoveListener(this);
+}
 
 ScriptExecutor::Result::Result() = default;
-ScriptExecutor::Result::Result(const Result& other) = default;
 ScriptExecutor::Result::~Result() = default;
 
 void ScriptExecutor::Run(RunScriptCallback callback) {
+  DVLOG(2) << "Starting script " << script_path_;
   (*scripts_state_)[script_path_] = SCRIPT_STATUS_RUNNING;
+
+  delegate_->AddListener(this);
 
   callback_ = std::move(callback);
   DCHECK(delegate_->GetService());
 
+  DVLOG(2) << "GetActions for " << delegate_->GetCurrentURL().host();
   delegate_->GetService()->GetActions(
-      script_path_, delegate_->GetWebController()->GetUrl(),
-      delegate_->GetParameters(), last_global_payload_, last_script_payload_,
+      script_path_, delegate_->GetCurrentURL(), delegate_->GetTriggerContext(),
+      last_global_payload_, last_script_payload_,
       base::BindOnce(&ScriptExecutor::OnGetActions,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-std::unique_ptr<BatchElementChecker>
-ScriptExecutor::CreateBatchElementChecker() {
-  return delegate_->GetWebController()->CreateBatchElementChecker();
+void ScriptExecutor::OnNavigationStateChanged() {
+  if (delegate_->IsNavigatingToNewDocument()) {
+    navigation_info_.set_started(true);
+    navigation_info_.set_unexpected(expected_navigation_step_ !=
+                                    ExpectedNavigationStep::EXPECTED);
+  } else {
+    navigation_info_.set_ended(true);
+  }
+
+  if (delegate_->HasNavigationError()) {
+    navigation_info_.set_has_error(true);
+  }
+
+  switch (expected_navigation_step_) {
+    case ExpectedNavigationStep::UNEXPECTED:
+      break;
+
+    case ExpectedNavigationStep::EXPECTED:
+      if (delegate_->IsNavigatingToNewDocument()) {
+        expected_navigation_step_ = ExpectedNavigationStep::STARTED;
+      }
+      break;
+
+    case ExpectedNavigationStep::STARTED:
+      if (!delegate_->IsNavigatingToNewDocument()) {
+        expected_navigation_step_ = ExpectedNavigationStep::DONE;
+        if (on_expected_navigation_done_)
+          std::move(on_expected_navigation_done_)
+              .Run(!delegate_->HasNavigationError());
+      }
+      break;
+
+    case ExpectedNavigationStep::DONE:
+      // nothing to do
+      break;
+  }
 }
 
-void ScriptExecutor::ShortWaitForElementExist(
+void ScriptExecutor::RunElementChecks(BatchElementChecker* checker,
+                                      base::OnceCallback<void()> all_done) {
+  return checker->Run(delegate_->GetWebController(), std::move(all_done));
+}
+
+void ScriptExecutor::ShortWaitForElement(
     const Selector& selector,
     base::OnceCallback<void(bool)> callback) {
-  WaitForElement(kShortWaitForElementDeadline, kExistenceCheck, selector,
-                 std::move(callback));
+  wait_for_dom_ = std::make_unique<WaitForDomOperation>(
+      this, kShortWaitForElementDeadline, /* allow_interrupt= */ false,
+      SelectorPredicate::kMatches, selector,
+      base::BindOnce(&ScriptExecutor::OnShortWaitForElement,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  wait_for_dom_->Run();
 }
 
-void ScriptExecutor::WaitForElementVisible(
+void ScriptExecutor::WaitForDom(
     base::TimeDelta max_wait_time,
     bool allow_interrupt,
+    ActionDelegate::SelectorPredicate selector_predicate,
     const Selector& selector,
-    base::OnceCallback<void(bool)> callback) {
-  if (!allow_interrupt || ordered_interrupts_->empty()) {
-    // No interrupts to worry about. Just run normal wait.
-    WaitForElement(max_wait_time, kVisibilityCheck, selector,
-                   std::move(callback));
-    return;
-  }
-  wait_with_interrupts_ = std::make_unique<WaitWithInterrupts>(
-      this, max_wait_time, kVisibilityCheck, selector,
-      base::BindOnce(&ScriptExecutor::OnWaitForElementVisible,
+    base::OnceCallback<void(ProcessedActionStatusProto)> callback) {
+  wait_for_dom_ = std::make_unique<WaitForDomOperation>(
+      this, max_wait_time, allow_interrupt, selector_predicate, selector,
+      base::BindOnce(&ScriptExecutor::OnWaitForElementVisibleWithInterrupts,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-  wait_with_interrupts_->Run();
+  wait_for_dom_->Run();
 }
 
-void ScriptExecutor::ShowStatusMessage(const std::string& message) {
-  delegate_->GetUiController()->ShowStatusMessage(message);
+void ScriptExecutor::SetStatusMessage(const std::string& message) {
+  delegate_->SetStatusMessage(message);
+}
+
+std::string ScriptExecutor::GetStatusMessage() {
+  return delegate_->GetStatusMessage();
 }
 
 void ScriptExecutor::ClickOrTapElement(
     const Selector& selector,
-    base::OnceCallback<void(bool)> callback) {
+    base::OnceCallback<void(const ClientStatus&)> callback) {
   delegate_->GetWebController()->ClickOrTapElement(selector,
                                                    std::move(callback));
 }
 
 void ScriptExecutor::GetPaymentInformation(
-    payments::mojom::PaymentOptionsPtr payment_options,
-    base::OnceCallback<void(std::unique_ptr<PaymentInformation>)> callback,
-    const std::string& title,
-    const std::vector<std::string>& supported_basic_card_networks) {
-  delegate_->GetUiController()->GetPaymentInformation(
-      std::move(payment_options), std::move(callback), title,
-      supported_basic_card_networks);
+    std::unique_ptr<PaymentRequestOptions> options) {
+  options->callback = base::BindOnce(&ScriptExecutor::OnGetPaymentInformation,
+                                     weak_ptr_factory_.GetWeakPtr(),
+                                     std::move(options->callback));
+  delegate_->SetPaymentRequestOptions(std::move(options));
+  delegate_->EnterState(AutofillAssistantState::PROMPT);
 }
 
-void ScriptExecutor::Choose(
-    const std::vector<UiController::Choice>& choices,
-    base::OnceCallback<void(const std::string&)> callback) {
-  if (!touchable_elements_.empty()) {
-    // Choose reproduces the end-of-script appearance and behavior during script
-    // execution. This includes allowing access to touchable elements, set
-    // through a previous call to the focus action with touchable_elements set.
-    delegate_->SetTouchableElementArea(touchable_elements_);
-    delegate_->GetUiController()->HideOverlay();
-    AllowShowingSoftKeyboard(true);
+void ScriptExecutor::OnGetPaymentInformation(
+    base::OnceCallback<void(std::unique_ptr<PaymentInformation>)> callback,
+    std::unique_ptr<PaymentInformation> result) {
+  delegate_->EnterState(AutofillAssistantState::RUNNING);
+  std::move(callback).Run(std::move(result));
+}
+
+void ScriptExecutor::GetFullCard(GetFullCardCallback callback) {
+  DCHECK(GetClientMemory()->selected_card());
+
+  // User might be asked to provide the cvc.
+  delegate_->EnterState(AutofillAssistantState::MODAL_DIALOG);
+
+  // TODO(crbug.com/806868): Consider refactoring SelfDeleteFullCardRequester
+  // so as to unit test it.
+  (new SelfDeleteFullCardRequester())
+      ->GetFullCard(
+          GetWebContents(), GetClientMemory()->selected_card(),
+          base::BindOnce(&ScriptExecutor::OnGetFullCard,
+                         weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void ScriptExecutor::OnGetFullCard(GetFullCardCallback callback,
+                                   std::unique_ptr<autofill::CreditCard> card,
+                                   const base::string16& cvc) {
+  delegate_->EnterState(AutofillAssistantState::RUNNING);
+  std::move(callback).Run(std::move(card), cvc);
+}
+
+void ScriptExecutor::Prompt(std::unique_ptr<std::vector<Chip>> chips) {
+  if (touchable_element_area_) {
+    // SetChips reproduces the end-of-script appearance and behavior during
+    // script execution. This includes allowing access to touchable elements,
+    // set through a previous call to the focus action with touchable_elements
+    // set.
+    delegate_->SetTouchableElementArea(*touchable_element_area_);
 
     // The touchable_elements_ currently set in the script is reset, so that it
     // won't affect the real end of the script.
-    touchable_elements_.clear();
+    touchable_element_area_.reset();
 
     // The touchable element and overlays are cleared again in
-    // ScriptExecutor::OnChosen
+    // ScriptExecutor::OnChosen or ScriptExecutor::ClearChips
   }
-  delegate_->GetUiController()->Choose(
-      choices,
-      base::BindOnce(&ScriptExecutor::OnChosen, weak_ptr_factory_.GetWeakPtr(),
-                     std::move(callback)));
+
+  // We change the chips callback with a callback that cleans up the state
+  // before calling the initial callback.
+  for (auto& chip : *chips) {
+    chip.callback = base::BindOnce(&ScriptExecutor::OnChosen,
+                                   weak_ptr_factory_.GetWeakPtr(),
+                                   std::move(chip.callback));
+  }
+
+  delegate_->EnterState(AutofillAssistantState::PROMPT);
+  delegate_->SetChips(std::move(chips));
 }
 
-void ScriptExecutor::ForceChoose(const std::string& result) {
-  delegate_->GetUiController()->ForceChoose(result);
+void ScriptExecutor::CancelPrompt() {
+  // Delete on_terminate_prompt_ if necessary, without running.
+  if (on_terminate_prompt_)
+    std::move(on_terminate_prompt_);
+
+  delegate_->SetChips(nullptr);
+  CleanUpAfterPrompt();
 }
 
-void ScriptExecutor::ChooseAddress(
-    base::OnceCallback<void(const std::string&)> callback) {
-  delegate_->GetUiController()->ChooseAddress(std::move(callback));
+void ScriptExecutor::CleanUpAfterPrompt() {
+  delegate_->ClearTouchableElementArea();
+  delegate_->EnterState(AutofillAssistantState::RUNNING);
 }
 
-void ScriptExecutor::FillAddressForm(const autofill::AutofillProfile* profile,
-                                     const Selector& selector,
-                                     base::OnceCallback<void(bool)> callback) {
+void ScriptExecutor::OnChosen(base::OnceClosure callback) {
+  CleanUpAfterPrompt();
+  std::move(callback).Run();
+}
+
+void ScriptExecutor::FillAddressForm(
+    const autofill::AutofillProfile* profile,
+    const Selector& selector,
+    base::OnceCallback<void(const ClientStatus&)> callback) {
   delegate_->GetWebController()->FillAddressForm(profile, selector,
                                                  std::move(callback));
 }
 
-void ScriptExecutor::ChooseCard(
-    base::OnceCallback<void(const std::string&)> callback) {
-  delegate_->GetUiController()->ChooseCard(std::move(callback));
-}
-
-void ScriptExecutor::FillCardForm(std::unique_ptr<autofill::CreditCard> card,
-                                  const base::string16& cvc,
-                                  const Selector& selector,
-                                  base::OnceCallback<void(bool)> callback) {
+void ScriptExecutor::FillCardForm(
+    std::unique_ptr<autofill::CreditCard> card,
+    const base::string16& cvc,
+    const Selector& selector,
+    base::OnceCallback<void(const ClientStatus&)> callback) {
   delegate_->GetWebController()->FillCardForm(std::move(card), cvc, selector,
                                               std::move(callback));
 }
 
-void ScriptExecutor::SelectOption(const Selector& selector,
-                                  const std::string& selected_option,
-                                  base::OnceCallback<void(bool)> callback) {
+void ScriptExecutor::SelectOption(
+    const Selector& selector,
+    const std::string& selected_option,
+    base::OnceCallback<void(const ClientStatus&)> callback) {
   delegate_->GetWebController()->SelectOption(selector, selected_option,
                                               std::move(callback));
 }
 
-void ScriptExecutor::HighlightElement(const Selector& selector,
-                                      base::OnceCallback<void(bool)> callback) {
+void ScriptExecutor::HighlightElement(
+    const Selector& selector,
+    base::OnceCallback<void(const ClientStatus&)> callback) {
   delegate_->GetWebController()->HighlightElement(selector,
                                                   std::move(callback));
 }
 
-void ScriptExecutor::FocusElement(const Selector& selector,
-                                  base::OnceCallback<void(bool)> callback) {
+void ScriptExecutor::FocusElement(
+    const Selector& selector,
+    base::OnceCallback<void(const ClientStatus&)> callback) {
   last_focused_element_selector_ = selector;
   delegate_->GetWebController()->FocusElement(selector, std::move(callback));
 }
 
-void ScriptExecutor::SetTouchableElements(
-    const std::vector<Selector>& element_selector) {
-  touchable_elements_ = element_selector;
+void ScriptExecutor::SetTouchableElementArea(
+    const ElementAreaProto& touchable_element_area) {
+  touchable_element_area_ =
+      std::make_unique<ElementAreaProto>(touchable_element_area);
 }
 
-void ScriptExecutor::ShowProgressBar(int progress, const std::string& message) {
-  delegate_->GetUiController()->ShowProgressBar(progress, message);
+void ScriptExecutor::SetProgress(int progress) {
+  delegate_->SetProgress(progress);
 }
 
-void ScriptExecutor::HideProgressBar() {
-  delegate_->GetUiController()->HideProgressBar();
+void ScriptExecutor::SetProgressVisible(bool visible) {
+  delegate_->SetProgressVisible(visible);
 }
 
-void ScriptExecutor::ShowOverlay() {
-  delegate_->GetUiController()->ShowOverlay();
+void ScriptExecutor::GetFieldValue(
+    const Selector& selector,
+    base::OnceCallback<void(bool, const std::string&)> callback) {
+  delegate_->GetWebController()->GetFieldValue(selector, std::move(callback));
 }
 
-void ScriptExecutor::HideOverlay() {
-  delegate_->GetUiController()->HideOverlay();
-}
-
-void ScriptExecutor::AllowShowingSoftKeyboard(bool enabled) {
-  delegate_->GetUiController()->AllowShowingSoftKeyboard(enabled);
-}
-
-void ScriptExecutor::SetFieldValue(const Selector& selector,
-                                   const std::string& value,
-                                   bool simulate_key_presses,
-                                   base::OnceCallback<void(bool)> callback) {
+void ScriptExecutor::SetFieldValue(
+    const Selector& selector,
+    const std::string& value,
+    bool simulate_key_presses,
+    base::OnceCallback<void(const ClientStatus&)> callback) {
   delegate_->GetWebController()->SetFieldValue(
       selector, value, simulate_key_presses, std::move(callback));
 }
 
-void ScriptExecutor::SetAttribute(const Selector& selector,
-                                  const std::vector<std::string>& attribute,
-                                  const std::string& value,
-                                  base::OnceCallback<void(bool)> callback) {
+void ScriptExecutor::SetAttribute(
+    const Selector& selector,
+    const std::vector<std::string>& attribute,
+    const std::string& value,
+    base::OnceCallback<void(const ClientStatus&)> callback) {
   delegate_->GetWebController()->SetAttribute(selector, attribute, value,
                                               std::move(callback));
 }
 
 void ScriptExecutor::SendKeyboardInput(
     const Selector& selector,
-    const std::vector<std::string>& text_parts,
-    base::OnceCallback<void(bool)> callback) {
-  delegate_->GetWebController()->SendKeyboardInput(selector, text_parts,
+    const std::vector<UChar32>& codepoints,
+    base::OnceCallback<void(const ClientStatus&)> callback) {
+  delegate_->GetWebController()->SendKeyboardInput(selector, codepoints,
                                                    std::move(callback));
 }
 
 void ScriptExecutor::GetOuterHtml(
     const Selector& selector,
-    base::OnceCallback<void(bool, const std::string&)> callback) {
+    base::OnceCallback<void(const ClientStatus&, const std::string&)>
+        callback) {
   delegate_->GetWebController()->GetOuterHtml(selector, std::move(callback));
+}
+
+void ScriptExecutor::ExpectNavigation() {
+  expected_navigation_step_ = ExpectedNavigationStep::EXPECTED;
+}
+
+bool ScriptExecutor::ExpectedNavigationHasStarted() {
+  return expected_navigation_step_ != ExpectedNavigationStep::EXPECTED;
+}
+
+bool ScriptExecutor::WaitForNavigation(
+    base::OnceCallback<void(bool)> callback) {
+  switch (expected_navigation_step_) {
+    case ExpectedNavigationStep::UNEXPECTED:
+      return false;
+
+    case ExpectedNavigationStep::DONE:
+      std::move(callback).Run(!delegate_->HasNavigationError());
+      break;
+
+    case ExpectedNavigationStep::EXPECTED:
+    case ExpectedNavigationStep::STARTED:
+      on_expected_navigation_done_ = std::move(callback);
+      break;
+
+      // No default to make compilation fail if not all cases are covered
+  }
+  return true;
 }
 
 void ScriptExecutor::LoadURL(const GURL& url) {
@@ -265,8 +419,6 @@ void ScriptExecutor::Shutdown() {
   } else {
     at_end_ = SHUTDOWN;
   }
-  if (wait_with_interrupts_)
-    wait_with_interrupts_->Shutdown();
 }
 
 void ScriptExecutor::Close() {
@@ -276,15 +428,6 @@ void ScriptExecutor::Close() {
 
 void ScriptExecutor::Restart() {
   at_end_ = RESTART;
-}
-
-void ScriptExecutor::StopCurrentScriptAndShutdown(const std::string& message) {
-  // Use a default message when |message| is empty.
-  delegate_->GetUiController()->ShowStatusMessage(
-      message.empty() ? l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_GIVE_UP)
-                      : message);
-  at_end_ = SHUTDOWN_GRACEFULLY;
-  should_stop_script_ = true;
 }
 
 ClientMemory* ScriptExecutor::GetClientMemory() {
@@ -299,21 +442,44 @@ content::WebContents* ScriptExecutor::GetWebContents() {
   return delegate_->GetWebContents();
 }
 
-void ScriptExecutor::HideDetails() {
-  delegate_->GetUiController()->HideDetails();
+void ScriptExecutor::SetDetails(std::unique_ptr<Details> details) {
+  return delegate_->SetDetails(std::move(details));
 }
 
-void ScriptExecutor::ShowDetails(const DetailsProto& details,
-                                 base::OnceCallback<void(bool)> callback) {
-  return delegate_->GetUiController()->ShowDetails(details,
-                                                   std::move(callback));
+void ScriptExecutor::ClearInfoBox() {
+  delegate_->ClearInfoBox();
+}
+
+void ScriptExecutor::SetInfoBox(const InfoBox& info_box) {
+  delegate_->SetInfoBox(info_box);
 }
 
 void ScriptExecutor::OnGetActions(bool result, const std::string& response) {
-  if (!result) {
+  bool success = result && ProcessNextActionResponse(response);
+  DVLOG(2) << __func__ << " result=" << result;
+  if (should_stop_script_) {
+    // The last action forced the script to stop. Sending the result of the
+    // action is considered best effort in this situation. Report a successful
+    // run to the caller no matter what, so we don't confuse users with an error
+    // message.
+    RunCallback(true);
+    return;
+  }
+
+  if (!success) {
     RunCallback(false);
     return;
   }
+
+  if (!actions_.empty()) {
+    ProcessNextAction();
+    return;
+  }
+
+  RunCallback(true);
+}
+
+bool ScriptExecutor::ProcessNextActionResponse(const std::string& response) {
   processed_actions_.clear();
   actions_.clear();
 
@@ -322,23 +488,15 @@ void ScriptExecutor::OnGetActions(bool result, const std::string& response) {
   bool parse_result = ProtocolUtils::ParseActions(
       response, &last_global_payload_, &last_script_payload_, &actions_,
       &scripts, &should_update_scripts);
-
   if (!parse_result) {
-    RunCallback(false);
-    return;
+    return false;
   }
+
   ReportPayloadsToListener();
   if (should_update_scripts) {
     ReportScriptsUpdateToListener(std::move(scripts));
   }
-
-  if (actions_.empty()) {
-    // Finished executing the script if there are no more actions.
-    RunCallback(true);
-    return;
-  }
-
-  ProcessNextAction();
+  return true;
 }
 
 void ScriptExecutor::ReportPayloadsToListener() {
@@ -357,21 +515,21 @@ void ScriptExecutor::ReportScriptsUpdateToListener(
 }
 
 void ScriptExecutor::RunCallback(bool success) {
-  DCHECK(callback_);
   if (should_clean_contextual_ui_on_finish_ || !success) {
-    HideDetails();
+    SetDetails(nullptr);
     should_clean_contextual_ui_on_finish_ = false;
   }
 
   Result result;
   result.success = success;
   result.at_end = at_end_;
-  result.touchable_elements = touchable_elements_;
+  result.touchable_element_area = std::move(touchable_element_area_);
 
   RunCallbackWithResult(result);
 }
 
 void ScriptExecutor::RunCallbackWithResult(const Result& result) {
+  DCHECK(callback_);
   (*scripts_state_)[script_path_] =
       result.success ? SCRIPT_STATUS_SUCCESS : SCRIPT_STATUS_FAILURE;
   std::move(callback_).Run(result);
@@ -383,7 +541,7 @@ void ScriptExecutor::ProcessNextAction() {
   // we could have more |processed_actions| than |actions_|.
   if (actions_.size() <= processed_actions_.size()) {
     DCHECK_EQ(actions_.size(), processed_actions_.size());
-    // Request more actions to execute.
+    DVLOG(2) << __func__ << ", get more actions";
     GetNextActions();
     return;
   }
@@ -403,13 +561,19 @@ void ScriptExecutor::ProcessNextAction() {
 }
 
 void ScriptExecutor::ProcessAction(Action* action) {
+  DVLOG(2) << "Begin action: " << *action;
+
+  navigation_info_.Clear();
+  navigation_info_.set_has_error(delegate_->HasNavigationError());
+
   action->ProcessAction(this, base::BindOnce(&ScriptExecutor::OnProcessedAction,
                                              weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ScriptExecutor::GetNextActions() {
   delegate_->GetService()->GetNextActions(
-      last_global_payload_, last_script_payload_, processed_actions_,
+      delegate_->GetTriggerContext(), last_global_payload_,
+      last_script_payload_, processed_actions_,
       base::BindOnce(&ScriptExecutor::OnGetActions,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -418,109 +582,123 @@ void ScriptExecutor::OnProcessedAction(
     std::unique_ptr<ProcessedActionProto> processed_action_proto) {
   previous_action_type_ = processed_action_proto->action().action_info_case();
   processed_actions_.emplace_back(*processed_action_proto);
-  if (processed_actions_.back().status() !=
-      ProcessedActionStatusProto::ACTION_APPLIED) {
+
+  auto& processed_action = processed_actions_.back();
+  *processed_action.mutable_navigation_info() = navigation_info_;
+  if (processed_action.status() != ProcessedActionStatusProto::ACTION_APPLIED) {
+    if (delegate_->HasNavigationError()) {
+      // Overwrite the original error, as the root cause is most likely a
+      // navigation error.
+      processed_action.mutable_status_details()->set_original_status(
+          processed_action.status());
+      processed_action.set_status(ProcessedActionStatusProto::NAVIGATION_ERROR);
+    }
+    DVLOG(1) << "Action failed: " << processed_action.status()
+             << ", get more actions";
     // Report error immediately, interrupting action processing.
     GetNextActions();
     return;
   }
-
-  if (should_stop_script_) {
-    // Last action called StopCurrentScript(). We simulate a successful end of
-    // script to make sure we don't display any errors.
-    RunCallback(true);
-    return;
-  }
-
   ProcessNextAction();
 }
 
-void ScriptExecutor::WaitForElement(base::TimeDelta max_wait_time,
-                                    ElementCheckType check_type,
-                                    const Selector& selector,
-                                    base::OnceCallback<void(bool)> callback) {
-  DCHECK(!batch_element_checker_);
-  batch_element_checker_ = CreateBatchElementChecker();
-  batch_element_checker_->AddElementCheck(check_type, selector,
-                                          base::DoNothing());
-  batch_element_checker_->Run(
-      max_wait_time, /* try_done= */ base::DoNothing(), /* all_done= */
-      base::BindOnce(&ScriptExecutor::OnWaitForElement,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-}
-
-void ScriptExecutor::OnWaitForElement(base::OnceCallback<void(bool)> callback) {
-  bool all_found = batch_element_checker_->all_found();
-  batch_element_checker_.reset();
-  std::move(callback).Run(all_found);
-}
-
-void ScriptExecutor::OnWaitForElementVisible(
-    base::OnceCallback<void(bool)> element_found_callback,
+void ScriptExecutor::OnShortWaitForElement(
+    base::OnceCallback<void(bool)> callback,
     bool element_found,
-    const Result* interrupt_result) {
-  if (interrupt_result) {
-    RunCallbackWithResult(*interrupt_result);
+    const Result* interrupt_result,
+    const std::set<std::string>& interrupt_paths) {
+  // Interrupts cannot run, so should never be reported.
+  DCHECK(!interrupt_result);
+  DCHECK(interrupt_paths.empty());
 
-    // TODO(crbug.com/806868): Let the server know that the original script was
-    // interrupted and that the interrupting script failed. This implementation
-    // just drops the current action flow on the floor by deleting
-    // element_found_callback without calling it.
+  std::move(callback).Run(element_found);
+}
+
+void ScriptExecutor::OnWaitForElementVisibleWithInterrupts(
+    base::OnceCallback<void(ProcessedActionStatusProto)> callback,
+    bool element_found,
+    const Result* interrupt_result,
+    const std::set<std::string>& interrupt_paths) {
+  ran_interrupts_.insert(interrupt_paths.begin(), interrupt_paths.end());
+  if (interrupt_result) {
+    if (!interrupt_result->success) {
+      std::move(callback).Run(INTERRUPT_FAILED);
+      return;
+    }
+    if (interrupt_result->at_end != CONTINUE) {
+      at_end_ = interrupt_result->at_end;
+      should_stop_script_ = true;
+      std::move(callback).Run(MANUAL_FALLBACK);
+      return;
+    }
+  }
+  std::move(callback).Run(element_found ? ACTION_APPLIED
+                                        : ELEMENT_RESOLUTION_FAILED);
+}
+
+ScriptExecutor::WaitForDomOperation::WaitForDomOperation(
+    ScriptExecutor* main_script,
+    base::TimeDelta max_wait_time,
+    bool allow_interrupt,
+    ActionDelegate::SelectorPredicate selector_predicate,
+    const Selector& selector,
+    WaitForDomOperation::Callback callback)
+    : main_script_(main_script),
+      max_wait_time_(max_wait_time),
+      allow_interrupt_(allow_interrupt),
+      selector_predicate_(selector_predicate),
+      selector_(selector),
+      callback_(std::move(callback)),
+      retry_timer_(kPeriodicElementCheck),
+      weak_ptr_factory_(this) {}
+
+ScriptExecutor::WaitForDomOperation::~WaitForDomOperation() {
+  main_script_->delegate_->RemoveListener(this);
+}
+
+void ScriptExecutor::WaitForDomOperation::Run() {
+  main_script_->delegate_->AddListener(this);
+  if (main_script_->delegate_->IsNavigatingToNewDocument())
+    return;  // start paused
+
+  Start();
+}
+
+void ScriptExecutor::WaitForDomOperation::Start() {
+  retry_timer_.Start(
+      max_wait_time_,
+      base::BindRepeating(&ScriptExecutor::WaitForDomOperation::RunChecks,
+                          // safe since this instance owns retry_timer_
+                          base::Unretained(this)),
+      base::BindOnce(&ScriptExecutor::WaitForDomOperation::RunCallback,
+                     base::Unretained(this)));
+}
+
+void ScriptExecutor::WaitForDomOperation::Pause() {
+  if (interrupt_executor_) {
+    // If an interrupt is running, it'll be the one to be paused, if necessary.
     return;
   }
 
-  // Continue the original script.
-  std::move(element_found_callback).Run(element_found);
+  retry_timer_.Cancel();
 }
 
-ScriptExecutor::WaitWithInterrupts::WaitWithInterrupts(
-    ScriptExecutor* main_script,
-    base::TimeDelta max_wait_time,
-    ElementCheckType check_type,
-    const Selector& selector,
-    WaitWithInterrupts::Callback callback)
-    : main_script_(main_script),
-      max_wait_time_(max_wait_time),
-      check_type_(check_type),
-      selector_(selector),
-      callback_(std::move(callback)),
-      element_found_(false),
-      weak_ptr_factory_(this) {}
+void ScriptExecutor::WaitForDomOperation::Continue() {
+  if (retry_timer_.running() || !callback_)
+    return;
 
-ScriptExecutor::WaitWithInterrupts::~WaitWithInterrupts() = default;
+  Start();
+}
 
-void ScriptExecutor::WaitWithInterrupts::Run() {
-  // Reset state possibly left over from previous runs.
-  element_found_ = false;
-  runnable_interrupts_.clear();
-  batch_element_checker_ =
-      main_script_->delegate_->GetWebController()->CreateBatchElementChecker();
-
-  batch_element_checker_->AddElementCheck(
-      check_type_, selector_,
-      base::BindOnce(&WaitWithInterrupts::OnElementCheckDone,
-                     base::Unretained(this)));
-  for (const auto* interrupt : *main_script_->ordered_interrupts_) {
-    interrupt->precondition->Check(
-        main_script_->delegate_->GetWebController()->GetUrl(),
-        batch_element_checker_.get(), main_script_->delegate_->GetParameters(),
-        *main_script_->scripts_state_,
-        base::BindOnce(&WaitWithInterrupts::OnPreconditionCheckDone,
-                       weak_ptr_factory_.GetWeakPtr(),
-                       base::Unretained(interrupt)));
+void ScriptExecutor::WaitForDomOperation::OnNavigationStateChanged() {
+  if (main_script_->delegate_->IsNavigatingToNewDocument()) {
+    Pause();
+  } else {
+    Continue();
   }
-  // The base::Unretained(this) above are safe, since the pointers belong to the
-  // main script, which own this instance.
-
-  batch_element_checker_->Run(
-      max_wait_time_,
-      base::BindRepeating(&WaitWithInterrupts::OnTryDone,
-                          weak_ptr_factory_.GetWeakPtr()),
-      base::BindOnce(&WaitWithInterrupts::OnAllDone,
-                     weak_ptr_factory_.GetWeakPtr()));
 }
 
-void ScriptExecutor::WaitWithInterrupts::OnServerPayloadChanged(
+void ScriptExecutor::WaitForDomOperation::OnServerPayloadChanged(
     const std::string& global_payload,
     const std::string& script_payload) {
   // Interrupts and main scripts share global payloads, but not script payloads.
@@ -528,25 +706,72 @@ void ScriptExecutor::WaitWithInterrupts::OnServerPayloadChanged(
   main_script_->ReportPayloadsToListener();
 }
 
-void ScriptExecutor::WaitWithInterrupts::OnScriptListChanged(
+void ScriptExecutor::WaitForDomOperation::OnScriptListChanged(
     std::vector<std::unique_ptr<Script>> scripts) {
   main_script_->ReportScriptsUpdateToListener(std::move(scripts));
 }
 
-void ScriptExecutor::WaitWithInterrupts::OnPreconditionCheckDone(
+void ScriptExecutor::WaitForDomOperation::RunChecks(
+    base::OnceCallback<void(bool)> report_attempt_result) {
+  // Reset state possibly left over from previous runs.
+  element_check_result_ = false;
+  runnable_interrupts_.clear();
+  batch_element_checker_ = std::make_unique<BatchElementChecker>();
+  batch_element_checker_->AddElementCheck(
+      selector_, base::BindOnce(&WaitForDomOperation::OnElementCheckDone,
+                                base::Unretained(this)));
+  if (allow_interrupt_) {
+    for (const auto* interrupt : *main_script_->ordered_interrupts_) {
+      if (ran_interrupts_.find(interrupt->handle.path) !=
+          ran_interrupts_.end()) {
+        // Only run an interrupt once in a WaitForDomOperation, to avoid loops.
+        continue;
+      }
+
+      interrupt->precondition->Check(
+          main_script_->delegate_->GetCurrentURL(),
+          batch_element_checker_.get(),
+          main_script_->delegate_->GetTriggerContext()->script_parameters,
+          *main_script_->scripts_state_,
+          base::BindOnce(&WaitForDomOperation::OnPreconditionCheckDone,
+                         weak_ptr_factory_.GetWeakPtr(),
+                         base::Unretained(interrupt)));
+    }
+  }
+
+  batch_element_checker_->Run(
+      main_script_->delegate_->GetWebController(),
+      base::BindOnce(&WaitForDomOperation::OnAllChecksDone,
+                     base::Unretained(this), std::move(report_attempt_result)));
+}
+
+void ScriptExecutor::WaitForDomOperation::OnPreconditionCheckDone(
     const Script* interrupt,
     bool precondition_match) {
   if (precondition_match)
     runnable_interrupts_.insert(interrupt);
 }
 
-void ScriptExecutor::WaitWithInterrupts::OnElementCheckDone(bool found) {
-  element_found_ = found;
+void ScriptExecutor::WaitForDomOperation::OnElementCheckDone(bool found) {
+  switch (selector_predicate_) {
+    case ActionDelegate::SelectorPredicate::kMatches:
+      element_check_result_ = found;
+      break;
+
+    case ActionDelegate::SelectorPredicate::kDoesntMatch:
+      element_check_result_ = !found;
+      break;
+
+      // Default intentionally left unset to cause a compilation error if a new
+      // value is added.
+  }
+
   // Wait for all checks to run before reporting that the element was found to
   // the caller, so interrupts have a chance to run.
 }
 
-void ScriptExecutor::WaitWithInterrupts::OnTryDone() {
+void ScriptExecutor::WaitForDomOperation::OnAllChecksDone(
+    base::OnceCallback<void(bool)> report_attempt_result) {
   if (!runnable_interrupts_.empty()) {
     // We must go through runnable_interrupts_ to make sure priority order is
     // respected in case more than one interrupt is ready to run.
@@ -557,83 +782,80 @@ void ScriptExecutor::WaitWithInterrupts::OnTryDone() {
       }
     }
   }
-
-  if (element_found_)
-    RunCallback(true, nullptr);
+  std::move(report_attempt_result).Run(element_check_result_);
 }
 
-void ScriptExecutor::WaitWithInterrupts::OnAllDone() {
-  // This means that we've reached the end of the timeout. Report whether we
-  // found the element unless an interrupt has just been started by OnTryDone.
-  if (!interrupt_executor_)
-    RunCallback(element_found_, nullptr);
-}
-
-void ScriptExecutor::WaitWithInterrupts::RunInterrupt(const Script* interrupt) {
+void ScriptExecutor::WaitForDomOperation::RunInterrupt(
+    const Script* interrupt) {
   batch_element_checker_.reset();
   SavePreInterruptState();
+  ran_interrupts_.insert(interrupt->handle.path);
   interrupt_executor_ = std::make_unique<ScriptExecutor>(
       interrupt->handle.path, main_script_->last_global_payload_,
       main_script_->initial_script_payload_,
       /* listener= */ this, main_script_->scripts_state_, &no_interrupts_,
       main_script_->delegate_);
   interrupt_executor_->Run(
-      base::BindOnce(&ScriptExecutor::WaitWithInterrupts::OnInterruptDone,
+      base::BindOnce(&ScriptExecutor::WaitForDomOperation::OnInterruptDone,
                      base::Unretained(this)));
   // base::Unretained(this) is safe because interrupt_executor_ belongs to this
 }
 
-void ScriptExecutor::WaitWithInterrupts::OnInterruptDone(
+void ScriptExecutor::WaitForDomOperation::OnInterruptDone(
     const ScriptExecutor::Result& result) {
   interrupt_executor_.reset();
   if (!result.success || result.at_end != ScriptExecutor::CONTINUE) {
-    RunCallback(false, &result);
+    RunCallbackWithResult(false, &result);
     return;
   }
-  RestorePreInterruptUiState();
+  RestoreStatusMessage();
 
   // Restart. We use the original wait time since the interruption could have
   // triggered any kind of actions, including actions that wait on the user. We
   // don't trust a previous element_found_ result, since it could have changed.
-  Run();
+  Start();
 }
 
-void ScriptExecutor::WaitWithInterrupts::RunCallback(
-    bool found,
+void ScriptExecutor::WaitForDomOperation::RunCallback(bool found) {
+  RunCallbackWithResult(found, nullptr);
+}
+
+void ScriptExecutor::WaitForDomOperation::RunCallbackWithResult(
+    bool check_result,
     const ScriptExecutor::Result* result) {
   // stop element checking if one is still in progress
   batch_element_checker_.reset();
+  retry_timer_.Cancel();
   if (!callback_)
     return;
 
-  RestorePreInterruptScroll(found);
-  std::move(callback_).Run(found, result);
+  RestorePreInterruptScroll(check_result);
+  std::move(callback_).Run(check_result, result, ran_interrupts_);
 }
 
-void ScriptExecutor::WaitWithInterrupts::SavePreInterruptState() {
+void ScriptExecutor::WaitForDomOperation::SavePreInterruptState() {
   if (saved_pre_interrupt_state_)
     return;
 
-  pre_interrupt_status_ =
-      main_script_->delegate_->GetUiController()->GetStatusMessage();
+  pre_interrupt_status_ = main_script_->delegate_->GetStatusMessage();
   saved_pre_interrupt_state_ = true;
 }
 
-void ScriptExecutor::WaitWithInterrupts::RestorePreInterruptUiState() {
+void ScriptExecutor::WaitForDomOperation::RestoreStatusMessage() {
   if (!saved_pre_interrupt_state_)
     return;
 
-  main_script_->delegate_->GetUiController()->ShowStatusMessage(
-      pre_interrupt_status_);
+  main_script_->delegate_->SetStatusMessage(pre_interrupt_status_);
 }
 
-void ScriptExecutor::WaitWithInterrupts::RestorePreInterruptScroll(
-    bool element_found) {
+void ScriptExecutor::WaitForDomOperation::RestorePreInterruptScroll(
+    bool check_result) {
   if (!saved_pre_interrupt_state_)
     return;
 
   auto* delegate = main_script_->delegate_;
-  if (element_found) {
+  if (check_result &&
+      selector_predicate_ == ActionDelegate::SelectorPredicate::kMatches) {
     delegate->GetWebController()->FocusElement(selector_, base::DoNothing());
   } else if (!main_script_->last_focused_element_selector_.empty()) {
     delegate->GetWebController()->FocusElement(
@@ -641,18 +863,11 @@ void ScriptExecutor::WaitWithInterrupts::RestorePreInterruptScroll(
   }
 }
 
-void ScriptExecutor::WaitWithInterrupts::Shutdown() {
-  if (interrupt_executor_)
-    interrupt_executor_->Shutdown();
-}
-
-void ScriptExecutor::OnChosen(
-    base::OnceCallback<void(const std::string&)> callback,
-    const std::string& payload) {
-  delegate_->GetUiController()->ShowOverlay();
-  AllowShowingSoftKeyboard(false);
-  delegate_->ClearTouchableElementArea();
-  std::move(callback).Run(payload);
+std::ostream& operator<<(std::ostream& out,
+                         const ScriptExecutor::Result& result) {
+  result.success ? out << "succeeded. " : out << "failed. ";
+  out << "at_end = " << result.at_end;
+  return out;
 }
 
 }  // namespace autofill_assistant

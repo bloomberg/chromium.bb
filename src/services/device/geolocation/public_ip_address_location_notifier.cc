@@ -4,6 +4,7 @@
 
 #include "services/device/geolocation/public_ip_address_location_notifier.h"
 
+#include "base/bind.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/device/geolocation/wifi_data.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"

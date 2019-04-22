@@ -32,7 +32,7 @@ namespace {
 // trace_clocks in preference order.
 constexpr const char* kClocks[] = {"boot", "global", "local"};
 
-constexpr int kDefaultPerCpuBufferSizeKb = 512;    // 512kb
+constexpr int kDefaultPerCpuBufferSizeKb = 2 * 1024;  // 2mb
 constexpr int kMaxPerCpuBufferSizeKb = 64 * 1024;  // 64mb
 
 void AddEventGroup(const ProtoTranslationTable* table,
@@ -76,7 +76,8 @@ std::set<GroupAndName> FtraceConfigMuxer::GetFtraceEvents(
     std::string name;
     std::tie(group, name) = EventToStringGroupAndName(config_value);
     if (name == "*") {
-      events = ReadEventsInGroupFromFs(*ftrace_, group);
+      for (const auto& event : ReadEventsInGroupFromFs(*ftrace_, group))
+        events.insert(event);
     } else if (group.empty()) {
       // If there is no group specified, find an event with that name and
       // use it's group.
@@ -227,6 +228,17 @@ std::set<GroupAndName> FtraceConfigMuxer::GetFtraceEvents(
 
       if (category == "pagecache") {
         AddEventGroup(table, "pagecache", &events);
+        continue;
+      }
+
+      if (category == "memory") {
+        events.insert(GroupAndName("kmem", "rss_stat"));
+        events.insert(GroupAndName("kmem", "ion_heap_grow"));
+        events.insert(GroupAndName("kmem", "ion_heap_shrink"));
+        events.insert(GroupAndName("oom", "oom_score_adj_update"));
+        events.insert(GroupAndName("sched", "sched_process_exit"));
+        events.insert(GroupAndName("task", "task_rename"));
+        events.insert(GroupAndName("task", "task_newtask"));
         continue;
       }
     }

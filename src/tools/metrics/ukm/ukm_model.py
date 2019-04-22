@@ -14,7 +14,7 @@ _OBSOLETE_TYPE = models.TextNodeType('obsolete')
 _OWNER_TYPE = models.TextNodeType('owner', single_line=True)
 _SUMMARY_TYPE = models.TextNodeType('summary')
 
-_LOWERCASE_NAME_FN = lambda n: n.attributes['name'].value.lower()
+_LOWERCASE_NAME_FN = lambda n: n.get('name').lower()
 
 _ENUMERATION_TYPE = models.ObjectNodeType(
     'enumeration',
@@ -24,71 +24,77 @@ _ENUMERATION_TYPE = models.ObjectNodeType(
 _QUANTILES_TYPE = models.ObjectNodeType(
     'quantiles',
     attributes=[
-      ('type', unicode),
+      ('type', unicode, None),
     ],
     single_line=True)
 
 _INDEX_TYPE = models.ObjectNodeType(
     'index',
     attributes=[
-      ('fields', unicode),
+      ('fields', unicode, None),
     ],
     single_line=True)
 
 _STATISTICS_TYPE =  models.ObjectNodeType(
     'statistics',
-    attributes=[],
+    attributes=[
+      ('export', unicode, r'^(?i)(|true|false)$'),
+    ],
     children=[
-        models.ChildType('quantiles', _QUANTILES_TYPE, False),
-        models.ChildType('enumeration', _ENUMERATION_TYPE, False),
+        models.ChildType('quantiles', _QUANTILES_TYPE, multiple=False),
+        models.ChildType('enumeration', _ENUMERATION_TYPE, multiple=False),
     ])
 
 _HISTORY_TYPE =  models.ObjectNodeType(
     'history',
     attributes=[],
     children=[
-        models.ChildType('index', _INDEX_TYPE, False),
-        models.ChildType('statistics', _STATISTICS_TYPE, True),
+        models.ChildType('index', _INDEX_TYPE, multiple=True),
+        models.ChildType('statistics', _STATISTICS_TYPE, multiple=True),
     ])
 
 _AGGREGATION_TYPE =  models.ObjectNodeType(
     'aggregation',
     attributes=[],
     children=[
-        models.ChildType('history', _HISTORY_TYPE, False),
+        models.ChildType('history', _HISTORY_TYPE, multiple=False),
     ])
 
 _METRIC_TYPE =  models.ObjectNodeType(
     'metric',
     attributes=[
-      ('name', unicode),
-      ('semantic_type', unicode),
+      ('name', unicode, r'^[A-Za-z0-9_.]+$'),
+      ('semantic_type', unicode, None),
     ],
     children=[
-        models.ChildType('obsolete', _OBSOLETE_TYPE, False),
-        models.ChildType('owners', _OWNER_TYPE, True),
-        models.ChildType('summary', _SUMMARY_TYPE, False),
-        models.ChildType('aggregation', _AGGREGATION_TYPE, True),
+        models.ChildType('obsolete', _OBSOLETE_TYPE, multiple=False),
+        models.ChildType('owners', _OWNER_TYPE, multiple=True),
+        models.ChildType('summary', _SUMMARY_TYPE, multiple=False),
+        models.ChildType('aggregation', _AGGREGATION_TYPE, multiple=True),
     ])
 
 _EVENT_TYPE =  models.ObjectNodeType(
     'event',
     alphabetization=[('metric', _LOWERCASE_NAME_FN)],
-    attributes=[('name', unicode), ('singular', bool)],
+    attributes=[
+      ('name', unicode, r'^[A-Za-z0-9.]+$'),
+      ('singular', unicode, r'^(?i)(|true|false)$'),
+    ],
     extra_newlines=(1, 1, 1),
     children=[
-        models.ChildType('obsolete', _OBSOLETE_TYPE, False),
-        models.ChildType('owners', _OWNER_TYPE, True),
-        models.ChildType('summary', _SUMMARY_TYPE, False),
-        models.ChildType('metrics', _METRIC_TYPE, True),
+        models.ChildType('obsolete', _OBSOLETE_TYPE, multiple=False),
+        models.ChildType('owners', _OWNER_TYPE, multiple=True),
+        models.ChildType('summary', _SUMMARY_TYPE, multiple=False),
+        models.ChildType('metrics', _METRIC_TYPE, multiple=True),
     ])
 
 _UKM_CONFIGURATION_TYPE = models.ObjectNodeType(
     'ukm-configuration',
+    alphabetization=[('event', _LOWERCASE_NAME_FN)],
     extra_newlines=(2, 1, 1),
     indent=False,
     children=[
-        models.ChildType('events', _EVENT_TYPE, True),
+        models.ChildType('events', _EVENT_TYPE, multiple=True),
     ])
 
 UKM_XML_TYPE = models.DocumentType(_UKM_CONFIGURATION_TYPE)

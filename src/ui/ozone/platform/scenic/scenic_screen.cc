@@ -91,13 +91,13 @@ display::Display ScenicScreen::GetDisplayForAcceleratedWidget(
 }
 
 gfx::Point ScenicScreen::GetCursorScreenPoint() const {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
   return gfx::Point();
 }
 
 gfx::AcceleratedWidget ScenicScreen::GetAcceleratedWidgetAtScreenPoint(
     const gfx::Point& point) const {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
   return gfx::kNullAcceleratedWidget;
 }
 

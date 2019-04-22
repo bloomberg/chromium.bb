@@ -52,9 +52,30 @@ declare_args() {
   start_daemons_for_testing = true
 }
 
+# Chromium sets this to true.
+if (!defined(build_with_chromium)) {
+  build_with_chromium = false
+}
+
+# Embedders can override this to true.
 if (!defined(perfetto_build_with_embedder)) {
   perfetto_build_with_embedder = build_with_chromium
 }
+
+perfetto_force_dlog_default = ""
+if (perfetto_build_with_embedder) {
+  perfetto_force_dlog_default = "off"
+}
+
+declare_args() {
+  # Whether DLOG should be enabled on debug builds (""), all builds ("on"), or
+  # none ("off"). We disable it by default for embedders to avoid spamming their
+  # console.
+  perfetto_force_dlog = perfetto_force_dlog_default
+}
+
+assert(perfetto_force_dlog == "" || perfetto_force_dlog == "on" ||
+       perfetto_force_dlog == "off")
 
 perfetto_build_standalone =
     !perfetto_build_with_android && !build_with_chromium &&
@@ -73,6 +94,14 @@ if (perfetto_build_with_android) {
 }
 
 # Cross-checks.
+
+# Exactly one between build_with_android, build_standalone and
+# build_with_embedder must be true.
+assert(perfetto_build_standalone || perfetto_build_with_android ||
+       perfetto_build_with_embedder)
+assert(!(perfetto_build_with_android && perfetto_build_standalone))
+assert(!(perfetto_build_with_embedder && perfetto_build_standalone))
+assert(!(perfetto_build_with_android && perfetto_build_with_embedder))
 
 # If |build_with_chromium| is true then also |perfetto_build_with_embedder|
 # must be true

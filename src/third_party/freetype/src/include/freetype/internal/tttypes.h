@@ -5,7 +5,7 @@
  *   Basic SFNT/TrueType type definitions and interface (specification
  *   only).
  *
- * Copyright 1996-2018 by
+ * Copyright (C) 1996-2019 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -58,7 +58,7 @@ FT_BEGIN_HEADER
    *
    * @fields:
    *   tag ::
-   *     Must be 'ttc ' to indicate a TrueType collection.
+   *     Must be 'ttc~' to indicate a TrueType collection.
    *
    *   version ::
    *     The version number.
@@ -1395,7 +1395,7 @@ FT_BEGIN_HEADER
    *
    *   cvt ::
    *     The face's original control value table.  Coordinates are expressed
-   *     in unscaled font units.  Comes from the 'cvt ' table.  Ignored for
+   *     in unscaled font units.  Comes from the 'cvt~' table.  Ignored for
    *     Type 2 fonts.
    *
    *   interpreter ::
@@ -1485,12 +1485,12 @@ FT_BEGIN_HEADER
    *     indices used in the font's sbit table.
    *
    *   cpal ::
-   *     A pointer to data related to the 'CPAL' table.  NULL if the table is
-   *     not available.
+   *     A pointer to data related to the 'CPAL' table.  `NULL` if the table
+   *     is not available.
    *
    *   colr ::
-   *     A pointer to data related to the 'COLR' table.  NULL if the table is
-   *     not available.
+   *     A pointer to data related to the 'COLR' table.  `NULL` if the table
+   *     is not available.
    *
    *   kern_table ::
    *     A pointer to the 'kern' table.

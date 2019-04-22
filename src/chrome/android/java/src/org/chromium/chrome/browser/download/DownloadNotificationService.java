@@ -8,7 +8,6 @@ import static org.chromium.chrome.browser.download.DownloadBroadcastManager.getS
 import static org.chromium.chrome.browser.download.DownloadSnackbarController.INVALID_NOTIFICATION_ID;
 
 import android.app.Notification;
-import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -29,8 +28,11 @@ import org.chromium.base.StrictModeContext;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.notifications.NotificationManagerProxy;
+import org.chromium.chrome.browser.notifications.NotificationManagerProxyImpl;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.FailState;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
@@ -93,7 +95,7 @@ public class DownloadNotificationService {
     @VisibleForTesting
     final List<ContentId> mDownloadsInProgress = new ArrayList<ContentId>();
 
-    private NotificationManager mNotificationManager;
+    private NotificationManagerProxy mNotificationManager;
     private Bitmap mDownloadSuccessLargeIcon;
     private DownloadSharedPreferenceHelper mDownloadSharedPreferenceHelper;
     private DownloadForegroundServiceManager mDownloadForegroundServiceManager;
@@ -113,8 +115,7 @@ public class DownloadNotificationService {
     @VisibleForTesting
     DownloadNotificationService() {
         mNotificationManager =
-                (NotificationManager) ContextUtils.getApplicationContext().getSystemService(
-                        Context.NOTIFICATION_SERVICE);
+                new NotificationManagerProxyImpl(ContextUtils.getApplicationContext());
         mDownloadSharedPreferenceHelper = DownloadSharedPreferenceHelper.getInstance();
         mDownloadForegroundServiceManager = new DownloadForegroundServiceManager();
     }
@@ -242,7 +243,7 @@ public class DownloadNotificationService {
                                                 .setPendingState(pendingState)
                                                 .build();
         Notification notification = DownloadNotificationFactory.buildNotification(
-                context, DownloadStatus.IN_PROGRESS, downloadUpdate);
+                context, DownloadStatus.IN_PROGRESS, downloadUpdate, notificationId);
         updateNotification(notificationId, notification, id,
                 new DownloadSharedPreferenceEntry(id, notificationId, isOffTheRecord,
                         canDownloadWhileMetered, fileName, true, isTransient));
@@ -253,7 +254,7 @@ public class DownloadNotificationService {
         startTrackingInProgressDownload(id);
     }
 
-    public void cancelNotification(int notificationId) {
+    private void cancelNotification(int notificationId) {
         // TODO(b/65052774): Add back NOTIFICATION_NAMESPACE when able to.
         mNotificationManager.cancel(notificationId);
     }
@@ -343,7 +344,7 @@ public class DownloadNotificationService {
                                                 .build();
 
         Notification notification = DownloadNotificationFactory.buildNotification(
-                context, DownloadStatus.PAUSED, downloadUpdate);
+                context, DownloadStatus.PAUSED, downloadUpdate, notificationId);
         updateNotification(notificationId, notification, id,
                 new DownloadSharedPreferenceEntry(id, notificationId, isOffTheRecord,
                         canDownloadWhileMetered, fileName, isAutoResumable, isTransient));
@@ -401,7 +402,7 @@ public class DownloadNotificationService {
                                                 .setTotalBytes(totalBytes)
                                                 .build();
         Notification notification = DownloadNotificationFactory.buildNotification(
-                context, DownloadStatus.COMPLETED, downloadUpdate);
+                context, DownloadStatus.COMPLETED, downloadUpdate, notificationId);
 
         updateNotification(notificationId, notification, id, null);
         mDownloadForegroundServiceManager.updateDownloadStatus(
@@ -445,7 +446,7 @@ public class DownloadNotificationService {
                                                 .setFailState(failState)
                                                 .build();
         Notification notification = DownloadNotificationFactory.buildNotification(
-                context, DownloadStatus.FAILED, downloadUpdate);
+                context, DownloadStatus.FAILED, downloadUpdate, notificationId);
 
         updateNotification(notificationId, notification, id, null);
         mDownloadForegroundServiceManager.updateDownloadStatus(
@@ -528,6 +529,8 @@ public class DownloadNotificationService {
      * already in progress, do nothing.
      */
     void resumeAllPendingDownloads() {
+        if (FeatureUtilities.isDownloadAutoResumptionEnabledInNative()) return;
+
         // Limit the number of auto resumption attempts in case Chrome falls into a vicious cycle.
         DownloadResumptionScheduler.getDownloadResumptionScheduler().cancel();
         int numAutoResumptionAtemptLeft = getResumptionAttemptLeft();

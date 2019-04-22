@@ -4,6 +4,7 @@
 
 #include <stdint.h>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/run_loop.h"
@@ -42,7 +43,7 @@ class ActivityLogPrerenderTest : public ExtensionApiTest {
     ExtensionApiTest::SetUpOnMainThread();
     host_resolver()->AddRule("*", "127.0.0.1");
     prerender::PrerenderManager::SetMode(
-        prerender::PrerenderManager::PRERENDER_MODE_ENABLED);
+        prerender::PrerenderManager::DEPRECATED_PRERENDER_MODE_ENABLED);
   }
 
   static void Prerender_Arguments(

@@ -48,7 +48,6 @@ apply plugin: "com.android.application"
 
 android {
     compileSdkVersion "{{ compile_sdk_version }}"
-    buildToolsVersion "{{ build_tools_version }}"
 
     defaultConfig {
         vectorDrawables.useSupportLibrary = true
@@ -112,9 +111,4 @@ afterEvaluate {
     tasksToDisable.each { Task task ->
       task.enabled = false
     }
-{% if bootclasspath is defined %}
-    tasks.withType(JavaCompile) {
-      options.bootClasspath = "{{ bootclasspath }}"
-    }
-{% endif %}
 }

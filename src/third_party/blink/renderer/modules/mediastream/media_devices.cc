@@ -32,10 +32,8 @@ namespace {
 
 class PromiseResolverCallbacks final : public UserMediaRequest::Callbacks {
  public:
-  static PromiseResolverCallbacks* Create(ScriptPromiseResolver* resolver) {
-    return new PromiseResolverCallbacks(resolver);
-  }
-
+  explicit PromiseResolverCallbacks(ScriptPromiseResolver* resolver)
+      : resolver_(resolver) {}
   ~PromiseResolverCallbacks() override = default;
 
   void OnSuccess(ScriptWrappable* callback_this_value,
@@ -53,30 +51,13 @@ class PromiseResolverCallbacks final : public UserMediaRequest::Callbacks {
   }
 
  private:
-  explicit PromiseResolverCallbacks(ScriptPromiseResolver* resolver)
-      : resolver_(resolver) {}
-
   Member<ScriptPromiseResolver> resolver_;
 };
 
 }  // namespace
 
-MediaDevices* MediaDevices::Create(ExecutionContext* context) {
-  MediaDevices* media_devices = MakeGarbageCollected<MediaDevices>(context);
-  media_devices->PauseIfNeeded();
-  return media_devices;
-}
-
 MediaDevices::MediaDevices(ExecutionContext* context)
-    : PausableObject(context),
-      stopped_(false),
-      dispatch_scheduled_event_runner_(
-          context ? AsyncMethodRunner<MediaDevices>::Create(
-                        this,
-                        &MediaDevices::DispatchScheduledEvent,
-                        context->GetTaskRunner(TaskType::kMediaElementEvent))
-                  : nullptr),
-      binding_(this) {}
+    : ContextLifecycleObserver(context), stopped_(false), binding_(this) {}
 
 MediaDevices::~MediaDevices() = default;
 
@@ -90,13 +71,14 @@ ScriptPromise MediaDevices::enumerateDevices(ScriptState* script_state) {
                                            "Current frame is detached."));
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
   requests_.insert(resolver);
 
   GetDispatcherHost(frame)->EnumerateDevices(
       true /* audio input */, true /* video input */, true /* audio output */,
       true /* request_video_input_capabilities */,
+      true /* request_audio_input_capabilities */,
       WTF::Bind(&MediaDevices::DevicesEnumerated, WrapPersistent(this),
                 WrapPersistent(resolver)));
   return promise;
@@ -119,9 +101,8 @@ ScriptPromise MediaDevices::SendUserMediaRequest(
     WebUserMediaRequest::MediaType media_type,
     const MediaStreamConstraints* options,
     ExceptionState& exception_state) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
-  PromiseResolverCallbacks* callbacks =
-      PromiseResolverCallbacks::Create(resolver);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  auto* callbacks = MakeGarbageCollected<PromiseResolverCallbacks>(resolver);
 
   Document* document = To<Document>(ExecutionContext::From(script_state));
   UserMediaController* user_media =
@@ -172,7 +153,7 @@ const AtomicString& MediaDevices::InterfaceName() const {
 }
 
 ExecutionContext* MediaDevices::GetExecutionContext() const {
-  return PausableObject::GetExecutionContext();
+  return ContextLifecycleObserver::GetExecutionContext();
 }
 
 void MediaDevices::RemoveAllEventListeners() {
@@ -213,16 +194,6 @@ void MediaDevices::ContextDestroyed(ExecutionContext*) {
   dispatcher_host_.reset();
 }
 
-void MediaDevices::Pause() {
-  DCHECK(dispatch_scheduled_event_runner_);
-  dispatch_scheduled_event_runner_->Pause();
-}
-
-void MediaDevices::Unpause() {
-  DCHECK(dispatch_scheduled_event_runner_);
-  dispatch_scheduled_event_runner_->Unpause();
-}
-
 void MediaDevices::OnDevicesChanged(
     MediaDeviceType type,
     Vector<mojom::blink::MediaDeviceInfoPtr> device_infos) {
@@ -238,11 +209,19 @@ void MediaDevices::OnDevicesChanged(
 
 void MediaDevices::ScheduleDispatchEvent(Event* event) {
   scheduled_events_.push_back(event);
-  DCHECK(dispatch_scheduled_event_runner_);
-  dispatch_scheduled_event_runner_->RunAsync();
+  if (dispatch_scheduled_events_task_handle_.IsActive())
+    return;
+
+  auto* context = GetExecutionContext();
+  DCHECK(context);
+  dispatch_scheduled_events_task_handle_ = PostCancellableTask(
+      *context->GetTaskRunner(TaskType::kMediaElementEvent), FROM_HERE,
+      WTF::Bind(&MediaDevices::DispatchScheduledEvents, WrapPersistent(this)));
 }
 
-void MediaDevices::DispatchScheduledEvent() {
+void MediaDevices::DispatchScheduledEvents() {
+  if (stopped_)
+    return;
   HeapVector<Member<Event>> events;
   events.swap(scheduled_events_);
 
@@ -280,7 +259,9 @@ void MediaDevices::DevicesEnumerated(
     ScriptPromiseResolver* resolver,
     Vector<Vector<mojom::blink::MediaDeviceInfoPtr>> enumeration,
     Vector<mojom::blink::VideoInputDeviceCapabilitiesPtr>
-        video_input_capabilities) {
+        video_input_capabilities,
+    Vector<mojom::blink::AudioInputDeviceCapabilitiesPtr>
+        audio_input_capabilities) {
   if (!requests_.Contains(resolver))
     return;
 
@@ -299,6 +280,12 @@ void MediaDevices::DevicesEnumerated(
         enumeration[static_cast<wtf_size_t>(MediaDeviceType::MEDIA_VIDEO_INPUT)]
             .size(),
         video_input_capabilities.size());
+  }
+  if (!audio_input_capabilities.IsEmpty()) {
+    DCHECK_EQ(
+        enumeration[static_cast<wtf_size_t>(MediaDeviceType::MEDIA_AUDIO_INPUT)]
+            .size(),
+        audio_input_capabilities.size());
   }
 
   MediaDeviceInfoVector media_devices;
@@ -319,11 +306,16 @@ void MediaDevices::DevicesEnumerated(
           input_device_info->SetVideoInputCapabilities(
               std::move(video_input_capabilities[j]));
         }
+        if (device_type == MediaDeviceType::MEDIA_AUDIO_INPUT &&
+            !audio_input_capabilities.IsEmpty()) {
+          input_device_info->SetAudioInputCapabilities(
+              std::move(audio_input_capabilities[j]));
+        }
         media_devices.push_back(input_device_info);
       } else {
-        media_devices.push_back(
-            MediaDeviceInfo::Create(device_info->device_id, device_info->label,
-                                    device_info->group_id, device_type));
+        media_devices.push_back(MakeGarbageCollected<MediaDeviceInfo>(
+            device_info->device_id, device_info->label, device_info->group_id,
+            device_type));
       }
     }
   }
@@ -368,11 +360,10 @@ void MediaDevices::SetDispatcherHostForTesting(
 }
 
 void MediaDevices::Trace(blink::Visitor* visitor) {
-  visitor->Trace(dispatch_scheduled_event_runner_);
   visitor->Trace(scheduled_events_);
   visitor->Trace(requests_);
   EventTargetWithInlineData::Trace(visitor);
-  PausableObject::Trace(visitor);
+  ContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink

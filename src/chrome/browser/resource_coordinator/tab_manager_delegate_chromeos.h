@@ -18,6 +18,7 @@
 #include "base/process/process.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/arc/process/arc_process.h"
+#include "chrome/browser/chromeos/arc/process/arc_process_service.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_state.mojom.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
@@ -41,15 +42,14 @@ enum class ProcessType {
   FOCUSED_TAB = 1,
   FOCUSED_APP = 2,
 
-  // Important apps are protected in two ways: 1) Chrome never kills them, and
-  // 2) the kernel is still allowed to kill them, but their OOM adjustment
-  // scores are better than BACKGROUND_TABs and BACKGROUND_APPs.
-  IMPORTANT_APP = 3,
-
-  BACKGROUND_APP = 4,
-  PROTECTED_BACKGROUND_TAB = 5,
-  BACKGROUND_TAB = 6,
-  UNKNOWN_TYPE = 7,
+  // PROTECTED_BACKGROUND processes are those that are in the background but
+  // are more important than BACKGROUND processes because they may be disruptive
+  // to the user if killed. CACHED_APP marks Android processes which are cached
+  // or empty.
+  PROTECTED_BACKGROUND = 3,
+  BACKGROUND = 4,
+  CACHED_APP = 5,
+  UNKNOWN_TYPE = 6,
 };
 
 // The Chrome OS TabManagerDelegate is responsible for keeping the
@@ -74,16 +74,18 @@ class TabManagerDelegate : public wm::ActivationChangeObserver,
                          aura::Window* gained_active,
                          aura::Window* lost_active) override;
 
+  // Called by TabManager::Start to start a timer that periodically updates
+  // OOM scores.
+  void StartPeriodicOOMScoreUpdate();
+
   // Kills a process on memory pressure.
-  void LowMemoryKill(::mojom::LifecycleUnitDiscardReason reason);
+  void LowMemoryKill(::mojom::LifecycleUnitDiscardReason reason,
+                     TabManager::TabDiscardDoneCB tab_discard_done);
 
   // Returns oom_score_adj of a process if the score is cached by |this|.
   // If couldn't find the score in the cache, returns -1001 since the valid
   // range of oom_score_adj is [-1000, 1000].
   int GetCachedOomScore(base::ProcessHandle process_handle);
-
-  // Called when the timer fires, sets oom_adjust_score for all renderers.
-  void AdjustOomPriorities();
 
   // Returns true if the process has recently been killed.
   // Virtual for unit testing.
@@ -108,10 +110,14 @@ class TabManagerDelegate : public wm::ActivationChangeObserver,
   FRIEND_TEST_ALL_PREFIXES(TabManagerDelegateTest,
                            CandidatesSortedWithFocusedAppAndTab);
   FRIEND_TEST_ALL_PREFIXES(TabManagerDelegateTest,
+                           CandidatesSortedWithTabRanker);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerDelegateTest,
                            DoNotKillRecentlyKilledArcProcesses);
   FRIEND_TEST_ALL_PREFIXES(TabManagerDelegateTest, IsRecentlyKilledArcProcess);
   FRIEND_TEST_ALL_PREFIXES(TabManagerDelegateTest, KillMultipleProcesses);
   FRIEND_TEST_ALL_PREFIXES(TabManagerDelegateTest, SetOomScoreAdj);
+
+  using OptionalArcProcessList = arc::ArcProcessService::OptionalArcProcessList;
 
   class Candidate;
   class FocusedProcess;
@@ -136,7 +142,7 @@ class TabManagerDelegate : public wm::ActivationChangeObserver,
   // Get the list of candidates to kill, sorted by descending importance.
   static std::vector<Candidate> GetSortedCandidates(
       const LifecycleUnitVector& lifecycle_units,
-      const std::vector<arc::ArcProcess>& arc_processes);
+      const OptionalArcProcessList& arc_processes);
 
   // Returns the LifecycleUnits in TabManager. Virtual for unit tests.
   virtual LifecycleUnitVector GetLifecycleUnits();
@@ -147,13 +153,17 @@ class TabManagerDelegate : public wm::ActivationChangeObserver,
   // Kills a process after getting all info of tabs and apps.
   void LowMemoryKillImpl(base::TimeTicks start_time,
                          ::mojom::LifecycleUnitDiscardReason reason,
-                         std::vector<arc::ArcProcess> arc_processes);
+                         TabManager::TabDiscardDoneCB tab_discard_done,
+                         OptionalArcProcessList arc_processes);
 
   // Sets a newly focused tab the highest priority process if it wasn't.
   void AdjustFocusedTabScore(base::ProcessHandle pid);
 
+  // Called when the timer fires, sets oom_adjust_score for all renderers.
+  void AdjustOomPriorities();
+
   // Called by AdjustOomPriorities. Runs on the main thread.
-  void AdjustOomPrioritiesImpl(std::vector<arc::ArcProcess> arc_processes);
+  void AdjustOomPrioritiesImpl(OptionalArcProcessList arc_processes);
 
   // Sets OOM score for processes in the range [|rbegin|, |rend|) to integers
   // distributed evenly in [|range_begin|, |range_end|).
@@ -184,6 +194,9 @@ class TabManagerDelegate : public wm::ActivationChangeObserver,
 
   // Registrar to receive renderer notifications.
   content::NotificationRegistrar registrar_;
+
+  // Timer to periodically make OOM score adjustments.
+  base::RepeatingTimer adjust_oom_priorities_timer_;
 
   // Timer to guarantee that the tab or app is focused for a certain amount of
   // time.
@@ -218,13 +231,38 @@ class TabManagerDelegate::Candidate {
         lifecycle_unit_sort_key_(lifecycle_unit_->GetSortKey()) {
     DCHECK(lifecycle_unit_);
   }
-  explicit Candidate(const arc::ArcProcess* app) : app_(app) { DCHECK(app_); }
+
+  // Candidates are sorted by a pair of sort keys <TabRanker score,
+  // last_activity_time>. Apps are not scored by TabRanker, so their score
+  // is set to kMaxScore. When TabRanker is off, tabs also have a score of
+  // kMaxScore so this has the effect of sorting by last_activity_time only.
+  // But if TabRanker is on, kMaxScore guarantees all apps are sorted before
+  // tabs.
+  explicit Candidate(const arc::ArcProcess* app)
+      : lifecycle_unit_sort_key_(
+            LifecycleUnit::SortKey::kMaxScore,
+            base::TimeTicks::FromUptimeMillis(app->last_activity_time())),
+        app_(app) {
+    DCHECK(app_);
+  }
 
   // Move-only class.
   Candidate(Candidate&&) = default;
   Candidate& operator=(Candidate&& other);
 
-  // Higher priority first.
+  // Candidates are sorted higher priority first. They are first sorted into
+  // their respective ProcessTypes.
+  // LifecycleUnit::SortKey is used to compare processes within a ProcessType,
+  // using a combination of TabRanker reactivation score (for tabs only) and
+  // last focused time for all processes. When TabRanker is disabled, tabs are
+  // given a default score of kMaxScore. An ArcProcess (app) is always assigned
+  // kMaxScore. This means that when TabRanker is off, all processes have
+  // kMaxScore and are then compared by last focused time.
+  // When TabRanker is on, tabs have their own defined order so we can't compare
+  // apps to tabs, since we wouldn't have a comparator to satisfy transitivity.
+  // In this case, ARC processes are sorted before (higher priority than) tabs
+  // and compared by last focused time, while tabs are compared by their
+  // reactivation score.
   bool operator<(const Candidate& rhs) const;
 
   LifecycleUnit* lifecycle_unit() { return lifecycle_unit_; }

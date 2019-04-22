@@ -8,7 +8,7 @@
 
 #include <utility>
 
-#include "fxjs/xfa/cjx_radial.h"
+#include "fxjs/xfa/cjx_node.h"
 #include "third_party/base/ptr_util.h"
 #include "xfa/fxfa/parser/cxfa_color.h"
 #include "xfa/fxgraphics/cxfa_geshading.h"
@@ -18,16 +18,15 @@ namespace {
 const CXFA_Node::PropertyData kRadialPropertyData[] = {
     {XFA_Element::Color, 1, 0},
     {XFA_Element::Extras, 1, 0},
-    {XFA_Element::Unknown, 0, 0}};
+};
+
 const CXFA_Node::AttributeData kRadialAttributeData[] = {
     {XFA_Attribute::Id, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Use, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Type, XFA_AttributeType::Enum,
-     (void*)XFA_AttributeEnum::ToEdge},
+     (void*)XFA_AttributeValue::ToEdge},
     {XFA_Attribute::Usehref, XFA_AttributeType::CData, nullptr},
-    {XFA_Attribute::Unknown, XFA_AttributeType::Integer, nullptr}};
-
-constexpr wchar_t kRadialName[] = L"radial";
+};
 
 }  // namespace
 
@@ -39,15 +38,13 @@ CXFA_Radial::CXFA_Radial(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_Element::Radial,
                 kRadialPropertyData,
                 kRadialAttributeData,
-                kRadialName,
-                pdfium::MakeUnique<CJX_Radial>(this)) {}
+                pdfium::MakeUnique<CJX_Node>(this)) {}
 
-CXFA_Radial::~CXFA_Radial() {}
+CXFA_Radial::~CXFA_Radial() = default;
 
 bool CXFA_Radial::IsToEdge() {
-  return JSObject()
-             ->TryEnum(XFA_Attribute::Type, true)
-             .value_or(XFA_AttributeEnum::ToEdge) == XFA_AttributeEnum::ToEdge;
+  auto value = JSObject()->TryEnum(XFA_Attribute::Type, true);
+  return !value.has_value() || value.value() == XFA_AttributeValue::ToEdge;
 }
 
 CXFA_Color* CXFA_Radial::GetColorIfExists() {

@@ -27,17 +27,21 @@ class DEVICE_VR_EXPORT OculusDevice
   explicit OculusDevice();
   ~OculusDevice() override;
 
+  static bool IsHwAvailable();
+  static bool IsApiAvailable();
+
   // VRDeviceBase
   void RequestSession(
       mojom::XRRuntimeSessionOptionsPtr options,
       mojom::XRRuntime::RequestSessionCallback callback) override;
-  void OnGetInlineFrameData(
-      mojom::XRFrameDataProvider::GetFrameDataCallback callback) override;
+  void EnsureInitialized(int render_process_id,
+                         int render_frame_id,
+                         EnsureInitializedCallback callback) override;
   void OnRequestSessionResult(mojom::XRRuntime::RequestSessionCallback callback,
                               bool result,
                               mojom::XRSessionPtr session);
 
-  bool IsInitialized() { return !!session_; }
+  bool IsAvailable();
 
   mojom::IsolatedXRGamepadProviderFactoryPtr BindGamepadFactory();
   mojom::XRCompositorHostPtr BindCompositorHost();
@@ -57,9 +61,12 @@ class DEVICE_VR_EXPORT OculusDevice
       mojom::ImmersiveOverlayRequest overlay_request) override;
 
   void OnPresentationEnded();
+  bool EnsureValidDisplayInfo();
   void StartOvrSession();
   void StopOvrSession();
 
+  int outstanding_session_requests_count_ = 0;
+  bool have_real_display_info_ = false;
   std::unique_ptr<XRCompositorCommon> render_loop_;
   ovrSession session_ = nullptr;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;

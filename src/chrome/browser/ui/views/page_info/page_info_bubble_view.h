@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view_base.h"
 #include "chrome/browser/ui/views/page_info/permission_selector_row.h"
 #include "chrome/browser/ui/views/page_info/permission_selector_row_observer.h"
+#include "components/security_state/core/security_state.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/link_listener.h"
@@ -39,10 +40,6 @@ class Rect;
 namespace net {
 class X509Certificate;
 }  // namespace net
-
-namespace security_state {
-struct SecurityInfo;
-}  // namespace security_state
 
 namespace test {
 class PageInfoBubbleViewTestApi;
@@ -80,6 +77,8 @@ class PageInfoBubbleView : public PageInfoBubbleViewBase,
     VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_COOKIE_DIALOG,
     VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_SITE_SETTINGS,
     VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_CERTIFICATE_VIEWER,
+    VIEW_ID_PAGE_INFO_BUTTON_END_VR,
+    VIEW_ID_PAGE_INFO_HOVER_BUTTON_VR_PRESENTATION,
   };
 
   // Creates the appropriate page info bubble for the given |url|.
@@ -93,19 +92,22 @@ class PageInfoBubbleView : public PageInfoBubbleViewBase,
       Profile* profile,
       content::WebContents* web_contents,
       const GURL& url,
-      const security_state::SecurityInfo& security_info);
+      security_state::SecurityLevel security_level,
+      const security_state::VisibleSecurityState& visible_security_state);
 
  private:
   friend class PageInfoBubbleViewBrowserTest;
   friend class test::PageInfoBubbleViewTestApi;
 
-  PageInfoBubbleView(views::View* anchor_view,
-                     const gfx::Rect& anchor_rect,
-                     gfx::NativeView parent_window,
-                     Profile* profile,
-                     content::WebContents* web_contents,
-                     const GURL& url,
-                     const security_state::SecurityInfo& security_info);
+  PageInfoBubbleView(
+      views::View* anchor_view,
+      const gfx::Rect& anchor_rect,
+      gfx::NativeView parent_window,
+      Profile* profile,
+      content::WebContents* web_contents,
+      const GURL& url,
+      security_state::SecurityLevel security_level,
+      const security_state::VisibleSecurityState& visible_security_state);
 
   // PageInfoBubbleViewBase:
   gfx::Size CalculatePreferredSize() const override;
@@ -135,7 +137,13 @@ class PageInfoBubbleView : public PageInfoBubbleViewBase,
   void SetPermissionInfo(const PermissionInfoList& permission_info_list,
                          ChosenObjectInfoList chosen_object_info_list) override;
   void SetIdentityInfo(const IdentityInfo& identity_info) override;
-#if defined(SAFE_BROWSING_DB_LOCAL)
+  void SetPageFeatureInfo(const PageFeatureInfo& info) override;
+
+  void LayoutPermissionsLikeUiRow(views::GridLayout* layout,
+                                  bool is_list_empty,
+                                  int column_id);
+
+#if defined(FULL_SAFE_BROWSING)
   std::unique_ptr<PageInfoUI::SecurityDescription>
   CreateSecurityDescriptionForPasswordReuse(
       bool is_enterprise_password) const override;
@@ -169,6 +177,10 @@ class PageInfoBubbleView : public PageInfoBubbleViewBase,
 
   // The view that contains the "Permissions" table of the bubble.
   views::View* permissions_view_;
+
+  // The view that contains ui related to features on a page, like a presenting
+  // VR page.
+  views::View* page_feature_info_view_;
 
   // The certificate provided by the site, if one exists.
   scoped_refptr<net::X509Certificate> certificate_;

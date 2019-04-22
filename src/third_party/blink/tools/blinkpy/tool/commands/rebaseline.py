@@ -412,8 +412,8 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
             test_baseline_set: A TestBaselineSet instance, which represents
                 a set of tests/platform combinations to rebaseline.
         """
-        if self._tool.git().has_working_directory_changes(pathspec=self._layout_tests_dir()):
-            _log.error('There are uncommitted changes in the layout tests directory; aborting.')
+        if self._tool.git().has_working_directory_changes(pathspec=self._web_tests_dir()):
+            _log.error('There are uncommitted changes in the web tests directory; aborting.')
             return
 
         for test in sorted({t for t, _, _ in test_baseline_set}):
@@ -458,12 +458,12 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
         baseline_paths = []
         for test in test_baseline_set.all_tests():
             filenames = [self._file_name_for_expected_result(test, suffix) for suffix in BASELINE_SUFFIX_LIST]
-            baseline_paths += [filesystem.join(self._layout_tests_dir(), filename) for filename in filenames]
+            baseline_paths += [filesystem.join(self._web_tests_dir(), filename) for filename in filenames]
         baseline_paths.sort()
         return baseline_paths
 
-    def _layout_tests_dir(self):
-        return self._tool.port_factory.get().layout_tests_dir()
+    def _web_tests_dir(self):
+        return self._tool.port_factory.get().web_tests_dir()
 
     def _suffixes_for_actual_failures(self, test, build):
         """Gets the baseline suffixes for actual mismatch failures in some results.

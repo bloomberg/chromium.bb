@@ -9,15 +9,17 @@
 #include "base/pickle.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "ui/base/clipboard/clipboard_format_type.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "url/url_constants.h"
 
 namespace bookmarks {
 
 // static
-const ui::Clipboard::FormatType& BookmarkNodeData::GetBookmarkFormatType() {
-  static const base::NoDestructor<ui::Clipboard::FormatType> format(
-      ui::Clipboard::GetFormatType(BookmarkNodeData::kClipboardFormatString));
+const ui::ClipboardFormatType& BookmarkNodeData::GetBookmarkFormatType() {
+  static const base::NoDestructor<ui::ClipboardFormatType> format(
+      ui::ClipboardFormatType::GetType(
+          BookmarkNodeData::kClipboardFormatString));
 
   return *format;
 }

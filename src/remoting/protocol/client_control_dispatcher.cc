@@ -111,6 +111,13 @@ void ClientControlDispatcher::DeliverClientMessage(
   message_pipe()->Send(&control_message, base::Closure());
 }
 
+void ClientControlDispatcher::SelectDesktopDisplay(
+    const SelectDesktopDisplayRequest& select_display) {
+  ControlMessage message;
+  message.mutable_select_display()->CopyFrom(select_display);
+  message_pipe()->Send(&message, base::Closure());
+}
+
 void ClientControlDispatcher::OnIncomingMessage(
     std::unique_ptr<CompoundBuffer> buffer) {
   DCHECK(client_stub_);

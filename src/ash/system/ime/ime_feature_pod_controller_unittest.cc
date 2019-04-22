@@ -57,7 +57,7 @@ class IMEFeaturePodControllerTest : public NoSessionAshTestBase {
   void SetActiveIMECount(int count) {
     available_imes_.resize(count);
     for (int i = 0; i < count; ++i)
-      available_imes_[i].id = base::IntToString(i);
+      available_imes_[i].id = base::NumberToString(i);
     RefreshImeController();
   }
 

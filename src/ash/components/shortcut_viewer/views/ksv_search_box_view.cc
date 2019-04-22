@@ -32,7 +32,7 @@ constexpr int kBorderCornerRadius = 32;
 KSVSearchBoxView::KSVSearchBoxView(search_box::SearchBoxViewDelegate* delegate)
     : search_box::SearchBoxViewBase(delegate) {
   SetSearchBoxBackgroundCornerRadius(kBorderCornerRadius);
-  SetSearchBoxBackgroundColor(kDefaultSearchBoxBackgroundColor);
+  UpdateBackgroundColor(kDefaultSearchBoxBackgroundColor);
   search_box()->SetBackgroundColor(SK_ColorTRANSPARENT);
   search_box()->SetColor(gfx::kGoogleGrey900);
   search_box()->set_placeholder_text_color(gfx::kGoogleGrey900);
@@ -83,7 +83,7 @@ void KSVSearchBoxView::SetAccessibleValue(const base::string16& value) {
 }
 
 void KSVSearchBoxView::UpdateBackgroundColor(SkColor color) {
-  SetSearchBoxBackgroundColor(color);
+  GetSearchBoxBackground()->SetNativeControlColor(color);
 }
 
 void KSVSearchBoxView::UpdateSearchBoxBorder() {
@@ -98,12 +98,12 @@ void KSVSearchBoxView::UpdateSearchBoxBorder() {
   if (search_box()->HasFocus() || is_search_box_active()) {
     SetBorder(views::CreateRoundedRectBorder(
         kBorderThichness, kBorderCornerRadius, kActiveBorderColor));
-    SetSearchBoxBackgroundColor(gfx::kGoogleGrey100);
+    UpdateBackgroundColor(gfx::kGoogleGrey100);
     return;
   }
   SetBorder(views::CreateRoundedRectBorder(
       kBorderThichness, kBorderCornerRadius, SK_ColorTRANSPARENT));
-  SetSearchBoxBackgroundColor(kDefaultSearchBoxBackgroundColor);
+  UpdateBackgroundColor(kDefaultSearchBoxBackgroundColor);
 }
 
 void KSVSearchBoxView::SetupCloseButton() {

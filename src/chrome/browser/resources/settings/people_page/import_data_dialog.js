@@ -64,15 +64,17 @@ Polymer({
 
     this.addWebUIListener('import-data-status-changed', importStatus => {
       this.importStatus_ = importStatus;
-      if (this.hasImportStatus_(settings.ImportDataStatus.FAILED))
+      if (this.hasImportStatus_(settings.ImportDataStatus.FAILED)) {
         this.closeDialog_();
+      }
     });
   },
 
   /** @private */
   prefsChanged_: function() {
-    if (this.selected_ == undefined || this.prefs == undefined)
+    if (this.selected_ == undefined || this.prefs == undefined) {
       return;
+    }
 
     this.noImportDataTypeSelected_ =
         !(this.getPref('import_dialog_history').value &&
@@ -119,10 +121,11 @@ Polymer({
 
   /** @private */
   onActionButtonTap_: function() {
-    if (this.isImportFromFileSelected_())
+    if (this.isImportFromFileSelected_()) {
       this.browserProxy_.importFromBookmarksFile();
-    else
+    } else {
       this.browserProxy_.importData(this.$.browserSelect.selectedIndex);
+    }
   },
 
   /** @private */

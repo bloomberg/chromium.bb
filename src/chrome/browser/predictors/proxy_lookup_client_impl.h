@@ -37,6 +37,7 @@ class ProxyLookupClientImpl : public network::mojom::ProxyLookupClient {
 
   // network::mojom::ProxyLookupClient:
   void OnProxyLookupComplete(
+      int32_t net_error,
       const base::Optional<net::ProxyInfo>& proxy_info) override;
 
  private:

@@ -32,7 +32,6 @@
 
 #include <utility>
 
-#include "base/debug/alias.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_for_context_dispose.h"
 #include "third_party/blink/renderer/core/frame/dom_window.h"
@@ -63,7 +62,10 @@ WindowProxy::WindowProxy(v8::Isolate* isolate,
       lifecycle_(Lifecycle::kContextIsUninitialized) {}
 
 void WindowProxy::ClearForClose() {
-  DisposeContext(Lifecycle::kFrameIsDetached, kFrameWillNotBeReused);
+  DisposeContext(lifecycle_ == Lifecycle::kV8MemoryIsForciblyPurged
+                     ? Lifecycle::kFrameIsDetachedAndV8MemoryIsPurged
+                     : Lifecycle::kFrameIsDetached,
+                 kFrameWillNotBeReused);
 }
 
 void WindowProxy::ClearForNavigation() {
@@ -72,6 +74,10 @@ void WindowProxy::ClearForNavigation() {
 
 void WindowProxy::ClearForSwap() {
   DisposeContext(Lifecycle::kGlobalObjectIsDetached, kFrameWillNotBeReused);
+}
+
+void WindowProxy::ClearForV8MemoryPurge() {
+  DisposeContext(Lifecycle::kV8MemoryIsForciblyPurged, kFrameWillNotBeReused);
 }
 
 v8::Local<v8::Object> WindowProxy::GlobalProxyIfNotDetached() {
@@ -100,8 +106,6 @@ v8::Local<v8::Object> WindowProxy::ReleaseGlobalProxy() {
 void WindowProxy::SetGlobalProxy(v8::Local<v8::Object> global_proxy) {
   DCHECK_EQ(lifecycle_, Lifecycle::kContextIsUninitialized);
 
-  base::debug::StackTrace initialization_stack = initialization_stack_;
-  base::debug::Alias(&initialization_stack);
   CHECK(global_proxy_.IsEmpty());
   global_proxy_.Set(isolate_, global_proxy);
 
@@ -153,7 +157,6 @@ void WindowProxy::InitializeIfNeeded() {
   if (lifecycle_ == Lifecycle::kContextIsUninitialized ||
       lifecycle_ == Lifecycle::kGlobalObjectIsDetached) {
     Initialize();
-    initialization_stack_ = base::debug::StackTrace();
   }
 }
 

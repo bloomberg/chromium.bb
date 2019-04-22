@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
-#include "chromeos/dbus/power_policy_controller.h"
+#include "chromeos/dbus/power/power_policy_controller.h"
 
 namespace device {
 
@@ -106,12 +106,12 @@ PowerSaveBlocker::PowerSaveBlocker(
       ui_task_runner_(ui_task_runner),
       blocking_task_runner_(blocking_task_runner) {
   ui_task_runner_->PostTask(FROM_HERE,
-                            base::Bind(&Delegate::ApplyBlock, delegate_));
+                            base::BindOnce(&Delegate::ApplyBlock, delegate_));
 }
 
 PowerSaveBlocker::~PowerSaveBlocker() {
   ui_task_runner_->PostTask(FROM_HERE,
-                            base::Bind(&Delegate::RemoveBlock, delegate_));
+                            base::BindOnce(&Delegate::RemoveBlock, delegate_));
 }
 
 }  // namespace device

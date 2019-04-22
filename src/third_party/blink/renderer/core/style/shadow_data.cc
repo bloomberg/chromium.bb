@@ -50,9 +50,11 @@ ShadowData ShadowData::NeutralValue() {
 }
 
 FloatRectOutsets ShadowData::RectOutsets() const {
-  // 3 * skBlurRadiusToSigma(blur()) is how Skia implements the radius of a
-  // blur. See also https://crbug.com/624175.
-  float blur_and_spread = ceil(3 * SkBlurRadiusToSigma(Blur())) + Spread();
+  // 3 * sigma is how Skia computes the box blur extent.
+  // See also https://crbug.com/624175.
+  // TODO(fmalita): since the blur extent must reflect rasterization bounds,
+  // its value should be queried from Skia (pending API availability).
+  float blur_and_spread = ceil(3 * BlurRadiusToStdDev(Blur())) + Spread();
   return FloatRectOutsets(
       blur_and_spread - Y() /* top */, blur_and_spread + X() /* right */,
       blur_and_spread + Y() /* bottom */, blur_and_spread - X() /* left */);

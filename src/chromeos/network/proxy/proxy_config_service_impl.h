@@ -8,9 +8,9 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/network/network_state_handler_observer.h"
 #include "components/onc/onc_constants.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -29,7 +29,7 @@ class NetworkState;
 // - provides network stack with latest effective proxy configuration for
 //   currently active network via PrefProxyConfigTrackerImpl's mechanism of
 //   pushing config to ChromeProxyConfigService
-class CHROMEOS_EXPORT ProxyConfigServiceImpl
+class COMPONENT_EXPORT(CHROMEOS_NETWORK) ProxyConfigServiceImpl
     : public PrefProxyConfigTrackerImpl,
       public NetworkStateHandlerObserver {
  public:

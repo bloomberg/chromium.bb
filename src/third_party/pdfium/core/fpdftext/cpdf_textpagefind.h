@@ -7,6 +7,7 @@
 #ifndef CORE_FPDFTEXT_CPDF_TEXTPAGEFIND_H_
 #define CORE_FPDFTEXT_CPDF_TEXTPAGEFIND_H_
 
+#include <memory>
 #include <vector>
 
 #include "core/fxcrt/fx_coordinates.h"
@@ -19,42 +20,44 @@ class CPDF_TextPage;
 
 class CPDF_TextPageFind {
  public:
-  explicit CPDF_TextPageFind(const CPDF_TextPage* pTextPage);
+  struct Options {
+    bool bMatchCase = false;
+    bool bMatchWholeWord = false;
+    bool bConsecutive = false;
+  };
+
+  static std::unique_ptr<CPDF_TextPageFind> Create(
+      const CPDF_TextPage* pTextPage,
+      const WideString& findwhat,
+      const Options& options,
+      Optional<size_t> startPos);
+
   ~CPDF_TextPageFind();
 
-  bool FindFirst(const WideString& findwhat,
-                 int flags,
-                 Optional<size_t> startPos);
   bool FindNext();
   bool FindPrev();
   int GetCurOrder() const;
   int GetMatchedCount() const;
 
- protected:
-  void ExtractFindWhat(const WideString& findwhat);
-  bool IsMatchWholeWord(const WideString& csPageText,
-                        size_t startPos,
-                        size_t endPos);
-  Optional<WideString> ExtractSubString(const wchar_t* lpszFullString,
-                                        int iSubString,
-                                        wchar_t chSep);
+ private:
+  CPDF_TextPageFind(const CPDF_TextPage* pTextPage,
+                    const std::vector<WideString>& findwhat_array,
+                    const Options& options,
+                    Optional<size_t> startPos);
+
+  // Should be called immediately after construction.
+  bool FindFirst();
+
   int GetCharIndex(int index) const;
 
- private:
-  std::vector<uint16_t> m_CharIndex;
-  UnownedPtr<const CPDF_TextPage> m_pTextPage;
-  WideString m_strText;
-  WideString m_findWhat;
-  int m_flags;
-  std::vector<WideString> m_csFindWhatArray;
+  UnownedPtr<const CPDF_TextPage> const m_pTextPage;
+  const WideString m_strText;
+  const std::vector<WideString> m_csFindWhatArray;
   Optional<size_t> m_findNextStart;
   Optional<size_t> m_findPreStart;
-  bool m_bMatchCase;
-  bool m_bMatchWholeWord;
-  int m_resStart;
-  int m_resEnd;
-  std::vector<CFX_FloatRect> m_resArray;
-  bool m_IsFind;
+  int m_resStart = 0;
+  int m_resEnd = -1;
+  const Options m_options;
 };
 
 #endif  // CORE_FPDFTEXT_CPDF_TEXTPAGEFIND_H_

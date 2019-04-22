@@ -1,24 +1,44 @@
 # liblouis: Portuguese Grade 1 Braille Table
-# Created by Leon Ungier <Leon.Ungier@ViewPlus.com>.
 #
-#  Copyright (C) 2009 ViewPlus Technologies, Inc. www.viewplus.com and
-#  JJB Software, Inc. www.jjb-software.com
+# -----------
+#-display-name: Portuguese uncontracted braille
+#
+#+locale:pt
+#+type:literary
+#+contraction:no
+#+grade:1
+#
+# TODO: Please correct the metadata above. It is not meant to be
+# accurate nor complete. It hasn't been verified by the table
+# author yet. It is merely an attempt by the liblouis maintainers
+# to get some sensible initial values in place.
+#
+# TODO: Please add a reference to official documentation about
+# the implemented braille code. Preferably submit the documents
+# to https://github.com/liblouis/braille-specs.
+# -----------
+#
+#  Copyright (C) 2004-2008 ViewPlus Technologies, Inc. www.viewplus.com
+#  Copyright (C) 2004-2006 JJB Software, Inc. www.jjb-software.com
+#  Copyright (C) 2012 Mesar Hameed <mesar.hameed@gmail.com>
 #
 #  This file is part of liblouis.
-
+#
 #  liblouis is free software: you can redistribute it and/or modify it
-#  under the terms of the Lesser GNU General Public License as
-#  published by the Free Software Foundation, either version 3 of the
+#  under the terms of the GNU Lesser General Public License as
+#  published by the Free Software Foundation, either version 2.1 of the
 #  License, or (at your option) any later version.
-
+#
 #  liblouis is distributed in the hope that it will be useful, but
 #  WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the Lesser
-#  GNU General Public License for more details.
-
-#  You should have received a copy of the Lesser GNU General Public
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+#  Lesser General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public
 #  License along with liblouis. If not, see
 #  <http://www.gnu.org/licenses/>.
+
+# Created by Leon Ungier <Leon.Ungier@ViewPlus.com>.
 
 locale Portugal
 
@@ -44,7 +64,6 @@ punctuation , 2					coma							44
 punctuation - 36				hyphen-minus			45
 punctuation . 3					point							46
 math / 6-2							solidus						47
-include digits6Dots.uti
 punctuation : 25			colon					58		x003A
 punctuation ;	23			semicolon			59		x003B
 math < 246													60		x003C
@@ -53,7 +72,9 @@ math > 135													62		x003E
 punctuation ? 26										63		x003F
 sign @ 156						commercial at	64		x0040
 
-include latinLetterDef6Dots.uti
+include latinLetterDef6Dots.uti 
+include digits6Dots.uti # Must come after letters.
+include litdigits6Dots.uti # Must come after letters.
 
 punctuation [ 12356-3		left square bracket			x005B
 sign \\ 5-3							reverse solidus					x005C
@@ -149,16 +170,19 @@ sign \x2260 45-2356											not equal to
 #-------------- end defintions ------------------------------------------
 
 
-capsign 46
-# begcaps 46-46-136			# uncomment if you don't want capitalization
-begcaps 46-46
+capsletter 46
+# capsword 46-46-136			# uncomment if you don't want capitalization
+begcapsword 46-46
 
-begital 35
-begbold 35
-begunder 35
-endital 35
-endbold 35
-endunder 35
+emphclass italic
+emphclass underline
+emphclass bold
+begemph italic 35
+begemph bold 35
+begemph underline 35
+endemph italic 35
+endemph bold 35
+endemph underline 35
 begcomp 5-2
 endcomp 5-2
 

@@ -7,17 +7,19 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
+#include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
-#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
+#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
+#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
+#include "chrome/browser/previews/previews_content_util.h"
 #include "chrome/browser/previews/previews_ui_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/page_load_metrics/page_load_timing.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
-#include "components/previews/content/previews_content_util.h"
+#include "components/offline_pages/buildflags/buildflags.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/previews_state.h"
@@ -25,7 +27,17 @@
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_source.h"
 
+#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
+#include "chrome/browser/offline_pages/offline_page_tab_helper.h"
+#endif
+
 namespace previews {
+
+namespace {
+
+const char kOfflinePreviewsMimeType[] = "multipart/related";
+
+}  // namespace
 
 PreviewsUKMObserver::PreviewsUKMObserver()
     : committed_preview_(PreviewsType::NONE) {}
@@ -52,6 +64,16 @@ PreviewsUKMObserver::OnCommit(content::NavigationHandle* navigation_handle,
   committed_preview_ = previews_user_data->committed_previews_type();
   content::PreviewsState previews_state =
       previews_user_data->committed_previews_state();
+
+  if (navigation_handle->GetWebContents()->GetContentsMimeType() ==
+      kOfflinePreviewsMimeType) {
+    if (!IsOfflinePreview(navigation_handle->GetWebContents()))
+      return STOP_OBSERVING;
+    offline_preview_seen_ = true;
+    DCHECK_EQ(previews::GetMainFramePreviewsType(previews_state),
+              previews::PreviewsType::OFFLINE);
+  }
+
   if (previews_state && previews::GetMainFramePreviewsType(previews_state) ==
                             previews::PreviewsType::LITE_PAGE) {
     lite_page_seen_ = true;
@@ -79,6 +101,16 @@ PreviewsUKMObserver::OnCommit(content::NavigationHandle* navigation_handle,
   }
 
   return CONTINUE_OBSERVING;
+}
+
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+PreviewsUKMObserver::ShouldObserveMimeType(const std::string& mime_type) const {
+  if (PageLoadMetricsObserver::ShouldObserveMimeType(mime_type) ==
+          CONTINUE_OBSERVING ||
+      mime_type == kOfflinePreviewsMimeType) {
+    return CONTINUE_OBSERVING;
+  }
+  return STOP_OBSERVING;
 }
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
@@ -119,9 +151,11 @@ void PreviewsUKMObserver::OnComplete(
 void PreviewsUKMObserver::RecordPreviewsTypes(
     const page_load_metrics::PageLoadExtraInfo& info) {
   // Record the page end reason in UMA.
-  UMA_HISTOGRAM_ENUMERATION(
-      "Previews.PageEndReason", info.page_end_reason,
-      page_load_metrics::PageEndReason::PAGE_END_REASON_COUNT);
+  if (committed_preview_ != PreviewsType::NONE) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "Previews.PageEndReason", info.page_end_reason,
+        page_load_metrics::PageEndReason::PAGE_END_REASON_COUNT);
+  }
   base::UmaHistogramExactLinear(
       base::StringPrintf(
           "Previews.PageEndReason.%s",
@@ -135,8 +169,9 @@ void PreviewsUKMObserver::RecordPreviewsTypes(
   // also cause no preview to be committed.
   if (!server_lofi_seen_ && !client_lofi_seen_ && !lite_page_seen_ &&
       !noscript_seen_ && !resource_loading_hints_seen_ &&
-      !origin_opt_out_occurred_ && !save_data_enabled_ &&
-      !lite_page_redirect_seen_ && !navigation_restart_penalty_.has_value()) {
+      !offline_preview_seen_ && !origin_opt_out_occurred_ &&
+      !save_data_enabled_ && !lite_page_redirect_seen_ &&
+      !navigation_restart_penalty_.has_value()) {
     return;
   }
 
@@ -153,6 +188,8 @@ void PreviewsUKMObserver::RecordPreviewsTypes(
     builder.Setnoscript(1);
   if (resource_loading_hints_seen_)
     builder.Setresource_loading_hints(1);
+  if (offline_preview_seen_)
+    builder.Setoffline_preview(1);
   if (opt_out_occurred_)
     builder.Setopt_out(previews::params::IsPreviewsOmniboxUiEnabled() ? 2 : 1);
   if (origin_opt_out_occurred_)
@@ -203,6 +240,17 @@ bool PreviewsUKMObserver::IsDataSaverEnabled(
   }
 
   return data_reduction_proxy_settings->IsDataReductionProxyEnabled();
+}
+
+bool PreviewsUKMObserver::IsOfflinePreview(
+    content::WebContents* web_contents) const {
+#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
+  offline_pages::OfflinePageTabHelper* tab_helper =
+      offline_pages::OfflinePageTabHelper::FromWebContents(web_contents);
+  return tab_helper && tab_helper->GetOfflinePreviewItem();
+#else
+  return false;
+#endif
 }
 
 }  // namespace previews

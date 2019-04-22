@@ -31,18 +31,19 @@ class GlobalCacheStorageImpl final
     GlobalCacheStorageImpl* supplement =
         Supplement<T>::template From<GlobalCacheStorageImpl>(supplementable);
     if (!supplement) {
-      supplement = new GlobalCacheStorageImpl;
+      supplement = MakeGarbageCollected<GlobalCacheStorageImpl>();
       Supplement<T>::ProvideTo(supplementable, supplement);
     }
     return *supplement;
   }
 
+  GlobalCacheStorageImpl() = default;
   ~GlobalCacheStorageImpl() {}
 
   CacheStorage* Caches(T& fetching_scope, ExceptionState& exception_state) {
     ExecutionContext* context = fetching_scope.GetExecutionContext();
     if (!context->GetSecurityOrigin()->CanAccessCacheStorage()) {
-      if (context->GetSecurityContext().IsSandboxed(kSandboxOrigin)) {
+      if (context->GetSecurityContext().IsSandboxed(WebSandboxFlags::kOrigin)) {
         exception_state.ThrowSecurityError(
             "Cache storage is disabled because the context is sandboxed and "
             "lacks the 'allow-same-origin' flag.");
@@ -67,7 +68,7 @@ class GlobalCacheStorageImpl final
             "provider.");
         return nullptr;
       }
-      caches_ = CacheStorage::Create(
+      caches_ = MakeGarbageCollected<CacheStorage>(
           context, GlobalFetch::ScopedFetcher::From(fetching_scope));
     }
     return caches_;
@@ -81,8 +82,6 @@ class GlobalCacheStorageImpl final
   }
 
  private:
-  GlobalCacheStorageImpl() = default;
-
   Member<CacheStorage> caches_;
 };
 

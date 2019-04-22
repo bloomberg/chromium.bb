@@ -6,24 +6,25 @@ $|++;
 # Test all tables with lou_checktable.
 #
 # Copyright (C) 2010 by Swiss Library for the Blind, Visually Impaired and Print Disabled
-# Copyright (C) 2012-2013 Mesar Hameed <mhameed @ src.gnome.org>
-# 
+# Copyright (C) 2012-2013 Mesar Hameed <mesar.hameed@gmail.com>
 #
 # Copying and distribution of this file, with or without modification,
 # are permitted in any medium without royalty provided the copyright
-# notice and this notice are preserved.
+# notice and this notice are preserved. This file is offered as-is,
+# without any warranty.
 
 my $fail = 0;
 # some tables are quite big and take some time to check, so keep the timeout reasonably long
 my $timeout = 120; # seconds
 
-# We assume that the productive tables, i.e. the ones that are shipped
-# with liblouis (and need to be tested) are found in the first path in
-# LOUIS_TABLEPATH. The subsequent entries are for test tables.
-my $tablesdir = (split(',', $ENV{LOUIS_TABLEPATH}))[0];
+# In the test suite the LOUIS_TABLEPATH is set up so that it actually
+# points at the top src dir of liblouis. So to find the productive
+# tables, i.e. the ones that are shipped with liblouis (and need to be
+# tested) we have to check the tables subdir.
+my $tablesdir = "$ENV{LOUIS_TABLEPATH}/tables";
 
 # get all the tables from the tables directory
-my @tables = glob("$tablesdir/*.{utb,ctb}");
+my @tables = glob("$tablesdir/*.{utb,ctb,tbl}");
 
 
 foreach my $table (@tables) {

@@ -6,17 +6,10 @@
 
 #include <memory>
 
-#include "ash/accelerators/accelerator_commands.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/window.h"
-
-// Note: The unit tests for |ToggleMaximized()| and
-// |ToggleFullscreen()| are in
-// chrome/browser/ui/ash/accelerator_commands_browsertests.cc.
-// because they depends on chrome implementation of
-// |ash::wm::WindowStateDelegate|.
 
 namespace ash {
 namespace accelerators {

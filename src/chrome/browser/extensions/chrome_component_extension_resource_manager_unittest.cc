@@ -65,10 +65,11 @@ TEST_F(ChromeComponentExtensionResourceManagerTest,
 
 #if defined(OS_CHROMEOS)
   // The resource is a component resource.
-  int resource_id = 0;
+  ComponentExtensionResourceInfo resource_info;
   ASSERT_TRUE(resource_manager->IsComponentExtensionResource(
-      extension->path(), resource.relative_path(), &resource_id));
-  ASSERT_EQ(IDR_FILE_MANAGER_ICON_16, resource_id);
+      extension->path(), resource.relative_path(), &resource_info));
+  ASSERT_EQ(IDR_FILE_MANAGER_ICON_16, resource_info.resource_id);
+  EXPECT_FALSE(resource_info.gzipped);
 #endif
 }
 

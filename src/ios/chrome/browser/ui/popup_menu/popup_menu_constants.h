@@ -11,15 +11,7 @@
 extern NSString* const kPopupMenuToolsMenuTableViewId;
 extern NSString* const kPopupMenuNavigationTableViewId;
 
-// Alpha for the background color of the highlighted items.
-extern const CGFloat kSelectedItemBackgroundAlpha;
-// Duration of the highlight animation of the popup menu.
-extern const CGFloat kHighlightAnimationDuration;
-
-// Radius for the rounded corner of the popup menu.
-extern const CGFloat kPopupMenuCornerRadius;
-
-// Tools Menu item IDs.
+// Accessibility IDs for the Tools Menu items.
 // Reload item accessibility Identifier.
 extern NSString* const kToolsMenuReload;
 // Stop item accessibility Identifier.
@@ -44,6 +36,8 @@ extern NSString* const kToolsMenuOtherDevicesId;
 extern NSString* const kToolsMenuHistoryId;
 // Report an issue item accessibility Identifier.
 extern NSString* const kToolsMenuReportAnIssueId;
+// Translate item accessibility Identifier.
+extern NSString* const kToolsMenuTranslateId;
 // Find in Page item accessibility Identifier.
 extern NSString* const kToolsMenuFindInPageId;
 // Request desktop item accessibility Identifier.
@@ -68,5 +62,7 @@ extern NSString* const kToolsMenuPasteAndGo;
 extern NSString* const kToolsMenuVoiceSearch;
 // QR Code Search item accessibility Identifier.
 extern NSString* const kToolsMenuQRCodeSearch;
+// Copied Image Search item accessibility Identifier.
+extern NSString* const kToolsMenuCopiedImageSearch;
 
 #endif  // IOS_CHROME_BROWSER_UI_POPUP_MENU_POPUP_MENU_CONSTANTS_H_

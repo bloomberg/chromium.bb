@@ -5,7 +5,6 @@
 #ifndef CC_TEST_TEST_HOOKS_H_
 #define CC_TEST_TEST_HOOKS_H_
 
-#include "base/macros.h"
 #include "cc/animation/animation_delegate.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_impl.h"
@@ -17,6 +16,7 @@ struct PresentationFeedback;
 namespace viz {
 class CompositorFrame;
 class OutputSurface;
+class SkiaOutputSurface;
 }
 
 namespace cc {
@@ -133,6 +133,8 @@ class TestHooks : public AnimationDelegate {
   // OutputSurface indirections to the LayerTreeTest, that can be further
   // overridden.
   virtual void RequestNewLayerTreeFrameSink() = 0;
+  virtual std::unique_ptr<viz::SkiaOutputSurface>
+  CreateDisplaySkiaOutputSurfaceOnThread() = 0;
   virtual std::unique_ptr<viz::OutputSurface>
   CreateDisplayOutputSurfaceOnThread(
       scoped_refptr<viz::ContextProvider> compositor_context_provider) = 0;

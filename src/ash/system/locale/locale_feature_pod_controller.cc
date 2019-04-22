@@ -7,6 +7,7 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/model/locale_model.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/unified/feature_pod_button.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
@@ -25,7 +26,7 @@ LocaleFeaturePodController::~LocaleFeaturePodController() = default;
 FeaturePodButton* LocaleFeaturePodController::CreateButton() {
   auto* button = new FeaturePodButton(this);
   const bool visible =
-      !Shell::Get()->system_tray_model()->locale_list().empty();
+      !Shell::Get()->system_tray_model()->locale()->locale_list().empty();
   button->SetVisible(visible);
   if (visible) {
     button->SetVectorIcon(kUnifiedMenuLocaleIcon);
@@ -34,9 +35,11 @@ FeaturePodButton* LocaleFeaturePodController::CreateButton() {
     button->SetLabel(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_LOCALE));
     button->ShowDetailedViewArrow();
     button->DisableLabelButtonFocus();
-    button->SetSubLabel(
-        base::i18n::ToUpper(base::UTF8ToUTF16(l10n_util::GetLanguage(
-            Shell::Get()->system_tray_model()->current_locale_iso_code()))));
+    button->SetSubLabel(base::i18n::ToUpper(base::UTF8ToUTF16(
+        l10n_util::GetLanguage(Shell::Get()
+                                   ->system_tray_model()
+                                   ->locale()
+                                   ->current_locale_iso_code()))));
   }
   return button;
 }

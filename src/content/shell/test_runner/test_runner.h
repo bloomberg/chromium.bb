@@ -17,10 +17,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
-#include "content/shell/test_runner/layout_test_runtime_flags.h"
 #include "content/shell/test_runner/test_runner_export.h"
 #include "content/shell/test_runner/web_test_runner.h"
-#include "media/midi/midi_service.mojom.h"
+#include "content/shell/test_runner/web_test_runtime_flags.h"
 #include "third_party/blink/public/platform/web_effective_connection_type.h"
 #include "third_party/blink/public/platform/web_image.h"
 #include "v8/include/v8.h"
@@ -42,7 +41,6 @@ class Arguments;
 }
 
 namespace test_runner {
-
 class MockContentSettingsClient;
 class MockScreenOrientationClient;
 class SpellCheckClient;
@@ -62,7 +60,7 @@ class WebTestDelegate;
 // 2. It manages global test state.  Example:
 //    - Tracking topLoadingFrame that can finish the test when it loads.
 //    - WorkQueue holding load requests from the TestInterfaces
-//    - LayoutTestRuntimeFlags
+//    - WebTestRuntimeFlags
 class TestRunner : public WebTestRunner {
  public:
   explicit TestRunner(TestInterfaces*);
@@ -88,11 +86,11 @@ class TestRunner : public WebTestRunner {
   bool IsRecursiveLayoutDumpRequested() override;
   std::string DumpLayout(blink::WebLocalFrame* frame) override;
   bool ShouldDumpSelectionRect() const override;
-  // Returns true if the browser should capture the pixels instead.
-  bool DumpPixelsAsync(
-      blink::WebLocalFrame* frame,
+  bool CanDumpPixelsFromRenderer() const override;
+  void DumpPixelsAsync(
+      content::RenderView* render_view,
       base::OnceCallback<void(const SkBitmap&)> callback) override;
-  void ReplicateLayoutTestRuntimeFlagsChanges(
+  void ReplicateWebTestRuntimeFlagsChanges(
       const base::DictionaryValue& changed_values) override;
   bool HasCustomTextDump(std::string* custom_text_dump) const override;
   bool ShouldDumpBackForwardList() const override;
@@ -137,20 +135,21 @@ class TestRunner : public WebTestRunner {
   bool animation_requires_raster() const { return animation_requires_raster_; }
   void SetAnimationRequiresRaster(bool do_raster);
 
-  // To be called when |frame| starts loading - TestRunner will check if
-  // there is currently no top-loading-frame being tracked and if so, then it
-  // will return true and start tracking |frame| as the top-loading-frame.
-  bool tryToSetTopLoadingFrame(blink::WebFrame* frame);
+  // Add |frame| to the set of loading frames.
+  //
+  // Note: Only one renderer process is really tracking the loading frames. This
+  //       is the first to observe one. Both local and remote frames are tracked
+  //       by this process.
+  void AddLoadingFrame(blink::WebFrame* frame);
 
-  // To be called when |frame| finishes loading - TestRunner will check if
-  // |frame| is currently tracked as the top-loading-frame, and if yes, then it
-  // will return true, stop top-loading-frame tracking, and potentially finish
-  // the test (unless testRunner.waitUntilDone() was called and/or there are
-  // pending load requests in WorkQueue).
-  bool tryToClearTopLoadingFrame(blink::WebFrame*);
+  // Remove |frame| from the set of loading frames.
+  //
+  // When there are no more loading frames, this potentially finishes the test,
+  // unless testRunner.waitUntilDone() was called and/or there are pending load
+  // requests in WorkQueue.
+  void RemoveLoadingFrame(blink::WebFrame* frame);
 
   blink::WebFrame* mainFrame() const;
-  blink::WebFrame* topLoadingFrame() const;
   void policyDelegateDone();
   bool policyDelegateEnabled() const;
   bool policyDelegateIsPermissive() const;
@@ -159,16 +158,12 @@ class TestRunner : public WebTestRunner {
   void setDragImage(const SkBitmap& drag_image);
   bool shouldDumpNavigationPolicy() const;
 
-  midi::mojom::Result midiAccessorResult();
-
   bool ShouldDumpConsoleMessages() const;
   // Controls whether console messages produced by the page are dumped
   // to test output.
   void SetDumpConsoleMessages(bool value);
 
   bool ShouldDumpJavaScriptDialogs() const;
-
-  void SetShouldUseInnerTextDump(bool value);
 
   blink::WebEffectiveConnectionType effective_connection_type() const {
     return effective_connection_type_;
@@ -243,7 +238,7 @@ class TestRunner : public WebTestRunner {
   void SetCloseRemainingWindowsWhenComplete(bool close_remaining_windows);
   void ResetTestHelperControllers();
 
-  // Allows layout tests to manage origins' allow list.
+  // Allows web tests to manage origins' allow list.
   void AddOriginAccessAllowListEntry(const std::string& source_origin,
                                      const std::string& destination_protocol,
                                      const std::string& destination_host,
@@ -290,7 +285,7 @@ class TestRunner : public WebTestRunner {
   void SetAllowFileAccessFromFileURLs(bool allow);
   void OverridePreference(gin::Arguments* arguments);
 
-  // Modify accept_languages in RendererPreferences.
+  // Modify accept_languages in blink::mojom::RendererPreferences.
   void SetAcceptLanguages(const std::string& accept_languages);
 
   // Enable or disable plugins.
@@ -387,9 +382,12 @@ class TestRunner : public WebTestRunner {
   // Sets up a mock DocumentSubresourceFilter to disallow subsequent subresource
   // loads within the current document with the given path |suffixes|. The
   // filter is created and injected even if |suffixes| is empty. If |suffixes|
-  // contains the empty string, all subresource loads will be disallowed.
+  // contains the empty string, all subresource loads will be disallowed. If
+  // |block_subresources| is false, matching resources will not be blocked but
+  // instead marked as matching a disallowed resource.
   void SetDisallowedSubresourcePathSuffixes(
-      const std::vector<std::string>& suffixes);
+      const std::vector<std::string>& suffixes,
+      bool block_subresources);
 
   // This function sets a flag that tells the test runner to dump all
   // the lines of descriptive text about spellcheck execution.
@@ -459,7 +457,7 @@ class TestRunner : public WebTestRunner {
   // Inspect chooser state
   bool IsChooserShown();
 
-  // Allows layout tests to exec scripts at WebInspector side.
+  // Allows web tests to exec scripts at WebInspector side.
   void EvaluateInWebInspector(int call_id, const std::string& script);
 
   // Clears all databases.
@@ -489,9 +487,6 @@ class TestRunner : public WebTestRunner {
   // Resets between tests.
   void SetPOSIXLocale(const std::string& locale);
 
-  // MIDI function to control permission handling.
-  void SetMIDIAccessorResult(midi::mojom::Result result);
-
   // Simulates a click on a Web Notification.
   void SimulateWebNotificationClick(
       const std::string& title,
@@ -501,9 +496,9 @@ class TestRunner : public WebTestRunner {
   // Simulates closing a Web Notification.
   void SimulateWebNotificationClose(const std::string& title, bool by_user);
 
-  // Takes care of notifying the delegate after a change to layout test runtime
+  // Takes care of notifying the delegate after a change to web test runtime
   // flags.
-  void OnLayoutTestRuntimeFlagsChanged();
+  void OnWebTestRuntimeFlagsChanged();
 
   ///////////////////////////////////////////////////////////////////////////
   // Internal helpers
@@ -536,7 +531,7 @@ class TestRunner : public WebTestRunner {
   int web_history_item_count_;
 
   // Flags controlling what content gets dumped as a layout text result.
-  LayoutTestRuntimeFlags layout_test_runtime_flags_;
+  WebTestRuntimeFlags web_test_runtime_flags_;
 
   // If true, the test runner will output a base64 encoded WAVE file.
   bool dump_as_audio_;
@@ -553,9 +548,6 @@ class TestRunner : public WebTestRunner {
   // a series of 1px-wide, view-tall paints across the width of the view.
   bool sweep_horizontally_;
 
-  // startSession() result of MockWebMIDIAccessor for testing.
-  midi::mojom::Result midi_accessor_result_;
-
   std::set<std::string> http_headers_to_clear_;
 
   // WAV audio data is stored here.
@@ -565,8 +557,8 @@ class TestRunner : public WebTestRunner {
   WebTestDelegate* delegate_;
   blink::WebView* main_view_;
 
-  // This is non-0 IFF a load is in progress.
-  blink::WebFrame* top_loading_frame_;
+  // This is non empty when a load is in progress.
+  std::vector<blink::WebFrame*> loading_frames_;
 
   // WebContentSettingsClient mock object.
   std::unique_ptr<MockContentSettingsClient> mock_content_settings_client_;
@@ -595,7 +587,7 @@ class TestRunner : public WebTestRunner {
   // This does not include most "ordinary" animations, such as CSS animations.
   bool animation_requires_raster_;
 
-  // An effective connection type settable by layout tests.
+  // An effective connection type settable by web tests.
   blink::WebEffectiveConnectionType effective_connection_type_;
 
   // Forces v8 compilation cache to be disabled (used for inspector tests).

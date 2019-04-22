@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "base/process/process_metrics.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
@@ -526,7 +526,7 @@ TEST_F(DiskCachePerfTest, SimpleCacheInitialReadPortion) {
   disk_cache::Entry* cache_entry[kBatchSize];
   for (int i = 0; i < kBatchSize; ++i) {
     net::TestCompletionCallback cb;
-    int rv = cache_->CreateEntry(base::IntToString(i), net::HIGHEST,
+    int rv = cache_->CreateEntry(base::NumberToString(i), net::HIGHEST,
                                  &cache_entry[i], cb.callback());
     ASSERT_EQ(net::OK, cb.GetResult(rv));
 

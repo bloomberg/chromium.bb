@@ -114,9 +114,9 @@ class RegistrarInvalidatorTestDelegate {
   std::unique_ptr<RegistrarInvalidator> invalidator_;
 };
 
-INSTANTIATE_TYPED_TEST_CASE_P(RegistrarInvalidatorTest,
-                              InvalidatorTest,
-                              RegistrarInvalidatorTestDelegate);
+INSTANTIATE_TYPED_TEST_SUITE_P(RegistrarInvalidatorTest,
+                               InvalidatorTest,
+                               RegistrarInvalidatorTestDelegate);
 
 }  // namespace
 

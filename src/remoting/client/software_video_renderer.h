@@ -60,7 +60,7 @@ class SoftwareVideoRenderer : public protocol::VideoRenderer,
 
   // protocol::VideoStub interface.
   void ProcessVideoPacket(std::unique_ptr<VideoPacket> packet,
-                          const base::Closure& done) override;
+                          base::OnceClosure done) override;
 
  private:
   void RenderFrame(std::unique_ptr<protocol::FrameStats> stats,

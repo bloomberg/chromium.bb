@@ -24,6 +24,7 @@ Untuk mendapatkan maklumat tentang privasi, sila lihat Dasar Privasi Google (htt
 <translation id="1520828917794284345">Ubah saiz desktop supaya sesuai</translation>
 <translation id="154040539590487450">Gagal memulakan perkhidmatan akses jauh.</translation>
 <translation id="1546934824884762070">Ralat yang tidak dijangka telah berlaku. Sila laporkan masalah ini kepada pembangun.</translation>
+<translation id="1624185583382384493">Desktop Jauh Chrome kini tersedia di web. Cuba <ph name="LINK_BEGIN" />apl web<ph name="LINK_END" /> kami—apl ini pantas dan percuma, dengan lebih banyak ciri, termasuk sokongan yang dipertingkatkan untuk berbilang monitor.</translation>
 <translation id="1643640058022401035">Tindakan meninggalkan halaman ini akan menamatkan sesi Chromoting anda.</translation>
 <translation id="1654128982815600832">Mendayakan sambungan jauh untuk komputer ini…</translation>
 <translation id="170207782578677537">Gagal mendaftarkan komputer ini.</translation>
@@ -138,6 +139,7 @@ Untuk mendapatkan maklumat tentang privasi, sila lihat Dasar Privasi Google (htt
 <translation id="3989511127559254552">Untuk meneruskan, anda mesti memberikan kebenaran akses lanjutan terlebih dahulu kepada komputer anda. Anda hanya perlu melakukannya sekali.</translation>
 <translation id="4006787130661126000">Anda mesti mendayakan sambungan jauh jika anda mahu menggunakan Desktop Jauh Chrome untuk mengakses komputer ini.</translation>
 <translation id="405887016757208221">Komputer jauh gagal memulakan sesi. Jika masalah berterusan, sila cuba mengkonfigurasi hos sekali lagi.</translation>
+<translation id="4060747889721220580">Muat Turun Fail</translation>
 <translation id="4068946408131579958">Semua sambungan</translation>
 <translation id="409800995205263688">NOTA: Tetapan dasar membenarkan sambungan antara komputer dalam rangkaian anda sahaja.</translation>
 <translation id="4126409073460786861">Selepas penyediaan selesai, muat semula halaman ini dan anda akan dapat mengakses komputer dengan memilih peranti anda dan memasukkan PIN</translation>
@@ -242,6 +244,7 @@ Untuk mendayakan fungsian ini, pilih '<ph name="BUTTON_NAME" />' untuk mendapatk
 <translation id="6198252989419008588">Tukar PIN</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (sudah lapuk)</translation>
 <translation id="6221358653751391898">Anda tidak log masuk ke Chrome. Sila log masuk dan cuba lagi.</translation>
+<translation id="6227369581881558336">Desktop Jauh Chrome kini tersedia di web dengan ciri baharu, termasuk pemindahan fail! Lihat <ph name="LINK_BEGIN" />apl web<ph name="LINK_END" /> kami.</translation>
 <translation id="6284412385303060032">Hos yang berjalan pada skrin logik konsol telah ditutup untuk menyokong mod tirai dengan menukar kepada hos yang berjalan dalam sesi khusus pengguna.</translation>
 <translation id="629730747756840877">Akaun</translation>
 <translation id="6304318647555713317">Klien</translation>
@@ -289,7 +292,6 @@ Untuk mendayakan fungsian ini, pilih '<ph name="BUTTON_NAME" />' untuk mendapatk
 <translation id="7434397035092923453">Akses ditolak untuk klien: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7444276978508498879">Klien disambungkan: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7526139040829362392">Tukar akaun</translation>
-<translation id="7589941250119944644">Desktop Jauh Chrome akan berpindah ke rumah baharu di web. Cuba <ph name="LINK_BEGIN" />apl web<ph name="LINK_END" /> kami—apl ini pantas dan percuma, mengandungi semua ciri yang sama seperti sebelum ini.</translation>
 <translation id="7606912958770842224">Dayakan sambungan jauh</translation>
 <translation id="7628469622942688817">Ingat PIN saya pada peranti ini.</translation>
 <translation id="7649070708921625228">Bantuan</translation>

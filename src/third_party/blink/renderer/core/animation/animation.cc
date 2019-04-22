@@ -53,7 +53,6 @@
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
@@ -80,7 +79,7 @@ Animation* Animation::Create(AnimationEffect* effect,
 
   DocumentTimeline* subtimeline = ToDocumentTimeline(timeline);
 
-  Animation* animation = new Animation(
+  Animation* animation = MakeGarbageCollected<Animation>(
       subtimeline->GetDocument()->ContextDocument(), *subtimeline, effect);
 
   if (subtimeline) {
@@ -94,8 +93,6 @@ Animation* Animation::Create(AnimationEffect* effect,
 Animation* Animation::Create(ExecutionContext* execution_context,
                              AnimationEffect* effect,
                              ExceptionState& exception_state) {
-  DCHECK(RuntimeEnabledFeatures::WebAnimationsAPIEnabled());
-
   Document* document = To<Document>(execution_context);
   return Create(effect, &document->Timeline(), exception_state);
 }
@@ -104,8 +101,6 @@ Animation* Animation::Create(ExecutionContext* execution_context,
                              AnimationEffect* effect,
                              AnimationTimeline* timeline,
                              ExceptionState& exception_state) {
-  DCHECK(RuntimeEnabledFeatures::WebAnimationsAPIEnabled());
-
   if (!timeline) {
     return Create(execution_context, effect, exception_state);
   }
@@ -142,7 +137,7 @@ Animation::Animation(ExecutionContext* execution_context,
     }
     content_->Attach(this);
   }
-  probe::didCreateAnimation(timeline_->GetDocument(), sequence_number_);
+  probe::DidCreateAnimation(timeline_->GetDocument(), sequence_number_);
 }
 
 Animation::~Animation() {
@@ -685,9 +680,9 @@ void Animation::finish(ExceptionState& exception_state) {
 
 ScriptPromise Animation::finished(ScriptState* script_state) {
   if (!finished_promise_) {
-    finished_promise_ =
-        new AnimationPromise(ExecutionContext::From(script_state), this,
-                             AnimationPromise::kFinished);
+    finished_promise_ = MakeGarbageCollected<AnimationPromise>(
+        ExecutionContext::From(script_state), this,
+        AnimationPromise::kFinished);
     if (PlayStateInternal() == kFinished)
       finished_promise_->Resolve(this);
   }
@@ -696,8 +691,8 @@ ScriptPromise Animation::finished(ScriptState* script_state) {
 
 ScriptPromise Animation::ready(ScriptState* script_state) {
   if (!ready_promise_) {
-    ready_promise_ = new AnimationPromise(ExecutionContext::From(script_state),
-                                          this, AnimationPromise::kReady);
+    ready_promise_ = MakeGarbageCollected<AnimationPromise>(
+        ExecutionContext::From(script_state), this, AnimationPromise::kReady);
     if (PlayStateInternal() != kPending)
       ready_promise_->Resolve(this);
   }
@@ -865,7 +860,7 @@ void Animation::StartAnimationOnCompositor(
   base::Optional<double> start_time = base::nullopt;
   double time_offset = 0;
   if (start_time_) {
-    start_time = TimeTicksInSeconds(TimelineInternal()->ZeroTime()) +
+    start_time = TimelineInternal()->ZeroTime().since_origin().InSecondsF() +
                  start_time_.value();
     if (reversed)
       start_time = start_time.value() - (EffectEnd() / fabs(playback_rate_));
@@ -975,8 +970,9 @@ bool Animation::Update(TimingUpdateReason reason) {
         if (GetExecutionContext() && HasEventListeners(event_type)) {
           double event_current_time = NullValue();
           pending_cancelled_event_ =
-              AnimationPlaybackEvent::Create(event_type, event_current_time,
-                                             TimelineInternal()->currentTime());
+              MakeGarbageCollected<AnimationPlaybackEvent>(
+                  event_type, event_current_time,
+                  TimelineInternal()->currentTime());
           pending_cancelled_event_->SetTarget(this);
           pending_cancelled_event_->SetCurrentTarget(this);
           timeline_->GetDocument()->EnqueueAnimationFrameEvent(
@@ -987,8 +983,9 @@ bool Animation::Update(TimingUpdateReason reason) {
         if (GetExecutionContext() && HasEventListeners(event_type)) {
           double event_current_time = CurrentTimeInternal() * 1000;
           pending_finished_event_ =
-              AnimationPlaybackEvent::Create(event_type, event_current_time,
-                                             TimelineInternal()->currentTime());
+              MakeGarbageCollected<AnimationPlaybackEvent>(
+                  event_type, event_current_time,
+                  TimelineInternal()->currentTime());
           pending_finished_event_->SetTarget(this);
           pending_finished_event_->SetCurrentTarget(this);
           timeline_->GetDocument()->EnqueueAnimationFrameEvent(
@@ -1222,7 +1219,7 @@ Animation::PlayStateUpdateScope::~PlayStateUpdateScope() {
   animation_->EndUpdatingState();
 
   if (old_play_state != new_play_state) {
-    probe::animationPlayStateChanged(
+    probe::AnimationPlayStateChanged(
         animation_->TimelineInternal()->GetDocument(), animation_,
         old_play_state, new_play_state);
   }
@@ -1318,7 +1315,7 @@ void Animation::Trace(blink::Visitor* visitor) {
 
 Animation::CompositorAnimationHolder*
 Animation::CompositorAnimationHolder::Create(Animation* animation) {
-  return new CompositorAnimationHolder(animation);
+  return MakeGarbageCollected<CompositorAnimationHolder>(animation);
 }
 
 Animation::CompositorAnimationHolder::CompositorAnimationHolder(

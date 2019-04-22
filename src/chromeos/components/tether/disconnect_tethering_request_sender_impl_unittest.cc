@@ -8,13 +8,13 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/test/scoped_task_environment.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
+#include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/components/tether/disconnect_tethering_operation.h"
 #include "chromeos/components/tether/disconnect_tethering_request_sender.h"
 #include "chromeos/components/tether/fake_tether_host_fetcher.h"
 #include "chromeos/services/device_sync/public/cpp/fake_device_sync_client.h"
 #include "chromeos/services/secure_channel/public/cpp/client/fake_secure_channel_client.h"
-#include "components/cryptauth/remote_device_ref.h"
-#include "components/cryptauth/remote_device_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -26,7 +26,7 @@ namespace {
 class FakeDisconnectTetheringOperation : public DisconnectTetheringOperation {
  public:
   FakeDisconnectTetheringOperation(
-      cryptauth::RemoteDeviceRef device_to_connect,
+      multidevice::RemoteDeviceRef device_to_connect,
       device_sync::DeviceSyncClient* device_sync_client,
       secure_channel::SecureChannelClient* secure_channel_client)
       : DisconnectTetheringOperation(device_to_connect,
@@ -39,7 +39,7 @@ class FakeDisconnectTetheringOperation : public DisconnectTetheringOperation {
     NotifyObserversOperationFinished(success);
   }
 
-  cryptauth::RemoteDeviceRef GetRemoteDevice() {
+  multidevice::RemoteDeviceRef GetRemoteDevice() {
     EXPECT_EQ(1u, remote_devices().size());
     return remote_devices()[0];
   }
@@ -58,7 +58,7 @@ class FakeDisconnectTetheringOperationFactory
  protected:
   // DisconnectTetheringOperation::Factory:
   std::unique_ptr<DisconnectTetheringOperation> BuildInstance(
-      cryptauth::RemoteDeviceRef device_to_connect,
+      multidevice::RemoteDeviceRef device_to_connect,
       device_sync::DeviceSyncClient* device_sync_client,
       secure_channel::SecureChannelClient* secure_channel_client) override {
     FakeDisconnectTetheringOperation* operation =
@@ -97,7 +97,7 @@ class FakeDisconnectTetheringRequestSenderObserver
 class DisconnectTetheringRequestSenderTest : public testing::Test {
  public:
   DisconnectTetheringRequestSenderTest()
-      : test_devices_(cryptauth::CreateRemoteDeviceRefListForTest(2u)) {}
+      : test_devices_(multidevice::CreateRemoteDeviceRefListForTest(2u)) {}
   ~DisconnectTetheringRequestSenderTest() override = default;
 
   void SetUp() override {
@@ -182,7 +182,7 @@ class DisconnectTetheringRequestSenderTest : public testing::Test {
                       ->num_no_more_pending_requests_events());
   }
 
-  const cryptauth::RemoteDeviceRefList test_devices_;
+  const multidevice::RemoteDeviceRefList test_devices_;
 
   std::unique_ptr<device_sync::FakeDeviceSyncClient> fake_device_sync_client_;
   std::unique_ptr<secure_channel::SecureChannelClient>
@@ -221,7 +221,8 @@ TEST_F(DisconnectTetheringRequestSenderTest,
        DISABLED_SendRequest_CannotFetchHost) {
   // Remove hosts from |fake_tether_host_fetcher_|; this will cause the fetcher
   // to return a null RemoteDevice.
-  fake_tether_host_fetcher_->set_tether_hosts(cryptauth::RemoteDeviceRefList());
+  fake_tether_host_fetcher_->set_tether_hosts(
+      multidevice::RemoteDeviceRefList());
 
   disconnect_tethering_request_sender_->SendDisconnectRequestToDevice(
       test_devices_[0].GetDeviceId());

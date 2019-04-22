@@ -349,7 +349,7 @@
 
     if (cls === PackedBool) {
       var byte = 0;
-      for (i = 0; i < numberOfElements; ++i) {
+      for (let i = 0; i < numberOfElements; ++i) {
         if (val[i])
           byte |= (1 << i % 8);
         if (i % 8 === 7 || i == numberOfElements - 1) {

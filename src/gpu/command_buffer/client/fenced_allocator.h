@@ -32,19 +32,19 @@ class CommandBufferHelper;
 // (see http://www.corp.google.com/eng/doc/cpp_primer.html#thread_safety).
 class GPU_EXPORT FencedAllocator {
  public:
-  typedef unsigned int Offset;
+  typedef uint32_t Offset;
   // Invalid offset, returned by Alloc in case of failure.
   enum : Offset { kInvalidOffset = 0xffffffffU };
 
   // Allocation alignment, must be a power of two.
-  enum : unsigned int { kAllocAlignment = 16 };
+  enum : uint32_t { kAllocAlignment = 16 };
 
   // Status of a block of memory, for book-keeping.
   enum State { IN_USE, FREE, FREE_PENDING_TOKEN };
 
   // Creates a FencedAllocator. Note that the size of the buffer is passed, but
   // not its base address: everything is handled as offsets into the buffer.
-  FencedAllocator(unsigned int size, CommandBufferHelper* helper);
+  FencedAllocator(uint32_t size, CommandBufferHelper* helper);
 
   ~FencedAllocator();
 
@@ -58,7 +58,7 @@ class GPU_EXPORT FencedAllocator {
   // Returns:
   //   the offset of the allocated memory block, or kInvalidOffset if out of
   //   memory.
-  Offset Alloc(unsigned int size);
+  Offset Alloc(uint32_t size);
 
   // Frees a block of memory.
   //
@@ -78,15 +78,15 @@ class GPU_EXPORT FencedAllocator {
   void FreeUnused();
 
   // Gets the size of the largest free block that is available without waiting.
-  unsigned int GetLargestFreeSize();
+  uint32_t GetLargestFreeSize();
 
   // Gets the size of the largest free block that can be allocated if the
   // caller can wait. Allocating a block of this size will succeed, but may
   // block.
-  unsigned int GetLargestFreeOrPendingSize();
+  uint32_t GetLargestFreeOrPendingSize();
 
   // Gets the total size of all free blocks that are available without waiting.
-  unsigned int GetFreeSize();
+  uint32_t GetFreeSize();
 
   // Checks for consistency inside the book-keeping structures. Used for
   // testing.
@@ -96,7 +96,7 @@ class GPU_EXPORT FencedAllocator {
   bool InUseOrFreePending();
 
   // Return bytes of memory that is IN_USE
-  size_t bytes_in_use() const { return bytes_in_use_; }
+  uint32_t bytes_in_use() const { return bytes_in_use_; }
 
   // Gets the status of a block, as well as the corresponding token if
   // FREE_PENDING_TOKEN.
@@ -107,7 +107,7 @@ class GPU_EXPORT FencedAllocator {
   struct Block {
     State state;
     Offset offset;
-    unsigned int size;
+    uint32_t size;
     int32_t token;  // token to wait for in the FREE_PENDING_TOKEN case.
   };
 
@@ -120,7 +120,7 @@ class GPU_EXPORT FencedAllocator {
   };
 
   typedef std::vector<Block> Container;
-  typedef unsigned int BlockIndex;
+  typedef uint32_t BlockIndex;
 
   static const int32_t kUnusedToken = 0;
 
@@ -142,11 +142,11 @@ class GPU_EXPORT FencedAllocator {
   // NOTE: this will invalidate block indices.
   // Returns the offset of the allocated block (NOTE: this is different from
   // the other functions that return a block index).
-  Offset AllocInBlock(BlockIndex index, unsigned int size);
+  Offset AllocInBlock(BlockIndex index, uint32_t size);
 
   CommandBufferHelper *helper_;
   Container blocks_;
-  size_t bytes_in_use_;
+  uint32_t bytes_in_use_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(FencedAllocator);
 };
@@ -155,9 +155,7 @@ class GPU_EXPORT FencedAllocator {
 // instead of offsets.
 class FencedAllocatorWrapper {
  public:
-  FencedAllocatorWrapper(unsigned int size,
-                         CommandBufferHelper* helper,
-                         void* base)
+  FencedAllocatorWrapper(uint32_t size, CommandBufferHelper* helper, void* base)
       : allocator_(size, helper), base_(base) {}
 
   // Allocates a block of memory. If the buffer is out of directly available
@@ -170,7 +168,7 @@ class FencedAllocatorWrapper {
   // Returns:
   //   the pointer to the allocated memory block, or NULL if out of
   //   memory.
-  void *Alloc(unsigned int size) {
+  void* Alloc(uint32_t size) {
     FencedAllocator::Offset offset = allocator_.Alloc(size);
     return GetPointer(offset);
   }
@@ -186,7 +184,8 @@ class FencedAllocatorWrapper {
   // Returns:
   //   the pointer to the allocated memory block, or NULL if out of
   //   memory.
-  template <typename T> T *AllocTyped(unsigned int count) {
+  template <typename T>
+  T* AllocTyped(uint32_t count) {
     return static_cast<T *>(Alloc(count * sizeof(T)));
   }
 
@@ -233,18 +232,16 @@ class FencedAllocatorWrapper {
   }
 
   // Gets the size of the largest free block that is available without waiting.
-  unsigned int GetLargestFreeSize() {
-    return allocator_.GetLargestFreeSize();
-  }
+  uint32_t GetLargestFreeSize() { return allocator_.GetLargestFreeSize(); }
 
   // Gets the size of the largest free block that can be allocated if the
   // caller can wait.
-  unsigned int GetLargestFreeOrPendingSize() {
+  uint32_t GetLargestFreeOrPendingSize() {
     return allocator_.GetLargestFreeOrPendingSize();
   }
 
   // Gets the total size of all free blocks.
-  unsigned int GetFreeSize() { return allocator_.GetFreeSize(); }
+  uint32_t GetFreeSize() { return allocator_.GetFreeSize(); }
 
   // Checks for consistency inside the book-keeping structures. Used for
   // testing.
@@ -257,7 +254,7 @@ class FencedAllocatorWrapper {
 
   FencedAllocator &allocator() { return allocator_; }
 
-  size_t bytes_in_use() const { return allocator_.bytes_in_use(); }
+  uint32_t bytes_in_use() const { return allocator_.bytes_in_use(); }
 
   FencedAllocator::State GetPointerStatusForTest(void* pointer,
                                                  int32_t* token_if_pending) {

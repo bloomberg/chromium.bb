@@ -32,7 +32,7 @@ class EnterprisePlatformKeysInternalGenerateKeyFunction
                       const std::string& error_message);
 
   DECLARE_EXTENSION_FUNCTION("enterprise.platformKeysInternal.generateKey",
-                             ENTERPRISE_PLATFORMKEYSINTERNAL_GENERATEKEY);
+                             ENTERPRISE_PLATFORMKEYSINTERNAL_GENERATEKEY)
 };
 
 class EnterprisePlatformKeysGetCertificatesFunction
@@ -47,7 +47,7 @@ class EnterprisePlatformKeysGetCertificatesFunction
                          const std::string& error_message);
 
   DECLARE_EXTENSION_FUNCTION("enterprise.platformKeys.getCertificates",
-                             ENTERPRISE_PLATFORMKEYS_GETCERTIFICATES);
+                             ENTERPRISE_PLATFORMKEYS_GETCERTIFICATES)
 };
 
 class EnterprisePlatformKeysImportCertificateFunction
@@ -61,7 +61,7 @@ class EnterprisePlatformKeysImportCertificateFunction
   void OnImportedCertificate(const std::string& error_message);
 
   DECLARE_EXTENSION_FUNCTION("enterprise.platformKeys.importCertificate",
-                             ENTERPRISE_PLATFORMKEYS_IMPORTCERTIFICATE);
+                             ENTERPRISE_PLATFORMKEYS_IMPORTCERTIFICATE)
 };
 
 class EnterprisePlatformKeysRemoveCertificateFunction
@@ -75,7 +75,7 @@ class EnterprisePlatformKeysRemoveCertificateFunction
   void OnRemovedCertificate(const std::string& error_message);
 
   DECLARE_EXTENSION_FUNCTION("enterprise.platformKeys.removeCertificate",
-                             ENTERPRISE_PLATFORMKEYS_REMOVECERTIFICATE);
+                             ENTERPRISE_PLATFORMKEYS_REMOVECERTIFICATE)
 };
 
 class EnterprisePlatformKeysInternalGetTokensFunction
@@ -90,7 +90,7 @@ class EnterprisePlatformKeysInternalGetTokensFunction
                    const std::string& error_message);
 
   DECLARE_EXTENSION_FUNCTION("enterprise.platformKeysInternal.getTokens",
-                             ENTERPRISE_PLATFORMKEYSINTERNAL_GETTOKENS);
+                             ENTERPRISE_PLATFORMKEYSINTERNAL_GETTOKENS)
 };
 
 class EnterprisePlatformKeysChallengeMachineKeyFunction
@@ -113,7 +113,7 @@ class EnterprisePlatformKeysChallengeMachineKeyFunction
   EPKPChallengeMachineKey* impl_;
 
   DECLARE_EXTENSION_FUNCTION("enterprise.platformKeys.challengeMachineKey",
-                             ENTERPRISE_PLATFORMKEYS_CHALLENGEMACHINEKEY);
+                             ENTERPRISE_PLATFORMKEYS_CHALLENGEMACHINEKEY)
 };
 
 class EnterprisePlatformKeysChallengeUserKeyFunction
@@ -136,7 +136,7 @@ class EnterprisePlatformKeysChallengeUserKeyFunction
   EPKPChallengeUserKey* impl_;
 
   DECLARE_EXTENSION_FUNCTION("enterprise.platformKeys.challengeUserKey",
-                             ENTERPRISE_PLATFORMKEYS_CHALLENGEUSERKEY);
+                             ENTERPRISE_PLATFORMKEYS_CHALLENGEUSERKEY)
 };
 
 }  // namespace extensions

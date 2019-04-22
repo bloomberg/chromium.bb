@@ -40,8 +40,7 @@ import org.chromium.chrome.browser.contextual_suggestions.ContextualSuggestionsM
 import org.chromium.chrome.browser.dependency_injection.ChromeAppModule;
 import org.chromium.chrome.browser.dependency_injection.ModuleFactoryOverrides;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
-import org.chromium.chrome.browser.modelutil.ListObservable;
-import org.chromium.chrome.browser.modelutil.ListObservable.ListObserver;
+import org.chromium.chrome.browser.fullscreen.FullscreenManagerTestUtils;
 import org.chromium.chrome.browser.multiwindow.MultiWindowTestHelper;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
@@ -50,7 +49,7 @@ import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticleViewHolder;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tabmodel.TabModel;
-import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
+import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.test.ScreenShooter;
 import org.chromium.chrome.browser.toolbar.top.ToolbarPhone;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
@@ -60,6 +59,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.RenderTestRule;
+import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
 import org.chromium.chrome.test.util.browser.compositor.layouts.DisableChromeAnimations;
@@ -69,6 +69,8 @@ import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestWebContentsObserver;
 import org.chromium.net.test.EmbeddedTestServer;
+import org.chromium.ui.modelutil.ListObservable;
+import org.chromium.ui.modelutil.ListObservable.ListObserver;
 import org.chromium.ui.test.util.UiRestriction;
 
 import java.util.Locale;
@@ -344,11 +346,45 @@ public class ContextualSuggestionsTest {
     @Test
     @MediumTest
     @Feature({"ContextualSuggestions"})
-    @DisabledTest(message = "https://crbug.com/890947")
     @EnableFeatures(ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON)
-    public void testInProductHelp() throws InterruptedException, TimeoutException {
-        assertTrue(
-                "Help bubble should be showing.", mMediator.getHelpBubbleForTesting().isShowing());
+    @DisableFeatures(ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_IPH_REVERSE_SCROLL)
+    public void testInProductHelp_DontRequireReverseScroll() throws Exception {
+        // IPH can only be shown after the animation completes.
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> getToolbarPhone().endExperimentalButtonAnimationForTesting());
+
+        CriteriaHelper.pollUiThread(() -> mMediator.getHelpBubbleForTesting() != null &&
+                            mMediator.getHelpBubbleForTesting().isShowing(),
+                "Help bubble never shown.");
+
+        ThreadUtils.runOnUiThreadBlocking(() -> mMediator.getHelpBubbleForTesting().dismiss());
+
+        Assert.assertEquals("Help bubble should be dimissed.", 1,
+                mFakeTracker.mDimissedCallbackHelper.getCallCount());
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"ContextualSuggestions"})
+    @EnableFeatures({ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON,
+            ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_IPH_REVERSE_SCROLL})
+    @DisabledTest(message = "https://crbug.com/890947")
+    public void testInProductHelp_RequireReverseScroll() throws Exception {
+        // IPH can only be shown after the animation to show the toolbar button completes.
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> getToolbarPhone().endExperimentalButtonAnimationForTesting());
+
+        Assert.assertNull("Help bubble should not be shown yet.",
+                mMediator.getHelpBubbleForTesting());
+
+        // Scroll the base page, hiding then reshowing the browser controls.
+        FullscreenManagerTestUtils.disableBrowserOverrides();
+        FullscreenManagerTestUtils.waitForBrowserControlsToBeMoveable(
+                mActivityTestRule, mActivityTestRule.getActivity().getActivityTab());
+
+        CriteriaHelper.pollUiThread(() -> mMediator.getHelpBubbleForTesting() != null &&
+                            mMediator.getHelpBubbleForTesting().isShowing(),
+                "Help bubble never shown.");
 
         ThreadUtils.runOnUiThreadBlocking(() -> mMediator.getHelpBubbleForTesting().dismiss());
 
@@ -552,29 +588,6 @@ public class ContextualSuggestionsTest {
     @MediumTest
     @Feature({"ContextualSuggestions"})
     @EnableFeatures(ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON)
-    public void testToolbarButton_ToggleTabSwitcher() throws Exception {
-        View toolbarButton = getToolbarButton();
-
-        assertEquals(
-                "Toolbar button should be visible", View.VISIBLE, toolbarButton.getVisibility());
-
-        ThreadUtils.runOnUiThreadBlocking(
-                () -> { mActivityTestRule.getActivity().getLayoutManager().showOverview(false); });
-
-        assertEquals("Toolbar button should be invisible", View.INVISIBLE,
-                toolbarButton.getVisibility());
-
-        ThreadUtils.runOnUiThreadBlocking(
-                () -> { mActivityTestRule.getActivity().getLayoutManager().hideOverview(false); });
-
-        assertEquals(
-                "Toolbar button should be visible", View.VISIBLE, toolbarButton.getVisibility());
-    }
-
-    @Test
-    @MediumTest
-    @Feature({"ContextualSuggestions"})
-    @EnableFeatures(ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON)
     public void testToolbarButton_SwitchTabs() throws Exception {
         View toolbarButton = getToolbarButton();
 
@@ -603,8 +616,8 @@ public class ContextualSuggestionsTest {
     public void testToolbarButton_ResponseInTabSwitcher() throws Exception {
         View toolbarButton = getToolbarButton();
 
-        assertEquals(
-                "Toolbar button should be visible", View.VISIBLE, toolbarButton.getVisibility());
+        assertEquals("Toolbar button should be visible before resetting suggestions", View.VISIBLE,
+                toolbarButton.getVisibility());
 
         // Simulate suggestions being cleared.
         ThreadUtils.runOnUiThreadBlocking(() -> {
@@ -629,14 +642,14 @@ public class ContextualSuggestionsTest {
             }
         });
 
-        assertEquals("Toolbar button should be invisible", View.INVISIBLE,
+        assertEquals("Toolbar button should be visible after response received", View.VISIBLE,
                 toolbarButton.getVisibility());
 
         ThreadUtils.runOnUiThreadBlocking(
                 () -> { mActivityTestRule.getActivity().getLayoutManager().hideOverview(false); });
 
-        assertEquals(
-                "Toolbar button should be visible", View.VISIBLE, toolbarButton.getVisibility());
+        assertEquals("Toolbar button should still be visible after exiting tab switcher",
+                View.VISIBLE, toolbarButton.getVisibility());
     }
 
     @Test

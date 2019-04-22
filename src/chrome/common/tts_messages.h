@@ -52,12 +52,14 @@ IPC_MESSAGE_CONTROL1(TtsMsg_DidPauseSpeaking,
                      int /* utterance id */)
 IPC_MESSAGE_CONTROL1(TtsMsg_DidResumeSpeaking,
                      int /* utterance id */)
-IPC_MESSAGE_CONTROL2(TtsMsg_WordBoundary,
+IPC_MESSAGE_CONTROL3(TtsMsg_WordBoundary,
                      int /* utterance id */,
-                     int /* char index */)
-IPC_MESSAGE_CONTROL2(TtsMsg_SentenceBoundary,
+                     int /* char index */,
+                     int /* char length*/)
+IPC_MESSAGE_CONTROL3(TtsMsg_SentenceBoundary,
                      int /* utterance id */,
-                     int /* char index */)
+                     int /* char index */,
+                     int /* char length*/)
 IPC_MESSAGE_CONTROL2(TtsMsg_MarkerEvent,
                      int /* utterance id */,
                      int /* char index */)

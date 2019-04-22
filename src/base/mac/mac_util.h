@@ -63,7 +63,11 @@ BASE_EXPORT void ReleaseFullScreen(FullScreenMode mode);
 BASE_EXPORT void SwitchFullScreenModes(FullScreenMode from_mode,
                                        FullScreenMode to_mode);
 
-// Excludes the file given by |file_path| from being backed up by Time Machine.
+// Returns true if the file at |file_path| is excluded from Time Machine
+// backups.
+BASE_EXPORT bool GetFileBackupExclusion(const FilePath& file_path);
+
+// Excludes the file given by |file_path| from Time Machine backups.
 BASE_EXPORT bool SetFileBackupExclusion(const FilePath& file_path);
 
 // Checks if the current application is set as a Login Item, so it will launch

@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
@@ -23,16 +24,26 @@
 #include "base/win/scoped_com_initializer.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "media/capture/video/chromeos/mojo/cros_image_capture.mojom.h"
+#endif  // defined(OS_CHROMEOS)
+
+namespace base {
+class SingleThreadTaskRunner;
+}
+
 namespace video_capture {
 
 class ServiceImpl : public service_manager::Service,
                     public service_manager::ServiceKeepalive::Observer {
  public:
-  explicit ServiceImpl(service_manager::mojom::ServiceRequest request);
+  ServiceImpl(service_manager::mojom::ServiceRequest request,
+              scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
 
   // Constructs a service instance which overrides the default idle timeout
   // behavior.
   ServiceImpl(service_manager::mojom::ServiceRequest request,
+              scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
               base::Optional<base::TimeDelta> idle_timeout);
 
   ~ServiceImpl() override;
@@ -43,6 +54,8 @@ class ServiceImpl : public service_manager::Service,
       base::RepeatingClosure observer_cb);
   void SetShutdownTimeoutCancelledObserver(base::RepeatingClosure observer_cb);
   bool HasNoContextRefs();
+
+  void ShutdownServiceAsap();
 
   // service_manager::Service implementation.
   void OnStart() override;
@@ -59,6 +72,9 @@ class ServiceImpl : public service_manager::Service,
   void OnDeviceFactoryProviderRequest(
       mojom::DeviceFactoryProviderRequest request);
   void OnTestingControlsRequest(mojom::TestingControlsRequest request);
+#if defined(OS_CHROMEOS)
+  void OnCrosImageCaptureRequest(cros::mojom::CrosImageCaptureRequest request);
+#endif  // defined(OS_CHROMEOS)
   void MaybeRequestQuitDelayed();
   void MaybeRequestQuit();
   void LazyInitializeDeviceFactoryProvider();
@@ -66,6 +82,7 @@ class ServiceImpl : public service_manager::Service,
 
   service_manager::ServiceBinding binding_;
   service_manager::ServiceKeepalive keepalive_;
+  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 
 #if defined(OS_WIN)
   // COM must be initialized in order to access the video capture devices.

@@ -15,6 +15,7 @@ import org.chromium.base.ActivityState;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Callback;
+import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
@@ -23,6 +24,7 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.SearchEnginePreference;
 import org.chromium.chrome.browser.search_engines.TemplateUrl;
@@ -147,13 +149,7 @@ public class LocaleManager {
      * @return Whether the Chrome instance is running in a special locale.
      */
     public boolean isSpecialLocaleEnabled() {
-        // If there is a kill switch sent from the server, disable the feature.
-        if (!ChromeFeatureList.isEnabled("SpecialLocaleWrapper")) {
-            return false;
-        }
-        boolean inSpecialLocale = ChromeFeatureList.isEnabled("SpecialLocale");
-        inSpecialLocale = isReallyInSpecialLocale(inSpecialLocale);
-        return inSpecialLocale;
+        return false;
     }
 
     /**
@@ -379,15 +375,6 @@ public class LocaleManager {
     }
 
     /**
-     * Does some extra checking about whether the user is in special locale.
-     * @param inSpecialLocale Whether the variation service thinks the client is in special locale.
-     * @return The result after extra confirmation.
-     */
-    protected boolean isReallyInSpecialLocale(boolean inSpecialLocale) {
-        return inSpecialLocale;
-    }
-
-    /**
      * @return Whether and which search engine promo should be shown.
      */
     @SearchEnginePromoType
@@ -514,4 +501,20 @@ public class LocaleManager {
      */
     public void recordLocaleBasedSearchMetrics(
             boolean isFromSearchWidget, String url, @PageTransition int transition) {}
+
+    /**
+     * @return Whether the user requires special handling.
+     */
+    public boolean isSpecialUser() {
+        if (CommandLine.getInstance().hasSwitch(ChromeSwitches.FORCE_ENABLE_SPECIAL_USER)) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Record metrics related to user type.
+     */
+    @CalledByNative
+    public void recordUserTypeMetrics() {}
 }

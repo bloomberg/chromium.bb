@@ -67,6 +67,8 @@ enum NumberType
 	NUMBERTYPE_INT16,
 	NUMBERTYPE_UINT16,
 	NUMBERTYPE_FLOAT16,
+	NUMBERTYPE_END16,		// Marks the end of 16-bit scalar types
+	NUMBERTYPE_FLOAT64,
 };
 
 typedef enum RoundingModeFlags_e
@@ -114,7 +116,7 @@ struct IFDataType
 							, elementType	(elementT)
 						{
 							DE_ASSERT(numE > 0 && numE < 5);
-							DE_ASSERT(elementT != NUMBERTYPE_END32);
+							DE_ASSERT(elementT != NUMBERTYPE_END32 && elementT != NUMBERTYPE_END16);
 						}
 
 						IFDataType			(const IFDataType& that)
@@ -132,6 +134,8 @@ struct IFDataType
 	std::string			str					(void) const;
 
 	bool				elementIs32bit		(void) const { return elementType < NUMBERTYPE_END32; }
+	bool				elementIs64bit		(void) const { return elementType > NUMBERTYPE_END16; }
+
 	bool				isVector			(void) const { return numElements > 1; }
 
 	deUint32			numElements;
@@ -323,20 +327,9 @@ const std::string numberToString (T number)
 	return ss.str();
 }
 
-// Performs a bitwise copy of source to the destination type Dest.
-template <typename Dest, typename Src>
-Dest bitwiseCast (Src source)
-{
-  Dest dest;
-  DE_STATIC_ASSERT(sizeof(source) == sizeof(dest));
-  deMemcpy(&dest, &source, sizeof(dest));
-  return dest;
-}
-
 template<typename T>	T			randomScalar	(de::Random& rnd, T minValue, T maxValue);
 template<> inline		float		randomScalar	(de::Random& rnd, float minValue, float maxValue)		{ return rnd.getFloat(minValue, maxValue);	}
 template<> inline		deInt32		randomScalar	(de::Random& rnd, deInt32 minValue, deInt32 maxValue)	{ return rnd.getInt(minValue, maxValue);	}
-
 
 void getDefaultColors (tcu::RGBA (&colors)[4]);
 
@@ -347,7 +340,8 @@ void getInvertedDefaultColors (tcu::RGBA (&colors)[4]);
 // Creates fragments that specialize into a simple pass-through shader (of any kind).
 std::map<std::string, std::string> passthruFragments (void);
 
-void createCombinedModule (vk::SourceCollections& dst, InstanceContext);
+// Creates a combined shader module based on VkShaderStageFlagBits defined in InstanceContext
+void createCombinedModule (vk::SourceCollections& dst, InstanceContext ctx);
 
 // This has two shaders of each stage. The first
 // is a passthrough, the second inverts the color.
@@ -611,6 +605,20 @@ bool compare16BitFloat (float original, deUint16 returned, RoundingModeFlags fla
 // * Different bit patterns of NaNs are allowed.
 // * For the rest, require exactly the same bit pattern.
 bool compare16BitFloat (deUint16 returned, float original, tcu::TestLog& log);
+bool compare16BitFloat (deFloat16 original, deFloat16 returned, std::string& error);
+
+// Given the original 64-bit float value, computes the corresponding 16-bit
+// float value under the given rounding mode flags and compares with the
+// returned 16-bit float value. Returns true if they are considered as equal.
+//
+// The following equivalence criteria are respected:
+// * Positive and negative zeros are considered equivalent.
+// * Denormalized floats are allowed to be flushed to zeros, including
+//   * Inputted 64bit denormalized float
+//   * Generated 16bit denormalized float
+// * Different bit patterns of NaNs are allowed.
+// * For the rest, require exactly the same bit pattern.
+bool compare16BitFloat64 (double original, deUint16 returned, RoundingModeFlags flags, tcu::TestLog& log);
 
 // Compare the returned 32-bit float against its expected value.
 //
@@ -621,6 +629,16 @@ bool compare16BitFloat (deUint16 returned, float original, tcu::TestLog& log);
 // * Different bit patterns of NaNs/Infs are allowed.
 // * For the rest, use C++ float equivalence check.
 bool compare32BitFloat (float expected, float returned, tcu::TestLog& log);
+
+// Compare the returned 64-bit float against its expected value.
+//
+// The following equivalence criteria are respected:
+// * Denormalized floats are allowed to be flushed to zeros, including
+//   * The expected value itself is a denormalized float
+//   * The expected value is a denormalized float if converted to 16bit
+// * Different bit patterns of NaNs/Infs are allowed.
+// * For the rest, use C++ float equivalence check.
+bool compare64BitFloat (double expected, double returned, tcu::TestLog& log);
 
 } // SpirVAssembly
 } // vkt

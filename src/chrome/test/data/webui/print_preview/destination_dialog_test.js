@@ -8,6 +8,7 @@ cr.define('destination_dialog_test', function() {
     PrinterList: 'PrinterList',
     ShowProvisionalDialog: 'ShowProvisionalDialog',
     ReloadPrinterList: 'ReloadPrinterList',
+    UserAccounts: 'UserAccounts',
   };
 
   const suiteName = 'DestinationDialogTest';
@@ -18,11 +19,11 @@ cr.define('destination_dialog_test', function() {
     /** @type {?print_preview.DestinationStore} */
     let destinationStore = null;
 
-    /** @type {?print_preview.UserInfo} */
-    let userInfo = null;
-
     /** @type {?print_preview.NativeLayer} */
     let nativeLayer = null;
+
+    /** @type {?print_preview.CloudPrintInterface} */
+    let cloudPrintInterface = null;
 
     /** @type {!Array<!print_preview.Destination>} */
     let destinations = [];
@@ -34,13 +35,18 @@ cr.define('destination_dialog_test', function() {
     let recentDestinations = [];
 
     /** @override */
+    suiteSetup(function() {
+      print_preview_test_utils.setupTestListenerElement();
+    });
+
+    /** @override */
     setup(function() {
       // Create data classes
       nativeLayer = new print_preview.NativeLayerStub();
       print_preview.NativeLayer.setInstance(nativeLayer);
-      userInfo = new print_preview.UserInfo();
-      destinationStore = new print_preview.DestinationStore(
-          userInfo, new WebUIListenerTracker());
+      cloudPrintInterface = new print_preview.CloudPrintInterfaceStub();
+      destinationStore = print_preview_test_utils.createDestinationStore();
+      destinationStore.setCloudPrintInterface(cloudPrintInterface);
       destinations = print_preview_test_utils.getDestinations(
           nativeLayer, localDestinations);
       recentDestinations =
@@ -53,10 +59,10 @@ cr.define('destination_dialog_test', function() {
 
       // Set up dialog
       dialog = document.createElement('print-preview-destination-dialog');
-      dialog.userInfo = userInfo;
+      dialog.activeUser = '';
+      dialog.users = [];
       dialog.destinationStore = destinationStore;
-      dialog.invitationStore = new print_preview.InvitationStore(userInfo);
-      dialog.recentDestinations = recentDestinations;
+      dialog.invitationStore = new print_preview.InvitationStore();
       document.body.appendChild(dialog);
       return nativeLayer.whenCalled('getPrinterCapabilities')
           .then(function() {
@@ -71,40 +77,21 @@ cr.define('destination_dialog_test', function() {
 
     // Test that destinations are correctly displayed in the lists.
     test(assert(TestNames.PrinterList), function() {
-      const lists =
-          dialog.shadowRoot.querySelectorAll('print-preview-destination-list');
-      assertEquals(2, lists.length);
+      const list = dialog.$$('print-preview-destination-list');
 
-      const recentItems = lists[0].shadowRoot.querySelectorAll(
+      const printerItems = list.shadowRoot.querySelectorAll(
           'print-preview-destination-list-item');
-      const printerItems = lists[1].shadowRoot.querySelectorAll(
-          'print-preview-destination-list-item');
-      // Check that list titles have the correct text color.
-      lists.forEach(list => {
-        // google-grey-refresh-700
-        assertEquals(
-            'rgb(95, 99, 104)',
-            window.getComputedStyle(list.$$('.title')).color);
-      });
-
-      assertEquals(1, recentItems.length);
 
       const getDisplayedName = item => item.$$('.name').textContent;
-
-      // Check FooName is most recent and has the correct text color.
-      const mostRecent = recentItems[0];
-      assertEquals('FooName', getDisplayedName(mostRecent));
-      // google-grey-900
-      assertEquals(
-          'rgb(32, 33, 36)',
-          window.getComputedStyle(mostRecent.$$('.name')).color);
-
       // 5 printers + Save as PDF
       assertEquals(6, printerItems.length);
       // Save as PDF shows up first.
       assertEquals(
           print_preview.Destination.GooglePromotedId.SAVE_AS_PDF,
           getDisplayedName(printerItems[0]));
+      assertEquals(
+          'rgb(32, 33, 36)',
+          window.getComputedStyle(printerItems[0].$$('.name')).color);
       // FooName will be second since it was updated by the capabilities fetch.
       assertEquals('FooName', getDisplayedName(printerItems[1]));
       Array.from(printerItems).slice(2).forEach((item, index) => {
@@ -135,10 +122,8 @@ cr.define('destination_dialog_test', function() {
           .then(function() {
             Polymer.dom.flush();
             assertFalse(provisionalDialog.$.dialog.open);
-            const lists = dialog.shadowRoot.querySelectorAll(
-                'print-preview-destination-list');
-            assertEquals(2, lists.length);
-            const printerItems = lists[1].shadowRoot.querySelectorAll(
+            const list = dialog.$$('print-preview-destination-list');
+            const printerItems = list.shadowRoot.querySelectorAll(
                 'print-preview-destination-list-item');
 
             // Should have 5 local destinations, Save as PDF + extension
@@ -173,16 +158,11 @@ cr.define('destination_dialog_test', function() {
     // Test that destinations are correctly cleared when the destination store
     // reloads the printer list.
     test(assert(TestNames.ReloadPrinterList), function() {
-      const lists =
-          dialog.shadowRoot.querySelectorAll('print-preview-destination-list');
-      assertEquals(2, lists.length);
+      const list = dialog.$$('print-preview-destination-list');
 
-      const recentItems = lists[0].shadowRoot.querySelectorAll(
-          'print-preview-destination-list-item');
-      const printerItems = lists[1].shadowRoot.querySelectorAll(
+      const printerItems = list.shadowRoot.querySelectorAll(
           'print-preview-destination-list-item');
 
-      assertEquals(1, recentItems.length);
       assertEquals(6, printerItems.length);
       const oldPdfDestination = printerItems[0].destination;
       assertEquals(
@@ -203,6 +183,136 @@ cr.define('destination_dialog_test', function() {
             newPdfDestination.id);
         assertNotEquals(oldPdfDestination, newPdfDestination);
       });
+    });
+
+    /**
+     * @param {string} account The current active user account.
+     * @param {number} numUsers The total number of users that are signed in.
+     */
+    function assertSignedInState(account, numUsers) {
+      const signedIn = account !== '';
+      assertEquals(signedIn, dialog.$.cloudprintPromo.hidden);
+      assertEquals(!signedIn, dialog.$$('.user-info').hidden);
+
+      if (numUsers > 0) {
+        const userSelect = dialog.$$('.md-select');
+        const userSelectOptions = userSelect.querySelectorAll('option');
+        assertEquals(numUsers + 1, userSelectOptions.length);
+        assertEquals('', userSelectOptions[numUsers].value);
+        assertEquals(account, userSelect.value);
+      }
+    }
+
+    /**
+     * @param {number} numPrinters The total number of available printers.
+     * @param {string} account The current active user account.
+     */
+    function assertNumPrintersWithDriveAccount(numPrinters, account) {
+      const list = dialog.$$('print-preview-destination-list');
+      const printerItems = list.shadowRoot.querySelectorAll(
+          'print-preview-destination-list-item:not([hidden])');
+      assertEquals(numPrinters, printerItems.length);
+      const drivePrinter = Array.from(printerItems).find(item => {
+        return item.destination.id ===
+            print_preview.Destination.GooglePromotedId.DOCS;
+      });
+      assertEquals(!!drivePrinter, account !== '');
+      if (drivePrinter) {
+        assertEquals(account, drivePrinter.destination.account);
+      }
+    }
+
+    // Test that signing in and switching accounts works as expected.
+    test(assert(TestNames.UserAccounts), function() {
+      // Set up the cloud print interface with Google Drive printer for a couple
+      // different accounts.
+      const user1 = 'foo@chromium.org';
+      const user2 = 'bar@chromium.org';
+      cloudPrintInterface.setPrinter(
+          print_preview_test_utils.getGoogleDriveDestination(user1));
+      cloudPrintInterface.setPrinter(
+          print_preview_test_utils.getGoogleDriveDestination(user2));
+
+      // Check that both cloud print promo and dropdown are hidden when cloud
+      // print is disabled.
+      dialog.cloudPrintState = print_preview.CloudPrintState.DISABLED;
+      assertTrue(dialog.$.cloudprintPromo.hidden);
+      assertTrue(dialog.$$('.user-info').hidden);
+      const userSelect = dialog.$$('.md-select');
+
+      // Enable cloud print.
+      dialog.cloudPrintState = print_preview.CloudPrintState.NOT_SIGNED_IN;
+      assertSignedInState('', 0);
+
+      // 6 printers, no Google drive (since not signed in).
+      assertNumPrintersWithDriveAccount(6, '');
+
+      // Simulate signing in to an account.
+      destinationStore.setActiveUser(user1);
+      dialog.$.cloudprintPromo.querySelector('[is=\'action-link\']').click();
+      return nativeLayer.whenCalled('signIn')
+          .then(addAccount => {
+            assertFalse(addAccount);
+            nativeLayer.resetResolver('signIn');
+            dialog.cloudPrintState = print_preview.CloudPrintState.SIGNED_IN;
+            dialog.activeUser = user1;
+            dialog.users = [user1];
+            Polymer.dom.flush();
+
+            // Promo is hidden and select shows the signed in user.
+            assertSignedInState(user1, 1);
+
+            // Now have 7 printers (Google Drive), with user1 signed in.
+            assertNumPrintersWithDriveAccount(7, user1);
+
+            // Simulate signing into a second account.
+            userSelect.value = '';
+            userSelect.dispatchEvent(new CustomEvent('change'));
+            return nativeLayer.whenCalled('signIn');
+          })
+          .then(addAccount => {
+            assertTrue(addAccount);
+            dialog.users = [user1, user2];
+            Polymer.dom.flush();
+
+            // Promo is hidden and select shows the signed in user.
+            assertSignedInState(user1, 2);
+
+            // Still have 7 printers (Google Drive), with user1 signed in.
+            assertNumPrintersWithDriveAccount(7, user1);
+
+            // Select the second account.
+            const whenEventFired =
+                test_util.eventToPromise('account-change', dialog);
+            userSelect.value = user2;
+            userSelect.dispatchEvent(new CustomEvent('change'));
+            return whenEventFired;
+          })
+          .then(() => {
+            Polymer.dom.flush();
+
+            // Check printers were temporarily cleared.
+            assertNumPrintersWithDriveAccount(0, '');
+
+            // This will all be done by app.js and user_info.js in response to
+            // the account-change event.
+            destinationStore.setActiveUser(user2);
+            dialog.activeUser = user2;
+            const whenInserted = test_util.eventToPromise(
+                print_preview.DestinationStore.EventType.DESTINATIONS_INSERTED,
+                destinationStore);
+            destinationStore.reloadUserCookieBasedDestinations(user2);
+
+            return whenInserted;
+          })
+          .then(() => {
+            Polymer.dom.flush();
+
+            assertSignedInState(user2, 2);
+
+            // 7 printers (Google Drive), with user2 signed in.
+            assertNumPrintersWithDriveAccount(7, user2);
+          });
     });
   });
 

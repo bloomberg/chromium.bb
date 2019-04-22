@@ -139,9 +139,9 @@ class SocketDataPumpTest : public testing::Test,
   DISALLOW_COPY_AND_ASSIGN(SocketDataPumpTest);
 };
 
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        SocketDataPumpTest,
-                        testing::Values(net::SYNCHRONOUS, net::ASYNC));
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         SocketDataPumpTest,
+                         testing::Values(net::SYNCHRONOUS, net::ASYNC));
 
 TEST_P(SocketDataPumpTest, ReadAndWriteMultiple) {
   const char kTestMsg[] = "abcdefghij";

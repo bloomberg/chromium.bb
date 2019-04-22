@@ -22,12 +22,16 @@
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
-#include "components/autofill/core/common/autofill_features.h"
+#include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#include "ui/native_theme/native_theme.h"  // nogncheck
+#endif
 
 namespace autofill {
 
@@ -82,22 +86,11 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
   // Hide warnings as appropriate.
   PossiblyRemoveAutofillWarnings(&suggestions);
 
-#if !defined(OS_ANDROID)
-  // If there are above the fold suggestions at this point, add a separator to
-  // go between the values and menu items. Skip this when using the Native Views
-  // implementation, which has its own logic for distinguishing footer rows.
-  // TODO(crbug.com/831603): Remove this when the relevant feature is on 100%.
-  if (!suggestions.empty() && !features::ShouldUseNativeViews()) {
-    suggestions.push_back(Suggestion());
-    suggestions.back().frontend_id = POPUP_ITEM_ID_SEPARATOR;
-  }
-#endif
-
   if (should_show_scan_credit_card_) {
     Suggestion scan_credit_card(
         l10n_util::GetStringUTF16(IDS_AUTOFILL_SCAN_CREDIT_CARD));
     scan_credit_card.frontend_id = POPUP_ITEM_ID_SCAN_CREDIT_CARD;
-    scan_credit_card.icon = base::ASCIIToUTF16("scanCreditCardIcon");
+    scan_credit_card.icon = "scanCreditCardIcon";
     suggestions.push_back(scan_credit_card);
   }
 
@@ -115,7 +108,7 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
     suggestions.emplace_back(
         l10n_util::GetStringUTF16(IDS_AUTOFILL_SHOW_ACCOUNT_CARDS));
     suggestions.back().frontend_id = POPUP_ITEM_ID_SHOW_ACCOUNT_CARDS;
-    suggestions.back().icon = base::ASCIIToUTF16("google");
+    suggestions.back().icon = "google";
   }
 
   if (has_autofill_suggestions_)
@@ -124,16 +117,6 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
   // Append the credit card signin promo, if appropriate (there are no other
   // suggestions).
   if (suggestions.empty() && should_show_cc_signin_promo_) {
-// No separator on Android.
-#if !defined(OS_ANDROID)
-    // If there are autofill suggestions, the "Autofill options" row was added
-    // above. Add a separator between it and the signin promo.
-    if (has_autofill_suggestions_) {
-      suggestions.push_back(Suggestion());
-      suggestions.back().frontend_id = POPUP_ITEM_ID_SEPARATOR;
-    }
-#endif
-
     Suggestion signin_promo_suggestion(
         l10n_util::GetStringUTF16(IDS_AUTOFILL_CREDIT_CARD_SIGNIN_PROMO));
     signin_promo_suggestion.frontend_id =
@@ -142,14 +125,6 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
     signin_metrics::RecordSigninImpressionUserActionForAccessPoint(
         signin_metrics::AccessPoint::ACCESS_POINT_AUTOFILL_DROPDOWN);
   }
-
-#if !defined(OS_ANDROID)
-  // Remove the separator if there is one, and if it is the last element.
-  if (!suggestions.empty() &&
-      suggestions.back().frontend_id == POPUP_ITEM_ID_SEPARATOR) {
-    suggestions.pop_back();
-  }
-#endif
 
   // If anything else is added to modify the values after inserting the data
   // list, AutofillPopupControllerImpl::UpdateDataListValues will need to be
@@ -232,6 +207,7 @@ void AutofillExternalDelegate::DidAcceptSuggestion(const base::string16& value,
     manager_->ShowAutofillSettings(popup_type_ == PopupType::kCreditCards);
   } else if (identifier == POPUP_ITEM_ID_CLEAR_FORM) {
     // User selected 'Clear form'.
+    AutofillMetrics::LogAutofillFormCleared();
     driver_->RendererShouldClearFilledSection();
   } else if (identifier == POPUP_ITEM_ID_PASSWORD_ENTRY ||
              identifier == POPUP_ITEM_ID_USERNAME_ENTRY) {
@@ -242,6 +218,7 @@ void AutofillExternalDelegate::DidAcceptSuggestion(const base::string16& value,
     // User selected an Autocomplete, so we fill directly.
     driver_->RendererShouldFillFieldWithValue(value);
     AutofillMetrics::LogAutocompleteSuggestionAcceptedIndex(position);
+    manager_->OnAutocompleteEntrySelected(value);
   } else if (identifier == POPUP_ITEM_ID_SCAN_CREDIT_CARD) {
     manager_->client()->ScanCreditCard(base::Bind(
         &AutofillExternalDelegate::OnCreditCardScanned, GetWeakPtr()));
@@ -380,8 +357,16 @@ void AutofillExternalDelegate::ApplyAutofillOptions(
   suggestions->back().frontend_id = POPUP_ITEM_ID_AUTOFILL_OPTIONS;
   // On Android and Desktop, Google Pay branding is shown along with Settings.
   // So Google Pay Icon is just attached to an existing menu item.
-  if (is_all_server_suggestions)
-    suggestions->back().icon = base::ASCIIToUTF16("googlePay");
+  if (is_all_server_suggestions) {
+#if defined(OS_ANDROID) || defined(OS_IOS)
+    suggestions->back().icon = "googlePay";
+#else
+    suggestions->back().icon =
+        ui::NativeTheme::GetInstanceForNativeUi()->SystemDarkModeEnabled()
+            ? "googlePayDark"
+            : "googlePay";
+#endif
+  }
 
 // On iOS, GooglePayIcon comes at the begining and hence prepended to the list.
 #if defined(OS_IOS)
@@ -389,7 +374,7 @@ void AutofillExternalDelegate::ApplyAutofillOptions(
           features::kAutofillDownstreamUseGooglePayBrandingOniOS) &&
       is_all_server_suggestions) {
     Suggestion googlepay_icon;
-    googlepay_icon.icon = base::ASCIIToUTF16("googlePay");
+    googlepay_icon.icon = "googlePay";
     googlepay_icon.frontend_id = POPUP_ITEM_ID_GOOGLE_PAY_BRANDING;
     suggestions->insert(suggestions->begin(), googlepay_icon);
   }
@@ -397,10 +382,10 @@ void AutofillExternalDelegate::ApplyAutofillOptions(
 
 #if defined(OS_ANDROID)
   if (IsKeyboardAccessoryEnabled()) {
-    suggestions->back().icon = base::ASCIIToUTF16("settings");
+    suggestions->back().icon = "settings";
     if (IsHintEnabledInKeyboardAccessory() && !query_field_.is_autofilled) {
       Suggestion create_icon;
-      create_icon.icon = base::ASCIIToUTF16("create");
+      create_icon.icon = "create";
       create_icon.frontend_id = POPUP_ITEM_ID_CREATE_HINT;
       suggestions->push_back(create_icon);
     }
@@ -435,8 +420,12 @@ void AutofillExternalDelegate::InsertDataListValues(
   suggestions->insert(suggestions->begin(), data_list_values_.size(),
                       Suggestion());
   for (size_t i = 0; i < data_list_values_.size(); i++) {
+    // A suggestion's label has one line of disambiguating information to show
+    // to the user. However, when the two-line suggestion display experiment is
+    // enabled on desktop, label is replaced by additional label.
     (*suggestions)[i].value = data_list_values_[i];
     (*suggestions)[i].label = data_list_labels_[i];
+    (*suggestions)[i].additional_label = data_list_labels_[i];
     (*suggestions)[i].frontend_id = POPUP_ITEM_ID_DATALIST_ENTRY;
   }
 }

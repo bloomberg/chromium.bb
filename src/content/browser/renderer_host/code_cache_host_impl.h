@@ -14,8 +14,8 @@
 #include "content/browser/cache_storage/cache_storage_cache_handle.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
 #include "third_party/blink/public/mojom/loader/code_cache.mojom.h"
-#include "third_party/blink/public/platform/modules/cache_storage/cache_storage.mojom.h"
 
 class GURL;
 
@@ -77,6 +77,7 @@ class CONTENT_EXPORT CodeCacheHostImpl : public blink::mojom::CodeCacheHost {
                            const std::vector<uint8_t>& data);
   void OnCacheStorageOpenCallback(const GURL& url,
                                   base::Time expected_response_time,
+                                  int64_t trace_id,
                                   scoped_refptr<net::IOBuffer> buf,
                                   int buf_len,
                                   CacheStorageCacheHandle cache_handle,

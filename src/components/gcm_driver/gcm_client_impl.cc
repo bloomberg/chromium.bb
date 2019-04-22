@@ -435,12 +435,12 @@ void GCMClientImpl::OnLoadCompleted(
        iter != result->registrations.end();
        ++iter) {
     std::string registration_id;
-    std::unique_ptr<RegistrationInfo> registration =
+    scoped_refptr<RegistrationInfo> registration =
         RegistrationInfo::BuildFromString(iter->first, iter->second,
                                           &registration_id);
     // TODO(jianli): Add UMA to track the error case.
     if (registration)
-      registrations_[make_linked_ptr(registration.release())] = registration_id;
+      registrations_.emplace(std::move(registration), registration_id);
   }
 
   for (auto iter = result->instance_id_data.begin();
@@ -863,7 +863,7 @@ void GCMClientImpl::ResetCache() {
 }
 
 void GCMClientImpl::Register(
-    const linked_ptr<RegistrationInfo>& registration_info) {
+    scoped_refptr<RegistrationInfo> registration_info) {
   DCHECK_EQ(state_, READY);
 
   // Registrations should never pass as an app_id the special category used
@@ -984,7 +984,7 @@ void GCMClientImpl::Register(
 }
 
 void GCMClientImpl::OnRegisterCompleted(
-    const linked_ptr<RegistrationInfo>& registration_info,
+    scoped_refptr<RegistrationInfo> registration_info,
     RegistrationRequest::Status status,
     const std::string& registration_id) {
   DCHECK(delegate_);
@@ -1032,7 +1032,7 @@ void GCMClientImpl::OnRegisterCompleted(
 }
 
 bool GCMClientImpl::ValidateRegistration(
-    const linked_ptr<RegistrationInfo>& registration_info,
+    scoped_refptr<RegistrationInfo> registration_info,
     const std::string& registration_id) {
   DCHECK_EQ(state_, READY);
 
@@ -1066,7 +1066,7 @@ bool GCMClientImpl::ValidateRegistration(
 }
 
 void GCMClientImpl::Unregister(
-    const linked_ptr<RegistrationInfo>& registration_info) {
+    scoped_refptr<RegistrationInfo> registration_info) {
   DCHECK_EQ(state_, READY);
 
   std::unique_ptr<UnregistrationRequest::CustomRequestHandler> request_handler;
@@ -1169,7 +1169,7 @@ void GCMClientImpl::Unregister(
 }
 
 void GCMClientImpl::OnUnregisterCompleted(
-    const linked_ptr<RegistrationInfo>& registration_info,
+    scoped_refptr<RegistrationInfo> registration_info,
     UnregistrationRequest::Status status) {
   DVLOG(1) << "Unregister completed for app: " << registration_info->app_id
            << " with " << (status ? "success." : "failure.");

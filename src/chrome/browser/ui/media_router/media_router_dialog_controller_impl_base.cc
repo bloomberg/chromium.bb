@@ -10,7 +10,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/media_router/media_router_ui_base.h"
 #include "chrome/browser/ui/media_router/media_router_ui_service.h"
-#include "chrome/browser/ui/toolbar/media_router_action.h"
 
 using content::WebContents;
 
@@ -31,29 +30,15 @@ MediaRouterDialogControllerImplBase::~MediaRouterDialogControllerImplBase() {
   media_router_ui_service_->RemoveObserver(this);
 }
 
-void MediaRouterDialogControllerImplBase::SetMediaRouterAction(
-    const base::WeakPtr<MediaRouterAction>& action) {
-  action_ = action;
-}
-
 void MediaRouterDialogControllerImplBase::CreateMediaRouterDialog() {
   if (!GetActionController())
     return;
-
-  // The |GetActionController_| must be notified after |action_| to avoid a UI
-  // bug in which the drop shadow is drawn in an incorrect position.
-  if (action_)
-    action_->OnDialogShown();
   GetActionController()->OnDialogShown();
 }
 
 void MediaRouterDialogControllerImplBase::Reset() {
-  if (IsShowingMediaRouterDialog()) {
-    if (action_)
-      action_->OnDialogHidden();
-    if (GetActionController())
-      GetActionController()->OnDialogHidden();
-  }
+  if (IsShowingMediaRouterDialog() && GetActionController())
+    GetActionController()->OnDialogHidden();
   MediaRouterDialogController::Reset();
 }
 

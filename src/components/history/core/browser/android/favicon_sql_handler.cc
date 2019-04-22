@@ -5,9 +5,9 @@
 #include "components/history/core/browser/android/favicon_sql_handler.h"
 
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/stl_util.h"
 #include "components/history/core/browser/thumbnail_database.h"
 
 using base::Time;
@@ -23,9 +23,8 @@ const HistoryAndBookmarkRow::ColumnID kInterestingColumns[] = {
 }  // namespace
 
 FaviconSQLHandler::FaviconSQLHandler(ThumbnailDatabase* thumbnail_db)
-    : SQLHandler(kInterestingColumns, arraysize(kInterestingColumns)),
-      thumbnail_db_(thumbnail_db) {
-}
+    : SQLHandler(kInterestingColumns, base::size(kInterestingColumns)),
+      thumbnail_db_(thumbnail_db) {}
 
 FaviconSQLHandler::~FaviconSQLHandler() {
 }

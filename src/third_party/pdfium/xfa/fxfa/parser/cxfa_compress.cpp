@@ -6,16 +6,17 @@
 
 #include "xfa/fxfa/parser/cxfa_compress.h"
 
+#include "fxjs/xfa/cjx_node.h"
+#include "third_party/base/ptr_util.h"
+
 namespace {
 
 const CXFA_Node::AttributeData kCompressAttributeData[] = {
     {XFA_Attribute::Desc, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Scope, XFA_AttributeType::Enum,
-     (void*)XFA_AttributeEnum::ImageOnly},
+     (void*)XFA_AttributeValue::ImageOnly},
     {XFA_Attribute::Lock, XFA_AttributeType::Integer, (void*)0},
-    {XFA_Attribute::Unknown, XFA_AttributeType::Integer, nullptr}};
-
-constexpr wchar_t kCompressName[] = L"compress";
+};
 
 }  // namespace
 
@@ -25,8 +26,8 @@ CXFA_Compress::CXFA_Compress(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_XDPPACKET_Config,
                 XFA_ObjectType::Node,
                 XFA_Element::Compress,
-                nullptr,
+                {},
                 kCompressAttributeData,
-                kCompressName) {}
+                pdfium::MakeUnique<CJX_Node>(this)) {}
 
-CXFA_Compress::~CXFA_Compress() {}
+CXFA_Compress::~CXFA_Compress() = default;

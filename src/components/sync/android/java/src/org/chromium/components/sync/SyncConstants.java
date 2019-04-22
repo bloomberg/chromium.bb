@@ -8,7 +8,7 @@ package org.chromium.components.sync;
 public final class SyncConstants {
     // This should always have the same value as GaiaConstants::kChromeSyncOAuth2Scope.
     public static final String CHROME_SYNC_OAUTH2_SCOPE =
-            "https://www.googleapis.com/auth/chromesync";
+            "oauth2:https://www.googleapis.com/auth/chromesync";
 
     // This should always have the same value as TabNodePool::kInvalidTabNodeID.
     public static final int INVALID_TAB_NODE_ID = -1;

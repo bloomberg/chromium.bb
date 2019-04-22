@@ -106,6 +106,7 @@ void OpenNewForegroundTab(content::NavigationHandle* navigation_handle) {
     url_params.extra_headers = content_type_header.ToString();
   }
 
+  url_params.initiator_origin = navigation_handle->GetInitiatorOrigin();
   url_params.uses_post = navigation_handle->IsPost();
   url_params.post_data = navigation_handle->GetResourceRequestBody();
   url_params.redirect_chain = navigation_handle->GetRedirectChain();

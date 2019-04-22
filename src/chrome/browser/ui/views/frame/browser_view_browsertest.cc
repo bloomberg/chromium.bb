@@ -124,7 +124,8 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest, CloseWithTabsStartWithActive) {
       new Browser(Browser::CreateParams(browser()->profile(), true));
   chrome::AddTabAt(browser2, GURL(), -1, true);
   chrome::AddTabAt(browser2, GURL(), -1, true);
-  browser2->tab_strip_model()->ActivateTabAt(0, true);
+  browser2->tab_strip_model()->ActivateTabAt(
+      0, {TabStripModel::GestureType::kOther});
   TestWebContentsObserver observer(
       browser2->tab_strip_model()->GetWebContentsAt(0),
       browser2->tab_strip_model()->GetWebContentsAt(1));
@@ -214,7 +215,7 @@ class BookmarkBarViewObserverImpl : public BookmarkBarViewObserver {
 // Verifies we don't unnecessarily change the visibility of the BookmarkBarView.
 IN_PROC_BROWSER_TEST_F(BrowserViewTest, AvoidUnnecessaryVisibilityChanges) {
   // Create two tabs, the first empty and the second the ntp. Make it so the
-  // BookmarkBarView isn't shown (meaning it'll only be shown when on the ntp).
+  // BookmarkBarView isn't shown.
   browser()->profile()->GetPrefs()->SetBoolean(
       bookmarks::prefs::kShowBookmarkBar, false);
   GURL new_tab_url(chrome::kChromeUINewTabURL);
@@ -225,33 +226,33 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest, AvoidUnnecessaryVisibilityChanges) {
   BookmarkBarViewObserverImpl observer;
   BookmarkBarView* bookmark_bar = browser_view()->bookmark_bar();
   bookmark_bar->AddObserver(&observer);
-  EXPECT_TRUE(bookmark_bar->visible());
+  EXPECT_FALSE(bookmark_bar->visible());
 
   // Go to empty tab. Bookmark bar should hide.
-  browser()->tab_strip_model()->ActivateTabAt(0, true);
+  browser()->tab_strip_model()->ActivateTabAt(
+      0, {TabStripModel::GestureType::kOther});
   EXPECT_FALSE(bookmark_bar->visible());
-  EXPECT_EQ(1, observer.change_count());
+  EXPECT_EQ(0, observer.change_count());
   observer.clear_change_count();
 
-  // Go to ntp tab. Bookmark bar should show.
-  browser()->tab_strip_model()->ActivateTabAt(1, true);
-  EXPECT_TRUE(bookmark_bar->visible());
-  EXPECT_EQ(1, observer.change_count());
+  // Go to ntp tab. Bookmark bar should not show.
+  browser()->tab_strip_model()->ActivateTabAt(
+      1, {TabStripModel::GestureType::kOther});
+  EXPECT_FALSE(bookmark_bar->visible());
+  EXPECT_EQ(0, observer.change_count());
   observer.clear_change_count();
 
   // Repeat with the bookmark bar always visible.
   browser()->profile()->GetPrefs()->SetBoolean(
       bookmarks::prefs::kShowBookmarkBar, true);
-  browser()->tab_strip_model()->ActivateTabAt(1, true);
+  browser()->tab_strip_model()->ActivateTabAt(
+      0, {TabStripModel::GestureType::kOther});
   EXPECT_TRUE(bookmark_bar->visible());
+  EXPECT_EQ(1, observer.change_count());
   observer.clear_change_count();
 
-  browser()->tab_strip_model()->ActivateTabAt(0, true);
-  EXPECT_TRUE(bookmark_bar->visible());
-  EXPECT_EQ(0, observer.change_count());
-  observer.clear_change_count();
-
-  browser()->tab_strip_model()->ActivateTabAt(1, true);
+  browser()->tab_strip_model()->ActivateTabAt(
+      1, {TabStripModel::GestureType::kOther});
   EXPECT_TRUE(bookmark_bar->visible());
   EXPECT_EQ(0, observer.change_count());
   observer.clear_change_count();
@@ -303,18 +304,13 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest, ShowFaviconInTab) {
   ASSERT_FALSE(favicon.IsEmpty());
 }
 
-#if defined(OS_MACOSX)
-// Voiceover treats tab modal dialogs as native windows, so this approach is not
-// necessary.
-#define MAYBE_GetAccessibleTabModalDialogTitle \
-  DISABLED_GetAccessibleTabModalDialogTitle
-#else
-#define MAYBE_GetAccessibleTabModalDialogTitle GetAccessibleTabModalDialogTitle
-#endif
+// On Mac, voiceover treats tab modal dialogs as native windows, so setting an
+// accessible title for tab-modal dialogs is not necessary.
+#if !defined(OS_MACOSX)
+
 // Open a tab-modal dialog and check that the accessible window title is the
 // title of the dialog.
-IN_PROC_BROWSER_TEST_F(BrowserViewTest,
-                       MAYBE_GetAccessibleTabModalDialogTitle) {
+IN_PROC_BROWSER_TEST_F(BrowserViewTest, GetAccessibleTabModalDialogTitle) {
   base::string16 window_title = base::ASCIIToUTF16("about:blank - ") +
                                 l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
   EXPECT_TRUE(base::StartsWith(browser_view()->GetAccessibleWindowTitle(),
@@ -331,17 +327,9 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest,
                                window_title, base::CompareCase::SENSITIVE));
 }
 
-#if defined(OS_MACOSX)
-// Voiceover treats tab modal dialogs as native windows, so this approach is not
-// necessary.
-#define MAYBE_GetAccessibleTabModalDialogTree \
-  DISABLED_GetAccessibleTabModalDialogTree
-#else
-#define MAYBE_GetAccessibleTabModalDialogTree GetAccessibleTabModalDialogTree
-#endif
 // Open a tab-modal dialog and check that the accessibility tree only contains
 // the dialog.
-IN_PROC_BROWSER_TEST_F(BrowserViewTest, MAYBE_GetAccessibleTabModalDialogTree) {
+IN_PROC_BROWSER_TEST_F(BrowserViewTest, GetAccessibleTabModalDialogTree) {
   ui::AXPlatformNode* ax_node = ui::AXPlatformNode::FromNativeViewAccessible(
       browser_view()->GetWidget()->GetRootView()->GetNativeViewAccessible());
 // We expect this conversion to be safe on Windows, but can't guarantee that it
@@ -372,3 +360,5 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest, MAYBE_GetAccessibleTabModalDialogTree) {
   EXPECT_NE(ui::AXPlatformNodeTestHelper::FindChildByName(ax_node, "OK"),
             nullptr);
 }
+
+#endif  // !defined(OS_MACOSX)

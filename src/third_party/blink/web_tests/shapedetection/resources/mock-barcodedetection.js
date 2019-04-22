@@ -16,6 +16,16 @@ class MockBarcodeDetectionProvider {
     this.mockService_ = new MockBarcodeDetection(request, options);
   }
 
+  enumerateSupportedFormats() {
+    return Promise.resolve({
+      supportedFormats: [
+        shapeDetection.mojom.BarcodeFormat.AZTEC,
+        shapeDetection.mojom.BarcodeFormat.DATA_MATRIX,
+        shapeDetection.mojom.BarcodeFormat.QR_CODE,
+      ]
+    });
+  }
+
   getFrameData() {
     return this.mockService_.bufferData_;
   }
@@ -40,6 +50,7 @@ class MockBarcodeDetection {
         {
           rawValue : "cats",
           boundingBox: { x: 1.0, y: 1.0, width: 100.0, height: 100.0 },
+          format: shapeDetection.mojom.BarcodeFormat.QR_CODE,
           cornerPoints: [
             { x: 1.0, y: 1.0 },
             { x: 101.0, y: 1.0 },
@@ -50,6 +61,7 @@ class MockBarcodeDetection {
         {
           rawValue : "dogs",
           boundingBox: { x: 2.0, y: 2.0, width: 50.0, height: 50.0 },
+          format: shapeDetection.mojom.BarcodeFormat.CODE_128,
           cornerPoints: [
             { x: 2.0, y: 2.0 },
             { x: 52.0, y: 2.0 },

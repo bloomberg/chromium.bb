@@ -2,8 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import DEPS
-CONFIG_CTX = DEPS['path'].CONFIG_CTX
+from RECIPE_MODULES.recipe_engine.path import CONFIG_CTX
 
 
 @CONFIG_CTX()

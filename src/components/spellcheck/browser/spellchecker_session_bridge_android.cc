@@ -55,10 +55,10 @@ void SpellCheckerSessionBridge::RequestTextCheck(
   }
 
   // RequestTextCheck API call arrives at the SpellCheckHost before
-  // ToggleSpellCheck when the user focuses an input field that already
+  // DisconnectSessionBridge when the user focuses an input field that already
   // contains completed text.  We need to initialize the spellchecker here
-  // rather than in response to ToggleSpellCheck so that the existing text
-  // will be spellchecked immediately.
+  // rather than in response to DisconnectSessionBridge so that the existing
+  // text will be spellchecked immediately.
   if (java_object_.is_null()) {
     java_object_.Reset(Java_SpellCheckerSessionBridge_create(
         base::android::AttachCurrentThread(),

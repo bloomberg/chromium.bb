@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
@@ -223,9 +224,9 @@ int BookmarkProvider::CalculateBookmarkMatchRelevance(
   const int kURLCountBoost[4] = { 0, 75, 125, 150 };
   std::vector<const BookmarkNode*> nodes;
   bookmark_model_->GetNodesByURL(url, &nodes);
-  DCHECK_GE(std::min(arraysize(kURLCountBoost), nodes.size()), 1U);
+  DCHECK_GE(std::min(base::size(kURLCountBoost), nodes.size()), 1U);
   relevance +=
-      kURLCountBoost[std::min(arraysize(kURLCountBoost), nodes.size()) - 1];
+      kURLCountBoost[std::min(base::size(kURLCountBoost), nodes.size()) - 1];
   relevance = std::min(kMaxBookmarkScore, relevance);
   return relevance;
 }

@@ -4,8 +4,13 @@
 
 #include "ui/views/controls/prefix_selector.h"
 
+#if defined(OS_WIN)
+#include <vector>
+#endif
+
 #include "base/i18n/case_conversion.h"
 #include "base/time/default_tick_clock.h"
+#include "build/build_config.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/range/range.h"
@@ -17,7 +22,7 @@ namespace views {
 
 namespace {
 
-const int64_t kTimeBeforeClearingMS = 1000;
+constexpr int64_t kTimeBeforeClearingMS = 1000;
 
 }  // namespace
 
@@ -26,8 +31,7 @@ PrefixSelector::PrefixSelector(PrefixDelegate* delegate, View* host_view)
       host_view_(host_view),
       tick_clock_(base::DefaultTickClock::GetInstance()) {}
 
-PrefixSelector::~PrefixSelector() {
-}
+PrefixSelector::~PrefixSelector() = default;
 
 void PrefixSelector::OnViewBlur() {
   ClearText();
@@ -112,12 +116,12 @@ bool PrefixSelector::GetCompositionTextRange(gfx::Range* range) const {
   return false;
 }
 
-bool PrefixSelector::GetSelectionRange(gfx::Range* range) const {
+bool PrefixSelector::GetEditableSelectionRange(gfx::Range* range) const {
   *range = gfx::Range();
   return false;
 }
 
-bool PrefixSelector::SetSelectionRange(const gfx::Range& range) {
+bool PrefixSelector::SetEditableSelectionRange(const gfx::Range& range) {
   return false;
 }
 
@@ -163,6 +167,16 @@ bool PrefixSelector::ShouldDoLearning() {
   NOTIMPLEMENTED_LOG_ONCE();
   return false;
 }
+
+#if defined(OS_WIN)
+void PrefixSelector::SetCompositionFromExistingText(
+    const gfx::Range& range,
+    const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) {}
+void PrefixSelector::SetActiveCompositionForAccessibility(
+    const gfx::Range& range,
+    const base::string16& active_composition_text,
+    bool is_composition_committed) {}
+#endif
 
 void PrefixSelector::OnTextInput(const base::string16& text) {
   // Small hack to filter out 'tab' and 'enter' input, as the expectation is

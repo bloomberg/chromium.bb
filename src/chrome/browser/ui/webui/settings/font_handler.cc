@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/i18n/rtl.h"
 #include "chrome/browser/browser_process.h"
@@ -108,10 +109,8 @@ const extensions::Extension* FontHandler::GetAdvancedFontSettingsExtension() {
 }
 
 void FontHandler::NotifyAdvancedFontSettingsAvailability() {
-  CallJavascriptFunction(
-      "cr.webUIListenerCallback",
-      base::Value("advanced-font-settings-installed"),
-      base::Value(GetAdvancedFontSettingsExtension() != nullptr));
+  FireWebUIListener("advanced-font-settings-installed",
+                    base::Value(GetAdvancedFontSettingsExtension() != nullptr));
 }
 
 void FontHandler::OnExtensionLoaded(content::BrowserContext*,

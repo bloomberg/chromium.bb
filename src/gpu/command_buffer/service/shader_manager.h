@@ -6,8 +6,8 @@
 #define GPU_COMMAND_BUFFER_SERVICE_SHADER_MANAGER_H_
 
 #include <string>
+#include <unordered_map>
 
-#include "base/containers/hash_tables.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -316,7 +316,7 @@ class GPU_GLES2_EXPORT ShaderManager {
   friend class Shader;
 
   // Info for each shader by service side shader Id.
-  typedef base::hash_map<GLuint, scoped_refptr<Shader> > ShaderMap;
+  typedef std::unordered_map<GLuint, scoped_refptr<Shader>> ShaderMap;
   ShaderMap shaders_;
 
   void RemoveShaderIfUnused(Shader* shader);

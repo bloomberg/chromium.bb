@@ -3,8 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/time/time.h"
-#include "cc/base/lap_timer.h"
-
+#include "base/timer/lap_timer.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
@@ -12,6 +11,7 @@
 #include "third_party/blink/renderer/platform/fonts/font_description.h"
 #include "third_party/blink/renderer/platform/testing/font_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 using blink::test::CreateTestFont;
 
@@ -22,6 +22,8 @@ static const int kWarmupRuns = 10000;
 static const int kTimeCheckInterval = 1000000;
 
 class ShapeResultPerfTest {
+  USING_FAST_MALLOC(ShapeResultPerfTest);
+
  public:
   enum FontName {
     ahem,
@@ -58,7 +60,7 @@ class ShapeResultPerfTest {
       {roboto, "third_party/Roboto/roboto-regular.woff2"},
   };
 
-  cc::LapTimer timer;
+  base::LapTimer timer;
 };
 
 class OffsetForPositionPerfTest : public ShapeResultPerfTest,
@@ -145,9 +147,9 @@ TEST_P(OffsetForPositionPerfTest, RTLOffsetForPositionIncludePartialDontBreak) {
                          timer.LapsPerSecond(), "runs/s", true);
 }
 
-INSTANTIATE_TEST_CASE_P(OffsetForPosition,
-                        OffsetForPositionPerfTest,
-                        testing::Values(0, 10, 60, 100, 200, 350));
+INSTANTIATE_TEST_SUITE_P(OffsetForPosition,
+                         OffsetForPositionPerfTest,
+                         testing::Values(0, 10, 60, 100, 200, 350));
 
 TEST_P(CharacterRangePerfTest, LTRCharacterForPosition) {
   TextRun run = SetupFont(ahem, "FURACOLO", true);
@@ -163,8 +165,8 @@ TEST_P(CharacterRangePerfTest, RTLCharacterForPosition) {
                          timer.LapsPerSecond(), "runs/s", true);
 }
 
-INSTANTIATE_TEST_CASE_P(CharacterRange,
-                        CharacterRangePerfTest,
-                        testing::Values(0, 1, 2, 4, 8));
+INSTANTIATE_TEST_SUITE_P(CharacterRange,
+                         CharacterRangePerfTest,
+                         testing::Values(0, 1, 2, 4, 8));
 
 }  // namespace blink

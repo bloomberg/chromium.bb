@@ -5,12 +5,12 @@
 #include "chrome/browser/plugins/flash_download_interception.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/no_destructor.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/plugins/plugin_utils.h"
-#include "chrome/browser/plugins/plugins_field_trial.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -19,7 +19,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
-#include "third_party/blink/public/platform/modules/permissions/permission_status.mojom.h"
+#include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
 #include "third_party/re2/src/re2/re2.h"
 #include "url/origin.h"
 
@@ -77,8 +77,6 @@ void FlashDownloadInterception::InterceptFlashDownloadNavigation(
   ContentSetting flash_setting = PluginUtils::GetFlashPluginContentSetting(
       host_content_settings_map, url::Origin::Create(source_url), source_url,
       nullptr);
-  flash_setting = PluginsFieldTrial::EffectiveContentSetting(
-      host_content_settings_map, CONTENT_SETTINGS_TYPE_PLUGINS, flash_setting);
 
   if (flash_setting == CONTENT_SETTING_DETECT_IMPORTANT_CONTENT) {
     PermissionManager* manager = PermissionManager::Get(profile);
@@ -100,9 +98,6 @@ bool FlashDownloadInterception::ShouldStopFlashDownloadAction(
     const GURL& source_url,
     const GURL& target_url,
     bool has_user_gesture) {
-  if (!PluginUtils::ShouldPreferHtmlOverPlugins(host_content_settings_map))
-    return false;
-
   if (!has_user_gesture)
     return false;
 
@@ -135,9 +130,6 @@ bool FlashDownloadInterception::ShouldStopFlashDownloadAction(
     ContentSetting flash_setting = PluginUtils::GetFlashPluginContentSetting(
         host_content_settings_map, url::Origin::Create(source_url), source_url,
         nullptr);
-    flash_setting = PluginsFieldTrial::EffectiveContentSetting(
-        host_content_settings_map, CONTENT_SETTINGS_TYPE_PLUGINS,
-        flash_setting);
 
     return flash_setting == CONTENT_SETTING_DETECT_IMPORTANT_CONTENT ||
            flash_setting == CONTENT_SETTING_BLOCK;
@@ -177,5 +169,6 @@ FlashDownloadInterception::MaybeCreateThrottleFor(NavigationHandle* handle) {
   }
 
   return std::make_unique<navigation_interception::InterceptNavigationThrottle>(
-      handle, base::Bind(&InterceptNavigation, source_url));
+      handle, base::Bind(&InterceptNavigation, source_url),
+      navigation_interception::SynchronyMode::kSync);
 }

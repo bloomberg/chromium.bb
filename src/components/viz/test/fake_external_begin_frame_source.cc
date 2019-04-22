@@ -4,6 +4,7 @@
 
 #include "components/viz/test/fake_external_begin_frame_source.h"
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -99,12 +100,11 @@ void FakeExternalBeginFrameSource::TestOnBeginFrame(
 
 void FakeExternalBeginFrameSource::PostTestOnBeginFrame() {
   begin_frame_task_.Reset(
-      base::Bind(&FakeExternalBeginFrameSource::TestOnBeginFrame,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&FakeExternalBeginFrameSource::TestOnBeginFrame,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     CreateBeginFrameArgs(BEGINFRAME_FROM_HERE)));
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(begin_frame_task_.callback(),
-                     CreateBeginFrameArgs(BEGINFRAME_FROM_HERE)),
+      FROM_HERE, begin_frame_task_.callback(),
       base::TimeDelta::FromMilliseconds(milliseconds_per_frame_));
   next_begin_frame_number_++;
 }

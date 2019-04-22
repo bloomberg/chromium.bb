@@ -4,9 +4,12 @@
 
 #include "url/url_canon.h"
 
+#include "base/component_export.h"
+
 namespace url {
 
-template class EXPORT_TEMPLATE_DEFINE(URL_EXPORT) CanonOutputT<char>;
-template class EXPORT_TEMPLATE_DEFINE(URL_EXPORT) CanonOutputT<base::char16>;
+template class EXPORT_TEMPLATE_DEFINE(COMPONENT_EXPORT(URL)) CanonOutputT<char>;
+template class EXPORT_TEMPLATE_DEFINE(COMPONENT_EXPORT(URL))
+    CanonOutputT<base::char16>;
 
 }  // namespace url

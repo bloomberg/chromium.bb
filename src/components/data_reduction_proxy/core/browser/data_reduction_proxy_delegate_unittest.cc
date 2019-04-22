@@ -33,6 +33,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_bypass_protocol.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
@@ -104,26 +105,18 @@ class TestDataReductionProxyDelegate : public DataReductionProxyDelegate {
     if (expect_alternative_proxy_server && !broken) {
       histogram_tester.ExpectUniqueSample(
           "DataReductionProxy.Quic.ProxyStatus",
-          TestDataReductionProxyDelegate::QuicProxyStatus::
-              QUIC_PROXY_STATUS_AVAILABLE,
-          1);
+          QuicProxyStatus::QUIC_PROXY_STATUS_AVAILABLE, 1);
     } else if (!supports_quic && !broken) {
       histogram_tester.ExpectUniqueSample(
           "DataReductionProxy.Quic.ProxyStatus",
-          TestDataReductionProxyDelegate::QuicProxyStatus::
-              QUIC_PROXY_NOT_SUPPORTED,
-          1);
+          QuicProxyStatus::QUIC_PROXY_NOT_SUPPORTED, 1);
     } else {
       ASSERT_TRUE(broken);
       histogram_tester.ExpectUniqueSample(
           "DataReductionProxy.Quic.ProxyStatus",
-          TestDataReductionProxyDelegate::QuicProxyStatus::
-              QUIC_PROXY_STATUS_MARKED_AS_BROKEN,
-          1);
+          QuicProxyStatus::QUIC_PROXY_STATUS_MARKED_AS_BROKEN, 1);
     }
   }
-
-  using DataReductionProxyDelegate::QuicProxyStatus;
 
  private:
   const bool proxy_supports_quic_;
@@ -335,17 +328,17 @@ TEST_F(DataReductionProxyDelegateTest, OnResolveProxy) {
 TEST_F(DataReductionProxyDelegateTest, OnResolveProxyWarmupURL) {
   const struct {
     bool is_secure_proxy;
-    bool is_core_proxy;
     bool use_warmup_url;
   } tests[] = {
-      {false, false, false}, {false, true, false}, {true, false, false},
-      {true, true, false},   {false, false, true}, {false, true, true},
-      {true, false, true},   {true, true, true},
+      {false, false},
+      {true, false},
+      {false, true},
+      {true, true},
   };
 
   for (const auto& test : tests) {
     config()->SetInFlightWarmupProxyDetails(
-        std::make_pair(test.is_secure_proxy, test.is_core_proxy));
+        std::make_pair(test.is_secure_proxy, true));
     GURL url;
     if (test.use_warmup_url) {
       url = params::GetWarmupURL();
@@ -366,8 +359,7 @@ TEST_F(DataReductionProxyDelegateTest, OnResolveProxyWarmupURL) {
       // resolution for the warmup URL. Hence, the warmup URL will be fetched
       // directly in all cases except when the in-flight warmup proxy details
       // match the properties of the data saver proxies configured by this test.
-      expect_data_reduction_proxy_used =
-          !test.is_secure_proxy && test.is_core_proxy;
+      expect_data_reduction_proxy_used = !test.is_secure_proxy;
     }
 
     // Other proxy info
@@ -447,19 +439,18 @@ TEST_F(DataReductionProxyDelegateTest, AlternativeProxy) {
     std::vector<DataReductionProxyServer> proxies_for_http;
 
     net::ProxyServer first_proxy = GetProxyWithScheme(test.first_proxy_scheme);
-    proxies_for_http.push_back(
-        DataReductionProxyServer(first_proxy, ProxyServer::CORE));
+    proxies_for_http.push_back(DataReductionProxyServer(first_proxy));
 
     net::ProxyServer second_proxy =
         GetProxyWithScheme(test.second_proxy_scheme);
-    proxies_for_http.push_back(
-        DataReductionProxyServer(second_proxy, ProxyServer::UNSPECIFIED_TYPE));
+    proxies_for_http.push_back(DataReductionProxyServer(second_proxy));
 
     params()->SetProxiesForHttpForTesting(proxies_for_http);
 
     TestDataReductionProxyDelegate delegate(config(), io_data()->configurator(),
                                             io_data()->bypass_stats(),
                                             test.proxy_supports_quic);
+    delegate.InitializeOnIOThread(io_data());
 
     base::FieldTrialList field_trial_list(nullptr);
     base::FieldTrialList::CreateFieldTrial(
@@ -872,10 +863,10 @@ TEST_F(DataReductionProxyDelegateTest, PartialRangeSavings) {
       {"HTTP/1.1 200 OK\r\n"
        "Via: 1.1 Chrome-Compression-Proxy\r\n"
        "Content-Length: " +
-           base::Int64ToString(static_cast<int64_t>(1) << 60) +
+           base::NumberToString(static_cast<int64_t>(1) << 60) +
            "\r\n"
            "Chrome-Proxy: ofcl=" +
-           base::Int64ToString((static_cast<int64_t>(1) << 60) * 3) +
+           base::NumberToString((static_cast<int64_t>(1) << 60) * 3) +
            "\r\n\r\n",
        100, 300},
       {"HTTP/1.1 206 Partial Content\r\n"

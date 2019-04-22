@@ -51,4 +51,6 @@ void WebContentsTopSitesObserver::NavigationEntryCommitted(
   }
 }
 
+WEB_CONTENTS_USER_DATA_KEY_IMPL(WebContentsTopSitesObserver)
+
 }  // namespace history

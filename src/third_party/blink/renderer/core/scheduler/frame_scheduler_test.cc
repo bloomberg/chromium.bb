@@ -28,9 +28,8 @@ TEST_F(FrameSchedulerFrameTypeTest, GetFrameType) {
             MainFrame().GetFrame()->GetFrameScheduler()->GetFrameType());
 
   Frame* child = MainFrame().GetFrame()->Tree().FirstChild();
-  ASSERT_TRUE(child->IsLocalFrame());
   EXPECT_EQ(FrameScheduler::FrameType::kSubframe,
-            ToLocalFrame(child)->GetFrameScheduler()->GetFrameType());
+            To<LocalFrame>(child)->GetFrameScheduler()->GetFrameType());
 }
 
 }  // namespace blink

@@ -12,7 +12,6 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/themes/theme_properties.h"
-#include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
@@ -20,6 +19,7 @@
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "chrome/browser/ui/web_app_browser_controller.h"
 #include "chrome/browser/win/titlebar_config.h"
 #include "content/public/browser/web_contents.h"
 #include "skia/ext/image_operations.h"
@@ -66,11 +66,9 @@ constexpr char GlassBrowserFrameView::kClassName[];
 
 SkColor GlassBrowserFrameView::GetReadableFeatureColor(
     SkColor background_color) {
-  // BlendTowardOppositeLuma or IsDark isn't used here because those functions
-  // may use a different value for the dark/light threshold or the upper/lower
-  // bounds to which the color is blended. This will ensure the results of this
-  // function remain unchanged should those other functions behave differently.
-  // This algorithm matches the behaviour for native Windows caption buttons.
+  // color_utils::GetColorWithMaxContrast()/IsDark() aren't used here because
+  // they switch based on the Chrome light/dark endpoints, while we want to use
+  // the system native behavior below.
   return color_utils::GetLuma(background_color) < 128 ? SK_ColorWHITE
                                                       : SK_ColorBLACK;
 }
@@ -113,17 +111,15 @@ GlassBrowserFrameView::GlassBrowserFrameView(BrowserFrame* frame,
     AddChildView(window_title_);
   }
 
-  extensions::HostedAppBrowserController* controller =
-      browser_view->browser()->hosted_app_controller();
+  WebAppBrowserController* controller =
+      browser_view->browser()->web_app_controller();
   if (controller && controller->ShouldShowHostedAppButtonContainer()) {
-    // TODO(alancutter): Avoid snapshotting GetTitlebarFeatureColor() values
-    // here and call it on demand in
-    // HostedAppButtonContainer::UpdateIconsColor() via a delegate interface.
-    SkColor active_color = GetTitlebarFeatureColor(kActive);
-    SkColor inactive_color = GetTitlebarFeatureColor(kInactive);
-
+    // TODO(alancutter): Avoid snapshotting GetCaptionColor() values here and
+    // call it on demand in HostedAppButtonContainer::UpdateIconsColor() via a
+    // delegate interface.
     set_hosted_app_button_container(new HostedAppButtonContainer(
-        frame, browser_view, active_color, inactive_color));
+        frame, browser_view, GetCaptionColor(kActive),
+        GetCaptionColor(kInactive)));
     AddChildView(hosted_app_button_container());
   }
 
@@ -150,8 +146,8 @@ bool GlassBrowserFrameView::CaptionButtonsOnLeadingEdge() const {
   return !ShouldCustomDrawSystemTitlebar() && base::i18n::IsRTL();
 }
 
-gfx::Rect GlassBrowserFrameView::GetBoundsForTabStrip(
-    views::View* tabstrip) const {
+gfx::Rect GlassBrowserFrameView::GetBoundsForTabStripRegion(
+    const views::View* tabstrip) const {
   const int x = CaptionButtonsOnLeadingEdge()
                     ? (width() - frame()->GetMinimizeButtonOffset())
                     : 0;
@@ -199,6 +195,14 @@ bool GlassBrowserFrameView::CanDrawStrokes() const {
   return BrowserNonClientFrameView::CanDrawStrokes();
 }
 
+SkColor GlassBrowserFrameView::GetCaptionColor(ActiveState active_state) const {
+  const SkAlpha title_alpha = ShouldPaintAsActive(active_state)
+                                  ? SK_AlphaOPAQUE
+                                  : kInactiveTitlebarFeatureAlpha;
+  return SkColorSetA(GetReadableFeatureColor(GetFrameColor(active_state)),
+                     title_alpha);
+}
+
 void GlassBrowserFrameView::UpdateThrobber(bool running) {
   if (ShowCustomIcon())
     window_icon_->Update();
@@ -221,23 +225,7 @@ gfx::Size GlassBrowserFrameView::GetMinimumSize() const {
   gfx::Size min_size(browser_view()->GetMinimumSize());
   min_size.Enlarge(0, GetTopInset(false));
 
-  // Ensure that the minimum width is enough to hold a min-width tab strip.
-  if (browser_view()->IsTabStripVisible()) {
-    TabStrip* tabstrip = browser_view()->tabstrip();
-    int min_tabstrip_width = tabstrip->GetMinimumSize().width();
-    int min_tabstrip_area_width =
-        width() - GetBoundsForTabStrip(tabstrip).width() + min_tabstrip_width;
-    min_size.set_width(std::max(min_tabstrip_area_width, min_size.width()));
-  }
-
   return min_size;
-}
-
-bool GlassBrowserFrameView::IsSingleTabModeAvailable() const {
-  // We can't paint the special single-tab appearance unless we're
-  // custom-drawing the titlebar.
-  return ShouldCustomDrawSystemTitlebar() &&
-         BrowserNonClientFrameView::IsSingleTabModeAvailable();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -389,7 +377,7 @@ void GlassBrowserFrameView::ButtonPressed(views::Button* sender,
   else if (sender == restore_button_)
     frame()->Restore();
   else if (sender == close_button_)
-    frame()->Close();
+    frame()->CloseWithReason(views::Widget::ClosedReason::kCloseButtonClicked);
 }
 
 bool GlassBrowserFrameView::ShouldTabIconViewAnimate() const {
@@ -519,15 +507,6 @@ int GlassBrowserFrameView::TitlebarHeight(bool restored) const {
   return TitlebarMaximizedVisualHeight() + FrameTopBorderThickness(false);
 }
 
-SkColor GlassBrowserFrameView::GetTitlebarFeatureColor(
-    ActiveState active_state) const {
-  const SkAlpha title_alpha = ShouldPaintAsActive(active_state)
-                                  ? SK_AlphaOPAQUE
-                                  : kInactiveTitlebarFeatureAlpha;
-  return SkColorSetA(GetReadableFeatureColor(GetFrameColor(active_state)),
-                     title_alpha);
-}
-
 int GlassBrowserFrameView::WindowTopY() const {
   // The window top is SM_CYSIZEFRAME pixels when maximized (see the comment in
   // FrameTopBorderThickness()) and floor(system dsf) pixels when restored.
@@ -612,26 +591,20 @@ void GlassBrowserFrameView::PaintTitlebar(gfx::Canvas* canvas) const {
   // ourselves, we can make the client surface fully opaque and avoid the
   // power consumption needed for DWM to blend the window contents.
   //
-  // So the accent border also has to be opaque, but native inactive borders
-  // are #494949 with 47% alpha. Against white (the most visible case) this is
-  // #AAAAAA, so we color with that normally. However, when the titlebar is dark
-  // that color sometimes stands out badly. In that case we lighten the titlebar
-  // color slightly, which creates a subtle highlight effect. This isn't exactly
-  // native but it looks good given our constraints.
+  // So the accent border also has to be opaque. Native inactive borders are
+  // #555555 with 50% alpha. We can blend the titlebar color with this to
+  // approximate the native effect.
   const SkColor titlebar_color = GetTitlebarColor();
-  const SkColor inactive_border_color =
-      color_utils::IsDark(titlebar_color)
-          ? color_utils::BlendTowardOppositeLuma(titlebar_color, 0x0F)
-          : SkColorSetRGB(0xAA, 0xAA, 0xAA);
   flags.setColor(
       ShouldPaintAsActive()
           ? GetThemeProvider()->GetColor(ThemeProperties::COLOR_ACCENT_BORDER)
-          : inactive_border_color);
+          : color_utils::AlphaBlend(SkColorSetRGB(0x55, 0x55, 0x55),
+                                    titlebar_color, 0.5f));
   canvas->DrawRect(gfx::RectF(0, 0, width() * scale, y), flags);
 
   const int titlebar_height =
       browser_view()->IsTabStripVisible()
-          ? GetBoundsForTabStrip(browser_view()->tabstrip()).bottom()
+          ? GetBoundsForTabStripRegion(browser_view()->tabstrip()).bottom()
           : TitlebarHeight(false);
   const gfx::Rect titlebar_rect = gfx::ToEnclosingRect(
       gfx::RectF(0, y, width() * scale, titlebar_height * scale - y));
@@ -646,8 +619,7 @@ void GlassBrowserFrameView::PaintTitlebar(gfx::Canvas* canvas) const {
                              GetTopInset(false) + titlebar_rect.y(),
                          titlebar_rect.x(), titlebar_rect.y(),
                          titlebar_rect.width(), titlebar_rect.height(), scale,
-                         SkShader::kRepeat_TileMode,
-                         SkShader::kMirror_TileMode);
+                         SkTileMode::kRepeat, SkTileMode::kMirror);
   }
   const gfx::ImageSkia frame_overlay_image = GetFrameOverlayImage();
   if (!frame_overlay_image.isNull()) {
@@ -658,7 +630,7 @@ void GlassBrowserFrameView::PaintTitlebar(gfx::Canvas* canvas) const {
   }
 
   if (ShowCustomTitle())
-    window_title_->SetEnabledColor(GetTitlebarFeatureColor(kUseCurrent));
+    window_title_->SetEnabledColor(GetCaptionColor(kUseCurrent));
 }
 
 void GlassBrowserFrameView::LayoutTitleBar() {

@@ -16,7 +16,7 @@ enum class NumberParsingResult {
   kError,
   // For UInt functions, kOverflowMin never happens. Negative numbers are
   // treated as kError. This behavior matches to the HTML standard.
-  // https://html.spec.whatwg.org/multipage/common-microsyntaxes.html#rules-for-parsing-non-negative-integers
+  // https://html.spec.whatwg.org/C/#rules-for-parsing-non-negative-integers
   kOverflowMin,
   kOverflowMax,
 };

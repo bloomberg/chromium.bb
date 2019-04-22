@@ -309,6 +309,12 @@
             method: "Resize()",
             field_dependencies: ["resize"]
           },
+        ],
+        predicates_to_test: [
+          {
+            predicate: "a.ClipPathDataEquivalent(b)",
+            field_dependencies: ["clip-path"]
+          }
         ]
     },
     {

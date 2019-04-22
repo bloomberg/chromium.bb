@@ -4,53 +4,48 @@
 
 #include "chrome/browser/sync/profile_sync_service_android.h"
 
-#include <stddef.h>
-#include <stdint.h>
-
 #include <string>
 #include <vector>
 
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/i18n/time_formatting.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/sync/device_info_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/session_sync_service_factory.h"
-#include "chrome/browser/sync/sync_ui_util.h"
-#include "chrome/common/channel_info.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/pref_names.h"
-#include "components/sync/driver/about_sync_util.h"
+#include "components/sync/base/user_selectable_type.h"
+#include "components/sync/device_info/device_info.h"
+#include "components/sync/device_info/device_info_sync_service.h"
+#include "components/sync/device_info/device_info_tracker.h"
+#include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_service_utils.h"
 #include "components/sync/engine/net/network_resources.h"
 #include "components/sync_sessions/session_sync_service.h"
-#include "components/unified_consent/url_keyed_data_collection_consent_helper.h"
 #include "content/public/browser/browser_thread.h"
-#include "google/cacheinvalidation/types.pb.h"
-#include "google_apis/gaia/gaia_constants.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 #include "jni/ProfileSyncService_jni.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using base::android::AttachCurrentThread;
-using base::android::CheckException;
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
-using browser_sync::ProfileSyncService;
 using content::BrowserThread;
-using unified_consent::UrlKeyedDataCollectionConsentHelper;
 
 namespace {
 
@@ -100,9 +95,8 @@ ProfileSyncServiceAndroid::ProfileSyncServiceAndroid(JNIEnv* env, jobject obj)
     return;
   }
 
-  sync_prefs_ = std::make_unique<syncer::SyncPrefs>(profile_->GetPrefs());
-
-  sync_service_ = ProfileSyncServiceFactory::GetForProfile(profile_);
+  sync_service_ =
+      ProfileSyncServiceFactory::GetAsProfileSyncServiceForProfile(profile_);
 }
 
 bool ProfileSyncServiceAndroid::Init() {
@@ -140,6 +134,13 @@ jboolean ProfileSyncServiceAndroid::IsSyncRequested(
     const JavaParamRef<jobject>& obj) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return sync_service_->GetUserSettings()->IsSyncRequested();
+}
+
+jboolean ProfileSyncServiceAndroid::CanSyncFeatureStart(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return sync_service_->CanSyncFeatureStart();
 }
 
 void ProfileSyncServiceAndroid::RequestStart(JNIEnv* env,
@@ -213,9 +214,15 @@ ScopedJavaLocalRef<jintArray> ProfileSyncServiceAndroid::GetActiveDataTypes(
 ScopedJavaLocalRef<jintArray> ProfileSyncServiceAndroid::GetChosenDataTypes(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  syncer::ModelTypeSet types =
-      sync_service_->GetUserSettings()->GetChosenDataTypes();
-  return JNI_ProfileSyncService_ModelTypeSetToJavaIntArray(env, types);
+  // TODO(crbug/950874): introduce UserSelectableType in java code, then remove
+  // workaround here and in SetChosenDataTypes().
+  syncer::UserSelectableTypeSet types =
+      sync_service_->GetUserSettings()->GetSelectedTypes();
+  syncer::ModelTypeSet model_types;
+  for (syncer::UserSelectableType type : types) {
+    model_types.Put(syncer::UserSelectableTypeToCanonicalModelType(type));
+  }
+  return JNI_ProfileSyncService_ModelTypeSetToJavaIntArray(env, model_types);
 }
 
 ScopedJavaLocalRef<jintArray> ProfileSyncServiceAndroid::GetPreferredDataTypes(
@@ -233,11 +240,18 @@ void ProfileSyncServiceAndroid::SetChosenDataTypes(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   std::vector<int> types_vector;
   base::android::JavaIntArrayToIntVector(env, model_type_array, &types_vector);
-  syncer::ModelTypeSet types;
+  syncer::ModelTypeSet model_types;
   for (size_t i = 0; i < types_vector.size(); i++) {
-    types.Put(static_cast<syncer::ModelType>(types_vector[i]));
+    model_types.Put(static_cast<syncer::ModelType>(types_vector[i]));
   }
-  sync_service_->GetUserSettings()->SetChosenDataTypes(sync_everything, types);
+  syncer::UserSelectableTypeSet selected_types;
+  for (syncer::UserSelectableType type : syncer::UserSelectableTypeSet::All()) {
+    if (model_types.Has(syncer::UserSelectableTypeToCanonicalModelType(type))) {
+      selected_types.Put(type);
+    }
+  }
+  sync_service_->GetUserSettings()->SetSelectedTypes(sync_everything,
+                                                     selected_types);
 }
 
 jboolean ProfileSyncServiceAndroid::IsEncryptEverythingAllowed(
@@ -334,7 +348,7 @@ void ProfileSyncServiceAndroid::GetAllNodes(
 
   base::Callback<void(std::unique_ptr<base::ListValue>)> native_callback =
       base::Bind(&NativeGetAllNodesCallback, java_callback);
-  sync_service_->GetAllNodes(native_callback);
+  sync_service_->GetAllNodesForDebugging(native_callback);
 }
 
 jint ProfileSyncServiceAndroid::GetAuthError(JNIEnv* env,
@@ -350,47 +364,24 @@ jboolean ProfileSyncServiceAndroid::HasUnrecoverableError(
   return sync_service_->HasUnrecoverableError();
 }
 
-jboolean ProfileSyncServiceAndroid::IsUrlKeyedDataCollectionEnabled(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj,
-    jboolean personalized) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  std::unique_ptr<UrlKeyedDataCollectionConsentHelper>
-      unified_consent_url_helper;
-  if (personalized) {
-    unified_consent_url_helper = UrlKeyedDataCollectionConsentHelper::
-        NewPersonalizedDataCollectionConsentHelper(sync_service_);
-  } else {
-    PrefService* pref_service = profile_->GetPrefs();
-    unified_consent_url_helper = UrlKeyedDataCollectionConsentHelper::
-        NewAnonymizedDataCollectionConsentHelper(pref_service, sync_service_);
-  }
-
-  return unified_consent_url_helper->IsEnabled();
-}
-
-jint ProfileSyncServiceAndroid::GetProtocolErrorClientAction(
+jboolean ProfileSyncServiceAndroid::RequiresClientUpgrade(
     JNIEnv* env,
     const JavaParamRef<jobject>&) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  syncer::SyncStatus status;
-  sync_service_->QueryDetailedSyncStatus(&status);
-  return status.sync_protocol_error.action;
+  return sync_service_->RequiresClientUpgrade();
 }
-
-// Pure SyncPrefs calls.
 
 jboolean ProfileSyncServiceAndroid::IsPassphrasePrompted(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  return sync_prefs_->IsPassphrasePrompted();
+  return sync_service_->IsPassphrasePrompted();
 }
 
 void ProfileSyncServiceAndroid::SetPassphrasePrompted(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     jboolean prompted) {
-  sync_prefs_->SetPassphrasePrompted(prompted);
+  sync_service_->SetPassphrasePrompted(prompted);
 }
 
 void ProfileSyncServiceAndroid::SetSyncSessionsId(
@@ -408,7 +399,7 @@ jboolean ProfileSyncServiceAndroid::HasKeepEverythingSynced(
     JNIEnv* env,
     const JavaParamRef<jobject>&) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return sync_prefs_->HasKeepEverythingSynced();
+  return sync_service_->GetUserSettings()->IsSyncEverythingEnabled();
 }
 
 // UI string getters.
@@ -422,10 +413,10 @@ ProfileSyncServiceAndroid::GetSyncEnterGooglePassphraseBodyWithDateText(
       sync_service_->GetUserSettings()->GetExplicitPassphraseTime();
   base::string16 passphrase_time_str =
       base::TimeFormatShortDate(passphrase_time);
-  return base::android::ConvertUTF16ToJavaString(env,
-      l10n_util::GetStringFUTF16(
-        IDS_SYNC_ENTER_GOOGLE_PASSPHRASE_BODY_WITH_DATE,
-        passphrase_time_str));
+  return base::android::ConvertUTF16ToJavaString(
+      env, l10n_util::GetStringFUTF16(
+               IDS_SYNC_ENTER_GOOGLE_PASSPHRASE_BODY_WITH_DATE_ANDROID,
+               passphrase_time_str));
 }
 
 ScopedJavaLocalRef<jstring>
@@ -437,9 +428,10 @@ ProfileSyncServiceAndroid::GetSyncEnterCustomPassphraseBodyWithDateText(
       sync_service_->GetUserSettings()->GetExplicitPassphraseTime();
   base::string16 passphrase_time_str =
       base::TimeFormatShortDate(passphrase_time);
-  return base::android::ConvertUTF16ToJavaString(env,
-      l10n_util::GetStringFUTF16(IDS_SYNC_ENTER_PASSPHRASE_BODY_WITH_DATE,
-        passphrase_time_str));
+  return base::android::ConvertUTF16ToJavaString(
+      env, l10n_util::GetStringFUTF16(
+               IDS_SYNC_ENTER_PASSPHRASE_BODY_WITH_DATE_ANDROID,
+               passphrase_time_str));
 }
 
 ScopedJavaLocalRef<jstring>
@@ -452,6 +444,20 @@ ProfileSyncServiceAndroid::GetCurrentSignedInAccountText(
   return base::android::ConvertUTF16ToJavaString(
       env, l10n_util::GetStringFUTF16(IDS_SYNC_ACCOUNT_INFO,
                                       base::ASCIIToUTF16(sync_username)));
+}
+
+jint ProfileSyncServiceAndroid::GetNumberOfSyncedDevices(
+    JNIEnv* env,
+    const JavaParamRef<jobject>&) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  syncer::DeviceInfoSyncService* device_sync_service =
+      DeviceInfoSyncServiceFactory::GetForProfile(profile_);
+  if (!device_sync_service) {
+    return 0;
+  }
+  const std::vector<std::unique_ptr<syncer::DeviceInfo>> all_devices =
+      device_sync_service->GetDeviceInfoTracker()->GetAllDeviceInfo();
+  return all_devices.size();
 }
 
 ScopedJavaLocalRef<jstring>
@@ -468,11 +474,9 @@ ProfileSyncServiceAndroid::GetSyncEnterCustomPassphraseBodyText(
 jlong ProfileSyncServiceAndroid::GetLastSyncedTimeForTest(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  // Use profile preferences here instead of SyncPrefs to avoid an extra
-  // conversion, since SyncPrefs::GetLastSyncedTime() converts the stored value
-  // to to base::Time.
+  base::Time last_sync_time = sync_service_->GetLastSyncedTimeForDebugging();
   return static_cast<jlong>(
-      profile_->GetPrefs()->GetInt64(syncer::prefs::kSyncLastSyncedTime));
+      (last_sync_time - base::Time::UnixEpoch()).InMicroseconds());
 }
 
 void ProfileSyncServiceAndroid::OverrideNetworkResourcesForTest(
@@ -491,6 +495,15 @@ ProfileSyncServiceAndroid*
   return reinterpret_cast<ProfileSyncServiceAndroid*>(
       Java_ProfileSyncService_getProfileSyncServiceAndroid(
           AttachCurrentThread()));
+}
+
+void ProfileSyncServiceAndroid::TriggerRefresh(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  // Only allowed to trigger refresh/schedule nudges for protocol types, things
+  // like PROXY_TABS are not allowed.
+  sync_service_->TriggerRefresh(syncer::Intersection(
+      sync_service_->GetActiveDataTypes(), syncer::ProtocolTypes()));
 }
 
 static jlong JNI_ProfileSyncService_Init(JNIEnv* env,

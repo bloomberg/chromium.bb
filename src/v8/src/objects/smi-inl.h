@@ -13,10 +13,9 @@
 namespace v8 {
 namespace internal {
 
-CAST_ACCESSOR2(Smi)
+CAST_ACCESSOR(Smi)
 
-int Smi::ToInt(const Object* object) { return Smi::cast(object)->value(); }
-int Smi::ToInt(ObjectPtr object) { return Smi::cast(object)->value(); }
+int Smi::ToInt(const Object object) { return Smi::cast(object)->value(); }
 
 }  // namespace internal
 }  // namespace v8

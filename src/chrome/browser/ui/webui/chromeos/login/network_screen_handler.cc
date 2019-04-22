@@ -17,17 +17,13 @@
 #include "chromeos/network/network_state_handler.h"
 #include "components/login/localized_values_builder.h"
 
-namespace {
-
-const char kJsScreenPath[] = "login.NetworkScreen";
-
-}  // namespace
-
 namespace chromeos {
 
-NetworkScreenHandler::NetworkScreenHandler(CoreOobeView* core_oobe_view)
-    : BaseScreenHandler(kScreenId), core_oobe_view_(core_oobe_view) {
-  set_call_js_prefix(kJsScreenPath);
+NetworkScreenHandler::NetworkScreenHandler(JSCallsContainer* js_calls_container,
+                                           CoreOobeView* core_oobe_view)
+    : BaseScreenHandler(kScreenId, js_calls_container),
+      core_oobe_view_(core_oobe_view) {
+  set_user_acted_method_path("login.NetworkScreen.userActed");
   DCHECK(core_oobe_view_);
 }
 
@@ -74,7 +70,7 @@ void NetworkScreenHandler::Unbind() {
 }
 
 void NetworkScreenHandler::ShowError(const base::string16& message) {
-  CallJSWithPrefix("showError", message);
+  CallJS("login.NetworkScreen.showError", message);
 }
 
 void NetworkScreenHandler::ClearErrors() {
@@ -85,6 +81,10 @@ void NetworkScreenHandler::ClearErrors() {
 void NetworkScreenHandler::ShowConnectingStatus(
     bool connecting,
     const base::string16& network_id) {}
+
+void NetworkScreenHandler::SetOfflineDemoModeEnabled(bool enabled) {
+  CallJS("login.NetworkScreen.setOfflineDemoModeEnabled", enabled);
+}
 
 void NetworkScreenHandler::DeclareLocalizedValues(
     ::login::LocalizedValuesBuilder* builder) {
@@ -100,8 +100,6 @@ void NetworkScreenHandler::DeclareLocalizedValues(
 
 void NetworkScreenHandler::GetAdditionalParameters(
     base::DictionaryValue* dict) {
-  dict->SetBoolean("offlineDemoModeEnabled",
-                   DemoSetupController::IsOfflineDemoModeAllowed());
 }
 
 void NetworkScreenHandler::Initialize() {

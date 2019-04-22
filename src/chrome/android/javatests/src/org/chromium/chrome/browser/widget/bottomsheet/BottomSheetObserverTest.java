@@ -5,8 +5,12 @@
 package org.chromium.chrome.browser.widget.bottomsheet;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import android.support.test.filters.MediumTest;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -36,7 +40,7 @@ public class BottomSheetObserverTest {
         mBottomSheetTestRule.startMainActivityOnBottomSheet(BottomSheet.SheetState.PEEK);
         ThreadUtils.runOnUiThreadBlocking(() -> {
             mBottomSheetTestRule.getBottomSheet().showContent(new TestBottomSheetContent(
-                    mBottomSheetTestRule.getActivity(), BottomSheet.ContentPriority.HIGH));
+                    mBottomSheetTestRule.getActivity(), BottomSheet.ContentPriority.HIGH, false));
         });
         mObserver = mBottomSheetTestRule.getObserver();
     }
@@ -204,5 +208,56 @@ public class BottomSheetObserverTest {
         mBottomSheetTestRule.setSheetOffsetFromBottom(halfHeight);
         callbackHelper.waitForCallback(callbackCount, 1);
         assertEquals(1f, mObserver.getLastPeekToHalfValue(), MathUtils.EPSILON);
+    }
+
+    @Test
+    @MediumTest
+    public void testWrapContentBehavior() throws TimeoutException, InterruptedException {
+        // We make sure the height of the wrapped content is smaller than sheetContainerHeight.
+        BottomSheet bottomSheet = mBottomSheetTestRule.getBottomSheet();
+        int wrappedContentHeight = (int) bottomSheet.getSheetContainerHeight() / 2;
+        assertTrue(wrappedContentHeight > 0);
+
+        // Show content that should be wrapped.
+        CallbackHelper callbackHelper = mObserver.mContentChangedCallbackHelper;
+        int callCount = callbackHelper.getCallCount();
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            bottomSheet.showContent(new TestBottomSheetContent(
+                    mBottomSheetTestRule.getActivity(), BottomSheet.ContentPriority.HIGH, false) {
+                private final ViewGroup mContentView;
+
+                {
+                    // We wrap the View in a FrameLayout as we need something to read the hard coded
+                    // height in the layout params. There is no way to create a View with a specific
+                    // height on its own as View::onMeasure will by default set its height/width to
+                    // be the minimum height/width of its background (if any) or expand as much as
+                    // it can.
+                    mContentView = new FrameLayout(mBottomSheetTestRule.getActivity());
+                    View child = new View(mBottomSheetTestRule.getActivity());
+                    child.setLayoutParams(new ViewGroup.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT, wrappedContentHeight));
+                    mContentView.addView(child);
+                }
+
+                @Override
+                public View getContentView() {
+                    return mContentView;
+                }
+
+                @Override
+                public boolean wrapContentEnabled() {
+                    return true;
+                }
+            });
+        });
+        callbackHelper.waitForCallback(callCount);
+
+        // HALF state is forbidden when wrapping the content.
+        mBottomSheetTestRule.setSheetState(BottomSheet.SheetState.HALF, false);
+        assertEquals(BottomSheet.SheetState.FULL, bottomSheet.getSheetState());
+
+        // Check the offset.
+        assertEquals(wrappedContentHeight + bottomSheet.getToolbarShadowHeight(),
+                bottomSheet.getCurrentOffsetPx(), MathUtils.EPSILON);
     }
 }

@@ -87,15 +87,15 @@ TEST_F('ChromeVoxEditingTest', 'Multiline', function() {
                       {startIndex: 9, endIndex: 9})
         .call(textarea.setSelection.bind(textarea, 1, 1))
         .expectSpeech('i')
-        .expectBraille('Line 1\nmled',
+        .expectBraille('Line 1 mled',
                        {startIndex: 1, endIndex: 1})
         .call(textarea.setSelection.bind(textarea, 7, 7))
         .expectSpeech('line 2')
-        .expectBraille('line 2\n',
+        .expectBraille('line 2',
                        {startIndex: 0, endIndex: 0})
         .call(textarea.setSelection.bind(textarea, 7, 13))
         .expectSpeech('line 2', 'selected')
-        .expectBraille('line 2\n',
+        .expectBraille('line 2',
                        {startIndex: 0, endIndex: 6});
 
     mockFeedback.replay();
@@ -138,13 +138,21 @@ TEST_F('ChromeVoxEditingTest', 'TextButNoSelectionChange', function() {
 });
 
 TEST_F('ChromeVoxEditingTest', 'RichTextMoveByLine', function() {
+  // Turn on rich text output settings.
+  localStorage['customizeRichTextIndication'] = 'true';
+  localStorage['indicateMisspell'] = 'announce';
+  localStorage['indicateBold'] = 'announce';
+  localStorage['indicateItalic'] = 'announce';
+  localStorage['indicateUnderline'] = 'announce';
+
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
-    <div id="go" role="textbox" contenteditable>
+    <div role="textbox" contenteditable>
       <h2>hello</h2>
       <div><br></div>
       <p>This is a <a href="#test">test</a> of rich text</p>
     </div>
+    <button id="go">Go</button>
     <script>
       var dir = 'forward';
       var line = 0;
@@ -164,7 +172,8 @@ TEST_F('ChromeVoxEditingTest', 'RichTextMoveByLine', function() {
     </script>
   */}, function(root) {
     var input = root.find({role: RoleType.TEXT_FIELD});
-    var moveByLine = input.doDefault.bind(input);
+    var go = root.find({role: RoleType.BUTTON});
+    var moveByLine = go.doDefault.bind(go);
     this.listenOnce(input, 'focus', function() {
       mockFeedback.call(moveByLine)
           .expectSpeech('\n')
@@ -185,9 +194,17 @@ TEST_F('ChromeVoxEditingTest', 'RichTextMoveByLine', function() {
 });
 
 TEST_F('ChromeVoxEditingTest', 'RichTextMoveByCharacter', function() {
+  // Turn on rich text output settings.
+  localStorage['customizeRichTextIndication'] = 'true';
+  localStorage['indicateMisspell'] = 'announce';
+  localStorage['indicateBold'] = 'announce';
+  localStorage['indicateItalic'] = 'announce';
+  localStorage['indicateUnderline'] = 'announce';
+
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
-    <div id="go" role="textbox" contenteditable>This <b>is</b> a test.</div>
+    <div role="textbox" contenteditable>This <b>is</b> a test.</div>
+    <button id="go">Go</button>
 
     <script>
       var dir = 'forward';
@@ -208,7 +225,8 @@ TEST_F('ChromeVoxEditingTest', 'RichTextMoveByCharacter', function() {
     </script>
   */}, function(root) {
     var input = root.find({role: RoleType.TEXT_FIELD});
-    var moveByChar = input.doDefault.bind(input);
+    var go = root.find({role: RoleType.BUTTON});
+    var moveByChar = go.doDefault.bind(go);
     var lineText = 'This is a test. mled';
 
     this.listenOnce(input, 'focus', function() {
@@ -227,16 +245,16 @@ TEST_F('ChromeVoxEditingTest', 'RichTextMoveByCharacter', function() {
 
           .call(moveByChar)
           .expectSpeech('i')
-          .expectSpeech('Bold start')
+          .expectSpeech('Bold')
           .expectBraille(lineText, { startIndex: 5, endIndex: 5 })
 
           .call(moveByChar)
           .expectSpeech('s')
-          .expectSpeech('Bold end')
           .expectBraille(lineText, { startIndex: 6, endIndex: 6 })
 
           .call(moveByChar)
           .expectSpeech(' ')
+          .expectSpeech('Not bold')
           .expectBraille(lineText, { startIndex: 7, endIndex: 7 })
 
           .call(moveByChar)
@@ -253,11 +271,19 @@ TEST_F('ChromeVoxEditingTest', 'RichTextMoveByCharacter', function() {
   });
 });
 
-// Tests specifically for cursor workarounds.
-TEST_F('ChromeVoxEditingTest', 'RichTextMoveByCharacterNodeWorkaround', function() {
+// Flakily times out. crbug.com/942241
+TEST_F('ChromeVoxEditingTest', 'DISABLED_RichTextMoveByCharacterAllAttributes', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
-    <div id="go" role="textbox" contenteditable>hello <b>world</b></div>
+    <div role="textbox" contenteditable>
+      <p style="font-size:20px; font-family:times">
+        <b style="color:#ff0000">Move</b> <i>through</i> <u style="font-family:georgia">text</u>
+        by <strike style="font-size:12px; color:#0000ff">character</strike>
+        <a href="#">test</a>!
+      </p>
+    </div>
+
+    <button id="go">Go</button>
 
     <script>
       document.getElementById('go').addEventListener('click', function() {
@@ -267,7 +293,144 @@ TEST_F('ChromeVoxEditingTest', 'RichTextMoveByCharacterNodeWorkaround', function
     </script>
   */}, function(root) {
     var input = root.find({role: RoleType.TEXT_FIELD});
-    var moveByChar = input.doDefault.bind(input)
+    var go = root.find({role: RoleType.BUTTON});
+    var moveByChar = go.doDefault.bind(go);
+    var lineText = 'Move through text by character test! mled';
+    var lineOnLinkText = 'Move through text by character test lnk ! mled';
+
+    this.listenOnce(input, chrome.automation.EventType.FOCUS, function() {
+      mockFeedback.call(moveByChar)
+          .expectSpeech('o')
+          .expectSpeech('Size 20')
+          .expectSpeech('Red, 100% opacity.')
+          .expectSpeech('Bold')
+          .expectSpeech('Font times')
+          .expectBraille(lineText, { startIndex: 1, endIndex: 1 })
+          .call(moveByChar)
+          .expectSpeech('v').expectBraille(lineText, { startIndex: 2, endIndex: 2 })
+          .call(moveByChar)
+          .expectSpeech('e')
+          .expectBraille(lineText, { startIndex: 3, endIndex: 3 })
+          .call(moveByChar)
+          .expectSpeech(' ')
+          .expectSpeech('Black, 100% opacity.')
+          .expectSpeech('Not bold')
+          .expectBraille(lineText, { startIndex: 4, endIndex: 4 })
+          .call(moveByChar)
+          .expectSpeech('t')
+          .expectSpeech('Italic')
+          .expectBraille(lineText, { startIndex: 5, endIndex: 5 })
+          .call(moveByChar)
+          .expectSpeech('h').expectBraille(lineText, { startIndex: 6, endIndex: 6 })
+          .call(moveByChar)
+          .expectSpeech('r').expectBraille(lineText, { startIndex: 7, endIndex: 7 })
+          .call(moveByChar)
+          .expectSpeech('o').expectBraille(lineText, { startIndex: 8, endIndex: 8 })
+          .call(moveByChar)
+          .expectSpeech('u').expectBraille(lineText, { startIndex: 9, endIndex: 9 })
+          .call(moveByChar)
+          .expectSpeech('g').expectBraille(lineText, { startIndex: 10, endIndex: 10 })
+          .call(moveByChar)
+          .expectSpeech('h')
+          .expectBraille(lineText, { startIndex: 11, endIndex: 11 })
+          .call(moveByChar)
+          .expectSpeech(' ')
+          .expectSpeech('Not italic')
+          .expectBraille(lineText, { startIndex: 12, endIndex: 12 })
+          .call(moveByChar)
+          .expectSpeech('t')
+          .expectSpeech('Underline')
+          .expectSpeech('Font georgia')
+          .expectBraille(lineText, { startIndex: 13, endIndex: 13 })
+          .call(moveByChar)
+          .expectSpeech('e').expectBraille(lineText, { startIndex: 14, endIndex: 14 })
+          .call(moveByChar)
+          .expectSpeech('x').expectBraille(lineText, { startIndex: 15, endIndex: 15 })
+          .call(moveByChar)
+          .expectSpeech('t')
+          .expectBraille(lineText, { startIndex: 16, endIndex: 16 })
+          .call(moveByChar)
+          .expectSpeech(' ')
+          .expectSpeech('Not underline')
+          .expectSpeech('Font times')
+          .expectBraille(lineText, { startIndex: 17, endIndex: 17 })
+          .call(moveByChar)
+          .expectSpeech('b').expectBraille(lineText, { startIndex: 18, endIndex: 18 })
+          .call(moveByChar)
+          .expectSpeech('y').expectBraille(lineText, { startIndex: 19, endIndex: 19 })
+          .call(moveByChar)
+          .expectSpeech(' ').expectBraille(lineText, { startIndex: 20, endIndex: 20 })
+          .call(moveByChar)
+          .expectSpeech('c')
+          .expectSpeech('Size 12')
+          .expectSpeech('Blue, 100% opacity.')
+          .expectSpeech('Line through')
+          .expectBraille(lineText, { startIndex: 21, endIndex: 21 })
+          .call(moveByChar)
+          .expectSpeech('h').expectBraille(lineText, { startIndex: 22, endIndex: 22 })
+          .call(moveByChar)
+          .expectSpeech('a').expectBraille(lineText, { startIndex: 23, endIndex: 23 })
+          .call(moveByChar)
+          .expectSpeech('r').expectBraille(lineText, { startIndex: 24, endIndex: 24 })
+          .call(moveByChar)
+          .expectSpeech('a').expectBraille(lineText, { startIndex: 25, endIndex: 25 })
+          .call(moveByChar)
+          .expectSpeech('c').expectBraille(lineText, { startIndex: 26, endIndex: 26 })
+          .call(moveByChar)
+          .expectSpeech('t').expectBraille(lineText, { startIndex: 27, endIndex: 27 })
+          .call(moveByChar)
+          .expectSpeech('e').expectBraille(lineText, { startIndex: 28, endIndex: 28 })
+          .call(moveByChar)
+          .expectSpeech('r')
+          .expectBraille(lineText, { startIndex: 29, endIndex: 29 })
+          .call(moveByChar)
+          .expectSpeech(' ')
+          .expectSpeech('Size 20')
+          .expectSpeech('Black, 100% opacity.')
+          .expectSpeech('Not line through')
+          .expectBraille(lineText, { startIndex: 30, endIndex: 30 })
+          .call(moveByChar)
+          .expectSpeech('t')
+          .expectSpeech('Blue, 100% opacity.')
+          .expectSpeech('Link')
+          .expectSpeech('Underline')
+          .expectBraille(lineOnLinkText, { startIndex: 31, endIndex: 31 })
+          .call(moveByChar)
+          .expectSpeech('e').expectBraille(lineOnLinkText, { startIndex: 32, endIndex: 32 })
+          .call(moveByChar)
+          .expectSpeech('s').expectBraille(lineOnLinkText, { startIndex: 33, endIndex: 33 })
+          .call(moveByChar)
+          .expectSpeech('t').expectBraille(lineOnLinkText, { startIndex: 34, endIndex: 34 })
+          .call(moveByChar)
+          .expectSpeech('!')
+          .expectSpeech('Black, 100% opacity.')
+          .expectSpeech('Not link')
+          .expectSpeech('Not underline')
+          .expectBraille(lineText, {startIndex: 35, endIndex: 35 })
+
+          .replay();
+    });
+    input.focus();
+  });
+});
+
+// Tests specifically for cursor workarounds.
+TEST_F('ChromeVoxEditingTest', 'RichTextMoveByCharacterNodeWorkaround', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function() {/*!
+    <div role="textbox" contenteditable>hello <b>world</b></div>
+    <button id="go">Go</button>
+
+    <script>
+      document.getElementById('go').addEventListener('click', function() {
+        var sel = getSelection();
+        sel.modify('move', 'forward', 'character');
+      }, true);
+    </script>
+  */}, function(root) {
+    var input = root.find({role: RoleType.TEXT_FIELD});
+    var go = root.find({role: RoleType.BUTTON});
+    var moveByChar = go.doDefault.bind(go);
     var lineText = 'hello world mled';
 
     this.listenOnce(input, 'focus', function() {
@@ -298,7 +461,8 @@ TEST_F('ChromeVoxEditingTest', 'RichTextMoveByCharacterNodeWorkaround', function
 TEST_F('ChromeVoxEditingTest', 'RichTextMoveByCharacterEndOfLine', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
-    <div id="go" role="textbox" contenteditable>Test</div>
+    <div role="textbox" contenteditable>Test</div>
+    <button id="go">Go</button>
 
     <script>
       document.getElementById('go').addEventListener('click', function() {
@@ -308,7 +472,8 @@ TEST_F('ChromeVoxEditingTest', 'RichTextMoveByCharacterEndOfLine', function() {
     </script>
   */}, function(root) {
     var input = root.find({role: RoleType.TEXT_FIELD});
-    var moveByChar = input.doDefault.bind(input);
+    var go = root.find({role: RoleType.BUTTON});
+    var moveByChar = go.doDefault.bind(go);
     var lineText = 'Test mled';
 
     this.listenOnce(input, 'focus', function() {
@@ -332,10 +497,17 @@ TEST_F('ChromeVoxEditingTest', 'RichTextMoveByCharacterEndOfLine', function() {
 });
 
 TEST_F('ChromeVoxEditingTest', 'RichTextLinkOutput', function() {
+  // Turn on rich text output settings.
+  localStorage['customizeRichTextIndication'] = 'true';
+  localStorage['indicateMisspell'] = 'announce';
+  localStorage['indicateBold'] = 'announce';
+  localStorage['indicateItalic'] = 'announce';
+  localStorage['indicateUnderline'] = 'announce';
+
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
-    <div id="go" role="textbox" contenteditable>a <a href="#">test</a></div>
-
+    <div role="textbox" contenteditable>a <a href="#">test</a></div>
+    <button id="go">Go</button>
     <script>
       document.getElementById('go').addEventListener('click', function() {
         var sel = getSelection();
@@ -344,7 +516,8 @@ TEST_F('ChromeVoxEditingTest', 'RichTextLinkOutput', function() {
     </script>
   */}, function(root) {
     var input = root.find({role: RoleType.TEXT_FIELD});
-    var moveByChar = input.doDefault.bind(input);
+    var go = root.find({role: RoleType.BUTTON});
+    var moveByChar = go.doDefault.bind(go);
     var lineText = 'a test mled';
     var lineOnLinkText = 'a test lnk mled';
 
@@ -354,8 +527,9 @@ TEST_F('ChromeVoxEditingTest', 'RichTextLinkOutput', function() {
           .expectBraille(lineText, { startIndex: 1, endIndex: 1 })
           .call(moveByChar)
           .expectSpeech('t')
-          .expectSpeech('Link start')
-          .expectSpeech('Underline start')
+          .expectSpeech('Blue, 100% opacity.')
+          .expectSpeech('Link')
+          .expectSpeech('Underline')
           .expectBraille(lineOnLinkText, { startIndex: 2, endIndex: 2 })
           .call(moveByChar)
           .expectSpeech('e')
@@ -365,8 +539,6 @@ TEST_F('ChromeVoxEditingTest', 'RichTextLinkOutput', function() {
           .expectBraille(lineOnLinkText, { startIndex: 4, endIndex: 4 })
           .call(moveByChar)
           .expectSpeech('t')
-          .expectSpeech('Link end')
-          .expectSpeech('Underline end')
           .expectBraille(lineOnLinkText, { startIndex: 5, endIndex: 5 })
 
           .replay();
@@ -378,7 +550,8 @@ TEST_F('ChromeVoxEditingTest', 'RichTextLinkOutput', function() {
 TEST_F('ChromeVoxEditingTest', 'RichTextExtendByCharacter', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
-    <div id="go" role="textbox" contenteditable>Te<br>st</div>
+    <div role="textbox" contenteditable>Te<br>st</div>
+    <button id="go">Go</button>
 
     <script>
       document.getElementById('go').addEventListener('click', function() {
@@ -388,7 +561,8 @@ TEST_F('ChromeVoxEditingTest', 'RichTextExtendByCharacter', function() {
     </script>
   */}, function(root) {
     var input = root.find({role: RoleType.TEXT_FIELD});
-    var moveByChar = input.doDefault.bind(input);
+    var go = root.find({role: RoleType.BUTTON});
+    var moveByChar = go.doDefault.bind(go);
 
     this.listenOnce(input, 'focus', function() {
       mockFeedback.call(moveByChar)
@@ -412,9 +586,10 @@ TEST_F('ChromeVoxEditingTest', 'RichTextExtendByCharacter', function() {
 TEST_F('ChromeVoxEditingTest', 'RichTextImageByCharacter', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
-    <p id="go" contenteditable>
+    <p contenteditable>
       <img alt="dog"></img> is a <img alt="cat"</img> test
     </p>
+    <button id="go">Go</button>
     <script>
       document.getElementById('go').addEventListener('click', function() {
         var sel = getSelection();
@@ -423,7 +598,8 @@ TEST_F('ChromeVoxEditingTest', 'RichTextImageByCharacter', function() {
     </script>
   */}, function(root) {
     var input = root.find({role: RoleType.PARAGRAPH});
-    var moveByChar = input.doDefault.bind(input);
+    var go = root.find({role: RoleType.BUTTON});
+    var moveByChar = go.doDefault.bind(go);
 
     this.listenOnce(input, 'focus', function() {
       var lineText = 'dog is a cat test mled';
@@ -477,7 +653,10 @@ TEST_F('ChromeVoxEditingTest', 'RichTextSelectByLine', function() {
   // middle of "11111" and reliably hit a given character position in "22222",
   // regardless of font configuration. https://crbug.com/898213
   this.runWithLoadedTree(function() {/*!
-    <p id="go" contenteditable>
+    <div>
+      <button id="go">Go</button>
+    </div>
+    <p contenteditable>
       11111 line<br>
       22222 line<br>
       33333 line<br>
@@ -511,7 +690,8 @@ TEST_F('ChromeVoxEditingTest', 'RichTextSelectByLine', function() {
     </script>
   */}, function(root) {
     var input = root.find({role: RoleType.PARAGRAPH});
-    var move = input.doDefault.bind(input);
+    var go = root.find({role: RoleType.BUTTON});
+    var move = go.doDefault.bind(go);
 
     this.listenOnce(input, 'focus', function() {
 

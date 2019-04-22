@@ -13,9 +13,9 @@
 
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_client.h"
-#include "components/autofill/core/browser/credit_card_save_manager.h"
 #include "components/autofill/core/browser/form_structure.h"
-#include "components/autofill/core/browser/local_card_migration_manager.h"
+#include "components/autofill/core/browser/payments/credit_card_save_manager.h"
+#include "components/autofill/core/browser/payments/local_card_migration_manager.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 
@@ -120,6 +120,13 @@ class FormDataImporter {
   CreditCard ExtractCreditCardFromForm(const FormStructure& form,
                                        bool* hasDuplicateFieldType);
 
+  // Whether a dynamic change form is imported.
+  bool from_dynamic_change_form_ = false;
+
+  // Whether the form imported has non-focusable fields after user entered
+  // information into it.
+  bool has_non_focusable_field_ = false;
+
   // The associated autofill client. Weak reference.
   AutofillClient* client_;
 
@@ -145,13 +152,23 @@ class FormDataImporter {
   friend class AutofillMergeTest;
   friend class FormDataImporterTest;
   friend class FormDataImporterTestBase;
-  friend class SaveCardBubbleViewsBrowserTestBase;
+  friend class LocalCardMigrationBrowserTest;
+  friend class SaveCardBubbleViewsFullFormBrowserTest;
   friend class SaveCardInfobarEGTestHelper;
   FRIEND_TEST_ALL_PREFIXES(AutofillMergeTest, MergeProfiles);
   FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest,
                            AllowDuplicateMaskedServerCardIfFlagEnabled);
   FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest, DontDuplicateFullServerCard);
   FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest, DontDuplicateMaskedServerCard);
+  FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest,
+                           ImportFormData_AddressesDisabledOneCreditCard);
+  FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest,
+                           ImportFormData_AddressCreditCardDisabled);
+  FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest,
+                           ImportFormData_HiddenCreditCardFormAfterEntered);
+  FRIEND_TEST_ALL_PREFIXES(
+      FormDataImporterTest,
+      ImportFormData_HiddenCreditCardFormAfterEnteredWithExpOff);
   FRIEND_TEST_ALL_PREFIXES(
       FormDataImporterTest,
       ImportFormData_ImportCreditCardRecordType_FullServerCard);
@@ -178,10 +195,6 @@ class FormDataImporter {
   FRIEND_TEST_ALL_PREFIXES(
       FormDataImporterTest,
       ImportFormData_SecondImportResetsCreditCardRecordType);
-  FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest,
-                           ImportFormData_AddressesDisabledOneCreditCard);
-  FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest,
-                           ImportFormData_AddressCreditCardDisabled);
   FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest,
                            ImportFormData_TwoAddressesOneCreditCard);
   FRIEND_TEST_ALL_PREFIXES(

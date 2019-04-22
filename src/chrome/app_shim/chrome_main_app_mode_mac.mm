@@ -1,7 +1,6 @@
 // Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
 // On Mac, one can't make shortcuts with command-line arguments. Instead, we
 // produce small app bundles which locate the Chromium framework and load it,
 // passing the appropriate data. This is the entry point into the framework for
@@ -27,124 +26,25 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/thread.h"
+#include "chrome/app/chrome_crash_reporter_client.h"
 #include "chrome/app_shim/app_shim_controller.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/crash/content/app/crashpad.h"
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/core/embedder/scoped_ipc_support.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
-namespace {
-
-// Timeout in seconds to wait for a reply for the initial Apple Event. Note that
-// kAEDefaultTimeout on Mac is "about one minute" according to Apple's
-// documentation, but is no longer supported for asynchronous Apple Events.
-const int kPingChromeTimeoutSeconds = 60;
-
-}  // namespace
-
-// A ReplyEventHandler is a helper class to send an Apple Event to a process
-// and call a callback when the reply returns.
-//
-// This is used to 'ping' the main Chrome process -- once Chrome has sent back
-// an Apple Event reply, it's guaranteed that it has opened the IPC channel
-// that the app shim will connect to.
-@interface ReplyEventHandler : NSObject {
-  base::Callback<void(bool)> onReply_;
-  AEDesc replyEvent_;
-}
-// Sends an Apple Event to the process identified by the bundle identifier,
-// and calls |replyFn| when the reply is received. Internally this
-// creates a ReplyEventHandler, which will delete itself once the reply event
-// has been received.
-+ (void)pingProcessAndCall:(base::Callback<void(bool)>)replyFn;
+// The NSApplication for app shims is a vanilla NSApplication, but sub-class it
+// so that we can DCHECK that we know precisely when it is initialized.
+@interface AppShimApplication : NSApplication
 @end
 
-@interface ReplyEventHandler (PrivateMethods)
-// Initialise the reply event handler. Doesn't register any handlers until
-// |-pingProcess:| is called. |replyFn| is the function to be called when the
-// Apple Event reply arrives.
-- (id)initWithCallback:(base::Callback<void(bool)>)replyFn;
-
-// Sends an Apple Event ping to the process identified by the bundle
-// identifier and registers to listen for a reply.
-- (void)pingProcess;
-
-// Called when a response is received from the target process for the ping sent
-// by |-pingProcess:|.
-- (void)message:(NSAppleEventDescriptor*)event
-      withReply:(NSAppleEventDescriptor*)reply;
-
-// Calls |onReply_|, passing it |success| to specify whether the ping was
-// successful.
-- (void)closeWithSuccess:(bool)success;
-@end
-
-@implementation ReplyEventHandler
-+ (void)pingProcessAndCall:(base::Callback<void(bool)>)replyFn {
-  // The object will release itself when the reply arrives, or possibly earlier
-  // if an unrecoverable error occurs.
-  ReplyEventHandler* handler =
-      [[ReplyEventHandler alloc] initWithCallback:replyFn];
-  [handler pingProcess];
-}
-@end
-
-@implementation ReplyEventHandler (PrivateMethods)
-- (id)initWithCallback:(base::Callback<void(bool)>)replyFn {
-  if ((self = [super init])) {
-    onReply_ = replyFn;
-  }
-  return self;
-}
-
-- (void)pingProcess {
-  // Register the reply listener.
-  NSAppleEventManager* em = [NSAppleEventManager sharedAppleEventManager];
-  [em setEventHandler:self
-          andSelector:@selector(message:withReply:)
-        forEventClass:kCoreEventClass
-           andEventID:kAEAnswer];
-
-  // Craft the Apple Event to send.
-  NSString* chromeBundleId = [base::mac::OuterBundle() bundleIdentifier];
-  NSAppleEventDescriptor* target = [NSAppleEventDescriptor
-      descriptorWithDescriptorType:typeApplicationBundleID
-                              data:[chromeBundleId
-                                       dataUsingEncoding:NSUTF8StringEncoding]];
-
-  NSAppleEventDescriptor* initialEvent = [NSAppleEventDescriptor
-      appleEventWithEventClass:app_mode::kAEChromeAppClass
-                       eventID:app_mode::kAEChromeAppPing
-              targetDescriptor:target
-                      returnID:kAutoGenerateReturnID
-                 transactionID:kAnyTransactionID];
-
-  // Note that AESendMessage effectively ignores kAEDefaultTimeout, because this
-  // call does not pass kAEWantReceipt (which is deprecated and unsupported on
-  // Mac). Instead, rely on OnPingChromeTimeout().
-  OSStatus status = AESendMessage([initialEvent aeDesc], &replyEvent_,
-                                  kAEQueueReply, kAEDefaultTimeout);
-  if (status != noErr) {
-    OSSTATUS_LOG(ERROR, status) << "AESendMessage";
-    [self closeWithSuccess:false];
-  }
-}
-
-- (void)message:(NSAppleEventDescriptor*)event
-      withReply:(NSAppleEventDescriptor*)reply {
-  [self closeWithSuccess:true];
-}
-
-- (void)closeWithSuccess:(bool)success {
-  onReply_.Run(success);
-  NSAppleEventManager* em = [NSAppleEventManager sharedAppleEventManager];
-  [em removeEventHandlerForEventClass:kCoreEventClass andEventID:kAEAnswer];
-  [self release];
-}
+@implementation AppShimApplication
 @end
 
 extern "C" {
@@ -157,12 +57,18 @@ extern "C" {
 // upgrade them; the old shim will not be able to dyload the new
 // ChromeAppModeStart, so it will fall back to the upgrade path. See
 // https://crbug.com/561205.
-__attribute__((visibility("default")))
-int ChromeAppModeStart_v4(const app_mode::ChromeAppModeInfo* info);
+__attribute__((visibility("default"))) int ChromeAppModeStart_v5(
+    const app_mode::ChromeAppModeInfo* info);
 
 }  // extern "C"
 
-int ChromeAppModeStart_v4(const app_mode::ChromeAppModeInfo* info) {
+void PostRepeatingDelayedTask() {
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::BindOnce(&PostRepeatingDelayedTask),
+      base::TimeDelta::FromDays(1));
+}
+
+int ChromeAppModeStart_v5(const app_mode::ChromeAppModeInfo* info) {
   base::CommandLine::Init(info->argc, info->argv);
 
   base::mac::ScopedNSAutoreleasePool scoped_pool;
@@ -179,9 +85,14 @@ int ChromeAppModeStart_v4(const app_mode::ChromeAppModeInfo* info) {
   }
 
   // Set bundle paths. This loads the bundles.
-  base::mac::SetOverrideOuterBundlePath(info->chrome_outer_bundle_path);
+  base::mac::SetOverrideOuterBundlePath(
+      base::FilePath(info->chrome_outer_bundle_path));
   base::mac::SetOverrideFrameworkBundlePath(
-      info->chrome_versioned_path.Append(chrome::kFrameworkName));
+      base::FilePath(info->chrome_versioned_path)
+          .Append(chrome::kFrameworkName));
+
+  ChromeCrashReporterClient::Create();
+  crash_reporter::InitializeCrashpad(true, "app_shim");
 
   // Calculate the preferred locale used by Chrome.
   // We can't use l10n_util::OverrideLocaleWithCocoaLocale() because it calls
@@ -193,6 +104,17 @@ int ChromeAppModeStart_v4(const app_mode::ChromeAppModeInfo* info) {
   NSArray* supported_languages = [base::mac::OuterBundle() localizations];
   std::string preferred_localization;
   for (NSString* language in preferred_languages) {
+    // We must convert the "-" separator to "_" to be compatible with
+    // NSBundle::localizations() e.g. "en-GB" becomes "en_GB".
+    // See https://crbug.com/913345.
+    language = [language stringByReplacingOccurrencesOfString:@"-"
+                                                   withString:@"_"];
+    if ([supported_languages containsObject:language]) {
+      preferred_localization = base::SysNSStringToUTF8(language);
+      break;
+    }
+    // Check for language support without the region component.
+    language = [language componentsSeparatedByString:@"_"][0];
     if ([supported_languages containsObject:language]) {
       preferred_localization = base::SysNSStringToUTF8(language);
       break;
@@ -201,9 +123,12 @@ int ChromeAppModeStart_v4(const app_mode::ChromeAppModeInfo* info) {
   std::string locale = l10n_util::NormalizeLocale(
       l10n_util::GetApplicationLocale(preferred_localization));
 
-  // Load localized strings.
+  // Load localized strings and mouse cursor images.
   ui::ResourceBundle::InitSharedInstanceWithLocale(
-      locale, NULL, ui::ResourceBundle::DO_NOT_LOAD_COMMON_RESOURCES);
+      locale, NULL, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
+
+  ChromeContentClient chrome_content_client;
+  content::SetContentClient(&chrome_content_client);
 
   // Launch the IO thread.
   base::Thread::Options io_thread_options;
@@ -216,32 +141,56 @@ int ChromeAppModeStart_v4(const app_mode::ChromeAppModeInfo* info) {
       io_thread->task_runner(),
       mojo::core::ScopedIPCSupport::ShutdownPolicy::FAST);
 
-  // Find already running instances of Chrome.
-  pid_t pid = -1;
-  std::string chrome_process_id =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          app_mode::kLaunchedByChromeProcessId);
-  if (!chrome_process_id.empty()) {
-    if (!base::StringToInt(chrome_process_id, &pid))
-      LOG(FATAL) << "Invalid PID: " << chrome_process_id;
-  } else {
+  base::scoped_nsobject<NSRunningApplication> chrome_running_app;
+
+  // If this shim was launched by Chrome, open that specified process.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          app_mode::kLaunchedByChromeProcessId)) {
+    std::string chrome_pid_string =
+        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            app_mode::kLaunchedByChromeProcessId);
+    int chrome_pid;
+    if (!base::StringToInt(chrome_pid_string, &chrome_pid))
+      LOG(FATAL) << "Invalid PID: " << chrome_pid_string;
+
+    chrome_running_app.reset([NSRunningApplication
+        runningApplicationWithProcessIdentifier:chrome_pid]);
+    if (!chrome_running_app)
+      LOG(FATAL) << "Failed open process with PID: " << chrome_pid;
+  }
+
+  // Find an already running instance of Chrome to open, if one exists.
+  if (!chrome_running_app) {
     NSString* chrome_bundle_id = [base::mac::OuterBundle() bundleIdentifier];
     NSArray* existing_chrome = [NSRunningApplication
         runningApplicationsWithBundleIdentifier:chrome_bundle_id];
-    if ([existing_chrome count] > 0)
-      pid = [[existing_chrome objectAtIndex:0] processIdentifier];
+    if ([existing_chrome count] > 0) {
+      chrome_running_app.reset([existing_chrome objectAtIndex:0],
+                               base::scoped_policy::RETAIN);
+    }
   }
+
+  // Initialize the NSApplication (and ensure that it was not previously
+  // initialized).
+  [AppShimApplication sharedApplication];
+  CHECK([NSApp isKindOfClass:[AppShimApplication class]]);
 
   base::MessageLoopForUI main_message_loop;
   ui::WindowResizeHelperMac::Get()->Init(main_message_loop.task_runner());
   base::PlatformThread::SetName("CrAppShimMain");
-  AppShimController controller(info);
 
-  // In tests, launching Chrome does nothing, and we won't get a ping response,
-  // so just assume the socket exists.
-  if (pid == -1 &&
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          app_mode::kLaunchedForTest)) {
+  // TODO(https://crbug.com/925998): This workaround ensures that there is
+  // always delayed work enqueued. If there is ever not enqueued delayed work,
+  // then NSMenus and NSAlerts can start misbehaving (see
+  // https://crbug.com/920795 for examples). This workaround is not an
+  // appropriate solution to the problem, and should be replaced by a fix in
+  // the relevant message pump code.
+  PostRepeatingDelayedTask();
+
+  // If Chrome is not running, launch it. In tests, launching Chrome does
+  // nothing, so just assume the socket exists.
+  if (!chrome_running_app && !base::CommandLine::ForCurrentProcess()->HasSwitch(
+                                 app_mode::kLaunchedForTest)) {
     // Launch Chrome if it isn't already running.
     base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
     command_line.AppendSwitch(switches::kSilentLaunch);
@@ -252,36 +201,16 @@ int ChromeAppModeStart_v4(const app_mode::ChromeAppModeInfo* info) {
       command_line.AppendSwitch(switches::kShowAppList);
     } else {
       command_line.AppendSwitchPath(switches::kProfileDirectory,
-                                    info->profile_dir);
+                                    base::FilePath(info->profile_dir));
     }
 
-    base::Process app = base::mac::OpenApplicationWithPath(
-        base::mac::OuterBundlePath(), command_line, NSWorkspaceLaunchDefault);
-    if (!app.IsValid())
-      return 1;
-
-    base::Callback<void(bool)> on_ping_chrome_reply = base::Bind(
-        &AppShimController::OnPingChromeReply, base::Unretained(&controller));
-
-    // This code abuses the fact that Apple Events sent before the process is
-    // fully initialized don't receive a reply until its run loop starts. Once
-    // the reply is received, Chrome will have opened its IPC port, guaranteed.
-    [ReplyEventHandler pingProcessAndCall:on_ping_chrome_reply];
-
-    main_message_loop.task_runner()->PostDelayedTask(
-        FROM_HERE, base::Bind(&AppShimController::OnPingChromeTimeout,
-                              base::Unretained(&controller)),
-        base::TimeDelta::FromSeconds(kPingChromeTimeoutSeconds));
-  } else {
-    // Chrome already running. Proceed to init. This could still fail if Chrome
-    // is still starting up or shutting down, but the process will exit quickly,
-    // which is preferable to waiting for the Apple Event to timeout after one
-    // minute.
-    main_message_loop.task_runner()->PostTask(
-        FROM_HERE, base::BindOnce(&AppShimController::InitBootstrapPipe,
-                                  base::Unretained(&controller)));
+    chrome_running_app.reset(base::mac::OpenApplicationWithPath(
+        base::mac::OuterBundlePath(), command_line, NSWorkspaceLaunchDefault));
+    if (!chrome_running_app)
+      LOG(FATAL) << "Failed launch Chrome.";
   }
 
+  AppShimController controller(info, chrome_running_app);
   base::RunLoop().Run();
   return 0;
 }

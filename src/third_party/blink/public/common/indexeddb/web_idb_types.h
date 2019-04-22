@@ -30,25 +30,6 @@
 
 namespace blink {
 
-// TODO(cmp): Deprecate these in favor of the blink.mojom.IDB* enum types.
-
-enum WebIDBKeyType {
-  kWebIDBKeyTypeInvalid = 0,
-  kWebIDBKeyTypeArray,
-  kWebIDBKeyTypeBinary,
-  kWebIDBKeyTypeString,
-  kWebIDBKeyTypeDate,
-  kWebIDBKeyTypeNumber,
-  kWebIDBKeyTypeNull,
-  kWebIDBKeyTypeMin,
-};
-
-enum WebIDBKeyPathType {
-  kWebIDBKeyPathTypeNull = 0,
-  kWebIDBKeyPathTypeString,
-  kWebIDBKeyPathTypeArray,
-};
-
 // kIDBOperationTypeCount corresponds to the number of mojom::IDBOperationType
 // enum values that exist.  Mojo provides kMaxValue which corresponds to the
 // value of the last item in the enum list.  To get the total number, we have

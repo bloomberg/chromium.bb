@@ -22,6 +22,7 @@
 #include "cc/base/histograms.h"
 #include "cc/raster/single_thread_task_graph_runner.h"
 #include "cc/raster/task_graph_runner.h"
+#include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
@@ -62,13 +63,11 @@
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "gpu/ipc/host/gpu_memory_buffer_support.h"
 #include "gpu/vulkan/buildflags.h"
-#include "services/service_manager/runner/common/client_util.h"
 #include "services/ws/public/cpp/gpu/context_provider_command_buffer.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/compositor/compositor.h"
-#include "ui/compositor/compositor_switches.h"
 #include "ui/compositor/host/external_begin_frame_controller_client_impl.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/display_switches.h"
@@ -96,6 +95,7 @@
 #include "ui/ozone/public/overlay_manager_ozone.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/ozone_switches.h"
+#include "ui/ozone/public/platform_window_surface.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 #include "ui/ozone/public/surface_ozone_canvas.h"
 #elif defined(USE_X11)
@@ -109,12 +109,6 @@
 #endif
 #if !defined(GPU_SURFACE_HANDLE_IS_ACCELERATED_WINDOW)
 #include "gpu/ipc/common/gpu_surface_tracker.h"
-#endif
-
-#if BUILDFLAG(ENABLE_VULKAN)
-#include "components/viz/common/gpu/vulkan_in_process_context_provider.h"
-#include "content/browser/compositor/vulkan_browser_compositor_output_surface.h"
-#include "gpu/vulkan/init/vulkan_factory.h"
 #endif
 
 using viz::ContextProvider;
@@ -170,7 +164,6 @@ GpuProcessTransportFactory::GpuProcessTransportFactory(
     viz::ServerSharedBitmapManager* server_shared_bitmap_manager,
     scoped_refptr<base::SingleThreadTaskRunner> resize_task_runner)
     : frame_sink_id_allocator_(kDefaultClientId),
-      renderer_settings_(viz::CreateRendererSettings()),
       resize_task_runner_(std::move(resize_task_runner)),
       task_graph_runner_(new cc::SingleThreadTaskGraphRunner),
       shared_worker_context_provider_factory_(
@@ -236,11 +229,13 @@ GpuProcessTransportFactory::CreateSoftwareOutputDevice(
 #elif defined(USE_OZONE)
   ui::SurfaceFactoryOzone* factory =
       ui::OzonePlatform::GetInstance()->GetSurfaceFactoryOzone();
+  std::unique_ptr<ui::PlatformWindowSurface> platform_window_surface =
+      factory->CreatePlatformWindowSurface(widget);
   std::unique_ptr<ui::SurfaceOzoneCanvas> surface_ozone =
       factory->CreateCanvasForWidget(widget);
   CHECK(surface_ozone);
   return std::make_unique<viz::SoftwareOutputDeviceOzone>(
-      std::move(surface_ozone));
+      std::move(platform_window_surface), std::move(surface_ozone));
 #elif defined(USE_X11)
   return std::make_unique<viz::SoftwareOutputDeviceX11>(widget);
 #elif defined(OS_MACOSX)
@@ -268,17 +263,17 @@ CreateOverlayCandidateValidator(
 
   ui::OzonePlatform* ozone_platform = ui::OzonePlatform::GetInstance();
   DCHECK(ozone_platform);
-  ui::OverlayManagerOzone* overlay_manager =
-      ozone_platform->GetOverlayManager();
+  auto& host_properties = ozone_platform->GetInitializedHostProperties();
   if (!command_line->HasSwitch(switches::kEnableHardwareOverlays) &&
-      overlay_manager->SupportsOverlays()) {
+      host_properties.supports_overlays) {
     enable_overlay_flag = "single-fullscreen,single-on-top,underlay";
   }
   if (!enable_overlay_flag.empty()) {
     std::unique_ptr<ui::OverlayCandidatesOzone> overlay_candidates =
         ozone_platform->GetOverlayManager()->CreateOverlayCandidates(widget);
     validator.reset(new viz::CompositorOverlayCandidateValidatorOzone(
-        std::move(overlay_candidates), enable_overlay_flag));
+        std::move(overlay_candidates),
+        viz::ParseOverlayStategies(enable_overlay_flag)));
   }
 #elif defined(OS_MACOSX)
   // Overlays are only supported through the remote layer API.
@@ -315,14 +310,9 @@ void GpuProcessTransportFactory::CreateLayerTreeFrameSink(
       compositor->widget());
 #endif
 
-#if BUILDFLAG(ENABLE_VULKAN)
-  const bool use_vulkan = static_cast<bool>(SharedVulkanContextProvider());
-#else
-  const bool use_vulkan = false;
-#endif
   const bool use_gpu_compositing =
       !compositor->force_software_compositor() && !is_gpu_compositing_disabled_;
-  if (use_gpu_compositing && !use_vulkan) {
+  if (use_gpu_compositing) {
     gpu_channel_factory_->EstablishGpuChannel(base::BindOnce(
         &GpuProcessTransportFactory::EstablishedGpuChannel,
         callback_factory_.GetWeakPtr(), compositor, use_gpu_compositing));
@@ -371,16 +361,9 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
       compositor->widget());
 #endif
 
-#if BUILDFLAG(ENABLE_VULKAN)
-  scoped_refptr<viz::VulkanInProcessContextProvider> vulkan_context_provider =
-      SharedVulkanContextProvider();
-  bool use_vulkan = vulkan_context_provider != nullptr;
-#else
-  bool use_vulkan = false;
-#endif
   scoped_refptr<ws::ContextProviderCommandBuffer> context_provider;
 
-  if (!use_gpu_compositing || use_vulkan) {
+  if (!use_gpu_compositing) {
     // If not using GL compositing, don't keep the old shared worker context.
     shared_worker_context_provider_factory_.Reset();
   } else if (!gpu_channel_host) {
@@ -430,7 +413,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
   }
 
   bool gpu_compositing_ready =
-      use_vulkan || (context_provider && shared_worker_context_provider());
+      context_provider && shared_worker_context_provider();
   UMA_HISTOGRAM_BOOLEAN("Aura.CreatedGpuBrowserCompositor",
                         gpu_compositing_ready);
   if (!gpu_compositing_ready) {
@@ -454,88 +437,70 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
     }
   }
 
-  BrowserCompositorOutputSurface::UpdateVSyncParametersCallback vsync_callback =
-      base::Bind(&ui::Compositor::SetDisplayVSyncParameters, compositor);
+  auto vsync_callback = base::BindRepeating(
+      &ui::Compositor::SetDisplayVSyncParameters, compositor);
   std::unique_ptr<BrowserCompositorOutputSurface> display_output_surface;
-#if BUILDFLAG(ENABLE_VULKAN)
-  std::unique_ptr<VulkanBrowserCompositorOutputSurface> vulkan_surface;
-  if (vulkan_context_provider) {
-    vulkan_surface.reset(new VulkanBrowserCompositorOutputSurface(
-        vulkan_context_provider, vsync_callback));
-    if (!vulkan_surface->Initialize(compositor.get()->widget())) {
-      vulkan_surface->Destroy();
-      vulkan_surface.reset();
-    } else {
-      display_output_surface = std::move(vulkan_surface);
+  if (!use_gpu_compositing) {
+    if (!is_gpu_compositing_disabled_ &&
+        !compositor->force_software_compositor()) {
+      // This will cause all other display compositors and FrameSink clients
+      // to fall back to software compositing. If the compositor is
+      // |force_software_compositor()|, then it is not a signal to others to
+      // use software too - but such compositors can not embed external
+      // surfaces as they are not following the correct mode.
+      DisableGpuCompositing(compositor.get());
     }
-  }
-#endif
-
-  if (!display_output_surface) {
-    if (!use_gpu_compositing) {
-      if (!is_gpu_compositing_disabled_ &&
-          !compositor->force_software_compositor()) {
-        // This will cause all other display compositors and FrameSink clients
-        // to fall back to software compositing. If the compositor is
-        // |force_software_compositor()|, then it is not a signal to others to
-        // use software too - but such compositors can not embed external
-        // surfaces as they are not following the correct mode.
-        DisableGpuCompositing(compositor.get());
-      }
+    display_output_surface =
+        std::make_unique<SoftwareBrowserCompositorOutputSurface>(
+            CreateSoftwareOutputDevice(compositor->widget(),
+                                       compositor->task_runner()),
+            std::move(vsync_callback));
+  } else {
+    DCHECK(context_provider);
+    const auto& capabilities = context_provider->ContextCapabilities();
+    if (data->surface_handle == gpu::kNullSurfaceHandle) {
       display_output_surface =
-          std::make_unique<SoftwareBrowserCompositorOutputSurface>(
-              CreateSoftwareOutputDevice(compositor->widget(),
-                                         compositor->task_runner()),
-              std::move(vsync_callback));
-    } else {
-      DCHECK(context_provider);
-      const auto& capabilities = context_provider->ContextCapabilities();
-      if (data->surface_handle == gpu::kNullSurfaceHandle) {
-        display_output_surface =
-            std::make_unique<OffscreenBrowserCompositorOutputSurface>(
-                context_provider, std::move(vsync_callback),
-                std::unique_ptr<viz::CompositorOverlayCandidateValidator>());
-      } else if (capabilities.surfaceless) {
+          std::make_unique<OffscreenBrowserCompositorOutputSurface>(
+              context_provider, std::move(vsync_callback),
+              std::unique_ptr<viz::CompositorOverlayCandidateValidator>());
+    } else if (capabilities.surfaceless) {
 #if defined(OS_MACOSX)
-        const auto& gpu_feature_info = context_provider->GetGpuFeatureInfo();
-        bool disable_overlay_ca_layers = gpu_feature_info.IsWorkaroundEnabled(
-            gpu::DISABLE_OVERLAY_CA_LAYERS);
-        display_output_surface = std::make_unique<GpuOutputSurfaceMac>(
-            context_provider, data->surface_handle, vsync_callback,
-            CreateOverlayCandidateValidator(compositor->widget(),
-                                            disable_overlay_ca_layers),
-            GetGpuMemoryBufferManager());
+      const auto& gpu_feature_info = context_provider->GetGpuFeatureInfo();
+      bool disable_overlay_ca_layers =
+          gpu_feature_info.IsWorkaroundEnabled(gpu::DISABLE_OVERLAY_CA_LAYERS);
+      display_output_surface = std::make_unique<GpuOutputSurfaceMac>(
+          context_provider, data->surface_handle, vsync_callback,
+          CreateOverlayCandidateValidator(compositor->widget(),
+                                          disable_overlay_ca_layers),
+          GetGpuMemoryBufferManager());
 #else
-        DCHECK(capabilities.texture_format_bgra8888);
-        auto gpu_output_surface =
-            std::make_unique<GpuSurfacelessBrowserCompositorOutputSurface>(
-                context_provider, data->surface_handle,
-                std::move(vsync_callback),
-                CreateOverlayCandidateValidator(compositor->widget()),
-                GL_TEXTURE_2D, GL_BGRA_EXT,
-                display::DisplaySnapshot::PrimaryFormat(),
-                GetGpuMemoryBufferManager());
-        display_output_surface = std::move(gpu_output_surface);
+      DCHECK(capabilities.texture_format_bgra8888);
+      auto gpu_output_surface =
+          std::make_unique<GpuSurfacelessBrowserCompositorOutputSurface>(
+              context_provider, data->surface_handle, std::move(vsync_callback),
+              CreateOverlayCandidateValidator(compositor->widget()),
+              display::DisplaySnapshot::PrimaryFormat(),
+              GetGpuMemoryBufferManager());
+      display_output_surface = std::move(gpu_output_surface);
 #endif
-      } else {
-        std::unique_ptr<viz::CompositorOverlayCandidateValidator> validator;
+    } else {
+      std::unique_ptr<viz::CompositorOverlayCandidateValidator> validator;
 #if defined(OS_WIN)
-        const bool use_overlays_for_sw_protected_video =
-            base::FeatureList::IsEnabled(
-                features::kUseDCOverlaysForSoftwareProtectedVideo);
-        if (capabilities.dc_layers && (capabilities.use_dc_overlays_for_video ||
-                                       use_overlays_for_sw_protected_video))
-          validator = CreateOverlayCandidateValidator(compositor->widget());
-#elif !defined(OS_MACOSX)
-        // Overlays are only supported on surfaceless output surfaces on Mac.
+      const bool use_overlays_for_sw_protected_video =
+          base::FeatureList::IsEnabled(
+              features::kUseDCOverlaysForSoftwareProtectedVideo);
+      if (capabilities.dc_layers && (capabilities.use_dc_overlays_for_video ||
+                                     use_overlays_for_sw_protected_video))
         validator = CreateOverlayCandidateValidator(compositor->widget());
+#elif !defined(OS_MACOSX)
+      // Overlays are only supported on surfaceless output surfaces on Mac.
+      validator = CreateOverlayCandidateValidator(compositor->widget());
 #endif
-        auto gpu_output_surface =
-            std::make_unique<GpuBrowserCompositorOutputSurface>(
-                context_provider, std::move(vsync_callback),
-                std::move(validator));
-        display_output_surface = std::move(gpu_output_surface);
-      }
+      auto gpu_output_surface =
+          std::make_unique<GpuBrowserCompositorOutputSurface>(
+              context_provider, std::move(vsync_callback),
+              std::move(validator));
+      display_output_surface = std::move(gpu_output_surface);
     }
   }
 
@@ -550,10 +515,10 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
       external_begin_frame_controller_client;
 
   viz::BeginFrameSource* begin_frame_source = nullptr;
-  if (compositor->external_begin_frames_enabled()) {
+  if (compositor->external_begin_frame_client()) {
     external_begin_frame_controller_client =
         std::make_unique<ui::ExternalBeginFrameControllerClientImpl>(
-            compositor.get());
+            compositor->external_begin_frame_client());
     // We don't bind the controller mojo interface, since we only use the
     // ExternalBeginFrameSourceMojo directly and not via mojo (plus, as it
     // is an associated interface, binding it would require a separate pipe).
@@ -571,12 +536,12 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
                 compositor->task_runner().get()));
     begin_frame_source = synthetic_begin_frame_source.get();
   } else {
-      synthetic_begin_frame_source =
-          std::make_unique<viz::DelayBasedBeginFrameSource>(
-              std::make_unique<viz::DelayBasedTimeSource>(
-                  compositor->task_runner().get()),
-              viz::BeginFrameSource::kNotRestartableId);
-      begin_frame_source = synthetic_begin_frame_source.get();
+    synthetic_begin_frame_source =
+        std::make_unique<viz::DelayBasedBeginFrameSource>(
+            std::make_unique<viz::DelayBasedTimeSource>(
+                compositor->task_runner().get()),
+            viz::BeginFrameSource::kNotRestartableId);
+    begin_frame_source = synthetic_begin_frame_source.get();
   }
 
   if (data->synthetic_begin_frame_source) {
@@ -595,7 +560,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
 
   // The Display owns and uses the |display_output_surface| created above.
   data->display = std::make_unique<viz::Display>(
-      server_shared_bitmap_manager_, renderer_settings_,
+      server_shared_bitmap_manager_, viz::CreateRendererSettings(),
       compositor->frame_sink_id(), std::move(display_output_surface),
       std::move(scheduler), compositor->task_runner());
   data->display_client =
@@ -912,8 +877,8 @@ GpuProcessTransportFactory::SharedMainThreadContextProvider() {
   bool need_alpha_channel = false;
   bool support_locking = false;
   bool support_gles2_interface = true;
-  bool support_raster_interface = false;
-  bool support_grcontext = true;
+  bool support_raster_interface = true;
+  bool support_grcontext = false;
   shared_main_thread_contexts_ = CreateContextCommon(
       std::move(gpu_channel_host), gpu::kNullSurfaceHandle, need_alpha_channel,
       false, support_locking, support_gles2_interface, support_raster_interface,
@@ -925,6 +890,14 @@ GpuProcessTransportFactory::SharedMainThreadContextProvider() {
     shared_main_thread_contexts_->RemoveObserver(this);
     shared_main_thread_contexts_ = nullptr;
   }
+  return shared_main_thread_contexts_;
+}
+
+scoped_refptr<viz::RasterContextProvider>
+GpuProcessTransportFactory::SharedMainThreadRasterContextProvider() {
+  SharedMainThreadContextProvider();
+  DCHECK(!shared_main_thread_contexts_ ||
+         shared_main_thread_contexts_->RasterInterface());
   return shared_main_thread_contexts_;
 }
 
@@ -975,30 +948,6 @@ void GpuProcessTransportFactory::OnLostMainThreadSharedContext() {
   // Kill things that use the shared context before killing the shared context.
   lost_shared_main_thread_contexts = nullptr;
 }
-
-#if BUILDFLAG(ENABLE_VULKAN)
-scoped_refptr<viz::VulkanInProcessContextProvider>
-GpuProcessTransportFactory::SharedVulkanContextProvider() {
-  if (!shared_vulkan_context_provider_initialized_) {
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableVulkan)) {
-      base::ScopedAllowBlocking allow_blocking;
-      vulkan_implementation_ = gpu::CreateVulkanImplementation();
-      if (vulkan_implementation_ &&
-          vulkan_implementation_->InitializeVulkanInstance()) {
-        shared_vulkan_context_provider_ =
-            viz::VulkanInProcessContextProvider::Create(
-                vulkan_implementation_.get());
-      } else {
-        vulkan_implementation_.reset();
-      }
-    }
-
-    shared_vulkan_context_provider_initialized_ = true;
-  }
-  return shared_vulkan_context_provider_;
-}
-#endif
 
 void GpuProcessTransportFactory::OnContextLost() {
   DLOG(ERROR) << "Lost UI shared context.";

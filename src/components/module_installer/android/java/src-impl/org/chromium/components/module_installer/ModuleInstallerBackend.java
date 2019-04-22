@@ -34,6 +34,12 @@ import java.util.List;
     public abstract void install(String moduleName);
 
     /**
+     * Asynchronously installs module in the background.
+     * @param moduleName Name of the module.
+     */
+    public abstract void installDeferred(String moduleName);
+
+    /**
      * Releases resources of this backend. Calling this method an install is in progress results in
      * undefined behavior. Calling any other method on this backend after closing results in
      * undefined behavior, too.

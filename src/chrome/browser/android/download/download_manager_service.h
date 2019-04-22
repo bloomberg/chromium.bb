@@ -14,14 +14,14 @@
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/android/download/download_controller.h"
-#include "chrome/browser/download/download_history.h"
 #include "components/download/content/public/all_download_item_notifier.h"
 #include "components/download/public/common/in_progress_download_manager.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 
 using base::android::JavaParamRef;
 
@@ -33,9 +33,12 @@ class DownloadItem;
 // Java object.
 class DownloadManagerService
     : public download::AllDownloadItemNotifier::Observer,
-      public DownloadHistory::Observer,
-      public content::NotificationObserver {
+      public content::DownloadManager::Observer,
+      public content::NotificationObserver,
+      public service_manager::Service {
  public:
+  static void CreateAutoResumptionHandler();
+
   static void OnDownloadCanceled(
       download::DownloadItem* download,
       DownloadController::DownloadCancelReason reason);
@@ -49,11 +52,7 @@ class DownloadManagerService
   DownloadManagerService();
   ~DownloadManagerService() override;
 
-  std::unique_ptr<service_manager::Service>
-  CreateServiceManagerServiceInstance();
-
-  void NotifyServiceStarted(
-      std::unique_ptr<service_manager::Connector> connector);
+  void BindServiceRequest(service_manager::mojom::ServiceRequest request);
 
   // Called to Initialize this object. If |is_full_browser_started| is false,
   // it means only the service manager is launched. OnFullBrowserStarted() will
@@ -82,13 +81,15 @@ class DownloadManagerService
   void ResumeDownload(JNIEnv* env,
                       jobject obj,
                       const JavaParamRef<jstring>& jdownload_guid,
-                      bool is_off_the_record);
+                      bool is_off_the_record,
+                      bool has_user_gesture);
 
   // Called to retry a download.
   void RetryDownload(JNIEnv* env,
                      jobject obj,
                      const JavaParamRef<jstring>& jdownload_guid,
-                     bool is_off_the_record);
+                     bool is_off_the_record,
+                     bool has_user_gesture);
 
   // Called to cancel a download item that has GUID equal to |jdownload_guid|.
   // If the DownloadItem is not yet created, retry after a while.
@@ -108,6 +109,14 @@ class DownloadManagerService
   void RemoveDownload(JNIEnv* env,
                       jobject obj,
                       const JavaParamRef<jstring>& jdownload_guid,
+                      bool is_off_the_record);
+
+  // Called to rename a download item that has GUID equal to |id|.
+  void RenameDownload(JNIEnv* env,
+                      const JavaParamRef<jobject>& obj,
+                      const JavaParamRef<jstring>& id,
+                      const JavaParamRef<jstring>& name,
+                      const JavaParamRef<jobject>& callback,
                       bool is_off_the_record);
 
   // Returns whether or not the given download can be opened by the browser.
@@ -134,10 +143,11 @@ class DownloadManagerService
                             const JavaParamRef<jstring>& jdownload_guid,
                             bool is_off_the_record);
 
-  // DownloadHistory::Observer methods.
-  void OnHistoryQueryComplete() override;
+  // content::DownloadManager::Observer methods.
+  void OnManagerInitialized() override;
 
   // AllDownloadItemNotifier::Observer methods.
+  void OnManagerInitialized(content::DownloadManager* manager) override;
   void OnDownloadCreated(content::DownloadManager* manager,
                          download::DownloadItem* item) override;
   void OnDownloadUpdated(content::DownloadManager* manager,
@@ -150,9 +160,26 @@ class DownloadManagerService
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
+  // Called by the java code to create and insert an interrupted download to
+  // |in_progress_manager_| for testing purpose.
+  void CreateInterruptedDownloadForTest(
+      JNIEnv* env,
+      jobject obj,
+      const JavaParamRef<jstring>& jurl,
+      const JavaParamRef<jstring>& jdownload_guid,
+      const JavaParamRef<jstring>& jtarget_path);
+
   // Retrives the in-progress manager and give up the ownership.
   download::InProgressDownloadManager* RetriveInProgressDownloadManager(
       content::BrowserContext* context);
+
+  // Get all downloads from DownloadManager or InProgressManager.
+  void GetAllDownloads(content::DownloadManager::DownloadVector* all_items,
+                       bool is_off_the_record);
+
+  // Gets a download item from DownloadManager or InProgressManager.
+  download::DownloadItem* GetDownload(const std::string& download_guid,
+                                      bool is_off_the_record);
 
  protected:
   // Called to get the content::DownloadManager instance.
@@ -165,11 +192,13 @@ class DownloadManagerService
 
   // Helper function to start the download resumption.
   void ResumeDownloadInternal(const std::string& download_guid,
-                              bool is_off_the_record);
+                              bool is_off_the_record,
+                              bool has_user_gesture);
 
   // Helper function to retry the download.
   void RetryDownloadInternal(const std::string& download_guid,
-                             bool is_off_the_record);
+                             bool is_off_the_record,
+                             bool has_user_gesture);
 
   // Helper function to cancel a download.
   void CancelDownloadInternal(const std::string& download_guid,
@@ -191,10 +220,6 @@ class DownloadManagerService
 
   void OnResumptionFailedInternal(const std::string& download_guid);
 
-  // Gets a download item from DownloadManager or InProgressManager.
-  download::DownloadItem* GetDownload(const std::string& download_guid,
-                                      bool is_off_the_record);
-
   // Creates the InProgressDownloadmanager when running with ServiceManager
   // only mode.
   void CreateInProgressDownloadManager();
@@ -207,10 +232,12 @@ class DownloadManagerService
     resume_callback_for_testing_ = resume_cb;
   }
 
+  service_manager::ServiceBinding service_binding_{this};
+
   // Reference to the Java object.
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;
 
-  bool is_history_query_complete_;
+  bool is_manager_initialized_;
   bool is_pending_downloads_loaded_;
 
   enum PendingGetDownloadsFlags {
@@ -221,11 +248,24 @@ class DownloadManagerService
   int pending_get_downloads_actions_;
 
   enum DownloadAction { RESUME, RETRY, PAUSE, CANCEL, REMOVE, UNKNOWN };
-  using PendingDownloadActions = std::map<std::string, DownloadAction>;
+
+  // Holds params provided to the download function calls.
+  struct DownloadActionParams {
+    explicit DownloadActionParams(DownloadAction download_action);
+    DownloadActionParams(DownloadAction download_action, bool user_gesture);
+    DownloadActionParams(const DownloadActionParams& other);
+
+    ~DownloadActionParams() = default;
+
+    DownloadAction action;
+    bool has_user_gesture;
+  };
+
+  using PendingDownloadActions = std::map<std::string, DownloadActionParams>;
   PendingDownloadActions pending_actions_;
 
   void EnqueueDownloadAction(const std::string& download_guid,
-                             DownloadAction action);
+                             const DownloadActionParams& params);
 
   ResumeCallback resume_callback_for_testing_;
 
@@ -238,9 +278,6 @@ class DownloadManagerService
   // In-progress download manager when download is running as a service. Will
   // pass this object to DownloadManagerImpl once it is created.
   std::unique_ptr<download::InProgressDownloadManager> in_progress_manager_;
-
-  // Connector to the service manager to get the network service.
-  std::unique_ptr<service_manager::Connector> connector_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadManagerService);
 };

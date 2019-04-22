@@ -23,14 +23,11 @@
 @property(nonatomic, copy) NSString* leadingDetailText;
 @property(nonatomic, copy) NSString* trailingDetailText;
 
-// The accessory type for the represented cell.
-@property(nonatomic) UITableViewCellAccessoryType accessoryType;
-
 @end
 
 // Cell for autofill data with two leading text labels and one trailing text
 // label.
-@interface AutofillDataCell : UITableViewCell
+@interface AutofillDataCell : TableViewCell
 
 @property(nonatomic, readonly, strong) UILabel* textLabel;
 @property(nonatomic, readonly, strong) UILabel* leadingDetailTextLabel;

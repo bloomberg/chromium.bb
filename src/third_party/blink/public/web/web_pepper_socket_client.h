@@ -51,18 +51,18 @@ class WebPepperSocketClient {
   virtual void DidReceiveMessage(const WebString& message) {}
   virtual void DidReceiveArrayBuffer(const WebArrayBuffer& array_buffer) {}
   virtual void DidReceiveMessageError() {}
-  virtual void DidConsumeBufferedAmount(unsigned long consumed) {}
+  virtual void DidConsumeBufferedAmount(uint64_t consumed) {}
   virtual void DidStartClosingHandshake() {}
   virtual void DidClose(ClosingHandshakeCompletionStatus,
-                        unsigned short code,
+                        uint16_t code,
                         const WebString& reason) {}
 
   // FIXME: Deperecate these methods.
   virtual void DidConnect() {}
-  virtual void DidUpdateBufferedAmount(unsigned long buffered_amount) {}
-  virtual void DidClose(unsigned long unhandled_buffered_amount,
+  virtual void DidUpdateBufferedAmount(uint64_t buffered_amount) {}
+  virtual void DidClose(uint64_t unhandled_buffered_amount,
                         ClosingHandshakeCompletionStatus,
-                        unsigned short code,
+                        uint16_t code,
                         const WebString& reason) {}
 };
 

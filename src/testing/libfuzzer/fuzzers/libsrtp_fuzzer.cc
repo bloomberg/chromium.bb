@@ -85,7 +85,7 @@ struct Environment {
     assert(static_cast<size_t>(policy.rtcp.cipher_key_len) == key_length);
     memcpy(key, replacement_key, key_length);
     return policy;
-  };
+  }
 
   Environment() {
     srtp_init();
@@ -112,7 +112,7 @@ struct Environment {
     p->auth_key_len = 0;
     p->auth_tag_len = 0;
     p->sec_serv = sec_serv_none;
-  };
+  }
 };
 
 size_t ReadLength(const uint8_t* data, size_t size) {

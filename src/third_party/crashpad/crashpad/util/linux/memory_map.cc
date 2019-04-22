@@ -18,6 +18,7 @@
 #include <string.h>
 #include <sys/sysmacros.h>
 
+#include "base/bit_cast.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "build/build_config.h"
@@ -40,16 +41,18 @@ bool LocalStringToNumber(const std::string& string, Type* number) {
   static_assert(sizeof(Type) == sizeof(int) || sizeof(Type) == sizeof(int64_t),
                 "Unexpected Type size");
 
+  char data[sizeof(Type)];
   if (sizeof(Type) == sizeof(int)) {
-    return std::numeric_limits<Type>::is_signed
-               ? StringToNumber(string, reinterpret_cast<int*>(number))
-               : StringToNumber(string,
-                                reinterpret_cast<unsigned int*>(number));
+    if (!StringToNumber(string, reinterpret_cast<unsigned int*>(data))) {
+      return false;
+    }
   } else {
-    return std::numeric_limits<Type>::is_signed
-               ? StringToNumber(string, reinterpret_cast<int64_t*>(number))
-               : StringToNumber(string, reinterpret_cast<uint64_t*>(number));
+    if (!StringToNumber(string, reinterpret_cast<uint64_t*>(data))) {
+      return false;
+    }
   }
+  *number = bit_cast<Type>(data);
+  return true;
 }
 
 template <typename Type>
@@ -204,6 +207,48 @@ ParseResult ParseMapsLine(DelimitedFileReader* maps_file_reader,
   return ParseResult::kSuccess;
 }
 
+class SparseReverseIterator : public MemoryMap::Iterator {
+ public:
+  SparseReverseIterator(const std::vector<const MemoryMap::Mapping*>& mappings)
+      : mappings_(mappings), riter_(mappings_.rbegin()) {}
+
+  SparseReverseIterator() : mappings_(), riter_(mappings_.rend()) {}
+
+  // Iterator:
+  const MemoryMap::Mapping* Next() override {
+    return riter_ == mappings_.rend() ? nullptr : *(riter_++);
+  }
+
+  unsigned int Count() override { return mappings_.rend() - riter_; }
+
+ private:
+  std::vector<const MemoryMap::Mapping*> mappings_;
+  std::vector<const MemoryMap::Mapping*>::reverse_iterator riter_;
+
+  DISALLOW_COPY_AND_ASSIGN(SparseReverseIterator);
+};
+
+class FullReverseIterator : public MemoryMap::Iterator {
+ public:
+  FullReverseIterator(
+      std::vector<MemoryMap::Mapping>::const_reverse_iterator rbegin,
+      std::vector<MemoryMap::Mapping>::const_reverse_iterator rend)
+      : riter_(rbegin), rend_(rend) {}
+
+  // Iterator:
+  const MemoryMap::Mapping* Next() override {
+    return riter_ == rend_ ? nullptr : &*riter_++;
+  }
+
+  unsigned int Count() override { return rend_ - riter_; }
+
+ private:
+  std::vector<MemoryMap::Mapping>::const_reverse_iterator riter_;
+  std::vector<MemoryMap::Mapping>::const_reverse_iterator rend_;
+
+  DISALLOW_COPY_AND_ASSIGN(FullReverseIterator);
+};
+
 }  // namespace
 
 MemoryMap::Mapping::Mapping()
@@ -296,7 +341,7 @@ const MemoryMap::Mapping* MemoryMap::FindMappingWithName(
   return nullptr;
 }
 
-std::vector<const MemoryMap::Mapping*> MemoryMap::FindFilePossibleMmapStarts(
+std::unique_ptr<MemoryMap::Iterator> MemoryMap::FindFilePossibleMmapStarts(
     const Mapping& mapping) const {
   INITIALIZATION_STATE_DCHECK_VALID(initialized_);
 
@@ -308,12 +353,12 @@ std::vector<const MemoryMap::Mapping*> MemoryMap::FindFilePossibleMmapStarts(
     for (const auto& candidate : mappings_) {
       if (mapping.Equals(candidate)) {
         possible_starts.push_back(&candidate);
-        return possible_starts;
+        return std::make_unique<SparseReverseIterator>(possible_starts);
       }
     }
 
     LOG(ERROR) << "mapping not found";
-    return std::vector<const Mapping*>();
+    return std::make_unique<SparseReverseIterator>();
   }
 
 #if defined(OS_ANDROID)
@@ -341,7 +386,7 @@ std::vector<const MemoryMap::Mapping*> MemoryMap::FindFilePossibleMmapStarts(
         possible_starts.push_back(&candidate);
       }
       if (mapping.Equals(candidate)) {
-        return possible_starts;
+        return std::make_unique<SparseReverseIterator>(possible_starts);
       }
     }
   }
@@ -359,12 +404,23 @@ std::vector<const MemoryMap::Mapping*> MemoryMap::FindFilePossibleMmapStarts(
       possible_starts.push_back(&candidate);
     }
     if (mapping.Equals(candidate)) {
-      return possible_starts;
+      return std::make_unique<SparseReverseIterator>(possible_starts);
     }
   }
 
   LOG(ERROR) << "mapping not found";
-  return std::vector<const Mapping*>();
+  return std::make_unique<SparseReverseIterator>();
+}
+
+std::unique_ptr<MemoryMap::Iterator> MemoryMap::ReverseIteratorFrom(
+    const Mapping& target) const {
+  for (auto riter = mappings_.crbegin(); riter != mappings_.rend(); ++riter) {
+    if (riter->Equals(target)) {
+      return std::make_unique<FullReverseIterator>(riter, mappings_.rend());
+    }
+  }
+  return std::make_unique<FullReverseIterator>(mappings_.rend(),
+                                               mappings_.rend());
 }
 
 }  // namespace crashpad

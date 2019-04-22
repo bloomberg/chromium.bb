@@ -27,6 +27,7 @@ static const int kSpvDecorateTargetIdInIdx = 0;
 static const int kSpvDecorateDecorationInIdx = 1;
 static const int kSpvDecorateBuiltinInIdx = 2;
 static const int kEntryPointInterfaceInIdx = 3;
+static const int kEntryPointFunctionIdInIdx = 1;
 
 }  // anonymous namespace
 
@@ -70,6 +71,15 @@ void IRContext::BuildInvalidAnalyses(IRContext::Analysis set) {
   if (set & kAnalysisStructuredCFG) {
     BuildStructuredCFGAnalysis();
   }
+  if (set & kAnalysisIdToFuncMapping) {
+    BuildIdToFuncMapping();
+  }
+  if (set & kAnalysisConstants) {
+    BuildConstantManager();
+  }
+  if (set & kAnalysisTypes) {
+    BuildTypeManager();
+  }
 }
 
 void IRContext::InvalidateAnalysesExceptFor(
@@ -79,6 +89,11 @@ void IRContext::InvalidateAnalysesExceptFor(
 }
 
 void IRContext::InvalidateAnalyses(IRContext::Analysis analyses_to_invalidate) {
+  // The ConstantManager contains Type pointers. If the TypeManager goes
+  // away, the ConstantManager has to go away.
+  if (analyses_to_invalidate & kAnalysisTypes) {
+    analyses_to_invalidate |= kAnalysisConstants;
+  }
   if (analyses_to_invalidate & kAnalysisDefUse) {
     def_use_mgr_.reset(nullptr);
   }
@@ -109,6 +124,15 @@ void IRContext::InvalidateAnalyses(IRContext::Analysis analyses_to_invalidate) {
   }
   if (analyses_to_invalidate & kAnalysisStructuredCFG) {
     struct_cfg_analysis_.reset(nullptr);
+  }
+  if (analyses_to_invalidate & kAnalysisIdToFuncMapping) {
+    id_to_func_.clear();
+  }
+  if (analyses_to_invalidate & kAnalysisConstants) {
+    constant_mgr_.reset(nullptr);
+  }
+  if (analyses_to_invalidate & kAnalysisTypes) {
+    type_mgr_.reset(nullptr);
   }
 
   valid_analyses_ = Analysis(valid_analyses_ & ~analyses_to_invalidate);
@@ -245,6 +269,14 @@ bool IRContext::IsConsistent() {
     return false;
   }
 
+  if (AreAnalysesValid(kAnalysisDecorations)) {
+    analysis::DecorationManager* dec_mgr = get_decoration_mgr();
+    analysis::DecorationManager current(module());
+
+    if (*dec_mgr != current) {
+      return false;
+    }
+  }
   return true;
 }
 
@@ -313,6 +345,7 @@ void IRContext::AddCombinatorsForCapability(uint32_t capability) {
                                SpvOpTypeImage,
                                SpvOpTypeSampler,
                                SpvOpTypeSampledImage,
+                               SpvOpTypeAccelerationStructureNV,
                                SpvOpTypeArray,
                                SpvOpTypeRuntimeArray,
                                SpvOpTypeStruct,
@@ -641,8 +674,8 @@ uint32_t IRContext::GetBuiltinVarId(uint32_t builtin) {
         reg_type = type_mgr->GetRegisteredType(&v4float_ty);
         break;
       }
-      case SpvBuiltInVertexId:
-      case SpvBuiltInInstanceId:
+      case SpvBuiltInVertexIndex:
+      case SpvBuiltInInstanceIndex:
       case SpvBuiltInPrimitiveId:
       case SpvBuiltInInvocationId:
       case SpvBuiltInGlobalInvocationId: {
@@ -658,6 +691,7 @@ uint32_t IRContext::GetBuiltinVarId(uint32_t builtin) {
     uint32_t type_id = type_mgr->GetTypeInstruction(reg_type);
     uint32_t varTyPtrId =
         type_mgr->FindPointerToType(type_id, SpvStorageClassInput);
+    // TODO(1841): Handle id overflow.
     var_id = TakeNextId();
     std::unique_ptr<Instruction> newVarOp(
         new Instruction(this, SpvOpVariable, varTyPtrId, var_id,
@@ -671,6 +705,70 @@ uint32_t IRContext::GetBuiltinVarId(uint32_t builtin) {
   }
   builtin_var_id_map_[builtin] = var_id;
   return var_id;
+}
+
+void IRContext::AddCalls(const Function* func, std::queue<uint32_t>* todo) {
+  for (auto bi = func->begin(); bi != func->end(); ++bi)
+    for (auto ii = bi->begin(); ii != bi->end(); ++ii)
+      if (ii->opcode() == SpvOpFunctionCall)
+        todo->push(ii->GetSingleWordInOperand(0));
+}
+
+bool IRContext::ProcessEntryPointCallTree(ProcessFunction& pfn) {
+  // Collect all of the entry points as the roots.
+  std::queue<uint32_t> roots;
+  for (auto& e : module()->entry_points()) {
+    roots.push(e.GetSingleWordInOperand(kEntryPointFunctionIdInIdx));
+  }
+  return ProcessCallTreeFromRoots(pfn, &roots);
+}
+
+bool IRContext::ProcessReachableCallTree(ProcessFunction& pfn) {
+  std::queue<uint32_t> roots;
+
+  // Add all entry points since they can be reached from outside the module.
+  for (auto& e : module()->entry_points())
+    roots.push(e.GetSingleWordInOperand(kEntryPointFunctionIdInIdx));
+
+  // Add all exported functions since they can be reached from outside the
+  // module.
+  for (auto& a : annotations()) {
+    // TODO: Handle group decorations as well.  Currently not generate by any
+    // front-end, but could be coming.
+    if (a.opcode() == SpvOp::SpvOpDecorate) {
+      if (a.GetSingleWordOperand(1) ==
+          SpvDecoration::SpvDecorationLinkageAttributes) {
+        uint32_t lastOperand = a.NumOperands() - 1;
+        if (a.GetSingleWordOperand(lastOperand) ==
+            SpvLinkageType::SpvLinkageTypeExport) {
+          uint32_t id = a.GetSingleWordOperand(0);
+          if (GetFunction(id)) {
+            roots.push(id);
+          }
+        }
+      }
+    }
+  }
+
+  return ProcessCallTreeFromRoots(pfn, &roots);
+}
+
+bool IRContext::ProcessCallTreeFromRoots(ProcessFunction& pfn,
+                                         std::queue<uint32_t>* roots) {
+  // Process call tree
+  bool modified = false;
+  std::unordered_set<uint32_t> done;
+
+  while (!roots->empty()) {
+    const uint32_t fi = roots->front();
+    roots->pop();
+    if (done.insert(fi).second) {
+      Function* fn = GetFunction(fi);
+      modified = pfn(fn) || modified;
+      AddCalls(fn, roots);
+    }
+  }
+  return modified;
 }
 
 // Gets the dominator analysis for function |f|.

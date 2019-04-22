@@ -33,7 +33,7 @@
 }
 
 - (void)executeJavaScript:(NSString*)script
-        completionHandler:(web::JavaScriptResultBlock)completionHandler {
+        completionHandler:(void (^)(id, NSError*))completionHandler {
   web::ExecuteJavaScript(_webView, script, completionHandler);
 }
 

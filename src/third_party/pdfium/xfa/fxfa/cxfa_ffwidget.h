@@ -15,7 +15,7 @@
 #include "xfa/fwl/cfwl_app.h"
 #include "xfa/fwl/cfwl_messagemouse.h"
 #include "xfa/fxfa/fxfa.h"
-#include "xfa/fxfa/parser/cxfa_contentlayoutitem.h"
+#include "xfa/fxfa/layout/cxfa_contentlayoutitem.h"
 
 class CFX_DIBitmap;
 class CXFA_Box;
@@ -32,16 +32,16 @@ inline float XFA_UnitPx2Pt(float fPx, float fDpi) {
   return fPx * 72.0f / fDpi;
 }
 
-#define XFA_FLOAT_PERCISION 0.001f
+constexpr float kXFAWidgetPrecision = 0.001f;
 
 void XFA_DrawImage(CXFA_Graphics* pGS,
                    const CFX_RectF& rtImage,
                    const CFX_Matrix& matrix,
                    const RetainPtr<CFX_DIBitmap>& pDIBitmap,
-                   XFA_AttributeEnum iAspect,
+                   XFA_AttributeValue iAspect,
                    const CFX_Size& dpi,
-                   XFA_AttributeEnum iHorzAlign = XFA_AttributeEnum::Left,
-                   XFA_AttributeEnum iVertAlign = XFA_AttributeEnum::Top);
+                   XFA_AttributeValue iHorzAlign = XFA_AttributeValue::Left,
+                   XFA_AttributeValue iVertAlign = XFA_AttributeValue::Top);
 
 RetainPtr<CFX_DIBitmap> XFA_LoadImageFromBuffer(
     const RetainPtr<IFX_SeekableReadStream>& pImageFileRead,
@@ -61,41 +61,18 @@ class CXFA_CalcData {
   int32_t m_iRefCount;
 };
 
-enum class XFA_FFWidgetType {
-  kNone = 0,
-  kBarcode,
-  kButton,
-  kCheckButton,
-  kChoiceList,
-  kDateTimeEdit,
-  kImageEdit,
-  kNumericEdit,
-  kPasswordEdit,
-  kSignature,
-  kTextEdit,
-  kArc,
-  kLine,
-  kRectangle,
-  kText,
-  kImage,
-  kSubform,
-  kExclGroup
-};
-
-class CXFA_FFWidget : public CXFA_ContentLayoutItem {
+class CXFA_FFWidget {
  public:
   enum FocusOption { kDoNotDrawFocus = 0, kDrawFocus };
+  enum HighlightOption { kNoHighlight = 0, kHighlight };
 
   explicit CXFA_FFWidget(CXFA_Node* pNode);
-  ~CXFA_FFWidget() override;
+  virtual ~CXFA_FFWidget();
 
-  // CXFA_ContentLayoutItem:
-  CXFA_FFWidget* AsFFWidget() override;
-
-  virtual CFX_RectF GetBBox(uint32_t dwStatus, FocusOption focus);
+  virtual CFX_RectF GetBBox(FocusOption focus);
   virtual void RenderWidget(CXFA_Graphics* pGS,
                             const CFX_Matrix& matrix,
-                            uint32_t dwStatus);
+                            HighlightOption highlight);
   virtual bool IsLoaded();
   virtual bool LoadWidget();
   virtual bool PerformLayout();
@@ -142,9 +119,11 @@ class CXFA_FFWidget : public CXFA_ContentLayoutItem {
   virtual void Delete();
   virtual void DeSelect();
   virtual WideString GetText();
-
   virtual FormFieldType GetFormFieldType();
 
+  CXFA_Node* GetNode() const { return m_pNode.Get(); }
+  CXFA_ContentLayoutItem* GetLayoutItem() const { return m_pLayoutItem.Get(); }
+  void SetLayoutItem(CXFA_ContentLayoutItem* pItem) { m_pLayoutItem = pItem; }
   CXFA_FFPageView* GetPageView() const { return m_pPageView.Get(); }
   void SetPageView(CXFA_FFPageView* pPageView) { m_pPageView = pPageView; }
   CXFA_FFDocView* GetDocView() const { return m_pDocView.Get(); }
@@ -152,16 +131,15 @@ class CXFA_FFWidget : public CXFA_ContentLayoutItem {
 
   const CFX_RectF& GetWidgetRect() const;
   const CFX_RectF& RecacheWidgetRect() const;
-  uint32_t GetStatus();
   void ModifyStatus(uint32_t dwAdded, uint32_t dwRemoved);
-
-  CXFA_Node* GetNode() const { return m_pNode.Get(); }
 
   CXFA_FFDoc* GetDoc();
   CXFA_FFApp* GetApp();
   IXFA_AppProvider* GetAppProvider();
   void InvalidateRect();
-  bool IsFocused() const { return !!(m_dwStatus & XFA_WidgetStatus_Focused); }
+  bool IsFocused() const {
+    return GetLayoutItem()->TestStatusBits(XFA_WidgetStatus_Focused);
+  }
   CFX_PointF Rotate2Normal(const CFX_PointF& point);
   CFX_Matrix GetRotateMatrix();
   bool IsLayoutRectEmpty();
@@ -183,11 +161,12 @@ class CXFA_FFWidget : public CXFA_ContentLayoutItem {
                           bool forceRound);
 
   CFX_RectF GetRectWithoutRotate();
-  bool IsMatchVisibleStatus(uint32_t dwStatus);
+  bool HasVisibleStatus() const;
   void EventKillFocus();
   bool IsButtonDown();
   void SetButtonDown(bool bSet);
 
+  UnownedPtr<CXFA_ContentLayoutItem> m_pLayoutItem;
   UnownedPtr<CXFA_FFDocView> m_pDocView;
   UnownedPtr<CXFA_FFPageView> m_pPageView;
   UnownedPtr<CXFA_Node> const m_pNode;

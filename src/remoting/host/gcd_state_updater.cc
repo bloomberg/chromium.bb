@@ -8,6 +8,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/strings/stringize_macros.h"
 #include "base/time/time.h"
@@ -70,7 +71,7 @@ void GcdStateUpdater::OnSignalStrategyStateChange(SignalStrategy::State state) {
 }
 
 bool GcdStateUpdater::OnSignalStrategyIncomingStanza(
-    const buzz::XmlElement* stanza) {
+    const jingle_xmpp::XmlElement* stanza) {
   // Ignore all XMPP stanzas.
   return false;
 }

@@ -6,14 +6,15 @@
 
 #include <chrono>
 
-#include "gpu/command_buffer/service/raster_decoder_context_state.h"
+#include "base/bind.h"
+#include "gpu/command_buffer/service/shared_context_state.h"
 #include "ui/gl/gl_context.h"
 
 namespace gpu {
 namespace raster {
 
 GrCacheController::GrCacheController(
-    RasterDecoderContextState* context_state,
+    SharedContextState* context_state,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : context_state_(context_state), task_runner_(std::move(task_runner)) {}
 
@@ -21,9 +22,9 @@ GrCacheController::~GrCacheController() = default;
 
 void GrCacheController::ScheduleGrContextCleanup() {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK(context_state_->context->IsCurrent(nullptr));
+  DCHECK(context_state_->IsCurrent(nullptr));
 
-  if (!context_state_->gr_context)
+  if (!context_state_->gr_context())
     return;
 
   current_idle_id_++;
@@ -35,9 +36,8 @@ void GrCacheController::ScheduleGrContextCleanup() {
   // a long while even if it is under budget. Below we set a call back to
   // purge all possible GrContext resources if the context itself is not being
   // used.
-  context_state_->context->DirtyVirtualContextState();
-  context_state_->need_context_state_reset = true;
-  context_state_->gr_context->performDeferredCleanup(
+  context_state_->set_need_context_state_reset(true);
+  context_state_->gr_context()->performDeferredCleanup(
       std::chrono::seconds(kOldResourceCleanupDelaySeconds));
 
   constexpr int kIdleCleanupDelaySeconds = 1;
@@ -52,16 +52,10 @@ void GrCacheController::ScheduleGrContextCleanup() {
 void GrCacheController::PurgeGrCache(uint64_t idle_id) {
   purge_gr_cache_cb_.Cancel();
 
-  if (context_state_->context_lost)
-    return;
-
-  // Skip unnecessary MakeCurrent to improve
+  // We don't care which surface is current. This improves
   // performance. https://crbug.com/457431
-  if (!context_state_->context->IsCurrent(nullptr) &&
-      !context_state_->context->MakeCurrent(context_state_->surface.get())) {
-    context_state_->context_lost = true;
+  if (!context_state_->MakeCurrent(nullptr))
     return;
-  }
 
   // If the idle id changed, the context was used after this callback was
   // posted. Schedule another one.
@@ -70,9 +64,8 @@ void GrCacheController::PurgeGrCache(uint64_t idle_id) {
     return;
   }
 
-  context_state_->context->DirtyVirtualContextState();
-  context_state_->need_context_state_reset = true;
-  context_state_->gr_context->freeGpuResources();
+  context_state_->set_need_context_state_reset(true);
+  context_state_->gr_context()->freeGpuResources();
 }
 
 }  // namespace raster

@@ -5,11 +5,7 @@
 // Custom bindings for the automation API.
 var AutomationNode = require('automationNode').AutomationNode;
 var AutomationRootNode = require('automationNode').AutomationRootNode;
-var automation = apiBridge || require('binding').Binding.create('automation');
-var automationInternal =
-    getInternalApi ?
-        getInternalApi('automationInternal') :
-        require('binding').Binding.create('automationInternal').generate();
+var automationInternal = getInternalApi('automationInternal');
 var exceptionHandler = require('uncaught_exception_handler');
 var logging = requireNative('logging');
 var nativeAutomationInternal = requireNative('automationInternal');
@@ -23,12 +19,6 @@ var RemoveTreeChangeObserver =
     nativeAutomationInternal.RemoveTreeChangeObserver;
 var GetFocusNative = nativeAutomationInternal.GetFocus;
 
-var jsLastError = bindingUtil ? undefined : require('lastError');
-function hasLastError() {
-  return bindingUtil ?
-      bindingUtil.hasLastError() : jsLastError.hasError(chrome);
-}
-
 /**
  * A namespace to export utility functions to other files in automation.
  */
@@ -37,7 +27,7 @@ window.automationUtil = function() {};
 // TODO(aboxhall): Look into using WeakMap
 var idToCallback = {};
 
-var DESKTOP_TREE_ID = "0";
+var desktopId = undefined;
 
 automationUtil.storeTreeCallback = function(id, callback) {
   if (!callback)
@@ -79,7 +69,10 @@ automationUtil.focusedNode = null;
  * @return {AutomationNode}
  */
 automationUtil.getFocus = function() {
-  var focusedNodeInfo = GetFocusNative(DESKTOP_TREE_ID);
+  if (desktopId === undefined)
+    return;
+
+  var focusedNodeInfo = GetFocusNative(desktopId);
   if (!focusedNodeInfo)
     return null;
   var tree = AutomationRootNode.getOrCreate(focusedNodeInfo.treeId);
@@ -102,7 +95,7 @@ automationUtil.updateFocusedNodeOnBlur = function() {
   automationUtil.focusedNode = focus ? focus.root : null;
 };
 
-automation.registerCustomHook(function(bindingsAPI) {
+apiBridge.registerCustomHook(function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
   // TODO(aboxhall, dtseng): Make this return the speced AutomationRootNode obj.
@@ -119,7 +112,7 @@ automation.registerCustomHook(function(bindingsAPI) {
     var params = { tabID: tabID };
     automationInternal.enableTab(params,
         function onEnable(id) {
-          if (hasLastError()) {
+          if (bindingUtil.hasLastError()) {
             callback();
             return;
           }
@@ -130,21 +123,22 @@ automation.registerCustomHook(function(bindingsAPI) {
   var desktopTree = null;
   apiFunctions.setHandleRequest('getDesktop', function(callback) {
     StartCachingAccessibilityTrees();
-    desktopTree = AutomationRootNode.get(DESKTOP_TREE_ID);
+    if (desktopId !== undefined)
+      desktopTree = AutomationRootNode.get(desktopId);
     if (!desktopTree) {
-      if (DESKTOP_TREE_ID in idToCallback)
-        idToCallback[DESKTOP_TREE_ID].push(callback);
-      else
-        idToCallback[DESKTOP_TREE_ID] = [callback];
-
-      // TODO(dtseng): Disable desktop tree once desktop object goes out of
-      // scope.
-      automationInternal.enableDesktop(function() {
-        if (hasLastError()) {
-          AutomationRootNode.destroy(DESKTOP_TREE_ID);
+      automationInternal.enableDesktop(function(treeId) {
+        if (bindingUtil.hasLastError()) {
+          AutomationRootNode.destroy(treeId);
+          desktopId = undefined;
           callback();
           return;
         }
+        desktopId = treeId;
+        desktopTree = AutomationRootNode.getOrCreate(desktopId);
+        callback(desktopTree);
+
+        // TODO(dtseng): Disable desktop tree once desktop object goes out of
+        // scope.
       });
     } else {
       callback(desktopTree);
@@ -184,7 +178,7 @@ automation.registerCustomHook(function(bindingsAPI) {
     var focusNodeImpl = privates(params.focusObject).impl;
     if (anchorNodeImpl.treeID !== focusNodeImpl.treeID)
       throw new Error('Selection anchor and focus must be in the same tree.');
-    if (anchorNodeImpl.treeID === DESKTOP_TREE_ID) {
+    if (anchorNodeImpl.treeID === desktopId) {
       throw new Error('Use AutomationNode.setSelection to set the selection ' +
           'in the desktop tree.');
     }
@@ -265,6 +259,9 @@ automationInternal.onAccessibilityEvent.addListener(function(eventParams) {
     // root node when nothing has focus, we need to treat those as focus
     // events but otherwise not handle blur events specially.
     var node = privates(targetTree).impl.get(eventParams.targetID);
+    if (!node)
+      return;
+
     if (node == node.root)
       automationUtil.updateFocusedNodeOnBlur();
   } else if (eventParams.eventType == 'mediaStartedPlaying' ||
@@ -306,8 +303,7 @@ automationInternal.onAccessibilityEvent.addListener(function(eventParams) {
   // attribute or child nodes. If we've got that, wait for the full tree before
   // calling the callback.
   // TODO(dmazzoni): Don't send down placeholder (crbug.com/397553)
-  if (id != DESKTOP_TREE_ID && !targetTree.url &&
-      targetTree.children.length == 0)
+  if (id != desktopId && !targetTree.url && targetTree.children.length == 0)
     return;
 
   // If the tree wasn't available when getTree() was called, the callback will
@@ -339,14 +335,19 @@ automationInternal.onAccessibilityTreeSerializationError.addListener(
   automationInternal.enableFrame(id);
 });
 
-automationInternal.onActionResult.addListener(
-    function(treeID, requestID, result) {
+automationInternal.onActionResult.addListener(function(
+    treeID, requestID, result) {
   var targetTree = AutomationRootNode.get(treeID);
   if (!targetTree)
     return;
 
   privates(targetTree).impl.onActionResult(requestID, result);
-    });
+});
 
-if (!apiBridge)
-  exports.$set('binding', automation.generate());
+automationInternal.onGetTextLocationResult.addListener(function(
+    textLocationParams) {
+  var targetTree = AutomationRootNode.get(textLocationParams.treeID);
+  if (!targetTree)
+    return;
+  privates(targetTree).impl.onGetTextLocationResult(textLocationParams);
+});

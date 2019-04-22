@@ -5,7 +5,7 @@
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_view_controller.h"
 
 #include "base/ios/block_types.h"
-#import "base/logging.h"
+#include "base/logging.h"
 #import "base/mac/foundation_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
@@ -13,6 +13,7 @@
 #include "ios/chrome/browser/procedural_block_types.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_cell.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_constants.h"
+#import "ios/chrome/browser/ui/tab_grid/grid/grid_empty_view.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_image_data_source.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_item.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_layout.h"
@@ -72,24 +73,6 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 @end
 
 @implementation GridViewController
-// Public properties.
-@synthesize theme = _theme;
-@synthesize delegate = _delegate;
-@synthesize imageDataSource = _imageDataSource;
-@synthesize emptyStateView = _emptyStateView;
-@synthesize showsSelectionUpdates = _showsSelectionUpdates;
-// Private properties.
-@synthesize updatesCollectionView = _updatesCollectionView;
-@synthesize collectionView = _collectionView;
-@synthesize items = _items;
-@synthesize selectedItemID = _selectedItemID;
-@synthesize lastInsertedItemID = _lastInsertedItemID;
-@synthesize itemReorderRecognizer = _itemReorderRecognizer;
-@synthesize itemReorderTouchPoint = _itemReorderTouchPoint;
-@synthesize emptyStateAnimator = _emptyStateAnimator;
-@synthesize defaultLayout = _defaultLayout;
-@synthesize reorderingLayout = _reorderingLayout;
-@synthesize hasChangedOrder = _hasChangedOrder;
 
 - (instancetype)init {
   if (self = [super init]) {
@@ -98,6 +81,8 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   }
   return self;
 }
+
+#pragma mark - UIViewController
 
 - (void)loadView {
   self.defaultLayout = [[GridLayout alloc] init];
@@ -164,29 +149,40 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   [super viewWillDisappear:animated];
 }
 
+#pragma mark - UITraitEnvironment
+
+- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
+  [super traitCollectionDidChange:previousTraitCollection];
+  [self.collectionView.collectionViewLayout invalidateLayout];
+}
+
 #pragma mark - Public
 
 - (UIScrollView*)gridView {
   return self.collectionView;
 }
 
-- (void)setEmptyStateView:(UIView*)emptyStateView {
+- (void)setEmptyStateView:(UIView<GridEmptyView>*)emptyStateView {
   if (_emptyStateView)
     [_emptyStateView removeFromSuperview];
   _emptyStateView = emptyStateView;
+  emptyStateView.scrollViewContentInsets =
+      self.collectionView.adjustedContentInset;
   emptyStateView.translatesAutoresizingMaskIntoConstraints = NO;
   [self.collectionView.backgroundView addSubview:emptyStateView];
   id<LayoutGuideProvider> safeAreaGuide =
       self.collectionView.backgroundView.safeAreaLayoutGuide;
   [NSLayoutConstraint activateConstraints:@[
-    [self.collectionView.backgroundView.centerXAnchor
-        constraintEqualToAnchor:emptyStateView.centerXAnchor],
     [self.collectionView.backgroundView.centerYAnchor
         constraintEqualToAnchor:emptyStateView.centerYAnchor],
     [safeAreaGuide.leadingAnchor
-        constraintLessThanOrEqualToAnchor:emptyStateView.leadingAnchor],
+        constraintEqualToAnchor:emptyStateView.leadingAnchor],
     [safeAreaGuide.trailingAnchor
-        constraintGreaterThanOrEqualToAnchor:emptyStateView.trailingAnchor],
+        constraintEqualToAnchor:emptyStateView.trailingAnchor],
+    [emptyStateView.topAnchor
+        constraintGreaterThanOrEqualToAnchor:safeAreaGuide.topAnchor],
+    [emptyStateView.bottomAnchor
+        constraintLessThanOrEqualToAnchor:safeAreaGuide.bottomAnchor],
   ]];
 }
 
@@ -313,6 +309,12 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   return NO;
 }
 
+#pragma mark - UIScrollViewDelegate
+
+- (void)scrollViewDidChangeAdjustedContentInset:(UIScrollView*)scrollView {
+  self.emptyStateView.scrollViewContentInsets = scrollView.contentInset;
+}
+
 #pragma mark - GridCellDelegate
 
 - (void)closeButtonTappedForCell:(GridCell*)cell {
@@ -327,8 +329,8 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   [self.delegate gridViewController:self
                  didCloseItemWithID:cell.itemIdentifier];
   // Record when a tab is closed via the X.
-  // TODO(crbug.com/856965) : Rename metrics.
-  base::RecordAction(base::UserMetricsAction("MobileStackViewCloseTab"));
+  base::RecordAction(
+      base::UserMetricsAction("MobileTabGridCloseControlTapped"));
 }
 
 #pragma mark - GridConsumer

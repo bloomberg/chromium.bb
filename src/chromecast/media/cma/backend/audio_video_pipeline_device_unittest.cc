@@ -72,6 +72,7 @@ void IgnoreEos() {}
 AudioConfig DefaultAudioConfig() {
   AudioConfig default_config;
   default_config.codec = kCodecPCM;
+  default_config.channel_layout = ChannelLayout::STEREO;
   default_config.sample_format = kSampleFormatS16;
   default_config.channel_number = 2;
   default_config.bytes_per_channel = 2;
@@ -84,7 +85,7 @@ VideoConfig DefaultVideoConfig() {
   default_config.codec = kCodecH264;
   default_config.profile = kH264Main;
   default_config.additional_config = nullptr;
-  default_config.encryption_scheme = Unencrypted();
+  default_config.encryption_scheme = EncryptionScheme::kUnencrypted;
   return default_config;
 }
 
@@ -196,18 +197,14 @@ class AudioVideoPipelineDeviceTest : public testing::Test {
   void SetUp() override {
     CastMediaShlib::Initialize(
         base::CommandLine::ForCurrentProcess()->argv());
-    if (VolumeControl::Initialize) {
-      VolumeControl::Initialize(base::CommandLine::ForCurrentProcess()->argv());
-    }
+    VolumeControl::Initialize(base::CommandLine::ForCurrentProcess()->argv());
   }
 
   void TearDown() override {
     // Pipeline must be destroyed before finalizing media shlib.
     backend_.reset();
     effects_backends_.clear();
-    if (VolumeControl::Finalize) {
-      VolumeControl::Finalize();
-    }
+    VolumeControl::Finalize();
     CastMediaShlib::Finalize();
   }
 
@@ -470,6 +467,7 @@ void BufferFeeder::TestAudioConfigs() {
   AudioConfig config;
   // First, make sure that kAudioCodecUnknown is not accepted.
   config.codec = kAudioCodecUnknown;
+  config.channel_layout = ChannelLayout::STEREO;
   config.sample_format = kSampleFormatS16;
   config.channel_number = 2;
   config.bytes_per_channel = 2;
@@ -591,7 +589,7 @@ std::unique_ptr<BufferFeeder> BufferFeeder::LoadVideo(
     video_config.codec = kCodecH264;
     video_config.profile = kH264Main;
     video_config.additional_config = nullptr;
-    video_config.encryption_scheme = Unencrypted();
+    video_config.encryption_scheme = EncryptionScheme::kUnencrypted;
   } else {
     base::FilePath file_path = GetTestDataFilePath(filename);
     DemuxResult demux_result = FFmpegDemuxForTest(file_path, false /* audio */);

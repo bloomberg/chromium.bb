@@ -47,7 +47,7 @@ class BrowsingDataMediaLicenseHelper
   };
 
   using FetchCallback =
-      base::Callback<void(const std::list<MediaLicenseInfo>&)>;
+      base::OnceCallback<void(const std::list<MediaLicenseInfo>&)>;
 
   // Creates a BrowsingDataMediaLicenseHelper instance for the media
   // licenses stored in |profile|'s user data directory. The
@@ -65,7 +65,7 @@ class BrowsingDataMediaLicenseHelper
   // thread; the provided Callback will likewise be executed asynchronously
   // on the UI thread. Obtaining the data will occur asynchronously on the
   // FILE thread.
-  virtual void StartFetching(const FetchCallback& callback) = 0;
+  virtual void StartFetching(FetchCallback callback) = 0;
 
   // Deletes any media licenses associated with |origin| from the disk.
   // Deletion will occur asynchronously on the FILE thread, but this function

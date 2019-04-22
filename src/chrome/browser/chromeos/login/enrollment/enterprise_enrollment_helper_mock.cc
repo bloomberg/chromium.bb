@@ -7,14 +7,12 @@
 
 namespace chromeos {
 
-EnterpriseEnrollmentHelperMock::EnterpriseEnrollmentHelperMock(
-    EnrollmentStatusConsumer* status_consumer)
-    : EnterpriseEnrollmentHelper(status_consumer) {}
+EnterpriseEnrollmentHelperMock::EnterpriseEnrollmentHelperMock() {}
 
 EnterpriseEnrollmentHelperMock::~EnterpriseEnrollmentHelperMock() {}
 
 EnterpriseEnrollmentHelper::EnrollmentStatusConsumer*
-EnterpriseEnrollmentHelperMock::status_consumer() {
+EnterpriseEnrollmentHelperMock::status_consumer() const {
   return EnterpriseEnrollmentHelper::status_consumer();
 }
 

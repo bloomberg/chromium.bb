@@ -21,7 +21,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
@@ -31,12 +30,15 @@ import org.chromium.components.location.LocationUtils;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.AndroidPermissionDelegate;
 import org.chromium.ui.base.PermissionCallback;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.widget.TextViewWithClickableSpans;
+
+import java.util.concurrent.Callable;
 
 /**
  * Tests for the BluetoothChooserDialog class.
@@ -117,7 +119,7 @@ public class BluetoothChooserDialogTest {
     }
 
     private BluetoothChooserDialogWithFakeNatives createDialog() {
-        return ThreadUtils.runOnUiThreadBlockingNoException(
+        return TestThreadUtils.runOnUiThreadBlockingNoException(
                 () -> {
                     mWindowAndroid = new ActivityWindowAndroid(mActivityTestRule.getActivity());
                     BluetoothChooserDialogWithFakeNatives dialog =
@@ -135,18 +137,7 @@ public class BluetoothChooserDialogTest {
         final ListView items = (ListView) dialog.findViewById(R.id.items);
         final Button button = (Button) dialog.findViewById(R.id.positive);
 
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return items.getChildAt(0) != null;
-            }
-        });
-
-        Assert.assertEquals("Not all items have a view; positions may be incorrect.",
-                items.getChildCount(), items.getAdapter().getCount());
-
-        // Verify first item selected gets selected.
-        TouchCommon.singleClickView(items.getChildAt(position - 1));
+        clickItemAtPosition(items, position - 1);
 
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
@@ -162,6 +153,26 @@ public class BluetoothChooserDialogTest {
             public boolean isSatisfied() {
                 return chooserDialog.mFinishedEventType != -1;
             }
+        });
+    }
+
+    private static void clickItemAtPosition(ListView listView, int position) {
+        CriteriaHelper.pollUiThread(() -> listView.getChildAt(0) != null);
+
+        Callable<Boolean> isVisible = () -> {
+            int visibleStart = listView.getFirstVisiblePosition();
+            int visibleEnd = visibleStart + listView.getChildCount() - 1;
+            return position >= visibleStart && position <= visibleEnd;
+        };
+
+        if (!TestThreadUtils.runOnUiThreadBlockingNoException(isVisible)) {
+            TestThreadUtils.runOnUiThreadBlocking(() -> listView.setSelection(position));
+            CriteriaHelper.pollUiThread(isVisible);
+        }
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            TouchCommon.singleClickView(
+                    listView.getChildAt(position - listView.getFirstVisiblePosition()));
         });
     }
 
@@ -218,7 +229,7 @@ public class BluetoothChooserDialogTest {
         final Button button = (Button) dialog.findViewById(R.id.positive);
         final View progress = dialog.findViewById(R.id.progress);
 
-        ThreadUtils.runOnUiThreadBlocking(() -> {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
             // Add non-connected device with no signal strength.
             mChooserDialog.addOrUpdateDevice("id-1", "Name 1", false /* isGATTConnected */,
                     -1 /* signalStrengthLevel */);
@@ -284,9 +295,8 @@ public class BluetoothChooserDialogTest {
                 new TestAndroidPermissionDelegate(dialog);
         mWindowAndroid.setAndroidPermissionDelegate(permissionDelegate);
 
-        ThreadUtils.runOnUiThreadBlocking(
-                ()
-                        -> mChooserDialog.notifyDiscoveryState(
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> mChooserDialog.notifyDiscoveryState(
                                 BluetoothChooserDialog.DiscoveryMode.DISCOVERY_FAILED_TO_START));
 
         Assert.assertEquals(removeLinkTags(mActivityTestRule.getActivity().getString(
@@ -300,7 +310,7 @@ public class BluetoothChooserDialogTest {
         Assert.assertEquals(View.GONE, items.getVisibility());
         Assert.assertEquals(View.GONE, progress.getVisibility());
 
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> errorView.getClickableSpans()[0].onClick(errorView));
 
         // Permission was requested.
@@ -309,10 +319,10 @@ public class BluetoothChooserDialogTest {
         Assert.assertNotNull(permissionDelegate.mCallback);
         // Grant permission.
         mLocationUtils.mLocationGranted = true;
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> permissionDelegate.mCallback.onRequestPermissionsResult(
-                        new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
-                        new int[]{PackageManager.PERMISSION_GRANTED}));
+                                new String[] {Manifest.permission.ACCESS_COARSE_LOCATION},
+                                new int[] {PackageManager.PERMISSION_GRANTED}));
 
         Assert.assertEquals(1, mChooserDialog.mRestartSearchCount);
         Assert.assertEquals(removeLinkTags(mActivityTestRule.getActivity().getString(
@@ -344,9 +354,8 @@ public class BluetoothChooserDialogTest {
         mLocationUtils.mLocationGranted = true;
         mLocationUtils.mSystemLocationSettingsEnabled = false;
 
-        ThreadUtils.runOnUiThreadBlocking(
-                ()
-                        -> mChooserDialog.notifyDiscoveryState(
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> mChooserDialog.notifyDiscoveryState(
                                 BluetoothChooserDialog.DiscoveryMode.DISCOVERY_FAILED_TO_START));
 
         Assert.assertEquals(removeLinkTags(mActivityTestRule.getActivity().getString(
@@ -362,10 +371,10 @@ public class BluetoothChooserDialogTest {
 
         // Turn on Location Services.
         mLocationUtils.mSystemLocationSettingsEnabled = true;
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> mChooserDialog.mLocationModeBroadcastReceiver.onReceive(
-                        mActivityTestRule.getActivity(),
-                        new Intent(LocationManager.MODE_CHANGED_ACTION)));
+                                mActivityTestRule.getActivity(),
+                                new Intent(LocationManager.MODE_CHANGED_ACTION)));
 
         Assert.assertEquals(1, mChooserDialog.mRestartSearchCount);
         Assert.assertEquals(removeLinkTags(mActivityTestRule.getActivity().getString(
@@ -393,7 +402,7 @@ public class BluetoothChooserDialogTest {
         final View progress = dialog.findViewById(R.id.progress);
 
         // Turn off adapter.
-        ThreadUtils.runOnUiThreadBlocking(() -> mChooserDialog.notifyAdapterTurnedOff());
+        TestThreadUtils.runOnUiThreadBlocking(() -> mChooserDialog.notifyAdapterTurnedOff());
 
         Assert.assertEquals(removeLinkTags(mActivityTestRule.getActivity().getString(
                                     R.string.bluetooth_adapter_off)),
@@ -407,7 +416,7 @@ public class BluetoothChooserDialogTest {
         Assert.assertEquals(View.GONE, progress.getVisibility());
 
         // Turn on adapter.
-        ThreadUtils.runOnUiThreadBlocking(() -> itemChooser.signalInitializingAdapter());
+        TestThreadUtils.runOnUiThreadBlocking(() -> itemChooser.signalInitializingAdapter());
 
         Assert.assertEquals(View.GONE, errorView.getVisibility());
         Assert.assertEquals(View.GONE, items.getVisibility());

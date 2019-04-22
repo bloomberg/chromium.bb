@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "url/url_canon.h"
@@ -117,8 +118,8 @@ DatabaseIdentifier DatabaseIdentifier::Parse(const std::string& identifier) {
   if (identifier.find("..") != std::string::npos)
     return DatabaseIdentifier();
   char forbidden[] = {'\\', '/', ':' ,'\0'};
-  if (identifier.find_first_of(forbidden, 0, arraysize(forbidden)) !=
-          std::string::npos) {
+  if (identifier.find_first_of(forbidden, 0, base::size(forbidden)) !=
+      std::string::npos) {
     return DatabaseIdentifier();
   }
 
@@ -188,7 +189,7 @@ std::string DatabaseIdentifier::ToString() const {
   if (is_unique_)
     return "__0";
   return scheme_ + "_" + EscapeIPv6Hostname(hostname_) + "_" +
-         base::IntToString(port_);
+         base::NumberToString(port_);
 }
 
 GURL DatabaseIdentifier::ToOrigin() const {
@@ -198,7 +199,7 @@ GURL DatabaseIdentifier::ToOrigin() const {
     return GURL();
   if (port_ == 0)
     return GURL(scheme_ + "://" + hostname_);
-  return GURL(scheme_ + "://" + hostname_ + ":" + base::IntToString(port_));
+  return GURL(scheme_ + "://" + hostname_ + ":" + base::NumberToString(port_));
 }
 
 }  // namespace storage

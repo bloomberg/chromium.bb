@@ -8,12 +8,15 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 #include <stdint.h>
 
 namespace blink {
 
 class CORE_EXPORT TimeClamper {
+  USING_FAST_MALLOC(TimeClamper);
+
  public:
 // As site isolation is enabled on desktop platforms, we can safely provide
 // more timing resolution. Jittering is still enabled everywhere.

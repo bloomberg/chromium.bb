@@ -1,7 +1,8 @@
 <!DOCTYPE HTML>
 <html>
 <body>
-<script src="../resources/js-test.js"></script>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
 
 <style>
 button {
@@ -11,19 +12,16 @@ button {
 
 <button id="cake">Button with image of <img alt="cake" src="resources/cake.png" width="40px"></button>
 
-<div id="console"></div>
 <script>
-description("This test makes sure that a generic focusable div can get accessibility focus and gets its accessible text from contents..");
-
-if (window.testRunner && window.accessibilityController) {
-    testRunner.dumpAsText();
-
+test((t) => {
     var button = document.getElementById('cake');
     button.focus();
-    shouldBe("document.activeElement == button", "true");
+    assert_equals(document.activeElement == button, true);
     window.axButton = accessibilityController.focusedElement;
-    shouldBe("axButton.name.indexOf('Button with image of cake') >= 0", "true");
-}
+    assert_equals(axButton.name.indexOf('Button with image of cake') >= 0, true);
+}, "This test makes sure that a generic focusable div can get accessibility focus and gets its accessible text from contents..");
+
+
 
 </script>
 

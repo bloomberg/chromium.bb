@@ -269,7 +269,7 @@ void ProxyConfigServiceMac::OnNetworkConfigChange(CFArrayRef changed_keys) {
   // Call OnProxyConfigChanged() on the TakeRunner to notify our observers.
   sequenced_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&Helper::OnProxyConfigChanged, helper_.get(), new_config));
+      base::BindOnce(&Helper::OnProxyConfigChanged, helper_.get(), new_config));
 }
 
 void ProxyConfigServiceMac::OnProxyConfigChanged(

@@ -18,8 +18,9 @@
  * @private
  */
 function isEmptyObject_(object) {
-  for (var i in object)
+  for (const i in object) {
     return false;
+  }
   return true;
 }
 
@@ -31,24 +32,15 @@ function isEmptyObject_(object) {
  * @private
  */
 function copyAttributes_(source, destination) {
-  for (var i in source)
+  for (const i in source) {
     destination[i] = source[i];
+  }
   return destination;
 }
 
 /**
- * Apply localization to |element| with i18n_template.js if available.
- * @param {Element} element Element to be localized.
- * @private
- */
-function localize_(element) {
-  if (window.i18nTemplate && window.loadTimeData)
-    i18nTemplate.process(element, loadTimeData);
-}
-
-/**
  * Returns 'N/A' (Not Available) text if |value| is undefined.
- * @param {Object} value Object to print.
+ * @param {*} value Object to print.
  * @return {string} 'N/A' or ''.
  * @private
  */
@@ -64,7 +56,7 @@ function checkIfAvailable_(value) {
  * @private
  */
 function stringToText_(value) {
-  return checkIfAvailable_(value) || value;
+  return checkIfAvailable_(value) || /** @type {string} */ (value);
 }
 
 /**
@@ -78,7 +70,7 @@ function stringToText_(value) {
  * @private
  */
 function separateBackward_(value, maxLength) {
-  var result = [];
+  const result = [];
   while (value.length > maxLength) {
     result.unshift(value.slice(-3));
     value = value.slice(0, -3);
@@ -96,15 +88,16 @@ function separateBackward_(value, maxLength) {
  * @private
  */
 function numBytesToText_(value) {
-  var result = checkIfAvailable_(value);
-  if (result)
+  let result = checkIfAvailable_(value);
+  if (result) {
     return result;
+  }
 
-  var segments = separateBackward_(value.toString(), 3);
+  const segments = separateBackward_(value.toString(), 3);
   result = segments.join(',') + ' B';
 
   if (segments.length > 1) {
-    var UNIT = [' B', ' KB', ' MB', ' GB', ' TB', ' PB'];
+    const UNIT = [' B', ' KB', ' MB', ' GB', ' TB', ' PB'];
     result = segments[0] + '.' + segments[1].slice(0, 2) +
         UNIT[Math.min(segments.length, UNIT.length) - 1] + ' (' + result + ')';
   }
@@ -121,25 +114,26 @@ function numBytesToText_(value) {
  * @private
  */
 function dateToText(value) {
-  var result = checkIfAvailable_(value);
-  if (result)
+  let result = checkIfAvailable_(value);
+  if (result) {
     return result;
+  }
 
-  var time = new Date(value);
-  var now = new Date();
-  var delta = Date.now() - value;
+  const time = new Date(value);
+  const now = new Date();
+  const delta = Date.now() - value;
 
-  var SECOND = 1000;
-  var MINUTE = 60 * SECOND;
-  var HOUR = 60 * MINUTE;
-  var DAY = 23 * HOUR;
-  var WEEK = 7 * DAY;
+  const SECOND = 1000;
+  const MINUTE = 60 * SECOND;
+  const HOUR = 60 * MINUTE;
+  const DAY = 23 * HOUR;
+  const WEEK = 7 * DAY;
 
-  var SHOW_SECOND = 5 * MINUTE;
-  var SHOW_MINUTE = 5 * HOUR;
-  var SHOW_HOUR = 3 * DAY;
-  var SHOW_DAY = 2 * WEEK;
-  var SHOW_WEEK = 3 * 30 * DAY;
+  const SHOW_SECOND = 5 * MINUTE;
+  const SHOW_MINUTE = 5 * HOUR;
+  const SHOW_HOUR = 3 * DAY;
+  const SHOW_DAY = 2 * WEEK;
+  const SHOW_WEEK = 3 * 30 * DAY;
 
   if (delta < 0) {
     result = 'access from future ';
@@ -161,14 +155,14 @@ function dateToText(value) {
  * Available disk space.
  * @type {number|undefined}
  */
-var availableSpace = undefined;
+let availableSpace = undefined;
 
 /**
  * Root of the quota data tree,
  * holding userdata as |treeViewObject.detail|.
  * @type {cr.ui.Tree}
  */
-var treeViewObject = undefined;
+let treeViewObject;
 
 /**
  * Key-value styled statistics data.
@@ -176,15 +170,15 @@ var treeViewObject = undefined;
  * The value is hold as |statistics[key].detail|.
  * @type {Object<string,Element>}
  */
-var statistics = {};
+const statistics = {};
 
 /**
  * Initialize and return |treeViewObject|.
- * @return {cr.ui.Tree} Initialized |treeViewObject|.
+ * @return {!cr.ui.Tree} Initialized |treeViewObject|.
  */
 function getTreeViewObject() {
   if (!treeViewObject) {
-    treeViewObject = $('tree-view');
+    treeViewObject = /** @type {!cr.ui.Tree} */ ($('tree-view'));
     cr.ui.decorate(treeViewObject, cr.ui.Tree);
     treeViewObject.detail = {payload: {}, children: {}};
     treeViewObject.addEventListener('change', updateDescription);
@@ -198,8 +192,8 @@ function getTreeViewObject() {
  * @return {cr.ui.TreeItem} Initialized |storageObject|.
  */
 function getStorageObject(type) {
-  var treeViewObject = getTreeViewObject();
-  var storageObject = treeViewObject.detail.children[type];
+  const treeViewObject = getTreeViewObject();
+  let storageObject = treeViewObject.detail.children[type];
   if (!storageObject) {
     storageObject =
         new cr.ui.TreeItem({label: type, detail: {payload: {}, children: {}}});
@@ -218,8 +212,8 @@ function getStorageObject(type) {
  * @return {cr.ui.TreeItem} Initialized |hostObject|.
  */
 function getHostObject(type, host) {
-  var storageObject = getStorageObject(type);
-  var hostObject = storageObject.detail.children[host];
+  const storageObject = getStorageObject(type);
+  let hostObject = storageObject.detail.children[host];
   if (!hostObject) {
     hostObject =
         new cr.ui.TreeItem({label: host, detail: {payload: {}, children: {}}});
@@ -239,8 +233,8 @@ function getHostObject(type, host) {
  * @return {cr.ui.TreeItem} Initialized |originObject|.
  */
 function getOriginObject(type, host, origin) {
-  var hostObject = getHostObject(type, host);
-  var originObject = hostObject.detail.children[origin];
+  const hostObject = getHostObject(type, host);
+  let originObject = hostObject.detail.children[origin];
   if (!originObject) {
     originObject = new cr.ui.TreeItem(
         {label: origin, detail: {payload: {}, children: {}}});
@@ -255,12 +249,9 @@ function getOriginObject(type, host, origin) {
  * Event Handler for |cr.quota.onAvailableSpaceUpdated|.
  * |event.detail| contains |availableSpace|.
  * |availableSpace| represents total available disk space.
- * @param {CustomEvent} event AvailableSpaceUpdated event.
+ * @param {!CustomEvent<number>} event AvailableSpaceUpdated event.
  */
 function handleAvailableSpace(event) {
-  /**
-   * @type {string}
-   */
   availableSpace = event.detail;
   $('diskspace-entry').innerHTML = numBytesToText_(availableSpace);
 }
@@ -279,23 +270,21 @@ function handleAvailableSpace(event) {
  *
  *  |usage|, |unlimitedUsage| and |quota| can be missing,
  *  and some additional fields can be included.
- * @param {CustomEvent} event GlobalInfoUpdated event.
+ * @param {!CustomEvent<!{
+ *     type: string,
+ *     usage: ?number,
+ *     unlimitedUsage: ?number,
+ *     quota: ?string
+ * }>} event GlobalInfoUpdated event.
  */
 function handleGlobalInfo(event) {
-  /**
-   * @type {{
-   *         type: {!string},
-   *         usage: {?number},
-   *         unlimitedUsage: {?number}
-   *         quota: {?string}
-   *       }}
-   */
-  var data = event.detail;
-  var storageObject = getStorageObject(data.type);
+  const data = event.detail;
+  const storageObject = getStorageObject(data.type);
   copyAttributes_(data, storageObject.detail.payload);
   storageObject.reveal();
-  if (getTreeViewObject().selectedItem == storageObject)
+  if (getTreeViewObject().selectedItem == storageObject) {
     updateDescription();
+  }
 }
 
 /**
@@ -312,26 +301,24 @@ function handleGlobalInfo(event) {
  *
  * |usage| and |quota| can be missing,
  * and some additional fields can be included.
- * @param {CustomEvent} event PerHostInfoUpdated event.
+ * @param {!CustomEvent<!Array<{
+ *     host: string,
+ *     type: string,
+ *     usage: ?number,
+ *     quota: ?number
+ * }>>} event PerHostInfoUpdated event.
  */
 function handlePerHostInfo(event) {
-  /**
-   * @type {Array<{
-   *         host: {!string},
-   *         type: {!string},
-   *         usage: {?number},
-   *         quota: {?number}
-   *       }}
-   */
-  var dataArray = event.detail;
+  const dataArray = event.detail;
 
-  for (var i = 0; i < dataArray.length; ++i) {
-    var data = dataArray[i];
-    var hostObject = getHostObject(data.type, data.host);
+  for (let i = 0; i < dataArray.length; ++i) {
+    const data = dataArray[i];
+    const hostObject = getHostObject(data.type, data.host);
     copyAttributes_(data, hostObject.detail.payload);
     hostObject.reveal();
-    if (getTreeViewObject().selectedItem == hostObject)
+    if (getTreeViewObject().selectedItem == hostObject) {
       updateDescription();
+    }
   }
 }
 
@@ -357,44 +344,39 @@ function handlePerHostInfo(event) {
  *
  * |inUse|, |usedCount|, |lastAccessTime| and |lastModifiedTime| can be missing,
  * and some additional fields can be included.
- * @param {CustomEvent} event PerOriginInfoUpdated event.
+ * @param {!CustomEvent<!Array<!{
+ *     origin: string,
+ *     type: string,
+ *     host: string,
+ *     inUse: ?boolean,
+ *     usedCount: ?number,
+ *     lastAccessTime: ?number,
+ *     lastModifiedTime: ?number
+ * }>>} event PerOriginInfoUpdated event.
  */
 function handlePerOriginInfo(event) {
-  /**
-   * @type {Array<{
-   *         origin: {!string},
-   *         type: {!string},
-   *         host: {!string},
-   *         inUse: {?boolean},
-   *         usedCount: {?number},
-   *         lastAccessTime: {?number}
-   *         lastModifiedTime: {?number}
-   *       }>}
-   */
-  var dataArray = event.detail;
+  const dataArray = event.detail;
 
-  for (var i = 0; i < dataArray.length; ++i) {
-    var data = dataArray[i];
-    var originObject = getOriginObject(data.type, data.host, data.origin);
+  for (let i = 0; i < dataArray.length; ++i) {
+    const data = dataArray[i];
+    const originObject = getOriginObject(data.type, data.host, data.origin);
     copyAttributes_(data, originObject.detail.payload);
     originObject.reveal();
-    if (getTreeViewObject().selectedItem == originObject)
+    if (getTreeViewObject().selectedItem == originObject) {
       updateDescription();
+    }
   }
 }
 
 /**
  * Event Handler for |cr.quota.onStatisticsUpdated|.
  * |event.detail| contains misc statistics data as dictionary.
- * @param {CustomEvent} event StatisticsUpdated event.
+ * @param {!CustomEvent<!Object>} event StatisticsUpdated event.
  */
 function handleStatistics(event) {
-  /**
-   * @type {Object<string>}
-   */
-  var data = event.detail;
-  for (var key in data) {
-    var entry = statistics[key];
+  const data = event.detail;
+  for (const key in data) {
+    let entry = statistics[key];
     if (!entry) {
       entry = cr.doc.createElement('tr');
       $('stat-entries').appendChild(entry);
@@ -403,7 +385,6 @@ function handleStatistics(event) {
     entry.detail = data[key];
     entry.innerHTML = '<td>' + stringToText_(key) + '</td>' +
         '<td>' + stringToText_(entry.detail) + '</td>';
-    localize_(entry);
   }
 }
 
@@ -412,12 +393,12 @@ function handleStatistics(event) {
  * selected item in tree view.
  */
 function updateDescription() {
-  var item = getTreeViewObject().selectedItem;
-  var tbody = $('tree-item-description');
+  const item = getTreeViewObject().selectedItem;
+  const tbody = $('tree-item-description');
   tbody.innerHTML = '';
 
   if (item) {
-    var keyAndLabel = [
+    const keyAndLabel = [
       ['type', 'Storage Type'], ['host', 'Host Name'], ['origin', 'Origin URL'],
       ['usage', 'Total Storage Usage', numBytesToText_],
       ['unlimitedUsage', 'Usage of Unlimited Origins', numBytesToText_],
@@ -426,19 +407,19 @@ function updateDescription() {
       ['lastAccessTime', 'Last Access Time', dateToText],
       ['lastModifiedTime', 'Last Modified Time', dateToText]
     ];
-    for (var i = 0; i < keyAndLabel.length; ++i) {
-      var key = keyAndLabel[i][0];
-      var label = keyAndLabel[i][1];
-      var entry = item.detail.payload[key];
-      if (entry === undefined)
+    for (let i = 0; i < keyAndLabel.length; ++i) {
+      const key = keyAndLabel[i][0];
+      const label = keyAndLabel[i][1];
+      const entry = item.detail.payload[key];
+      if (entry === undefined) {
         continue;
+      }
 
-      var normalize = keyAndLabel[i][2] || stringToText_;
+      const normalize = keyAndLabel[i][2] || stringToText_;
 
-      var row = cr.doc.createElement('tr');
+      const row = cr.doc.createElement('tr');
       row.innerHTML = '<td>' + label + '</td>' +
           '<td>' + normalize(entry) + '</td>';
-      localize_(row);
       tbody.appendChild(row);
     }
   }
@@ -446,24 +427,26 @@ function updateDescription() {
 
 /**
  * Dump |treeViewObject| or subtree to a object.
- * @param {?{cr.ui.Tree|cr.ui.TreeItem}} opt_treeitem
+ * @param {(cr.ui.Tree|cr.ui.TreeItem)=} opt_treeitem
  * @return {Object} Dump result object from |treeViewObject|.
  */
 function dumpTreeToObj(opt_treeitem) {
-  var treeitem = opt_treeitem || getTreeViewObject();
-  var res = {};
+  const treeitem = opt_treeitem || getTreeViewObject();
+  const res = {};
   res.payload = treeitem.detail.payload;
   res.children = [];
-  for (var i in treeitem.detail.children) {
-    var child = treeitem.detail.children[i];
+  for (const i in treeitem.detail.children) {
+    const child = treeitem.detail.children[i];
     res.children.push(dumpTreeToObj(child));
   }
 
-  if (isEmptyObject_(res.payload))
+  if (isEmptyObject_(res.payload)) {
     delete res.payload;
+  }
 
-  if (res.children.length == 0)
+  if (res.children.length == 0) {
     delete res.children;
+  }
   return res;
 }
 
@@ -472,9 +455,10 @@ function dumpTreeToObj(opt_treeitem) {
  * @return {Object} Dump result object from |statistics|.
  */
 function dumpStatisticsToObj() {
-  var result = {};
-  for (var key in statistics)
+  const result = {};
+  for (const key in statistics) {
     result[key] = statistics[key].detail;
+  }
   return result;
 }
 
@@ -483,7 +467,7 @@ function dumpStatisticsToObj() {
  * Dump and show all data from WebUI page to 'dump-field' element.
  */
 function dump() {
-  var separator = '========\n';
+  const separator = '========\n';
 
   $('dump-field').textContent = separator + 'Summary\n' + separator +
       JSON.stringify({availableSpace: availableSpace}, null, 2) + '\n' +

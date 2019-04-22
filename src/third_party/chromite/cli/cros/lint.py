@@ -478,10 +478,13 @@ class DocStringChecker(BaseChecker):
       if arg.name.startswith('_'):
         continue
 
+      # Valid arguments may look like `<arg>:` or `<arg> (<type>):`.
+      arg_re = re.compile(r'%s( \([^)]+\))?:' % re.escape(arg.name))
       for l in section.lines:
         aline = l.lstrip()
-        if aline.startswith('%s:' % arg.name):
-          amsg = aline[len(arg.name) + 1:]
+        m = arg_re.match(aline)
+        if m:
+          amsg = aline[m.end():]
           if len(amsg) and len(amsg) - len(amsg.lstrip()) != 1:
             margs = {'arg': l}
             self.add_message('C9012', node=node, line=node.fromlineno,

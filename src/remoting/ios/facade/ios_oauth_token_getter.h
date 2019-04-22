@@ -20,7 +20,7 @@ class IosOauthTokenGetter : public OAuthTokenGetter {
   ~IosOauthTokenGetter() override;
 
   // OAuthTokenGetter overrides.
-  void CallWithToken(const TokenCallback& on_access_token) override;
+  void CallWithToken(TokenCallback on_access_token) override;
   void InvalidateCache() override;
 
   base::WeakPtr<IosOauthTokenGetter> GetWeakPtr();

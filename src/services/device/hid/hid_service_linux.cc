@@ -25,7 +25,7 @@
 #include "base/strings/string_split.h"
 #include "base/task/post_task.h"
 #include "base/threading/scoped_blocking_call.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/device_event_log/device_event_log.h"
 #include "device/udev_linux/scoped_udev.h"
@@ -34,8 +34,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "base/system/sys_info.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/permission_broker_client.h"
+#include "chromeos/dbus/permission_broker/permission_broker_client.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace device {
@@ -55,7 +54,7 @@ struct HidServiceLinux::ConnectParams {
                 const ConnectCallback& callback)
       : device_info(std::move(device_info)),
         callback(callback),
-        task_runner(base::ThreadTaskRunnerHandle::Get()),
+        task_runner(base::SequencedTaskRunnerHandle::Get()),
         blocking_task_runner(
             base::CreateSequencedTaskRunnerWithTraits(kBlockingTaskTraits)) {}
   ~ConnectParams() {}
@@ -67,15 +66,15 @@ struct HidServiceLinux::ConnectParams {
   base::ScopedFD fd;
 };
 
-class HidServiceLinux::BlockingTaskHelper : public UdevWatcher::Observer {
+class HidServiceLinux::BlockingTaskRunnerHelper : public UdevWatcher::Observer {
  public:
-  BlockingTaskHelper(base::WeakPtr<HidServiceLinux> service)
+  BlockingTaskRunnerHelper(base::WeakPtr<HidServiceLinux> service)
       : service_(std::move(service)),
-        task_runner_(base::ThreadTaskRunnerHandle::Get()) {
+        task_runner_(base::SequencedTaskRunnerHandle::Get()) {
     DETACH_FROM_SEQUENCE(sequence_checker_);
   }
 
-  ~BlockingTaskHelper() override {
+  ~BlockingTaskRunnerHelper() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   }
 
@@ -94,7 +93,7 @@ class HidServiceLinux::BlockingTaskHelper : public UdevWatcher::Observer {
   void OnDeviceAdded(ScopedUdevDevicePtr device) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     base::ScopedBlockingCall scoped_blocking_call(
-        base::BlockingType::MAY_BLOCK);
+        FROM_HERE, base::BlockingType::MAY_BLOCK);
 
     const char* device_path = udev_device_get_syspath(device.get());
     if (!device_path)
@@ -171,7 +170,7 @@ class HidServiceLinux::BlockingTaskHelper : public UdevWatcher::Observer {
   void OnDeviceRemoved(ScopedUdevDevicePtr device) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     base::ScopedBlockingCall scoped_blocking_call(
-        base::BlockingType::MAY_BLOCK);
+        FROM_HERE, base::BlockingType::MAY_BLOCK);
 
     const char* device_path = udev_device_get_syspath(device.get());
     if (device_path) {
@@ -188,22 +187,23 @@ class HidServiceLinux::BlockingTaskHelper : public UdevWatcher::Observer {
   base::WeakPtr<HidServiceLinux> service_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
-  DISALLOW_COPY_AND_ASSIGN(BlockingTaskHelper);
+  DISALLOW_COPY_AND_ASSIGN(BlockingTaskRunnerHelper);
 };
 
 HidServiceLinux::HidServiceLinux()
     : blocking_task_runner_(
           base::CreateSequencedTaskRunnerWithTraits(kBlockingTaskTraits)),
+      helper_(nullptr, base::OnTaskRunnerDeleter(blocking_task_runner_)),
       weak_factory_(this) {
-  helper_ = std::make_unique<BlockingTaskHelper>(weak_factory_.GetWeakPtr());
+  // We need to properly initialize |blocking_task_helper_| here because we need
+  // |weak_factory_| to be created first.
+  helper_.reset(new BlockingTaskRunnerHelper(weak_factory_.GetWeakPtr()));
   blocking_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&BlockingTaskHelper::Start,
+      FROM_HERE, base::BindOnce(&BlockingTaskRunnerHelper::Start,
                                 base::Unretained(helper_.get())));
 }
 
-HidServiceLinux::~HidServiceLinux() {
-  blocking_task_runner_->DeleteSoon(FROM_HERE, helper_.release());
-}
+HidServiceLinux::~HidServiceLinux() = default;
 
 base::WeakPtr<HidService> HidServiceLinux::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
@@ -211,12 +211,12 @@ base::WeakPtr<HidService> HidServiceLinux::GetWeakPtr() {
 
 void HidServiceLinux::Connect(const std::string& device_guid,
                               const ConnectCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   const auto& map_entry = devices().find(device_guid);
   if (map_entry == devices().end()) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, nullptr));
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(callback, nullptr));
     return;
   }
   scoped_refptr<HidDeviceInfo> device_info = map_entry->second;
@@ -224,16 +224,13 @@ void HidServiceLinux::Connect(const std::string& device_guid,
   auto params = std::make_unique<ConnectParams>(device_info, callback);
 
 #if defined(OS_CHROMEOS)
-  chromeos::PermissionBrokerClient* client =
-      chromeos::DBusThreadManager::Get()->GetPermissionBrokerClient();
-  DCHECK(client) << "Could not get permission broker client.";
   chromeos::PermissionBrokerClient::ErrorCallback error_callback =
-      base::Bind(&HidServiceLinux::OnPathOpenError,
-                 params->device_info->device_node(), params->callback);
-  client->OpenPath(
+      base::BindOnce(&HidServiceLinux::OnPathOpenError,
+                     params->device_info->device_node(), params->callback);
+  chromeos::PermissionBrokerClient::Get()->OpenPath(
       device_info->device_node(),
-      base::Bind(&HidServiceLinux::OnPathOpenComplete, base::Passed(&params)),
-      error_callback);
+      base::BindOnce(&HidServiceLinux::OnPathOpenComplete, std::move(params)),
+      std::move(error_callback));
 #else
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner =
       params->blocking_task_runner;
@@ -248,12 +245,8 @@ void HidServiceLinux::Connect(const std::string& device_guid,
 // static
 void HidServiceLinux::OnPathOpenComplete(std::unique_ptr<ConnectParams> params,
                                          base::ScopedFD fd) {
-  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner =
-      params->blocking_task_runner;
   params->fd = std::move(fd);
-  blocking_task_runner->PostTask(
-      FROM_HERE,
-      base::BindOnce(&HidServiceLinux::FinishOpen, std::move(params)));
+  FinishOpen(std::move(params));
 }
 
 // static
@@ -271,7 +264,8 @@ void HidServiceLinux::OnPathOpenError(const std::string& device_path,
 // static
 void HidServiceLinux::OpenOnBlockingThread(
     std::unique_ptr<ConnectParams> params) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   scoped_refptr<base::SequencedTaskRunner> task_runner = params->task_runner;
 
   base::FilePath device_path(params->device_info->device_node());
@@ -297,32 +291,27 @@ void HidServiceLinux::OpenOnBlockingThread(
     return;
   }
   params->fd.reset(device_file.TakePlatformFile());
-  FinishOpen(std::move(params));
+
+  task_runner->PostTask(FROM_HERE, base::BindOnce(&HidServiceLinux::FinishOpen,
+                                                  std::move(params)));
 }
 
 #endif  // defined(OS_CHROMEOS)
 
 // static
 void HidServiceLinux::FinishOpen(std::unique_ptr<ConnectParams> params) {
-  scoped_refptr<base::SequencedTaskRunner> task_runner = params->task_runner;
+  DCHECK(params->fd.is_valid());
 
   if (!base::SetNonBlocking(params->fd.get())) {
     HID_PLOG(ERROR) << "Failed to set the non-blocking flag on the device fd";
-    task_runner->PostTask(FROM_HERE, base::BindOnce(params->callback, nullptr));
+    std::move(params->callback).Run(nullptr);
     return;
   }
 
-  task_runner->PostTask(
-      FROM_HERE,
-      base::BindOnce(&HidServiceLinux::CreateConnection, std::move(params)));
-}
-
-// static
-void HidServiceLinux::CreateConnection(std::unique_ptr<ConnectParams> params) {
-  DCHECK(params->fd.is_valid());
-  params->callback.Run(base::MakeRefCounted<HidConnectionLinux>(
-      std::move(params->device_info), std::move(params->fd),
-      std::move(params->blocking_task_runner)));
+  std::move(params->callback)
+      .Run(base::MakeRefCounted<HidConnectionLinux>(
+          std::move(params->device_info), std::move(params->fd),
+          std::move(params->blocking_task_runner)));
 }
 
 }  // namespace device

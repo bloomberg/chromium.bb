@@ -18,9 +18,10 @@ import isolated_format
 from depot_tools import auto_stub
 from depot_tools import fix_encoding
 from utils import file_path
+from utils import fs
 from utils import tools
 
-import isolateserver_mock
+import isolateserver_fake
 
 
 ALGO = hashlib.sha1
@@ -29,14 +30,14 @@ ALGO = hashlib.sha1
 class SymlinkTest(unittest.TestCase):
   def setUp(self):
     super(SymlinkTest, self).setUp()
-    self.old_cwd = os.getcwd()
+    self.old_cwd = unicode(os.getcwd())
     self.cwd = tempfile.mkdtemp(prefix=u'isolate_')
     # Everything should work even from another directory.
-    os.chdir(self.cwd)
+    fs.chdir(self.cwd)
 
   def tearDown(self):
     try:
-      os.chdir(self.old_cwd)
+      fs.chdir(self.old_cwd)
       file_path.rmtree(self.cwd)
     finally:
       super(SymlinkTest, self).tearDown()
@@ -45,74 +46,51 @@ class SymlinkTest(unittest.TestCase):
     def test_expand_symlinks_path_case(self):
       # Ensures that the resulting path case is fixed on case insensitive file
       # system.
-      os.symlink('dest', os.path.join(self.cwd, 'link'))
-      os.mkdir(os.path.join(self.cwd, 'Dest'))
-      open(os.path.join(self.cwd, 'Dest', 'file.txt'), 'w').close()
+      fs.symlink('dest', os.path.join(self.cwd, u'link'))
+      fs.mkdir(os.path.join(self.cwd, u'Dest'))
+      fs.open(os.path.join(self.cwd, u'Dest', u'file.txt'), 'w').close()
 
-      result = isolated_format.expand_symlinks(unicode(self.cwd), 'link')
-      self.assertEqual((u'Dest', [u'link']), result)
-      result = isolated_format.expand_symlinks(
-          unicode(self.cwd), 'link/File.txt')
-      self.assertEqual((u'Dest/file.txt', [u'link']), result)
+      relfile, symlinks = isolated_format._expand_symlinks(self.cwd, u'.')
+      self.assertEqual((u'.', []), (relfile, symlinks))
 
-    def test_expand_directories_and_symlinks_path_case(self):
-      # Ensures that the resulting path case is fixed on case insensitive file
-      # system. A superset of test_expand_symlinks_path_case.
-      # Create *all* the paths with the wrong path case.
-      basedir = os.path.join(self.cwd, 'baseDir')
-      os.mkdir(basedir.lower())
-      subdir = os.path.join(basedir, 'subDir')
-      os.mkdir(subdir.lower())
-      open(os.path.join(subdir, 'Foo.txt'), 'w').close()
-      os.symlink('subDir', os.path.join(basedir, 'linkdir'))
-      actual = isolated_format.expand_directories_and_symlinks(
-          unicode(self.cwd), [u'baseDir/'], lambda _: None, True, False)
-      expected = [
-        u'basedir/linkdir',
-        u'basedir/subdir/Foo.txt',
-        u'basedir/subdir/Foo.txt',
-      ]
-      self.assertEqual(expected, actual)
+      relfile, symlinks = isolated_format._expand_symlinks(self.cwd, u'link')
+      self.assertEqual((u'Dest', [u'link']), (relfile, symlinks))
+
+      relfile, symlinks = isolated_format._expand_symlinks(
+          self.cwd, u'link/File.txt')
+      self.assertEqual((u'Dest/file.txt', [u'link']), (relfile, symlinks))
 
     def test_file_to_metadata_path_case_simple(self):
       # Ensure the symlink dest is saved in the right path case.
-      subdir = os.path.join(self.cwd, 'subdir')
-      os.mkdir(subdir)
-      linkdir = os.path.join(self.cwd, 'linkdir')
-      os.symlink('subDir', linkdir)
-      actual = isolated_format.file_to_metadata(
-          unicode(linkdir.upper()), {}, True, ALGO, False)
-      expected = {'l': u'subdir', 't': int(os.stat(linkdir).st_mtime)}
-      self.assertEqual(expected, actual)
+      subdir = os.path.join(self.cwd, u'subdir')
+      fs.mkdir(subdir)
+      linkdir = os.path.join(self.cwd, u'linkdir')
+      fs.symlink('subDir', linkdir)
+      actual = isolated_format.file_to_metadata(linkdir.upper(), True, False)
+      self.assertEqual({'l': u'subdir'}, actual)
 
     def test_file_to_metadata_path_case_complex(self):
       # Ensure the symlink dest is saved in the right path case. This includes 2
       # layers of symlinks.
-      basedir = os.path.join(self.cwd, 'basebir')
-      os.mkdir(basedir)
+      basedir = os.path.join(self.cwd, u'basebir')
+      fs.mkdir(basedir)
 
-      linkeddir2 = os.path.join(self.cwd, 'linkeddir2')
-      os.mkdir(linkeddir2)
+      linkeddir2 = os.path.join(self.cwd, u'linkeddir2')
+      fs.mkdir(linkeddir2)
 
-      linkeddir1 = os.path.join(basedir, 'linkeddir1')
-      os.symlink('../linkedDir2', linkeddir1)
+      linkeddir1 = os.path.join(basedir, u'linkeddir1')
+      fs.symlink('../linkedDir2', linkeddir1)
 
-      subsymlinkdir = os.path.join(basedir, 'symlinkdir')
-      os.symlink('linkedDir1', subsymlinkdir)
-
-      actual = isolated_format.file_to_metadata(
-          unicode(subsymlinkdir.upper()), {}, True, ALGO, False)
-      expected = {
-        'l': u'linkeddir1', 't': int(os.stat(subsymlinkdir).st_mtime),
-      }
-      self.assertEqual(expected, actual)
+      subsymlinkdir = os.path.join(basedir, u'symlinkdir')
+      fs.symlink('linkedDir1', subsymlinkdir)
 
       actual = isolated_format.file_to_metadata(
-          unicode(linkeddir1.upper()), {}, True, ALGO, False)
-      expected = {
-        'l': u'../linkeddir2', 't': int(os.stat(linkeddir1).st_mtime),
-      }
-      self.assertEqual(expected, actual)
+          subsymlinkdir.upper(), True, False)
+      self.assertEqual({'l': u'linkeddir1'}, actual)
+
+      actual = isolated_format.file_to_metadata(
+          linkeddir1.upper(), True, False)
+      self.assertEqual({'l': u'../linkeddir2'}, actual)
 
   if sys.platform != 'win32':
     def test_symlink_input_absolute_path(self):
@@ -123,48 +101,48 @@ class SymlinkTest(unittest.TestCase):
       # .../tmp
       # .../tmp/foo
       src = os.path.join(self.cwd, u'src')
-      src_out = os.path.join(src, 'out')
-      tmp = os.path.join(self.cwd, 'tmp')
-      tmp_foo = os.path.join(tmp, 'foo')
-      os.mkdir(src)
-      os.mkdir(tmp)
-      os.mkdir(tmp_foo)
+      src_out = os.path.join(src, u'out')
+      tmp = os.path.join(self.cwd, u'tmp')
+      tmp_foo = os.path.join(tmp, u'foo')
+      fs.mkdir(src)
+      fs.mkdir(tmp)
+      fs.mkdir(tmp_foo)
       # The problem was that it's an absolute path, so it must be considered a
       # normal directory.
-      os.symlink(tmp, src_out)
-      open(os.path.join(tmp_foo, 'bar.txt'), 'w').close()
-      actual = isolated_format.expand_symlinks(src, u'out/foo/bar.txt')
-      self.assertEqual((u'out/foo/bar.txt', []), actual)
+      fs.symlink(tmp, src_out)
+      fs.open(os.path.join(tmp_foo, u'bar.txt'), 'w').close()
+      relfile, symlinks = isolated_format._expand_symlinks(
+          src, u'out/foo/bar.txt')
+      self.assertEqual((u'out/foo/bar.txt', []), (relfile, symlinks))
 
     def test_file_to_metadata_path_case_collapse(self):
       # Ensure setting the collapse_symlink option doesn't include the symlinks
-      basedir = os.path.join(self.cwd, 'basedir')
-      os.mkdir(basedir)
-      subdir = os.path.join(basedir, 'subdir')
-      os.mkdir(subdir)
-      linkdir = os.path.join(basedir, 'linkdir')
-      os.mkdir(linkdir)
+      basedir = os.path.join(self.cwd, u'basedir')
+      fs.mkdir(basedir)
+      subdir = os.path.join(basedir, u'subdir')
+      fs.mkdir(subdir)
+      linkdir = os.path.join(basedir, u'linkdir')
+      fs.mkdir(linkdir)
 
-      foo_file = os.path.join(subdir, 'Foo.txt')
-      open(foo_file, 'w').close()
-      sym_file = os.path.join(basedir, 'linkdir', 'Sym.txt')
-      os.symlink('../subdir/Foo.txt', sym_file)
+      foo_file = os.path.join(subdir, u'Foo.txt')
+      fs.open(foo_file, 'w').close()
+      sym_file = os.path.join(basedir, u'linkdir', u'Sym.txt')
+      fs.symlink('../subdir/Foo.txt', sym_file)
 
-      actual = isolated_format.file_to_metadata(sym_file, {}, True, ALGO, True)
-
+      actual = isolated_format.file_to_metadata(sym_file, True, True)
+      actual['h'] = isolated_format.hash_file(sym_file, ALGO)
       expected = {
         # SHA-1 of empty string
         'h': 'da39a3ee5e6b4b0d3255bfef95601890afd80709',
         'm': 288,
         's': 0,
-        't': int(round(os.stat(foo_file).st_mtime)),
       }
       self.assertEqual(expected, actual)
 
 
 class TestIsolated(auto_stub.TestCase):
   def test_load_isolated_empty(self):
-    m = isolated_format.load_isolated('{}', isolateserver_mock.ALGO)
+    m = isolated_format.load_isolated('{}', isolateserver_fake.ALGO)
     self.assertEqual({}, m)
 
   def test_load_isolated_good(self):
@@ -185,7 +163,7 @@ class TestIsolated(auto_stub.TestCase):
       u'relative_cwd': u'somewhere_else',
       u'version': isolated_format.ISOLATED_FILE_VERSION,
     }
-    m = isolated_format.load_isolated(json.dumps(data), isolateserver_mock.ALGO)
+    m = isolated_format.load_isolated(json.dumps(data), isolateserver_fake.ALGO)
     self.assertEqual(data, m)
 
   def test_load_isolated_bad(self):
@@ -199,7 +177,7 @@ class TestIsolated(auto_stub.TestCase):
       u'version': isolated_format.ISOLATED_FILE_VERSION,
     }
     with self.assertRaises(isolated_format.IsolatedError):
-      isolated_format.load_isolated(json.dumps(data), isolateserver_mock.ALGO)
+      isolated_format.load_isolated(json.dumps(data), isolateserver_fake.ALGO)
 
   def test_load_isolated_bad_abs(self):
     for i in ('/a', 'a/..', 'a/', '\\\\a'):
@@ -208,7 +186,7 @@ class TestIsolated(auto_stub.TestCase):
         u'version': isolated_format.ISOLATED_FILE_VERSION,
       }
       with self.assertRaises(isolated_format.IsolatedError):
-        isolated_format.load_isolated(json.dumps(data), isolateserver_mock.ALGO)
+        isolated_format.load_isolated(json.dumps(data), isolateserver_fake.ALGO)
 
   def test_load_isolated_os_only(self):
     # Tolerate 'os' on older version.
@@ -216,7 +194,7 @@ class TestIsolated(auto_stub.TestCase):
       u'os': 'HP/UX',
       u'version': '1.3',
     }
-    m = isolated_format.load_isolated(json.dumps(data), isolateserver_mock.ALGO)
+    m = isolated_format.load_isolated(json.dumps(data), isolateserver_fake.ALGO)
     self.assertEqual(data, m)
 
   def test_load_isolated_os_only_bad(self):
@@ -225,7 +203,7 @@ class TestIsolated(auto_stub.TestCase):
       u'version': isolated_format.ISOLATED_FILE_VERSION,
     }
     with self.assertRaises(isolated_format.IsolatedError):
-      isolated_format.load_isolated(json.dumps(data), isolateserver_mock.ALGO)
+      isolated_format.load_isolated(json.dumps(data), isolateserver_fake.ALGO)
 
   def test_load_isolated_path(self):
     # Automatically convert the path case.
@@ -244,7 +222,7 @@ class TestIsolated(auto_stub.TestCase):
 
     data = gen_data(wrong_path_sep)
     actual = isolated_format.load_isolated(
-        json.dumps(data), isolateserver_mock.ALGO)
+        json.dumps(data), isolateserver_fake.ALGO)
     expected = gen_data(os.path.sep)
     self.assertEqual(expected, actual)
 
@@ -261,8 +239,7 @@ class TestIsolated(auto_stub.TestCase):
         }
       },
     }
-    m = isolated_format.save_isolated('foo', data)
-    self.assertEqual([], m)
+    isolated_format.save_isolated('foo', data)
     self.assertEqual([('foo', data, True)], calls)
 
 

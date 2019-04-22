@@ -15,11 +15,20 @@
 #include "third_party/blink/renderer/core/editing/text_affinity.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_object.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
 
 namespace blink {
 
 namespace {
 
+// TODO(nektar): Add Web tests for this event.
+void ScheduleSelectEvent(TextControlElement& text_control) {
+  Event* event = Event::CreateBubble(event_type_names::kSelect);
+  event->SetTarget(&text_control);
+  text_control.GetDocument().EnqueueAnimationFrameEvent(event);
+}
+
+// TODO(nektar): Add Web tests for this event.
 DispatchEventResult DispatchSelectStart(Node* node) {
   if (!node)
     return DispatchEventResult::kNotCanceled;
@@ -111,16 +120,45 @@ void AXSelection::ClearCurrentSelection(Document& document) {
 AXSelection AXSelection::FromCurrentSelection(
     const Document& document,
     const AXSelectionBehavior selection_behavior) {
-  LocalFrame* frame = document.GetFrame();
+  const LocalFrame* frame = document.GetFrame();
   if (!frame)
     return {};
 
-  FrameSelection& frame_selection = frame->Selection();
+  const FrameSelection& frame_selection = frame->Selection();
   if (!frame_selection.IsAvailable())
     return {};
 
   return FromSelection(frame_selection.GetSelectionInDOMTree(),
                        selection_behavior);
+}
+
+// static
+AXSelection AXSelection::FromCurrentSelection(
+    const TextControlElement& text_control) {
+  const Document& document = text_control.GetDocument();
+  AXObjectCache* ax_object_cache = document.ExistingAXObjectCache();
+  if (!ax_object_cache)
+    return {};
+
+  auto* ax_object_cache_impl = static_cast<AXObjectCacheImpl*>(ax_object_cache);
+  const AXObject* ax_text_control =
+      ax_object_cache_impl->GetOrCreate(&text_control);
+  DCHECK(ax_text_control);
+  const TextAffinity extent_affinity = text_control.Selection().Affinity();
+  const TextAffinity base_affinity =
+      text_control.selectionStart() == text_control.selectionEnd()
+          ? extent_affinity
+          : TextAffinity::kDownstream;
+  const auto ax_base = AXPosition::CreatePositionInTextObject(
+      *ax_text_control, static_cast<int>(text_control.selectionStart()),
+      base_affinity);
+  const auto ax_extent = AXPosition::CreatePositionInTextObject(
+      *ax_text_control, static_cast<int>(text_control.selectionEnd()),
+      extent_affinity);
+
+  AXSelection::Builder selection_builder;
+  selection_builder.SetBase(ax_base).SetExtent(ax_extent);
+  return selection_builder.Build();
 }
 
 // static
@@ -133,8 +171,9 @@ AXSelection AXSelection::FromSelection(
 
   const Position dom_base = selection.Base();
   const Position dom_extent = selection.Extent();
-  const TextAffinity base_affinity = TextAffinity::kDownstream;
   const TextAffinity extent_affinity = selection.Affinity();
+  const TextAffinity base_affinity =
+      selection.IsCaret() ? extent_affinity : TextAffinity::kDownstream;
 
   AXPositionAdjustmentBehavior base_adjustment =
       AXPositionAdjustmentBehavior::kMoveRight;
@@ -185,6 +224,33 @@ bool AXSelection::IsValid() const {
   // We don't support selections that span across documents.
   if (base_.ContainerObject()->GetDocument() !=
       extent_.ContainerObject()->GetDocument()) {
+    return false;
+  }
+
+  //
+  // The following code checks if a text position in a text control is valid.
+  // Since the contents of a text control are implemented using user agent
+  // shadow DOM, we want to prevent users from selecting across the shadow DOM
+  // boundary.
+  //
+  // TODO(nektar): Generalize this logic to adjust user selection if it crosses
+  // disallowed shadow DOM boundaries such as user agent shadow DOM, editing
+  // boundaries, replaced elements, CSS user-select, etc.
+  //
+
+  if (base_.IsTextPosition() &&
+      base_.ContainerObject()->IsNativeTextControl() &&
+      !(base_.ContainerObject() == extent_.ContainerObject() &&
+        extent_.IsTextPosition() &&
+        extent_.ContainerObject()->IsNativeTextControl())) {
+    return false;
+  }
+
+  if (extent_.IsTextPosition() &&
+      extent_.ContainerObject()->IsNativeTextControl() &&
+      !(base_.ContainerObject() == extent_.ContainerObject() &&
+        base_.IsTextPosition() &&
+        base_.ContainerObject()->IsNativeTextControl())) {
     return false;
   }
 
@@ -242,6 +308,22 @@ bool AXSelection::Select(const AXSelectionBehavior selection_behavior) {
   if (!IsValid()) {
     NOTREACHED() << "Trying to select an invalid accessibility selection.";
     return false;
+  }
+
+  base::Optional<AXSelection::TextControlSelection> text_control_selection =
+      AsTextControlSelection();
+  if (text_control_selection.has_value()) {
+    DCHECK_LE(text_control_selection->start, text_control_selection->end);
+    TextControlElement& text_control =
+        ToTextControl(*base_.ContainerObject()->GetNode());
+    if (!text_control.SetSelectionRange(text_control_selection->start,
+                                        text_control_selection->end,
+                                        text_control_selection->direction)) {
+      return false;
+    }
+
+    ScheduleSelectEvent(text_control);
+    return true;
   }
 
   const SelectionInDOMTree selection = AsSelection(selection_behavior);
@@ -311,6 +393,24 @@ String AXSelection::ToString() const {
   if (!IsValid())
     return "Invalid AXSelection";
   return "AXSelection from " + Base().ToString() + " to " + Extent().ToString();
+}
+
+base::Optional<AXSelection::TextControlSelection>
+AXSelection::AsTextControlSelection() const {
+  if (!IsValid() || !base_.IsTextPosition() || !extent_.IsTextPosition() ||
+      base_.ContainerObject() != extent_.ContainerObject() ||
+      !base_.ContainerObject()->IsNativeTextControl() ||
+      !IsTextControl(base_.ContainerObject()->GetNode())) {
+    return {};
+  }
+
+  if (base_ <= extent_) {
+    return TextControlSelection(base_.TextOffset(), extent_.TextOffset(),
+                                kSelectionHasForwardDirection);
+  } else {
+    return TextControlSelection(extent_.TextOffset(), base_.TextOffset(),
+                                kSelectionHasBackwardDirection);
+  }
 }
 
 bool operator==(const AXSelection& a, const AXSelection& b) {

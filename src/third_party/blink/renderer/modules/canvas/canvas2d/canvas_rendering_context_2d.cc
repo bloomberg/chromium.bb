@@ -33,6 +33,7 @@
 
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_rendering_context_2d.h"
 
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_scroll_into_view_params.h"
@@ -51,6 +52,8 @@
 #include "third_party/blink/renderer/core/layout/hit_test_canvas_result.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
+#include "third_party/blink/renderer/core/scroll/scroll_alignment.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_style.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/hit_region.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/path_2d.h"
@@ -65,7 +68,6 @@
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/stroke_data.h"
-#include "third_party/blink/renderer/platform/scroll/scroll_alignment.h"
 #include "third_party/blink/renderer/platform/text/bidi_text_run.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -339,7 +341,7 @@ void CanvasRenderingContext2D::ScrollPathIntoViewInternal(const Path& path) {
   if (!GetState().IsTransformInvertible() || path.IsEmpty())
     return;
 
-  canvas()->GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  canvas()->GetDocument().UpdateStyleAndLayout();
 
   LayoutObject* renderer = canvas()->GetLayoutObject();
   LayoutBox* layout_box = canvas()->GetLayoutBox();
@@ -368,17 +370,26 @@ void CanvasRenderingContext2D::ScrollPathIntoViewInternal(const Path& path) {
   // Then we clip the bounding box to the canvas visible range.
   path_rect.Intersect(canvas_rect);
 
+  // Horizontal text is aligned at the top of the screen
+  ScrollAlignment horizontal_scroll_mode =
+      ScrollAlignment::kAlignToEdgeIfNeeded;
+  ScrollAlignment vertical_scroll_mode = ScrollAlignment::kAlignTopAlways;
+
+  // Vertical text needs be aligned horizontally on the screen
   bool is_horizontal_writing_mode =
       canvas()->EnsureComputedStyle()->IsHorizontalWritingMode();
-
+  if (!is_horizontal_writing_mode) {
+    bool is_right_to_left =
+        canvas()->EnsureComputedStyle()->IsFlippedBlocksWritingMode();
+    horizontal_scroll_mode =
+        (is_right_to_left ? ScrollAlignment::kAlignRightAlways
+                          : ScrollAlignment::kAlignLeftAlways);
+    vertical_scroll_mode = ScrollAlignment::kAlignToEdgeIfNeeded;
+  }
   renderer->ScrollRectToVisible(
       path_rect,
-      WebScrollIntoViewParams(
-          is_horizontal_writing_mode ? ScrollAlignment::kAlignToEdgeIfNeeded
-                                     : ScrollAlignment::kAlignLeftAlways,
-          !is_horizontal_writing_mode ? ScrollAlignment::kAlignToEdgeIfNeeded
-                                      : ScrollAlignment::kAlignTopAlways,
-          kProgrammaticScroll, false, kScrollBehaviorAuto));
+      WebScrollIntoViewParams(horizontal_scroll_mode, vertical_scroll_mode,
+                              kProgrammaticScroll, false, kScrollBehaviorAuto));
 }
 
 void CanvasRenderingContext2D::clearRect(double x,
@@ -453,7 +464,7 @@ String CanvasRenderingContext2D::font() const {
   if (font_description.VariantCaps() == FontDescription::kSmallCaps)
     serialized_font.Append("small-caps ");
 
-  serialized_font.AppendNumber(font_description.ComputedPixelSize());
+  serialized_font.AppendNumber(font_description.ComputedSize());
   serialized_font.Append("px");
 
   const FontFamily& first_font_family = font_description.Family();
@@ -504,9 +515,8 @@ void CanvasRenderingContext2D::setFont(const String& new_font) {
     HashMap<String, Font>::iterator i =
         fonts_resolved_using_current_style_.find(new_font);
     if (i != fonts_resolved_using_current_style_.end()) {
-      DCHECK(font_lru_list_.Contains(new_font));
-      font_lru_list_.erase(new_font);
-      font_lru_list_.insert(new_font);
+      auto add_result = font_lru_list_.PrependOrMoveToFirst(new_font);
+      DCHECK(!add_result.is_new_entry);
       ModifiableState().SetFont(i->value, Host()->GetFontSelector());
     } else {
       MutableCSSPropertyValueSet* parsed_style =
@@ -537,8 +547,8 @@ void CanvasRenderingContext2D::setFont(const String& new_font) {
       Font final_font(final_description);
 
       fonts_resolved_using_current_style_.insert(new_font, final_font);
-      DCHECK(!font_lru_list_.Contains(new_font));
-      font_lru_list_.insert(new_font);
+      auto add_result = font_lru_list_.PrependOrMoveToFirst(new_font);
+      DCHECK(add_result.is_new_entry);
       PruneLocalFontCache(canvas_font_cache->HardMaxFonts());  // hard limit
       should_prune_local_font_cache_ = true;  // apply soft limit
       ModifiableState().SetFont(final_font, Host()->GetFontSelector());
@@ -582,8 +592,8 @@ void CanvasRenderingContext2D::PruneLocalFontCache(size_t target_size) {
     return;
   }
   while (font_lru_list_.size() > target_size) {
-    fonts_resolved_using_current_style_.erase(font_lru_list_.front());
-    font_lru_list_.RemoveFirst();
+    fonts_resolved_using_current_style_.erase(font_lru_list_.back());
+    font_lru_list_.pop_back();
   }
 }
 
@@ -651,13 +661,13 @@ bool CanvasRenderingContext2D::ParseColorOrCurrentColor(
 HitTestCanvasResult* CanvasRenderingContext2D::GetControlAndIdIfHitRegionExists(
     const LayoutPoint& location) {
   if (HitRegionsCount() <= 0)
-    return HitTestCanvasResult::Create(String(), nullptr);
+    return MakeGarbageCollected<HitTestCanvasResult>(String(), nullptr);
 
   LayoutBox* box = canvas()->GetLayoutBox();
   FloatPoint local_pos =
       box->AbsoluteToLocal(FloatPoint(location), kUseTransforms);
-  if (box->HasBorderOrPadding())
-    local_pos.Move(-box->PhysicalContentBoxOffset());
+  if (box->StyleRef().HasBorder() || box->StyleRef().MayHavePadding())
+    local_pos.Move(FloatSize(-box->PhysicalContentBoxOffset()));
   float scaleWidth = box->ContentWidth().ToFloat() == 0.0f
                          ? 1.0f
                          : canvas()->width() / box->ContentWidth();
@@ -670,12 +680,12 @@ HitTestCanvasResult* CanvasRenderingContext2D::GetControlAndIdIfHitRegionExists(
   if (hit_region) {
     Element* control = hit_region->Control();
     if (control && canvas()->IsSupportedInteractiveCanvasFallback(*control)) {
-      return HitTestCanvasResult::Create(hit_region->Id(),
-                                         hit_region->Control());
+      return MakeGarbageCollected<HitTestCanvasResult>(hit_region->Id(),
+                                                       hit_region->Control());
     }
-    return HitTestCanvasResult::Create(hit_region->Id(), nullptr);
+    return MakeGarbageCollected<HitTestCanvasResult>(hit_region->Id(), nullptr);
   }
-  return HitTestCanvasResult::Create(String(), nullptr);
+  return MakeGarbageCollected<HitTestCanvasResult>(String(), nullptr);
 }
 
 String CanvasRenderingContext2D::GetIdFromControl(const Element* element) {
@@ -866,16 +876,14 @@ void CanvasRenderingContext2D::DrawTextInternal(
       break;
   }
 
-  // The slop built in to this mask rect matches the heuristic used in
-  // FontCGWin.cpp for GDI text.
   TextRunPaintInfo text_run_paint_info(text_run);
-  text_run_paint_info.bounds =
-      FloatRect(location.X() - font_metrics.Height() / 2,
-                location.Y() - font_metrics.Ascent() - font_metrics.LineGap(),
-                clampTo<float>(width + font_metrics.Height()),
-                font_metrics.LineSpacing());
+  FloatRect bounds(
+      location.X() - font_metrics.Height() / 2,
+      location.Y() - font_metrics.Ascent() - font_metrics.LineGap(),
+      clampTo<float>(width + font_metrics.Height()),
+      font_metrics.LineSpacing());
   if (paint_type == CanvasRenderingContext2DState::kStrokePaintType)
-    InflateStrokeRect(text_run_paint_info.bounds);
+    InflateStrokeRect(bounds);
 
   CanvasRenderingContext2DAutoRestoreSkCanvas state_restorer(this);
   if (use_max_width) {
@@ -898,7 +906,7 @@ void CanvasRenderingContext2D::DrawTextInternal(
       },
       [](const SkIRect& rect)  // overdraw test lambda
       { return false; },
-      text_run_paint_info.bounds, paint_type);
+      bounds, paint_type);
 }
 
 const Font& CanvasRenderingContext2D::AccessFont() {
@@ -932,8 +940,11 @@ CanvasRenderingContext2D::getContextAttributes() const {
   CanvasRenderingContext2DSettings* settings =
       CanvasRenderingContext2DSettings::Create();
   settings->setAlpha(CreationAttributes().alpha);
-  settings->setColorSpace(ColorSpaceAsString());
-  settings->setPixelFormat(PixelFormatAsString());
+  if (RuntimeEnabledFeatures::CanvasColorManagementEnabled()) {
+    settings->setColorSpace(ColorSpaceAsString());
+    settings->setPixelFormat(PixelFormatAsString());
+  }
+  settings->setDesynchronized(canvas()->LowLatencyEnabled());
   return settings;
 }
 
@@ -1000,7 +1011,7 @@ void CanvasRenderingContext2D::DrawFocusRing(const Path& path) {
 
 void CanvasRenderingContext2D::UpdateElementAccessibility(const Path& path,
                                                           Element* element) {
-  element->GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+  element->GetDocument().UpdateStyleAndLayout();
   AXObjectCache* ax_object_cache =
       element->GetDocument().ExistingAXObjectCache();
   LayoutBoxModelObject* lbmo = canvas()->GetLayoutBoxModelObject();
@@ -1061,13 +1072,13 @@ void CanvasRenderingContext2D::addHitRegion(const HitRegionOptions* options,
   }
 
   if (!hit_region_manager_)
-    hit_region_manager_ = HitRegionManager::Create();
+    hit_region_manager_ = MakeGarbageCollected<HitRegionManager>();
 
   // Remove previous region (with id or control)
   hit_region_manager_->RemoveHitRegionById(options->id());
   hit_region_manager_->RemoveHitRegionByControl(options->control());
 
-  HitRegion* hit_region = HitRegion::Create(hit_region_path, options);
+  auto* hit_region = MakeGarbageCollected<HitRegion>(hit_region_path, options);
   Element* element = hit_region->Control();
   if (element && element->IsDescendantOf(canvas()))
     UpdateElementAccessibility(hit_region->GetPath(), hit_region->Control());
@@ -1099,6 +1110,9 @@ unsigned CanvasRenderingContext2D::HitRegionsCount() const {
 }
 
 void CanvasRenderingContext2D::DisableAcceleration() {
+  if (base::FeatureList::IsEnabled(features::kAlwaysAccelerateCanvas)) {
+    NOTREACHED();
+  }
   canvas()->DisableAcceleration();
 }
 

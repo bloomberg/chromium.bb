@@ -34,7 +34,7 @@ uint64_t QuicChromiumClientSessionPeer::GetPushedAndUnclaimedBytesCount(
 // static
 QuicChromiumClientStream* QuicChromiumClientSessionPeer::CreateOutgoingStream(
     QuicChromiumClientSession* session) {
-  return session->ShouldCreateOutgoingStream()
+  return session->ShouldCreateOutgoingBidirectionalStream()
              ? session->CreateOutgoingReliableStreamImpl(
                    TRAFFIC_ANNOTATION_FOR_TESTS)
              : nullptr;

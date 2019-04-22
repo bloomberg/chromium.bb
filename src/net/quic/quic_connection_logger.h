@@ -17,10 +17,10 @@
 #include "net/cert/cert_verify_result.h"
 #include "net/log/net_log_with_source.h"
 #include "net/socket/socket_performance_watcher.h"
-#include "net/third_party/quic/core/crypto/crypto_handshake_message.h"
-#include "net/third_party/quic/core/http/quic_spdy_session.h"
-#include "net/third_party/quic/core/quic_connection.h"
-#include "net/third_party/quic/core/quic_packets.h"
+#include "net/third_party/quiche/src/quic/core/crypto/crypto_handshake_message.h"
+#include "net/third_party/quiche/src/quic/core/http/quic_spdy_session.h"
+#include "net/third_party/quiche/src/quic/core/quic_connection.h"
+#include "net/third_party/quiche/src/quic/core/quic_packets.h"
 
 namespace base {
 class HistogramBase;
@@ -50,6 +50,11 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
                     quic::QuicPacketNumber original_packet_number,
                     quic::TransmissionType transmission_type,
                     quic::QuicTime sent_time) override;
+  void OnIncomingAck(const quic::QuicAckFrame& frame,
+                     quic::QuicTime ack_receive_time,
+                     quic::QuicPacketNumber largest_observed,
+                     bool rtt_updated,
+                     quic::QuicPacketNumber least_unacked_sent_packet) override;
   void OnPacketLoss(quic::QuicPacketNumber lost_packet_number,
                     quic::TransmissionType transmission_type,
                     quic::QuicTime detection_time) override;
@@ -64,7 +69,6 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
   void OnProtocolVersionMismatch(quic::ParsedQuicVersion version) override;
   void OnPacketHeader(const quic::QuicPacketHeader& header) override;
   void OnStreamFrame(const quic::QuicStreamFrame& frame) override;
-  void OnAckFrame(const quic::QuicAckFrame& frame) override;
   void OnStopWaitingFrame(const quic::QuicStopWaitingFrame& frame) override;
   void OnRstStreamFrame(const quic::QuicRstStreamFrame& frame) override;
   void OnConnectionCloseFrame(
@@ -118,6 +122,11 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
   bool no_packet_received_after_ping_;
   // The size of the previously received packet.
   size_t previous_received_packet_size_;
+  // The first received packet number. Used as the left edge of
+  // received_packets_ and received_acks_. In the case where packets are
+  // received out of order, packets with numbers smaller than
+  // first_received_packet_number_ will not be logged.
+  quic::QuicPacketNumber first_received_packet_number_;
   // The largest packet number received.  In the case where a packet is
   // received late (out of order), this value will not be updated.
   quic::QuicPacketNumber largest_received_packet_number_;
@@ -152,13 +161,13 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
   // Count of the number of BLOCKED frames sent.
   int num_blocked_frames_sent_;
   // Vector of inital packets status' indexed by packet numbers, where
-  // false means never received.  Zero is not a valid packet number, so
-  // that offset is never used, and we'll track 150 packets.
-  std::bitset<151> received_packets_;
+  // false means never received. We track 150 packets starting from
+  // first_received_packet_number_.
+  std::bitset<150> received_packets_;
   // Vector to indicate which of the initial 150 received packets turned out to
   // contain solo ACK frames.  An element is true iff an ACK frame was in the
   // corresponding packet, and there was very little else.
-  std::bitset<151> received_acks_;
+  std::bitset<150> received_acks_;
   // The available type of connection (WiFi, 3G, etc.) when connection was first
   // used.
   const char* const connection_description_;

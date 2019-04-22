@@ -28,6 +28,7 @@
 
 #include <memory>
 
+#include "base/macros.h"
 #include "base/optional.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
@@ -37,7 +38,6 @@
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
@@ -46,7 +46,6 @@
 namespace blink {
 
 class PLATFORM_EXPORT NetworkStateNotifier {
-  WTF_MAKE_NONCOPYABLE(NetworkStateNotifier);
   USING_FAST_MALLOC(NetworkStateNotifier);
 
  public:
@@ -223,7 +222,7 @@ class PLATFORM_EXPORT NetworkStateNotifier {
 
   // When called, successive setWebConnectionType/setOnLine calls are stored,
   // and supplied overridden values are used instead until clearOverride() is
-  // called.  This is used for layout tests (see crbug.com/377736) and inspector
+  // called.  This is used for web tests (see crbug.com/377736) and inspector
   // emulation.
   // If |effective_type| is null, its value is computed using |http_rtt_msec|.
   // |max_bandwidth_mbps| is used to override both the |max_bandwidth_mbps| and
@@ -235,7 +234,7 @@ class PLATFORM_EXPORT NetworkStateNotifier {
       bool on_line,
       WebConnectionType,
       base::Optional<WebEffectiveConnectionType> effective_type,
-      unsigned long http_rtt_msec,
+      int64_t http_rtt_msec,
       double max_bandwidth_mbps);
   void SetSaveDataEnabledOverride(bool enabled);
   void ClearOverride();
@@ -256,8 +255,8 @@ class PLATFORM_EXPORT NetworkStateNotifier {
 
   // Returns |rtt| after adding host-specific random noise, and rounding it as
   // per the NetInfo spec to improve privacy.
-  unsigned long RoundRtt(const String& host,
-                         const base::Optional<TimeDelta>& rtt) const;
+  uint32_t RoundRtt(const String& host,
+                    const base::Optional<TimeDelta>& rtt) const;
 
   // Returns |downlink_mbps| after adding host-specific random noise, and
   // rounding it as per the NetInfo spec and to improve privacy.
@@ -314,6 +313,8 @@ class PLATFORM_EXPORT NetworkStateNotifier {
   // thread.  Note that ScopedNotifier must be destroyed when not holding a lock
   // so that onLine notifications can be dispatched without a deadlock.
   class ScopedNotifier {
+    STACK_ALLOCATED();
+
    public:
     explicit ScopedNotifier(NetworkStateNotifier&);
     ~ScopedNotifier();
@@ -369,6 +370,8 @@ class PLATFORM_EXPORT NetworkStateNotifier {
   ObserverListMap on_line_state_observers_;
 
   const uint8_t randomization_salt_ = base::RandInt(1, 20);
+
+  DISALLOW_COPY_AND_ASSIGN(NetworkStateNotifier);
 };
 
 PLATFORM_EXPORT NetworkStateNotifier& GetNetworkStateNotifier();

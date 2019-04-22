@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "components/sessions/core/session_id.h"
 #include "components/sync_sessions/synced_tab_delegate.h"
-#include "ios/web/public/web_state/web_state_user_data.h"
+#import "ios/web/public/web_state/web_state_user_data.h"
 
 class IOSChromeSyncedTabDelegate
     : public sync_sessions::SyncedTabDelegate,
@@ -47,6 +47,8 @@ class IOSChromeSyncedTabDelegate
   friend class web::WebStateUserData<IOSChromeSyncedTabDelegate>;
 
   web::WebState* web_state_;
+
+  WEB_STATE_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(IOSChromeSyncedTabDelegate);
 };

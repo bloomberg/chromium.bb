@@ -8,13 +8,11 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/passwords/password_generation_popup_view.h"
 #include "chrome/browser/ui/views/autofill/autofill_popup_base_view.h"
-#include "ui/views/controls/styled_label_listener.h"
 
 class PasswordGenerationPopupController;
 
 class PasswordGenerationPopupViewViews : public autofill::AutofillPopupBaseView,
-                                         public PasswordGenerationPopupView,
-                                         public views::StyledLabelListener {
+                                         public PasswordGenerationPopupView {
  public:
   PasswordGenerationPopupViewViews(
       PasswordGenerationPopupController* controller,
@@ -40,11 +38,6 @@ class PasswordGenerationPopupViewViews : public autofill::AutofillPopupBaseView,
   void OnPaint(gfx::Canvas* canvas) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   gfx::Size CalculatePreferredSize() const override;
-
-  // views::StyledLabelListener implementation
-  void StyledLabelLinkClicked(views::StyledLabel* label,
-                              const gfx::Range& range,
-                              int event_flags) override;
 
   // Sub view that displays the actual generated password.
   GeneratedPasswordBox* password_view_ = nullptr;

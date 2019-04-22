@@ -44,7 +44,7 @@ class PanedWidgetDelegate : public views::WidgetDelegate {
     std::copy(accessible_panes_.begin(), accessible_panes_.end(),
               std::back_inserter(*panes));
   }
-  views::Widget* GetWidget() override { return widget_; };
+  views::Widget* GetWidget() override { return widget_; }
   const views::Widget* GetWidget() const override { return widget_; }
 
  private:

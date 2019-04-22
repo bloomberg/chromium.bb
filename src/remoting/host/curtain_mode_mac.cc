@@ -129,7 +129,7 @@ void SessionWatcher::Start() {
   // unaviodable as long as the curtain enforcement depends on processing of
   // the switch-in notifications.
   ui_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&SessionWatcher::ActivateCurtain, this));
+      FROM_HERE, base::BindOnce(&SessionWatcher::ActivateCurtain, this));
 }
 
 void SessionWatcher::Stop() {
@@ -137,7 +137,7 @@ void SessionWatcher::Stop() {
 
   client_session_control_.reset();
   ui_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&SessionWatcher::RemoveEventHandler, this));
+      FROM_HERE, base::BindOnce(&SessionWatcher::RemoveEventHandler, this));
 }
 
 SessionWatcher::~SessionWatcher() {
@@ -241,7 +241,8 @@ void SessionWatcher::RemoveEventHandler() {
 void SessionWatcher::DisconnectSession(protocol::ErrorCode error) {
   if (!caller_task_runner_->BelongsToCurrentThread()) {
     caller_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&SessionWatcher::DisconnectSession, this, error));
+        FROM_HERE,
+        base::BindOnce(&SessionWatcher::DisconnectSession, this, error));
     return;
   }
 

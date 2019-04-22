@@ -4,6 +4,7 @@
 
 #include "components/autofill/core/browser/autofill_download_manager.h"
 
+#include <algorithm>
 #include <tuple>
 #include <utility>
 
@@ -34,6 +35,7 @@
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/submission_source.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
+#include "components/google/core/common/google_util.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -51,6 +53,12 @@
 namespace autofill {
 
 namespace {
+
+// The reserved identifier ranges for autofill server experiments.
+constexpr std::pair<int, int> kAutofillExperimentRanges[] = {
+    {3312923, 3312930}, {3314208, 3314209}, {3314711, 3314712},
+    {3314445, 3314448}, {3314854, 3314883},
+};
 
 const size_t kMaxQueryGetSize = 1400;  // 1.25KB
 const size_t kAutofillDownloadManagerMaxFormCacheSize = 16;
@@ -85,6 +93,13 @@ const net::BackoffEntry::Policy kAutofillBackoffPolicy = {
 const char kDefaultAutofillServerURL[] =
     "https://clients1.google.com/tbproxy/af/";
 
+// The default number of days after which to reset the registry of autofill
+// events for which an upload has been sent.
+constexpr base::FeatureParam<int> kAutofillUploadThrottlingPeriodInDays(
+    &features::kAutofillUploadThrottling,
+    switches::kAutofillUploadThrottlingPeriodInDays,
+    28);
+
 // Header for API key.
 constexpr char kGoogApiKey[] = "X-Goog-Api-Key";
 // Header to get base64 encoded serialized proto from API for safety.
@@ -92,6 +107,12 @@ constexpr char kGoogEncodeResponseIfExecutable[] =
     "X-Goog-Encode-Response-If-Executable";
 
 constexpr char kDefaultAPIKey[] = "";
+
+// The maximum number of attempts for a given autofill request.
+constexpr base::FeatureParam<int> kAutofillMaxServerAttempts(
+    &features::kAutofillServerCommunication,
+    "max-attempts",
+    5);
 
 // Returns the base URL for the autofill server.
 GURL GetAutofillServerURL() {
@@ -136,6 +157,20 @@ GURL GetAutofillServerURL() {
   return autofill_server_url;
 }
 
+base::TimeDelta GetThrottleResetPeriod() {
+  return base::TimeDelta::FromDays(
+      std::max(1, kAutofillUploadThrottlingPeriodInDays.Get()));
+}
+
+// Returns true if |id| is within |kAutofillExperimentRanges|.
+bool IsAutofillExperimentId(int id) {
+  for (const auto& range : kAutofillExperimentRanges) {
+    if (range.first <= id && id <= range.second)
+      return true;
+  }
+  return false;
+}
+
 // Helper to log the HTTP |response_code| and other data received for
 // |request_type| to UMA.
 void LogHttpResponseData(AutofillDownloadManager::RequestType request_type,
@@ -158,9 +193,6 @@ void LogHttpResponseData(AutofillDownloadManager::RequestType request_type,
       break;
     default:
       NOTREACHED();
-      base::UmaHistogramSparse("Autofill.Unknown.HttpResponseOrErrorCode",
-                               response_or_error_code);
-      UMA_HISTOGRAM_TIMES("Autofill.Unknown.RequestDuration", request_duration);
   }
 }
 
@@ -179,8 +211,6 @@ void LogFailingPayloadSize(AutofillDownloadManager::RequestType request_type,
       break;
     default:
       NOTREACHED();
-      UMA_HISTOGRAM_COUNTS_100000("Autofill.Unknown.FailingPayloadSize",
-                                  num_bytes);
   }
 }
 
@@ -197,7 +227,6 @@ void LogExponentialBackoffDelay(
       break;
     default:
       NOTREACHED();
-      UMA_HISTOGRAM_MEDIUM_TIMES("Autofill.Unknown.BackoffDelay", delay);
   }
 }
 
@@ -349,21 +378,24 @@ std::ostream& operator<<(std::ostream& out,
   return out;
 }
 
-// Check for and returns true if |upload_event| is allowed to trigger an upload
-// for |form|. If true, updates |prefs| to track that |upload_event| has been
-// recorded for |form|.
-bool IsUploadAllowed(const FormStructure& form, PrefService* pref_service) {
-  if (!pref_service ||
-      !base::FeatureList::IsEnabled(features::kAutofillUploadThrottling)) {
-    return true;
-  }
+// Returns true if an upload of |form| triggered by |form.submission_source()|
+// can be throttled/suppressed. This is true if |prefs| indicates that this
+// upload has already happened within the last update window. Updates |prefs|
+// account for the upload for |form|.
+bool CanThrottleUpload(const FormStructure& form,
+                       base::TimeDelta throttle_reset_period,
+                       PrefService* pref_service) {
+  // PasswordManager uploads are triggered via specific first occurrences and
+  // do not participate in the pref-service tracked throttling mechanism. Return
+  // false for these uploads.
+  if (!pref_service)
+    return false;
 
   // If the upload event pref needs to be reset, clear it now.
-  static constexpr base::TimeDelta kResetPeriod = base::TimeDelta::FromDays(28);
   base::Time now = AutofillClock::Now();
   base::Time last_reset =
       pref_service->GetTime(prefs::kAutofillUploadEventsLastResetTimestamp);
-  if ((now - last_reset) > kResetPeriod) {
+  if ((now - last_reset) > throttle_reset_period) {
     AutofillDownloadManager::ClearUploadHistory(pref_service);
   }
 
@@ -382,17 +414,15 @@ bool IsUploadAllowed(const FormStructure& form, PrefService* pref_service) {
   DCHECK_LT(bit, 32);
   const int mask = (1 << bit);
 
-  // Check if the upload should be allowed and, if so, update the upload event
-  // pref to set the appropriate bit.
-  bool allow_upload = ((value & mask) == 0);
-  if (allow_upload) {
+  // Check if this is the first upload for this event. If so, update the upload
+  // event pref to set the appropriate bit.
+  bool is_first_upload_for_event = ((value & mask) == 0);
+  if (is_first_upload_for_event) {
     DictionaryPrefUpdate update(pref_service, prefs::kAutofillUploadEvents);
     update->SetKey(std::move(key), base::Value(value | mask));
   }
 
-  // Capture metrics and return.
-  AutofillMetrics::LogUploadEvent(form.submission_source(), allow_upload);
-  return allow_upload;
+  return !is_first_upload_for_event;
 }
 
 // Determines whether to use the API instead of the legacy server.
@@ -447,7 +477,19 @@ struct AutofillDownloadManager::FormRequestData {
   std::vector<std::string> form_signatures;
   RequestType request_type;
   std::string payload;
+  int num_attempts = 0;
 };
+
+ScopedActiveAutofillExperiments::ScopedActiveAutofillExperiments() {
+  AutofillDownloadManager::ResetActiveExperiments();
+}
+
+ScopedActiveAutofillExperiments::~ScopedActiveAutofillExperiments() {
+  AutofillDownloadManager::ResetActiveExperiments();
+}
+
+std::vector<variations::VariationID>*
+    AutofillDownloadManager::active_experiments_ = nullptr;
 
 AutofillDownloadManager::AutofillDownloadManager(AutofillDriver* driver,
                                                  Observer* observer,
@@ -456,6 +498,7 @@ AutofillDownloadManager::AutofillDownloadManager(AutofillDriver* driver,
       observer_(observer),
       api_key_(api_key),
       autofill_server_url_(GetAutofillServerURL()),
+      throttle_reset_period_(GetThrottleResetPeriod()),
       max_form_cache_size_(kAutofillDownloadManagerMaxFormCacheSize),
       loader_backoff_(&kAutofillBackoffPolicy),
       weak_factory_(this) {
@@ -478,12 +521,24 @@ bool AutofillDownloadManager::StartQueryRequest(
   if (CountActiveFieldsInForms(forms) > kMaxFieldsPerQueryRequest)
     return false;
 
+  // Encode the query for the requested forms.
   AutofillQueryContents query;
   FormRequestData request_data;
   if (!FormStructure::EncodeQueryRequest(forms, &request_data.form_signatures,
                                          &query)) {
     return false;
   }
+
+  // The set of active autofill experiments is constant for the life of the
+  // process. We initialize and statically cache it on first use. Leaked on
+  // process termination.
+  if (active_experiments_ == nullptr)
+    InitActiveExperiments();
+
+  // Attach any active autofill experiments.
+  query.mutable_experiments()->Reserve(active_experiments_->size());
+  for (int id : *active_experiments_)
+    query.mutable_experiments()->Add(id);
 
   // Get the query request payload.
   std::string payload;
@@ -521,7 +576,18 @@ bool AutofillDownloadManager::StartUploadRequest(
     const std::string& login_form_signature,
     bool observed_submission,
     PrefService* prefs) {
-  if (!IsEnabled() || !IsUploadAllowed(form, prefs))
+  if (!IsEnabled())
+    return false;
+
+  bool can_throttle_upload =
+      CanThrottleUpload(form, throttle_reset_period_, prefs);
+  bool throttling_is_enabled =
+      base::FeatureList::IsEnabled(features::kAutofillUploadThrottling);
+  bool is_small_form = form.active_field_count() < 3;
+  bool allow_upload =
+      !(can_throttle_upload && (throttling_is_enabled || is_small_form));
+  AutofillMetrics::LogUploadEvent(form.submission_source(), allow_upload);
+  if (!allow_upload)
     return false;
 
   AutofillUploadContents upload;
@@ -529,6 +595,18 @@ bool AutofillDownloadManager::StartUploadRequest(
                                 login_form_signature, observed_submission,
                                 &upload)) {
     return false;
+  }
+
+  // If this upload was a candidate for throttling, tag it and make sure that
+  // any throttling sensitive features are enforced.
+  if (can_throttle_upload) {
+    upload.set_was_throttleable(true);
+
+    // Don't send randomized metadata.
+    upload.clear_randomized_form_metadata();
+    for (auto& f : *upload.mutable_field()) {
+      f.clear_randomized_field_metadata();
+    }
   }
 
   // Get the POST payload that contains upload data.
@@ -643,11 +721,11 @@ bool AutofillDownloadManager::StartRequest(FormRequestData request_data) {
   resource_request->method = method;
 
   // Add Chrome experiment state to the request headers.
-  variations::AppendVariationHeadersUnknownSignedIn(
+  variations::AppendVariationsHeaderUnknownSignedIn(
       request_url,
       driver_->IsIncognito() ? variations::InIncognito::kYes
                              : variations::InIncognito::kNo,
-      &resource_request->headers);
+      resource_request.get());
 
   // Set headers specific to the API if using it.
   if (UseApi())
@@ -655,10 +733,10 @@ bool AutofillDownloadManager::StartRequest(FormRequestData request_data) {
     resource_request->headers.SetHeader(kGoogEncodeResponseIfExecutable,
                                         "base64");
 
-  // Put API key in request's header if there is.
-  if (!api_key_.empty() &&
-      variations::ShouldAppendVariationHeaders(request_url)) {
-    // Make sure that we only send the API key to endpoints trusted by Chrome.
+  // Put API key in request's header if a key exists, and the endpoint is
+  // trusted by Google.
+  if (!api_key_.empty() && request_url.SchemeIs(url::kHttpsScheme) &&
+      google_util::IsGoogleAssociatedDomainUrl(request_url)) {
     resource_request->headers.SetHeader(kGoogApiKey, api_key_);
   }
 
@@ -744,6 +822,16 @@ std::string AutofillDownloadManager::GetCombinedSignature(
   return signature;
 }
 
+// static
+int AutofillDownloadManager::GetMaxServerAttempts() {
+  // This value is constant for the life of the browser, so we cache it
+  // statically on first use to avoid re-parsing the param on each retry
+  // opportunity. The range is forced to be within [1, 20].
+  static int max_attempts =
+      std::max(1, std::min(20, kAutofillMaxServerAttempts.Get()));
+  return max_attempts;
+}
+
 void AutofillDownloadManager::OnSimpleLoaderComplete(
     std::list<std::unique_ptr<network::SimpleURLLoader>>::iterator it,
     FormRequestData request_data,
@@ -792,6 +880,10 @@ void AutofillDownloadManager::OnSimpleLoaderComplete(
     if (response_code >= 400 && response_code <= 499)
       return;
 
+    // If we've exhausted the maximum number of attempts, don't retry.
+    if (++request_data.num_attempts >= GetMaxServerAttempts())
+      return;
+
     base::TimeDelta backoff = loader_backoff_.GetTimeUntilRelease();
     LogExponentialBackoffDelay(request_data.request_type, backoff);
 
@@ -819,6 +911,27 @@ void AutofillDownloadManager::OnSimpleLoaderComplete(
   DVLOG(1) << "AutofillDownloadManager: upload request has succeeded.";
 
   observer_->OnUploadedPossibleFieldTypes();
+}
+
+void AutofillDownloadManager::InitActiveExperiments() {
+  auto* variations_http_header_provider =
+      variations::VariationsHttpHeaderProvider::GetInstance();
+  DCHECK(variations_http_header_provider != nullptr);
+
+  delete active_experiments_;
+  active_experiments_ = new std::vector<variations::VariationID>(
+      variations_http_header_provider->GetVariationsVector(
+          variations::GOOGLE_WEB_PROPERTIES_TRIGGER));
+  base::EraseIf(*active_experiments_, [](variations::VariationID id) {
+    return !IsAutofillExperimentId(id);
+  });
+  std::sort(active_experiments_->begin(), active_experiments_->end());
+}
+
+// static
+void AutofillDownloadManager::ResetActiveExperiments() {
+  delete active_experiments_;
+  active_experiments_ = nullptr;
 }
 
 }  // namespace autofill

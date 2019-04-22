@@ -9,10 +9,10 @@
 #include <stdint.h>
 
 #include <memory>
+#include <unordered_map>
 #include <vector>
 
 #include "base/callback.h"
-#include "base/containers/hash_tables.h"
 #include "base/format_macros.h"
 #include "base/macros.h"
 #include "base/memory/discardable_memory_allocator.h"
@@ -141,8 +141,8 @@ class DISCARDABLE_MEMORY_EXPORT DiscardableSharedMemoryManager
 
   base::Lock lock_;
   using MemorySegmentMap =
-      base::hash_map<int32_t, scoped_refptr<MemorySegment>>;
-  using ClientMap = base::hash_map<int, MemorySegmentMap>;
+      std::unordered_map<int32_t, scoped_refptr<MemorySegment>>;
+  using ClientMap = std::unordered_map<int, MemorySegmentMap>;
   ClientMap clients_;
   // Note: The elements in |segments_| are arranged in such a way that they form
   // a heap. The LRU memory segment always first.

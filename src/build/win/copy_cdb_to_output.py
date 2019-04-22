@@ -3,6 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 import glob
 import hashlib
 import os
@@ -38,7 +40,7 @@ def _CopyImpl(file_name, target_dir, source_dir, verbose=False):
       ((not os.path.isfile(target)) or
        _HexDigest(source) != _HexDigest(target))):
     if verbose:
-      print 'Copying %s to %s...' % (source, target)
+      print('Copying %s to %s...' % (source, target))
     if os.path.exists(target):
       os.unlink(target)
     shutil.copy(source, target)
@@ -54,7 +56,7 @@ def _CopyCDBToOutput(output_dir, target_arch):
   directory, which is created if it does not exist. The output
   directory, and target architecture that should be copied, are
   passed. Supported values for the target architecture are the GYP
-  values "ia32" and "x64" and the GN values "x86" and "x64".
+  values "ia32", "x64", "arm64" and the GN values "x86", "x64", "arm64".
   """
   _ConditionalMkdir(output_dir)
   vs_toolchain.SetEnvironmentAndGetRuntimeDllDirs()
@@ -66,10 +68,10 @@ def _CopyCDBToOutput(output_dir, target_arch):
                                         '\\Windows Kits\\10')))
   if target_arch == 'ia32' or target_arch == 'x86':
     src_arch = 'x86'
-  elif target_arch == 'x64':
-    src_arch = 'x64'
+  elif target_arch in ['x64', 'arm64']:
+    src_arch = target_arch
   else:
-    print 'copy_cdb_to_output.py: unknown target_arch %s' % target_arch
+    print('copy_cdb_to_output.py: unknown target_arch %s' % target_arch)
     sys.exit(1)
   # We need to copy multiple files, so cache the computed source directory.
   src_dir = os.path.join(win_sdk_dir, 'Debuggers', src_arch)
@@ -79,7 +81,14 @@ def _CopyCDBToOutput(output_dir, target_arch):
   dst_winext_dir = os.path.join(output_dir, 'winext')
   src_winxp_dir = os.path.join(src_dir, 'winxp')
   dst_winxp_dir = os.path.join(output_dir, 'winxp')
-  src_crt_dir = os.path.join(win_sdk_dir, 'Redist', 'ucrt', 'DLLs', src_arch)
+  # Starting with the 10.0.17763 SDK the ucrt files are in a version-named
+  # directory - this handles both cases.
+  redist_dir = os.path.join(win_sdk_dir, 'Redist')
+  version_dirs = glob.glob(os.path.join(redist_dir, '10.*'))
+  if len(version_dirs) > 0:
+    version_dirs.sort(reverse=True)
+    redist_dir = version_dirs[0]
+  src_crt_dir = os.path.join(redist_dir, 'ucrt', 'DLLs', src_arch)
   _ConditionalMkdir(dst_winext_dir)
   _ConditionalMkdir(dst_winxp_dir)
   # Note that the outputs from the "copy_cdb_to_output" target need to
@@ -92,17 +101,18 @@ def _CopyCDBToOutput(output_dir, target_arch):
   _CopyImpl('uext.dll', dst_winext_dir, src_winext_dir)
   _CopyImpl('exts.dll', dst_winxp_dir, src_winxp_dir)
   _CopyImpl('ntsdexts.dll', dst_winxp_dir, src_winxp_dir)
-  _CopyImpl('api-ms-win-eventing-provider-l1-1-0.dll', output_dir, src_dir)
+  if src_arch in ['x64', 'x86']:
+    _CopyImpl('api-ms-win-eventing-provider-l1-1-0.dll', output_dir, src_dir)
+    _CopyImpl('ucrtbase.dll', output_dir, src_crt_dir)
   for dll_path in glob.glob(os.path.join(src_crt_dir, 'api-ms-win-*.dll')):
     _CopyImpl(os.path.split(dll_path)[1], output_dir, src_crt_dir)
-  _CopyImpl('ucrtbase.dll', output_dir, src_crt_dir)
   return 0
 
 
 def main():
   if len(sys.argv) < 2:
-    print >>sys.stderr, 'Usage: copy_cdb_to_output.py <output_dir> ' + \
-        '<target_arch>'
+    print('Usage: copy_cdb_to_output.py <output_dir> ' + \
+        '<target_arch>', file=sys.stderr)
     return 1
   return _CopyCDBToOutput(sys.argv[1], sys.argv[2])
 

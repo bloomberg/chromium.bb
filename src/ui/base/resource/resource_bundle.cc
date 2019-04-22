@@ -15,7 +15,6 @@
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
@@ -28,12 +27,12 @@
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/buildflags.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/data_pack.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
-#include "ui/base/ui_features.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/codec/jpeg_codec.h"
@@ -153,23 +152,28 @@ class ResourceBundle::ResourceBundleImageSource : public gfx::ImageSkiaSource {
 };
 
 struct ResourceBundle::FontKey {
-  FontKey(int in_size_delta,
+  FontKey(const std::string& typeface,
+          int in_size_delta,
           gfx::Font::FontStyle in_style,
           gfx::Font::Weight in_weight)
-      : size_delta(in_size_delta), style(in_style), weight(in_weight) {}
+      : typeface(typeface),
+        size_delta(in_size_delta),
+        style(in_style),
+        weight(in_weight) {}
 
   ~FontKey() {}
 
   bool operator==(const FontKey& rhs) const {
-    return std::tie(size_delta, style, weight) ==
-           std::tie(rhs.size_delta, rhs.style, rhs.weight);
+    return std::tie(typeface, size_delta, style, weight) ==
+           std::tie(rhs.typeface, rhs.size_delta, rhs.style, rhs.weight);
   }
 
   bool operator<(const FontKey& rhs) const {
-    return std::tie(size_delta, style, weight) <
-           std::tie(rhs.size_delta, rhs.style, rhs.weight);
+    return std::tie(typeface, size_delta, style, weight) <
+           std::tie(rhs.typeface, rhs.size_delta, rhs.style, rhs.weight);
   }
 
+  std::string typeface;
   int size_delta;
   gfx::Font::FontStyle style;
   gfx::Font::Weight weight;
@@ -591,16 +595,34 @@ const gfx::FontList& ResourceBundle::GetFontListWithDelta(
     int size_delta,
     gfx::Font::FontStyle style,
     gfx::Font::Weight weight) {
+  return GetFontListWithTypefaceAndDelta(/*typeface=*/std::string(), size_delta,
+                                         style, weight);
+}
+
+const gfx::FontList& ResourceBundle::GetFontListWithTypefaceAndDelta(
+    const std::string& typeface,
+    int size_delta,
+    gfx::Font::FontStyle style,
+    gfx::Font::Weight weight) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  const FontKey styled_key(size_delta, style, weight);
+  const FontKey styled_key(typeface, size_delta, style, weight);
 
   auto found = font_cache_.find(styled_key);
   if (found != font_cache_.end())
     return found->second;
 
-  const FontKey base_key(0, gfx::Font::NORMAL, gfx::Font::Weight::NORMAL);
-  gfx::FontList& base = font_cache_[base_key];
+  const FontKey base_key(typeface, 0, gfx::Font::NORMAL,
+                         gfx::Font::Weight::NORMAL);
+  gfx::FontList default_font_list = gfx::FontList();
+  gfx::FontList base_font_list =
+      typeface.empty()
+          ? default_font_list
+          : gfx::FontList({typeface}, default_font_list.GetFontStyle(),
+                          default_font_list.GetFontSize(),
+                          default_font_list.GetFontWeight());
+  font_cache_.insert({base_key, base_font_list});
+  gfx::FontList& base = font_cache_.find(base_key)->second;
   if (styled_key == base_key)
     return base;
 
@@ -608,15 +630,16 @@ const gfx::FontList& ResourceBundle::GetFontListWithDelta(
   // Cache the unstyled font by first inserting a default-constructed font list.
   // Then, derive it for the initial insertion, or use the iterator that points
   // to the existing entry that the insertion collided with.
-  const FontKey sized_key(size_delta, gfx::Font::NORMAL,
+  const FontKey sized_key(typeface, size_delta, gfx::Font::NORMAL,
                           gfx::Font::Weight::NORMAL);
-  auto sized = font_cache_.insert(std::make_pair(sized_key, gfx::FontList()));
+  auto sized = font_cache_.insert(std::make_pair(sized_key, base_font_list));
   if (sized.second)
     sized.first->second = base.DeriveWithSizeDelta(size_delta);
-  if (styled_key == sized_key)
+  if (styled_key == sized_key) {
     return sized.first->second;
+  }
 
-  auto styled = font_cache_.insert(std::make_pair(styled_key, gfx::FontList()));
+  auto styled = font_cache_.insert(std::make_pair(styled_key, base_font_list));
   DCHECK(styled.second);  // Otherwise font_cache_.find(..) would have found it.
   styled.first->second = sized.first->second.Derive(
       0, sized.first->second.GetFontStyle() | style, weight);
@@ -940,12 +963,12 @@ base::string16 ResourceBundle::GetLocalizedStringImpl(int resource_id) {
 // static
 bool ResourceBundle::PNGContainsFallbackMarker(const unsigned char* buf,
                                                size_t size) {
-  if (size < arraysize(kPngMagic) ||
-      memcmp(buf, kPngMagic, arraysize(kPngMagic)) != 0) {
+  if (size < base::size(kPngMagic) ||
+      memcmp(buf, kPngMagic, base::size(kPngMagic)) != 0) {
     // Data invalid or a JPEG.
     return false;
   }
-  size_t pos = arraysize(kPngMagic);
+  size_t pos = base::size(kPngMagic);
 
   // Scan for custom chunks until we find one, find the IDAT chunk, or run out
   // of chunks.
@@ -956,13 +979,12 @@ bool ResourceBundle::PNGContainsFallbackMarker(const unsigned char* buf,
     base::ReadBigEndian(reinterpret_cast<const char*>(buf + pos), &length);
     if (size - pos - kPngChunkMetadataSize < length)
       break;
-    if (length == 0 &&
-        memcmp(buf + pos + sizeof(uint32_t), kPngScaleChunkType,
-               arraysize(kPngScaleChunkType)) == 0) {
+    if (length == 0 && memcmp(buf + pos + sizeof(uint32_t), kPngScaleChunkType,
+                              base::size(kPngScaleChunkType)) == 0) {
       return true;
     }
     if (memcmp(buf + pos + sizeof(uint32_t), kPngDataChunkType,
-               arraysize(kPngDataChunkType)) == 0) {
+               base::size(kPngDataChunkType)) == 0) {
       // Stop looking for custom chunks, any custom chunks should be before an
       // IDAT chunk.
       break;

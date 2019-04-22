@@ -43,7 +43,7 @@ class RadioButtonGroup : public GarbageCollected<RadioButtonGroup> {
   bool Contains(HTMLInputElement*) const;
   unsigned size() const;
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   void SetNeedsValidityCheckForAllButtons();
@@ -64,10 +64,6 @@ class RadioButtonGroup : public GarbageCollected<RadioButtonGroup> {
 
 RadioButtonGroup::RadioButtonGroup()
     : checked_button_(nullptr), required_count_(0) {}
-
-RadioButtonGroup* RadioButtonGroup::Create() {
-  return MakeGarbageCollected<RadioButtonGroup>();
-}
 
 inline bool RadioButtonGroup::IsValid() const {
   return !IsRequired() || checked_button_;
@@ -195,7 +191,7 @@ unsigned RadioButtonGroup::size() const {
   return members_.size();
 }
 
-void RadioButtonGroup::Trace(blink::Visitor* visitor) {
+void RadioButtonGroup::Trace(Visitor* visitor) {
   visitor->Trace(members_);
   visitor->Trace(checked_button_);
 }
@@ -220,7 +216,7 @@ void RadioButtonGroupScope::AddButton(HTMLInputElement* element) {
   auto* key_value =
       name_to_group_map_->insert(element->GetName(), nullptr).stored_value;
   if (!key_value->value)
-    key_value->value = RadioButtonGroup::Create();
+    key_value->value = MakeGarbageCollected<RadioButtonGroup>();
   key_value->value->Add(element);
 }
 
@@ -297,7 +293,7 @@ void RadioButtonGroupScope::RemoveButton(HTMLInputElement* element) {
   }
 }
 
-void RadioButtonGroupScope::Trace(blink::Visitor* visitor) {
+void RadioButtonGroupScope::Trace(Visitor* visitor) {
   visitor->Trace(name_to_group_map_);
 }
 

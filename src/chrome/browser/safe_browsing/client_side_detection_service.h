@@ -61,7 +61,7 @@ class ClientSideDetectionService : public content::NotificationObserver {
   // Creates a client-side detection service.  The service is initially
   // disabled, use SetEnabledAndRefreshState() to start it.  The caller takes
   // ownership of the object.  This function may return NULL.
-  static ClientSideDetectionService* Create(
+  static std::unique_ptr<ClientSideDetectionService> Create(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
 
   // Enables or disables the service, and refreshes the state of all renderers.

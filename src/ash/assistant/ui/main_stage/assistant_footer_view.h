@@ -10,6 +10,7 @@
 
 #include "ash/public/cpp/assistant/default_voice_interaction_observer.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "ui/views/view.h"
 
@@ -19,14 +20,15 @@ class CallbackLayerAnimationObserver;
 
 namespace ash {
 
-class AssistantController;
 class AssistantOptInView;
+class AssistantViewDelegate;
 class SuggestionContainerView;
 
-class AssistantFooterView : public views::View,
-                            DefaultVoiceInteractionObserver {
+class COMPONENT_EXPORT(ASSISTANT_UI) AssistantFooterView
+    : public views::View,
+      DefaultVoiceInteractionObserver {
  public:
-  explicit AssistantFooterView(AssistantController* assistant_controller);
+  explicit AssistantFooterView(AssistantViewDelegate* delegate);
   ~AssistantFooterView() override;
 
   // views::View:
@@ -35,7 +37,8 @@ class AssistantFooterView : public views::View,
   int GetHeightForWidth(int width) const override;
 
   // mojom::VoiceInteractionObserver:
-  void OnVoiceInteractionSetupCompleted(bool completed) override;
+  void OnVoiceInteractionConsentStatusUpdated(
+      mojom::ConsentStatus consent_status) override;
 
  private:
   void InitLayout();
@@ -43,7 +46,7 @@ class AssistantFooterView : public views::View,
   void OnAnimationStarted(const ui::CallbackLayerAnimationObserver& observer);
   bool OnAnimationEnded(const ui::CallbackLayerAnimationObserver& observer);
 
-  AssistantController* const assistant_controller_;  // Owned by Shell.
+  AssistantViewDelegate* const delegate_;  // Owned by Shell.
 
   SuggestionContainerView* suggestion_container_;  // Owned by view hierarchy.
   AssistantOptInView* opt_in_view_;                // Owned by view hierarchy.

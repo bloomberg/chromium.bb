@@ -48,8 +48,6 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
-#include "services/network/public/cpp/features.h"
-#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/messaging/string_message_codec.h"
 
 namespace chrome_service_worker_browser_test {
@@ -226,6 +224,31 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerTest,
+                       StartServiceWorkerAndDispatchMessage) {
+  base::RunLoop run_loop;
+  blink::TransferableMessage msg;
+  const base::string16 message_data = base::UTF8ToUTF16("testMessage");
+
+  WriteFile(FILE_PATH_LITERAL("sw.js"), "self.onfetch = function(e) {};");
+  WriteFile(FILE_PATH_LITERAL("test.html"), kInstallAndWaitForActivatedPage);
+  InitializeServer();
+  NavigateToPageAndWaitForReadyTitle("/test.html");
+  msg.owned_encoded_message = blink::EncodeStringMessage(message_data);
+  msg.encoded_message = msg.owned_encoded_message;
+
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::IO},
+      base::BindOnce(
+          &content::ServiceWorkerContext::StartServiceWorkerAndDispatchMessage,
+          base::Unretained(GetServiceWorkerContext()),
+          embedded_test_server()->GetURL("/scope/"), std::move(msg),
+          base::BindRepeating(&ExpectResultAndRun<bool>, true,
+                              run_loop.QuitClosure())));
+
+  run_loop.Run();
+}
+
+IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerTest,
                        StartServiceWorkerForLongRunningMessage) {
   base::RunLoop run_loop;
   blink::TransferableMessage msg;
@@ -288,6 +311,15 @@ class ChromeServiceWorkerFetchTest : public ChromeServiceWorkerTest {
               "  event.waitUntil(self.clients.claim());"
               "};"
               "this.onfetch = function(event) {"
+              // Ignore the default favicon request. The default favicon request
+              // is sent after the page loading is finished, and we can't
+              // control the timing of the request. If the request is sent after
+              // clients.claim() is called, fetch event for the default favicon
+              // request is triggered and the tests become flaky. See
+              // https://crbug.com/912543.
+              "  if (event.request.url.endsWith('/favicon.ico')) {"
+              "    return;"
+              "  }"
               "  event.respondWith("
               "      self.clients.matchAll().then(function(clients) {"
               "          clients.forEach(function(client) {"
@@ -439,9 +471,9 @@ class ChromeServiceWorkerLinkFetchTest : public ChromeServiceWorkerFetchTest {
         ->GetMainFrame()
         ->ExecuteJavaScriptForTests(
             base::ASCIIToUTF16(js),
-            base::Bind([](const base::Closure& quit_callback,
-                          const base::Value* result) { quit_callback.Run(); },
-                       run_loop.QuitClosure()));
+            base::BindOnce([](const base::Closure& quit_callback,
+                              base::Value result) { quit_callback.Run(); },
+                           run_loop.QuitClosure()));
     run_loop.Run();
   }
 
@@ -775,33 +807,11 @@ enum class ServicifiedFeatures { kNone, kServiceWorker, kNetwork };
 //
 // This is in //chrome instead of //content since the tests exercise the
 // kBlockThirdPartyCookies preference which is not a //content concept.
-class ChromeServiceWorkerNavigationPreloadTest
-    : public InProcessBrowserTest,
-      public ::testing::WithParamInterface<ServicifiedFeatures> {
+class ChromeServiceWorkerNavigationPreloadTest : public InProcessBrowserTest {
  public:
   ChromeServiceWorkerNavigationPreloadTest() = default;
 
   void SetUp() override {
-    // Enable servicification based on the test parameter.
-    ServicifiedFeatures param = GetParam();
-    switch (param) {
-      case ServicifiedFeatures::kNone:
-        scoped_feature_list_.InitWithFeatures(
-            {}, {blink::features::kServiceWorkerServicification,
-                 network::features::kNetworkService});
-        break;
-      case ServicifiedFeatures::kServiceWorker:
-        scoped_feature_list_.InitWithFeatures(
-            {blink::features::kServiceWorkerServicification},
-            {network::features::kNetworkService});
-        break;
-      case ServicifiedFeatures::kNetwork:
-        scoped_feature_list_.InitAndEnableFeature(
-            network::features::kNetworkService);
-        break;
-    }
-
-    // Setup the test server.
     embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
         &ChromeServiceWorkerNavigationPreloadTest::HandleRequest,
         base::Unretained(this)));
@@ -874,7 +884,7 @@ class ChromeServiceWorkerNavigationPreloadTest
 // when third-party cookies are blocked. The navigation preload request
 // should be sent with cookies as normal. Regression test for
 // https://crbug.com/913220.
-IN_PROC_BROWSER_TEST_P(ChromeServiceWorkerNavigationPreloadTest,
+IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerNavigationPreloadTest,
                        TopFrameWithThirdPartyBlocking) {
   // Enable third-party cookie blocking.
   browser()->profile()->GetPrefs()->SetBoolean(prefs::kBlockThirdPartyCookies,
@@ -907,7 +917,7 @@ IN_PROC_BROWSER_TEST_P(ChromeServiceWorkerNavigationPreloadTest,
 // when third-party cookies are blocked. This blocks service worker as well,
 // so the navigation preload request should not be sent. And the navigation
 // request should not include cookies.
-IN_PROC_BROWSER_TEST_P(ChromeServiceWorkerNavigationPreloadTest,
+IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerNavigationPreloadTest,
                        SubFrameWithThirdPartyBlocking) {
   // Enable third-party cookie blocking.
   browser()->profile()->GetPrefs()->SetBoolean(prefs::kBlockThirdPartyCookies,
@@ -948,11 +958,5 @@ IN_PROC_BROWSER_TEST_P(ChromeServiceWorkerNavigationPreloadTest,
       HasHeader(received_request(), "Service-Worker-Navigation-Preload"));
   EXPECT_FALSE(HasHeader(received_request(), "Cookie"));
 }
-
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        ChromeServiceWorkerNavigationPreloadTest,
-                        ::testing::Values(ServicifiedFeatures::kNone,
-                                          ServicifiedFeatures::kServiceWorker,
-                                          ServicifiedFeatures::kNetwork));
 
 }  // namespace chrome_service_worker_browser_test

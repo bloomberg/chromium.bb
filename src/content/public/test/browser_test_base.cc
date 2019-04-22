@@ -5,6 +5,7 @@
 #include "content/public/test/browser_test_base.h"
 
 #include <stddef.h>
+#include <iostream>
 
 #include "base/base_switches.h"
 #include "base/bind.h"
@@ -66,12 +67,6 @@
 #include "base/process/process_handle.h"
 #endif
 
-#if defined(OS_CHROMEOS)
-#include "content/public/browser/network_service_instance.h"
-#include "net/base/network_change_notifier.h"
-#include "net/base/network_change_notifier_chromeos.h"
-#endif
-
 #if defined(USE_AURA)
 #include "content/browser/compositor/image_transport_factory.h"
 #include "ui/aura/test/event_generator_delegate_aura.h"  // nogncheck
@@ -97,7 +92,12 @@ void DumpStackTraceSignalHandler(int signal) {
     message += strsignal(signal);
     message += ". Backtrace:\n";
     logging::RawLog(logging::LOG_ERROR, message.c_str());
-    base::debug::StackTrace().Print();
+    auto stack_trace = base::debug::StackTrace();
+    stack_trace.OutputToStream(&std::cerr);
+#if defined(OS_ANDROID)
+    // Also output the trace to logcat on Android.
+    stack_trace.Print();
+#endif
   }
   _exit(128 + signal);
 }
@@ -193,7 +193,7 @@ void BrowserTestBase::SetUp() {
   // when sharded.
   command_line->AppendSwitchASCII(
       switches::kIPCConnectionTimeout,
-      base::Int64ToString(TestTimeouts::action_max_timeout().InSeconds()));
+      base::NumberToString(TestTimeouts::action_max_timeout().InSeconds()));
 
   // The tests assume that file:// URIs can freely access other file:// URIs.
   if (AllowFileAccessFromFiles())
@@ -266,9 +266,6 @@ void BrowserTestBase::SetUp() {
   // not affect the results.
   command_line->AppendSwitchASCII(switches::kForceDisplayColorProfile, "srgb");
 
-  // Disable compositor Ukm in browser tests until crbug.com/761524 is resolved.
-  command_line->AppendSwitch(switches::kDisableCompositorUkmForTests);
-
   test_host_resolver_ = std::make_unique<TestHostResolver>();
 
   ContentBrowserSanityChecker scoped_enable_sanity_checks;
@@ -335,13 +332,15 @@ void BrowserTestBase::SetUp() {
   MainFunctionParams params(*command_line);
   params.ui_task = ui_task.release();
   params.created_main_parts_closure = created_main_parts_closure.release();
-  base::TaskScheduler::Create("Browser");
+  base::ThreadPool::Create("Browser");
   DCHECK(!field_trial_list_);
   field_trial_list_ = SetUpFieldTrialsAndFeatureList();
-  StartBrowserTaskScheduler();
+  StartBrowserThreadPool();
   BrowserTaskExecutor::Create();
+  BrowserTaskExecutor::PostFeatureListSetup();
   // TODO(phajdan.jr): Check return code, http://crbug.com/374738 .
   BrowserMain(params);
+  BrowserTaskExecutor::ResetForTesting();
 #else
   GetContentMainParams()->ui_task = ui_task.release();
   GetContentMainParams()->created_main_parts_closure =
@@ -364,7 +363,7 @@ bool BrowserTestBase::AllowFileAccessFromFiles() const {
 
 void BrowserTestBase::SimulateNetworkServiceCrash() {
   CHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
-  CHECK(!IsNetworkServiceRunningInProcess())
+  CHECK(!IsInProcessNetworkService())
       << "Can't crash the network service if it's running in-process!";
   network::mojom::NetworkServiceTestPtr network_service_test;
   ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
@@ -392,17 +391,6 @@ void BrowserTestBase::ProxyRunTestOnMainThreadLoop() {
   if (handle_sigterm_)
     signal(SIGTERM, DumpStackTraceSignalHandler);
 #endif  // defined(OS_POSIX)
-
-#if defined(OS_CHROMEOS)
-  // Manually set the connection type since ChromeOS's NetworkChangeNotifier
-  // implementation relies on some other class controlling it (normally
-  // NetworkChangeManagerClient), which may not be set up in all browser tests.
-  net::NetworkChangeNotifierChromeos* network_change_notifier =
-      static_cast<net::NetworkChangeNotifierChromeos*>(
-          content::GetNetworkChangeNotifier());
-  network_change_notifier->OnConnectionChanged(
-      net::NetworkChangeNotifier::CONNECTION_ETHERNET);
-#endif
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableTracing)) {
@@ -548,13 +536,15 @@ void BrowserTestBase::InitializeNetworkProcess() {
          rule.resolver_type !=
              net::RuleBasedHostResolverProc::Rule::kResolverTypeIPLiteral) ||
         rule.address_family != net::AddressFamily::ADDRESS_FAMILY_UNSPECIFIED ||
-        !!rule.latency_ms || rule.replacement.empty())
+        !!rule.latency_ms)
       continue;
     network::mojom::RulePtr mojo_rule = network::mojom::Rule::New();
     if (rule.resolver_type ==
         net::RuleBasedHostResolverProc::Rule::kResolverTypeSystem) {
       mojo_rule->resolver_type =
-          network::mojom::ResolverType::kResolverTypeSystem;
+          rule.replacement.empty()
+              ? network::mojom::ResolverType::kResolverTypeDirectLookup
+              : network::mojom::ResolverType::kResolverTypeSystem;
     } else {
       mojo_rule->resolver_type =
           network::mojom::ResolverType::kResolverTypeIPLiteral;

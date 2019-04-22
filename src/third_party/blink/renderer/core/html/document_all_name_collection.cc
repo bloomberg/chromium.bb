@@ -12,7 +12,7 @@ DocumentAllNameCollection::DocumentAllNameCollection(ContainerNode& document,
     : HTMLNameCollection(document, kDocumentAllNamedItems, name) {}
 
 bool DocumentAllNameCollection::ElementMatches(const Element& element) const {
-  // https://html.spec.whatwg.org/multipage/common-dom-interfaces.html#all-named-elements
+  // https://html.spec.whatwg.org/C/#all-named-elements
   // Match below type of elements by name but any type of element by id.
   if (element.HasTagName(html_names::kATag) ||
       element.HasTagName(html_names::kButtonTag) ||

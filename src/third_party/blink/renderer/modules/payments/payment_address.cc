@@ -18,18 +18,9 @@ PaymentAddress::PaymentAddress(
       dependent_locality_(address->dependent_locality),
       postal_code_(address->postal_code),
       sorting_code_(address->sorting_code),
-      language_code_(address->language_code),
       organization_(address->organization),
       recipient_(address->recipient),
-      phone_(address->phone) {
-  if (!language_code_.IsEmpty() && !address->script_code.IsEmpty()) {
-    StringBuilder builder;
-    builder.Append(language_code_);
-    builder.Append('-');
-    builder.Append(address->script_code);
-    language_code_ = builder.ToString();
-  }
-}
+      phone_(address->phone) {}
 
 PaymentAddress::~PaymentAddress() = default;
 
@@ -42,7 +33,6 @@ ScriptValue PaymentAddress::toJSONForBinding(ScriptState* script_state) const {
   result.AddString("dependentLocality", dependentLocality());
   result.AddString("postalCode", postalCode());
   result.AddString("sortingCode", sortingCode());
-  result.AddString("languageCode", languageCode());
   result.AddString("organization", organization());
   result.AddString("recipient", recipient());
   result.AddString("phone", phone());

@@ -12,7 +12,7 @@ namespace ui {
 class GL_EXPORT GpuSwitchingObserver {
  public:
   // Called for any observer when the system switches to a different GPU.
-  virtual void OnGpuSwitched() {};
+  virtual void OnGpuSwitched() {}
 };
 
 }  // namespace ui

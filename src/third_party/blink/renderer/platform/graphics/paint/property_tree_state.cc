@@ -8,37 +8,50 @@
 
 namespace blink {
 
+const PropertyTreeState& PropertyTreeState::Uninitialized() {
+  DEFINE_STATIC_REF(TransformPaintPropertyNode, transform,
+                    TransformPaintPropertyNode::Create(
+                        TransformPaintPropertyNode::Root(), {}));
+  DEFINE_STATIC_REF(ClipPaintPropertyNode, clip,
+                    ClipPaintPropertyNode::Create(ClipPaintPropertyNode::Root(),
+                                                  {transform}));
+  DEFINE_STATIC_REF(EffectPaintPropertyNode, effect,
+                    EffectPaintPropertyNode::Create(
+                        EffectPaintPropertyNode::Root(), {transform}));
+  DEFINE_STATIC_LOCAL(PropertyTreeState, uninitialized,
+                      (*transform, *clip, *effect));
+  return uninitialized;
+}
+
 const PropertyTreeState& PropertyTreeState::Root() {
   DEFINE_STATIC_LOCAL(
       PropertyTreeState, root,
-      (&TransformPaintPropertyNode::Root(), &ClipPaintPropertyNode::Root(),
-       &EffectPaintPropertyNode::Root()));
+      (TransformPaintPropertyNode::Root(), ClipPaintPropertyNode::Root(),
+       EffectPaintPropertyNode::Root()));
   return root;
 }
 
 PropertyTreeState PropertyTreeState::Unalias() const {
-  return PropertyTreeState(transform_ ? transform_->Unalias() : nullptr,
-                           clip_ ? clip_->Unalias() : nullptr,
-                           effect_ ? effect_->Unalias() : nullptr);
+  return PropertyTreeState(Transform().Unalias(), Clip().Unalias(),
+                           Effect().Unalias());
 }
 
 String PropertyTreeState::ToString() const {
-  return String::Format("t:%p c:%p e:%p", Transform(), Clip(), Effect());
+  return String::Format("t:%p c:%p e:%p", transform_, clip_, effect_);
 }
 
 #if DCHECK_IS_ON()
 
 String PropertyTreeState::ToTreeString() const {
-  return "transform:\n" + (Transform() ? Transform()->ToTreeString() : "null") +
-         "\nclip:\n" + (Clip() ? Clip()->ToTreeString() : "null") +
-         "\neffect:\n" + (Effect() ? Effect()->ToTreeString() : "null");
+  return "transform:\n" + Transform().ToTreeString() + "\nclip:\n" +
+         Clip().ToTreeString() + "\neffect:\n" + Effect().ToTreeString();
 }
 
 #endif
 
 size_t PropertyTreeState::CacheMemoryUsageInBytes() const {
-  return Clip()->CacheMemoryUsageInBytes() +
-         Transform()->CacheMemoryUsageInBytes();
+  return Clip().CacheMemoryUsageInBytes() +
+         Transform().CacheMemoryUsageInBytes();
 }
 
 std::ostream& operator<<(std::ostream& os, const PropertyTreeState& state) {

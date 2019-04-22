@@ -16,6 +16,7 @@
 
 #include "common/Assert.h"
 #include "dawn_native/opengl/DeviceGL.h"
+#include "dawn_native/opengl/UtilsGL.h"
 
 namespace dawn_native { namespace opengl {
 
@@ -80,6 +81,15 @@ namespace dawn_native { namespace opengl {
         glSamplerParameteri(mHandle, GL_TEXTURE_WRAP_R, WrapMode(descriptor->addressModeW));
         glSamplerParameteri(mHandle, GL_TEXTURE_WRAP_S, WrapMode(descriptor->addressModeU));
         glSamplerParameteri(mHandle, GL_TEXTURE_WRAP_T, WrapMode(descriptor->addressModeV));
+
+        glSamplerParameterf(mHandle, GL_TEXTURE_MIN_LOD, descriptor->lodMinClamp);
+        glSamplerParameterf(mHandle, GL_TEXTURE_MAX_LOD, descriptor->lodMaxClamp);
+
+        if (ToOpenGLCompareFunction(descriptor->compareFunction) != GL_NEVER) {
+            glSamplerParameteri(mHandle, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+            glSamplerParameteri(mHandle, GL_TEXTURE_COMPARE_FUNC,
+                                ToOpenGLCompareFunction(descriptor->compareFunction));
+        }
     }
 
     GLuint Sampler::GetHandle() const {

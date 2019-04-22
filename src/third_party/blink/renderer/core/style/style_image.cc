@@ -11,7 +11,7 @@
 namespace blink {
 
 FloatSize StyleImage::ApplyZoom(const FloatSize& size, float multiplier) const {
-  if (multiplier == 1.0f || ImageHasRelativeSize())
+  if (multiplier == 1.0f || !HasIntrinsicSize())
     return size;
 
   float width = size.Width() * multiplier;
@@ -33,11 +33,8 @@ FloatSize StyleImage::ImageSizeForSVGImage(
     const LayoutSize& default_object_size) const {
   FloatSize unzoomed_default_object_size(default_object_size);
   unzoomed_default_object_size.Scale(1 / multiplier);
-  // FIXME(schenney): Remove this rounding hack once background image
-  // geometry is converted to handle rounding downstream.
-  return FloatSize(RoundedIntSize(
-      ApplyZoom(svg_image->ConcreteObjectSize(unzoomed_default_object_size),
-                multiplier)));
+  return ApplyZoom(svg_image->ConcreteObjectSize(unzoomed_default_object_size),
+                   multiplier);
 }
 
 }  // namespace blink

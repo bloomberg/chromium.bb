@@ -25,7 +25,6 @@ test(function () {
     for (let i = 0; i < childrenCount; i++) {
       let child = element.childAtIndex(i);
       children.push(child);
-      child.children = getAccessibilityChildren(child);
     }
     return children;
   }

@@ -64,7 +64,9 @@ SHADER(
 // clang-format on
 
 void CheckNoGlError(const std::string& msg) {
-  CHECK_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError()) << " " << msg;
+  const GLenum error = glGetError();
+  CHECK_EQ(static_cast<GLenum>(GL_NO_ERROR), error)
+      << msg << " " << gl::GLEnums::GetStringError(error);
 }
 
 // Utility function to compile a shader from a string.

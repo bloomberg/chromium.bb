@@ -1,5 +1,7 @@
 #include "rar.hpp"
 
+namespace third_party_unrar {
+
 RAROptions::RAROptions()
 {
   Init();
@@ -33,3 +35,5 @@ void RAROptions::Init()
   QOpenMode=QOPEN_AUTO;
 #endif
 }
+
+}  // namespace third_party_unrar

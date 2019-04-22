@@ -16,7 +16,6 @@
 <translation id="152892567002884378">Увеличаване на силата на звука</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> и след това <ph name="ESC" /></translation>
 <translation id="1652741121070700329">Преместване в началото на предишната дума</translation>
-<translation id="1671169355475348905">Превключване към метода на въвеждане за предишния език</translation>
 <translation id="1679841710523778799">Увеличаване на яркостта</translation>
 <translation id="168356808214100546">Натиснете и задръжте <ph name="ALT" />, използвайте <ph name="TAB" />, за да стигнете до желания прозорец, и освободете клавишите.</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -33,6 +32,7 @@
 <translation id="2181097965834437145">Показване или скриване на лентата на отметките</translation>
 <translation id="2185166372312820725">Към предишния раздел</translation>
 <translation id="2194790690264064655">Натиснете <ph name="CTRL" /> и кликнете върху връзка</translation>
+<translation id="2246352309084894470">Отваряне/затваряне на стартовия панел на цял екран</translation>
 <translation id="2382644247745281995">Не се поддържа за текущата клавиатурна подредба</translation>
 <translation id="2397416548179033562">Показване на менюто на Chrome</translation>
 <translation id="2424073332829844142">Включване и изключване на Caps Lock</translation>
@@ -44,7 +44,6 @@
 <translation id="2574014812750545982">Повторно задаване на мащаба на страницата</translation>
 <translation id="2596078834055697711">Правене на екранна снимка на прозореца</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> и след това <ph name="TAB" /> или <ph name="RIGHT" /></translation>
-<translation id="2687057317448262550">Превключване към метода на въвеждане за следващия език</translation>
 <translation id="2699509451653686398">Запазване на текущата уеб страница като отметка</translation>
 <translation id="2750942583782703988">Презареждане на текущата страница</translation>
 <translation id="2764005613199379871">Поставяне на фокуса в адресната лента за търсене</translation>
@@ -147,6 +146,7 @@
 <translation id="671928215901716392">Заключване на екрана</translation>
 <translation id="6727005317916125192">Предишният панел</translation>
 <translation id="6740781404993465795">Избиране на следващата дума или буква</translation>
+<translation id="6755851152783057058">Превключване към последно използвания метод на въвеждане</translation>
 <translation id="6760706756348334449">Намаляване на силата на звука</translation>
 <translation id="6941333068993625698">Изпращане на отзиви</translation>
 <translation id="6981982820502123353">Достъпност</translation>
@@ -157,6 +157,7 @@
 <translation id="7237562915163138771">Въведете уеб адрес в адресната лента, след което натиснете <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /></translation>
 <translation id="7254764037241667478">Включване на спящия режим (спиране)</translation>
 <translation id="7379254767514753910"><ph name="ALT" /> или <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
+<translation id="7422707470576323858">Превключване към следващия наличен метод на въвеждане</translation>
 <translation id="743754632698445141">Освобождаване на приложение</translation>
 <translation id="7439718573248533901">Изтриване на следващата буква (изтриване напред)</translation>
 <translation id="7611271430932669992">Преместване на фокуса към изскачащите и диалоговите прозорци</translation>

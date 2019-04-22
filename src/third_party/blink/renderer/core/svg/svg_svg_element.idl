@@ -66,5 +66,5 @@ interface SVGSVGElement : SVGGraphicsElement {
     [MeasureAs=SVGSMILCurrentTime] void setCurrentTime(float seconds);
 };
 
-SVGSVGElement implements SVGFitToViewBox;
-SVGSVGElement implements SVGZoomAndPan;
+SVGSVGElement includes SVGFitToViewBox;
+SVGSVGElement includes SVGZoomAndPan;

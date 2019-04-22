@@ -104,12 +104,14 @@ class ComponentCloudPolicyStoreTest : public testing::Test {
                            PolicyBuilder::kFakePublicKeyVersion);
   }
 
-  void SetupExpectBundleWithScope(const PolicyScope& scope) {
+  void SetupExpectBundleWithScope(
+      const PolicyScope& scope,
+      const PolicySource& source = POLICY_SOURCE_CLOUD) {
     PolicyMap& policy = expected_bundle_.Get(kTestPolicyNS);
     policy.Clear();
-    policy.Set("Name", POLICY_LEVEL_MANDATORY, scope, POLICY_SOURCE_CLOUD,
+    policy.Set("Name", POLICY_LEVEL_MANDATORY, scope, source,
                std::make_unique<base::Value>("disabled"), nullptr);
-    policy.Set("Second", POLICY_LEVEL_RECOMMENDED, scope, POLICY_SOURCE_CLOUD,
+    policy.Set("Second", POLICY_LEVEL_RECOMMENDED, scope, source,
                std::make_unique<base::Value>("maybe"), nullptr);
   }
 
@@ -128,14 +130,11 @@ class ComponentCloudPolicyStoreTest : public testing::Test {
     return builder_.GetBlob();
   }
 
-  std::unique_ptr<ComponentCloudPolicyStore> CreateStore() {
-    return CreateStoreWithPolicyType(dm_protocol::kChromeExtensionPolicyType);
-  }
-
-  std::unique_ptr<ComponentCloudPolicyStore> CreateStoreWithPolicyType(
-      const std::string& policy_type) {
+  std::unique_ptr<ComponentCloudPolicyStore> CreateStore(
+      const std::string& policy_type = dm_protocol::kChromeExtensionPolicyType,
+      const PolicySource& source = POLICY_SOURCE_CLOUD) {
     return std::make_unique<ComponentCloudPolicyStore>(
-        &store_delegate_, cache_.get(), policy_type);
+        &store_delegate_, cache_.get(), policy_type, source);
   }
 
   // Returns true if the policy exposed by the |store| is empty.
@@ -433,22 +432,21 @@ TEST_F(ComponentCloudPolicyStoreTest,
   PolicyNamespace ns_signin_extension(POLICY_DOMAIN_SIGNIN_EXTENSIONS,
                                       kTestExtension);
 
-  store_ = CreateStoreWithPolicyType(
-      dm_protocol::kChromeMachineLevelExtensionCloudPolicyType);
+  store_ =
+      CreateStore(dm_protocol::kChromeMachineLevelExtensionCloudPolicyType);
   EXPECT_FALSE(store_->ValidatePolicy(ns_chrome, CreateResponse(),
                                       nullptr /*policy_data*/,
                                       nullptr /*payload*/));
   EXPECT_FALSE(store_->ValidatePolicy(ns_signin_extension, CreateResponse(),
                                       nullptr, nullptr));
 
-  store_ =
-      CreateStoreWithPolicyType(dm_protocol::kChromeSigninExtensionPolicyType);
+  store_ = CreateStore(dm_protocol::kChromeSigninExtensionPolicyType);
   EXPECT_FALSE(
       store_->ValidatePolicy(ns_chrome, CreateResponse(), nullptr, nullptr));
   EXPECT_FALSE(
       store_->ValidatePolicy(ns_extension, CreateResponse(), nullptr, nullptr));
 
-  store_ = CreateStoreWithPolicyType(dm_protocol::kChromeExtensionPolicyType);
+  store_ = CreateStore(dm_protocol::kChromeExtensionPolicyType);
   EXPECT_FALSE(
       store_->ValidatePolicy(ns_chrome, CreateResponse(), nullptr, nullptr));
   EXPECT_FALSE(store_->ValidatePolicy(ns_signin_extension, CreateResponse(),
@@ -522,8 +520,8 @@ TEST_F(ComponentCloudPolicyStoreTest, StoreAndLoad) {
 }
 
 TEST_F(ComponentCloudPolicyStoreTest, StoreAndLoadMachineLevelUserPolicy) {
-  store_ = CreateStoreWithPolicyType(
-      dm_protocol::kChromeMachineLevelExtensionCloudPolicyType);
+  store_ =
+      CreateStore(dm_protocol::kChromeMachineLevelExtensionCloudPolicyType);
   store_->SetCredentials(PolicyBuilder::GetFakeAccountIdForTesting(),
                          PolicyBuilder::kFakeToken,
                          PolicyBuilder::kFakeDeviceId, public_key_,
@@ -536,8 +534,66 @@ TEST_F(ComponentCloudPolicyStoreTest, StoreAndLoadMachineLevelUserPolicy) {
 
   StoreTestPolicyWithNamespace(store_.get(), kTestPolicyNS);
 
-  another_store_ = CreateStoreWithPolicyType(
+  another_store_ =
+      CreateStore(dm_protocol::kChromeMachineLevelExtensionCloudPolicyType);
+  another_store_->SetCredentials(PolicyBuilder::GetFakeAccountIdForTesting(),
+                                 PolicyBuilder::kFakeToken,
+                                 PolicyBuilder::kFakeDeviceId, public_key_,
+                                 PolicyBuilder::kFakePublicKeyVersion);
+  another_store_->Load();
+  EXPECT_TRUE(another_store_->policy().Equals(expected_bundle_));
+  EXPECT_EQ(TestPolicyHash(), another_store_->GetCachedHash(kTestPolicyNS));
+}
+
+TEST_F(ComponentCloudPolicyStoreTest, StoreAndLoadPolicyWithCloudPriority) {
+  store_ = CreateStore(dm_protocol::kChromeMachineLevelExtensionCloudPolicyType,
+                       POLICY_SOURCE_PRIORITY_CLOUD);
+  store_->SetCredentials(PolicyBuilder::GetFakeAccountIdForTesting(),
+                         PolicyBuilder::kFakeToken,
+                         PolicyBuilder::kFakeDeviceId, public_key_,
+                         PolicyBuilder::kFakePublicKeyVersion);
+
+  builder_.policy_data().set_policy_type(
       dm_protocol::kChromeMachineLevelExtensionCloudPolicyType);
+  builder_.payload().set_secure_hash(TestPolicyHash());
+  SetupExpectBundleWithScope(POLICY_SCOPE_MACHINE,
+                             POLICY_SOURCE_PRIORITY_CLOUD);
+
+  StoreTestPolicyWithNamespace(store_.get(), kTestPolicyNS);
+
+  another_store_ =
+      CreateStore(dm_protocol::kChromeMachineLevelExtensionCloudPolicyType,
+                  POLICY_SOURCE_PRIORITY_CLOUD);
+  another_store_->SetCredentials(PolicyBuilder::GetFakeAccountIdForTesting(),
+                                 PolicyBuilder::kFakeToken,
+                                 PolicyBuilder::kFakeDeviceId, public_key_,
+                                 PolicyBuilder::kFakePublicKeyVersion);
+  another_store_->Load();
+  EXPECT_TRUE(another_store_->policy().Equals(expected_bundle_));
+  EXPECT_EQ(TestPolicyHash(), another_store_->GetCachedHash(kTestPolicyNS));
+}
+
+TEST_F(ComponentCloudPolicyStoreTest,
+       StoreAndLoadPolicyWithDifferentCloudPriority) {
+  store_ = CreateStore(dm_protocol::kChromeMachineLevelExtensionCloudPolicyType,
+                       POLICY_SOURCE_CLOUD);
+  store_->SetCredentials(PolicyBuilder::GetFakeAccountIdForTesting(),
+                         PolicyBuilder::kFakeToken,
+                         PolicyBuilder::kFakeDeviceId, public_key_,
+                         PolicyBuilder::kFakePublicKeyVersion);
+
+  builder_.policy_data().set_policy_type(
+      dm_protocol::kChromeMachineLevelExtensionCloudPolicyType);
+  builder_.payload().set_secure_hash(TestPolicyHash());
+  SetupExpectBundleWithScope(POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD);
+
+  StoreTestPolicyWithNamespace(store_.get(), kTestPolicyNS);
+
+  SetupExpectBundleWithScope(POLICY_SCOPE_MACHINE,
+                             POLICY_SOURCE_PRIORITY_CLOUD);
+  another_store_ =
+      CreateStore(dm_protocol::kChromeMachineLevelExtensionCloudPolicyType,
+                  POLICY_SOURCE_PRIORITY_CLOUD);
   another_store_->SetCredentials(PolicyBuilder::GetFakeAccountIdForTesting(),
                                  PolicyBuilder::kFakeToken,
                                  PolicyBuilder::kFakeDeviceId, public_key_,

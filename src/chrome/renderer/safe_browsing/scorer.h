@@ -18,8 +18,8 @@
 #include <stdint.h>
 
 #include <string>
+#include <unordered_set>
 
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "chrome/common/safe_browsing/client_model.pb.h"
@@ -48,11 +48,11 @@ class Scorer {
 
   // Returns a set of hashed page terms that appear in the model in binary
   // format.
-  const base::hash_set<std::string>& page_terms() const;
+  const std::unordered_set<std::string>& page_terms() const;
 
   // Returns a set of hashed page words that appear in the model in binary
   // format.
-  const base::hash_set<uint32_t>& page_words() const;
+  const std::unordered_set<uint32_t>& page_words() const;
 
   // Return the maximum number of words per term for the loaded model.
   size_t max_words_per_term() const;
@@ -83,8 +83,8 @@ class Scorer {
                           const FeatureMap& features) const;
 
   ClientSideModel model_;
-  base::hash_set<std::string> page_terms_;
-  base::hash_set<uint32_t> page_words_;
+  std::unordered_set<std::string> page_terms_;
+  std::unordered_set<uint32_t> page_words_;
 
   DISALLOW_COPY_AND_ASSIGN(Scorer);
 };

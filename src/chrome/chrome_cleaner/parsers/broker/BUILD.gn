@@ -25,6 +25,7 @@ source_set("unittest_sources") {
 
   sources = [
     "json_parser_sandbox_setup_unittest.cc",
+    "lnk_parser_sandbox_setup_unittest.cc",
   ]
   deps = [
     ":parser_sandbox_broker",
@@ -35,6 +36,10 @@ source_set("unittest_sources") {
     "//chrome/chrome_cleaner/os:common_os",
     "//chrome/chrome_cleaner/parsers/json_parser:json_parser",
     "//chrome/chrome_cleaner/parsers/json_parser:json_splicer",
+    "//chrome/chrome_cleaner/parsers/shortcut_parser:sandboxed_lnk_parser_test_util",
+    "//chrome/chrome_cleaner/parsers/shortcut_parser/broker:sandboxed_shortcut_parser",
+    "//chrome/chrome_cleaner/parsers/shortcut_parser/broker:shortcut_parser_api",
+    "//chrome/chrome_cleaner/parsers/shortcut_parser/target:lnk_parser",
     "//chrome/chrome_cleaner/parsers/target:parser_sandbox_target",
     "//mojo/public/cpp/bindings:bindings",
     "//sandbox/win:sandbox",

@@ -131,6 +131,7 @@ class WTF_EXPORT ArrayBufferContents {
 
   void Transfer(ArrayBufferContents& other);
   void ShareWith(ArrayBufferContents& other);
+  void ShareNonSharedForInternalUse(ArrayBufferContents& other);
   void CopyTo(ArrayBufferContents& other);
 
   static void* AllocateMemoryOrNull(size_t, InitializationPolicy);

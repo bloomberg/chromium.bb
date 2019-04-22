@@ -9,12 +9,14 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/win/core_winrt_util.h"
+#include "base/win/post_async_results.h"
 #include "base/win/scoped_hstring.h"
 #include "device/bluetooth/bluetooth_adapter_winrt.h"
 #include "device/bluetooth/bluetooth_gatt_discoverer_winrt.h"
@@ -449,7 +451,7 @@ void BluetoothDeviceWinrt::CreateGattConnectionImpl() {
     return;
   }
 
-  hr = PostAsyncResults(
+  hr = base::win::PostAsyncResults(
       std::move(from_bluetooth_address_op),
       base::BindOnce(&BluetoothDeviceWinrt::OnFromBluetoothAddress,
                      weak_ptr_factory_.GetWeakPtr()));

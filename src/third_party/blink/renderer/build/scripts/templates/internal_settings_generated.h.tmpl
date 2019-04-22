@@ -30,10 +30,10 @@ class InternalSettingsGenerated : public ScriptWrappable {
   void Trace(Visitor*) override;
 
  private:
-  Member<Page> m_page;
+  Member<Page> page_;
 
   {% for setting in settings if setting.type|to_idl_type %}
-  {{setting.type}} m_{{setting.name}};
+  {{setting.type}} {{setting.name}}_;
   {% endfor %}
 };
 

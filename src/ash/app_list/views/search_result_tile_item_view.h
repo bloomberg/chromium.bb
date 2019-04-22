@@ -38,8 +38,8 @@ class APP_LIST_EXPORT SearchResultTileItemView
                            bool show_in_apps_page);
   ~SearchResultTileItemView() override;
 
-  SearchResult* result() { return item_; }
-  void SetSearchResult(SearchResult* item);
+  void OnResultChanged() override;
+  void SetIndexInItemListView(size_t index);
 
   // Informs the SearchResultTileItemView of its parent's background color. The
   // controls within the SearchResultTileItemView will adapt to suit the given
@@ -59,18 +59,20 @@ class APP_LIST_EXPORT SearchResultTileItemView
 
   // Overridden from SearchResultObserver:
   void OnMetadataChanged() override;
-  void OnResultDestroying() override;
 
   // views::ContextMenuController overrides:
-  void ShowContextMenuForView(views::View* source,
-                              const gfx::Point& point,
-                              ui::MenuSourceType source_type) override;
+  void ShowContextMenuForViewImpl(views::View* source,
+                                  const gfx::Point& point,
+                                  ui::MenuSourceType source_type) override;
 
   // AppListMenuModelAdapter::Delegate overrides:
   void ExecuteCommand(int command_id, int event_flags) override;
 
  private:
-  // Bound by ShowContextMenuForView().
+  // Launch the result and log to various histograms.
+  void ActivateResult(int event_flags);
+
+  // Bound by ShowContextMenuForViewImpl().
   void OnGetContextMenuModel(views::View* source,
                              const gfx::Point& point,
                              ui::MenuSourceType source_type,
@@ -93,7 +95,7 @@ class APP_LIST_EXPORT SearchResultTileItemView
   bool IsSuggestedAppTileShownInAppPage() const;
 
   // Records an app being launched.
-  void LogAppLaunch() const;
+  void LogAppLaunchForSuggestedApp() const;
 
   void UpdateBackgroundColor();
 
@@ -101,14 +103,10 @@ class APP_LIST_EXPORT SearchResultTileItemView
   void Layout() override;
   const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
-  bool GetTooltipText(const gfx::Point& p,
-                      base::string16* tooltip) const override;
+  base::string16 GetTooltipText(const gfx::Point& p) const override;
 
   AppListViewDelegate* const view_delegate_;           // Owned by AppListView.
   PaginationModel* const pagination_model_;            // Owned by AppsGridView.
-
-  // Owned by the model provided by the AppListViewDelegate.
-  SearchResult* item_ = nullptr;
 
   views::ImageView* icon_ = nullptr;         // Owned by views hierarchy.
   views::ImageView* badge_ = nullptr;        // Owned by views hierarchy.
@@ -120,10 +118,14 @@ class APP_LIST_EXPORT SearchResultTileItemView
   SkColor parent_background_color_ = SK_ColorTRANSPARENT;
 
   const bool is_play_store_app_search_enabled_;
+  const bool is_app_reinstall_recommendation_enabled_;
   const bool show_in_apps_page_;  // True if shown in app list's apps page.
 
   std::unique_ptr<AppListMenuModelAdapter> context_menu_;
 
+  // The index of this item in the search_result_tile_item_list_view, only used
+  // for logging.
+  int index_in_item_list_view_ = -1;
   base::WeakPtrFactory<SearchResultTileItemView> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchResultTileItemView);

@@ -10,11 +10,12 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/printing/print_job_worker.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "printing/print_job_constants.h"
 #include "printing/print_settings.h"
@@ -22,8 +23,9 @@
 namespace printing {
 
 PrinterQuery::PrinterQuery(int render_process_id, int render_frame_id)
-    : cookie_(PrintSettings::NewCookie()),
-      task_runner_(base::ThreadTaskRunnerHandle::Get()),
+    : base::RefCountedDeleteOnSequence<PrinterQuery>(
+          base::ThreadTaskRunnerHandle::Get()),
+      cookie_(PrintSettings::NewCookie()),
       worker_(std::make_unique<PrintJobWorker>(render_process_id,
                                                render_frame_id,
                                                this)) {
@@ -31,6 +33,7 @@ PrinterQuery::PrinterQuery(int render_process_id, int render_frame_id)
 }
 
 PrinterQuery::~PrinterQuery() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   // The job should be finished (or at least canceled) when it is destroyed.
   DCHECK(!is_print_dialog_box_shown_);
   // If this fires, it is that this pending printer context has leaked.
@@ -39,6 +42,7 @@ PrinterQuery::~PrinterQuery() {
 
 void PrinterQuery::GetSettingsDone(const PrintSettings& new_settings,
                                    PrintingContext::Result result) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   is_print_dialog_box_shown_ = false;
   last_status_ = result;
   if (result != PrintingContext::FAILED) {
@@ -56,6 +60,7 @@ void PrinterQuery::GetSettingsDone(const PrintSettings& new_settings,
 }
 
 std::unique_ptr<PrintJobWorker> PrinterQuery::DetachWorker() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!callback_);
   DCHECK(worker_);
 
@@ -81,7 +86,7 @@ void PrinterQuery::GetSettings(GetSettingsAskParam ask_user_for_settings,
                                bool is_scripted,
                                bool is_modifiable,
                                base::OnceClosure callback) {
-  DCHECK(RunsTasksInCurrentSequence());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(!is_print_dialog_box_shown_ || !is_scripted);
 
   StartWorker(std::move(callback));
@@ -97,11 +102,11 @@ void PrinterQuery::GetSettings(GetSettingsAskParam ask_user_for_settings,
                      has_selection, margin_type, is_scripted, is_modifiable));
 }
 
-void PrinterQuery::SetSettings(
-    std::unique_ptr<base::DictionaryValue> new_settings,
-    base::OnceClosure callback) {
-  StartWorker(std::move(callback));
+void PrinterQuery::SetSettings(base::Value new_settings,
+                               base::OnceClosure callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
+  StartWorker(std::move(callback));
   worker_->PostTask(FROM_HERE, base::BindOnce(&PrintJobWorker::SetSettings,
                                               base::Unretained(worker_.get()),
                                               std::move(new_settings)));
@@ -111,8 +116,9 @@ void PrinterQuery::SetSettings(
 void PrinterQuery::SetSettingsFromPOD(
     std::unique_ptr<printing::PrintSettings> new_settings,
     base::OnceClosure callback) {
-  StartWorker(std::move(callback));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
+  StartWorker(std::move(callback));
   worker_->PostTask(
       FROM_HERE,
       base::BindOnce(&PrintJobWorker::SetSettingsFromPOD,
@@ -121,6 +127,7 @@ void PrinterQuery::SetSettingsFromPOD(
 #endif
 
 void PrinterQuery::StartWorker(base::OnceClosure callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(!callback_);
   DCHECK(worker_);
 
@@ -132,23 +139,22 @@ void PrinterQuery::StartWorker(base::OnceClosure callback) {
 }
 
 void PrinterQuery::StopWorker() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
   if (worker_) {
     // http://crbug.com/66082: We're blocking on the PrinterQuery's worker
     // thread.  It's not clear to me if this may result in blocking the current
     // thread for an unacceptable time.  We should probably fix it.
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_thread_join;
     worker_->Stop();
     worker_.reset();
   }
 }
 
-bool PrinterQuery::RunsTasksInCurrentSequence() const {
-  return task_runner_->RunsTasksInCurrentSequence();
-}
-
 bool PrinterQuery::PostTask(const base::Location& from_here,
                             base::OnceClosure task) {
-  return task_runner_->PostTask(from_here, std::move(task));
+  return base::PostTaskWithTraits(from_here, {content::BrowserThread::IO},
+                                  std::move(task));
 }
 
 bool PrinterQuery::is_callback_pending() const {

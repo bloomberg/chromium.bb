@@ -16,6 +16,7 @@ from collections import OrderedDict
 
 import json
 
+_show_only_in_metadata = set(['tags', 'expectations_files', 'test_name_prefix'])
 
 class ResultType(object):
     Pass = 'PASS'
@@ -46,6 +47,7 @@ class Result(object):
         self.out = out
         self.err = err
         self.pid = pid
+        self.is_regression = actual != ResultType.Pass and unexpected
 
 
 class ResultSet(object):
@@ -57,10 +59,11 @@ class ResultSet(object):
         self.results.append(result)
 
 
-TEST_SEPARATOR = '.'
+DEFAULT_TEST_SEPARATOR = '.'
 
 
-def make_full_results(metadata, seconds_since_epoch, all_test_names, results):
+def make_full_results(metadata, seconds_since_epoch, all_test_names, results,
+                      test_separator=DEFAULT_TEST_SEPARATOR):
     """Convert the typ results to the Chromium JSON test result format.
 
     See http://www.chromium.org/developers/the-json-test-results-format
@@ -70,16 +73,18 @@ def make_full_results(metadata, seconds_since_epoch, all_test_names, results):
     full_results = OrderedDict()
     full_results['version'] = 3
     full_results['interrupted'] = False
-    full_results['path_delimiter'] = TEST_SEPARATOR
+    full_results['path_delimiter'] = test_separator
     full_results['seconds_since_epoch'] = seconds_since_epoch
 
-    for md in metadata:
-        key, val = md.split('=', 1)
-        full_results[key] = val
+    full_results.update(
+        {k:v for k, v in metadata.items() if k not in _show_only_in_metadata})
+
+    if metadata:
+        full_results['metadata'] = metadata
 
     passing_tests = _passing_test_names(results)
-    failed_tests = failed_test_names(results)
-    skipped_tests = set(all_test_names) - passing_tests - failed_tests
+    skipped_tests = _skipped_test_names(results)
+    failed_tests = set(all_test_names) - passing_tests - skipped_tests
 
     full_results['num_failures_by_type'] = OrderedDict()
     full_results['num_failures_by_type']['FAIL'] = len(failed_tests)
@@ -92,7 +97,8 @@ def make_full_results(metadata, seconds_since_epoch, all_test_names, results):
 
     for test_name in all_test_names:
         value = _results_for_test(test_name, results)
-        _add_path_to_trie(full_results['tests'], test_name, value)
+        _add_path_to_trie(
+            full_results['tests'], test_name, value, test_separator)
         if value.get('is_regression'):
             full_results['num_regressions'] += 1
 
@@ -128,10 +134,10 @@ def num_skips(full_results):
     return full_results['num_failures_by_type']['SKIP']
 
 
-def failed_test_names(results):
+def regressions(results):
     names = set()
     for r in results.results:
-        if r.actual == ResultType.Failure:
+        if r.is_regression:
             names.add(r.name)
         elif ((r.actual == ResultType.Pass or r.actual == ResultType.Skip)
               and r.name in names):
@@ -143,6 +149,8 @@ def failed_test_names(results):
             names.remove(r.name)
     return names
 
+def _skipped_test_names(results):
+    return set([r.name for r in results.results if r.actual == ResultType.Skip])
 
 def _passing_test_names(results):
     return set(r.name for r in results.results if r.actual == ResultType.Pass)
@@ -173,7 +181,7 @@ def _results_for_test(test_name, results):
             # of the *last* time it was run.
             if r.unexpected:
                 value['is_unexpected'] = r.unexpected
-                if r.actual != ResultType.Pass:
+                if r.is_regression:
                     value['is_regression'] = True
             else:
                 if 'is_unexpected' in value:
@@ -183,7 +191,7 @@ def _results_for_test(test_name, results):
 
             # This assumes that the expected values are the same for every
             # invocation of the test.
-            value['expected'] = ' '.join(r.expected)
+            value['expected'] = ' '.join(sorted(r.expected))
 
     if not actuals:  # pragma: untested
         actuals.append('SKIP')
@@ -191,14 +199,14 @@ def _results_for_test(test_name, results):
     value['times'] = times
     return value
 
-def _add_path_to_trie(trie, path, value):
-    if TEST_SEPARATOR not in path:
+def _add_path_to_trie(trie, path, value, test_separator):
+    if test_separator not in path:
         trie[path] = value
         return
-    directory, rest = path.split(TEST_SEPARATOR, 1)
+    directory, rest = path.split(test_separator, 1)
     if directory not in trie:
         trie[directory] = {}
-    _add_path_to_trie(trie[directory], rest, value)
+    _add_path_to_trie(trie[directory], rest, value, test_separator)
 
 
 def _encode_multipart_form_data(attrs, test_results):

@@ -369,7 +369,7 @@ def main():
     disable = build_utils.ParseGnList(args.disable)
     input_strings.extend(disable)
 
-  output_paths = [ args.result_path ]
+  output_paths = [args.result_path, args.processed_config_path]
 
   build_utils.CallAndWriteDepfileIfStale(
       lambda: _OnStaleMd5(args.lint_path,

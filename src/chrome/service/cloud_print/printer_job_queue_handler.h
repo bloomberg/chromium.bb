@@ -18,7 +18,7 @@
 #include "chrome/common/cloud_print/cloud_print_constants.h"
 
 namespace base {
-class DictionaryValue;
+class Value;
 }
 
 namespace cloud_print {
@@ -64,9 +64,8 @@ class PrinterJobQueueHandler {
 
   // Returns a vector with details of all jobs in the queue, sorted by time
   // until they are ready to print, lowest to highest. Jobs that are ready to
-  // print will have a time_remaining_ of 0.
-  std::vector<JobDetails> GetJobsFromQueue(
-      const base::DictionaryValue& json_data);
+  // print will have a |time_remaining_| of 0.
+  std::vector<JobDetails> GetJobsFromQueue(const base::Value& json_data);
 
   // Marks a job fetch as failed. Returns "true" if the job will be retried.
   bool JobFetchFailed(const std::string& job_id);

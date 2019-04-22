@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "chromeos/chromeos_export.h"
+#include "base/component_export.h"
 
 namespace chromeos {
 
@@ -26,7 +26,7 @@ enum IPConfigType {
 };
 
 // IP Configuration.
-struct CHROMEOS_EXPORT NetworkIPConfig {
+struct COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkIPConfig {
   NetworkIPConfig(const std::string& device_path, IPConfigType type,
                   const std::string& address, const std::string& netmask,
                   const std::string& gateway, const std::string& name_servers);

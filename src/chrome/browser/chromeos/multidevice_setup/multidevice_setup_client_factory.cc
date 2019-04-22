@@ -7,7 +7,6 @@
 #include "base/macros.h"
 #include "chrome/browser/chromeos/device_sync/device_sync_client_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chromeos/chromeos_features.h"
 #include "chromeos/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
 #include "chromeos/services/multidevice_setup/public/cpp/multidevice_setup_client_impl.h"
 #include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
@@ -63,6 +62,9 @@ MultiDeviceSetupClientFactory::~MultiDeviceSetupClientFactory() = default;
 // static
 MultiDeviceSetupClient* MultiDeviceSetupClientFactory::GetForProfile(
     Profile* profile) {
+  if (!profile)
+    return nullptr;
+
   MultiDeviceSetupClientHolder* holder =
       static_cast<MultiDeviceSetupClientHolder*>(
           GetInstance()->GetServiceForBrowserContext(profile, true));
@@ -77,18 +79,14 @@ MultiDeviceSetupClientFactory* MultiDeviceSetupClientFactory::GetInstance() {
 
 KeyedService* MultiDeviceSetupClientFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  if (IsAllowedByPolicy(context) &&
-      base::FeatureList::IsEnabled(
-          chromeos::features::kEnableUnifiedMultiDeviceSetup) &&
-      base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
+  if (IsAllowedByPolicy(context))
     return new MultiDeviceSetupClientHolder(context);
-  }
 
   return nullptr;
 }
 
 bool MultiDeviceSetupClientFactory::ServiceIsNULLWhileTesting() const {
-  return true;
+  return service_is_null_while_testing_;
 }
 
 }  // namespace multidevice_setup

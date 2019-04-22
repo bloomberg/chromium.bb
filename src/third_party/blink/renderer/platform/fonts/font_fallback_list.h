@@ -39,7 +39,7 @@ class FontDescription;
 const int kCAllFamiliesScanned = -1;
 
 class PLATFORM_EXPORT FontFallbackList : public RefCounted<FontFallbackList> {
-  WTF_MAKE_NONCOPYABLE(FontFallbackList);
+  USING_FAST_MALLOC(FontFallbackList);
 
  public:
   static scoped_refptr<FontFallbackList> Create() {
@@ -56,7 +56,7 @@ class PLATFORM_EXPORT FontFallbackList : public RefCounted<FontFallbackList> {
   FontSelector* GetFontSelector() const { return font_selector_.Get(); }
   // FIXME: It should be possible to combine fontSelectorVersion and generation.
   unsigned FontSelectorVersion() const { return font_selector_version_; }
-  unsigned Generation() const { return generation_; }
+  uint16_t Generation() const { return generation_; }
 
   ShapeCache* GetShapeCache(const FontDescription& font_description) const {
     if (!shape_cache_) {
@@ -98,9 +98,11 @@ class PLATFORM_EXPORT FontFallbackList : public RefCounted<FontFallbackList> {
   Persistent<FontSelector> font_selector_;
   unsigned font_selector_version_;
   mutable int family_index_;
-  unsigned short generation_;
+  uint16_t generation_;
   mutable bool has_loading_fallback_ : 1;
   mutable base::WeakPtr<ShapeCache> shape_cache_;
+
+  DISALLOW_COPY_AND_ASSIGN(FontFallbackList);
 };
 
 }  // namespace blink

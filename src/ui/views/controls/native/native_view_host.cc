@@ -20,12 +20,7 @@ const char kWidgetNativeViewHostKey[] = "WidgetNativeViewHost";
 ////////////////////////////////////////////////////////////////////////////////
 // NativeViewHost, public:
 
-NativeViewHost::NativeViewHost()
-    : native_view_(NULL),
-      fast_resize_(false),
-      fast_resize_at_last_layout_(false),
-      resize_background_color_(SK_ColorWHITE) {
-}
+NativeViewHost::NativeViewHost() = default;
 
 NativeViewHost::~NativeViewHost() {
   // As part of deleting NativeViewHostWrapper the native view is unparented.
@@ -38,6 +33,12 @@ void NativeViewHost::Attach(gfx::NativeView native_view) {
   DCHECK(!native_view_);
   native_view_ = native_view;
   native_wrapper_->AttachNativeView();
+  // This does not use InvalidateLayout() to ensure the visibility state of
+  // the NativeView is correctly set (if this View isn't visible, Layout()
+  // won't, be called, resulting in the NativeView potentially having the wrong
+  // visibility state).
+  // TODO(https://crbug.com/947051): inestigate removing updating visibility
+  // immediately and calling InvalidateLayout() to update bounds.
   Layout();
 
   Widget* widget = Widget::GetWidgetForNativeView(native_view);
@@ -49,6 +50,10 @@ void NativeViewHost::Detach() {
   Detach(false);
 }
 
+void NativeViewHost::SetParentAccessible(gfx::NativeViewAccessible accessible) {
+  native_wrapper_->SetParentAccessible(accessible);
+}
+
 bool NativeViewHost::SetCornerRadius(int corner_radius) {
   return SetCustomMask(views::Painter::CreatePaintedLayer(
       views::Painter::CreateSolidRoundRectPainter(SK_ColorBLACK,
@@ -58,6 +63,14 @@ bool NativeViewHost::SetCornerRadius(int corner_radius) {
 bool NativeViewHost::SetCustomMask(std::unique_ptr<ui::LayerOwner> mask) {
   DCHECK(native_wrapper_);
   return native_wrapper_->SetCustomMask(std::move(mask));
+}
+
+void NativeViewHost::SetHitTestTopInset(int top_inset) {
+  native_wrapper_->SetHitTestTopInset(top_inset);
+}
+
+int NativeViewHost::GetHitTestTopInset() const {
+  return native_wrapper_->GetHitTestTopInset();
 }
 
 void NativeViewHost::SetNativeViewSize(const gfx::Size& size) {
@@ -139,10 +152,12 @@ void NativeViewHost::OnPaint(gfx::Canvas* canvas) {
   // It would be nice if this used some approximation of the page's
   // current background color.
   if (native_wrapper_->HasInstalledClip())
-    canvas->FillRect(GetLocalBounds(), resize_background_color_);
+    canvas->FillRect(GetLocalBounds(), SK_ColorWHITE);
 }
 
 void NativeViewHost::VisibilityChanged(View* starting_from, bool is_visible) {
+  // This does not use InvalidateLayout() to ensure the visibility state is
+  // correctly set (if this View isn't visible, Layout() won't be called).
   Layout();
 }
 
@@ -154,7 +169,7 @@ bool NativeViewHost::GetNeedsNotificationWhenVisibleBoundsChange() const {
 }
 
 void NativeViewHost::OnVisibleBoundsChanged() {
-  Layout();
+  InvalidateLayout();
 }
 
 void NativeViewHost::ViewHierarchyChanged(
@@ -219,11 +234,11 @@ void NativeViewHost::Detach(bool destroyed) {
     if (!destroyed) {
       Widget* widget = Widget::GetWidgetForNativeView(native_view_);
       if (widget)
-        widget->SetNativeWindowProperty(kWidgetNativeViewHostKey, NULL);
+        widget->SetNativeWindowProperty(kWidgetNativeViewHostKey, nullptr);
       ClearFocus();
     }
     native_wrapper_->NativeViewDetaching(destroyed);
-    native_view_ = NULL;
+    native_view_ = nullptr;
   }
 }
 

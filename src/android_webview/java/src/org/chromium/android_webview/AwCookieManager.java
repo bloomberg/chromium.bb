@@ -6,9 +6,9 @@ package org.chromium.android_webview;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.support.annotation.Nullable;
 
 import org.chromium.base.Callback;
-import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
@@ -79,7 +79,7 @@ public final class AwCookieManager {
     public void setCookie(final String url, final String value, final Callback<Boolean> callback) {
         try {
             UrlValue pair = fixupUrlValue(url, value);
-            nativeSetCookie(pair.mUrl, pair.mValue, CookieCallback.convert(callback));
+            nativeSetCookie(pair.mUrl, pair.mValue, new CookieCallback(callback));
         } catch (IllegalStateException e) {
             throw new IllegalStateException(
                     "SetCookie must be called on a thread with a running Looper.");
@@ -105,7 +105,7 @@ public final class AwCookieManager {
      */
     public void removeSessionCookies(Callback<Boolean> callback) {
         try {
-            nativeRemoveSessionCookies(CookieCallback.convert(callback));
+            nativeRemoveSessionCookies(new CookieCallback(callback));
         } catch (IllegalStateException e) {
             throw new IllegalStateException(
                     "removeSessionCookies must be called on a thread with a running Looper.");
@@ -119,7 +119,7 @@ public final class AwCookieManager {
      */
     public void removeAllCookies(Callback<Boolean> callback) {
         try {
-            nativeRemoveAllCookies(CookieCallback.convert(callback));
+            nativeRemoveAllCookies(new CookieCallback(callback));
         } catch (IllegalStateException e) {
             throw new IllegalStateException(
                     "removeAllCookies must be called on a thread with a running Looper.");
@@ -164,41 +164,36 @@ public final class AwCookieManager {
         nativeSetAcceptFileSchemeCookies(accept);
     }
 
-    @CalledByNative
-    public static void invokeBooleanCookieCallback(CookieCallback<Boolean> callback,
-            boolean result) {
-        callback.onReceiveValue(result);
-    }
-
     /**
      * CookieCallback is a bridge that knows how to call a Callback on its original thread.
      * We need to arrange for the users Callback#onResult to be called on the original
      * thread after the work is done. When the API is called we construct a CookieCallback which
      * remembers the handler of the current thread. Later the native code uses
-     * invokeBooleanCookieCallback to call CookieCallback#onReceiveValue which posts a Runnable
-     * on the handler of the original thread which in turn calls Callback#onResult.
+     * the native method |RunBooleanCallbackAndroid| to call CookieCallback#onResult which posts a
+     * Runnable on the handler of the original thread which in turn calls Callback#onResult.
      */
-    private static class CookieCallback<T> {
-        Callback<T> mCallback;
+    private static class CookieCallback implements Callback<Boolean> {
+        @Nullable
+        Callback<Boolean> mCallback;
+        @Nullable
         Handler mHandler;
 
-        public CookieCallback(Callback<T> callback, Handler handler) {
-            mCallback = callback;
-            mHandler = handler;
-        }
-
-        public static <T> CookieCallback<T> convert(Callback<T> callback)
-                throws IllegalStateException {
-            if (callback == null) return null;
-            if (Looper.myLooper() == null) {
-                throw new IllegalStateException("CookieCallback.convert should be called on "
-                        + "a thread with a running Looper.");
+        public CookieCallback(@Nullable Callback<Boolean> callback) {
+            if (callback != null) {
+                if (Looper.myLooper() == null) {
+                    throw new IllegalStateException("new CookieCallback should be called on "
+                            + "a thread with a running Looper.");
+                }
+                mCallback = callback;
+                mHandler = new Handler();
             }
-            return new CookieCallback<T>(callback, new Handler());
         }
 
-        public void onReceiveValue(final T t) {
-            mHandler.post(() -> mCallback.onResult(t));
+        @Override
+        public void onResult(final Boolean result) {
+            if (mHandler == null) return;
+            assert mCallback != null;
+            mHandler.post(() -> mCallback.onResult(result));
         }
     }
 
@@ -242,14 +237,13 @@ public final class AwCookieManager {
     private native void nativeSetShouldAcceptCookies(boolean accept);
     private native boolean nativeGetShouldAcceptCookies();
 
-    private native void nativeSetCookie(String url, String value,
-            CookieCallback<Boolean> callback);
+    private native void nativeSetCookie(String url, String value, CookieCallback callback);
     private native void nativeSetCookieSync(String url, String value);
     private native String nativeGetCookie(String url);
 
-    private native void nativeRemoveSessionCookies(CookieCallback<Boolean> callback);
+    private native void nativeRemoveSessionCookies(CookieCallback callback);
     private native void nativeRemoveSessionCookiesSync();
-    private native void nativeRemoveAllCookies(CookieCallback<Boolean> callback);
+    private native void nativeRemoveAllCookies(CookieCallback callback);
     private native void nativeRemoveAllCookiesSync();
     private native void nativeRemoveExpiredCookies();
     private native void nativeFlushCookieStore();

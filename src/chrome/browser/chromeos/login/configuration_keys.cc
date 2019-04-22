@@ -12,6 +12,12 @@ namespace configuration {
 // All keys should be listed here, even if they are used in JS code only.
 // These keys are used in chrome/browser/resources/chromeos/login/oobe_types.js
 
+// == HID Detection screen:
+
+// Boolean value indicating if we should skip HID detection screen altogether.
+
+const char kSkipHIDDetection[] = "skipHIDDetection";
+
 // == Welcome screen:
 
 // Boolean value indicating if "Next" button on welcome screen is pressed
@@ -82,6 +88,10 @@ const char kDeviceRequisition[] = "deviceRequisition";
 // to perform specific enrollment-time actions (e.g. create robot accounts).
 const char kRestoreAfterRollback[] = "enrollmentRestoreAfterRollback";
 
+// String value containing an enrollment token that would be used during
+// enrollment to identify organization device is enrolled into.
+const char kEnrollmentToken[] = "enrollmentToken";
+
 // String value indicating which license type should automatically be used if
 // license selection is done on a client side.
 const char kEnrollmentLicenseType[] = "enrollmentLicenseType";
@@ -105,6 +115,8 @@ constexpr struct {
   ValueType type;
   ConfigurationHandlerSide side;
 } kAllConfigurationKeys[] = {
+    {kSkipHIDDetection, ValueType::BOOLEAN,
+     ConfigurationHandlerSide::HANDLER_CPP},
     {kWelcomeNext, ValueType::BOOLEAN, ConfigurationHandlerSide::HANDLER_JS},
     {kLanguage, ValueType::STRING, ConfigurationHandlerSide::HANDLER_JS},
     {kInputMethod, ValueType::STRING, ConfigurationHandlerSide::HANDLER_JS},
@@ -122,6 +134,8 @@ constexpr struct {
     {kRestoreAfterRollback, ValueType::BOOLEAN,
      ConfigurationHandlerSide::HANDLER_CPP},
     {kDeviceRequisition, ValueType::STRING,
+     ConfigurationHandlerSide::HANDLER_CPP},
+    {kEnrollmentToken, ValueType::STRING,
      ConfigurationHandlerSide::HANDLER_CPP},
     {kEnrollmentLicenseType, ValueType::STRING,
      ConfigurationHandlerSide::HANDLER_CPP},
@@ -158,10 +172,8 @@ bool ValidateConfiguration(const base::Value& configuration) {
       clone.RemoveKey(key.key);
     }
   }
-  valid = valid && clone.DictEmpty();
-  for (const auto& item : clone.DictItems()) {
-    LOG(ERROR) << "Unknown configuration key " << item.first;
-  }
+  for (const auto& item : clone.DictItems())
+    LOG(WARNING) << "Unknown configuration key " << item.first;
   return valid;
 }
 

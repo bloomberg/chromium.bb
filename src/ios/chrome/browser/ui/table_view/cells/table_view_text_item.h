@@ -7,12 +7,13 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/ui/table_view/cells/table_view_cell.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_item.h"
 
 // TableViewTextItem contains the model data for a TableViewTextCell.
 @interface TableViewTextItem : TableViewItem
 
-// Text Alignment for the cell's textLabel. Default is NSTextAlignmentLeft.
+// Text Alignment for the cell's textLabel. Default is NSTextAlignmentNatural.
 @property(nonatomic, assign) NSTextAlignment textAlignment;
 
 // UIColor for the cell's textLabel. Default is
@@ -25,10 +26,14 @@
 // If set to YES, |text| will be shown as "••••••" with fixed length.
 @property(nonatomic, assign) BOOL masked;
 
+// Whether this item is enabled. If it is not enabled, the corresponding cell
+// has its user interaction disabled. Enabled by default.
+@property(nonatomic, assign, getter=isEnabled) BOOL enabled;
+
 @end
 
-// UITableViewCell that displays a text label.
-@interface TableViewTextCell : UITableViewCell
+// TableViewCell that displays a text label.
+@interface TableViewTextCell : TableViewCell
 
 // The text to display.
 @property(nonatomic, readonly, strong) UILabel* textLabel;

@@ -46,8 +46,9 @@ cr.define('print_preview_new', function() {
      * @return {!print_preview_new.PluginProxy} The singleton instance.
      */
     static getInstance() {
-      if (instance == null)
+      if (instance == null) {
         instance = new PluginProxy();
+      }
       return assert(instance);
     }
 
@@ -124,9 +125,21 @@ cr.define('print_preview_new', function() {
           this.getPreviewUrl_(previewUid, index), color, pages, modifiable);
     }
 
+    /**
+     * @param {number} scrollX The amount to horizontally scroll in pixels.
+     * @param {number} scrollY The amount to vertically scroll in pixels.
+     */
+    scrollPosition(scrollX, scrollY) {
+      this.plugin_.scrollPosition(scrollX, scrollY);
+    }
+
     /** @param {!KeyboardEvent} e Keyboard event to forward to the plugin. */
     sendKeyEvent(e) {
       this.plugin_.sendKeyEvent(e);
+    }
+
+    hideToolbars() {
+      this.plugin_.hideToolbars();
     }
 
     /**
@@ -145,6 +158,11 @@ cr.define('print_preview_new', function() {
     loadPreviewPage(previewUid, pageIndex, index) {
       this.plugin_.loadPreviewPage(
           this.getPreviewUrl_(previewUid, pageIndex), index);
+    }
+
+    /** @param {boolean} darkMode Whether the page is in dark mode. */
+    darkModeChanged(darkMode) {
+      this.plugin_.darkModeChanged(darkMode);
     }
   }
 

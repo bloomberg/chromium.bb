@@ -52,6 +52,7 @@ public:
     bool srgbWriteControl() const { return fSRGBWriteControl; }
     bool discardRenderTargetSupport() const { return fDiscardRenderTargetSupport; }
     bool gpuTracingSupport() const { return fGpuTracingSupport; }
+    bool compressedTexSubImageSupport() const { return fCompressedTexSubImageSupport; }
     bool oversizedStencilSupport() const { return fOversizedStencilSupport; }
     bool textureBarrierSupport() const { return fTextureBarrierSupport; }
     bool sampleLocationsSupport() const { return fSampleLocationsSupport; }
@@ -72,7 +73,7 @@ public:
 
     bool preferVRAMUseOverFlushes() const { return fPreferVRAMUseOverFlushes; }
 
-    bool blacklistCoverageCounting() const { return fBlacklistCoverageCounting; }
+    bool preferTrianglesOverSampleMask() const { return fPreferTrianglesOverSampleMask; }
 
     bool avoidStencilBuffers() const { return fAvoidStencilBuffers; }
 
@@ -102,8 +103,9 @@ public:
         return kAdvancedCoherent_BlendEquationSupport == fBlendEquationSupport;
     }
 
-    bool canUseAdvancedBlendEquation(GrBlendEquation equation) const {
+    bool isAdvancedBlendEquationBlacklisted(GrBlendEquation equation) const {
         SkASSERT(GrBlendEquationIsAdvanced(equation));
+        SkASSERT(this->advancedBlendEquationSupport());
         return SkToBool(fAdvBlendEqBlacklist & (1 << equation));
     }
 
@@ -112,11 +114,13 @@ public:
      * textures allows partial mappings or full mappings.
      */
     enum MapFlags {
-        kNone_MapFlags   = 0x0,       //<! Cannot map the resource.
+        kNone_MapFlags      = 0x0,   //<! Cannot map the resource.
 
-        kCanMap_MapFlag  = 0x1,       //<! The resource can be mapped. Must be set for any of
-                                      //   the other flags to have meaning.
-        kSubset_MapFlag  = 0x2,       //<! The resource can be partially mapped.
+        kCanMap_MapFlag     = 0x1,   //<! The resource can be mapped. Must be set for any of
+                                     //   the other flags to have meaning.
+        kSubset_MapFlag     = 0x2,   //<! The resource can be partially mapped.
+        kAsyncRead_MapFlag  = 0x4,   //<! Are maps for reading asynchronous WRT GrGpuCommandBuffers
+                                     //   submitted to GrGpu.
     };
 
     uint32_t mapBufferFlags() const { return fMapBufferFlags; }
@@ -145,8 +149,6 @@ public:
         SkASSERT(fMaxTileSize <= fMaxTextureSize);
         return fMaxTileSize;
     }
-
-    int maxRasterSamples() const { return fMaxRasterSamples; }
 
     int maxWindowRectangles() const { return fMaxWindowRectangles; }
 
@@ -192,7 +194,7 @@ public:
      * If this returns false then the caller should implement a fallback where a temporary texture
      * is created, pixels are written to it, and then that is copied or drawn into the the surface.
      */
-    virtual bool surfaceSupportsWritePixels(const GrSurface*) const = 0;
+    bool surfaceSupportsWritePixels(const GrSurface*) const;
 
     /**
      * Backends may have restrictions on what types of surfaces support GrGpu::readPixels().
@@ -220,6 +222,21 @@ public:
         return GrPixelConfigToColorType(config);
     }
 
+    /** Are transfer buffers (to textures and from surfaces) supported? */
+    bool transferBufferSupport() const { return fTransferBufferSupport; }
+
+    /**
+     * Gets the alignment requirement for the buffer offset used with GrGpu::transferPixelsFrom for
+     * a given GrColorType. To check whether a pixels as GrColorType can be read for a given surface
+     * see supportedReadPixelsColorType() and surfaceSupportsReadPixels().
+     *
+     * @param bufferColorType The color type of the pixel data that will be stored in the transfer
+     *                        buffer.
+     * @return minimum required alignment for the buffer offset or zero if reading to the color type
+     *         is not supported.
+     */
+    size_t transferFromOffsetAlignment(GrColorType bufferColorType) const;
+
     bool suppressPrints() const { return fSuppressPrints; }
 
     size_t bufferMapThreshold() const {
@@ -231,6 +248,13 @@ public:
         is not initialized (even if not read by draw calls). */
     bool mustClearUploadedBufferData() const { return fMustClearUploadedBufferData; }
 
+    /** For some environments, there is a performance or safety concern to not
+        initializing textures. For example, with WebGL and Firefox, there is a large
+        performance hit to not doing it.
+     */
+    bool shouldInitializeTextures() const { return fShouldInitializeTextures; }
+
+
     /** Returns true if the given backend supports importing AHardwareBuffers via the
      * GrAHardwarebufferImageGenerator. This will only ever be supported on Android devices with API
      * level >= 26.
@@ -239,23 +263,38 @@ public:
 
     bool wireframeMode() const { return fWireframeMode; }
 
-    bool sampleShadingSupport() const { return fSampleShadingSupport; }
-
     bool fenceSyncSupport() const { return fFenceSyncSupport; }
     bool crossContextTextureSupport() const { return fCrossContextTextureSupport; }
     /**
      * Returns whether or not we will be able to do a copy given the passed in params
      */
-    virtual bool canCopySurface(const GrSurfaceProxy* dst, const GrSurfaceProxy* src,
-                                const SkIRect& srcRect, const SkIPoint& dstPoint) const = 0;
+    bool canCopySurface(const GrSurfaceProxy* dst, const GrSurfaceProxy* src,
+                        const SkIRect& srcRect, const SkIPoint& dstPoint) const;
 
     bool dynamicStateArrayGeometryProcessorTextureSupport() const {
         return fDynamicStateArrayGeometryProcessorTextureSupport;
     }
 
-    virtual bool performPartialClearsAsDraws() const {
-        return false;
+    // Not all backends support clearing with a scissor test (e.g. Metal), this will always
+    // return true if performColorClearsAsDraws() returns true.
+    bool performPartialClearsAsDraws() const {
+        return fPerformColorClearsAsDraws || fPerformPartialClearsAsDraws;
     }
+
+    // Many drivers have issues with color clears.
+    bool performColorClearsAsDraws() const { return fPerformColorClearsAsDraws; }
+
+    /// Adreno 4xx devices experience an issue when there are a large number of stencil clip bit
+    /// clears. The minimal repro steps are not precisely known but drawing a rect with a stencil
+    /// op instead of using glClear seems to resolve the issue.
+    bool performStencilClearsAsDraws() const { return fPerformStencilClearsAsDraws; }
+
+    // Can we use coverage counting shortcuts to render paths? Coverage counting can cause artifacts
+    // along shared edges if care isn't taken to ensure both contours wind in the same direction.
+    bool allowCoverageCounting() const { return fAllowCoverageCounting; }
+
+    // Should we disable the CCPR code due to a faulty driver?
+    bool driverBlacklistCCPR() const { return fDriverBlacklistCCPR; }
 
     /**
      * This is can be called before allocating a texture to be a dst for copySurface. This is only
@@ -272,46 +311,35 @@ public:
     bool validateSurfaceDesc(const GrSurfaceDesc&, GrMipMapped) const;
 
     /**
-     * Returns true if the GrBackendTexture can be used with the supplied SkColorType. If it is
-     * compatible, the passed in GrPixelConfig will be set to a config that matches the backend
-     * format and requested SkColorType.
+     * If the GrBackendRenderTarget can be used with the supplied SkColorType the return will be
+     * the config that matches the backend format and requested SkColorType. Otherwise, kUnknown is
+     * returned.
      */
-    virtual bool validateBackendTexture(const GrBackendTexture& tex, SkColorType ct,
-                                        GrPixelConfig*) const = 0;
-    virtual bool validateBackendRenderTarget(const GrBackendRenderTarget&, SkColorType,
-                                             GrPixelConfig*) const = 0;
+    virtual GrPixelConfig validateBackendRenderTarget(const GrBackendRenderTarget&,
+                                                      SkColorType) const = 0;
 
-    // TODO: replace validateBackendTexture and validateBackendRenderTarget with calls to
-    // getConfigFromBackendFormat?
+    // TODO: replace validateBackendRenderTarget with calls to getConfigFromBackendFormat?
     // TODO: it seems like we could pass the full SkImageInfo and validate its colorSpace too
-    virtual bool getConfigFromBackendFormat(const GrBackendFormat& format, SkColorType ct,
-                                            GrPixelConfig*) const = 0;
+    // Returns kUnknown if a valid config could not be determined.
+    virtual GrPixelConfig getConfigFromBackendFormat(const GrBackendFormat& format,
+                                                     SkColorType ct) const = 0;
 
     /**
-     * Special method only for YUVA images. Returns true if the format can be used for a
-     * YUVA plane, and the passed in GrPixelConfig will be set to a config that matches
-     * the backend texture.
+     * Special method only for YUVA images. Returns a config that matches the backend format or
+     * kUnknown if a config could not be determined.
      */
-    virtual bool getYUVAConfigFromBackendTexture(const GrBackendTexture& tex,
-                                                 GrPixelConfig*) const = 0;
+    virtual GrPixelConfig getYUVAConfigFromBackendFormat(const GrBackendFormat& format) const = 0;
 
-    /**
-     * Special method only for YUVA images. Returns true if the format can be used for a
-     * YUVA plane, and the passed in GrPixelConfig will be set to a config that matches
-     * the backend format.
-     */
-    virtual bool getYUVAConfigFromBackendFormat(const GrBackendFormat& format,
-                                                GrPixelConfig*) const = 0;
-
+    /** These are used when creating a new texture internally. */
     virtual GrBackendFormat getBackendFormatFromGrColorType(GrColorType ct,
                                                             GrSRGBEncoded srgbEncoded) const = 0;
     GrBackendFormat getBackendFormatFromColorType(SkColorType ct) const;
 
     /**
-     * Creates a GrBackendFormat which matches the backend texture. If the backend texture is
-     * invalid, the function will return the default GrBackendFormat.
+     * The CLAMP_TO_BORDER wrap mode for texture coordinates was added to desktop GL in 1.3, and
+     * GLES 3.2, but is also available in extensions. Vulkan and Metal always have support.
      */
-    GrBackendFormat createFormatFromBackendTexture(const GrBackendTexture&) const;
+    bool clampToBorderSupport() const { return fClampToBorderSupport; }
 
     const GrDriverBugWorkarounds& workarounds() const { return fDriverBugWorkarounds; }
 
@@ -320,12 +348,6 @@ protected:
         overrides requested by the client. Note that overrides will only reduce the caps never
         expand them. */
     void applyOptionsOverrides(const GrContextOptions& options);
-
-    /**
-     * Subclasses implement this to actually create a GrBackendFormat to match backend texture. At
-     * this point, the backend texture has already been validated.
-     */
-    virtual GrBackendFormat onCreateFormatFromBackendTexture(const GrBackendTexture&) const = 0;
 
     sk_sp<GrShaderCaps> fShaderCaps;
 
@@ -337,6 +359,7 @@ protected:
     bool fReuseScratchTextures                       : 1;
     bool fReuseScratchBuffers                        : 1;
     bool fGpuTracingSupport                          : 1;
+    bool fCompressedTexSubImageSupport               : 1;
     bool fOversizedStencilSupport                    : 1;
     bool fTextureBarrierSupport                      : 1;
     bool fSampleLocationsSupport                     : 1;
@@ -347,18 +370,27 @@ protected:
     bool fPreferClientSideDynamicBuffers             : 1;
     bool fPreferFullscreenClears                     : 1;
     bool fMustClearUploadedBufferData                : 1;
+    bool fShouldInitializeTextures                   : 1;
     bool fSupportsAHardwareBufferImages              : 1;
     bool fHalfFloatVertexAttributeSupport            : 1;
+    bool fClampToBorderSupport                       : 1;
+    bool fPerformPartialClearsAsDraws                : 1;
+    bool fPerformColorClearsAsDraws                  : 1;
+    bool fPerformStencilClearsAsDraws                : 1;
+    bool fAllowCoverageCounting                      : 1;
+    bool fTransferBufferSupport                      : 1;
 
     // Driver workaround
-    bool fBlacklistCoverageCounting                  : 1;
+    bool fDriverBlacklistCCPR                        : 1;
     bool fAvoidStencilBuffers                        : 1;
     bool fAvoidWritePixelsFastPath                   : 1;
 
     // ANGLE performance workaround
     bool fPreferVRAMUseOverFlushes                   : 1;
 
-    bool fSampleShadingSupport                       : 1;
+    // On some platforms it's better to make more triangles than to use the sample mask (MSAA only).
+    bool fPreferTrianglesOverSampleMask              : 1;
+
     // TODO: this may need to be an enum to support different fence types
     bool fFenceSyncSupport                           : 1;
 
@@ -380,7 +412,6 @@ protected:
     int fMaxVertexAttributes;
     int fMaxTextureSize;
     int fMaxTileSize;
-    int fMaxRasterSamples;
     int fMaxWindowRectangles;
     int fMaxClipAnalyticFPs;
 
@@ -389,6 +420,10 @@ protected:
 private:
     virtual void onApplyOptionsOverrides(const GrContextOptions&) {}
     virtual void onDumpJSON(SkJSONWriter*) const {}
+    virtual bool onSurfaceSupportsWritePixels(const GrSurface*) const = 0;
+    virtual bool onCanCopySurface(const GrSurfaceProxy* dst, const GrSurfaceProxy* src,
+                                  const SkIRect& srcRect, const SkIPoint& dstPoint) const = 0;
+    virtual size_t onTransferFromOffsetAlignment(GrColorType bufferColorType) const = 0;
 
     // Backends should implement this if they have any extra requirements for use of window
     // rectangles for a specific GrBackendRenderTarget outside of basic support.

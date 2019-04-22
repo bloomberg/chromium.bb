@@ -6,6 +6,8 @@
 
 #include <memory>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/time/clock.h"
 #include "components/drive/chromeos/about_resource_root_folder_id_loader.h"
 #include "components/drive/file_system_core_util.h"

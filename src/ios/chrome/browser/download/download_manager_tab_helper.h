@@ -46,6 +46,8 @@ class DownloadManagerTabHelper
                            id<DownloadManagerTabHelperDelegate> delegate);
 
  private:
+  friend class web::WebStateUserData<DownloadManagerTabHelper>;
+
   // web::WebStateObserver overrides:
   void WasShown(web::WebState* web_state) override;
   void WasHidden(web::WebState* web_state) override;
@@ -64,6 +66,8 @@ class DownloadManagerTabHelper
   web::WebState* web_state_ = nullptr;
   __weak id<DownloadManagerTabHelperDelegate> delegate_ = nil;
   std::unique_ptr<web::DownloadTask> task_;
+
+  WEB_STATE_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(DownloadManagerTabHelper);
 };

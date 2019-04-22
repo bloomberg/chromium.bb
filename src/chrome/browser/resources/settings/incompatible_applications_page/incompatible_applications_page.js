@@ -105,7 +105,7 @@ Polymer({
    */
   onIncompatibleApplicationRemoved_: function(applicationName) {
     // Find the index of the element.
-    let index = this.applications_.findIndex(function(application) {
+    const index = this.applications_.findIndex(function(application) {
       return application.name == applicationName;
     });
 
@@ -125,8 +125,9 @@ Polymer({
     const numApplications = this.applications_.length;
 
     // The plural strings are not displayed when there is no applications.
-    if (this.applications_.length === 0)
+    if (this.applications_.length === 0) {
       return;
+    }
 
     Promise
         .all([

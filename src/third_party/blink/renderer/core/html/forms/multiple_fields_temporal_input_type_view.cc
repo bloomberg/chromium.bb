@@ -271,7 +271,8 @@ bool MultipleFieldsTemporalInputTypeView::
 void MultipleFieldsTemporalInputTypeView::PickerIndicatorChooseValue(
     const String& value) {
   if (GetElement().IsValidValue(value)) {
-    GetElement().setValue(value, kDispatchInputAndChangeEvent);
+    GetElement().setValue(value,
+                          TextFieldEventBehavior::kDispatchInputAndChangeEvent);
     return;
   }
 
@@ -289,11 +290,14 @@ void MultipleFieldsTemporalInputTypeView::PickerIndicatorChooseValue(
 void MultipleFieldsTemporalInputTypeView::PickerIndicatorChooseValue(
     double value) {
   DCHECK(std::isfinite(value) || std::isnan(value));
-  if (std::isnan(value))
-    GetElement().setValue(g_empty_string, kDispatchInputAndChangeEvent);
-  else
-    GetElement().setValueAsNumber(value, ASSERT_NO_EXCEPTION,
-                                  kDispatchInputAndChangeEvent);
+  if (std::isnan(value)) {
+    GetElement().setValue(g_empty_string,
+                          TextFieldEventBehavior::kDispatchInputAndChangeEvent);
+  } else {
+    GetElement().setValueAsNumber(
+        value, ASSERT_NO_EXCEPTION,
+        TextFieldEventBehavior::kDispatchInputAndChangeEvent);
+  }
 }
 
 Element& MultipleFieldsTemporalInputTypeView::PickerOwnerElement() const {
@@ -314,17 +318,10 @@ MultipleFieldsTemporalInputTypeView::MultipleFieldsTemporalInputTypeView(
       picker_indicator_is_visible_(false),
       picker_indicator_is_always_visible_(false) {}
 
-MultipleFieldsTemporalInputTypeView*
-MultipleFieldsTemporalInputTypeView::Create(HTMLInputElement& element,
-                                            BaseTemporalInputType& input_type) {
-  return MakeGarbageCollected<MultipleFieldsTemporalInputTypeView>(element,
-                                                                   input_type);
-}
-
 MultipleFieldsTemporalInputTypeView::~MultipleFieldsTemporalInputTypeView() =
     default;
 
-void MultipleFieldsTemporalInputTypeView::Trace(blink::Visitor* visitor) {
+void MultipleFieldsTemporalInputTypeView::Trace(Visitor* visitor) {
   visitor->Trace(input_type_);
   InputTypeView::Trace(visitor);
 }
@@ -419,7 +416,7 @@ void MultipleFieldsTemporalInputTypeView::HandleFocusInEvent(
       GetElement().GetDocument().GetPage()->GetFocusController().AdvanceFocus(
           type);
   } else if (type == kWebFocusTypeNone || type == kWebFocusTypeMouse ||
-             type == kWebFocusTypePage) {
+             type == kWebFocusTypePage || type == kWebFocusTypeAccessKey) {
     edit->FocusByOwner(old_focused_element);
   } else {
     edit->FocusByOwner();
@@ -596,8 +593,8 @@ void MultipleFieldsTemporalInputTypeView::HidePickerIndicator() {
     return;
   picker_indicator_is_visible_ = false;
   DCHECK(GetPickerIndicatorElement());
-  GetPickerIndicatorElement()->SetInlineStyleProperty(CSSPropertyDisplay,
-                                                      CSSValueNone);
+  GetPickerIndicatorElement()->SetInlineStyleProperty(CSSPropertyID::kDisplay,
+                                                      CSSValueID::kNone);
 }
 
 void MultipleFieldsTemporalInputTypeView::ShowPickerIndicator() {
@@ -605,7 +602,8 @@ void MultipleFieldsTemporalInputTypeView::ShowPickerIndicator() {
     return;
   picker_indicator_is_visible_ = true;
   DCHECK(GetPickerIndicatorElement());
-  GetPickerIndicatorElement()->RemoveInlineStyleProperty(CSSPropertyDisplay);
+  GetPickerIndicatorElement()->RemoveInlineStyleProperty(
+      CSSPropertyID::kDisplay);
 }
 
 void MultipleFieldsTemporalInputTypeView::FocusAndSelectClearButtonOwner() {
@@ -618,7 +616,8 @@ bool MultipleFieldsTemporalInputTypeView::
 }
 
 void MultipleFieldsTemporalInputTypeView::ClearValue() {
-  GetElement().setValue("", kDispatchInputAndChangeEvent);
+  GetElement().setValue("",
+                        TextFieldEventBehavior::kDispatchInputAndChangeEvent);
   GetElement().UpdateClearButtonVisibility();
 }
 
@@ -629,13 +628,13 @@ void MultipleFieldsTemporalInputTypeView::UpdateClearButtonVisibility() {
 
   if (GetElement().IsRequired() ||
       !GetDateTimeEditElement()->AnyEditableFieldsHaveValues()) {
-    clear_button->SetInlineStyleProperty(CSSPropertyOpacity, 0.0,
+    clear_button->SetInlineStyleProperty(CSSPropertyID::kOpacity, 0.0,
                                          CSSPrimitiveValue::UnitType::kNumber);
-    clear_button->SetInlineStyleProperty(CSSPropertyPointerEvents,
-                                         CSSValueNone);
+    clear_button->SetInlineStyleProperty(CSSPropertyID::kPointerEvents,
+                                         CSSValueID::kNone);
   } else {
-    clear_button->RemoveInlineStyleProperty(CSSPropertyOpacity);
-    clear_button->RemoveInlineStyleProperty(CSSPropertyPointerEvents);
+    clear_button->RemoveInlineStyleProperty(CSSPropertyID::kOpacity);
+    clear_button->RemoveInlineStyleProperty(CSSPropertyID::kPointerEvents);
   }
 }
 

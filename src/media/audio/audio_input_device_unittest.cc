@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "media/audio/audio_input_device.h"
+
+#include <utility>
+
 #include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop.h"
@@ -67,7 +70,7 @@ TEST(AudioInputDeviceTest, Noop) {
   base::MessageLoopForIO io_loop;
   MockAudioInputIPC* input_ipc = new MockAudioInputIPC();
   scoped_refptr<AudioInputDevice> device(new AudioInputDevice(
-      base::WrapUnique(input_ipc), base::ThreadPriority::REALTIME_AUDIO));
+      base::WrapUnique(input_ipc), AudioInputDevice::Purpose::kUserInput));
 }
 
 ACTION_P(ReportStateChange, device) {
@@ -82,7 +85,7 @@ TEST(AudioInputDeviceTest, FailToCreateStream) {
   MockCaptureCallback callback;
   MockAudioInputIPC* input_ipc = new MockAudioInputIPC();
   scoped_refptr<AudioInputDevice> device(new AudioInputDevice(
-      base::WrapUnique(input_ipc), base::ThreadPriority::REALTIME_AUDIO));
+      base::WrapUnique(input_ipc), AudioInputDevice::Purpose::kUserInput));
   device->Initialize(params, &callback);
   EXPECT_CALL(*input_ipc, CreateStream(_, _, _, _))
       .WillOnce(ReportStateChange(device.get()));
@@ -118,7 +121,7 @@ TEST(AudioInputDeviceTest, CreateStream) {
   MockCaptureCallback callback;
   MockAudioInputIPC* input_ipc = new MockAudioInputIPC();
   scoped_refptr<AudioInputDevice> device(new AudioInputDevice(
-      base::WrapUnique(input_ipc), base::ThreadPriority::REALTIME_AUDIO));
+      base::WrapUnique(input_ipc), AudioInputDevice::Purpose::kUserInput));
   device->Initialize(params, &callback);
 
   EXPECT_CALL(*input_ipc, CreateStream(_, _, _, _))

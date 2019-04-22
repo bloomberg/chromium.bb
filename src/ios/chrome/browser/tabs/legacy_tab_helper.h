@@ -24,6 +24,8 @@ class LegacyTabHelper : public web::WebStateUserData<LegacyTabHelper> {
   static Tab* GetTabForWebState(web::WebState* web_state);
 
  private:
+  friend class web::WebStateUserData<LegacyTabHelper>;
+
   LegacyTabHelper(web::WebState* web_state, Tab* tab);
   ~LegacyTabHelper() override;
 
@@ -33,6 +35,8 @@ class LegacyTabHelper : public web::WebStateUserData<LegacyTabHelper> {
 
   // The Tab instance associated with the WebState.
   Tab* tab_;
+
+  WEB_STATE_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(LegacyTabHelper);
 };

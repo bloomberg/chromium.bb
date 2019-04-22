@@ -35,11 +35,15 @@ bool MockDataChannel::reliable() const { return reliable_; }
 bool MockDataChannel::ordered() const { return config_.ordered; }
 
 uint16_t MockDataChannel::maxRetransmitTime() const {
-  return config_.maxRetransmitTime;
+  // TODO(https://bugs.chromium.org/854385): Restore when change landed.
+  // return config_.maxRetransmitTime;
+  return -1;
 }
 
 uint16_t MockDataChannel::maxRetransmits() const {
-  return config_.maxRetransmits;
+  // TODO(https://bugs.chromium.org/854385): Restore when change landed.
+  // return config_.maxRetransmits;
+  return -1;
 }
 
 std::string MockDataChannel::protocol() const { return config_.protocol; }

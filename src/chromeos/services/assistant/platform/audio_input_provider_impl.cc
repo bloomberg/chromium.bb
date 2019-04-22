@@ -4,12 +4,16 @@
 
 #include "chromeos/services/assistant/platform/audio_input_provider_impl.h"
 
+#include "chromeos/services/assistant/public/features.h"
+
 namespace chromeos {
 namespace assistant {
 
 AudioInputProviderImpl::AudioInputProviderImpl(
-    service_manager::Connector* connector)
-    : audio_input_(connector) {}
+    service_manager::Connector* connector,
+    const std::string& input_device_id,
+    const std::string& hotword_device_id)
+    : audio_input_(connector, input_device_id, hotword_device_id) {}
 
 AudioInputProviderImpl::~AudioInputProviderImpl() = default;
 
@@ -18,7 +22,9 @@ AudioInputImpl& AudioInputProviderImpl::GetAudioInput() {
 }
 
 int64_t AudioInputProviderImpl::GetCurrentAudioTime() {
-  // TODO(xiaohuic): see if we can support real timestamp.
+  if (features::IsAudioEraserEnabled())
+    return base::TimeTicks::Now().since_origin().InMicroseconds();
+
   return 0;
 }
 
@@ -28,6 +34,14 @@ void AudioInputProviderImpl::SetMicState(bool mic_open) {
 
 void AudioInputProviderImpl::OnHotwordEnabled(bool enable) {
   audio_input_.OnHotwordEnabled(enable);
+}
+
+void AudioInputProviderImpl::SetDeviceId(const std::string& device_id) {
+  audio_input_.SetDeviceId(device_id);
+}
+
+void AudioInputProviderImpl::SetHotwordDeviceId(const std::string& device_id) {
+  audio_input_.SetHotwordDeviceId(device_id);
 }
 
 }  // namespace assistant

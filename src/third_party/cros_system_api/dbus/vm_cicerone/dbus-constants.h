@@ -16,7 +16,6 @@ const char kVmCiceroneServiceName[] = "org.chromium.VmCicerone";
 const char kNotifyVmStartedMethod[] = "NotifyVmStarted";
 const char kNotifyVmStoppedMethod[] = "NotifyVmStopped";
 const char kGetContainerTokenMethod[] = "GetContainerToken";
-const char kIsContainerRunningMethod[] = "IsContainerRunning";
 
 // Methods to be called from Chrome.
 const char kLaunchContainerApplicationMethod[] = "LaunchContainerApplication";
@@ -26,12 +25,17 @@ const char kGetLinuxPackageInfoMethod[] = "GetLinuxPackageInfo";
 const char kInstallLinuxPackageMethod[] = "InstallLinuxPackage";
 const char kUninstallPackageOwningFileMethod[] = "UninstallPackageOwningFile";
 const char kCreateLxdContainerMethod[] = "CreateLxdContainer";
+const char kDeleteLxdContainerMethod[] = "DeleteLxdContainer";
 const char kStartLxdContainerMethod[] = "StartLxdContainer";
+const char kSetTimezoneMethod[] = "SetTimezone";
 const char kGetLxdContainerUsernameMethod[] = "GetLxdContainerUsername";
 const char kSetUpLxdContainerUserMethod[] = "SetUpLxdContainerUser";
+const char kAppSearchMethod[] = "AppSearch";
+const char kExportLxdContainerMethod[] = "ExportLxdContainer";
+const char kImportLxdContainerMethod[] = "ImportLxdContainer";
 
 // Methods to be called from debugd.
-const char kGetDebugInformation[] = "GetDebugInformation";
+const char kGetDebugInformationMethod[] = "GetDebugInformation";
 
 // Signals.
 const char kContainerStartedSignal[] = "ContainerStarted";
@@ -40,8 +44,12 @@ const char kInstallLinuxPackageProgressSignal[] =
     "InstallLinuxPackageProgress";
 const char kUninstallPackageProgressSignal[] = "UninstallPackageProgress";
 const char kLxdContainerCreatedSignal[] = "LxdContainerCreated";
+const char kLxdContainerDeletedSignal[] = "LxdContainerDeleted";
 const char kLxdContainerDownloadingSignal[] = "LxdContainerDownloading";
+const char kLxdContainerStartingSignal[] = "LxdContainerStarting";
 const char kTremplinStartedSignal[] = "TremplinStarted";
+const char kExportLxdContainerProgressSignal[] = "ExportLxdContainerProgress";
+const char kImportLxdContainerProgressSignal[] = "ImportLxdContainerProgress";
 
 }  // namespace cicerone
 }  // namespace vm_tools

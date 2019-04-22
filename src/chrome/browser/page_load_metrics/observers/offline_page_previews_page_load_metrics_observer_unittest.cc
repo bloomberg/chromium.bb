@@ -55,7 +55,6 @@ class OfflinePagePreviewsPageLoadMetricsObserverTest
     timing_.paint_timing->first_contentful_paint =
         base::TimeDelta::FromSeconds(4);
     timing_.paint_timing->first_image_paint = base::TimeDelta::FromSeconds(5);
-    timing_.paint_timing->first_text_paint = base::TimeDelta::FromSeconds(6);
     timing_.document_timing->load_event_start = base::TimeDelta::FromSeconds(7);
     PopulateRequiredTimingFields(&timing_);
   }
@@ -71,31 +70,36 @@ class OfflinePagePreviewsPageLoadMetricsObserverTest
   }
 
   void ValidateHistograms() {
-    ValidateHistogramsFor(
+    ValidateTimingHistogramsFor(
         internal::kHistogramOfflinePreviewsDOMContentLoadedEventFired,
         timing_.document_timing->dom_content_loaded_event_start);
-    ValidateHistogramsFor(internal::kHistogramOfflinePreviewsFirstLayout,
-                          timing_.document_timing->first_layout);
-    ValidateHistogramsFor(internal::kHistogramOfflinePreviewsLoadEventFired,
-                          timing_.document_timing->load_event_start);
-    ValidateHistogramsFor(
+    ValidateTimingHistogramsFor(internal::kHistogramOfflinePreviewsFirstLayout,
+                                timing_.document_timing->first_layout);
+    ValidateTimingHistogramsFor(
+        internal::kHistogramOfflinePreviewsLoadEventFired,
+        timing_.document_timing->load_event_start);
+    ValidateTimingHistogramsFor(
         internal::kHistogramOfflinePreviewsFirstContentfulPaint,
         timing_.paint_timing->first_contentful_paint);
-    ValidateHistogramsFor(internal::kHistogramOfflinePreviewsParseStart,
-                          timing_.parse_timing->parse_start);
+    ValidateTimingHistogramsFor(internal::kHistogramOfflinePreviewsParseStart,
+                                timing_.parse_timing->parse_start);
+    ValidateHistogramsFor(internal::kHistogramOfflinePreviewsPageEndReason,
+                          page_load_metrics::PageEndReason::END_NEW_NAVIGATION);
   }
 
-  void ValidateHistogramsFor(const std::string& histogram_,
-                             const base::Optional<base::TimeDelta>& event) {
-    histogram_tester().ExpectTotalCount(histogram_,
-                                        is_offline_preview_ ? 1 : 0);
+  void ValidateTimingHistogramsFor(
+      const std::string& histogram,
+      const base::Optional<base::TimeDelta>& event) {
+    ValidateHistogramsFor(histogram, static_cast<base::HistogramBase::Sample>(
+                                         event.value().InMilliseconds()));
+  }
+
+  void ValidateHistogramsFor(const std::string& histogram,
+                             const base::HistogramBase::Sample sample) {
+    histogram_tester().ExpectTotalCount(histogram, is_offline_preview_ ? 1 : 0);
     if (!is_offline_preview_)
       return;
-    histogram_tester().ExpectUniqueSample(
-        histogram_,
-        static_cast<base::HistogramBase::Sample>(
-            event.value().InMilliseconds()),
-        1);
+    histogram_tester().ExpectUniqueSample(histogram, sample, 1);
   }
 
  protected:

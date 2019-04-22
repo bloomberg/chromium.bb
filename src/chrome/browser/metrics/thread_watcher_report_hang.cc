@@ -41,15 +41,21 @@ NOINLINE void ShutdownHang() {
 #endif  // !defined(OS_ANDROID)
 
 NOINLINE void ThreadUnresponsive_UI() {
+  ReportThreadHang();
+  // Defining |inhibit_comdat| *after* calling ReportThreadHang() prevents tail
+  // call optimization from not putting this function's address on the stack.
+  // https://crbug.com/905288#c10
   volatile int inhibit_comdat = __LINE__;
   ALLOW_UNUSED_LOCAL(inhibit_comdat);
-  ReportThreadHang();
 }
 
 NOINLINE void ThreadUnresponsive_IO() {
+  ReportThreadHang();
+  // Defining |inhibit_comdat| *after* calling ReportThreadHang() prevents tail
+  // call optimization from not putting this function's address on the stack.
+  // https://crbug.com/905288#c10
   volatile int inhibit_comdat = __LINE__;
   ALLOW_UNUSED_LOCAL(inhibit_comdat);
-  ReportThreadHang();
 }
 
 NOINLINE void CrashBecauseThreadWasUnresponsive(

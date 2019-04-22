@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/browsing_data/browsing_data_database_helper.h"
+#include "content/public/browser/storage_usage_info.h"
 
 // Mock for BrowsingDataDatabaseHelper.
 // Use AddDatabaseSamples() or add directly to response_ list, then call
@@ -22,8 +23,7 @@ class MockBrowsingDataDatabaseHelper : public BrowsingDataDatabaseHelper {
 
   void StartFetching(FetchCallback callback) override;
 
-  void DeleteDatabase(const std::string& origin,
-                      const std::string& name) override;
+  void DeleteDatabase(const url::Origin& origin) override;
 
   // Adds some DatabaseInfo samples.
   void AddDatabaseSamples();
@@ -50,7 +50,7 @@ class MockBrowsingDataDatabaseHelper : public BrowsingDataDatabaseHelper {
   // Stores which databases exist.
   std::map<const std::string, bool> databases_;
 
-  std::list<DatabaseInfo> response_;
+  std::list<content::StorageUsageInfo> response_;
 
   DISALLOW_COPY_AND_ASSIGN(MockBrowsingDataDatabaseHelper);
 };

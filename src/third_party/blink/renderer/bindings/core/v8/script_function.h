@@ -31,6 +31,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SCRIPT_FUNCTION_H_
 #define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SCRIPT_FUNCTION_H_
 
+#include "third_party/blink/renderer/bindings/core/v8/custom_wrappable_adapter.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -49,11 +50,13 @@ namespace blink {
 //     return self->BindToV8Function();
 //   }
 // };
-class CORE_EXPORT ScriptFunction
-    : public GarbageCollectedFinalized<ScriptFunction> {
+class CORE_EXPORT ScriptFunction : public CustomWrappableAdapter {
  public:
-  virtual ~ScriptFunction() = default;
-  virtual void Trace(blink::Visitor*);
+  ~ScriptFunction() override = default;
+
+  void Trace(blink::Visitor*) override;
+
+  const char* NameInHeapSnapshot() const override { return "ScriptFunction"; }
 
  protected:
   explicit ScriptFunction(ScriptState* script_state)
@@ -76,7 +79,7 @@ class CORE_EXPORT ScriptFunction
 
   Member<ScriptState> script_state_;
 #if DCHECK_IS_ON()
-  // bindToV8Function must not be called twice.
+  // BindToV8Function() must not be called twice.
   bool bind_to_v8_function_already_called_ = false;
 #endif
 };

@@ -11,6 +11,7 @@
 
 #include "base/strings/string16.h"
 #include "build/build_config.h"
+#include "chrome/browser/permissions/chooser_context_base.h"
 #include "chrome/browser/ui/page_info/page_info.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -91,16 +92,17 @@ class PageInfoUI {
     bool is_incognito;
   };
 
-  // |ChosenObjectInfo| contains information about a single |object| of a
-  // chooser |type| that the current website has been granted access to.
+  // |ChosenObjectInfo| contains information about a single |chooser_object| of
+  // a chooser |type| that the current website has been granted access to.
   struct ChosenObjectInfo {
-    ChosenObjectInfo(const PageInfo::ChooserUIInfo& ui_info,
-                     std::unique_ptr<base::DictionaryValue> object);
+    ChosenObjectInfo(
+        const PageInfo::ChooserUIInfo& ui_info,
+        std::unique_ptr<ChooserContextBase::Object> chooser_object);
     ~ChosenObjectInfo();
     // |ui_info| for this chosen object type.
     const PageInfo::ChooserUIInfo& ui_info;
-    // The opaque |object| representing the thing the user selected.
-    std::unique_ptr<base::DictionaryValue> object;
+    // The opaque |chooser_object| representing the thing the user selected.
+    std::unique_ptr<ChooserContextBase::Object> chooser_object;
   };
 
   // |IdentityInfo| contains information about the site's identity and
@@ -136,6 +138,13 @@ class PageInfoUI {
     // page info will include buttons to change corresponding password, and
     // to whitelist current site.
     bool show_change_password_buttons;
+  };
+
+  struct PageFeatureInfo {
+    PageFeatureInfo();
+
+    // True if VR content is being presented in a headset.
+    bool is_vr_presentation_in_headset;
   };
 
   using CookieInfoList = std::vector<CookieInfo>;
@@ -198,6 +207,9 @@ class PageInfoUI {
   // Returns the icon for the button / link to Site settings.
   static const gfx::ImageSkia GetSiteSettingsIcon(
       const SkColor related_text_color);
+
+  // Returns the icon for VR settings.
+  static const gfx::ImageSkia GetVrSettingsIcon(SkColor related_text_color);
 #endif
 
   // Return true if the given ContentSettingsType is in PageInfoUI.
@@ -214,11 +226,13 @@ class PageInfoUI {
   // Sets site identity information.
   virtual void SetIdentityInfo(const IdentityInfo& identity_info) = 0;
 
+  virtual void SetPageFeatureInfo(const PageFeatureInfo& page_feature_info) = 0;
+
   // Helper to get security description info to display to the user.
   std::unique_ptr<PageInfoUI::SecurityDescription> GetSecurityDescription(
       const IdentityInfo& identity_info) const;
 
-#if defined(SAFE_BROWSING_DB_LOCAL)
+#if defined(FULL_SAFE_BROWSING)
   // Creates security description for password reuse case.
   virtual std::unique_ptr<PageInfoUI::SecurityDescription>
   CreateSecurityDescriptionForPasswordReuse(

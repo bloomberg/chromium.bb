@@ -4,8 +4,10 @@
 
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 
+#include <set>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -20,7 +22,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/supervised_user_whitelist_installer.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/supervised_user/experimental/supervised_user_filtering_switches.h"
 #include "chrome/browser/supervised_user/permission_request_creator.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
@@ -31,21 +33,20 @@
 #include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_site_list.h"
 #include "chrome/browser/supervised_user/supervised_user_whitelist_service.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/policy/core/browser/url_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "extensions/buildflags/buildflags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/identity/public/cpp/accounts_mutator.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -164,17 +165,6 @@ void SupervisedUserService::Init() {
       base::Bind(&SupervisedUserService::OnSupervisedUserIdChanged,
           base::Unretained(this)));
 
-  browser_sync::ProfileSyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile_);
-  // Can be null in tests.
-  if (sync_service)
-    sync_service->AddPreferenceProvider(this);
-
-  std::string client_id = component_updater::SupervisedUserWhitelistInstaller::
-      ClientIdForProfilePath(profile_->GetPath());
-  whitelist_service_.reset(new SupervisedUserWhitelistService(
-      profile_->GetPrefs(),
-      g_browser_process->supervised_user_whitelist_installer(), client_id));
   whitelist_service_->AddSiteListsChangedCallback(
       base::Bind(&SupervisedUserService::OnSiteListsChanged,
                  weak_ptr_factory_.GetWeakPtr()));
@@ -322,11 +312,9 @@ base::string16 SupervisedUserService::GetExtensionsLockedMessage() const {
 
 #if !defined(OS_ANDROID)
 void SupervisedUserService::InitSync(const std::string& refresh_token) {
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
-  token_service->UpdateCredentials(
-      supervised_users::kSupervisedUserPseudoEmail, refresh_token,
-      signin_metrics::SourceForRefreshTokenOperation::kSupervisedUser_InitSync);
+  IdentityManagerFactory::GetForProfile(profile_)
+      ->GetAccountsMutator()
+      ->LegacySetRefreshTokenForSupervisedUser(refresh_token);
 }
 #endif  // !defined(OS_ANDROID)
 
@@ -366,6 +354,12 @@ SupervisedUserService::SupervisedUserService(Profile* profile)
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   registry_observer_.Add(extensions::ExtensionRegistry::Get(profile));
 #endif
+
+  std::string client_id = component_updater::SupervisedUserWhitelistInstaller::
+      ClientIdForProfilePath(profile_->GetPath());
+  whitelist_service_ = std::make_unique<SupervisedUserWhitelistService>(
+      profile_->GetPrefs(),
+      g_browser_process->supervised_user_whitelist_installer(), client_id);
 }
 
 void SupervisedUserService::SetActive(bool active) {
@@ -376,10 +370,9 @@ void SupervisedUserService::SetActive(bool active) {
   if (!delegate_ || !delegate_->SetActive(active_)) {
     if (active_) {
 #if !defined(OS_ANDROID)
-      ProfileOAuth2TokenService* token_service =
-          ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
-      token_service->LoadCredentials(
-          supervised_users::kSupervisedUserPseudoEmail);
+      IdentityManagerFactory::GetForProfile(profile_)
+          ->DeprecatedLoadCredentialsForSupervisedUser(
+              supervised_users::kSupervisedUserPseudoEmail);
 #else
       NOTREACHED();
 #endif
@@ -394,10 +387,6 @@ void SupervisedUserService::SetActive(bool active) {
   if (theme_service->UsingDefaultTheme() || theme_service->UsingSystemTheme())
     theme_service->UseDefaultTheme();
 #endif
-
-  browser_sync::ProfileSyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile_);
-  sync_service->SetEncryptEverythingAllowed(!active_);
 
   GetSettingsService()->SetActive(active_);
 
@@ -565,12 +554,14 @@ void SupervisedUserService::OnSafeSitesSettingChanged() {
   bool use_online_check =
       supervised_users::IsSafeSitesOnlineCheckEnabled(profile_);
   if (use_online_check != url_filter_.HasAsyncURLChecker()) {
-    if (use_online_check)
+    if (use_online_check) {
       url_filter_.InitAsyncURLChecker(
           content::BrowserContext::GetDefaultStoragePartition(profile_)
-              ->GetURLLoaderFactoryForBrowserProcess());
-    else
+              ->GetURLLoaderFactoryForBrowserProcess(),
+          IdentityManagerFactory::GetForProfile(profile_));
+    } else {
       url_filter_.ClearAsyncURLChecker();
+    }
   }
 }
 
@@ -720,12 +711,6 @@ void SupervisedUserService::Shutdown() {
     base::RecordAction(UserMetricsAction("ManagedUsers_QuitBrowser"));
   }
   SetActive(false);
-
-  browser_sync::ProfileSyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile_);
-  // Can be null in tests.
-  if (sync_service)
-    sync_service->RemovePreferenceProvider(this);
 }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -984,18 +969,16 @@ void SupervisedUserService::SetExtensionsActive() {
 }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
-syncer::ModelTypeSet SupervisedUserService::GetForcedDataTypes() const {
+syncer::UserSelectableTypeSet SupervisedUserService::GetForcedTypes() const {
   if (!ProfileIsSupervised())
-    return syncer::ModelTypeSet();
+    return syncer::UserSelectableTypeSet();
 
-  syncer::ModelTypeSet result;
-  result.Put(syncer::EXTENSIONS);
-  result.Put(syncer::EXTENSION_SETTINGS);
-  result.Put(syncer::APPS);
-  result.Put(syncer::APP_SETTINGS);
-  result.Put(syncer::APP_NOTIFICATIONS);
-  result.Put(syncer::APP_LIST);
-  return result;
+  return {syncer::UserSelectableType::kExtensions,
+          syncer::UserSelectableType::kApps};
+}
+
+bool SupervisedUserService::IsEncryptEverythingAllowed() const {
+  return !active_;
 }
 
 #if !defined(OS_ANDROID)

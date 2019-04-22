@@ -10,6 +10,7 @@
 #include "base/time/time.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/prefix_delegate.h"
+#include "ui/views/style/typography.h"
 
 namespace gfx {
 class FontList;
@@ -38,14 +39,20 @@ class VIEWS_EXPORT Combobox : public View,
  public:
   // The combobox's class name.
   static const char kViewClassName[];
+  static constexpr int kDefaultComboboxTextContext = style::CONTEXT_BUTTON;
+  static constexpr int kDefaultComboboxTextStyle = style::STYLE_PRIMARY;
 
   // |model| is owned by the combobox when using this constructor.
-  explicit Combobox(std::unique_ptr<ui::ComboboxModel> model);
+  explicit Combobox(std::unique_ptr<ui::ComboboxModel> model,
+                    int text_context = kDefaultComboboxTextContext,
+                    int text_style = kDefaultComboboxTextStyle);
   // |model| is not owned by the combobox when using this constructor.
-  explicit Combobox(ui::ComboboxModel* model);
+  explicit Combobox(ui::ComboboxModel* model,
+                    int text_context = kDefaultComboboxTextContext,
+                    int text_style = kDefaultComboboxTextStyle);
   ~Combobox() override;
 
-  static const gfx::FontList& GetFontList();
+  const gfx::FontList& GetFontList() const;
 
   // Sets the listener which will be called when a selection has been made.
   void set_listener(ComboboxListener* listener) { listener_ = listener; }
@@ -125,9 +132,6 @@ class VIEWS_EXPORT Combobox : public View,
   // Called when the selection is changed by the user.
   void OnPerformAction();
 
-  // Returns the size of the disclosure arrow.
-  gfx::Size ArrowSize() const;
-
   // Finds the size of the largest menu label.
   gfx::Size GetContentSize() const;
 
@@ -135,9 +139,6 @@ class VIEWS_EXPORT Combobox : public View,
   void HandleClickEvent();
 
   PrefixSelector* GetPrefixSelector();
-
-  // Returns the width of the combobox's arrow container.
-  int GetArrowContainerWidth() const;
 
   // Returns the color to use for the combobox's focus ring.
   SkColor GetFocusRingColor() const;
@@ -148,6 +149,14 @@ class VIEWS_EXPORT Combobox : public View,
 
   // Reference to our model, which may be owned or not.
   ui::ComboboxModel* model_;
+
+  // Typography context for the text written in the combobox and the options
+  // shown in the drop-down menu.
+  const int text_context_;
+
+  // Typography style for the text written in the combobox and the options shown
+  // in the drop-down menu.
+  const int text_style_;
 
   // Our listener. Not owned. Notified when the selected index change.
   ComboboxListener* listener_;
@@ -173,7 +182,7 @@ class VIEWS_EXPORT Combobox : public View,
   // menu. There is no clean way to get the second click event because the
   // menu is displayed using a modal loop and, unlike regular menus in Windows,
   // the button is not part of the displayed menu.
-  base::Time closed_time_;
+  base::TimeTicks closed_time_;
 
   // The maximum dimensions of the content in the dropdown.
   gfx::Size content_size_;

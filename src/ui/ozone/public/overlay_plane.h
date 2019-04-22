@@ -5,6 +5,8 @@
 #ifndef UI_OZONE_PUBLIC_OVERLAY_PLANE_H_
 #define UI_OZONE_PUBLIC_OVERLAY_PLANE_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "ui/gfx/geometry/rect.h"

@@ -3,8 +3,8 @@
 # found in the LICENSE file.
 
 import("//build/config/features.gni")
-import("//remoting/remoting_options.gni")
 import("//media/media_options.gni")
+import("//remoting/remoting_options.gni")
 
 static_library("protocol") {
   sources = [
@@ -144,6 +144,8 @@ static_library("protocol") {
     "pseudotcp_channel_factory.h",
     "rejecting_authenticator.cc",
     "rejecting_authenticator.h",
+    "rfc7050_ip_synthesizer.cc",
+    "rfc7050_ip_synthesizer.h",
     "sdp_message.cc",
     "sdp_message.h",
     "secure_channel_factory.cc",
@@ -205,6 +207,7 @@ static_library("protocol") {
     "//remoting/signaling",
     "//third_party/boringssl",
     "//third_party/libyuv",
+    "//ui/events:dom_keycode_converter",
   ]
 
   defines = []
@@ -224,6 +227,8 @@ static_library("protocol") {
       "chromium_port_allocator_factory.h",
       "chromium_socket_factory.cc",
       "chromium_socket_factory.h",
+      "rfc7050_prefix_refresher.cc",
+      "rfc7050_prefix_refresher.h",
       "webrtc_audio_module.cc",
       "webrtc_audio_module.h",
       "webrtc_audio_sink_adapter.cc",
@@ -232,8 +237,6 @@ static_library("protocol") {
       "webrtc_connection_to_host.h",
       "webrtc_data_stream_adapter.cc",
       "webrtc_data_stream_adapter.h",
-      "webrtc_dummy_video_capturer.cc",
-      "webrtc_dummy_video_capturer.h",
       "webrtc_dummy_video_encoder.cc",
       "webrtc_dummy_video_encoder.h",
       "webrtc_transport.cc",
@@ -360,6 +363,7 @@ source_set("unit_tests") {
     "port_range_unittest.cc",
     "ppapi_module_stub.cc",
     "pseudotcp_adapter_unittest.cc",
+    "rfc7050_ip_synthesizer_unittest.cc",
     "sdp_message_unittest.cc",
     "session_config_unittest.cc",
     "spake2_authenticator_unittest.cc",

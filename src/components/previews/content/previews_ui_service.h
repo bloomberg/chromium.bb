@@ -105,21 +105,10 @@ class PreviewsUIService
       uint64_t page_id);
 
   // Returns the vector of subresource patterns whose loading should be blocked
-  // when loading |document_gurl|. The pattern may be a single substring to
-  // match against the URL or it may be an ordered set of substrings to match
-  // where the substrings are separated by the ‘*’ wildcard character (with an
-  // implicit ‘*’ at the beginning and end).
+  // when loading |document_gurl|. Each pattern is a substring to match
+  // against the URL.
   std::vector<std::string> GetResourceLoadingHintsResourcePatternsToBlock(
       const GURL& document_gurl) const;
-
-  // Sets the vector of subresource patterns whose loading should be blocked
-  // when loading |document_gurl| to |patterns|. The pattern may be a single
-  // substring to match against the URL or it may be an ordered set of
-  // substrings to match where the substrings are separated by the ‘*’ wildcard
-  // character (with an implicit ‘*’ at the beginning and end).
-  void SetResourceLoadingHintsResourcePatternsToBlock(
-      const GURL& document_gurl,
-      const std::vector<std::string>& patterns);
 
   // Expose the pointer to PreviewsLogger to extract logging messages. This
   // pointer's life time is the same as of |this|, and it is guaranteed to not
@@ -138,14 +127,6 @@ class PreviewsUIService
   // The decision making object for Previews triggering. Guaranteed to be
   // non-null.
   std::unique_ptr<previews::PreviewsDeciderImpl> previews_decider_impl_;
-
-  // |resource_loading_hints_patterns_| are the set of subresource patterns
-  // whose loading should be blocked. The hints apply to subresources when
-  // fetching |resource_loading_hints_document_gurl_|.
-  // TODO(tbansal): https://crbug.com/856243. Consider storing this
-  // data in a map or an LRU cache.
-  GURL resource_loading_hints_document_gurl_;
-  std::vector<std::string> resource_loading_hints_patterns_to_block_;
 
   // A log object to keep track of events such as previews navigations,
   // blacklist actions, etc.

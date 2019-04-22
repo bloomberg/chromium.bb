@@ -174,8 +174,7 @@ spv_result_t ValidateConstantComposite(ValidationState_t& _,
       bool is_const;
       uint32_t value;
       std::tie(is_int32, is_const, value) = _.EvalInt32IfConst(length->id());
-      if (is_int32 && is_const && !spvOpcodeIsSpecConstant(length->opcode()) &&
-          value != constituent_count) {
+      if (is_int32 && is_const && value != constituent_count) {
         return _.diag(SPV_ERROR_INVALID_ID, inst)
                << opcode_name
                << " Constituent count does not match "
@@ -248,6 +247,36 @@ spv_result_t ValidateConstantComposite(ValidationState_t& _,
         }
       }
     } break;
+    case SpvOpTypeCooperativeMatrixNV: {
+      if (1 != constituent_count) {
+        return _.diag(SPV_ERROR_INVALID_ID, inst)
+               << opcode_name << " Constituent <id> '"
+               << _.getIdName(inst->type_id()) << "' count must be one.";
+      }
+      const auto constituent_id = inst->GetOperandAs<uint32_t>(2);
+      const auto constituent = _.FindDef(constituent_id);
+      if (!constituent || !spvOpcodeIsConstantOrUndef(constituent->opcode())) {
+        return _.diag(SPV_ERROR_INVALID_ID, inst)
+               << opcode_name << " Constituent <id> '"
+               << _.getIdName(constituent_id)
+               << "' is not a constant or undef.";
+      }
+      const auto constituent_type = _.FindDef(constituent->type_id());
+      if (!constituent_type) {
+        return _.diag(SPV_ERROR_INVALID_ID, constituent)
+               << "Result type is not defined.";
+      }
+
+      const auto component_type_id = result_type->GetOperandAs<uint32_t>(1);
+      const auto component_type = _.FindDef(component_type_id);
+      if (!component_type || component_type->id() != constituent_type->id()) {
+        return _.diag(SPV_ERROR_INVALID_ID, inst)
+               << opcode_name << " Constituent <id> '"
+               << _.getIdName(constituent_id)
+               << "' type does not match the Result Type <id> '"
+               << _.getIdName(result_type->id()) << "'s component type.";
+      }
+    } break;
     default:
       break;
   }
@@ -286,6 +315,7 @@ bool IsTypeNullable(const std::vector<uint32_t>& instruction,
       return true;
     case SpvOpTypeArray:
     case SpvOpTypeMatrix:
+    case SpvOpTypeCooperativeMatrixNV:
     case SpvOpTypeVector: {
       auto base_type = _.FindDef(instruction[2]);
       return base_type && IsTypeNullable(base_type->words(), _);
@@ -315,6 +345,65 @@ spv_result_t ValidateConstantNull(ValidationState_t& _,
   return SPV_SUCCESS;
 }
 
+spv_result_t ValidateSpecConstantOp(ValidationState_t& _,
+                                    const Instruction* inst) {
+  const auto op = inst->GetOperandAs<SpvOp>(2);
+
+  // The binary parser already ensures that the op is valid for *some*
+  // environment.  Here we check restrictions.
+  switch (op) {
+    case SpvOpQuantizeToF16:
+      if (!_.HasCapability(SpvCapabilityShader)) {
+        return _.diag(SPV_ERROR_INVALID_ID, inst)
+               << "Specialization constant operation " << spvOpcodeString(op)
+               << " requires Shader capability";
+      }
+      break;
+
+    case SpvOpUConvert:
+      if (!_.features().uconvert_spec_constant_op &&
+          !_.HasCapability(SpvCapabilityKernel)) {
+        return _.diag(SPV_ERROR_INVALID_ID, inst)
+               << "UConvert requires Kernel capability or extension "
+                  "SPV_AMD_gpu_shader_int16";
+      }
+      break;
+
+    case SpvOpConvertFToS:
+    case SpvOpConvertSToF:
+    case SpvOpConvertFToU:
+    case SpvOpConvertUToF:
+    case SpvOpConvertPtrToU:
+    case SpvOpConvertUToPtr:
+    case SpvOpGenericCastToPtr:
+    case SpvOpPtrCastToGeneric:
+    case SpvOpBitcast:
+    case SpvOpFNegate:
+    case SpvOpFAdd:
+    case SpvOpFSub:
+    case SpvOpFMul:
+    case SpvOpFDiv:
+    case SpvOpFRem:
+    case SpvOpFMod:
+    case SpvOpAccessChain:
+    case SpvOpInBoundsAccessChain:
+    case SpvOpPtrAccessChain:
+    case SpvOpInBoundsPtrAccessChain:
+      if (!_.HasCapability(SpvCapabilityKernel)) {
+        return _.diag(SPV_ERROR_INVALID_ID, inst)
+               << "Specialization constant operation " << spvOpcodeString(op)
+               << " requires Kernel capability";
+      }
+      break;
+
+    default:
+      break;
+  }
+
+  // TODO(dneto): Validate result type and arguments to the various operations.
+  return SPV_SUCCESS;
+}
+
 }  // namespace
 
 spv_result_t ConstantPass(ValidationState_t& _, const Instruction* inst) {
@@ -334,6 +423,9 @@ spv_result_t ConstantPass(ValidationState_t& _, const Instruction* inst) {
       break;
     case SpvOpConstantNull:
       if (auto error = ValidateConstantNull(_, inst)) return error;
+      break;
+    case SpvOpSpecConstantOp:
+      if (auto error = ValidateSpecConstantOp(_, inst)) return error;
       break;
     default:
       break;

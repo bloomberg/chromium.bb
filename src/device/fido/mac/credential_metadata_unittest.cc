@@ -127,9 +127,9 @@ TEST(CredentialMetadata, GenerateRandomSecret) {
 TEST(CredentialMetadata, FromPublicKeyCredentialUserEntity) {
   std::vector<uint8_t> user_id = {{1, 2, 3}};
   PublicKeyCredentialUserEntity in(user_id);
-  in.SetUserName("username");
-  in.SetDisplayName("display name");
-  in.SetIconUrl(GURL("http://rp.foo/user.png"));
+  in.name = "username";
+  in.display_name = "display name";
+  in.icon_url = GURL("http://rp.foo/user.png");
   CredentialMetadata::UserEntity out =
       CredentialMetadata::UserEntity::FromPublicKeyCredentialUserEntity(
           std::move(in));
@@ -142,10 +142,10 @@ TEST(CredentialMetadata, ToPublicKeyCredentialUserEntity) {
   std::vector<uint8_t> user_id = {{1, 2, 3}};
   CredentialMetadata::UserEntity in(user_id, "username", "display name");
   PublicKeyCredentialUserEntity out = in.ToPublicKeyCredentialUserEntity();
-  EXPECT_EQ(user_id, out.user_id());
-  EXPECT_EQ("username", out.user_name().value());
-  EXPECT_EQ("display name", out.user_display_name().value());
-  EXPECT_FALSE(out.user_icon_url().has_value());
+  EXPECT_EQ(user_id, out.id);
+  EXPECT_EQ("username", out.name.value());
+  EXPECT_EQ("display name", out.display_name.value());
+  EXPECT_FALSE(out.icon_url.has_value());
 }
 
 }  // namespace

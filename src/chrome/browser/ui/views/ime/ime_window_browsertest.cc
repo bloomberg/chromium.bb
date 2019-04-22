@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/run_loop.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/ime/ime_native_window.h"
 #include "chrome/browser/ui/ime/ime_window.h"
@@ -61,13 +62,22 @@ class ImeWindowBrowserTest : public InProcessBrowserTest,
   DISALLOW_COPY_AND_ASSIGN(ImeWindowBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_F(ImeWindowBrowserTest, CreateNormalWindow) {
+// https://crbug.com/919624 : Flaky on Win7 bots
+#if defined(OS_WIN)
+#define MAYBE_CreateNormalWindow DISABLED_CreateNormalWindow
+#define MAYBE_CreateFollowCursorWindow DISABLED_CreateFollowCursorWindow
+#else
+#define MAYBE_CreateNormalWindow CreateNormalWindow
+#define MAYBE_CreateFollowCursorWindow CreateFollowCursorWindow
+#endif
+
+IN_PROC_BROWSER_TEST_F(ImeWindowBrowserTest, MAYBE_CreateNormalWindow) {
   gfx::Rect expected_bounds(100, 200, 300, 400);
   CreateImeWindow(expected_bounds, false);
   VerifyImeWindow(expected_bounds);
 }
 
-IN_PROC_BROWSER_TEST_F(ImeWindowBrowserTest, CreateFollowCursorWindow) {
+IN_PROC_BROWSER_TEST_F(ImeWindowBrowserTest, MAYBE_CreateFollowCursorWindow) {
   gfx::Rect expected_bounds(100, 200, 300, 400);
   CreateImeWindow(expected_bounds, true);
   VerifyImeWindow(expected_bounds);

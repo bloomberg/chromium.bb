@@ -31,6 +31,11 @@ void CustomCountHistogram::CountMicroseconds(base::TimeDelta delta) {
       delta.InMicroseconds()));
 }
 
+void CustomCountHistogram::CountMilliseconds(base::TimeDelta delta) {
+  Count(base::saturated_cast<base::HistogramBase::Sample>(
+      delta.InMilliseconds()));
+}
+
 BooleanHistogram::BooleanHistogram(const char* name)
     : CustomCountHistogram(base::BooleanHistogram::FactoryGet(
           name,

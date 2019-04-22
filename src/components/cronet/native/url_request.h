@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/thread_annotations.h"
 #include "components/cronet/cronet_url_request.h"
 #include "components/cronet/cronet_url_request_context.h"
 #include "components/cronet/native/generated/cronet.idl_impl_interface.h"
@@ -53,7 +54,7 @@ class Cronet_UrlRequestImpl : public Cronet_UrlRequest {
 
   // Return |true| if request has started and is now done.
   // Must be called under |lock_| held.
-  bool IsDoneLocked();
+  bool IsDoneLocked() const SHARED_LOCKS_REQUIRED(lock_);
 
   // Helper method to set final status of CronetUrlRequest and clean up the
   // native request adapter. Returns true if request is already done, false
@@ -65,7 +66,8 @@ class Cronet_UrlRequestImpl : public Cronet_UrlRequest {
   // native request adapter. Returns true if request is already done, false
   // request is not done and is destroyed. Must be called under |lock_| held.
   bool DestroyRequestUnlessDoneLocked(
-      Cronet_RequestFinishedInfo_FINISHED_REASON finished_reason);
+      Cronet_RequestFinishedInfo_FINISHED_REASON finished_reason)
+      EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   // Helper method to post |task| to the |executor_|.
   void PostTaskToExecutor(base::OnceClosure task);
@@ -80,6 +82,9 @@ class Cronet_UrlRequestImpl : public Cronet_UrlRequest {
   void InvokeCallbackOnFailed();
   void InvokeCallbackOnCanceled();
 
+  // Runs InvokeCallbackOnFailed() on the client executor.
+  void PostCallbackOnFailedToExecutor();
+
   // Invoke all members of |status_listeners_|. Should be called prior to
   // invoking a final callback. Once a final callback has been called, |this|
   // and |executor_| may be deleted and so the callbacks cannot be issued.
@@ -90,14 +95,15 @@ class Cronet_UrlRequestImpl : public Cronet_UrlRequest {
   base::Lock lock_;
   // NetworkTask object lives on the network thread. Owned by |request_|.
   // Outlives this.
-  NetworkTasks* network_tasks_ = nullptr;
+  NetworkTasks* network_tasks_ GUARDED_BY(lock_) = nullptr;
   // Cronet URLRequest used for this operation.
-  CronetURLRequest* request_ = nullptr;
-  bool started_ = false;
-  bool waiting_on_redirect_ = false;
-  bool waiting_on_read_ = false;
+  CronetURLRequest* request_ GUARDED_BY(lock_) = nullptr;
+  bool started_ GUARDED_BY(lock_) = false;
+  bool waiting_on_redirect_ GUARDED_BY(lock_) = false;
+  bool waiting_on_read_ GUARDED_BY(lock_) = false;
   // Set of status_listeners_ that have not yet been called back.
-  std::unordered_multiset<Cronet_UrlRequestStatusListenerPtr> status_listeners_;
+  std::unordered_multiset<Cronet_UrlRequestStatusListenerPtr> status_listeners_
+      GUARDED_BY(lock_);
 
   // Response info updated by callback with number of bytes received. May be
   // nullptr, if no response has been received.
@@ -125,6 +131,6 @@ class Cronet_UrlRequestImpl : public Cronet_UrlRequest {
   DISALLOW_COPY_AND_ASSIGN(Cronet_UrlRequestImpl);
 };
 
-};  // namespace cronet
+}  // namespace cronet
 
 #endif  // COMPONENTS_CRONET_NATIVE_URL_REQUEST_H_

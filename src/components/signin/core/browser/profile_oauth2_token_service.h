@@ -8,8 +8,9 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
+#include "build/buildflag.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/signin/core/browser/signin_buildflags.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "google_apis/gaia/oauth2_token_service_delegate.h"
@@ -39,8 +40,7 @@ class PrefRegistrySimple;
 // Note: requests should be started from the UI thread. To start a
 // request from other thread, please use OAuth2TokenServiceRequest.
 class ProfileOAuth2TokenService : public OAuth2TokenService,
-                                  public OAuth2TokenService::Observer,
-                                  public KeyedService {
+                                  public OAuth2TokenService::Observer {
  public:
   ProfileOAuth2TokenService(
       PrefService* user_prefs,
@@ -50,8 +50,7 @@ class ProfileOAuth2TokenService : public OAuth2TokenService,
   // Registers per-profile prefs.
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
-  // KeyedService implementation.
-  void Shutdown() override;
+  void Shutdown();
 
   // Loads credentials from a backing persistent store to make them available
   // after service is used between profile restarts.
@@ -89,13 +88,29 @@ class ProfileOAuth2TokenService : public OAuth2TokenService,
   // is no such instance.
   const net::BackoffEntry* GetDelegateBackoffEntry();
 
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+  // Removes the credentials associated to account_id from the internal storage,
+  // and moves them to |to_service|. The credentials are not revoked on the
+  // server, but the OnRefreshTokenRevoked() notification is sent to the
+  // observers.
+  void ExtractCredentials(ProfileOAuth2TokenService* to_service,
+                          const std::string& account_id);
+#endif
+
   void set_all_credentials_loaded_for_testing(bool loaded) {
     all_credentials_loaded_ = loaded;
+  }
+
+  // Exposes the ability to update auth errors to tests.
+  void UpdateAuthErrorForTesting(const std::string& account_id,
+                                 const GoogleServiceAuthError& error) {
+    UpdateAuthError(account_id, error);
   }
 
  private:
   friend class identity::IdentityManager;
 
+  // OAuth2TokenService::Observer implementation.
   void OnRefreshTokenAvailable(const std::string& account_id) override;
   void OnRefreshTokenRevoked(const std::string& account_id) override;
   void OnRefreshTokensLoaded() override;

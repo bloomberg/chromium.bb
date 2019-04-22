@@ -40,25 +40,13 @@ class WebAppExtensionIdsMapTest : public ChromeRenderViewHostTestHarness {
     return crx_file::id_util::GenerateId("fake_app_id_for:" + url.spec());
   }
 
-  void SimulatePreviouslyInstalledApp(GURL url,
-                                      InstallSource install_source,
-                                      const char* format = nullptr) {
+  void SimulatePreviouslyInstalledApp(GURL url, InstallSource install_source) {
     std::string id = GenerateFakeExtensionId(url);
     extensions::ExtensionRegistry::Get(profile())->AddEnabled(
         extensions::ExtensionBuilder("Dummy Name").SetID(id).Build());
 
-    if (format == nullptr) {
-      // Write the latest format.
-      ExtensionIdsMap extension_ids_map(profile()->GetPrefs());
-      extension_ids_map.Insert(url, id, install_source);
-    } else if (std::string(format) == "M70") {
-      // Write the M70 format, with an implicit kInternal install source.
-      EXPECT_EQ(InstallSource::kInternal, install_source);
-      DictionaryPrefUpdate(profile()->GetPrefs(), prefs::kWebAppsExtensionIDs)
-          ->SetKey(url.spec(), base::Value(id));
-    } else {
-      NOTREACHED();
-    }
+    ExtensionIdsMap extension_ids_map(profile()->GetPrefs());
+    extension_ids_map.Insert(url, id, install_source);
   }
 
   void SimulateUninstallApp(GURL url) {
@@ -71,20 +59,6 @@ class WebAppExtensionIdsMapTest : public ChromeRenderViewHostTestHarness {
         ExtensionIdsMap::GetInstalledAppUrls(profile(), install_source);
     std::sort(vec.begin(), vec.end());
     return vec;
-  }
-
-  bool HasM70FormatEntries() {
-    const base::DictionaryValue* urls_to_dicts =
-        profile()->GetPrefs()->GetDictionary(prefs::kWebAppsExtensionIDs);
-    if (!urls_to_dicts) {
-      return false;
-    }
-    for (const auto& it : urls_to_dicts->DictItems()) {
-      if (it.second.is_string()) {
-        return true;
-      }
-    }
-    return false;
   }
 
  private:
@@ -185,53 +159,6 @@ TEST_F(WebAppExtensionIdsMapTest, BasicOps) {
   EXPECT_FALSE(ExtensionIdsMap::HasExtensionId(prefs, id_d));
 
   EXPECT_EQ(std::vector<GURL>({url_c}),
-            GetInstalledAppUrls(InstallSource::kInternal));
-  EXPECT_EQ(std::vector<GURL>({url_a}),
-            GetInstalledAppUrls(InstallSource::kExternalDefault));
-  EXPECT_EQ(std::vector<GURL>({}),
-            GetInstalledAppUrls(InstallSource::kExternalPolicy));
-
-  // Add an entry in the older M70 prefs format.
-
-  EXPECT_FALSE(HasM70FormatEntries());
-  SimulatePreviouslyInstalledApp(url_d, InstallSource::kInternal, "M70");
-  EXPECT_TRUE(HasM70FormatEntries());
-
-  EXPECT_EQ(id_a, map.LookupExtensionId(url_a).value_or("missing"));
-  EXPECT_EQ(id_b, map.LookupExtensionId(url_b).value_or("missing"));
-  EXPECT_EQ(id_c, map.LookupExtensionId(url_c).value_or("missing"));
-  EXPECT_EQ(id_d, map.LookupExtensionId(url_d).value_or("missing"));
-
-  EXPECT_TRUE(ExtensionIdsMap::HasExtensionId(prefs, id_a));
-  EXPECT_TRUE(ExtensionIdsMap::HasExtensionId(prefs, id_b));
-  EXPECT_TRUE(ExtensionIdsMap::HasExtensionId(prefs, id_c));
-  EXPECT_TRUE(ExtensionIdsMap::HasExtensionId(prefs, id_d));
-
-  EXPECT_EQ(std::vector<GURL>({url_c, url_d}),
-            GetInstalledAppUrls(InstallSource::kInternal));
-  EXPECT_EQ(std::vector<GURL>({url_a}),
-            GetInstalledAppUrls(InstallSource::kExternalDefault));
-  EXPECT_EQ(std::vector<GURL>({}),
-            GetInstalledAppUrls(InstallSource::kExternalPolicy));
-
-  // Upgrade from the older M70 prefs format to the newer M71+ one. Other than
-  // HasM70FormatEntries, none of the other EXPECTs should change.
-
-  EXPECT_TRUE(HasM70FormatEntries());
-  ExtensionIdsMap::UpgradeFromM70Format(prefs);
-  EXPECT_FALSE(HasM70FormatEntries());
-
-  EXPECT_EQ(id_a, map.LookupExtensionId(url_a).value_or("missing"));
-  EXPECT_EQ(id_b, map.LookupExtensionId(url_b).value_or("missing"));
-  EXPECT_EQ(id_c, map.LookupExtensionId(url_c).value_or("missing"));
-  EXPECT_EQ(id_d, map.LookupExtensionId(url_d).value_or("missing"));
-
-  EXPECT_TRUE(ExtensionIdsMap::HasExtensionId(prefs, id_a));
-  EXPECT_TRUE(ExtensionIdsMap::HasExtensionId(prefs, id_b));
-  EXPECT_TRUE(ExtensionIdsMap::HasExtensionId(prefs, id_c));
-  EXPECT_TRUE(ExtensionIdsMap::HasExtensionId(prefs, id_d));
-
-  EXPECT_EQ(std::vector<GURL>({url_c, url_d}),
             GetInstalledAppUrls(InstallSource::kInternal));
   EXPECT_EQ(std::vector<GURL>({url_a}),
             GetInstalledAppUrls(InstallSource::kExternalDefault));

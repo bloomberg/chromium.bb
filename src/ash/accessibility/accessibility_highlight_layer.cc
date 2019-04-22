@@ -57,6 +57,10 @@ bool AccessibilityHighlightLayer::CanAnimate() const {
   return false;
 }
 
+bool AccessibilityHighlightLayer::NeedToAnimate() const {
+  return false;
+}
+
 int AccessibilityHighlightLayer::GetInset() const {
   return kLayerMargin;
 }

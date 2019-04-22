@@ -126,12 +126,6 @@ class MediaRouterUIBase
   const std::vector<MediaRoute>& routes() const { return routes_; }
   content::WebContents* initiator() const { return initiator_; }
 
-  // Used in tests for wired display presentations.
-  void set_display_observer_for_test(
-      std::unique_ptr<WebContentsDisplayObserver> display_observer) {
-    display_observer_ = std::move(display_observer);
-  }
-
  protected:
   struct RouteRequest {
    public:
@@ -222,9 +216,8 @@ class MediaRouterUIBase
     return start_presentation_context_.get();
   }
 
-  void set_start_presentation_context_for_test(
-      std::unique_ptr<StartPresentationContext> start_presentation_context) {
-    start_presentation_context_ = std::move(start_presentation_context);
+  QueryResultManager* query_result_manager() const {
+    return query_result_manager_.get();
   }
 
   void set_media_router_file_dialog_for_test(
@@ -232,15 +225,19 @@ class MediaRouterUIBase
     media_router_file_dialog_ = std::move(file_dialog);
   }
 
-  QueryResultManager* query_result_manager() const {
-    return query_result_manager_.get();
+  void set_start_presentation_context_for_test(
+      std::unique_ptr<StartPresentationContext> start_presentation_context) {
+    start_presentation_context_ = std::move(start_presentation_context);
   }
 
  private:
+  friend class MediaRouterUiForTest;
   FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest,
                            UIMediaRoutesObserverAssignsCurrentCastModes);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest,
                            UIMediaRoutesObserverSkipsUnavailableCastModes);
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest,
+                           UpdateSinksWhenDialogMovesToAnotherDisplay);
 
   class WebContentsFullscreenOnLoadedObserver;
 

@@ -29,7 +29,7 @@ namespace {
 bool IsNTP(content::WebContents* web_contents) {
   // Use the committed entry so the bookmarks bar disappears at the same time
   // the page does.
-  const content::NavigationEntry* entry =
+  content::NavigationEntry* entry =
       web_contents->GetController().GetLastCommittedEntry();
   if (!entry)
     entry = web_contents->GetController().GetVisibleEntry();
@@ -67,7 +67,10 @@ bool BookmarkTabHelper::ShouldShowBookmarkBar() const {
       !prefs->GetBoolean(bookmarks::prefs::kShowBookmarkBar))
     return false;
 
-  return IsNTP(web_contents());
+  // The bookmark bar is only shown on the NTP if the user
+  // has added something to it.
+  return IsNTP(web_contents()) && bookmark_model_ &&
+         bookmark_model_->HasBookmarks();
 }
 
 void BookmarkTabHelper::AddObserver(BookmarkTabHelperObserver* observer) {
@@ -164,3 +167,5 @@ void BookmarkTabHelper::DidAttachInterstitialPage() {
 void BookmarkTabHelper::DidDetachInterstitialPage() {
   UpdateStarredStateForCurrentURL();
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(BookmarkTabHelper)

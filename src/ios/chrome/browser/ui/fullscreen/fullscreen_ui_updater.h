@@ -9,7 +9,7 @@
 
 @protocol FullscreenUIElement;
 
-// Observer that updates UI elements for FullscreenController.
+// Observer that updates FullscreenUIElements for FullscreenController events.
 class FullscreenUIUpdater : public FullscreenControllerObserver {
  public:
   // Contructor for an observer that updates |ui_element|.  |ui_element| is not
@@ -18,6 +18,10 @@ class FullscreenUIUpdater : public FullscreenControllerObserver {
 
  private:
   // FullscreenControllerObserver:
+  void FullscreenViewportInsetRangeChanged(
+      FullscreenController* controller,
+      UIEdgeInsets min_viewport_insets,
+      UIEdgeInsets max_viewport_insets) override;
   void FullscreenProgressUpdated(FullscreenController* controller,
                                  CGFloat progress) override;
   void FullscreenEnabledStateChanged(FullscreenController* controller,

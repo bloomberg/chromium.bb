@@ -15,10 +15,6 @@ class FilePath;
 
 namespace download {
 
-bool GetQuarantinePropertiesDeprecated(
-    const base::FilePath& file,
-    base::scoped_nsobject<NSMutableDictionary>* properties);
-
 bool GetQuarantineProperties(
     const base::FilePath& file,
     base::scoped_nsobject<NSMutableDictionary>* properties);

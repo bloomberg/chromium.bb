@@ -3,13 +3,14 @@
 // found in the LICENSE file.
 
 #include "ash/public/interfaces/constants.mojom.h"
-#include "ash/public/interfaces/shell_test_api.mojom.h"
+#include "ash/public/interfaces/shell_test_api.test-mojom.h"
 #include "base/run_loop.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/ash/tablet_mode_client_observer.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/test/mus/change_completion_waiter.h"
 
 namespace test {
 
@@ -43,9 +44,9 @@ class TestTabletModeClientObserver : public TabletModeClientObserver {
 
 }  // namespace
 
-// Enables or disables the tablet mode and waits to until the change has made
-// its way back into Chrome (from Ash). Should only be called to toggle the
-// current mode.
+// Enables or disables the tablet mode and waits until the change has made its
+// way back into Chrome (from Ash). Should only be called to toggle the current
+// mode.
 void SetAndWaitForTabletMode(bool enabled) {
   ASSERT_NE(enabled, TabletModeClient::Get()->tablet_mode_enabled());
 
@@ -57,6 +58,7 @@ void SetAndWaitForTabletMode(bool enabled) {
 
   TestTabletModeClientObserver observer(enabled);
   observer.run_loop()->Run();
+  aura::test::WaitForAllChangesToComplete();
 
   ASSERT_EQ(enabled, TabletModeClient::Get()->tablet_mode_enabled());
 }

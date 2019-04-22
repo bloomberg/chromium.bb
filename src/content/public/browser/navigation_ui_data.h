@@ -15,7 +15,7 @@ namespace content {
 // content/ will transfer it to the IO thread as a clone.
 class NavigationUIData {
  public:
-  virtual ~NavigationUIData(){};
+  virtual ~NavigationUIData() {}
 
   // Creates a new NavigationData that is a deep copy of the original.
   virtual std::unique_ptr<NavigationUIData> Clone() const = 0;

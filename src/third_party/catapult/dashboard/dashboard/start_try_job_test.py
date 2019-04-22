@@ -60,20 +60,6 @@ _EXPECTED_PERF_CONFIG_DIFF = """config = {
  }
 """
 
-_EXPECTED_PERF_CONFIG_TRACING_DIFF = """config = {
--  'command': '',
--  'metric': '',
--  'repeat_count': '',
--  'max_time_minutes': '',
-+  "bad_revision": "215828",
-+  "command": "src/tools/perf/run_benchmark -v --browser=release --output-format=chartjson --upload-results --pageset-repeat=1 --also-run-disabled-tests --extra-chrome-categories=toplevel --extra-atrace-categories=battor dromaeo.jslibstylejquery",
-+  "good_revision": "215806",
-+  "max_time_minutes": "60",
-+  "repeat_count": "1",
-+  "try_job_id": 1
- }
-"""
-
 _FAKE_XSRF_TOKEN = '1234567890'
 
 _ISSUE_CREATED_RESPONSE = """Issue created. https://test-rietveld.appspot.com/33001
@@ -963,6 +949,14 @@ class StartBisectTest(testing_common.TestCase):
          '--enable-gpu'),
         bisect_bot='winx64nvidia_perf_bisect',
         suite='performance_browser_tests')
+
+  def testGetConfig_UnsupportedSuite(self):
+    response = start_try_job.GetBisectConfig(
+        bisect_bot='Pixel2', suite='v8', master_name='internal.client.v8',
+        metric='JSTests/Array/Total', good_revision='265549',
+        bad_revision='265556', repeat_count='15', max_time_minutes='8',
+        bug_id='-1')
+    self.assertEqual({'error': 'Could not guess command for \'v8\'.'}, response)
 
   def testGuessMetric_SummaryMetricWithNoTIRLabel(self):
     testing_common.AddTests(

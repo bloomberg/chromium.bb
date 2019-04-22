@@ -6,6 +6,7 @@
 
 #include <set>
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/guid.h"
 #include "base/run_loop.h"

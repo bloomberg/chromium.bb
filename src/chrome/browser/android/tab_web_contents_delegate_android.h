@@ -10,6 +10,7 @@
 #include "content/public/browser/bluetooth_chooser.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "printing/buildflags/buildflags.h"
 
 class FindNotificationDetails;
 
@@ -66,13 +67,13 @@ class TabWebContentsDelegateAndroid
       content::MediaResponseCallback callback) override;
   bool CheckMediaAccessPermission(content::RenderFrameHost* render_frame_host,
                                   const GURL& security_origin,
-                                  content::MediaStreamType type) override;
+                                  blink::MediaStreamType type) override;
   void SetOverlayMode(bool use_overlay_mode) override;
-  bool RequestPpapiBrokerPermission(
+  void RequestPpapiBrokerPermission(
       content::WebContents* web_contents,
       const GURL& url,
       const base::FilePath& plugin_path,
-      const base::Callback<void(bool)>& callback) override;
+      base::OnceCallback<void(bool)> callback) override;
   content::WebContents* OpenURLFromTab(
       content::WebContents* source,
       const content::OpenURLParams& params) override;
@@ -86,8 +87,6 @@ class TabWebContentsDelegateAndroid
   blink::WebSecurityStyle GetSecurityStyle(
       content::WebContents* web_contents,
       content::SecurityStyleExplanations* security_style_explanations) override;
-  void RequestAppBannerFromDevTools(
-      content::WebContents* web_contents) override;
   void OnDidBlockFramebust(content::WebContents* web_contents,
                            const GURL& url) override;
   void UpdateUserGestureCarryoverInfo(
@@ -97,6 +96,14 @@ class TabWebContentsDelegateAndroid
       std::unique_ptr<content::WebContents> new_contents,
       bool did_start_load,
       bool did_finish_load) override;
+
+#if BUILDFLAG(ENABLE_PRINTING)
+  void PrintCrossProcessSubframe(
+      content::WebContents* web_contents,
+      const gfx::Rect& rect,
+      int document_cookie,
+      content::RenderFrameHost* subframe_host) const override;
+#endif
 
  private:
   // NotificationObserver implementation.

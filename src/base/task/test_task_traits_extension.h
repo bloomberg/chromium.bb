@@ -27,20 +27,14 @@ class TestTaskTraitsExtension {
     ValidTrait(TestExtensionBoolTrait);
   };
 
-  using TestExtensionEnumFilter =
-      trait_helpers::EnumTraitFilter<TestExtensionEnumTrait,
-                                     TestExtensionEnumTrait::kA>;
-  using TestExtensionBoolFilter =
-      trait_helpers::BooleanTraitFilter<TestExtensionBoolTrait>;
-
   template <class... ArgTypes,
             class CheckArgumentsAreValid = std::enable_if_t<
                 trait_helpers::AreValidTraits<ValidTrait, ArgTypes...>::value>>
   constexpr TestTaskTraitsExtension(ArgTypes... args)
-      : enum_trait_(trait_helpers::GetTraitFromArgList<TestExtensionEnumFilter>(
-            args...)),
-        bool_trait_(trait_helpers::GetTraitFromArgList<TestExtensionBoolFilter>(
-            args...)) {}
+      : enum_trait_(
+            trait_helpers::GetEnum<TestExtensionEnumTrait,
+                                   TestExtensionEnumTrait::kA>(args...)),
+        bool_trait_(trait_helpers::HasTrait<TestExtensionBoolTrait>(args...)) {}
 
   constexpr TaskTraitsExtensionStorage Serialize() const {
     return {kExtensionId, {{static_cast<uint8_t>(enum_trait_), bool_trait_}}};

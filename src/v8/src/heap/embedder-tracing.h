@@ -17,15 +17,15 @@ class JSObject;
 
 class V8_EXPORT_PRIVATE LocalEmbedderHeapTracer final {
  public:
-  typedef std::pair<void*, void*> WrapperInfo;
-  typedef std::vector<WrapperInfo> WrapperCache;
+  using WrapperInfo = std::pair<void*, void*>;
+  using WrapperCache = std::vector<WrapperInfo>;
 
   class V8_EXPORT_PRIVATE ProcessingScope {
    public:
     explicit ProcessingScope(LocalEmbedderHeapTracer* tracer);
     ~ProcessingScope();
 
-    void TracePossibleWrapper(JSObject* js_object);
+    void TracePossibleWrapper(JSObject js_object);
 
     void AddWrapperInfoForTesting(WrapperInfo info);
 
@@ -53,6 +53,10 @@ class V8_EXPORT_PRIVATE LocalEmbedderHeapTracer final {
   void EnterFinalPause();
   bool Trace(double deadline);
   bool IsRemoteTracingDone();
+
+  bool IsRootForNonTracingGC(const v8::TracedGlobal<v8::Value>& handle) {
+    return !InUse() || remote_tracer_->IsRootForNonTracingGC(handle);
+  }
 
   void NotifyV8MarkingWorklistWasEmpty() {
     num_v8_marking_worklist_was_empty_++;

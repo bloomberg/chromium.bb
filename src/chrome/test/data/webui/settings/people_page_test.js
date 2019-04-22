@@ -125,7 +125,7 @@ cr.define('settings_people_page', function() {
 
       // This makes sure UI meant for DICE-enabled profiles are not leaked to
       // non-dice profiles.
-      // TODO(scottchen): This should be removed once all profiles are fully
+      // TODO(tangltom): This should be removed once all profiles are fully
       // migrated.
       test('NoManageProfileRow', function() {
         assertFalse(!!peoplePage.$$('#edit-profile'));
@@ -580,23 +580,5 @@ cr.define('settings_people_page', function() {
 
       assertEquals(settings.getCurrentRoute(), settings.routes.SYNC);
     });
-
-    if (!cr.isChromeOS) {
-      test('CancelSyncSetupOnSyncControlsPage', function() {
-        settings.navigateTo(settings.routes.SYNC);
-        settings.navigateTo(settings.routes.SYNC_ADVANCED);
-        peoplePage.syncStatus = {setupInProgress: true};
-        Polymer.dom.flush();
-
-        peoplePage.$$('settings-sync-controls')
-            .$.toast.querySelector('paper-button')
-            .click();
-
-        return browserProxy.whenCalled('didNavigateAwayFromSyncPage')
-            .then(abort => {
-              assertTrue(abort);
-            });
-      });
-    }
   });
 });

@@ -68,6 +68,7 @@ static_library("browser") {
     "//net",
     "//third_party/icu",
     "//ui/base",
+    "//ui/base/clipboard",
     "//ui/gfx",
     "//url",
   ]
@@ -135,6 +136,7 @@ source_set("unit_tests") {
     "//components/prefs:test_support",
     "//testing/gtest",
     "//ui/base",
+    "//ui/base/clipboard",
     "//url",
   ]
 }

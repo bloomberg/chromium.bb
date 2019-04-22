@@ -13,10 +13,12 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/run_loop.h"
-#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/presentation_request.h"
 #include "content/public/browser/presentation_service_delegate.h"
+#include "content/public/test/mock_navigation_handle.h"
 #include "content/test/test_render_frame_host.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
@@ -248,9 +250,9 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
     RenderFrameHostTester* rfh_tester = RenderFrameHostTester::For(rfh);
     if (!main_frame)
       rfh = rfh_tester->AppendChild("subframe");
-    std::unique_ptr<NavigationHandle> navigation_handle =
-        NavigationHandle::CreateNavigationHandleForTesting(GURL(), rfh, true);
-    // Destructor calls DidFinishNavigation.
+    MockNavigationHandle handle(GURL(), rfh);
+    handle.set_has_committed(true);
+    service_impl_->DidFinishNavigation(&handle);
   }
 
   void ListenForScreenAvailabilityAndWait(const GURL& url,

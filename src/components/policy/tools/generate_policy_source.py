@@ -10,6 +10,7 @@ chromium_os_flag should be 1 if this is a Chromium OS build
 template is the path to a .json policy template file.'''
 
 from __future__ import with_statement
+from collections import namedtuple
 from collections import OrderedDict
 from functools import partial
 import json
@@ -353,6 +354,7 @@ def _WritePolicyConstantHeader(policies, os, f, risk_tags):
   f.write('#ifndef CHROME_COMMON_POLICY_CONSTANTS_H_\n'
           '#define CHROME_COMMON_POLICY_CONSTANTS_H_\n'
           '\n'
+          '#include <cstdint>\n'
           '#include <string>\n'
           '\n'
           '#include "base/values.h"\n'
@@ -404,6 +406,9 @@ def _WritePolicyConstantHeader(policies, os, f, risk_tags):
   for protobuf_type in protobuf_types:
     _WriteChromePolicyAccessHeader(f, protobuf_type)
 
+  f.write('constexpr int64_t kDevicePolicyExternalDataResourceCacheSize = %d;\n'
+          % _ComputeTotalDevicePolicyExternalDataMaxSize(policies))
+
   f.write('\n}  // namespace policy\n\n'
           '#endif  // CHROME_COMMON_POLICY_CONSTANTS_H_\n')
 
@@ -425,7 +430,26 @@ def _WriteChromePolicyAccessHeader(f, protobuf_type):
           (protobuf_type, protobuf_type))
 
 
+def _ComputeTotalDevicePolicyExternalDataMaxSize(policies):
+  total_device_policy_external_data_max_size = 0
+  for policy in policies:
+    if policy.is_device_only and policy.policy_type == 'TYPE_EXTERNAL':
+      total_device_policy_external_data_max_size += policy.max_size
+  return total_device_policy_external_data_max_size
+
+
 #------------------ policy constants source ------------------------#
+
+SchemaNodeKey = namedtuple('SchemaNodeKey',
+                           'schema_type extra is_sensitive_value')
+SchemaNode = namedtuple(
+    'SchemaNode',
+    'schema_type extra is_sensitive_value has_sensitive_children comments')
+PropertyNode = namedtuple('PropertyNode', 'key schema')
+PropertiesNode = namedtuple(
+    'PropertiesNode',
+    'begin end pattern_end required_begin required_end additional name')
+RestrictionNode = namedtuple('RestrictionNode', 'first second')
 
 # A mapping of the simple schema types to base::Value::Types.
 SIMPLE_SCHEMA_NAME_MAP = {
@@ -435,6 +459,14 @@ SIMPLE_SCHEMA_NAME_MAP = {
     'number': 'Type::DOUBLE',
     'string': 'Type::STRING',
 }
+
+INVALID_INDEX = -1
+MIN_INDEX = -1
+MAX_INDEX = (1 << 15) - 1  # signed short in c++
+MIN_POLICY_ID = 0
+MAX_POLICY_ID = (1 << 16) - 1  # unsigned short
+MIN_EXTERNAL_DATA_SIZE = 0
+MAX_EXTERNAL_DATA_SIZE = (1 << 32) - 1  # unsigned int32
 
 
 class SchemaNodesGenerator:
@@ -447,21 +479,14 @@ class SchemaNodesGenerator:
     that string at runtime. This mapping can be used to reuse existing string
     constants."""
     self.shared_strings = shared_strings
-    self.schema_nodes = []
-    self.property_nodes = []
-    self.properties_nodes = []
-    self.restriction_nodes = []
+    self.key_index_map = {}  # |SchemaNodeKey| -> index in |schema_nodes|
+    self.schema_nodes = []  # List of |SchemaNode|s
+    self.property_nodes = []  # List of |PropertyNode|s
+    self.properties_nodes = []  # List of |PropertiesNode|s
+    self.restriction_nodes = []  # List of |RestrictionNode|s
     self.required_properties = []
     self.int_enums = []
     self.string_enums = []
-    self.simple_types = {
-        'boolean': None,
-        'integer': None,
-        'null': None,
-        'number': None,
-        'string': None,
-    }
-    self.stringlist_type = None
     self.ranges = {}
     self.id_map = {}
 
@@ -472,30 +497,34 @@ class SchemaNodesGenerator:
     # C/C++ escaped string. Known differences includes unicode escaping format.
     return json.dumps(s)
 
-  def AppendSchema(self, type, extra, comment=''):
+  def AppendSchema(self, schema_type, extra, is_sensitive_value, comment=''):
+    # Find existing schema node with same structure.
+    key_node = SchemaNodeKey(schema_type, extra, is_sensitive_value)
+    if key_node in self.key_index_map:
+      index = self.key_index_map[key_node]
+      if comment:
+        self.schema_nodes[index].comments.add(comment)
+      return index
+
+    # Create new schema node.
     index = len(self.schema_nodes)
-    self.schema_nodes.append((type, extra, comment))
+    comments = {comment} if comment else set()
+    schema_node = SchemaNode(schema_type, extra, is_sensitive_value, False,
+                             comments)
+    self.schema_nodes.append(schema_node)
+    self.key_index_map[key_node] = index
     return index
 
   def AppendRestriction(self, first, second):
-    r = (str(first), str(second))
+    r = RestrictionNode(str(first), str(second))
     if not r in self.ranges:
       self.ranges[r] = len(self.restriction_nodes)
       self.restriction_nodes.append(r)
     return self.ranges[r]
 
-  def GetSimpleType(self, name):
-    if self.simple_types[name] == None:
-      self.simple_types[name] = self.AppendSchema(SIMPLE_SCHEMA_NAME_MAP[name],
-                                                  -1, 'simple type: ' + name)
-    return self.simple_types[name]
-
-  def GetStringList(self):
-    if self.stringlist_type == None:
-      self.stringlist_type = self.AppendSchema('Type::LIST',
-                                               self.GetSimpleType('string'),
-                                               'simple type: stringlist')
-    return self.stringlist_type
+  def GetSimpleType(self, name, is_sensitive_value):
+    return self.AppendSchema(SIMPLE_SCHEMA_NAME_MAP[name], INVALID_INDEX,
+                             is_sensitive_value, 'simple type: ' + name)
 
   def SchemaHaveRestriction(self, schema):
     return any(keyword in schema
@@ -506,41 +535,43 @@ class SchemaNodesGenerator:
     return all(sortedSeq[i] + 1 == sortedSeq[i + 1]
                for i in xrange(len(sortedSeq) - 1))
 
-  def GetEnumIntegerType(self, schema, name):
+  def GetEnumIntegerType(self, schema, is_sensitive_value, name):
     assert all(type(x) == int for x in schema['enum'])
     possible_values = schema['enum']
     if self.IsConsecutiveInterval(possible_values):
       index = self.AppendRestriction(max(possible_values), min(possible_values))
       return self.AppendSchema(
-          'Type::INTEGER', index,
+          'Type::INTEGER', index, is_sensitive_value,
           'integer with enumeration restriction (use range instead): %s' % name)
     offset_begin = len(self.int_enums)
     self.int_enums += possible_values
     offset_end = len(self.int_enums)
     return self.AppendSchema('Type::INTEGER',
                              self.AppendRestriction(offset_begin, offset_end),
+                             is_sensitive_value,
                              'integer with enumeration restriction: %s' % name)
 
-  def GetEnumStringType(self, schema, name):
+  def GetEnumStringType(self, schema, is_sensitive_value, name):
     assert all(type(x) == str for x in schema['enum'])
     offset_begin = len(self.string_enums)
     self.string_enums += schema['enum']
     offset_end = len(self.string_enums)
     return self.AppendSchema('Type::STRING',
                              self.AppendRestriction(offset_begin, offset_end),
+                             is_sensitive_value,
                              'string with enumeration restriction: %s' % name)
 
-  def GetEnumType(self, schema, name):
+  def GetEnumType(self, schema, is_sensitive_value, name):
     if len(schema['enum']) == 0:
       raise RuntimeError('Empty enumeration in %s' % name)
     elif schema['type'] == 'integer':
-      return self.GetEnumIntegerType(schema, name)
+      return self.GetEnumIntegerType(schema, is_sensitive_value, name)
     elif schema['type'] == 'string':
-      return self.GetEnumStringType(schema, name)
+      return self.GetEnumStringType(schema, is_sensitive_value, name)
     else:
       raise RuntimeError('Unknown enumeration type in %s' % name)
 
-  def GetPatternType(self, schema, name):
+  def GetPatternType(self, schema, is_sensitive_value, name):
     if schema['type'] != 'string':
       raise RuntimeError('Unknown pattern type in %s' % name)
     pattern = schema['pattern']
@@ -551,9 +582,10 @@ class SchemaNodesGenerator:
     index = len(self.string_enums)
     self.string_enums.append(pattern)
     return self.AppendSchema('Type::STRING', self.AppendRestriction(
-        index, index), 'string with pattern restriction: %s' % name)
+        index, index), is_sensitive_value,
+                             'string with pattern restriction: %s' % name)
 
-  def GetRangedType(self, schema, name):
+  def GetRangedType(self, schema, is_sensitive_value, name):
     if schema['type'] != 'integer':
       raise RuntimeError('Unknown ranged type in %s' % name)
     min_value_set, max_value_set = False, False
@@ -568,7 +600,7 @@ class SchemaNodesGenerator:
     index = self.AppendRestriction(
         str(max_value) if max_value_set else 'INT_MAX',
         str(min_value) if min_value_set else 'INT_MIN')
-    return self.AppendSchema('Type::INTEGER', index,
+    return self.AppendSchema('Type::INTEGER', index, is_sensitive_value,
                              'integer with ranged restriction: %s' % name)
 
   def Generate(self, schema, name):
@@ -582,51 +614,62 @@ class SchemaNodesGenerator:
       if not isinstance(schema['$ref'], types.StringTypes):
         raise RuntimeError("$ref attribute must be a string")
       return schema['$ref']
-    if schema['type'] in self.simple_types:
+
+    is_sensitive_value = schema.get('sensitiveValue', False)
+    assert type(is_sensitive_value) is bool
+
+    if schema['type'] in SIMPLE_SCHEMA_NAME_MAP:
       if not self.SchemaHaveRestriction(schema):
         # Simple types use shared nodes.
-        return self.GetSimpleType(schema['type'])
+        return self.GetSimpleType(schema['type'], is_sensitive_value)
       elif 'enum' in schema:
-        return self.GetEnumType(schema, name)
+        return self.GetEnumType(schema, is_sensitive_value, name)
       elif 'pattern' in schema:
-        return self.GetPatternType(schema, name)
+        return self.GetPatternType(schema, is_sensitive_value, name)
       else:
-        return self.GetRangedType(schema, name)
+        return self.GetRangedType(schema, is_sensitive_value, name)
 
     if schema['type'] == 'array':
-      # Special case for lists of strings, which is a common policy type.
-      # The 'type' may be missing if the schema has a '$ref' attribute.
-      if schema['items'].get('type', '') == 'string':
-        return self.GetStringList()
       return self.AppendSchema(
           'Type::LIST',
-          self.GenerateAndCollectID(schema['items'], 'items of ' + name))
+          self.GenerateAndCollectID(schema['items'], 'items of ' + name),
+          is_sensitive_value)
     elif schema['type'] == 'object':
       # Reserve an index first, so that dictionaries come before their
       # properties. This makes sure that the root node is the first in the
       # SchemaNodes array.
-      index = self.AppendSchema('Type::DICTIONARY', -1)
+      # This however, prevents de-duplication for object schemas since we could
+      # only determine duplicates after all child schema nodes are generated as
+      # well and then we couldn't remove the newly created schema node without
+      # invalidating all child schema indices.
+      index = len(self.schema_nodes)
+      self.schema_nodes.append(
+          SchemaNode('Type::DICTIONARY', INVALID_INDEX, is_sensitive_value,
+                     False, {name}))
 
       if 'additionalProperties' in schema:
         additionalProperties = self.GenerateAndCollectID(
             schema['additionalProperties'], 'additionalProperties of ' + name)
       else:
-        additionalProperties = -1
+        additionalProperties = INVALID_INDEX
 
       # Properties must be sorted by name, for the binary search lookup.
       # Note that |properties| must be evaluated immediately, so that all the
       # recursive calls to Generate() append the necessary child nodes; if
       # |properties| were a generator then this wouldn't work.
       sorted_properties = sorted(schema.get('properties', {}).items())
-      properties = [(self.GetString(key),
-                     self.GenerateAndCollectID(subschema, key))
-                    for key, subschema in sorted_properties]
+      properties = [
+          PropertyNode(
+              self.GetString(key), self.GenerateAndCollectID(subschema, key))
+          for key, subschema in sorted_properties
+      ]
 
       pattern_properties = []
       for pattern, subschema in schema.get('patternProperties', {}).items():
-        pattern_properties.append((self.GetString(pattern),
-                                   self.GenerateAndCollectID(
-                                       subschema, pattern)))
+        pattern_properties.append(
+            PropertyNode(
+                self.GetString(pattern),
+                self.GenerateAndCollectID(subschema, pattern)))
 
       begin = len(self.property_nodes)
       self.property_nodes += properties
@@ -651,11 +694,13 @@ class SchemaNodesGenerator:
         assert properties.has_key(name)
 
       extra = len(self.properties_nodes)
-      self.properties_nodes.append((begin, end, pattern_end, required_begin,
-                                    required_end, additionalProperties, name))
+      self.properties_nodes.append(
+          PropertiesNode(begin, end, pattern_end, required_begin, required_end,
+                         additionalProperties, name))
 
-      # Set the right data at |index| now.
-      self.schema_nodes[index] = ('Type::DICTIONARY', extra, name)
+      # Update index at |extra| now, since that was filled with a dummy value
+      # when the schema node was created.
+      self.schema_nodes[index] = self.schema_nodes[index]._replace(extra=extra)
       return index
     else:
       assert False
@@ -679,33 +724,43 @@ class SchemaNodesGenerator:
 
     |f| an open file to write to."""
     f.write('const internal::SchemaNode kSchemas[] = {\n'
-            '//  Type                          Extra\n')
-    for type, extra, comment in self.schema_nodes:
-      type += ','
-      f.write('  { base::Value::%-18s %3d },  // %s\n' % (type, extra, comment))
+            '//  Type' + ' ' * 27 +
+            'Extra  IsSensitiveValue HasSensitiveChildren\n')
+    for schema_node in self.schema_nodes:
+      assert schema_node.extra >= MIN_INDEX and schema_node.extra <= MAX_INDEX
+      comment = ('\n' + ' ' * 69 + '// ').join(schema_node.comments)
+      f.write('  { base::Value::%-19s %4s %-16s %-5s },  // %s\n' %
+              (schema_node.schema_type + ',', str(schema_node.extra) + ',',
+               str(schema_node.is_sensitive_value).lower() + ',',
+               str(schema_node.has_sensitive_children).lower(), comment))
     f.write('};\n\n')
 
     if self.property_nodes:
       f.write('const internal::PropertyNode kPropertyNodes[] = {\n'
-              '//  Property                                          #Schema\n')
-      for key, schema in self.property_nodes:
-        key += ','
-        f.write('  { %-50s %6d },\n' % (key, schema))
+              '//  Property' + ' ' * 61 + 'Schema\n')
+      for property_node in self.property_nodes:
+        f.write('  { %-64s %6d },\n' % (property_node.key + ',',
+                                        property_node.schema))
       f.write('};\n\n')
 
     if self.properties_nodes:
       f.write('const internal::PropertiesNode kProperties[] = {\n'
               '//  Begin    End  PatternEnd  RequiredBegin  RequiredEnd'
               '  Additional Properties\n')
-      for node in self.properties_nodes:
-        f.write('  { %5d, %5d, %5d, %5d, %10d, %5d },  // %s\n' % node)
+      for properties_node in self.properties_nodes:
+        for i in range(0, len(properties_node) - 1):
+          assert (properties_node[i] >= MIN_INDEX and
+                  properties_node[i] <= MAX_INDEX)
+        f.write(
+            '  { %5d, %5d, %5d, %5d, %10d, %5d },  // %s\n' % properties_node)
       f.write('};\n\n')
 
     if self.restriction_nodes:
       f.write('const internal::RestrictionNode kRestrictionNodes[] = {\n')
       f.write('//   FIRST, SECOND\n')
-      for first, second in self.restriction_nodes:
-        f.write('  {{ %-8s %4s}},\n' % (first + ',', second))
+      for restriction_node in self.restriction_nodes:
+        f.write('  {{ %-8s %4s}},\n' % (restriction_node.first + ',',
+                                        restriction_node.second))
       f.write('};\n\n')
 
     if self.required_properties:
@@ -737,7 +792,6 @@ class SchemaNodesGenerator:
     f.write('  kStringEnumerations,\n' if self.string_enums else '  NULL,\n')
     f.write('  %d,  // validation_schema root index\n' %
             self.validation_schema_root_index)
-    f.write('  nullptr,  // schema_nodes_metadata\n')
     f.write('};\n\n')
 
   def GetByID(self, id_str):
@@ -747,8 +801,10 @@ class SchemaNodesGenerator:
       raise RuntimeError('Invalid $ref: ' + id_str)
     return self.id_map[id_str]
 
-  def ResolveID(self, index, params):
-    return params[:index] + (self.GetByID(params[index]),) + params[index + 1:]
+  def ResolveID(self, index, tuple_type, params):
+    simple_tuple = params[:index] + (self.GetByID(
+        params[index]),) + params[index + 1:]
+    return tuple_type(*simple_tuple)
 
   def ResolveReferences(self):
     """Resolve reference mapping, required to be called after Generate()
@@ -759,10 +815,54 @@ class SchemaNodesGenerator:
     simple as looking up for corresponding ID in self.id_map, and replace the
     old index with the mapped index.
     """
-    self.schema_nodes = map(partial(self.ResolveID, 1), self.schema_nodes)
-    self.property_nodes = map(partial(self.ResolveID, 1), self.property_nodes)
+    self.schema_nodes = map(
+        partial(self.ResolveID, 1, SchemaNode), self.schema_nodes)
+    self.property_nodes = map(
+        partial(self.ResolveID, 1, PropertyNode), self.property_nodes)
     self.properties_nodes = map(
-        partial(self.ResolveID, 3), self.properties_nodes)
+        partial(self.ResolveID, 3, PropertiesNode), self.properties_nodes)
+
+  def FindSensitiveChildren(self):
+    """Wrapper function, which calls FindSensitiveChildrenRecursive().
+    """
+    if self.schema_nodes:
+      self.FindSensitiveChildrenRecursive(0, set())
+
+  def FindSensitiveChildrenRecursive(self, index, handled_schema_nodes):
+    """Recursively compute |has_sensitive_children| for the schema node at
+    |index| and all its child elements. A schema has sensitive children if any
+    of its children has |is_sensitive_value|==True or has sensitive children
+    itself.
+    """
+    node = self.schema_nodes[index]
+    if index in handled_schema_nodes:
+      return node.has_sensitive_children or node.is_sensitive_value
+
+    handled_schema_nodes.add(index)
+    has_sensitive_children = False
+    if node.schema_type == 'Type::DICTIONARY':
+      properties_node = self.properties_nodes[node.extra]
+      # Iterate through properties and patternProperties.
+      for property_index in range(properties_node.begin,
+                                  properties_node.pattern_end - 1):
+        sub_index = self.property_nodes[property_index].schema
+        has_sensitive_children |= self.FindSensitiveChildrenRecursive(
+            sub_index, handled_schema_nodes)
+      # AdditionalProperties
+      if properties_node.additional != INVALID_INDEX:
+        sub_index = properties_node.additional
+        has_sensitive_children |= self.FindSensitiveChildrenRecursive(
+            sub_index, handled_schema_nodes)
+    elif node.schema_type == 'Type::LIST':
+      sub_index = node.extra
+      has_sensitive_children |= self.FindSensitiveChildrenRecursive(
+          sub_index, handled_schema_nodes)
+
+    if has_sensitive_children:
+      self.schema_nodes[index] = self.schema_nodes[index]._replace(
+          has_sensitive_children=True)
+
+    return has_sensitive_children or node.is_sensitive_value
 
 
 def _GenerateDefaultValue(value):
@@ -799,6 +899,7 @@ def _WritePolicyConstantSource(policies, os, f, risk_tags):
           '#include <memory>\n'
           '\n'
           '#include "base/logging.h"\n'
+          '#include "base/stl_util.h"  // base::size()\n'
           '#include "components/policy/core/common/policy_types.h"\n'
           '#include "components/policy/core/common/schema_internal.h"\n'
           '#include "components/policy/proto/cloud_policy.pb.h"\n'
@@ -835,6 +936,9 @@ def _WritePolicyConstantSource(policies, os, f, risk_tags):
           '//  is_deprecated  is_device_policy  id    max_external_data_size\n')
   for policy in policies:
     if policy.is_supported:
+      assert policy.id >= MIN_POLICY_ID and policy.id <= MAX_POLICY_ID
+      assert (policy.max_size >= MIN_EXTERNAL_DATA_SIZE and
+              policy.max_size <= MAX_EXTERNAL_DATA_SIZE)
       f.write('  // %s\n' % policy.name)
       f.write('  { %-14s %-16s %3s, %24s,\n'
               '    %s },\n' % ('true,' if policy.is_deprecated else 'false,',
@@ -851,9 +955,10 @@ def _WritePolicyConstantSource(policies, os, f, risk_tags):
         schema_generator.GenerateAndCollectID(chrome_validation_schema,
                                               'validation_schema root node')
   else:
-    schema_generator.validation_schema_root_index = -1
+    schema_generator.validation_schema_root_index = INVALID_INDEX
 
   schema_generator.ResolveReferences()
+  schema_generator.FindSensitiveChildren()
   schema_generator.Write(f)
 
   f.write('\n' 'namespace {\n')
@@ -935,7 +1040,7 @@ def _WritePolicyConstantSource(policies, os, f, risk_tags):
           '  // Offsetting |it| from |begin| here obtains the index we\'re\n'
           '  // looking for.\n'
           '  size_t index = it - begin;\n'
-          '  CHECK_LT(index, arraysize(kChromePolicyDetails));\n'
+          '  CHECK_LT(index, base::size(kChromePolicyDetails));\n'
           '  return kChromePolicyDetails + index;\n'
           '}\n\n')
 

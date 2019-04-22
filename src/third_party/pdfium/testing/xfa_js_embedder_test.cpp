@@ -8,8 +8,8 @@
 
 #include "fpdfsdk/cpdfsdk_helpers.h"
 #include "fpdfsdk/fpdfxfa/cpdfxfa_context.h"
-#include "fxjs/cfxjse_engine.h"
-#include "fxjs/cfxjse_value.h"
+#include "fxjs/xfa/cfxjse_engine.h"
+#include "fxjs/xfa/cfxjse_value.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/base/ptr_util.h"
 #include "xfa/fxfa/cxfa_ffapp.h"
@@ -71,7 +71,7 @@ bool XFAJSEmbedderTest::OpenDocumentWithOptions(
   return true;
 }
 
-bool XFAJSEmbedderTest::Execute(const ByteStringView& input) {
+bool XFAJSEmbedderTest::Execute(ByteStringView input) {
   if (ExecuteHelper(input))
     return true;
 
@@ -86,11 +86,11 @@ bool XFAJSEmbedderTest::Execute(const ByteStringView& input) {
   return false;
 }
 
-bool XFAJSEmbedderTest::ExecuteSilenceFailure(const ByteStringView& input) {
+bool XFAJSEmbedderTest::ExecuteSilenceFailure(ByteStringView input) {
   return ExecuteHelper(input);
 }
 
-bool XFAJSEmbedderTest::ExecuteHelper(const ByteStringView& input) {
+bool XFAJSEmbedderTest::ExecuteHelper(ByteStringView input) {
   value_ = pdfium::MakeUnique<CFXJSE_Value>(GetIsolate());
   return script_context_->RunScript(CXFA_Script::Type::Formcalc,
                                     WideString::FromUTF8(input).AsStringView(),

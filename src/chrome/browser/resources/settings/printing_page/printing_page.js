@@ -22,15 +22,11 @@ Polymer({
       value: function() {
         const map = new Map();
         if (settings.routes.CLOUD_PRINTERS) {
-          map.set(
-              settings.routes.CLOUD_PRINTERS.path,
-              '#cloudPrinters .subpage-arrow button');
+          map.set(settings.routes.CLOUD_PRINTERS.path, '#cloudPrinters');
         }
         // <if expr="chromeos">
         if (settings.routes.CUPS_PRINTERS) {
-          map.set(
-              settings.routes.CUPS_PRINTERS.path,
-              '#cupsPrinters .subpage-arrow button');
+          map.set(settings.routes.CUPS_PRINTERS.path, '#cupsPrinters');
         }
         // </if>
         return map;

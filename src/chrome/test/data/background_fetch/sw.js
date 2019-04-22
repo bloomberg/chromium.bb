@@ -8,7 +8,7 @@ self.addEventListener('activate', e => e.waitUntil(clients.claim()));
 
 // Posts |msg| to background_fetch.js.
 function postToWindowClients(msg) {
-  clients.matchAll({ type: 'window' }).then(clientWindows => {
+  return clients.matchAll({ type: 'window' }).then(clientWindows => {
     for (const client of clientWindows) client.postMessage(msg);
   });
 }
@@ -33,4 +33,13 @@ self.addEventListener('backgroundfetchsuccess', e => {
 self.addEventListener('backgroundfetchfail', e => {
   e.waitUntil(e.updateUI({title: 'New Failed Title!'}).then(
       () => postToWindowClients(e.type)));
+});
+
+self.addEventListener('backgroundfetchabort', e => {
+  e.waitUntil(postToWindowClients(e.type));
+});
+
+self.addEventListener('backgroundfetchclick', e => {
+  e.waitUntil(clients.openWindow(
+      '/background_fetch/background_fetch.html?clickevent'));
 });

@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
@@ -18,15 +19,16 @@
 #include "base/threading/platform_thread.h"
 #include "base/values.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_interfaces.h"
 #include "net/base/test_completion_callback.h"
-#include "net/dns/host_cache.h"
-#include "net/dns/mock_host_resolver.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_with_source.h"
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_entry.h"
 #include "net/log/test_net_log_util.h"
+#include "net/proxy_resolution/mock_proxy_host_resolver.h"
 #include "net/proxy_resolution/proxy_info.h"
+#include "net/proxy_resolution/proxy_resolve_dns_operation.h"
 #include "net/proxy_resolution/proxy_resolver_error_observer.h"
 #include "net/test/event_waiter.h"
 #include "net/test/gtest_util.h"
@@ -78,7 +80,7 @@ std::unique_ptr<ProxyResolverErrorObserver> ReturnErrorObserver(
 
 std::unique_ptr<ProxyResolver> CreateResolver(
     NetLog* net_log,
-    HostResolver* host_resolver,
+    ProxyHostResolver* host_resolver,
     std::unique_ptr<ProxyResolverErrorObserver> error_observer,
     const char* filename) {
   std::unique_ptr<ProxyResolver> resolver;
@@ -127,7 +129,7 @@ class MockErrorObserver : public ProxyResolverErrorObserver {
 TEST_F(ProxyResolverV8TracingWrapperTest, Simple) {
   TestNetLog log;
   BoundTestNetLog request_log;
-  MockCachingHostResolver host_resolver;
+  MockProxyHostResolver host_resolver;
   MockErrorObserver* error_observer = new MockErrorObserver;
 
   std::unique_ptr<ProxyResolver> resolver = CreateResolver(
@@ -159,7 +161,7 @@ TEST_F(ProxyResolverV8TracingWrapperTest, Simple) {
 TEST_F(ProxyResolverV8TracingWrapperTest, JavascriptError) {
   TestNetLog log;
   BoundTestNetLog request_log;
-  MockCachingHostResolver host_resolver;
+  MockProxyHostResolver host_resolver;
   MockErrorObserver* error_observer = new MockErrorObserver;
 
   std::unique_ptr<ProxyResolver> resolver = CreateResolver(
@@ -189,7 +191,7 @@ TEST_F(ProxyResolverV8TracingWrapperTest, JavascriptError) {
   log.GetEntries(&entries_list[0]);
   request_log.GetEntries(&entries_list[1]);
 
-  for (size_t list_i = 0; list_i < arraysize(entries_list); list_i++) {
+  for (size_t list_i = 0; list_i < base::size(entries_list); list_i++) {
     const TestNetLogEntry::List& entries = entries_list[list_i];
     EXPECT_EQ(2u, entries.size());
     EXPECT_TRUE(LogContainsEvent(entries, 0,
@@ -210,7 +212,7 @@ TEST_F(ProxyResolverV8TracingWrapperTest, JavascriptError) {
 TEST_F(ProxyResolverV8TracingWrapperTest, TooManyAlerts) {
   TestNetLog log;
   BoundTestNetLog request_log;
-  MockCachingHostResolver host_resolver;
+  MockProxyHostResolver host_resolver;
   MockErrorObserver* error_observer = new MockErrorObserver;
 
   std::unique_ptr<ProxyResolver> resolver =
@@ -244,7 +246,7 @@ TEST_F(ProxyResolverV8TracingWrapperTest, TooManyAlerts) {
   log.GetEntries(&entries_list[0]);
   request_log.GetEntries(&entries_list[1]);
 
-  for (size_t list_i = 0; list_i < arraysize(entries_list); list_i++) {
+  for (size_t list_i = 0; list_i < base::size(entries_list); list_i++) {
     const TestNetLogEntry::List& entries = entries_list[list_i];
     EXPECT_EQ(50u, entries.size());
     for (size_t i = 0; i < entries.size(); ++i) {
@@ -260,7 +262,7 @@ TEST_F(ProxyResolverV8TracingWrapperTest, TooManyAlerts) {
 TEST_F(ProxyResolverV8TracingWrapperTest, TooManyEmptyAlerts) {
   TestNetLog log;
   BoundTestNetLog request_log;
-  MockCachingHostResolver host_resolver;
+  MockProxyHostResolver host_resolver;
   MockErrorObserver* error_observer = new MockErrorObserver;
 
   std::unique_ptr<ProxyResolver> resolver =
@@ -291,7 +293,7 @@ TEST_F(ProxyResolverV8TracingWrapperTest, TooManyEmptyAlerts) {
   log.GetEntries(&entries_list[0]);
   request_log.GetEntries(&entries_list[1]);
 
-  for (size_t list_i = 0; list_i < arraysize(entries_list); list_i++) {
+  for (size_t list_i = 0; list_i < base::size(entries_list); list_i++) {
     const TestNetLogEntry::List& entries = entries_list[list_i];
     EXPECT_EQ(1000u, entries.size());
     for (size_t i = 0; i < entries.size(); ++i) {
@@ -308,20 +310,26 @@ TEST_F(ProxyResolverV8TracingWrapperTest, TooManyEmptyAlerts) {
 TEST_F(ProxyResolverV8TracingWrapperTest, Dns) {
   TestNetLog log;
   BoundTestNetLog request_log;
-  MockCachingHostResolver host_resolver;
+  MockProxyHostResolver host_resolver;
   MockErrorObserver* error_observer = new MockErrorObserver;
 
-  host_resolver.rules()->AddRuleForAddressFamily("host1", ADDRESS_FAMILY_IPV4,
-                                                 "166.155.144.44");
-  host_resolver.rules()->AddIPLiteralRule("host1", "::1,192.168.1.1",
-                                          std::string());
-  host_resolver.rules()->AddSimulatedFailure("host2");
-  host_resolver.rules()->AddRule("host3", "166.155.144.33");
-  host_resolver.rules()->AddRule("host5", "166.155.144.55");
-  host_resolver.rules()->AddSimulatedFailure("host6");
-  host_resolver.rules()->AddRuleForAddressFamily("*", ADDRESS_FAMILY_IPV4,
-                                                 "122.133.144.155");
-  host_resolver.rules()->AddRule("*", "133.122.100.200");
+  host_resolver.SetResult(GetHostName(),
+                          ProxyResolveDnsOperation::MY_IP_ADDRESS,
+                          {IPAddress(122, 133, 144, 155)});
+  host_resolver.SetResult(GetHostName(),
+                          ProxyResolveDnsOperation::MY_IP_ADDRESS_EX,
+                          {IPAddress(133, 122, 100, 200)});
+  host_resolver.SetError("", ProxyResolveDnsOperation::DNS_RESOLVE);
+  host_resolver.SetResult("host1", ProxyResolveDnsOperation::DNS_RESOLVE,
+                          {IPAddress(166, 155, 144, 44)});
+  IPAddress v6_local;
+  ASSERT_TRUE(v6_local.AssignFromIPLiteral("::1"));
+  host_resolver.SetResult("host1", ProxyResolveDnsOperation::DNS_RESOLVE_EX,
+                          {v6_local, IPAddress(192, 168, 1, 1)});
+  host_resolver.SetError("host2", ProxyResolveDnsOperation::DNS_RESOLVE);
+  host_resolver.SetResult("host3", ProxyResolveDnsOperation::DNS_RESOLVE,
+                          {IPAddress(166, 155, 144, 33)});
+  host_resolver.SetError("host6", ProxyResolveDnsOperation::DNS_RESOLVE_EX);
 
   std::unique_ptr<ProxyResolver> resolver = CreateResolver(
       &log, &host_resolver, base::WrapUnique(error_observer), "dns.js");
@@ -367,7 +375,7 @@ TEST_F(ProxyResolverV8TracingWrapperTest, Dns) {
   log.GetEntries(&entries_list[0]);
   request_log.GetEntries(&entries_list[1]);
 
-  for (size_t list_i = 0; list_i < arraysize(entries_list); list_i++) {
+  for (size_t list_i = 0; list_i < base::size(entries_list); list_i++) {
     const TestNetLogEntry::List& entries = entries_list[list_i];
     EXPECT_EQ(1u, entries.size());
     EXPECT_TRUE(LogContainsEvent(entries, 0,
@@ -377,71 +385,19 @@ TEST_F(ProxyResolverV8TracingWrapperTest, Dns) {
   }
 }
 
-// This test runs a PAC script that does "myIpAddress()" followed by
-// "dnsResolve()". This requires 2 restarts. However once the HostResolver's
-// cache is warmed, subsequent calls should take 0 restarts.
-TEST_F(ProxyResolverV8TracingWrapperTest, DnsChecksCache) {
-  TestNetLog log;
-  BoundTestNetLog request_log;
-  MockCachingHostResolver host_resolver;
-  MockErrorObserver* error_observer = new MockErrorObserver;
-
-  host_resolver.rules()->AddRule("foopy", "166.155.144.11");
-  host_resolver.rules()->AddRule("*", "122.133.144.155");
-
-  std::unique_ptr<ProxyResolver> resolver = CreateResolver(
-      &log, &host_resolver, base::WrapUnique(error_observer), "simple_dns.js");
-
-  TestCompletionCallback callback1;
-  TestCompletionCallback callback2;
-  ProxyInfo proxy_info;
-
-  std::unique_ptr<ProxyResolver::Request> req;
-  int rv =
-      resolver->GetProxyForURL(GURL("http://foopy/req1"), &proxy_info,
-                               callback1.callback(), &req, request_log.bound());
-
-  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
-  EXPECT_THAT(callback1.WaitForResult(), IsOk());
-
-  // The test does 2 DNS resolutions.
-  EXPECT_EQ(2u, host_resolver.num_resolve());
-
-  // The first request took 2 restarts, hence on g_iteration=3.
-  EXPECT_EQ("166.155.144.11:3", proxy_info.proxy_server().ToURI());
-
-  std::unique_ptr<ProxyResolver::Request> req2;
-  rv = resolver->GetProxyForURL(GURL("http://foopy/req2"), &proxy_info,
-                                callback2.callback(), &req2,
-                                request_log.bound());
-
-  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
-  EXPECT_THAT(callback2.WaitForResult(), IsOk());
-
-  EXPECT_EQ(4u, host_resolver.num_resolve());
-
-  // This time no restarts were required, so g_iteration incremented by 1.
-  EXPECT_EQ("166.155.144.11:4", proxy_info.proxy_server().ToURI());
-
-  // No errors.
-  EXPECT_EQ("", error_observer->GetOutput());
-
-  EXPECT_EQ(0u, log.GetSize());
-  EXPECT_EQ(0u, request_log.GetSize());
-}
-
 // This test runs a weird PAC script that was designed to defeat the DNS tracing
 // optimization. The proxy resolver should detect the inconsistency and
 // fall-back to synchronous mode execution.
 TEST_F(ProxyResolverV8TracingWrapperTest, FallBackToSynchronous1) {
   TestNetLog log;
   BoundTestNetLog request_log;
-  MockCachingHostResolver host_resolver;
+  MockProxyHostResolver host_resolver;
   MockErrorObserver* error_observer = new MockErrorObserver;
 
-  host_resolver.rules()->AddRule("host1", "166.155.144.11");
-  host_resolver.rules()->AddRule("crazy4", "133.199.111.4");
-  host_resolver.rules()->AddRule("*", "122.133.144.155");
+  host_resolver.SetResult("host1", ProxyResolveDnsOperation::DNS_RESOLVE,
+                          {IPAddress(166, 155, 144, 11)});
+  host_resolver.SetResult("crazy4", ProxyResolveDnsOperation::DNS_RESOLVE,
+                          {IPAddress(133, 199, 111, 4)});
 
   std::unique_ptr<ProxyResolver> resolver =
       CreateResolver(&log, &host_resolver, base::WrapUnique(error_observer),
@@ -474,7 +430,7 @@ TEST_F(ProxyResolverV8TracingWrapperTest, FallBackToSynchronous1) {
   log.GetEntries(&entries_list[0]);
   request_log.GetEntries(&entries_list[1]);
 
-  for (size_t list_i = 0; list_i < arraysize(entries_list); list_i++) {
+  for (size_t list_i = 0; list_i < base::size(entries_list); list_i++) {
     const TestNetLogEntry::List& entries = entries_list[list_i];
     EXPECT_EQ(1u, entries.size());
     EXPECT_TRUE(LogContainsEvent(entries, 0,
@@ -490,14 +446,17 @@ TEST_F(ProxyResolverV8TracingWrapperTest, FallBackToSynchronous1) {
 TEST_F(ProxyResolverV8TracingWrapperTest, FallBackToSynchronous2) {
   TestNetLog log;
   BoundTestNetLog request_log;
-  MockCachingHostResolver host_resolver;
+  MockProxyHostResolver host_resolver;
   MockErrorObserver* error_observer = new MockErrorObserver;
 
-  host_resolver.rules()->AddRule("host1", "166.155.144.11");
-  host_resolver.rules()->AddRule("host2", "166.155.144.22");
-  host_resolver.rules()->AddRule("host3", "166.155.144.33");
-  host_resolver.rules()->AddRule("host4", "166.155.144.44");
-  host_resolver.rules()->AddRule("*", "122.133.144.155");
+  host_resolver.SetResult("host1", ProxyResolveDnsOperation::DNS_RESOLVE,
+                          {IPAddress(166, 155, 144, 11)});
+  host_resolver.SetResult("host2", ProxyResolveDnsOperation::DNS_RESOLVE,
+                          {IPAddress(166, 155, 144, 22)});
+  host_resolver.SetResult("host3", ProxyResolveDnsOperation::DNS_RESOLVE,
+                          {IPAddress(166, 155, 144, 33)});
+  host_resolver.SetResult("host4", ProxyResolveDnsOperation::DNS_RESOLVE,
+                          {IPAddress(166, 155, 144, 44)});
 
   std::unique_ptr<ProxyResolver> resolver =
       CreateResolver(&log, &host_resolver, base::WrapUnique(error_observer),
@@ -532,11 +491,14 @@ TEST_F(ProxyResolverV8TracingWrapperTest, FallBackToSynchronous2) {
 TEST_F(ProxyResolverV8TracingWrapperTest, InfiniteDNSSequence) {
   TestNetLog log;
   BoundTestNetLog request_log;
-  MockCachingHostResolver host_resolver;
+  MockProxyHostResolver host_resolver;
   MockErrorObserver* error_observer = new MockErrorObserver;
 
-  host_resolver.rules()->AddRule("host*", "166.155.144.11");
-  host_resolver.rules()->AddRule("*", "122.133.144.155");
+  for (int i = 0; i < 21; ++i) {
+    host_resolver.SetResult("host" + std::to_string(i),
+                            ProxyResolveDnsOperation::DNS_RESOLVE,
+                            {IPAddress(166, 155, 144, 11)});
+  }
 
   std::unique_ptr<ProxyResolver> resolver =
       CreateResolver(&log, &host_resolver, base::WrapUnique(error_observer),
@@ -579,11 +541,17 @@ TEST_F(ProxyResolverV8TracingWrapperTest, InfiniteDNSSequence) {
 TEST_F(ProxyResolverV8TracingWrapperTest, InfiniteDNSSequence2) {
   TestNetLog log;
   BoundTestNetLog request_log;
-  MockCachingHostResolver host_resolver;
+  MockProxyHostResolver host_resolver;
   MockErrorObserver* error_observer = new MockErrorObserver;
 
-  host_resolver.rules()->AddRule("host*", "166.155.144.11");
-  host_resolver.rules()->AddRule("*", "122.133.144.155");
+  host_resolver.SetResult(GetHostName(),
+                          ProxyResolveDnsOperation::MY_IP_ADDRESS,
+                          {IPAddress(122, 133, 144, 155)});
+  for (int i = 0; i < 21; ++i) {
+    host_resolver.SetResult("host" + std::to_string(i),
+                            ProxyResolveDnsOperation::DNS_RESOLVE,
+                            {IPAddress(166, 155, 144, 11)});
+  }
 
   std::unique_ptr<ProxyResolver> resolver =
       CreateResolver(&log, &host_resolver, base::WrapUnique(error_observer),
@@ -614,12 +582,13 @@ TEST_F(ProxyResolverV8TracingWrapperTest, InfiniteDNSSequence2) {
 void DnsDuringInitHelper(bool synchronous_host_resolver) {
   TestNetLog log;
   BoundTestNetLog request_log;
-  MockCachingHostResolver host_resolver;
-  host_resolver.set_synchronous_mode(synchronous_host_resolver);
+  MockProxyHostResolver host_resolver(synchronous_host_resolver);
   MockErrorObserver* error_observer = new MockErrorObserver;
 
-  host_resolver.rules()->AddRule("host1", "91.13.12.1");
-  host_resolver.rules()->AddRule("host2", "91.13.12.2");
+  host_resolver.SetResult("host1", ProxyResolveDnsOperation::DNS_RESOLVE,
+                          {IPAddress(91, 13, 12, 1)});
+  host_resolver.SetResult("host2", ProxyResolveDnsOperation::DNS_RESOLVE,
+                          {IPAddress(91, 13, 12, 2)});
 
   std::unique_ptr<ProxyResolver> resolver =
       CreateResolver(&log, &host_resolver, base::WrapUnique(error_observer),
@@ -628,11 +597,10 @@ void DnsDuringInitHelper(bool synchronous_host_resolver) {
   // Initialization did 2 dnsResolves.
   EXPECT_EQ(2u, host_resolver.num_resolve());
 
-  host_resolver.rules()->ClearRules();
-  host_resolver.GetHostCache()->clear();
-
-  host_resolver.rules()->AddRule("host1", "145.88.13.3");
-  host_resolver.rules()->AddRule("host2", "137.89.8.45");
+  host_resolver.SetResult("host1", ProxyResolveDnsOperation::DNS_RESOLVE,
+                          {IPAddress(145, 88, 13, 3)});
+  host_resolver.SetResult("host2", ProxyResolveDnsOperation::DNS_RESOLVE,
+                          {IPAddress(137, 89, 8, 45)});
 
   TestCompletionCallback callback;
   ProxyInfo proxy_info;
@@ -686,10 +654,10 @@ void CrashCallback(int) {
 // threads are involved, the cancellation may be received a different
 // times.
 TEST_F(ProxyResolverV8TracingWrapperTest, CancelAll) {
-  MockCachingHostResolver host_resolver;
+  MockProxyHostResolver host_resolver;
   MockErrorObserver* error_observer = new MockErrorObserver;
 
-  host_resolver.rules()->AddSimulatedFailure("*");
+  host_resolver.FailAll();
 
   std::unique_ptr<ProxyResolver> resolver = CreateResolver(
       nullptr, &host_resolver, base::WrapUnique(error_observer), "dns.js");
@@ -714,10 +682,10 @@ TEST_F(ProxyResolverV8TracingWrapperTest, CancelAll) {
 // threads are involved, the cancellation may be received a different
 // times.
 TEST_F(ProxyResolverV8TracingWrapperTest, CancelSome) {
-  MockCachingHostResolver host_resolver;
+  MockProxyHostResolver host_resolver;
   MockErrorObserver* error_observer = new MockErrorObserver;
 
-  host_resolver.rules()->AddSimulatedFailure("*");
+  host_resolver.FailAll();
 
   std::unique_ptr<ProxyResolver> resolver = CreateResolver(
       nullptr, &host_resolver, base::WrapUnique(error_observer), "dns.js");
@@ -746,10 +714,10 @@ TEST_F(ProxyResolverV8TracingWrapperTest, CancelSome) {
 // Cancel a request after it has finished running on the worker thread, and has
 // posted a task the completion task back to origin thread.
 TEST_F(ProxyResolverV8TracingWrapperTest, CancelWhilePendingCompletionTask) {
-  MockCachingHostResolver host_resolver;
+  MockProxyHostResolver host_resolver;
   MockErrorObserver* error_observer = new MockErrorObserver;
 
-  host_resolver.rules()->AddSimulatedFailure("*");
+  host_resolver.FailAll();
 
   std::unique_ptr<ProxyResolver> resolver = CreateResolver(
       nullptr, &host_resolver, base::WrapUnique(error_observer), "error.js");
@@ -783,112 +751,12 @@ TEST_F(ProxyResolverV8TracingWrapperTest, CancelWhilePendingCompletionTask) {
   EXPECT_EQ("i-approve-this-message:42", proxy_info2.proxy_server().ToURI());
 }
 
-// This implementation of HostResolver allows blocking until a resolve request
-// has been received. The resolve requests it receives will never be completed.
-class BlockableHostResolver : public HostResolver {
- public:
-  BlockableHostResolver()
-      : num_cancelled_requests_(0), waiting_for_resolve_(false) {}
-
-  std::unique_ptr<ResolveHostRequest> CreateRequest(
-      const HostPortPair& host,
-      const NetLogWithSource& net_log,
-      const base::Optional<ResolveHostParameters>& optional_parameters)
-      override {
-    NOTIMPLEMENTED();
-    return nullptr;
-  }
-
-  int Resolve(const RequestInfo& info,
-              RequestPriority priority,
-              AddressList* addresses,
-              CompletionOnceCallback callback,
-              std::unique_ptr<Request>* out_req,
-              const NetLogWithSource& net_log) override {
-    EXPECT_FALSE(callback.is_null());
-    EXPECT_TRUE(out_req);
-
-    if (!action_.is_null())
-      action_.Run();
-
-    // Indicate to the caller that a request was received.
-    EXPECT_TRUE(waiting_for_resolve_);
-    base::RunLoop::QuitCurrentWhenIdleDeprecated();
-
-    // This line is intentionally after action_.Run(), since one of the
-    // tests does a cancellation inside of Resolve(), and it is more
-    // interesting if *out_req hasn't been written yet at that point.
-    out_req->reset(new RequestImpl(this));
-
-    // Return ERR_IO_PENDING as this request will NEVER be completed.
-    // Expectation is for the caller to later cancel the request.
-    return ERR_IO_PENDING;
-  }
-
-  int ResolveFromCache(const RequestInfo& info,
-                       AddressList* addresses,
-                       const NetLogWithSource& net_log) override {
-    NOTREACHED();
-    return ERR_DNS_CACHE_MISS;
-  }
-
-  int ResolveStaleFromCache(const RequestInfo& info,
-                            AddressList* addresses,
-                            HostCache::EntryStaleness* stale_info,
-                            const NetLogWithSource& net_log) override {
-    NOTREACHED();
-    return ERR_DNS_CACHE_MISS;
-  }
-
-  bool HasCached(base::StringPiece hostname,
-                 HostCache::Entry::Source* source_out,
-                 HostCache::EntryStaleness* stale_out) const override {
-    NOTIMPLEMENTED();
-    return false;
-  }
-
-  void IncreaseNumOfCancelledRequests() { num_cancelled_requests_++; }
-
-  void SetAction(const base::Callback<void(void)>& action) { action_ = action; }
-
-  // Waits until Resolve() has been called.
-  void WaitUntilRequestIsReceived() {
-    waiting_for_resolve_ = true;
-    base::RunLoop().Run();
-    DCHECK(waiting_for_resolve_);
-    waiting_for_resolve_ = false;
-  }
-
-  int num_cancelled_requests() const { return num_cancelled_requests_; }
-
- private:
-  class RequestImpl : public HostResolver::Request {
-   public:
-    RequestImpl(BlockableHostResolver* resolver) : resolver_(resolver) {}
-
-    ~RequestImpl() override {
-      if (resolver_)
-        resolver_->IncreaseNumOfCancelledRequests();
-    }
-
-    void ChangeRequestPriority(RequestPriority priority) override {}
-
-   private:
-    BlockableHostResolver* resolver_;
-
-    DISALLOW_COPY_AND_ASSIGN(RequestImpl);
-  };
-
-  int num_cancelled_requests_;
-  bool waiting_for_resolve_;
-  base::Callback<void(void)> action_;
-};
-
 // This cancellation test exercises a more predictable cancellation codepath --
 // when the request has an outstanding DNS request in flight.
 TEST_F(ProxyResolverV8TracingWrapperTest,
        CancelWhileOutstandingNonBlockingDns) {
-  BlockableHostResolver host_resolver;
+  base::RunLoop run_loop1;
+  HangingProxyHostResolver host_resolver(run_loop1.QuitClosure());
   MockErrorObserver* error_observer = new MockErrorObserver;
 
   std::unique_ptr<ProxyResolver> resolver = CreateResolver(
@@ -905,15 +773,17 @@ TEST_F(ProxyResolverV8TracingWrapperTest,
 
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
-  host_resolver.WaitUntilRequestIsReceived();
+  run_loop1.Run();
 
+  base::RunLoop run_loop2;
+  host_resolver.set_hang_callback(run_loop2.QuitClosure());
   rv = resolver->GetProxyForURL(GURL("http://foo/req2"), &proxy_info2,
                                 base::Bind(&CrashCallback), &request2,
                                 NetLogWithSource());
 
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
-  host_resolver.WaitUntilRequestIsReceived();
+  run_loop2.Run();
 
   request1.reset();
   request2.reset();
@@ -925,20 +795,23 @@ TEST_F(ProxyResolverV8TracingWrapperTest,
   // should have been cancelled.
 }
 
-void CancelRequestAndPause(std::unique_ptr<ProxyResolver::Request>* request) {
+void CancelRequestAndPause(std::unique_ptr<ProxyResolver::Request>* request,
+                           base::RunLoop* run_loop) {
   request->reset();
 
   // Sleep for a little bit. This makes it more likely for the worker
   // thread to have returned from its call, and serves as a regression
   // test for http://crbug.com/173373.
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(30));
+
+  run_loop->Quit();
 }
 
 // In non-blocking mode, the worker thread actually does block for
 // a short time to see if the result is in the DNS cache. Test
 // cancellation while the worker thread is waiting on this event.
 TEST_F(ProxyResolverV8TracingWrapperTest, CancelWhileBlockedInNonBlockingDns) {
-  BlockableHostResolver host_resolver;
+  HangingProxyHostResolver host_resolver;
   MockErrorObserver* error_observer = new MockErrorObserver;
 
   std::unique_ptr<ProxyResolver> resolver = CreateResolver(
@@ -947,21 +820,23 @@ TEST_F(ProxyResolverV8TracingWrapperTest, CancelWhileBlockedInNonBlockingDns) {
   ProxyInfo proxy_info;
   std::unique_ptr<ProxyResolver::Request> request;
 
+  base::RunLoop run_loop;
+  host_resolver.set_hang_callback(
+      base::BindRepeating(&CancelRequestAndPause, &request, &run_loop));
+
   int rv = resolver->GetProxyForURL(GURL("http://foo/"), &proxy_info,
                                     base::Bind(&CrashCallback), &request,
                                     NetLogWithSource());
 
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
-  host_resolver.SetAction(base::Bind(CancelRequestAndPause, &request));
-
-  host_resolver.WaitUntilRequestIsReceived();
+  run_loop.Run();
 }
 
 // Cancel the request while there is a pending DNS request, however before
 // the request is sent to the host resolver.
 TEST_F(ProxyResolverV8TracingWrapperTest, CancelWhileBlockedInNonBlockingDns2) {
-  MockCachingHostResolver host_resolver;
+  MockProxyHostResolver host_resolver;
   MockErrorObserver* error_observer = new MockErrorObserver;
 
   std::unique_ptr<ProxyResolver> resolver = CreateResolver(
@@ -987,7 +862,8 @@ TEST_F(ProxyResolverV8TracingWrapperTest, CancelWhileBlockedInNonBlockingDns2) {
 
 TEST_F(ProxyResolverV8TracingWrapperTest,
        CancelCreateResolverWhileOutstandingBlockingDns) {
-  BlockableHostResolver host_resolver;
+  base::RunLoop run_loop;
+  HangingProxyHostResolver host_resolver(run_loop.QuitClosure());
   MockErrorObserver* error_observer = new MockErrorObserver;
 
   ProxyResolverFactoryV8TracingWrapper factory(
@@ -1002,7 +878,7 @@ TEST_F(ProxyResolverV8TracingWrapperTest,
                                        &request);
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
-  host_resolver.WaitUntilRequestIsReceived();
+  run_loop.Run();
 
   request.reset();
   EXPECT_EQ(1, host_resolver.num_cancelled_requests());
@@ -1010,7 +886,8 @@ TEST_F(ProxyResolverV8TracingWrapperTest,
 
 TEST_F(ProxyResolverV8TracingWrapperTest,
        DeleteFactoryWhileOutstandingBlockingDns) {
-  BlockableHostResolver host_resolver;
+  base::RunLoop run_loop;
+  HangingProxyHostResolver host_resolver(run_loop.QuitClosure());
   MockErrorObserver* error_observer = new MockErrorObserver;
 
   std::unique_ptr<ProxyResolver> resolver;
@@ -1025,13 +902,13 @@ TEST_F(ProxyResolverV8TracingWrapperTest,
                                          &resolver, base::Bind(&CrashCallback),
                                          &request);
     EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
-    host_resolver.WaitUntilRequestIsReceived();
+    run_loop.Run();
   }
   EXPECT_EQ(1, host_resolver.num_cancelled_requests());
 }
 
 TEST_F(ProxyResolverV8TracingWrapperTest, ErrorLoadingScript) {
-  BlockableHostResolver host_resolver;
+  HangingProxyHostResolver host_resolver;
   MockErrorObserver* error_observer = new MockErrorObserver;
 
   ProxyResolverFactoryV8TracingWrapper factory(
@@ -1055,11 +932,13 @@ TEST_F(ProxyResolverV8TracingWrapperTest, ErrorLoadingScript) {
 TEST_F(ProxyResolverV8TracingWrapperTest, Terminate) {
   TestNetLog log;
   BoundTestNetLog request_log;
-  MockCachingHostResolver host_resolver;
+  MockProxyHostResolver host_resolver;
   MockErrorObserver* error_observer = new MockErrorObserver;
 
-  host_resolver.rules()->AddRule("host1", "182.111.0.222");
-  host_resolver.rules()->AddRule("host2", "111.33.44.55");
+  host_resolver.SetResult("host1", ProxyResolveDnsOperation::DNS_RESOLVE,
+                          {IPAddress(182, 111, 0, 222)});
+  host_resolver.SetResult("host2", ProxyResolveDnsOperation::DNS_RESOLVE_EX,
+                          {IPAddress(111, 33, 44, 55)});
 
   std::unique_ptr<ProxyResolver> resolver = CreateResolver(
       &log, &host_resolver, base::WrapUnique(error_observer), "terminate.js");
@@ -1096,18 +975,24 @@ TEST_F(ProxyResolverV8TracingWrapperTest, MultipleResolvers) {
   // ------------------------
   // Setup resolver0
   // ------------------------
-  MockHostResolver host_resolver0;
-  host_resolver0.rules()->AddRuleForAddressFamily("host1", ADDRESS_FAMILY_IPV4,
-                                                  "166.155.144.44");
-  host_resolver0.rules()->AddIPLiteralRule("host1", "::1,192.168.1.1",
-                                           std::string());
-  host_resolver0.rules()->AddSimulatedFailure("host2");
-  host_resolver0.rules()->AddRule("host3", "166.155.144.33");
-  host_resolver0.rules()->AddRule("host5", "166.155.144.55");
-  host_resolver0.rules()->AddSimulatedFailure("host6");
-  host_resolver0.rules()->AddRuleForAddressFamily("*", ADDRESS_FAMILY_IPV4,
-                                                  "122.133.144.155");
-  host_resolver0.rules()->AddRule("*", "133.122.100.200");
+  MockProxyHostResolver host_resolver0;
+  host_resolver0.SetResult(GetHostName(),
+                           ProxyResolveDnsOperation::MY_IP_ADDRESS,
+                           {IPAddress(122, 133, 144, 155)});
+  host_resolver0.SetResult(GetHostName(),
+                           ProxyResolveDnsOperation::MY_IP_ADDRESS_EX,
+                           {IPAddress(133, 122, 100, 200)});
+  host_resolver0.SetError("", ProxyResolveDnsOperation::DNS_RESOLVE);
+  host_resolver0.SetResult("host1", ProxyResolveDnsOperation::DNS_RESOLVE,
+                           {IPAddress(166, 155, 144, 44)});
+  IPAddress v6_local;
+  ASSERT_TRUE(v6_local.AssignFromIPLiteral("::1"));
+  host_resolver0.SetResult("host1", ProxyResolveDnsOperation::DNS_RESOLVE_EX,
+                           {v6_local, IPAddress(192, 168, 1, 1)});
+  host_resolver0.SetError("host2", ProxyResolveDnsOperation::DNS_RESOLVE);
+  host_resolver0.SetResult("host3", ProxyResolveDnsOperation::DNS_RESOLVE,
+                           {IPAddress(166, 155, 144, 33)});
+  host_resolver0.SetError("host6", ProxyResolveDnsOperation::DNS_RESOLVE_EX);
   std::unique_ptr<ProxyResolver> resolver0 =
       CreateResolver(nullptr, &host_resolver0,
                      std::make_unique<MockErrorObserver>(), "dns.js");
@@ -1129,8 +1014,9 @@ TEST_F(ProxyResolverV8TracingWrapperTest, MultipleResolvers) {
   // ------------------------
   // Setup resolver3
   // ------------------------
-  MockHostResolver host_resolver3;
-  host_resolver3.rules()->AddRule("foo", "166.155.144.33");
+  MockProxyHostResolver host_resolver3;
+  host_resolver3.SetResult("foo", ProxyResolveDnsOperation::DNS_RESOLVE,
+                           {IPAddress(166, 155, 144, 33)});
   std::unique_ptr<ProxyResolver> resolver3 =
       CreateResolver(nullptr, &host_resolver3,
                      std::make_unique<MockErrorObserver>(), "simple_dns.js");
@@ -1143,7 +1029,7 @@ TEST_F(ProxyResolverV8TracingWrapperTest, MultipleResolvers) {
       resolver0.get(), resolver1.get(), resolver2.get(), resolver3.get(),
   };
 
-  const size_t kNumResolvers = arraysize(resolver);
+  const size_t kNumResolvers = base::size(resolver);
   const size_t kNumIterations = 20;
   const size_t kNumResults = kNumResolvers * kNumIterations;
   TestCompletionCallback callback[kNumResults];

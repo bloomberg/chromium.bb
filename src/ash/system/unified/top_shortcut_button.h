@@ -21,13 +21,12 @@ class TopShortcutButton : public views::ImageButton {
   TopShortcutButton(views::ButtonListener* listener, int accessible_name_id);
   ~TopShortcutButton() override;
 
+  // views::View:
+  gfx::Size CalculatePreferredSize() const override;
+
   // views::ImageButton:
   void PaintButtonContents(gfx::Canvas* canvas) override;
   std::unique_ptr<views::InkDrop> CreateInkDrop() override;
-  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
-  std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
-      const override;
-  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TopShortcutButton);

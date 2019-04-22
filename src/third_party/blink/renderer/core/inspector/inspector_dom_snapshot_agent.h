@@ -41,7 +41,7 @@ class CORE_EXPORT InspectorDOMSnapshotAgent final
   protocol::Response enable() override;
   protocol::Response disable() override;
   protocol::Response getSnapshot(
-      std::unique_ptr<protocol::Array<String>> style_whitelist,
+      std::unique_ptr<protocol::Array<String>> style_filter,
       protocol::Maybe<bool> include_event_listeners,
       protocol::Maybe<bool> include_paint_order,
       protocol::Maybe<bool> include_user_agent_shadow_tree,
@@ -118,7 +118,7 @@ class CORE_EXPORT InspectorDOMSnapshotAgent final
   // Returns the index of the ComputedStyle in |computed_styles_| for the given
   // Node. Adds a new ComputedStyle if necessary, but ensures no duplicates are
   // added to |computed_styles_|. Returns -1 if the node has no values for
-  // styles in |style_whitelist_|.
+  // styles in |style_filter_|.
   int GetStyleIndexForNode(Node*);
   std::unique_ptr<protocol::Array<int>> BuildStylesForNode(Node*);
 
@@ -133,7 +133,7 @@ class CORE_EXPORT InspectorDOMSnapshotAgent final
                                          int,
                                          VectorStringHashTraits,
                                          VectorStringHashTraits>;
-  using CSSPropertyWhitelist = Vector<std::pair<String, CSSPropertyID>>;
+  using CSSPropertyFilter = Vector<std::pair<String, CSSPropertyID>>;
   using PaintOrderMap = WTF::HashMap<PaintLayer*, int>;
   using OriginUrlMap = WTF::HashMap<DOMNodeId, String>;
 
@@ -154,8 +154,7 @@ class CORE_EXPORT InspectorDOMSnapshotAgent final
   // Maps a style string vector to an index in |computed_styles_|. Used to avoid
   // duplicate entries in |computed_styles_|.
   std::unique_ptr<ComputedStylesMap> computed_styles_map_;
-  std::unique_ptr<Vector<std::pair<String, CSSPropertyID>>>
-      css_property_whitelist_;
+  std::unique_ptr<CSSPropertyFilter> css_property_filter_;
   // Maps a PaintLayer to its paint order index.
   std::unique_ptr<PaintOrderMap> paint_order_map_;
   int next_paint_order_index_ = 0;

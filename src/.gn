@@ -8,11 +8,6 @@ import("//third_party/angle/dotfile_settings.gni")
 # The location of the build configuration file.
 buildconfig = "//build/config/BUILDCONFIG.gn"
 
-# The secondary source root is a parallel directory tree where
-# GN build files are placed when they can not be placed directly
-# in the source tree, e.g. for third party source trees.
-secondary_source = "//build/secondary/"
-
 # These arguments override the default values for items in a declare_args
 # block. "gn args" in turn can override these.
 #
@@ -79,6 +74,7 @@ check_targets = [
   "//base/*",
   "//blink/*",
   "//build/*",
+  "//buildtools/*",
   "//cc/*",
 
   #"//chrome/android/*",  # 13 errors
@@ -214,7 +210,6 @@ check_targets = [
   "//chrome/browser/tab_contents/*",
   "//chrome/browser/task_manager/*",
   "//chrome/browser/themes/*",
-  "//chrome/browser/thumbnails/*",
   "//chrome/browser/tracing/*",
   "//chrome/browser/translate/*",
   "//chrome/browser/ui/*",
@@ -279,6 +274,7 @@ check_targets = [
   "//extensions/renderer:unit_tests",
   "//extensions/shell/*",
   "//extensions/strings/*",
+  "//fuchsia/*",
   "//gin/*",
   "//google_apis/*",
   "//google_update/*",
@@ -289,7 +285,9 @@ check_targets = [
   "//ipc/*",
 
   #"//jingle/*",
-  "//mash/*",
+
+  "//libassistant/communication/*",
+  "//libinteraction/*",
 
   "//media/*",
   "//mojo/*",
@@ -314,10 +312,10 @@ check_targets = [
   "//testing/*",
 
   #"//third_party/*",  # May not ever want this.
+  "//third_party:freetype_harfbuzz",
   "//third_party/Python-Markdown/*",
 
   # "//third_party/SPIRV-Tools/*",  # 30ish errors
-  "//third_party/WebKit/*",
   "//third_party/abseil-cpp/*",
   "//third_party/accessibility-audit/*",
   "//third_party/accessibility_test_framework/*",
@@ -351,7 +349,6 @@ check_targets = [
   "//third_party/auto/*",
   "//third_party/axe-core/*",
   "//third_party/bazel/*",
-  "//third_party/bidichecker/*",
   "//third_party/binutils/*",
   "//third_party/blanketjs/*",
 
@@ -394,13 +391,11 @@ check_targets = [
   "//third_party/elfutils/*",
   "//third_party/errorprone/*",
   "//third_party/espresso/*",
-  "//third_party/eu-strip/*",
   "//third_party/expat/*",
   "//third_party/eyesfree/*",
   "//third_party/feed/*",
 
   # "//third_party/ffmpeg/*",  # android_cronet only https://crbug.com/898793
-  "//third_party/fips181/*",
   "//third_party/flac/*",
   "//third_party/flatbuffers/*",
   "//third_party/flot/*",
@@ -413,7 +408,6 @@ check_targets = [
   "//third_party/gif_player/*",
   "//third_party/glfw/*",
   "//third_party/glslang/*",
-  "//third_party/glslang-angle/*",
   "//third_party/google_appengine_cloudstorage/*",
   "//third_party/google_input_tools/*",
   "//third_party/googletest/*",
@@ -442,7 +436,6 @@ check_targets = [
   "//third_party/isimpledom/*",
   "//third_party/javax_inject/*",
   "//third_party/jinja2/*",
-  "//third_party/jmake/*",
   "//third_party/jsoncpp/*",
   "//third_party/jsr-305/*",
   "//third_party/jstemplate/*",
@@ -561,7 +554,6 @@ check_targets = [
   "//third_party/speech-dispatcher/*",
   "//third_party/spirv-cross/*",
   "//third_party/spirv-headers/*",
-  "//third_party/spirv-tools-angle/*",
   "//third_party/sqlite/*",
   "//third_party/sqlite4java/*",
   "//third_party/stp/*",
@@ -578,7 +570,6 @@ check_targets = [
   "//third_party/usrsctp/*",
   "//third_party/v4l-utils/*",
   "//third_party/valgrind/*",
-  "//third_party/visualmetrics/*",
   "//third_party/vulkan/*",
   "//third_party/vulkan-validation-layers/*",
 
@@ -597,11 +588,8 @@ check_targets = [
   "//third_party/wtl/*",
   "//third_party/xdg-utils/*",
   "//third_party/xstream/*",
-  "//third_party/yara/*",
   "//third_party/yasm/*",
   "//third_party/zlib/*",
-  "//third_party/webrtc/*",
-  "//third_party/webrtc_overrides/*",
   "//third_party/woff2/*",
 
   "//tools/*",
@@ -609,7 +597,6 @@ check_targets = [
   "//url/*",
 
   #"//v8/*",  # Errors: https://bugs.chromium.org/p/v8/issues/detail?id=7330
-  "//webrunner/*",
 ]
 
 # These are the list of GN files that run exec_script. This whitelist exists

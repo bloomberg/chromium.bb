@@ -23,6 +23,7 @@ source_set("shortcuts") {
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/ntp_tile_views",
     "//ios/chrome/browser/ui/ntp_tile_views:constants",
+    "//ios/chrome/browser/url_loading",
     "//ios/chrome/common/favicon",
     "//ios/chrome/common/ui_util",
   ]
@@ -50,6 +51,7 @@ source_set("shortcuts_internal") {
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/favicon",
     "//ios/chrome/browser/ui/toolbar/public",
+    "//ios/chrome/browser/url_loading",
     "//ios/web/public",
   ]
 }
@@ -88,6 +90,8 @@ source_set("eg_tests") {
     "//ios/chrome/browser/reading_list",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui:feature_flags",
+    "//ios/chrome/browser/ui/content_suggestions:content_suggestions_constant",
+    "//ios/chrome/browser/ui/omnibox:omnibox_popup_shared",
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/base:base",
     "//ios/chrome/test/earl_grey:test_support",

@@ -87,11 +87,11 @@ void ImeControllerClient::SwitchToNextIme() {
     state->SwitchToNextInputMethod();
 }
 
-void ImeControllerClient::SwitchToPreviousIme() {
+void ImeControllerClient::SwitchToLastUsedIme() {
   InputMethodManager::State* state =
       input_method_manager_->GetActiveIMEState().get();
   if (state)
-    state->SwitchToPreviousInputMethod();
+    state->SwitchToLastUsedInputMethod();
 }
 
 void ImeControllerClient::SwitchImeById(const std::string& id,
@@ -111,6 +111,20 @@ void ImeControllerClient::SetCapsLockEnabled(bool caps_enabled) {
       chromeos::input_method::InputMethodManager::Get()->GetImeKeyboard();
   if (keyboard)
     keyboard->SetCapsLockEnabled(caps_enabled);
+}
+
+void ImeControllerClient::UpdateMirroringState(bool mirroring_enabled) {
+  ui::IMEEngineHandlerInterface* ime_engine =
+      ui::IMEBridge::Get()->GetCurrentEngineHandler();
+  if (ime_engine)
+    ime_engine->SetMirroringEnabled(mirroring_enabled);
+}
+
+void ImeControllerClient::UpdateCastingState(bool casting_enabled) {
+  ui::IMEEngineHandlerInterface* ime_engine =
+      ui::IMEBridge::Get()->GetCurrentEngineHandler();
+  if (ime_engine)
+    ime_engine->SetCastingEnabled(casting_enabled);
 }
 
 void ImeControllerClient::OverrideKeyboardKeyset(

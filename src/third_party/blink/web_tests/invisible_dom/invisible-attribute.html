@@ -14,6 +14,11 @@
     </div>
   </div>
 </template>
+
+<div id="hasTabIndex" tabindex="0" invisible>
+  focusable
+</div>
+
 <script>
 let outerDiv = innerDiv = null;
 'use strict';
@@ -100,5 +105,28 @@ test(() => {
   slot.invisible = "invisible";
   assertIsNotDisplayed(slottedChild);
 }, "Flat tree descendants of an invisible element are not displayed");
+
+test (()=> {
+  setUp();
+  // Invisible div with no tabindex is not focused.
+  innerDiv.focus();
+  assert_not_equals(document.activeElement, innerDiv);
+  // Invisible div that eventually has display:none style is not focused.
+  innerDiv.tabIndex = 0;
+  innerDiv.style = "display: none";
+  innerDiv.focus();
+  assert_not_equals(document.activeElement, innerDiv);
+  innerDiv.style = "";
+  outerDiv.style = "display: none";
+  innerDiv.focus();
+  assert_not_equals(document.activeElement, innerDiv);
+  // Invisible div with tabindex is focused.
+  outerDiv.style = "";
+  innerDiv.focus();
+  assert_equals(document.activeElement, innerDiv);
+  // Invisible div with pre-existing tabindex is focused.
+  hasTabIndex.focus();
+  assert_equals(document.activeElement, hasTabIndex);
+}, "Invisible elements are focusable.");
 </script>
 </body>

@@ -1223,4 +1223,4 @@ std::wstring GetTestingOverride(ROOT_KEY root) {
   return g_HKLM_override;
 }
 
-};  // namespace nt
+}  // namespace nt

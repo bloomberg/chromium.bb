@@ -39,9 +39,9 @@
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/text/unicode.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -107,11 +107,17 @@ typedef void (*GraphemeClusterCallback)(void* context,
                                         CanvasRotationInVertical);
 
 class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
+  USING_FAST_MALLOC(ShapeResult);
+
  public:
   static scoped_refptr<ShapeResult> Create(const Font* font,
                                     unsigned num_characters,
                                     TextDirection direction) {
     return base::AdoptRef(new ShapeResult(font, num_characters, direction));
+  }
+  static scoped_refptr<ShapeResult> CreateEmpty(const ShapeResult& other) {
+    return base::AdoptRef(
+        new ShapeResult(other.primary_font_, 0, other.Direction()));
   }
   static scoped_refptr<ShapeResult> Create(const ShapeResult& other) {
     return base::AdoptRef(new ShapeResult(other));
@@ -120,7 +126,19 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
       const Font*,
       const TextRun&,
       float position_offset,
-      unsigned count);
+      unsigned length);
+  static scoped_refptr<ShapeResult> CreateForTabulationCharacters(
+      const Font* font,
+      TextDirection direction,
+      const TabSize& tab_size,
+      float position,
+      unsigned start_index,
+      unsigned length);
+  static scoped_refptr<ShapeResult> CreateForSpaces(const Font* font,
+                                                    TextDirection direction,
+                                                    unsigned start_index,
+                                                    unsigned length,
+                                                    float width);
   ~ShapeResult();
 
   // Returns a mutable unique instance. If |this| has more than 1 ref count,
@@ -239,26 +257,25 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
 
   // Append a copy of a range within an existing result to another result.
   //
-  // For sequential copies the opaque_context in/out parameter can be used to
-  // improve performance by avoding a linear scan to find the first run for the
-  // range. It should be set to zero for the first call and the resulting out
-  // value for one call is the appropiate input value for the next.
-  // NOTE: opaque_context assumes non-overlapping ranges.
-  void CopyRange(unsigned start,
-                 unsigned end,
-                 ShapeResult*,
-                 unsigned* opaque_context = nullptr) const;
+  // For sequential copies the vector version below is prefered as it avoid a
+  // linear scan to find the first run for the range.
+  void CopyRange(unsigned start, unsigned end, ShapeResult*) const;
+
+  struct ShapeRange {
+    // ShapeRange(unsigned start, unsigned end, ShapeResult* target)
+    //    : start(start), end(end), target(target){};
+    unsigned start;
+    unsigned end;
+    ShapeResult* target;
+  };
+
+  // Copy a set of sequential ranges. The ranges may not overlap and the offsets
+  // must be sequential and monotically increasing.
+  void CopyRanges(const ShapeRange* ranges, unsigned num_ranges) const;
 
   // Create a new ShapeResult instance from a range within an existing result.
-  //
-  // For sequential copies the opaque_context in/out parameter can be used to
-  // improve performance by avoding a linear scan to find the first run for the
-  // range. It should be set to zero for the first call and the resulting out
-  // value for one call is the appropiate input value for the next.
-  // NOTE: opaque_context assumes non-overlapping ranges.
   scoped_refptr<ShapeResult> SubRange(unsigned start_offset,
-                                      unsigned end_offset,
-                                      unsigned* opaque_context = nullptr) const;
+                                      unsigned end_offset) const;
 
   // Create a new ShapeResult instance with the start offset adjusted.
   scoped_refptr<ShapeResult> CopyAdjustedOffset(unsigned start_offset) const;
@@ -342,7 +359,6 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
     STACK_ALLOCATED();
 
    public:
-    unsigned run_index = 0;
     // The total number of characters of runs_[0..run_index - 1].
     unsigned characters_on_left_runs = 0;
 
@@ -396,6 +412,17 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
     friend class ShapeResult;
   };
 
+  // Append a copy of a range within an existing result to another result.
+  //
+  // For sequential copies the run_index argument indicates the run to start at.
+  // If set to zero it will always scan from the first run which is guaranteed
+  // to produce the correct results at the cost of run-time performance.
+  // Returns the appropriate run_index for the next sequential invocation.
+  unsigned CopyRangeInternal(unsigned run_index,
+                             unsigned start,
+                             unsigned end,
+                             ShapeResult* target) const;
+
   template <bool>
   void ComputePositionData() const;
 
@@ -419,6 +446,10 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   float LineLeftBounds() const;
   float LineRightBounds() const;
 
+  // Common signatures with ShapeResultView, to templatize algorithms.
+  const Vector<scoped_refptr<RunInfo>>& RunsOrParts() const { return runs_; }
+  unsigned StartIndexOffsetForRun() const { return 0; }
+
   float width_;
   FloatRect glyph_bounding_box_;
   Vector<scoped_refptr<RunInfo>> runs_;
@@ -441,6 +472,7 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   friend class ShapeResultBuffer;
   friend class ShapeResultBloberizer;
   friend class ShapeResultView;
+  friend class ShapeResultTest;
 };
 
 PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const ShapeResult&);

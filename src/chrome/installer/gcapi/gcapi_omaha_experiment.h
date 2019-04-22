@@ -6,6 +6,7 @@
 #define CHROME_INSTALLER_GCAPI_GCAPI_OMAHA_EXPERIMENT_H_
 
 #include "base/strings/string16.h"
+#include "base/time/time.h"
 
 namespace gcapi_internals {
 
@@ -18,6 +19,9 @@ base::string16 GetGCAPIExperimentLabel(const wchar_t* brand_code,
                                        const base::string16& label);
 
 }  // namespace gcapi_internals
+
+// The separator used to separate items in experiment labels.
+extern const base::char16 kExperimentLabelSeparator;
 
 // Writes a reactivation brand code experiment label in the Chrome product and
 // binaries registry keys for |brand_code|. This experiment label will have a
@@ -34,5 +38,9 @@ bool SetReactivationExperimentLabels(const wchar_t* brand_code, int shell_mode);
 // HKCU. A user cannot have both a reactivation label and a relaunch label set
 // at the same time (they are mutually exclusive).
 bool SetRelaunchExperimentLabels(const wchar_t* brand_code, int shell_mode);
+
+// Constructs a date string in the format understood by Google Update for the
+// |current_time| plus one year.
+base::string16 BuildExperimentDateString(base::Time current_time);
 
 #endif  // CHROME_INSTALLER_GCAPI_GCAPI_OMAHA_EXPERIMENT_H_

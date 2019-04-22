@@ -9,21 +9,14 @@
 #include "fxjs/xfa/cjx_packet.h"
 #include "third_party/base/ptr_util.h"
 
-namespace {
-
-constexpr wchar_t kPacketName[] = L"packet";
-
-}  // namespace
-
 CXFA_Packet::CXFA_Packet(CXFA_Document* doc, XFA_PacketType packet)
     : CXFA_Node(doc,
                 packet,
                 XFA_XDPPACKET_XDP,
                 XFA_ObjectType::NodeC,
                 XFA_Element::Packet,
-                nullptr,
-                nullptr,
-                kPacketName,
+                {},
+                {},
                 pdfium::MakeUnique<CJX_Packet>(this)) {}
 
-CXFA_Packet::~CXFA_Packet() {}
+CXFA_Packet::~CXFA_Packet() = default;

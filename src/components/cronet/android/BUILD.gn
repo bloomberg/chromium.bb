@@ -2,9 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/android/resource_sizes.gni")
 import("//build/buildflag_header.gni")
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
+import("//build/config/zip.gni")
 import("//build/util/lastchange.gni")
 import("//build/util/process_version.gni")
 import("//build/util/version.gni")
@@ -41,7 +43,7 @@ generate_jni("cronet_jni_headers") {
 }
 
 generate_jni_registration("cronet_jni_registration") {
-  target = ":cronet_impl_all_java"
+  target = ":cronet_impl_native_base_java"
   header_output = _jni_registration_header
   sources_blacklist = [
     "//base/android/java/src/org/chromium/base/library_loader/LibraryLoader.java",
@@ -50,14 +52,8 @@ generate_jni_registration("cronet_jni_registration") {
   ]
 }
 
-java_library("cronet_jni_registration_java") {
+android_library("cronet_jni_registration_java") {
   srcjar_deps = [ ":cronet_jni_registration" ]
-}
-
-java_cpp_enum("effective_connection_type_java") {
-  sources = [
-    "//net/nqe/effective_connection_type.h",
-  ]
 }
 
 java_cpp_enum("rtt_throughput_values_java") {
@@ -153,13 +149,14 @@ source_set("cronet_static") {
     "//base/third_party/dynamic_annotations",
     "//components/cronet:cronet_common",
     "//components/cronet:cronet_version_header",
+    "//components/cronet:metrics_util",
     "//components/cronet/native:cronet_native_impl",
     "//components/metrics",
     "//components/prefs",
     "//net",
     "//third_party/zlib:zlib",
     "//url",
-    "//url:url_features",
+    "//url:buildflags",
   ]
   sources = [
     "//components/cronet/android/cronet_bidirectional_stream_adapter.cc",
@@ -173,8 +170,6 @@ source_set("cronet_static") {
     "//components/cronet/android/cronet_url_request_context_adapter.h",
     "//components/cronet/android/io_buffer_with_byte_buffer.cc",
     "//components/cronet/android/io_buffer_with_byte_buffer.h",
-    "//components/cronet/android/metrics_util.cc",
-    "//components/cronet/android/metrics_util.h",
     "//components/cronet/android/url_request_error.cc",
     "//components/cronet/android/url_request_error.h",
     _jni_registration_header,
@@ -255,16 +250,16 @@ android_library("cronet_api_java") {
 
   deps = [
     ":api_version",
-    "//third_party/android_deps:android_support_annotations_java",
+    "//third_party/android_deps:com_android_support_support_annotations_java",
   ]
 }
 
 cronet_impl_common_java_srcjar_deps = [
-  ":effective_connection_type_java",
   ":http_cache_type_java",
   ":integrated_mode_state",
   ":load_states_list",
   ":rtt_throughput_values_java",
+  "//net:effective_connection_type_java",
 ]
 
 cronet_impl_common_java_deps_to_package =
@@ -295,7 +290,7 @@ android_library("cronet_impl_common_base_java") {
   deps = [
     ":cronet_api_java",
     ":impl_version",
-    "//third_party/android_deps:android_support_annotations_java",
+    "//third_party/android_deps:com_android_support_support_annotations_java",
   ]
   deps += cronet_impl_common_java_deps_to_package
 
@@ -316,7 +311,7 @@ android_library("cronet_impl_platform_base_java") {
     ":cronet_api_java",
     ":cronet_impl_common_base_java",
     "//net/android:net_thread_stats_uid_java",
-    "//third_party/android_deps:android_support_annotations_java",
+    "//third_party/android_deps:com_android_support_support_annotations_java",
     "//third_party/jsr-305:jsr_305_javalib",
   ]
 }
@@ -328,10 +323,11 @@ cronet_impl_native_java_srcjar_deps = [
 ]
 
 cronet_impl_native_java_deps_to_package = [
+  ":cronet_urlconnection_impl_java",
   "//base:base_java",
+  "//base:jni_java",
   "//net/android:net_java",
   "//url:url_java",
-  ":cronet_urlconnection_impl_java",
 ]
 
 android_library("cronet_urlconnection_impl_java") {
@@ -372,7 +368,7 @@ android_library("cronet_impl_native_base_java") {
   deps = [
     ":cronet_api_java",
     ":cronet_impl_common_base_java",
-    "//third_party/android_deps:android_support_annotations_java",
+    "//third_party/android_deps:com_android_support_support_annotations_java",
     "//third_party/jsr-305:jsr_305_javalib",
   ]
   deps += cronet_impl_native_java_deps_to_package
@@ -433,6 +429,10 @@ android_apk("cronet_sample_apk") {
   ]
 }
 
+android_resource_sizes_test("resource_sizes_cronet_sample_apk") {
+  apk = ":cronet_sample_apk"
+}
+
 action("cronet_combine_proguard_flags") {
   script = "//components/cronet/tools/generate_proguard_file.py"
   sources = [
@@ -455,7 +455,7 @@ _package_dir = "$root_out_dir/cronet"
 android_java_prebuilt("package_api_java") {
   jar_path = "$_package_dir/cronet_api.jar"
   deps = [
-    ":copy_cronet_java8_jars_cronet_api_javaX",
+    ":repackage_api",
   ]
 }
 
@@ -463,16 +463,21 @@ android_java_prebuilt("package_impl_common_java") {
   jar_path = "$_package_dir/cronet_impl_common_java.jar"
   deps = [
     ":package_api_java",
-    ":repackage_extracted_common_jars",
+    ":repackage_common",
   ]
 }
 
-android_java_prebuilt("package_impl_native_java") {
+java_prebuilt("package_impl_native_java") {
+  # This target is a java_prebuilt instead of a android_java_prebuilt so we
+  # don't filter out GEN_JNI which is part of jar_excluded_patterns in
+  # android_java_prebuilt.
   jar_path = "$_package_dir/cronet_impl_native_java.jar"
+  supports_android = true
+  requires_android = true
   deps = [
     ":package_api_java",
     ":package_impl_common_java",
-    ":repackage_extracted_native_jars",
+    ":repackage_native",
     "//third_party/android_deps:android_support_v4_java",
     "//third_party/jsr-305:jsr_305_javalib",
   ]
@@ -481,9 +486,9 @@ android_java_prebuilt("package_impl_native_java") {
 android_java_prebuilt("package_impl_platform_java") {
   jar_path = "$_package_dir/cronet_impl_platform_java.jar"
   deps = [
-    ":copy_cronet_java8_jars_cronet_impl_platform_base_javaX",
     ":package_api_java",
     ":package_impl_common_java",
+    ":repackage_platform",
   ]
 }
 
@@ -584,58 +589,8 @@ jar_src("jar_cronet_impl_platform_java_source") {
   jar_path = "$_package_dir/cronet_impl_platform_java-src.jar"
 }
 
-template("copy_java8_jars") {
-  _deps = []
-  foreach(_dep, invoker.deps) {
-    _dep_name = get_label_info(_dep, "name")
-    _source_jar =
-        get_label_info(_dep, "target_gen_dir") + "/" + _dep_name + ".javac.jar"
-    _output_jar = "$_package_dir/" + _dep_name + ".jar"
-
-    # Adjust file names that are different from the target name that builds it.
-    if (_output_jar == "$_package_dir/" + "cronet_api_java.jar") {
-      _output_jar = "$_package_dir/" + "cronet_api.jar"
-    }
-    if (_output_jar == "$_package_dir/" + "cronet_impl_platform_base_java.jar") {
-      _output_jar = "$_package_dir/" + "cronet_impl_platform_java.jar"
-    }
-
-    # _deps have targets which match the java target whitelist. Add a
-    # trailing X to avoid the copy() target matching the whitelist.
-    # See _java_target_whitelist in build/config/android/internal_rules.gni.
-    _copy_target_name = "${target_name}_${_dep_name}X"
-    copy(_copy_target_name) {
-      sources = [
-        _source_jar,
-      ]
-      outputs = [
-        _output_jar,
-      ]
-      deps = [
-        ":$_dep_name",
-      ]
-    }
-
-    _deps += [ ":" + _copy_target_name ]
-  }
-
-  group(target_name) {
-    deps = _deps
-  }
-}
-
-copy_java8_jars("copy_cronet_java8_jars") {
-  deps = [
-    ":cronet_api_java",
-    ":cronet_impl_platform_base_java",
-  ]
-}
-
-_extract_cronet_native_jars_dir = "$target_gen_dir/cronet_native_jar_extract"
-_extract_cronet_common_jars_dir = "$target_gen_dir/cronet_common_jar_extract"
-
 # List of patterns of .class files to exclude from the jar.
-jar_excluded_patterns = [
+_jar_excluded_patterns = [
   # Excludes Android support libraries crbug.com/832770.
   "android/*",
   "*/library_loader/*.class",
@@ -646,118 +601,43 @@ jar_excluded_patterns = [
   "org/chromium/base/memory/MemoryPressureMonitor*.class",
 ]
 
-action("extract_cronet_native_jars") {
-  # extract_from_jars.py deletes the target directory before extracting.
-  script = "//components/cronet/tools/extract_from_jars.py"
-  depfile = "$target_gen_dir/$target_name.d"
-
-  _stamp_file = "$target_gen_dir/$target_name.stamp"
-  outputs = [
-    _stamp_file,
-  ]
-
-  deps = [
-    ":cronet_impl_native_base_java",
-    ":cronet_jni_registration_java",
-  ]
-  deps += cronet_impl_native_java_deps_to_package
-
-  sources = []
-
-  # Extract pre-desugared jar for each dependency.
-  foreach(dep, deps) {
-    sources += [ get_label_info(dep, "target_gen_dir") + "/" +
-                 get_label_info(dep, "name") + ".javac.jar" ]
+template("repackage_jars") {
+  dist_jar(target_name) {
+    requires_android = true
+    direct_deps_only = true
+    use_unprocessed_jars = true
+    no_build_hooks = true
+    forward_variables_from(invoker, "*")
   }
+}
 
-  _rebased_sources = rebase_path(sources, root_build_dir)
-
-  args = [
-    "--classes-dir",
-    rebase_path(_extract_cronet_native_jars_dir, root_build_dir),
-    "--jars=${_rebased_sources}",
-    "--depfile",
-    rebase_path(depfile, root_build_dir),
-    "--stamp",
-    rebase_path(_stamp_file, root_build_dir),
+repackage_jars("repackage_api") {
+  output = "$_package_dir/cronet_api.jar"
+  deps = [
+    ":cronet_api_java",
   ]
 }
 
-action("repackage_extracted_native_jars") {
-  _output_jar = "$_package_dir/cronet_impl_native_java.jar"
-
-  script = "//build/android/gyp/jar.py"
-  outputs = [
-    _output_jar,
-  ]
-
-  args = [
-    "--classes-dir",
-    rebase_path(_extract_cronet_native_jars_dir, root_build_dir),
-    "--excluded-classes=$jar_excluded_patterns",
-    "--jar-path",
-    rebase_path(_output_jar, root_build_dir),
-  ]
-
+repackage_jars("repackage_platform") {
+  output = "$_package_dir/cronet_impl_platform_java.jar"
   deps = [
-    ":extract_cronet_native_jars",
+    ":cronet_impl_platform_base_java",
   ]
 }
 
-action("extract_cronet_common_jars") {
-  # extract_from_jars.py deletes the target directory before extracting.
-  script = "//components/cronet/tools/extract_from_jars.py"
-  depfile = "$target_gen_dir/$target_name.d"
-
-  _stamp_file = "$target_gen_dir/$target_name.stamp"
-  outputs = [
-    _stamp_file,
-  ]
-
-  deps = [
-    ":cronet_impl_common_base_java",
-  ]
-  deps += cronet_impl_common_java_deps_to_package
-
-  sources = []
-
-  # Extract pre-desugared jar for each dependency.
-  foreach(dep, deps) {
-    sources += [ get_label_info(dep, "target_gen_dir") + "/" +
-                 get_label_info(dep, "name") + ".javac.jar" ]
-  }
-
-  _rebased_sources = rebase_path(sources, root_build_dir)
-
-  args = [
-    "--classes-dir",
-    rebase_path(_extract_cronet_common_jars_dir, root_build_dir),
-    "--jars=${_rebased_sources}",
-    "--depfile",
-    rebase_path(depfile, root_build_dir),
-    "--stamp",
-    rebase_path(_stamp_file, root_build_dir),
-  ]
+repackage_jars("repackage_native") {
+  output = "$_package_dir/cronet_impl_native_java.jar"
+  deps = cronet_impl_native_java_deps_to_package + [
+           ":cronet_impl_native_base_java",
+           ":cronet_jni_registration_java",
+         ]
+  jar_excluded_patterns = _jar_excluded_patterns
 }
 
-action("repackage_extracted_common_jars") {
-  _output_jar = "$_package_dir/cronet_impl_common_java.jar"
-
-  script = "//build/android/gyp/jar.py"
-  outputs = [
-    _output_jar,
-  ]
-
-  args = [
-    "--classes-dir",
-    rebase_path(_extract_cronet_common_jars_dir, root_build_dir),
-    "--jar-path",
-    rebase_path(_output_jar, root_build_dir),
-  ]
-
-  deps = [
-    ":extract_cronet_common_jars",
-  ]
+repackage_jars("repackage_common") {
+  output = "$_package_dir/cronet_impl_common_java.jar"
+  deps = cronet_impl_common_java_deps_to_package +
+         [ ":cronet_impl_common_base_java" ]
 }
 
 if (!is_component_build) {
@@ -852,11 +732,11 @@ if (!is_component_build) {
 
   android_resources("cronet_test_apk_resources") {
     testonly = true
+    custom_package = "org.chromium.net"
     resource_dirs = [
       "test/res",
       "test/smoketests/res/native",
     ]
-    android_manifest = "test/AndroidManifest.xml"
   }
 
   android_library("cronet_test_apk_java") {
@@ -882,6 +762,7 @@ if (!is_component_build) {
       "//base:base_java",
       "//base:base_java_test_support",
       "//net/android:net_java_test_support",
+      "//third_party/android_sdk:android_test_base_java",
       "//third_party/junit",
       "//third_party/netty4:netty_all_java",
     ]
@@ -900,50 +781,6 @@ if (!is_component_build) {
                                            "test/smoketests/src/org/chromium/net/smoke/NativeCronetTestRule.java",
                                          ]
 
-  android_library("cronet_smoketests_native_java") {
-    testonly = true
-    java_files = [
-                   "test/smoketests/src/org/chromium/net/smoke/Http2Test.java",
-                   "test/smoketests/src/org/chromium/net/smoke/QuicTest.java",
-                 ] + cronet_smoketests_native_common_srcs
-
-    deps = [
-      ":cronet_api_java",
-      ":cronet_test_apk_java",
-      "//base:base_java",
-      "//base:base_java_test_support",
-      "//third_party/android_support_test_runner:runner_java",
-      "//third_party/junit",
-      "//third_party/netty4:netty_all_java",
-    ]
-  }
-
-  android_apk("cronet_test_apk") {
-    testonly = true
-    apk_name = "CronetTest"
-    android_manifest = "test/AndroidManifest.xml"
-    shared_libraries = [
-      ":cronet",
-      ":cronet_tests",
-    ]
-    loadable_modules = [ "$root_out_dir/libnetty-tcnative.so" ]
-
-    deps = [
-      ":cronet_combine_proguard_flags",
-      ":cronet_test_apk_resources",
-      "//base:base_java",
-      "//third_party/netty-tcnative:netty-tcnative-so",
-    ]
-
-    proguard_enabled = true
-
-    proguard_configs = [
-      "$target_gen_dir/cronet_impl_native_proguard.cfg",
-      "cronet_impl_common_proguard.cfg",
-      "cronet_impl_platform_proguard.cfg",
-    ]
-  }
-
   cronet_javatests_deps_to_package = [
     ":cronet_test_apk_java",
     "//base:base_java",
@@ -952,6 +789,7 @@ if (!is_component_build) {
     "//net/android:net_java",
     "//net/android:net_java_test_support",
     "//url:url_java",
+    "//third_party/junit",
   ]
 
   android_library("cronet_javatests") {
@@ -1004,9 +842,9 @@ if (!is_component_build) {
       ":cronet_api_java",
       ":cronet_impl_all_java",
       ":cronet_urlconnection_impl_java",
+      "//third_party/android_sdk:android_test_base_java",
       "//third_party/android_support_test_runner:runner_java",
       "//third_party/hamcrest:hamcrest_core_java",
-      "//third_party/junit",
     ]
     deps += cronet_javatests_deps_to_package
     data = [
@@ -1016,22 +854,37 @@ if (!is_component_build) {
 
   instrumentation_test_apk("cronet_test_instrumentation_apk") {
     apk_name = "CronetTestInstrumentation"
-    apk_under_test = ":cronet_test_apk"
     android_manifest = "test/javatests/AndroidManifest.xml"
+
+    shared_libraries = [
+      ":cronet",
+      ":cronet_tests",
+    ]
+    loadable_modules = [ "$root_out_dir/libnetty-tcnative.so" ]
+
+    java_files = cronet_smoketests_native_common_srcs + [
+                   "test/smoketests/src/org/chromium/net/smoke/Http2Test.java",
+                   "test/smoketests/src/org/chromium/net/smoke/QuicTest.java",
+                 ]
 
     deps = [
       ":cronet_api_java",
+      ":cronet_combine_proguard_flags",
       ":cronet_impl_all_java",
       ":cronet_javatests",
-      ":cronet_smoketests_native_java",
       ":cronet_test_apk_java",
+      ":cronet_test_apk_resources",
       "//base:base_java",
       "//base:base_java_test_support",
       "//net/android:net_java",
       "//net/android:net_java_test_support",
+      "//third_party/android_sdk:android_test_base_java",
+      "//third_party/android_sdk:android_test_mock_java",
       "//third_party/android_support_test_runner:runner_java",
-      "//third_party/android_tools:android_test_mock_java",
       "//third_party/hamcrest:hamcrest_core_java",
+      "//third_party/junit",
+      "//third_party/netty-tcnative:netty-tcnative-so",
+      "//third_party/netty4:netty_all_java",
     ]
     additional_apks = [ "//net/android:net_test_support_apk" ]
 
@@ -1041,88 +894,72 @@ if (!is_component_build) {
 
     proguard_enabled = true
 
-    proguard_configs = [ "test/proguard.cfg" ]
+    proguard_configs = [
+      "$target_gen_dir/cronet_impl_native_proguard.cfg",
+      "cronet_impl_common_proguard.cfg",
+      "cronet_impl_platform_proguard.cfg",
+      "test/proguard.cfg",
+    ]
   }
 
   android_resources("cronet_smoketests_platform_only_apk_resources") {
     testonly = true
+    custom_package = "org.chromium.net"
     resource_dirs = [ "test/smoketests/res/platform_only" ]
-    android_manifest = "test/AndroidManifest.xml"
   }
 
-  android_library("cronet_smoketests_platform_only_java") {
-    testonly = true
-    java_files = [ "test/smoketests/src/org/chromium/net/smoke/PlatformOnlyEngineTest.java" ] + cronet_smoketests_platform_only_common_srcs
-    deps = [
-      ":cronet_api_java",
-      "//base:base_java_test_support",
-      "//third_party/android_support_test_runner:runner_java",
-      "//third_party/junit",
-      "//third_party/netty4:netty_all_java",
-    ]
-  }
+  instrumentation_test_apk(
+      "cronet_smoketests_platform_only_instrumentation_apk") {
+    apk_name = "PlatformOnlyEngineSmokeTestInstrumentation"
+    android_manifest = "test/javatests/AndroidManifest.xml"
 
-  android_apk("cronet_smoketests_platform_only_apk") {
-    testonly = true
-    apk_name = "PlatformOnlyEngineSmokeTest"
-    android_manifest = "test/AndroidManifest.xml"
-    java_files = [ "test/src/org/chromium/net/CronetTestApplication.java" ]
-
-    proguard_enabled = true
-    proguard_configs = [
-      "cronet_impl_common_proguard.cfg",
-      "cronet_impl_platform_proguard.cfg",
-    ]
+    java_files = cronet_smoketests_platform_only_common_srcs + [
+                   "test/src/org/chromium/net/CronetTestApplication.java",
+                   "test/smoketests/src/org/chromium/net/smoke/PlatformOnlyEngineTest.java",
+                 ]
 
     deps = [
       ":cronet_api_java",
       ":cronet_impl_common_base_java",
       ":cronet_impl_platform_base_java",
       ":cronet_smoketests_platform_only_apk_resources",
-    ]
-  }
-
-  instrumentation_test_apk(
-      "cronet_smoketests_platform_only_instrumentation_apk") {
-    apk_name = "PlatformOnlyEngineSmokeTestInstrumentation"
-    apk_under_test = ":cronet_smoketests_platform_only_apk"
-    android_manifest = "test/javatests/AndroidManifest.xml"
-    deps = [
-      ":cronet_smoketests_platform_only_java",
       "//base:base_java_test_support",
-      "//third_party/android_support_test_runner:runner_java",
-      "//third_party/android_tools:android_test_mock_java",
-    ]
-
-    proguard_enabled = true
-
-    proguard_configs = [ "test/proguard.cfg" ]
-  }
-
-  android_library("cronet_smoketests_missing_native_library_java") {
-    testonly = true
-    java_files = [ "test/smoketests/src/org/chromium/net/smoke/MissingNativeLibraryTest.java" ] + cronet_smoketests_native_common_srcs
-    deps = [
-      ":cronet_api_java",
-      ":cronet_test_apk_java",
-      "//base:base_java",
-      "//base:base_java_test_support",
+      "//third_party/android_sdk:android_test_base_java",
+      "//third_party/android_sdk:android_test_mock_java",
       "//third_party/android_support_test_runner:runner_java",
       "//third_party/junit",
       "//third_party/netty4:netty_all_java",
     ]
+
+    proguard_enabled = true
+
+    proguard_configs = [
+      "cronet_impl_common_proguard.cfg",
+      "cronet_impl_platform_proguard.cfg",
+      "test/proguard.cfg",
+    ]
   }
 
-  android_apk("cronet_smoketests_missing_native_library_apk") {
-    testonly = true
-    apk_name = "MissingNativeLibrarySmokeTest"
-    android_manifest = "test/AndroidManifest.xml"
+  instrumentation_test_apk(
+      "cronet_smoketests_missing_native_library_instrumentation_apk") {
+    apk_name = "MissingNativeLibrarySmokeTestInstrumentation"
+    android_manifest = "test/javatests/AndroidManifest.xml"
+
+    java_files = cronet_smoketests_native_common_srcs + [ "test/smoketests/src/org/chromium/net/smoke/MissingNativeLibraryTest.java" ]
     deps = [
       ":cronet_api_java",
       ":cronet_combine_proguard_flags",
       ":cronet_impl_common_base_java",
       ":cronet_impl_platform_base_java",
+      ":cronet_test_apk_java",
       ":cronet_test_apk_resources",
+      "//base:base_java",
+      "//base:base_java_test_support",
+      "//third_party/android_sdk:android_test_base_java",
+      "//third_party/android_sdk:android_test_mock_java",
+      "//third_party/android_support_test_runner:runner_java",
+      "//third_party/junit",
+      "//third_party/netty4:netty_all_java",
     ]
 
     proguard_enabled = true
@@ -1130,38 +967,7 @@ if (!is_component_build) {
       "$target_gen_dir/cronet_impl_native_proguard.cfg",
       "cronet_impl_common_proguard.cfg",
       "cronet_impl_platform_proguard.cfg",
-    ]
-  }
-
-  instrumentation_test_apk(
-      "cronet_smoketests_missing_native_library_instrumentation_apk") {
-    apk_name = "MissingNativeLibrarySmokeTestInstrumentation"
-    apk_under_test = ":cronet_smoketests_missing_native_library_apk"
-    android_manifest = "test/javatests/AndroidManifest.xml"
-
-    deps = [
-      ":cronet_smoketests_missing_native_library_java",
-      "//third_party/android_tools:android_test_mock_java",
-    ]
-
-    proguard_enabled = true
-
-    proguard_configs = [ "test/proguard.cfg" ]
-  }
-
-  android_library("cronet_perf_test_apk_java") {
-    testonly = true
-    android_manifest_for_lint = "test/javaperftests/AndroidManifest.xml"
-    java_files = [
-      "test/javaperftests/src/org/chromium/net/CronetPerfTestActivity.java",
-    ]
-
-    deps = [
-      ":cronet_api_java",
-      ":cronet_impl_all_java",
-      ":cronet_javatests",
-      ":cronet_test_apk_java",
-      "//base:base_java",
+      "test/proguard.cfg",
     ]
   }
 
@@ -1174,12 +980,19 @@ if (!is_component_build) {
       ":cronet_tests",
     ]
 
+    java_files = [
+      "test/javaperftests/src/org/chromium/net/CronetPerfTestActivity.java",
+    ]
+
     deps = [
+      ":cronet_api_java",
       ":cronet_combine_proguard_flags",
-      ":cronet_perf_test_apk_java",
+      ":cronet_impl_all_java",
+      ":cronet_javatests",
       ":cronet_test_apk_java",
       "//base:base_java",
-      "//third_party/android_tools:android_test_mock_java",
+      "//third_party/android_sdk:android_test_mock_java",
+      "//third_party/junit",
     ]
 
     proguard_enabled = true
@@ -1188,6 +1001,7 @@ if (!is_component_build) {
       "cronet_impl_common_proguard.cfg",
       "test/proguard.cfg",
       "//base/android/proguard/chromium_apk.flags",
+      "//testing/android/proguard_for_test.flags",
     ]
   }
 
@@ -1251,69 +1065,14 @@ if (!is_component_build) {
   }
 
   _test_package_dir = "$root_out_dir/cronet/test"
-  _extract_cronet_test_jars_dir = "$target_gen_dir/cronet_test_jar_extract"
 
-  cronet_test_deps = [ ":cronet_javatests" ]
-  cronet_test_deps += cronet_javatests_deps_to_package
-
-  action("extract_cronet_test_jars") {
-    # extract_from_jars.py deletes the target directory before extracting.
-    script = "//components/cronet/tools/extract_from_jars.py"
-    depfile = "$target_gen_dir/$target_name.d"
+  repackage_jars("repackage_test_jars") {
+    output = "$_test_package_dir/cronet_tests_java.jar"
     testonly = true
-
-    sources = [
-      NETTY4_JAR_FILE,
-    ]
-
-    # Extract pre-desugared jar for each cronet_test_deps.
-    foreach(dep, cronet_test_deps) {
-      sources += [ get_label_info(dep, "target_gen_dir") + "/" +
-                   get_label_info(dep, "name") + ".javac.jar" ]
-    }
-
-    _stamp_file = "$target_gen_dir/$target_name.stamp"
-    outputs = [
-      _stamp_file,
-    ]
-
-    _rebased_sources = rebase_path(sources, root_build_dir)
-
-    args = [
-      "--classes-dir",
-      rebase_path(_extract_cronet_test_jars_dir, root_build_dir),
-      "--jars=${_rebased_sources}",
-      "--depfile",
-      rebase_path(depfile, root_build_dir),
-      "--stamp",
-      rebase_path(_stamp_file, root_build_dir),
-    ]
-
-    deps = [
-      "//third_party/netty4:netty_all_java",
-    ]
-    deps += cronet_test_deps
-  }
-
-  action("repackage_extracted_test_jars") {
-    _output_jar = "$_test_package_dir/cronet_tests_java.jar"
-    testonly = true
-
-    script = "//build/android/gyp/jar.py"
-    outputs = [
-      _output_jar,
-    ]
-
-    args = [
-      "--classes-dir",
-      rebase_path(_extract_cronet_test_jars_dir, root_build_dir),
-      "--jar-path",
-      rebase_path(_output_jar, root_build_dir),
-    ]
-
-    deps = [
-      ":extract_cronet_test_jars",
-    ]
+    deps = cronet_javatests_deps_to_package + [
+             ":cronet_javatests",
+             "//third_party/netty4:netty_all_java",
+           ]
   }
 
   zip("jar_cronet_sample_source") {
@@ -1353,7 +1112,7 @@ if (!is_component_build) {
                     "//net/android:net_android_java_enums_srcjar",
                     "//net/android:net_errors_java",
                   ]
-    excluded_patterns = jar_excluded_patterns
+    excluded_patterns = _jar_excluded_patterns
     jar_path = "$_package_dir/cronet_impl_native_java-src.jar"
   }
 
@@ -1611,7 +1370,6 @@ if (!is_component_build) {
         (!(target_cpu == "arm" && arm_version == 7) || !arm_use_neon)) {
       deps = [
         ":api_static_checks",
-        ":copy_cronet_java8_jars",
         ":cronet_package_copy",
         ":cronet_package_copy_native_lib",
         ":cronet_package_copy_native_lib_unstripped",
@@ -1624,8 +1382,10 @@ if (!is_component_build) {
         ":jar_cronet_impl_native_java_source",
         ":jar_cronet_impl_platform_java_source",
         ":jar_cronet_sample_source",
-        ":repackage_extracted_common_jars",
-        ":repackage_extracted_native_jars",
+        ":repackage_api",
+        ":repackage_common",
+        ":repackage_native",
+        ":repackage_platform",
       ]
       if (current_cpu == "arm" && arm_version == 7) {
         deps += [ ":enforce_no_neon" ]
@@ -1644,7 +1404,7 @@ if (!is_component_build) {
         ":cronet_package_copy_test_assets",
         ":cronet_package_copy_test_files",
         ":cronet_package_copy_test_support_apks",
-        ":repackage_extracted_test_jars",
+        ":repackage_test_jars",
       ]
     }
   }

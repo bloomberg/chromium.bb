@@ -5,11 +5,13 @@
 #ifndef CHROMEOS_DBUS_SMB_PROVIDER_CLIENT_H_
 #define CHROMEOS_DBUS_SMB_PROVIDER_CLIENT_H_
 
+#include <string>
+
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_file.h"
 #include "base/memory/weak_ptr.h"
-#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/smbprovider/directory_entry.pb.h"
 #include "dbus/object_proxy.h"
@@ -20,7 +22,7 @@ namespace chromeos {
 // SmbProviderClient is used to communicate with the org.chromium.SmbProvider
 // service. All methods should be called from the origin thread (UI thread)
 // which initializes the DBusThreadManager instance.
-class CHROMEOS_EXPORT SmbProviderClient
+class COMPONENT_EXPORT(CHROMEOS_DBUS) SmbProviderClient
     : public DBusClient,
       public base::SupportsWeakPtr<SmbProviderClient> {
  public:
@@ -81,6 +83,13 @@ class CHROMEOS_EXPORT SmbProviderClient
   // Calls Unmount. This removes the corresponding mount of |mount_id| from
   // the list of valid mounts. Subsequent operations on |mount_id| will fail.
   virtual void Unmount(int32_t mount_id, StatusCallback callback) = 0;
+
+  // Calls Premount. This attempts to mount the share at |share_path|. Premount
+  // succeeds even if authentication fails and the user can provide the
+  // credentials at a later time.
+  virtual void Premount(const base::FilePath& share_path,
+                        bool ntlm_enabled,
+                        MountCallback callback) = 0;
 
   // Calls ReadDirectory. Using the corresponding mount of |mount_id|, this
   // reads the directory on a given |directory_path| and passes the
@@ -230,6 +239,24 @@ class CHROMEOS_EXPORT SmbProviderClient
   virtual void ContinueReadDirectory(int32_t mount_id,
                                      int32_t read_dir_token,
                                      ReadDirectoryCallback callback) = 0;
+
+  // Calls UpdateMountCredentials. This will update a mount's credentials with
+  // |workgroup|, |username|, and |password_fd|. Returns smbprovider::ERROR_OK
+  // if the mount's credentials successfully updated. Returns
+  // smbprovider::ERROR_NOT_FOUND if the mount's credentials were not updated.
+  virtual void UpdateMountCredentials(int32_t mount_id,
+                                      std::string workgroup,
+                                      std::string username,
+                                      base::ScopedFD password_fd,
+                                      StatusCallback callback) = 0;
+
+  // Calls UpdateSharePath. This will update a mount's share path with
+  // |share_path|. Returns smbprovider::ERROR_OK if the mount's share path was
+  // successfully updated. Returns smbprovider::ERROR_NOT_FOUND if the mount's
+  // share path were not updated.
+  virtual void UpdateSharePath(int32_t mount_id,
+                               const std::string& share_path,
+                               StatusCallback callback) = 0;
 
  protected:
   // Create() should be used instead.

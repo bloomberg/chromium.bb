@@ -20,7 +20,6 @@ class WebViewWebClient : public web::WebClient {
 
   // WebClient implementation.
   std::unique_ptr<web::WebMainParts> CreateWebMainParts() override;
-  std::string GetProduct() const override;
   std::string GetUserAgent(web::UserAgentType type) const override;
   base::StringPiece GetDataResource(
       int resource_id,

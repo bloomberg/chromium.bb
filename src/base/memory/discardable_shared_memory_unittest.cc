@@ -245,6 +245,11 @@ TEST(DiscardableSharedMemoryTest, LockShouldAlwaysFailAfterSuccessfulPurge) {
 TEST(DiscardableSharedMemoryTest, LockShouldFailIfPlatformLockPagesFails) {
   const uint32_t kDataSize = 1024;
 
+  // This test cannot succeed on devices without a proper ashmem device
+  // because Lock() will always succeed.
+  if (!DiscardableSharedMemory::IsAshmemDeviceSupportedForTesting())
+    return;
+
   DiscardableSharedMemory memory1;
   bool rv1 = memory1.CreateAndMap(kDataSize);
   ASSERT_TRUE(rv1);
@@ -275,9 +280,9 @@ TEST(DiscardableSharedMemoryTest, LockShouldFailIfPlatformLockPagesFails) {
 #endif  // defined(OS_ANDROID)
 
 TEST(DiscardableSharedMemoryTest, LockAndUnlockRange) {
-  const uint32_t kDataSize = 32;
+  const size_t kDataSize = 32;
 
-  uint32_t data_size_in_bytes = kDataSize * base::GetPageSize();
+  size_t data_size_in_bytes = kDataSize * base::GetPageSize();
 
   TestDiscardableSharedMemory memory1;
   bool rv = memory1.CreateAndMap(data_size_in_bytes);

@@ -6,31 +6,42 @@
 
 #include "fxjs/global_timer.h"
 
+#include <map>
+
+#include "fpdfsdk/cfx_systemhandler.h"
 #include "fxjs/cjs_app.h"
+
+namespace {
+
+using TimerMap = std::map<int32_t, GlobalTimer*>;
+TimerMap* GetGlobalTimerMap() {
+  // Leak the timer array at shutdown.
+  static auto* s_TimerMap = new TimerMap;
+  return s_TimerMap;
+}
+
+}  // namespace
 
 GlobalTimer::GlobalTimer(CJS_App* pObj,
                          CPDFSDK_FormFillEnvironment* pFormFillEnv,
                          CJS_Runtime* pRuntime,
-                         int nType,
+                         Type nType,
                          const WideString& script,
                          uint32_t dwElapse,
                          uint32_t dwTimeOut)
-    : m_nTimerID(0),
+    : m_nTimerID(pFormFillEnv->GetSysHandler()->SetTimer(dwElapse, Trigger)),
       m_pEmbedApp(pObj),
-      m_bProcessing(false),
       m_nType(nType),
       m_dwTimeOut(dwTimeOut),
       m_swJScript(script),
       m_pRuntime(pRuntime),
       m_pFormFillEnv(pFormFillEnv) {
-  CFX_SystemHandler* pHandler = m_pFormFillEnv->GetSysHandler();
-  m_nTimerID = pHandler->SetTimer(dwElapse, Trigger);
-  if (m_nTimerID)
+  if (HasValidID())
     (*GetGlobalTimerMap())[m_nTimerID] = this;
 }
 
 GlobalTimer::~GlobalTimer() {
-  if (!m_nTimerID)
+  if (!HasValidID())
     return;
 
   if (GetRuntime())
@@ -40,7 +51,7 @@ GlobalTimer::~GlobalTimer() {
 }
 
 // static
-void GlobalTimer::Trigger(int nTimerID) {
+void GlobalTimer::Trigger(int32_t nTimerID) {
   auto it = GetGlobalTimerMap()->find(nTimerID);
   if (it == GetGlobalTimerMap()->end())
     return;
@@ -65,7 +76,7 @@ void GlobalTimer::Trigger(int nTimerID) {
 }
 
 // static
-void GlobalTimer::Cancel(int nTimerID) {
+void GlobalTimer::Cancel(int32_t nTimerID) {
   auto it = GetGlobalTimerMap()->find(nTimerID);
   if (it == GetGlobalTimerMap()->end())
     return;
@@ -74,9 +85,6 @@ void GlobalTimer::Cancel(int nTimerID) {
   pTimer->m_pEmbedApp->CancelProc(pTimer);
 }
 
-// static
-GlobalTimer::TimerMap* GlobalTimer::GetGlobalTimerMap() {
-  // Leak the timer array at shutdown.
-  static auto* s_TimerMap = new TimerMap;
-  return s_TimerMap;
+bool GlobalTimer::HasValidID() const {
+  return m_nTimerID != CFX_SystemHandler::kInvalidTimerID;
 }

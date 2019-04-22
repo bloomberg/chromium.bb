@@ -9,9 +9,9 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
@@ -77,7 +77,7 @@ void ShortcutsProviderExtensionTest::SetUp() {
   provider_ = new ShortcutsProvider(&client_);
   PopulateShortcutsBackendWithTestData(client_.GetShortcutsBackend(),
                                        shortcut_test_db,
-                                       arraysize(shortcut_test_db));
+                                       base::size(shortcut_test_db));
 }
 
 void ShortcutsProviderExtensionTest::TearDown() {

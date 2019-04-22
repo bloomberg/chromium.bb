@@ -15,7 +15,6 @@
 #include "components/ntp_snippets/contextual/contextual_suggestion.h"
 #include "components/ntp_snippets/contextual/contextual_suggestions_fetch.h"
 #include "components/ntp_snippets/contextual/contextual_suggestions_fetcher.h"
-#include "components/unified_consent/url_keyed_data_collection_consent_helper.h"
 
 namespace network {
 class SharedURLLoaderFactory;
@@ -31,8 +30,6 @@ class ContextualSuggestionsFetcherImpl : public ContextualSuggestionsFetcher {
  public:
   ContextualSuggestionsFetcherImpl(
       const scoped_refptr<network::SharedURLLoaderFactory>& loader_factory,
-      std::unique_ptr<unified_consent::UrlKeyedDataCollectionConsentHelper>
-          consent_helper,
       const std::string& application_language_code);
   ~ContextualSuggestionsFetcherImpl() override;
 
@@ -48,8 +45,6 @@ class ContextualSuggestionsFetcherImpl : public ContextualSuggestionsFetcher {
                      ContextualSuggestionsResult result);
 
   const scoped_refptr<network::SharedURLLoaderFactory> loader_factory_;
-  std::unique_ptr<unified_consent::UrlKeyedDataCollectionConsentHelper>
-      consent_helper_;
   /// BCP47 formatted language code to use.
   const std::string bcp_language_code_;
 

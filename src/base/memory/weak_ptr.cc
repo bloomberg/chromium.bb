@@ -34,6 +34,10 @@ bool WeakReference::Flag::MaybeValid() const {
   return !invalidated_.IsSet();
 }
 
+void WeakReference::Flag::DetachFromSequence() {
+  DETACH_FROM_SEQUENCE(sequence_checker_);
+}
+
 WeakReference::Flag::~Flag() = default;
 
 WeakReference::WeakReference() = default;
@@ -54,25 +58,24 @@ bool WeakReference::MaybeValid() const {
   return flag_ && flag_->MaybeValid();
 }
 
-WeakReferenceOwner::WeakReferenceOwner() = default;
+WeakReferenceOwner::WeakReferenceOwner()
+    : flag_(MakeRefCounted<WeakReference::Flag>()) {}
 
 WeakReferenceOwner::~WeakReferenceOwner() {
-  Invalidate();
+  flag_->Invalidate();
 }
 
 WeakReference WeakReferenceOwner::GetRef() const {
-  // If we hold the last reference to the Flag then create a new one.
+  // If we hold the last reference to the Flag then detach the SequenceChecker.
   if (!HasRefs())
-    flag_ = new WeakReference::Flag();
+    flag_->DetachFromSequence();
 
   return WeakReference(flag_);
 }
 
 void WeakReferenceOwner::Invalidate() {
-  if (flag_) {
-    flag_->Invalidate();
-    flag_ = nullptr;
-  }
+  flag_->Invalidate();
+  flag_ = MakeRefCounted<WeakReference::Flag>();
 }
 
 WeakPtrBase::WeakPtrBase() : ptr_(0) {}

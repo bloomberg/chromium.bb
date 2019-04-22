@@ -12,9 +12,11 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "third_party/skia/include/core/SkFont.h"
+#include "third_party/skia/include/core/SkFontMetrics.h"
 #include "third_party/skia/include/core/SkFontStyle.h"
-#include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkString.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
@@ -47,6 +49,7 @@ sk_sp<SkTypeface> CreateSkTypeface(bool italic,
                                    std::string* family,
                                    bool* out_success) {
   DCHECK(family);
+  TRACE_EVENT0("fonts", "gfx::CreateSkTypeface");
 
   const int font_weight = (weight == Font::Weight::INVALID)
                               ? static_cast<int>(Font::Weight::NORMAL)
@@ -54,9 +57,15 @@ sk_sp<SkTypeface> CreateSkTypeface(bool italic,
   SkFontStyle sk_style(
       font_weight, SkFontStyle::kNormal_Width,
       italic ? SkFontStyle::kItalic_Slant : SkFontStyle::kUpright_Slant);
-  sk_sp<SkTypeface> typeface =
-      SkTypeface::MakeFromName(family->c_str(), sk_style);
+  sk_sp<SkTypeface> typeface;
+  {
+    TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("fonts"), "SkTypeface::MakeFromName",
+                 "family", *family);
+    typeface = SkTypeface::MakeFromName(family->c_str(), sk_style);
+  }
   if (!typeface) {
+    TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("fonts"), "SkTypeface::MakeFromName",
+                 "family", kFallbackFontFamilyName);
     // A non-scalable font such as .pcf is specified. Fall back to a default
     // scalable font.
     typeface = sk_sp<SkTypeface>(
@@ -226,6 +235,7 @@ int PlatformFontSkia::GetFontSize() const {
 }
 
 const FontRenderParams& PlatformFontSkia::GetFontRenderParams() {
+  TRACE_EVENT0("fonts", "PlatformFontSkia::GetFontRenderParams");
   float current_scale_factor = GetFontRenderParamsDeviceScaleFactor();
   if (current_scale_factor != device_scale_factor_) {
     FontRenderParamsQuery query;
@@ -261,6 +271,7 @@ void PlatformFontSkia::InitFromDetails(sk_sp<SkTypeface> typeface,
                                        int style,
                                        Font::Weight weight,
                                        const FontRenderParams& render_params) {
+  TRACE_EVENT0("fonts", "PlatformFontSkia::InitFromDetails");
   DCHECK_GT(font_size_pixels, 0);
 
   font_family_ = font_family;
@@ -285,6 +296,7 @@ void PlatformFontSkia::InitFromDetails(sk_sp<SkTypeface> typeface,
 }
 
 void PlatformFontSkia::InitFromPlatformFont(const PlatformFontSkia* other) {
+  TRACE_EVENT0("fonts", "PlatformFontSkia::InitFromPlatformFont");
   typeface_ = other->typeface_;
   font_family_ = other->font_family_;
   font_size_pixels_ = other->font_size_pixels_;
@@ -304,20 +316,18 @@ void PlatformFontSkia::InitFromPlatformFont(const PlatformFontSkia* other) {
 
 void PlatformFontSkia::ComputeMetricsIfNecessary() {
   if (metrics_need_computation_) {
+    TRACE_EVENT0("fonts", "PlatformFontSkia::ComputeMetricsIfNecessary");
+
     metrics_need_computation_ = false;
 
-    SkPaint paint;
-    paint.setAntiAlias(false);
-    paint.setSubpixelText(false);
-    paint.setTextSize(font_size_pixels_);
-    paint.setTypeface(typeface_);
-    paint.setFakeBoldText(weight_ >= Font::Weight::BOLD &&
-                          !typeface_->isBold());
-    paint.setTextSkewX((Font::ITALIC & style_) && !typeface_->isItalic()
-                           ? -SK_Scalar1 / 4
-                           : 0);
+    SkFont font(typeface_, font_size_pixels_);
+    font.setEdging(SkFont::Edging::kAlias);
+    font.setEmbolden(weight_ >= Font::Weight::BOLD && !typeface_->isBold());
+    font.setSkewX((Font::ITALIC & style_) && !typeface_->isItalic()
+                      ? -SK_Scalar1 / 4
+                      : 0);
     SkFontMetrics metrics;
-    paint.getFontMetrics(&metrics);
+    font.getMetrics(&metrics);
     ascent_pixels_ = SkScalarCeilToInt(-metrics.fAscent);
     height_pixels_ = ascent_pixels_ + SkScalarCeilToInt(metrics.fDescent);
     cap_height_pixels_ = SkScalarCeilToInt(metrics.fCapHeight);
@@ -336,6 +346,7 @@ PlatformFont* PlatformFont::CreateDefault() {
 // static
 PlatformFont* PlatformFont::CreateFromNameAndSize(const std::string& font_name,
                                                   int font_size) {
+  TRACE_EVENT0("fonts", "PlatformFont::CreateFromNameAndSize");
   return new PlatformFontSkia(font_name, font_size);
 }
 

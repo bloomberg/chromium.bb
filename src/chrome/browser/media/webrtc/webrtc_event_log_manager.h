@@ -30,7 +30,7 @@ class WebRTCInternalsIntegrationBrowserTest;
 namespace content {
 class BrowserContext;
 class NetworkConnectionTracker;
-};
+}  // namespace content
 
 namespace webrtc_event_logging {
 
@@ -96,7 +96,6 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
 
   void PeerConnectionAdded(int render_process_id,
                            int lid,  // Renderer-local PeerConnection ID.
-                           const std::string& peer_connection_id,
                            base::OnceCallback<void(bool)> reply) override;
 
   void PeerConnectionRemoved(int render_process_id,
@@ -109,6 +108,12 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
   void PeerConnectionStopped(int render_process_id,
                              int lid,  // Renderer-local PeerConnection ID.
                              base::OnceCallback<void(bool)> reply) override;
+
+  void PeerConnectionSessionIdSet(
+      int render_process_id,
+      int lid,
+      const std::string& session_id,
+      base::OnceCallback<void(bool)> reply) override;
 
   // The file's actual path is derived from |base_path| by adding a timestamp,
   // the render process ID and the PeerConnection's local ID.
@@ -134,7 +139,7 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
   // more details.
   void StartRemoteLogging(
       int render_process_id,
-      const std::string& peer_connection_id,
+      const std::string& session_id,
       size_t max_file_size_bytes,
       int output_period_ms,
       size_t web_app_id,
@@ -268,10 +273,13 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
       base::OnceClosure reply);
 
   void PeerConnectionAddedInternal(PeerConnectionKey key,
-                                   const std::string& peer_connection_id,
                                    base::OnceCallback<void(bool)> reply);
   void PeerConnectionRemovedInternal(PeerConnectionKey key,
                                      base::OnceCallback<void(bool)> reply);
+
+  void PeerConnectionSessionIdSetInternal(PeerConnectionKey key,
+                                          const std::string& session_id,
+                                          base::OnceCallback<void(bool)> reply);
 
   void EnableLocalLoggingInternal(const base::FilePath& base_path,
                                   size_t max_file_size_bytes,
@@ -286,7 +294,7 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
   void StartRemoteLoggingInternal(
       int render_process_id,
       BrowserContextId browser_context_id,
-      const std::string& peer_connection_id,
+      const std::string& session_id,
       const base::FilePath& browser_context_dir,
       size_t max_file_size_bytes,
       int output_period_ms,

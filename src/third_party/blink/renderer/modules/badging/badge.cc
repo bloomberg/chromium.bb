@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/modules/badging/badge.h"
 
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "third_party/blink/renderer/bindings/modules/v8/usv_string_or_long.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -21,7 +20,7 @@ Badge::~Badge() = default;
 Badge* Badge::From(ExecutionContext* context) {
   Badge* supplement = Supplement<ExecutionContext>::From<Badge>(context);
   if (!supplement) {
-    supplement = new Badge(context);
+    supplement = MakeGarbageCollected<Badge>(context);
     ProvideTo(*context, supplement);
   }
   return supplement;
@@ -29,14 +28,17 @@ Badge* Badge::From(ExecutionContext* context) {
 
 // static
 void Badge::set(ScriptState* script_state, ExceptionState& exception_state) {
-  BadgeFromState(script_state)->Set(nullptr, exception_state);
+  BadgeFromState(script_state)->SetFlag();
 }
 
 // static
 void Badge::set(ScriptState* script_state,
-                USVStringOrLong& contents,
+                uint64_t content,
                 ExceptionState& exception_state) {
-  BadgeFromState(script_state)->Set(&contents, exception_state);
+  if (content == 0)
+    BadgeFromState(script_state)->Clear();
+  else
+    BadgeFromState(script_state)->SetInteger(content);
 }
 
 // static
@@ -44,21 +46,12 @@ void Badge::clear(ScriptState* script_state) {
   BadgeFromState(script_state)->Clear();
 }
 
-void Badge::Set(USVStringOrLong* contents, ExceptionState& exception_state) {
-  if (contents) {
-    if (contents->IsLong() && contents->GetAsLong() <= 0) {
-      exception_state.ThrowTypeError("Badge contents should be > 0");
-      return;
-    }
-    if (contents->IsUSVString() && contents->GetAsUSVString() == "") {
-      exception_state.ThrowTypeError(
-          "Badge contents cannot be the empty string");
-      return;
-    }
-  }
-  // TODO(estevenson): Add support for sending badge contents to the browser.
-  // TODO(estevenson): Verify that contents is a single grapheme cluster.
-  badge_service_->SetBadge();
+void Badge::SetInteger(uint64_t content) {
+  badge_service_->SetInteger(content);
+}
+
+void Badge::SetFlag() {
+  badge_service_->SetFlag();
 }
 
 void Badge::Clear() {

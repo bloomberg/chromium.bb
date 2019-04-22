@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "build/build_config.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -24,12 +25,14 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "ui/native_theme/native_theme.h"
 #include "url/gurl.h"
 
 #if defined(OS_ANDROID)
 #error "Instant is only used on desktop";
 #endif
 
+class DarkModeObserver;
 class InstantIOContext;
 class InstantServiceObserver;
 class NtpBackgroundService;
@@ -98,14 +101,15 @@ class InstantService : public KeyedService,
   bool UndoCustomLinkAction();
   // Invoked when the Instant page wants to delete all custom links and use Most
   // Visited sites instead. Returns false and does nothing if the profile is
-  // using a non-Google search provider.
-  bool ResetCustomLinks();
+  // using a non-Google search provider. Marked virtual for mocking in tests.
+  virtual bool ResetCustomLinks();
 
-  // Invoked by the InstantController to update theme information for NTP.
-  //
-  // TODO(kmadhusu): Invoking this from InstantController shouldn't be
-  // necessary. Investigate more and remove this from here.
+  // Invoked to update theme information for the NTP.
   void UpdateThemeInfo();
+
+  // Invoked when a background pref update is received via sync, triggering
+  // an update of theme info.
+  void UpdateBackgroundFromSync();
 
   // Invoked by the InstantController to update most visited items details for
   // NTP.
@@ -127,13 +131,21 @@ class InstantService : public KeyedService,
   // Invoked when a user selected the "Upload an image" option on the NTP.
   void SelectLocalBackgroundImage(const base::FilePath& path);
 
-  // Used for testing.
-  ThemeBackgroundInfo* GetThemeInfoForTesting() { return theme_info_.get(); }
+  // Getter for |theme_info_| that will also initialize it if necessary.
+  ThemeBackgroundInfo* GetInitializedThemeInfo();
 
+  // Used for testing.
+  void SetDarkModeThemeForTesting(ui::NativeTheme* theme);
+
+  // Used for testing.
   void AddValidBackdropUrlForTesting(const GURL& url) const;
 
   // Check if a custom background has been set by the user.
   bool IsCustomBackgroundSet();
+
+  // Reset all NTP customizations to default. Marked virtual for mocking in
+  // tests.
+  virtual void ResetToDefault();
 
  private:
   class SearchProviderObserver;
@@ -142,7 +154,9 @@ class InstantService : public KeyedService,
   friend class InstantUnitTestBase;
 
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, ProcessIsolation);
+  FRIEND_TEST_ALL_PREFIXES(InstantServiceTest, DeleteThumbnailDataIfExists);
   FRIEND_TEST_ALL_PREFIXES(InstantServiceTest, GetNTPTileSuggestion);
+  FRIEND_TEST_ALL_PREFIXES(InstantServiceTest, TestNoThemeInfo);
 
   // KeyedService:
   void Shutdown() override;
@@ -159,6 +173,10 @@ class InstantService : public KeyedService,
   // search provider is not Google.
   void OnSearchProviderChanged(bool is_google);
 
+  // Called when dark mode changes. Updates current theme info as necessary and
+  // notifies that the theme has changed.
+  void OnDarkModeChanged(bool dark_mode);
+
   // ntp_tiles::MostVisitedSites::Observer implementation.
   void OnURLsAvailable(
       const std::map<ntp_tiles::SectionType, ntp_tiles::NTPTilesVector>&
@@ -173,13 +191,21 @@ class InstantService : public KeyedService,
   void ApplyOrResetCustomBackgroundThemeInfo();
 
   void ApplyCustomBackgroundThemeInfo();
-  void ApplyCustomBackgroundThemeInfoFromLocalFile(bool file_exists);
 
-  void ResetCustomBackgroundThemeInfo();
+  // Marked virtual for mocking in tests.
+  virtual void ResetCustomBackgroundThemeInfo();
 
   void FallbackToDefaultThemeInfo();
 
   void RemoveLocalBackgroundImageCopy();
+
+  // Remove old user thumbnail data if it exists. If |callback| is provided,
+  // calls back true if the thumbnail data was deleted. Thumbnails have been
+  // deprecated as of M69.
+  // TODO(crbug.com/893362): Remove after M75.
+  void DeleteThumbnailDataIfExists(
+      const base::FilePath& profile_path,
+      base::Optional<base::OnceCallback<void(bool)>> callback);
 
   // Returns false if the custom background pref cannot be parsed, otherwise
   // returns true and sets custom_background_url to the value in the pref.
@@ -188,6 +214,8 @@ class InstantService : public KeyedService,
   // Update the background pref to point to
   // chrome-search://local-ntp/background.jpg
   void SetBackgroundToLocalResource();
+
+  void CreateDarkModeObserver(ui::NativeTheme* theme);
 
   Profile* const profile_;
 
@@ -215,6 +243,9 @@ class InstantService : public KeyedService,
   PrefChangeRegistrar pref_change_registrar_;
 
   PrefService* pref_service_;
+
+  // Keeps track of any changes to system dark mode.
+  std::unique_ptr<DarkModeObserver> dark_mode_observer_;
 
   NtpBackgroundService* background_service_;
 

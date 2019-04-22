@@ -14,11 +14,13 @@ namespace gpu {
 namespace gles2 {
 
 Logger::Logger(const DebugMarkerManager* debug_marker_manager,
-               const LogMessageCallback& callback)
+               const LogMessageCallback& callback,
+               bool disable_gl_error_limit)
     : debug_marker_manager_(debug_marker_manager),
       log_message_callback_(callback),
       log_message_count_(0),
-      log_synthesized_gl_errors_(true) {
+      log_synthesized_gl_errors_(true),
+      disable_gl_error_limit_(disable_gl_error_limit) {
   Logger* this_temp = this;
   this_in_hex_ = std::string("GroupMarkerNotSet(crbug.com/242999)!:") +
       base::HexEncode(&this_temp, sizeof(this_temp));
@@ -28,9 +30,7 @@ Logger::~Logger() = default;
 
 void Logger::LogMessage(
     const char* filename, int line, const std::string& msg) {
-  if (log_message_count_ < kMaxLogMessages ||
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableGLErrorLimit)) {
+  if (log_message_count_ < kMaxLogMessages || disable_gl_error_limit_) {
     std::string prefixed_msg(std::string("[") + GetLogPrefix() + "]" + msg);
     ++log_message_count_;
     // LOG this unless logging is turned off as any chromium code that

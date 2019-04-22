@@ -23,28 +23,35 @@ int NextId() {
 namespace blink {
 
 AnimationWorklet::AnimationWorklet(Document* document)
-    : Worklet(document), scope_id_(NextId()), last_animation_id_(0) {}
+    : Worklet(document), worklet_id_(NextId()), last_animation_id_(0) {}
 
 AnimationWorklet::~AnimationWorklet() = default;
 
 bool AnimationWorklet::NeedsToCreateGlobalScope() {
-  // For now, create only one global scope per document.
-  // TODO(nhiroki): Revisit this later.
-  return GetNumberOfGlobalScopes() == 0;
+  return GetNumberOfGlobalScopes() <
+         static_cast<wtf_size_t>(
+             AnimationWorkletProxyClient::kNumStatelessGlobalScopes);
 }
 
 WorkletGlobalScopeProxy* AnimationWorklet::CreateGlobalScope() {
   DCHECK(NeedsToCreateGlobalScope());
 
-  Document* document = To<Document>(GetExecutionContext());
-  AnimationWorkletProxyClient* proxy_client =
-      AnimationWorkletProxyClient::FromDocument(document, scope_id_);
+  if (!proxy_client_) {
+    // TODO(kevers|majidvp): Consider refactoring so that proxy client
+    // initialization can move to the constructor. Currently, initialization
+    // in the constructor leads to test failures as the document frame has not
+    // been initialized at the time of the constructor call.
+    Document* document = To<Document>(GetExecutionContext());
+    proxy_client_ =
+        AnimationWorkletProxyClient::FromDocument(document, worklet_id_);
+  }
 
-  WorkerClients* worker_clients = WorkerClients::Create();
-  ProvideAnimationWorkletProxyClientTo(worker_clients, proxy_client);
+  auto* worker_clients = MakeGarbageCollected<WorkerClients>();
+  ProvideAnimationWorkletProxyClientTo(worker_clients, proxy_client_);
 
   AnimationWorkletMessagingProxy* proxy =
-      new AnimationWorkletMessagingProxy(GetExecutionContext());
+      MakeGarbageCollected<AnimationWorkletMessagingProxy>(
+          GetExecutionContext());
   proxy->Initialize(worker_clients, ModuleResponsesMap());
   return proxy;
 }
@@ -52,11 +59,12 @@ WorkletGlobalScopeProxy* AnimationWorklet::CreateGlobalScope() {
 WorkletAnimationId AnimationWorklet::NextWorkletAnimationId() {
   // Id starts from 1. This way it safe to use it as key in hashmap with default
   // key traits.
-  return {.scope_id = scope_id_, .animation_id = ++last_animation_id_};
+  return {.worklet_id = worklet_id_, .animation_id = ++last_animation_id_};
 }
 
 void AnimationWorklet::Trace(blink::Visitor* visitor) {
   Worklet::Trace(visitor);
+  visitor->Trace(proxy_client_);
 }
 
 }  // namespace blink

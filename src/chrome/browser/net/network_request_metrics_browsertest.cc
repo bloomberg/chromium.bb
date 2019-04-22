@@ -609,12 +609,12 @@ IN_PROC_BROWSER_TEST_P(NetworkRequestMetricsBrowserTest, FileURLSuccess) {
                   NetworkAccessed::kNoNetworkAccessed);
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        NetworkRequestMetricsBrowserTest,
-                        testing::Values(RequestType::kMainFrame,
-                                        RequestType::kSubFrame,
-                                        RequestType::kImage,
-                                        RequestType::kScript));
+INSTANTIATE_TEST_SUITE_P(,
+                         NetworkRequestMetricsBrowserTest,
+                         testing::Values(RequestType::kMainFrame,
+                                         RequestType::kSubFrame,
+                                         RequestType::kImage,
+                                         RequestType::kScript));
 
 }  //  namespace
 }  // namespace content

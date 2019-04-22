@@ -41,7 +41,6 @@
 #include "third_party/blink/public/platform/web_float_rect.h"
 #include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_size.h"
-#include "third_party/blink/renderer/platform/drag_image.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/geometry/region.h"
@@ -59,7 +58,6 @@
 #include "third_party/blink/renderer/platform/graphics/paint/raster_invalidator.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
-#include "third_party/blink/renderer/platform/scroll/scroll_snap_data.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
@@ -71,17 +69,13 @@
 
 namespace blink {
 
-std::unique_ptr<GraphicsLayer> GraphicsLayer::Create(
-    GraphicsLayerClient& client) {
-  return base::WrapUnique(new GraphicsLayer(client));
-}
-
 GraphicsLayer::GraphicsLayer(GraphicsLayerClient& client)
     : client_(client),
       prevent_contents_opaque_changes_(false),
       draws_content_(false),
+      paints_hit_test_(false),
       contents_visible_(true),
-      hit_testable_without_draws_content_(false),
+      hit_testable_(false),
       needs_check_raster_invalidation_(false),
       has_scroll_parent_(false),
       has_clip_parent_(false),
@@ -90,22 +84,24 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient& client)
       parent_(nullptr),
       mask_layer_(nullptr),
       contents_clipping_mask_layer_(nullptr),
-      paint_count_(0),
       contents_layer_(nullptr),
       contents_layer_id_(0),
       rendering_context3d_(0),
       weak_ptr_factory_(this) {
 #if DCHECK_IS_ON()
+  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
   client.VerifyNotPainting();
 #endif
   layer_ = cc::PictureLayer::Create(this);
   CcLayer()->SetIsDrawable(draws_content_ && contents_visible_);
+  CcLayer()->SetHitTestable(hit_testable_);
   CcLayer()->SetLayerClient(weak_ptr_factory_.GetWeakPtr());
 
   UpdateTrackingRasterInvalidations();
 }
 
 GraphicsLayer::~GraphicsLayer() {
+  CcLayer()->ClearClient();
   CcLayer()->SetLayerClient(nullptr);
   SetContentsLayer(nullptr);
   for (size_t i = 0; i < link_highlights_.size(); ++i)
@@ -121,9 +117,9 @@ GraphicsLayer::~GraphicsLayer() {
   DCHECK(!parent_);
 }
 
-LayoutRect GraphicsLayer::VisualRect() const {
+IntRect GraphicsLayer::VisualRect() const {
   DCHECK(layer_state_);
-  return LayoutRect(layer_state_->offset, LayoutSize(Size()));
+  return IntRect(layer_state_->offset, IntSize(Size()));
 }
 
 void GraphicsLayer::SetHasWillChangeTransformHint(
@@ -137,17 +133,33 @@ void GraphicsLayer::SetOverscrollBehavior(
 }
 
 void GraphicsLayer::SetSnapContainerData(
-    base::Optional<SnapContainerData> data) {
+    base::Optional<cc::SnapContainerData> data) {
   CcLayer()->SetSnapContainerData(std::move(data));
 }
 
 void GraphicsLayer::SetIsResizedByBrowserControls(
     bool is_resized_by_browser_controls) {
+  DCHECK(!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
+         !RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
   CcLayer()->SetIsResizedByBrowserControls(is_resized_by_browser_controls);
 }
 
 void GraphicsLayer::SetIsContainerForFixedPositionLayers(bool is_container) {
+  DCHECK(!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
+         !RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
   CcLayer()->SetIsContainerForFixedPositionLayers(is_container);
+}
+
+void GraphicsLayer::SetCompositingReasons(CompositingReasons reasons) {
+  CcLayer()->set_compositing_reasons(reasons);
+}
+
+CompositingReasons GraphicsLayer::GetCompositingReasons() const {
+  return CcLayer()->compositing_reasons();
+}
+
+void GraphicsLayer::SetOwnerNodeId(int node_id) {
+  CcLayer()->set_owner_node_id(node_id);
 }
 
 void GraphicsLayer::SetParent(GraphicsLayer* layer) {
@@ -244,8 +256,10 @@ void GraphicsLayer::RemoveFromParent() {
   // When using layer lists, cc::Layers are created and removed in
   // PaintArtifactCompositor.
   if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
-      !RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+      !RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     CcLayer()->RemoveFromParent();
+  } else {
+    SetPaintArtifactCompositorNeedsUpdate();
   }
 }
 
@@ -287,8 +301,8 @@ void GraphicsLayer::PaintRecursively() {
 
 void GraphicsLayer::PaintRecursivelyInternal(
     Vector<GraphicsLayer*>& repainted_layers) {
-  if (DrawsContent()) {
-    if (Paint(nullptr))
+  if (PaintsContentOrHitTest()) {
+    if (Paint())
       repainted_layers.push_back(this);
   }
 
@@ -301,8 +315,7 @@ void GraphicsLayer::PaintRecursivelyInternal(
     child->PaintRecursivelyInternal(repainted_layers);
 }
 
-bool GraphicsLayer::Paint(const IntRect* interest_rect,
-                          GraphicsContext::DisabledMode disabled_mode) {
+bool GraphicsLayer::Paint(GraphicsContext::DisabledMode disabled_mode) {
 #if !DCHECK_IS_ON()
   // TODO(crbug.com/853096): Investigate why we can ever reach here without
   // a valid layer state. Seems to only happen on Android builds.
@@ -310,7 +323,7 @@ bool GraphicsLayer::Paint(const IntRect* interest_rect,
     return false;
 #endif
 
-  if (PaintWithoutCommit(interest_rect, disabled_mode))
+  if (PaintWithoutCommit(disabled_mode))
     GetPaintController().CommitNewDisplayItems();
   else if (!needs_check_raster_invalidation_)
     return false;
@@ -330,7 +343,7 @@ bool GraphicsLayer::Paint(const IntRect* interest_rect,
       layer_state_->state, VisualRectSubpixelOffset(), this);
 
   if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() &&
-      DrawsContent()) {
+      PaintsContentOrHitTest()) {
     auto& tracking = EnsureRasterInvalidator().EnsureTracking();
     tracking.CheckUnderInvalidations(DebugName(), CapturePaintRecord(),
                                      InterestRect());
@@ -347,15 +360,19 @@ bool GraphicsLayer::Paint(const IntRect* interest_rect,
   return true;
 }
 
+bool GraphicsLayer::PaintWithoutCommitForTesting(
+    const base::Optional<IntRect>& interest_rect) {
+  return PaintWithoutCommit(GraphicsContext::kNothingDisabled,
+                            base::OptionalOrNullptr(interest_rect));
+}
+
 bool GraphicsLayer::PaintWithoutCommit(
-    const IntRect* interest_rect,
-    GraphicsContext::DisabledMode disabled_mode) {
-  DCHECK(DrawsContent());
+    GraphicsContext::DisabledMode disabled_mode,
+    const IntRect* interest_rect) {
+  DCHECK(PaintsContentOrHitTest());
 
   if (client_.ShouldThrottleRendering())
     return false;
-
-  IncrementPaintCount();
 
   IntRect new_interest_rect;
   if (!interest_rect) {
@@ -368,6 +385,7 @@ bool GraphicsLayer::PaintWithoutCommit(
       !client_.NeedsRepaint(*this) &&
       !GetPaintController().CacheIsAllInvalid() &&
       previous_interest_rect_ == *interest_rect) {
+    GetPaintController().UpdateUMACountsOnFullyCached();
     return false;
   }
 
@@ -384,7 +402,8 @@ bool GraphicsLayer::PaintWithoutCommit(
 void GraphicsLayer::UpdateChildList() {
   // When using layer lists, cc::Layers are created in PaintArtifactCompositor.
   if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
-      RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+      RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    SetPaintArtifactCompositorNeedsUpdate();
     return;
   }
 
@@ -431,6 +450,11 @@ void GraphicsLayer::UpdateContentsRect() {
   if (!contents_layer)
     return;
 
+  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+    const auto& offset = GetContentsOffsetFromTransformNode();
+    contents_layer->SetOffsetToTransformParent(
+        gfx::Vector2dF(offset.X(), offset.Y()));
+  }
   contents_layer->SetPosition(
       FloatPoint(contents_rect_.X(), contents_rect_.Y()));
   if (!image_layer_) {
@@ -521,20 +545,18 @@ void GraphicsLayer::SetupContentsLayer(cc::Layer* contents_layer) {
   // contents_layer, for the correctness of early exit conditions in
   // SetDrawsContent() and SetContentsVisible().
   contents_layer_->SetIsDrawable(contents_visible_);
+  contents_layer_->SetHitTestable(contents_visible_);
 
   // Insert the content layer first. Video elements require this, because they
   // have shadow content that must display in front of the video.
   if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
-      !RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+      !RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     CcLayer()->InsertChild(contents_layer_, 0);
   }
   cc::PictureLayer* border_cc_layer =
       contents_clipping_mask_layer_ ? contents_clipping_mask_layer_->CcLayer()
                                     : nullptr;
   contents_layer_->SetMaskLayer(border_cc_layer);
-  if (border_cc_layer)
-    border_cc_layer->set_is_rounded_corner_mask(true);
-
   contents_layer_->Set3dSortingContextId(rendering_context3d_);
 }
 
@@ -568,8 +590,9 @@ cc::Layer* GraphicsLayer::ContentsLayerIfRegistered() {
 
 RasterInvalidator& GraphicsLayer::EnsureRasterInvalidator() {
   if (!raster_invalidator_) {
-    raster_invalidator_ = std::make_unique<RasterInvalidator>(
-        [this](const IntRect& r) { SetNeedsDisplayInRect(r); });
+    raster_invalidator_ =
+        std::make_unique<RasterInvalidator>(base::BindRepeating(
+            &GraphicsLayer::SetNeedsDisplayInRect, base::Unretained(this)));
     raster_invalidator_->SetTracksRasterInvalidations(
         client_.IsTrackingRasterInvalidations());
   }
@@ -684,7 +707,7 @@ void GraphicsLayer::SetRenderingContext(int context) {
   CcLayer()->Set3dSortingContextId(context);
 
   if (contents_layer_)
-    CcLayer()->Set3dSortingContextId(rendering_context3d_);
+    contents_layer_->Set3dSortingContextId(rendering_context3d_);
 }
 
 bool GraphicsLayer::MasksToBounds() const {
@@ -722,6 +745,10 @@ void GraphicsLayer::SetContentsVisible(bool contents_visible) {
   UpdateLayerIsDrawable();
 }
 
+void GraphicsLayer::SetPaintArtifactCompositorNeedsUpdate() const {
+  client_.SetPaintArtifactCompositorNeedsUpdate();
+}
+
 void GraphicsLayer::SetClipParent(cc::Layer* parent) {
   has_clip_parent_ = !!parent;
   CcLayer()->SetClipParent(parent);
@@ -751,15 +778,13 @@ void GraphicsLayer::SetContentsOpaque(bool opaque) {
     contents_layer_->SetContentsOpaque(opaque);
 }
 
-void GraphicsLayer::SetMaskLayer(GraphicsLayer* mask_layer,
-                                 bool is_rounded_corner_mask) {
+void GraphicsLayer::SetMaskLayer(GraphicsLayer* mask_layer) {
   if (mask_layer == mask_layer_)
     return;
 
   mask_layer_ = mask_layer;
-  CcLayer()->SetMaskLayer(mask_layer_ ? mask_layer_->CcLayer() : nullptr);
-  if (mask_layer_)
-    mask_layer_->CcLayer()->set_is_rounded_corner_mask(is_rounded_corner_mask);
+  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
+    CcLayer()->SetMaskLayer(mask_layer_ ? mask_layer_->CcLayer() : nullptr);
 }
 
 void GraphicsLayer::SetContentsClippingMaskLayer(
@@ -775,9 +800,6 @@ void GraphicsLayer::SetContentsClippingMaskLayer(
       contents_clipping_mask_layer_ ? contents_clipping_mask_layer_->CcLayer()
                                     : nullptr;
   contents_layer->SetMaskLayer(contents_clipping_mask_cc_layer);
-  // Contents clipping mask layesrs (aka child clipping mask layer) is always
-  // a rounded corner mask.
-  contents_layer->set_is_rounded_corner_mask(true);
   UpdateContentsRect();
 }
 
@@ -813,11 +835,11 @@ void GraphicsLayer::SetIsRootForIsolatedGroup(bool isolated) {
   CcLayer()->SetIsRootForIsolatedGroup(isolated);
 }
 
-void GraphicsLayer::SetHitTestableWithoutDrawsContent(bool should_hit_test) {
-  if (hit_testable_without_draws_content_ == should_hit_test)
+void GraphicsLayer::SetHitTestable(bool should_hit_test) {
+  if (hit_testable_ == should_hit_test)
     return;
-  hit_testable_without_draws_content_ = should_hit_test;
-  CcLayer()->SetHitTestableWithoutDrawsContent(should_hit_test);
+  hit_testable_ = should_hit_test;
+  CcLayer()->SetHitTestable(should_hit_test);
 }
 
 void GraphicsLayer::SetContentsNeedsDisplay() {
@@ -829,7 +851,7 @@ void GraphicsLayer::SetContentsNeedsDisplay() {
 }
 
 void GraphicsLayer::SetNeedsDisplay() {
-  if (!DrawsContent())
+  if (!PaintsContentOrHitTest())
     return;
 
   CcLayer()->SetNeedsDisplay();
@@ -846,7 +868,7 @@ void GraphicsLayer::SetNeedsDisplay() {
 }
 
 void GraphicsLayer::SetNeedsDisplayInRect(const IntRect& rect) {
-  DCHECK(DrawsContent());
+  DCHECK(PaintsContentOrHitTest());
 
   CcLayer()->SetNeedsDisplayRect(rect);
   for (auto* link_highlight : link_highlights_)
@@ -896,6 +918,7 @@ void GraphicsLayer::SetContentsToImage(
             .TakePaintImage();
     if (!image_layer_) {
       image_layer_ = cc::PictureImageLayer::Create();
+      image_layer_->set_owner_node_id(CcLayer()->owner_node_id());
       RegisterContentsLayer(image_layer_.get());
     }
     image_layer_->SetImage(std::move(paint_image), matrix,
@@ -920,8 +943,11 @@ void GraphicsLayer::SetFilters(CompositorFilterOperations filters) {
   CcLayer()->SetFilters(filters.ReleaseCcFilterOperations());
 }
 
-void GraphicsLayer::SetBackdropFilters(CompositorFilterOperations filters) {
+void GraphicsLayer::SetBackdropFilters(
+    CompositorFilterOperations filters,
+    const gfx::RRectF& backdrop_filter_bounds) {
   CcLayer()->SetBackdropFilters(filters.ReleaseCcFilterOperations());
+  CcLayer()->SetBackdropFilterBounds(backdrop_filter_bounds);
 }
 
 void GraphicsLayer::SetStickyPositionConstraint(
@@ -962,7 +988,7 @@ std::unique_ptr<base::trace_event::TracedValue> GraphicsLayer::TakeDebugInfo(
 
   traced_value->BeginArray("compositing_reasons");
   for (const char* description :
-       CompositingReason::Descriptions(compositing_reasons_))
+       CompositingReason::Descriptions(GetCompositingReasons()))
     traced_value->AppendString(description);
   traced_value->EndArray();
 
@@ -972,8 +998,8 @@ std::unique_ptr<base::trace_event::TracedValue> GraphicsLayer::TakeDebugInfo(
     traced_value->AppendString(description);
   traced_value->EndArray();
 
-  if (owner_node_id_)
-    traced_value->SetInteger("owner_node", owner_node_id_);
+  if (auto node_id = layer_->owner_node_id())
+    traced_value->SetInteger("owner_node", node_id);
 
   if (auto* tracking = GetRasterInvalidationTracking()) {
     tracking->AddToTracedValue(*traced_value);
@@ -988,9 +1014,9 @@ void GraphicsLayer::DidChangeScrollbarsHiddenIfOverlay(bool hidden) {
 }
 
 PaintController& GraphicsLayer::GetPaintController() const {
-  CHECK(DrawsContent());
+  CHECK(PaintsContentOrHitTest());
   if (!paint_controller_)
-    paint_controller_ = PaintController::Create();
+    paint_controller_ = std::make_unique<PaintController>();
   return *paint_controller_;
 }
 
@@ -1006,7 +1032,7 @@ CompositorElementId GraphicsLayer::GetElementId() const {
 }
 
 sk_sp<PaintRecord> GraphicsLayer::CapturePaintRecord() const {
-  DCHECK(DrawsContent());
+  DCHECK(PaintsContentOrHitTest());
 
   if (client_.ShouldThrottleRendering())
     return sk_sp<PaintRecord>(new PaintRecord);
@@ -1022,9 +1048,10 @@ sk_sp<PaintRecord> GraphicsLayer::CapturePaintRecord() const {
 
 void GraphicsLayer::SetLayerState(const PropertyTreeState& layer_state,
                                   const IntPoint& layer_offset) {
-  DCHECK(layer_state.Transform() && layer_state.Clip() && layer_state.Effect());
-
   if (layer_state_) {
+    if (layer_state_->state == layer_state &&
+        layer_state_->offset == layer_offset)
+      return;
     layer_state_->state = layer_state;
     layer_state_->offset = layer_offset;
   } else {
@@ -1036,29 +1063,24 @@ void GraphicsLayer::SetLayerState(const PropertyTreeState& layer_state,
     CcLayer()->SetOffsetToTransformParent(
         gfx::Vector2dF(layer_offset.X(), layer_offset.Y()));
 
-    if (!contents_layer_state_ && ContentsLayer()) {
+    if (ContentsLayer()) {
+      const auto& offset = GetContentsOffsetFromTransformNode();
       ContentsLayer()->SetOffsetToTransformParent(
-          gfx::Vector2dF(layer_offset.X(), layer_offset.Y()));
+          gfx::Vector2dF(offset.X(), offset.Y()));
     }
+    SetPaintArtifactCompositorNeedsUpdate();
   }
 }
 
-void GraphicsLayer::SetContentsLayerState(const PropertyTreeState& layer_state,
-                                          const IntPoint& layer_offset) {
-  DCHECK(layer_state.Transform() && layer_state.Clip() && layer_state.Effect());
+void GraphicsLayer::SetContentsPropertyTreeState(
+    const PropertyTreeState& layer_state) {
   DCHECK(ContentsLayer());
 
-  if (contents_layer_state_) {
-    contents_layer_state_->state = layer_state;
-    contents_layer_state_->offset = layer_offset;
+  if (contents_property_tree_state_) {
+    *contents_property_tree_state_ = layer_state;
   } else {
-    contents_layer_state_ =
-        std::make_unique<LayerState>(LayerState{layer_state, layer_offset});
-  }
-
-  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-    ContentsLayer()->SetOffsetToTransformParent(
-        gfx::Vector2dF(layer_offset.X(), layer_offset.Y()));
+    contents_property_tree_state_ =
+        std::make_unique<PropertyTreeState>(layer_state);
   }
 }
 
@@ -1094,7 +1116,7 @@ scoped_refptr<cc::DisplayItemList> GraphicsLayer::PaintContentsToDisplayList(
   // occurs in LocalFrameView::PaintTree() which calls GraphicsLayer::Paint();
   // this method merely copies the painted output to the cc::DisplayItemList.
   if (painting_control != PAINTING_BEHAVIOR_NORMAL)
-    Paint(nullptr, disabled_mode);
+    Paint(disabled_mode);
 
   auto display_list = base::MakeRefCounted<cc::DisplayItemList>();
 

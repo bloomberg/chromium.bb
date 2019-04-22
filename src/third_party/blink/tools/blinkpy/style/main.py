@@ -100,8 +100,7 @@ def change_directory(filesystem, checkout_root, paths):
     return paths
 
 
-# TODO(tkent): Replace "WebKit" with "Blink" in code.
-class CheckWebKitStyle(object):
+class CheckBlinkStyle(object):
 
     def _engage_awesome_stderr_hacks(self):
         # Change stderr to write with replacement characters so we don't die
@@ -129,17 +128,17 @@ class CheckWebKitStyle(object):
 
         stderr = self._engage_awesome_stderr_hacks()
 
-        # Checking for the verbose flag before calling check_webkit_style_parser()
+        # Checking for the verbose flag before calling check_blink_style_parser()
         # lets us enable verbose logging earlier.
         is_verbose = '-v' in args or '--verbose' in args
 
         checker.configure_logging(stream=stderr, is_verbose=is_verbose)
         _log.debug('Verbose logging enabled.')
 
-        parser = checker.check_webkit_style_parser()
+        parser = checker.check_blink_style_parser()
         (paths, options) = parser.parse(args)
 
-        configuration = checker.check_webkit_style_configuration(options)
+        configuration = checker.check_blink_style_configuration(options)
 
         paths = change_directory(host.filesystem, checkout_root=host.git().checkout_root, paths=paths)
 

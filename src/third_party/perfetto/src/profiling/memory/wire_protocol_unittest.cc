@@ -17,7 +17,7 @@
 #include "src/profiling/memory/wire_protocol.h"
 #include "perfetto/base/logging.h"
 #include "perfetto/base/scoped_file.h"
-#include "src/profiling/memory/record_reader.h"
+#include "perfetto/base/unix_socket.h"
 
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -39,8 +39,8 @@ bool operator==(const AllocMetadata& one, const AllocMetadata& other) {
              0;
 }
 
-bool operator==(const FreeMetadata& one, const FreeMetadata& other);
-bool operator==(const FreeMetadata& one, const FreeMetadata& other) {
+bool operator==(const FreeBatch& one, const FreeBatch& other);
+bool operator==(const FreeBatch& one, const FreeBatch& other) {
   if (one.num_entries != other.num_entries)
     return false;
   for (size_t i = 0; i < one.num_entries; ++i) {
@@ -53,28 +53,21 @@ bool operator==(const FreeMetadata& one, const FreeMetadata& other) {
 
 namespace {
 
-RecordReader::Record ReceiveAll(int sock) {
-  RecordReader record_reader;
-  RecordReader::Record record;
-  bool received = false;
-  while (!received) {
-    RecordReader::ReceiveBuffer buf = record_reader.BeginReceive();
-    ssize_t rd = PERFETTO_EINTR(read(sock, buf.data, buf.size));
-    PERFETTO_CHECK(rd > 0);
-    auto status = record_reader.EndReceive(static_cast<size_t>(rd), &record);
-    switch (status) {
-      case (RecordReader::Result::Noop):
-        break;
-      case (RecordReader::Result::RecordReceived):
-        received = true;
-        break;
-      case (RecordReader::Result::KillConnection):
-        PERFETTO_CHECK(false);
-        break;
-    }
-  }
-  return record;
+base::ScopedFile CopyFD(int fd) {
+  int sv[2];
+  PERFETTO_CHECK(socketpair(AF_UNIX, SOCK_STREAM, 0, sv) == 0);
+  base::UnixSocketRaw send_sock(base::ScopedFile(sv[0]),
+                                base::SockType::kStream);
+  base::UnixSocketRaw recv_sock(base::ScopedFile(sv[1]),
+                                base::SockType::kStream);
+  char msg[] = "a";
+  PERFETTO_CHECK(send_sock.Send(msg, sizeof(msg), &fd, 1));
+  base::ScopedFile res;
+  recv_sock.Receive(msg, sizeof(msg), &res, 1);
+  return res;
 }
+
+constexpr auto kShmemSize = 1048576;
 
 TEST(WireProtocolTest, AllocMessage) {
   char payload[] = {0x77, 0x77, 0x77, 0x00};
@@ -93,17 +86,20 @@ TEST(WireProtocolTest, AllocMessage) {
   msg.payload = payload;
   msg.payload_size = sizeof(payload);
 
-  int sv[2];
-  ASSERT_EQ(socketpair(AF_UNIX, SOCK_STREAM, 0, sv), 0);
-  base::ScopedFile send_sock(sv[0]);
-  base::ScopedFile recv_sock(sv[1]);
-  ASSERT_TRUE(SendWireMessage(*send_sock, msg));
+  auto shmem_client = SharedRingBuffer::Create(kShmemSize);
+  ASSERT_TRUE(shmem_client);
+  ASSERT_TRUE(shmem_client->is_valid());
+  auto shmem_server = SharedRingBuffer::Attach(CopyFD(shmem_client->fd()));
 
-  RecordReader::Record record = ReceiveAll(*recv_sock);
+  ASSERT_TRUE(SendWireMessage(&shmem_client.value(), msg));
 
+  auto buf = shmem_server->BeginRead();
+  ASSERT_TRUE(buf);
   WireMessage recv_msg;
-  ASSERT_TRUE(ReceiveWireMessage(reinterpret_cast<char*>(record.data.get()),
-                                 record.size, &recv_msg));
+  ASSERT_TRUE(ReceiveWireMessage(reinterpret_cast<char*>(buf.data), buf.size,
+                                 &recv_msg));
+  shmem_server->EndRead(std::move(buf));
+
   ASSERT_EQ(recv_msg.record_type, msg.record_type);
   ASSERT_EQ(*recv_msg.alloc_header, *msg.alloc_header);
   ASSERT_EQ(recv_msg.payload_size, msg.payload_size);
@@ -113,25 +109,28 @@ TEST(WireProtocolTest, AllocMessage) {
 TEST(WireProtocolTest, FreeMessage) {
   WireMessage msg = {};
   msg.record_type = RecordType::Free;
-  FreeMetadata metadata = {};
-  metadata.num_entries = kFreePageSize;
-  for (size_t i = 0; i < kFreePageSize; ++i) {
-    metadata.entries[i].sequence_number = 0x111111111111111;
-    metadata.entries[i].addr = 0x222222222222222;
+  FreeBatch batch = {};
+  batch.num_entries = kFreeBatchSize;
+  for (size_t i = 0; i < kFreeBatchSize; ++i) {
+    batch.entries[i].sequence_number = 0x111111111111111;
+    batch.entries[i].addr = 0x222222222222222;
   }
-  msg.free_header = &metadata;
+  msg.free_header = &batch;
 
-  int sv[2];
-  ASSERT_EQ(socketpair(AF_UNIX, SOCK_STREAM, 0, sv), 0);
-  base::ScopedFile send_sock(sv[0]);
-  base::ScopedFile recv_sock(sv[1]);
-  ASSERT_TRUE(SendWireMessage(*send_sock, msg));
+  auto shmem_client = SharedRingBuffer::Create(kShmemSize);
+  ASSERT_TRUE(shmem_client);
+  ASSERT_TRUE(shmem_client->is_valid());
+  auto shmem_server = SharedRingBuffer::Attach(CopyFD(shmem_client->fd()));
 
-  RecordReader::Record record = ReceiveAll(*recv_sock);
+  ASSERT_TRUE(SendWireMessage(&shmem_client.value(), msg));
 
+  auto buf = shmem_server->BeginRead();
+  ASSERT_TRUE(buf);
   WireMessage recv_msg;
-  ASSERT_TRUE(ReceiveWireMessage(reinterpret_cast<char*>(record.data.get()),
-                                 record.size, &recv_msg));
+  ASSERT_TRUE(ReceiveWireMessage(reinterpret_cast<char*>(buf.data), buf.size,
+                                 &recv_msg));
+  shmem_server->EndRead(std::move(buf));
+
   ASSERT_EQ(recv_msg.record_type, msg.record_type);
   ASSERT_EQ(*recv_msg.free_header, *msg.free_header);
   ASSERT_EQ(recv_msg.payload_size, msg.payload_size);

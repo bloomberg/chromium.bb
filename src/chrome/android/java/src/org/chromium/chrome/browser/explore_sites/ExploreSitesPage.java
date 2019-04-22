@@ -9,21 +9,18 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.view.View;
-import android.view.ViewGroup;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.UrlConstants;
-import org.chromium.chrome.browser.modelutil.ListModel;
-import org.chromium.chrome.browser.modelutil.PropertyModel;
-import org.chromium.chrome.browser.modelutil.RecyclerViewAdapter;
+import org.chromium.chrome.browser.gesturenav.HistoryNavigationLayout;
 import org.chromium.chrome.browser.native_page.BasicNativePage;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.native_page.NativePageHost;
@@ -32,10 +29,12 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
-import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
+import org.chromium.ui.modelutil.ListModel;
+import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.modelutil.RecyclerViewAdapter;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -47,11 +46,12 @@ import java.util.List;
  * Provides functionality when the user interacts with the explore sites page.
  */
 public class ExploreSitesPage extends BasicNativePage {
-    private static final String TAG = "ExploreSitesPage";
     private static final String CONTEXT_MENU_USER_ACTION_PREFIX = "ExploreSites";
     private static final int INITIAL_SCROLL_POSITION = 3;
+    private static final int INITIAL_SCROLL_POSITION_PERSONALIZED = 0;
     private static final String NAVIGATION_ENTRY_SCROLL_POSITION_KEY =
             "ExploreSitesPageScrollPosition";
+
     static final PropertyModel.WritableIntPropertyKey STATUS_KEY =
             new PropertyModel.WritableIntPropertyKey();
     static final PropertyModel.WritableIntPropertyKey SCROLL_TO_CATEGORY_KEY =
@@ -59,6 +59,7 @@ public class ExploreSitesPage extends BasicNativePage {
     static final PropertyModel
             .ReadableObjectPropertyKey<ListModel<ExploreSitesCategory>> CATEGORY_LIST_KEY =
             new PropertyModel.ReadableObjectPropertyKey<>();
+    private static final int UNKNOWN_NAV_CATEGORY = -1;
 
     @IntDef({CatalogLoadingState.LOADING, CatalogLoadingState.SUCCESS, CatalogLoadingState.ERROR})
     @Retention(RetentionPolicy.SOURCE)
@@ -69,20 +70,20 @@ public class ExploreSitesPage extends BasicNativePage {
         int LOADING_NET = 4; // Retrieving catalog resources from internet.
     }
 
-    private TabModelSelector mTabModelSelector;
     private NativePageHost mHost;
     private Tab mTab;
     private TabObserver mTabObserver;
     private Profile mProfile;
-    private ViewGroup mView;
+    private HistoryNavigationLayout mView;
     private RecyclerView mRecyclerView;
-    private LinearLayoutManager mLayoutManager;
+    private StableScrollLayoutManager mLayoutManager;
     private String mTitle;
     private PropertyModel mModel;
     private ContextMenuManager mContextMenuManager;
-    private String mNavFragment;
+    private int mNavigateToCategory;
     private boolean mHasFetchedNetworkCatalog;
     private boolean mIsLoaded;
+    private int mInitialScrollPosition;
 
     /**
      * Create a new instance of the explore sites page.
@@ -96,20 +97,19 @@ public class ExploreSitesPage extends BasicNativePage {
         mHost = host;
         mTab = mHost.getActiveTab();
 
-        mTabModelSelector = activity.getTabModelSelector();
         mTitle = activity.getString(R.string.explore_sites_title);
-        mView = (ViewGroup) activity.getLayoutInflater().inflate(
+        mView = (HistoryNavigationLayout) activity.getLayoutInflater().inflate(
                 R.layout.explore_sites_page_layout, null);
         mProfile = mHost.getActiveTab().getProfile();
         mHasFetchedNetworkCatalog = false;
 
         mModel = new PropertyModel.Builder(STATUS_KEY, SCROLL_TO_CATEGORY_KEY, CATEGORY_LIST_KEY)
-                         .with(CATEGORY_LIST_KEY, new ListModel<ExploreSitesCategory>())
+                         .with(CATEGORY_LIST_KEY, new ListModel<>())
                          .with(STATUS_KEY, CatalogLoadingState.LOADING)
                          .build();
 
         Context context = mView.getContext();
-        mLayoutManager = new LinearLayoutManager(context);
+        mLayoutManager = new StableScrollLayoutManager(context);
         int iconSizePx = context.getResources().getDimensionPixelSize(R.dimen.tile_view_icon_size);
         RoundedIconGenerator iconGenerator = new RoundedIconGenerator(iconSizePx, iconSizePx,
                 iconSizePx / 2,
@@ -117,32 +117,38 @@ public class ExploreSitesPage extends BasicNativePage {
                         context.getResources(), R.color.default_favicon_background_color),
                 context.getResources().getDimensionPixelSize(R.dimen.tile_view_icon_text_size));
 
-        NativePageNavigationDelegateImpl navDelegate =
-                new NativePageNavigationDelegateImpl(activity, mProfile, host, mTabModelSelector);
+        NativePageNavigationDelegateImpl navDelegate = new NativePageNavigationDelegateImpl(
+                activity, mProfile, host, activity.getTabModelSelector());
+
         // Don't direct reference activity because it might change if tab is reparented.
         Runnable closeContextMenuCallback =
                 () -> host.getActiveTab().getActivity().closeContextMenu();
-        mContextMenuManager = new ContextMenuManager(navDelegate, this::setTouchEnabled,
-                closeContextMenuCallback, CONTEXT_MENU_USER_ACTION_PREFIX);
+        mContextMenuManager = new ContextMenuManager(navDelegate,
+                (enabled) -> {}, closeContextMenuCallback, CONTEXT_MENU_USER_ACTION_PREFIX);
         host.getActiveTab().getWindowAndroid().addContextMenuCloseListener(mContextMenuManager);
 
         CategoryCardAdapter adapterDelegate = new CategoryCardAdapter(
                 mModel, mLayoutManager, iconGenerator, mContextMenuManager, navDelegate, mProfile);
 
-        mRecyclerView = (RecyclerView) mView.findViewById(R.id.explore_sites_category_recycler);
+        mView.setTab(mTab);
+        mRecyclerView = mView.findViewById(R.id.explore_sites_category_recycler);
         RecyclerViewAdapter<CategoryCardViewHolderFactory.CategoryCardViewHolder, Void> adapter =
                 new RecyclerViewAdapter<>(adapterDelegate, new CategoryCardViewHolderFactory());
 
         mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.setAdapter(adapter);
 
+        // When we personalize, we don't want to scroll to the 4th category.
+        mInitialScrollPosition =
+                ExploreSitesBridge.getVariation() == ExploreSitesVariation.PERSONALIZED
+                ? INITIAL_SCROLL_POSITION_PERSONALIZED
+                : INITIAL_SCROLL_POSITION;
+
         ExploreSitesBridge.getEspCatalog(mProfile, this::translateToModel);
         RecordUserAction.record("Android.ExploreSitesPage.Open");
-
-        // TODO(chili): Set layout to be an observer of list model
     }
 
-    void translateToModel(@Nullable List<ExploreSitesCategory> categoryList) {
+    private void translateToModel(@Nullable List<ExploreSitesCategory> categoryList) {
         // If list is null or we received an empty catalog from network, show error.
         if (categoryList == null || (categoryList.isEmpty() && mHasFetchedNetworkCatalog)) {
             onUpdatedCatalog(false);
@@ -154,6 +160,9 @@ public class ExploreSitesPage extends BasicNativePage {
             mHasFetchedNetworkCatalog = true;
             ExploreSitesBridge.updateCatalogFromNetwork(
                     mProfile, /* isImmediateFetch =*/true, this::onUpdatedCatalog);
+            RecordHistogram.recordEnumeratedHistogram("ExploreSites.CatalogUpdateRequestSource",
+                    ExploreSitesEnums.CatalogUpdateRequestSource.EXPLORE_SITES_PAGE,
+                    ExploreSitesEnums.CatalogUpdateRequestSource.NUM_ENTRIES);
             return;
         }
         mModel.set(STATUS_KEY, CatalogLoadingState.SUCCESS);
@@ -167,15 +176,8 @@ public class ExploreSitesPage extends BasicNativePage {
             }
         }
 
-        Parcelable savedScrollPosition = getLayoutManagerStateFromNavigationEntry();
-        if (savedScrollPosition != null) {
-            mLayoutManager.onRestoreInstanceState(savedScrollPosition);
-        } else if (mNavFragment != null) {
-            lookupCategoryAndScroll();
-        } else {
-            mModel.set(SCROLL_TO_CATEGORY_KEY,
-                    Math.min(categoryListModel.size() - 1, INITIAL_SCROLL_POSITION));
-        }
+        restoreScrollPosition();
+
         if (mTab != null) {
             // We want to observe page load start so that we can store the recycler view layout
             // state, for making "back" work correctly.
@@ -199,6 +201,25 @@ public class ExploreSitesPage extends BasicNativePage {
         mIsLoaded = true;
     }
 
+    private void restoreScrollPosition() {
+        Parcelable savedScrollPosition = getLayoutManagerStateFromNavigationEntry();
+
+        if (savedScrollPosition != null) {
+            mLayoutManager.onRestoreInstanceState(savedScrollPosition);
+        } else {
+            int scrollPosition = mInitialScrollPosition;
+            if (mNavigateToCategory != UNKNOWN_NAV_CATEGORY) {
+                scrollPosition = lookupCategory();
+            }
+            if (scrollPosition == RecyclerView.NO_POSITION) {
+                // Default to first position.
+                scrollPosition = 0;
+            }
+
+            mModel.set(SCROLL_TO_CATEGORY_KEY, scrollPosition);
+        }
+    }
+
     private void onUpdatedCatalog(Boolean hasFetchedCatalog) {
         if (hasFetchedCatalog) {
             ExploreSitesBridge.getEspCatalog(mProfile, this::translateToModel);
@@ -208,8 +229,12 @@ public class ExploreSitesPage extends BasicNativePage {
         }
     }
 
-    public boolean isLoadedForTests() {
+    boolean isLoadedForTests() {
         return mIsLoaded;
+    }
+
+    int initialScrollPositionForTests() {
+        return mInitialScrollPosition;
     }
 
     @Override
@@ -230,13 +255,16 @@ public class ExploreSitesPage extends BasicNativePage {
     @Override
     public void updateForUrl(String url) {
         super.updateForUrl(url);
+        mNavigateToCategory = UNKNOWN_NAV_CATEGORY;
         try {
-            mNavFragment = new URI(url).getFragment();
-        } catch (URISyntaxException e) {
-            mNavFragment = null;
+            mNavigateToCategory = Integer.parseInt(new URI(url).getFragment());
+        } catch (URISyntaxException | NumberFormatException ignored) {
         }
         if (mModel.get(STATUS_KEY) == CatalogLoadingState.SUCCESS) {
-            lookupCategoryAndScroll();
+            int category = lookupCategory();
+            if (category != RecyclerView.NO_POSITION) {
+                mModel.set(SCROLL_TO_CATEGORY_KEY, category);
+            }
         }
     }
 
@@ -280,7 +308,8 @@ public class ExploreSitesPage extends BasicNativePage {
         Parcel parcel = Parcel.obtain();
         parcel.unmarshall(parcelData, 0, parcelData.length);
         parcel.setDataPosition(0);
-        Parcelable scrollPosition = LinearLayoutManager.SavedState.CREATOR.createFromParcel(parcel);
+        Parcelable scrollPosition =
+                StableScrollLayoutManager.SavedState.CREATOR.createFromParcel(parcel);
         parcel.recycle();
 
         return scrollPosition;
@@ -295,20 +324,16 @@ public class ExploreSitesPage extends BasicNativePage {
         super.destroy();
     }
 
-    private void setTouchEnabled(boolean enabled) {} // Does nothing.
-
-    private void lookupCategoryAndScroll() {
-        try {
-            int id = Integer.parseInt(mNavFragment);
+    private int lookupCategory() {
+        if (mNavigateToCategory != UNKNOWN_NAV_CATEGORY) {
             ListModel<ExploreSitesCategory> categoryList = mModel.get(CATEGORY_LIST_KEY);
             for (int i = 0; i < categoryList.size(); i++) {
-                if (categoryList.get(i).getId() == id) {
-                    mModel.set(SCROLL_TO_CATEGORY_KEY, i);
-                    break;
+                if (categoryList.get(i).getId() == mNavigateToCategory) {
+                    return i;
                 }
             }
+        }
 
-        } catch (NumberFormatException e) {
-        } // do nothing
+        return RecyclerView.NO_POSITION;
     }
 }

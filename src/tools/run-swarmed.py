@@ -33,21 +33,20 @@ def _Spawn(args):
   """Triggers a swarming job. The arguments passed are:
   - The index of the job;
   - The command line arguments object;
-  - The hash of the isolate job used to trigger;
-  - Value of --gtest_filter arg, or empty if none.
+  - The hash of the isolate job used to trigger.
 
   The return value is passed to a collect-style map() and consists of:
   - The index of the job;
   - The json file created by triggering and used to collect results;
   - The command line arguments object.
   """
-  index, args, isolated_hash, gtest_filter = args
+  index, args, isolated_hash = args
   json_file = os.path.join(args.results, '%d.json' % index)
   trigger_args = [
       'tools/swarming_client/swarming.py', 'trigger',
       '-S', 'https://chromium-swarm.appspot.com',
       '-I', 'https://isolateserver.appspot.com',
-      '-d', 'pool', 'Chrome',
+      '-d', 'pool', args.pool,
       '-s', isolated_hash,
       '--dump-json', json_file,
   ]
@@ -60,12 +59,37 @@ def _Spawn(args):
     ]
   elif args.target_os == 'win':
     trigger_args += [ '-d', 'os', 'Windows' ]
+  elif args.target_os == 'android':
+    # The canonical version numbers are stored in the infra repository here:
+    # build/scripts/slave/recipe_modules/swarming/api.py
+    cpython_version = 'version:2.7.14.chromium14'
+    vpython_version = 'git_revision:96f81e737868d43124b4661cf1c325296ca04944'
+    cpython_pkg = (
+        '.swarming_module:infra/python/cpython/${platform}:' +
+        cpython_version)
+    vpython_native_pkg = (
+        '.swarming_module:infra/tools/luci/vpython-native/${platform}:' +
+        vpython_version)
+    vpython_pkg = (
+        '.swarming_module:infra/tools/luci/vpython/${platform}:' +
+        vpython_version)
+    trigger_args += [
+        '-d', 'os', 'Android',
+        '-d', 'device_os', args.device_os,
+        '--cipd-package', cpython_pkg,
+        '--cipd-package', vpython_native_pkg,
+        '--cipd-package', vpython_pkg,
+        '--env-prefix', 'PATH', '.swarming_module',
+        '--env-prefix', 'PATH', '.swarming_module/bin',
+        '--env-prefix', 'VPYTHON_VIRTUALENV_ROOT',
+        '.swarming_module_cache/vpython',
+    ]
   trigger_args += [
       '--',
       '--test-launcher-summary-output=${ISOLATED_OUTDIR}/output.json',
       '--system-log-file=${ISOLATED_OUTDIR}/system_log']
-  if gtest_filter:
-    trigger_args.append('--gtest_filter=' + gtest_filter)
+  if args.gtest_filter:
+    trigger_args.append('--gtest_filter=' + args.gtest_filter)
   elif args.target_os == 'fuchsia':
     filter_file = \
         'testing/buildbot/filters/fuchsia.' + args.test_name + '.filter'
@@ -108,6 +132,10 @@ def main():
                       help='CPU architecture of the test binary.')
   parser.add_argument('--copies', '-n', type=int, default=1,
                       help='Number of copies to spawn.')
+  parser.add_argument('--device-os', default='M',
+                      help='Run tests on the given version of Android.')
+  parser.add_argument('--pool', default='Chrome',
+                      help='Use the given swarming pool.')
   parser.add_argument('--results', '-r', default='results',
                       help='Directory in which to store results.')
   parser.add_argument('--gtest_filter',
@@ -160,8 +188,7 @@ def main():
   try:
     print 'Triggering %d tasks...' % args.copies
     pool = multiprocessing.Pool()
-    spawn_args = map(lambda i: (i, args, isolated_hash, args.gtest_filter),
-                     range(args.copies))
+    spawn_args = map(lambda i: (i, args, isolated_hash), range(args.copies))
     spawn_results = pool.imap_unordered(_Spawn, spawn_args)
 
     exit_codes = []

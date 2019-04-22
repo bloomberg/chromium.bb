@@ -36,13 +36,14 @@ void ThreadTable::RegisterTable(sqlite3* db, const TraceStorage* storage) {
   Table::Register<ThreadTable>(db, storage, "thread");
 }
 
-Table::Schema ThreadTable::CreateSchema(int, const char* const*) {
+base::Optional<Table::Schema> ThreadTable::Init(int, const char* const*) {
   return Schema(
       {
           Table::Column(Column::kUtid, "utid", ColumnType::kInt),
           Table::Column(Column::kUpid, "upid", ColumnType::kInt),
           Table::Column(Column::kName, "name", ColumnType::kString),
           Table::Column(Column::kTid, "tid", ColumnType::kInt),
+          Table::Column(Column::kStartTs, "start_ts", ColumnType::kLong),
       },
       {Column::kUtid});
 }
@@ -59,10 +60,11 @@ int ThreadTable::BestIndex(const QueryConstraints& qc, BestIndexInfo* info) {
   // If the query has a constraint on the |utid| field, return a reduced cost
   // because we can do that filter efficiently.
   const auto& constraints = qc.constraints();
-  if (constraints.size() == 1 && constraints.front().iColumn == Column::kUtid) {
-    info->estimated_cost = IsOpEq(constraints.front().op) ? 1 : 10;
+  for (const auto& cs : qc.constraints()) {
+    if (cs.iColumn == Column::kUtid) {
+      info->estimated_cost = IsOpEq(constraints.front().op) ? 1 : 10;
+    }
   }
-
   return SQLITE_OK;
 }
 
@@ -71,7 +73,7 @@ ThreadTable::Cursor::Cursor(const TraceStorage* storage,
                             sqlite3_value** argv)
     : storage_(storage) {
   min = 0;
-  max = static_cast<uint32_t>(storage_->thread_count());
+  max = static_cast<uint32_t>(storage_->thread_count()) - 1;
   desc = false;
   current = min;
   for (size_t j = 0; j < qc.constraints().size(); j++) {
@@ -108,17 +110,28 @@ int ThreadTable::Cursor::Column(sqlite3_context* context, int N) {
       break;
     }
     case Column::kUpid: {
-      sqlite3_result_int64(context, thread.upid.value_or(0));
+      if (thread.upid.has_value()) {
+        sqlite3_result_int64(context, thread.upid.value());
+      } else {
+        sqlite3_result_null(context);
+      }
       break;
     }
     case Column::kName: {
       const auto& name = storage_->GetString(thread.name_id);
-      sqlite3_result_text(context, name.c_str(),
-                          static_cast<int>(name.length()), nullptr);
+      sqlite3_result_text(context, name.c_str(), -1, kSqliteStatic);
       break;
     }
     case Column::kTid: {
       sqlite3_result_int64(context, thread.tid);
+      break;
+    }
+    case Column::kStartTs: {
+      if (thread.start_ns != 0) {
+        sqlite3_result_int64(context, thread.start_ns);
+      } else {
+        sqlite3_result_null(context);
+      }
       break;
     }
     default: {

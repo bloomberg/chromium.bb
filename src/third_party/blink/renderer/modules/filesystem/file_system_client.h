@@ -32,31 +32,33 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_FILE_SYSTEM_CLIENT_H_
 
 #include <memory>
+
+#include "base/callback.h"
+#include "base/macros.h"
 #include "third_party/blink/public/mojom/filesystem/file_system.mojom-blink.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
 class ExecutionContext;
 class LocalFrame;
-class ContentSettingCallbacks;
 class WorkerClients;
 
 class FileSystemClient {
   USING_FAST_MALLOC(FileSystemClient);
-  WTF_MAKE_NONCOPYABLE(FileSystemClient);
 
  public:
   FileSystemClient() = default;
   virtual ~FileSystemClient() = default;
 
   virtual bool RequestFileSystemAccessSync(ExecutionContext*) = 0;
-  virtual void RequestFileSystemAccessAsync(
-      ExecutionContext*,
-      std::unique_ptr<ContentSettingCallbacks>) = 0;
+  virtual void RequestFileSystemAccessAsync(ExecutionContext*,
+                                            base::OnceCallback<void(bool)>) = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FileSystemClient);
 };
 
 MODULES_EXPORT void ProvideLocalFileSystemTo(LocalFrame&,

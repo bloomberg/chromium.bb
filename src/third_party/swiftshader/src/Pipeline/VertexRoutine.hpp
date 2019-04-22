@@ -18,7 +18,12 @@
 #include "Device/Color.hpp"
 #include "Device/VertexProcessor.hpp"
 #include "ShaderCore.hpp"
-#include "VertexShader.hpp"
+#include "SpirvShader.hpp"
+
+namespace vk
+{
+	class PipelineLayout;
+} // namespace vk
 
 namespace sw
 {
@@ -38,7 +43,10 @@ namespace sw
 	class VertexRoutine : public VertexRoutinePrototype
 	{
 	public:
-		VertexRoutine(const VertexProcessor::State &state, const VertexShader *shader);
+		VertexRoutine(
+			const VertexProcessor::State &state,
+			vk::PipelineLayout const *pipelineLayout,
+			SpirvShader const *spirvShader);
 		virtual ~VertexRoutine();
 
 		void generate();
@@ -48,10 +56,10 @@ namespace sw
 
 		Int clipFlags;
 
-		RegisterArray<MAX_VERTEX_INPUTS> v;    // Input registers
-		RegisterArray<MAX_VERTEX_OUTPUTS> o;   // Output registers
+		SpirvRoutine routine;
 
 		const VertexProcessor::State &state;
+		SpirvShader const * const spirvShader;
 
 	private:
 		virtual void program(UInt &index) = 0;
@@ -61,10 +69,8 @@ namespace sw
 		Vector4f readStream(Pointer<Byte> &buffer, UInt &stride, const Stream &stream, const UInt &index);
 		void readInput(UInt &index);
 		void computeClipFlags();
-		void postTransform();
 		void writeCache(Pointer<Byte> &cacheLine);
 		void writeVertex(const Pointer<Byte> &vertex, Pointer<Byte> &cacheLine);
-		void transformFeedback(const Pointer<Byte> &vertex, const UInt &primitiveNumber, const UInt &indexInPrimitive);
 	};
 }
 

@@ -26,7 +26,7 @@ int64_t CreateUniqueContextId() {
 }  // namespace
 
 FakeNavigationContext::FakeNavigationContext()
-    : navigation_id_(CreateUniqueContextId()){};
+    : navigation_id_(CreateUniqueContextId()) {}
 FakeNavigationContext::~FakeNavigationContext() = default;
 
 WebState* FakeNavigationContext::GetWebState() {

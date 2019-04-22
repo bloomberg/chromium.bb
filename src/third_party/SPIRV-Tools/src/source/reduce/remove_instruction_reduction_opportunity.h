@@ -15,30 +15,27 @@
 #ifndef SOURCE_REDUCE_REMOVE_INSTRUCTION_REDUCTION_OPPORTUNITY_H_
 #define SOURCE_REDUCE_REMOVE_INSTRUCTION_REDUCTION_OPPORTUNITY_H_
 
-#include "reduction_opportunity.h"
 #include "source/opt/instruction.h"
+#include "source/reduce/reduction_opportunity.h"
 
 namespace spvtools {
 namespace reduce {
 
-using namespace opt;
-
-// Captures the opportunity to remove an instruction from the SPIR-V module.
+// An opportunity to remove an instruction from the SPIR-V module.
 class RemoveInstructionReductionOpportunity : public ReductionOpportunity {
  public:
   // Constructs the opportunity to remove |inst|.
-  explicit RemoveInstructionReductionOpportunity(Instruction* inst)
+  explicit RemoveInstructionReductionOpportunity(opt::Instruction* inst)
       : inst_(inst) {}
 
-  // This kind of opportunity can be unconditionally applied.
+  // Always returns true, as this opportunity can always be applied.
   bool PreconditionHolds() override;
 
  protected:
-  // Remove the instruction.
   void Apply() override;
 
  private:
-  Instruction* inst_;
+  opt::Instruction* inst_;
 };
 
 }  // namespace reduce

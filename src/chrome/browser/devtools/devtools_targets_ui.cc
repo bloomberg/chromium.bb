@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
@@ -385,7 +386,7 @@ void PortForwardingStatusSerializer::PortStatusChanged(
     auto port_status_dict = std::make_unique<base::DictionaryValue>();
     const PortStatusMap& port_status_map = sit->second;
     for (auto it = port_status_map.begin(); it != port_status_map.end(); ++it) {
-      port_status_dict->SetInteger(base::IntToString(it->first), it->second);
+      port_status_dict->SetInteger(base::NumberToString(it->first), it->second);
     }
 
     auto device_status_dict = std::make_unique<base::DictionaryValue>();

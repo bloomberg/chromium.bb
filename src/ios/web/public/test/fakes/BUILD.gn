@@ -8,7 +8,9 @@ source_set("fakes") {
 
   deps = [
     "//base",
+    "//ios/web/common",
     "//ios/web/public/download",
+    "//ios/web/public/find_in_page",
     "//ios/web/test:test_constants",
     "//ios/web/web_state:navigation_context",
     "//ios/web/web_state:web_frame",
@@ -25,6 +27,8 @@ source_set("fakes") {
   ]
 
   sources = [
+    "crw_fake_find_in_page_manager_delegate.h",
+    "crw_fake_find_in_page_manager_delegate.mm",
     "crw_fake_web_state_policy_decider.h",
     "crw_fake_web_state_policy_decider.mm",
     "crw_test_js_injection_receiver.h",
@@ -35,10 +39,14 @@ source_set("fakes") {
     "fake_download_controller_delegate.mm",
     "fake_download_task.h",
     "fake_download_task.mm",
+    "fake_find_in_page_manager_delegate.h",
+    "fake_find_in_page_manager_delegate.mm",
     "fake_navigation_context.h",
     "fake_navigation_context.mm",
     "fake_web_frame.cc",
     "fake_web_frame.h",
+    "fake_web_state_policy_decider.h",
+    "fake_web_state_policy_decider.mm",
     "test_browser_state.cc",
     "test_browser_state.h",
     "test_java_script_dialog_presenter.h",

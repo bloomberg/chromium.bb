@@ -5,7 +5,7 @@ function testImageColors(source, cyanInTargetGamut) {
 
   var image = document.querySelector('img');
   image.onload = function() {
-    runAfterLayoutAndPaint(function () { setTimeout(drawImageToCanvas, 0) });
+    runAfterLayoutAndPaint(drawImageToCanvas);
   };
 
   image.src = source;

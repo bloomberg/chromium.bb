@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper_transform_cache.h"
 
+#include <utility>
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/graphics/paint/transform_paint_property_node.h"
 #include "third_party/blink/renderer/platform/testing/paint_property_test_helpers.h"
@@ -34,10 +35,7 @@ class GeometryMapperTransformCacheTest : public testing::Test {
                                        double y) {
     const auto& cache = GetTransformCache(node);
     EXPECT_EQ(&t0(), cache.root_of_2d_translation());
-    EXPECT_EQ(TransformationMatrix().Translate(x, y),
-              cache.to_2d_translation_root());
-    EXPECT_EQ(TransformationMatrix().Translate(-x, -y),
-              cache.from_2d_translation_root());
+    EXPECT_EQ(FloatSize(x, y), cache.to_2d_translation_root());
 
     EXPECT_FALSE(HasPlaneRootTransform(node));
     EXPECT_FALSE(HasScreenTransform(node));
@@ -46,11 +44,13 @@ class GeometryMapperTransformCacheTest : public testing::Test {
     EXPECT_FALSE(HasScreenTransform(node));
 
     EXPECT_EQ(&t0(), cache.plane_root());
-    EXPECT_EQ(cache.to_2d_translation_root(), cache.to_plane_root());
-    EXPECT_EQ(cache.from_2d_translation_root(), cache.from_plane_root());
-    EXPECT_EQ(cache.to_2d_translation_root(), cache.to_screen());
-    EXPECT_EQ(cache.from_2d_translation_root(), cache.projection_from_screen());
-  };
+    TransformationMatrix actual_to_plane_root;
+    cache.ApplyToPlaneRoot(actual_to_plane_root);
+    EXPECT_EQ(TransformationMatrix().Translate(x, y), actual_to_plane_root);
+    TransformationMatrix actual_from_plane_root;
+    cache.ApplyFromPlaneRoot(actual_from_plane_root);
+    EXPECT_EQ(TransformationMatrix().Translate(-x, -y), actual_from_plane_root);
+  }
 
   static void CheckRootAsPlaneRoot(
       const TransformPaintPropertyNode& node,
@@ -60,10 +60,8 @@ class GeometryMapperTransformCacheTest : public testing::Test {
       double translate_y) {
     const auto& cache = GetTransformCache(node);
     EXPECT_EQ(&root_of_2d_translation, cache.root_of_2d_translation());
-    EXPECT_EQ(TransformationMatrix().Translate(translate_x, translate_y),
+    EXPECT_EQ(FloatSize(translate_x, translate_y),
               cache.to_2d_translation_root());
-    EXPECT_EQ(TransformationMatrix().Translate(-translate_x, -translate_y),
-              cache.from_2d_translation_root());
 
     EXPECT_TRUE(HasPlaneRootTransform(node));
     EXPECT_FALSE(HasScreenTransform(node));
@@ -74,8 +72,13 @@ class GeometryMapperTransformCacheTest : public testing::Test {
     EXPECT_EQ(&t0(), cache.plane_root());
     EXPECT_EQ(to_plane_root, cache.to_plane_root());
     EXPECT_EQ(to_plane_root.Inverse(), cache.from_plane_root());
-    EXPECT_EQ(cache.to_plane_root(), cache.to_screen());
-    EXPECT_EQ(cache.from_plane_root(), cache.projection_from_screen());
+
+    TransformationMatrix actual_to_screen;
+    cache.ApplyToScreen(actual_to_screen);
+    EXPECT_EQ(to_plane_root, actual_to_screen);
+    TransformationMatrix actual_projection_from_screen;
+    cache.ApplyProjectionFromScreen(actual_projection_from_screen);
+    EXPECT_EQ(to_plane_root.Inverse(), actual_projection_from_screen);
   }
 
   static void CheckPlaneRootSameAs2dTranslationRoot(
@@ -86,10 +89,8 @@ class GeometryMapperTransformCacheTest : public testing::Test {
       double translate_y) {
     const auto& cache = GetTransformCache(node);
     EXPECT_EQ(&plane_root, cache.root_of_2d_translation());
-    EXPECT_EQ(TransformationMatrix().Translate(translate_x, translate_y),
+    EXPECT_EQ(FloatSize(translate_x, translate_y),
               cache.to_2d_translation_root());
-    EXPECT_EQ(TransformationMatrix().Translate(-translate_x, -translate_y),
-              cache.from_2d_translation_root());
 
     EXPECT_FALSE(HasPlaneRootTransform(node));
     EXPECT_FALSE(HasScreenTransform(node));
@@ -98,8 +99,6 @@ class GeometryMapperTransformCacheTest : public testing::Test {
     EXPECT_TRUE(HasScreenTransform(node));
 
     EXPECT_EQ(&plane_root, cache.plane_root());
-    EXPECT_EQ(cache.to_2d_translation_root(), cache.to_plane_root());
-    EXPECT_EQ(cache.from_2d_translation_root(), cache.from_plane_root());
     EXPECT_EQ(to_screen, cache.to_screen());
     auto projection_from_screen = to_screen;
     projection_from_screen.FlattenTo2d();
@@ -117,10 +116,8 @@ class GeometryMapperTransformCacheTest : public testing::Test {
       double translate_y) {
     const auto& cache = GetTransformCache(node);
     EXPECT_EQ(&root_of_2d_translation, cache.root_of_2d_translation());
-    EXPECT_EQ(TransformationMatrix().Translate(translate_x, translate_y),
+    EXPECT_EQ(FloatSize(translate_x, translate_y),
               cache.to_2d_translation_root());
-    EXPECT_EQ(TransformationMatrix().Translate(-translate_x, -translate_y),
-              cache.from_2d_translation_root());
 
     EXPECT_TRUE(HasPlaneRootTransform(node));
     EXPECT_FALSE(HasScreenTransform(node));
@@ -235,8 +232,7 @@ TEST_F(GeometryMapperTransformCacheTest, TransformUpdate) {
 
   // Change t2 back to a 2d translation.
   GeometryMapperTransformCache::ClearCache();
-  t2->Update(*t1, TransformPaintPropertyNode::State{
-                      TransformationMatrix().Translate(11, 12)});
+  t2->Update(*t1, TransformPaintPropertyNode::State{FloatSize(11, 12)});
   Check2dTranslationToRoot(t0(), 0, 0);
   Check2dTranslationToRoot(*t1, 1, 2);
   Check2dTranslationToRoot(*t2, 12, 14);

@@ -17,7 +17,8 @@ TestSharedURLLoaderFactory::TestSharedURLLoaderFactory(
   mojom::NetworkContextPtr network_context;
   network_context_ = std::make_unique<NetworkContext>(
       network_service, mojo::MakeRequest(&network_context),
-      url_request_context_.get());
+      url_request_context_.get(),
+      /*cors_exempt_header_list=*/std::vector<std::string>());
   mojom::URLLoaderFactoryParamsPtr params =
       mojom::URLLoaderFactoryParams::New();
   params->process_id = mojom::kBrowserProcessId;

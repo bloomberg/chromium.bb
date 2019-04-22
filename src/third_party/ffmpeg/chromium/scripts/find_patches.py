@@ -27,10 +27,12 @@ import subprocess
 
 # What directory will we look for patches in?
 # TODO(liberato): Should we find the root of the ffmpeg tree?
-PATH="."
+PATH = "."
+
 
 def log(str):
   print("[%s]" % str, file=sys.stderr)
+
 
 def run(command):
   """ Runs a command and returns stdout.
@@ -43,6 +45,7 @@ def run(command):
   """
   return subprocess.Popen(command, stdout=subprocess.PIPE).communicate()[0]
 
+
 class PatchInfo:
   """ Structure to keep track of one patch in a diff.
 
@@ -52,6 +55,7 @@ class PatchInfo:
   lines result in an approximate search, we want to be reasonably sure that
   any deleted lines aren't actually just changes ("delete old, add new").
   """
+
   def __init__(self):
     # Does a diff insert any lines?
     self._does_insert = False
@@ -59,14 +63,16 @@ class PatchInfo:
     self._deleted_lines = set()
 
   def record_inserted_line(self, line):
-    """ Records that |line| was inserted as part of the patch, where |line| is
-    a string from the patch, e.g., "+ foo that was added;"
+    """ Records that |line| was inserted as part of the patch.
+
+    |line| is a string from the patch, e.g., "+ foo that was added;"
     """
     self._does_insert = True
 
   def record_deleted_line(self, line):
-    """ Records that |line| was deleted as part of the patch, where |line| is
-    a string from the patch, e.g., "- foo that was removed;"
+    """ Records that |line| was deleted as part of the patch.
+
+    |line| is a string from the patch, e.g., "- foo that was removed;"
     """
     self._deleted_lines.add(line)
 
@@ -89,6 +95,7 @@ class PatchInfo:
       return self._deleted_lines
     return set()
 
+
 def main(argv):
   # Origin branch that contains the patches we want to find.
   # Can specify, for example "origin/merge-m68" to get the  patches file for
@@ -105,12 +112,13 @@ def main(argv):
 
   write_patches_file(origin_branch, sys.stdout)
 
+
 def write_patches_file(origin_branch, output_file):
   """Write the patches file for |origin_branch| to |output_file|."""
   # Get the latest upstream commit that's reachable from the origin branch.
   # We'll use that to compare against.
-  upstream = run(["git", "merge-base", "upstream/master", origin_branch]
-                ).strip()
+  upstream = run(["git", "merge-base", "upstream/master",
+                  origin_branch]).strip()
   if not upstream:
     raise Exception("Could not find upstream commit")
 
@@ -125,15 +133,17 @@ def write_patches_file(origin_branch, output_file):
   # Find diffs between the versions, excluding all files that are only on
   # origin.  We explicitly exclude .gitignore, since it exists in both places.
   # Ask for no context, since we ignore it anyway.
-  diff = run(["git", "diff", "--diff-filter=a", "-U0",
-          revision_range, PATH, ":!.gitignore"])
+  diff = run([
+      "git", "diff", "--diff-filter=a", "-U0", revision_range, PATH,
+      ":!.gitignore"
+  ])
 
   # Set of chromium patch sha1s we've seen.
   sha1s = set()
   # Map of sha1 to set of files that it affects.
   sha1ToFiles = collections.defaultdict(set)
   # Mapping of filename to set of lines that were deleted.
-  files_to_deleted_lines={}
+  files_to_deleted_lines = {}
   patch_info = PatchInfo()
   filename = None
 
@@ -160,7 +170,7 @@ def write_patches_file(origin_branch, output_file):
       # Extract the "+linespec", which is what was added by |origin|.
       # If the number of lines is specified as 0, then it's a deletion only.
       # If the number of lines is unspecified, then it's 1.
-      added_linespec = re.sub(r'^.*\+(.*) @@.*', r'\1', line)
+      added_linespec = re.sub(r"^.*\+(.*) @@.*", r"\1", line)
       # Figure out the lines to blame.  This is just "starting_line,+number".
       if "," in added_linespec:
         # linespec is "line_number,number_of_lines"
@@ -173,8 +183,10 @@ def write_patches_file(origin_branch, output_file):
         # One-line change
         blame_range = "%s,+1" % added_linespec
 
-      blame = run(["git", "blame", "-L %s" % blame_range, revision_range, "--",
-                   filename])
+      blame = run([
+          "git", "blame", "-l",
+          "-L %s" % blame_range, revision_range, "--", filename
+      ])
 
       # Collect sha1 lines, and create a mapping of files that is changed by
       # each sha1.
@@ -203,9 +215,11 @@ def write_patches_file(origin_branch, output_file):
 
       log("Checking for deleted lines in %s" % filename)
       # Specify "--first-parent" so that we find commits on (presumably) origin.
-      sha1 = run(["git", "log", "-1", revision_range,
-                  "--format=%H", "-S", deleted_line, origin_branch, "--",
-                  filename]).strip()
+      sha1 = run([
+          "git", "log", "-1", revision_range, "--format=%H", "-S", deleted_line,
+          origin_branch, "--", filename
+      ]).strip()
+
       # Add the sha1 to the sets
       sha1s.add(sha1)
       sha1ToFiles[sha1].add(filename)
@@ -220,25 +234,32 @@ def write_patches_file(origin_branch, output_file):
 
   # Print the patches file.
   log("Writing patch file")
-  print("--------------------------------------------------------------------",
-          file=output_file)
-  print("-- Chromium Patches                                               --",
-          file=output_file)
-  print("--------------------------------------------------------------------",
-          file=output_file)
+  print(
+      "---------------------------------------------------------------------",
+      file=output_file)
+  print(
+      "-- Chromium Patches. Autogenerated by " + os.path.basename(__file__) +
+      ", do not edit --",
+      file=output_file)
+  print(
+      "---------------------------------------------------------------------",
+      file=output_file)
   print("\n", file=output_file)
   wd = os.getcwd()
-  for sha1, date in sorted(sha1_to_date.iteritems(), key=lambda (k,v): v):
-    print("------------------------------------------------------------------",
-            file=output_file)
-    print(run(["git", "log", "-1", "%s" % sha1]), file=output_file)
-    print(" Affects: ", file=output_file)
+  for sha1, date in sorted(sha1_to_date.iteritems(), key=lambda (k, v): v):
+    print(
+        "------------------------------------------------------------------",
+        file=output_file)
+    for line in run(["git", "log", "-1", "%s" % sha1]).splitlines():
+      print(line.rstrip(), file=output_file)
+    print("\nAffects:", file=output_file)
     # TODO(liberato): maybe add the lines that were affected.
-    for file in sha1ToFiles[sha1]:
-      print(os.path.relpath(file, wd), file=output_file)
+    for file in sorted(sha1ToFiles[sha1]):
+      print("    " + os.path.relpath(file, wd), file=output_file)
     print(file=output_file)
 
   log("Done")
+
 
 if __name__ == "__main__":
   main(sys.argv)

@@ -133,7 +133,6 @@ void ListMarkerPainter::Paint(const PaintInfo& paint_info) {
   }
 
   TextRunPaintInfo text_run_paint_info(text_run);
-  text_run_paint_info.bounds = FloatRect(EnclosingIntRect(marker));
   const SimpleFontData* font_data =
       layout_list_marker_.StyleRef().GetFont().PrimaryFont();
   FloatPoint text_origin =
@@ -164,18 +163,21 @@ void ListMarkerPainter::Paint(const PaintInfo& paint_info) {
       ConstructTextRun(font, suffix_str, 2, layout_list_marker_.StyleRef(),
                        layout_list_marker_.StyleRef().Direction());
   TextRunPaintInfo suffix_run_info(suffix_run);
-  suffix_run_info.bounds = FloatRect(EnclosingIntRect(marker));
 
   if (layout_list_marker_.StyleRef().IsLeftToRightDirection()) {
-    context.DrawText(font, text_run_paint_info, text_origin);
+    context.DrawText(font, text_run_paint_info, text_origin,
+                     NodeHolder::EmptyNodeHolder());
     context.DrawText(font, suffix_run_info,
-                     text_origin + FloatSize(IntSize(font.Width(text_run), 0)));
+                     text_origin + FloatSize(IntSize(font.Width(text_run), 0)),
+                     NodeHolder::EmptyNodeHolder());
   } else {
-    context.DrawText(font, suffix_run_info, text_origin);
+    context.DrawText(font, suffix_run_info, text_origin,
+                     NodeHolder::EmptyNodeHolder());
     // Is the truncation to IntSize below meaningful or a bug?
     context.DrawText(
         font, text_run_paint_info,
-        text_origin + FloatSize(IntSize(font.Width(suffix_run), 0)));
+        text_origin + FloatSize(IntSize(font.Width(suffix_run), 0)),
+        NodeHolder::EmptyNodeHolder());
   }
   // TODO(npm): Check that there are non-whitespace characters. See
   // crbug.com/788444.

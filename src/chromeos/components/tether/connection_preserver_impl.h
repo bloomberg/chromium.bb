@@ -77,7 +77,7 @@ class ConnectionPreserverImpl
       const std::string& device_id);
   void SetPreservedConnection(const std::string& device_id);
   void RemovePreservedConnectionIfPresent();
-  base::Optional<cryptauth::RemoteDeviceRef> GetRemoteDevice(
+  base::Optional<multidevice::RemoteDeviceRef> GetRemoteDevice(
       const std::string device_id);
 
   void SetTimerForTesting(std::unique_ptr<base::OneShotTimer> timer_for_test);

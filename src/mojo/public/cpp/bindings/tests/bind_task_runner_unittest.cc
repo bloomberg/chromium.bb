@@ -8,7 +8,7 @@
 #include "base/callback.h"
 #include "base/containers/queue.h"
 #include "base/message_loop/message_loop.h"
-#include "base/single_thread_task_runner.h"
+#include "base/sequenced_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
@@ -24,7 +24,7 @@ namespace mojo {
 namespace test {
 namespace {
 
-class TestTaskRunner : public base::SingleThreadTaskRunner {
+class TestTaskRunner : public base::SequencedTaskRunner {
  public:
   TestTaskRunner()
       : thread_id_(base::PlatformThread::CurrentRef()),
@@ -122,7 +122,7 @@ template <typename BindingType, typename RequestType>
 class IntegerSenderImpl : public IntegerSender {
  public:
   IntegerSenderImpl(RequestType request,
-                    scoped_refptr<base::SingleThreadTaskRunner> runner)
+                    scoped_refptr<base::SequencedTaskRunner> runner)
       : binding_(this, std::move(request), std::move(runner)) {}
 
   ~IntegerSenderImpl() override {}
@@ -153,8 +153,8 @@ class IntegerSenderConnectionImpl : public IntegerSenderConnection {
 
   explicit IntegerSenderConnectionImpl(
       IntegerSenderConnectionRequest request,
-      scoped_refptr<base::SingleThreadTaskRunner> runner,
-      scoped_refptr<base::SingleThreadTaskRunner> sender_runner)
+      scoped_refptr<base::SequencedTaskRunner> runner,
+      scoped_refptr<base::SequencedTaskRunner> sender_runner)
       : binding_(this, std::move(request), std::move(runner)),
         sender_runner_(std::move(sender_runner)) {}
 
@@ -179,7 +179,7 @@ class IntegerSenderConnectionImpl : public IntegerSenderConnection {
  private:
   Binding<IntegerSenderConnection> binding_;
   std::unique_ptr<SenderType> sender_impl_;
-  scoped_refptr<base::SingleThreadTaskRunner> sender_runner_;
+  scoped_refptr<base::SequencedTaskRunner> sender_runner_;
   base::Closure get_sender_notification_;
 };
 

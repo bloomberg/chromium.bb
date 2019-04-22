@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="../appearance_page/appearance_page.html">
 <link rel="import" href="../autofill_page/autofill_page.html">
@@ -13,13 +14,14 @@
 <link rel="import" href="../settings_page/main_page_behavior.html">
 <link rel="import" href="../settings_page/settings_section.html">
 <link rel="import" href="../settings_page_css.html">
-<link rel="import" href="../settings_vars_css.html">
 
 <if expr="chromeos">
 <link rel="import" href="../android_apps_page/android_apps_browser_proxy.html">
 <link rel="import" href="../android_apps_page/android_apps_page.html">
 <link rel="import" href="../bluetooth_page/bluetooth_page.html">
 <link rel="import" href="../crostini_page/crostini_page.html">
+<link rel="import" href="../plugin_vm_page/plugin_vm_page.html">
+<link rel="import" href="../kiosk_next_shell_page/kiosk_next_shell_page.html">
 <link rel="import" href="../device_page/device_page.html">
 <link rel="import" href="../internet_page/internet_page.html">
 <link rel="import" href="../multidevice_page/multidevice_page.html">
@@ -41,7 +43,7 @@
       }
 
       #advancedToggle {
-        @apply --settings-actionable;
+        @apply --cr-actionable;
         align-items: center;
         display: flex;
         margin-bottom: 3px;
@@ -119,8 +121,7 @@
             </settings-bluetooth-page>
           </settings-section>
         </template>
-        <template is="dom-if"
-            if="[[canShowMultideviceSection_(showMultidevice, pageVisibility)]]"
+        <template is="dom-if" if="[[showPage_(pageVisibility.multidevice)]]"
             restamp>
           <settings-section page-title="$i18n{multidevicePageTitle}"
               section="multidevice">
@@ -186,22 +187,38 @@
           </settings-section>
         </template>
 <if expr="chromeos">
-        <template is="dom-if"
-            if="[[shouldShowAndroidApps_(showAndroidApps, androidAppsInfo, pageVisibility)]]"
-            restamp>
+        <template is="dom-if" if="[[shouldCreateAndroidAppsSection_(
+            showAndroidApps, pageVisibility)]]" restamp>
           <settings-section page-title="$i18n{androidAppsPageTitle}"
-              section="androidApps">
+              section="androidApps" hidden$="[[!shouldShowAndroidAppsSection_(
+              androidAppsInfo)]]">
             <settings-android-apps-page prefs="{{prefs}}"
                 android-apps-info="[[androidAppsInfo]]"
                 have-play-store-app="[[havePlayStoreApp]]">
             </settings-android-apps-page>
           </settings-section>
         </template>
+        <template is="dom-if" if="[[showKioskNextShell]]" restamp>
+          <settings-section
+              page-title="$i18n{kioskNextShellPageTitle}"
+              section="kiosk-next-shell">
+            <settings-kiosk-next-shell-page prefs="{{prefs}}">
+            </settings-kiosk-next-shell-page>
+          </settings-section>
+        </template>
         <template is="dom-if" if="[[showCrostini]]" restamp>
           <settings-section page-title="$i18n{crostiniPageTitle}"
               section="crostini">
-            <settings-crostini-page prefs="{{prefs}}">
+            <settings-crostini-page prefs="{{prefs}}"
+                allow-crostini="[[allowCrostini_]]">
             </settings-crostini-page>
+          </settings-section>
+        </template>
+        <template is="dom-if" if="[[showPluginVm]]" restamp>
+          <settings-section page-title="$i18n{pluginVmPageTitle}"
+              section="pluginVm">
+            <settings-plugin-vm-page prefs="{{prefs}}">
+            </settings-plugin-vm-page>
           </settings-section>
         </template>
 </if>

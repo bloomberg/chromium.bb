@@ -8,8 +8,8 @@
 #include <stdint.h>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/bindings_export.h"
 #include "mojo/public/cpp/bindings/lib/serialization_context.h"
 
 namespace mojo {
@@ -19,7 +19,7 @@ class MessageReceiverWithResponder;
 namespace internal {
 
 // Proxy for request messages defined in interface_control_messages.mojom.
-class MOJO_CPP_BINDINGS_EXPORT ControlMessageProxy {
+class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) ControlMessageProxy {
  public:
   // Doesn't take ownership of |receiver|. It must outlive this object.
   explicit ControlMessageProxy(MessageReceiverWithResponder* receiver);

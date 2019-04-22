@@ -13,6 +13,7 @@
 #include "components/autofill_assistant/browser/actions/action.h"
 
 namespace autofill_assistant {
+
 // An action to select an option on a given element on Web.
 class SelectOptionAction : public Action {
  public:
@@ -26,8 +27,10 @@ class SelectOptionAction : public Action {
 
   void OnWaitForElement(ActionDelegate* delegate,
                         ProcessActionCallback callback,
+                        const Selector& selector,
                         bool element_found);
-  void OnSelectOption(ProcessActionCallback callback, bool status);
+  void OnSelectOption(ProcessActionCallback callback,
+                      const ClientStatus& status);
 
   base::WeakPtrFactory<SelectOptionAction> weak_ptr_factory_;
 

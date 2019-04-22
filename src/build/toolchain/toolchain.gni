@@ -5,8 +5,8 @@
 # Toolchain-related configuration that may be needed outside the context of the
 # toolchain() rules themselves.
 
-import("//build_overrides/build.gni")
 import("//build/config/chrome_build.gni")
+import("//build_overrides/build.gni")
 
 declare_args() {
   # If this is set to true, or if LLVM_FORCE_HEAD_REVISION is set to 1
@@ -24,10 +24,6 @@ declare_args() {
 
   # Used for binary size analysis.
   generate_linker_map = is_android && is_official_build
-
-  # Use absolute file paths in the compiler diagnostics and __FILE__ macro
-  # if needed.
-  msvc_use_absolute_paths = false
 }
 
 if (generate_linker_map) {
@@ -46,7 +42,7 @@ hermetic_xcode_path =
 declare_args() {
   if (is_clang) {
     # Clang compiler version. Clang files are placed at version-dependent paths.
-    clang_version = "8.0.0"
+    clang_version = "9.0.0"
   }
 }
 
@@ -76,6 +72,13 @@ if (is_posix || is_fuchsia) {
   shlib_prefix = "lib"
 } else {
   shlib_prefix = ""
+}
+
+# Directory for shared library files.
+if (is_fuchsia) {
+  shlib_subdir = "/lib"
+} else {
+  shlib_subdir = ""
 }
 
 # While other "tool"s in a toolchain are specific to the target of that

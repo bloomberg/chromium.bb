@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 
 #if defined(OS_CHROMEOS)
@@ -21,7 +21,7 @@ bool IsLocaleSupportedByOS(const std::string& locale) {
   // TODO(jungshik): Once the above issues are resolved, change this back
   // to return true.
   static const char kUnsupportedLocales[][3] = {"am", "sw"};
-  for (size_t i = 0; i < arraysize(kUnsupportedLocales); ++i) {
+  for (size_t i = 0; i < base::size(kUnsupportedLocales); ++i) {
     if (base::LowerCaseEqualsASCII(locale, kUnsupportedLocales[i]))
       return false;
   }

@@ -10,11 +10,14 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
+import android.text.format.DateUtils;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.task.AsyncTask;
+import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
 import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.ShortcutSource;
@@ -23,7 +26,6 @@ import org.chromium.content_public.common.ScreenOrientationValues;
 import org.chromium.webapk.lib.common.WebApkConstants;
 
 import java.io.File;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Stores data about an installed web app. Uses SharedPreferences to persist the data to disk.
@@ -77,15 +79,15 @@ public class WebappDataStorage {
     static final String KEY_PENDING_UPDATE_FILE_PATH = "pending_update_file_path";
 
     // Number of milliseconds between checks for whether the WebAPK's Web Manifest has changed.
-    public static final long UPDATE_INTERVAL = TimeUnit.DAYS.toMillis(3L);
+    public static final long UPDATE_INTERVAL = DateUtils.DAY_IN_MILLIS * 3;
 
     // Number of milliseconds between checks of updates for a WebAPK that is expected to check
     // updates less frequently. crbug.com/680128.
-    public static final long RELAXED_UPDATE_INTERVAL = TimeUnit.DAYS.toMillis(30L);
+    public static final long RELAXED_UPDATE_INTERVAL = DateUtils.DAY_IN_MILLIS * 30;
 
     // Number of milliseconds to wait before re-requesting an updated WebAPK from the WebAPK
     // server if the previous update attempt failed.
-    public static final long RETRY_UPDATE_DURATION = TimeUnit.DAYS.toMillis(1L);
+    public static final long RETRY_UPDATE_DURATION = DateUtils.DAY_IN_MILLIS;
 
     // The default shell Apk version of WebAPKs.
     static final int DEFAULT_SHELL_APK_VERSION = 1;
@@ -99,7 +101,7 @@ public class WebappDataStorage {
     // We use a heuristic to determine whether a web app is still installed on the home screen, as
     // there is no way to do so directly. Any web app which has been opened in the last ten days
     // is considered to be still on the home screen.
-    static final long WEBAPP_LAST_OPEN_MAX_TIME = TimeUnit.DAYS.toMillis(10L);
+    static final long WEBAPP_LAST_OPEN_MAX_TIME = DateUtils.DAY_IN_MILLIS * 10;
 
     private static Clock sClock = new Clock();
     private static Factory sFactory = new Factory();
@@ -546,16 +548,11 @@ public class WebappDataStorage {
         if (pendingUpdateFilePath == null) return;
 
         mPreferences.edit().remove(KEY_PENDING_UPDATE_FILE_PATH).apply();
-        new AsyncTask<Void>() {
-            @Override
-            protected Void doInBackground() {
-                if (!new File(pendingUpdateFilePath).delete()) {
-                    Log.d(TAG, "Failed to delete file " + pendingUpdateFilePath);
-                }
-                return null;
+        PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK, () -> {
+            if (!new File(pendingUpdateFilePath).delete()) {
+                Log.d(TAG, "Failed to delete file " + pendingUpdateFilePath);
             }
-        }
-                .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        });
     }
 
     /**

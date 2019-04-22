@@ -81,7 +81,6 @@ const char kMediaStreamRenderToAssociatedSink[] =
     "chromeRenderToAssociatedSink";
 // RenderToAssociatedSink will be going away some time.
 const char kMediaStreamAudioHotword[] = "googHotword";
-// TODO(hta): googHotword should go away. https://crbug.com/577627
 const char kEchoCancellation[] = "echoCancellation";
 const char kDisableLocalEcho[] = "disableLocalEcho";
 const char kGoogEchoCancellation[] = "googEchoCancellation";
@@ -308,8 +307,6 @@ static void ParseOldStyleNames(
       // Should give TypeError when it's not parseable.
       // https://crbug.com/576582
       result.render_to_associated_sink.SetExact(ToBoolean(constraint.value_));
-    } else if (constraint.name_.Equals(kMediaStreamAudioHotword)) {
-      result.hotword_enabled.SetExact(ToBoolean(constraint.value_));
     } else if (constraint.name_.Equals(kGoogEchoCancellation)) {
       result.goog_echo_cancellation.SetExact(ToBoolean(constraint.value_));
     } else if (constraint.name_.Equals(kGoogExperimentalEchoCancellation)) {
@@ -416,11 +413,13 @@ static void ParseOldStyleNames(
     } else if (constraint.name_.Equals(kGoogLeakyBucket) ||
                constraint.name_.Equals(kGoogBeamforming) ||
                constraint.name_.Equals(kGoogArrayGeometry) ||
-               constraint.name_.Equals(kPowerLineFrequency)) {
+               constraint.name_.Equals(kPowerLineFrequency) ||
+               constraint.name_.Equals(kMediaStreamAudioHotword)) {
       // TODO(crbug.com/856176): Remove the kGoogBeamforming and
       // kGoogArrayGeometry special cases.
       context->AddConsoleMessage(ConsoleMessage::Create(
-          kDeprecationMessageSource, kWarningMessageLevel,
+          mojom::ConsoleMessageSource::kDeprecation,
+          mojom::ConsoleMessageLevel::kWarning,
           "Obsolete constraint named " + String(constraint.name_) +
               " is ignored. Please stop using it."));
     } else if (constraint.name_.Equals(kVideoKind)) {
@@ -443,10 +442,11 @@ static void ParseOldStyleNames(
       if (report_unknown_names) {
         // TODO(hta): UMA stats for unknown constraints passed.
         // https://crbug.com/576613
-        context->AddConsoleMessage(ConsoleMessage::Create(
-            kDeprecationMessageSource, kWarningMessageLevel,
-            "Unknown constraint named " + String(constraint.name_) +
-                " rejected"));
+        context->AddConsoleMessage(
+            ConsoleMessage::Create(mojom::ConsoleMessageSource::kDeprecation,
+                                   mojom::ConsoleMessageLevel::kWarning,
+                                   "Unknown constraint named " +
+                                       String(constraint.name_) + " rejected"));
         // TODO(crbug.com/856176): Don't throw an error.
         error_state.ThrowConstraintError("Unknown name of constraint detected",
                                          constraint.name_);
@@ -665,11 +665,6 @@ void CopyConstraintSet(const MediaTrackConstraintSet* constraints_in,
     CopyBooleanConstraint(constraints_in->echoCancellation(), naked_treatment,
                           constraint_buffer.echo_cancellation);
   }
-  if (constraints_in->hasEchoCancellationType()) {
-    CopyStringConstraint(constraints_in->echoCancellationType(),
-                         naked_treatment,
-                         constraint_buffer.echo_cancellation_type);
-  }
   if (constraints_in->hasAutoGainControl()) {
     CopyBooleanConstraint(constraints_in->autoGainControl(), naked_treatment,
                           constraint_buffer.goog_auto_gain_control);
@@ -697,22 +692,6 @@ void CopyConstraintSet(const MediaTrackConstraintSet* constraints_in,
   if (constraints_in->hasVideoKind()) {
     CopyStringConstraint(constraints_in->videoKind(), naked_treatment,
                          constraint_buffer.video_kind);
-  }
-  if (constraints_in->hasDepthNear()) {
-    CopyDoubleConstraint(constraints_in->depthNear(), naked_treatment,
-                         constraint_buffer.depth_near);
-  }
-  if (constraints_in->hasDepthFar()) {
-    CopyDoubleConstraint(constraints_in->depthFar(), naked_treatment,
-                         constraint_buffer.depth_far);
-  }
-  if (constraints_in->hasFocalLengthX()) {
-    CopyDoubleConstraint(constraints_in->focalLengthX(), naked_treatment,
-                         constraint_buffer.focal_length_x);
-  }
-  if (constraints_in->hasFocalLengthY()) {
-    CopyDoubleConstraint(constraints_in->focalLengthY(), naked_treatment,
-                         constraint_buffer.focal_length_y);
   }
 }
 
@@ -860,7 +839,7 @@ StringOrStringSequence ConvertStringSequence(
     for (const auto& scanner : input)
       buffer.push_back(scanner);
     the_strings.SetStringSequence(buffer);
-  } else if (input.size() > 0) {
+  } else if (!input.empty()) {
     the_strings.SetString(input[0]);
   }
   return the_strings;
@@ -878,7 +857,7 @@ StringOrStringSequenceOrConstrainDOMStringParameters ConvertString(
       for (const auto& scanner : input_buffer)
         buffer.push_back(scanner);
       output_union.SetStringSequence(buffer);
-    } else if (input_buffer.size() > 0) {
+    } else if (!input_buffer.empty()) {
       output_union.SetString(input_buffer[0]);
     }
   } else if (!input.IsEmpty()) {

@@ -5,7 +5,7 @@
 mojom = "//ui/base/mojo/clipboard.mojom"
 public_headers = [ "//ui/base/clipboard/clipboard_types.h" ]
 traits_headers = [ "//ui/base/mojo/clipboard_struct_traits.h" ]
-deps = [
-  "//ui/base",
+public_deps = [
+  "//ui/base/clipboard:clipboard_types",
 ]
 type_mappings = [ "ui.mojom.ClipboardType=ui::ClipboardType" ]

@@ -20,7 +20,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
@@ -49,6 +48,7 @@ import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
 import org.chromium.chrome.test.util.browser.suggestions.FakeMostVisitedSites;
 import org.chromium.chrome.test.util.browser.suggestions.FakeSuggestionsSource;
 import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependenciesRule;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TestTouchUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -131,7 +131,7 @@ public class NewTabPageRecyclerViewTest {
         // effects other elements of the UI - it moves the Learn More link into the Context Menu.
         // Removing the ScrollToLoad listener from the RecyclerView allows us to prevent scroll to
         // load triggering while maintaining the UI otherwise.
-        ThreadUtils.runOnUiThreadBlocking(
+        TestThreadUtils.runOnUiThreadBlocking(
                 () -> mNtp.getNewTabPageView().getRecyclerView().clearScrollToLoadListener());
     }
 
@@ -356,13 +356,10 @@ public class NewTabPageRecyclerViewTest {
     private ViewHolder getViewHolderAtPosition(final int position) {
         final NewTabPageRecyclerView recyclerView = getRecyclerView();
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                recyclerView.getLinearLayoutManager().scrollToPositionWithOffset(position,
-                        mActivityTestRule.getActivity().getResources().getDimensionPixelSize(
-                                R.dimen.tab_strip_height));
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            recyclerView.getLinearLayoutManager().scrollToPositionWithOffset(position,
+                    mActivityTestRule.getActivity().getResources().getDimensionPixelSize(
+                            R.dimen.tab_strip_height));
         });
         return RecyclerViewTestUtils.waitForView(getRecyclerView(), position);
     }
@@ -376,24 +373,17 @@ public class NewTabPageRecyclerViewTest {
      */
     private void dismissItemAtPosition(int position) throws InterruptedException, TimeoutException {
         final ViewHolder viewHolder = getViewHolderAtPosition(position);
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                getRecyclerView().dismissItemWithAnimation(viewHolder);
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { getRecyclerView().dismissItemWithAnimation(viewHolder); });
         RecyclerViewTestUtils.waitForViewToDetach(getRecyclerView(), (viewHolder.itemView));
     }
 
     private void setSuggestionsAndWaitForUpdate(final int suggestionsCount) {
         final FakeSuggestionsSource source = mSource;
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                source.setStatusForCategory(TEST_CATEGORY, CategoryStatus.AVAILABLE);
-                source.setSuggestionsForCategory(TEST_CATEGORY, buildSuggestions(suggestionsCount));
-            }
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            source.setStatusForCategory(TEST_CATEGORY, CategoryStatus.AVAILABLE);
+            source.setSuggestionsForCategory(TEST_CATEGORY, buildSuggestions(suggestionsCount));
         });
         RecyclerViewTestUtils.waitForStableRecyclerView(getRecyclerView());
     }

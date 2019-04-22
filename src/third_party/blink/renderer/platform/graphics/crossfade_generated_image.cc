@@ -63,7 +63,6 @@ void CrossfadeGeneratedImage::DrawCrossfade(cc::PaintCanvas* canvas,
   PaintFlags image_flags(flags);
   image_flags.setBlendMode(SkBlendMode::kSrcOver);
   image_flags.setColor(ScaleAlpha(flags.getColor(), 1 - percentage_));
-  image_flags.setAntiAlias(flags.isAntiAlias());
   // TODO(junov): This code should probably be propagating the
   // RespectImageOrientationEnum from CrossfadeGeneratedImage::draw(). Code was
   // written this way during refactoring to avoid modifying existing behavior,
@@ -106,7 +105,6 @@ void CrossfadeGeneratedImage::DrawTile(GraphicsContext& context,
 
   PaintFlags flags = context.FillFlags();
   flags.setBlendMode(SkBlendMode::kSrcOver);
-  flags.setAntiAlias(context.ShouldAntialias());
   FloatRect dest_rect((FloatPoint()), crossfade_size_);
   flags.setFilterQuality(
       context.ComputeFilterQuality(this, dest_rect, src_rect));

@@ -24,7 +24,7 @@ namespace ui {
 
 class DrmCursor;
 class DrmDisplayHostMananger;
-class DrmOverlayManager;
+class DrmOverlayManagerHost;
 class GpuThreadObserver;
 
 class DrmGpuPlatformSupportHost : public GpuPlatformSupportHost,
@@ -70,12 +70,13 @@ class DrmGpuPlatformSupportHost : public GpuPlatformSupportHost,
                             base::ScopedFD fd) override;
   bool GpuRemoveGraphicsDevice(const base::FilePath& path) override;
 
-  // Methods needed for DrmOverlayManager.
-  // Methods for DrmOverlayManager.
-  void RegisterHandlerForDrmOverlayManager(DrmOverlayManager* handler) override;
+  // Methods needed for DrmOverlayManagerHost.
+  // Methods for DrmOverlayManagerHost.
+  void RegisterHandlerForDrmOverlayManager(
+      DrmOverlayManagerHost* handler) override;
   void UnRegisterHandlerForDrmOverlayManager() override;
 
-  // Services needed by DrmOverlayManager
+  // Services needed by DrmOverlayManagerHost
   bool GpuCheckOverlayCapabilities(
       gfx::AcceleratedWidget widget,
       const OverlaySurfaceCandidateList& new_params) override;
@@ -126,7 +127,7 @@ class DrmGpuPlatformSupportHost : public GpuPlatformSupportHost,
   base::Callback<void(IPC::Message*)> send_callback_;
 
   DrmDisplayHostManager* display_manager_;  // Not owned.
-  DrmOverlayManager* overlay_manager_;      // Not owned.
+  DrmOverlayManagerHost* overlay_manager_;  // Not owned.
 
   DrmCursor* const cursor_;  // Not owned.
   base::ObserverList<GpuThreadObserver>::Unchecked gpu_thread_observers_;

@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/json/json_reader.h"
@@ -94,7 +95,7 @@ std::string GenerateGetUserMediaWithDisableLocalEcho(
 }
 
 bool VerifyDisableLocalEcho(bool expect_value,
-                            const content::StreamControls& controls) {
+                            const blink::StreamControls& controls) {
   return expect_value == controls.disable_local_echo;
 }
 
@@ -148,9 +149,10 @@ class WebRtcGetUserMediaBrowserTest : public WebRtcContentBrowserTestBase,
 
     int error_code;
     std::string error_message;
-    std::unique_ptr<base::Value> value = base::JSONReader::ReadAndReturnError(
-        devices_as_json, base::JSON_ALLOW_TRAILING_COMMAS, &error_code,
-        &error_message);
+    std::unique_ptr<base::Value> value =
+        base::JSONReader::ReadAndReturnErrorDeprecated(
+            devices_as_json, base::JSON_ALLOW_TRAILING_COMMAS, &error_code,
+            &error_message);
 
     ASSERT_TRUE(value.get() != nullptr) << error_message;
     EXPECT_EQ(value->type(), base::Value::Type::LIST);
@@ -753,8 +755,16 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
   ExecuteJavascriptAndWaitForOk("applyConstraintsVideoOverconstrained()");
 }
 
+// Flaky on Win, see https://crbug.com/915135
+// Flaky on tsan and asan with accelerated canvases,
+// see https://crbug.com/952381
+#if defined(OS_WIN) || defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER)
+#define MAYBE_ApplyConstraintsNonDevice DISABLED_ApplyConstraintsNonDevice
+#else
+#define MAYBE_ApplyConstraintsNonDevice ApplyConstraintsNonDevice
+#endif
 IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
-                       ApplyConstraintsNonDevice) {
+                       MAYBE_ApplyConstraintsNonDevice) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
   NavigateToURL(shell(), url);
@@ -868,18 +878,34 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
   ExecuteJavascriptAndWaitForOk("verifyAfterAudioServiceCrash()");
 }
 
+// Test crashes on MSAN. See https://crbug.com/941934
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_GetUserMediaCloneAndApplyConstraints \
+  DISABLED_GetUserMediaCloneAndApplyConstraints
+#else
+#define MAYBE_GetUserMediaCloneAndApplyConstraints \
+  GetUserMediaCloneAndApplyConstraints
+#endif
+IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
+                       MAYBE_GetUserMediaCloneAndApplyConstraints) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
+  NavigateToURL(shell(), url);
+  ExecuteJavascriptAndWaitForOk("getUserMediaCloneAndApplyConstraints()");
+}
+
 // We run these tests with the audio service both in and out of the the browser
 // process to have waterfall coverage while the feature rolls out. It should be
 // removed after launch.
 #if (defined(OS_LINUX) && !defined(CHROME_OS)) || defined(OS_MACOSX) || \
     defined(OS_WIN)
 // Supported platforms.
-INSTANTIATE_TEST_CASE_P(, WebRtcGetUserMediaBrowserTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(, WebRtcGetUserMediaBrowserTest, ::testing::Bool());
 #else
 // Platforms where the out of process audio service is not supported
-INSTANTIATE_TEST_CASE_P(,
-                        WebRtcGetUserMediaBrowserTest,
-                        ::testing::Values(false));
+INSTANTIATE_TEST_SUITE_P(,
+                         WebRtcGetUserMediaBrowserTest,
+                         ::testing::Values(false));
 #endif
 
 }  // namespace content

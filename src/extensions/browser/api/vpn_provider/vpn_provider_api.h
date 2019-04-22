@@ -27,7 +27,7 @@ class VpnThreadExtensionFunction : public UIThreadExtensionFunction {
 class VpnProviderCreateConfigFunction : public VpnThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("vpnProvider.createConfig",
-                             VPNPROVIDER_CREATECONFIG);
+                             VPNPROVIDER_CREATECONFIG)
 
  protected:
   ~VpnProviderCreateConfigFunction() override;
@@ -38,7 +38,7 @@ class VpnProviderCreateConfigFunction : public VpnThreadExtensionFunction {
 class VpnProviderDestroyConfigFunction : public VpnThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("vpnProvider.destroyConfig",
-                             VPNPROVIDER_DESTROYCONFIG);
+                             VPNPROVIDER_DESTROYCONFIG)
 
  protected:
   ~VpnProviderDestroyConfigFunction() override;
@@ -49,7 +49,7 @@ class VpnProviderDestroyConfigFunction : public VpnThreadExtensionFunction {
 class VpnProviderSetParametersFunction : public VpnThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("vpnProvider.setParameters",
-                             VPNPROVIDER_SETPARAMETERS);
+                             VPNPROVIDER_SETPARAMETERS)
 
  protected:
   ~VpnProviderSetParametersFunction() override;
@@ -59,7 +59,7 @@ class VpnProviderSetParametersFunction : public VpnThreadExtensionFunction {
 
 class VpnProviderSendPacketFunction : public VpnThreadExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("vpnProvider.sendPacket", VPNPROVIDER_SENDPACKET);
+  DECLARE_EXTENSION_FUNCTION("vpnProvider.sendPacket", VPNPROVIDER_SENDPACKET)
 
  protected:
   ~VpnProviderSendPacketFunction() override;
@@ -71,7 +71,7 @@ class VpnProviderNotifyConnectionStateChangedFunction
     : public VpnThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("vpnProvider.notifyConnectionStateChanged",
-                             VPNPROVIDER_NOTIFYCONNECTIONSTATECHANGED);
+                             VPNPROVIDER_NOTIFYCONNECTIONSTATECHANGED)
 
  protected:
   ~VpnProviderNotifyConnectionStateChangedFunction() override;

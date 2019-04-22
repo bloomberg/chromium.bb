@@ -126,8 +126,6 @@ PopularSites::SitesVector ParseSiteList(const base::ListValue& list) {
       continue;
     std::string favicon_url;
     item->GetString("favicon_url", &favicon_url);
-    std::string thumbnail_url;
-    item->GetString("thumbnail_url", &thumbnail_url);
     std::string large_icon_url;
     item->GetString("large_icon_url", &large_icon_url);
 
@@ -142,7 +140,7 @@ PopularSites::SitesVector ParseSiteList(const base::ListValue& list) {
     }
 
     sites.emplace_back(title, GURL(url), GURL(favicon_url),
-                       GURL(large_icon_url), GURL(thumbnail_url), title_source);
+                       GURL(large_icon_url), title_source);
     item->GetInteger("default_icon_resource",
                      &sites.back().default_icon_resource);
     item->GetBoolean("baked_in", &sites.back().baked_in);
@@ -216,15 +214,15 @@ void SetDefaultResourceForSite(int index,
 #endif
 
 // Creates the list of popular sites based on a snapshot available for mobile.
-std::unique_ptr<base::ListValue> DefaultPopularSites() {
+base::Value DefaultPopularSites() {
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
-  return std::make_unique<base::ListValue>();
+  return base::Value(base::Value::Type::LIST);
 #else
   if (!base::FeatureList::IsEnabled(kPopularSitesBakedInContentFeature)) {
-    return std::make_unique<base::ListValue>();
+    return base::Value(base::Value::Type::LIST);
   }
   std::unique_ptr<base::ListValue> sites =
-      base::ListValue::From(base::JSONReader::Read(
+      base::ListValue::From(base::JSONReader::ReadDeprecated(
           ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
               IDR_DEFAULT_POPULAR_SITES_JSON)));
   DCHECK(sites);
@@ -242,7 +240,7 @@ std::unique_ptr<base::ListValue> DefaultPopularSites() {
     SetDefaultResourceForSite(index++, icon_resource, sites.get());
   }
 #endif  // GOOGLE_CHROME_BUILD
-  return sites;
+  return base::Value::FromUniquePtrValue(std::move(sites));
 #endif  // OS_ANDROID || OS_IOS
 }
 
@@ -252,13 +250,11 @@ PopularSites::Site::Site(const base::string16& title,
                          const GURL& url,
                          const GURL& favicon_url,
                          const GURL& large_icon_url,
-                         const GURL& thumbnail_url,
                          TileTitleSource title_source)
     : title(title),
       url(url),
       favicon_url(favicon_url),
       large_icon_url(large_icon_url),
-      thumbnail_url(thumbnail_url),
       title_source(title_source),
       baked_in(false),
       default_icon_resource(-1) {}

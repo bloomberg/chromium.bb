@@ -14,7 +14,7 @@ import org.chromium.android_webview.AwContents;
 
 /**
  * Simple Java abstraction and wrapper for the native DrawGLFunctor flow.
- * An instance of this class can be constructed, bound to a single view context (i.e. AwContennts)
+ * An instance of this class can be constructed, bound to a single view context (i.e. AwContents)
  * and then drawn and detached from the view tree any number of times (using requestDrawGL and
  * detach respectively).
  */

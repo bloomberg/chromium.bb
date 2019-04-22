@@ -21,25 +21,33 @@ class NavigationClient : mojom::NavigationClient {
   void CommitNavigation(
       const network::ResourceResponseHead& head,
       const CommonNavigationParams& common_params,
-      const RequestNavigationParams& request_params,
+      const CommitNavigationParams& commit_params,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
-      std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loaders,
+      std::unique_ptr<blink::URLLoaderFactoryBundleInfo> subresource_loaders,
       base::Optional<std::vector<::content::mojom::TransferrableURLLoaderPtr>>
           subresource_overrides,
-      mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info,
+      blink::mojom::ControllerServiceWorkerInfoPtr
+          controller_service_worker_info,
+      blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info,
       network::mojom::URLLoaderFactoryPtr prefetch_loader_factory,
       const base::UnguessableToken& devtools_navigation_token,
       CommitNavigationCallback callback) override;
   void CommitFailedNavigation(
       const CommonNavigationParams& common_params,
-      const RequestNavigationParams& request_params,
+      const CommitNavigationParams& commit_params,
       bool has_stale_copy_in_cache,
       int error_code,
       const base::Optional<std::string>& error_page_content,
-      std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loaders,
+      std::unique_ptr<blink::URLLoaderFactoryBundleInfo> subresource_loaders,
       CommitFailedNavigationCallback callback) override;
 
   void Bind(mojom::NavigationClientAssociatedRequest request);
+
+  // See NavigationState::was_initiated_in_this_frame for details.
+  void MarkWasInitiatedInThisFrame();
+  bool was_initiated_in_this_frame() const {
+    return was_initiated_in_this_frame_;
+  }
 
  private:
   // OnDroppedNavigation is bound from BeginNavigation till CommitNavigation.
@@ -51,6 +59,7 @@ class NavigationClient : mojom::NavigationClient {
 
   mojo::AssociatedBinding<mojom::NavigationClient> navigation_client_binding_;
   RenderFrameImpl* render_frame_;
+  bool was_initiated_in_this_frame_ = false;
 };
 
 }  // namespace content

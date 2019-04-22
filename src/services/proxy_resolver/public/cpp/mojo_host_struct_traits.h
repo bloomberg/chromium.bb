@@ -7,38 +7,19 @@
 
 #include "base/strings/string_piece.h"
 #include "mojo/public/cpp/bindings/enum_traits.h"
-#include "mojo/public/cpp/bindings/struct_traits.h"
-#include "net/dns/host_resolver.h"
-#include "services/network/public/mojom/address_family.mojom.h"
+#include "net/proxy_resolution/proxy_resolve_dns_operation.h"
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
 
 namespace mojo {
 
 template <>
-struct StructTraits<proxy_resolver::mojom::HostResolverRequestInfoDataView,
-                    std::unique_ptr<net::HostResolver::RequestInfo>> {
-  static base::StringPiece host(
-      const std::unique_ptr<net::HostResolver::RequestInfo>& obj) {
-    return obj->hostname();
-  }
+struct EnumTraits<proxy_resolver::mojom::HostResolveOperation,
+                  net::ProxyResolveDnsOperation> {
+  static proxy_resolver::mojom::HostResolveOperation ToMojom(
+      net::ProxyResolveDnsOperation input);
 
-  static uint16_t port(
-      const std::unique_ptr<net::HostResolver::RequestInfo>& obj) {
-    return obj->port();
-  }
-
-  static net::AddressFamily address_family(
-      const std::unique_ptr<net::HostResolver::RequestInfo>& obj) {
-    return obj->address_family();
-  }
-
-  static bool is_my_ip_address(
-      const std::unique_ptr<net::HostResolver::RequestInfo>& obj) {
-    return obj->is_my_ip_address();
-  }
-
-  static bool Read(proxy_resolver::mojom::HostResolverRequestInfoDataView obj,
-                   std::unique_ptr<net::HostResolver::RequestInfo>* output);
+  static bool FromMojom(proxy_resolver::mojom::HostResolveOperation input,
+                        net::ProxyResolveDnsOperation* output);
 };
 
 }  // namespace mojo

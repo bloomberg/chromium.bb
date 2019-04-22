@@ -7,6 +7,8 @@
 
 #include <map>
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
@@ -46,7 +48,8 @@ class PluginMetadata {
                  const GURL& plugin_url,
                  const GURL& help_url,
                  const base::string16& group_name_matcher,
-                 const std::string& language);
+                 const std::string& language,
+                 bool plugin_is_deprecated);
   ~PluginMetadata();
 
   // Unique identifier for the plugin.
@@ -66,6 +69,9 @@ class PluginMetadata {
   const GURL& help_url() const { return help_url_; }
 
   const std::string& language() const { return language_; }
+
+  // Returns whether the plugin has been deprecated and cannot be updated.
+  bool plugin_is_deprecated() const { return plugin_is_deprecated_; }
 
   bool HasMimeType(const std::string& mime_type) const;
   void AddMimeType(const std::string& mime_type);
@@ -105,6 +111,7 @@ class PluginMetadata {
   std::map<base::Version, SecurityStatus, VersionComparator> versions_;
   std::vector<std::string> all_mime_types_;
   std::vector<std::string> matching_mime_types_;
+  const bool plugin_is_deprecated_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginMetadata);
 };

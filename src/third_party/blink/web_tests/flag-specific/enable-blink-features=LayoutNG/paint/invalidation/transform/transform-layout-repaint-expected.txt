@@ -18,11 +18,6 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV id='target'",
-          "rect": [40, 50, 208, 118],
-          "reason": "geometry"
-        },
-        {
           "object": "NGPhysicalTextFragment 'PASS'",
           "rect": [52, 51, 43, 32],
           "reason": "full"

@@ -28,7 +28,7 @@ class BackgroundLoaderContents : public content::WebContentsDelegate {
     // start if a page initiates it. Callback can be called
     // synchronously. Returning true to the callback will initiate
     // the single file download. Assumes delegate will appropriately clean up.
-    virtual void CanDownload(const base::Callback<void(bool)>& callback) = 0;
+    virtual void CanDownload(base::OnceCallback<void(bool)> callback) = 0;
   };
 
   // Creates BackgroundLoaderContents with specified |browser_context|. Uses
@@ -54,7 +54,7 @@ class BackgroundLoaderContents : public content::WebContentsDelegate {
   bool ShouldFocusPageAfterCrash() override;
   void CanDownload(const GURL& url,
                    const std::string& request_method,
-                   const base::Callback<void(bool)>& callback) override;
+                   base::OnceCallback<void(bool)> callback) override;
 
   bool ShouldCreateWebContents(
       content::WebContents* web_contents,
@@ -87,7 +87,7 @@ class BackgroundLoaderContents : public content::WebContentsDelegate {
       content::MediaResponseCallback callback) override;
   bool CheckMediaAccessPermission(content::RenderFrameHost* render_frame_host,
                                   const GURL& security_origin,
-                                  content::MediaStreamType type) override;
+                                  blink::MediaStreamType type) override;
   void AdjustPreviewsStateForNavigation(
       content::WebContents* web_contents,
       content::PreviewsState* previews_state) override;

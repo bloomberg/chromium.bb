@@ -4,20 +4,21 @@
 
 module content.mojom;
 
+import "content/common/document_scoped_interface_bundle.mojom";
 import "content/common/native_types.mojom";
-import "content/common/service_worker/embedded_worker.mojom";
-import "content/public/common/renderer_preferences.mojom";
 import "ipc/constants.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "services/network/public/mojom/network_types.mojom";
-import "services/service_manager/public/mojom/interface_provider.mojom";
 import "services/service_manager/public/mojom/service.mojom";
+import "third_party/blink/public/mojom/renderer_preferences.mojom";
+import "third_party/blink/public/mojom/service_worker/embedded_worker.mojom";
+import "third_party/blink/public/mojom/user_agent/user_agent_metadata.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
 struct CreateViewParams {
   // Renderer-wide preferences.
-  RendererPreferences renderer_preferences;
+  blink.mojom.RendererPreferences renderer_preferences;
 
   // Preferences for this view.
   WebPreferences web_preferences;
@@ -30,12 +31,9 @@ struct CreateViewParams {
   // set to something other than None.
   int32 main_frame_routing_id = IPC.mojom.kRoutingIdNone;
 
-  // The InterfaceProvider through which the main RenderFrame can access
-  // services exposed by its RenderFrameHost.
-  //
   // This is null precisely when |main_frame_routing_id| is MSG_ROUTING_NONE,
   // that is, when creating a RenderView for a remote main frame.
-  service_manager.mojom.InterfaceProvider? main_frame_interface_provider;
+  DocumentScopedInterfaceBundle? main_frame_interface_bundle;
 
   // The ID of the widget for the main frame.
   int32 main_frame_widget_routing_id = IPC.mojom.kRoutingIdNone;
@@ -84,6 +82,9 @@ struct CreateViewParams {
   // window.open or via <a target=...>) should be renderer-wide (i.e. going
   // beyond the usual opener-relationship-based BrowsingInstance boundaries).
   bool renderer_wide_named_frame_lookup;
+
+  // Set this to true when creating a RenderView inside a portal.
+  bool inside_portal;
 };
 
 struct CreateFrameWidgetParams {
@@ -100,9 +101,10 @@ struct CreateFrameParams {
   // Specifies the routing ID of the new RenderFrame object.
   int32 routing_id;
 
-  // If a valid |proxy_routing_id| is provided, the new frame will be
-  // configured to replace the proxy on commit.
-  int32 proxy_routing_id;
+  // If a valid |previous_routing_id| is provided, the new frame will be
+  // configured to replace either the previous frame or the previous proxy on
+  // commit.
+  int32 previous_routing_id;
 
   // Specifies the new frame's opener.  The opener will be null if this is
   // MSG_ROUTING_NONE.
@@ -119,9 +121,7 @@ struct CreateFrameParams {
   // parent frame, in front of any other children.
   int32 previous_sibling_routing_id;
 
-  // The InterfaceProvider through which the RenderFrame can access services
-  // exposed by its RenderFrameHost.
-  service_manager.mojom.InterfaceProvider interface_provider;
+  DocumentScopedInterfaceBundle interface_bundle;
 
   // When the new frame has a parent, |replication_state| holds the new frame's
   // properties replicated from the process rendering the parent frame, such as
@@ -160,6 +160,16 @@ struct UpdateScrollbarThemeParams {
   bool scroll_view_rubber_banding;
 };
 
+enum RenderProcessState {
+  kVisible,
+  // Hidden render processes can still be foregrounded. For example, a hidden
+  // renderer playing audio would be foregrounded.
+  kHidden,
+  // Refers to a renderer that is hidden and running at background process
+  // priority.
+  kBackgrounded,
+};
+
 // The primordial Channel-associated interface implemented by a render process.
 // This should be used for implementing browser-to-renderer control messages
 // which need to retain FIFO with respect to legacy IPC messages.
@@ -196,7 +206,7 @@ interface Renderer {
   // TODO(shimazu): Send all params for starting service worker to reduce the
   // number of IPCs.
   SetUpEmbeddedWorkerChannelForServiceWorker(
-      EmbeddedWorkerInstanceClient& client_request);
+      blink.mojom.EmbeddedWorkerInstanceClient& client_request);
 
   // Tells the renderer that the network type has changed so that
   // navigator.onLine and navigator.connection can be updated.
@@ -226,6 +236,10 @@ interface Renderer {
   // initialization.
   SetUserAgent(string user_agent);
 
+  // Sets the user agent metadata. This will replace `SetUserAgent()` if we
+  // decide to ship https://github.com/WICG/ua-client-hints.
+  SetUserAgentMetadata(blink.mojom.UserAgentMetadata metadata);
+
   // Tells the renderer about a scrollbar appearance change. Only for use on
   // OS X.
   UpdateScrollbarTheme(UpdateScrollbarThemeParams params);
@@ -239,16 +253,13 @@ interface Renderer {
   PurgePluginListCache(bool reload_pages);
 
 
-  // Tells the renderer process to enter or leave background mode.
-  SetProcessBackgrounded(bool background);
+  // Tells the renderer process of a change in visibility or background state.
+  SetProcessState(RenderProcessState process_state);
 
   // Tells the scheduler about "keep-alive" state which can be due to:
   // service workers, shared workers, or fetch keep-alive.
   // If set to true, then the scheduler should not freeze the renderer.
   SetSchedulerKeepActive(bool keep_active);
-
-  // Tells the renderer process to purge and suspend.
-  ProcessPurgeAndSuspend();
 
   // Tells the renderer process that it has been locked to a site (i.e., a
   // scheme plus eTLD+1, such as https://google.com), or to a more specific

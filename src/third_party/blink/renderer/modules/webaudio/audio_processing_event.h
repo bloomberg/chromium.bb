@@ -48,6 +48,12 @@ class AudioProcessingEvent final : public Event {
   static AudioProcessingEvent* Create(const AtomicString& type,
                                       const AudioProcessingEventInit*);
 
+  AudioProcessingEvent();
+  AudioProcessingEvent(AudioBuffer* input_buffer,
+                       AudioBuffer* output_buffer,
+                       double playback_time);
+  AudioProcessingEvent(const AtomicString& type,
+                       const AudioProcessingEventInit*);
   ~AudioProcessingEvent() override;
 
   AudioBuffer* inputBuffer() { return input_buffer_.Get(); }
@@ -59,13 +65,6 @@ class AudioProcessingEvent final : public Event {
   void Trace(blink::Visitor*) override;
 
  private:
-  AudioProcessingEvent();
-  AudioProcessingEvent(AudioBuffer* input_buffer,
-                       AudioBuffer* output_buffer,
-                       double playback_time);
-  AudioProcessingEvent(const AtomicString& type,
-                       const AudioProcessingEventInit*);
-
   Member<AudioBuffer> input_buffer_;
   Member<AudioBuffer> output_buffer_;
   double playback_time_;

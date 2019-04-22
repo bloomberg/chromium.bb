@@ -16,6 +16,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
+#include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/services/secure_channel/authenticated_channel_impl.h"
 #include "chromeos/services/secure_channel/ble_advertiser_impl.h"
 #include "chromeos/services/secure_channel/ble_constants.h"
@@ -23,19 +24,18 @@
 #include "chromeos/services/secure_channel/ble_listener_failure_type.h"
 #include "chromeos/services/secure_channel/ble_scanner_impl.h"
 #include "chromeos/services/secure_channel/ble_synchronizer.h"
+#include "chromeos/services/secure_channel/ble_weave_client_connection.h"
 #include "chromeos/services/secure_channel/fake_authenticated_channel.h"
 #include "chromeos/services/secure_channel/fake_ble_advertiser.h"
 #include "chromeos/services/secure_channel/fake_ble_scanner.h"
 #include "chromeos/services/secure_channel/fake_ble_service_data_helper.h"
 #include "chromeos/services/secure_channel/fake_ble_synchronizer.h"
+#include "chromeos/services/secure_channel/fake_connection.h"
+#include "chromeos/services/secure_channel/fake_secure_channel_connection.h"
 #include "chromeos/services/secure_channel/fake_secure_channel_disconnector.h"
 #include "chromeos/services/secure_channel/fake_timer_factory.h"
+#include "chromeos/services/secure_channel/secure_channel.h"
 #include "chromeos/services/secure_channel/secure_channel_disconnector_impl.h"
-#include "components/cryptauth/ble/bluetooth_low_energy_weave_client_connection.h"
-#include "components/cryptauth/fake_connection.h"
-#include "components/cryptauth/fake_secure_channel.h"
-#include "components/cryptauth/remote_device_test_util.h"
-#include "components/cryptauth/secure_channel.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -196,8 +196,7 @@ class FakeSecureChannelDisconnectorFactory
 };
 
 class FakeWeaveClientConnectionFactory
-    : public cryptauth::weave::BluetoothLowEnergyWeaveClientConnection::
-          Factory {
+    : public weave::BluetoothLowEnergyWeaveClientConnection::Factory {
  public:
   FakeWeaveClientConnectionFactory(
       scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
@@ -211,23 +210,21 @@ class FakeWeaveClientConnectionFactory
     expected_bluetooth_device_ = expected_bluetooth_device;
   }
 
-  cryptauth::FakeConnection* last_created_instance() {
-    return last_created_instance_;
-  }
+  FakeConnection* last_created_instance() { return last_created_instance_; }
 
  private:
   // cryptauth::BluetoothLowEnergyWeaveClientConnection::Factory:
-  std::unique_ptr<cryptauth::Connection> BuildInstance(
-      cryptauth::RemoteDeviceRef remote_device,
+  std::unique_ptr<Connection> BuildInstance(
+      multidevice::RemoteDeviceRef remote_device,
       scoped_refptr<device::BluetoothAdapter> adapter,
       const device::BluetoothUUID remote_service_uuid,
       device::BluetoothDevice* bluetooth_device,
       bool should_set_low_connection_latency) override {
     EXPECT_EQ(expected_mock_adapter_, adapter);
     EXPECT_EQ(device::BluetoothUUID(kGattServerUuid), remote_service_uuid);
-    EXPECT_FALSE(should_set_low_connection_latency);
+    EXPECT_TRUE(should_set_low_connection_latency);
 
-    auto instance = std::make_unique<cryptauth::FakeConnection>(remote_device);
+    auto instance = std::make_unique<FakeConnection>(remote_device);
     last_created_instance_ = instance.get();
     return instance;
   }
@@ -236,12 +233,12 @@ class FakeWeaveClientConnectionFactory
       expected_mock_adapter_;
   device::MockBluetoothDevice* expected_bluetooth_device_;
 
-  cryptauth::FakeConnection* last_created_instance_ = nullptr;
+  FakeConnection* last_created_instance_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(FakeWeaveClientConnectionFactory);
 };
 
-class FakeSecureChannelFactory : public cryptauth::SecureChannel::Factory {
+class FakeSecureChannelFactory : public SecureChannel::Factory {
  public:
   FakeSecureChannelFactory(
       FakeWeaveClientConnectionFactory* fake_weave_client_connection_factory)
@@ -250,26 +247,26 @@ class FakeSecureChannelFactory : public cryptauth::SecureChannel::Factory {
 
   virtual ~FakeSecureChannelFactory() = default;
 
-  cryptauth::FakeSecureChannel* last_created_instance() {
+  FakeSecureChannelConnection* last_created_instance() {
     return last_created_instance_;
   }
 
  private:
-  // cryptauth::SecureChannel::Factory:
-  std::unique_ptr<cryptauth::SecureChannel> BuildInstance(
-      std::unique_ptr<cryptauth::Connection> connection) override {
+  // SecureChannel::Factory:
+  std::unique_ptr<SecureChannel> BuildInstance(
+      std::unique_ptr<Connection> connection) override {
     EXPECT_EQ(fake_weave_client_connection_factory_->last_created_instance(),
               connection.get());
 
     auto instance =
-        std::make_unique<cryptauth::FakeSecureChannel>(std::move(connection));
+        std::make_unique<FakeSecureChannelConnection>(std::move(connection));
     last_created_instance_ = instance.get();
     return instance;
   }
 
   FakeWeaveClientConnectionFactory* fake_weave_client_connection_factory_;
 
-  cryptauth::FakeSecureChannel* last_created_instance_ = nullptr;
+  FakeSecureChannelConnection* last_created_instance_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSecureChannelFactory);
 };
@@ -281,7 +278,7 @@ class FakeAuthenticatedChannelFactory
   virtual ~FakeAuthenticatedChannelFactory() = default;
 
   void SetExpectationsForNextCall(
-      cryptauth::FakeSecureChannel* expected_fake_secure_channel,
+      FakeSecureChannelConnection* expected_fake_secure_channel,
       bool expected_to_be_background_advertisement) {
     expected_fake_secure_channel_ = expected_fake_secure_channel;
     expected_to_be_background_advertisement_ =
@@ -297,7 +294,7 @@ class FakeAuthenticatedChannelFactory
   std::unique_ptr<AuthenticatedChannel> BuildInstance(
       const std::vector<mojom::ConnectionCreationDetail>&
           connection_creation_details,
-      std::unique_ptr<cryptauth::SecureChannel> secure_channel) override {
+      std::unique_ptr<SecureChannel> secure_channel) override {
     EXPECT_EQ(expected_fake_secure_channel_, secure_channel.get());
     EXPECT_EQ(1u, connection_creation_details.size());
     if (expected_to_be_background_advertisement_) {
@@ -315,7 +312,7 @@ class FakeAuthenticatedChannelFactory
     return instance;
   }
 
-  cryptauth::FakeSecureChannel* expected_fake_secure_channel_ = nullptr;
+  FakeSecureChannelConnection* expected_fake_secure_channel_ = nullptr;
   bool expected_to_be_background_advertisement_ = false;
 
   FakeAuthenticatedChannel* last_created_instance_ = nullptr;
@@ -332,7 +329,7 @@ class SecureChannelBleConnectionManagerImplTest : public testing::Test {
             base::test::ScopedTaskEnvironment::MainThreadType::DEFAULT,
             base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED),
         test_devices_(
-            cryptauth::CreateRemoteDeviceRefListForTest(kNumTestDevices)) {}
+            multidevice::CreateRemoteDeviceRefListForTest(kNumTestDevices)) {}
   ~SecureChannelBleConnectionManagerImplTest() override = default;
 
   // testing::Test:
@@ -372,12 +369,12 @@ class SecureChannelBleConnectionManagerImplTest : public testing::Test {
 
     fake_weave_client_connection_factory_ =
         std::make_unique<FakeWeaveClientConnectionFactory>(mock_adapter_);
-    cryptauth::weave::BluetoothLowEnergyWeaveClientConnection::Factory::
+    weave::BluetoothLowEnergyWeaveClientConnection::Factory::
         SetInstanceForTesting(fake_weave_client_connection_factory_.get());
 
     fake_secure_channel_factory_ = std::make_unique<FakeSecureChannelFactory>(
         fake_weave_client_connection_factory_.get());
-    cryptauth::SecureChannel::Factory::SetInstanceForTesting(
+    SecureChannel::Factory::SetInstanceForTesting(
         fake_secure_channel_factory_.get());
 
     fake_authenticated_channel_factory_ =
@@ -395,9 +392,9 @@ class SecureChannelBleConnectionManagerImplTest : public testing::Test {
     BleAdvertiserImpl::Factory::SetFactoryForTesting(nullptr);
     BleScannerImpl::Factory::SetFactoryForTesting(nullptr);
     SecureChannelDisconnectorImpl::Factory::SetFactoryForTesting(nullptr);
-    cryptauth::weave::BluetoothLowEnergyWeaveClientConnection::Factory::
+    weave::BluetoothLowEnergyWeaveClientConnection::Factory::
         SetInstanceForTesting(nullptr);
-    cryptauth::SecureChannel::Factory::SetInstanceForTesting(nullptr);
+    SecureChannel::Factory::SetInstanceForTesting(nullptr);
     AuthenticatedChannelImpl::Factory::SetFactoryForTesting(nullptr);
   }
 
@@ -547,8 +544,8 @@ class SecureChannelBleConnectionManagerImplTest : public testing::Test {
   }
 
   // Returns the SecureChannel created by this call.
-  cryptauth::FakeSecureChannel* SimulateConnectionEstablished(
-      cryptauth::RemoteDeviceRef remote_device,
+  FakeSecureChannelConnection* SimulateConnectionEstablished(
+      multidevice::RemoteDeviceRef remote_device,
       ConnectionRole connection_role) {
     auto mock_bluetooth_device = std::make_unique<device::MockBluetoothDevice>(
         mock_adapter_.get(), 0u /* bluetooth_class */, "name", "address",
@@ -569,7 +566,7 @@ class SecureChannelBleConnectionManagerImplTest : public testing::Test {
             ->GetAllScanFiltersForRemoteDevice(remote_device.GetDeviceId())
             .empty());
 
-    cryptauth::FakeSecureChannel* last_created_secure_channel =
+    FakeSecureChannelConnection* last_created_secure_channel =
         fake_secure_channel_factory_->last_created_instance();
     EXPECT_TRUE(last_created_secure_channel->was_initialized());
     return last_created_secure_channel;
@@ -578,7 +575,7 @@ class SecureChannelBleConnectionManagerImplTest : public testing::Test {
   void SimulateSecureChannelDisconnection(
       const std::string& remote_device_id,
       bool fail_during_authentication,
-      cryptauth::FakeSecureChannel* fake_secure_channel,
+      FakeSecureChannelConnection* fake_secure_channel,
       size_t num_initiator_attempts_canceled_from_disconnection = 0u,
       size_t num_listener_attempts_canceled_from_disconnection = 0u) {
     size_t num_ble_initiator_failures_before_call =
@@ -588,14 +585,11 @@ class SecureChannelBleConnectionManagerImplTest : public testing::Test {
 
     // Connect, then disconnect. If needed, start authenticating before
     // disconnecting.
-    fake_secure_channel->ChangeStatus(
-        cryptauth::SecureChannel::Status::CONNECTED);
+    fake_secure_channel->ChangeStatus(SecureChannel::Status::CONNECTED);
     if (fail_during_authentication) {
-      fake_secure_channel->ChangeStatus(
-          cryptauth::SecureChannel::Status::AUTHENTICATING);
+      fake_secure_channel->ChangeStatus(SecureChannel::Status::AUTHENTICATING);
     }
-    fake_secure_channel->ChangeStatus(
-        cryptauth::SecureChannel::Status::DISCONNECTED);
+    fake_secure_channel->ChangeStatus(SecureChannel::Status::DISCONNECTED);
 
     // Iterate through all pending requests to |remote_device_id|, ensuring that
     // all expected failures have been communicated back to the client.
@@ -660,7 +654,7 @@ class SecureChannelBleConnectionManagerImplTest : public testing::Test {
 
   void SimulateSecureChannelAuthentication(
       const std::string& remote_device_id,
-      cryptauth::FakeSecureChannel* fake_secure_channel,
+      FakeSecureChannelConnection* fake_secure_channel,
       bool created_via_background_advertisement) {
     fake_authenticated_channel_factory_->SetExpectationsForNextCall(
         fake_secure_channel, created_via_background_advertisement);
@@ -668,14 +662,11 @@ class SecureChannelBleConnectionManagerImplTest : public testing::Test {
     size_t num_success_callbacks_before_call = successful_connections_.size();
 
     test_clock()->Advance(kAdvertisementToConnectionTime);
-    fake_secure_channel->ChangeStatus(
-        cryptauth::SecureChannel::Status::CONNECTED);
-    fake_secure_channel->ChangeStatus(
-        cryptauth::SecureChannel::Status::AUTHENTICATING);
+    fake_secure_channel->ChangeStatus(SecureChannel::Status::CONNECTED);
+    fake_secure_channel->ChangeStatus(SecureChannel::Status::AUTHENTICATING);
 
     test_clock()->Advance(kConnectionToAuthenticationTime);
-    fake_secure_channel->ChangeStatus(
-        cryptauth::SecureChannel::Status::AUTHENTICATED);
+    fake_secure_channel->ChangeStatus(SecureChannel::Status::AUTHENTICATED);
 
     // Verify that the callback was made. Verification that the provided
     // DeviceIdPair was correct occurs in OnConnectionSuccess().
@@ -705,13 +696,15 @@ class SecureChannelBleConnectionManagerImplTest : public testing::Test {
   }
 
   bool WasChannelHandledByDisconnector(
-      cryptauth::FakeSecureChannel* fake_secure_channel) {
+      FakeSecureChannelConnection* fake_secure_channel) {
     return fake_secure_channel_disconnector()->WasChannelHandled(
         fake_secure_channel);
   }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  const cryptauth::RemoteDeviceRefList& test_devices() { return test_devices_; }
+  const multidevice::RemoteDeviceRefList& test_devices() {
+    return test_devices_;
+  }
 
   base::SimpleTestClock* test_clock() { return test_clock_.get(); }
 
@@ -848,7 +841,7 @@ class SecureChannelBleConnectionManagerImplTest : public testing::Test {
     return fake_secure_channel_disconnector_factory_->instance();
   }
 
-  const cryptauth::RemoteDeviceRefList test_devices_;
+  const multidevice::RemoteDeviceRefList test_devices_;
 
   base::HistogramTester histogram_tester_;
 
@@ -962,7 +955,7 @@ TEST_F(SecureChannelBleConnectionManagerImplTest,
                                 true /* expected_to_add_request */,
                                 false /* should_cancel_attempt_on_failure */);
 
-  cryptauth::FakeSecureChannel* fake_secure_channel =
+  FakeSecureChannelConnection* fake_secure_channel =
       SimulateConnectionEstablished(test_devices()[1],
                                     ConnectionRole::kInitiatorRole);
   SimulateSecureChannelDisconnection(pair.remote_device_id(),
@@ -981,7 +974,7 @@ TEST_F(SecureChannelBleConnectionManagerImplTest,
                                 true /* expected_to_add_request */,
                                 true /* should_cancel_attempt_on_failure */);
 
-  cryptauth::FakeSecureChannel* fake_secure_channel =
+  FakeSecureChannelConnection* fake_secure_channel =
       SimulateConnectionEstablished(test_devices()[1],
                                     ConnectionRole::kInitiatorRole);
   SimulateSecureChannelDisconnection(
@@ -1000,7 +993,7 @@ TEST_F(SecureChannelBleConnectionManagerImplTest,
                                 true /* expected_to_add_request */,
                                 false /* should_cancel_attempt_on_failure */);
 
-  cryptauth::FakeSecureChannel* fake_secure_channel =
+  FakeSecureChannelConnection* fake_secure_channel =
       SimulateConnectionEstablished(test_devices()[1],
                                     ConnectionRole::kInitiatorRole);
   SimulateSecureChannelDisconnection(pair.remote_device_id(),
@@ -1019,7 +1012,7 @@ TEST_F(SecureChannelBleConnectionManagerImplTest,
                                 true /* expected_to_add_request */,
                                 false /* should_cancel_attempt_on_failure */);
 
-  cryptauth::FakeSecureChannel* fake_secure_channel =
+  FakeSecureChannelConnection* fake_secure_channel =
       SimulateConnectionEstablished(test_devices()[1],
                                     ConnectionRole::kInitiatorRole);
   SimulateSecureChannelAuthentication(
@@ -1058,7 +1051,7 @@ TEST_F(SecureChannelBleConnectionManagerImplTest,
                                true /* expected_to_add_request */,
                                false /* should_cancel_attempt_on_failure */);
 
-  cryptauth::FakeSecureChannel* fake_secure_channel =
+  FakeSecureChannelConnection* fake_secure_channel =
       SimulateConnectionEstablished(test_devices()[1],
                                     ConnectionRole::kListenerRole);
   SimulateSecureChannelDisconnection(pair.remote_device_id(),
@@ -1077,7 +1070,7 @@ TEST_F(SecureChannelBleConnectionManagerImplTest,
                                true /* expected_to_add_request */,
                                true /* should_cancel_attempt_on_failure */);
 
-  cryptauth::FakeSecureChannel* fake_secure_channel =
+  FakeSecureChannelConnection* fake_secure_channel =
       SimulateConnectionEstablished(test_devices()[1],
                                     ConnectionRole::kListenerRole);
   SimulateSecureChannelDisconnection(
@@ -1096,7 +1089,7 @@ TEST_F(SecureChannelBleConnectionManagerImplTest,
                                true /* expected_to_add_request */,
                                false /* should_cancel_attempt_on_failure */);
 
-  cryptauth::FakeSecureChannel* fake_secure_channel =
+  FakeSecureChannelConnection* fake_secure_channel =
       SimulateConnectionEstablished(test_devices()[1],
                                     ConnectionRole::kListenerRole);
   SimulateSecureChannelDisconnection(pair.remote_device_id(),
@@ -1115,7 +1108,7 @@ TEST_F(SecureChannelBleConnectionManagerImplTest,
                                true /* expected_to_add_request */,
                                false /* should_cancel_attempt_on_failure */);
 
-  cryptauth::FakeSecureChannel* fake_secure_channel =
+  FakeSecureChannelConnection* fake_secure_channel =
       SimulateConnectionEstablished(test_devices()[1],
                                     ConnectionRole::kListenerRole);
   SimulateSecureChannelAuthentication(
@@ -1144,7 +1137,7 @@ TEST_F(SecureChannelBleConnectionManagerImplTest,
                         false /* replaced_by_higher_priority_advertisement */);
 
   // For pair_1, establish a connection then fail due to GATT errors.
-  cryptauth::FakeSecureChannel* fake_secure_channel_1 =
+  FakeSecureChannelConnection* fake_secure_channel_1 =
       SimulateConnectionEstablished(test_devices()[1],
                                     ConnectionRole::kInitiatorRole);
   SimulateSecureChannelDisconnection(pair_1.remote_device_id(),
@@ -1152,7 +1145,7 @@ TEST_F(SecureChannelBleConnectionManagerImplTest,
                                      fake_secure_channel_1);
 
   // For pair_2, establish a connection then fail due to authentication errors.
-  cryptauth::FakeSecureChannel* fake_secure_channel_2 =
+  FakeSecureChannelConnection* fake_secure_channel_2 =
       SimulateConnectionEstablished(test_devices()[2],
                                     ConnectionRole::kInitiatorRole);
   SimulateSecureChannelDisconnection(pair_2.remote_device_id(),
@@ -1178,14 +1171,14 @@ TEST_F(SecureChannelBleConnectionManagerImplTest,
                                 true /* expected_to_add_request */,
                                 false /* should_cancel_attempt_on_failure */);
 
-  cryptauth::FakeSecureChannel* fake_secure_channel_1 =
+  FakeSecureChannelConnection* fake_secure_channel_1 =
       SimulateConnectionEstablished(test_devices()[1],
                                     ConnectionRole::kInitiatorRole);
   SimulateSecureChannelAuthentication(
       pair_1.remote_device_id(), fake_secure_channel_1,
       false /* created_via_background_advertisement */);
 
-  cryptauth::FakeSecureChannel* fake_secure_channel_2 =
+  FakeSecureChannelConnection* fake_secure_channel_2 =
       SimulateConnectionEstablished(test_devices()[2],
                                     ConnectionRole::kInitiatorRole);
   SimulateSecureChannelAuthentication(
@@ -1207,14 +1200,14 @@ TEST_F(SecureChannelBleConnectionManagerImplTest,
                                true /* expected_to_add_request */,
                                false /* should_cancel_attempt_on_failure */);
 
-  cryptauth::FakeSecureChannel* fake_secure_channel_1 =
+  FakeSecureChannelConnection* fake_secure_channel_1 =
       SimulateConnectionEstablished(test_devices()[1],
                                     ConnectionRole::kListenerRole);
   SimulateSecureChannelDisconnection(pair_1.remote_device_id(),
                                      true /* fail_during_authentication */,
                                      fake_secure_channel_1);
 
-  cryptauth::FakeSecureChannel* fake_secure_channel_2 =
+  FakeSecureChannelConnection* fake_secure_channel_2 =
       SimulateConnectionEstablished(test_devices()[2],
                                     ConnectionRole::kListenerRole);
   SimulateSecureChannelDisconnection(pair_2.remote_device_id(),
@@ -1239,14 +1232,14 @@ TEST_F(SecureChannelBleConnectionManagerImplTest,
                                true /* expected_to_add_request */,
                                false /* should_cancel_attempt_on_failure */);
 
-  cryptauth::FakeSecureChannel* fake_secure_channel_1 =
+  FakeSecureChannelConnection* fake_secure_channel_1 =
       SimulateConnectionEstablished(test_devices()[1],
                                     ConnectionRole::kListenerRole);
   SimulateSecureChannelAuthentication(
       pair_1.remote_device_id(), fake_secure_channel_1,
       true /* created_via_background_advertisement */);
 
-  cryptauth::FakeSecureChannel* fake_secure_channel_2 =
+  FakeSecureChannelConnection* fake_secure_channel_2 =
       SimulateConnectionEstablished(test_devices()[2],
                                     ConnectionRole::kListenerRole);
   SimulateSecureChannelAuthentication(
@@ -1267,7 +1260,7 @@ TEST_F(SecureChannelBleConnectionManagerImplTest,
                                 false /* should_cancel_attempt_on_failure */);
 
   // GATT failure.
-  cryptauth::FakeSecureChannel* fake_secure_channel_1 =
+  FakeSecureChannelConnection* fake_secure_channel_1 =
       SimulateConnectionEstablished(test_devices()[1],
                                     ConnectionRole::kInitiatorRole);
   SimulateSecureChannelDisconnection(pair.remote_device_id(),
@@ -1275,7 +1268,7 @@ TEST_F(SecureChannelBleConnectionManagerImplTest,
                                      fake_secure_channel_1);
 
   // Authentication failure.
-  cryptauth::FakeSecureChannel* fake_secure_channel_2 =
+  FakeSecureChannelConnection* fake_secure_channel_2 =
       SimulateConnectionEstablished(test_devices()[1],
                                     ConnectionRole::kListenerRole);
   SimulateSecureChannelDisconnection(pair.remote_device_id(),
@@ -1298,7 +1291,7 @@ TEST_F(SecureChannelBleConnectionManagerImplTest,
                                 true /* expected_to_add_request */,
                                 false /* should_cancel_attempt_on_failure */);
 
-  cryptauth::FakeSecureChannel* fake_secure_channel =
+  FakeSecureChannelConnection* fake_secure_channel =
       SimulateConnectionEstablished(test_devices()[1],
                                     ConnectionRole::kInitiatorRole);
   SimulateSecureChannelAuthentication(
@@ -1315,7 +1308,7 @@ TEST_F(SecureChannelBleConnectionManagerImplTest,
                                true /* expected_to_add_request */,
                                false /* should_cancel_attempt_on_failure */);
 
-  cryptauth::FakeSecureChannel* fake_secure_channel =
+  FakeSecureChannelConnection* fake_secure_channel =
       SimulateConnectionEstablished(test_devices()[1],
                                     ConnectionRole::kInitiatorRole);
 
@@ -1346,7 +1339,7 @@ TEST_F(SecureChannelBleConnectionManagerImplTest,
                                 true /* expected_to_add_request */,
                                 false /* should_cancel_attempt_on_failure */);
 
-  cryptauth::FakeSecureChannel* fake_secure_channel =
+  FakeSecureChannelConnection* fake_secure_channel =
       SimulateConnectionEstablished(test_devices()[1],
                                     ConnectionRole::kInitiatorRole);
 
@@ -1371,7 +1364,7 @@ TEST_F(SecureChannelBleConnectionManagerImplTest, ConnectionMetrics) {
   test_clock()->Advance(kScanToAdvertisementTime);
 
   // Simulate a connection being established, then disconnected.
-  cryptauth::FakeSecureChannel* fake_secure_channel =
+  FakeSecureChannelConnection* fake_secure_channel =
       SimulateConnectionEstablished(test_devices()[1],
                                     ConnectionRole::kListenerRole);
   test_clock()->Advance(kAdvertisementToConnectionTime);

@@ -22,15 +22,14 @@ class Widget;
 
 class PlatformTestHelper {
  public:
-  using Factory = base::Callback<std::unique_ptr<PlatformTestHelper>(void)>;
-  PlatformTestHelper() {}
+  using Factory =
+      base::RepeatingCallback<std::unique_ptr<PlatformTestHelper>(void)>;
+
+  PlatformTestHelper() = default;
   virtual ~PlatformTestHelper();
 
-  static void set_factory(const Factory& factory);
+  static void set_factory(Factory factory);
   static std::unique_ptr<PlatformTestHelper> Create();
-
-  static void SetIsMus();
-  static bool IsMus();
 
   // Called once the ViewsTestHelper has been created, but before SetUp() is
   // called.

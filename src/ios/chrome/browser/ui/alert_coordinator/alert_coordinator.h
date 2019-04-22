@@ -38,6 +38,12 @@
                                      title:(NSString*)title
                                    message:(NSString*)message
     NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                                     title:(NSString*)title
+                                   message:(NSString*)message
+                              browserState:
+                                  (ios::ChromeBrowserState*)browserState
+    NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
     NS_UNAVAILABLE;
@@ -45,6 +51,8 @@
                               browserState:
                                   (ios::ChromeBrowserState*)browserState
     NS_UNAVAILABLE;
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                                   browser:(Browser*)browser NS_UNAVAILABLE;
 
 // Adds an item at the end of the menu. It does nothing if |visible| is true or
 // if trying to add an item with a UIAlertActionStyleCancel while
@@ -59,8 +67,12 @@
 @end
 
 @interface AlertCoordinator (Subclassing)
-// Lazy initializer to create the alertController.
+// The UIAlertController being managed by this coordinator.
 @property(nonatomic, readonly) UIAlertController* alertController;
+// Called when lazily instantiating |alertController|.  Subclasses should
+// override and return the appropriately configured UIAlertController.
+- (UIAlertController*)alertControllerWithTitle:(NSString*)title
+                                       message:(NSString*)message;
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_ALERT_COORDINATOR_ALERT_COORDINATOR_H_

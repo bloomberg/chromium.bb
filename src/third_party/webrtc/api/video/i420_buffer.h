@@ -14,10 +14,10 @@
 #include <stdint.h>
 #include <memory>
 
+#include "api/scoped_refptr.h"
 #include "api/video/video_frame_buffer.h"
 #include "api/video/video_rotation.h"
 #include "rtc_base/memory/aligned_malloc.h"
-#include "rtc_base/scoped_ref_ptr.h"
 #include "rtc_base/system/rtc_export.h"
 
 namespace webrtc {
@@ -96,6 +96,12 @@ class RTC_EXPORT I420Buffer : public I420BufferInterface {
 
   // Scale all of |src| to the size of |this| buffer, with no cropping.
   void ScaleFrom(const I420BufferInterface& src);
+
+  // Pastes whole picture to canvas at (offset_row, offset_col).
+  // Offsets and picture dimensions must be even.
+  void PasteFrom(const I420BufferInterface& picture,
+                 int offset_col,
+                 int offset_row);
 
  protected:
   I420Buffer(int width, int height);

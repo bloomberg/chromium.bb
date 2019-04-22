@@ -8,7 +8,7 @@
 <TextView
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:gravity="center"
-    android:layout_height="@dimen/keyboard_accessory_action_height"
+    android:layout_height="@dimen/keyboard_accessory_bar_item_height"
     android:layout_width="wrap_content"
     android:minHeight="0dp"
     android:minWidth="0dp"
@@ -19,5 +19,5 @@
     android:layout_marginBottom="@dimen/keyboard_accessory_half_padding"
     android:layout_marginTop="@dimen/keyboard_accessory_half_padding"
     android:elevation="2dp"
-    android:textAppearance="@style/BlackTitle2"
+    android:textAppearance="@style/TextAppearance.BlackTitle2"
     android:background="@drawable/autofill_chip_inset"/>

@@ -26,9 +26,9 @@ constexpr char kImageKey[] = "key";
 constexpr char kImageData[] = "data";
 }  // namespace
 
-class ImageDataStoreDiskTest : public testing::Test {
+class CachedImageFetcherImageDataStoreDiskTest : public testing::Test {
  public:
-  ImageDataStoreDiskTest() {}
+  CachedImageFetcherImageDataStoreDiskTest() {}
   void SetUp() override { ASSERT_TRUE(temp_dir_.CreateUniqueTempDir()); }
 
   void CreateDataStore() {
@@ -39,8 +39,9 @@ class ImageDataStoreDiskTest : public testing::Test {
 
   void InitializeDataStore() {
     EXPECT_CALL(*this, OnInitialized());
-    data_store()->Initialize(base::BindOnce(
-        &ImageDataStoreDiskTest::OnInitialized, base::Unretained(this)));
+    data_store()->Initialize(
+        base::BindOnce(&CachedImageFetcherImageDataStoreDiskTest::OnInitialized,
+                       base::Unretained(this)));
     RunUntilIdle();
   }
 
@@ -61,8 +62,9 @@ class ImageDataStoreDiskTest : public testing::Test {
   void AssertDataPresent(const std::string& key, const std::string& data) {
     EXPECT_CALL(*this, DataCallback(data));
     data_store()->LoadImage(
-        key, base::BindOnce(&ImageDataStoreDiskTest::DataCallback,
-                            base::Unretained(this)));
+        key,
+        base::BindOnce(&CachedImageFetcherImageDataStoreDiskTest::DataCallback,
+                       base::Unretained(this)));
     RunUntilIdle();
   }
 
@@ -90,10 +92,10 @@ class ImageDataStoreDiskTest : public testing::Test {
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
-  DISALLOW_COPY_AND_ASSIGN(ImageDataStoreDiskTest);
+  DISALLOW_COPY_AND_ASSIGN(CachedImageFetcherImageDataStoreDiskTest);
 };
 
-TEST_F(ImageDataStoreDiskTest, SanityTest) {
+TEST_F(CachedImageFetcherImageDataStoreDiskTest, SanityTest) {
   CreateDataStore();
   InitializeDataStore();
 
@@ -104,7 +106,7 @@ TEST_F(ImageDataStoreDiskTest, SanityTest) {
   AssertDataPresent(kImageKey, "");
 }
 
-TEST_F(ImageDataStoreDiskTest, Init) {
+TEST_F(CachedImageFetcherImageDataStoreDiskTest, Init) {
   CreateDataStore();
   ASSERT_FALSE(data_store()->IsInitialized());
 
@@ -112,7 +114,7 @@ TEST_F(ImageDataStoreDiskTest, Init) {
   ASSERT_TRUE(data_store()->IsInitialized());
 }
 
-TEST_F(ImageDataStoreDiskTest, InitWithExistingDirectory) {
+TEST_F(CachedImageFetcherImageDataStoreDiskTest, InitWithExistingDirectory) {
   PrepareDataStore(/* initialize */ true);
 
   // Recreating the data store shouldn't wipe the directory.
@@ -122,18 +124,18 @@ TEST_F(ImageDataStoreDiskTest, InitWithExistingDirectory) {
   AssertDataPresent(kImageKey);
 }
 
-TEST_F(ImageDataStoreDiskTest, SaveBeforeInit) {
+TEST_F(CachedImageFetcherImageDataStoreDiskTest, SaveBeforeInit) {
   PrepareDataStore(/* initialize */ false);
   // No data should be present (empty string).
   AssertDataPresent(kImageKey, "");
 }
 
-TEST_F(ImageDataStoreDiskTest, Save) {
+TEST_F(CachedImageFetcherImageDataStoreDiskTest, Save) {
   PrepareDataStore(/* initialize */ true);
   AssertDataPresent(kImageKey);
 }
 
-TEST_F(ImageDataStoreDiskTest, DeleteBeforeInit) {
+TEST_F(CachedImageFetcherImageDataStoreDiskTest, DeleteBeforeInit) {
   PrepareDataStore(/* initialize */ false);
 
   DeleteData(kImageKey);
@@ -143,7 +145,7 @@ TEST_F(ImageDataStoreDiskTest, DeleteBeforeInit) {
   AssertDataPresent(kImageKey);
 }
 
-TEST_F(ImageDataStoreDiskTest, Delete) {
+TEST_F(CachedImageFetcherImageDataStoreDiskTest, Delete) {
   PrepareDataStore(/* initialize */ true);
 
   DeleteData(kImageKey);
@@ -152,35 +154,39 @@ TEST_F(ImageDataStoreDiskTest, Delete) {
   AssertDataPresent(kImageKey, "");
 }
 
-TEST_F(ImageDataStoreDiskTest, GetAllKeysBeforeInit) {
+TEST_F(CachedImageFetcherImageDataStoreDiskTest, GetAllKeysBeforeInit) {
   PrepareDataStore(/* initialize */ false);
 
   // Should return empty vector even though there is a file present.
   EXPECT_CALL(*this, KeysCallback(std::vector<std::string>()));
-  data_store()->GetAllKeys(base::BindOnce(&ImageDataStoreDiskTest::KeysCallback,
-                                          base::Unretained(this)));
+  data_store()->GetAllKeys(
+      base::BindOnce(&CachedImageFetcherImageDataStoreDiskTest::KeysCallback,
+                     base::Unretained(this)));
   RunUntilIdle();
 }
 
-TEST_F(ImageDataStoreDiskTest, GetAllKeys) {
+TEST_F(CachedImageFetcherImageDataStoreDiskTest, GetAllKeys) {
   PrepareDataStore(/* initialize */ true);
 
   // Should return empty vector even though there is a file present.
   EXPECT_CALL(*this, KeysCallback(std::vector<std::string>({kImageKey})));
-  data_store()->GetAllKeys(base::BindOnce(&ImageDataStoreDiskTest::KeysCallback,
-                                          base::Unretained(this)));
+  data_store()->GetAllKeys(
+      base::BindOnce(&CachedImageFetcherImageDataStoreDiskTest::KeysCallback,
+                     base::Unretained(this)));
   RunUntilIdle();
 }
 
-TEST_F(ImageDataStoreDiskTest, QueuedLoadIsServedBeforeDelete) {
+TEST_F(CachedImageFetcherImageDataStoreDiskTest,
+       QueuedLoadIsServedBeforeDelete) {
   CreateDataStore();
   InitializeDataStore();
 
   SaveData(kImageKey);
   EXPECT_CALL(*this, DataCallback(kImageData));
-  data_store()->LoadImage(kImageKey,
-                          base::BindOnce(&ImageDataStoreDiskTest::DataCallback,
-                                         base::Unretained(this)));
+  data_store()->LoadImage(
+      kImageKey,
+      base::BindOnce(&CachedImageFetcherImageDataStoreDiskTest::DataCallback,
+                     base::Unretained(this)));
   DeleteData(kImageKey);
 
   RunUntilIdle();

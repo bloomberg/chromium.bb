@@ -48,7 +48,7 @@ const char kExternalDataPath[] = "policy/blank.html";
 class UserCloudExternalDataManagerTest : public LoginPolicyTestBase {
  protected:
   void SetUp() override {
-    set_initialize_fake_merge_session(false);
+    fake_gaia_.set_initialize_fake_merge_session(false);
 
     LoginPolicyTestBase::SetUp();
   }
@@ -112,10 +112,10 @@ IN_PROC_BROWSER_TEST_F(UserCloudExternalDataManagerTest, FetchExternalData) {
 
   base::RunLoop run_loop;
   std::unique_ptr<std::string> fetched_external_data;
-  policy_entry->external_data_fetcher->Fetch(base::Bind(
-      &test::ExternalDataFetchCallback,
-      &fetched_external_data,
-      run_loop.QuitClosure()));
+  base::FilePath file_path;
+  policy_entry->external_data_fetcher->Fetch(
+      base::BindOnce(&test::ExternalDataFetchCallback, &fetched_external_data,
+                     &file_path, run_loop.QuitClosure()));
   run_loop.Run();
 
   ASSERT_TRUE(fetched_external_data);

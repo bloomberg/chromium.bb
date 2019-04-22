@@ -17,6 +17,7 @@
 class GURL;
 
 namespace content {
+class RenderFrameHost;
 class RenderViewHost;
 class WebContents;
 class WebUI;
@@ -90,6 +91,10 @@ class WEB_DIALOGS_EXPORT WebDialogDelegate {
   virtual void OnDialogShown(content::WebUI* webui,
                              content::RenderViewHost* render_view_host) {}
 
+  // A callback to notify the delegate that the dialog is about to close due to
+  // the user pressing the ESC key.
+  virtual void OnDialogClosingFromKeyEvent() {}
+
   // A callback to notify the delegate that the dialog closed.
   // IMPORTANT: Implementations should delete |this| here (unless they've
   // arranged for the delegate to be deleted in some other way, e.g. by
@@ -116,7 +121,8 @@ class WEB_DIALOGS_EXPORT WebDialogDelegate {
   // customized menu.
   // Returns true iff you do NOT want the standard context menu to be
   // shown (because you want to handle it yourself).
-  virtual bool HandleContextMenu(const content::ContextMenuParams& params);
+  virtual bool HandleContextMenu(content::RenderFrameHost* render_frame_host,
+                                 const content::ContextMenuParams& params);
 
   // A callback to allow the delegate to open a new URL inside |source|.
   // On return |out_new_contents| should contain the WebContents the URL

@@ -8,10 +8,10 @@
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"
-#include "ios/chrome/browser/experimental_flags.h"
+#include "ios/chrome/browser/system_flags.h"
+#import "ios/chrome/browser/ui/authentication/cells/signin_promo_view.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui.h"
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
-#import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
@@ -87,7 +87,9 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
   [SigninEarlGreyUI signinWithIdentity:identity];
 
   // Check |identity| is signed-in.
-  [SigninEarlGreyUtils assertSignedInWithIdentity:identity];
+  NSError* signedInError =
+      [SigninEarlGreyUtils checkSignedInWithIdentity:identity];
+  GREYAssertNil(signedInError, signedInError.localizedDescription);
 }
 
 // Tests signing in with one account, switching sync account to a second and
@@ -115,10 +117,16 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
   [[EarlGrey selectElementWithMatcher:
                  chrome_test_util::SettingsImportDataKeepSeparateButton()]
       performAction:grey_tap()];
-  TapButtonWithLabelId(IDS_IOS_OPTIONS_IMPORT_DATA_CONTINUE_BUTTON);
+  id<GREYMatcher> matcher = grey_allOf(
+      chrome_test_util::ButtonWithAccessibilityLabelId(
+          IDS_IOS_OPTIONS_IMPORT_DATA_CONTINUE_BUTTON),
+      grey_not(grey_accessibilityTrait(UIAccessibilityTraitNotEnabled)), nil);
+  [[EarlGrey selectElementWithMatcher:matcher] performAction:grey_tap()];
 
   // Check the signed-in user did change.
-  [SigninEarlGreyUtils assertSignedInWithIdentity:identity2];
+  NSError* signedInError =
+      [SigninEarlGreyUtils checkSignedInWithIdentity:identity2];
+  GREYAssertNil(signedInError, signedInError.localizedDescription);
 
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -150,10 +158,16 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::
                                           SettingsImportDataImportButton()]
       performAction:grey_tap()];
-  TapButtonWithLabelId(IDS_IOS_OPTIONS_IMPORT_DATA_CONTINUE_BUTTON);
+  [[EarlGrey selectElementWithMatcher:
+                 grey_allOf(chrome_test_util::ButtonWithAccessibilityLabelId(
+                                IDS_IOS_OPTIONS_IMPORT_DATA_CONTINUE_BUTTON),
+                            grey_userInteractionEnabled(), nil)]
+      performAction:grey_tap()];
 
   // Check the signed-in user did change.
-  [SigninEarlGreyUtils assertSignedInWithIdentity:identity2];
+  NSError* signedInError =
+      [SigninEarlGreyUtils checkSignedInWithIdentity:identity2];
+  GREYAssertNil(signedInError, signedInError.localizedDescription);
 
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -183,7 +197,9 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
   SetEarlGreySynchronizationEnabled(YES);
 
   [SigninEarlGreyUI confirmSigninConfirmationDialog];
-  [SigninEarlGreyUtils assertSignedInWithIdentity:managed_identity];
+  NSError* signedInError =
+      [SigninEarlGreyUtils checkSignedInWithIdentity:managed_identity];
+  GREYAssertNil(signedInError, signedInError.localizedDescription);
 
   // Switch Sync account to |identity|.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsAccountButton()]
@@ -199,7 +215,9 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
   TapButtonWithLabelId(IDS_IOS_MANAGED_SWITCH_ACCEPT_BUTTON);
   SetEarlGreySynchronizationEnabled(YES);
 
-  [SigninEarlGreyUtils assertSignedInWithIdentity:identity];
+  NSError* signedInError2 =
+      [SigninEarlGreyUtils checkSignedInWithIdentity:identity];
+  GREYAssertNil(signedInError2, signedInError2.localizedDescription);
 
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -233,12 +251,14 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
       performAction:grey_tap()];
 
   // Check that there is no signed in user.
-  [SigninEarlGreyUtils assertSignedOut];
+  NSError* signedOutError = [SigninEarlGreyUtils checkSignedOut];
+  GREYAssertNil(signedOutError, signedOutError.localizedDescription);
 }
 
 // Tests that signing out of a managed account from the Settings works
 // correctly.
-- (void)testSignInDisconnectFromChromeManaged {
+// TODO(crbug.com): Re-enable the test.
+- (void)DISABLED_testSignInDisconnectFromChromeManaged {
   ChromeIdentity* identity = [SigninEarlGreyUtils fakeManagedIdentity];
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
       identity);
@@ -255,7 +275,9 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
   SetEarlGreySynchronizationEnabled(YES);
 
   [SigninEarlGreyUI confirmSigninConfirmationDialog];
-  [SigninEarlGreyUtils assertSignedInWithIdentity:identity];
+  NSError* signedInError =
+      [SigninEarlGreyUtils checkSignedInWithIdentity:identity];
+  GREYAssertNil(signedInError, signedInError.localizedDescription);
 
   // Go to Accounts Settings and tap the sign out button.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsAccountButton()]
@@ -275,7 +297,8 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
       performAction:grey_tap()];
 
   // Check that there is no signed in user.
-  [SigninEarlGreyUtils assertSignedOut];
+  NSError* signedOutError = [SigninEarlGreyUtils checkSignedOut];
+  GREYAssertNil(signedOutError, signedOutError.localizedDescription);
 }
 
 // Tests that signing in, tapping the Settings link on the confirmation screen
@@ -290,9 +313,12 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
   [ChromeEarlGreyUI tapSettingsMenuButton:SecondarySignInButton()];
   [SigninEarlGreyUI selectIdentityWithEmail:identity.userEmail];
 
-  // Tap Settings link.
+  // Wait until the next screen appears.
   id<GREYMatcher> settings_link_matcher = grey_allOf(
       grey_accessibilityLabel(@"Settings"), grey_sufficientlyVisible(), nil);
+
+  WaitForMatcher(settings_link_matcher);
+  // Tap Settings link.
   [[EarlGrey selectElementWithMatcher:settings_link_matcher]
       performAction:grey_tap()];
 
@@ -305,7 +331,9 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
           IDS_IOS_SETTINGS_TITLE);
   [[EarlGrey selectElementWithMatcher:settings_matcher]
       assertWithMatcher:grey_notVisible()];
-  [SigninEarlGreyUtils assertSignedInWithIdentity:identity];
+  NSError* signedInError =
+      [SigninEarlGreyUtils checkSignedInWithIdentity:identity];
+  GREYAssertNil(signedInError, signedInError.localizedDescription);
 }
 
 // Opens the sign in screen and then cancel it by opening a new tab. Ensures
@@ -417,7 +445,8 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
       onElementWithMatcher:chrome_test_util::SettingsAccountsCollectionView()]
       performAction:grey_tap()];
   TapButtonWithLabelId(IDS_IOS_DISCONNECT_DIALOG_CONTINUE_BUTTON_MOBILE);
-  [SigninEarlGreyUtils assertSignedOut];
+  NSError* signedOutError = [SigninEarlGreyUtils checkSignedOut];
+  GREYAssertNil(signedOutError, signedOutError.localizedDescription);
   [[EarlGrey selectElementWithMatcher:SecondarySignInButton()]
       performAction:grey_tap()];
   [SigninEarlGreyUI selectIdentityWithEmail:identity1.userEmail];
@@ -442,7 +471,8 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
   TapButtonWithLabelId(IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_SKIP_BUTTON);
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
-  [SigninEarlGreyUtils assertSignedOut];
+  NSError* signedOutError2 = [SigninEarlGreyUtils checkSignedOut];
+  GREYAssertNil(signedOutError2, signedOutError2.localizedDescription);
 }
 
 // Opens the sign in screen from the bookmarks and then cancel it by tapping on

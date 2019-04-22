@@ -26,7 +26,6 @@
 #include "chrome/browser/chromeos/file_manager/volume_manager_observer.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
 #include "chromeos/disks/disk_mount_manager.h"
-#include "chromeos/network/network_state_handler_observer.h"
 #include "chromeos/settings/timezone_settings.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/intent_helper/arc_intent_helper_observer.h"
@@ -34,16 +33,13 @@
 #include "components/drive/chromeos/sync_client.h"
 #include "components/drive/service/drive_service_interface.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "services/network/public/cpp/network_connection_tracker.h"
 #include "storage/browser/fileapi/file_system_operation.h"
 
 class PrefChangeRegistrar;
 class Profile;
 
 using file_manager::util::EntryDefinition;
-
-namespace chromeos {
-class NetworkState;
-}
 
 namespace drive {
 class FileChange;
@@ -53,15 +49,16 @@ namespace file_manager {
 
 // Monitors changes in disk mounts, network connection state and preferences
 // affecting File Manager. Dispatches appropriate File Browser events.
-class EventRouter : public KeyedService,
-                    public chromeos::NetworkStateHandlerObserver,
-                    public chromeos::system::TimezoneSettings::Observer,
-                    public drive::FileSystemObserver,
-                    public drive::DriveServiceObserver,
-                    public VolumeManagerObserver,
-                    public arc::ArcIntentHelperObserver,
-                    public drive::DriveIntegrationServiceObserver,
-                    public crostini::CrostiniSharePath::Observer {
+class EventRouter
+    : public KeyedService,
+      public network::NetworkConnectionTracker::NetworkConnectionObserver,
+      public chromeos::system::TimezoneSettings::Observer,
+      public drive::FileSystemObserver,
+      public drive::DriveServiceObserver,
+      public VolumeManagerObserver,
+      public arc::ArcIntentHelperObserver,
+      public drive::DriveIntegrationServiceObserver,
+      public crostini::CrostiniSharePath::Observer {
  public:
   typedef base::Callback<void(const base::FilePath& virtual_path,
                               const drive::FileChange* list,
@@ -78,7 +75,7 @@ class EventRouter : public KeyedService,
   // KeyedService overrides.
   void Shutdown() override;
 
-  typedef base::Callback<void(bool success)> BoolCallback;
+  using BoolCallback = base::OnceCallback<void(bool success)>;
 
   // Adds a file watch at |local_path|, associated with |virtual_path|, for
   // an extension with |extension_id|.
@@ -91,7 +88,7 @@ class EventRouter : public KeyedService,
   void AddFileWatch(const base::FilePath& local_path,
                     const base::FilePath& virtual_path,
                     const std::string& extension_id,
-                    const BoolCallback& callback);
+                    BoolCallback callback);
 
   // Removes a file watch at |local_path| for an extension with |extension_id|.
   //
@@ -118,8 +115,8 @@ class EventRouter : public KeyedService,
       const std::string& extension_id,
       storage::WatcherManager::ChangeType change_type);
 
-  // chromeos::NetworkStateHandlerObserver overrides.
-  void DefaultNetworkChanged(const chromeos::NetworkState* network) override;
+  // network::NetworkConnectionTracker::NetworkConnectionObserver overrides.
+  void OnConnectionChanged(network::mojom::ConnectionType type) override;
 
   // chromeos::system::TimezoneSettings::Observer overrides.
   void TimezoneChanged(const icu::TimeZone& timezone) override;
@@ -155,14 +152,14 @@ class EventRouter : public KeyedService,
   void OnFileSystemMountFailed() override;
 
   // crostini::CrostiniSharePath::Observer overrides
-  void OnUnshare(const base::FilePath& path) override;
+  void OnUnshare(const std::string& vm_name,
+                 const base::FilePath& path) override;
 
   // Returns a weak pointer for the event router.
   base::WeakPtr<EventRouter> GetWeakPtr();
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(EventRouterTest,
-                           PopulateCrostiniSharedPathsChangedEvent);
+  FRIEND_TEST_ALL_PREFIXES(EventRouterTest, PopulateCrostiniUnshareEvent);
 
   // Starts observing file system change events.
   void ObserveEvents();
@@ -203,13 +200,17 @@ class EventRouter : public KeyedService,
       chromeos::MountError error,
       const Volume& volume);
 
-  // Populate the paths changed event.
-  static void PopulateCrostiniSharedPathsChangedEvent(
-      extensions::api::file_manager_private::CrostiniSharedPathsChangedEvent&
-          event,
+  // Populate the path unshared event.
+  static void PopulateCrostiniUnshareEvent(
+      extensions::api::file_manager_private::CrostiniEvent& event,
+      const std::string& vm_name,
       const std::string& extension_id,
       const std::string& mount_name,
+      const std::string& file_system_name,
       const std::string& full_path);
+
+  // Called when crostini is enabled/disabled.
+  void OnCrostiniEnabledChanged();
 
   base::Time last_copy_progress_event_;
 

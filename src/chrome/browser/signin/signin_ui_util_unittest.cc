@@ -9,18 +9,18 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
 #include "build/buildflag.h"
-#include "chrome/browser/signin/account_tracker_service_factory.h"
-#include "chrome/browser/signin/fake_gaia_cookie_manager_service_builder.h"
-#include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
-#include "chrome/browser/signin/fake_signin_manager_builder.h"
-#include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/browser/signin/scoped_account_consistency.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
+#include "components/google/core/browser/google_url_tracker.h"
 #include "components/signin/core/browser/account_consistency_method.h"
+#include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/signin_buildflags.h"
+#include "services/identity/public/cpp/accounts_mutator.h"
+#include "services/identity/public/cpp/identity_manager.h"
+#include "services/identity/public/cpp/identity_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace signin_ui_util {
@@ -132,15 +132,8 @@ class DiceSigninUiUtilTest : public BrowserWithTestWindowTest {
 
   // BrowserWithTestWindowTest:
   TestingProfile::TestingFactories GetTestingFactories() override {
-    return {
-        {SigninManagerFactory::GetInstance(),
-         base::BindRepeating(&BuildFakeSigninManagerForTesting)},
-        {ProfileOAuth2TokenServiceFactory::GetInstance(),
-         base::BindRepeating(&BuildFakeProfileOAuth2TokenService)},
-        {GaiaCookieManagerServiceFactory::GetInstance(),
-         base::BindRepeating(
-             &BuildFakeGaiaCookieManagerServiceWithOptions,
-             /*create_fake_url_loader_factory_for_cookie_requests=*/false)}};
+    return IdentityTestEnvironmentProfileAdaptor::
+        GetIdentityTestEnvironmentFactories();
   }
 
   // BrowserWithTestWindowTest:
@@ -148,14 +141,9 @@ class DiceSigninUiUtilTest : public BrowserWithTestWindowTest {
     return new SigninUiUtilTestBrowserWindow();
   }
 
-  // Returns the token service.
-  ProfileOAuth2TokenService* GetTokenService() {
-    return ProfileOAuth2TokenServiceFactory::GetForProfile(profile());
-  }
-
-  // Returns the account tracker service.
-  AccountTrackerService* GetAccountTrackerService() {
-    return AccountTrackerServiceFactory::GetForProfile(profile());
+  // Returns the identity manager.
+  identity::IdentityManager* GetIdentityManager() {
+    return IdentityManagerFactory::GetForProfile(profile());
   }
 
   void EnableSync(const AccountInfo& account_info,
@@ -276,10 +264,10 @@ class DiceSigninUiUtilTest : public BrowserWithTestWindowTest {
 };
 
 TEST_F(DiceSigninUiUtilTest, EnableSyncWithExistingAccount) {
-  // Add an account.
   std::string account_id =
-      GetAccountTrackerService()->SeedAccountInfo(kMainEmail, kMainGaiaID);
-  GetTokenService()->UpdateCredentials(account_id, "token");
+      GetIdentityManager()->GetAccountsMutator()->AddOrUpdateAccount(
+          kMainGaiaID, kMainEmail, "refresh_token", false,
+          signin_metrics::SourceForRefreshTokenOperation::kUnknown);
 
   for (bool is_default_promo_account : {true, false}) {
     base::HistogramTester histogram_tester;
@@ -289,8 +277,11 @@ TEST_F(DiceSigninUiUtilTest, EnableSyncWithExistingAccount) {
     EXPECT_EQ(0, user_action_tester.GetActionCount(
                      "Signin_Signin_FromBookmarkBubble"));
 
-    EnableSync(GetAccountTrackerService()->GetAccountInfo(account_id),
-               is_default_promo_account);
+    EnableSync(
+        GetIdentityManager()
+            ->FindAccountInfoForAccountWithRefreshTokenByAccountId(account_id)
+            .value(),
+        is_default_promo_account);
     signin_metrics::PromoAction expected_promo_action =
         is_default_promo_account
             ? signin_metrics::PromoAction::PROMO_ACTION_WITH_DEFAULT
@@ -326,10 +317,16 @@ TEST_F(DiceSigninUiUtilTest, EnableSyncWithExistingAccount) {
 
 TEST_F(DiceSigninUiUtilTest, EnableSyncWithAccountThatNeedsReauth) {
   AddTab(browser(), GURL("http://example.com"));
-  // Add an account to the account tracker, but do not add it to the token
-  // service in order for it to require a reauth before enabling sync.
   std::string account_id =
-      GetAccountTrackerService()->SeedAccountInfo(kMainGaiaID, kMainEmail);
+      GetIdentityManager()->GetAccountsMutator()->AddOrUpdateAccount(
+          kMainGaiaID, kMainEmail, "refresh_token", false,
+          signin_metrics::SourceForRefreshTokenOperation::kUnknown);
+
+  // Add an account and then put its refresh token into an error state to
+  // require a reauth before enabling sync.
+  identity::UpdatePersistentErrorOfRefreshTokenForAccount(
+      GetIdentityManager(), account_id,
+      GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
 
   for (bool is_default_promo_account : {true, false}) {
     base::HistogramTester histogram_tester;
@@ -339,8 +336,11 @@ TEST_F(DiceSigninUiUtilTest, EnableSyncWithAccountThatNeedsReauth) {
     EXPECT_EQ(0, user_action_tester.GetActionCount(
                      "Signin_Signin_FromBookmarkBubble"));
 
-    EnableSync(GetAccountTrackerService()->GetAccountInfo(account_id),
-               is_default_promo_account);
+    EnableSync(
+        GetIdentityManager()
+            ->FindAccountInfoForAccountWithRefreshTokenByAccountId(account_id)
+            .value(),
+        is_default_promo_account);
     ASSERT_FALSE(create_dice_turn_sync_on_helper_called_);
 
     ExpectOneSigninStartedHistograms(
@@ -363,7 +363,8 @@ TEST_F(DiceSigninUiUtilTest, EnableSyncWithAccountThatNeedsReauth) {
     TabStripModel* tab_strip = browser()->tab_strip_model();
     content::WebContents* active_contents = tab_strip->GetActiveWebContents();
     ASSERT_TRUE(active_contents);
-    EXPECT_EQ(signin::GetSigninURLForDice(profile(), kMainEmail),
+    EXPECT_EQ(signin::GetChromeSyncURLForDice(
+                  kMainEmail, GoogleURLTracker::kDefaultGoogleHomepage),
               active_contents->GetVisibleURL());
     tab_strip->CloseWebContentsAt(
         tab_strip->GetIndexOfWebContents(active_contents),
@@ -395,7 +396,8 @@ TEST_F(DiceSigninUiUtilTest, EnableSyncForNewAccountWithNoTab) {
   content::WebContents* active_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(active_contents);
-  EXPECT_EQ(signin::GetSigninURLForDice(profile(), ""),
+  EXPECT_EQ(signin::GetChromeSyncURLForDice(
+                "", GoogleURLTracker::kDefaultGoogleHomepage),
             active_contents->GetVisibleURL());
 }
 
@@ -403,10 +405,9 @@ TEST_F(DiceSigninUiUtilTest, EnableSyncForNewAccountWithNoTabWithExisting) {
   base::HistogramTester histogram_tester;
   base::UserActionTester user_action_tester;
 
-  // Add an account.
-  std::string account_id =
-      GetAccountTrackerService()->SeedAccountInfo(kMainEmail, kMainGaiaID);
-  GetTokenService()->UpdateCredentials(account_id, "token");
+  GetIdentityManager()->GetAccountsMutator()->AddOrUpdateAccount(
+      kMainGaiaID, kMainEmail, "refresh_token", false,
+      signin_metrics::SourceForRefreshTokenOperation::kUnknown);
 
   ExpectNoSigninStartedHistograms(histogram_tester);
   EXPECT_EQ(
@@ -450,7 +451,8 @@ TEST_F(DiceSigninUiUtilTest, EnableSyncForNewAccountWithOneTab) {
   content::WebContents* active_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(active_contents);
-  EXPECT_EQ(signin::GetSigninURLForDice(profile(), ""),
+  EXPECT_EQ(signin::GetChromeSyncURLForDice(
+                "", GoogleURLTracker::kDefaultGoogleHomepage),
             active_contents->GetVisibleURL());
 }
 
@@ -478,7 +480,7 @@ TEST_F(DiceSigninUiUtilTest, MergeDiceSigninTab) {
   ASSERT_EQ(0, tab_strip->active_index());
   GURL other_url = GURL("http://example.com");
   AddTab(browser(), other_url);
-  tab_strip->ActivateTabAt(0, true);
+  tab_strip->ActivateTabAt(0, {TabStripModel::GestureType::kOther});
   ASSERT_EQ(other_url, tab_strip->GetActiveWebContents()->GetVisibleURL());
   ASSERT_EQ(0, tab_strip->active_index());
 

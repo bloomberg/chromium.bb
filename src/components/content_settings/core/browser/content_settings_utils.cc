@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/values.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -31,7 +31,7 @@ const ContentSettingsStringMapping kContentSettingsStringMapping[] = {
     {CONTENT_SETTING_SESSION_ONLY, "session_only"},
     {CONTENT_SETTING_DETECT_IMPORTANT_CONTENT, "detect_important_content"},
 };
-static_assert(arraysize(kContentSettingsStringMapping) ==
+static_assert(base::size(kContentSettingsStringMapping) ==
                   CONTENT_SETTING_NUM_SETTINGS,
               "kContentSettingsToFromString should have "
               "CONTENT_SETTING_NUM_SETTINGS elements");
@@ -50,8 +50,8 @@ const ContentSetting kContentSettingOrder[] = {
     CONTENT_SETTING_BLOCK
 };
 
-static_assert(arraysize(kContentSettingOrder) ==
-              CONTENT_SETTING_NUM_SETTINGS - 1,
+static_assert(base::size(kContentSettingOrder) ==
+                  CONTENT_SETTING_NUM_SETTINGS - 1,
               "kContentSettingOrder should have CONTENT_SETTING_NUM_SETTINGS-1"
               "entries");
 
@@ -69,7 +69,7 @@ std::string ContentSettingToString(ContentSetting setting) {
 
 bool ContentSettingFromString(const std::string& name,
                               ContentSetting* setting) {
-  for (size_t i = 0; i < arraysize(kContentSettingsStringMapping); ++i) {
+  for (size_t i = 0; i < base::size(kContentSettingsStringMapping); ++i) {
     if (name == kContentSettingsStringMapping[i].content_setting_str) {
       *setting = kContentSettingsStringMapping[i].content_setting;
       return true;

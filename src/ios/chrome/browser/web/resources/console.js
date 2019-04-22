@@ -26,7 +26,7 @@ function sendConsoleMessage(method, originalArgs) {
     'command': 'console.msg',
     'method': method,
     'message': message,
-    'origin': document.location.origin
+    'url': document.location.href
   });
 }
 

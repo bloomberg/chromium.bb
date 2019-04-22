@@ -9,6 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/controls/button/button.h"
 
@@ -30,9 +31,7 @@ class Label;
 // couldn't bring myself to use such a long name.
 class KeywordHintView : public views::Button {
  public:
-  KeywordHintView(views::ButtonListener* listener,
-                  Profile* profile,
-                  OmniboxTint tint);
+  KeywordHintView(LocationBarView* parent, Profile* profile);
   ~KeywordHintView() override;
 
   void SetKeyword(const base::string16& keyword);
@@ -46,18 +45,21 @@ class KeywordHintView : public views::Button {
   gfx::Size CalculatePreferredSize() const override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
 
+  void OnThemeChanged() override;
+
  private:
   // Creates a label for non-chip text.
   views::Label* CreateLabel(SkColor text_color, SkColor background_color);
 
   int GetCornerRadius() const;
 
-  Profile* profile_;
+  LocationBarView* location_bar_view_ = nullptr;
+  Profile* profile_ = nullptr;
 
-  views::Label* leading_label_;
-  views::View* chip_container_;
-  views::Label* chip_label_;
-  views::Label* trailing_label_;
+  views::Label* leading_label_ = nullptr;
+  views::View* chip_container_ = nullptr;
+  views::Label* chip_label_ = nullptr;
+  views::Label* trailing_label_ = nullptr;
 
   base::string16 keyword_;
 

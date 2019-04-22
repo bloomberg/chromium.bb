@@ -28,7 +28,6 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_context_creation_attributes_core.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_image_source.h"
-#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/workers/worker_animation_frame_provider.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -59,9 +58,6 @@ CanvasRenderingContext::CanvasRenderingContext(
 
   if (!creation_attributes_.alpha)
     color_params_.SetOpacityMode(kOpaque);
-
-  if (!origin_trials::LowLatencyCanvasEnabled(host->GetTopExecutionContext()))
-    creation_attributes_.low_latency = false;
 
   // Make creation_attributes_ reflect the effective color_space and
   // pixel_format rather than the requested one.
@@ -152,6 +148,8 @@ CanvasRenderingContext::ContextType CanvasRenderingContext::ContextTypeFromId(
     return kContextImageBitmap;
   if (id == "xrpresent")
     return kContextXRPresent;
+  if (id == "gpupresent" && RuntimeEnabledFeatures::WebGPUEnabled())
+    return kContextGPUPresent;
   return kContextTypeUnknown;
 }
 
@@ -163,9 +161,7 @@ CanvasRenderingContext::ResolveContextTypeAliases(
   return type;
 }
 
-bool CanvasRenderingContext::WouldTaintOrigin(
-    CanvasImageSource* image_source,
-    const SecurityOrigin* destination_security_origin) {
+bool CanvasRenderingContext::WouldTaintOrigin(CanvasImageSource* image_source) {
   // Don't taint the canvas on data URLs. This special case is needed here
   // because CanvasImageSource::WouldTaintOrigin() can return false for data
   // URLs due to restrictions on SVG foreignObject nodes as described in
@@ -178,12 +174,11 @@ bool CanvasRenderingContext::WouldTaintOrigin(
   if (has_url && source_url.ProtocolIsData())
     return false;
 
-  return image_source->WouldTaintOrigin(destination_security_origin);
+  return image_source->WouldTaintOrigin();
 }
 
-void CanvasRenderingContext::Trace(blink::Visitor* visitor) {
+void CanvasRenderingContext::Trace(Visitor* visitor) {
   visitor->Trace(host_);
-  visitor->Trace(creation_attributes_);
   ScriptWrappable::Trace(visitor);
 }
 

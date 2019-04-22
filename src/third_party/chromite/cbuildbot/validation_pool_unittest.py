@@ -21,7 +21,7 @@ import time
 from chromite.cbuildbot import patch_series
 from chromite.cbuildbot import repository
 from chromite.cbuildbot import validation_pool
-from chromite.lib.const import waterfall
+from chromite.lib import buildstore
 from chromite.lib import cidb
 from chromite.lib import clactions
 from chromite.lib import config_lib
@@ -71,7 +71,7 @@ def MakePool(overlays=constants.PUBLIC_OVERLAYS, build_number=1,
   builder_run = FakeBuilderRun(fake_db)
   if fake_db:
     build_id = fake_db.InsertBuild(
-        builder_name, waterfall.WATERFALL_INTERNAL, build_number,
+        builder_name, build_number,
         'build-config', 'bot hostname', buildbucket_id=buildbucket_id)
     builder_run.attrs.metadata.UpdateWithDict({'build_id': build_id})
 
@@ -102,31 +102,31 @@ class FakeBuilderRun(object):
   """
   def __init__(self, fake_db=None):
     self.fake_db = fake_db
-    metadata_dict = {'buildbot-master-name': waterfall.WATERFALL_INTERNAL}
     FakeAttrs = collections.namedtuple('FakeAttrs', ['metadata'])
-    self.attrs = FakeAttrs(metadata=metadata_lib.CBuildbotMetadata(
-        metadata_dict=metadata_dict))
+    self.attrs = FakeAttrs(metadata=metadata_lib.CBuildbotMetadata())
     FakeConfig = collections.namedtuple('FakeConfig', ['name'])
     self.config = FakeConfig(name='master-paladin')
-    self.GetBuildbotUrl = lambda: waterfall.WATERFALL_INTERNAL
-    self.GetWaterfall = lambda: waterfall.WATERFALL_INTERNAL
 
   def GetCIDBHandle(self):
-    """Get the build_id and cidb handle, if available.
+    """Get the build_identifier and cidb handle, if available.
 
     Returns:
-      A (build_id, CIDBConnection) tuple if fake_db is set up and a build_id is
-      known in metadata. Otherwise, (None, None).
+      A (build_identifier, CIDBConnection) tuple if fake_db is set up
+      and a build_id is known in metadata. Otherwise,
+      (BuildIdentifier(None, None), None).
     """
     try:
       build_id = self.attrs.metadata.GetValue('build_id')
+      buildbucket_id = 1234
+      build_identifier = buildstore.BuildIdentifier(
+          cidb_id=build_id, buildbucket_id=buildbucket_id)
     except KeyError:
-      return (None, None)
+      return (buildstore.BuildIdentifier(None, None), None)
 
     if build_id is not None and self.fake_db:
-      return (build_id, self.fake_db)
+      return (build_identifier, self.fake_db)
 
-    return (None, None)
+    return (buildstore.BuildIdentifier(None, None), None)
 
 
 # pylint: disable=protected-access
@@ -353,7 +353,8 @@ class ValidationFailureOrTimeout(_Base):
 
   def testCancelledPreCQ(self):
     """Do not RemoveReady for cancelled Pre-CQs."""
-    build_id, _ = self._pool._run.GetCIDBHandle()
+    build_identifier, _ = self._pool._run.GetCIDBHandle()
+    build_id = build_identifier.cidb_id
     for change in self._patches:
       self.fake_db.InsertCLActions(
           build_id, [clactions.CLAction.FromGerritPatchAndAction(
@@ -374,7 +375,8 @@ class ValidationFailureOrTimeout(_Base):
 
   def testFirstFailureInPreCQ(self):
     """Tests that the first failure in pre-CQ is notified."""
-    build_id, _ = self._pool._run.GetCIDBHandle()
+    build_identifier, _ = self._pool._run.GetCIDBHandle()
+    build_id = build_identifier.cidb_id
     for change in self._patches:
       self.fake_db.InsertCLActions(
           build_id,
@@ -393,7 +395,8 @@ class ValidationFailureOrTimeout(_Base):
 
   def testSecondFailureInPreCQ(self):
     """Tests that the second failure in pre-CQ is NOT notified."""
-    build_id, _ = self._pool._run.GetCIDBHandle()
+    build_identifier, _ = self._pool._run.GetCIDBHandle()
+    build_id = build_identifier.cidb_id
     for change in self._patches:
       self.fake_db.InsertCLActions(
           build_id,
@@ -571,7 +574,7 @@ class TestCoreLogic(_Base):
     patch_series.PatchSeries.Apply.configure_mock(
         return_value=([patches[2]], [error], []))
 
-    git_repo_returns = [None] + ['foo_repo'] * (len(patches) - 1)
+    git_repo_returns = ['foo_repo', 'foo_repo', None]
     self.PatchObject(patch_series.PatchSeries, 'GetGitRepoForChange',
                      side_effect=git_repo_returns)
 
@@ -777,7 +780,7 @@ class TestCoreLogic(_Base):
     # Create a passing build.
     for i in range(2):
       self.fake_db.InsertBuild(
-          builder_name, None, i, builder_name, 'abcdelicious',
+          builder_name, i, builder_name, 'abcdelicious',
           status=constants.BUILDER_STATUS_PASSED)
 
     self.assertEqual(slave_pool._GetFailStreak(), 0)
@@ -785,24 +788,24 @@ class TestCoreLogic(_Base):
     # Add a fail streak.
     for i in range(3, 6):
       self.fake_db.InsertBuild(
-          builder_name, None, i, builder_name, 'abcdelicious',
+          builder_name, i, builder_name, 'abcdelicious',
           status=constants.BUILDER_STATUS_FAILED)
 
     self.assertEqual(slave_pool._GetFailStreak(), 3)
 
     # Add another success and failure.
     self.fake_db.InsertBuild(
-        builder_name, None, 6, builder_name, 'abcdelicious',
+        builder_name, 6, builder_name, 'abcdelicious',
         status=constants.BUILDER_STATUS_PASSED)
     self.fake_db.InsertBuild(
-        builder_name, None, 7, builder_name, 'abcdelicious',
+        builder_name, 7, builder_name, 'abcdelicious',
         status=constants.BUILDER_STATUS_FAILED)
 
     self.assertEqual(slave_pool._GetFailStreak(), 1)
 
     # Finally just add one last pass and make sure fail streak is wiped.
     self.fake_db.InsertBuild(
-        builder_name, None, 8, builder_name, 'abcdelicious',
+        builder_name, 8, builder_name, 'abcdelicious',
         status=constants.BUILDER_STATUS_PASSED)
 
     self.assertEqual(slave_pool._GetFailStreak(), 0)
@@ -1543,8 +1546,13 @@ class SubmitPoolTest(BaseSubmitPoolTestCase):
     for p in self.patches[:-1]:
       self.patch_mock.SetGerritDependencies(p, [])
     self.patch_mock.SetGerritDependencies(self.patches[4], self.patches[::-1])
-    self.pool_mock.max_submits.value = 1
-    submitted = [self.patches[2], self.patches[1], self.patches[3],
+    self.pool_mock.submit_results = {self.patches[0]: False,
+                                     self.patches[1]: False,
+                                     self.patches[2]: True,
+                                     self.patches[3]: False,
+                                     self.patches[4]: False,}
+    # This numbers are dependant on hash iteration order. :(
+    submitted = [self.patches[3], self.patches[2], self.patches[1],
                  self.patches[0]]
     rejected = self.patches[:2] + self.patches[3:]
     self.SubmitPool(submitted=submitted, rejected=rejected)
@@ -1553,7 +1561,7 @@ class SubmitPoolTest(BaseSubmitPoolTestCase):
           p, validation_pool.ValidationPool.INCONSISTENT_SUBMIT_MSG)
       self.assertEqualNotifyArg(p_failed_submit, p, 'error')
     failed_submit = validation_pool.PatchFailedToSubmit(
-        self.patches[1], validation_pool.ValidationPool.INCONSISTENT_SUBMIT_MSG)
+        self.patches[3], validation_pool.ValidationPool.INCONSISTENT_SUBMIT_MSG)
     dep_failed = cros_patch.DependencyError(self.patches[4], failed_submit)
     self.assertEqualNotifyArg(dep_failed, self.patches[4], 'error')
 
@@ -1618,15 +1626,16 @@ class SubmitPoolTest(BaseSubmitPoolTestCase):
     def _ReloadPatches(patches):
       reloaded = copy.deepcopy(patches)
       approvals = {('VRIF', '1'): False}
+      # Depends on hash iteration order. :(
       backup = reloaded[1].HasApproval
       self.PatchObject(
-          reloaded[1], 'HasApproval',
+          reloaded[0], 'HasApproval',
           side_effect=lambda *args: approvals.get(args, backup(*args)))
       return reloaded
     self.PatchObject(gerrit, 'GetGerritPatchInfoWithPatchQueries',
                      _ReloadPatches)
     self.SubmitPool(submitted=self.patches[:1], rejected=self.patches[1:])
-    message = 'CL:2 is not marked Verified=+1.'
+    message = 'chromium:2 is not marked Verified=+1.'
     self.assertEqualNotifyArg(message, self.patches[1], 'error')
 
   def testAlreadyMerged(self):
@@ -1638,7 +1647,8 @@ class SubmitPoolTest(BaseSubmitPoolTestCase):
     """Test that a CL that was modified during the run is rejected."""
     def _ReloadPatches(patches):
       reloaded = copy.deepcopy(patches)
-      reloaded[1].patch_number += 1
+      # Depends on hash iteration order. :(
+      reloaded[0].patch_number += 1
       return reloaded
     self.PatchObject(gerrit, 'GetGerritPatchInfoWithPatchQueries',
                      _ReloadPatches)

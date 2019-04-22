@@ -29,6 +29,8 @@ SurfaceState::SurfaceState(const egl::Config *configIn, const AttributeMap &attr
     : label(nullptr), config(configIn), attributes(attributesIn), timestampsEnabled(false)
 {}
 
+SurfaceState::~SurfaceState() = default;
+
 Surface::Surface(EGLint surfaceType,
                  const egl::Config *config,
                  const AttributeMap &attributes,
@@ -134,7 +136,7 @@ void Surface::postSwap(const gl::Context *context)
     if (mRobustResourceInitialization && mSwapBehavior != EGL_BUFFER_PRESERVED)
     {
         mInitState = gl::InitState::MayNeedInit;
-        onStorageChange(context);
+        onStateChange(context, angle::SubjectMessage::STORAGE_CHANGED);
     }
 }
 
@@ -183,7 +185,7 @@ Error Surface::setIsCurrent(const gl::Context *context, bool isCurrent)
         return NoError();
     }
 
-    return releaseRef(context->getCurrentDisplay());
+    return releaseRef(context->getDisplay());
 }
 
 Error Surface::releaseRef(const Display *display)
@@ -402,7 +404,7 @@ Error Surface::bindTexImage(gl::Context *context, gl::Texture *texture, EGLint b
     ASSERT(!mTexture);
     ANGLE_TRY(mImplementation->bindTexImage(context, texture, buffer));
 
-    if (texture->bindTexImageFromSurface(context, this) == angle::Result::Stop())
+    if (texture->bindTexImageFromSurface(context, this) == angle::Result::Stop)
     {
         return Error(EGL_BAD_SURFACE);
     }
@@ -419,11 +421,7 @@ Error Surface::releaseTexImage(const gl::Context *context, EGLint buffer)
     ANGLE_TRY(mImplementation->releaseTexImage(context, buffer));
 
     ASSERT(mTexture);
-    auto glErr = mTexture->releaseTexImageFromSurface(context);
-    if (glErr.isError())
-    {
-        return Error(EGL_BAD_SURFACE);
-    }
+    ANGLE_TRY(ResultToEGL(mTexture->releaseTexImageFromSurface(context)));
 
     return releaseTexImageFromTexture(context);
 }
@@ -437,7 +435,7 @@ Error Surface::releaseTexImageFromTexture(const gl::Context *context)
 {
     ASSERT(mTexture);
     mTexture = nullptr;
-    return releaseRef(context->getCurrentDisplay());
+    return releaseRef(context->getDisplay());
 }
 
 gl::Extents Surface::getAttachmentSize(const gl::ImageIndex & /*target*/) const

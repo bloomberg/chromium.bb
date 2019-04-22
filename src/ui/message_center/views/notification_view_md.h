@@ -139,8 +139,8 @@ class NotificationInputContainerMD : public views::InkDropHostView,
   // Overridden from views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
-  views::Textfield* textfield() const { return textfield_; };
-  views::ImageButton* button() const { return button_; };
+  views::Textfield* textfield() const { return textfield_; }
+  views::ImageButton* button() const { return button_; }
 
  private:
   NotificationInputDelegate* const delegate_;
@@ -183,13 +183,14 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
   // Overridden from views::InkDropHostView:
   void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
   void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
+  std::unique_ptr<views::InkDrop> CreateInkDrop() override;
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
+  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
   SkColor GetInkDropBaseColor() const override;
 
   // Overridden from MessageView:
   void UpdateWithNotification(const Notification& notification) override;
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
-  void UpdateControlButtonsVisibility() override;
   void UpdateCornerRadius(int top_radius, int bottom_radius) override;
   NotificationControlButtonsView* GetControlButtonsView() const override;
   bool IsExpanded() const override;
@@ -208,24 +209,27 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
 
  private:
   FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, CreateOrUpdateTest);
-  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, TestIconSizing);
-  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, UpdateButtonsStateTest);
-  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, UpdateButtonCountTest);
+  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, ExpandLongMessage);
+  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, InlineSettings);
+  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest,
+                           InlineSettingsInkDropAnimation);
+  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, NotificationWithoutIcon);
+  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, TestAccentColor);
+  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, TestActionButtonClick);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, TestClick);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, TestClickExpanded);
-  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, TestActionButtonClick);
+  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest,
+                           TestDeleteOnDisableNotification);
+  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, TestDeleteOnToggleExpanded);
+  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, TestIconSizing);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, TestInlineReply);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest,
                            TestInlineReplyRemovedByUpdate);
-  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, ExpandLongMessage);
-  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, TestAccentColor);
-  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, UseImageAsIcon);
-  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, NotificationWithoutIcon);
-  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, InlineSettings);
+  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, UpdateAddingIcon);
+  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, UpdateButtonCountTest);
+  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, UpdateButtonsStateTest);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, UpdateViewsOrderingTest);
-  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, TestDeleteOnToggleExpanded);
-  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest,
-                           TestDeleteOnDisableNotification);
+  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, UseImageAsIcon);
 
   friend class NotificationViewMDTest;
 
@@ -252,6 +256,9 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
   void UpdateViewForExpandedState(bool expanded);
   void ToggleInlineSettings(const ui::Event& event);
 
+  // Initializes |ink_drop_mask_| and sets the mask on |ink_drop_layer_|.
+  void InstallNotificationInkDropMask();
+
   views::InkDropContainerView* const ink_drop_container_;
 
   // View containing close and settings buttons
@@ -272,6 +279,15 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
 
   // Describes whether the view should display a hand pointer or not.
   bool clickable_;
+
+  // Corner radii for the InkDropMask.
+  int top_radius_ = 0;
+  int bottom_radius_ = 0;
+
+  // The InkDrop layer and InkDropMask used to update their bounds on
+  // OnBoundsChanged(). See crbug.com/915222.
+  ui::Layer* ink_drop_layer_ = nullptr;
+  std::unique_ptr<views::InkDropMask> ink_drop_mask_;
 
   // Container views directly attached to this view.
   NotificationHeaderView* header_row_ = nullptr;

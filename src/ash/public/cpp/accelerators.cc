@@ -4,18 +4,20 @@
 
 #include "ash/public/cpp/accelerators.h"
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 
 namespace ash {
 
 const AcceleratorData kAcceleratorData[] = {
-    {true, ui::VKEY_SPACE, ui::EF_CONTROL_DOWN, PREVIOUS_IME},
-    {false, ui::VKEY_SPACE, ui::EF_CONTROL_DOWN, PREVIOUS_IME},
+    {true, ui::VKEY_SPACE, ui::EF_CONTROL_DOWN, SWITCH_TO_LAST_USED_IME},
+    {false, ui::VKEY_SPACE, ui::EF_CONTROL_DOWN, SWITCH_TO_LAST_USED_IME},
     {true, ui::VKEY_TAB, ui::EF_ALT_DOWN, CYCLE_FORWARD_MRU},
     {true, ui::VKEY_TAB, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
      CYCLE_BACKWARD_MRU},
     {true, ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_NONE, TOGGLE_OVERVIEW},
     {true, ui::VKEY_BROWSER_SEARCH, ui::EF_NONE, TOGGLE_APP_LIST},
+    {true, ui::VKEY_BROWSER_SEARCH, ui::EF_SHIFT_DOWN,
+     TOGGLE_APP_LIST_FULLSCREEN},
     {true, ui::VKEY_WLAN, ui::EF_NONE, TOGGLE_WIFI},
     {true, ui::VKEY_KBD_BRIGHTNESS_DOWN, ui::EF_NONE, KEYBOARD_BRIGHTNESS_DOWN},
     {true, ui::VKEY_KBD_BRIGHTNESS_UP, ui::EF_NONE, KEYBOARD_BRIGHTNESS_UP},
@@ -82,7 +84,8 @@ const AcceleratorData kAcceleratorData[] = {
     {true, ui::VKEY_VOLUME_DOWN, ui::EF_NONE, VOLUME_DOWN},
     {true, ui::VKEY_VOLUME_UP, ui::EF_NONE, VOLUME_UP},
     {true, ui::VKEY_ESCAPE, ui::EF_COMMAND_DOWN, SHOW_TASK_MANAGER},
-    {true, ui::VKEY_SPACE, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN, NEXT_IME},
+    {true, ui::VKEY_SPACE, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN,
+     SWITCH_TO_NEXT_IME},
     {true, ui::VKEY_I, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, OPEN_FEEDBACK_PAGE},
     {true, ui::VKEY_Q, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, EXIT},
     {true, ui::VKEY_N, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
@@ -105,6 +108,7 @@ const AcceleratorData kAcceleratorData[] = {
     // act on release instead of press when using Search as a modifier key for
     // extended keyboard shortcuts.
     {false, ui::VKEY_LWIN, ui::EF_NONE, TOGGLE_APP_LIST},
+    {false, ui::VKEY_LWIN, ui::EF_SHIFT_DOWN, TOGGLE_APP_LIST_FULLSCREEN},
     {true, ui::VKEY_MEDIA_LAUNCH_APP2, ui::EF_NONE, TOGGLE_FULLSCREEN},
     {true, ui::VKEY_MEDIA_LAUNCH_APP2, ui::EF_SHIFT_DOWN, TOGGLE_FULLSCREEN},
     {true, ui::VKEY_ESCAPE, ui::EF_SHIFT_DOWN | ui::EF_COMMAND_DOWN, UNPIN},
@@ -174,6 +178,6 @@ const AcceleratorData kAcceleratorData[] = {
     // VKEY_MEDIA_LAUNCH_MAIL.
 };
 
-const size_t kAcceleratorDataLength = arraysize(kAcceleratorData);
+const size_t kAcceleratorDataLength = base::size(kAcceleratorData);
 
 }  // namespace ash

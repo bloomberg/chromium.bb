@@ -9,7 +9,7 @@
 
 #include <memory>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -24,7 +24,7 @@ class SampleToGroupIteratorTest : public testing::Test {
  public:
   SampleToGroupIteratorTest() {
     // Build sample group description index table from kSampleToGroupTable.
-    for (size_t i = 0; i < arraysize(kCompactSampleToGroupTable); ++i) {
+    for (size_t i = 0; i < base::size(kCompactSampleToGroupTable); ++i) {
       for (uint32_t j = 0; j < kCompactSampleToGroupTable[i].sample_count;
            ++j) {
         sample_to_group_table_.push_back(
@@ -34,7 +34,7 @@ class SampleToGroupIteratorTest : public testing::Test {
 
     sample_to_group_.entries.assign(
         kCompactSampleToGroupTable,
-        kCompactSampleToGroupTable + arraysize(kCompactSampleToGroupTable));
+        kCompactSampleToGroupTable + base::size(kCompactSampleToGroupTable));
     sample_to_group_iterator_.reset(
         new SampleToGroupIterator(sample_to_group_));
   }

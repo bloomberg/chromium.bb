@@ -9,9 +9,7 @@
 
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_stream.h"
-#include "core/fxcrt/fx_memory.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "testing/test_support.h"
 #include "third_party/base/ptr_util.h"
 
 TEST(CFX_SeekableMultiStreamTest, NoStreams) {
@@ -43,11 +41,11 @@ TEST(CXFAFileReadTest, NormalStreams) {
   auto stream3 = pdfium::MakeUnique<CPDF_Stream>();
 
   // 16 chars total.
-  stream1->InitStream(ByteStringView("one t").span(),
+  stream1->InitStream(ByteStringView("one t").raw_span(),
                       pdfium::MakeUnique<CPDF_Dictionary>());
-  stream2->InitStream(ByteStringView("wo ").span(),
+  stream2->InitStream(ByteStringView("wo ").raw_span(),
                       pdfium::MakeUnique<CPDF_Dictionary>());
-  stream3->InitStream(ByteStringView("three!!!").span(),
+  stream3->InitStream(ByteStringView("three!!!").raw_span(),
                       pdfium::MakeUnique<CPDF_Dictionary>());
 
   streams.push_back(stream1.get());

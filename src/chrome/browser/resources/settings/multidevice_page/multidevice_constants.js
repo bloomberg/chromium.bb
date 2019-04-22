@@ -76,6 +76,7 @@ cr.define('settings', function() {
  *   instantTetheringState: !settings.MultiDeviceFeatureState,
  *   messagesState: !settings.MultiDeviceFeatureState,
  *   smartLockState: !settings.MultiDeviceFeatureState,
+ *   isAndroidSmsPairingComplete: boolean
  * }}
  */
 let MultiDevicePageContentData;

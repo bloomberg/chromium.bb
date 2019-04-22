@@ -6,7 +6,8 @@
 
 #include "xfa/fxfa/parser/cxfa_passwordedit.h"
 
-#include "fxjs/xfa/cjx_passwordedit.h"
+#include "fxjs/xfa/cjx_node.h"
+#include "third_party/base/ptr_util.h"
 
 namespace {
 
@@ -14,17 +15,16 @@ const CXFA_Node::PropertyData kPasswordEditPropertyData[] = {
     {XFA_Element::Margin, 1, 0},
     {XFA_Element::Border, 1, 0},
     {XFA_Element::Extras, 1, 0},
-    {XFA_Element::Unknown, 0, 0}};
+};
+
 const CXFA_Node::AttributeData kPasswordEditAttributeData[] = {
     {XFA_Attribute::Id, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Use, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::PasswordChar, XFA_AttributeType::CData, (void*)L"*"},
     {XFA_Attribute::Usehref, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::HScrollPolicy, XFA_AttributeType::Enum,
-     (void*)XFA_AttributeEnum::Auto},
-    {XFA_Attribute::Unknown, XFA_AttributeType::Integer, nullptr}};
-
-constexpr wchar_t kPasswordEditName[] = L"passwordEdit";
+     (void*)XFA_AttributeValue::Auto},
+};
 
 }  // namespace
 
@@ -36,9 +36,9 @@ CXFA_PasswordEdit::CXFA_PasswordEdit(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_Element::PasswordEdit,
                 kPasswordEditPropertyData,
                 kPasswordEditAttributeData,
-                kPasswordEditName) {}
+                pdfium::MakeUnique<CJX_Node>(this)) {}
 
-CXFA_PasswordEdit::~CXFA_PasswordEdit() {}
+CXFA_PasswordEdit::~CXFA_PasswordEdit() = default;
 
 XFA_FFWidgetType CXFA_PasswordEdit::GetDefaultFFWidgetType() const {
   return XFA_FFWidgetType::kPasswordEdit;

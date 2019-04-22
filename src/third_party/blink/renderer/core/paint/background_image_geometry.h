@@ -97,8 +97,12 @@ class BackgroundImageGeometry {
   void SetPhaseX(float x) { phase_.SetX(x); }
   void SetPhaseY(float y) { phase_.SetY(y); }
 
-  void SetNoRepeatX(LayoutUnit x_offset, LayoutUnit snapped_x_offset);
-  void SetNoRepeatY(LayoutUnit y_offset, LayoutUnit snapped_y_offset);
+  void SetNoRepeatX(const FillLayer&,
+                    LayoutUnit x_offset,
+                    LayoutUnit snapped_x_offset);
+  void SetNoRepeatY(const FillLayer&,
+                    LayoutUnit y_offset,
+                    LayoutUnit snapped_y_offset);
   void SetRepeatX(const FillLayer&,
                   LayoutUnit available_width,
                   LayoutUnit extra_offset);

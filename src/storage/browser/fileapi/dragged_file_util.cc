@@ -24,32 +24,51 @@ using FileInfo = IsolatedContext::MountPointInfo;
 
 namespace {
 
-// Simply enumerate each path from a given fileinfo set.
-// Used to enumerate top-level paths of an isolated filesystem.
+// Enumerate each path from a given fileinfo set.
+// Used to enumerate top-level or recursive paths of an isolated filesystem.
 class SetFileEnumerator : public FileSystemFileUtil::AbstractFileEnumerator {
  public:
-  explicit SetFileEnumerator(const std::vector<FileInfo>& files)
-      : files_(files) {
+  SetFileEnumerator(const std::vector<FileInfo>& files, bool recursive)
+      : files_(files), recursive_(recursive) {
     file_iter_ = files_.begin();
   }
   ~SetFileEnumerator() override = default;
 
   // AbstractFileEnumerator overrides.
   base::FilePath Next() override {
-    if (file_iter_ == files_.end())
-      return base::FilePath();
-    base::FilePath platform_file = (file_iter_++)->path;
-    NativeFileUtil::GetFileInfo(platform_file, &file_info_);
-    return platform_file;
+    if (recursive_enumerator_) {
+      base::FilePath platform_file = recursive_enumerator_->Next();
+      if (platform_file.empty()) {
+        recursive_enumerator_.reset();
+      } else {
+        file_info_.is_directory = recursive_enumerator_->IsDirectory();
+        file_info_.size = recursive_enumerator_->Size();
+        file_info_.last_modified = recursive_enumerator_->LastModifiedTime();
+        return platform_file;
+      }
+    }
+    if (file_iter_ != files_.end()) {
+      base::FilePath platform_file = (file_iter_++)->path;
+      NativeFileUtil::GetFileInfo(platform_file, &file_info_);
+      if (recursive_ && file_info_.is_directory) {
+        recursive_enumerator_ =
+            NativeFileUtil::CreateFileEnumerator(platform_file, recursive_);
+      }
+      return platform_file;
+    }
+    return base::FilePath();
   }
   int64_t Size() override { return file_info_.size; }
   bool IsDirectory() override { return file_info_.is_directory; }
   base::Time LastModifiedTime() override { return file_info_.last_modified; }
 
  private:
-  std::vector<FileInfo> files_;
+  const std::vector<FileInfo> files_;
+  const bool recursive_;
   std::vector<FileInfo>::const_iterator file_iter_;
   base::File::Info file_info_;
+  std::unique_ptr<FileSystemFileUtil::AbstractFileEnumerator>
+      recursive_enumerator_;
 };
 
 }  // namespace
@@ -91,17 +110,18 @@ base::File::Error DraggedFileUtil::GetFileInfo(
 
 std::unique_ptr<FileSystemFileUtil::AbstractFileEnumerator>
 DraggedFileUtil::CreateFileEnumerator(FileSystemOperationContext* context,
-                                      const FileSystemURL& root) {
+                                      const FileSystemURL& root,
+                                      bool recursive) {
   DCHECK(root.is_valid());
   if (!root.path().empty())
-    return LocalFileUtil::CreateFileEnumerator(context, root);
+    return LocalFileUtil::CreateFileEnumerator(context, root, recursive);
 
   // Root path case.
   std::vector<FileInfo> toplevels;
   IsolatedContext::GetInstance()->GetDraggedFileInfo(
       root.filesystem_id(), &toplevels);
   return std::unique_ptr<AbstractFileEnumerator>(
-      new SetFileEnumerator(toplevels));
+      new SetFileEnumerator(toplevels, recursive));
 }
 
 }  // namespace storage

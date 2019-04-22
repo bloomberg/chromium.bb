@@ -12,8 +12,10 @@ namespace media {
 MediaUrlDemuxer::MediaUrlDemuxer(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     const GURL& media_url,
-    const GURL& site_for_cookies)
-    : params_{media_url, site_for_cookies}, task_runner_(task_runner) {}
+    const GURL& site_for_cookies,
+    bool allow_credentials)
+    : params_{media_url, site_for_cookies, allow_credentials},
+      task_runner_(task_runner) {}
 
 MediaUrlDemuxer::~MediaUrlDemuxer() = default;
 
@@ -35,9 +37,17 @@ std::string MediaUrlDemuxer::GetDisplayName() const {
   return "MediaUrlDemuxer";
 }
 
+void MediaUrlDemuxer::ForwardDurationChangeToDemuxerHost(
+    base::TimeDelta duration) {
+  DCHECK(host_);
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  host_->SetDuration(duration);
+}
+
 void MediaUrlDemuxer::Initialize(DemuxerHost* host,
                                  const PipelineStatusCB& status_cb) {
   DVLOG(1) << __func__;
+  host_ = host;
   task_runner_->PostTask(FROM_HERE, base::BindOnce(status_cb, PIPELINE_OK));
 }
 

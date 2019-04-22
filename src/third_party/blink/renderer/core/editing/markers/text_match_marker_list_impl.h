@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_MARKERS_TEXT_MATCH_MARKER_LIST_IMPL_H_
 
 #include "third_party/blink/renderer/core/editing/markers/document_marker_list.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -39,7 +40,7 @@ class CORE_EXPORT TextMatchMarkerListImpl final : public DocumentMarkerList {
                     unsigned offset,
                     unsigned old_length,
                     unsigned new_length) final;
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   // TextMatchMarkerListImpl-specific
   Vector<IntRect> LayoutRects(const Node&) const;
@@ -55,11 +56,12 @@ class CORE_EXPORT TextMatchMarkerListImpl final : public DocumentMarkerList {
   DISALLOW_COPY_AND_ASSIGN(TextMatchMarkerListImpl);
 };
 
-DEFINE_TYPE_CASTS(TextMatchMarkerListImpl,
-                  DocumentMarkerList,
-                  list,
-                  list->MarkerType() == DocumentMarker::kTextMatch,
-                  list.MarkerType() == DocumentMarker::kTextMatch);
+template <>
+struct DowncastTraits<TextMatchMarkerListImpl> {
+  static bool AllowFrom(const DocumentMarkerList& list) {
+    return list.MarkerType() == DocumentMarker::kTextMatch;
+  }
+};
 
 }  // namespace blink
 

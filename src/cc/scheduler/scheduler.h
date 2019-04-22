@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/cancelable_callback.h"
-#include "base/macros.h"
 #include "base/time/time.h"
 #include "cc/cc_export.h"
 #include "cc/scheduler/begin_frame_tracker.h"
@@ -78,7 +77,10 @@ class CC_EXPORT Scheduler : public viz::BeginFrameObserverBase {
             int layer_tree_host_id,
             base::SingleThreadTaskRunner* task_runner,
             std::unique_ptr<CompositorTimingHistory> compositor_timing_history);
+  Scheduler(const Scheduler&) = delete;
   ~Scheduler() override;
+
+  Scheduler& operator=(const Scheduler&) = delete;
 
   // This is needed so that the scheduler doesn't perform spurious actions while
   // the compositor is being torn down.
@@ -104,6 +106,15 @@ class CC_EXPORT Scheduler : public viz::BeginFrameObserverBase {
   void NotifyReadyToActivate();
   void NotifyReadyToDraw();
   void SetBeginFrameSource(viz::BeginFrameSource* source);
+
+  using AnimationWorkletState = SchedulerStateMachine::AnimationWorkletState;
+  using TreeType = SchedulerStateMachine::TreeType;
+
+  // Sets whether asynchronous animation worklet mutations are running.
+  // Mutations on the pending tree should block activiation. Mutations on the
+  // active tree should delay draw to allow time for the mutations to complete.
+  void NotifyAnimationWorkletStateChange(AnimationWorkletState state,
+                                         TreeType tree);
 
   // Set |needs_begin_main_frame_| to true, which will cause the BeginFrame
   // source to be told to send BeginFrames to this client so that this client
@@ -185,9 +196,9 @@ class CC_EXPORT Scheduler : public viz::BeginFrameObserverBase {
 
   base::TimeTicks LastBeginImplFrameTime();
 
-  // Deferring BeginMainFrame prevents all document lifecycle updates, and
-  // compositor commits.
-  void SetDeferMainFrameUpdate(bool defer_main_frame_update);
+  // Deferring begin main frame prevents all document lkifecycle updates and
+  // updates of new layer tree state.
+  void SetDeferBeginMainFrame(bool defer_begin_main_frame);
 
   // Controls whether the BeginMainFrameNotExpected messages should be sent to
   // the main thread by the cc scheduler.
@@ -283,8 +294,8 @@ class CC_EXPORT Scheduler : public viz::BeginFrameObserverBase {
   // Used to drop the pending begin frame before we go idle.
   void CancelPendingBeginFrameTask();
 
-  void BeginImplFrameNotExpectedSoon();
   void BeginMainFrameNotExpectedUntil(base::TimeTicks time);
+  void BeginMainFrameNotExpectedSoon();
   void DrawIfPossible();
   void DrawForced();
   void ProcessScheduledActions();
@@ -313,8 +324,6 @@ class CC_EXPORT Scheduler : public viz::BeginFrameObserverBase {
   bool IsInsideAction(SchedulerStateMachine::Action action) {
     return inside_action_ == action;
   }
-
-  DISALLOW_COPY_AND_ASSIGN(Scheduler);
 };
 
 }  // namespace cc

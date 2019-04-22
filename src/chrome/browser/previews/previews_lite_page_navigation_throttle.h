@@ -44,23 +44,26 @@ class PreviewsLitePageNavigationThrottle : public content::NavigationThrottle {
     kPathSuffixBlacklisted = 0,
     kNavigationToPreviewsDomain = 1,
     kNavigationToPrivateDomain = 2,
-    kHostBlacklisted = 3,
-    kMaxValue = kHostBlacklisted,
+    kHostBypassBlacklisted = 3,
+    kMaxValue = kHostBypassBlacklisted,
   };
 
   // Reasons that a navigation is not eligible for this preview. This enum must
   // remain synchronized with the enum |PreviewsServerLitePageIneligibleReason|
-  // in metrics/histograms/enums.xml.
+  // in tools/metrics/histograms/enums.xml.
   enum class IneligibleReason {
     kNonHttpsScheme = 0,
-    kHttpPost = 1,
+    kHttpPost_DEPRECATED = 1,
     kSubframeNavigation = 2,
     kServerUnavailable = 3,
     kInfoBarNotSeen = 4,
-    kNetworkNotSlow = 5,
+    kNetworkNotSlow_DEPRECATED = 5,
     kLoadOriginalReload = 6,
     kCookiesBlocked = 7,
-    kMaxValue = kCookiesBlocked,
+    kECTUnknown_DEPRECATED = 8,
+    kExceededMaxNavigationRestarts = 9,
+    kPreviewsState_DEPRECATED = 10,
+    kMaxValue = kPreviewsState_DEPRECATED,
   };
 
   // The response type from the previews server. This enum must
@@ -113,6 +116,18 @@ class PreviewsLitePageNavigationThrottle : public content::NavigationThrottle {
       std::unique_ptr<previews::PreviewsUserData::ServerLitePageInfo> info,
       bool use_post_task);
 
+  // Records an entry in the ineligibility histogram.
+  static void LogIneligibleReason(IneligibleReason reason);
+
+  // Gets the ServerLitePageInfo struct from an existing attempted lite page
+  // navigation, if there is one. If not, returns a new ServerLitePageInfo
+  // initialized with metadata from navigation_handle() and |this| that is owned
+  // by the PreviewsUserData associated with navigation_handle().
+  static previews::PreviewsUserData::ServerLitePageInfo*
+  GetOrCreateServerLitePageInfo(
+      content::NavigationHandle* navigation_handle,
+      PreviewsLitePageNavigationThrottleManager* manager);
+
  private:
   // The current effective connection type;
   net::EffectiveConnectionType GetECT() const;
@@ -145,13 +160,6 @@ class PreviewsLitePageNavigationThrottle : public content::NavigationThrottle {
   // Safely sets the status of the ServerLitePageInfo struct from an existing
   // attempted lite page navigation, if there is one. If not, does nothing.
   void SetServerLitePageInfoStatus(previews::ServerLitePageStatus status);
-
-  // Gets the ServerLitePageInfo struct from an existing attempted lite page
-  // navigation, if there is one. If not, returns a new ServerLitePageInfo
-  // initialized with metadata from navigation_handle() and |this| that is owned
-  // by the PreviewsUserData associated with navigation_handle().
-  previews::PreviewsUserData::ServerLitePageInfo*
-  GetOrCreateServerLitePageInfo() const;
 
   // content::NavigationThrottle implementation:
   content::NavigationThrottle::ThrottleCheckResult WillStartRequest() override;

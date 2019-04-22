@@ -6,6 +6,7 @@
 #define IOS_TESTING_EMBEDDED_TEST_SERVER_HANDLERS_H_
 
 #include <memory>
+#include <string>
 
 namespace net {
 namespace test_server {
@@ -24,6 +25,15 @@ extern const char kTestDownloadMimeType[];
 
 // Returns a page with iframe which uses URL from the query as src.
 std::unique_ptr<net::test_server::HttpResponse> HandleIFrame(
+    const net::test_server::HttpRequest& request);
+
+// Returns a page with |html|.
+std::unique_ptr<net::test_server::HttpResponse> HandlePageWithHtml(
+    const std::string& html,
+    const net::test_server::HttpRequest& request);
+
+// Returns a page with contetns of URL request query.
+std::unique_ptr<net::test_server::HttpResponse> HandlePageWithContents(
     const net::test_server::HttpRequest& request);
 
 // Returns a page with content of URL request query if |responds_with_content|

@@ -22,8 +22,7 @@ import zipfile
 # Any new non-system import must be added to:
 #     //build/config/android/internal_rules.gni
 
-# Some clients do not add //build/android/gyp to PYTHONPATH.
-import md5_check  # pylint: disable=relative-import
+from util import md5_check
 
 sys.path.append(os.path.join(os.path.dirname(__file__),
                              os.pardir, os.pardir, os.pardir))
@@ -36,7 +35,7 @@ DIR_SOURCE_ROOT = os.environ.get('CHECKOUT_SOURCE_ROOT',
                                  os.pardir, os.pardir, os.pardir, os.pardir)))
 
 HERMETIC_TIMESTAMP = (2001, 1, 1, 0, 0, 0)
-_HERMETIC_FILE_ATTR = (0644 << 16L)
+_HERMETIC_FILE_ATTR = (0o644 << 16)
 
 
 @contextlib.contextmanager
@@ -83,24 +82,33 @@ def ReadBuildVars(path):
     return dict(l.rstrip().split('=', 1) for l in f)
 
 
-def ParseGnList(gn_string):
-  """Converts a command-line parameter into a list.
+def ParseGnList(value):
+  """Converts a "GN-list" command-line parameter into a list.
 
-  If the input starts with a '[' it is assumed to be a GN-formatted list and
-  it will be parsed accordingly. When empty an empty list will be returned.
-  Otherwise, the parameter will be treated as a single raw string (not
-  GN-formatted in that it's not assumed to have literal quotes that must be
-  removed) and a list will be returned containing that string.
+  Conversions handled:
+    * None -> []
+    * '' -> []
+    * 'asdf' -> ['asdf']
+    * '["a", "b"]' -> ['a', 'b']
+    * ['["a", "b"]', 'c'] -> ['a', 'b', 'c']  (flattened list)
 
   The common use for this behavior is in the Android build where things can
   take lists of @FileArg references that are expanded via ExpandFileArgs.
   """
-  if gn_string.startswith('['):
-    parser = gn_helpers.GNValueParser(gn_string)
-    return parser.ParseList()
-  if len(gn_string):
-    return [ gn_string ]
-  return []
+  # Convert None to [].
+  if not value:
+    return []
+  # Convert a list of GN lists to a flattened list.
+  if isinstance(value, list):
+    ret = []
+    for arg in value:
+      ret.extend(ParseGnList(arg))
+    return ret
+  # Convert normal GN list.
+  if value.startswith('['):
+    return gn_helpers.GNValueParser(value).ParseList()
+  # Convert a single string value to a list.
+  return [value]
 
 
 def CheckOptions(options, parser, required=None):
@@ -254,7 +262,7 @@ def _IsSymlink(zip_file, name):
 
   # The two high-order bytes of ZipInfo.external_attr represent
   # UNIX permissions and file type bits.
-  return stat.S_ISLNK(zi.external_attr >> 16L)
+  return stat.S_ISLNK(zi.external_attr >> 16)
 
 
 def ExtractAll(zip_path, path=None, no_clobber=True, pattern=None,
@@ -317,19 +325,19 @@ def AddToZipHermetic(zip_file, zip_path, src_path=None, data=None,
 
   if src_path and os.path.islink(src_path):
     zipinfo.filename = zip_path
-    zipinfo.external_attr |= stat.S_IFLNK << 16L # mark as a symlink
+    zipinfo.external_attr |= stat.S_IFLNK << 16  # mark as a symlink
     zip_file.writestr(zipinfo, os.readlink(src_path))
     return
 
   # zipfile.write() does
-  #     external_attr = (os.stat(src_path)[0] & 0xFFFF) << 16L
+  #     external_attr = (os.stat(src_path)[0] & 0xFFFF) << 16
   # but we want to use _HERMETIC_FILE_ATTR, so manually set
   # the few attr bits we care about.
   if src_path:
     st = os.stat(src_path)
     for mode in (stat.S_IXUSR, stat.S_IXGRP, stat.S_IXOTH):
       if st.st_mode & mode:
-        zipinfo.external_attr |= mode << 16L
+        zipinfo.external_attr |= mode << 16
 
   if src_path:
     with open(src_path, 'rb') as f:
@@ -360,6 +368,8 @@ def DoZip(inputs, output, base_dir=None, compress_fn=None,
         By default, items will be |zipfile.ZIP_STORED|.
     zip_prefix_path: Path prepended to file path in zip file.
   """
+  if base_dir is None:
+    base_dir = '.'
   input_tuples = []
   for tup in inputs:
     if isinstance(tup, basestring):
@@ -471,7 +481,7 @@ def GetSortedTransitiveDependencies(top, deps_func):
       deps_map[node] = deps
 
   discover(top)
-  return deps_map.keys()
+  return list(deps_map)
 
 
 def _ComputePythonDependencies():
@@ -562,9 +572,6 @@ def ExpandFileArgs(args):
     if not match:
       continue
 
-    if match.end() != len(arg):
-      raise Exception('Unexpected characters after FileArg: ' + arg)
-
     lookup_path = match.group(1).split(':')
     file_path = lookup_path[0]
     if not file_path in file_jsons:
@@ -578,9 +585,10 @@ def ExpandFileArgs(args):
     # This should match ParseGnList. The output is either a GN-formatted list
     # or a literal (with no quotes).
     if isinstance(expansion, list):
-      new_args[i] = arg[:match.start()] + gn_helpers.ToGNString(expansion)
+      new_args[i] = (arg[:match.start()] + gn_helpers.ToGNString(expansion) +
+                     arg[match.end():])
     else:
-      new_args[i] = arg[:match.start()] + str(expansion)
+      new_args[i] = arg[:match.start()] + str(expansion) + arg[match.end():]
 
   return new_args
 

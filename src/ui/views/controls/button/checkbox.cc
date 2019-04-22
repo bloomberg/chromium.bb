@@ -17,6 +17,7 @@
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/ink_drop_impl.h"
+#include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/animation/ink_drop_ripple.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/focus_ring.h"
@@ -36,7 +37,6 @@ Checkbox::Checkbox(const base::string16& label, ButtonListener* listener)
     : LabelButton(listener, label), checked_(false), label_ax_id_(0) {
   SetHorizontalAlignment(gfx::ALIGN_LEFT);
   SetFocusForPlatform();
-  SetFocusPainter(nullptr);
 
   set_request_focus_on_press(false);
   SetInkDropMode(InkDropMode::ON);
@@ -51,8 +51,7 @@ Checkbox::Checkbox(const base::string16& label, ButtonListener* listener)
   SetInstallFocusRingOnFocus(true);
 }
 
-Checkbox::~Checkbox() {
-}
+Checkbox::~Checkbox() = default;
 
 void Checkbox::SetChecked(bool checked) {
   if (checked_ != checked) {
@@ -108,7 +107,6 @@ void Checkbox::OnNativeThemeChanged(const ui::NativeTheme* theme) {
 }
 
 std::unique_ptr<InkDrop> Checkbox::CreateInkDrop() {
-  // Completely removes the highlight.
   std::unique_ptr<InkDropImpl> ink_drop = CreateDefaultInkDropImpl();
   ink_drop->SetShowHighlightOnHover(false);
   ink_drop->SetAutoHighlightMode(InkDropImpl::AutoHighlightMode::NONE);
@@ -117,12 +115,18 @@ std::unique_ptr<InkDrop> Checkbox::CreateInkDrop() {
 
 std::unique_ptr<InkDropRipple> Checkbox::CreateInkDropRipple() const {
   // The "small" size is 21dp, the large size is 1.33 * 21dp = 28dp.
-  return CreateDefaultInkDropRipple(image()->GetMirroredBounds().CenterPoint(),
-                                    gfx::Size(21, 21));
+  return CreateSquareInkDropRipple(image()->GetMirroredBounds().CenterPoint(),
+                                   gfx::Size(21, 21));
+}
+
+std::unique_ptr<InkDropMask> Checkbox::CreateInkDropMask() const {
+  // Avoid the default ink-drop mask to allow the ripple effect to extend beyond
+  // the checkbox view (otherwise it gets clipped which looks weird).
+  return nullptr;
 }
 
 SkColor Checkbox::GetInkDropBaseColor() const {
-  // Usually ink drop ripples match the text color. Checkboxes use the color of
+  // Usually ink-drop ripples match the text color. Checkboxes use the color of
   // the unchecked, enabled icon.
   return GetIconImageColor(IconState::ENABLED);
 }
@@ -161,17 +165,14 @@ const gfx::VectorIcon& Checkbox::GetVectorIcon() const {
 }
 
 SkColor Checkbox::GetIconImageColor(int icon_state) const {
-  const SkColor active_color =
+  const SkColor active_color = GetNativeTheme()->GetSystemColor(
       (icon_state & IconState::CHECKED)
-          ? GetNativeTheme()->GetSystemColor(
-                ui::NativeTheme::kColorId_ProminentButtonColor)
-          // When unchecked, the icon color matches push button text color.
-          : style::GetColor(*this, style::CONTEXT_BUTTON_MD,
-                            style::STYLE_PRIMARY);
+          ? ui::NativeTheme::kColorId_ProminentButtonColor
+          : ui::NativeTheme::kColorId_ButtonEnabledColor);
   return (icon_state & IconState::ENABLED)
              ? active_color
-             : color_utils::BlendTowardOppositeLuma(active_color,
-                                                    gfx::kDisabledControlAlpha);
+             : color_utils::BlendTowardMaxContrast(active_color,
+                                                   gfx::kDisabledControlAlpha);
 }
 
 void Checkbox::NotifyClick(const ui::Event& event) {

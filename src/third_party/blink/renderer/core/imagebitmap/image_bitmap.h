@@ -141,9 +141,7 @@ class CORE_EXPORT ImageBitmap final : public ScriptWrappable,
   scoped_refptr<Image> GetSourceImageForCanvas(SourceImageStatus*,
                                                AccelerationHint,
                                                const FloatSize&) override;
-  bool WouldTaintOrigin(const SecurityOrigin*) const override {
-    return !image_->OriginClean();
-  }
+  bool WouldTaintOrigin() const override { return !image_->OriginClean(); }
   void AdjustDrawRects(FloatRect* src_rect, FloatRect* dst_rect) const override;
   FloatSize ElementSize(const FloatSize&) const override;
   bool IsImageBitmap() const override { return true; }

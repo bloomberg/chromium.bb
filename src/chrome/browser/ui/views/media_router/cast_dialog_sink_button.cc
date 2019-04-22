@@ -31,65 +31,6 @@ namespace media_router {
 
 namespace {
 
-class StopButton : public views::LabelButton {
- public:
-  StopButton(CastDialogSinkButton* owner,
-             views::ButtonListener* button_listener,
-             const UIMediaSink& sink,
-             int button_tag,
-             bool enabled)
-      : views::LabelButton(button_listener, base::string16()), owner_(owner) {
-    static const gfx::ImageSkia icon = CreateVectorIcon(
-        kGenericStopIcon, kPrimaryIconSize, gfx::kGoogleBlue500);
-    SetImage(views::Button::STATE_NORMAL, icon);
-    SetInkDropMode(InkDropMode::ON);
-    set_tag(button_tag);
-    SetBorder(views::CreateEmptyBorder(gfx::Insets(kPrimaryIconBorderWidth)));
-    SetEnabled(enabled);
-    // Make it possible to navigate to this button by pressing the tab key.
-    SetFocusBehavior(FocusBehavior::ALWAYS);
-    // Remove the outlines drawn when the button is in focus.
-    SetInstallFocusRingOnFocus(false);
-    SetFocusPainter(nullptr);
-
-    SetAccessibleName(l10n_util::GetStringFUTF16(
-        IDS_MEDIA_ROUTER_STOP_CASTING_BUTTON_ACCESSIBLE_NAME,
-        sink.friendly_name, sink.status_text));
-  }
-
-  ~StopButton() override = default;
-
-  SkColor GetInkDropBaseColor() const override {
-    return views::style::GetColor(*this, views::style::CONTEXT_BUTTON,
-                                  STYLE_SECONDARY);
-  }
-
-  std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
-      const override {
-    return std::make_unique<views::InkDropHighlight>(
-        size(), height() / 2,
-        gfx::PointF(GetMirroredRect(GetLocalBounds()).CenterPoint()),
-        GetInkDropBaseColor());
-  }
-
-  bool CanProcessEventsWithinSubtree() const override { return true; }
-
-  // views::Button:
-  void StateChanged(ButtonState old_state) override {
-    if (state() == Button::STATE_HOVERED) {
-      owner_->OverrideStatusText(
-          l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_STOP_CASTING));
-    } else if (old_state == Button::STATE_HOVERED) {
-      owner_->RestoreStatusText();
-    }
-  }
-
- private:
-  CastDialogSinkButton* const owner_;
-
-  DISALLOW_COPY_AND_ASSIGN(StopButton);
-};
-
 gfx::ImageSkia CreateSinkIcon(SinkIconType icon_type, bool enabled = true) {
   const gfx::VectorIcon* vector_icon;
   switch (icon_type) {
@@ -129,6 +70,15 @@ gfx::ImageSkia CreateDisabledSinkIcon(SinkIconType icon_type) {
   return CreateSinkIcon(icon_type, false);
 }
 
+std::unique_ptr<views::ImageView> CreatePrimaryIconView(
+    const gfx::ImageSkia& image) {
+  auto icon_view = std::make_unique<views::ImageView>();
+  icon_view->SetImage(image);
+  icon_view->SetBorder(
+      views::CreateEmptyBorder(gfx::Insets(kPrimaryIconBorderWidth)));
+  return icon_view;
+}
+
 std::unique_ptr<views::View> CreatePrimaryIconForSink(
     CastDialogSinkButton* sink_button,
     views::ButtonListener* button_listener,
@@ -136,26 +86,19 @@ std::unique_ptr<views::View> CreatePrimaryIconForSink(
     int button_tag) {
   // The stop button has the highest priority, and the issue icon comes second.
   if (sink.state == UIMediaSinkState::CONNECTED) {
-    return std::make_unique<StopButton>(
-        sink_button, button_listener, sink, button_tag,
-        sink.state == UIMediaSinkState::CONNECTED);
+    return CreatePrimaryIconView(gfx::CreateVectorIcon(
+        kGenericStopIcon, kPrimaryIconSize, gfx::kGoogleBlue500));
   } else if (sink.issue) {
-    auto icon_view = std::make_unique<views::ImageView>();
-    icon_view->SetImage(CreateVectorIcon(::vector_icons::kInfoOutlineIcon,
-                                         kPrimaryIconSize,
-                                         gfx::kChromeIconGrey));
-    icon_view->SetBorder(
-        views::CreateEmptyBorder(gfx::Insets(kPrimaryIconBorderWidth)));
-    return icon_view;
+    const SkColor icon_color =
+        ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
+            ui::NativeTheme::kColorId_DefaultIconColor);
+    return CreatePrimaryIconView(gfx::CreateVectorIcon(
+        ::vector_icons::kInfoOutlineIcon, kPrimaryIconSize, icon_color));
   } else if (sink.state == UIMediaSinkState::CONNECTING ||
              sink.state == UIMediaSinkState::DISCONNECTING) {
     return CreateThrobber();
   }
-  auto icon_view = std::make_unique<views::ImageView>();
-  icon_view->SetImage(CreateSinkIcon(sink.icon_type));
-  icon_view->SetBorder(
-      views::CreateEmptyBorder(gfx::Insets(kPrimaryIconBorderWidth)));
-  return icon_view;
+  return CreatePrimaryIconView(CreateSinkIcon(sink.icon_type));
 }
 
 base::string16 GetStatusTextForSink(const UIMediaSink& sink) {
@@ -191,7 +134,8 @@ CastDialogSinkButton::CastDialogSinkButton(
           /** secondary_icon_view */ nullptr),
       sink_(sink) {
   set_tag(button_tag);
-  SetEnabled(sink.state == UIMediaSinkState::AVAILABLE);
+  SetEnabled(sink.state == UIMediaSinkState::AVAILABLE ||
+             sink.state == UIMediaSinkState::CONNECTED);
 }
 
 CastDialogSinkButton::~CastDialogSinkButton() = default;
@@ -227,6 +171,9 @@ void CastDialogSinkButton::OnMouseReleased(const ui::MouseEvent& event) {
 
 void CastDialogSinkButton::OnEnabledChanged() {
   HoverButton::OnEnabledChanged();
+  // Prevent a DCHECK failure seen at https://crbug.com/912687 by not having an
+  // InkDrop if the button is disabled.
+  SetInkDropMode(enabled() ? InkDropMode::ON : InkDropMode::OFF);
   // If the button has a state other than AVAILABLE (e.g. CONNECTED), there is
   // no need to change the status or the icon.
   if (sink_.state != UIMediaSinkState::AVAILABLE)
@@ -259,6 +206,19 @@ void CastDialogSinkButton::RequestFocus() {
     // want focus.
     icon_view()->RequestFocus();
   }
+}
+
+void CastDialogSinkButton::OnFocus() {
+  HoverButton::OnFocus();
+  if (sink_.state == UIMediaSinkState::CONNECTED) {
+    OverrideStatusText(
+        l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_STOP_CASTING));
+  }
+}
+
+void CastDialogSinkButton::OnBlur() {
+  if (sink_.state == UIMediaSinkState::CONNECTED)
+    RestoreStatusText();
 }
 
 }  // namespace media_router

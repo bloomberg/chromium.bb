@@ -11,7 +11,7 @@ namespace blink {
 class LayoutSVGForeignObjectTest : public RenderingTest {
  public:
   LayoutSVGForeignObjectTest()
-      : RenderingTest(SingleChildLocalFrameClient::Create()) {}
+      : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()) {}
 };
 
 TEST_F(LayoutSVGForeignObjectTest, DivInForeignObject) {

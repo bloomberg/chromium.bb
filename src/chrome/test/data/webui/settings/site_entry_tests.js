@@ -78,15 +78,16 @@ suite('SiteEntry', function() {
   test('displays the correct number of origins', function() {
     testElement.siteGroup = TEST_MULTIPLE_SITE_GROUP;
     Polymer.dom.flush();
-    assertEquals(
-        3, testElement.$.collapseChild.querySelectorAll('.list-item').length);
+    const collapseChild = testElement.$.originList.get();
+    Polymer.dom.flush();
+    assertEquals(3, collapseChild.querySelectorAll('.list-item').length);
   });
 
   test('expands and closes to show more origins', function() {
     testElement.siteGroup = TEST_MULTIPLE_SITE_GROUP;
     assertTrue(testElement.grouped_(testElement.siteGroup));
     assertEquals('false', toggleButton.getAttribute('aria-expanded'));
-    const originList = testElement.root.querySelector('iron-collapse');
+    const originList = testElement.$.originList.get();
     assertTrue(originList.classList.contains('iron-collapse-closed'));
     assertEquals('true', originList.getAttribute('aria-hidden'));
 
@@ -100,7 +101,7 @@ suite('SiteEntry', function() {
     testElement.siteGroup = TEST_SINGLE_SITE_GROUP;
     assertFalse(testElement.grouped_(testElement.siteGroup));
     assertEquals('false', toggleButton.getAttribute('aria-expanded'));
-    const originList = testElement.root.querySelector('iron-collapse');
+    const originList = testElement.$.originList.get();
     assertTrue(originList.classList.contains('iron-collapse-closed'));
     assertEquals('true', originList.getAttribute('aria-hidden'));
 
@@ -118,8 +119,9 @@ suite('SiteEntry', function() {
   test('with multiple origins navigates to Site Details', function() {
     testElement.siteGroup = TEST_MULTIPLE_SITE_GROUP;
     Polymer.dom.flush();
-    const originList =
-        testElement.$.collapseChild.querySelectorAll('.list-item');
+    const collapseChild = testElement.$.originList.get();
+    Polymer.dom.flush();
+    const originList = collapseChild.querySelectorAll('.list-item');
     assertEquals(3, originList.length);
 
     // Test clicking on one of these origins takes the user to Site Details,
@@ -141,76 +143,38 @@ suite('SiteEntry', function() {
   });
 
   test(
-      'with multiple origins can reset settings via overflow menu', function() {
-        testElement.siteGroup = TEST_MULTIPLE_SITE_GROUP;
-        Polymer.dom.flush();
-        const overflowMenuButton = testElement.$.overflowMenuButton;
-        assertFalse(overflowMenuButton.closest('.row-aligned').hidden);
-
-        // Open the reset settings dialog and make sure both cancelling the
-        // action and resetting all permissions work.
-        const overflowMenu = testElement.$.menu.get();
-        const menuItems = overflowMenu.querySelectorAll('.dropdown-item');
-        ['cancel-button', 'action-button'].forEach(buttonType => {
-          // Test clicking on the overflow menu button opens the menu.
-          assertFalse(overflowMenu.open);
-          overflowMenuButton.click();
-          assertTrue(overflowMenu.open);
-
-          // Open the reset settings dialog and tap the |buttonType| button.
-          assertFalse(testElement.$.confirmResetSettings.open);
-          menuItems[0].click();
-          assertTrue(testElement.$.confirmResetSettings.open);
-          const actionButtonList =
-              testElement.$.confirmResetSettings.getElementsByClassName(
-                  buttonType);
-          assertEquals(1, actionButtonList.length);
-          actionButtonList[0].click();
-
-          // Check the dialog and overflow menu are now both closed.
-          assertFalse(testElement.$.confirmResetSettings.open);
-          assertFalse(overflowMenu.open);
-        });
-
-        // Ensure a call was made to setOriginPermissions for each origin.
-        assertEquals(
-            TEST_MULTIPLE_SITE_GROUP.origins.length,
-            browserProxy.getCallCount('setOriginPermissions'));
-      });
-
-  test(
       'moving from grouped to ungrouped does not get stuck in opened state',
       function() {
-        // Clone this object to avoid propogating changes made in this test.
+        // Clone this object to avoid propagating changes made in this test.
         testElement.siteGroup =
             JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP));
         Polymer.dom.flush();
         toggleButton.click();
-        assertTrue(testElement.$.collapseChild.opened);
+        assertTrue(testElement.$.originList.get().opened);
 
         // Remove all origins except one, then make sure it's not still
         // expanded.
         testElement.siteGroup.origins.splice(1);
         assertEquals(1, testElement.siteGroup.origins.length);
         testElement.onSiteGroupChanged_(testElement.siteGroup);
-        assertFalse(testElement.$.collapseChild.opened);
+        assertFalse(testElement.$.originList.get().opened);
       });
 
-  test('cookies only show when non-zero for grouped entries', function() {
+  test('cookies show correctly for grouped entries', function() {
     localDataBrowserProxy.setCookieDetails(TEST_COOKIE_LIST);
     testElement.siteGroup = TEST_MULTIPLE_SITE_GROUP;
     Polymer.dom.flush();
     const cookiesLabel = testElement.$.cookies;
     assertTrue(cookiesLabel.hidden);
-
     // When the number of cookies is more than zero, the label appears.
-    testElement.onSiteGroupChanged_(TEST_MULTIPLE_SITE_GROUP);
-    return localDataBrowserProxy.whenCalled('getNumCookiesList')
-        .then((args) => {
-          assertEquals(1, args.length);
-          assertEquals('example.com', args[0]);
-          return localDataBrowserProxy.whenCalled('getNumCookiesString');
-        })
+    const testSiteGroup = JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP));
+    const numCookies = 3;
+    testSiteGroup.numCookies = numCookies;
+
+    testElement.siteGroup = testSiteGroup;
+
+    Polymer.dom.flush();
+    return localDataBrowserProxy.whenCalled('getNumCookiesString')
         .then((args) => {
           assertEquals(3, args);
           assertFalse(cookiesLabel.hidden);
@@ -218,20 +182,31 @@ suite('SiteEntry', function() {
         });
   });
 
-  test('cookies do not show for ungrouped entries', function() {
+  test('cookies show for ungrouped entries', function() {
     testElement.siteGroup = TEST_SINGLE_SITE_GROUP;
     Polymer.dom.flush();
     const cookiesLabel = testElement.$.cookies;
     assertTrue(cookiesLabel.hidden);
 
-    testElement.onSiteGroupChanged_(TEST_SINGLE_SITE_GROUP);
-    // Make sure there was never any call to the back end to retrieve cookies.
-    assertEquals(0, localDataBrowserProxy.getCallCount('getNumCookiesList'));
-    assertTrue(cookiesLabel.hidden);
+
+    const testSiteGroup = JSON.parse(JSON.stringify(TEST_SINGLE_SITE_GROUP));
+    const numCookies = 3;
+
+    testSiteGroup.numCookies = numCookies;
+
+    testElement.siteGroup = testSiteGroup;
+
+    Polymer.dom.flush();
+    return localDataBrowserProxy.whenCalled('getNumCookiesString')
+        .then((args) => {
+          assertEquals(3, args);
+          assertFalse(cookiesLabel.hidden);
+          assertEquals('· 3 cookies', cookiesLabel.textContent.trim());
+        });
   });
 
-  test.only('data usage shown correctly for grouped entries', function() {
-    // Clone this object to avoid propogating changes made in this test.
+  test('data usage shown correctly for grouped entries', function() {
+    // Clone this object to avoid propagating changes made in this test.
     const testSiteGroup = JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP));
     const numBytes1 = 74622;
     const numBytes2 = 1274;
@@ -251,7 +226,7 @@ suite('SiteEntry', function() {
   });
 
   test('data usage shown correctly for ungrouped entries', function() {
-    // Clone this object to avoid propogating changes made in this test.
+    // Clone this object to avoid propagating changes made in this test.
     const testSiteGroup = JSON.parse(JSON.stringify(TEST_SINGLE_SITE_GROUP));
     const numBytes = 74622;
     testSiteGroup.origins[0].usage = numBytes;
@@ -264,5 +239,139 @@ suite('SiteEntry', function() {
               .textContent.trim());
 
     });
+  });
+
+  test('favicon with www.etld+1 chosen for site group', function() {
+    // Clone this object to avoid propagating changes made in this test.
+    const testSiteGroup = JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP));
+    testSiteGroup.origins[0].usage = 0;
+    testSiteGroup.origins[1].usage = 1274;
+    testSiteGroup.origins[2].usage = 74622;
+    testElement.siteGroup = testSiteGroup;
+    Polymer.dom.flush();
+    assertEquals(
+        testElement.$.collapseParent.querySelector('site-favicon').url,
+        'https://www.example.com');
+  });
+
+  test('favicon with largest storage chosen for site group', function() {
+    // Clone this object to avoid propagating changes made in this test.
+    const testSiteGroup = JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP));
+    testSiteGroup.origins[0].usage = 0;
+    testSiteGroup.origins[1].usage = 1274;
+    testSiteGroup.origins[2].usage = 74622;
+    testSiteGroup.origins[1].origin = 'https://abc.example.com';
+    testElement.siteGroup = testSiteGroup;
+    Polymer.dom.flush();
+    assertEquals(
+        testElement.$.collapseParent.querySelector('site-favicon').url,
+        'https://login.example.com');
+  });
+
+  test('favicon with largest cookies number chosen for site group', function() {
+    // Clone this object to avoid propagating changes made in this test.
+    const testSiteGroup = JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP));
+    testSiteGroup.origins[0].usage = 0;
+    testSiteGroup.origins[1].usage = 1274;
+    testSiteGroup.origins[2].usage = 1274;
+    testSiteGroup.origins[0].numCookies = 10;
+    testSiteGroup.origins[1].numCookies = 3;
+    testSiteGroup.origins[2].numCookies = 1;
+    testSiteGroup.origins[1].origin = 'https://abc.example.com';
+    testElement.siteGroup = testSiteGroup;
+    Polymer.dom.flush();
+    assertEquals(
+        testElement.$.collapseParent.querySelector('site-favicon').url,
+        'https://abc.example.com');
+  });
+
+  test('can be sorted by most visited', function() {
+    // Clone this object to avoid propagating changes made in this test.
+    const testSiteGroup = JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP));
+    testSiteGroup.origins[0].engagement = 20;
+    testSiteGroup.origins[1].engagement = 30;
+    testSiteGroup.origins[2].engagement = 10;
+    testSiteGroup.origins[0].usage = 0;
+    testSiteGroup.origins[1].usage = 1274;
+    testSiteGroup.origins[2].usage = 1274;
+    testSiteGroup.origins[0].numCookies = 10;
+    testSiteGroup.origins[1].numCookies = 3;
+    testSiteGroup.origins[2].numCookies = 1;
+    testElement.sortMethod = settings.SortMethod.MOST_VISITED;
+    testElement.siteGroup = testSiteGroup;
+    Polymer.dom.flush();
+    const collapseChild = testElement.$.originList.get();
+    Polymer.dom.flush();
+    const origins = collapseChild.querySelectorAll('.list-item');
+    assertEquals(3, origins.length);
+    assertEquals(
+        'www.example.com',
+        origins[0].querySelector('#originSiteRepresentation').innerText.trim());
+    assertEquals(
+        'example.com',
+        origins[1].querySelector('#originSiteRepresentation').innerText.trim());
+    assertEquals(
+        'login.example.com',
+        origins[2].querySelector('#originSiteRepresentation').innerText.trim());
+  });
+
+  test('can be sorted by storage', function() {
+    // Clone this object to avoid propagating changes made in this test.
+    const testSiteGroup = JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP));
+    testSiteGroup.origins[0].engagement = 20;
+    testSiteGroup.origins[1].engagement = 30;
+    testSiteGroup.origins[2].engagement = 10;
+    testSiteGroup.origins[0].usage = 0;
+    testSiteGroup.origins[1].usage = 1274;
+    testSiteGroup.origins[2].usage = 1274;
+    testSiteGroup.origins[0].numCookies = 10;
+    testSiteGroup.origins[1].numCookies = 3;
+    testSiteGroup.origins[2].numCookies = 1;
+    testElement.sortMethod = settings.SortMethod.STORAGE;
+    testElement.siteGroup = testSiteGroup;
+    Polymer.dom.flush();
+    const collapseChild = testElement.$.originList.get();
+    Polymer.dom.flush();
+    const origins = collapseChild.querySelectorAll('.list-item');
+    assertEquals(3, origins.length);
+    assertEquals(
+        'www.example.com',
+        origins[0].querySelector('#originSiteRepresentation').innerText.trim());
+    assertEquals(
+        'login.example.com',
+        origins[1].querySelector('#originSiteRepresentation').innerText.trim());
+    assertEquals(
+        'example.com',
+        origins[2].querySelector('#originSiteRepresentation').innerText.trim());
+  });
+
+  test('can be sorted by name', function() {
+    // Clone this object to avoid propagating changes made in this test.
+    const testSiteGroup = JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP));
+    testSiteGroup.origins[0].engagement = 20;
+    testSiteGroup.origins[1].engagement = 30;
+    testSiteGroup.origins[2].engagement = 10;
+    testSiteGroup.origins[0].usage = 0;
+    testSiteGroup.origins[1].usage = 1274;
+    testSiteGroup.origins[2].usage = 1274;
+    testSiteGroup.origins[0].numCookies = 10;
+    testSiteGroup.origins[1].numCookies = 3;
+    testSiteGroup.origins[2].numCookies = 1;
+    testElement.sortMethod = settings.SortMethod.NAME;
+    testElement.siteGroup = testSiteGroup;
+    Polymer.dom.flush();
+    const collapseChild = testElement.$.originList.get();
+    Polymer.dom.flush();
+    const origins = collapseChild.querySelectorAll('.list-item');
+    assertEquals(3, origins.length);
+    assertEquals(
+        'example.com',
+        origins[0].querySelector('#originSiteRepresentation').innerText.trim());
+    assertEquals(
+        'login.example.com',
+        origins[1].querySelector('#originSiteRepresentation').innerText.trim());
+    assertEquals(
+        'www.example.com',
+        origins[2].querySelector('#originSiteRepresentation').innerText.trim());
   });
 });

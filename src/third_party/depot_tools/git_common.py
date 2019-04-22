@@ -4,6 +4,9 @@
 
 # Monkeypatch IMapIterator so that Ctrl-C can kill everything properly.
 # Derived from https://gist.github.com/aljungberg/626518
+
+from __future__ import print_function
+
 import multiprocessing.pool
 from multiprocessing.pool import IMapIterator
 def wrapper(func):
@@ -32,7 +35,7 @@ import threading
 
 import subprocess2
 
-from StringIO import StringIO
+from io import BytesIO
 
 
 ROOT = os.path.abspath(os.path.dirname(__file__))
@@ -310,7 +313,7 @@ def once(function):
 ## Git functions
 
 def die(message, *args):
-  print >> sys.stderr, textwrap.dedent(message % args)
+  print(textwrap.dedent(message % args), file=sys.stderr)
   sys.exit(1)
 
 
@@ -805,14 +808,14 @@ def status():
   stat_entry = collections.namedtuple('stat_entry', 'lstat rstat src')
 
   def tokenizer(stream):
-    acc = StringIO()
+    acc = BytesIO()
     c = None
     while c != '':
       c = stream.read(1)
       if c in (None, '', '\0'):
-        if acc.len:
+        if len(acc.getvalue()):
           yield acc.getvalue()
-          acc = StringIO()
+          acc = BytesIO()
       else:
         acc.write(c)
 
@@ -843,7 +846,7 @@ def squash_current_branch(header=None, merge_base=None):
   if not get_dirty_files():
     # Sometimes the squash can result in the same tree, meaning that there is
     # nothing to commit at this point.
-    print 'Nothing to commit; squashed branch is empty'
+    print('Nothing to commit; squashed branch is empty')
     return False
   run('commit', '--no-verify', '-a', '-F', '-', indata=log_msg)
   return True

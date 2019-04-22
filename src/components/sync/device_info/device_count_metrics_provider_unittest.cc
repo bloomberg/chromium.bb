@@ -32,6 +32,7 @@ class FakeTracker : public DeviceInfoTracker {
   void AddObserver(Observer* observer) override {}
   void RemoveObserver(Observer* observer) override {}
   int CountActiveDevices() const override { return count_; }
+  void ForcePulseForTest() override {}
 
  private:
   int count_;
@@ -59,7 +60,7 @@ class DeviceCountMetricsProviderTest : public testing::Test {
   void TestProvider(int expected_device_count) {
     base::HistogramTester histogram_tester;
     metrics_provider_.ProvideCurrentSessionData(nullptr);
-    histogram_tester.ExpectUniqueSample("Sync.DeviceCount",
+    histogram_tester.ExpectUniqueSample("Sync.DeviceCount2",
                                         expected_device_count, 1);
   }
 

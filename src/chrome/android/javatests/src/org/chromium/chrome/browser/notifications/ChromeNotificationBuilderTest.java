@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.notifications;
 
 import android.app.Notification;
 import android.app.NotificationChannel;
-import android.app.NotificationManager;
 import android.content.Context;
 import android.os.Build;
 import android.support.test.InstrumentationRegistry;
@@ -33,14 +32,13 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 public class ChromeNotificationBuilderTest {
     private static final int TEST_NOTIFICATION_ID = 101;
 
-    private NotificationManager mNotificationManager;
+    private NotificationManagerProxy mNotificationManager;
 
     @Before
     public void setUp() {
         Context context = InstrumentationRegistry.getTargetContext();
 
-        mNotificationManager =
-                (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        mNotificationManager = new NotificationManagerProxyImpl(context);
 
         // Don't rely on channels already being registered.
         clearNotificationChannels(mNotificationManager);
@@ -52,7 +50,7 @@ public class ChromeNotificationBuilderTest {
         mNotificationManager.cancelAll();
     }
 
-    private static void clearNotificationChannels(NotificationManager notificationManager) {
+    private static void clearNotificationChannels(NotificationManagerProxy notificationManager) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             for (NotificationChannel channel : notificationManager.getNotificationChannels()) {
                 if (!channel.getId().equals(NotificationChannel.DEFAULT_CHANNEL_ID)) {
@@ -72,7 +70,6 @@ public class ChromeNotificationBuilderTest {
         Notification notification = notificationBuilder.setContentTitle("Title")
                                             .setSmallIcon(R.drawable.ic_chrome)
                                             .build();
-
         mNotificationManager.notify(TEST_NOTIFICATION_ID, notification);
     }
 
@@ -88,5 +85,22 @@ public class ChromeNotificationBuilderTest {
                                             .build();
 
         mNotificationManager.notify(TEST_NOTIFICATION_ID, notification);
+    }
+
+    @MediumTest
+    @Test
+    public void buildChromeNotification() {
+        ChromeNotificationBuilder builder =
+                NotificationBuilderFactory.createChromeNotificationBuilder(true,
+                        ChannelDefinitions.ChannelId.BROWSER, null,
+                        new NotificationMetadata(
+                                NotificationUmaTracker.SystemNotificationType.BROWSER_ACTIONS, null,
+                                TEST_NOTIFICATION_ID));
+
+        ChromeNotification notification = builder.setContentTitle("Title")
+                                                  .setSmallIcon(R.drawable.ic_chrome)
+                                                  .buildChromeNotification();
+
+        mNotificationManager.notify(notification);
     }
 }

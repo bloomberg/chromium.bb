@@ -104,25 +104,12 @@ public:
 };
 
 /**
- * Interface for receiving custom annotation events at Animation build time.
- *
- * Annotations are parsed as a top-level key-value string dictionary, e.g.:
- *
- * {
- *   ...
- *
- *   "annotations": {
- *     "key1": "foo",
- *     "key2": "bar",
- *     "key3": "baz"
- *   },
- *
- *   ...
- * }
+ * Interface for receiving AE composition markers at Animation build time.
  */
-class SK_API AnnotationObserver : public SkRefCnt {
+class SK_API MarkerObserver : public SkRefCnt {
 public:
-    virtual void onAnnotation(const char key[], const char value[]) = 0;
+    // t0,t1 are in the Animation::seek() domain.
+    virtual void onMarker(const char name[], float t0, float t1) = 0;
 };
 
 class SK_API Animation : public SkNVRefCnt<Animation> {
@@ -172,9 +159,9 @@ public:
         Builder& setLogger(sk_sp<Logger>);
 
         /**
-         * Register an AnnotationObserver with this builder.
+         * Register a MarkerObserver with this builder.
          */
-        Builder& setAnnotationObserver(sk_sp<AnnotationObserver>);
+        Builder& setMarkerObserver(sk_sp<MarkerObserver>);
 
         /**
          * Animation factories.
@@ -184,12 +171,12 @@ public:
         sk_sp<Animation> makeFromFile(const char path[]);
 
     private:
-        sk_sp<ResourceProvider>   fResourceProvider;
-        sk_sp<SkFontMgr>          fFontMgr;
-        sk_sp<PropertyObserver>   fPropertyObserver;
-        sk_sp<Logger>             fLogger;
-        sk_sp<AnnotationObserver> fAnnotationObserver;
-        Stats                     fStats;
+        sk_sp<ResourceProvider> fResourceProvider;
+        sk_sp<SkFontMgr>        fFontMgr;
+        sk_sp<PropertyObserver> fPropertyObserver;
+        sk_sp<Logger>           fLogger;
+        sk_sp<MarkerObserver>   fMarkerObserver;
+        Stats                   fStats;
     };
 
     /**
@@ -203,13 +190,23 @@ public:
 
     ~Animation();
 
+    enum RenderFlag : uint32_t {
+        // When rendering into a known transparent buffer, clients can pass
+        // this flag to avoid some unnecessary compositing overhead for
+        // animations using layer blend modes.
+        kSkipTopLevelIsolation = 0x01,
+    };
+    using RenderFlags = uint32_t;
+
     /**
      * Draws the current animation frame.
      *
      * @param canvas   destination canvas
      * @param dst      optional destination rect
+     * @param flags    optional RenderFlags
      */
     void render(SkCanvas* canvas, const SkRect* dst = nullptr) const;
+    void render(SkCanvas* canvas, const SkRect* dst, RenderFlags) const;
 
     /**
      * Updates the animation state for |t|.
@@ -230,8 +227,12 @@ public:
     void setShowInval(bool show);
 
 private:
+    enum Flags : uint32_t {
+        kRequiresTopLevelIsolation = 1 << 0, // Needs to draw into a layer due to layer blending.
+    };
+
     Animation(std::unique_ptr<sksg::Scene>, SkString ver, const SkSize& size,
-              SkScalar inPoint, SkScalar outPoint, SkScalar duration);
+              SkScalar inPoint, SkScalar outPoint, SkScalar duration, uint32_t flags = 0);
 
     std::unique_ptr<sksg::Scene> fScene;
     const SkString               fVersion;
@@ -239,6 +240,7 @@ private:
     const SkScalar               fInPoint,
                                  fOutPoint,
                                  fDuration;
+    const uint32_t               fFlags;
 
     typedef SkNVRefCnt<Animation> INHERITED;
 };

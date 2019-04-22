@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/search_engines/default_search_manager.h"
@@ -67,7 +67,8 @@ TemplateURLService* TemplateURLServiceFactory::GetForBrowserState(
 
 // static
 TemplateURLServiceFactory* TemplateURLServiceFactory::GetInstance() {
-  return base::Singleton<TemplateURLServiceFactory>::get();
+  static base::NoDestructor<TemplateURLServiceFactory> instance;
+  return instance.get();
 }
 
 // static

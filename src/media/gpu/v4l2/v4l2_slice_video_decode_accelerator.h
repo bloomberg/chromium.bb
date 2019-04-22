@@ -19,10 +19,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
+#include "base/trace_event/memory_dump_provider.h"
 #include "media/gpu/decode_surface_handler.h"
 #include "media/gpu/gpu_video_decode_accelerator_helpers.h"
-#include "media/gpu/h264_decoder.h"
 #include "media/gpu/media_gpu_export.h"
+#include "media/gpu/v4l2/v4l2_decode_surface_handler.h"
 #include "media/gpu/v4l2/v4l2_device.h"
 #include "media/gpu/vp8_decoder.h"
 #include "media/gpu/vp9_decoder.h"
@@ -39,7 +40,8 @@ class V4L2DecodeSurface;
 // the input stream and managing decoder state across frames.
 class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
     : public VideoDecodeAccelerator,
-      public DecodeSurfaceHandler<V4L2DecodeSurface> {
+      public V4L2DecodeSurfaceHandler,
+      public base::trace_event::MemoryDumpProvider {
  public:
   V4L2SliceVideoDecodeAccelerator(
       const scoped_refptr<V4L2Device>& device,
@@ -57,7 +59,7 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   void ImportBufferForPicture(
       int32_t picture_buffer_id,
       VideoPixelFormat pixel_format,
-      const gfx::GpuMemoryBufferHandle& gpu_memory_buffer_handle) override;
+      gfx::GpuMemoryBufferHandle gpu_memory_buffer_handle) override;
   void ReusePictureBuffer(int32_t picture_buffer_id) override;
   void Flush() override;
   void Reset() override;
@@ -69,11 +71,11 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
 
   static VideoDecodeAccelerator::SupportedProfiles GetSupportedProfiles();
 
- private:
-  class V4L2H264Accelerator;
-  class V4L2VP8Accelerator;
-  class V4L2VP9Accelerator;
+  // base::trace_event::MemoryDumpProvider implementation.
+  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                    base::trace_event::ProcessMemoryDump* pmd) override;
 
+ private:
   // Record for input buffers.
   struct InputRecord {
     InputRecord();
@@ -134,7 +136,7 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   //
   // Below methods are used by accelerator implementations.
   //
-  // DecodeSurfaceHandler implementation.
+  // V4L2DecodeSurfaceHandler implementation.
   scoped_refptr<V4L2DecodeSurface> CreateSurface() override;
   // SurfaceReady() uses |decoder_display_queue_| to guarantee that decoding
   // of |dec_surface| happens in order.
@@ -142,21 +144,11 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
                     int32_t bitstream_id,
                     const gfx::Rect& visible_rect,
                     const VideoColorSpace& /* color_space */) override;
-
-  // Append slice data in |data| of size |size| to pending hardware
-  // input buffer with |index|. This buffer will be submitted for decode
-  // on the next DecodeSurface(). Return true on success.
-  bool SubmitSlice(int index, const uint8_t* data, size_t size);
-
-  // Submit controls in |ext_ctrls| to hardware. Return true on success.
-  bool SubmitExtControls(struct v4l2_ext_controls* ext_ctrls);
-
-  // Gets current control values for controls in |ext_ctrls| from the driver.
-  // Return true on success.
-  bool GetExtControls(struct v4l2_ext_controls* ext_ctrls);
-
-  // Return true if the driver exposes V4L2 control |ctrl_id|, false otherwise.
-  bool IsCtrlExposed(uint32_t ctrl_id);
+  bool SubmitSlice(const scoped_refptr<V4L2DecodeSurface>& dec_surface,
+                   const uint8_t* data,
+                   size_t size) override;
+  void DecodeSurface(
+      const scoped_refptr<V4L2DecodeSurface>& dec_surface) override;
 
   //
   // Internal methods of this class.
@@ -174,7 +166,7 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   void Dequeue();
 
   // V4L2 QBUF helpers.
-  bool EnqueueInputRecord(int index, uint32_t config_store);
+  bool EnqueueInputRecord(const V4L2DecodeSurface* dec_surface);
   bool EnqueueOutputRecord(int index);
 
   // Set input and output formats in hardware.
@@ -272,37 +264,26 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   // file descriptors.
   void ImportBufferForPictureTask(
       int32_t picture_buffer_id,
-      // TODO(posciak): (https://crbug.com/561749) we should normally be able to
-      // pass the vector by itself via std::move, but it's not possible to do
-      // this if this method is used as a callback.
-      std::unique_ptr<std::vector<base::ScopedFD>> passed_dmabuf_fds);
+      std::vector<base::ScopedFD> passed_dmabuf_fds);
 
   // Create a GLImage for the buffer associated with V4L2 |buffer_index| and
   // for |picture_buffer_id|, backed by dmabuf file descriptors in
   // |passed_dmabuf_fds|, taking ownership of them.
   // The GLImage will be associated |client_texture_id| in gles2 decoder.
-  void CreateGLImageFor(
-      size_t buffer_index,
-      int32_t picture_buffer_id,
-      // TODO(posciak): (https://crbug.com/561749) we should normally be able to
-      // pass the vector by itself via std::move, but it's not possible to do
-      // this if this method is used as a callback.
-      std::unique_ptr<std::vector<base::ScopedFD>> passed_dmabuf_fds,
-      GLuint client_texture_id,
-      GLuint texture_id,
-      const gfx::Size& size,
-      uint32_t fourcc);
+  void CreateGLImageFor(size_t buffer_index,
+                        int32_t picture_buffer_id,
+                        std::vector<base::ScopedFD> passed_dmabuf_fds,
+                        GLuint client_texture_id,
+                        GLuint texture_id,
+                        const gfx::Size& size,
+                        uint32_t fourcc);
 
   // Take the dmabuf |passed_dmabuf_fds|, for |picture_buffer_id|, and use it
   // for OutputRecord at |buffer_index|. The buffer is backed by
   // |passed_dmabuf_fds|, and the OutputRecord takes ownership of them.
-  void AssignDmaBufs(
-      size_t buffer_index,
-      int32_t picture_buffer_id,
-      // TODO(posciak): (https://crbug.com/561749) we should normally be able to
-      // pass the vector by itself via std::move, but it's not possible to do
-      // this if this method is used as a callback.
-      std::unique_ptr<std::vector<base::ScopedFD>> passed_dmabuf_fds);
+  void AssignDmaBufs(size_t buffer_index,
+                     int32_t picture_buffer_id,
+                     std::vector<base::ScopedFD> passed_dmabuf_fds);
 
   // Performed on decoder_thread_ as a consequence of poll() on decoder_thread_
   // returning an event.
@@ -362,6 +343,11 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   // Callback that indicates a picture has been cleared.
   void PictureCleared();
 
+  // Returns the number of OutputRecords at client/device. This is used to
+  // compute values reported for chrome://tracing.
+  size_t GetNumOfOutputRecordsAtClient() const;
+  size_t GetNumOfOutputRecordsAtDevice() const;
+
   size_t input_planes_count_;
   size_t output_planes_count_;
 
@@ -418,8 +404,11 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   gfx::Size coded_size_;
 
   struct BitstreamBufferRef;
-  // Input queue of stream buffers coming from the client.
-  base::queue<std::unique_ptr<BitstreamBufferRef>> decoder_input_queue_;
+  // Input queue of stream buffers coming from the client. Although the elements
+  // in |decoder_input_queue_| is push()/pop() in queue order, this needs to be
+  // base::circular_deque because we need to do random access in OnMemoryDump().
+  base::circular_deque<std::unique_ptr<BitstreamBufferRef>>
+      decoder_input_queue_;
   // BitstreamBuffer currently being processed.
   std::unique_ptr<BitstreamBufferRef> decoder_current_bitstream_buffer_;
 

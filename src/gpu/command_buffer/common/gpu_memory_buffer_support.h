@@ -63,6 +63,11 @@ GPU_EXPORT uint32_t GetBufferTextureTarget(gfx::BufferUsage usage,
                                            gfx::BufferFormat format,
                                            const Capabilities& capabilities);
 
+// Returns whether a native GMB with the given format needs to be bound to the
+// platform-specfic texture target or GL_TEXTURE_2D.
+GPU_EXPORT bool NativeBufferNeedsPlatformSpecificTextureTarget(
+    gfx::BufferFormat format);
+
 }  // namespace gpu
 
 #endif  // GPU_COMMAND_BUFFER_COMMON_GPU_MEMORY_BUFFER_SUPPORT_H_

@@ -51,8 +51,8 @@ enum class RequestThread {
 };
 
 // Adds an error message to the context's console.
-using AddConsoleError =
-    base::Callback<void(v8::Local<v8::Context>, const std::string& error)>;
+using AddConsoleError = base::RepeatingCallback<void(v8::Local<v8::Context>,
+                                                     const std::string& error)>;
 
 }  // namespace binding
 }  // namespace extensions

@@ -20,9 +20,9 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
 #if defined(OS_WIN)
-#define IntToStringType base::IntToString16
+#define NumberToStringType base::NumberToString16
 #else
-#define IntToStringType base::IntToString
+#define NumberToStringType base::NumberToString
 #endif
 
 namespace {
@@ -39,9 +39,9 @@ const base::FilePath::CharType kBaseFilename[] =
 // "/tmp/.com.google.Chrome.Z6UC3P.12345.aec_dump.1".
 base::FilePath GetExpectedAecDumpFileName(const base::FilePath& base_file_path,
                                           int render_process_id) {
-  return base_file_path.AddExtension(IntToStringType(render_process_id))
+  return base_file_path.AddExtension(NumberToStringType(render_process_id))
       .AddExtension(FILE_PATH_LITERAL("aec_dump"))
-      .AddExtension(IntToStringType(kExpectedConsumerId));
+      .AddExtension(NumberToStringType(kExpectedConsumerId));
 }
 
 // Get the file names of the recordings. The name will be

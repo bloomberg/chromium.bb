@@ -9,6 +9,7 @@
 #include <memory>
 #include <sstream>
 
+#include "constants/annotation_common.h"
 #include "core/fpdfapi/parser/cpdf_array.h"
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_document.h"
@@ -52,25 +53,26 @@ CPDFSDK_Widget::~CPDFSDK_Widget() = default;
 #ifdef PDF_ENABLE_XFA
 CXFA_FFWidget* CPDFSDK_Widget::GetMixXFAWidget() const {
   CPDFXFA_Context* pContext = m_pPageView->GetFormFillEnv()->GetXFAContext();
-  if (pContext->GetFormType() == FormType::kXFAForeground) {
-    if (!m_hMixXFAWidget) {
-      if (CXFA_FFDocView* pDocView = pContext->GetXFADocView()) {
-        WideString sName;
-        if (GetFieldType() == FormFieldType::kRadioButton) {
-          sName = GetAnnotName();
-          if (sName.IsEmpty())
-            sName = GetName();
-        } else {
-          sName = GetName();
-        }
+  if (pContext->GetFormType() != FormType::kXFAForeground)
+    return nullptr;
 
-        if (!sName.IsEmpty())
-          m_hMixXFAWidget = pDocView->GetWidgetByName(sName, nullptr);
-      }
-    }
-    return m_hMixXFAWidget.Get();
+  CXFA_FFDocView* pDocView = pContext->GetXFADocView();
+  if (!pDocView)
+    return nullptr;
+
+  WideString sName;
+  if (GetFieldType() == FormFieldType::kRadioButton) {
+    sName = GetAnnotName();
+    if (sName.IsEmpty())
+      sName = GetName();
+  } else {
+    sName = GetName();
   }
-  return nullptr;
+
+  if (sName.IsEmpty())
+    return nullptr;
+
+  return pDocView->GetWidgetByName(sName, nullptr);
 }
 
 CXFA_FFWidget* CPDFSDK_Widget::GetGroupMixXFAWidget() const {
@@ -303,7 +305,8 @@ void CPDFSDK_Widget::Synchronize(bool bSynchronizeElse) {
 #endif  // PDF_ENABLE_XFA
 
 bool CPDFSDK_Widget::IsWidgetAppearanceValid(CPDF_Annot::AppearanceMode mode) {
-  CPDF_Dictionary* pAP = GetAnnotDict()->GetDictFor("AP");
+  const CPDF_Dictionary* pAP =
+      GetAnnotDict()->GetDictFor(pdfium::annotation::kAP);
   if (!pAP)
     return false;
 
@@ -317,8 +320,8 @@ bool CPDFSDK_Widget::IsWidgetAppearanceValid(CPDF_Annot::AppearanceMode mode) {
     ap_entry = "N";
 
   // Get the AP stream or subdirectory
-  CPDF_Object* psub = pAP->GetDirectObjectFor(ap_entry);
-  if (!psub)
+  const CPDF_Object* pSub = pAP->GetDirectObjectFor(ap_entry);
+  if (!pSub)
     return false;
 
   FormFieldType fieldType = GetFieldType();
@@ -328,10 +331,10 @@ bool CPDFSDK_Widget::IsWidgetAppearanceValid(CPDF_Annot::AppearanceMode mode) {
     case FormFieldType::kListBox:
     case FormFieldType::kTextField:
     case FormFieldType::kSignature:
-      return psub->IsStream();
+      return pSub->IsStream();
     case FormFieldType::kCheckBox:
     case FormFieldType::kRadioButton:
-      if (CPDF_Dictionary* pSubDict = psub->AsDictionary()) {
+      if (const CPDF_Dictionary* pSubDict = pSub->AsDictionary()) {
         return !!pSubDict->GetStreamFor(GetAppState());
       }
       return false;
@@ -360,12 +363,7 @@ int CPDFSDK_Widget::GetLayoutOrder() const {
 }
 
 int CPDFSDK_Widget::GetFieldFlags() const {
-  CPDF_InteractiveForm* pPDFInteractiveForm =
-      m_pInteractiveForm->GetInteractiveForm();
-  CPDF_FormControl* pFormControl =
-      pPDFInteractiveForm->GetControlByDict(GetAnnotDict());
-  CPDF_FormField* pFormField = pFormControl->GetField();
-  return pFormField->GetFieldFlags();
+  return GetFormField()->GetFieldFlags();
 }
 
 bool CPDFSDK_Widget::IsSignatureWidget() const {
@@ -673,9 +671,7 @@ void CPDFSDK_Widget::DrawShadow(CFX_RenderDevice* pDevice,
   if (!m_pInteractiveForm->IsNeedHighLight(fieldType))
     return;
 
-  CFX_Matrix page2device;
-  pPageView->GetCurrentMatrix(page2device);
-
+  CFX_Matrix page2device = pPageView->GetCurrentMatrix();
   CFX_FloatRect rcDevice = GetRect();
   CFX_PointF tmp =
       page2device.Transform(CFX_PointF(rcDevice.left, rcDevice.bottom));

@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/task/post_task.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor.h"
@@ -173,8 +174,10 @@ std::unique_ptr<ResolveHostClientImpl> PreconnectManager::PreresolveUrl(
   if (!network_context) {
     // Cannot invoke the callback right away because it would cause the
     // use-after-free after returning from this function.
-    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                             base::BindOnce(std::move(callback), false));
+    base::PostTaskWithTraits(
+        FROM_HERE,
+        {content::BrowserThread::UI, content::BrowserTaskType::kPreconnect},
+        base::BindOnce(std::move(callback), false));
     return nullptr;
   }
 
@@ -223,8 +226,13 @@ void PreconnectManager::TryToLaunchPreresolveJobs() {
       preresolve_jobs_.Remove(job_id);
     }
 
-    if (info)
+    if (info) {
+      DCHECK_LE(1u, info->queued_count);
       --info->queued_count;
+      if (info->is_done()) {
+        AllPreresolvesForUrlFinished(info);
+      }
+    }
   }
 }
 
@@ -275,8 +283,10 @@ void PreconnectManager::FinishPreresolveJob(PreresolveJobId job_id,
     info->stats->requests_stats.emplace_back(job->url, need_preconnect);
   preresolve_jobs_.Remove(job_id);
   --inflight_preresolves_count_;
-  if (info)
+  if (info) {
+    DCHECK_LE(1u, info->inflight_count);
     --info->inflight_count;
+  }
   if (info && info->is_done())
     AllPreresolvesForUrlFinished(info);
   TryToLaunchPreresolveJobs();

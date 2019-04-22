@@ -268,10 +268,10 @@ TEST_P(SSLPlatformKeyCNGTest, KeyMatches) {
   TestSSLPrivateKeyMatches(key.get(), pkcs8);
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        SSLPlatformKeyCNGTest,
-                        testing::ValuesIn(kTestKeys),
-                        TestKeyToString);
+INSTANTIATE_TEST_SUITE_P(,
+                         SSLPlatformKeyCNGTest,
+                         testing::ValuesIn(kTestKeys),
+                         TestKeyToString);
 
 TEST(SSLPlatformKeyCAPITest, KeyMatches) {
   base::test::ScopedTaskEnvironment scoped_task_environment;

@@ -13,7 +13,6 @@
 #include <unordered_map>
 #include <vector>
 
-#include "base/containers/hash_tables.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -107,8 +106,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterMac
   void DeviceConnected(IOBluetoothDevice* device);
 
   // We only use CoreBluetooth when OS X >= 10.10. This because the
-  // CBCentralManager destructor was found to crash on the mac_chromium_rel_ng
-  // builder running 10.9.5. May also cause blued to crash on OS X 10.9.5
+  // CBCentralManager destructor was found to crash on the mac-rel builder
+  // running 10.9.5. May also cause blued to crash on OS X 10.9.5
   // (crbug.com/506287).
   static bool IsLowEnergyAvailable();
 

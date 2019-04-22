@@ -7,6 +7,7 @@
 #include <cmath>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
@@ -147,7 +148,7 @@ void URLRequestThrottlerEntry::DisableBackoffThrottling() {
 }
 
 void URLRequestThrottlerEntry::DetachManager() {
-  manager_ = NULL;
+  manager_ = nullptr;
 }
 
 bool URLRequestThrottlerEntry::ShouldRejectRequest(

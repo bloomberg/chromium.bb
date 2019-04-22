@@ -5,6 +5,8 @@
 #ifndef CONTENT_PUBLIC_BROWSER_ANDROID_SYNCHRONOUS_COMPOSITOR_CLIENT_H_
 #define CONTENT_PUBLIC_BROWSER_ANDROID_SYNCHRONOUS_COMPOSITOR_CLIENT_H_
 
+#include <memory>
+
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -14,6 +16,10 @@
 
 namespace ui {
 class TouchHandleDrawable;
+}
+
+namespace viz {
+class CopyOutputRequest;
 }
 
 namespace content {
@@ -55,6 +61,10 @@ class SynchronousCompositorClient {
   virtual void DidUpdateContent(SynchronousCompositor* compositor) = 0;
 
   virtual ui::TouchHandleDrawable* CreateDrawable() = 0;
+
+  virtual void CopyOutput(
+      SynchronousCompositor* compositor,
+      std::unique_ptr<viz::CopyOutputRequest> copy_request) = 0;
 
  protected:
   SynchronousCompositorClient() {}

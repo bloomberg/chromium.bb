@@ -4,6 +4,8 @@
 
 #include "components/ntp_snippets/remote/prefetched_pages_tracker_impl.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -17,6 +19,8 @@
 using ntp_snippets::test::FakeOfflinePageModel;
 using offline_pages::MultipleOfflinePageItemCallback;
 using offline_pages::OfflinePageItem;
+using offline_pages::OfflinePageModel;
+using offline_pages::PageCriteria;
 using testing::_;
 using testing::Eq;
 using testing::SaveArg;
@@ -32,8 +36,8 @@ class MockOfflinePageModel : public offline_pages::StubOfflinePageModel {
  public:
   ~MockOfflinePageModel() override = default;
 
-  MOCK_METHOD2(GetPagesByNamespace,
-               void(const std::string& name_space,
+  MOCK_METHOD2(GetPagesWithCriteria,
+               void(const PageCriteria& criteria,
                     MultipleOfflinePageItemCallback callback));
 };
 
@@ -42,7 +46,7 @@ OfflinePageItem CreateOfflinePageItem(const GURL& url,
   static int id = 0;
   ++id;
   return OfflinePageItem(
-      url, id, offline_pages::ClientId(name_space, base::IntToString(id)),
+      url, id, offline_pages::ClientId(name_space, base::NumberToString(id)),
       base::FilePath::FromUTF8Unsafe(
           base::StringPrintf("some/folder/%d.mhtml", id)),
       0, base::Time::Now());
@@ -140,7 +144,7 @@ TEST_F(PrefetchedPagesTrackerImplTest, ShouldDeletePrefetchedURLWhenNotified) {
       tracker.PrefetchedOfflinePageExists(GURL("http://prefetched.com")));
   tracker.OfflinePageDeleted(offline_pages::OfflinePageModel::DeletedPageInfo(
       item.offline_id, kSystemDownloadId, item.client_id,
-      /*request_origin=*/"", item.original_url));
+      /*request_origin=*/"", item.original_url_if_different));
   EXPECT_FALSE(
       tracker.PrefetchedOfflinePageExists(GURL("http://prefetched.com")));
 }
@@ -163,16 +167,15 @@ TEST_F(PrefetchedPagesTrackerImplTest,
   tracker.OfflinePageDeleted(offline_pages::OfflinePageModel::DeletedPageInfo(
       manually_downloaded_item.offline_id, kSystemDownloadId,
       manually_downloaded_item.client_id,
-      /*request_origin=*/"", manually_downloaded_item.original_url));
+      /*request_origin=*/"",
+      manually_downloaded_item.original_url_if_different));
   EXPECT_TRUE(
       tracker.PrefetchedOfflinePageExists(GURL("http://prefetched.com")));
 }
 
 TEST_F(PrefetchedPagesTrackerImplTest,
        ShouldReportAsNotInitializedBeforeReceivedArticles) {
-  EXPECT_CALL(
-      *mock_offline_page_model(),
-      GetPagesByNamespace(offline_pages::kSuggestedArticlesNamespace, _));
+  EXPECT_CALL(*mock_offline_page_model(), GetPagesWithCriteria(_, _));
   PrefetchedPagesTrackerImpl tracker(mock_offline_page_model());
   tracker.Initialize(base::BindOnce([] {}));
   EXPECT_FALSE(tracker.IsInitialized());
@@ -181,13 +184,11 @@ TEST_F(PrefetchedPagesTrackerImplTest,
 TEST_F(PrefetchedPagesTrackerImplTest,
        ShouldReportAsInitializedAfterInitialization) {
   MultipleOfflinePageItemCallback offline_pages_callback;
-  EXPECT_CALL(
-      *mock_offline_page_model(),
-      GetPagesByNamespace(offline_pages::kSuggestedArticlesNamespace, _))
-      .WillOnce([&](const std::string& name_space,
-                    MultipleOfflinePageItemCallback callback) {
-        offline_pages_callback = std::move(callback);
-      });
+  EXPECT_CALL(*mock_offline_page_model(), GetPagesWithCriteria(_, _))
+      .WillOnce(
+          [&](const PageCriteria&, MultipleOfflinePageItemCallback callback) {
+            offline_pages_callback = std::move(callback);
+          });
   PrefetchedPagesTrackerImpl tracker(mock_offline_page_model());
   tracker.Initialize(base::BindOnce([] {}));
 
@@ -198,13 +199,11 @@ TEST_F(PrefetchedPagesTrackerImplTest,
 
 TEST_F(PrefetchedPagesTrackerImplTest, ShouldCallCallbackAfterInitialization) {
   MultipleOfflinePageItemCallback offline_pages_callback;
-  EXPECT_CALL(
-      *mock_offline_page_model(),
-      GetPagesByNamespace(offline_pages::kSuggestedArticlesNamespace, _))
-      .WillOnce([&](const std::string& name_space,
-                    MultipleOfflinePageItemCallback callback) {
-        offline_pages_callback = std::move(callback);
-      });
+  EXPECT_CALL(*mock_offline_page_model(), GetPagesWithCriteria(_, _))
+      .WillOnce(
+          [&](const PageCriteria&, MultipleOfflinePageItemCallback callback) {
+            offline_pages_callback = std::move(callback);
+          });
   PrefetchedPagesTrackerImpl tracker(mock_offline_page_model());
 
   base::MockCallback<base::OnceCallback<void()>>
@@ -217,13 +216,11 @@ TEST_F(PrefetchedPagesTrackerImplTest, ShouldCallCallbackAfterInitialization) {
 TEST_F(PrefetchedPagesTrackerImplTest,
        ShouldCallMultipleCallbacksAfterInitialization) {
   MultipleOfflinePageItemCallback offline_pages_callback;
-  EXPECT_CALL(
-      *mock_offline_page_model(),
-      GetPagesByNamespace(offline_pages::kSuggestedArticlesNamespace, _))
-      .WillOnce([&](const std::string& name_space,
-                    MultipleOfflinePageItemCallback callback) {
-        offline_pages_callback = std::move(callback);
-      });
+  EXPECT_CALL(*mock_offline_page_model(), GetPagesWithCriteria(_, _))
+      .WillOnce(
+          [&](const PageCriteria&, MultipleOfflinePageItemCallback callback) {
+            offline_pages_callback = std::move(callback);
+          });
   PrefetchedPagesTrackerImpl tracker(mock_offline_page_model());
 
   base::MockCallback<base::OnceCallback<void()>>
@@ -239,13 +236,11 @@ TEST_F(PrefetchedPagesTrackerImplTest,
 TEST_F(PrefetchedPagesTrackerImplTest,
        ShouldCallCallbackImmediatelyIfAlreadyInitialiazed) {
   MultipleOfflinePageItemCallback offline_pages_callback;
-  EXPECT_CALL(
-      *mock_offline_page_model(),
-      GetPagesByNamespace(offline_pages::kSuggestedArticlesNamespace, _))
-      .WillOnce([&](const std::string& name_space,
-                    MultipleOfflinePageItemCallback callback) {
-        offline_pages_callback = std::move(callback);
-      });
+  EXPECT_CALL(*mock_offline_page_model(), GetPagesWithCriteria(_, _))
+      .WillOnce(
+          [&](const PageCriteria&, MultipleOfflinePageItemCallback callback) {
+            offline_pages_callback = std::move(callback);
+          });
   PrefetchedPagesTrackerImpl tracker(mock_offline_page_model());
   tracker.Initialize(base::BindOnce([] {}));
 
@@ -274,7 +269,7 @@ TEST_F(PrefetchedPagesTrackerImplTest,
 
   tracker.OfflinePageDeleted(offline_pages::OfflinePageModel::DeletedPageInfo(
       first_item.offline_id, kSystemDownloadId, first_item.client_id,
-      /*request_origin=*/"", first_item.original_url));
+      /*request_origin=*/"", first_item.original_url_if_different));
 
   // Only one offline page (out of two) has been removed, the remaining one
   // should be reported here.
@@ -299,14 +294,14 @@ TEST_F(PrefetchedPagesTrackerImplTest,
 
   tracker.OfflinePageDeleted(offline_pages::OfflinePageModel::DeletedPageInfo(
       first_item.offline_id, kSystemDownloadId, first_item.client_id,
-      /*request_origin=*/"", first_item.original_url));
+      /*request_origin=*/"", first_item.original_url_if_different));
 
   ASSERT_TRUE(
       tracker.PrefetchedOfflinePageExists(GURL("http://prefetched.com")));
 
   tracker.OfflinePageDeleted(offline_pages::OfflinePageModel::DeletedPageInfo(
       second_item.offline_id, kSystemDownloadId, second_item.client_id,
-      /*request_origin=*/"", second_item.original_url));
+      /*request_origin=*/"", second_item.original_url_if_different));
 
   // All offline pages have been removed, their absence should be reported here.
   EXPECT_FALSE(

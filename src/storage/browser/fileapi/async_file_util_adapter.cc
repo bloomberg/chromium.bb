@@ -59,8 +59,21 @@ class GetFileInfoHelper {
 
   void GetFileInfo(FileSystemFileUtil* file_util,
                    FileSystemOperationContext* context,
-                   const FileSystemURL& url) {
+                   const FileSystemURL& url,
+                   bool calculate_total_size) {
     error_ = file_util->GetFileInfo(context, url, &file_info_, &platform_path_);
+    if (error_ == base::File::FILE_OK && calculate_total_size &&
+        file_info_.is_directory) {
+      file_info_.size = 0;
+      auto enumerator = file_util->CreateFileEnumerator(context, url, true);
+      base::FilePath path = enumerator->Next();
+      while (!path.empty()) {
+        if (!enumerator->IsDirectory()) {
+          file_info_.size += enumerator->Size();
+        }
+        path = enumerator->Next();
+      }
+    }
   }
 
   void CreateSnapshotFile(FileSystemFileUtil* file_util,
@@ -95,8 +108,8 @@ void ReadDirectoryHelper(FileSystemFileUtil* file_util,
                          AsyncFileUtil::ReadDirectoryCallback callback) {
   base::File::Info file_info;
   base::FilePath platform_path;
-  base::File::Error error = file_util->GetFileInfo(
-      context, url, &file_info, &platform_path);
+  base::File::Error error =
+      file_util->GetFileInfo(context, url, &file_info, &platform_path);
 
   if (error == base::File::FILE_OK && !file_info.is_directory)
     error = base::File::FILE_ERROR_NOT_A_DIRECTORY;
@@ -114,7 +127,7 @@ void ReadDirectoryHelper(FileSystemFileUtil* file_util,
   const size_t kResultChunkSize = 100;
 
   std::unique_ptr<FileSystemFileUtil::AbstractFileEnumerator> file_enum(
-      file_util->CreateFileEnumerator(context, url));
+      file_util->CreateFileEnumerator(context, url, false));
 
   base::FilePath current;
   while (!(current = file_enum->Next()).empty()) {
@@ -207,14 +220,17 @@ void AsyncFileUtilAdapter::CreateDirectory(
 void AsyncFileUtilAdapter::GetFileInfo(
     std::unique_ptr<FileSystemOperationContext> context,
     const FileSystemURL& url,
-    int /* fields */,
+    int fields,
     GetFileInfoCallback callback) {
   FileSystemOperationContext* context_ptr = context.release();
   GetFileInfoHelper* helper = new GetFileInfoHelper;
+  bool calculate_total_size =
+      (fields & FileSystemOperation::GET_METADATA_FIELD_TOTAL_SIZE);
   const bool success = context_ptr->task_runner()->PostTaskAndReply(
       FROM_HERE,
       BindOnce(&GetFileInfoHelper::GetFileInfo, Unretained(helper),
-               sync_file_util_.get(), base::Owned(context_ptr), url),
+               sync_file_util_.get(), base::Owned(context_ptr), url,
+               calculate_total_size),
       BindOnce(&GetFileInfoHelper::ReplyFileInfo, Owned(helper),
                std::move(callback)));
   DCHECK(success);

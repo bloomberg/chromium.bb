@@ -7,8 +7,8 @@
 #include <stdint.h>
 
 #include <memory>
+#include <unordered_set>
 
-#include "base/containers/hash_tables.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/format_macros.h"
@@ -83,7 +83,7 @@ TEST_F(PhishingScorerTest, PageTerms) {
   std::unique_ptr<Scorer> scorer(Scorer::Create(model_.SerializeAsString()));
   ASSERT_TRUE(scorer.get());
 
-  // Use std::vector instead of base::hash_set for comparison.
+  // Use std::vector instead of std::unordered_set for comparison.
   // On Android, EXPECT_THAT(..., ContainerEq(...)) doesn't support
   // std::hash_set, but std::vector works fine.
   std::vector<std::string> expected_page_terms;
@@ -91,7 +91,7 @@ TEST_F(PhishingScorerTest, PageTerms) {
   expected_page_terms.push_back("token two");
   std::sort(expected_page_terms.begin(), expected_page_terms.end());
 
-  base::hash_set<std::string> page_terms = scorer->page_terms();
+  std::unordered_set<std::string> page_terms = scorer->page_terms();
   std::vector<std::string> page_terms_v(page_terms.begin(), page_terms.end());
   std::sort(page_terms_v.begin(), page_terms_v.end());
 
@@ -107,7 +107,7 @@ TEST_F(PhishingScorerTest, PageWords) {
   expected_page_words.push_back(3000U);
   std::sort(expected_page_words.begin(), expected_page_words.end());
 
-  base::hash_set<uint32_t> page_words = scorer->page_words();
+  std::unordered_set<uint32_t> page_words = scorer->page_words();
   std::vector<uint32_t> page_words_v(page_words.begin(), page_words.end());
   std::sort(page_words_v.begin(), page_words_v.end());
 

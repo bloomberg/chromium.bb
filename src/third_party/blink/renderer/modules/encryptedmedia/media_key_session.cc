@@ -53,8 +53,8 @@
 #include "third_party/blink/renderer/platform/instance_counters.h"
 #include "third_party/blink/renderer/platform/network/mime/content_type.h"
 #include "third_party/blink/renderer/platform/timer.h"
-#include "third_party/blink/renderer/platform/wtf/ascii_ctype.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/ascii_ctype.h"
 
 #define MEDIA_KEY_SESSION_LOG_LEVEL 3
 
@@ -337,20 +337,13 @@ class SimpleResultPromise : public ContentDecryptionModuleResultPromise {
   Member<MediaKeySession> session_;
 };
 
-MediaKeySession* MediaKeySession::Create(
-    ScriptState* script_state,
-    MediaKeys* media_keys,
-    WebEncryptedMediaSessionType session_type) {
-  return MakeGarbageCollected<MediaKeySession>(script_state, media_keys,
-                                               session_type);
-}
-
 MediaKeySession::MediaKeySession(ScriptState* script_state,
                                  MediaKeys* media_keys,
                                  WebEncryptedMediaSessionType session_type)
     : ContextLifecycleObserver(ExecutionContext::From(script_state)),
-      async_event_queue_(EventQueue::Create(GetExecutionContext(),
-                                            TaskType::kMediaElementEvent)),
+      async_event_queue_(
+          MakeGarbageCollected<EventQueue>(GetExecutionContext(),
+                                           TaskType::kMediaElementEvent)),
       media_keys_(media_keys),
       session_type_(session_type),
       expiration_(std::numeric_limits<double>::quiet_NaN()),
@@ -358,9 +351,10 @@ MediaKeySession::MediaKeySession(ScriptState* script_state,
       is_uninitialized_(true),
       is_callable_(false),
       is_closing_or_closed_(false),
-      closed_promise_(new ClosedPromise(ExecutionContext::From(script_state),
-                                        this,
-                                        ClosedPromise::kClosed)),
+      closed_promise_(MakeGarbageCollected<ClosedPromise>(
+          ExecutionContext::From(script_state),
+          this,
+          ClosedPromise::kClosed)),
       action_timer_(ExecutionContext::From(script_state)
                         ->GetTaskRunner(TaskType::kMiscPlatformAPI),
                     this,
@@ -378,7 +372,7 @@ MediaKeySession::MediaKeySession(ScriptState* script_state,
   // From https://w3c.github.io/encrypted-media/#createSession:
   // MediaKeys::createSession(), step 3.
   // 3.1 Let the sessionId attribute be the empty string.
-  DCHECK(sessionId().IsEmpty());
+  DCHECK(session_id_.IsEmpty());
 
   // 3.2 Let the expiration attribute be NaN.
   DCHECK(std::isnan(expiration_));
@@ -418,7 +412,7 @@ void MediaKeySession::Dispose() {
 }
 
 String MediaKeySession::sessionId() const {
-  return session_->SessionId();
+  return session_id_;
 }
 
 ScriptPromise MediaKeySession::closed(ScriptState* script_state) {
@@ -536,7 +530,8 @@ void MediaKeySession::FinishGenerateRequest() {
   //         new DOMException whose name is the appropriate error name.
   //         (Done by CDM calling result.completeWithError() as appropriate.)
   // 10.10.2 Set the sessionId attribute to session id.
-  DCHECK(!sessionId().IsEmpty());
+  session_id_ = session_->SessionId();
+  DCHECK(!session_id_.IsEmpty());
 
   // 10.10.3 Let this object's callable be true.
   is_callable_ = true;
@@ -654,7 +649,8 @@ void MediaKeySession::FinishLoad() {
   //       (Done by CDM calling result.completeWithError() as appropriate.)
 
   // 8.9.2 Set the sessionId attribute to sanitized session ID.
-  DCHECK(!sessionId().IsEmpty());
+  session_id_ = session_->SessionId();
+  DCHECK(!session_id_.IsEmpty());
 
   // 8.9.3 Let this object's callable be true.
   is_callable_ = true;
@@ -910,6 +906,11 @@ void MediaKeySession::Message(MessageType message_type,
 }
 
 void MediaKeySession::Close() {
+  // Note that this is the event from the CDM when this session is actually
+  // closed. The CDM can close a session at any time. Normally it would happen
+  // as the result of a close() call, but also happens when update() has been
+  // called with a record of license destruction or if the CDM crashes or
+  // otherwise becomes unavailable.
   DVLOG(MEDIA_KEY_SESSION_LOG_LEVEL) << __func__ << "(" << this << ")";
 
   // From http://w3c.github.io/encrypted-media/#session-closed
@@ -931,6 +932,22 @@ void MediaKeySession::Close() {
 
   // 7. Resolve promise.
   closed_promise_->ResolveWithUndefined();
+
+  // Stop the CDM from firing any more events for this session.
+  session_.reset();
+
+  // Fail any pending events, except if it's a close request.
+  action_timer_.Stop();
+  while (!pending_actions_.IsEmpty()) {
+    PendingAction* action = pending_actions_.TakeFirst();
+    if (action->GetType() == PendingAction::kClose) {
+      action->Result()->Complete();
+    } else {
+      action->Result()->CompleteWithError(
+          kWebContentDecryptionModuleExceptionInvalidStateError, 0,
+          "Session has been closed");
+    }
+  }
 }
 
 void MediaKeySession::ExpirationChanged(double updated_expiry_time_in_ms) {

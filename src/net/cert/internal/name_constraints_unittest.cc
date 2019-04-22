@@ -82,9 +82,9 @@ class ParseNameConstraints
 
 // Run the tests with the name constraints marked critical and non-critical. For
 // supported name types, the results should be the same for both.
-INSTANTIATE_TEST_CASE_P(InstantiationName,
-                        ParseNameConstraints,
-                        ::testing::Values(true, false));
+INSTANTIATE_TEST_SUITE_P(InstantiationName,
+                         ParseNameConstraints,
+                         ::testing::Values(true, false));
 
 TEST_P(ParseNameConstraints, DNSNames) {
   std::string a;

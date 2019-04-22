@@ -4,10 +4,8 @@
 
 #include "ui/base/emoji/emoji_panel_helper.h"
 
-#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/no_destructor.h"
-#include "ui/base/ui_base_features.h"
 
 namespace ui {
 
@@ -21,7 +19,9 @@ base::RepeatingClosure& GetShowEmojiKeyboardCallback() {
 }  // namespace
 
 bool IsEmojiPanelSupported() {
-  return base::FeatureList::IsEnabled(features::kEnableEmojiContextMenu);
+  // TODO(https://crbug.com/887649): Emoji callback is null in Mojo apps because
+  // they are in a different process. Fix it and remove the null check.
+  return !GetShowEmojiKeyboardCallback().is_null();
 }
 
 void ShowEmojiPanel() {

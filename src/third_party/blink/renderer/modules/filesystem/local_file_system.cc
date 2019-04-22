@@ -31,6 +31,8 @@
 #include "third_party/blink/renderer/modules/filesystem/local_file_system.h"
 
 #include <memory>
+#include <utility>
+
 #include "base/feature_list.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -44,138 +46,124 @@
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/modules/filesystem/dom_file_system.h"
+#include "third_party/blink/renderer/modules/filesystem/file_system_callbacks.h"
 #include "third_party/blink/renderer/modules/filesystem/file_system_client.h"
 #include "third_party/blink/renderer/modules/filesystem/file_system_dispatcher.h"
-#include "third_party/blink/renderer/platform/async_file_system_callbacks.h"
-#include "third_party/blink/renderer/platform/content_setting_callbacks.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
 
-namespace {
-
-void ReportFailure(std::unique_ptr<AsyncFileSystemCallbacks> callbacks,
-                   base::File::Error error) {
-  callbacks->DidFail(error);
-}
-
-}  // namespace
-
-class CallbackWrapper final
-    : public GarbageCollectedFinalized<CallbackWrapper> {
- public:
-  CallbackWrapper(std::unique_ptr<AsyncFileSystemCallbacks> c)
-      : callbacks_(std::move(c)) {}
-  virtual ~CallbackWrapper() = default;
-  std::unique_ptr<AsyncFileSystemCallbacks> Release() {
-    return std::move(callbacks_);
-  }
-
-  void Trace(blink::Visitor* visitor) {}
-
- private:
-  std::unique_ptr<AsyncFileSystemCallbacks> callbacks_;
-};
-
 LocalFileSystem::~LocalFileSystem() = default;
 
-void LocalFileSystem::ResolveURL(
-    ExecutionContext* context,
-    const KURL& file_system_url,
-    std::unique_ptr<AsyncFileSystemCallbacks> callbacks,
-    SynchronousType type) {
-  CallbackWrapper* wrapper = new CallbackWrapper(std::move(callbacks));
+void LocalFileSystem::ResolveURL(ExecutionContext* context,
+                                 const KURL& file_system_url,
+                                 std::unique_ptr<ResolveURICallbacks> callbacks,
+                                 SynchronousType type) {
   RequestFileSystemAccessInternal(
       context,
-      WTF::Bind(&LocalFileSystem::ResolveURLInternal,
+      WTF::Bind(&LocalFileSystem::ResolveURLCallback,
                 WrapCrossThreadPersistent(this), WrapPersistent(context),
-                file_system_url, WrapPersistent(wrapper), type),
-      WTF::Bind(&LocalFileSystem::FileSystemNotAllowedInternal,
-                WrapCrossThreadPersistent(this), WrapPersistent(context),
-                WrapPersistent(wrapper)));
+                file_system_url, std::move(callbacks), type));
+}
+
+void LocalFileSystem::ResolveURLCallback(
+    ExecutionContext* context,
+    const KURL& file_system_url,
+    std::unique_ptr<ResolveURICallbacks> callbacks,
+    SynchronousType sync_type,
+    bool allowed) {
+  if (allowed) {
+    ResolveURLInternal(context, file_system_url, std::move(callbacks),
+                       sync_type);
+    return;
+  }
+  FileSystemNotAllowedInternal(context, std::move(callbacks));
 }
 
 void LocalFileSystem::RequestFileSystem(
     ExecutionContext* context,
     mojom::blink::FileSystemType type,
-    long long size,
-    std::unique_ptr<AsyncFileSystemCallbacks> callbacks,
+    int64_t size,
+    std::unique_ptr<FileSystemCallbacks> callbacks,
     SynchronousType sync_type) {
-  CallbackWrapper* wrapper = new CallbackWrapper(std::move(callbacks));
   RequestFileSystemAccessInternal(
       context,
-      WTF::Bind(&LocalFileSystem::FileSystemAllowedInternal,
+      WTF::Bind(&LocalFileSystem::RequestFileSystemCallback,
                 WrapCrossThreadPersistent(this), WrapPersistent(context), type,
-                WrapPersistent(wrapper), sync_type),
-      WTF::Bind(&LocalFileSystem::FileSystemNotAllowedInternal,
-                WrapCrossThreadPersistent(this), WrapPersistent(context),
-                WrapPersistent(wrapper)));
+                std::move(callbacks), sync_type));
+}
+
+void LocalFileSystem::RequestFileSystemCallback(
+    ExecutionContext* context,
+    mojom::blink::FileSystemType type,
+    std::unique_ptr<FileSystemCallbacks> callbacks,
+    SynchronousType sync_type,
+    bool allowed) {
+  if (allowed) {
+    FileSystemAllowedInternal(context, type, std::move(callbacks), sync_type);
+    return;
+  }
+  FileSystemNotAllowedInternal(context, std::move(callbacks));
 }
 
 void LocalFileSystem::RequestFileSystemAccessInternal(
     ExecutionContext* context,
-    base::OnceClosure allowed,
-    base::OnceClosure denied) {
+    base::OnceCallback<void(bool)> callback) {
   if (!context->IsDocument()) {
     if (!Client().RequestFileSystemAccessSync(context)) {
-      std::move(denied).Run();
+      std::move(callback).Run(false);
       return;
     }
-    std::move(allowed).Run();
+    std::move(callback).Run(true);
     return;
   }
-  Client().RequestFileSystemAccessAsync(
-      context,
-      ContentSettingCallbacks::Create(std::move(allowed), std::move(denied)));
+  Client().RequestFileSystemAccessAsync(context, std::move(callback));
 }
 
-void LocalFileSystem::FileSystemNotAvailable(ExecutionContext* context,
-                                             CallbackWrapper* callbacks) {
+void LocalFileSystem::FileSystemNotAllowedInternal(
+    ExecutionContext* context,
+    std::unique_ptr<FileSystemCallbacks> callbacks) {
   context->GetTaskRunner(TaskType::kFileReading)
-      ->PostTask(FROM_HERE,
-                 WTF::Bind(&ReportFailure, WTF::Passed(callbacks->Release()),
-                           base::File::FILE_ERROR_ABORT));
+      ->PostTask(FROM_HERE, WTF::Bind(&FileSystemCallbacks::DidFail,
+                                      WTF::Passed(std::move(callbacks)),
+                                      base::File::FILE_ERROR_ABORT));
 }
 
-void LocalFileSystem::FileSystemNotAllowedInternal(ExecutionContext* context,
-                                                   CallbackWrapper* callbacks) {
+void LocalFileSystem::FileSystemNotAllowedInternal(
+    ExecutionContext* context,
+    std::unique_ptr<ResolveURICallbacks> callbacks) {
   context->GetTaskRunner(TaskType::kFileReading)
-      ->PostTask(FROM_HERE,
-                 WTF::Bind(&ReportFailure, WTF::Passed(callbacks->Release()),
-                           base::File::FILE_ERROR_ABORT));
+      ->PostTask(FROM_HERE, WTF::Bind(&ResolveURICallbacks::DidFail,
+                                      WTF::Passed(std::move(callbacks)),
+                                      base::File::FILE_ERROR_ABORT));
 }
 
 void LocalFileSystem::FileSystemAllowedInternal(
     ExecutionContext* context,
     mojom::blink::FileSystemType type,
-    CallbackWrapper* callbacks,
+    std::unique_ptr<FileSystemCallbacks> callbacks,
     SynchronousType sync_type) {
-  KURL storage_partition =
-      KURL(NullURL(), context->GetSecurityOrigin()->ToString());
-  std::unique_ptr<AsyncFileSystemCallbacks> async_callbacks =
-      callbacks->Release();
   FileSystemDispatcher& dispatcher = FileSystemDispatcher::From(context);
   if (sync_type == kSynchronous) {
-    dispatcher.OpenFileSystemSync(storage_partition, type,
-                                  std::move(async_callbacks));
+    dispatcher.OpenFileSystemSync(context->GetSecurityOrigin(), type,
+                                  std::move(callbacks));
   } else {
-    dispatcher.OpenFileSystem(storage_partition, type,
-                              std::move(async_callbacks));
+    dispatcher.OpenFileSystem(context->GetSecurityOrigin(), type,
+                              std::move(callbacks));
   }
 }
 
-void LocalFileSystem::ResolveURLInternal(ExecutionContext* context,
-                                         const KURL& file_system_url,
-                                         CallbackWrapper* callbacks,
-                                         SynchronousType sync_type) {
+void LocalFileSystem::ResolveURLInternal(
+    ExecutionContext* context,
+    const KURL& file_system_url,
+    std::unique_ptr<ResolveURICallbacks> callbacks,
+    SynchronousType sync_type) {
   FileSystemDispatcher& dispatcher = FileSystemDispatcher::From(context);
-  std::unique_ptr<AsyncFileSystemCallbacks> async_callbacks =
-      callbacks->Release();
   if (sync_type == kSynchronous) {
-    dispatcher.ResolveURLSync(file_system_url, std::move(async_callbacks));
+    dispatcher.ResolveURLSync(file_system_url, std::move(callbacks));
   } else {
-    dispatcher.ResolveURL(file_system_url, std::move(async_callbacks));
+    dispatcher.ResolveURL(file_system_url, std::move(callbacks));
   }
 }
 

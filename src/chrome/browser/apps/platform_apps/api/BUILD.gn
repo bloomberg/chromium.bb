@@ -26,6 +26,8 @@ source_set("api") {
   sources = [
     "browser/browser_api.cc",
     "browser/browser_api.h",
+    "browser_context_keyed_service_factories.cc",
+    "browser_context_keyed_service_factories.h",
     "media_galleries/blob_data_source_factory.cc",
     "media_galleries/blob_data_source_factory.h",
     "media_galleries/media_galleries_api.cc",
@@ -57,8 +59,14 @@ source_set("api") {
     "//extensions/browser",
   ]
 
+  public_deps = [
+    "//chrome/browser/apps/platform_apps/api/music_manager_private",
+  ]
+
   if (is_chromeos) {
     sources += [
+      "arc_apps_private/arc_apps_private_api.cc",
+      "arc_apps_private/arc_apps_private_api.h",
       "webstore_widget_private/app_installer.cc",
       "webstore_widget_private/app_installer.h",
       "webstore_widget_private/webstore_widget_private_api.cc",
@@ -67,10 +75,9 @@ source_set("api") {
 
     deps += [
       "//chrome:strings",
+      "//chromeos/components/multidevice/logging",
       "//chromeos/components/proximity_auth",
-      "//chromeos/components/proximity_auth/logging",
       "//components/account_id",
-      "//components/cryptauth",
       "//components/strings:components_strings_grit",
       "//components/user_manager",
       "//device/bluetooth",

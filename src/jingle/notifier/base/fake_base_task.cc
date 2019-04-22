@@ -5,6 +5,7 @@
 #include <stddef.h>
 
 #include "base/compiler_specific.h"
+#include "net/base/host_port_pair.h"
 #include "jingle/notifier/base/fake_base_task.h"
 #include "jingle/notifier/base/weak_xmpp_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -15,14 +16,14 @@ namespace notifier {
 using ::testing::_;
 using ::testing::Return;
 
-class MockAsyncSocket : public buzz::AsyncSocket {
+class MockAsyncSocket : public jingle_xmpp::AsyncSocket {
  public:
   ~MockAsyncSocket() override {}
 
   MOCK_METHOD0(state, State());
   MOCK_METHOD0(error, Error());
   MOCK_METHOD0(GetError, int());
-  MOCK_METHOD1(Connect, bool(const rtc::SocketAddress&));
+  MOCK_METHOD1(Connect, bool(const net::HostPortPair&));
   MOCK_METHOD3(Read, bool(char*, size_t, size_t*));
   MOCK_METHOD2(Write, bool(const char*, size_t));
   MOCK_METHOD0(Close, bool());
@@ -37,16 +38,16 @@ namespace {
 // PushNotificationsSubscribeTask.
 class FakeWeakXmppClient : public notifier::WeakXmppClient {
  public:
-  explicit FakeWeakXmppClient(rtc::TaskParent* parent)
+  explicit FakeWeakXmppClient(jingle_xmpp::TaskParent* parent)
       : notifier::WeakXmppClient(parent),
         jid_("test@example.com/testresource") {}
 
   ~FakeWeakXmppClient() override {}
 
-  const buzz::Jid& jid() const override { return jid_; }
+  const jingle_xmpp::Jid& jid() const override { return jid_; }
 
  private:
-  buzz::Jid jid_;
+  jingle_xmpp::Jid jid_;
 };
 
 }  // namespace
@@ -59,7 +60,7 @@ FakeBaseTask::FakeBaseTask() {
       new FakeWeakXmppClient(&task_pump_);
 
   weak_xmpp_client->Start();
-  buzz::XmppClientSettings settings;
+  jingle_xmpp::XmppClientSettings settings;
   // Owned by |weak_xmpp_client|.
   MockAsyncSocket* mock_async_socket = new MockAsyncSocket();
   EXPECT_CALL(*mock_async_socket, Connect(_)).WillOnce(Return(true));
@@ -72,7 +73,7 @@ FakeBaseTask::FakeBaseTask() {
 
 FakeBaseTask::~FakeBaseTask() {}
 
-base::WeakPtr<buzz::XmppTaskParentInterface> FakeBaseTask::AsWeakPtr() {
+base::WeakPtr<jingle_xmpp::XmppTaskParentInterface> FakeBaseTask::AsWeakPtr() {
   return base_task_;
 }
 

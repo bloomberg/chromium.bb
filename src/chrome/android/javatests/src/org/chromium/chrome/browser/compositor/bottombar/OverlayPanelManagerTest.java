@@ -109,7 +109,7 @@ public class OverlayPanelManagerTest {
          */
         private static class MockOverlayPanelContent extends OverlayPanelContent {
             public MockOverlayPanelContent() {
-                super(null, null, null, 0);
+                super(null, null, null, false, 0);
             }
 
             @Override

@@ -48,7 +48,7 @@ class MODULES_EXPORT BackgroundFetchIconLoader final
 
   // ThreadableLoaderClient interface.
   void DidReceiveData(const char* data, unsigned length) override;
-  void DidFinishLoading(unsigned long resource_identifier) override;
+  void DidFinishLoading(uint64_t resource_identifier) override;
   void DidFail(const ResourceError& error) override;
   void DidFailRedirectCheck() override;
 

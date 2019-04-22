@@ -60,7 +60,7 @@ std::string GetRandomId(
   const base::Value *out_value;
 
   do {
-    string_value = base::IntToString(rand_value);
+    string_value = base::NumberToString(rand_value);
     rand_value++;
   } while (mapping.Get(string_value, &out_value));
 

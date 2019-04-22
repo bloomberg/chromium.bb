@@ -70,8 +70,9 @@ Polymer({
    */
   onAvatarTap_: function(e) {
     // Manual selection for profile creation
-    if (this.selectedAvatarElement_)
+    if (this.selectedAvatarElement_) {
       this.selectedAvatarElement_.classList.remove('iron-selected');
+    }
     this.selectedAvatarElement_ = /** @type {!HTMLElement} */ (e.target);
     this.selectedAvatarElement_.classList.add('iron-selected');
 

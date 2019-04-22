@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "components/policy/core/common/cloud/mock_user_cloud_policy_store.h"
+
 #include "base/sequenced_task_runner.h"
+#include "components/policy/proto/device_management_backend.pb.h"
 
 namespace policy {
 

@@ -32,20 +32,25 @@
 #endif
 
 #if defined(OS_ANDROID)
-#include "chrome/common/descriptors_android.h"
+#include "chrome/common/chrome_descriptors.h"
 #endif
 
 #if defined(OS_CHROMEOS)
 #include "chrome/common/channel_info.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "components/version_info/version_info.h"
 #endif
+
+void ChromeCrashReporterClient::Create() {
+  static base::NoDestructor<ChromeCrashReporterClient> crash_client;
+  crash_reporter::SetCrashReporterClient(crash_client.get());
+}
 
 ChromeCrashReporterClient::ChromeCrashReporterClient() {}
 
 ChromeCrashReporterClient::~ChromeCrashReporterClient() {}
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
 void ChromeCrashReporterClient::SetCrashReporterClientIdFromGUID(
     const std::string& client_guid) {
   crash_keys::SetMetricsClientIdFromGUID(client_guid);

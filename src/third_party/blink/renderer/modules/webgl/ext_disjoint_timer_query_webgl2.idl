@@ -4,8 +4,6 @@
 
 // https://www.khronos.org/registry/webgl/extensions/EXT_disjoint_timer_query_webgl2/
 
-typedef unsigned long long GLuint64EXT;
-
 [
     DoNotCheckConstants,
     NoInterfaceObject

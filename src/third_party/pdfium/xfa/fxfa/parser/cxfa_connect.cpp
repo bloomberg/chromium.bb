@@ -6,7 +6,7 @@
 
 #include "xfa/fxfa/parser/cxfa_connect.h"
 
-#include "fxjs/xfa/cjx_connect.h"
+#include "fxjs/xfa/cjx_node.h"
 #include "third_party/base/ptr_util.h"
 
 namespace {
@@ -16,7 +16,8 @@ const CXFA_Node::PropertyData kConnectPropertyData[] = {
     {XFA_Element::ConnectString, 1, 0},
     {XFA_Element::User, 1, 0},
     {XFA_Element::Password, 1, 0},
-    {XFA_Element::Unknown, 0, 0}};
+};
+
 const CXFA_Node::AttributeData kConnectAttributeData[] = {
     {XFA_Attribute::Id, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Name, XFA_AttributeType::CData, nullptr},
@@ -25,12 +26,10 @@ const CXFA_Node::AttributeData kConnectAttributeData[] = {
     {XFA_Attribute::Timeout, XFA_AttributeType::Integer, (void*)15},
     {XFA_Attribute::Connection, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Usage, XFA_AttributeType::Enum,
-     (void*)XFA_AttributeEnum::ExportAndImport},
+     (void*)XFA_AttributeValue::ExportAndImport},
     {XFA_Attribute::Usehref, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::DelayedOpen, XFA_AttributeType::CData, nullptr},
-    {XFA_Attribute::Unknown, XFA_AttributeType::Integer, nullptr}};
-
-constexpr wchar_t kConnectName[] = L"connect";
+};
 
 }  // namespace
 
@@ -43,7 +42,6 @@ CXFA_Connect::CXFA_Connect(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_Element::Connect,
                 kConnectPropertyData,
                 kConnectAttributeData,
-                kConnectName,
-                pdfium::MakeUnique<CJX_Connect>(this)) {}
+                pdfium::MakeUnique<CJX_Node>(this)) {}
 
-CXFA_Connect::~CXFA_Connect() {}
+CXFA_Connect::~CXFA_Connect() = default;

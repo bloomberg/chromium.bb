@@ -61,7 +61,8 @@ void PluginPrefsFactory::RegisterProfilePrefs(
   registry->RegisterListPref(prefs::kPluginsDisabledPlugins);
   registry->RegisterListPref(prefs::kPluginsDisabledPluginsExceptions);
   registry->RegisterListPref(prefs::kPluginsEnabledPlugins);
-  registry->RegisterBooleanPref(prefs::kPluginsAlwaysOpenPdfExternally, false);
+  registry->RegisterBooleanPref(prefs::kPluginsAlwaysOpenPdfExternally, false, 
+                                user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
 content::BrowserContext* PluginPrefsFactory::GetBrowserContextToUse(

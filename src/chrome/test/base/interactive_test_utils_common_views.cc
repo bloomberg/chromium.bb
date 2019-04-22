@@ -6,6 +6,7 @@
 
 #include "chrome/test/base/interactive_test_utils.h"
 
+#include "base/bind.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/views/view.h"
@@ -16,7 +17,7 @@ namespace ui_test_utils {
 void MoveMouseToCenterAndPress(views::View* view,
                                ui_controls::MouseButton button,
                                int button_state,
-                               const base::RepeatingClosure& closure,
+                               base::OnceClosure closure,
                                int accelerator_state) {
   DCHECK(view);
   DCHECK(view->GetWidget());
@@ -30,12 +31,17 @@ void MoveMouseToCenterAndPress(views::View* view,
       animator->StopAnimating();
   }
 
-  gfx::Point view_center(view->width() / 2, view->height() / 2);
-  views::View::ConvertPointToScreen(view, &view_center);
+  gfx::Point view_center = GetCenterInScreenCoordinates(view);
   ui_controls::SendMouseMoveNotifyWhenDone(
       view_center.x(), view_center.y(),
-      base::BindOnce(&internal::ClickTask, button, button_state, closure,
-                     accelerator_state));
+      base::BindOnce(&internal::ClickTask, button, button_state,
+                     std::move(closure), accelerator_state));
+}
+
+gfx::Point GetCenterInScreenCoordinates(const views::View* view) {
+  gfx::Point center = view->GetLocalBounds().CenterPoint();
+  views::View::ConvertPointToScreen(view, &center);
+  return center;
 }
 
 }  // namespace ui_test_utils

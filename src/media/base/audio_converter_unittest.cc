@@ -251,7 +251,7 @@ TEST_P(AudioConverterTest, ManyInputs) {
   RunTest(kConvertInputs);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AudioConverterTest,
     AudioConverterTest,
     testing::Values(

@@ -67,7 +67,7 @@ class TestableFileWriter : public GarbageCollectedFinalized<TestableFileWriter>,
   bool received_cancel_;
 
   int received_did_write_count_;
-  long long received_did_write_bytes_total_;
+  int64_t received_did_write_bytes_total_;
   bool received_did_write_complete_;
   bool received_did_truncate_;
   bool received_did_fail_;
@@ -161,7 +161,7 @@ class FileWriterTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    testable_writer_ = new TestableFileWriter();
+    testable_writer_ = MakeGarbageCollected<TestableFileWriter>();
     testable_writer_->Initialize(mock_path_as_kurl(), 10);
   }
 

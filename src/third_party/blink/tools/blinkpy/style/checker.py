@@ -226,22 +226,22 @@ def _all_categories():
     return categories
 
 
-def _check_webkit_style_defaults():
+def _check_blink_style_defaults():
     """Return the default command-line options for check_blink_style.py."""
     return DefaultCommandOptionValues(min_confidence=_DEFAULT_MIN_CONFIDENCE,
                                       output_format=_DEFAULT_OUTPUT_FORMAT)
 
 
 # This function assists in optparser not having to import from checker.
-def check_webkit_style_parser():
+def check_blink_style_parser():
     all_categories = _all_categories()
-    default_options = _check_webkit_style_defaults()
+    default_options = _check_blink_style_defaults()
     return ArgumentParser(all_categories=all_categories,
                           base_filter_rules=_BASE_FILTER_RULES,
                           default_options=default_options)
 
 
-def check_webkit_style_configuration(options):
+def check_blink_style_configuration(options):
     """Return a StyleProcessorConfiguration instance for check_blink_style.py.
 
     Args:

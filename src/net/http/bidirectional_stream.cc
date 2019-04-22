@@ -28,7 +28,7 @@
 #include "net/spdy/spdy_log_util.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_config.h"
-#include "net/third_party/spdy/core/spdy_header_block.h"
+#include "net/third_party/quiche/src/spdy/core/spdy_header_block.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "url/gurl.h"
 
@@ -107,8 +107,8 @@ BidirectionalStream::BidirectionalStream(
   if (!request_info_->url.SchemeIs(url::kHttpsScheme)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&BidirectionalStream::NotifyFailed,
-                   weak_factory_.GetWeakPtr(), ERR_DISALLOWED_URL_SCHEME));
+        base::BindOnce(&BidirectionalStream::NotifyFailed,
+                       weak_factory_.GetWeakPtr(), ERR_DISALLOWED_URL_SCHEME));
     return;
   }
 
@@ -376,7 +376,8 @@ void BidirectionalStream::OnWebSocketHandshakeStreamReady(
 void BidirectionalStream::OnStreamFailed(
     int result,
     const NetErrorDetails& net_error_details,
-    const SSLConfig& used_ssl_config) {
+    const SSLConfig& used_ssl_config,
+    const ProxyInfo& used_proxy_info) {
   DCHECK_LT(result, 0);
   DCHECK_NE(result, ERR_IO_PENDING);
   DCHECK(stream_request_);
@@ -420,14 +421,14 @@ void BidirectionalStream::OnNeedsClientAuth(const SSLConfig& used_ssl_config,
   StartRequest(ssl_config);
 }
 
-void BidirectionalStream::OnHttpsProxyTunnelResponse(
+void BidirectionalStream::OnHttpsProxyTunnelResponseRedirect(
     const HttpResponseInfo& response_info,
     const SSLConfig& used_ssl_config,
     const ProxyInfo& used_proxy_info,
     std::unique_ptr<HttpStream> stream) {
   DCHECK(stream_request_);
 
-  NotifyFailed(ERR_HTTPS_PROXY_TUNNEL_RESPONSE);
+  NotifyFailed(ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT);
 }
 
 void BidirectionalStream::OnQuicBroken() {}

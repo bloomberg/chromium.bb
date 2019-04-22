@@ -257,7 +257,7 @@ NthIndexData::NthIndexData(ContainerNode& parent, const QualifiedName& type) {
   count_ = count;
 }
 
-void NthIndexData::Trace(blink::Visitor* visitor) {
+void NthIndexData::Trace(Visitor* visitor) {
   visitor->Trace(element_index_map_);
 }
 

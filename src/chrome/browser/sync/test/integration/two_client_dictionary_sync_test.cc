@@ -97,7 +97,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientDictionarySyncTest,
   ASSERT_TRUE(DictionaryMatchChecker().Wait());
 
   for (int i = 0; i < num_clients(); ++i)
-    dictionary_helper::AddWord(i, "foo" + base::IntToString(i));
+    dictionary_helper::AddWord(i, "foo" + base::NumberToString(i));
 
   ASSERT_TRUE(DictionaryMatchChecker().Wait());
   ASSERT_EQ(num_clients(),
@@ -123,15 +123,9 @@ IN_PROC_BROWSER_TEST_P(TwoClientDictionarySyncTest,
   ASSERT_EQ(1UL, dictionary_helper::GetDictionarySize(0));
 }
 
-// Crash-flaky on win7 (dbg) and win-asan: http://crbug.com/889505
-#if defined(OS_WIN) && (!defined(NDEBUG) || defined(ADDRESS_SANITIZER))
-#define MAYBE_Limit DISABLED_Limit
-#else
-#define MAYBE_Limit Limit
-#endif
 // Tests the case where a client has more words added than the
 // kMaxSyncableDictionaryWords limit.
-IN_PROC_BROWSER_TEST_P(TwoClientDictionarySyncTest, MAYBE_Limit) {
+IN_PROC_BROWSER_TEST_P(TwoClientDictionarySyncTest, Limit) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   dictionary_helper::LoadDictionaries();
   ASSERT_TRUE(DictionaryMatchChecker().Wait());
@@ -176,8 +170,8 @@ IN_PROC_BROWSER_TEST_P(TwoClientDictionarySyncTest, MAYBE_Limit) {
       NumDictionaryEntriesChecker(0, kMaxSyncableDictionaryWords).Wait());
 }
 
-INSTANTIATE_TEST_CASE_P(USS,
-                        TwoClientDictionarySyncTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(USS,
+                         TwoClientDictionarySyncTest,
+                         ::testing::Values(false, true));
 
 }  // namespace

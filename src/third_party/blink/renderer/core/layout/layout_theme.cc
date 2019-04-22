@@ -21,11 +21,6 @@
 
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 
-#include <string>
-
-#include "base/feature_list.h"
-#include "base/metrics/field_trial_params.h"
-#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/web/blink.h"
@@ -53,14 +48,13 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/fallback_theme.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/core/style/computed_style_initial_values.h"
 #include "third_party/blink/renderer/platform/file_metadata.h"
 #include "third_party/blink/renderer/platform/fonts/font_selector.h"
 #include "third_party/blink/renderer/platform/fonts/string_truncator.h"
-#include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/touch_action.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
-#include "third_party/blink/renderer/platform/theme.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "ui/native_theme/native_theme.h"
@@ -68,36 +62,6 @@
 // The methods in this file are shared by all themes on every platform.
 
 namespace blink {
-
-namespace {
-
-void GetAutofillPreviewColorsFromFieldTrial(std::string* color,
-                                            std::string* background_color) {
-  constexpr char kAutofillDefaultBackgroundColor[] = "#FAFFBD";
-  constexpr char kAutofillDefaultColor[] = "#000000";
-
-  if (base::FeatureList::IsEnabled(features::kAutofillPreviewStyleExperiment)) {
-    std::string bg_color_param = base::GetFieldTrialParamValueByFeature(
-        features::kAutofillPreviewStyleExperiment,
-        features::kAutofillPreviewStyleExperimentBgColorParameterName);
-    std::string color_param = base::GetFieldTrialParamValueByFeature(
-        features::kAutofillPreviewStyleExperiment,
-        features::kAutofillPreviewStyleExperimentColorParameterName);
-    if (Color().SetFromString(bg_color_param.c_str()) &&
-        Color().SetFromString(color_param.c_str())) {
-      *background_color = bg_color_param;
-      *color = color_param;
-      return;
-    }
-  }
-
-  // Fallback to the default colors if the experiment is not enabled or if a
-  // color param is invalid.
-  *background_color = std::string(kAutofillDefaultBackgroundColor);
-  *color = std::string(kAutofillDefaultColor);
-}
-
-}  // namespace
 
 // Wrapper function defined in WebKit.h
 void SetMockThemeEnabledForTest(bool value) {
@@ -114,8 +78,7 @@ LayoutTheme& LayoutTheme::GetTheme() {
   return NativeTheme();
 }
 
-LayoutTheme::LayoutTheme(Theme* platform_theme)
-    : has_custom_focus_ring_color_(false), platform_theme_(platform_theme) {}
+LayoutTheme::LayoutTheme() : has_custom_focus_ring_color_(false) {}
 
 void LayoutTheme::AdjustStyle(ComputedStyle& style, Element* e) {
   DCHECK(style.HasAppearance());
@@ -153,125 +116,7 @@ void LayoutTheme::AdjustStyle(ComputedStyle& style, Element* e) {
     return;
   }
 
-  if (platform_theme_) {
-    switch (part) {
-      case kCheckboxPart:
-      case kInnerSpinButtonPart:
-      case kRadioPart:
-      case kPushButtonPart:
-      case kSquareButtonPart:
-      case kButtonPart: {
-        // Border
-        LengthBox border_box(style.BorderTopWidth(), style.BorderRightWidth(),
-                             style.BorderBottomWidth(),
-                             style.BorderLeftWidth());
-        border_box = platform_theme_->ControlBorder(
-            part, style.GetFont().GetFontDescription(), border_box,
-            style.EffectiveZoom());
-        if (border_box.Top().Value() !=
-            static_cast<int>(style.BorderTopWidth())) {
-          if (border_box.Top().Value())
-            style.SetBorderTopWidth(border_box.Top().Value());
-          else
-            style.ResetBorderTop();
-        }
-        if (border_box.Right().Value() !=
-            static_cast<int>(style.BorderRightWidth())) {
-          if (border_box.Right().Value())
-            style.SetBorderRightWidth(border_box.Right().Value());
-          else
-            style.ResetBorderRight();
-        }
-        if (border_box.Bottom().Value() !=
-            static_cast<int>(style.BorderBottomWidth())) {
-          style.SetBorderBottomWidth(border_box.Bottom().Value());
-          if (border_box.Bottom().Value())
-            style.SetBorderBottomWidth(border_box.Bottom().Value());
-          else
-            style.ResetBorderBottom();
-        }
-        if (border_box.Left().Value() !=
-            static_cast<int>(style.BorderLeftWidth())) {
-          style.SetBorderLeftWidth(border_box.Left().Value());
-          if (border_box.Left().Value())
-            style.SetBorderLeftWidth(border_box.Left().Value());
-          else
-            style.ResetBorderLeft();
-        }
-
-        // Padding
-        LengthBox padding_box = platform_theme_->ControlPadding(
-            part, style.GetFont().GetFontDescription(), style.PaddingTop(),
-            style.PaddingRight(), style.PaddingBottom(), style.PaddingLeft(),
-            style.EffectiveZoom());
-        if (!style.PaddingEqual(padding_box))
-          style.SetPadding(padding_box);
-
-        // Whitespace
-        if (platform_theme_->ControlRequiresPreWhiteSpace(part))
-          style.SetWhiteSpace(EWhiteSpace::kPre);
-
-        // Width / Height
-        // The width and height here are affected by the zoom.
-        // FIXME: Check is flawed, since it doesn't take min-width/max-width
-        // into account.
-        LengthSize control_size = platform_theme_->GetControlSize(
-            part, style.GetFont().GetFontDescription(),
-            LengthSize(style.Width(), style.Height()), style.EffectiveZoom());
-
-        LengthSize min_control_size = platform_theme_->MinimumControlSize(
-            part, style.GetFont().GetFontDescription(), style.EffectiveZoom());
-
-        // Only potentially set min-size to |control_size| for these parts.
-        if (part == kCheckboxPart || part == kRadioPart)
-          SetMinimumSize(style, &control_size, &min_control_size);
-        else
-          SetMinimumSize(style, nullptr, &min_control_size);
-
-        if (control_size.Width() != style.Width())
-          style.SetWidth(control_size.Width());
-        if (control_size.Height() != style.Height())
-          style.SetHeight(control_size.Height());
-
-        // Font
-        FontDescription control_font = platform_theme_->ControlFont(
-            part, style.GetFont().GetFontDescription(), style.EffectiveZoom());
-        if (control_font != style.GetFont().GetFontDescription()) {
-          // Reset our line-height
-          style.SetLineHeight(ComputedStyleInitialValues::InitialLineHeight());
-
-          // Now update our font.
-          if (style.SetFontDescription(control_font))
-            style.GetFont().Update(nullptr);
-        }
-        break;
-      }
-      case kProgressBarPart:
-        AdjustProgressBarBounds(style);
-        break;
-      default:
-        break;
-    }
-  }
-
-  if (!platform_theme_) {
-    // Call the appropriate style adjustment method based off the appearance
-    // value.
-    switch (style.Appearance()) {
-      case kCheckboxPart:
-        return AdjustCheckboxStyle(style);
-      case kRadioPart:
-        return AdjustRadioStyle(style);
-      case kPushButtonPart:
-      case kSquareButtonPart:
-      case kButtonPart:
-        return AdjustButtonStyle(style);
-      case kInnerSpinButtonPart:
-        return AdjustInnerSpinButtonStyle(style);
-      default:
-        break;
-    }
-  }
+  AdjustControlPartStyle(style);
 
   // Call the appropriate style adjustment method based off the appearance
   // value.
@@ -298,23 +143,7 @@ void LayoutTheme::AdjustStyle(ComputedStyle& style, Element* e) {
 }
 
 String LayoutTheme::ExtraDefaultStyleSheet() {
-  std::string color, background_color;
-  GetAutofillPreviewColorsFromFieldTrial(&color, &background_color);
-  // TODO(crbug.com/880258): Use different styles for
-  // `-internal-autofill-previewed` and `-internal-autofill-selected`.
-  constexpr char const format[] =
-      "input:-internal-autofill-previewed,"
-      "input:-internal-autofill-selected,"
-      "textarea:-internal-autofill-previewed,"
-      "textarea:-internal-autofill-selected,"
-      "select:-internal-autofill-previewed,"
-      "select:-internal-autofill-selected "
-      "{"
-      "  background-color: %s !important;"
-      "  background-image:none !important;"
-      "  color: %s !important;"
-      "}";
-  return String::Format(format, background_color.c_str(), color.c_str());
+  return g_empty_string;
 }
 
 String LayoutTheme::ExtraQuirksStyleSheet() {
@@ -408,11 +237,6 @@ Color LayoutTheme::PlatformInactiveListBoxSelectionForegroundColor() const {
 
 LayoutUnit LayoutTheme::BaselinePositionAdjustment(
     const ComputedStyle& style) const {
-  if (platform_theme_) {
-    return LayoutUnit(
-        platform_theme_->BaselinePositionAdjustment(style.Appearance()) *
-        style.EffectiveZoom());
-  }
   return LayoutUnit();
 }
 
@@ -439,16 +263,6 @@ bool LayoutTheme::IsControlStyled(const ComputedStyle& style) const {
 
     default:
       return false;
-  }
-}
-
-void LayoutTheme::AddVisualOverflow(const Node* node,
-                                    const ComputedStyle& style,
-                                    IntRect& border_box) {
-  if (platform_theme_) {
-    platform_theme_->AddVisualOverflow(style.Appearance(),
-                                       ControlStatesForNode(node, style),
-                                       style.EffectiveZoom(), border_box);
   }
 }
 
@@ -680,7 +494,7 @@ void LayoutTheme::SetCaretBlinkInterval(TimeDelta interval) {
 }
 
 TimeDelta LayoutTheme::CaretBlinkInterval() const {
-  // Disable the blinking caret in layout test mode, as it introduces
+  // Disable the blinking caret in web test mode, as it introduces
   // a race condition for the pixel tests. http://b/1198440
   return WebTestSupport::IsRunningWebTest() ? TimeDelta()
                                             : caret_blink_interval_;
@@ -698,25 +512,25 @@ static FontDescription& GetCachedFontDescription(CSSValueID system_font_id) {
   DEFINE_STATIC_LOCAL(FontDescription, webkit_control, ());
   DEFINE_STATIC_LOCAL(FontDescription, default_description, ());
   switch (system_font_id) {
-    case CSSValueCaption:
+    case CSSValueID::kCaption:
       return caption;
-    case CSSValueIcon:
+    case CSSValueID::kIcon:
       return icon;
-    case CSSValueMenu:
+    case CSSValueID::kMenu:
       return menu;
-    case CSSValueMessageBox:
+    case CSSValueID::kMessageBox:
       return message_box;
-    case CSSValueSmallCaption:
+    case CSSValueID::kSmallCaption:
       return small_caption;
-    case CSSValueStatusBar:
+    case CSSValueID::kStatusBar:
       return status_bar;
-    case CSSValueWebkitMiniControl:
+    case CSSValueID::kWebkitMiniControl:
       return webkit_mini_control;
-    case CSSValueWebkitSmallControl:
+    case CSSValueID::kWebkitSmallControl:
       return webkit_small_control;
-    case CSSValueWebkitControl:
+    case CSSValueID::kWebkitControl:
       return webkit_control;
-    case CSSValueNone:
+    case CSSValueID::kNone:
       return default_description;
     default:
       NOTREACHED();
@@ -745,71 +559,71 @@ void LayoutTheme::SystemFont(CSSValueID system_font_id,
 
 Color LayoutTheme::SystemColor(CSSValueID css_value_id) const {
   switch (css_value_id) {
-    case CSSValueActiveborder:
+    case CSSValueID::kActiveborder:
       return 0xFFFFFFFF;
-    case CSSValueActivecaption:
+    case CSSValueID::kActivecaption:
       return 0xFFCCCCCC;
-    case CSSValueAppworkspace:
+    case CSSValueID::kAppworkspace:
       return 0xFFFFFFFF;
-    case CSSValueBackground:
+    case CSSValueID::kBackground:
       return 0xFF6363CE;
-    case CSSValueButtonface:
+    case CSSValueID::kButtonface:
       return 0xFFC0C0C0;
-    case CSSValueButtonhighlight:
+    case CSSValueID::kButtonhighlight:
       return 0xFFDDDDDD;
-    case CSSValueButtonshadow:
+    case CSSValueID::kButtonshadow:
       return 0xFF888888;
-    case CSSValueButtontext:
+    case CSSValueID::kButtontext:
       return 0xFF000000;
-    case CSSValueCaptiontext:
+    case CSSValueID::kCaptiontext:
       return 0xFF000000;
-    case CSSValueGraytext:
+    case CSSValueID::kGraytext:
       return 0xFF808080;
-    case CSSValueHighlight:
+    case CSSValueID::kHighlight:
       return 0xFFB5D5FF;
-    case CSSValueHighlighttext:
+    case CSSValueID::kHighlighttext:
       return 0xFF000000;
-    case CSSValueInactiveborder:
+    case CSSValueID::kInactiveborder:
       return 0xFFFFFFFF;
-    case CSSValueInactivecaption:
+    case CSSValueID::kInactivecaption:
       return 0xFFFFFFFF;
-    case CSSValueInactivecaptiontext:
+    case CSSValueID::kInactivecaptiontext:
       return 0xFF7F7F7F;
-    case CSSValueInfobackground:
+    case CSSValueID::kInfobackground:
       return 0xFFFBFCC5;
-    case CSSValueInfotext:
+    case CSSValueID::kInfotext:
       return 0xFF000000;
-    case CSSValueMenu:
+    case CSSValueID::kMenu:
       return 0xFFC0C0C0;
-    case CSSValueMenutext:
+    case CSSValueID::kMenutext:
       return 0xFF000000;
-    case CSSValueScrollbar:
+    case CSSValueID::kScrollbar:
       return 0xFFFFFFFF;
-    case CSSValueText:
+    case CSSValueID::kText:
       return 0xFF000000;
-    case CSSValueThreeddarkshadow:
+    case CSSValueID::kThreeddarkshadow:
       return 0xFF666666;
-    case CSSValueThreedface:
+    case CSSValueID::kThreedface:
       return 0xFFC0C0C0;
-    case CSSValueThreedhighlight:
+    case CSSValueID::kThreedhighlight:
       return 0xFFDDDDDD;
-    case CSSValueThreedlightshadow:
+    case CSSValueID::kThreedlightshadow:
       return 0xFFC0C0C0;
-    case CSSValueThreedshadow:
+    case CSSValueID::kThreedshadow:
       return 0xFF888888;
-    case CSSValueWindow:
+    case CSSValueID::kWindow:
       return 0xFFFFFFFF;
-    case CSSValueWindowframe:
+    case CSSValueID::kWindowframe:
       return 0xFFCCCCCC;
-    case CSSValueWindowtext:
+    case CSSValueID::kWindowtext:
       return 0xFF000000;
-    case CSSValueInternalActiveListBoxSelection:
+    case CSSValueID::kInternalActiveListBoxSelection:
       return ActiveListBoxSelectionBackgroundColor();
-    case CSSValueInternalActiveListBoxSelectionText:
+    case CSSValueID::kInternalActiveListBoxSelectionText:
       return ActiveListBoxSelectionForegroundColor();
-    case CSSValueInternalInactiveListBoxSelection:
+    case CSSValueID::kInternalInactiveListBoxSelection:
       return InactiveListBoxSelectionBackgroundColor();
-    case CSSValueInternalInactiveListBoxSelectionText:
+    case CSSValueID::kInternalInactiveListBoxSelectionText:
       return InactiveListBoxSelectionForegroundColor();
     default:
       break;
@@ -835,6 +649,22 @@ Color LayoutTheme::TapHighlightColor() {
 void LayoutTheme::SetCustomFocusRingColor(const Color& c) {
   custom_focus_ring_color_ = c;
   has_custom_focus_ring_color_ = true;
+}
+
+bool LayoutTheme::IsFocusRingOutset() const {
+  return is_focus_ring_outset_;
+}
+
+void LayoutTheme::SetIsFocusRingOutset(bool is_outset) {
+  is_focus_ring_outset_ = is_outset;
+}
+
+float LayoutTheme::MinimumStrokeWidthForFocusRing() const {
+  return minimum_width_for_focus_ring_;
+}
+
+void LayoutTheme::SetMinimumStrokeWidthForFocusRing(float stroke_width) {
+  minimum_width_for_focus_ring_ = stroke_width;
 }
 
 Color LayoutTheme::FocusRingColor() const {
@@ -897,9 +727,9 @@ void LayoutTheme::AdjustStyleUsingFallbackTheme(ComputedStyle& style) {
 // static
 void LayoutTheme::SetSizeIfAuto(ComputedStyle& style, const IntSize& size) {
   if (style.Width().IsIntrinsicOrAuto())
-    style.SetWidth(Length(size.Width(), kFixed));
+    style.SetWidth(Length::Fixed(size.Width()));
   if (style.Height().IsIntrinsicOrAuto())
-    style.SetHeight(Length(size.Height(), kFixed));
+    style.SetHeight(Length::Fixed(size.Height()));
 }
 
 // static
@@ -924,8 +754,8 @@ void LayoutTheme::SetMinimumSize(ComputedStyle& style,
 // static
 void LayoutTheme::SetMinimumSizeIfAuto(ComputedStyle& style,
                                        const IntSize& size) {
-  LengthSize length_size(Length(size.Width(), kFixed),
-                         Length(size.Height(), kFixed));
+  LengthSize length_size(Length::Fixed(size.Width()),
+                         Length::Fixed(size.Height()));
   SetMinimumSize(style, &length_size);
 }
 
@@ -975,6 +805,66 @@ void LayoutTheme::AdjustRadioStyleUsingFallbackTheme(
   // box and turns off the Windows XP theme)
   // for now, we will not honor it.
   style.ResetBorder();
+}
+
+Color LayoutTheme::RootElementColor(ColorScheme color_scheme) const {
+  if (color_scheme == ColorScheme::kDark)
+    return Color::kWhite;
+  return ComputedStyleInitialValues::InitialColor();
+}
+
+LengthBox LayoutTheme::ControlPadding(ControlPart part,
+                                      const FontDescription&,
+                                      const Length& zoomed_box_top,
+                                      const Length& zoomed_box_right,
+                                      const Length& zoomed_box_bottom,
+                                      const Length& zoomed_box_left,
+                                      float) const {
+  switch (part) {
+    case kMenulistPart:
+    case kMenulistButtonPart:
+    case kCheckboxPart:
+    case kRadioPart:
+      return LengthBox(0);
+    default:
+      return LengthBox(zoomed_box_top, zoomed_box_right, zoomed_box_bottom,
+                       zoomed_box_left);
+  }
+}
+
+LengthBox LayoutTheme::ControlBorder(ControlPart part,
+                                     const FontDescription&,
+                                     const LengthBox& zoomed_box,
+                                     float) const {
+  switch (part) {
+    case kPushButtonPart:
+    case kMenulistPart:
+    case kSearchFieldPart:
+    case kCheckboxPart:
+    case kRadioPart:
+      return LengthBox(0);
+    default:
+      return zoomed_box;
+  }
+}
+
+void LayoutTheme::AdjustControlPartStyle(ComputedStyle& style) {
+  // Call the appropriate style adjustment method based off the appearance
+  // value.
+  switch (style.Appearance()) {
+    case kCheckboxPart:
+      return AdjustCheckboxStyle(style);
+    case kRadioPart:
+      return AdjustRadioStyle(style);
+    case kPushButtonPart:
+    case kSquareButtonPart:
+    case kButtonPart:
+      return AdjustButtonStyle(style);
+    case kInnerSpinButtonPart:
+      return AdjustInnerSpinButtonStyle(style);
+    default:
+      break;
+  }
 }
 
 }  // namespace blink

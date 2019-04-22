@@ -53,7 +53,7 @@ class ViewAXPlatformNodeDelegateWinTest : public ViewsTestBase {
   void GetIAccessible2InterfaceForView(View* view, IAccessible2_2** result) {
     ComPtr<IAccessible> view_accessible(view->GetNativeViewAccessible());
     ComPtr<IServiceProvider> service_provider;
-    ASSERT_EQ(S_OK, view_accessible.CopyTo(service_provider.GetAddressOf()));
+    ASSERT_EQ(S_OK, view_accessible.As(&service_provider));
     ASSERT_EQ(S_OK, service_provider->QueryService(IID_IAccessible2_2, result));
   }
 };
@@ -75,31 +75,29 @@ TEST_F(ViewAXPlatformNodeDelegateWinTest, TextfieldAccessibility) {
   ComPtr<IAccessible> content_accessible(content->GetNativeViewAccessible());
   LONG child_count = 0;
   ASSERT_EQ(S_OK, content_accessible->get_accChildCount(&child_count));
-  ASSERT_EQ(1L, child_count);
+  EXPECT_EQ(1, child_count);
 
   ComPtr<IDispatch> textfield_dispatch;
   ComPtr<IAccessible> textfield_accessible;
   ScopedVariant child_index(1);
-  ASSERT_EQ(S_OK, content_accessible->get_accChild(
-                      child_index, textfield_dispatch.GetAddressOf()));
   ASSERT_EQ(S_OK,
-            textfield_dispatch.CopyTo(textfield_accessible.GetAddressOf()));
+            content_accessible->get_accChild(child_index, &textfield_dispatch));
+  ASSERT_EQ(S_OK, textfield_dispatch.As(&textfield_accessible));
 
   ScopedBstr name;
   ScopedVariant childid_self(CHILDID_SELF);
   ASSERT_EQ(S_OK,
             textfield_accessible->get_accName(childid_self, name.Receive()));
-  ASSERT_STREQ(L"Name", name);
+  EXPECT_STREQ(L"Name", static_cast<BSTR>(name));
 
   ScopedBstr value;
   ASSERT_EQ(S_OK,
             textfield_accessible->get_accValue(childid_self, value.Receive()));
-  ASSERT_STREQ(L"Value", value);
+  EXPECT_STREQ(L"Value", static_cast<BSTR>(value));
 
   ScopedBstr new_value(L"New value");
   ASSERT_EQ(S_OK, textfield_accessible->put_accValue(childid_self, new_value));
-
-  ASSERT_STREQ(L"New value", textfield->text().c_str());
+  EXPECT_STREQ(L"New value", textfield->text().c_str());
 }
 
 TEST_F(ViewAXPlatformNodeDelegateWinTest, TextfieldAssociatedLabel) {
@@ -125,10 +123,9 @@ TEST_F(ViewAXPlatformNodeDelegateWinTest, TextfieldAssociatedLabel) {
   ComPtr<IDispatch> textfield_dispatch;
   ComPtr<IAccessible> textfield_accessible;
   ScopedVariant child_index(2);
-  ASSERT_EQ(S_OK, content_accessible->get_accChild(
-                      child_index, textfield_dispatch.GetAddressOf()));
   ASSERT_EQ(S_OK,
-            textfield_dispatch.CopyTo(textfield_accessible.GetAddressOf()));
+            content_accessible->get_accChild(child_index, &textfield_dispatch));
+  ASSERT_EQ(S_OK, textfield_dispatch.As(&textfield_accessible));
 
   ScopedBstr name;
   ScopedVariant childid_self(CHILDID_SELF);
@@ -137,7 +134,7 @@ TEST_F(ViewAXPlatformNodeDelegateWinTest, TextfieldAssociatedLabel) {
   ASSERT_STREQ(L"Label", name);
 
   ComPtr<IAccessible2_2> textfield_ia2;
-  EXPECT_EQ(S_OK, textfield_accessible.CopyTo(textfield_ia2.GetAddressOf()));
+  EXPECT_EQ(S_OK, textfield_accessible.As(&textfield_ia2));
   ScopedBstr type(IA2_RELATION_LABELLED_BY);
   IUnknown** targets;
   LONG n_targets;
@@ -146,7 +143,7 @@ TEST_F(ViewAXPlatformNodeDelegateWinTest, TextfieldAssociatedLabel) {
   ASSERT_EQ(1, n_targets);
   ComPtr<IUnknown> label_unknown(targets[0]);
   ComPtr<IAccessible> label_accessible;
-  ASSERT_EQ(S_OK, label_unknown.CopyTo(label_accessible.GetAddressOf()));
+  ASSERT_EQ(S_OK, label_unknown.As(&label_accessible));
   ScopedVariant role;
   EXPECT_EQ(S_OK, label_accessible->get_accRole(childid_self, role.Receive()));
   EXPECT_EQ(ROLE_SYSTEM_STATICTEXT, V_I4(role.ptr()));
@@ -159,16 +156,16 @@ class ViewAXPlatformNodeDelegateWinTestWithBoolChildFlag
     : public ViewAXPlatformNodeDelegateWinTest,
       public testing::WithParamInterface<bool> {
  public:
-  ViewAXPlatformNodeDelegateWinTestWithBoolChildFlag() {}
-  ~ViewAXPlatformNodeDelegateWinTestWithBoolChildFlag() override {}
+  ViewAXPlatformNodeDelegateWinTestWithBoolChildFlag() = default;
+  ~ViewAXPlatformNodeDelegateWinTestWithBoolChildFlag() override = default;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ViewAXPlatformNodeDelegateWinTestWithBoolChildFlag);
 };
 
-INSTANTIATE_TEST_CASE_P(,
-                        ViewAXPlatformNodeDelegateWinTestWithBoolChildFlag,
-                        testing::Bool());
+INSTANTIATE_TEST_SUITE_P(,
+                         ViewAXPlatformNodeDelegateWinTestWithBoolChildFlag,
+                         testing::Bool());
 
 TEST_P(ViewAXPlatformNodeDelegateWinTestWithBoolChildFlag, AuraChildWidgets) {
   // Create the parent widget.
@@ -223,10 +220,9 @@ TEST_P(ViewAXPlatformNodeDelegateWinTestWithBoolChildFlag, AuraChildWidgets) {
   ComPtr<IDispatch> child_widget_dispatch;
   ComPtr<IAccessible> child_widget_accessible;
   ScopedVariant child_index_2(2);
-  ASSERT_EQ(S_OK, root_view_accessible->get_accChild(
-                      child_index_2, child_widget_dispatch.GetAddressOf()));
-  ASSERT_EQ(S_OK, child_widget_dispatch.CopyTo(
-                      child_widget_accessible.GetAddressOf()));
+  ASSERT_EQ(S_OK, root_view_accessible->get_accChild(child_index_2,
+                                                     &child_widget_dispatch));
+  ASSERT_EQ(S_OK, child_widget_dispatch.As(&child_widget_accessible));
 
   // Check the bounds of the IAccessible for the child widget.
   // This is a sanity check to make sure we have the right object
@@ -243,9 +239,9 @@ TEST_P(ViewAXPlatformNodeDelegateWinTestWithBoolChildFlag, AuraChildWidgets) {
   ComPtr<IDispatch> child_widget_parent_dispatch;
   ComPtr<IAccessible> child_widget_parent_accessible;
   ASSERT_EQ(S_OK, child_widget_accessible->get_accParent(
-                      child_widget_parent_dispatch.GetAddressOf()));
-  ASSERT_EQ(S_OK, child_widget_parent_dispatch.CopyTo(
-                      child_widget_parent_accessible.GetAddressOf()));
+                      &child_widget_parent_dispatch));
+  ASSERT_EQ(S_OK,
+            child_widget_parent_dispatch.As(&child_widget_parent_accessible));
   EXPECT_EQ(root_view_accessible.Get(), child_widget_parent_accessible.Get());
 }
 
@@ -266,17 +262,16 @@ TEST_F(ViewAXPlatformNodeDelegateWinTest, DISABLED_RetrieveAllAlerts) {
   content->AddChildView(infobar2);
 
   View* root_view = content->parent();
-  ASSERT_EQ(NULL, root_view->parent());
+  ASSERT_EQ(nullptr, root_view->parent());
 
   ComPtr<IAccessible2_2> root_view_accessible;
-  GetIAccessible2InterfaceForView(root_view,
-                                  root_view_accessible.GetAddressOf());
+  GetIAccessible2InterfaceForView(root_view, &root_view_accessible);
 
   ComPtr<IAccessible2_2> infobar_accessible;
-  GetIAccessible2InterfaceForView(infobar, infobar_accessible.GetAddressOf());
+  GetIAccessible2InterfaceForView(infobar, &infobar_accessible);
 
   ComPtr<IAccessible2_2> infobar2_accessible;
-  GetIAccessible2InterfaceForView(infobar2, infobar2_accessible.GetAddressOf());
+  GetIAccessible2InterfaceForView(infobar2, &infobar2_accessible);
 
   // Initially, there are no alerts
   ScopedBstr alerts_bstr(L"alerts");
@@ -394,9 +389,9 @@ TEST_F(ViewAXPlatformNodeDelegateWinTest, Overrides) {
   // Get the child accessible.
   ComPtr<IDispatch> alert_dispatch;
   ComPtr<IAccessible> alert_accessible;
-  ASSERT_EQ(S_OK, content_accessible->get_accChild(
-                      child_index, alert_dispatch.GetAddressOf()));
-  ASSERT_EQ(S_OK, alert_dispatch.CopyTo(alert_accessible.GetAddressOf()));
+  ASSERT_EQ(S_OK,
+            content_accessible->get_accChild(child_index, &alert_dispatch));
+  ASSERT_EQ(S_OK, alert_dispatch.As(&alert_accessible));
 
   // Child accessible is a leaf.
   LONG child_count = 0;
@@ -404,8 +399,8 @@ TEST_F(ViewAXPlatformNodeDelegateWinTest, Overrides) {
   ASSERT_EQ(0, child_count);
 
   ComPtr<IDispatch> child_dispatch;
-  ASSERT_EQ(E_INVALIDARG, alert_accessible->get_accChild(
-                              child_index, child_dispatch.GetAddressOf()));
+  ASSERT_EQ(E_INVALIDARG,
+            alert_accessible->get_accChild(child_index, &child_dispatch));
   ASSERT_EQ(child_dispatch.Get(), nullptr);
 }
 }  // namespace test

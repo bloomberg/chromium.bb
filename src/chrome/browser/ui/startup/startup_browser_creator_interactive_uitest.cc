@@ -10,6 +10,8 @@
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_browser_main.h"
+#include "chrome/browser/chrome_browser_main_extra_parts.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sessions/session_restore.h"
@@ -17,12 +19,17 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-typedef InProcessBrowserTest StartupBrowserCreatorTest;
+#if defined(USE_AURA)
+#include "ui/aura/window.h"
+#endif
+
+using StartupBrowserCreatorTest = InProcessBrowserTest;
 
 // Chrome OS doesn't support multiprofile.
 // And BrowserWindow::IsActive() always returns false in tests on MAC.
@@ -100,3 +107,60 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, LastUsedProfileActivated) {
   EXPECT_FALSE(new_browser->window()->IsActive());
 }
 #endif  // !OS_MACOSX && !OS_CHROMEOS
+
+#if defined(USE_AURA)
+class StartupPagePrefSetterMainExtraParts : public ChromeBrowserMainExtraParts {
+ public:
+  explicit StartupPagePrefSetterMainExtraParts(const std::vector<GURL>& urls)
+      : urls_(urls) {}
+
+  // ChromeBrowserMainExtraParts:
+  void PreBrowserStart() override {
+    Profile* profile =
+        g_browser_process->profile_manager()->GetActiveUserProfile();
+
+    SessionStartupPref pref_urls(SessionStartupPref::URLS);
+    pref_urls.urls = std::move(urls_);
+    SessionStartupPref::SetStartupPref(profile, pref_urls);
+  }
+
+ private:
+  std::vector<GURL> urls_;
+  DISALLOW_COPY_AND_ASSIGN(StartupPagePrefSetterMainExtraParts);
+};
+
+class StartupPageTest : public InProcessBrowserTest {
+ public:
+  StartupPageTest() {
+    // Don't open about:blank since we want to test startup urls.
+    set_open_about_blank_on_browser_launch(false);
+  }
+  ~StartupPageTest() override = default;
+
+  // InProcessBrowserTest:
+  void CreatedBrowserMainParts(
+      content::BrowserMainParts* browser_main_parts) override {
+    const std::vector<GURL> urls = {ui_test_utils::GetTestUrl(
+        base::FilePath(FILE_PATH_LITERAL("focus")),
+        base::FilePath(FILE_PATH_LITERAL("page_with_focus.html")))};
+
+    ChromeBrowserMainParts* chrome_browser_main_parts =
+        static_cast<ChromeBrowserMainParts*>(browser_main_parts);
+    chrome_browser_main_parts->AddParts(
+        new StartupPagePrefSetterMainExtraParts(urls));
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(StartupPageTest);
+};
+
+IN_PROC_BROWSER_TEST_F(StartupPageTest, StartupPageFocus) {
+  // Browser window should be active.
+  EXPECT_TRUE(browser()->window()->IsActive());
+
+  // Focus should land in the content area.
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(contents->GetContentNativeView()->HasFocus());
+}
+#endif  // defined(USE_AURA)

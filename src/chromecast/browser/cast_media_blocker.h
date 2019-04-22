@@ -5,16 +5,23 @@
 #ifndef CHROMECAST_BROWSER_CAST_MEDIA_BLOCKER_H_
 #define CHROMECAST_BROWSER_CAST_MEDIA_BLOCKER_H_
 
+#include <vector>
+
 #include "base/macros.h"
-#include "content/public/browser/media_session_observer.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "services/media_session/public/mojom/media_session.mojom.h"
+
+namespace content {
+class MediaSession;
+}  // namespace content
 
 namespace chromecast {
 namespace shell {
 
 // This class implements a blocking mode for web applications and is used in
 // Chromecast internal code. Media is unblocked by default.
-class CastMediaBlocker : public content::MediaSessionObserver {
+class CastMediaBlocker : public media_session::mojom::MediaSessionObserver {
  public:
   explicit CastMediaBlocker(content::MediaSession* media_session);
   ~CastMediaBlocker() override;
@@ -23,9 +30,18 @@ class CastMediaBlocker : public content::MediaSessionObserver {
   // unblocked, previously suspended elements should begin playing again.
   void BlockMediaLoading(bool blocked);
 
-  // content::MediaSessionObserver implementation:
-  void MediaSessionStateChanged(bool is_controllable,
-                                bool is_suspended) override;
+  // media_session::mojom::MediaSessionObserver implementation:
+  void MediaSessionInfoChanged(
+      media_session::mojom::MediaSessionInfoPtr session_info) override;
+  void MediaSessionMetadataChanged(
+      const base::Optional<media_session::MediaMetadata>& metadata) override {}
+  void MediaSessionActionsChanged(
+      const std::vector<media_session::mojom::MediaSessionAction>& action)
+      override {}
+  void MediaSessionImagesChanged(
+      const base::flat_map<media_session::mojom::MediaSessionImageType,
+                           std::vector<media_session::MediaImage>>& images)
+      override {}
 
  protected:
   bool media_loading_blocked() const { return blocked_; }
@@ -50,6 +66,11 @@ class CastMediaBlocker : public content::MediaSessionObserver {
   // suspended. These variables cache arguments from MediaSessionStateChanged().
   bool suspended_;
   bool controllable_;
+
+  content::MediaSession* const media_session_;
+
+  mojo::Binding<media_session::mojom::MediaSessionObserver> observer_binding_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(CastMediaBlocker);
 };

@@ -8,6 +8,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
@@ -15,9 +16,11 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "build/build_config.h"
+#include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/gpu/context_lost_observer.h"
 #include "components/viz/common/gpu/context_lost_reason.h"
 #include "components/viz/common/resources/platform_color.h"
+#include "components/viz/common/viz_utils.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
@@ -39,7 +42,9 @@ namespace viz {
 
 namespace {
 
-gpu::ContextCreationAttribs CreateAttributes(bool requires_alpha_channel) {
+gpu::ContextCreationAttribs CreateAttributes(
+    bool requires_alpha_channel,
+    const gfx::ColorSpace& color_space) {
   gpu::ContextCreationAttribs attributes;
   attributes.alpha_size = requires_alpha_channel ? 8 : -1;
   attributes.depth_size = 0;
@@ -60,12 +65,16 @@ gpu::ContextCreationAttribs CreateAttributes(bool requires_alpha_channel) {
   attributes.lose_context_when_out_of_memory = true;
 
 #if defined(OS_ANDROID)
-  // TODO(cblume): We should add wide gamut code here, setting
-  // attributes.color_space.
+  if (color_space == gfx::ColorSpace::CreateSRGB()) {
+    attributes.color_space = gpu::COLOR_SPACE_SRGB;
+  } else if (color_space == gfx::ColorSpace::CreateDisplayP3D65()) {
+    attributes.color_space = gpu::COLOR_SPACE_DISPLAY_P3;
+  } else {
+    // The browser only sends the above two color spaces.
+    NOTREACHED();
+  }
 
-  if (requires_alpha_channel) {
-    attributes.alpha_size = 8;
-  } else if (base::SysInfo::AmountOfPhysicalMemoryMB() <= 512) {
+  if (!requires_alpha_channel && PreferRGB565ResourcesForDisplay()) {
     // See compositor_impl_android.cc for more information about this.
     // It is inside GetCompositorContextAttributes().
     attributes.alpha_size = 0;
@@ -84,20 +93,41 @@ void UmaRecordContextLost(ContextLostReason reason) {
   UMA_HISTOGRAM_ENUMERATION("GPU.ContextLost.DisplayCompositor", reason);
 }
 
+gfx::ColorSpace ColorSpaceForRendererSettings(
+    const RendererSettings& renderer_settings) {
+#if defined(OS_ANDROID)
+  return renderer_settings.color_space;
+#else
+  return gfx::ColorSpace();
+#endif
+}
+
+gpu::SharedMemoryLimits SharedMemoryLimitsForRendererSettings(
+    const RendererSettings& renderer_settings) {
+#if defined(OS_ANDROID)
+  return gpu::SharedMemoryLimits::ForDisplayCompositor(
+      renderer_settings.initial_screen_size);
+#else
+  return gpu::SharedMemoryLimits::ForDisplayCompositor();
+#endif
+}
+
 }  // namespace
 
 VizProcessContextProvider::VizProcessContextProvider(
-    scoped_refptr<gpu::CommandBufferTaskExecutor> task_executor,
+    gpu::CommandBufferTaskExecutor* task_executor,
     gpu::SurfaceHandle surface_handle,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     gpu::ImageFactory* image_factory,
     gpu::GpuChannelManagerDelegate* gpu_channel_manager_delegate,
-    const gpu::SharedMemoryLimits& limits,
-    bool requires_alpha_channel)
-    : attributes_(CreateAttributes(requires_alpha_channel)) {
+    const RendererSettings& renderer_settings)
+    : attributes_(
+          CreateAttributes(renderer_settings.requires_alpha_channel,
+                           ColorSpaceForRendererSettings(renderer_settings))) {
   InitializeContext(std::move(task_executor), surface_handle,
                     gpu_memory_buffer_manager, image_factory,
-                    gpu_channel_manager_delegate, limits);
+                    gpu_channel_manager_delegate,
+                    SharedMemoryLimitsForRendererSettings(renderer_settings));
 
   if (context_result_ == gpu::ContextResult::kSuccess) {
     // |gles2_implementation_| is owned here so bind an unretained pointer or
@@ -201,7 +231,7 @@ uint32_t VizProcessContextProvider::GetCopyTextureInternalFormat() {
 }
 
 void VizProcessContextProvider::InitializeContext(
-    scoped_refptr<gpu::CommandBufferTaskExecutor> task_executor,
+    gpu::CommandBufferTaskExecutor* task_executor,
     gpu::SurfaceHandle surface_handle,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     gpu::ImageFactory* image_factory,
@@ -209,8 +239,9 @@ void VizProcessContextProvider::InitializeContext(
     const gpu::SharedMemoryLimits& mem_limits) {
   const bool is_offscreen = surface_handle == gpu::kNullSurfaceHandle;
 
-  command_buffer_ =
-      std::make_unique<gpu::InProcessCommandBuffer>(std::move(task_executor));
+  command_buffer_ = std::make_unique<gpu::InProcessCommandBuffer>(
+      task_executor,
+      GURL("chrome://gpu/VizProcessContextProvider::InitializeContext"));
   context_result_ = command_buffer_->Initialize(
       /*surface=*/nullptr, is_offscreen, surface_handle, attributes_,
       /*share_command_buffer=*/nullptr, gpu_memory_buffer_manager,
@@ -248,6 +279,10 @@ void VizProcessContextProvider::InitializeContext(
 
   cache_controller_ = std::make_unique<ContextCacheController>(
       gles2_implementation_.get(), base::ThreadTaskRunnerHandle::Get());
+
+  // TraceEndCHROMIUM is implicit when the context is destroyed
+  gles2_implementation_->TraceBeginCHROMIUM("VizCompositor",
+                                            "DisplayCompositor");
 }
 
 void VizProcessContextProvider::OnContextLost() {

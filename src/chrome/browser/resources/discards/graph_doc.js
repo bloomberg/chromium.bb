@@ -2,6 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Target y position for page nodes.
+const kPageNodesTargetY = 20;
+
+// Range occupied by page nodes at the top of the graph view.
+const kPageNodesYRange = 100;
+
+// Range occupied by process nodes at the bottom of the graph view.
+const kProcessNodesYRange = 150;
+
+// Target y position for frame nodes.
+const kFrameNodesTargetY = kPageNodesYRange + 50;
+
+// Range that frame nodes cannot enter at the top/bottom of the graph view.
+const kFrameNodesTopMargin = kPageNodesYRange;
+const kFrameNodesBottomMargin = kProcessNodesYRange + 50;
 
 /** @implements {d3.ForceNode} */
 class GraphNode {
@@ -24,17 +39,33 @@ class GraphNode {
   }
 
   /**
-   * @param {number} height
+   * @param {number} graph_height: Height of the graph view (svg).
    * @return {number}
    */
-  yPosition(height) {
-    // By default, nodes are biased mildly to the center of the graph.
-    return height / 2;
+  targetYPosition(graph_height) {
+    return 0;
   }
 
-  /** @return {number} */
-  yStrength() {
+  /**
+   * @return {number}: The strength of the force that pulls the node towards
+   *                    its target y position.
+   */
+  targetYPositionStrength() {
     return 0.1;
+  }
+
+  /**
+   * @param {number} graph_height: Height of the graph view.
+   * @return {!Array<number>}
+   */
+  allowedYRange(graph_height) {
+    // By default, there is no hard constraint on the y position of a node.
+    return [-Infinity, Infinity];
+  }
+
+  /** @return {number}: The strength of the repulsion force with other nodes. */
+  manyBodyStrength() {
+    return -200;
   }
 
   /** @return {!Array<number>} */
@@ -48,21 +79,32 @@ class PageNode extends GraphNode {
   constructor(page) {
     super(page.id);
     this.page = page;
+    this.y = kPageNodesTargetY;
   }
 
   /** override */
   get title() {
-    return this.page.mainFrameUrl;
+    return this.page.mainFrameUrl.length > 0 ? this.page.mainFrameUrl : 'Page';
   }
 
   /** override */
-  yPosition(height) {
-    return 30;
+  targetYPosition(graph_height) {
+    return kPageNodesTargetY;
   }
 
   /** @override */
-  yStrength() {
-    return 1;
+  targetYPositionStrength() {
+    return 10;
+  }
+
+  /** override */
+  allowedYRange(graph_height) {
+    return [0, kPageNodesYRange];
+  }
+
+  /** override */
+  manyBodyStrength() {
+    return -600;
   }
 
   /** override */
@@ -80,7 +122,17 @@ class FrameNode extends GraphNode {
 
   /** override */
   get title() {
-    return 'Frame';
+    return this.frame.url.length > 0 ? this.frame.url : 'Frame';
+  }
+
+  /** override */
+  targetYPosition(graph_height) {
+    return kFrameNodesTargetY;
+  }
+
+  /** override */
+  allowedYRange(graph_height) {
+    return [kFrameNodesTopMargin, graph_height - kFrameNodesBottomMargin];
   }
 
   /** override */
@@ -98,18 +150,28 @@ class ProcessNode extends GraphNode {
   }
 
   /** override */
-  yPosition(height) {
-    return height - 30;
-  }
-
-  /** @return {number} */
-  yStrength() {
-    return 1;
+  get title() {
+    return `PID: ${this.process.pid.pid}`;
   }
 
   /** override */
-  get title() {
-    return `PID: ${this.process.pid.pid}`;
+  targetYPosition(graph_height) {
+    return graph_height - (kProcessNodesYRange / 2);
+  }
+
+  /** @return {number} */
+  targetYPositionStrength() {
+    return 10;
+  }
+
+  /** override */
+  allowedYRange(graph_height) {
+    return [graph_height - kProcessNodesYRange, graph_height];
+  }
+
+  /** override */
+  manyBodyStrength() {
+    return -600;
   }
 }
 
@@ -172,7 +234,13 @@ class Graph {
 
     const linkForce = d3.forceLink().id(d => d.id);
     simulation.force('link', linkForce);
-    simulation.force('charge', d3.forceManyBody());
+
+    // Sets the repulsion force between nodes (positive number is attraction,
+    // negative number is repulsion).
+    simulation.force(
+        'charge',
+        d3.forceManyBody().strength(this.getManyBodyStrength_.bind(this)));
+
     this.simulation_ = simulation;
 
     // Create the <g> elements that host nodes and links.
@@ -249,14 +317,15 @@ class Graph {
 
   /** @private */
   onTick_() {
+    const circles = this.nodeGroup_.selectAll('circle');
+    circles.attr('cx', this.getClampedXPosition_.bind(this))
+        .attr('cy', this.getClampedYPosition_.bind(this));
+
     const lines = this.linkGroup_.selectAll('line');
     lines.attr('x1', d => d.source.x)
         .attr('y1', d => d.source.y)
         .attr('x2', d => d.target.x)
         .attr('y2', d => d.target.y);
-
-    const circles = this.nodeGroup_.selectAll('circle');
-    circles.attr('cx', d => d.x).attr('cy', d => d.y);
   }
 
   /**
@@ -265,13 +334,15 @@ class Graph {
    * @private
    */
   addOrUpdatePage_(oldNodes, page) {
-    if (!page)
+    if (!page) {
       return;
+    }
     let node = /** @type {?PageNode} */ (oldNodes.get(page.id));
-    if (node)
+    if (node) {
       node.page = page;
-    else
+    } else {
       node = new PageNode(page);
+    }
 
     this.nodes_.set(page.id, node);
   }
@@ -282,13 +353,15 @@ class Graph {
    * @private
    */
   addOrUpdateFrame_(oldNodes, frame) {
-    if (!frame)
+    if (!frame) {
       return;
+    }
     let node = /** @type {?FrameNode} */ (oldNodes.get(frame.id));
-    if (node)
+    if (node) {
       node.frame = frame;
-    else
+    } else {
       node = new FrameNode(frame);
+    }
 
     this.nodes_.set(frame.id, node);
   }
@@ -299,13 +372,15 @@ class Graph {
    * @private
    */
   addOrUpdateProcess_(oldNodes, process) {
-    if (!process)
+    if (!process) {
       return;
+    }
     let node = /** @type {?ProcessNode} */ (oldNodes.get(process.id));
-    if (node)
+    if (node) {
       node.process = process;
-    else
+    } else {
       node = new ProcessNode(process);
+    }
 
     this.nodes_.set(process.id, node);
   }
@@ -317,8 +392,9 @@ class Graph {
    */
   maybeAddLink_(source, dst_id) {
     const target = this.nodes_.get(dst_id);
-    if (target)
+    if (target) {
       this.links_.push({source: source, target: target});
+    }
   }
 
   /**
@@ -331,12 +407,15 @@ class Graph {
     // existing nodes into it.
     const oldNodes = this.nodes_;
     this.nodes_ = new Map();
-    for (const page of graph.pages)
+    for (const page of graph.pages) {
       this.addOrUpdatePage_(oldNodes, page);
-    for (const frame of graph.frames)
+    }
+    for (const frame of graph.frames) {
       this.addOrUpdateFrame_(oldNodes, frame);
-    for (const process of graph.processes)
+    }
+    for (const process of graph.processes) {
       this.addOrUpdateProcess_(oldNodes, process);
+    }
 
 
     // Recompute the links, there's no benefit to maintaining the identity
@@ -347,8 +426,9 @@ class Graph {
     const newNodes = this.nodes_.values();
     for (const node of newNodes) {
       const linkTargets = node.linkTargets();
-      for (const linkTarget of linkTargets)
+      for (const linkTarget of linkTargets) {
         this.maybeAddLink_(node, linkTarget);
+      }
     }
 
     // TODO(siggi): this is a good place to do initial positioning of new nodes.
@@ -360,8 +440,9 @@ class Graph {
    * @private
    */
   onDragStart_(d) {
-    if (!d3.event.active)
+    if (!d3.event.active) {
       this.restartSimulation_();
+    }
     d.fx = d.x;
     d.fy = d.y;
   }
@@ -380,8 +461,9 @@ class Graph {
    * @private
    */
   onDragEnd_(d) {
-    if (!d3.event.active)
+    if (!d3.event.active) {
       this.simulation_.alphaTarget(0);
+    }
     d.fx = null;
     d.fy = null;
   }
@@ -390,16 +472,43 @@ class Graph {
    * @param {!d3.ForceNode} d The node to position.
    * @private
    */
-  getYPosition_(d) {
-    return d.yPosition(this.height_);
+  getTargetYPosition_(d) {
+    return d.targetYPosition(this.height_);
   }
 
   /**
    * @param {!d3.ForceNode} d The node to position.
    * @private
    */
-  getYStrength_(d) {
-    return d.yStrength();
+  getClampedYPosition_(d) {
+    const range = d.allowedYRange(this.height_);
+    d.y = Math.max(range[0], Math.min(d.y, range[1]));
+    return d.y;
+  }
+
+  /**
+   * @param {!d3.ForceNode} d The node to position.
+   * @private
+   */
+  getClampedXPosition_(d) {
+    d.x = Math.max(10, Math.min(d.x, this.width_ - 10));
+    return d.x;
+  }
+
+  /**
+   * @param {!d3.ForceNode} d The node to position.
+   * @private
+   */
+  getTargetYPositionStrength_(d) {
+    return d.targetYPositionStrength();
+  }
+
+  /**
+   * @param {!d3.ForceNode} d The node to position.
+   * @private
+   */
+  getManyBodyStrength_(d) {
+    return d.manyBodyStrength();
   }
 
   /** @private */
@@ -419,8 +528,8 @@ class Graph {
     // Reset both X and Y attractive forces, as they're cached.
     const xForce = d3.forceX().x(this.width_ / 2).strength(0.1);
     const yForce = d3.forceY()
-                       .y(this.getYPosition_.bind(this))
-                       .strength(this.getYStrength_.bind(this));
+                       .y(this.getTargetYPosition_.bind(this))
+                       .strength(this.getTargetYPositionStrength_.bind(this));
     this.simulation_.force('x_pos', xForce);
     this.simulation_.force('y_pos', yForce);
 

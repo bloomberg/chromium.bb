@@ -4,12 +4,20 @@
 
 #include "cc/paint/image_transfer_cache_entry.h"
 
+#include <utility>
+#include <vector>
+
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/numerics/checked_math.h"
 #include "cc/paint/paint_op_reader.h"
 #include "cc/paint/paint_op_writer.h"
+#include "third_party/skia/include/core/SkColorSpace.h"
+#include "third_party/skia/include/core/SkImage.h"
+#include "third_party/skia/include/core/SkImageInfo.h"
+#include "third_party/skia/include/core/SkPixmap.h"
 #include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/GrTypes.h"
 
 namespace cc {
 namespace {
@@ -69,7 +77,7 @@ ClientImageTransferCacheEntry::ClientImageTransferCacheEntry(
                             : 0u;
 
   // Compute and cache the size of the data.
-  base::CheckedNumeric<size_t> safe_size;
+  base::CheckedNumeric<uint32_t> safe_size;
   safe_size += PaintOpWriter::HeaderBytes();
   safe_size += sizeof(uint32_t);  // color type
   safe_size += sizeof(uint32_t);  // width
@@ -90,7 +98,7 @@ ClientImageTransferCacheEntry::~ClientImageTransferCacheEntry() = default;
 // static
 base::AtomicSequenceNumber ClientImageTransferCacheEntry::s_next_id_;
 
-size_t ClientImageTransferCacheEntry::SerializedSize() const {
+uint32_t ClientImageTransferCacheEntry::SerializedSize() const {
   return size_;
 }
 
@@ -100,6 +108,8 @@ uint32_t ClientImageTransferCacheEntry::Id() const {
 
 bool ClientImageTransferCacheEntry::Serialize(base::span<uint8_t> data) const {
   DCHECK_GE(data.size(), SerializedSize());
+  DCHECK_GT(pixmap_->width(), 0);
+  DCHECK_GT(pixmap_->height(), 0);
 
   // We don't need to populate the SerializeOptions here since the writer is
   // only used for serializing primitives.
@@ -133,6 +143,31 @@ ServiceImageTransferCacheEntry::ServiceImageTransferCacheEntry(
 ServiceImageTransferCacheEntry& ServiceImageTransferCacheEntry::operator=(
     ServiceImageTransferCacheEntry&& other) = default;
 
+bool ServiceImageTransferCacheEntry::BuildFromDecodedData(
+    GrContext* context,
+    base::span<const uint8_t> decoded_image,
+    size_t row_bytes,
+    const SkImageInfo& image_info,
+    bool needs_mips,
+    sk_sp<SkColorSpace> target_color_space) {
+  context_ = context;
+  has_mips_ = needs_mips;
+  size_ = image_info.computeByteSize(row_bytes);
+  if (size_ == SIZE_MAX)
+    return false;
+  DCHECK_LE(size_, decoded_image.size());
+
+  uint32_t width;
+  uint32_t height;
+  if (!base::CheckedNumeric<int>(image_info.width()).AssignIfValid(&width) ||
+      !base::CheckedNumeric<int>(image_info.height()).AssignIfValid(&height)) {
+    return false;
+  }
+
+  return MakeSkImage(SkPixmap(image_info, decoded_image.data(), row_bytes),
+                     width, height, target_color_space);
+}
+
 size_t ServiceImageTransferCacheEntry::CachedSize() const {
   return size_;
 }
@@ -144,10 +179,18 @@ bool ServiceImageTransferCacheEntry::Deserialize(
 
   // We don't need to populate the DeSerializeOptions here since the reader is
   // only used for de-serializing primitives.
-  PaintOp::DeserializeOptions options(nullptr, nullptr, nullptr);
+  std::vector<uint8_t> scratch_buffer;
+  PaintOp::DeserializeOptions options(nullptr, nullptr, nullptr,
+                                      &scratch_buffer);
   PaintOpReader reader(data.data(), data.size(), options);
-  SkColorType color_type;
+  SkColorType color_type = kUnknown_SkColorType;
   reader.Read(&color_type);
+
+  if (color_type == kUnknown_SkColorType ||
+      color_type == kRGB_101010x_SkColorType ||
+      color_type > kLastEnum_SkColorType)
+    return false;
+
   uint32_t width;
   reader.Read(&width);
   uint32_t height;
@@ -157,7 +200,6 @@ bool ServiceImageTransferCacheEntry::Deserialize(
   has_mips_ = needs_mips;
   size_t pixel_size;
   reader.ReadSize(&pixel_size);
-  size_ = data.size();
   sk_sp<SkColorSpace> pixmap_color_space;
   reader.Read(&pixmap_color_space);
   sk_sp<SkColorSpace> target_color_space;
@@ -179,23 +221,38 @@ bool ServiceImageTransferCacheEntry::Deserialize(
 
   DCHECK(SkIsAlign4(reinterpret_cast<uintptr_t>(pixel_data)));
 
+  if (width == 0 || height == 0)
+    return false;
+
+  // Match GrTexture::onGpuMemorySize so that memory traces agree.
+  auto gr_mips = has_mips_ ? GrMipMapped::kYes : GrMipMapped::kNo;
+  size_ = GrContext::ComputeTextureSize(color_type, width, height, gr_mips);
+
   // Const-cast away the "volatile" on |pixel_data|. We specifically understand
   // that a malicious caller may change our pixels under us, and are OK with
   // this as the worst case scenario is visual corruption.
   SkPixmap pixmap(image_info, const_cast<const void*>(pixel_data),
                   image_info.minRowBytes());
+  return MakeSkImage(pixmap, width, height, target_color_space);
+}
+
+bool ServiceImageTransferCacheEntry::MakeSkImage(
+    const SkPixmap& pixmap,
+    uint32_t width,
+    uint32_t height,
+    sk_sp<SkColorSpace> target_color_space) {
+  DCHECK(context_);
 
   // Depending on whether the pixmap will fit in a GPU texture, either create
   // a software or GPU SkImage.
-  uint32_t max_size = context->maxTextureSize();
+  uint32_t max_size = context_->maxTextureSize();
   fits_on_gpu_ = width <= max_size && height <= max_size;
   if (fits_on_gpu_) {
     sk_sp<SkImage> image = SkImage::MakeFromRaster(pixmap, nullptr, nullptr);
     if (!image)
       return false;
-    image_ =
-        MakeTextureImage(context, std::move(image), target_color_space,
-                         needs_mips ? GrMipMapped::kYes : GrMipMapped::kNo);
+    image_ = MakeTextureImage(context_, std::move(image), target_color_space,
+                              has_mips_ ? GrMipMapped::kYes : GrMipMapped::kNo);
   } else {
     sk_sp<SkImage> original =
         SkImage::MakeFromRaster(pixmap, [](const void*, void*) {}, nullptr);

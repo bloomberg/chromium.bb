@@ -7,16 +7,18 @@
 #include <memory>
 
 #include "base/command_line.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "content/browser/media/session/media_session_player_observer.h"
 #include "content/browser/media/session/mock_media_session_player_observer.h"
+#include "content/browser/media/session/mock_media_session_service_impl.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_service_manager_context.h"
 #include "media/base/media_content_type.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "services/media_session/public/cpp/switches.h"
+#include "services/media_session/public/cpp/features.h"
 #include "services/media_session/public/cpp/test/audio_focus_test_util.h"
 #include "services/media_session/public/cpp/test/mock_media_session.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
@@ -74,15 +76,23 @@ class MockAudioFocusDelegate : public AudioFocusDelegate {
 
 class MediaSessionImplTest : public RenderViewHostTestHarness {
  public:
-  MediaSessionImplTest() = default;
+  MediaSessionImplTest() {
+    default_actions_.insert(media_session::mojom::MediaSessionAction::kPlay);
+    default_actions_.insert(media_session::mojom::MediaSessionAction::kPause);
+    default_actions_.insert(media_session::mojom::MediaSessionAction::kStop);
+  }
 
   void SetUp() override {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        media_session::switches::kEnableAudioFocus);
+    scoped_feature_list_.InitWithFeatures(
+        {media_session::features::kMediaSessionService,
+         media_session::features::kAudioFocusEnforcement},
+        {});
 
     RenderViewHostTestHarness::SetUp();
 
-    player_observer_.reset(new MockMediaSessionPlayerObserver());
+    player_observer_.reset(new MockMediaSessionPlayerObserver(main_rfh()));
+    mock_media_session_service_.reset(
+        new testing::NiceMock<MockMediaSessionServiceImpl>(main_rfh()));
 
     // Connect to the Media Session service and bind |audio_focus_ptr_| to it.
     service_manager_context_ = std::make_unique<TestServiceManagerContext>();
@@ -93,6 +103,7 @@ class MediaSessionImplTest : public RenderViewHostTestHarness {
   }
 
   void TearDown() override {
+    mock_media_session_service_.reset();
     service_manager_context_.reset();
 
     RenderViewHostTestHarness::TearDown();
@@ -115,8 +126,12 @@ class MediaSessionImplTest : public RenderViewHostTestHarness {
     return media_session::test::GetMediaSessionInfoSync(session)->state;
   }
 
-  bool HasMojoObservers(MediaSessionImpl* session) {
-    return !session->mojo_observers_.empty();
+  void ClearObservers(MediaSessionImpl* session) {
+    session->observers_.CloseAll();
+  }
+
+  bool HasObservers(MediaSessionImpl* session) {
+    return !session->observers_.empty();
   }
 
   void FlushForTesting(MediaSessionImpl* session) {
@@ -142,7 +157,32 @@ class MediaSessionImplTest : public RenderViewHostTestHarness {
     session->SetDelegateForTests(base::WrapUnique(delegate));
   }
 
+  MockMediaSessionServiceImpl& mock_media_session_service() const {
+    return *mock_media_session_service_.get();
+  }
+
+  MediaSessionImpl* GetMediaSession() {
+    return MediaSessionImpl::Get(web_contents());
+  }
+
+  void StartNewPlayer() {
+    GetMediaSession()->AddPlayer(player_observer_.get(),
+                                 player_observer_->StartNewPlayer(),
+                                 media::MediaContentType::Persistent);
+  }
+
+  const std::set<media_session::mojom::MediaSessionAction>& default_actions()
+      const {
+    return default_actions_;
+  }
+
  private:
+  std::set<media_session::mojom::MediaSessionAction> default_actions_;
+
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  std::unique_ptr<MockMediaSessionServiceImpl> mock_media_session_service_;
+
   media_session::mojom::AudioFocusManagerPtr audio_focus_ptr_;
 
   std::unique_ptr<TestServiceManagerContext> service_manager_context_;
@@ -151,160 +191,291 @@ class MediaSessionImplTest : public RenderViewHostTestHarness {
 };
 
 TEST_F(MediaSessionImplTest, SessionInfoState) {
-  std::unique_ptr<WebContents> web_contents(CreateTestWebContents());
-  MediaSessionImpl* media_session = MediaSessionImpl::Get(web_contents.get());
-  EXPECT_EQ(MediaSessionInfo::SessionState::kInactive, GetState(media_session));
+  EXPECT_EQ(MediaSessionInfo::SessionState::kInactive,
+            GetState(GetMediaSession()));
 
   {
-    MockMediaSessionMojoObserver observer(*media_session);
-    RequestAudioFocus(media_session, AudioFocusType::kGain);
-    FlushForTesting(media_session);
+    MockMediaSessionMojoObserver observer(*GetMediaSession());
+    RequestAudioFocus(GetMediaSession(), AudioFocusType::kGain);
+    FlushForTesting(GetMediaSession());
     observer.WaitForState(MediaSessionInfo::SessionState::kActive);
 
     EXPECT_TRUE(observer.session_info().Equals(
-        media_session::test::GetMediaSessionInfoSync(media_session)));
+        media_session::test::GetMediaSessionInfoSync(GetMediaSession())));
   }
 
   {
-    MockMediaSessionMojoObserver observer(*media_session);
-    media_session->StartDucking();
-    FlushForTesting(media_session);
+    MockMediaSessionMojoObserver observer(*GetMediaSession());
+    GetMediaSession()->StartDucking();
+    FlushForTesting(GetMediaSession());
     observer.WaitForState(MediaSessionInfo::SessionState::kDucking);
 
     EXPECT_TRUE(observer.session_info().Equals(
-        media_session::test::GetMediaSessionInfoSync(media_session)));
+        media_session::test::GetMediaSessionInfoSync(GetMediaSession())));
   }
 
   {
-    MockMediaSessionMojoObserver observer(*media_session);
-    media_session->StopDucking();
-    FlushForTesting(media_session);
+    MockMediaSessionMojoObserver observer(*GetMediaSession());
+    GetMediaSession()->StopDucking();
+    FlushForTesting(GetMediaSession());
     observer.WaitForState(MediaSessionInfo::SessionState::kActive);
 
     EXPECT_TRUE(observer.session_info().Equals(
-        media_session::test::GetMediaSessionInfoSync(media_session)));
+        media_session::test::GetMediaSessionInfoSync(GetMediaSession())));
   }
 
   {
-    MockMediaSessionMojoObserver observer(*media_session);
-    media_session->Suspend(MediaSession::SuspendType::kSystem);
-    FlushForTesting(media_session);
+    MockMediaSessionMojoObserver observer(*GetMediaSession());
+    GetMediaSession()->Suspend(MediaSession::SuspendType::kSystem);
+    FlushForTesting(GetMediaSession());
     observer.WaitForState(MediaSessionInfo::SessionState::kSuspended);
 
     EXPECT_TRUE(observer.session_info().Equals(
-        media_session::test::GetMediaSessionInfoSync(media_session)));
+        media_session::test::GetMediaSessionInfoSync(GetMediaSession())));
   }
 
   {
-    MockMediaSessionMojoObserver observer(*media_session);
-    media_session->Resume(MediaSession::SuspendType::kSystem);
-    FlushForTesting(media_session);
+    MockMediaSessionMojoObserver observer(*GetMediaSession());
+    GetMediaSession()->Resume(MediaSession::SuspendType::kSystem);
+    FlushForTesting(GetMediaSession());
     observer.WaitForState(MediaSessionInfo::SessionState::kActive);
 
     EXPECT_TRUE(observer.session_info().Equals(
-        media_session::test::GetMediaSessionInfoSync(media_session)));
+        media_session::test::GetMediaSessionInfoSync(GetMediaSession())));
   }
 
   {
-    MockMediaSessionMojoObserver observer(*media_session);
-    AbandonAudioFocus(media_session);
-    FlushForTesting(media_session);
+    MockMediaSessionMojoObserver observer(*GetMediaSession());
+    AbandonAudioFocus(GetMediaSession());
+    FlushForTesting(GetMediaSession());
     observer.WaitForState(MediaSessionInfo::SessionState::kInactive);
 
     EXPECT_TRUE(observer.session_info().Equals(
-        media_session::test::GetMediaSessionInfoSync(media_session)));
+        media_session::test::GetMediaSessionInfoSync(GetMediaSession())));
   }
 }
 
 TEST_F(MediaSessionImplTest, NotifyDelegateOnStateChange) {
-  std::unique_ptr<WebContents> web_contents(CreateTestWebContents());
-  MediaSessionImpl* media_session = MediaSessionImpl::Get(web_contents.get());
   MockAudioFocusDelegate* delegate = new MockAudioFocusDelegate();
-  SetDelegateForTests(media_session, delegate);
+  SetDelegateForTests(GetMediaSession(), delegate);
 
-  RequestAudioFocus(media_session, AudioFocusType::kGain);
+  RequestAudioFocus(GetMediaSession(), AudioFocusType::kGain);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(MediaSessionInfo::SessionState::kActive, delegate->GetState());
 
-  media_session->StartDucking();
+  GetMediaSession()->StartDucking();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(MediaSessionInfo::SessionState::kDucking, delegate->GetState());
 
-  media_session->StopDucking();
+  GetMediaSession()->StopDucking();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(MediaSessionInfo::SessionState::kActive, delegate->GetState());
 
-  media_session->Suspend(MediaSession::SuspendType::kSystem);
+  GetMediaSession()->Suspend(MediaSession::SuspendType::kSystem);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(MediaSessionInfo::SessionState::kSuspended, delegate->GetState());
 
-  media_session->Resume(MediaSession::SuspendType::kSystem);
+  GetMediaSession()->Resume(MediaSession::SuspendType::kSystem);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(MediaSessionInfo::SessionState::kActive, delegate->GetState());
 
-  AbandonAudioFocus(media_session);
+  AbandonAudioFocus(GetMediaSession());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(MediaSessionInfo::SessionState::kInactive, delegate->GetState());
 }
 
 TEST_F(MediaSessionImplTest, PepperForcesDuckAndRequestsFocus) {
-  std::unique_ptr<WebContents> web_contents(CreateTestWebContents());
-  MediaSessionImpl* media_session = MediaSessionImpl::Get(web_contents.get());
-
   int player_id = player_observer_->StartNewPlayer();
 
   {
-    MockMediaSessionMojoObserver observer(*media_session);
-    media_session->AddPlayer(player_observer_.get(), player_id,
-                             media::MediaContentType::Pepper);
+    MockMediaSessionMojoObserver observer(*GetMediaSession());
+    GetMediaSession()->AddPlayer(player_observer_.get(), player_id,
+                                 media::MediaContentType::Pepper);
     observer.WaitForState(MediaSessionInfo::SessionState::kActive);
   }
 
-  EXPECT_TRUE(GetForceDuck(media_session));
+  EXPECT_TRUE(GetForceDuck(GetMediaSession()));
 
   {
-    MockMediaSessionMojoObserver observer(*media_session);
-    media_session->RemovePlayer(player_observer_.get(), player_id);
+    MockMediaSessionMojoObserver observer(*GetMediaSession());
+    GetMediaSession()->RemovePlayer(player_observer_.get(), player_id);
     observer.WaitForState(MediaSessionInfo::SessionState::kInactive);
   }
 
-  EXPECT_FALSE(GetForceDuck(media_session));
+  EXPECT_FALSE(GetForceDuck(GetMediaSession()));
 }
 
-TEST_F(MediaSessionImplTest, RegisterMojoObserver) {
-  std::unique_ptr<WebContents> web_contents(CreateTestWebContents());
-  MediaSessionImpl* media_session = MediaSessionImpl::Get(web_contents.get());
+TEST_F(MediaSessionImplTest, RegisterObserver) {
+  // There is no way to get the number of mojo observers so we should just
+  // remove them all and check if the mojo observers interface ptr set is
+  // empty or not.
+  ClearObservers(GetMediaSession());
+  EXPECT_FALSE(HasObservers(GetMediaSession()));
 
-  EXPECT_FALSE(HasMojoObservers(media_session));
+  MockMediaSessionMojoObserver observer(*GetMediaSession());
+  FlushForTesting(GetMediaSession());
 
-  MockMediaSessionMojoObserver observer(*media_session);
-  FlushForTesting(media_session);
-
-  EXPECT_TRUE(HasMojoObservers(media_session));
+  EXPECT_TRUE(HasObservers(GetMediaSession()));
 }
 
 TEST_F(MediaSessionImplTest, SessionInfo_PlaybackState) {
-  std::unique_ptr<WebContents> web_contents(CreateTestWebContents());
-  MediaSessionImpl* media_session = MediaSessionImpl::Get(web_contents.get());
-
   EXPECT_EQ(MediaPlaybackState::kPaused,
-            media_session::test::GetMediaSessionInfoSync(media_session)
+            media_session::test::GetMediaSessionInfoSync(GetMediaSession())
                 ->playback_state);
 
   int player_id = player_observer_->StartNewPlayer();
 
   {
-    MockMediaSessionMojoObserver observer(*media_session);
-    media_session->AddPlayer(player_observer_.get(), player_id,
-                             media::MediaContentType::Persistent);
+    MockMediaSessionMojoObserver observer(*GetMediaSession());
+    GetMediaSession()->AddPlayer(player_observer_.get(), player_id,
+                                 media::MediaContentType::Persistent);
     observer.WaitForPlaybackState(MediaPlaybackState::kPlaying);
   }
 
   {
-    MockMediaSessionMojoObserver observer(*media_session);
-    media_session->OnPlayerPaused(player_observer_.get(), player_id);
+    MockMediaSessionMojoObserver observer(*GetMediaSession());
+    GetMediaSession()->OnPlayerPaused(player_observer_.get(), player_id);
     observer.WaitForPlaybackState(MediaPlaybackState::kPaused);
   }
+}
+
+TEST_F(MediaSessionImplTest, SuspendUI) {
+  EXPECT_CALL(
+      mock_media_session_service().mock_client(),
+      DidReceiveAction(media_session::mojom::MediaSessionAction::kPause))
+      .Times(0);
+
+  StartNewPlayer();
+
+  GetMediaSession()->Suspend(MediaSession::SuspendType::kUI);
+  mock_media_session_service().FlushForTesting();
+
+  media_session::test::MockMediaSessionMojoObserver observer(
+      *GetMediaSession());
+  observer.WaitForExpectedActions(default_actions());
+}
+
+TEST_F(MediaSessionImplTest, SuspendContent_WithAction) {
+  EXPECT_CALL(
+      mock_media_session_service().mock_client(),
+      DidReceiveAction(media_session::mojom::MediaSessionAction::kPause))
+      .Times(0);
+
+  StartNewPlayer();
+  mock_media_session_service().EnableAction(
+      media_session::mojom::MediaSessionAction::kPause);
+
+  GetMediaSession()->Suspend(MediaSession::SuspendType::kContent);
+  mock_media_session_service().FlushForTesting();
+
+  media_session::test::MockMediaSessionMojoObserver observer(
+      *GetMediaSession());
+  observer.WaitForExpectedActions(default_actions());
+}
+
+TEST_F(MediaSessionImplTest, SuspendSystem_WithAction) {
+  EXPECT_CALL(
+      mock_media_session_service().mock_client(),
+      DidReceiveAction(media_session::mojom::MediaSessionAction::kPause))
+      .Times(0);
+
+  StartNewPlayer();
+  mock_media_session_service().EnableAction(
+      media_session::mojom::MediaSessionAction::kPause);
+
+  GetMediaSession()->Suspend(MediaSession::SuspendType::kSystem);
+  mock_media_session_service().FlushForTesting();
+
+  media_session::test::MockMediaSessionMojoObserver observer(
+      *GetMediaSession());
+  observer.WaitForExpectedActions(default_actions());
+}
+
+TEST_F(MediaSessionImplTest, SuspendUI_WithAction) {
+  EXPECT_CALL(
+      mock_media_session_service().mock_client(),
+      DidReceiveAction(media_session::mojom::MediaSessionAction::kPause));
+
+  StartNewPlayer();
+  mock_media_session_service().EnableAction(
+      media_session::mojom::MediaSessionAction::kPause);
+
+  GetMediaSession()->Suspend(MediaSession::SuspendType::kUI);
+  mock_media_session_service().FlushForTesting();
+
+  media_session::test::MockMediaSessionMojoObserver observer(
+      *GetMediaSession());
+  observer.WaitForExpectedActions(default_actions());
+}
+
+TEST_F(MediaSessionImplTest, ResumeUI) {
+  EXPECT_CALL(mock_media_session_service().mock_client(),
+              DidReceiveAction(media_session::mojom::MediaSessionAction::kPlay))
+      .Times(0);
+
+  StartNewPlayer();
+
+  GetMediaSession()->Suspend(MediaSession::SuspendType::kSystem);
+  GetMediaSession()->Resume(MediaSession::SuspendType::kUI);
+  mock_media_session_service().FlushForTesting();
+
+  media_session::test::MockMediaSessionMojoObserver observer(
+      *GetMediaSession());
+  observer.WaitForExpectedActions(default_actions());
+}
+
+TEST_F(MediaSessionImplTest, ResumeContent_WithAction) {
+  EXPECT_CALL(mock_media_session_service().mock_client(),
+              DidReceiveAction(media_session::mojom::MediaSessionAction::kPlay))
+      .Times(0);
+
+  StartNewPlayer();
+  mock_media_session_service().EnableAction(
+      media_session::mojom::MediaSessionAction::kPlay);
+
+  GetMediaSession()->Suspend(MediaSession::SuspendType::kSystem);
+  GetMediaSession()->Resume(MediaSession::SuspendType::kContent);
+  mock_media_session_service().FlushForTesting();
+
+  media_session::test::MockMediaSessionMojoObserver observer(
+      *GetMediaSession());
+  observer.WaitForExpectedActions(default_actions());
+}
+
+TEST_F(MediaSessionImplTest, ResumeSystem_WithAction) {
+  EXPECT_CALL(mock_media_session_service().mock_client(),
+              DidReceiveAction(media_session::mojom::MediaSessionAction::kPlay))
+      .Times(0);
+
+  StartNewPlayer();
+  mock_media_session_service().EnableAction(
+      media_session::mojom::MediaSessionAction::kPlay);
+
+  GetMediaSession()->Suspend(MediaSession::SuspendType::kSystem);
+  GetMediaSession()->Resume(MediaSession::SuspendType::kSystem);
+  mock_media_session_service().FlushForTesting();
+
+  media_session::test::MockMediaSessionMojoObserver observer(
+      *GetMediaSession());
+  observer.WaitForExpectedActions(default_actions());
+}
+
+TEST_F(MediaSessionImplTest, ResumeUI_WithAction) {
+  EXPECT_CALL(
+      mock_media_session_service().mock_client(),
+      DidReceiveAction(media_session::mojom::MediaSessionAction::kPlay));
+
+  StartNewPlayer();
+  mock_media_session_service().EnableAction(
+      media_session::mojom::MediaSessionAction::kPlay);
+
+  GetMediaSession()->Suspend(MediaSession::SuspendType::kSystem);
+  GetMediaSession()->Resume(MediaSession::SuspendType::kUI);
+  mock_media_session_service().FlushForTesting();
+
+  media_session::test::MockMediaSessionMojoObserver observer(
+      *GetMediaSession());
+  observer.WaitForExpectedActions(default_actions());
 }
 
 #if !defined(OS_ANDROID)
@@ -404,59 +575,76 @@ TEST_F(MediaSessionImplTest, WebContentsDestroyed_StopsDucking) {
   }
 }
 
-TEST_F(MediaSessionImplTest, RequestAudioFocus_OnFocus_Active) {
-  std::unique_ptr<WebContents> web_contents(CreateTestWebContents());
-  MediaSessionImpl* media_session = MediaSessionImpl::Get(web_contents.get());
+#if defined(OS_MACOSX)
+
+TEST_F(MediaSessionImplTest, TabFocusDoesNotCauseAudioFocus) {
   MockAudioFocusDelegate* delegate = new MockAudioFocusDelegate();
-  SetDelegateForTests(media_session, delegate);
+  SetDelegateForTests(GetMediaSession(), delegate);
 
   {
-    MockMediaSessionMojoObserver observer(*media_session);
-    RequestAudioFocus(media_session, AudioFocusType::kGain);
-    FlushForTesting(media_session);
+    MockMediaSessionMojoObserver observer(*GetMediaSession());
+    RequestAudioFocus(GetMediaSession(), AudioFocusType::kGain);
+    FlushForTesting(GetMediaSession());
     observer.WaitForState(MediaSessionInfo::SessionState::kActive);
   }
 
   EXPECT_EQ(1, delegate->request_audio_focus_count());
-  media_session->OnWebContentsFocused(nullptr);
+  GetMediaSession()->OnWebContentsFocused(nullptr);
+  EXPECT_EQ(1, delegate->request_audio_focus_count());
+}
+
+#else  // defined(OS_MACOSX)
+
+TEST_F(MediaSessionImplTest, RequestAudioFocus_OnFocus_Active) {
+  MockAudioFocusDelegate* delegate = new MockAudioFocusDelegate();
+  SetDelegateForTests(GetMediaSession(), delegate);
+
+  {
+    MockMediaSessionMojoObserver observer(*GetMediaSession());
+    RequestAudioFocus(GetMediaSession(), AudioFocusType::kGain);
+    FlushForTesting(GetMediaSession());
+    observer.WaitForState(MediaSessionInfo::SessionState::kActive);
+  }
+
+  EXPECT_EQ(1, delegate->request_audio_focus_count());
+  GetMediaSession()->OnWebContentsFocused(nullptr);
   EXPECT_EQ(2, delegate->request_audio_focus_count());
 }
 
 TEST_F(MediaSessionImplTest, RequestAudioFocus_OnFocus_Inactive) {
-  std::unique_ptr<WebContents> web_contents(CreateTestWebContents());
-  MediaSessionImpl* media_session = MediaSessionImpl::Get(web_contents.get());
   MockAudioFocusDelegate* delegate = new MockAudioFocusDelegate();
-  SetDelegateForTests(media_session, delegate);
-  EXPECT_EQ(MediaSessionInfo::SessionState::kInactive, GetState(media_session));
+  SetDelegateForTests(GetMediaSession(), delegate);
+  EXPECT_EQ(MediaSessionInfo::SessionState::kInactive,
+            GetState(GetMediaSession()));
 
   EXPECT_EQ(0, delegate->request_audio_focus_count());
-  media_session->OnWebContentsFocused(nullptr);
+  GetMediaSession()->OnWebContentsFocused(nullptr);
   EXPECT_EQ(0, delegate->request_audio_focus_count());
 }
 
 TEST_F(MediaSessionImplTest, RequestAudioFocus_OnFocus_Suspended) {
-  std::unique_ptr<WebContents> web_contents(CreateTestWebContents());
-  MediaSessionImpl* media_session = MediaSessionImpl::Get(web_contents.get());
   MockAudioFocusDelegate* delegate = new MockAudioFocusDelegate();
-  SetDelegateForTests(media_session, delegate);
+  SetDelegateForTests(GetMediaSession(), delegate);
 
   {
-    MockMediaSessionMojoObserver observer(*media_session);
-    RequestAudioFocus(media_session, AudioFocusType::kGain);
-    FlushForTesting(media_session);
+    MockMediaSessionMojoObserver observer(*GetMediaSession());
+    RequestAudioFocus(GetMediaSession(), AudioFocusType::kGain);
+    FlushForTesting(GetMediaSession());
     observer.WaitForState(MediaSessionInfo::SessionState::kActive);
   }
 
   {
-    MockMediaSessionMojoObserver observer(*media_session);
-    media_session->Suspend(MediaSession::SuspendType::kSystem);
+    MockMediaSessionMojoObserver observer(*GetMediaSession());
+    GetMediaSession()->Suspend(MediaSession::SuspendType::kSystem);
     observer.WaitForState(MediaSessionInfo::SessionState::kSuspended);
   }
 
   EXPECT_EQ(1, delegate->request_audio_focus_count());
-  media_session->OnWebContentsFocused(nullptr);
+  GetMediaSession()->OnWebContentsFocused(nullptr);
   EXPECT_EQ(1, delegate->request_audio_focus_count());
 }
+
+#endif  // defined(OS_MACOSX)
 
 #endif  // !defined(OS_ANDROID)
 

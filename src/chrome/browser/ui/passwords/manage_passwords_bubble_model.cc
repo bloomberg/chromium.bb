@@ -21,7 +21,6 @@
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_form_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_manager_constants.h"
@@ -29,6 +28,7 @@
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/password_manager/core/common/password_manager_ui.h"
 #include "components/prefs/pref_service.h"
+#include "components/sync/driver/sync_service.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -57,7 +57,7 @@ std::vector<autofill::PasswordForm> DeepCopyForms(
 }
 
 bool IsSyncUser(Profile* profile) {
-  const browser_sync::ProfileSyncService* sync_service =
+  const syncer::SyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile);
   return password_bubble_experiment::IsSmartLockUser(sync_service);
 }
@@ -469,7 +469,7 @@ bool ManagePasswordsBubbleModel::ReplaceToShowPromotionIfNeeded() {
   if (!profile)
     return false;
   PrefService* prefs = profile->GetPrefs();
-  const browser_sync::ProfileSyncService* sync_service =
+  const syncer::SyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile);
   // Signin promotion.
   if (password_bubble_experiment::ShouldShowChromeSignInPasswordPromo(

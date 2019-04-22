@@ -7,10 +7,10 @@
 #include "cc/layers/layer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/picture_in_picture/picture_in_picture_control_info.h"
 #include "third_party/blink/public/platform/web_fullscreen_video_status.h"
 #include "third_party/blink/public/platform/web_media_player.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/html/media/html_media_test_helper.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
@@ -25,24 +25,6 @@ class HTMLVideoElementMockMediaPlayer : public EmptyWebMediaPlayer {
   MOCK_METHOD1(OnDisplayTypeChanged, void(WebMediaPlayer::DisplayType));
 };
 
-class HTMLVideoElementFrameClient : public EmptyLocalFrameClient {
- public:
-  HTMLVideoElementFrameClient(std::unique_ptr<WebMediaPlayer> player)
-      : player_(std::move(player)) {}
-
-  std::unique_ptr<WebMediaPlayer> CreateWebMediaPlayer(
-      HTMLMediaElement&,
-      const WebMediaPlayerSource&,
-      WebMediaPlayerClient* client,
-      WebLayerTreeView*) override {
-    DCHECK(player_) << " Empty injected player - already used?";
-    return std::move(player_);
-  }
-
- private:
-  std::unique_ptr<WebMediaPlayer> player_;
-};
-
 class HTMLVideoElementTest : public PageTestBase {
  public:
   void SetUp() override {
@@ -51,7 +33,7 @@ class HTMLVideoElementTest : public PageTestBase {
     media_player_ = mock_media_player.get();
 
     SetupPageWithClients(nullptr,
-                         MakeGarbageCollected<HTMLVideoElementFrameClient>(
+                         MakeGarbageCollected<test::MediaStubLocalFrameClient>(
                              std::move(mock_media_player)),
                          nullptr);
     video_ = HTMLVideoElement::Create(GetDocument());
@@ -112,16 +94,6 @@ TEST_F(HTMLVideoElementTest, PictureInPictureInterstitial_Reattach) {
   GetDocument().body()->removeChild(video());
   GetDocument().body()->appendChild(video());
   GetDocument().body()->removeChild(video());
-}
-
-TEST_F(HTMLVideoElementTest, setPictureInPictureControls) {
-  EXPECT_FALSE(video()->HasPictureInPictureCustomControls());
-
-  std::vector<PictureInPictureControlInfo> test_controls;
-  test_controls.push_back(PictureInPictureControlInfo());
-  video()->SetPictureInPictureCustomControls(test_controls);
-
-  EXPECT_TRUE(video()->HasPictureInPictureCustomControls());
 }
 
 TEST_F(HTMLVideoElementTest, EffectivelyFullscreen_DisplayType) {

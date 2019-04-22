@@ -13,15 +13,14 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/appcache/appcache_group.h"
@@ -46,6 +45,9 @@
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
+#include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 
 namespace content {
 namespace appcache_update_job_unittest {
@@ -53,12 +55,10 @@ namespace appcache_update_job_unittest {
 class AppCacheUpdateJobTest;
 
 // Values should match values used in appcache_update_job.cc.
-const base::TimeDelta kFullUpdateInterval =
-    base::TimeDelta::FromHours(24);
+const base::TimeDelta kFullUpdateInterval = base::TimeDelta::FromHours(24);
 const base::TimeDelta kMaxEvictableErrorDuration =
     base::TimeDelta::FromDays(14);
-const base::TimeDelta kOneHour =
-    base::TimeDelta::FromHours(1);
+const base::TimeDelta kOneHour = base::TimeDelta::FromHours(1);
 
 const char kManifest1Contents[] =
     "CACHE MANIFEST\n"
@@ -86,15 +86,16 @@ class MockHttpServer {
   }
 
   static net::URLRequestJob* JobFactory(
-      net::URLRequest* request, net::NetworkDelegate* network_delegate) {
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) {
     if (request->url().host() != "mockhost" &&
         request->url().host() != "cross_origin_host")
       return new net::URLRequestErrorJob(request, network_delegate, -100);
 
     std::string headers, body;
     GetMockResponse(request->url().path(), &headers, &body);
-    return new net::URLRequestTestJob(
-        request, network_delegate, headers, body, true);
+    return new net::URLRequestTestJob(request, network_delegate, headers, body,
+                                      true);
   }
 
   static void GetMockResponse(const std::string& path,
@@ -125,102 +126,109 @@ class MockHttpServer {
         "\n";
 
     if (path == "/files/missing-mime-manifest") {
-      (*headers) = std::string(ok_headers, arraysize(ok_headers));
+      (*headers) = std::string(ok_headers, base::size(ok_headers));
       (*body) = "CACHE MANIFEST\n";
     } else if (path == "/files/bad-manifest") {
-      (*headers) = std::string(manifest_headers, arraysize(manifest_headers));
+      (*headers) = std::string(manifest_headers, base::size(manifest_headers));
       (*body) = "BAD CACHE MANIFEST";
     } else if (path == "/files/empty1") {
-      (*headers) = std::string(ok_headers, arraysize(ok_headers));
+      (*headers) = std::string(ok_headers, base::size(ok_headers));
       (*body) = "";
     } else if (path == "/files/empty-file-manifest") {
-      (*headers) = std::string(manifest_headers, arraysize(manifest_headers));
-      (*body) = "CACHE MANIFEST\n"
-                "empty1\n";
+      (*headers) = std::string(manifest_headers, base::size(manifest_headers));
+      (*body) =
+          "CACHE MANIFEST\n"
+          "empty1\n";
     } else if (path == "/files/empty-manifest") {
-      (*headers) = std::string(manifest_headers, arraysize(manifest_headers));
+      (*headers) = std::string(manifest_headers, base::size(manifest_headers));
       (*body) = "CACHE MANIFEST\n";
     } else if (path == "/files/explicit1") {
-      (*headers) = std::string(ok_headers, arraysize(ok_headers));
+      (*headers) = std::string(ok_headers, base::size(ok_headers));
       (*body) = "explicit1";
     } else if (path == "/files/explicit2") {
-      (*headers) = std::string(ok_headers, arraysize(ok_headers));
+      (*headers) = std::string(ok_headers, base::size(ok_headers));
       (*body) = "explicit2";
     } else if (path == "/files/fallback1a") {
-      (*headers) = std::string(ok_headers, arraysize(ok_headers));
+      (*headers) = std::string(ok_headers, base::size(ok_headers));
       (*body) = "fallback1a";
     } else if (path == "/files/intercept1a") {
-      (*headers) = std::string(ok_headers, arraysize(ok_headers));
+      (*headers) = std::string(ok_headers, base::size(ok_headers));
       (*body) = "intercept1a";
     } else if (path == "/files/gone") {
-      (*headers) = std::string(gone_headers, arraysize(gone_headers));
+      (*headers) = std::string(gone_headers, base::size(gone_headers));
       (*body) = "";
     } else if (path == "/files/manifest1") {
-      (*headers) = std::string(manifest_headers, arraysize(manifest_headers));
+      (*headers) = std::string(manifest_headers, base::size(manifest_headers));
       (*body) = kManifest1Contents;
     } else if (path == "/files/manifest1-with-notmodified") {
-      (*headers) = std::string(manifest_headers, arraysize(manifest_headers));
+      (*headers) = std::string(manifest_headers, base::size(manifest_headers));
       (*body) = kManifest1Contents;
-      (*body).append("CACHE:\n"
-                     "notmodified\n");
+      (*body).append(
+          "CACHE:\n"
+          "notmodified\n");
     } else if (path == "/files/manifest-fb-404") {
-      (*headers) = std::string(manifest_headers, arraysize(manifest_headers));
-      (*body) = "CACHE MANIFEST\n"
-                "explicit1\n"
-                "FALLBACK:\n"
-                "fallback1 fallback1a\n"
-                "fallback404 fallback-404\n"
-                "NETWORK:\n"
-                "online1\n";
+      (*headers) = std::string(manifest_headers, base::size(manifest_headers));
+      (*body) =
+          "CACHE MANIFEST\n"
+          "explicit1\n"
+          "FALLBACK:\n"
+          "fallback1 fallback1a\n"
+          "fallback404 fallback-404\n"
+          "NETWORK:\n"
+          "online1\n";
     } else if (path == "/files/manifest-merged-types") {
-      (*headers) = std::string(manifest_headers, arraysize(manifest_headers));
-      (*body) = "CACHE MANIFEST\n"
-                "explicit1\n"
-                "# manifest is also an explicit entry\n"
-                "manifest-merged-types\n"
-                "FALLBACK:\n"
-                "# fallback is also explicit entry\n"
-                "fallback1 explicit1\n"
-                "NETWORK:\n"
-                "online1\n";
+      (*headers) = std::string(manifest_headers, base::size(manifest_headers));
+      (*body) =
+          "CACHE MANIFEST\n"
+          "explicit1\n"
+          "# manifest is also an explicit entry\n"
+          "manifest-merged-types\n"
+          "FALLBACK:\n"
+          "# fallback is also explicit entry\n"
+          "fallback1 explicit1\n"
+          "NETWORK:\n"
+          "online1\n";
     } else if (path == "/files/manifest-with-404") {
-      (*headers) = std::string(manifest_headers, arraysize(manifest_headers));
-      (*body) = "CACHE MANIFEST\n"
-                "explicit-404\n"
-                "explicit1\n"
-                "explicit2\n"
-                "explicit3\n"
-                "FALLBACK:\n"
-                "fallback1 fallback1a\n"
-                "NETWORK:\n"
-                "online1\n";
+      (*headers) = std::string(manifest_headers, base::size(manifest_headers));
+      (*body) =
+          "CACHE MANIFEST\n"
+          "explicit-404\n"
+          "explicit1\n"
+          "explicit2\n"
+          "explicit3\n"
+          "FALLBACK:\n"
+          "fallback1 fallback1a\n"
+          "NETWORK:\n"
+          "online1\n";
     } else if (path == "/files/manifest-with-intercept") {
-      (*headers) = std::string(manifest_headers, arraysize(manifest_headers));
-      (*body) = "CACHE MANIFEST\n"
-                "CHROMIUM-INTERCEPT:\n"
-                "intercept1 return intercept1a\n";
+      (*headers) = std::string(manifest_headers, base::size(manifest_headers));
+      (*body) =
+          "CACHE MANIFEST\n"
+          "CHROMIUM-INTERCEPT:\n"
+          "intercept1 return intercept1a\n";
     } else if (path == "/files/notmodified") {
-      (*headers) = std::string(not_modified_headers,
-                               arraysize(not_modified_headers));
+      (*headers) =
+          std::string(not_modified_headers, base::size(not_modified_headers));
       (*body) = "";
     } else if (path == "/files/servererror") {
-      (*headers) = std::string(error_headers,
-                               arraysize(error_headers));
+      (*headers) = std::string(error_headers, base::size(error_headers));
       (*body) = "error";
     } else if (path == "/files/valid_cross_origin_https_manifest") {
-      (*headers) = std::string(manifest_headers, arraysize(manifest_headers));
-      (*body) = "CACHE MANIFEST\n"
-                "https://cross_origin_host/files/explicit1\n";
+      (*headers) = std::string(manifest_headers, base::size(manifest_headers));
+      (*body) =
+          "CACHE MANIFEST\n"
+          "https://cross_origin_host/files/explicit1\n";
     } else if (path == "/files/invalid_cross_origin_https_manifest") {
-      (*headers) = std::string(manifest_headers, arraysize(manifest_headers));
-      (*body) = "CACHE MANIFEST\n"
-                "https://cross_origin_host/files/no-store-headers\n";
+      (*headers) = std::string(manifest_headers, base::size(manifest_headers));
+      (*body) =
+          "CACHE MANIFEST\n"
+          "https://cross_origin_host/files/no-store-headers\n";
     } else if (path == "/files/no-store-headers") {
-      (*headers) = std::string(no_store_headers, arraysize(no_store_headers));
+      (*headers) = std::string(no_store_headers, base::size(no_store_headers));
       (*body) = "no-store";
     } else {
-      (*headers) = std::string(not_found_headers,
-                               arraysize(not_found_headers));
+      (*headers) =
+          std::string(not_found_headers, base::size(not_found_headers));
       (*body) = "";
     }
   }
@@ -237,30 +245,26 @@ class MockHttpServerJobFactory
 };
 
 inline bool operator==(const AppCacheNamespace& lhs,
-    const AppCacheNamespace& rhs) {
-  return lhs.type == rhs.type &&
-         lhs.namespace_url == rhs.namespace_url &&
+                       const AppCacheNamespace& rhs) {
+  return lhs.type == rhs.type && lhs.namespace_url == rhs.namespace_url &&
          lhs.target_url == rhs.target_url;
 }
 
-class MockFrontend : public AppCacheFrontend {
+class MockFrontend : public blink::mojom::AppCacheFrontend {
  public:
   MockFrontend()
       : ignore_progress_events_(false),
         verify_progress_events_(false),
         last_progress_total_(-1),
         last_progress_complete_(-1),
-        start_update_trigger_(AppCacheEventID::APPCACHE_CHECKING_EVENT),
+        start_update_trigger_(
+            blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT),
         update_(nullptr) {}
 
-  void OnCacheSelected(int host_id, const AppCacheInfo& info) override {}
+  void CacheSelected(blink::mojom::AppCacheInfoPtr info) override {}
 
-  void OnStatusChanged(const std::vector<int>& host_ids,
-                       AppCacheStatus status) override {}
-
-  void OnEventRaised(const std::vector<int>& host_ids,
-                     AppCacheEventID event_id) override {
-    raised_events_.push_back(RaisedEvent(host_ids, event_id));
+  void EventRaised(blink::mojom::AppCacheEventID event_id) override {
+    raised_events_.push_back(event_id);
 
     // Trigger additional updates if requested.
     if (event_id == start_update_trigger_ && update_) {
@@ -272,18 +276,17 @@ class MockFrontend : public AppCacheFrontend {
     }
   }
 
-  void OnErrorEventRaised(const std::vector<int>& host_ids,
-                          const AppCacheErrorDetails& details) override {
-    error_message_ = details.message;
-    OnEventRaised(host_ids, AppCacheEventID::APPCACHE_ERROR_EVENT);
+  void ErrorEventRaised(
+      blink::mojom::AppCacheErrorDetailsPtr details) override {
+    error_message_ = details->message;
+    EventRaised(blink::mojom::AppCacheEventID::APPCACHE_ERROR_EVENT);
   }
 
-  void OnProgressEventRaised(const std::vector<int>& host_ids,
-                             const GURL& url,
-                             int num_total,
-                             int num_complete) override {
+  void ProgressEventRaised(const GURL& url,
+                           int32_t num_total,
+                           int32_t num_complete) override {
     if (!ignore_progress_events_)
-      OnEventRaised(host_ids, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+      EventRaised(blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
 
     if (verify_progress_events_) {
       EXPECT_GE(num_total, num_complete);
@@ -309,21 +312,16 @@ class MockFrontend : public AppCacheFrontend {
     }
   }
 
-  void OnLogMessage(int host_id,
-                    AppCacheLogLevel log_level,
-                    const std::string& message) override {}
+  void LogMessage(blink::mojom::ConsoleMessageLevel log_level,
+                  const std::string& message) override {}
 
-  void OnContentBlocked(int host_id, const GURL& manifest_url) override {}
-
-  void OnSetSubresourceFactory(
-      int host_id,
+  void SetSubresourceFactory(
       network::mojom::URLLoaderFactoryPtr url_loader_factory) override {}
 
-  void AddExpectedEvent(const std::vector<int>& host_ids,
-      AppCacheEventID event_id) {
+  void AddExpectedEvent(blink::mojom::AppCacheEventID event_id) {
     DCHECK(!ignore_progress_events_ ||
-           event_id != AppCacheEventID::APPCACHE_PROGRESS_EVENT);
-    expected_events_.push_back(RaisedEvent(host_ids, event_id));
+           event_id != blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    expected_events_.push_back(event_id);
   }
 
   void SetIgnoreProgressEvents(bool ignore) {
@@ -340,7 +338,7 @@ class MockFrontend : public AppCacheFrontend {
     verify_progress_events_ = verify;
   }
 
-  void TriggerAdditionalUpdates(AppCacheEventID trigger_event,
+  void TriggerAdditionalUpdates(blink::mojom::AppCacheEventID trigger_event,
                                 AppCacheUpdateJob* update) {
     start_update_trigger_ = trigger_event;
     update_ = update;
@@ -350,9 +348,7 @@ class MockFrontend : public AppCacheFrontend {
     update_hosts_.push_back(host);
   }
 
-  using HostIds = std::vector<int>;
-  using RaisedEvent = std::pair<HostIds, AppCacheEventID>;
-  using RaisedEvents = std::vector<RaisedEvent>;
+  using RaisedEvents = std::vector<blink::mojom::AppCacheEventID>;
   RaisedEvents raised_events_;
   std::string error_message_;
 
@@ -367,7 +363,7 @@ class MockFrontend : public AppCacheFrontend {
   int last_progress_complete_;
 
   // Add ability for frontend to add master entries to an inprogress update.
-  AppCacheEventID start_update_trigger_;
+  blink::mojom::AppCacheEventID start_update_trigger_;
   AppCacheUpdateJob* update_;
   std::vector<AppCacheHost*> update_hosts_;
 };
@@ -379,11 +375,9 @@ class RedirectFactory : public net::URLRequestJobFactory::ProtocolHandler {
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const override {
     return new net::URLRequestTestJob(
-        request,
-        network_delegate,
+        request, network_delegate,
         net::URLRequestTestJob::test_redirect_headers(),
-        net::URLRequestTestJob::test_data_1(),
-        true);
+        net::URLRequestTestJob::test_data_1(), true);
   }
 };
 
@@ -399,8 +393,9 @@ class RetryRequestTestJob : public net::URLRequestTestJob {
   static const GURL kRetryUrl;
 
   // Call this at the start of each retry test.
-  static void Initialize(int num_retry_responses, RetryHeader header,
-      int expected_requests) {
+  static void Initialize(int num_retry_responses,
+                         RetryHeader header,
+                         int expected_requests) {
     num_requests_ = 0;
     num_retries_ = num_retry_responses;
     retry_after_ = header;
@@ -415,7 +410,8 @@ class RetryRequestTestJob : public net::URLRequestTestJob {
   }
 
   static net::URLRequestJob* RetryFactory(
-      net::URLRequest* request, net::NetworkDelegate* network_delegate) {
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) {
     std::string headers;
     GetResponseForURL(request->original_url(), &headers, nullptr);
     return new RetryRequestTestJob(request, network_delegate, headers);
@@ -453,12 +449,12 @@ class RetryRequestTestJob : public net::URLRequestTestJob {
 
     switch (retry_after_) {
       case NO_RETRY_AFTER:
-        return std::string(no_retry_after, arraysize(no_retry_after));
+        return std::string(no_retry_after, base::size(no_retry_after));
       case NONZERO_RETRY_AFTER:
-        return std::string(nonzero, arraysize(nonzero));
+        return std::string(nonzero, base::size(nonzero));
       case RETRY_AFTER_0:
       default:
-        return std::string(retry_after_0, arraysize(retry_after_0));
+        return std::string(retry_after_0, base::size(retry_after_0));
     }
   }
 
@@ -467,11 +463,12 @@ class RetryRequestTestJob : public net::URLRequestTestJob {
         "HTTP/1.1 200 OK\n"
         "Content-type: text/cache-manifest\n"
         "\n";
-    return std::string(headers, arraysize(headers));
+    return std::string(headers, base::size(headers));
   }
 
   static std::string data() {
-    return std::string("CACHE MANIFEST\r"
+    return std::string(
+        "CACHE MANIFEST\r"
         "http://retry\r");  // must be same as kRetryUrl
   }
 
@@ -533,7 +530,8 @@ class HttpHeadersRequestTestJob : public net::URLRequestTestJob {
   }
 
   static net::URLRequestJob* IfModifiedSinceFactory(
-      net::URLRequest* request, net::NetworkDelegate* network_delegate) {
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) {
     ValidateExtraHeaders(request->extra_request_headers());
     return MockHttpServer::JobFactory(request, network_delegate);
   }
@@ -581,8 +579,8 @@ class IfModifiedSinceJobFactory
   net::URLRequestJob* MaybeCreateJob(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const override {
-    return HttpHeadersRequestTestJob::IfModifiedSinceFactory(
-        request, network_delegate);
+    return HttpHeadersRequestTestJob::IfModifiedSinceFactory(request,
+                                                             network_delegate);
   }
 };
 
@@ -650,9 +648,7 @@ class IOThread {
   IOThread() {}
   ~IOThread() {}
 
-  net::URLRequestContext* request_context() {
-    return request_context_.get();
-  }
+  net::URLRequestContext* request_context() { return request_context_.get(); }
 
   void SetNewJobFactory(net::URLRequestJobFactory* job_factory) {
     DCHECK(job_factory);
@@ -705,20 +701,16 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
         expect_non_null_update_time_(false),
         tested_manifest_(NONE),
         tested_manifest_path_override_(nullptr),
-        request_handler_type_(GetParam()),
         thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD) {
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&IOThread::Init, base::Unretained(io_thread_.get())));
 
-    if (request_handler_type_ == URLLOADER) {
-      loader_factory_getter_ = new URLLoaderFactoryGetter();
-      feature_list_.InitAndEnableFeature(network::features::kNetworkService);
-      base::PostTaskWithTraits(
-          FROM_HERE, {BrowserThread::IO},
-          base::BindOnce(&AppCacheUpdateJobTest::InitializeFactory,
-                         base::Unretained(this)));
-    }
+    loader_factory_getter_ = base::MakeRefCounted<URLLoaderFactoryGetter>();
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
+        base::BindOnce(&AppCacheUpdateJobTest::InitializeFactory,
+                       base::Unretained(this)));
   }
 
   ~AppCacheUpdateJobTest() {
@@ -735,22 +727,18 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
   // when it goes out of scope.
   template <class Method>
   void RunTestOnIOThread(Method method) {
-    event_.reset(new base::WaitableEvent(
-        base::WaitableEvent::ResetPolicy::AUTOMATIC,
-        base::WaitableEvent::InitialState::NOT_SIGNALED));
-
+    base::RunLoop run_loop;
+    test_completed_cb_ = run_loop.QuitClosure();
     base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
                              base::BindOnce(method, base::Unretained(this)));
-
-    // Wait until task is done before exiting the test.
-    event_->Wait();
+    run_loop.Run();
   }
 
   void InitializeFactory() {
     if (!loader_factory_getter_.get())
       return;
     loader_factory_getter_->SetNetworkFactoryForTesting(
-        &mock_url_loader_factory_);
+        &mock_url_loader_factory_, /* is_corb_enabled = */ true);
   }
 
   void StartCacheAttemptTest() {
@@ -765,7 +753,9 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     group_->update_job_ = update;
 
     MockFrontend mock_frontend;
-    AppCacheHost host(1, &mock_frontend, service_.get());
+    AppCacheHost host(/*host_id=*/1, /*process_id=*/1, /*render_frame_id=*/1,
+                      nullptr, service_.get());
+    host.set_frontend_for_testing(&mock_frontend);
 
     update->StartUpdate(&host, GURL());
 
@@ -777,11 +767,9 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
 
     // Verify notifications.
     MockFrontend::RaisedEvents& events = mock_frontend.raised_events_;
-    size_t expected = 1;
-    EXPECT_EQ(expected, events.size());
-    EXPECT_EQ(expected, events[0].first.size());
-    EXPECT_EQ(host.host_id(), events[0].first[0]);
-    EXPECT_EQ(AppCacheEventID::APPCACHE_CHECKING_EVENT, events[0].second);
+    ASSERT_EQ(1u, events.size());
+    EXPECT_EQ(blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT,
+              events[0]);
 
     // Abort as we're not testing actual URL fetches in this test.
     delete update;
@@ -804,17 +792,26 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
       MockFrontend mock_frontend1;
       MockFrontend mock_frontend2;
       MockFrontend mock_frontend3;
+      MockFrontend mock_frontend4;
 
-      AppCacheHost host1(1, &mock_frontend1, service_.get());
+      AppCacheHost host1(/*host_id=*/1, /*process_id=*/1, /*render_frame_id=*/1,
+                         nullptr, service_.get());
+      host1.set_frontend_for_testing(&mock_frontend1);
       host1.AssociateCompleteCache(cache1);
 
-      AppCacheHost host2(2, &mock_frontend2, service_.get());
+      AppCacheHost host2(/*host_id=*/2, /*process_id=*/2, /*render_frame_id=*/2,
+                         nullptr, service_.get());
+      host2.set_frontend_for_testing(&mock_frontend2);
       host2.AssociateCompleteCache(cache2);
 
-      AppCacheHost host3(3, &mock_frontend1, service_.get());
+      AppCacheHost host3(/*host_id=*/3, /*process_id=*/3, /*render_frame_id=*/3,
+                         nullptr, service_.get());
+      host3.set_frontend_for_testing(&mock_frontend3);
       host3.AssociateCompleteCache(cache1);
 
-      AppCacheHost host4(4, &mock_frontend3, service_.get());
+      AppCacheHost host4(/*host_id=*/4, /*process_id=*/4, /*render_frame_id=*/4,
+                         nullptr, service_.get());
+      host4.set_frontend_for_testing(&mock_frontend4);
 
       AppCacheUpdateJob* update =
           new AppCacheUpdateJob(service_.get(), group_.get());
@@ -828,24 +825,22 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
       EXPECT_FALSE(update->doing_full_update_check_);
 
       // Verify notifications.
-      MockFrontend::RaisedEvents& events = mock_frontend1.raised_events_;
-      size_t expected = 1;
-      EXPECT_EQ(expected, events.size());
-      expected = 2;  // 2 hosts using frontend1
-      EXPECT_EQ(expected, events[0].first.size());
-      MockFrontend::HostIds& host_ids = events[0].first;
-      EXPECT_TRUE(base::ContainsValue(host_ids, host1.host_id()));
-      EXPECT_TRUE(base::ContainsValue(host_ids, host3.host_id()));
-      EXPECT_EQ(AppCacheEventID::APPCACHE_CHECKING_EVENT, events[0].second);
+      MockFrontend::RaisedEvents events = mock_frontend1.raised_events_;
+      ASSERT_EQ(1u, events.size());
+      EXPECT_EQ(blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT,
+                events[0]);
 
       events = mock_frontend2.raised_events_;
-      expected = 1;
-      EXPECT_EQ(expected, events.size());
-      EXPECT_EQ(expected, events[0].first.size());  // 1 host using frontend2
-      EXPECT_EQ(host2.host_id(), events[0].first[0]);
-      EXPECT_EQ(AppCacheEventID::APPCACHE_CHECKING_EVENT, events[0].second);
+      ASSERT_EQ(1u, events.size());
+      EXPECT_EQ(blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT,
+                events[0]);
 
       events = mock_frontend3.raised_events_;
+      ASSERT_EQ(1u, events.size());
+      EXPECT_EQ(blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT,
+                events[0]);
+
+      events = mock_frontend4.raised_events_;
       EXPECT_TRUE(events.empty());
 
       // Abort as we're not testing actual URL fetches in this test.
@@ -872,8 +867,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     do_checks_after_update_finished_ = true;
     expect_group_obsolete_ = false;
     expect_group_has_cache_ = false;
-    frontend->AddExpectedEvent(MockFrontend::HostIds(1, host->host_id()),
-                               AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -897,8 +892,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     host1->AssociateCompleteCache(cache);
     host2->AssociateCompleteCache(cache);
 
-    group_->set_last_full_update_check_time(
-        base::Time::Now() - kFullUpdateInterval - kOneHour);
+    group_->set_last_full_update_check_time(base::Time::Now() -
+                                            kFullUpdateInterval - kOneHour);
     update->StartUpdate(nullptr, GURL());
     EXPECT_TRUE(update->doing_full_update_check_);
 
@@ -909,26 +904,20 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     expect_evictable_error_ = true;
     expect_newest_cache_ = cache;  // newest cache unaffected by update
     expect_full_update_time_equal_to_ = group_->last_full_update_check_time();
-    MockFrontend::HostIds ids1(1, host1->host_id());
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_ERROR_EVENT);
-    MockFrontend::HostIds ids2(1, host2->host_id());
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_ERROR_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_ERROR_EVENT);
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_ERROR_EVENT);
 
     WaitForUpdateToFinish();
   }
 
   void ManifestRedirectTest() {
     ASSERT_TRUE(base::MessageLoopCurrentForIO::IsSet());
-
-    if (request_handler_type_ == URLREQUEST) {
-      net::URLRequestJobFactoryImpl* new_factory(
-          new net::URLRequestJobFactoryImpl);
-      new_factory->SetProtocolHandler("http",
-                                      base::WrapUnique(new RedirectFactory));
-      io_thread_->SetNewJobFactory(new_factory);
-    }
 
     MakeService();
     group_ = new AppCacheGroup(service_->storage(), GURL("http://testme"),
@@ -945,8 +934,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     do_checks_after_update_finished_ = true;
     expect_group_obsolete_ = false;
     expect_group_has_cache_ = false;  // redirect is like a failed request
-    frontend->AddExpectedEvent(MockFrontend::HostIds(1, host->host_id()),
-                               AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -979,14 +968,14 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     expect_old_cache_ = cache;
     tested_manifest_ = EMPTY_MANIFEST;
     tested_manifest_path_override_ = "files/missing-mime-manifest";
-    MockFrontend::HostIds ids(1, host->host_id());
-    frontend->AddExpectedEvent(ids, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend->AddExpectedEvent(ids,
-                               AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
     frontend->AddExpectedEvent(
-        ids, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
-    frontend->AddExpectedEvent(ids,
-                               AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -995,9 +984,9 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     ASSERT_TRUE(base::MessageLoopCurrentForIO::IsSet());
 
     MakeService();
-    group_ = new AppCacheGroup(
-        service_->storage(), MockHttpServer::GetMockUrl("files/nosuchfile"),
-        service_->storage()->NewGroupId());
+    group_ = new AppCacheGroup(service_->storage(),
+                               MockHttpServer::GetMockUrl("files/nosuchfile"),
+                               service_->storage()->NewGroupId());
     AppCacheUpdateJob* update =
         new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
@@ -1017,12 +1006,14 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     expect_group_obsolete_ = true;
     expect_group_has_cache_ = true;
     expect_newest_cache_ = cache;  // newest cache unaffected by update
-    MockFrontend::HostIds ids1(1, host1->host_id());
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_OBSOLETE_EVENT);
-    MockFrontend::HostIds ids2(1, host2->host_id());
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_OBSOLETE_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_OBSOLETE_EVENT);
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_OBSOLETE_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -1031,9 +1022,9 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     ASSERT_TRUE(base::MessageLoopCurrentForIO::IsSet());
 
     MakeService();
-    group_ = new AppCacheGroup(
-        service_->storage(), MockHttpServer::GetMockUrl("files/gone"),
-        service_->storage()->NewGroupId());
+    group_ = new AppCacheGroup(service_->storage(),
+                               MockHttpServer::GetMockUrl("files/gone"),
+                               service_->storage()->NewGroupId());
     AppCacheUpdateJob* update =
         new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
@@ -1046,8 +1037,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     do_checks_after_update_finished_ = true;
     expect_group_obsolete_ = false;
     expect_group_has_cache_ = false;
-    frontend->AddExpectedEvent(MockFrontend::HostIds(1, host->host_id()),
-                               AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -1056,9 +1047,9 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     ASSERT_TRUE(base::MessageLoopCurrentForIO::IsSet());
 
     MakeService();
-    group_ = new AppCacheGroup(
-        service_->storage(), MockHttpServer::GetMockUrl("files/notmodified"),
-        service_->storage()->NewGroupId());
+    group_ = new AppCacheGroup(service_->storage(),
+                               MockHttpServer::GetMockUrl("files/notmodified"),
+                               service_->storage()->NewGroupId());
     AppCacheUpdateJob* update =
         new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
@@ -1071,8 +1062,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     do_checks_after_update_finished_ = true;
     expect_group_obsolete_ = false;
     expect_group_has_cache_ = false;  // treated like cache failure
-    frontend->AddExpectedEvent(MockFrontend::HostIds(1, host->host_id()),
-                               AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -1081,9 +1072,9 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     ASSERT_TRUE(base::MessageLoopCurrentForIO::IsSet());
 
     MakeService();
-    group_ = new AppCacheGroup(
-        service_->storage(), MockHttpServer::GetMockUrl("files/notmodified"),
-        service_->storage()->NewGroupId());
+    group_ = new AppCacheGroup(service_->storage(),
+                               MockHttpServer::GetMockUrl("files/notmodified"),
+                               service_->storage()->NewGroupId());
     AppCacheUpdateJob* update =
         new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
@@ -1096,8 +1087,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     host1->AssociateCompleteCache(cache);
     host2->AssociateCompleteCache(cache);
 
-    group_->set_last_full_update_check_time(
-        base::Time::Now() - kFullUpdateInterval - kOneHour);
+    group_->set_last_full_update_check_time(base::Time::Now() -
+                                            kFullUpdateInterval - kOneHour);
     group_->set_first_evictable_error_time(base::Time::Now());
     update->StartUpdate(nullptr, GURL());
     EXPECT_TRUE(update->doing_full_update_check_);
@@ -1106,17 +1097,17 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     do_checks_after_update_finished_ = true;
     expect_group_obsolete_ = false;
     expect_group_has_cache_ = true;
-    expect_newest_cache_ = cache;  // newest cache unaffected by update
-    expect_evictable_error_ = false;   // should be reset
+    expect_newest_cache_ = cache;     // newest cache unaffected by update
+    expect_evictable_error_ = false;  // should be reset
     expect_full_update_time_newer_than_ = group_->last_full_update_check_time();
-    MockFrontend::HostIds ids1(1, host1->host_id());
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend1->AddExpectedEvent(ids1,
-                                AppCacheEventID::APPCACHE_NO_UPDATE_EVENT);
-    MockFrontend::HostIds ids2(1, host2->host_id());
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend2->AddExpectedEvent(ids2,
-                                AppCacheEventID::APPCACHE_NO_UPDATE_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_NO_UPDATE_EVENT);
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_NO_UPDATE_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -1125,9 +1116,9 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     ASSERT_TRUE(base::MessageLoopCurrentForIO::IsSet());
 
     MakeService();
-    group_ = new AppCacheGroup(
-        service_->storage(), MockHttpServer::GetMockUrl("files/manifest1"),
-        service_->storage()->NewGroupId());
+    group_ = new AppCacheGroup(service_->storage(),
+                               MockHttpServer::GetMockUrl("files/manifest1"),
+                               service_->storage()->NewGroupId());
     AppCacheUpdateJob* update =
         new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
@@ -1149,14 +1140,14 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     expect_group_obsolete_ = false;
     expect_group_has_cache_ = true;
     expect_newest_cache_ = cache;  // newest cache unaffected by update
-    MockFrontend::HostIds ids1(1, host1->host_id());
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend1->AddExpectedEvent(ids1,
-                                AppCacheEventID::APPCACHE_NO_UPDATE_EVENT);
-    MockFrontend::HostIds ids2(1, host2->host_id());
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend2->AddExpectedEvent(ids2,
-                                AppCacheEventID::APPCACHE_NO_UPDATE_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_NO_UPDATE_EVENT);
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_NO_UPDATE_EVENT);
 
     // Seed storage with expected manifest data.
     const std::string seed_data(kManifest1Contents);
@@ -1198,9 +1189,10 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     expect_group_is_being_deleted_ = true;
     expect_group_has_cache_ = true;
     expect_newest_cache_ = cache;  // newest cache unaffected by update
-    MockFrontend::HostIds id(1, host->host_id());
-    frontend->AddExpectedEvent(id, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend->AddExpectedEvent(id, AppCacheEventID::APPCACHE_ERROR_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_ERROR_EVENT);
     frontend->expected_error_message_ =
         "Manifest entry not found in existing cache";
     WaitForUpdateToFinish();
@@ -1222,9 +1214,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     GURL manifest_url = MockHttpServer::GetMockUrl("files/manifest1");
 
     MakeService();
-    group_ = new AppCacheGroup(
-        service_->storage(), manifest_url,
-        service_->storage()->NewGroupId());
+    group_ = new AppCacheGroup(service_->storage(), manifest_url,
+                               service_->storage()->NewGroupId());
     ASSERT_TRUE(group_->last_full_update_check_time().is_null());
     AppCacheUpdateJob* update =
         new AppCacheUpdateJob(service_.get(), group_.get());
@@ -1240,8 +1231,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     expect_group_has_cache_ = true;
     expect_full_update_time_newer_than_ = base::Time::Now() - kOneHour;
     tested_manifest_ = MANIFEST1;
-    frontend->AddExpectedEvent(MockFrontend::HostIds(1, host->host_id()),
-                               AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -1252,9 +1243,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     GURL manifest_url =
         MockHttpServer::GetMockUrl("files/manifest-with-intercept");
     MakeService();
-    group_ = new AppCacheGroup(
-        service_->storage(), manifest_url,
-        service_->storage()->NewGroupId());
+    group_ = new AppCacheGroup(service_->storage(), manifest_url,
+                               service_->storage()->NewGroupId());
     AppCacheUpdateJob* update =
         new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
@@ -1268,8 +1258,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     expect_group_obsolete_ = false;
     expect_group_has_cache_ = true;
     tested_manifest_ = MANIFEST_WITH_INTERCEPT;
-    frontend->AddExpectedEvent(MockFrontend::HostIds(1, host->host_id()),
-                               AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -1278,9 +1268,9 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     ASSERT_TRUE(base::MessageLoopCurrentForIO::IsSet());
 
     MakeService();
-    group_ = new AppCacheGroup(
-        service_->storage(), MockHttpServer::GetMockUrl("files/manifest1"),
-        service_->storage()->NewGroupId());
+    group_ = new AppCacheGroup(service_->storage(),
+                               MockHttpServer::GetMockUrl("files/manifest1"),
+                               service_->storage()->NewGroupId());
     AppCacheUpdateJob* update =
         new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
@@ -1299,8 +1289,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     host2->AssociateCompleteCache(cache);
     frontend1->SetVerifyProgressEvents(true);
     frontend2->SetVerifyProgressEvents(true);
-    group_->set_last_full_update_check_time(
-        base::Time::Now() - kFullUpdateInterval - kOneHour);
+    group_->set_last_full_update_check_time(base::Time::Now() -
+                                            kFullUpdateInterval - kOneHour);
 
     // Set up checks for when update job finishes.
     do_checks_after_update_finished_ = true;
@@ -1309,26 +1299,30 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     expect_old_cache_ = cache;
     tested_manifest_ = MANIFEST1;
     expect_full_update_time_newer_than_ = group_->last_full_update_check_time();
-    MockFrontend::HostIds ids1(1, host1->host_id());
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend1->AddExpectedEvent(ids1,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
     frontend1->AddExpectedEvent(
-        ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
-    frontend1->AddExpectedEvent(ids1,
-                                AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
-    MockFrontend::HostIds ids2(1, host2->host_id());
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend2->AddExpectedEvent(ids2,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
     frontend2->AddExpectedEvent(
-        ids2, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
-    frontend2->AddExpectedEvent(ids2,
-                                AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
 
     // Seed storage with expected manifest data different from manifest1.
     const std::string seed_data("different");
@@ -1347,9 +1341,9 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     ASSERT_TRUE(base::MessageLoopCurrentForIO::IsSet());
 
     MakeService();
-    group_ = new AppCacheGroup(
-        service_->storage(), MockHttpServer::GetMockUrl("files/manifest1"),
-        service_->storage()->NewGroupId());
+    group_ = new AppCacheGroup(service_->storage(),
+                               MockHttpServer::GetMockUrl("files/manifest1"),
+                               service_->storage()->NewGroupId());
     AppCacheUpdateJob* update =
         new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
@@ -1375,16 +1369,18 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
         MockHttpServer::GetMockUrl("files/explicit1"),
         response_writer_->response_id()));
     tested_manifest_ = MANIFEST1;
-    MockFrontend::HostIds ids(1, host->host_id());
-    frontend->AddExpectedEvent(ids, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend->AddExpectedEvent(ids,
-                               AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend->AddExpectedEvent(ids, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
-    frontend->AddExpectedEvent(ids, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
     frontend->AddExpectedEvent(
-        ids, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
-    frontend->AddExpectedEvent(ids,
-                               AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
 
     // Seed storage with expected http response info for entry. Allow reuse.
     const char data[] =
@@ -1415,9 +1411,9 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     ASSERT_TRUE(base::MessageLoopCurrentForIO::IsSet());
 
     MakeService();
-    group_ = new AppCacheGroup(
-        service_->storage(), MockHttpServer::GetMockUrl("files/manifest1"),
-        service_->storage()->NewGroupId());
+    group_ = new AppCacheGroup(service_->storage(),
+                               MockHttpServer::GetMockUrl("files/manifest1"),
+                               service_->storage()->NewGroupId());
     AppCacheUpdateJob* update =
         new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
@@ -1440,16 +1436,18 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     expect_group_has_cache_ = true;
     expect_old_cache_ = cache;
     tested_manifest_ = MANIFEST1;
-    MockFrontend::HostIds ids(1, host->host_id());
-    frontend->AddExpectedEvent(ids, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend->AddExpectedEvent(ids,
-                               AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend->AddExpectedEvent(ids, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
-    frontend->AddExpectedEvent(ids, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
     frontend->AddExpectedEvent(
-        ids, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
-    frontend->AddExpectedEvent(ids,
-                               AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
 
     // Seed storage with expected http response info for entry. Do NOT
     // allow reuse by setting an expires header in the past.
@@ -1481,9 +1479,9 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     ASSERT_TRUE(base::MessageLoopCurrentForIO::IsSet());
 
     MakeService();
-    group_ = new AppCacheGroup(
-        service_->storage(), MockHttpServer::GetMockUrl("files/manifest1"),
-        service_->storage()->NewGroupId());
+    group_ = new AppCacheGroup(service_->storage(),
+                               MockHttpServer::GetMockUrl("files/manifest1"),
+                               service_->storage()->NewGroupId());
     AppCacheUpdateJob* update =
         new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
@@ -1506,16 +1504,18 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     expect_group_has_cache_ = true;
     expect_old_cache_ = cache;
     tested_manifest_ = MANIFEST1;
-    MockFrontend::HostIds ids(1, host->host_id());
-    frontend->AddExpectedEvent(ids, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend->AddExpectedEvent(ids,
-                               AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend->AddExpectedEvent(ids, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
-    frontend->AddExpectedEvent(ids, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
     frontend->AddExpectedEvent(
-        ids, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
-    frontend->AddExpectedEvent(ids,
-                               AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
 
     // Seed storage with expected http response info for entry: a vary header.
     const char data[] =
@@ -1575,16 +1575,18 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
         MockHttpServer::GetMockUrl("files/explicit1"),
         response_writer_->response_id()));
     tested_manifest_ = MANIFEST1;
-    MockFrontend::HostIds ids(1, host->host_id());
-    frontend->AddExpectedEvent(ids, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend->AddExpectedEvent(ids,
-                               AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend->AddExpectedEvent(ids, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
-    frontend->AddExpectedEvent(ids, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
     frontend->AddExpectedEvent(
-        ids, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
-    frontend->AddExpectedEvent(ids,
-                               AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
 
     // Seed storage with expected http response info for an entry
     // with a vary header for which we allow reuse.
@@ -1617,7 +1619,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     ASSERT_TRUE(base::MessageLoopCurrentForIO::IsSet());
 
     MakeService();
-    group_ = new AppCacheGroup(service_->storage(),
+    group_ = new AppCacheGroup(
+        service_->storage(),
         MockHttpServer::GetMockUrl("files/manifest-merged-types"),
         service_->storage()->NewGroupId());
     AppCacheUpdateJob* update =
@@ -1645,28 +1648,31 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     expect_group_has_cache_ = true;
     expect_old_cache_ = cache;
     tested_manifest_ = MANIFEST_MERGED_TYPES;
-    MockFrontend::HostIds ids1(1, host1->host_id());
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend1->AddExpectedEvent(ids1,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
     frontend1->AddExpectedEvent(
-        ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // explicit1
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
     frontend1->AddExpectedEvent(
-        ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // manifest
+        blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
     frontend1->AddExpectedEvent(
-        ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
-    frontend1->AddExpectedEvent(ids1,
-                                AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
-    MockFrontend::HostIds ids2(1, host2->host_id());
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend2->AddExpectedEvent(ids2,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // explicit1
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // manifest
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
+
     frontend2->AddExpectedEvent(
-        ids2, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
-    frontend2->AddExpectedEvent(ids2,
-                                AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -1675,9 +1681,10 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     ASSERT_TRUE(base::MessageLoopCurrentForIO::IsSet());
 
     MakeService();
-    group_ = new AppCacheGroup(service_->storage(),
-        MockHttpServer::GetMockUrl("files/manifest-with-404"),
-        service_->storage()->NewGroupId());
+    group_ =
+        new AppCacheGroup(service_->storage(),
+                          MockHttpServer::GetMockUrl("files/manifest-with-404"),
+                          service_->storage()->NewGroupId());
     AppCacheUpdateJob* update =
         new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
@@ -1690,8 +1697,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     do_checks_after_update_finished_ = true;
     expect_group_obsolete_ = false;
     expect_group_has_cache_ = false;  // 404 explicit url is cache failure
-    frontend->AddExpectedEvent(MockFrontend::HostIds(1, host->host_id()),
-                               AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -1700,9 +1707,10 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     ASSERT_TRUE(base::MessageLoopCurrentForIO::IsSet());
 
     MakeService();
-    group_ = new AppCacheGroup(service_->storage(),
-        MockHttpServer::GetMockUrl("files/manifest-fb-404"),
-        service_->storage()->NewGroupId());
+    group_ =
+        new AppCacheGroup(service_->storage(),
+                          MockHttpServer::GetMockUrl("files/manifest-fb-404"),
+                          service_->storage()->NewGroupId());
     AppCacheUpdateJob* update =
         new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
@@ -1727,16 +1735,19 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     expect_group_has_cache_ = true;
     expect_newest_cache_ = cache;  // newest cache unaffectd by failed update
     expect_eviction_ = true;
-    MockFrontend::HostIds ids1(1, host1->host_id());
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend1->AddExpectedEvent(ids1,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_ERROR_EVENT);
-    MockFrontend::HostIds ids2(1, host2->host_id());
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend2->AddExpectedEvent(ids2,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_ERROR_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_ERROR_EVENT);
+
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_ERROR_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -1749,9 +1760,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     MakeService();
     const GURL kManifestUrl =
         MockHttpServer::GetMockUrl(tested_manifest_path_override_);
-    group_ = new AppCacheGroup(
-        service_->storage(), kManifestUrl,
-        service_->storage()->NewGroupId());
+    group_ = new AppCacheGroup(service_->storage(), kManifestUrl,
+                               service_->storage()->NewGroupId());
     AppCacheUpdateJob* update =
         new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
@@ -1765,18 +1775,15 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     host2->AssociateCompleteCache(cache);
 
     // Give the newest cache some existing entries; one will fail with a 404.
-    cache->AddEntry(
-        MockHttpServer::GetMockUrl("files/notfound"),
-        AppCacheEntry(AppCacheEntry::MASTER, 222));
+    cache->AddEntry(MockHttpServer::GetMockUrl("files/notfound"),
+                    AppCacheEntry(AppCacheEntry::MASTER, 222));
     cache->AddEntry(
         MockHttpServer::GetMockUrl("files/explicit2"),
         AppCacheEntry(AppCacheEntry::MASTER | AppCacheEntry::FOREIGN, 333));
-    cache->AddEntry(
-        MockHttpServer::GetMockUrl("files/servererror"),
-        AppCacheEntry(AppCacheEntry::MASTER, 444));
-    cache->AddEntry(
-        MockHttpServer::GetMockUrl("files/notmodified"),
-        AppCacheEntry(AppCacheEntry::EXPLICIT, 555));
+    cache->AddEntry(MockHttpServer::GetMockUrl("files/servererror"),
+                    AppCacheEntry(AppCacheEntry::MASTER, 444));
+    cache->AddEntry(MockHttpServer::GetMockUrl("files/notmodified"),
+                    AppCacheEntry(AppCacheEntry::EXPLICIT, 555));
 
     // Seed the response_info working set with canned data for
     // files/servererror and for files/notmodified to test that the
@@ -1785,7 +1792,7 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
         "HTTP/1.1 200 OK\0"
         "Last-Modified: Sat, 29 Oct 1994 19:43:31 GMT\0"
         "\0";
-    const std::string kRawHeaders(kData, arraysize(kData));
+    const std::string kRawHeaders(kData, base::size(kData));
     MakeAppCacheResponseInfo(kManifestUrl, 444, kRawHeaders);
     MakeAppCacheResponseInfo(kManifestUrl, 555, kRawHeaders);
 
@@ -1810,46 +1817,47 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
         MockHttpServer::GetMockUrl("files/servererror"), 444));  // copied
     expect_response_ids_.insert(std::map<GURL, int64_t>::value_type(
         MockHttpServer::GetMockUrl("files/notmodified"), 555));  // copied
-    MockFrontend::HostIds ids1(1, host1->host_id());
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend1->AddExpectedEvent(ids1,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
     frontend1->AddExpectedEvent(
-        ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // explicit1
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
     frontend1->AddExpectedEvent(
-        ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // fallback1a
+        blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
     frontend1->AddExpectedEvent(
-        ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // notfound
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // explicit1
     frontend1->AddExpectedEvent(
-        ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // explicit2
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // fallback1a
     frontend1->AddExpectedEvent(
-        ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // servererror
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // notfound
     frontend1->AddExpectedEvent(
-        ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // notmodified
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // explicit2
     frontend1->AddExpectedEvent(
-        ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
-    frontend1->AddExpectedEvent(ids1,
-                                AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
-    MockFrontend::HostIds ids2(1, host2->host_id());
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend2->AddExpectedEvent(ids2,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // servererror
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // notmodified
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
+
     frontend2->AddExpectedEvent(
-        ids2, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // explicit1
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
     frontend2->AddExpectedEvent(
-        ids2, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // fallback1a
+        blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
     frontend2->AddExpectedEvent(
-        ids2, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // notfound
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // explicit1
     frontend2->AddExpectedEvent(
-        ids2, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // explicit2
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // fallback1a
     frontend2->AddExpectedEvent(
-        ids2, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // servererror
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // notfound
     frontend2->AddExpectedEvent(
-        ids2, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // notmodified
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // explicit2
     frontend2->AddExpectedEvent(
-        ids2, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
-    frontend2->AddExpectedEvent(ids2,
-                                AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // servererror
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // notmodified
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -1883,22 +1891,23 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     expect_group_has_cache_ = true;
     expect_old_cache_ = cache;
     tested_manifest_ = EMPTY_MANIFEST;
-    MockFrontend::HostIds ids1(1, host1->host_id());
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend1->AddExpectedEvent(ids1,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
     frontend1->AddExpectedEvent(
-        ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
-    frontend1->AddExpectedEvent(ids1,
-                                AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
-    MockFrontend::HostIds ids2(1, host2->host_id());
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend2->AddExpectedEvent(ids2,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
+
     frontend2->AddExpectedEvent(
-        ids2, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
-    frontend2->AddExpectedEvent(ids2,
-                                AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -1907,7 +1916,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     ASSERT_TRUE(base::MessageLoopCurrentForIO::IsSet());
 
     MakeService();
-    group_ = new AppCacheGroup(service_->storage(),
+    group_ = new AppCacheGroup(
+        service_->storage(),
         MockHttpServer::GetMockUrl("files/empty-file-manifest"),
         service_->storage()->NewGroupId());
     AppCacheUpdateJob* update =
@@ -1927,15 +1937,16 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     expect_group_obsolete_ = false;
     expect_group_has_cache_ = true;
     tested_manifest_ = EMPTY_FILE_MANIFEST;
-    MockFrontend::HostIds ids1(1, host->host_id());
-    frontend->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend->AddExpectedEvent(ids1,
-                               AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
     frontend->AddExpectedEvent(
-        ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
-    frontend->AddExpectedEvent(ids1,
-                               AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -1947,18 +1958,10 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     // Expect 1 manifest fetch and 3 retries.
     RetryRequestTestJob::Initialize(5, RetryRequestTestJob::RETRY_AFTER_0, 4);
 
-    if (request_handler_type_ == URLREQUEST) {
-      net::URLRequestJobFactoryImpl* new_factory(
-          new net::URLRequestJobFactoryImpl);
-      new_factory->SetProtocolHandler(
-          "http", base::WrapUnique(new RetryRequestTestJobFactory));
-      io_thread_->SetNewJobFactory(new_factory);
-    }
-
     MakeService();
-    group_ = new AppCacheGroup(service_->storage(),
-                               RetryRequestTestJob::kRetryUrl,
-                               service_->storage()->NewGroupId());
+    group_ =
+        new AppCacheGroup(service_->storage(), RetryRequestTestJob::kRetryUrl,
+                          service_->storage()->NewGroupId());
     AppCacheUpdateJob* update =
         new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
@@ -1971,8 +1974,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     do_checks_after_update_finished_ = true;
     expect_group_obsolete_ = false;
     expect_group_has_cache_ = false;
-    frontend->AddExpectedEvent(MockFrontend::HostIds(1, host->host_id()),
-                               AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -1984,18 +1987,10 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     // Expect 1 manifest fetch and 0 retries.
     RetryRequestTestJob::Initialize(5, RetryRequestTestJob::NO_RETRY_AFTER, 1);
 
-    if (request_handler_type_ == URLREQUEST) {
-      net::URLRequestJobFactoryImpl* new_factory(
-          new net::URLRequestJobFactoryImpl);
-      new_factory->SetProtocolHandler(
-          "http", base::WrapUnique(new RetryRequestTestJobFactory));
-      io_thread_->SetNewJobFactory(new_factory);
-    }
-
     MakeService();
-    group_ = new AppCacheGroup(service_->storage(),
-                               RetryRequestTestJob::kRetryUrl,
-                               service_->storage()->NewGroupId());
+    group_ =
+        new AppCacheGroup(service_->storage(), RetryRequestTestJob::kRetryUrl,
+                          service_->storage()->NewGroupId());
     AppCacheUpdateJob* update =
         new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
@@ -2008,8 +2003,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     do_checks_after_update_finished_ = true;
     expect_group_obsolete_ = false;
     expect_group_has_cache_ = false;
-    frontend->AddExpectedEvent(MockFrontend::HostIds(1, host->host_id()),
-                               AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -2019,21 +2014,13 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
 
     // Set some large number of times to return retry.
     // Expect 1 request and 0 retry attempts.
-    RetryRequestTestJob::Initialize(
-        5, RetryRequestTestJob::NONZERO_RETRY_AFTER, 1);
-
-    if (request_handler_type_ == URLREQUEST) {
-      net::URLRequestJobFactoryImpl* new_factory(
-          new net::URLRequestJobFactoryImpl);
-      new_factory->SetProtocolHandler(
-          "http", base::WrapUnique(new RetryRequestTestJobFactory));
-      io_thread_->SetNewJobFactory(new_factory);
-    }
+    RetryRequestTestJob::Initialize(5, RetryRequestTestJob::NONZERO_RETRY_AFTER,
+                                    1);
 
     MakeService();
-    group_ = new AppCacheGroup(service_->storage(),
-                               RetryRequestTestJob::kRetryUrl,
-                               service_->storage()->NewGroupId());
+    group_ =
+        new AppCacheGroup(service_->storage(), RetryRequestTestJob::kRetryUrl,
+                          service_->storage()->NewGroupId());
     AppCacheUpdateJob* update =
         new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
@@ -2046,8 +2033,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     do_checks_after_update_finished_ = true;
     expect_group_obsolete_ = false;
     expect_group_has_cache_ = false;
-    frontend->AddExpectedEvent(MockFrontend::HostIds(1, host->host_id()),
-                               AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -2058,51 +2045,6 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     // Set 2 as the retry limit (does not exceed the max).
     // Expect 1 manifest fetch, 2 retries, 1 url fetch, 1 manifest refetch.
     RetryRequestTestJob::Initialize(2, RetryRequestTestJob::RETRY_AFTER_0, 5);
-
-    if (request_handler_type_ == URLREQUEST) {
-      net::URLRequestJobFactoryImpl* new_factory(
-          new net::URLRequestJobFactoryImpl);
-      new_factory->SetProtocolHandler(
-          "http", base::WrapUnique(new RetryRequestTestJobFactory));
-      io_thread_->SetNewJobFactory(new_factory);
-    }
-
-    MakeService();
-    group_ = new AppCacheGroup(service_->storage(),
-                               RetryRequestTestJob::kRetryUrl,
-                               service_->storage()->NewGroupId());
-    AppCacheUpdateJob* update =
-        new AppCacheUpdateJob(service_.get(), group_.get());
-    group_->update_job_ = update;
-
-    MockFrontend* frontend = MakeMockFrontend();
-    AppCacheHost* host = MakeHost(1, frontend);
-    update->StartUpdate(host, GURL());
-
-    // Set up checks for when update job finishes.
-    do_checks_after_update_finished_ = true;
-    expect_group_obsolete_ = false;
-    expect_group_has_cache_ = true;
-    frontend->AddExpectedEvent(MockFrontend::HostIds(1, host->host_id()),
-                               AppCacheEventID::APPCACHE_CHECKING_EVENT);
-
-    WaitForUpdateToFinish();
-  }
-
-  void RetryUrlTest() {
-    ASSERT_TRUE(base::MessageLoopCurrentForIO::IsSet());
-
-    // Set 1 as the retry limit (does not exceed the max).
-    // Expect 1 manifest fetch, 1 url fetch, 1 url retry, 1 manifest refetch.
-    RetryRequestTestJob::Initialize(1, RetryRequestTestJob::RETRY_AFTER_0, 4);
-
-    if (request_handler_type_ == URLREQUEST) {
-      net::URLRequestJobFactoryImpl* new_factory(
-          new net::URLRequestJobFactoryImpl);
-      new_factory->SetProtocolHandler(
-          "http", base::WrapUnique(new RetryRequestTestJobFactory));
-      io_thread_->SetNewJobFactory(new_factory);
-    }
 
     MakeService();
     group_ =
@@ -2120,8 +2062,37 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     do_checks_after_update_finished_ = true;
     expect_group_obsolete_ = false;
     expect_group_has_cache_ = true;
-    frontend->AddExpectedEvent(MockFrontend::HostIds(1, host->host_id()),
-                               AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+
+    WaitForUpdateToFinish();
+  }
+
+  void RetryUrlTest() {
+    ASSERT_TRUE(base::MessageLoopCurrentForIO::IsSet());
+
+    // Set 1 as the retry limit (does not exceed the max).
+    // Expect 1 manifest fetch, 1 url fetch, 1 url retry, 1 manifest refetch.
+    RetryRequestTestJob::Initialize(1, RetryRequestTestJob::RETRY_AFTER_0, 4);
+
+    MakeService();
+    group_ =
+        new AppCacheGroup(service_->storage(), RetryRequestTestJob::kRetryUrl,
+                          service_->storage()->NewGroupId());
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
+    group_->update_job_ = update;
+
+    MockFrontend* frontend = MakeMockFrontend();
+    AppCacheHost* host = MakeHost(1, frontend);
+    update->StartUpdate(host, GURL());
+
+    // Set up checks for when update job finishes.
+    do_checks_after_update_finished_ = true;
+    expect_group_obsolete_ = false;
+    expect_group_has_cache_ = true;
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -2134,9 +2105,9 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
         reinterpret_cast<MockAppCacheStorage*>(service_->storage());
     storage->SimulateStoreGroupAndNewestCacheFailure();
 
-    group_ = new AppCacheGroup(
-        service_->storage(), MockHttpServer::GetMockUrl("files/manifest1"),
-        service_->storage()->NewGroupId());
+    group_ = new AppCacheGroup(service_->storage(),
+                               MockHttpServer::GetMockUrl("files/manifest1"),
+                               service_->storage()->NewGroupId());
     AppCacheUpdateJob* update =
         new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
@@ -2149,8 +2120,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     do_checks_after_update_finished_ = true;
     expect_group_obsolete_ = false;
     expect_group_has_cache_ = false;  // storage failed
-    frontend->AddExpectedEvent(MockFrontend::HostIds(1, host->host_id()),
-                               AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -2163,9 +2134,9 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
         reinterpret_cast<MockAppCacheStorage*>(service_->storage());
     storage->SimulateStoreGroupAndNewestCacheFailure();
 
-    group_ = new AppCacheGroup(
-        service_->storage(), MockHttpServer::GetMockUrl("files/manifest1"),
-        service_->storage()->NewGroupId());
+    group_ = new AppCacheGroup(service_->storage(),
+                               MockHttpServer::GetMockUrl("files/manifest1"),
+                               service_->storage()->NewGroupId());
     AppCacheUpdateJob* update =
         new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
@@ -2185,20 +2156,27 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     expect_group_obsolete_ = false;
     expect_group_has_cache_ = true;
     expect_newest_cache_ = cache;  // unchanged
-    MockFrontend::HostIds ids1(1, host1->host_id());
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend1->AddExpectedEvent(ids1,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_ERROR_EVENT);
-    MockFrontend::HostIds ids2(1, host2->host_id());
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend2->AddExpectedEvent(ids2,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_ERROR_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_ERROR_EVENT);
+
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_ERROR_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -2222,21 +2200,19 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
         "Content-type: text/cache-manifest\0"
         "Last-Modified: Sat, 29 Oct 1994 19:43:31 GMT\0"
         "\0";
-    const std::string kRawHeaders(kData, arraysize(kData));
+    const std::string kRawHeaders(kData, base::size(kData));
     MakeAppCacheResponseInfo(kManifestUrl, kManifestResponseId, kRawHeaders);
 
-    group_ = new AppCacheGroup(
-        service_->storage(), kManifestUrl,
-        service_->storage()->NewGroupId());
-    scoped_refptr<AppCache> cache(
-        MakeCacheForGroup(service_->storage()->NewCacheId(),
-                          kManifestResponseId));
+    group_ = new AppCacheGroup(service_->storage(), kManifestUrl,
+                               service_->storage()->NewGroupId());
+    scoped_refptr<AppCache> cache(MakeCacheForGroup(
+        service_->storage()->NewCacheId(), kManifestResponseId));
 
     MockFrontend* frontend = MakeMockFrontend();
     AppCacheHost* host = MakeHost(1, frontend);
-    host->first_party_url_ = kManifestUrl;
+    host->SetFirstPartyUrlForTesting(kManifestUrl);
     host->SelectCache(MockHttpServer::GetMockUrl("files/empty1"),
-                      kAppCacheNoCacheId, kManifestUrl);
+                      blink::mojom::kAppCacheNoCacheId, kManifestUrl);
 
     // Set up checks for when update job finishes.
     do_checks_after_update_finished_ = true;
@@ -2245,10 +2221,9 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     expect_group_obsolete_ = false;
     expect_group_has_cache_ = true;
     expect_newest_cache_ = cache.get();  // unchanged
-    MockFrontend::HostIds ids1(1, host->host_id());
-    frontend->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_ERROR_EVENT);
-    frontend->expected_error_message_ =
-        "Failed to commit new cache to storage";
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_ERROR_EVENT);
+    frontend->expected_error_message_ = "Failed to commit new cache to storage";
 
     WaitForUpdateToFinish();
   }
@@ -2261,9 +2236,9 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
         reinterpret_cast<MockAppCacheStorage*>(service_->storage());
     storage->SimulateMakeGroupObsoleteFailure();
 
-    group_ = new AppCacheGroup(
-        service_->storage(), MockHttpServer::GetMockUrl("files/nosuchfile"),
-        service_->storage()->NewGroupId());
+    group_ = new AppCacheGroup(service_->storage(),
+                               MockHttpServer::GetMockUrl("files/nosuchfile"),
+                               service_->storage()->NewGroupId());
     AppCacheUpdateJob* update =
         new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
@@ -2283,12 +2258,15 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     expect_group_obsolete_ = false;
     expect_group_has_cache_ = true;
     expect_newest_cache_ = cache;  // newest cache unaffected by update
-    MockFrontend::HostIds ids1(1, host1->host_id());
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_ERROR_EVENT);
-    MockFrontend::HostIds ids2(1, host2->host_id());
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_ERROR_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_ERROR_EVENT);
+
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_ERROR_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -2311,9 +2289,10 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     do_checks_after_update_finished_ = true;
     expect_group_obsolete_ = false;
     expect_group_has_cache_ = false;
-    MockFrontend::HostIds ids1(1, host->host_id());
-    frontend->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_ERROR_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_ERROR_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -2323,7 +2302,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
 
     MakeService();
     group_ = new AppCacheGroup(service_->storage(),
-        MockHttpServer::GetMockUrl("files/bad-manifest"), 111);
+                               MockHttpServer::GetMockUrl("files/bad-manifest"),
+                               111);
     AppCacheUpdateJob* update =
         new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
@@ -2337,9 +2317,10 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     do_checks_after_update_finished_ = true;
     expect_group_obsolete_ = false;
     expect_group_has_cache_ = false;
-    MockFrontend::HostIds ids1(1, host->host_id());
-    frontend->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_ERROR_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_ERROR_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -2348,10 +2329,9 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     ASSERT_TRUE(base::MessageLoopCurrentForIO::IsSet());
 
     MakeService();
-    group_ = new AppCacheGroup(
-        service_->storage(),
-        MockHttpServer::GetMockUrl("files/nosuchfile"),
-        111);
+    group_ =
+        new AppCacheGroup(service_->storage(),
+                          MockHttpServer::GetMockUrl("files/nosuchfile"), 111);
     AppCacheUpdateJob* update =
         new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
@@ -2366,9 +2346,10 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     do_checks_after_update_finished_ = true;
     expect_group_obsolete_ = false;
     expect_group_has_cache_ = false;
-    MockFrontend::HostIds ids1(1, host->host_id());
-    frontend->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_ERROR_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_ERROR_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -2377,7 +2358,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     ASSERT_TRUE(base::MessageLoopCurrentForIO::IsSet());
 
     MakeService();
-    group_ = new AppCacheGroup(service_->storage(),
+    group_ = new AppCacheGroup(
+        service_->storage(),
         MockHttpServer::GetMockUrl("files/manifest-fb-404"), 111);
     AppCacheUpdateJob* update =
         new AppCacheUpdateJob(service_.get(), group_.get());
@@ -2386,8 +2368,7 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     MockFrontend* frontend = MakeMockFrontend();
     frontend->SetIgnoreProgressEvents(true);
     AppCacheHost* host = MakeHost(1, frontend);
-    host->new_master_entry_url_ =
-        MockHttpServer::GetMockUrl("files/explicit1");
+    host->new_master_entry_url_ = MockHttpServer::GetMockUrl("files/explicit1");
 
     update->StartUpdate(host, host->new_master_entry_url_);
 
@@ -2395,11 +2376,12 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     do_checks_after_update_finished_ = true;
     expect_group_obsolete_ = false;
     expect_group_has_cache_ = false;  // 404 fallback url is cache failure
-    MockFrontend::HostIds ids1(1, host->host_id());
-    frontend->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend->AddExpectedEvent(ids1,
-                               AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_ERROR_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_ERROR_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -2408,10 +2390,9 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     ASSERT_TRUE(base::MessageLoopCurrentForIO::IsSet());
 
     MakeService();
-    group_ = new AppCacheGroup(
-        service_->storage(),
-        MockHttpServer::GetMockUrl("files/manifest1"),
-        111);
+    group_ =
+        new AppCacheGroup(service_->storage(),
+                          MockHttpServer::GetMockUrl("files/manifest1"), 111);
     AppCacheUpdateJob* update =
         new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
@@ -2434,16 +2415,19 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     do_checks_after_update_finished_ = true;
     expect_group_obsolete_ = false;
     expect_group_has_cache_ = false;  // all pending masters failed
-    MockFrontend::HostIds ids1(1, host1->host_id());
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend1->AddExpectedEvent(ids1,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_ERROR_EVENT);
-    MockFrontend::HostIds ids2(1, host2->host_id());
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend2->AddExpectedEvent(ids2,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_ERROR_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_ERROR_EVENT);
+
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_ERROR_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -2452,10 +2436,9 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     ASSERT_TRUE(base::MessageLoopCurrentForIO::IsSet());
 
     MakeService();
-    group_ = new AppCacheGroup(
-        service_->storage(),
-        MockHttpServer::GetMockUrl("files/manifest1"),
-        111);
+    group_ =
+        new AppCacheGroup(service_->storage(),
+                          MockHttpServer::GetMockUrl("files/manifest1"), 111);
     AppCacheUpdateJob* update =
         new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
@@ -2485,25 +2468,30 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     expect_group_has_cache_ = true;
     expect_old_cache_ = cache;
     tested_manifest_ = MANIFEST1;
-    MockFrontend::HostIds ids1(1, host1->host_id());
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend1->AddExpectedEvent(ids1,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
     frontend1->AddExpectedEvent(
-        ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
-    frontend1->AddExpectedEvent(ids1,
-                                AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
-    MockFrontend::HostIds ids2(1, host2->host_id());
-    frontend2->AddExpectedEvent(ids2,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_ERROR_EVENT);
-    MockFrontend::HostIds ids3(1, host3->host_id());
-    frontend3->AddExpectedEvent(ids3, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend3->AddExpectedEvent(ids3,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend3->AddExpectedEvent(ids3, AppCacheEventID::APPCACHE_ERROR_EVENT);
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
+
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_ERROR_EVENT);
+
+    frontend3->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend3->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend3->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_ERROR_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -2512,10 +2500,9 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     ASSERT_TRUE(base::MessageLoopCurrentForIO::IsSet());
 
     MakeService();
-    group_ = new AppCacheGroup(
-        service_->storage(),
-        MockHttpServer::GetMockUrl("files/manifest1"),
-        111);
+    group_ =
+        new AppCacheGroup(service_->storage(),
+                          MockHttpServer::GetMockUrl("files/manifest1"), 111);
     AppCacheUpdateJob* update =
         new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
@@ -2541,20 +2528,25 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     expect_extra_entries_.insert(AppCache::EntryMap::value_type(
         MockHttpServer::GetMockUrl("files/explicit2"),
         AppCacheEntry(AppCacheEntry::MASTER)));
-    MockFrontend::HostIds ids1(1, host1->host_id());
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend1->AddExpectedEvent(ids1,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_ERROR_EVENT);
-    MockFrontend::HostIds ids2(1, host2->host_id());
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend2->AddExpectedEvent(ids2,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_ERROR_EVENT);
+
     frontend2->AddExpectedEvent(
-        ids2, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_CACHED_EVENT);
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CACHED_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -2563,10 +2555,9 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     ASSERT_TRUE(base::MessageLoopCurrentForIO::IsSet());
 
     MakeService();
-    group_ = new AppCacheGroup(
-        service_->storage(),
-        MockHttpServer::GetMockUrl("files/manifest1"),
-        111);
+    group_ =
+        new AppCacheGroup(service_->storage(),
+                          MockHttpServer::GetMockUrl("files/manifest1"), 111);
     AppCacheUpdateJob* update =
         new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
@@ -2598,30 +2589,36 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     expect_extra_entries_.insert(AppCache::EntryMap::value_type(
         MockHttpServer::GetMockUrl("files/explicit2"),
         AppCacheEntry(AppCacheEntry::MASTER)));
-    MockFrontend::HostIds ids1(1, host1->host_id());
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend1->AddExpectedEvent(ids1,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
     frontend1->AddExpectedEvent(
-        ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
-    frontend1->AddExpectedEvent(ids1,
-                                AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
-    MockFrontend::HostIds ids2(1, host2->host_id());
-    frontend2->AddExpectedEvent(ids2,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_ERROR_EVENT);
-    MockFrontend::HostIds ids3(1, host3->host_id());
-    frontend3->AddExpectedEvent(ids3, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend3->AddExpectedEvent(ids3,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend3->AddExpectedEvent(ids3, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
-    frontend3->AddExpectedEvent(ids3, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
+
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_ERROR_EVENT);
+
     frontend3->AddExpectedEvent(
-        ids3, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
-    frontend3->AddExpectedEvent(ids3,
-                                AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend3->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend3->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend3->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend3->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend3->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -2630,8 +2627,9 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     ASSERT_TRUE(base::MessageLoopCurrentForIO::IsSet());
 
     MakeService();
-    group_ = new AppCacheGroup(service_->storage(),
-        MockHttpServer::GetMockUrl("files/notmodified"), 111);
+    group_ =
+        new AppCacheGroup(service_->storage(),
+                          MockHttpServer::GetMockUrl("files/notmodified"), 111);
     AppCacheUpdateJob* update =
         new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
@@ -2655,7 +2653,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
         MockHttpServer::GetMockUrl("files/explicit1");
     update->StartUpdate(host2, host2->new_master_entry_url_);
 
-    AppCacheHost* host3 = MakeHost(3, frontend2);  // same frontend as host2
+    MockFrontend* frontend3 = MakeMockFrontend();
+    AppCacheHost* host3 = MakeHost(3, frontend3);
     host3->new_master_entry_url_ =
         MockHttpServer::GetMockUrl("files/explicit2");
     update->StartUpdate(host3, host3->new_master_entry_url_);
@@ -2667,17 +2666,18 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     expect_newest_cache_ = cache;  // newest cache still the same cache
     expect_non_null_update_time_ = true;
     tested_manifest_ = PENDING_MASTER_NO_UPDATE;
-    MockFrontend::HostIds ids1(1, host1->host_id());
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend1->AddExpectedEvent(ids1,
-                                AppCacheEventID::APPCACHE_NO_UPDATE_EVENT);
-    MockFrontend::HostIds ids3(1, host3->host_id());
-    frontend2->AddExpectedEvent(ids3, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    MockFrontend::HostIds ids2and3;
-    ids2and3.push_back(host2->host_id());
-    ids2and3.push_back(host3->host_id());
-    frontend2->AddExpectedEvent(ids2and3,
-                                AppCacheEventID::APPCACHE_NO_UPDATE_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_NO_UPDATE_EVENT);
+
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_NO_UPDATE_EVENT);
+
+    frontend3->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend3->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_NO_UPDATE_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -2686,9 +2686,9 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     ASSERT_TRUE(base::MessageLoopCurrentForIO::IsSet());
 
     MakeService();
-    group_ = new AppCacheGroup(
-        service_->storage(), MockHttpServer::GetMockUrl("files/manifest1"),
-        service_->storage()->NewGroupId());
+    group_ = new AppCacheGroup(service_->storage(),
+                               MockHttpServer::GetMockUrl("files/manifest1"),
+                               service_->storage()->NewGroupId());
     AppCacheUpdateJob* update =
         new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
@@ -2720,12 +2720,12 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     AppCacheHost* host5 = MakeHost(5, frontend5);  // no master entry url
 
     frontend1->TriggerAdditionalUpdates(
-        AppCacheEventID::APPCACHE_DOWNLOADING_EVENT, update);
-    frontend1->AdditionalUpdateHost(host2);  // fetch will fail
-    frontend1->AdditionalUpdateHost(host3);  // same as an explicit entry
-    frontend1->AdditionalUpdateHost(host4);  // same as another master entry
+        blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT, update);
+    frontend1->AdditionalUpdateHost(host2);    // fetch will fail
+    frontend1->AdditionalUpdateHost(host3);    // same as an explicit entry
+    frontend1->AdditionalUpdateHost(host4);    // same as another master entry
     frontend1->AdditionalUpdateHost(nullptr);  // no host
-    frontend1->AdditionalUpdateHost(host5);  // no master entry url
+    frontend1->AdditionalUpdateHost(host5);    // no master entry url
 
     // Set up checks for when update job finishes.
     do_checks_after_update_finished_ = true;
@@ -2735,44 +2735,57 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     expect_extra_entries_.insert(AppCache::EntryMap::value_type(
         MockHttpServer::GetMockUrl("files/explicit2"),
         AppCacheEntry(AppCacheEntry::MASTER)));
-    MockFrontend::HostIds ids1(1, host1->host_id());
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend1->AddExpectedEvent(ids1,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
     frontend1->AddExpectedEvent(
-        ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_CACHED_EVENT);
-    MockFrontend::HostIds ids2(1, host2->host_id());
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend2->AddExpectedEvent(ids2,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_ERROR_EVENT);
-    MockFrontend::HostIds ids3(1, host3->host_id());
-    frontend3->AddExpectedEvent(ids3, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend3->AddExpectedEvent(ids3,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend3->AddExpectedEvent(ids3, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
-    frontend3->AddExpectedEvent(ids3, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CACHED_EVENT);
+
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_ERROR_EVENT);
+
     frontend3->AddExpectedEvent(
-        ids3, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
-    frontend3->AddExpectedEvent(ids3, AppCacheEventID::APPCACHE_CACHED_EVENT);
-    MockFrontend::HostIds ids4(1, host4->host_id());
-    frontend4->AddExpectedEvent(ids4, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend4->AddExpectedEvent(ids4,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend4->AddExpectedEvent(ids4, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
-    frontend4->AddExpectedEvent(ids4, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend3->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend3->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend3->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend3->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend3->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CACHED_EVENT);
+
     frontend4->AddExpectedEvent(
-        ids4, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
-    frontend4->AddExpectedEvent(ids4, AppCacheEventID::APPCACHE_CACHED_EVENT);
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend4->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend4->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend4->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend4->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend4->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CACHED_EVENT);
 
     // Host 5 is not associated with cache so no progress/cached events.
-    MockFrontend::HostIds ids5(1, host5->host_id());
-    frontend5->AddExpectedEvent(ids5, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend5->AddExpectedEvent(ids5,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend5->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend5->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -2781,9 +2794,9 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     ASSERT_TRUE(base::MessageLoopCurrentForIO::IsSet());
 
     MakeService();
-    group_ = new AppCacheGroup(
-        service_->storage(), MockHttpServer::GetMockUrl("files/notmodified"),
-        service_->storage()->NewGroupId());
+    group_ = new AppCacheGroup(service_->storage(),
+                               MockHttpServer::GetMockUrl("files/notmodified"),
+                               service_->storage()->NewGroupId());
     AppCacheUpdateJob* update =
         new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
@@ -2824,13 +2837,13 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     host6->new_master_entry_url_ =
         MockHttpServer::GetMockUrl("files/explicit1");
 
-    frontend2->TriggerAdditionalUpdates(AppCacheEventID::APPCACHE_ERROR_EVENT,
-                                        update);
+    frontend2->TriggerAdditionalUpdates(
+        blink::mojom::AppCacheEventID::APPCACHE_ERROR_EVENT, update);
     frontend2->AdditionalUpdateHost(host3);
     frontend2->AdditionalUpdateHost(nullptr);  // no host
-    frontend2->AdditionalUpdateHost(host4);  // no master entry url
-    frontend2->AdditionalUpdateHost(host5);  // same as existing cache entry
-    frontend2->AdditionalUpdateHost(host6);  // same as another master entry
+    frontend2->AdditionalUpdateHost(host4);    // no master entry url
+    frontend2->AdditionalUpdateHost(host5);    // same as existing cache entry
+    frontend2->AdditionalUpdateHost(host6);    // same as another master entry
 
     // Set up checks for when update job finishes.
     do_checks_after_update_finished_ = true;
@@ -2838,26 +2851,33 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     expect_group_has_cache_ = true;
     expect_newest_cache_ = cache;  // newest cache unaffected by update
     tested_manifest_ = PENDING_MASTER_NO_UPDATE;
-    MockFrontend::HostIds ids1(1, host1->host_id());  // prior associated host
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend1->AddExpectedEvent(ids1,
-                                AppCacheEventID::APPCACHE_NO_UPDATE_EVENT);
-    MockFrontend::HostIds ids2(1, host2->host_id());
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_ERROR_EVENT);
-    MockFrontend::HostIds ids3(1, host3->host_id());
-    frontend3->AddExpectedEvent(ids3, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend3->AddExpectedEvent(ids3,
-                                AppCacheEventID::APPCACHE_NO_UPDATE_EVENT);
-    MockFrontend::HostIds ids4(1, host4->host_id());  // unassociated w/cache
-    frontend4->AddExpectedEvent(ids4, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    MockFrontend::HostIds ids5(1, host5->host_id());
-    frontend5->AddExpectedEvent(ids5, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend5->AddExpectedEvent(ids5,
-                                AppCacheEventID::APPCACHE_NO_UPDATE_EVENT);
-    MockFrontend::HostIds ids6(1, host6->host_id());
-    frontend6->AddExpectedEvent(ids6, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend6->AddExpectedEvent(ids6,
-                                AppCacheEventID::APPCACHE_NO_UPDATE_EVENT);
+    // prior associated host
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_NO_UPDATE_EVENT);
+
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_ERROR_EVENT);
+
+    frontend3->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend3->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_NO_UPDATE_EVENT);
+
+    // unassociated w/cache
+    frontend4->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+
+    frontend5->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend5->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_NO_UPDATE_EVENT);
+
+    frontend6->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend6->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_NO_UPDATE_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -2866,10 +2886,9 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     ASSERT_TRUE(base::MessageLoopCurrentForIO::IsSet());
 
     MakeService();
-    group_ = new AppCacheGroup(
-        service_->storage(),
-        MockHttpServer::GetMockUrl("files/manifest1"),
-        111);
+    group_ =
+        new AppCacheGroup(service_->storage(),
+                          MockHttpServer::GetMockUrl("files/manifest1"), 111);
     AppCacheUpdateJob* update =
         new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
@@ -2901,12 +2920,12 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
         MockHttpServer::GetMockUrl("files/explicit2");
 
     frontend1->TriggerAdditionalUpdates(
-        AppCacheEventID::APPCACHE_PROGRESS_EVENT, update);
-    frontend1->AdditionalUpdateHost(host2);  // same as entry in manifest
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT, update);
+    frontend1->AdditionalUpdateHost(host2);    // same as entry in manifest
     frontend1->AdditionalUpdateHost(nullptr);  // no host
-    frontend1->AdditionalUpdateHost(host3);  // new master entry
-    frontend1->AdditionalUpdateHost(host4);  // no master entry url
-    frontend1->AdditionalUpdateHost(host5);  // same as another master entry
+    frontend1->AdditionalUpdateHost(host3);    // new master entry
+    frontend1->AdditionalUpdateHost(host4);    // no master entry url
+    frontend1->AdditionalUpdateHost(host5);    // same as another master entry
 
     // Set up checks for when update job finishes.
     do_checks_after_update_finished_ = true;
@@ -2916,47 +2935,58 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     expect_extra_entries_.insert(AppCache::EntryMap::value_type(
         MockHttpServer::GetMockUrl("files/explicit2"),
         AppCacheEntry(AppCacheEntry::MASTER)));
-    MockFrontend::HostIds ids1(1, host1->host_id());  // prior associated host
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend1->AddExpectedEvent(ids1,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
-    frontend1->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    // prior associated host
     frontend1->AddExpectedEvent(
-        ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
-    frontend1->AddExpectedEvent(ids1,
-                                AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
-    MockFrontend::HostIds ids2(1, host2->host_id());
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend2->AddExpectedEvent(ids2,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend2->AddExpectedEvent(ids2, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend1->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
+
     frontend2->AddExpectedEvent(
-        ids2, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
-    frontend2->AddExpectedEvent(ids2,
-                                AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
-    MockFrontend::HostIds ids3(1, host3->host_id());
-    frontend3->AddExpectedEvent(ids3, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend3->AddExpectedEvent(ids3,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend3->AddExpectedEvent(ids3, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend2->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
+
     frontend3->AddExpectedEvent(
-        ids3, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
-    frontend3->AddExpectedEvent(ids3,
-                                AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
-    MockFrontend::HostIds ids4(1, host4->host_id());  // unassociated w/cache
-    frontend4->AddExpectedEvent(ids4, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend4->AddExpectedEvent(ids4,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    MockFrontend::HostIds ids5(1, host5->host_id());
-    frontend5->AddExpectedEvent(ids5, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend5->AddExpectedEvent(ids5,
-                                AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend5->AddExpectedEvent(ids5, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend3->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend3->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend3->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend3->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
+
+    // unassociated w/cache
+    frontend4->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend4->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+
     frontend5->AddExpectedEvent(
-        ids5, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
-    frontend5->AddExpectedEvent(ids5,
-                                AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend5->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend5->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend5->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend5->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -2965,10 +2995,9 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     ASSERT_TRUE(base::MessageLoopCurrentForIO::IsSet());
 
     MakeService();
-    group_ = new AppCacheGroup(
-        service_->storage(),
-        MockHttpServer::GetMockUrl("files/manifest1"),
-        111);
+    group_ =
+        new AppCacheGroup(service_->storage(),
+                          MockHttpServer::GetMockUrl("files/manifest1"), 111);
     AppCacheUpdateJob* update =
         new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
@@ -2981,8 +3010,7 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     // Start an update. Should be queued.
     MockFrontend* frontend = MakeMockFrontend();
     AppCacheHost* host = MakeHost(1, frontend);
-    host->new_master_entry_url_ =
-        MockHttpServer::GetMockUrl("files/explicit2");
+    host->new_master_entry_url_ = MockHttpServer::GetMockUrl("files/explicit2");
     update->StartUpdate(host, host->new_master_entry_url_);
     EXPECT_TRUE(update->pending_master_entries_.empty());
     EXPECT_FALSE(group_->queued_updates_.empty());
@@ -2999,18 +3027,21 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     tested_manifest_ = MANIFEST1;
     expect_extra_entries_.insert(AppCache::EntryMap::value_type(
         host->new_master_entry_url_, AppCacheEntry(AppCacheEntry::MASTER)));
-    MockFrontend::HostIds ids1(1, host->host_id());
-    frontend->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend->AddExpectedEvent(ids1,
-                               AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
-    frontend->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
     frontend->AddExpectedEvent(
-        ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
-    frontend->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_CACHED_EVENT);
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CACHED_EVENT);
 
-    // Group status will be AppCacheStatus::APPCACHE_STATUS_IDLE so cannot call
-    // WaitForUpdateToFinish.
+    // Group status will be blink::mojom::AppCacheStatus::APPCACHE_STATUS_IDLE
+    // so cannot call WaitForUpdateToFinish.
     group_->AddUpdateObserver(this);
   }
 
@@ -3022,17 +3053,9 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
   void IfModifiedSinceTestCache() {
     ASSERT_TRUE(base::MessageLoopCurrentForIO::IsSet());
 
-    if (request_handler_type_ == URLREQUEST) {
-      net::URLRequestJobFactoryImpl* new_factory(
-          new net::URLRequestJobFactoryImpl);
-      new_factory->SetProtocolHandler(
-          "http", base::WrapUnique(new IfModifiedSinceJobFactory));
-      io_thread_->SetNewJobFactory(new_factory);
-    }
-
     MakeService();
-    group_ = new AppCacheGroup(
-        service_->storage(), GURL("http://headertest"), 111);
+    group_ =
+        new AppCacheGroup(service_->storage(), GURL("http://headertest"), 111);
     AppCacheUpdateJob* update =
         new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
@@ -3041,19 +3064,17 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     // synchronously.
     HttpHeadersRequestTestJob::Initialize(std::string(), std::string());
     MockFrontend mock_frontend;
-    AppCacheHost host(1, &mock_frontend, service_.get());
+    AppCacheHost host(/*host_id=*/1, /*process_id=*/1, /*render_frame_id=*/1,
+                      nullptr, service_.get());
+    host.set_frontend_for_testing(&mock_frontend);
     update->StartUpdate(&host, GURL());
 
-    // If URLLoader based tests are enabled, we need to wait for the URL
-    // load requests to make it to the MockURLLoaderFactory.
-    if (request_handler_type_ == URLLOADER) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::BindOnce(&AppCacheUpdateJobTest::VerifyHeadersAndDeleteUpdate,
-                         update));
-    } else {
-      VerifyHeadersAndDeleteUpdate(update);
-    }
+    // We need to wait for the URL load requests to make it to the
+    // MockURLLoaderFactory.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&AppCacheUpdateJobTest::VerifyHeadersAndDeleteUpdate,
+                       update));
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&AppCacheUpdateJobTest::UpdateFinishedUnwound,
@@ -3063,21 +3084,13 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
   void IfModifiedTestRefetch() {
     ASSERT_TRUE(base::MessageLoopCurrentForIO::IsSet());
 
-    if (request_handler_type_ == URLREQUEST) {
-      net::URLRequestJobFactoryImpl* new_factory(
-          new net::URLRequestJobFactoryImpl);
-      new_factory->SetProtocolHandler(
-          "http", base::WrapUnique(new IfModifiedSinceJobFactory));
-      io_thread_->SetNewJobFactory(new_factory);
-    }
-
     // Now simulate a refetch manifest request. Will start fetch request
     // synchronously.
     const char data[] =
         "HTTP/1.1 200 OK\0"
         "\0";
     net::HttpResponseHeaders* headers =
-        new net::HttpResponseHeaders(std::string(data, arraysize(data)));
+        new net::HttpResponseHeaders(std::string(data, base::size(data)));
     net::HttpResponseInfo* response_info = new net::HttpResponseInfo();
     response_info->headers = headers;  // adds ref to headers
 
@@ -3095,16 +3108,12 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     update->internal_state_ = AppCacheUpdateJob::REFETCH_MANIFEST;
     update->FetchManifest(false);  // not first request
 
-    // If URLLoader based tests are enabled, we need to wait for the URL
-    // load requests to make it to the MockURLLoaderFactory.
-    if (request_handler_type_ == URLLOADER) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::BindOnce(&AppCacheUpdateJobTest::VerifyHeadersAndDeleteUpdate,
-                         update));
-    } else {
-      VerifyHeadersAndDeleteUpdate(update);
-    }
+    // We need to wait for the URL load requests to make it to the
+    // MockURLLoaderFactory.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&AppCacheUpdateJobTest::VerifyHeadersAndDeleteUpdate,
+                       update));
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&AppCacheUpdateJobTest::UpdateFinishedUnwound,
@@ -3114,14 +3123,6 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
   void IfModifiedTestLastModified() {
     ASSERT_TRUE(base::MessageLoopCurrentForIO::IsSet());
 
-    if (request_handler_type_ == URLREQUEST) {
-      net::URLRequestJobFactoryImpl* new_factory(
-          new net::URLRequestJobFactoryImpl);
-      new_factory->SetProtocolHandler(
-          "http", base::WrapUnique(new IfModifiedSinceJobFactory));
-      io_thread_->SetNewJobFactory(new_factory);
-    }
-
     // Change the headers to include a Last-Modified header. Manifest refetch
     // should include If-Modified-Since header.
     const char data2[] =
@@ -3129,7 +3130,7 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
         "Last-Modified: Sat, 29 Oct 1994 19:43:31 GMT\0"
         "\0";
     net::HttpResponseHeaders* headers2 =
-        new net::HttpResponseHeaders(std::string(data2, arraysize(data2)));
+        new net::HttpResponseHeaders(std::string(data2, base::size(data2)));
     net::HttpResponseInfo* response_info = new net::HttpResponseInfo();
     response_info->headers = headers2;
 
@@ -3147,16 +3148,12 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     update->internal_state_ = AppCacheUpdateJob::REFETCH_MANIFEST;
     update->FetchManifest(false);  // not first request
 
-    // If URLLoader based tests are enabled, we need to wait for the URL
-    // load requests to make it to the MockURLLoaderFactory.
-    if (request_handler_type_ == URLLOADER) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::BindOnce(&AppCacheUpdateJobTest::VerifyHeadersAndDeleteUpdate,
-                         update));
-    } else {
-      VerifyHeadersAndDeleteUpdate(update);
-    }
+    // We need to wait for the URL load requests to make it to the
+    // MockURLLoaderFactory.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&AppCacheUpdateJobTest::VerifyHeadersAndDeleteUpdate,
+                       update));
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&AppCacheUpdateJobTest::UpdateFinishedUnwound,
@@ -3169,19 +3166,10 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     HttpHeadersRequestTestJob::Initialize("Sat, 29 Oct 1994 19:43:31 GMT",
                                           std::string());
 
-    if (request_handler_type_ == URLREQUEST) {
-      net::URLRequestJobFactoryImpl* new_factory(
-          new net::URLRequestJobFactoryImpl);
-      new_factory->SetProtocolHandler(
-          "http", base::WrapUnique(new IfModifiedSinceJobFactory));
-      io_thread_->SetNewJobFactory(new_factory);
-    }
-
     MakeService();
-    group_ = new AppCacheGroup(
-        service_->storage(),
-        MockHttpServer::GetMockUrl("files/manifest1"),
-        111);
+    group_ =
+        new AppCacheGroup(service_->storage(),
+                          MockHttpServer::GetMockUrl("files/manifest1"), 111);
     AppCacheUpdateJob* update =
         new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
@@ -3202,16 +3190,18 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     expect_group_has_cache_ = true;
     expect_old_cache_ = cache;
     tested_manifest_ = MANIFEST1;
-    MockFrontend::HostIds ids1(1, host->host_id());
-    frontend->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend->AddExpectedEvent(ids1,
-                               AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
-    frontend->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
     frontend->AddExpectedEvent(
-        ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
-    frontend->AddExpectedEvent(ids1,
-                               AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
 
     // Seed storage with expected manifest response info that will cause
     // an If-Modified-Since header to be put in the manifest fetch request.
@@ -3242,19 +3232,10 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
 
     HttpHeadersRequestTestJob::Initialize(std::string(), "\"LadeDade\"");
 
-    if (request_handler_type_ == URLREQUEST) {
-      net::URLRequestJobFactoryImpl* new_factory(
-          new net::URLRequestJobFactoryImpl);
-      new_factory->SetProtocolHandler(
-          "http", base::WrapUnique(new IfModifiedSinceJobFactory));
-      io_thread_->SetNewJobFactory(new_factory);
-    }
-
     MakeService();
-    group_ = new AppCacheGroup(
-        service_->storage(),
-        MockHttpServer::GetMockUrl("files/manifest1"),
-        111);
+    group_ =
+        new AppCacheGroup(service_->storage(),
+                          MockHttpServer::GetMockUrl("files/manifest1"), 111);
     AppCacheUpdateJob* update =
         new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
@@ -3275,16 +3256,18 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     expect_group_has_cache_ = true;
     expect_old_cache_ = cache;
     tested_manifest_ = MANIFEST1;
-    MockFrontend::HostIds ids1(1, host->host_id());
-    frontend->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_CHECKING_EVENT);
-    frontend->AddExpectedEvent(ids1,
-                               AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
-    frontend->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
-    frontend->AddExpectedEvent(ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);
     frontend->AddExpectedEvent(
-        ids1, AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
-    frontend->AddExpectedEvent(ids1,
-                               AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
 
     // Seed storage with expected manifest response info that will cause
     // an If-None-Match header to be put in the manifest fetch request.
@@ -3315,17 +3298,9 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
 
     HttpHeadersRequestTestJob::Initialize(std::string(), "\"LadeDade\"");
 
-    if (request_handler_type_ == URLREQUEST) {
-      net::URLRequestJobFactoryImpl* new_factory(
-          new net::URLRequestJobFactoryImpl);
-      new_factory->SetProtocolHandler(
-          "http", base::WrapUnique(new IfModifiedSinceJobFactory));
-      io_thread_->SetNewJobFactory(new_factory);
-    }
-
     MakeService();
-    group_ = new AppCacheGroup(
-        service_->storage(), GURL("http://headertest"), 111);
+    group_ =
+        new AppCacheGroup(service_->storage(), GURL("http://headertest"), 111);
     AppCacheUpdateJob* update =
         new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
@@ -3336,7 +3311,7 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
         "ETag: \"LadeDade\"\0"
         "\0";
     net::HttpResponseHeaders* headers =
-        new net::HttpResponseHeaders(std::string(data, arraysize(data)));
+        new net::HttpResponseHeaders(std::string(data, base::size(data)));
     net::HttpResponseInfo* response_info = new net::HttpResponseInfo();
     response_info->headers = headers;  // adds ref to headers
 
@@ -3345,16 +3320,12 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     update->internal_state_ = AppCacheUpdateJob::REFETCH_MANIFEST;
     update->FetchManifest(false);  // not first request
 
-    // If URLLoader based tests are enabled, we need to wait for the URL
-    // load requests to make it to the MockURLLoaderFactory.
-    if (request_handler_type_ == URLLOADER) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::BindOnce(&AppCacheUpdateJobTest::VerifyHeadersAndDeleteUpdate,
-                         update));
-    } else {
-      VerifyHeadersAndDeleteUpdate(update);
-    }
+    // We need to wait for the URL load requests to make it to the
+    // MockURLLoaderFactory.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&AppCacheUpdateJobTest::VerifyHeadersAndDeleteUpdate,
+                       update));
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&AppCacheUpdateJobTest::UpdateFinishedUnwound,
@@ -3365,20 +3336,12 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     ASSERT_TRUE(base::MessageLoopCurrentForIO::IsSet());
 
     // Verify that code is correct when building multiple extra headers.
-    HttpHeadersRequestTestJob::Initialize(
-        "Sat, 29 Oct 1994 19:43:31 GMT", "\"LadeDade\"");
-
-    if (request_handler_type_ == URLREQUEST) {
-      net::URLRequestJobFactoryImpl* new_factory(
-          new net::URLRequestJobFactoryImpl);
-      new_factory->SetProtocolHandler(
-          "http", base::WrapUnique(new IfModifiedSinceJobFactory));
-      io_thread_->SetNewJobFactory(new_factory);
-    }
+    HttpHeadersRequestTestJob::Initialize("Sat, 29 Oct 1994 19:43:31 GMT",
+                                          "\"LadeDade\"");
 
     MakeService();
-    group_ = new AppCacheGroup(
-        service_->storage(), GURL("http://headertest"), 111);
+    group_ =
+        new AppCacheGroup(service_->storage(), GURL("http://headertest"), 111);
     AppCacheUpdateJob* update =
         new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
@@ -3390,7 +3353,7 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
         "ETag: \"LadeDade\"\0"
         "\0";
     net::HttpResponseHeaders* headers =
-        new net::HttpResponseHeaders(std::string(data, arraysize(data)));
+        new net::HttpResponseHeaders(std::string(data, base::size(data)));
     net::HttpResponseInfo* response_info = new net::HttpResponseInfo();
     response_info->headers = headers;  // adds ref to headers
 
@@ -3399,16 +3362,12 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     update->internal_state_ = AppCacheUpdateJob::REFETCH_MANIFEST;
     update->FetchManifest(false);  // not first request
 
-    // If URLLoader based tests are enabled, we need to wait for the URL
-    // load requests to make it to the MockURLLoaderFactory.
-    if (request_handler_type_ == URLLOADER) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::BindOnce(&AppCacheUpdateJobTest::VerifyHeadersAndDeleteUpdate,
-                         update));
-    } else {
-      VerifyHeadersAndDeleteUpdate(update);
-    }
+    // We need to wait for the URL load requests to make it to the
+    // MockURLLoaderFactory.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&AppCacheUpdateJobTest::VerifyHeadersAndDeleteUpdate,
+                       update));
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&AppCacheUpdateJobTest::UpdateFinishedUnwound,
@@ -3422,8 +3381,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
         "files/valid_cross_origin_https_manifest");
 
     MakeService();
-    group_ = new AppCacheGroup(
-        service_->storage(), manifest_url, service_->storage()->NewGroupId());
+    group_ = new AppCacheGroup(service_->storage(), manifest_url,
+                               service_->storage()->NewGroupId());
     AppCacheUpdateJob* update =
         new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
@@ -3437,9 +3396,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     expect_group_obsolete_ = false;
     expect_group_has_cache_ = true;
     tested_manifest_ = NONE;
-    MockFrontend::HostIds host_ids(1, host->host_id());
-    frontend->AddExpectedEvent(host_ids,
-                               AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -3451,8 +3409,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
         "files/invalid_cross_origin_https_manifest");
 
     MakeService();
-    group_ = new AppCacheGroup(
-        service_->storage(), manifest_url, service_->storage()->NewGroupId());
+    group_ = new AppCacheGroup(service_->storage(), manifest_url,
+                               service_->storage()->NewGroupId());
     AppCacheUpdateJob* update =
         new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
@@ -3466,9 +3424,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     expect_group_obsolete_ = false;
     expect_group_has_cache_ = false;
     tested_manifest_ = NONE;
-    MockFrontend::HostIds host_ids(1, host->host_id());
-    frontend->AddExpectedEvent(host_ids,
-                               AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -3508,7 +3465,7 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     response_infos_.clear();
     service_.reset(nullptr);
 
-    event_->Signal();
+    std::move(test_completed_cb_).Run();
   }
 
   void MakeService() {
@@ -3532,8 +3489,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     group_->set_last_full_update_check_time(cache->update_time());
 
     // Add manifest entry to cache.
-    cache->AddEntry(manifest_entry_url,
-        AppCacheEntry(AppCacheEntry::MANIFEST, manifest_response_id));
+    cache->AddEntry(manifest_entry_url, AppCacheEntry(AppCacheEntry::MANIFEST,
+                                                      manifest_response_id));
 
     // Specific tests that expect a newer time should set
     // expect_full_update_time_newer_than_ which causes this
@@ -3543,9 +3500,14 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     return cache;
   }
 
-  AppCacheHost* MakeHost(int host_id, AppCacheFrontend* frontend) {
-    hosts_.push_back(
-        std::make_unique<AppCacheHost>(host_id, frontend, service_.get()));
+  AppCacheHost* MakeHost(int host_id,
+                         blink::mojom::AppCacheFrontend* frontend) {
+    constexpr int kProcessIdForTests = 123;
+    constexpr int kRenderFrameIdForTests = 456;
+    hosts_.push_back(std::make_unique<AppCacheHost>(host_id, kProcessIdForTests,
+                                                    kRenderFrameIdForTests,
+                                                    nullptr, service_.get()));
+    hosts_.back()->set_frontend_for_testing(frontend);
     return hosts_.back().get();
   }
 
@@ -3556,9 +3518,9 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     std::unique_ptr<net::HttpResponseInfo> http_info =
         std::make_unique<net::HttpResponseInfo>();
     http_info->headers = new net::HttpResponseHeaders(raw_headers);
-    scoped_refptr<AppCacheResponseInfo> info(
-        new AppCacheResponseInfo(service_->storage(), manifest_url, response_id,
-                                 std::move(http_info), 0));
+    scoped_refptr<AppCacheResponseInfo> info(new AppCacheResponseInfo(
+        service_->storage()->GetWeakPtr(), manifest_url, response_id,
+        std::move(http_info), 0));
     response_infos_.push_back(info);
     return info.get();
   }
@@ -3624,7 +3586,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
 
         // Check that all entries in the newest cache were stored.
         for (const auto& pair : group_->newest_complete_cache()->entries()) {
-          EXPECT_NE(kAppCacheNoResponseId, pair.second.response_id());
+          EXPECT_NE(blink::mojom::kAppCacheNoResponseId,
+                    pair.second.response_id());
 
           // Check that any copied entries have the expected response id
           // and that entries that are not copied have a different response id.
@@ -3648,26 +3611,16 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
 
       MockFrontend::RaisedEvents& expected_events = frontend->expected_events_;
       MockFrontend::RaisedEvents& actual_events = frontend->raised_events_;
-      EXPECT_EQ(expected_events.size(), actual_events.size());
+      ASSERT_EQ(expected_events.size(), actual_events.size());
 
       // Check each expected event.
-      for (size_t j = 0;
-           j < expected_events.size() && j < actual_events.size(); ++j) {
-        EXPECT_EQ(expected_events[j].second, actual_events[j].second);
-
-        MockFrontend::HostIds& expected_ids = expected_events[j].first;
-        MockFrontend::HostIds& actual_ids = actual_events[j].first;
-        EXPECT_EQ(expected_ids.size(), actual_ids.size());
-
-        for (size_t k = 0; k < expected_ids.size(); ++k) {
-          int id = expected_ids[k];
-          EXPECT_TRUE(base::ContainsValue(actual_ids, id));
-        }
+      for (size_t j = 0; j < expected_events.size() && j < actual_events.size();
+           ++j) {
+        EXPECT_EQ(expected_events[j], actual_events[j]);
       }
 
       if (!frontend->expected_error_message_.empty()) {
-        EXPECT_EQ(frontend->expected_error_message_,
-                  frontend->error_message_);
+        EXPECT_EQ(frontend->expected_error_message_, frontend->error_message_);
       }
     }
 
@@ -3708,9 +3661,9 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
   void VerifyManifest1(AppCache* cache) {
     size_t expected = 3 + expect_extra_entries_.size();
     EXPECT_EQ(expected, cache->entries().size());
-    const char* kManifestPath = tested_manifest_path_override_ ?
-        tested_manifest_path_override_ :
-        "files/manifest1";
+    const char* kManifestPath = tested_manifest_path_override_
+                                    ? tested_manifest_path_override_
+                                    : "files/manifest1";
     AppCacheEntry* entry =
         cache->GetEntry(MockHttpServer::GetMockUrl(kManifestPath));
     ASSERT_TRUE(entry);
@@ -3718,8 +3671,7 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     entry = cache->GetEntry(MockHttpServer::GetMockUrl("files/explicit1"));
     ASSERT_TRUE(entry);
     EXPECT_TRUE(entry->IsExplicit());
-    entry = cache->GetEntry(
-        MockHttpServer::GetMockUrl("files/fallback1a"));
+    entry = cache->GetEntry(MockHttpServer::GetMockUrl("files/fallback1a"));
     ASSERT_TRUE(entry);
     EXPECT_EQ(AppCacheEntry::FALLBACK, entry->types());
 
@@ -3732,11 +3684,10 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     expected = 1;
     ASSERT_EQ(expected, cache->fallback_namespaces_.size());
     EXPECT_TRUE(cache->fallback_namespaces_[0] ==
-                    AppCacheNamespace(
-                        APPCACHE_FALLBACK_NAMESPACE,
-                        MockHttpServer::GetMockUrl("files/fallback1"),
-                        MockHttpServer::GetMockUrl("files/fallback1a"),
-                        false));
+                AppCacheNamespace(
+                    APPCACHE_FALLBACK_NAMESPACE,
+                    MockHttpServer::GetMockUrl("files/fallback1"),
+                    MockHttpServer::GetMockUrl("files/fallback1a"), false));
 
     EXPECT_TRUE(cache->online_whitelist_namespaces_.empty());
     EXPECT_TRUE(cache->online_whitelist_all_);
@@ -3755,36 +3706,35 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     entry = cache->GetEntry(MockHttpServer::GetMockUrl("files/explicit1"));
     ASSERT_TRUE(entry);
     EXPECT_EQ(AppCacheEntry::EXPLICIT | AppCacheEntry::FALLBACK |
-        AppCacheEntry::MASTER, entry->types());
+                  AppCacheEntry::MASTER,
+              entry->types());
 
     expected = 1;
     ASSERT_EQ(expected, cache->fallback_namespaces_.size());
     EXPECT_TRUE(cache->fallback_namespaces_[0] ==
-                    AppCacheNamespace(
-                        APPCACHE_FALLBACK_NAMESPACE,
-                        MockHttpServer::GetMockUrl("files/fallback1"),
-                        MockHttpServer::GetMockUrl("files/explicit1"),
-                        false));
+                AppCacheNamespace(APPCACHE_FALLBACK_NAMESPACE,
+                                  MockHttpServer::GetMockUrl("files/fallback1"),
+                                  MockHttpServer::GetMockUrl("files/explicit1"),
+                                  false));
 
     EXPECT_EQ(expected, cache->online_whitelist_namespaces_.size());
     EXPECT_TRUE(cache->online_whitelist_namespaces_[0] ==
-                    AppCacheNamespace(
-                        APPCACHE_NETWORK_NAMESPACE,
-                        MockHttpServer::GetMockUrl("files/online1"),
-                        GURL(), false));
+                AppCacheNamespace(APPCACHE_NETWORK_NAMESPACE,
+                                  MockHttpServer::GetMockUrl("files/online1"),
+                                  GURL(), false));
     EXPECT_FALSE(cache->online_whitelist_all_);
 
     EXPECT_TRUE(cache->update_time_ > base::Time());
   }
 
   void VerifyEmptyManifest(AppCache* cache) {
-    const char* kManifestPath = tested_manifest_path_override_ ?
-        tested_manifest_path_override_ :
-        "files/empty-manifest";
+    const char* kManifestPath = tested_manifest_path_override_
+                                    ? tested_manifest_path_override_
+                                    : "files/empty-manifest";
     size_t expected = 1;
     EXPECT_EQ(expected, cache->entries().size());
-    AppCacheEntry* entry = cache->GetEntry(
-        MockHttpServer::GetMockUrl(kManifestPath));
+    AppCacheEntry* entry =
+        cache->GetEntry(MockHttpServer::GetMockUrl(kManifestPath));
     ASSERT_TRUE(entry);
     EXPECT_EQ(AppCacheEntry::MANIFEST, entry->types());
 
@@ -3802,8 +3752,7 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     ASSERT_TRUE(entry);
     EXPECT_EQ(AppCacheEntry::MANIFEST, entry->types());
 
-    entry = cache->GetEntry(
-        MockHttpServer::GetMockUrl("files/empty1"));
+    entry = cache->GetEntry(MockHttpServer::GetMockUrl("files/empty1"));
     ASSERT_TRUE(entry);
     EXPECT_EQ(AppCacheEntry::EXPLICIT, entry->types());
     EXPECT_TRUE(entry->has_response_id());
@@ -3817,19 +3766,17 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
 
   void VerifyMasterEntryNoUpdate(AppCache* cache) {
     EXPECT_EQ(size_t(3), cache->entries().size());
-    AppCacheEntry* entry = cache->GetEntry(
-        MockHttpServer::GetMockUrl("files/notmodified"));
+    AppCacheEntry* entry =
+        cache->GetEntry(MockHttpServer::GetMockUrl("files/notmodified"));
     ASSERT_TRUE(entry);
     EXPECT_EQ(AppCacheEntry::MANIFEST, entry->types());
 
-    entry = cache->GetEntry(
-        MockHttpServer::GetMockUrl("files/explicit1"));
+    entry = cache->GetEntry(MockHttpServer::GetMockUrl("files/explicit1"));
     ASSERT_TRUE(entry);
     EXPECT_EQ(AppCacheEntry::MASTER, entry->types());
     EXPECT_TRUE(entry->has_response_id());
 
-    entry = cache->GetEntry(
-        MockHttpServer::GetMockUrl("files/explicit2"));
+    entry = cache->GetEntry(MockHttpServer::GetMockUrl("files/explicit2"));
     ASSERT_TRUE(entry);
     EXPECT_EQ(AppCacheEntry::EXPLICIT | AppCacheEntry::MASTER, entry->types());
     EXPECT_TRUE(entry->has_response_id());
@@ -3874,7 +3821,7 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
   std::unique_ptr<MockAppCacheService> service_;
   scoped_refptr<AppCacheGroup> group_;
   scoped_refptr<AppCache> protect_newest_cache_;
-  std::unique_ptr<base::WaitableEvent> event_;
+  base::OnceClosure test_completed_cb_;
 
   std::unique_ptr<AppCacheResponseWriter> response_writer_;
 
@@ -3905,14 +3852,12 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
   AppCache::EntryMap expect_extra_entries_;
   std::map<GURL, int64_t> expect_response_ids_;
 
-  RequestHandlerType request_handler_type_;
-  base::test::ScopedFeatureList feature_list_;
   MockURLLoaderFactory mock_url_loader_factory_;
   scoped_refptr<URLLoaderFactoryGetter> loader_factory_getter_;
   content::TestBrowserThreadBundle thread_bundle_;
 };
 
-TEST_P(AppCacheUpdateJobTest, AlreadyChecking) {
+TEST_F(AppCacheUpdateJobTest, AlreadyChecking) {
   MockAppCacheService service;
   scoped_refptr<AppCacheGroup> group(
       new AppCacheGroup(service.storage(), GURL("http://manifesturl.com"),
@@ -3928,19 +3873,18 @@ TEST_P(AppCacheUpdateJobTest, AlreadyChecking) {
   EXPECT_EQ(AppCacheGroup::CHECKING, group->update_status());
 
   MockFrontend mock_frontend;
-  AppCacheHost host(1, &mock_frontend, &service);
+  AppCacheHost host(/*host_id=*/1, /*process_id=*/1, /*render_frame_id=*/1,
+                    nullptr, &service);
+  host.set_frontend_for_testing(&mock_frontend);
   update.StartUpdate(&host, GURL());
 
   MockFrontend::RaisedEvents events = mock_frontend.raised_events_;
-  size_t expected = 1;
-  EXPECT_EQ(expected, events.size());
-  EXPECT_EQ(expected, events[0].first.size());
-  EXPECT_EQ(host.host_id(), events[0].first[0]);
-  EXPECT_EQ(AppCacheEventID::APPCACHE_CHECKING_EVENT, events[0].second);
+  ASSERT_EQ(1u, events.size());
+  EXPECT_EQ(blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT, events[0]);
   EXPECT_EQ(AppCacheGroup::CHECKING, group->update_status());
 }
 
-TEST_P(AppCacheUpdateJobTest, AlreadyDownloading) {
+TEST_F(AppCacheUpdateJobTest, AlreadyDownloading) {
   MockAppCacheService service;
   scoped_refptr<AppCacheGroup> group(
       new AppCacheGroup(service.storage(), GURL("http://manifesturl.com"),
@@ -3956,254 +3900,246 @@ TEST_P(AppCacheUpdateJobTest, AlreadyDownloading) {
   EXPECT_EQ(AppCacheGroup::DOWNLOADING, group->update_status());
 
   MockFrontend mock_frontend;
-  AppCacheHost host(1, &mock_frontend, &service);
+  AppCacheHost host(/*host_id=*/1, /*process_id=*/1, /*render_frame_id=*/1,
+                    nullptr, &service);
+  host.set_frontend_for_testing(&mock_frontend);
   update.StartUpdate(&host, GURL());
 
   MockFrontend::RaisedEvents events = mock_frontend.raised_events_;
-  size_t expected = 2;
-  EXPECT_EQ(expected, events.size());
-  expected = 1;
-  EXPECT_EQ(expected, events[0].first.size());
-  EXPECT_EQ(host.host_id(), events[0].first[0]);
-  EXPECT_EQ(AppCacheEventID::APPCACHE_CHECKING_EVENT, events[0].second);
-
-  EXPECT_EQ(expected, events[1].first.size());
-  EXPECT_EQ(host.host_id(), events[1].first[0]);
-  EXPECT_EQ(AppCacheEventID::APPCACHE_DOWNLOADING_EVENT, events[1].second);
+  ASSERT_EQ(2u, events.size());
+  EXPECT_EQ(blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT, events[0]);
+  EXPECT_EQ(blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT,
+            events[1]);
 
   EXPECT_EQ(AppCacheGroup::DOWNLOADING, group->update_status());
 }
 
-TEST_P(AppCacheUpdateJobTest, StartCacheAttempt) {
+TEST_F(AppCacheUpdateJobTest, StartCacheAttempt) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::StartCacheAttemptTest);
 }
 
-TEST_P(AppCacheUpdateJobTest, StartUpgradeAttempt) {
+TEST_F(AppCacheUpdateJobTest, StartUpgradeAttempt) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::StartUpgradeAttemptTest);
 }
 
-TEST_P(AppCacheUpdateJobTest, CacheAttemptFetchManifestFail) {
+TEST_F(AppCacheUpdateJobTest, CacheAttemptFetchManifestFail) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::CacheAttemptFetchManifestFailTest);
 }
 
-TEST_P(AppCacheUpdateJobTest, UpgradeFetchManifestFail) {
+TEST_F(AppCacheUpdateJobTest, UpgradeFetchManifestFail) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::UpgradeFetchManifestFailTest);
 }
 
-TEST_P(AppCacheUpdateJobTest, ManifestRedirect) {
+TEST_F(AppCacheUpdateJobTest, ManifestRedirect) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::ManifestRedirectTest);
 }
 
-TEST_P(AppCacheUpdateJobTest, ManifestMissingMimeTypeTest) {
+TEST_F(AppCacheUpdateJobTest, ManifestMissingMimeTypeTest) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::ManifestMissingMimeTypeTest);
 }
 
-TEST_P(AppCacheUpdateJobTest, ManifestNotFound) {
+TEST_F(AppCacheUpdateJobTest, ManifestNotFound) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::ManifestNotFoundTest);
 }
 
-TEST_P(AppCacheUpdateJobTest, ManifestGone) {
+TEST_F(AppCacheUpdateJobTest, ManifestGone) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::ManifestGoneTest);
 }
 
-TEST_P(AppCacheUpdateJobTest, CacheAttemptNotModified) {
+TEST_F(AppCacheUpdateJobTest, CacheAttemptNotModified) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::CacheAttemptNotModifiedTest);
 }
 
-TEST_P(AppCacheUpdateJobTest, UpgradeNotModified) {
+TEST_F(AppCacheUpdateJobTest, UpgradeNotModified) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::UpgradeNotModifiedTest);
 }
 
-TEST_P(AppCacheUpdateJobTest, UpgradeManifestDataUnchanged) {
+TEST_F(AppCacheUpdateJobTest, UpgradeManifestDataUnchanged) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::UpgradeManifestDataUnchangedTest);
 }
 
-TEST_P(AppCacheUpdateJobTest, Bug95101Test) {
+TEST_F(AppCacheUpdateJobTest, Bug95101Test) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::Bug95101Test);
 }
 
-TEST_P(AppCacheUpdateJobTest, BasicCacheAttemptSuccess) {
+TEST_F(AppCacheUpdateJobTest, BasicCacheAttemptSuccess) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::BasicCacheAttemptSuccessTest);
 }
 
-TEST_P(AppCacheUpdateJobTest, DownloadInterceptEntriesTest) {
+TEST_F(AppCacheUpdateJobTest, DownloadInterceptEntriesTest) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::DownloadInterceptEntriesTest);
 }
 
-TEST_P(AppCacheUpdateJobTest, BasicUpgradeSuccess) {
+TEST_F(AppCacheUpdateJobTest, BasicUpgradeSuccess) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::BasicUpgradeSuccessTest);
 }
 
-TEST_P(AppCacheUpdateJobTest, UpgradeLoadFromNewestCache) {
+TEST_F(AppCacheUpdateJobTest, UpgradeLoadFromNewestCache) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::UpgradeLoadFromNewestCacheTest);
 }
 
-TEST_P(AppCacheUpdateJobTest, UpgradeNoLoadFromNewestCache) {
+TEST_F(AppCacheUpdateJobTest, UpgradeNoLoadFromNewestCache) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::UpgradeNoLoadFromNewestCacheTest);
 }
 
-TEST_P(AppCacheUpdateJobTest, UpgradeLoadFromNewestCacheVaryHeader) {
+TEST_F(AppCacheUpdateJobTest, UpgradeLoadFromNewestCacheVaryHeader) {
   RunTestOnIOThread(
       &AppCacheUpdateJobTest::UpgradeLoadFromNewestCacheVaryHeaderTest);
 }
 
-TEST_P(AppCacheUpdateJobTest, UpgradeLoadFromNewestCacheReuseVaryHeader) {
+TEST_F(AppCacheUpdateJobTest, UpgradeLoadFromNewestCacheReuseVaryHeader) {
   RunTestOnIOThread(
       &AppCacheUpdateJobTest::UpgradeLoadFromNewestCacheReuseVaryHeaderTest);
 }
 
-TEST_P(AppCacheUpdateJobTest, UpgradeSuccessMergedTypes) {
+TEST_F(AppCacheUpdateJobTest, UpgradeSuccessMergedTypes) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::UpgradeSuccessMergedTypesTest);
 }
 
-TEST_P(AppCacheUpdateJobTest, CacheAttemptFailUrlFetch) {
+TEST_F(AppCacheUpdateJobTest, CacheAttemptFailUrlFetch) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::CacheAttemptFailUrlFetchTest);
 }
 
-TEST_P(AppCacheUpdateJobTest, UpgradeFailUrlFetch) {
+TEST_F(AppCacheUpdateJobTest, UpgradeFailUrlFetch) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::UpgradeFailUrlFetchTest);
 }
 
-TEST_P(AppCacheUpdateJobTest, UpgradeFailMasterUrlFetch) {
+TEST_F(AppCacheUpdateJobTest, UpgradeFailMasterUrlFetch) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::UpgradeFailMasterUrlFetchTest);
 }
 
-TEST_P(AppCacheUpdateJobTest, EmptyManifest) {
+TEST_F(AppCacheUpdateJobTest, EmptyManifest) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::EmptyManifestTest);
 }
 
-TEST_P(AppCacheUpdateJobTest, EmptyFile) {
+TEST_F(AppCacheUpdateJobTest, EmptyFile) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::EmptyFileTest);
 }
 
-TEST_P(AppCacheUpdateJobTest, RetryRequest) {
+TEST_F(AppCacheUpdateJobTest, RetryRequest) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::RetryRequestTest);
 }
 
-TEST_P(AppCacheUpdateJobTest, RetryNoRetryAfter) {
+TEST_F(AppCacheUpdateJobTest, RetryNoRetryAfter) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::RetryNoRetryAfterTest);
 }
 
-TEST_P(AppCacheUpdateJobTest, RetryNonzeroRetryAfter) {
+TEST_F(AppCacheUpdateJobTest, RetryNonzeroRetryAfter) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::RetryNonzeroRetryAfterTest);
 }
 
-TEST_P(AppCacheUpdateJobTest, RetrySuccess) {
+TEST_F(AppCacheUpdateJobTest, RetrySuccess) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::RetrySuccessTest);
 }
 
-TEST_P(AppCacheUpdateJobTest, RetryUrl) {
+TEST_F(AppCacheUpdateJobTest, RetryUrl) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::RetryUrlTest);
 }
 
-TEST_P(AppCacheUpdateJobTest, FailStoreNewestCache) {
+TEST_F(AppCacheUpdateJobTest, FailStoreNewestCache) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::FailStoreNewestCacheTest);
 }
 
-TEST_P(AppCacheUpdateJobTest, MasterEntryFailStoreNewestCacheTest) {
+TEST_F(AppCacheUpdateJobTest, MasterEntryFailStoreNewestCacheTest) {
   RunTestOnIOThread(
       &AppCacheUpdateJobTest::MasterEntryFailStoreNewestCacheTest);
 }
 
-TEST_P(AppCacheUpdateJobTest, UpgradeFailStoreNewestCache) {
+TEST_F(AppCacheUpdateJobTest, UpgradeFailStoreNewestCache) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::UpgradeFailStoreNewestCacheTest);
 }
 
-TEST_P(AppCacheUpdateJobTest, UpgradeFailMakeGroupObsolete) {
+TEST_F(AppCacheUpdateJobTest, UpgradeFailMakeGroupObsolete) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::UpgradeFailMakeGroupObsoleteTest);
 }
 
-TEST_P(AppCacheUpdateJobTest, MasterEntryFetchManifestFail) {
+TEST_F(AppCacheUpdateJobTest, MasterEntryFetchManifestFail) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::MasterEntryFetchManifestFailTest);
 }
 
-TEST_P(AppCacheUpdateJobTest, MasterEntryBadManifest) {
+TEST_F(AppCacheUpdateJobTest, MasterEntryBadManifest) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::MasterEntryBadManifestTest);
 }
 
-TEST_P(AppCacheUpdateJobTest, MasterEntryManifestNotFound) {
+TEST_F(AppCacheUpdateJobTest, MasterEntryManifestNotFound) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::MasterEntryManifestNotFoundTest);
 }
 
-TEST_P(AppCacheUpdateJobTest, MasterEntryFailUrlFetch) {
+TEST_F(AppCacheUpdateJobTest, MasterEntryFailUrlFetch) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::MasterEntryFailUrlFetchTest);
 }
 
-TEST_P(AppCacheUpdateJobTest, MasterEntryAllFail) {
+TEST_F(AppCacheUpdateJobTest, MasterEntryAllFail) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::MasterEntryAllFailTest);
 }
 
-TEST_P(AppCacheUpdateJobTest, UpgradeMasterEntryAllFail) {
+TEST_F(AppCacheUpdateJobTest, UpgradeMasterEntryAllFail) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::UpgradeMasterEntryAllFailTest);
 }
 
-TEST_P(AppCacheUpdateJobTest, MasterEntrySomeFail) {
+TEST_F(AppCacheUpdateJobTest, MasterEntrySomeFail) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::MasterEntrySomeFailTest);
 }
 
-TEST_P(AppCacheUpdateJobTest, UpgradeMasterEntrySomeFail) {
+TEST_F(AppCacheUpdateJobTest, UpgradeMasterEntrySomeFail) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::UpgradeMasterEntrySomeFailTest);
 }
 
-TEST_P(AppCacheUpdateJobTest, MasterEntryNoUpdate) {
+TEST_F(AppCacheUpdateJobTest, MasterEntryNoUpdate) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::MasterEntryNoUpdateTest);
 }
 
-TEST_P(AppCacheUpdateJobTest, StartUpdateMidCacheAttempt) {
+TEST_F(AppCacheUpdateJobTest, StartUpdateMidCacheAttempt) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::StartUpdateMidCacheAttemptTest);
 }
 
-TEST_P(AppCacheUpdateJobTest, StartUpdateMidNoUpdate) {
+TEST_F(AppCacheUpdateJobTest, StartUpdateMidNoUpdate) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::StartUpdateMidNoUpdateTest);
 }
 
-TEST_P(AppCacheUpdateJobTest, StartUpdateMidDownload) {
+TEST_F(AppCacheUpdateJobTest, StartUpdateMidDownload) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::StartUpdateMidDownloadTest);
 }
 
-TEST_P(AppCacheUpdateJobTest, QueueMasterEntry) {
+TEST_F(AppCacheUpdateJobTest, QueueMasterEntry) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::QueueMasterEntryTest);
 }
 
-TEST_P(AppCacheUpdateJobTest, IfModifiedSinceCache) {
+TEST_F(AppCacheUpdateJobTest, IfModifiedSinceCache) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::IfModifiedSinceTestCache);
 }
 
-TEST_P(AppCacheUpdateJobTest, IfModifiedRefetch) {
+TEST_F(AppCacheUpdateJobTest, IfModifiedRefetch) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::IfModifiedTestRefetch);
 }
 
-TEST_P(AppCacheUpdateJobTest, IfModifiedLastModified) {
+TEST_F(AppCacheUpdateJobTest, IfModifiedLastModified) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::IfModifiedTestLastModified);
 }
 
-TEST_P(AppCacheUpdateJobTest, IfModifiedSinceUpgrade) {
+TEST_F(AppCacheUpdateJobTest, IfModifiedSinceUpgrade) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::IfModifiedSinceUpgradeTest);
 }
 
-TEST_P(AppCacheUpdateJobTest, IfNoneMatchUpgrade) {
+TEST_F(AppCacheUpdateJobTest, IfNoneMatchUpgrade) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::IfNoneMatchUpgradeTest);
 }
 
-TEST_P(AppCacheUpdateJobTest, IfNoneMatchRefetch) {
+TEST_F(AppCacheUpdateJobTest, IfNoneMatchRefetch) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::IfNoneMatchRefetchTest);
 }
 
-TEST_P(AppCacheUpdateJobTest, MultipleHeadersRefetch) {
+TEST_F(AppCacheUpdateJobTest, MultipleHeadersRefetch) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::MultipleHeadersRefetchTest);
 }
 
-TEST_P(AppCacheUpdateJobTest, CrossOriginHttpsSuccess) {
+TEST_F(AppCacheUpdateJobTest, CrossOriginHttpsSuccess) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::CrossOriginHttpsSuccessTest);
 }
 
-TEST_P(AppCacheUpdateJobTest, CrossOriginHttpsDenied) {
+TEST_F(AppCacheUpdateJobTest, CrossOriginHttpsDenied) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::CrossOriginHttpsDeniedTest);
 }
-
-INSTANTIATE_TEST_CASE_P(,
-                        AppCacheUpdateJobTest,
-                        ::testing::Values(URLREQUEST, URLLOADER));
 
 }  // namespace appcache_update_job_unittest
 }  // namespace content

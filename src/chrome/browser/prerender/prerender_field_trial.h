@@ -12,6 +12,9 @@ namespace prerender {
 // These Finch feature and parameter strings exposed for for testing.
 extern const base::Feature kNoStatePrefetchFeature;
 
+// Preconnects instead of prefetching from GWS.
+extern const base::Feature kGWSPrefetchHoldback;
+
 // Configures global state using kNoStatePrefetchFeature.
 void ConfigureNoStatePrefetch();
 

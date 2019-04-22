@@ -23,7 +23,7 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
@@ -85,7 +85,6 @@ class LoginScreenDefaultPolicyBrowsertestBase
   ~LoginScreenDefaultPolicyBrowsertestBase() override;
 
   // DevicePolicyCrosBrowserTest:
-  void SetUpInProcessBrowserTestFixture() override;
   void SetUpOnMainThread() override;
 
   void RefreshDevicePolicyAndWaitForPrefChange(const char* pref_name);
@@ -135,13 +134,6 @@ LoginScreenDefaultPolicyBrowsertestBase::
 
 LoginScreenDefaultPolicyBrowsertestBase::
     ~LoginScreenDefaultPolicyBrowsertestBase() {
-}
-
-void LoginScreenDefaultPolicyBrowsertestBase::
-    SetUpInProcessBrowserTestFixture() {
-  InstallOwnerKey();
-  MarkAsEnterpriseOwned();
-  DevicePolicyCrosBrowserTest::SetUpInProcessBrowserTestFixture();
 }
 
 void LoginScreenDefaultPolicyBrowsertestBase::SetUpOnMainThread() {

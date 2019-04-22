@@ -21,6 +21,7 @@ class MockDevice : public media::VideoCaptureDevice {
   void SendStubFrame(const media::VideoCaptureFormat& format,
                      int rotation,
                      int frame_feedback_id);
+  void SendOnStarted();
 
   // media::VideoCaptureDevice implementation.
   MOCK_METHOD2(DoAllocateAndStart,

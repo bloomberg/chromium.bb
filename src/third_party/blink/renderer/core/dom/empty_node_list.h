@@ -38,16 +38,12 @@ namespace blink {
 
 class EmptyNodeList final : public NodeList {
  public:
-  static EmptyNodeList* Create(Node& root_node) {
-    return MakeGarbageCollected<EmptyNodeList>(root_node);
-  }
-
   explicit EmptyNodeList(Node& root_node) : owner_(root_node) {}
   ~EmptyNodeList() override;
 
   Node& OwnerNode() const { return *owner_; }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   unsigned length() const override { return 0; }

@@ -10,11 +10,7 @@
             }
 
             function load() {
-                var canplayCount = 0;
                 function oncanplay() {
-                    if (++canplayCount < 2) {
-                        return;
-                    }
                     // Make sure we render the first frame.
                     requestAnimationFrame(function() {
                         video.play();
@@ -24,12 +20,12 @@
                 // Get the first video to stay on frame zero for comparison purposes.
                 var video = document.getElementsByTagName("video")[0];
                 video.src = "../media/resources/frame_size_change.webm";
-                video.addEventListener('canplay', oncanplay);
+                video.addEventListener('canplay', oncanplay, {once: true});
 
                 // Get the second video to play through the clip with changing dimensions.
                 video = document.getElementsByTagName("video")[1];
                 video.src = "../media/resources/frame_size_change.webm";
-                video.addEventListener('canplay', oncanplay);
+                video.addEventListener('canplay', oncanplay, {once: true});
 
                 video.addEventListener('playing', function() {
                     // Make sure the video plays for a bit.

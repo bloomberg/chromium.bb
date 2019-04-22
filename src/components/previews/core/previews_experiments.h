@@ -68,6 +68,10 @@ size_t MaxStoredHistoryLengthForHostIndifferentBlackList();
 // The maximum number of hosts allowed in the in memory black list.
 size_t MaxInMemoryHostsInBlackList();
 
+// The maximum number of hosts allowed to be requested by the client to the
+// remote Optimzation Guide Service.
+size_t MaxHostsForOptimizationGuideServiceHintsFetch();
+
 // The number of recent navigations that were opted out of for a given host that
 // would trigger that host to be blacklisted.
 int PerHostBlackListOptOutThreshold();
@@ -96,6 +100,12 @@ base::TimeDelta LitePagePreviewsNavigationTimeoutDuration();
 // The host for Lite Page server previews.
 GURL GetLitePagePreviewsDomainURL();
 
+// The API key for the One Platform Optimization Guide Service.
+std::string GetOptimizationGuideServiceAPIKey();
+
+// The host for the One Platform Optimization Guide Service.
+GURL GetOptimizationGuideServiceURL();
+
 // The duration of a single bypass for Lite Page Server Previews.
 base::TimeDelta LitePagePreviewsSingleBypassDuration();
 
@@ -115,6 +125,10 @@ bool LitePagePreviewsOverridePageHints();
 // a client-side safety limit for RAM use in case server sends too large of
 // a blacklist.
 int LitePageRedirectPreviewMaxServerBlacklistByteSize();
+
+// The maximum number of times that a Lite Page Redirect preview should restart
+// a navigation.
+size_t LitePageRedirectPreviewMaxNavigationRestarts();
 
 // The maximum number of seconds to loadshed the Previews server for.
 int PreviewServerLoadshedMaxSeconds();
@@ -163,9 +177,9 @@ size_t GetMaxPageHintsInMemoryThreshhold();
 // Whether server optimization hints are enabled.
 bool IsOptimizationHintsEnabled();
 
-// The threshold of EffectiveConnectionType above which Client Lo-Fi previews
-// should not be served.
-net::EffectiveConnectionType EffectiveConnectionTypeThresholdForClientLoFi();
+// Returns true if the feature to fetch hints from the remote Optimization Guide
+// Service is enabled.
+bool IsHintsFetchingEnabled();
 
 // For estimating NoScript data savings, this is the percentage factor to
 // multiple by the network bytes for inflating the original_bytes count.
@@ -174,11 +188,6 @@ int NoScriptPreviewsInflationPercent();
 // For estimating NoScript data savings, this is the number of bytes to
 // for inflating the original_bytes count.
 int NoScriptPreviewsInflationBytes();
-
-// Whether to use top level optimization hints for NoScript instead of
-// page hints. This is to allow for reverting to original behavior until
-// page hints for NoScript is successfully launched.
-bool NoScriptPreviewsUsesTopLevelHints();
 
 // For estimating ResourceLoadingHints data savings, this is the percentage
 // factor to multiple by the network bytes for inflating the original_bytes

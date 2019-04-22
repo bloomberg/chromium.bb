@@ -709,9 +709,14 @@ void GenerateCaps(IDirect3D9 *d3d9,
     // https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_robustness.txt
     extensions->robustBufferAccessBehavior = false;
     extensions->blendMinMax                = true;
+    // https://docs.microsoft.com/en-us/windows/desktop/direct3ddxgi/format-support-for-direct3d-feature-level-9-1-hardware
+    extensions->floatBlend                 = false;
     extensions->framebufferBlit            = true;
     extensions->framebufferMultisample     = true;
-    extensions->instancedArrays            = deviceCaps.PixelShaderVersion >= D3DPS_VERSION(3, 0);
+    extensions->instancedArraysANGLE       = deviceCaps.PixelShaderVersion >= D3DPS_VERSION(3, 0);
+    // D3D9 requires at least one attribute that has a divisor of 0, which isn't required by the EXT
+    // extension
+    extensions->instancedArraysEXT         = false;
     extensions->packReverseRowOrder        = true;
     extensions->standardDerivatives =
         (deviceCaps.PS20Caps.Caps & D3DPS20CAPS_GRADIENTINSTRUCTIONS) != 0;

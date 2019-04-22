@@ -16,6 +16,7 @@
 
 #include "common/Assert.h"
 #include "common/Constants.h"
+#include "utils/ComboRenderPipelineDescriptor.h"
 #include "utils/DawnHelpers.h"
 
 #include <array>
@@ -51,15 +52,17 @@ class PushConstantTest: public DawnTest {
 
             dawn::PipelineLayout pl = utils::MakeBasicPipelineLayout(device, &bgl);
 
-            dawn::BufferView views[2] = {
-                buf1.CreateBufferViewBuilder().SetExtent(0, 4).GetResult(),
-                buf2.CreateBufferViewBuilder().SetExtent(0, 4).GetResult(),
-            };
-
-            dawn::BindGroup bg = device.CreateBindGroupBuilder()
-                .SetLayout(bgl)
-                .SetBufferViews(0, extraBuffer ? 2 : 1, views)
-                .GetResult();
+            dawn::BindGroup bg;
+            if (extraBuffer) {
+                bg = utils::MakeBindGroup(device, bgl, {
+                    {0, buf1, 0, 4},
+                    {1, buf2, 0, 4},
+                });
+            } else {
+                bg = utils::MakeBindGroup(device, bgl, {
+                    {0, buf1, 0, 4},
+                });
+            }
 
             return {std::move(pl), std::move(bg), std::move(buf1)};
         }
@@ -146,9 +149,13 @@ class PushConstantTest: public DawnTest {
             );
 
             dawn::ComputePipelineDescriptor descriptor;
-            descriptor.module = module;
-            descriptor.entryPoint = "main";
             descriptor.layout = pl;
+
+            dawn::PipelineStageDescriptor computeStage;
+            computeStage.module = module;
+            computeStage.entryPoint = "main";
+            descriptor.computeStage = &computeStage;
+
             return device.CreateComputePipeline(&descriptor);
         }
 
@@ -182,25 +189,13 @@ class PushConstantTest: public DawnTest {
                 })").c_str()
             );
 
-            dawn::BlendDescriptor blend;
-            blend.operation = dawn::BlendOperation::Add;
-            blend.srcFactor = dawn::BlendFactor::One;
-            blend.dstFactor = dawn::BlendFactor::One;
+            utils::ComboRenderPipelineDescriptor descriptor(device);
+            descriptor.layout = layout;
+            descriptor.cVertexStage.module = vsModule;
+            descriptor.cFragmentStage.module = fsModule;
+            descriptor.primitiveTopology = dawn::PrimitiveTopology::PointList;
 
-            dawn::BlendState blendState = device.CreateBlendStateBuilder()
-                .SetBlendEnabled(true)
-                .SetColorBlend(&blend)
-                .SetAlphaBlend(&blend)
-                .GetResult();
-
-            return device.CreateRenderPipelineBuilder()
-                .SetColorAttachmentFormat(0, dawn::TextureFormat::R8G8B8A8Unorm)
-                .SetLayout(layout)
-                .SetStage(dawn::ShaderStage::Vertex, vsModule, "main")
-                .SetStage(dawn::ShaderStage::Fragment, fsModule, "main")
-                .SetPrimitiveTopology(dawn::PrimitiveTopology::PointList)
-                .SetColorAttachmentBlendState(0, blendState)
-                .GetResult();
+            return device.CreateRenderPipeline(&descriptor);
         }
 };
 
@@ -212,13 +207,13 @@ TEST_P(PushConstantTest, ComputePassDefaultsToZero) {
     dawn::ComputePipeline pipeline = MakeTestComputePipeline(binding.layout, MakeAllZeroSpec());
 
     uint32_t notZero = 42;
-    dawn::CommandBufferBuilder builder = device.CreateCommandBufferBuilder();
+    dawn::CommandEncoder encoder = device.CreateCommandEncoder();
     {
-        dawn::ComputePassEncoder pass = builder.BeginComputePass();
+        dawn::ComputePassEncoder pass = encoder.BeginComputePass();
 
         // Test compute push constants are set to zero by default.
-        pass.SetComputePipeline(pipeline);
-        pass.SetBindGroup(0, binding.bindGroup);
+        pass.SetPipeline(pipeline);
+        pass.SetBindGroup(0, binding.bindGroup, 0, nullptr);
         pass.Dispatch(1, 1, 1);
         // Set push constants to non-zero value to check they will be reset to zero
         // on the next BeginComputePass
@@ -227,16 +222,16 @@ TEST_P(PushConstantTest, ComputePassDefaultsToZero) {
         pass.EndPass();
     }
     {
-        dawn::ComputePassEncoder pass = builder.BeginComputePass();
+        dawn::ComputePassEncoder pass = encoder.BeginComputePass();
 
-        pass.SetComputePipeline(pipeline);
-        pass.SetBindGroup(0, binding.bindGroup);
+        pass.SetPipeline(pipeline);
+        pass.SetBindGroup(0, binding.bindGroup, 0, nullptr);
         pass.Dispatch(1, 1, 1);
 
         pass.EndPass();
     }
 
-    dawn::CommandBuffer commands = builder.GetResult();
+    dawn::CommandBuffer commands = encoder.Finish();
     queue.Submit(1, &commands);
 
     EXPECT_BUFFER_U32_EQ(1, binding.resultBuffer, 0);
@@ -251,16 +246,16 @@ TEST_P(PushConstantTest, RenderPassDefaultsToZero) {
     dawn::PipelineLayout layout = MakeEmptyLayout();
     dawn::RenderPipeline pipeline = MakeTestRenderPipeline(layout, MakeAllZeroSpec(), MakeAllZeroSpec());
 
-    dawn::CommandBufferBuilder builder = device.CreateCommandBufferBuilder();
+    dawn::CommandEncoder encoder = device.CreateCommandEncoder();
     {
-        dawn::RenderPassEncoder pass = builder.BeginRenderPass(renderPass.renderPassInfo);
+        dawn::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);
         // Test render push constants are set to zero by default.
-        pass.SetRenderPipeline(pipeline);
-        pass.DrawArrays(1, 1, 0, 0);
+        pass.SetPipeline(pipeline);
+        pass.Draw(1, 1, 0, 0);
         pass.EndPass();
     }
 
-    dawn::CommandBuffer commands = builder.GetResult();
+    dawn::CommandBuffer commands = encoder.Finish();
     queue.Submit(1, &commands);
 
     EXPECT_PIXEL_RGBA8_EQ(RGBA8(1, 1, 0, 0), renderPass.color, 0, 0);
@@ -281,19 +276,19 @@ TEST_P(PushConstantTest, VariousConstantTypes) {
     dawn::ComputePipeline pipeline = MakeTestComputePipeline(binding.layout, spec);
 
 
-    dawn::CommandBufferBuilder builder = device.CreateCommandBufferBuilder();
+    dawn::CommandEncoder encoder = device.CreateCommandEncoder();
     {
-        dawn::ComputePassEncoder pass = builder.BeginComputePass();
+        dawn::ComputePassEncoder pass = encoder.BeginComputePass();
 
         pass.SetPushConstants(dawn::ShaderStageBit::Compute, 0, 3, reinterpret_cast<uint32_t*>(&values));
-        pass.SetComputePipeline(pipeline);
-        pass.SetBindGroup(0, binding.bindGroup);
+        pass.SetPipeline(pipeline);
+        pass.SetBindGroup(0, binding.bindGroup, 0, nullptr);
         pass.Dispatch(1, 1, 1);
 
         pass.EndPass();
     }
 
-    dawn::CommandBuffer commands = builder.GetResult();
+    dawn::CommandBuffer commands = encoder.Finish();
     queue.Submit(1, &commands);
 
     EXPECT_BUFFER_U32_EQ(1, binding.resultBuffer, 0);
@@ -311,25 +306,25 @@ TEST_P(PushConstantTest, InheritThroughPipelineLayoutChange) {
 
     uint32_t one = 1;
     uint32_t two = 2;
-    dawn::CommandBufferBuilder builder = device.CreateCommandBufferBuilder();
+    dawn::CommandEncoder encoder = device.CreateCommandEncoder();
     {
-        dawn::ComputePassEncoder pass = builder.BeginComputePass();
+        dawn::ComputePassEncoder pass = encoder.BeginComputePass();
 
         // Set Push constant before there is a pipeline set
         pass.SetPushConstants(dawn::ShaderStageBit::Compute, 0, 1, &one);
-        pass.SetComputePipeline(pipeline1);
-        pass.SetBindGroup(0, binding1.bindGroup);
+        pass.SetPipeline(pipeline1);
+        pass.SetBindGroup(0, binding1.bindGroup, 0, nullptr);
         pass.Dispatch(1, 1, 1);
         // Change the push constant before changing pipeline layout
         pass.SetPushConstants(dawn::ShaderStageBit::Compute, 0, 1, &two);
-        pass.SetComputePipeline(pipeline2);
-        pass.SetBindGroup(0, binding2.bindGroup);
+        pass.SetPipeline(pipeline2);
+        pass.SetBindGroup(0, binding2.bindGroup, 0, nullptr);
         pass.Dispatch(1, 1, 1);
 
         pass.EndPass();
     }
 
-    dawn::CommandBuffer commands = builder.GetResult();
+    dawn::CommandBuffer commands = encoder.Finish();
     queue.Submit(1, &commands);
 
     EXPECT_BUFFER_U32_EQ(1, binding1.resultBuffer, 0);
@@ -348,19 +343,19 @@ TEST_P(PushConstantTest, SetAllConstantsToNonZero) {
     auto binding = MakeTestBindings(false);
     dawn::ComputePipeline pipeline = MakeTestComputePipeline(binding.layout, spec);
 
-    dawn::CommandBufferBuilder builder = device.CreateCommandBufferBuilder();
+    dawn::CommandEncoder encoder = device.CreateCommandEncoder();
     {
-        dawn::ComputePassEncoder pass = builder.BeginComputePass();
+        dawn::ComputePassEncoder pass = encoder.BeginComputePass();
 
         pass.SetPushConstants(dawn::ShaderStageBit::Compute, 0, kMaxPushConstants, &values[0]);
-        pass.SetComputePipeline(pipeline);
-        pass.SetBindGroup(0, binding.bindGroup);
+        pass.SetPipeline(pipeline);
+        pass.SetBindGroup(0, binding.bindGroup, 0, nullptr);
         pass.Dispatch(1, 1, 1);
 
         pass.EndPass();
     }
 
-    dawn::CommandBuffer commands = builder.GetResult();
+    dawn::CommandBuffer commands = encoder.Finish();
     queue.Submit(1, &commands);
 
     EXPECT_BUFFER_U32_EQ(1, binding.resultBuffer, 0);
@@ -378,17 +373,17 @@ TEST_P(PushConstantTest, SeparateVertexAndFragmentConstants) {
 
     uint32_t one = 1;
     uint32_t two = 2;
-    dawn::CommandBufferBuilder builder = device.CreateCommandBufferBuilder();
+    dawn::CommandEncoder encoder = device.CreateCommandEncoder();
     {
-        dawn::RenderPassEncoder pass = builder.BeginRenderPass(renderPass.renderPassInfo);
+        dawn::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);
         pass.SetPushConstants(dawn::ShaderStageBit::Vertex, 0, 1, &one);
         pass.SetPushConstants(dawn::ShaderStageBit::Fragment, 0, 1, &two);
-        pass.SetRenderPipeline(pipeline);
-        pass.DrawArrays(1, 1, 0, 0);
+        pass.SetPipeline(pipeline);
+        pass.Draw(1, 1, 0, 0);
         pass.EndPass();
     }
 
-    dawn::CommandBuffer commands = builder.GetResult();
+    dawn::CommandBuffer commands = encoder.Finish();
     queue.Submit(1, &commands);
 
     EXPECT_PIXEL_RGBA8_EQ(RGBA8(1, 1, 0, 0), renderPass.color, 0, 0);
@@ -404,18 +399,18 @@ TEST_P(PushConstantTest, SimultaneousVertexAndFragmentConstants) {
     dawn::RenderPipeline pipeline = MakeTestRenderPipeline(layout, spec, spec);
 
     uint32_t two = 2;
-    dawn::CommandBufferBuilder builder = device.CreateCommandBufferBuilder();
+    dawn::CommandEncoder encoder = device.CreateCommandEncoder();
     {
-        dawn::RenderPassEncoder pass = builder.BeginRenderPass(renderPass.renderPassInfo);
+        dawn::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);
         pass.SetPushConstants(dawn::ShaderStageBit::Vertex | dawn::ShaderStageBit::Fragment, 0, 1, &two);
-        pass.SetRenderPipeline(pipeline);
-        pass.DrawArrays(1, 1, 0, 0);
+        pass.SetPipeline(pipeline);
+        pass.Draw(1, 1, 0, 0);
         pass.EndPass();
     }
 
-    dawn::CommandBuffer commands = builder.GetResult();
+    dawn::CommandBuffer commands = encoder.Finish();
     queue.Submit(1, &commands);
 
     EXPECT_PIXEL_RGBA8_EQ(RGBA8(1, 1, 0, 0), renderPass.color, 0, 0);
 }
-DAWN_INSTANTIATE_TEST(PushConstantTest, MetalBackend, OpenGLBackend)
+DAWN_INSTANTIATE_TEST(PushConstantTest, MetalBackend, OpenGLBackend);

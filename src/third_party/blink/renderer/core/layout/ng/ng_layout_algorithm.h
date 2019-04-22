@@ -17,11 +17,31 @@ class ComputedStyle;
 class NGLayoutResult;
 struct MinMaxSizeInput;
 
+// Operations provided by a layout algorithm.
+class NGLayoutAlgorithmOperations {
+ public:
+  // Actual layout function. Lays out the children and descendants within the
+  // constraints given by the NGConstraintSpace. Returns a layout result with
+  // the resulting layout information.
+  // TODO(layout-dev): attempt to make this function const.
+  virtual scoped_refptr<const NGLayoutResult> Layout() = 0;
+
+  // Computes the min-content and max-content intrinsic sizes for the given box.
+  // The result will not take any min-width, max-width or width properties into
+  // account. If the return value is empty, the caller is expected to synthesize
+  // this value from the overflow rect returned from Layout called with an
+  // available width of 0 and LayoutUnit::max(), respectively.
+  virtual base::Optional<MinMaxSize> ComputeMinMaxSize(
+      const MinMaxSizeInput&) const {
+    return base::nullopt;
+  }
+};
+
 // Base class for all LayoutNG algorithms.
 template <typename NGInputNodeType,
           typename NGBoxFragmentBuilderType,
           typename NGBreakTokenType>
-class CORE_EXPORT NGLayoutAlgorithm {
+class CORE_EXPORT NGLayoutAlgorithm : public NGLayoutAlgorithmOperations {
   STACK_ALLOCATED();
  public:
   NGLayoutAlgorithm(NGInputNodeType node,
@@ -30,9 +50,12 @@ class CORE_EXPORT NGLayoutAlgorithm {
                     TextDirection direction,
                     const NGBreakTokenType* break_token)
       : node_(node),
-        constraint_space_(space),
         break_token_(break_token),
-        container_builder_(node, style, space.GetWritingMode(), direction) {}
+        container_builder_(node,
+                           style,
+                           &space,
+                           space.GetWritingMode(),
+                           direction) {}
 
   NGLayoutAlgorithm(NGInputNodeType node,
                     const NGConstraintSpace& space,
@@ -45,31 +68,18 @@ class CORE_EXPORT NGLayoutAlgorithm {
 
   virtual ~NGLayoutAlgorithm() = default;
 
-  // Actual layout function. Lays out the children and descendants within the
-  // constraints given by the NGConstraintSpace. Returns a layout result with
-  // the resulting layout information.
-  // TODO(layout-dev): attempt to make this function const.
-  virtual scoped_refptr<NGLayoutResult> Layout() = 0;
-
-  // Computes the min-content and max-content intrinsic sizes for the given box.
-  // The result will not take any min-width, max-width or width properties into
-  // account. If the return value is empty, the caller is expected to synthesize
-  // this value from the overflow rect returned from Layout called with an
-  // available width of 0 and LayoutUnit::max(), respectively.
-  virtual base::Optional<MinMaxSize> ComputeMinMaxSize(
-      const MinMaxSizeInput&) const {
-    return base::nullopt;
-  }
-
  protected:
-  const NGConstraintSpace& ConstraintSpace() const { return constraint_space_; }
+  const NGConstraintSpace& ConstraintSpace() const {
+    DCHECK(container_builder_.ConstraintSpace());
+    return *container_builder_.ConstraintSpace();
+  }
 
   const ComputedStyle& Style() const { return node_.Style(); }
 
   NGBfcOffset ContainerBfcOffset() const {
     DCHECK(container_builder_.BfcBlockOffset());
     return {container_builder_.BfcLineOffset(),
-            container_builder_.BfcBlockOffset().value()};
+            *container_builder_.BfcBlockOffset()};
   }
 
   NGInputNodeType Node() const { return node_; }
@@ -77,7 +87,6 @@ class CORE_EXPORT NGLayoutAlgorithm {
   const NGBreakTokenType* BreakToken() const { return break_token_.get(); }
 
   NGInputNodeType node_;
-  const NGConstraintSpace& constraint_space_;
 
   // The break token from which we are currently resuming layout.
   scoped_refptr<const NGBreakTokenType> break_token_;

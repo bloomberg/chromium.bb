@@ -15,16 +15,16 @@
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/hash.h"
+#include "base/hash/hash.h"
+#include "base/hash/sha1.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/shared_memory.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
-#include "base/sha1.h"
+#include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -185,12 +185,12 @@ bool AddDirectory(int path,
 // Compares the loaded |module| file name matches |module_name|.
 bool IsExpandedModuleName(HMODULE module, const wchar_t* module_name) {
   wchar_t path[MAX_PATH];
-  DWORD sz = ::GetModuleFileNameW(module, path, arraysize(path));
-  if ((sz == arraysize(path)) || (sz == 0)) {
+  DWORD sz = ::GetModuleFileNameW(module, path, base::size(path));
+  if ((sz == base::size(path)) || (sz == 0)) {
     // XP does not set the last error properly, so we bail out anyway.
     return false;
   }
-  if (!::GetLongPathName(path, path, arraysize(path)))
+  if (!::GetLongPathName(path, path, base::size(path)))
     return false;
   base::FilePath fname(path);
   return (fname.BaseName().value() == module_name);
@@ -239,7 +239,7 @@ void BlacklistAddOneDll(const wchar_t* module_name,
 // Eviction of injected DLLs is done by the sandbox so that the injected module
 // does not get a chance to execute any code.
 void AddGenericDllEvictionPolicy(sandbox::TargetPolicy* policy) {
-  for (int ix = 0; ix != arraysize(kTroublesomeDlls); ++ix)
+  for (int ix = 0; ix != base::size(kTroublesomeDlls); ++ix)
     BlacklistAddOneDll(kTroublesomeDlls[ix], true, policy);
 }
 
@@ -862,13 +862,12 @@ sandbox::ResultCode SandboxWin::StartSandboxedProcess(
     options.handles_to_inherit = handles_to_inherit;
     BOOL in_job = true;
     // Prior to Windows 8 nested jobs aren't possible.
-    if (sandbox_type == SANDBOX_TYPE_NETWORK &&
-        (base::win::GetVersion() >= base::win::VERSION_WIN8 ||
-         (::IsProcessInJob(::GetCurrentProcess(), nullptr, &in_job) &&
-          !in_job))) {
-      // Launch the process in a job to ensure that the network process doesn't
-      // outlive the browser. This could happen if there is a lot of I/O on
-      // process shutdown, in which case TerminateProcess would fail.
+    if (base::win::GetVersion() >= base::win::VERSION_WIN8 ||
+        (::IsProcessInJob(::GetCurrentProcess(), nullptr, &in_job) &&
+         !in_job)) {
+      // Launch the process in a job to ensure that it doesn't outlive the
+      // browser. This could happen if there is a lot of I/O on process
+      // shutdown, in which case TerminateProcess would fail.
       // https://crbug.com/820996
       if (!g_job_object_handle) {
         sandbox::Job job_obj;

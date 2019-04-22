@@ -7,6 +7,7 @@
 
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 namespace scheduler {
@@ -14,6 +15,8 @@ namespace scheduler {
 // A CancelableClosureHolder is a CancelableCallback which resets its wrapped
 // callback with a cached closure whenever it is canceled.
 class CancelableClosureHolder {
+  DISALLOW_NEW();
+
  public:
   CancelableClosureHolder();
   ~CancelableClosureHolder();

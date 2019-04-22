@@ -1,10 +1,13 @@
-main frame - didStartProvisionalLoadForFrame
+main frame - DidStartNavigation
+main frame - ReadyToCommitNavigation
 main frame - didCommitLoadForFrame
 main frame - didReceiveTitle: 
 main frame - didFinishDocumentLoadForFrame
 main frame - didHandleOnloadEventsForFrame
 main frame - didFinishLoadForFrame
-main frame - didStartProvisionalLoadForFrame
+main frame - BeginNavigation request to 'http://127.0.0.1:8000/loading/link-preload-image-srcset-2x.html', http method GET
+main frame - DidStartNavigation
+main frame - ReadyToCommitNavigation
 main frame - didCommitLoadForFrame
 main frame - didReceiveTitle: 
 main frame - didFinishDocumentLoadForFrame
@@ -18,5 +21,6 @@ PASS internals.isPreloaded('resources/image2.png'); is true
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 This test passes if the fallback image (defined in the href attribute) is not preloaded, but the 2x version (defined in imagesrcset) is.
 The second link rel=preload is here to make sure isPreloaded is working properly

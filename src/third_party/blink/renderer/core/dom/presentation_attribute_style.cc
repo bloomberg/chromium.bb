@@ -64,7 +64,7 @@ static bool operator!=(const PresentationAttributeCacheKey& a,
 struct PresentationAttributeCacheEntry final
     : public GarbageCollectedFinalized<PresentationAttributeCacheEntry> {
  public:
-  void Trace(blink::Visitor* visitor) { visitor->Trace(value); }
+  void Trace(Visitor* visitor) { visitor->Trace(value); }
 
   PresentationAttributeCacheKey key;
   Member<CSSPropertyValueSet> value;
@@ -174,7 +174,7 @@ CSSPropertyValueSet* ComputePresentationAttributeStyle(Element& element) {
     AttributeCollection attributes = element.AttributesWithoutUpdate();
     for (const Attribute& attr : attributes) {
       element.CollectStyleForPresentationAttribute(
-          attr.GetName(), attr.Value(), ToMutableCSSPropertyValueSet(style));
+          attr.GetName(), attr.Value(), To<MutableCSSPropertyValueSet>(style));
     }
   }
 

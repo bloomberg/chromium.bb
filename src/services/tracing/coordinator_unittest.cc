@@ -4,166 +4,24 @@
 
 #include "services/tracing/coordinator.h"
 
-#include <algorithm>
 #include <memory>
-#include <set>
-#include <string>
-#include <utility>
-#include <vector>
 
 #include "base/run_loop.h"
-#include "base/strings/string_split.h"
-#include "base/test/scoped_task_environment.h"
-#include "mojo/public/cpp/system/data_pipe.h"
-#include "mojo/public/cpp/system/data_pipe_drainer.h"
-#include "services/service_manager/public/cpp/service_context_ref.h"
-#include "services/tracing/public/mojom/tracing.mojom.h"
+#include "services/tracing/coordinator_test_util.h"
 #include "services/tracing/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace tracing {
 
-class CoordinatorTest : public testing::Test,
-                        public mojo::DataPipeDrainer::Client {
+class CoordinatorTest : public testing::Test, public CoordinatorTestUtil {
  public:
-  // testing::Test
   void SetUp() override {
-    agent_registry_ = std::make_unique<AgentRegistry>();
-    coordinator_ = std::make_unique<Coordinator>(agent_registry_.get());
-    output_ = "";
+    CoordinatorTestUtil::SetUp();
+    coordinator_ = std::make_unique<Coordinator>(agent_registry(),
+                                                 base::RepeatingClosure());
+    coordinator_->FinishedReceivingRunningPIDs();
   }
-
-  // testing::Test
-  void TearDown() override {
-    agents_.clear();
-    coordinator_.reset();
-    agent_registry_.reset();
-  }
-
-  // mojo::DataPipeDrainer::Client
-  void OnDataAvailable(const void* data, size_t num_bytes) override {
-    output_.append(static_cast<const char*>(data), num_bytes);
-  }
-
-  // mojo::DataPipeDrainer::Client
-  void OnDataComplete() override { std::move(quit_closure_).Run(); }
-
-  MockAgent* AddArrayAgent(base::ProcessId pid) {
-    auto agent = std::make_unique<MockAgent>();
-    agent_registry_->RegisterAgent(agent->CreateAgentPtr(), "traceEvents",
-                                   mojom::TraceDataType::ARRAY, false, pid);
-    agents_.push_back(std::move(agent));
-    return agents_.back().get();
-  }
-
-  MockAgent* AddArrayAgent() { return AddArrayAgent(base::kNullProcessId); }
-
-  MockAgent* AddObjectAgent() {
-    auto agent = std::make_unique<MockAgent>();
-    agent_registry_->RegisterAgent(agent->CreateAgentPtr(), "systemTraceEvents",
-                                   mojom::TraceDataType::OBJECT, false,
-                                   base::kNullProcessId);
-    agents_.push_back(std::move(agent));
-    return agents_.back().get();
-  }
-
-  MockAgent* AddStringAgent() {
-    auto agent = std::make_unique<MockAgent>();
-    agent_registry_->RegisterAgent(agent->CreateAgentPtr(), "power",
-                                   mojom::TraceDataType::STRING, false,
-                                   base::kNullProcessId);
-    agents_.push_back(std::move(agent));
-    return agents_.back().get();
-  }
-
-  void StartTracing(std::string config,
-                    bool expected_response,
-                    bool stop_and_flush) {
-    base::RepeatingClosure closure;
-    if (stop_and_flush) {
-      closure = base::BindRepeating(&CoordinatorTest::StopAndFlush,
-                                    base::Unretained(this));
-    }
-
-    coordinator_->StartTracing(
-        config,
-        base::BindRepeating(
-            [](bool expected, base::RepeatingClosure closure, bool actual) {
-              EXPECT_EQ(expected, actual);
-              if (!closure.is_null())
-                closure.Run();
-            },
-            expected_response, closure));
-  }
-
-  void StartTracing(std::string config, bool expected_response) {
-    StartTracing(config, expected_response, false);
-  }
-
-  void StopAndFlush() {
-    mojo::DataPipe data_pipe;
-    auto dummy_callback = [](base::Value metadata) {};
-    coordinator_->StopAndFlush(std::move(data_pipe.producer_handle),
-                               base::BindRepeating(dummy_callback));
-    drainer_.reset(
-        new mojo::DataPipeDrainer(this, std::move(data_pipe.consumer_handle)));
-  }
-
-  void IsTracing(bool expected_response) {
-    coordinator_->IsTracing(base::BindRepeating(
-        [](bool expected, bool actual) { EXPECT_EQ(expected, actual); },
-        expected_response));
-  }
-
-  void RequestBufferUsage(float expected_usage, uint32_t expected_count) {
-    coordinator_->RequestBufferUsage(base::BindRepeating(
-        [](float expected_usage, uint32_t expected_count, bool success,
-           float usage, uint32_t count) {
-          EXPECT_TRUE(success);
-          EXPECT_EQ(expected_usage, usage);
-          EXPECT_EQ(expected_count, count);
-        },
-        expected_usage, expected_count));
-  }
-
-  void CheckDisconnectClosures(size_t num_agents) {
-    // Verify that all disconnect closures are cleared up. This means that, for
-    // each agent, either the tracing service is notified that the agent is
-    // disconnected or the agent has answered to all requests.
-    size_t count = 0;
-    agent_registry_->ForAllAgents([&count](AgentRegistry::AgentEntry* entry) {
-      count++;
-      EXPECT_EQ(0u, entry->num_disconnect_closures_for_testing());
-    });
-    EXPECT_EQ(num_agents, count);
-  }
-
-  void GetCategories(bool expected_success,
-                     std::set<std::string> expected_categories) {
-    coordinator_->GetCategories(base::BindRepeating(
-        [](bool expected_success, std::set<std::string> expected_categories,
-           bool success, const std::string& categories) {
-          EXPECT_EQ(expected_success, success);
-          if (!success)
-            return;
-          std::vector<std::string> category_vector = base::SplitString(
-              categories, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-          EXPECT_EQ(expected_categories.size(), category_vector.size());
-          for (const auto& expected_category : expected_categories) {
-            EXPECT_EQ(1, std::count(category_vector.begin(),
-                                    category_vector.end(), expected_category));
-          }
-        },
-        expected_success, expected_categories));
-  }
-
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
-  std::unique_ptr<AgentRegistry> agent_registry_;
-  std::unique_ptr<Coordinator> coordinator_;
-  std::vector<std::unique_ptr<MockAgent>> agents_;
-  std::unique_ptr<mojo::DataPipeDrainer> drainer_;
-  base::RepeatingClosure quit_closure_;
-  std::string output_;
+  void TearDown() override { CoordinatorTestUtil::TearDown(); }
 };
 
 TEST_F(CoordinatorTest, StartTracingSimple) {
@@ -251,19 +109,15 @@ TEST_F(CoordinatorTest, StartTracingWithSameConfigs) {
 }
 
 TEST_F(CoordinatorTest, StopAndFlushObjectAgent) {
-  base::RunLoop run_loop;
-  quit_closure_ = run_loop.QuitClosure();
-
   auto* agent = AddObjectAgent();
   agent->data_.push_back("\"content\":{\"a\":1}");
   agent->data_.push_back("\"name\":\"etw\"");
 
-  StartTracing("config", true, true);
-  if (!quit_closure_.is_null())
-    run_loop.Run();
+  StartTracing("config", true);
+  std::string output = StopAndFlush();
 
   EXPECT_EQ("{\"systemTraceEvents\":{\"content\":{\"a\":1},\"name\":\"etw\"}}",
-            output_);
+            output);
 
   // Each agent should have received exactly two calls.
   EXPECT_EQ(2u, agent->call_stat().size());
@@ -272,9 +126,6 @@ TEST_F(CoordinatorTest, StopAndFlushObjectAgent) {
 }
 
 TEST_F(CoordinatorTest, StopAndFlushTwoArrayAgents) {
-  base::RunLoop run_loop;
-  quit_closure_ = run_loop.QuitClosure();
-
   auto* agent1 = AddArrayAgent();
   agent1->data_.push_back("e1");
   agent1->data_.push_back("e2");
@@ -283,21 +134,20 @@ TEST_F(CoordinatorTest, StopAndFlushTwoArrayAgents) {
   agent2->data_.push_back("e3");
   agent2->data_.push_back("e4");
 
-  StartTracing("config", true, true);
-  if (!quit_closure_.is_null())
-    run_loop.Run();
+  StartTracing("config", true);
+  std::string output = StopAndFlush();
 
-  // |output_| should be of the form {"traceEvents":[ei,ej,ek,el]}, where
+  // |output| should be of the form {"traceEvents":[ei,ej,ek,el]}, where
   // ei,ej,ek,el is a permutation of e1,e2,e3,e4 such that e1 is before e2 and
   // e3 is before e4 since e1 and 2 come from the same agent and their order
   // should be preserved and, similarly, the order of e3 and e4 should be
   // preserved, too.
-  EXPECT_TRUE(output_ == "{\"traceEvents\":[e1,e2,e3,e4]}" ||
-              output_ == "{\"traceEvents\":[e1,e3,e2,e4]}" ||
-              output_ == "{\"traceEvents\":[e1,e3,e4,e2]}" ||
-              output_ == "{\"traceEvents\":[e3,e1,e2,e4]}" ||
-              output_ == "{\"traceEvents\":[e3,e1,e4,e2]}" ||
-              output_ == "{\"traceEvents\":[e3,e4,e1,e2]}");
+  EXPECT_TRUE(output == "{\"traceEvents\":[e1,e2,e3,e4]}" ||
+              output == "{\"traceEvents\":[e1,e3,e2,e4]}" ||
+              output == "{\"traceEvents\":[e1,e3,e4,e2]}" ||
+              output == "{\"traceEvents\":[e3,e1,e2,e4]}" ||
+              output == "{\"traceEvents\":[e3,e1,e4,e2]}" ||
+              output == "{\"traceEvents\":[e3,e4,e1,e2]}");
 
   // Each agent should have received exactly two calls.
   EXPECT_EQ(2u, agent1->call_stat().size());
@@ -310,9 +160,6 @@ TEST_F(CoordinatorTest, StopAndFlushTwoArrayAgents) {
 }
 
 TEST_F(CoordinatorTest, StopAndFlushDifferentTypeAgents) {
-  base::RunLoop run_loop;
-  quit_closure_ = run_loop.QuitClosure();
-
   auto* agent1 = AddArrayAgent();
   agent1->data_.push_back("e1");
   agent1->data_.push_back("e2");
@@ -321,12 +168,11 @@ TEST_F(CoordinatorTest, StopAndFlushDifferentTypeAgents) {
   agent2->data_.push_back("e3");
   agent2->data_.push_back("e4");
 
-  StartTracing("config", true, true);
-  if (!quit_closure_.is_null())
-    run_loop.Run();
+  StartTracing("config", true);
+  std::string output = StopAndFlush();
 
-  EXPECT_TRUE(output_ == "{\"traceEvents\":[e1,e2],\"power\":\"e3e4\"}" ||
-              output_ == "{\"power\":\"e3e4\",\"traceEvents\":[e1,e2]}");
+  EXPECT_TRUE(output == "{\"traceEvents\":[e1,e2],\"power\":\"e3e4\"}" ||
+              output == "{\"power\":\"e3e4\",\"traceEvents\":[e1,e2]}");
 
   // Each agent should have received exactly two calls.
   EXPECT_EQ(2u, agent1->call_stat().size());
@@ -339,20 +185,16 @@ TEST_F(CoordinatorTest, StopAndFlushDifferentTypeAgents) {
 }
 
 TEST_F(CoordinatorTest, StopAndFlushWithMetadata) {
-  base::RunLoop run_loop;
-  quit_closure_ = run_loop.QuitClosure();
-
   auto* agent = AddArrayAgent();
   agent->data_.push_back("event");
   agent->metadata_.SetString("key", "value");
 
-  StartTracing("config", true, true);
-  if (!quit_closure_.is_null())
-    run_loop.Run();
+  StartTracing("config", true);
+  std::string output = StopAndFlush();
 
   // Metadata is written at after trace data.
   EXPECT_EQ("{\"traceEvents\":[event],\"metadata\":{\"key\":\"value\"}}",
-            output_);
+            output);
   EXPECT_EQ(2u, agent->call_stat().size());
   EXPECT_EQ("StartTracing", agent->call_stat()[0]);
   EXPECT_EQ("StopAndFlush", agent->call_stat()[1]);
@@ -360,6 +202,7 @@ TEST_F(CoordinatorTest, StopAndFlushWithMetadata) {
 
 TEST_F(CoordinatorTest, IsTracing) {
   base::RunLoop run_loop;
+  AddArrayAgent();
   StartTracing("config", true);
   IsTracing(true);
   run_loop.RunUntilIdle();
@@ -405,37 +248,52 @@ TEST_F(CoordinatorTest, RequestBufferUsage) {
   EXPECT_EQ(1u, agent3->call_stat().size());
 }
 
-TEST_F(CoordinatorTest, GetCategoriesFail) {
-  base::RunLoop run_loop;
-  StartTracing("config", true);
-  std::set<std::string> expected_categories;
-  GetCategories(false, expected_categories);
-  run_loop.RunUntilIdle();
-}
-
-TEST_F(CoordinatorTest, GetCategoriesSimple) {
-  base::RunLoop run_loop;
-  auto* agent = AddArrayAgent();
-  agent->categories_ = "cat2,cat1";
-  std::set<std::string> expected_categories;
-  expected_categories.insert("cat1");
-  expected_categories.insert("cat2");
-  GetCategories(true, expected_categories);
-  run_loop.RunUntilIdle();
-}
-
-TEST_F(CoordinatorTest, GetCategoriesFromTwoAgents) {
-  base::RunLoop run_loop;
+TEST_F(CoordinatorTest, LateAgents) {
   auto* agent1 = AddArrayAgent();
-  agent1->categories_ = "cat2,cat1";
+
+  StartTracing("config", true);
+  StopAndFlush();
+
+  base::RunLoop run_loop;
   auto* agent2 = AddArrayAgent();
-  agent2->categories_ = "cat3,cat2";
-  std::set<std::string> expected_categories;
-  expected_categories.insert("cat1");
-  expected_categories.insert("cat2");
-  expected_categories.insert("cat3");
-  GetCategories(true, expected_categories);
+  agent2->data_.push_back("discarded data");
   run_loop.RunUntilIdle();
+
+  EXPECT_EQ(2u, agent1->call_stat().size());
+  EXPECT_EQ("StartTracing", agent1->call_stat()[0]);
+  EXPECT_EQ("StopAndFlush", agent1->call_stat()[1]);
+
+  // The second agent that registers after the end of a tracing session should
+  // receive a StopAndFlush message.
+  EXPECT_EQ(1u, agent2->call_stat().size());
+  EXPECT_EQ("StopAndFlush", agent2->call_stat()[0]);
+}
+
+TEST_F(CoordinatorTest, WaitForSpecificPIDs) {
+  coordinator_->AddExpectedPID(42);
+  coordinator_->AddExpectedPID(4242);
+
+  auto* agent1 = AddArrayAgent(42);
+  StartTracing("config", true);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(tracing_begin_callback_received());
+
+  auto* agent2 = AddArrayAgent(4242);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(tracing_begin_callback_received());
+
+  StopAndFlush();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(2u, agent1->call_stat().size());
+  EXPECT_EQ("StartTracing", agent1->call_stat()[0]);
+  EXPECT_EQ("StopAndFlush", agent1->call_stat()[1]);
+
+  EXPECT_EQ(2u, agent2->call_stat().size());
+  EXPECT_EQ("StartTracing", agent2->call_stat()[0]);
+  EXPECT_EQ("StopAndFlush", agent2->call_stat()[1]);
 }
 
 }  // namespace tracing

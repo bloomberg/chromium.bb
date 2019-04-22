@@ -14,6 +14,7 @@
 
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
+#include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -121,7 +122,8 @@ class P2PSocketManager
 
   base::flat_map<P2PSocket*, std::unique_ptr<P2PSocket>> sockets_;
 
-  std::set<std::unique_ptr<DnsRequest>> dns_requests_;
+  std::set<std::unique_ptr<DnsRequest>, base::UniquePtrComparator>
+      dns_requests_;
   P2PMessageThrottler throttler_;
 
   bool dump_incoming_rtp_packet_ = false;

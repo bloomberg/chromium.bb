@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "cc/paint/color_space_transfer_cache_entry.h"
 #include "cc/paint/decode_stashing_image_provider.h"
 #include "cc/paint/display_item_list.h"  // nogncheck
 #include "cc/paint/paint_op_buffer_serializer.h"
@@ -23,41 +22,15 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
+#include "gpu/command_buffer/common/mailbox.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/skia_util.h"
 
 namespace gpu {
 namespace raster {
 
-static GLenum GetImageTextureTarget(const gpu::Capabilities& caps,
-                                    gfx::BufferUsage usage,
-                                    viz::ResourceFormat format) {
-  gfx::BufferFormat buffer_format = viz::BufferFormat(format);
-  return GetBufferTextureTarget(usage, buffer_format, caps);
-}
-
-RasterImplementationGLES::Texture::Texture(GLuint id,
-                                           GLenum target,
-                                           bool use_buffer,
-                                           gfx::BufferUsage buffer_usage,
-                                           viz::ResourceFormat format)
-    : id(id),
-      target(target),
-      use_buffer(use_buffer),
-      buffer_usage(buffer_usage),
-      format(format) {}
-
-RasterImplementationGLES::Texture* RasterImplementationGLES::GetTexture(
-    GLuint texture_id) {
-  auto it = texture_info_.find(texture_id);
-  DCHECK(it != texture_info_.end()) << "Undefined texture id";
-  return &it->second;
-}
-
-RasterImplementationGLES::RasterImplementationGLES(
-    gles2::GLES2Interface* gl,
-    const gpu::Capabilities& caps)
-    : gl_(gl), caps_(caps) {}
+RasterImplementationGLES::RasterImplementationGLES(gles2::GLES2Interface* gl)
+    : gl_(gl) {}
 
 RasterImplementationGLES::~RasterImplementationGLES() {}
 
@@ -75,24 +48,6 @@ void RasterImplementationGLES::ShallowFlushCHROMIUM() {
 
 void RasterImplementationGLES::OrderingBarrierCHROMIUM() {
   gl_->OrderingBarrierCHROMIUM();
-}
-
-void RasterImplementationGLES::GenSyncTokenCHROMIUM(GLbyte* sync_token) {
-  gl_->GenSyncTokenCHROMIUM(sync_token);
-}
-
-void RasterImplementationGLES::GenUnverifiedSyncTokenCHROMIUM(
-    GLbyte* sync_token) {
-  gl_->GenUnverifiedSyncTokenCHROMIUM(sync_token);
-}
-
-void RasterImplementationGLES::VerifySyncTokensCHROMIUM(GLbyte** sync_tokens,
-                                                        GLsizei count) {
-  gl_->VerifySyncTokensCHROMIUM(sync_tokens, count);
-}
-
-void RasterImplementationGLES::WaitSyncTokenCHROMIUM(const GLbyte* sync_token) {
-  gl_->WaitSyncTokenCHROMIUM(sync_token);
 }
 
 GLenum RasterImplementationGLES::GetError() {
@@ -131,60 +86,34 @@ void RasterImplementationGLES::GetQueryObjectuivEXT(GLuint id,
   gl_->GetQueryObjectuivEXT(id, pname, params);
 }
 
-void RasterImplementationGLES::DeleteTextures(GLsizei n,
-                                              const GLuint* textures) {
-  DCHECK_GT(n, 0);
-  for (GLsizei i = 0; i < n; i++) {
-    auto texture_iter = texture_info_.find(textures[i]);
-    DCHECK(texture_iter != texture_info_.end());
+void RasterImplementationGLES::CopySubTexture(
+    const gpu::Mailbox& source_mailbox,
+    const gpu::Mailbox& dest_mailbox,
+    GLenum dest_target,
+    GLint xoffset,
+    GLint yoffset,
+    GLint x,
+    GLint y,
+    GLsizei width,
+    GLsizei height) {
+  GLuint texture_ids[2] = {
+      gl_->CreateAndConsumeTextureCHROMIUM(source_mailbox.name),
+      gl_->CreateAndConsumeTextureCHROMIUM(dest_mailbox.name),
+  };
+  DCHECK(texture_ids[0]);
+  DCHECK(texture_ids[1]);
 
-    texture_info_.erase(texture_iter);
-  }
-
-  gl_->DeleteTextures(n, textures);
-}
-
-GLuint RasterImplementationGLES::CreateAndConsumeTexture(
-    bool use_buffer,
-    gfx::BufferUsage buffer_usage,
-    viz::ResourceFormat format,
-    const GLbyte* mailbox) {
-  GLuint texture_id = gl_->CreateAndConsumeTextureCHROMIUM(mailbox);
-  DCHECK(texture_id);
-  DCHECK(!viz::IsResourceFormatCompressed(format));
-
-  GLenum target = use_buffer
-                      ? GetImageTextureTarget(caps_, buffer_usage, format)
-                      : GL_TEXTURE_2D;
-  texture_info_.emplace(std::make_pair(
-      texture_id,
-      Texture(texture_id, target, use_buffer, buffer_usage, format)));
-
-  return texture_id;
-}
-
-void RasterImplementationGLES::CopySubTexture(GLuint source_id,
-                                              GLuint dest_id,
-                                              GLint xoffset,
-                                              GLint yoffset,
-                                              GLint x,
-                                              GLint y,
-                                              GLsizei width,
-                                              GLsizei height) {
-  Texture* source = GetTexture(source_id);
-  Texture* dest = GetTexture(dest_id);
-
-  gl_->CopySubTextureCHROMIUM(source->id, 0, dest->target, dest->id, 0, xoffset,
-                              yoffset, x, y, width, height, false, false,
-                              false);
+  gl_->CopySubTextureCHROMIUM(texture_ids[0], 0, dest_target, texture_ids[1], 0,
+                              xoffset, yoffset, x, y, width, height, false,
+                              false, false);
+  gl_->DeleteTextures(2, texture_ids);
 }
 
 void RasterImplementationGLES::BeginRasterCHROMIUM(
     GLuint sk_color,
     GLuint msaa_sample_count,
     GLboolean can_use_lcd_text,
-    GLint color_type,
-    const cc::RasterColorSpace& raster_color_space,
+    const gfx::ColorSpace& color_space,
     const GLbyte* mailbox) {
   NOTREACHED();
 }
@@ -197,7 +126,8 @@ void RasterImplementationGLES::RasterCHROMIUM(
     const gfx::Rect& playback_rect,
     const gfx::Vector2dF& post_translate,
     GLfloat post_scale,
-    bool requires_clear) {
+    bool requires_clear,
+    size_t* max_op_size_hint) {
   NOTREACHED();
 }
 
@@ -217,6 +147,15 @@ SyncToken RasterImplementationGLES::ScheduleImageDecode(
     bool needs_mips) {
   NOTREACHED();
   return SyncToken();
+}
+
+GLuint RasterImplementationGLES::CreateAndConsumeForGpuRaster(
+    const GLbyte* mailbox) {
+  return gl_->CreateAndConsumeTextureCHROMIUM(mailbox);
+}
+
+void RasterImplementationGLES::DeleteGpuRasterTexture(GLuint texture) {
+  gl_->DeleteTextures(1, &texture);
 }
 
 void RasterImplementationGLES::BeginGpuRaster() {
@@ -244,6 +183,22 @@ void RasterImplementationGLES::TraceBeginCHROMIUM(const char* category_name,
 
 void RasterImplementationGLES::TraceEndCHROMIUM() {
   gl_->TraceEndCHROMIUM();
+}
+
+// InterfaceBase implementation.
+void RasterImplementationGLES::GenSyncTokenCHROMIUM(GLbyte* sync_token) {
+  gl_->GenSyncTokenCHROMIUM(sync_token);
+}
+void RasterImplementationGLES::GenUnverifiedSyncTokenCHROMIUM(
+    GLbyte* sync_token) {
+  gl_->GenUnverifiedSyncTokenCHROMIUM(sync_token);
+}
+void RasterImplementationGLES::VerifySyncTokensCHROMIUM(GLbyte** sync_tokens,
+                                                        GLsizei count) {
+  gl_->VerifySyncTokensCHROMIUM(sync_tokens, count);
+}
+void RasterImplementationGLES::WaitSyncTokenCHROMIUM(const GLbyte* sync_token) {
+  gl_->WaitSyncTokenCHROMIUM(sync_token);
 }
 
 }  // namespace raster

@@ -38,12 +38,13 @@ class BrowserFrameHeaderAsh : public ash::FrameHeader {
   // the window.
   static int GetThemeBackgroundXInset();
 
+  // FrameHeader:
+  void UpdateFrameColors() override;
+
  protected:
   // FrameHeader:
   void DoPaintHeader(gfx::Canvas* canvas) override;
-  void DoSetFrameColors(SkColor active_frame_color,
-                        SkColor inactive_frame_color) override;
-  ash::AshLayoutSize GetButtonLayoutSize() const override;
+  views::CaptionButtonLayoutSize GetButtonLayoutSize() const override;
   SkColor GetTitleColor() const override;
   SkColor GetCurrentFrameColor() const override;
 

@@ -30,6 +30,8 @@ enum UninstallReason {
 
   UNINSTALL_REASON_CHROME_WEBSTORE,
 
+  UNINSTALL_REASON_ARC,  // Web app that was uninstalled via ARC
+
   UNINSTALL_REASON_MAX,  // Should always be the last value
 };
 

@@ -6,13 +6,14 @@
 
 #include "xfa/fxfa/parser/cxfa_dsigdata.h"
 
+#include "fxjs/xfa/cjx_node.h"
+#include "third_party/base/ptr_util.h"
+
 namespace {
 
 const CXFA_Node::AttributeData kDSigDataAttributeData[] = {
     {XFA_Attribute::Value, XFA_AttributeType::CData, nullptr},
-    {XFA_Attribute::Unknown, XFA_AttributeType::Integer, nullptr}};
-
-constexpr wchar_t kDSigDataName[] = L"dSigData";
+};
 
 }  // namespace
 
@@ -22,8 +23,8 @@ CXFA_DSigData::CXFA_DSigData(CXFA_Document* doc, XFA_PacketType packet)
                 (XFA_XDPPACKET_Template | XFA_XDPPACKET_Form),
                 XFA_ObjectType::Node,
                 XFA_Element::DSigData,
-                nullptr,
+                {},
                 kDSigDataAttributeData,
-                kDSigDataName) {}
+                pdfium::MakeUnique<CJX_Node>(this)) {}
 
-CXFA_DSigData::~CXFA_DSigData() {}
+CXFA_DSigData::~CXFA_DSigData() = default;

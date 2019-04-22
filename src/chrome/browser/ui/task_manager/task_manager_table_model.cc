@@ -80,6 +80,18 @@ int ValueCompare(T value1, T value2) {
   return value1 < value2 ? -1 : 1;
 }
 
+// This forces NaN values to the bottom of the table.
+template <>
+int ValueCompare(double value1, double value2) {
+  if (std::isnan(value1))
+    return std::isnan(value2) ? 0 : -1;
+  if (std::isnan(value2))
+    return 1;
+  if (value1 == value2)
+    return 0;
+  return value1 < value2 ? -1 : 1;
+}
+
 // This is used to sort process priority. We want the backgrounded process (with
 // a true value) to come first.
 int BooleanCompare(bool value1, bool value2) {
@@ -119,6 +131,8 @@ class TaskManagerValuesStringifier {
   ~TaskManagerValuesStringifier() {}
 
   base::string16 GetCpuUsageText(double cpu_usage) {
+    if (std::isnan(cpu_usage))
+      return n_a_string_;
     return base::UTF8ToUTF16(base::StringPrintf(kCpuTextFormatString,
                                                 cpu_usage));
   }
@@ -187,13 +201,13 @@ class TaskManagerValuesStringifier {
     if (nacl_port == nacl::kGdbDebugStubPortUnknown)
       return unknown_string_;
 
-    return base::IntToString16(nacl_port);
+    return base::NumberToString16(nacl_port);
   }
 
   base::string16 GetWindowsHandlesText(int64_t current, int64_t peak) {
     return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_HANDLES_CELL_TEXT,
-                                      base::Int64ToString16(current),
-                                      base::Int64ToString16(peak));
+                                      base::NumberToString16(current),
+                                      base::NumberToString16(peak));
   }
 
   base::string16 GetNetworkUsageText(int64_t network_usage) {
@@ -209,7 +223,7 @@ class TaskManagerValuesStringifier {
   }
 
   base::string16 GetProcessIdText(base::ProcessId proc_id) {
-    return base::IntToString16(proc_id);
+    return base::NumberToString16(proc_id);
   }
 
   base::string16 FormatAllocatedAndUsedMemory(int64_t allocated, int64_t used) {
@@ -227,7 +241,7 @@ class TaskManagerValuesStringifier {
   base::string16 GetKeepaliveCountText(int keepalive_count) const {
     if (keepalive_count < 0)
       return n_a_string();
-    return base::IntToString16(keepalive_count);
+    return base::NumberToString16(keepalive_count);
   }
 
   const base::string16& n_a_string() const { return n_a_string_; }
@@ -351,6 +365,13 @@ base::string16 TaskManagerTableModel::GetText(int row, int column) {
           observed_task_manager()->GetSwappedMemoryUsage(tasks_[row]), false);
 
     case IDS_TASK_MANAGER_PROCESS_ID_COLUMN:
+      if (observed_task_manager()->IsRunningInVM(tasks_[row])) {
+        // Don't show the process ID if running inside a VM to avoid confusion
+        // over conflicting pids.
+        // TODO(b/122992194): Figure out if we need to change this to display
+        // something for VM processes.
+        return base::string16();
+      }
       return stringifier_->GetProcessIdText(
           observed_task_manager()->GetProcessId(tasks_[row]));
 
@@ -430,13 +451,13 @@ base::string16 TaskManagerTableModel::GetText(int row, int column) {
           ? stringifier_->backgrounded_string()
           : stringifier_->foregrounded_string();
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_MACOSX)
     case IDS_TASK_MANAGER_OPEN_FD_COUNT_COLUMN: {
       const int fd_count = observed_task_manager()->GetOpenFdCount(tasks_[row]);
       return fd_count >= 0 ? base::FormatNumber(fd_count)
                            : stringifier_->n_a_string();
     }
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) || defined(OS_MACOSX)
 
     case IDS_TASK_MANAGER_KEEPALIVE_COUNT_COLUMN: {
       return stringifier_->GetKeepaliveCountText(
@@ -500,9 +521,15 @@ int TaskManagerTableModel::CompareValues(int row1,
           observed_task_manager()->GetNaClDebugStubPort(tasks_[row1]),
           observed_task_manager()->GetNaClDebugStubPort(tasks_[row2]));
 
-    case IDS_TASK_MANAGER_PROCESS_ID_COLUMN:
+    case IDS_TASK_MANAGER_PROCESS_ID_COLUMN: {
+      bool vm1 = observed_task_manager()->IsRunningInVM(tasks_[row1]);
+      bool vm2 = observed_task_manager()->IsRunningInVM(tasks_[row2]);
+      if (vm1 != vm2) {
+        return ValueCompare(vm1, vm2);
+      }
       return ValueCompare(observed_task_manager()->GetProcessId(tasks_[row1]),
                           observed_task_manager()->GetProcessId(tasks_[row2]));
+    }
 
     case IDS_TASK_MANAGER_GDI_HANDLES_COLUMN: {
       int64_t current1, peak1, current2, peak2;
@@ -590,7 +617,7 @@ int TaskManagerTableModel::CompareValues(int row1,
       return BooleanCompare(is_proc1_bg, is_proc2_bg);
     }
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_MACOSX)
     case IDS_TASK_MANAGER_OPEN_FD_COUNT_COLUMN: {
       const int proc1_fd_count =
           observed_task_manager()->GetOpenFdCount(tasks_[row1]);
@@ -598,7 +625,7 @@ int TaskManagerTableModel::CompareValues(int row1,
           observed_task_manager()->GetOpenFdCount(tasks_[row2]);
       return ValueCompare(proc1_fd_count, proc2_fd_count);
     }
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) || defined(OS_MACOSX)
 
     default:
       NOTREACHED();
@@ -609,17 +636,21 @@ int TaskManagerTableModel::CompareValues(int row1,
 void TaskManagerTableModel::GetRowsGroupRange(int row_index,
                                               int* out_start,
                                               int* out_length) {
-  const base::ProcessId process_id =
-      observed_task_manager()->GetProcessId(tasks_[row_index]);
   int i = row_index;
   int limit = row_index + 1;
-  while (i > 0 &&
-         observed_task_manager()->GetProcessId(tasks_[i - 1]) == process_id) {
-    --i;
-  }
-  while (limit < RowCount() &&
-         observed_task_manager()->GetProcessId(tasks_[limit]) == process_id) {
-    ++limit;
+  if (!observed_task_manager()->IsRunningInVM(tasks_[row_index])) {
+    const base::ProcessId process_id =
+        observed_task_manager()->GetProcessId(tasks_[row_index]);
+    while (i > 0 &&
+           observed_task_manager()->GetProcessId(tasks_[i - 1]) == process_id &&
+           !observed_task_manager()->IsRunningInVM(tasks_[i - 1])) {
+      --i;
+    }
+    while (limit < RowCount() &&
+           observed_task_manager()->GetProcessId(tasks_[limit]) == process_id &&
+           !observed_task_manager()->IsRunningInVM(tasks_[limit])) {
+      ++limit;
+    }
   }
   *out_start = i;
   *out_length = limit - i;
@@ -760,11 +791,11 @@ void TaskManagerTableModel::UpdateRefreshTypes(int column_id, bool visibility) {
       type = REFRESH_TYPE_KEEPALIVE_COUNT;
       break;
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_MACOSX)
     case IDS_TASK_MANAGER_OPEN_FD_COUNT_COLUMN:
       type = REFRESH_TYPE_FD_COUNT;
       break;
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) || defined(OS_MACOSX)
 
     default:
       NOTREACHED();
@@ -895,8 +926,15 @@ bool TaskManagerTableModel::IsTaskFirstInGroup(int row_index) const {
   if (row_index == 0)
     return true;
 
-  return observed_task_manager()->GetProcessId(tasks_[row_index - 1]) !=
-      observed_task_manager()->GetProcessId(tasks_[row_index]);
+  if (observed_task_manager()->GetProcessId(tasks_[row_index - 1]) !=
+      observed_task_manager()->GetProcessId(tasks_[row_index]))
+    return true;
+
+  if (observed_task_manager()->IsRunningInVM(tasks_[row_index - 1]) !=
+      observed_task_manager()->IsRunningInVM(tasks_[row_index]))
+    return true;
+
+  return false;
 }
 
 }  // namespace task_manager

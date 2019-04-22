@@ -13,7 +13,7 @@
 #include "chrome/browser/ui/views/toolbar/browser_app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "ui/base/ui_features.h"
+#include "ui/base/buildflags.h"
 #include "ui/views/view.h"
 
 class SessionCrashedBubbleViewTest : public DialogBrowserTest {
@@ -26,8 +26,8 @@ class SessionCrashedBubbleViewTest : public DialogBrowserTest {
     views::View* anchor_view = nullptr;
     if (anchor_rect == gfx::Rect()) {
       anchor_view = BrowserView::GetBrowserViewForBrowser(browser())
-                        ->toolbar()
-                        ->app_menu_button();
+                        ->toolbar_button_provider()
+                        ->GetAppMenuButton();
     }
     SessionCrashedBubbleView* crash_bubble =
         new SessionCrashedBubbleView(anchor_view, anchor_rect, browser(),

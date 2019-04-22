@@ -48,7 +48,7 @@ void GeneratedImage::DrawPattern(GraphicsContext& dest_context,
   FloatRect tile_rect = src_rect;
   tile_rect.Expand(repeat_spacing);
 
-  std::unique_ptr<PaintController> paint_controller = PaintController::Create();
+  auto paint_controller = std::make_unique<PaintController>();
   GraphicsContext context(*paint_controller);
   context.BeginRecording(tile_rect);
   DrawTile(context, src_rect);
@@ -59,8 +59,8 @@ void GeneratedImage::DrawPattern(GraphicsContext& dest_context,
   pattern_matrix.preTranslate(tile_rect.X(), tile_rect.Y());
 
   sk_sp<PaintShader> tile_shader = PaintShader::MakePaintRecord(
-      std::move(record), tile_rect, SkShader::kRepeat_TileMode,
-      SkShader::kRepeat_TileMode, &pattern_matrix);
+      std::move(record), tile_rect, SkTileMode::kRepeat, SkTileMode::kRepeat,
+      &pattern_matrix);
 
   PaintFlags fill_flags = dest_context.FillFlags();
   fill_flags.setShader(std::move(tile_shader));

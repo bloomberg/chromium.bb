@@ -23,6 +23,7 @@
 #include "gpu/command_buffer/client/gles2_interface_stub.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
 #include "gpu/config/gpu_feature_info.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 namespace skia_bindings {
@@ -42,6 +43,12 @@ class TestSharedImageInterface : public gpu::SharedImageInterface {
                                  const gfx::ColorSpace& color_space,
                                  uint32_t usage) override;
 
+  gpu::Mailbox CreateSharedImage(ResourceFormat format,
+                                 const gfx::Size& size,
+                                 const gfx::ColorSpace& color_space,
+                                 uint32_t usage,
+                                 base::span<const uint8_t> pixel_data) override;
+
   gpu::Mailbox CreateSharedImage(
       gfx::GpuMemoryBuffer* gpu_memory_buffer,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
@@ -54,12 +61,16 @@ class TestSharedImageInterface : public gpu::SharedImageInterface {
   void DestroySharedImage(const gpu::SyncToken& sync_token,
                           const gpu::Mailbox& mailbox) override;
 
+  gpu::SyncToken GenVerifiedSyncToken() override;
   gpu::SyncToken GenUnverifiedSyncToken() override;
 
   size_t shared_image_count() const { return shared_images_.size(); }
+  const gfx::Size& MostRecentSize() const { return most_recent_size_; }
+  bool CheckSharedImageExists(const gpu::Mailbox& mailbox) const;
 
  private:
   uint64_t release_id_ = 0;
+  gfx::Size most_recent_size_;
   base::flat_set<gpu::Mailbox> shared_images_;
 };
 

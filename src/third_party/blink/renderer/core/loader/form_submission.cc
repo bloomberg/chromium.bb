@@ -70,7 +70,8 @@ static void AppendMailtoPostFormDataToURL(KURL& url,
     // Convention seems to be to decode, and s/&/\r\n/. Also, spaces are encoded
     // as %20.
     body = DecodeURLEscapeSequences(
-        body.Replace('&', "\r\n").Replace('+', ' ') + "\r\n");
+        body.Replace('&', "\r\n").Replace('+', ' ') + "\r\n",
+        DecodeURLMode::kUTF8OrIsomorphic);
   }
 
   Vector<char> body_data;
@@ -234,11 +235,9 @@ FormSubmission* FormSubmission::Create(HTMLFormElement* form,
           ? UTF8Encoding()
           : FormDataEncoder::EncodingFromAcceptCharset(
                 copied_attributes.AcceptCharset(), document.Encoding());
-  FormData* dom_form_data =
-      FormData::Create(data_encoding.EncodingForFormSubmission());
-  bool entry_list_result =
-      form->ConstructEntryList(submit_button, *dom_form_data);
-  DCHECK(entry_list_result);
+  FormData* dom_form_data = form->ConstructEntryList(
+      submit_button, data_encoding.EncodingForFormSubmission());
+  DCHECK(dom_form_data);
 
   scoped_refptr<EncodedFormData> form_data;
   String boundary;
@@ -273,8 +272,10 @@ void FormSubmission::Trace(blink::Visitor* visitor) {
 }
 
 KURL FormSubmission::RequestURL() const {
-  if (method_ == FormSubmission::kPostMethod)
+  if (method_ == FormSubmission::kPostMethod ||
+      action_.ProtocolIsJavaScript()) {
     return action_;
+  }
 
   KURL request_url(action_);
   request_url.SetQuery(form_data_->FlattenToString());
@@ -289,8 +290,8 @@ FrameLoadRequest FormSubmission::CreateFrameLoadRequest(
     frame_request.SetFrameName(target_);
 
   if (method_ == FormSubmission::kPostMethod) {
-    frame_request.GetResourceRequest().SetHTTPMethod(http_names::kPOST);
-    frame_request.GetResourceRequest().SetHTTPBody(form_data_);
+    frame_request.GetResourceRequest().SetHttpMethod(http_names::kPOST);
+    frame_request.GetResourceRequest().SetHttpBody(form_data_);
 
     // construct some user headers if necessary
     if (boundary_.IsEmpty()) {
@@ -301,7 +302,7 @@ FrameLoadRequest FormSubmission::CreateFrameLoadRequest(
     }
   }
 
-  frame_request.GetResourceRequest().SetURL(RequestURL());
+  frame_request.GetResourceRequest().SetUrl(RequestURL());
 
   frame_request.SetForm(form_);
 

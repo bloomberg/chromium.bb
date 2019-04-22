@@ -9,6 +9,7 @@
 
 #include "base/barrier_closure.h"
 #include "base/bind.h"
+#include "base/stl_util.h"
 
 namespace ash {
 
@@ -175,7 +176,7 @@ bool TestSessionStateAnimator::IsContainerAnimated(
 bool TestSessionStateAnimator::AreContainersAnimated(
     int container_mask,
     SessionStateAnimator::AnimationType type) const {
-  for (size_t i = 0; i < arraysize(kAllContainers); ++i) {
+  for (size_t i = 0; i < base::size(kAllContainers); ++i) {
     if (container_mask & kAllContainers[i] &&
         !IsContainerAnimated(kAllContainers[i], type)) {
       return false;
@@ -198,7 +199,7 @@ void TestSessionStateAnimator::StartAnimation(int container_mask,
                                               AnimationType type,
                                               AnimationSpeed speed) {
   ++last_animation_epoch_;
-  for (size_t i = 0; i < arraysize(kAllContainers); ++i) {
+  for (size_t i = 0; i < base::size(kAllContainers); ++i) {
     if (container_mask & kAllContainers[i]) {
       // Use a dummy no-op callback because one isn't required by the client
       // but one is required when completing or aborting animations.
@@ -216,14 +217,14 @@ void TestSessionStateAnimator::StartAnimationWithCallback(
   ++last_animation_epoch_;
 
   int container_count = 0;
-  for (size_t i = 0; i < arraysize(kAllContainers); ++i) {
+  for (size_t i = 0; i < base::size(kAllContainers); ++i) {
     if (container_mask & kAllContainers[i])
       ++container_count;
   }
 
   base::RepeatingClosure completion_callback =
       base::BarrierClosure(container_count, std::move(callback));
-  for (size_t i = 0; i < arraysize(kAllContainers); ++i) {
+  for (size_t i = 0; i < base::size(kAllContainers); ++i) {
     if (container_mask & kAllContainers[i]) {
       // ash::SessionStateAnimatorImpl invokes the callback whether or not the
       // animation was completed successfully or not.
@@ -256,7 +257,7 @@ void TestSessionStateAnimator::StartAnimationInSequence(
     AnimationSpeed speed,
     AnimationSequence* animation_sequence) {
   ++last_animation_epoch_;
-  for (size_t i = 0; i < arraysize(kAllContainers); ++i) {
+  for (size_t i = 0; i < base::size(kAllContainers); ++i) {
     if (container_mask & kAllContainers[i]) {
       base::Closure success_callback =
           base::Bind(&AnimationSequence::SequenceFinished,

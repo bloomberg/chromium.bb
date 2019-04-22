@@ -152,7 +152,7 @@ bool ResourceRequestPolicy::CanRequestResource(
         "pages outside the extension.",
         resource_url.spec().c_str());
     frame->AddMessageToConsole(
-        blink::WebConsoleMessage(blink::WebConsoleMessage::kLevelError,
+        blink::WebConsoleMessage(blink::mojom::ConsoleMessageLevel::kError,
                                  blink::WebString::FromUTF8(message)));
     return false;
   }

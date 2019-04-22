@@ -9,6 +9,7 @@
 #include "base/android/build_info.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -136,8 +137,7 @@ class ChannelsRuleIterator : public content_settings::RuleIterator {
         ContentSettingsPattern::FromURLNoWildcard(
             GURL(channels_[index_].origin)),
         ContentSettingsPattern::Wildcard(),
-        new base::Value(
-            ChannelStatusToContentSetting(channels_[index_].status)));
+        base::Value(ChannelStatusToContentSetting(channels_[index_].status)));
     index_++;
     return rule;
   }
@@ -224,9 +224,8 @@ void NotificationChannelsProviderAndroid::MigrateToChannelsIfNecessary(
 
     while (it && it->HasNext()) {
       content_settings::Rule rule = it->Next();
-      rules.push_back(rule);
-
       CreateChannelForRule(rule);
+      rules.push_back(std::move(rule));
     }
   }
 
@@ -352,6 +351,7 @@ bool NotificationChannelsProviderAndroid::SetWebsiteSetting(
       NOTREACHED();
       break;
   }
+  delete value;
   return true;
 }
 
@@ -428,7 +428,7 @@ void NotificationChannelsProviderAndroid::CreateChannelForRule(
   DCHECK(!origin.opaque());
   const std::string origin_string = origin.Serialize();
   ContentSetting content_setting =
-      content_settings::ValueToContentSetting(rule.value.get());
+      content_settings::ValueToContentSetting(&rule.value);
   switch (content_setting) {
     case CONTENT_SETTING_ALLOW:
       CreateChannelIfRequired(origin_string,

@@ -6,10 +6,9 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/feature_list.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/timer/elapsed_timer.h"
@@ -17,7 +16,6 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/extension_features.h"
 #include "extensions/common/extensions_client.h"
 #include "extensions/renderer/console.h"
 #include "extensions/renderer/safe_builtins.h"
@@ -63,7 +61,7 @@ void Fatal(ScriptContext* context, const std::string& message) {
 
   ExtensionsClient* client = ExtensionsClient::Get();
   if (client->ShouldSuppressFatalErrors()) {
-    console::AddMessage(context, content::CONSOLE_MESSAGE_LEVEL_ERROR,
+    console::AddMessage(context, blink::mojom::ConsoleMessageLevel::kError,
                         full_message);
     client->RecordDidSuppressFatalError();
   } else {
@@ -74,8 +72,8 @@ void Fatal(ScriptContext* context, const std::string& message) {
 void Warn(v8::Isolate* isolate, const std::string& message) {
   ScriptContext* script_context =
       ScriptContextSet::GetContextByV8Context(isolate->GetCurrentContext());
-  console::AddMessage(script_context, content::CONSOLE_MESSAGE_LEVEL_WARNING,
-                      message);
+  console::AddMessage(script_context,
+                      blink::mojom::ConsoleMessageLevel::kWarning, message);
 }
 
 // Default exception handler which logs the exception.
@@ -109,9 +107,9 @@ void SetExportsProperty(
   v8::Local<v8::Object> obj = args.This();
   CHECK_EQ(2, args.Length());
   CHECK(args[0]->IsString());
-  v8::Maybe<bool> result = obj->DefineOwnProperty(
-      args.GetIsolate()->GetCurrentContext(),
-      args[0]->ToString(args.GetIsolate()), args[1], v8::ReadOnly);
+  v8::Maybe<bool> result =
+      obj->DefineOwnProperty(args.GetIsolate()->GetCurrentContext(),
+                             args[0].As<v8::String>(), args[1], v8::ReadOnly);
   if (!result.FromMaybe(false))
     LOG(ERROR) << "Failed to set private property on the export.";
 }
@@ -170,9 +168,7 @@ ModuleSystem::ModuleSystem(ScriptContext* context, const SourceMap* source_map)
       context_(context),
       source_map_(source_map),
       natives_enabled_(0),
-      exception_handler_(new DefaultExceptionHandler(context)),
-      lazily_initialize_handlers_(base::FeatureList::IsEnabled(
-          extensions_features::kNativeCrxBindings)) {
+      exception_handler_(new DefaultExceptionHandler(context)) {
   v8::Local<v8::Object> global(context->v8_context()->Global());
   v8::Isolate* isolate = context->isolate();
   SetPrivate(global, kModulesField, v8::Object::New(isolate));
@@ -189,14 +185,17 @@ ModuleSystem::~ModuleSystem() {
 }
 
 void ModuleSystem::AddRoutes() {
-  RouteHandlerFunction("require", base::Bind(&ModuleSystem::RequireForJs,
-                                             base::Unretained(this)));
-  RouteHandlerFunction("requireNative", base::Bind(&ModuleSystem::RequireNative,
-                                                   base::Unretained(this)));
-  RouteHandlerFunction("loadScript", base::Bind(&ModuleSystem::LoadScript,
-                                                base::Unretained(this)));
   RouteHandlerFunction(
-      "privates", base::Bind(&ModuleSystem::Private, base::Unretained(this)));
+      "require",
+      base::BindRepeating(&ModuleSystem::RequireForJs, base::Unretained(this)));
+  RouteHandlerFunction("requireNative",
+                       base::BindRepeating(&ModuleSystem::RequireNative,
+                                           base::Unretained(this)));
+  RouteHandlerFunction(
+      "loadScript",
+      base::BindRepeating(&ModuleSystem::LoadScript, base::Unretained(this)));
+  RouteHandlerFunction("privates", base::BindRepeating(&ModuleSystem::Private,
+                                                       base::Unretained(this)));
 }
 
 void ModuleSystem::Invalidate() {
@@ -351,9 +350,6 @@ void ModuleSystem::RegisterNativeHandler(
     const std::string& name,
     std::unique_ptr<NativeHandler> native_handler) {
   ClobberExistingNativeHandler(name);
-  if (!lazily_initialize_handlers_)
-    native_handler->Initialize();
-
   native_handler_map_[name] = std::move(native_handler);
 }
 
@@ -619,7 +615,7 @@ v8::MaybeLocal<v8::Object> ModuleSystem::RequireNativeFromString(
     return v8::MaybeLocal<v8::Object>();
   }
 
-  if (lazily_initialize_handlers_ && !i->second->IsInitialized())
+  if (!i->second->IsInitialized())
     i->second->Initialize();
 
   return i->second->NewInstance();
@@ -798,7 +794,7 @@ v8::Local<v8::Value> ModuleSystem::LoadModuleWithNativeAPIBridge(
   {
     v8::TryCatch try_catch(GetIsolate());
     try_catch.SetCaptureMessage(true);
-    context_->SafeCallFunction(func, arraysize(args), args);
+    context_->SafeCallFunction(func, base::size(args), args);
     if (try_catch.HasCaught()) {
       HandleException(try_catch);
       return v8::Undefined(GetIsolate());

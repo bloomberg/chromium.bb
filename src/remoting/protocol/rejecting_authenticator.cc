@@ -32,14 +32,14 @@ RejectingAuthenticator::rejection_reason() const {
 }
 
 void RejectingAuthenticator::ProcessMessage(
-    const buzz::XmlElement* message,
+    const jingle_xmpp::XmlElement* message,
     const base::Closure& resume_callback) {
   DCHECK_EQ(state_, WAITING_MESSAGE);
   state_ = REJECTED;
   resume_callback.Run();
 }
 
-std::unique_ptr<buzz::XmlElement> RejectingAuthenticator::GetNextMessage() {
+std::unique_ptr<jingle_xmpp::XmlElement> RejectingAuthenticator::GetNextMessage() {
   NOTREACHED();
   return nullptr;
 }
@@ -47,7 +47,7 @@ std::unique_ptr<buzz::XmlElement> RejectingAuthenticator::GetNextMessage() {
 const std::string& RejectingAuthenticator::GetAuthKey() const {
   NOTREACHED();
   return auth_key_;
-};
+}
 
 std::unique_ptr<ChannelAuthenticator>
 RejectingAuthenticator::CreateChannelAuthenticator() const {

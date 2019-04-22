@@ -206,7 +206,6 @@ class CombinedReaders {
         this.currentReader_ = this.readers_.pop();
         this.readEntries(success, error);
       }
-
     }, error);
   }
 }
@@ -258,16 +257,23 @@ class EntryList {
    * @param {string} label: Label to be used when displaying to user, it should
    *    already translated.
    * @param {VolumeManagerCommon.RootType} rootType root type.
-   *
+   * @param {string} devicePath Device path
    */
-  constructor(label, rootType) {
+  constructor(label, rootType, devicePath = '') {
     /**
      * @private {string} label: Label to be used when displaying to user, it
-     *      should be already translated. */
+     *      should be already translated.
+     */
     this.label_ = label;
 
     /** @private {VolumeManagerCommon.RootType} rootType root type. */
     this.rootType_ = rootType;
+
+    /**
+     * @private {string} devicePath Path belonging to the external media
+     * device. Partitions on the same external drive have the same device path.
+     */
+    this.devicePath_ = devicePath;
 
     /**
      * @private {!Array<!Entry|!FilesAppEntry>} children entries of
@@ -317,6 +323,11 @@ class EntryList {
    * @override
    */
   toURL() {
+    // There may be multiple entry lists. Append the device path to return
+    // a unique identifiable URL for the entry list.
+    if (this.devicePath_) {
+      return 'entry-list://' + this.rootType + '/' + this.devicePath_;
+    }
     return 'entry-list://' + this.rootType;
   }
 
@@ -397,6 +408,22 @@ class EntryList {
   removeByRootType(rootType) {
     const childIndex = this.children_.findIndex(
         childEntry => childEntry.rootType === rootType);
+    if (childIndex !== -1) {
+      this.children_.splice(childIndex, 1);
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Removes the entry.
+   * @param {!Entry|FilesAppEntry} entry to be removed.
+   * This method is specific to EntryList and VolumeEntry instance.
+   * @return {boolean} if entry was removed.
+   */
+  removeChildEntry(entry) {
+    const childIndex =
+        this.children_.findIndex(childEntry => childEntry === entry);
     if (childIndex !== -1) {
       this.children_.splice(childIndex, 1);
       return true;
@@ -579,9 +606,14 @@ class VolumeEntry {
    * @override
    */
   createReader() {
-    const readers = [this.rootEntry_.createReader()];
-    if (this.children_.length)
+    const readers = [];
+    if (this.rootEntry_) {
+      readers.push(this.rootEntry_.createReader());
+    }
+
+    if (this.children_.length) {
       readers.push(new StaticReader(this.children_));
+    }
 
     return new CombinedReaders(readers);
   }
@@ -654,6 +686,22 @@ class VolumeEntry {
     }
     return false;
   }
+
+  /**
+   * Removes the entry.
+   * @param {!Entry|FilesAppEntry} entry to be removed.
+   * This method is specific to EntryList and VolumeEntry instance.
+   * @return {boolean} if entry was removed.
+   */
+  removeChildEntry(entry) {
+    const childIndex =
+        this.children_.findIndex(childEntry => childEntry === entry);
+    if (childIndex !== -1) {
+      this.children_.splice(childIndex, 1);
+      return true;
+    }
+    return false;
+  }
 }
 
 /**
@@ -672,7 +720,8 @@ class FakeEntry {
   constructor(label, rootType, opt_sourceRestriction) {
     /**
      * @public {string} label: Label to be used when displaying to user, it
-     *      should be already translated. */
+     *      should be already translated.
+     */
     this.label = label;
 
     /** @public {string} Name for this volume. */

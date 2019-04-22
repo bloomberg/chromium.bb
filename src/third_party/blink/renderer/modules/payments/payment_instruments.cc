@@ -10,8 +10,8 @@
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom-blink.h"
+#include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/public/platform/web_feature.mojom-blink.h"
 #include "third_party/blink/public/platform/web_icon_sizes_parser.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -153,7 +153,7 @@ ScriptPromise PaymentInstruments::deleteInstrument(
                                            kPaymentManagerUnavailable));
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   manager_->DeletePaymentInstrument(
@@ -174,7 +174,7 @@ ScriptPromise PaymentInstruments::get(ScriptState* script_state,
                                            kPaymentManagerUnavailable));
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   manager_->GetPaymentInstrument(
@@ -194,7 +194,7 @@ ScriptPromise PaymentInstruments::keys(ScriptState* script_state) {
                                            kPaymentManagerUnavailable));
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   manager_->KeysOfPaymentInstruments(
@@ -214,7 +214,7 @@ ScriptPromise PaymentInstruments::has(ScriptState* script_state,
                                            kPaymentManagerUnavailable));
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   manager_->HasPaymentInstrument(
@@ -237,7 +237,7 @@ ScriptPromise PaymentInstruments::set(ScriptState* script_state,
                                            kPaymentManagerUnavailable));
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ExecutionContext* context = ExecutionContext::From(script_state);
   Document* doc = DynamicTo<Document>(context);
 
@@ -267,7 +267,7 @@ ScriptPromise PaymentInstruments::clear(ScriptState* script_state) {
                                            kPaymentManagerUnavailable));
   }
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   manager_->ClearPaymentInstruments(

@@ -6,6 +6,9 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/vr/service/xr_runtime_manager.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/web_preferences.h"
 #include "device/vr/buildflags/buildflags.h"
@@ -51,6 +54,57 @@ bool VrTabHelper::IsInVr(content::WebContents* contents) {
   return vr_tab_helper->is_in_vr();
 }
 
+/* static */
+bool VrTabHelper::IsContentDisplayedInHeadset(content::WebContents* contents) {
+  if (!contents)
+    return false;
+
+  VrTabHelper* vr_tab_helper = VrTabHelper::FromWebContents(contents);
+  if (!vr_tab_helper) {
+    VrTabHelper::CreateForWebContents(contents);
+    vr_tab_helper = VrTabHelper::FromWebContents(contents);
+  }
+  return vr_tab_helper->is_content_displayed_in_headset();
+}
+
+/* static */
+void VrTabHelper::SetIsContentDisplayedInHeadset(content::WebContents* contents,
+                                                 bool state) {
+  if (!contents)
+    return;
+  VrTabHelper* vr_tab_helper = VrTabHelper::FromWebContents(contents);
+  if (!vr_tab_helper) {
+    VrTabHelper::CreateForWebContents(contents);
+    vr_tab_helper = VrTabHelper::FromWebContents(contents);
+  }
+  bool old_state = vr_tab_helper->IsContentDisplayedInHeadset(contents);
+  vr_tab_helper->SetIsContentDisplayedInHeadset(state);
+  if (old_state != state) {
+#if !defined(OS_ANDROID)
+    Browser* browser = chrome::FindBrowserWithWebContents(contents);
+    if (browser) {
+      TabStripModel* tab_strip_model = browser->tab_strip_model();
+      if (tab_strip_model) {
+        tab_strip_model->UpdateWebContentsStateAt(
+            tab_strip_model->GetIndexOfWebContents(contents),
+            TabChangeType::kAll);
+      }
+    }
+#endif
+  }
+}
+
+/* static */
+void VrTabHelper::ExitVrPresentation() {
+#if defined(OS_WIN) && BUILDFLAG(ENABLE_VR)
+  XRRuntimeManager::ExitImmersivePresentation();
+#endif
+}
+
+void VrTabHelper::SetIsContentDisplayedInHeadset(bool state) {
+  is_content_displayed_in_headset_ = state;
+}
+
 bool VrTabHelper::IsUiSuppressedInVr(content::WebContents* contents,
                                      UiSuppressedElement element) {
   if (!IsInVr(contents))
@@ -90,5 +144,7 @@ bool VrTabHelper::IsUiSuppressedInVr(content::WebContents* contents,
   }
   return suppress;
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(VrTabHelper)
 
 }  // namespace vr

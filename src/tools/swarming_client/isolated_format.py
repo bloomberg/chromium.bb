@@ -122,8 +122,10 @@ def walk_includes(isolated):
 
 
 @tools.profile
-def expand_symlinks(indir, relfile):
-  """Follows symlinks in |relfile|, but treating symlinks that point outside the
+def _expand_symlinks(indir, relfile):
+  """Finds symlinks in relfile.
+
+  Follows symlinks in |relfile|, but treating symlinks that point outside the
   build tree as if they were ordinary directories/files. Returns the final
   symlink-free target and a list of paths to symlinks encountered in the
   process.
@@ -134,6 +136,16 @@ def expand_symlinks(indir, relfile):
 
   Fails when a directory loop is detected, although in theory we could support
   that case.
+
+  Arguments:
+  - indir: base directory; symlinks in indir are not processed; this is
+    the base directory that is considered 'outside of the tree'.
+  - relfile: part of the path to expand symlink.
+
+  Returns:
+    tuple(relfile, list(symlinks)): relfile is real path of relfile where all
+    symlinks were evaluated. symlinks if the chain of symlinks found along the
+    way, if any.
   """
   is_directory = relfile.endswith(os.path.sep)
   done = indir
@@ -180,10 +192,9 @@ def expand_symlinks(indir, relfile):
     symlink_path = symlink_path.split(os.path.sep)
     prefix_length = 0
     for target_piece, symlink_path_piece in zip(target, symlink_path):
-      if target_piece == symlink_path_piece:
-        prefix_length += 1
-      else:
+      if target_piece != symlink_path_piece:
         break
+      prefix_length += 1
     done = os.path.sep.join(target[:prefix_length])
     todo = os.path.join(
         os.path.sep.join(target[prefix_length:]), post_symlink)
@@ -204,7 +215,7 @@ def expand_directory_and_symlink(indir, relfile, blacklist, follow_symlinks):
     ln -s .. foo
 
   Yields:
-    Relative file paths inside the directory.
+    tuple(Relative path, bool is_symlink) to files and symlinks inside |indir|.
   """
   if os.path.isabs(relfile):
     raise MappingError(u'Can\'t map absolute path %s' % relfile)
@@ -241,13 +252,15 @@ def expand_directory_and_symlink(indir, relfile, blacklist, follow_symlinks):
   symlinks = []
   if follow_symlinks:
     try:
-      relfile, symlinks = expand_symlinks(indir, relfile)
+      relfile, symlinks = _expand_symlinks(indir, relfile)
     except OSError:
       # The file doesn't exist, it will throw below.
       pass
 
+  # The symlinks need to be mapped in.
   for s in symlinks:
-    yield s
+    yield s, True
+
   if relfile.endswith(os.path.sep):
     if not fs.isdir(infile):
       raise MappingError(
@@ -264,9 +277,9 @@ def expand_directory_and_symlink(indir, relfile, blacklist, follow_symlinks):
         if fs.isdir(os.path.join(indir, inner_relfile)):
           inner_relfile += os.path.sep
         # Apply recursively.
-        for i in expand_directory_and_symlink(
+        for i, is_symlink in expand_directory_and_symlink(
             indir, inner_relfile, blacklist, follow_symlinks):
-          yield i
+          yield i, is_symlink
     except OSError as e:
       raise MappingError(
           u'Unable to iterate over directory %s.\n%s' % (infile, e))
@@ -279,32 +292,11 @@ def expand_directory_and_symlink(indir, relfile, blacklist, follow_symlinks):
     if not fs.isfile(infile):
       raise MappingError(u'Input file %s doesn\'t exist' % infile)
 
-    yield relfile
-
-
-def expand_directories_and_symlinks(
-    indir, infiles, blacklist, follow_symlinks, ignore_broken_items):
-  """Expands the directories and the symlinks, applies the blacklist and
-  verifies files exist.
-
-  Files are specified in os native path separator.
-
-  Yields:
-    Relative file path of each file inside every directory specified.
-  """
-  for relfile in infiles:
-    try:
-      for i in expand_directory_and_symlink(
-          indir, relfile, blacklist, follow_symlinks):
-        yield i
-    except MappingError as e:
-      if not ignore_broken_items:
-        raise
-      logging.info('warning: %s', e)
+    yield relfile, False
 
 
 @tools.profile
-def file_to_metadata(filepath, prevdict, read_only, algo, collapse_symlinks):
+def file_to_metadata(filepath, read_only, collapse_symlinks):
   """Processes an input file, a dependency, and return meta data about it.
 
   Behaviors:
@@ -314,28 +306,21 @@ def file_to_metadata(filepath, prevdict, read_only, algo, collapse_symlinks):
 
   Arguments:
     filepath: File to act on.
-    prevdict: the previous dictionary. It is used to retrieve the cached hash
-              to skip recalculating the hash. Optional.
     read_only: If 1 or 2, the file mode is manipulated. In practice, only save
                one of 4 modes: 0755 (rwx), 0644 (rw), 0555 (rx), 0444 (r). On
                windows, mode is not set since all files are 'executable' by
                default.
-    algo:      Hashing algorithm used.
     collapse_symlinks: True if symlinked files should be treated like they were
                        the normal underlying file.
 
   Returns:
     The necessary dict to create a entry in the 'files' section of an .isolated
-    file.
+    file *except* 'h' for files.
   """
   # TODO(maruel): None is not a valid value.
   assert read_only in (None, 0, 1, 2), read_only
   out = {}
-  # Always check the file stat and check if it is a link. The timestamp is used
-  # to know if the file's content/symlink destination should be looked into.
-  # E.g. only reuse from prevdict if the timestamp hasn't changed.
-  # There is the risk of the file's timestamp being reset to its last value
-  # manually while its content changed. We don't protect against that use case.
+  # Always check the file stat and check if it is a link.
   try:
     if collapse_symlinks:
       # os.stat follows symbolic links
@@ -363,35 +348,18 @@ def file_to_metadata(filepath, prevdict, read_only, algo, collapse_symlinks):
     if not is_link:
       out['m'] = filemode
 
-  # Used to skip recalculating the hash or link destination. Use the most recent
-  # update time.
-  out['t'] = int(round(filestats.st_mtime))
-
   if not is_link:
     out['s'] = filestats.st_size
-    # If the timestamp wasn't updated and the file size is still the same, carry
-    # on the hash.
-    if (prevdict.get('t') == out['t'] and
-        prevdict.get('s') == out['s']):
-      # Reuse the previous hash if available.
-      out['h'] = prevdict.get('h')
-    if not out.get('h'):
-      out['h'] = hash_file(filepath, algo)
   else:
-    # If the timestamp wasn't updated, carry on the link destination.
-    if prevdict.get('t') == out['t']:
-      # Reuse the previous link destination if available.
-      out['l'] = prevdict.get('l')
-    if out.get('l') is None:
-      # The link could be in an incorrect path case. In practice, this only
-      # happen on OSX on case insensitive HFS.
-      # TODO(maruel): It'd be better if it was only done once, in
-      # expand_directory_and_symlink(), so it would not be necessary to do again
-      # here.
-      symlink_value = fs.readlink(filepath)  # pylint: disable=E1101
-      filedir = file_path.get_native_path_case(os.path.dirname(filepath))
-      native_dest = file_path.fix_native_path_case(filedir, symlink_value)
-      out['l'] = os.path.relpath(native_dest, filedir)
+    # The link could be in an incorrect path case. In practice, this only
+    # happens on macOS on case insensitive HFS.
+    # TODO(maruel): It'd be better if it was only done once, in
+    # expand_directory_and_symlink(), so it would not be necessary to do again
+    # here.
+    symlink_value = fs.readlink(filepath)  # pylint: disable=no-member
+    filedir = file_path.get_native_path_case(os.path.dirname(filepath))
+    native_dest = file_path.fix_native_path_case(filedir, symlink_value)
+    out['l'] = os.path.relpath(native_dest, filedir)
   return out
 
 
@@ -400,14 +368,11 @@ def save_isolated(isolated, data):
 
   Note: this reference implementation does not create child .isolated file so it
   always returns an empty list.
-
-  Returns the list of child isolated files that are included by |isolated|.
   """
   # Make sure the data is valid .isolated data by 'reloading' it.
   algo = SUPPORTED_ALGOS[data['algo']]
   load_isolated(json.dumps(data), algo)
   tools.write_json(isolated, data, True)
-  return []
 
 
 def split_path(path):

@@ -29,6 +29,16 @@ Git map-branches displays all local branches such that:
 
 NOTE: If multiple branches are on the same commit, they will all be cyan.
 
+OPTIONS
+-------
+
+--no-color::
+  Turn off colors.
+
+-v::
+  Be more verbose. Pass once to show tracking info, twice for hash and review
+  URL, thrice for review status.
+
 EXAMPLE
 -------
 

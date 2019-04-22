@@ -14,6 +14,8 @@ is broad applicability.
 
 ### Design and naming
 
+Fundamental [//base principles](../README.md#design-and-naming) apply, i.e.:
+
 Containers should adhere as closely to STL as possible. Functions and behaviors
 not present in STL should only be added when they are related to the specific
 data structure implemented by the container.

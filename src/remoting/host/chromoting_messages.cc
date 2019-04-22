@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "remoting/host/chromoting_param_traits_impl.h"
+
 // Get basic type definitions.
 #define IPC_MESSAGE_IMPL
 #include "remoting/host/chromoting_messages.h"

@@ -31,7 +31,10 @@
         });
 
         waitForEvent(video, 'canplaythrough', function() {
-            runWithKeyDown(function(){video.webkitRequestFullScreen()});
+          // Run with garbage key. User input is needed to go into fullscreen,
+          // and since the video will be in focus, we cannot use space as it
+          // will play the video.
+          runWithKeyDown(function(){video.webkitRequestFullScreen()}, 'a');
         });
 
         video.src = '../media/content/test.ogv';

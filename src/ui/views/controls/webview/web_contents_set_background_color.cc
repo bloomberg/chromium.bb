@@ -31,7 +31,7 @@ WebContentsSetBackgroundColor::WebContentsSetBackgroundColor(
     SkColor color)
     : content::WebContentsObserver(web_contents), color_(color) {}
 
-WebContentsSetBackgroundColor::~WebContentsSetBackgroundColor() {}
+WebContentsSetBackgroundColor::~WebContentsSetBackgroundColor() = default;
 
 void WebContentsSetBackgroundColor::RenderViewReady() {
   web_contents()
@@ -51,5 +51,7 @@ void WebContentsSetBackgroundColor::RenderViewHostChanged(
     content::RenderViewHost* new_host) {
   new_host->GetWidget()->GetView()->SetBackgroundColor(color_);
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(WebContentsSetBackgroundColor)
 
 }  // namespace views

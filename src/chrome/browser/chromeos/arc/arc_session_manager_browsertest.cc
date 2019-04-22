@@ -11,29 +11,33 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/arc/arc_service_launcher.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/test/arc_data_removed_waiter.h"
+#include "chrome/browser/chromeos/login/test/local_policy_test_server_mixin.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/extensions/api/tabs/tabs_api.h"
+#include "chrome/browser/extensions/extension_function_test_utils.h"
+#include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
-#include "chrome/browser/policy/test/local_policy_test_server.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/account_id/account_id.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_service_manager.h"
-#include "components/arc/arc_session_runner.h"
 #include "components/arc/arc_util.h"
+#include "components/arc/session/arc_session_runner.h"
 #include "components/arc/test/fake_arc_session.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
@@ -41,10 +45,11 @@
 #include "components/policy/core/common/policy_switches.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/extension_builder.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_data_stream.h"
 #include "net/url_request/url_request_test_job.h"
@@ -95,31 +100,20 @@ class ArcPlayStoreDisabledWaiter : public ArcSessionManager::Observer {
   DISALLOW_COPY_AND_ASSIGN(ArcPlayStoreDisabledWaiter);
 };
 
-class ArcSessionManagerTest : public InProcessBrowserTest {
+class ArcSessionManagerTest : public chromeos::MixinBasedInProcessBrowserTest {
  protected:
   ArcSessionManagerTest() {}
 
-  // InProcessBrowserTest:
+  // MixinBasedInProcessBrowserTest:
   ~ArcSessionManagerTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
+    chromeos::MixinBasedInProcessBrowserTest::SetUpCommandLine(command_line);
     arc::SetArcAvailableCommandLineForTesting(command_line);
   }
 
-  void SetUpInProcessBrowserTestFixture() override {
-    // Start test device management server.
-    test_server_.reset(new policy::LocalPolicyTestServer());
-    ASSERT_TRUE(test_server_->Start());
-
-    // Specify device management server URL.
-    std::string url = test_server_->GetServiceURL().spec();
-    base::CommandLine* const command_line =
-        base::CommandLine::ForCurrentProcess();
-    command_line->AppendSwitchASCII(policy::switches::kDeviceManagementUrl,
-                                    url);
-  }
-
   void SetUpOnMainThread() override {
+    chromeos::MixinBasedInProcessBrowserTest::SetUpOnMainThread();
     user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
         std::make_unique<chromeos::FakeChromeUserManager>());
     // Init ArcSessionManager for testing.
@@ -127,7 +121,8 @@ class ArcSessionManagerTest : public InProcessBrowserTest {
     ArcSessionManager::SetUiEnabledForTesting(false);
     ArcSessionManager::EnableCheckAndroidManagementForTesting(true);
     ArcSessionManager::Get()->SetArcSessionRunnerForTesting(
-        std::make_unique<ArcSessionRunner>(base::Bind(FakeArcSession::Create)));
+        std::make_unique<ArcSessionRunner>(
+            base::BindRepeating(FakeArcSession::Create)));
 
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
@@ -183,8 +178,8 @@ class ArcSessionManagerTest : public InProcessBrowserTest {
     profile_.reset();
     base::RunLoop().RunUntilIdle();
     user_manager_enabler_.reset();
-    test_server_.reset();
     chromeos::ProfileHelper::SetAlwaysReturnPrimaryUserForTesting(false);
+    chromeos::MixinBasedInProcessBrowserTest::TearDownOnMainThread();
   }
 
   chromeos::FakeChromeUserManager* GetFakeUserManager() const {
@@ -209,7 +204,7 @@ class ArcSessionManagerTest : public InProcessBrowserTest {
   }
 
  private:
-  std::unique_ptr<policy::LocalPolicyTestServer> test_server_;
+  chromeos::LocalPolicyTestServerMixin local_policy_mixin_{&mixin_host_};
   std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
   std::unique_ptr<IdentityTestEnvironmentProfileAdaptor>
       identity_test_environment_adaptor_;
@@ -250,6 +245,32 @@ IN_PROC_BROWSER_TEST_F(ArcSessionManagerTest, ManagedAndroidAccount) {
       kManagedAuthToken, base::Time::Max());
   ArcPlayStoreDisabledWaiter().Wait();
   EXPECT_FALSE(IsArcPlayStoreEnabledForProfile(profile()));
+}
+
+// Make sure that ARC is disabled upon entering locked fullscreen mode.
+IN_PROC_BROWSER_TEST_F(ArcSessionManagerTest, ArcDisabledInLockedFullscreen) {
+  EnableArc();
+  ASSERT_EQ(ArcSessionManager::State::ACTIVE,
+            ArcSessionManager::Get()->state());
+
+  const int window_id = extensions::ExtensionTabUtil::GetWindowId(browser());
+  const char kStateLockedFullscreen[] =
+      "[%u, {\"state\": \"locked-fullscreen\"}]";
+
+  auto function = base::MakeRefCounted<extensions::WindowsUpdateFunction>();
+  scoped_refptr<const extensions::Extension> extension(
+      extensions::ExtensionBuilder("Test")
+          .SetID("pmgljoohajacndjcjlajcopidgnhphcl")
+          .AddPermission("lockWindowFullscreenPrivate")
+          .Build());
+  function->set_extension(extension.get());
+
+  extension_function_test_utils::RunFunctionAndReturnSingleResult(
+      function.get(), base::StringPrintf(kStateLockedFullscreen, window_id),
+      browser());
+
+  ASSERT_EQ(ArcSessionManager::State::STOPPED,
+            ArcSessionManager::Get()->state());
 }
 
 }  // namespace arc

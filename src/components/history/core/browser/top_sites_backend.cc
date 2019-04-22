@@ -43,15 +43,15 @@ void TopSitesBackend::Shutdown() {
       FROM_HERE, base::BindOnce(&TopSitesBackend::ShutdownDBOnDBThread, this));
 }
 
-void TopSitesBackend::GetMostVisitedThumbnails(
-    const GetMostVisitedThumbnailsCallback& callback,
+void TopSitesBackend::GetMostVisitedSites(
+    GetMostVisitedSitesCallback callback,
     base::CancelableTaskTracker* tracker) {
-  scoped_refptr<MostVisitedThumbnails> thumbnails = new MostVisitedThumbnails();
+  scoped_refptr<MostVisitedThreadSafe> sites = new MostVisitedThreadSafe();
   tracker->PostTaskAndReply(
       db_task_runner_.get(), FROM_HERE,
-      base::BindOnce(&TopSitesBackend::GetMostVisitedThumbnailsOnDBThread, this,
-                     thumbnails),
-      base::BindOnce(callback, thumbnails));
+      base::BindOnce(&TopSitesBackend::GetMostVisitedSitesOnDBThread, this,
+                     sites),
+      base::BindOnce(std::move(callback), sites));
 }
 
 void TopSitesBackend::UpdateTopSites(const TopSitesDelta& delta,
@@ -61,24 +61,10 @@ void TopSitesBackend::UpdateTopSites(const TopSitesDelta& delta,
                                 this, delta, record_or_not));
 }
 
-void TopSitesBackend::SetPageThumbnail(const MostVisitedURL& url,
-                                       int url_rank,
-                                       const Images& thumbnail) {
-  db_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&TopSitesBackend::SetPageThumbnailOnDBThread,
-                                this, url, url_rank, thumbnail));
-}
-
 void TopSitesBackend::ResetDatabase() {
   db_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&TopSitesBackend::ResetDatabaseOnDBThread, this,
                                 db_path_));
-}
-
-void TopSitesBackend::DoEmptyRequest(const base::Closure& reply,
-                                     base::CancelableTaskTracker* tracker) {
-  tracker->PostTaskAndReply(db_task_runner_.get(), FROM_HERE, base::DoNothing(),
-                            reply);
 }
 
 TopSitesBackend::~TopSitesBackend() {
@@ -99,13 +85,12 @@ void TopSitesBackend::ShutdownDBOnDBThread() {
   db_.reset();
 }
 
-void TopSitesBackend::GetMostVisitedThumbnailsOnDBThread(
-    scoped_refptr<MostVisitedThumbnails> thumbnails) {
+void TopSitesBackend::GetMostVisitedSitesOnDBThread(
+    scoped_refptr<MostVisitedThreadSafe> sites) {
   DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
 
   if (db_) {
-    db_->GetPageThumbnails(&(thumbnails->most_visited),
-                           &(thumbnails->url_to_images_map));
+    db_->GetSites(&(sites->data));
   }
 }
 
@@ -124,15 +109,6 @@ void TopSitesBackend::UpdateTopSitesOnDBThread(
     UMA_HISTOGRAM_TIMES("History.FirstUpdateTime",
                         base::TimeTicks::Now() - begin_time);
   }
-}
-
-void TopSitesBackend::SetPageThumbnailOnDBThread(const MostVisitedURL& url,
-                                                 int url_rank,
-                                                 const Images& thumbnail) {
-  if (!db_)
-    return;
-
-  db_->SetPageThumbnail(url, url_rank, thumbnail);
 }
 
 void TopSitesBackend::ResetDatabaseOnDBThread(const base::FilePath& file_path) {

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/outdated_upgrade_bubble_view.h"
 
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/task/post_task.h"
@@ -123,7 +124,7 @@ bool OutdatedUpgradeBubbleView::Accept() {
         FROM_HERE,
         {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
          base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
-        base::Bind(&google_update::ElevateIfNeededToReenableUpdates));
+        base::BindOnce(&google_update::ElevateIfNeededToReenableUpdates));
 #endif  // defined(OS_WIN)
   }
 

@@ -4,6 +4,10 @@
 
 #include "gpu/ipc/gpu_in_process_thread_service.h"
 
+#include <utility>
+#include <vector>
+
+#include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "gpu/command_buffer/service/scheduler.h"
 
@@ -27,13 +31,6 @@ class SchedulerSequence : public CommandBufferTaskExecutor::Sequence {
   SequenceId GetSequenceId() override { return sequence_id_; }
 
   bool ShouldYield() override { return scheduler_->ShouldYield(sequence_id_); }
-
-  void SetEnabled(bool enabled) override {
-    if (enabled)
-      scheduler_->EnableSequence(sequence_id_);
-    else
-      scheduler_->DisableSequence(sequence_id_);
-  }
 
   void ScheduleTask(base::OnceClosure task,
                     std::vector<SyncToken> sync_token_fences) override {
@@ -62,13 +59,17 @@ GpuInProcessThreadService::GpuInProcessThreadService(
     scoped_refptr<gl::GLShareGroup> share_group,
     gl::GLSurfaceFormat share_group_surface_format,
     const GpuFeatureInfo& gpu_feature_info,
-    const GpuPreferences& gpu_preferences)
+    const GpuPreferences& gpu_preferences,
+    SharedImageManager* shared_image_manager,
+    gles2::ProgramCache* program_cache)
     : CommandBufferTaskExecutor(gpu_preferences,
                                 gpu_feature_info,
                                 sync_point_manager,
                                 mailbox_manager,
                                 share_group,
-                                share_group_surface_format),
+                                share_group_surface_format,
+                                shared_image_manager,
+                                program_cache),
       task_runner_(task_runner),
       scheduler_(scheduler) {}
 
@@ -80,10 +81,6 @@ bool GpuInProcessThreadService::ForceVirtualizedGLContexts() const {
 
 bool GpuInProcessThreadService::ShouldCreateMemoryTracker() const {
   return true;
-}
-
-bool GpuInProcessThreadService::BlockThreadOnWaitSyncToken() const {
-  return false;
 }
 
 std::unique_ptr<CommandBufferTaskExecutor::Sequence>
@@ -98,6 +95,11 @@ void GpuInProcessThreadService::ScheduleOutOfOrderTask(base::OnceClosure task) {
 void GpuInProcessThreadService::ScheduleDelayedWork(base::OnceClosure task) {
   task_runner_->PostDelayedTask(FROM_HERE, std::move(task),
                                 base::TimeDelta::FromMilliseconds(2));
+}
+
+void GpuInProcessThreadService::PostNonNestableToClient(
+    base::OnceClosure callback) {
+  NOTREACHED();
 }
 
 }  // namespace gpu

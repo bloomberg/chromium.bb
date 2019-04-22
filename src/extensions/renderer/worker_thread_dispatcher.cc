@@ -4,6 +4,9 @@
 
 #include "extensions/renderer/worker_thread_dispatcher.h"
 
+#include <utility>
+
+#include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/lazy_instance.h"
 #include "base/threading/platform_thread.h"
@@ -15,11 +18,11 @@
 #include "extensions/common/extension_features.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/renderer/dispatcher.h"
-#include "extensions/renderer/extension_bindings_system.h"
 #include "extensions/renderer/extensions_renderer_client.h"
-#include "extensions/renderer/js_extension_bindings_system.h"
 #include "extensions/renderer/native_extension_bindings_system.h"
+#include "extensions/renderer/native_renderer_messaging_service.h"
 #include "extensions/renderer/service_worker_data.h"
+#include "extensions/renderer/worker_script_context_set.h"
 
 namespace extensions {
 
@@ -54,7 +57,7 @@ void WorkerThreadDispatcher::Init(content::RenderThread* render_thread) {
 }
 
 // static
-ExtensionBindingsSystem* WorkerThreadDispatcher::GetBindingsSystem() {
+NativeExtensionBindingsSystem* WorkerThreadDispatcher::GetBindingsSystem() {
   return GetServiceWorkerData()->bindings_system();
 }
 
@@ -72,7 +75,11 @@ ScriptContext* WorkerThreadDispatcher::GetScriptContext() {
 bool WorkerThreadDispatcher::HandlesMessageOnWorkerThread(
     const IPC::Message& message) {
   return message.type() == ExtensionMsg_ResponseWorker::ID ||
-         message.type() == ExtensionMsg_DispatchEvent::ID;
+         message.type() == ExtensionMsg_DispatchEvent::ID ||
+         message.type() == ExtensionMsg_DispatchOnConnect::ID ||
+         message.type() == ExtensionMsg_DeliverMessage::ID ||
+         message.type() == ExtensionMsg_DispatchOnDisconnect::ID ||
+         message.type() == ExtensionMsg_ValidateMessagePort::ID;
 }
 
 // static
@@ -94,8 +101,8 @@ bool WorkerThreadDispatcher::OnControlMessageReceived(
       return false;
     base::TaskRunner* runner = GetTaskRunnerFor(worker_thread_id);
     bool task_posted = runner->PostTask(
-        FROM_HERE, base::Bind(&WorkerThreadDispatcher::ForwardIPC,
-                              worker_thread_id, message));
+        FROM_HERE, base::BindOnce(&WorkerThreadDispatcher::ForwardIPC,
+                                  worker_thread_id, message));
     DCHECK(task_posted) << "Could not PostTask IPC to worker thread.";
     return true;
   }
@@ -110,6 +117,11 @@ void WorkerThreadDispatcher::OnMessageReceivedOnWorkerThread(
   IPC_BEGIN_MESSAGE_MAP(WorkerThreadDispatcher, message)
     IPC_MESSAGE_HANDLER(ExtensionMsg_ResponseWorker, OnResponseWorker)
     IPC_MESSAGE_HANDLER(ExtensionMsg_DispatchEvent, OnDispatchEvent)
+    IPC_MESSAGE_HANDLER(ExtensionMsg_DispatchOnConnect, OnDispatchOnConnect)
+    IPC_MESSAGE_HANDLER(ExtensionMsg_DeliverMessage, OnDeliverMessage)
+    IPC_MESSAGE_HANDLER(ExtensionMsg_DispatchOnDisconnect,
+                        OnDispatchOnDisconnect)
+    IPC_MESSAGE_HANDLER(ExtensionMsg_ValidateMessagePort, OnValidateMessagePort)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   CHECK(handled);
@@ -146,10 +158,58 @@ void WorkerThreadDispatcher::OnDispatchEvent(
                                            params.event_id));
 }
 
+void WorkerThreadDispatcher::OnDispatchOnConnect(
+    int worker_thread_id,
+    const PortId& target_port_id,
+    const std::string& channel_name,
+    const ExtensionMsg_TabConnectionInfo& source,
+    const ExtensionMsg_ExternalConnectionInfo& info) {
+  DCHECK_EQ(worker_thread_id, content::WorkerThread::GetCurrentId());
+  WorkerThreadDispatcher::GetBindingsSystem()
+      ->messaging_service()
+      ->DispatchOnConnect(Dispatcher::GetWorkerScriptContextSet(),
+                          target_port_id, channel_name, source, info,
+                          // Render frames do not matter.
+                          nullptr);
+}
+
+void WorkerThreadDispatcher::OnValidateMessagePort(int worker_thread_id,
+                                                   const PortId& id) {
+  DCHECK_EQ(content::WorkerThread::GetCurrentId(), worker_thread_id);
+  WorkerThreadDispatcher::GetBindingsSystem()
+      ->messaging_service()
+      ->ValidateMessagePort(Dispatcher::GetWorkerScriptContextSet(), id,
+                            // Render frames do not matter.
+                            nullptr);
+}
+
+void WorkerThreadDispatcher::OnDeliverMessage(int worker_thread_id,
+                                              const PortId& target_port_id,
+                                              const Message& message) {
+  WorkerThreadDispatcher::GetBindingsSystem()
+      ->messaging_service()
+      ->DeliverMessage(Dispatcher::GetWorkerScriptContextSet(), target_port_id,
+                       message,
+                       // Render frames do not matter.
+                       nullptr);
+}
+
+void WorkerThreadDispatcher::OnDispatchOnDisconnect(
+    int worker_thread_id,
+    const PortId& port_id,
+    const std::string& error_message) {
+  WorkerThreadDispatcher::GetBindingsSystem()
+      ->messaging_service()
+      ->DispatchOnDisconnect(Dispatcher::GetWorkerScriptContextSet(), port_id,
+                             error_message,
+                             // Render frames do not matter.
+                             nullptr);
+}
+
 void WorkerThreadDispatcher::AddWorkerData(
     int64_t service_worker_version_id,
     ScriptContext* context,
-    std::unique_ptr<ExtensionBindingsSystem> bindings_system) {
+    std::unique_ptr<NativeExtensionBindingsSystem> bindings_system) {
   ServiceWorkerData* data = g_data_tls.Pointer()->Get();
   if (!data) {
     ServiceWorkerData* new_data = new ServiceWorkerData(
@@ -167,19 +227,37 @@ void WorkerThreadDispatcher::AddWorkerData(
   }
 }
 
-void WorkerThreadDispatcher::DidStartContext(
+void WorkerThreadDispatcher::DidInitializeContext(
     int64_t service_worker_version_id) {
   ServiceWorkerData* data = g_data_tls.Pointer()->Get();
   DCHECK_EQ(service_worker_version_id, data->service_worker_version_id());
-  Send(new ExtensionHostMsg_DidStartServiceWorkerContext(
-      data->context()->GetExtensionID(), service_worker_version_id));
+  const int thread_id = content::WorkerThread::GetCurrentId();
+  DCHECK_NE(thread_id, kMainThreadId);
+  Send(new ExtensionHostMsg_DidInitializeServiceWorkerContext(
+      data->context()->GetExtensionID(), service_worker_version_id, thread_id));
 }
 
-void WorkerThreadDispatcher::DidStopContext(int64_t service_worker_version_id) {
+void WorkerThreadDispatcher::DidStartContext(
+    const GURL& service_worker_scope,
+    int64_t service_worker_version_id) {
   ServiceWorkerData* data = g_data_tls.Pointer()->Get();
   DCHECK_EQ(service_worker_version_id, data->service_worker_version_id());
+  const int thread_id = content::WorkerThread::GetCurrentId();
+  DCHECK_NE(thread_id, kMainThreadId);
+  Send(new ExtensionHostMsg_DidStartServiceWorkerContext(
+      data->context()->GetExtensionID(), service_worker_scope,
+      service_worker_version_id, thread_id));
+}
+
+void WorkerThreadDispatcher::DidStopContext(const GURL& service_worker_scope,
+                                            int64_t service_worker_version_id) {
+  ServiceWorkerData* data = g_data_tls.Pointer()->Get();
+  const int thread_id = content::WorkerThread::GetCurrentId();
+  DCHECK_NE(thread_id, kMainThreadId);
+  DCHECK_EQ(service_worker_version_id, data->service_worker_version_id());
   Send(new ExtensionHostMsg_DidStopServiceWorkerContext(
-      data->context()->GetExtensionID(), service_worker_version_id));
+      data->context()->GetExtensionID(), service_worker_scope,
+      service_worker_version_id, thread_id));
 }
 
 void WorkerThreadDispatcher::RemoveWorkerData(

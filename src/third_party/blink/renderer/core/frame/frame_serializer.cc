@@ -63,7 +63,7 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
-#include "third_party/blink/renderer/platform/serialized_resource.h"
+#include "third_party/blink/renderer/platform/mhtml/serialized_resource.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -85,40 +85,31 @@ class SerializerMarkupAccumulator : public MarkupAccumulator {
  public:
   SerializerMarkupAccumulator(FrameSerializer::Delegate&,
                               const Document&,
-                              HeapVector<Member<Node>>&);
+                              HeapVector<Member<const Element>>&);
   ~SerializerMarkupAccumulator() override;
 
  protected:
-  void AppendCustomAttributes(StringBuilder&,
-                              const Element&,
-                              Namespaces*) override;
-  void AppendText(StringBuilder& out, Text&) override;
+  void AppendCustomAttributes(const Element&) override;
   bool ShouldIgnoreAttribute(const Element&, const Attribute&) const override;
   bool ShouldIgnoreElement(const Element&) const override;
-  void AppendElement(StringBuilder& out, const Element&, Namespaces*) override;
-  void AppendAttribute(StringBuilder& out,
-                       const Element&,
-                       const Attribute&,
-                       Namespaces*) override;
-  void AppendStartTag(Node&, Namespaces* = nullptr) override;
-  void AppendEndTag(const Element&) override;
+  AtomicString AppendElement(const Element&) override;
+  void AppendAttribute(const Element&, const Attribute&) override;
   std::pair<Node*, Element*> GetAuxiliaryDOMTree(const Element&) const override;
 
  private:
-  void AppendAttributeValue(StringBuilder& out, const String& attribute_value);
-  void AppendRewrittenAttribute(StringBuilder& out,
-                                const Element&,
+  void AppendAttributeValue(const String& attribute_value);
+  void AppendRewrittenAttribute(const Element&,
                                 const String& attribute_name,
                                 const String& attribute_value);
 
   FrameSerializer::Delegate& delegate_;
   Member<const Document> document_;
 
-  // FIXME: |FrameSerializer| uses |m_nodes| for collecting nodes in document
-  // included into serialized text then extracts image, object, etc. The size
-  // of this vector isn't small for large document. It is better to use
+  // FIXME: |FrameSerializer| uses |elements_| for collecting elements in
+  // document included into serialized text then extracts image, object, etc.
+  // The size of this vector isn't small for large document. It is better to use
   // callback like functionality.
-  HeapVector<Member<Node>>& nodes_;
+  HeapVector<Member<const Element>>& elements_;
 
   // Elements with links rewritten via appendAttribute method.
   HeapHashSet<Member<const Element>> elements_with_rewritten_links_;
@@ -127,26 +118,19 @@ class SerializerMarkupAccumulator : public MarkupAccumulator {
 SerializerMarkupAccumulator::SerializerMarkupAccumulator(
     FrameSerializer::Delegate& delegate,
     const Document& document,
-    HeapVector<Member<Node>>& nodes)
+    HeapVector<Member<const Element>>& elements)
     : MarkupAccumulator(kResolveAllURLs),
       delegate_(delegate),
       document_(&document),
-      nodes_(nodes) {}
+      elements_(elements) {}
 
 SerializerMarkupAccumulator::~SerializerMarkupAccumulator() = default;
 
 void SerializerMarkupAccumulator::AppendCustomAttributes(
-    StringBuilder& result,
-    const Element& element,
-    Namespaces* namespaces) {
+    const Element& element) {
   Vector<Attribute> attributes = delegate_.GetCustomAttributes(element);
   for (const auto& attribute : attributes)
-    AppendAttribute(result, element, attribute, namespaces);
-}
-
-void SerializerMarkupAccumulator::AppendText(StringBuilder& result,
-                                             Text& text) {
-  MarkupAccumulator::AppendText(result, text);
+    AppendAttribute(element, attribute);
 }
 
 bool SerializerMarkupAccumulator::ShouldIgnoreAttribute(
@@ -168,32 +152,32 @@ bool SerializerMarkupAccumulator::ShouldIgnoreElement(
   return delegate_.ShouldIgnoreElement(element);
 }
 
-void SerializerMarkupAccumulator::AppendElement(StringBuilder& result,
-                                                const Element& element,
-                                                Namespaces* namespaces) {
-  MarkupAccumulator::AppendElement(result, element, namespaces);
+AtomicString SerializerMarkupAccumulator::AppendElement(
+    const Element& element) {
+  AtomicString prefix = MarkupAccumulator::AppendElement(element);
 
   // TODO(tiger): Refactor MarkupAccumulator so it is easier to append an
   // element like this, without special cases for XHTML
   if (IsHTMLHeadElement(element)) {
-    result.Append("<meta http-equiv=\"Content-Type\" content=\"");
-    AppendAttributeValue(result, document_->SuggestedMIMEType());
-    result.Append("; charset=");
-    AppendAttributeValue(result, document_->characterSet());
+    markup_.Append("<meta http-equiv=\"Content-Type\" content=\"");
+    AppendAttributeValue(document_->SuggestedMIMEType());
+    markup_.Append("; charset=");
+    AppendAttributeValue(document_->characterSet());
     if (document_->IsXHTMLDocument())
-      result.Append("\" />");
+      markup_.Append("\" />");
     else
-      result.Append("\">");
+      markup_.Append("\">");
   }
+  elements_.push_back(&element);
 
   // FIXME: For object (plugins) tags and video tag we could replace them by an
   // image of their current contents.
+
+  return prefix;
 }
 
-void SerializerMarkupAccumulator::AppendAttribute(StringBuilder& out,
-                                                  const Element& element,
-                                                  const Attribute& attribute,
-                                                  Namespaces* namespaces) {
+void SerializerMarkupAccumulator::AppendAttribute(const Element& element,
+                                                  const Attribute& attribute) {
   // Check if link rewriting can affect the attribute.
   bool is_link_attribute = element.HasLegalLinkAttribute(attribute.GetName());
   bool is_src_doc_attribute = IsHTMLFrameElementBase(element) &&
@@ -204,7 +188,7 @@ void SerializerMarkupAccumulator::AppendAttribute(StringBuilder& out,
     if (delegate_.RewriteLink(element, new_link_for_the_element)) {
       if (is_link_attribute) {
         // Rewrite element links.
-        AppendRewrittenAttribute(out, element, attribute.GetName().ToString(),
+        AppendRewrittenAttribute(element, attribute.GetName().ToString(),
                                  new_link_for_the_element);
       } else {
         DCHECK(is_src_doc_attribute);
@@ -212,7 +196,7 @@ void SerializerMarkupAccumulator::AppendAttribute(StringBuilder& out,
         // serialized subframe to use html contents from the link provided by
         // Delegate::rewriteLink rather than html contents from srcdoc
         // attribute.
-        AppendRewrittenAttribute(out, element, html_names::kSrcAttr.LocalName(),
+        AppendRewrittenAttribute(element, html_names::kSrcAttr.LocalName(),
                                  new_link_for_the_element);
       }
       return;
@@ -220,17 +204,7 @@ void SerializerMarkupAccumulator::AppendAttribute(StringBuilder& out,
   }
 
   // Fallback to appending the original attribute.
-  MarkupAccumulator::AppendAttribute(out, element, attribute, namespaces);
-}
-
-void SerializerMarkupAccumulator::AppendStartTag(Node& node,
-                                                 Namespaces* namespaces) {
-  MarkupAccumulator::AppendStartTag(node, namespaces);
-  nodes_.push_back(&node);
-}
-
-void SerializerMarkupAccumulator::AppendEndTag(const Element& element) {
-  MarkupAccumulator::AppendEndTag(element);
+  MarkupAccumulator::AppendAttribute(element, attribute);
 }
 
 std::pair<Node*, Element*> SerializerMarkupAccumulator::GetAuxiliaryDOMTree(
@@ -239,14 +213,12 @@ std::pair<Node*, Element*> SerializerMarkupAccumulator::GetAuxiliaryDOMTree(
 }
 
 void SerializerMarkupAccumulator::AppendAttributeValue(
-    StringBuilder& out,
     const String& attribute_value) {
-  MarkupFormatter::AppendAttributeValue(out, attribute_value,
+  MarkupFormatter::AppendAttributeValue(markup_, attribute_value,
                                         document_->IsHTMLDocument());
 }
 
 void SerializerMarkupAccumulator::AppendRewrittenAttribute(
-    StringBuilder& out,
     const Element& element,
     const String& attribute_name,
     const String& attribute_value) {
@@ -257,11 +229,11 @@ void SerializerMarkupAccumulator::AppendRewrittenAttribute(
   // Append the rewritten attribute.
   // TODO(tiger): Refactor MarkupAccumulator so it is easier to append an
   // attribute like this.
-  out.Append(' ');
-  out.Append(attribute_name);
-  out.Append("=\"");
-  AppendAttributeValue(out, attribute_value);
-  out.Append("\"");
+  markup_.Append(' ');
+  markup_.Append(attribute_name);
+  markup_.Append("=\"");
+  AppendAttributeValue(attribute_value);
+  markup_.Append("\"");
 }
 
 // TODO(tiger): Right now there is no support for rewriting URLs inside CSS
@@ -295,15 +267,15 @@ void FrameSerializer::SerializeFrame(const LocalFrame& frame) {
     return;
   }
 
-  HeapVector<Member<Node>> serialized_nodes;
+  HeapVector<Member<const Element>> serialized_elements;
   {
     TRACE_EVENT0("page-serialization", "FrameSerializer::serializeFrame HTML");
     SCOPED_BLINK_UMA_HISTOGRAM_TIMER(
         "PageSerialization.SerializationTime.Html");
     SerializerMarkupAccumulator accumulator(delegate_, document,
-                                            serialized_nodes);
+                                            serialized_elements);
     String text =
-        SerializeNodes<EditingStrategy>(accumulator, document, kIncludeNode);
+        accumulator.SerializeNodes<EditingStrategy>(document, kIncludeNode);
 
     CString frame_html =
         document.Encoding().Encode(text, WTF::kEntitiesForUnencodables);
@@ -314,38 +286,35 @@ void FrameSerializer::SerializeFrame(const LocalFrame& frame) {
 
   should_collect_problem_metric_ =
       delegate_.ShouldCollectProblemMetric() && frame.IsMainFrame();
-  for (Node* node : serialized_nodes) {
+  for (const Element* node : serialized_elements) {
     DCHECK(node);
-    if (!node->IsElementNode())
-      continue;
-
-    Element& element = ToElement(*node);
+    const Element& element = *node;
     // We have to process in-line style as it might contain some resources
     // (typically background images).
     if (element.IsStyledElement()) {
       RetrieveResourcesForProperties(element.InlineStyle(), document);
-      RetrieveResourcesForProperties(element.PresentationAttributeStyle(),
-                                     document);
+      RetrieveResourcesForProperties(
+          const_cast<Element&>(element).PresentationAttributeStyle(), document);
     }
 
-    if (auto* image = ToHTMLImageElementOrNull(element)) {
-      KURL url =
+    if (const auto* image = ToHTMLImageElementOrNull(element)) {
+      KURL image_url =
           document.CompleteURL(image->getAttribute(html_names::kSrcAttr));
       ImageResourceContent* cached_image = image->CachedImage();
-      AddImageToResources(cached_image, url);
-    } else if (auto* input = ToHTMLInputElementOrNull(element)) {
+      AddImageToResources(cached_image, image_url);
+    } else if (const auto* input = ToHTMLInputElementOrNull(element)) {
       if (input->type() == input_type_names::kImage && input->ImageLoader()) {
-        KURL url = input->Src();
+        KURL image_url = input->Src();
         ImageResourceContent* cached_image = input->ImageLoader()->GetContent();
-        AddImageToResources(cached_image, url);
+        AddImageToResources(cached_image, image_url);
       }
-    } else if (auto* link = ToHTMLLinkElementOrNull(element)) {
+    } else if (const auto* link = ToHTMLLinkElementOrNull(element)) {
       if (CSSStyleSheet* sheet = link->sheet()) {
-        KURL url =
+        KURL sheet_url =
             document.CompleteURL(link->getAttribute(html_names::kHrefAttr));
-        SerializeCSSStyleSheet(*sheet, url);
+        SerializeCSSStyleSheet(*sheet, sheet_url);
       }
-    } else if (auto* style = ToHTMLStyleElementOrNull(element)) {
+    } else if (const auto* style = ToHTMLStyleElementOrNull(element)) {
       if (CSSStyleSheet* sheet = style->sheet())
         SerializeCSSStyleSheet(*sheet, NullURL());
     }
@@ -458,11 +427,11 @@ void FrameSerializer::SerializeCSSRule(CSSRule* rule) {
   switch (rule->type()) {
     case CSSRule::kStyleRule:
       RetrieveResourcesForProperties(
-          &ToCSSStyleRule(rule)->GetStyleRule()->Properties(), document);
+          &To<CSSStyleRule>(rule)->GetStyleRule()->Properties(), document);
       break;
 
     case CSSRule::kImportRule: {
-      CSSImportRule* import_rule = ToCSSImportRule(rule);
+      CSSImportRule* import_rule = To<CSSImportRule>(rule);
       KURL sheet_base_url = rule->parentStyleSheet()->BaseURL();
       DCHECK(sheet_base_url.IsValid());
       KURL import_url = KURL(sheet_base_url, import_rule->href());
@@ -482,7 +451,7 @@ void FrameSerializer::SerializeCSSRule(CSSRule* rule) {
 
     case CSSRule::kFontFaceRule:
       RetrieveResourcesForProperties(
-          &ToCSSFontFaceRule(rule)->StyleRule()->Properties(), document);
+          &To<CSSFontFaceRule>(rule)->StyleRule()->Properties(), document);
       break;
 
     // Rules in which no external resources can be referenced
@@ -504,12 +473,8 @@ bool FrameSerializer::ShouldAddURL(const KURL& url) {
 
 void FrameSerializer::AddToResources(
     const String& mime_type,
-    ResourceHasCacheControlNoStoreHeader has_cache_control_no_store_header,
     scoped_refptr<const SharedBuffer> data,
     const KURL& url) {
-  if (delegate_.ShouldSkipResource(has_cache_control_no_store_header))
-    return;
-
   if (!data) {
     DLOG(ERROR) << "No data for resource " << url.GetString();
     return;
@@ -536,9 +501,6 @@ void FrameSerializer::AddImageToResources(ImageResourceContent* image,
 
   scoped_refptr<const SharedBuffer> data = image->GetImage()->Data();
   AddToResources(image->GetResponse().MimeType(),
-                 image->HasCacheControlNoStoreHeader()
-                     ? kHasCacheControlNoStoreHeader
-                     : kNoCacheControlNoStoreHeader,
                  data, url);
 
   // If we're already reporting time for CSS serialization don't report it for
@@ -560,11 +522,7 @@ void FrameSerializer::AddFontToResources(FontResource& font) {
 
   scoped_refptr<const SharedBuffer> data(font.ResourceBuffer());
 
-  AddToResources(font.GetResponse().MimeType(),
-                 font.HasCacheControlNoStoreHeader()
-                     ? kHasCacheControlNoStoreHeader
-                     : kNoCacheControlNoStoreHeader,
-                 data, font.Url());
+  AddToResources(font.GetResponse().MimeType(), data, font.Url());
 }
 
 void FrameSerializer::RetrieveResourcesForProperties(
@@ -585,28 +543,24 @@ void FrameSerializer::RetrieveResourcesForProperties(
 
 void FrameSerializer::RetrieveResourcesForCSSValue(const CSSValue& css_value,
                                                    Document& document) {
-  if (css_value.IsImageValue()) {
-    const CSSImageValue& image_value = ToCSSImageValue(css_value);
-    if (image_value.IsCachePending())
+  if (const auto* image_value = DynamicTo<CSSImageValue>(css_value)) {
+    if (image_value->IsCachePending())
       return;
-    StyleImage* style_image = image_value.CachedImage();
+    StyleImage* style_image = image_value->CachedImage();
     if (!style_image || !style_image->IsImageResource())
       return;
 
     AddImageToResources(style_image->CachedImage(),
                         style_image->CachedImage()->Url());
-  } else if (css_value.IsFontFaceSrcValue()) {
-    const CSSFontFaceSrcValue& font_face_src_value =
-        ToCSSFontFaceSrcValue(css_value);
-    if (font_face_src_value.IsLocal()) {
+  } else if (const auto* font_face_src_value =
+                 DynamicTo<CSSFontFaceSrcValue>(css_value)) {
+    if (font_face_src_value->IsLocal())
       return;
-    }
 
-    AddFontToResources(font_face_src_value.Fetch(&document, nullptr));
-  } else if (css_value.IsValueList()) {
-    const CSSValueList& css_value_list = ToCSSValueList(css_value);
-    for (unsigned i = 0; i < css_value_list.length(); i++)
-      RetrieveResourcesForCSSValue(css_value_list.Item(i), document);
+    AddFontToResources(font_face_src_value->Fetch(&document, nullptr));
+  } else if (const auto* css_value_list = DynamicTo<CSSValueList>(css_value)) {
+    for (unsigned i = 0; i < css_value_list->length(); i++)
+      RetrieveResourcesForCSSValue(css_value_list->Item(i), document);
   }
 }
 

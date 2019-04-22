@@ -26,7 +26,7 @@ if (document.location.hostname == '127.0.0.1') {
         });
 
         window.onload = function() {
-          testRunner.setIsolatedWorldSecurityOrigin(2, 'chrome-extension://123');
+          testRunner.setIsolatedWorldInfo(2, 'chrome-extension://123', null);
           var iframe = document.getElementsByTagName('iframe')[0];
           iframe.focus();
           document.domain = 'example.test';

@@ -6,8 +6,9 @@
 #define STORAGE_BROWSER_DATABASE_DATABASE_UTIL_H_
 
 #include <string>
+
+#include "base/component_export.h"
 #include "base/strings/string16.h"
-#include "storage/browser/storage_browser_export.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -18,7 +19,7 @@ namespace storage {
 
 class DatabaseTracker;
 
-class STORAGE_EXPORT DatabaseUtil {
+class COMPONENT_EXPORT(STORAGE_BROWSER) DatabaseUtil {
  public:
   static const char kJournalFileSuffix[];
 

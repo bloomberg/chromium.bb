@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_RENDERER_HOST_MEDIA_VIDEO_CAPTURE_HOST_H_
 
 #include <map>
+#include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -89,6 +90,9 @@ class CONTENT_EXPORT VideoCaptureHost
   void GetDeviceFormatsInUse(int32_t device_id,
                              int32_t session_id,
                              GetDeviceFormatsInUseCallback callback) override;
+  void OnFrameDropped(int32_t device_id,
+                      media::VideoCaptureFrameDropReason reason) override;
+  void OnLog(int32_t device_id, const std::string& message) override;
 
   void DoError(VideoCaptureControllerID id, media::VideoCaptureError error);
   void DoEnded(VideoCaptureControllerID id);

@@ -61,6 +61,7 @@ suite('Multidevice', function() {
           messagesState: pairingComplete ?
               settings.MultiDeviceFeatureState.ENABLED_BY_USER :
               settings.MultiDeviceFeatureState.FURTHER_SETUP_REQUIRED,
+          isAndroidSmsPairingComplete: pairingComplete,
         });
     Polymer.dom.flush();
   }

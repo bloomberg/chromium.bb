@@ -1,7 +1,5 @@
 These scripts should execute even though there are parse errors in the policy.
 
-
-
 --------
 Frame: '<!--framePath //<!--frame0-->-->'
 --------

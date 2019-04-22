@@ -48,7 +48,10 @@ class CPDF_Parser {
 
   // A limit on the maximum object number in the xref table. Theoretical limits
   // are higher, but this may be large enough in practice.
-  static const uint32_t kMaxObjectNumber = 1048576;
+  // Note: This was 1M, but https://crbug.com/910009 encountered a PDF with
+  // object numbers in the 1.7M range. The PDF only has 10K objects, but they
+  // are non-consecutive.
+  static constexpr uint32_t kMaxObjectNumber = 4 * 1024 * 1024;
 
   static const size_t kInvalidPos = std::numeric_limits<size_t>::max();
 
@@ -108,6 +111,8 @@ class CPDF_Parser {
     return m_CrossRefTable.get();
   }
 
+  bool xref_table_rebuilt() const { return m_bXRefTableRebuilt; }
+
   CPDF_SyntaxParser* GetSyntax() const { return m_pSyntax.get(); }
 
   void SetLinearizedHeader(std::unique_ptr<CPDF_LinearizedHeader> pLinearized);
@@ -122,6 +127,7 @@ class CPDF_Parser {
   std::unique_ptr<CPDF_SyntaxParser> m_pSyntax;
 
  private:
+  friend class cpdf_parser_BadStartXrefShouldNotBuildCrossRefTable_Test;
   friend class cpdf_parser_ParseStartXRefWithHeaderOffset_Test;
   friend class cpdf_parser_ParseStartXRef_Test;
   friend class cpdf_parser_ParseLinearizedWithHeaderOffset_Test;
@@ -171,6 +177,7 @@ class CPDF_Parser {
 
   bool m_bHasParsed = false;
   bool m_bXRefStream = false;
+  bool m_bXRefTableRebuilt = false;
   int m_FileVersion = 0;
   // m_CrossRefTable must be destroyed after m_pSecurityHandler due to the
   // ownership of the ID array data.

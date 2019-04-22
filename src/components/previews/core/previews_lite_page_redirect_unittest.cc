@@ -38,6 +38,15 @@ TEST(PreviewsLitePageURLHandlerTest,
           "http%3A%2F%2Foriginal.host.com%2Fpath%2Fpath%2Fpath%3Fquery%3Dyes",
           true,
       },
+      {
+          "https://previews.host.com",
+          "http://original.host.com/path/path/path?query=yes#fragment",
+          "https://6p7dar4ju6r4ynz7x3pucmlcltuqsf7z5auhvckzln7voglkt56q."
+          "previews.host.com/p?u="
+          "http%3A%2F%2Foriginal.host.com%2Fpath%2Fpath%2Fpath%3Fquery%3Dyes"
+          "#fragment",
+          true,
+      },
   };
 
   for (const TestCase& test_case : kTestCases) {

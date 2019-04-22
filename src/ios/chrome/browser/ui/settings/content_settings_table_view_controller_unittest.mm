@@ -4,10 +4,7 @@
 
 #import "ios/chrome/browser/ui/settings/content_settings_table_view_controller.h"
 
-#include "base/test/scoped_feature_list.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
-#include "ios/chrome/browser/mailto/features.h"
-#import "ios/chrome/browser/ui/settings/cells/settings_detail_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller_test.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
@@ -43,10 +40,6 @@ class ContentSettingsTableViewControllerTest
 // rewriting feature is enabled and mailto handling with Google UI is enabled.
 TEST_F(ContentSettingsTableViewControllerTest,
        TestModelWithMailToUrlRewritingAndGoogleUI) {
-  // Turn on mailto handling with Google UI feature flag.
-  base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_feature_list_.InitAndEnableFeature(kMailtoHandledWithGoogleUI);
-
   CreateController();
   CheckController();
   CheckTitleWithId(IDS_IOS_CONTENT_SETTINGS_TITLE);
@@ -56,27 +49,6 @@ TEST_F(ContentSettingsTableViewControllerTest,
   CheckDetailItemTextWithIds(IDS_IOS_BLOCK_POPUPS, IDS_IOS_SETTING_ON, 0, 0);
   CheckDetailItemTextWithIds(IDS_IOS_TRANSLATE_SETTING, IDS_IOS_SETTING_ON, 0,
                              1);
-}
-
-// Tests that there are 3 sections in Content Settings if mailto: URL
-// rewriting feature is enabled.
-TEST_F(ContentSettingsTableViewControllerTest,
-       TestModelWithMailToUrlRewriting) {
-  // Turn off mailto handling with Google UI feature flag.
-  base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_feature_list_.InitAndDisableFeature(kMailtoHandledWithGoogleUI);
-
-  CreateController();
-  CheckController();
-  CheckTitleWithId(IDS_IOS_CONTENT_SETTINGS_TITLE);
-
-  ASSERT_EQ(1, NumberOfSections());
-  ASSERT_EQ(3, NumberOfItemsInSection(0));
-  CheckDetailItemTextWithIds(IDS_IOS_BLOCK_POPUPS, IDS_IOS_SETTING_ON, 0, 0);
-  CheckDetailItemTextWithIds(IDS_IOS_TRANSLATE_SETTING, IDS_IOS_SETTING_ON, 0,
-                             1);
-  SettingsDetailItem* item = GetTableViewItem(0, 2);
-  EXPECT_NSEQ(l10n_util::GetNSString(IDS_IOS_COMPOSE_EMAIL_SETTING), item.text);
 }
 
 }  // namespace

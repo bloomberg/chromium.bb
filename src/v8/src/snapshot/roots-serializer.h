@@ -31,21 +31,21 @@ class RootsSerializer : public Serializer {
     return root_has_been_serialized_.test(static_cast<size_t>(root_index));
   }
 
-  bool IsRootAndHasBeenSerialized(HeapObject* obj) const {
+  bool IsRootAndHasBeenSerialized(HeapObject obj) const {
     RootIndex root_index;
     return root_index_map()->Lookup(obj, &root_index) &&
            root_has_been_serialized(root_index);
   }
 
  protected:
-  void CheckRehashability(HeapObject* obj);
+  void CheckRehashability(HeapObject obj);
 
   // Serializes |object| if not previously seen and returns its cache index.
-  int SerializeInObjectCache(HeapObject* object);
+  int SerializeInObjectCache(HeapObject object);
 
  private:
-  void VisitRootPointers(Root root, const char* description, ObjectSlot start,
-                         ObjectSlot end) override;
+  void VisitRootPointers(Root root, const char* description,
+                         FullObjectSlot start, FullObjectSlot end) override;
   void Synchronize(VisitorSynchronization::SyncTag tag) override;
 
   const RootIndex first_root_to_be_serialized_;

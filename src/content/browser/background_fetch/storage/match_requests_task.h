@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_BACKGROUND_FETCH_STORAGE_MATCH_REQUESTS_TASK_H_
 #define CONTENT_BROWSER_BACKGROUND_FETCH_STORAGE_MATCH_REQUESTS_TASK_H_
 
+#include <memory>
+
 #include "base/callback_forward.h"
 #include "base/memory/scoped_refptr.h"
 #include "content/browser/background_fetch/background_fetch.pb.h"
@@ -22,15 +24,15 @@ namespace background_fetch {
 
 class MatchRequestsTask : public DatabaseTask {
  public:
-  using SettledFetchesCallback =
-      base::OnceCallback<void(blink::mojom::BackgroundFetchError,
-                              std::vector<BackgroundFetchSettledFetch>)>;
+  using SettledFetchesCallback = base::OnceCallback<void(
+      blink::mojom::BackgroundFetchError,
+      std::vector<blink::mojom::BackgroundFetchSettledFetchPtr>)>;
 
   // Gets settled fetches from cache storage, filtered according to
   // |match_params|.
   MatchRequestsTask(
       DatabaseTaskHost* host,
-      BackgroundFetchRegistrationId registration_id,
+      const BackgroundFetchRegistrationId& registration_id,
       std::unique_ptr<BackgroundFetchRequestMatchParams> match_params,
       SettledFetchesCallback callback);
 
@@ -40,12 +42,17 @@ class MatchRequestsTask : public DatabaseTask {
   void Start() override;
 
  private:
-  void DidOpenCache(CacheStorageCacheHandle handle,
+  void DidOpenCache(int64_t trace_id,
+                    CacheStorageCacheHandle handle,
                     blink::mojom::CacheStorageError error);
 
   void DidGetAllMatchedEntries(
+      int64_t trace_id,
       blink::mojom::CacheStorageError error,
       std::vector<CacheStorageCache::CacheEntry> entries);
+
+  // Checks whether |request| shuld be matched given the provided query params.
+  bool ShouldMatchRequest(const blink::mojom::FetchAPIRequestPtr& request);
 
   void FinishWithError(blink::mojom::BackgroundFetchError error) override;
 
@@ -56,7 +63,7 @@ class MatchRequestsTask : public DatabaseTask {
   SettledFetchesCallback callback_;
 
   CacheStorageCacheHandle handle_;
-  std::vector<BackgroundFetchSettledFetch> settled_fetches_;
+  std::vector<blink::mojom::BackgroundFetchSettledFetchPtr> settled_fetches_;
 
   base::WeakPtrFactory<MatchRequestsTask> weak_factory_;  // Keep as last.
 
@@ -64,7 +71,6 @@ class MatchRequestsTask : public DatabaseTask {
 };
 
 }  // namespace background_fetch
-
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_BACKGROUND_FETCH_STORAGE_MATCH_REQUESTS_TASK_H_

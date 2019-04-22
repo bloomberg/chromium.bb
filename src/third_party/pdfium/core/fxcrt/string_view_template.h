@@ -22,6 +22,9 @@ namespace fxcrt {
 // An immutable string with caller-provided storage which must outlive the
 // string itself. These are not necessarily nul-terminated, so that substring
 // extraction (via the Mid(), Left(), and Right() methods) is copy-free.
+//
+// String view arguments should be passed by value, since they are small,
+// rather than const-ref, even if they are not modified.
 template <typename T>
 class StringViewTemplate {
  public:
@@ -44,7 +47,7 @@ class StringViewTemplate {
       : m_Span(reinterpret_cast<const UnsignedType*>(ptr), len) {}
 
   explicit constexpr StringViewTemplate(
-      const pdfium::span<CharType>& other) noexcept
+      const pdfium::span<const CharType>& other) noexcept
       : m_Span(reinterpret_cast<const UnsignedType*>(other.data()),
                other.size()) {}
 
@@ -109,6 +112,40 @@ class StringViewTemplate {
     return !(*this == other);
   }
 
+  bool IsASCII() const {
+    for (auto c : *this) {
+      if (c <= 0 || c > 127)  // Questionable signedness of |c|.
+        return false;
+    }
+    return true;
+  }
+
+  bool EqualsASCII(const StringViewTemplate<char>& that) const {
+    size_t length = GetLength();
+    if (length != that.GetLength())
+      return false;
+
+    for (size_t i = 0; i < length; ++i) {
+      auto c = (*this)[i];
+      if (c <= 0 || c > 127 || c != that[i])  // Questionable signedness of |c|.
+        return false;
+    }
+    return true;
+  }
+
+  bool EqualsASCIINoCase(const StringViewTemplate<char>& that) const {
+    size_t length = GetLength();
+    if (length != that.GetLength())
+      return false;
+
+    for (size_t i = 0; i < length; ++i) {
+      auto c = (*this)[i];
+      if (c <= 0 || c > 127 || tolower(c) != tolower(that[i]))
+        return false;
+    }
+    return true;
+  }
+
   uint32_t GetID() const {
     if (m_Span.size() == 0)
       return 0;
@@ -121,7 +158,11 @@ class StringViewTemplate {
     return strid << ((4 - size) * 8);
   }
 
-  pdfium::span<const UnsignedType> span() const { return m_Span; }
+  pdfium::span<const UnsignedType> raw_span() const { return m_Span; }
+  pdfium::span<const CharType> span() const {
+    return pdfium::make_span(reinterpret_cast<const CharType*>(m_Span.data()),
+                             m_Span.size());
+  }
   const UnsignedType* raw_str() const { return m_Span.data(); }
   const CharType* unterminated_c_str() const {
     return reinterpret_cast<const CharType*>(m_Span.data());

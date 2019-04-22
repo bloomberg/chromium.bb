@@ -54,6 +54,7 @@ class FakePageScheduler final : public PageScheduler {
   void SetKeepActive(bool keep_active) override {}
   bool IsMainFrameLocal() const override { return true; }
   void SetIsMainFrameLocal(bool is_local) override {}
+  void OnLocalMainFrameNetworkAlmostIdle() override {}
 
   std::unique_ptr<FrameScheduler> CreateFrameScheduler(
       FrameScheduler::Delegate* delegate,
@@ -65,15 +66,15 @@ class FakePageScheduler final : public PageScheduler {
   void DisableVirtualTimeForTesting() override {}
   bool VirtualTimeAllowedToAdvance() const override { return false; }
   void SetVirtualTimePolicy(VirtualTimePolicy policy) override {}
-  void AddVirtualTimeObserver(VirtualTimeObserver* observer) override {}
-  void RemoveVirtualTimeObserver(VirtualTimeObserver* observer) override {}
   void SetInitialVirtualTime(base::Time time) override {}
   void SetInitialVirtualTimeOffset(base::TimeDelta offset) override {}
   void GrantVirtualTimeBudget(base::TimeDelta budget,
                               base::OnceClosure callback) override {}
   void SetMaxVirtualTimeTaskStarvationCount(int count) override {}
   void AudioStateChanged(bool is_audio_playing) override {}
-  bool HasActiveConnectionForTest() const override { return false; }
+  bool OptedOutFromAggressiveThrottlingForTest() const override {
+    return false;
+  }
   bool RequestBeginMainFrameNotExpected(bool new_state) override {
     return false;
   }

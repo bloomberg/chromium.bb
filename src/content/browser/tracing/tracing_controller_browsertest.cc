@@ -7,6 +7,7 @@
 #include <stdint.h>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/memory/ref_counted_memory.h"
@@ -36,33 +37,6 @@ using base::trace_event::TraceConfig;
 namespace content {
 
 namespace {
-
-const char* kMetadataWhitelist[] = {
-  "cpu-brand",
-  "network-type",
-  "os-name",
-  "user-agent"
-};
-
-bool IsMetadataWhitelisted(const std::string& metadata_name) {
-  for (auto* key : kMetadataWhitelist) {
-    if (base::MatchPattern(metadata_name, key)) {
-      return true;
-    }
-  }
-  return false;
-}
-
-bool IsTraceEventArgsWhitelisted(
-    const char* category_group_name,
-    const char* event_name,
-    base::trace_event::ArgumentNameFilterPredicate* arg_filter) {
-  if (base::MatchPattern(category_group_name, "benchmark") &&
-      base::MatchPattern(event_name, "whitelisted")) {
-    return true;
-  }
-  return false;
-}
 
 bool KeyEquals(const base::Value* value,
                const char* key_name,
@@ -123,9 +97,6 @@ class TestTracingDelegate : public TracingDelegate {
   std::unique_ptr<TraceUploader> GetTraceUploader(
       scoped_refptr<network::SharedURLLoaderFactory>) override {
     return nullptr;
-  }
-  MetadataFilterPredicate GetMetadataFilterPredicate() override {
-    return base::BindRepeating(IsMetadataWhitelisted);
   }
 };
 
@@ -249,12 +220,10 @@ class TracingControllerTest : public ContentBrowserTest {
 
     Navigate(shell());
 
-    base::trace_event::TraceLog::GetInstance()->SetArgumentFilterPredicate(
-        base::Bind(&IsTraceEventArgsWhitelisted));
-
     TracingControllerImpl* controller = TracingControllerImpl::GetInstance();
-    controller->GetTraceEventAgent()->AddMetadataGeneratorFunction(base::Bind(
-        &TracingControllerTest::GenerateMetadataDict, base::Unretained(this)));
+    tracing::TraceEventAgent::GetInstance()->AddMetadataGeneratorFunction(
+        base::Bind(&TracingControllerTest::GenerateMetadataDict,
+                   base::Unretained(this)));
 
     {
       base::RunLoop run_loop;
@@ -390,15 +359,8 @@ IN_PROC_BROWSER_TEST_F(TracingControllerTest, EnableAndStopTracing) {
   TestStartAndStopTracingString();
 }
 
-// TODO(crbug.com/871770): Disabled for failing on ASAN.
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_DisableRecordingStoresMetadata \
-  DISABLED_DisableRecordingStoresMetadata
-#else
-#define MAYBE_DisableRecordingStoresMetadata DisableRecordingStoresMetadata
-#endif
 IN_PROC_BROWSER_TEST_F(TracingControllerTest,
-                       MAYBE_DisableRecordingStoresMetadata) {
+                       DisableRecordingStoresMetadata) {
   TestStartAndStopTracingString();
   // Check that a number of important keys exist in the metadata dictionary. The
   // values are not checked to ensure the test is robust.
@@ -444,7 +406,8 @@ IN_PROC_BROWSER_TEST_F(TracingControllerTest, NotWhitelistedMetadataStripped) {
   EXPECT_TRUE(not_whitelisted == "__stripped__");
 
   // Also check the trace content.
-  std::unique_ptr<base::Value> trace_json = base::JSONReader::Read(last_data());
+  std::unique_ptr<base::Value> trace_json =
+      base::JSONReader::ReadDeprecated(last_data());
   ASSERT_TRUE(trace_json);
   const base::Value* metadata_json =
       trace_json->FindKeyOfType("metadata", base::Value::Type::DICTIONARY);
@@ -456,7 +419,7 @@ IN_PROC_BROWSER_TEST_F(TracingControllerTest, NotWhitelistedMetadataStripped) {
   EXPECT_TRUE(KeyNotEquals(metadata_json, "user-agent", "__stripped__"));
 
   // The following field is not whitelisted and is supposed to be stripped.
-  EXPECT_TRUE(KeyEquals(metadata_json, "chrome-bitness", "__stripped__"));
+  EXPECT_TRUE(KeyEquals(metadata_json, "v8-version", "__stripped__"));
 
   // TODO(770017): This test is currently broken since metadata filtering is
   // only done in |TracingControllerImpl::GenerateMetadataDict()|. Metadata
@@ -526,13 +489,6 @@ IN_PROC_BROWSER_TEST_F(TracingControllerTest, DoubleStopTracing) {
 #define MAYBE_SystemTraceEvents DISABLED_SystemTraceEvents
 #endif
 IN_PROC_BROWSER_TEST_F(TracingControllerTest, MAYBE_SystemTraceEvents) {
-#if !defined(OS_CHROMEOS)
-  // TODO(crbug.com/900603): Enable this test for perfetto on other platforms
-  // once passing.
-  if (tracing::TracingUsesPerfettoBackend())
-    return;
-#endif
-
   TestStartAndStopTracingString(true /* enable_systrace */);
   EXPECT_TRUE(last_data().find("systemTraceEvents") != std::string::npos);
 }

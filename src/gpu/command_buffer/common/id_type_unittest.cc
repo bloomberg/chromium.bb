@@ -188,13 +188,13 @@ TEST_P(IdTypeSpecificValueTest, StdMap) {
   EXPECT_EQ(map[other_id()], "other_id");
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        IdTypeSpecificValueTest,
-                        ::testing::Values(std::numeric_limits<int>::min(),
-                                          -1,
-                                          0,
-                                          1,
-                                          123,
-                                          std::numeric_limits<int>::max()));
+INSTANTIATE_TEST_SUITE_P(,
+                         IdTypeSpecificValueTest,
+                         ::testing::Values(std::numeric_limits<int>::min(),
+                                           -1,
+                                           0,
+                                           1,
+                                           123,
+                                           std::numeric_limits<int>::max()));
 
 }  // namespace gpu

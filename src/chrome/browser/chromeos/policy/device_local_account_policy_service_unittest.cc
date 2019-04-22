@@ -29,8 +29,8 @@
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "chromeos/chromeos_paths.h"
-#include "chromeos/dbus/power_policy_controller.h"
+#include "chromeos/constants/chromeos_paths.h"
+#include "chromeos/dbus/power/power_policy_controller.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_service.h"
@@ -87,6 +87,10 @@ class DeviceLocalAccountPolicyServiceTestBase
   DeviceLocalAccountPolicyServiceTestBase();
   ~DeviceLocalAccountPolicyServiceTestBase() override;
 
+  // chromeos::DeviceSettingsTestBase:
+  void SetUp() override;
+  void TearDown() override;
+
   void CreatePolicyService();
 
   void InstallDeviceLocalAccountPolicy(const std::string& account_id);
@@ -114,6 +118,10 @@ class DeviceLocalAccountPolicyServiceTest
  public:
   MOCK_METHOD1(OnRefreshDone, void(bool));
 
+  // DeviceLocalAccountPolicyServiceTestBase:
+  void SetUp() override;
+  void TearDown() override;
+
  protected:
   DeviceLocalAccountPolicyServiceTest();
   ~DeviceLocalAccountPolicyServiceTest();
@@ -133,11 +141,18 @@ DeviceLocalAccountPolicyServiceTestBase::
           DeviceLocalAccount::TYPE_PUBLIC_SESSION)),
       account_2_user_id_(GenerateDeviceLocalAccountUserId(
           kAccount2,
-          DeviceLocalAccount::TYPE_PUBLIC_SESSION)),
-      cros_settings_(std::make_unique<chromeos::CrosSettings>(
-          &device_settings_service_,
-          TestingBrowserProcess::GetGlobal()->local_state())),
-      extension_cache_task_runner_(new base::TestSimpleTaskRunner) {
+          DeviceLocalAccount::TYPE_PUBLIC_SESSION)) {}
+
+DeviceLocalAccountPolicyServiceTestBase::
+    ~DeviceLocalAccountPolicyServiceTestBase() = default;
+
+void DeviceLocalAccountPolicyServiceTestBase::SetUp() {
+  chromeos::DeviceSettingsTestBase::SetUp();
+
+  cros_settings_ = std::make_unique<chromeos::CrosSettings>(
+      device_settings_service_.get(),
+      TestingBrowserProcess::GetGlobal()->local_state());
+  extension_cache_task_runner_ = new base::TestSimpleTaskRunner;
   expected_policy_map_.Set(key::kSearchSuggestEnabled, POLICY_LEVEL_MANDATORY,
                            POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
                            std::make_unique<base::Value>(true), nullptr);
@@ -149,18 +164,18 @@ DeviceLocalAccountPolicyServiceTestBase::
       dm_protocol::kChromePublicAccountPolicyType);
 }
 
-DeviceLocalAccountPolicyServiceTestBase::
-    ~DeviceLocalAccountPolicyServiceTestBase() {
+void DeviceLocalAccountPolicyServiceTestBase::TearDown() {
   service_->Shutdown();
   service_.reset();
   extension_cache_task_runner_->RunUntilIdle();
+  cros_settings_.reset();
   chromeos::DeviceSettingsTestBase::TearDown();
 }
 
 void DeviceLocalAccountPolicyServiceTestBase::CreatePolicyService() {
   service_.reset(new DeviceLocalAccountPolicyService(
-      &session_manager_client_, &device_settings_service_, cros_settings_.get(),
-      &affiliated_invalidation_service_provider_,
+      &session_manager_client_, device_settings_service_.get(),
+      cros_settings_.get(), &affiliated_invalidation_service_provider_,
       base::ThreadTaskRunnerHandle::Get(), extension_cache_task_runner_,
       base::ThreadTaskRunnerHandle::Get(),
       /*url_loader_factory=*/nullptr));
@@ -178,26 +193,33 @@ void DeviceLocalAccountPolicyServiceTestBase::
 void DeviceLocalAccountPolicyServiceTestBase::AddDeviceLocalAccountToPolicy(
     const std::string& account_id) {
   em::DeviceLocalAccountInfoProto* account =
-      device_policy_.payload().mutable_device_local_accounts()->add_account();
+      device_policy_->payload().mutable_device_local_accounts()->add_account();
   account->set_account_id(account_id);
   account->set_type(
       em::DeviceLocalAccountInfoProto::ACCOUNT_TYPE_PUBLIC_SESSION);
 }
 
 void DeviceLocalAccountPolicyServiceTestBase::InstallDevicePolicy() {
-  device_policy_.Build();
-  session_manager_client_.set_device_policy(device_policy_.GetBlob());
+  device_policy_->Build();
+  session_manager_client_.set_device_policy(device_policy_->GetBlob());
   ReloadDeviceSettings();
 }
 
-DeviceLocalAccountPolicyServiceTest::DeviceLocalAccountPolicyServiceTest() {
+void DeviceLocalAccountPolicyServiceTest::SetUp() {
+  DeviceLocalAccountPolicyServiceTestBase::SetUp();
   CreatePolicyService();
   service_->AddObserver(&service_observer_);
 }
 
-DeviceLocalAccountPolicyServiceTest::~DeviceLocalAccountPolicyServiceTest() {
+void DeviceLocalAccountPolicyServiceTest::TearDown() {
   service_->RemoveObserver(&service_observer_);
+  DeviceLocalAccountPolicyServiceTestBase::TearDown();
 }
+
+DeviceLocalAccountPolicyServiceTest::DeviceLocalAccountPolicyServiceTest() =
+    default;
+DeviceLocalAccountPolicyServiceTest::~DeviceLocalAccountPolicyServiceTest() =
+    default;
 
 void DeviceLocalAccountPolicyServiceTest::InstallDevicePolicy() {
   EXPECT_CALL(service_observer_, OnDeviceLocalAccountsChanged());
@@ -346,7 +368,7 @@ TEST_F(DeviceLocalAccountPolicyServiceTest, DevicePolicyChange) {
   EXPECT_CALL(service_observer_, OnPolicyUpdated(account_1_user_id_));
   InstallDevicePolicy();
 
-  device_policy_.payload().mutable_device_local_accounts()->clear_account();
+  device_policy_->payload().mutable_device_local_accounts()->clear_account();
   InstallDevicePolicy();
 
   EXPECT_FALSE(service_->GetBrokerForUser(account_1_user_id_));
@@ -394,7 +416,7 @@ TEST_F(DeviceLocalAccountPolicyServiceTest, FetchPolicy) {
 
   em::DeviceManagementRequest request;
   em::DeviceManagementResponse response;
-  response.mutable_policy_response()->add_response()->CopyFrom(
+  response.mutable_policy_response()->add_responses()->CopyFrom(
       device_local_account_policy_.policy());
   EXPECT_CALL(mock_device_management_service_,
               CreateJob(DeviceManagementRequestJob::TYPE_POLICY_FETCH, _))
@@ -402,8 +424,8 @@ TEST_F(DeviceLocalAccountPolicyServiceTest, FetchPolicy) {
   EXPECT_CALL(
       mock_device_management_service_,
       StartJob(dm_protocol::kValueRequestPolicy, std::string(), std::string(),
-               device_policy_.policy_data().request_token(), std::string(),
-               device_policy_.policy_data().device_id(), _))
+               device_policy_->policy_data().request_token(), std::string(),
+               device_policy_->policy_data().device_id(), _))
       .WillOnce(SaveArg<6>(&request));
   // This will be called twice, because the ComponentCloudPolicyService will
   // also become ready after flushing all the pending tasks.
@@ -412,12 +434,12 @@ TEST_F(DeviceLocalAccountPolicyServiceTest, FetchPolicy) {
   Mock::VerifyAndClearExpectations(&service_observer_);
   Mock::VerifyAndClearExpectations(&mock_device_management_service_);
   EXPECT_TRUE(request.has_policy_request());
-  ASSERT_EQ(2, request.policy_request().request_size());
+  ASSERT_EQ(2, request.policy_request().requests_size());
 
   const em::PolicyFetchRequest* public_account =
-      &request.policy_request().request(0);
+      &request.policy_request().requests(0);
   const em::PolicyFetchRequest* extensions =
-      &request.policy_request().request(1);
+      &request.policy_request().requests(1);
   // The order is not guarateed.
   if (extensions->policy_type() ==
       dm_protocol::kChromePublicAccountPolicyType) {
@@ -458,7 +480,7 @@ TEST_F(DeviceLocalAccountPolicyServiceTest, RefreshPolicy) {
   ASSERT_TRUE(broker->core()->service());
 
   em::DeviceManagementResponse response;
-  response.mutable_policy_response()->add_response()->CopyFrom(
+  response.mutable_policy_response()->add_responses()->CopyFrom(
       device_local_account_policy_.policy());
   EXPECT_CALL(mock_device_management_service_, CreateJob(_, _))
       .WillOnce(mock_device_management_service_.SucceedJob(response));
@@ -643,7 +665,7 @@ TEST_F(DeviceLocalAccountPolicyExtensionCacheTest, RaceAgainstCacheShutdown) {
   extension_cache_task_runner_->RunUntilIdle();
 
   // Remove account 1 from device policy, triggering a shutdown of its cache.
-  device_policy_.payload().mutable_device_local_accounts()->clear_account();
+  device_policy_->payload().mutable_device_local_accounts()->clear_account();
   InstallDevicePolicy();
 
   // Re-add account 1 to device policy.
@@ -686,7 +708,7 @@ TEST_F(DeviceLocalAccountPolicyExtensionCacheTest,
 
   // Remove account 1 from device policy, allowing the shutdown of its cache to
   // finish and the deletion of its now obsolete cache directory to begin.
-  device_policy_.payload().mutable_device_local_accounts()->clear_account();
+  device_policy_->payload().mutable_device_local_accounts()->clear_account();
   InstallDevicePolicy();
   extension_cache_task_runner_->RunUntilIdle();
   base::RunLoop().RunUntilIdle();
@@ -753,7 +775,7 @@ TEST_F(DeviceLocalAccountPolicyExtensionCacheTest, RemoveAccount) {
 
   // Remove account 1 from device policy, allowing the deletion of its now
   // obsolete cache directory to finish.
-  device_policy_.payload().mutable_device_local_accounts()->clear_account();
+  device_policy_->payload().mutable_device_local_accounts()->clear_account();
   InstallDevicePolicy();
   extension_cache_task_runner_->RunUntilIdle();
   base::RunLoop().RunUntilIdle();
@@ -829,7 +851,7 @@ TEST_F(DeviceLocalAccountPolicyProviderTest, Initialization) {
   // The account disappearing should *not* flip the initialization flag back.
   EXPECT_CALL(provider_observer_, OnUpdatePolicy(provider_.get()))
       .Times(AnyNumber());
-  device_policy_.payload().mutable_device_local_accounts()->clear_account();
+  device_policy_->payload().mutable_device_local_accounts()->clear_account();
   InstallDevicePolicy();
   Mock::VerifyAndClearExpectations(&provider_observer_);
 
@@ -898,7 +920,7 @@ TEST_F(DeviceLocalAccountPolicyProviderTest, Policy) {
   // Account disappears, policy should stay in effect.
   EXPECT_CALL(provider_observer_, OnUpdatePolicy(provider_.get()))
       .Times(AnyNumber());
-  device_policy_.payload().mutable_device_local_accounts()->clear_account();
+  device_policy_->payload().mutable_device_local_accounts()->clear_account();
   InstallDevicePolicy();
   Mock::VerifyAndClearExpectations(&provider_observer_);
 
@@ -959,7 +981,7 @@ TEST_F(DeviceLocalAccountPolicyProviderTest, RefreshPolicies) {
   ASSERT_TRUE(request_job);
   em::DeviceManagementResponse response;
   device_local_account_policy_.Build();
-  response.mutable_policy_response()->add_response()->CopyFrom(
+  response.mutable_policy_response()->add_responses()->CopyFrom(
       device_local_account_policy_.policy());
   request_job->SendResponse(DM_STATUS_SUCCESS, response);
   FlushDeviceSettings();

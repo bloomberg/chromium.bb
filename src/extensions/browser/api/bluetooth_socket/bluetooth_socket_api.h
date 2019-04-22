@@ -9,8 +9,8 @@
 
 #include <memory>
 #include <string>
+#include <unordered_set>
 
-#include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/browser_thread.h"
 #include "device/bluetooth/bluetooth_adapter.h"
@@ -54,7 +54,7 @@ class BluetoothSocketAsyncApiFunction : public UIThreadExtensionFunction {
   int AddSocket(BluetoothApiSocket* socket);
   BluetoothApiSocket* GetSocket(int api_resource_id);
   void RemoveSocket(int api_resource_id);
-  base::hash_set<int>* GetSocketIds();
+  std::unordered_set<int>* GetSocketIds();
 
  private:
   ApiResourceManager<BluetoothApiSocket>* manager_;
@@ -62,7 +62,7 @@ class BluetoothSocketAsyncApiFunction : public UIThreadExtensionFunction {
 
 class BluetoothSocketCreateFunction : public BluetoothSocketAsyncApiFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("bluetoothSocket.create", BLUETOOTHSOCKET_CREATE);
+  DECLARE_EXTENSION_FUNCTION("bluetoothSocket.create", BLUETOOTHSOCKET_CREATE)
 
   BluetoothSocketCreateFunction();
 
@@ -77,7 +77,7 @@ class BluetoothSocketCreateFunction : public BluetoothSocketAsyncApiFunction {
 
 class BluetoothSocketUpdateFunction : public BluetoothSocketAsyncApiFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("bluetoothSocket.update", BLUETOOTHSOCKET_UPDATE);
+  DECLARE_EXTENSION_FUNCTION("bluetoothSocket.update", BLUETOOTHSOCKET_UPDATE)
 
   BluetoothSocketUpdateFunction();
 
@@ -95,7 +95,7 @@ class BluetoothSocketSetPausedFunction
     : public BluetoothSocketAsyncApiFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetoothSocket.setPaused",
-                             BLUETOOTHSOCKET_SETPAUSED);
+                             BLUETOOTHSOCKET_SETPAUSED)
 
   BluetoothSocketSetPausedFunction();
 
@@ -144,7 +144,7 @@ class BluetoothSocketListenUsingRfcommFunction
     : public BluetoothSocketListenFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetoothSocket.listenUsingRfcomm",
-                             BLUETOOTHSOCKET_LISTENUSINGRFCOMM);
+                             BLUETOOTHSOCKET_LISTENUSINGRFCOMM)
 
   BluetoothSocketListenUsingRfcommFunction();
 
@@ -173,7 +173,7 @@ class BluetoothSocketListenUsingL2capFunction
     : public BluetoothSocketListenFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetoothSocket.listenUsingL2cap",
-                             BLUETOOTHSOCKET_LISTENUSINGL2CAP);
+                             BLUETOOTHSOCKET_LISTENUSINGL2CAP)
 
   BluetoothSocketListenUsingL2capFunction();
 
@@ -228,8 +228,7 @@ class BluetoothSocketAbstractConnectFunction :
 class BluetoothSocketConnectFunction :
     public BluetoothSocketAbstractConnectFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("bluetoothSocket.connect",
-                             BLUETOOTHSOCKET_CONNECT);
+  DECLARE_EXTENSION_FUNCTION("bluetoothSocket.connect", BLUETOOTHSOCKET_CONNECT)
 
   BluetoothSocketConnectFunction();
 
@@ -245,7 +244,7 @@ class BluetoothSocketDisconnectFunction
     : public BluetoothSocketAsyncApiFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetoothSocket.disconnect",
-                             BLUETOOTHSOCKET_DISCONNECT);
+                             BLUETOOTHSOCKET_DISCONNECT)
 
   BluetoothSocketDisconnectFunction();
 
@@ -263,7 +262,7 @@ class BluetoothSocketDisconnectFunction
 
 class BluetoothSocketCloseFunction : public BluetoothSocketAsyncApiFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("bluetoothSocket.close", BLUETOOTHSOCKET_CLOSE);
+  DECLARE_EXTENSION_FUNCTION("bluetoothSocket.close", BLUETOOTHSOCKET_CLOSE)
 
   BluetoothSocketCloseFunction();
 
@@ -279,7 +278,7 @@ class BluetoothSocketCloseFunction : public BluetoothSocketAsyncApiFunction {
 
 class BluetoothSocketSendFunction : public BluetoothSocketAsyncApiFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("bluetoothSocket.send", BLUETOOTHSOCKET_SEND);
+  DECLARE_EXTENSION_FUNCTION("bluetoothSocket.send", BLUETOOTHSOCKET_SEND)
 
   BluetoothSocketSendFunction();
 
@@ -303,8 +302,7 @@ class BluetoothSocketSendFunction : public BluetoothSocketAsyncApiFunction {
 
 class BluetoothSocketGetInfoFunction : public BluetoothSocketAsyncApiFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("bluetoothSocket.getInfo",
-                             BLUETOOTHSOCKET_GETINFO);
+  DECLARE_EXTENSION_FUNCTION("bluetoothSocket.getInfo", BLUETOOTHSOCKET_GETINFO)
 
   BluetoothSocketGetInfoFunction();
 
@@ -322,7 +320,7 @@ class BluetoothSocketGetSocketsFunction
     : public BluetoothSocketAsyncApiFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetoothSocket.getSockets",
-                             BLUETOOTHSOCKET_GETSOCKETS);
+                             BLUETOOTHSOCKET_GETSOCKETS)
 
   BluetoothSocketGetSocketsFunction();
 

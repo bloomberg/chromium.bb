@@ -9,7 +9,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "components/autofill/core/browser/autofill_country.h"
-#include "components/autofill/core/common/autofill_features.h"
 #include "jni/AutofillProfileBridge_jni.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_field.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_metadata.h"
@@ -36,9 +35,7 @@ using ::i18n::addressinput::Localization;
 using ::i18n::addressinput::RECIPIENT;
 
 static ScopedJavaLocalRef<jstring>
-JNI_AutofillProfileBridge_GetDefaultCountryCode(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& clazz) {
+JNI_AutofillProfileBridge_GetDefaultCountryCode(JNIEnv* env) {
   std::string default_country_code =
       autofill::AutofillCountry::CountryCodeForLocale(
           g_browser_process->GetApplicationLocale());
@@ -47,7 +44,6 @@ JNI_AutofillProfileBridge_GetDefaultCountryCode(
 
 static void JNI_AutofillProfileBridge_GetSupportedCountries(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jobject>& j_country_code_list,
     const JavaParamRef<jobject>& j_country_name_list) {
   std::vector<std::string> country_codes = GetRegionCodes();
@@ -72,7 +68,6 @@ static void JNI_AutofillProfileBridge_GetSupportedCountries(
 
 static void JNI_AutofillProfileBridge_GetRequiredFields(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& j_country_code,
     const JavaParamRef<jobject>& j_required_fields_list) {
   std::string country_code = ConvertJavaStringToUTF8(env, j_country_code);
@@ -94,7 +89,6 @@ static void JNI_AutofillProfileBridge_GetRequiredFields(
 static ScopedJavaLocalRef<jstring>
 JNI_AutofillProfileBridge_GetAddressUiComponents(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& j_country_code,
     const JavaParamRef<jstring>& j_language_code,
     const JavaParamRef<jobject>& j_id_list,
@@ -122,10 +116,6 @@ JNI_AutofillProfileBridge_GetAddressUiComponents(
       country_code, localization, language_code, &best_language_tag);
 
   for (const auto& ui_component : ui_components) {
-    if (ui_component.field == AddressField::ORGANIZATION &&
-        !base::FeatureList::IsEnabled(features::kAutofillEnableCompanyName)) {
-      continue;
-    }
     component_labels.push_back(ui_component.name);
     component_required.push_back(
         IsFieldRequired(ui_component.field, country_code));
@@ -146,4 +136,4 @@ JNI_AutofillProfileBridge_GetAddressUiComponents(
   return ConvertUTF8ToJavaString(env, best_language_tag);
 }
 
-} // namespace autofill
+}  // namespace autofill

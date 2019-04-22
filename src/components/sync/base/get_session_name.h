@@ -9,6 +9,7 @@
 
 namespace syncer {
 
+// TODO(crbug.com/922971): Move this elsewhere in components/sync/device_info.
 std::string GetSessionNameBlocking();
 
 }  // namespace syncer

@@ -13,7 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "components/feature_engagement/internal/event_store.h"
 #include "components/feature_engagement/internal/proto/feature_event.pb.h"
-#include "components/leveldb_proto/proto_database.h"
+#include "components/leveldb_proto/public/proto_database.h"
 
 namespace feature_engagement {
 
@@ -34,7 +34,8 @@ class PersistentEventStore : public EventStore {
   void DeleteEvent(const std::string& event_name) override;
 
  private:
-  void OnInitComplete(const OnLoadedCallback& callback, bool success);
+  void OnInitComplete(const OnLoadedCallback& callback,
+                      leveldb_proto::Enums::InitStatus status);
   void OnLoadComplete(const OnLoadedCallback& callback,
                       bool success,
                       std::unique_ptr<std::vector<Event>> entries);

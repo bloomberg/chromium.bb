@@ -6,9 +6,10 @@
 
 #include <map>
 #include <memory>
+#include <vector>
 
 #include "base/callback.h"
-#include "base/containers/flat_map.h"
+#include "base/containers/flat_set.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/dom_storage/session_storage_area_impl.h"
@@ -107,7 +108,10 @@ class CONTENT_EXPORT SessionStorageNamespaceImplMojo final
       const OriginAreas& areas_to_clone);
 
   // Resets to a pre-populated and pre-bound state. Used when the owner needs to
-  // delete & recreate the database.
+  // delete & recreate the database. This call should happen on every namespace
+  // at once, and the logic relies on that.
+  // TODO(dmurph): It's unclear if we need this or not - we might just want to
+  // destruct the object instead of having this method.
   void Reset();
 
   SessionStorageMetadata::NamespaceEntry namespace_entry() {
@@ -148,6 +152,22 @@ class CONTENT_EXPORT SessionStorageNamespaceImplMojo final
 
   void FlushOriginForTesting(const url::Origin& origin);
 
+  void AddNamespacesWaitingForClone(const std::string& namespace_id) {
+    namespaces_waiting_for_clone_call_.insert(namespace_id);
+  }
+
+  bool HasNamespacesWaitingForClone() const {
+    return !namespaces_waiting_for_clone_call_.empty();
+  }
+  void CloneAllNamespacesWaitingForClone();
+
+  // This is only used on shutdown to avoid the DCHECK in the destructor.
+  // We are fine to drop clone calls during shutdown, even if this loses some
+  // data.
+  void ClearNamespacesWaitingForClone() {
+    namespaces_waiting_for_clone_call_.clear();
+  }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(SessionStorageContextMojoTest,
                            PurgeMemoryDoesNotCrashOrHang);
@@ -165,6 +185,10 @@ class CONTENT_EXPORT SessionStorageNamespaceImplMojo final
   bool waiting_on_clone_population_ = false;
   bool bind_waiting_on_clone_population_ = false;
   std::vector<base::OnceClosure> run_after_clone_population_;
+  // Namespaces that are waiting for the |Clone| call to be called on this
+  // namespace. If this namespace is destructed, then these namespaces are still
+  // waiting and should be unblocked.
+  base::flat_set<std::string> namespaces_waiting_for_clone_call_;
 
   bool populated_ = false;
   OriginAreas origin_areas_;

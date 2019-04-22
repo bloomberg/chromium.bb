@@ -33,16 +33,13 @@ class NGRelativeUtilsTest : public testing::Test {
                LayoutUnit right,
                LayoutUnit bottom,
                LayoutUnit left) {
-    style_->SetTop(top == kAuto ? Length(LengthType::kAuto)
-                                : Length(top.ToInt(), LengthType::kFixed));
-    style_->SetRight(right == kAuto
-                         ? Length(LengthType::kAuto)
-                         : Length(right.ToInt(), LengthType::kFixed));
-    style_->SetBottom(bottom == kAuto
-                          ? Length(LengthType::kAuto)
-                          : Length(bottom.ToInt(), LengthType::kFixed));
-    style_->SetLeft(left == kAuto ? Length(LengthType::kAuto)
-                                  : Length(left.ToInt(), LengthType::kFixed));
+    style_->SetTop(top == kAuto ? Length::Auto() : Length::Fixed(top.ToInt()));
+    style_->SetRight(right == kAuto ? Length::Auto()
+                                    : Length::Fixed(right.ToInt()));
+    style_->SetBottom(bottom == kAuto ? Length::Auto()
+                                      : Length::Fixed(bottom.ToInt()));
+    style_->SetLeft(left == kAuto ? Length::Auto()
+                                  : Length::Fixed(left.ToInt()));
   }
 
   scoped_refptr<ComputedStyle> style_;

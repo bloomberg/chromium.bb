@@ -76,17 +76,17 @@ class GrandfatheredEasyUnlockHostDisabler
 
   void DisableEasyUnlockHostIfNecessary();
   void OnSetSoftwareFeatureStateResult(
-      cryptauth::RemoteDeviceRef device,
+      multidevice::RemoteDeviceRef device,
       device_sync::mojom::NetworkRequestResult result_code);
   void SetPotentialEasyUnlockHostToDisable(
-      base::Optional<cryptauth::RemoteDeviceRef> device);
-  base::Optional<cryptauth::RemoteDeviceRef> GetEasyUnlockHostToDisable();
+      base::Optional<multidevice::RemoteDeviceRef> device);
+  base::Optional<multidevice::RemoteDeviceRef> GetEasyUnlockHostToDisable();
 
   HostBackendDelegate* host_backend_delegate_;
   device_sync::DeviceSyncClient* device_sync_client_;
   PrefService* pref_service_;
   std::unique_ptr<base::OneShotTimer> timer_;
-  base::Optional<cryptauth::RemoteDeviceRef> current_better_together_host_;
+  base::Optional<multidevice::RemoteDeviceRef> current_better_together_host_;
 
   DISALLOW_COPY_AND_ASSIGN(GrandfatheredEasyUnlockHostDisabler);
 };
@@ -95,4 +95,4 @@ class GrandfatheredEasyUnlockHostDisabler
 
 }  // namespace chromeos
 
-#endif
+#endif  // CHROMEOS_SERVICES_MULTIDEVICE_SETUP_GRANDFATHERED_EASY_UNLOCK_HOST_DISABLER_H_

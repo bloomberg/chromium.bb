@@ -67,7 +67,7 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest> {
   // represented by |render_process_host|, if any. Otherwise, an empty string is
   // returned.
   static std::string GetPartitionID(
-      const content::RenderProcessHost* render_process_host);
+      content::RenderProcessHost* render_process_host);
 
   static const char Type[];
 
@@ -212,7 +212,8 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest> {
                               int32_t line_no,
                               const base::string16& source_id) final;
   void CloseContents(content::WebContents* source) final;
-  bool HandleContextMenu(const content::ContextMenuParams& params) final;
+  bool HandleContextMenu(content::RenderFrameHost* render_frame_host,
+                         const content::ContextMenuParams& params) final;
   bool HandleKeyboardEvent(content::WebContents* source,
                            const content::NativeWebKeyboardEvent& event) final;
   void LoadProgressChanged(content::WebContents* source, double progress) final;
@@ -234,10 +235,10 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest> {
       const base::Callback<void(bool)>& callback) final;
   bool CheckMediaAccessPermission(content::RenderFrameHost* render_frame_host,
                                   const GURL& security_origin,
-                                  content::MediaStreamType type) final;
+                                  blink::MediaStreamType type) final;
   void CanDownload(const GURL& url,
                    const std::string& request_method,
-                   const base::Callback<void(bool)>& callback) final;
+                   base::OnceCallback<void(bool)> callback) final;
   content::JavaScriptDialogManager* GetJavaScriptDialogManager(
       content::WebContents* source) final;
   void AddNewContents(content::WebContents* source,

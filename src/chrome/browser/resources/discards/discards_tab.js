@@ -31,15 +31,17 @@ cr.define('discards_tab', function() {
     if (sortKey == 'title' || sortKey == 'tabUrl') {
       val1 = val1.toLowerCase();
       val2 = val2.toLowerCase();
-      if (val1 == val2)
+      if (val1 == val2) {
         return 0;
+      }
       return val1 > val2 ? 1 : -1;
     }
 
     // Compares boolean fields.
     if (['canFreeze', 'canDiscard', 'isAutoDiscardable'].includes(sortKey)) {
-      if (val1 == val2)
+      if (val1 == val2) {
         return 0;
+      }
       return val1 ? 1 : -1;
     }
 
@@ -97,7 +99,7 @@ Polymer({
   /** @private The current update timer if any. */
   updateTimer_: 0,
 
-  /** @private {(mojom.DiscardsDetailsProviderPtr|null)} */
+  /** @private {(mojom.DiscardsDetailsProviderProxy|null)} */
   uiHandler_: null,
 
   /** @override */
@@ -122,8 +124,9 @@ Polymer({
   computeSortFunction_: function(sortKey, sortReverse) {
     // Polymer 2.0 may invoke multi-property observers before all properties
     // are defined.
-    if (!sortKey)
+    if (!sortKey) {
       return (a, b) => 0;
+    }
 
     return function(a, b) {
       const comp = discards_tab.compareTabDiscardsInfos(sortKey, a, b);
@@ -249,8 +252,9 @@ Polymer({
    * @private
    */
   updateTable_: function() {
-    if (this.updateTimer_)
+    if (this.updateTimer_) {
       clearInterval(this.updateTimer_);
+    }
     this.updateTableImpl_();
     this.updateTimer_ = setInterval(this.updateTableImpl_.bind(this), 1000);
   },
@@ -331,18 +335,6 @@ Polymer({
   hasCannotFreezeReasons_: function(item) {
     return item.cannotFreezeReasons.length != 0;
   },
-
-  /**
-   * Returns a string with the reasons an item cannot be frozen, for display in
-   * a tooltip.
-   * @param {mojom.TabDiscardsInfo} item The item in question.
-   * @return {string} A string with the reasons.
-   * @private
-   */
-  cannotFreezeReasons_: function(item) {
-    return item.cannotFreezeReasons.join('<br />');
-  },
-
   /**
    * Tests whether an item has reasons why it cannot be discarded.
    * @param {mojom.TabDiscardsInfo} item The item in question.
@@ -352,17 +344,6 @@ Polymer({
    */
   hasCannotDiscardReasons_: function(item) {
     return item.cannotDiscardReasons.length != 0;
-  },
-
-  /**
-   * Returns a string with the reasons an item cannot be discarded, for display
-   * in a tooltip.
-   * @param {mojom.TabDiscardsInfo} item The item in question.
-   * @return {string} A string with the reasons.
-   * @private
-   */
-  cannotDiscardReasons_: function(item) {
-    return item.cannotDiscardReasons.join('<br />');
   },
 
   /**

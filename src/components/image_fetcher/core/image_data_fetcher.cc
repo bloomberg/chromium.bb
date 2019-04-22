@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
@@ -15,11 +16,11 @@
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
 
-using data_use_measurement::DataUseUserData;
-
 namespace {
 
 const char kContentLocationHeader[] = "Content-Location";
+
+const int kDownloadTimeoutSeconds = 30;
 
 }  // namespace
 
@@ -43,19 +44,12 @@ struct ImageDataFetcher::ImageDataFetcherRequest {
 
 ImageDataFetcher::ImageDataFetcher(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
-    : url_loader_factory_(url_loader_factory),
-      data_use_service_name_(DataUseUserData::IMAGE_FETCHER_UNTAGGED) {
+    : url_loader_factory_(url_loader_factory) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 ImageDataFetcher::~ImageDataFetcher() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-}
-
-void ImageDataFetcher::SetDataUseServiceName(
-    DataUseServiceName data_use_service_name) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  data_use_service_name_ = data_use_service_name;
 }
 
 void ImageDataFetcher::SetImageDownloadLimit(
@@ -93,16 +87,15 @@ void ImageDataFetcher::FetchImageData(
                           net::LOAD_DO_NOT_SEND_AUTH_DATA;
   }
 
-  // TODO(https://crbug.com/808498) re-add data use measurement once
-  // SimpleURLLoader supports it.  Parameter:
-  // data_use_service_name_
-
   std::unique_ptr<network::SimpleURLLoader> loader =
       network::SimpleURLLoader::Create(std::move(request), traffic_annotation);
 
   // For compatibility in error handling. This is a little wasteful since the
   // body will get thrown out anyway, though.
   loader->SetAllowHttpErrorResults(true);
+
+  loader->SetTimeoutDuration(
+      base::TimeDelta::FromSeconds(kDownloadTimeoutSeconds));
 
   if (max_download_bytes_.has_value()) {
     loader->DownloadToString(

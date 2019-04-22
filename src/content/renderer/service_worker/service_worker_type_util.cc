@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "storage/common/blob_storage/blob_handle.h"
+#include "third_party/blink/public/common/fetch/fetch_api_request_headers_map.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_request.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_response.h"
 #include "third_party/blink/public/platform/web_http_header_visitor.h"
@@ -64,10 +65,10 @@ std::vector<GURL> GetURLList(
 
 void GetServiceWorkerHeaderMapFromWebRequest(
     const blink::WebServiceWorkerRequest& web_request,
-    ServiceWorkerHeaderMap* headers) {
+    blink::FetchAPIRequestHeadersMap* headers) {
   DCHECK(headers);
   DCHECK(headers->empty());
-  web_request.VisitHTTPHeaderFields(MakeHeaderVisitor(headers).get());
+  web_request.VisitHttpHeaderFields(MakeHeaderVisitor(headers).get());
 }
 
 blink::mojom::FetchAPIResponsePtr GetFetchAPIResponseFromWebResponse(
@@ -95,15 +96,15 @@ blink::mojom::FetchAPIResponsePtr GetFetchAPIResponseFromWebResponse(
   }
 
   base::flat_map<std::string, std::string> headers;
-  web_response.VisitHTTPHeaderFields(MakeHeaderVisitor(&headers).get());
+  web_response.VisitHttpHeaderFields(MakeHeaderVisitor(&headers).get());
 
   return blink::mojom::FetchAPIResponse::New(
       GetURLList(web_response.UrlList()), web_response.Status(),
-      web_response.StatusText().Utf8(), web_response.ResponseType(), headers,
-      std::move(blob), web_response.GetError(), web_response.ResponseTime(),
+      web_response.StatusText().Utf8(), web_response.ResponseType(),
+      web_response.ResponseSource(), headers, std::move(blob),
+      web_response.GetError(), web_response.ResponseTime(),
       web_response.CacheStorageCacheName().Utf8(),
       GetHeaderList(web_response.CorsExposedHeaderNames()),
-      !web_response.CacheStorageCacheName().IsNull(),
       std::move(side_data_blob));
 }
 

@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_SCRIPT_LOADER_FACTORY_H_
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_SCRIPT_LOADER_FACTORY_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -16,33 +18,39 @@ class SharedURLLoaderFactory;
 
 namespace content {
 
+class ServiceWorkerCacheWriter;
 class ServiceWorkerContextCore;
 class ServiceWorkerProviderHost;
 
-// S13nServiceWorker:
 // Created per one running service worker for loading its scripts. This is kept
-// alive while ServiceWorkerNetworkProvider in the renderer process is alive.
+// alive while the WebServiceWorkerNetworkProvider in the renderer process is
+// alive.
 //
-// This factory handles requests for the scripts of a new (installing)
-// service worker. For installed workers, service worker script streaming
-// (ServiceWorkerInstalledScriptsSender) is typically used instead. However,
-// this factory can still be used when an installed worker imports a
-// non-installed script. In this case, this factory just returns a network
-// error as the spec disallows it.
+// This factory handles requests for scripts from service workers that were new
+// (non-installed) when they started. For service workers that were already
+// installed when they started, ServiceWorkerInstalledScriptsManager is used
+// instead.
 //
 // This factory creates either a ServiceWorkerNewScriptLoader or a
 // ServiceWorkerInstalledScriptLoader to load a script.
 class CONTENT_EXPORT ServiceWorkerScriptLoaderFactory
     : public network::mojom::URLLoaderFactory {
  public:
-  // |loader_factory| is used to load scripts. Typically
+  // |loader_factory_for_new_scripts| is used to load scripts. Typically
   // a new script will be loaded from the NetworkService. However,
-  // |loader_factory| may internally contain non-NetworkService
+  // |loader_factory_for_new_scripts| may internally contain non-NetworkService
   // factories used for non-http(s) URLs, e.g., a chrome-extension:// URL.
+  //
+  // |loader_factory_for_new_scripts| is null if this factory is created for an
+  // installed service worker, which is expected to load its scripts via
+  // ServiceWorkerInstalledScriptsManager, and only uses this factory for
+  // loading non-installed scripts, in which case this factory returns network
+  // error.
   ServiceWorkerScriptLoaderFactory(
       base::WeakPtr<ServiceWorkerContextCore> context,
       base::WeakPtr<ServiceWorkerProviderHost> provider_host,
-      scoped_refptr<network::SharedURLLoaderFactory> loader_factory);
+      scoped_refptr<network::SharedURLLoaderFactory>
+          loader_factory_for_new_scripts);
   ~ServiceWorkerScriptLoaderFactory() override;
 
   // network::mojom::URLLoaderFactory:
@@ -56,15 +64,47 @@ class CONTENT_EXPORT ServiceWorkerScriptLoaderFactory
                                 traffic_annotation) override;
   void Clone(network::mojom::URLLoaderFactoryRequest request) override;
 
+  void Update(scoped_refptr<network::SharedURLLoaderFactory> loader_factory);
+
  private:
   bool CheckIfScriptRequestIsValid(
       const network::ResourceRequest& resource_request);
 
+  // Used only when ServiceWorkerImportedScriptUpdateCheck is enabled.
+  //
+  // The callback is called once the copy is done. It normally runs
+  // asynchronously, and would be synchronous if the operation completes
+  // synchronously. The first parameter of the callback is the new resource id
+  // and the second parameter is the result of the operation. net::OK means
+  // success.
+  void CopyScript(const GURL& url,
+                  int64_t resource_id,
+                  base::OnceCallback<void(int64_t, net::Error)> callback);
+
+  // This method is called to notify that the operation triggered by
+  // CopyScript() completed.
+  //
+  // If the copy operation is successful, a ServiceWorkerInstalledScriptLoader
+  // would be created to load the new copy.
+  void OnCopyScriptFinished(network::mojom::URLLoaderRequest request,
+                            uint32_t options,
+                            const network::ResourceRequest& resource_request,
+                            network::mojom::URLLoaderClientPtr client,
+                            int64_t new_resource_id,
+                            net::Error error);
+
   base::WeakPtr<ServiceWorkerContextCore> context_;
   base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
-  scoped_refptr<network::SharedURLLoaderFactory> loader_factory_;
+  // Can be null if this factory is for an installed service worker.
+  scoped_refptr<network::SharedURLLoaderFactory>
+      loader_factory_for_new_scripts_;
 
   mojo::BindingSet<network::mojom::URLLoaderFactory> bindings_;
+
+  // Used to copy script started at CopyScript().
+  std::unique_ptr<ServiceWorkerCacheWriter> cache_writer_;
+
+  base::WeakPtrFactory<ServiceWorkerScriptLoaderFactory> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerScriptLoaderFactory);
 };

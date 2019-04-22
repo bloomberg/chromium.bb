@@ -25,30 +25,31 @@ constexpr unsigned int kIterationsPerStep = 100;
 class MockIndexBuffer : public rx::IndexBuffer
 {
   public:
-    MockIndexBuffer(unsigned int bufferSize, GLenum indexType)
+    MockIndexBuffer(unsigned int bufferSize, gl::DrawElementsType indexType)
         : mBufferSize(bufferSize), mIndexType(indexType)
     {}
 
-    MOCK_METHOD4(initialize, angle::Result(const gl::Context *, unsigned int, GLenum, bool));
+    MOCK_METHOD4(initialize,
+                 angle::Result(const gl::Context *, unsigned int, gl::DrawElementsType, bool));
     MOCK_METHOD4(mapBuffer,
                  angle::Result(const gl::Context *, unsigned int, unsigned int, void **));
     MOCK_METHOD1(unmapBuffer, angle::Result(const gl::Context *));
     MOCK_METHOD1(discard, angle::Result(const gl::Context *));
-    MOCK_METHOD3(setSize, angle::Result(const gl::Context *, unsigned int, GLenum));
+    MOCK_METHOD3(setSize, angle::Result(const gl::Context *, unsigned int, gl::DrawElementsType));
 
     // inlined for speed
-    GLenum getIndexType() const override { return mIndexType; }
+    gl::DrawElementsType getIndexType() const override { return mIndexType; }
     unsigned int getBufferSize() const override { return mBufferSize; }
 
   private:
     unsigned int mBufferSize;
-    GLenum mIndexType;
+    gl::DrawElementsType mIndexType;
 };
 
 class MockBufferFactoryD3D : public rx::BufferFactoryD3D
 {
   public:
-    MockBufferFactoryD3D(unsigned int bufferSize, GLenum indexType)
+    MockBufferFactoryD3D(unsigned int bufferSize, gl::DrawElementsType indexType)
         : mBufferSize(bufferSize), mIndexType(indexType)
     {}
 
@@ -71,7 +72,7 @@ class MockBufferFactoryD3D : public rx::BufferFactoryD3D
 
   private:
     unsigned int mBufferSize;
-    GLenum mIndexType;
+    gl::DrawElementsType mIndexType;
 };
 
 class MockBufferD3D : public rx::BufferD3D
@@ -91,7 +92,7 @@ class MockBufferD3D : public rx::BufferD3D
         {
             memcpy(&mData[0], data, size);
         }
-        return angle::Result::Continue();
+        return angle::Result::Continue;
     }
 
     MOCK_METHOD5(
@@ -113,7 +114,7 @@ class MockBufferD3D : public rx::BufferD3D
     angle::Result getData(const gl::Context *context, const uint8_t **outData) override
     {
         *outData = &mData[0];
-        return angle::Result::Continue();
+        return angle::Result::Continue;
     }
 
   private:
@@ -161,7 +162,7 @@ IndexDataManagerPerfTest::IndexDataManagerPerfTest()
       mIndexDataManager(&mMockBufferFactory),
       mIndexCount(4000),
       mBufferSize(mIndexCount * sizeof(GLushort)),
-      mMockBufferFactory(mBufferSize, GL_UNSIGNED_SHORT),
+      mMockBufferFactory(mBufferSize, gl::DrawElementsType::UnsignedShort),
       mMockGLFactory(&mMockBufferFactory),
       mIndexBuffer(&mMockGLFactory, 1)
 {
@@ -170,10 +171,10 @@ IndexDataManagerPerfTest::IndexDataManagerPerfTest()
     {
         indexData[index] = static_cast<GLushort>(index);
     }
-    EXPECT_FALSE(mIndexBuffer
-                     .bufferData(nullptr, gl::BufferBinding::Array, &indexData[0],
-                                 indexData.size() * sizeof(GLushort), gl::BufferUsage::StaticDraw)
-                     .isError());
+    EXPECT_EQ(
+        angle::Result::Continue,
+        mIndexBuffer.bufferData(nullptr, gl::BufferBinding::Array, &indexData[0],
+                                indexData.size() * sizeof(GLushort), gl::BufferUsage::StaticDraw));
 }
 
 void IndexDataManagerPerfTest::step()
@@ -182,11 +183,11 @@ void IndexDataManagerPerfTest::step()
     gl::IndexRange indexRange;
     for (unsigned int iteration = 0; iteration < kIterationsPerStep; ++iteration)
     {
-        (void)mIndexBuffer.getIndexRange(nullptr, GL_UNSIGNED_SHORT, 0, mIndexCount, false,
-                                         &indexRange);
-        (void)mIndexDataManager.prepareIndexData(nullptr, GL_UNSIGNED_SHORT, GL_UNSIGNED_SHORT,
-                                                 mIndexCount, &mIndexBuffer, nullptr,
-                                                 &translatedIndexData);
+        (void)mIndexBuffer.getIndexRange(nullptr, gl::DrawElementsType::UnsignedShort, 0,
+                                         mIndexCount, false, &indexRange);
+        (void)mIndexDataManager.prepareIndexData(nullptr, gl::DrawElementsType::UnsignedShort,
+                                                 gl::DrawElementsType::UnsignedShort, mIndexCount,
+                                                 &mIndexBuffer, nullptr, &translatedIndexData);
     }
 }
 

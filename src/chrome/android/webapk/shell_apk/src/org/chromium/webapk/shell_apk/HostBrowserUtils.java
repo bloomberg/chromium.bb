@@ -26,15 +26,17 @@ public class HostBrowserUtils {
 
     private static final int MINIMUM_REQUIRED_INTENT_HELPER_VERSION = 2;
 
+    private static final String VERSION_NAME_DEVELOPER_BUILD = "Developer Build";
+
     private static final String TAG = "cr_HostBrowserUtils";
 
     /**
      * The package names of the browsers that support WebAPKs. The most preferred one comes first.
      */
-    private static List<String> sBrowsersSupportingWebApk =
-            new ArrayList<String>(Arrays.asList("com.google.android.apps.chrome",
-                    "com.android.chrome", "com.chrome.beta", "com.chrome.dev", "com.chrome.canary",
-                    "org.chromium.chrome", "org.chromium.arc.intent_helper"));
+    private static List<String> sBrowsersSupportingWebApk = new ArrayList<String>(
+            Arrays.asList("com.google.android.apps.chrome", "com.android.chrome", "com.chrome.beta",
+                    "com.chrome.dev", "com.chrome.canary", "org.chromium.chrome",
+                    "org.chromium.chrome.tests", "org.chromium.arc.intent_helper"));
 
     /** Caches the package name of the host browser. */
     private static String sHostPackage;
@@ -85,7 +87,7 @@ public class HostBrowserUtils {
         sHostPackage = computeHostBrowserPackageNameInternal(context);
         if (!TextUtils.equals(sHostPackage, hostInPreferences)) {
             if (!TextUtils.isEmpty(hostInPreferences)) {
-                deleteSharedPref(context);
+                WebApkSharedPreferences.clear(context);
                 deleteInternalStorage(context);
             }
             writeHostBrowserToSharedPref(context, sHostPackage);
@@ -117,6 +119,11 @@ public class HostBrowserUtils {
             return -1;
         }
         String versionName = info.versionName;
+
+        if (TextUtils.equals(versionName, VERSION_NAME_DEVELOPER_BUILD)) {
+            return Integer.MAX_VALUE;
+        }
+
         int dotIndex = versionName.indexOf(".");
         if (dotIndex < 0) {
             return -1;
@@ -205,13 +212,6 @@ public class HostBrowserUtils {
         if (resolveInfo == null || resolveInfo.activityInfo == null) return null;
 
         return resolveInfo.activityInfo.packageName;
-    }
-
-    /** Deletes the SharedPreferences for the given context. */
-    private static void deleteSharedPref(Context context) {
-        SharedPreferences.Editor editor = WebApkSharedPreferences.getPrefs(context).edit();
-        editor.clear();
-        editor.apply();
     }
 
     /** Deletes the internal storage for the given context. */

@@ -2,90 +2,96 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('print_preview', function() {
-  'use strict';
+cr.exportPath('print_preview');
 
-  class UserInfo extends cr.EventTarget {
-    /**
-     * Repository which stores information about the user. Events are dispatched
-     * when the information changes.
-     */
-    constructor() {
-      super();
+/** @enum {number} */
+print_preview.CloudPrintState = {
+  DISABLED: 0,
+  ENABLED: 1,
+  SIGNED_IN: 2,
+  NOT_SIGNED_IN: 3,
+};
 
-      /**
-       * Email address of the logged in user or {@code null} if no user is
-       * logged in. In case of Google multilogin, can be changed by the user.
-       * @private {?string}
-       */
-      this.activeUser_ = null;
+(function() {
+'use strict';
 
-      /**
-       * Email addresses of the logged in users or empty array if no user is
-       * logged in. {@code null} if not known yet.
-       * @private {?Array<string>}
-       */
-      this.users_ = null;
-    }
+/**
+ * @typedef {{ activeUser: string,
+ *             users: (!Array<string> | undefined) }}
+ */
+let UpdateUsersPayload;
 
-    /** @return {boolean} Whether user accounts are already retrieved. */
-    get initialized() {
-      return this.users_ != null;
-    }
+Polymer({
+  is: 'print-preview-user-info',
 
-    /** @return {boolean} Whether user is logged in or not. */
-    get loggedIn() {
-      return !!this.activeUser;
-    }
+  properties: {
+    activeUser: {
+      type: String,
+      notify: true,
+      // The initialization below is needed only in Polymer 1, to allow
+      // observers to fire.
+      // TODO (rbpotter): Remove when migration to Polymer 2 is complete.
+      value: '',
+    },
 
-    /**
-     * @return {?string} Email address of the logged in user or {@code null} if
-     *     no user is logged.
-     */
-    get activeUser() {
-      return this.activeUser_;
-    }
+    /** @type {?print_preview.DestinationStore} */
+    destinationStore: Object,
 
-    /**
-     * Changes active user.
-     * @param {?string} activeUser Email address for the user to be set as
-     *     active.
-     */
-    set activeUser(activeUser) {
-      if (!!activeUser && this.activeUser_ != activeUser) {
-        this.activeUser_ = activeUser;
-        cr.dispatchSimpleEvent(this, UserInfo.EventType.ACTIVE_USER_CHANGED);
-      }
-    }
+    /** @type {?print_preview.InvitationStore} */
+    invitationStore: Object,
 
-    /**
-     * @return {?Array<string>} Email addresses of the logged in users or
-     *     empty array if no user is logged in. {@code null} if not known yet.
-     */
-    get users() {
-      return this.users_;
-    }
+    /** @type {!Array<string>} */
+    users: {
+      type: Array,
+      notify: true,
+      value: function() {
+        return [];
+      },
+    },
+  },
 
-    /**
-     * Sets logged in user accounts info.
-     * @param {string} activeUser Active user account (email).
-     * @param {!Array<string>} users List of currently logged in accounts.
-     */
-    setUsers(activeUser, users) {
-      this.activeUser_ = activeUser;
-      this.users_ = users || [];
-      cr.dispatchSimpleEvent(this, UserInfo.EventType.USERS_CHANGED);
-    }
-  }
+  /** @private {!EventTracker} */
+  tracker_: new EventTracker(),
+
+  /** @override */
+  detached: function() {
+    this.tracker_.removeAll();
+  },
+
+  /** @param {!cloudprint.CloudPrintInterface} cloudPrintInterface */
+  setCloudPrintInterface: function(cloudPrintInterface) {
+    this.tracker_.add(
+        cloudPrintInterface.getEventTarget(),
+        cloudprint.CloudPrintInterfaceEventType.UPDATE_USERS,
+        this.updateUsers_.bind(this));
+  },
 
   /**
-   * Enumeration of event types dispatched by the user info.
-   * @enum {string}
+   * @param {string} user The new active user.
+   * @private
    */
-  UserInfo.EventType = {
-    ACTIVE_USER_CHANGED: 'print_preview.UserInfo.ACTIVE_USER_CHANGED',
-    USERS_CHANGED: 'print_preview.UserInfo.USERS_CHANGED'
-  };
+  setActiveUser_: function(user) {
+    this.destinationStore.setActiveUser(user);
+    this.activeUser = user;
+  },
 
-  return {UserInfo: UserInfo};
+  /**
+   * @param {!CustomEvent<!UpdateUsersPayload>} e Event containing the new
+   *     active user and users.
+   * @private
+   */
+  updateUsers_: function(e) {
+    this.setActiveUser_(e.detail.activeUser);
+    if (e.detail.users) {
+      this.users = e.detail.users;
+    }
+  },
+
+  /** @param {string} user The new active user. */
+  updateActiveUser: function(user) {
+    this.setActiveUser_(user);
+    this.destinationStore.reloadUserCookieBasedDestinations(user);
+    this.invitationStore.startLoadingInvitations(user);
+  },
 });
+})();

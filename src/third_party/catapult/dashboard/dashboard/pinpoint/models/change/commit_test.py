@@ -2,12 +2,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import mock
+import re
+
 from dashboard.pinpoint.models.change import commit
 from dashboard.pinpoint import test
 
 
 def Commit(number, repository='chromium'):
-  return commit.Commit(repository, 'commit_' + str(number))
+  return commit.Commit(repository=repository, git_hash='commit_' + str(number))
 
 
 class CommitTest(test.TestCase):
@@ -73,16 +76,72 @@ deps_os = {
         'committer': {'time': 'Fri Jan 01 00:01:00 2016'},
         'message': 'Subject.\n\n'
                    'Commit message.\n'
+                   'Reviewed-on: https://foo/c/chromium/src/+/123\n'
                    'Cr-Commit-Position: refs/heads/master@{#437745}',
     }
 
     expected = {
         'repository': 'chromium',
-        'git_hash': 'aaa7336',
+        'git_hash': 'commit_0',
         'url': test.CHROMIUM_URL + '/+/aaa7336',
-        'subject': 'Subject.',
         'author': 'author@chromium.org',
-        'time': 'Fri Jan 01 00:01:00 2016',
+        'created': '2016-01-01T00:01:00',
+        'subject': 'Subject.',
+        'message': 'Subject.\n\n'
+                   'Commit message.\n'
+                   'Reviewed-on: https://foo/c/chromium/src/+/123\n'
+                   'Cr-Commit-Position: refs/heads/master@{#437745}',
+        'review_url': 'https://foo/c/chromium/src/+/123',
+        'commit_position': 437745,
+    }
+    self.assertEqual(Commit(0).AsDict(), expected)
+
+  def testAsDict_UtcOffsetPositive(self):
+    self.commit_info.side_effect = None
+    self.commit_info.return_value = {
+        'author': {'email': 'author@chromium.org'},
+        'commit': 'aaa7336',
+        'committer': {'time': 'Fri Jan 01 00:01:00 2016 +0000'},
+        'message': 'Subject.\n\n'
+                   'Commit message.\n'
+                   'Cr-Commit-Position: refs/heads/master@{#437745}',
+    }
+
+    expected = {
+        'repository': 'chromium',
+        'git_hash': 'commit_0',
+        'url': test.CHROMIUM_URL + '/+/aaa7336',
+        'author': 'author@chromium.org',
+        'created': '2016-01-01T00:01:00',
+        'subject': 'Subject.',
+        'message': 'Subject.\n\n'
+                   'Commit message.\n'
+                   'Cr-Commit-Position: refs/heads/master@{#437745}',
+        'commit_position': 437745,
+    }
+    self.assertEqual(Commit(0).AsDict(), expected)
+
+  def testAsDict_UtcOffsetNegative(self):
+    self.commit_info.side_effect = None
+    self.commit_info.return_value = {
+        'author': {'email': 'author@chromium.org'},
+        'commit': 'aaa7336',
+        'committer': {'time': 'Fri Jan 01 00:01:00 2016 -0000'},
+        'message': 'Subject.\n\n'
+                   'Commit message.\n'
+                   'Cr-Commit-Position: refs/heads/master@{#437745}',
+    }
+
+    expected = {
+        'repository': 'chromium',
+        'git_hash': 'commit_0',
+        'url': test.CHROMIUM_URL + '/+/aaa7336',
+        'author': 'author@chromium.org',
+        'created': '2016-01-01T00:01:00',
+        'subject': 'Subject.',
+        'message': 'Subject.\n\n'
+                   'Commit message.\n'
+                   'Cr-Commit-Position: refs/heads/master@{#437745}',
         'commit_position': 437745,
     }
     self.assertEqual(Commit(0).AsDict(), expected)
@@ -179,3 +238,42 @@ class MidpointTest(test.TestCase):
 
     with self.assertRaises(commit.NonLinearError):
       commit.Commit.Midpoint(Commit(1), Commit(9))
+
+  def testMidpointWithMergeCommits(self):
+    midpoint = commit.Commit.Midpoint(
+        commit.Commit(repository='chromium', git_hash='commit_0'),
+        commit.Commit(repository='chromium', git_hash='mc_4'))
+    self.assertEqual(midpoint,
+                     commit.Commit(repository='chromium', git_hash='commit_2'))
+
+  @mock.patch.object(
+      commit.deferred, 'defer')
+  def testMidpointCachesData(self, mock_defer):
+    midpoint = commit.Commit.Midpoint(
+        commit.Commit(repository='chromium', git_hash='commit_0'),
+        commit.Commit(repository='chromium', git_hash='mc_4'))
+
+    mock_defer.assert_called_once_with(
+        commit._CacheCommitDetails, midpoint.repository, midpoint.git_hash)
+
+  def testContinuousMidpointWithMergeCommits(self):
+
+    def _Midpoints(start_point, end_point):
+      midpoint = commit.Commit.Midpoint(start_point, end_point)
+      while midpoint.git_hash != start_point.git_hash:
+        yield midpoint
+        start_point = midpoint
+        midpoint = commit.Commit.Midpoint(start_point, end_point)
+
+    start = commit.Commit(repository='chromium', git_hash='mc_1')
+    end = commit.Commit(repository='chromium', git_hash='mc_100')
+    count = 0
+    matcher = re.compile(r'^mc_\d+$')
+    for midpoint in _Midpoints(start, end):
+      self.assertRegexpMatches(midpoint.git_hash, matcher)
+      count += 1
+      self.assertLess(count, 100)
+
+    # Check that the midpoint search algorithm runs in log2(N) time.
+    self.assertGreater(count, 0)
+    self.assertLess(count, 8)

@@ -54,7 +54,7 @@ class SVGPathByteStreamSource {
 
   bool ReadFlag() { return ReadType<bool>(); }
   float ReadFloat() { return ReadType<float>(); }
-  unsigned short ReadSVGSegmentType() { return ReadType<unsigned short>(); }
+  uint16_t ReadSVGSegmentType() { return ReadType<uint16_t>(); }
   FloatPoint ReadFloatPoint() {
     float x = ReadType<float>();
     float y = ReadType<float>();

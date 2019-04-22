@@ -25,8 +25,6 @@ const char kHistogramFromGWSLoad[] =
     "NavigationToLoadEventFired";
 const char kHistogramFromGWSFirstPaint[] =
     "PageLoad.Clients.FromGoogleSearch.PaintTiming.NavigationToFirstPaint";
-const char kHistogramFromGWSFirstTextPaint[] =
-    "PageLoad.Clients.FromGoogleSearch.PaintTiming.NavigationToFirstTextPaint";
 const char kHistogramFromGWSFirstImagePaint[] =
     "PageLoad.Clients.FromGoogleSearch.PaintTiming.NavigationToFirstImagePaint";
 const char kHistogramFromGWSFirstContentfulPaint[] =
@@ -40,7 +38,7 @@ const char kHistogramFromGWSParseDuration[] =
 const char kHistogramFromGWSParseStart[] =
     "PageLoad.Clients.FromGoogleSearch.ParseTiming.NavigationToParseStart";
 const char kHistogramFromGWSFirstInputDelay[] =
-    "PageLoad.Clients.FromGoogleSearch.InteractiveTiming.FirstInputDelay";
+    "PageLoad.Clients.FromGoogleSearch.InteractiveTiming.FirstInputDelay3";
 
 const char kHistogramFromGWSAbortNewNavigationBeforeCommit[] =
     "PageLoad.Clients.FromGoogleSearch.Experimental.AbortTiming.NewNavigation."
@@ -394,12 +392,6 @@ void FromGWSPageLoadMetricsObserver::OnFirstPaintInPage(
   logger_.OnFirstPaintInPage(timing, extra_info);
 }
 
-void FromGWSPageLoadMetricsObserver::OnFirstTextPaintInPage(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  logger_.OnFirstTextPaintInPage(timing, extra_info);
-}
-
 void FromGWSPageLoadMetricsObserver::OnFirstImagePaintInPage(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
@@ -443,8 +435,10 @@ void FromGWSPageLoadMetricsObserver::OnFailedProvisionalLoad(
 }
 
 void FromGWSPageLoadMetricsObserver::OnUserInput(
-    const blink::WebInputEvent& event) {
-  logger_.OnUserInput(event);
+    const blink::WebInputEvent& event,
+    const page_load_metrics::mojom::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+  logger_.OnUserInput(event, timing, extra_info);
 }
 
 void FromGWSPageLoadMetricsLogger::OnCommit(
@@ -585,16 +579,6 @@ void FromGWSPageLoadMetricsLogger::OnFirstPaintInPage(
   first_paint_triggered_ = true;
 }
 
-void FromGWSPageLoadMetricsLogger::OnFirstTextPaintInPage(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  if (ShouldLogForegroundEventAfterCommit(timing.paint_timing->first_text_paint,
-                                          extra_info)) {
-    PAGE_LOAD_HISTOGRAM(internal::kHistogramFromGWSFirstTextPaint,
-                        timing.paint_timing->first_text_paint.value());
-  }
-}
-
 void FromGWSPageLoadMetricsLogger::OnFirstImagePaintInPage(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
@@ -656,7 +640,9 @@ void FromGWSPageLoadMetricsLogger::OnParseStop(
 }
 
 void FromGWSPageLoadMetricsLogger::OnUserInput(
-    const blink::WebInputEvent& event) {
+    const blink::WebInputEvent& event,
+    const page_load_metrics::mojom::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& extra_info) {
   if (first_paint_triggered_ && !first_user_interaction_after_paint_) {
     DCHECK(!navigation_start_.is_null());
     first_user_interaction_after_paint_ =

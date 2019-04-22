@@ -31,13 +31,17 @@ scoped_refptr<Layer> ParseTreeFromValue(const base::Value& val,
   int width, height;
   success &= list->GetInteger(0, &width);
   success &= list->GetInteger(1, &height);
-  success &= dict->GetList("Position", &list);
-  double position_x, position_y;
-  success &= list->GetDouble(0, &position_x);
-  success &= list->GetDouble(1, &position_y);
 
   bool draws_content;
   success &= dict->GetBoolean("DrawsContent", &draws_content);
+
+  bool hit_testable;
+  // If we cannot load hit_testable, we may try loading the old version, since
+  // we do not record |hit_testable_without_draws_content| in the past, we use
+  // |draws_content| as the value of |hit_testable|.
+  if (!dict->GetBoolean("HitTestable", &hit_testable)) {
+    hit_testable = draws_content;
+  }
 
   scoped_refptr<Layer> new_layer;
   if (layer_type == "SolidColorLayer") {
@@ -86,9 +90,9 @@ scoped_refptr<Layer> ParseTreeFromValue(const base::Value& val,
   } else {  // Type "Layer" or "unknown"
     new_layer = Layer::Create();
   }
-  new_layer->SetPosition(gfx::PointF(position_x, position_y));
   new_layer->SetBounds(gfx::Size(width, height));
   new_layer->SetIsDrawable(draws_content);
+  new_layer->SetHitTestable(hit_testable);
 
   double opacity;
   if (dict->GetDouble("Opacity", &opacity))
@@ -143,7 +147,7 @@ scoped_refptr<Layer> ParseTreeFromValue(const base::Value& val,
 
 scoped_refptr<Layer> ParseTreeFromJson(std::string json,
                                        ContentLayerClient* content_client) {
-  std::unique_ptr<base::Value> val = base::test::ParseJson(json);
+  std::unique_ptr<base::Value> val = base::test::ParseJsonDeprecated(json);
   return ParseTreeFromValue(*val, content_client);
 }
 

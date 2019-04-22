@@ -8,9 +8,11 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <limits>
 #include <map>
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "base/logging.h"
@@ -55,77 +57,100 @@ void RemoveDuplicatePrepopulateIDs(
     const SearchTermsData& search_terms_data,
     std::set<std::string>* removed_keyword_guids) {
   DCHECK(template_urls);
+  TemplateURLService::OwnedTemplateURLVector checked_urls;
 
   // For convenience construct an ID->TemplateURL* map from |prepopulated_urls|.
   std::map<int, TemplateURLData*> prepopulated_url_map;
   for (const auto& url : prepopulated_urls)
     prepopulated_url_map[url->prepopulate_id] = url.get();
 
-  // Separate |template_urls| into prepopulated and non-prepopulated groups.
-  std::multimap<int, std::unique_ptr<TemplateURL>> unchecked_urls;
-  TemplateURLService::OwnedTemplateURLVector checked_urls;
+  constexpr size_t invalid_index = std::numeric_limits<size_t>::max();
+  // A helper structure for deduplicating elements with the same prepopulate_id.
+  struct DuplicationData {
+    DuplicationData() : index_representative(invalid_index) {}
+
+    // The index into checked_urls at which the best representative is stored.
+    size_t index_representative;
+
+    // Proper duplicates for consideration during selection phase.  This
+    // does not include the representative stored in checked_urls.
+    TemplateURLService::OwnedTemplateURLVector duplicates;
+  };
+  // Map from prepopulate_id to data for deduplication and selection.
+  std::unordered_map<int, DuplicationData> duplication_map;
+
+  const auto has_default_search_keyword = [&](const auto& turl) {
+    return default_search_provider &&
+           (default_search_provider->prepopulate_id() ==
+            turl->prepopulate_id()) &&
+           default_search_provider->HasSameKeywordAs(turl->data(),
+                                                     search_terms_data);
+  };
+
+  // Deduplication phase: move elements into new vector, preserving order while
+  // gathering duplicates into separate container for selection.
   for (auto& turl : *template_urls) {
-    int prepopulate_id = turl->prepopulate_id();
-    if (prepopulate_id)
-      unchecked_urls.insert(std::make_pair(prepopulate_id, std::move(turl)));
-    else
+    const int prepopulate_id = turl->prepopulate_id();
+    if (prepopulate_id) {
+      auto& duplication_data = duplication_map[prepopulate_id];
+      if (duplication_data.index_representative == invalid_index) {
+        // This is the first found.
+        duplication_data.index_representative = checked_urls.size();
+        checked_urls.push_back(std::move(turl));
+      } else {
+        // This is a duplicate.
+        duplication_data.duplicates.push_back(std::move(turl));
+      }
+    } else {
       checked_urls.push_back(std::move(turl));
+    }
   }
 
-  // For each group of prepopulated URLs with one ID, find the best URL to use
-  // and add it to the (initially all non-prepopulated) URLs we've already OKed.
-  // Delete the others from the service and from memory.
-  while (!unchecked_urls.empty()) {
-    // Find the best URL.
-    int prepopulate_id = unchecked_urls.begin()->first;
-    auto prepopulated_url = prepopulated_url_map.find(prepopulate_id);
-    auto end = unchecked_urls.upper_bound(prepopulate_id);
-    auto best = unchecked_urls.begin();
-    bool matched_keyword = false;
-    for (auto i = unchecked_urls.begin(); i != end; ++i) {
-      // If the user-selected DSE is a prepopulated engine its properties will
-      // either come from the prepopulation origin or from the user preferences
-      // file (see DefaultSearchManager). Those properties will end up
-      // overwriting whatever we load now anyway. If we are eliminating
-      // duplicates, then, we err on the side of keeping the thing that looks
-      // more like the value we will end up with in the end.
-      if (default_search_provider &&
-          (default_search_provider->prepopulate_id() ==
-              i->second->prepopulate_id()) &&
-          default_search_provider->HasSameKeywordAs(i->second->data(),
-                                                    search_terms_data)) {
-        best = i;
-        break;
-      }
+  // Selection and cleanup phase: swap out elements if necessary to ensure new
+  // vector contains only the best representative for each prepopulate_id.
+  // Then delete the remaining duplicates.
+  for (auto& id_data : duplication_map) {
+    const auto prepopulated_url = prepopulated_url_map.find(id_data.first);
+    const auto has_prepopulated_keyword = [&](const auto& turl) {
+      return (prepopulated_url != prepopulated_url_map.end()) &&
+             turl->HasSameKeywordAs(*prepopulated_url->second,
+                                    search_terms_data);
+    };
 
-      // Otherwise, a URL is best if it matches the prepopulated data's keyword;
-      // if none match, just fall back to using the one with the lowest ID.
-      if (matched_keyword)
-        continue;
-      if ((prepopulated_url != prepopulated_url_map.end()) &&
-          i->second->HasSameKeywordAs(*prepopulated_url->second,
-                                      search_terms_data)) {
-        best = i;
-        matched_keyword = true;
-      } else if (i->second->id() < best->second->id()) {
-        best = i;
+    // If the user-selected DSE is a prepopulated engine its properties will
+    // either come from the prepopulation origin or from the user preferences
+    // file (see DefaultSearchManager). Those properties will end up
+    // overwriting whatever we load now anyway. If we are eliminating
+    // duplicates, then, we err on the side of keeping the thing that looks
+    // more like the value we will end up with in the end.
+    // Otherwise, a URL is best if it matches the prepopulated data's keyword;
+    // if none match, just fall back to using the one with the lowest ID.
+    auto& best = checked_urls[id_data.second.index_representative];
+    if (!has_default_search_keyword(best)) {
+      bool matched_keyword = has_prepopulated_keyword(best);
+      for (auto& duplicate : id_data.second.duplicates) {
+        if (has_default_search_keyword(duplicate)) {
+          best.swap(duplicate);
+          break;
+        } else if (matched_keyword) {
+          continue;
+        } else if (has_prepopulated_keyword(duplicate)) {
+          best.swap(duplicate);
+          matched_keyword = true;
+        } else if (duplicate->id() < best->id()) {
+          best.swap(duplicate);
+        }
       }
     }
 
-    // Add the best URL to the checked group and delete the rest.
-    checked_urls.push_back(std::move(best->second));
-    for (auto i = unchecked_urls.begin(); i != end; ++i) {
-      if (i == best)
-        continue;
+    // Clean up what's left.
+    for (const auto& duplicate : id_data.second.duplicates) {
       if (service) {
-        service->RemoveKeyword(i->second->id());
+        service->RemoveKeyword(duplicate->id());
         if (removed_keyword_guids)
-          removed_keyword_guids->insert(i->second->sync_guid());
+          removed_keyword_guids->insert(duplicate->sync_guid());
       }
     }
-
-    // Done with this group.
-    unchecked_urls.erase(unchecked_urls.begin(), end);
   }
 
   // Return the checked URLs.

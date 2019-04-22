@@ -17,12 +17,6 @@
 var tilesAreLoaded = false;
 
 
-var numDdllogResponsesReceived = 0;
-var lastDdllogResponse = '';
-
-var onDdllogResponse = null;
-
-
 /**
  * Whether the Most Visited and edit custom link iframes should be created while
  * running tests. Currently the SimpleJavascriptTests are flaky due to some
@@ -59,8 +53,8 @@ function disableIframesAndVoiceSearchForTesting() {
  *
  * @type {{
  *   numTitleLines: number,
- *   titleColor: string,
- *   titleColorAgainstDark: string,
+ *   titleColor: Array<number>,
+ *   titleColorAgainstDark: Array<number>,
  * }}
  */
 var NTP_DESIGN = {
@@ -76,16 +70,22 @@ var NTP_DESIGN = {
  * @const
  */
 var CLASSES = {
+  // Shows a Google search style fakebox.
+  ALTERNATE_FAKEBOX: 'alternate-fakebox',
   ALTERNATE_LOGO: 'alternate-logo',  // Shows white logo if required by theme
+  // Applies styles to dialogs used in customization.
+  CUSTOMIZE_DIALOG: 'customize-dialog',
   DARK: 'dark',
   DEFAULT_THEME: 'default-theme',
   DELAYED_HIDE_NOTIFICATION: 'mv-notice-delayed-hide',
-  FADE: 'fade',  // Enables opacity transition on logo and doodle.
   FAKEBOX_FOCUS: 'fakebox-focused',  // Applies focus styles to the fakebox
-  SHOW_EDIT_DIALOG: 'show',          // Displays the edit custom link dialog.
-  HIDE_BODY_OVERFLOW: 'hidden',      // Prevents scrolling while the edit custom
-                                     // link dialog is open.
+  // Shows a search icon in the fakebox.
+  SHOW_FAKEBOX_ICON: 'show-fakebox-icon',
+  SHOW_EDIT_DIALOG: 'show',      // Displays the edit custom link dialog.
+  HIDE_BODY_OVERFLOW: 'hidden',  // Prevents scrolling while the edit custom
+                                 // link dialog is open.
   // Applies float animations to the Most Visited notification
+  FLOAT_DOWN: 'float-down',
   FLOAT_UP: 'float-up',
   // Applies drag focus style to the fakebox
   FAKEBOX_DRAG_FOCUS: 'fakebox-drag-focused',
@@ -93,16 +93,16 @@ var CLASSES = {
   HAS_LINK: 'has-link',
   HIDE_FAKEBOX: 'hide-fakebox',
   HIDE_NOTIFICATION: 'notice-hide',
+  HIDE_PROMO: 'hide-promo',
   INITED: 'inited',  // Reveals the <body> once init() is done.
   LEFT_ALIGN_ATTRIBUTION: 'left-align-attribution',
-  MATERIAL_DESIGN: 'md',  // Applies Material Design styles to the page
-  MATERIAL_DESIGN_ICONS:
-      'md-icons',  // Applies Material Design styles to Most Visited.
   // Vertically centers the most visited section for a non-Google provided page.
   NON_GOOGLE_PAGE: 'non-google-page',
   NON_WHITE_BG: 'non-white-bg',
-  RTL: 'rtl',              // Right-to-left language text.
-  SHOW_LOGO: 'show-logo',  // Marks logo/doodle that should be shown.
+  REMOVE_FAKEBOX: 'remove-fakebox',  // Hides the fakebox from the page.
+  RTL: 'rtl',                        // Right-to-left language text.
+  // Applied when the doodle notifier should be shown instead of the doodle.
+  USE_NOTIFIER: 'use-notifier',
 };
 
 
@@ -114,6 +114,7 @@ var CLASSES = {
 var IDS = {
   ATTRIBUTION: 'attribution',
   ATTRIBUTION_TEXT: 'attribution-text',
+  CUSTOM_BG: 'custom-bg',
   CUSTOM_LINKS_EDIT_IFRAME: 'custom-links-edit',
   CUSTOM_LINKS_EDIT_IFRAME_DIALOG: 'custom-links-edit-dialog',
   ERROR_NOTIFICATION: 'error-notice',
@@ -121,27 +122,23 @@ var IDS = {
   ERROR_NOTIFICATION_LINK: 'error-notice-link',
   ERROR_NOTIFICATION_MSG: 'error-notice-msg',
   FAKEBOX: 'fakebox',
+  FAKEBOX_CONTAINER: 'fakebox-container',
   FAKEBOX_INPUT: 'fakebox-input',
   FAKEBOX_TEXT: 'fakebox-text',
   FAKEBOX_MICROPHONE: 'fakebox-microphone',
   LOGO: 'logo',
-  LOGO_DEFAULT: 'logo-default',
-  LOGO_DOODLE: 'logo-doodle',
-  LOGO_DOODLE_IMAGE: 'logo-doodle-image',
-  LOGO_DOODLE_IFRAME: 'logo-doodle-iframe',
-  LOGO_DOODLE_BUTTON: 'logo-doodle-button',
-  LOGO_DOODLE_NOTIFIER: 'logo-doodle-notifier',
   MOST_VISITED: 'most-visited',
   NOTIFICATION: 'mv-notice',
   NOTIFICATION_CONTAINER: 'mv-notice-container',
-  NOTIFICATION_CLOSE_BUTTON: 'mv-notice-x',
   NOTIFICATION_MESSAGE: 'mv-msg',
   NTP_CONTENTS: 'ntp-contents',
   PROMO: 'promo',
   RESTORE_ALL_LINK: 'mv-restore',
+  SUGGESTIONS: 'suggestions',
   TILES: 'mv-tiles',
   TILES_IFRAME: 'mv-single',
   UNDO_LINK: 'mv-undo',
+  USER_CONTENT: 'user-content',
 };
 
 
@@ -189,6 +186,11 @@ var LOG_TYPE = {
   NTP_CUSTOMIZE_SHORTCUT_CANCEL: 54,
   // 'Done' was clicked in the 'Edit shortcut' dialog.
   NTP_CUSTOMIZE_SHORTCUT_DONE: 55,
+
+  // A middle slot promo was shown.
+  NTP_MIDDLE_SLOT_PROMO_SHOWN: 60,
+  // A promo link was clicked.
+  NTP_MIDDLE_SLOT_PROMO_LINK_CLICKED: 61,
 };
 
 
@@ -210,12 +212,23 @@ const MAX_NUM_TILES_CUSTOM_LINKS = 10;
 
 
 /**
- * Background colors considered "white". Used to determine if it is possible
- * to display a Google Doodle, or if the notifier should be used instead.
+ * Background colors considered "white". Used to determine if it is possible to
+ * display a Google Doodle, or if the notifier should be used instead. Also used
+ * to determine if a colored or white logo should be used.
  * @type {Array<string>}
  * @const
  */
 var WHITE_BACKGROUND_COLORS = ['rgba(255,255,255,1)', 'rgba(0,0,0,0)'];
+
+
+/**
+ * Background color for Chrome dark mode. Used to determine if it is possible to
+ * display a Google Doodle, or if the notifier should be used instead.
+ * @type {string}
+ * @const
+ */
+const DARK_MODE_BACKGROUND_COLOR = 'rgba(50,54,57,1)';
+
 
 /**
  * Enum for keycodes.
@@ -233,6 +246,14 @@ const NOTIFICATION_TIMEOUT = 10000;
 
 
 /**
+ * The period of time (ms) before transitions can be applied to a toast
+ * notification after modifying the "display" property.
+ * @type {number}
+ */
+const DISPLAY_TIMEOUT = 20;
+
+
+/**
  * The last blacklisted tile rid if any, which by definition should not be
  * filler.
  * @type {?number}
@@ -245,7 +266,15 @@ var lastBlacklistedTile = null;
  * set if a notification is visible.
  * @type {?Object}
  */
-let delayedHideNotification;
+let delayedHideNotification = null;
+
+
+/**
+ * The currently visible notification element. Null if no notification is
+ * present.
+ * @type {?Object}
+ */
+let currNotification = null;
 
 
 /**
@@ -256,42 +285,70 @@ var ntpApiHandle;
 
 
 /**
- * Returns a timeout that can be executed early.
- * @param {!Function} timeout The timeout function.
+ * True if dark mode is enabled.
+ * @type {boolean}
+ */
+let isDarkModeEnabled = false;
+
+
+/**
+ * True if dark colored chips should be used instead of light mode chips when
+ * dark mode is enabled.
+ * @type {boolean}
+ */
+let useDarkChips = false;
+
+
+/**
+ * Returns a timeout that can be executed early. Calls back true if this was
+ * an early execution, false otherwise.
+ * @param {!Function} timeout The timeout function. Requires a boolean param.
  * @param {number} delay The timeout delay.
- * @param {Object} previousContainer The pre-existing notification container.
  * @return {Object}
  */
-function createExecutableTimeout(timeout, delay, previousContainer) {
-  let timeoutId = window.setTimeout(timeout, delay);
+function createExecutableTimeout(timeout, delay) {
+  let timeoutId = window.setTimeout(() => {
+    timeout(/*executedEarly=*/ false);
+  }, delay);
   return {
-    previousContainer: previousContainer,
     clear: () => {
       window.clearTimeout(timeoutId);
     },
     trigger: () => {
       window.clearTimeout(timeoutId);
-      return timeout();
+      return timeout(/*executedEarly=*/ true);
     }
   };
 }
 
 
 /**
+ * Called by tests to override the executable timeout with a test timeout.
+ * @param {!Function} timeout The timeout function. Requires a boolean param.
+ */
+function overrideExecutableTimeoutForTesting(timeout) {
+  createExecutableTimeout = timeout;
+}
+
+
+/**
  * Returns theme background info, first checking for history.state.notheme. If
- * the page has notheme set, returns a fallback light-colored theme.
+ * the page has notheme set, returns a fallback light-colored theme (or dark-
+ * colored theme if dark mode is enabled). This is used when the doodle is
+ * displayed after clicking the notifier.
  */
 function getThemeBackgroundInfo() {
   if (history.state && history.state.notheme) {
     return {
       alternateLogo: false,
-      backgroundColorRgba: [255, 255, 255, 255],
-      colorRgba: [255, 255, 255, 255],
+      backgroundColorRgba:
+          (isDarkModeEnabled ? [50, 54, 57, 255] : [255, 255, 255, 255]),
       headerColorRgba: [150, 150, 150, 255],
       linkColorRgba: [6, 55, 116, 255],
       sectionBorderColorRgba: [150, 150, 150, 255],
       textColorLightRgba: [102, 102, 102, 255],
       textColorRgba: [0, 0, 0, 255],
+      usingDarkMode: isDarkModeEnabled,
       usingDefaultTheme: true,
     };
   }
@@ -302,19 +359,43 @@ function getThemeBackgroundInfo() {
 /**
  * Heuristic to determine whether a theme should be considered to be dark, so
  * the colors of various UI elements can be adjusted.
- * @param {ThemeBackgroundInfo|undefined} info Theme background information.
+ *
+ * The user theme/custom background will always take precedence over dark mode
+ * when considering darkness. Therefore, dark mode should only be checked if
+ * this is the default NTP. Dark mode is considered a dark theme if enabled.
+ *
  * @return {boolean} Whether the theme is dark.
  * @private
  */
 function getIsThemeDark() {
   var info = getThemeBackgroundInfo();
-  if (!info)
-    return false;
+  // Only check for dark mode if this is the default NTP (i.e. no theme or
+  // custom background set).
+  if (!info || info.usingDefaultTheme && !info.customBackgroundConfigured) {
+    // Dark mode is always considered a dark theme.
+    return isDarkModeEnabled;
+  }
+
   // Heuristic: light text implies dark theme.
   var rgba = info.textColorRgba;
   var luminance = 0.3 * rgba[0] + 0.59 * rgba[1] + 0.11 * rgba[2];
   return luminance >= 128;
 }
+
+
+/**
+ * Determine whether dark chips should be used if dark mode is enabled. This is
+ * is the case when dark mode is enabled and a background image (from a custom
+ * background or user theme) is not set.
+ *
+ * @param {!Object} info Theme background information.
+ * @return {boolean} Whether the chips should be dark.
+ * @private
+ */
+function getUseDarkChips(info) {
+  return info.usingDarkMode && !info.imageUrl;
+}
+
 
 /**
  * Updates the NTP based on the current theme.
@@ -324,23 +405,41 @@ function renderTheme() {
   $(IDS.NTP_CONTENTS).classList.toggle(CLASSES.DARK, getIsThemeDark());
 
   var info = getThemeBackgroundInfo();
-  if (!info)
+  if (!info) {
     return;
+  }
 
-  var background = [convertToRGBAColor(info.backgroundColorRgba),
-                    info.imageUrl,
-                    info.imageTiling,
-                    info.imageHorizontalAlignment,
-                    info.imageVerticalAlignment].join(' ').trim();
+  // Update dark mode styling.
+  isDarkModeEnabled = info.usingDarkMode;
+  useDarkChips = getUseDarkChips(info);
+  document.documentElement.setAttribute('darkmode', isDarkModeEnabled);
+  document.body.classList.toggle('light-chip', !useDarkChips);
+
+  var background = [
+    convertToRGBAColor(info.backgroundColorRgba), info.imageUrl,
+    info.imageTiling, info.imageHorizontalAlignment, info.imageVerticalAlignment
+  ].join(' ').trim();
 
   // If a custom background has been selected the image will be applied to the
   // custom-background element instead of the body.
   if (!info.customBackgroundConfigured) {
     document.body.style.background = background;
   }
-  document.body.classList.toggle(CLASSES.ALTERNATE_LOGO, info.alternateLogo);
-  var isNonWhiteBackground = !WHITE_BACKGROUND_COLORS.includes(background);
+
+  // Dark mode uses a white Google logo.
+  const useWhiteLogo =
+      info.alternateLogo || (info.usingDefaultTheme && isDarkModeEnabled);
+  document.body.classList.toggle(CLASSES.ALTERNATE_LOGO, useWhiteLogo);
+  const isNonWhiteBackground = !WHITE_BACKGROUND_COLORS.includes(background);
   document.body.classList.toggle(CLASSES.NON_WHITE_BG, isNonWhiteBackground);
+
+  // The doodle notifier should be shown for non-default backgrounds. This
+  // includes non-white backgrounds, excluding dark mode gray if dark mode is
+  // enabled.
+  const isDefaultBackground = WHITE_BACKGROUND_COLORS.includes(background) ||
+      (isDarkModeEnabled && background === DARK_MODE_BACKGROUND_COLOR);
+  document.body.classList.toggle(CLASSES.USE_NOTIFIER, !isDefaultBackground);
+
   updateThemeAttribution(info.attributionUrl, info.imageHorizontalAlignment);
   setCustomThemeStyle(info);
 
@@ -349,7 +448,7 @@ function renderTheme() {
       customBackgrounds.CUSTOM_BACKGROUND_OVERLAY, 'url(' + info.imageUrl + ')'
     ].join(',').trim();
 
-    if (imageWithOverlay != document.body.style.backgroundImage) {
+    if (imageWithOverlay != $(IDS.CUSTOM_BG).style.backgroundImage) {
       customBackgrounds.closeCustomizationDialog();
       customBackgrounds.clearAttribution();
     }
@@ -357,19 +456,19 @@ function renderTheme() {
     // |image| and |imageWithOverlay| use the same url as their source. Waiting
     // to display the custom background until |image| is fully loaded ensures
     // that |imageWithOverlay| is also loaded.
-    $('custom-bg').style.backgroundImage = imageWithOverlay;
+    $(IDS.CUSTOM_BG).style.backgroundImage = imageWithOverlay;
     var image = new Image();
     image.onload = function() {
-      $('custom-bg').style.opacity = '1';
+      $(IDS.CUSTOM_BG).style.opacity = '1';
     };
     image.src = info.imageUrl;
 
     customBackgrounds.setAttribution(
         info.attribution1, info.attribution2, info.attributionActionUrl);
   } else {
-    $('custom-bg').style.opacity = '0';
+    $(IDS.CUSTOM_BG).style.opacity = '0';
     window.setTimeout(function() {
-      $('custom-bg').style.backgroundImage = '';
+      $(IDS.CUSTOM_BG).style.backgroundImage = '';
     }, 1000);
     customBackgrounds.clearAttribution();
   }
@@ -380,6 +479,11 @@ function renderTheme() {
           !info.customBackgroundConfigured);
   $(customBackgrounds.IDS.RESTORE_DEFAULT).tabIndex =
       (info.customBackgroundConfigured ? 0 : -1);
+
+  $(customBackgrounds.IDS.EDIT_BG)
+      .classList.toggle(
+          customBackgrounds.CLASSES.ENTRY_POINT_ENHANCED,
+          !info.customBackgroundConfigured);
 
   if (configData.isGooglePage) {
     // Hide the settings menu or individual options if the related features are
@@ -394,14 +498,16 @@ function renderTheme() {
  */
 function sendThemeInfoToMostVisitedIframe() {
   var info = getThemeBackgroundInfo();
-  if (!info)
+  if (!info) {
     return;
+  }
 
   var isThemeDark = getIsThemeDark();
 
   var message = {cmd: 'updateTheme'};
   message.isThemeDark = isThemeDark;
   message.isUsingTheme = !info.usingDefaultTheme;
+  message.isDarkMode = getUseDarkChips(info);
 
   var titleColor = NTP_DESIGN.titleColor;
   if (!info.usingDefaultTheme && info.textColorRgba) {
@@ -416,7 +522,29 @@ function sendThemeInfoToMostVisitedIframe() {
 
 
 /**
+ * Sends the current theme info to the edit custom link iframe.
+ * @private
+ */
+function sendThemeInfoToEditCustomLinkIframe() {
+  if (!configData.isGooglePage) {
+    return;
+  }
+
+  const info = getThemeBackgroundInfo();
+  if (!info) {
+    return;
+  }
+
+  let message = {cmd: 'updateTheme'};
+  message.isDarkMode = info.usingDarkMode;
+
+  $(IDS.CUSTOM_LINKS_EDIT_IFRAME).contentWindow.postMessage(message, '*');
+}
+
+
+/**
  * Updates the OneGoogleBar (if it is loaded) based on the current theme.
+ * TODO(crbug.com/918582): Add support for OGB dark mode.
  * @private
  */
 function renderOneGoogleBarTheme() {
@@ -442,9 +570,19 @@ function renderOneGoogleBarTheme() {
  * @private
  */
 function onThemeChange() {
+  // Save the current dark mode state to check if dark mode has changed.
+  const usingDarkChips = useDarkChips;
+
   renderTheme();
   renderOneGoogleBarTheme();
   sendThemeInfoToMostVisitedIframe();
+  sendThemeInfoToEditCustomLinkIframe();
+
+  // If dark mode has been changed, refresh the MV tiles to render the
+  // appropriate icon.
+  if (usingDarkChips != useDarkChips) {
+    reloadTiles();
+  }
 }
 
 
@@ -454,9 +592,9 @@ function onThemeChange() {
  * @private
  */
 function setCustomThemeStyle(themeInfo) {
-  var textColor = null;
-  var textColorLight = null;
-  var mvxFilter = null;
+  var textColor = '';
+  var textColorLight = '';
+  var mvxFilter = '';
   if (!themeInfo.usingDefaultTheme) {
     textColor = convertToRGBAColor(themeInfo.textColorRgba);
     textColorLight = convertToRGBAColor(themeInfo.textColorLightRgba);
@@ -470,8 +608,6 @@ function setCustomThemeStyle(themeInfo) {
   document.body.style.setProperty('--text-color-light', textColorLight);
   // Themes reuse the "light" text color for links too.
   document.body.style.setProperty('--text-color-link', textColorLight);
-  $(IDS.NOTIFICATION_CLOSE_BUTTON)
-      .style.setProperty('--theme-filter', mvxFilter);
 }
 
 
@@ -551,11 +687,10 @@ function reloadTiles() {
 
   var pages = ntpApiHandle.mostVisited;
   var cmds = [];
-  let maxNumTiles = configData.isCustomLinksEnabled ?
-      MAX_NUM_TILES_CUSTOM_LINKS :
-      MAX_NUM_TILES_MOST_VISITED;
+  let maxNumTiles = configData.isGooglePage ? MAX_NUM_TILES_CUSTOM_LINKS :
+                                              MAX_NUM_TILES_MOST_VISITED;
   for (var i = 0; i < Math.min(maxNumTiles, pages.length); ++i) {
-    cmds.push({cmd: 'tile', rid: pages[i].rid});
+    cmds.push({cmd: 'tile', rid: pages[i].rid, darkMode: useDarkChips});
   }
   cmds.push({cmd: 'show'});
 
@@ -569,10 +704,12 @@ function reloadTiles() {
  * @param {boolean} success True if the link was successfully added.
  */
 function onAddCustomLinkDone(success) {
-  if (success)
+  if (success) {
     showNotification(configData.translatedStrings.linkAddedMsg);
-  else
-    showErrorNotification(configData.translatedStrings.linkCantCreate);
+  } else {
+    showErrorNotification(
+        configData.translatedStrings.linkCantCreate, null, null);
+  }
   ntpApiHandle.logEvent(LOG_TYPE.NTP_CUSTOMIZE_SHORTCUT_DONE);
 }
 
@@ -584,10 +721,12 @@ function onAddCustomLinkDone(success) {
  * @param {boolean} success True if the link was successfully updated.
  */
 function onUpdateCustomLinkDone(success) {
-  if (success)
+  if (success) {
     showNotification(configData.translatedStrings.linkEditedMsg);
-  else
-    showErrorNotification(configData.translatedStrings.linkCantEdit);
+  } else {
+    showErrorNotification(
+        configData.translatedStrings.linkCantEdit, null, null);
+  }
 }
 
 
@@ -598,10 +737,12 @@ function onUpdateCustomLinkDone(success) {
  * @param {boolean} success True if the link was successfully deleted.
  */
 function onDeleteCustomLinkDone(success) {
-  if (success)
+  if (success) {
     showNotification(configData.translatedStrings.linkRemovedMsg);
-  else
-    showErrorNotification(configData.translatedStrings.linkCantRemove);
+  } else {
+    showErrorNotification(
+        configData.translatedStrings.linkCantRemove, null, null);
+  }
 }
 
 
@@ -612,17 +753,7 @@ function onDeleteCustomLinkDone(success) {
  */
 function showNotification(msg) {
   $(IDS.NOTIFICATION_MESSAGE).textContent = msg;
-
-  if (configData.isMDIconsEnabled && configData.isGooglePage) {
-    floatUpNotification($(IDS.NOTIFICATION), $(IDS.NOTIFICATION_CONTAINER));
-  } else {
-    var notification = $(IDS.NOTIFICATION);
-    notification.classList.remove(CLASSES.HIDE_NOTIFICATION);
-    notification.classList.remove(CLASSES.DELAYED_HIDE_NOTIFICATION);
-    notification.scrollTop;
-    notification.classList.add(CLASSES.DELAYED_HIDE_NOTIFICATION);
-  }
-
+  floatUpNotification($(IDS.NOTIFICATION), $(IDS.NOTIFICATION_CONTAINER));
   $(IDS.UNDO_LINK).focus();
 }
 
@@ -631,13 +762,8 @@ function showNotification(msg) {
  * Hides the Most Visited pop-up notification.
  */
 function hideNotification() {
-  if (configData.isMDIconsEnabled && configData.isGooglePage) {
-    floatDownNotification($(IDS.NOTIFICATION), $(IDS.NOTIFICATION_CONTAINER));
-  } else {
-    var notification = $(IDS.NOTIFICATION);
-    notification.classList.add(CLASSES.HIDE_NOTIFICATION);
-    notification.classList.remove(CLASSES.DELAYED_HIDE_NOTIFICATION);
-  }
+  floatDownNotification(
+      $(IDS.NOTIFICATION), $(IDS.NOTIFICATION_CONTAINER), /*showPromo=*/ true);
 }
 
 
@@ -669,73 +795,110 @@ function showErrorNotification(msg, linkName, linkOnClick) {
  * Animates the specified notification to float up. Automatically hides any
  * pre-existing notification and sets a delayed timer to hide the new
  * notification.
- * @param {!Element} notification The notification element.
- * @param {!Element} notificationContainer The notification container element.
+ * @param {?Element} notification The notification element.
+ * @param {?Element} notificationContainer The notification container element.
  */
 function floatUpNotification(notification, notificationContainer) {
-  // Show middle-slot promo if one is present.
-  if ($(IDS.PROMO) !== null) {
-    $(IDS.PROMO).classList.add(CLASSES.HIDE_NOTIFICATION);
+  if (!notification || !notificationContainer) {
+    return;
   }
 
-  // Hide pre-existing notification if it was different type. Clear timeout and
-  // replace it with the new timeout and new message if it was the same type.
+  // Hide any pre-existing notification.
   if (delayedHideNotification) {
-    if (delayedHideNotification.previousContainer === notificationContainer)
+    // Hide the current notification if it's a different type (i.e. error vs
+    // success). Otherwise, simply clear the notification timeout and reset it
+    // later.
+    if (currNotification === notificationContainer) {
       delayedHideNotification.clear();
-    else
+    } else {
       delayedHideNotification.trigger();
+    }
     delayedHideNotification = null;
   }
 
+  // Hide middle-slot promo if one is present.
+  let promo = $(IDS.PROMO);
+  if (promo) {
+    promo.classList.add(CLASSES.FLOAT_DOWN);
+    // Prevent keyboard focus once the promo is hidden.
+    promo.addEventListener('transitionend', (event) => {
+      if (event.propertyName === 'bottom' &&
+          promo.classList.contains(CLASSES.FLOAT_DOWN)) {
+        promo.classList.add(CLASSES.HIDE_NOTIFICATION);
+      }
+    }, {once: true});
+  }
+
   notification.classList.remove(CLASSES.HIDE_NOTIFICATION);
-  // Timeout is required for the "float up" transition to work. Modifying the
-  // "display" property prevents transitions from activating.
+  // Timeout is required for the "float" transition to work. Modifying the
+  // "display" property prevents transitions from activating for a brief period
+  // of time.
   window.setTimeout(() => {
     notificationContainer.classList.add(CLASSES.FLOAT_UP);
-  }, 20);
+  }, DISPLAY_TIMEOUT);
 
   // Automatically hide the notification after a period of time.
-  delayedHideNotification = createExecutableTimeout(() => {
-    floatDownNotification(notification, notificationContainer);
-  }, NOTIFICATION_TIMEOUT, notificationContainer);
+  delayedHideNotification = createExecutableTimeout((executedEarly) => {
+    // Early execution occurs if another notification should be shown. In this
+    // case, we do not want to re-show the promo yet.
+    floatDownNotification(notification, notificationContainer, !executedEarly);
+  }, NOTIFICATION_TIMEOUT);
+  currNotification = notificationContainer;
 }
 
 
 /**
  * Animates the pop-up notification to float down, and clears the timeout to
  * hide the notification.
- * @param {!Element} notification The notification element.
- * @param {!Element} notificationContainer The notification container element.
+ * @param {?Element} notification The notification element.
+ * @param {?Element} notificationContainer The notification container element.
+ * @param {boolean} showPromo Do show the promo if present.
  */
-function floatDownNotification(notification, notificationContainer) {
-  if (!notificationContainer.classList.contains(CLASSES.FLOAT_UP))
+function floatDownNotification(notification, notificationContainer, showPromo) {
+  if (!notification || !notificationContainer) {
     return;
+  }
 
-  // Hide middle-slot promo if one is present.
-  if ($(IDS.PROMO) !== null) {
-    $(IDS.PROMO).classList.remove(CLASSES.HIDE_NOTIFICATION);
+  if (!notificationContainer.classList.contains(CLASSES.FLOAT_UP)) {
+    return;
   }
 
   // Clear the timeout to hide the notification.
   if (delayedHideNotification) {
     delayedHideNotification.clear();
     delayedHideNotification = null;
+    currNotification = null;
+  }
+
+  if (showPromo) {
+    // Show middle-slot promo if one is present.
+    let promo = $(IDS.PROMO);
+    if (promo) {
+      promo.classList.remove(CLASSES.HIDE_NOTIFICATION);
+      // Timeout is required for the "float" transition to work. Modifying the
+      // "display" property prevents transitions from activating for a brief
+      // period of time.
+      window.setTimeout(() => {
+        promo.classList.remove(CLASSES.FLOAT_DOWN);
+      }, DISPLAY_TIMEOUT);
+    }
   }
 
   // Reset notification visibility once the animation is complete.
-  notificationContainer.classList.remove(CLASSES.FLOAT_UP);
-  let afterHide = (event) => {
-    if (event.propertyName === 'bottom') {
-      notification.classList.add(CLASSES.HIDE_NOTIFICATION);
-      notification.classList.remove(CLASSES.HAS_LINK);
-      notificationContainer.removeEventListener('transitionend', afterHide);
-    }
+  notificationContainer.addEventListener('transitionend', (event) => {
     // Blur the hidden items.
     $(IDS.UNDO_LINK).blur();
     $(IDS.RESTORE_ALL_LINK).blur();
-  };
-  notificationContainer.addEventListener('transitionend', afterHide);
+    if (notification.classList.contains(CLASSES.HAS_LINK)) {
+      notification.classList.remove(CLASSES.HAS_LINK);
+      $(IDS.ERROR_NOTIFICATION_LINK).blur();
+    }
+    // Hide the notification
+    if (!notification.classList.contains(CLASSES.FLOAT_UP)) {
+      notification.classList.add(CLASSES.HIDE_NOTIFICATION);
+    }
+  }, {once: true});
+  notificationContainer.classList.remove(CLASSES.FLOAT_UP);
 }
 
 
@@ -747,7 +910,7 @@ function onUndo() {
   hideNotification();
   // Focus on the omnibox after the notification is hidden.
   window.chrome.embeddedSearch.searchBox.startCapturingKeyStrokes();
-  if (configData.isCustomLinksEnabled) {
+  if (configData.isGooglePage) {
     ntpApiHandle.undoCustomLinkAction();
   } else if (lastBlacklistedTile != null) {
     ntpApiHandle.undoMostVisitedDeletion(lastBlacklistedTile);
@@ -763,7 +926,7 @@ function onRestoreAll() {
   hideNotification();
   // Focus on the omnibox after the notification is hidden.
   window.chrome.embeddedSearch.searchBox.startCapturingKeyStrokes();
-  if (configData.isCustomLinksEnabled) {
+  if (configData.isGooglePage) {
     ntpApiHandle.resetCustomLinks();
   } else {
     ntpApiHandle.undoAllMostVisitedDeletions();
@@ -821,8 +984,9 @@ function isFakeboxFocused() {
  * @return {boolean} True if the click occurred in an enabled fakebox.
  */
 function isFakeboxClick(event) {
-  return $(IDS.FAKEBOX).contains(event.target) &&
-      !$(IDS.FAKEBOX_MICROPHONE).contains(event.target);
+  return $(IDS.FAKEBOX).contains(/** @type HTMLElement */ (event.target)) &&
+      !$(IDS.FAKEBOX_MICROPHONE)
+           .contains(/** @type HTMLElement */ (event.target));
 }
 
 
@@ -841,8 +1005,9 @@ function setFakeboxVisibility(show) {
  */
 function registerKeyHandler(element, keycode, handler) {
   element.addEventListener('keydown', function(event) {
-    if (event.keyCode == keycode)
+    if (event.keyCode == keycode) {
       handler(event);
+    }
   });
 }
 
@@ -856,38 +1021,44 @@ function handlePostMessage(event) {
   var args = event.data;
   if (cmd === 'loaded') {
     tilesAreLoaded = true;
-    if (configData.isGooglePage && !$('one-google-loader')) {
-      // Load the OneGoogleBar script. It'll create a global variable name "og"
-      // which is a dict corresponding to the native OneGoogleBarData type.
-      // We do this only after all the tiles have loaded, to avoid slowing down
-      // the main page load.
-      var ogScript = document.createElement('script');
-      ogScript.id = 'one-google-loader';
-      ogScript.src = 'chrome-search://local-ntp/one-google.js';
-      document.body.appendChild(ogScript);
-      ogScript.onload = function() {
-        injectOneGoogleBar(og);
-      };
-    }
-    if (configData.isGooglePage && !$('promo-loader')) {
-      var promoScript = document.createElement('script');
-      promoScript.id = 'promo-loader';
-      promoScript.src = 'chrome-search://local-ntp/promo.js';
-      document.body.appendChild(promoScript);
-      promoScript.onload = function() {
-        injectPromo(promo);
-      };
-    }
-    if (configData.isCustomLinksEnabled) {
-      $(customBackgrounds.IDS.CUSTOM_LINKS_RESTORE_DEFAULT)
-          .classList.toggle(
-              customBackgrounds.CLASSES.OPTION_DISABLED,
-              !args.showRestoreDefault);
-      $(customBackgrounds.IDS.CUSTOM_LINKS_RESTORE_DEFAULT).tabIndex =
-          (args.showRestoreDefault ? 0 : -1);
+    if (configData.isGooglePage) {
+      // Show search suggestions if they were previously hidden.
+      if ($(IDS.SUGGESTIONS)) {
+        $(IDS.SUGGESTIONS).style.visibility = 'visible';
+      }
+      if (!$('one-google-loader')) {
+        // Load the OneGoogleBar script. It'll create a global variable name
+        // "og" which is a dict corresponding to the native OneGoogleBarData
+        // type. We do this only after all the tiles have loaded, to avoid
+        // slowing down the main page load.
+        var ogScript = document.createElement('script');
+        ogScript.id = 'one-google-loader';
+        ogScript.src = 'chrome-search://local-ntp/one-google.js';
+        document.body.appendChild(ogScript);
+        ogScript.onload = function() {
+          injectOneGoogleBar(og);
+        };
+      }
+      if (!$('promo-loader')) {
+        var promoScript = document.createElement('script');
+        promoScript.id = 'promo-loader';
+        promoScript.src = 'chrome-search://local-ntp/promo.js';
+        document.body.appendChild(promoScript);
+        promoScript.onload = function() {
+          injectPromo(promo);
+        };
+      }
+      if (!configData.hideShortcuts) {
+        $(customBackgrounds.IDS.CUSTOM_LINKS_RESTORE_DEFAULT)
+            .classList.toggle(
+                customBackgrounds.CLASSES.OPTION_DISABLED,
+                !args.showRestoreDefault);
+        $(customBackgrounds.IDS.CUSTOM_LINKS_RESTORE_DEFAULT).tabIndex =
+            (args.showRestoreDefault ? 0 : -1);
+      }
     }
   } else if (cmd === 'tileBlacklisted') {
-    if (configData.isCustomLinksEnabled) {
+    if (configData.isGooglePage) {
       showNotification(configData.translatedStrings.linkRemovedMsg);
     } else {
       showNotification(
@@ -897,21 +1068,7 @@ function handlePostMessage(event) {
 
     ntpApiHandle.deleteMostVisitedItem(args.tid);
   } else if (cmd === 'resizeDoodle') {
-    let width = args.width || null;
-    let height = args.height || null;
-    let duration = args.duration || '0s';
-    let iframe = $(IDS.LOGO_DOODLE_IFRAME);
-
-    var transitionCallback = function() {
-      iframe.removeEventListener('webkitTransitionEnd', transitionCallback);
-      iframe.contentWindow.postMessage(
-          {cmd: 'resizeComplete'}, 'https://www.google.com');
-    };
-    iframe.addEventListener('webkitTransitionEnd', transitionCallback, false);
-
-    document.body.style.setProperty('--logo-iframe-resize-duration', duration);
-    document.body.style.setProperty('--logo-iframe-height', height);
-    document.body.style.setProperty('--logo-iframe-width', width);
+    doodles.resizeDoodleHandler(args);
   } else if (cmd === 'startEditLink') {
     $(IDS.CUSTOM_LINKS_EDIT_IFRAME)
         .contentWindow.postMessage({cmd: 'linkData', tid: args.tid}, '*');
@@ -929,24 +1086,19 @@ function handlePostMessage(event) {
   }
 }
 
-
-/**
- * Enables Material Design styles for the Most Visited section. Implicitly
- * enables Material Design for the rest of NTP.
- */
-function enableMDIcons() {
-  $(IDS.MOST_VISITED).classList.add(CLASSES.MATERIAL_DESIGN_ICONS);
-  $(IDS.TILES).classList.add(CLASSES.MATERIAL_DESIGN_ICONS);
-  enableMD();
-  animations.addRippleAnimations();
-}
-
-
-/**
- * Enables Material Design styles for all NTP components except Most Visited.
- */
-function enableMD() {
-  document.body.classList.add(CLASSES.MATERIAL_DESIGN);
+function showSearchSuggestions() {
+  // Inject search suggestions as early as possible to avoid shifting of other
+  // elements.
+  if (!$('search-suggestions-loader')) {
+    var ssScript = document.createElement('script');
+    ssScript.id = 'search-suggestions-loader';
+    ssScript.src = 'chrome-search://local-ntp/search-suggestions.js';
+    ssScript.async = false;
+    document.body.appendChild(ssScript);
+    ssScript.onload = function() {
+      injectSearchSuggestions(searchSuggestions);
+    };
+  }
 }
 
 
@@ -963,7 +1115,7 @@ function init() {
 
   // Hide notifications after fade out, so we can't focus on links via keyboard.
   $(IDS.NOTIFICATION).addEventListener('transitionend', (event) => {
-    if (event.properyName === 'opacity') {
+    if (event.propertyName === 'opacity') {
       hideNotification();
     }
   });
@@ -982,14 +1134,12 @@ function init() {
   registerKeyHandler(restoreAllLink, KEYCODE.ENTER, onRestoreAll);
   registerKeyHandler(restoreAllLink, KEYCODE.SPACE, onRestoreAll);
   restoreAllLink.textContent =
-      (configData.isCustomLinksEnabled ?
+      (configData.isGooglePage ?
            configData.translatedStrings.restoreDefaultLinks :
            configData.translatedStrings.restoreThumbnailsShort);
 
   $(IDS.ATTRIBUTION_TEXT).textContent =
       configData.translatedStrings.attributionIntro;
-
-  $(IDS.NOTIFICATION_CLOSE_BUTTON).addEventListener('click', hideNotification);
 
   var embeddedSearchApiHandle = window.chrome.embeddedSearch;
 
@@ -1002,126 +1152,92 @@ function init() {
   var searchboxApiHandle = embeddedSearchApiHandle.searchBox;
 
   if (configData.isGooglePage) {
-    if (configData.isMDIconsEnabled || configData.isCustomLinksEnabled) {
-      enableMDIcons();
-    } else if (configData.isMDUIEnabled) {
-      enableMD();
+    showSearchSuggestions();
+    animations.addRippleAnimations();
+
+    ntpApiHandle.onaddcustomlinkdone = onAddCustomLinkDone;
+    ntpApiHandle.onupdatecustomlinkdone = onUpdateCustomLinkDone;
+    ntpApiHandle.ondeletecustomlinkdone = onDeleteCustomLinkDone;
+
+    customBackgrounds.init(showErrorNotification, hideNotification);
+
+    if (configData.alternateFakebox) {
+      document.body.classList.add(CLASSES.ALTERNATE_FAKEBOX);
+    }
+    if (configData.fakeboxSearchIcon) {
+      document.body.classList.add(CLASSES.SHOW_FAKEBOX_ICON);
     }
 
-    if (configData.isCustomLinksEnabled) {
-      ntpApiHandle.onaddcustomlinkdone = onAddCustomLinkDone;
-      ntpApiHandle.onupdatecustomlinkdone = onUpdateCustomLinkDone;
-      ntpApiHandle.ondeletecustomlinkdone = onDeleteCustomLinkDone;
-    }
+    if (configData.removeFakebox) {
+      document.body.classList.add(CLASSES.REMOVE_FAKEBOX);
+    } else {
+      // Set up the fakebox (which only exists on the Google NTP).
+      ntpApiHandle.oninputstart = onInputStart;
+      ntpApiHandle.oninputcancel = onInputCancel;
 
-    if (configData.isCustomBackgroundsEnabled ||
-        configData.isCustomLinksEnabled) {
-      customBackgrounds.init(showErrorNotification, hideNotification);
-    }
+      if (ntpApiHandle.isInputInProgress) {
+        onInputStart();
+      }
 
+      $(IDS.FAKEBOX_TEXT).textContent =
+          configData.translatedStrings.searchboxPlaceholder;
 
-    // Set up the fakebox (which only exists on the Google NTP).
-    ntpApiHandle.oninputstart = onInputStart;
-    ntpApiHandle.oninputcancel = onInputCancel;
+      if (!iframesAndVoiceSearchDisabledForTesting) {
+        speech.init(
+            configData.googleBaseUrl, configData.translatedStrings,
+            $(IDS.FAKEBOX_MICROPHONE), searchboxApiHandle);
+      }
 
-    if (ntpApiHandle.isInputInProgress) {
-      onInputStart();
-    }
+      // Listener for updating the key capture state.
+      document.body.onmousedown = function(event) {
+        if (isFakeboxClick(event)) {
+          searchboxApiHandle.startCapturingKeyStrokes();
+        } else if (isFakeboxFocused()) {
+          searchboxApiHandle.stopCapturingKeyStrokes();
+        }
+      };
+      searchboxApiHandle.onkeycapturechange = function() {
+        setFakeboxFocus(searchboxApiHandle.isKeyCaptureEnabled);
+      };
+      var inputbox = $(IDS.FAKEBOX_INPUT);
+      inputbox.onpaste = function(event) {
+        event.preventDefault();
+        // Send pasted text to Omnibox.
+        var text = event.clipboardData.getData('text/plain');
+        if (text) {
+          searchboxApiHandle.paste(text);
+        }
+      };
+      inputbox.ondrop = function(event) {
+        event.preventDefault();
+        var text = event.dataTransfer.getData('text/plain');
+        if (text) {
+          searchboxApiHandle.paste(text);
+        }
+        setFakeboxDragFocus(false);
+      };
+      inputbox.ondragenter = function() {
+        setFakeboxDragFocus(true);
+      };
+      inputbox.ondragleave = function() {
+        setFakeboxDragFocus(false);
+      };
+      utils.disableOutlineOnMouseClick($(IDS.FAKEBOX_MICROPHONE));
 
-    $(IDS.FAKEBOX_TEXT).textContent =
-        configData.translatedStrings.searchboxPlaceholder;
-
-    if (!iframesAndVoiceSearchDisabledForTesting) {
-      speech.init(
-          configData.googleBaseUrl, configData.translatedStrings,
-          $(IDS.FAKEBOX_MICROPHONE), searchboxApiHandle);
-    }
-
-    // Listener for updating the key capture state.
-    document.body.onmousedown = function(event) {
-      if (isFakeboxClick(event))
-        searchboxApiHandle.startCapturingKeyStrokes();
-      else if (isFakeboxFocused())
-        searchboxApiHandle.stopCapturingKeyStrokes();
-    };
-    searchboxApiHandle.onkeycapturechange = function() {
+      // Update the fakebox style to match the current key capturing state.
       setFakeboxFocus(searchboxApiHandle.isKeyCaptureEnabled);
-    };
-    var inputbox = $(IDS.FAKEBOX_INPUT);
-    inputbox.onpaste = function(event) {
-      event.preventDefault();
-      // Send pasted text to Omnibox.
-      var text = event.clipboardData.getData('text/plain');
-      if (text)
-        searchboxApiHandle.paste(text);
-    };
-    inputbox.ondrop = function(event) {
-      event.preventDefault();
-      var text = event.dataTransfer.getData('text/plain');
-      if (text) {
-        searchboxApiHandle.paste(text);
+      // Also tell the browser that we're capturing, otherwise it's possible
+      // that both fakebox and Omnibox have visible focus at the same time, see
+      // crbug.com/792850.
+      if (searchboxApiHandle.isKeyCaptureEnabled) {
+        searchboxApiHandle.startCapturingKeyStrokes();
       }
-      setFakeboxDragFocus(false);
-    };
-    inputbox.ondragenter = function() {
-      setFakeboxDragFocus(true);
-    };
-    inputbox.ondragleave = function() {
-      setFakeboxDragFocus(false);
-    };
-    utils.disableOutlineOnMouseClick($(IDS.FAKEBOX_MICROPHONE));
-
-    // Update the fakebox style to match the current key capturing state.
-    setFakeboxFocus(searchboxApiHandle.isKeyCaptureEnabled);
-    // Also tell the browser that we're capturing, otherwise it's possible that
-    // both fakebox and Omnibox have visible focus at the same time, see
-    // crbug.com/792850.
-    if (searchboxApiHandle.isKeyCaptureEnabled) {
-      searchboxApiHandle.startCapturingKeyStrokes();
     }
 
-    // Load the Doodle. After the first request completes (getting cached
-    // data), issue a second request for fresh Doodle data.
-    loadDoodle(/*v=*/null, function(ddl) {
-      if (ddl === null) {
-        // Got no ddl object at all, the feature is probably disabled. Just show
-        // the logo.
-        showLogoOrDoodle(/*fromCache=*/true);
-        return;
-      }
+    doodles.init();
 
-      // Got a (possibly empty) ddl object. Show logo or doodle.
-      targetDoodle.image = ddl.image || null;
-      targetDoodle.metadata = ddl.metadata || null;
-      showLogoOrDoodle(/*fromCache=*/true);
-      // Never hide an interactive doodle if it was already shown.
-      if (ddl.metadata && (ddl.metadata.type === LOGO_TYPE.INTERACTIVE))
-        return;
-      // If we got a valid ddl object (from cache), load a fresh one.
-      if (ddl.v !== null) {
-        loadDoodle(ddl.v, function(ddl2) {
-          if (ddl2.usable) {
-            targetDoodle.image = ddl2.image || null;
-            targetDoodle.metadata = ddl2.metadata || null;
-            fadeToLogoOrDoodle();
-          }
-        });
-      }
-    });
-
-    // Set up doodle notifier (but it may be invisible).
-    var doodleNotifier = $(IDS.LOGO_DOODLE_NOTIFIER);
-    doodleNotifier.title = configData.translatedStrings.clickToViewDoodle;
-    doodleNotifier.addEventListener('click', function(e) {
-      e.preventDefault();
-      var state = window.history.state || {};
-      state.notheme = true;
-      window.history.replaceState(state, document.title);
-      onThemeChange();
-      if (e.detail === 0) {  // Activated by keyboard.
-        $(IDS.LOGO_DOODLE_BUTTON).focus();
-      }
-    });
+    $(customBackgrounds.IDS.EDIT_BG_TEXT).textContent =
+        configData.translatedStrings.customizeButtonLabel;
   } else {
     document.body.classList.add(CLASSES.NON_GOOGLE_PAGE);
   }
@@ -1138,6 +1254,8 @@ function init() {
     createIframes();
   }
 
+  utils.setPlatformClass(document.body);
+  utils.disableOutlineOnMouseClick($(customBackgrounds.IDS.EDIT_BG));
   document.body.classList.add(CLASSES.INITED);
 }
 
@@ -1151,10 +1269,12 @@ function createIframes() {
 
   var searchboxApiHandle = window.chrome.embeddedSearch.searchBox;
 
-  if (searchboxApiHandle.rtl)
+  if (searchboxApiHandle.rtl) {
     args.push('rtl=1');
-  if (NTP_DESIGN.numTitleLines > 1)
+  }
+  if (NTP_DESIGN.numTitleLines > 1) {
     args.push('ntl=' + NTP_DESIGN.numTitleLines);
+  }
 
   args.push(
       'title=' +
@@ -1162,11 +1282,7 @@ function createIframes() {
   args.push('removeTooltip=' +
       encodeURIComponent(configData.translatedStrings.removeThumbnailTooltip));
 
-  if (configData.isMDIconsEnabled) {
-    args.push('enableMD=1');
-  }
-
-  if (configData.isCustomLinksEnabled) {
+  if (configData.isGooglePage) {
     args.push('enableCustomLinks=1');
     args.push(
         'addLink=' +
@@ -1188,16 +1304,17 @@ function createIframes() {
   $(IDS.TILES).appendChild(iframe);
 
   iframe.onload = function() {
-    reloadTiles();
     sendThemeInfoToMostVisitedIframe();
+    reloadTiles();
   };
 
-  if (configData.isCustomLinksEnabled) {
+  if (configData.isGooglePage) {
     // Collect arguments for the edit custom link iframe.
     let clArgs = [];
 
-    if (searchboxApiHandle.rtl)
+    if (searchboxApiHandle.rtl) {
       clArgs.push('rtl=1');
+    }
 
     clArgs.push(
         'addTitle=' +
@@ -1232,8 +1349,18 @@ function createIframes() {
     clIframe.src = 'chrome-search://most-visited/edit.html?' + clArgs.join('&');
     let clIframeDialog = document.createElement('dialog');
     clIframeDialog.id = IDS.CUSTOM_LINKS_EDIT_IFRAME_DIALOG;
+    clIframeDialog.classList.add(CLASSES.CUSTOMIZE_DIALOG);
     clIframeDialog.appendChild(clIframe);
     document.body.appendChild(clIframeDialog);
+
+    clIframe.onload = () => {
+      sendThemeInfoToEditCustomLinkIframe();
+    };
+
+    if (configData.hideShortcuts) {
+      $(IDS.TILES).style.display = 'none';
+      clIframeDialog.style.display = 'none';
+    }
   }
 
   window.addEventListener('message', handlePostMessage);
@@ -1253,13 +1380,50 @@ function listen() {
  * doesn't block the main page load.
  */
 function injectPromo(promo) {
-  if (promo.promoHtml == '')
+  if (promo.promoHtml == '') {
     return;
+  }
 
   let promoContainer = document.createElement('div');
   promoContainer.id = IDS.PROMO;
   promoContainer.innerHTML += promo.promoHtml;
   $(IDS.NTP_CONTENTS).appendChild(promoContainer);
+
+  if (promo.promoLogUrl) {
+    navigator.sendBeacon(promo.promoLogUrl);
+  }
+
+  ntpApiHandle.logEvent(LOG_TYPE.NTP_MIDDLE_SLOT_PROMO_SHOWN);
+
+  let links = promoContainer.getElementsByTagName('a');
+  if (links[0]) {
+    links[0].onclick = function() {
+      ntpApiHandle.logEvent(LOG_TYPE.NTP_MIDDLE_SLOT_PROMO_LINK_CLICKED);
+    };
+  }
+}
+
+
+/**
+ * Injects search suggestions into the page. Called *synchronously* with cached
+ * data as not to cause shifting of the most visited tiles.
+ */
+function injectSearchSuggestions(suggestions) {
+  if (suggestions.suggestionsHtml === '') {
+    return;
+  }
+
+  let suggestionsContainer = document.createElement('div');
+  suggestionsContainer.id = IDS.SUGGESTIONS;
+  suggestionsContainer.style.visibility = 'hidden';
+  suggestionsContainer.innerHTML += suggestions.suggestionsHtml;
+  $(IDS.USER_CONTENT).insertAdjacentElement('afterbegin', suggestionsContainer);
+
+  let endOfBodyScript = document.createElement('script');
+  endOfBodyScript.type = 'text/javascript';
+  endOfBodyScript.appendChild(
+      document.createTextNode(suggestions.suggestionsEndOfBodyScript));
+  document.body.appendChild(endOfBodyScript);
 }
 
 
@@ -1300,337 +1464,13 @@ function injectOneGoogleBar(ogb) {
 }
 
 
-/** Loads the Doodle. On success, the loaded script declares a global variable
- * ddl, which onload() receives as its single argument. On failure, onload() is
- * called with null as the argument. If v is null, then the call requests a
- * cached logo. If non-null, it must be the ddl.v of a previous request for a
- * cached logo, and the corresponding fresh logo is returned.
- * @param {?number} v
- * @param {function(?{v, usable, image, metadata})} onload
- */
-var loadDoodle = function(v, onload) {
-  var ddlScript = document.createElement('script');
-  ddlScript.src = 'chrome-search://local-ntp/doodle.js';
-  if (v !== null)
-    ddlScript.src += '?v=' + v;
-  ddlScript.onload = function() {
-    onload(ddl);
-  };
-  ddlScript.onerror = function() {
-    onload(null);
-  };
-  // TODO(treib,sfiera): Add a timeout in case something goes wrong?
-  document.body.appendChild(ddlScript);
-};
-
-
-/** Handles the response of a doodle impression ping, i.e. stores the
- * appropriate interactionLogUrl or onClickUrlExtraParams.
- *
- * @param {!Object} ddllog Response object from the ddllog ping.
- * @param {!boolean} isAnimated
- */
-var handleDdllogResponse = function(ddllog, isAnimated) {
-  if (ddllog && ddllog.interaction_log_url) {
-    let interactionLogUrl =
-        new URL(ddllog.interaction_log_url, configData.googleBaseUrl);
-    if (isAnimated) {
-      targetDoodle.animatedInteractionLogUrl = interactionLogUrl;
-    } else {
-      targetDoodle.staticInteractionLogUrl = interactionLogUrl;
-    }
-    lastDdllogResponse = 'interaction_log_url ' + ddllog.interaction_log_url;
-  } else if (ddllog && ddllog.target_url_params) {
-    targetDoodle.onClickUrlExtraParams =
-        new URLSearchParams(ddllog.target_url_params);
-    lastDdllogResponse = 'target_url_params ' + ddllog.target_url_params;
-  } else {
-    console.log('Invalid or missing ddllog response:');
-    console.log(ddllog);
-  }
-};
-
-
-/** Logs a doodle impression at the given logUrl, and handles the response via
- * handleDdllogResponse.
- *
- * @param {!string} logUrl
- * @param {!boolean} isAnimated
- */
-var logDoodleImpression = function(logUrl, isAnimated) {
-  lastDdllogResponse = '';
-  fetch(logUrl, {credentials: 'omit'})
-      .then(function(response) {
-        return response.text();
-      })
-      .then(function(text) {
-        // Remove the optional XSS preamble.
-        const preamble = ')]}\'';
-        if (text.startsWith(preamble)) {
-          text = text.substr(preamble.length);
-        }
-        try {
-          var json = JSON.parse(text);
-        } catch (error) {
-          console.log('Failed to parse doodle impression response as JSON:');
-          console.log(error);
-          return;
-        }
-        handleDdllogResponse(json.ddllog, isAnimated);
-      })
-      .catch(function(error) {
-        console.log('Error logging doodle impression to "' + logUrl + '":');
-        console.log(error);
-      })
-      .finally(function() {
-        ++numDdllogResponsesReceived;
-        if (onDdllogResponse !== null) {
-          onDdllogResponse();
-        }
-      });
-};
-
-
-/** Returns true if the target doodle is currently visible. If |image| is null,
- * returns true when the default logo is visible; if non-null, checks that it
- * matches the doodle that is currently visible. Here, "visible" means
- * fully-visible or fading in.
- *
- * @returns {boolean}
- */
-var isDoodleCurrentlyVisible = function() {
-  var haveDoodle = ($(IDS.LOGO_DOODLE).classList.contains(CLASSES.SHOW_LOGO));
-  var wantDoodle =
-      (targetDoodle.image !== null) && (targetDoodle.metadata !== null);
-  if (!haveDoodle || !wantDoodle) {
-    return haveDoodle === wantDoodle;
-  }
-
-  // Have a visible doodle and a target doodle. Test that they match.
-  if (targetDoodle.metadata.type === LOGO_TYPE.INTERACTIVE) {
-    var logoDoodleIframe = $(IDS.LOGO_DOODLE_IFRAME);
-    return logoDoodleIframe.classList.contains(CLASSES.SHOW_LOGO) &&
-        (logoDoodleIframe.src === targetDoodle.metadata.fullPageUrl);
-  } else {
-    var logoDoodleImage = $(IDS.LOGO_DOODLE_IMAGE);
-    var logoDoodleButton = $(IDS.LOGO_DOODLE_BUTTON);
-    return logoDoodleButton.classList.contains(CLASSES.SHOW_LOGO) &&
-        ((logoDoodleImage.src === targetDoodle.image) ||
-         (logoDoodleImage.src === targetDoodle.metadata.animatedUrl));
-  }
-};
-
-
-/** The image and metadata that should be shown, according to the latest fetch.
- * After a logo fades out, onDoodleFadeOutComplete fades in a logo according to
- * targetDoodle.
- */
-var targetDoodle = {
-  image: null,
-  metadata: null,
-  // The log URLs and params may be filled with the response from the
-  // corresponding impression log URL.
-  staticInteractionLogUrl: null,
-  animatedInteractionLogUrl: null,
-  onClickUrlExtraParams: null,
-};
-
-
-var getDoodleTargetUrl = function() {
-  let url = new URL(targetDoodle.metadata.onClickUrl);
-  if (targetDoodle.onClickUrlExtraParams) {
-    for (var param of targetDoodle.onClickUrlExtraParams) {
-      url.searchParams.append(param[0], param[1]);
-    }
-  }
-  return url;
-};
-
-
-var showLogoOrDoodle = function(fromCache) {
-  const cachedInteractiveOffline = fromCache &&
-      targetDoodle.metadata !== null &&
-      targetDoodle.metadata.type == LOGO_TYPE.INTERACTIVE &&
-      !window.navigator.onLine;
-  if (targetDoodle.metadata !== null && !cachedInteractiveOffline) {
-    applyDoodleMetadata();
-    if (targetDoodle.metadata.type === LOGO_TYPE.INTERACTIVE) {
-      $(IDS.LOGO_DOODLE_BUTTON).classList.remove(CLASSES.SHOW_LOGO);
-      $(IDS.LOGO_DOODLE_IFRAME).classList.add(CLASSES.SHOW_LOGO);
-    } else {
-      $(IDS.LOGO_DOODLE_IMAGE).src = targetDoodle.image;
-      $(IDS.LOGO_DOODLE_BUTTON).classList.add(CLASSES.SHOW_LOGO);
-      $(IDS.LOGO_DOODLE_IFRAME).classList.remove(CLASSES.SHOW_LOGO);
-
-      // Log the impression in Chrome metrics.
-      var isCta = !!targetDoodle.metadata.animatedUrl;
-      var eventType = isCta ?
-          (fromCache ? LOG_TYPE.NTP_CTA_LOGO_SHOWN_FROM_CACHE :
-                       LOG_TYPE.NTP_CTA_LOGO_SHOWN_FRESH) :
-          (fromCache ? LOG_TYPE.NTP_STATIC_LOGO_SHOWN_FROM_CACHE :
-                       LOG_TYPE.NTP_STATIC_LOGO_SHOWN_FRESH);
-      ntpApiHandle.logEvent(eventType);
-
-      // Ping the proper impression logging URL if it exists.
-      var logUrl = isCta ? targetDoodle.metadata.ctaLogUrl :
-                           targetDoodle.metadata.logUrl;
-      if (logUrl) {
-        logDoodleImpression(logUrl, /*isAnimated=*/false);
-      }
-    }
-    $(IDS.LOGO_DOODLE).classList.add(CLASSES.SHOW_LOGO);
-  } else {
-    // No doodle. Just show the default logo.
-    $(IDS.LOGO_DEFAULT).classList.add(CLASSES.SHOW_LOGO);
-  }
-};
-
-
-/**
- * Starts fading out the given element, which should be either the default logo
- * or the doodle.
- *
- * @param {HTMLElement} element
- */
-var startFadeOut = function(element) {
-  if (!element.classList.contains(CLASSES.SHOW_LOGO)) {
-    return;
-  }
-
-  // Compute style now, to ensure that the transition from 1 -> 0 is properly
-  // recognized. Otherwise, if a 0 -> 1 -> 0 transition is too fast, the
-  // element might stay invisible instead of appearing then fading out.
-  window.getComputedStyle(element).opacity;
-
-  element.classList.add(CLASSES.FADE);
-  element.classList.remove(CLASSES.SHOW_LOGO);
-  element.addEventListener('transitionend', onDoodleFadeOutComplete);
-};
-
-
-/**
- * Integrates a fresh doodle into the page as appropriate. If the correct logo
- * or doodle is already shown, just updates the metadata. Otherwise, initiates
- * a fade from the currently-shown logo/doodle to the new one.
- */
-var fadeToLogoOrDoodle = function() {
-  // If the image is already visible, there's no need to start a fade-out.
-  // However, metadata may have changed, so update the doodle's alt text and
-  // href, if applicable.
-  if (isDoodleCurrentlyVisible()) {
-    if (targetDoodle.metadata !== null) {
-      applyDoodleMetadata();
-    }
-    return;
-  }
-
-  // It's not the same doodle. Clear any loging URLs/params we might have.
-  targetDoodle.staticInteractionLogUrl = null;
-  targetDoodle.animatedInteractionLogUrl = null;
-  targetDoodle.onClickUrlExtraParams = null;
-
-  // Start fading out the current logo or doodle. onDoodleFadeOutComplete will
-  // apply the change when the fade-out finishes.
-  startFadeOut($(IDS.LOGO_DEFAULT));
-  startFadeOut($(IDS.LOGO_DOODLE));
-};
-
-
-var onDoodleFadeOutComplete = function(e) {
-  // Fade-out finished. Start fading in the appropriate logo.
-  $(IDS.LOGO_DOODLE).classList.add(CLASSES.FADE);
-  $(IDS.LOGO_DEFAULT).classList.add(CLASSES.FADE);
-  showLogoOrDoodle(/*fromCache=*/false);
-
-  this.removeEventListener('transitionend', onDoodleFadeOutComplete);
-};
-
-
-var applyDoodleMetadata = function() {
-  var logoDoodleButton = $(IDS.LOGO_DOODLE_BUTTON);
-  var logoDoodleImage = $(IDS.LOGO_DOODLE_IMAGE);
-  var logoDoodleIframe = $(IDS.LOGO_DOODLE_IFRAME);
-
-  switch (targetDoodle.metadata.type) {
-    case LOGO_TYPE.SIMPLE:
-      logoDoodleImage.title = targetDoodle.metadata.altText;
-
-      // On click, navigate to the target URL.
-      logoDoodleButton.onclick = function() {
-        // Log the click in Chrome metrics.
-        ntpApiHandle.logEvent(LOG_TYPE.NTP_STATIC_LOGO_CLICKED);
-
-        // Ping the static interaction_log_url if there is one.
-        if (targetDoodle.staticInteractionLogUrl) {
-          navigator.sendBeacon(targetDoodle.staticInteractionLogUrl);
-          targetDoodle.staticInteractionLogUrl = null;
-        }
-
-        window.location = getDoodleTargetUrl();
-      };
-      break;
-
-    case LOGO_TYPE.ANIMATED:
-      logoDoodleImage.title = targetDoodle.metadata.altText;
-      // The CTA image is currently shown; on click, show the animated one.
-      logoDoodleButton.onclick = function(e) {
-        e.preventDefault();
-
-        // Log the click in Chrome metrics.
-        ntpApiHandle.logEvent(LOG_TYPE.NTP_CTA_LOGO_CLICKED);
-
-        // Ping the static interaction_log_url if there is one.
-        if (targetDoodle.staticInteractionLogUrl) {
-          navigator.sendBeacon(targetDoodle.staticInteractionLogUrl);
-          targetDoodle.staticInteractionLogUrl = null;
-        }
-
-        // Once the animated image loads, ping the impression log URL.
-        if (targetDoodle.metadata.logUrl) {
-          logoDoodleImage.onload = function() {
-            logDoodleImpression(
-                targetDoodle.metadata.logUrl, /*isAnimated=*/true);
-          };
-        }
-        logoDoodleImage.src = targetDoodle.metadata.animatedUrl;
-
-        // When the animated image is clicked, navigate to the target URL.
-        logoDoodleButton.onclick = function() {
-          // Log the click in Chrome metrics.
-          ntpApiHandle.logEvent(LOG_TYPE.NTP_ANIMATED_LOGO_CLICKED);
-
-          // Ping the animated interaction_log_url if there is one.
-          if (targetDoodle.animatedInteractionLogUrl) {
-            navigator.sendBeacon(targetDoodle.animatedInteractionLogUrl);
-            targetDoodle.animatedInteractionLogUrl = null;
-          }
-
-          window.location = getDoodleTargetUrl();
-        };
-      };
-      break;
-
-    case LOGO_TYPE.INTERACTIVE:
-      logoDoodleIframe.title = targetDoodle.metadata.altText;
-      logoDoodleIframe.src = targetDoodle.metadata.fullPageUrl;
-      document.body.style.setProperty(
-          '--logo-iframe-width', targetDoodle.metadata.iframeWidthPx + 'px');
-      document.body.style.setProperty(
-          '--logo-iframe-height', targetDoodle.metadata.iframeHeightPx + 'px');
-      document.body.style.setProperty(
-          '--logo-iframe-initial-height',
-          targetDoodle.metadata.iframeHeightPx + 'px');
-      break;
-  }
-};
-
-
 return {
   init: init,  // Exposed for testing.
   listen: listen,
-  disableIframesAndVoiceSearchForTesting: disableIframesAndVoiceSearchForTesting
+  disableIframesAndVoiceSearchForTesting:
+      disableIframesAndVoiceSearchForTesting,
+  overrideExecutableTimeoutForTesting: overrideExecutableTimeoutForTesting
 };
-
 }
 
 if (!window.localNTPUnitTest) {

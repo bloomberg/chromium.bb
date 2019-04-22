@@ -12,6 +12,7 @@
 
 #include "base/barrier_closure.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/guid.h"
@@ -278,10 +279,53 @@ void ServiceWorkerContextWrapper::OnRegistrationCompleted(
     observer.OnRegistrationCompleted(scope);
 }
 
+void ServiceWorkerContextWrapper::OnReportConsoleMessage(
+    int64_t version_id,
+    const ConsoleMessage& message) {
+  for (auto& observer : observer_list_)
+    observer.OnReportConsoleMessage(version_id, message);
+}
+
 void ServiceWorkerContextWrapper::OnNoControllees(int64_t version_id,
                                                   const GURL& scope) {
   for (auto& observer : observer_list_)
     observer.OnNoControllees(version_id, scope);
+}
+
+void ServiceWorkerContextWrapper::OnRunningStateChanged(
+    int64_t version_id,
+    EmbeddedWorkerStatus running_status) {
+  // When |running_status| is RUNNING/STOPPING, the service
+  // worker is doing some actual tasks, so we consider the service worker is
+  // in a running status.
+  //
+  // Although the service work does have some tasks being processed in the stage
+  // of STARTING, some resources of it may have not been allocated yet,
+  // e.g. process id. If STARTING is considered as running, then the observer of
+  // ServiceWorkerContextWrapper may get the unexpected information of this
+  // service worker after being notified due to the absence of the resoureces.
+  //
+  // TODO(minggang): Create a new observer to listen to the events when the
+  // process of the service worker is allocated/released, instead of using the
+  // running status of the embedded worker.
+  if (running_status == EmbeddedWorkerStatus::RUNNING) {
+    running_service_workers_.emplace(version_id);
+    for (auto& observer : observer_list_) {
+      observer.OnVersionRunningStatusChanged(this, version_id,
+                                             true /* is_running */);
+    }
+    return;
+  }
+
+  if (running_service_workers_.find(version_id) !=
+          running_service_workers_.end() &&
+      running_status == EmbeddedWorkerStatus::STOPPED) {
+    running_service_workers_.erase(version_id);
+    for (auto& observer : observer_list_) {
+      observer.OnVersionRunningStatusChanged(this, version_id,
+                                             false /* is_running */);
+    }
+  }
 }
 
 void ServiceWorkerContextWrapper::OnVersionStateChanged(
@@ -356,6 +400,8 @@ bool ServiceWorkerContextWrapper::StartingExternalRequest(
     int64_t service_worker_version_id,
     const std::string& request_uuid) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!context())
+    return false;
   ServiceWorkerVersion* version =
       context()->GetLiveVersion(service_worker_version_id);
   if (!version)
@@ -367,6 +413,8 @@ bool ServiceWorkerContextWrapper::FinishedExternalRequest(
     int64_t service_worker_version_id,
     const std::string& request_uuid) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!context())
+    return false;
   ServiceWorkerVersion* version =
       context()->GetLiveVersion(service_worker_version_id);
   if (!version)
@@ -417,15 +465,24 @@ void ServiceWorkerContextWrapper::DeleteForOrigin(const GURL& origin,
       base::BindOnce(&StatusCodeToBoolCallbackAdapter, std::move(callback)));
 }
 
+void ServiceWorkerContextWrapper::PerformStorageCleanup(
+    base::OnceClosure callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!context_core_) {
+    std::move(callback).Run();
+    return;
+  }
+  context()->PerformStorageCleanup(std::move(callback));
+}
+
 void ServiceWorkerContextWrapper::CheckHasServiceWorker(
     const GURL& url,
-    const GURL& other_url,
     CheckHasServiceWorkerCallback callback) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&ServiceWorkerContextWrapper::CheckHasServiceWorker,
-                       this, url, other_url, std::move(callback)));
+                       this, url, std::move(callback)));
     return;
   }
   if (!context_core_) {
@@ -436,7 +493,7 @@ void ServiceWorkerContextWrapper::CheckHasServiceWorker(
     return;
   }
   context()->CheckHasServiceWorker(
-      net::SimplifyUrlForRequest(url), net::SimplifyUrlForRequest(other_url),
+      net::SimplifyUrlForRequest(url),
       base::BindOnce(&ServiceWorkerContextWrapper::DidCheckHasServiceWorker,
                      this, std::move(callback)));
 }
@@ -470,6 +527,25 @@ void ServiceWorkerContextWrapper::StartWorkerForScope(
                      std::move(failure_callback)));
 }
 
+void ServiceWorkerContextWrapper::StartServiceWorkerAndDispatchMessage(
+    const GURL& scope,
+    blink::TransferableMessage message,
+    ResultCallback result_callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  if (!context_core_) {
+    std::move(result_callback).Run(false);
+    return;
+  }
+
+  FindReadyRegistrationForScope(
+      net::SimplifyUrlForRequest(scope),
+      base::BindOnce(
+          &ServiceWorkerContextWrapper::DidFindRegistrationForMessageDispatch,
+          this, std::move(message), scope, std::move(result_callback),
+          false /* is_long_running_message */));
+}
+
 void ServiceWorkerContextWrapper::
     StartServiceWorkerAndDispatchLongRunningMessage(
         const GURL& scope,
@@ -490,16 +566,17 @@ void ServiceWorkerContextWrapper::
 
   FindReadyRegistrationForScope(
       net::SimplifyUrlForRequest(scope),
-      base::BindOnce(&ServiceWorkerContextWrapper::
-                         DidFindRegistrationForLongRunningMessage,
-                     this, std::move(message), scope,
-                     std::move(result_callback)));
+      base::BindOnce(
+          &ServiceWorkerContextWrapper::DidFindRegistrationForMessageDispatch,
+          this, std::move(message), scope, std::move(result_callback),
+          true /* is_long_running_message */));
 }
 
-void ServiceWorkerContextWrapper::DidFindRegistrationForLongRunningMessage(
+void ServiceWorkerContextWrapper::DidFindRegistrationForMessageDispatch(
     blink::TransferableMessage message,
     const GURL& source_origin,
     ResultCallback result_callback,
+    bool is_long_running_message,
     blink::ServiceWorkerStatusCode service_worker_status,
     scoped_refptr<ServiceWorkerRegistration> registration) {
   if (service_worker_status != blink::ServiceWorkerStatusCode::kOk) {
@@ -509,18 +586,21 @@ void ServiceWorkerContextWrapper::DidFindRegistrationForLongRunningMessage(
     return;
   }
   registration->active_version()->StartWorker(
-      ServiceWorkerMetrics::EventType::LONG_RUNNING_MESSAGE,
-      base::BindOnce(&ServiceWorkerContextWrapper::
-                         DidStartServiceWorkerForLongRunningMessage,
-                     this, std::move(message), source_origin, registration,
-                     std::move(result_callback)));
+      is_long_running_message
+          ? ServiceWorkerMetrics::EventType::LONG_RUNNING_MESSAGE
+          : ServiceWorkerMetrics::EventType::MESSAGE,
+      base::BindOnce(
+          &ServiceWorkerContextWrapper::DidStartServiceWorkerForMessageDispatch,
+          this, std::move(message), source_origin, registration,
+          std::move(result_callback), is_long_running_message));
 }
 
-void ServiceWorkerContextWrapper::DidStartServiceWorkerForLongRunningMessage(
+void ServiceWorkerContextWrapper::DidStartServiceWorkerForMessageDispatch(
     blink::TransferableMessage message,
     const GURL& source_origin,
     scoped_refptr<ServiceWorkerRegistration> registration,
     ResultCallback result_callback,
+    bool is_long_running_message,
     blink::ServiceWorkerStatusCode status) {
   if (status != blink::ServiceWorkerStatusCode::kOk) {
     std::move(result_callback).Run(false);
@@ -529,13 +609,8 @@ void ServiceWorkerContextWrapper::DidStartServiceWorkerForLongRunningMessage(
 
   scoped_refptr<ServiceWorkerVersion> version = registration->active_version();
 
-  int request_id = version->StartRequestWithCustomTimeout(
-      ServiceWorkerMetrics::EventType::LONG_RUNNING_MESSAGE,
-      base::BindOnce(&MessageFinishedSending, std::move(result_callback)),
-      base::TimeDelta::FromDays(kActiveWorkerTimeoutDays),
-      ServiceWorkerVersion::CONTINUE_ON_TIMEOUT);
-
-  mojom::ExtendableMessageEventPtr event = mojom::ExtendableMessageEvent::New();
+  blink::mojom::ExtendableMessageEventPtr event =
+      blink::mojom::ExtendableMessageEvent::New();
   event->message = std::move(message);
   event->source_origin = url::Origin::Create(source_origin);
   event->source_info_for_service_worker =
@@ -543,9 +618,22 @@ void ServiceWorkerContextWrapper::DidStartServiceWorkerForLongRunningMessage(
           ->GetOrCreateServiceWorkerObjectHost(version)
           ->CreateCompleteObjectInfoToSend();
 
-  version->endpoint()->DispatchExtendableMessageEventWithCustomTimeout(
-      std::move(event), base::TimeDelta::FromDays(kActiveWorkerTimeoutDays),
-      version->CreateSimpleEventCallback(request_id));
+  if (is_long_running_message) {
+    int request_id = version->StartRequestWithCustomTimeout(
+        ServiceWorkerMetrics::EventType::LONG_RUNNING_MESSAGE,
+        base::BindOnce(&MessageFinishedSending, std::move(result_callback)),
+        base::TimeDelta::FromDays(kActiveWorkerTimeoutDays),
+        ServiceWorkerVersion::CONTINUE_ON_TIMEOUT);
+    version->endpoint()->DispatchExtendableMessageEventWithCustomTimeout(
+        std::move(event), base::TimeDelta::FromDays(kActiveWorkerTimeoutDays),
+        version->CreateSimpleEventCallback(request_id));
+  } else {
+    int request_id = version->StartRequest(
+        ServiceWorkerMetrics::EventType::MESSAGE,
+        base::BindOnce(&MessageFinishedSending, std::move(result_callback)));
+    version->endpoint()->DispatchExtendableMessageEvent(
+        std::move(event), version->CreateSimpleEventCallback(request_id));
+  }
 }
 
 void ServiceWorkerContextWrapper::StartServiceWorkerForNavigationHint(
@@ -598,6 +686,28 @@ void ServiceWorkerContextWrapper::StopAllServiceWorkers(
   }
   StopAllServiceWorkersOnIO(std::move(callback),
                             base::ThreadTaskRunnerHandle::Get());
+}
+
+void ServiceWorkerContextWrapper::GetAllServiceWorkerRunningInfos(
+    GetAllServiceWorkerRunningInfosCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(
+          &ServiceWorkerContextWrapper::GetAllServiceWorkerRunningInfosOnIO,
+          this, std::move(callback), base::ThreadTaskRunnerHandle::Get()));
+}
+
+void ServiceWorkerContextWrapper::GetServiceWorkerRunningInfo(
+    int64_t version_id,
+    GetServiceWorkerRunningInfoCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(
+          &ServiceWorkerContextWrapper::GetServiceWorkerRunningInfoOnIO, this,
+          version_id, std::move(callback),
+          base::ThreadTaskRunnerHandle::Get()));
 }
 
 ServiceWorkerRegistration* ServiceWorkerContextWrapper::GetLiveRegistration(
@@ -887,6 +997,20 @@ void ServiceWorkerContextWrapper::GetUserDataForAllRegistrationsByKeyPrefix(
       key_prefix, std::move(callback));
 }
 
+void ServiceWorkerContextWrapper::ClearUserDataForAllRegistrationsByKeyPrefix(
+    const std::string& key_prefix,
+    StatusCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!context_core_) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  blink::ServiceWorkerStatusCode::kErrorAbort));
+    return;
+  }
+  context_core_->storage()->ClearUserDataForAllRegistrationsByKeyPrefix(
+      key_prefix, std::move(callback));
+}
+
 void ServiceWorkerContextWrapper::StartServiceWorker(const GURL& scope,
                                                      StatusCallback callback) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
@@ -966,14 +1090,19 @@ void ServiceWorkerContextWrapper::RemoveObserver(
 base::WeakPtr<ServiceWorkerProviderHost>
 ServiceWorkerContextWrapper::PreCreateHostForSharedWorker(
     int process_id,
-    mojom::ServiceWorkerProviderInfoForSharedWorkerPtr* out_provider_info) {
+    blink::mojom::ServiceWorkerProviderInfoForWorkerPtr* out_provider_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
+  if (!context_core_)
+    return nullptr;
   return ServiceWorkerProviderHost::PreCreateForSharedWorker(
-      context()->AsWeakPtr(), process_id, out_provider_info);
+      context_core_->AsWeakPtr(), process_id, out_provider_info);
 }
 
 ServiceWorkerContextWrapper::~ServiceWorkerContextWrapper() {
+  for (auto& observer : observer_list_)
+    observer.OnDestruct(static_cast<ServiceWorkerContext*>(this));
+
   // Explicitly remove this object as an observer to avoid use-after-frees in
   // tests where this object is not guaranteed to outlive the
   // ServiceWorkerContextCore it wraps.
@@ -1128,7 +1257,8 @@ void ServiceWorkerContextWrapper::DidGetAllRegistrationsForGetAllOrigins(
     auto it = origins.find(origin);
     if (it == origins.end()) {
       origins[origin] = StorageUsageInfo(
-          origin, registration_info.stored_version_size_bytes, base::Time());
+          url::Origin::Create(origin),
+          registration_info.stored_version_size_bytes, base::Time());
     } else {
       it->second.total_size_bytes +=
           registration_info.stored_version_size_bytes;
@@ -1293,6 +1423,59 @@ void ServiceWorkerContextWrapper::StopAllServiceWorkersOnIO(
 ServiceWorkerContextCore* ServiceWorkerContextWrapper::context() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return context_core_.get();
+}
+
+void ServiceWorkerContextWrapper::GetAllServiceWorkerRunningInfosOnIO(
+    GetAllServiceWorkerRunningInfosCallback callback,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner_for_callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  std::vector<ServiceWorkerVersionInfo> live_versions = GetAllLiveVersionInfo();
+  std::vector<ServiceWorkerRunningInfo> live_versions_running_info;
+  for (const auto& version_info : live_versions) {
+    if (IsRunningStatus(version_info.running_status)) {
+      live_versions_running_info.emplace_back(
+          ExtractServiceWorkerRunningInfoFromVersionInfo(version_info));
+    }
+  }
+
+  task_runner_for_callback->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback),
+                                static_cast<ServiceWorkerContext*>(this),
+                                std::move(live_versions_running_info)));
+}
+
+void ServiceWorkerContextWrapper::GetServiceWorkerRunningInfoOnIO(
+    int64_t version_id,
+    GetServiceWorkerRunningInfoCallback callback,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner_for_callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  ServiceWorkerVersion* version = GetLiveVersion(version_id);
+  if (version && IsRunningStatus(version->running_status())) {
+    ServiceWorkerVersionInfo info = version->GetInfo();
+    task_runner_for_callback->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(callback),
+                       static_cast<ServiceWorkerContext*>(this),
+                       ExtractServiceWorkerRunningInfoFromVersionInfo(info)));
+  } else {
+    task_runner_for_callback->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  static_cast<ServiceWorkerContext*>(this),
+                                  ServiceWorkerRunningInfo()));
+  }
+}
+
+ServiceWorkerRunningInfo
+ServiceWorkerContextWrapper::ExtractServiceWorkerRunningInfoFromVersionInfo(
+    const ServiceWorkerVersionInfo& version_info) {
+  return ServiceWorkerRunningInfo(version_info.script_url,
+                                  version_info.version_id,
+                                  version_info.process_id);
+}
+
+bool ServiceWorkerContextWrapper::IsRunningStatus(EmbeddedWorkerStatus status) {
+  return status == EmbeddedWorkerStatus::RUNNING ||
+         status == EmbeddedWorkerStatus::STOPPING;
 }
 
 }  // namespace content

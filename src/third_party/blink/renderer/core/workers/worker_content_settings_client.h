@@ -51,15 +51,13 @@ class CORE_EXPORT WorkerContentSettingsClient final
  public:
   static const char kSupplementName[];
 
-  static WorkerContentSettingsClient* Create(
-      std::unique_ptr<WebContentSettingsClient>);
-
   explicit WorkerContentSettingsClient(
       std::unique_ptr<WebContentSettingsClient>);
   virtual ~WorkerContentSettingsClient();
 
   bool RequestFileSystemAccessSync();
   bool AllowIndexedDB();
+  bool AllowCacheStorage();
   bool AllowRunningInsecureContent(bool enabled_per_settings,
                                    const SecurityOrigin*,
                                    const KURL&);

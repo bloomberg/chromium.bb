@@ -27,12 +27,12 @@
 #include "sandbox/mac/seatbelt_exec.h"
 #include "services/service_manager/sandbox/mac/audio.sb.h"
 #include "services/service_manager/sandbox/mac/cdm.sb.h"
-#include "services/service_manager/sandbox/mac/common_v2.sb.h"
+#include "services/service_manager/sandbox/mac/common.sb.h"
 #include "services/service_manager/sandbox/mac/gpu_v2.sb.h"
 #include "services/service_manager/sandbox/mac/nacl_loader.sb.h"
 #include "services/service_manager/sandbox/mac/pdf_compositor.sb.h"
-#include "services/service_manager/sandbox/mac/ppapi_v2.sb.h"
-#include "services/service_manager/sandbox/mac/renderer_v2.sb.h"
+#include "services/service_manager/sandbox/mac/ppapi.sb.h"
+#include "services/service_manager/sandbox/mac/renderer.sb.h"
 #include "services/service_manager/sandbox/mac/utility.sb.h"
 #include "services/service_manager/sandbox/switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -46,7 +46,7 @@ namespace {
 // crbug.com/740009: This allows the unit test to cleanup temporary directories,
 // and is safe since this is only a unit test.
 constexpr char kTempDirSuffix[] =
-    "(allow file* (subpath \"/private/var/folders/\"))";
+    "(allow file* (subpath \"/private/var/folders\"))";
 constexpr char kExtraDataArg[] = "extra-data";
 
 class SandboxMacTest : public base::MultiProcessTest {
@@ -62,7 +62,7 @@ class SandboxMacTest : public base::MultiProcessTest {
   }
 
   std::string ProfileForSandbox(const std::string& sandbox_profile) {
-    return std::string(service_manager::kSeatbeltPolicyString_common_v2) +
+    return std::string(service_manager::kSeatbeltPolicyString_common) +
            sandbox_profile + kTempDirSuffix;
   }
 
@@ -118,13 +118,12 @@ class SandboxMacTest : public base::MultiProcessTest {
   }
 
   void ExecuteInPpapiSandbox(const std::string& procname) {
-    ExecuteWithParams(procname, service_manager::kSeatbeltPolicyString_ppapi_v2,
+    ExecuteWithParams(procname, service_manager::kSeatbeltPolicyString_ppapi,
                       &content::SetupPPAPISandboxParameters);
   }
 
   void ExecuteInRendererSandbox(const std::string& procname) {
-    ExecuteWithParams(procname,
-                      service_manager::kSeatbeltPolicyString_renderer_v2,
+    ExecuteWithParams(procname, service_manager::kSeatbeltPolicyString_renderer,
                       &content::SetupCommonSandboxParameters);
   }
 

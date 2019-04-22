@@ -18,6 +18,13 @@ _ALL_PERF_WATERFALL_TELEMETRY_BENCHMARKS = frozenset(
     benchmark_finders.GetAllPerfBenchmarks())
 
 
+def _IsPlatformSupported(benchmark, platform):
+    supported = benchmark.GetSupportedPlatformNames(
+        benchmark.SUPPORTED_PLATFORMS)
+    return 'all' in supported or platform in supported
+
+
+# TODO(crbug.com/937715): Give this class and this file more meaningful names.
 class PerfPlatform(object):
   def __init__(self, name, description, is_fyi=False,
                benchmarks_names_to_run=None, num_shards=None):
@@ -35,7 +42,9 @@ class PerfPlatform(object):
       benchmarks_to_run = frozenset(benchmarks)
     else:
       benchmarks_to_run = _ALL_PERF_WATERFALL_TELEMETRY_BENCHMARKS
-    self._benchmarks_to_run = benchmarks_to_run
+    platform = self._sort_key.split(' ', 1)[0]
+    self._benchmarks_to_run = frozenset([
+        b for b in benchmarks_to_run if _IsPlatformSupported(b, platform)])
 
     base_file_name = name.replace(' ', '_').lower()
     self._timing_file_path = os.path.join(
@@ -138,6 +147,10 @@ ANDROID_GO = PerfPlatform(
     num_shards=19,
     benchmarks_names_to_run=_ANDROID_GO_BENCHMARK_NAMES)
 
+ANDROID_GO_WEBVIEW = PerfPlatform(
+    'android-go_webview-perf', 'Android OPM1.171019.021',
+    num_shards=25, benchmarks_names_to_run=_ANDROID_GO_BENCHMARK_NAMES)
+
 ANDROID_NEXUS_5 = PerfPlatform(
     'Android Nexus5 Perf', 'Android KOT49H',
     num_shards=16)
@@ -153,7 +166,7 @@ ANDROID_NEXUS_5X_WEBVIEW = PerfPlatform(
 
 ANDROID_NEXUS_6_WEBVIEW = PerfPlatform(
     'Android Nexus6 WebView Perf', 'Android AOSP MOB30K',
-    num_shards=8)  # Reduced from 16 per crbug.com/891848.
+    num_shards=12)  # Reduced from 16 per crbug.com/891848.
 
 
 # FYI bots
@@ -165,17 +178,12 @@ ANDROID_PIXEL2_WEBVIEW = PerfPlatform(
     'android-pixel2_webview-perf', 'Android OPM1.171019.021', is_fyi=True,
     num_shards=7)
 
-ANDROID_GO_WEBVIEW = PerfPlatform(
-    'android-go_webview-perf', 'Android OPM1.171019.021', is_fyi=True,
-    num_shards=25)
-
 ANDROID_NEXUS5X_PERF_FYI =  PerfPlatform(
     'android-nexus5x-perf-fyi', 'Android MMB29Q', is_fyi=True,
     num_shards=4, benchmarks_names_to_run={
       'heap_profiling.mobile.disabled',
       'heap_profiling.mobile.native',
       'heap_profiling.mobile.pseudo',
-      'rendering.oopd.mobile',
     })
 
 # TODO(crbug.com/902089): Add linux-perf-fyi once the bot is configured to use

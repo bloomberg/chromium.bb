@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/debug/leak_annotations.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -569,9 +570,8 @@ void GlobalMenuBarX11::AddHistoryItemToMenu(HistoryItem* item,
 void GlobalMenuBarX11::GetTopSitesData() {
   DCHECK(top_sites_);
 
-  top_sites_->GetMostVisitedURLs(
-      base::Bind(&GlobalMenuBarX11::OnTopSitesReceived,
-                 weak_ptr_factory_.GetWeakPtr()), false);
+  top_sites_->GetMostVisitedURLs(base::Bind(
+      &GlobalMenuBarX11::OnTopSitesReceived, weak_ptr_factory_.GetWeakPtr()));
 }
 
 void GlobalMenuBarX11::OnTopSitesReceived(

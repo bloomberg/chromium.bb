@@ -23,6 +23,7 @@
     clicked,
     documentSelectionChanged,
     documentTitleChanged,
+    endOfTest,
     expandedChanged,
     focus,
     focusContext,
@@ -43,6 +44,7 @@
     menuListItemSelected,
     menuListValueChanged,
     menuPopupEnd,
+    menuPopupHide,
     menuPopupStart,
     menuStart,
     mouseCanceled,
@@ -190,6 +192,7 @@
     list,
     listBox,
     listBoxOption,
+    listGrid,  // Native
     listItem,
     listMarker,
     log,
@@ -283,6 +286,7 @@
 
   // All possible actions that can be performed on automation nodes.
   enum ActionType {
+    annotatePageImages,
     blur,
     clearAccessibilityFocus,
     customAction,
@@ -291,6 +295,7 @@
     focus,
     getImageData,
     getTextLocation,
+    hideTooltip,
     hitTest,
     increment,
     loadInlineTextBoxes,
@@ -300,15 +305,17 @@
     scrollForward,
     scrollLeft,
     scrollRight,
+    scrollUp,
     scrollToMakeVisible,
     scrollToPoint,
-    scrollUp,
     setAccessibilityFocus,
     setScrollOffset,
     setSelection,
     setSequentialFocusNavigationStartingPoint,
     setValue,
-    showContextMenu
+    showContextMenu,
+    signalEndOfTest,
+    showTooltip
   };
 
   // Possible changes to the automation tree. For any given atomic change
@@ -545,6 +552,11 @@
     // The source of the name.
     NameFromType? nameFrom;
 
+    // The image annotation for image nodes, which may be a human-readable
+    // string that is the contextualized annotation or a status string related
+    // to annotations.
+    DOMString? imageAnnotation;
+
     // The value for this node: for example the <code>value</code> attribute of
     // an <code>&lt;input&gt; element.
     DOMString? value;
@@ -706,6 +718,19 @@
     // The affinity of the tree selection focus, if any.
     DOMString? focusAffinity;
 
+    // The selection start node of the tree selection, if any.
+    AutomationNode? selectionStartObject;
+    // The selection start offset of the tree selection, if any.
+    long? selectionStartOffset;
+    // The affinity of the tree selection start, if any.
+    DOMString? selectionStartAffinity;
+    // The selection end node of the tree selection, if any.
+    AutomationNode? selectionEndObject;
+    // The selection end offset of the tree selection, if any.
+    long? selectionEndOffset;
+    // The affinity of the tree selection end, if any.
+    DOMString? selectionEndAffinity;
+
     //
     // Range attributes.
     //
@@ -842,8 +867,11 @@
     // A data url with the contents of this object's image or thumbnail.
     DOMString? imageDataUrl;
 
-    // The language code for this subtree.
+    // The author-provided language code for this subtree.
     DOMString? language;
+
+    // The detected language code for this subtree.
+    DOMString? detectedLanguage;
 
     // Indicates the availability and type of interactive popup element
     // true - the popup is a menu
@@ -896,6 +924,12 @@
 
     // Indicates whether this node is selected, unselected, or neither.
     boolean? selected;
+
+    // Indicates the font size of this node.
+    long? fontSize;
+
+    // Indicates the font family.
+    DOMString fontFamily;
 
     //
     // Walking the tree.

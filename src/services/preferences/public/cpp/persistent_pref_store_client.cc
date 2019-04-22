@@ -4,6 +4,7 @@
 
 #include "services/preferences/public/cpp/persistent_pref_store_client.h"
 
+#include "base/bind.h"
 #include "base/values.h"
 #include "components/prefs/pref_registry.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
@@ -270,8 +271,9 @@ void PersistentPrefStoreClient::QueueWrite(
     // |this|. Instead, the destruction of |this| will flush any pending
     // writes.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&PersistentPrefStoreClient::FlushPendingWrites,
-                              weak_factory_.GetWeakPtr()));
+        FROM_HERE,
+        base::BindOnce(&PersistentPrefStoreClient::FlushPendingWrites,
+                       weak_factory_.GetWeakPtr()));
   }
   RemoveRedundantPaths(&path_components);
   auto& entry = pending_writes_[key];

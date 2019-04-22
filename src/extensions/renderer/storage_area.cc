@@ -7,6 +7,7 @@
 #include "base/strings/stringprintf.h"
 #include "extensions/common/api/storage.h"
 #include "extensions/renderer/bindings/api_binding_util.h"
+#include "extensions/renderer/bindings/api_event_handler.h"
 #include "extensions/renderer/bindings/api_invocation_errors.h"
 #include "extensions/renderer/bindings/api_request_handler.h"
 #include "extensions/renderer/bindings/api_signature.h"
@@ -21,22 +22,28 @@ namespace extensions {
 
 namespace {
 
-#define DEFINE_STORAGE_AREA_HANDLERS()                            \
-  const char* GetTypeName() override { return "StorageArea"; }    \
-  void Get(gin::Arguments* arguments) {                           \
-    storage_area_.HandleFunctionCall("get", arguments);           \
-  }                                                               \
-  void Set(gin::Arguments* arguments) {                           \
-    storage_area_.HandleFunctionCall("set", arguments);           \
-  }                                                               \
-  void Remove(gin::Arguments* arguments) {                        \
-    storage_area_.HandleFunctionCall("remove", arguments);        \
-  }                                                               \
-  void Clear(gin::Arguments* arguments) {                         \
-    storage_area_.HandleFunctionCall("clear", arguments);         \
-  }                                                               \
-  void GetBytesInUse(gin::Arguments* arguments) {                 \
-    storage_area_.HandleFunctionCall("getBytesInUse", arguments); \
+#define DEFINE_STORAGE_AREA_HANDLERS()                                      \
+  const char* GetTypeName() override { return "StorageArea"; }              \
+  void Get(gin::Arguments* arguments) {                                     \
+    storage_area_.HandleFunctionCall("get", arguments);                     \
+  }                                                                         \
+  void Set(gin::Arguments* arguments) {                                     \
+    storage_area_.HandleFunctionCall("set", arguments);                     \
+  }                                                                         \
+  void Remove(gin::Arguments* arguments) {                                  \
+    storage_area_.HandleFunctionCall("remove", arguments);                  \
+  }                                                                         \
+  void Clear(gin::Arguments* arguments) {                                   \
+    storage_area_.HandleFunctionCall("clear", arguments);                   \
+  }                                                                         \
+  void GetBytesInUse(gin::Arguments* arguments) {                           \
+    storage_area_.HandleFunctionCall("getBytesInUse", arguments);           \
+  }                                                                         \
+  v8::Local<v8::Value> GetOnChangedEvent(gin::Arguments* arguments) {       \
+    v8::Isolate* isolate = arguments->isolate();                            \
+    v8::Local<v8::Context> context = arguments->GetHolderCreationContext(); \
+    v8::Local<v8::Object> wrapper = GetWrapper(isolate).ToLocalChecked();   \
+    return storage_area_.GetOnChangedEvent(isolate, context, wrapper);      \
   }
 
 // gin::Wrappables for each of the storage areas. Since each has slightly
@@ -45,9 +52,14 @@ namespace {
 class LocalStorageArea final : public gin::Wrappable<LocalStorageArea> {
  public:
   LocalStorageArea(APIRequestHandler* request_handler,
+                   APIEventHandler* event_handler,
                    const APITypeReferenceMap* type_refs,
                    const BindingAccessChecker* access_checker)
-      : storage_area_(request_handler, type_refs, "local", access_checker) {}
+      : storage_area_(request_handler,
+                      event_handler,
+                      type_refs,
+                      "local",
+                      access_checker) {}
   ~LocalStorageArea() override = default;
 
   static gin::WrapperInfo kWrapperInfo;
@@ -60,6 +72,7 @@ class LocalStorageArea final : public gin::Wrappable<LocalStorageArea> {
         .SetMethod("remove", &LocalStorageArea::Remove)
         .SetMethod("clear", &LocalStorageArea::Clear)
         .SetMethod("getBytesInUse", &LocalStorageArea::GetBytesInUse)
+        .SetProperty("onChanged", &LocalStorageArea::GetOnChangedEvent)
         .SetValue("QUOTA_BYTES", api::storage::local::QUOTA_BYTES);
   }
 
@@ -76,9 +89,14 @@ gin::WrapperInfo LocalStorageArea::kWrapperInfo = {gin::kEmbedderNativeGin};
 class SyncStorageArea final : public gin::Wrappable<SyncStorageArea> {
  public:
   SyncStorageArea(APIRequestHandler* request_handler,
+                  APIEventHandler* event_handler,
                   const APITypeReferenceMap* type_refs,
                   const BindingAccessChecker* access_checker)
-      : storage_area_(request_handler, type_refs, "sync", access_checker) {}
+      : storage_area_(request_handler,
+                      event_handler,
+                      type_refs,
+                      "sync",
+                      access_checker) {}
   ~SyncStorageArea() override = default;
 
   static gin::WrapperInfo kWrapperInfo;
@@ -91,6 +109,7 @@ class SyncStorageArea final : public gin::Wrappable<SyncStorageArea> {
         .SetMethod("remove", &SyncStorageArea::Remove)
         .SetMethod("clear", &SyncStorageArea::Clear)
         .SetMethod("getBytesInUse", &SyncStorageArea::GetBytesInUse)
+        .SetProperty("onChanged", &SyncStorageArea::GetOnChangedEvent)
         .SetValue("QUOTA_BYTES", api::storage::sync::QUOTA_BYTES)
         .SetValue("QUOTA_BYTES_PER_ITEM",
                   api::storage::sync::QUOTA_BYTES_PER_ITEM)
@@ -117,9 +136,14 @@ gin::WrapperInfo SyncStorageArea::kWrapperInfo = {gin::kEmbedderNativeGin};
 class ManagedStorageArea final : public gin::Wrappable<ManagedStorageArea> {
  public:
   ManagedStorageArea(APIRequestHandler* request_handler,
+                     APIEventHandler* event_handler,
                      const APITypeReferenceMap* type_refs,
                      const BindingAccessChecker* access_checker)
-      : storage_area_(request_handler, type_refs, "managed", access_checker) {}
+      : storage_area_(request_handler,
+                      event_handler,
+                      type_refs,
+                      "managed",
+                      access_checker) {}
   ~ManagedStorageArea() override = default;
 
   static gin::WrapperInfo kWrapperInfo;
@@ -131,7 +155,8 @@ class ManagedStorageArea final : public gin::Wrappable<ManagedStorageArea> {
         .SetMethod("set", &ManagedStorageArea::Set)
         .SetMethod("remove", &ManagedStorageArea::Remove)
         .SetMethod("clear", &ManagedStorageArea::Clear)
-        .SetMethod("getBytesInUse", &ManagedStorageArea::GetBytesInUse);
+        .SetMethod("getBytesInUse", &ManagedStorageArea::GetBytesInUse)
+        .SetProperty("onChanged", &ManagedStorageArea::GetOnChangedEvent);
   }
 
  private:
@@ -149,10 +174,12 @@ gin::WrapperInfo ManagedStorageArea::kWrapperInfo = {gin::kEmbedderNativeGin};
 }  // namespace
 
 StorageArea::StorageArea(APIRequestHandler* request_handler,
+                         APIEventHandler* event_handler,
                          const APITypeReferenceMap* type_refs,
                          const std::string& name,
                          const BindingAccessChecker* access_checker)
     : request_handler_(request_handler),
+      event_handler_(event_handler),
       type_refs_(type_refs),
       name_(name),
       access_checker_(access_checker) {}
@@ -170,19 +197,19 @@ v8::Local<v8::Object> StorageArea::CreateStorageArea(
   v8::Local<v8::Object> object;
   if (property_name == "local") {
     gin::Handle<LocalStorageArea> handle = gin::CreateHandle(
-        isolate,
-        new LocalStorageArea(request_handler, type_refs, access_checker));
+        isolate, new LocalStorageArea(request_handler, event_handler, type_refs,
+                                      access_checker));
     object = handle.ToV8().As<v8::Object>();
   } else if (property_name == "sync") {
     gin::Handle<SyncStorageArea> handle = gin::CreateHandle(
-        isolate,
-        new SyncStorageArea(request_handler, type_refs, access_checker));
+        isolate, new SyncStorageArea(request_handler, event_handler, type_refs,
+                                     access_checker));
     object = handle.ToV8().As<v8::Object>();
   } else {
     CHECK_EQ("managed", property_name);
     gin::Handle<ManagedStorageArea> handle = gin::CreateHandle(
-        isolate,
-        new ManagedStorageArea(request_handler, type_refs, access_checker));
+        isolate, new ManagedStorageArea(request_handler, event_handler,
+                                        type_refs, access_checker));
     object = handle.ToV8().As<v8::Object>();
   }
   return object;
@@ -223,6 +250,38 @@ void StorageArea::HandleFunctionCall(const std::string& method_name,
   request_handler_->StartRequest(
       context, full_method_name, std::move(converted_arguments), callback,
       v8::Local<v8::Function>(), binding::RequestThread::UI);
+}
+
+v8::Local<v8::Value> StorageArea::GetOnChangedEvent(
+    v8::Isolate* isolate,
+    v8::Local<v8::Context> context,
+    v8::Local<v8::Object> wrapper) {
+  if (!binding::IsContextValidOrThrowError(context))
+    return v8::Undefined(isolate);
+
+  v8::Local<v8::Private> key = v8::Private::ForApi(
+      isolate, gin::StringToSymbol(isolate, "onChangedEvent"));
+  v8::Local<v8::Value> event;
+  if (!wrapper->GetPrivate(context, key).ToLocal(&event)) {
+    NOTREACHED();
+    return v8::Local<v8::Value>();
+  }
+
+  DCHECK(!event.IsEmpty());
+  if (event->IsUndefined()) {
+    constexpr bool kSupportsFilters = false;
+    constexpr bool kSupportsLazyListeners = true;
+    event = event_handler_->CreateEventInstance(
+        base::StringPrintf("storage.%s.onChanged", name_.c_str()),
+        kSupportsFilters, kSupportsLazyListeners, binding::kNoListenerMax, true,
+        context);
+    v8::Maybe<bool> set_result = wrapper->SetPrivate(context, key, event);
+    if (!set_result.IsJust() || !set_result.FromJust()) {
+      NOTREACHED();
+      return v8::Local<v8::Value>();
+    }
+  }
+  return event;
 }
 
 }  // namespace extensions

@@ -195,7 +195,7 @@ class MediaGalleriesAddGalleryWatchFunction
     : public ChromeAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("mediaGalleries.addGalleryWatch",
-                             MEDIAGALLERIES_ADDGALLERYWATCH);
+                             MEDIAGALLERIES_ADDGALLERYWATCH)
 
  protected:
   ~MediaGalleriesAddGalleryWatchFunction() override;
@@ -212,7 +212,7 @@ class MediaGalleriesRemoveGalleryWatchFunction
     : public ChromeAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("mediaGalleries.removeGalleryWatch",
-                             MEDIAGALLERIES_REMOVEGALLERYWATCH);
+                             MEDIAGALLERIES_REMOVEGALLERYWATCH)
 
  protected:
   ~MediaGalleriesRemoveGalleryWatchFunction() override;

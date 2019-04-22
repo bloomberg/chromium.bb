@@ -5,7 +5,13 @@
 #ifndef SERVICES_WS_PUBLIC_CPP_HOST_GPU_INTERFACE_PROVIDER_H_
 #define SERVICES_WS_PUBLIC_CPP_HOST_GPU_INTERFACE_PROVIDER_H_
 
+#include <string>
+
 #include "services/service_manager/public/cpp/binder_registry.h"
+
+#if defined(USE_OZONE)
+#include "mojo/public/cpp/system/message_pipe.h"
+#endif
 
 namespace ws {
 
@@ -23,9 +29,9 @@ class GpuInterfaceProvider {
       service_manager::BinderRegistry* registry) = 0;
 
 #if defined(USE_OZONE)
-  // Registers the gpu-related interfaces needed by Ozone.
-  virtual void RegisterOzoneGpuInterfaces(
-      service_manager::BinderRegistry* registry) = 0;
+  // Binds a gpu-related interface needed by Ozone.
+  virtual void BindOzoneGpuInterface(const std::string& interface_name,
+                                     mojo::ScopedMessagePipeHandle handle) = 0;
 #endif
 };
 

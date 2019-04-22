@@ -13,6 +13,7 @@
 #include "fpdfsdk/cpdfsdk_pageview.h"
 #include "fpdfsdk/cpdfsdk_xfawidget.h"
 #include "fpdfsdk/fpdfxfa/cpdfxfa_context.h"
+#include "public/fpdf_fwlevent.h"
 #include "xfa/fwl/cfwl_app.h"
 #include "xfa/fwl/fwl_widgethit.h"
 #include "xfa/fxfa/cxfa_ffdocview.h"
@@ -79,21 +80,14 @@ CFX_FloatRect CPDFSDK_XFAWidgetHandler::GetViewBBox(CPDFSDK_PageView* pPageView,
   CXFA_Node* node = pAnnot->GetXFAWidget()->GetNode();
   ASSERT(node->IsWidgetReady());
 
-  CFX_RectF rcBBox;
-  if (node->GetFFWidgetType() == XFA_FFWidgetType::kSignature) {
-    rcBBox = pAnnot->GetXFAWidget()->GetBBox(XFA_WidgetStatus_Visible,
-                                             CXFA_FFWidget::kDrawFocus);
-  } else {
-    rcBBox = pAnnot->GetXFAWidget()->GetBBox(XFA_WidgetStatus_None,
-                                             CXFA_FFWidget::kDoNotDrawFocus);
-  }
+  CFX_RectF rcBBox = pAnnot->GetXFAWidget()->GetBBox(
+      node->GetFFWidgetType() == XFA_FFWidgetType::kSignature
+          ? CXFA_FFWidget::kDrawFocus
+          : CXFA_FFWidget::kDoNotDrawFocus);
+
   CFX_FloatRect rcWidget(rcBBox.left, rcBBox.top, rcBBox.left + rcBBox.width,
                          rcBBox.top + rcBBox.height);
-  rcWidget.left -= 1.0f;
-  rcWidget.right += 1.0f;
-  rcWidget.bottom -= 1.0f;
-  rcWidget.top += 1.0f;
-
+  rcWidget.Inflate(1.0f, 1.0f);
   return rcWidget;
 }
 
@@ -372,6 +366,19 @@ bool CPDFSDK_XFAWidgetHandler::OnXFAChangedFocus(
     bRet = true;
 
   return bRet;
+}
+
+bool CPDFSDK_XFAWidgetHandler::SetIndexSelected(
+    CPDFSDK_Annot::ObservedPtr* pAnnot,
+    int index,
+    bool selected) {
+  return false;
+}
+
+bool CPDFSDK_XFAWidgetHandler::IsIndexSelected(
+    CPDFSDK_Annot::ObservedPtr* pAnnot,
+    int index) {
+  return false;
 }
 
 CXFA_FFWidgetHandler* CPDFSDK_XFAWidgetHandler::GetXFAWidgetHandler(

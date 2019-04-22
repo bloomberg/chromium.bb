@@ -6,7 +6,9 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/macros.h"
 #include "base/optional.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "extensions/common/api/messaging/message.h"
 #include "extensions/common/api/messaging/port_id.h"
@@ -142,7 +144,7 @@ TEST_F(GinPortTest, TestDispatchMessage) {
   v8::Local<v8::Function> test_function =
       FunctionFromString(context, kTestFunction);
   v8::Local<v8::Value> args[] = {port_obj};
-  RunFunctionOnGlobal(test_function, context, arraysize(args), args);
+  RunFunctionOnGlobal(test_function, context, base::size(args), args);
 
   port->DispatchOnMessage(context, Message(R"({"foo":42})", false));
 
@@ -173,7 +175,7 @@ TEST_F(GinPortTest, TestPostMessage) {
     v8::Local<v8::Value> args[] = {port_obj};
 
     if (expected_port_id) {
-      RunFunction(v8_function, context, arraysize(args), args);
+      RunFunction(v8_function, context, base::size(args), args);
       ASSERT_TRUE(delegate()->last_port_id());
       EXPECT_EQ(*expected_port_id, delegate()->last_port_id());
       ASSERT_TRUE(delegate()->last_message());
@@ -181,7 +183,7 @@ TEST_F(GinPortTest, TestPostMessage) {
       EXPECT_EQ(expected_message->user_gesture,
                 delegate()->last_message()->user_gesture);
     } else {
-      RunFunctionAndExpectError(v8_function, context, arraysize(args), args,
+      RunFunctionAndExpectError(v8_function, context, base::size(args), args,
                                 "Uncaught Error: Could not serialize message.");
       EXPECT_FALSE(delegate()->last_port_id());
       EXPECT_FALSE(delegate()->last_message())
@@ -246,7 +248,7 @@ TEST_F(GinPortTest, TestPostMessage) {
     v8::Local<v8::Function> function = FunctionFromString(context, kFunction);
     v8::Local<v8::Value> args[] = {port_obj};
     RunFunctionAndExpectError(
-        function, context, arraysize(args), args,
+        function, context, base::size(args), args,
         "Uncaught Error: Attempting to use a disconnected port object");
 
     EXPECT_FALSE(delegate()->last_port_id());
@@ -276,7 +278,7 @@ TEST_F(GinPortTest, TestNativeDisconnect) {
   v8::Local<v8::Function> test_function =
       FunctionFromString(context, kTestFunction);
   v8::Local<v8::Value> args[] = {port_obj};
-  RunFunctionOnGlobal(test_function, context, arraysize(args), args);
+  RunFunctionOnGlobal(test_function, context, base::size(args), args);
 
   port->DispatchOnDisconnect(context);
   EXPECT_EQ("true", GetStringPropertyFromObject(context->Global(), context,
@@ -299,8 +301,67 @@ TEST_F(GinPortTest, TestJSDisconnect) {
   const char kFunction[] = "(function(port) { port.disconnect(); })";
   v8::Local<v8::Function> function = FunctionFromString(context, kFunction);
   v8::Local<v8::Value> args[] = {port_obj};
-  RunFunction(function, context, arraysize(args), args);
+  RunFunction(function, context, base::size(args), args);
   ::testing::Mock::VerifyAndClearExpectations(delegate());
+  EXPECT_TRUE(port->is_closed_for_testing());
+}
+
+// Tests that a call of disconnect() from the listener of the onDisconnect event
+// is rejected. Regression test for crbug.com/932347.
+TEST_F(GinPortTest, JSDisconnectFromOnDisconnect) {
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = MainContext();
+
+  PortId port_id(base::UnguessableToken::Create(), 0, true);
+  gin::Handle<GinPort> port = CreatePort(context, port_id);
+
+  v8::Local<v8::Object> port_obj = port.ToV8().As<v8::Object>();
+
+  const char kTestFunction[] =
+      R"((function(port) {
+           port.onDisconnect.addListener(() => {
+             port.disconnect();
+           });
+      }))";
+  v8::Local<v8::Function> test_function =
+      FunctionFromString(context, kTestFunction);
+  v8::Local<v8::Value> args[] = {port_obj};
+  RunFunctionOnGlobal(test_function, context, base::size(args), args);
+
+  port->DispatchOnDisconnect(context);
+  EXPECT_TRUE(port->is_closed_for_testing());
+}
+
+// Tests that a call of postMessage() from the listener of the onDisconnect
+// event is rejected. Regression test for crbug.com/932347.
+TEST_F(GinPortTest, JSPostMessageFromOnDisconnect) {
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = MainContext();
+
+  PortId port_id(base::UnguessableToken::Create(), 0, true);
+  gin::Handle<GinPort> port = CreatePort(context, port_id);
+
+  v8::Local<v8::Object> port_obj = port.ToV8().As<v8::Object>();
+
+  const char kTestFunction[] =
+      R"((function(port) {
+           port.onDisconnect.addListener(() => {
+             try {
+               port.postMessage({data: [42]});
+             } catch (e) {
+               this.lastError = e.message;
+             }
+           });
+      }))";
+  v8::Local<v8::Function> test_function =
+      FunctionFromString(context, kTestFunction);
+  v8::Local<v8::Value> args[] = {port_obj};
+  RunFunctionOnGlobal(test_function, context, base::size(args), args);
+
+  port->DispatchOnDisconnect(context);
+  EXPECT_EQ(
+      "\"Attempting to use a disconnected port object\"",
+      GetStringPropertyFromObject(context->Global(), context, "lastError"));
   EXPECT_TRUE(port->is_closed_for_testing());
 }
 
@@ -310,18 +371,24 @@ TEST_F(GinPortTest, TestSenderProperty) {
   v8::Local<v8::Context> context = MainContext();
 
   PortId port_id(base::UnguessableToken::Create(), 0, true);
-  gin::Handle<GinPort> port = CreatePort(context, port_id);
 
-  v8::Local<v8::Object> port_obj = port.ToV8().As<v8::Object>();
+  {
+    gin::Handle<GinPort> port = CreatePort(context, port_id);
+    v8::Local<v8::Object> port_obj = port.ToV8().As<v8::Object>();
+    EXPECT_EQ("undefined",
+              GetStringPropertyFromObject(port_obj, context, "sender"));
+  }
 
-  EXPECT_EQ("undefined",
-            GetStringPropertyFromObject(port_obj, context, "sender"));
-
-  port->SetSender(context,
-                  gin::DataObjectBuilder(isolate()).Set("prop", 42).Build());
-
-  EXPECT_EQ(R"({"prop":42})",
-            GetStringPropertyFromObject(port_obj, context, "sender"));
+  {
+    // SetSender() can only be called before the `sender` property is accessed,
+    // so we need to create a new port here.
+    gin::Handle<GinPort> port = CreatePort(context, port_id);
+    port->SetSender(context,
+                    gin::DataObjectBuilder(isolate()).Set("prop", 42).Build());
+    v8::Local<v8::Object> port_obj = port.ToV8().As<v8::Object>();
+    EXPECT_EQ(R"({"prop":42})",
+              GetStringPropertyFromObject(port_obj, context, "sender"));
+  }
 }
 
 TEST_F(GinPortTest, TryUsingPortAfterInvalidation) {
@@ -360,10 +427,28 @@ TEST_F(GinPortTest, TryUsingPortAfterInvalidation) {
         get_on_disconnect_function}) {
     SCOPED_TRACE(gin::V8ToString(isolate(),
                                  function->ToString(context).ToLocalChecked()));
-    RunFunctionAndExpectError(function, context, arraysize(function_args),
+    RunFunctionAndExpectError(function, context, base::size(function_args),
                               function_args,
                               "Uncaught Error: Extension context invalidated.");
   }
+}
+
+TEST_F(GinPortTest, AlteringPortName) {
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = MainContext();
+
+  PortId port_id(base::UnguessableToken::Create(), 0, true);
+  gin::Handle<GinPort> port = CreatePort(context, port_id);
+
+  v8::Local<v8::Object> port_obj = port.ToV8().As<v8::Object>();
+
+  v8::Local<v8::Function> change_port_name = FunctionFromString(
+      context, "(function(port) { port.name = 'foo'; return port.name; })");
+
+  v8::Local<v8::Value> args[] = {port_obj};
+  v8::Local<v8::Value> result =
+      RunFunction(change_port_name, context, base::size(args), args);
+  EXPECT_EQ(R"("foo")", V8ToString(result, context));
 }
 
 }  // namespace extensions

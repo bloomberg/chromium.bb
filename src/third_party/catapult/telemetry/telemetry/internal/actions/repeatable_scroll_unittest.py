@@ -30,6 +30,7 @@ class RepeatableScrollActionTest(tab_test_case.TabTestCase):
     self._window_height = int(
         self._tab.EvaluateJavaScript('__GestureCommon_GetWindowHeight()'))
 
+  @decorators.Disabled('mac')  # crbug.com/934649
   # https://github.com/catapult-project/catapult/issues/3099
   # Test flaky on chromeos: https://crbug.com/826527.
   @decorators.Disabled('android', 'chromeos')
@@ -52,8 +53,9 @@ class RepeatableScrollActionTest(tab_test_case.TabTestCase):
         msg='scroll_position=%d;expected %d' % (scroll_position,
                                                 expected_scroll))
 
-  # https://github.com/catapult-project/catapult/issues/3099
-  @decorators.Disabled('android')
+  # Failing on Android: https://github.com/catapult-project/catapult/issues/3099
+  # Flaky on chromeos: https://crbug.com/932104.
+  @decorators.Disabled('android', 'chromeos')
   def testRepeatableScrollActionTwoRepeats(self):
     if not self._browser_info.HasRepeatableSynthesizeScrollGesture():
       return

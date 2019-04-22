@@ -14,11 +14,11 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "net/base/address_list.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/completion_repeating_callback.h"
+#include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_export.h"
-#include "net/dns/host_resolver.h"
 #include "net/log/net_log_with_source.h"
 #include "net/socket/stream_socket.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -26,20 +26,18 @@
 
 namespace net {
 
-class ClientSocketHandle;
-
 // This StreamSocket is used to setup a SOCKSv5 handshake with a socks proxy.
 // Currently no SOCKSv5 authentication is supported.
 class NET_EXPORT_PRIVATE SOCKS5ClientSocket : public StreamSocket {
  public:
-  // |req_info| contains the hostname and port to which the socket above will
+  // |destination| contains the hostname and port to which the socket above will
   // communicate to via the SOCKS layer.
   //
   // Although SOCKS 5 supports 3 different modes of addressing, we will
   // always pass it a hostname. This means the DNS resolving is done
   // proxy side.
-  SOCKS5ClientSocket(std::unique_ptr<ClientSocketHandle> transport_socket,
-                     const HostResolver::RequestInfo& req_info,
+  SOCKS5ClientSocket(std::unique_ptr<StreamSocket> transport_socket,
+                     const HostPortPair& destination,
                      const NetworkTrafficAnnotationTag& traffic_annotation);
 
   // On destruction Disconnect() is called.
@@ -126,7 +124,7 @@ class NET_EXPORT_PRIVATE SOCKS5ClientSocket : public StreamSocket {
   CompletionRepeatingCallback io_callback_;
 
   // Stores the underlying socket.
-  std::unique_ptr<ClientSocketHandle> transport_;
+  std::unique_ptr<StreamSocket> transport_socket_;
 
   State next_state_;
 
@@ -154,7 +152,7 @@ class NET_EXPORT_PRIVATE SOCKS5ClientSocket : public StreamSocket {
 
   bool was_ever_used_;
 
-  HostResolver::RequestInfo host_request_info_;
+  const HostPortPair destination_;
 
   NetLogWithSource net_log_;
 

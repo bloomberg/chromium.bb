@@ -67,9 +67,6 @@ class VIEWS_MUS_EXPORT AuraInit {
   // services should shutdown.
   bool Init(const InitParams& params);
 
-  // Returns true on success.
-  bool InitializeResources(const InitParams& params);
-
   std::unique_ptr<aura::Env> env_;
   std::unique_ptr<MusClient> mus_client_;
   std::unique_ptr<ViewsDelegate> views_delegate_;

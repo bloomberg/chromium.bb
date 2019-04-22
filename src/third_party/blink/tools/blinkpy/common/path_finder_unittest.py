@@ -21,20 +21,20 @@ class TestPathFinder(unittest.TestCase):
             finder.path_from_chromium_base('foo', 'bar.baz'),
             '/mock-checkout/foo/bar.baz')
 
-    def test_layout_tests_dir(self):
+    def test_web_tests_dir(self):
         finder = PathFinder(MockFileSystem())
         self.assertEqual(
-            finder.layout_tests_dir(),
+            finder.web_tests_dir(),
             '/mock-checkout/' + RELATIVE_WEB_TESTS[:-1])
 
-    def test_layout_tests_dir_with_backslash_sep(self):
+    def test_web_tests_dir_with_backslash_sep(self):
         filesystem = MockFileSystem()
         filesystem.sep = '\\'
         filesystem.path_to_module = lambda _: (
             'C:\\mock-checkout\\third_party\\blink\\tools\\blinkpy\\foo.py')
         finder = PathFinder(filesystem)
         self.assertEqual(
-            finder.layout_tests_dir(),
+            finder.web_tests_dir(),
             'C:\\mock-checkout\\third_party\\blink\\web_tests')
 
     def test_perf_tests_dir(self):
@@ -43,10 +43,10 @@ class TestPathFinder(unittest.TestCase):
             finder.perf_tests_dir(),
             '/mock-checkout/third_party/blink/perf_tests')
 
-    def test_path_from_layout_tests(self):
+    def test_path_from_web_tests(self):
         finder = PathFinder(MockFileSystem())
         self.assertEqual(
-            finder.path_from_layout_tests('external', 'wpt'),
+            finder.path_from_web_tests('external', 'wpt'),
             '/mock-checkout/' + RELATIVE_WEB_TESTS + 'external/wpt')
 
     def test_depot_tools_base_not_found(self):
@@ -67,3 +67,25 @@ class TestPathFinder(unittest.TestCase):
         finder = PathFinder(filesystem)
         self.assertEqual(
             finder.depot_tools_base(), '/checkout/third_party/depot_tools')
+
+    def test_strip_web_tests_path(self):
+        finder = PathFinder(MockFileSystem())
+        path_with_web_tests = '/mock-checkout/' + RELATIVE_WEB_TESTS + 'external/wpt'
+        self.assertEqual(
+            finder.strip_web_tests_path(path_with_web_tests),
+            'external/wpt')
+        path_without_web_tests = '/checkout/' + RELATIVE_WEB_TESTS + 'external/wpt'
+        self.assertEqual(
+            finder.strip_web_tests_path(path_without_web_tests),
+            path_without_web_tests)
+
+    def test_strip_webdriver_tests_path(self):
+        finder = PathFinder(MockFileSystem())
+        path_with_webdriver_prefix = 'external/wpt/webdriver/' + 'foo/bar.py::test'
+        self.assertEqual(
+            finder.strip_webdriver_tests_path(path_with_webdriver_prefix),
+            'foo/bar.py::test')
+        path_without_webdriver_prefix = 'external/wpt' + 'bar/foo.py::test'
+        self.assertEqual(
+            finder.strip_webdriver_tests_path(path_without_webdriver_prefix),
+            path_without_webdriver_prefix)

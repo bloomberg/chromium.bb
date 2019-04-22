@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/containers/hash_tables.h"
 #include "base/files/file_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -306,8 +305,8 @@ void HistoryDatabase::Vacuum() {
   ignore_result(db_.Execute("VACUUM"));
 }
 
-void HistoryDatabase::TrimMemory(bool aggressively) {
-  db_.TrimMemory(aggressively);
+void HistoryDatabase::TrimMemory() {
+  db_.TrimMemory();
 }
 
 bool HistoryDatabase::Raze() {
@@ -334,7 +333,7 @@ SegmentID HistoryDatabase::GetSegmentID(VisitID visit_id) {
       "SELECT segment_id FROM visits WHERE id = ?"));
   s.BindInt64(0, visit_id);
 
-  if (!s.Step() || s.ColumnType(0) == sql::COLUMN_TYPE_NULL)
+  if (!s.Step() || s.GetColumnType(0) == sql::ColumnType::kNull)
     return 0;
   return s.ColumnInt64(0);
 }

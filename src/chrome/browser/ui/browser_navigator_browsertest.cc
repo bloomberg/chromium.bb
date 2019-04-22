@@ -111,11 +111,14 @@ NavigateParams BrowserNavigatorTest::MakeNavigateParams(
 }
 
 bool BrowserNavigatorTest::OpenPOSTURLInNewForegroundTabAndGetTitle(
-    const GURL& url, const std::string& post_data, bool is_browser_initiated,
+    const GURL& url,
+    const std::string& post_data,
+    bool is_browser_initiated,
     base::string16* title) {
   NavigateParams param(MakeNavigateParams());
   param.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   param.url = url;
+  param.initiator_origin = url::Origin();
   param.is_renderer_initiated = !is_browser_initiated;
   param.uses_post = true;
   param.post_data = network::ResourceRequestBody::CreateFromBytes(
@@ -162,8 +165,7 @@ std::unique_ptr<WebContents> BrowserNavigatorTest::CreateWebContents(
   WebContents* base_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   if (base_web_contents) {
-    create_params.initial_size =
-        base_web_contents->GetContainerBounds().size();
+    create_params.initial_size = base_web_contents->GetContainerBounds().size();
   }
   return WebContents::Create(create_params);
 }
@@ -301,7 +303,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_CurrentTab) {
 // This test verifies that a singleton tab is refocused if one is already opened
 // in another or an existing window, or added if it is not.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_SingletonTabExisting) {
-  GURL singleton_url1("http://maps.google.com/");
+  const GURL singleton_url1("http://maps.google.com/");
 
   // Register for a notification if an additional WebContents was instantiated.
   // Opening a Singleton tab that is already opened should not be opening a new
@@ -322,8 +324,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_SingletonTabExisting) {
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
   EXPECT_EQ(2, browser()->tab_strip_model()->active_index());
 
-  unsigned int previous_tab_contents_count =
-      created_tab_contents_count_ = 0;
+  unsigned int previous_tab_contents_count = created_tab_contents_count_ = 0;
 
   // Navigate to singleton_url1.
   NavigateParams params(MakeNavigateParams());
@@ -336,13 +337,12 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_SingletonTabExisting) {
   EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
 
   // No tab contents should have been created
-  EXPECT_EQ(previous_tab_contents_count,
-            created_tab_contents_count_);
+  EXPECT_EQ(previous_tab_contents_count, created_tab_contents_count_);
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        Disposition_SingletonTabNoneExisting) {
-  GURL singleton_url1("http://maps.google.com/");
+  const GURL singleton_url1("http://maps.google.com/");
 
   // We should have one browser with 1 tab.
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
@@ -369,8 +369,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_NewForegroundTab) {
   NavigateParams params(MakeNavigateParams());
   params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   Navigate(&params);
-  EXPECT_NE(old_contents,
-            browser()->tab_strip_model()->GetActiveWebContents());
+  EXPECT_NE(old_contents, browser()->tab_strip_model()->GetActiveWebContents());
   EXPECT_EQ(browser()->tab_strip_model()->GetActiveWebContents(),
             params.navigated_or_inserted_contents);
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
@@ -399,8 +398,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        Disposition_IncompatibleWindow_Existing) {
   // Open a foreground tab in a window that cannot open popups when there is an
   // existing compatible window somewhere else that they can be opened within.
-  Browser* popup = CreateEmptyBrowserForType(Browser::TYPE_POPUP,
-                                             browser()->profile());
+  Browser* popup =
+      CreateEmptyBrowserForType(Browser::TYPE_POPUP, browser()->profile());
   NavigateParams params(MakeNavigateParams(popup));
   params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   Navigate(&params);
@@ -432,8 +431,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   // need a different profile, and creating a popup window with an incognito
   // profile is a quick and dirty way of achieving this.
   Browser* popup = CreateEmptyBrowserForType(
-      Browser::TYPE_POPUP,
-      browser()->profile()->GetOffTheRecordProfile());
+      Browser::TYPE_POPUP, browser()->profile()->GetOffTheRecordProfile());
   NavigateParams params(MakeNavigateParams(popup));
   params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   Navigate(&params);
@@ -557,8 +555,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 
 // This test verifies that navigating with WindowOpenDisposition = NEW_POPUP
 // from an app popup results in a new Browser also of TYPE_POPUP.
-IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
-                       Disposition_NewPopupFromAppPopup) {
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_NewPopupFromAppPopup) {
   Browser* app_browser = CreateEmptyBrowserForApp(browser()->profile());
   // Open an app popup.
   NavigateParams params1(MakeNavigateParams(app_browser));
@@ -628,7 +625,6 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_NewPopupTrusted) {
   EXPECT_TRUE(params.browser->is_type_popup());
   EXPECT_TRUE(params.browser->is_trusted_source());
 }
-
 
 // This test verifies that navigating with WindowOpenDisposition = NEW_WINDOW
 // always opens a new window.
@@ -754,15 +750,35 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 // be switched away from and closed. It verifies that if we close the
 // earlier tab, that we don't use a stale index, and select the wrong tab.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, OutOfOrderTabSwitchTest) {
-  GURL singleton_url("http://maps.google.com/");
+  const GURL singleton_url("http://maps.google.com/");
 
   NavigateHelper(singleton_url, browser(),
                  WindowOpenDisposition::NEW_FOREGROUND_TAB, true);
 
-  browser()->tab_strip_model()->ActivateTabAt(0, true);
+  browser()->tab_strip_model()->ActivateTabAt(
+      0, {TabStripModel::GestureType::kOther});
 
   NavigateHelper(singleton_url, browser(), WindowOpenDisposition::SWITCH_TO_TAB,
                  false);
+}
+
+// This test verifies the two cases of attempting to switch to a tab that no
+// longer exists: if NTP, load in current tab, otherwise load in new
+// foreground tab.
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, NavigateOnTabSwitchLostTest) {
+  const GURL singleton_url("chrome://dino");
+
+  NavigateHelper(singleton_url, browser(), WindowOpenDisposition::SWITCH_TO_TAB,
+                 true);
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
+
+  NavigateHelper(GURL("chrome://about"), browser(),
+                 WindowOpenDisposition::NEW_FOREGROUND_TAB, true);
+  browser()->tab_strip_model()->CloseWebContentsAt(0,
+                                                   TabStripModel::CLOSE_NONE);
+  NavigateHelper(singleton_url, browser(), WindowOpenDisposition::SWITCH_TO_TAB,
+                 true);
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
 }
 
 // This test verifies that IsTabOpenWithURL() and GetIndexOfExistingTab()
@@ -795,7 +811,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, SchemeMismatchTabSwitchTest) {
 // switch to. It verifies that we don't recommend the active tab, and that,
 // when switching, we don't mistakenly pick the current browser.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, SwitchToTabCorrectWindow) {
-  GURL singleton_url("http://maps.google.com/");
+  const GURL singleton_url("http://maps.google.com/");
 
   // Make singleton tab.
   Browser* orig_browser = NavigateHelper(
@@ -1005,9 +1021,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, MAYBE_Disposition_Incognito) {
 // This test verifies that navigating with WindowOpenDisposition = INCOGNITO
 // reuses an existing incognito window when possible.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_IncognitoRefocus) {
-  Browser* incognito_browser =
-      CreateEmptyBrowserForType(Browser::TYPE_TABBED,
-                                browser()->profile()->GetOffTheRecordProfile());
+  Browser* incognito_browser = CreateEmptyBrowserForType(
+      Browser::TYPE_TABBED, browser()->profile()->GetOffTheRecordProfile());
   NavigateParams params(MakeNavigateParams());
   params.disposition = WindowOpenDisposition::OFF_THE_RECORD;
   Navigate(&params);
@@ -1183,9 +1198,10 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   EXPECT_EQ(browser(), params.browser);
   EXPECT_EQ(3, browser()->tab_strip_model()->count());
   EXPECT_EQ(2, browser()->tab_strip_model()->active_index());
-  EXPECT_EQ(GetContentSettingsURL(),
-            ShortenUberURL(browser()->tab_strip_model()->
-                GetActiveWebContents()->GetURL()));
+  EXPECT_EQ(
+      GetContentSettingsURL(),
+      ShortenUberURL(
+          browser()->tab_strip_model()->GetActiveWebContents()->GetURL()));
 }
 
 // This test verifies that constructing params with disposition = SINGLETON_TAB
@@ -1193,8 +1209,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 // the path) which is navigated to the specified URL.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        Disposition_SingletonTabExisting_IgnorePath) {
-  GURL singleton_url1(GetSettingsURL());
-  chrome::AddSelectedTabWithURL(browser(), singleton_url1,
+  const GURL singleton_url(GetSettingsURL());
+  chrome::AddSelectedTabWithURL(browser(), singleton_url,
                                 ui::PAGE_TRANSITION_LINK);
   chrome::AddSelectedTabWithURL(browser(), GetGoogleURL(),
                                 ui::PAGE_TRANSITION_LINK);
@@ -1204,7 +1220,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   EXPECT_EQ(3, browser()->tab_strip_model()->count());
   EXPECT_EQ(2, browser()->tab_strip_model()->active_index());
 
-  // Navigate to singleton_url1.
+  // Navigate to |singleton_url|.
   NavigateParams params(MakeNavigateParams());
   params.disposition = WindowOpenDisposition::SINGLETON_TAB;
   params.url = GetContentSettingsURL();
@@ -1217,9 +1233,10 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   EXPECT_EQ(browser(), params.browser);
   EXPECT_EQ(3, browser()->tab_strip_model()->count());
   EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
-  EXPECT_EQ(GetContentSettingsURL(),
-            ShortenUberURL(browser()->tab_strip_model()->
-                GetActiveWebContents()->GetURL()));
+  EXPECT_EQ(
+      GetContentSettingsURL(),
+      ShortenUberURL(
+          browser()->tab_strip_model()->GetActiveWebContents()->GetURL()));
 }
 
 // This test verifies that constructing params with disposition = SINGLETON_TAB
@@ -1227,8 +1244,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 // the path) which is navigated to the specified URL.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        Disposition_SingletonTabExistingSubPath_IgnorePath) {
-  GURL singleton_url1(GetContentSettingsURL());
-  chrome::AddSelectedTabWithURL(browser(), singleton_url1,
+  const GURL singleton_url(GetContentSettingsURL());
+  chrome::AddSelectedTabWithURL(browser(), singleton_url,
                                 ui::PAGE_TRANSITION_LINK);
   chrome::AddSelectedTabWithURL(browser(), GetGoogleURL(),
                                 ui::PAGE_TRANSITION_LINK);
@@ -1238,7 +1255,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   EXPECT_EQ(3, browser()->tab_strip_model()->count());
   EXPECT_EQ(2, browser()->tab_strip_model()->active_index());
 
-  // Navigate to singleton_url1.
+  // Navigate to |singleton_url|.
   NavigateParams params(MakeNavigateParams());
   params.disposition = WindowOpenDisposition::SINGLETON_TAB;
   params.url = GetClearBrowsingDataURL();
@@ -1251,9 +1268,10 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   EXPECT_EQ(browser(), params.browser);
   EXPECT_EQ(3, browser()->tab_strip_model()->count());
   EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
-  EXPECT_EQ(GetClearBrowsingDataURL(),
-            ShortenUberURL(browser()->tab_strip_model()->
-                GetActiveWebContents()->GetURL()));
+  EXPECT_EQ(
+      GetClearBrowsingDataURL(),
+      ShortenUberURL(
+          browser()->tab_strip_model()->GetActiveWebContents()->GetURL()));
 }
 
 // This test verifies that constructing params with disposition = SINGLETON_TAB
@@ -1261,7 +1279,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 // selected tab is a match but has a different path.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        Disposition_SingletonTabFocused_IgnorePath) {
-  GURL singleton_url_current(GetContentSettingsURL());
+  const GURL singleton_url_current(GetContentSettingsURL());
   chrome::AddSelectedTabWithURL(browser(), singleton_url_current,
                                 ui::PAGE_TRANSITION_LINK);
 
@@ -1271,7 +1289,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
 
   // Navigate to a different settings path.
-  GURL singleton_url_target(GetClearBrowsingDataURL());
+  const GURL singleton_url_target(GetClearBrowsingDataURL());
   NavigateParams params(MakeNavigateParams());
   params.disposition = WindowOpenDisposition::SINGLETON_TAB;
   params.url = singleton_url_target;
@@ -1283,9 +1301,10 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   EXPECT_EQ(browser(), params.browser);
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
   EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
-  EXPECT_EQ(singleton_url_target,
-            ShortenUberURL(browser()->tab_strip_model()->
-                GetActiveWebContents()->GetURL()));
+  EXPECT_EQ(
+      singleton_url_target,
+      ShortenUberURL(
+          browser()->tab_strip_model()->GetActiveWebContents()->GetURL()));
 }
 
 // This test verifies that constructing params with disposition = SINGLETON_TAB
@@ -1294,7 +1313,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        Disposition_SingletonTabExisting_IgnoreQuery) {
   int initial_tab_count = browser()->tab_strip_model()->count();
-  GURL singleton_url_current("chrome://settings/internet");
+  const GURL singleton_url_current("chrome://settings/internet");
   chrome::AddSelectedTabWithURL(browser(), singleton_url_current,
                                 ui::PAGE_TRANSITION_LINK);
 
@@ -1302,7 +1321,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   EXPECT_EQ(initial_tab_count, browser()->tab_strip_model()->active_index());
 
   // Navigate to a different settings path.
-  GURL singleton_url_target(
+  const GURL singleton_url_target(
       "chrome://settings/internet?"
       "guid=ethernet_00aa00aa00aa&networkType=1");
   NavigateParams params(MakeNavigateParams());
@@ -1320,9 +1339,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 
 // This test verifies that the settings page isn't opened in the incognito
 // window.
-// Disabled until fixed for uber settings: http://crbug.com/111243
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
-                       DISABLED_Disposition_Settings_UseNonIncognitoWindow) {
+                       Disposition_Settings_UseNonIncognitoWindow) {
   RunUseNonIncognitoWindowTest(GetSettingsURL());
 }
 
@@ -1350,9 +1368,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 
 // This test verifies that the settings page isn't opened in the incognito
 // window from a non-incognito window (bookmark open-in-incognito trigger).
-// Disabled until fixed for uber settings: http://crbug.com/111243
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
-    DISABLED_Disposition_Settings_UseNonIncognitoWindowForBookmark) {
+                       Disposition_Settings_UseNonIncognitoWindowForBookmark) {
   NavigateParams params(browser(), GetSettingsURL(),
                         ui::PAGE_TRANSITION_AUTO_BOOKMARK);
   params.disposition = WindowOpenDisposition::OFF_THE_RECORD;
@@ -1365,18 +1382,18 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   }
 
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
-  EXPECT_EQ(GetSettingsURL(),
-            ShortenUberURL(browser()->tab_strip_model()->
-                GetActiveWebContents()->GetURL()));
+  EXPECT_EQ(
+      GetSettingsURL(),
+      ShortenUberURL(
+          browser()->tab_strip_model()->GetActiveWebContents()->GetURL()));
 }
 
 // Settings page is expected to always open in normal mode regardless
 // of whether the user is trying to open it in incognito mode or not.
 // This test verifies that if incognito mode is forced (by policy), settings
 // page doesn't open at all.
-// Disabled until fixed for uber settings: http://crbug.com/111243
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
-    DISABLED_Disposition_Settings_DoNothingIfIncognitoIsForced) {
+                       Disposition_Settings_DoNothingIfIncognitoIsForced) {
   RunDoNothingIfIncognitoIsForcedTest(GetSettingsURL());
 }
 
@@ -1397,10 +1414,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 }
 
 // This test makes sure a crashed singleton tab reloads from a new navigation.
-// http://crbug.com/396371
-IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
-                       DISABLED_NavigateToCrashedSingletonTab) {
-  GURL singleton_url(GetContentSettingsURL());
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, NavigateToCrashedSingletonTab) {
+  const GURL singleton_url(GetContentSettingsURL());
   WebContents* web_contents = chrome::AddSelectedTabWithURL(
       browser(), singleton_url, ui::PAGE_TRANSITION_LINK);
 
@@ -1434,9 +1449,10 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
     observer.Wait();
   }
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
-  EXPECT_EQ(GetSettingsURL(),
-            ShortenUberURL(browser()->tab_strip_model()->
-                GetActiveWebContents()->GetURL()));
+  EXPECT_EQ(
+      GetSettingsURL(),
+      ShortenUberURL(
+          browser()->tab_strip_model()->GetActiveWebContents()->GetURL()));
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
@@ -1453,9 +1469,10 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
     observer.Wait();
   }
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
-  EXPECT_EQ(GetSettingsURL(),
-            ShortenUberURL(browser()->tab_strip_model()->
-                GetActiveWebContents()->GetURL()));
+  EXPECT_EQ(
+      GetSettingsURL(),
+      ShortenUberURL(
+          browser()->tab_strip_model()->GetActiveWebContents()->GetURL()));
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
@@ -1475,9 +1492,10 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
     observer.Wait();
   }
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
-  EXPECT_EQ(GetSettingsURL(),
-            ShortenUberURL(browser()->tab_strip_model()->
-                GetActiveWebContents()->GetURL()));
+  EXPECT_EQ(
+      GetSettingsURL(),
+      ShortenUberURL(
+          browser()->tab_strip_model()->GetActiveWebContents()->GetURL()));
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
@@ -1497,9 +1515,10 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
     observer.Wait();
   }
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
-  EXPECT_EQ(GetSettingsURL(),
-            ShortenUberURL(browser()->tab_strip_model()->
-                GetActiveWebContents()->GetURL()));
+  EXPECT_EQ(
+      GetSettingsURL(),
+      ShortenUberURL(
+          browser()->tab_strip_model()->GetActiveWebContents()->GetURL()));
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
@@ -1524,9 +1543,10 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
     observer.Wait();
   }
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
-  EXPECT_EQ(GetSettingsURL(),
-            ShortenUberURL(browser()->tab_strip_model()->
-                GetActiveWebContents()->GetURL()));
+  EXPECT_EQ(
+      GetSettingsURL(),
+      ShortenUberURL(
+          browser()->tab_strip_model()->GetActiveWebContents()->GetURL()));
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
@@ -1581,9 +1601,10 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   ShowSettings(browser());
 
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
-  EXPECT_EQ(GetSettingsURL(),
-            ShortenUberURL(browser()->tab_strip_model()->
-                GetActiveWebContents()->GetURL()));
+  EXPECT_EQ(
+      GetSettingsURL(),
+      ShortenUberURL(
+          browser()->tab_strip_model()->GetActiveWebContents()->GetURL()));
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, CloseSingletonTab) {
@@ -1596,7 +1617,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, CloseSingletonTab) {
     observer.Wait();
   }
 
-  browser()->tab_strip_model()->ActivateTabAt(0, true);
+  browser()->tab_strip_model()->ActivateTabAt(
+      0, {TabStripModel::GestureType::kOther});
 
   {
     content::WindowedNotificationObserver observer(
@@ -1628,10 +1650,10 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 // TODO(linux_aura) http://crbug.com/163931
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
 #define MAYBE_NavigateFromDefaultToBookmarksInSameTab \
-    DISABLED_NavigateFromDefaultToBookmarksInSameTab
+  DISABLED_NavigateFromDefaultToBookmarksInSameTab
 #else
 #define MAYBE_NavigateFromDefaultToBookmarksInSameTab \
-    NavigateFromDefaultToBookmarksInSameTab
+  NavigateFromDefaultToBookmarksInSameTab
 #endif
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        MAYBE_NavigateFromDefaultToBookmarksInSameTab) {
@@ -1662,8 +1684,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
             browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
-                       NavigateWithoutBrowser) {
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, NavigateWithoutBrowser) {
   // First navigate using the profile of the existing browser window, and
   // check that the window is reused.
   NavigateParams params(browser()->profile(), GetGoogleURL(),

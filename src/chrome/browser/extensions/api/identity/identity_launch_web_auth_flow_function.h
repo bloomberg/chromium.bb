@@ -17,7 +17,7 @@ class IdentityLaunchWebAuthFlowFunction : public ChromeAsyncExtensionFunction,
                                           public WebAuthFlow::Delegate {
  public:
   DECLARE_EXTENSION_FUNCTION("identity.launchWebAuthFlow",
-                             EXPERIMENTAL_IDENTITY_LAUNCHWEBAUTHFLOW);
+                             EXPERIMENTAL_IDENTITY_LAUNCHWEBAUTHFLOW)
 
   IdentityLaunchWebAuthFlowFunction();
 

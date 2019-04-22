@@ -45,10 +45,11 @@ class GL_EXPORT GLContextEGL : public GLContextReal {
   void Destroy();
   void ReleaseYUVToRGBConverters();
 
-  EGLContext context_;
-  EGLDisplay display_;
-  EGLConfig config_;
-  bool unbind_fbo_on_makecurrent_;
+  EGLContext context_ = nullptr;
+  EGLDisplay display_ = nullptr;
+  EGLConfig config_ = nullptr;
+  bool unbind_fbo_on_makecurrent_ = false;
+  bool lost_ = false;
   std::map<gfx::ColorSpace, std::unique_ptr<YUVToRGBConverter>>
       yuv_to_rgb_converters_;
 

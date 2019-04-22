@@ -8,7 +8,7 @@
 #error "This file requires ARC support."
 #endif
 
-ToolbarTestWebState::ToolbarTestWebState() : loading_progress_(0){};
+ToolbarTestWebState::ToolbarTestWebState() : loading_progress_(0) {}
 
 double ToolbarTestWebState::GetLoadingProgress() const {
   return loading_progress_;

@@ -38,9 +38,15 @@ const size_t kMaxIndexChars = 65535;
   // Copy the completion handler so that the block does not capture a reference.
   __block language_detection::BufferedTextCallback blockCallback = callback;
   NSString* JS = @"__gCrWeb.languageDetection.retrieveBufferedTextContent()";
-  [self executeJavaScript:JS completionHandler:^(id result, NSError*) {
-    blockCallback.Run(base::SysNSStringToUTF16(result));
-  }];
+  [self executeJavaScript:JS
+        completionHandler:^(id result, NSError*) {
+          // In the case that |result| is not a NSString, pass an empty string.
+          if ([result isKindOfClass:[NSString class]]) {
+            blockCallback.Run(base::SysNSStringToUTF16(result));
+          } else {
+            blockCallback.Run(base::string16());
+          }
+        }];
 }
 
 @end

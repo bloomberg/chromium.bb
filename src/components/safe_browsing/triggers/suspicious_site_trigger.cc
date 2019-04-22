@@ -4,6 +4,7 @@
 
 #include "components/safe_browsing/triggers/suspicious_site_trigger.h"
 
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
@@ -287,5 +288,7 @@ void SuspiciousSiteTrigger::SetTaskRunnerForTest(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   task_runner_ = task_runner;
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(SuspiciousSiteTrigger)
 
 }  // namespace safe_browsing

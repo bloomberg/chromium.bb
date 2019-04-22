@@ -8,6 +8,7 @@
 
 #include <vector>
 
+#include "base/bind.h"
 #include "base/files/file.h"
 #include "base/run_loop.h"
 #include "content/public/test/test_browser_thread_bundle.h"

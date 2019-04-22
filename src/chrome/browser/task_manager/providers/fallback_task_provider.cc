@@ -94,8 +94,8 @@ void FallbackTaskProvider::ShowTaskLater(Task* task) {
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&FallbackTaskProvider::ShowPendingTask,
-                 it->second.GetWeakPtr(), task),
+      base::BindOnce(&FallbackTaskProvider::ShowPendingTask,
+                     it->second.GetWeakPtr(), task),
       kTimeDelayForPendingTask);
 }
 

@@ -7,8 +7,8 @@
 
 #include <string>
 
+#include "base/component_export.h"
 #include "base/logging.h"
-#include "chromeos/chromeos_export.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/base/net_errors.h"
@@ -17,7 +17,7 @@ namespace chromeos {
 
 class UserContext;
 
-class CHROMEOS_EXPORT AuthFailure {
+class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) AuthFailure {
  public:
   // Enum used for UMA. Do NOT reorder or remove entry. Don't forget to
   // update LoginFailureReason enum in enums.xml when adding new entries.
@@ -122,7 +122,7 @@ enum SuccessReason {
 // An interface that defines the callbacks for objects that the
 // Authenticator class will call to report the success/failure of
 // authentication for Chromium OS.
-class CHROMEOS_EXPORT AuthStatusConsumer {
+class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) AuthStatusConsumer {
  public:
   virtual ~AuthStatusConsumer() {}
   // The current login attempt has ended in failure, with error |error|.

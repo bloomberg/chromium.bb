@@ -15,18 +15,15 @@
 #include "ui/aura/test/test_window_parenting_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/base/ime/init/input_method_factory.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/input_method_delegate.h"
-#include "ui/base/ime/input_method_factory.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 #include "ui/wm/core/default_activation_client.h"
 
 #if defined(OS_FUCHSIA)
-#include <fuchsia/ui/policy/cpp/fidl.h>
-#include <lib/zx/eventpair.h>
-#include "base/fuchsia/component_context.h"
-#include "base/fuchsia/fuchsia_logging.h"
+#include "ui/platform_window/fuchsia/initialize_presenter_api_view.h"
 #endif
 
 #if defined(USE_OZONE)
@@ -98,7 +95,7 @@ ShellPlatformDataAura::ShellPlatformDataAura(const gfx::Size& initial_size) {
     // TODO(https://crbug.com/872339): Implement PlatformScreen for all
     // platforms and remove this code.
     if (!screen_) {
-      // Some layout tests expect to be able to resize the window, so the screen
+      // Some web tests expect to be able to resize the window, so the screen
       // must be larger than the window.
       screen_.reset(
           aura::TestScreen::Create(gfx::ScaleToCeiledSize(initial_size, 2.0)));
@@ -115,17 +112,7 @@ ShellPlatformDataAura::ShellPlatformDataAura(const gfx::Size& initial_size) {
   if (ui::OzonePlatform::GetInstance()
           ->GetPlatformProperties()
           .needs_view_token) {
-    // Create view_token and view_holder_token.
-    zx::eventpair view_holder_token;
-    zx_status_t status = zx::eventpair::create(
-        /*options=*/0, &properties.view_token, &view_holder_token);
-    ZX_CHECK(status == ZX_OK, status) << "zx_eventpair_create";
-
-    // Request Presenter to show the view full-screen.
-    auto presenter = base::fuchsia::ComponentContext::GetDefault()
-                         ->ConnectToService<fuchsia::ui::policy::Presenter>();
-
-    presenter->Present2(std::move(view_holder_token), nullptr);
+    ui::fuchsia::InitializeViewTokenAndPresentView(&properties);
   }
 #endif
 

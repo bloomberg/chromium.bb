@@ -10,6 +10,7 @@
 #include "base/time/time.h"
 #include "components/offline_pages/core/model/model_task_test_base.h"
 #include "components/offline_pages/core/model/offline_page_model_utils.h"
+#include "components/offline_pages/core/offline_clock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace offline_pages {
@@ -36,7 +37,7 @@ TEST_F(MarkPageAccessedTaskTest, MarkPageAccessed) {
                        kTestFileSize);
   store_test_util()->InsertItem(page);
 
-  base::Time current_time = base::Time::Now();
+  base::Time current_time = OfflineTimeNow();
   auto task = std::make_unique<MarkPageAccessedTask>(store(), kTestOfflineId,
                                                      current_time);
   RunTask(std::move(task));
@@ -62,7 +63,7 @@ TEST_F(MarkPageAccessedTaskTest, MarkPageAccessedTwice) {
                        kTestFileSize);
   store_test_util()->InsertItem(page);
 
-  base::Time current_time = base::Time::Now();
+  base::Time current_time = OfflineTimeNow();
   auto task = std::make_unique<MarkPageAccessedTask>(store(), kTestOfflineId,
                                                      current_time);
   RunTask(std::move(task));
@@ -83,7 +84,7 @@ TEST_F(MarkPageAccessedTaskTest, MarkPageAccessedTwice) {
                                       "OfflinePages.PageAccessInterval"),
       (current_time - page.last_access_time).InMinutes(), 1);
 
-  base::Time second_time = base::Time::Now();
+  base::Time second_time = OfflineTimeNow();
   task = std::make_unique<MarkPageAccessedTask>(store(), kTestOfflineId,
                                                 second_time);
   RunTask(std::move(task));

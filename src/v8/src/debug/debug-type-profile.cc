@@ -24,7 +24,8 @@ std::unique_ptr<TypeProfile> TypeProfile::Collect(Isolate* isolate) {
 
   Script::Iterator scripts(isolate);
 
-  while (Script* script = scripts.Next()) {
+  for (Script script = scripts.Next(); !script.is_null();
+       script = scripts.Next()) {
     if (!script->IsUserJavaScript()) {
       continue;
     }
@@ -37,15 +38,16 @@ std::unique_ptr<TypeProfile> TypeProfile::Collect(Isolate* isolate) {
     // TODO(franzih): Sort the vectors by script first instead of iterating
     // the list multiple times.
     for (int i = 0; i < list->Length(); i++) {
-      FeedbackVector* vector = FeedbackVector::cast(list->Get(i));
-      SharedFunctionInfo* info = vector->shared_function_info();
+      FeedbackVector vector = FeedbackVector::cast(list->Get(i));
+      SharedFunctionInfo info = vector->shared_function_info();
       DCHECK(info->IsSubjectToDebugging());
 
       // Match vectors with script.
       if (script != info->script()) {
         continue;
       }
-      if (info->feedback_metadata()->is_empty() ||
+      if (!info->HasFeedbackMetadata() ||
+          info->feedback_metadata()->is_empty() ||
           !info->feedback_metadata()->HasTypeProfileSlot()) {
         continue;
       }
@@ -69,10 +71,10 @@ std::unique_ptr<TypeProfile> TypeProfile::Collect(Isolate* isolate) {
   return result;
 }
 
-void TypeProfile::SelectMode(Isolate* isolate, debug::TypeProfile::Mode mode) {
+void TypeProfile::SelectMode(Isolate* isolate, debug::TypeProfileMode mode) {
   HandleScope handle_scope(isolate);
 
-  if (mode == debug::TypeProfile::Mode::kNone) {
+  if (mode == debug::TypeProfileMode::kNone) {
     if (!isolate->factory()
              ->feedback_vectors_for_profiling_tools()
              ->IsUndefined(isolate)) {
@@ -86,8 +88,8 @@ void TypeProfile::SelectMode(Isolate* isolate, debug::TypeProfile::Mode mode) {
           isolate->factory()->feedback_vectors_for_profiling_tools());
 
       for (int i = 0; i < list->Length(); i++) {
-        FeedbackVector* vector = FeedbackVector::cast(list->Get(i));
-        SharedFunctionInfo* info = vector->shared_function_info();
+        FeedbackVector vector = FeedbackVector::cast(list->Get(i));
+        SharedFunctionInfo info = vector->shared_function_info();
         DCHECK(info->IsSubjectToDebugging());
         if (info->feedback_metadata()->HasTypeProfileSlot()) {
           FeedbackSlot slot = vector->GetTypeProfileSlot();
@@ -104,7 +106,7 @@ void TypeProfile::SelectMode(Isolate* isolate, debug::TypeProfile::Mode mode) {
       }
     }
   } else {
-    DCHECK_EQ(debug::TypeProfile::Mode::kCollect, mode);
+    DCHECK_EQ(debug::TypeProfileMode::kCollect, mode);
     isolate->MaybeInitializeVectorListFromHeap();
   }
   isolate->set_type_profile_mode(mode);

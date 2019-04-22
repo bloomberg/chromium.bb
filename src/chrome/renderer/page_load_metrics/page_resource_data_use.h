@@ -7,6 +7,9 @@
 
 #include "base/macros.h"
 #include "chrome/common/page_load_metrics/page_load_metrics.mojom.h"
+#include "content/public/common/previews_state.h"
+#include "content/public/common/resource_type.h"
+#include "url/origin.h"
 
 class GURL;
 
@@ -27,7 +30,9 @@ class PageResourceDataUse {
 
   void DidStartResponse(const GURL& response_url,
                         int resource_id,
-                        const network::ResourceResponseHead& response_head);
+                        const network::ResourceResponseHead& response_head,
+                        content::ResourceType resource_type,
+                        content::PreviewsState previews_state);
 
   // Updates received bytes.
   void DidReceiveTransferSizeUpdate(int received_data_length);
@@ -74,6 +79,9 @@ class PageResourceDataUse {
   bool was_fetched_via_cache_;
   bool is_secure_scheme_;
   bool proxy_used_;
+  bool is_primary_frame_resource_ = false;
+
+  url::Origin origin_;
 
   std::string mime_type_;
 

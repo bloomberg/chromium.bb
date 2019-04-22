@@ -31,45 +31,24 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_member.h"
 #include "components/signin/core/browser/account_info.h"
-#include "components/signin/core/browser/signin_internals_util.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
 class AccountTrackerService;
 class PrefRegistrySimple;
 class PrefService;
+class ProfileOAuth2TokenService;
 class SigninClient;
-class SigninErrorController;
 
-class SigninManagerBase : public KeyedService {
+class SigninManagerBase {
  public:
   class Observer {
    public:
-    // Called when a user fails to sign into Google services such as sync.
-    virtual void GoogleSigninFailed(const GoogleServiceAuthError& error) {}
-
     // Called when a user signs into Google services such as sync.
     // This method is not called during a reauth.
     virtual void GoogleSigninSucceeded(const AccountInfo& account_info) {}
-
-    // Called when a user signs into Google services such as sync. Also passes
-    // the password of the Google account that was used to sign in.
-    // This method is not called during a reauth.
-    //
-    // Observers should override |GoogleSigninSucceeded| if they are not
-    // interested in the password thas was used during the sign-in.
-    //
-    // Note: The password is always empty on mobile as the user signs in to
-    // Chrome with accounts that were added to the device, so Chrome does not
-    // have access to the password.
-    // DEPRECATED: password will be empty if login is using DICE workflow; the
-    // method will be removed once all login is using the DICE workflow.
-    virtual void GoogleSigninSucceededWithPassword(
-        const AccountInfo& account_info,
-        const std::string& password) {}
 
     // Called when the currently signed-in user for a user has been signed out.
     virtual void GoogleSignedOut(const AccountInfo& account_info) {}
@@ -78,10 +57,8 @@ class SigninManagerBase : public KeyedService {
     virtual ~Observer() {}
 
    private:
-    // SigninManagers that fire |GoogleSigninSucceededWithPassword|
-    // notifications.
+    // SigninManagers that fire notifications.
     friend class SigninManager;
-    friend class FakeSigninManager;
   };
 
 // On non-ChromeOS platforms, SigninManagerBase should only be instantiated
@@ -95,13 +72,13 @@ class SigninManagerBase : public KeyedService {
  private:
 #endif
   SigninManagerBase(SigninClient* client,
-                    AccountTrackerService* account_tracker_service,
-                    SigninErrorController* signin_error_controller);
+                    ProfileOAuth2TokenService* token_service,
+                    AccountTrackerService* account_tracker_service);
 #if !defined(OS_CHROMEOS)
  public:
 #endif
 
-  ~SigninManagerBase() override;
+  virtual ~SigninManagerBase();
 
   // Registers per-profile prefs.
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
@@ -110,14 +87,8 @@ class SigninManagerBase : public KeyedService {
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
   // If user was signed in, load tokens from DB if available.
-  virtual void Initialize(PrefService* local_state);
+  void Initialize(PrefService* local_state);
   bool IsInitialized() const;
-
-  // Returns true if a signin to Chrome is allowed (by policy or pref).
-  // TODO(crbug.com/806778): this method should not be used externally,
-  // instead the value of the kSigninAllowed preference should be checked.
-  // Once all external code has been modified, this method will be removed.
-  virtual bool IsSigninAllowed() const;
 
   // If a user has previously signed in (and has not signed out), this returns
   // the know information of the account. Otherwise, it returns an empty struct.
@@ -144,38 +115,25 @@ class SigninManagerBase : public KeyedService {
   // Returns true if there is an authenticated user.
   bool IsAuthenticated() const;
 
-  // Returns true if there's a signin in progress.
-  virtual bool AuthInProgress() const;
-
-  // KeyedService implementation.
-  void Shutdown() override;
-
-  // Methods to register or remove observers of signin.
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
-
-  // Methods to register or remove SigninDiagnosticObservers.
-  void AddSigninDiagnosticsObserver(
-      signin_internals_util::SigninDiagnosticsObserver* observer);
-  void RemoveSigninDiagnosticsObserver(
-      signin_internals_util::SigninDiagnosticsObserver* observer);
-
-  // Gives access to the SigninClient instance associated with this instance.
-  SigninClient* signin_client() const { return client_; }
-
-  // Adds a callback that will be called when this instance is shut down.Not
-  // intended for general usage, but rather for usage only by the Identity
-  // Service implementation during the time period of conversion of Chrome to
-  // use the Identity Service.
-  std::unique_ptr<base::CallbackList<void()>::Subscription>
-  RegisterOnShutdownCallback(const base::Closure& cb) {
-    return on_shutdown_callback_list_.Add(cb);
-  }
+  // Methods to set or clear the observer of signin.
+  // In practice these should only be used by IdentityManager.
+  // NOTE: If SetObserver is called, ClearObserver should be called before
+  // the destruction of SigninManagerBase.
+  void SetObserver(Observer* observer);
+  void ClearObserver();
 
  protected:
+  SigninClient* signin_client() const { return client_; }
+
+  ProfileOAuth2TokenService* token_service() const { return token_service_; }
+
   AccountTrackerService* account_tracker_service() const {
     return account_tracker_service_;
   }
+
+  // Invoked at the end of |Initialize| before the refresh token for the primary
+  // account is loaded.
+  virtual void FinalizeInitBeforeLoadingRefreshTokens(PrefService* local_state);
 
   // Sets the authenticated user's account id.
   // If the user is already authenticated with the same account id, then this
@@ -192,35 +150,27 @@ class SigninManagerBase : public KeyedService {
   // call this.
   void ClearAuthenticatedAccountId();
 
-  // List of observers to notify on signin events.
-  // Makes sure list is empty on destruction.
-  base::ObserverList<Observer, true>::Unchecked observer_list_;
-
-  // Helper method to notify all registered diagnostics observers with.
-  void NotifyDiagnosticsObservers(
-      const signin_internals_util::TimedSigninStatusField& field,
-      const std::string& value);
+  // Observer to notify on signin events.
+  // There is a DCHECK on destruction that this has been cleared.
+  Observer* observer_ = nullptr;
 
  private:
-  friend class FakeSigninManagerBase;
-  friend class FakeSigninManager;
-
   // Added only to allow SigninManager to call the SigninManagerBase
   // constructor while disallowing any ad-hoc subclassing of
   // SigninManagerBase.
   friend class SigninManager;
 
   SigninClient* client_;
+
+  // The ProfileOAuth2TokenService instance associated with this object. Must
+  // outlive this object.
+  ProfileOAuth2TokenService* token_service_;
+
   AccountTrackerService* account_tracker_service_;
-  SigninErrorController* signin_error_controller_;
   bool initialized_;
 
   // Account id after successful authentication.
   std::string authenticated_account_id_;
-
-  // The list of SigninDiagnosticObservers.
-  base::ObserverList<signin_internals_util::SigninDiagnosticsObserver,
-                     true>::Unchecked signin_diagnostics_observers_;
 
   // The list of callbacks notified on shutdown.
   base::CallbackList<void()> on_shutdown_callback_list_;

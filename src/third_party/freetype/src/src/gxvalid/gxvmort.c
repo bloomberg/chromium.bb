@@ -4,7 +4,7 @@
  *
  *   TrueTypeGX/AAT mort table validation (body).
  *
- * Copyright 2005-2018 by
+ * Copyright (C) 2005-2019 by
  * suzuki toshiya, Masatake YAMATO, Red Hat K.K.,
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
@@ -123,6 +123,7 @@
                               GXV_Validator  gxvalid )
   {
     FT_UNUSED( gxvalid );
+    FT_UNUSED( coverage );
 
 #ifdef FT_DEBUG_LEVEL_TRACE
     if ( coverage & 0x8000U )

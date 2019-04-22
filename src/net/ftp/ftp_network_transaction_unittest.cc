@@ -9,8 +9,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "net/base/host_port_pair.h"
 #include "net/base/io_buffer.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/test_completion_callback.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/ftp/ftp_request_info.h"
@@ -907,9 +907,10 @@ TEST_P(FtpNetworkTransactionTest, DirectoryTransaction) {
 
   EXPECT_TRUE(transaction_->GetResponseInfo()->is_directory_listing);
   EXPECT_EQ(-1, transaction_->GetResponseInfo()->expected_content_size);
-  EXPECT_EQ((GetFamily() == AF_INET) ? "127.0.0.1" : "::1",
-            transaction_->GetResponseInfo()->socket_address.host());
-  EXPECT_EQ(21, transaction_->GetResponseInfo()->socket_address.port());
+  EXPECT_EQ(
+      (GetFamily() == AF_INET) ? "127.0.0.1" : "::1",
+      transaction_->GetResponseInfo()->remote_endpoint.ToStringWithoutPort());
+  EXPECT_EQ(21, transaction_->GetResponseInfo()->remote_endpoint.port());
 }
 
 TEST_P(FtpNetworkTransactionTest, DirectoryTransactionWithPasvFallback) {
@@ -990,9 +991,10 @@ TEST_P(FtpNetworkTransactionTest, DownloadTransaction) {
 
   // We pass an artificial value of 18 as a response to the SIZE command.
   EXPECT_EQ(18, transaction_->GetResponseInfo()->expected_content_size);
-  EXPECT_EQ((GetFamily() == AF_INET) ? "127.0.0.1" : "::1",
-            transaction_->GetResponseInfo()->socket_address.host());
-  EXPECT_EQ(21, transaction_->GetResponseInfo()->socket_address.port());
+  EXPECT_EQ(
+      (GetFamily() == AF_INET) ? "127.0.0.1" : "::1",
+      transaction_->GetResponseInfo()->remote_endpoint.ToStringWithoutPort());
+  EXPECT_EQ(21, transaction_->GetResponseInfo()->remote_endpoint.port());
 }
 
 TEST_P(FtpNetworkTransactionTest, DownloadTransactionWithPasvFallback) {
@@ -1733,8 +1735,8 @@ TEST_P(FtpNetworkTransactionTest, InvalidRemoteDirectory2) {
       "257 \"foo\nbar\" is your current location\r\n", ERR_INVALID_RESPONSE);
 }
 
-INSTANTIATE_TEST_CASE_P(Ftp,
-                        FtpNetworkTransactionTest,
-                        ::testing::Values(AF_INET, AF_INET6));
+INSTANTIATE_TEST_SUITE_P(Ftp,
+                         FtpNetworkTransactionTest,
+                         ::testing::Values(AF_INET, AF_INET6));
 
 }  // namespace net

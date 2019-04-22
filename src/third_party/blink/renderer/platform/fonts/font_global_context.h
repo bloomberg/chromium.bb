@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/platform/fonts/shaping/harfbuzz_font_cache.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/text/layout_locale.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 struct hb_font_funcs_t;
 
@@ -22,7 +23,7 @@ enum CreateIfNeeded { kDoNotCreate, kCreate };
 // FontGlobalContext contains non-thread-safe, thread-specific data used for
 // font formatting.
 class PLATFORM_EXPORT FontGlobalContext {
-  WTF_MAKE_NONCOPYABLE(FontGlobalContext);
+  USING_FAST_MALLOC(FontGlobalContext);
 
  public:
   static FontGlobalContext* Get(CreateIfNeeded = kCreate);
@@ -43,10 +44,8 @@ class PLATFORM_EXPORT FontGlobalContext {
 
   static FontUniqueNameLookup* GetFontUniqueNameLookup();
 
-  // Called by MemoryCoordinator to clear memory.
+  // Called by MemoryPressureListenerRegistry to clear memory.
   static void ClearMemory();
-
-  static void ClearForTesting();
 
  private:
   friend class WTF::ThreadSpecific<FontGlobalContext>;
@@ -58,6 +57,8 @@ class PLATFORM_EXPORT FontGlobalContext {
   HarfBuzzFontCache harfbuzz_font_cache_;
   hb_font_funcs_t* harfbuzz_font_funcs_;
   std::unique_ptr<FontUniqueNameLookup> font_unique_name_lookup_;
+
+  DISALLOW_COPY_AND_ASSIGN(FontGlobalContext);
 };
 
 }  // namespace blink

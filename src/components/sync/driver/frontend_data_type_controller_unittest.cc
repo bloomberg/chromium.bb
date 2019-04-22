@@ -10,13 +10,12 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/sync/driver/configure_context.h"
 #include "components/sync/driver/data_type_controller_mock.h"
-#include "components/sync/driver/fake_sync_client.h"
 #include "components/sync/driver/fake_sync_service.h"
 #include "components/sync/driver/frontend_data_type_controller_mock.h"
 #include "components/sync/driver/model_associator_mock.h"
@@ -36,18 +35,20 @@ namespace syncer {
 
 class FrontendDataTypeControllerFake : public FrontendDataTypeController {
  public:
-  FrontendDataTypeControllerFake(SyncClient* sync_client,
+  FrontendDataTypeControllerFake(SyncService* sync_service,
+                                 SyncApiComponentFactory* component_factory,
                                  FrontendDataTypeControllerMock* mock)
-      : FrontendDataTypeController(BOOKMARKS, base::Closure(), sync_client),
-        mock_(mock),
-        sync_client_(sync_client) {}
+      : FrontendDataTypeController(BOOKMARKS, base::DoNothing(), sync_service),
+        sync_service_(sync_service),
+        component_factory_(component_factory),
+        mock_(mock) {}
   ~FrontendDataTypeControllerFake() override {}
 
  private:
   void CreateSyncComponents() override {
     SyncApiComponentFactory::SyncComponents sync_components =
-        sync_client_->GetSyncApiComponentFactory()
-            ->CreateBookmarkSyncComponents(CreateErrorHandler());
+        component_factory_->CreateBookmarkSyncComponents(
+            CreateErrorHandler(), sync_service_->GetUserShare());
     model_associator_ = std::move(sync_components.model_associator);
     change_processor_ = std::move(sync_components.change_processor);
   }
@@ -63,13 +64,14 @@ class FrontendDataTypeControllerFake : public FrontendDataTypeController {
     mock_->RecordStartFailure(result);
   }
 
+  SyncService* sync_service_;
+  SyncApiComponentFactory* component_factory_;
   FrontendDataTypeControllerMock* mock_;
-  SyncClient* sync_client_;
 };
 
 class SyncFrontendDataTypeControllerTest : public testing::Test {
  public:
-  SyncFrontendDataTypeControllerTest() : sync_client_(&components_factory_) {
+  SyncFrontendDataTypeControllerTest() {
     model_associator_deleter_ =
         std::make_unique<NiceMock<ModelAssociatorMock>>();
     change_processor_deleter_ =
@@ -77,7 +79,7 @@ class SyncFrontendDataTypeControllerTest : public testing::Test {
     model_associator_ = model_associator_deleter_.get();
     change_processor_ = change_processor_deleter_.get();
 
-    ON_CALL(components_factory_, CreateBookmarkSyncComponents(_))
+    ON_CALL(components_factory_, CreateBookmarkSyncComponents(_, _))
         .WillByDefault(testing::InvokeWithoutArgs([=]() {
           SyncApiComponentFactory::SyncComponents components;
           components.model_associator = std::move(model_associator_deleter_);
@@ -89,7 +91,7 @@ class SyncFrontendDataTypeControllerTest : public testing::Test {
   void SetUp() override {
     dtc_mock_ = std::make_unique<StrictMock<FrontendDataTypeControllerMock>>();
     frontend_dtc_ = std::make_unique<FrontendDataTypeControllerFake>(
-        &sync_client_, dtc_mock_.get());
+        &sync_service_, &components_factory_, dtc_mock_.get());
   }
 
  protected:
@@ -136,13 +138,13 @@ class SyncFrontendDataTypeControllerTest : public testing::Test {
 
   void PumpLoop() { base::RunLoop().RunUntilIdle(); }
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
   ModelAssociatorMock* model_associator_;
   ChangeProcessorMock* change_processor_;
   std::unique_ptr<ModelAssociatorMock> model_associator_deleter_;
   std::unique_ptr<ChangeProcessorMock> change_processor_deleter_;
   NiceMock<SyncApiComponentFactoryMock> components_factory_;
-  FakeSyncClient sync_client_;
+  FakeSyncService sync_service_;
   std::unique_ptr<FrontendDataTypeControllerFake> frontend_dtc_;
   std::unique_ptr<FrontendDataTypeControllerMock> dtc_mock_;
   StartCallbackMock start_callback_;

@@ -9,8 +9,8 @@
 
 namespace remoting {
 
-using buzz::QName;
-using buzz::XmlElement;
+using jingle_xmpp::QName;
+using jingle_xmpp::XmlElement;
 
 std::unique_ptr<XmlElement> HostExperimentSessionPlugin::GetNextMessage() {
   if (attributes_sent_) {

@@ -193,8 +193,9 @@ Ribbon.prototype.disable = function() {
  * @private
  */
 Ribbon.prototype.onSplice_ = function(event) {
-  if (event.removed.length === 0 && event.added.length === 0)
+  if (event.removed.length === 0 && event.added.length === 0) {
     return;
+  }
 
   if (event.removed.length > 0 && event.added.length > 0) {
     console.error('Replacing is not implemented.');
@@ -204,8 +205,9 @@ Ribbon.prototype.onSplice_ = function(event) {
   if (event.added.length > 0) {
     for (var i = 0; i < event.added.length; i++) {
       var index = this.dataModel_.indexOf(event.added[i]);
-      if (index === -1)
+      if (index === -1) {
         continue;
+      }
       var element = this.renderThumbnail_(index);
       var nextItem = this.dataModel_.item(index + 1);
       var nextElement =
@@ -258,8 +260,9 @@ Ribbon.prototype.onSplice_ = function(event) {
     }
   }
 
-  if (removed)
+  if (removed) {
     this.scheduleRemove_();
+  }
 
   this.onSelection_();
 };
@@ -270,8 +273,9 @@ Ribbon.prototype.onSplice_ = function(event) {
  */
 Ribbon.prototype.onSelection_ = function() {
   var indexes = this.selectionModel_.selectedIndexes;
-  if (indexes.length === 0)
+  if (indexes.length === 0) {
     return;  // Ignore temporary empty selection.
+  }
   var selectedIndex = indexes[0];
 
   var length = this.dataModel_.length;
@@ -302,8 +306,9 @@ Ribbon.prototype.onSelection_ = function() {
          ++index) {
       // Only add items that are in either old or the new viewport.
       if (this.lastVisibleIndex_ < index && index < firstIndex ||
-          lastIndex < index && index < this.firstVisibleIndex_)
+          lastIndex < index && index < this.firstVisibleIndex_) {
         continue;
+      }
 
       var box = this.renderThumbnail_(index);
       box.style.marginLeft = Ribbon.MARGIN + 'px';
@@ -324,10 +329,11 @@ Ribbon.prototype.onSelection_ = function() {
       // Sliding to the right.
       startBox.style.marginLeft = -margin + 'px';
 
-      if (this.firstChild)
+      if (this.firstChild) {
         this.insertBefore(startBox, this.firstChild);
-      else
+      } else {
         this.appendChild(startBox);
+      }
 
       setTimeout(function() {
         startBox.style.marginLeft = Ribbon.MARGIN + 'px';
@@ -338,10 +344,11 @@ Ribbon.prototype.onSelection_ = function() {
       startBox.setAttribute('vanishing', 'slide');
       startBox.style.marginLeft = Ribbon.MARGIN + 'px';
 
-      if (this.firstChild)
+      if (this.firstChild) {
         this.insertBefore(startBox, this.firstChild);
-      else
+      } else {
         this.appendChild(startBox);
+      }
 
       setTimeout(function() {
         startBox.style.marginLeft = -margin + 'px';
@@ -364,8 +371,9 @@ Ribbon.prototype.onSelection_ = function() {
       lastIndex < length - 1 && selectedIndex !== lastIndex);
 
   var oldSelected = this.querySelector('[selected]');
-  if (oldSelected)
+  if (oldSelected) {
     oldSelected.removeAttribute('selected');
+  }
 
   var newSelected =
       this.renderCache_[this.dataModel_.item(selectedIndex).getEntry().toURL()];
@@ -381,8 +389,9 @@ Ribbon.prototype.onSelection_ = function() {
  * @private
  */
 Ribbon.prototype.scheduleRemove_ = function() {
-  if (this.removeTimeout_)
+  if (this.removeTimeout_) {
     clearTimeout(this.removeTimeout_);
+  }
 
   this.removeTimeout_ = setTimeout(function() {
     this.removeTimeout_ = null;
@@ -420,8 +429,9 @@ Ribbon.prototype.renderThumbnail_ = function(index) {
   var cached = this.renderCache_[url];
   if (cached) {
     var img = cached.querySelector('img');
-    if (img)
+    if (img) {
       img.classList.add('cached');
+    }
     return cached;
   }
 
@@ -459,8 +469,9 @@ Ribbon.prototype.renderThumbnail_ = function(index) {
 Ribbon.prototype.setThumbnailImage_ = function(thumbnail, item) {
   thumbnail.setAttribute('title', item.getFileName());
 
-  if (!item.getThumbnailMetadataItem())
+  if (!item.getThumbnailMetadataItem()) {
     return;
+  }
 
   var hideIndicator = function() {
     thumbnail.querySelector('.indicator').classList.toggle('loading', false);
@@ -489,12 +500,14 @@ Ribbon.prototype.setThumbnailImage_ = function(thumbnail, item) {
  */
 Ribbon.prototype.onContentChange_ = function(event) {
   var url = event.item.getEntry().toURL();
-  if (event.oldEntry.toURL() !== url)
+  if (event.oldEntry.toURL() !== url) {
     this.remapCache_(event.oldEntry.toURL(), url);
+  }
 
   var thumbnail = this.renderCache_[url];
-  if (thumbnail && event.item)
+  if (thumbnail && event.item) {
     this.setThumbnailImage_(thumbnail, event.item);
+  }
 };
 
 /**

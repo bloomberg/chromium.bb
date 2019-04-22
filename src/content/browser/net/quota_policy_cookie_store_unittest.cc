@@ -11,7 +11,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/time/time.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/cookies/cookie_util.h"
@@ -91,14 +91,14 @@ class QuotaPolicyCookieStoreTest : public testing::Test {
                  const base::Time& creation) {
     store_->AddCookie(net::CanonicalCookie(name, value, domain, path, creation,
                                            creation, base::Time(), false, false,
-                                           net::CookieSameSite::DEFAULT_MODE,
+                                           net::CookieSameSite::NO_RESTRICTION,
                                            net::COOKIE_PRIORITY_DEFAULT));
   }
 
   void DestroyStore() {
     store_ = nullptr;
-    // Ensure that |store_|'s destructor has run by flushing TaskScheduler.
-    base::TaskScheduler::GetInstance()->FlushForTesting();
+    // Ensure that |store_|'s destructor has run by flushing ThreadPool.
+    base::ThreadPool::GetInstance()->FlushForTesting();
   }
 
   void SetUp() override {

@@ -6,14 +6,20 @@
 
 #include "base/ios/ios_util.h"
 #include "base/metrics/user_metrics.h"
+#include "base/strings/sys_string_conversions.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
+#include "components/open_from_clipboard/clipboard_recent_content.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/commands/activity_service_commands.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
+#import "ios/chrome/browser/ui/commands/infobar_commands.h"
 #import "ios/chrome/browser/ui/commands/load_query_commands.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_animator.h"
+#import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #include "ios/chrome/browser/ui/location_bar/location_bar_steady_view.h"
 #import "ios/chrome/browser/ui/orchestrator/location_bar_offset_provider.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #import "ios/chrome/grit/ios_strings.h"
@@ -169,6 +175,10 @@ typedef NS_ENUM(int, TrailingButtonState) {
   AddSameConstraints(self.locationBarSteadyView, self.view);
 
   [self switchToEditing:NO];
+
+  if (IsInfobarUIRebootEnabled()) {
+    [self updateInfobarButton];
+  }
 }
 
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
@@ -182,6 +192,9 @@ typedef NS_ENUM(int, TrailingButtonState) {
   CGFloat alphaValue = fmax((progress - 0.85) / 0.15, 0);
   CGFloat scaleValue = 0.79 + 0.21 * progress;
   self.locationBarSteadyView.trailingButton.alpha = alphaValue;
+  if (IsInfobarUIRebootEnabled()) {
+    self.locationBarSteadyView.leadingButton.alpha = alphaValue;
+  }
   self.locationBarSteadyView.transform =
       CGAffineTransformMakeScale(scaleValue, scaleValue);
 }
@@ -232,6 +245,10 @@ typedef NS_ENUM(int, TrailingButtonState) {
   if (self.trailingButtonState == kShareButton) {
     self.locationBarSteadyView.trailingButton.enabled = enabled;
   }
+}
+
+- (void)displayInfobarButton:(BOOL)display {
+  self.locationBarSteadyView.leadingButton.hidden = !display;
 }
 
 #pragma mark - LocationBarAnimatee
@@ -416,6 +433,37 @@ typedef NS_ENUM(int, TrailingButtonState) {
   base::RecordAction(base::UserMetricsAction("MobileToolbarShareMenu"));
 }
 
+// TODO(crbug.com/935804): Create constants variables for the magic numbers
+// being used here if/when this stops being temporary.
+- (void)updateInfobarButton {
+  DCHECK(IsInfobarUIRebootEnabled());
+  [self.locationBarSteadyView.leadingButton
+      setImage:[[UIImage imageNamed:@"infobar_passwords_icon"]
+                   imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]
+      forState:UIControlStateNormal];
+  self.locationBarSteadyView.leadingButton.imageView.contentMode =
+      UIViewContentModeScaleToFill;
+  self.locationBarSteadyView.leadingButton.imageEdgeInsets =
+      UIEdgeInsetsMake(6, 6, 6, 6);
+
+  [self.locationBarSteadyView.leadingButton
+             addTarget:self.dispatcher
+                action:@selector(displayModalInfobar)
+      forControlEvents:UIControlEventTouchUpInside];
+  // Set as hidden as it should only be shown by |displayInfobarButton:|
+  self.locationBarSteadyView.leadingButton.hidden = YES;
+}
+
+- (void)setInfobarButtonStyleSelected:(BOOL)selected {
+  self.locationBarSteadyView.leadingButton.backgroundColor =
+      selected ? [UIColor colorWithWhite:0.80 alpha:1.0] : [UIColor clearColor];
+}
+
+- (void)setInfobarButtonStyleActive:(BOOL)active {
+  self.locationBarSteadyView.leadingButton.tintColor =
+      active ? self.locationBarSteadyView.tintColor : [UIColor lightGrayColor];
+}
+
 #pragma mark - UIMenu
 
 - (void)showLongPressMenu:(UILongPressGestureRecognizer*)sender {
@@ -428,30 +476,108 @@ typedef NS_ENUM(int, TrailingButtonState) {
     // when it's the first time setting the first responder.
     dispatch_async(dispatch_get_main_queue(), ^{
       UIMenuController* menu = [UIMenuController sharedMenuController];
-      UIMenuItem* pasteAndGo = [[UIMenuItem alloc]
-          initWithTitle:l10n_util::GetNSString(IDS_IOS_PASTE_AND_GO)
-                 action:@selector(pasteAndGo:)];
-      [menu setMenuItems:@[ pasteAndGo ]];
+      if (base::FeatureList::IsEnabled(kCopiedContentBehavior)) {
+        UIMenuItem* searchCopiedImage = [[UIMenuItem alloc]
+            initWithTitle:l10n_util::GetNSString((IDS_IOS_SEARCH_COPIED_IMAGE))
+                   action:@selector(searchCopiedImage:)];
+        UIMenuItem* visitCopiedLink = [[UIMenuItem alloc]
+            initWithTitle:l10n_util::GetNSString(IDS_IOS_VISIT_COPIED_LINK)
+                   action:@selector(visitCopiedLink:)];
+        UIMenuItem* searchCopiedText = [[UIMenuItem alloc]
+            initWithTitle:l10n_util::GetNSString(IDS_IOS_SEARCH_COPIED_TEXT)
+                   action:@selector(searchCopiedText:)];
+        [menu setMenuItems:@[
+          searchCopiedImage, visitCopiedLink, searchCopiedText
+        ]];
+      } else {
+        UIMenuItem* pasteAndGo = [[UIMenuItem alloc]
+            initWithTitle:l10n_util::GetNSString(IDS_IOS_PASTE_AND_GO)
+                   action:@selector(pasteAndGo:)];
+        [menu setMenuItems:@[ pasteAndGo ]];
+      }
 
       [menu setTargetRect:self.locationBarSteadyView.frame inView:self.view];
       [menu setMenuVisible:YES animated:YES];
+      // When we present the menu manually, it doesn't get focused by Voiceover.
+      // This notification forces voiceover to select the presented menu.
+      UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification,
+                                      menu);
     });
   }
 }
 
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender {
-  return action == @selector(copy:) ||
-         (action == @selector(pasteAndGo:) &&
-          UIPasteboard.generalPasteboard.string.length > 0);
+  if (action == @selector(copy:)) {
+    return YES;
+  }
+
+  // remove along with flag kCopiedContentBehavior
+  if (action == @selector(pasteAndGo:)) {
+    DCHECK(!base::FeatureList::IsEnabled(kCopiedContentBehavior));
+    return UIPasteboard.generalPasteboard.string.length > 0;
+  }
+
+  if (action == @selector(searchCopiedImage:) ||
+      action == @selector(visitCopiedLink:) ||
+      action == @selector(searchCopiedText:)) {
+    ClipboardRecentContent* clipboardRecentContent =
+        ClipboardRecentContent::GetInstance();
+    DCHECK(base::FeatureList::IsEnabled(kCopiedContentBehavior));
+    if (self.searchByImageEnabled &&
+        clipboardRecentContent->GetRecentImageFromClipboard().has_value()) {
+      return action == @selector(searchCopiedImage:);
+    }
+    if (clipboardRecentContent->GetRecentURLFromClipboard().has_value()) {
+      return action == @selector(visitCopiedLink:);
+    }
+    if (clipboardRecentContent->GetRecentTextFromClipboard().has_value()) {
+      return action == @selector(searchCopiedText:);
+    }
+    return NO;
+  }
+  return NO;
 }
 
 - (void)copy:(id)sender {
   [self.delegate locationBarCopyTapped];
 }
 
+- (void)searchCopiedImage:(id)sender {
+  DCHECK(base::FeatureList::IsEnabled(kCopiedContentBehavior));
+  if (base::Optional<gfx::Image> optionalImage =
+          ClipboardRecentContent::GetInstance()
+              ->GetRecentImageFromClipboard()) {
+    UIImage* image = optionalImage.value().ToUIImage();
+    [self.dispatcher searchByImage:image];
+  }
+}
+
+- (void)visitCopiedLink:(id)sender {
+  [self pasteAndGo:sender];
+}
+
+- (void)searchCopiedText:(id)sender {
+  [self pasteAndGo:sender];
+}
+
+// Both actions are performed the same, but need to be enabled differently,
+// so we need two different selectors.
 - (void)pasteAndGo:(id)sender {
-  [self.dispatcher loadQuery:UIPasteboard.generalPasteboard.string
-                 immediately:YES];
+  NSString* query;
+  if (base::FeatureList::IsEnabled(kCopiedContentBehavior)) {
+    ClipboardRecentContent* clipboardRecentContent =
+        ClipboardRecentContent::GetInstance();
+    if (base::Optional<GURL> optionalUrl =
+            clipboardRecentContent->GetRecentURLFromClipboard()) {
+      query = base::SysUTF8ToNSString(optionalUrl.value().spec());
+    } else if (base::Optional<base::string16> optionalText =
+                   clipboardRecentContent->GetRecentTextFromClipboard()) {
+      query = base::SysUTF16ToNSString(optionalText.value());
+    }
+  } else {
+    query = UIPasteboard.generalPasteboard.string;
+  }
+  [self.dispatcher loadQuery:query immediately:YES];
 }
 
 @end

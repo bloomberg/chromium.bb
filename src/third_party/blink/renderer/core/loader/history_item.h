@@ -27,11 +27,12 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_HISTORY_ITEM_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_HISTORY_ITEM_H_
 
+#include "base/optional.h"
 #include "third_party/blink/public/platform/web_scroll_anchor_data.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/loader/frame_loader_types.h"
+#include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/weborigin/referrer.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -64,23 +65,22 @@ class CORE_EXPORT HistoryItem final
   const AtomicString& FormContentType() const;
 
   class ViewState {
+    DISALLOW_NEW();
+
    public:
-    ViewState() : page_scale_factor_(0) {}
+    ViewState() = default;
     ViewState(const ViewState&) = default;
 
     ScrollOffset visual_viewport_scroll_offset_;
     ScrollOffset scroll_offset_;
-    float page_scale_factor_;
+    float page_scale_factor_ = 0;
     ScrollAnchorData scroll_anchor_data_;
   };
 
-  ViewState* GetViewState() const { return view_state_.get(); }
+  const base::Optional<ViewState>& GetViewState() const { return view_state_; }
   void ClearViewState() { view_state_.reset(); }
   void CopyViewStateFrom(HistoryItem* other) {
-    if (other->view_state_)
-      view_state_ = std::make_unique<ViewState>(*other->view_state_.get());
-    else
-      view_state_.reset();
+    view_state_ = other->GetViewState();
   }
 
   void SetVisualViewportScrollOffset(const ScrollOffset&);
@@ -100,15 +100,13 @@ class CORE_EXPORT HistoryItem final
   void SetStateObject(scoped_refptr<SerializedScriptValue>);
   SerializedScriptValue* StateObject() const { return state_object_.get(); }
 
-  void SetItemSequenceNumber(long long number) {
-    item_sequence_number_ = number;
-  }
-  long long ItemSequenceNumber() const { return item_sequence_number_; }
+  void SetItemSequenceNumber(int64_t number) { item_sequence_number_ = number; }
+  int64_t ItemSequenceNumber() const { return item_sequence_number_; }
 
-  void SetDocumentSequenceNumber(long long number) {
+  void SetDocumentSequenceNumber(int64_t number) {
     document_sequence_number_ = number;
   }
-  long long DocumentSequenceNumber() const { return document_sequence_number_; }
+  int64_t DocumentSequenceNumber() const { return document_sequence_number_; }
 
   void SetScrollRestorationType(HistoryScrollRestorationType type) {
     scroll_restoration_type_ = type;
@@ -119,7 +117,6 @@ class CORE_EXPORT HistoryItem final
 
   void SetScrollAnchorData(const ScrollAnchorData&);
 
-  void SetFormInfoFromRequest(const ResourceRequest&);
   void SetFormData(scoped_refptr<EncodedFormData>);
   void SetFormContentType(const AtomicString&);
 
@@ -134,7 +131,7 @@ class CORE_EXPORT HistoryItem final
   Vector<String> document_state_vector_;
   Member<DocumentState> document_state_;
 
-  std::unique_ptr<ViewState> view_state_;
+  base::Optional<ViewState> view_state_;
 
   // If two HistoryItems have the same item sequence number, then they are
   // clones of one another. Traversing history from one such HistoryItem to

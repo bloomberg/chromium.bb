@@ -6,7 +6,8 @@
 
 #include <memory>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
+#include "media/base/media_util.h"
 #include "media/formats/mp4/box_definitions.h"
 #include "media/formats/mp4/box_reader.h"
 
@@ -33,7 +34,7 @@ static bool ReadAllPsshBoxes(
   DCHECK(!input.empty());
 
   // TODO(wolenetz): Questionable MediaLog usage, http://crbug.com/712310
-  MediaLog media_log;
+  NullMediaLog media_log;
 
   // Verify that |input| contains only 'pssh' boxes.
   // ReadAllChildrenAndCheckFourCC() is templated, so it checks that each
@@ -94,7 +95,7 @@ bool GetKeyIdsForCommonSystemId(const std::vector<uint8_t>& pssh_boxes,
   KeyIdList result;
   std::vector<uint8_t> common_system_id(
       kCencCommonSystemId,
-      kCencCommonSystemId + arraysize(kCencCommonSystemId));
+      kCencCommonSystemId + base::size(kCencCommonSystemId));
   for (const auto& child : children) {
     if (child.system_id == common_system_id) {
       key_ids->assign(child.key_ids.begin(), child.key_ids.end());

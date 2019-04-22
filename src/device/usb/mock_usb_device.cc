@@ -25,7 +25,8 @@ MockUsbDevice::MockUsbDevice(uint16_t vendor_id,
                 0x0100,  // device_version
                 base::UTF8ToUTF16(manufacturer_string),
                 base::UTF8ToUTF16(product_string),
-                base::UTF8ToUTF16(serial_number)) {}
+                base::UTF8ToUTF16(serial_number),
+                0, 0) {} // Bus and port number
 
 MockUsbDevice::MockUsbDevice(uint16_t vendor_id,
                              uint16_t product_id,
@@ -42,7 +43,8 @@ MockUsbDevice::MockUsbDevice(uint16_t vendor_id,
                 0x0100,  // device_version
                 base::UTF8ToUTF16(manufacturer_string),
                 base::UTF8ToUTF16(product_string),
-                base::UTF8ToUTF16(serial_number)) {
+                base::UTF8ToUTF16(serial_number),
+                0, 0) { // Bus and port number
   webusb_landing_page_ = webusb_landing_page;
 }
 
@@ -67,7 +69,8 @@ MockUsbDevice::MockUsbDevice(
                 0x0100,  // device_version
                 base::string16(),
                 base::string16(),
-                base::string16()) {
+                base::string16(),
+                0, 0) { // Bus and port number
   descriptor_.configurations = configurations;
 }
 

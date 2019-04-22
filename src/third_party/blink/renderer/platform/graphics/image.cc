@@ -31,7 +31,6 @@
 #include "cc/tiles/software_image_decode_cache.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_data.h"
-#include "third_party/blink/renderer/platform/drag_image.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
@@ -46,9 +45,12 @@
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImage.h"
+#include "third_party/skia/include/core/SkSurface.h"
 
 #include <math.h>
 #include <tuple>
@@ -56,6 +58,8 @@
 namespace blink {
 
 class CombinedImageDecodeCache {
+  USING_FAST_MALLOC(CombinedImageDecodeCache);
+
  public:
   CombinedImageDecodeCache(size_t locked_memory_limit_bytes)
       : locked_memory_limit_bytes_(locked_memory_limit_bytes) {
@@ -88,9 +92,7 @@ Image::Image(ImageObserver* observer, bool is_multipart)
     : image_observer_disabled_(false),
       image_observer_(observer),
       stable_image_id_(PaintImage::GetNextId()),
-      is_multipart_(is_multipart),
-      high_contrast_classification_(
-          HighContrastClassification::kNotClassified) {}
+      is_multipart_(is_multipart) {}
 
 Image::~Image() = default;
 
@@ -123,6 +125,57 @@ scoped_refptr<Image> Image::LoadPlatformResource(const char* name) {
   return image;
 }
 
+// static
+PaintImage Image::ResizeAndOrientImage(
+    const PaintImage& image,
+    ImageOrientation orientation,
+    FloatSize image_scale,
+    float opacity,
+    InterpolationQuality interpolation_quality) {
+  IntSize size(image.width(), image.height());
+  size.Scale(image_scale.Width(), image_scale.Height());
+  AffineTransform transform;
+  if (orientation != kDefaultImageOrientation) {
+    if (orientation.UsesWidthAsHeight())
+      size = size.TransposedSize();
+    transform *= orientation.TransformFromDefault(FloatSize(size));
+  }
+  transform.ScaleNonUniform(image_scale.Width(), image_scale.Height());
+
+  if (size.IsEmpty())
+    return PaintImage();
+
+  if (transform.IsIdentity() && opacity == 1) {
+    // Nothing to adjust, just use the original.
+    DCHECK_EQ(image.width(), size.Width());
+    DCHECK_EQ(image.height(), size.Height());
+    return image;
+  }
+
+  const SkImageInfo info =
+      SkImageInfo::MakeN32(size.Width(), size.Height(), kPremul_SkAlphaType,
+                           SkColorSpace::MakeSRGB());
+  sk_sp<SkSurface> surface = SkSurface::MakeRaster(info);
+  if (!surface)
+    return PaintImage();
+
+  SkPaint paint;
+  DCHECK_GE(opacity, 0);
+  DCHECK_LE(opacity, 1);
+  paint.setAlpha(opacity * 255);
+  paint.setFilterQuality(interpolation_quality == kInterpolationNone
+                             ? kNone_SkFilterQuality
+                             : kHigh_SkFilterQuality);
+
+  SkCanvas* canvas = surface->getCanvas();
+  canvas->concat(AffineTransformToSkMatrix(transform));
+  canvas->drawImage(image.GetSkImage(), 0, 0, &paint);
+
+  return PaintImageBuilder::WithProperties(std::move(image))
+      .set_image(surface->makeImageSnapshot(), PaintImage::GetNextContentId())
+      .TakePaintImage();
+}
+
 Image::SizeAvailability Image::SetData(scoped_refptr<SharedBuffer> data,
                                        bool all_data_received) {
   encoded_image_data_ = std::move(data);
@@ -140,173 +193,15 @@ String Image::FilenameExtension() const {
   return String();
 }
 
-// TODO(schenney): Lift this code, with the calculations for subsetting the
-// image and the like, up the stack into a BackgroundPainter.
-void Image::DrawTiledBackground(GraphicsContext& ctxt,
-                                const FloatSize& unsnapped_subset_size,
-                                const FloatRect& snapped_paint_rect,
-                                const FloatPoint& phase,
-                                const FloatSize& tile_size,
-                                SkBlendMode op,
-                                const FloatSize& repeat_spacing) {
-  if (tile_size.IsEmpty())
-    return;
-
-  // Use the intrinsic size of the image if it has one, otherwise force the
-  // generated image to be the tile size.
-  FloatSize intrinsic_tile_size(Size());
-  FloatSize scale(1, 1);
-  if (HasRelativeSize()) {
-    intrinsic_tile_size.SetWidth(tile_size.Width());
-    intrinsic_tile_size.SetHeight(tile_size.Height());
-  } else {
-    scale = FloatSize(tile_size.Width() / intrinsic_tile_size.Width(),
-                      tile_size.Height() / intrinsic_tile_size.Height());
-  }
-
-  const FloatRect one_tile_rect = ComputePhaseForBackground(
-      snapped_paint_rect.Location(), tile_size, phase, repeat_spacing);
-
-  // Check and see if a single draw of the image can cover the entire area we
-  // are supposed to tile. The dest_rect_for_subset must use the same
-  // location that was used in ComputePhaseForBackground and the unsnapped
-  // destination rect in order to correctly evaluate the subset size and
-  // location in the presence of border snapping and zoom.
-  FloatRect dest_rect_for_subset(snapped_paint_rect.Location(),
-                                 unsnapped_subset_size);
-  if (one_tile_rect.Contains(dest_rect_for_subset)) {
-    FloatRect visible_src_rect = ComputeSubsetForBackground(
-        one_tile_rect, dest_rect_for_subset, intrinsic_tile_size);
-    // Round to avoid filtering pulling in neighboring pixels, for the
-    // common case of sprite maps.
-    // TODO(schenney): Snapping at this level is a problem for cases where we
-    // might be animating background-position to pan over an image. Ideally we
-    // would either snap only if close to integral, or move snapping
-    // calculations up the stack.
-    visible_src_rect = FloatRect(RoundedIntRect(visible_src_rect));
-    ctxt.DrawImage(this, kSyncDecode, snapped_paint_rect, &visible_src_rect, op,
-                   kDoNotRespectImageOrientation);
-    return;
-  }
-
-  // Note that this tile rect the image's pre-scaled size.
-  FloatRect tile_rect(FloatPoint(), intrinsic_tile_size);
-  // This call takes the unscaled image, applies the given scale, and paints
-  // it into the snapped_dest_rect using phase from one_tile_rect and the
-  // given repeat spacing. Note the phase is already scaled.
-  DrawPattern(ctxt, tile_rect, scale, one_tile_rect.Location(), op,
-              snapped_paint_rect, repeat_spacing);
-
-  StartAnimation();
-}
-
-// TODO(schenney): Lift this code, with the calculations for subsetting the
-// image and the like, up the stack into a border painting class.
-void Image::DrawTiledBorder(GraphicsContext& ctxt,
-                            const FloatRect& dst_rect,
-                            const FloatRect& src_rect,
-                            const FloatSize& provided_tile_scale_factor,
-                            TileRule h_rule,
-                            TileRule v_rule,
-                            SkBlendMode op) {
-  // TODO(cavalcantii): see crbug.com/662513.
-  FloatSize tile_scale_factor = provided_tile_scale_factor;
-  if (v_rule == kRoundTile) {
-    float v_repetitions = std::max(
-        1.0f, roundf(dst_rect.Height() /
-                     (tile_scale_factor.Height() * src_rect.Height())));
-    tile_scale_factor.SetHeight(dst_rect.Height() /
-                                (src_rect.Height() * v_repetitions));
-  }
-
-  if (h_rule == kRoundTile) {
-    float h_repetitions =
-        std::max(1.0f, roundf(dst_rect.Width() /
-                              (tile_scale_factor.Width() * src_rect.Width())));
-    tile_scale_factor.SetWidth(dst_rect.Width() /
-                               (src_rect.Width() * h_repetitions));
-  }
-
-  // We want to construct the phase such that the pattern is centered (when
-  // stretch is not set for a particular rule).
-  float v_phase = tile_scale_factor.Height() * src_rect.Y();
-  float h_phase = tile_scale_factor.Width() * src_rect.X();
-  if (v_rule == kRepeatTile) {
-    float scaled_tile_height = tile_scale_factor.Height() * src_rect.Height();
-    v_phase -= (dst_rect.Height() - scaled_tile_height) / 2;
-  }
-
-  if (h_rule == kRepeatTile) {
-    float scaled_tile_width = tile_scale_factor.Width() * src_rect.Width();
-    h_phase -= (dst_rect.Width() - scaled_tile_width) / 2;
-  }
-
-  FloatSize spacing;
-  auto calculate_space_needed =
-      [](const float destination,
-         const float source) -> std::tuple<bool, float> {
-    DCHECK_GT(source, 0);
-    DCHECK_GT(destination, 0);
-
-    float repeat_tiles_count = floorf(destination / source);
-    if (!repeat_tiles_count)
-      return std::make_tuple(false, -1);
-
-    float space = destination;
-    space -= source * repeat_tiles_count;
-    space /= repeat_tiles_count + 1.0;
-
-    return std::make_tuple(true, space);
-  };
-
-  if (v_rule == kSpaceTile) {
-    std::tuple<bool, float> space =
-        calculate_space_needed(dst_rect.Height(), src_rect.Height());
-    if (!std::get<0>(space))
-      return;
-
-    spacing.SetHeight(std::get<1>(space));
-    tile_scale_factor.SetHeight(1.0);
-    v_phase = src_rect.Y();
-    v_phase -= spacing.Height();
-  }
-
-  if (h_rule == kSpaceTile) {
-    std::tuple<bool, float> space =
-        calculate_space_needed(dst_rect.Width(), src_rect.Width());
-    if (!std::get<0>(space))
-      return;
-
-    spacing.SetWidth(std::get<1>(space));
-    tile_scale_factor.SetWidth(1.0);
-    h_phase = src_rect.X();
-    h_phase -= spacing.Width();
-  }
-
-  FloatPoint pattern_phase(dst_rect.X() - h_phase, dst_rect.Y() - v_phase);
-
-  // TODO(cavalcantii): see crbug.com/662507.
-  if ((h_rule == kRoundTile) || (v_rule == kRoundTile)) {
-    ScopedInterpolationQuality interpolation_quality_scope(ctxt,
-                                                           kInterpolationLow);
-    DrawPattern(ctxt, src_rect, tile_scale_factor, pattern_phase, op, dst_rect,
-                FloatSize());
-  } else {
-    DrawPattern(ctxt, src_rect, tile_scale_factor, pattern_phase, op, dst_rect,
-                spacing);
-  }
-
-  StartAnimation();
-}
-
 namespace {
 
 sk_sp<PaintShader> CreatePatternShader(const PaintImage& image,
                                        const SkMatrix& shader_matrix,
-                                       const PaintFlags& paint,
+                                       SkFilterQuality quality_to_use,
+                                       bool should_antialias,
                                        const FloatSize& spacing,
-                                       SkShader::TileMode tmx,
-                                       SkShader::TileMode tmy) {
+                                       SkTileMode tmx,
+                                       SkTileMode tmy) {
   if (spacing.IsZero()) {
     return PaintShader::MakeImage(image, tmx, tmy, &shader_matrix);
   }
@@ -318,19 +213,18 @@ sk_sp<PaintShader> CreatePatternShader(const PaintImage& image,
 
   PaintRecorder recorder;
   cc::PaintCanvas* canvas = recorder.beginRecording(tile_rect);
-  canvas->drawImage(image, 0, 0, &paint);
+  PaintFlags flags;
+  flags.setAntiAlias(should_antialias);
+  flags.setFilterQuality(quality_to_use);
+  canvas->drawImage(image, 0, 0, &flags);
 
   return PaintShader::MakePaintRecord(recorder.finishRecordingAsPicture(),
                                       tile_rect, tmx, tmy, &shader_matrix);
 }
 
-SkShader::TileMode ComputeTileMode(float left,
-                                   float right,
-                                   float min,
-                                   float max) {
+SkTileMode ComputeTileMode(float left, float right, float min, float max) {
   DCHECK(left < right);
-  return left >= min && right <= max ? SkShader::kClamp_TileMode
-                                     : SkShader::kRepeat_TileMode;
+  return left >= min && right <= max ? SkTileMode::kClamp : SkTileMode::kRepeat;
 }
 
 }  // anonymous namespace
@@ -389,24 +283,26 @@ void Image::DrawPattern(GraphicsContext& context,
   const auto tmy = ComputeTileMode(dest_rect.Y(), dest_rect.MaxY(), adjusted_y,
                                    adjusted_y + tile_size.Height());
 
-  PaintFlags flags = context.FillFlags();
-  flags.setColor(SK_ColorBLACK);
-  flags.setBlendMode(composite_op);
-  flags.setFilterQuality(
-      context.ComputeFilterQuality(this, dest_rect, FloatRect(subset_rect)));
-  flags.setAntiAlias(context.ShouldAntialias());
-  flags.setShader(CreatePatternShader(
-      image, local_matrix, flags,
+  SkFilterQuality quality_to_use =
+      context.ComputeFilterQuality(this, dest_rect, FloatRect(subset_rect));
+  sk_sp<PaintShader> tile_shader = CreatePatternShader(
+      image, local_matrix, quality_to_use, context.ShouldAntialias(),
       FloatSize(repeat_spacing.Width() / scale_src_to_dest.Width(),
                 repeat_spacing.Height() / scale_src_to_dest.Height()),
-      tmx, tmy));
+      tmx, tmy);
+
+  PaintFlags flags = context.FillFlags();
   // If the shader could not be instantiated (e.g. non-invertible matrix),
   // draw transparent.
   // Note: we can't simply bail, because of arbitrary blend mode.
-  if (!flags.HasShader())
-    flags.setColor(SK_ColorTRANSPARENT);
+  flags.setColor(tile_shader ? SK_ColorBLACK : SK_ColorTRANSPARENT);
+  flags.setBlendMode(composite_op);
+  flags.setFilterQuality(quality_to_use);
+  flags.setShader(std::move(tile_shader));
 
   context.DrawRect(dest_rect, flags);
+
+  StartAnimation();
 
   if (CurrentFrameIsLazyDecoded()) {
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
@@ -437,9 +333,8 @@ bool Image::ApplyShader(PaintFlags& flags, const SkMatrix& local_matrix) {
   if (!image)
     return false;
 
-  flags.setShader(PaintShader::MakeImage(image, SkShader::kRepeat_TileMode,
-                                         SkShader::kRepeat_TileMode,
-                                         &local_matrix));
+  flags.setShader(PaintShader::MakeImage(image, SkTileMode::kRepeat,
+                                         SkTileMode::kRepeat, &local_matrix));
   if (!flags.HasShader())
     return false;
 
@@ -448,33 +343,6 @@ bool Image::ApplyShader(PaintFlags& flags, const SkMatrix& local_matrix) {
   StartAnimation();
 
   return true;
-}
-
-FloatRect Image::ComputePhaseForBackground(const FloatPoint& destination_offset,
-                                           const FloatSize& size,
-                                           const FloatPoint& phase,
-                                           const FloatSize& spacing) {
-  const FloatSize step_per_tile(size + spacing);
-  return FloatRect(
-      FloatPoint(
-          destination_offset.X() + fmodf(-phase.X(), step_per_tile.Width()),
-          destination_offset.Y() + fmodf(-phase.Y(), step_per_tile.Height())),
-      size);
-}
-
-FloatRect Image::ComputeSubsetForBackground(const FloatRect& phase_and_size,
-                                            const FloatRect& subset,
-                                            const FloatSize& intrinsic_size) {
-  // TODO(schenney): Re-enable this after determining why it fails for
-  // SPv2, and maybe other cases.
-  // DCHECK(phase_and_size.Contains(subset));
-
-  const FloatSize scale(phase_and_size.Width() / intrinsic_size.Width(),
-                        phase_and_size.Height() / intrinsic_size.Height());
-  return FloatRect((subset.X() - phase_and_size.X()) / scale.Width(),
-                   (subset.Y() - phase_and_size.Y()) / scale.Height(),
-                   subset.Width() / scale.Width(),
-                   subset.Height() / scale.Height());
 }
 
 SkBitmap Image::AsSkBitmapForCurrentFrame(
@@ -487,7 +355,7 @@ SkBitmap Image::AsSkBitmapForCurrentFrame(
       IsBitmapImage()) {
     ImageOrientation orientation =
         ToBitmapImage(this)->CurrentFrameOrientation();
-    paint_image = DragImage::ResizeAndOrientImage(paint_image, orientation);
+    paint_image = ResizeAndOrientImage(paint_image, orientation);
     if (!paint_image)
       return {};
   }
@@ -499,6 +367,46 @@ SkBitmap Image::AsSkBitmapForCurrentFrame(
   SkBitmap bitmap;
   sk_image->asLegacyBitmap(&bitmap);
   return bitmap;
+}
+
+DarkModeClassification Image::GetDarkModeClassification(
+    const FloatRect& src_rect) {
+  // Assuming that multiple uses of the same sprite region all have the same
+  // size, only the top left corner coordinates of the src_rect are used to
+  // generate the key for caching and retrieving the classification.
+  ClassificationKey key(src_rect.X(), src_rect.Y());
+  std::map<ClassificationKey, DarkModeClassification>::iterator result =
+      dark_mode_classifications_.find(key);
+  if (result == dark_mode_classifications_.end())
+    return DarkModeClassification::kNotClassified;
+
+  return result->second;
+}
+
+void Image::AddDarkModeClassification(
+    const FloatRect& src_rect,
+    DarkModeClassification dark_mode_classification) {
+  // Add the classification in the map only if the image is not classified yet.
+  DCHECK(GetDarkModeClassification(src_rect) ==
+         DarkModeClassification::kNotClassified);
+  ClassificationKey key(src_rect.X(), src_rect.Y());
+  dark_mode_classifications_[key] = dark_mode_classification;
+}
+
+bool Image::ShouldApplyDarkModeFilter(const FloatRect& src_rect) {
+  // Check if the image has already been classified.
+  DarkModeClassification result = GetDarkModeClassification(src_rect);
+  if (result != DarkModeClassification::kNotClassified)
+    return result == DarkModeClassification::kApplyDarkModeFilter;
+
+  result = ClassifyImageForDarkMode(src_rect);
+
+  // Store the classification result using src_rect's location
+  // as a key for the map.
+  if (ShouldCacheDarkModeClassification())
+    AddDarkModeClassification(src_rect, result);
+
+  return result == DarkModeClassification::kApplyDarkModeFilter;
 }
 
 }  // namespace blink

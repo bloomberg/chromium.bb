@@ -6,14 +6,15 @@
 
 #include "xfa/fxfa/parser/cxfa_exobject.h"
 
-#include "fxjs/xfa/cjx_exobject.h"
+#include "fxjs/xfa/cjx_node.h"
 #include "third_party/base/ptr_util.h"
 
 namespace {
 
 const CXFA_Node::PropertyData kExObjectPropertyData[] = {
     {XFA_Element::Extras, 1, 0},
-    {XFA_Element::Unknown, 0, 0}};
+};
+
 const CXFA_Node::AttributeData kExObjectAttributeData[] = {
     {XFA_Attribute::Id, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Name, XFA_AttributeType::CData, nullptr},
@@ -23,9 +24,7 @@ const CXFA_Node::AttributeData kExObjectAttributeData[] = {
     {XFA_Attribute::Usehref, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::CodeBase, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::ClassId, XFA_AttributeType::CData, nullptr},
-    {XFA_Attribute::Unknown, XFA_AttributeType::Integer, nullptr}};
-
-constexpr wchar_t kExObjectName[] = L"exObject";
+};
 
 }  // namespace
 
@@ -37,7 +36,6 @@ CXFA_ExObject::CXFA_ExObject(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_Element::ExObject,
                 kExObjectPropertyData,
                 kExObjectAttributeData,
-                kExObjectName,
-                pdfium::MakeUnique<CJX_ExObject>(this)) {}
+                pdfium::MakeUnique<CJX_Node>(this)) {}
 
-CXFA_ExObject::~CXFA_ExObject() {}
+CXFA_ExObject::~CXFA_ExObject() = default;

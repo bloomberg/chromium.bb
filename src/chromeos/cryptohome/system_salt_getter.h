@@ -11,15 +11,15 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "chromeos/chromeos_export.h"
 
 namespace chromeos {
 
 // This class is used to get the system salt from cryptohome and cache it.
-class CHROMEOS_EXPORT SystemSaltGetter {
+class COMPONENT_EXPORT(CHROMEOS_CRYPTOHOME) SystemSaltGetter {
  public:
   typedef base::Callback<void(const std::string& system_salt)>
       GetSystemSaltCallback;

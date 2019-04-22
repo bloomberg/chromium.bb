@@ -14,20 +14,79 @@
 
 #include "dawn_native/DawnNative.h"
 #include "dawn_native/Device.h"
+#include "dawn_native/Instance.h"
 
 // Contains the entry-points into dawn_native
 
 namespace dawn_native {
 
-    dawnProcTable GetProcsAutogen();
+    DawnProcTable GetProcsAutogen();
 
-    dawnProcTable GetProcs() {
+    DawnProcTable GetProcs() {
         return GetProcsAutogen();
     }
 
-    const PCIInfo& GetPCIInfo(dawnDevice device) {
-        DeviceBase* deviceBase = reinterpret_cast<DeviceBase*>(device);
-        return deviceBase->GetPCIInfo();
+    // Adapter
+
+    Adapter::Adapter() = default;
+
+    Adapter::Adapter(AdapterBase* impl) : mImpl(impl) {
+    }
+
+    Adapter::~Adapter() {
+        mImpl = nullptr;
+    }
+
+    BackendType Adapter::GetBackendType() const {
+        return mImpl->GetBackendType();
+    }
+
+    DeviceType Adapter::GetDeviceType() const {
+        return mImpl->GetDeviceType();
+    }
+
+    const PCIInfo& Adapter::GetPCIInfo() const {
+        return mImpl->GetPCIInfo();
+    }
+
+    Adapter::operator bool() const {
+        return mImpl != nullptr;
+    }
+
+    DawnDevice Adapter::CreateDevice() {
+        return reinterpret_cast<DawnDevice>(mImpl->CreateDevice());
+    }
+
+    // AdapterDiscoverOptionsBase
+
+    AdapterDiscoveryOptionsBase::AdapterDiscoveryOptionsBase(BackendType type) : backendType(type) {
+    }
+
+    // Instance
+
+    Instance::Instance() : mImpl(new InstanceBase()) {
+    }
+
+    Instance::~Instance() {
+        delete mImpl;
+        mImpl = nullptr;
+    }
+
+    void Instance::DiscoverDefaultAdapters() {
+        mImpl->DiscoverDefaultAdapters();
+    }
+
+    bool Instance::DiscoverAdapters(const AdapterDiscoveryOptionsBase* options) {
+        return mImpl->DiscoverAdapters(options);
+    }
+
+    std::vector<Adapter> Instance::GetAdapters() const {
+        // Adapters are owned by mImpl so it is safe to return non RAII pointers to them
+        std::vector<Adapter> adapters;
+        for (const std::unique_ptr<AdapterBase>& adapter : mImpl->GetAdapters()) {
+            adapters.push_back({adapter.get()});
+        }
+        return adapters;
     }
 
 }  // namespace dawn_native

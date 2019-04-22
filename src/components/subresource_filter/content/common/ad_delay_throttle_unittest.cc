@@ -565,8 +565,8 @@ TEST_P(AdDelayThrottleEnabledParamTest, IsolatedMetrics) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        AdDelayThrottleEnabledParamTest,
-                        ::testing::Values(true, false));
+INSTANTIATE_TEST_SUITE_P(,
+                         AdDelayThrottleEnabledParamTest,
+                         ::testing::Values(true, false));
 
 }  // namespace subresource_filter

@@ -15,14 +15,14 @@
 namespace viz {
 namespace {
 
-void DestroyOnThread(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    const gpu::GpuMemoryBufferImpl::DestructionCallback& callback,
-    const gpu::SyncToken& sync_token) {
+void DestroyOnThread(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+                     gpu::GpuMemoryBufferImpl::DestructionCallback callback,
+                     const gpu::SyncToken& sync_token) {
   if (task_runner->BelongsToCurrentThread()) {
     std::move(callback).Run(sync_token);
   } else {
-    task_runner->PostTask(FROM_HERE, base::BindOnce(callback, sync_token));
+    task_runner->PostTask(FROM_HERE,
+                          base::BindOnce(std::move(callback), sync_token));
   }
 }
 
@@ -54,12 +54,12 @@ InProcessGpuMemoryBufferManager::CreateGpuMemoryBuffer(
       gpu_memory_buffer_factory_->CreateGpuMemoryBuffer(
           id, size, format, usage, client_id_, surface_handle);
 
-  auto callback = base::BindRepeating(
+  auto callback = base::BindOnce(
       &InProcessGpuMemoryBufferManager::ShouldDestroyGpuMemoryBuffer, weak_ptr_,
       id);
   return gpu_memory_buffer_support_.CreateGpuMemoryBufferImplFromHandle(
       std::move(buffer_handle), size, format, usage,
-      base::BindRepeating(&DestroyOnThread, task_runner_, std::move(callback)));
+      base::BindOnce(&DestroyOnThread, task_runner_, std::move(callback)));
 }
 
 void InProcessGpuMemoryBufferManager::SetDestructionSyncToken(

@@ -16,7 +16,6 @@
 class BookmarkBarView;
 class Browser;
 class BrowserViewLayoutDelegate;
-class ContentsLayoutManager;
 class ImmersiveModeController;
 class InfoBarContainerView;
 class TabStrip;
@@ -47,11 +46,11 @@ class BrowserViewLayout : public views::LayoutManager {
             Browser* browser,
             views::ClientView* browser_view,
             views::View* top_container,
+            views::View* tab_strip_region_view,
             TabStrip* tab_strip,
             views::View* toolbar,
             InfoBarContainerView* infobar_container,
             views::View* contents_container,
-            ContentsLayoutManager* contents_layout_manager,
             ImmersiveModeController* immersive_mode_controller);
 
   // Sets or updates views that are not available when |this| is initialized.
@@ -132,12 +131,12 @@ class BrowserViewLayout : public views::LayoutManager {
   // NOTE: If you add a view, try to add it as a views::View, which makes
   // testing much easier.
   views::View* top_container_;
+  views::View* tab_strip_region_view_;
   TabStrip* tab_strip_;
   views::View* toolbar_;
   BookmarkBarView* bookmark_bar_;
   InfoBarContainerView* infobar_container_;
   views::View* contents_container_;
-  ContentsLayoutManager* contents_layout_manager_;
   views::View* download_shelf_;
 
   ImmersiveModeController* immersive_mode_controller_;

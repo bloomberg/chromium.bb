@@ -70,8 +70,9 @@ Polymer({
       shouldResetAutoHide = false;
     }
 
-    if (shouldResetAutoHide)
+    if (shouldResetAutoHide) {
       this.resetAutoHide_();
+    }
   },
 
   /**

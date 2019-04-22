@@ -1,0 +1,94 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_onc_types.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_container_shadow_behavior.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_drawer/cr_drawer.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_toolbar/cr_toolbar.html">
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
+<link rel="import" href="chrome://resources/html/find_shortcut_behavior.html">
+<link rel="import" href="chrome://resources/html/util.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
+<link rel="import" href="../os_settings_menu/os_settings_menu.html">
+<link rel="import" href="../os_settings_main/os_settings_main.html">
+<link rel="import" href="../../global_scroll_target_behavior.html">
+<link rel="import" href="../../i18n_setup.html">
+<link rel="import" href="../../icons.html">
+<link rel="import" href="../../settings_shared_css.html">
+<link rel="import" href="../../page_visibility.html">
+<link rel="import" href="../../prefs/prefs.html">
+<link rel="import" href="../../route.html">
+<link rel="import" href="../../settings_vars_css.html">
+
+<dom-module id="os-settings-ui">
+  <template>
+    <style include="settings-shared">
+      :host {
+        @apply --cr-page-host;
+        @apply --layout-fit;
+        display: flex;
+        flex-direction: column;
+      }
+
+      cr-drawer {
+        z-index: 2;
+      }
+
+      cr-toolbar {
+        @apply --layout-center;
+        min-height: 56px;
+        z-index: 2;
+      }
+
+      :host-context(html:not([dark])) cr-toolbar {
+        --iron-icon-fill-color: white;
+      }
+
+      #container {
+        flex: 1;
+        overflow: overlay;
+        position: relative;
+      }
+    </style>
+    <settings-prefs id="prefs" prefs="{{prefs}}"></settings-prefs>
+    <cr-toolbar page-name="$i18n{settings}"
+        clear-label="$i18n{clearSearch}"
+        search-prompt="$i18n{searchPrompt}"
+        on-cr-toolbar-menu-tap="onMenuButtonTap_"
+        spinner-active="[[toolbarSpinnerActive_]]"
+        menu-label="$i18n{menuButtonLabel}"
+        on-search-changed="onSearchChanged_"
+        role="banner"
+        show-menu>
+    </cr-toolbar>
+    <cr-drawer id="drawer" on-close="onMenuClose_" heading="$i18n{settings}"
+        align="$i18n{textdirection}">
+      <div class="drawer-content">
+        <template is="dom-if" id="drawerTemplate">
+          <os-settings-menu page-visibility="[[pageVisibility_]]"
+              show-android-apps="[[showAndroidApps_]]"
+              show-crostini="[[showCrostini_]]"
+              show-plugin-vm="[[showPluginVm_]]"
+              show-multidevice="[[showMultidevice_]]"
+              have-play-store-app="[[havePlayStoreApp_]]"
+              on-iron-activate="onIronActivate_"
+              advanced-opened="{{advancedOpened_}}">
+          </os-settings-menu>
+        </template>
+      </div>
+    </cr-drawer>
+    <div id="container" class="no-outline">
+      <os-settings-main id="main" prefs="{{prefs}}"
+          toolbar-spinner-active="{{toolbarSpinnerActive_}}"
+          page-visibility="[[pageVisibility_]]"
+          show-android-apps="[[showAndroidApps_]]"
+          show-kiosk-next-shell="[[showKioskNextShell_]]"
+          show-crostini="[[showCrostini_]]"
+          show-plugin-vm="[[showPluginVm_]]"
+          show-multidevice="[[showMultidevice_]]"
+          have-play-store-app="[[havePlayStoreApp_]]"
+          advanced-toggle-expanded="{{advancedOpened_}}">
+      </os-settings-main>
+    </div>
+  </template>
+  <script src="os_settings_ui.js"></script>
+</dom-module>

@@ -5,6 +5,7 @@
 import("//build/config/dcheck_always_on.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
+import("//third_party/protobuf/proto_library.gni")
 
 # Compile-time options passed to SQLite.
 #
@@ -58,11 +59,6 @@ config("chromium_sqlite3_compile_options") {
     # private, so our databases use stricter settings.
     "SQLITE_DEFAULT_FILE_PERMISSIONS=0600",
 
-    # SQLite uses a lookaside buffer to improve performance of small mallocs.
-    # Chrome already depends on small mallocs being efficient, so we disable
-    # this to avoid the extra memory overhead.
-    "SQLITE_DEFAULT_LOOKASIDE=0,0",
-
     # Needed by the SQL MemoryDumpProvider.
     #
     # Setting this to 1 is needed to collect the information reported by
@@ -84,8 +80,8 @@ config("chromium_sqlite3_compile_options") {
     # syntax, for instance SQLITE_OMIT_VIRTUALTABLE omits the virtual table
     # syntax entirely. Missing an item usually results in syntax working but
     # execution failing. Review:
-    #   src/src/parse.py
-    #   src/tool/mkkeywordhash.c
+    #   patched/src/parse.py
+    #   patched/tool/mkkeywordhash.c
 
     # The flags below are recommended in the SQLite documentation, and disable
     # features Chrome doesn't use.
@@ -94,6 +90,17 @@ config("chromium_sqlite3_compile_options") {
     "SQLITE_OMIT_PROGRESS_CALLBACK",
     "SQLITE_OMIT_SHARED_CACHE",
     "SQLITE_USE_ALLOCA",
+
+    # Chrome doesn't use the ANALYZE SQLite extension.
+    #
+    # ANALYZE [1] is non-standard, and currently performs a table scan to
+    # update statistics used by the query planner. Chrome uses straightforward
+    # database schemas which do not require the level of fine tuning provided
+    # by ANALYZE, and we generally cannot afford the I/O cost of the required
+    # table scans.
+    #
+    # [1] https://www.sqlite.org/lang_analyze.html
+    "SQLITE_OMIT_ANALYZE",
 
     # Chrome initializes SQLite manually in //sql/connection.cc.
     "SQLITE_OMIT_AUTOINIT",
@@ -114,6 +121,13 @@ config("chromium_sqlite3_compile_options") {
     # Chrome does not use sqlite3_column_decltype().
     "SQLITE_OMIT_DECLTYPE",
 
+    # EXPLAIN's output is not stable across releases [1], so it should not be
+    # used in Chrome. Skipping the EXPLAIN machinery also results in
+    # non-trivial binary savings.
+    #
+    # [1] https://www.sqlite.org/lang_explain.html
+    "SQLITE_OMIT_EXPLAIN",
+
     # Chrome does not use sqlite3_{get,free}_table().
     "SQLITE_OMIT_GET_TABLE",
 
@@ -124,8 +138,22 @@ config("chromium_sqlite3_compile_options") {
     # reach extension loading code.
     "SQLITE_OMIT_LOAD_EXTENSION",
 
+    # Chrome already depends on malloc being very efficient, so we disable
+    # SQLite's arena allocator.
+    "SQLITE_DEFAULT_LOOKASIDE=0,0",
+    "SQLITE_OMIT_LOOKASIDE",
+
     # Chrome doesn't use TCL variables.
     "SQLITE_OMIT_TCL_VARIABLE",
+
+    # The REINDEX statemnt is only useful if a collation sequence's definition
+    # changes [1]. Chrome never defines its own collation sequences [2, 3], so
+    # it never needs to call REINDEX.
+    #
+    # [1] https://www.sqlite.org/lang_reindex.html
+    # [2] https://www.sqlite.org/datatype3.html#collating_sequences
+    # [3] https://www.sqlite.org/c3ref/create_collation.html
+    "SQLITE_OMIT_REINDEX",
 
     # Chrome doesn't use sqlite3_{profile,trace}().
     "SQLITE_OMIT_TRACE",
@@ -156,8 +184,8 @@ config("chromium_sqlite3_compile_options") {
   }
 
   if (using_sanitizer) {
-    # Limit max length of data blobs and queries to 128 MB for fuzzing builds.
     defines += [
+      # Limit max length of data blobs and queries to 128 MB for fuzzing builds.
       "SQLITE_MAX_LENGTH=128000000",
       "SQLITE_MAX_SQL_LENGTH=128000000",
       "SQLITE_PRINTF_PRECISION_LIMIT=1280000",
@@ -170,7 +198,17 @@ config("chromium_sqlite3_compile_options") {
     # pages, so fuzzer will not crash when reaching the limit.
     # Apply this for fuzzing builds only, not for all builds with sanitizers.
     if (use_fuzzing_engine) {
-      defines += [ "SQLITE_MAX_PAGE_COUNT=16384" ]
+      defines += [
+        "SQLITE_MAX_PAGE_COUNT=16384",
+
+        # Used to deserialize a database from a libfuzzer-provided data blob.
+        # This is to fuzz SQLite's resilience to database corruption.
+        "SQLITE_ENABLE_DESERIALIZE",
+      ]
+
+      # The progress callback is used in fuzzing to cancel long-running queries
+      # so we don't spend too much time on them.
+      defines -= [ "SQLITE_OMIT_PROGRESS_CALLBACK" ]
     }
   }
 
@@ -232,7 +270,7 @@ config("sqlite_warnings") {
     ]
   }
   if (is_win && !is_clang) {
-    cflags += [ "/wd4101" ]  # 'zTrace' unreferenced variable in src/vdbe.c
+    cflags += [ "/wd4101" ]  # 'zTrace' unreferenced variable in patched/vdbe.c
   }
 }
 
@@ -241,15 +279,15 @@ component("chromium_sqlite3") {
   visibility = [ ":*" ]
 
   public = [
+    "patched/src/recover.h",
     "sqlite3.h",
-    "src/src/recover.h",
   ]
 
   sources = [
     "amalgamation/sqlite3.h",
+    "patched/src/recover.c",
+    "patched/src/recover_varint.c",
     "sqlite3_shim.c",
-    "src/src/recover.c",
-    "src/src/recover_varint.c",
   ]
 
   inputs = [
@@ -340,7 +378,7 @@ group("sqlite") {
   ]
 }
 
-if (is_linux || is_mac) {
+if (is_win || is_mac || is_linux) {
   executable("sqlite_shell") {
     include_dirs = [
       # shell.c contains an '#include "sqlite3.h", which we want to be
@@ -356,13 +394,11 @@ if (is_linux || is_mac) {
     ]
 
     if (is_linux) {
-      sources += [ "src/src/shell_icu_linux.c" ]
+      sources += [ "patched/src/shell_icu_linux.c" ]
     }
 
-    # TODO(pwnall): Re-enable the shell on Windows when compilation errors are
-    #               fixed upstream.
     if (is_win) {
-      sources += [ "src/src/shell_icu_win.c" ]
+      sources += [ "patched/src/shell_icu_win.c" ]
     }
 
     deps = [
@@ -382,13 +418,176 @@ if (is_linux || is_mac) {
   }
 }
 
+# Libfuzzer-based fuzzer test from SQLite source tree.
 fuzzer_test("sqlite3_ossfuzz_fuzzer") {
   include_dirs = [ "." ]
   sources = [
-    "src/test/ossfuzz.c",
+    "patched/test/ossfuzz.c",
   ]
   deps = [
     ":sqlite",
   ]
   dict = "fuzz/sql.dict"
+}
+
+source_set("sqlite3_lpm_fuzzer_core") {
+  sources = [
+    "fuzz/disabled_queries_parser.cc",
+    "fuzz/disabled_queries_parser.h",
+    "fuzz/sql_run_queries.cc",
+    "fuzz/sql_run_queries.h",
+  ]
+  deps = [
+    ":sqlite",
+  ]
+  public_deps = [
+    ":sqlite3_lpm_fuzzer_input",
+  ]
+  configs += [
+    ":sqlite_warnings",
+    ":chromium_sqlite3_compile_options",
+  ]
+  all_dependent_configs = [
+    ":lpm_fuzzer_omit_non_websql",
+    ":chromium_sqlite3_compile_options",
+  ]
+}
+
+# LPM-based fuzzer test.
+fuzzer_test("sqlite3_lpm_fuzzer") {
+  sources = [
+    "fuzz/sql_fuzzer.cc",
+    "fuzz/sql_query_proto_to_string.cc",
+    "fuzz/sql_query_proto_to_string.h",
+  ]
+  deps = [
+    ":sqlite3_lpm_fuzzer_core",
+    "//third_party/libprotobuf-mutator",
+  ]
+  additional_configs = [ ":sqlite_warnings" ]
+  libfuzzer_options = [
+    "max_len=2111000",
+    "len_control=0",
+  ]
+  seed_corpus = "fuzz/lpm_fuzzer_seed_corpus/"
+}
+
+# FTS3-focused LPM-based fuzzer test.
+fuzzer_test("sqlite3_fts3_lpm_fuzzer") {
+  sources = [
+    "fuzz/sql_fuzzer.cc",
+    "fuzz/sql_query_proto_to_string.cc",
+    "fuzz/sql_query_proto_to_string.h",
+  ]
+  deps = [
+    ":sqlite3_lpm_fuzzer_core",
+    "//third_party/libprotobuf-mutator",
+  ]
+  additional_configs = [
+    ":sqlite_warnings",
+    ":sqlite3_fts3_lpm_fuzzer_config",
+  ]
+  libfuzzer_options = [
+    "max_len=2111000",
+    "len_control=0",
+  ]
+}
+
+fuzzer_test("sqlite3_select_printf_lpm_fuzzer") {
+  sources = [
+    "fuzz/sql_printf_fuzzer.cc",
+    "fuzz/sql_query_proto_to_string.cc",
+    "fuzz/sql_query_proto_to_string.h",
+  ]
+  deps = [
+    ":sqlite3_lpm_fuzzer_core",
+    "//third_party/libprotobuf-mutator",
+  ]
+  libfuzzer_options = [ "max_len=111000" ]
+}
+
+fuzzer_test("sqlite3_select_strftime_lpm_fuzzer") {
+  sources = [
+    "fuzz/sql_query_proto_to_string.cc",
+    "fuzz/sql_query_proto_to_string.h",
+    "fuzz/sql_strftime_fuzzer.cc",
+  ]
+  deps = [
+    ":sqlite3_lpm_fuzzer_core",
+    "//third_party/libprotobuf-mutator",
+  ]
+  libfuzzer_options = [ "max_len=111000" ]
+}
+
+fuzzer_test("sqlite3_select_expr_lpm_fuzzer") {
+  sources = [
+    "fuzz/sql_expr_fuzzer.cc",
+    "fuzz/sql_query_proto_to_string.cc",
+    "fuzz/sql_query_proto_to_string.h",
+  ]
+  deps = [
+    ":sqlite3_lpm_fuzzer_core",
+    "//third_party/libprotobuf-mutator",
+  ]
+  libfuzzer_options = [
+    "max_len=111000",
+    "len_control=0",
+  ]
+}
+
+config("sqlite3_fts3_lpm_fuzzer_config") {
+  defines = [ "FUZZ_FTS3" ]
+}
+
+config("lpm_fuzzer_omit_non_websql") {
+  defines = [
+    "FUZZ_OMIT_SAVEPOINT",
+    "FUZZ_OMIT_PRAGMA",
+  ]
+}
+
+proto_library("sqlite3_lpm_fuzzer_input") {
+  sources = [
+    "fuzz/icu_codes.proto",
+    "fuzz/sql_queries.proto",
+    "fuzz/sql_query_grammar.proto",
+  ]
+}
+
+# Generates a good corpus for the sqlite_lpm_fuzzer
+# Don't build this tool on Windows since it uses a POSIX-only API and because it
+# only needs to be used on devs' machines.
+if (use_fuzzing_engine && !is_win) {
+  executable("sqlite3_lpm_corpus_gen") {
+    sources = [
+      "fuzz/sql_generate_corpus.cc",
+      "fuzz/sql_query_proto_to_string.cc",
+      "fuzz/sql_query_proto_to_string.h",
+    ]
+    deps = [
+      ":sqlite3_lpm_fuzzer_core",
+      "//base",
+      "//third_party/protobuf:protobuf_full",
+    ]
+  }
+}
+
+config("sqlite3_dbfuzz2_config") {
+  cflags = [ "-Wno-sign-compare" ]
+  configs = [ ":sqlite_warnings" ]
+}
+
+# Upstream fuzzer that tests corrupted database files.
+if (use_fuzzing_engine) {
+  fuzzer_test("sqlite3_dbfuzz2_fuzzer") {
+    include_dirs = [ "." ]
+    sources = [
+      "patched/test/dbfuzz2.c",
+    ]
+    deps = [
+      ":sqlite",
+    ]
+    additional_configs = [ ":sqlite3_dbfuzz2_config" ]
+    seed_corpus = "fuzz/db_corpus"
+  }
 }

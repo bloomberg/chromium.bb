@@ -17,7 +17,7 @@ static void draw(SkCanvas* canvas, int width, int height, SkColor colors[2]) {
     const SkScalar radius = 40;
     SkPaint paint;
     paint.setShader(SkGradientShader::MakeRadial(center, radius, colors, nullptr, 2,
-                                                 SkShader::kMirror_TileMode));
+                                                 SkTileMode::kMirror));
     paint.setBlendMode(SkBlendMode::kSrc);
     canvas->drawPaint(paint);
 }
@@ -112,8 +112,7 @@ protected:
 
         colors[0] = SK_ColorGREEN;
         colors[1] = SK_ColorYELLOW;
-        // as of this writing, the raster code will fail to draw the scaled version
-        // since it has a 64K limit on x,y coordinates... (but gpu should succeed)
+        // This used to be big enough that we didn't draw on CPU, but now we do.
         show_image(canvas, veryBig, small, colors, fProc);
     }
 

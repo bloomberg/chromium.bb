@@ -6,10 +6,10 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_COMPUTED_STYLE_INITIAL_VALUES_H_
 
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
+#include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/core/style/filter_operations.h"
 #include "third_party/blink/renderer/platform/theme_types.h"
-#include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 {% for include in includes %}
 #include "{{include}}"
 {% endfor %}
@@ -45,7 +45,7 @@ class ComputedStyleInitialValues{
   }
   static StyleImage* InitialBorderImageSource() { return nullptr; }
   static float InitialBorderWidth() { return 3; }
-  static unsigned short InitialColumnRuleWidth() {
+  static uint16_t InitialColumnRuleWidth() {
     return 3;
   }
 
@@ -60,7 +60,7 @@ class ComputedStyleInitialValues{
   static float InitialWordSpacing() { return 0.0f; }
   static float InitialLetterSpacing() { return 0.0f; }
 
-  static unsigned short InitialOutlineWidth() {
+  static uint16_t InitialOutlineWidth() {
     return 3;
   }
   static EVerticalAlign InitialVerticalAlign() {
@@ -68,15 +68,15 @@ class ComputedStyleInitialValues{
   }
 
   // -webkit-perspective-origin-x
-  static Length InitialPerspectiveOriginX() { return Length(50.0, kPercent); }
+  static Length InitialPerspectiveOriginX() { return Length::Percent(50.0); }
 
   // -webkit-perspective-origin-y
-  static Length InitialPerspectiveOriginY() { return Length(50.0, kPercent); }
+  static Length InitialPerspectiveOriginY() { return Length::Percent(50.0); }
 
   // -webkit-transform-origin-x
-  static Length InitialTransformOriginX() { return Length(50.0, kPercent); }
+  static Length InitialTransformOriginX() { return Length::Percent(50.0); }
   // -webkit-transform-origin-y
-  static Length InitialTransformOriginY() { return Length(50.0, kPercent); }
+  static Length InitialTransformOriginY() { return Length::Percent(50.0); }
   // -webkit-transform-origin-z
   static float InitialTransformOriginZ() { return 0; }
 
@@ -122,7 +122,7 @@ class ComputedStyleInitialValues{
  private:
   static const FilterOperations& InitialFilterInternal() {
     DEFINE_STATIC_LOCAL(Persistent<FilterOperationsWrapper>, ops,
-        (FilterOperationsWrapper::Create()));
+        (MakeGarbageCollected<FilterOperationsWrapper>()));
     return ops->Operations();
   }
 };

@@ -9,17 +9,20 @@
 
 #include "src/accessors.h"
 #include "src/api-inl.h"
+#include "src/base/overflowing-math.h"
 #include "src/compilation-cache.h"
 #include "src/execution.h"
 #include "src/field-type.h"
 #include "src/global-handles.h"
 #include "src/heap/factory.h"
+#include "src/heap/heap-inl.h"
 #include "src/heap/incremental-marking.h"
 #include "src/heap/spaces.h"
 #include "src/ic/ic.h"
 #include "src/layout-descriptor.h"
 #include "src/objects-inl.h"
 #include "src/objects/api-callbacks.h"
+#include "src/objects/heap-number-inl.h"
 #include "src/property.h"
 #include "test/cctest/cctest.h"
 #include "test/cctest/heap/heap-utils.h"
@@ -36,8 +39,9 @@ namespace test_unboxed_doubles {
 //
 
 static void InitializeVerifiedMapDescriptors(
-    Map map, DescriptorArray* descriptors, LayoutDescriptor layout_descriptor) {
-  map->InitializeDescriptors(descriptors, layout_descriptor);
+    Isolate* isolate, Map map, DescriptorArray descriptors,
+    LayoutDescriptor layout_descriptor) {
+  map->InitializeDescriptors(isolate, descriptors, layout_descriptor);
   CHECK(layout_descriptor->IsConsistentWithMap(map, true));
 }
 
@@ -64,19 +68,18 @@ Handle<JSObject> GetObject(const char* name) {
               .ToLocalChecked())));
 }
 
-
-static double GetDoubleFieldValue(JSObject* obj, FieldIndex field_index) {
+static double GetDoubleFieldValue(JSObject obj, FieldIndex field_index) {
   if (obj->IsUnboxedDoubleField(field_index)) {
     return obj->RawFastDoublePropertyAt(field_index);
   } else {
-    Object* value = obj->RawFastPropertyAt(field_index);
+    Object value = obj->RawFastPropertyAt(field_index);
     CHECK(value->IsMutableHeapNumber());
     return MutableHeapNumber::cast(value)->value();
   }
 }
 
-void WriteToField(JSObject* object, int descriptor, Object* value) {
-  DescriptorArray* descriptors = object->map()->instance_descriptors();
+void WriteToField(JSObject object, int descriptor, Object value) {
+  DescriptorArray descriptors = object->map()->instance_descriptors();
   PropertyDetails details = descriptors->GetDetails(descriptor);
   object->WriteToField(descriptor, details, value);
 }
@@ -192,7 +195,8 @@ TEST(LayoutDescriptorBasicSlow) {
         LayoutDescriptor::New(isolate, map, descriptors, kPropsCount);
     CHECK_EQ(LayoutDescriptor::FastPointerLayout(), *layout_descriptor);
     CHECK_EQ(kBitsInSmiLayout, layout_descriptor->capacity());
-    InitializeVerifiedMapDescriptors(*map, *descriptors, *layout_descriptor);
+    InitializeVerifiedMapDescriptors(isolate, *map, *descriptors,
+                                     *layout_descriptor);
   }
 
   props[0] = PROP_DOUBLE;
@@ -216,7 +220,8 @@ TEST(LayoutDescriptorBasicSlow) {
     for (int i = 1; i < kPropsCount; i++) {
       CHECK(layout_descriptor->IsTagged(i));
     }
-    InitializeVerifiedMapDescriptors(*map, *descriptors, *layout_descriptor);
+    InitializeVerifiedMapDescriptors(isolate, *map, *descriptors,
+                                     *layout_descriptor);
   }
 
   {
@@ -236,7 +241,8 @@ TEST(LayoutDescriptorBasicSlow) {
       CHECK(layout_descriptor->IsTagged(i));
     }
 
-    InitializeVerifiedMapDescriptors(*map, *descriptors, *layout_descriptor);
+    InitializeVerifiedMapDescriptors(isolate, *map, *descriptors,
+                                     *layout_descriptor);
 
     // Here we have truly slow layout descriptor, so play with the bits.
     CHECK(layout_descriptor->IsTagged(-1));
@@ -436,7 +442,7 @@ static void TestLayoutDescriptorQueriesSlow(int max_sequence_length) {
     int cur = 0;
     for (int i = 0; i < kMaxNumberOfDescriptors; i++) {
       bit_flip_positions[i] = cur;
-      cur = (cur + 1) * 2;
+      cur = base::MulWithWraparound((cur + 1), 2);
     }
     CHECK_LT(cur, 10000);
     bit_flip_positions[kMaxNumberOfDescriptors] = 10000;
@@ -449,7 +455,7 @@ static void TestLayoutDescriptorQueriesSlow(int max_sequence_length) {
     int cur = 3;
     for (int i = 0; i < kMaxNumberOfDescriptors; i++) {
       bit_flip_positions[i] = cur;
-      cur = (cur + 1) * 2;
+      cur = base::MulWithWraparound((cur + 1), 2);
     }
     CHECK_LT(cur, 10000);
     bit_flip_positions[kMaxNumberOfDescriptors] = 10000;
@@ -516,7 +522,8 @@ TEST(LayoutDescriptorCreateNewFast) {
     layout_descriptor =
         LayoutDescriptor::New(isolate, map, descriptors, kPropsCount);
     CHECK_EQ(LayoutDescriptor::FastPointerLayout(), *layout_descriptor);
-    InitializeVerifiedMapDescriptors(*map, *descriptors, *layout_descriptor);
+    InitializeVerifiedMapDescriptors(isolate, *map, *descriptors,
+                                     *layout_descriptor);
   }
 
   {
@@ -524,7 +531,8 @@ TEST(LayoutDescriptorCreateNewFast) {
     layout_descriptor =
         LayoutDescriptor::New(isolate, map, descriptors, kPropsCount);
     CHECK_EQ(LayoutDescriptor::FastPointerLayout(), *layout_descriptor);
-    InitializeVerifiedMapDescriptors(*map, *descriptors, *layout_descriptor);
+    InitializeVerifiedMapDescriptors(isolate, *map, *descriptors,
+                                     *layout_descriptor);
   }
 
   {
@@ -537,7 +545,8 @@ TEST(LayoutDescriptorCreateNewFast) {
     CHECK(!layout_descriptor->IsTagged(1));
     CHECK(layout_descriptor->IsTagged(2));
     CHECK(layout_descriptor->IsTagged(125));
-    InitializeVerifiedMapDescriptors(*map, *descriptors, *layout_descriptor);
+    InitializeVerifiedMapDescriptors(isolate, *map, *descriptors,
+                                     *layout_descriptor);
   }
 }
 
@@ -562,7 +571,8 @@ TEST(LayoutDescriptorCreateNewSlow) {
     layout_descriptor =
         LayoutDescriptor::New(isolate, map, descriptors, kPropsCount);
     CHECK_EQ(LayoutDescriptor::FastPointerLayout(), *layout_descriptor);
-    InitializeVerifiedMapDescriptors(*map, *descriptors, *layout_descriptor);
+    InitializeVerifiedMapDescriptors(isolate, *map, *descriptors,
+                                     *layout_descriptor);
   }
 
   {
@@ -570,7 +580,8 @@ TEST(LayoutDescriptorCreateNewSlow) {
     layout_descriptor =
         LayoutDescriptor::New(isolate, map, descriptors, kPropsCount);
     CHECK_EQ(LayoutDescriptor::FastPointerLayout(), *layout_descriptor);
-    InitializeVerifiedMapDescriptors(*map, *descriptors, *layout_descriptor);
+    InitializeVerifiedMapDescriptors(isolate, *map, *descriptors,
+                                     *layout_descriptor);
   }
 
   {
@@ -583,7 +594,8 @@ TEST(LayoutDescriptorCreateNewSlow) {
     CHECK(!layout_descriptor->IsTagged(1));
     CHECK(layout_descriptor->IsTagged(2));
     CHECK(layout_descriptor->IsTagged(125));
-    InitializeVerifiedMapDescriptors(*map, *descriptors, *layout_descriptor);
+    InitializeVerifiedMapDescriptors(isolate, *map, *descriptors,
+                                     *layout_descriptor);
   }
 
   {
@@ -602,7 +614,8 @@ TEST(LayoutDescriptorCreateNewSlow) {
     for (int i = inobject_properties; i < kPropsCount; i++) {
       CHECK(layout_descriptor->IsTagged(i));
     }
-    InitializeVerifiedMapDescriptors(*map, *descriptors, *layout_descriptor);
+    InitializeVerifiedMapDescriptors(isolate, *map, *descriptors,
+                                     *layout_descriptor);
 
     // Now test LayoutDescriptor::cast_gc_safe().
     Handle<LayoutDescriptor> layout_descriptor_copy =
@@ -636,7 +649,7 @@ static Handle<LayoutDescriptor> TestLayoutDescriptorAppend(
       DescriptorArray::Allocate(isolate, 0, kPropsCount);
 
   Handle<Map> map = Map::Create(isolate, inobject_properties);
-  map->InitializeDescriptors(*descriptors,
+  map->InitializeDescriptors(isolate, *descriptors,
                              LayoutDescriptor::FastPointerLayout());
 
   int next_field_offset = 0;
@@ -672,7 +685,7 @@ static Handle<LayoutDescriptor> TestLayoutDescriptorAppend(
       }
       CHECK(layout_descriptor->IsTagged(next_field_offset));
     }
-    map->InitializeDescriptors(*descriptors, *layout_descriptor);
+    map->InitializeDescriptors(isolate, *descriptors, *layout_descriptor);
   }
   Handle<LayoutDescriptor> layout_descriptor(map->layout_descriptor(), isolate);
   CHECK(layout_descriptor->IsConsistentWithMap(*map, true));
@@ -788,7 +801,7 @@ static Handle<LayoutDescriptor> TestLayoutDescriptorAppendIfFastOrUseFull(
     Map map = *last_map;
     for (int i = 0; i < descriptors_length; i++) {
       maps[descriptors_length - 1 - i] = handle(map, isolate);
-      Object* maybe_map = map->GetBackPointer();
+      Object maybe_map = map->GetBackPointer();
       CHECK(maybe_map->IsMap());
       map = Map::cast(maybe_map);
       CHECK(!map->is_stable());
@@ -940,12 +953,13 @@ TEST(Regress436816) {
   Handle<Map> map = Map::Create(isolate, kPropsCount);
   Handle<LayoutDescriptor> layout_descriptor =
       LayoutDescriptor::New(isolate, map, descriptors, kPropsCount);
-  map->InitializeDescriptors(*descriptors, *layout_descriptor);
+  map->InitializeDescriptors(isolate, *descriptors, *layout_descriptor);
 
-  Handle<JSObject> object = factory->NewJSObjectFromMap(map, TENURED);
+  Handle<JSObject> object =
+      factory->NewJSObjectFromMap(map, AllocationType::kOld);
 
   Address fake_address = static_cast<Address>(~kHeapObjectTagMask);
-  HeapObject* fake_object = HeapObject::FromAddress(fake_address);
+  HeapObject fake_object = HeapObject::FromAddress(fake_address);
   CHECK(fake_object->IsHeapObject());
 
   uint64_t boom_value = bit_cast<uint64_t>(fake_object);
@@ -1079,7 +1093,8 @@ TEST(DoScavenge) {
             .ToHandleChecked();
 
   // Create object in new space.
-  Handle<JSObject> obj = factory->NewJSObjectFromMap(map, NOT_TENURED);
+  Handle<JSObject> obj =
+      factory->NewJSObjectFromMap(map, AllocationType::kYoung);
 
   Handle<HeapNumber> heap_number = factory->NewHeapNumber(42.5);
   WriteToField(*obj, 0, *heap_number);
@@ -1102,7 +1117,7 @@ TEST(DoScavenge) {
 
   // Construct a double value that looks like a pointer to the new space object
   // and store it into the obj.
-  Address fake_object = reinterpret_cast<Address>(*temp) + kPointerSize;
+  Address fake_object = temp->ptr() + kSystemPointerSize;
   double boom_value = bit_cast<double>(fake_object);
 
   FieldIndex field_index = FieldIndex::ForDescriptor(obj->map(), 0);
@@ -1153,12 +1168,14 @@ TEST(DoScavengeWithIncrementalWriteBarrier) {
     AlwaysAllocateScope always_allocate(isolate);
     // Make sure |obj_value| is placed on an old-space evacuation candidate.
     heap::SimulateFullSpace(old_space);
-    obj_value = factory->NewJSArray(32 * KB, HOLEY_ELEMENTS, TENURED);
-    ec_page = Page::FromAddress(obj_value->address());
+    obj_value =
+        factory->NewJSArray(32 * KB, HOLEY_ELEMENTS, AllocationType::kOld);
+    ec_page = Page::FromHeapObject(*obj_value);
   }
 
   // Create object in new space.
-  Handle<JSObject> obj = factory->NewJSObjectFromMap(map, NOT_TENURED);
+  Handle<JSObject> obj =
+      factory->NewJSObjectFromMap(map, AllocationType::kYoung);
 
   Handle<HeapNumber> heap_number = factory->NewHeapNumber(42.5);
   WriteToField(*obj, 0, *heap_number);
@@ -1222,7 +1239,8 @@ static void TestLayoutDescriptorHelper(Isolate* isolate,
 
   Handle<LayoutDescriptor> layout_descriptor = LayoutDescriptor::New(
       isolate, map, descriptors, descriptors->number_of_descriptors());
-  InitializeVerifiedMapDescriptors(*map, *descriptors, *layout_descriptor);
+  InitializeVerifiedMapDescriptors(isolate, *map, *descriptors,
+                                   *layout_descriptor);
 
   LayoutDescriptorHelper helper(*map);
   bool all_fields_tagged = true;
@@ -1248,11 +1266,11 @@ static void TestLayoutDescriptorHelper(Isolate* isolate,
     CHECK_EQ(expected_tagged, helper.IsTagged(index.offset(), instance_size,
                                               &end_of_region_offset));
     CHECK_GT(end_of_region_offset, 0);
-    CHECK_EQ(end_of_region_offset % kPointerSize, 0);
+    CHECK_EQ(end_of_region_offset % kTaggedSize, 0);
     CHECK(end_of_region_offset <= instance_size);
 
     for (int offset = index.offset(); offset < end_of_region_offset;
-         offset += kPointerSize) {
+         offset += kTaggedSize) {
       CHECK_EQ(expected_tagged, helper.IsTagged(index.offset()));
     }
     if (end_of_region_offset < instance_size) {
@@ -1262,7 +1280,7 @@ static void TestLayoutDescriptorHelper(Isolate* isolate,
     }
   }
 
-  for (int offset = 0; offset < JSObject::kHeaderSize; offset += kPointerSize) {
+  for (int offset = 0; offset < JSObject::kHeaderSize; offset += kTaggedSize) {
     // Header queries
     CHECK(helper.IsTagged(offset));
     int end_of_region_offset;
@@ -1435,13 +1453,13 @@ static void TestWriteBarrier(Handle<Map> map, Handle<Map> new_map,
   Handle<HeapObject> obj_value;
   {
     AlwaysAllocateScope always_allocate(isolate);
-    obj = factory->NewJSObjectFromMap(map, TENURED);
+    obj = factory->NewJSObjectFromMap(map, AllocationType::kOld);
     CHECK(old_space->Contains(*obj));
 
     obj_value = factory->NewHeapNumber(0.);
   }
 
-  CHECK(Heap::InNewSpace(*obj_value));
+  CHECK(Heap::InYoungGeneration(*obj_value));
 
   {
     FieldIndex index = FieldIndex::ForDescriptor(*map, tagged_descriptor);
@@ -1455,7 +1473,7 @@ static void TestWriteBarrier(Handle<Map> map, Handle<Map> new_map,
   // |boom_value| to the slot that was earlier recorded by write barrier.
   JSObject::MigrateToMap(obj, new_map);
 
-  Address fake_object = reinterpret_cast<Address>(*obj_value) + kPointerSize;
+  Address fake_object = obj_value->ptr() + kTaggedSize;
   uint64_t boom_value = bit_cast<uint64_t>(fake_object);
 
   FieldIndex double_field_index =
@@ -1500,14 +1518,15 @@ static void TestIncrementalWriteBarrier(Handle<Map> map, Handle<Map> new_map,
   Page* ec_page;
   {
     AlwaysAllocateScope always_allocate(isolate);
-    obj = factory->NewJSObjectFromMap(map, TENURED);
+    obj = factory->NewJSObjectFromMap(map, AllocationType::kOld);
     CHECK(old_space->Contains(*obj));
 
     // Make sure |obj_value| is placed on an old-space evacuation candidate.
     heap::SimulateFullSpace(old_space);
-    obj_value = factory->NewJSArray(32 * KB, HOLEY_ELEMENTS, TENURED);
-    ec_page = Page::FromAddress(obj_value->address());
-    CHECK_NE(ec_page, Page::FromAddress(obj->address()));
+    obj_value =
+        factory->NewJSArray(32 * KB, HOLEY_ELEMENTS, AllocationType::kOld);
+    ec_page = Page::FromHeapObject(*obj_value);
+    CHECK_NE(ec_page, Page::FromHeapObject(*obj));
   }
 
   // Heap is ready, force |ec_page| to become an evacuation candidate and

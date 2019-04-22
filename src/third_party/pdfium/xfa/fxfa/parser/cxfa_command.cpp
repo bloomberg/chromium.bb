@@ -6,7 +6,7 @@
 
 #include "xfa/fxfa/parser/cxfa_command.h"
 
-#include "fxjs/xfa/cjx_command.h"
+#include "fxjs/xfa/cjx_node.h"
 #include "third_party/base/ptr_util.h"
 
 namespace {
@@ -16,16 +16,15 @@ const CXFA_Node::PropertyData kCommandPropertyData[] = {
     {XFA_Element::Insert, 1, 0},
     {XFA_Element::Update, 1, 0},
     {XFA_Element::Delete, 1, 0},
-    {XFA_Element::Unknown, 0, 0}};
+};
+
 const CXFA_Node::AttributeData kCommandAttributeData[] = {
     {XFA_Attribute::Id, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Name, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Use, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Timeout, XFA_AttributeType::Integer, (void*)30},
     {XFA_Attribute::Usehref, XFA_AttributeType::CData, nullptr},
-    {XFA_Attribute::Unknown, XFA_AttributeType::Integer, nullptr}};
-
-constexpr wchar_t kCommandName[] = L"command";
+};
 
 }  // namespace
 
@@ -37,7 +36,6 @@ CXFA_Command::CXFA_Command(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_Element::Command,
                 kCommandPropertyData,
                 kCommandAttributeData,
-                kCommandName,
-                pdfium::MakeUnique<CJX_Command>(this)) {}
+                pdfium::MakeUnique<CJX_Node>(this)) {}
 
-CXFA_Command::~CXFA_Command() {}
+CXFA_Command::~CXFA_Command() = default;

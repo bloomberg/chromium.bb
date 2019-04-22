@@ -25,6 +25,7 @@ include_rules = [
   # This directory contains build flags and does not pull all of PPAPI in.
   "+ppapi/buildflags",
   "+services/data_decoder/public",
+  "+services/identity/public/cpp",
   "+services/network/public/cpp",
   "+services/network/public/mojom",
   "+services/network",
@@ -33,6 +34,7 @@ include_rules = [
   "+skia/ext/image_operations.h",
   "+third_party/leveldatabase",
   "+third_party/re2",
+  "+third_party/blink/public/common",
   "+third_party/blink/public/mojom",
   "+third_party/blink/public/platform",
   "+third_party/blink/public/web",

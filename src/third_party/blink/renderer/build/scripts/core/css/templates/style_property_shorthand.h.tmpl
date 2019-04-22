@@ -35,25 +35,25 @@ class StylePropertyShorthand {
     USING_FAST_MALLOC(StylePropertyShorthand);
  public:
   constexpr StylePropertyShorthand()
-      : m_properties(0),
-        m_length(0),
-        m_shorthandID(CSSPropertyInvalid) {}
+      : properties_(0),
+        length_(0),
+        shorthand_id_(CSSPropertyID::kInvalid) {}
 
   constexpr StylePropertyShorthand(CSSPropertyID id,
                                    const CSSProperty** properties,
                                    unsigned numProperties)
-      : m_properties(properties),
-        m_length(numProperties),
-        m_shorthandID(id) {}
+      : properties_(properties),
+        length_(numProperties),
+        shorthand_id_(id) {}
 
-  const CSSProperty** properties() const { return m_properties; }
-  unsigned length() const { return m_length; }
-  CSSPropertyID id() const { return m_shorthandID; }
+  const CSSProperty** properties() const { return properties_; }
+  unsigned length() const { return length_; }
+  CSSPropertyID id() const { return shorthand_id_; }
 
  private:
-  const CSSProperty** m_properties;
-  unsigned m_length;
-  CSSPropertyID m_shorthandID;
+  const CSSProperty** properties_;
+  unsigned length_;
+  CSSPropertyID shorthand_id_;
 };
 
 {% for property in properties %}

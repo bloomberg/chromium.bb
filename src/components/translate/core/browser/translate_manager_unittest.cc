@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "components/infobars/core/infobar.h"
 #include "components/language/core/browser/language_model.h"
+#include "components/language/core/browser/language_prefs.h"
 #include "components/language/core/common/language_experiments.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -114,11 +115,10 @@ using namespace translate::TranslateBrowserMetrics;
 // TranslatePrefs gets created.
 struct ProfilePrefRegistration {
   ProfilePrefRegistration(sync_preferences::TestingPrefServiceSyncable* prefs) {
-    prefs->registry()->RegisterStringPref(accept_languages_prefs,
-                                          std::string());
+    language::LanguagePrefs::RegisterProfilePrefs(prefs->registry());
+    prefs->SetString(accept_languages_prefs, std::string());
 #if defined(OS_CHROMEOS)
-    prefs->registry()->RegisterStringPref(preferred_languages_prefs,
-                                          std::string());
+    prefs->SetString(preferred_languages_prefs, std::string());
 #endif
     TranslatePrefs::RegisterProfilePrefs(prefs->registry());
     // TODO(groby): Figure out RegisterProfilePrefs() should register this.
@@ -163,7 +163,7 @@ class TranslateManagerTest : public ::testing::Test {
   void SetHasLanguageChanged(bool has_language_changed) {
     translate_manager_->GetLanguageState().LanguageDetermined("de", true);
     translate_manager_->GetLanguageState().DidNavigate(false, true, false,
-                                                       std::string());
+                                                       std::string(), false);
     translate_manager_->GetLanguageState().LanguageDetermined(
         has_language_changed ? "en" : "de", true);
     EXPECT_EQ(has_language_changed,
@@ -351,9 +351,9 @@ TEST_F(TranslateManagerTest, OverrideTriggerWithIndiaEnglishExperiment) {
   };
   ON_CALL(mock_translate_client_, IsTranslatableURL(GURL::EmptyGURL()))
       .WillByDefault(Return(true));
-  TranslateAcceptLanguages accept_langugages(&prefs_, accept_languages_prefs);
+  TranslateAcceptLanguages accept_languages(&prefs_, accept_languages_prefs);
   ON_CALL(mock_translate_client_, GetTranslateAcceptLanguages())
-      .WillByDefault(Return(&accept_langugages));
+      .WillByDefault(Return(&accept_languages));
   ON_CALL(mock_translate_client_, ShowTranslateUI(_, _, _, _, _))
       .WillByDefault(Return(true));
 
@@ -546,8 +546,7 @@ TEST_F(TranslateManagerTest,
       {{"override_model", "heuristic"}, {"enforce_ranker", "false"}});
   TranslateManager::SetIgnoreMissingKeyForTesting(true);
   mock_language_model_.details = {
-      MockLanguageModel::LanguageDetails("en", 1.0),
-      MockLanguageModel::LanguageDetails("hi", 0.5),
+      MockLanguageModel::LanguageDetails("hi", 1.),
   };
   ON_CALL(mock_translate_client_, IsTranslatableURL(GURL::EmptyGURL()))
       .WillByDefault(Return(true));
@@ -566,11 +565,11 @@ TEST_F(TranslateManagerTest,
 
   base::HistogramTester histogram_tester;
   prefs_.SetBoolean(prefs::kOfferTranslateEnabled, true);
-  translate_manager_->GetLanguageState().LanguageDetermined("en", true);
+  translate_manager_->GetLanguageState().LanguageDetermined("fr", true);
   network_notifier_.SimulateOnline();
   EXPECT_EQ("hi", TranslateManager::GetTargetLanguage(
-                      &translate_prefs_, &mock_language_model_, {"en"}));
-  translate_manager_->InitiateTranslation("en");
+                      &translate_prefs_, &mock_language_model_, {}));
+  translate_manager_->InitiateTranslation("fr");
   EXPECT_THAT(histogram_tester.GetAllSamples(kInitiationStatusName),
               ElementsAre(Bucket(INITIATION_STATUS_SHOW_INFOBAR, 1),
                           Bucket(INITIATION_STATUS_SHOW_ICON, 1)));
@@ -664,6 +663,11 @@ TEST_F(TranslateManagerTest,
 
 TEST_F(TranslateManagerTest, DontTranslateOffline) {
   TranslateManager::SetIgnoreMissingKeyForTesting(true);
+
+  TranslateAcceptLanguages accept_languages(&prefs_, accept_languages_prefs);
+  ON_CALL(mock_translate_client_, GetTranslateAcceptLanguages())
+      .WillByDefault(Return(&accept_languages));
+
   translate_manager_.reset(new translate::TranslateManager(
       &mock_translate_client_, &mock_translate_ranker_, &mock_language_model_));
 
@@ -675,19 +679,18 @@ TEST_F(TranslateManagerTest, DontTranslateOffline) {
 
   translate_manager_->GetLanguageState().LanguageDetermined("de", true);
 
-  // In the offline case, Initiate will early-out before even hitting the API
-  // key test.
+  // In the offline case, Initiate won't trigger any translate behavior, so no
+  // UI showing and no auto-translate.
   network_notifier_.SimulateOffline();
   translate_manager_->InitiateTranslation("de");
-  histogram_tester.ExpectTotalCount(kInitiationStatusName, 0);
-
-  // In the online case, InitiateTranslation will proceed past early out tests.
-  network_notifier_.SimulateOnline();
-  translate_manager_->InitiateTranslation("de");
-  histogram_tester.ExpectUniqueSample(
-      kInitiationStatusName,
-      translate::TranslateBrowserMetrics::INITIATION_STATUS_DISABLED_BY_PREFS,
-      1);
+  EXPECT_THAT(histogram_tester.GetAllSamples(kInitiationStatusName),
+              Not(Contains(Bucket(INITIATION_STATUS_SHOW_INFOBAR, 1))));
+  EXPECT_THAT(histogram_tester.GetAllSamples(kInitiationStatusName),
+              Not(Contains(Bucket(INITIATION_STATUS_SHOW_ICON, 1))));
+  EXPECT_THAT(histogram_tester.GetAllSamples(kInitiationStatusName),
+              Not(Contains(Bucket(INITIATION_STATUS_AUTO_BY_CONFIG, 1))));
+  EXPECT_THAT(histogram_tester.GetAllSamples(kInitiationStatusName),
+              Not(Contains(Bucket(INITIATION_STATUS_AUTO_BY_LINK, 1))));
 }
 
 TEST_F(TranslateManagerTest, TestRecordTranslateEvent) {
@@ -950,6 +953,84 @@ TEST_F(TranslateManagerTest, CanManuallyTranslate_UndefinedSourceLanguage) {
       translate::kUnknownLanguageCode, true);
 
   EXPECT_FALSE(translate_manager_->CanManuallyTranslate());
+}
+
+TEST_F(TranslateManagerTest, PredefinedTargetLanguage) {
+  TranslateManager::SetIgnoreMissingKeyForTesting(true);
+  translate_manager_.reset(new translate::TranslateManager(
+      &mock_translate_client_, &mock_translate_ranker_, &mock_language_model_));
+
+  manager_->set_application_locale("en");
+  ASSERT_TRUE(TranslateDownloadManager::IsSupportedLanguage("en"));
+
+  ON_CALL(mock_translate_client_, IsTranslatableURL(GURL::EmptyGURL()))
+      .WillByDefault(Return(true));
+  TranslateAcceptLanguages accept_langugages(&prefs_, accept_languages_prefs);
+  ON_CALL(mock_translate_client_, GetTranslateAcceptLanguages())
+      .WillByDefault(Return(&accept_langugages));
+  ON_CALL(mock_translate_client_, ShowTranslateUI(_, _, _, _, _))
+      .WillByDefault(Return(true));
+  network_notifier_.SimulateOnline();
+
+  translate_manager_->SetPredefinedTargetLanguage("ru");
+  EXPECT_EQ(
+      "ru",
+      translate_manager_->GetLanguageState().GetPredefinedTargetLanguage());
+
+  translate_manager_->GetLanguageState().LanguageDetermined("en", true);
+
+  base::HistogramTester histogram_tester;
+  translate_manager_->InitiateTranslation("en");
+  EXPECT_THAT(histogram_tester.GetAllSamples(kInitiationStatusName),
+              ElementsAre(Bucket(
+                  INITIATION_STATUS_SHOW_UI_PREDEFINED_TARGET_LANGUAGE, 1)));
+}
+
+TEST_F(TranslateManagerTest, PredefinedTargetLanguage_HonourUserSettings) {
+  TranslateManager::SetIgnoreMissingKeyForTesting(true);
+  translate_manager_.reset(new translate::TranslateManager(
+      &mock_translate_client_, &mock_translate_ranker_, &mock_language_model_));
+  manager_->set_application_locale("en");
+
+  // Add german language to the list of accepted languages.
+  // If a lang is not in the list than CanTranslateLanguage(|lang|) returns true
+  // even if a language is blocked.
+  prefs_.registry()->RegisterStringPref("accept_languages.test", "de");
+  TranslateAcceptLanguages accept_languages(&prefs_, "accept_languages.test");
+
+  ON_CALL(mock_translate_client_, IsTranslatableURL(GURL::EmptyGURL()))
+      .WillByDefault(Return(true));
+  ON_CALL(mock_translate_client_, GetTranslateAcceptLanguages())
+      .WillByDefault(Return(&accept_languages));
+  ON_CALL(mock_translate_client_, ShowTranslateUI(_, _, _, _, _))
+      .WillByDefault(Return(true));
+
+  translate_prefs_.BlockLanguage("de");
+  translate_prefs_.WhitelistLanguagePair("fr", "de");
+
+  ASSERT_TRUE(translate_prefs_.IsBlockedLanguage("de"));
+  ASSERT_FALSE(translate_prefs_.CanTranslateLanguage(&accept_languages, "de"));
+
+  network_notifier_.SimulateOnline();
+
+  translate_manager_->SetPredefinedTargetLanguage("ru");
+  EXPECT_EQ(
+      "ru",
+      translate_manager_->GetLanguageState().GetPredefinedTargetLanguage());
+
+  translate_manager_->GetLanguageState().LanguageDetermined("de", true);
+
+  base::HistogramTester histogram_tester;
+  translate_manager_->InitiateTranslation("de");
+  EXPECT_THAT(histogram_tester.GetAllSamples(kInitiationStatusName),
+              ElementsAre(Bucket(INITIATION_STATUS_DISABLED_BY_CONFIG, 1)));
+
+  translate_manager_->GetLanguageState().LanguageDetermined("fr", true);
+  translate_manager_->InitiateTranslation("fr");
+  EXPECT_THAT(histogram_tester.GetAllSamples(kInitiationStatusName),
+              ElementsAre(Bucket(INITIATION_STATUS_DISABLED_BY_CONFIG, 1),
+                          Bucket(INITIATION_STATUS_AUTO_BY_CONFIG, 1),
+                          Bucket(INITIATION_STATUS_SHOW_ICON, 1)));
 }
 
 }  // namespace testing

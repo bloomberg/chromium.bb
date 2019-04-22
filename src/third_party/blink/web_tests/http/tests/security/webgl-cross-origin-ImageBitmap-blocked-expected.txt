@@ -2,7 +2,6 @@ WebGL's tex(Sub)Image2D should throw a SecurityError exception when the ImageBit
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS gl.getError() is gl.NO_ERROR
 PASS gl.getError() is gl.NO_ERROR
 PASS gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, bitmap) did not throw exception.

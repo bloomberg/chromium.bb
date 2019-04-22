@@ -21,13 +21,13 @@ namespace chromeos {
 class EnableDebuggingScreenHandler : public EnableDebuggingScreenView,
                                      public BaseScreenHandler {
  public:
-  EnableDebuggingScreenHandler();
+  explicit EnableDebuggingScreenHandler(JSCallsContainer* js_calls_container);
   ~EnableDebuggingScreenHandler() override;
 
   // EnableDebuggingScreenView implementation:
   void Show() override;
   void Hide() override;
-  void SetDelegate(Delegate* delegate) override;
+  void SetDelegate(EnableDebuggingScreen* screen) override;
 
   // BaseScreenHandler implementation:
   void DeclareLocalizedValues(
@@ -76,7 +76,7 @@ class EnableDebuggingScreenHandler : public EnableDebuggingScreenView,
   // Updates UI state.
   void UpdateUIState(UIState state);
 
-  Delegate* delegate_ = nullptr;
+  EnableDebuggingScreen* screen_ = nullptr;
 
   // Keeps whether screen should be shown right after initialization.
   bool show_on_init_ = false;

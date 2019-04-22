@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
 #include "services/network/public/cpp/resource_request.h"

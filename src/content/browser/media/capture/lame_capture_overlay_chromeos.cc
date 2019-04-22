@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cmath>
 
+#include "base/bind.h"
 #include "base/numerics/safe_conversions.h"
 #include "content/browser/media/capture/lame_window_capturer_chromeos.h"
 #include "media/base/video_frame.h"

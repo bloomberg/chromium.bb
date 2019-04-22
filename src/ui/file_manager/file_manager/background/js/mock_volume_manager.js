@@ -12,14 +12,41 @@ function MockVolumeManager() {
   this.driveConnectionState = {
     type: VolumeManagerCommon.DriveConnectionType.ONLINE
   };
-  this.createVolumeInfo(
+
+  // Create Drive.   Drive attempts to resolve FilesSystemURLs for '/root',
+  // '/team_drives' and '/Computers' during initialization. Create a filesystem
+  // with those entries now, and mock webkitResolveLocalFileSystemURL.
+  const driveFs = new MockFileSystem(
       VolumeManagerCommon.VolumeType.DRIVE,
-      'drive',
+      'filesystem:' + VolumeManagerCommon.VolumeType.DRIVE);
+  driveFs.populate(['/root/', '/team_drives/', '/Computers/']);
+
+  // Mock window.webkitResolve to return entries.
+  const orig = window.webkitResolveLocalFileSystemURL;
+  window.webkitResolveLocalFileSystemURL = (url, success) => {
+    const match = url.match(/^filesystem:drive(\/.*)/);
+    if (match) {
+      const path = match[1];
+      const entry = driveFs.entries[path];
+      if (entry) {
+        return setTimeout(success, 0, entry);
+      }
+    }
+    throw new DOMException('Unknown drive url: ' + url, 'NotFoundError');
+  };
+
+  // Create Drive, swap entries back in, revert window.webkitResolve.
+  const drive = this.createVolumeInfo(
+      VolumeManagerCommon.VolumeType.DRIVE, VolumeManagerCommon.RootType.DRIVE,
       str('DRIVE_DIRECTORY_LABEL'));
+  /** @type {MockFileSystem} */ (drive.fileSystem)
+      .populate(Object.values(driveFs.entries));
+  window.webkitResolveLocalFileSystmeURL = orig;
+
+  // Create Downloads.
   this.createVolumeInfo(
       VolumeManagerCommon.VolumeType.DOWNLOADS,
-      'downloads',
-      str('DOWNLOADS_DIRECTORY_LABEL'));
+      VolumeManagerCommon.RootType.DOWNLOADS, str('DOWNLOADS_DIRECTORY_LABEL'));
 }
 
 /**
@@ -31,10 +58,10 @@ MockVolumeManager.instance_ = null;
  * Replaces the VolumeManager singleton with a MockVolumeManager.
  * @param {!MockVolumeManager=} opt_singleton
  */
-MockVolumeManager.installMockSingleton = function(opt_singleton) {
+MockVolumeManager.installMockSingleton = opt_singleton => {
   MockVolumeManager.instance_ = opt_singleton || new MockVolumeManager();
 
-  volumeManagerFactory.getInstance = function() {
+  volumeManagerFactory.getInstance = () => {
     return Promise.resolve(MockVolumeManager.instance_);
   };
 };
@@ -45,13 +72,14 @@ MockVolumeManager.installMockSingleton = function(opt_singleton) {
  * @param {!VolumeManagerCommon.VolumeType} type
  * @param {string} volumeId
  * @param {string} label
+ * @param {string=} providerId
  *
  * @return {!VolumeInfo}
  */
-MockVolumeManager.prototype.createVolumeInfo =
-    function(type, volumeId, label) {
-  var volumeInfo =
-      MockVolumeManager.createMockVolumeInfo(type, volumeId, label);
+MockVolumeManager.prototype.createVolumeInfo = function(
+    type, volumeId, label, providerId) {
+  const volumeInfo = MockVolumeManager.createMockVolumeInfo(
+      type, volumeId, label, undefined, providerId);
   this.volumeInfoList.add(volumeInfo);
   return volumeInfo;
 };
@@ -85,10 +113,10 @@ MockVolumeManager.prototype.getLocationInfo = function(entry) {
     var isRootEntry = entry.fullPath === '/root';
     if (entry.fullPath.startsWith('/team_drives')) {
       if (entry.fullPath === '/team_drives') {
-        rootType = VolumeManagerCommon.RootType.TEAM_DRIVES_GRAND_ROOT;
+        rootType = VolumeManagerCommon.RootType.SHARED_DRIVES_GRAND_ROOT;
         isRootEntry = true;
       } else {
-        rootType = VolumeManagerCommon.RootType.TEAM_DRIVE;
+        rootType = VolumeManagerCommon.RootType.SHARED_DRIVE;
         isRootEntry = util.isTeamDriveRoot(entry);
       }
     } else if (entry.fullPath.startsWith('/Computers')) {
@@ -123,11 +151,12 @@ MockVolumeManager.prototype.whenVolumeInfoReady =
  * @return {VolumeInfo} Volume info.
  */
 MockVolumeManager.prototype.getCurrentProfileVolumeInfo = function(volumeType) {
-  for (var i = 0; i < this.volumeInfoList.length; i++) {
-    var volumeInfo = this.volumeInfoList.item(i);
+  for (let i = 0; i < this.volumeInfoList.length; i++) {
+    const volumeInfo = this.volumeInfoList.item(i);
     if (volumeInfo.profile.isCurrentProfile &&
-        volumeInfo.volumeType === volumeType)
+        volumeInfo.volumeType === volumeType) {
       return volumeInfo;
+    }
   }
   return null;
 };
@@ -145,49 +174,54 @@ MockVolumeManager.prototype.getDriveConnectionState = function() {
  * @param {!VolumeManagerCommon.VolumeType} type Volume type.
  * @param {string} volumeId Volume id.
  * @param {string=} label Label.
+ * @param {string=} devicePath Device path.
+ * @param {string=} providerId Provider id.
  * @return {!VolumeInfo} Created mock VolumeInfo.
  */
-MockVolumeManager.createMockVolumeInfo = function(type, volumeId, label) {
-  var fileSystem = new MockFileSystem(volumeId, 'filesystem:' + volumeId);
+MockVolumeManager.createMockVolumeInfo =
+    (type, volumeId, label, devicePath, providerId) => {
+      const fileSystem = new MockFileSystem(volumeId, 'filesystem:' + volumeId);
 
-  // If there's no label set it to volumeId to make it shorter to write tests.
-  var volumeInfo = new VolumeInfoImpl(
-      type, volumeId, fileSystem,
-      '',                                          // error
-      '',                                          // deviceType
-      '',                                          // devicePath
-      false,                                       // isReadOnly
-      false,                                       // isReadOnlyRemovableDevice
-      {isCurrentProfile: true, displayName: ''},   // profile
-      label || volumeId,                           // label
-      undefined,                                   // providerId
-      false,                                       // hasMedia
-      false,                                       // configurable
-      false,                                       // watchable
-      VolumeManagerCommon.Source.NETWORK,          // source
-      VolumeManagerCommon.FileSystemType.UNKNOWN,  // diskFileSystemType
-      {});                                         // iconSet
+      // If there's no label set it to volumeId to make it shorter to write
+      // tests.
+      const volumeInfo = new VolumeInfoImpl(
+          type, volumeId, fileSystem,
+          '',                // error
+          '',                // deviceType
+          devicePath || '',  // devicePath
+          false,             // isReadOnly
+          false,             // isReadOnlyRemovableDevice
+          {isCurrentProfile: true, displayName: ''},   // profile
+          label || volumeId,                           // label
+          providerId,                                  // providerId
+          false,                                       // hasMedia
+          false,                                       // configurable
+          false,                                       // watchable
+          VolumeManagerCommon.Source.NETWORK,          // source
+          VolumeManagerCommon.FileSystemType.UNKNOWN,  // diskFileSystemType
+          {},                                          // iconSet
+          '');                                         // driveLabel
 
-  return volumeInfo;
-};
+      return volumeInfo;
+    };
 
-MockVolumeManager.prototype.mountArchive = function(
-    fileUrl, successCallback, errorCallback) {
+MockVolumeManager.prototype.mountArchive =
+    (fileUrl, successCallback, errorCallback) => {
+      throw new Error('Not implemented.');
+    };
+MockVolumeManager.prototype.unmount =
+    (volumeInfo, successCallback, errorCallback) => {
+      throw new Error('Not implemented.');
+    };
+MockVolumeManager.prototype.configure = volumeInfo => {
   throw new Error('Not implemented.');
 };
-MockVolumeManager.prototype.unmount = function(
-    volumeInfo, successCallback, errorCallback) {
+MockVolumeManager.prototype.addEventListener = (type, handler) => {
   throw new Error('Not implemented.');
 };
-MockVolumeManager.prototype.configure = function(volumeInfo) {
+MockVolumeManager.prototype.removeEventListener = (type, handler) => {
   throw new Error('Not implemented.');
 };
-MockVolumeManager.prototype.addEventListener = function(type, handler) {
-  throw new Error('Not implemented.');
-};
-MockVolumeManager.prototype.removeEventListener = function(type, handler) {
-  throw new Error('Not implemented.');
-};
-MockVolumeManager.prototype.dispatchEvent = function(event) {
+MockVolumeManager.prototype.dispatchEvent = event => {
   throw new Error('Not implemented.');
 };

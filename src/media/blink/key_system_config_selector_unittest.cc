@@ -488,9 +488,9 @@ TEST_F(KeySystemConfigSelectorTest, UsableConfig) {
   SelectConfigReturnsConfig();
 
   EXPECT_EQ("", config_.label);
-  EXPECT_TRUE(config_.init_data_types.IsEmpty());
+  EXPECT_TRUE(config_.init_data_types.empty());
   EXPECT_EQ(1u, config_.audio_capabilities.size());
-  EXPECT_TRUE(config_.video_capabilities.IsEmpty());
+  EXPECT_TRUE(config_.video_capabilities.empty());
   EXPECT_EQ(MediaKeysRequirement::kNotAllowed, config_.distinctive_identifier);
   EXPECT_EQ(MediaKeysRequirement::kNotAllowed, config_.persistent_state);
   ASSERT_EQ(1u, config_.session_types.size());
@@ -700,7 +700,7 @@ TEST_F(KeySystemConfigSelectorTest, SessionTypes_Empty) {
   configs_.push_back(config);
 
   SelectConfigReturnsConfig();
-  EXPECT_TRUE(config_.session_types.IsEmpty());
+  EXPECT_TRUE(config_.session_types.empty());
 }
 
 TEST_F(KeySystemConfigSelectorTest, SessionTypes_SubsetSupported) {

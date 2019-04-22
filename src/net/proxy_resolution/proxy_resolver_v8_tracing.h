@@ -16,8 +16,8 @@
 
 namespace net {
 
-class HostResolver;
 class NetLogWithSource;
+class ProxyHostResolver;
 
 // ProxyResolverV8Tracing is a non-blocking proxy resolver.
 class NET_EXPORT ProxyResolverV8Tracing {
@@ -38,7 +38,7 @@ class NET_EXPORT ProxyResolverV8Tracing {
     virtual void OnError(int line_number, const base::string16& message) = 0;
 
     // Returns a HostResolver to use for DNS resolution.
-    virtual HostResolver* GetHostResolver() = 0;
+    virtual ProxyHostResolver* GetHostResolver() = 0;
 
     // Returns a NetLogWithSource to be passed to the HostResolver returned by
     // GetHostResolver().

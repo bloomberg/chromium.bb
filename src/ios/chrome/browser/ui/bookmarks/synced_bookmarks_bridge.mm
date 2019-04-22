@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/bookmarks/synced_bookmarks_bridge.h"
 
-#include "components/browser_sync/profile_sync_service.h"
+#include "components/sync/driver/sync_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"

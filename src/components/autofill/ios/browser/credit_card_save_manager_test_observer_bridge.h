@@ -8,7 +8,7 @@
 #import <Foundation/Foundation.h>
 
 #include "base/macros.h"
-#include "components/autofill/core/browser/credit_card_save_manager.h"
+#include "components/autofill/core/browser/payments/credit_card_save_manager.h"
 
 // A protocol to be adopted by EarlGrey tests to get notified of actions that
 // occur in autofill::CreditCardSaveManager.
@@ -24,7 +24,7 @@
 
 - (void)receivedUploadCardResponse;
 
-- (void)ccsmStrikeChangeComplete;
+- (void)strikeChangeComplete;
 
 @end
 
@@ -46,7 +46,7 @@ class CreditCardSaveManagerTestObserverBridge
   void OnReceivedGetUploadDetailsResponse() override;
   void OnSentUploadCardRequest() override;
   void OnReceivedUploadCardResponse() override;
-  void OnCCSMStrikeChangeComplete() override;
+  void OnStrikeChangeComplete() override;
 
  private:
   __weak id<CreditCardSaveManagerTestObserver> observer_ = nil;

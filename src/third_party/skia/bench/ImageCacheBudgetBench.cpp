@@ -6,10 +6,10 @@
  */
 
 #include "Benchmark.h"
-#include "sk_tool_utils.h"
 #include "SkCanvas.h"
 #include "SkImage.h"
 #include "SkSurface.h"
+#include "ToolUtils.h"
 
 #include "GrContext.h"
 #include "GrContextPriv.h"
@@ -27,8 +27,8 @@ static constexpr int kS = 25;
 
 static void make_images(sk_sp<SkImage> imgs[], int cnt) {
     for (int i = 0; i < cnt; ++i) {
-        SkBitmap bmp = sk_tool_utils::create_checkerboard_bitmap(kS, kS, SK_ColorBLACK,
-                                                                 SK_ColorCYAN, 10);
+        SkBitmap bmp =
+                ToolUtils::create_checkerboard_bitmap(kS, kS, SK_ColorBLACK, SK_ColorCYAN, 10);
         imgs[i] = SkImage::MakeFromBitmap(bmp);
     }
 }
@@ -47,7 +47,7 @@ void set_cache_budget(SkCanvas* canvas, int approxImagesInBudget) {
     GrContext* context =  canvas->getGrContext();
     SkASSERT(context);
     context->flush();
-    context->contextPriv().purgeAllUnlockedResources_ForTesting();
+    context->priv().testingOnly_purgeAllUnlockedResources();
     sk_sp<SkImage> image;
     make_images(&image, 1);
     draw_image(canvas, image.get());
@@ -56,7 +56,7 @@ void set_cache_budget(SkCanvas* canvas, int approxImagesInBudget) {
     context->getResourceCacheUsage(&baselineCount, nullptr);
     baselineCount -= 1; // for the image's textures.
     context->setResourceCacheLimits(baselineCount + approxImagesInBudget, 1 << 30);
-    context->contextPriv().purgeAllUnlockedResources_ForTesting();
+    context->priv().testingOnly_purgeAllUnlockedResources();
 }
 
 //////////////////////////////////////////////////////////////////////////////

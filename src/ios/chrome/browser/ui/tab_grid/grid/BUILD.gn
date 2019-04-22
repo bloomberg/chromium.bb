@@ -12,6 +12,7 @@ source_set("grid_ui") {
     "grid_constants.h",
     "grid_constants.mm",
     "grid_consumer.h",
+    "grid_empty_view.h",
     "grid_image_data_source.h",
     "grid_item.h",
     "grid_item.mm",
@@ -20,8 +21,6 @@ source_set("grid_ui") {
     "grid_theme.h",
     "grid_view_controller.h",
     "grid_view_controller.mm",
-    "top_aligned_image_view.h",
-    "top_aligned_image_view.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -31,6 +30,7 @@ source_set("grid_ui") {
     "//base",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
+    "//ios/chrome/browser/ui/elements",
     "//ios/chrome/browser/ui/tab_grid/transitions",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/common/ui_util",

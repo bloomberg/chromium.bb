@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "android_webview/browser/net/init_native_callback.h"
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "net/cookies/cookie_store.h"
 #include "net/cookies/cookie_store_change_unittest.h"
@@ -65,16 +66,16 @@ struct AwCookieStoreWrapperTestTraits {
 // Run the standard cookie tests with AwCookieStoreWrapper. Macro must be in
 // net namespace.
 namespace net {
-INSTANTIATE_TYPED_TEST_CASE_P(AwCookieStoreWrapper,
-                              CookieStoreTest,
-                              android_webview::AwCookieStoreWrapperTestTraits);
-INSTANTIATE_TYPED_TEST_CASE_P(AwCookieStoreWrapper,
-                              CookieStoreChangeGlobalTest,
-                              android_webview::AwCookieStoreWrapperTestTraits);
-INSTANTIATE_TYPED_TEST_CASE_P(AwCookieStoreWrapper,
-                              CookieStoreChangeUrlTest,
-                              android_webview::AwCookieStoreWrapperTestTraits);
-INSTANTIATE_TYPED_TEST_CASE_P(AwCookieStoreWrapper,
-                              CookieStoreChangeNamedTest,
-                              android_webview::AwCookieStoreWrapperTestTraits);
+INSTANTIATE_TYPED_TEST_SUITE_P(AwCookieStoreWrapper,
+                               CookieStoreTest,
+                               android_webview::AwCookieStoreWrapperTestTraits);
+INSTANTIATE_TYPED_TEST_SUITE_P(AwCookieStoreWrapper,
+                               CookieStoreChangeGlobalTest,
+                               android_webview::AwCookieStoreWrapperTestTraits);
+INSTANTIATE_TYPED_TEST_SUITE_P(AwCookieStoreWrapper,
+                               CookieStoreChangeUrlTest,
+                               android_webview::AwCookieStoreWrapperTestTraits);
+INSTANTIATE_TYPED_TEST_SUITE_P(AwCookieStoreWrapper,
+                               CookieStoreChangeNamedTest,
+                               android_webview::AwCookieStoreWrapperTestTraits);
 }  // namespace net

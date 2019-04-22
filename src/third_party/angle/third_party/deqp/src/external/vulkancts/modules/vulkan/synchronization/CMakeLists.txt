@@ -1,4 +1,7 @@
-include_directories(..)
+include_directories(
+	..
+	../util
+	)
 
 set(DEQP_VK_SYNCHRONIZATION_SRCS
 	vktSynchronizationTests.cpp
@@ -32,6 +35,8 @@ set(DEQP_VK_SYNCHRONIZATION_LIBS
 	tcutil
 	vkutil
 	)
+
+PCH(DEQP_VK_SYNCHRONIZATION_SRCS ../pch.cpp)
 
 add_library(deqp-vk-synchronization STATIC ${DEQP_VK_SYNCHRONIZATION_SRCS})
 target_link_libraries(deqp-vk-synchronization ${DEQP_VK_SYNCHRONIZATION_LIBS})

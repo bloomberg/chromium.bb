@@ -106,10 +106,10 @@ jvalue CoerceJavaScriptIntegerToJavaValue(JNIEnv* env,
       result.l = NULL;
       break;
     case JavaType::TypeString:
-      result.l = coerce_to_string
-                     ? ConvertUTF8ToJavaString(
-                           env, base::Int64ToString(int_value)).Release()
-                     : NULL;
+      result.l = coerce_to_string ? ConvertUTF8ToJavaString(
+                                        env, base::NumberToString(int_value))
+                                        .Release()
+                                  : NULL;
       break;
     case JavaType::TypeBoolean:
       // LIVECONNECT_COMPLIANCE: Existing behavior is to convert to false. Spec
@@ -539,7 +539,7 @@ jobject CoerceJavaScriptDictionaryToArray(JNIEnv* env,
   }
   auto null_value = std::make_unique<base::Value>();
   for (jsize i = 0; i < length; ++i) {
-    const std::string key(base::IntToString(i));
+    const std::string key(base::NumberToString(i));
     const base::Value* value_element = null_value.get();
     if (dictionary_value->HasKey(key)) {
       dictionary_value->Get(key, &value_element);
@@ -722,8 +722,14 @@ jvalue CoerceJavaScriptValueToJavaValue(JNIEnv* env,
     case base::Value::Type::BINARY:
       return CoerceGinJavaBridgeValueToJavaValue(
           env, value, target_type, coerce_to_string, object_refs, error);
+    // TODO(crbug.com/859477): Remove after root cause is found.
+    case base::Value::Type::DEAD:
+      CHECK(false);
+      return jvalue();
   }
-  NOTREACHED();
+
+  // TODO(crbug.com/859477): Revert to NOTREACHED() after root cause is found.
+  CHECK(false);
   return jvalue();
 }
 

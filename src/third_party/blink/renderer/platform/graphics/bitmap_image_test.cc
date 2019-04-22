@@ -30,7 +30,9 @@
 
 #include "third_party/blink/renderer/platform/graphics/bitmap_image.h"
 
+#include "base/bind.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "cc/paint/image_provider.h"
 #include "cc/paint/skia_paint_canvas.h"
 #include "cc/tiles/mipmap_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -59,11 +61,12 @@ class FrameSettingImageProvider : public cc::ImageProvider {
       : frame_index_(frame_index), client_id_(client_id) {}
   ~FrameSettingImageProvider() override = default;
 
-  ScopedDecodedDrawImage GetDecodedDrawImage(
+  ImageProvider::ScopedResult GetRasterContent(
       const cc::DrawImage& draw_image) override {
+    DCHECK(!draw_image.paint_image().IsPaintWorklet());
     auto sk_image =
         draw_image.paint_image().GetSkImageForFrame(frame_index_, client_id_);
-    return ScopedDecodedDrawImage(
+    return ScopedResult(
         cc::DecodedDrawImage(sk_image, SkSize::MakeEmpty(), SkSize::Make(1, 1),
                              draw_image.filter_quality(), true));
   }
@@ -95,8 +98,6 @@ void GenerateBitmapForPaintImage(cc::PaintImage paint_image,
 // return value of MaxDecodedImageBytes().
 class TestingPlatformSupportWithMaxDecodedBytes
     : public TestingPlatformSupportWithMockScheduler {
-  WTF_MAKE_NONCOPYABLE(TestingPlatformSupportWithMaxDecodedBytes);
-
  public:
   TestingPlatformSupportWithMaxDecodedBytes() {}
   ~TestingPlatformSupportWithMaxDecodedBytes() override {}
@@ -109,6 +110,8 @@ class TestingPlatformSupportWithMaxDecodedBytes
 
  private:
   size_t max_decoded_image_bytes_ = Platform::kNoDecodedImageByteLimit;
+
+  DISALLOW_COPY_AND_ASSIGN(TestingPlatformSupportWithMaxDecodedBytes);
 };
 
 class BitmapImageTest : public testing::Test {
@@ -233,7 +236,7 @@ class BitmapImageTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    image_observer_ = new FakeImageObserver;
+    image_observer_ = MakeGarbageCollected<FakeImageObserver>();
     image_ = BitmapImage::Create(image_observer_.Get());
   }
 
@@ -293,8 +296,7 @@ TEST_F(BitmapImageTest, jpegHasColorProfile) {
 }
 
 TEST_F(BitmapImageTest, pngHasColorProfile) {
-  LoadImage(
-      "palatted-color-png-gamma-one-color-profile.png");
+  LoadImage("palatted-color-png-gamma-one-color-profile.png");
   image_->PaintImageForCurrentFrame();
   EXPECT_EQ(65536u, DecodedSize());
   EXPECT_TRUE(image_->HasColorProfile());
@@ -603,7 +605,7 @@ class BitmapImageTestWithMockDecoder : public BitmapImageTest,
   void SetUp() override {
     BitmapImageTest::SetUp();
 
-    auto decoder = MockImageDecoder::Create(this);
+    auto decoder = std::make_unique<MockImageDecoder>(this);
     decoder->SetSize(10, 10);
     image_->SetDecoderForTesting(
         DeferredImageDecoder::CreateForTesting(std::move(decoder)));
@@ -669,7 +671,7 @@ TEST_F(BitmapImageTestWithMockDecoder, ImageMetadataTracking) {
       EXPECT_EQ(data.duration, base::TimeDelta::FromSeconds(1));
     EXPECT_TRUE(data.complete);
   }
-};
+}
 
 TEST_F(BitmapImageTestWithMockDecoder,
        AnimationPolicyOverrideOriginalRepetitionNone) {
@@ -830,7 +832,7 @@ const DecodedImageTypeHistogramTest::ParamType
         {"wrong-frame-dimensions.ico", BitmapImageMetrics::kImageICO},
         {"lenna.bmp", BitmapImageMetrics::kImageBMP}};
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     DecodedImageTypeHistogramTest,
     DecodedImageTypeHistogramTest,
     testing::ValuesIn(kDecodedImageTypeHistogramTestparams));
@@ -853,7 +855,7 @@ const DecodedImageOrientationHistogramTest::ParamType
         {"exif-orientation-7-rl.jpg", kOriginRightBottom},
         {"exif-orientation-8-llo.jpg", kOriginLeftBottom}};
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     DecodedImageOrientationHistogramTest,
     DecodedImageOrientationHistogramTest,
     testing::ValuesIn(kDecodedImageOrientationHistogramTestParams));
@@ -876,7 +878,7 @@ const DecodedImageDensityHistogramTest100px::ParamType
         // 632x475 too big for the 100-399px range.
         {"cat.jpg", DecodedImageDensityHistogramTest100px::kNoSamplesReported}};
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     DecodedImageDensityHistogramTest100px,
     DecodedImageDensityHistogramTest100px,
     testing::ValuesIn(kDecodedImageDensityHistogramTest100pxParams));
@@ -898,7 +900,7 @@ const DecodedImageDensityHistogramTest400px::ParamType
         // 632x475, 68826 bytes --> 1.83
         {"cat.jpg", 183}};
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     DecodedImageDensityHistogramTest400px,
     DecodedImageDensityHistogramTest400px,
     testing::ValuesIn(kDecodedImageDensityHistogramTest400pxParams));

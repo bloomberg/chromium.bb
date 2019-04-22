@@ -48,8 +48,7 @@ enum GraphicsLayerPaintingPhaseFlags {
   kGraphicsLayerPaintDecoration = (1 << 7),
   kGraphicsLayerPaintAllWithOverflowClip =
       (kGraphicsLayerPaintBackground | kGraphicsLayerPaintForeground |
-       kGraphicsLayerPaintMask |
-       kGraphicsLayerPaintDecoration)
+       kGraphicsLayerPaintMask | kGraphicsLayerPaintDecoration)
 };
 typedef unsigned GraphicsLayerPaintingPhase;
 
@@ -96,6 +95,8 @@ class PLATFORM_EXPORT GraphicsLayerClient {
   virtual bool IsTrackingRasterInvalidations() const { return false; }
 
   virtual void SetOverlayScrollbarsHidden(bool) {}
+
+  virtual void SetPaintArtifactCompositorNeedsUpdate() const {}
 
   virtual String DebugName(const GraphicsLayer*) const = 0;
 

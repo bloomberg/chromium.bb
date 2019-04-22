@@ -5,10 +5,10 @@
 package org.chromium.webapk.shell_apk.h2o;
 
 import android.app.Activity;
-import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -17,6 +17,7 @@ import android.util.Log;
 import org.chromium.webapk.lib.common.WebApkConstants;
 import org.chromium.webapk.shell_apk.HostBrowserLauncher;
 import org.chromium.webapk.shell_apk.HostBrowserLauncherParams;
+import org.chromium.webapk.shell_apk.WebApkSharedPreferences;
 
 /** Contains methods for launching host browser where ShellAPK shows the splash screen. */
 public class H2OLauncher {
@@ -35,6 +36,16 @@ public class H2OLauncher {
                 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
     }
 
+    /** Returns whether the WebAPK requested a relaunch within the last {@link deltaMs}. */
+    public static boolean didRequestRelaunchFromHostBrowserWithinLastMs(
+            Context context, long deltaMs) {
+        SharedPreferences sharedPrefs = WebApkSharedPreferences.getPrefs(context);
+        long now = System.currentTimeMillis();
+        long lastRequestTimestamp = sharedPrefs.getLong(
+                WebApkSharedPreferences.PREF_REQUEST_HOST_BROWSER_RELAUNCH_TIMESTAMP, -1);
+        return (now - lastRequestTimestamp) <= deltaMs;
+    }
+
     /**
      * Changes which components are enabled.
      *
@@ -44,6 +55,9 @@ public class H2OLauncher {
      */
     public static void changeEnabledComponentsAndKillShellApk(
             Context context, ComponentName enableComponent, ComponentName disableComponent) {
+        // Force any pending SharedPreference writes to occur.
+        WebApkSharedPreferences.flushPendingWrites(context);
+
         PackageManager pm = context.getPackageManager();
         // The state change takes seconds if we do not let PackageManager kill the ShellAPK.
         pm.setComponentEnabledSetting(enableComponent,
@@ -56,20 +70,10 @@ public class H2OLauncher {
     public static void launch(Activity splashActivity, HostBrowserLauncherParams params) {
         Log.v(TAG, "WebAPK Launch URL: " + params.getStartUrl());
 
-        Intent intent = HostBrowserLauncher.createLaunchInWebApkModeIntent(
-                splashActivity.getApplicationContext(), params);
-        intent.putExtra(WebApkConstants.EXTRA_USE_TRANSPARENT_SPLASH, true);
-
-        // Clear Intent.FLAG_ACTIVITY_NEW_TASK flag set by
-        // {@link HostBrowserLauncher#createLaunchInWebApkModeIntent()}.
-        intent.setFlags(0);
-
-        try {
-            splashActivity.startActivity(intent);
-        } catch (ActivityNotFoundException e) {
-            Log.w(TAG, "Unable to launch browser in WebAPK mode.");
-            e.printStackTrace();
-        }
+        Bundle extraExtras = new Bundle();
+        extraExtras.putBoolean(WebApkConstants.EXTRA_SPLASH_PROVIDED_BY_WEBAPK, true);
+        HostBrowserLauncher.launchBrowserInWebApkMode(
+                splashActivity, params, extraExtras, Intent.FLAG_ACTIVITY_NO_ANIMATION);
     }
 
     /** Launches the given component, passing extras from the given intent. */
@@ -91,5 +95,20 @@ public class H2OLauncher {
         }
 
         context.startActivity(intent);
+    }
+
+    /** Sends intent to host browser to request that the host browser relaunch the WebAPK. */
+    public static void requestRelaunchFromHostBrowser(
+            Context context, HostBrowserLauncherParams params) {
+        long timestamp = System.currentTimeMillis();
+        SharedPreferences.Editor editor = WebApkSharedPreferences.getPrefs(context).edit();
+        editor.putLong(
+                WebApkSharedPreferences.PREF_REQUEST_HOST_BROWSER_RELAUNCH_TIMESTAMP, timestamp);
+        editor.apply();
+
+        Bundle extraExtras = new Bundle();
+        extraExtras.putBoolean(WebApkConstants.EXTRA_RELAUNCH, true);
+        HostBrowserLauncher.launchBrowserInWebApkMode(
+                context, params, extraExtras, Intent.FLAG_ACTIVITY_NEW_TASK);
     }
 }

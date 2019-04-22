@@ -61,6 +61,7 @@
 #include <tuple>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -386,7 +387,7 @@ class Job : public URLRequest::Delegate {
 void RequestCore::CancelJob() {
   if (!task_runner_->RunsTasksInCurrentSequence()) {
     task_runner_->PostTask(FROM_HERE,
-                           base::Bind(&RequestCore::CancelJob, this));
+                           base::BindOnce(&RequestCore::CancelJob, this));
     return;
   }
 
@@ -798,8 +799,8 @@ class CertNetFetcherImpl : public CertNetFetcher {
     // then the request will hang (that is, WaitForResult will not return).
     if (!task_runner_->PostTask(
             FROM_HERE,
-            base::Bind(&CertNetFetcherImpl::DoFetchOnNetworkSequence, this,
-                       base::Passed(&request_params), request_core))) {
+            base::BindOnce(&CertNetFetcherImpl::DoFetchOnNetworkSequence, this,
+                           std::move(request_params), request_core))) {
       request_core->SignalImmediateError();
     }
 

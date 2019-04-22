@@ -102,6 +102,10 @@ class MEDIA_EXPORT PipelineController {
   // been suspended.
   void Resume();
 
+  // Called when a decoder in the pipeline lost its state. This requires a seek
+  // so that the decoder can start from a new key frame.
+  void OnDecoderStateLost();
+
   // Returns true if the current state is stable. This means that |state_| is
   // PLAYING and there are no pending operations. Requests are processed
   // immediately when the state is stable, otherwise they are queued.
@@ -193,7 +197,8 @@ class MEDIA_EXPORT PipelineController {
   // issued at the next stable state.
   bool pending_seeked_cb_ = false;
 
-  // Indicates that a seek has occurred from an explicit call to Seek().
+  // Indicates that a seek has occurred from an explicit call to Seek() or
+  // OnDecoderStateLost().
   bool pending_seek_except_start_ = false;
 
   // Indicates that time has been changed by a seek, which will be reported at

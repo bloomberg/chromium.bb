@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/login/screens/fingerprint_setup_screen.h"
-
+#include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager_util.h"
+#include "chrome/browser/profiles/profile_manager.h"
 
 namespace chromeos {
 namespace {
@@ -14,10 +15,11 @@ constexpr char kUserActionClose[] = "fingerprint-setup-done";
 }  // namespace
 
 FingerprintSetupScreen::FingerprintSetupScreen(
-    BaseScreenDelegate* base_screen_delegate,
-    FingerprintSetupScreenView* view)
-    : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_FINGERPRINT_SETUP),
-      view_(view) {
+    FingerprintSetupScreenView* view,
+    const base::RepeatingClosure& exit_callback)
+    : BaseScreen(OobeScreen::SCREEN_FINGERPRINT_SETUP),
+      view_(view),
+      exit_callback_(exit_callback) {
   DCHECK(view_);
   view_->Bind(this);
 }
@@ -27,8 +29,10 @@ FingerprintSetupScreen::~FingerprintSetupScreen() {
 }
 
 void FingerprintSetupScreen::Show() {
-  if (chrome_user_manager_util::IsPublicSessionOrEphemeralLogin()) {
-    Finish(ScreenExitCode::FINGERPRINT_SETUP_FINISHED);
+  if (!chromeos::quick_unlock::IsFingerprintEnabled(
+          ProfileManager::GetActiveUserProfile()) ||
+      chrome_user_manager_util::IsPublicSessionOrEphemeralLogin()) {
+    exit_callback_.Run();
     return;
   }
   view_->Show();
@@ -40,7 +44,7 @@ void FingerprintSetupScreen::Hide() {
 
 void FingerprintSetupScreen::OnUserAction(const std::string& action_id) {
   if (action_id == kUserActionClose) {
-    Finish(ScreenExitCode::FINGERPRINT_SETUP_FINISHED);
+    exit_callback_.Run();
     return;
   }
   BaseScreen::OnUserAction(action_id);

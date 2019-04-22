@@ -74,8 +74,6 @@ class MockChromeClient : public EmptyChromeClient {
 
 class StubLocalFrameClient : public EmptyLocalFrameClient {
  public:
-  static StubLocalFrameClient* Create() { return new StubLocalFrameClient; }
-
   std::unique_ptr<WebMediaPlayer> CreateWebMediaPlayer(
       HTMLMediaElement&,
       const WebMediaPlayerSource&,
@@ -101,13 +99,14 @@ class MediaControlsRotateToFullscreenDelegateTest
       MediaControlsRotateToFullscreenDelegate::SimpleOrientation;
 
   void SetUp() override {
-    chrome_client_ = new MockChromeClient();
+    chrome_client_ = MakeGarbageCollected<MockChromeClient>();
 
     Page::PageClients clients;
     FillWithEmptyClients(clients);
     clients.chrome_client = chrome_client_.Get();
 
-    SetupPageWithClients(&clients, StubLocalFrameClient::Create());
+    SetupPageWithClients(&clients,
+                         MakeGarbageCollected<StubLocalFrameClient>());
     video_ = HTMLVideoElement::Create(GetDocument());
     GetVideo().setAttribute(kControlsAttr, g_empty_atom);
     // Most tests should call GetDocument().body()->AppendChild(&GetVideo());
@@ -135,7 +134,7 @@ class MediaControlsRotateToFullscreenDelegateTest
 
   bool IsObservingVisibility() const {
     return GetMediaControls()
-        .rotate_to_fullscreen_delegate_->visibility_observer_;
+        .rotate_to_fullscreen_delegate_->intersection_observer_;
   }
 
   bool ObservedVisibility() const {

@@ -21,6 +21,8 @@ jumbo_source_set("fde") {
   deps = [
     "../../core/fxcrt",
     "../../core/fxge",
+    "../fgas",
+    "../fgas/layout",
   ]
   configs += [
     "../../:pdfium_core_config",
@@ -35,6 +37,7 @@ pdfium_unittest_source_set("unittests") {
   ]
   deps = [
     ":fde",
+    "../../testing:unit_test_support",
     "../fgas",
   ]
   pdfium_root_dir = "../../"

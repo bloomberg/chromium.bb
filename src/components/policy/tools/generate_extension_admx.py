@@ -223,7 +223,8 @@ class AdmxGenerator(object):
         letters, uppercase letters, digits and the underscore character.
       parenty_key: The registry key of the parent.
     '''
-    full_name = parent_category_full_name + '_' + self._ToId(policy_name)
+    policy_id = self._ToId(policy_name)
+    full_name = parent_category_full_name + '_' + policy_id
     policy_title = policy_schema.get('title', policy_name)
 
     if 'id' in policy_schema:
@@ -267,7 +268,7 @@ class AdmxGenerator(object):
                                            'presentation')
       self._SetAttribute(presentation_elem, 'id', full_name)
       if policy_schema['type'] == 'boolean':
-        self._SetAttribute(policy_elem, 'valueName', full_name)
+        self._SetAttribute(policy_elem, 'valueName', policy_id)
 
         enabled_value_elem = self._AddElement(policy_elem, 'enabledValue')
         decimal_elem = self._AddElement(enabled_value_elem, 'decimal')
@@ -280,7 +281,7 @@ class AdmxGenerator(object):
         elements_elem = self._AddElement(policy_elem, 'elements')
         decimal_elem = self._AddElement(elements_elem, 'decimal')
         self._SetAttribute(decimal_elem, 'id', desc_id)
-        self._SetAttribute(decimal_elem, 'valueName', full_name)
+        self._SetAttribute(decimal_elem, 'valueName', policy_id)
 
         textbox_elem = self._AddElement(presentation_elem, 'decimalTextBox')
         self._SetAttribute(textbox_elem, 'refId', desc_id)
@@ -293,7 +294,7 @@ class AdmxGenerator(object):
         elements_elem = self._AddElement(policy_elem, 'elements')
         text_elem = self._AddElement(elements_elem, 'text')
         self._SetAttribute(text_elem, 'id', desc_id)
-        self._SetAttribute(text_elem, 'valueName', full_name)
+        self._SetAttribute(text_elem, 'valueName', policy_id)
 
         textbox_elem = self._AddElement(presentation_elem, 'textBox')
         self._SetAttribute(textbox_elem, 'refId', desc_id)

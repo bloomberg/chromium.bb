@@ -13,6 +13,7 @@
 #include "src/elements.h"
 #include "src/execution.h"
 #include "src/heap/factory.h"
+#include "src/heap/heap-inl.h"
 #include "src/isolate-inl.h"
 #include "src/message-template.h"
 #include "src/ostreams.h"
@@ -28,13 +29,13 @@
 #include "src/string-search.h"
 #include "src/unicode-decoder.h"
 #include "src/unicode-inl.h"
+#include "src/zone/zone-list-inl.h"
 
 #ifdef V8_INTL_SUPPORT
 #include "unicode/uniset.h"
 #include "unicode/utypes.h"
 #endif  // V8_INTL_SUPPORT
 
-#ifndef V8_INTERPRETED_REGEXP
 #if V8_TARGET_ARCH_IA32
 #include "src/regexp/ia32/regexp-macro-assembler-ia32.h"
 #elif V8_TARGET_ARCH_X64
@@ -54,8 +55,6 @@
 #else
 #error Unsupported target architecture.
 #endif
-#endif
-
 
 namespace v8 {
 namespace internal {
@@ -240,8 +239,8 @@ int RegExpImpl::AtomExecRaw(Isolate* isolate, Handle<JSRegExp> regexp,
   }
 
   for (int i = 0; i < output_size; i += 2) {
-    String::FlatContent needle_content = needle->GetFlatContent();
-    String::FlatContent subject_content = subject->GetFlatContent();
+    String::FlatContent needle_content = needle->GetFlatContent(no_gc);
+    String::FlatContent subject_content = subject->GetFlatContent(no_gc);
     DCHECK(needle_content.IsFlat());
     DCHECK(subject_content.IsFlat());
     // dispatch on type of strings
@@ -299,12 +298,12 @@ Handle<Object> RegExpImpl::AtomExec(Isolate* isolate, Handle<JSRegExp> re,
 bool RegExpImpl::EnsureCompiledIrregexp(Isolate* isolate, Handle<JSRegExp> re,
                                         Handle<String> sample_subject,
                                         bool is_one_byte) {
-  Object* compiled_code = re->DataAt(JSRegExp::code_index(is_one_byte));
-#ifdef V8_INTERPRETED_REGEXP
-  if (compiled_code->IsByteArray()) return true;
-#else  // V8_INTERPRETED_REGEXP (RegExp native code)
-  if (compiled_code->IsCode()) return true;
-#endif
+  Object compiled_code = re->DataAt(JSRegExp::code_index(is_one_byte));
+  if (compiled_code != Smi::FromInt(JSRegExp::kUninitializedValue)) {
+    DCHECK(FLAG_regexp_interpret_all ? compiled_code->IsByteArray()
+                                     : compiled_code->IsCode());
+    return true;
+  }
   return CompileIrregexp(isolate, re, sample_subject, is_one_byte);
 }
 
@@ -315,7 +314,7 @@ bool RegExpImpl::CompileIrregexp(Isolate* isolate, Handle<JSRegExp> re,
   Zone zone(isolate->allocator(), ZONE_NAME);
   PostponeInterruptsScope postpone(isolate);
 #ifdef DEBUG
-  Object* entry = re->DataAt(JSRegExp::code_index(is_one_byte));
+  Object entry = re->DataAt(JSRegExp::code_index(is_one_byte));
   // When arriving here entry can only be a smi representing an uncompiled
   // regexp.
   DCHECK(entry->IsSmi());
@@ -410,21 +409,21 @@ int RegExpImpl::IrregexpPrepare(Isolate* isolate, Handle<JSRegExp> regexp,
   DCHECK(subject->IsFlat());
 
   // Check representation of the underlying storage.
-  bool is_one_byte = subject->IsOneByteRepresentationUnderneath();
+  bool is_one_byte = String::IsOneByteRepresentationUnderneath(*subject);
   if (!EnsureCompiledIrregexp(isolate, regexp, subject, is_one_byte)) return -1;
 
-#ifdef V8_INTERPRETED_REGEXP
-  // Byte-code regexp needs space allocated for all its registers.
-  // The result captures are copied to the start of the registers array
-  // if the match succeeds.  This way those registers are not clobbered
-  // when we set the last match info from last successful match.
-  return IrregexpNumberOfRegisters(FixedArray::cast(regexp->data())) +
-         (IrregexpNumberOfCaptures(FixedArray::cast(regexp->data())) + 1) * 2;
-#else  // V8_INTERPRETED_REGEXP
-  // Native regexp only needs room to output captures. Registers are handled
-  // internally.
-  return (IrregexpNumberOfCaptures(FixedArray::cast(regexp->data())) + 1) * 2;
-#endif  // V8_INTERPRETED_REGEXP
+  if (FLAG_regexp_interpret_all) {
+    // Byte-code regexp needs space allocated for all its registers.
+    // The result captures are copied to the start of the registers array
+    // if the match succeeds.  This way those registers are not clobbered
+    // when we set the last match info from last successful match.
+    return IrregexpNumberOfRegisters(FixedArray::cast(regexp->data())) +
+           (IrregexpNumberOfCaptures(FixedArray::cast(regexp->data())) + 1) * 2;
+  } else {
+    // Native regexp only needs room to output captures. Registers are handled
+    // internally.
+    return (IrregexpNumberOfCaptures(FixedArray::cast(regexp->data())) + 1) * 2;
+  }
 }
 
 int RegExpImpl::IrregexpExecRaw(Isolate* isolate, Handle<JSRegExp> regexp,
@@ -436,77 +435,83 @@ int RegExpImpl::IrregexpExecRaw(Isolate* isolate, Handle<JSRegExp> regexp,
   DCHECK_LE(index, subject->length());
   DCHECK(subject->IsFlat());
 
-  bool is_one_byte = subject->IsOneByteRepresentationUnderneath();
+  bool is_one_byte = String::IsOneByteRepresentationUnderneath(*subject);
 
-#ifndef V8_INTERPRETED_REGEXP
-  DCHECK(output_size >= (IrregexpNumberOfCaptures(*irregexp) + 1) * 2);
-  do {
-    EnsureCompiledIrregexp(isolate, regexp, subject, is_one_byte);
-    Handle<Code> code(IrregexpNativeCode(*irregexp, is_one_byte), isolate);
-    // The stack is used to allocate registers for the compiled regexp code.
-    // This means that in case of failure, the output registers array is left
-    // untouched and contains the capture results from the previous successful
-    // match.  We can use that to set the last match info lazily.
-    NativeRegExpMacroAssembler::Result res =
-        NativeRegExpMacroAssembler::Match(code,
-                                          subject,
-                                          output,
-                                          output_size,
-                                          index,
-                                          isolate);
-    if (res != NativeRegExpMacroAssembler::RETRY) {
-      DCHECK(res != NativeRegExpMacroAssembler::EXCEPTION ||
-             isolate->has_pending_exception());
-      STATIC_ASSERT(
-          static_cast<int>(NativeRegExpMacroAssembler::SUCCESS) == RE_SUCCESS);
-      STATIC_ASSERT(
-          static_cast<int>(NativeRegExpMacroAssembler::FAILURE) == RE_FAILURE);
-      STATIC_ASSERT(static_cast<int>(NativeRegExpMacroAssembler::EXCEPTION)
-                    == RE_EXCEPTION);
-      return static_cast<IrregexpResult>(res);
-    }
-    // If result is RETRY, the string has changed representation, and we
-    // must restart from scratch.
-    // In this case, it means we must make sure we are prepared to handle
-    // the, potentially, different subject (the string can switch between
-    // being internal and external, and even between being Latin1 and UC16,
-    // but the characters are always the same).
-    IrregexpPrepare(isolate, regexp, subject);
-    is_one_byte = subject->IsOneByteRepresentationUnderneath();
-  } while (true);
-  UNREACHABLE();
-#else  // V8_INTERPRETED_REGEXP
+  if (!FLAG_regexp_interpret_all) {
+    DCHECK(output_size >= (IrregexpNumberOfCaptures(*irregexp) + 1) * 2);
+    do {
+      EnsureCompiledIrregexp(isolate, regexp, subject, is_one_byte);
+      Handle<Code> code(IrregexpNativeCode(*irregexp, is_one_byte), isolate);
+      // The stack is used to allocate registers for the compiled regexp code.
+      // This means that in case of failure, the output registers array is left
+      // untouched and contains the capture results from the previous successful
+      // match.  We can use that to set the last match info lazily.
+      int res = NativeRegExpMacroAssembler::Match(code, subject, output,
+                                                  output_size, index, isolate);
+      if (res != NativeRegExpMacroAssembler::RETRY) {
+        DCHECK(res != NativeRegExpMacroAssembler::EXCEPTION ||
+               isolate->has_pending_exception());
+        STATIC_ASSERT(static_cast<int>(NativeRegExpMacroAssembler::SUCCESS) ==
+                      RE_SUCCESS);
+        STATIC_ASSERT(static_cast<int>(NativeRegExpMacroAssembler::FAILURE) ==
+                      RE_FAILURE);
+        STATIC_ASSERT(static_cast<int>(NativeRegExpMacroAssembler::EXCEPTION) ==
+                      RE_EXCEPTION);
+        return res;
+      }
+      // If result is RETRY, the string has changed representation, and we
+      // must restart from scratch.
+      // In this case, it means we must make sure we are prepared to handle
+      // the, potentially, different subject (the string can switch between
+      // being internal and external, and even between being Latin1 and UC16,
+      // but the characters are always the same).
+      IrregexpPrepare(isolate, regexp, subject);
+      is_one_byte = String::IsOneByteRepresentationUnderneath(*subject);
+    } while (true);
+    UNREACHABLE();
+  } else {
+    DCHECK(FLAG_regexp_interpret_all);
+    DCHECK(output_size >= IrregexpNumberOfRegisters(*irregexp));
+    // We must have done EnsureCompiledIrregexp, so we can get the number of
+    // registers.
+    int number_of_capture_registers =
+        (IrregexpNumberOfCaptures(*irregexp) + 1) * 2;
+    int32_t* raw_output = &output[number_of_capture_registers];
 
-  DCHECK(output_size >= IrregexpNumberOfRegisters(*irregexp));
-  // We must have done EnsureCompiledIrregexp, so we can get the number of
-  // registers.
-  int number_of_capture_registers =
-      (IrregexpNumberOfCaptures(*irregexp) + 1) * 2;
-  int32_t* raw_output = &output[number_of_capture_registers];
-  // We do not touch the actual capture result registers until we know there
-  // has been a match so that we can use those capture results to set the
-  // last match info.
-  for (int i = number_of_capture_registers - 1; i >= 0; i--) {
-    raw_output[i] = -1;
-  }
-  Handle<ByteArray> byte_codes(IrregexpByteCode(*irregexp, is_one_byte),
-                               isolate);
+    do {
+      // We do not touch the actual capture result registers until we know there
+      // has been a match so that we can use those capture results to set the
+      // last match info.
+      for (int i = number_of_capture_registers - 1; i >= 0; i--) {
+        raw_output[i] = -1;
+      }
+      Handle<ByteArray> byte_codes(IrregexpByteCode(*irregexp, is_one_byte),
+                                   isolate);
 
-  IrregexpResult result = IrregexpInterpreter::Match(isolate,
-                                                     byte_codes,
-                                                     subject,
-                                                     raw_output,
-                                                     index);
-  if (result == RE_SUCCESS) {
-    // Copy capture results to the start of the registers array.
-    MemCopy(output, raw_output, number_of_capture_registers * sizeof(int32_t));
+      IrregexpInterpreter::Result result = IrregexpInterpreter::Match(
+          isolate, byte_codes, subject, raw_output, index);
+      DCHECK_IMPLIES(result == IrregexpInterpreter::EXCEPTION,
+                     isolate->has_pending_exception());
+
+      switch (result) {
+        case IrregexpInterpreter::SUCCESS:
+          // Copy capture results to the start of the registers array.
+          MemCopy(output, raw_output,
+                  number_of_capture_registers * sizeof(int32_t));
+          return result;
+        case IrregexpInterpreter::EXCEPTION:
+        case IrregexpInterpreter::FAILURE:
+          return result;
+        case IrregexpInterpreter::RETRY:
+          // The string has changed representation, and we must restart the
+          // match.
+          is_one_byte = String::IsOneByteRepresentationUnderneath(*subject);
+          EnsureCompiledIrregexp(isolate, regexp, subject, is_one_byte);
+          break;
+      }
+    } while (true);
+    UNREACHABLE();
   }
-  if (result == RE_EXCEPTION) {
-    DCHECK(!isolate->has_pending_exception());
-    isolate->StackOverflow();
-  }
-  return result;
-#endif  // V8_INTERPRETED_REGEXP
 }
 
 MaybeHandle<Object> RegExpImpl::IrregexpExec(
@@ -517,8 +522,8 @@ MaybeHandle<Object> RegExpImpl::IrregexpExec(
   subject = String::Flatten(isolate, subject);
 
   // Prepare space for the return values.
-#if defined(V8_INTERPRETED_REGEXP) && defined(DEBUG)
-  if (FLAG_trace_regexp_bytecodes) {
+#ifdef DEBUG
+  if (FLAG_regexp_interpret_all && FLAG_trace_regexp_bytecodes) {
     String pattern = regexp->Pattern();
     PrintF("\n\nRegexp match:   /%s/\n\n", pattern->ToCString().get());
     PrintF("\n\nSubject string: '%s'\n\n", subject->ToCString().get());
@@ -572,12 +577,12 @@ Handle<RegExpMatchInfo> RegExpImpl::SetLastMatchInfo(
   result->SetNumberOfCaptureRegisters(capture_register_count);
 
   if (*result != *last_match_info) {
-    // The match info has been reallocated, update the corresponding reference
-    // on the native context.
     if (*last_match_info == *isolate->regexp_last_match_info()) {
+      // This inner condition is only needed for special situations like the
+      // regexp fuzzer, where we pass our own custom RegExpMatchInfo to
+      // RegExpImpl::Exec; there actually want to bypass the Isolate's match
+      // info and execute the regexp without side effects.
       isolate->native_context()->set_regexp_last_match_info(*result);
-    } else if (*last_match_info == *isolate->regexp_internal_match_info()) {
-      isolate->native_context()->set_regexp_internal_match_info(*result);
     }
   }
 
@@ -600,11 +605,7 @@ RegExpImpl::GlobalCache::GlobalCache(Handle<JSRegExp> regexp,
       regexp_(regexp),
       subject_(subject),
       isolate_(isolate) {
-#ifdef V8_INTERPRETED_REGEXP
-  bool interpreted = true;
-#else
-  bool interpreted = false;
-#endif  // V8_INTERPRETED_REGEXP
+  bool interpreted = FLAG_regexp_interpret_all;
 
   if (regexp_->TypeTag() == JSRegExp::ATOM) {
     static const int kAtomRegistersPerMatch = 2;
@@ -1076,8 +1077,8 @@ RegExpEngine::CompilationResult RegExpCompiler::Assemble(
   Handle<HeapObject> code = macro_assembler_->GetCode(pattern);
   isolate->IncreaseTotalRegexpCodeGenerated(code->Size());
   work_list_ = nullptr;
-#if defined(ENABLE_DISASSEMBLER) && !defined(V8_INTERPRETED_REGEXP)
-  if (FLAG_print_code) {
+#ifdef ENABLE_DISASSEMBLER
+  if (FLAG_print_code && !FLAG_regexp_interpret_all) {
     CodeTracer::Scope trace_scope(isolate->GetCodeTracer());
     OFStream os(trace_scope.file());
     Handle<Code>::cast(code)->Disassemble(pattern->ToCString().get(), os);
@@ -1542,7 +1543,26 @@ void ChoiceNode::GenerateGuard(RegExpMacroAssembler* macro_assembler,
 // that cannot occur in the source string because it is Latin1.
 static int GetCaseIndependentLetters(Isolate* isolate, uc16 character,
                                      bool one_byte_subject,
-                                     unibrow::uchar* letters) {
+                                     unibrow::uchar* letters,
+                                     int letter_length) {
+#ifdef V8_INTL_SUPPORT
+  icu::UnicodeSet set;
+  set.add(character);
+  set = set.closeOver(USET_CASE_INSENSITIVE);
+  int32_t range_count = set.getRangeCount();
+  int items = 0;
+  for (int32_t i = 0; i < range_count; i++) {
+    UChar32 start = set.getRangeStart(i);
+    UChar32 end = set.getRangeEnd(i);
+    CHECK(end - start + items <= letter_length);
+    while (start <= end) {
+      if (one_byte_subject && start > String::kMaxOneByteCharCode) break;
+      letters[items++] = (unibrow::uchar)(start);
+      start++;
+    }
+  }
+  return items;
+#else
   int length =
       isolate->jsregexp_uncanonicalize()->get(character, '\0', letters);
   // Unibrow returns 0 or 1 for characters where case independence is
@@ -1563,8 +1583,8 @@ static int GetCaseIndependentLetters(Isolate* isolate, uc16 character,
   }
 
   return length;
+#endif  // V8_INTL_SUPPORT
 }
-
 
 static inline bool EmitSimpleCharacter(Isolate* isolate,
                                        RegExpCompiler* compiler,
@@ -1598,8 +1618,8 @@ static inline bool EmitAtomNonLetter(Isolate* isolate,
                                      bool preloaded) {
   RegExpMacroAssembler* macro_assembler = compiler->macro_assembler();
   bool one_byte = compiler->one_byte();
-  unibrow::uchar chars[unibrow::Ecma262UnCanonicalize::kMaxWidth];
-  int length = GetCaseIndependentLetters(isolate, c, one_byte, chars);
+  unibrow::uchar chars[4];
+  int length = GetCaseIndependentLetters(isolate, c, one_byte, chars, 4);
   if (length < 1) {
     // This can't match.  Must be an one-byte subject and a non-one-byte
     // character.  We do not need to do anything since the one-byte pass
@@ -1659,14 +1679,9 @@ static bool ShortCutEmitCharacterPair(RegExpMacroAssembler* macro_assembler,
   return false;
 }
 
-
-typedef bool EmitCharacterFunction(Isolate* isolate,
-                                   RegExpCompiler* compiler,
-                                   uc16 c,
-                                   Label* on_failure,
-                                   int cp_offset,
-                                   bool check,
-                                   bool preloaded);
+using EmitCharacterFunction = bool(Isolate* isolate, RegExpCompiler* compiler,
+                                   uc16 c, Label* on_failure, int cp_offset,
+                                   bool check, bool preloaded);
 
 // Only emits letters (things that have case).  Only used for case independent
 // matches.
@@ -1679,8 +1694,8 @@ static inline bool EmitAtomLetter(Isolate* isolate,
                                   bool preloaded) {
   RegExpMacroAssembler* macro_assembler = compiler->macro_assembler();
   bool one_byte = compiler->one_byte();
-  unibrow::uchar chars[unibrow::Ecma262UnCanonicalize::kMaxWidth];
-  int length = GetCaseIndependentLetters(isolate, c, one_byte, chars);
+  unibrow::uchar chars[4];
+  int length = GetCaseIndependentLetters(isolate, c, one_byte, chars, 4);
   if (length <= 1) return false;
   // We may not need to check against the end of the input string
   // if this character lies before a character that matched.
@@ -1688,7 +1703,6 @@ static inline bool EmitAtomLetter(Isolate* isolate,
     macro_assembler->LoadCurrentCharacter(cp_offset, on_failure, check);
   }
   Label ok;
-  DCHECK_EQ(4, unibrow::Ecma262UnCanonicalize::kMaxWidth);
   switch (length) {
     case 2: {
       if (ShortCutEmitCharacterPair(macro_assembler, one_byte, chars[0],
@@ -1806,7 +1820,7 @@ static void EmitUseLookupTable(
   }
   Factory* factory = masm->isolate()->factory();
   // TODO(erikcorry): Cache these.
-  Handle<ByteArray> ba = factory->NewByteArray(kSize, TENURED);
+  Handle<ByteArray> ba = factory->NewByteArray(kSize, AllocationType::kOld);
   for (int i = 0; i < kSize; i++) {
     ba->set(i, templ[i]);
   }
@@ -2484,9 +2498,9 @@ void TextNode::GetQuickCheckDetails(QuickCheckDetails* details,
             details->positions(characters_filled_in);
         uc16 c = quarks[i];
         if (elm.atom()->ignore_case()) {
-          unibrow::uchar chars[unibrow::Ecma262UnCanonicalize::kMaxWidth];
-          int length = GetCaseIndependentLetters(isolate, c,
-                                                 compiler->one_byte(), chars);
+          unibrow::uchar chars[4];
+          int length = GetCaseIndependentLetters(
+              isolate, c, compiler->one_byte(), chars, 4);
           if (length == 0) {
             // This can happen because all case variants are non-Latin1, but we
             // know the input is Latin1.
@@ -3759,7 +3773,8 @@ void BoyerMooreLookahead::EmitSkipInstructions(RegExpMacroAssembler* masm) {
   }
 
   Factory* factory = masm->isolate()->factory();
-  Handle<ByteArray> boolean_skip_table = factory->NewByteArray(kSize, TENURED);
+  Handle<ByteArray> boolean_skip_table =
+      factory->NewByteArray(kSize, AllocationType::kOld);
   int skip_distance = GetSkipTable(
       min_lookahead, max_lookahead, boolean_skip_table);
   DCHECK_NE(0, skip_distance);
@@ -5113,6 +5128,17 @@ int CompareFirstChar(RegExpTree* const* a, RegExpTree* const* b) {
   return 0;
 }
 
+#ifdef V8_INTL_SUPPORT
+
+// Case Insensitve comparesion
+int CompareFirstCharCaseInsensitve(RegExpTree* const* a, RegExpTree* const* b) {
+  RegExpAtom* atom1 = (*a)->AsAtom();
+  RegExpAtom* atom2 = (*b)->AsAtom();
+  icu::UnicodeString character1(atom1->data().at(0));
+  return character1.caseCompare(atom2->data().at(0), U_FOLD_CASE_DEFAULT);
+}
+
+#else
 
 static unibrow::uchar Canonical(
     unibrow::Mapping<unibrow::Ecma262Canonicalize>* canonicalize,
@@ -5124,7 +5150,6 @@ static unibrow::uchar Canonical(
   if (length == 1) canonical = chars[0];
   return canonical;
 }
-
 
 int CompareFirstCharCaseIndependent(
     unibrow::Mapping<unibrow::Ecma262Canonicalize>* canonicalize,
@@ -5140,7 +5165,7 @@ int CompareFirstCharCaseIndependent(
   }
   return static_cast<int>(character1) - static_cast<int>(character2);
 }
-
+#endif  // V8_INTL_SUPPORT
 
 // We can stable sort runs of atoms, since the order does not matter if they
 // start with different characters.
@@ -5176,6 +5201,10 @@ bool RegExpDisjunction::SortConsecutiveAtoms(RegExpCompiler* compiler) {
     DCHECK_LE(i, alternatives->length());
     DCHECK_LE(first_atom, i);
     if (IgnoreCase(flags)) {
+#ifdef V8_INTL_SUPPORT
+      alternatives->StableSort(CompareFirstCharCaseInsensitve, first_atom,
+                               i - first_atom);
+#else
       unibrow::Mapping<unibrow::Ecma262Canonicalize>* canonicalize =
           compiler->isolate()->regexp_macro_assembler_canonicalize();
       auto compare_closure =
@@ -5183,6 +5212,7 @@ bool RegExpDisjunction::SortConsecutiveAtoms(RegExpCompiler* compiler) {
             return CompareFirstCharCaseIndependent(canonicalize, a, b);
           };
       alternatives->StableSort(compare_closure, first_atom, i - first_atom);
+#endif  // V8_INTL_SUPPORT
     } else {
       alternatives->StableSort(CompareFirstChar, first_atom, i - first_atom);
     }
@@ -5209,7 +5239,11 @@ void RegExpDisjunction::RationalizeConsecutiveAtoms(RegExpCompiler* compiler) {
     }
     RegExpAtom* const atom = alternative->AsAtom();
     JSRegExp::Flags flags = atom->flags();
+#ifdef V8_INTL_SUPPORT
+    icu::UnicodeString common_prefix(atom->data().at(0));
+#else
     unibrow::uchar common_prefix = atom->data().at(0);
+#endif  // V8_INTL_SUPPORT
     int first_with_prefix = i;
     int prefix_length = atom->length();
     i++;
@@ -5218,6 +5252,14 @@ void RegExpDisjunction::RationalizeConsecutiveAtoms(RegExpCompiler* compiler) {
       if (!alternative->IsAtom()) break;
       RegExpAtom* const atom = alternative->AsAtom();
       if (atom->flags() != flags) break;
+#ifdef V8_INTL_SUPPORT
+      icu::UnicodeString new_prefix(atom->data().at(0));
+      if (new_prefix != common_prefix) {
+        if (!IgnoreCase(flags)) break;
+        if (common_prefix.caseCompare(new_prefix, U_FOLD_CASE_DEFAULT) != 0)
+          break;
+      }
+#else
       unibrow::uchar new_prefix = atom->data().at(0);
       if (new_prefix != common_prefix) {
         if (!IgnoreCase(flags)) break;
@@ -5227,6 +5269,7 @@ void RegExpDisjunction::RationalizeConsecutiveAtoms(RegExpCompiler* compiler) {
         common_prefix = Canonical(canonicalize, common_prefix);
         if (new_prefix != common_prefix) break;
       }
+#endif  // V8_INTL_SUPPORT
       prefix_length = Min(prefix_length, atom->length());
       i++;
     }
@@ -5892,6 +5935,53 @@ void CharacterRange::AddCaseEquivalents(Isolate* isolate, Zone* zone,
                                         bool is_one_byte) {
   CharacterRange::Canonicalize(ranges);
   int range_count = ranges->length();
+#ifdef V8_INTL_SUPPORT
+  icu::UnicodeSet already_added;
+  icu::UnicodeSet others;
+  for (int i = 0; i < range_count; i++) {
+    CharacterRange range = ranges->at(i);
+    uc32 bottom = range.from();
+    if (bottom > String::kMaxUtf16CodeUnit) continue;
+    uc32 top = Min(range.to(), String::kMaxUtf16CodeUnit);
+    // Nothing to be done for surrogates.
+    if (bottom >= kLeadSurrogateStart && top <= kTrailSurrogateEnd) continue;
+    if (is_one_byte && !RangeContainsLatin1Equivalents(range)) {
+      if (bottom > String::kMaxOneByteCharCode) continue;
+      if (top > String::kMaxOneByteCharCode) top = String::kMaxOneByteCharCode;
+    }
+    already_added.add(bottom, top);
+    while (bottom <= top) {
+      icu::UnicodeString upper(bottom);
+      upper.toUpper();
+      icu::UnicodeSet expanded(bottom, bottom);
+      expanded.closeOver(USET_CASE_INSENSITIVE);
+      for (int32_t i = 0; i < expanded.getRangeCount(); i++) {
+        UChar32 start = expanded.getRangeStart(i);
+        UChar32 end = expanded.getRangeEnd(i);
+        while (start <= end) {
+          icu::UnicodeString upper2(start);
+          upper2.toUpper();
+          // Only add if the upper case are the same.
+          if (upper[0] == upper2[0]) {
+            others.add(start);
+          }
+          start++;
+        }
+      }
+      bottom++;
+    }
+  }
+  others.removeAll(already_added);
+  for (int32_t i = 0; i < others.getRangeCount(); i++) {
+    UChar32 start = others.getRangeStart(i);
+    UChar32 end = others.getRangeEnd(i);
+    if (start == end) {
+      ranges->Add(CharacterRange::Singleton(start), zone);
+    } else {
+      ranges->Add(CharacterRange::Range(start, end), zone);
+    }
+  }
+#else
   for (int i = 0; i < range_count; i++) {
     CharacterRange range = ranges->at(i);
     uc32 bottom = range.from();
@@ -5957,8 +6047,8 @@ void CharacterRange::AddCaseEquivalents(Isolate* isolate, Zone* zone,
       }
     }
   }
+#endif  // V8_INTL_SUPPORT
 }
-
 
 bool CharacterRange::IsCanonical(ZoneList<CharacterRange>* ranges) {
   DCHECK_NOT_NULL(ranges);
@@ -6437,10 +6527,10 @@ void TextNode::FillInBMInfo(Isolate* isolate, int initial_offset, int budget,
         }
         uc16 character = atom->data()[j];
         if (IgnoreCase(atom->flags())) {
-          unibrow::uchar chars[unibrow::Ecma262UnCanonicalize::kMaxWidth];
+          unibrow::uchar chars[4];
           int length = GetCaseIndependentLetters(
               isolate, character, bm->max_char() == String::kMaxOneByteCharCode,
-              chars);
+              chars, 4);
           for (int j = 0; j < length; j++) {
             bm->Set(offset, chars[j]);
           }
@@ -6698,55 +6788,57 @@ RegExpEngine::CompilationResult RegExpEngine::Compile(
   }
 
   // Create the correct assembler for the architecture.
-#ifndef V8_INTERPRETED_REGEXP
-  // Native regexp implementation.
+  std::unique_ptr<RegExpMacroAssembler> macro_assembler;
+  if (!FLAG_regexp_interpret_all) {
+    // Native regexp implementation.
+    DCHECK(!FLAG_jitless);
 
-  NativeRegExpMacroAssembler::Mode mode =
-      is_one_byte ? NativeRegExpMacroAssembler::LATIN1
-                  : NativeRegExpMacroAssembler::UC16;
+    NativeRegExpMacroAssembler::Mode mode =
+        is_one_byte ? NativeRegExpMacroAssembler::LATIN1
+                    : NativeRegExpMacroAssembler::UC16;
 
 #if V8_TARGET_ARCH_IA32
-  RegExpMacroAssemblerIA32 macro_assembler(isolate, zone, mode,
-                                           (data->capture_count + 1) * 2);
+    macro_assembler.reset(new RegExpMacroAssemblerIA32(
+        isolate, zone, mode, (data->capture_count + 1) * 2));
 #elif V8_TARGET_ARCH_X64
-  RegExpMacroAssemblerX64 macro_assembler(isolate, zone, mode,
-                                          (data->capture_count + 1) * 2);
+    macro_assembler.reset(new RegExpMacroAssemblerX64(
+        isolate, zone, mode, (data->capture_count + 1) * 2));
 #elif V8_TARGET_ARCH_ARM
-  RegExpMacroAssemblerARM macro_assembler(isolate, zone, mode,
-                                          (data->capture_count + 1) * 2);
+    macro_assembler.reset(new RegExpMacroAssemblerARM(
+        isolate, zone, mode, (data->capture_count + 1) * 2));
 #elif V8_TARGET_ARCH_ARM64
-  RegExpMacroAssemblerARM64 macro_assembler(isolate, zone, mode,
-                                            (data->capture_count + 1) * 2);
+    macro_assembler.reset(new RegExpMacroAssemblerARM64(
+        isolate, zone, mode, (data->capture_count + 1) * 2));
 #elif V8_TARGET_ARCH_S390
-  RegExpMacroAssemblerS390 macro_assembler(isolate, zone, mode,
-                                           (data->capture_count + 1) * 2);
+    macro_assembler.reset(new RegExpMacroAssemblerS390(
+        isolate, zone, mode, (data->capture_count + 1) * 2));
 #elif V8_TARGET_ARCH_PPC
-  RegExpMacroAssemblerPPC macro_assembler(isolate, zone, mode,
-                                          (data->capture_count + 1) * 2);
+    macro_assembler.reset(new RegExpMacroAssemblerPPC(
+        isolate, zone, mode, (data->capture_count + 1) * 2));
 #elif V8_TARGET_ARCH_MIPS
-  RegExpMacroAssemblerMIPS macro_assembler(isolate, zone, mode,
-                                           (data->capture_count + 1) * 2);
+    macro_assembler.reset(new RegExpMacroAssemblerMIPS(
+        isolate, zone, mode, (data->capture_count + 1) * 2));
 #elif V8_TARGET_ARCH_MIPS64
-  RegExpMacroAssemblerMIPS macro_assembler(isolate, zone, mode,
-                                           (data->capture_count + 1) * 2);
+    macro_assembler.reset(new RegExpMacroAssemblerMIPS(
+        isolate, zone, mode, (data->capture_count + 1) * 2));
 #else
 #error "Unsupported architecture"
 #endif
+  } else {
+    DCHECK(FLAG_regexp_interpret_all);
 
-#else  // V8_INTERPRETED_REGEXP
-  // Interpreted regexp implementation.
-  EmbeddedVector<byte, 1024> codes;
-  RegExpMacroAssemblerIrregexp macro_assembler(isolate, codes, zone);
-#endif  // V8_INTERPRETED_REGEXP
+    // Interpreted regexp implementation.
+    macro_assembler.reset(new RegExpMacroAssemblerIrregexp(isolate, zone));
+  }
 
-  macro_assembler.set_slow_safe(TooMuchRegExpCode(isolate, pattern));
+  macro_assembler->set_slow_safe(TooMuchRegExpCode(isolate, pattern));
 
   // Inserted here, instead of in Assembler, because it depends on information
   // in the AST that isn't replicated in the Node structure.
   static const int kMaxBacksearchLimit = 1024;
   if (is_end_anchored && !is_start_anchored && !is_sticky &&
       max_length < kMaxBacksearchLimit) {
-    macro_assembler.SetCurrentPositionFromEnd(max_length);
+    macro_assembler->SetCurrentPositionFromEnd(max_length);
   }
 
   if (is_global) {
@@ -6756,17 +6848,17 @@ RegExpEngine::CompilationResult RegExpEngine::Compile(
     } else if (is_unicode) {
       mode = RegExpMacroAssembler::GLOBAL_UNICODE;
     }
-    macro_assembler.set_global_mode(mode);
+    macro_assembler->set_global_mode(mode);
   }
 
-  return compiler.Assemble(isolate, &macro_assembler, node, data->capture_count,
-                           pattern);
+  return compiler.Assemble(isolate, macro_assembler.get(), node,
+                           data->capture_count, pattern);
 }
 
 bool RegExpEngine::TooMuchRegExpCode(Isolate* isolate, Handle<String> pattern) {
   Heap* heap = isolate->heap();
   bool too_much = pattern->length() > RegExpImpl::kRegExpTooLargeToOptimize;
-  if (heap->isolate()->total_regexp_code_generated() >
+  if (isolate->total_regexp_code_generated() >
           RegExpImpl::kRegExpCompiledLimit &&
       heap->CommittedMemoryExecutable() >
           RegExpImpl::kRegExpExecutableMemoryLimit) {
@@ -6775,10 +6867,10 @@ bool RegExpEngine::TooMuchRegExpCode(Isolate* isolate, Handle<String> pattern) {
   return too_much;
 }
 
-Object* RegExpResultsCache::Lookup(Heap* heap, String key_string,
-                                   Object* key_pattern,
-                                   FixedArray* last_match_cache,
-                                   ResultsCacheType type) {
+Object RegExpResultsCache::Lookup(Heap* heap, String key_string,
+                                  Object key_pattern,
+                                  FixedArray* last_match_cache,
+                                  ResultsCacheType type) {
   FixedArray cache;
   if (!key_string->IsInternalizedString()) return Smi::kZero;
   if (type == STRING_SPLIT_SUBSTRINGS) {

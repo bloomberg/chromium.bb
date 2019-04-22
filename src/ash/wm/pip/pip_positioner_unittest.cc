@@ -6,76 +6,108 @@
 
 #include <memory>
 #include <string>
+#include <tuple>
 #include <vector>
 
+#include "ash/root_window_controller.h"
+#include "ash/scoped_root_window_for_new_windows.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/pip/pip_test_utils.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/public/keyboard_switches.h"
 #include "ui/keyboard/test/keyboard_test_util.h"
+#include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
 
 namespace {
 
-// WindowState based on a given initial state.
-class FakeWindowState : public wm::WindowState::State {
- public:
-  explicit FakeWindowState(mojom::WindowStateType initial_state_type)
-      : state_type_(initial_state_type) {}
-  ~FakeWindowState() override = default;
+display::Display GetDisplayForWindow(aura::Window* window) {
+  return display::Screen::GetScreen()->GetDisplayNearestWindow(window);
+}
 
-  // WindowState::State overrides:
-  void OnWMEvent(wm::WindowState* window_state,
-                 const wm::WMEvent* event) override {}
-  mojom::WindowStateType GetType() const override { return state_type_; }
-  void AttachState(wm::WindowState* window_state,
-                   wm::WindowState::State* previous_state) override {}
-  void DetachState(wm::WindowState* window_state) override {}
+gfx::Rect ConvertToScreenForWindow(aura::Window* window,
+                                   const gfx::Rect& bounds) {
+  gfx::Rect new_bounds = bounds;
+  ::wm::ConvertRectToScreen(window->GetRootWindow(), &new_bounds);
+  return new_bounds;
+}
 
- private:
-  mojom::WindowStateType state_type_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeWindowState);
-};
+gfx::Rect ConvertPrimaryToScreen(const gfx::Rect& bounds) {
+  return ConvertToScreenForWindow(Shell::GetPrimaryRootWindow(), bounds);
+}
 
 }  // namespace
 
-class PipPositionerTest : public AshTestBase {
- public:
-  PipPositionerTest() = default;
-  ~PipPositionerTest() override = default;
+using PipPositionerTest = AshTestBase;
 
+TEST_F(PipPositionerTest,
+       PipRestingPositionSnapsInDisplayWithLargeAspectRatio) {
+  UpdateDisplay("1600x400");
+
+  // Snap to the top edge instead of the far left edge.
+  EXPECT_EQ(ConvertPrimaryToScreen(gfx::Rect(500, 8, 100, 100)),
+            PipPositioner::GetRestingPosition(
+                GetPrimaryDisplay(),
+                ConvertPrimaryToScreen(gfx::Rect(500, 100, 100, 100))));
+}
+
+TEST_F(PipPositionerTest, AvoidObstaclesAvoidsUnifiedSystemTray) {
+  UpdateDisplay("1000x1000");
+  auto* unified_system_tray = GetPrimaryUnifiedSystemTray();
+  unified_system_tray->ShowBubble(/*show_by_click=*/false);
+
+  auto display = GetPrimaryDisplay();
+  gfx::Rect area = PipPositioner::GetMovementArea(display);
+  gfx::Rect bubble_bounds = unified_system_tray->GetBubbleBoundsInScreen();
+  gfx::Rect bounds = gfx::Rect(bubble_bounds.x(), bubble_bounds.y(), 100, 100);
+  gfx::Rect moved_bounds = PipPositioner::GetRestingPosition(display, bounds);
+
+  // Expect that the returned bounds don't intersect the unified system tray
+  // but also don't leave the PIP movement area.
+  EXPECT_FALSE(moved_bounds.Intersects(bubble_bounds));
+  EXPECT_TRUE(area.Contains(moved_bounds));
+}
+
+class PipPositionerDisplayTest : public AshTestBase,
+                                 public ::testing::WithParamInterface<
+                                     std::tuple<std::string, std::size_t>> {
+ public:
   void SetUp() override {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         keyboard::switches::kEnableVirtualKeyboard);
     AshTestBase::SetUp();
-    SetTouchKeyboardEnabled(true);
-    Shell::Get()->EnableKeyboard();
 
-    UpdateWorkArea("400x400");
-    window_ = CreateTestWindowInShellWithBounds(gfx::Rect(200, 200, 100, 100));
-    wm::WindowState* window_state = wm::GetWindowState(window_);
-    test_state_ = new FakeWindowState(mojom::WindowStateType::PIP);
-    window_state->SetStateObject(
-        std::unique_ptr<wm::WindowState::State>(test_state_));
+    const std::string& display_string = std::get<0>(GetParam());
+    const std::size_t root_window_index = std::get<1>(GetParam());
+    UpdateWorkArea(display_string);
+    ASSERT_LT(root_window_index, Shell::GetAllRootWindows().size());
+    root_window_ = Shell::GetAllRootWindows()[root_window_index];
+    scoped_root_.reset(new ScopedRootWindowForNewWindows(root_window_));
+    ForceHideShelvesForTest();
   }
 
   void TearDown() override {
-    SetTouchKeyboardEnabled(false);
+    scoped_root_.reset();
     AshTestBase::TearDown();
   }
 
-  void UpdateWorkArea(const std::string& bounds) {
-    UpdateDisplay(bounds);
-    aura::Window* root = Shell::GetPrimaryRootWindow();
-    Shell::Get()->SetDisplayWorkAreaInsets(root, gfx::Insets());
+ protected:
+  display::Display GetDisplay() { return GetDisplayForWindow(root_window_); }
+
+  aura::Window* root_window() { return root_window_; }
+
+  gfx::Rect ConvertToScreen(const gfx::Rect& bounds) {
+    return ConvertToScreenForWindow(root_window_, bounds);
   }
 
   gfx::Rect CallAvoidObstacles(const display::Display& display,
@@ -83,219 +115,254 @@ class PipPositionerTest : public AshTestBase {
     return PipPositioner::AvoidObstacles(display, bounds);
   }
 
+  void UpdateWorkArea(const std::string& bounds) {
+    UpdateDisplay(bounds);
+    for (aura::Window* root : Shell::GetAllRootWindows())
+      Shell::Get()->SetDisplayWorkAreaInsets(root, gfx::Insets());
+  }
+
+ private:
+  std::unique_ptr<ScopedRootWindowForNewWindows> scoped_root_;
+  aura::Window* root_window_;
+};
+
+TEST_P(PipPositionerDisplayTest, PipMovementAreaIsInset) {
+  gfx::Rect area = PipPositioner::GetMovementArea(GetDisplay());
+  EXPECT_EQ(ConvertToScreen(gfx::Rect(8, 8, 384, 384)), area);
+}
+
+TEST_P(PipPositionerDisplayTest,
+       PipMovementAreaIncludesKeyboardIfKeyboardIsShown) {
+  auto* keyboard_controller = keyboard::KeyboardController::Get();
+  keyboard_controller->ShowKeyboardInDisplay(GetDisplay());
+  ASSERT_TRUE(keyboard::WaitUntilShown());
+  aura::Window* keyboard_window = keyboard_controller->GetKeyboardWindow();
+  keyboard_window->SetBounds(gfx::Rect(0, 300, 400, 100));
+
+  gfx::Rect area = PipPositioner::GetMovementArea(GetDisplay());
+  EXPECT_EQ(ConvertToScreen(gfx::Rect(8, 8, 384, 284)), area);
+}
+
+TEST_P(PipPositionerDisplayTest, PipRestingPositionSnapsToClosestEdge) {
+  auto display = GetDisplay();
+
+  // Snap near top edge to top.
+  EXPECT_EQ(ConvertToScreen(gfx::Rect(100, 8, 100, 100)),
+            PipPositioner::GetRestingPosition(
+                display, ConvertToScreen(gfx::Rect(100, 50, 100, 100))));
+
+  // Snap near bottom edge to bottom.
+  EXPECT_EQ(ConvertToScreen(gfx::Rect(100, 292, 100, 100)),
+            PipPositioner::GetRestingPosition(
+                display, ConvertToScreen(gfx::Rect(100, 250, 100, 100))));
+
+  // Snap near left edge to left.
+  EXPECT_EQ(ConvertToScreen(gfx::Rect(8, 100, 100, 100)),
+            PipPositioner::GetRestingPosition(
+                display, ConvertToScreen(gfx::Rect(50, 100, 100, 100))));
+
+  // Snap near right edge to right.
+  EXPECT_EQ(ConvertToScreen(gfx::Rect(292, 100, 100, 100)),
+            PipPositioner::GetRestingPosition(
+                display, ConvertToScreen(gfx::Rect(250, 100, 100, 100))));
+}
+
+TEST_P(PipPositionerDisplayTest, PipRestingPositionSnapsInsideDisplay) {
+  auto display = GetDisplay();
+
+  // Snap near top edge outside movement area to top.
+  EXPECT_EQ(ConvertToScreen(gfx::Rect(100, 8, 100, 100)),
+            PipPositioner::GetRestingPosition(
+                display, ConvertToScreen(gfx::Rect(100, -50, 100, 100))));
+
+  // Snap near bottom edge outside movement area to bottom.
+  EXPECT_EQ(ConvertToScreen(gfx::Rect(100, 292, 100, 100)),
+            PipPositioner::GetRestingPosition(
+                display, ConvertToScreen(gfx::Rect(100, 450, 100, 100))));
+
+  // Snap near left edge outside movement area to left.
+  EXPECT_EQ(ConvertToScreen(gfx::Rect(8, 100, 100, 100)),
+            PipPositioner::GetRestingPosition(
+                display, ConvertToScreen(gfx::Rect(-50, 100, 100, 100))));
+
+  // Snap near right edge outside movement area to right.
+  EXPECT_EQ(ConvertToScreen(gfx::Rect(292, 100, 100, 100)),
+            PipPositioner::GetRestingPosition(
+                display, ConvertToScreen(gfx::Rect(450, 100, 100, 100))));
+}
+
+TEST_P(PipPositionerDisplayTest, PipAdjustPositionForDragClampsToMovementArea) {
+  auto display = GetDisplay();
+
+  // Adjust near top edge outside movement area.
+  EXPECT_EQ(ConvertToScreen(gfx::Rect(100, 8, 100, 100)),
+            PipPositioner::GetBoundsForDrag(
+                display, ConvertToScreen(gfx::Rect(100, -50, 100, 100))));
+
+  // Adjust near bottom edge outside movement area.
+  EXPECT_EQ(ConvertToScreen(gfx::Rect(100, 292, 100, 100)),
+            PipPositioner::GetBoundsForDrag(
+                display, ConvertToScreen(gfx::Rect(100, 450, 100, 100))));
+
+  // Adjust near left edge outside movement area.
+  EXPECT_EQ(ConvertToScreen(gfx::Rect(8, 100, 100, 100)),
+            PipPositioner::GetBoundsForDrag(
+                display, ConvertToScreen(gfx::Rect(-50, 100, 100, 100))));
+
+  // Adjust near right edge outside movement area.
+  EXPECT_EQ(ConvertToScreen(gfx::Rect(292, 100, 100, 100)),
+            PipPositioner::GetBoundsForDrag(
+                display, ConvertToScreen(gfx::Rect(450, 100, 100, 100))));
+}
+
+TEST_P(PipPositionerDisplayTest, PipRestingPositionWorksIfKeyboardIsDisabled) {
+  SetTouchKeyboardEnabled(false);
+  auto display = GetDisplay();
+
+  // Snap near top edge to top.
+  EXPECT_EQ(ConvertToScreen(gfx::Rect(100, 8, 100, 100)),
+            PipPositioner::GetRestingPosition(
+                display, ConvertToScreen(gfx::Rect(100, 50, 100, 100))));
+}
+
+TEST_P(PipPositionerDisplayTest,
+       PipDismissedPositionDoesNotMoveAnExcessiveDistance) {
+  auto display = GetDisplay();
+
+  EXPECT_EQ(ConvertToScreen(gfx::Rect(100, 100, 100, 100)),
+            PipPositioner::GetDismissedPosition(
+                display, ConvertToScreen(gfx::Rect(100, 100, 100, 100))));
+}
+
+TEST_P(PipPositionerDisplayTest, PipDismissedPositionChosesClosestEdge) {
+  auto display = GetDisplay();
+
+  // Dismiss near top edge outside movement area towards top.
+  EXPECT_EQ(ConvertToScreen(gfx::Rect(100, -100, 100, 100)),
+            PipPositioner::GetDismissedPosition(
+                display, ConvertToScreen(gfx::Rect(100, 50, 100, 100))));
+
+  // Dismiss near bottom edge outside movement area towards bottom.
+  EXPECT_EQ(ConvertToScreen(gfx::Rect(100, 400, 100, 100)),
+            PipPositioner::GetDismissedPosition(
+                display, ConvertToScreen(gfx::Rect(100, 250, 100, 100))));
+
+  // Dismiss near left edge outside movement area towards left.
+  EXPECT_EQ(ConvertToScreen(gfx::Rect(-100, 100, 100, 100)),
+            PipPositioner::GetDismissedPosition(
+                display, ConvertToScreen(gfx::Rect(50, 100, 100, 100))));
+
+  // Dismiss near right edge outside movement area towards right.
+  EXPECT_EQ(ConvertToScreen(gfx::Rect(400, 100, 100, 100)),
+            PipPositioner::GetDismissedPosition(
+                display, ConvertToScreen(gfx::Rect(250, 100, 100, 100))));
+}
+
+// Verify that if two edges are equally close, the PIP window prefers dismissing
+// out horizontally.
+TEST_P(PipPositionerDisplayTest, PipDismissedPositionPrefersHorizontal) {
+  auto display = GetDisplay();
+
+  // Top left corner.
+  EXPECT_EQ(ConvertToScreen(gfx::Rect(-150, 0, 100, 100)),
+            PipPositioner::GetDismissedPosition(
+                display, ConvertToScreen(gfx::Rect(0, 0, 100, 100))));
+
+  // Top right corner.
+  EXPECT_EQ(ConvertToScreen(gfx::Rect(450, 0, 100, 100)),
+            PipPositioner::GetDismissedPosition(
+                display, ConvertToScreen(gfx::Rect(300, 0, 100, 100))));
+
+  // Bottom left corner.
+  EXPECT_EQ(ConvertToScreen(gfx::Rect(-150, 300, 100, 100)),
+            PipPositioner::GetDismissedPosition(
+                display, ConvertToScreen(gfx::Rect(0, 300, 100, 100))));
+
+  // Bottom right corner.
+  EXPECT_EQ(ConvertToScreen(gfx::Rect(450, 300, 100, 100)),
+            PipPositioner::GetDismissedPosition(
+                display, ConvertToScreen(gfx::Rect(300, 300, 100, 100))));
+}
+
+TEST_P(PipPositionerDisplayTest, AvoidObstaclesAvoidsFloatingKeyboard) {
+  auto display = GetDisplay();
+
+  auto* keyboard_controller = keyboard::KeyboardController::Get();
+  keyboard_controller->SetContainerType(
+      keyboard::mojom::ContainerType::kFloating, base::nullopt,
+      base::DoNothing());
+  keyboard_controller->ShowKeyboardInDisplay(display);
+  ASSERT_TRUE(keyboard::WaitUntilShown());
+  aura::Window* keyboard_window = keyboard_controller->GetKeyboardWindow();
+  keyboard_window->SetBounds(gfx::Rect(0, 0, 100, 100));
+
+  gfx::Rect area = PipPositioner::GetMovementArea(display);
+  gfx::Rect moved_bounds =
+      CallAvoidObstacles(display, ConvertToScreen(gfx::Rect(8, 8, 100, 100)));
+
+  // Expect that the returned bounds don't intersect the floating keyboard
+  // but also don't leave the PIP movement area.
+  EXPECT_FALSE(moved_bounds.Intersects(keyboard_window->GetBoundsInScreen()));
+  EXPECT_TRUE(area.Contains(moved_bounds));
+}
+
+TEST_P(PipPositionerDisplayTest,
+       AvoidObstaclesDoesNotChangeBoundsIfThereIsNoCollision) {
+  auto display = GetDisplay();
+  EXPECT_EQ(ConvertToScreen(gfx::Rect(100, 100, 100, 100)),
+            CallAvoidObstacles(display,
+                               ConvertToScreen(gfx::Rect(100, 100, 100, 100))));
+}
+
+TEST_P(PipPositionerDisplayTest, GetRestingPositionAvoidsKeyboard) {
+  auto display = GetDisplay();
+
+  auto* keyboard_controller = keyboard::KeyboardController::Get();
+  keyboard_controller->ShowKeyboardInDisplay(display);
+  ASSERT_TRUE(keyboard::WaitUntilShown());
+  aura::Window* keyboard_window = keyboard_controller->GetKeyboardWindow();
+  keyboard_window->SetBounds(gfx::Rect(0, 300, 400, 100));
+
+  EXPECT_EQ(ConvertToScreen(gfx::Rect(8, 192, 100, 100)),
+            PipPositioner::GetRestingPosition(
+                display, ConvertToScreen(gfx::Rect(8, 300, 100, 100))));
+}
+
+TEST_P(PipPositionerDisplayTest, AutoHideShownShelfAffectsPip) {
+  auto* shelf = Shelf::ForWindow(root_window());
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+
+  auto shelf_bounds = shelf->GetWindow()->GetBoundsInScreen();
+  // Use a smaller window so it is guaranteed to find a free space to move to.
+  auto pip_bounds = CallAvoidObstacles(
+      GetDisplay(), gfx::Rect(shelf_bounds.CenterPoint(), gfx::Size(1, 1)));
+  EXPECT_FALSE(shelf_bounds.Intersects(pip_bounds));
+}
+
+// TODO: UpdateDisplay() doesn't support different layouts of multiple displays.
+// We should add some way to try multiple layouts.
+INSTANTIATE_TEST_SUITE_P(
+    /* no prefix */,
+    PipPositionerDisplayTest,
+    testing::Values(std::make_tuple("400x400", 0u),
+                    std::make_tuple("400x400/r", 0u),
+                    std::make_tuple("400x400/u", 0u),
+                    std::make_tuple("400x400/l", 0u),
+                    std::make_tuple("800x800*2", 0u),
+                    std::make_tuple("400x400,400x400", 0u),
+                    std::make_tuple("400x400,400x400", 1u)));
+
+class PipPositionerLogicTest : public ::testing::Test {
+ public:
   gfx::Rect CallAvoidObstaclesInternal(const gfx::Rect& work_area,
                                        const std::vector<gfx::Rect>& rects,
                                        const gfx::Rect& bounds) {
     return PipPositioner::AvoidObstaclesInternal(work_area, rects, bounds);
   }
-
- protected:
-  aura::Window* window() { return window_; }
-  wm::WindowState* window_state() { return wm::GetWindowState(window_); }
-  FakeWindowState* test_state() { return test_state_; }
-
- private:
-  aura::Window* window_;
-  FakeWindowState* test_state_;
-
-  DISALLOW_COPY_AND_ASSIGN(PipPositionerTest);
 };
 
-TEST_F(PipPositionerTest, PipMovementAreaIsInset) {
-  gfx::Rect area = PipPositioner::GetMovementArea(window_state()->GetDisplay());
-  EXPECT_EQ(gfx::Rect(8, 8, 384, 384), area);
-}
-
-TEST_F(PipPositionerTest, PipMovementAreaIncludesKeyboardIfKeyboardIsShown) {
-  auto* keyboard_controller = keyboard::KeyboardController::Get();
-  keyboard_controller->ShowKeyboard(/*lock=*/true);
-  aura::Window* keyboard_window = keyboard_controller->GetKeyboardWindow();
-  keyboard_window->SetBounds(gfx::Rect(0, 300, 400, 100));
-  ASSERT_TRUE(keyboard::WaitUntilShown());
-
-  gfx::Rect area = PipPositioner::GetMovementArea(window_state()->GetDisplay());
-  EXPECT_EQ(gfx::Rect(8, 8, 384, 284), area);
-}
-
-TEST_F(PipPositionerTest, PipRestingPositionSnapsToClosestEdge) {
-  auto display = window_state()->GetDisplay();
-
-  // Snap near top edge to top.
-  EXPECT_EQ(
-      gfx::Rect(100, 8, 100, 100),
-      PipPositioner::GetRestingPosition(display, gfx::Rect(100, 50, 100, 100)));
-
-  // Snap near bottom edge to bottom.
-  EXPECT_EQ(gfx::Rect(100, 292, 100, 100),
-            PipPositioner::GetRestingPosition(display,
-                                              gfx::Rect(100, 250, 100, 100)));
-
-  // Snap near left edge to left.
-  EXPECT_EQ(
-      gfx::Rect(8, 100, 100, 100),
-      PipPositioner::GetRestingPosition(display, gfx::Rect(50, 100, 100, 100)));
-
-  // Snap near right edge to right.
-  EXPECT_EQ(gfx::Rect(292, 100, 100, 100),
-            PipPositioner::GetRestingPosition(display,
-                                              gfx::Rect(250, 100, 100, 100)));
-}
-
-TEST_F(PipPositionerTest, PipRestingPositionSnapsInsideDisplay) {
-  auto display = window_state()->GetDisplay();
-
-  // Snap near top edge outside movement area to top.
-  EXPECT_EQ(gfx::Rect(100, 8, 100, 100),
-            PipPositioner::GetRestingPosition(display,
-                                              gfx::Rect(100, -50, 100, 100)));
-
-  // Snap near bottom edge outside movement area to bottom.
-  EXPECT_EQ(gfx::Rect(100, 292, 100, 100),
-            PipPositioner::GetRestingPosition(display,
-                                              gfx::Rect(100, 450, 100, 100)));
-
-  // Snap near left edge outside movement area to left.
-  EXPECT_EQ(gfx::Rect(8, 100, 100, 100),
-            PipPositioner::GetRestingPosition(display,
-                                              gfx::Rect(-50, 100, 100, 100)));
-
-  // Snap near right edge outside movement area to right.
-  EXPECT_EQ(gfx::Rect(292, 100, 100, 100),
-            PipPositioner::GetRestingPosition(display,
-                                              gfx::Rect(450, 100, 100, 100)));
-}
-
-TEST_F(PipPositionerTest,
-       PipRestingPositionSnapsInDisplayWithLargeAspectRatio) {
-  UpdateDisplay("1600x400");
-  auto display = window_state()->GetDisplay();
-
-  // Snap to the top edge instead of the far left edge.
-  EXPECT_EQ(gfx::Rect(500, 8, 100, 100),
-            PipPositioner::GetRestingPosition(display,
-                                              gfx::Rect(500, 100, 100, 100)));
-}
-
-TEST_F(PipPositionerTest, PipAdjustPositionForDragClampsToMovementArea) {
-  auto display = window_state()->GetDisplay();
-
-  // Adjust near top edge outside movement area.
-  EXPECT_EQ(
-      gfx::Rect(100, 8, 100, 100),
-      PipPositioner::GetBoundsForDrag(display, gfx::Rect(100, -50, 100, 100)));
-
-  // Adjust near bottom edge outside movement area.
-  EXPECT_EQ(
-      gfx::Rect(100, 292, 100, 100),
-      PipPositioner::GetBoundsForDrag(display, gfx::Rect(100, 450, 100, 100)));
-
-  // Adjust near left edge outside movement area.
-  EXPECT_EQ(
-      gfx::Rect(8, 100, 100, 100),
-      PipPositioner::GetBoundsForDrag(display, gfx::Rect(-50, 100, 100, 100)));
-
-  // Adjust near right edge outside movement area.
-  EXPECT_EQ(
-      gfx::Rect(292, 100, 100, 100),
-      PipPositioner::GetBoundsForDrag(display, gfx::Rect(450, 100, 100, 100)));
-}
-
-TEST_F(PipPositionerTest, PipRestingPositionWorksIfKeyboardIsDisabled) {
-  Shell::Get()->DisableKeyboard();
-  auto display = window_state()->GetDisplay();
-
-  // Snap near top edge to top.
-  EXPECT_EQ(
-      gfx::Rect(100, 8, 100, 100),
-      PipPositioner::GetRestingPosition(display, gfx::Rect(100, 50, 100, 100)));
-}
-
-TEST_F(PipPositionerTest, PipDismissedPositionDoesNotMoveAnExcessiveDistance) {
-  auto display = window_state()->GetDisplay();
-
-  EXPECT_EQ(gfx::Rect(100, 100, 100, 100),
-            PipPositioner::GetDismissedPosition(display,
-                                                gfx::Rect(100, 100, 100, 100)));
-}
-
-TEST_F(PipPositionerTest, PipDismissedPositionChosesClosestEdge) {
-  auto display = window_state()->GetDisplay();
-
-  // Dismiss near top edge outside movement area towards top.
-  EXPECT_EQ(gfx::Rect(100, -100, 100, 100),
-            PipPositioner::GetDismissedPosition(display,
-                                                gfx::Rect(100, 50, 100, 100)));
-
-  // Dismiss near bottom edge outside movement area towards bottom.
-  EXPECT_EQ(gfx::Rect(100, 400, 100, 100),
-            PipPositioner::GetDismissedPosition(display,
-                                                gfx::Rect(100, 250, 100, 100)));
-
-  // Dismiss near left edge outside movement area towards left.
-  EXPECT_EQ(gfx::Rect(-100, 100, 100, 100),
-            PipPositioner::GetDismissedPosition(display,
-                                                gfx::Rect(50, 100, 100, 100)));
-
-  // Dismiss near right edge outside movement area towards right.
-  EXPECT_EQ(gfx::Rect(400, 100, 100, 100),
-            PipPositioner::GetDismissedPosition(display,
-                                                gfx::Rect(250, 100, 100, 100)));
-}
-
-// Verify that if two edges are equally close, the PIP window prefers dismissing
-// out horizontally.
-TEST_F(PipPositionerTest, PipDismissedPositionPrefersHorizontal) {
-  auto display = window_state()->GetDisplay();
-
-  // Top left corner.
-  EXPECT_EQ(
-      gfx::Rect(-150, 0, 100, 100),
-      PipPositioner::GetDismissedPosition(display, gfx::Rect(0, 0, 100, 100)));
-
-  // Top right corner.
-  EXPECT_EQ(gfx::Rect(450, 0, 100, 100),
-            PipPositioner::GetDismissedPosition(display,
-                                                gfx::Rect(300, 0, 100, 100)));
-
-  // Bottom left corner.
-  EXPECT_EQ(gfx::Rect(-150, 300, 100, 100),
-            PipPositioner::GetDismissedPosition(display,
-                                                gfx::Rect(0, 300, 100, 100)));
-
-  // Bottom right corner.
-  EXPECT_EQ(gfx::Rect(450, 300, 100, 100),
-            PipPositioner::GetDismissedPosition(display,
-                                                gfx::Rect(300, 300, 100, 100)));
-}
-
-TEST_F(PipPositionerTest,
-       PipRestoresToPreviousBoundsOnMovementAreaChangeIfTheyExist) {
-  // Position the PIP window on the side of the screen where it will be next
-  // to an edge and therefore in a resting position for the whole test.
-  const gfx::Rect bounds = gfx::Rect(292, 200, 100, 100);
-  // Set restore position to where the window currently is.
-  window()->SetBounds(bounds);
-  window_state()->SetRestoreBoundsInScreen(bounds);
-  EXPECT_TRUE(window_state()->HasRestoreBounds());
-
-  // Update the work area so that the PIP window should be pushed upward.
-  UpdateWorkArea("400x200");
-
-  // Set PIP to the updated constrained bounds.
-  const gfx::Rect constrained_bounds =
-      PipPositioner::GetPositionAfterMovementAreaChange(window_state());
-  EXPECT_EQ(gfx::Rect(292, 92, 100, 100), constrained_bounds);
-  window()->SetBounds(constrained_bounds);
-
-  // Restore the original work area.
-  UpdateWorkArea("400x400");
-
-  // Expect that the PIP window is put back to where it was before.
-  EXPECT_EQ(gfx::Rect(292, 200, 100, 100),
-            PipPositioner::GetPositionAfterMovementAreaChange(window_state()));
-}
-
-TEST_F(PipPositionerTest,
+TEST_F(PipPositionerLogicTest,
        AvoidObstaclesDoesNotMoveBoundsIfThereIsNoIntersection) {
   const gfx::Rect area(0, 0, 400, 400);
 
@@ -336,7 +403,7 @@ TEST_F(PipPositionerTest,
                                        gfx::Rect(100, 300, 100, 100)));
 }
 
-TEST_F(PipPositionerTest, AvoidObstaclesOffByOneCases) {
+TEST_F(PipPositionerLogicTest, AvoidObstaclesOffByOneCases) {
   const gfx::Rect area(0, 0, 400, 400);
 
   // Test 1x1 PIP window intersecting a 1x1 obstacle.
@@ -464,7 +531,7 @@ TEST_F(PipPositionerTest, AvoidObstaclesOffByOneCases) {
                                        gfx::Rect(9, 12, 3, 3)));
 }
 
-TEST_F(PipPositionerTest, AvoidObstaclesNestedObstacle) {
+TEST_F(PipPositionerLogicTest, AvoidObstaclesNestedObstacle) {
   const gfx::Rect area(0, 0, 400, 400);
   EXPECT_EQ(gfx::Rect(9, 16, 1, 1),
             CallAvoidObstaclesInternal(
@@ -472,7 +539,7 @@ TEST_F(PipPositionerTest, AvoidObstaclesNestedObstacle) {
                 gfx::Rect(16, 16, 1, 1)));
 }
 
-TEST_F(PipPositionerTest, AvoidObstaclesAvoidsTwoObstacles) {
+TEST_F(PipPositionerLogicTest, AvoidObstaclesAvoidsTwoObstacles) {
   const gfx::Rect area(0, 0, 400, 400);
   const std::vector<gfx::Rect> obstacles = {gfx::Rect(4, 1, 4, 5),
                                             gfx::Rect(2, 4, 4, 5)};
@@ -488,7 +555,7 @@ TEST_F(PipPositionerTest, AvoidObstaclesAvoidsTwoObstacles) {
             CallAvoidObstaclesInternal(area, obstacles, gfx::Rect(4, 1, 2, 2)));
 }
 
-TEST_F(PipPositionerTest, AvoidObstaclesAvoidsThreeObstacles) {
+TEST_F(PipPositionerLogicTest, AvoidObstaclesAvoidsThreeObstacles) {
   const gfx::Rect area(0, 0, 400, 400);
   const std::vector<gfx::Rect> obstacles = {
       gfx::Rect(4, 1, 4, 5), gfx::Rect(2, 4, 4, 5), gfx::Rect(2, 1, 3, 4)};
@@ -501,7 +568,8 @@ TEST_F(PipPositionerTest, AvoidObstaclesAvoidsThreeObstacles) {
             CallAvoidObstaclesInternal(area, obstacles, gfx::Rect(3, 3, 2, 2)));
 }
 
-TEST_F(PipPositionerTest, AvoidObstaclesDoesNotPositionBoundsOutsideOfPipArea) {
+TEST_F(PipPositionerLogicTest,
+       AvoidObstaclesDoesNotPositionBoundsOutsideOfPipArea) {
   // Position the bounds such that moving it the least distance to stop
   // intersecting |obstacle| would put it outside of |area|. It should go
   // instead to the position of second least distance, which would be below
@@ -513,7 +581,8 @@ TEST_F(PipPositionerTest, AvoidObstaclesDoesNotPositionBoundsOutsideOfPipArea) {
             CallAvoidObstaclesInternal(area, {obstacle}, bounds));
 }
 
-TEST_F(PipPositionerTest, AvoidObstaclesPositionsBoundsWithLeastDisplacement) {
+TEST_F(PipPositionerLogicTest,
+       AvoidObstaclesPositionsBoundsWithLeastDisplacement) {
   const gfx::Rect area(0, 0, 400, 400);
   const gfx::Rect obstacle(200, 200, 100, 100);
 
@@ -536,51 +605,6 @@ TEST_F(PipPositionerTest, AvoidObstaclesPositionsBoundsWithLeastDisplacement) {
   EXPECT_EQ(gfx::Rect(200, 100, 100, 100),
             CallAvoidObstaclesInternal(area, {obstacle},
                                        gfx::Rect(200, 150, 100, 100)));
-}
-
-TEST_F(PipPositionerTest, AvoidObstaclesAvoidsUnifiedSystemTray) {
-  UpdateDisplay("1000x1000");
-  auto* unified_system_tray = GetPrimaryUnifiedSystemTray();
-  unified_system_tray->ShowBubble(/*show_by_click=*/false);
-
-  auto display = window_state()->GetDisplay();
-  gfx::Rect area = PipPositioner::GetMovementArea(display);
-  gfx::Rect bubble_bounds = unified_system_tray->GetBubbleBoundsInScreen();
-  gfx::Rect bounds = gfx::Rect(bubble_bounds.x(), bubble_bounds.y(), 100, 100);
-  gfx::Rect moved_bounds = CallAvoidObstacles(display, bounds);
-
-  // Expect that the returned bounds don't intersect the unified system tray
-  // but also don't leave the PIP movement area.
-  EXPECT_FALSE(moved_bounds.Intersects(bubble_bounds));
-  EXPECT_TRUE(area.Contains(moved_bounds));
-}
-
-TEST_F(PipPositionerTest, AvoidObstaclesAvoidsFloatingKeyboard) {
-  auto* keyboard_controller = keyboard::KeyboardController::Get();
-  keyboard_controller->SetContainerType(
-      keyboard::mojom::ContainerType::kFloating, base::nullopt,
-      base::DoNothing());
-  keyboard_controller->ShowKeyboard(/*lock=*/true);
-  aura::Window* keyboard_window = keyboard_controller->GetKeyboardWindow();
-  keyboard_window->SetBounds(gfx::Rect(200, 200, 100, 100));
-  ASSERT_TRUE(keyboard::WaitUntilShown());
-
-  auto display = window_state()->GetDisplay();
-  gfx::Rect area = PipPositioner::GetMovementArea(display);
-  gfx::Rect moved_bounds =
-      CallAvoidObstacles(display, gfx::Rect(150, 200, 100, 100));
-
-  // Expect that the returned bounds don't intersect the floating keyboard
-  // but also don't leave the PIP movement area.
-  EXPECT_FALSE(moved_bounds.Intersects(keyboard_window->GetBoundsInScreen()));
-  EXPECT_TRUE(area.Contains(moved_bounds));
-}
-
-TEST_F(PipPositionerTest,
-       AvoidObstaclesDoesNotChangeBoundsIfThereIsNoCollision) {
-  auto display = window_state()->GetDisplay();
-  EXPECT_EQ(gfx::Rect(100, 100, 100, 100),
-            CallAvoidObstacles(display, gfx::Rect(100, 100, 100, 100)));
 }
 
 }  // namespace ash

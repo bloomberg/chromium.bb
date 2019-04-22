@@ -38,53 +38,58 @@ const char kTargetExtension[] = "abcdefghijklmnopabcdefghijklmnop";
 const char kTargetExtension2[] = "bcdefghijklmnopabcdefghijklmnopa";
 const char kTargetExtension3[] = "cdefghijklmnopabcdefghijklmnopab";
 const char kTargetExtension4[] = "defghijklmnopabcdefghijklmnopabc";
+const char kTargetExtension5[] = "efghijklmnopabcdefghijklmnopabcd";
+const char kTargetExtension6[] = "fghijklmnopabcdefghijklmnopabcde";
+const char kTargetExtension7[] = "ghijklmnopabcdefghijklmnopabcdef";
+const char kTargetExtension8[] = "hijklmnopabcdefghijklmnopabcdefg";
 const char kExampleUpdateUrl[] = "http://example.com/update_url";
 
 const char kNonExistingExtension[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 const char kNonExistingUpdateUrl[] = "http://example.net/update.xml";
 
 const char kExampleDictPreference[] =
-    "{"
-    "  \"abcdefghijklmnopabcdefghijklmnop\": {"  // kTargetExtension
-    "    \"installation_mode\": \"allowed\","
-    "    \"blocked_permissions\": [\"fileSystem\", "
-    "                              \"bookmarks\", "
-    "                              \"downloads\"],"
-    "    \"minimum_version_required\": \"1.1.0\","
-    "    \"runtime_allowed_hosts\": [\"<all_urls>\"],"
-    "  },"
-    "  \"bcdefghijklmnopabcdefghijklmnopa\": {"  // kTargetExtension2
-    "    \"installation_mode\": \"force_installed\","
-    "    \"update_url\": \"http://example.com/update_url\","
-    "    \"blocked_permissions\": [\"downloads\"],"
-    "  },"
-    "  \"cdefghijklmnopabcdefghijklmnopab\": {"  // kTargetExtension3
-    "    \"installation_mode\": \"normal_installed\","
-    "    \"update_url\": \"http://example.com/update_url\","
-    "    \"blocked_permissions\": [\"fileSystem\", \"history\"],"
-    "  },"
-    "  \"defghijklmnopabcdefghijklmnopabc\": {"  // kTargetExtension4
-    "    \"installation_mode\": \"blocked\","
-    "    \"runtime_blocked_hosts\": [\"*://*.foo.com\", "
-    "\"https://bar.org/test\"],"
-    "    \"blocked_install_message\": \"Custom Error Extension4\","
-    "  },"
-    "  \"jdkrmdirkjskemfioeesiofoielsmroi\": {"  // kTargetExtension5
-    "    \"installation_mode\": \"normal_installed\","
-    "  },"
-    "  \"update_url:http://example.com/update_url\": {"  // kExampleUpdateUrl
-    "    \"installation_mode\": \"allowed\","
-    "    \"blocked_permissions\": [\"fileSystem\", \"bookmarks\"],"
-    "  },"
-    "  \"*\": {"
-    "    \"installation_mode\": \"blocked\","
-    "    \"install_sources\": [\"*://foo.com/*\"],"
-    "    \"allowed_types\": [\"theme\", \"user_script\"],"
-    "    \"blocked_permissions\": [\"fileSystem\", \"downloads\"],"
-    "    \"runtime_blocked_hosts\": [\"*://*.example.com\"],"
-    "    \"blocked_install_message\": \"Custom Error Default\","
-    "  },"
-    "}";
+    R"(
+{
+  "abcdefghijklmnopabcdefghijklmnop": {
+    "installation_mode": "allowed",
+    "blocked_permissions": ["fileSystem", "bookmarks", "downloads"],
+    "minimum_version_required": "1.1.0",
+    "runtime_allowed_hosts": ["<all_urls>"],
+  },
+  "bcdefghijklmnopabcdefghijklmnopa": {
+    "installation_mode": "force_installed",
+    "update_url": "http://example.com/update_url",
+    "blocked_permissions": ["downloads"],
+  },
+  "cdefghijklmnopabcdefghijklmnopab": {
+    "installation_mode": "normal_installed",
+    "update_url": "http://example.com/update_url",
+    "blocked_permissions": ["fileSystem", "history"],
+  },
+  "defghijklmnopabcdefghijklmnopabc": {
+    "installation_mode": "blocked",
+    "runtime_blocked_hosts": ["*://*.foo.com", "https://bar.org/test"],
+    "blocked_install_message": "Custom Error Extension4",
+  },
+  "efghijklmnopabcdefghijklmnopabcd,fghijklmnopabcdefghijklmnopabcde": {
+    "installation_mode": "allowed",
+  },
+  "ghijklmnopabcdefghijklmnopabcdef,hijklmnopabcdefghijklmnopabcdefg,": {
+    "installation_mode": "allowed",
+  },
+  "update_url:http://example.com/update_url": {
+    "installation_mode": "allowed",
+    "blocked_permissions": ["fileSystem", "bookmarks"],
+  },
+  "*": {
+    "installation_mode": "blocked",
+    "install_sources": ["*://foo.com/*"],
+    "allowed_types": ["theme", "user_script"],
+    "blocked_permissions": ["fileSystem", "downloads"],
+    "runtime_blocked_hosts": ["*://*.example.com"],
+    "blocked_install_message": "Custom Error Default",
+  },
+})";
 
 const char kExampleDictNoCustomError[] =
     "{"
@@ -167,9 +172,11 @@ class ExtensionManagementServiceTest : public testing::Test {
 
   void SetExampleDictPref(const base::StringPiece example_dict_preference) {
     std::string error_msg;
-    std::unique_ptr<base::Value> parsed = base::JSONReader::ReadAndReturnError(
-        example_dict_preference,
-        base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS, NULL, &error_msg);
+    std::unique_ptr<base::Value> parsed =
+        base::JSONReader::ReadAndReturnErrorDeprecated(
+            example_dict_preference,
+            base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS, NULL,
+            &error_msg);
     ASSERT_TRUE(parsed && parsed->is_dict()) << error_msg;
     SetPref(true, pref_names::kExtensionManagement, std::move(parsed));
   }
@@ -189,7 +196,8 @@ class ExtensionManagementServiceTest : public testing::Test {
   URLPatternSet GetPolicyBlockedHosts(const std::string& id) {
     scoped_refptr<const Extension> extension =
         CreateExtension(Manifest::UNPACKED, "0.1", id, kNonExistingUpdateUrl);
-    return extension_management_->GetPolicyBlockedHosts(extension.get());
+    return extension_management_->GetPolicyBlockedHosts(extension.get())
+        .Clone();
   }
 
   // Wrapper of ExtensionManagement::GetPolicyAllowedHosts, |id| is used
@@ -197,7 +205,8 @@ class ExtensionManagementServiceTest : public testing::Test {
   URLPatternSet GetPolicyAllowedHosts(const std::string& id) {
     scoped_refptr<const Extension> extension =
         CreateExtension(Manifest::UNPACKED, "0.1", id, kNonExistingUpdateUrl);
-    return extension_management_->GetPolicyAllowedHosts(extension.get());
+    return extension_management_->GetPolicyAllowedHosts(extension.get())
+        .Clone();
   }
 
   // Wrapper of ExtensionManagement::BlockedInstallMessage, |id| is used
@@ -486,6 +495,16 @@ TEST_F(ExtensionManagementServiceTest, PreferenceParsing) {
   EXPECT_EQ("Custom Error Default",
             GetBlockedInstallMessage(kNonExistingExtension));
 
+  // Verifies using multiple extensions as a key.
+  EXPECT_EQ(GetInstallationModeById(kTargetExtension5),
+            ExtensionManagement::INSTALLATION_ALLOWED);
+  EXPECT_EQ(GetInstallationModeById(kTargetExtension6),
+            ExtensionManagement::INSTALLATION_ALLOWED);
+  EXPECT_EQ(GetInstallationModeById(kTargetExtension7),
+            ExtensionManagement::INSTALLATION_ALLOWED);
+  EXPECT_EQ(GetInstallationModeById(kTargetExtension8),
+            ExtensionManagement::INSTALLATION_ALLOWED);
+
   // Verifies global settings.
   EXPECT_TRUE(ReadGlobalSettings()->has_restricted_install_sources);
   const URLPatternSet& allowed_sites = ReadGlobalSettings()->install_sources;
@@ -571,19 +590,19 @@ TEST_F(ExtensionManagementServiceTest, BlockedPermissionsConflictHandling) {
 
   APIPermissionSet api_permission_set;
 
-  api_permission_set = blocked_permissions_for_update_url;
+  api_permission_set = blocked_permissions_for_update_url.Clone();
   api_permission_set.insert(APIPermission::kFileSystem);
   api_permission_set.insert(APIPermission::kDownloads);
   api_permission_set.insert(APIPermission::kBookmark);
   EXPECT_EQ(api_permission_set,
             GetBlockedAPIPermissions(kTargetExtension, kExampleUpdateUrl));
 
-  api_permission_set = blocked_permissions_for_update_url;
+  api_permission_set = blocked_permissions_for_update_url.Clone();
   api_permission_set.insert(APIPermission::kDownloads);
   EXPECT_EQ(api_permission_set,
             GetBlockedAPIPermissions(kTargetExtension2, kExampleUpdateUrl));
 
-  api_permission_set = blocked_permissions_for_update_url;
+  api_permission_set = blocked_permissions_for_update_url.Clone();
   api_permission_set.insert(APIPermission::kFileSystem);
   api_permission_set.insert(APIPermission::kHistory);
   EXPECT_EQ(api_permission_set,

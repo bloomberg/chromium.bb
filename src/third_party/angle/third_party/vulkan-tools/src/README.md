@@ -16,7 +16,7 @@ verify their applications correct use of the Vulkan API.
 
 The following components are available in this repository:
 - [*Mock ICD*](icd/)
-- [*Cube and Cube++ Demo*](cube/)
+- [*Vkcube and Vkcube++ Demo*](cube/)
 - [*VulkanInfo*](vulkaninfo/)
 - [*Windows Runtime*](winrt/)
 
@@ -32,7 +32,15 @@ Please see the [GOVERNANCE.md](GOVERNANCE.md) file in this repository for reposi
 ## How to Build and Run
 
 [BUILD.md](BUILD.md)
-Includes directions for building all components as well as running the cube demo applications.
+Includes directions for building all components as well as running the vkcube demo applications.
+
+## Version Tagging Scheme
+
+Updates to the `Vulkan-Tools` repository which correspond to a new Vulkan specification release are tagged using the following format: `v<`_`version`_`>` (e.g., `v1.1.96`).
+
+**Note**: Marked version releases have undergone thorough testing but do not imply the same quality level as SDK tags. SDK tags follow the `sdk-<`_`version`_`>.<`_`patch`_`>` format (e.g., `sdk-1.1.92.0`).
+
+This scheme was adopted following the 1.1.96 Vulkan specification release.
 
 ## License
 This work is released as open source under a Apache-style license from Khronos including a Khronos copyright.

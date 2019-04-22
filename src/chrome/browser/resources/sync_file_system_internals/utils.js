@@ -10,11 +10,12 @@
  * @return {HTMLElement} The newly created HTML element.
  */
 function createElementFromText(elementName, text, opt_attributes) {
-  var element = document.createElement(elementName);
+  const element = document.createElement(elementName);
   element.appendChild(document.createTextNode(text));
   if (opt_attributes) {
-    for (var key in opt_attributes)
+    for (const key in opt_attributes) {
       element.setAttribute(key, opt_attributes[key]);
+    }
   }
   return element;
 }
@@ -27,8 +28,8 @@ function createElementFromText(elementName, text, opt_attributes) {
  * @return {HTMLElement} The newly created HTML element.
  */
 function createElementFromDictionary(elementName, dict) {
-  var element = document.createElement(elementName);
-  for (var key in dict) {
+  const element = document.createElement(elementName);
+  for (const key in dict) {
     element.appendChild(document.createTextNode(key + ': ' + dict[key]));
     element.appendChild(document.createElement('br'));
   }

@@ -8,7 +8,7 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_model.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#import "ios/web/public/features.h"
+#import "ios/web/common/features.h"
 #import "ios/web/public/web_state/ui/crw_web_view_proxy.h"
 #import "ios/web/public/web_state/ui/crw_web_view_scroll_view_proxy.h"
 #import "ios/web/public/web_state/web_state.h"
@@ -21,21 +21,14 @@
 // The fullscreen model, used to get the information about the state of
 // fullscreen.
 @property(nonatomic, assign) FullscreenModel* model;
-// Whether the content offset should be matching the frame changes.
-@property(nonatomic, assign) BOOL compensateFrameChangeByOffset;
 @end
 
 @implementation FullscreenWebViewResizer
 
-@synthesize compensateFrameChangeByOffset = _compensateFrameChangeByOffset;
 @synthesize model = _model;
 @synthesize webState = _webState;
 
 - (instancetype)initWithModel:(FullscreenModel*)model {
-  // This can only be instantiated when the feature is enabled.
-  if (!base::FeatureList::IsEnabled(web::features::kOutOfWebFullscreen))
-    return nil;
-
   self = [super init];
   if (self) {
     _model = model;
@@ -96,6 +89,7 @@
     return;
 
   [self updateForInsets:self.model->GetToolbarInsetsAtProgress(progress)];
+  self.model->SetWebViewSafeAreaInsets(self.webState->GetView().safeAreaInsets);
 }
 
 // Updates the WebState view, resizing it such as |insets| is the insets between

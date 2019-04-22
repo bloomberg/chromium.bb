@@ -12,10 +12,10 @@ namespace ash {
 
 // The ratio between a highlight view's primary axis, and the screens
 // primary axis.
-ASH_EXPORT constexpr double kHighlightScreenPrimaryAxisRatio = 0.10;
+ASH_EXPORT constexpr float kHighlightScreenPrimaryAxisRatio = 0.10;
 
 // The padding between a highlight view and the edge of the screen.
-ASH_EXPORT constexpr double kHighlightScreenEdgePaddingDp = 8;
+ASH_EXPORT constexpr float kHighlightScreenEdgePaddingDp = 8;
 
 // The amount of inset to be applied on a split view label. Here horizontal and
 // vertical apply to the orientation before rotation (if there is rotation).

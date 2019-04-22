@@ -15,9 +15,6 @@ class CFX_XMLNode;
 class CXFA_LocaleValue;
 class CXFA_Node;
 
-double XFA_GetFractionalScale(uint32_t idx);
-int XFA_GetMaxFractionalScale();
-
 bool XFA_FDEExtension_ResolveNamespaceQualifier(CFX_XMLElement* pNode,
                                                 const WideString& wsQualifier,
                                                 WideString* wsNamespaceURI);
@@ -33,9 +30,5 @@ void XFA_DataExporter_RegenerateFormFile(
     CXFA_Node* pNode,
     const RetainPtr<IFX_SeekableStream>& pStream,
     bool bSaveXML);
-
-const XFA_SCRIPTATTRIBUTEINFO* XFA_GetScriptAttributeByName(
-    XFA_Element eElement,
-    WideStringView wsAttributeName);
 
 #endif  // XFA_FXFA_PARSER_XFA_UTILS_H_

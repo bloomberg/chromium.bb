@@ -92,7 +92,7 @@ def FilterPbForPlatform(full_pb, platform_type):
     assert not invalid_char_re.search(file_type.extension), (
         "File extension '%s' contains non alpha-num-dash chars" % (
             file_type.extension))
-    assert file_type.extension is not extensions_used, (
+    assert file_type.extension not in extensions_used, (
         "Duplicate extension '%s'" % file_type.extension)
     extensions_used.add(file_type.extension)
 

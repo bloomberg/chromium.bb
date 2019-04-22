@@ -5,9 +5,10 @@
 #include <drm_fourcc.h>
 #include <stddef.h>
 #include <stdint.h>
-
+#include <memory>
 #include <utility>
 
+#include "base/bind_helpers.h"
 #include "base/files/platform_file.h"
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"

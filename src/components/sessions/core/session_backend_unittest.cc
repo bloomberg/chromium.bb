@@ -9,7 +9,7 @@
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -107,7 +107,7 @@ TEST_F(SessionBackendTest, RandomData) {
     { 13, "abcdefghijklm" },
   };
 
-  for (size_t i = 0; i < arraysize(data); ++i) {
+  for (size_t i = 0; i < base::size(data); ++i) {
     scoped_refptr<SessionBackend> backend(
         new SessionBackend(sessions::BaseSessionService::SESSION_RESTORE,
                            path_));

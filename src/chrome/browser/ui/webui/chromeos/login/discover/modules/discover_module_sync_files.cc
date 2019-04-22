@@ -15,7 +15,7 @@ namespace {
 
 class DiscoverModuleSyncFilesHandler : public DiscoverHandler {
  public:
-  DiscoverModuleSyncFilesHandler();
+  explicit DiscoverModuleSyncFilesHandler(JSCallsContainer* js_calls_container);
   ~DiscoverModuleSyncFilesHandler() override = default;
 
  private:
@@ -28,8 +28,9 @@ class DiscoverModuleSyncFilesHandler : public DiscoverHandler {
   DISALLOW_COPY_AND_ASSIGN(DiscoverModuleSyncFilesHandler);
 };
 
-DiscoverModuleSyncFilesHandler::DiscoverModuleSyncFilesHandler()
-    : DiscoverHandler(DiscoverModuleSyncFiles::kModuleName) {}
+DiscoverModuleSyncFilesHandler::DiscoverModuleSyncFilesHandler(
+    JSCallsContainer* js_calls_container)
+    : DiscoverHandler(js_calls_container) {}
 
 void DiscoverModuleSyncFilesHandler::DeclareLocalizedValues(
     ::login::LocalizedValuesBuilder* builder) {
@@ -55,8 +56,9 @@ bool DiscoverModuleSyncFiles::IsCompleted() const {
   return false;
 }
 
-std::unique_ptr<DiscoverHandler> DiscoverModuleSyncFiles::CreateWebUIHandler() {
-  return std::make_unique<DiscoverModuleSyncFilesHandler>();
+std::unique_ptr<DiscoverHandler> DiscoverModuleSyncFiles::CreateWebUIHandler(
+    JSCallsContainer* js_calls_container) {
+  return std::make_unique<DiscoverModuleSyncFilesHandler>(js_calls_container);
 }
 
 }  // namespace chromeos

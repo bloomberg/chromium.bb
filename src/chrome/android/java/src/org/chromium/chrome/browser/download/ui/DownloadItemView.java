@@ -99,7 +99,7 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
         mCheckedIconForegroundColorList = DownloadUtils.getIconForegroundColorList(context);
         mIconBackgroundResId = R.drawable.list_item_icon_modern_bg;
         mIconForegroundColorList =
-                AppCompatResources.getColorStateList(context, R.color.dark_mode_tint);
+                AppCompatResources.getColorStateList(context, R.color.standard_mode_tint);
     }
 
     // ListMenuButton.Delegate implementation.

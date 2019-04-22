@@ -5,13 +5,16 @@
 #ifndef ASH_ASSISTANT_UI_BASE_ASSISTANT_SCROLL_VIEW_H_
 #define ASH_ASSISTANT_UI_BASE_ASSISTANT_SCROLL_VIEW_H_
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/view_observer.h"
 
 namespace ash {
 
-class AssistantScrollView : public views::ScrollView, views::ViewObserver {
+class COMPONENT_EXPORT(ASSISTANT_UI) AssistantScrollView
+    : public views::ScrollView,
+      views::ViewObserver {
  public:
   AssistantScrollView();
   ~AssistantScrollView() override;

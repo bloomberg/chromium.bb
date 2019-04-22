@@ -4,6 +4,7 @@
 
 #include "chrome/browser/android/vr/autocomplete_controller.h"
 
+#include "base/bind.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
@@ -21,10 +22,9 @@ constexpr size_t kMaxNumberOfSuggestions = 4;
 constexpr int kSuggestionThrottlingDelayMs = 150;
 }  // namespace
 
-AutocompleteController::AutocompleteController(
-    const SuggestionCallback& callback)
+AutocompleteController::AutocompleteController(SuggestionCallback callback)
     : profile_(ProfileManager::GetActiveUserProfile()),
-      suggestion_callback_(callback) {
+      suggestion_callback_(std::move(callback)) {
   auto client = std::make_unique<ChromeAutocompleteProviderClient>(profile_);
   client_ = client.get();
   autocomplete_controller_ = std::make_unique<::AutocompleteController>(
@@ -50,7 +50,7 @@ void AutocompleteController::Start(const AutocompleteRequest& request) {
 
 void AutocompleteController::Stop() {
   autocomplete_controller_->Stop(true);
-  suggestion_callback_.Run(std::make_unique<OmniboxSuggestions>());
+  suggestion_callback_.Run(std::vector<OmniboxSuggestion>{});
 }
 
 std::tuple<GURL, bool> AutocompleteController::GetUrlFromVoiceInput(
@@ -72,21 +72,21 @@ std::tuple<GURL, bool> AutocompleteController::GetUrlFromVoiceInput(
 }
 
 void AutocompleteController::OnResultChanged(bool default_match_changed) {
-  auto suggestions = std::make_unique<OmniboxSuggestions>();
+  std::vector<OmniboxSuggestion> suggestions;
   for (const auto& match : autocomplete_controller_->result()) {
     const gfx::VectorIcon* icon = &match.GetVectorIcon(false);
-    suggestions->suggestions.emplace_back(OmniboxSuggestion(
-        match.contents, match.description, match.contents_class,
-        match.description_class, icon, match.destination_url,
-        last_request_.text, match.inline_autocompletion));
-    if (suggestions->suggestions.size() >= kMaxNumberOfSuggestions)
+    suggestions.emplace_back(match.contents, match.description,
+                             match.contents_class, match.description_class,
+                             icon, match.destination_url, last_request_.text,
+                             match.inline_autocompletion);
+    if (suggestions.size() >= kMaxNumberOfSuggestions)
       break;
   }
   suggestions_timeout_.Cancel();
 
-  if (suggestions->suggestions.size() < kMaxNumberOfSuggestions) {
-    suggestions_timeout_.Reset(
-        base::BindRepeating(suggestion_callback_, base::Passed(&suggestions)));
+  if (suggestions.size() < kMaxNumberOfSuggestions) {
+    suggestions_timeout_.Reset(base::BindRepeating(
+        suggestion_callback_, base::Passed(std::move(suggestions))));
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, suggestions_timeout_.callback(),
         base::TimeDelta::FromMilliseconds(kSuggestionThrottlingDelayMs));

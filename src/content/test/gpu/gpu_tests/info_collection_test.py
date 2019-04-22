@@ -27,7 +27,12 @@ class InfoCollectionTest(gpu_integration_test.GpuIntegrationTest):
 
   @classmethod
   def GenerateGpuTests(cls, options):
-    yield ('_', '_', (options.expected_vendor_id, options.expected_device_id))
+    yield ('InfoCollection_basic', '_',
+           ('_RunBasicTest',
+            options.expected_vendor_id,
+            options.expected_device_id))
+    yield ('InfoCollection_direct_composition', '_',
+           ('_RunDirectCompositionTest', '_', '_'))
 
   @classmethod
   def SetUpProcess(cls):
@@ -44,28 +49,59 @@ class InfoCollectionTest(gpu_integration_test.GpuIntegrationTest):
     if not system_info:
       self.fail("Browser doesn't support GetSystemInfo")
 
-    gpu = system_info.gpu.devices[0]
-    if not gpu:
+    test_func = args[0]
+    getattr(self, test_func)(system_info.gpu, args[1], args[2])
+
+  ######################################
+  # Helper functions for the tests below
+
+  def _RunBasicTest(self, gpu, expected_vendor_id_str,
+                    expected_device_id_str):
+    device = gpu.devices[0]
+    if not device:
       self.fail("System Info doesn't have a gpu")
 
-    detected_vendor_id = gpu.vendor_id
-    detected_device_id = gpu.device_id
+    detected_vendor_id = device.vendor_id
+    detected_device_id = device.device_id
 
     # Gather the expected IDs passed on the command line
-    if args[0] == None or args[1] == None:
+    if expected_vendor_id_str is None or expected_device_id_str is None:
       self.fail("Missing --expected-[vendor|device]-id command line args")
 
-    expected_vendor_id = int(args[0], 16)
-    expected_device_id = int(args[1], 16)
+    expected_vendor_id = int(expected_vendor_id_str, 16)
+    expected_device_id = int(expected_device_id_str, 16)
 
-    # Check expected and detected matches
+    # Check expected and detected GPUs match
     if detected_vendor_id != expected_vendor_id:
       self.fail('Vendor ID mismatch, expected %s but got %s.' %
           (expected_vendor_id, detected_vendor_id))
 
     if detected_device_id != expected_device_id:
-      self.fail('device ID mismatch, expected %s but got %s.' %
+      self.fail('Device ID mismatch, expected %s but got %s.' %
           (expected_device_id, detected_device_id))
+
+  def _RunDirectCompositionTest(self, gpu, unused_arg_0, unused_arg_1):
+    os_name = self.browser.platform.GetOSName()
+    if os_name and os_name.lower() == 'win':
+      overlay_bot_config = self.GetOverlayBotConfig()
+      aux_attributes = gpu.aux_attributes
+      if not aux_attributes:
+        self.fail('GPU info does not have aux_attributes.')
+      for field, expected in overlay_bot_config.iteritems():
+        detected = aux_attributes.get(field, 'NONE')
+        if expected != detected:
+          self.fail('%s mismatch, expected %s but got %s.' %
+              (field, self._ValueToStr(expected), self._ValueToStr(detected)))
+
+  @staticmethod
+  def _ValueToStr(value):
+    if type(value) is str:
+      return value
+    if type(value) is unicode:
+      return str(value)
+    if type(value) is bool:
+      return 'supported' if value else 'unsupported'
+    assert False
 
   @classmethod
   def _CreateExpectations(cls):

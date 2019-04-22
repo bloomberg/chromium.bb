@@ -5,10 +5,11 @@
 #include <lib/fidl/cpp/binding.h>
 #include <lib/fidl/cpp/internal/pending_response.h>
 #include <lib/fidl/cpp/internal/weak_stub_controller.h>
-#include <lib/zx/log.h>
+#include <lib/zx/debuglog.h>
 #include <zircon/syscalls/log.h>
 
 #include "base/bind.h"
+#include "base/files/file_util.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
@@ -226,19 +227,14 @@ class TestolaImpl : public fidljstest::Testola {
 
   void PrintInt(int32_t number) override { received_int_ = number; }
 
-  void PrintMsg(fidl::StringPtr message) override {
-    std::string as_str = message.get();
-    received_msg_ = as_str;
-  }
+  void PrintMsg(std::string message) override { received_msg_ = message; }
 
   void VariousArgs(fidljstest::Blorp blorp,
-                   fidl::StringPtr msg,
-                   fidl::VectorPtr<uint32_t> stuff) override {
-    std::string msg_as_str = msg.get();
-    std::vector<uint32_t> stuff_as_vec = stuff.get();
+                   std::string msg,
+                   std::vector<uint32_t> stuff) override {
     various_blorp_ = blorp;
-    various_msg_ = msg_as_str;
-    various_stuff_ = stuff_as_vec;
+    various_msg_ = msg;
+    various_stuff_ = stuff;
   }
 
   void WithResponse(int32_t a,
@@ -277,15 +273,15 @@ class TestolaImpl : public fidljstest::Testola {
       sat.arrrr[i] = static_cast<int32_t>(i * 5) - 10;
     }
     sat.nullable_vector_of_string0 = nullptr;
-    fidl::VectorPtr<fidl::StringPtr> vector_of_str;
+    std::vector<std::string> vector_of_str;
     vector_of_str.push_back("passed_str0");
     vector_of_str.push_back("passed_str1");
-    sat.nullable_vector_of_string1 = std::move(vector_of_str);
-    fidl::VectorPtr<fidljstest::Blorp> vector_of_blorp;
-    vector_of_blorp->push_back(fidljstest::Blorp::GAMMA);
-    vector_of_blorp->push_back(fidljstest::Blorp::BETA);
-    vector_of_blorp->push_back(fidljstest::Blorp::BETA);
-    vector_of_blorp->push_back(fidljstest::Blorp::ALPHA);
+    sat.nullable_vector_of_string1.reset(std::move(vector_of_str));
+    std::vector<fidljstest::Blorp> vector_of_blorp;
+    vector_of_blorp.push_back(fidljstest::Blorp::GAMMA);
+    vector_of_blorp.push_back(fidljstest::Blorp::BETA);
+    vector_of_blorp.push_back(fidljstest::Blorp::BETA);
+    vector_of_blorp.push_back(fidljstest::Blorp::ALPHA);
     sat.vector_of_blorp = std::move(vector_of_blorp);
 
     resp(std::move(sat));
@@ -293,10 +289,10 @@ class TestolaImpl : public fidljstest::Testola {
 
   void PassHandles(zx::job job, PassHandlesCallback callback) override {
     EXPECT_EQ(GetKoidForHandle(job), GetKoidForHandle(*zx::job::default_job()));
-    zx::log log;
-    EXPECT_EQ(zx::log::create(ZX_LOG_FLAG_READABLE, &log), ZX_OK);
-    unowned_log_handle_ = log.get();
-    callback(std::move(log));
+    zx::process process;
+    ASSERT_EQ(zx::process::self()->duplicate(ZX_RIGHT_SAME_RIGHTS, &process),
+              ZX_OK);
+    callback(std::move(process));
   }
 
   void ReceiveUnions(fidljstest::StructOfMultipleUnions somu) override {
@@ -330,37 +326,36 @@ class TestolaImpl : public fidljstest::Testola {
     callback(std::move(resp));
   }
 
-  void SendVectorsOfString(
-      fidl::VectorPtr<fidl::StringPtr> unsized,
-      fidl::VectorPtr<fidl::StringPtr> nullable,
-      fidl::VectorPtr<fidl::StringPtr> max_strlen) override {
-    ASSERT_EQ(unsized->size(), 3u);
-    EXPECT_EQ((*unsized)[0], "str0");
-    EXPECT_EQ((*unsized)[1], "str1");
-    EXPECT_EQ((*unsized)[2], "str2");
+  void SendVectorsOfString(std::vector<std::string> unsized,
+                           std::vector<fidl::StringPtr> nullable,
+                           std::vector<std::string> max_strlen) override {
+    ASSERT_EQ(unsized.size(), 3u);
+    EXPECT_EQ(unsized[0], "str0");
+    EXPECT_EQ(unsized[1], "str1");
+    EXPECT_EQ(unsized[2], "str2");
 
-    ASSERT_EQ(nullable->size(), 5u);
-    EXPECT_EQ((*nullable)[0], "str3");
-    EXPECT_TRUE((*nullable)[1].is_null());
-    EXPECT_TRUE((*nullable)[2].is_null());
-    EXPECT_TRUE((*nullable)[3].is_null());
-    EXPECT_EQ((*nullable)[4], "str4");
+    ASSERT_EQ(nullable.size(), 5u);
+    EXPECT_EQ(nullable[0], "str3");
+    EXPECT_TRUE(nullable[1].is_null());
+    EXPECT_TRUE(nullable[2].is_null());
+    EXPECT_TRUE(nullable[3].is_null());
+    EXPECT_EQ(nullable[4], "str4");
 
-    ASSERT_EQ(max_strlen->size(), 1u);
-    EXPECT_EQ((*max_strlen)[0], "0123456789");
+    ASSERT_EQ(max_strlen.size(), 1u);
+    EXPECT_EQ(max_strlen[0], "0123456789");
 
     did_get_vectors_of_string_ = true;
   }
 
-  void VectorOfStruct(fidl::VectorPtr<fidljstest::StructWithUint> stuff,
+  void VectorOfStruct(std::vector<fidljstest::StructWithUint> stuff,
                       VectorOfStructCallback callback) override {
-    ASSERT_EQ(stuff->size(), 4u);
-    EXPECT_EQ((*stuff)[0].num, 456u);
-    EXPECT_EQ((*stuff)[1].num, 789u);
-    EXPECT_EQ((*stuff)[2].num, 123u);
-    EXPECT_EQ((*stuff)[3].num, 0xfffffu);
+    ASSERT_EQ(stuff.size(), 4u);
+    EXPECT_EQ(stuff[0].num, 456u);
+    EXPECT_EQ(stuff[1].num, 789u);
+    EXPECT_EQ(stuff[2].num, 123u);
+    EXPECT_EQ(stuff[3].num, 0xfffffu);
 
-    fidl::VectorPtr<fidljstest::StructWithUint> response;
+    std::vector<fidljstest::StructWithUint> response;
     fidljstest::StructWithUint a;
     a.num = 369;
     response.push_back(a);
@@ -373,99 +368,99 @@ class TestolaImpl : public fidljstest::Testola {
   void PassVectorOfPrimitives(
       fidljstest::VectorsOfPrimitives input,
       PassVectorOfPrimitivesCallback callback) override {
-    ASSERT_EQ(input.v_bool->size(), 1u);
-    ASSERT_EQ(input.v_uint8->size(), 2u);
-    ASSERT_EQ(input.v_uint16->size(), 3u);
-    ASSERT_EQ(input.v_uint32->size(), 4u);
-    ASSERT_EQ(input.v_uint64->size(), 5u);
-    ASSERT_EQ(input.v_int8->size(), 6u);
-    ASSERT_EQ(input.v_int16->size(), 7u);
-    ASSERT_EQ(input.v_int32->size(), 8u);
-    ASSERT_EQ(input.v_int64->size(), 9u);
-    ASSERT_EQ(input.v_float32->size(), 10u);
-    ASSERT_EQ(input.v_float64->size(), 11u);
+    ASSERT_EQ(input.v_bool.size(), 1u);
+    ASSERT_EQ(input.v_uint8.size(), 2u);
+    ASSERT_EQ(input.v_uint16.size(), 3u);
+    ASSERT_EQ(input.v_uint32.size(), 4u);
+    ASSERT_EQ(input.v_uint64.size(), 5u);
+    ASSERT_EQ(input.v_int8.size(), 6u);
+    ASSERT_EQ(input.v_int16.size(), 7u);
+    ASSERT_EQ(input.v_int32.size(), 8u);
+    ASSERT_EQ(input.v_int64.size(), 9u);
+    ASSERT_EQ(input.v_float32.size(), 10u);
+    ASSERT_EQ(input.v_float64.size(), 11u);
 
-    EXPECT_EQ((*input.v_bool)[0], true);
+    EXPECT_EQ(input.v_bool[0], true);
 
-    EXPECT_EQ((*input.v_uint8)[0], 2u);
-    EXPECT_EQ((*input.v_uint8)[1], 3u);
+    EXPECT_EQ(input.v_uint8[0], 2u);
+    EXPECT_EQ(input.v_uint8[1], 3u);
 
-    EXPECT_EQ((*input.v_uint16)[0], 4u);
-    EXPECT_EQ((*input.v_uint16)[1], 5u);
-    EXPECT_EQ((*input.v_uint16)[2], 6u);
+    EXPECT_EQ(input.v_uint16[0], 4u);
+    EXPECT_EQ(input.v_uint16[1], 5u);
+    EXPECT_EQ(input.v_uint16[2], 6u);
 
-    EXPECT_EQ((*input.v_uint32)[0], 7u);
-    EXPECT_EQ((*input.v_uint32)[1], 8u);
-    EXPECT_EQ((*input.v_uint32)[2], 9u);
-    EXPECT_EQ((*input.v_uint32)[3], 10u);
+    EXPECT_EQ(input.v_uint32[0], 7u);
+    EXPECT_EQ(input.v_uint32[1], 8u);
+    EXPECT_EQ(input.v_uint32[2], 9u);
+    EXPECT_EQ(input.v_uint32[3], 10u);
 
-    EXPECT_EQ((*input.v_uint64)[0], 11u);
-    EXPECT_EQ((*input.v_uint64)[1], 12u);
-    EXPECT_EQ((*input.v_uint64)[2], 13u);
-    EXPECT_EQ((*input.v_uint64)[3], 14u);
-    EXPECT_EQ((*input.v_uint64)[4], 0xffffffffffffff00ULL);
+    EXPECT_EQ(input.v_uint64[0], 11u);
+    EXPECT_EQ(input.v_uint64[1], 12u);
+    EXPECT_EQ(input.v_uint64[2], 13u);
+    EXPECT_EQ(input.v_uint64[3], 14u);
+    EXPECT_EQ(input.v_uint64[4], 0xffffffffffffff00ULL);
 
-    EXPECT_EQ((*input.v_int8)[0], -16);
-    EXPECT_EQ((*input.v_int8)[1], -17);
-    EXPECT_EQ((*input.v_int8)[2], -18);
-    EXPECT_EQ((*input.v_int8)[3], -19);
-    EXPECT_EQ((*input.v_int8)[4], -20);
-    EXPECT_EQ((*input.v_int8)[5], -21);
+    EXPECT_EQ(input.v_int8[0], -16);
+    EXPECT_EQ(input.v_int8[1], -17);
+    EXPECT_EQ(input.v_int8[2], -18);
+    EXPECT_EQ(input.v_int8[3], -19);
+    EXPECT_EQ(input.v_int8[4], -20);
+    EXPECT_EQ(input.v_int8[5], -21);
 
-    EXPECT_EQ((*input.v_int16)[0], -22);
-    EXPECT_EQ((*input.v_int16)[1], -23);
-    EXPECT_EQ((*input.v_int16)[2], -24);
-    EXPECT_EQ((*input.v_int16)[3], -25);
-    EXPECT_EQ((*input.v_int16)[4], -26);
-    EXPECT_EQ((*input.v_int16)[5], -27);
-    EXPECT_EQ((*input.v_int16)[6], -28);
+    EXPECT_EQ(input.v_int16[0], -22);
+    EXPECT_EQ(input.v_int16[1], -23);
+    EXPECT_EQ(input.v_int16[2], -24);
+    EXPECT_EQ(input.v_int16[3], -25);
+    EXPECT_EQ(input.v_int16[4], -26);
+    EXPECT_EQ(input.v_int16[5], -27);
+    EXPECT_EQ(input.v_int16[6], -28);
 
-    EXPECT_EQ((*input.v_int32)[0], -29);
-    EXPECT_EQ((*input.v_int32)[1], -30);
-    EXPECT_EQ((*input.v_int32)[2], -31);
-    EXPECT_EQ((*input.v_int32)[3], -32);
-    EXPECT_EQ((*input.v_int32)[4], -33);
-    EXPECT_EQ((*input.v_int32)[5], -34);
-    EXPECT_EQ((*input.v_int32)[6], -35);
-    EXPECT_EQ((*input.v_int32)[7], -36);
+    EXPECT_EQ(input.v_int32[0], -29);
+    EXPECT_EQ(input.v_int32[1], -30);
+    EXPECT_EQ(input.v_int32[2], -31);
+    EXPECT_EQ(input.v_int32[3], -32);
+    EXPECT_EQ(input.v_int32[4], -33);
+    EXPECT_EQ(input.v_int32[5], -34);
+    EXPECT_EQ(input.v_int32[6], -35);
+    EXPECT_EQ(input.v_int32[7], -36);
 
-    EXPECT_EQ((*input.v_int64)[0], -37);
-    EXPECT_EQ((*input.v_int64)[1], -38);
-    EXPECT_EQ((*input.v_int64)[2], -39);
-    EXPECT_EQ((*input.v_int64)[3], -40);
-    EXPECT_EQ((*input.v_int64)[4], -41);
-    EXPECT_EQ((*input.v_int64)[5], -42);
-    EXPECT_EQ((*input.v_int64)[6], -43);
-    EXPECT_EQ((*input.v_int64)[7], -44);
-    EXPECT_EQ((*input.v_int64)[8], -0x7fffffffffffffffLL);
+    EXPECT_EQ(input.v_int64[0], -37);
+    EXPECT_EQ(input.v_int64[1], -38);
+    EXPECT_EQ(input.v_int64[2], -39);
+    EXPECT_EQ(input.v_int64[3], -40);
+    EXPECT_EQ(input.v_int64[4], -41);
+    EXPECT_EQ(input.v_int64[5], -42);
+    EXPECT_EQ(input.v_int64[6], -43);
+    EXPECT_EQ(input.v_int64[7], -44);
+    EXPECT_EQ(input.v_int64[8], -0x7fffffffffffffffLL);
 
-    EXPECT_EQ((*input.v_float32)[0], 46.f);
-    EXPECT_EQ((*input.v_float32)[1], 47.f);
-    EXPECT_EQ((*input.v_float32)[2], 48.f);
-    EXPECT_EQ((*input.v_float32)[3], 49.f);
-    EXPECT_EQ((*input.v_float32)[4], 50.f);
-    EXPECT_EQ((*input.v_float32)[5], 51.f);
-    EXPECT_EQ((*input.v_float32)[6], 52.f);
-    EXPECT_EQ((*input.v_float32)[7], 53.f);
-    EXPECT_EQ((*input.v_float32)[8], 54.f);
-    EXPECT_EQ((*input.v_float32)[9], 55.f);
+    EXPECT_EQ(input.v_float32[0], 46.f);
+    EXPECT_EQ(input.v_float32[1], 47.f);
+    EXPECT_EQ(input.v_float32[2], 48.f);
+    EXPECT_EQ(input.v_float32[3], 49.f);
+    EXPECT_EQ(input.v_float32[4], 50.f);
+    EXPECT_EQ(input.v_float32[5], 51.f);
+    EXPECT_EQ(input.v_float32[6], 52.f);
+    EXPECT_EQ(input.v_float32[7], 53.f);
+    EXPECT_EQ(input.v_float32[8], 54.f);
+    EXPECT_EQ(input.v_float32[9], 55.f);
 
-    EXPECT_EQ((*input.v_float64)[0], 56.0);
-    EXPECT_EQ((*input.v_float64)[1], 57.0);
-    EXPECT_EQ((*input.v_float64)[2], 58.0);
-    EXPECT_EQ((*input.v_float64)[3], 59.0);
-    EXPECT_EQ((*input.v_float64)[4], 60.0);
-    EXPECT_EQ((*input.v_float64)[5], 61.0);
-    EXPECT_EQ((*input.v_float64)[6], 62.0);
-    EXPECT_EQ((*input.v_float64)[7], 63.0);
-    EXPECT_EQ((*input.v_float64)[8], 64.0);
-    EXPECT_EQ((*input.v_float64)[9], 65.0);
-    EXPECT_EQ((*input.v_float64)[10], 66.0);
+    EXPECT_EQ(input.v_float64[0], 56.0);
+    EXPECT_EQ(input.v_float64[1], 57.0);
+    EXPECT_EQ(input.v_float64[2], 58.0);
+    EXPECT_EQ(input.v_float64[3], 59.0);
+    EXPECT_EQ(input.v_float64[4], 60.0);
+    EXPECT_EQ(input.v_float64[5], 61.0);
+    EXPECT_EQ(input.v_float64[6], 62.0);
+    EXPECT_EQ(input.v_float64[7], 63.0);
+    EXPECT_EQ(input.v_float64[8], 64.0);
+    EXPECT_EQ(input.v_float64[9], 65.0);
+    EXPECT_EQ(input.v_float64[10], 66.0);
 
     fidljstest::VectorsOfPrimitives output = std::move(input);
-#define INC_OUTPUT_ARRAY(v)                       \
-  for (size_t i = 0; i < output.v->size(); ++i) { \
-    (*output.v)[i] += 10;                         \
+#define INC_OUTPUT_ARRAY(v)                      \
+  for (size_t i = 0; i < output.v.size(); ++i) { \
+    output.v[i] += 10;                           \
   }
     INC_OUTPUT_ARRAY(v_uint8);
     INC_OUTPUT_ARRAY(v_uint16);
@@ -495,8 +490,6 @@ class TestolaImpl : public fidljstest::Testola {
   const std::string& various_msg() const { return various_msg_; }
   const std::vector<uint32_t>& various_stuff() const { return various_stuff_; }
 
-  zx_handle_t unowned_log_handle() const { return unowned_log_handle_; }
-
   fidljstest::BasicStruct GetReceivedStruct() const { return basic_struct_; }
 
   bool did_receive_union() const { return did_receive_union_; }
@@ -525,7 +518,6 @@ class TestolaImpl : public fidljstest::Testola {
   std::vector<uint32_t> various_stuff_;
   fidljstest::BasicStruct basic_struct_;
   std::vector<base::OnceClosure> response_callbacks_;
-  zx_handle_t unowned_log_handle_;
   bool did_receive_union_ = false;
   bool did_get_vectors_of_string_ = false;
   std::unique_ptr<AnotherInterfaceImpl> another_interface_impl_;
@@ -551,9 +543,10 @@ TEST_F(FidlGenJsTest, RawReceiveFidlMessage) {
   uint8_t data[1024];
   zx_handle_t handles[1];
   uint32_t actual_bytes, actual_handles;
-  ASSERT_EQ(helper.server().read(0, data, base::size(data), &actual_bytes,
-                                 handles, base::size(handles), &actual_handles),
-            ZX_OK);
+  ASSERT_EQ(
+      helper.server().rea2(0, data, handles, base::size(data),
+                           base::size(handles), &actual_bytes, &actual_handles),
+      ZX_OK);
   EXPECT_EQ(actual_bytes, 16u);
   EXPECT_EQ(actual_handles, 0u);
 
@@ -583,9 +576,10 @@ TEST_F(FidlGenJsTest, RawReceiveFidlMessageWithSimpleArg) {
   uint8_t data[1024];
   zx_handle_t handles[1];
   uint32_t actual_bytes, actual_handles;
-  ASSERT_EQ(helper.server().read(0, data, base::size(data), &actual_bytes,
-                                 handles, base::size(handles), &actual_handles),
-            ZX_OK);
+  ASSERT_EQ(
+      helper.server().rea2(0, data, handles, base::size(data),
+                           base::size(handles), &actual_bytes, &actual_handles),
+      ZX_OK);
   // 24 rather than 20 because everything's 8 aligned.
   EXPECT_EQ(actual_bytes, 24u);
   EXPECT_EQ(actual_handles, 0u);
@@ -616,9 +610,10 @@ TEST_F(FidlGenJsTest, RawReceiveFidlMessageWithStringArg) {
   uint8_t data[1024];
   zx_handle_t handles[1];
   uint32_t actual_bytes, actual_handles;
-  ASSERT_EQ(helper.server().read(0, data, base::size(data), &actual_bytes,
-                                 handles, base::size(handles), &actual_handles),
-            ZX_OK);
+  ASSERT_EQ(
+      helper.server().rea2(0, data, handles, base::size(data),
+                           base::size(handles), &actual_bytes, &actual_handles),
+      ZX_OK);
   EXPECT_EQ(actual_handles, 0u);
 
   fidl::Message message(
@@ -647,9 +642,10 @@ TEST_F(FidlGenJsTest, RawReceiveFidlMessageWithMultipleArgs) {
   uint8_t data[1024];
   zx_handle_t handles[1];
   uint32_t actual_bytes, actual_handles;
-  ASSERT_EQ(helper.server().read(0, data, base::size(data), &actual_bytes,
-                                 handles, base::size(handles), &actual_handles),
-            ZX_OK);
+  ASSERT_EQ(
+      helper.server().rea2(0, data, handles, base::size(data),
+                           base::size(handles), &actual_bytes, &actual_handles),
+      ZX_OK);
   EXPECT_EQ(actual_handles, 0u);
 
   fidl::Message message(
@@ -871,7 +867,7 @@ TEST_F(FidlGenJsTest, HandlePassing) {
     var proxy = new TestolaProxy();
     proxy.$bind(testHandle);
     proxy.PassHandles(testJobHandle).then(h => {
-      this.debuglogHandle = h;
+      this.processHandle = h;
     }).catch((e) => log('FAILED: ' + e));
   )";
   helper.runner().Run(source, "test.js");
@@ -879,17 +875,19 @@ TEST_F(FidlGenJsTest, HandlePassing) {
   // Run the message loop to send the request and receive a response.
   base::RunLoop().RunUntilIdle();
 
-  zx_handle_t debug_handle_back_from_js =
-      helper.Get<uint32_t>("debuglogHandle");
-  EXPECT_EQ(debug_handle_back_from_js, testola_impl.unowned_log_handle());
+  zx_handle_t process_handle_back_from_js =
+      helper.Get<uint32_t>("processHandle");
+  EXPECT_EQ(GetKoidForHandle(process_handle_back_from_js),
+            GetKoidForHandle(*zx::process::self()));
 
   // Make sure we received the valid handle back correctly, and close it. Not
-  // stored into a zx::log in case it isn't valid, and to check the return value
-  // from closing it.
-  EXPECT_EQ(zx_handle_close(debug_handle_back_from_js), ZX_OK);
+  // stored into a zx::process in case it isn't valid, and to check the return
+  // value from closing it.
+  EXPECT_EQ(zx_handle_close(process_handle_back_from_js), ZX_OK);
 
-  // Ensure we didn't pass away our default job.
+  // Ensure we didn't pass away our default job, or process self.
   EXPECT_NE(GetKoidForHandle(*zx::job::default_job()), ZX_KOID_INVALID);
+  EXPECT_NE(GetKoidForHandle(*zx::process::self()), ZX_KOID_INVALID);
 }
 
 TEST_F(FidlGenJsTest, UnionSend) {

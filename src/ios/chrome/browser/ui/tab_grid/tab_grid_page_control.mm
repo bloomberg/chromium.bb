@@ -125,7 +125,12 @@ UIImage* ImageForSegment(NSString* segment, BOOL selected) {
 @interface TabGridPageControlBackground : UIView
 @end
 
-@interface TabGridPageControl ()<UIGestureRecognizerDelegate>
+@interface TabGridPageControl () <UIGestureRecognizerDelegate> {
+  UIAccessibilityElement* _incognitoAccessibilityElement;
+  UIAccessibilityElement* _regularAccessibilityElement;
+  UIAccessibilityElement* _remoteAccessibilityElement;
+}
+
 // Layout guides used to position segment-specific content.
 @property(nonatomic, weak) UILayoutGuide* incognitoGuide;
 @property(nonatomic, weak) UILayoutGuide* regularGuide;
@@ -153,7 +158,6 @@ UIImage* ImageForSegment(NSString* segment, BOOL selected) {
 // the negative-x direction from |sliderOrigin|, and otherwise it will move in
 // the positive-x direction.
 @property(nonatomic) CGFloat sliderRange;
-@property(nonatomic, strong) NSArray* accessibilityElements;
 // State properties to track the point and position (in the 0.0-1.0 range) of
 // drags.
 @property(nonatomic) CGPoint dragStart;
@@ -161,29 +165,6 @@ UIImage* ImageForSegment(NSString* segment, BOOL selected) {
 @end
 
 @implementation TabGridPageControl
-// Public properties
-@synthesize selectedPage = _selectedPage;
-@synthesize sliderPosition = _sliderPosition;
-@synthesize regularTabCount = _regularTabCount;
-// Private properties
-@synthesize incognitoGuide = _incognitoGuide;
-@synthesize regularGuide = _regularGuide;
-@synthesize remoteGuide = _remoteGuide;
-@synthesize sliderView = _sliderView;
-@synthesize selectedImageView = _selectedImageView;
-@synthesize incognitoIcon = _incognitoIcon;
-@synthesize incognitoSelectedIcon = _incognitoSelectedIconl;
-@synthesize regularIcon = _regularIcon;
-@synthesize regularSelectedIcon = _regularSelectedIcon;
-@synthesize regularLabel = _regularLabel;
-@synthesize regularSelectedLabel = _regularSelectedLabel;
-@synthesize remoteIcon = _remoteIcon;
-@synthesize remoteSelectedIcon = _remoteSelectedIcon;
-@synthesize sliderOrigin = _sliderOrigin;
-@synthesize sliderRange = _sliderRange;
-@synthesize accessibilityElements = _accessibilityElements;
-@synthesize dragStart = _dragStart;
-@synthesize dragStartPosition = _dragStartPosition;
 
 + (instancetype)pageControl {
   return [[TabGridPageControl alloc] init];
@@ -194,6 +175,38 @@ UIImage* ImageForSegment(NSString* segment, BOOL selected) {
   if (self = [super initWithFrame:frame]) {
     // Default to the regular tab page as the selected page.
     _selectedPage = TabGridPageRegularTabs;
+
+    _incognitoAccessibilityElement =
+        [[UIAccessibilityElement alloc] initWithAccessibilityContainer:self];
+    _incognitoAccessibilityElement.accessibilityTraits =
+        UIAccessibilityTraitButton;
+    _incognitoAccessibilityElement.accessibilityLabel =
+        l10n_util::GetNSString(IDS_IOS_TAB_GRID_INCOGNITO_TABS_TITLE);
+    _incognitoAccessibilityElement.accessibilityIdentifier =
+        kTabGridIncognitoTabsPageButtonIdentifier;
+
+    _regularAccessibilityElement =
+        [[UIAccessibilityElement alloc] initWithAccessibilityContainer:self];
+    _regularAccessibilityElement.accessibilityTraits =
+        UIAccessibilityTraitButton;
+    _regularAccessibilityElement.accessibilityLabel =
+        l10n_util::GetNSString(IDS_IOS_TAB_GRID_REGULAR_TABS_TITLE);
+    _regularAccessibilityElement.accessibilityIdentifier =
+        kTabGridRegularTabsPageButtonIdentifier;
+
+    _remoteAccessibilityElement =
+        [[UIAccessibilityElement alloc] initWithAccessibilityContainer:self];
+    _remoteAccessibilityElement.accessibilityTraits =
+        UIAccessibilityTraitButton;
+    _remoteAccessibilityElement.accessibilityLabel =
+        l10n_util::GetNSString(IDS_IOS_TAB_GRID_REMOTE_TABS_TITLE);
+    _remoteAccessibilityElement.accessibilityIdentifier =
+        kTabGridRemoteTabsPageButtonIdentifier;
+
+    self.accessibilityElements = @[
+      _incognitoAccessibilityElement, _regularAccessibilityElement,
+      _remoteAccessibilityElement
+    ];
   }
   return self;
 }
@@ -334,6 +347,8 @@ UIImage* ImageForSegment(NSString* segment, BOOL selected) {
   // The superclass call should be made first, so the constraint-based layout
   // guides can be set correctly.
   [super layoutSubviews];
+  [self updateAccessibilityFrames];
+
   // Position the section images and labels, which depend on the layout guides.
   self.incognitoIcon.center = [self centerOfSegment:TabGridPageIncognitoTabs];
   self.incognitoSelectedIcon.center =
@@ -359,57 +374,10 @@ UIImage* ImageForSegment(NSString* segment, BOOL selected) {
   self.sliderPosition = _sliderPosition;
 }
 
-#pragma mark - UIAccessibilityContainer
+#pragma mark - UIAccessibility (informal protocol)
 
 - (BOOL)isAccessibilityElement {
   return NO;
-}
-
-- (NSInteger)accessibilityElementCount {
-  return (NSInteger)self.accessibilityElements.count;
-}
-
-- (id)accessibilityElementAtIndex:(NSInteger)index {
-  return [self.accessibilityElements objectAtIndex:index];
-}
-
-- (NSInteger)indexOfAccessibilityElement:(id)element {
-  return [self.accessibilityElements indexOfObject:element];
-}
-
-- (NSArray*)accessibilityElements {
-  if (!_accessibilityElements) {
-    UIAccessibilityElement* incognitoElement =
-        [[UIAccessibilityElement alloc] initWithAccessibilityContainer:self];
-    incognitoElement.accessibilityFrameInContainerSpace =
-        self.incognitoGuide.layoutFrame;
-    incognitoElement.accessibilityTraits = UIAccessibilityTraitButton;
-    incognitoElement.accessibilityLabel =
-        l10n_util::GetNSString(IDS_IOS_TAB_GRID_INCOGNITO_TABS_TITLE);
-    incognitoElement.accessibilityIdentifier =
-        kTabGridIncognitoTabsPageButtonIdentifier;
-    UIAccessibilityElement* regularElement =
-        [[UIAccessibilityElement alloc] initWithAccessibilityContainer:self];
-    regularElement.accessibilityFrameInContainerSpace =
-        self.regularGuide.layoutFrame;
-    regularElement.accessibilityTraits = UIAccessibilityTraitButton;
-    regularElement.accessibilityLabel =
-        l10n_util::GetNSString(IDS_IOS_TAB_GRID_REGULAR_TABS_TITLE);
-    regularElement.accessibilityIdentifier =
-        kTabGridRegularTabsPageButtonIdentifier;
-    UIAccessibilityElement* remoteElement =
-        [[UIAccessibilityElement alloc] initWithAccessibilityContainer:self];
-    remoteElement.accessibilityFrameInContainerSpace =
-        self.remoteGuide.layoutFrame;
-    remoteElement.accessibilityTraits = UIAccessibilityTraitButton;
-    remoteElement.accessibilityLabel =
-        l10n_util::GetNSString(IDS_IOS_TAB_GRID_REMOTE_TABS_TITLE);
-    remoteElement.accessibilityIdentifier =
-        kTabGridRemoteTabsPageButtonIdentifier;
-    _accessibilityElements =
-        @[ incognitoElement, regularElement, remoteElement ];
-  }
-  return _accessibilityElements;
 }
 
 #pragma mark - UIAccessibilityContainer Helpers
@@ -433,6 +401,15 @@ UIImage* ImageForSegment(NSString* segment, BOOL selected) {
     if ([element.accessibilityIdentifier isEqualToString:selectedPageID])
       element.accessibilityTraits |= UIAccessibilityTraitSelected;
   }
+}
+
+- (void)updateAccessibilityFrames {
+  _incognitoAccessibilityElement.accessibilityFrameInContainerSpace =
+      self.incognitoGuide.layoutFrame;
+  _regularAccessibilityElement.accessibilityFrameInContainerSpace =
+      self.regularGuide.layoutFrame;
+  _remoteAccessibilityElement.accessibilityFrameInContainerSpace =
+      self.remoteGuide.layoutFrame;
 }
 
 #pragma mark - UIGestureRecognizerDelegate

@@ -22,6 +22,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/test_support_android.h"
 #include "gtest/gtest.h"
@@ -77,7 +78,7 @@ static void JNI_NativeTest_RunTests(
     const JavaParamRef<jstring>& jtest_data_dir) {
   // Command line initialized basically, will be fully initialized later.
   static const char* const kInitialArgv[] = { "ChromeTestActivity" };
-  base::CommandLine::Init(arraysize(kInitialArgv), kInitialArgv);
+  base::CommandLine::Init(base::size(kInitialArgv), kInitialArgv);
 
   std::vector<std::string> args;
 

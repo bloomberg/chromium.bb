@@ -22,7 +22,7 @@ class CORE_EXPORT IncrementLoadEventDelayCount {
   USING_FAST_MALLOC(IncrementLoadEventDelayCount);
 
  public:
-  static std::unique_ptr<IncrementLoadEventDelayCount> Create(Document&);
+  explicit IncrementLoadEventDelayCount(Document&);
   ~IncrementLoadEventDelayCount();
 
   // Decrements the loadEventDelayCount and checks load event synchronously,
@@ -36,7 +36,6 @@ class CORE_EXPORT IncrementLoadEventDelayCount {
   void DocumentChanged(Document& new_document);
 
  private:
-  IncrementLoadEventDelayCount(Document&);
   WeakPersistent<Document> document_;
   DISALLOW_COPY_AND_ASSIGN(IncrementLoadEventDelayCount);
 };

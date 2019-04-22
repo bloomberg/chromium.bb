@@ -19,7 +19,6 @@ class DisplayItemList;
 
 namespace ui {
 class ClipRecorder;
-class CompositingRecorder;
 class PaintRecorder;
 class TransformRecorder;
 
@@ -78,7 +77,6 @@ class COMPOSITOR_EXPORT PaintContext {
   // don't want to expose them on this class so that people must go through the
   // recorders to access them.
   friend class ClipRecorder;
-  friend class CompositingRecorder;
   friend class PaintRecorder;
   friend class TransformRecorder;
   // The Cache class also needs to access the DisplayItemList to append its

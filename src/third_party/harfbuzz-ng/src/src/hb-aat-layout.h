@@ -39,7 +39,7 @@ HB_BEGIN_DECLS
  * hb_aat_layout_feature_type_t:
  *
  *
- * Since: REPLACEME
+ * Since: 2.2.0
  */
 typedef enum
 {
@@ -92,7 +92,7 @@ typedef enum
  * hb_aat_layout_feature_selector_t:
  *
  *
- * Since: REPLACEME
+ * Since: 2.2.0
  */
 typedef enum
 {
@@ -455,6 +455,30 @@ hb_aat_layout_feature_type_get_selector_infos (hb_face_t                        
 					       unsigned int                          *selector_count, /* IN/OUT.  May be NULL. */
 					       hb_aat_layout_feature_selector_info_t *selectors,      /* OUT.     May be NULL. */
 					       unsigned int                          *default_index   /* OUT.     May be NULL. */);
+
+
+/*
+ * morx/mort
+ */
+
+HB_EXTERN hb_bool_t
+hb_aat_layout_has_substitution (hb_face_t *face);
+
+
+/*
+ * kerx
+ */
+
+HB_EXTERN hb_bool_t
+hb_aat_layout_has_positioning (hb_face_t *face);
+
+
+/*
+ * trak
+ */
+
+HB_EXTERN hb_bool_t
+hb_aat_layout_has_tracking (hb_face_t *face);
 
 
 HB_END_DECLS

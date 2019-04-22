@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/reset_password/reset_password_ui.h"
 
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
@@ -110,8 +111,8 @@ ResetPasswordUI::ResetPasswordUI(content::WebUI* web_ui)
   std::unique_ptr<content::WebUIDataSource> html_source(
       content::WebUIDataSource::Create(chrome::kChromeUIResetPasswordHost));
   html_source->AddResourcePath("reset_password.js", IDR_RESET_PASSWORD_JS);
-  html_source->AddResourcePath("reset_password.mojom.js",
-                               IDR_RESET_PASSWORD_MOJO_JS);
+  html_source->AddResourcePath("reset_password.mojom-lite.js",
+                               IDR_RESET_PASSWORD_MOJOM_LITE_JS);
   html_source->SetDefaultResource(IDR_RESET_PASSWORD_HTML);
   html_source->AddLocalizedStrings(PopulateStrings());
   html_source->UseGzip();
@@ -139,11 +140,7 @@ base::DictionaryValue ResetPasswordUI::PopulateStrings() const {
   bool known_password_type =
       password_type_ !=
       safe_browsing::PasswordReuseEvent::REUSED_PASSWORD_TYPE_UNKNOWN;
-  if (!known_password_type) {
-    UMA_HISTOGRAM_ENUMERATION(
-        safe_browsing::kInterstitialActionByUserNavigationHistogram,
-        safe_browsing::WarningAction::SHOWN);
-  }
+
   int heading_string_id = known_password_type
                               ? IDS_RESET_PASSWORD_WARNING_HEADING
                               : IDS_RESET_PASSWORD_HEADING;

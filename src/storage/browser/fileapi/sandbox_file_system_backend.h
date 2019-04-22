@@ -12,6 +12,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -20,7 +21,6 @@
 #include "storage/browser/fileapi/sandbox_file_system_backend_delegate.h"
 #include "storage/browser/fileapi/task_runner_bound_observer_list.h"
 #include "storage/browser/quota/special_storage_policy.h"
-#include "storage/browser/storage_browser_export.h"
 
 namespace storage {
 
@@ -28,7 +28,7 @@ namespace storage {
 // profile directory in a sandboxed way.
 // This interface also lets one enumerate and remove storage for the origins
 // that use the filesystem.
-class STORAGE_EXPORT SandboxFileSystemBackend
+class COMPONENT_EXPORT(STORAGE_BROWSER) SandboxFileSystemBackend
     : public FileSystemBackend {
  public:
   explicit SandboxFileSystemBackend(SandboxFileSystemBackendDelegate* delegate);

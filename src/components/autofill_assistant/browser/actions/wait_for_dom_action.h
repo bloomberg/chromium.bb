@@ -26,7 +26,8 @@ class WaitForDomAction : public Action {
   void InternalProcessAction(ActionDelegate* delegate,
                              ProcessActionCallback callback) override;
 
-  void OnCheckDone(ProcessActionCallback callback, bool element_found);
+  void OnCheckDone(ProcessActionCallback callback,
+                   ProcessedActionStatusProto status);
 
   base::WeakPtrFactory<WaitForDomAction> weak_ptr_factory_;
 

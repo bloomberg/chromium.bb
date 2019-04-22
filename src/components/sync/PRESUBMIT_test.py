@@ -164,7 +164,7 @@ class ModelTypeInfoChangeTest(unittest.TestCase):
     mock_input_api.files = [
       MockFile(os.path.abspath('./protocol/sync.proto'),
         MOCK_PROTOFILE_CONTENTS),
-      MockFile(os.path.abspath('./syncable/model_type.cc'),
+      MockFile(os.path.abspath('./base/model_type.cc'),
         MOCK_MODELTYPE_CONTENTS % (modeltype_literal))
     ]
 

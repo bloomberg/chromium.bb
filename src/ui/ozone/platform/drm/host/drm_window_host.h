@@ -98,6 +98,7 @@ class DrmWindowHost : public PlatformWindow,
   DrmCursor* const cursor_;                       // Not owned.
   DrmWindowHostManager* const window_manager_;    // Not owned.
   DrmDisplayHostManager* const display_manager_;  // Not owned.
+  // TODO(crbug.com/936425): Remove after VizDisplayCompositor feature launches.
   DrmOverlayManager* const overlay_manager_;      // Not owned.
 
   gfx::Rect bounds_;

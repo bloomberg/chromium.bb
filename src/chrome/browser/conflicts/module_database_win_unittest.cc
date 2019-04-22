@@ -4,17 +4,13 @@
 
 #include "chrome/browser/conflicts/module_database_win.h"
 
-#include <algorithm>
 #include <memory>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/task/post_task.h"
-#include "base/task/task_scheduler/task_scheduler.h"
-#include "base/test/scoped_mock_time_message_loop_task_runner.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/conflicts/module_database_observer_win.h"
+#include "chrome/browser/conflicts/module_info_win.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -41,34 +37,31 @@ class ModuleDatabaseTest : public testing::Test {
   ModuleDatabaseTest()
       : dll1_(kDll1),
         dll2_(kDll2),
+        test_browser_thread_bundle_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI_MOCK_TIME),
         scoped_testing_local_state_(TestingBrowserProcess::GetGlobal()),
-        module_database_(base::SequencedTaskRunnerHandle::Get()) {}
+        module_database_(std::make_unique<ModuleDatabase>(
+            /* third_party_blocking_policy_enabled = */ false)) {}
 
-  void TearDown() override {
-    // Give work on background threads a chance run, as it may want to use
-    // |mock_time_task_runner_|, which gets destroyed before
-    // |test_browser_thread_bundle_|
-    test_browser_thread_bundle_.RunUntilIdle();
+  ~ModuleDatabaseTest() override {
+    module_database_ = nullptr;
+
+    // Clear the outstanding delayed tasks that were posted by the
+    // ModuleDatabase instance.
+    test_browser_thread_bundle_.FastForwardUntilNoTasksRemain();
   }
 
   const ModuleDatabase::ModuleMap& modules() {
-    return module_database_.modules_;
+    return module_database_->modules_;
   }
 
-  ModuleDatabase* module_database() { return &module_database_; }
+  ModuleDatabase* module_database() { return module_database_.get(); }
 
-  static uint32_t ProcessTypeToBit(content::ProcessType process_type) {
-    return ModuleDatabase::ProcessTypeToBit(process_type);
-  }
-
-  void RunSchedulerUntilIdle() {
-    base::TaskScheduler::GetInstance()->FlushForTesting();
-    mock_time_task_runner_->RunUntilIdle();
-  }
+  void RunSchedulerUntilIdle() { test_browser_thread_bundle_.RunUntilIdle(); }
 
   void FastForwardToIdleTimer() {
-    RunSchedulerUntilIdle();
-    mock_time_task_runner_->FastForwardBy(ModuleDatabase::kIdleTimeout);
+    test_browser_thread_bundle_.FastForwardBy(ModuleDatabase::kIdleTimeout);
+    test_browser_thread_bundle_.RunUntilIdle();
   }
 
   const base::FilePath dll1_;
@@ -78,30 +71,12 @@ class ModuleDatabaseTest : public testing::Test {
   // Must be before |module_database_|.
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
 
-  base::ScopedMockTimeMessageLoopTaskRunner mock_time_task_runner_;
-
   ScopedTestingLocalState scoped_testing_local_state_;
 
-  ModuleDatabase module_database_;
+  std::unique_ptr<ModuleDatabase> module_database_;
 
   DISALLOW_COPY_AND_ASSIGN(ModuleDatabaseTest);
 };
-
-TEST_F(ModuleDatabaseTest, TasksAreBounced) {
-  // Run a task on the current thread. This should not be bounced, so their
-  // results should be immediately available.
-  module_database()->OnModuleLoad(kProcessType1, dll1_, kSize1, kTime1);
-  EXPECT_EQ(1u, modules().size());
-
-  // Run similar tasks on another thread with another module. These should be
-  // bounced.
-  base::PostTask(FROM_HERE, base::Bind(&ModuleDatabase::OnModuleLoad,
-                                       base::Unretained(module_database()),
-                                       kProcessType2, dll2_, kSize1, kTime1));
-  EXPECT_EQ(1u, modules().size());
-  RunSchedulerUntilIdle();
-  EXPECT_EQ(2u, modules().size());
-}
 
 TEST_F(ModuleDatabaseTest, DatabaseIsConsistent) {
   EXPECT_EQ(0u, modules().size());

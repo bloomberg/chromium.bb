@@ -89,10 +89,9 @@ void LogMessageHandler::PostLogMessageToCorrectThread(
   // Note that this means that LOG(FATAL) messages will be lost because the
   // process will exit before the message is sent to the client.
   caller_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&LogMessageHandler::SendLogMessageToClient,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 severity, file, line, message_start, str));
+      FROM_HERE, base::BindOnce(&LogMessageHandler::SendLogMessageToClient,
+                                weak_ptr_factory_.GetWeakPtr(), severity, file,
+                                line, message_start, str));
 }
 
 void LogMessageHandler::SendLogMessageToClient(

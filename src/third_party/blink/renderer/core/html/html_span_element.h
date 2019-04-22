@@ -37,7 +37,6 @@ class CORE_EXPORT HTMLSpanElement : public HTMLElement {
  public:
   DECLARE_NODE_FACTORY(HTMLSpanElement);
 
- protected:
   explicit HTMLSpanElement(Document&);
 };
 

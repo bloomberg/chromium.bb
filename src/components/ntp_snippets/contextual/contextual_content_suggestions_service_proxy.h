@@ -34,17 +34,12 @@ class ContextualContentSuggestionsServiceProxy {
   void FetchContextualSuggestions(const GURL& url,
                                   FetchClustersCallback callback);
 
-  // Fetches an image for a contextual suggestion with specified
-  // |suggestion_id|.
-  void FetchContextualSuggestionImage(
-      const std::string& suggestion_id,
-      ntp_snippets::ImageFetchedCallback callback);
+  // Get the URL for the given suggestion id.
+  std::string GetContextualSuggestionImageUrl(const std::string& suggestion_id);
 
-  // Fetches a favicon for a contextual suggestion with specified
-  // |suggestion_id|.
-  void FetchContextualSuggestionFavicon(
-      const std::string& suggestion_id,
-      ntp_snippets::ImageFetchedCallback callback);
+  // Get the URL for the given suggestion id.
+  std::string GetContextualSuggestionFaviconUrl(
+      const std::string& suggestion_id);
 
   // Clears the state of the proxy.
   void ClearState();
@@ -58,10 +53,6 @@ class ContextualContentSuggestionsServiceProxy {
   void FlushMetrics();
 
  private:
-  void FetchImageImpl(const GURL& image_url,
-                      const std::string& image_id,
-                      ntp_snippets::ImageFetchedCallback callback);
-
   void CacheSuggestions(FetchClustersCallback callback,
                         ContextualSuggestionsResult result);
   // Pointer to the service.

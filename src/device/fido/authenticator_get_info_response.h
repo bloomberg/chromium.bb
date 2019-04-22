@@ -37,7 +37,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorGetInfoResponse {
   AuthenticatorGetInfoResponse& SetExtensions(
       std::vector<std::string> extensions);
   AuthenticatorGetInfoResponse& SetOptions(
-      AuthenticatorSupportedOptions options);
+      const AuthenticatorSupportedOptions& options);
 
   const base::flat_set<ProtocolVersion>& versions() const { return versions_; }
   const std::array<uint8_t, kAaguidLength>& aaguid() const { return aaguid_; }

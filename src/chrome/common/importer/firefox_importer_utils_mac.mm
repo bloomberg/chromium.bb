@@ -25,17 +25,17 @@ base::FilePath GetProfilesINI() {
 }
 
 base::FilePath GetFirefoxDylibPath() {
-  CFURLRef appURL = nil;
-  if (LSFindApplicationForInfo(kLSUnknownCreator,
-                              CFSTR("org.mozilla.firefox"),
-                              NULL,
-                              NULL,
-                              &appURL) != noErr) {
+  base::ScopedCFTypeRef<CFErrorRef> out_err;
+  base::ScopedCFTypeRef<CFArrayRef> app_urls(
+      LSCopyApplicationURLsForBundleIdentifier(CFSTR("org.mozilla.firefox"),
+                                               out_err.InitializeInto()));
+  if (out_err || CFArrayGetCount(app_urls) == 0) {
     return base::FilePath();
   }
-  NSBundle *ff_bundle =
-      [NSBundle bundleWithPath:[base::mac::CFToNSCast(appURL) path]];
-  CFRelease(appURL);
+  CFURLRef app_url =
+      base::mac::CFCastStrict<CFURLRef>(CFArrayGetValueAtIndex(app_urls, 0));
+  NSBundle* ff_bundle =
+      [NSBundle bundleWithPath:[base::mac::CFToNSCast(app_url) path]];
   NSString *ff_library_path =
       [[ff_bundle executablePath] stringByDeletingLastPathComponent];
   char buf[MAXPATHLEN];

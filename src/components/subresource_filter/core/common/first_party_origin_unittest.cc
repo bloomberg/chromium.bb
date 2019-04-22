@@ -14,7 +14,7 @@ TEST(FirstPartyOriginTest, AllSameDomain) {
 
   FirstPartyOrigin first_party(url::Origin::Create(GURL("https://" + kDomain)));
   for (int index = 0; index < 5; ++index) {
-    GURL url("https://" + kDomain + "/path?q=" + base::IntToString(index));
+    GURL url("https://" + kDomain + "/path?q=" + base::NumberToString(index));
     EXPECT_FALSE(FirstPartyOrigin::IsThirdParty(url, first_party.origin()));
     EXPECT_FALSE(first_party.IsThirdParty(url));
   }
@@ -25,7 +25,8 @@ TEST(FirstPartyOriginTest, AllFirstParty) {
 
   FirstPartyOrigin first_party(url::Origin::Create(GURL("https://" + kDomain)));
   for (int index = 0; index < 5; ++index) {
-    GURL url("https://sub" + base::IntToString(index) + "." + kDomain + "/suf");
+    GURL url("https://sub" + base::NumberToString(index) + "." + kDomain +
+             "/suf");
     EXPECT_FALSE(FirstPartyOrigin::IsThirdParty(url, first_party.origin()));
     EXPECT_FALSE(first_party.IsThirdParty(url));
   }
@@ -36,7 +37,8 @@ TEST(FirstPartyOriginTest, AllThirdParty) {
 
   FirstPartyOrigin first_party(url::Origin::Create(GURL("https://" + kDomain)));
   for (int index = 0; index < 5; ++index) {
-    GURL url("https://example" + base::IntToString(index) + ".co.uk/path?k=v");
+    GURL url("https://example" + base::NumberToString(index) +
+             ".co.uk/path?k=v");
     EXPECT_TRUE(FirstPartyOrigin::IsThirdParty(url, first_party.origin()));
     EXPECT_TRUE(first_party.IsThirdParty(url));
   }

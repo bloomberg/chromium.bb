@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/task/post_task.h"
@@ -15,9 +16,8 @@
 #include "components/autofill/core/browser/webdata/autofill_wallet_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_features.h"
-#include "components/browser_sync/browser_sync_switches.h"
 #include "components/browser_sync/profile_sync_components_factory_impl.h"
-#include "components/browser_sync/profile_sync_service.h"
+#include "components/history/core/common/pref_names.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/password_store.h"
@@ -36,12 +36,11 @@
 #include "ios/web_view/internal/autofill/web_view_personal_data_manager_factory.h"
 #include "ios/web_view/internal/passwords/web_view_password_store_factory.h"
 #include "ios/web_view/internal/pref_names.h"
+#import "ios/web_view/internal/sync/web_view_device_info_sync_service_factory.h"
 #import "ios/web_view/internal/sync/web_view_model_type_store_service_factory.h"
 #import "ios/web_view/internal/sync/web_view_profile_invalidation_provider_factory.h"
-#import "ios/web_view/internal/sync/web_view_profile_sync_service_factory.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
 #include "ios/web_view/internal/webdata_services/web_view_web_data_service_wrapper_factory.h"
-#include "ui/base/device_form_factor.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -81,9 +80,7 @@ WebViewSyncClient::WebViewSyncClient(WebViewBrowserState* browser_state)
       browser_state_, ServiceAccessType::IMPLICIT_ACCESS);
 
   component_factory_.reset(new browser_sync::ProfileSyncComponentsFactoryImpl(
-      this, version_info::Channel::UNKNOWN, version_info::GetVersionNumber(),
-      ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET,
-      prefs::kSavingBrowserHistoryDisabled,
+      this, version_info::Channel::STABLE, prefs::kSavingBrowserHistoryDisabled,
       base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::UI}),
       db_thread_, profile_web_data_service_, account_web_data_service_,
       password_store_,
@@ -91,11 +88,6 @@ WebViewSyncClient::WebViewSyncClient(WebViewBrowserState* browser_state)
 }
 
 WebViewSyncClient::~WebViewSyncClient() {}
-
-syncer::SyncService* WebViewSyncClient::GetSyncService() {
-  DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  return WebViewProfileSyncServiceFactory::GetForBrowserState(browser_state_);
-}
 
 PrefService* WebViewSyncClient::GetPrefService() {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
@@ -108,6 +100,11 @@ base::FilePath WebViewSyncClient::GetLocalSyncBackendFolder() {
 
 syncer::ModelTypeStoreService* WebViewSyncClient::GetModelTypeStoreService() {
   return WebViewModelTypeStoreServiceFactory::GetForBrowserState(
+      browser_state_);
+}
+
+syncer::DeviceInfoSyncService* WebViewSyncClient::GetDeviceInfoSyncService() {
+  return WebViewDeviceInfoSyncServiceFactory::GetForBrowserState(
       browser_state_);
 }
 
@@ -127,8 +124,9 @@ sync_sessions::SessionSyncService* WebViewSyncClient::GetSessionSyncService() {
   return nullptr;
 }
 
-bool WebViewSyncClient::HasPasswordStore() {
-  return true;
+send_tab_to_self::SendTabToSelfSyncService*
+WebViewSyncClient::GetSendTabToSelfSyncService() {
+  return nullptr;
 }
 
 autofill::PersonalDataManager* WebViewSyncClient::GetPersonalDataManager() {
@@ -143,10 +141,12 @@ base::RepeatingClosure WebViewSyncClient::GetPasswordStateChangedCallback() {
 }
 
 syncer::DataTypeController::TypeVector
-WebViewSyncClient::CreateDataTypeControllers() {
+WebViewSyncClient::CreateDataTypeControllers(
+    syncer::SyncService* sync_service) {
   // iOS WebView uses butter sync and so has no need to record user consents.
   syncer::DataTypeController::TypeVector type_vector =
-      component_factory_->CreateCommonDataTypeControllers(GetDisabledTypes());
+      component_factory_->CreateCommonDataTypeControllers(GetDisabledTypes(),
+                                                          sync_service);
   type_vector.erase(std::remove_if(type_vector.begin(), type_vector.end(),
                                    [](const auto& data_type_controller) {
                                      return data_type_controller->type() ==
@@ -155,7 +155,7 @@ WebViewSyncClient::CreateDataTypeControllers() {
   return type_vector;
 }
 
-BookmarkUndoService* WebViewSyncClient::GetBookmarkUndoServiceIfExists() {
+BookmarkUndoService* WebViewSyncClient::GetBookmarkUndoService() {
   return nullptr;
 }
 
@@ -233,6 +233,10 @@ WebViewSyncClient::CreateModelWorkerForGroup(syncer::ModelSafeGroup group) {
 syncer::SyncApiComponentFactory*
 WebViewSyncClient::GetSyncApiComponentFactory() {
   return component_factory_.get();
+}
+
+syncer::SyncTypePreferenceProvider* WebViewSyncClient::GetPreferenceProvider() {
+  return nullptr;
 }
 
 }  // namespace ios_web_view

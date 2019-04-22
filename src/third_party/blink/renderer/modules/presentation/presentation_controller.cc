@@ -156,10 +156,15 @@ mojom::blink::PresentationServicePtr&
 PresentationController::GetPresentationService() {
   if (!presentation_service_ && GetFrame() && GetFrame()->Client()) {
     auto* interface_provider = GetFrame()->Client()->GetInterfaceProvider();
-    interface_provider->GetInterface(mojo::MakeRequest(&presentation_service_));
+
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+        GetFrame()->GetTaskRunner(TaskType::kPresentation);
+    interface_provider->GetInterface(
+        mojo::MakeRequest(&presentation_service_, task_runner));
 
     mojom::blink::PresentationControllerPtr controller_ptr;
-    controller_binding_.Bind(mojo::MakeRequest(&controller_ptr));
+    controller_binding_.Bind(mojo::MakeRequest(&controller_ptr, task_runner),
+                             task_runner);
     presentation_service_->SetController(std::move(controller_ptr));
   }
   return presentation_service_;

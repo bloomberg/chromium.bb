@@ -4,6 +4,7 @@
 
 #include "chrome/browser/safe_browsing/certificate_reporting_service_factory.h"
 
+#include "base/bind_helpers.h"
 #include "base/time/default_clock.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
@@ -89,6 +90,10 @@ KeyedService* CertificateReportingServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   safe_browsing::SafeBrowsingService* safe_browsing_service =
       g_browser_process->safe_browsing_service();
+  // In unit tests the safe browsing service can be null, if this happens,
+  // return null instead of crashing.
+  if (!safe_browsing_service)
+    return nullptr;
   return new CertificateReportingService(
       safe_browsing_service,
       url_loader_factory_.get() ? url_loader_factory_

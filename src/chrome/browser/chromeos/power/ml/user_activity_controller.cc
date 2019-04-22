@@ -6,8 +6,8 @@
 
 #include "ash/shell.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
+#include "chromeos/constants/devicetype.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/system/devicetype.h"
 #include "components/session_manager/session_manager_types.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "services/viz/public/interfaces/compositing/video_detector_observer.mojom.h"
@@ -29,7 +29,7 @@ UserActivityController::UserActivityController() {
   }
 
   chromeos::PowerManagerClient* power_manager_client =
-      chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
+      chromeos::PowerManagerClient::Get();
   DCHECK(power_manager_client);
   ui::UserActivityDetector* detector = ui::UserActivityDetector::Get();
   DCHECK(detector);

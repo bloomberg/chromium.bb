@@ -41,8 +41,8 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "third_party/icu/source/common/unicode/utf8.h"
 
@@ -70,7 +70,8 @@ const char kProlog[] =
 const char kEpilog[] =
     "};\n"
     "\n"
-    "const size_t kUtf8ValidatorTablesSize = arraysize(kUtf8ValidatorTables);\n"
+    "const size_t kUtf8ValidatorTablesSize = "
+    "base::size(kUtf8ValidatorTables);\n"
     "\n"
     "}  // namespace internal\n"
     "}  // namespace base\n";
@@ -180,10 +181,10 @@ PairVector InitializeCharacters() {
     uint8_t bytes[4];
     unsigned int offset = 0;
     UBool is_error = false;
-    U8_APPEND(bytes, offset, arraysize(bytes), i, is_error);
+    U8_APPEND(bytes, offset, base::size(bytes), i, is_error);
     DCHECK(!is_error);
     DCHECK_GT(offset, 0u);
-    DCHECK_LE(offset, arraysize(bytes));
+    DCHECK_LE(offset, base::size(bytes));
     Pair pair = {Character(bytes, bytes + offset), StringSet()};
     vector.push_back(pair);
   }
@@ -263,9 +264,9 @@ void MoveAllCharsToSets(PairVector* pairs) {
 // algorithm is working. Use the command-line option
 // --vmodule=build_utf8_validator_tables=1 to see this output.
 void LogStringSets(const PairVector& pairs) {
-  for (auto pair_it = pairs.begin(); pair_it != pairs.end(); ++pair_it) {
+  for (const auto& pair_it : pairs) {
     std::string set_as_string;
-    for (auto set_it = pair_it->set.begin(); set_it != pair_it->set.end();
+    for (auto set_it = pair_it.set.begin(); set_it != pair_it.set.end();
          ++set_it) {
       set_as_string += base::StringPrintf("[\\x%02x-\\x%02x]",
                                           static_cast<int>(set_it->from()),
@@ -318,7 +319,7 @@ uint8_t MakeState(const StringSet& set,
       {static_cast<uint8_t>(range.to() + 1), 1}};
   states->push_back(
       State(new_state_initializer,
-            new_state_initializer + arraysize(new_state_initializer)));
+            new_state_initializer + base::size(new_state_initializer)));
   const uint8_t new_state_number =
       base::checked_cast<uint8_t>(states->size() - 1);
   CHECK(state_map->insert(std::make_pair(set, new_state_number)).second);
@@ -350,10 +351,9 @@ std::vector<State> GenerateStates(const PairVector& pairs) {
       const StateRange new_range_initializer[] = {
           {range.from(), target_state},
           {static_cast<uint8_t>(range.to() + 1), 1}};
-      states[0]
-          .insert(states[0].end(),
-                  new_range_initializer,
-                  new_range_initializer + arraysize(new_range_initializer));
+      states[0].insert(
+          states[0].end(), new_range_initializer,
+          new_range_initializer + base::size(new_range_initializer));
     }
   }
   return states;
@@ -373,13 +373,13 @@ void PrintStates(const std::vector<State>& states, FILE* stream) {
   std::vector<uint8_t> shifts;
   uint8_t pos = 0;
 
-  for (auto state_it = states.begin(); state_it != states.end(); ++state_it) {
+  for (const auto& state_it : states) {
     // We want to set |shift| to the (0-based) index of the least-significant
     // set bit in any of the ranges for this state, since this tells us how many
     // bits we can discard and still determine what range a byte lies in. Sadly
     // it appears that ffs() is not portable, so we do it clumsily.
     uint8_t shift = 7;
-    for (auto range_it = state_it->begin(); range_it != state_it->end();
+    for (auto range_it = state_it.begin(); range_it != state_it.end();
          ++range_it) {
       while (shift > 0 && range_it->from % (1 << shift) != 0) {
         --shift;
@@ -428,7 +428,7 @@ int main(int argc, char* argv[]) {
   settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
   logging::InitLogging(settings);
   if (base::CommandLine::ForCurrentProcess()->HasSwitch("help")) {
-    fwrite(kHelpText, 1, arraysize(kHelpText), stdout);
+    fwrite(kHelpText, 1, base::size(kHelpText), stdout);
     exit(EXIT_SUCCESS);
   }
   base::FilePath filename =

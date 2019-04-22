@@ -14,16 +14,14 @@
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/widget/widget.h"
 
 namespace views {
 
 namespace {
 
-const char kViewsTextServicesContextMenuHistogram[] =
-    "ViewsTextServicesContextMenu.Used";
-
-// Do not change the values in this enum as they are used by UMA.
-enum class Command { kEmoji = 0, kMaxValue = kEmoji };
+const char kViewsTextServicesContextMenuEmoji[] =
+    "ContextMenu.ViewsTextServices.Emoji";
 
 }  // namespace
 
@@ -41,7 +39,7 @@ ViewsTextServicesContextMenuBase::ViewsTextServicesContextMenuBase(
   }
 }
 
-ViewsTextServicesContextMenuBase::~ViewsTextServicesContextMenuBase() {}
+ViewsTextServicesContextMenuBase::~ViewsTextServicesContextMenuBase() = default;
 
 bool ViewsTextServicesContextMenuBase::SupportsCommand(int command_id) const {
   return command_id == IDS_CONTENT_CONTEXT_EMOJI;
@@ -82,9 +80,8 @@ bool ViewsTextServicesContextMenuBase::IsCommandIdEnabled(
 
 void ViewsTextServicesContextMenuBase::ExecuteCommand(int command_id) {
   if (command_id == IDS_CONTENT_CONTEXT_EMOJI) {
-    ui::ShowEmojiPanel();
-    UMA_HISTOGRAM_ENUMERATION(kViewsTextServicesContextMenuHistogram,
-                              Command::kEmoji);
+    client()->GetWidget()->ShowEmojiPanel();
+    UMA_HISTOGRAM_BOOLEAN(kViewsTextServicesContextMenuEmoji, true);
   }
 }
 

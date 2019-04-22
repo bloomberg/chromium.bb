@@ -45,7 +45,7 @@ import types
 # that blink/tools is in sys.path for the next imports to work correctly.
 tools_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 if tools_dir not in sys.path:
-    sys.path.append(tools_dir)
+    sys.path.insert(0, tools_dir)
 
 from blinkpy.common import exit_codes
 from blinkpy.common import read_checksum_from_png

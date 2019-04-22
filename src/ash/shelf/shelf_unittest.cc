@@ -6,9 +6,11 @@
 
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/root_window_controller.h"
+#include "ash/session/session_controller.h"
 #include "ash/session/test_session_controller_client.h"
+#include "ash/shelf/overflow_button.h"
 #include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_button.h"
+#include "ash/shelf/shelf_app_button.h"
 #include "ash/shelf/shelf_controller.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_view_test_api.h"
@@ -16,6 +18,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/session_manager/session_manager_types.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 
@@ -30,12 +33,13 @@ class ShelfTest : public AshTestBase {
   void SetUp() override {
     AshTestBase::SetUp();
 
-    ShelfView* shelf_view = GetPrimaryShelf()->GetShelfViewForTesting();
-    shelf_model_ = shelf_view->model();
+    shelf_view_ = GetPrimaryShelf()->GetShelfViewForTesting();
+    shelf_model_ = shelf_view_->model();
 
-    test_.reset(new ShelfViewTestAPI(shelf_view));
+    test_.reset(new ShelfViewTestAPI(shelf_view_));
   }
 
+  ShelfView* shelf_view() { return shelf_view_; }
   ShelfModel* shelf_model() { return shelf_model_; }
 
   ShelfViewTestAPI* test_api() { return test_.get(); }
@@ -48,6 +52,7 @@ class ShelfTest : public AshTestBase {
   }
 
  private:
+  ShelfView* shelf_view_ = nullptr;
   ShelfModel* shelf_model_ = nullptr;
   std::unique_ptr<ShelfViewTestAPI> test_;
 
@@ -66,8 +71,8 @@ TEST_F(ShelfTest, StatusReflection) {
   item.status = STATUS_RUNNING;
   int index = shelf_model()->Add(item);
   ASSERT_EQ(++button_count, test_api()->GetButtonCount());
-  ShelfButton* button = test_api()->GetButton(index);
-  EXPECT_EQ(ShelfButton::STATE_RUNNING, button->state());
+  ShelfAppButton* button = test_api()->GetButton(index);
+  EXPECT_EQ(ShelfAppButton::STATE_RUNNING, button->state());
 
   // Remove it.
   shelf_model()->RemoveItemAt(index);
@@ -88,10 +93,10 @@ TEST_F(ShelfTest, CheckHoverAfterMenu) {
   int index = shelf_model()->Add(item);
 
   ASSERT_EQ(++button_count, test_api()->GetButtonCount());
-  ShelfButton* button = test_api()->GetButton(index);
-  button->AddState(ShelfButton::STATE_HOVERED);
+  ShelfAppButton* button = test_api()->GetButton(index);
+  button->AddState(ShelfAppButton::STATE_HOVERED);
   button->ShowContextMenu(gfx::Point(), ui::MENU_SOURCE_MOUSE);
-  EXPECT_FALSE(button->state() & ShelfButton::STATE_HOVERED);
+  EXPECT_FALSE(button->state() & ShelfAppButton::STATE_HOVERED);
 
   // Remove it.
   shelf_model()->RemoveItemAt(index);
@@ -104,8 +109,8 @@ TEST_F(ShelfTest, ShowOverflowBubble) {
   ShelfItem item;
   item.type = TYPE_APP;
   item.status = STATUS_RUNNING;
-  while (!test_api()->IsOverflowButtonVisible()) {
-    item.id = ShelfID(base::IntToString(shelf_model()->item_count()));
+  while (!shelf_view()->GetOverflowButton()->visible()) {
+    item.id = ShelfID(base::NumberToString(shelf_model()->item_count()));
     shelf_model()->Add(item);
     ASSERT_LT(shelf_model()->item_count(), 10000);
   }
@@ -140,6 +145,32 @@ TEST_F(ShelfTest, ShelfHiddenOnScreenOnSecondaryDisplay) {
     EXPECT_EQ(SHELF_VISIBLE, GetPrimaryShelf()->GetVisibilityState());
     EXPECT_EQ(SHELF_HIDDEN, GetSecondaryShelf()->GetVisibilityState());
   }
+}
+
+using NoSessionShelfTest = NoSessionAshTestBase;
+
+// Regression test for crash in Shelf::SetAlignment(). https://crbug.com/937495
+TEST_F(NoSessionShelfTest, SetAlignmentDuringDisplayDisconnect) {
+  UpdateDisplay("1024x768,800x600");
+  base::RunLoop().RunUntilIdle();
+
+  // The task indirectly triggers Shelf::SetAlignment() via a SessionObserver.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](TestSessionControllerClient* session) {
+            session->SetSessionState(session_manager::SessionState::ACTIVE);
+          },
+          GetSessionControllerClient()));
+
+  // Remove the secondary display.
+  UpdateDisplay("1280x1024");
+
+  // The session activation task runs before the RootWindowController and the
+  // Shelf are deleted.
+  base::RunLoop().RunUntilIdle();
+
+  // No crash.
 }
 
 }  // namespace

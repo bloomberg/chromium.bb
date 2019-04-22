@@ -15,7 +15,7 @@ namespace {
 
 class BidiContainerViewTest : public PlatformTest {
  protected:
-  void SetUp() override { defaultLocale_ = base::i18n::GetConfiguredLocale(); };
+  void SetUp() override { defaultLocale_ = base::i18n::GetConfiguredLocale(); }
   void TearDown() override { base::i18n::SetICUDefaultLocale(defaultLocale_); }
   UIViewAutoresizing AutoresizingMaskForLocale(const char* locale,
                                                UIViewAutoresizing autoresizing);

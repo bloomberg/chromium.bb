@@ -19,16 +19,10 @@
 
 class PrefService;
 
-namespace metrics {
-class TranslateEventProto;
-}  // namespace metrics
-
 namespace translate {
 class TranslateAcceptLanguages;
 class TranslatePrefs;
 class TranslateManager;
-
-struct LanguageDetectionDetails;
 }  // namespace translate
 
 namespace web {
@@ -68,9 +62,6 @@ class WebViewTranslateClient
   std::unique_ptr<translate::TranslatePrefs> GetTranslatePrefs() override;
   translate::TranslateAcceptLanguages* GetTranslateAcceptLanguages() override;
   int GetInfobarIconID() const override;
-  void RecordLanguageDetectionEvent(
-      const translate::LanguageDetectionDetails& details) const override;
-  void RecordTranslateEvent(const metrics::TranslateEventProto&) override;
   std::unique_ptr<infobars::InfoBar> CreateInfoBar(
       std::unique_ptr<translate::TranslateInfoBarDelegate> delegate)
       const override;
@@ -100,6 +91,8 @@ class WebViewTranslateClient
 
   // ObjC class that wraps this class.
   __weak CWVTranslationController* translation_controller_ = nil;
+
+  WEB_STATE_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(WebViewTranslateClient);
 };

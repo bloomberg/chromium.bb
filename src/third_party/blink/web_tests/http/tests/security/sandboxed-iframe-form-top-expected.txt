@@ -3,5 +3,3 @@ CONSOLE ERROR: line 8: Unsafe JavaScript attempt to initiate navigation for fram
 This tests passes if the sandboxed frame cannot navigate the top frame.
 
 PASS
-
-

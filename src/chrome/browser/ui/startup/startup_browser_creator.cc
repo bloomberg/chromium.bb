@@ -66,14 +66,16 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/common/switches.h"
-#include "net/base/port_util.h"
 #include "printing/buildflags/buildflags.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/ash_pref_names.h"
 #include "chrome/browser/chromeos/app_mode/app_launch_utils.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_app_launcher.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "components/user_manager/user_manager.h"
 #else
@@ -241,7 +243,8 @@ void DumpBrowserHistograms(const base::FilePath& output_file) {
   std::string output_string(
       base::StatisticsRecorder::ToJSON(base::JSON_VERBOSITY_LEVEL_FULL));
 
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   base::WriteFile(output_file, output_string.data(),
                   static_cast<int>(output_string.size()));
 }
@@ -275,6 +278,27 @@ void ShowUserManagerOnStartup(const base::CommandLine& command_line) {
   UserManager::Show(base::FilePath(),
                     profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
 #endif  // !defined(OS_CHROMEOS)
+}
+
+bool IsSilentLaunchEnabled(const base::CommandLine& command_line,
+                           const Profile* profile) {
+  // Note: This check should have been done in ProcessCmdLineImpl()
+  // before calling this function. However chromeos/login/login_utils.cc
+  // calls this function directly (see comments there) so it has to be checked
+  // again.
+  bool silent_launch = command_line.HasSwitch(switches::kSilentLaunch);
+
+#if defined(CHROMEOS)
+  DCHECK(!chromeos::ProfileHelper::IsSigninProfile(profile));
+  if (base::FeatureList::IsEnabled(ash::features::kKioskNextShell)) {
+    const PrefService* prefs = profile->GetPrefs();
+    if (prefs->GetBoolean(ash::prefs::kKioskNextShellEnabled)) {
+      silent_launch = true;
+    }
+  }
+#endif
+
+  return silent_launch;
 }
 
 }  // namespace
@@ -336,13 +360,7 @@ bool StartupBrowserCreator::LaunchBrowser(
     profile = profile->GetOffTheRecordProfile();
 #endif
 
-  // Note: This check should have been done in ProcessCmdLineImpl()
-  // before calling this function. However chromeos/login/login_utils.cc
-  // calls this function directly (see comments there) so it has to be checked
-  // again.
-  const bool silent_launch = command_line.HasSwitch(switches::kSilentLaunch);
-
-  if (!silent_launch) {
+  if (!IsSilentLaunchEnabled(command_line, profile)) {
     StartupBrowserCreatorImpl lwp(cur_dir, command_line, this, is_first_run);
     const std::vector<GURL> urls_to_launch =
         GetURLsFromCommandLine(command_line, cur_dir, profile);
@@ -588,12 +606,6 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
   }
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
-  if (command_line.HasSwitch(switches::kExplicitlyAllowedPorts)) {
-    std::string allowed_ports =
-        command_line.GetSwitchValueASCII(switches::kExplicitlyAllowedPorts);
-    net::SetExplicitlyAllowedPorts(allowed_ports);
-  }
-
   if (command_line.HasSwitch(switches::kValidateCrx)) {
     if (!process_startup) {
       LOG(ERROR) << "chrome is already running; you must close all running "
@@ -798,7 +810,7 @@ bool StartupBrowserCreator::ProcessLastOpenedProfiles(
   base::debug::Alias(&last_opened_profiles);
   const Profile* DEBUG_profile_0 = nullptr;
   const Profile* DEBUG_profile_1 = nullptr;
-  if (last_opened_profiles.size() > 0)
+  if (!last_opened_profiles.empty())
     DEBUG_profile_0 = last_opened_profiles[0];
   if (last_opened_profiles.size() > 1)
     DEBUG_profile_1 = last_opened_profiles[1];

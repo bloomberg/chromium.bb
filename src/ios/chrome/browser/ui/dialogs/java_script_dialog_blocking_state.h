@@ -56,6 +56,8 @@ class JavaScriptDialogBlockingState
   // The NavigationItem for which JavaScript dialogs were blocked.
   web::NavigationItem* blocked_item_ = nullptr;
 
+  WEB_STATE_USER_DATA_KEY_DECL();
+
   DISALLOW_COPY_AND_ASSIGN(JavaScriptDialogBlockingState);
 };
 

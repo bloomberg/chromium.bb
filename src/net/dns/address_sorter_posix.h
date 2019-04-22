@@ -51,7 +51,7 @@ class NET_EXPORT_PRIVATE AddressSorterPosix
     unsigned label;
 
     // Values from the OS, matter only if more than one source address is used.
-    unsigned prefix_length;
+    size_t prefix_length;
     bool deprecated;  // vs. preferred RFC4862
     bool home;        // vs. care-of RFC6275
     bool native;

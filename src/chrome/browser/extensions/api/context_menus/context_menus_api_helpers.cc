@@ -34,7 +34,7 @@ std::string GetIDString(const MenuItem::Id& id) {
   if (id.uid == 0)
     return id.string_uid;
   else
-    return base::IntToString(id.uid);
+    return base::NumberToString(id.uid);
 }
 
 MenuItem* GetParent(MenuItem::Id parent_id,

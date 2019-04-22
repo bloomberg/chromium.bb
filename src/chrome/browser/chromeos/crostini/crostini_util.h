@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_CHROMEOS_CROSTINI_CROSTINI_UTIL_H_
 
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/optional.h"
@@ -24,18 +26,28 @@ class Profile;
 
 namespace crostini {
 
-// Enables/disables overriding IsCrostiniUIAllowedForProfile's normal
-// behaviour and returning true instead.
-void SetCrostiniUIAllowedForTesting(bool enabled);
+struct LinuxPackageInfo;
+
+// A unique identifier for our containers. This is <vm_name, container_name>.
+using ContainerId = std::pair<std::string, std::string>;
+
+// Return" (<vm_name>, <container_name>)".
+std::string ContainerIdToString(const ContainerId& container_id);
 
 // Returns true if crostini is allowed to run for |profile|.
 // Otherwise, returns false, e.g. if crostini is not available on the device,
 // or it is in the flow to set up managed account creation.
 bool IsCrostiniAllowedForProfile(Profile* profile);
 
-// Returns true if crostini UI can be shown. Implies crostini is allowed to
-// run.
-bool IsCrostiniUIAllowedForProfile(Profile* profile);
+// When |check_policy| is true, returns true if fully interactive crostini UI
+// may be shown. Implies crostini is allowed to run.
+// When check_policy is false, returns true if crostini UI is not forbidden by
+// hardware, flags, etc, even if it is forbidden by the enterprise policy. The
+// UI uses this to indicate that crostini is available but disabled by policy.
+bool IsCrostiniUIAllowedForProfile(Profile* profile, bool check_policy = true);
+
+// Returns true if policy allows export import UI.
+bool IsCrostiniExportImportUIAllowedForProfile(Profile* profile);
 
 // Returns whether if Crostini has been enabled, i.e. the user has launched it
 // at least once and not deleted it.
@@ -74,10 +86,7 @@ std::string CryptohomeIdForProfile(Profile* profile);
 
 // Retrieves username from profile.  This is the text until '@' in
 // profile->GetProfileUserName() email address.
-std::string ContainerUserNameForProfile(Profile* profile);
-
-// Returns the home directory within the container for a given profile.
-base::FilePath ContainerHomeDirectoryForProfile(Profile* profile);
+std::string DefaultContainerUserNameForProfile(Profile* profile);
 
 // Returns the mount directory within the container where paths from the Chrome
 // OS host such as within Downloads are shared with the container.
@@ -104,8 +113,27 @@ void ShowCrostiniInstallerView(Profile* profile, CrostiniUISurface ui_surface);
 // Shows the Crostini Uninstaller dialog.
 void ShowCrostiniUninstallerView(Profile* profile,
                                  CrostiniUISurface ui_surface);
-// Shows the Crostini Upgrade dialog.
+// Shows the Crostini App installer dialog.
+void ShowCrostiniAppInstallerView(Profile* profile,
+                                  const LinuxPackageInfo& package_info);
+// Shows the Crostini App Uninstaller dialog.
+void ShowCrostiniAppUninstallerView(Profile* profile,
+                                    const std::string& app_id);
+// Shows the Crostini Termina Upgrade dialog (for blocking crostini start until
+// Termina version matches).
 void ShowCrostiniUpgradeView(Profile* profile, CrostiniUISurface ui_surface);
+
+// Shows the Crostini Container Upgrade dialog (for running upgrades in the
+// container).
+void ShowCrostiniUpgradeContainerView(Profile* profile,
+                                      CrostiniUISurface ui_surface);
+// Show the Crostini Container Upgrade dialog after a delay
+// (CloseCrostiniUpgradeContainerView will cancel the next dialog show).
+void PrepareShowCrostiniUpgradeContainerView(Profile* profile,
+                                             CrostiniUISurface ui_surface);
+// Closes the current CrostiniUpgradeContainerView or ensures that the view will
+// not open until PrepareShowCrostiniUpgradeContainerView is called again.
+void CloseCrostiniUpgradeContainerView();
 
 // We use an arbitrary well-formed extension id for the Terminal app, this
 // is equal to GenerateId("Terminal").
@@ -119,12 +147,28 @@ constexpr char kCrostiniCroshBuiltinAppId[] =
 // Generated using crx_file::id_util::GenerateId("LinuxAppsFolder")
 constexpr char kCrostiniFolderId[] = "ddolnhmblagmcagkedkbfejapapdimlk";
 constexpr char kCrostiniDefaultImageServerUrl[] =
-    "https://storage.googleapis.com/cros-containers";
+    "https://storage.googleapis.com/cros-containers/%d";
 constexpr char kCrostiniDefaultImageAlias[] = "debian/stretch";
 
 // Whether running Crostini is allowed for unaffiliated users per enterprise
 // policy.
 bool IsUnaffiliatedCrostiniAllowedByPolicy();
+
+// Add a newly created LXD container to the kCrostiniContainers pref
+void AddNewLxdContainerToPrefs(Profile* profile,
+                               std::string vm_name,
+                               std::string container_name);
+
+// Remove a newly deleted LXD container from the kCrostiniContainers pref, and
+// deregister its apps and mime types.
+void RemoveLxdContainerFromPrefs(Profile* profile,
+                                 std::string vm_name,
+                                 std::string container_name);
+
+// Returns a string to be displayed in a notification with the estimated time
+// left for an operation to run which started and time |start| and is current
+// at |percent| way through.
+base::string16 GetTimeRemainingMessage(base::Time start, int percent);
 
 }  // namespace crostini
 

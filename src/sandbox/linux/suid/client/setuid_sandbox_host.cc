@@ -20,11 +20,11 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/process/launch.h"
 #include "base/process/process_metrics.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "sandbox/linux/suid/common/sandbox.h"
 #include "sandbox/linux/suid/common/suid_unsafe_environment_variables.h"
@@ -37,7 +37,7 @@ namespace {
 // setuid sandbox. Old versions of the sandbox will ignore this.
 void SetSandboxAPIEnvironmentVariable(base::Environment* env) {
   env->SetVar(kSandboxEnvironmentApiRequest,
-              base::IntToString(kSUIDSandboxApiNumber));
+              base::NumberToString(kSUIDSandboxApiNumber));
 }
 
 // Unset environment variables that are expected to be set by the setuid
@@ -51,7 +51,7 @@ void UnsetExpectedEnvironmentVariables(base::EnvironmentMap* env_map) {
       kSandboxNETNSEnvironmentVarName,
   };
 
-  for (size_t i = 0; i < arraysize(environment_vars); ++i) {
+  for (size_t i = 0; i < base::size(environment_vars); ++i) {
     // Setting values in EnvironmentMap to an empty-string will make
     // sure that they get unset from the environment via AlterEnvironment().
     (*env_map)[environment_vars[i]] = base::NativeEnvironmentString();
@@ -170,7 +170,7 @@ void SetuidSandboxHost::SetupLaunchOptions(
 
   // Launching a setuid binary requires PR_SET_NO_NEW_PRIVS to not be used.
   options->allow_new_privs = true;
-  UnsetExpectedEnvironmentVariables(&options->environ);
+  UnsetExpectedEnvironmentVariables(&options->environment);
 
   // Set dummy_fd to the reading end of a closed pipe.
   int pipe_fds[2];

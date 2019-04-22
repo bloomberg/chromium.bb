@@ -30,6 +30,7 @@ enum class PermissionType {
   CLIPBOARD_WRITE = 15,
   PAYMENT_HANDLER = 16,
   BACKGROUND_FETCH = 17,
+  IDLE_DETECTION = 18,
 
   // Always keep this at the end.
   NUM,

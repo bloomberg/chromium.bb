@@ -42,14 +42,15 @@ class CustomArguments : public CustomArgumentsBase {
   Handle<V> GetReturnValue(Isolate* isolate);
 
   inline Isolate* isolate() {
-    return reinterpret_cast<Isolate*>(*slot_at(T::kIsolateIndex));
+    return reinterpret_cast<Isolate*>((*slot_at(T::kIsolateIndex)).ptr());
   }
 
-  inline ObjectSlot slot_at(int index) {
+  inline FullObjectSlot slot_at(int index) {
     // This allows index == T::kArgsLength so "one past the end" slots
     // can be retrieved for iterating purposes.
-    DCHECK(index >= 0 && index <= T::kArgsLength);
-    return ObjectSlot(values_ + index);
+    DCHECK_LE(static_cast<unsigned>(index),
+              static_cast<unsigned>(T::kArgsLength));
+    return FullObjectSlot(values_ + index);
   }
   Address values_[T::kArgsLength];
 };
@@ -70,8 +71,8 @@ class PropertyCallbackArguments
   static const int kIsolateIndex = T::kIsolateIndex;
   static const int kShouldThrowOnErrorIndex = T::kShouldThrowOnErrorIndex;
 
-  PropertyCallbackArguments(Isolate* isolate, Object* data, Object* self,
-                            JSObject* holder, ShouldThrow should_throw);
+  PropertyCallbackArguments(Isolate* isolate, Object data, Object self,
+                            JSObject holder, Maybe<ShouldThrow> should_throw);
 
   // -------------------------------------------------------------------------
   // Accessor Callbacks
@@ -138,8 +139,8 @@ class PropertyCallbackArguments
       GenericNamedPropertyGetterCallback f, Handle<Name> name,
       Handle<Object> info, Handle<Object> receiver = Handle<Object>());
 
-  inline JSObject* holder();
-  inline Object* receiver();
+  inline JSObject holder();
+  inline Object receiver();
 
   // Don't copy PropertyCallbackArguments, because they would both have the
   // same prev_ pointer.
@@ -159,10 +160,10 @@ class FunctionCallbackArguments
   static const int kIsolateIndex = T::kIsolateIndex;
   static const int kNewTargetIndex = T::kNewTargetIndex;
 
-  FunctionCallbackArguments(internal::Isolate* isolate, internal::Object* data,
-                            internal::HeapObject* callee,
-                            internal::Object* holder,
-                            internal::HeapObject* new_target,
+  FunctionCallbackArguments(internal::Isolate* isolate, internal::Object data,
+                            internal::HeapObject callee,
+                            internal::Object holder,
+                            internal::HeapObject new_target,
                             internal::Address* argv, int argc);
 
   /*
@@ -173,10 +174,10 @@ class FunctionCallbackArguments
    * and used if it's been set to anything inside the callback.
    * New style callbacks always use the return value.
    */
-  inline Handle<Object> Call(CallHandlerInfo* handler);
+  inline Handle<Object> Call(CallHandlerInfo handler);
 
  private:
-  inline JSObject* holder();
+  inline JSObject holder();
 
   internal::Address* argv_;
   int argc_;

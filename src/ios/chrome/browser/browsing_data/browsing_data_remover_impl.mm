@@ -22,9 +22,11 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "components/autofill/core/browser/legacy_strike_database.h"
+#include "components/autofill/core/browser/payments/legacy_strike_database.h"
+#include "components/autofill/core/browser/payments/strike_database.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
+#include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/language/core/browser/url_language_histogram.h"
@@ -39,9 +41,13 @@
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/autofill/legacy_strike_database_factory.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
+#include "ios/chrome/browser/autofill/strike_database_factory.h"
 #include "ios/chrome/browser/bookmarks/bookmark_remover_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/browsing_data/browsing_data_features.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
+#include "ios/chrome/browser/external_files/external_file_remover.h"
+#include "ios/chrome/browser/external_files/external_file_remover_factory.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/history/web_history_service_factory.h"
 #include "ios/chrome/browser/ios_chrome_io_thread.h"
@@ -53,10 +59,9 @@
 #import "ios/chrome/browser/sessions/session_service_ios.h"
 #include "ios/chrome/browser/signin/account_consistency_service_factory.h"
 #include "ios/chrome/browser/snapshots/snapshots_util.h"
-#include "ios/chrome/browser/ui/external_file_remover.h"
-#include "ios/chrome/browser/ui/external_file_remover_factory.h"
 #include "ios/chrome/browser/web_data_service_factory.h"
 #include "ios/net/http_cache_helper.h"
+#import "ios/web/public/browsing_data_removing_util.h"
 #include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread.h"
 #import "ios/web/public/web_view_creation_util.h"
@@ -64,8 +69,6 @@
 #include "net/base/net_errors.h"
 #include "net/cookies/cookie_store.h"
 #include "net/http/transport_security_state.h"
-#include "net/ssl/channel_id_service.h"
-#include "net/ssl/channel_id_store.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
@@ -96,10 +99,6 @@ void IgnoreArgumentHelper(base::OnceClosure callback, T unused_argument) {
 template <typename T>
 base::OnceCallback<void(T)> IgnoreArgument(base::OnceClosure callback) {
   return base::BindOnce(&IgnoreArgumentHelper<T>, std::move(callback));
-}
-
-bool AllDomainsPredicate(const std::string& domain) {
-  return true;
 }
 
 void BookmarkClearedAdapter(std::unique_ptr<BookmarkRemoverHelper> remover,
@@ -136,36 +135,6 @@ void ClearCookies(
   cookie_store->DeleteAllCreatedInTimeRangeAsync(
       creation_range, AdaptCallbackForRepeating(base::BindOnce(
                           &DeleteCallbackAdapter, std::move(callback))));
-}
-
-// Clears SSL connection pool and then invoke callback.
-void OnClearedChannelIDs(
-    scoped_refptr<net::URLRequestContextGetter> request_context_getter,
-    base::OnceClosure callback) {
-  DCHECK_CURRENTLY_ON(web::WebThread::IO);
-  // Need to close open SSL connections which may be using the channel ids we
-  // are deleting.
-  // TODO(crbug.com/166069): Make the server bound cert service/store have
-  // observers that can notify relevant things directly.
-  request_context_getter->GetURLRequestContext()
-      ->ssl_config_service()
-      ->NotifySSLConfigChange();
-  std::move(callback).Run();
-}
-
-// Clears channel IDs.
-void ClearChannelIDs(
-    scoped_refptr<net::URLRequestContextGetter> request_context_getter,
-    base::Time delete_begin,
-    base::Time delete_end,
-    base::OnceClosure callback) {
-  DCHECK_CURRENTLY_ON(web::WebThread::IO);
-  net::ChannelIDService* channel_id_service =
-      request_context_getter->GetURLRequestContext()->channel_id_service();
-  channel_id_service->GetChannelIDStore()->DeleteForDomainsCreatedBetween(
-      base::BindRepeating(&AllDomainsPredicate), delete_begin, delete_end,
-      AdaptCallbackForRepeating(base::BindOnce(
-          &OnClearedChannelIDs, request_context_getter, std::move(callback))));
 }
 
 }  // namespace
@@ -257,11 +226,6 @@ void BrowsingDataRemoverImpl::Remove(browsing_data::TimePeriod time_period,
   DCHECK(!browser_state_->IsOffTheRecord() ||
          time_period == browsing_data::TimePeriod::ALL_TIME);
 
-  // Cookies and server bound certificates should have the same lifetime.
-  DCHECK_EQ(
-      IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_COOKIES),
-      IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_CHANNEL_IDS));
-
   // Partial clearing of downloads, bookmarks or reading lists is not supported.
   DCHECK(
       !(IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_DOWNLOADS) ||
@@ -341,17 +305,6 @@ void BrowsingDataRemoverImpl::RemoveImpl(base::Time delete_begin,
                            CreatePendingTaskCompletionClosure())));
   }
 
-  if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_CHANNEL_IDS)) {
-    base::RecordAction(base::UserMetricsAction("ClearBrowsingData_ChannelIDs"));
-    base::PostTaskWithTraits(
-        FROM_HERE, task_traits,
-        base::BindOnce(
-            &ClearChannelIDs, context_getter_, delete_begin, delete_end,
-            base::BindOnce(base::IgnoreResult(&base::TaskRunner::PostTask),
-                           current_task_runner, FROM_HERE,
-                           CreatePendingTaskCompletionClosure())));
-  }
-
   // There is no need to clean the remaining types of data for off-the-record
   // ChromeBrowserStates as no data is saved. Early return to avoid scheduling
   // unnecessary work.
@@ -373,10 +326,9 @@ void BrowsingDataRemoverImpl::RemoveImpl(base::Time delete_begin,
 
     if (history_service) {
       base::RecordAction(base::UserMetricsAction("ClearBrowsingData_History"));
-      history_service->ExpireLocalAndRemoteHistoryBetween(
+      history_service->DeleteLocalAndRemoteHistoryBetween(
           ios::WebHistoryServiceFactory::GetForBrowserState(browser_state_),
-          std::set<GURL>(), delete_begin, delete_end,
-          AdaptCallbackForRepeating(CreatePendingTaskCompletionClosure()),
+          delete_begin, delete_end, CreatePendingTaskCompletionClosure(),
           &history_task_tracker_);
     }
 
@@ -479,13 +431,30 @@ void BrowsingDataRemoverImpl::RemoveImpl(base::Time delete_begin,
       web_data_service->RemoveAutofillDataModifiedBetween(delete_begin,
                                                           delete_end);
 
-      // Clear out the Autofill LegacyStrikeDatabase in its entirety.
-      autofill::LegacyStrikeDatabase* legacy_strike_database =
-          autofill::LegacyStrikeDatabaseFactory::GetForBrowserState(
-              browser_state_);
-      if (legacy_strike_database)
-        legacy_strike_database->ClearAllStrikes(AdaptCallbackForRepeating(
-            IgnoreArgument<bool>(CreatePendingTaskCompletionClosure())));
+      if (base::FeatureList::IsEnabled(
+              autofill::features::kAutofillSaveCreditCardUsesStrikeSystemV2) ||
+          base::FeatureList::IsEnabled(
+              autofill::features::
+                  kAutofillLocalCardMigrationUsesStrikeSystemV2)) {
+        // Clear out the Autofill StrikeDatabase in its entirety.
+        // Both StrikeDatabase and LegacyStrikeDatabase use data from the same
+        // ProtoDatabase, so only one of them needs to call ClearAllStrikes(~).
+        autofill::StrikeDatabase* strike_database =
+            autofill::StrikeDatabaseFactory::GetForBrowserState(browser_state_);
+        if (strike_database)
+          strike_database->ClearAllStrikes();
+      } else if (base::FeatureList::IsEnabled(
+                     autofill::features::
+                         kAutofillSaveCreditCardUsesStrikeSystem)) {
+        // Clear out the Autofill LegacyStrikeDatabase in its entirety.
+        autofill::LegacyStrikeDatabase* legacy_strike_database =
+            autofill::LegacyStrikeDatabaseFactory::GetForBrowserState(
+                browser_state_);
+        if (legacy_strike_database) {
+          legacy_strike_database->ClearAllStrikes(AdaptCallbackForRepeating(
+              IgnoreArgument<bool>(CreatePendingTaskCompletionClosure())));
+        }
+      }
 
       // Ask for a call back when the above calls are finished.
       web_data_service->GetDBTaskRunner()->PostTaskAndReply(
@@ -505,9 +474,8 @@ void BrowsingDataRemoverImpl::RemoveImpl(base::Time delete_begin,
     ClearHttpCache(context_getter_,
                    base::CreateSingleThreadTaskRunnerWithTraits(task_traits),
                    delete_begin, delete_end,
-                   AdaptCallbackForRepeating(
-                       base::BindOnce(&NetCompletionCallbackAdapter,
-                                      CreatePendingTaskCompletionClosure())));
+                   base::BindOnce(&NetCompletionCallbackAdapter,
+                                  CreatePendingTaskCompletionClosure()));
   }
 
   // Remove omnibox zero-suggest cache results.
@@ -573,7 +541,7 @@ void BrowsingDataRemoverImpl::RemoveImpl(base::Time delete_begin,
       AdaptCallbackForRepeating(CreatePendingTaskCompletionClosure()));
 
   // Remove browsing data stored in WKWebsiteDataStore if necessary.
-  RemoveDataFromWKWebsiteDataStore(delete_begin, delete_end, mask);
+  RemoveDataFromWKWebsiteDataStore(delete_begin, mask);
 
   // Record the combined deletion of cookies and cache.
   CookieOrCacheDeletionChoice choice;
@@ -597,8 +565,40 @@ void BrowsingDataRemoverImpl::RemoveImpl(base::Time delete_begin,
 // new API.
 void BrowsingDataRemoverImpl::RemoveDataFromWKWebsiteDataStore(
     base::Time delete_begin,
-    base::Time delete_end,
     BrowsingDataRemoveMask mask) {
+  if (base::FeatureList::IsEnabled(kWebClearBrowsingData)) {
+    web::ClearBrowsingDataMask types =
+        web::ClearBrowsingDataMask::kRemoveNothing;
+    if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_APPCACHE)) {
+      types |= web::ClearBrowsingDataMask::kRemoveAppCache;
+    }
+    if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_COOKIES)) {
+      types |= web::ClearBrowsingDataMask::kRemoveCookies;
+    }
+    if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_INDEXEDDB)) {
+      types |= web::ClearBrowsingDataMask::kRemoveIndexedDB;
+    }
+    if (IsRemoveDataMaskSet(mask,
+                            BrowsingDataRemoveMask::REMOVE_LOCAL_STORAGE)) {
+      types |= web::ClearBrowsingDataMask::kRemoveLocalStorage;
+    }
+    if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_WEBSQL)) {
+      types |= web::ClearBrowsingDataMask::kRemoveWebSQL;
+    }
+    if (IsRemoveDataMaskSet(mask,
+                            BrowsingDataRemoveMask::REMOVE_CACHE_STORAGE)) {
+      types |= web::ClearBrowsingDataMask::kRemoveCacheStorage;
+    }
+    if (IsRemoveDataMaskSet(mask,
+                            BrowsingDataRemoveMask::REMOVE_VISITED_LINKS)) {
+      types |= web::ClearBrowsingDataMask::kRemoveVisitedLinks;
+    }
+
+    web::ClearBrowsingData(browser_state_, types, delete_begin,
+                           CreatePendingTaskCompletionClosure());
+    return;
+  }
+
   // Converts browsing data types from BrowsingDataRemoveMask to
   // WKWebsiteDataStore strings.
   NSMutableSet* data_types_to_remove = [[NSMutableSet alloc] init];

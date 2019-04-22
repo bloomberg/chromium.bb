@@ -7,6 +7,7 @@
 # Chrome Application dir entries, sorted alphabetically.
 #
 chrome.exe: %(ChromeDir)s\
+chrome_proxy.exe: %(ChromeDir)s\
 #
 # Chrome version dir assembly manifest.
 # The name of this file must match the name of the version dir, so we cannot
@@ -23,7 +24,6 @@ chrome_child.dll: %(VersionDir)s\
 chrome_elf.dll: %(VersionDir)s\
 chrome_watcher.dll: %(VersionDir)s\
 d3dcompiler_47.dll: %(VersionDir)s\
-elevation_service.exe: %(VersionDir)s\
 eventlog_provider.dll: %(VersionDir)s\
 ffmpeg.dll: %(VersionDir)s\
 icudt.dll: %(VersionDir)s\
@@ -67,23 +67,27 @@ SmallLogoDev.png: %(VersionDir)s\VisualElements\
 swiftshader\libEGL.dll: %(VersionDir)s\swiftshader\
 swiftshader\libGLESv2.dll: %(VersionDir)s\swiftshader\
 
+#
+# MEI Preload sub dir
+#
+MEIPreload\manifest.json: %(VersionDir)s\MEIPreload\
+MEIPreload\preloaded_data.pb: %(VersionDir)s\MEIPreload\
+
 [HIDPI]
 chrome_200_percent.pak: %(VersionDir)s\
 
 [TOUCH]
 
 [GOOGLE_CHROME]
+# The elevation service is only installed for Google Chrome builds.
+elevation_service.exe: %(VersionDir)s\
+
 #
 # Widevine CDM sub-dir
 #
 WidevineCdm\manifest.json: %(VersionDir)s\WidevineCdm\
+WidevineCdm\LICENSE: %(VersionDir)s\WidevineCdm\
 WidevineCdm\_platform_specific\win_x86\widevinecdm.dll: %(VersionDir)s\WidevineCdm\_platform_specific\win_x86\
 WidevineCdm\_platform_specific\win_x86\widevinecdm.dll.sig: %(VersionDir)s\WidevineCdm\_platform_specific\win_x86\
 WidevineCdm\_platform_specific\win_x64\widevinecdm.dll: %(VersionDir)s\WidevineCdm\_platform_specific\win_x64\
 WidevineCdm\_platform_specific\win_x64\widevinecdm.dll.sig: %(VersionDir)s\WidevineCdm\_platform_specific\win_x64\
-
-#
-# MEI Preload sub dir
-#
-MEIPreload\manifest.json: %(VersionDir)s\MEIPreload\
-MEIPreload\preloaded_data.pb: %(VersionDir)s\MEIPreload\

@@ -81,7 +81,7 @@ class CONTENT_EXPORT AppCacheRequestHandler
       FallbackCallback fallback_callback) override;
   // MaybeCreateLoaderForResponse always returns synchronously.
   bool MaybeCreateLoaderForResponse(
-      const GURL& request_url,
+      const network::ResourceRequest& request,
       const network::ResourceResponseHead& response,
       network::mojom::URLLoaderPtr* loader,
       network::mojom::URLLoaderClientRequest* client_request,
@@ -113,9 +113,7 @@ class CONTENT_EXPORT AppCacheRequestHandler
       const network::ResourceRequest& request,
       base::WeakPtr<AppCacheHost> appcache_host);
 
-  static bool IsMainResourceType(ResourceType type) {
-    return IsResourceTypeFrame(type) || type == RESOURCE_TYPE_SHARED_WORKER;
-  }
+  static bool IsMainResourceType(ResourceType type);
 
   // Called by unittests to indicate that we are in test mode.
   static void SetRunningInTests(bool in_tests);

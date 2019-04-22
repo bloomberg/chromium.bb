@@ -65,7 +65,8 @@ Sensor::Sensor(ExecutionContext* execution_context,
           "Maximum allowed frequency value for this sensor type is %.0f Hz.",
           max_allowed_frequency);
       ConsoleMessage* console_message = ConsoleMessage::Create(
-          kJSMessageSource, kInfoMessageLevel, std::move(message));
+          mojom::ConsoleMessageSource::kJavaScript,
+          mojom::ConsoleMessageLevel::kInfo, std::move(message));
       execution_context->AddConsoleMessage(console_message);
     }
   }
@@ -131,12 +132,13 @@ DOMHighResTimeStamp Sensor::timestamp(ScriptState* script_state,
   is_null = false;
 
   if (WebTestSupport::IsRunningWebTest()) {
-    // In layout tests performance.now() * 0.001 is passed to the shared buffer.
+    // In web tests performance.now() * 0.001 is passed to the shared buffer.
     return sensor_proxy_->GetReading().timestamp() * 1000;
   }
 
   return performance->MonotonicTimeToDOMHighResTimeStamp(
-      TimeTicksFromSeconds(sensor_proxy_->GetReading().timestamp()));
+      base::TimeTicks() +
+      base::TimeDelta::FromSecondsD(sensor_proxy_->GetReading().timestamp()));
 }
 
 void Sensor::Trace(blink::Visitor* visitor) {

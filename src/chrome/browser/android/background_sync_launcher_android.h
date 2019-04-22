@@ -10,8 +10,10 @@
 #include <set>
 
 #include "base/android/jni_android.h"
+#include "base/callback_forward.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "base/time/time.h"
 
 // The BackgroundSyncLauncherAndroid singleton owns the Java
 // BackgroundSyncLauncher object and is used to register interest in starting
@@ -21,14 +23,23 @@ class BackgroundSyncLauncherAndroid {
  public:
   static BackgroundSyncLauncherAndroid* Get();
 
-  static void LaunchBrowserIfStopped(bool launch_when_next_online,
-                                     int64_t min_delay_ms);
+  // Calculates the soonest wakeup time across all the storage
+  // partitions for the non-incognito profile and ensures that the browser
+  // is running when the device next goes online after that time has passed.
+  // If this time is set to base::TimeDelta::Max() across all storage
+  // partitions, the wake-up task is cancelled.
+  static void LaunchBrowserIfStopped();
 
   static bool ShouldDisableBackgroundSync();
 
   // TODO(iclelland): Remove this once the bots have their play services package
   // updated before every test run. (https://crbug.com/514449)
   static void SetPlayServicesVersionCheckDisabledForTests(bool disabled);
+
+  // Fires all pending Background Sync events across all storage partitions
+  // for the last used profile.
+  void FireBackgroundSyncEvents(
+      const base::android::JavaParamRef<jobject>& j_runnable);
 
  private:
   friend struct base::LazyInstanceTraitsBase<BackgroundSyncLauncherAndroid>;
@@ -37,10 +48,14 @@ class BackgroundSyncLauncherAndroid {
   BackgroundSyncLauncherAndroid();
   ~BackgroundSyncLauncherAndroid();
 
-  void LaunchBrowserIfStoppedImpl(bool launch_when_next_online,
-                                  int64_t min_delay_ms);
+  void LaunchBrowserIfStoppedImpl();
+  void LaunchBrowserWithWakeupDelta(base::TimeDelta soonest_wakeup_delta);
 
-  base::android::ScopedJavaGlobalRef<jobject> java_launcher_;
+  base::android::ScopedJavaGlobalRef<jobject>
+      java_gcm_network_manager_launcher_;
+  base::android::ScopedJavaGlobalRef<jobject>
+      java_background_sync_background_task_scheduler_launcher_;
+
   DISALLOW_COPY_AND_ASSIGN(BackgroundSyncLauncherAndroid);
 };
 

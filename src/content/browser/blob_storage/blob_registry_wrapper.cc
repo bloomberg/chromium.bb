@@ -4,6 +4,7 @@
 
 #include "content/browser/blob_storage/blob_registry_wrapper.h"
 
+#include "base/bind.h"
 #include "base/task/post_task.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -36,6 +37,11 @@ class BindingDelegate : public storage::BlobRegistryImpl::Delegate {
     ChildProcessSecurityPolicyImpl* security_policy =
         ChildProcessSecurityPolicyImpl::GetInstance();
     return security_policy->CanCommitURL(process_id_, url);
+  }
+  bool IsProcessValid() override {
+    ChildProcessSecurityPolicyImpl* security_policy =
+        ChildProcessSecurityPolicyImpl::GetInstance();
+    return security_policy->HasSecurityState(process_id_);
   }
 
  private:

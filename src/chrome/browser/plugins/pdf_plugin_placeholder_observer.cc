@@ -96,3 +96,5 @@ void PDFPluginPlaceholderObserver::OnOpenPDF(
   web_contents()->OpenURL(open_url_params);
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(PDFPluginPlaceholderObserver)

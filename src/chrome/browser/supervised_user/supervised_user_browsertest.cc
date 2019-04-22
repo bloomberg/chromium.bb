@@ -4,6 +4,8 @@
 
 #include <utility>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/run_loop.h"
@@ -47,7 +49,7 @@
 #include "services/network/public/cpp/network_switches.h"
 
 #if defined(OS_CHROMEOS)
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #endif
 
 using content::InterstitialPage;
@@ -120,8 +122,10 @@ class SupervisedUserTest : public InProcessBrowserTest,
 
   void SendAccessRequest(WebContents* tab) {
     if (AreCommittedInterstitialsEnabled()) {
-      tab->GetMainFrame()->ExecuteJavaScriptForTests(base::ASCIIToUTF16(
-          "supervisedUserErrorPageController.requestPermission()"));
+      tab->GetMainFrame()->ExecuteJavaScriptForTests(
+          base::ASCIIToUTF16(
+              "supervisedUserErrorPageController.requestPermission()"),
+          base::NullCallback());
       return;
     }
 
@@ -139,7 +143,8 @@ class SupervisedUserTest : public InProcessBrowserTest,
   void GoBack(WebContents* tab) {
     if (AreCommittedInterstitialsEnabled()) {
       tab->GetMainFrame()->ExecuteJavaScriptForTests(
-          base::ASCIIToUTF16("supervisedUserErrorPageController.goBack()"));
+          base::ASCIIToUTF16("supervisedUserErrorPageController.goBack()"),
+          base::NullCallback());
       return;
     }
     InterstitialPage* interstitial_page = tab->GetInterstitialPage();
@@ -285,11 +290,11 @@ class TabClosingObserver : public TabStripModelObserver {
   DISALLOW_COPY_AND_ASSIGN(TabClosingObserver);
 };
 
-INSTANTIATE_TEST_CASE_P(, SupervisedUserTest, ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(, SupervisedUserTest, ::testing::Values(false, true));
 
-INSTANTIATE_TEST_CASE_P(,
-                        SupervisedUserBlockModeTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(,
+                         SupervisedUserBlockModeTest,
+                         ::testing::Values(false, true));
 
 // Navigates to a blocked URL.
 IN_PROC_BROWSER_TEST_P(SupervisedUserBlockModeTest,

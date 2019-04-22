@@ -8,9 +8,9 @@
 
 #include <vector>
 
-#include "fxjs/cfxjse_class.h"
-#include "fxjs/cfxjse_engine.h"
-#include "fxjs/cfxjse_value.h"
+#include "fxjs/xfa/cfxjse_class.h"
+#include "fxjs/xfa/cfxjse_engine.h"
+#include "fxjs/xfa/cfxjse_value.h"
 #include "xfa/fxfa/parser/cxfa_arraynodelist.h"
 #include "xfa/fxfa/parser/cxfa_document.h"
 #include "xfa/fxfa/parser/cxfa_field.h"
@@ -24,6 +24,10 @@ CJX_Container::CJX_Container(CXFA_Node* node) : CJX_Node(node) {
 }
 
 CJX_Container::~CJX_Container() {}
+
+bool CJX_Container::DynamicTypeIs(TypeTag eType) const {
+  return eType == static_type__ || ParentType__::DynamicTypeIs(eType);
+}
 
 CJS_Result CJX_Container::getDelta(
     CFX_V8* runtime,

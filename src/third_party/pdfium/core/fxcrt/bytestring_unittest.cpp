@@ -395,6 +395,24 @@ TEST(ByteString, OperatorPlus) {
   EXPECT_EQ("Dogs like me", ByteString("Dogs") + " like me");
   EXPECT_EQ("Oh no, error number 42",
             "Oh no, error number " + ByteString::Format("%d", 42));
+
+  {
+    // Make sure operator+= and Concat() increases string memory allocation
+    // geometrically.
+    int allocations = 0;
+    ByteString str("ABCDEFGHIJKLMN");
+    const char* buffer = str.c_str();
+    for (size_t i = 0; i < 10000; ++i) {
+      str += "!";
+      const char* new_buffer = str.c_str();
+      if (new_buffer != buffer) {
+        buffer = new_buffer;
+        ++allocations;
+      }
+    }
+    EXPECT_LT(allocations, 25);
+    EXPECT_GT(allocations, 10);
+  }
 }
 
 TEST(ByteString, Concat) {
@@ -1363,7 +1381,7 @@ TEST(ByteStringView, OperatorEQ) {
 
   pdfium::span<const uint8_t> span5(
       pdfium::as_bytes(pdfium::make_span("hello", 5)));
-  EXPECT_EQ(byte_string_c.span(), span5);
+  EXPECT_EQ(byte_string_c.raw_span(), span5);
 }
 
 TEST(ByteStringView, OperatorNE) {
@@ -1812,6 +1830,24 @@ TEST(ByteString, FormatInteger) {
   // int limits.
   EXPECT_EQ("2147483647", ByteString::FormatInteger(INT_MAX));
   EXPECT_EQ("-2147483648", ByteString::FormatInteger(INT_MIN));
+}
+
+TEST(ByteString, FX_HashCode_Ascii) {
+  EXPECT_EQ(0u, FX_HashCode_GetA("", false));
+  EXPECT_EQ(65u, FX_HashCode_GetA("A", false));
+  EXPECT_EQ(97u, FX_HashCode_GetA("A", true));
+  EXPECT_EQ(31 * 65u + 66u, FX_HashCode_GetA("AB", false));
+  EXPECT_EQ(31u * 65u + 255u, FX_HashCode_GetA("A\xff", false));
+  EXPECT_EQ(31u * 97u + 255u, FX_HashCode_GetA("A\xff", true));
+}
+
+TEST(ByteString, FX_HashCode_Wide) {
+  EXPECT_EQ(0u, FX_HashCode_GetAsIfW("", false));
+  EXPECT_EQ(65u, FX_HashCode_GetAsIfW("A", false));
+  EXPECT_EQ(97u, FX_HashCode_GetAsIfW("A", true));
+  EXPECT_EQ(1313u * 65u + 66u, FX_HashCode_GetAsIfW("AB", false));
+  EXPECT_EQ(1313u * 65u + 255u, FX_HashCode_GetAsIfW("A\xff", false));
+  EXPECT_EQ(1313u * 97u + 255u, FX_HashCode_GetAsIfW("A\xff", true));
 }
 
 }  // namespace fxcrt

@@ -642,9 +642,9 @@ TEST_F(AnimationTest,
 
   const scoped_refptr<ElementAnimations> element_animations =
       host_->GetElementAnimationsForElementId(element_id_);
-  EXPECT_TRUE(element_animations->keyframe_effects_list().HasObserver(
+  EXPECT_TRUE(element_animations->HasKeyframeEffectForTesting(
       animation_->GetKeyframeEffectById(keyframe_effect_id1)));
-  EXPECT_FALSE(element_animations->keyframe_effects_list().HasObserver(
+  EXPECT_FALSE(element_animations->HasKeyframeEffectForTesting(
       animation_->GetKeyframeEffectById(keyframe_effect_id2)));
 
   animation_->AttachElementForKeyframeEffect(element_id_, keyframe_effect_id2);
@@ -654,16 +654,16 @@ TEST_F(AnimationTest,
   EXPECT_TRUE(animation_->GetKeyframeEffectById(keyframe_effect_id2)
                   ->needs_push_properties());
 
-  EXPECT_TRUE(element_animations->keyframe_effects_list().HasObserver(
+  EXPECT_TRUE(element_animations->HasKeyframeEffectForTesting(
       animation_->GetKeyframeEffectById(keyframe_effect_id2)));
 
   host_->PushPropertiesTo(host_impl_);
 
   const scoped_refptr<ElementAnimations> element_animations_impl =
       host_impl_->GetElementAnimationsForElementId(element_id_);
-  EXPECT_TRUE(element_animations_impl->keyframe_effects_list().HasObserver(
+  EXPECT_TRUE(element_animations_impl->HasKeyframeEffectForTesting(
       animation_impl_->GetKeyframeEffectById(keyframe_effect_id1)));
-  EXPECT_TRUE(element_animations_impl->keyframe_effects_list().HasObserver(
+  EXPECT_TRUE(element_animations_impl->HasKeyframeEffectForTesting(
       animation_impl_->GetKeyframeEffectById(keyframe_effect_id2)));
 
   EXPECT_TRUE(animation_impl_->element_animations(keyframe_effect_id1));
@@ -676,17 +676,17 @@ TEST_F(AnimationTest,
   animation_->DetachElement();
   EXPECT_FALSE(animation_->element_animations(keyframe_effect_id1));
   EXPECT_FALSE(animation_->element_id_of_keyframe_effect(keyframe_effect_id1));
-  EXPECT_FALSE(element_animations->keyframe_effects_list().HasObserver(
+  EXPECT_FALSE(element_animations->HasKeyframeEffectForTesting(
       animation_->GetKeyframeEffectById(keyframe_effect_id1)));
 
   EXPECT_FALSE(animation_->element_animations(keyframe_effect_id2));
   EXPECT_FALSE(animation_->element_id_of_keyframe_effect(keyframe_effect_id2));
-  EXPECT_FALSE(element_animations->keyframe_effects_list().HasObserver(
+  EXPECT_FALSE(element_animations->HasKeyframeEffectForTesting(
       animation_->GetKeyframeEffectById(keyframe_effect_id2)));
 
-  EXPECT_TRUE(element_animations_impl->keyframe_effects_list().HasObserver(
+  EXPECT_TRUE(element_animations_impl->HasKeyframeEffectForTesting(
       animation_impl_->GetKeyframeEffectById(keyframe_effect_id1)));
-  EXPECT_TRUE(element_animations_impl->keyframe_effects_list().HasObserver(
+  EXPECT_TRUE(element_animations_impl->HasKeyframeEffectForTesting(
       animation_impl_->GetKeyframeEffectById(keyframe_effect_id2)));
 
   host_->PushPropertiesTo(host_impl_);
@@ -694,12 +694,12 @@ TEST_F(AnimationTest,
   EXPECT_FALSE(animation_impl_->element_animations(keyframe_effect_id1));
   EXPECT_FALSE(
       animation_impl_->element_id_of_keyframe_effect(keyframe_effect_id1));
-  EXPECT_FALSE(element_animations_impl->keyframe_effects_list().HasObserver(
+  EXPECT_FALSE(element_animations_impl->HasKeyframeEffectForTesting(
       animation_impl_->GetKeyframeEffectById(keyframe_effect_id1)));
   EXPECT_FALSE(animation_impl_->element_animations(keyframe_effect_id2));
   EXPECT_FALSE(
       animation_impl_->element_id_of_keyframe_effect(keyframe_effect_id2));
-  EXPECT_FALSE(element_animations_impl->keyframe_effects_list().HasObserver(
+  EXPECT_FALSE(element_animations_impl->HasKeyframeEffectForTesting(
       animation_impl_->GetKeyframeEffectById(keyframe_effect_id2)));
 
   timeline_->DetachAnimation(animation_);
@@ -776,18 +776,18 @@ TEST_F(AnimationTest,
                   ->needs_push_properties());
 
   element_animations = host_->GetElementAnimationsForElementId(element1);
-  EXPECT_TRUE(element_animations->keyframe_effects_list().HasObserver(
+  EXPECT_TRUE(element_animations->HasKeyframeEffectForTesting(
       animation_->GetKeyframeEffectById(keyframe_effect_id1)));
-  EXPECT_FALSE(element_animations->keyframe_effects_list().HasObserver(
+  EXPECT_FALSE(element_animations->HasKeyframeEffectForTesting(
       animation_->GetKeyframeEffectById(keyframe_effect_id2)));
 
   element_animations = host_->GetElementAnimationsForElementId(element2);
-  EXPECT_TRUE(element_animations->keyframe_effects_list().HasObserver(
+  EXPECT_TRUE(element_animations->HasKeyframeEffectForTesting(
       animation_->GetKeyframeEffectById(keyframe_effect_id2)));
 
   animation_->DetachElement();
   EXPECT_TRUE(animation_->animation_timeline());
-  EXPECT_FALSE(element_animations->keyframe_effects_list().HasObserver(
+  EXPECT_FALSE(element_animations->HasKeyframeEffectForTesting(
       animation_->GetKeyframeEffectById(keyframe_effect_id2)));
   EXPECT_FALSE(animation_->GetKeyframeEffectById(keyframe_effect_id1)
                    ->element_animations());
@@ -905,6 +905,30 @@ TEST_F(AnimationTest, TickingAnimationsFromTwoKeyframeEffects) {
       element_id_, ElementListType::PENDING, end_opacity);
   client_impl_.ExpectTransformPropertyMutated(
       element_id_, ElementListType::PENDING, transform_x, transform_y);
+}
+
+TEST_F(AnimationTest, TickingState) {
+  KeyframeEffectId keyframe_effect_id = animation_->NextKeyframeEffectId();
+
+  animation_->AddKeyframeEffect(
+      std::make_unique<KeyframeEffect>(keyframe_effect_id));
+
+  host_->AddAnimationTimeline(timeline_);
+  timeline_->AttachAnimation(animation_);
+
+  const int transform_x = 10;
+  const int transform_y = 20;
+  const double duration = 1.;
+  animation_->AttachElementForKeyframeEffect(element_id_, keyframe_effect_id);
+  AddAnimatedTransformToAnimation(animation_.get(), duration, transform_x,
+                                  transform_y, keyframe_effect_id);
+  KeyframeEffect* keyframe_effect =
+      animation_->GetKeyframeEffectById(keyframe_effect_id);
+  EXPECT_FALSE(keyframe_effect->is_ticking());
+  client_.RegisterElement(element_id_, ElementListType::ACTIVE);
+  EXPECT_TRUE(keyframe_effect->is_ticking());
+  client_.UnregisterElement(element_id_, ElementListType::ACTIVE);
+  EXPECT_FALSE(keyframe_effect->is_ticking());
 }
 
 TEST_F(AnimationTest, KeyframeEffectSyncToImplTest) {

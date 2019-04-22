@@ -7,7 +7,7 @@
 #include <list>
 #include <string>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -389,7 +389,7 @@ TEST(KeyConverter, MAYBE_AllSpecialWebDriverKeysOnEnglishKeyboard) {
           << "Index: " << i;
       if (i == 0) {
         EXPECT_EQ(0u, events.size()) << "Index: " << i;
-      } else if (i >= arraysize(kTextForKeys) || kTextForKeys[i] == 0) {
+      } else if (i >= base::size(kTextForKeys) || kTextForKeys[i] == 0) {
         EXPECT_EQ(2u, events.size()) << "Index: " << i;
       } else {
         ASSERT_EQ(3u, events.size()) << "Index: " << i;

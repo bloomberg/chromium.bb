@@ -11,7 +11,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_local.h"
 #include "build/build_config.h"
@@ -26,8 +26,8 @@ base::LazyInstance<base::ThreadLocalPointer<ChildProcess>>::DestructorAtExit
 
 ChildProcess::ChildProcess(
     base::ThreadPriority io_thread_priority,
-    const std::string& task_scheduler_name,
-    std::unique_ptr<base::TaskScheduler::InitParams> task_scheduler_init_params)
+    const std::string& thread_pool_name,
+    std::unique_ptr<base::ThreadPool::InitParams> thread_pool_init_params)
     : ref_count_(0),
       shutdown_event_(base::WaitableEvent::ResetPolicy::MANUAL,
                       base::WaitableEvent::InitialState::NOT_SIGNALED),
@@ -35,20 +35,19 @@ ChildProcess::ChildProcess(
   DCHECK(!g_lazy_child_process_tls.Pointer()->Get());
   g_lazy_child_process_tls.Pointer()->Set(this);
 
-  // Initialize TaskScheduler if not already done. A TaskScheduler may already
+  // Initialize ThreadPool if not already done. A ThreadPool may already
   // exist when ChildProcess is instantiated in the browser process or in a
   // test process.
-  if (!base::TaskScheduler::GetInstance()) {
-    if (task_scheduler_init_params) {
-      base::TaskScheduler::Create(task_scheduler_name);
-      base::TaskScheduler::GetInstance()->Start(
-          *task_scheduler_init_params.get());
+  if (!base::ThreadPool::GetInstance()) {
+    if (thread_pool_init_params) {
+      base::ThreadPool::Create(thread_pool_name);
+      base::ThreadPool::GetInstance()->Start(*thread_pool_init_params.get());
     } else {
-      base::TaskScheduler::CreateAndStartWithDefaultParams(task_scheduler_name);
+      base::ThreadPool::CreateAndStartWithDefaultParams(thread_pool_name);
     }
 
-    DCHECK(base::TaskScheduler::GetInstance());
-    initialized_task_scheduler_ = true;
+    DCHECK(base::ThreadPool::GetInstance());
+    initialized_thread_pool_ = true;
   }
 
   // We can't recover from failing to start the IO thread.
@@ -85,9 +84,9 @@ ChildProcess::~ChildProcess() {
   g_lazy_child_process_tls.Pointer()->Set(nullptr);
   io_thread_.Stop();
 
-  if (initialized_task_scheduler_) {
-    DCHECK(base::TaskScheduler::GetInstance());
-    base::TaskScheduler::GetInstance()->Shutdown();
+  if (initialized_thread_pool_) {
+    DCHECK(base::ThreadPool::GetInstance());
+    base::ThreadPool::GetInstance()->Shutdown();
   }
 }
 

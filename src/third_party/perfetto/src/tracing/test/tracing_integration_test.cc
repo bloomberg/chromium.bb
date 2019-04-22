@@ -26,6 +26,7 @@
 #include "perfetto/tracing/core/producer.h"
 #include "perfetto/tracing/core/trace_config.h"
 #include "perfetto/tracing/core/trace_packet.h"
+#include "perfetto/tracing/core/trace_stats.h"
 #include "perfetto/tracing/core/trace_writer.h"
 #include "perfetto/tracing/ipc/consumer_ipc_client.h"
 #include "perfetto/tracing/ipc/producer_ipc_client.h"
@@ -76,6 +77,10 @@ class MockConsumer : public Consumer {
   MOCK_METHOD0(OnDisconnect, void());
   MOCK_METHOD0(OnTracingDisabled, void());
   MOCK_METHOD2(OnTracePackets, void(std::vector<TracePacket>*, bool));
+  MOCK_METHOD1(OnDetach, void(bool));
+  MOCK_METHOD2(OnAttach, void(bool, const TraceConfig&));
+  MOCK_METHOD2(OnTraceStats, void(bool, const TraceStats&));
+  MOCK_METHOD1(OnObservableEvents, void(const ObservableEvents&));
 
   // Workaround, gmock doesn't support yet move-only types, passing a pointer.
   void OnTraceData(std::vector<TracePacket> packets, bool has_more) {
@@ -96,6 +101,8 @@ void CheckTraceStats(const protos::TracePacket& packet) {
   EXPECT_GT(buf_stats.bytes_written(), 0u);
   EXPECT_GT(buf_stats.chunks_written(), 0u);
   EXPECT_EQ(0u, buf_stats.chunks_overwritten());
+  EXPECT_EQ(0u, buf_stats.chunks_rewritten());
+  EXPECT_EQ(0u, buf_stats.chunks_committed_out_of_order());
   EXPECT_EQ(0u, buf_stats.write_wrap_count());
   EXPECT_EQ(0u, buf_stats.patches_failed());
   EXPECT_EQ(0u, buf_stats.readaheads_failed());
@@ -374,6 +381,8 @@ TEST_F(TracingIntegrationTest, WriteIntoFile) {
   protos::Trace tmp_trace;
   ASSERT_TRUE(tmp_trace.ParseFromArray(tmp_buf, static_cast<int>(rsize)));
   size_t num_test_packet = 0;
+  size_t num_clock_snapshot_packet = 0;
+  size_t num_system_info_packet = 0;
   bool saw_trace_stats = false;
   for (int i = 0; i < tmp_trace.packet_size(); i++) {
     const protos::TracePacket& packet = tmp_trace.packet(i);
@@ -383,9 +392,15 @@ TEST_F(TracingIntegrationTest, WriteIntoFile) {
     } else if (packet.has_trace_stats()) {
       saw_trace_stats = true;
       CheckTraceStats(packet);
+    } else if (packet.has_clock_snapshot()) {
+      num_clock_snapshot_packet++;
+    } else if (packet.has_system_info()) {
+      num_system_info_packet++;
     }
   }
   ASSERT_TRUE(saw_trace_stats);
+  ASSERT_GT(num_clock_snapshot_packet, 0u);
+  ASSERT_GT(num_system_info_packet, 0u);
 }
 
 // TODO(primiano): add tests to cover:

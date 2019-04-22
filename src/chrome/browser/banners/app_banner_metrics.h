@@ -94,6 +94,6 @@ void TrackBeforeInstallEvent(int event);
 void TrackInstallableStatusCode(InstallableStatusCode code);
 void TrackInstallDisplayMode(blink::WebDisplayMode display);
 
-};  // namespace banners
+}  // namespace banners
 
 #endif  // CHROME_BROWSER_BANNERS_APP_BANNER_METRICS_H_

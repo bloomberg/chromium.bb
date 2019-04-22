@@ -222,6 +222,9 @@ _SPECIAL_ROOT_DEVICE_LIST = [
     'crosshatch', # Pixel 3 XL
     'blueline', # Pixel 3
 ]
+_SPECIAL_ROOT_DEVICE_LIST += ['aosp_%s' % _d for _d in
+                              _SPECIAL_ROOT_DEVICE_LIST]
+
 _IMEI_RE = re.compile(r'  Device ID = (.+)$')
 # The following regex is used to match result parcels like:
 """
@@ -234,6 +237,19 @@ _PARCEL_RESULT_RE = re.compile(
     r'0x[0-9a-f]{8}\: (?:[0-9a-f]{8}\s+){1,4}\'(.{16})\'')
 _EBUSY_RE = re.compile(
     r'mkdir failed for ([^,]*), Device or resource busy')
+
+_WEBVIEW_SYSUPDATE_CURRENT_PKG_RE = re.compile(
+    r'Current WebView package.*:.*\(([a-z.]*),')
+_WEBVIEW_SYSUPDATE_FALLBACK_LOGIC_RE = re.compile(
+    r'Fallback logic enabled: (true|false)')
+_WEBVIEW_SYSUPDATE_PACKAGE_INSTALLED_RE = re.compile(
+    r'(?:Valid|Invalid) package\s+(\S+)\s+\(.*\),?\s+(.*)$')
+_WEBVIEW_SYSUPDATE_PACKAGE_NOT_INSTALLED_RE = re.compile(
+    r'(\S+)\s+(is NOT installed\.)')
+_WEBVIEW_SYSUPDATE_MIN_VERSION_CODE = re.compile(
+    r'Minimum WebView version code: (\d+)')
+
+_GOOGLE_FEATURES_RE = re.compile(r'^\s*com\.google\.')
 
 PS_COLUMNS = ('name', 'pid', 'ppid')
 ProcessInfo = collections.namedtuple('ProcessInfo', PS_COLUMNS)
@@ -860,19 +876,25 @@ class DeviceUtils(object):
   @decorators.WithTimeoutAndRetriesFromInstance(
       min_default_timeout=INSTALL_DEFAULT_TIMEOUT)
   def Install(self, apk, allow_downgrade=False, reinstall=False,
-              permissions=None, timeout=None, retries=None):
-    """Install an APK.
+              permissions=None, timeout=None, retries=None, modules=None):
+    """Install an APK or app bundle.
 
-    Noop if an identical APK is already installed.
+    Noop if an identical APK is already installed. If installing a bundle, the
+    bundletools helper script (bin/*_bundle) should be used rather than the .aab
+    file.
 
     Args:
-      apk: An ApkHelper instance or string containing the path to the APK.
+      apk: An ApkHelper instance or string containing the path to the APK or
+        bundle.
       allow_downgrade: A boolean indicating if we should allow downgrades.
       reinstall: A boolean indicating if we should keep any existing app data.
+        Ignored if |apk| is a bundle.
       permissions: Set of permissions to set. If not set, finds permissions with
           apk helper. To set no permissions, pass [].
       timeout: timeout in seconds
       retries: number of retries
+      modules: An iterable containing specific bundle modules to install.
+          Error if set and |apk| points to an APK instead of a bundle.
 
     Raises:
       CommandFailedError if the installation fails.
@@ -880,7 +902,8 @@ class DeviceUtils(object):
       DeviceUnreachableError on missing device.
     """
     self._InstallInternal(apk, None, allow_downgrade=allow_downgrade,
-                          reinstall=reinstall, permissions=permissions)
+                          reinstall=reinstall, permissions=permissions,
+                          modules=modules)
 
   @decorators.WithTimeoutAndRetriesFromInstance(
       min_default_timeout=INSTALL_DEFAULT_TIMEOUT)
@@ -916,11 +939,28 @@ class DeviceUtils(object):
 
   def _InstallInternal(self, base_apk, split_apks, allow_downgrade=False,
                        reinstall=False, allow_cached_props=False,
-                       permissions=None):
+                       permissions=None, modules=None):
+    base_apk = apk_helper.ToHelper(base_apk)
+    if base_apk.is_bundle:
+      if split_apks:
+        raise device_errors.CommandFailedError(
+            'Attempted to install a bundle {} while specifying split apks'
+            .format(base_apk))
+      if allow_downgrade:
+        logging.warning('Installation of a bundle requested with '
+                        'allow_downgrade=False. This is not possible with '
+                        'bundletools, no downgrading is possible. This '
+                        'flag will be ignored and installation will proceed.')
+      # |allow_cached_props| is unused and ignored for bundles.
+      self._InstallBundleInternal(base_apk, permissions, modules)
+      return
+
+    if modules:
+      raise device_errors.CommandFailedError(
+          'Attempted to specify modules to install when providing an APK')
+
     if split_apks:
       self._CheckSdkLevel(version_codes.LOLLIPOP)
-
-    base_apk = apk_helper.ToHelper(base_apk)
 
     all_apks = [base_apk.path]
     if split_apks:
@@ -986,6 +1026,20 @@ class DeviceUtils(object):
     if host_checksums is not None:
       self._cache['package_apk_checksums'][package_name] = host_checksums
 
+  def _InstallBundleInternal(self, bundle, permissions, modules):
+    cmd = [bundle.path, 'install', '--device', self.serial]
+    if modules:
+      for m in modules:
+        cmd.extend(['-m', m])
+    status = cmd_helper.RunCmd(cmd)
+    if status != 0:
+      raise device_errors.CommandFailedError('Cound not install {}'.format(
+          bundle.path))
+    if (permissions is None
+        and self.build_version_sdk >= version_codes.MARSHMALLOW):
+      permissions = bundle.GetPermissions()
+    self.GrantPermissions(bundle.GetPackageName(), permissions)
+
   @decorators.WithTimeoutAndRetriesFromInstance()
   def Uninstall(self, package_name, keep_data=False, timeout=None,
                 retries=None):
@@ -1007,15 +1061,11 @@ class DeviceUtils(object):
     installed = self._GetApplicationPathsInternal(package_name)
     if not installed:
       return
-    try:
-      self.adb.Uninstall(package_name, keep_data)
-      self._cache['package_apk_paths'][package_name] = []
-      self._cache['package_apk_checksums'][package_name] = set()
-    except:
-      # Clear cache since we can't be sure of the state.
-      self._cache['package_apk_paths'].pop(package_name, 0)
-      self._cache['package_apk_checksums'].pop(package_name, 0)
-      raise
+    # cached package paths are indeterminate due to system apps taking over
+    # user apps after uninstall, so clear it
+    self._cache['package_apk_paths'].pop(package_name, 0)
+    self._cache['package_apk_checksums'].pop(package_name, 0)
+    self.adb.Uninstall(package_name, keep_data)
 
   def _CheckSdkLevel(self, required_sdk_level):
     """Raises an exception if the device does not have the required SDK level.
@@ -2221,20 +2271,42 @@ class DeviceUtils(object):
     else:
       return False
 
+  def GetLocale(self, cache=False):
+    """Returns the locale setting on the device.
+
+    Args:
+      cache: Whether to use cached properties when available.
+    Returns:
+      A pair (language, country).
+    """
+    locale = self.GetProp('persist.sys.locale', cache=cache)
+    if locale:
+      if '-' not in locale:
+        logging.error('Unparsable locale: %s', locale)
+        return ('', '')  # Behave as if persist.sys.locale is undefined.
+      return tuple(locale.split('-', 1))
+    return (self.GetProp('persist.sys.language', cache=cache),
+            self.GetProp('persist.sys.country', cache=cache))
+
   def GetLanguage(self, cache=False):
     """Returns the language setting on the device.
+
+    DEPRECATED: Prefer GetLocale() instead.
+
     Args:
       cache: Whether to use cached properties when available.
     """
-    return self.GetProp('persist.sys.language', cache=cache)
+    return self.GetLocale(cache=cache)[0]
 
   def GetCountry(self, cache=False):
     """Returns the country setting on the device.
 
+    DEPRECATED: Prefer GetLocale() instead.
+
     Args:
       cache: Whether to use cached properties when available.
     """
-    return self.GetProp('persist.sys.country', cache=cache)
+    return self.GetLocale(cache=cache)[1]
 
   @property
   def screen_density(self):
@@ -2307,7 +2379,11 @@ class DeviceUtils(object):
 
   @property
   def product_cpu_abi(self):
-    """Returns the product cpu abi of the device (e.g. 'armeabi-v7a')."""
+    """Returns the product cpu abi of the device (e.g. 'armeabi-v7a').
+
+    For supported ABIs, the return value will be one of the values defined in
+    devil.android.ndk.abis.
+    """
     return self.GetProp('ro.product.cpu.abi', cache=True)
 
   @property
@@ -2433,7 +2509,8 @@ class DeviceUtils(object):
       retries: number of retries
 
     Returns:
-      The device's main ABI name.
+      The device's main ABI name. For supported ABIs, the return value will be
+      one of the values defined in devil.android.ndk.abis.
 
     Raises:
       CommandTimeoutError on timeout.
@@ -2630,6 +2707,66 @@ class DeviceUtils(object):
         check_return=True)
 
   @decorators.WithTimeoutAndRetriesFromInstance()
+  def GetWebViewUpdateServiceDump(self, timeout=None, retries=None):
+    """Get the WebView update command sysdump on the device.
+
+    Returns:
+      A dictionary with these possible entries:
+        FallbackLogicEnabled: True|False
+        CurrentWebViewPackage: "package name"
+        MinimumWebViewVersionCode: int
+        WebViewPackages: Dict of installed WebView providers, mapping "package
+            name" to "reason it's valid/invalid."
+
+    It may return an empty dictionary if device does not
+    support the "dumpsys webviewupdate" command.
+
+    Raises:
+      CommandFailedError on failure.
+      CommandTimeoutError on timeout.
+      DeviceUnreachableError on missing device.
+    """
+    result = {}
+
+    # Command was implemented starting in Oreo
+    if self.build_version_sdk < version_codes.OREO:
+      return result
+
+    output = self.RunShellCommand(
+        ['dumpsys', 'webviewupdate'], check_return=True)
+    webview_packages = {}
+    for line in output:
+      match = re.search(_WEBVIEW_SYSUPDATE_CURRENT_PKG_RE, line)
+      if match:
+        result['CurrentWebViewPackage'] = match.group(1)
+      match = re.search(_WEBVIEW_SYSUPDATE_FALLBACK_LOGIC_RE, line)
+      if match:
+        result['FallbackLogicEnabled'] = \
+            True if match.group(1) == 'true' else False
+      match = re.search(_WEBVIEW_SYSUPDATE_PACKAGE_INSTALLED_RE, line)
+      if match:
+        package_name = match.group(1)
+        reason = match.group(2)
+        webview_packages[package_name] = reason
+      match = re.search(_WEBVIEW_SYSUPDATE_PACKAGE_NOT_INSTALLED_RE, line)
+      if match:
+        package_name = match.group(1)
+        reason = match.group(2)
+        webview_packages[package_name] = reason
+      match = re.search(_WEBVIEW_SYSUPDATE_MIN_VERSION_CODE, line)
+      if match:
+        result['MinimumWebViewVersionCode'] = int(match.group(1))
+    if webview_packages:
+      result['WebViewPackages'] = webview_packages
+
+    missing_fields = set(['CurrentWebViewPackage', 'FallbackLogicEnabled']) - \
+                     set(result.keys())
+    if len(missing_fields) > 0:
+      raise device_errors.CommandFailedError(
+          '%s not found in dumpsys webviewupdate' % str(list(missing_fields)))
+    return result
+
+  @decorators.WithTimeoutAndRetriesFromInstance()
   def SetWebViewImplementation(self, package_name, timeout=None, retries=None):
     """Select the WebView implementation to the specified package.
 
@@ -2644,14 +2781,76 @@ class DeviceUtils(object):
       CommandTimeoutError on timeout.
       DeviceUnreachableError on missing device.
     """
+    installed = self.GetApplicationPaths(package_name)
+    if not installed:
+      raise device_errors.CommandFailedError(
+          '%s is not installed' % package_name, str(self))
     output = self.RunShellCommand(
         ['cmd', 'webviewupdate', 'set-webview-implementation', package_name],
-        single_line=True, check_return=True)
+        single_line=True,
+        check_return=False)
     if output == 'Success':
       logging.info('WebView provider set to: %s', package_name)
     else:
+      dumpsys_output = self.GetWebViewUpdateServiceDump()
+      webview_packages = dumpsys_output.get('WebViewPackages')
+      if webview_packages:
+        reason = webview_packages.get(package_name)
+        if not reason:
+          all_provider_package_names = webview_packages.keys()
+          raise device_errors.CommandFailedError(
+              '%s is not in the system WebView provider list. Must choose one '
+              'of %r.' % (package_name, all_provider_package_names), str(self))
+        if re.search(r'is\s+NOT\s+installed/enabled for all users', reason):
+          raise device_errors.CommandFailedError(
+              '%s is disabled, make sure to disable WebView fallback logic' %
+              package_name, str(self))
+        if re.search(r'No WebView-library manifest flag', reason):
+          raise device_errors.CommandFailedError(
+              '%s does not declare a WebView native library, so it cannot '
+              'be a WebView provider' % package_name, str(self))
+        if re.search(r'SDK version too low', reason):
+          raise device_errors.CommandFailedError(
+              '%s needs a higher targetSdkVersion (must be >= %d)' %
+              (package_name, self.build_version_sdk), str(self))
+        if re.search(r'Version code too low', reason):
+          raise device_errors.CommandFailedError(
+              '%s needs a higher versionCode (must be >= %d)' %
+              (package_name, dumpsys_output.get('MinimumWebViewVersionCode')),
+              str(self))
       raise device_errors.CommandFailedError(
           'Error setting WebView provider: %s' % output, str(self))
+
+  @decorators.WithTimeoutAndRetriesFromInstance()
+  def SetWebViewFallbackLogic(self, enabled, timeout=None, retries=None):
+    """Select the WebView implementation to the specified package.
+
+    Args:
+      enabled: bool - True for enabled, False for disabled
+      timeout: timeout in seconds
+      retries: number of retries
+
+    Raises:
+      CommandFailedError on failure.
+      CommandTimeoutError on timeout.
+      DeviceUnreachableError on missing device.
+    """
+
+    # command is not available pre-monochrome, treat as no-op
+    if self.build_version_sdk < version_codes.NOUGAT:
+      return
+
+    # redundant-packages is the opposite of fallback logic
+    enable_string = 'disable' if enabled else 'enable'
+    output = self.RunShellCommand(
+        ['cmd', 'webviewupdate', '%s-redundant-packages' % enable_string],
+        single_line=True, check_return=True)
+    if output == 'Success':
+      logging.info('WebView Fallback Logic is %s',
+                   'enabled' if enabled else 'disabled')
+    else:
+      raise device_errors.CommandFailedError(
+          'Error setting WebView Fallback Logic: %s' % output, str(self))
 
   @decorators.WithTimeoutAndRetriesFromInstance()
   def TakeScreenshot(self, host_path=None, timeout=None, retries=None):
@@ -2860,7 +3059,7 @@ class DeviceUtils(object):
           the last attempt if there are no available devices. It will only reset
           those that appear to be android devices.
       abis: A list of ABIs for which the device needs to support at least one of
-          (optional).
+          (optional). See devil.android.ndk.abis for valid values.
       A device serial, or a list of device serials (optional).
 
     Returns:

@@ -4,98 +4,156 @@
 
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 
-#include "third_party/blink/public/platform/platform.h"
+#include <vector>
 #include "third_party/blink/public/platform/web_url_loader_client.h"
-#include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_network.h"
+#include "third_party/blink/renderer/platform/loader/static_data_navigation_body_loader.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
 
-SimRequest::SimRequest(String url, String mime_type)
+SimRequestBase::SimRequestBase(String url,
+                               String mime_type,
+                               bool start_immediately,
+                               Params params)
     : url_(url),
+      redirect_url_(params.redirect_url),
+      mime_type_(mime_type),
+      start_immediately_(start_immediately),
+      started_(false),
       client_(nullptr),
       total_encoded_data_length_(0),
-      is_ready_(false) {
-  KURL full_url(url);
-  WebURLResponse response(full_url);
-  response.SetMIMEType(mime_type);
-  response.SetHTTPStatusCode(200);
-  Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(full_url,
-                                                              response, "");
+      response_http_headers_(params.response_http_headers) {
   SimNetwork::Current().AddRequest(*this);
 }
 
-SimRequest::~SimRequest() {
-  DCHECK(!is_ready_);
+SimRequestBase::~SimRequestBase() {
+  DCHECK(!client_);
+  DCHECK(!navigation_body_loader_);
 }
 
-void SimRequest::DidReceiveResponse(WebURLLoaderClient* client,
-                                    const WebURLResponse& response) {
+void SimRequestBase::DidReceiveResponse(WebURLLoaderClient* client,
+                                        const WebURLResponse& response) {
+  DCHECK(!navigation_body_loader_);
   client_ = client;
   response_ = response;
-  is_ready_ = true;
+  started_ = false;
+  if (start_immediately_)
+    StartInternal();
 }
 
-void SimRequest::DidFail(const WebURLError& error) {
+void SimRequestBase::DidFail(const WebURLError& error) {
   error_ = error;
 }
 
-void SimRequest::Start() {
-  SimNetwork::Current().ServePendingRequests();
-  DCHECK(is_ready_);
+void SimRequestBase::UsedForNavigation(
+    StaticDataNavigationBodyLoader* navigation_body_loader) {
+  DCHECK(start_immediately_);
+  DCHECK(!client_);
+  DCHECK(!started_);
+  navigation_body_loader_ = navigation_body_loader;
+  started_ = true;
+}
+
+void SimRequestBase::StartInternal() {
+  DCHECK(!started_);
+  DCHECK(redirect_url_.IsEmpty());  // client_ is nullptr on redirects
+  started_ = true;
   client_->DidReceiveResponse(response_);
 }
 
-void SimRequest::Write(const String& data) {
-  DCHECK(is_ready_);
+void SimRequestBase::Write(const String& data) {
+  if (!started_)
+    ServePending();
+  DCHECK(started_);
   DCHECK(!error_);
   total_encoded_data_length_ += data.length();
-  client_->DidReceiveData(data.Utf8().data(), data.length());
+  if (navigation_body_loader_)
+    navigation_body_loader_->Write(data.Utf8().data(), data.length());
+  else
+    client_->DidReceiveData(data.Utf8().data(), data.length());
 }
 
-void SimRequest::Write(const Vector<char>& data) {
-  DCHECK(is_ready_);
+void SimRequestBase::Write(const Vector<char>& data) {
+  if (!started_)
+    ServePending();
+  DCHECK(started_);
   DCHECK(!error_);
   total_encoded_data_length_ += data.size();
-  client_->DidReceiveData(data.data(), data.size());
+  if (navigation_body_loader_)
+    navigation_body_loader_->Write(data.data(), data.size());
+  else
+    client_->DidReceiveData(data.data(), data.size());
 }
 
-void SimRequest::Finish() {
-  DCHECK(is_ready_);
+void SimRequestBase::Finish() {
+  if (!started_)
+    ServePending();
+  DCHECK(started_);
   if (error_) {
+    DCHECK(!navigation_body_loader_);
     client_->DidFail(*error_, total_encoded_data_length_,
                      total_encoded_data_length_, total_encoded_data_length_);
   } else {
-    // TODO(esprehn): Is claiming a request time of 0 okay for tests?
-    client_->DidFinishLoading(
-        TimeTicks(), total_encoded_data_length_, total_encoded_data_length_,
-        total_encoded_data_length_, false,
-        std::vector<network::cors::PreflightTimingInfo>());
+    if (navigation_body_loader_) {
+      navigation_body_loader_->Finish();
+    } else {
+      // TODO(esprehn): Is claiming a request time of 0 okay for tests?
+      client_->DidFinishLoading(
+          TimeTicks(), total_encoded_data_length_, total_encoded_data_length_,
+          total_encoded_data_length_, false,
+          std::vector<network::cors::PreflightTimingInfo>());
+    }
   }
   Reset();
 }
 
-void SimRequest::Complete(const String& data) {
-  Start();
+void SimRequestBase::Complete(const String& data) {
+  if (!started_)
+    ServePending();
+  if (!started_)
+    StartInternal();
   if (!data.IsEmpty())
     Write(data);
   Finish();
 }
 
-void SimRequest::Complete(const Vector<char>& data) {
-  Start();
+void SimRequestBase::Complete(const Vector<char>& data) {
+  if (!started_)
+    ServePending();
+  if (!started_)
+    StartInternal();
   if (!data.IsEmpty())
     Write(data);
   Finish();
 }
 
-void SimRequest::Reset() {
-  is_ready_ = false;
+void SimRequestBase::Reset() {
+  started_ = false;
   client_ = nullptr;
-  Platform::Current()->GetURLLoaderMockFactory()->UnregisterURL(KURL(url_));
-
+  navigation_body_loader_ = nullptr;
   SimNetwork::Current().RemoveRequest(*this);
+}
+
+void SimRequestBase::ServePending() {
+  SimNetwork::Current().ServePendingRequests();
+}
+
+SimRequest::SimRequest(String url, String mime_type, Params params)
+    : SimRequestBase(url, mime_type, true /* start_immediately */, params) {}
+
+SimRequest::~SimRequest() = default;
+
+SimSubresourceRequest::SimSubresourceRequest(String url,
+                                             String mime_type,
+                                             Params params)
+    : SimRequestBase(url, mime_type, false /* start_immediately */, params) {}
+
+SimSubresourceRequest::~SimSubresourceRequest() = default;
+
+void SimSubresourceRequest::Start() {
+  ServePending();
+  StartInternal();
 }
 
 }  // namespace blink

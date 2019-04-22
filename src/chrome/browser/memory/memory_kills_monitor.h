@@ -16,7 +16,7 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/simple_thread.h"
 #include "base/time/time.h"
-#include "chromeos/login/login_state.h"
+#include "chromeos/login/login_state/login_state.h"
 
 namespace memory {
 

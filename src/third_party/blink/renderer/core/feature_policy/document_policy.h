@@ -7,14 +7,14 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/feature_policy/policy.h"
+#include "third_party/blink/renderer/core/feature_policy/dom_feature_policy.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
 
 namespace blink {
 
 // DocumentPolicy inherits Policy. It represents the feature policy
 // introspection of a document.
-class CORE_EXPORT DocumentPolicy final : public Policy {
+class CORE_EXPORT DocumentPolicy final : public DOMFeaturePolicy {
  public:
   // Create a new DocumentPolicy, which is associated with |document|.
   explicit DocumentPolicy(Document* document) : document_(document) {}

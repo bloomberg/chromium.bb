@@ -4,7 +4,7 @@
 
 #include "chrome/browser/offline_pages/prefetch/thumbnail_fetcher_impl.h"
 
-#include "base/metrics/histogram_macros.h"
+#include "base/bind.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/offline_pages/core/client_id.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
@@ -12,28 +12,15 @@
 namespace offline_pages {
 namespace {
 
-using FetchCompleteStatus = ThumbnailFetcherImpl::FetchCompleteStatus;
-
 void FetchCompleteAndReportUMA(
     ThumbnailFetcher::ImageDataFetchedCallback callback,
-    bool is_first_attempt,
     const std::string& image_data) {
-  auto status = is_first_attempt ? FetchCompleteStatus::kFirstAttemptSuccess
-                                 : FetchCompleteStatus::kSecondAttemptSuccess;
-  if (image_data.empty()) {
-    status = is_first_attempt ? FetchCompleteStatus::kFirstAttemptEmptyImage
-                              : FetchCompleteStatus::kSecondAttemptEmptyImage;
-    std::move(callback).Run(std::string());
-  } else if (image_data.size() > ThumbnailFetcherImpl::kMaxThumbnailSize) {
-    status = is_first_attempt ? FetchCompleteStatus::kFirstAttemptTooLarge
-                              : FetchCompleteStatus::kSecondAttemptTooLarge;
+  if (image_data.empty() ||
+      image_data.size() > ThumbnailFetcherImpl::kMaxThumbnailSize) {
     std::move(callback).Run(std::string());
   } else {
     std::move(callback).Run(image_data);
   }
-
-  UMA_HISTOGRAM_ENUMERATION("OfflinePages.Prefetching.FetchThumbnail.Complete2",
-                            status);
 }
 
 }  // namespace
@@ -49,19 +36,16 @@ void ThumbnailFetcherImpl::SetContentSuggestionsService(
 
 void ThumbnailFetcherImpl::FetchSuggestionImageData(
     const ClientId& client_id,
-    bool is_first_attempt,
     ImageDataFetchedCallback callback) {
   DCHECK(client_id.name_space == kSuggestedArticlesNamespace);
   DCHECK(content_suggestions_);
 
-  UMA_HISTOGRAM_BOOLEAN("OfflinePages.Prefetching.FetchThumbnail.Start", true);
   content_suggestions_->FetchSuggestionImageData(
       ntp_snippets::ContentSuggestion::ID(
           ntp_snippets::Category::FromKnownCategory(
               ntp_snippets::KnownCategories::ARTICLES),
           client_id.id),
-      base::BindOnce(FetchCompleteAndReportUMA, std::move(callback),
-                     is_first_attempt));
+      base::BindOnce(FetchCompleteAndReportUMA, std::move(callback)));
 }
 
 }  // namespace offline_pages

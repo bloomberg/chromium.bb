@@ -19,7 +19,9 @@
 #include "base/command_line.h"
 #include "mojo/core/embedder/embedder.h"                  // nogncheck
 #include "services/service_manager/public/cpp/service.h"  // nogncheck
+#include "services/service_manager/public/cpp/service_binding.h"  // nogncheck
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"  // nogncheck
+#include "services/ws/public/mojom/constants.mojom.h"  // nogncheck
 #include "ui/ozone/public/ozone_platform.h"
 #endif
 
@@ -27,7 +29,8 @@ namespace {
 #if defined(USE_OZONE)
 class OzoneDrmTestService : public service_manager::Service {
  public:
-  OzoneDrmTestService() = default;
+  explicit OzoneDrmTestService(service_manager::mojom::ServiceRequest request)
+      : service_binding_(this, std::move(request)) {}
   ~OzoneDrmTestService() override = default;
 
   service_manager::BinderRegistry* registry() { return &registry_; }
@@ -39,8 +42,8 @@ class OzoneDrmTestService : public service_manager::Service {
   }
 
  private:
+  service_manager::ServiceBinding service_binding_;
   service_manager::BinderRegistry registry_;
-  std::unique_ptr<service_manager::Connector> connector_;
 
   DISALLOW_COPY_AND_ASSIGN(OzoneDrmTestService);
 };
@@ -66,14 +69,10 @@ class GlTestSuite : public base::TestSuite {
             base::test::ScopedTaskEnvironment::MainThreadType::UI);
 
 #if defined(USE_OZONE)
-    auto service_ptr = std::make_unique<OzoneDrmTestService>();
-    // |service| is valid as long as |connector_factory_| is valid.
-    OzoneDrmTestService* service = service_ptr.get();
-
-    connector_factory_ =
-        service_manager::TestConnectorFactory::CreateForUniqueService(
-            std::move(service_ptr));
-    connector_ = connector_factory_->CreateConnector();
+    // OzonePlatform DRM implementation may attempt to connect to the ws service
+    // to acquire interfaces.
+    service_ = std::make_unique<OzoneDrmTestService>(
+        connector_factory_.RegisterInstance(ws::mojom::kServiceName));
 
     // Make Ozone run in single-process mode, where it doesn't expect a GPU
     // process and it spawns and starts its own DRM thread. Note that this mode
@@ -81,12 +80,12 @@ class GlTestSuite : public base::TestSuite {
     // and GPU components.
     ui::OzonePlatform::InitParams params;
     params.single_process = true;
-    params.connector = connector_.get();
+    params.connector = connector_factory_.GetDefaultConnector();
 
     // This initialization must be done after ScopedTaskEnvironment has
     // initialized the UI thread.
     ui::OzonePlatform::InitializeForUI(params);
-    ui::OzonePlatform::GetInstance()->AddInterfaces(service->registry());
+    ui::OzonePlatform::GetInstance()->AddInterfaces(service_->registry());
 #endif
   }
 
@@ -98,8 +97,8 @@ class GlTestSuite : public base::TestSuite {
   std::unique_ptr<base::test::ScopedTaskEnvironment> scoped_task_environment_;
 
 #if defined(USE_OZONE)
-  std::unique_ptr<service_manager::TestConnectorFactory> connector_factory_;
-  std::unique_ptr<service_manager::Connector> connector_;
+  service_manager::TestConnectorFactory connector_factory_;
+  std::unique_ptr<OzoneDrmTestService> service_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(GlTestSuite);

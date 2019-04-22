@@ -12,9 +12,9 @@
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_task_environment.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/shill_profile_client.h"
-#include "chromeos/dbus/shill_service_client.h"
+#include "chromeos/dbus/shill/shill_clients.h"
+#include "chromeos/dbus/shill/shill_profile_client.h"
+#include "chromeos/dbus/shill/shill_service_client.h"
 #include "chromeos/network/network_cert_loader.h"
 #include "chromeos/network/network_state_handler.h"
 #include "crypto/scoped_nss_types.h"
@@ -50,21 +50,24 @@ class NetworkCertMigratorTest : public testing::Test {
   void SetUp() override {
     ASSERT_TRUE(test_system_nssdb_.is_open());
     ASSERT_TRUE(test_user_nssdb_.is_open());
-    // Use the same DB for public and private slot.
-    test_system_nsscertdb_.reset(new net::NSSCertDatabaseChromeOS(
-        crypto::ScopedPK11Slot(PK11_ReferenceSlot(test_system_nssdb_.slot())),
-        crypto::ScopedPK11Slot(PK11_ReferenceSlot(test_system_nssdb_.slot()))));
-    test_user_nsscertdb_.reset(new net::NSSCertDatabaseChromeOS(
+    // Use the same slot as public and private slot for the user's
+    // NSSCertDatabse for testing.
+    test_user_nsscertdb_ = std::make_unique<net::NSSCertDatabaseChromeOS>(
         crypto::ScopedPK11Slot(PK11_ReferenceSlot(test_user_nssdb_.slot())),
-        crypto::ScopedPK11Slot(PK11_ReferenceSlot(test_user_nssdb_.slot()))));
+        crypto::ScopedPK11Slot(PK11_ReferenceSlot(test_user_nssdb_.slot())));
+    // Create a NSSCertDatabase for the system slot. While NetworkCertLoader
+    // does not care about the public slot in this database, NSSCertDatabase
+    // requires a public slot. Pass the system slot there for testing.
+    test_system_nsscertdb_ = std::make_unique<net::NSSCertDatabaseChromeOS>(
+        crypto::ScopedPK11Slot(PK11_ReferenceSlot(test_system_nssdb_.slot())),
+        crypto::ScopedPK11Slot() /* private_slot */);
+    test_system_nsscertdb_->SetSystemSlot(
+        crypto::ScopedPK11Slot(PK11_ReferenceSlot(test_system_nssdb_.slot())));
 
-    DBusThreadManager::Initialize();
-    service_test_ =
-        DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface();
-    DBusThreadManager::Get()
-        ->GetShillProfileClient()
-        ->GetTestInterface()
-        ->AddProfile(kUserShillProfile, "" /* userhash */);
+    shill_clients::InitializeFakes();
+    service_test_ = ShillServiceClient::Get()->GetTestInterface();
+    ShillProfileClient::Get()->GetTestInterface()->AddProfile(
+        kUserShillProfile, "" /* userhash */);
     scoped_task_environment_.RunUntilIdle();
     service_test_->ClearServices();
     scoped_task_environment_.RunUntilIdle();
@@ -77,7 +80,7 @@ class NetworkCertMigratorTest : public testing::Test {
     network_cert_migrator_.reset();
     network_state_handler_.reset();
     NetworkCertLoader::Shutdown();
-    DBusThreadManager::Shutdown();
+    shill_clients::Shutdown();
   }
 
  protected:
@@ -94,7 +97,7 @@ class NetworkCertMigratorTest : public testing::Test {
         test_client_cert_.get(), &slot_id);
     ASSERT_FALSE(test_client_cert_pkcs11_id_.empty());
     ASSERT_NE(-1, slot_id);
-    test_client_cert_slot_id_ = base::IntToString(slot_id);
+    test_client_cert_slot_id_ = base::NumberToString(slot_id);
   }
 
   void SetupNetworkHandlers() {

@@ -4,6 +4,7 @@
 
 #include "content/browser/appcache/appcache_url_loader_job.h"
 
+#include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
 #include "content/browser/appcache/appcache_histograms.h"
 #include "content/browser/appcache/appcache_request_handler.h"
@@ -11,8 +12,10 @@
 #include "content/browser/appcache/appcache_url_loader_request.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/public/common/resource_type.h"
+#include "net/base/ip_endpoint.h"
 #include "net/http/http_status_code.h"
 #include "services/network/public/cpp/net_adapters.h"
+#include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 
 namespace content {
 
@@ -65,7 +68,8 @@ void AppCacheURLLoaderJob::DeliverNetworkResponse() {
 
   // We signal our caller with an empy callback that it needs to perform
   // the network load.
-  DCHECK(loader_callback_ && !binding_.is_bound());
+  DCHECK(loader_callback_);
+  DCHECK(!binding_.is_bound());
   std::move(loader_callback_).Run({});
   DeleteSoon();
 }
@@ -106,9 +110,8 @@ base::WeakPtr<AppCacheURLLoaderJob> AppCacheURLLoaderJob::GetDerivedWeakPtr() {
 }
 
 void AppCacheURLLoaderJob::FollowRedirect(
-    const base::Optional<std::vector<std::string>>&
-        to_be_removed_request_headers,
-    const base::Optional<net::HttpRequestHeaders>& modified_request_headers,
+    const std::vector<std::string>& modified_headers,
+    const net::HttpRequestHeaders& removed_headers,
     const base::Optional<GURL>& new_url) {
   NOTREACHED() << "appcache never produces redirects";
 }
@@ -150,7 +153,7 @@ AppCacheURLLoaderJob::AppCacheURLLoaderJob(
     NavigationLoaderInterceptor::LoaderCallback loader_callback)
     : storage_(storage->GetWeakPtr()),
       start_time_tick_(base::TimeTicks::Now()),
-      cache_id_(kAppCacheNoCacheId),
+      cache_id_(blink::mojom::kAppCacheNoCacheId),
       is_fallback_(false),
       binding_(this),
       writable_handle_watcher_(FROM_HERE,
@@ -291,7 +294,7 @@ void AppCacheURLLoaderJob::SendResponseInfo() {
       is_range_request() ? range_response_info_->headers->GetContentLength()
                          : info_->response_data_size();
   response_head.connection_info = http_info.connection_info;
-  response_head.socket_address = http_info.socket_address;
+  response_head.remote_endpoint = http_info.remote_endpoint;
   response_head.was_fetched_via_spdy = http_info.was_fetched_via_spdy;
   response_head.was_alpn_negotiated = http_info.was_alpn_negotiated;
   response_head.alpn_negotiated_protocol = http_info.alpn_negotiated_protocol;

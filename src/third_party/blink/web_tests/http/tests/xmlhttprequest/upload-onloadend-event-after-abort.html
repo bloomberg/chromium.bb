@@ -21,7 +21,7 @@ function log(message)
 
 var xhr = new XMLHttpRequest();
 var results = "";
-var expected = " progress progress abort loadend";
+var expected = " progress abort loadend";
 
 function logProgressEvent(e) {
     results += " " + e.type;
@@ -29,7 +29,7 @@ function logProgressEvent(e) {
 
 function logUnexpectedProgressEvent(e) {
     results += " [unexpected ProgressEvent: " + e.type + "]";
-    completeTest();   
+    completeTest();
 }
 
 function completeTest()

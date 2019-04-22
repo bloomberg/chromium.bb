@@ -16,7 +16,7 @@ class BluetoothCharacteristicProperties final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static BluetoothCharacteristicProperties* Create(uint32_t properties);
+  explicit BluetoothCharacteristicProperties(uint32_t properties);
 
   // IDL exposed interface:
   bool broadcast() const;
@@ -30,8 +30,6 @@ class BluetoothCharacteristicProperties final : public ScriptWrappable {
   bool writableAuxiliaries() const;
 
  private:
-  explicit BluetoothCharacteristicProperties(uint32_t properties);
-
   enum Property {
     kNone = 0,
     kBroadcast = 1 << 0,
@@ -51,4 +49,4 @@ class BluetoothCharacteristicProperties final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // GamepadButton_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_BLUETOOTH_BLUETOOTH_CHARACTERISTIC_PROPERTIES_H_

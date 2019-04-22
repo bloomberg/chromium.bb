@@ -11,11 +11,12 @@
 
 #include "SkRect.h"
 #include "SkRectPriv.h"
-#include "SkSGColor.h"
 #include "SkSGDraw.h"
 #include "SkSGGroup.h"
 #include "SkSGInvalidationController.h"
+#include "SkSGPaint.h"
 #include "SkSGRect.h"
+#include "SkSGRenderEffect.h"
 #include "SkSGTransform.h"
 #include "SkTo.h"
 
@@ -55,16 +56,35 @@ static void check_inval(skiatest::Reporter* reporter, const sk_sp<sksg::Node>& r
     }
 }
 
+struct HitTest {
+    const SkPoint           pt;
+    sk_sp<sksg::RenderNode> node;
+};
+
+static void check_hittest(skiatest::Reporter* reporter, const sk_sp<sksg::RenderNode>& root,
+                          const std::vector<HitTest>& tests) {
+    for (const auto& tst : tests) {
+        const auto* node = root->nodeAt(tst.pt);
+        if (node != tst.node.get()) {
+            SkDebugf("*** nodeAt(%f, %f) - expected %p, got %p\n",
+                     tst.pt.x(), tst.pt.y(), tst.node.get(), node);
+        }
+        REPORTER_ASSERT(reporter, tst.node.get() == node);
+    }
+}
+
 static void inval_test1(skiatest::Reporter* reporter) {
     auto color  = sksg::Color::Make(0xff000000);
     auto r1     = sksg::Rect::Make(SkRect::MakeWH(100, 100)),
          r2     = sksg::Rect::Make(SkRect::MakeWH(100, 100));
     auto grp    = sksg::Group::Make();
-    auto matrix = sksg::Matrix::Make(SkMatrix::I());
-    auto root   = sksg::Transform::Make(grp, matrix);
+    auto matrix = sksg::Matrix<SkMatrix>::Make(SkMatrix::I());
+    auto root   = sksg::TransformEffect::Make(grp, matrix);
+    auto d1     = sksg::Draw::Make(r1, color),
+         d2     = sksg::Draw::Make(r2, color);
 
-    grp->addChild(sksg::Draw::Make(r1, color));
-    grp->addChild(sksg::Draw::Make(r2, color));
+    grp->addChild(d1);
+    grp->addChild(d2);
 
     {
         // Initial revalidation.
@@ -72,6 +92,15 @@ static void inval_test1(skiatest::Reporter* reporter) {
                     SkRect::MakeWH(100, 100),
                     SkRectPriv::MakeLargeS32(),
                     nullptr);
+
+        check_hittest(reporter, root, {
+                          {{  -1,   0 }, nullptr },
+                          {{   0,  -1 }, nullptr },
+                          {{ 100,   0 }, nullptr },
+                          {{   0, 100 }, nullptr },
+                          {{   0,   0 },      d2 },
+                          {{  99,  99 },      d2 },
+                      });
     }
 
     {
@@ -82,6 +111,22 @@ static void inval_test1(skiatest::Reporter* reporter) {
                     SkRect::MakeWH(300, 200),
                     SkRect::MakeWH(300, 200),
                     &damage);
+
+        check_hittest(reporter, root, {
+                          {{  -1,   0 }, nullptr },
+                          {{   0,  -1 }, nullptr },
+                          {{ 100,   0 }, nullptr },
+                          {{   0, 100 }, nullptr },
+                          {{   0,   0 },      d1 },
+                          {{  99,  99 },      d1 },
+
+                          {{ 199, 100 }, nullptr },
+                          {{ 200,  99 }, nullptr },
+                          {{ 300, 100 }, nullptr },
+                          {{ 200, 200 }, nullptr },
+                          {{ 200, 100 },      d2 },
+                          {{ 299, 199 },      d2 },
+                      });
     }
 
     {
@@ -102,6 +147,22 @@ static void inval_test1(skiatest::Reporter* reporter) {
                     SkRect::MakeWH(300, 200),
                     SkRect::MakeWH(100, 100),
                     &damage);
+
+        check_hittest(reporter, root, {
+                          {{  -1,   0 }, nullptr },
+                          {{   0,  -1 }, nullptr },
+                          {{  50,   0 }, nullptr },
+                          {{   0, 100 }, nullptr },
+                          {{   0,   0 },      d1 },
+                          {{  49,  99 },      d1 },
+
+                          {{ 199, 100 }, nullptr },
+                          {{ 200,  99 }, nullptr },
+                          {{ 300, 100 }, nullptr },
+                          {{ 200, 200 }, nullptr },
+                          {{ 200, 100 },      d2 },
+                          {{ 299, 199 },      d2 },
+                      });
     }
 
     {
@@ -112,6 +173,22 @@ static void inval_test1(skiatest::Reporter* reporter) {
                     SkRect::MakeWH(600, 400),
                     SkRect::MakeWH(600, 400),
                     &damage);
+
+        check_hittest(reporter, root, {
+                          {{  -1,   0 }, nullptr },
+                          {{   0,  -1 }, nullptr },
+                          {{  25,   0 }, nullptr },
+                          {{   0,  50 }, nullptr },
+                          {{   0,   0 },      d1 },
+                          {{  24,  49 },      d1 },
+
+                          {{  99,  50 }, nullptr },
+                          {{ 100,  49 }, nullptr },
+                          {{ 150,  50 }, nullptr },
+                          {{ 100, 100 }, nullptr },
+                          {{ 100,  50 },      d2 },
+                          {{ 149,  99 },      d2 },
+                      });
     }
 
     {
@@ -122,16 +199,33 @@ static void inval_test1(skiatest::Reporter* reporter) {
                     SkRect::MakeWH(500, 400),
                     SkRect::MakeLTRB(400, 200, 600, 400),
                     &damage);
+
+        check_hittest(reporter, root, {
+                          {{  -1,   0 }, nullptr },
+                          {{   0,  -1 }, nullptr },
+                          {{  25,   0 }, nullptr },
+                          {{   0,  50 }, nullptr },
+                          {{   0,   0 },      d1 },
+                          {{  24,  49 },      d1 },
+
+                          {{  99,  50 }, nullptr },
+                          {{ 100,  49 }, nullptr },
+                          {{ 125,  50 }, nullptr },
+                          {{ 100, 100 }, nullptr },
+                          {{ 100,  50 },      d2 },
+                          {{ 124,  99 },      d2 },
+                      });
     }
 }
 
 static void inval_test2(skiatest::Reporter* reporter) {
     auto color = sksg::Color::Make(0xff000000);
     auto rect  = sksg::Rect::Make(SkRect::MakeWH(100, 100));
-    auto m1    = sksg::Matrix::Make(SkMatrix::I()),
-         m2    = sksg::Matrix::Make(SkMatrix::I(), m1);
-    auto t1    = sksg::Transform::Make(sksg::Draw::Make(rect, color), m2),
-         t2    = sksg::Transform::Make(sksg::Draw::Make(rect, color), m1);
+    auto m1    = sksg::Matrix<SkMatrix>::Make(SkMatrix::I()),
+         m2    = sksg::Matrix<SkMatrix>::Make(SkMatrix::I());
+    auto t1    = sksg::TransformEffect::Make(sksg::Draw::Make(rect, color),
+                                             sksg::Transform::MakeConcat(m1, m2)),
+         t2    = sksg::TransformEffect::Make(sksg::Draw::Make(rect, color), m1);
     auto root  = sksg::Group::Make();
     root->addChild(t1);
     root->addChild(t2);
@@ -191,6 +285,49 @@ static void inval_test2(skiatest::Reporter* reporter) {
     }
 }
 
+static void inval_test3(skiatest::Reporter* reporter) {
+    auto color1 = sksg::Color::Make(0xff000000),
+         color2 = sksg::Color::Make(0xff000000);
+    auto group  = sksg::Group::Make();
+
+    group->addChild(sksg::Draw::Make(sksg::Rect::Make(SkRect::MakeWH(100, 100)),
+                                     color1));
+    group->addChild(sksg::Draw::Make(sksg::Rect::Make(SkRect::MakeXYWH(200, 0, 100, 100)),
+                                     color2));
+    auto filter = sksg::DropShadowImageFilter::Make();
+    filter->setOffset({50, 75});
+    auto root = sksg::ImageFilterEffect::Make(group, filter);
+
+    {
+        // Initial revalidation.
+        check_inval(reporter, root,
+                    SkRect::MakeXYWH(0, 0, 350, 175),
+                    SkRectPriv::MakeLargeS32(),
+                    nullptr);
+    }
+
+    {
+        // Shadow-only.
+        filter->setMode(sksg::DropShadowImageFilter::Mode::kShadowOnly);
+        std::vector<SkRect> damage = { {0, 0, 350, 175}, { 50, 75, 350, 175} };
+        check_inval(reporter, root,
+                    SkRect::MakeLTRB(50, 75, 350, 175),
+                    SkRect::MakeLTRB(0, 0, 350, 175),
+                    &damage);
+    }
+
+    {
+        // Content change -> single/full filter bounds inval.
+        color1->setColor(0xffff0000);
+        std::vector<SkRect> damage = { { 50, 75, 350, 175} };
+        check_inval(reporter, root,
+                    SkRect::MakeLTRB(50, 75, 350, 175),
+                    SkRect::MakeLTRB(50, 75, 350, 175),
+                    &damage);
+    }
+
+}
+
 static void inval_group_remove(skiatest::Reporter* reporter) {
     auto draw = sksg::Draw::Make(sksg::Rect::Make(SkRect::MakeWH(100, 100)),
                                  sksg::Color::Make(SK_ColorBLACK));
@@ -205,6 +342,7 @@ static void inval_group_remove(skiatest::Reporter* reporter) {
 DEF_TEST(SGInvalidation, reporter) {
     inval_test1(reporter);
     inval_test2(reporter);
+    inval_test3(reporter);
     inval_group_remove(reporter);
 }
 

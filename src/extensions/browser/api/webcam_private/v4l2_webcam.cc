@@ -12,8 +12,8 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 
-#include "base/macros.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/stl_util.h"
 
 #define V4L2_CID_PAN_SPEED (V4L2_CID_CAMERA_CLASS_BASE+32)
 #define V4L2_CID_TILT_SPEED (V4L2_CID_CAMERA_CLASS_BASE+33)
@@ -44,7 +44,7 @@ const uvc_xu_control_mapping kLogitechCmdMapping = {
     V4L2_CTRL_TYPE_MENU,
     UVC_CTRL_DATA_TYPE_ENUM,
     const_cast<uvc_menu_info*>(&kLogitechCmdMenu[0]),
-    arraysize(kLogitechCmdMenu),
+    base::size(kLogitechCmdMenu),
 };
 
 const uvc_xu_control_mapping kLogitechPanAbsoluteMapping = {

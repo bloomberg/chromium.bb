@@ -7,21 +7,28 @@
 /**
  * Tests sharing a file on Drive
  */
-testcase.suggestAppDialog = async function() {
+testcase.suggestAppDialog = async () => {
+  await sendTestMessage({
+    name: 'expectFileTask',
+    fileNames: ['unsupported.foo'],
+    openType: 'launch'
+  });
+
   // Fetch the mock CWS page data.
   const data =
       JSON.parse(await sendTestMessage({name: 'getCwsWidgetContainerMockUrl'}));
 
   // Override the container URL with the mock.
-  var appState = {
+  const appState = {
     suggestAppsDialogState: {
       overrideCwsContainerUrlForTest: data.url,
       overrideCwsContainerOriginForTest: data.origin
     }
   };
 
-  // Set up File Manager.
-  const {appId} = await setupAndWaitUntilReady(appState, RootPath.DRIVE);
+  // Open Files app.
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DRIVE, [], BASIC_DRIVE_ENTRY_SET, appState);
 
   // Select a file.
   chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(

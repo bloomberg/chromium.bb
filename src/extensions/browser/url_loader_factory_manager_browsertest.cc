@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/build_config.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -34,7 +35,7 @@ class URLLoaderFactoryManagerBrowserTest : public ShellApiTest,
 
     host_resolver()->AddRule("*", "127.0.0.1");
     ASSERT_TRUE(embedded_test_server()->Start());
-  };
+  }
 
   void TearDownOnMainThread() override {
     tab1_.reset();
@@ -307,8 +308,16 @@ IN_PROC_BROWSER_TEST_F(URLLoaderFactoryManagerBrowserTest,
   EXPECT_FALSE(DoContentScriptsMatch_Tab2_BarBlankFrame2());
 }
 
+// Flaky on MacOS since r622662. See https://crbug.com/921883
+#if defined(OS_MACOSX)
+#define MAYBE_ContentScriptMatching_NotAllFrames \
+  DISABLED_ContentScriptMatching_NotAllFrames
+#else
+#define MAYBE_ContentScriptMatching_NotAllFrames \
+  ContentScriptMatching_NotAllFrames
+#endif
 IN_PROC_BROWSER_TEST_F(URLLoaderFactoryManagerBrowserTest,
-                       ContentScriptMatching_NotAllFrames) {
+                       MAYBE_ContentScriptMatching_NotAllFrames) {
   SetUpFrameTree();
   ASSERT_FALSE(::testing::Test::HasFailure());
 

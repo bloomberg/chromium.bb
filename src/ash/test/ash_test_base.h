@@ -7,22 +7,37 @@
 
 #include <stdint.h>
 
+#include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/wm/desks/desks_util.h"
 #include "base/macros.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread.h"
 #include "components/user_manager/user_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/client/window_types.h"
+#include "ui/aura/env.h"
 #include "ui/display/display.h"
 
 namespace aura {
 class Window;
 class WindowDelegate;
 }  // namespace aura
+
+namespace base {
+namespace test {
+class ScopedTaskEnvironment;
+}
+}  // namespace base
+
+namespace chromeos {
+class FakePowerManagerClient;
+}
 
 namespace display {
 class Display;
@@ -57,12 +72,12 @@ class WindowTreeTestHelper;
 namespace ash {
 
 class AppListTestHelper;
-class AshTestEnvironment;
 class AshTestHelper;
 class Shelf;
 class TestScreenshotDelegate;
 class TestSessionControllerClient;
 class UnifiedSystemTray;
+class WorkAreaInsets;
 
 class AshTestBase : public testing::Test {
  public:
@@ -78,6 +93,13 @@ class AshTestBase : public testing::Test {
 
   // Returns the unified system tray on the primary display.
   static UnifiedSystemTray* GetPrimaryUnifiedSystemTray();
+
+  // Returns WorkAreaInsets for the primary display.
+  static WorkAreaInsets* GetPrimaryWorkAreaInsets();
+
+  // AshTestBase creates a ScopedTaskEnvironment. This may not be appropriate in
+  // some environments. Use this to destroy it.
+  void DestroyScopedTaskEnvironment();
 
   // Call this only if this code is being run outside of ash, for example, in
   // browser tests that use AshTestBase. This disables CHECKs that are
@@ -98,8 +120,14 @@ class AshTestBase : public testing::Test {
   // values for |container_id|.
   static std::unique_ptr<views::Widget> CreateTestWidget(
       views::WidgetDelegate* delegate = nullptr,
-      int container_id = kShellWindowId_DefaultContainer,
-      const gfx::Rect& bounds = gfx::Rect());
+      int container_id = desks_util::GetActiveDeskContainerId(),
+      const gfx::Rect& bounds = gfx::Rect(),
+      bool show = true);
+
+  // Returns the set of properties for creating a proxy window.
+  std::map<std::string, std::vector<uint8_t>> CreatePropertiesForProxyWindow(
+      const gfx::Rect& bounds_in_screen = gfx::Rect(),
+      aura::client::WindowType type = aura::client::WINDOW_TYPE_NORMAL);
 
   // Creates a visible window in the appropriate container. If
   // |bounds_in_screen| is empty the window is added to the primary root
@@ -157,6 +185,9 @@ class AshTestBase : public testing::Test {
   // Convenience method to return the DisplayManager.
   display::DisplayManager* display_manager();
 
+  // Convenience method to return the FakePowerManagerClient.
+  chromeos::FakePowerManagerClient* power_manager_client() const;
+
   // Test if moving a mouse to |point_in_screen| warps it to another
   // display.
   bool TestIfMouseWarpsAt(ui::test::EventGenerator* event_generator,
@@ -182,10 +213,6 @@ class AshTestBase : public testing::Test {
 
   AshTestHelper* ash_test_helper() { return ash_test_helper_.get(); }
 
-  // Deprecated. Using this triggers a preprocessor warning, use
-  // base::RunLoop().RunUntilIdle() instead.
-  void RunAllPendingInMessageLoop();
-
   TestScreenshotDelegate* GetScreenshotDelegate();
 
   TestSessionControllerClient* GetSessionControllerClient();
@@ -208,6 +235,10 @@ class AshTestBase : public testing::Test {
 
   // Simulates kiosk mode. |user_type| must correlate to a kiosk type user.
   void SimulateKioskMode(user_manager::UserType user_type);
+
+  // Simulates setting height of the accessibility panel.
+  // Note: Accessibility panel widget needs to be setup first.
+  void SetAccessibilityPanelHeight(int panel_height);
 
   // Clears all user sessions and resets to the primary login screen state.
   void ClearLogin();
@@ -246,14 +277,14 @@ class AshTestBase : public testing::Test {
  private:
   void CreateWindowTreeIfNecessary();
 
-  bool setup_called_;
-  bool teardown_called_;
+  bool setup_called_ = false;
+  bool teardown_called_ = false;
   // |SetUp()| doesn't activate session if this is set to false.
-  bool start_session_;
+  bool start_session_ = true;
   // |SetUp()| doesn't inject local-state PrefService into Shell if this is
   // set to false.
   bool provide_local_state_ = true;
-  std::unique_ptr<AshTestEnvironment> ash_test_environment_;
+  std::unique_ptr<base::test::ScopedTaskEnvironment> scoped_task_environment_;
   std::unique_ptr<AshTestHelper> ash_test_helper_;
   std::unique_ptr<ui::test::EventGenerator> event_generator_;
 
@@ -271,6 +302,26 @@ class NoSessionAshTestBase : public AshTestBase {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NoSessionAshTestBase);
+};
+
+// Base test class that forces single-process mash to be enabled *and* creates
+// a views::MusClient. This base class is useful for testing WindowService
+// related functionality exposed by Ash.
+// TODO(sky): this name is misleading. Rename to better indicate what it does.
+class SingleProcessMashTestBase : public AshTestBase {
+ public:
+  SingleProcessMashTestBase();
+  ~SingleProcessMashTestBase() override;
+
+  // AshTestBase:
+  void SetUp() override;
+  void TearDown() override;
+
+ private:
+  aura::Env::Mode original_aura_env_mode_ = aura::Env::Mode::LOCAL;
+  base::test::ScopedFeatureList feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(SingleProcessMashTestBase);
 };
 
 }  // namespace ash

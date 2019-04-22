@@ -32,7 +32,7 @@ static const int delta_lf_id_lut[MAX_MB_PLANE][2] = {
   { 0, 1 }, { 2, 2 }, { 3, 3 }
 };
 
-typedef enum EDGE_DIR { VERT_EDGE = 0, HORZ_EDGE = 1, NUM_EDGE_DIRS } EDGE_DIR;
+enum { VERT_EDGE = 0, HORZ_EDGE = 1, NUM_EDGE_DIRS } UENUM1BYTE(EDGE_DIR);
 
 static const int mode_lf_lut[] = {
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // INTRA_MODES
@@ -456,9 +456,9 @@ uint8_t get_filter_level(const AV1_COMMON *cm, const loop_filter_info_n *lfi_n,
                          const int dir_idx, int plane,
                          const MB_MODE_INFO *mbmi) {
   const int segment_id = mbmi->segment_id;
-  if (cm->delta_lf_present_flag) {
+  if (cm->delta_q_info.delta_lf_present_flag) {
     int delta_lf;
-    if (cm->delta_lf_multi) {
+    if (cm->delta_q_info.delta_lf_multi) {
       const int delta_lf_idx = delta_lf_id_lut[plane][dir_idx];
       delta_lf = mbmi->delta_lf[delta_lf_idx];
     } else {
@@ -1426,9 +1426,9 @@ static void highbd_filter_selectively_horiz(
                                                lfi->hev_thr, lfin->mblim,
                                                lfin->lim, lfin->hev_thr, bd);
           } else {
-            aom_highbd_lpf_horizontal_14_dual_c(s, pitch, lfi->mblim, lfi->lim,
-                                                lfi->hev_thr, lfin->mblim,
-                                                lfin->lim, lfin->hev_thr, bd);
+            aom_highbd_lpf_horizontal_14_dual(s, pitch, lfi->mblim, lfi->lim,
+                                              lfi->hev_thr, lfin->mblim,
+                                              lfin->lim, lfin->hev_thr, bd);
           }
           count = 2;
         } else {

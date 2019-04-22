@@ -35,7 +35,6 @@ scheduling_metrics::ThreadType ConvertBlinkThreadType(
     case WebThreadType::kHRTFDatabaseLoaderThread:
     case WebThreadType::kOfflineAudioRenderThread:
     case WebThreadType::kReverbConvolutionBackgroundThread:
-    case WebThreadType::kScriptStreamerThread:
     case WebThreadType::kSharedWorkerThread:
     case WebThreadType::kUnspecifiedWorkerThread:
     case WebThreadType::kWebAudioThread:

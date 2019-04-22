@@ -39,28 +39,15 @@ namespace dawn_native { namespace d3d12 {
 
       private:
         // Dawn API
-        void SetSubDataImpl(uint32_t start, uint32_t count, const uint8_t* data) override;
-        void MapReadAsyncImpl(uint32_t serial, uint32_t start, uint32_t count) override;
-        void MapWriteAsyncImpl(uint32_t serial, uint32_t start, uint32_t count) override;
+        void MapReadAsyncImpl(uint32_t serial) override;
+        void MapWriteAsyncImpl(uint32_t serial) override;
         void UnmapImpl() override;
+        void DestroyImpl() override;
 
         ComPtr<ID3D12Resource> mResource;
         bool mFixedResourceState = false;
         dawn::BufferUsageBit mLastUsage = dawn::BufferUsageBit::None;
         D3D12_RANGE mWrittenMappedRange;
-    };
-
-    class BufferView : public BufferViewBase {
-      public:
-        BufferView(BufferViewBuilder* builder);
-
-        uint32_t GetD3D12Size() const;
-        const D3D12_CONSTANT_BUFFER_VIEW_DESC& GetCBVDescriptor() const;
-        const D3D12_UNORDERED_ACCESS_VIEW_DESC& GetUAVDescriptor() const;
-
-      private:
-        D3D12_CONSTANT_BUFFER_VIEW_DESC mCbvDesc;
-        D3D12_UNORDERED_ACCESS_VIEW_DESC mUavDesc;
     };
 
     class MapRequestTracker {

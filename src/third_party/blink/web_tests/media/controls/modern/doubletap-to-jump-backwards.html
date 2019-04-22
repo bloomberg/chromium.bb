@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <title>Test that player will jump backwards 10 seconds if double tapped on the left hand side.</title>
+<script src="../../../resources/gesture-util.js"></script>
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
 <script src="../../media-controls.js"></script>
@@ -20,6 +21,8 @@ async_test(t => {
     assert_not_equals(Math.round(video.currentTime), 25);
   });
 
+  let double_tap_gesture;
+
   video.onseeked = t.step_func(() => {
     const currentTime = Math.round(video.currentTime);
 
@@ -27,12 +30,12 @@ async_test(t => {
       // Double tap on the left side.
       time = currentTime;
       const coordinates = videoLeftEdgeCoordinates(video);
-      doubleTouchAtCoordinates(coordinates[0], coordinates[1]);
+      double_tap_gesture = doubleTapAt(coordinates[0], coordinates[1]);
     } else if (time > 0) {
       // Check the video went back 10 seconds
       assert_greater_than(time, 0);
       assert_equals(currentTime, time - 10);
-      t.done();
+      double_tap_gesture.then(t.step_func_done());
     }
   });
 

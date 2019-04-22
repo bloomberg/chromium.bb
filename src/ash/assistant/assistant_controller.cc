@@ -8,39 +8,38 @@
 #include <utility>
 
 #include "ash/accessibility/accessibility_controller.h"
-#include "ash/assistant/assistant_cache_controller.h"
-#include "ash/assistant/assistant_controller_observer.h"
-#include "ash/assistant/assistant_interaction_controller.h"
-#include "ash/assistant/assistant_notification_controller.h"
-#include "ash/assistant/assistant_screen_context_controller.h"
-#include "ash/assistant/assistant_setup_controller.h"
-#include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/new_window_controller.h"
+#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/utility/screenshot_controller.h"
 #include "ash/voice_interaction/voice_interaction_controller.h"
 #include "base/bind.h"
 #include "base/memory/scoped_refptr.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "services/content/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace ash {
 
+namespace {
+
+// Scheme of the Android intent url.
+constexpr char kAndroidIntentScheme[] = "intent";
+
+}  // namespace
+
 AssistantController::AssistantController()
     : assistant_volume_control_binding_(this),
-      assistant_cache_controller_(
-          std::make_unique<AssistantCacheController>(this)),
-      assistant_interaction_controller_(
-          std::make_unique<AssistantInteractionController>(this)),
-      assistant_notification_controller_(
-          std::make_unique<AssistantNotificationController>(this)),
-      assistant_screen_context_controller_(
-          std::make_unique<AssistantScreenContextController>(this)),
-      assistant_setup_controller_(
-          std::make_unique<AssistantSetupController>(this)),
-      assistant_ui_controller_(std::make_unique<AssistantUiController>(this)),
+      assistant_alarm_timer_controller_(this),
+      assistant_cache_controller_(this),
+      assistant_interaction_controller_(this),
+      assistant_notification_controller_(this),
+      assistant_screen_context_controller_(this),
+      assistant_setup_controller_(this),
+      assistant_ui_controller_(this),
+      view_delegate_(this),
       weak_factory_(this) {
   Shell::Get()->voice_interaction_controller()->AddLocalObserver(this);
   chromeos::CrasAudioHandler::Get()->AddAudioObserver(this);
@@ -56,6 +55,11 @@ AssistantController::~AssistantController() {
   Shell::Get()->accessibility_controller()->RemoveObserver(this);
   Shell::Get()->voice_interaction_controller()->RemoveLocalObserver(this);
   RemoveObserver(this);
+}
+
+// static
+void AssistantController::RegisterProfilePrefs(PrefRegistrySimple* registry) {
+  registry->RegisterIntegerPref(prefs::kAssistantNumWarmerWelcomeTriggered, 0);
 }
 
 void AssistantController::BindRequest(
@@ -82,10 +86,10 @@ void AssistantController::SetAssistant(
   assistant_ = std::move(assistant);
 
   // Provide reference to sub-controllers.
-  assistant_interaction_controller_->SetAssistant(assistant_.get());
-  assistant_notification_controller_->SetAssistant(assistant_.get());
-  assistant_screen_context_controller_->SetAssistant(assistant_.get());
-  assistant_ui_controller_->SetAssistant(assistant_.get());
+  assistant_interaction_controller_.SetAssistant(assistant_.get());
+  assistant_notification_controller_.SetAssistant(assistant_.get());
+  assistant_screen_context_controller_.SetAssistant(assistant_.get());
+  assistant_ui_controller_.SetAssistant(assistant_.get());
 
   // The Assistant service needs to have accessibility state synced with ash
   // and be notified of any accessibility status changes in the future to
@@ -102,6 +106,39 @@ void AssistantController::SetAssistantImageDownloader(
 void AssistantController::OpenAssistantSettings() {
   // Launch Assistant settings via deeplink.
   OpenUrl(assistant::util::CreateAssistantSettingsDeepLink());
+}
+
+void AssistantController::SendAssistantFeedback(
+    bool assistant_debug_info_allowed,
+    const std::string& feedback_description,
+    const std::string& screenshot_png) {
+  chromeos::assistant::mojom::AssistantFeedbackPtr assistant_feedback =
+      chromeos::assistant::mojom::AssistantFeedback::New();
+  assistant_feedback->assistant_debug_info_allowed =
+      assistant_debug_info_allowed;
+  assistant_feedback->description = feedback_description;
+  assistant_feedback->screenshot_png = screenshot_png;
+  assistant_->SendAssistantFeedback(std::move(assistant_feedback));
+}
+
+void AssistantController::SetDeviceActions(
+    chromeos::assistant::mojom::DeviceActionsPtr device_actions) {
+  device_actions_ = std::move(device_actions);
+}
+
+void AssistantController::StartSpeakerIdEnrollmentFlow() {
+  mojom::ConsentStatus consent_status =
+      Shell::Get()->voice_interaction_controller()->consent_status().value_or(
+          mojom::ConsentStatus::kUnknown);
+  if (consent_status == mojom::ConsentStatus::kActivityControlAccepted) {
+    // If activity control has been accepted, launch the enrollment flow.
+    setup_controller()->StartOnboarding(false /* relaunch */,
+                                        mojom::FlowType::SPEAKER_ID_ENROLLMENT);
+  } else {
+    // If activity control has not been accepted, launch the opt-in flow.
+    setup_controller()->StartOnboarding(false /* relaunch */,
+                                        mojom::FlowType::CONSENT_FLOW);
+  }
 }
 
 void AssistantController::DownloadImage(
@@ -136,15 +173,13 @@ void AssistantController::OnDeepLinkReceived(
       break;
     }
     case DeepLinkType::kFeedback:
-      // TODO(dmblack): Possibly use a new FeedbackSource (this method defaults
-      // to kFeedbackSourceAsh). This may be useful for differentiating feedback
-      // UI and behavior for Assistant.
-      Shell::Get()->new_window_controller()->OpenFeedbackPage();
+      Shell::Get()->new_window_controller()->OpenFeedbackPage(
+          /*from_assistant=*/true);
       break;
     case DeepLinkType::kScreenshot:
       // We close the UI before taking the screenshot as it's probably not the
       // user's intention to include the Assistant in the picture.
-      assistant_ui_controller_->CloseUi(AssistantExitPoint::kUnspecified);
+      assistant_ui_controller_.CloseUi(AssistantExitPoint::kUnspecified);
       Shell::Get()->screenshot_controller()->TakeScreenshotForAllRootWindows();
       break;
     case DeepLinkType::kTaskManager:
@@ -152,6 +187,8 @@ void AssistantController::OnDeepLinkReceived(
       Shell::Get()->new_window_controller()->ShowTaskManager();
       break;
     case DeepLinkType::kUnsupported:
+    case DeepLinkType::kLists:
+    case DeepLinkType::kNotes:
     case DeepLinkType::kOnboarding:
     case DeepLinkType::kQuery:
     case DeepLinkType::kReminders:
@@ -178,12 +215,11 @@ void AssistantController::AddVolumeObserver(mojom::VolumeObserverPtr observer) {
   int output_volume =
       chromeos::CrasAudioHandler::Get()->GetOutputVolumePercent();
   bool mute = chromeos::CrasAudioHandler::Get()->IsOutputMuted();
-  OnOutputMuteChanged(mute, false /* system_adjust */);
+  OnOutputMuteChanged(mute);
   OnOutputNodeVolumeChanged(0 /* node */, output_volume);
 }
 
-void AssistantController::OnOutputMuteChanged(bool mute_on,
-                                              bool system_adjust) {
+void AssistantController::OnOutputMuteChanged(bool mute_on) {
   volume_observer_.ForAllPtrs([mute_on](mojom::VolumeObserver* observer) {
     observer->OnMuteStateChanged(mute_on);
   });
@@ -200,10 +236,15 @@ void AssistantController::OnAccessibilityStatusChanged() {
   // The Assistant service needs to be informed of changes to accessibility
   // state so that it can turn on/off A11Y features appropriately.
   assistant_->OnAccessibilityStatusChanged(
-      Shell::Get()->accessibility_controller()->IsSpokenFeedbackEnabled());
+      Shell::Get()->accessibility_controller()->spoken_feedback_enabled());
 }
 
 void AssistantController::OpenUrl(const GURL& url, bool from_server) {
+  if (url.SchemeIs(kAndroidIntentScheme) && device_actions_) {
+    device_actions_->LaunchAndroidIntent(url.spec());
+    return;
+  }
+
   if (assistant::util::IsDeepLinkUrl(url)) {
     NotifyDeepLinkReceived(url);
     return;
@@ -217,7 +258,7 @@ void AssistantController::OpenUrl(const GURL& url, bool from_server) {
 }
 
 void AssistantController::GetNavigableContentsFactory(
-    content::mojom::NavigableContentsFactoryRequest request) {
+    mojo::PendingReceiver<content::mojom::NavigableContentsFactory> receiver) {
   const mojom::UserSession* user_session =
       Shell::Get()->session_controller()->GetUserSession(0);
 
@@ -233,10 +274,14 @@ void AssistantController::GetNavigableContentsFactory(
     return;
   }
 
-  Shell::Get()->connector()->BindInterface(
+  Shell::Get()->connector()->Connect(
       service_manager::ServiceFilter::ByNameInGroup(
           content::mojom::kServiceName, *service_instance_group),
-      std::move(request));
+      std::move(receiver));
+}
+
+bool AssistantController::IsAssistantReady() const {
+  return !!assistant_;
 }
 
 void AssistantController::NotifyConstructed() {
@@ -257,8 +302,11 @@ void AssistantController::NotifyDeepLinkReceived(const GURL& deep_link) {
   const std::map<std::string, std::string> params =
       assistant::util::GetDeepLinkParams(deep_link);
 
+  // TODO(wutao): Remove AssistantControllerObserver::OnDeepLinkReceived.
   for (AssistantControllerObserver& observer : observers_)
     observer.OnDeepLinkReceived(type, params);
+
+  view_delegate_.NotifyDeepLinkReceived(type, params);
 }
 
 void AssistantController::NotifyUrlOpened(const GURL& url, bool from_server) {
@@ -269,7 +317,7 @@ void AssistantController::NotifyUrlOpened(const GURL& url, bool from_server) {
 void AssistantController::OnVoiceInteractionStatusChanged(
     mojom::VoiceInteractionState state) {
   if (state == mojom::VoiceInteractionState::NOT_READY)
-    assistant_ui_controller_->HideUi(AssistantExitPoint::kUnspecified);
+    assistant_ui_controller_.CloseUi(AssistantExitPoint::kUnspecified);
 }
 
 base::WeakPtr<AssistantController> AssistantController::GetWeakPtr() {

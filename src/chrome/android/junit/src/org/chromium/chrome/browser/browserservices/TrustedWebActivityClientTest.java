@@ -28,6 +28,7 @@ import org.mockito.stubbing.Answer;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.chrome.browser.notifications.ChromeNotification;
 import org.chromium.chrome.browser.notifications.NotificationBuilderBase;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 
@@ -55,6 +56,9 @@ public class TrustedWebActivityClientTest {
     @Mock
     private Bitmap mServiceSmallIconBitmap;
 
+    @Mock
+    private ChromeNotification mChromeNotification;
+
     private TrustedWebActivityClient mClient;
 
     @Before
@@ -71,16 +75,19 @@ public class TrustedWebActivityClientTest {
         when(mService.getSmallIconId()).thenReturn(SERVICE_SMALL_ICON_ID);
         when(mService.getSmallIconBitmap()).thenReturn(mServiceSmallIconBitmap);
         when(mService.getComponentName()).thenReturn(new ComponentName(CLIENT_PACKAGE_NAME, ""));
+        when(mService.areNotificationsEnabled(any())).thenReturn(true);
+        when(mNotificationBuilder.build(any())).thenReturn(mChromeNotification);
 
-        mClient = new TrustedWebActivityClient(mConnection, mRecorder, mNotificationUmaTracker);
+        mClient = new TrustedWebActivityClient(mConnection, mRecorder);
     }
 
     @Test
     public void usesIconFromService_IfStatusBarIconNotSet() {
         setHasStatusBarBitmap(false);
         postNotification();
-        verify(mNotificationBuilder).setStatusBarIconForUntrustedRemoteApp(
-                SERVICE_SMALL_ICON_ID, mServiceSmallIconBitmap, CLIENT_PACKAGE_NAME);
+        verify(mNotificationBuilder)
+                .setStatusBarIconForRemoteApp(
+                        SERVICE_SMALL_ICON_ID, mServiceSmallIconBitmap, CLIENT_PACKAGE_NAME);
     }
 
 
@@ -89,22 +96,21 @@ public class TrustedWebActivityClientTest {
         setHasStatusBarBitmap(true);
         postNotification();
         verify(mNotificationBuilder, never())
-                .setStatusBarIconForUntrustedRemoteApp(anyInt(), any(), anyString());
+                .setStatusBarIconForRemoteApp(anyInt(), any(), anyString());
     }
 
     @Test
     public void usesIconFromService_IfContentSmallIconNotSet() {
         setHasContentBitmap(false);
         postNotification();
-        verify(mNotificationBuilder)
-                .setContentSmallIconForUntrustedRemoteApp(mServiceSmallIconBitmap);
+        verify(mNotificationBuilder).setContentSmallIconForRemoteApp(mServiceSmallIconBitmap);
     }
 
     @Test
     public void doesntUseIconFromService_IfContentSmallIconSet() {
         setHasContentBitmap(true);
         postNotification();
-        verify(mNotificationBuilder, never()).setContentSmallIconForUntrustedRemoteApp(any());
+        verify(mNotificationBuilder, never()).setContentSmallIconForRemoteApp(any());
     }
 
 
@@ -134,6 +140,7 @@ public class TrustedWebActivityClientTest {
     }
 
     private void postNotification() {
-        mClient.notifyNotification(Uri.parse(""), "tag", 1, mNotificationBuilder);
+        mClient.notifyNotification(Uri.parse(""), "tag", 1, mNotificationBuilder,
+                mNotificationUmaTracker);
     }
 }

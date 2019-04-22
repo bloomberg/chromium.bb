@@ -6,10 +6,11 @@
 
 #include <memory>
 
-#include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/model/assistant_ui_element.h"
 #include "ash/assistant/ui/assistant_container_view.h"
-#include "ash/shell.h"
+#include "ash/assistant/ui/assistant_ui_constants.h"
+#include "ash/assistant/ui/assistant_view_delegate.h"
+#include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event.h"
 #include "ui/events/event_sink.h"
@@ -49,9 +50,9 @@ void CreateAndSendMouseClick(aura::WindowTreeHost* host,
 }  // namespace
 
 AssistantCardElementView::AssistantCardElementView(
-    AssistantController* assistant_controller,
+    AssistantViewDelegate* delegate,
     const AssistantCardElement* card_element)
-    : assistant_controller_(assistant_controller),
+    : delegate_(delegate),
       contents_(const_cast<AssistantCardElement*>(card_element)->contents()) {
   InitLayout(card_element);
 
@@ -81,7 +82,7 @@ void AssistantCardElementView::AddedToWidget() {
   // vertically. As such, we need to prevent the Assistant card window from
   // receiving events it doesn't need. It needs mouse click events for
   // handling links.
-  AssistantContainerView::OnlyAllowMouseClickEvents(window);
+  window->SetProperty(ash::assistant::ui::kOnlyAllowMouseClickEvents, true);
 }
 
 void AssistantCardElementView::ChildPreferredSizeChanged(views::View* child) {
@@ -118,7 +119,7 @@ void AssistantCardElementView::OnGestureEvent(ui::GestureEvent* event) {
   aura::WindowTreeHost* host = root_window->GetHost();
   host->ConvertDIPToPixels(&location_in_pixels);
 
-  wm::CursorManager* cursor_manager = Shell::Get()->cursor_manager();
+  wm::CursorManager* cursor_manager = delegate_->GetCursorManager();
 
   // We want to prevent the cursor from changing its visibility during our
   // mouse events because we are actually handling a gesture. To accomplish
@@ -151,7 +152,7 @@ void AssistantCardElementView::DidSuppressNavigation(
   // We delegate navigation to the AssistantController so that it can apply
   // special handling to deep links.
   if (from_user_gesture)
-    assistant_controller_->OpenUrl(url);
+    delegate_->OpenUrlFromView(url);
 }
 
 void AssistantCardElementView::InitLayout(

@@ -5,8 +5,11 @@
 #include "ash/ws/multi_user_window_manager_bridge.h"
 
 #include "ash/multi_user/multi_user_window_manager.h"
+#include "ash/session/session_controller.h"
+#include "ash/shell.h"
 #include "services/ws/window_tree.h"
 #include "ui/aura/window.h"
+#include "ui/base/ui_base_features.h"
 
 namespace ash {
 
@@ -26,17 +29,31 @@ MultiUserWindowManagerBridge::~MultiUserWindowManagerBridge() {
 
 void MultiUserWindowManagerBridge::SetClient(
     mojom::MultiUserWindowManagerClientAssociatedPtrInfo client_info) {
+  multi_user_window_manager_.reset();
   client_.Bind(std::move(client_info));
-  ash::MultiUserWindowManager::Get()->SetClient(client_.get());
+  if (features::IsMultiProcessMash()) {
+    // NOTE: there is nothing stopping mulitple MultiUserWindowManagerBridges
+    // from being created (because multiple clients ask for
+    // ash::mojom::MultiUserWindowManager). This code is assuming only a single
+    // client is used at a time.
+    multi_user_window_manager_ = std::make_unique<ash::MultiUserWindowManager>(
+        client_.get(), nullptr,
+        Shell::Get()->session_controller()->GetActiveAccountId());
+  } else if (ash::MultiUserWindowManager::Get()) {
+    ash::MultiUserWindowManager::Get()->SetClient(client_.get());
+  }
 }
 
 void MultiUserWindowManagerBridge::SetWindowOwner(ws::Id window_id,
                                                   const AccountId& account_id,
                                                   bool show_for_current_user) {
-  // At this time this is only called once MultiUserWindowManager has been
-  // created. This needs to be fixed for the multi-process case.
+  // AshTestBase pumps events during shutdown. This makes it possible to get
+  // here with no ash::MultiUserWindowManager. This should only be possible in
+  // tests. None-the-less this needs to be fixed for the multi-process case.
   // http://crbug.com/875111.
-  DCHECK(ash::MultiUserWindowManager::Get());
+  if (!ash::MultiUserWindowManager::Get())
+    return;
+
   aura::Window* window = window_tree_->GetWindowByTransportId(window_id);
   if (window && window_tree_->IsTopLevel(window)) {
     ash::MultiUserWindowManager::Get()->SetWindowOwner(
@@ -49,10 +66,13 @@ void MultiUserWindowManagerBridge::SetWindowOwner(ws::Id window_id,
 void MultiUserWindowManagerBridge::ShowWindowForUser(
     ws::Id window_id,
     const AccountId& account_id) {
-  // At this time this is only called once MultiUserWindowManager has been
-  // created. This needs to be fixed for the multi-process case.
+  // AshTestBase pumps events during shutdown. This makes it possible to get
+  // here with no ash::MultiUserWindowManager. This should only be possible in
+  // tests. None-the-less this needs to be fixed for the multi-process case.
   // http://crbug.com/875111.
-  DCHECK(ash::MultiUserWindowManager::Get());
+  if (!ash::MultiUserWindowManager::Get())
+    return;
+
   aura::Window* window = window_tree_->GetWindowByTransportId(window_id);
   if (window && window_tree_->IsTopLevel(window))
     ash::MultiUserWindowManager::Get()->ShowWindowForUser(window, account_id);

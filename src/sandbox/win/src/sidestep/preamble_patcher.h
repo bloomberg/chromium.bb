@@ -107,6 +107,6 @@ class PreamblePatcher {
                                         size_t* bytes_needed);
 };
 
-};  // namespace sidestep
+}  // namespace sidestep
 
 #endif  // SANDBOX_SRC_SIDESTEP_PREAMBLE_PATCHER_H__

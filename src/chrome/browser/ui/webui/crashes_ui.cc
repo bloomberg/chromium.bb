@@ -106,7 +106,7 @@ CrashesDOMHandler::CrashesDOMHandler()
 }
 
 CrashesDOMHandler::~CrashesDOMHandler() {
-  upload_list_->CancelCallback();
+  upload_list_->CancelLoadCallback();
 }
 
 void CrashesDOMHandler::RegisterMessages() {

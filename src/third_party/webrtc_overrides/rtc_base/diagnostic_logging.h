@@ -8,37 +8,10 @@
 #include <sstream>
 #include <string>
 
+#include "third_party/webrtc/api/scoped_refptr.h"
 #include "third_party/webrtc/rtc_base/checks.h"
-#include "third_party/webrtc/rtc_base/scoped_ref_ptr.h"
 
 namespace rtc {
-
-///////////////////////////////////////////////////////////////////////////////
-// ConstantLabel can be used to easily generate string names from constant
-// values.  This can be useful for logging descriptive names of error messages.
-// Usage:
-//   const ConstantLabel LIBRARY_ERRORS[] = {
-//     KLABEL(SOME_ERROR),
-//     KLABEL(SOME_OTHER_ERROR),
-//     ...
-//     LASTLABEL
-//   }
-//
-//   int err = LibraryFunc();
-//   LOG(LS_ERROR) << "LibraryFunc returned: "
-//                 << ErrorName(err, LIBRARY_ERRORS);
-
-struct ConstantLabel {
-  int value;
-  const char* label;
-};
-#define KLABEL(x) \
-  { x, #x }
-#define LASTLABEL \
-  { 0, 0 }
-
-const char* FindLabel(int value, const ConstantLabel entries[]);
-std::string ErrorName(int err, const ConstantLabel* err_table);
 
 //////////////////////////////////////////////////////////////////////
 // Note that the non-standard LoggingSeverity aliases exist because they are

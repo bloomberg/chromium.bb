@@ -123,12 +123,6 @@ void OnShutdownStarting(ShutdownType type) {
   static crash_reporter::CrashKeyString<8> shutdown_type_key("shutdown-type");
   shutdown_type_key.Set(ToShutdownTypeString(type));
 
-#if !defined(OS_CHROMEOS)
-  // Start the shutdown tracing. Note that On ChromeOS this has already been
-  // called in AttemptUserExit().
-  StartShutdownTracing();
-#endif
-
   g_shutdown_type = type;
   // For now, we're only counting the number of renderer processes
   // since we can't safely count the number of plugin processes from this
@@ -267,12 +261,12 @@ void ShutdownPostThreadsStop(int shutdown_flags) {
     // We can't use prefs since all services are shutdown at this point.
     TimeDelta shutdown_delta = base::Time::Now() - *g_shutdown_started;
     std::string shutdown_ms =
-        base::Int64ToString(shutdown_delta.InMilliseconds());
+        base::NumberToString(shutdown_delta.InMilliseconds());
     int len = static_cast<int>(shutdown_ms.length()) + 1;
     base::FilePath shutdown_ms_file = GetShutdownMsPath();
     // Note: ReadLastShutdownFile() is done as a BLOCK_SHUTDOWN task so there's
     // an implicit sequencing between it and this write which happens after
-    // threads have been stopped (and thus TaskScheduler::Shutdown() is
+    // threads have been stopped (and thus ThreadPool::Shutdown() is
     // complete).
     base::WriteFile(shutdown_ms_file, shutdown_ms.c_str(), len);
   }
@@ -286,7 +280,8 @@ void ShutdownPostThreadsStop(int shutdown_flags) {
 void ReadLastShutdownFile(ShutdownType type,
                           int num_procs,
                           int num_procs_slow) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   base::FilePath shutdown_ms_file = GetShutdownMsPath();
   std::string shutdown_ms_str;
@@ -364,19 +359,6 @@ void SetTryingToQuit(bool quitting) {
 
 bool IsTryingToQuit() {
   return g_trying_to_quit;
-}
-
-void StartShutdownTracing() {
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kTraceShutdown)) {
-    base::trace_event::TraceConfig trace_config(
-        command_line.GetSwitchValueASCII(switches::kTraceShutdown), "");
-    content::TracingController::GetInstance()->StartTracing(
-        trace_config,
-        content::TracingController::StartTracingDoneCallback());
-  }
-  TRACE_EVENT0("shutdown", "StartShutdownTracing");
 }
 
 }  // namespace browser_shutdown

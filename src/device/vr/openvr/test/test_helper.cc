@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_restrictions.h"
-#include "device/vr/openvr/test/test_hook.h"
+#include "device/vr/test/test_hook.h"
 #include "third_party/openvr/src/headers/openvr.h"
 #include "third_party/openvr/src/src/ivrclientcore.h"
 
@@ -283,7 +283,7 @@ bool TestHelper::GetControllerPose(unsigned int index,
   return false;
 }
 
-void TestHelper::SetTestHook(device::OpenVRTestHook* hook) {
+void TestHelper::SetTestHook(device::VRTestHook* hook) {
   base::AutoLock auto_lock(lock_);
   test_hook_ = hook;
 }

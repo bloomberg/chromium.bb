@@ -4,6 +4,7 @@
 
 #import <EarlGrey/EarlGrey.h>
 
+#include <functional>
 #include <string>
 
 #include "base/bind.h"
@@ -43,10 +44,7 @@ std::string GetErrorMessage() {
   self.testServer->RegisterRequestHandler(base::BindRepeating(
       &net::test_server::HandlePrefixedRequest, "/echo-query",
       base::BindRepeating(&testing::HandleEchoQueryOrCloseSocket,
-                          base::ConstRef(_serverRespondsWithContent))));
-  self.testServer->RegisterRequestHandler(
-      base::BindRepeating(&net::test_server::HandlePrefixedRequest, "/iframe",
-                          base::BindRepeating(&testing::HandleIFrame)));
+                          std::cref(_serverRespondsWithContent))));
 
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
 }

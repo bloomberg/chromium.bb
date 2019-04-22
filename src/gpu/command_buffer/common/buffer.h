@@ -24,19 +24,19 @@ class GPU_EXPORT BufferBacking {
   virtual const base::UnsafeSharedMemoryRegion& shared_memory_region() const;
   virtual base::UnguessableToken GetGUID() const;
   virtual void* GetMemory() const = 0;
-  virtual size_t GetSize() const = 0;
+  virtual uint32_t GetSize() const = 0;
 };
 
 class GPU_EXPORT MemoryBufferBacking : public BufferBacking {
  public:
-  explicit MemoryBufferBacking(size_t size);
+  explicit MemoryBufferBacking(uint32_t size);
   ~MemoryBufferBacking() override;
   void* GetMemory() const override;
-  size_t GetSize() const override;
+  uint32_t GetSize() const override;
 
  private:
   std::unique_ptr<char[]> memory_;
-  size_t size_;
+  uint32_t size_;
   DISALLOW_COPY_AND_ASSIGN(MemoryBufferBacking);
 };
 
@@ -50,7 +50,7 @@ class GPU_EXPORT SharedMemoryBufferBacking : public BufferBacking {
   const base::UnsafeSharedMemoryRegion& shared_memory_region() const override;
   base::UnguessableToken GetGUID() const override;
   void* GetMemory() const override;
-  size_t GetSize() const override;
+  uint32_t GetSize() const override;
 
  private:
   base::UnsafeSharedMemoryRegion shared_memory_region_;
@@ -65,7 +65,7 @@ class GPU_EXPORT Buffer : public base::RefCountedThreadSafe<Buffer> {
 
   BufferBacking* backing() const { return backing_.get(); }
   void* memory() const { return memory_; }
-  size_t size() const { return size_; }
+  uint32_t size() const { return size_; }
 
   // Returns nullptr if the address overflows the memory.
   void* GetDataAddress(uint32_t data_offset, uint32_t data_size) const;
@@ -82,7 +82,7 @@ class GPU_EXPORT Buffer : public base::RefCountedThreadSafe<Buffer> {
 
   std::unique_ptr<BufferBacking> backing_;
   void* memory_;
-  size_t size_;
+  uint32_t size_;
 
   DISALLOW_COPY_AND_ASSIGN(Buffer);
 };
@@ -100,10 +100,14 @@ static inline scoped_refptr<Buffer> MakeBufferFromSharedMemory(
       std::move(shared_memory_region), std::move(shared_memory_mapping)));
 }
 
-static inline scoped_refptr<Buffer> MakeMemoryBuffer(size_t size) {
+static inline scoped_refptr<Buffer> MakeMemoryBuffer(uint32_t size) {
   return base::MakeRefCounted<Buffer>(
       std::make_unique<MemoryBufferBacking>(size));
 }
+
+// Generates a process unique buffer ID which can be safely used with
+// GetBufferGUIDForTracing.
+GPU_EXPORT int32_t GetNextBufferId();
 
 // Generates GUID which can be used to trace buffer using an Id.
 GPU_EXPORT base::trace_event::MemoryAllocatorDumpGuid GetBufferGUIDForTracing(

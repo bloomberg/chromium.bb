@@ -726,6 +726,11 @@ template<> VkStructureType getStructureType<VkPhysicalDevicePushDescriptorProper
 	return VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PUSH_DESCRIPTOR_PROPERTIES_KHR;
 }
 
+template<> VkStructureType getStructureType<VkPhysicalDeviceFloat16Int8FeaturesKHR> (void)
+{
+	return VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FLOAT16_INT8_FEATURES_KHR;
+}
+
 template<> VkStructureType getStructureType<VkPresentRegionsKHR> (void)
 {
 	return VK_STRUCTURE_TYPE_PRESENT_REGIONS_KHR;
@@ -846,6 +851,21 @@ template<> VkStructureType getStructureType<VkPhysicalDeviceDriverPropertiesKHR>
 	return VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DRIVER_PROPERTIES_KHR;
 }
 
+template<> VkStructureType getStructureType<VkPhysicalDeviceFloatControlsPropertiesKHR> (void)
+{
+	return VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FLOAT_CONTROLS_PROPERTIES_KHR;
+}
+
+template<> VkStructureType getStructureType<VkSubpassDescriptionDepthStencilResolveKHR> (void)
+{
+	return VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_DEPTH_STENCIL_RESOLVE_KHR;
+}
+
+template<> VkStructureType getStructureType<VkPhysicalDeviceDepthStencilResolvePropertiesKHR> (void)
+{
+	return VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_STENCIL_RESOLVE_PROPERTIES_KHR;
+}
+
 template<> VkStructureType getStructureType<VkDebugReportCallbackCreateInfoEXT> (void)
 {
 	return VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT;
@@ -924,6 +944,21 @@ template<> VkStructureType getStructureType<VkValidationFlagsEXT> (void)
 template<> VkStructureType getStructureType<VkViSurfaceCreateInfoNN> (void)
 {
 	return VK_STRUCTURE_TYPE_VI_SURFACE_CREATE_INFO_NN;
+}
+
+template<> VkStructureType getStructureType<VkConditionalRenderingBeginInfoEXT> (void)
+{
+	return VK_STRUCTURE_TYPE_CONDITIONAL_RENDERING_BEGIN_INFO_EXT;
+}
+
+template<> VkStructureType getStructureType<VkPhysicalDeviceConditionalRenderingFeaturesEXT> (void)
+{
+	return VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CONDITIONAL_RENDERING_FEATURES_EXT;
+}
+
+template<> VkStructureType getStructureType<VkCommandBufferInheritanceConditionalRenderingInfoEXT> (void)
+{
+	return VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_CONDITIONAL_RENDERING_INFO_EXT;
 }
 
 template<> VkStructureType getStructureType<VkDeviceGeneratedCommandsFeaturesNVX> (void)
@@ -1204,5 +1239,15 @@ template<> VkStructureType getStructureType<VkDescriptorPoolInlineUniformBlockCr
 template<> VkStructureType getStructureType<VkPhysicalDeviceShaderAtomicInt64FeaturesKHR> (void)
 {
 	return VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_ATOMIC_INT64_FEATURES_KHR;
+}
+
+template<> VkStructureType getStructureType<VkPhysicalDeviceVulkanMemoryModelFeaturesKHR> (void)
+{
+	return VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_MEMORY_MODEL_FEATURES_KHR;
+}
+
+template<> VkStructureType getStructureType<VkPhysicalDeviceScalarBlockLayoutFeaturesEXT> (void)
+{
+	return VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SCALAR_BLOCK_LAYOUT_FEATURES_EXT;
 }
 

@@ -96,8 +96,15 @@ function getFontsWithTestCharsForOS() {
       [ "MalayalamSangamMN", "0" ],
       [ "HiraMaruPro-W4", "0" ],
       [ "HiraKakuStdN-W8", "0" ],
-    ]
-  };
+    ];
+  } else if (navigator.userAgent.indexOf("Windows") !== -1) {
+    return [
+      ["CambriaMath", "0"],
+      ["Ming-Lt-HKSCS-ExtB", "0"],
+      ["NSimSun", "0"],
+      ["calibri-bolditalic", "0"]
+      ];
+  }
   return [];
 }
 
@@ -105,7 +112,7 @@ function stripSpaces(fontName) {
   return fontName.replace(/\s+/g, '');
 }
 
-function addTestNodes() {
+async function addTestNodes() {
   var containerDiv = document.createElement("div");
   var fontFaceDeclarations = "";
     for (font_name_and_testchars of getFontsWithTestCharsForOS()) {
@@ -122,6 +129,7 @@ function addTestNodes() {
   }
   fontfaces.innerText = fontFaceDeclarations;
   document.body.appendChild(containerDiv);
+  await document.fonts.ready;
   // Force layout so that the DevTools side of the test can start accessing
   // nodes' font information reliably.
   document.body.offsetTop;

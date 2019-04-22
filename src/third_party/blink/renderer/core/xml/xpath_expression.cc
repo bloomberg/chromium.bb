@@ -44,7 +44,7 @@ XPathExpression* XPathExpression::CreateExpression(
     const String& expression,
     XPathNSResolver* resolver,
     ExceptionState& exception_state) {
-  XPathExpression* expr = XPathExpression::Create();
+  auto* expr = MakeGarbageCollected<XPathExpression>();
   Parser parser;
 
   expr->top_expression_ =
@@ -61,7 +61,7 @@ void XPathExpression::Trace(blink::Visitor* visitor) {
 }
 
 XPathResult* XPathExpression::evaluate(Node* context_node,
-                                       unsigned short type,
+                                       uint16_t type,
                                        const ScriptValue&,
                                        ExceptionState& exception_state) {
   if (!IsValidContextNode(context_node)) {
@@ -73,7 +73,7 @@ XPathResult* XPathExpression::evaluate(Node* context_node,
   }
 
   EvaluationContext evaluation_context(*context_node);
-  XPathResult* result = XPathResult::Create(
+  auto* result = MakeGarbageCollected<XPathResult>(
       evaluation_context, top_expression_->Evaluate(evaluation_context));
 
   if (evaluation_context.had_type_conversion_error) {

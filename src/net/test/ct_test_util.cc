@@ -216,7 +216,7 @@ std::string GetTestPublicKeyId() {
 }
 
 void GetX509CertSCT(scoped_refptr<SignedCertificateTimestamp>* sct_ref) {
-  CHECK(sct_ref != NULL);
+  CHECK(sct_ref != nullptr);
   *sct_ref = new SignedCertificateTimestamp();
   SignedCertificateTimestamp *const sct(sct_ref->get());
   sct->version = ct::SignedCertificateTimestamp::V1;
@@ -233,7 +233,7 @@ void GetX509CertSCT(scoped_refptr<SignedCertificateTimestamp>* sct_ref) {
 }
 
 void GetPrecertSCT(scoped_refptr<SignedCertificateTimestamp>* sct_ref) {
-  CHECK(sct_ref != NULL);
+  CHECK(sct_ref != nullptr);
   *sct_ref = new SignedCertificateTimestamp();
   SignedCertificateTimestamp *const sct(sct_ref->get());
   sct->version = ct::SignedCertificateTimestamp::V1;
@@ -342,7 +342,7 @@ std::string CreateSignedTreeHeadJsonString(size_t tree_size,
                                            std::string tree_head_signature) {
   std::string sth_json =
       std::string("{\"tree_size\":") + base::NumberToString(tree_size) +
-      std::string(",\"timestamp\":") + base::Int64ToString(timestamp);
+      std::string(",\"timestamp\":") + base::NumberToString(timestamp);
 
   if (!sha256_root_hash.empty()) {
     std::string root_hash_b64;

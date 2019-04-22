@@ -31,11 +31,20 @@ NSString* const AccessoryCreditCardAccessibilityIdentifier =
 
 namespace {
 
-// The inset on the left before the icons start.
-constexpr CGFloat ManualFillIconsLeftInset = 10;
+// The leading inset for the icons.
+constexpr CGFloat ManualFillIconsLeadingInset = 10;
 
-// The inset on the right after the icons end.
-constexpr CGFloat ManualFillIconsRightInset = 24;
+// The trailing inset for the icons.
+constexpr CGFloat ManualFillIconsTrailingInset = 24;
+
+// The iPad override for the trailing inset.
+constexpr CGFloat ManualFillIconsIPadTrailingInset = 20;
+
+// Default spacing for the icons.
+constexpr CGFloat ManualFillIconsSpacing = 10;
+
+// iPad override for the icons' spacing.
+constexpr CGFloat ManualFillIconsIPadSpacing = 15;
 
 }  // namespace
 
@@ -190,11 +199,14 @@ static NSTimeInterval MFAnimationDuration = 0.2;
     [icons addObject:self.accountButton];
   }
   UIStackView* stackView = [[UIStackView alloc] initWithArrangedSubviews:icons];
-  stackView.spacing = 10;
+  stackView.spacing =
+      IsIPadIdiom() ? ManualFillIconsIPadSpacing : ManualFillIconsSpacing;
   stackView.axis = UILayoutConstraintAxisHorizontal;
   stackView.translatesAutoresizingMaskIntoConstraints = NO;
   [self.view addSubview:stackView];
 
+  CGFloat trailingInset = IsIPadIdiom() ? ManualFillIconsIPadTrailingInset
+                                        : ManualFillIconsTrailingInset;
   id<LayoutGuideProvider> safeAreaLayoutGuide = self.view.safeAreaLayoutGuide;
   [NSLayoutConstraint activateConstraints:@[
     // Vertical constraints.
@@ -204,10 +216,10 @@ static NSTimeInterval MFAnimationDuration = 0.2;
     // Horizontal constraints.
     [stackView.leadingAnchor
         constraintEqualToAnchor:safeAreaLayoutGuide.leadingAnchor
-                       constant:ManualFillIconsLeftInset],
+                       constant:ManualFillIconsLeadingInset],
     [safeAreaLayoutGuide.trailingAnchor
         constraintEqualToAnchor:stackView.trailingAnchor
-                       constant:ManualFillIconsRightInset],
+                       constant:trailingInset],
   ]];
 }
 
@@ -264,6 +276,7 @@ static NSTimeInterval MFAnimationDuration = 0.2;
 }
 
 - (void)accountButtonPressed:(UIButton*)sender {
+  base::RecordAction(base::UserMetricsAction("ManualFallback_OpenProfile"));
   [self animateKeyboardButtonHidden:NO];
   [self resetTintColors];
   [self.accountButton setTintColor:UIColor.cr_manualFillTintColor];

@@ -361,7 +361,7 @@ test (() => {
 }, "CSSOM changes to non-constructed stylesheet should affect default style");
 
 test (() => {
-  const constructedStyleSheet = document.createEmptyCSSStyleSheet();
+  const constructedStyleSheet = new CSSStyleSheet();
   const redStyleText = "* { color: red; }";
   constructedStyleSheet.insertRule(redStyleText);
   window.customElements.define("element-constructed", class extends HTMLElement {

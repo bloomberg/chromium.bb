@@ -17,6 +17,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "components/safe_browsing/base_ui_manager.h"
+#include "components/security_interstitials/content/unsafe_resource.h"
 
 class GURL;
 
@@ -103,6 +104,9 @@ class SafeBrowsingUIManager : public BaseUIManager {
 
   // Calls SafeBrowsingBlockingPage::ShowBlockingPage().
   void ShowBlockingPageForResource(const UnsafeResource& resource) override;
+
+  // Returns true if SB committed interstitials are enabled.
+  bool SafeBrowsingInterstitialsAreCommittedNavigations() override;
 
   // Helper method to ensure hit reports are only sent when the user has
   // opted in to extended reporting and is not currently in incognito mode.

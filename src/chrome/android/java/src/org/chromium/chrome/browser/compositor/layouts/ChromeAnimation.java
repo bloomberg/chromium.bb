@@ -8,12 +8,10 @@ import android.annotation.TargetApi;
 import android.os.Build;
 import android.os.SystemClock;
 import android.provider.Settings;
-import android.view.animation.AccelerateInterpolator;
-import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Interpolator;
-import android.view.animation.LinearInterpolator;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.chrome.browser.compositor.animation.CompositorAnimator;
 import org.chromium.chrome.browser.util.MathUtils;
 
 import java.util.ArrayList;
@@ -46,47 +44,7 @@ public class ChromeAnimation<T> {
     private final ArrayList<Animation<T>> mAnimations = new ArrayList<Animation<T>>();
     private long mCurrentTime;
 
-    // Keep a reference to one of each standard interpolator to avoid allocations.
-    private static AccelerateInterpolator sAccelerateInterpolator;
-    private static LinearInterpolator sLinearInterpolator;
-    private static DecelerateInterpolator sDecelerateInterpolator;
     private static final Object sLock = new Object();
-
-    /**
-     * @return The default acceleration interpolator. No allocation.
-     */
-    public static AccelerateInterpolator getAccelerateInterpolator() {
-        synchronized (sLock) {
-            if (sAccelerateInterpolator == null) {
-                sAccelerateInterpolator = new AccelerateInterpolator();
-            }
-        }
-        return sAccelerateInterpolator;
-    }
-
-    /**
-     * @return The default linear interpolator. No allocation.
-     */
-    public static LinearInterpolator getLinearInterpolator() {
-        synchronized (sLock) {
-            if (sLinearInterpolator == null) {
-                sLinearInterpolator = new LinearInterpolator();
-            }
-        }
-        return sLinearInterpolator;
-    }
-
-    /**
-     * @return The default deceleration interpolator. No allocation.
-     */
-    public static DecelerateInterpolator getDecelerateInterpolator() {
-        synchronized (sLock) {
-            if (sDecelerateInterpolator == null) {
-                sDecelerateInterpolator = new DecelerateInterpolator();
-            }
-        }
-        return sDecelerateInterpolator;
-    }
 
     /**
      * Adds a ChromeAnimation.Animation instance to this ChromeAnimation set.  This Animation will
@@ -221,7 +179,7 @@ public class ChromeAnimation<T> {
         private long mStartDelay;
         private boolean mDelayStartValue;
         private boolean mHasFinished;
-        private Interpolator mInterpolator = getDecelerateInterpolator();
+        private Interpolator mInterpolator = CompositorAnimator.DECELERATE_INTERPOLATOR;
 
         /**
          * Creates a new Animation object with a custom Interpolator.
@@ -466,7 +424,7 @@ public class ChromeAnimation<T> {
                 int prop, float start, float end, long duration, long startTime,
                 boolean setStartValueAfterStartDelay) {
             addAnimation(set, object, prop, start, end, duration, startTime,
-                    setStartValueAfterStartDelay, getDecelerateInterpolator());
+                    setStartValueAfterStartDelay, CompositorAnimator.DECELERATE_INTERPOLATOR);
         }
 
         /**

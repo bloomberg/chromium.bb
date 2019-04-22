@@ -156,6 +156,7 @@ var tests = [
     chrome.test.assertTrue(!!chrome.storage.local, 'no local');
     chrome.test.assertTrue(!!chrome.storage.local.set, 'no set');
     chrome.test.assertTrue(!!chrome.storage.local.get, 'no get');
+    chrome.test.assertTrue(!!chrome.storage.local.onChanged, 'no onChanged');
     // Check some properties.
     chrome.test.assertTrue(!!chrome.storage.local.QUOTA_BYTES,
                            'local quota bytes');

@@ -89,7 +89,10 @@ struct MediaLogEvent {
     // A property has changed without any special event occurring.
     PROPERTY_CHANGE,
 
-    TYPE_LAST = PROPERTY_CHANGE
+    // Issued when a player is suspended.
+    SUSPENDED,
+
+    TYPE_LAST = SUSPENDED
   };
 
   int32_t id;

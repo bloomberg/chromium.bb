@@ -5,14 +5,14 @@
 #ifndef SQL_TRANSACTION_H_
 #define SQL_TRANSACTION_H_
 
+#include "base/component_export.h"
 #include "base/macros.h"
-#include "sql/sql_export.h"
 
 namespace sql {
 
 class Database;
 
-class SQL_EXPORT Transaction {
+class COMPONENT_EXPORT(SQL) Transaction {
  public:
   // Creates the scoped transaction object. You MUST call Begin() to begin the
   // transaction. If you have begun a transaction and not committed it, the

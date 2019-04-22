@@ -25,6 +25,8 @@ Polymer({
      * The heading text for the blocked exception list.
      */
     blockHeader: String,
+
+    searchFilter: String,
   },
 
   /** @override */

@@ -19,14 +19,9 @@
 
 namespace sw
 {
-	class Resource;
-
 	enum StreamType ENUM_UNDERLYING_TYPE_UNSIGNED_INT
 	{
 		STREAMTYPE_COLOR,     // 4 normalized unsigned bytes, ZYXW order
-		STREAMTYPE_UDEC3,     // 3 unsigned 10-bit fields
-		STREAMTYPE_DEC3N,     // 3 normalized signed 10-bit fields
-		STREAMTYPE_INDICES,   // 4 unsigned bytes, stored unconverted into X component
 		STREAMTYPE_FLOAT,     // Normalization ignored
 		STREAMTYPE_BYTE,
 		STREAMTYPE_SBYTE,
@@ -34,7 +29,6 @@ namespace sw
 		STREAMTYPE_USHORT,
 		STREAMTYPE_INT,
 		STREAMTYPE_UINT,
-		STREAMTYPE_FIXED,     // Normalization ignored (16.16 format)
 		STREAMTYPE_HALF,      // Normalization ignored
 		STREAMTYPE_2_10_10_10_INT,
 		STREAMTYPE_2_10_10_10_UINT,
@@ -44,18 +38,18 @@ namespace sw
 
 	struct StreamResource
 	{
-		Resource *resource;
 		const void *buffer;
-		unsigned int stride;
+		unsigned int vertexStride;
+		unsigned int instanceStride;
 	};
 
 	struct Stream : public StreamResource
 	{
-		Stream(Resource *resource = 0, const void *buffer = 0, unsigned int stride = 0)
+		Stream(const void *buffer = nullptr, unsigned int vertexStride = 0)
 		{
-			this->resource = resource;
 			this->buffer = buffer;
-			this->stride = stride;
+			this->vertexStride = vertexStride;
+			this->instanceStride = 0;
 		}
 
 		Stream &define(StreamType type, unsigned int count, bool normalized = false)
@@ -81,12 +75,14 @@ namespace sw
 		{
 			static const float4 null = {0, 0, 0, 1};
 
-			resource = 0;
 			buffer = &null;
-			stride = 0;
+			vertexStride = 0;
+			instanceStride = 0;
 			type = STREAMTYPE_FLOAT;
 			count = 0;
 			normalized = false;
+			offset = 0;
+			binding = 0;
 
 			return *this;
 		}
@@ -99,6 +95,8 @@ namespace sw
 		StreamType type;
 		unsigned char count;
 		bool normalized;
+		unsigned int offset;
+		unsigned int binding;
 	};
 }
 

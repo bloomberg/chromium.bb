@@ -8,20 +8,15 @@
  * button (taking up the whole 'row'). The name link comes from the intended use
  * of this element to take the user to another page in the app or to an external
  * page (somewhat like an HTML link).
- * Note: the ripple handling was taken from Polymer v1 paper-icon-button-light.
  */
 Polymer({
   is: 'cr-link-row',
-
-  behaviors: [Polymer.PaperRippleBehavior],
 
   properties: {
     startIcon: {
       type: String,
       value: '',
     },
-
-    iconClass: String,
 
     label: {
       type: String,
@@ -32,40 +27,44 @@ Polymer({
       type: String,
       /* Value used for noSubLabel attribute. */
       value: '',
+      observer: 'onSubLabelChange_',
     },
 
     disabled: {
       type: Boolean,
       reflectToAttribute: true,
     },
+
+    external: {
+      type: Boolean,
+      value: false,
+    },
+
+    /** @private {string|undefined} */
+    ariaDescribedBy_: String,
   },
 
-  listeners: {
-    'down': '_rippleDown',
-    'up': '_rippleUp',
-    'focus': '_rippleDown',
-    'blur': '_rippleUp',
+  /** @type {boolean} */
+  get noink() {
+    return this.$.icon.noink;
+  },
+
+  /** @type {boolean} */
+  set noink(value) {
+    this.$.icon.noink = value;
   },
 
   focus: function() {
-    // Forward focus to the button wrapper.
-    this.$$('button').focus();
+    this.$.icon.focus();
   },
 
-  _rippleDown: function() {
-    this.getRipple().uiDownAction();
+  /** @private */
+  getIconClass_: function() {
+    return this.external ? 'icon-external' : 'subpage-arrow';
   },
 
-  _rippleUp: function() {
-    this.getRipple().uiUpAction();
-  },
-
-  _createRipple: function() {
-    this._rippleContainer = this.$.icon;
-    const ripple = Polymer.PaperRippleBehavior._createRipple();
-    ripple.id = 'ink';
-    ripple.setAttribute('recenters', '');
-    ripple.classList.add('circle');
-    return ripple;
+  /** @private */
+  onSubLabelChange_: function() {
+    this.ariaDescribedBy_ = this.subLabel ? 'subLabel' : undefined;
   },
 });

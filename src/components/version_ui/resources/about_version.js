@@ -73,8 +73,9 @@ function returnARCVersion(arcVersion) {
  * @param {!{customizationId: string}} response
  */
 function returnCustomizationId(response) {
-  if (!response.customizationId)
+  if (!response.customizationId) {
     return;
+  }
   $('customization_id_holder').hidden = false;
   $('customization_id').textContent = response.customizationId;
 }

@@ -14,6 +14,8 @@ jumbo_component("display") {
     "display_change_notifier.cc",
     "display_change_notifier.h",
     "display_export.h",
+    "display_features.cc",
+    "display_features.h",
     "display_finder.cc",
     "display_finder.h",
     "display_layout.cc",
@@ -161,8 +163,8 @@ test("display_unittests") {
     "display_layout_unittest.cc",
     "display_list_unittest.cc",
     "display_unittest.cc",
+    "fake/fake_display_snapshot_unittest.cc",
     "manager/display_manager_utilities_unittest.cc",
-    "manager/fake_display_snapshot_unittest.cc",
     "manager/json_converter_unittest.cc",
     "manager/managed_display_info_unittest.cc",
     "mojo/display_struct_traits_unittest.cc",
@@ -198,6 +200,7 @@ test("display_unittests") {
     "//mojo/core/test:run_all_unittests",
     "//testing/gmock",
     "//testing/gtest",
+    "//ui/display/fake",
     "//ui/display/manager",
     "//ui/display/mojo:interfaces",
     "//ui/display/types",
@@ -215,6 +218,6 @@ test("display_unittests") {
   }
 
   if (is_chromeos) {
-    deps += [ "//chromeos" ]
+    deps += [ "//chromeos/constants" ]
   }
 }

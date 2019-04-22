@@ -19,6 +19,7 @@ from dashboard.pinpoint.models import quest as quest_module
 from dashboard.pinpoint.models.change import change_test
 
 
+# All arguments must have string values.
 _BASE_REQUEST = {
     'target': 'telemetry_perf_tests',
     'configuration': 'chromium-rel-mac11-pro',
@@ -33,7 +34,8 @@ _BASE_REQUEST = {
 _CONFIGURATION_ARGUMENTS = {
     'browser': 'release',
     'builder': 'Mac Builder',
-    'dimensions': '{"key": "value"}',
+    'bucket': 'luci.bucket',
+    'dimensions': '[{"key": "pool", "value": "cool pool"}]',
     'repository': 'chromium',
     'swarming_server': 'https://chromium-swarm.appspot.com',
 }
@@ -100,6 +102,15 @@ class NewTest(_NewTest):
     self.assertEqual(
         result['jobUrl'],
         'https://testbed.example.com/job/%s' % result['jobId'])
+
+  def testBrowserOverride(self):
+    request = dict(_BASE_REQUEST)
+    request['browser'] = 'debug'
+    response = self.Post('/api/new', request, status=200)
+    job = job_module.JobFromId(json.loads(response.body)['jobId'])
+    self.assertIsInstance(job.state._quests[1], quest_module.RunTelemetryTest)
+    self.assertIn('debug', job.state._quests[1]._extra_args)
+    self.assertNotIn('release', job.state._quests[1]._extra_args)
 
   def testComparisonModeFunctional(self):
     request = dict(_BASE_REQUEST)
@@ -240,3 +251,18 @@ class NewTest(_NewTest):
     response = self.Post('/api/new', _BASE_REQUEST, status=200)
     job = job_module.JobFromId(json.loads(response.body)['jobId'])
     self.assertEqual(job.user, testing_common.INTERNAL_USER.email())
+
+  def testVrQuest(self):
+    request = dict(_BASE_REQUEST)
+    request['target'] = 'vr_perf_tests'
+    configuration = dict(_CONFIGURATION_ARGUMENTS)
+    configuration['browser'] = 'android-chromium'
+    request.update(configuration)
+    del request['configuration']
+    response = self.Post('/api/new', request, status=200)
+    job = job_module.JobFromId(json.loads(response.body)['jobId'])
+    self.assertEqual(len(job.state._quests), 3)
+    self.assertIsInstance(job.state._quests[0], quest_module.FindIsolate)
+    self.assertIsInstance(job.state._quests[1], quest_module.RunVrTelemetryTest)
+    self.assertIsInstance(job.state._quests[2],
+                          quest_module.ReadHistogramsJsonValue)

@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "ios/web/public/web_state/web_frame.h"
 #include "ios/web/public/web_state/web_frames_manager.h"
-#include "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -38,6 +38,11 @@ WebFrame* GetWebFrameWithId(WebState* web_state, const std::string& frame_id) {
 
 std::string GetWebFrameId(WebFrame* frame) {
   return frame ? frame->GetFrameId() : std::string();
+}
+
+std::set<WebFrame*> GetAllWebFrames(WebState* web_state) {
+  WebFramesManager* manager = WebFramesManager::FromWebState(web_state);
+  return manager->GetAllWebFrames();
 }
 
 }  // namespace web

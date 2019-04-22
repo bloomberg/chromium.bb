@@ -39,6 +39,6 @@ class WebSandboxSupportMac : public blink::WebSandboxSupport {
   DISALLOW_COPY_AND_ASSIGN(WebSandboxSupportMac);
 };
 
-};  // namespace content
+}  // namespace content
 
 #endif  // CONTENT_CHILD_CHILD_PROCESS_SANDBOX_SUPPORT_IMPL_MAC_H_

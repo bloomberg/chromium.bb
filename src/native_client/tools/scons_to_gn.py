@@ -3,6 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 import fnmatch
 import optparse
 import os
@@ -24,13 +26,13 @@ def RunTests():
   fail_count = 0
   for filename in os.listdir(test_path):
     if fnmatch.fnmatch(filename, '*_test.py'):
-      print 'Testing: ' + filename
+      print('Testing: ' + filename)
       filepath = os.path.join(test_path, filename)
       val = os.system(sys.executable + ' ' + filepath)
       if val:
-        print 'FAILED: ' + filename
+        print('FAILED: ' + filename)
         fail_count += 1
-      print '\n'
+      print('\n')
 
 
 def main(argv):

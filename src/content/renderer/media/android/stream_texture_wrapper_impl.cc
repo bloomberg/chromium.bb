@@ -4,6 +4,7 @@
 
 #include "content/renderer/media/android/stream_texture_wrapper_impl.h"
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "cc/layers/video_frame_provider.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -126,8 +127,8 @@ void StreamTextureWrapperImpl::UpdateTextureSize(const gfx::Size& new_size) {
 
   if (!main_task_runner_->BelongsToCurrentThread()) {
     main_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&StreamTextureWrapperImpl::UpdateTextureSize,
-                              weak_factory_.GetWeakPtr(), new_size));
+        FROM_HERE, base::BindOnce(&StreamTextureWrapperImpl::UpdateTextureSize,
+                                  weak_factory_.GetWeakPtr(), new_size));
     return;
   }
 
@@ -155,9 +156,10 @@ void StreamTextureWrapperImpl::Initialize(
   natural_size_ = natural_size;
 
   main_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&StreamTextureWrapperImpl::InitializeOnMainThread,
-                            weak_factory_.GetWeakPtr(), received_frame_cb,
-                            media::BindToCurrentLoop(init_cb)));
+      FROM_HERE,
+      base::BindOnce(&StreamTextureWrapperImpl::InitializeOnMainThread,
+                     weak_factory_.GetWeakPtr(), received_frame_cb,
+                     media::BindToCurrentLoop(init_cb)));
 }
 
 void StreamTextureWrapperImpl::InitializeOnMainThread(
@@ -186,8 +188,8 @@ void StreamTextureWrapperImpl::Destroy() {
     // base::Unretained is safe here because this function is the only one that
     // can call delete.
     main_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&StreamTextureWrapperImpl::Destroy, base::Unretained(this)));
+        FROM_HERE, base::BindOnce(&StreamTextureWrapperImpl::Destroy,
+                                  base::Unretained(this)));
     return;
   }
 

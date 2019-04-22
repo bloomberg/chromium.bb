@@ -25,11 +25,11 @@ void GoogleURLLoaderThrottle::DetachFromCurrentSequence() {}
 void GoogleURLLoaderThrottle::WillStartRequest(
     network::ResourceRequest* request,
     bool* defer) {
-  if (!is_off_the_record_ &&
-      variations::ShouldAppendVariationHeaders(request->url) &&
-      !dynamic_params_.variation_ids_header.empty()) {
-    request->client_data_header = dynamic_params_.variation_ids_header;
-  }
+  variations::AppendVariationsHeaderWithCustomValue(
+      request->url,
+      is_off_the_record_ ? variations::InIncognito::kYes
+                         : variations::InIncognito::kNo,
+      dynamic_params_.variation_ids_header, request);
 
   if (dynamic_params_.force_safe_search) {
     GURL new_url;
@@ -59,12 +59,12 @@ void GoogleURLLoaderThrottle::WillStartRequest(
 
 void GoogleURLLoaderThrottle::WillRedirectRequest(
     net::RedirectInfo* redirect_info,
-    const network::ResourceResponseHead& /* response_head */,
+    const network::ResourceResponseHead& response_head,
     bool* /* defer */,
     std::vector<std::string>* to_be_removed_headers,
     net::HttpRequestHeaders* modified_headers) {
-  if (!variations::ShouldAppendVariationHeaders(redirect_info->new_url))
-    to_be_removed_headers->push_back(variations::kClientDataHeader);
+  variations::RemoveVariationsHeaderIfNeeded(*redirect_info, response_head,
+                                             to_be_removed_headers);
 
   // URLLoaderThrottles can only change the redirect URL when the network
   // service is enabled. The non-network service path handles this in

@@ -357,9 +357,7 @@ static void ecp_nistz256_points_mul(const EC_GROUP *group, EC_RAW_POINT *r,
     unsigned index = 0;
     unsigned wvalue = calc_first_wvalue(&index, p_str);
 
-    const PRECOMP256_ROW *const precomputed_table =
-        (const PRECOMP256_ROW *)ecp_nistz256_precomputed;
-    ecp_nistz256_select_w7(&p.a, precomputed_table[0], wvalue >> 1);
+    ecp_nistz256_select_w7(&p.a, ecp_nistz256_precomputed[0], wvalue >> 1);
 
     ecp_nistz256_neg(p.p.Z, p.p.Y);
     copy_conditional(p.p.Y, p.p.Z, wvalue & 1);
@@ -373,11 +371,14 @@ static void ecp_nistz256_points_mul(const EC_GROUP *group, EC_RAW_POINT *r,
     for (int i = 1; i < 37; i++) {
       wvalue = calc_wvalue(&index, p_str);
 
-      ecp_nistz256_select_w7(&t.a, precomputed_table[i], wvalue >> 1);
+      ecp_nistz256_select_w7(&t.a, ecp_nistz256_precomputed[i], wvalue >> 1);
 
       ecp_nistz256_neg(t.p.Z, t.a.Y);
       copy_conditional(t.a.Y, t.p.Z, wvalue & 1);
 
+      // Note |ecp_nistz256_point_add_affine| does not work if |p.p| and |t.a|
+      // are the same non-infinity point, so it is important that we compute the
+      // |g_scalar| term before the |p_scalar| term.
       ecp_nistz256_point_add_affine(&p.p, &p.p, &t.a);
     }
   }
@@ -401,14 +402,12 @@ static void ecp_nistz256_points_mul_public(const EC_GROUP *group,
   unsigned index = 0;
   unsigned wvalue = calc_first_wvalue(&index, p_str);
 
-  const PRECOMP256_ROW *const precomputed_table =
-      (const PRECOMP256_ROW *)ecp_nistz256_precomputed;
-
   // Convert |p| from affine to Jacobian coordinates. We set Z to zero if |p|
   // is infinity and |ONE| otherwise. |p| was computed from the table, so it
   // is infinity iff |wvalue >> 1| is zero.
   if ((wvalue >> 1) != 0) {
-    OPENSSL_memcpy(&p.a, &precomputed_table[0][(wvalue >> 1) - 1], sizeof(p.a));
+    OPENSSL_memcpy(&p.a, &ecp_nistz256_precomputed[0][(wvalue >> 1) - 1],
+                   sizeof(p.a));
     OPENSSL_memcpy(&p.p.Z, ONE, sizeof(p.p.Z));
   } else {
     OPENSSL_memset(&p.a, 0, sizeof(p.a));
@@ -426,12 +425,16 @@ static void ecp_nistz256_points_mul_public(const EC_GROUP *group,
       continue;
     }
 
-    OPENSSL_memcpy(&t.a, &precomputed_table[i][(wvalue >> 1) - 1], sizeof(p.a));
+    OPENSSL_memcpy(&t.a, &ecp_nistz256_precomputed[i][(wvalue >> 1) - 1],
+                   sizeof(p.a));
 
     if ((wvalue & 1) == 1) {
       ecp_nistz256_neg(t.a.Y, t.a.Y);
     }
 
+    // Note |ecp_nistz256_point_add_affine| does not work if |p.p| and |t.a|
+    // are the same non-infinity point, so it is important that we compute the
+    // |g_scalar| term before the |p_scalar| term.
     ecp_nistz256_point_add_affine(&p.p, &p.p, &t.a);
   }
 
@@ -581,7 +584,7 @@ static void ecp_nistz256_inv_mod_ord(const EC_GROUP *group, EC_SCALAR *out,
 static int ecp_nistz256_mont_inv_mod_ord_vartime(const EC_GROUP *group,
                                                  EC_SCALAR *out,
                                                  const EC_SCALAR *in) {
-  if ((OPENSSL_ia32cap_P[1] & (1 << 28)) == 0) {
+  if ((OPENSSL_ia32cap_get()[1] & (1 << 28)) == 0) {
     // No AVX support; fallback to generic code.
     return ec_GFp_simple_mont_inv_mod_ord_vartime(group, out, in);
   }
@@ -651,7 +654,7 @@ DEFINE_METHOD_FUNCTION(EC_METHOD, EC_GFp_nistz256_method) {
   out->scalar_inv_montgomery = ecp_nistz256_inv_mod_ord;
   out->scalar_inv_montgomery_vartime = ecp_nistz256_mont_inv_mod_ord_vartime;
   out->cmp_x_coordinate = ecp_nistz256_cmp_x_coordinate;
-};
+}
 
 #endif /* !defined(OPENSSL_NO_ASM) && defined(OPENSSL_X86_64) && \
           !defined(OPENSSL_SMALL) */

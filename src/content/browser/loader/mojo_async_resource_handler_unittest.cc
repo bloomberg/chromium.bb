@@ -314,7 +314,7 @@ class MojoAsyncResourceHandlerTestBase {
         kRouteId,                                // render_view_id
         0,                                       // render_frame_id
         true,                                    // is_main_frame
-        false,                                   // allow_download
+        ResourceInterceptPolicy::kAllowNone,     // resource_intercept_policy
         true,                                    // is_async
         PREVIEWS_OFF,                            // previews_state
         nullptr);                                // navigation_ui_data
@@ -1209,7 +1209,7 @@ TEST_P(MojoAsyncResourceHandlerWithAllocationSizeTest, RedirectHandling) {
 
   ASSERT_EQ(MockResourceLoader::Status::CALLBACK_PENDING,
             mock_loader_->status());
-  handler_->FollowRedirect(base::nullopt, base::nullopt, base::nullopt);
+  handler_->FollowRedirect({}, {}, base::nullopt);
   ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->status());
 
   url_loader_client_.ClearHasReceivedRedirect();
@@ -1230,7 +1230,7 @@ TEST_P(MojoAsyncResourceHandlerWithAllocationSizeTest, RedirectHandling) {
 
   ASSERT_EQ(MockResourceLoader::Status::CALLBACK_PENDING,
             mock_loader_->status());
-  handler_->FollowRedirect(base::nullopt, base::nullopt, base::nullopt);
+  handler_->FollowRedirect({}, {}, base::nullopt);
   ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->status());
 
   // Give the final response.
@@ -1254,7 +1254,7 @@ TEST_P(MojoAsyncResourceHandlerWithAllocationSizeTest, RedirectHandling) {
 // redirect, despite the fact that no redirect has been received yet.
 TEST_P(MojoAsyncResourceHandlerWithAllocationSizeTest,
        MalformedFollowRedirectRequest) {
-  handler_->FollowRedirect(base::nullopt, base::nullopt, base::nullopt);
+  handler_->FollowRedirect({}, {}, base::nullopt);
 
   EXPECT_TRUE(handler_->has_received_bad_message());
 }
@@ -1271,7 +1271,7 @@ TEST_P(
                 base::MakeRefCounted<network::ResourceResponse>()));
 
   ASSERT_FALSE(url_loader_client_.has_received_response());
-  url_loader_client_.RunUntilResponseReceived();
+  url_loader_client_.RunUntilResponseBodyArrived();
 
   ASSERT_EQ(MockResourceLoader::Status::IDLE, mock_loader_->OnWillRead());
 
@@ -1328,7 +1328,7 @@ TEST_P(
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
             mock_loader_->OnReadCompleted("B"));
 
-  ASSERT_TRUE(url_loader_client_.response_body().is_valid());
+  ASSERT_TRUE(url_loader_client_.has_received_response());
   url_loader_client_.RunUntilResponseBodyArrived();
   ASSERT_TRUE(url_loader_client_.response_body().is_valid());
 
@@ -1420,7 +1420,7 @@ TEST_F(MojoAsyncResourceHandlerTest, SSLInfoOnComplete) {
 
   url_loader_client_.RunUntilComplete();
   EXPECT_FALSE(url_loader_client_.completion_status().ssl_info);
-};
+}
 
 // Test that SSLInfo is attached to OnResponseComplete when there is the
 // kURLLoadOptionsSendSSLInfoForCertificateError option.
@@ -1438,7 +1438,7 @@ TEST_F(MojoAsyncResourceHandlerSendSSLInfoForCertificateError,
 
   url_loader_client_.RunUntilComplete();
   EXPECT_TRUE(url_loader_client_.completion_status().ssl_info);
-};
+}
 
 // Test that SSLInfo is not attached to OnResponseComplete when there is the
 // kURLLoadOptionsSendSSLInfoForCertificateError option and a minor SSL error.
@@ -1455,7 +1455,7 @@ TEST_F(MojoAsyncResourceHandlerSendSSLInfoForCertificateError,
             mock_loader_->OnResponseCompleted(net::URLRequestStatus()));
   url_loader_client_.RunUntilComplete();
   EXPECT_FALSE(url_loader_client_.completion_status().ssl_info);
-};
+}
 
 TEST_F(MojoAsyncResourceHandlerTest,
        TransferSizeUpdateCalledForNonBlockedResponse) {
@@ -1571,8 +1571,8 @@ TEST_F(MojoAsyncResourceHandlerTest,
             url_loader_client_.body_transfer_size());
 }
 
-INSTANTIATE_TEST_CASE_P(MojoAsyncResourceHandlerWithAllocationSizeTest,
-                        MojoAsyncResourceHandlerWithAllocationSizeTest,
-                        ::testing::Values(8, 32 * 2014));
+INSTANTIATE_TEST_SUITE_P(MojoAsyncResourceHandlerWithAllocationSizeTest,
+                         MojoAsyncResourceHandlerWithAllocationSizeTest,
+                         ::testing::Values(8, 32 * 2014));
 }  // namespace
 }  // namespace content

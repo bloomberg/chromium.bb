@@ -180,14 +180,12 @@ void DeclarativeContentPageUrlConditionTracker::StopTrackingPredicates(
 
 void DeclarativeContentPageUrlConditionTracker::TrackForWebContents(
     content::WebContents* contents) {
-  per_web_contents_tracker_[contents] =
-      make_linked_ptr(new PerWebContentsTracker(
-          contents,
-          &url_matcher_,
-          base::Bind(&Delegate::RequestEvaluation, base::Unretained(delegate_)),
-          base::Bind(&DeclarativeContentPageUrlConditionTracker::
+  per_web_contents_tracker_[contents] = std::make_unique<PerWebContentsTracker>(
+      contents, &url_matcher_,
+      base::Bind(&Delegate::RequestEvaluation, base::Unretained(delegate_)),
+      base::Bind(&DeclarativeContentPageUrlConditionTracker::
                      DeletePerWebContentsTracker,
-                     base::Unretained(this))));
+                 base::Unretained(this)));
   per_web_contents_tracker_[contents]->UpdateMatchesForCurrentUrl(true);
 }
 

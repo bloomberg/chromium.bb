@@ -7,13 +7,13 @@ package org.chromium.chrome.browser.partnerbookmarks;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.text.format.DateUtils;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Stores failed favicon loads along with a timestamp determining what point we can attempt
@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class PartnerBookmarksFaviconThrottle {
     private static final String PREFERENCES_NAME = "partner_bookmarks_favicon_throttle";
-    private static final long FAVICON_RETRIEVAL_TIMEOUT_MS = TimeUnit.DAYS.toMillis(30);
+    private static final long FAVICON_RETRIEVAL_TIMEOUT_MS = DateUtils.DAY_IN_MILLIS * 30;
 
     private final SharedPreferences mSharedPreferences;
 

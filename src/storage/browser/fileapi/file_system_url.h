@@ -8,11 +8,12 @@
 #include <set>
 #include <string>
 
+#include "base/component_export.h"
 #include "base/files/file_path.h"
-#include "storage/browser/storage_browser_export.h"
 #include "storage/common/fileapi/file_system_mount_option.h"
 #include "storage/common/fileapi/file_system_types.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace storage {
 
@@ -75,13 +76,13 @@ namespace storage {
 // illegal on the current platform.
 // To avoid problems, use VirtualPath::BaseName and
 // VirtualPath::GetComponents instead of the base::FilePath methods.
-class STORAGE_EXPORT FileSystemURL {
+class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemURL {
  public:
   FileSystemURL();
   FileSystemURL(const FileSystemURL& other);
   // Constructs FileSystemURL with the contents of |other|, which is left in
   // valid but unspecified state.
-  FileSystemURL(FileSystemURL&& other) noexcept;
+  FileSystemURL(FileSystemURL&& other);
   ~FileSystemURL();
 
   // Replaces the contents with those of |rhs|, which is left in valid but
@@ -93,10 +94,10 @@ class STORAGE_EXPORT FileSystemURL {
   // Methods for creating FileSystemURL without attempting to crack them.
   // Should be used only in tests.
   static FileSystemURL CreateForTest(const GURL& url);
-  static FileSystemURL CreateForTest(const GURL& origin,
+  static FileSystemURL CreateForTest(const url::Origin& origin,
                                      FileSystemType mount_type,
                                      const base::FilePath& virtual_path);
-  static FileSystemURL CreateForTest(const GURL& origin,
+  static FileSystemURL CreateForTest(const url::Origin& origin,
                                      FileSystemType mount_type,
                                      const base::FilePath& virtual_path,
                                      const std::string& mount_filesystem_id,
@@ -109,7 +110,7 @@ class STORAGE_EXPORT FileSystemURL {
   bool is_valid() const { return is_valid_; }
 
   // Returns the origin part of this URL. See the class comment for details.
-  const GURL& origin() const { return origin_; }
+  const url::Origin& origin() const { return origin_; }
 
   // Returns the type part of this URL. See the class comment for details.
   FileSystemType type() const { return type_; }
@@ -149,7 +150,7 @@ class STORAGE_EXPORT FileSystemURL {
     return !(*this == that);
   }
 
-  struct STORAGE_EXPORT Comparator {
+  struct COMPONENT_EXPORT(STORAGE_BROWSER) Comparator {
     bool operator() (const FileSystemURL& lhs, const FileSystemURL& rhs) const;
   };
 
@@ -159,11 +160,11 @@ class STORAGE_EXPORT FileSystemURL {
   friend class IsolatedContext;
 
   explicit FileSystemURL(const GURL& filesystem_url);
-  FileSystemURL(const GURL& origin,
+  FileSystemURL(const url::Origin& origin,
                 FileSystemType mount_type,
                 const base::FilePath& virtual_path);
   // Creates a cracked FileSystemURL.
-  FileSystemURL(const GURL& origin,
+  FileSystemURL(const url::Origin& origin,
                 FileSystemType mount_type,
                 const base::FilePath& virtual_path,
                 const std::string& mount_filesystem_id,
@@ -172,10 +173,13 @@ class STORAGE_EXPORT FileSystemURL {
                 const std::string& filesystem_id,
                 const FileSystemMountOption& mount_option);
 
+  // Used to determine if a FileSystemURL was default constructed.
+  bool is_null_ = false;
+
   bool is_valid_;
 
   // Values parsed from the original URL.
-  GURL origin_;
+  url::Origin origin_;
   FileSystemType mount_type_;
   base::FilePath virtual_path_;
 

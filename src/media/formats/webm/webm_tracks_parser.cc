@@ -30,21 +30,6 @@ static TextKind CodecIdToTextKind(const std::string& codec_id) {
   return kTextNone;
 }
 
-static base::TimeDelta PrecisionCappedDefaultDuration(
-    const double timecode_scale_in_us,
-    const int64_t duration_in_ns) {
-  if (duration_in_ns <= 0)
-    return kNoTimestamp;
-
-  int64_t mult = duration_in_ns / 1000;
-  mult /= timecode_scale_in_us;
-  if (mult == 0)
-    return kNoTimestamp;
-
-  mult = static_cast<double>(mult) * timecode_scale_in_us;
-  return base::TimeDelta::FromMicroseconds(mult);
-}
-
 WebMTracksParser::WebMTracksParser(MediaLog* media_log, bool ignore_text_tracks)
     : ignore_text_tracks_(ignore_text_tracks),
       media_log_(media_log),
@@ -54,6 +39,24 @@ WebMTracksParser::WebMTracksParser(MediaLog* media_log, bool ignore_text_tracks)
 }
 
 WebMTracksParser::~WebMTracksParser() = default;
+
+base::TimeDelta WebMTracksParser::PrecisionCappedDefaultDuration(
+    const int64_t timecode_scale_in_ns,
+    const int64_t duration_in_ns) const {
+  DCHECK_GT(timecode_scale_in_ns, 0);
+  if (duration_in_ns <= 0)
+    return kNoTimestamp;
+
+  // Calculate the (integral) number of complete |timecode_scale_in_ns|
+  // intervals that fit within |duration_in_ns|.
+  int64_t intervals = duration_in_ns / timecode_scale_in_ns;
+
+  int64_t result_us = (intervals * timecode_scale_in_ns) / 1000;
+  if (result_us == 0)
+    return kNoTimestamp;
+
+  return base::TimeDelta::FromMicroseconds(result_us);
+}
 
 void WebMTracksParser::Reset() {
   ResetTrackEntry();
@@ -103,14 +106,14 @@ int WebMTracksParser::Parse(const uint8_t* buf, int size) {
 }
 
 base::TimeDelta WebMTracksParser::GetAudioDefaultDuration(
-    const double timecode_scale_in_us) const {
-  return PrecisionCappedDefaultDuration(timecode_scale_in_us,
+    const int64_t timecode_scale_in_ns) const {
+  return PrecisionCappedDefaultDuration(timecode_scale_in_ns,
                                         audio_default_duration_);
 }
 
 base::TimeDelta WebMTracksParser::GetVideoDefaultDuration(
-    const double timecode_scale_in_us) const {
-  return PrecisionCappedDefaultDuration(timecode_scale_in_us,
+    const int64_t timecode_scale_in_ns) const {
+  return PrecisionCappedDefaultDuration(timecode_scale_in_ns,
                                         video_default_duration_);
 }
 
@@ -266,7 +269,7 @@ bool WebMTracksParser::OnListEnd(int id) {
         MEDIA_LOG(DEBUG, media_log_) << "Ignoring text track " << track_num_;
         ignored_tracks_.insert(track_num_);
       } else {
-        std::string track_num = base::Int64ToString(track_num_);
+        std::string track_num = base::NumberToString(track_num_);
         text_tracks_[track_num_] = TextTrackConfig(
             text_track_kind, track_name_, track_language_, track_num);
       }

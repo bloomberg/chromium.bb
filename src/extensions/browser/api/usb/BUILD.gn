@@ -11,12 +11,10 @@ source_set("usb") {
   sources = [
     "usb_api.cc",
     "usb_api.h",
+    "usb_device_manager.cc",
+    "usb_device_manager.h",
     "usb_device_resource.cc",
     "usb_device_resource.h",
-    "usb_event_router.cc",
-    "usb_event_router.h",
-    "usb_guid_map.cc",
-    "usb_guid_map.h",
   ]
 
   configs += [

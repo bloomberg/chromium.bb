@@ -2,7 +2,6 @@ Check that interfaces inherit from EventTarget
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS EventSource.prototype.__proto__ is EventTarget.prototype
 PASS FileReader.prototype.__proto__ is EventTarget.prototype
 PASS MediaSource.prototype.__proto__ is EventTarget.prototype

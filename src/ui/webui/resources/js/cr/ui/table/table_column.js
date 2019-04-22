@@ -7,7 +7,7 @@
  */
 
 cr.define('cr.ui.table', function() {
-  /** @const */ var EventTarget = cr.EventTarget;
+  /** @const */ const EventTarget = cr.EventTarget;
 
   /**
    * A table column that wraps column ids and settings.
@@ -36,7 +36,7 @@ cr.define('cr.ui.table', function() {
      * @return {cr.ui.table.TableColumn} Clone of the given column.
      */
     clone: function() {
-      var tableColumn =
+      const tableColumn =
           new TableColumn(this.id_, this.name_, this.width_, this.endAlign_);
       tableColumn.renderFunction = this.renderFunction_;
       tableColumn.headerRenderFunction = this.headerRenderFunction_;
@@ -55,7 +55,7 @@ cr.define('cr.ui.table', function() {
      * @return {HTMLElement} Rendered element.
      */
     renderFunction_: function(dataItem, columnId, table) {
-      var div = /** @type {HTMLElement} */
+      const div = /** @type {HTMLElement} */
           (table.ownerDocument.createElement('div'));
       div.textContent = dataItem[columnId];
       div.hidden = !this.visible;

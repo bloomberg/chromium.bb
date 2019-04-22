@@ -2147,4 +2147,4 @@ void Converter::AppendPropertyAndValue(
   if (append_semicolon)
     string_ += "; ";
 }
-};  // namespace css_proto_converter
+}  // namespace css_proto_converter

@@ -9,18 +9,12 @@ proto_library("uwe_matcher_proto") {
     "uwe_matcher.proto",
   ]
 
-  deps = [
-    ":uws_spec_by_version_proto",
-  ]
+  link_deps = [ ":uws_spec_by_version_proto" ]
 }
 
 proto_library("file_digest_proto") {
   sources = [
     "file_digest.proto",
-  ]
-
-  deps = [
-    "//third_party/protobuf:py_proto",
   ]
 }
 
@@ -34,10 +28,6 @@ proto_library("spec_footprints_proto") {
   sources = [
     "spec_footprints.proto",
   ]
-
-  deps = [
-    "//third_party/protobuf:py_proto",
-  ]
 }
 
 proto_library("uws_spec_by_version_proto") {
@@ -45,8 +35,5 @@ proto_library("uws_spec_by_version_proto") {
     "uws_spec_by_version.proto",
   ]
 
-  deps = [
-    ":shared_pup_enums_proto",
-    "//third_party/protobuf:py_proto",
-  ]
+  link_deps = [ ":shared_pup_enums_proto" ]
 }

@@ -37,6 +37,7 @@ enum Event {
   kClicked,
   kDocumentSelectionChanged,
   kDocumentTitleChanged,
+  kEndOfTest,                 // Sentinel value indicating the end of a test
   kExpandedChanged,           // Web
   kFocus,
   kFocusContext,              // Contextual focus event that must delay the next focus event
@@ -56,8 +57,9 @@ enum Event {
   kMenuEnd,                   // Native / Win
   kMenuListItemSelected,      // Web
   kMenuListValueChanged,      // Web
-  kMenuPopupEnd,              // Native / Win
-  kMenuPopupStart,            // Native / Win
+  kMenuPopupEnd,              // Native
+  kMenuPopupHide,             // Native / AuraLinux
+  kMenuPopupStart,            // Native
   kMenuStart,                 // Native / Win
   kMouseCanceled,
   kMouseDragged,
@@ -85,12 +87,18 @@ enum Event {
   kValueChanged,
 };
 
-// Explanation:
+// Accessibility object roles.
 // The majority of these roles come from the ARIA specification. Reference
 // the latest draft for proper usage.
 //
 // Roles not included by the ARIA specification should be avoided, especially
 // internal roles used by the accessibility infrastructure.
+//
+// Explanation of in-lined comments next to some enum values.
+ //
+ // Web: this attribute is only used in web content.
+ //
+ // Native: this attribute is only used in native UI.
 enum Role {
   kNone,
   kAbbr,
@@ -212,6 +220,10 @@ enum Role {
   kList,
   kListBox,
   kListBoxOption,
+  // kListGrid behaves similar to an ARIA grid but is primarily used by
+  // TableView and its subclasses, so that they could be exposed correctly on
+  // certain platforms.
+  kListGrid,  // Native
   kListItem,
   kListMarker,
   kLog,
@@ -309,6 +321,10 @@ enum State {
  // object, e.g. "FOCUS".
 enum Action {
   kNone,
+
+  // Request image annotations for all the eligible images on a page.
+  kAnnotatePageImages,
+
   kBlur,
 
   // Notifies a node that it no longer has accessibility focus.
@@ -328,6 +344,11 @@ enum Action {
 
    // Return the content of this image object in the image_data attribute.
   kGetImageData,
+
+  // Gets the bounding rect for a range of text.
+  kGetTextLocation,
+
+  kHideTooltip,
 
    // Given a point, find the object it corresponds to and fire a
    // |AXActionData.hit_test_event_to_fire| event on it in response.
@@ -379,9 +400,11 @@ enum Action {
    // Replace the value of the control with AXActionData::value and
    // reset the selection, if applicable.
   kSetValue,
-
   kShowContextMenu,
-  kGetTextLocation,
+
+   // Send an event signaling the end of a test.
+  kSignalEndOfTest,
+  kShowTooltip,
 };
 
 enum ActionFlags {
@@ -439,6 +462,9 @@ enum StringAttribute {
    // Only present when different from parent.
   kFontFamily,
   kHtmlTag,
+  // Stores an automatic image annotation if one is available. Only valid on
+  // ax::mojom::Role::kImage. See kImageAnnotationStatus, too.
+  kImageAnnotation,
   kImageDataUrl,
   kInnerHtml,
   kKeyShortcuts,
@@ -447,9 +473,12 @@ enum StringAttribute {
   kName,
   kLiveRelevant,
   kLiveStatus,
+  // Only if not already exposed in kName (NameFrom::kPlaceholder)
   kPlaceholder,
   kRole,
   kRoleDescription,
+  // Only if not already exposed in kName (NameFrom::kTitle)
+  kTooltip,
   kUrl,
   kValue,
 };
@@ -539,12 +568,18 @@ enum IntAttribute {
 
   kHasPopup,
 
+  // Image annotation status, of type ImageAnnotationStatus.
+  kImageAnnotationStatus,
+
    // Indicates if a form control has invalid input or
    // if an element has an aria-invalid attribute.
   kInvalidState,
 
    // Of type AXCheckedState
   kCheckedState,
+
+  // The list style type. Only available on list items.
+  kListStyle,
 
    // Specifies the direction of the text, e.g., right-to-left.
   kTextDirection,
@@ -554,6 +589,15 @@ enum IntAttribute {
 
    // Bold, italic, underline, etc.
   kTextStyle,
+
+  // The overline text decoration style.
+  kTextOverlineStyle,
+
+  // The strikethrough text decoration style.
+  kTextStrikethroughStyle,
+
+  // The underline text decoration style.
+  kTextUnderlineStyle,
 
    // Focus traversal in views and Android.
   kPreviousFocusId,
@@ -571,6 +615,11 @@ enum FloatAttribute {
    // Text attributes.
    // Font size is in pixels.
   kFontSize,
+
+   // Font weight can take on any arbitrary numeric value. Increments of 100 in
+   // range [0, 900] represent keywords such as light, normal, bold, etc. 0 is
+   // the default.
+  kFontWeight,
 };
 
 // These attributes can take three states:
@@ -717,6 +766,16 @@ enum MarkerType {
   kSpellingGrammarTextMatchActiveSuggestionSuggestion = 55,
 };
 
+enum ListStyle {
+  kNone,
+  kCircle,
+  kDisc,
+  kImage,
+  kNumeric,
+  kSquare,
+  kOther, // Language specific ordering (alpha, roman, cjk-ideographic, etc...)
+};
+
 enum TextDirection {
   kNone,
   kLtr,
@@ -738,6 +797,17 @@ enum TextStyle {
   kItalic,
   kUnderline,
   kLineThrough,
+  kOverline,
+  kNone,
+};
+
+enum TextDecorationStyle {
+  kNone,
+  kDotted,
+  kDashed,
+  kSolid,
+  kDouble,
+  kWavy,
 };
 
 enum AriaCurrentState {
@@ -760,7 +830,7 @@ enum HasPopup {
   kTree,
   kGrid,
   kDialog,
-  kLast = kDialog,
+  kNone = kFalse
 };
 
 enum InvalidState {
@@ -815,7 +885,6 @@ enum DescriptionFrom {
   kUninitialized,
   kAttribute,
   kContents,
-  kPlaceholder,
   kRelatedElement,
 };
 
@@ -871,4 +940,41 @@ enum TreeOrder {
 
    // First node is after the second one.
   kAfter,
+};
+
+// For internal use by ui::AXTreeID / ax::mojom::AXTreeID.
+enum AXTreeIDType {
+  kUnknown,  // The Tree ID is unknown.
+  kToken,    // Every other tree ID must have a valid unguessable token.
+};
+
+enum ImageAnnotationStatus {
+   // Not an image, or image annotation feature not enabled.
+  kNone,
+
+   // Not loaded yet, already labeled by the author, or not eligible
+   // due to size, type, etc.
+  kIneligibleForAnnotation,
+
+   // Eligible to be automatically annotated if the user requests it.
+  kEligibleForAnnotation,
+
+   // An annotation has been requested but has not been received yet.
+  kAnnotationPending,
+
+   // An annotation has been provided and kImageAnnotation contains the
+   // annotation text.
+  kAnnotationSucceeded,
+
+   // The annotation request was processed successfully, but it was not
+   // possible to come up with an annotation for this image.
+  kAnnotationEmpty,
+
+   // The image is classified as adult content and no annotation will
+   // be generated.
+  kAnnotationAdult,
+
+   // The annotation process failed, e.g. unable to contact the server,
+   // request timed out, etc.
+  kAnnotationProcessFailed,
 };

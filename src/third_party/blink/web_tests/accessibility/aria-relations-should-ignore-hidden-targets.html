@@ -2,10 +2,6 @@
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 
-<style>
-.hideAllContainers .container { display: none; }
-</style>
-
 <div class="container">
     <ul id="tablist" role="tablist">
         <li id="tab" role="tab" aria-controls="panel"></li>
@@ -14,8 +10,7 @@
 </div>
 
 <script>
-test(function(t)
-{
+test(function(t) {
     var axTab = accessibilityController.accessibleElementById('tab');
     var panel = document.getElementById('panel');
     var axPanel = accessibilityController.accessibleElementById('panel');
@@ -78,9 +73,4 @@ test(function(t)
     flowtoItems.style.display = 'none';
     assert_not_equals(axHeading.ariaFlowToElementAtIndex(0), axItem2);
 }, 'aria-flowto should ignore hidden targets.');
-</script>
-
-<script>
-if (window.testRunner)
-    document.body.className = "hideAllContainers";
 </script>

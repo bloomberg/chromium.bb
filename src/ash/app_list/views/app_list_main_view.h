@@ -94,6 +94,7 @@ class APP_LIST_EXPORT AppListMainView
   void AssistantButtonPressed() override;
   void BackButtonPressed() override;
   void ActiveChanged(search_box::SearchBoxViewBase* sender) override;
+  void SearchBoxFocusChanged(search_box::SearchBoxViewBase* sender) override;
 
   AppListViewDelegate* delegate_;  // Owned by parent view (AppListView).
   AppListModel* model_;        // Unowned; ownership is handled by |delegate_|.
@@ -101,6 +102,7 @@ class APP_LIST_EXPORT AppListMainView
 
   // Created by AppListView. Owned by views hierarchy.
   SearchBoxView* search_box_view_;
+
   ContentsView* contents_view_;       // Owned by views hierarchy.
   AppListView* const app_list_view_;  // Owned by views hierarchy.
 

@@ -4,6 +4,8 @@
 
 #include <memory>
 
+#include "base/bind.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "extensions/browser/extension_function.h"
@@ -55,7 +57,12 @@ class ValidationFunction : public UIThreadExtensionFunction {
 
 using ChromeExtensionFunctionUnitTest = ExtensionServiceTestBase;
 
-TEST_F(ChromeExtensionFunctionUnitTest, SimpleFunctionTest) {
+#if defined(OS_WIN) || defined(CHROMEOS)
+#define MAYBE_SimpleFunctionTest DISABLED_SimpleFunctionTest
+#else
+#define MAYBE_SimpleFunctionTest SimpleFunctionTest
+#endif
+TEST_F(ChromeExtensionFunctionUnitTest, MAYBE_SimpleFunctionTest) {
   scoped_refptr<ValidationFunction> function(new ValidationFunction(true));
   function->RunWithValidation()->Execute();
   EXPECT_TRUE(function->did_respond());

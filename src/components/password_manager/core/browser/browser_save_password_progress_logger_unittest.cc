@@ -45,7 +45,7 @@ class MockLogManager : public StubLogManager {
 class BrowserSavePasswordProgressLoggerTest : public testing::Test {
  public:
   BrowserSavePasswordProgressLoggerTest() {
-    form_.origin = GURL("http://myform.com/form.html");
+    form_.url = GURL("http://myform.com/form.html");
     form_.action = GURL("http://m.myform.com/submit.html");
     form_.name = base::UTF8ToUTF16("form_name");
 

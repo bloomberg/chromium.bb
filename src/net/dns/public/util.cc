@@ -70,7 +70,12 @@ IPEndPoint GetMdnsGroupEndPoint(AddressFamily address_family) {
 }
 
 IPEndPoint GetMdnsReceiveEndPoint(AddressFamily address_family) {
-#if defined(OS_WIN) || defined(OS_FUCHSIA)
+// TODO(qingsi): MacOS should follow other POSIX platforms in the else-branch
+// after addressing crbug.com/899310. We have encountered a conflicting issue on
+// CrOS as described in crbug.com/931916, and the following is a temporary
+// mitigation to reconcile the two issues. Remove this after closing
+// crbug.com/899310.
+#if defined(OS_WIN) || defined(OS_FUCHSIA) || defined(OS_MACOSX)
   // With Windows, binding to a mulitcast group address is not allowed.
   // Multicast messages will be received appropriate to the multicast groups the
   // socket has joined. Sockets intending to receive multicast messages should
@@ -86,12 +91,12 @@ IPEndPoint GetMdnsReceiveEndPoint(AddressFamily address_family) {
       NOTREACHED();
       return IPEndPoint();
   }
-#else   // !(defined(OS_WIN) || defined(OS_FUCHSIA))
+#else   // !(defined(OS_WIN) || defined(OS_FUCHSIA)) || defined(OS_MACOSX)
   // With POSIX, any socket can receive messages for multicast groups joined by
   // any socket on the system. Sockets intending to receive messages for a
   // specific multicast group should bind to that group address.
   return GetMdnsGroupEndPoint(address_family);
-#endif  // !(defined(OS_WIN) || defined(OS_FUCHSIA))
+#endif  // !(defined(OS_WIN) || defined(OS_FUCHSIA)) || defined(OS_MACOSX)
 }
 
 }  // namespace dns_util

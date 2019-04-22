@@ -4,6 +4,9 @@
 
 package org.chromium.chrome.browser.sync;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * Fake some ProfileSyncService methods for testing.
  *
@@ -11,6 +14,8 @@ package org.chromium.chrome.browser.sync;
  */
 public class FakeProfileSyncService extends ProfileSyncService {
     private boolean mEngineInitialized;
+    private int mNumberOfSyncedDevices;
+    private Set<Integer> mChosenTypes = new HashSet<>();
 
     public FakeProfileSyncService() {
         super();
@@ -28,5 +33,24 @@ public class FakeProfileSyncService extends ProfileSyncService {
     @Override
     public boolean isUsingSecondaryPassphrase() {
         return true;
+    }
+
+    @Override
+    public int getNumberOfSyncedDevices() {
+        return mNumberOfSyncedDevices;
+    }
+
+    public void setNumberOfSyncedDevices(int numDevices) {
+        mNumberOfSyncedDevices = numDevices;
+    }
+
+    @Override
+    public void setChosenDataTypes(boolean syncEverything, Set<Integer> enabledTypes) {
+        mChosenTypes = enabledTypes;
+    }
+
+    @Override
+    public Set<Integer> getPreferredDataTypes() {
+        return mChosenTypes;
     }
 }

@@ -8,10 +8,10 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
-#include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/heap_profiler.h"
+#include "base/trace_event/trace_event.h"
 #include "mojo/public/c/system/trap.h"
 
 namespace mojo {
@@ -42,6 +42,8 @@ class SimpleWatcher::Context : public base::RefCountedThreadSafe<Context> {
     *result = MojoAddTrigger(trap_handle.value(), handle.value(), signals,
                              condition, context->value(), nullptr);
     if (*result != MOJO_RESULT_OK) {
+      context->cancelled_ = true;
+
       // Balanced by the AddRef() above since MojoAddTrigger failed.
       context->Release();
       return nullptr;
@@ -76,7 +78,17 @@ class SimpleWatcher::Context : public base::RefCountedThreadSafe<Context> {
       : weak_watcher_(weak_watcher),
         task_runner_(task_runner),
         watch_id_(watch_id) {}
-  ~Context() {}
+
+  ~Context() {
+    // TODO(https://crbug.com/896419): Remove this once it's been live for a
+    // while. This is intended to catch possible double-frees of SimpleWatchers,
+    // due to, e.g., invalid cross-thread usage of bindings endpoints. If this
+    // CHECK fails, then the Context is being destroyed before a cancellation
+    // notification fired. In that case we know a Context ref has been
+    // double-released and we can catch its stack.
+    base::AutoLock lock(lock_);
+    CHECK(cancelled_);
+  }
 
   void Notify(MojoResult result,
               MojoHandleSignalsState signals_state,
@@ -90,6 +102,7 @@ class SimpleWatcher::Context : public base::RefCountedThreadSafe<Context> {
       // closed due to pipe error, all before the thread's TaskRunner has been
       // properly initialized.
       base::AutoLock lock(lock_);
+      cancelled_ = true;
       if (!enable_cancellation_notifications_)
         return;
     }
@@ -105,8 +118,8 @@ class SimpleWatcher::Context : public base::RefCountedThreadSafe<Context> {
       weak_watcher_->OnHandleReady(watch_id_, result, state);
     } else {
       task_runner_->PostTask(
-          FROM_HERE, base::Bind(&SimpleWatcher::OnHandleReady, weak_watcher_,
-                                watch_id_, result, state));
+          FROM_HERE, base::BindOnce(&SimpleWatcher::OnHandleReady,
+                                    weak_watcher_, watch_id_, result, state));
     }
   }
 
@@ -115,6 +128,7 @@ class SimpleWatcher::Context : public base::RefCountedThreadSafe<Context> {
   const int watch_id_;
 
   base::Lock lock_;
+  bool cancelled_ = false;
   bool enable_cancellation_notifications_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(Context);
@@ -244,8 +258,8 @@ void SimpleWatcher::ArmOrNotify() {
   DCHECK_EQ(MOJO_RESULT_FAILED_PRECONDITION, rv);
   task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&SimpleWatcher::OnHandleReady, weak_factory_.GetWeakPtr(),
-                 watch_id_, ready_result, ready_state));
+      base::BindOnce(&SimpleWatcher::OnHandleReady, weak_factory_.GetWeakPtr(),
+                     watch_id_, ready_result, ready_state));
 }
 
 void SimpleWatcher::OnHandleReady(int watch_id,
@@ -270,6 +284,10 @@ void SimpleWatcher::OnHandleReady(int watch_id,
   // NOTE: It's legal for |callback| to delete |this|.
   if (!callback.is_null()) {
     TRACE_HEAP_PROFILER_API_SCOPED_TASK_EXECUTION event(heap_profiler_tag_);
+    // Lot of janks caused are grouped to OnHandleReady tasks. This trace event helps identify the
+    // cause of janks. It is ok to pass |heap_profiler_tag_| here since it is a string literal.
+    // TODO(927206): Consider renaming |heap_profiler_tag_|.
+    TRACE_EVENT0("toplevel", heap_profiler_tag_);
 
     base::WeakPtr<SimpleWatcher> weak_self = weak_factory_.GetWeakPtr();
     callback.Run(result, state);

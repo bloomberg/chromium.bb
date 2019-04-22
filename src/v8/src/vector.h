@@ -51,7 +51,7 @@ class Vector {
   constexpr size_t size() const { return length_; }
 
   // Returns whether or not the vector is empty.
-  constexpr bool is_empty() const { return length_ == 0; }
+  constexpr bool empty() const { return length_ == 0; }
 
   // Returns the pointer to the start of the data in the vector.
   constexpr T* start() const { return start_; }
@@ -140,9 +140,6 @@ class Vector {
     return Vector<const T>::cast(*this);
   }
 
-  // Factory method for creating empty vectors.
-  static Vector<T> empty() { return Vector<T>(nullptr, 0); }
-
   template <typename S>
   static constexpr Vector<T> cast(Vector<S> input) {
     return Vector<T>(reinterpret_cast<T*>(input.start()),
@@ -205,13 +202,16 @@ class OwnedVector {
             typename = typename std::enable_if<std::is_convertible<
                 std::unique_ptr<U>, std::unique_ptr<T>>::value>::type>
   OwnedVector(OwnedVector<U>&& other)
-      : data_(other.ReleaseData()), length_(other.size()) {}
+      : data_(std::move(other.data_)), length_(other.length_) {
+    STATIC_ASSERT(sizeof(U) == sizeof(T));
+    other.length_ = 0;
+  }
 
   // Returns the length of the vector as a size_t.
   constexpr size_t size() const { return length_; }
 
   // Returns whether or not the vector is empty.
-  constexpr bool is_empty() const { return length_ == 0; }
+  constexpr bool empty() const { return length_ == 0; }
 
   // Returns the pointer to the start of the data in the vector.
   T* start() const {
@@ -223,8 +223,11 @@ class OwnedVector {
   Vector<T> as_vector() const { return Vector<T>(start(), size()); }
 
   // Releases the backing data from this vector and transfers ownership to the
-  // caller. This vectors data can no longer be used afterwards.
-  std::unique_ptr<T[]> ReleaseData() { return std::move(data_); }
+  // caller. This vector will be empty afterwards.
+  std::unique_ptr<T[]> ReleaseData() {
+    length_ = 0;
+    return std::move(data_);
+  }
 
   // Allocates a new vector of the specified size via the default allocator.
   static OwnedVector<T> New(size_t size) {
@@ -246,7 +249,13 @@ class OwnedVector {
     return vec;
   }
 
+  bool operator==(std::nullptr_t) const { return data_ == nullptr; }
+  bool operator!=(std::nullptr_t) const { return data_ != nullptr; }
+
  private:
+  template <typename U>
+  friend class OwnedVector;
+
   std::unique_ptr<T[]> data_;
   size_t length_ = 0;
 };
@@ -257,10 +266,10 @@ inline int StrLength(const char* string) {
   return static_cast<int>(length);
 }
 
-
-#define STATIC_CHAR_VECTOR(x)                                              \
-  v8::internal::Vector<const uint8_t>(reinterpret_cast<const uint8_t*>(x), \
-                                      arraysize(x) - 1)
+template <size_t N>
+constexpr Vector<const uint8_t> StaticCharVector(const char (&array)[N]) {
+  return Vector<const uint8_t>::cast(Vector<const char>(array, N - 1));
+}
 
 inline Vector<const char> CStrVector(const char* data) {
   return Vector<const char>(data, StrLength(data));
@@ -288,14 +297,47 @@ inline constexpr Vector<T> ArrayVector(T (&arr)[N]) {
   return Vector<T>(arr);
 }
 
-// Construct a Vector from anything providing a {data()} and {size()} accessor.
-template <typename Container,
-          typename T = typename std::remove_reference<
-              decltype(*(std::declval<Container>()).data())>::type,
-          typename = decltype((std::declval<Container>()).size())>
-inline constexpr Vector<T> VectorOf(Container&& c) {
-  return Vector<T>(c.data(), c.size());
+// Construct a Vector from a start pointer and a size.
+template <typename T>
+inline constexpr Vector<T> VectorOf(T* start, size_t size) {
+  return Vector<T>(start, size);
 }
+
+// Construct a Vector from anything providing a {data()} and {size()} accessor.
+template <typename Container>
+inline constexpr auto VectorOf(Container&& c)
+    -> decltype(VectorOf(c.data(), c.size())) {
+  return VectorOf(c.data(), c.size());
+}
+
+template <typename T, int kSize>
+class EmbeddedVector : public Vector<T> {
+ public:
+  EmbeddedVector() : Vector<T>(buffer_, kSize) {}
+
+  explicit EmbeddedVector(T initial_value) : Vector<T>(buffer_, kSize) {
+    for (int i = 0; i < kSize; ++i) {
+      buffer_[i] = initial_value;
+    }
+  }
+
+  // When copying, make underlying Vector to reference our buffer.
+  EmbeddedVector(const EmbeddedVector& rhs) V8_NOEXCEPT : Vector<T>(rhs) {
+    MemCopy(buffer_, rhs.buffer_, sizeof(T) * kSize);
+    this->set_start(buffer_);
+  }
+
+  EmbeddedVector& operator=(const EmbeddedVector& rhs) V8_NOEXCEPT {
+    if (this == &rhs) return *this;
+    Vector<T>::operator=(rhs);
+    MemCopy(buffer_, rhs.buffer_, sizeof(T) * kSize);
+    this->set_start(buffer_);
+    return *this;
+  }
+
+ private:
+  T buffer_[kSize];
+};
 
 }  // namespace internal
 }  // namespace v8

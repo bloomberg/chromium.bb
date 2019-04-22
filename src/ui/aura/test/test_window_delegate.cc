@@ -5,12 +5,12 @@
 #include "ui/aura/test/test_window_delegate.h"
 
 #include "base/strings/stringprintf.h"
+#include "third_party/skia/include/core/SkPath.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/path.h"
 #include "ui/gfx/skia_util.h"
 
 #if defined(USE_AURA)
@@ -94,8 +94,7 @@ bool TestWindowDelegate::HasHitTestMask() const {
   return false;
 }
 
-void TestWindowDelegate::GetHitTestMask(gfx::Path* mask) const {
-}
+void TestWindowDelegate::GetHitTestMask(SkPath* mask) const {}
 
 ////////////////////////////////////////////////////////////////////////////////
 // ColorTestWindowDelegate
@@ -138,7 +137,7 @@ bool MaskedWindowDelegate::HasHitTestMask() const {
   return true;
 }
 
-void MaskedWindowDelegate::GetHitTestMask(gfx::Path* mask) const {
+void MaskedWindowDelegate::GetHitTestMask(SkPath* mask) const {
   mask->addRect(RectToSkRect(mask_rect_));
 }
 

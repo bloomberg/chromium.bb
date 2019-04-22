@@ -15,14 +15,7 @@ namespace content {
 
 // A Java counterpart will be generated for this enum.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.content.browser.accessibility
-enum ScrollDirection {
-  FORWARD,
-  BACKWARD,
-  UP,
-  DOWN,
-  LEFT,
-  RIGHT
-};
+enum ScrollDirection { FORWARD, BACKWARD, UP, DOWN, LEFT, RIGHT };
 
 // From android.view.accessibility.AccessibilityNodeInfo in Java:
 enum AndroidMovementGranularity {
@@ -80,11 +73,11 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
   BrowserAccessibility* GetFocus() override;
   void SendLocationChangeEvents(
       const std::vector<AccessibilityHostMsg_LocationChangeParams>& params)
-          override;
+      override;
   void FireFocusEvent(BrowserAccessibility* node) override;
   void FireBlinkEvent(ax::mojom::Event event_type,
                       BrowserAccessibility* node) override;
-  void FireGeneratedEvent(AXEventGenerator::Event event_type,
+  void FireGeneratedEvent(ui::AXEventGenerator::Event event_type,
                           BrowserAccessibility* node) override;
   gfx::Rect GetViewBounds() override;
 
@@ -108,11 +101,11 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
                              int32_t* end_index);
 
  private:
-  // AXTreeDelegate overrides.
+  // AXTreeObserver overrides.
   void OnAtomicUpdateFinished(
       ui::AXTree* tree,
       bool root_changed,
-      const std::vector<ui::AXTreeDelegate::Change>& changes) override;
+      const std::vector<ui::AXTreeObserver::Change>& changes) override;
 
   bool UseRootScrollOffsetsWhenComputingBounds() override;
 
@@ -136,6 +129,6 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityManagerAndroid);
 };
 
-}
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_MANAGER_ANDROID_H_

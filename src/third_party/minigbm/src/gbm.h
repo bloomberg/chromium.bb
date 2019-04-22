@@ -35,6 +35,10 @@ extern "C" {
 
 #define __GBM__ 1
 
+#ifndef MINIGBM
+#define MINIGBM
+#endif
+
 #include <stddef.h>
 #include <stdint.h>
 
@@ -301,7 +305,9 @@ gbm_bo_create_with_modifiers(struct gbm_device *gbm,
 #define GBM_BO_IMPORT_WL_BUFFER         0x5501
 #define GBM_BO_IMPORT_EGL_IMAGE         0x5502
 #define GBM_BO_IMPORT_FD                0x5503
+// Deprecated. Use GBM_BO_IMPORT_FD_MODIFIER instead.
 #define GBM_BO_IMPORT_FD_PLANAR         0x5504
+#define GBM_BO_IMPORT_FD_MODIFIER       0x5505
 
 struct gbm_import_fd_data {
    int fd;
@@ -311,6 +317,18 @@ struct gbm_import_fd_data {
    uint32_t format;
 };
 
+struct gbm_import_fd_modifier_data {
+   uint32_t width;
+   uint32_t height;
+   uint32_t format;
+   uint32_t num_fds;
+   int fds[GBM_MAX_PLANES];
+   int strides[GBM_MAX_PLANES];
+   int offsets[GBM_MAX_PLANES];
+   uint64_t modifier;
+};
+
+// Deprecated. Use gbm_import_fd_modifier_data instead.
 struct gbm_import_fd_planar_data {
    int fds[GBM_MAX_PLANES];
    uint32_t width;

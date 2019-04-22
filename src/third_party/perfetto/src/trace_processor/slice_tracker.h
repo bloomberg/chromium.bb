@@ -29,45 +29,50 @@ class TraceProcessorContext;
 class SliceTracker {
  public:
   explicit SliceTracker(TraceProcessorContext*);
-  ~SliceTracker();
+  virtual ~SliceTracker();
 
-  void BeginAndroid(uint64_t timestamp,
+  void BeginAndroid(int64_t timestamp,
                     uint32_t ftrace_tid,
-                    uint32_t atrace_tid,
+                    uint32_t atrace_tgid,
                     StringId cat,
                     StringId name);
 
-  void Begin(uint64_t timestamp, UniqueTid utid, StringId cat, StringId name);
+  // virtual for testing
+  virtual void Begin(int64_t timestamp,
+                     UniqueTid utid,
+                     StringId cat,
+                     StringId name);
 
-  void Scoped(uint64_t timestamp,
+  void Scoped(int64_t timestamp,
               UniqueTid utid,
               StringId cat,
               StringId name,
-              uint64_t duration);
+              int64_t duration);
 
-  void EndAndroid(uint64_t timestamp, uint32_t ftrace_tid, uint32_t atrace_tid);
+  void EndAndroid(int64_t timestamp, uint32_t ftrace_tid, uint32_t atrace_tgid);
 
-  void End(uint64_t timestamp,
-           UniqueTid utid,
-           StringId opt_cat = {},
-           StringId opt_name = {});
+  // virtual for testing
+  virtual void End(int64_t timestamp,
+                   UniqueTid utid,
+                   StringId opt_cat = {},
+                   StringId opt_name = {});
 
  private:
   using SlicesStack = std::vector<size_t>;
 
-  void StartSlice(uint64_t timestamp,
-                  uint64_t duration,
+  void StartSlice(int64_t timestamp,
+                  int64_t duration,
                   UniqueTid utid,
                   StringId cat,
                   StringId name);
   void CompleteSlice(UniqueTid tid);
 
-  void MaybeCloseStack(uint64_t end_ts, SlicesStack*);
-  uint64_t GetStackHash(const SlicesStack&);
+  void MaybeCloseStack(int64_t end_ts, SlicesStack*);
+  int64_t GetStackHash(const SlicesStack&);
 
   TraceProcessorContext* const context_;
   std::unordered_map<UniqueTid, SlicesStack> threads_;
-  std::unordered_map<uint32_t, uint32_t> ftrace_to_atrace_pid_;
+  std::unordered_map<uint32_t, uint32_t> ftrace_to_atrace_tgid_;
 };
 
 }  // namespace trace_processor

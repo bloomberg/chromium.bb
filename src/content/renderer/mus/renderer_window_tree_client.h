@@ -111,37 +111,37 @@ class RendererWindowTreeClient : public ws::mojom::WindowTreeClient,
   // implementations would require some amount of refactoring out of
   // RenderWidget and related classes (e.g. resize, input, ime etc.).
   void OnClientId(uint32_t client_id) override;
-  void OnEmbed(
-      ws::mojom::WindowDataPtr root,
-      ws::mojom::WindowTreePtr tree,
-      int64_t display_id,
-      ws::Id focused_window_id,
-      bool drawn,
-      const base::Optional<viz::LocalSurfaceId>& local_surface_id) override;
-  void OnEmbedFromToken(
-      const base::UnguessableToken& token,
-      ws::mojom::WindowDataPtr root,
-      int64_t display_id,
-      const base::Optional<viz::LocalSurfaceId>& local_surface_id) override;
+  void OnEmbed(ws::mojom::WindowDataPtr root,
+               ws::mojom::WindowTreePtr tree,
+               int64_t display_id,
+               ws::Id focused_window_id,
+               bool drawn,
+               const base::Optional<viz::LocalSurfaceIdAllocation>&
+                   local_surface_id_allocation) override;
+  void OnEmbedFromToken(const base::UnguessableToken& token,
+                        ws::mojom::WindowDataPtr root,
+                        int64_t display_id,
+                        const base::Optional<viz::LocalSurfaceIdAllocation>&
+                            local_surface_id_allocation) override;
   void OnEmbeddedAppDisconnected(ws::Id window_id) override;
   void OnUnembed(ws::Id window_id) override;
   void OnCaptureChanged(ws::Id new_capture_window_id,
                         ws::Id old_capture_window_id) override;
   void OnFrameSinkIdAllocated(ws::Id window_id,
                               const viz::FrameSinkId& frame_sink_id) override;
-  void OnTopLevelCreated(
-      uint32_t change_id,
-      ws::mojom::WindowDataPtr data,
-      int64_t display_id,
-      bool drawn,
-      const base::Optional<viz::LocalSurfaceId>& local_surface_id) override;
+  void OnTopLevelCreated(uint32_t change_id,
+                         ws::mojom::WindowDataPtr data,
+                         int64_t display_id,
+                         bool drawn,
+                         const viz::LocalSurfaceIdAllocation&
+                             local_surface_id_allocation) override;
   void OnWindowBoundsChanged(
       ws::Id window_id,
-      const gfx::Rect& old_bounds,
       const gfx::Rect& new_bounds,
-      const base::Optional<viz::LocalSurfaceId>& local_frame_id) override;
+      ui::WindowShowState state,
+      const base::Optional<viz::LocalSurfaceIdAllocation>&
+          local_surface_id_allocation) override;
   void OnWindowTransformChanged(ws::Id window_id,
-                                const gfx::Transform& old_transform,
                                 const gfx::Transform& new_transform) override;
   void OnTransientWindowAdded(ws::Id window_id,
                               ws::Id transient_window_id) override;
@@ -157,9 +157,6 @@ class RendererWindowTreeClient : public ws::mojom::WindowTreeClient,
                          ws::mojom::OrderDirection direction) override;
   void OnWindowDeleted(ws::Id window_id) override;
   void OnWindowVisibilityChanged(ws::Id window_id, bool visible) override;
-  void OnWindowOpacityChanged(ws::Id window_id,
-                              float old_opacity,
-                              float new_opacity) override;
   void OnWindowDisplayChanged(ws::Id window_id, int64_t display_id) override;
   void OnWindowParentDrawnStateChanged(ws::Id window_id, bool drawn) override;
   void OnWindowSharedPropertyChanged(
@@ -173,23 +170,26 @@ class RendererWindowTreeClient : public ws::mojom::WindowTreeClient,
                           bool matches_event_observer) override;
   void OnObservedInputEvent(std::unique_ptr<ui::Event> event) override;
   void OnWindowFocused(ws::Id focused_window_id) override;
-  void OnWindowCursorChanged(ws::Id window_id, ui::CursorData cursor) override;
+  void OnWindowCursorChanged(ws::Id window_id, ui::Cursor cursor) override;
   void OnDragDropStart(const base::flat_map<std::string, std::vector<uint8_t>>&
                            mime_data) override;
   void OnDragEnter(ws::Id window_id,
                    uint32_t event_flags,
-                   const gfx::Point& position,
+                   const gfx::PointF& location_in_root,
+                   const gfx::PointF& location,
                    uint32_t effect_bitmask,
                    OnDragEnterCallback callback) override;
   void OnDragOver(ws::Id window_id,
                   uint32_t event_flags,
-                  const gfx::Point& position,
+                  const gfx::PointF& location_in_root,
+                  const gfx::PointF& location,
                   uint32_t effect_bitmask,
                   OnDragOverCallback callback) override;
   void OnDragLeave(ws::Id window_id) override;
   void OnCompleteDrop(ws::Id window_id,
                       uint32_t event_flags,
-                      const gfx::Point& position,
+                      const gfx::PointF& location_in_root,
+                      const gfx::PointF& location,
                       uint32_t effect_bitmask,
                       OnCompleteDropCallback callback) override;
   void OnPerformDragDropCompleted(uint32_t change_id,
@@ -201,9 +201,12 @@ class RendererWindowTreeClient : public ws::mojom::WindowTreeClient,
   void RequestClose(ws::Id window_id) override;
   void GetScreenProviderObserver(
       ws::mojom::ScreenProviderObserverAssociatedRequest observer) override;
-  void OnOcclusionStateChanged(
-      ws::Id window_id,
-      ws::mojom::OcclusionState occlusion_state) override;
+  void OnOcclusionStatesChanged(
+      const base::flat_map<ws::Id, ws::mojom::OcclusionState>&
+          occlusion_changes) override;
+  void CleanupGestureState(ws::Id window_id) override;
+  void OnWindowResizeLoopStarted(ws::Id window_id) override;
+  void OnWindowResizeLoopEnded(ws::Id window_id) override;
 
   const int routing_id_;
   ws::Id root_window_id_ = 0u;

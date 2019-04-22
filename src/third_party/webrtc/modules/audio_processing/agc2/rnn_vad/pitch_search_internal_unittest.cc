@@ -9,7 +9,6 @@
  */
 
 #include "modules/audio_processing/agc2/rnn_vad/pitch_search_internal.h"
-#include "common_audio/real_fourier.h"
 
 #include <array>
 #include <tuple>
@@ -24,43 +23,16 @@ namespace rnn_vad {
 namespace test {
 namespace {
 
-constexpr std::array<size_t, 2> kTestPitchPeriods = {
-    3 * kMinPitch48kHz / 2, (3 * kMinPitch48kHz + kMaxPitch48kHz) / 2,
+constexpr std::array<int, 2> kTestPitchPeriods = {
+    3 * kMinPitch48kHz / 2,
+    (3 * kMinPitch48kHz + kMaxPitch48kHz) / 2,
 };
 constexpr std::array<float, 2> kTestPitchGains = {0.35f, 0.75f};
-
-constexpr size_t kNumPitchBufSquareEnergies = 385;
-constexpr size_t kNumPitchBufAutoCorrCoeffs = 147;
-constexpr size_t kTestDataSize =
-    kBufSize24kHz + kNumPitchBufSquareEnergies + kNumPitchBufAutoCorrCoeffs;
-
-class TestData {
- public:
-  TestData() {
-    auto test_data_reader = CreatePitchSearchTestDataReader();
-    test_data_reader->ReadChunk(test_data_);
-  }
-  rtc::ArrayView<const float, kBufSize24kHz> GetPitchBufView() {
-    return {test_data_.data(), kBufSize24kHz};
-  }
-  rtc::ArrayView<const float, kNumPitchBufSquareEnergies>
-  GetPitchBufSquareEnergiesView() {
-    return {test_data_.data() + kBufSize24kHz, kNumPitchBufSquareEnergies};
-  }
-  rtc::ArrayView<const float, kNumPitchBufAutoCorrCoeffs>
-  GetPitchBufAutoCorrCoeffsView() {
-    return {test_data_.data() + kBufSize24kHz + kNumPitchBufSquareEnergies,
-            kNumPitchBufAutoCorrCoeffs};
-  }
-
- private:
-  std::array<float, kTestDataSize> test_data_;
-};
 
 }  // namespace
 
 class ComputePitchGainThresholdTest
-    : public testing::Test,
+    : public ::testing::Test,
       public ::testing::WithParamInterface<
           std::tuple<size_t, size_t, size_t, float, size_t, float, float>> {};
 
@@ -87,7 +59,7 @@ TEST_P(ComputePitchGainThresholdTest, BitExactness) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     RnnVadTest,
     ComputePitchGainThresholdTest,
     ::testing::Values(
@@ -106,7 +78,7 @@ INSTANTIATE_TEST_CASE_P(
         std::make_tuple(78, 2, 156, 0.72750503f, 153, 0.85069299f, 0.618379f)));
 
 TEST(RnnVadTest, ComputeSlidingFrameSquareEnergiesBitExactness) {
-  TestData test_data;
+  PitchTestData test_data;
   std::array<float, kNumPitchBufSquareEnergies> computed_output;
   {
     // TODO(bugs.webrtc.org/8948): Add when the issue is fixed.
@@ -119,51 +91,8 @@ TEST(RnnVadTest, ComputeSlidingFrameSquareEnergiesBitExactness) {
                      computed_output, 3e-2f);
 }
 
-TEST(RnnVadTest, ComputePitchAutoCorrelationBitExactness) {
-  TestData test_data;
-  std::array<float, kBufSize12kHz> pitch_buf_decimated;
-  Decimate2x(test_data.GetPitchBufView(), pitch_buf_decimated);
-  std::array<float, kNumPitchBufAutoCorrCoeffs> computed_output;
-  {
-    // TODO(bugs.webrtc.org/8948): Add when the issue is fixed.
-    // FloatingPointExceptionObserver fpe_observer;
-    std::unique_ptr<RealFourier> fft =
-        RealFourier::Create(kAutoCorrelationFftOrder);
-    ComputePitchAutoCorrelation(pitch_buf_decimated, kMaxPitch12kHz,
-                                computed_output, fft.get());
-  }
-  auto auto_corr_view = test_data.GetPitchBufAutoCorrCoeffsView();
-  ExpectNearAbsolute({auto_corr_view.data(), auto_corr_view.size()},
-                     computed_output, 3e-3f);
-}
-
-// Check that the auto correlation function computes the right thing for a
-// simple use case.
-TEST(RnnVadTest, ComputePitchAutoCorrelationConstantBuffer) {
-  // Create constant signal with no pitch.
-  std::array<float, kBufSize12kHz> pitch_buf_decimated;
-  std::fill(pitch_buf_decimated.begin(), pitch_buf_decimated.end(), 1.f);
-
-  std::array<float, kNumPitchBufAutoCorrCoeffs> computed_output;
-  {
-    // TODO(bugs.webrtc.org/8948): Add when the issue is fixed.
-    // FloatingPointExceptionObserver fpe_observer;
-    std::unique_ptr<RealFourier> fft =
-        RealFourier::Create(kAutoCorrelationFftOrder);
-    ComputePitchAutoCorrelation(pitch_buf_decimated, kMaxPitch12kHz,
-                                computed_output, fft.get());
-  }
-
-  // The expected output is constantly the length of the fixed 'x'
-  // array in ComputePitchAutoCorrelation.
-  std::array<float, kNumPitchBufAutoCorrCoeffs> expected_output;
-  std::fill(expected_output.begin(), expected_output.end(),
-            kBufSize12kHz - kMaxPitch12kHz);
-  ExpectNearAbsolute(expected_output, computed_output, 4e-5f);
-}
-
 TEST(RnnVadTest, FindBestPitchPeriodsBitExactness) {
-  TestData test_data;
+  PitchTestData test_data;
   std::array<float, kBufSize12kHz> pitch_buf_decimated;
   Decimate2x(test_data.GetPitchBufView(), pitch_buf_decimated);
   std::array<size_t, 2> pitch_candidates_inv_lags;
@@ -180,7 +109,7 @@ TEST(RnnVadTest, FindBestPitchPeriodsBitExactness) {
 }
 
 TEST(RnnVadTest, RefinePitchPeriod48kHzBitExactness) {
-  TestData test_data;
+  PitchTestData test_data;
   std::array<float, kBufSize12kHz> pitch_buf_decimated;
   Decimate2x(test_data.GetPitchBufView(), pitch_buf_decimated);
   size_t pitch_inv_lag;
@@ -195,18 +124,18 @@ TEST(RnnVadTest, RefinePitchPeriod48kHzBitExactness) {
 }
 
 class CheckLowerPitchPeriodsAndComputePitchGainTest
-    : public testing::Test,
+    : public ::testing::Test,
       public ::testing::WithParamInterface<
-          std::tuple<size_t, size_t, float, size_t, float>> {};
+          std::tuple<int, int, float, int, float>> {};
 
 TEST_P(CheckLowerPitchPeriodsAndComputePitchGainTest, BitExactness) {
   const auto params = GetParam();
-  const size_t initial_pitch_period = std::get<0>(params);
-  const size_t prev_pitch_period = std::get<1>(params);
+  const int initial_pitch_period = std::get<0>(params);
+  const int prev_pitch_period = std::get<1>(params);
   const float prev_pitch_gain = std::get<2>(params);
-  const size_t expected_pitch_period = std::get<3>(params);
+  const int expected_pitch_period = std::get<3>(params);
   const float expected_pitch_gain = std::get<4>(params);
-  TestData test_data;
+  PitchTestData test_data;
   {
     // TODO(bugs.webrtc.org/8948): Add when the issue is fixed.
     // FloatingPointExceptionObserver fpe_observer;
@@ -218,48 +147,48 @@ TEST_P(CheckLowerPitchPeriodsAndComputePitchGainTest, BitExactness) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(RnnVadTest,
-                        CheckLowerPitchPeriodsAndComputePitchGainTest,
-                        ::testing::Values(std::make_tuple(kTestPitchPeriods[0],
-                                                          kTestPitchPeriods[0],
-                                                          kTestPitchGains[0],
-                                                          91,
-                                                          -0.0188608f),
-                                          std::make_tuple(kTestPitchPeriods[0],
-                                                          kTestPitchPeriods[0],
-                                                          kTestPitchGains[1],
-                                                          91,
-                                                          -0.0188608f),
-                                          std::make_tuple(kTestPitchPeriods[0],
-                                                          kTestPitchPeriods[1],
-                                                          kTestPitchGains[0],
-                                                          91,
-                                                          -0.0188608f),
-                                          std::make_tuple(kTestPitchPeriods[0],
-                                                          kTestPitchPeriods[1],
-                                                          kTestPitchGains[1],
-                                                          91,
-                                                          -0.0188608f),
-                                          std::make_tuple(kTestPitchPeriods[1],
-                                                          kTestPitchPeriods[0],
-                                                          kTestPitchGains[0],
-                                                          475,
-                                                          -0.0904344f),
-                                          std::make_tuple(kTestPitchPeriods[1],
-                                                          kTestPitchPeriods[0],
-                                                          kTestPitchGains[1],
-                                                          475,
-                                                          -0.0904344f),
-                                          std::make_tuple(kTestPitchPeriods[1],
-                                                          kTestPitchPeriods[1],
-                                                          kTestPitchGains[0],
-                                                          475,
-                                                          -0.0904344f),
-                                          std::make_tuple(kTestPitchPeriods[1],
-                                                          kTestPitchPeriods[1],
-                                                          kTestPitchGains[1],
-                                                          475,
-                                                          -0.0904344f)));
+INSTANTIATE_TEST_SUITE_P(RnnVadTest,
+                         CheckLowerPitchPeriodsAndComputePitchGainTest,
+                         ::testing::Values(std::make_tuple(kTestPitchPeriods[0],
+                                                           kTestPitchPeriods[0],
+                                                           kTestPitchGains[0],
+                                                           91,
+                                                           -0.0188608f),
+                                           std::make_tuple(kTestPitchPeriods[0],
+                                                           kTestPitchPeriods[0],
+                                                           kTestPitchGains[1],
+                                                           91,
+                                                           -0.0188608f),
+                                           std::make_tuple(kTestPitchPeriods[0],
+                                                           kTestPitchPeriods[1],
+                                                           kTestPitchGains[0],
+                                                           91,
+                                                           -0.0188608f),
+                                           std::make_tuple(kTestPitchPeriods[0],
+                                                           kTestPitchPeriods[1],
+                                                           kTestPitchGains[1],
+                                                           91,
+                                                           -0.0188608f),
+                                           std::make_tuple(kTestPitchPeriods[1],
+                                                           kTestPitchPeriods[0],
+                                                           kTestPitchGains[0],
+                                                           475,
+                                                           -0.0904344f),
+                                           std::make_tuple(kTestPitchPeriods[1],
+                                                           kTestPitchPeriods[0],
+                                                           kTestPitchGains[1],
+                                                           475,
+                                                           -0.0904344f),
+                                           std::make_tuple(kTestPitchPeriods[1],
+                                                           kTestPitchPeriods[1],
+                                                           kTestPitchGains[0],
+                                                           475,
+                                                           -0.0904344f),
+                                           std::make_tuple(kTestPitchPeriods[1],
+                                                           kTestPitchPeriods[1],
+                                                           kTestPitchGains[1],
+                                                           475,
+                                                           -0.0904344f)));
 
 }  // namespace test
 }  // namespace rnn_vad

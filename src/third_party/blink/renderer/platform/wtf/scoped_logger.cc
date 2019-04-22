@@ -6,6 +6,7 @@
 
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/thread_specific.h"
 
 #if DCHECK_IS_ON()
@@ -36,7 +37,7 @@ ScopedLogger::~ScopedLogger() {
 
 void ScopedLogger::SetPrintFuncForTests(PrintFunctionPtr ptr) {
   print_func_ = ptr;
-};
+}
 
 void ScopedLogger::Init(const char* format, va_list args) {
   Current() = this;

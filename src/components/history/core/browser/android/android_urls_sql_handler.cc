@@ -5,7 +5,7 @@
 #include "components/history/core/browser/android/android_urls_sql_handler.h"
 
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "components/history/core/browser/android/android_urls_database.h"
 
 namespace history {
@@ -20,9 +20,8 @@ const HistoryAndBookmarkRow::ColumnID kInterestingColumns[] = {
 
 AndroidURLsSQLHandler::AndroidURLsSQLHandler(
     AndroidURLsDatabase* android_urls_db)
-    : SQLHandler(kInterestingColumns, arraysize(kInterestingColumns)),
-      android_urls_db_(android_urls_db) {
-}
+    : SQLHandler(kInterestingColumns, base::size(kInterestingColumns)),
+      android_urls_db_(android_urls_db) {}
 
 AndroidURLsSQLHandler::~AndroidURLsSQLHandler() {
 }

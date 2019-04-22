@@ -10,12 +10,13 @@
 #include "base/format_macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_impl.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/sequence_manager/sequence_manager_impl.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -27,13 +28,6 @@
 #endif
 
 namespace base {
-
-class ThreadForTest : public Thread {
- public:
-  ThreadForTest() : Thread("test") {}
-
-  using Thread::message_loop;
-};
 
 class ScheduleWorkTest : public testing::Test {
  public:
@@ -57,10 +51,7 @@ class ScheduleWorkTest : public testing::Test {
     uint64_t schedule_calls = 0u;
     do {
       for (size_t i = 0; i < kBatchSize; ++i) {
-        target_message_loop()
-            ->GetMessageLoopBase()
-            ->GetMessagePump()
-            ->ScheduleWork();
+        target_message_loop_base()->GetMessagePump()->ScheduleWork();
         schedule_calls++;
       }
       now = base::TimeTicks::Now();
@@ -76,24 +67,29 @@ class ScheduleWorkTest : public testing::Test {
           base::ThreadTicks::Now() - thread_start;
     min_batch_times_[index] = minimum;
     max_batch_times_[index] = maximum;
-    target_message_loop()->task_runner()->PostTask(
+    target_message_loop_base()->GetTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(&ScheduleWorkTest::Increment,
                                   base::Unretained(this), schedule_calls));
   }
 
   void ScheduleWork(MessageLoop::Type target_type, int num_scheduling_threads) {
 #if defined(OS_ANDROID)
-    // Test randomly times out on Android (crbug.com/906686).
-    return;
-
     if (target_type == MessageLoop::TYPE_JAVA) {
       java_thread_.reset(new android::JavaHandlerThread("target"));
       java_thread_->Start();
     } else
 #endif
     {
-      target_.reset(new ThreadForTest());
-      target_->StartWithOptions(Thread::Options(target_type, 0u));
+      target_.reset(new Thread("test"));
+
+      Thread::Options options(target_type, 0u);
+
+      std::unique_ptr<MessageLoop> message_loop =
+          MessageLoop::CreateUnbound(target_type);
+      message_loop_ = message_loop.get();
+      options.task_environment =
+          new internal::MessageLoopTaskEnvironment(std::move(message_loop));
+      target_->StartWithOptions(options);
 
       // Without this, it's possible for the scheduling threads to start and run
       // before the target thread. In this case, the scheduling threads will
@@ -181,16 +177,17 @@ class ScheduleWorkTest : public testing::Test {
     }
   }
 
-  MessageLoop* target_message_loop() {
+  sequence_manager::internal::SequenceManagerImpl* target_message_loop_base() {
 #if defined(OS_ANDROID)
     if (java_thread_)
-      return java_thread_->message_loop();
+      return java_thread_->message_loop()->GetSequenceManagerImpl();
 #endif
-    return target_->message_loop();
+    return MessageLoopCurrent::Get()->GetCurrentSequenceManagerImpl();
   }
 
  private:
-  std::unique_ptr<ThreadForTest> target_;
+  std::unique_ptr<Thread> target_;
+  MessageLoop* message_loop_;
 #if defined(OS_ANDROID)
   std::unique_ptr<android::JavaHandlerThread> java_thread_;
 #endif

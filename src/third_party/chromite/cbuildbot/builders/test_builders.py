@@ -87,8 +87,9 @@ class ChromiteTestsBuilder(generic_builders.PreCqBuilder):
     self._RunStage(build_stages.InitSDKStage)
     self._RunStage(build_stages.UpdateSDKStage)
     self._RunStage(test_stages.ChromiteTestStage)
-    # TODO(crbug.com/820305): Enable after the flake issue is fixed.
-    # self._RunStage(test_stages.CidbIntegrationTestStage)
+    # This test is a little flaky, so retry it if needed.
+    self._RunStage(generic_stages.RetryStage, 2,
+                   test_stages.CidbIntegrationTestStage)
 
 
 class CbuildbotLaunchTestBuilder(generic_builders.PreCqBuilder):

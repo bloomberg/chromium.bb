@@ -60,19 +60,19 @@ ImmutableCSSPropertyValueSet* ImmutableCSSPropertyValueSet::Create(
 }
 
 CSSPropertyName CSSPropertyValueSet::PropertyReference::Name() const {
-  if (Id() != CSSPropertyVariable)
+  if (Id() != CSSPropertyID::kVariable)
     return CSSPropertyName(Id());
-  return CSSPropertyName(ToCSSCustomPropertyDeclaration(Value()).GetName());
+  return CSSPropertyName(To<CSSCustomPropertyDeclaration>(Value()).GetName());
 }
 
 ImmutableCSSPropertyValueSet* CSSPropertyValueSet::ImmutableCopyIfNeeded()
     const {
-  if (!IsMutable()) {
-    return ToImmutableCSSPropertyValueSet(
-        const_cast<CSSPropertyValueSet*>(this));
-  }
-  const MutableCSSPropertyValueSet* mutable_this =
-      ToMutableCSSPropertyValueSet(this);
+  auto* immutable_property_set = DynamicTo<ImmutableCSSPropertyValueSet>(
+      const_cast<CSSPropertyValueSet*>(this));
+  if (immutable_property_set)
+    return immutable_property_set;
+
+  const auto* mutable_this = To<MutableCSSPropertyValueSet>(this);
   return ImmutableCSSPropertyValueSet::Create(
       mutable_this->property_vector_.data(),
       mutable_this->property_vector_.size(), CssParserMode());
@@ -115,7 +115,7 @@ static uint16_t GetConvertedCSSPropertyID(CSSPropertyID property_id) {
 }
 
 static uint16_t GetConvertedCSSPropertyID(const AtomicString&) {
-  return static_cast<uint16_t>(CSSPropertyVariable);
+  return static_cast<uint16_t>(CSSPropertyID::kVariable);
 }
 
 static uint16_t GetConvertedCSSPropertyID(AtRuleDescriptorID descriptor_id) {
@@ -127,8 +127,8 @@ static bool IsPropertyMatch(const CSSPropertyValueMetadata& metadata,
                             const CSSValue&,
                             uint16_t id,
                             CSSPropertyID property_id) {
-  DCHECK_EQ(id, property_id);
-  bool result = metadata.Property().PropertyID() == id;
+  DCHECK_EQ(id, static_cast<uint16_t>(property_id));
+  bool result = static_cast<uint16_t>(metadata.Property().PropertyID()) == id;
 // Only enabled properties should be part of the style.
 #if DCHECK_IS_ON()
   DCHECK(!result ||
@@ -141,9 +141,9 @@ static bool IsPropertyMatch(const CSSPropertyValueMetadata& metadata,
                             const CSSValue& value,
                             uint16_t id,
                             const AtomicString& custom_property_name) {
-  DCHECK_EQ(id, CSSPropertyVariable);
-  return metadata.Property().PropertyID() == id &&
-         ToCSSCustomPropertyDeclaration(value).GetName() ==
+  DCHECK_EQ(id, static_cast<uint16_t>(CSSPropertyID::kVariable));
+  return static_cast<uint16_t>(metadata.Property().PropertyID()) == id &&
+         To<CSSCustomPropertyDeclaration>(value).GetName() ==
              custom_property_name;
 }
 
@@ -182,8 +182,9 @@ void ImmutableCSSPropertyValueSet::TraceAfterDispatch(blink::Visitor* visitor) {
 MutableCSSPropertyValueSet::MutableCSSPropertyValueSet(
     const CSSPropertyValueSet& other)
     : CSSPropertyValueSet(other.CssParserMode()) {
-  if (other.IsMutable()) {
-    property_vector_ = ToMutableCSSPropertyValueSet(other).property_vector_;
+  if (auto* other_mutable_property_set =
+          DynamicTo<MutableCSSPropertyValueSet>(other)) {
+    property_vector_ = other_mutable_property_set->property_vector_;
   } else {
     property_vector_.ReserveInitialCapacity(other.PropertyCount());
     for (unsigned i = 0; i < other.PropertyCount(); ++i) {
@@ -249,16 +250,16 @@ template CORE_EXPORT const CSSValue*
 
 void CSSPropertyValueSet::Trace(blink::Visitor* visitor) {
   if (is_mutable_)
-    ToMutableCSSPropertyValueSet(this)->TraceAfterDispatch(visitor);
+    To<MutableCSSPropertyValueSet>(this)->TraceAfterDispatch(visitor);
   else
-    ToImmutableCSSPropertyValueSet(this)->TraceAfterDispatch(visitor);
+    To<ImmutableCSSPropertyValueSet>(this)->TraceAfterDispatch(visitor);
 }
 
 void CSSPropertyValueSet::FinalizeGarbageCollectedObject() {
   if (is_mutable_)
-    ToMutableCSSPropertyValueSet(this)->~MutableCSSPropertyValueSet();
+    To<MutableCSSPropertyValueSet>(this)->~MutableCSSPropertyValueSet();
   else
-    ToImmutableCSSPropertyValueSet(this)->~ImmutableCSSPropertyValueSet();
+    To<ImmutableCSSPropertyValueSet>(this)->~ImmutableCSSPropertyValueSet();
 }
 
 bool MutableCSSPropertyValueSet::RemoveShorthandProperty(
@@ -343,7 +344,7 @@ CSSPropertyID CSSPropertyValueSet::GetPropertyShorthand(
     CSSPropertyID property_id) const {
   int found_property_index = FindPropertyIndex(property_id);
   if (found_property_index == -1)
-    return CSSPropertyInvalid;
+    return CSSPropertyID::kInvalid;
   return PropertyAt(found_property_index).ShorthandID();
 }
 

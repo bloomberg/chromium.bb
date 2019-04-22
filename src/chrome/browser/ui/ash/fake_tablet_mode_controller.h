@@ -23,6 +23,9 @@ class FakeTabletModeController : ash::mojom::TabletModeController {
 
   // ash::mojom::TabletModeController:
   void SetClient(ash::mojom::TabletModeClientPtr client) override;
+  void SetTabletModeEnabledForTesting(
+      bool enabled,
+      SetTabletModeEnabledForTestingCallback callback) override;
 
  private:
   mojo::Binding<ash::mojom::TabletModeController> binding_;

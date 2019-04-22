@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
 #include "content/browser/renderer_host/input/synthetic_gesture.h"
@@ -66,6 +67,8 @@ WebTouchPoint::State ToWebTouchPointState(
       return WebTouchPoint::kStateMoved;
     case SyntheticPointerActionParams::PointerActionType::RELEASE:
       return WebTouchPoint::kStateReleased;
+    case SyntheticPointerActionParams::PointerActionType::CANCEL:
+      return WebTouchPoint::kStateCancelled;
     case SyntheticPointerActionParams::PointerActionType::IDLE:
       return WebTouchPoint::kStateStationary;
     case SyntheticPointerActionParams::PointerActionType::LEAVE:
@@ -89,6 +92,7 @@ WebInputEvent::Type ToWebMouseEventType(
       return WebInputEvent::kMouseUp;
     case SyntheticPointerActionParams::PointerActionType::LEAVE:
       return WebInputEvent::kMouseLeave;
+    case SyntheticPointerActionParams::PointerActionType::CANCEL:
     case SyntheticPointerActionParams::PointerActionType::IDLE:
     case SyntheticPointerActionParams::PointerActionType::NOT_INITIALIZED:
       NOTREACHED()
@@ -182,6 +186,14 @@ class MockSyntheticGestureTarget : public SyntheticGestureTarget {
 
   bool flush_requested() const { return flush_requested_; }
   void ClearFlushRequest() { flush_requested_ = false; }
+
+  void WaitForTargetAck(SyntheticGestureParams::GestureType type,
+                        SyntheticGestureParams::GestureSourceType source,
+                        base::OnceClosure callback) const override {
+    // Must resolve synchronously since FlushInputUntilComplete will try the
+    // next gesture after this one.
+    std::move(callback).Run();
+  }
 
  private:
   bool flush_requested_;
@@ -1386,9 +1398,9 @@ TEST_P(SyntheticGestureControllerTestWithParam,
   }
 }
 
-INSTANTIATE_TEST_CASE_P(Single,
-                        SyntheticGestureControllerTestWithParam,
-                        testing::Values(TOUCH_SCROLL, TOUCH_DRAG));
+INSTANTIATE_TEST_SUITE_P(Single,
+                         SyntheticGestureControllerTestWithParam,
+                         testing::Values(TOUCH_SCROLL, TOUCH_DRAG));
 
 TEST_F(SyntheticGestureControllerTest, SingleDragGestureMouseDiagonal) {
   CreateControllerAndTarget<MockDragMouseTarget>();

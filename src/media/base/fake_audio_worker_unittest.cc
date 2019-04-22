@@ -9,6 +9,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "media/base/audio_parameters.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -32,12 +33,14 @@ class FakeAudioWorkerTest : public testing::Test {
 
   ~FakeAudioWorkerTest() override = default;
 
-  void CalledByFakeWorker() { seen_callbacks_++; }
+  void CalledByFakeWorker(base::TimeTicks ideal_time, base::TimeTicks now) {
+    seen_callbacks_++;
+  }
 
   void RunOnAudioThread() {
     ASSERT_TRUE(message_loop_.task_runner()->BelongsToCurrentThread());
-    fake_worker_.Start(base::Bind(&FakeAudioWorkerTest::CalledByFakeWorker,
-                                  base::Unretained(this)));
+    fake_worker_.Start(base::BindRepeating(
+        &FakeAudioWorkerTest::CalledByFakeWorker, base::Unretained(this)));
   }
 
   void RunOnceOnAudioThread() {
@@ -46,8 +49,8 @@ class FakeAudioWorkerTest : public testing::Test {
     // Start() should immediately post a task to run the callback, so we
     // should end up with only a single callback being run.
     message_loop_.task_runner()->PostTask(
-        FROM_HERE,
-        base::Bind(&FakeAudioWorkerTest::EndTest, base::Unretained(this), 1));
+        FROM_HERE, base::BindOnce(&FakeAudioWorkerTest::EndTest,
+                                  base::Unretained(this), 1));
   }
 
   void StopStartOnAudioThread() {
@@ -68,8 +71,8 @@ class FakeAudioWorkerTest : public testing::Test {
     if (seen_callbacks_ < callbacks) {
       message_loop_.task_runner()->PostDelayedTask(
           FROM_HERE,
-          base::Bind(&FakeAudioWorkerTest::TimeCallbacksOnAudioThread,
-                     base::Unretained(this), callbacks),
+          base::BindOnce(&FakeAudioWorkerTest::TimeCallbacksOnAudioThread,
+                         base::Unretained(this), callbacks),
           time_between_callbacks_ / 2);
     } else {
       end_time_ = base::TimeTicks::Now();
@@ -99,7 +102,13 @@ class FakeAudioWorkerTest : public testing::Test {
 };
 
 // Ensure the worker runs on the audio thread and fires callbacks.
-TEST_F(FakeAudioWorkerTest, FakeBasicCallback) {
+// TODO(https://crbug.com/945486): Flakily failing on Fuchsia.
+#if defined(OS_FUCHSIA)
+#define MAYBE_FakeBasicCallback DISABLED_FakeBasicCallback
+#else
+#define MAYBE_FakeBasicCallback FakeBasicCallback
+#endif
+TEST_F(FakeAudioWorkerTest, MAYBE_FakeBasicCallback) {
   message_loop_.task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&FakeAudioWorkerTest::RunOnceOnAudioThread,
                                 base::Unretained(this)));
@@ -140,8 +149,8 @@ TEST_F(FakeAudioWorkerTest, StartStopClearsCallbacks) {
   // chance of catching the worker doing the wrong thing.
   message_loop_.task_runner()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&FakeAudioWorkerTest::StopStartOnAudioThread,
-                 base::Unretained(this)),
+      base::BindOnce(&FakeAudioWorkerTest::StopStartOnAudioThread,
+                     base::Unretained(this)),
       time_between_callbacks_ / 2);
 
   // EndTest() will ensure the proper number of callbacks have occurred.

@@ -5,7 +5,9 @@
 #include "ui/ozone/platform/scenic/scenic_gpu_host.h"
 
 #include <inttypes.h>
+#include <utility>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -35,7 +37,8 @@ namespace ui {
 
 ScenicGpuHost::ScenicGpuHost(ScenicWindowManager* scenic_window_manager)
     : scenic_window_manager_(scenic_window_manager),
-      binding_(this),
+      host_binding_(this),
+      gpu_binding_(this),
       ui_thread_runner_(base::ThreadTaskRunnerHandle::Get()),
       weak_ptr_factory_(this) {
   DETACH_FROM_THREAD(io_thread_checker_);
@@ -45,6 +48,13 @@ ScenicGpuHost::~ScenicGpuHost() {
   DCHECK_CALLED_ON_VALID_THREAD(ui_thread_checker_);
 }
 
+mojom::ScenicGpuHostPtr ScenicGpuHost::CreateHostProcessSelfBinding() {
+  DCHECK(!host_binding_.is_bound());
+  mojom::ScenicGpuHostPtr gpu_host;
+  host_binding_.Bind(mojo::MakeRequest(&gpu_host));
+  return gpu_host;
+}
+
 void ScenicGpuHost::ExportParent(int32_t surface_handle,
                                  mojo::ScopedHandle export_token_mojo) {
   DCHECK_CALLED_ON_VALID_THREAD(ui_thread_checker_);
@@ -52,7 +62,8 @@ void ScenicGpuHost::ExportParent(int32_t surface_handle,
       scenic_window_manager_->GetWindow(surface_handle);
   if (!scenic_window)
     return;
-  zx::eventpair export_token(
+  fuchsia::ui::gfx::ExportToken export_token;
+  export_token.value = zx::eventpair(
       mojo::UnwrapPlatformHandle(std::move(export_token_mojo)).TakeHandle());
   scenic_window->ExportRenderingEntity(std::move(export_token));
 }
@@ -87,8 +98,8 @@ void ScenicGpuHost::OnGpuServiceLaunchedOnUI(
   DCHECK_CALLED_ON_VALID_THREAD(ui_thread_checker_);
 
   mojom::ScenicGpuHostPtr gpu_host;
-  binding_.Close();
-  binding_.Bind(mojo::MakeRequest(&gpu_host));
+  gpu_binding_.Close();
+  gpu_binding_.Bind(mojo::MakeRequest(&gpu_host));
 
   gpu_service_.Bind(std::move(gpu_service_ptr_info));
   gpu_service_->Initialize(std::move(gpu_host));

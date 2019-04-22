@@ -70,7 +70,7 @@ class CORE_EXPORT FilterOperations {
   bool HasFilterThatAffectsOpacity() const;
   bool HasFilterThatMovesPixels() const;
 
-  bool HasReferenceFilter() const;
+  bool HasBlurOrReferenceFilter() const;
 
   void AddClient(SVGResourceClient&) const;
   void RemoveClient(SVGResourceClient&) const;
@@ -85,14 +85,6 @@ class CORE_EXPORT FilterOperations {
 class FilterOperationsWrapper
     : public GarbageCollected<FilterOperationsWrapper> {
  public:
-  static FilterOperationsWrapper* Create() {
-    return MakeGarbageCollected<FilterOperationsWrapper>();
-  }
-
-  static FilterOperationsWrapper* Create(const FilterOperations& operations) {
-    return MakeGarbageCollected<FilterOperationsWrapper>(operations);
-  }
-
   FilterOperationsWrapper() = default;
   explicit FilterOperationsWrapper(const FilterOperations& operations)
       : operations_(operations) {}

@@ -8,9 +8,8 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
-#include "chromeos/dbus/power_manager_client.h"
 
 namespace device {
 
@@ -29,7 +28,7 @@ class PowerManagerObserver
     if (currently_listening_)
       return;
     chromeos::PowerManagerClient* power_client =
-        chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
+        chromeos::PowerManagerClient::Get();
     power_client->AddObserver(this);
     power_client->RequestStatusUpdate();
     currently_listening_ = true;
@@ -39,8 +38,7 @@ class PowerManagerObserver
   void Stop() {
     if (!currently_listening_)
       return;
-    chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
-        this);
+    chromeos::PowerManagerClient::Get()->RemoveObserver(this);
     currently_listening_ = false;
   }
 

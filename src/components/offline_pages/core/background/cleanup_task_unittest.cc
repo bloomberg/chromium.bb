@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/time/clock.h"
 #include "components/offline_pages/core/background/offliner_policy.h"
 #include "components/offline_pages/core/background/request_coordinator.h"
 #include "components/offline_pages/core/background/request_coordinator_event_logger.h"
@@ -87,7 +86,9 @@ class CleanupTaskTest : public RequestQueueTaskTestBase {
 
   void SetUp() override;
 
-  void AddRequestDone(ItemActionStatus status);
+  static void AddRequestDone(AddRequestResult result) {
+    ASSERT_EQ(AddRequestResult::SUCCESS, result);
+  }
 
   void GetRequestsCallback(
       bool success,
@@ -128,10 +129,6 @@ void CleanupTaskTest::SetUp() {
   InitializeStore();
 }
 
-void CleanupTaskTest::AddRequestDone(ItemActionStatus status) {
-  ASSERT_EQ(ItemActionStatus::SUCCESS, status);
-}
-
 void CleanupTaskTest::GetRequestsCallback(
     bool success,
     std::vector<std::unique_ptr<SavePageRequest>> requests) {
@@ -144,10 +141,10 @@ void CleanupTaskTest::QueueRequests(const SavePageRequest& request1,
   DeviceConditions conditions;
   std::set<int64_t> disabled_requests;
   // Add test requests on the Queue.
-  store_.AddRequest(request1, base::BindOnce(&CleanupTaskTest::AddRequestDone,
-                                             base::Unretained(this)));
-  store_.AddRequest(request2, base::BindOnce(&CleanupTaskTest::AddRequestDone,
-                                             base::Unretained(this)));
+  store_.AddRequest(request1, RequestQueue::AddOptions(),
+                    base::BindOnce(&CleanupTaskTest::AddRequestDone));
+  store_.AddRequest(request2, RequestQueue::AddOptions(),
+                    base::BindOnce(&CleanupTaskTest::AddRequestDone));
 
   // Pump the loop to give the async queue the opportunity to do the adds.
   PumpLoop();
@@ -161,7 +158,7 @@ void CleanupTaskTest::MakeFactoryAndTask() {
 }
 
 TEST_F(CleanupTaskTest, CleanupExpiredRequest) {
-  base::Time creation_time = OfflineClock()->Now();
+  base::Time creation_time = OfflineTimeNow();
   base::Time expired_time =
       creation_time - base::TimeDelta::FromSeconds(
                           policy()->GetRequestExpirationTimeInSeconds() + 10);
@@ -185,7 +182,7 @@ TEST_F(CleanupTaskTest, CleanupExpiredRequest) {
 }
 
 TEST_F(CleanupTaskTest, CleanupStartCountExceededRequest) {
-  base::Time creation_time = OfflineClock()->Now();
+  base::Time creation_time = OfflineTimeNow();
   // Request2 will have an exceeded start count.
   SavePageRequest request1(kRequestId1, kUrl1, kClientId1, creation_time,
                            kUserRequested);
@@ -207,7 +204,7 @@ TEST_F(CleanupTaskTest, CleanupStartCountExceededRequest) {
 }
 
 TEST_F(CleanupTaskTest, CleanupCompletionCountExceededRequest) {
-  base::Time creation_time = OfflineClock()->Now();
+  base::Time creation_time = OfflineTimeNow();
   // Request2 will have an exceeded completion count.
   SavePageRequest request1(kRequestId1, kUrl1, kClientId1, creation_time,
                            kUserRequested);
@@ -229,7 +226,7 @@ TEST_F(CleanupTaskTest, CleanupCompletionCountExceededRequest) {
 }
 
 TEST_F(CleanupTaskTest, IgnoreRequestInProgress) {
-  base::Time creation_time = OfflineClock()->Now();
+  base::Time creation_time = OfflineTimeNow();
   // Both requests will have an exceeded completion count.
   // The first request will be marked as started.
   SavePageRequest request1(kRequestId1, kUrl1, kClientId1, creation_time,

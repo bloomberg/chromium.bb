@@ -48,7 +48,6 @@ const unsigned RealtimeAnalyser::kInputBufferSize =
 
 RealtimeAnalyser::RealtimeAnalyser()
     : input_buffer_(kInputBufferSize),
-      write_index_(0),
       down_mix_bus_(AudioBus::Create(1, audio_utilities::kRenderQuantumFrames)),
       fft_size_(kDefaultFFTSize),
       magnitude_buffer_(kDefaultFFTSize / 2),

@@ -5,7 +5,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//      http://www.apache.org/licenses/LICENSE-2.0
+//      https://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -22,7 +22,7 @@
 // support type inference, classification, and transformation, as well as
 // make it easier to write templates based on generic type behavior.
 //
-// See http://en.cppreference.com/w/cpp/header/type_traits
+// See https://en.cppreference.com/w/cpp/header/type_traits
 //
 // WARNING: use of many of the constructs in this header will count as "complex
 // template metaprogramming", so before proceeding, please carefully consider
@@ -246,7 +246,7 @@ struct is_trivially_destructible
 // For the purposes of this check, the call to std::declval is considered
 // trivial."
 //
-// Notes from http://en.cppreference.com/w/cpp/types/is_constructible:
+// Notes from https://en.cppreference.com/w/cpp/types/is_constructible:
 // In many implementations, is_nothrow_constructible also checks if the
 // destructor throws because it is effectively noexcept(T(arg)). Same
 // applies to is_trivially_constructible, which, in these implementations, also
@@ -413,24 +413,139 @@ template <typename T>
 using result_of_t = typename std::result_of<T>::type;
 
 namespace type_traits_internal {
+// In MSVC we can't probe std::hash or stdext::hash because it triggers a
+// static_assert instead of failing substitution. Libc++ prior to 4.0
+// also used a static_assert.
+//
+#if defined(_MSC_VER) || (defined(_LIBCPP_VERSION) && \
+                          _LIBCPP_VERSION < 4000 && _LIBCPP_STD_VER > 11)
+#define ABSL_META_INTERNAL_STD_HASH_SFINAE_FRIENDLY_ 0
+#else
+#define ABSL_META_INTERNAL_STD_HASH_SFINAE_FRIENDLY_ 1
+#endif
+
+#if !ABSL_META_INTERNAL_STD_HASH_SFINAE_FRIENDLY_
 template <typename Key, typename = size_t>
+struct IsHashable : std::true_type {};
+#else   // ABSL_META_INTERNAL_STD_HASH_SFINAE_FRIENDLY_
+template <typename Key, typename = void>
 struct IsHashable : std::false_type {};
 
 template <typename Key>
-struct IsHashable<Key,
-                  decltype(std::declval<std::hash<Key>>()(std::declval<Key>()))>
-    : std::true_type {};
+struct IsHashable<
+    Key,
+    absl::enable_if_t<std::is_convertible<
+        decltype(std::declval<std::hash<Key>&>()(std::declval<Key const&>())),
+        std::size_t>::value>> : std::true_type {};
+#endif  // !ABSL_META_INTERNAL_STD_HASH_SFINAE_FRIENDLY_
 
-template <typename Key>
-struct IsHashEnabled
-    : absl::conjunction<std::is_default_constructible<std::hash<Key>>,
-                        std::is_copy_constructible<std::hash<Key>>,
-                        std::is_destructible<std::hash<Key>>,
-                        absl::is_copy_assignable<std::hash<Key>>,
-                        IsHashable<Key>> {};
+struct AssertHashEnabledHelper {
+ private:
+  static void Sink(...) {}
+  struct NAT {};
+
+  template <class Key>
+  static auto GetReturnType(int)
+      -> decltype(std::declval<std::hash<Key>>()(std::declval<Key const&>()));
+  template <class Key>
+  static NAT GetReturnType(...);
+
+  template <class Key>
+  static std::nullptr_t DoIt() {
+    static_assert(IsHashable<Key>::value,
+                  "std::hash<Key> does not provide a call operator");
+    static_assert(
+        std::is_default_constructible<std::hash<Key>>::value,
+        "std::hash<Key> must be default constructible when it is enabled");
+    static_assert(
+        std::is_copy_constructible<std::hash<Key>>::value,
+        "std::hash<Key> must be copy constructible when it is enabled");
+    static_assert(absl::is_copy_assignable<std::hash<Key>>::value,
+                  "std::hash<Key> must be copy assignable when it is enabled");
+    // is_destructible is unchecked as it's implied by each of the
+    // is_constructible checks.
+    using ReturnType = decltype(GetReturnType<Key>(0));
+    static_assert(std::is_same<ReturnType, NAT>::value ||
+                      std::is_same<ReturnType, size_t>::value,
+                  "std::hash<Key> must return size_t");
+    return nullptr;
+  }
+
+  template <class... Ts>
+  friend void AssertHashEnabled();
+};
+
+template <class... Ts>
+inline void AssertHashEnabled() {
+  using Helper = AssertHashEnabledHelper;
+  Helper::Sink(Helper::DoIt<Ts>()...);
+}
 
 }  // namespace type_traits_internal
 
+// An internal namespace that is required to implement the C++17 swap traits.
+// It is not further nested in type_traits_internal to avoid long symbol names.
+namespace swap_internal {
+
+// Necessary for the traits.
+using std::swap;
+
+// This declaration prevents global `swap` and `absl::swap` overloads from being
+// considered unless ADL picks them up.
+void swap();
+
+template <class T>
+using IsSwappableImpl = decltype(swap(std::declval<T&>(), std::declval<T&>()));
+
+// NOTE: This dance with the default template parameter is for MSVC.
+template <class T,
+          class IsNoexcept = std::integral_constant<
+              bool, noexcept(swap(std::declval<T&>(), std::declval<T&>()))>>
+using IsNothrowSwappableImpl = typename std::enable_if<IsNoexcept::value>::type;
+
+// IsSwappable
+//
+// Determines whether the standard swap idiom is a valid expression for
+// arguments of type `T`.
+template <class T>
+struct IsSwappable
+    : absl::type_traits_internal::is_detected<IsSwappableImpl, T> {};
+
+// IsNothrowSwappable
+//
+// Determines whether the standard swap idiom is a valid expression for
+// arguments of type `T` and is noexcept.
+template <class T>
+struct IsNothrowSwappable
+    : absl::type_traits_internal::is_detected<IsNothrowSwappableImpl, T> {};
+
+// Swap()
+//
+// Performs the swap idiom from a namespace where valid candidates may only be
+// found in `std` or via ADL.
+template <class T, absl::enable_if_t<IsSwappable<T>::value, int> = 0>
+void Swap(T& lhs, T& rhs) noexcept(IsNothrowSwappable<T>::value) {
+  swap(lhs, rhs);
+}
+
+// StdSwapIsUnconstrained
+//
+// Some standard library implementations are broken in that they do not
+// constrain `std::swap`. This will effectively tell us if we are dealing with
+// one of those implementations.
+using StdSwapIsUnconstrained = IsSwappable<void()>;
+
+}  // namespace swap_internal
+
+namespace type_traits_internal {
+
+// Make the swap-related traits/function accessible from this namespace.
+using swap_internal::IsNothrowSwappable;
+using swap_internal::IsSwappable;
+using swap_internal::Swap;
+using swap_internal::StdSwapIsUnconstrained;
+
+}  // namespace type_traits_internal
 }  // namespace absl
 
 #endif  // ABSL_META_TYPE_TRAITS_H_

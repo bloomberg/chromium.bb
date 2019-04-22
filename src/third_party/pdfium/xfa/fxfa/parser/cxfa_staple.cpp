@@ -6,16 +6,17 @@
 
 #include "xfa/fxfa/parser/cxfa_staple.h"
 
+#include "fxjs/xfa/cjx_node.h"
+#include "third_party/base/ptr_util.h"
+
 namespace {
 
 const CXFA_Node::AttributeData kStapleAttributeData[] = {
     {XFA_Attribute::Mode, XFA_AttributeType::Enum,
-     (void*)XFA_AttributeEnum::UsePrinterSetting},
+     (void*)XFA_AttributeValue::UsePrinterSetting},
     {XFA_Attribute::Desc, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Lock, XFA_AttributeType::Integer, (void*)0},
-    {XFA_Attribute::Unknown, XFA_AttributeType::Integer, nullptr}};
-
-constexpr wchar_t kStapleName[] = L"staple";
+};
 
 }  // namespace
 
@@ -25,8 +26,8 @@ CXFA_Staple::CXFA_Staple(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_XDPPACKET_Config,
                 XFA_ObjectType::Node,
                 XFA_Element::Staple,
-                nullptr,
+                {},
                 kStapleAttributeData,
-                kStapleName) {}
+                pdfium::MakeUnique<CJX_Node>(this)) {}
 
-CXFA_Staple::~CXFA_Staple() {}
+CXFA_Staple::~CXFA_Staple() = default;

@@ -33,7 +33,7 @@ TEST_F(CannedBrowsingDataCacheStorageHelperTest, Empty) {
       new CannedBrowsingDataCacheStorageHelper(CacheStorageContext()));
 
   ASSERT_TRUE(helper->empty());
-  helper->AddCacheStorage(origin);
+  helper->Add(url::Origin::Create(origin));
   ASSERT_FALSE(helper->empty());
   helper->Reset();
   ASSERT_TRUE(helper->empty());
@@ -47,12 +47,12 @@ TEST_F(CannedBrowsingDataCacheStorageHelperTest, Delete) {
       new CannedBrowsingDataCacheStorageHelper(CacheStorageContext()));
 
   EXPECT_TRUE(helper->empty());
-  helper->AddCacheStorage(origin1);
-  helper->AddCacheStorage(origin2);
-  helper->AddCacheStorage(origin2);
-  EXPECT_EQ(2u, helper->GetCacheStorageCount());
+  helper->Add(url::Origin::Create(origin1));
+  helper->Add(url::Origin::Create(origin2));
+  helper->Add(url::Origin::Create(origin2));
+  EXPECT_EQ(2u, helper->GetCount());
   helper->DeleteCacheStorage(origin2);
-  EXPECT_EQ(1u, helper->GetCacheStorageCount());
+  EXPECT_EQ(1u, helper->GetCount());
 }
 
 TEST_F(CannedBrowsingDataCacheStorageHelperTest, IgnoreExtensionsAndDevTools) {
@@ -63,9 +63,9 @@ TEST_F(CannedBrowsingDataCacheStorageHelperTest, IgnoreExtensionsAndDevTools) {
       new CannedBrowsingDataCacheStorageHelper(CacheStorageContext()));
 
   ASSERT_TRUE(helper->empty());
-  helper->AddCacheStorage(origin1);
+  helper->Add(url::Origin::Create(origin1));
   ASSERT_TRUE(helper->empty());
-  helper->AddCacheStorage(origin2);
+  helper->Add(url::Origin::Create(origin2));
   ASSERT_TRUE(helper->empty());
 }
 

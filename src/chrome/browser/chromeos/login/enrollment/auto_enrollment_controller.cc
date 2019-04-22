@@ -17,11 +17,11 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/server_backed_state_keys_broker.h"
 #include "chrome/browser/net/system_network_context_manager.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
-#include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/system_clock_client.h"
+#include "chromeos/dbus/system_clock/system_clock_client.h"
 #include "chromeos/system/factory_ping_embargo_check.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
@@ -158,13 +158,11 @@ class AutoEnrollmentController::SystemClockSyncWaiter
     : public chromeos::SystemClockClient::Observer {
  public:
   SystemClockSyncWaiter() : weak_ptr_factory_(this) {
-    chromeos::DBusThreadManager::Get()->GetSystemClockClient()->AddObserver(
-        this);
+    chromeos::SystemClockClient::Get()->AddObserver(this);
   }
 
   ~SystemClockSyncWaiter() override {
-    chromeos::DBusThreadManager::Get()->GetSystemClockClient()->RemoveObserver(
-        this);
+    chromeos::SystemClockClient::Get()->RemoveObserver(this);
   }
 
   // Waits for the system clock to be synchronized. If it already is
@@ -188,11 +186,9 @@ class AutoEnrollmentController::SystemClockSyncWaiter
                          base::BindRepeating(&SystemClockSyncWaiter::OnTimeout,
                                              weak_ptr_factory_.GetWeakPtr()));
 
-    chromeos::DBusThreadManager::Get()
-        ->GetSystemClockClient()
-        ->WaitForServiceToBeAvailable(base::BindOnce(
-            &SystemClockSyncWaiter::OnGotSystemClockServiceAvailable,
-            weak_ptr_factory_.GetWeakPtr()));
+    chromeos::SystemClockClient::Get()->WaitForServiceToBeAvailable(
+        base::BindOnce(&SystemClockSyncWaiter::OnGotSystemClockServiceAvailable,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
  private:
@@ -204,7 +200,7 @@ class AutoEnrollmentController::SystemClockSyncWaiter
       return;
     }
 
-    chromeos::DBusThreadManager::Get()->GetSystemClockClient()->GetLastSyncInfo(
+    chromeos::SystemClockClient::Get()->GetLastSyncInfo(
         base::BindOnce(&SystemClockSyncWaiter::OnGotLastSyncInfo,
                        weak_ptr_factory_.GetWeakPtr()));
   }
@@ -237,7 +233,7 @@ class AutoEnrollmentController::SystemClockSyncWaiter
 
   // chromeos::SystemClockClient::Observer:
   void SystemClockUpdated() override {
-    chromeos::DBusThreadManager::Get()->GetSystemClockClient()->GetLastSyncInfo(
+    chromeos::SystemClockClient::Get()->GetLastSyncInfo(
         base::BindOnce(&SystemClockSyncWaiter::OnGotLastSyncInfo,
                        weak_ptr_factory_.GetWeakPtr()));
   }
@@ -365,8 +361,14 @@ AutoEnrollmentController::GetFRERequirement() {
     if (check_enrollment_value == "1")
       return FRERequirement::kExplicitlyRequired;
   }
-  if (!provider->GetMachineStatistic(system::kActivateDateKey, nullptr) &&
-      !provider->GetEnterpriseMachineID().empty()) {
+  // Assume that the presence of the machine serial number means that VPD has
+  // been read successfully. Don't trust a missing ActivateDate if VPD could not
+  // be read successfully.
+  bool vpd_read_successfully = !provider->GetEnterpriseMachineID().empty();
+  if (vpd_read_successfully &&
+      !provider->GetMachineStatistic(system::kActivateDateKey, nullptr)) {
+    // The device has never been activated (enterprise enrolled or
+    // consumer-owned) so doing a FRE check is not necessary.
     return FRERequirement::kNotRequired;
   }
   return FRERequirement::kRequired;
@@ -747,16 +749,18 @@ void AutoEnrollmentController::UpdateState(
   }
 
   if (state_ == policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT) {
-    // Cryptohome D-Bus service may not be available yet. See
-    // https://crbug.com/841627.
-    DBusThreadManager::Get()
-        ->GetCryptohomeClient()
-        ->WaitForServiceToBeAvailable(base::BindOnce(
-            &AutoEnrollmentController::StartRemoveFirmwareManagementParameters,
-            weak_ptr_factory_.GetWeakPtr()));
+    StartCleanupForcedReEnrollment();
   } else {
     progress_callbacks_.Notify(state_);
   }
+}
+
+void AutoEnrollmentController::StartCleanupForcedReEnrollment() {
+  // D-Bus services may not be available yet, so we call
+  // WaitForServiceToBeAvailable. See https://crbug.com/841627.
+  CryptohomeClient::Get()->WaitForServiceToBeAvailable(base::BindOnce(
+      &AutoEnrollmentController::StartRemoveFirmwareManagementParameters,
+      weak_ptr_factory_.GetWeakPtr()));
 }
 
 void AutoEnrollmentController::StartRemoveFirmwareManagementParameters(
@@ -769,19 +773,43 @@ void AutoEnrollmentController::StartRemoveFirmwareManagementParameters(
   }
 
   cryptohome::RemoveFirmwareManagementParametersRequest request;
-  DBusThreadManager::Get()
-      ->GetCryptohomeClient()
-      ->RemoveFirmwareManagementParametersFromTpm(
-          request,
-          base::BindOnce(
-              &AutoEnrollmentController::OnFirmwareManagementParametersRemoved,
-              weak_ptr_factory_.GetWeakPtr()));
+  CryptohomeClient::Get()->RemoveFirmwareManagementParametersFromTpm(
+      request,
+      base::BindOnce(
+          &AutoEnrollmentController::OnFirmwareManagementParametersRemoved,
+          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void AutoEnrollmentController::OnFirmwareManagementParametersRemoved(
     base::Optional<cryptohome::BaseReply> reply) {
   if (!reply.has_value())
     LOG(ERROR) << "Failed to remove firmware management parameters.";
+
+  // D-Bus services may not be available yet, so we call
+  // WaitForServiceToBeAvailable. See https://crbug.com/841627.
+  SessionManagerClient::Get()->WaitForServiceToBeAvailable(
+      base::BindOnce(&AutoEnrollmentController::StartClearForcedReEnrollmentVpd,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void AutoEnrollmentController::StartClearForcedReEnrollmentVpd(
+    bool service_is_ready) {
+  DCHECK_EQ(policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT, state_);
+  if (!service_is_ready) {
+    LOG(ERROR)
+        << "Failed waiting for session_manager D-Bus service availability.";
+    progress_callbacks_.Notify(state_);
+    return;
+  }
+
+  SessionManagerClient::Get()->ClearForcedReEnrollmentVpd(
+      base::BindOnce(&AutoEnrollmentController::OnForcedReEnrollmentVpdCleared,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void AutoEnrollmentController::OnForcedReEnrollmentVpdCleared(bool reply) {
+  if (!reply)
+    LOG(ERROR) << "Failed to clear forced re-enrollment flags in RW VPD.";
 
   progress_callbacks_.Notify(state_);
 }

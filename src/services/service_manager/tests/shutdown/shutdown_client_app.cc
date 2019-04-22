@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/macros.h"
-#include "base/run_loop.h"
+#include "base/message_loop/message_loop.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/service_manager/public/c/main.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_context.h"
-#include "services/service_manager/public/cpp/service_runner.h"
-#include "services/service_manager/tests/shutdown/shutdown_unittest.mojom.h"
+#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/cpp/service_executable/service_main.h"
+#include "services/service_manager/tests/shutdown/shutdown.test-mojom.h"
 
 namespace service_manager {
 
@@ -19,11 +19,12 @@ class ShutdownClientApp : public Service,
                           public mojom::ShutdownTestClientController,
                           public mojom::ShutdownTestClient {
  public:
-  ShutdownClientApp() {
+  explicit ShutdownClientApp(mojom::ServiceRequest request)
+      : service_binding_(this, std::move(request)) {
     registry_.AddInterface<mojom::ShutdownTestClientController>(
         base::Bind(&ShutdownClientApp::Create, base::Unretained(this)));
   }
-  ~ShutdownClientApp() override {}
+  ~ShutdownClientApp() override = default;
 
  private:
   // service_manager::Service:
@@ -40,7 +41,8 @@ class ShutdownClientApp : public Service,
   // mojom::ShutdownTestClientController:
   void ConnectAndWait(ConnectAndWaitCallback callback) override {
     mojom::ShutdownTestServicePtr service;
-    context()->connector()->BindInterface("shutdown_service", &service);
+    service_binding_.GetConnector()->BindInterface("shutdown_service",
+                                                   &service);
 
     mojo::Binding<mojom::ShutdownTestClient> client_binding(this);
 
@@ -56,6 +58,7 @@ class ShutdownClientApp : public Service,
     std::move(callback).Run();
   }
 
+  ServiceBinding service_binding_;
   BinderRegistry registry_;
   mojo::BindingSet<mojom::ShutdownTestClientController> bindings_;
 
@@ -64,7 +67,7 @@ class ShutdownClientApp : public Service,
 
 }  // namespace service_manager
 
-MojoResult ServiceMain(MojoHandle service_request_handle) {
-  service_manager::ServiceRunner runner(new service_manager::ShutdownClientApp);
-  return runner.Run(service_request_handle);
+void ServiceMain(service_manager::mojom::ServiceRequest request) {
+  base::MessageLoop message_loop;
+  service_manager::ShutdownClientApp(std::move(request)).RunUntilTermination();
 }

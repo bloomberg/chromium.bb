@@ -105,10 +105,10 @@ Node* GraphAssembler::Projection(int index, Node* value) {
   return graph()->NewNode(common()->Projection(index), value, current_control_);
 }
 
-Node* GraphAssembler::Allocate(PretenureFlag pretenure, Node* size) {
-  return current_control_ = current_effect_ =
-             graph()->NewNode(simplified()->AllocateRaw(Type::Any(), pretenure),
-                              size, current_effect_, current_control_);
+Node* GraphAssembler::Allocate(AllocationType allocation, Node* size) {
+  return current_control_ = current_effect_ = graph()->NewNode(
+             simplified()->AllocateRaw(Type::Any(), allocation), size,
+             current_effect_, current_control_);
 }
 
 Node* GraphAssembler::LoadField(FieldAccess const& access, Node* object) {
@@ -203,6 +203,12 @@ Node* GraphAssembler::ToNumber(Node* value) {
 Node* GraphAssembler::BitcastWordToTagged(Node* value) {
   return current_effect_ =
              graph()->NewNode(machine()->BitcastWordToTagged(), value,
+                              current_effect_, current_control_);
+}
+
+Node* GraphAssembler::BitcastTaggedToWord(Node* value) {
+  return current_effect_ =
+             graph()->NewNode(machine()->BitcastTaggedToWord(), value,
                               current_effect_, current_control_);
 }
 

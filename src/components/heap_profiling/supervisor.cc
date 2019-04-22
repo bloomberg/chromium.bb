@@ -4,6 +4,7 @@
 
 #include "components/heap_profiling/supervisor.h"
 
+#include "base/bind.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/no_destructor.h"
 #include "base/task/post_task.h"
@@ -88,17 +89,6 @@ void Supervisor::StartManualProfiling(base::ProcessId pid) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(HasStarted());
   client_connection_manager_->StartProfilingProcess(pid);
-}
-
-void Supervisor::SetKeepSmallAllocations(bool keep_small_allocations) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  DCHECK(HasStarted());
-
-  base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::IO})
-      ->PostTask(
-          FROM_HERE,
-          base::BindOnce(&Supervisor::SetKeepSmallAllocationsOnIOThread,
-                         base::Unretained(this), keep_small_allocations));
 }
 
 void Supervisor::GetProfiledPids(GetProfiledPidsCallback callback) {
@@ -226,11 +216,6 @@ void Supervisor::GetProfiledPidsOnIOThread(GetProfiledPidsCallback callback) {
       },
       std::move(callback));
   controller_->GetProfiledPids(std::move(post_result_to_ui_thread));
-}
-
-void Supervisor::SetKeepSmallAllocationsOnIOThread(
-    bool keep_small_allocations) {
-  controller_->SetKeepSmallAllocations(keep_small_allocations);
 }
 
 }  // namespace heap_profiling

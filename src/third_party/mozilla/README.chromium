@@ -10,7 +10,6 @@ Description:
   (src/camino/src/extensions):
 
     NSPasteboard+Utils.h/mm
-    NSScreen+Utils.h/m
     NSString+Utils.h/m
     NSURL+Utils.h/m
     NSWorkspace+Utils.h/m
@@ -34,3 +33,6 @@ Local modifications:
 - MOZILLA_EXPORT was added to some constants in NSPasteboard+Utils.h.
 - +[NSWorkspace(CaminoDefaultBrowserAdditions) isLeopardOrHigher] hidden since
   it relies on methods deprecated in 10.8 (and is unused in Chrome).
+- NSWorkspace(CaminoDefaultBrowserAdditions) methods defaultBrowserURL,
+  defaultFeedViewerURL, and urlOfApplicationWithIdentifier: removed since they
+  are unused in Chrome and rely on deprecated APIs as of 10.10.

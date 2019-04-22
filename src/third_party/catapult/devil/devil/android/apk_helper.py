@@ -5,10 +5,13 @@
 """Module containing utilities for apk packages."""
 
 import re
+import xml.etree.ElementTree
 import zipfile
 
 from devil import base_error
+from devil.android.ndk import abis
 from devil.android.sdk import aapt
+from devil.utils import cmd_helper
 
 
 _MANIFEST_ATTRIBUTE_RE = re.compile(
@@ -45,9 +48,8 @@ def ToHelper(path_or_helper):
 # matches the height of the stack). Each line parsed (either an attribute or an
 # element) is added to the node at the top of the stack (after the stack has
 # been popped/pushed due to indentation).
-def _ParseManifestFromApk(apk_path):
-  aapt_output = aapt.Dump('xmltree', apk_path, 'AndroidManifest.xml')
-
+def _ParseManifestFromApk(apk):
+  aapt_output = aapt.Dump('xmltree', apk.path, 'AndroidManifest.xml')
   parsed_manifest = {}
   node_stack = [parsed_manifest]
   indent = '  '
@@ -96,12 +98,54 @@ def _ParseManifestFromApk(apk_path):
       manifest_key = m.group(1)
       if manifest_key in node:
         raise base_error.BaseError(
-            "A single attribute should have one key and one value")
+            "A single attribute should have one key and one value: {}"
+            .format(line))
       else:
         node[manifest_key] = m.group(2) or m.group(3)
       continue
 
   return parsed_manifest
+
+
+def _ParseManifestFromBundle(bundle):
+  cmd = [bundle.path, 'dump-manifest']
+  status, stdout, stderr = cmd_helper.GetCmdStatusOutputAndError(cmd)
+  if status != 0:
+    raise Exception('Failed running {} with output\n{}\n{}'.format(
+        ' '.join(cmd), stdout, stderr))
+  return ParseManifestFromXml(stdout)
+
+
+def ParseManifestFromXml(xml_str):
+  """Parse an android bundle manifest.
+
+    As ParseManifestFromAapt, but uses the xml output from bundletool. Each
+    element is a dict, mapping attribute or children by name. Attributes map to
+    a dict (as they are unique), children map to a list of dicts (as there may
+    be multiple children with the same name).
+
+  Args:
+    xml_str (str) An xml string that is an android manifest.
+
+  Returns:
+    A dict holding the parsed manifest, as with ParseManifestFromAapt.
+  """
+  root = xml.etree.ElementTree.fromstring(xml_str)
+  return {root.tag: [_ParseManifestXMLNode(root)]}
+
+
+def _ParseManifestXMLNode(node):
+  out = {}
+  for name, value in node.attrib.items():
+    cleaned_name = name.replace(
+        '{http://schemas.android.com/apk/res/android}',
+        'android:').replace(
+            '{http://schemas.android.com/tools}',
+            'tools:')
+    out[cleaned_name] = value
+  for child in node:
+    out.setdefault(child.tag, []).append(_ParseManifestXMLNode(child))
+  return out
 
 
 def _ParseNumericKey(obj, key, default=0):
@@ -151,6 +195,10 @@ class ApkHelper(object):
   @property
   def path(self):
     return self._apk_path
+
+  @property
+  def is_bundle(self):
+    return self._apk_path.endswith('_bundle')
 
   def GetActivityName(self):
     """Returns the name of the first launcher Activity in the apk."""
@@ -233,9 +281,60 @@ class ApkHelper(object):
     except KeyError:
       return []
 
+  def GetVersionCode(self):
+    """Returns the versionCode as an integer, or None if not available."""
+    manifest_info = self._GetManifest()
+    try:
+      version_code = manifest_info['manifest'][0]['android:versionCode']
+      return int(version_code, 16)
+    except KeyError:
+      return None
+
+  def GetVersionName(self):
+    """Returns the versionName as a string."""
+    manifest_info = self._GetManifest()
+    try:
+      version_name = manifest_info['manifest'][0]['android:versionName']
+      return version_name
+    except KeyError:
+      return ''
+
+  def GetMinSdkVersion(self):
+    """Returns the minSdkVersion as an integer, or None if not available."""
+    manifest_info = self._GetManifest()
+    try:
+      uses_sdk = manifest_info['manifest'][0]['uses-sdk'][0]
+      min_sdk_version = uses_sdk['android:minSdkVersion']
+      return int(min_sdk_version, 16)
+    except KeyError:
+      return None
+
+  def GetTargetSdkVersion(self):
+    """Returns the targetSdkVersion as a string."""
+    manifest_info = self._GetManifest()
+    try:
+      uses_sdk = manifest_info['manifest'][0]['uses-sdk'][0]
+      target_sdk_version = uses_sdk['android:targetSdkVersion']
+      try:
+        # The common case is for this to be an integer. Convert to decimal
+        # notation (rather than hexadecimal) for readability, but convert back
+        # to a string for type consistency with the general case.
+        return str(int(target_sdk_version, 16))
+      except ValueError:
+        # In general (ex. apps targeting pre-release Android versions),
+        # targetSdkVersion can be a string (usually, the OS codename letter).
+        # For simplicity, don't do any validation on the value.
+        return target_sdk_version
+    except KeyError:
+      return ''
+
   def _GetManifest(self):
     if not self._manifest:
-      self._manifest = _ParseManifestFromApk(self._apk_path)
+      app = ToHelper(self._apk_path)
+      if app.is_bundle:
+        self._manifest = _ParseManifestFromBundle(app)
+      else:
+        self._manifest = _ParseManifestFromApk(app)
     return self._manifest
 
   def _ResolveName(self, name):
@@ -257,10 +356,10 @@ class ApkHelper(object):
       if len(path_tokens) >= 2 and path_tokens[0] == 'lib':
         libs.add(path_tokens[1])
     lib_to_abi = {
-        'armeabi-v7a': ['armeabi-v7a', 'arm64-v8a'],
-        'arm64-v8a': ['arm64-v8a'],
-        'x86': ['x86', 'x64'],
-        'x64': ['x64']
+        abis.ARM: [abis.ARM, abis.ARM_64],
+        abis.ARM_64: [abis.ARM_64],
+        abis.X86: [abis.X86, abis.X86_64],
+        abis.X86_64: [abis.X86_64]
     }
     try:
       output = set()

@@ -4,6 +4,7 @@
 
 #include "net/base/network_change_notifier.h"
 
+#include "build/build_config.h"
 #include "net/base/network_interfaces.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -111,6 +112,9 @@ TEST(NetworkChangeNotifierTest, IgnoreAirdropOnMac) {
   interface_airdrop.type = NetworkChangeNotifier::CONNECTION_ETHERNET;
   interface_airdrop.name = "awdl0";
   interface_airdrop.friendly_name = "awdl0";
+  interface_airdrop.address =
+      // Link-local IPv6 address
+      IPAddress({0xfe, 0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4});
   list.push_back(interface_airdrop);
 
 #if defined(OS_MACOSX)
@@ -128,7 +132,30 @@ TEST(NetworkChangeNotifierTest, IgnoreTunnelsOnMac) {
   interface_tunnel.type = NetworkChangeNotifier::CONNECTION_ETHERNET;
   interface_tunnel.name = "utun0";
   interface_tunnel.friendly_name = "utun0";
+  interface_tunnel.address =
+      // Link-local IPv6 address
+      IPAddress({0xfe, 0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 3, 2, 1});
   list.push_back(interface_tunnel);
+
+#if defined(OS_MACOSX)
+  EXPECT_EQ(NetworkChangeNotifier::CONNECTION_NONE,
+            NetworkChangeNotifier::ConnectionTypeFromInterfaceList(list));
+#else
+  EXPECT_EQ(NetworkChangeNotifier::CONNECTION_ETHERNET,
+            NetworkChangeNotifier::ConnectionTypeFromInterfaceList(list));
+#endif
+}
+
+TEST(NetworkChangeNotifierTest, IgnoreDisconnectedEthernetOnMac) {
+  NetworkInterfaceList list;
+  NetworkInterface interface_ethernet;
+  interface_ethernet.type = NetworkChangeNotifier::CONNECTION_ETHERNET;
+  interface_ethernet.name = "en5";
+  interface_ethernet.friendly_name = "en5";
+  interface_ethernet.address =
+      // Link-local IPv6 address
+      IPAddress({0xfe, 0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 1, 2, 3});
+  list.push_back(interface_ethernet);
 
 #if defined(OS_MACOSX)
   EXPECT_EQ(NetworkChangeNotifier::CONNECTION_NONE,

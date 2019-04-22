@@ -27,18 +27,6 @@
       </button>
     </span>
   </div>
-  <div id="srt-prompt" class="content">
-    <img src="../../../../../components/resources/sadtab.svg" class="srt-image">
-    <p i18n-content="srtPromptBody" class="srt-body"></p>
-    <div class="buttons-pane top-buttons">
-      <button id="srt-decline-button" class="white-button"
-          i18n-content="srtPromptDeclineButton">
-      </button>
-      <button id="srt-accept-button" class="blue-button"
-          i18n-content="srtPromptAcceptButton">
-      </button>
-    </div>
-  </div>
   <div id="content-pane" class="content">
     <textarea id="description-text" aria-labelledby="page-title"></textarea>
     <div>
@@ -78,9 +66,13 @@
     <div class="checkbox-field-container">
       <input id="sys-info-checkbox" type="checkbox" aria-labelledby="sys-info-label" checked>
       <label id="sys-info-label" i18n-values=".innerHTML:sys-info"></label>
-      </span>
     </div>
 <if expr="chromeos">
+    <!-- Assistant Debug Logs (Googler Internal Only) -->
+    <div id="assistant-checkbox-container" class="checkbox-field-container" hidden>
+      <input id="assistant-info-checkbox" type="checkbox" checked aria-labelledby="assistant-info-label">
+      <label id="assistant-info-label" i18n-values=".innerHTML:assistant-info"></label>
+    </div>
     <!-- Bluetooth Logs (Googler Internal Only) -->
     <div id="bluetooth-checkbox-container" class="checkbox-field-container"
       hidden>
@@ -97,8 +89,10 @@
 </if>
     <!-- Privacy note -->
     <div id="privacy-note" i18n-values=".innerHTML:privacy-note"></div>
-    <!-- Buttons -->
-    <div class="buttons-pane">
+  </div>
+  <!-- Buttons -->
+  <div id="bottom-buttons-container" class="content">
+    <div class="buttons-pane bottom-buttons">
       <button id="cancel-button" type="submit"
           class="white-button" i18n-content="cancel">
       </button>

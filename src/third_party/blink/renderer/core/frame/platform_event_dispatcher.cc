@@ -48,7 +48,7 @@ void PlatformEventDispatcher::NotifyControllers() {
 
   {
     base::AutoReset<bool> change_is_dispatching(&is_dispatching_, true);
-    // HashSet m_controllers can be updated during an iteration, and it stops
+    // HashSet |controllers_| can be updated during an iteration, and it stops
     // the iteration.  Thus we store it into a Vector to access all elements.
     HeapVector<Member<PlatformEventController>> snapshot_vector;
     CopyToVector(controllers_, snapshot_vector);

@@ -145,6 +145,7 @@ class SearchBoxViewTest : public views::test::WidgetTest,
   void AssistantButtonPressed() override {}
   void BackButtonPressed() override {}
   void ActiveChanged(search_box::SearchBoxViewBase* sender) override {}
+  void SearchBoxFocusChanged(search_box::SearchBoxViewBase* sender) override {}
 
   AppListTestViewDelegate view_delegate_;
   views::Widget* widget_;
@@ -172,7 +173,12 @@ TEST_F(SearchBoxViewTest, CloseButtonVisibleAfterTyping) {
 // activated.
 TEST_F(SearchBoxViewTest, CloseButtonInvisibleAfterSearchBoxActived) {
   SetSearchBoxActive(true, ui::ET_MOUSE_PRESSED);
-  EXPECT_FALSE(view()->close_button()->visible());
+
+  // UI behavior is different with Zero State enabled.
+  if (app_list_features::IsZeroStateSuggestionsEnabled())
+    EXPECT_TRUE(view()->close_button()->visible());
+  else
+    EXPECT_FALSE(view()->close_button()->visible());
 }
 
 // Tests that the close button becomes invisible after close button is clicked.
@@ -218,7 +224,7 @@ TEST_F(SearchBoxViewTest, SearchBoxInactiveSearchBoxGoogle) {
   SetSearchEngineIsGoogle(true);
   SetSearchBoxActive(false, ui::ET_UNKNOWN);
   const gfx::ImageSkia expected_icon =
-      gfx::CreateVectorIcon(kIcGoogleBlackIcon, search_box::kSearchIconSize,
+      gfx::CreateVectorIcon(kGoogleBlackIcon, search_box::kSearchIconSize,
                             search_box::kDefaultSearchboxColor);
   view()->ModelChanged();
 
@@ -234,7 +240,7 @@ TEST_F(SearchBoxViewTest, SearchBoxActiveSearchEngineGoogle) {
   SetSearchEngineIsGoogle(true);
   SetSearchBoxActive(true, ui::ET_MOUSE_PRESSED);
   const gfx::ImageSkia expected_icon =
-      gfx::CreateVectorIcon(kIcGoogleColorIcon, search_box::kSearchIconSize,
+      gfx::CreateVectorIcon(kGoogleColorIcon, search_box::kSearchIconSize,
                             search_box::kDefaultSearchboxColor);
   view()->ModelChanged();
 
@@ -250,7 +256,7 @@ TEST_F(SearchBoxViewTest, SearchBoxInactiveSearchEngineNotGoogle) {
   SetSearchEngineIsGoogle(false);
   SetSearchBoxActive(false, ui::ET_UNKNOWN);
   const gfx::ImageSkia expected_icon = gfx::CreateVectorIcon(
-      kIcSearchEngineNotGoogleIcon, search_box::kSearchIconSize,
+      kSearchEngineNotGoogleIcon, search_box::kSearchIconSize,
       search_box::kDefaultSearchboxColor);
   view()->ModelChanged();
 
@@ -266,7 +272,7 @@ TEST_F(SearchBoxViewTest, SearchBoxActiveSearchEngineNotGoogle) {
   SetSearchEngineIsGoogle(false);
   SetSearchBoxActive(true, ui::ET_UNKNOWN);
   const gfx::ImageSkia expected_icon = gfx::CreateVectorIcon(
-      kIcSearchEngineNotGoogleIcon, search_box::kSearchIconSize,
+      kSearchEngineNotGoogleIcon, search_box::kSearchIconSize,
       search_box::kDefaultSearchboxColor);
   view()->ModelChanged();
 
@@ -275,6 +281,53 @@ TEST_F(SearchBoxViewTest, SearchBoxActiveSearchEngineNotGoogle) {
 
   EXPECT_TRUE(gfx::test::AreBitmapsEqual(*expected_icon.bitmap(),
                                          *actual_icon.bitmap()));
+}
+
+class SearchBoxViewAssistantButtonTest : public SearchBoxViewTest {
+ public:
+  SearchBoxViewAssistantButtonTest() = default;
+  ~SearchBoxViewAssistantButtonTest() override = default;
+
+  // Overridden from testing::Test
+  void SetUp() override {
+    SearchBoxViewTest::SetUp();
+    view_delegate()->GetSearchModel()->search_box()->SetShowAssistantButton(
+        true);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SearchBoxViewAssistantButtonTest);
+};
+
+// Tests that the assistant button is visible by default.
+TEST_F(SearchBoxViewAssistantButtonTest, AssistantButtonVisibleByDefault) {
+  EXPECT_TRUE(view()->assistant_button()->visible());
+}
+
+// Tests that the assistant button is visible after the search box is activated.
+TEST_F(SearchBoxViewAssistantButtonTest,
+       AssistantButtonVisibleAfterSearchBoxActived) {
+  // Assistant button is not showing up under zero state for now.
+  // TODO(jennyz): Make assistant button show up under zero state.
+  if (!app_list_features::IsZeroStateSuggestionsEnabled()) {
+    SetSearchBoxActive(true, ui::ET_MOUSE_PRESSED);
+    EXPECT_TRUE(view()->assistant_button()->visible());
+  }
+}
+
+// Tests that the assistant button is invisible after typing in the search box,
+// and comes back when search box is empty.
+TEST_F(SearchBoxViewAssistantButtonTest,
+       AssistantButtonChangeVisibilityWithTyping) {
+  KeyPress(ui::VKEY_A);
+  EXPECT_FALSE(view()->assistant_button()->visible());
+
+  // Assistant button is not showing up under zero state for now.
+  // TODO(crbug.com/925455): Make assistant button show up under zero state.
+  if (!app_list_features::IsZeroStateSuggestionsEnabled()) {
+    KeyPress(ui::VKEY_BACK);
+    EXPECT_TRUE(view()->assistant_button()->visible());
+  }
 }
 
 class SearchBoxViewAutocompleteTest
@@ -416,13 +469,13 @@ class SearchBoxViewAutocompleteTest
   DISALLOW_COPY_AND_ASSIGN(SearchBoxViewAutocompleteTest);
 };
 
-INSTANTIATE_TEST_CASE_P(,
-                        SearchBoxViewAutocompleteTest,
-                        ::testing::Values(ui::VKEY_LEFT,
-                                          ui::VKEY_RIGHT,
-                                          ui::VKEY_UP,
-                                          ui::VKEY_DOWN,
-                                          ui::VKEY_BACK));
+INSTANTIATE_TEST_SUITE_P(,
+                         SearchBoxViewAutocompleteTest,
+                         ::testing::Values(ui::VKEY_LEFT,
+                                           ui::VKEY_RIGHT,
+                                           ui::VKEY_UP,
+                                           ui::VKEY_DOWN,
+                                           ui::VKEY_BACK));
 
 // Tests that autocomplete suggestions are consistent with top SearchResult list
 // titles.
@@ -559,14 +612,6 @@ TEST_F(SearchBoxViewAutocompleteTest,
       ui::GestureEvent(0, 0, 0, ui::EventTimeForNow(),
                        ui::GestureEventDetails(ui::ET_GESTURE_TAP)),
       true);
-}
-
-// Tests that only the autocomplete suggestion text is deleted after pressing
-// up, down, left, right, or backspace.
-TEST_P(SearchBoxViewAutocompleteTest,
-       SearchBoxDeletesAutocompleteTextOnlyAfterUpDownLeftRightBackspace) {
-  TestKeyEvent(ui::KeyEvent(ui::ET_KEY_PRESSED, key_code(), ui::EF_NONE),
-               false);
 }
 
 // Tests that autocomplete is not handled if IME is using composition text.

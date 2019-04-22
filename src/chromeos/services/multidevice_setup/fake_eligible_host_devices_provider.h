@@ -7,8 +7,8 @@
 
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
+#include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/services/multidevice_setup/eligible_host_devices_provider.h"
-#include "components/cryptauth/remote_device_ref.h"
 
 namespace chromeos {
 
@@ -21,15 +21,15 @@ class FakeEligibleHostDevicesProvider : public EligibleHostDevicesProvider {
   ~FakeEligibleHostDevicesProvider() override;
 
   void set_eligible_host_devices(
-      const cryptauth::RemoteDeviceRefList eligible_host_devices) {
+      const multidevice::RemoteDeviceRefList eligible_host_devices) {
     eligible_host_devices_ = eligible_host_devices;
   }
 
  private:
   // EligibleHostDevicesProvider:
-  cryptauth::RemoteDeviceRefList GetEligibleHostDevices() const override;
+  multidevice::RemoteDeviceRefList GetEligibleHostDevices() const override;
 
-  cryptauth::RemoteDeviceRefList eligible_host_devices_;
+  multidevice::RemoteDeviceRefList eligible_host_devices_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeEligibleHostDevicesProvider);
 };

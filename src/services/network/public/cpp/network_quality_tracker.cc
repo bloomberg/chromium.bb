@@ -7,7 +7,9 @@
 #include <limits>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
+#include "services/network/public/mojom/network_service.mojom.h"
 
 namespace network {
 

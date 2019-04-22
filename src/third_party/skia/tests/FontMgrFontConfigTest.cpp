@@ -7,6 +7,7 @@
 
 #include "Resources.h"
 #include "SkCanvas.h"
+#include "SkFont.h"
 #include "SkFontMgr.h"
 #include "SkFontMgr_fontconfig.h"
 #include "SkTypeface.h"
@@ -29,13 +30,22 @@ static bool bitmap_compare(const SkBitmap& ref, const SkBitmap& test) {
 
 DEF_TEST(FontMgrFontConfig, reporter) {
     FcConfig* config = FcConfigCreate();
-    SkString distortablePath = GetResourcePath("fonts/Distortable.ttf");
-    FcConfigAppFontAddFile(
-        config, reinterpret_cast<const FcChar8*>(distortablePath.c_str()));
+
+    // FontConfig may modify the passed path (make absolute or other).
+    FcConfigSetSysRoot(config, reinterpret_cast<const FcChar8*>(GetResourcePath("").c_str()));
+    // FontConfig will lexically compare paths against its version of the sysroot.
+    SkString distortablePath(reinterpret_cast<const char*>(FcConfigGetSysRoot(config)));
+    distortablePath += "/fonts/Distortable.ttf";
+    FcConfigAppFontAddFile(config, reinterpret_cast<const FcChar8*>(distortablePath.c_str()));
+
     FcConfigBuildFonts(config);
 
     sk_sp<SkFontMgr> fontMgr(SkFontMgr_New_FontConfig(config));
     sk_sp<SkTypeface> typeface(fontMgr->legacyMakeTypeface("Distortable", SkFontStyle()));
+    if (!typeface) {
+        ERRORF(reporter, "Could not find typeface. FcVersion: %d", FcGetVersion());
+        return;
+    }
 
     SkBitmap bitmapStream;
     bitmapStream.allocN32Pixels(64, 64);
@@ -47,17 +57,10 @@ DEF_TEST(FontMgrFontConfig, reporter) {
     SkCanvas canvasClone(bitmapClone);
     canvasStream.drawColor(SK_ColorWHITE);
 
-    SkPaint paintStream;
-    paintStream.setColor(SK_ColorGRAY);
-    paintStream.setTextSize(SkIntToScalar(20));
-    paintStream.setAntiAlias(true);
-    paintStream.setLCDRenderText(true);
+    SkPaint paint;
+    paint.setColor(SK_ColorGRAY);
 
-    SkPaint paintClone;
-    paintClone.setColor(SK_ColorGRAY);
-    paintClone.setTextSize(SkIntToScalar(20));
-    paintClone.setAntiAlias(true);
-    paintClone.setLCDRenderText(true);
+    constexpr float kTextSize = 20;
 
     std::unique_ptr<SkStreamAsset> distortableStream(
         GetResourceAsStream("fonts/Distortable.ttf"));
@@ -65,8 +68,6 @@ DEF_TEST(FontMgrFontConfig, reporter) {
         return;
     }
 
-    const char* text = "abc";
-    const size_t textLen = strlen(text);
     SkPoint point = SkPoint::Make(20.0f, 20.0f);
     SkFourByteTag tag = SkSetFourByteTag('w', 'g', 'h', 't');
 
@@ -78,17 +79,23 @@ DEF_TEST(FontMgrFontConfig, reporter) {
         SkFontArguments::VariationPosition
             position = {coordinates, SK_ARRAY_COUNT(coordinates)};
 
-        paintStream.setTypeface(sk_sp<SkTypeface>(
+        SkFont fontStream(
             fontMgr->makeFromStream(distortableStream->duplicate(),
-                                    SkFontArguments().setVariationDesignPosition(position))));
-        paintClone.setTypeface(sk_sp<SkTypeface>(
-            typeface->makeClone(SkFontArguments().setVariationDesignPosition(position))));
+                                    SkFontArguments().setVariationDesignPosition(position)),
+            kTextSize);
+        fontStream.setEdging(SkFont::Edging::kSubpixelAntiAlias);
+
+        SkFont fontClone(
+            typeface->makeClone(SkFontArguments().setVariationDesignPosition(position)), kTextSize);
+        fontClone.setEdging(SkFont::Edging::kSubpixelAntiAlias);
+
+        constexpr char text[] = "abc";
 
         canvasStream.drawColor(SK_ColorWHITE);
-        canvasStream.drawText(text, textLen, point.fX, point.fY, paintStream);
+        canvasStream.drawString(text, point.fX, point.fY, fontStream, paint);
 
         canvasClone.drawColor(SK_ColorWHITE);
-        canvasClone.drawText(text, textLen, point.fX, point.fY, paintClone);
+        canvasClone.drawString(text, point.fX, point.fY, fontClone, paint);
 
         bool success = bitmap_compare(bitmapStream, bitmapClone);
         REPORTER_ASSERT(reporter, success);

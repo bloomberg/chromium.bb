@@ -46,14 +46,21 @@ class PLATFORM_EXPORT LayoutPoint {
  public:
   constexpr LayoutPoint() = default;
   constexpr LayoutPoint(LayoutUnit x, LayoutUnit y) : x_(x), y_(y) {}
-  LayoutPoint(int x, int y) : x_(LayoutUnit(x)), y_(LayoutUnit(y)) {}
-  LayoutPoint(const IntPoint& point) : x_(point.X()), y_(point.Y()) {}
-  explicit LayoutPoint(const FloatPoint& point)
+  constexpr LayoutPoint(int x, int y) : x_(LayoutUnit(x)), y_(LayoutUnit(y)) {}
+  constexpr LayoutPoint(const IntPoint& point) : x_(point.X()), y_(point.Y()) {}
+  constexpr explicit LayoutPoint(const FloatPoint& point)
       : x_(point.X()), y_(point.Y()) {}
-  explicit LayoutPoint(const DoublePoint& point)
+  constexpr explicit LayoutPoint(const DoublePoint& point)
       : x_(point.X()), y_(point.Y()) {}
   constexpr explicit LayoutPoint(const LayoutSize& size)
       : x_(size.Width()), y_(size.Height()) {}
+
+  constexpr explicit operator FloatPoint() const {
+    return FloatPoint(x_.ToFloat(), y_.ToFloat());
+  }
+  constexpr explicit operator DoublePoint() const {
+    return DoublePoint(x_.ToDouble(), y_.ToDouble());
+  }
 
   static constexpr LayoutPoint Zero() { return LayoutPoint(); }
 

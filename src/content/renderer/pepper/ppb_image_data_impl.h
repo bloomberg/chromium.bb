@@ -38,7 +38,7 @@ class CONTENT_EXPORT PPB_ImageData_Impl
   // it cheap & easy to implement Swap.
   class Backend {
    public:
-    virtual ~Backend() {};
+    virtual ~Backend() {}
     virtual bool Init(PPB_ImageData_Impl* impl,
                       PP_ImageDataFormat format,
                       int width,

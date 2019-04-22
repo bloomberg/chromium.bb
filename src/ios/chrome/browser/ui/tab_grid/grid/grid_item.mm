@@ -8,12 +8,9 @@
 #error "This file requires ARC support."
 #endif
 
-#import "base/logging.h"
+#include "base/logging.h"
 
 @implementation GridItem
-@synthesize identifier = _identifier;
-@synthesize title = _title;
-@synthesize hidesTitle = _hidesTitle;
 
 - (instancetype)initWithIdentifier:(NSString*)identifier {
   DCHECK(identifier);

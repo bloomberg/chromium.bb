@@ -7,7 +7,13 @@
 
 class BookmarkBarViewObserver {
  public:
-  virtual void OnBookmarkBarVisibilityChanged() = 0;
+  // Called when the BookmarkBarView's visibility is directly toggled.  Not
+  // called when the visibility changes due to e.g. a parent being made visible.
+  virtual void OnBookmarkBarVisibilityChanged() {}
+
+  // Called when the user drags over a folder, causing a menu to appear (into
+  // which bookmarks can be dropped).
+  virtual void OnDropMenuShown() {}
 
  protected:
   ~BookmarkBarViewObserver() {}

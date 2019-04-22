@@ -1,6 +1,8 @@
+# TODO: Remove this (had to keep it during move because of buggy presubmit)
+
 fdoray@chromium.org
 gab@chromium.org
 robliao@chromium.org
 
 # TEAM: scheduler-dev@chromium.org
-# COMPONENT: Internals>TaskScheduler
+# COMPONENT: Internals>ThreadPool

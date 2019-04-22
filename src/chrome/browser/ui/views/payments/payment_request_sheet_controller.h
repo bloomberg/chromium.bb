@@ -92,6 +92,14 @@ class PaymentRequestSheetController : public views::ButtonListener {
   // "Cancel".
   virtual base::string16 GetSecondaryButtonLabel();
 
+  // Returns the secondary button tag, by default
+  // static_cast<int>(PaymentRequestCommonTags::CLOSE_BUTTON_TAG).
+  virtual int GetSecondaryButtonTag();
+
+  // Returns the secondary button id, by default
+  // static_cast<int>(DialogViewID::CANCEL_BUTTON).
+  virtual int GetSecondaryButtonId();
+
   // Returns true if the secondary button should be shown, false otherwise.
   virtual bool ShouldShowSecondaryButton();
 

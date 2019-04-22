@@ -66,7 +66,7 @@ class DisconnectTetheringRequestSenderImpl
  private:
   void OnTetherHostFetched(
       const std::string& device_id,
-      base::Optional<cryptauth::RemoteDeviceRef> tether_host);
+      base::Optional<multidevice::RemoteDeviceRef> tether_host);
 
   device_sync::DeviceSyncClient* device_sync_client_;
   secure_channel::SecureChannelClient* secure_channel_client_;

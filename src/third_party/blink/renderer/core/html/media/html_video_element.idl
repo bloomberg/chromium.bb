@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// https://html.spec.whatwg.org/#the-video-element
+// https://html.spec.whatwg.org/C/#the-video-element
 
 [
     HTMLConstructor,
@@ -56,4 +56,6 @@
     // The number of decoded frames that have been dropped by the player
     // for performance reasons during playback.
     [MeasureAs=PrefixedVideoDroppedFrameCount] readonly attribute unsigned long webkitDroppedFrameCount;
+
+    [CEReactions, Reflect] attribute boolean playsInline;
 };

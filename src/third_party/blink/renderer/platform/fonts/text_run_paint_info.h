@@ -21,7 +21,6 @@ struct TextRunPaintInfo {
   const TextRun& run;
   unsigned from;
   unsigned to;
-  FloatRect bounds;
 };
 
 }  // namespace blink

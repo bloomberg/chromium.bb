@@ -28,9 +28,7 @@ class NET_EXPORT SSLConfigService {
     // The following settings are considered user changes:
     //     version_min
     //     version_max
-    //     tls13_variant
     //     disabled_cipher_suites
-    //     channel_id_enabled
     //     false_start_enabled
     //     require_ecdhe
     virtual void OnSSLConfigChanged() = 0;

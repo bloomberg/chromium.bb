@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/modules/device_orientation/device_orientation_event.h"
 #include "third_party/blink/renderer/modules/device_orientation/device_orientation_event_pump.h"
 #include "third_party/blink/renderer/modules/event_modules.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
@@ -56,10 +57,11 @@ void DeviceOrientationController::DidAddEventListener(
   LocalFrame* frame = GetDocument().GetFrame();
   if (frame) {
     if (GetDocument().IsSecureContext()) {
-      UseCounter::Count(frame, WebFeature::kDeviceOrientationSecureOrigin);
+      UseCounter::Count(GetDocument(),
+                        WebFeature::kDeviceOrientationSecureOrigin);
     } else {
       Deprecation::CountDeprecation(
-          frame, WebFeature::kDeviceOrientationInsecureOrigin);
+          GetDocument(), WebFeature::kDeviceOrientationInsecureOrigin);
       HostsUsingFeatures::CountAnyWorld(
           GetDocument(),
           HostsUsingFeatures::Feature::kDeviceOrientationInsecureHost);
@@ -68,6 +70,10 @@ void DeviceOrientationController::DidAddEventListener(
               ->GetSettings()
               ->GetStrictPowerfulFeatureRestrictions())
         return;
+      if (RuntimeEnabledFeatures::
+              RestrictDeviceSensorEventsToSecureContextsEnabled()) {
+        return;
+      }
     }
   }
 
@@ -174,7 +180,8 @@ void DeviceOrientationController::LogToConsolePolicyFeaturesDisabled(
       "features.md#sensor-features",
       event_name.Ascii().data());
   ConsoleMessage* console_message = ConsoleMessage::Create(
-      kJSMessageSource, kWarningMessageLevel, std::move(message));
+      mojom::ConsoleMessageSource::kJavaScript,
+      mojom::ConsoleMessageLevel::kWarning, std::move(message));
   frame->Console().AddMessage(console_message);
 }
 

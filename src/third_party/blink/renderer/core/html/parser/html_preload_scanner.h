@@ -60,13 +60,8 @@ struct CORE_EXPORT CachedDocumentParameters {
   USING_FAST_MALLOC(CachedDocumentParameters);
 
  public:
-  static std::unique_ptr<CachedDocumentParameters> Create(Document* document) {
-    return base::WrapUnique(new CachedDocumentParameters(document));
-  }
-
-  static std::unique_ptr<CachedDocumentParameters> Create() {
-    return base::WrapUnique(new CachedDocumentParameters);
-  }
+  explicit CachedDocumentParameters(Document*);
+  CachedDocumentParameters() = default;
 
   bool do_html_preload_scanning;
   Length default_viewport_min_width;
@@ -75,10 +70,6 @@ struct CORE_EXPORT CachedDocumentParameters {
   network::mojom::ReferrerPolicy referrer_policy;
   SubresourceIntegrity::IntegrityFeatures integrity_features;
   bool lazyload_policy_enforced;
-
- private:
-  explicit CachedDocumentParameters(Document*);
-  CachedDocumentParameters() = default;
 };
 
 class TokenPreloadScanner {
@@ -90,7 +81,8 @@ class TokenPreloadScanner {
   TokenPreloadScanner(const KURL& document_url,
                       std::unique_ptr<CachedDocumentParameters>,
                       const MediaValuesCached::MediaValuesCachedData&,
-                      const ScannerType);
+                      const ScannerType,
+                      bool priority_hints_origin_trial_enabled);
   ~TokenPreloadScanner();
 
   void Scan(const HTMLToken&,
@@ -162,6 +154,12 @@ class TokenPreloadScanner {
   Persistent<MediaValuesCached> media_values_;
   ClientHintsPreferences client_hints_preferences_;
   ScannerType scanner_type_;
+  // TODO(domfarolino): Remove this once Priority Hints is no longer in Origin
+  // Trial (see https://crbug.com/821464). This member exists because
+  // HTMLPreloadScanner has no access to an ExecutionContext*, and therefore
+  // cannot determine an Origin Trial's status, so we accept this information in
+  // the constructor and set this flag accordingly.
+  bool priority_hints_origin_trial_enabled_;
 
   bool did_rewind_ = false;
 
@@ -174,17 +172,11 @@ class CORE_EXPORT HTMLPreloadScanner {
   USING_FAST_MALLOC(HTMLPreloadScanner);
 
  public:
-  static std::unique_ptr<HTMLPreloadScanner> Create(
-      const HTMLParserOptions& options,
-      const KURL& document_url,
-      std::unique_ptr<CachedDocumentParameters> document_parameters,
-      const MediaValuesCached::MediaValuesCachedData& media_values_cached_data,
-      const TokenPreloadScanner::ScannerType scanner_type) {
-    return base::WrapUnique(new HTMLPreloadScanner(
-        options, document_url, std::move(document_parameters),
-        media_values_cached_data, scanner_type));
-  }
-
+  HTMLPreloadScanner(const HTMLParserOptions&,
+                     const KURL& document_url,
+                     std::unique_ptr<CachedDocumentParameters>,
+                     const MediaValuesCached::MediaValuesCachedData&,
+                     const TokenPreloadScanner::ScannerType);
   ~HTMLPreloadScanner();
 
   void AppendToEnd(const SegmentedString&);
@@ -193,12 +185,6 @@ class CORE_EXPORT HTMLPreloadScanner {
                             bool& has_csp_meta_tag);
 
  private:
-  HTMLPreloadScanner(const HTMLParserOptions&,
-                     const KURL& document_url,
-                     std::unique_ptr<CachedDocumentParameters>,
-                     const MediaValuesCached::MediaValuesCachedData&,
-                     const TokenPreloadScanner::ScannerType);
-
   TokenPreloadScanner scanner_;
   SegmentedString source_;
   HTMLToken token_;

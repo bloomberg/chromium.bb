@@ -74,7 +74,6 @@ void CastServiceSimple::StartInternal() {
   params.window_params.delegate = this;
   cast_web_view_ =
       web_contents_manager_->CreateWebView(params, nullptr, /* site_instance */
-                                           nullptr,         /* extension */
                                            GURL() /* initial_url */);
   cast_web_view_->LoadUrl(startup_url_);
   cast_web_view_->GrantScreenAccess();
@@ -101,7 +100,6 @@ void CastServiceSimple::OnWindowDestroyed() {}
 void CastServiceSimple::OnKeyEvent(const ui::KeyEvent& key_event) {}
 
 bool CastServiceSimple::OnAddMessageToConsoleReceived(
-    content::WebContents* source,
     int32_t level,
     const base::string16& message,
     int32_t line_no,

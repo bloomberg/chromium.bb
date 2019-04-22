@@ -108,8 +108,9 @@ class ScopedFakeNSWindowFullscreen::Impl {
                       object:window];
     DCHECK(base::MessageLoopCurrentForUI::IsSet());
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&Impl::FinishEnterFullscreen,
-                              base::Unretained(this), fullscreen_content_size));
+        FROM_HERE,
+        base::BindOnce(&Impl::FinishEnterFullscreen, base::Unretained(this),
+                       fullscreen_content_size));
   }
 
   void FinishEnterFullscreen(NSSize fullscreen_content_size) {
@@ -148,7 +149,7 @@ class ScopedFakeNSWindowFullscreen::Impl {
     DCHECK(base::MessageLoopCurrentForUI::IsSet());
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&Impl::FinishExitFullscreen, base::Unretained(this)));
+        base::BindOnce(&Impl::FinishExitFullscreen, base::Unretained(this)));
   }
 
   void FinishExitFullscreen() {

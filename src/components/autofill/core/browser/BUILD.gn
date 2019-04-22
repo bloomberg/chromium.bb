@@ -4,19 +4,25 @@
 
 import("//build/config/chrome_build.gni")
 import("//build/config/jumbo.gni")
+import("//build/util/version.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 
 jumbo_static_library("browser") {
   sources = [
     "accessory_sheet_data.cc",
     "accessory_sheet_data.h",
-    "account_info_getter.h",
     "address.cc",
     "address.h",
     "address_combobox_model.cc",
     "address_combobox_model.h",
+    "address_contact_form_label_formatter.cc",
+    "address_contact_form_label_formatter.h",
+    "address_email_form_label_formatter.cc",
+    "address_email_form_label_formatter.h",
     "address_field.cc",
     "address_field.h",
+    "address_form_label_formatter.cc",
+    "address_form_label_formatter.h",
     "address_i18n.cc",
     "address_i18n.h",
     "address_normalization_manager.cc",
@@ -24,6 +30,8 @@ jumbo_static_library("browser") {
     "address_normalizer.h",
     "address_normalizer_impl.cc",
     "address_normalizer_impl.h",
+    "address_phone_form_label_formatter.cc",
+    "address_phone_form_label_formatter.h",
     "address_rewriter.cc",
     "address_rewriter.h",
     "address_rewriter_rules.cc",
@@ -64,6 +72,8 @@ jumbo_static_library("browser") {
     "autofill_metadata.h",
     "autofill_metrics.cc",
     "autofill_metrics.h",
+    "autofill_observer.cc",
+    "autofill_observer.h",
     "autofill_popup_delegate.h",
     "autofill_profile.cc",
     "autofill_profile.h",
@@ -79,14 +89,12 @@ jumbo_static_library("browser") {
     "autofill_provider.h",
     "autofill_scanner.cc",
     "autofill_scanner.h",
+    "autofill_subject.cc",
+    "autofill_subject.h",
     "autofill_type.cc",
     "autofill_type.h",
-    "autofill_wallet_data_type_controller.cc",
-    "autofill_wallet_data_type_controller.h",
-    "autofill_wallet_model_type_controller.cc",
-    "autofill_wallet_model_type_controller.h",
-    "card_unmask_delegate.cc",
-    "card_unmask_delegate.h",
+    "contact_form_label_formatter.cc",
+    "contact_form_label_formatter.h",
     "contact_info.cc",
     "contact_info.h",
     "country_combobox_model.cc",
@@ -99,10 +107,6 @@ jumbo_static_library("browser") {
     "credit_card.h",
     "credit_card_field.cc",
     "credit_card_field.h",
-    "credit_card_save_manager.cc",
-    "credit_card_save_manager.h",
-    "credit_card_save_strike_database.cc",
-    "credit_card_save_strike_database.h",
     "email_field.cc",
     "email_field.h",
     "field_candidates.cc",
@@ -120,21 +124,40 @@ jumbo_static_library("browser") {
     "form_structure.h",
     "form_types.cc",
     "form_types.h",
-    "legacy_strike_database.cc",
-    "legacy_strike_database.h",
-    "legal_message_line.cc",
-    "legal_message_line.h",
-    "local_card_migration_manager.cc",
-    "local_card_migration_manager.h",
+    "label_formatter.cc",
+    "label_formatter.h",
+    "label_formatter_utils.cc",
+    "label_formatter_utils.h",
+    "metrics/address_form_event_logger.cc",
+    "metrics/address_form_event_logger.h",
+    "metrics/credit_card_form_event_logger.cc",
+    "metrics/credit_card_form_event_logger.h",
+    "metrics/form_event_logger_base.cc",
+    "metrics/form_event_logger_base.h",
+    "metrics/form_events.h",
     "name_field.cc",
     "name_field.h",
-    "password_requirements_spec_fetcher.h",
-    "password_requirements_spec_fetcher_impl.cc",
-    "password_requirements_spec_fetcher_impl.h",
-    "password_requirements_spec_printer.cc",
-    "password_requirements_spec_printer.h",
+    "payments/account_info_getter.h",
+    "payments/autofill_wallet_data_type_controller.cc",
+    "payments/autofill_wallet_data_type_controller.h",
+    "payments/autofill_wallet_model_type_controller.cc",
+    "payments/autofill_wallet_model_type_controller.h",
+    "payments/card_unmask_delegate.cc",
+    "payments/card_unmask_delegate.h",
+    "payments/credit_card_save_manager.cc",
+    "payments/credit_card_save_manager.h",
+    "payments/credit_card_save_strike_database.cc",
+    "payments/credit_card_save_strike_database.h",
     "payments/full_card_request.cc",
     "payments/full_card_request.h",
+    "payments/legacy_strike_database.cc",
+    "payments/legacy_strike_database.h",
+    "payments/legal_message_line.cc",
+    "payments/legal_message_line.h",
+    "payments/local_card_migration_manager.cc",
+    "payments/local_card_migration_manager.h",
+    "payments/local_card_migration_strike_database.cc",
+    "payments/local_card_migration_strike_database.h",
     "payments/payments_client.cc",
     "payments/payments_client.h",
     "payments/payments_customer_data.h",
@@ -143,6 +166,13 @@ jumbo_static_library("browser") {
     "payments/payments_service_url.h",
     "payments/payments_util.cc",
     "payments/payments_util.h",
+    "payments/risk_data_loader.h",
+    "payments/strike_database.cc",
+    "payments/strike_database.h",
+    "payments/strike_database_integrator_base.cc",
+    "payments/strike_database_integrator_base.h",
+    "payments/strike_database_integrator_test_strike_database.cc",
+    "payments/strike_database_integrator_test_strike_database.h",
     "personal_data_manager.cc",
     "personal_data_manager.h",
     "personal_data_manager_observer.h",
@@ -154,6 +184,8 @@ jumbo_static_library("browser") {
     "phone_number_i18n.h",
     "popup_item_ids.h",
     "popup_types.h",
+    "price_field.cc",
+    "price_field.h",
     "randomized_encoder.cc",
     "randomized_encoder.h",
     "rationalization_util.cc",
@@ -163,13 +195,10 @@ jumbo_static_library("browser") {
     "region_data_loader.h",
     "region_data_loader_impl.cc",
     "region_data_loader_impl.h",
-    "risk_data_loader.h",
     "search_field.cc",
     "search_field.h",
     "state_names.cc",
     "state_names.h",
-    "strike_database.cc",
-    "strike_database.h",
     "subkey_requester.cc",
     "subkey_requester.h",
     "suggestion.cc",
@@ -177,10 +206,14 @@ jumbo_static_library("browser") {
     "suggestion_selection.cc",
     "suggestion_selection.h",
     "sync_utils.h",
-    "ui/card_unmask_prompt_controller.h",
-    "ui/card_unmask_prompt_controller_impl.cc",
-    "ui/card_unmask_prompt_controller_impl.h",
-    "ui/card_unmask_prompt_view.h",
+    "test_data_creator.cc",
+    "test_data_creator.h",
+    "travel_field.cc",
+    "travel_field.h",
+    "ui/payments/card_unmask_prompt_controller.h",
+    "ui/payments/card_unmask_prompt_controller_impl.cc",
+    "ui/payments/card_unmask_prompt_controller_impl.h",
+    "ui/payments/card_unmask_prompt_view.h",
     "validation.cc",
     "validation.h",
     "webdata/autocomplete_sync_bridge.cc",
@@ -218,6 +251,8 @@ jumbo_static_library("browser") {
     "webdata/autofill_webdata_backend.h",
     "webdata/autofill_webdata_backend_impl.cc",
     "webdata/autofill_webdata_backend_impl.h",
+    "webdata/autofill_webdata_backend_util.cc",
+    "webdata/autofill_webdata_backend_util.h",
     "webdata/autofill_webdata_service.cc",
     "webdata/autofill_webdata_service.h",
     "webdata/autofill_webdata_service_observer.h",
@@ -236,21 +271,23 @@ jumbo_static_library("browser") {
     sources += [
       "autofill_assistant.cc",
       "autofill_assistant.h",
-      "autofill_credit_card_filling_infobar_delegate_mobile.cc",
-      "autofill_credit_card_filling_infobar_delegate_mobile.h",
-      "autofill_save_card_infobar_delegate_mobile.cc",
-      "autofill_save_card_infobar_delegate_mobile.h",
-      "autofill_save_card_infobar_mobile.h",
-      "ui/card_name_fix_flow_view_delegate_mobile.cc",
-      "ui/card_name_fix_flow_view_delegate_mobile.h",
+      "payments/autofill_credit_card_filling_infobar_delegate_mobile.cc",
+      "payments/autofill_credit_card_filling_infobar_delegate_mobile.h",
+      "payments/autofill_save_card_infobar_delegate_mobile.cc",
+      "payments/autofill_save_card_infobar_delegate_mobile.h",
+      "payments/autofill_save_card_infobar_mobile.h",
+      "ui/payments/card_expiration_date_fix_flow_view_delegate_mobile.cc",
+      "ui/payments/card_expiration_date_fix_flow_view_delegate_mobile.h",
+      "ui/payments/card_name_fix_flow_view_delegate_mobile.cc",
+      "ui/payments/card_name_fix_flow_view_delegate_mobile.h",
     ]
   }
 
   if (!is_android) {
     sources += [
-      "ui/local_card_migration_bubble_controller.h",
-      "ui/local_card_migration_dialog_controller.h",
-      "ui/save_card_bubble_controller.h",
+      "ui/payments/local_card_migration_bubble_controller.h",
+      "ui/payments/local_card_migration_dialog_controller.h",
+      "ui/payments/save_card_bubble_controller.h",
     ]
   }
 
@@ -265,6 +302,8 @@ jumbo_static_library("browser") {
     ]
   }
 
+  defines = [ "CHROME_VERSION_MAJOR=" + chrome_version_major ]
+
   configs += [ "//build/config:precompiled_headers" ]
 
   public_deps = [
@@ -276,12 +315,11 @@ jumbo_static_library("browser") {
     "//third_party/libaddressinput",
   ]
   deps = [
-    ":password_generator",
-    ":password_generator_fips181",
     "proto:legacy_proto_bridge",
     "//base",
     "//base:i18n",
     "//components/data_use_measurement/core",
+    "//components/google/core/common",
     "//components/history/core/browser",
     "//components/infobars/core",
     "//components/keyed_service/core",
@@ -322,6 +360,13 @@ jumbo_static_library("browser") {
     ]
   }
 
+  if (!is_android && !is_ios) {
+    deps += [
+      "//ui/native_theme",
+      "//ui/native_theme:native_theme_browser",
+    ]
+  }
+
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 }
 
@@ -332,11 +377,25 @@ jumbo_static_library("test_support") {
     "autofill_test_utils.h",
     "data_driven_test.cc",
     "data_driven_test.h",
+    "mock_autocomplete_history_manager.cc",
+    "mock_autocomplete_history_manager.h",
+    "payments/test_credit_card_save_manager.cc",
+    "payments/test_credit_card_save_manager.h",
+    "payments/test_credit_card_save_strike_database.cc",
+    "payments/test_credit_card_save_strike_database.h",
+    "payments/test_legacy_strike_database.cc",
+    "payments/test_legacy_strike_database.h",
+    "payments/test_local_card_migration_manager.cc",
+    "payments/test_local_card_migration_manager.h",
     "payments/test_payments_client.cc",
     "payments/test_payments_client.h",
+    "payments/test_strike_database.cc",
+    "payments/test_strike_database.h",
     "suggestion_test_helpers.h",
     "test_address_normalizer.cc",
     "test_address_normalizer.h",
+    "test_autofill_async_observer.cc",
+    "test_autofill_async_observer.h",
     "test_autofill_client.cc",
     "test_autofill_client.h",
     "test_autofill_clock.cc",
@@ -351,27 +410,19 @@ jumbo_static_library("test_support") {
     "test_autofill_manager.h",
     "test_autofill_profile_validator.cc",
     "test_autofill_profile_validator.h",
+    "test_autofill_profile_validator_delayed.cc",
+    "test_autofill_profile_validator_delayed.h",
     "test_autofill_provider.cc",
     "test_autofill_provider.h",
-    "test_credit_card_save_manager.cc",
-    "test_credit_card_save_manager.h",
-    "test_credit_card_save_strike_database.cc",
-    "test_credit_card_save_strike_database.h",
     "test_event_waiter.h",
     "test_form_data_importer.cc",
     "test_form_data_importer.h",
     "test_form_structure.cc",
     "test_form_structure.h",
-    "test_legacy_strike_database.cc",
-    "test_legacy_strike_database.h",
-    "test_local_card_migration_manager.cc",
-    "test_local_card_migration_manager.h",
     "test_personal_data_manager.cc",
     "test_personal_data_manager.h",
     "test_region_data_loader.cc",
     "test_region_data_loader.h",
-    "test_strike_database.cc",
-    "test_strike_database.h",
     "webdata/autofill_sync_bridge_test_util.cc",
     "webdata/autofill_sync_bridge_test_util.h",
     "webdata/mock_autofill_webdata_backend.cc",
@@ -406,30 +457,6 @@ jumbo_static_library("test_support") {
     "//third_party/libaddressinput:util",
     "//ui/gfx:test_support",
     "//ui/gfx/geometry",
-  ]
-}
-
-static_library("password_generator") {
-  sources = [
-    "password_generator.cc",
-    "password_generator.h",
-  ]
-  public_deps = [
-    "//components/autofill/core/browser/proto",
-  ]
-  deps = [
-    "//base",
-  ]
-}
-
-static_library("password_generator_fips181") {
-  sources = [
-    "password_generator_fips181.cc",
-    "password_generator_fips181.h",
-  ]
-  deps = [
-    "//base",
-    "//third_party/fips181",
   ]
 }
 
@@ -483,44 +510,43 @@ source_set("unit_tests") {
     "autofill_profile_unittest.cc",
     "autofill_profile_validation_util_unittest.cc",
     "autofill_profile_validator_unittest.cc",
+    "autofill_subject_unittest.cc",
     "autofill_type_unittest.cc",
-    "autofill_wallet_data_type_controller_unittest.cc",
     "contact_info_unittest.cc",
     "country_combobox_model_unittest.cc",
     "country_names_unittest.cc",
     "credit_card_field_unittest.cc",
-    "credit_card_save_manager_unittest.cc",
-    "credit_card_save_strike_database_unittest.cc",
     "credit_card_unittest.cc",
     "field_candidates_unittest.cc",
     "field_filler_unittest.cc",
     "form_data_importer_unittest.cc",
     "form_field_unittest.cc",
     "form_structure_unittest.cc",
-    "legacy_strike_database_unittest.cc",
-    "legal_message_line_unittest.cc",
-    "local_card_migration_manager_unittest.cc",
     "name_field_unittest.cc",
-    "password_generator_fips181_unittest.cc",
-    "password_generator_unittest.cc",
-    "password_requirements_spec_fetcher_unittest.cc",
+    "payments/autofill_wallet_data_type_controller_unittest.cc",
+    "payments/credit_card_save_manager_unittest.cc",
     "payments/full_card_request_unittest.cc",
+    "payments/legacy_strike_database_unittest.cc",
+    "payments/legal_message_line_unittest.cc",
+    "payments/local_card_migration_manager_unittest.cc",
     "payments/payments_client_unittest.cc",
     "payments/payments_service_url_unittest.cc",
     "payments/payments_util_unittest.cc",
+    "payments/strike_database_integrator_test_strike_database_unittest.cc",
+    "payments/strike_database_unittest.cc",
     "personal_data_manager_unittest.cc",
     "phone_field_unittest.cc",
     "phone_number_i18n_unittest.cc",
     "phone_number_unittest.cc",
+    "price_field_unittest.cc",
     "proto/legacy_proto_bridge_unittest.cc",
     "randomized_encoder_unittest.cc",
     "rationalization_util_unittest.cc",
     "region_combobox_model_unittest.cc",
     "search_field_unittest.cc",
-    "strike_database_unittest.cc",
     "subkey_requester_unittest.cc",
     "suggestion_selection_unittest.cc",
-    "ui/card_unmask_prompt_controller_impl_unittest.cc",
+    "ui/payments/card_unmask_prompt_controller_impl_unittest.cc",
     "validation_unittest.cc",
     "webdata/autocomplete_sync_bridge_unittest.cc",
     "webdata/autofill_profile_sync_bridge_unittest.cc",
@@ -547,10 +573,22 @@ source_set("unit_tests") {
     ]
   }
 
+  if (!is_ios && !is_android) {
+    sources += [
+      "address_contact_form_label_formatter_unittest.cc",
+      "address_email_form_label_formatter_unittest.cc",
+      "address_form_label_formatter_unittest.cc",
+      "address_phone_form_label_formatter_unittest.cc",
+      "contact_form_label_formatter_unittest.cc",
+      "label_formatter_unittest.cc",
+      "label_formatter_utils_unittest.cc",
+    ]
+  }
+
+  defines = [ "CHROME_VERSION_MAJOR=" + chrome_version_major ]
+
   deps = [
     ":browser",
-    ":password_generator",
-    ":password_generator_fips181",
     ":test_support",
     ":unit_tests_bundle_data",
     "proto:legacy_proto_bridge",
@@ -570,6 +608,7 @@ source_set("unit_tests") {
     "//components/ukm:test_support",
     "//components/variations",
     "//components/variations:test_support",
+    "//components/variations/net",
     "//components/version_info:version_info",
     "//components/webdata/common",
     "//components/webdata_services:test_support",
@@ -609,15 +648,6 @@ fuzzer_test("form_structure_fuzzer") {
   dict = "form_structure_fuzzer.dict"
 }
 
-fuzzer_test("password_generator_fips181_fuzzer") {
-  sources = [
-    "password_generator_fips181_fuzzer.cc",
-  ]
-  deps = [
-    ":password_generator_fips181",
-  ]
-}
-
 if (use_libfuzzer) {
   fuzzer_test("form_structure_process_query_response_fuzzer") {
     sources = [
@@ -629,17 +659,6 @@ if (use_libfuzzer) {
       "//base:base",
       "//components/autofill/core/browser/proto",
       "//components/autofill/core/common",
-      "//third_party/libprotobuf-mutator",
-    ]
-  }
-
-  fuzzer_test("password_generator_proto_fuzzer") {
-    sources = [
-      "password_generator_proto_fuzzer.cc",
-    ]
-    deps = [
-      ":password_generator",
-      "//components/autofill/core/browser/proto",
       "//third_party/libprotobuf-mutator",
     ]
   }

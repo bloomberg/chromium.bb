@@ -7,17 +7,13 @@
 #include <memory>
 #include <string>
 
+#include "base/bind_helpers.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/test_extension_environment.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/test/base/testing_profile.h"
-
-#if defined(OS_MACOSX)
-#include "base/command_line.h"
-#include "chrome/common/chrome_switches.h"
-#endif
 
 class AppInfoDialogBrowserTest : public DialogBrowserTest {
  public:
@@ -38,13 +34,6 @@ class AppInfoDialogBrowserTest : public DialogBrowserTest {
   }
 
   void TearDownOnMainThread() override { extension_environment_ = nullptr; }
-
-#if defined(OS_MACOSX)
-  // content::BrowserTestBase:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kEnableAppInfoDialogMac);
-  }
-#endif
 
  private:
   std::unique_ptr<extensions::TestExtensionEnvironment> extension_environment_;

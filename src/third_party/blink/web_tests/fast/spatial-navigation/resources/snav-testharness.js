@@ -2,6 +2,7 @@
   "use strict";
 
   let gAsyncTest;
+  let gPostAssertsFunc;
 
   // TODO: Use WebDriver's API instead of eventSender.
   //       Hopefully something like:
@@ -60,6 +61,8 @@
 
   function stepAndAssertMoves(expectedMoves) {
     if (expectedMoves.length == 0) {
+      if (gPostAssertsFunc)
+        gAsyncTest.step(gPostAssertsFunc);
       gAsyncTest.done();
       return;
     }
@@ -70,7 +73,7 @@
     let wanted = findElement(expectedId);
     let receivingDoc = wanted.ownerDocument;
     let verifyAndAdvance = gAsyncTest.step_func(function() {
-      let focused = focusedDocument().activeElement;
+      let focused = window.internals.interestedElement;
       assert_equals(focused, wanted);
       // Kick off another async test step.
       stepAndAssertMoves(expectedMoves);
@@ -87,17 +90,28 @@
 
   // TODO: Port all old spatial navigation layout tests to this method.
   window.snav = {
-    assertSnavEnabledAndTestable: function() {
+    assertSnavEnabledAndTestable: function(focuslessSpatNav) {
       test(() => {
         assert_true(!!window.testRunner);
-        testRunner.overridePreference("WebKitTabToLinksPreferenceKey", 1);
-        testRunner.overridePreference('WebKitSpatialNavigationEnabled', 1);
+        window.snav.enableSnav(focuslessSpatNav);
       }, 'window.testRunner is present.');
     },
 
-    assertFocusMoves: function(expectedMoves, enableSpatnav=true) {
+    enableSnav: function(focuslessSpatNav) {
+      if (focuslessSpatNav)
+        internals.runtimeFlags.focuslessSpatialNavigationEnabled = true;
+
+      testRunner.overridePreference("WebKitTabToLinksPreferenceKey", 1);
+      testRunner.overridePreference('WebKitSpatialNavigationEnabled', 1);
+    },
+
+    triggerMove: triggerMove,
+
+    assertFocusMoves: function(expectedMoves, enableSpatnav=true, postAssertsFunc=null, focuslessSpatNav=false) {
       if (enableSpatnav)
-        snav.assertSnavEnabledAndTestable();
+        snav.assertSnavEnabledAndTestable(focuslessSpatNav);
+      if (postAssertsFunc)
+        gPostAssertsFunc = postAssertsFunc;
       gAsyncTest = async_test("Focus movements:\n" +
           JSON.stringify(expectedMoves).replace(/],/g, ']\n') + '\n');
 

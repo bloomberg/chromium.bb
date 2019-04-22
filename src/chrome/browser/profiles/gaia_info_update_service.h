@@ -55,9 +55,10 @@ class GAIAInfoUpdateService : public KeyedService,
   void ScheduleNextUpdate();
 
   // Overridden from identity::IdentityManager::Observer:
-  void OnPrimaryAccountSet(const AccountInfo& primary_account_info) override;
+  void OnPrimaryAccountSet(
+      const CoreAccountInfo& primary_account_info) override;
   void OnPrimaryAccountCleared(
-      const AccountInfo& previous_primary_account_info) override;
+      const CoreAccountInfo& previous_primary_account_info) override;
 
   Profile* profile_;
   std::unique_ptr<ProfileDownloader> profile_image_downloader_;

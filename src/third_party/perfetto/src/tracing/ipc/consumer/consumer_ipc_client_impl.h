@@ -61,10 +61,15 @@ class ConsumerIPCClientImpl : public TracingService::ConsumerEndpoint,
   // tracing library, which know nothing about the IPC transport.
   void EnableTracing(const TraceConfig&, base::ScopedFile) override;
   void StartTracing() override;
+  void ChangeTraceConfig(const TraceConfig&) override;
   void DisableTracing() override;
   void ReadBuffers() override;
   void FreeBuffers() override;
   void Flush(uint32_t timeout_ms, FlushCallback) override;
+  void Detach(const std::string& key) override;
+  void Attach(const std::string& key) override;
+  void GetTraceStats() override;
+  void ObserveEvents(uint32_t enabled_event_types) override;
 
   // ipc::ServiceProxy::EventListener implementation.
   // These methods are invoked by the IPC layer, which knows nothing about
@@ -74,6 +79,7 @@ class ConsumerIPCClientImpl : public TracingService::ConsumerEndpoint,
 
  private:
   void OnReadBuffersResponse(ipc::AsyncResult<protos::ReadBuffersResponse>);
+  void OnEnableTracingResponse(ipc::AsyncResult<protos::EnableTracingResponse>);
 
   // TODO(primiano): think to dtor order, do we rely on any specific sequence?
   Consumer* const consumer_;
@@ -94,6 +100,7 @@ class ConsumerIPCClientImpl : public TracingService::ConsumerEndpoint,
   // one with |last_slice_for_packet| == true is received.
   TracePacket partial_packet_;
 
+  // Keep last.
   base::WeakPtrFactory<ConsumerIPCClientImpl> weak_ptr_factory_;
 };
 

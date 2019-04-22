@@ -41,6 +41,9 @@ class APP_LIST_EXPORT SearchResultListView : public SearchResultContainerView {
 
   void OnSearchResultInstalled(SearchResultView* view);
 
+  // Handles vertical focus movement triggered by VKEY_UP/VKEY_DOWN.
+  bool HandleVerticalFocusMovement(SearchResultView* view, bool arrow_up);
+
   // Overridden from views::View:
   gfx::Size CalculatePreferredSize() const override;
   const char* GetClassName() const override;
@@ -52,6 +55,8 @@ class APP_LIST_EXPORT SearchResultListView : public SearchResultContainerView {
   void NotifyFirstResultYIndex(int y_index) override;
   int GetYSize() override;
   SearchResultBaseView* GetFirstResultView() override;
+
+  AppListMainView* app_list_main_view() const { return main_view_; }
 
  private:
   friend class test::SearchResultListViewTest;

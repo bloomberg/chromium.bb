@@ -29,7 +29,7 @@
     DEALINGS IN THE SOFTWARE.
   </copyright>
 
-  <interface name="xdg_wm_base" version="1">
+  <interface name="xdg_wm_base" version="2">
     <description summary="create desktop-style surfaces">
       The xdg_wm_base interface is exposed as a global object enabling clients
       to turn their wl_surfaces into windows in a desktop environment. It
@@ -115,7 +115,7 @@
     </event>
   </interface>
 
-  <interface name="xdg_positioner" version="1">
+  <interface name="xdg_positioner" version="2">
     <description summary="child surface positioner">
       The xdg_positioner provides a collection of rules for the placement of a
       child surface relative to a parent surface. Rules can be defined to ensure
@@ -359,7 +359,7 @@
     </request>
   </interface>
 
-  <interface name="xdg_surface" version="1">
+  <interface name="xdg_surface" version="2">
     <description summary="desktop user interface surface base interface">
       An interface that may be implemented by a wl_surface, for
       implementations that provide a desktop-style user interface.
@@ -528,7 +528,7 @@
     </event>
   </interface>
 
-  <interface name="xdg_toplevel" version="1">
+  <interface name="xdg_toplevel" version="2">
     <description summary="toplevel surface">
       This interface defines an xdg_surface role which allows a surface to,
       among other things, set window-like properties such as maximize,
@@ -555,7 +555,7 @@
     <request name="set_parent">
       <description summary="set the parent of this surface">
 	Set the "parent" of this surface. This surface should be stacked
-	this above the parent surface and all other ancestor surfaces.
+	above the parent surface and all other ancestor surfaces.
 
 	Parent windows should be set on dialogs, toolboxes, or other
 	"auxiliary" surfaces, so that the parent is raised when the dialog
@@ -724,6 +724,9 @@
 	<description summary="the surface is maximized">
 	  The surface is maximized. The window geometry specified in the configure
 	  event must be obeyed by the client.
+
+	  The client should draw without shadow or other
+	  decoration outside of the window geometry.
 	</description>
       </entry>
       <entry name="fullscreen" value="2" summary="the surface is fullscreen">
@@ -748,6 +751,30 @@
 	  Client window decorations should be painted as if the window is
 	  active. Do not assume this means that the window actually has
 	  keyboard or pointer focus.
+	</description>
+      </entry>
+      <entry name="tiled_left" value="5" since="2">
+	<description summary="the surface is tiled">
+	  The window is currently in a tiled layout and the left edge is
+	  considered to be adjacent to another part of the tiling grid.
+	</description>
+      </entry>
+      <entry name="tiled_right" value="6" since="2">
+	<description summary="the surface is tiled">
+	  The window is currently in a tiled layout and the right edge is
+	  considered to be adjacent to another part of the tiling grid.
+	</description>
+      </entry>
+      <entry name="tiled_top" value="7" since="2">
+	<description summary="the surface is tiled">
+	  The window is currently in a tiled layout and the top edge is
+	  considered to be adjacent to another part of the tiling grid.
+	</description>
+      </entry>
+      <entry name="tiled_bottom" value="8" since="2">
+	<description summary="the surface is tiled">
+	  The window is currently in a tiled layout and the bottom edge is
+	  considered to be adjacent to another part of the tiling grid.
 	</description>
       </entry>
     </enum>
@@ -839,12 +866,11 @@
 	Maximize the surface.
 
 	After requesting that the surface should be maximized, the compositor
-	will respond by emitting a configure event with the "maximized" state
-	and the required window geometry. The client should then update its
-	content, drawing it in a maximized state, i.e. without shadow or other
-	decoration outside of the window geometry. The client must also
-	acknowledge the configure when committing the new content (see
-	ack_configure).
+	will respond by emitting a configure event. Whether this configure
+	actually sets the window maximized is subject to compositor policies.
+	The client must then update its content, drawing in the configured
+	state. The client must also acknowledge the configure when committing
+	the new content (see ack_configure).
 
 	It is up to the compositor to decide how and where to maximize the
 	surface, for example which output and what region of the screen should
@@ -854,8 +880,8 @@
 	a configure event with the "maximized" state.
 
 	If the surface is in a fullscreen state, this request has no direct
-	effect. It will alter the state the surface is returned to when
-	unmaximized if not overridden by the compositor.
+	effect. It may alter the state the surface is returned to when
+	unmaximized unless overridden by the compositor.
       </description>
     </request>
 
@@ -864,13 +890,13 @@
 	Unmaximize the surface.
 
 	After requesting that the surface should be unmaximized, the compositor
-	will respond by emitting a configure event without the "maximized"
-	state. If available, the compositor will include the window geometry
-	dimensions the window had prior to being maximized in the configure
-	event. The client must then update its content, drawing it in a
-	regular state, i.e. potentially with shadow, etc. The client must also
-	acknowledge the configure when committing the new content (see
-	ack_configure).
+	will respond by emitting a configure event. Whether this actually
+	un-maximizes the window is subject to compositor policies.
+	If available and applicable, the compositor will include the window
+	geometry dimensions the window had prior to being maximized in the
+	configure event. The client must then update its content, drawing it in
+	the configured state. The client must also acknowledge the configure
+	when committing the new content (see ack_configure).
 
 	It is up to the compositor to position the surface after it was
 	unmaximized; usually the position the surface had before maximizing, if
@@ -880,8 +906,8 @@
 	emit a configure event without the "maximized" state.
 
 	If the surface is in a fullscreen state, this request has no direct
-	effect. It will alter the state the surface is returned to when
-	unmaximized if not overridden by the compositor.
+	effect. It may alter the state the surface is returned to when
+	unmaximized unless overridden by the compositor.
       </description>
     </request>
 
@@ -890,10 +916,10 @@
 	Make the surface fullscreen.
 
 	After requesting that the surface should be fullscreened, the
-	compositor will respond by emitting a configure event with the
-	"fullscreen" state and the fullscreen window geometry. The client must
-	also acknowledge the configure when committing the new content (see
-	ack_configure).
+	compositor will respond by emitting a configure event. Whether the
+	client is actually put into a fullscreen state is subject to compositor
+	policies. The client must also acknowledge the configure when
+	committing the new content (see ack_configure).
 
 	The output passed by the request indicates the client's preference as
 	to which display it should be set fullscreen on. If this value is NULL,
@@ -919,8 +945,9 @@
 	Make the surface no longer fullscreen.
 
 	After requesting that the surface should be unfullscreened, the
-	compositor will respond by emitting a configure event without the
-	"fullscreen" state.
+	compositor will respond by emitting a configure event.
+	Whether this actually removes the fullscreen state of the client is
+	subject to compositor policies.
 
 	Making a surface unfullscreen sets states for the surface based on the following:
 	* the state(s) it may have had before becoming fullscreen
@@ -989,7 +1016,7 @@
     </event>
   </interface>
 
-  <interface name="xdg_popup" version="1">
+  <interface name="xdg_popup" version="2">
     <description summary="short-lived, popup surfaces for menus">
       A popup surface is a short-lived, temporary surface. It can be used to
       implement for example menus, popovers, tooltips and other similar user
@@ -1006,9 +1033,6 @@
       unmap the surface. Clients that want to dismiss the popup when another
       surface of their own is clicked should dismiss the popup using the destroy
       request.
-
-      The parent surface must have either the xdg_toplevel or xdg_popup surface
-      role.
 
       A newly created xdg_popup will be stacked on top of all previously created
       xdg_popup surfaces associated with the same xdg_toplevel.

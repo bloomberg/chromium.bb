@@ -12,6 +12,7 @@
 
 #include "base/files/file_path.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_propvariant.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -19,10 +20,10 @@
 namespace base {
 namespace win {
 
-void ValidatePathsAreEqual(const base::FilePath& expected_path,
-                           const base::FilePath& actual_path) {
-  wchar_t long_expected_path_chars[MAX_PATH] = {0};
-  wchar_t long_actual_path_chars[MAX_PATH] = {0};
+void ValidatePathsAreEqual(const FilePath& expected_path,
+                           const FilePath& actual_path) {
+  char16 long_expected_path_chars[MAX_PATH] = {0};
+  char16 long_actual_path_chars[MAX_PATH] = {0};
 
   // If |expected_path| is empty confirm immediately that |actual_path| is also
   // empty.
@@ -32,31 +33,33 @@ void ValidatePathsAreEqual(const base::FilePath& expected_path,
   }
 
   // Proceed with LongPathName matching which will also confirm the paths exist.
-  EXPECT_NE(0U, ::GetLongPathName(
-      expected_path.value().c_str(), long_expected_path_chars, MAX_PATH))
-          << "Failed to get LongPathName of " << expected_path.value();
-  EXPECT_NE(0U, ::GetLongPathName(
-      actual_path.value().c_str(), long_actual_path_chars, MAX_PATH))
-          << "Failed to get LongPathName of " << actual_path.value();
+  EXPECT_NE(0U, ::GetLongPathName(as_wcstr(expected_path.value()),
+                                  as_writable_wcstr(long_expected_path_chars),
+                                  MAX_PATH))
+      << "Failed to get LongPathName of " << expected_path.value();
+  EXPECT_NE(0U, ::GetLongPathName(as_wcstr(actual_path.value()),
+                                  as_writable_wcstr(long_actual_path_chars),
+                                  MAX_PATH))
+      << "Failed to get LongPathName of " << actual_path.value();
 
-  base::FilePath long_expected_path(long_expected_path_chars);
-  base::FilePath long_actual_path(long_actual_path_chars);
+  FilePath long_expected_path(long_expected_path_chars);
+  FilePath long_actual_path(long_actual_path_chars);
   EXPECT_FALSE(long_expected_path.empty());
   EXPECT_FALSE(long_actual_path.empty());
 
   EXPECT_EQ(long_expected_path, long_actual_path);
 }
 
-void ValidateShortcut(const base::FilePath& shortcut_path,
+void ValidateShortcut(const FilePath& shortcut_path,
                       const ShortcutProperties& properties) {
   Microsoft::WRL::ComPtr<IShellLink> i_shell_link;
   Microsoft::WRL::ComPtr<IPersistFile> i_persist_file;
 
-  wchar_t read_target[MAX_PATH] = {0};
-  wchar_t read_working_dir[MAX_PATH] = {0};
-  wchar_t read_arguments[MAX_PATH] = {0};
-  wchar_t read_description[MAX_PATH] = {0};
-  wchar_t read_icon[MAX_PATH] = {0};
+  char16 read_target[MAX_PATH] = {0};
+  char16 read_working_dir[MAX_PATH] = {0};
+  char16 read_arguments[MAX_PATH] = {0};
+  char16 read_description[MAX_PATH] = {0};
+  char16 read_icon[MAX_PATH] = {0};
   int read_icon_index = 0;
 
   HRESULT hr;
@@ -74,41 +77,40 @@ void ValidateShortcut(const base::FilePath& shortcut_path,
     return;
 
   // Load the shortcut.
-  EXPECT_TRUE(SUCCEEDED(hr = i_persist_file->Load(
-      shortcut_path.value().c_str(), 0))) << "Failed to load shortcut at "
-                                          << shortcut_path.value();
+  EXPECT_TRUE(
+      SUCCEEDED(hr = i_persist_file->Load(as_wcstr(shortcut_path.value()), 0)))
+      << "Failed to load shortcut at " << shortcut_path.value();
   if (FAILED(hr))
     return;
 
   if (properties.options & ShortcutProperties::PROPERTIES_TARGET) {
-    EXPECT_TRUE(SUCCEEDED(
-        i_shell_link->GetPath(read_target, MAX_PATH, NULL, SLGP_SHORTPATH)));
-    ValidatePathsAreEqual(properties.target, base::FilePath(read_target));
+    EXPECT_TRUE(SUCCEEDED(i_shell_link->GetPath(
+        as_writable_wcstr(read_target), MAX_PATH, NULL, SLGP_SHORTPATH)));
+    ValidatePathsAreEqual(properties.target, FilePath(read_target));
   }
 
   if (properties.options & ShortcutProperties::PROPERTIES_WORKING_DIR) {
-    EXPECT_TRUE(SUCCEEDED(
-        i_shell_link->GetWorkingDirectory(read_working_dir, MAX_PATH)));
-    ValidatePathsAreEqual(properties.working_dir,
-                          base::FilePath(read_working_dir));
+    EXPECT_TRUE(SUCCEEDED(i_shell_link->GetWorkingDirectory(
+        as_writable_wcstr(read_working_dir), MAX_PATH)));
+    ValidatePathsAreEqual(properties.working_dir, FilePath(read_working_dir));
   }
 
   if (properties.options & ShortcutProperties::PROPERTIES_ARGUMENTS) {
-    EXPECT_TRUE(SUCCEEDED(
-        i_shell_link->GetArguments(read_arguments, MAX_PATH)));
+    EXPECT_TRUE(SUCCEEDED(i_shell_link->GetArguments(
+        as_writable_wcstr(read_arguments), MAX_PATH)));
     EXPECT_EQ(properties.arguments, read_arguments);
   }
 
   if (properties.options & ShortcutProperties::PROPERTIES_DESCRIPTION) {
-    EXPECT_TRUE(SUCCEEDED(
-        i_shell_link->GetDescription(read_description, MAX_PATH)));
+    EXPECT_TRUE(SUCCEEDED(i_shell_link->GetDescription(
+        as_writable_wcstr(read_description), MAX_PATH)));
     EXPECT_EQ(properties.description, read_description);
   }
 
   if (properties.options & ShortcutProperties::PROPERTIES_ICON) {
-    EXPECT_TRUE(SUCCEEDED(
-        i_shell_link->GetIconLocation(read_icon, MAX_PATH, &read_icon_index)));
-    ValidatePathsAreEqual(properties.icon, base::FilePath(read_icon));
+    EXPECT_TRUE(SUCCEEDED(i_shell_link->GetIconLocation(
+        as_writable_wcstr(read_icon), MAX_PATH, &read_icon_index)));
+    ValidatePathsAreEqual(properties.icon, FilePath(read_icon));
     EXPECT_EQ(properties.icon_index, read_icon_index);
   }
 
@@ -127,7 +129,7 @@ void ValidateShortcut(const base::FilePath& shortcut_path,
         EXPECT_TRUE(properties.app_id.empty());
         break;
       case VT_LPWSTR:
-        EXPECT_EQ(properties.app_id, pv_app_id.get().pwszVal);
+        EXPECT_EQ(properties.app_id, WideToUTF16(pv_app_id.get().pwszVal));
         break;
       default:
         ADD_FAILURE() << "Unexpected variant type: " << pv_app_id.get().vt;

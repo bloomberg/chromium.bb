@@ -62,7 +62,7 @@
 #include "content/public/common/content_switches.h"
 #include "google_apis/google_api_keys.h"
 #include "rlz/buildflags/buildflags.h"
-#include "ui/base/ui_features.h"
+#include "ui/base/buildflags.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
@@ -80,6 +80,10 @@
 #include "chrome/browser/ui/startup/credential_provider_signin_dialog_win.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 #endif  // defined(OS_WIN)
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+#include "chrome/browser/plugins/flash_deprecation_infobar_delegate.h"
+#endif
 
 #if BUILDFLAG(ENABLE_RLZ)
 #include "components/google/core/common/google_util.h"
@@ -101,7 +105,8 @@ namespace {
 //   (b) new constants should only be appended at the end of the enumeration.
 enum LaunchMode {
   LM_TO_BE_DECIDED = 0,         // Possibly direct launch or via a shortcut.
-  LM_AS_WEBAPP = 1,             // Launched as a installed web application.
+  LM_AS_WEBAPP_IN_WINDOW = 1,   // Launched as an installed web application in a
+                                // standalone window.
   LM_WITH_URLS = 2,             // Launched with urls in the cmd line.
   LM_OTHER = 3,                 // Not launched from a shortcut.
   LM_SHORTCUT_NONAME = 4,       // Launched from shortcut but no name available.
@@ -123,6 +128,8 @@ enum LaunchMode {
   LM_SHORTCUT_START_MENU = 19,         // A Windows Start Menu shortcut.
   LM_CREDENTIAL_PROVIDER_SIGNIN = 20,  // Started as a logon stub for the Google
                                        // Credential Provider for Windows.
+  LM_AS_WEBAPP_IN_TAB = 21,            // Launched as an installed web
+                                       // application in a browser tab.
 };
 
 // Returns a LaunchMode value if one can be determined with low overhead, or
@@ -341,19 +348,22 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
     // If |app_id| is a disabled or terminated platform app we handle it
     // specially here, otherwise it will be handled below.
     if (apps::OpenApplicationWithReenablePrompt(profile, app_id, command_line_,
-                                                cur_dir_))
+                                                cur_dir_)) {
       return true;
+    }
   }
 
-  // Open the required browser windows and tabs. First, see if
-  // we're being run as an application window. If so, the user
-  // opened an app shortcut.  Don't restore tabs or open initial
-  // URLs in that case. The user should see the window as an app,
-  // not as chrome.
-  // Special case is when app switches are passed but we do want to restore
-  // session. In that case open app window + focus it after session is restored.
+  // Open the required browser windows and tabs. If we're being run as an
+  // application window or application tab, don't restore tabs or open initial
+  // URLs as the user has directly launched an app shortcut. In the first case,
+  // the user should see a standlone app window. In the second case, the tab
+  // should either open in an existing Chrome window for this profile, or spawn
+  // a new Chrome window without any NTP if no window exists (see
+  // crbug.com/528385).
   if (OpenApplicationWindow(profile)) {
-    RecordLaunchModeHistogram(LM_AS_WEBAPP);
+    RecordLaunchModeHistogram(LM_AS_WEBAPP_IN_WINDOW);
+  } else if (OpenApplicationTab(profile)) {
+    RecordLaunchModeHistogram(LM_AS_WEBAPP_IN_TAB);
   } else {
     // Check the true process command line for --try-chrome-again=N rather than
     // the one parsed for startup URLs and such.
@@ -372,10 +382,6 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
       install_chrome_app::InstallChromeApp(
           command_line_.GetSwitchValueASCII(switches::kInstallChromeApp));
     }
-
-    // If this is an app launch, but we didn't open an app window, it may
-    // be an app tab.
-    OpenApplicationTab(profile);
 
 #if defined(OS_MACOSX)
     if (process_startup) {
@@ -480,7 +486,7 @@ Browser* StartupBrowserCreatorImpl::OpenTabsInBrowser(Browser* browser,
     if (!browser->tab_strip_model()->count())
       chrome::AddTabAt(browser, GURL(), -1, true);
     else
-      browser->tab_strip_model()->ActivateTabAt(0, false);
+      browser->tab_strip_model()->ActivateTabAt(0);
   }
 
   // The default behavior is to show the window, as expressed by the default
@@ -573,7 +579,6 @@ void StartupBrowserCreatorImpl::DetermineURLsAndLaunch(
     // Check if there are any incompatible applications cached from the last
     // Chrome run.
     has_incompatible_applications =
-        IncompatibleApplicationsUpdater::IsWarningEnabled() &&
         IncompatibleApplicationsUpdater::HasCachedApplications();
   }
 #endif
@@ -831,6 +836,13 @@ void StartupBrowserCreatorImpl::AddInfoBarsIfNecessary(
            browser_creator_->is_default_browser_dialog_suppressed())) {
         ShowDefaultBrowserPrompt(profile_);
       }
+    }
+#endif
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+    if (FlashDeprecationInfoBarDelegate::ShouldDisplayFlashDeprecation(
+            profile_)) {
+      FlashDeprecationInfoBarDelegate::Create(infobar_service);
     }
 #endif
   }

@@ -7,6 +7,7 @@
 #include <iterator>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 

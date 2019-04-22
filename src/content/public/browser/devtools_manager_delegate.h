@@ -13,10 +13,6 @@
 #include "content/public/browser/devtools_agent_host.h"
 #include "url/gurl.h"
 
-namespace base {
-class DictionaryValue;
-}
-
 namespace content {
 
 class DevToolsAgentHostClient;
@@ -71,12 +67,10 @@ class CONTENT_EXPORT DevToolsManagerDelegate {
                               DevToolsAgentHostClient* client);
 
   // Call callback if command was not handled.
-  using NotHandledCallback =
-      base::OnceCallback<void(std::unique_ptr<base::DictionaryValue>,
-                              const std::string&)>;
+  using NotHandledCallback = base::OnceCallback<void(const std::string&)>;
   virtual void HandleCommand(DevToolsAgentHost* agent_host,
                              DevToolsAgentHostClient* client,
-                             std::unique_ptr<base::DictionaryValue> command,
+                             const std::string& method,
                              const std::string& message,
                              NotHandledCallback callback);
 

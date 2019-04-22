@@ -192,6 +192,6 @@ struct ModrmEntry {
   OperandSize operand_size_;
 };
 
-};  // namespace sidestep
+}  // namespace sidestep
 
 #endif  // SANDBOX_SRC_SIDESTEP_MINI_DISASSEMBLER_TYPES_H__

@@ -29,6 +29,10 @@ class PlatformFieldTrials {
       bool has_seed,
       base::FeatureList* feature_list) = 0;
 
+  // Register any synthetic field trials. Will be called later than the above
+  // methods, in particular after g_browser_process is available..
+  virtual void RegisterSyntheticTrials() {}
+
  private:
   DISALLOW_COPY_AND_ASSIGN(PlatformFieldTrials);
 };

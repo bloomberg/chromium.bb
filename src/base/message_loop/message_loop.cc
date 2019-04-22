@@ -4,33 +4,20 @@
 
 #include "base/message_loop/message_loop.h"
 
-#include <algorithm>
-#include <atomic>
 #include <utility>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
-#include "base/compiler_specific.h"
-#include "base/debug/task_annotator.h"
-#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop_impl.h"
-#include "base/message_loop/message_loop_task_runner.h"
 #include "base/message_loop/message_pump_default.h"
 #include "base/message_loop/message_pump_for_io.h"
 #include "base/message_loop/message_pump_for_ui.h"
-#include "base/message_loop/sequenced_task_source.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
-#include "base/synchronization/waitable_event.h"
 #include "base/task/sequence_manager/sequence_manager.h"
 #include "base/task/sequence_manager/sequence_manager_impl.h"
 #include "base/task/sequence_manager/task_queue.h"
-#include "base/threading/thread_id_name_manager.h"
-#include "base/threading/thread_restrictions.h"
-#include "base/threading/thread_task_runner_handle.h"
-#include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 
 #if defined(OS_MACOSX)
 #include "base/message_loop/message_pump_mac.h"
@@ -41,10 +28,6 @@ namespace base {
 namespace {
 
 MessageLoop::MessagePumpFactory* message_pump_for_ui_factory_ = nullptr;
-
-std::unique_ptr<MessagePump> ReturnPump(std::unique_ptr<MessagePump> pump) {
-  return pump;
-}
 
 }  // namespace
 
@@ -58,32 +41,25 @@ constexpr MessageLoop::Type MessageLoop::TYPE_IO;
 constexpr MessageLoop::Type MessageLoop::TYPE_JAVA;
 #endif
 
-MessageLoop::MessageLoop(Type type)
-    : MessageLoop(type, MessagePumpFactoryCallback()) {
+MessageLoop::MessageLoop(Type type) : MessageLoop(type, nullptr) {
+  // For TYPE_CUSTOM you must either use
+  // MessageLoop(std::unique_ptr<MessagePump> pump) or
+  // MessageLoop::CreateUnbound()
+  DCHECK_NE(type_, TYPE_CUSTOM);
   BindToCurrentThread();
 }
 
 MessageLoop::MessageLoop(std::unique_ptr<MessagePump> pump)
-    : MessageLoop(TYPE_CUSTOM, BindOnce(&ReturnPump, std::move(pump))) {
+    : MessageLoop(TYPE_CUSTOM, std::move(pump)) {
   BindToCurrentThread();
 }
 
 MessageLoop::~MessageLoop() {
   // Clean up any unprocessed tasks, but take care: deleting a task could
-  // result in the addition of more tasks (e.g., via DeleteSoon).  We set a
-  // limit on the number of times we will allow a deleted task to generate more
-  // tasks.  Normally, we should only pass through this loop once or twice.  If
-  // we end up hitting the loop limit, then it is probably due to one task that
-  // is being stubborn.  Inspect the queues to see who is left.
-  bool tasks_remain;
-  for (int i = 0; i < 100; ++i) {
-    backend_->DeletePendingTasks();
-    // If we end up with empty queues, then break out of the loop.
-    tasks_remain = backend_->HasTasks();
-    if (!tasks_remain)
-      break;
-  }
-  DCHECK(!tasks_remain);
+  // result in the addition of more tasks (e.g., via DeleteSoon). This is taken
+  // care by the queue as it will prevent further tasks from being posted to its
+  // associated TaskRunner instances.
+  default_task_queue_->ShutdownTaskQueue();
 
   // If |pump_| is non-null, this message loop has been bound and should be the
   // current one on this thread. Otherwise, this loop is being destructed before
@@ -155,88 +131,51 @@ bool MessageLoop::IsType(Type type) const {
 // implementation detail. http://crbug.com/703346
 void MessageLoop::AddTaskObserver(TaskObserver* task_observer) {
   DCHECK_CALLED_ON_VALID_THREAD(bound_thread_checker_);
-  backend_->AddTaskObserver(task_observer);
+  sequence_manager_->AddTaskObserver(task_observer);
 }
 
 void MessageLoop::RemoveTaskObserver(TaskObserver* task_observer) {
   DCHECK_CALLED_ON_VALID_THREAD(bound_thread_checker_);
-  backend_->RemoveTaskObserver(task_observer);
+  sequence_manager_->RemoveTaskObserver(task_observer);
 }
 
 bool MessageLoop::IsBoundToCurrentThread() const {
-  return backend_->IsBoundToCurrentThread();
+  return sequence_manager_->IsBoundToCurrentThread();
 }
 
 bool MessageLoop::IsIdleForTesting() {
-  return backend_->IsIdleForTesting();
-}
-
-MessageLoopBase* MessageLoop::GetMessageLoopBase() {
-  return backend_.get();
+  return sequence_manager_->IsIdleForTesting();
 }
 
 //------------------------------------------------------------------------------
 
 // static
-std::unique_ptr<MessageLoop> MessageLoop::CreateUnbound(
-    Type type,
-    MessagePumpFactoryCallback pump_factory) {
-  return WrapUnique(new MessageLoop(type, std::move(pump_factory)));
+std::unique_ptr<MessageLoop> MessageLoop::CreateUnbound(Type type) {
+  return WrapUnique(new MessageLoop(type, nullptr));
 }
 
-const Feature kMessageLoopUsesSequenceManager{"MessageLoopUsesSequenceManager",
-                                              FEATURE_DISABLED_BY_DEFAULT};
+// static
+std::unique_ptr<MessageLoop> MessageLoop::CreateUnbound(
+    std::unique_ptr<MessagePump> custom_pump) {
+  return WrapUnique(new MessageLoop(TYPE_CUSTOM, std::move(custom_pump)));
+}
 
-MessageLoop::MessageLoop(Type type, MessagePumpFactoryCallback pump_factory)
-    : MessageLoop(type,
-                  std::move(pump_factory),
-                  FeatureList::IsEnabled(kMessageLoopUsesSequenceManager)
-                      ? BackendType::SEQUENCE_MANAGER
-                      : BackendType::MESSAGE_LOOP_IMPL) {}
-
-MessageLoop::MessageLoop(Type type,
-                         MessagePumpFactoryCallback pump_factory,
-                         BackendType backend_type)
-    : pump_(nullptr),
-      backend_(backend_type == BackendType::MESSAGE_LOOP_IMPL
-                   ? CreateMessageLoopImpl(type)
-                   : CreateSequenceManager(type)),
-      default_task_queue_(CreateDefaultTaskQueue(backend_type)),
+MessageLoop::MessageLoop(Type type, std::unique_ptr<MessagePump> custom_pump)
+    : sequence_manager_(
+          sequence_manager::internal::SequenceManagerImpl::CreateUnbound(
+              sequence_manager::SequenceManager::Settings{type})),
+      default_task_queue_(CreateDefaultTaskQueue()),
       type_(type),
-      pump_factory_(std::move(pump_factory)) {
-  // If type is TYPE_CUSTOM non-null pump_factory must be given.
-  DCHECK(type_ != TYPE_CUSTOM || !pump_factory_.is_null());
-
+      custom_pump_(std::move(custom_pump)) {
   // Bound in BindToCurrentThread();
   DETACH_FROM_THREAD(bound_thread_checker_);
 }
 
-std::unique_ptr<MessageLoopBase> MessageLoop::CreateMessageLoopImpl(
-    MessageLoop::Type type) {
-  return std::make_unique<MessageLoopImpl>(type);
-}
-
-std::unique_ptr<MessageLoopBase> MessageLoop::CreateSequenceManager(
-    MessageLoop::Type type) {
-  std::unique_ptr<sequence_manager::internal::SequenceManagerImpl> manager =
-      sequence_manager::internal::SequenceManagerImpl::CreateUnboundWithPump(
-          type);
-  // std::move() for nacl, it doesn't properly handle returning unique_ptr
-  // for subtypes.
-  return std::move(manager);
-}
-
-scoped_refptr<sequence_manager::TaskQueue> MessageLoop::CreateDefaultTaskQueue(
-    BackendType backend_type) {
-  if (backend_type == BackendType::MESSAGE_LOOP_IMPL)
-    return nullptr;
-  sequence_manager::internal::SequenceManagerImpl* manager =
-      static_cast<sequence_manager::internal::SequenceManagerImpl*>(
-          backend_.get());
-  scoped_refptr<sequence_manager::TaskQueue> default_task_queue =
-      manager->CreateTaskQueueWithType<sequence_manager::TaskQueue>(
-          sequence_manager::TaskQueue::Spec("default_tq"));
-  manager->SetTaskRunner(default_task_queue->task_runner());
+scoped_refptr<sequence_manager::TaskQueue>
+MessageLoop::CreateDefaultTaskQueue() {
+  auto default_task_queue = sequence_manager_->CreateTaskQueue(
+      sequence_manager::TaskQueue::Spec("default_tq"));
+  sequence_manager_->SetTaskRunner(default_task_queue->task_runner());
   return default_task_queue;
 }
 
@@ -252,39 +191,33 @@ void MessageLoop::BindToCurrentThread() {
   DCHECK(!MessageLoopCurrent::IsSet())
       << "should only have one message loop per thread";
 
-  backend_->BindToCurrentThread(std::move(pump));
-
-#if defined(OS_ANDROID)
-  // On Android, attach to the native loop when there is one.
-  if (type_ == TYPE_UI || type_ == TYPE_JAVA)
-    backend_->AttachToMessagePump();
-#endif
+  sequence_manager_->BindToCurrentThread(std::move(pump));
 }
 
 std::unique_ptr<MessagePump> MessageLoop::CreateMessagePump() {
-  if (!pump_factory_.is_null()) {
-    return std::move(pump_factory_).Run();
+  if (custom_pump_) {
+    return std::move(custom_pump_);
   } else {
     return CreateMessagePumpForType(type_);
   }
 }
 
 void MessageLoop::SetTimerSlack(TimerSlack timer_slack) {
-  backend_->SetTimerSlack(timer_slack);
+  sequence_manager_->SetTimerSlack(timer_slack);
 }
 
 std::string MessageLoop::GetThreadName() const {
-  return backend_->GetThreadName();
+  return sequence_manager_->GetThreadName();
 }
 
 scoped_refptr<SingleThreadTaskRunner> MessageLoop::task_runner() const {
-  return backend_->GetTaskRunner();
+  return sequence_manager_->GetTaskRunner();
 }
 
 void MessageLoop::SetTaskRunner(
     scoped_refptr<SingleThreadTaskRunner> task_runner) {
   DCHECK(task_runner);
-  backend_->SetTaskRunner(task_runner);
+  sequence_manager_->SetTaskRunner(task_runner);
 }
 
 #if !defined(OS_NACL)
@@ -302,7 +235,7 @@ MessageLoopForUI::MessageLoopForUI(Type type) : MessageLoop(type) {
 
 #if defined(OS_IOS)
 void MessageLoopForUI::Attach() {
-  backend_->AttachToMessagePump();
+  sequence_manager_->AttachToMessagePump();
 }
 #endif  // defined(OS_IOS)
 

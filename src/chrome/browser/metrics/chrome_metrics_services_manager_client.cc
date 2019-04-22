@@ -4,6 +4,10 @@
 
 #include "chrome/browser/metrics/chrome_metrics_services_manager_client.h"
 
+#include <map>
+#include <string>
+
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
@@ -45,7 +49,7 @@
 #endif  // OS_WIN
 
 #if defined(OS_CHROMEOS)
-#include "chromeos/settings/cros_settings_names.h"
+#include "chrome/browser/chromeos/settings/stats_reporting_controller.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace metrics {
@@ -80,26 +84,36 @@ void AppendSamplingTrialGroup(const std::string& group_name,
                               int rate,
                               base::FieldTrial* trial) {
   std::map<std::string, std::string> params = {
-      {kRateParamName, base::IntToString(rate)}};
+      {kRateParamName, base::NumberToString(rate)}};
   variations::AssociateVariationParams(trial->trial_name(), group_name, params);
   trial->AppendGroup(group_name, rate);
 }
 
 // Only clients that were given an opt-out metrics-reporting consent flow are
 // eligible for sampling.
-bool IsClientEligibleForSampling() {
-  return metrics::GetMetricsReportingDefaultState(
-             g_browser_process->local_state()) ==
+bool IsClientEligibleForSampling(PrefService* local_state) {
+  return metrics::GetMetricsReportingDefaultState(local_state) ==
          metrics::EnableMetricsDefault::OPT_OUT;
+}
+
+// Implementation of IsClientInSample() that takes a PrefService param.
+bool IsClientInSampleImpl(PrefService* local_state) {
+  // Only some clients are eligible for sampling. Clients that aren't eligible
+  // will always be considered "in sample". In this case, we don't want the
+  // feature state queried, because we don't want the field trial that controls
+  // sampling to be reported as active.
+  if (!IsClientEligibleForSampling(local_state))
+    return true;
+
+  return base::FeatureList::IsEnabled(
+      metrics::internal::kMetricsReportingFeature);
 }
 
 #if defined(OS_CHROMEOS)
 // Callback to update the metrics reporting state when the Chrome OS metrics
 // reporting setting changes.
 void OnCrosMetricsReportingSettingChange() {
-  bool enable_metrics = false;
-  chromeos::CrosSettings::Get()->GetBoolean(chromeos::kStatsReportingPref,
-                                            &enable_metrics);
+  bool enable_metrics = chromeos::StatsReportingController::Get()->IsEnabled();
   ChangeMetricsReportingState(enable_metrics);
 }
 #endif
@@ -130,8 +144,8 @@ class ChromeMetricsServicesManagerClient::ChromeEnabledStateProvider
   }
 
   bool IsReportingEnabled() const override {
-    return IsConsentGiven() &&
-           ChromeMetricsServicesManagerClient::IsClientInSample();
+    return metrics::EnabledStateProvider::IsReportingEnabled() &&
+           IsClientInSampleImpl(local_state_);
   }
 
  private:
@@ -195,22 +209,14 @@ void ChromeMetricsServicesManagerClient::CreateFallbackSamplingTrial(
 
 // static
 bool ChromeMetricsServicesManagerClient::IsClientInSample() {
-  // Only some clients are eligible for sampling. Clients that aren't eligible
-  // will always be considered "in sample". In this case, we don't want the
-  // feature state queried, because we don't want the field trial that controls
-  // sampling to be reported as active.
-  if (!IsClientEligibleForSampling())
-    return true;
-
-  return base::FeatureList::IsEnabled(
-      metrics::internal::kMetricsReportingFeature);
+  return IsClientInSampleImpl(g_browser_process->local_state());
 }
 
 // static
 bool ChromeMetricsServicesManagerClient::GetSamplingRatePerMille(int* rate) {
   // The population that is NOT eligible for sampling in considered "in sample",
   // but does not have a defined sample rate.
-  if (!IsClientEligibleForSampling())
+  if (!IsClientEligibleForSampling(g_browser_process->local_state()))
     return false;
 
   std::string rate_str = variations::GetVariationParamValueByFeature(
@@ -226,24 +232,29 @@ bool ChromeMetricsServicesManagerClient::GetSamplingRatePerMille(int* rate) {
 
 #if defined(OS_CHROMEOS)
 void ChromeMetricsServicesManagerClient::OnCrosSettingsCreated() {
-  cros_settings_observer_ = chromeos::CrosSettings::Get()->AddSettingsObserver(
-      chromeos::kStatsReportingPref,
-      base::Bind(&OnCrosMetricsReportingSettingChange));
+  reporting_setting_observer_ =
+      chromeos::StatsReportingController::Get()->AddObserver(
+          base::Bind(&OnCrosMetricsReportingSettingChange));
   // Invoke the callback once initially to set the metrics reporting state.
   OnCrosMetricsReportingSettingChange();
 }
 #endif
 
+const metrics::EnabledStateProvider&
+ChromeMetricsServicesManagerClient::GetEnabledStateProviderForTesting() {
+  return *enabled_state_provider_;
+}
+
 std::unique_ptr<rappor::RapporServiceImpl>
 ChromeMetricsServicesManagerClient::CreateRapporServiceImpl() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return std::make_unique<rappor::RapporServiceImpl>(
       local_state_, base::Bind(&chrome::IsIncognitoSessionActive));
 }
 
 std::unique_ptr<variations::VariationsService>
 ChromeMetricsServicesManagerClient::CreateVariationsService() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return variations::VariationsService::Create(
       std::make_unique<ChromeVariationsServiceClient>(), local_state_,
       GetMetricsStateManager(), switches::kDisableBackgroundNetworking,
@@ -253,13 +264,20 @@ ChromeMetricsServicesManagerClient::CreateVariationsService() {
 
 std::unique_ptr<metrics::MetricsServiceClient>
 ChromeMetricsServicesManagerClient::CreateMetricsServiceClient() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return ChromeMetricsServiceClient::Create(GetMetricsStateManager());
 }
 
-std::unique_ptr<const base::FieldTrial::EntropyProvider>
-ChromeMetricsServicesManagerClient::CreateEntropyProvider() {
-  return GetMetricsStateManager()->CreateDefaultEntropyProvider();
+metrics::MetricsStateManager*
+ChromeMetricsServicesManagerClient::GetMetricsStateManager() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  if (!metrics_state_manager_) {
+    metrics_state_manager_ = metrics::MetricsStateManager::Create(
+        local_state_, enabled_state_provider_.get(), GetRegistryBackupKey(),
+        base::Bind(&PostStoreMetricsClientInfo),
+        base::Bind(&GoogleUpdateSettings::LoadMetricsClientInfo));
+  }
+  return metrics_state_manager_.get();
 }
 
 scoped_refptr<network::SharedURLLoaderFactory>
@@ -274,38 +292,6 @@ bool ChromeMetricsServicesManagerClient::IsMetricsReportingEnabled() {
 
 bool ChromeMetricsServicesManagerClient::IsMetricsConsentGiven() {
   return enabled_state_provider_->IsConsentGiven();
-}
-
-#if defined(OS_WIN)
-void ChromeMetricsServicesManagerClient::UpdateRunningServices(
-    bool may_record,
-    bool may_upload) {
-  // First, set the registry value so that Crashpad will have the sampling state
-  // now and for subsequent runs.
-  install_static::SetCollectStatsInSample(IsClientInSample());
-
-  // Next, get Crashpad to pick up the sampling state for this session.
-  // Crashpad will use the kRegUsageStatsInSample registry value to apply
-  // sampling correctly, but may_record already reflects the sampling state.
-  // This isn't a problem though, since they will be consistent.
-  SetUploadConsent_ExportThunk(may_record && may_upload);
-}
-#endif  // defined(OS_WIN)
-
-metrics::MetricsStateManager*
-ChromeMetricsServicesManagerClient::GetMetricsStateManager() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (!metrics_state_manager_) {
-    metrics_state_manager_ = metrics::MetricsStateManager::Create(
-        local_state_, enabled_state_provider_.get(), GetRegistryBackupKey(),
-        base::Bind(&PostStoreMetricsClientInfo),
-        base::Bind(&GoogleUpdateSettings::LoadMetricsClientInfo));
-  }
-  return metrics_state_manager_.get();
-}
-
-bool ChromeMetricsServicesManagerClient::IsMetricsReportingForceEnabled() {
-  return ChromeMetricsServiceClient::IsMetricsReportingForceEnabled();
 }
 
 bool ChromeMetricsServicesManagerClient::IsIncognitoSessionActive() {
@@ -329,3 +315,19 @@ bool ChromeMetricsServicesManagerClient::IsIncognitoSessionActive() {
   return BrowserList::IsIncognitoSessionActive();
 #endif
 }
+
+#if defined(OS_WIN)
+void ChromeMetricsServicesManagerClient::UpdateRunningServices(
+    bool may_record,
+    bool may_upload) {
+  // First, set the registry value so that Crashpad will have the sampling state
+  // now and for subsequent runs.
+  install_static::SetCollectStatsInSample(IsClientInSample());
+
+  // Next, get Crashpad to pick up the sampling state for this session.
+  // Crashpad will use the kRegUsageStatsInSample registry value to apply
+  // sampling correctly, but may_record already reflects the sampling state.
+  // This isn't a problem though, since they will be consistent.
+  SetUploadConsent_ExportThunk(may_record && may_upload);
+}
+#endif  // defined(OS_WIN)

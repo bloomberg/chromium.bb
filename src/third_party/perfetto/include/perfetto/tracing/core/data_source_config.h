@@ -35,6 +35,8 @@
 
 #include "perfetto/base/export.h"
 
+#include "perfetto/tracing/core/android_log_config.h"
+#include "perfetto/tracing/core/android_power_config.h"
 #include "perfetto/tracing/core/chrome_config.h"
 #include "perfetto/tracing/core/ftrace_config.h"
 #include "perfetto/tracing/core/heapprofd_config.h"
@@ -54,7 +56,9 @@ class InodeFileConfig_MountPointMappingEntry;
 class ProcessStatsConfig;
 class SysStatsConfig;
 class HeapprofdConfig;
-class HeapprofdConfig_ContinousDumpConfig;
+class HeapprofdConfig_ContinuousDumpConfig;
+class AndroidPowerConfig;
+class AndroidLogConfig;
 class TestConfig;
 class TestConfig_DummyFields;
 }  // namespace protos
@@ -70,6 +74,10 @@ class PERFETTO_EXPORT DataSourceConfig {
   DataSourceConfig& operator=(DataSourceConfig&&);
   DataSourceConfig(const DataSourceConfig&);
   DataSourceConfig& operator=(const DataSourceConfig&);
+  bool operator==(const DataSourceConfig&) const;
+  bool operator!=(const DataSourceConfig& other) const {
+    return !(*this == other);
+  }
 
   // Conversion methods from/to the corresponding protobuf types.
   void FromProto(const perfetto::protos::DataSourceConfig&);
@@ -83,6 +91,11 @@ class PERFETTO_EXPORT DataSourceConfig {
 
   uint32_t trace_duration_ms() const { return trace_duration_ms_; }
   void set_trace_duration_ms(uint32_t value) { trace_duration_ms_ = value; }
+
+  bool enable_extra_guardrails() const { return enable_extra_guardrails_; }
+  void set_enable_extra_guardrails(bool value) {
+    enable_extra_guardrails_ = value;
+  }
 
   uint64_t tracing_session_id() const { return tracing_session_id_; }
   void set_tracing_session_id(uint64_t value) { tracing_session_id_ = value; }
@@ -111,6 +124,20 @@ class PERFETTO_EXPORT DataSourceConfig {
   const HeapprofdConfig& heapprofd_config() const { return heapprofd_config_; }
   HeapprofdConfig* mutable_heapprofd_config() { return &heapprofd_config_; }
 
+  const AndroidPowerConfig& android_power_config() const {
+    return android_power_config_;
+  }
+  AndroidPowerConfig* mutable_android_power_config() {
+    return &android_power_config_;
+  }
+
+  const AndroidLogConfig& android_log_config() const {
+    return android_log_config_;
+  }
+  AndroidLogConfig* mutable_android_log_config() {
+    return &android_log_config_;
+  }
+
   const std::string& legacy_config() const { return legacy_config_; }
   void set_legacy_config(const std::string& value) { legacy_config_ = value; }
 
@@ -121,6 +148,7 @@ class PERFETTO_EXPORT DataSourceConfig {
   std::string name_ = {};
   uint32_t target_buffer_ = {};
   uint32_t trace_duration_ms_ = {};
+  bool enable_extra_guardrails_ = {};
   uint64_t tracing_session_id_ = {};
   FtraceConfig ftrace_config_ = {};
   ChromeConfig chrome_config_ = {};
@@ -128,6 +156,8 @@ class PERFETTO_EXPORT DataSourceConfig {
   ProcessStatsConfig process_stats_config_ = {};
   SysStatsConfig sys_stats_config_ = {};
   HeapprofdConfig heapprofd_config_ = {};
+  AndroidPowerConfig android_power_config_ = {};
+  AndroidLogConfig android_log_config_ = {};
   std::string legacy_config_ = {};
   TestConfig for_testing_ = {};
 

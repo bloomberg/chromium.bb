@@ -103,7 +103,7 @@ ChromeCleanerRunner::ChromeCleanerRunner(
   cleaner_command_line_.AppendSwitchASCII(chrome_cleaner::kChromeVersionSwitch,
                                           version_info::GetVersionNumber());
   cleaner_command_line_.AppendSwitchASCII(chrome_cleaner::kChromeChannelSwitch,
-                                          base::IntToString(ChannelAsInt()));
+                                          base::NumberToString(ChannelAsInt()));
   base::FilePath chrome_exe_path;
   base::PathService::Get(base::FILE_EXE, &chrome_exe_path);
   cleaner_command_line_.AppendSwitchPath(chrome_cleaner::kChromeExePathSwitch,
@@ -115,7 +115,7 @@ ChromeCleanerRunner::ChromeCleanerRunner(
   // Start the cleaner process in scanning mode.
   cleaner_command_line_.AppendSwitchASCII(
       chrome_cleaner::kExecutionModeSwitch,
-      base::IntToString(
+      base::NumberToString(
           static_cast<int>(chrome_cleaner::ExecutionMode::kScanning)));
 
   // If set, forward the engine flag from the reporter. Otherwise, set the
@@ -134,7 +134,8 @@ ChromeCleanerRunner::ChromeCleanerRunner(
 
   cleaner_command_line_.AppendSwitchASCII(
       chrome_cleaner::kChromePromptSwitch,
-      base::IntToString(static_cast<int>(reporter_invocation.chrome_prompt())));
+      base::NumberToString(
+          static_cast<int>(reporter_invocation.chrome_prompt())));
 
   // If metrics is enabled, we can enable crash reporting in the Chrome Cleaner
   // process.
@@ -150,13 +151,12 @@ ChromeCleanerRunner::ChromeCleanerRunner(
         chrome_cleaner::kSRTPromptFieldTrialGroupNameSwitch, group_name);
   }
 
-  std::string reboot_prompt_type = base::IntToString(GetRebootPromptType());
+  std::string reboot_prompt_type = base::NumberToString(GetRebootPromptType());
   cleaner_command_line_.AppendSwitchASCII(
       chrome_cleaner::kRebootPromptMethodSwitch, reboot_prompt_type);
-
-  if (base::FeatureList::IsEnabled(kChromeCleanupQuarantineFeature)) {
-    cleaner_command_line_.AppendSwitch(chrome_cleaner::kQuarantineSwitch);
-  }
+  // TODO(veranika): enable Quarantine unconditionally in the cleaner and remove
+  // the command-line argument.
+  cleaner_command_line_.AppendSwitch(chrome_cleaner::kQuarantineSwitch);
 }
 
 ChromeCleanerRunner::ProcessStatus
@@ -220,9 +220,10 @@ void ChromeCleanerRunner::CreateChromePromptImpl(
   // std::unique_ptrs with custom deleters.
   chrome_prompt_impl_.reset(new ChromePromptImpl(
       extension_service_, std::move(chrome_prompt_request),
-      base::Bind(&ChromeCleanerRunner::OnConnectionClosed,
-                 base::RetainedRef(this)),
-      base::Bind(&ChromeCleanerRunner::OnPromptUser, base::RetainedRef(this))));
+      base::BindOnce(&ChromeCleanerRunner::OnConnectionClosed,
+                     base::RetainedRef(this)),
+      base::BindOnce(&ChromeCleanerRunner::OnPromptUser,
+                     base::RetainedRef(this))));
 }
 
 void ChromeCleanerRunner::OnPromptUser(

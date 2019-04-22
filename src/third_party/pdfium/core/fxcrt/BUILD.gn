@@ -18,8 +18,6 @@ jumbo_source_set("fxcrt") {
     "cfx_datetime.cpp",
     "cfx_datetime.h",
     "cfx_fixedbufgrow.h",
-    "cfx_memorystream.cpp",
-    "cfx_memorystream.h",
     "cfx_readonlymemorystream.cpp",
     "cfx_readonlymemorystream.h",
     "cfx_seekablestreamproxy.cpp",
@@ -52,14 +50,13 @@ jumbo_source_set("fxcrt") {
     "fx_string.h",
     "fx_system.cpp",
     "fx_system.h",
-    "fx_ucddata.cpp",
-    "fx_ucddata.h",
     "fx_unicode.cpp",
     "fx_unicode.h",
     "maybe_owned.h",
     "observable.h",
     "pauseindicator_iface.h",
     "retain_ptr.h",
+    "retained_tree_node.h",
     "shared_copy_on_write.h",
     "string_data_template.h",
     "string_pool_template.h",
@@ -120,13 +117,8 @@ jumbo_source_set("fxcrt") {
   }
   if (pdf_enable_xfa) {
     sources += [
-      "cfx_char.cpp",
-      "cfx_char.h",
-      "cfx_decimal.cpp",
-      "cfx_decimal.h",
-      "fx_arabic.cpp",
-      "fx_arabic.h",
-      "locale_iface.h",
+      "cfx_memorystream.cpp",
+      "cfx_memorystream.h",
     ]
   }
 }
@@ -151,6 +143,8 @@ pdfium_unittest_source_set("unittests") {
     "autorestorer_unittest.cpp",
     "bytestring_unittest.cpp",
     "cfx_bitstream_unittest.cpp",
+    "cfx_seekablestreamproxy_unittest.cpp",
+    "cfx_widetextbuf_unittest.cpp",
     "fx_bidi_unittest.cpp",
     "fx_coordinates_unittest.cpp",
     "fx_extension_unittest.cpp",
@@ -163,6 +157,7 @@ pdfium_unittest_source_set("unittests") {
     "observable_unittest.cpp",
     "pdfium_span_unittest.cpp",
     "retain_ptr_unittest.cpp",
+    "retained_tree_node_unittest.cpp",
     "shared_copy_on_write_unittest.cpp",
     "string_pool_template_unittest.cpp",
     "unowned_ptr_unittest.cpp",
@@ -181,6 +176,7 @@ pdfium_unittest_source_set("unittests") {
 
   if (pdf_enable_xfa) {
     sources += [
+      "cfx_memorystream_unittest.cpp",
       "cfx_seekablemultistream_unittest.cpp",
       "css/cfx_cssdeclaration_unittest.cpp",
       "css/cfx_cssstylesheet_unittest.cpp",

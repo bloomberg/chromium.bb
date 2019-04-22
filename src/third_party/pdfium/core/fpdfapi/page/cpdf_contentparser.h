@@ -12,14 +12,15 @@
 #include <vector>
 
 #include "core/fpdfapi/page/cpdf_streamcontentparser.h"
-#include "core/fpdfapi/parser/cpdf_stream_acc.h"
 #include "core/fxcrt/maybe_owned.h"
 #include "core/fxcrt/unowned_ptr.h"
 
 class CPDF_AllStates;
+class CPDF_Array;
 class CPDF_Form;
 class CPDF_Page;
 class CPDF_PageObjectHolder;
+class CPDF_Stream;
 class CPDF_StreamAcc;
 class CPDF_Type3Char;
 
@@ -52,6 +53,10 @@ class CPDF_ContentParser {
   Stage PrepareContent();
   Stage Parse();
   Stage CheckClip();
+
+  void HandlePageContentStream(CPDF_Stream* pStream);
+  bool HandlePageContentArray(CPDF_Array* pArray);
+  void HandlePageContentFailure();
 
   Stage m_CurrentStage;
   UnownedPtr<CPDF_PageObjectHolder> const m_pObjectHolder;

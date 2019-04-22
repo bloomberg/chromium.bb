@@ -126,20 +126,14 @@ std::vector<mojom::SiteEngagementDetails> GetAllDetailsImpl(
   return details;
 }
 
-// Takes a scoped_refptr to keep HostContentSettingsMap alive. See
-// crbug.com/901287.
-std::vector<mojom::SiteEngagementDetails> GetAllDetailsImplInBackground(
-    std::unique_ptr<base::Clock> clock,
-    scoped_refptr<HostContentSettingsMap> map) {
-  return GetAllDetailsImpl(clock.get(), map.get());
-}
-
 // Only accept a navigation event for engagement if it is one of:
 //  a. direct typed navigation
 //  b. clicking on an omnibox suggestion brought up by typing a keyword
 //  c. clicking on a bookmark or opening a bookmark app
 //  d. a custom search engine keyword search (e.g. Wikipedia search box added as
-//  search engine).
+//  search engine)
+//  e. an automatically generated top level navigation (e.g. command line
+//  navigation, in product help link).
 bool IsEngagementNavigation(ui::PageTransition transition) {
   return ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_TYPED) ||
          ui::PageTransitionCoreTypeIs(transition,
@@ -147,7 +141,9 @@ bool IsEngagementNavigation(ui::PageTransition transition) {
          ui::PageTransitionCoreTypeIs(transition,
                                       ui::PAGE_TRANSITION_AUTO_BOOKMARK) ||
          ui::PageTransitionCoreTypeIs(transition,
-                                      ui::PAGE_TRANSITION_KEYWORD_GENERATED);
+                                      ui::PAGE_TRANSITION_KEYWORD_GENERATED) ||
+         ui::PageTransitionCoreTypeIs(transition,
+                                      ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
 }
 
 }  // namespace
@@ -179,6 +175,15 @@ double SiteEngagementService::GetScoreFromSettings(
   return SiteEngagementScore(base::DefaultClock::GetInstance(), origin,
                              settings)
       .GetTotalScore();
+}
+
+// static
+std::vector<mojom::SiteEngagementDetails>
+SiteEngagementService::GetAllDetailsInBackground(
+    base::Time now,
+    scoped_refptr<HostContentSettingsMap> map) {
+  StoppedClock clock(now);
+  return GetAllDetailsImpl(&clock, map.get());
 }
 
 SiteEngagementService::SiteEngagementService(Profile* profile)
@@ -472,7 +477,7 @@ void SiteEngagementService::MaybeRecordMetrics() {
   // purposes.
   //
   // The profile and its KeyedServices are normally destroyed before the
-  // TaskScheduler shuts down background threads, so the task needs to hold a
+  // ThreadPool shuts down background threads, so the task needs to hold a
   // strong reference to HostContentSettingsMap (which supports outliving the
   // profile), and needs to avoid using any members of SiteEngagementService
   // (which does not). See https://crbug.com/900022.
@@ -481,8 +486,7 @@ void SiteEngagementService::MaybeRecordMetrics() {
       {base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(
-          &GetAllDetailsImplInBackground,
-          std::make_unique<StoppedClock>(clock_->Now()),
+          &GetAllDetailsInBackground, clock_->Now(),
           base::WrapRefCounted(
               HostContentSettingsMapFactory::GetForProfile(profile_))),
       base::BindOnce(&SiteEngagementService::RecordMetrics,
@@ -560,7 +564,7 @@ base::TimeDelta SiteEngagementService::GetStalePeriod() const {
 
 double SiteEngagementService::GetMedianEngagementFromSortedDetails(
     const std::vector<mojom::SiteEngagementDetails>& details) const {
-  if (details.size() == 0)
+  if (details.empty())
     return 0;
 
   // Calculate the median as the middle value of the sorted engagement scores

@@ -92,7 +92,7 @@ class PresentationReceiverWindowController final
   bool ShouldFocusPageAfterCrash() final;
   void CanDownload(const GURL& url,
                    const std::string& request_method,
-                   const base::Callback<void(bool)>& callback) final;
+                   base::OnceCallback<void(bool)> callback) final;
   bool ShouldCreateWebContents(
       content::WebContents* web_contents,
       content::RenderFrameHost* opener,

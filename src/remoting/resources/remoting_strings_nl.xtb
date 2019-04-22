@@ -24,6 +24,7 @@ Voor meer informatie over privacy bekijk je het Privacybeleid van Google (http:/
 <translation id="1520828917794284345">Formaat van bureaublad aanpassen</translation>
 <translation id="154040539590487450">Kan de service voor externe toegang niet starten.</translation>
 <translation id="1546934824884762070">Er is een onverwachte fout opgetreden. Meld dit probleem aan de ontwikkelaars.</translation>
+<translation id="1624185583382384493">Chrome Remote Desktop is nu beschikbaar op internet. Probeer onze <ph name="LINK_BEGIN" />web-app<ph name="LINK_END" />. Deze is snel en gratis en beschikt over nog meer functies, waaronder verbeterde ondersteuning voor meerdere beeldschermen.</translation>
 <translation id="1643640058022401035">Als je deze pagina verlaat, wordt je Chromoting-sessie beëindigd.</translation>
 <translation id="1654128982815600832">Externe verbindingen voor deze computer inschakelen…</translation>
 <translation id="170207782578677537">Kan deze computer niet registreren.</translation>
@@ -138,6 +139,7 @@ Voor meer informatie over privacy bekijk je het Privacybeleid van Google (http:/
 <translation id="3989511127559254552">Als je wilt doorgaan, moet je eerst uitgebreide toegangsrechten voor je computer verlenen. Je hoeft dit slechts één keer te doen.</translation>
 <translation id="4006787130661126000">Je moet externe verbindingen inschakelen als je Chrome Remote Desktop wilt gebruiken voor toegang tot deze computer.</translation>
 <translation id="405887016757208221">De externe computer kan de sessie niet initialiseren. Als het probleem blijft optreden, configureer je de host opnieuw.</translation>
+<translation id="4060747889721220580">Bestand downloaden</translation>
 <translation id="4068946408131579958">Alle verbindingen</translation>
 <translation id="409800995205263688">OPMERKING: beleidsinstellingen staan alleen verbindingen tussen computers binnen je netwerk toe.</translation>
 <translation id="4126409073460786861">Nadat het instellen is voltooid, vernieuw je deze pagina. Vervolgens kun je toegang tot de computer krijgen door je apparaat te kiezen en de pincode op te geven.</translation>
@@ -242,6 +244,7 @@ Als je deze functionaliteit wilt inschakelen, selecteer je '<ph name="BUTTON_NAM
 <translation id="6198252989419008588">Pincode wijzigen</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (verouderd)</translation>
 <translation id="6221358653751391898">Je bent niet ingelogd bij Chrome. Log in en probeer het opnieuw.</translation>
+<translation id="6227369581881558336">Chrome Remote Desktop is nu beschikbaar op internet met nieuwe functies, waaronder bestandsoverdracht. Bekijk onze <ph name="LINK_BEGIN" />web-app<ph name="LINK_END" />.</translation>
 <translation id="6284412385303060032">De host die werd uitgevoerd op het console-inlogscherm, is uitgeschakeld om de gordijnmodus te ondersteunen door over te schakelen naar een host die in een gebruikersspecifieke sessie wordt uitgevoerd.</translation>
 <translation id="629730747756840877">Account</translation>
 <translation id="6304318647555713317">Client</translation>
@@ -289,7 +292,6 @@ Als je deze functionaliteit wilt inschakelen, selecteer je '<ph name="BUTTON_NAM
 <translation id="7434397035092923453">Toegang geweigerd voor client: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7444276978508498879">Client verbonden: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7526139040829362392">Account wijzigen</translation>
-<translation id="7589941250119944644">Chrome Remote Desktop krijgt een nieuwe locatie op internet. Probeer onze snelle, gratis <ph name="LINK_BEGIN" />webapp<ph name="LINK_END" /> met dezelfde functies als voorheen.</translation>
 <translation id="7606912958770842224">Externe verbindingen inschakelen</translation>
 <translation id="7628469622942688817">Mijn pincode onthouden op dit apparaat.</translation>
 <translation id="7649070708921625228">Help</translation>

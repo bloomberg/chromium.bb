@@ -8,7 +8,6 @@
 
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/ui/static_content/static_html_view_controller.h"
-#import "ios/chrome/browser/ui/url_loader.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
@@ -44,32 +43,26 @@ class StaticHtmlNativeContentTest : public PlatformTest {
 
 TEST_F(StaticHtmlNativeContentTest, BasicResourceTest) {
   GURL url("chrome://foo");
-  id<UrlLoader> loader = [OCMockObject mockForProtocol:@protocol(UrlLoader)];
   StaticHtmlNativeContent* content = [[StaticHtmlNativeContent alloc]
       initWithResourcePathResource:@"about_credits.html"
-                            loader:loader
                       browserState:chrome_browser_state_.get()
                                url:url];
 
   ASSERT_EQ(url, [content url]);
-  ASSERT_OCMOCK_VERIFY((OCMockObject*)loader);
 }
 
 TEST_F(StaticHtmlNativeContentTest, BasicInitTest) {
   GURL url("chrome://foo");
-  id<UrlLoader> loader = [OCMockObject mockForProtocol:@protocol(UrlLoader)];
   StaticHtmlNativeContentTestGenerator* generator =
       [[StaticHtmlNativeContentTestGenerator alloc] init];
 
   StaticHtmlViewController* viewController = [[StaticHtmlViewController alloc]
       initWithGenerator:generator
            browserState:chrome_browser_state_.get()];
-  StaticHtmlNativeContent* content =
-      [[StaticHtmlNativeContent alloc] initWithLoader:loader
-                             staticHTMLViewController:viewController
-                                                  URL:url];
+  StaticHtmlNativeContent* content = [[StaticHtmlNativeContent alloc]
+      initWithStaticHTMLViewController:viewController
+                                   URL:url];
   ASSERT_EQ(url, [content url]);
-  ASSERT_OCMOCK_VERIFY((OCMockObject*)loader);
 }
 
 }  // namespace

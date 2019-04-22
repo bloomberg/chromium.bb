@@ -202,6 +202,9 @@ int BreakpadGetCrashReportCount(BreakpadRef ref);
 // Returns the next upload configuration. The report file is deleted.
 NSDictionary *BreakpadGetNextReportConfiguration(BreakpadRef ref);
 
+// Returns the date of the most recent crash report.
+NSDate *BreakpadGetDateOfMostRecentCrashReport(BreakpadRef ref);
+
 // Upload next report to the server.
 void BreakpadUploadNextReport(BreakpadRef ref);
 

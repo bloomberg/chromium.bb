@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "content/public/browser/browser_thread.h"
@@ -164,7 +165,7 @@ bool IsValidMacAddressImpl(const void* bytes, size_t size) {
     return false;
   }
 
-  for (size_t i = 0; i < arraysize(invalidAddresses); ++i) {
+  for (size_t i = 0; i < base::size(invalidAddresses); ++i) {
     size_t count = invalidAddresses[i].size;
     if (memcmp(invalidAddresses[i].address, bytes, count) == 0) {
       return false;

@@ -6,8 +6,10 @@
 #define BASE_MESSAGE_LOOP_MESSAGE_PUMP_H_
 
 #include "base/base_export.h"
+#include "base/logging.h"
 #include "base/message_loop/timer_slack.h"
 #include "base/sequence_checker.h"
+#include "base/time/time.h"
 
 namespace base {
 
@@ -21,10 +23,53 @@ class BASE_EXPORT MessagePump {
    public:
     virtual ~Delegate() = default;
 
+    // Called before work performed internal to the message pump is executed,
+    // including waiting for a wake up. Currently only called on Windows.
+    // TODO(wittman): Implement for other platforms.
+    virtual void BeforeDoInternalWork() = 0;
+
+    struct NextWorkInfo {
+      // Helper to extract a TimeDelta for pumps that need a
+      // timeout-till-next-task.
+      TimeDelta remaining_delay() const {
+        DCHECK(!delayed_run_time.is_null() && !delayed_run_time.is_max());
+        DCHECK_GE(TimeTicks::Now(), recent_now);
+        return delayed_run_time - recent_now;
+      }
+
+      // Helper to verify if the next task is ready right away.
+      bool is_immediate() const { return delayed_run_time.is_null(); }
+
+      // The next PendingTask's |delayed_run_time|. is_null() if there's extra
+      // work to run immediately. is_max() if there are no more immediate nor
+      // delayed tasks.
+      TimeTicks delayed_run_time;
+
+      // A recent view of TimeTicks::Now(). Only valid if |next_task_run_time|
+      // isn't null nor max. MessagePump impls should use remaining_delay()
+      // instead of resampling Now() if they wish to sleep for a TimeDelta.
+      TimeTicks recent_now;
+    };
+
+    // The latest model of MessagePumps will invoke this instead of
+    // DoWork()/DoDelayedWork(). Executes an immediate task or a ripe delayed
+    // task. Returns a struct which indicates |delayed_run_time|. DoSomeWork()
+    // will be invoked again shortly if is_immediate(); it will be invoked after
+    // |delayed_run_time| (or ScheduleWork()) if there isn't immediate work and
+    // |!delayed_run_time.is_max()|; and it will not be invoked again until
+    // ScheduleWork() otherwise. Redundant/spurious invocations outside of those
+    // guarantees are not impossible however. DoIdleWork() will not be called so
+    // long as this returns a null |delayed_run_time|. See design doc for
+    // details :
+    // https://docs.google.com/document/d/1no1JMli6F1r8gTF9KDIOvoWkUUZcXDktPf4A1IXYc3M/edit#
+    virtual NextWorkInfo DoSomeWork() = 0;
+
     // Called from within Run in response to ScheduleWork or when the message
     // pump would otherwise call DoDelayedWork.  Returns true to indicate that
     // work was done.  DoDelayedWork will still be called if DoWork returns
     // true, but DoIdleWork will not.
+    // Used in conjunction with DoDelayedWork() by old MessagePumps.
+    // TODO(gab): Migrate such pumps to DoSomeWork().
     virtual bool DoWork() = 0;
 
     // Called from within Run in response to ScheduleDelayedWork or when the
@@ -35,6 +80,8 @@ class BASE_EXPORT MessagePump {
     // |next_delayed_work_time| is null (per Time::is_null), then the queue of
     // future delayed work (timer events) is currently empty, and no additional
     // calls to this function need to be scheduled.
+    // Used in conjunction with DoWork() by old MessagePumps.
+    // TODO(gab): Migrate such pumps to DoSomeWork().
     virtual bool DoDelayedWork(TimeTicks* next_delayed_work_time) = 0;
 
     // Called from within Run just before the message pump goes to sleep.
@@ -120,8 +167,13 @@ class BASE_EXPORT MessagePump {
   virtual void ScheduleWork() = 0;
 
   // Schedule a DoDelayedWork callback to happen at the specified time,
-  // cancelling any pending DoDelayedWork callback.  This method may only be
-  // used on the thread that called Run.
+  // cancelling any pending DoDelayedWork callback. This method may only be used
+  // on the thread that called Run.
+  //
+  // This is mostly a no-op in the DoSomeWork() world but must still be invoked
+  // when the new |delayed_work_time| is sooner than the last one returned from
+  // DoSomeWork(). TODO(gab): Clarify this API once all pumps have been
+  // migrated.
   virtual void ScheduleDelayedWork(const TimeTicks& delayed_work_time) = 0;
 
   // Sets the timer slack to the specified value.

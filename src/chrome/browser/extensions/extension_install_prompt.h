@@ -301,8 +301,9 @@ class ExtensionInstallPrompt {
       const ShowDialogCallback& show_dialog_callback);
 
   // Installation was successful. This is declared virtual for testing.
-  virtual void OnInstallSuccess(const extensions::Extension* extension,
-                                SkBitmap* icon);
+  virtual void OnInstallSuccess(
+      scoped_refptr<const extensions::Extension> extension,
+      SkBitmap* icon);
 
   // Installation failed. This is declared virtual for testing.
   virtual void OnInstallFailure(const extensions::CrxInstallError& error);
@@ -333,7 +334,7 @@ class ExtensionInstallPrompt {
   SkBitmap icon_;
 
   // The extension we are showing the UI for.
-  const extensions::Extension* extension_;
+  scoped_refptr<const extensions::Extension> extension_;
 
   // A custom set of permissions to show in the install prompt instead of the
   // extension's active permissions.

@@ -64,17 +64,17 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
                                     const base::string16& error_description) {}
 
   // The RenderFrameHostImpl has committed a navigation. The Navigator is
-  // responsible for resetting |navigation_handle| at the end of this method and
-  // should not attempt to keep it alive.
-  // Note: it is possible that |navigation_handle| is not the NavigationHandle
-  // stored in the RenderFrameHost that just committed. This happens for example
-  // when a same-page navigation commits while another navigation is ongoing.
-  // The Navigator should use the NavigationHandle provided by this method and
-  // not attempt to access the RenderFrameHost's NavigationsHandle.
+  // responsible for resetting |navigation_request| at the end of this method
+  // and should not attempt to keep it alive. Note: it is possible that
+  // |navigation_request| is not the NavigationRequest stored in the
+  // RenderFrameHost that just committed. This happens for example when a
+  // same-page navigation commits while another navigation is ongoing. The
+  // Navigator should use the NavigationRequest provided by this method and not
+  // attempt to access the RenderFrameHost's NavigationsRequests.
   virtual void DidNavigate(
       RenderFrameHostImpl* render_frame_host,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
-      std::unique_ptr<NavigationHandleImpl> navigation_handle,
+      std::unique_ptr<NavigationRequest> navigation_request,
       bool was_within_same_document) {}
 
   // Called on a newly created subframe during a history navigation. The browser
@@ -104,6 +104,7 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
   virtual void RequestOpenURL(
       RenderFrameHostImpl* render_frame_host,
       const GURL& url,
+      const base::Optional<url::Origin>& initiator_origin,
       bool uses_post,
       const scoped_refptr<network::ResourceRequestBody>& body,
       const std::string& extra_headers,
@@ -121,10 +122,12 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
   virtual void NavigateFromFrameProxy(
       RenderFrameHostImpl* render_frame_host,
       const GURL& url,
+      const url::Origin& initiator_origin,
       SiteInstance* source_site_instance,
       const Referrer& referrer,
       ui::PageTransition page_transition,
       bool should_replace_current_entry,
+      NavigationDownloadPolicy download_policy,
       const std::string& method,
       scoped_refptr<network::ResourceRequestBody> post_body,
       const std::string& extra_headers,

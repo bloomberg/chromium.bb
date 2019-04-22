@@ -57,11 +57,9 @@ class CORE_EXPORT InputMethodController final
     kKeepSelection,
   };
 
-  static InputMethodController* Create(LocalFrame&);
-
   explicit InputMethodController(LocalFrame&);
   virtual ~InputMethodController();
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   // international text input composition
   bool HasComposition() const;

@@ -390,9 +390,7 @@ ObjectEntriesValuesBuiltinsAssembler::FinalizeValuesOrEntriesJSArray(
   CSA_ASSERT(this, IsJSArrayMap(array_map));
 
   GotoIf(IntPtrEqual(size, IntPtrConstant(0)), if_empty);
-  Node* array = AllocateUninitializedJSArrayWithoutElements(
-      array_map, SmiTag(size), nullptr);
-  StoreObjectField(array, JSArray::kElementsOffset, result);
+  Node* array = AllocateJSArray(array_map, result, SmiTag(size));
   return TNode<JSArray>::UncheckedCast(array);
 }
 
@@ -556,14 +554,14 @@ void ObjectBuiltinsAssembler::ObjectAssignFast(TNode<Context> context,
   GotoIfNot(IsJSObjectInstanceType(from_instance_type), slow);
   GotoIfNot(IsEmptyFixedArray(LoadElements(CAST(from))), slow);
 
-  ForEachEnumerableOwnProperty(context, from_map, CAST(from),
-                               [=](TNode<Name> key, TNode<Object> value) {
-                                 KeyedStoreGenericGenerator::SetProperty(
-                                     state(), context, to,
-                                     to_is_simple_receiver, key, value,
-                                     LanguageMode::kStrict);
-                               },
-                               slow);
+  ForEachEnumerableOwnProperty(
+      context, from_map, CAST(from), kEnumerationOrder,
+      [=](TNode<Name> key, TNode<Object> value) {
+        KeyedStoreGenericGenerator::SetProperty(state(), context, to,
+                                                to_is_simple_receiver, key,
+                                                value, LanguageMode::kStrict);
+      },
+      slow);
 
   Goto(&done);
   BIND(&done);
@@ -647,10 +645,8 @@ TF_BUILTIN(ObjectKeys, ObjectBuiltinsAssembler) {
     Node* native_context = LoadNativeContext(context);
     TNode<Map> array_map =
         LoadJSArrayElementsMap(PACKED_ELEMENTS, native_context);
-    TNode<JSArray> array = AllocateUninitializedJSArrayWithoutElements(
-        array_map, CAST(var_length.value()), nullptr);
-    StoreObjectFieldNoWriteBarrier(array, JSArray::kElementsOffset,
-                                   var_elements.value());
+    TNode<JSArray> array = AllocateJSArray(
+        array_map, CAST(var_elements.value()), CAST(var_length.value()));
     Return(array);
   }
 }
@@ -751,10 +747,8 @@ TF_BUILTIN(ObjectGetOwnPropertyNames, ObjectBuiltinsAssembler) {
     Node* native_context = LoadNativeContext(context);
     TNode<Map> array_map =
         LoadJSArrayElementsMap(PACKED_ELEMENTS, native_context);
-    TNode<JSArray> array = AllocateUninitializedJSArrayWithoutElements(
-        array_map, CAST(var_length.value()), nullptr);
-    StoreObjectFieldNoWriteBarrier(array, JSArray::kElementsOffset,
-                                   var_elements.value());
+    TNode<JSArray> array = AllocateJSArray(
+        array_map, CAST(var_elements.value()), CAST(var_length.value()));
     Return(array);
   }
 }
@@ -1056,17 +1050,57 @@ TF_BUILTIN(ObjectToString, ObjectBuiltinsAssembler) {
 
   BIND(&if_value);
   {
+    Label if_value_is_number(this, Label::kDeferred),
+        if_value_is_boolean(this, Label::kDeferred),
+        if_value_is_symbol(this, Label::kDeferred),
+        if_value_is_bigint(this, Label::kDeferred),
+        if_value_is_string(this, Label::kDeferred);
+
     Node* receiver_value = LoadJSValueValue(receiver);
-    GotoIf(TaggedIsSmi(receiver_value), &if_number);
+    // We need to start with the object to see if the value was a subclass
+    // which might have interesting properties.
+    var_holder.Bind(receiver);
+    GotoIf(TaggedIsSmi(receiver_value), &if_value_is_number);
     Node* receiver_value_map = LoadMap(receiver_value);
-    GotoIf(IsHeapNumberMap(receiver_value_map), &if_number);
-    GotoIf(IsBooleanMap(receiver_value_map), &if_boolean);
-    GotoIf(IsSymbolMap(receiver_value_map), &if_symbol);
+    GotoIf(IsHeapNumberMap(receiver_value_map), &if_value_is_number);
+    GotoIf(IsBooleanMap(receiver_value_map), &if_value_is_boolean);
+    GotoIf(IsSymbolMap(receiver_value_map), &if_value_is_symbol);
     Node* receiver_value_instance_type =
         LoadMapInstanceType(receiver_value_map);
-    GotoIf(IsBigIntInstanceType(receiver_value_instance_type), &if_bigint);
+    GotoIf(IsBigIntInstanceType(receiver_value_instance_type),
+           &if_value_is_bigint);
     CSA_ASSERT(this, IsStringInstanceType(receiver_value_instance_type));
-    Goto(&if_string);
+    Goto(&if_value_is_string);
+
+    BIND(&if_value_is_number);
+    {
+      var_default.Bind(LoadRoot(RootIndex::knumber_to_string));
+      Goto(&checkstringtag);
+    }
+
+    BIND(&if_value_is_boolean);
+    {
+      var_default.Bind(LoadRoot(RootIndex::kboolean_to_string));
+      Goto(&checkstringtag);
+    }
+
+    BIND(&if_value_is_string);
+    {
+      var_default.Bind(LoadRoot(RootIndex::kstring_to_string));
+      Goto(&checkstringtag);
+    }
+
+    BIND(&if_value_is_bigint);
+    {
+      var_default.Bind(LoadRoot(RootIndex::kobject_to_string));
+      Goto(&checkstringtag);
+    }
+
+    BIND(&if_value_is_symbol);
+    {
+      var_default.Bind(LoadRoot(RootIndex::kobject_to_string));
+      Goto(&checkstringtag);
+    }
   }
 
   BIND(&checkstringtag);
@@ -1355,7 +1389,7 @@ TF_BUILTIN(CreateGeneratorObject, ObjectBuiltinsAssembler) {
                       MachineType::Uint16()));
   Node* frame_size = ChangeInt32ToIntPtr(LoadObjectField(
       bytecode_array, BytecodeArray::kFrameSizeOffset, MachineType::Int32()));
-  Node* size = IntPtrAdd(WordSar(frame_size, IntPtrConstant(kPointerSizeLog2)),
+  Node* size = IntPtrAdd(WordSar(frame_size, IntPtrConstant(kTaggedSizeLog2)),
                          formal_parameter_count);
   Node* parameters_and_registers = AllocateFixedArray(HOLEY_ELEMENTS, size);
   FillFixedArrayWithValue(HOLEY_ELEMENTS, parameters_and_registers,

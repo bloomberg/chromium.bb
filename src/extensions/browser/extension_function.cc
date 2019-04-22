@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
@@ -23,9 +24,11 @@
 #include "extensions/browser/extension_message_filter.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/io_thread_extension_message_filter.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension_api.h"
 #include "extensions/common/extension_messages.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom-forward.h"
 
 using content::BrowserThread;
 using content::WebContents;
@@ -298,6 +301,7 @@ ExtensionFunction::ExtensionFunction()
       histogram_value_(extensions::functions::UNKNOWN),
       source_context_type_(Feature::UNSPECIFIED_CONTEXT),
       source_process_id_(-1),
+      service_worker_version_id_(blink::mojom::kInvalidServiceWorkerVersionId),
       did_respond_(false) {}
 
 ExtensionFunction::~ExtensionFunction() {
@@ -311,7 +315,7 @@ IOThreadExtensionFunction* ExtensionFunction::AsIOThreadExtensionFunction() {
   return NULL;
 }
 
-bool ExtensionFunction::HasPermission() {
+bool ExtensionFunction::HasPermission() const {
   Feature::Availability availability =
       ExtensionAPI::GetSharedInstance()->IsAvailable(
           name_, extension_.get(), source_context_type_, source_url(),
@@ -324,9 +328,10 @@ void ExtensionFunction::OnQuotaExceeded(const std::string& violation_error) {
   SendResponseImpl(false);
 }
 
-void ExtensionFunction::SetArgs(const base::ListValue* args) {
+void ExtensionFunction::SetArgs(base::Value args) {
+  DCHECK(args.is_list());
   DCHECK(!args_.get());  // Should only be called once.
-  args_ = args->CreateDeepCopy();
+  args_ = base::ListValue::From(base::Value::ToUniquePtrValue(std::move(args)));
 }
 
 const base::ListValue* ExtensionFunction::GetResultList() const {
@@ -483,10 +488,7 @@ void ExtensionFunction::SendResponseImpl(bool success) {
 }
 
 UIThreadExtensionFunction::UIThreadExtensionFunction()
-    : context_(nullptr),
-      render_frame_host_(nullptr),
-      service_worker_version_id_(blink::mojom::kInvalidServiceWorkerVersionId) {
-}
+    : context_(nullptr), render_frame_host_(nullptr) {}
 
 UIThreadExtensionFunction::~UIThreadExtensionFunction() {
   if (dispatcher() && (render_frame_host() || is_from_service_worker())) {
@@ -584,7 +586,7 @@ void UIThreadExtensionFunction::SetTransferredBlobUUIDs(
 }
 
 void UIThreadExtensionFunction::WriteToConsole(
-    content::ConsoleMessageLevel level,
+    blink::mojom::ConsoleMessageLevel level,
     const std::string& message) {
   // Only the main frame handles dev tools messages.
   WebContents::FromRenderFrameHost(render_frame_host_)
@@ -593,8 +595,7 @@ void UIThreadExtensionFunction::WriteToConsole(
 }
 
 IOThreadExtensionFunction::IOThreadExtensionFunction()
-    : routing_id_(MSG_ROUTING_NONE) {
-}
+    : worker_thread_id_(extensions::kMainThreadId) {}
 
 IOThreadExtensionFunction::~IOThreadExtensionFunction() {
 }

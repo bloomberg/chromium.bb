@@ -33,7 +33,7 @@ def validate_stream_name(v, maxlen=None):
   if len(v) > maxlen:
     raise ValueError('Maximum length exceeded (%d > %d)' % (len(v), maxlen))
   if _STREAM_NAME_RE.match(v) is None:
-    raise ValueError('Invalid stream name')
+    raise ValueError('Invalid stream name: %r' % v)
 
 
 def validate_tag(key, value):
@@ -71,7 +71,9 @@ def normalize(v, prefix=None):
   else:
     out = []
     for i, ch in enumerate(v):
-      if i == 0 and not _is_valid_stream_char(ch, first=True):
+      # Either the first character in v, or immediately after /
+      isFirst = i == 0 or out[-1][-1] == '/'
+      if isFirst and not _is_valid_stream_char(ch, first=True):
         # The first letter is special, and must be alphanumeric.
         # If we have a prefix, prepend that to the resulting string.
         if prefix is None:

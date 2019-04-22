@@ -25,6 +25,7 @@
 
 #include "third_party/blink/renderer/core/css/css_condition_rule.h"
 #include "third_party/blink/renderer/core/css/media_list.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -34,10 +35,6 @@ class CSSMediaRule final : public CSSConditionRule {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static CSSMediaRule* Create(StyleRuleMedia* rule, CSSStyleSheet* sheet) {
-    return MakeGarbageCollected<CSSMediaRule>(rule, sheet);
-  }
-
   CSSMediaRule(StyleRuleMedia*, CSSStyleSheet*);
   ~CSSMediaRule() override;
 
@@ -57,7 +54,12 @@ class CSSMediaRule final : public CSSConditionRule {
   mutable Member<MediaList> media_cssom_wrapper_;
 };
 
-DEFINE_CSS_RULE_TYPE_CASTS(CSSMediaRule, kMediaRule);
+template <>
+struct DowncastTraits<CSSMediaRule> {
+  static bool AllowFrom(const CSSRule& rule) {
+    return rule.type() == CSSRule::kMediaRule;
+  }
+};
 
 }  // namespace blink
 

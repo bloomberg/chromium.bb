@@ -2,7 +2,6 @@ Test that master list entries receive errors when manifest becomes obsolete.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS eventDetailsFromWindow.type is "obsolete"
 PASS eventDetailsFromFrame.type is "error"
 PASS eventDetailsFromFrame.reason is "manifest"

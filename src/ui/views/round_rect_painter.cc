@@ -6,7 +6,6 @@
 
 #include "cc/paint/paint_canvas.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/path.h"
 #include "ui/gfx/skia_util.h"
 
 namespace views {
@@ -16,8 +15,7 @@ RoundRectPainter::RoundRectPainter(SkColor border_color, int corner_radius)
       corner_radius_(corner_radius) {
 }
 
-RoundRectPainter::~RoundRectPainter() {
-}
+RoundRectPainter::~RoundRectPainter() = default;
 
 gfx::Size RoundRectPainter::GetMinimumSize() const {
   return gfx::Size(1, 1);

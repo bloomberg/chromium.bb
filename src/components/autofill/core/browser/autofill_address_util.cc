@@ -103,7 +103,7 @@ void GetAddressComponents(const std::string& country_code,
         components[i - 1].length_hint == AddressUiComponent::HINT_LONG ||
         components[i].length_hint == AddressUiComponent::HINT_LONG) {
       line = new base::ListValue;
-      address_components->Append(base::WrapUnique(line));
+      address_components->Append(std::unique_ptr<base::ListValue>(line));
       // |line| is invalidated at this point, so it needs to be reset.
       address_components->GetList(address_components->GetSize() - 1, &line);
     }

@@ -22,8 +22,17 @@
         };
       }
 
+      .fingerprint-scanner-tablet {
+        background:
+            url(chrome://theme/IDR_LOGIN_FINGERPRINT_SCANNER_TABLET_ANIMATION);
+      }
+
+      .fingerprint-scanner-laptop {
+        background:
+            url(chrome://theme/IDR_LOGIN_FINGERPRINT_SCANNER_LAPTOP_ANIMATION);
+      }
+
       #scannerLocation {
-        background: url(chrome://theme/IDR_LOGIN_FINGERPRINT_SCANNER_ANIMATION);
         background-position: center;
         background-repeat: no-repeat;
         background-size: 298px 205px;
@@ -39,6 +48,10 @@
       #messageDiv[invisible] {
         visibility: hidden;
       }
+
+      #closeButton {
+        margin-inline-start: 5px;
+      }
     </style>
 
     <cr-dialog id="dialog" on-close="close"
@@ -51,6 +64,7 @@
           <span>[[getInstructionMessage_(step_, problemMessage_)]]</span>
         </div>
         <div id="scannerLocation" hidden="[[!showScannerLocation_(step_)]]"
+            class$="[[getFingerprintScannerAnimationClass_()]]"
             aria-label="$i18n{configureFingerprintScannerStepAriaLabel}"
             aria-live="polite" >
         </div>

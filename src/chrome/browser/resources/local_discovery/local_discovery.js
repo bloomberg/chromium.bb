@@ -16,7 +16,7 @@ cr.define('local_discovery', function() {
   'use strict';
 
   // Histogram buckets for UMA tracking.
-  /** @const */ var DEVICES_PAGE_EVENTS = {
+  /** @const */ const DEVICES_PAGE_EVENTS = {
     OPENED: 0,
     LOG_IN_STARTED_FROM_REGISTER_PROMO: 1,
     LOG_IN_STARTED_FROM_DEVICE_LIST_PROMO: 2,
@@ -37,30 +37,30 @@ cr.define('local_discovery', function() {
    * Map of service names to corresponding service objects.
    * @type {Object<string,Service>}
    */
-  var devices = {};
+  const devices = {};
 
   /**
    * Whether or not the user is currently logged in.
    * @type bool
    */
-  var isUserLoggedIn = true;
+  let isUserLoggedIn = true;
 
   /**
    * Whether or not the user is supervised or off the record.
    * @type bool
    */
-  var isUserSupervisedOrOffTheRecord = false;
+  let isUserSupervisedOrOffTheRecord = false;
 
   /**
    * Whether or not the path-based dialog has been shown.
    * @type bool
    */
-  var dialogFromPathHasBeenShown = false;
+  let dialogFromPathHasBeenShown = false;
 
   /**
    * Focus manager for page.
    */
-  var focusManager = null;
+  let focusManager = null;
 
   /**
    * Object that represents a device in the device list.
@@ -191,22 +191,23 @@ cr.define('local_discovery', function() {
       deviceDomElement, name, description, buttonText, buttonAction) {
     deviceDomElement.classList.add('device');
 
-    var deviceInfo = document.createElement('div');
+    const deviceInfo = document.createElement('div');
     deviceInfo.className = 'device-info';
     deviceDomElement.appendChild(deviceInfo);
 
-    var deviceName = document.createElement('h3');
+    const deviceName = document.createElement('h3');
     deviceName.className = 'device-name';
     deviceName.textContent = name;
     deviceInfo.appendChild(deviceName);
 
-    var deviceDescription = document.createElement('div');
+    const deviceDescription = document.createElement('div');
     deviceDescription.className = 'device-subline';
     deviceDescription.textContent = description;
     deviceInfo.appendChild(deviceDescription);
 
+    let button;
     if (buttonAction) {
-      var button = document.createElement('button');
+      button = document.createElement('button');
       button.textContent = buttonText;
       button.addEventListener('click', buttonAction);
       deviceDomElement.appendChild(button);
@@ -221,7 +222,7 @@ cr.define('local_discovery', function() {
   function showRegisterOverlay() {
     recordUmaEvent(DEVICES_PAGE_EVENTS.ADD_PRINTER_CLICKED);
 
-    var registerOverlay = $('register-overlay');
+    const registerOverlay = $('register-overlay');
     registerOverlay.classList.add('showing');
     registerOverlay.focus();
 
@@ -319,9 +320,9 @@ cr.define('local_discovery', function() {
    * @param {Object} device The device to create the DOM for.
    */
   function createCloudDeviceDOM(device) {
-    var devicesDomElement = document.createElement('div');
+    const devicesDomElement = document.createElement('div');
 
-    var description =
+    const description =
         device.description || loadTimeData.getString('noDescriptionPrinter');
 
     fillDeviceDescription(
@@ -336,13 +337,13 @@ cr.define('local_discovery', function() {
    * @param {Array<Object>} devicesList List of devices.
    */
   function onCloudDeviceListAvailable(devicesList) {
-    var devicesListLength = devicesList.length;
-    var devicesContainer = $('cloud-devices');
+    const devicesListLength = devicesList.length;
+    const devicesContainer = $('cloud-devices');
 
     clearElement(devicesContainer);
     $('cloud-devices-loading').hidden = true;
 
-    for (var i = 0; i < devicesListLength; i++) {
+    for (let i = 0; i < devicesListLength; i++) {
       devicesContainer.appendChild(createCloudDeviceDOM(devicesList[i]));
     }
   }
@@ -361,7 +362,7 @@ cr.define('local_discovery', function() {
    * Handle the case where the cache for local devices has been flushed..
    */
   function onDeviceCacheFlushed() {
-    for (var deviceName in devices) {
+    for (const deviceName in devices) {
       devices[deviceName].removeDevice();
       delete devices[deviceName];
     }
@@ -373,7 +374,7 @@ cr.define('local_discovery', function() {
    * Update UI strings to reflect the number of local devices.
    */
   function updateUIToReflectState() {
-    var numberPrinters = $('register-device-list').children.length;
+    const numberPrinters = $('register-device-list').children.length;
     if (numberPrinters == 0) {
       $('no-printers-message').hidden = false;
 
@@ -402,7 +403,7 @@ cr.define('local_discovery', function() {
       window.close();
     }
 
-    var deviceDOM = createCloudDeviceDOM(deviceData);
+    const deviceDOM = createCloudDeviceDOM(deviceData);
     $('cloud-devices').insertBefore(deviceDOM, $('cloud-devices').firstChild);
     recordUmaEvent(DEVICES_PAGE_EVENTS.REGISTER_SUCCESS);
   }
@@ -412,9 +413,9 @@ cr.define('local_discovery', function() {
    * @param {string} pageId ID string for page.
    */
   function setRegisterPage(pageId) {
-    var pages = $('register-overlay').querySelectorAll('.register-page');
-    var pagesLength = pages.length;
-    for (var i = 0; i < pagesLength; i++) {
+    const pages = $('register-overlay').querySelectorAll('.register-page');
+    const pagesLength = pages.length;
+    for (let i = 0; i < pagesLength; i++) {
       pages[i].hidden = true;
     }
 
@@ -502,7 +503,7 @@ cr.define('local_discovery', function() {
 
     updateUIToReflectState();
 
-    for (var device in devices) {
+    for (const device in devices) {
       devices[device].setRegisterEnabled(isUserLoggedIn);
     }
   }
@@ -562,7 +563,7 @@ cr.define('local_discovery', function() {
 
   function getOverlayIDFromPath() {
     if (document.location.pathname == '/register') {
-      var params = parseQueryParams(document.location);
+      const params = parseQueryParams(document.location);
       return params['id'] || null;
     }
   }

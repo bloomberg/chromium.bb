@@ -30,7 +30,7 @@ class IntWrapper : public blink::GarbageCollectedFinalized<IntWrapper> {
 
   static IntWrapper* Create(int x, VerifyArenaCompaction verify = NoVerify) {
     did_verify_at_least_once = false;
-    return new IntWrapper(x, verify);
+    return blink::MakeGarbageCollected<IntWrapper>(x, verify);
   }
 
   virtual ~IntWrapper() = default;
@@ -91,7 +91,7 @@ using IntDeque = blink::HeapDeque<blink::Member<IntWrapper>>;
 using IntMap = blink::HeapHashMap<blink::Member<IntWrapper>, int>;
 // TODO(sof): decide if this ought to be a global trait specialization.
 // (i.e., for HeapHash*<T>.)
-WTF_ALLOW_CLEAR_UNUSED_SLOTS_WITH_MEM_FUNCTIONS(IntMap);
+WTF_ALLOW_CLEAR_UNUSED_SLOTS_WITH_MEM_FUNCTIONS(IntMap)
 
 namespace blink {
 
@@ -101,7 +101,7 @@ static const size_t kUnitPointer = 0x1u
 
 TEST(HeapCompactTest, SparseBitmapBasic) {
   Address base = reinterpret_cast<Address>(0x10000u);
-  std::unique_ptr<SparseHeapBitmap> bitmap = SparseHeapBitmap::Create(base);
+  auto bitmap = std::make_unique<SparseHeapBitmap>(base);
 
   size_t double_chunk = 2 * kChunkRange;
 
@@ -134,7 +134,7 @@ TEST(HeapCompactTest, SparseBitmapBasic) {
 
 TEST(HeapCompactTest, SparseBitmapBuild) {
   Address base = reinterpret_cast<Address>(0x10000u);
-  std::unique_ptr<SparseHeapBitmap> bitmap = SparseHeapBitmap::Create(base);
+  auto bitmap = std::make_unique<SparseHeapBitmap>(base);
 
   size_t double_chunk = 2 * kChunkRange;
 
@@ -195,7 +195,7 @@ TEST(HeapCompactTest, SparseBitmapBuild) {
 
 TEST(HeapCompactTest, SparseBitmapLeftExtension) {
   Address base = reinterpret_cast<Address>(0x10000u);
-  std::unique_ptr<SparseHeapBitmap> bitmap = SparseHeapBitmap::Create(base);
+  auto bitmap = std::make_unique<SparseHeapBitmap>(base);
 
   SparseHeapBitmap* start = bitmap->HasRange(base, 1);
   EXPECT_TRUE(start);
@@ -211,7 +211,7 @@ TEST(HeapCompactTest, SparseBitmapLeftExtension) {
             bitmap->HasRange(base - 2 * kUnitPointer, 1));
 
   // Reset.
-  bitmap = SparseHeapBitmap::Create(base);
+  bitmap = std::make_unique<SparseHeapBitmap>(base);
 
   // If attempting same as above, but the Address |A| is outside the
   // chunk size of a node, a new SparseHeapBitmap node needs to be
@@ -220,7 +220,7 @@ TEST(HeapCompactTest, SparseBitmapLeftExtension) {
   EXPECT_NE(bitmap->HasRange(base, 1),
             bitmap->HasRange(base - 2 * kUnitPointer, 1));
 
-  bitmap = SparseHeapBitmap::Create(base);
+  bitmap = std::make_unique<SparseHeapBitmap>(base);
   bitmap->Add(base - kChunkRange + kUnitPointer);
   // This address is just inside the horizon and shouldn't create a new chunk.
   EXPECT_EQ(bitmap->HasRange(base, 1),

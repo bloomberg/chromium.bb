@@ -10,7 +10,6 @@
 @class CommandDispatcher;
 @protocol PageInfoPresentation;
 @class TabModel;
-@protocol UrlLoader;
 
 // Notification sent when the page info is shown.
 extern NSString* const kPageInfoWillShowNotification;
@@ -27,9 +26,6 @@ extern NSString* const kPageInfoWillHideNotification;
 // The dispatcher for this coordinator. When |dispatcher| is set, the
 // coordinator will register itself as the target for PageInfoCommands.
 @property(nonatomic, weak) CommandDispatcher* dispatcher;
-
-// The UrlLoader to be used by this coordinator.
-@property(nonatomic, weak) id<UrlLoader> loader;
 
 // |presentationProvider| provides information and runs tasks necessary to
 // present Page Info.

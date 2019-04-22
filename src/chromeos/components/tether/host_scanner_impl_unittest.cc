@@ -14,6 +14,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
+#include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/components/tether/device_id_tether_network_guid_map.h"
 #include "chromeos/components/tether/fake_connection_preserver.h"
 #include "chromeos/components/tether/fake_host_scan_cache.h"
@@ -25,12 +26,9 @@
 #include "chromeos/components/tether/master_host_scan_cache.h"
 #include "chromeos/components/tether/mock_tether_host_response_recorder.h"
 #include "chromeos/components/tether/proto_test_util.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_shill_service_client.h"
-#include "chromeos/network/network_state_test.h"
+#include "chromeos/network/network_state_test_helper.h"
 #include "chromeos/services/device_sync/public/cpp/fake_device_sync_client.h"
 #include "chromeos/services/secure_channel/public/cpp/client/fake_secure_channel_client.h"
-#include "components/cryptauth/remote_device_test_util.h"
 #include "components/session_manager/core/session_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
@@ -58,13 +56,13 @@ class FakeHostScanDevicePrioritizer : public HostScanDevicePrioritizer {
 
   // Simply leave |remote_devices| as-is.
   void SortByHostScanOrder(
-      cryptauth::RemoteDeviceRefList* remote_devices) const override {}
+      multidevice::RemoteDeviceRefList* remote_devices) const override {}
 };
 
 class FakeHostScannerOperation : public HostScannerOperation {
  public:
   FakeHostScannerOperation(
-      const cryptauth::RemoteDeviceRefList& devices_to_connect,
+      const multidevice::RemoteDeviceRefList& devices_to_connect,
       device_sync::DeviceSyncClient* device_sync_client,
       secure_channel::SecureChannelClient* secure_channel_client,
       HostScanDevicePrioritizer* host_scan_device_prioritizer,
@@ -91,7 +89,7 @@ class FakeHostScannerOperation : public HostScannerOperation {
 class FakeHostScannerOperationFactory : public HostScannerOperation::Factory {
  public:
   FakeHostScannerOperationFactory(
-      const cryptauth::RemoteDeviceRefList& test_devices)
+      const multidevice::RemoteDeviceRefList& test_devices)
       : expected_devices_(test_devices) {}
   virtual ~FakeHostScannerOperationFactory() = default;
 
@@ -102,7 +100,7 @@ class FakeHostScannerOperationFactory : public HostScannerOperation::Factory {
  protected:
   // HostScannerOperation::Factory:
   std::unique_ptr<HostScannerOperation> BuildInstance(
-      const cryptauth::RemoteDeviceRefList& devices_to_connect,
+      const multidevice::RemoteDeviceRefList& devices_to_connect,
       device_sync::DeviceSyncClient* device_sync_client,
       secure_channel::SecureChannelClient* secure_channel_client,
       HostScanDevicePrioritizer* host_scan_device_prioritizer,
@@ -118,19 +116,19 @@ class FakeHostScannerOperationFactory : public HostScannerOperation::Factory {
   }
 
  private:
-  const cryptauth::RemoteDeviceRefList& expected_devices_;
+  const multidevice::RemoteDeviceRefList& expected_devices_;
   std::vector<FakeHostScannerOperation*> created_operations_;
 };
 
 std::string GenerateCellProviderForDevice(
-    cryptauth::RemoteDeviceRef remote_device) {
+    multidevice::RemoteDeviceRef remote_device) {
   // Return a string unique to |remote_device|.
   return "cellProvider" + remote_device.GetTruncatedDeviceIdForLogs();
 }
 
 std::vector<HostScannerOperation::ScannedDeviceInfo>
 CreateFakeScannedDeviceInfos(
-    const cryptauth::RemoteDeviceRefList& remote_devices) {
+    const multidevice::RemoteDeviceRefList& remote_devices) {
   // At least 4 ScannedDeviceInfos should be created to ensure that all 4 cases
   // described below are tested.
   EXPECT_GT(remote_devices.size(), 3u);
@@ -192,18 +190,14 @@ CreateFakeScannedDeviceInfos(
 
 }  // namespace
 
-class HostScannerImplTest : public NetworkStateTest {
+class HostScannerImplTest : public testing::Test {
  protected:
   HostScannerImplTest()
-      : test_devices_(cryptauth::CreateRemoteDeviceRefListForTest(4)),
+      : test_devices_(multidevice::CreateRemoteDeviceRefListForTest(4)),
         test_scanned_device_infos(CreateFakeScannedDeviceInfos(test_devices_)) {
   }
 
   void SetUp() override {
-    DBusThreadManager::Initialize();
-    NetworkHandler::Initialize();
-    NetworkStateTest::SetUp();
-
     scanned_device_infos_from_current_scan_.clear();
 
     fake_device_sync_client_ =
@@ -236,7 +230,7 @@ class HostScannerImplTest : public NetworkStateTest {
 
     host_scanner_ = base::WrapUnique(new HostScannerImpl(
         fake_device_sync_client_.get(), fake_secure_channel_client_.get(),
-        network_state_handler(), session_manager_.get(),
+        helper_.network_state_handler(), session_manager_.get(),
         fake_tether_host_fetcher_.get(),
         fake_host_scan_device_prioritizer_.get(),
         mock_tether_host_response_recorder_.get(),
@@ -252,10 +246,6 @@ class HostScannerImplTest : public NetworkStateTest {
   void TearDown() override {
     host_scanner_->RemoveObserver(test_observer_.get());
     HostScannerOperation::Factory::SetInstanceForTesting(nullptr);
-
-    NetworkStateTest::TearDown();
-    NetworkHandler::Shutdown();
-    DBusThreadManager::Shutdown();
   }
 
   // Causes |fake_operation| to receive the scan result in
@@ -389,7 +379,7 @@ class HostScannerImplTest : public NetworkStateTest {
        << "  \"State\": \"" << shill::kStateConfiguration << "\""
        << "}";
 
-    ConfigureService(ss.str());
+    helper_.ConfigureService(ss.str());
   }
 
   void SetScreenLockedState(bool is_locked) {
@@ -398,9 +388,14 @@ class HostScannerImplTest : public NetworkStateTest {
                   : session_manager::SessionState::LOGIN_PRIMARY);
   }
 
-  const base::test::ScopedTaskEnvironment scoped_task_environment_;
+  NetworkStateHandler* network_state_handler() {
+    return helper_.network_state_handler();
+  }
 
-  const cryptauth::RemoteDeviceRefList test_devices_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+
+  NetworkStateTestHelper helper_{true /* use_default_devices_and_services */};
+  const multidevice::RemoteDeviceRefList test_devices_;
   const std::vector<HostScannerOperation::ScannedDeviceInfo>
       test_scanned_device_infos;
 

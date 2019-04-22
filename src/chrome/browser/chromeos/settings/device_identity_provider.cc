@@ -43,7 +43,7 @@ void DeviceIdentityProvider::SetActiveAccountId(const std::string& account_id) {
   return;
 }
 
-bool DeviceIdentityProvider::IsActiveAccountAvailable() {
+bool DeviceIdentityProvider::IsActiveAccountWithRefreshToken() {
   if (GetActiveAccountId().empty() || !token_service_ ||
       !token_service_->RefreshTokenIsAvailable(GetActiveAccountId()))
     return false;

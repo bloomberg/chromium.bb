@@ -8,12 +8,14 @@
 #include <map>
 
 #include "base/observer_list.h"
+#include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "components/safe_browsing/password_protection/password_protection_service.h"
 #include "components/safe_browsing/triggers/trigger_manager.h"
 #include "components/sessions/core/session_id.h"
+#include "components/sync/protocol/gaia_password_reuse.pb.h"
 #include "components/sync/protocol/user_event_specifics.pb.h"
-#include "ui/base/ui_features.h"
+#include "ui/base/buildflags.h"
 #include "url/origin.h"
 
 struct AccountInfo;
@@ -171,15 +173,15 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   // returns an empty string.
   std::string GetOrganizationName(ReusedPasswordType password_type) const;
 
-  // Triggers "safeBrowsingPrivate.OnPolicySpecifiedPasswordReuseDetected"
-  // extension API for enterprise reporting.
-  // |is_phishing_url| indicates if the password reuse happened on a phishing
-  // page.
-  void OnPolicySpecifiedPasswordReuseDetected(const GURL& url,
-                                              bool is_phishing_url) override;
+  // If the browser is not incognito and the user is reusing their enterprise
+  // password or is a GSuite user, triggers
+  // safeBrowsingPrivate.OnPolicySpecifiedPasswordReuseDetected.
+  void MaybeReportPasswordReuseDetected(content::WebContents* web_contents,
+                                        ReusedPasswordType reused_password_type,
+                                        bool is_phishing_url) override;
 
   // Triggers "safeBrowsingPrivate.OnPolicySpecifiedPasswordChanged" API.
-  void OnPolicySpecifiedPasswordChanged() override;
+  void ReportPasswordChanged() override;
 
   // Returns true if there's any enterprise password reuses unhandled in
   // |web_contents|.
@@ -329,21 +331,19 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
 
   void MaybeLogPasswordReuseLookupResult(
       content::WebContents* web_contents,
-      sync_pb::UserEventSpecifics::GaiaPasswordReuse::PasswordReuseLookup::
-          LookupResult result);
+      sync_pb::GaiaPasswordReuse::PasswordReuseLookup::LookupResult result);
 
   void MaybeLogPasswordReuseLookupResultWithVerdict(
       content::WebContents* web_contents,
-      sync_pb::UserEventSpecifics::GaiaPasswordReuse::PasswordReuseLookup::
-          LookupResult result,
-      sync_pb::UserEventSpecifics::GaiaPasswordReuse::PasswordReuseLookup::
-          ReputationVerdict verdict,
+      sync_pb::GaiaPasswordReuse::PasswordReuseLookup::LookupResult result,
+      sync_pb::GaiaPasswordReuse::PasswordReuseLookup::ReputationVerdict
+          verdict,
       const std::string& verdict_token);
 
   void MaybeLogPasswordReuseDialogInteraction(
       int64_t navigation_id,
-      sync_pb::UserEventSpecifics::GaiaPasswordReuse::
-          PasswordReuseDialogInteraction::InteractionResult interaction_result);
+      sync_pb::GaiaPasswordReuse::PasswordReuseDialogInteraction::
+          InteractionResult interaction_result);
 
   // Log that we captured the password, either due to log-in or by timer.
   // This also sets the reoccuring timer.

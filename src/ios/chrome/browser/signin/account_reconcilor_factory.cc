@@ -6,17 +6,15 @@
 
 #include <memory>
 
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/core/browser/mirror_account_reconcilor_delegate.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
-#include "ios/chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "ios/chrome/browser/signin/signin_client_factory.h"
-#include "ios/web/public/features.h"
+#include "ios/web/common/features.h"
 #include "services/identity/public/cpp/identity_manager.h"
 
 namespace ios {
@@ -25,8 +23,6 @@ AccountReconcilorFactory::AccountReconcilorFactory()
     : BrowserStateKeyedServiceFactory(
           "AccountReconcilor",
           BrowserStateDependencyManager::GetInstance()) {
-  DependsOn(GaiaCookieManagerServiceFactory::GetInstance());
-  DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
   DependsOn(IdentityManagerFactory::GetInstance());
   DependsOn(SigninClientFactory::GetInstance());
 }
@@ -42,7 +38,8 @@ AccountReconcilor* AccountReconcilorFactory::GetForBrowserState(
 
 // static
 AccountReconcilorFactory* AccountReconcilorFactory::GetInstance() {
-  return base::Singleton<AccountReconcilorFactory>::get();
+  static base::NoDestructor<AccountReconcilorFactory> instance;
+  return instance.get();
 }
 
 std::unique_ptr<KeyedService> AccountReconcilorFactory::BuildServiceInstanceFor(
@@ -52,11 +49,8 @@ std::unique_ptr<KeyedService> AccountReconcilorFactory::BuildServiceInstanceFor(
   auto* identity_manager =
       IdentityManagerFactory::GetForBrowserState(chrome_browser_state);
   std::unique_ptr<AccountReconcilor> reconcilor(new AccountReconcilor(
-      ProfileOAuth2TokenServiceFactory::GetForBrowserState(
-          chrome_browser_state),
       identity_manager,
       SigninClientFactory::GetForBrowserState(chrome_browser_state),
-      GaiaCookieManagerServiceFactory::GetForBrowserState(chrome_browser_state),
       std::make_unique<signin::MirrorAccountReconcilorDelegate>(
           identity_manager)));
 #if defined(OS_IOS)

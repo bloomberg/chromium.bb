@@ -78,6 +78,13 @@ void JourneyLoggerAndroid::SetCanMakePaymentValue(
   journey_logger_.SetCanMakePaymentValue(jvalue);
 }
 
+void JourneyLoggerAndroid::SetHasEnrolledInstrumentValue(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller,
+    jboolean jvalue) {
+  journey_logger_.SetHasEnrolledInstrumentValue(jvalue);
+}
+
 void JourneyLoggerAndroid::SetEventOccurred(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller,

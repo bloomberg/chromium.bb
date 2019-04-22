@@ -17,6 +17,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/safe_browsing/archive_analyzer_results.h"
 #include "chrome/services/file_util/file_util_service.h"
+#include "chrome/services/file_util/public/mojom/constants.mojom.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "crypto/sha2.h"
@@ -74,10 +75,8 @@ class SandboxedZipAnalyzerTest : public ::testing::Test {
 
   SandboxedZipAnalyzerTest()
       : browser_thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
-        test_connector_factory_(
-            service_manager::TestConnectorFactory::CreateForUniqueService(
-                std::make_unique<FileUtilService>())),
-        connector_(test_connector_factory_->CreateConnector()) {}
+        file_util_service_(test_connector_factory_.RegisterInstance(
+            chrome::mojom::kFileUtilServiceName)) {}
 
   void SetUp() override {
     ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &dir_test_data_));
@@ -92,7 +91,8 @@ class SandboxedZipAnalyzerTest : public ::testing::Test {
     base::RunLoop run_loop;
     ResultsGetter results_getter(run_loop.QuitClosure(), results);
     scoped_refptr<SandboxedZipAnalyzer> analyzer(new SandboxedZipAnalyzer(
-        file_path, results_getter.GetCallback(), connector_.get()));
+        file_path, results_getter.GetCallback(),
+        test_connector_factory_.GetDefaultConnector()));
     analyzer->Start();
     run_loop.Run();
   }
@@ -186,9 +186,8 @@ class SandboxedZipAnalyzerTest : public ::testing::Test {
   base::FilePath dir_test_data_;
   content::TestBrowserThreadBundle browser_thread_bundle_;
   content::InProcessUtilityThreadHelper utility_thread_helper_;
-  std::unique_ptr<service_manager::TestConnectorFactory>
-      test_connector_factory_;
-  std::unique_ptr<service_manager::Connector> connector_;
+  service_manager::TestConnectorFactory test_connector_factory_;
+  FileUtilService file_util_service_;
 };
 
 // static
@@ -383,14 +382,27 @@ TEST_F(SandboxedZipAnalyzerTest, ZippedAppWithUnsignedAndSignedExecutable) {
                   "mach_o/zipped-app-two-executables-one-signed.zip"),
               &results);
 
-  EXPECT_THAT(histograms.GetAllSamples(kAppInZipHistogramName),
-              testing::ElementsAre(base::Bucket(/*bucket=*/true, /*count=*/1)));
-
   EXPECT_TRUE(results.success);
   EXPECT_TRUE(results.has_executable);
   EXPECT_FALSE(results.has_archive);
-  ASSERT_EQ(2, results.archived_binary.size());
-  ExpectBinary(kUnsignedMachO, results.archived_binary.Get(0));
-  ExpectBinary(kSignedMachO, results.archived_binary.Get(1));
+
+  // Many of the files within the app have no extension, and are therefore
+  // flagged by Safe Browsing. So search for the two executables.
+  bool found_unsigned = false;
+  bool found_signed = false;
+  for (const auto& binary : results.archived_binary) {
+    if (kSignedMachO.file_basename == binary.file_basename()) {
+      found_signed = true;
+      ExpectBinary(kSignedMachO, binary);
+    }
+
+    if (kUnsignedMachO.file_basename == binary.file_basename()) {
+      found_unsigned = true;
+      ExpectBinary(kUnsignedMachO, binary);
+    }
+  }
+
+  EXPECT_TRUE(found_unsigned);
+  EXPECT_TRUE(found_signed);
 }
 #endif  // OS_MACOSX

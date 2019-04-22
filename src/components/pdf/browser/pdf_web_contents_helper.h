@@ -6,9 +6,7 @@
 #define COMPONENTS_PDF_BROWSER_PDF_WEB_CONTENTS_HELPER_H_
 
 #include <memory>
-#include <string>
 
-#include "base/callback.h"
 #include "base/macros.h"
 #include "components/pdf/common/pdf.mojom.h"
 #include "content/public/browser/touch_selection_controller_client_manager.h"
@@ -66,6 +64,8 @@ class PDFWebContentsHelper
       content::TouchSelectionControllerClientManager* manager) override;
 
  private:
+  friend class content::WebContentsUserData<PDFWebContentsHelper>;
+
   PDFWebContentsHelper(content::WebContents* web_contents,
                        std::unique_ptr<PDFWebContentsHelperClient> client);
 
@@ -83,6 +83,7 @@ class PDFWebContentsHelper
                         int32_t left_height,
                         const gfx::PointF& right,
                         int32_t right_height) override;
+  void SetPluginCanSave(bool can_save) override;
 
   content::WebContentsFrameBindingSet<mojom::PdfService> pdf_service_bindings_;
   std::unique_ptr<PDFWebContentsHelperClient> const client_;
@@ -97,6 +98,8 @@ class PDFWebContentsHelper
   bool has_selection_ = false;
 
   mojom::PdfListenerPtr remote_pdf_client_;
+
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(PDFWebContentsHelper);
 };

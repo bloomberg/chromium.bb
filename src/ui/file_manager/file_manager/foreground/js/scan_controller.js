@@ -14,10 +14,7 @@
  * @struct
  */
 function ScanController(
-    directoryModel,
-    listContainer,
-    spinnerController,
-    commandHandler,
+    directoryModel, listContainer, spinnerController, commandHandler,
     selectionHandler) {
   /**
    * @type {!DirectoryModel}
@@ -92,11 +89,9 @@ function ScanController(
  * @private
  */
 ScanController.prototype.onScanStarted_ = function() {
-  if (this.scanInProgress_)
+  if (this.scanInProgress_) {
     this.listContainer_.endBatchUpdates();
-
-  if (this.commandHandler_)
-    this.commandHandler_.updateAvailability();
+  }
 
   this.listContainer_.startBatchUpdates();
   this.scanInProgress_ = true;
@@ -129,9 +124,6 @@ ScanController.prototype.onScanCompleted_ = function() {
 
   this.scanInProgress_ = false;
   this.listContainer_.endBatchUpdates();
-
-  if (this.commandHandler_)
-    this.commandHandler_.updateAvailability();
 };
 
 /**
@@ -143,12 +135,13 @@ ScanController.prototype.onScanUpdated_ = function() {
     return;
   }
 
-  if (this.scanUpdatedTimer_)
+  if (this.scanUpdatedTimer_) {
     return;
+  }
 
   // Show contents incrementally by finishing batch updated, but only after
   // 200ms elapsed, to avoid flickering when it is not necessary.
-  this.scanUpdatedTimer_ = setTimeout(function() {
+  this.scanUpdatedTimer_ = setTimeout(() => {
     this.hideSpinner_();
 
     // Update the UI.
@@ -157,7 +150,7 @@ ScanController.prototype.onScanUpdated_ = function() {
       this.listContainer_.startBatchUpdates();
     }
     this.scanUpdatedTimer_ = 0;
-  }.bind(this), 200);
+  }, 200);
 };
 
 /**
@@ -178,9 +171,6 @@ ScanController.prototype.onScanCancelled_ = function() {
 
   this.scanInProgress_ = false;
   this.listContainer_.endBatchUpdates();
-
-  if (this.commandHandler_)
-    this.commandHandler_.updateAvailability();
 };
 
 /**

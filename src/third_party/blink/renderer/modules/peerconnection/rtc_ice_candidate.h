@@ -56,11 +56,19 @@ class MODULES_EXPORT RTCIceCandidate final : public ScriptWrappable {
   explicit RTCIceCandidate(scoped_refptr<WebRTCICECandidate>);
 
   String candidate() const;
-  void setCandidate(String);
   String sdpMid() const;
-  void setSdpMid(String);
-  unsigned short sdpMLineIndex() const;
-  void setSdpMLineIndex(unsigned short);
+  uint16_t sdpMLineIndex(bool& is_null) const;
+  String foundation() const;
+  String component() const;
+  uint32_t priority(bool& is_null) const;
+  String address() const;
+  String protocol() const;
+  uint16_t port(bool& is_null) const;
+  String type() const;
+  String tcpType() const;
+  String relatedAddress() const;
+  uint16_t relatedPort(bool& is_null) const;
+  String usernameFragment() const;
 
   ScriptValue toJSONForBinding(ScriptState*);
 

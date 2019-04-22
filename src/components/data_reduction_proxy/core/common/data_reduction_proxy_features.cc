@@ -27,30 +27,27 @@ const base::Feature kDataReductionProxyLowMemoryDevicePromo{
     "DataReductionProxyLowMemoryDevicePromo",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables experiment that makes connection to the data saver proxy more robust.
-const base::Feature kDataReductionProxyRobustConnection{
-    "DataReductionProxyRobustConnection", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enabled for Chrome dogfooders.
 const base::Feature kDogfood{"DataReductionProxyDogfood",
                              base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables recording of the site-breakdown metrics using the page load metrics
-// harness, and disables the observer for data use ascriber.
-const base::Feature kDataSaverSiteBreakdownUsingPageLoadMetrics{
-    "DataSaverSiteBreakdownUsingPageLoadMetrics",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
-// If enabled, "br" is not added to the accept-encoding header. This effectively
-// disables the use of Brotli on the connection from Chrome to secure
-// HTTPS data saver proxies.
-const base::Feature kDataReductionProxyBrotliHoldback{
-    "DataReductionProxyBrotliHoldback", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables data reduction proxy when network service is enabled.
 const base::Feature kDataReductionProxyEnabledWithNetworkService{
     "DataReductionProxyEnabledWithNetworkService",
     base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables block action of all proxies when 502 is received with no
+// Chrome-Proxy header. The block duration is configurable via field trial with
+// a default of one second.
+const base::Feature kDataReductionProxyBlockOnBadGatewayResponse{
+    "DataReductionProxyBlockOnBadGatewayResponse",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables populating the previews page ID from NavigationUIData to the
+// pingbacks.
+const base::Feature kDataReductionProxyPopulatePreviewsPageIDToPingback{
+    "DataReductionProxyPopulatePreviewsPageIDToPingback",
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace data_reduction_proxy

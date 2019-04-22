@@ -11,7 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "components/browser_sync/profile_sync_service.h"
+#include "components/sync/driver/sync_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -32,8 +32,7 @@ void StartSyncOnUIThread(const base::FilePath& profile,
     return;
   }
 
-  browser_sync::ProfileSyncService* service =
-      ProfileSyncServiceFactory::GetForProfile(p);
+  syncer::SyncService* service = ProfileSyncServiceFactory::GetForProfile(p);
   if (!service) {
     DVLOG(2) << "No ProfileSyncService for profile, can't start sync.";
     return;

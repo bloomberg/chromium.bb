@@ -21,19 +21,21 @@ buildflag_header("media_buildflags") {
     "ENABLE_AC3_EAC3_AUDIO_DEMUXING=$enable_ac3_eac3_audio_demuxing",
     "ENABLE_CBCS_ENCRYPTION_SCHEME=$enable_cbcs_encryption_scheme",
     "ENABLE_CDM_HOST_VERIFICATION=$enable_cdm_host_verification",
-    "ENABLE_HEVC_DEMUXING=$enable_hevc_demuxing",
+    "ENABLE_CDM_STORAGE_ID=$enable_cdm_storage_id",
+    "ENABLE_DAV1D_DECODER=$enable_dav1d_decoder",
+    "ENABLE_AV1_DECODER=$enable_av1_decoder",
     "ENABLE_DOLBY_VISION_DEMUXING=$enable_dolby_vision_demuxing",
     "ENABLE_FFMPEG=$media_use_ffmpeg",
     "ENABLE_FFMPEG_VIDEO_DECODERS=$enable_ffmpeg_video_decoders",
+    "ENABLE_HEVC_DEMUXING=$enable_hevc_demuxing",
     "ENABLE_HLS_SAMPLE_AES=$enable_hls_sample_aes",
     "ENABLE_LIBRARY_CDMS=$enable_library_cdms",
     "ENABLE_LIBVPX=$media_use_libvpx",
-    "ENABLE_MSE_MPEG2TS_STREAM_PARSER=$enable_mse_mpeg2ts_stream_parser",
-    "ENABLE_MPEG_H_AUDIO_DEMUXING=$enable_mpeg_h_audio_demuxing",
-    "ENABLE_RUNTIME_MEDIA_RENDERER_SELECTION=$enable_runtime_media_renderer_selection",
-    "ENABLE_CDM_STORAGE_ID=$enable_cdm_storage_id",
+    "ENABLE_LOGGING_OVERRIDE=$enable_logging_override",
     "ENABLE_MEDIA_REMOTING=$enable_media_remoting",
     "ENABLE_MEDIA_REMOTING_RPC=$enable_media_remoting_rpc",
+    "ENABLE_MPEG_H_AUDIO_DEMUXING=$enable_mpeg_h_audio_demuxing",
+    "ENABLE_MSE_MPEG2TS_STREAM_PARSER=$enable_mse_mpeg2ts_stream_parser",
     "USE_PROPRIETARY_CODECS=$proprietary_codecs",
   ]
 }
@@ -312,6 +314,18 @@ if (proprietary_codecs) {
   }
 }
 
+fuzzer_test("media_jpeg_parser_picture_fuzzer") {
+  sources = [
+    "filters/jpeg_parser_picture_fuzzertest.cc",
+  ]
+  deps = [
+    ":test_support",
+    "//base",
+  ]
+  seed_corpus = "test/data"
+  dict = "test/jpeg.dict"
+}
+
 fuzzer_test("media_vp8_parser_fuzzer") {
   sources = [
     "filters/vp8_parser_fuzzertest.cc",
@@ -333,6 +347,18 @@ fuzzer_test("media_vp9_parser_fuzzer") {
     "//base",
   ]
   libfuzzer_options = [ "max_len = 400000" ]
+}
+
+fuzzer_test("media_vp9_parser_encrypted_fuzzer") {
+  sources = [
+    "filters/vp9_parser_encrypted_fuzzertest.cc",
+  ]
+  deps = [
+    ":test_support",
+    "//base",
+    "//base/test:test_support",
+  ]
+  seed_corpus = "//media/test/data"
 }
 
 fuzzer_test("media_vpx_video_decoder_fuzzer") {

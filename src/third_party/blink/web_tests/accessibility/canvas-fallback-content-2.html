@@ -1,7 +1,8 @@
 <!DOCTYPE HTML>
 <html>
 <body>
-<script src="../resources/js-test.js"></script>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
 
 <div>
   <a id="link1" href="#">Link</a>
@@ -53,38 +54,31 @@
 
 <div id="console"></div>
 <script>
-description("This tests a number of different elements in canvas fallback content to make sure their accessible attributes are essentially identical to the corresponding elements outside of canvas fallback content.");
+function check(id1, id2) {
+    window.element1 = document.getElementById(id1);
+    element1.focus();
+    assert_equals(document.activeElement == element1, true);
+    window.axElement1 = accessibilityController.focusedElement;
 
-if (window.testRunner && window.accessibilityController) {
-    testRunner.dumpAsText();
+    window.element2 = document.getElementById(id2);
+    element2.focus();
+    assert_equals(document.activeElement == element2, true);
+    window.axElement2 = accessibilityController.focusedElement;
 
-    function check(id1, id2) {
-        debug(id1);
-        window.element1 = document.getElementById(id1);
-        element1.focus();
-        shouldBe("document.activeElement == element1", "true");
-        window.axElement1 = accessibilityController.focusedElement;
+    assert_equals(axElement2.role, axElement1.role);
+    assert_equals(axElement2.roleDescription, axElement1.roleDescription);
+    assert_equals(axElement2.name, axElement1.name);
+    assert_equals(axElement2.description, axElement1.description);
+    assert_equals(axElement2.stringValue, axElement1.stringValue);
+    assert_equals(axElement2.isEnabled, axElement1.isEnabled);
+    assert_equals(axElement2.isRequired, axElement1.isRequired);
+    assert_equals(axElement2.isChecked, axElement1.isChecked);
+    assert_equals(axElement2.intValue, axElement1.intValue);
+    assert_equals(axElement2.minValue, axElement1.minValue);
+    assert_equals(axElement2.maxValue, axElement1.maxValue);
+}
 
-        debug(id2);
-        window.element2 = document.getElementById(id2);
-        element2.focus();
-        shouldBe("document.activeElement == element2", "true");
-        window.axElement2 = accessibilityController.focusedElement;
-
-        shouldBe("axElement2.role", "axElement1.role");
-        shouldBe("axElement2.roleDescription", "axElement1.roleDescription");
-        shouldBe("axElement2.name", "axElement1.name");
-        shouldBe("axElement2.description", "axElement1.description");
-        shouldBe("axElement2.stringValue", "axElement1.stringValue");
-        shouldBe("axElement2.isEnabled", "axElement1.isEnabled");
-        shouldBe("axElement2.isRequired", "axElement1.isRequired");
-        shouldBe("axElement2.isChecked", "axElement1.isChecked");
-        shouldBe("axElement2.intValue", "axElement1.intValue");
-        shouldBe("axElement2.minValue", "axElement1.minValue");
-        shouldBe("axElement2.maxValue", "axElement1.maxValue");
-        debug("");
-    }
-
+test((t) => {
     check("link1", "link2");
     check("button1", "button2");
     check("labeled-button1", "labeled-button2");
@@ -106,7 +100,8 @@ if (window.testRunner && window.accessibilityController) {
     check("aria-requiredbutton1", "aria-requiredbutton2");
     check("aria-togglebutton1", "aria-togglebutton2");
     check("aria-link1", "aria-link2");
-}
+}, "This tests a number of different elements in canvas fallback content to make sure their accessible attributes are essentially identical to the corresponding elements outside of canvas fallback content.");
+
 
 </script>
 

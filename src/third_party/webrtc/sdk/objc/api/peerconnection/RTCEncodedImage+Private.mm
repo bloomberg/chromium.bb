@@ -14,12 +14,12 @@
 
 @implementation RTCEncodedImage (Private)
 
-- (instancetype)initWithNativeEncodedImage:(webrtc::EncodedImage)encodedImage {
+- (instancetype)initWithNativeEncodedImage:(const webrtc::EncodedImage &)encodedImage {
   if (self = [super init]) {
     // Wrap the buffer in NSData without copying, do not take ownership.
-    self.buffer = [NSData dataWithBytesNoCopy:encodedImage._buffer
-                                   length:encodedImage._length
-                             freeWhenDone:NO];
+    self.buffer = [NSData dataWithBytesNoCopy:encodedImage.mutable_data()
+                                       length:encodedImage.size()
+                                 freeWhenDone:NO];
     self.encodedWidth = rtc::dchecked_cast<int32_t>(encodedImage._encodedWidth);
     self.encodedHeight = rtc::dchecked_cast<int32_t>(encodedImage._encodedHeight);
     self.timeStamp = encodedImage.Timestamp();
@@ -52,7 +52,7 @@
   encodedImage.timing_.flags = self.flags;
   encodedImage.timing_.encode_start_ms = self.encodeStartMs;
   encodedImage.timing_.encode_finish_ms = self.encodeFinishMs;
-  encodedImage._frameType = webrtc::FrameType(self.frameType);
+  encodedImage._frameType = webrtc::VideoFrameType(self.frameType);
   encodedImage.rotation_ = webrtc::VideoRotation(self.rotation);
   encodedImage._completeFrame = self.completeFrame;
   encodedImage.qp_ = self.qp ? self.qp.intValue : -1;

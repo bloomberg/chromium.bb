@@ -22,6 +22,7 @@ namespace content {
 class BrowserContext;
 class RenderViewHost;
 class SiteInstance;
+struct MediaPlayerId;
 }  // namespace content
 
 namespace chromecast {
@@ -44,12 +45,12 @@ class CastWebViewDefault : public CastWebView,
   // CastWebView implementation:
   shell::CastContentWindow* window() const override;
   content::WebContents* web_contents() const override;
+  CastWebContents* cast_web_contents() override;
   void LoadUrl(GURL url) override;
   void ClosePage(const base::TimeDelta& shutdown_delay) override;
   void InitializeWindow(CastWindowManager* window_manager,
                         CastWindowManager::WindowId z_order,
                         VisibilityPriority initial_priority) override;
-  void SetContext(base::Value context) override;
   void GrantScreenAccess() override;
   void RevokeScreenAccess() override;
 
@@ -60,10 +61,10 @@ class CastWebViewDefault : public CastWebView,
   void DidStartNavigation(
       content::NavigationHandle* navigation_handle) override;
   void MediaStartedPlaying(const MediaPlayerInfo& media_info,
-                           const MediaPlayerId& id) override;
+                           const content::MediaPlayerId& id) override;
   void MediaStoppedPlaying(
       const MediaPlayerInfo& media_info,
-      const MediaPlayerId& id,
+      const content::MediaPlayerId& id,
       WebContentsObserver::MediaStoppedReason reason) override;
 
   // WebContentsDelegate implementation:
@@ -74,7 +75,7 @@ class CastWebViewDefault : public CastWebView,
   void ActivateContents(content::WebContents* contents) override;
   bool CheckMediaAccessPermission(content::RenderFrameHost* render_frame_host,
                                   const GURL& security_origin,
-                                  content::MediaStreamType type) override;
+                                  blink::MediaStreamType type) override;
   bool DidAddMessageToConsole(content::WebContents* source,
                               int32_t level,
                               const base::string16& message,

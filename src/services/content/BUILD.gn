@@ -4,7 +4,6 @@
 
 import("//build/config/ui.gni")
 import("//services/content/public/features.gni")
-import("//services/service_manager/public/service_manifest.gni")
 
 source_set("impl") {
   visibility = [
@@ -75,9 +74,4 @@ source_set("tests") {
     "//testing/gtest",
     "//url",
   ]
-}
-
-service_manifest("manifest") {
-  name = "content"
-  source = "manifest.json"
 }

@@ -32,7 +32,7 @@ class AccessibilityLayerDelegate {
   virtual void OnAnimationStep(base::TimeTicks timestamp) = 0;
 
  protected:
-  virtual ~AccessibilityLayerDelegate(){};
+  virtual ~AccessibilityLayerDelegate() {}
 };
 
 // AccessibilityLayer manages a global always-on-top layer used to
@@ -53,6 +53,9 @@ class AccessibilityLayer : public ui::LayerDelegate,
   // Returns true if this layer is in a composited window with an
   // animation observer.
   virtual bool CanAnimate() const = 0;
+
+  // Returns true if a layer needs to animate.
+  virtual bool NeedToAnimate() const = 0;
 
   // Gets the inset for this layer in DIPs. This is used to increase
   // the bounding box to provide space for any margins or padding.

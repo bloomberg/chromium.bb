@@ -4,10 +4,11 @@
 
 #include "chrome/browser/ui/avatar_button_error_controller.h"
 
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sync_ui_util.h"
-#include "components/browser_sync/profile_sync_service.h"
+#include "components/sync/driver/sync_service.h"
 
 AvatarButtonErrorController::AvatarButtonErrorController(
     AvatarButtonErrorControllerDelegate* delegate,
@@ -67,7 +68,7 @@ AvatarButtonErrorController::SyncErrorObserver::SyncErrorObserver(
     : profile_(profile),
       avatar_button_error_controller_(avatar_button_error_controller),
       sync_observer_(this) {
-  browser_sync::ProfileSyncService* sync_service =
+  syncer::SyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
   if (sync_service)
     sync_observer_.Add(sync_service);
@@ -81,15 +82,12 @@ void AvatarButtonErrorController::SyncErrorObserver::OnStateChanged(
 }
 
 bool AvatarButtonErrorController::SyncErrorObserver::HasSyncError() {
-  browser_sync::ProfileSyncService* sync_service =
+  syncer::SyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
   if (sync_service) {
-    syncer::SyncStatus status;
-    sync_service->QueryDetailedSyncStatus(&status);
     return sync_service->HasUnrecoverableError() ||
-           status.sync_protocol_error.action == syncer::UPGRADE_CLIENT ||
            sync_ui_util::ShouldShowPassphraseError(sync_service) ||
-           sync_service->IsSyncConfirmationNeeded();
+           sync_ui_util::ShouldRequestSyncConfirmation(sync_service);
   }
   return false;
 }

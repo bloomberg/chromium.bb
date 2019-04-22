@@ -11,6 +11,7 @@
 #include "net/base/net_errors.h"
 #include "net/cert/cert_verify_proc.h"
 #include "net/cert/cert_verify_result.h"
+#include "net/cert/crl_set.h"
 #include "net/cert/nss_cert_database_chromeos.h"
 #include "net/cert/x509_util.h"
 #include "net/cert/x509_util_nss.h"
@@ -106,9 +107,9 @@ class CertVerifyProcChromeOSTest : public testing::Test {
       std::string* root_subject_name) {
     int flags = 0;
     net::CertVerifyResult verify_result;
-    int error =
-        verify_proc->Verify(cert, "127.0.0.1", std::string(), flags, NULL,
-                            additional_trust_anchors, &verify_result);
+    int error = verify_proc->Verify(cert, "127.0.0.1", std::string(), flags,
+                                    net::CRLSet::BuiltinCRLSet().get(),
+                                    additional_trust_anchors, &verify_result);
     if (!verify_result.verified_cert->intermediate_buffers().empty()) {
       root_subject_name->assign(GetSubjectCN(
           verify_result.verified_cert->intermediate_buffers().back().get()));
@@ -376,7 +377,7 @@ TEST_P(CertVerifyProcChromeOSOrderingTest, DISABLED_TrustThenVerify) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     Variations,
     CertVerifyProcChromeOSOrderingTest,
     ::testing::Combine(

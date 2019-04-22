@@ -8,16 +8,10 @@
 // Engine definitions. See prepopulated_engines_schema.json for the field
 // definitions.
 
-// The following unique IDs are available:
-//    7, 11, 12, 13, 14, 18, 19, 20, 22, 24, 26, 28, 29, 30, 32, 33, 34, 39, 37,
-//    38, 40, 41, 42, 46, 47, 48, 49, 51, 52, 58, 59, 69, 71, 72, 82, 84, 86,
-//    91+
-//
-// IDs > 1000 are reserved for distribution custom engines.
-//
 // NOTES:
-//   - CHANGE THE ABOVE NUMBERS IF YOU ADD A NEW ENGINE; ID conflicts = bad!
-//   - Make sure you update the int_variables below as required.
+//   - CHANGE THE BELOW NUMBERS IF YOU ADD A NEW ENGINE; ID conflicts = bad!
+//     - Make sure you update the int_variables below as described in comments.
+//     - IDs > 1000 are reserved for distribution custom engines.
 //   - NOTIFY the Chrome Webstore team if you add/delete a search engine or
 //     change domain of an existing one (send email to webstore-eng@google.com).
 //     They need to know the mapping between an engine's "id" and its URLs.
@@ -26,28 +20,20 @@
 
 {
   "int_variables": {
-    // The following id is for UMA stats only. Please update it if you add new
-    // engines outside the current range or it will not be counted in stats.
-    "kMaxPrepopulatedEngineID": 90,
+    // When adding new engines, increment this number and use it as the new
+    // max ID. This is used by UMA stats and must be updated to include the full
+    // range or else not all engines will be counted in stats.
+    "kMaxPrepopulatedEngineID": 94,
 
     // Increment this if you change the data in ways that mean users with
-    // existing data should get a new version.
-    "kCurrentDataVersion": 103
+    // existing data should get a new version. Otherwise, existing data may
+    // continue to be used and updates made here will not always appear.
+    "kCurrentDataVersion": 112
   },
 
   // The following engines are included in country lists and are added to the
   // list of search engines on the first run depending on user's country.
   "elements": {
-    "aol": {
-      "name": "AOL",
-      "keyword": "aol.com",
-      "favicon_url": "https://search.aol.com/favicon.ico",
-      "search_url": "https://search.aol.com/aol/search?q={searchTerms}",
-      "suggest_url": "https://autosuggest.search.aol.com/autocomplete/get?output=json&it=&q={searchTerms}",
-      "type": "SEARCH_ENGINE_AOL",
-      "id": 35
-    },
-
     // Ask and Ask UK have suggestion URLs reachable over HTTPS, but they
     // throw a certificate error, so those will remain as HTTP for now.
     "ask": {
@@ -56,25 +42,6 @@
       "favicon_url": "https://sp.ask.com/sh/i/a16/favicon/favicon.ico",
       "search_url": "https://www.ask.com/web?q={searchTerms}",
       "suggest_url": "http://ss.ask.com/query?q={searchTerms}&li=ff",
-      "type": "SEARCH_ENGINE_ASK",
-      "id": 4
-    },
-
-    "ask_br": {
-      "name": "Ask Brasil",
-      "keyword": "br.ask.com",
-      "favicon_url": "https://sp.br.ask.com/sh/i/a14/favicon/favicon.ico",
-      "search_url": "https://br.ask.com/web?q={searchTerms}",
-      "type": "SEARCH_ENGINE_ASK",
-      "id": 4
-    },
-
-    "ask_uk": {
-      "name": "Ask Jeeves",
-      "keyword": "uk.ask.com",
-      "favicon_url": "https://sp.uk.ask.com/sh/i/a16/favicon/favicon.ico",
-      "search_url": "https://uk.ask.com/web?q={searchTerms}",
-      "suggest_url": "http://ss.uk.ask.com/query?q={searchTerms}&li=ff",
       "type": "SEARCH_ENGINE_ASK",
       "id": 4
     },
@@ -102,11 +69,20 @@
       "favicon_url": "https://www.bing.com/sa/simg/bing_p_rr_teal_min.ico",
       "search_url": "https://www.bing.com/search?q={searchTerms}&PC=U316&FORM=CHROMN",
       "suggest_url": "https://www.bing.com/osjson.aspx?query={searchTerms}&language={language}&PC=U316",
-      "image_url": "https://www.bing.com/images/detail/search?iss=sbi&FORM=CHROMI#enterInsights",
+      "image_url": "https://www.bing.com/images/detail/search?iss=sbiupload&FORM=CHROMI#enterInsights",
       "new_tab_url": "https://www.bing.com/chrome/newtab",
-      "image_url_post_params": "imgurl={google:imageURL}",
+      "image_url_post_params": "imageBin={google:imageThumbnailBase64}",
       "type": "SEARCH_ENGINE_BING",
       "id": 3
+    },
+
+    "coccoc": {
+      "name": "Cốc Cốc",
+      "keyword": "coccoc.com",
+      "favicon_url": "https://coccoc.com/favicon.ico",
+      "search_url": "https://coccoc.com/search#query={searchTerms}",
+      "type": "SEARCH_ENGINE_COCCOC",
+      "id": 91
     },
 
     "daum": {
@@ -117,6 +93,17 @@
       "suggest_url": "https://suggest.search.daum.net/sushi/opensearch/pc?q={searchTerms}&DA=JU6",
       "type": "SEARCH_ENGINE_DAUM",
       "id": 68
+    },
+
+    "duckduckgo": {
+      "name": "DuckDuckGo",
+      "keyword": "duckduckgo.com",
+      "favicon_url": "https://duckduckgo.com/favicon.ico",
+      "search_url": "https://duckduckgo.com/?q={searchTerms}",
+      "suggest_url": "https://duckduckgo.com/ac/?q={searchTerms}&type=list",
+      "new_tab_url": "https://duckduckgo.com/chrome_newtab",
+      "type": "SEARCH_ENGINE_DUCKDUCKGO",
+      "id": 92
     },
 
     "google": {
@@ -140,15 +127,6 @@
       "id": 1
     },
 
-    "kvasir": {
-      "name": "Kvasir",
-      "keyword": "kvasir.no",
-      "favicon_url": "https://kvasir.no/grafikk/favicon.ico",
-      "search_url": "https://kvasir.no/alle?q={searchTerms}",
-      "type": "SEARCH_ENGINE_KVASIR",
-      "id": 73
-    },
-
     "mail_ru": {
       "name": "@MAIL.RU",
       "keyword": "mail.ru",
@@ -163,15 +141,6 @@
       "id": 83
     },
 
-    "najdi": {
-      "name": "Najdi.si",
-      "keyword": "najdi.si",
-      "favicon_url": "https://www.najdi.si/assets/PROD-1.5.16/ctx/images/favicon.ico",
-      "search_url": "https://www.najdi.si/search.jsp?q={searchTerms}",
-      "type": "SEARCH_ENGINE_NAJDI",
-      "id": 87
-    },
-
     "naver": {
       "name": "\ub124\uc774\ubc84",
       "keyword": "naver.com",
@@ -182,13 +151,23 @@
       "id": 67
     },
 
-    "onet": {
-      "name": "Onet.pl",
-      "keyword": "onet.pl",
-      "favicon_url": "https://szukaj.onet.pl/favicon.ico",
-      "search_url": "https://szukaj.onet.pl/wyniki.html?qt={searchTerms}",
-      "type": "SEARCH_ENGINE_ONET",
-      "id": 75
+    "parsijoo": {
+      "name": "پارسی جو",
+      "keyword": "parsijoo.ir",
+      "favicon_url": "https://cdn.parsijoo.ir/content3/images/1.0/favicon.ico",
+      "search_url": "https://parsijoo.ir/web?q={searchTerms}",
+      "type": "SEARCH_ENGINE_PARSIJOO",
+      "id": 93
+    },
+
+    "qwant": {
+      "name": "Qwant",
+      "keyword": "qwant.com",
+      "favicon_url": "https://www.qwant.com/favicon.ico",
+      "search_url": "https://www.qwant.com/?q={searchTerms}&client=opensearch",
+      "suggest_url": "https://api.qwant.com/api/suggest/?q={searchTerms}&client=opensearch",
+      "type": "SEARCH_ENGINE_QWANT",
+      "id": 94
     },
 
     "seznam": {
@@ -226,25 +205,6 @@
       "suggest_url": "http://api.sugg.sogou.com/su?type=addrbar&key={searchTerms}&ie={inputEncoding}",
       "type": "SEARCH_ENGINE_SOGOU",
       "id": 56
-    },
-
-    "vinden": {
-      "name": "Vinden.nl",
-      "keyword": "vinden.nl",
-      "favicon_url": "https://www.vinden.nl/favicon.ico",
-      "search_url": "https://www.vinden.nl/?q={searchTerms}",
-      "type": "SEARCH_ENGINE_VINDEN",
-      "id": 53
-    },
-
-    "virgilio": {
-      "name": "Virgilio",
-      "keyword": "virgilio.it",
-      "favicon_url": "http://ricerca.virgilio.it/common/favicon.ico",
-      "search_url": "http://ricerca.virgilio.it/ricerca?qs={searchTerms}",
-      "encoding": "ISO-8859-1",
-      "type": "SEARCH_ENGINE_VIRGILIO",
-      "id": 62
     },
 
     "yahoo": {
@@ -385,17 +345,9 @@
       "search_url": "https://fr.search.yahoo.com/search{google:pathWildcard}?ei={inputEncoding}&fr=crmas&p={searchTerms}",
       "suggest_url": "https://fr.search.yahoo.com/sugg/chrome?output=fxjson&appid=crmas&command={searchTerms}",
       "type": "SEARCH_ENGINE_YAHOO",
-      "id": 5  // Can't be 2 as this has to appear in the Belgium list alongside
-               // yahoo.
-    },
 
-    "yahoo_gr": {
-      "name": "Yahoo! \u0395\u03bb\u03bb\u03ac\u03b4\u03b1\u03c2",
-      "keyword": "gr.yahoo.com",
-      "favicon_url": "https://gr.search.yahoo.com/favicon.ico",
-      "search_url": "https://gr.search.yahoo.com/search{google:pathWildcard}?ei={inputEncoding}&fr=crmas&p={searchTerms}",
-      "type": "SEARCH_ENGINE_YAHOO",
-      "id": 2
+      // Can't be 2 as this has to appear in the Belgium list alongside yahoo.
+      "id": 5
     },
 
     "yahoo_hk": {
@@ -434,15 +386,6 @@
       "favicon_url": "https://search.yahoo.co.jp/favicon.ico",
       "search_url": "https://search.yahoo.co.jp/search{google:pathWildcard}?ei={inputEncoding}&fr=crmas&p={searchTerms}",
       "suggest_url": "https://search.yahooapis.jp/AssistSearchService/V2/webassistSearch?p={searchTerms}&appid=oQsoxcyxg66enp0TYoirkKoryq6rF8bK76mW0KYxZ0v0WPLtn.Lix6wy8F_LwGWHUII-&output=fxjson&fr=crmas",
-      "type": "SEARCH_ENGINE_YAHOO",
-      "id": 2
-    },
-
-    "yahoo_maktoob": {
-      "name": "Yahoo!\u200e \u0645\u0643\u062a\u0648\u0628",
-      "keyword": "maktoob.yahoo.com",
-      "favicon_url": "https://maktoob.search.yahoo.com/favicon.ico",
-      "search_url": "https://maktoob.search.yahoo.com/search{google:pathWildcard}?ei={inputEncoding}&fr=crmas&p={searchTerms}",
       "type": "SEARCH_ENGINE_YAHOO",
       "id": 2
     },
@@ -514,17 +457,9 @@
       "search_url": "https://qc.search.yahoo.com/search{google:pathWildcard}?ei={inputEncoding}&fr=crmas&p={searchTerms}",
       "suggest_url": "https://qc.search.yahoo.com/sugg/chrome?output=fxjson&appid=crmas&command={searchTerms}",
       "type": "SEARCH_ENGINE_YAHOO",
-      "id": 5  // Can't be 2 as this has to appear in the Canada list alongside
-               // yahoo_ca.
-    },
 
-    "yahoo_ro": {
-      "name": "Yahoo! Rom\u00e2nia",
-      "keyword": "ro.yahoo.com",
-      "favicon_url": "https://ro.search.yahoo.com/favicon.ico",
-      "search_url": "https://ro.search.yahoo.com/search{google:pathWildcard}?ei={inputEncoding}&fr=crmas&p={searchTerms}",
-      "type": "SEARCH_ENGINE_YAHOO",
-      "id": 2
+      // Can't be 2 as this has to appear in the Canada list alongside yahoo_ca.
+      "id": 5
     },
 
     "yahoo_se": {
@@ -615,6 +550,18 @@
       "image_url": "https://yandex.by/images/search/?rpt=imageview",
       "image_url_post_params": "upfile={google:imageThumbnail},original_width={google:imageOriginalWidth},original_height={google:imageOriginalHeight},prg=1",
       "new_tab_url": "https://www.yandex.by/chrome/newtab",
+      "type": "SEARCH_ENGINE_YANDEX",
+      "id": 15
+    },
+
+    "yandex_com": {
+      "name": "Yandex",
+      "keyword": "yandex.com",
+      "favicon_url": "https://yastatic.net/lego/_/rBTjd6UOPk5913OSn5ZQVYMTQWQ.ico",
+      "search_url": "https://yandex.com/search/?text={searchTerms}&from=os&clid=1836588",
+      "suggest_url": "https://suggest.yandex.com/suggest-ff.cgi?part={searchTerms}&uil=en&v=3&sn=5",
+      "image_url": "https://yandex.com/images/search?rpt=imageview",
+      "image_url_post_params": "upfile={google:imageThumbnail},original_width={google:imageOriginalWidth},original_height={google:imageOriginalHeight},prg=1",
       "type": "SEARCH_ENGINE_YANDEX",
       "id": 15
     },

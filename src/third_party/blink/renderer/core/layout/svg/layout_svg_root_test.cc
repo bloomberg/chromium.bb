@@ -35,12 +35,12 @@ TEST_F(LayoutSVGRootTest, VisualRectMappingWithoutViewportClipWithBorder) {
 
   LayoutRect root_visual_rect =
       static_cast<const LayoutObject&>(root).LocalVisualRect();
-  // SVG root's overflow includes overflow from descendants.
-  EXPECT_EQ(LayoutRect(0, 0, 220, 190), root_visual_rect);
+  // SVG root's local overflow does not include overflow from descendants.
+  EXPECT_EQ(LayoutRect(0, 0, 220, 120), root_visual_rect);
 
   rect = root_visual_rect;
   EXPECT_TRUE(root.MapToVisualRectInAncestorSpace(&root, rect));
-  EXPECT_EQ(LayoutRect(0, 0, 220, 190), rect);
+  EXPECT_EQ(LayoutRect(0, 0, 220, 120), rect);
 }
 
 TEST_F(LayoutSVGRootTest, VisualOverflowExpandsLayer) {
@@ -80,8 +80,6 @@ TEST_F(LayoutSVGRootTest, VisualRectMappingWithViewportClipAndBorder) {
       *ToLayoutSVGShape(GetLayoutObjectByElementId("rect"));
 
   LayoutRect rect = SVGLayoutSupport::VisualRectInAncestorSpace(svg_rect, root);
-  // (80, 80, 100, 100) added by root's content rect offset from border rect,
-  // clipped by (10, 10, 200, 100).
   EXPECT_EQ(LayoutRect(90, 90, 100, 20), rect);
 
   LayoutRect root_visual_rect =
@@ -94,34 +92,6 @@ TEST_F(LayoutSVGRootTest, VisualRectMappingWithViewportClipAndBorder) {
   EXPECT_TRUE(root.MapToVisualRectInAncestorSpace(&root, rect));
   // LayoutSVGRoot should not apply overflow clip on its own rect.
   EXPECT_EQ(LayoutRect(0, 0, 220, 120), rect);
-}
-
-TEST_F(LayoutSVGRootTest, VisualRectMappingWithViewportClipWithoutBorder) {
-  SetBodyInnerHTML(R"HTML(
-    <svg id='root' style='width: 200px; height: 100px; overflow: hidden'
-    viewBox='0 0 200 100'>
-       <rect id='rect' x='80' y='80' width='100' height='100'/>
-    </svg>
-  )HTML");
-
-  const LayoutSVGRoot& root =
-      *ToLayoutSVGRoot(GetLayoutObjectByElementId("root"));
-  const LayoutSVGShape& svg_rect =
-      *ToLayoutSVGShape(GetLayoutObjectByElementId("rect"));
-
-  LayoutRect rect = SVGLayoutSupport::VisualRectInAncestorSpace(svg_rect, root);
-  // (80, 80, 100, 100) clipped by (0, 0, 200, 100).
-  EXPECT_EQ(LayoutRect(80, 80, 100, 20), rect);
-
-  LayoutRect root_visual_rect =
-      static_cast<const LayoutObject&>(root).LocalVisualRect();
-  // SVG root doesn't have box decoration background, so just use clipped
-  // overflow of children.
-  EXPECT_EQ(LayoutRect(80, 80, 100, 20), root_visual_rect);
-
-  rect = root_visual_rect;
-  EXPECT_TRUE(root.MapToVisualRectInAncestorSpace(&root, rect));
-  EXPECT_EQ(LayoutRect(80, 80, 100, 20), rect);
 }
 
 TEST_F(LayoutSVGRootTest,

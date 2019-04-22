@@ -10,7 +10,6 @@ from __future__ import print_function
 import mock
 
 from chromite.cbuildbot import build_status_unittest
-from chromite.lib.const import waterfall
 from chromite.lib import buildbucket_lib
 from chromite.lib import builder_status_lib
 from chromite.lib import cidb
@@ -21,6 +20,7 @@ from chromite.lib import fake_cidb
 from chromite.lib import failure_message_lib
 from chromite.lib import failure_message_lib_unittest
 from chromite.lib import metadata_lib
+from chromite.lib.buildstore import FakeBuildStore, BuildIdentifier
 
 
 bb_infos = build_status_unittest.BuildbucketInfos
@@ -51,26 +51,29 @@ class BuilderStatusLibTests(cros_test_lib.MockTestCase):
   def testGetSlavesAbortedBySelfDestructedMaster(self):
     """Test GetSlavesAbortedBySelfDestructedMaster with aborted slaves."""
     db = fake_cidb.FakeCIDBConnection()
+    buildstore = FakeBuildStore(db)
     cidb.CIDBConnectionFactory.SetupMockCidb(db)
     master_build_id = db.InsertBuild(
-        'master', waterfall.WATERFALL_SWARMING, 1, 'master', 'bot_hostname',
-        buildbucket_id='0')
+        'master', 1, 'master', 'bot_hostname',
+        buildbucket_id=1234)
+    master_build_identifier = BuildIdentifier(cidb_id=master_build_id,
+                                              buildbucket_id=1234)
 
     self.assertEqual(
         set(),
         builder_status_lib.GetSlavesAbortedBySelfDestructedMaster(
-            master_build_id, db))
+            master_build_identifier, buildstore))
 
-    slave_build_id_1 = db.InsertBuild(
-        'slave_1', waterfall.WATERFALL_SWARMING, 1, 'slave_1', 'bot_hostname',
-        master_build_id=master_build_id, buildbucket_id='1')
-    slave_build_id_2 = db.InsertBuild(
-        'slave_2', waterfall.WATERFALL_SWARMING, 2, 'slave_2', 'bot_hostname',
-        master_build_id=master_build_id, buildbucket_id='2')
     db.InsertBuild(
-        'slave_3', waterfall.WATERFALL_SWARMING, 3, 'slave_3', 'bot_hostname',
-        master_build_id=master_build_id, buildbucket_id='3')
-    for slave_build_id in (slave_build_id_1, slave_build_id_2):
+        'slave_1', 1, 'slave_1', 'bot_hostname',
+        master_build_id=master_build_id, buildbucket_id=12)
+    db.InsertBuild(
+        'slave_2', 2, 'slave_2', 'bot_hostname',
+        master_build_id=master_build_id, buildbucket_id=23)
+    db.InsertBuild(
+        'slave_3', 3, 'slave_3', 'bot_hostname',
+        master_build_id=master_build_id, buildbucket_id=34)
+    for slave_build_id in (12, 23):
       db.InsertBuildMessage(
           master_build_id,
           message_type=constants.MESSAGE_TYPE_IGNORED_REASON,
@@ -79,7 +82,8 @@ class BuilderStatusLibTests(cros_test_lib.MockTestCase):
     self.assertEqual(
         {'slave_1', 'slave_2'},
         builder_status_lib.GetSlavesAbortedBySelfDestructedMaster(
-            master_build_id, db))
+            BuildIdentifier(cidb_id=master_build_id,
+                            buildbucket_id=1234), buildstore))
 
 
 # pylint: disable=protected-access
@@ -154,12 +158,14 @@ class SlaveBuilderStatusTest(cros_test_lib.MockTestCase):
   """Tests for SlaveBuilderStatus."""
 
   def setUp(self):
-    self.db = fake_cidb.FakeCIDBConnection()
     self.master_build_id = 0
+    self.master_build_identifier = BuildIdentifier(cidb_id=self.master_build_id,
+                                                   buildbucket_id=1234)
     self.site_config = config_lib.GetConfig()
     self.config = self.site_config['master-paladin']
     self.metadata = metadata_lib.CBuildbotMetadata()
     self.db = fake_cidb.FakeCIDBConnection()
+    self.buildstore = FakeBuildStore(self.db)
     self.buildbucket_client = mock.Mock()
     self.slave_1 = 'cyan-paladin'
     self.slave_2 = 'auron-paladin'
@@ -240,23 +246,23 @@ class SlaveBuilderStatusTest(cros_test_lib.MockTestCase):
 
   def _InsertMasterSlaveBuildsToCIDB(self):
     """Insert master and slave builds into fake_cidb."""
-    master = self.db.InsertBuild('master', waterfall.WATERFALL_SWARMING, 1,
+    master = self.db.InsertBuild('master', 1,
                                  'master', 'host1')
-    slave1 = self.db.InsertBuild('slave1', waterfall.WATERFALL_SWARMING, 2,
+    slave1 = self.db.InsertBuild('slave1', 2,
                                  'slave1', 'host1', master_build_id=0,
                                  buildbucket_id='id_1', status='fail')
-    slave2 = self.db.InsertBuild('slave2', waterfall.WATERFALL_SWARMING, 3,
+    slave2 = self.db.InsertBuild('slave2', 3,
                                  'slave2', 'host1', master_build_id=0,
                                  buildbucket_id='id_2', status='fail')
     return master, slave1, slave2
 
   def testGetAllSlaveCIDBStatusInfo(self):
     """GetAllSlaveCIDBStatusInfo without Buildbucket info."""
-    _, slave1_id, slave2_id = self._InsertMasterSlaveBuildsToCIDB()
+    _, _, _ = self._InsertMasterSlaveBuildsToCIDB()
 
     expected_status = {
-        'slave1': builder_status_lib.CIDBStatusInfo(slave1_id, 'fail', 2),
-        'slave2': builder_status_lib.CIDBStatusInfo(slave2_id, 'fail', 3)
+        'slave1': builder_status_lib.CIDBStatusInfo('id_1', 'fail'),
+        'slave2': builder_status_lib.CIDBStatusInfo('id_2', 'fail')
     }
 
     cidb_status = (
@@ -271,7 +277,7 @@ class SlaveBuilderStatusTest(cros_test_lib.MockTestCase):
 
   def testGetAllSlaveCIDBStatusInfoWithBuildbucket(self):
     """GetAllSlaveCIDBStatusInfo with Buildbucket info."""
-    _, slave1_id, slave2_id = self._InsertMasterSlaveBuildsToCIDB()
+    _, _, _ = self._InsertMasterSlaveBuildsToCIDB()
 
     buildbucket_info_dict = {
         'slave1': build_status_unittest.BuildbucketInfos.GetStartedBuild(
@@ -281,24 +287,24 @@ class SlaveBuilderStatusTest(cros_test_lib.MockTestCase):
     }
 
     expected_status = {
-        'slave1': builder_status_lib.CIDBStatusInfo(slave1_id, 'fail', 2),
-        'slave2': builder_status_lib.CIDBStatusInfo(slave2_id, 'fail', 3)
+        'slave1': builder_status_lib.CIDBStatusInfo('id_1', 'fail'),
+        'slave2': builder_status_lib.CIDBStatusInfo('id_2', 'fail'),
     }
 
     cidb_status = (
         builder_status_lib.SlaveBuilderStatus.GetAllSlaveCIDBStatusInfo(
-            self.db, self.master_build_id, buildbucket_info_dict))
+            self.buildstore, self.master_build_id, buildbucket_info_dict))
     self.assertDictEqual(cidb_status, expected_status)
 
     cidb_status = (
         builder_status_lib.SlaveBuilderStatus.GetAllSlaveCIDBStatusInfo(
-            self.db, self.master_build_id, buildbucket_info_dict))
+            self.buildstore, self.master_build_id, buildbucket_info_dict))
     self.assertDictEqual(cidb_status, expected_status)
 
   def testGetAllSlaveCIDBStatusInfoWithRetriedBuilds(self):
     """GetAllSlaveCIDBStatusInfo doesn't return retried builds."""
     self._InsertMasterSlaveBuildsToCIDB()
-    self.db.InsertBuild('slave1', waterfall.WATERFALL_SWARMING, 3,
+    self.db.InsertBuild('slave1', 3,
                         'slave1', 'host1', master_build_id=0,
                         buildbucket_id='id_3', status='inflight')
 
@@ -311,21 +317,21 @@ class SlaveBuilderStatusTest(cros_test_lib.MockTestCase):
 
     cidb_status = (
         builder_status_lib.SlaveBuilderStatus.GetAllSlaveCIDBStatusInfo(
-            self.db, self.master_build_id, buildbucket_info_dict))
+            self.buildstore, self.master_build_id, buildbucket_info_dict))
     self.assertEqual(set(cidb_status.keys()), set(['slave1']))
     self.assertEqual(cidb_status['slave1'].status, 'inflight')
 
 
   def ConstructBuilderStatusManager(self,
-                                    master_build_id=None,
+                                    master_build_identifier=None,
                                     db=None,
                                     config=None,
                                     metadata=None,
                                     buildbucket_client=None,
                                     builders_array=None,
                                     dry_run=True):
-    if master_build_id is None:
-      master_build_id = self.master_build_id
+    if master_build_identifier is None:
+      master_build_identifier = self.master_build_identifier
     if db is None:
       db = self.db
     if config is None:
@@ -336,13 +342,15 @@ class SlaveBuilderStatusTest(cros_test_lib.MockTestCase):
       buildbucket_client = self.buildbucket_client
     if builders_array is None:
       builders_array = self.builders_array
+    buildstore = FakeBuildStore(db)
 
     return builder_status_lib.SlaveBuilderStatus(
-        master_build_id, db, config, metadata, buildbucket_client,
-        builders_array, dry_run)
+        master_build_identifier, buildstore, config, metadata,
+        buildbucket_client, builders_array, dry_run)
 
   def testGetSlaveFailures(self):
     """Test _GetSlaveFailures."""
+    # pylint: disable=attribute-defined-outside-init
     self.PatchObject(builder_status_lib.SlaveBuilderStatus, '_InitSlaveInfo')
     entry_1 = stage_failure_helper.GetStageFailure(
         build_config=self.slave_1, failure_id=1)
@@ -352,9 +360,14 @@ class SlaveBuilderStatusTest(cros_test_lib.MockTestCase):
         build_config=self.slave_2, failure_id=3)
     failure_entries = [entry_1, entry_2, entry_3]
     mock_db = mock.Mock()
-    mock_db.GetSlaveFailures.return_value = failure_entries
+    mock_db.GetBuildStatusesWithBuildbucketIds.return_value = []
+    self.buildstore = FakeBuildStore(mock_db)
+    mock_db.GetBuildsFailures.return_value = failure_entries
+    fake_bb_info = mock.Mock()
+    fake_bb_info.buildbucket_id = 1234
+    fake_buildbucket_info_dict = {1: fake_bb_info}
     manager = self.ConstructBuilderStatusManager(db=mock_db)
-    slave_failures_dict = manager._GetSlaveFailures(None)
+    slave_failures_dict = manager._GetSlaveFailures(fake_buildbucket_info_dict)
 
     self.assertItemsEqual(slave_failures_dict.keys(),
                           [self.slave_1, self.slave_2])
@@ -428,7 +441,7 @@ class SlaveBuilderStatusTest(cros_test_lib.MockTestCase):
     self.PatchObject(builder_status_lib.SlaveBuilderStatus, '_InitSlaveInfo')
     manager = self.ConstructBuilderStatusManager()
     cidb_info_dict = {
-        self.slave_1: cidb_infos.GetPassedBuild(build_id=1, build_number=100)}
+        self.slave_1: cidb_infos.GetPassedBuild(buildbucket_id=100)}
     buildbucket_info_dict = {
         self.slave_1: bb_infos.GetSuccessBuild(url='http://buildbucket_url'),
         self.slave_2:  bb_infos.GetSuccessBuild(url='http://buildbucket_url'),
@@ -533,7 +546,7 @@ class SlaveBuilderStatusTest(cros_test_lib.MockTestCase):
     slave = 'cyan-paladin'
     builder_number = 37
 
-    slave_id = self.db.InsertBuild(slave, waterfall.WATERFALL_SWARMING,
+    slave_id = self.db.InsertBuild(slave,
                                    builder_number, slave, 'bot_hostname',
                                    master_build_id=self.master_build_id)
     self.db.InsertBuildMessage(
@@ -544,27 +557,27 @@ class SlaveBuilderStatusTest(cros_test_lib.MockTestCase):
 
     self.assertTrue(
         builder_status_lib.BuilderStatusManager.AbortedBySelfDestruction(
-            self.db, slave_id, self.master_build_id))
+            self.buildstore, slave_id, self.master_build_identifier))
 
   def testNotAbortedBySelfDestruction(self):
     """Test that aborts in CIDB are only flagged if they happened."""
     slave = 'cyan-paladin'
     builder_number = 37
 
-    slave_id = self.db.InsertBuild(slave, waterfall.WATERFALL_SWARMING,
+    slave_id = self.db.InsertBuild(slave,
                                    builder_number, slave, 'bot_hostname',
                                    master_build_id=self.master_build_id)
     self.db.InsertBuildMessage(self.master_build_id,
                                message_value=slave_id)
     builder_number = 1
 
-    self.db.InsertBuild(slave, waterfall.WATERFALL_SWARMING,
+    self.db.InsertBuild(slave,
                         builder_number, slave, 'bot_hostname')
     self.db.InsertBuildMessage(slave)
 
     self.assertFalse(
         builder_status_lib.BuilderStatusManager.AbortedBySelfDestruction(
-            self.db, slave_id, self.master_build_id))
+            self.buildstore, slave_id, self.master_build_identifier))
 
   def testAbortedBySelfDestructionOnBuildWithoutMaster(self):
     """AbortedBySelfDestruction returns False on builds without master."""
@@ -577,8 +590,10 @@ class BuilderStatusesFetcherTests(cros_test_lib.MockTestCase):
   """Tests for BuilderStatusesFetcher."""
 
   def setUp(self):
-    self.build_id = 0
+    self.build_identifier = BuildIdentifier(cidb_id=0,
+                                            buildbucket_id=1234)
     self.db = fake_cidb.FakeCIDBConnection()
+    self.buildstore = FakeBuildStore(self.db)
     self.site_config = config_lib.GetConfig()
     self.config = self.site_config['master-paladin']
     self.slave_config = self.site_config['eve-paladin']
@@ -590,11 +605,10 @@ class BuilderStatusesFetcherTests(cros_test_lib.MockTestCase):
     self.builders_array = [self.slave_1, self.slave_2]
 
   def CreateBuilderStatusesFetcher(
-      self, build_id=None, db=None, success=True, message=None, config=None,
+      self, build_identifier=None, success=True, message=None, config=None,
       metadata=None, buildbucket_client=None, builders_array=None,
       dry_run=True):
-    build_id = build_id or self.build_id
-    db = db or self.db
+    build_identifier = build_identifier or self.build_identifier
     message = message or self.message
     config = config or self.config
     metadata = metadata or self.metadata
@@ -604,8 +618,8 @@ class BuilderStatusesFetcherTests(cros_test_lib.MockTestCase):
     self.PatchObject(buildbucket_lib, 'FetchCurrentSlaveBuilders',
                      return_value=builders_array)
     builder_statuses_fetcher = builder_status_lib.BuilderStatusesFetcher(
-        build_id, db, success, message, config, metadata, buildbucket_client,
-        builders_array=builders_array, dry_run=dry_run)
+        build_identifier, self.buildstore, success, message, config, metadata,
+        buildbucket_client, builders_array=builders_array, dry_run=dry_run)
 
     return builder_statuses_fetcher
 
@@ -640,11 +654,11 @@ class BuilderStatusesFetcherTests(cros_test_lib.MockTestCase):
     """Test _FetchSlaveBuilderStatuses with a slave list."""
     status_dict = {
         'build1': build_status_unittest.CIDBStatusInfos.GetFailedBuild(
-            build_id=1),
+            buildbucket_id=1),
         'build2': build_status_unittest.CIDBStatusInfos.GetPassedBuild(
-            build_id=2),
+            buildbucket_id=2),
         'build3': build_status_unittest.CIDBStatusInfos.GetInflightBuild(
-            build_id=3)
+            buildbucket_id=3)
     }
     self._PatchesForGetSlaveBuilderStatus(status_dict)
     fetcher = self.CreateBuilderStatusesFetcher(
@@ -668,11 +682,11 @@ class BuilderStatusesFetcherTests(cros_test_lib.MockTestCase):
     """Test GetBuilderStatuses on masters."""
     status_dict = {
         'build1': build_status_unittest.CIDBStatusInfos.GetFailedBuild(
-            build_id=1),
+            buildbucket_id=1),
         'build2': build_status_unittest.CIDBStatusInfos.GetPassedBuild(
-            build_id=2),
+            buildbucket_id=2),
         'build3': build_status_unittest.CIDBStatusInfos.GetInflightBuild(
-            build_id=3)
+            buildbucket_id=3)
     }
     self._PatchesForGetSlaveBuilderStatus(status_dict)
     fetcher = self.CreateBuilderStatusesFetcher(

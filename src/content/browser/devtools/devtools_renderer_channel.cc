@@ -4,6 +4,8 @@
 
 #include "content/browser/devtools/devtools_renderer_channel.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "content/browser/devtools/devtools_agent_host_impl.h"
 #include "content/browser/devtools/devtools_session.h"
 #include "content/browser/devtools/protocol/devtools_domain_handler.h"
@@ -55,20 +57,22 @@ void DevToolsRendererChannel::CleanupConnection() {
   agent_ptr_ = nullptr;
 }
 
+void DevToolsRendererChannel::ForceDetachWorkerSessions() {
+  for (WorkerDevToolsAgentHost* host : child_workers_)
+    host->ForceDetachAllSessions();
+}
+
 void DevToolsRendererChannel::SetRendererInternal(
     blink::mojom::DevToolsAgent* agent,
     int process_id,
     RenderFrameHostImpl* frame_host) {
-  // Child workers will eventually disconnect, but timing depends on the
-  // renderer process. To ensure consistent view over protocol, disconnect them
-  // right now.
-  for (WorkerDevToolsAgentHost* host : child_workers_)
-    host->ForceDetachAllSessions();
+  ReportChildWorkersCallback();
   process_id_ = process_id;
   frame_host_ = frame_host;
   if (agent && !report_attachers_.empty()) {
     agent->ReportChildWorkers(true /* report */,
-                              !wait_for_debugger_attachers_.empty());
+                              !wait_for_debugger_attachers_.empty(),
+                              base::DoNothing());
   }
   for (DevToolsSession* session : owner_->sessions()) {
     for (auto& pair : session->handlers())
@@ -102,7 +106,10 @@ void DevToolsRendererChannel::InspectElement(const gfx::Point& point) {
 void DevToolsRendererChannel::SetReportChildWorkers(
     protocol::TargetAutoAttacher* attacher,
     bool report,
-    bool wait_for_debugger) {
+    bool wait_for_debugger,
+    base::OnceClosure callback) {
+  ReportChildWorkersCallback();
+  set_report_callback_ = std::move(callback);
   if (report) {
     if (report_attachers_.find(attacher) == report_attachers_.end()) {
       report_attachers_.insert(attacher);
@@ -117,18 +124,30 @@ void DevToolsRendererChannel::SetReportChildWorkers(
   else
     wait_for_debugger_attachers_.erase(attacher);
   if (agent_ptr_) {
-    agent_ptr_->ReportChildWorkers(!report_attachers_.empty(),
-                                   !wait_for_debugger_attachers_.empty());
+    agent_ptr_->ReportChildWorkers(
+        !report_attachers_.empty(), !wait_for_debugger_attachers_.empty(),
+        base::BindOnce(&DevToolsRendererChannel::ReportChildWorkersCallback,
+                       base::Unretained(this)));
   } else if (associated_agent_ptr_) {
     associated_agent_ptr_->ReportChildWorkers(
-        !report_attachers_.empty(), !wait_for_debugger_attachers_.empty());
+        !report_attachers_.empty(), !wait_for_debugger_attachers_.empty(),
+        base::BindOnce(&DevToolsRendererChannel::ReportChildWorkersCallback,
+                       base::Unretained(this)));
+  } else {
+    ReportChildWorkersCallback();
   }
+}
+
+void DevToolsRendererChannel::ReportChildWorkersCallback() {
+  if (set_report_callback_)
+    std::move(set_report_callback_).Run();
 }
 
 void DevToolsRendererChannel::ChildWorkerCreated(
     blink::mojom::DevToolsAgentPtr worker_devtools_agent,
     blink::mojom::DevToolsAgentHostRequest host_request,
     const GURL& url,
+    const std::string& name,
     const base::UnguessableToken& devtools_worker_token,
     bool waiting_for_debugger) {
   if (content::DevToolsAgentHost::GetForId(devtools_worker_token.ToString())) {
@@ -142,7 +161,7 @@ void DevToolsRendererChannel::ChildWorkerCreated(
   process->FilterURL(true /* empty_allowed */, &filtered_url);
   auto agent_host = base::MakeRefCounted<WorkerDevToolsAgentHost>(
       process_id_, std::move(worker_devtools_agent), std::move(host_request),
-      filtered_url, devtools_worker_token, owner_->GetId(),
+      filtered_url, std::move(name), devtools_worker_token, owner_->GetId(),
       base::BindOnce(&DevToolsRendererChannel::ChildWorkerDestroyed,
                      weak_factory_.GetWeakPtr()));
   child_workers_.insert(agent_host.get());

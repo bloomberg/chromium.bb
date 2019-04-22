@@ -42,6 +42,7 @@
 
 #include "base/at_exit.h"
 #include "base/base_paths.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/queue.h"
 #include "base/files/file_path.h"
@@ -144,18 +145,18 @@ class TransportClient : public CastTransport::Client {
 
   void OnStatusChanged(CastTransportStatus status) final {
     LOG(INFO) << "Cast transport status: " << status;
-  };
+  }
   void OnLoggingEventsReceived(
       std::unique_ptr<std::vector<FrameEvent>> frame_events,
       std::unique_ptr<std::vector<PacketEvent>> packet_events) final {
     DCHECK(log_event_dispatcher_);
     log_event_dispatcher_->DispatchBatchOfEvents(std::move(frame_events),
                                                  std::move(packet_events));
-  };
+  }
   void ProcessRtpPacket(std::unique_ptr<Packet> packet) final {
     if (packet_proxy_)
       packet_proxy_->ReceivePacket(std::move(packet));
-  };
+  }
 
  private:
   LogEventDispatcher* const log_event_dispatcher_;  // Not owned by this class.

@@ -23,6 +23,12 @@ class EmptyReferenceReader : public ReferenceReader {
   base::Optional<Reference> GetNext() override;
 };
 
+// A vacuous EmptyReferenceWriter that does not write.
+class EmptyReferenceWriter : public ReferenceWriter {
+ public:
+  void PutNext(Reference reference) override;
+};
+
 // Disassembler needs to be declared before ReferenceGroup because the latter
 // contains member pointers based on the former, and we use a compiler flag,
 // -fcomplete-member-pointers, which enforces that member pointer base types are

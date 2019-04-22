@@ -12,9 +12,9 @@
 
 namespace sandbox {
 
-Job::Job() : job_handle_(nullptr){};
+Job::Job() : job_handle_(nullptr) {}
 
-Job::~Job(){};
+Job::~Job() {}
 
 DWORD Job::Init(JobLevel security_level,
                 const wchar_t* job_name,

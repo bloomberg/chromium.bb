@@ -8,13 +8,13 @@
 namespace gpu {
 namespace {
 
-INSTANTIATE_TYPED_TEST_CASE_P(GpuMemoryBufferImplAndroidHardwareBuffer,
-                              GpuMemoryBufferImplTest,
-                              GpuMemoryBufferImplAndroidHardwareBuffer);
+INSTANTIATE_TYPED_TEST_SUITE_P(GpuMemoryBufferImplAndroidHardwareBuffer,
+                               GpuMemoryBufferImplTest,
+                               GpuMemoryBufferImplAndroidHardwareBuffer);
 
-INSTANTIATE_TYPED_TEST_CASE_P(GpuMemoryBufferImplAndroidHardwareBuffer,
-                              GpuMemoryBufferImplCreateTest,
-                              GpuMemoryBufferImplAndroidHardwareBuffer);
+INSTANTIATE_TYPED_TEST_SUITE_P(GpuMemoryBufferImplAndroidHardwareBuffer,
+                               GpuMemoryBufferImplCreateTest,
+                               GpuMemoryBufferImplAndroidHardwareBuffer);
 
 }  // namespace
 }  // namespace gpu

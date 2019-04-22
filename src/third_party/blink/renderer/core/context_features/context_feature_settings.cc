@@ -22,7 +22,7 @@ ContextFeatureSettings* ContextFeatureSettings::From(
   ContextFeatureSettings* settings =
       Supplement<ExecutionContext>::From<ContextFeatureSettings>(context);
   if (!settings && creation_mode == CreationMode::kCreateIfNotExists) {
-    settings = new ContextFeatureSettings(*context);
+    settings = MakeGarbageCollected<ContextFeatureSettings>(*context);
     Supplement<ExecutionContext>::ProvideTo(*context, settings);
   }
   return settings;

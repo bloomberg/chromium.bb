@@ -60,10 +60,12 @@ class WorkerInspectorController final
  public:
   static WorkerInspectorController* Create(
       WorkerThread*,
+      const KURL&,
       scoped_refptr<InspectorTaskRunner>,
       std::unique_ptr<WorkerDevToolsParams>);
 
   WorkerInspectorController(WorkerThread*,
+                            const KURL&,
                             WorkerThreadDebugger*,
                             scoped_refptr<InspectorTaskRunner>,
                             std::unique_ptr<WorkerDevToolsParams>);

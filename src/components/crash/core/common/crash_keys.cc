@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/format_macros.h"
 #include "base/no_destructor.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -23,7 +24,7 @@ namespace crash_keys {
 
 namespace {
 
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_ANDROID)
 // When using Crashpad, the crash reporting client ID is the responsibility of
 // Crashpad. It is not set directly by Chrome. To make the metrics client ID
 // available on the server, it's stored in a distinct key.
@@ -50,7 +51,7 @@ void SetMetricsClientIdFromGUID(const std::string& metrics_client_guid) {
 }
 
 void ClearMetricsClientId() {
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_ANDROID)
   // Crashpad always monitors for crashes, but doesn't upload them when
   // crash reporting is disabled. The preference to upload crash reports is
   // linked to the preference for metrics reporting. When metrics reporting is
@@ -130,7 +131,7 @@ static PrinterInfoKey printer_info_keys[] = {
 ScopedPrinterInfo::ScopedPrinterInfo(base::StringPiece data) {
   std::vector<base::StringPiece> info = base::SplitStringPiece(
       data, ";", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  for (size_t i = 0; i < arraysize(printer_info_keys); ++i) {
+  for (size_t i = 0; i < base::size(printer_info_keys); ++i) {
     if (i < info.size())
       printer_info_keys[i].Set(info[i]);
     else

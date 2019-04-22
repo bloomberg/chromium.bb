@@ -7,6 +7,7 @@
 #include <windows.h>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -81,9 +82,10 @@ int FileStream::Context::Read(IOBuffer* buf,
 
   task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&FileStream::Context::ReadAsync, base::Unretained(this),
-                 file_.GetPlatformFile(), base::WrapRefCounted(buf), buf_len,
-                 &io_context_.overlapped, base::ThreadTaskRunnerHandle::Get()));
+      base::BindOnce(&FileStream::Context::ReadAsync, base::Unretained(this),
+                     file_.GetPlatformFile(), base::WrapRefCounted(buf),
+                     buf_len, &io_context_.overlapped,
+                     base::ThreadTaskRunnerHandle::Get()));
   return ERR_IO_PENDING;
 }
 
@@ -185,14 +187,14 @@ void FileStream::Context::InvokeUserCallback() {
     async_in_progress_ = false;
   }
   scoped_refptr<IOBuffer> temp_buf = in_flight_buf_;
-  in_flight_buf_ = NULL;
+  in_flight_buf_ = nullptr;
   std::move(callback_).Run(result_);
 }
 
 void FileStream::Context::DeleteOrphanedContext() {
   async_in_progress_ = false;
   callback_.Reset();
-  in_flight_buf_ = NULL;
+  in_flight_buf_ = nullptr;
   CloseAndDelete();
 }
 
@@ -207,9 +209,9 @@ void FileStream::Context::ReadAsync(
   DWORD bytes_read = 0;
   BOOL ret = ::ReadFile(file, buf->data(), buf_len, &bytes_read, overlapped);
   origin_thread_task_runner->PostTask(
-      FROM_HERE,
-      base::Bind(&FileStream::Context::ReadAsyncResult,
-                 base::Unretained(context), ret, bytes_read, ::GetLastError()));
+      FROM_HERE, base::BindOnce(&FileStream::Context::ReadAsyncResult,
+                                base::Unretained(context), ret, bytes_read,
+                                ::GetLastError()));
 }
 
 void FileStream::Context::ReadAsyncResult(BOOL read_file_ret,

@@ -262,7 +262,29 @@ mouse shortcuts) can be found on the [Chromium X-Refs
 page](https://github.com/karlinjf/ChromiumXRefs/).
 
 
-## Code Completion with SublimeClang (Linux Only)
+## Code Completion, Error Highlighting, Go-to-Definition, and Find References with LSP (clangd)
+
+Gives Sublime Text 3 rich editing features for languages with Language Server
+Protocol support. It searches the current compilation unit for definitions and
+references and provides super fast code completion.
+
+In this case, we're going to add C/C++ support.
+
+1. Refer to [clangd.md](clangd.md) to install clangd and build a compilation
+   database.
+
+1. Install the [LSP Package](https://github.com/tomv564/LSP) and enable clangd
+   support by following the [link](https://clang.llvm.org/extra/clangd/Installation.html#editor-plugins)
+   and following the instructions for Sublime Text.
+
+To remove sublime text's auto completion and only show LSPs (recommended), set
+the following LSP preference:
+
+```json
+"only_show_lsp_completions": true
+```
+
+## Code Completion with SublimeClang (Linux Only) [Deprecated, see LSP above]
 
 SublimeClang is a powerful autocompletion plugin for Sublime that uses the Clang
 static analyzer to provide real-time type and function completion and
@@ -277,6 +299,7 @@ you can get them to work, please update these instructions ^\_^
 More information on SublimeClang's functionality (including keyboard shortcuts)
 can be found on the [SublimeClang GitHub
 page](https://github.com/quarnster/SublimeClang).
+
 
 ### Linux
 

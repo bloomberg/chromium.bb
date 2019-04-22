@@ -5,6 +5,7 @@
 #include "media/formats/mp4/dolby_vision.h"
 
 #include "base/logging.h"
+#include "media/base/media_util.h"
 #include "media/base/video_codecs.h"
 #include "media/formats/mp4/box_definitions.h"
 #include "media/formats/mp4/box_reader.h"
@@ -35,7 +36,7 @@ bool DolbyVisionConfiguration::Parse(BoxReader* reader) {
 bool DolbyVisionConfiguration::ParseForTesting(const uint8_t* data,
                                                int data_size) {
   BufferReader reader(data, data_size);
-  MediaLog media_log;
+  NullMediaLog media_log;
   return ParseInternal(&reader, &media_log);
 }
 

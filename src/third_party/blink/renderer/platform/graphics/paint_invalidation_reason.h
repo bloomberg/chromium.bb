@@ -59,10 +59,6 @@ PLATFORM_EXPORT const char* PaintInvalidationReasonToString(
     PaintInvalidationReason);
 
 inline bool IsFullPaintInvalidationReason(PaintInvalidationReason reason) {
-  // LayoutNG fully invalidates selections on NGPaintFragments.
-  // TODO(wangxianzhu): Move kSelection after kFull for LayoutNG.
-  if (RuntimeEnabledFeatures::LayoutNGEnabled())
-    return reason >= PaintInvalidationReason::kSelection;
   return reason >= PaintInvalidationReason::kFull;
 }
 

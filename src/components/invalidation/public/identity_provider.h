@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/values.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
 namespace invalidation {
@@ -67,7 +68,7 @@ class IdentityProvider {
 
   // Returns true iff (1) there is an active account and (2) that account has
   // a refresh token.
-  virtual bool IsActiveAccountAvailable() = 0;
+  virtual bool IsActiveAccountWithRefreshToken() = 0;
 
   // Starts an access token request for |oauth_consumer_name| and |scopes|. When
   // the request completes, |callback| will be invoked with the access token
@@ -88,6 +89,9 @@ class IdentityProvider {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
+  void RequestDetailedStatus(
+      base::RepeatingCallback<void(const base::DictionaryValue&)> caller) const;
+
  protected:
   IdentityProvider();
 
@@ -106,6 +110,18 @@ class IdentityProvider {
   void FireOnActiveAccountLogout();
 
  private:
+  struct Diagnostics {
+    Diagnostics();
+
+    // Collect all the internal variables in a single readable dictionary.
+    base::DictionaryValue CollectDebugData() const;
+
+    int token_removal_for_not_active_account_count = 0;
+    int token_update_for_not_active_account_count = 0;
+    base::Time account_token_updated;
+  };
+
+  Diagnostics diagnostic_info_;
   base::ObserverList<Observer, true>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(IdentityProvider);

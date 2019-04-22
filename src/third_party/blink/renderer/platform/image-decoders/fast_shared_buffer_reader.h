@@ -31,11 +31,11 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_IMAGE_DECODERS_FAST_SHARED_BUFFER_READER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_IMAGE_DECODERS_FAST_SHARED_BUFFER_READER_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/platform/image-decoders/segment_reader.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -45,7 +45,6 @@ namespace blink {
 // traffic.
 class PLATFORM_EXPORT FastSharedBufferReader final {
   DISALLOW_NEW();
-  WTF_MAKE_NONCOPYABLE(FastSharedBufferReader);
 
  public:
   FastSharedBufferReader(scoped_refptr<SegmentReader> data);
@@ -90,6 +89,8 @@ class PLATFORM_EXPORT FastSharedBufferReader final {
 
   // Data position in |data_| pointed to by |segment_|.
   mutable size_t data_position_;
+
+  DISALLOW_COPY_AND_ASSIGN(FastSharedBufferReader);
 };
 
 }  // namespace blink

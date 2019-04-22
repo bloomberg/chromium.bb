@@ -13,11 +13,11 @@
 #include <bitset>
 #include <list>
 #include <memory>
+#include <unordered_map>
 
 #include "base/atomicops.h"
 #include "base/containers/circular_deque.h"
 #include "base/containers/flat_map.h"
-#include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "gles2_impl_export.h"
@@ -33,7 +33,7 @@ namespace gles2 {
 // Manages buckets of QuerySync instances in mapped memory.
 class GLES2_IMPL_EXPORT QuerySyncManager {
  public:
-  static const size_t kSyncsPerBucket = 256;
+  static const uint32_t kSyncsPerBucket = 256;
 
   struct GLES2_IMPL_EXPORT Bucket {
     Bucket(QuerySync* sync_mem, int32_t shm_id, uint32_t shm_offset);
@@ -225,7 +225,7 @@ class GLES2_IMPL_EXPORT QueryTracker {
   }
 
  private:
-  typedef base::hash_map<GLuint, std::unique_ptr<Query>> QueryIdMap;
+  typedef std::unordered_map<GLuint, std::unique_ptr<Query>> QueryIdMap;
   typedef base::flat_map<GLenum, Query*> QueryTargetMap;
 
   QueryIdMap queries_;

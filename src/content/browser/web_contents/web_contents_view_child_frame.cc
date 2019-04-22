@@ -110,12 +110,8 @@ void WebContentsViewChildFrame::SetOverscrollControllerEnabled(bool enabled) {
 }
 
 #if defined(OS_MACOSX)
-bool WebContentsViewChildFrame::IsEventTracking() const {
+bool WebContentsViewChildFrame::CloseTabAfterEventTrackingIfNeeded() {
   return false;
-}
-
-void WebContentsViewChildFrame::CloseTabAfterEventTracking() {
-  NOTREACHED();
 }
 #endif
 

@@ -354,15 +354,15 @@ bool TryMatchLoadStoreShift(Arm64OperandGenerator* g,
 // Bitfields describing binary operator properties:
 // CanCommuteField is true if we can switch the two operands, potentially
 // requiring commuting the flags continuation condition.
-typedef BitField8<bool, 1, 1> CanCommuteField;
+using CanCommuteField = BitField8<bool, 1, 1>;
 // MustCommuteCondField is true when we need to commute the flags continuation
 // condition in order to switch the operands.
-typedef BitField8<bool, 2, 1> MustCommuteCondField;
+using MustCommuteCondField = BitField8<bool, 2, 1>;
 // IsComparisonField is true when the operation is a comparison and has no other
 // result other than the condition.
-typedef BitField8<bool, 3, 1> IsComparisonField;
+using IsComparisonField = BitField8<bool, 3, 1>;
 // IsAddSubField is true when an instruction is encoded as ADD or SUB.
-typedef BitField8<bool, 4, 1> IsAddSubField;
+using IsAddSubField = BitField8<bool, 4, 1>;
 
 // Get properties of a binary operator.
 uint8_t GetBinopProperties(InstructionCode opcode) {
@@ -620,9 +620,35 @@ void InstructionSelector::VisitLoad(Node* node) {
       opcode = kArm64LdrW;
       immediate_mode = kLoadStoreImm32;
       break;
+#ifdef V8_COMPRESS_POINTERS
+    case MachineRepresentation::kTaggedSigned:
+      opcode = kArm64LdrDecompressTaggedSigned;
+      immediate_mode = kLoadStoreImm32;
+      break;
+    case MachineRepresentation::kTaggedPointer:
+      opcode = kArm64LdrDecompressTaggedPointer;
+      immediate_mode = kLoadStoreImm32;
+      break;
+    case MachineRepresentation::kTagged:
+      opcode = kArm64LdrDecompressAnyTagged;
+      immediate_mode = kLoadStoreImm32;
+      break;
+    case MachineRepresentation::kCompressedSigned:
+    case MachineRepresentation::kCompressedPointer:
+    case MachineRepresentation::kCompressed:
+      opcode = kArm64LdrW;
+      immediate_mode = kLoadStoreImm32;
+      break;
+#else
+    case MachineRepresentation::kCompressedSigned:   // Fall through.
+    case MachineRepresentation::kCompressedPointer:  // Fall through.
+    case MachineRepresentation::kCompressed:
+      UNREACHABLE();
+      return;
     case MachineRepresentation::kTaggedSigned:   // Fall through.
     case MachineRepresentation::kTaggedPointer:  // Fall through.
     case MachineRepresentation::kTagged:         // Fall through.
+#endif
     case MachineRepresentation::kWord64:
       opcode = kArm64Ldr;
       immediate_mode = kLoadStoreImm64;
@@ -678,21 +704,8 @@ void InstructionSelector::VisitStore(Node* node) {
       addressing_mode = kMode_MRR;
     }
     inputs[input_count++] = g.UseUniqueRegister(value);
-    RecordWriteMode record_write_mode = RecordWriteMode::kValueIsAny;
-    switch (write_barrier_kind) {
-      case kNoWriteBarrier:
-        UNREACHABLE();
-        break;
-      case kMapWriteBarrier:
-        record_write_mode = RecordWriteMode::kValueIsMap;
-        break;
-      case kPointerWriteBarrier:
-        record_write_mode = RecordWriteMode::kValueIsPointer;
-        break;
-      case kFullWriteBarrier:
-        record_write_mode = RecordWriteMode::kValueIsAny;
-        break;
-    }
+    RecordWriteMode record_write_mode =
+        WriteBarrierKindToRecordWriteMode(write_barrier_kind);
     InstructionOperand temps[] = {g.TempRegister(), g.TempRegister()};
     size_t const temp_count = arraysize(temps);
     InstructionCode code = kArchStoreWithWriteBarrier;
@@ -726,9 +739,29 @@ void InstructionSelector::VisitStore(Node* node) {
         opcode = kArm64StrW;
         immediate_mode = kLoadStoreImm32;
         break;
+#ifdef V8_COMPRESS_POINTERS
+      case MachineRepresentation::kTaggedSigned:
+      case MachineRepresentation::kTaggedPointer:
+      case MachineRepresentation::kTagged:
+        opcode = kArm64StrCompressTagged;
+        immediate_mode = kLoadStoreImm32;
+        break;
+      case MachineRepresentation::kCompressedSigned:
+      case MachineRepresentation::kCompressedPointer:
+      case MachineRepresentation::kCompressed:
+        opcode = kArm64StrW;
+        immediate_mode = kLoadStoreImm32;
+        break;
+#else
+      case MachineRepresentation::kCompressedSigned:   // Fall through.
+      case MachineRepresentation::kCompressedPointer:  // Fall through.
+      case MachineRepresentation::kCompressed:
+        UNREACHABLE();
+        return;
       case MachineRepresentation::kTaggedSigned:   // Fall through.
       case MachineRepresentation::kTaggedPointer:  // Fall through.
       case MachineRepresentation::kTagged:         // Fall through.
+#endif
       case MachineRepresentation::kWord64:
         opcode = kArm64Str;
         immediate_mode = kLoadStoreImm64;
@@ -1259,11 +1292,6 @@ void InstructionSelector::VisitWord32Popcnt(Node* node) { UNREACHABLE(); }
 
 void InstructionSelector::VisitWord64Popcnt(Node* node) { UNREACHABLE(); }
 
-void InstructionSelector::VisitSpeculationFence(Node* node) {
-  Arm64OperandGenerator g(this);
-  Emit(kArm64DsbIsb, g.NoOutput());
-}
-
 void InstructionSelector::VisitInt32Add(Node* node) {
   Arm64OperandGenerator g(this);
   Int32BinopMatcher m(node);
@@ -1629,6 +1657,46 @@ void InstructionSelector::VisitChangeUint32ToUint64(Node* node) {
   Emit(kArm64Mov32, g.DefineAsRegister(node), g.UseRegister(value));
 }
 
+void InstructionSelector::VisitChangeTaggedToCompressed(Node* node) {
+  Arm64OperandGenerator g(this);
+  Node* value = node->InputAt(0);
+  Emit(kArm64CompressAny, g.DefineAsRegister(node), g.UseRegister(value));
+}
+
+void InstructionSelector::VisitChangeTaggedPointerToCompressedPointer(
+    Node* node) {
+  Arm64OperandGenerator g(this);
+  Node* value = node->InputAt(0);
+  Emit(kArm64CompressPointer, g.DefineAsRegister(node), g.UseRegister(value));
+}
+
+void InstructionSelector::VisitChangeTaggedSignedToCompressedSigned(
+    Node* node) {
+  Arm64OperandGenerator g(this);
+  Node* value = node->InputAt(0);
+  Emit(kArm64CompressSigned, g.DefineAsRegister(node), g.UseRegister(value));
+}
+
+void InstructionSelector::VisitChangeCompressedToTagged(Node* node) {
+  Arm64OperandGenerator g(this);
+  Node* const value = node->InputAt(0);
+  Emit(kArm64DecompressAny, g.DefineAsRegister(node), g.UseRegister(value));
+}
+
+void InstructionSelector::VisitChangeCompressedPointerToTaggedPointer(
+    Node* node) {
+  Arm64OperandGenerator g(this);
+  Node* const value = node->InputAt(0);
+  Emit(kArm64DecompressPointer, g.DefineAsRegister(node), g.UseRegister(value));
+}
+
+void InstructionSelector::VisitChangeCompressedSignedToTaggedSigned(
+    Node* node) {
+  Arm64OperandGenerator g(this);
+  Node* const value = node->InputAt(0);
+  Emit(kArm64DecompressSigned, g.DefineAsRegister(node), g.UseRegister(value));
+}
+
 void InstructionSelector::VisitTruncateInt64ToInt32(Node* node) {
   Arm64OperandGenerator g(this);
   Node* value = node->InputAt(0);
@@ -1665,7 +1733,7 @@ void InstructionSelector::EmitPrepareArguments(
   Arm64OperandGenerator g(this);
 
   // `arguments` includes alignment "holes". This means that slots bigger than
-  // kPointerSize, e.g. Simd128, will span across multiple arguments.
+  // kSystemPointerSize, e.g. Simd128, will span across multiple arguments.
   int claim_count = static_cast<int>(arguments->size());
   int slot = claim_count - 1;
   claim_count = RoundUp(claim_count, 2);
@@ -3009,7 +3077,7 @@ void InstructionSelector::VisitInt64AbsWithOverflow(Node* node) {
 
 void InstructionSelector::VisitS128Zero(Node* node) {
   Arm64OperandGenerator g(this);
-  Emit(kArm64S128Zero, g.DefineAsRegister(node), g.DefineAsRegister(node));
+  Emit(kArm64S128Zero, g.DefineAsRegister(node));
 }
 
 #define SIMD_VISIT_SPLAT(Type)                               \
@@ -3248,8 +3316,7 @@ InstructionSelector::SupportedMachineOperatorFlags() {
          MachineOperatorBuilder::kInt32DivIsSafe |
          MachineOperatorBuilder::kUint32DivIsSafe |
          MachineOperatorBuilder::kWord32ReverseBits |
-         MachineOperatorBuilder::kWord64ReverseBits |
-         MachineOperatorBuilder::kSpeculationFence;
+         MachineOperatorBuilder::kWord64ReverseBits;
 }
 
 // static

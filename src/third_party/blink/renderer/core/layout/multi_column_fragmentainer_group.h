@@ -194,8 +194,6 @@ class CORE_EXPORT MultiColumnFragmentainerGroup {
   // Maximum logical height allowed.
   LayoutUnit max_logical_height_;
 
-  unsigned actual_column_count_allowance_ = 0;
-
   bool is_logical_height_known_ = false;
 };
 

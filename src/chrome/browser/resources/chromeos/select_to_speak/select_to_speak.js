@@ -75,7 +75,11 @@ let SelectToSpeak = function() {
   /** @private {number} */
   this.currentNodeGroupIndex_ = -1;
 
-  /** @private {?Object} */
+  /**
+   * The indexes within the current node representing the word currently being
+   * spoken. Only updated if word highlighting is enabled.
+   * @private {?Object}
+   */
   this.currentNodeWord_ = null;
 
   /** @private {?AutomationNode} */
@@ -180,20 +184,21 @@ SelectToSpeak.prototype = {
    */
   requestSpeakSelectedText_: function(focusedNode) {
     // If nothing is selected, return early.
-    if (!focusedNode || !focusedNode.root || !focusedNode.root.anchorObject ||
-        !focusedNode.root.focusObject) {
+    if (!focusedNode || !focusedNode.root ||
+        !focusedNode.root.selectionStartObject ||
+        !focusedNode.root.selectionEndObject) {
       this.onNullSelection_();
       return;
     }
-    let anchorObject = focusedNode.root.anchorObject;
-    let anchorOffset = focusedNode.root.anchorOffset || 0;
-    let focusObject = focusedNode.root.focusObject;
-    let focusOffset = focusedNode.root.focusOffset || 0;
+    let anchorObject = focusedNode.root.selectionStartObject;
+    let anchorOffset = focusedNode.root.selectionStartOffset || 0;
+    let focusObject = focusedNode.root.selectionEndObject;
+    let focusOffset = focusedNode.root.selectionEndOffset || 0;
     if (anchorObject === focusObject && anchorOffset == focusOffset) {
       this.onNullSelection_();
       return;
     }
-    // First calculate the equivalant position for this selection.
+    // First calculate the equivalent position for this selection.
     // Sometimes the automation selection returns a offset into a root
     // node rather than a child node, which may be a bug. This allows us to
     // work around that bug until it is fixed or redefined.
@@ -402,9 +407,22 @@ SelectToSpeak.prototype = {
    * @private
    */
   clearFocusRing_: function() {
-    chrome.accessibilityPrivate.setFocusRing([]);
+    this.setFocusRings_([]);
     chrome.accessibilityPrivate.setHighlights(
         [], this.prefsManager_.highlightColor());
+  },
+
+  /**
+   * Sets the focus ring to |rects|.
+   * @param {!Array<!chrome.accessibilityPrivate.ScreenRect>} rects
+   * @private
+   */
+  setFocusRings_: function(rects) {
+    chrome.accessibilityPrivate.setFocusRings([{
+      rects: rects,
+      type: chrome.accessibilityPrivate.FocusType.GLOW,
+      color: this.prefsManager_.focusRingColor()
+    }]);
   },
 
   /**
@@ -462,8 +480,7 @@ SelectToSpeak.prototype = {
       },
       // onSelectionChanged: Mouse selection rect changed.
       onSelectionChanged: rect => {
-        chrome.accessibilityPrivate.setFocusRing(
-            [rect], this.prefsManager_.focusRingColor());
+        this.setFocusRings_([rect]);
       },
       // onKeystrokeSelection: Keys pressed for reading highlighted text.
       onKeystrokeSelection: () => {
@@ -621,42 +638,8 @@ SelectToSpeak.prototype = {
           if (isLast)
             this.onStateChanged_(SelectToSpeakState.INACTIVE);
         } else if (event.type == 'word') {
-          console.debug(nodeGroup.text + ' (index ' + event.charIndex + ')');
-          console.debug('-'.repeat(event.charIndex) + '^');
-          if (this.currentNodeGroupIndex_ + 1 < nodeGroup.nodes.length) {
-            let next = nodeGroup.nodes[this.currentNodeGroupIndex_ + 1];
-            let nodeUpdated = false;
-            // Check if we've reached this next node yet using the
-            // character index of the event. Add 1 for the space character
-            // between node names, and another to make it to the start of the
-            // next node name.
-            while (event.charIndex + 2 >= next.startChar &&
-                   this.currentNodeGroupIndex_ + 1 < nodeGroup.nodes.length) {
-              // Move to the next node.
-              this.currentNodeGroupIndex_ += 1;
-              this.currentNode_ = next;
-              this.currentNodeWord_ = null;
-              nodeUpdated = true;
-              if (this.currentNodeGroupIndex_ + 1 >= nodeGroup.nodes.length)
-                break;
-              next = nodeGroup.nodes[this.currentNodeGroupIndex_ + 1];
-            }
-            if (nodeUpdated) {
-              if (!this.prefsManager_.wordHighlightingEnabled()) {
-                // If we are doing a per-word highlight, we will test the
-                // node after figuring out what the currently highlighted
-                // word is.
-                this.testCurrentNode_();
-              }
-            }
-          }
-          if (this.prefsManager_.wordHighlightingEnabled()) {
-            this.updateNodeHighlight_(
-                nodeGroup.text, event.charIndex, undefined,
-                isLast ? opt_endIndex : undefined);
-          } else {
-            this.currentNodeWord_ = null;
-          }
+          this.onTtsWordEvent_(
+              event, nodeGroup, isLast ? opt_endIndex : undefined);
         }
       };
       chrome.tts.speak(nodeGroup.text || '', options);
@@ -675,6 +658,109 @@ SelectToSpeak.prototype = {
     this.intervalRef_ = setInterval(
         this.testCurrentNode_.bind(this),
         SelectToSpeak.NODE_STATE_TEST_INTERVAL_MS);
+  },
+
+  /**
+   * Uses the 'word' speech event to determine which node is currently beings
+   * spoken, and prepares for highlight if enabled.
+   * @param {!TtsEvent} event The event to use for updates.
+   * @param {ParagraphUtils.NodeGroup} nodeGroup The node group for this
+   *     utterance.
+   * @param {number=} opt_endIndex The last index for speech, if applicable.
+   * @private
+   */
+  onTtsWordEvent_: function(event, nodeGroup, opt_endIndex) {
+    // Not all speech engines include length in the ttsEvent object. If the
+    // engine does have it, it makes word highlighting easier and more
+    // accurate.
+    let hasLength = event.length !== undefined && event.length >= 0;
+    console.debug(nodeGroup.text + ' (index ' + event.charIndex + ')');
+    let debug = '-'.repeat(event.charIndex);
+    if (hasLength)
+      debug += '^'.repeat(event.length);
+    else
+      debug += '^';
+    console.debug(debug);
+
+    // First determine which node contains the word currently being spoken,
+    // and update this.currentNode_, this.currentNodeWord_, and
+    // this.currentNodeGroupIndex_ to match.
+    if (this.currentNodeGroupIndex_ + 1 < nodeGroup.nodes.length) {
+      let next = nodeGroup.nodes[this.currentNodeGroupIndex_ + 1];
+      let nodeUpdated = false;
+      // TODO(katie): For something like a date, the start and end
+      // node group nodes can actually be different. Example:
+      // "<span>Tuesday,</span> December 18, 2018".
+      if (hasLength) {
+        while (next && event.charIndex >= next.startChar &&
+               this.currentNodeGroupIndex_ + 1 < nodeGroup.nodes.length) {
+          next = this.incrementCurrentNodeAndGetNext_(nodeGroup);
+          nodeUpdated = true;
+        }
+
+        // Check if we've reached this next node yet using the
+        // character index of the event. Add 1 for the space character
+        // between node names, and another to make it to the start of the
+        // next node name.
+        // TODO: Do not use next.name.length instead use the next-next startChar
+        while (next &&
+               event.charIndex + event.length + 2 >=
+                   next.startChar + next.node.name.length &&
+               this.currentNodeGroupIndex_ + 1 < nodeGroup.nodes.length) {
+          next = this.incrementCurrentNodeAndGetNext_(nodeGroup);
+          nodeUpdated = true;
+        }
+      } else {
+        while (next && event.charIndex + 2 >= next.startChar &&
+               this.currentNodeGroupIndex_ + 1 < nodeGroup.nodes.length) {
+          next = this.incrementCurrentNodeAndGetNext_(nodeGroup);
+          nodeUpdated = true;
+        }
+      }
+      if (nodeUpdated) {
+        if (!this.prefsManager_.wordHighlightingEnabled()) {
+          // If we are doing a per-word highlight, we will test the
+          // node after figuring out what the currently highlighted
+          // word is. Otherwise, test it now.
+          this.testCurrentNode_();
+        }
+      }
+    }
+
+    // Finally update the word highlight if it is enabled.
+    if (this.prefsManager_.wordHighlightingEnabled()) {
+      if (hasLength) {
+        this.currentNodeWord_ = {
+          'start': event.charIndex - this.currentNode_.startChar,
+          'end': event.charIndex + event.length - this.currentNode_.startChar
+        };
+        this.testCurrentNode_();
+      } else {
+        this.updateNodeHighlight_(
+            nodeGroup.text, event.charIndex, undefined, opt_endIndex);
+      }
+    } else {
+      this.currentNodeWord_ = null;
+    }
+  },
+
+  /**
+   * Updates the current node and relevant points to be the next node in the
+   * group, then returns the next node in the group after that.
+   * @param {!ParagraphUtils.NodeGroup} nodeGroup
+   * @return {ParagraphUtils.NodeGroupItem}
+   * @private
+   */
+  incrementCurrentNodeAndGetNext_: function(nodeGroup) {
+    // Move to the next node.
+    this.currentNodeGroupIndex_ += 1;
+    this.currentNode_ = nodeGroup.nodes[this.currentNodeGroupIndex_];
+    // Setting this.currentNodeWord_ to null signals it should be recalculated
+    // later.
+    this.currentNodeWord_ = null;
+    if (this.currentNodeGroupIndex_ + 1 >= nodeGroup.nodes.length)
+      return null;
+    return nodeGroup.nodes[this.currentNodeGroupIndex_ + 1];
   },
 
   /**
@@ -807,12 +893,9 @@ SelectToSpeak.prototype = {
     // the one node. if it has siblings, highlight the parent.
     if (this.currentBlockParent_ != null &&
         node.role == RoleType.INLINE_TEXT_BOX) {
-      chrome.accessibilityPrivate.setFocusRing(
-          [this.currentBlockParent_.location],
-          this.prefsManager_.focusRingColor());
+      this.setFocusRings_([this.currentBlockParent_.location]);
     } else {
-      chrome.accessibilityPrivate.setFocusRing(
-          [node.location], this.prefsManager_.focusRingColor());
+      this.setFocusRings_([node.location]);
     }
   },
 

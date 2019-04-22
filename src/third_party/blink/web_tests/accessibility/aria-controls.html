@@ -1,7 +1,8 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
 <html>
 <head>
-<script src="../resources/js-test.js"></script>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
 </head>
 <body id="body">
 
@@ -16,17 +17,15 @@
 <div id="console"></div>
 
 <script>
-    description("This tests that aria-controls identifies the correct element");
 
-    if (window.accessibilityController) {
-        var tab_1 = accessibilityController.accessibleElementById("tablist_1").childAtIndex(0);
-        var panel_1 = accessibilityController.accessibleElementById("panel_1");
-        var panel_2 = accessibilityController.accessibleElementById("panel_2");
+test((t) => {
+    var tab_1 = accessibilityController.accessibleElementById("tablist_1").childAtIndex(0);
+    var panel_1 = accessibilityController.accessibleElementById("panel_1");
+    var panel_2 = accessibilityController.accessibleElementById("panel_2");
 
-        shouldBeTrue("tab_1.ariaControlsElementAtIndex(0).isEqual(panel_1)");
-        shouldBeTrue("tab_1.ariaControlsElementAtIndex(1).isEqual(panel_2)");
-
-    }
+    assert_true(tab_1.ariaControlsElementAtIndex(0).isEqual(panel_1));
+    assert_true(tab_1.ariaControlsElementAtIndex(1).isEqual(panel_2));
+}, "This tests that aria-controls identifies the correct element");
 
 </script>
 

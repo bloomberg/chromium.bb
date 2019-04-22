@@ -4,20 +4,25 @@ Tests that overriding shorthands within rule are visible.
 element.style { ()
 
 [expanded] 
-#main { (<style>…</style>)
+#main { (<style>)
 /-- overloaded --/     -x: ;
 
 [expanded] 
-#main { (<style>…</style>)
+#main { (<style>)
 /-- overloaded --/     -x: ;
 
 [expanded] 
-#main { (<style>…</style>)
+#main { (<style>)
 /-- overloaded --/     background: #000;
     background: #bada55;
 
 [expanded] 
 div { (user agent stylesheet)
     display: block;
+
+======== Inherited from html ========
+[expanded] 
+html { (user agent stylesheet)
+    color: -internal-root-color;
 
 

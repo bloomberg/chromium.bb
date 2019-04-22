@@ -35,9 +35,12 @@
 // Removes the animations on the custom keyboard view.
 - (void)removeAnimationsOnKeyboardView;
 
-// Removes the presented keyboard view and the input accessory view. Also clears
-// the references to them, so nothing shows until a new custom view is passed.
+// Removes the presented keyboard view and the input accessory view.
 - (void)restoreOriginalKeyboardView;
+
+// Same as |restoreOriginalKeyboardView| and also clears the references to them,
+// so nothing shows until a new custom view is passed.
+- (void)restoreOriginalKeyboardViewAndClearReferences;
 
 // Removes the presented keyboard view and the input accessory view until
 // |continueCustomKeyboardView| is called.
@@ -46,6 +49,11 @@
 // Adds the previously presented views to the keyboard. If they have not been
 // reset.
 - (void)continueCustomKeyboardView;
+
+// Tells the consumer that suggestions are being fetched. The fetching is
+// asynchronous, so this call gives the opportunity to do any view preparation
+// that doesn't need the suggestions.
+- (void)prepareToShowSuggestions;
 
 // Replace the keyboard accessory view with one showing the passed suggestions.
 // And form navigation buttons if not an iPad (which already includes those).

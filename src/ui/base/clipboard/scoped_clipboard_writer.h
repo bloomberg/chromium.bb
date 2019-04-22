@@ -13,11 +13,11 @@
 
 #include <string>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard.h"
-#include "ui/base/ui_base_export.h"
 
 namespace base {
 class Pickle;
@@ -27,7 +27,7 @@ namespace ui {
 
 // This class is a wrapper for |Clipboard| that handles packing data
 // into a Clipboard::ObjectMap.
-class UI_BASE_EXPORT ScopedClipboardWriter {
+class COMPONENT_EXPORT(BASE_CLIPBOARD) ScopedClipboardWriter {
  public:
   // Create an instance that is a simple wrapper around the clipboard of the
   // given type.
@@ -59,7 +59,7 @@ class UI_BASE_EXPORT ScopedClipboardWriter {
 
   // Adds arbitrary pickled data to clipboard.
   void WritePickledData(const base::Pickle& pickle,
-                        const Clipboard::FormatType& format);
+                        const ClipboardFormatType& format);
 
   // Adds custom data to clipboard.
   void WriteData(const std::string& type, const std::string& data);

@@ -4,6 +4,8 @@
 
 package org.chromium.net.impl;
 
+import android.support.annotation.IntDef;
+
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
@@ -18,6 +20,8 @@ import org.chromium.net.RequestFinishedInfo;
 import org.chromium.net.RequestPriority;
 import org.chromium.net.UrlResponseInfo;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.nio.ByteBuffer;
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -48,33 +52,37 @@ public class CronetBidirectionalStream extends ExperimentalBidirectionalStream {
      * exceptional final states: State.CANCELED and State.ERROR, which can be reached from
      * any other non-final state.
      */
-    private enum State {
+    @IntDef({State.NOT_STARTED, State.STARTED, State.WAITING_FOR_READ, State.READING,
+            State.READING_DONE, State.CANCELED, State.ERROR, State.SUCCESS, State.WAITING_FOR_FLUSH,
+            State.WRITING, State.WRITING_DONE})
+    @Retention(RetentionPolicy.SOURCE)
+    private @interface State {
         /* Initial state, stream not started. */
-        NOT_STARTED,
+        int NOT_STARTED = 0;
         /*
          * Stream started, request headers are being sent if mDelayRequestHeadersUntilNextFlush
          * is not set to true.
          */
-        STARTED,
+        int STARTED = 1;
         /* Waiting for {@code read()} to be called. */
-        WAITING_FOR_READ,
+        int WAITING_FOR_READ = 2;
         /* Reading from the remote, {@code onReadCompleted()} callback will be called when done. */
-        READING,
+        int READING = 3;
         /* There is no more data to read and stream is half-closed by the remote side. */
-        READING_DONE,
+        int READING_DONE = 4;
         /* Stream is canceled. */
-        CANCELED,
+        int CANCELED = 5;
         /* Error has occurred, stream is closed. */
-        ERROR,
+        int ERROR = 6;
         /* Reading and writing are done, and the stream is closed successfully. */
-        SUCCESS,
+        int SUCCESS = 7;
         /* Waiting for {@code nativeSendRequestHeaders()} or {@code nativeWritevData()} to be
            called. */
-        WAITING_FOR_FLUSH,
+        int WAITING_FOR_FLUSH = 8;
         /* Writing to the remote, {@code onWritevCompleted()} callback will be called when done. */
-        WRITING,
+        int WRITING = 9;
         /* There is no more data to write and stream is half-closed by the local side. */
-        WRITING_DONE,
+        int WRITING_DONE = 10;
     }
 
     private final CronetUrlRequestContext mRequestContext;
@@ -130,7 +138,7 @@ public class CronetBidirectionalStream extends ExperimentalBidirectionalStream {
      * NOT_STARTED -> STARTED --> WAITING_FOR_READ -> READING_DONE -> SUCCESS
      */
     @GuardedBy("mNativeStreamLock")
-    private State mReadState = State.NOT_STARTED;
+    private @State int mReadState = State.NOT_STARTED;
 
     /**
      * Write state is tracking writing flow.
@@ -140,7 +148,7 @@ public class CronetBidirectionalStream extends ExperimentalBidirectionalStream {
      * NOT_STARTED -> STARTED --> WAITING_FOR_FLUSH -> WRITING_DONE -> SUCCESS
      */
     @GuardedBy("mNativeStreamLock")
-    private State mWriteState = State.NOT_STARTED;
+    private @State int mWriteState = State.NOT_STARTED;
 
     // Only modified on the network thread.
     private UrlResponseInfoImpl mResponseInfo;

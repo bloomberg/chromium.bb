@@ -3452,10 +3452,6 @@ RTCD_EXTERN void (*aom_v_predictor_8x8)(uint8_t* dst,
                                         const uint8_t* above,
                                         const uint8_t* left);
 
-void av1_round_shift_array_c(int32_t* arr, int size, int bit);
-void av1_round_shift_array_neon(int32_t* arr, int size, int bit);
-RTCD_EXTERN void (*av1_round_shift_array)(int32_t* arr, int size, int bit);
-
 void aom_dsp_rtcd(void);
 
 #include "config/aom_config.h"
@@ -3587,9 +3583,6 @@ static void setup_rtcd_internal(void) {
   aom_v_predictor_8x8 = aom_v_predictor_8x8_c;
   if (flags & HAS_NEON)
     aom_v_predictor_8x8 = aom_v_predictor_8x8_neon;
-  av1_round_shift_array = av1_round_shift_array_c;
-  if (flags & HAS_NEON)
-    av1_round_shift_array = av1_round_shift_array_neon;
 }
 #endif
 

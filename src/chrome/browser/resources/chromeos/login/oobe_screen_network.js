@@ -8,7 +8,7 @@
 
 login.createScreen('NetworkScreen', 'network-selection', function() {
   return {
-    EXTERNAL_API: ['showError'],
+    EXTERNAL_API: ['showError', 'setOfflineDemoModeEnabled'],
 
     /** Dropdown element for networks selection. */
     dropdown_: null,
@@ -51,6 +51,14 @@ login.createScreen('NetworkScreen', 'network-selection', function() {
       messageDiv.textContent = message;
       error.appendChild(messageDiv);
       error.setAttribute('role', 'alert');
+    },
+
+    /**
+     * Enables or disables the offline Demo Mode option.
+     * @param {bool} enabled
+     */
+    setOfflineDemoModeEnabled: function(enabled) {
+      this.networkModule_.offlineDemoModeEnabled = enabled;
     },
 
     /** Called after resources are updated. */

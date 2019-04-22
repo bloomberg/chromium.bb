@@ -34,8 +34,8 @@
 #include <memory>
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/fileapi/file_reader_loader.h"
 #include "third_party/blink/renderer/core/fileapi/file_reader_loader_client.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -93,12 +93,12 @@ class CORE_EXPORT FileReader final : public EventTargetWithInlineData,
   void DidFinishLoading() override;
   void DidFail(FileErrorCode) override;
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(loadstart, kLoadstart);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(progress, kProgress);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(load, kLoad);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(abort, kAbort);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(loadend, kLoadend);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(loadstart, kLoadstart)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(progress, kProgress)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(load, kLoad)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(abort, kAbort)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(loadend, kLoadend)
 
   void Trace(blink::Visitor*) override;
 

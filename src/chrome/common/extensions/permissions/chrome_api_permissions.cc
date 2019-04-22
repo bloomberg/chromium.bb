@@ -123,8 +123,6 @@ constexpr APIPermissionInfo::InitInfo permissions_to_register[] = {
     {APIPermission::kMediaRouterPrivate, "mediaRouterPrivate",
      APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kNetworkingCastPrivate, "networking.castPrivate"},
-    {APIPermission::kPreferencesPrivate, "preferencesPrivate",
-     APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kSystemPrivate, "systemPrivate",
      APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kCloudPrintPrivate, "cloudPrintPrivate",
@@ -174,7 +172,6 @@ constexpr APIPermissionInfo::InitInfo permissions_to_register[] = {
     {APIPermission::kResourcesPrivate, "resourcesPrivate",
      APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kSafeBrowsingPrivate, "safeBrowsingPrivate"},
-    {APIPermission::kArcAppsPrivate, "arcAppsPrivate"},
 
     // Full url access permissions.
     {APIPermission::kDebugger, "debugger",
@@ -197,7 +194,6 @@ constexpr APIPermissionInfo::InitInfo permissions_to_register[] = {
     // Platform-app permissions.
 
     {APIPermission::kFileSystemProvider, "fileSystemProvider"},
-    {APIPermission::kPointerLock, "pointerLock"},
     {APIPermission::kCastStreaming, "cast.streaming"},
     {APIPermission::kLauncherSearchProvider, "launcherSearchProvider"},
 

@@ -1,13 +1,15 @@
 #ifndef _RAR_STRLIST_
 #define _RAR_STRLIST_
 
+namespace third_party_unrar {
+
 class StringList
 {
   private:
     Array<wchar> StringData;
     size_t CurPos;
 
-    uint StringsCount;
+    size_t StringsCount;
 
     size_t SaveCurPos[16],SavePosNumber;
   public:
@@ -21,11 +23,13 @@ class StringList
     wchar* GetString();
     bool GetString(wchar **Str);
     void Rewind();
-    uint ItemsCount() {return StringsCount;};
+    size_t ItemsCount() {return StringsCount;}
     size_t GetCharCount() {return StringData.Size();}
     bool Search(const wchar *Str,bool CaseSensitive);
     void SavePosition();
     void RestorePosition();
 };
+
+}  // namespace third_party_unrar
 
 #endif

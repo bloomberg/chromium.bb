@@ -9,23 +9,19 @@
 
 #include "base/json/json_reader.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
-#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/ui_base_features.h"
 
 namespace {
 
 bool ParseAnswer(const std::string& answer_json, SuggestionAnswer* answer) {
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(answer_json);
-  base::DictionaryValue* dict;
-  if (!value || !value->GetAsDictionary(&dict))
+  base::Optional<base::Value> value = base::JSONReader::Read(answer_json);
+  if (!value || !value->is_dict())
     return false;
 
   // ParseAnswer previously did not change the default answer type of -1, so
   // here we keep the same behavior by explicitly supplying default value.
-  return SuggestionAnswer::ParseAnswer(dict, base::UTF8ToUTF16("-1"), answer);
+  return SuggestionAnswer::ParseAnswer(*value, base::UTF8ToUTF16("-1"), answer);
 }
 
 }  // namespace
@@ -272,8 +268,7 @@ TEST(SuggestionAnswerTest, AddImageURLsTo) {
   ASSERT_EQ(0U, urls.size());
 
   {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeature(features::kExperimentalUi);
+    // Test with the image URL supplied by the "i" (image) param.
     json =
         "{ \"i\": { \"d\": \"https://gstatic.com/foo.png\", \"t\": 3 },"
         "  \"l\" : ["
@@ -287,6 +282,7 @@ TEST(SuggestionAnswerTest, AddImageURLsTo) {
     urls.clear();
   }
 
+  // Test with the image URL supplied by the "il" (image line) param.
   json =
       "{ \"l\" : ["
       "  { \"il\": { \"t\": [{ \"t\": \"some text\", \"tt\": 5 }] } },"
@@ -298,6 +294,9 @@ TEST(SuggestionAnswerTest, AddImageURLsTo) {
   EXPECT_EQ(GURL("https://gstatic.com/foo.png"), urls[0]);
   urls.clear();
 
+  // Test with image URLs supplied by both the "i" and "il" params. In this
+  // case, prefer the URL provided by the "i" param because the new answer code
+  // uses this.
   json =
       "{ \"i\": { \"d\": \"https://gstatic.com/foo.png\", \"t\": 3 },"
       "  \"l\" : ["
@@ -308,9 +307,11 @@ TEST(SuggestionAnswerTest, AddImageURLsTo) {
   ASSERT_TRUE(ParseAnswer(json, &answer));
   answer.AddImageURLsTo(&urls);
   ASSERT_EQ(1U, urls.size());
-  EXPECT_EQ(GURL("https://gstatic.com/bar.png"), urls[0]);
+  EXPECT_EQ(GURL("https://gstatic.com/foo.png"), urls[0]);
   urls.clear();
 
+  // Test with the image URL supplied by both "il" params. In this case, prefer
+  // the URL in the second line as the first is currently not used.
   json =
       "{ \"l\" : ["
       "  { \"il\": { \"t\": [{ \"t\": \"some text\", \"tt\": 5 }],"
@@ -320,6 +321,5 @@ TEST(SuggestionAnswerTest, AddImageURLsTo) {
   ASSERT_TRUE(ParseAnswer(json, &answer));
   answer.AddImageURLsTo(&urls);
   ASSERT_EQ(1U, urls.size());
-  // Note: first_line_.image_url() is not used in practice (so it's ignored).
   EXPECT_EQ(GURL("https://gstatic.com/bar.jpg"), urls[0]);
 }

@@ -25,6 +25,7 @@ from chromite.lib import cros_test_lib
 from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import patch as cros_patch
+from chromite.lib.buildstore import FakeBuildStore
 
 
 FAKE_VERSION_STRING = '1.2.4-rc3'
@@ -127,6 +128,7 @@ class LKGMManagerTest(cros_test_lib.MockTempDirTestCase):
     self.branch = 'master'
     self.build_name = 'amd64-generic'
     self.incr_type = 'branch'
+    self.buildstore = FakeBuildStore()
 
     # Create tmp subdirs based on the one provided TempDirMixin.
     self.tmpdir = os.path.join(self.tempdir, "base")
@@ -138,7 +140,8 @@ class LKGMManagerTest(cros_test_lib.MockTempDirTestCase):
         self.source_repo, self.tmpdir, self.branch, depth=1)
     self.manager = lkgm_manager.LKGMManager(
         repo, self.manifest_repo, self.build_name, constants.PFQ_TYPE, 'branch',
-        force=False, branch=self.branch, dry_run=True)
+        force=False, branch=self.branch, buildstore=self.buildstore,
+        dry_run=True)
     self.manager.manifest_dir = self.tmpmandir
     self.manager.lkgm_path = os.path.join(
         self.tmpmandir, constants.LKGM_MANIFEST)
@@ -317,10 +320,9 @@ class LKGMManagerTest(cros_test_lib.MockTempDirTestCase):
     Commit Queue and another from Non-Commit Queue.  We test the correct
     handling in both cases.
     """
-    fake_git_log = """Author: Sammy Sosa <fake@fake.com>
-    Commit: Chris Sosa <sosa@chromium.org>
-
-    Date:   Mon Aug 8 14:52:06 2011 -0700
+    fake_git_log = """commit abcd
+Author: Sammy Sosa <fake@fake.com>
+Commit: Chris Sosa <sosa@chromium.org>
 
     Add in a test for cbuildbot
 
@@ -331,12 +333,15 @@ class LKGMManagerTest(cros_test_lib.MockTempDirTestCase):
     Reviewed-on: https://chromium-review.googlesource.com/1234
     Reviewed-by: Fake person <fake@fake.org>
     Tested-by: Sammy Sosa <fake@fake.com>
-    Author: Sammy Sosa <fake@fake.com>
-    Commit: Gerrit <chrome-bot@chromium.org>
 
-    Date:   Mon Aug 8 14:52:06 2011 -0700
+commit ef01
+Author: Sammy Sosa <fake@fake.com>
+Commit: Gerrit <chrome-bot@chromium.org>
 
     Add in a test for cbuildbot
+
+    Random line that says "Author:" in the message:
+    Author: _Not_ Sammy Sosa <veryfake@fake.com>
 
     TEST=So much testing
     BUG=chromium-os:99999
@@ -368,10 +373,9 @@ class LKGMManagerTest(cros_test_lib.MockTempDirTestCase):
   def testGenerateBlameListHasChumpCL(self):
     """Test GenerateBlameList with chump CLs."""
     fake_git_log = """
-    Author: Sammy Sosa <fake@fake.com>
-    Commit: Chris Sosa <sosa@chromium.org>
-
-    Date:   Mon Aug 8 14:52:06 2011 -0700
+commit 1234
+Author: Sammy Sosa <fake@fake.com>
+Commit: Chris Sosa <sosa@chromium.org>
 
     Add in a test for cbuildbot
 
@@ -382,8 +386,6 @@ class LKGMManagerTest(cros_test_lib.MockTempDirTestCase):
     Reviewed-on: https://chromium-review.googlesource.com/1234
     Reviewed-by: Fake person <fake@fake.org>
     Tested-by: Sammy Sosa <fake@fake.com>
-    Author: Sammy Sosa <fake@fake.com>
-    Commit: Gerrit <chrome-bot@chromium.org>
     """
     project = {
         'name': 'fake/repo',
@@ -401,10 +403,10 @@ class LKGMManagerTest(cros_test_lib.MockTempDirTestCase):
 
   def testGenerateBlameListNoChumpCL(self):
     """Test GenerateBlameList without chump CLs."""
-    fake_git_log = """Author: Sammy Sosa <fake@fake.com>
-    Commit: Gerrit <chrome-bot@chromium.org>
-
-    Date:   Mon Aug 8 14:52:06 2011 -0700
+    fake_git_log = """
+commit 5678
+Author: Sammy Sosa <fake@fake.com>
+Commit: Gerrit <chrome-bot@chromium.org>
 
     Add in a test for cbuildbot
 

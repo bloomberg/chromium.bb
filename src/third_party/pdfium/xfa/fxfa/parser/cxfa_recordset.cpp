@@ -6,7 +6,7 @@
 
 #include "xfa/fxfa/parser/cxfa_recordset.h"
 
-#include "fxjs/xfa/cjx_recordset.h"
+#include "fxjs/xfa/cjx_node.h"
 #include "third_party/base/ptr_util.h"
 
 namespace {
@@ -17,19 +17,17 @@ const CXFA_Node::AttributeData kRecordSetAttributeData[] = {
     {XFA_Attribute::Max, XFA_AttributeType::Integer, (void*)0},
     {XFA_Attribute::Use, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::EofAction, XFA_AttributeType::Enum,
-     (void*)XFA_AttributeEnum::MoveLast},
+     (void*)XFA_AttributeValue::MoveLast},
     {XFA_Attribute::CursorType, XFA_AttributeType::Enum,
-     (void*)XFA_AttributeEnum::ForwardOnly},
+     (void*)XFA_AttributeValue::ForwardOnly},
     {XFA_Attribute::LockType, XFA_AttributeType::Enum,
-     (void*)XFA_AttributeEnum::ReadOnly},
+     (void*)XFA_AttributeValue::ReadOnly},
     {XFA_Attribute::BofAction, XFA_AttributeType::Enum,
-     (void*)XFA_AttributeEnum::MoveFirst},
+     (void*)XFA_AttributeValue::MoveFirst},
     {XFA_Attribute::Usehref, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::CursorLocation, XFA_AttributeType::Enum,
-     (void*)XFA_AttributeEnum::Client},
-    {XFA_Attribute::Unknown, XFA_AttributeType::Integer, nullptr}};
-
-constexpr wchar_t kRecordSetName[] = L"recordSet";
+     (void*)XFA_AttributeValue::Client},
+};
 
 }  // namespace
 
@@ -39,9 +37,8 @@ CXFA_RecordSet::CXFA_RecordSet(CXFA_Document* doc, XFA_PacketType packet)
                 XFA_XDPPACKET_SourceSet,
                 XFA_ObjectType::Node,
                 XFA_Element::RecordSet,
-                nullptr,
+                {},
                 kRecordSetAttributeData,
-                kRecordSetName,
-                pdfium::MakeUnique<CJX_RecordSet>(this)) {}
+                pdfium::MakeUnique<CJX_Node>(this)) {}
 
-CXFA_RecordSet::~CXFA_RecordSet() {}
+CXFA_RecordSet::~CXFA_RecordSet() = default;

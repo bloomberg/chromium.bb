@@ -1,11 +1,25 @@
-{#--- Begin #}
-mojo.mojom.Struct(
-    {{struct.name}},
+{%  for constant in struct.constants %}
+/**
+ * @const { {{constant.kind|lite_closure_type_with_nullability}} }
+ * @export
+ */
+{{module.namespace}}.{{struct.name}}_{{constant.name}} =
+    {{constant.value|expression_to_text_lite}};
+{%  endfor %}
+
+{%- from "lite/enum_definition.tmpl" import enum_def with context %}
+{%  for enum in struct.enums %}
+{{enum_def("%s.%sSpec"|format(module.namespace, struct.name),
+           "%s.%s"|format(module.namespace, struct.name), enum)}}
+{%  endfor %}
+
+mojo.internal.Struct(
+    {{module.namespace}}.{{struct.name}}Spec.$,
     '{{struct.name}}',
     {{struct.packed|payload_size}},
     [
 {%- for packed_field in struct.packed.packed_fields_in_ordinal_order %}
-      mojo.mojom.StructField(
+      mojo.internal.StructField(
         '{{packed_field.field.name}}', {{packed_field.offset}},
         {% if packed_field.field.kind|is_bool_kind %}{{packed_field.bit}}
         {%- else %}0{% endif %},
@@ -19,11 +33,20 @@ mojo.mojom.Struct(
 {%- endfor %}
     ]);
 
-{%  for constant in struct.constants %}
-{{struct.name}}.{{constant.name}} = {{constant.value|expression_to_text}};
-{%-  endfor %}
+{%  if generate_closure_exports -%}
+goog.provide('{{module.namespace}}.{{struct.name}}');
 
-{%- from "lite/enum_definition.tmpl" import enum_def %}
-{%  for enum in struct.enums %}
-{{enum_def("%s.%s"|format(struct.name, enum.name), enum)}}
-{%- endfor %}
+{% if struct.packed.packed_fields %}
+/**
+ * @typedef { {
+{%- for packed_field in struct.packed.packed_fields %}
+ *   {{packed_field.field.name}}: {{packed_field.field.kind|lite_closure_field_type}},
+{%-  endfor %}
+ * } }
+ */
+{% else %}
+/** @typedef {Object} */
+{% endif %}
+{{module.namespace}}.{{struct.name}};
+
+{%- endif %}

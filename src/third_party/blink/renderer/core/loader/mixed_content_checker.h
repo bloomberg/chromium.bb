@@ -37,6 +37,7 @@
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/loader/fetch/https_state.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/weborigin/security_violation_reporting_policy.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -68,7 +69,6 @@ class CORE_EXPORT MixedContentChecker final {
  public:
   static bool ShouldBlockFetch(LocalFrame*,
                                mojom::RequestContextType,
-                               network::mojom::RequestContextFrameType,
                                ResourceRequest::RedirectStatus,
                                const KURL&,
                                SecurityViolationReportingPolicy =
@@ -93,7 +93,7 @@ class CORE_EXPORT MixedContentChecker final {
                                 SecurityViolationReportingPolicy =
                                     SecurityViolationReportingPolicy::kReport);
 
-  static bool ShouldAutoupgrade(KURL frame_url,
+  static bool ShouldAutoupgrade(HttpsState context_https_state,
                                 WebMixedContentContextType type);
 
   static void CheckMixedPrivatePublic(LocalFrame*,
@@ -103,15 +103,8 @@ class CORE_EXPORT MixedContentChecker final {
       LocalFrame*,
       const ResourceRequest&);
 
-  // Returns the frame that should be considered the effective frame
-  // for a mixed content check for the given frame type.
-  static Frame* EffectiveFrameForFrameType(
-      LocalFrame*,
-      network::mojom::RequestContextFrameType);
-
   static void HandleCertificateError(LocalFrame*,
                                      const ResourceResponse&,
-                                     network::mojom::RequestContextFrameType,
                                      mojom::RequestContextType);
 
   // Receive information about mixed content found externally.
@@ -134,11 +127,7 @@ class CORE_EXPORT MixedContentChecker final {
  private:
   FRIEND_TEST_ALL_PREFIXES(MixedContentCheckerTest, HandleCertificateError);
 
-  static Frame* InWhichFrameIsContentMixed(
-      Frame*,
-      network::mojom::RequestContextFrameType,
-      const KURL&,
-      const LocalFrame*);
+  static Frame* InWhichFrameIsContentMixed(LocalFrame*, const KURL&);
 
   static ConsoleMessage* CreateConsoleMessageAboutFetch(
       const KURL&,

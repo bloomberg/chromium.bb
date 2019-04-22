@@ -54,7 +54,7 @@ void TestGuestViewManager::WaitForAllGuestsDeleted() {
 void TestGuestViewManager::WaitForLastGuestDeleted() {
   // Wait for the last guest that was created to be deleted.
   guest_web_contents_watchers_.back()->Wait();
-};
+}
 
 content::WebContents* TestGuestViewManager::WaitForSingleGuestCreated() {
   if (!GetNumGuestsActive()) {

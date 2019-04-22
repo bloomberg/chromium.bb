@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/views/content_test_utils.h"
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -38,7 +39,9 @@ class TestWebDialogView : public views::WebDialogView {
   TestWebDialogView(content::BrowserContext* context,
                     ui::WebDialogDelegate* delegate,
                     bool* observed_destroy)
-      : views::WebDialogView(context, delegate, new ChromeWebContentsHandler),
+      : views::WebDialogView(context,
+                             delegate,
+                             std::make_unique<ChromeWebContentsHandler>()),
         should_quit_on_size_change_(false),
         observed_destroy_(observed_destroy) {
     EXPECT_FALSE(*observed_destroy_);
@@ -237,4 +240,9 @@ IN_PROC_BROWSER_TEST_F(WebDialogBrowserTest, CloseParentWindow) {
   content::RunAllPendingInMessageLoop();
   EXPECT_TRUE(web_dialog_delegate_destroyed_);
   EXPECT_TRUE(web_dialog_view_destroyed_);
+}
+
+// Test that key event is translated to a text input properly.
+IN_PROC_BROWSER_TEST_F(WebDialogBrowserTest, TextInputViaKeyEvent) {
+  TestTextInputViaKeyEvent(view_->web_contents());
 }

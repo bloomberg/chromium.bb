@@ -31,6 +31,10 @@
 #include "chrome/browser/notifications/notification_platform_bridge_message_center.h"
 #endif
 
+#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
+#include "chrome/browser/send_tab_to_self/desktop_notification_handler.h"
+#endif
+
 #if defined(OS_WIN)
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/notifications/notification_platform_bridge_win.h"
@@ -116,6 +120,14 @@ NotificationDisplayServiceImpl::NotificationDisplayServiceImpl(Profile* profile)
         std::make_unique<NonPersistentNotificationHandler>());
     AddNotificationHandler(NotificationHandler::Type::WEB_PERSISTENT,
                            std::make_unique<PersistentNotificationHandler>());
+
+#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
+    AddNotificationHandler(
+        NotificationHandler::Type::SEND_TAB_TO_SELF,
+        std::make_unique<send_tab_to_self::DesktopNotificationHandler>(
+            profile_));
+#endif
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     AddNotificationHandler(
         NotificationHandler::Type::EXTENSION,
@@ -262,7 +274,8 @@ void NotificationDisplayServiceImpl::GetDisplayed(
     DisplayedNotificationsCallback callback) {
   if (!bridge_initialized_) {
     actions_.push(base::BindOnce(&NotificationDisplayServiceImpl::GetDisplayed,
-                                 weak_factory_.GetWeakPtr(), callback));
+                                 weak_factory_.GetWeakPtr(),
+                                 std::move(callback)));
     return;
   }
 

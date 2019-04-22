@@ -57,3 +57,5 @@ void LoadTimingTabHelper::ReportLoadTime(const base::TimeDelta& elapsed) {
 void LoadTimingTabHelper::ResetTimer() {
   load_start_time_ = base::TimeTicks();
 }
+
+WEB_STATE_USER_DATA_KEY_IMPL(LoadTimingTabHelper)

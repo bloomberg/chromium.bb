@@ -3,7 +3,53 @@
 // found in the LICENSE file.
 
 cr.define('settings_personalization_options', function() {
-  suite('SafeBrowsingExtendedReportingOfficialBuild', function() {
+  suite('PersonalizationOptionsTests_AllBuilds', function() {
+    /** @type {settings.TestPrivacyPageBrowserProxy} */
+    let testBrowserProxy;
+
+    /** @type {SettingsPersonalizationOptionsElement} */
+    let testElement;
+
+    suiteSetup(function() {
+      loadTimeData.overrideValues({
+        driveSuggestAvailable: true,
+      });
+    });
+
+    setup(function() {
+      testBrowserProxy = new TestPrivacyPageBrowserProxy();
+      settings.PrivacyPageBrowserProxyImpl.instance_ = testBrowserProxy;
+      PolymerTest.clearBody();
+      testElement = document.createElement('settings-personalization-options');
+      document.body.appendChild(testElement);
+      Polymer.dom.flush();
+    });
+
+    teardown(function() {
+      testElement.remove();
+    });
+
+    test('DriveSearchSuggestControl', function() {
+      assertFalse(!!testElement.$$('#driveSuggestControl'));
+
+      testElement.unifiedConsentEnabled = true;
+      testElement.syncStatus = {
+        signedIn: true,
+        statusAction: settings.StatusAction.NO_ACTION
+      };
+      Polymer.dom.flush();
+      assertTrue(!!testElement.$$('#driveSuggestControl'));
+
+      testElement.syncStatus = {
+        signedIn: true,
+        statusAction: settings.StatusAction.REAUTHENTICATE
+      };
+      Polymer.dom.flush();
+      assertFalse(!!testElement.$$('#driveSuggestControl'));
+    });
+  });
+
+  suite('PersonalizationOptionsTests_OfficialBuild', function() {
     /** @type {settings.TestPrivacyPageBrowserProxy} */
     let testBrowserProxy;
 
@@ -22,19 +68,6 @@ cr.define('settings_personalization_options', function() {
       testElement.remove();
     });
 
-    test('displaying toggles depending on unified consent', function() {
-      testElement.unifiedConsentEnabled = false;
-      Polymer.dom.flush();
-      assertEquals(
-          7,
-          testElement.root.querySelectorAll('settings-toggle-button').length);
-      testElement.unifiedConsentEnabled = true;
-      Polymer.dom.flush();
-      assertEquals(
-          8,
-          testElement.root.querySelectorAll('settings-toggle-button').length);
-    });
-
     test('UnifiedConsent spellcheck toggle', function() {
       testElement.unifiedConsentEnabled = true;
       testElement.prefs = {spellcheck: {dictionaries: {value: ['en-US']}}};
@@ -44,6 +77,17 @@ cr.define('settings_personalization_options', function() {
       testElement.prefs = {spellcheck: {dictionaries: {value: []}}};
       Polymer.dom.flush();
       assertTrue(testElement.$.spellCheckControl.hidden);
+
+      testElement.prefs = {
+        browser: {enable_spellchecking: {value: false}},
+        spellcheck: {
+          dictionaries: {value: ['en-US']},
+          use_spelling_service: {value: false}
+        }
+      };
+      Polymer.dom.flush();
+      testElement.$.spellCheckControl.click();
+      assertTrue(testElement.prefs.spellcheck.use_spelling_service.value);
     });
 
     test('NoUnifiedConsent spellcheck toggle', function() {
@@ -55,6 +99,14 @@ cr.define('settings_personalization_options', function() {
       testElement.prefs = {spellcheck: {dictionaries: {value: []}}};
       Polymer.dom.flush();
       assertFalse(testElement.$.spellCheckControl.hidden);
+
+      testElement.prefs = {
+        browser: {enable_spellchecking: {value: false}},
+        spellcheck: {use_spelling_service: {value: false}}
+      };
+      Polymer.dom.flush();
+      testElement.$.spellCheckControl.click();
+      assertTrue(testElement.prefs.spellcheck.use_spelling_service.value);
     });
   });
 });

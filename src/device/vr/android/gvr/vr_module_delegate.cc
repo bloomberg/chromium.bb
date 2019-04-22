@@ -7,22 +7,23 @@
 namespace device {
 
 namespace {
-// Storing the global delegate in a raw pointer - as opposed to e.g. an
+// Storing the global factory in a raw pointer - as opposed to e.g. an
 // std::unique_ptr - to avoid adding a static initializer.
-VrModuleDelegate* g_vr_module_delegate = nullptr;
+VrModuleDelegateFactory* g_vr_module_delegate_factory = nullptr;
 }  // namespace
 
 // static
-VrModuleDelegate* VrModuleDelegate::Get() {
-  return g_vr_module_delegate;
+VrModuleDelegateFactory* VrModuleDelegateFactory::Get() {
+  return g_vr_module_delegate_factory;
 }
 
 // static
-void VrModuleDelegate::Set(std::unique_ptr<VrModuleDelegate> delegate) {
-  if (g_vr_module_delegate) {
-    delete g_vr_module_delegate;
+void VrModuleDelegateFactory::Set(
+    std::unique_ptr<VrModuleDelegateFactory> factory) {
+  if (g_vr_module_delegate_factory) {
+    delete g_vr_module_delegate_factory;
   }
-  g_vr_module_delegate = delegate.release();
+  g_vr_module_delegate_factory = factory.release();
 }
 
 }  // namespace device

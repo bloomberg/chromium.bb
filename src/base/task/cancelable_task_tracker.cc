@@ -13,35 +13,12 @@
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
-#include "base/synchronization/cancellation_flag.h"
 #include "base/task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 
 namespace base {
 
 namespace {
-
-void RunIfNotCanceled(const CancellationFlag* flag, OnceClosure task) {
-  if (!flag->IsSet())
-    std::move(task).Run();
-}
-
-void RunIfNotCanceledThenUntrack(const CancellationFlag* flag,
-                                 OnceClosure task,
-                                 OnceClosure untrack) {
-  RunIfNotCanceled(flag, std::move(task));
-  std::move(untrack).Run();
-}
-
-bool IsCanceled(const CancellationFlag* flag,
-                ScopedClosureRunner* cleanup_runner) {
-  return flag->IsSet();
-}
-
-void RunAndDeleteFlag(OnceClosure closure, const CancellationFlag* flag) {
-  std::move(closure).Run();
-  delete flag;
-}
 
 void RunOrPostToTaskRunner(TaskRunner* task_runner, OnceClosure closure) {
   if (task_runner->RunsTasksInCurrentSequence())
@@ -55,8 +32,7 @@ void RunOrPostToTaskRunner(TaskRunner* task_runner, OnceClosure closure) {
 // static
 const CancelableTaskTracker::TaskId CancelableTaskTracker::kBadTaskId = 0;
 
-CancelableTaskTracker::CancelableTaskTracker()
-    : next_id_(1),weak_factory_(this) {}
+CancelableTaskTracker::CancelableTaskTracker() = default;
 
 CancelableTaskTracker::~CancelableTaskTracker() {
   DCHECK(sequence_checker_.CalledOnValidSequence());
@@ -83,23 +59,25 @@ CancelableTaskTracker::TaskId CancelableTaskTracker::PostTaskAndReply(
   // We need a SequencedTaskRunnerHandle to run |reply|.
   DCHECK(SequencedTaskRunnerHandle::IsSet());
 
-  // Owned by reply callback below.
-  CancellationFlag* flag = new CancellationFlag();
+  auto flag = MakeRefCounted<TaskCancellationFlag>();
 
   TaskId id = next_id_;
   next_id_++;  // int64_t is big enough that we ignore the potential overflow.
 
+  // Unretained(this) is safe because |flag| will have been set to the
+  // "canceled" state after |this| is deleted.
   OnceClosure untrack_closure =
-      BindOnce(&CancelableTaskTracker::Untrack, weak_factory_.GetWeakPtr(), id);
+      BindOnce(&CancelableTaskTracker::Untrack, Unretained(this), id);
   bool success = task_runner->PostTaskAndReply(
-      from_here, BindOnce(&RunIfNotCanceled, flag, std::move(task)),
-      BindOnce(&RunIfNotCanceledThenUntrack, Owned(flag), std::move(reply),
-               std::move(untrack_closure)));
+      from_here,
+      BindOnce(&RunIfNotCanceled, RetainedRef(flag), std::move(task)),
+      BindOnce(&RunThenUntrackIfNotCanceled, RetainedRef(flag),
+               std::move(reply), std::move(untrack_closure)));
 
   if (!success)
     return kBadTaskId;
 
-  Track(id, flag);
+  Track(id, std::move(flag));
   return id;
 }
 
@@ -111,24 +89,23 @@ CancelableTaskTracker::TaskId CancelableTaskTracker::NewTrackedTaskId(
   TaskId id = next_id_;
   next_id_++;  // int64_t is big enough that we ignore the potential overflow.
 
-  // Will be deleted by |untrack_and_delete_flag| after Untrack().
-  CancellationFlag* flag = new CancellationFlag();
+  auto flag = MakeRefCounted<TaskCancellationFlag>();
 
-  OnceClosure untrack_and_delete_flag = BindOnce(
-      &RunAndDeleteFlag,
-      BindOnce(&CancelableTaskTracker::Untrack, weak_factory_.GetWeakPtr(), id),
-      flag);
+  // Unretained(this) is safe because |flag| will have been set to the
+  // "canceled" state after |this| is deleted.
+  OnceClosure untrack_closure =
+      BindOnce(&CancelableTaskTracker::Untrack, Unretained(this), id);
 
-  // Will always run |untrack_and_delete_flag| on current sequence.
-  ScopedClosureRunner* untrack_and_delete_flag_runner =
-      new ScopedClosureRunner(BindOnce(
-          &RunOrPostToTaskRunner, RetainedRef(SequencedTaskRunnerHandle::Get()),
-          std::move(untrack_and_delete_flag)));
+  // Will always run |untrack_closure| on current sequence.
+  ScopedClosureRunner untrack_runner(BindOnce(
+      &RunOrPostToTaskRunner, RetainedRef(SequencedTaskRunnerHandle::Get()),
+      BindOnce(&RunIfNotCanceled, RetainedRef(flag),
+               std::move(untrack_closure))));
 
   *is_canceled_cb =
-      Bind(&IsCanceled, flag, Owned(untrack_and_delete_flag_runner));
+      Bind(&IsCanceled, RetainedRef(flag), std::move(untrack_runner));
 
-  Track(id, flag);
+  Track(id, std::move(flag));
   return id;
 }
 
@@ -145,14 +122,19 @@ void CancelableTaskTracker::TryCancel(TaskId id) {
     // Since this function is best-effort, it's OK to ignore these.
     return;
   }
-  it->second->Set();
+  it->second->data.Set();
+
+  // Remove |id| from |task_flags_| immediately, since we have no further
+  // use for tracking it. This allows the reply closures (see
+  // PostTaskAndReply()) for cancelled tasks to be skipped, since they have
+  // no clean-up to perform.
+  task_flags_.erase(it);
 }
 
 void CancelableTaskTracker::TryCancelAll() {
   DCHECK(sequence_checker_.CalledOnValidSequence());
   for (const auto& it : task_flags_)
-    it.second->Set();
-  weak_factory_.InvalidateWeakPtrs();
+    it.second->data.Set();
   task_flags_.clear();
 }
 
@@ -161,9 +143,33 @@ bool CancelableTaskTracker::HasTrackedTasks() const {
   return !task_flags_.empty();
 }
 
-void CancelableTaskTracker::Track(TaskId id, CancellationFlag* flag) {
+// static
+void CancelableTaskTracker::RunIfNotCanceled(const TaskCancellationFlag* flag,
+                                             OnceClosure task) {
+  if (!flag->data.IsSet())
+    std::move(task).Run();
+}
+
+// static
+void CancelableTaskTracker::RunThenUntrackIfNotCanceled(
+    const TaskCancellationFlag* flag,
+    OnceClosure task,
+    OnceClosure untrack) {
+  RunIfNotCanceled(flag, std::move(task));
+  RunIfNotCanceled(flag, std::move(untrack));
+}
+
+// static
+bool CancelableTaskTracker::IsCanceled(
+    const TaskCancellationFlag* flag,
+    const ScopedClosureRunner& cleanup_runner) {
+  return flag->data.IsSet();
+}
+
+void CancelableTaskTracker::Track(TaskId id,
+                                  scoped_refptr<TaskCancellationFlag> flag) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
-  bool success = task_flags_.insert(std::make_pair(id, flag)).second;
+  bool success = task_flags_.insert(std::make_pair(id, std::move(flag))).second;
   DCHECK(success);
 }
 

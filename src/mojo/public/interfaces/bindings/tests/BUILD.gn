@@ -320,7 +320,7 @@ component("test_export_component") {
 if (!is_ios) {
   component("test_export_blink_component") {
     testonly = true
-    deps = [
+    public_deps = [
       ":test_export_blink",
     ]
   }
@@ -483,4 +483,27 @@ mojom("echo") {
     "echo.mojom",
     "echo_import/echo_import.mojom",
   ]
+}
+
+# These could probably be merged with "test_interfaces" at some point.
+mojom("other_test_interfaces") {
+  testonly = true
+  sources = [
+    "new_endpoint_types.test-mojom",
+  ]
+}
+
+# Ensure that some target forces JS and Java bindings generation when all
+# targets are built. This provides a basic generation smoke test for new
+# endpoint types in mojom.
+group("test_generation") {
+  testonly = true
+  deps = [
+    ":other_test_interfaces",
+    ":other_test_interfaces_js",
+  ]
+
+  if (is_android) {
+    deps += [ ":other_test_interfaces_java" ]
+  }
 }

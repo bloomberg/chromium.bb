@@ -49,6 +49,29 @@ void ServiceWorkerContentSettingsProxyImpl::AllowIndexedDB(
       render_frames));
 }
 
+void ServiceWorkerContentSettingsProxyImpl::AllowCacheStorage(
+    AllowCacheStorageCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  // May be shutting down.
+  if (!context_ || !context_->wrapper()->resource_context()) {
+    std::move(callback).Run(false);
+    return;
+  }
+  if (origin_.opaque()) {
+    std::move(callback).Run(false);
+    return;
+  }
+  // |render_frames| is used to show UI for the frames affected by the
+  // content setting. However, service worker is not necessarily associated
+  // with frames or making the request on behalf of frames,
+  // so just pass an empty |render_frames|.
+  std::vector<GlobalFrameRoutingId> render_frames;
+  std::move(callback).Run(
+      GetContentClient()->browser()->AllowWorkerCacheStorage(
+          origin_.GetURL(), context_->wrapper()->resource_context(),
+          render_frames));
+}
+
 void ServiceWorkerContentSettingsProxyImpl::RequestFileSystemAccessSync(
     RequestFileSystemAccessSyncCallback callback) {
   mojo::ReportBadMessage(

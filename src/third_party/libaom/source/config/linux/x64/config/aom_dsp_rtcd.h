@@ -5378,10 +5378,6 @@ void aom_v_predictor_8x8_sse2(uint8_t* dst,
                               const uint8_t* left);
 #define aom_v_predictor_8x8 aom_v_predictor_8x8_sse2
 
-void av1_round_shift_array_c(int32_t* arr, int size, int bit);
-void av1_round_shift_array_sse4_1(int32_t* arr, int size, int bit);
-RTCD_EXTERN void (*av1_round_shift_array)(int32_t* arr, int size, int bit);
-
 void aom_dsp_rtcd(void);
 
 #ifdef RTCD_C
@@ -5799,9 +5795,6 @@ static void setup_rtcd_internal(void) {
   aom_v_predictor_64x64 = aom_v_predictor_64x64_sse2;
   if (flags & HAS_AVX2)
     aom_v_predictor_64x64 = aom_v_predictor_64x64_avx2;
-  av1_round_shift_array = av1_round_shift_array_c;
-  if (flags & HAS_SSE4_1)
-    av1_round_shift_array = av1_round_shift_array_sse4_1;
 }
 #endif
 

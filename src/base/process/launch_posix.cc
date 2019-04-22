@@ -35,11 +35,13 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/process/environment_internal.h"
 #include "base/process/process.h"
 #include "base/process/process_metrics.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
+#include "base/threading/platform_thread_internal_posix.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
@@ -299,10 +301,10 @@ Process LaunchProcess(const std::vector<std::string>& argv,
   std::unique_ptr<char* []> new_environ;
   char* const empty_environ = nullptr;
   char* const* old_environ = GetEnvironment();
-  if (options.clear_environ)
+  if (options.clear_environment)
     old_environ = &empty_environ;
-  if (!options.environ.empty())
-    new_environ = AlterEnvironment(old_environ, options.environ);
+  if (!options.environment.empty())
+    new_environ = internal::AlterEnvironment(old_environ, options.environment);
 
   sigset_t full_sigset;
   sigfillset(&full_sigset);
@@ -430,12 +432,15 @@ Process LaunchProcess(const std::vector<std::string>& argv,
 #endif  // defined(OS_CHROMEOS)
 
     // Cannot use STL iterators here, since debug iterators use locks.
-    for (const auto& value : options.fds_to_remap) {
+    // NOLINTNEXTLINE(modernize-loop-convert)
+    for (size_t i = 0; i < options.fds_to_remap.size(); ++i) {
+      const FileHandleMappingVector::value_type& value =
+          options.fds_to_remap[i];
       fd_shuffle1.push_back(InjectionArc(value.first, value.second, false));
       fd_shuffle2.push_back(InjectionArc(value.first, value.second, false));
     }
 
-    if (!options.environ.empty() || options.clear_environ)
+    if (!options.environment.empty() || options.clear_environment)
       SetEnvironment(new_environ.get());
 
     // fd_shuffle1 is mutated by this call because it cannot malloc.
@@ -486,7 +491,8 @@ Process LaunchProcess(const std::vector<std::string>& argv,
     if (options.wait) {
       // While this isn't strictly disk IO, waiting for another process to
       // finish is the sort of thing ThreadRestrictions is trying to prevent.
-      ScopedBlockingCall scoped_blocking_call(BlockingType::MAY_BLOCK);
+      ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                              BlockingType::MAY_BLOCK);
       pid_t ret = HANDLE_EINTR(waitpid(pid, nullptr, 0));
       DPCHECK(ret > 0);
     }
@@ -517,7 +523,7 @@ static bool GetAppOutputInternal(
     std::string* output,
     bool do_search_path,
     int* exit_code) {
-  ScopedBlockingCall scoped_blocking_call(BlockingType::MAY_BLOCK);
+  ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
   // exit_code must be supplied so calling function can determine success.
   DCHECK(exit_code);
   *exit_code = EXIT_FAILURE;
@@ -569,16 +575,20 @@ static bool GetAppOutputInternal(
       // Adding another element here? Remeber to increase the argument to
       // reserve(), above.
 
-      for (const auto& i : fd_shuffle1)
-        fd_shuffle2.push_back(i);
+      // Cannot use STL iterators here, since debug iterators use locks.
+      // NOLINTNEXTLINE(modernize-loop-convert)
+      for (size_t i = 0; i < fd_shuffle1.size(); ++i)
+        fd_shuffle2.push_back(fd_shuffle1[i]);
 
       if (!ShuffleFileDescriptors(&fd_shuffle1))
         _exit(127);
 
       CloseSuperfluousFds(fd_shuffle2);
 
-      for (const auto& arg : argv)
-        argv_cstr.push_back(const_cast<char*>(arg.c_str()));
+      // Cannot use STL iterators here, since debug iterators use locks.
+      // NOLINTNEXTLINE(modernize-loop-convert)
+      for (size_t i = 0; i < argv.size(); ++i)
+        argv_cstr.push_back(const_cast<char*>(argv[i].c_str()));
       argv_cstr.push_back(nullptr);
 
       if (do_search_path)
@@ -721,6 +731,13 @@ pid_t ForkWithFlags(unsigned long flags, pid_t* ptid, pid_t* ctid) {
   if (setjmp(env) == 0) {
     return CloneAndLongjmpInChild(flags, ptid, ctid, &env);
   }
+
+#if defined(OS_LINUX)
+  // Since we use clone() directly, it does not call any pthread_aftork()
+  // callbacks, we explicitly clear tid cache here (normally this call is
+  // done as pthread_aftork() callback).  See crbug.com/902514.
+  base::internal::ClearTidCache();
+#endif  // defined(OS_LINUX)
 
   return 0;
 }

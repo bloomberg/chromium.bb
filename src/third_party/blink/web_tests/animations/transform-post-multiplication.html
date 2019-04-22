@@ -20,11 +20,11 @@ function assertNoPostMultiplication(start, end) {
 }
 
 function interpolationUsesPostMultiplication(start, end) {
-    // This value prefix will cause post multiplication to interpolate differently than pairwise
-    // interpolation. Flipping both the x and y scales is equivalent to a 180 degree rotation in
-    // its matrix representation.
-    var testStart = 'scale(-1, -1) ' + start;
-    var testEnd = 'scale(1, 1) ' + end;
+    // This value suffix will cause post multiplication to interpolate differently than pairwise
+    // interpolation. Rotating by 370 degrees is equivalent to rotating by 10 degrees in the  matrix
+    // representation.
+    var testStart = start + ' rotate(370deg)';
+    var testEnd = end + ' rotate(0deg)';
 
     var animation = target.animate({transform: [toMatrix(testStart), toMatrix(testEnd)]}, 1);
     animation.currentTime = 0.5;

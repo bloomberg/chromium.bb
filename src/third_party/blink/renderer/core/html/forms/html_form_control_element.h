@@ -29,33 +29,27 @@
 #include "third_party/blink/public/web/web_autofill_state.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/html/forms/form_associated.h"
-#include "third_party/blink/renderer/core/html/forms/labelable_element.h"
 #include "third_party/blink/renderer/core/html/forms/listed_element.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
 
 namespace blink {
 
 class HTMLFormElement;
-class ValidationMessageClient;
-
-enum CheckValidityEventBehavior {
-  kCheckValidityDispatchNoEvent,
-  kCheckValidityDispatchInvalidEvent
-};
 
 // HTMLFormControlElement is the default implementation of
 // ListedElement, and listed element implementations should use
 // HTMLFormControlElement unless there is a special reason.
-class CORE_EXPORT HTMLFormControlElement : public LabelableElement,
+class CORE_EXPORT HTMLFormControlElement : public HTMLElement,
                                            public ListedElement,
                                            public FormAssociated {
   USING_GARBAGE_COLLECTED_MIXIN(HTMLFormControlElement);
 
  public:
   ~HTMLFormControlElement() override;
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
-  String formAction() const;
-  void setFormAction(const AtomicString&);
+  void formAction(USVStringOrTrustedURL&) const;
+  void setFormAction(const USVStringOrTrustedURL&, ExceptionState&);
   String formEnctype() const;
   void setFormEnctype(const AtomicString&);
   String formMethod() const;
@@ -98,25 +92,6 @@ class CORE_EXPORT HTMLFormControlElement : public LabelableElement,
 
   bool willValidate() const override;
 
-  void UpdateVisibleValidationMessage();
-  void HideVisibleValidationMessage();
-  bool checkValidity(
-      HeapVector<Member<HTMLFormControlElement>>* unhandled_invalid_controls =
-          nullptr,
-      CheckValidityEventBehavior = kCheckValidityDispatchInvalidEvent);
-  bool reportValidity();
-  // This must be called only after the caller check the element is focusable.
-  void ShowValidationMessage();
-  bool IsValidationMessageVisible() const;
-  // This must be called when a validation constraint or control value is
-  // changed.
-  void SetNeedsValidityCheck();
-  void setCustomValidity(const String&) final;
-  void FindCustomValidationMessageTextDirection(const String& message,
-                                                TextDirection& message_dir,
-                                                String& sub_message,
-                                                TextDirection& sub_message_dir);
-
   bool IsReadOnly() const;
   bool IsDisabledOrReadOnly() const;
 
@@ -144,7 +119,7 @@ class CORE_EXPORT HTMLFormControlElement : public LabelableElement,
   void CloneNonAttributePropertiesFrom(const Element&,
                                        CloneChildrenFlag) override;
 
-  FormAssociated* ToFormAssociatedOrNull() override { return this; };
+  FormAssociated* ToFormAssociatedOrNull() override { return this; }
   void AssociateWith(HTMLFormElement*) override;
 
   bool BlocksFormSubmission() const { return blocks_form_submission_; }
@@ -175,11 +150,7 @@ class CORE_EXPORT HTMLFormControlElement : public LabelableElement,
                          WebFocusType,
                          InputDeviceCapabilities* source_capabilities) override;
 
-  void DidRecalcStyle(StyleRecalcChange) override;
-
-  // This must be called any time the result of willValidate() has changed.
-  void SetNeedsWillValidateCheck();
-  virtual bool RecalcWillValidate() const;
+  void DidRecalcStyle(const StyleRecalcChange) override;
 
   virtual void ResetImpl() {}
   virtual bool SupportsAutofocus() const;
@@ -193,31 +164,10 @@ class CORE_EXPORT HTMLFormControlElement : public LabelableElement,
   bool IsValidElement() override;
   bool MatchesValidityPseudoClasses() const override;
 
-  ValidationMessageClient* GetValidationMessageClient() const;
-
-  // Requests validity recalc for the form owner, if one exists.
-  void FormOwnerSetNeedsValidityCheck();
-  // Requests validity recalc for all ancestor fieldsets, if exist.
-  void FieldSetAncestorsSetNeedsValidityCheck(Node*);
-
   unsigned unique_renderer_form_control_id_;
 
   WebString autofill_section_;
   enum WebAutofillState autofill_state_;
-
-  enum DataListAncestorState { kUnknown, kInsideDataList, kNotInsideDataList };
-  mutable enum DataListAncestorState data_list_ancestor_state_;
-
-  bool has_validation_message_ : 1;
-  // The initial value of will_validate_ depends on the derived class. We can't
-  // initialize it with a virtual function in the constructor. will_validate_
-  // is not deterministic as long as will_validate_initialized_ is false.
-  mutable bool will_validate_initialized_ : 1;
-  mutable bool will_validate_ : 1;
-
-  // Cache of valid().
-  bool is_valid_ : 1;
-  bool validity_is_dirty_ : 1;
 
   bool blocks_form_submission_ : 1;
 };

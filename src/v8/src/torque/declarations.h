@@ -47,22 +47,21 @@ class Declarations {
   static std::vector<Declarable*> Lookup(const QualifiedName& name) {
     std::vector<Declarable*> d = TryLookup(name);
     if (d.empty()) {
-      std::stringstream s;
-      s << "cannot find \"" << name << "\"";
-      ReportError(s.str());
+      ReportError("cannot find \"", name, "\"");
     }
     return d;
   }
 
   static std::vector<Declarable*> LookupGlobalScope(const std::string& name);
 
+  static const TypeAlias* LookupTypeAlias(const QualifiedName& name);
   static const Type* LookupType(const QualifiedName& name);
   static const Type* LookupType(std::string name);
   static const Type* LookupGlobalType(const std::string& name);
   static const Type* GetType(TypeExpression* type_expression);
 
   static Builtin* FindSomeInternalBuiltinWithType(
-      const FunctionPointerType* type);
+      const BuiltinPointerType* type);
 
   static Value* LookupValue(const QualifiedName& name);
 
@@ -76,15 +75,18 @@ class Declarations {
   static Namespace* DeclareNamespace(const std::string& name);
 
   static const AbstractType* DeclareAbstractType(
-      const std::string& name, bool transient, const std::string& generated,
+      const Identifier* name, bool transient, std::string generated,
       base::Optional<const AbstractType*> non_constexpr_version,
-      const base::Optional<std::string>& parent = {});
+      const base::Optional<Identifier*>& parent = {});
 
-  static void DeclareType(const std::string& name, const Type* type,
+  static void DeclareType(const Identifier* name, const Type* type,
                           bool redeclaration);
 
-  static void DeclareStruct(const std::string& name,
-                            const std::vector<NameAndType>& fields);
+  static StructType* DeclareStruct(const Identifier* name);
+
+  static ClassType* DeclareClass(const Type* super, const Identifier* name,
+                                 bool is_extern, bool generate_print,
+                                 bool transient, const std::string& generates);
 
   static Macro* CreateMacro(std::string external_name,
                             std::string readable_name,
@@ -96,6 +98,10 @@ class Declarations {
       base::Optional<std::string> external_assembler_name,
       const Signature& signature, bool transitioning,
       base::Optional<Statement*> body, base::Optional<std::string> op = {});
+
+  static Method* CreateMethod(AggregateType* class_type,
+                              const std::string& name, Signature signature,
+                              bool transitioning, Statement* body);
 
   static Intrinsic* CreateIntrinsic(const std::string& name,
                                     const Signature& signature);
@@ -115,9 +121,9 @@ class Declarations {
                                                  const Signature& signature,
                                                  bool transitioning);
 
-  static void DeclareExternConstant(const std::string& name, const Type* type,
+  static void DeclareExternConstant(Identifier* name, const Type* type,
                                     std::string value);
-  static NamespaceConstant* DeclareNamespaceConstant(const std::string& name,
+  static NamespaceConstant* DeclareNamespaceConstant(Identifier* name,
                                                      const Type* type,
                                                      Expression* body);
 
@@ -134,6 +140,7 @@ class Declarations {
     return CurrentScope::Get()->AddDeclarable(name,
                                               RegisterDeclarable(std::move(d)));
   }
+  static Macro* DeclareOperator(const std::string& name, Macro* m);
 
   static std::string GetGeneratedCallableName(
       const std::string& name, const TypeVector& specialized_types);

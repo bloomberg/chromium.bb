@@ -7,7 +7,7 @@
 
 #include "mojo/public/cpp/base/time_mojom_traits.h"
 #include "ui/base/accelerators/accelerator.h"
-#include "ui/base/accelerators/mojo/accelerator.mojom.h"
+#include "ui/base/accelerators/mojo/accelerator.mojom-shared.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 namespace mojo {

@@ -26,10 +26,6 @@
 #elif defined(USE_AURA)
 #if defined(OS_CHROMEOS)
 
-namespace display {
-class Screen;
-}
-
 namespace wm {
 class WMTestHelper;
 }
@@ -107,8 +103,8 @@ class Shell : public WebContentsDelegate,
       const gfx::Size& initial_size,
       scoped_refptr<SessionStorageNamespace> session_storage_namespace);
 
-  // Returns the Shell object corresponding to the given RenderViewHost.
-  static Shell* FromRenderViewHost(RenderViewHost* rvh);
+  // Returns the Shell object corresponding to the given WebContents.
+  static Shell* FromWebContents(WebContents* web_contents);
 
   // Returns the currently open windows.
   static std::vector<Shell*>& windows() { return windows_; }
@@ -183,6 +179,7 @@ class Shell : public WebContentsDelegate,
                               const base::string16& message,
                               int32_t line_no,
                               const base::string16& source_id) override;
+  void PortalWebContentsCreated(WebContents* portal_web_contents) override;
   void RendererUnresponsive(
       WebContents* source,
       RenderWidgetHost* render_widget_host,
@@ -197,7 +194,8 @@ class Shell : public WebContentsDelegate,
                                          bool allowed_per_prefs,
                                          const url::Origin& origin,
                                          const GURL& resource_url) override;
-  gfx::Size EnterPictureInPicture(const viz::SurfaceId&,
+  gfx::Size EnterPictureInPicture(content::WebContents* web_contents,
+                                  const viz::SurfaceId&,
                                   const gfx::Size& natural_size) override;
   bool ShouldResumeRequestsForCreatedWindow() override;
 
@@ -293,7 +291,6 @@ class Shell : public WebContentsDelegate,
 #elif defined(USE_AURA)
 #if defined(OS_CHROMEOS)
   static wm::WMTestHelper* wm_test_helper_;
-  static display::Screen* test_screen_;
 #else
   static wm::WMState* wm_state_;
 #endif

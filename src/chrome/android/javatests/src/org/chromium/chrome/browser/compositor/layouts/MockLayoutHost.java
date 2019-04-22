@@ -32,10 +32,10 @@ class MockLayoutHost implements LayoutManagerHost, LayoutRenderHost {
         }
 
         @Override
-        public void remove(int tabId) { }
+        public void remove(int tabId) {}
 
         @Override
-        public void clearExcept(int tabId) { }
+        public void clearExcept(int tabId) {}
     }
 
     private final MockTitleCache mMockTitleCache = new MockTitleCache();
@@ -49,16 +49,16 @@ class MockLayoutHost implements LayoutManagerHost, LayoutRenderHost {
     }
 
     @Override
-    public void requestRender() { }
+    public void requestRender() {}
 
     @Override
-    public void onCompositorLayout() { }
+    public void onCompositorLayout() {}
 
     @Override
     public void didSwapFrame(int pendingFrameCount) {}
 
     @Override
-    public void onSurfaceCreated() { }
+    public void onSurfaceCreated() {}
 
     @Override
     public void onSurfaceResized(int width, int height) {}
@@ -118,13 +118,13 @@ class MockLayoutHost implements LayoutManagerHost, LayoutRenderHost {
     }
 
     @Override
-    public void pushDebugRect(Rect rect, int color) { }
+    public void pushDebugRect(Rect rect, int color) {}
 
     @Override
-    public void loadPersitentTextureDataIfNeeded() { }
+    public void loadPersitentTextureDataIfNeeded() {}
 
     @Override
-    public void setContentOverlayVisibility(boolean visible) { }
+    public void setContentOverlayVisibility(boolean visible, boolean canBeFocusable) {}
 
     @Override
     public TitleCache getTitleCache() {
@@ -142,10 +142,10 @@ class MockLayoutHost implements LayoutManagerHost, LayoutRenderHost {
     }
 
     @Override
-    public void invalidateAccessibilityProvider() { }
+    public void invalidateAccessibilityProvider() {}
 
     @Override
-    public void onContentChanged() { }
+    public void onContentChanged() {}
 
     @Override
     public int getBrowserControlsBackgroundColor() {

@@ -16,6 +16,14 @@
 namespace content {
 class BrowserAccessibilityWin;
 
+// {3761326A-34B2-465A-835D-7A3D8F4EFB92}
+static const GUID kUiaTestCompleteSentinelGuid = {
+    0x3761326a,
+    0x34b2,
+    0x465a,
+    {0x83, 0x5d, 0x7a, 0x3d, 0x8f, 0x4e, 0xfb, 0x92}};
+static const wchar_t kUiaTestCompleteSentinel[] = L"kUiaTestCompleteSentinel";
+
 // Manages a tree of BrowserAccessibilityWin objects.
 class CONTENT_EXPORT BrowserAccessibilityManagerWin
     : public BrowserAccessibilityManager {
@@ -32,6 +40,9 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
   // Get the closest containing HWND.
   HWND GetParentHWND();
 
+  // AXEventGenerator methods
+  void OnSubtreeWillBeDeleted(ui::AXTree* tree, ui::AXNode* node) override;
+
   // BrowserAccessibilityManager methods
   void UserIsReloading() override;
   BrowserAccessibility* GetFocus() override;
@@ -41,10 +52,18 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
   void FireFocusEvent(BrowserAccessibility* node) override;
   void FireBlinkEvent(ax::mojom::Event event_type,
                       BrowserAccessibility* node) override;
-  void FireGeneratedEvent(AXEventGenerator::Event event_type,
+  void FireGeneratedEvent(ui::AXEventGenerator::Event event_type,
                           BrowserAccessibility* node) override;
 
+  void OnFocusLost(BrowserAccessibility* node) override;
+
   void FireWinAccessibilityEvent(LONG win_event, BrowserAccessibility* node);
+  void FireUiaAccessibilityEvent(LONG uia_event, BrowserAccessibility* node);
+  void FireUiaPropertyChangedEvent(LONG uia_property,
+                                   BrowserAccessibility* node);
+  void FireUiaStructureChangedEvent(StructureChangeType change_type,
+                                    BrowserAccessibility* node);
+  void FireUiaTextContainerEvent(LONG uia_event, BrowserAccessibility* node);
 
   // Track this object and post a VISIBLE_DATA_CHANGED notification when
   // its container scrolls.
@@ -55,13 +74,17 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
   void OnAccessibleHwndDeleted();
 
  protected:
-  // AXTreeDelegate methods.
+  // AXTreeObserver methods.
   void OnAtomicUpdateFinished(
       ui::AXTree* tree,
       bool root_changed,
-      const std::vector<ui::AXTreeDelegate::Change>& changes) override;
+      const std::vector<ui::AXTreeObserver::Change>& changes) override;
+
+  bool ShouldFireEventForNode(BrowserAccessibility* node);
 
  private:
+  void HandleSelectedStateChanged(BrowserAccessibility* node);
+
   // Give BrowserAccessibilityManager::Create access to our constructor.
   friend class BrowserAccessibilityManager;
 

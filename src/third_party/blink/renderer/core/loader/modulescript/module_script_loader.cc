@@ -13,6 +13,8 @@
 #include "third_party/blink/renderer/core/script/module_script.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loading_log.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
@@ -78,7 +80,7 @@ void ModuleScriptLoader::AdvanceState(ModuleScriptLoader::State new_state) {
 
 void ModuleScriptLoader::Fetch(
     const ModuleScriptFetchRequest& module_request,
-    FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
+    ResourceFetcher* fetch_client_settings_object_fetcher,
     ModuleGraphLevel level,
     Modulator* module_map_settings_object,
     ModuleScriptCustomFetchType custom_fetch_type,
@@ -87,16 +89,20 @@ void ModuleScriptLoader::Fetch(
   ModuleScriptLoader* loader = MakeGarbageCollected<ModuleScriptLoader>(
       module_map_settings_object, module_request.Options(), registry, client);
   registry->AddLoader(loader);
-  loader->FetchInternal(module_request, fetch_client_settings_object, level,
-                        custom_fetch_type);
+  loader->FetchInternal(module_request, fetch_client_settings_object_fetcher,
+                        level, custom_fetch_type);
 }
 
-// https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-single-module-script
+// https://html.spec.whatwg.org/C/#fetch-a-single-module-script
 void ModuleScriptLoader::FetchInternal(
     const ModuleScriptFetchRequest& module_request,
-    FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
+    ResourceFetcher* fetch_client_settings_object_fetcher,
     ModuleGraphLevel level,
     ModuleScriptCustomFetchType custom_fetch_type) {
+  const FetchClientSettingsObject& fetch_client_settings_object =
+      fetch_client_settings_object_fetcher->GetProperties()
+          .GetFetchClientSettingsObject();
+
   // Step 4. "Set moduleMap[url] to "fetching"." [spec text]
   AdvanceState(State::kFetching);
 
@@ -122,7 +128,7 @@ void ModuleScriptLoader::FetchInternal(
   // Step 6. "Set up the module script request given request and options."
   // [spec text]
   // [SMSR]
-  // https://html.spec.whatwg.org/multipage/webappapis.html#set-up-the-module-script-request
+  // https://html.spec.whatwg.org/C/#set-up-the-module-script-request
 
   // [SMSR] "... its parser metadata to options's parser metadata, ..."
   // [spec text]
@@ -153,37 +159,43 @@ void ModuleScriptLoader::FetchInternal(
   fetch_params.SetContentSecurityPolicyNonce(options_.Nonce());
 
   // [SMSR] "... its referrer policy to options's referrer policy." [spec text]
-  // Note: For now this is done below with SetHTTPReferrer()
+  // Note: For now this is done below with SetHttpReferrer()
   network::mojom::ReferrerPolicy referrer_policy =
       module_request.Options().GetReferrerPolicy();
   if (referrer_policy == network::mojom::ReferrerPolicy::kDefault)
-    referrer_policy = fetch_client_settings_object->GetReferrerPolicy();
+    referrer_policy = fetch_client_settings_object.GetReferrerPolicy();
 
   // Step 5. "... mode is "cors", ..."
   // [SMSR] "... and its credentials mode to options's credentials mode."
   // [spec text]
   fetch_params.SetCrossOriginAccessControl(
-      fetch_client_settings_object->GetSecurityOrigin(),
+      fetch_client_settings_object.GetSecurityOrigin(),
       options_.CredentialsMode());
 
   // Step 5. "... referrer is referrer, ..." [spec text]
-  // Note: For now this is done below with SetHTTPReferrer()
+  // Note: For now this is done below with SetHttpReferrer()
   String referrer_string = module_request.ReferrerString();
   if (referrer_string == Referrer::ClientReferrerString())
-    referrer_string = fetch_client_settings_object->GetOutgoingReferrer();
+    referrer_string = fetch_client_settings_object.GetOutgoingReferrer();
 
   // TODO(domfarolino): Stop storing ResourceRequest's referrer as a
   // blink::Referrer (https://crbug.com/850813).
-  fetch_params.MutableResourceRequest().SetHTTPReferrer(
+  fetch_params.MutableResourceRequest().SetHttpReferrer(
       SecurityPolicy::GenerateReferrer(referrer_policy,
                                        fetch_params.GetResourceRequest().Url(),
                                        referrer_string));
+
+  // Priority Hints and a request's "importance" are currently non-standard, but
+  // we can assume the following (see https://crbug.com/821464):
+  // Step 5. "... importance is options's importance ..."
+  fetch_params.MutableResourceRequest().SetFetchImportanceMode(
+      options_.Importance());
 
   // Step 5. "... and client is fetch client settings object." [spec text]
   // -> set by ResourceFetcher
 
   // Note: The fetch request's "origin" isn't specified in
-  // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-single-module-script
+  // https://html.spec.whatwg.org/C/#fetch-a-single-module-script
   // Thus, the "origin" is "client" per
   // https://fetch.spec.whatwg.org/#concept-request-origin
 
@@ -209,7 +221,8 @@ void ModuleScriptLoader::FetchInternal(
   // steps as part of the fetch's process response for the response response."
   // [spec text]
   module_fetcher_ = modulator_->CreateModuleScriptFetcher(custom_fetch_type);
-  module_fetcher_->Fetch(fetch_params, level, this);
+  module_fetcher_->Fetch(fetch_params, fetch_client_settings_object_fetcher,
+                         modulator_, level, this);
 }
 
 void ModuleScriptLoader::NotifyFetchFinished(
@@ -240,9 +253,10 @@ void ModuleScriptLoader::NotifyFetchFinished(
   // Step 10. "Let module script be the result of creating a module script given
   // source text, module map settings object, response's url, and options."
   // [spec text]
-  module_script_ = ModuleScript::Create(params->GetSourceText(), modulator_,
-                                        params->GetResponseUrl(),
-                                        params->GetResponseUrl(), options_);
+  module_script_ = ModuleScript::Create(
+      params->GetSourceText(), params->CacheHandler(),
+      ScriptSourceLocationType::kExternalFile, modulator_,
+      params->GetResponseUrl(), params->GetResponseUrl(), options_);
 
   AdvanceState(State::kFinished);
 }

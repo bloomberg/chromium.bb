@@ -12,8 +12,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/shill_profile_client.h"
+#include "chromeos/dbus/shill/shill_profile_client.h"
 #include "chromeos/network/network_type_pattern.h"
 #include "chromeos/network/network_ui_data.h"
 #include "chromeos/network/onc/onc_signature.h"
@@ -43,6 +42,10 @@ const base::DictionaryValue* GetByGUID(
   return it->second.get();
 }
 
+// Special service name in shill remembering settings across ethernet services.
+// Chrome should not attempt to configure / delete this.
+const char kEthernetAnyService[] = "ethernet_any";
+
 }  // namespace
 
 PolicyApplicator::PolicyApplicator(
@@ -65,7 +68,7 @@ PolicyApplicator::~PolicyApplicator() {
 }
 
 void PolicyApplicator::Run() {
-  DBusThreadManager::Get()->GetShillProfileClient()->GetProperties(
+  ShillProfileClient::Get()->GetProperties(
       dbus::ObjectPath(profile_.path),
       base::Bind(&PolicyApplicator::GetProfilePropertiesCallback,
                  weak_ptr_factory_.GetWeakPtr()),
@@ -99,16 +102,19 @@ void PolicyApplicator::GetProfilePropertiesCallback(
     std::string entry;
     it->GetAsString(&entry);
 
+    // Skip "ethernet_any", as this is used by shill internally to persist
+    // ethernet settings and the policy application logic should not mess with
+    // it.
+    if (entry == kEthernetAnyService)
+      continue;
+
     pending_get_entry_calls_.insert(entry);
-    DBusThreadManager::Get()->GetShillProfileClient()->GetEntry(
-        dbus::ObjectPath(profile_.path),
-        entry,
+    ShillProfileClient::Get()->GetEntry(
+        dbus::ObjectPath(profile_.path), entry,
         base::Bind(&PolicyApplicator::GetEntryCallback,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   entry),
+                   weak_ptr_factory_.GetWeakPtr(), entry),
         base::Bind(&PolicyApplicator::GetEntryError,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   entry));
+                   weak_ptr_factory_.GetWeakPtr(), entry));
   }
   if (pending_get_entry_calls_.empty()) {
     ApplyRemainingPolicies();
@@ -266,7 +272,7 @@ void PolicyApplicator::GetEntryError(const std::string& entry,
 }
 
 void PolicyApplicator::DeleteEntry(const std::string& entry) {
-  DBusThreadManager::Get()->GetShillProfileClient()->DeleteEntry(
+  ShillProfileClient::Get()->DeleteEntry(
       dbus::ObjectPath(profile_.path), entry, base::DoNothing(),
       base::Bind(&LogErrorMessage, FROM_HERE));
 }

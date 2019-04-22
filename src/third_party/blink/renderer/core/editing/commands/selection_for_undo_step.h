@@ -54,7 +54,7 @@ class SelectionForUndoStep final {
 
   bool IsValidFor(const Document&) const;
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   // |base_| and |extent_| can be disconnected from document.
@@ -84,7 +84,7 @@ class SelectionForUndoStep::Builder final {
   Builder& SetBaseAndExtentAsForwardSelection(const Position& base,
                                               const Position& extent);
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   SelectionForUndoStep selection_;

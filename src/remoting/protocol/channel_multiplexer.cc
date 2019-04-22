@@ -81,7 +81,7 @@ class ChannelMultiplexer::MuxChannel {
   // Called by MuxSocket.
   void OnSocketDestroyed();
   void DoWrite(std::unique_ptr<MultiplexPacket> packet,
-               const base::Closure& done_task,
+               base::OnceClosure done_task,
                const net::NetworkTrafficAnnotationTag& traffic_annotation);
   int DoRead(const scoped_refptr<net::IOBuffer>& buffer, int buffer_len);
 
@@ -184,14 +184,15 @@ void ChannelMultiplexer::MuxChannel::OnSocketDestroyed() {
 
 void ChannelMultiplexer::MuxChannel::DoWrite(
     std::unique_ptr<MultiplexPacket> packet,
-    const base::Closure& done_task,
+    base::OnceClosure done_task,
     const net::NetworkTrafficAnnotationTag& traffic_annotation) {
   packet->set_channel_id(send_id_);
   if (!id_sent_) {
     packet->set_channel_name(name_);
     id_sent_ = true;
   }
-  multiplexer_->DoWrite(std::move(packet), done_task, traffic_annotation);
+  multiplexer_->DoWrite(std::move(packet), std::move(done_task),
+                        traffic_annotation);
 }
 
 int ChannelMultiplexer::MuxChannel::DoRead(
@@ -258,10 +259,11 @@ int ChannelMultiplexer::MuxSocket::Write(
   packet->mutable_data()->assign(buffer->data(), size);
 
   write_pending_ = true;
-  channel_->DoWrite(std::move(packet),
-                    base::Bind(&ChannelMultiplexer::MuxSocket::OnWriteComplete,
-                               weak_factory_.GetWeakPtr()),
-                    traffic_annotation);
+  channel_->DoWrite(
+      std::move(packet),
+      base::BindOnce(&ChannelMultiplexer::MuxSocket::OnWriteComplete,
+                     weak_factory_.GetWeakPtr()),
+      traffic_annotation);
 
   // OnWriteComplete() might be called above synchronously.
   if (write_pending_) {
@@ -387,8 +389,8 @@ void ChannelMultiplexer::DoCreatePendingChannels() {
   // callback may destroy the multiplexer or somehow else modify
   // |pending_channels_| list (e.g. call CancelChannelCreation()).
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&ChannelMultiplexer::DoCreatePendingChannels,
-                            weak_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&ChannelMultiplexer::DoCreatePendingChannels,
+                                weak_factory_.GetWeakPtr()));
 
   PendingChannel c = pending_channels_.front();
   pending_channels_.erase(pending_channels_.begin());
@@ -415,8 +417,8 @@ void ChannelMultiplexer::OnBaseChannelError(int error) {
   for (auto it = channels_.begin(); it != channels_.end(); ++it) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&ChannelMultiplexer::NotifyBaseChannelError,
-                   weak_factory_.GetWeakPtr(), it->second->name(), error));
+        base::BindOnce(&ChannelMultiplexer::NotifyBaseChannelError,
+                       weak_factory_.GetWeakPtr(), it->second->name(), error));
   }
 }
 
@@ -462,9 +464,9 @@ void ChannelMultiplexer::OnIncomingPacket(
 
 void ChannelMultiplexer::DoWrite(
     std::unique_ptr<MultiplexPacket> packet,
-    const base::Closure& done_task,
+    base::OnceClosure done_task,
     const net::NetworkTrafficAnnotationTag& traffic_annotation) {
-  writer_.Write(SerializeAndFrameMessage(*packet), done_task,
+  writer_.Write(SerializeAndFrameMessage(*packet), std::move(done_task),
                 traffic_annotation);
 }
 

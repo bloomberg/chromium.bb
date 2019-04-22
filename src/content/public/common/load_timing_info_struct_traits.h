@@ -88,6 +88,10 @@ struct StructTraits<content::mojom::LoadTimingInfoDataView,
     return obj.send_end;
   }
 
+  static base::TimeTicks receive_headers_start(const net::LoadTimingInfo& obj) {
+    return obj.receive_headers_start;
+  }
+
   static base::TimeTicks receive_headers_end(const net::LoadTimingInfo& obj) {
     return obj.receive_headers_end;
   }

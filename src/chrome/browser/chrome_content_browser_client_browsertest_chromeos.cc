@@ -5,6 +5,7 @@
 #include "chrome/browser/chrome_content_browser_client.h"
 
 #include "base/base_switches.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -36,8 +37,9 @@ void GetUtilityProcessPidsOnIOThread(std::vector<pid_t>* pids) {
 std::string ReadCmdLine(pid_t pid) {
   // Files in "/proc" are in-memory, so it's safe to do IO.
   base::ScopedAllowBlockingForTesting allow_io;
-  base::FilePath cmdline_file =
-      base::FilePath("/proc").Append(base::IntToString(pid)).Append("cmdline");
+  base::FilePath cmdline_file = base::FilePath("/proc")
+                                    .Append(base::NumberToString(pid))
+                                    .Append("cmdline");
   std::string cmdline;
   base::ReadFileToString(cmdline_file, &cmdline);
   return cmdline;

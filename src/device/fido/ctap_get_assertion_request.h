@@ -20,6 +20,10 @@
 #include "device/fido/fido_constants.h"
 #include "device/fido/public_key_credential_descriptor.h"
 
+namespace cbor {
+class Value;
+}
+
 namespace device {
 
 // Object that encapsulates request parameters for AuthenticatorGetAssertion as
@@ -39,7 +43,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CtapGetAssertionRequest {
   // Serializes GetAssertion request parameter into CBOR encoded map with
   // integer keys and CBOR encoded values as defined by the CTAP spec.
   // https://drafts.fidoalliance.org/fido-2/latest/fido-client-to-authenticator-protocol-v2.0-wd-20180305.html#authenticatorGetAssertion
-  std::vector<uint8_t> EncodeAsCBOR() const;
+  std::pair<CtapRequestCommand, base::Optional<cbor::Value>> EncodeAsCBOR()
+      const;
 
   CtapGetAssertionRequest& SetUserVerification(
       UserVerificationRequirement user_verfication);
@@ -55,7 +60,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CtapGetAssertionRequest {
   // Return true if the given RP ID hash from a response is valid for this
   // request.
   bool CheckResponseRpIdHash(
-      const std::array<uint8_t, kRpIdHashLength>& response_rp_id_hash);
+      const std::array<uint8_t, kRpIdHashLength>& response_rp_id_hash) const;
 
   const std::string& rp_id() const { return rp_id_; }
   const std::string& client_data_json() const { return client_data_json_; }
@@ -98,7 +103,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CtapGetAssertionRequest {
   std::string client_data_json_;
   std::array<uint8_t, kClientDataHashLength> client_data_hash_;
   UserVerificationRequirement user_verification_ =
-      UserVerificationRequirement::kPreferred;
+      UserVerificationRequirement::kDiscouraged;
   bool user_presence_required_ = true;
 
   base::Optional<std::vector<PublicKeyCredentialDescriptor>> allow_list_;
@@ -110,6 +115,12 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CtapGetAssertionRequest {
       alternative_application_parameter_;
 
   bool is_incognito_mode_ = false;
+};
+
+class CtapGetNextAssertionRequest {
+ public:
+  std::pair<CtapRequestCommand, base::Optional<cbor::Value>> EncodeAsCBOR()
+      const;
 };
 
 }  // namespace device

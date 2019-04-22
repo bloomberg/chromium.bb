@@ -42,7 +42,11 @@ SelectionMenuController.prototype.onShowMenu_ = function() {
  * @private
  */
 SelectionMenuController.prototype.onHideMenu_ = function() {
-  // Do not remove 'toolbar-menu' yet, it will be removed at the end of
-  // FilesMenuItem.setMenuAsAnimating_ to avoid flicker.  See crbug.com/862926.
+  // If menu is animating to close, then do not remove 'toolbar-menu' yet, it
+  // will be removed at the end of FilesMenuItem.setMenuAsAnimating_ to avoid
+  // flicker.  See crbug.com/862926.
+  if (!this.menu_.classList.contains('animating')) {
+    this.menu_.classList.toggle('toolbar-menu', false);
+  }
   this.toggleRipple_.activated = false;
 };

@@ -13,7 +13,6 @@
 #include "re2/re2.h"
 
 using re2::StringPiece;
-using std::string;
 
 // NOT static, NOT signed.
 uint8_t dummy = 0;
@@ -21,25 +20,6 @@ uint8_t dummy = 0;
 void Test(StringPiece pattern, const RE2::Options& options, StringPiece text) {
   RE2 re(pattern, options);
   if (!re.ok())
-    return;
-
-  // Don't waste time fuzzing high-size programs.
-  // They can cause bug reports due to fuzzer timeouts.
-  int size = re.ProgramSize();
-  if (size > 9999)
-    return;
-  int rsize = re.ReverseProgramSize();
-  if (rsize > 9999)
-    return;
-
-  // Don't waste time fuzzing high-fanout programs.
-  // They can cause bug reports due to fuzzer timeouts.
-  std::map<int, int> histogram;
-  int fanout = re.ProgramFanout(&histogram);
-  if (fanout > 9)
-    return;
-  int rfanout = re.ReverseProgramFanout(&histogram);
-  if (rfanout > 9)
     return;
 
   // Don't waste time fuzzing programs with large substrings.
@@ -64,24 +44,59 @@ void Test(StringPiece pattern, const RE2::Options& options, StringPiece text) {
     }
   }
 
-  StringPiece sp1, sp2, sp3, sp4;
-  string s1, s2, s3, s4;
-  int i1, i2, i3, i4;
-  double d1, d2, d3, d4;
+  // Don't waste time fuzzing high-size programs.
+  // They can cause bug reports due to fuzzer timeouts.
+  int size = re.ProgramSize();
+  if (size > 9999)
+    return;
+  int rsize = re.ReverseProgramSize();
+  if (rsize > 9999)
+    return;
 
-  RE2::FullMatch(text, re, &sp1, &sp2, &sp3, &sp4);
-  RE2::PartialMatch(text, re, &s1, &s2, &s3, &s4);
+  // Don't waste time fuzzing high-fanout programs.
+  // They can cause bug reports due to fuzzer timeouts.
+  std::map<int, int> histogram;
+  int fanout = re.ProgramFanout(&histogram);
+  if (fanout > 9)
+    return;
+  int rfanout = re.ReverseProgramFanout(&histogram);
+  if (rfanout > 9)
+    return;
 
-  sp1 = sp2 = text;
-  RE2::Consume(&sp1, re, &i1, &i2, &i3, &i4);
-  RE2::FindAndConsume(&sp2, re, &d1, &d2, &d3, &d4);
+  if (re.NumberOfCapturingGroups() == 0) {
+    // Avoid early return due to too many arguments.
+    StringPiece sp = text;
+    RE2::FullMatch(sp, re);
+    RE2::PartialMatch(sp, re);
+    RE2::Consume(&sp, re);
+    sp = text;  // Reset.
+    RE2::FindAndConsume(&sp, re);
+  } else {
+    // Okay, we have at least one capturing group...
+    // Try conversion for variously typed arguments.
+    StringPiece sp = text;
+    short s;
+    RE2::FullMatch(sp, re, &s);
+    long l;
+    RE2::PartialMatch(sp, re, &l);
+    float f;
+    RE2::Consume(&sp, re, &f);
+    sp = text;  // Reset.
+    double d;
+    RE2::FindAndConsume(&sp, re, &d);
+  }
 
-  s3 = s4 = string(text);
-  RE2::Replace(&s3, re, "");
-  RE2::GlobalReplace(&s4, re, "");
+  std::string s = std::string(text);
+  RE2::Replace(&s, re, "");
+  s = std::string(text);  // Reset.
+  RE2::GlobalReplace(&s, re, "");
+
+  std::string min, max;
+  re.PossibleMatchRange(&min, &max, /*maxlen=*/9);
 
   // Exercise some other API functionality.
-  dummy += re.NumberOfCapturingGroups();
+  dummy += re.NamedCapturingGroups().size();
+  dummy += re.CapturingGroupNames().size();
   dummy += RE2::QuoteMeta(pattern).size();
 }
 
@@ -90,26 +105,32 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   if (size == 0 || size > 999)
     return 0;
 
-  // Crudely limit the use of ., \p and \P.
-  // Otherwise, we will waste time on inputs that have long runs of Unicode
+  // Crudely limit the use of ., \p, \P, \d, \D, \s, \S, \w and \W.
+  // Otherwise, we will waste time on inputs that have long runs of various
   // character classes. The fuzzer has shown itself to be easily capable of
   // generating such patterns that fall within the other limits, but result
   // in timeouts nonetheless. The marginal cost is high - even more so when
   // counted repetition is involved - whereas the marginal benefit is zero.
-  int dot = 0;
-  int backslash_p = 0;
+  // TODO(junyer): Handle [:isalnum:] et al. when they start to cause pain.
+  int char_class = 0;
+  int backslash_p = 0;  // very expensive, so handle specially
   for (size_t i = 0; i < size; i++) {
     if (data[i] == '.')
-      dot++;
+      char_class++;
     if (data[i] != '\\')
       continue;
     i++;
     if (i >= size)
       break;
+    if (data[i] == 'p' || data[i] == 'P' ||
+        data[i] == 'd' || data[i] == 'D' ||
+        data[i] == 's' || data[i] == 'S' ||
+        data[i] == 'w' || data[i] == 'W')
+      char_class++;
     if (data[i] == 'p' || data[i] == 'P')
       backslash_p++;
   }
-  if (dot > 99)
+  if (char_class > 9)
     return 0;
   if (backslash_p > 1)
     return 0;

@@ -25,6 +25,7 @@ class D3D11TextureHelper {
   bool EnsureInitialized();
   bool SetAdapterIndex(int32_t index);
   bool SetAdapterLUID(const LUID& luid);
+  void SetUseBGRA(bool bgra) { bgra_ = bgra; }
 
   void CleanupNoSubmit();
   void SetSourceAndOverlayVisible(bool source_visible, bool overlay_visible);
@@ -39,10 +40,16 @@ class D3D11TextureHelper {
 
   void AllocateBackBuffer();
   const Microsoft::WRL::ComPtr<ID3D11Texture2D>& GetBackbuffer();
+  void DiscardView();
 
   bool UpdateBackbufferSizes();
   gfx::RectF BackBufferLeft() { return target_left_; }
   gfx::RectF BackBufferRight() { return target_right_; }
+  void OverrideViewports(gfx::RectF left, gfx::RectF right) {
+    target_left_ = left;
+    target_right_ = right;
+    force_viewport_ = true;
+  }
   gfx::Size BackBufferSize() { return target_size_; }
   void SetBackbuffer(Microsoft::WRL::ComPtr<ID3D11Texture2D> back_buffer);
   Microsoft::WRL::ComPtr<ID3D11Device> GetDevice();
@@ -85,7 +92,8 @@ class D3D11TextureHelper {
 
     Microsoft::WRL::ComPtr<ID3D11RenderTargetView> render_target_view_;
     Microsoft::WRL::ComPtr<ID3D11PixelShader> flip_pixel_shader_;
-    Microsoft::WRL::ComPtr<ID3D11VertexShader> flip_vertex_shader_;
+    Microsoft::WRL::ComPtr<ID3D11VertexShader> vertex_shader_;
+    Microsoft::WRL::ComPtr<ID3D11GeometryShader> geometry_shader_;
 
     Microsoft::WRL::ComPtr<ID3D11InputLayout> input_layout_;
     Microsoft::WRL::ComPtr<ID3D11Buffer> vertex_buffer_;
@@ -101,6 +109,9 @@ class D3D11TextureHelper {
 
   bool overlay_visible_ = true;
   bool source_visible_ = true;
+
+  bool bgra_ = false;
+  bool force_viewport_ = false;
 
   gfx::RectF target_left_;   // 0 to 1 in each direction
   gfx::RectF target_right_;  // 0 to 1 in each direction

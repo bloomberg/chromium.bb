@@ -8,6 +8,7 @@
 #include "gpu/command_buffer/service/mailbox_manager_factory.h"
 #include "gpu/command_buffer/service/memory_program_cache.h"
 #include "gpu/command_buffer/service/program_cache.h"
+#include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_share_group.h"
 
 namespace gpu {
@@ -18,19 +19,20 @@ CommandBufferTaskExecutor::CommandBufferTaskExecutor(
     SyncPointManager* sync_point_manager,
     MailboxManager* mailbox_manager,
     scoped_refptr<gl::GLShareGroup> share_group,
-    gl::GLSurfaceFormat share_group_surface_format)
+    gl::GLSurfaceFormat share_group_surface_format,
+    SharedImageManager* shared_image_manager,
+    gles2::ProgramCache* program_cache)
     : gpu_preferences_(gpu_preferences),
       gpu_feature_info_(gpu_feature_info),
       sync_point_manager_(sync_point_manager),
       mailbox_manager_(mailbox_manager),
       share_group_(share_group),
       share_group_surface_format_(share_group_surface_format),
-      shader_translator_cache_(gpu_preferences_) {
-  if (!mailbox_manager_) {
-    // TODO(piman): have embedders own the mailbox manager.
-    owned_mailbox_manager_ = gles2::CreateMailboxManager(gpu_preferences_);
-    mailbox_manager_ = owned_mailbox_manager_.get();
-  }
+      program_cache_(program_cache),
+      shader_translator_cache_(gpu_preferences_),
+      shared_image_manager_(shared_image_manager) {
+  DCHECK(mailbox_manager_);
+  DCHECK(shared_image_manager_);
 }
 
 CommandBufferTaskExecutor::~CommandBufferTaskExecutor() = default;
@@ -57,13 +59,14 @@ gles2::ProgramCache* CommandBufferTaskExecutor::program_cache() {
     bool disable_disk_cache =
         gpu_preferences_.disable_gpu_shader_disk_cache ||
         gpu_feature_info_.IsWorkaroundEnabled(gpu::DISABLE_PROGRAM_DISK_CACHE);
-    program_cache_ = std::make_unique<gles2::MemoryProgramCache>(
+    owned_program_cache_ = std::make_unique<gles2::MemoryProgramCache>(
         gpu_preferences_.gpu_program_cache_size, disable_disk_cache,
         gpu_feature_info_.IsWorkaroundEnabled(
             gpu::DISABLE_PROGRAM_CACHING_FOR_TRANSFORM_FEEDBACK),
         &activity_flags_);
+    program_cache_ = owned_program_cache_.get();
   }
-  return program_cache_.get();
+  return program_cache_;
 }
 
 }  // namespace gpu

@@ -95,6 +95,7 @@ void LayoutSVGRoot::UnscaledIntrinsicSizingInfo(
 
 void LayoutSVGRoot::ComputeIntrinsicSizingInfo(
     IntrinsicSizingInfo& intrinsic_sizing_info) const {
+  DCHECK(!ShouldApplySizeContainment());
   UnscaledIntrinsicSizingInfo(intrinsic_sizing_info);
 
   intrinsic_sizing_info.size.Scale(StyleRef().EffectiveZoom());
@@ -209,15 +210,8 @@ void LayoutSVGRoot::UpdateLayout() {
   }
 
   const auto& old_overflow_rect = VisualOverflowRect();
-  overflow_.reset();
-  AddVisualEffectOverflow();
-
-  if (!ShouldApplyViewportClip()) {
-    FloatRect content_visual_rect = VisualRectInLocalSVGCoordinates();
-    content_visual_rect =
-        local_to_border_box_transform_.MapRect(content_visual_rect);
-    AddContentsVisualOverflow(EnclosingLayoutRect(content_visual_rect));
-  }
+  ClearSelfNeedsLayoutOverflowRecalc();
+  ClearLayoutOverflow();
 
   // The scale of one or more of the SVG elements may have changed, content
   // (the entire SVG) could have moved or new content may have been exposed, so
@@ -248,11 +242,24 @@ bool LayoutSVGRoot::ShouldApplyViewportClip() const {
          StyleRef().OverflowX() == EOverflow::kScroll || IsDocumentElement();
 }
 
-LayoutRect LayoutSVGRoot::VisualOverflowRect() const {
-  LayoutRect rect = LayoutReplaced::SelfVisualOverflowRect();
+void LayoutSVGRoot::RecalcVisualOverflow() {
+  LayoutReplaced::RecalcVisualOverflow();
+  UpdateCachedBoundaries();
   if (!ShouldApplyViewportClip())
-    rect.Unite(ContentsVisualOverflowRect());
-  return rect;
+    AddContentsVisualOverflow(ComputeContentsVisualOverflow());
+}
+
+LayoutRect LayoutSVGRoot::ComputeContentsVisualOverflow() const {
+  FloatRect content_visual_rect = VisualRectInLocalSVGCoordinates();
+  content_visual_rect =
+      local_to_border_box_transform_.MapRect(content_visual_rect);
+  // Condition the visual overflow rect to avoid being clipped/culled
+  // out if it is huge. This may sacrifice overflow, but usually only
+  // overflow that would never be seen anyway.
+  // To condition, we intersect with something that we oftentimes
+  // consider to be "infinity".
+  return Intersection(EnclosingLayoutRect(content_visual_rect),
+                      LayoutRect(LayoutRect::InfiniteIntRect()));
 }
 
 void LayoutSVGRoot::PaintReplaced(const PaintInfo& paint_info,
@@ -431,42 +438,6 @@ AffineTransform LayoutSVGRoot::LocalToSVGParentTransform() const {
   return AffineTransform::Translation(RoundToInt(Location().X()),
                                       RoundToInt(Location().Y())) *
          local_to_border_box_transform_;
-}
-
-LayoutRect LayoutSVGRoot::LocalVisualRectIgnoringVisibility() const {
-  // This is an open-coded aggregate of SVGLayoutSupport::localVisualRect
-  // and LayoutReplaced::localVisualRect. The reason for this is to optimize/
-  // minimize the visual rect when the box is not "decorated" (does not have
-  // background/border/etc., see
-  // LayoutSVGRootTest.VisualRectMappingWithViewportClipWithoutBorder).
-
-  // Return early for any cases where we don't actually paint.
-  if (!EnclosingLayer()->HasVisibleContent())
-    return LayoutRect();
-
-  // Compute the visual rect of the content of the SVG in the border-box
-  // coordinate space.
-  FloatRect content_visual_rect = VisualRectInLocalSVGCoordinates();
-  content_visual_rect =
-      local_to_border_box_transform_.MapRect(content_visual_rect);
-
-  // Apply initial viewport clip, overflow:visible content is added to
-  // visualOverflow but the most common case is that overflow is hidden, so
-  // always intersect.
-  content_visual_rect.Intersect(PixelSnappedBorderBoxRect());
-
-  LayoutRect visual_rect = EnclosingLayoutRect(content_visual_rect);
-  // If the box is decorated or is overflowing, extend it to include the
-  // border-box and overflow.
-  if (has_box_decoration_background_ || HasOverflowModel()) {
-    // The selectionRect can project outside of the overflowRect, so take their
-    // union for paint invalidation to avoid selection painting glitches.
-    LayoutRect decorated_visual_rect =
-        UnionRect(LocalSelectionRect(), VisualOverflowRect());
-    visual_rect.Unite(decorated_visual_rect);
-  }
-
-  return LayoutRect(EnclosingIntRect(visual_rect));
 }
 
 // This method expects local CSS box coordinates.

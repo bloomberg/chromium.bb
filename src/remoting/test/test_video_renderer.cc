@@ -5,6 +5,7 @@
 #include "remoting/test/test_video_renderer.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -46,7 +47,7 @@ class TestVideoRenderer::Core {
 
   // Used to decode video packets.
   void ProcessVideoPacket(std::unique_ptr<VideoPacket> packet,
-                          const base::Closure& done);
+                          base::OnceClosure done);
 
   // Initialize a decoder to decode video packets.
   void SetCodecForDecoding(const protocol::ChannelConfig::Codec codec);
@@ -159,7 +160,7 @@ TestVideoRenderer::Core::GetCurrentFrameForTest() const {
 
 void TestVideoRenderer::Core::ProcessVideoPacket(
     std::unique_ptr<VideoPacket> packet,
-    const base::Closure& done) {
+    base::OnceClosure done) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(decoder_);
   DCHECK(packet);
@@ -192,7 +193,7 @@ void TestVideoRenderer::Core::ProcessVideoPacket(
     }
   }
 
-  main_task_runner_->PostTask(FROM_HERE, done);
+  main_task_runner_->PostTask(FROM_HERE, std::move(done));
 
   if (save_frame_data_to_disk_) {
     std::unique_ptr<webrtc::DesktopFrame> frame(
@@ -280,8 +281,9 @@ TestVideoRenderer::TestVideoRenderer()
     LOG(ERROR) << "Cannot start TestVideoRenderer";
   } else {
     video_decode_task_runner_ = video_decode_thread_->task_runner();
-    video_decode_task_runner_->PostTask(FROM_HERE, base::Bind(&Core::Initialize,
-                                        base::Unretained(core_.get())));
+    video_decode_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&Core::Initialize, base::Unretained(core_.get())));
   }
 }
 
@@ -326,7 +328,7 @@ protocol::FrameStatsConsumer* TestVideoRenderer::GetFrameStatsConsumer() {
 
 void TestVideoRenderer::ProcessVideoPacket(
     std::unique_ptr<VideoPacket> video_packet,
-    const base::Closure& done) {
+    base::OnceClosure done) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(video_decode_task_runner_) << "Failed to start video decode thread";
 
@@ -334,15 +336,17 @@ void TestVideoRenderer::ProcessVideoPacket(
     VLOG(2) << "process video packet is called!";
 
     // Post video process task to the video decode thread.
-    base::Closure process_video_task = base::Bind(
-        &TestVideoRenderer::Core::ProcessVideoPacket,
-        base::Unretained(core_.get()), base::Passed(&video_packet), done);
-    video_decode_task_runner_->PostTask(FROM_HERE, process_video_task);
+    base::OnceClosure process_video_task =
+        base::BindOnce(&TestVideoRenderer::Core::ProcessVideoPacket,
+                       base::Unretained(core_.get()), std::move(video_packet),
+                       std::move(done));
+    video_decode_task_runner_->PostTask(FROM_HERE,
+                                        std::move(process_video_task));
   } else {
     // Log at a high verbosity level as we receive empty packets frequently and
     // they can clutter up the debug output if the level is set too low.
     VLOG(3) << "Empty Video Packet received.";
-    done.Run();
+    std::move(done).Run();
   }
 }
 
@@ -352,9 +356,8 @@ void TestVideoRenderer::SetCodecForDecoding(
 
   VLOG(2) << "TestVideoRenderer::SetDecoder() Called";
   video_decode_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&Core::SetCodecForDecoding,
-                            base::Unretained(core_.get()),
-                            codec));
+      FROM_HERE, base::BindOnce(&Core::SetCodecForDecoding,
+                                base::Unretained(core_.get()), codec));
 }
 
 std::unique_ptr<webrtc::DesktopFrame>
@@ -374,9 +377,9 @@ void TestVideoRenderer::ExpectAverageColorInRect(
   DVLOG(2) << "TestVideoRenderer::SetImagePatternAndMatchedCallback() Called";
   video_decode_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&Core::ExpectAverageColorInRect, base::Unretained(core_.get()),
-                 expected_rect, expected_avg_color,
-                 image_pattern_matched_callback));
+      base::BindOnce(&Core::ExpectAverageColorInRect,
+                     base::Unretained(core_.get()), expected_rect,
+                     expected_avg_color, image_pattern_matched_callback));
 }
 
 void TestVideoRenderer::SaveFrameDataToDisk(bool save_frame_data_to_disk) {
@@ -384,8 +387,8 @@ void TestVideoRenderer::SaveFrameDataToDisk(bool save_frame_data_to_disk) {
 
   video_decode_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&Core::save_frame_data_to_disk, base::Unretained(core_.get()),
-                 save_frame_data_to_disk));
+      base::BindOnce(&Core::save_frame_data_to_disk,
+                     base::Unretained(core_.get()), save_frame_data_to_disk));
 }
 
 }  // namespace test

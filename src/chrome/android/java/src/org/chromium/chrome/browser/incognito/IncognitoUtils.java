@@ -15,15 +15,13 @@ import android.util.Pair;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
-import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.document.DocumentUtils;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.tabmodel.TabbedModeTabPersistencePolicy;
 
 import java.io.File;
-import java.lang.ref.WeakReference;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -55,9 +53,9 @@ public class IncognitoUtils {
         for (ActivityManager.AppTask task : manager.getAppTasks()) {
             ActivityManager.RecentTaskInfo info = DocumentUtils.getTaskInfoFromTask(task);
             if (info == null) continue;
-            String className = DocumentUtils.getTaskClassName(task, pm);
+            String componentName = DocumentUtils.getTaskComponentName(task, pm);
 
-            if (ChromeTabbedActivity.isTabbedModeClassName(className)) {
+            if (ChromeTabbedActivity.isTabbedModeComponentName(componentName)) {
                 tabbedModeTaskIds.add(info.id);
             }
         }
@@ -66,10 +64,7 @@ public class IncognitoUtils {
             return true;
         }
 
-        List<WeakReference<Activity>> activities = ApplicationStatus.getRunningActivities();
-        for (int i = 0; i < activities.size(); i++) {
-            Activity activity = activities.get(i).get();
-            if (activity == null) continue;
+        for (Activity activity : ApplicationStatus.getRunningActivities()) {
             tabbedModeTaskIds.remove(activity.getTaskId());
         }
 

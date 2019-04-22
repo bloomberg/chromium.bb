@@ -37,7 +37,7 @@ class LogNetLogTest : public InProcessBrowserTest {
         << "Could not read: " << net_log_path_;
 
     // Parse it as JSON.
-    auto parsed = base::JSONReader::Read(file_contents);
+    auto parsed = base::JSONReader::ReadDeprecated(file_contents);
     ASSERT_TRUE(parsed);
 
     // Ensure the root value is a dictionary.

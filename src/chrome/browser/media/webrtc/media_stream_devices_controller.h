@@ -12,7 +12,8 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "components/content_settings/core/common/content_settings.h"
-#include "content/public/common/media_stream_request.h"
+#include "content/public/browser/media_stream_request.h"
+#include "third_party/blink/public/common/mediastream/media_stream_request.h"
 
 class MediaStreamDevicesController;
 class Profile;
@@ -81,8 +82,8 @@ class MediaStreamDevicesController {
 
   // Returns a list of devices available for the request for the given
   // audio/video permission settings.
-  content::MediaStreamDevices GetDevices(ContentSetting audio_setting,
-                                         ContentSetting video_setting);
+  blink::MediaStreamDevices GetDevices(ContentSetting audio_setting,
+                                       ContentSetting video_setting);
 
   // Runs |callback_| with the current audio/video permission settings.
   void RunCallback(bool blocked_by_feature_policy);
@@ -96,7 +97,7 @@ class MediaStreamDevicesController {
   ContentSetting GetContentSetting(
       ContentSettingsType content_type,
       const content::MediaStreamRequest& request,
-      content::MediaStreamRequestResult* denial_reason) const;
+      blink::MediaStreamRequestResult* denial_reason) const;
 
   // Returns true if clicking allow on the dialog should give access to the
   // requested devices.
@@ -109,7 +110,7 @@ class MediaStreamDevicesController {
   // through the lifetime of the request.
   ContentSetting audio_setting_;
   ContentSetting video_setting_;
-  content::MediaStreamRequestResult denial_reason_;
+  blink::MediaStreamRequestResult denial_reason_;
 
   content::WebContents* web_contents_;
 

@@ -9,9 +9,11 @@ import re
 import scm
 import subprocess2
 import sys
-import urlparse
 
-from third_party import colorama
+try:
+  import urlparse
+except ImportError:  # For Py3 compatibility
+  import urllib.parse as urlparse
 
 
 # Current version of metrics recording.
@@ -21,43 +23,35 @@ CURRENT_VERSION = 1
 
 APP_URL = 'https://cit-cli-metrics.appspot.com'
 
-EMPTY_LINE = (
-  '*                                                   *'
-)
-NOTICE_COUNTDOWN_HEADER = (
-  '*****************************************************\n'
-  '*  METRICS COLLECTION WILL START IN %2d EXECUTIONS   *'
-)
-NOTICE_COLLECTION_HEADER = (
-  '*****************************************************\n'
-  '*      METRICS COLLECTION IS TAKING PLACE           *'
-)
-NOTICE_VERSION_CHANGE_HEADER = (
-  '*****************************************************\n'
-  '*       WE ARE COLLECTING ADDITIONAL METRICS        *\n'
-  '*                                                   *\n'
-  '* Please review the changes and opt-in again.       *'
-)
-NOTICE_FOOTER = (
-  '* To suppress this message opt in or out using:     *\n'
-  '* $ gclient metrics [--opt-in] [--opt-out]          *\n'
-  '* For more information please see metrics.README.md *\n'
-  '* in your depot_tools checkout or visit             *\n'
-  '* https://bit.ly/2ufRS4p.                           *\n'
-  '*****************************************************\n'
-)
+def get_notice_countdown_header(countdown):
+  if countdown == 0:
+    yield '     METRICS COLLECTION IS TAKING PLACE'
+  else:
+    yield '  METRICS COLLECTION WILL START IN %d EXECUTIONS' % countdown
 
-CHANGE_NOTICE = {
-  # No changes for version 0
-  0: '',
-  1: ('* We want to collect the Git version.               *\n'
-      '* We want to collect information about the HTTP     *\n'
-      '* requests that depot_tools makes, and the git and  *\n'
-      '* cipd commands it executes.                        *\n'
-      '*                                                   *\n'
-      '* We only collect known strings to make sure we     *\n'
-      '* don\'t record PII.                                 *')
-}
+def get_notice_version_change_header():
+  yield '       WE ARE COLLECTING ADDITIONAL METRICS'
+  yield ''
+  yield ' Please review the changes and opt-in again.'
+
+def get_notice_footer():
+  yield 'To suppress this message opt in or out using:'
+  yield '$ gclient metrics [--opt-in] [--opt-out]'
+  yield 'For more information please see metrics.README.md'
+  yield 'in your depot_tools checkout or visit'
+  yield 'https://goo.gl/yNpRDV.'
+
+def get_change_notice(version):
+  if version == 0:
+    pass # No changes for version 0
+  elif version == 1:
+    yield 'We want to collect the Git version.'
+    yield 'We want to collect information about the HTTP'
+    yield 'requests that depot_tools makes, and the git and'
+    yield 'cipd commands it executes.'
+    yield ''
+    yield 'We only collect known strings to make sure we'
+    yield 'don\'t record PII.'
 
 
 KNOWN_PROJECT_URLS = {
@@ -147,6 +141,8 @@ KNOWN_SUBCOMMAND_ARGS = {
   'cc',
   'hashtag',
   'l=Auto-Submit+1',
+  'l=Code-Review+1',
+  'l=Code-Review+2',
   'l=Commit-Queue+1',
   'l=Commit-Queue+2',
   'label',
@@ -266,7 +262,7 @@ def get_repo_timestamp(path_to_repo):
   # Get the upstream for the current branch. If we're not in a branch, fallback
   # to HEAD.
   try:
-    upstream = scm.GIT.GetUpstreamBranch(path_to_repo)
+    upstream = scm.GIT.GetUpstreamBranch(path_to_repo) or 'HEAD'
   except subprocess2.CalledProcessError:
     upstream = 'HEAD'
 
@@ -283,25 +279,25 @@ def get_repo_timestamp(path_to_repo):
   # Get the age of the checkout in weeks.
   return seconds_to_weeks(stdout.strip())
 
+def print_boxed_text(out, min_width, lines):
+  [EW, NS, SE, SW, NE, NW] = list('=|++++')
+  width = max(min_width, max(len(line) for line in lines))
+  out(SE + EW * (width + 2) + SW + '\n')
+  for line in lines:
+    out('%s %-*s %s\n' % (NS, width, line, NS))
+  out(NE + EW * (width + 2) + NW + '\n')
 
 def print_notice(countdown):
   """Print a notice to let the user know the status of metrics collection."""
-  colorama.init()
-  print(colorama.Fore.RED + '\033[1m', file=sys.stderr, end='')
-  if countdown:
-    print(NOTICE_COUNTDOWN_HEADER % countdown, file=sys.stderr)
-  else:
-    print(NOTICE_COLLECTION_HEADER, file=sys.stderr)
-  print(EMPTY_LINE, file=sys.stderr)
-  print(NOTICE_FOOTER + colorama.Style.RESET_ALL, file=sys.stderr)
-
+  lines = list(get_notice_countdown_header(countdown))
+  lines.append('')
+  lines += list(get_notice_footer())
+  print_boxed_text(sys.stderr.write, 49, lines)
 
 def print_version_change(config_version):
   """Print a notice to let the user know we are collecting more metrics."""
-  colorama.init()
-  print(colorama.Fore.RED + '\033[1m', file=sys.stderr, end='')
-  print(NOTICE_VERSION_CHANGE_HEADER, file=sys.stderr)
-  print(EMPTY_LINE, file=sys.stderr)
-  for version in range(config_version + 1, CURRENT_VERSION + 1):
-    print(CHANGE_NOTICE[version], file=sys.stderr)
-    print(EMPTY_LINE, file=sys.stderr)
+  lines = list(get_notice_version_change_header())
+  for version in xrange(config_version + 1, CURRENT_VERSION + 1):
+    lines.append('')
+    lines += list(get_change_notice(version))
+  print_boxed_text(sys.stderr.write, 49, lines)

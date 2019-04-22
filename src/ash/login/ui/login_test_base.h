@@ -60,6 +60,10 @@ class LoginTestBase : public AshTestBase {
   // |DataDispatcher()|.
   void AddPublicAccountUsers(size_t num_public_accounts);
 
+  // Creates and appends |num_users| of child user accounts.
+  // Changes the active number of users. Fires an event on |DataDispatcher()|.
+  void AddChildUsers(size_t num_users);
+
   std::vector<mojom::LoginUserInfoPtr>& users() { return users_; }
 
   const std::vector<mojom::LoginUserInfoPtr>& users() const { return users_; }

@@ -164,7 +164,7 @@ void Logging::OnPostDispatchMessage(const Message& message) {
     Log(data);
   } else {
     main_thread_->PostTask(
-        FROM_HERE, base::Bind(&Logging::Log, base::Unretained(this), data));
+        FROM_HERE, base::BindOnce(&Logging::Log, base::Unretained(this), data));
   }
 }
 
@@ -178,7 +178,7 @@ void Logging::GetMessageText(uint32_t type, std::string* name,
   if (it == log_function_map_->end()) {
     if (name) {
       *name = "[UNKNOWN MSG ";
-      *name += base::IntToString(type);
+      *name += base::NumberToString(type);
       *name += " ]";
     }
     return;
@@ -234,7 +234,8 @@ void Logging::Log(const LogData& data) {
       if (!queue_invoke_later_pending_) {
         queue_invoke_later_pending_ = true;
         base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-            FROM_HERE, base::Bind(&Logging::OnSendLogs, base::Unretained(this)),
+            FROM_HERE,
+            base::BindOnce(&Logging::OnSendLogs, base::Unretained(this)),
             base::TimeDelta::FromMilliseconds(kLogSendDelayMs));
       }
     }

@@ -260,8 +260,10 @@ Polymer({
     eapOuterItems_: {
       type: Array,
       readOnly: true,
-      computed: 'computeEapOuterItems_(' +
-          'guid, shareNetwork_, shareAllowEnable, shareDefault)',
+      value: [
+        CrOnc.EAPType.LEAP, CrOnc.EAPType.PEAP, CrOnc.EAPType.EAP_TLS,
+        CrOnc.EAPType.EAP_TTLS
+      ],
     },
 
     /**
@@ -305,6 +307,15 @@ Polymer({
       ],
     },
 
+    /**
+     * Whether the current network configuration allows only device-wide
+     * certificates (e.g. shared EAP TLS networks).
+     * @private
+     */
+    deviceCertsOnly_: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   observers: [
@@ -372,6 +383,7 @@ Polymer({
     this.onCertificateListsChanged_();
     this.updateIsConfigured_();
     this.setShareNetwork_();
+    this.updateDeviceCertsOnly_();
   },
 
   save: function() {
@@ -387,8 +399,9 @@ Polymer({
    * @private
    */
   saveAndConnect_: function(connect) {
-    if (this.propertiesSent_)
+    if (this.propertiesSent_) {
       return;
+    }
     this.propertiesSent_ = true;
     this.error = '';
 
@@ -420,14 +433,16 @@ Polymer({
         'network-config-input:not([readonly]),' +
         'network-password-input:not([disabled]),' +
         'network-config-select:not([disabled])');
-    if (e)
+    if (e) {
       e.focus();
+    }
   },
 
   /** @private */
   connectIfConfigured_: function() {
-    if (!this.isConfigured_)
+    if (!this.isConfigured_) {
       return;
+    }
     this.connect();
   },
 
@@ -450,8 +465,9 @@ Polymer({
    * @return {!CrOnc.Source}
    */
   getSource_: function() {
-    if (!this.guid)
+    if (!this.guid) {
       return CrOnc.Source.NONE;
+    }
     const source = this.managedProperties.Source;
     return source ? /** @type {!CrOnc.Source} */ (source) : CrOnc.Source.NONE;
   },
@@ -477,8 +493,9 @@ Polymer({
       let userCerts = certificateLists.userCertificates.slice();
       // Only hardware backed user certs are supported.
       userCerts.forEach(function(cert) {
-        if (!cert.hardwareBacked)
-          cert.hash = '';  // Clear the hash to invalidate the certificate.
+        if (!cert.hardwareBacked) {
+          cert.hash = '';
+        }  // Clear the hash to invalidate the certificate.
       });
       if (isOpenVpn) {
         // OpenVPN allows but does not require a user certificate.
@@ -503,7 +520,14 @@ Polymer({
    * @private
    */
   getDefaultCert_: function(desc, hash) {
-    return {hardwareBacked: false, hash: hash, issuedBy: desc, issuedTo: ''};
+    return {
+      hardwareBacked: false,
+      hash: hash,
+      issuedBy: desc,
+      issuedTo: '',
+      isDefault: true,
+      deviceWide: false
+    };
   },
 
   /**
@@ -633,14 +657,13 @@ Polymer({
         this.shareNetwork_ = true;
         return;
       }
-      // Networks requiring a user certificate cannot be shared.
-      const eap = this.eapProperties_;
-      if (eap && eap.Outer == CrOnc.EAPType.EAP_TLS) {
-        this.shareNetwork_ = false;
-        return;
-      }
     }
     this.shareNetwork_ = this.shareDefault;
+  },
+
+  /** @private */
+  onShareChanged_: function(event) {
+    this.updateDeviceCertsOnly_();
   },
 
   /**
@@ -755,10 +778,12 @@ Polymer({
     }
     this.configProperties_ = configProperties;
     this.set('eapProperties_', this.getEap_(this.configProperties_));
-    if (!this.eapProperties_)
+    if (!this.eapProperties_) {
       this.showEap_ = null;
-    if (managedProperties.Type == CrOnc.Type.VPN)
+    }
+    if (managedProperties.Type == CrOnc.Type.VPN) {
       this.vpnType_ = this.getVpnTypeFromProperties_(this.configProperties_);
+    }
   },
 
   /**
@@ -793,12 +818,14 @@ Polymer({
    */
   updateEapOuter_: function() {
     const eap = this.eapProperties_;
-    if (!eap || !eap.Outer)
+    if (!eap || !eap.Outer) {
       return;
+    }
     const innerItems = this.getEapInnerItems_(eap.Outer);
     if (innerItems.length > 0) {
-      if (!eap.Inner || innerItems.indexOf(eap.Inner) < 0)
+      if (!eap.Inner || innerItems.indexOf(eap.Inner) < 0) {
         this.set('eapProperties_.Inner', innerItems[0]);
+      }
     } else {
       this.set('eapProperties_.Inner', undefined);
     }
@@ -809,8 +836,9 @@ Polymer({
   /** @private */
   updateEapCerts_: function() {
     // EAP is used for all configurable types except VPN.
-    if (this.type == CrOnc.Type.VPN)
+    if (this.type == CrOnc.Type.VPN) {
       return;
+    }
     const eap = this.eapProperties_;
     const pem = eap && eap.ServerCAPEMs ? eap.ServerCAPEMs[0] : '';
     const certId =
@@ -870,10 +898,12 @@ Polymer({
         eap = properties.WiMAX && properties.WiMAX.EAP;
         break;
     }
-    if (opt_create)
+    if (opt_create) {
       return eap || {};
-    if (eap)
+    }
+    if (eap) {
       eap.SaveCredentials = eap.SaveCredentials || false;
+    }
     return eap || null;
   },
 
@@ -936,8 +966,9 @@ Polymer({
 
   /** @private */
   updateVpnType_: function() {
-    if (this.configProperties_ === undefined)
+    if (this.configProperties_ === undefined) {
       return;
+    }
 
     const vpn = this.configProperties_.VPN;
     if (!vpn) {
@@ -948,18 +979,20 @@ Polymer({
     switch (this.vpnType_) {
       case VPNConfigType.L2TP_IPSEC_PSK:
         vpn.Type = CrOnc.VPNType.L2TP_IPSEC;
-        if (vpn.IPsec)
+        if (vpn.IPsec) {
           vpn.IPsec.AuthenticationType = CrOnc.IPsecAuthenticationType.PSK;
-        else
+        } else {
           vpn.IPsec = {AuthenticationType: CrOnc.IPsecAuthenticationType.PSK};
+        }
         this.showVpn_ = {Cert: false, OpenVPN: false};
         break;
       case VPNConfigType.L2TP_IPSEC_CERT:
         vpn.Type = CrOnc.VPNType.L2TP_IPSEC;
-        if (vpn.IPsec)
+        if (vpn.IPsec) {
           vpn.IPsec.AuthenticationType = CrOnc.IPsecAuthenticationType.CERT;
-        else
+        } else {
           vpn.IPsec = {AuthenticationType: CrOnc.IPsecAuthenticationType.CERT};
+        }
         this.showVpn_ = {Cert: true, OpenVPN: false};
         break;
       case VPNConfigType.OPEN_VPN:
@@ -974,8 +1007,9 @@ Polymer({
 
   /** @private */
   updateVpnIPsecCerts_: function() {
-    if (this.vpnType_ != VPNConfigType.L2TP_IPSEC_CERT)
+    if (this.vpnType_ != VPNConfigType.L2TP_IPSEC_CERT) {
       return;
+    }
     let pem, certId;
     const ipsec = /** @type {chrome.networkingPrivate.IPSecProperties} */ (
         this.get('VPN.IPsec', this.configProperties_));
@@ -989,8 +1023,9 @@ Polymer({
 
   /** @private */
   updateOpenVPNCerts_: function() {
-    if (this.vpnType_ != VPNConfigType.OPEN_VPN)
+    if (this.vpnType_ != VPNConfigType.OPEN_VPN) {
       return;
+    }
     let pem, certId;
     const openvpn = /** @type {chrome.networkingPrivate.OpenVPNProperties} */ (
         this.get('VPN.OpenVPN', this.configProperties_));
@@ -1047,16 +1082,22 @@ Polymer({
       const serverCa = this.serverCaCerts_.find(function(cert) {
         return cert.pem == pem;
       });
-      if (serverCa)
+      if (serverCa) {
         this.selectedServerCaHash_ = serverCa.hash;
+      }
     }
 
     if (certId) {
+      // |certId| is in the format |slot:id| for EAP and IPSec and |id| for
+      // OpenVPN certs.
+      // |userCerts_[i].PKCS11Id| is always in the format |slot:id|.
+      // Use a substring comparison to support both |certId| formats.
       const userCert = this.userCerts_.find(function(cert) {
-        return cert.PKCS11Id == certId;
+        return cert.PKCS11Id.indexOf(/** @type {string} */ (certId)) >= 0;
       });
-      if (userCert)
+      if (userCert) {
         this.selectedUserCertHash_ = userCert.hash;
+      }
     }
     this.updateSelectedCerts_();
     this.updateIsConfigured_();
@@ -1069,8 +1110,9 @@ Polymer({
    * @return {!chrome.networkingPrivate.Certificate|undefined}
    */
   findCert_: function(certs, hash) {
-    if (!hash)
+    if (!hash) {
       return undefined;
+    }
     return certs.find((cert) => {
       return cert.hash == hash;
     });
@@ -1083,21 +1125,31 @@ Polymer({
    * @private
    */
   updateSelectedCerts_: function() {
-    if (!this.findCert_(this.serverCaCerts_, this.selectedServerCaHash_))
+    if (!this.findCert_(this.serverCaCerts_, this.selectedServerCaHash_)) {
       this.selectedServerCaHash_ = undefined;
+    }
     if (!this.selectedServerCaHash_ ||
         this.selectedServerCaHash_ == DEFAULT_HASH) {
       const eap = this.eapProperties_;
-      if (eap && eap.UseSystemCAs === false)
+      if (eap && eap.UseSystemCAs === false) {
         this.selectedServerCaHash_ = DO_NOT_CHECK_HASH;
+      }
     }
-    if (!this.selectedServerCaHash_ && this.serverCaCerts_[0])
-      this.selectedServerCaHash_ = this.serverCaCerts_[0].hash;
+    if (!this.selectedServerCaHash_) {
+      // For unconfigured networks only, default to the first CA if available.
+      if (!this.guid && this.serverCaCerts_[0]) {
+        this.selectedServerCaHash_ = this.serverCaCerts_[0].hash;
+      } else {
+        this.selectedServerCaHash_ = DO_NOT_CHECK_HASH;
+      }
+    }
 
-    if (!this.findCert_(this.userCerts_, this.selectedUserCertHash_))
+    if (!this.findCert_(this.userCerts_, this.selectedUserCertHash_)) {
       this.selectedUserCertHash_ = undefined;
-    if (!this.selectedUserCertHash_ && this.userCerts_[0])
+    }
+    if (!this.selectedUserCertHash_ && this.userCerts_[0]) {
       this.selectedUserCertHash_ = this.userCerts_[0].hash;
+    }
   },
 
   /**
@@ -1105,29 +1157,55 @@ Polymer({
    * @private
    */
   getIsConfigured_: function() {
-    if (!this.configProperties_)
+    if (!this.configProperties_) {
       return false;
+    }
 
-    if (this.configProperties_.Type == CrOnc.Type.VPN)
+    if (this.configProperties_.Type == CrOnc.Type.VPN) {
       return this.vpnIsConfigured_();
+    }
 
     if (this.type == CrOnc.Type.WI_FI) {
-      if (!this.get('WiFi.SSID', this.configProperties_))
+      if (!this.get('WiFi.SSID', this.configProperties_)) {
         return false;
+      }
       if (this.configRequiresPassphrase_()) {
         const passphrase = this.get('WiFi.Passphrase', this.configProperties_);
-        if (!passphrase || passphrase.length < this.MIN_PASSPHRASE_LENGTH)
+        if (!passphrase || passphrase.length < this.MIN_PASSPHRASE_LENGTH) {
           return false;
+        }
       }
     }
-    if (this.security_ == CrOnc.Security.WPA_EAP)
+    if (this.security_ == CrOnc.Security.WPA_EAP) {
       return this.eapIsConfigured_();
+    }
     return true;
   },
 
   /** @private */
   updateIsConfigured_: function() {
     this.isConfigured_ = this.getIsConfigured_();
+  },
+
+  /** @private */
+  updateDeviceCertsOnly_: function() {
+    // Only device-wide certificates can be used for networks that require a
+    // certificate and are shared.
+    const eap = this.eapProperties_;
+    if (!this.shareNetwork_ || !eap || eap.Outer != CrOnc.EAPType.EAP_TLS) {
+      this.deviceCertsOnly_ = false;
+      return;
+    }
+    // Clear selection if certificate is not device-wide.
+    let cert = this.findCert_(this.userCerts_, this.selectedUserCertHash_);
+    if (cert && !cert.deviceWide) {
+      this.selectedUserCertHash_ = undefined;
+    }
+    cert = this.findCert_(this.serverCaCerts_, this.selectedServerCaHash_);
+    if (cert && !(cert.deviceWide || cert.isDefault)) {
+      this.selectedServerCaHash_ = undefined;
+    }
+    this.deviceCertsOnly_ = true;
   },
 
   /**
@@ -1148,30 +1226,6 @@ Polymer({
   /** @private */
   setEnableConnect_: function() {
     this.enableConnect = this.isConfigured_ && !this.propertiesSent_;
-  },
-
-  /**
-   * @param {string} guid
-   * @param {boolean} shareNetwork
-   * @param {boolean} shareAllowEnable
-   * @param {boolean} shareDefault
-   * @return {!Array<string>}
-   * @private
-   */
-  computeEapOuterItems_: function(
-      guid, shareNetwork, shareAllowEnable, shareDefault) {
-    // If a network must be shared, hide the TLS option. Otherwise selecting
-    // TLS will turn off and disable the shared state. NOTE: Ethernet EAP may
-    // be set at the Device level, but will be saved as a User configuration.
-    if (this.type != CrOnc.Type.ETHERNET &&
-        ((this.getSource_() != CrOnc.Source.NONE && shareNetwork) ||
-         (!shareAllowEnable && shareDefault))) {
-      return [CrOnc.EAPType.LEAP, CrOnc.EAPType.PEAP, CrOnc.EAPType.EAP_TTLS];
-    }
-    return [
-      CrOnc.EAPType.LEAP, CrOnc.EAPType.PEAP, CrOnc.EAPType.EAP_TLS,
-      CrOnc.EAPType.EAP_TTLS
-    ];
   },
 
   /**
@@ -1205,19 +1259,15 @@ Polymer({
    * @private
    */
   shareIsEnabled_: function() {
-    if (!this.shareAllowEnable || this.getSource_() != CrOnc.Source.NONE)
+    if (!this.shareAllowEnable || this.getSource_() != CrOnc.Source.NONE) {
       return false;
-
-    if (this.security_ == CrOnc.Security.WPA_EAP) {
-      const eap = this.getEap_(this.configProperties_);
-      if (eap && eap.Outer == CrOnc.EAPType.EAP_TLS)
-        return false;
     }
 
     if (this.type == CrOnc.Type.WI_FI) {
       // Insecure WiFi networks are always shared.
-      if (this.security_ == CrOnc.Security.NONE)
+      if (this.security_ == CrOnc.Security.NONE) {
         return false;
+      }
     }
     return true;
   },
@@ -1237,10 +1287,24 @@ Polymer({
    */
   eapIsConfigured_: function() {
     const eap = this.getEap_(this.configProperties_);
-    if (!eap)
+    if (!eap) {
       return false;
-    if (eap.Outer != CrOnc.EAPType.EAP_TLS)
+    }
+    if (eap.Outer != CrOnc.EAPType.EAP_TLS) {
       return true;
+    }
+    // EAP TLS networks can be shared only for device-wide certificates.
+    if (this.deviceCertsOnly_) {  // network is shared
+      let cert = this.findCert_(this.userCerts_, this.selectedUserCertHash_);
+      if (!cert || !cert.deviceWide) {
+        return false;
+      }
+      cert = this.findCert_(this.serverCaCerts_, this.selectedServerCaHash_);
+      if (!cert.deviceWide || !cert.isDefault) {
+        return false;
+      }
+    }
+
     return this.selectedUserCertHashIsValid_();
   },
 
@@ -1250,8 +1314,9 @@ Polymer({
    */
   vpnIsConfigured_: function() {
     const vpn = this.configProperties_.VPN;
-    if (!this.configProperties_.Name || !vpn || !vpn.Host)
+    if (!this.configProperties_.Name || !vpn || !vpn.Host) {
       return false;
+    }
 
     switch (this.vpnType_) {
       case VPNConfigType.L2TP_IPSEC_PSK:
@@ -1274,16 +1339,24 @@ Polymer({
     // Do not set AutoConnect by default, the connection manager will set
     // it to true on a successful connection.
     CrOnc.setTypeProperty(propertiesToSet, 'AutoConnect', undefined);
-    if (this.guid)
+    if (this.guid) {
       propertiesToSet.GUID = this.guid;
+    }
     const eap = this.getEap_(propertiesToSet);
-    if (eap)
+    if (eap) {
       this.setEapProperties_(eap);
+    }
     if (this.configProperties_.Type == CrOnc.Type.VPN) {
-      if (this.get('VPN.Type', propertiesToSet) == CrOnc.VPNType.OPEN_VPN)
+      // VPN.Host can be an IP address but will not be recognized as such if
+      // there is initial whitespace, so trim it.
+      if (typeof propertiesToSet.VPN.Host == 'string') {
+        propertiesToSet.VPN.Host = propertiesToSet.VPN.Host.trim();
+      }
+      if (this.get('VPN.Type', propertiesToSet) == CrOnc.VPNType.OPEN_VPN) {
         this.setOpenVPNProperties_(propertiesToSet);
-      else
+      } else {
         this.setVpnIPsecProperties_(propertiesToSet);
+      }
     }
     return propertiesToSet;
   },
@@ -1294,8 +1367,9 @@ Polymer({
    */
   getServerCaPems_: function() {
     const caHash = this.selectedServerCaHash_ || '';
-    if (!caHash || caHash == DO_NOT_CHECK_HASH || caHash == DEFAULT_HASH)
+    if (!caHash || caHash == DO_NOT_CHECK_HASH || caHash == DEFAULT_HASH) {
       return [];
+    }
     const serverCa = this.findCert_(this.serverCaCerts_, caHash);
     return serverCa && serverCa.pem ? [serverCa.pem] : [];
   },
@@ -1415,8 +1489,9 @@ Polymer({
       this.propertiesSent_ = false;
       return;
     }
-    if (connect)
+    if (connect) {
       this.startConnect_(guid);
+    }
   },
 
   /**
@@ -1456,10 +1531,12 @@ Polymer({
    * @private
    */
   getEapInnerItems_: function(outer) {
-    if (outer == CrOnc.EAPType.PEAP)
+    if (outer == CrOnc.EAPType.PEAP) {
       return this.eapInnerItemsPeap_;
-    if (outer == CrOnc.EAPType.EAP_TTLS)
+    }
+    if (outer == CrOnc.EAPType.EAP_TTLS) {
       return this.eapInnerItemsTtls_;
+    }
     return [];
   },
 

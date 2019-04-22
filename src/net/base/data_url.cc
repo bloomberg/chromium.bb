@@ -56,11 +56,12 @@ bool DataURL::Parse(const GURL& url,
 
   bool base64_encoded = false;
   for (; iter != meta_data.cend(); ++iter) {
-    if (!base64_encoded && *iter == kBase64Tag) {
+    if (!base64_encoded &&
+        base::EqualsCaseInsensitiveASCII(*iter, kBase64Tag)) {
       base64_encoded = true;
     } else if (charset->empty() &&
                base::StartsWith(*iter, kCharsetTag,
-                                base::CompareCase::SENSITIVE)) {
+                                base::CompareCase::INSENSITIVE_ASCII)) {
       *charset = std::string(iter->substr(kCharsetTag.size()));
       // The grammar for charset is not specially defined in RFC2045 and
       // RFC2397. It just needs to be a token.
@@ -76,7 +77,7 @@ bool DataURL::Parse(const GURL& url,
     mime_type->assign("text/plain");
     if (charset->empty())
       charset->assign("US-ASCII");
-  } else if (!ParseMimeTypeWithoutParameter(*mime_type, NULL, NULL)) {
+  } else if (!ParseMimeTypeWithoutParameter(*mime_type, nullptr, nullptr)) {
     // Fallback to the default as recommended in RFC2045 when the mediatype
     // value is invalid. For this case, we don't respect |charset| but force it
     // set to "US-ASCII".

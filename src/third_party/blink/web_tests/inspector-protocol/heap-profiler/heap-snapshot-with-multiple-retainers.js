@@ -31,43 +31,61 @@
   else
     return testRunner.fail('cannot find the leaking node');
 
-  var v8EventListener = helper.firstRetainingPath(node)[0];
-  var eventListener = helper.firstRetainingPath(node)[1];
-
-  if (v8EventListener.name() == 'V8EventListener') {
-    testRunner.log('SUCCESS: immediate retainer is V8EventListener.');
-  } else {
-    return testRunner.fail('cannot find the V8EventListener.');
+  let retainerPaths = [];
+  for (let it = node.retainers(); it.hasNext(); it.next()) {
+    let retainer = it.retainer.node();
+    let path = helper.firstRetainingPath(retainer);
+    path.unshift(retainer);
+    retainerPaths.push(path);
   }
-
-  if (eventListener.name() == 'EventListener') {
-    testRunner.log('SUCCESS: immediate retainer is EventListener.');
-  } else {
-    return testRunner.fail('cannot find the EventListener.');
-  }
-
-  if (v8EventListener.retainersCount() === 1) {
-    testRunner.log('SUCCESS: found single retaining path for v8EventListener.');
-  } else {
-    return testRunner.fail('cannot find single retaining path for v8EventListener.');
-  }
-
-  var retainingPaths = [];
-  for (var iter = eventListener.retainers(); iter.hasNext(); iter.next()) {
-    var path = helper.firstRetainingPath(iter.retainer.node());
-    path = path.map(node => node.name());
-    retainingPaths.push(path.join(', '));
-  }
-
-  if (retainingPaths.length >= 2) {
-    testRunner.log('SUCCESS: found multiple retaining paths.');
-  } else {
-    return testRunner.fail('cannot find multiple retaining paths.');
-  }
-
   // Sort alphabetically to make the test robust.
-  retainingPaths.sort((a, b) => (a < b ? -1 : (a == b ? 0 : 1)));
-  testRunner.log(`SUCCESS: path1 = [${retainingPaths[0]}]`);
-  testRunner.log(`SUCCESS: path2 = [${retainingPaths[1]}]`);
+  function toNames(path) {
+    let names = [];
+    for (node of path) {
+      if (node.name().includes('::')) {
+        names.push('InternalNode');
+      } else if (node.name() == 'Window / file://') {
+        // In MacOS 10.10 it's sometimes just Window, so we always make it
+        // so to avoid flakiness.
+        names.push('Window');
+      } else {
+        names.push(node.name());
+      }
+    }
+    return names;
+  }
+  retainerPaths.sort((path1, path2) => {
+    let s1 = toNames(path1).join('->');
+    let s2 = toNames(path2).join('->');
+    return s1 < s2 ? -1 : (s1 == s2) ? 0 : 1;
+  });
+
+  let v8EventListenerCount = 0;
+  for (let i = 0; i < retainerPaths.length; ++i) {
+    let path = retainerPaths[i];
+    // Two paths of [V8EventListener, EventListener, ...] are expected.
+    testRunner.log(`path${i+1} = [${toNames(path)}]`);
+    if (path[0].name() !== 'V8EventListener') {
+      continue;
+    }
+    ++v8EventListenerCount;
+
+    if (path[0].retainersCount() === 1) {
+      testRunner.log('SUCCESS: found a single retaining path for V8EventListener.');
+    } else {
+      return testRunner.fail('cannot find a single retaining path for V8EventListener.');
+    }
+    if (path[1].name() === 'EventListener') {
+      testRunner.log('SUCCESS: V8EventListener has an immediate retainer of EventListener.');
+    } else {
+      return testRunner.fail('cannot find an EventListener.');
+    }
+  }
+  if (v8EventListenerCount === 2) {
+    testRunner.log('SUCCESS: found 2 V8EventListeners as retainers.');
+  } else {
+    return testRunner.fail('cannot find 2 V8EventListeners as retainers.');
+  }
+
   testRunner.completeTest();
 })

@@ -73,13 +73,14 @@ DragSelector.SelectionFlag_ = {
  * @param {Event} event The mouse event.
  * @return {Object} Scrolled position.
  */
-DragSelector.getScrolledPosition = function(element, event) {
+DragSelector.getScrolledPosition = (element, event) => {
   if (!element.cachedBounds) {
     element.cachedBounds = element.getBoundingClientRect();
-    if (!element.cachedBounds)
+    if (!element.cachedBounds) {
       return null;
+    }
   }
-  var rect = element.cachedBounds;
+  const rect = element.cachedBounds;
   return {
     x: event.clientX - rect.left + element.scrollLeft,
     y: event.clientY - rect.top + element.scrollTop
@@ -96,16 +97,18 @@ DragSelector.getScrolledPosition = function(element, event) {
  */
 DragSelector.prototype.startDragSelection = function(list, event) {
   // Precondition check
-  if (!list.selectionModel_.multiple || this.target_)
+  if (!list.selectionModel_.multiple || this.target_) {
     return;
+  }
 
   // Set the target of the drag selection
   this.target_ = list;
 
   // Save the start state.
-  var startPos = DragSelector.getScrolledPosition(list, event);
-  if (!startPos)
+  const startPos = DragSelector.getScrolledPosition(list, event);
+  if (!startPos) {
     return;
+  }
   this.startX_ = startPos.x;
   this.startY_ = startPos.y;
   this.lastSelection_ = [];
@@ -138,8 +141,8 @@ DragSelector.prototype.startDragSelection = function(list, event) {
 DragSelector.prototype.onMouseMove_ = function(event) {
   event = /** @type {MouseEvent} */ (event);
   // Get the selection bounds.
-  var pos = DragSelector.getScrolledPosition(this.target_, event);
-  var borderBounds = {
+  const pos = DragSelector.getScrolledPosition(this.target_, event);
+  const borderBounds = {
     left: Math.max(Math.min(this.startX_, pos.x), 0),
     top: Math.max(Math.min(this.startY_, pos.y), 0),
     right: Math.min(Math.max(this.startX_, pos.x), this.target_.scrollWidth),
@@ -149,24 +152,24 @@ DragSelector.prototype.onMouseMove_ = function(event) {
   borderBounds.height = borderBounds.bottom - borderBounds.top;
 
   // Collect items within the selection rect.
-  var currentSelection = (/** @type {DragTarget} */ (this.target_))
-                             .getHitElements(
-                                 borderBounds.left, borderBounds.top,
-                                 borderBounds.width, borderBounds.height);
-  var pointedElements =
+  const currentSelection = (/** @type {DragTarget} */ (this.target_))
+                               .getHitElements(
+                                   borderBounds.left, borderBounds.top,
+                                   borderBounds.width, borderBounds.height);
+  const pointedElements =
       (/** @type {DragTarget} */ (this.target_)).getHitElements(pos.x, pos.y);
-  var leadIndex = pointedElements.length ? pointedElements[0] : -1;
+  const leadIndex = pointedElements.length ? pointedElements[0] : -1;
 
   // Diff the selection between currentSelection and this.lastSelection_.
-  var selectionFlag = [];
-  for (var i = 0; i < this.lastSelection_.length; i++) {
-    var index = this.lastSelection_[i];
+  const selectionFlag = [];
+  for (let i = 0; i < this.lastSelection_.length; i++) {
+    const index = this.lastSelection_[i];
     // Bit operator can be used for undefined value.
     selectionFlag[index] =
         selectionFlag[index] | DragSelector.SelectionFlag_.IN_LAST_SELECTION;
   }
-  for (var i = 0; i < currentSelection.length; i++) {
-    var index = currentSelection[i];
+  for (let i = 0; i < currentSelection.length; i++) {
+    const index = currentSelection[i];
     // Bit operator can be used for undefined value.
     selectionFlag[index] =
         selectionFlag[index] | DragSelector.SelectionFlag_.IN_CURRENT_SELECTION;
@@ -174,9 +177,9 @@ DragSelector.prototype.onMouseMove_ = function(event) {
 
   // Update the selection
   this.target_.selectionModel_.beginChange();
-  for (var name in selectionFlag) {
-    var index = parseInt(name, 10);
-    var flag = selectionFlag[index];
+  for (const name in selectionFlag) {
+    const index = parseInt(name, 10);
+    const flag = selectionFlag[index];
     // The flag may be one of followings:
     // - IN_LAST_SELECTION | IN_CURRENT_SELECTION
     // - IN_LAST_SELECTION

@@ -34,14 +34,14 @@ bool CXFA_FFImage::LoadWidget() {
 
 void CXFA_FFImage::RenderWidget(CXFA_Graphics* pGS,
                                 const CFX_Matrix& matrix,
-                                uint32_t dwStatus) {
-  if (!IsMatchVisibleStatus(dwStatus))
+                                HighlightOption highlight) {
+  if (!HasVisibleStatus())
     return;
 
   CFX_Matrix mtRotate = GetRotateMatrix();
   mtRotate.Concat(matrix);
 
-  CXFA_FFWidget::RenderWidget(pGS, mtRotate, dwStatus);
+  CXFA_FFWidget::RenderWidget(pGS, mtRotate, highlight);
 
   RetainPtr<CFX_DIBitmap> pDIBitmap = GetNode()->GetImageImage();
   if (!pDIBitmap)
@@ -51,8 +51,8 @@ void CXFA_FFImage::RenderWidget(CXFA_Graphics* pGS,
   CXFA_Margin* margin = m_pNode->GetMarginIfExists();
   XFA_RectWithoutMargin(&rtImage, margin);
 
-  XFA_AttributeEnum iHorzAlign = XFA_AttributeEnum::Left;
-  XFA_AttributeEnum iVertAlign = XFA_AttributeEnum::Top;
+  XFA_AttributeValue iHorzAlign = XFA_AttributeValue::Left;
+  XFA_AttributeValue iVertAlign = XFA_AttributeValue::Top;
   CXFA_Para* para = m_pNode->GetParaIfExists();
   if (para) {
     iHorzAlign = para->GetHorizontalAlign();

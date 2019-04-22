@@ -55,7 +55,7 @@ test(function(t) {
     assert_throws("INDEX_SIZE_ERR", function() {
       new ImageData(new Uint8Array(100), 25);
     });
-    assert_throws("INDEX_SIZE_ERR", function() {
+    assert_throws("INVALID_STATE_ERR", function() {
       new ImageData(new Uint8ClampedArray(27), 2);
     });
     assert_throws("INDEX_SIZE_ERR", function() {

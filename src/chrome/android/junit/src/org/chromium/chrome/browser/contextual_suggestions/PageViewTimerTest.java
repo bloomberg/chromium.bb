@@ -10,6 +10,8 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import android.os.SystemClock;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,7 +20,6 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
-import org.robolectric.shadows.ShadowSystemClock;
 
 import org.chromium.base.metrics.test.ShadowRecordHistogram;
 import org.chromium.base.test.BaseRobolectricTestRunner;
@@ -30,9 +31,9 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.Tab.TabHidingType;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
-import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.util.test.ShadowUrlUtilities;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
@@ -371,13 +372,13 @@ public final class PageViewTimerTest {
         mTimer = createPageViewTimer();
         switchTabs(null, mTab);
         showContentRunnable.run();
-        ShadowSystemClock.sleep(SAMPLE_PAGE_VIEW_TIME);
+        SystemClock.sleep(SAMPLE_PAGE_VIEW_TIME);
         if (pauseRunnable != null && resumeRunnable != null) {
             expectedTime += SAMPLE_PAGE_VIEW_TIME;
             pauseRunnable.run();
-            ShadowSystemClock.sleep(SAMPLE_PAGE_VIEW_TIME);
+            SystemClock.sleep(SAMPLE_PAGE_VIEW_TIME);
             resumeRunnable.run();
-            ShadowSystemClock.sleep(SAMPLE_PAGE_VIEW_TIME);
+            SystemClock.sleep(SAMPLE_PAGE_VIEW_TIME);
         }
         stopTimerRunnable.run();
         assertEquals(expectedSamples,

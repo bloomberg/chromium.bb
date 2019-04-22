@@ -9,9 +9,9 @@
 #include <tuple>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/containers/adapters.h"
 #include "base/feature_list.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
@@ -67,7 +67,7 @@ std::string EffectsToString(int effects) {
   };
 
   std::string ret;
-  for (size_t i = 0; i < arraysize(flags); ++i) {
+  for (size_t i = 0; i < base::size(flags); ++i) {
     if (effects & flags[i].flag) {
       if (!ret.empty())
         ret += " | ";
@@ -79,7 +79,7 @@ std::string EffectsToString(int effects) {
   if (effects) {
     if (!ret.empty())
       ret += " | ";
-    ret += base::IntToString(effects);
+    ret += base::NumberToString(effects);
   }
 
   return ret;
@@ -344,11 +344,9 @@ class MediaInternals::MediaInternalsUMAHandler {
     bool video_decoder_changed = false;
     bool has_cdm = false;
     bool is_incognito = false;
-    std::string audio_codec_name;
     std::string video_codec_name;
     std::string video_decoder;
     bool is_platform_video_decoder = false;
-    GURL origin_url;
   };
 
   // Helper function to report PipelineStatus associated with a player to UMA.
@@ -380,6 +378,15 @@ void MediaInternals::MediaInternalsUMAHandler::SavePlayerState(
 
   auto it = player_info_map.find(event.id);
   if (it == player_info_map.end()) {
+    if (event.type != media::MediaLogEvent::WEBMEDIAPLAYER_CREATED) {
+      // Due to the asynchronous cleanup order of PipelineImpl and WMPI,
+      // sometimes a kStopped / kStopping event can sneak in after
+      // WEBMEDIAPLAYER_DESTROYED. This causes a new memory leak because the
+      // newly created PipelineImpl would never get cleaned up.
+      // As a result, we should be dropping any event that would target a
+      // player that hasn't already been created.
+      return;
+    }
     bool success = false;
     std::tie(it, success) = player_info_map.emplace(
         std::make_pair(event.id, PipelineInfo(IsIncognito(render_process_id))));
@@ -392,12 +399,6 @@ void MediaInternals::MediaInternalsUMAHandler::SavePlayerState(
   PipelineInfo& player_info = it->second;
 
   switch (event.type) {
-    case media::MediaLogEvent::Type::WEBMEDIAPLAYER_CREATED: {
-      std::string origin_url;
-      event.params.GetString("origin_url", &origin_url);
-      player_info.origin_url = GURL(origin_url);
-      break;
-    }
     case media::MediaLogEvent::PLAY: {
       player_info.has_ever_played = true;
       break;
@@ -419,10 +420,6 @@ void MediaInternals::MediaInternalsUMAHandler::SavePlayerState(
       }
       if (event.params.HasKey("found_video_stream")) {
         event.params.GetBoolean("found_video_stream", &player_info.has_video);
-      }
-      if (event.params.HasKey("audio_codec_name")) {
-        event.params.GetString("audio_codec_name",
-                               &player_info.audio_codec_name);
       }
       if (event.params.HasKey("video_codec_name")) {
         event.params.GetString("video_codec_name",
@@ -484,6 +481,8 @@ std::string MediaInternals::MediaInternalsUMAHandler::GetUMANameForAVStream(
     uma_name += "VP9.";
   } else if (player_info.video_codec_name == "h264") {
     uma_name += "H264.";
+  } else if (player_info.video_codec_name == "av1") {
+    uma_name += "AV1.";
   } else {
     return uma_name + "Other";
   }

@@ -9,6 +9,7 @@
 
 #include "base/base64.h"
 #include "base/optional.h"
+#include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "components/onc/onc_constants.h"
@@ -254,8 +255,11 @@ bool OncParsedCertificates::ParseClientCertificate(
     return false;
   }
 
+  std::string base64_pkcs12_data;
+  base::RemoveChars(base64_pkcs12_data_key->GetString(), "\n",
+                    &base64_pkcs12_data);
   std::string pkcs12_data;
-  if (!base::Base64Decode(base64_pkcs12_data_key->GetString(), &pkcs12_data)) {
+  if (!base::Base64Decode(base64_pkcs12_data, &pkcs12_data)) {
     LOG(ERROR) << "Unable to base64 decode PKCS#12 data: \""
                << base64_pkcs12_data_key->GetString() << "\".";
     return false;

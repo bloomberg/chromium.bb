@@ -183,6 +183,8 @@ class EVENTS_OZONE_EVDEV_EXPORT DeviceEventDispatcherEvdev {
   virtual void DispatchStylusStateChanged(StylusState stylus_state) = 0;
   virtual void DispatchGamepadDevicesUpdated(
       const std::vector<InputDevice>& devices) = 0;
+  virtual void DispatchUncategorizedDevicesUpdated(
+      const std::vector<InputDevice>& devices) = 0;
 };
 
 }  // namespace ui

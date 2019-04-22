@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/inspect_ui.h"
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/metrics/user_metrics.h"
 #include "chrome/browser/devtools/devtools_targets_ui.h"
@@ -46,6 +47,7 @@ const char kInspectUiActivateCommand[] = "activate";
 const char kInspectUiCloseCommand[] = "close";
 const char kInspectUiReloadCommand[] = "reload";
 const char kInspectUiOpenCommand[] = "open";
+const char kInspectUiPauseCommand[] = "pause";
 const char kInspectUiInspectBrowser[] = "inspect-browser";
 const char kInspectUiLocalHost[] = "localhost";
 
@@ -100,6 +102,7 @@ class InspectMessageHandler : public WebUIMessageHandler {
   void HandleCloseCommand(const base::ListValue* args);
   void HandleReloadCommand(const base::ListValue* args);
   void HandleOpenCommand(const base::ListValue* args);
+  void HandlePauseCommand(const base::ListValue* args);
   void HandleInspectBrowserCommand(const base::ListValue* args);
   void HandleBooleanPrefChanged(const char* pref_name,
                                 const base::ListValue* args);
@@ -137,6 +140,10 @@ void InspectMessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       kInspectUiCloseCommand,
       base::BindRepeating(&InspectMessageHandler::HandleCloseCommand,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      kInspectUiPauseCommand,
+      base::BindRepeating(&InspectMessageHandler::HandlePauseCommand,
                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       kInspectUiDiscoverUsbDevicesEnabledCommand,
@@ -250,6 +257,13 @@ void InspectMessageHandler::HandleOpenCommand(const base::ListValue* args) {
   std::string url;
   if (ParseStringArgs(args, &source_id, &browser_id, &url))
     inspect_ui_->Open(source_id, browser_id, url);
+}
+
+void InspectMessageHandler::HandlePauseCommand(const base::ListValue* args) {
+  std::string source;
+  std::string id;
+  if (ParseStringArgs(args, &source, &id))
+    inspect_ui_->Pause(source, id);
 }
 
 void InspectMessageHandler::HandleInspectBrowserCommand(
@@ -431,6 +445,16 @@ void InspectUI::Open(const std::string& source_id,
     handler->Open(browser_id, url);
 }
 
+void InspectUI::Pause(const std::string& source_id,
+                      const std::string& target_id) {
+  scoped_refptr<DevToolsAgentHost> target = FindTarget(source_id, target_id);
+  content::WebContents* web_contents = target->GetWebContents();
+  if (web_contents) {
+    DevToolsWindow::OpenDevToolsWindow(web_contents,
+                                       DevToolsToggleAction::PauseInDebugger());
+  }
+}
+
 void InspectUI::InspectBrowserWithCustomFrontend(
     const std::string& source_id,
     const std::string& browser_id,
@@ -603,7 +627,7 @@ void InspectUI::SetPortForwardingDefaults() {
   }
 
   // Do nothing if user already took explicit action.
-  if (enabled || config->size() != 0)
+  if (enabled || !config->empty())
     return;
 
   base::DictionaryValue default_config;

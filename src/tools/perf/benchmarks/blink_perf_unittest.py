@@ -51,15 +51,14 @@ class BlinkPerfTest(page_test_test_case.PageTestTestCase):
     self.assertEquals(len(frame_view_layouts), 1)
     # append-child-measure-time.html specifies 5 iterationCount.
     self.assertEquals(len(frame_view_layouts[0].values), 5)
-    self.assertGreater(frame_view_layouts[0].GetRepresentativeNumber(), 0.001)
+    self.assertGreater(frame_view_layouts[0].mean, 0.001)
 
     update_layout_trees = results.FindAllPageSpecificValuesNamed(
         'UpdateLayoutTree')
     self.assertEquals(len(update_layout_trees), 1)
     # append-child-measure-time.html specifies 5 iterationCount.
     self.assertEquals(len(update_layout_trees[0].values), 5)
-
-    self.assertGreater(update_layout_trees[0].GetRepresentativeNumber(), 0.001)
+    self.assertGreater(update_layout_trees[0].mean, 0.001)
 
   def testBlinkPerfTracingMetricsForMeasureFrameTime(self):
     results = self.RunMeasurement(measurement=self._measurement,
@@ -75,15 +74,14 @@ class BlinkPerfTest(page_test_test_case.PageTestTestCase):
     self.assertEquals(len(frame_view_prepaints), 1)
     # color-changes-measure-frame-time.html specifies 9 iterationCount.
     self.assertEquals(len(frame_view_prepaints[0].values), 9)
-    self.assertGreater(frame_view_prepaints[0].GetRepresentativeNumber(), 0.001)
+    self.assertGreater(frame_view_prepaints[0].mean, 0.001)
 
     frame_view_painttrees = results.FindAllPageSpecificValuesNamed(
         'LocalFrameView::RunPaintLifecyclePhase')
     self.assertEquals(len(frame_view_painttrees), 1)
     # color-changes-measure-frame-time.html specifies 9 iterationCount.
     self.assertEquals(len(frame_view_painttrees[0].values), 9)
-    self.assertGreater(frame_view_painttrees[0].GetRepresentativeNumber(),
-        0.001)
+    self.assertGreater(frame_view_painttrees[0].mean, 0.001)
 
   def testBlinkPerfTracingMetricsForMeasurePageLoadTime(self):
     results = self.RunMeasurement(measurement=self._measurement,
@@ -98,14 +96,14 @@ class BlinkPerfTest(page_test_test_case.PageTestTestCase):
     self.assertEquals(len(create_child_frame), 1)
     # color-changes-measure-frame-time.html specifies 7 iterationCount.
     self.assertEquals(len(create_child_frame[0].values), 7)
-    self.assertGreater(create_child_frame[0].GetRepresentativeNumber(), 0.001)
+    self.assertGreater(create_child_frame[0].mean, 0.001)
 
     post_layout_task = results.FindAllPageSpecificValuesNamed(
         'LocalFrameView::performPostLayoutTasks')
     self.assertEquals(len(post_layout_task), 1)
     # color-changes-measure-frame-time.html specifies 7 iterationCount.
     self.assertEquals(len(post_layout_task[0].values), 7)
-    self.assertGreater(post_layout_task[0].GetRepresentativeNumber(), 0.001)
+    self.assertGreater(post_layout_task[0].mean, 0.001)
 
 
   def testBlinkPerfTracingMetricsForMeasureAsync(self):
@@ -127,13 +125,13 @@ class BlinkPerfTest(page_test_test_case.PageTestTestCase):
     self.assertEquals(len(blob_readers[0].values), 6)
 
     # TODO(mek): Delete non-mojo code paths when blobs are always using mojo.
-    using_mojo = blob_readers[0].GetRepresentativeNumber() > 0.001
+    using_mojo = blob_readers[0].mean > 0.001
     if using_mojo:
-      self.assertEquals(blob_requests[0].GetRepresentativeNumber(), 0)
-      self.assertGreater(blob_readers[0].GetRepresentativeNumber(), 0.001)
+      self.assertEquals(blob_requests[0].mean, 0)
+      self.assertGreater(blob_readers[0].mean, 0.001)
     else:
-      self.assertGreater(blob_requests[0].GetRepresentativeNumber(), 0.001)
-      self.assertEquals(blob_readers[0].GetRepresentativeNumber(), 0)
+      self.assertGreater(blob_requests[0].mean, 0.001)
+      self.assertEquals(blob_readers[0].mean, 0)
 
     if using_mojo:
       read_data = results.FindAllPageSpecificValuesNamed(
@@ -144,7 +142,14 @@ class BlinkPerfTest(page_test_test_case.PageTestTestCase):
     self.assertEquals(len(read_data), 1)
     # simple-blob-measure-async.html specifies 6 iterationCount.
     self.assertEquals(len(read_data[0].values), 6)
-    self.assertGreater(read_data[0].GetRepresentativeNumber(), 0.001)
+    self.assertGreater(read_data[0].mean, 0.001)
+
+  def testBlinkPerfLifecycleMethods(self):
+    results = self.RunMeasurement(measurement=self._measurement,
+        ps=self._CreateStorySetForTestFile(
+            'lifecycle-methods.html'),
+        options=self._options)
+    self.assertFalse(results.failures)
 
 
 # pylint: disable=protected-access

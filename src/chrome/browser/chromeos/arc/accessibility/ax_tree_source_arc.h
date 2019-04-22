@@ -11,7 +11,7 @@
 
 #include "chrome/browser/chromeos/arc/accessibility/arc_accessibility_info_data.h"
 #include "components/arc/common/accessibility_helper.mojom.h"
-#include "ui/accessibility/ax_host_delegate.h"
+#include "ui/accessibility/ax_action_handler.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_tree_data.h"
@@ -33,7 +33,7 @@ using AXTreeArcSerializer = ui::
 class AXTreeSourceArc : public ui::AXTreeSource<ArcAccessibilityInfoData*,
                                                 ui::AXNodeData,
                                                 ui::AXTreeData>,
-                        public ui::AXHostDelegate {
+                        public ui::AXActionHandler {
  public:
   class Delegate {
    public:
@@ -83,6 +83,8 @@ class AXTreeSourceArc : public ui::AXTreeSource<ArcAccessibilityInfoData*,
 
   bool is_notification() { return is_notification_; }
 
+  bool is_input_method_window() { return is_input_method_window_; }
+
  private:
   friend class arc::AXTreeSourceArcTest;
   class FocusStealer;
@@ -106,7 +108,7 @@ class AXTreeSourceArc : public ui::AXTreeSource<ArcAccessibilityInfoData*,
   void ComputeEnclosingBoundsInternal(ArcAccessibilityInfoData* info_data,
                                       gfx::Rect& computed_bounds) const;
 
-  // AXHostDelegate overrides.
+  // AXActionHandler overrides.
   void PerformAction(const ui::AXActionData& data) override;
 
   // Resets tree state.
@@ -122,6 +124,7 @@ class AXTreeSourceArc : public ui::AXTreeSource<ArcAccessibilityInfoData*,
   int32_t window_id_;
   int32_t focused_id_;
   bool is_notification_;
+  bool is_input_method_window_;
 
   // A delegate that handles accessibility actions on behalf of this tree. The
   // delegate is valid during the lifetime of this tree.

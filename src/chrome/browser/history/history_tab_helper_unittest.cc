@@ -5,6 +5,7 @@
 #include "chrome/browser/history/history_tab_helper.h"
 
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/test/bind_test_util.h"

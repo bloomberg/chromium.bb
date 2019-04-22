@@ -25,6 +25,7 @@ from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import partial_mock
+from chromite.lib.buildstore import FakeBuildStore
 from chromite.scripts import cbuildbot
 
 
@@ -87,6 +88,7 @@ class RunBuildStagesTest(cros_test_lib.RunCommandTempDirTestCase,
     self.bot_id = self.build_config.name
     self.build_config['master'] = False
     self.build_config['important'] = False
+    self.buildstore = FakeBuildStore()
 
     # Use the cbuildbot parser to create properties and populate default values.
     self.parser = cbuildbot._CreateParser()
@@ -127,7 +129,7 @@ class RunBuildStagesTest(cros_test_lib.RunCommandTempDirTestCase,
 
     # Clean up before.
     os.environ.pop('CHROMEOS_OFFICIAL', None)
-    simple_builders.SimpleBuilder(self.run).Run()
+    simple_builders.SimpleBuilder(self.run, self.buildstore).Run()
     self.assertIn('CHROMEOS_OFFICIAL', os.environ)
 
   def testChromeosOfficialNotSet(self):
@@ -138,7 +140,7 @@ class RunBuildStagesTest(cros_test_lib.RunCommandTempDirTestCase,
 
     # Clean up before.
     os.environ.pop('CHROMEOS_OFFICIAL', None)
-    simple_builders.SimpleBuilder(self.run).Run()
+    simple_builders.SimpleBuilder(self.run, self.buildstore).Run()
     self.assertNotIn('CHROMEOS_OFFICIAL', os.environ)
 
 
@@ -341,36 +343,6 @@ class InterfaceTest(cros_test_lib.MockTestCase, cros_test_lib.LoggingTestCase):
     options = cbuildbot.ParseCommandLine(self.parser, args)
     self.assertEquals(options.chrome_rev, constants.CHROME_REV_LOCAL)
     self.assertNotEquals(options.chrome_root, None)
-
-  def testCreateBranch(self):
-    """Test a normal create branch run."""
-    args = ['-r', self._BUILD_ROOT,
-            '--branch-name', 'refs/heads/test', constants.BRANCH_UTIL_CONFIG]
-    self.assertDieSysExit(cbuildbot.ParseCommandLine, self.parser, args)
-
-  def testCreateBranchNoVersion(self):
-    """Test we require --version with branch-util."""
-    with cros_test_lib.LoggingCapturer() as logger:
-      args = ['-r', self._BUILD_ROOT, constants.BRANCH_UTIL_CONFIG]
-      self.assertDieSysExit(cbuildbot.ParseCommandLine, self.parser, args)
-      self.AssertLogsContain(logger, '--branch-name')
-
-  def testCreateBranchDelete(self):
-    """Test we don't require --version with --delete."""
-    args = ['-r', self._BUILD_ROOT,
-            '--delete-branch', '--branch-name', 'refs/heads/test',
-            constants.BRANCH_UTIL_CONFIG]
-    cbuildbot.ParseCommandLine(self.parser, args)
-
-  def testBranchOptionsWithoutBranchConfig(self):
-    """Error out when branch options passed in without branch-util config."""
-    for extra_args in [['--delete-branch'],
-                       ['--branch-name', 'refs/heads/test'],
-                       ['--rename-to', 'abc']]:
-      with cros_test_lib.LoggingCapturer() as logger:
-        args = ['-r', self._BUILD_ROOT, self._GENERIC_PREFLIGHT] + extra_args
-        self.assertDieSysExit(cbuildbot.ParseCommandLine, self.parser, args)
-        self.AssertLogsContain(logger, 'Cannot specify')
 
 
 class FullInterfaceTest(cros_test_lib.MockTempDirTestCase):

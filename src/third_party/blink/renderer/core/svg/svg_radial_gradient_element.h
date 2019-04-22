@@ -35,6 +35,8 @@ class SVGRadialGradientElement final : public SVGGradientElement {
  public:
   DECLARE_NODE_FACTORY(SVGRadialGradientElement);
 
+  explicit SVGRadialGradientElement(Document&);
+
   bool CollectGradientAttributes(RadialGradientAttributes&);
 
   SVGAnimatedLength* cx() const { return cx_.Get(); }
@@ -47,11 +49,9 @@ class SVGRadialGradientElement final : public SVGGradientElement {
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit SVGRadialGradientElement(Document&);
-
   void SvgAttributeChanged(const QualifiedName&) override;
 
-  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout) override;
 
   bool SelfHasRelativeLengths() const override;
 

@@ -12,7 +12,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/containers/hash_tables.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "base/unguessable_token.h"
@@ -170,11 +169,15 @@ FrameTree::NodeRange FrameTree::NodesExceptSubtree(FrameTreeNode* node) {
   return NodeRange(root_, node);
 }
 
-bool FrameTree::AddFrame(
+FrameTreeNode* FrameTree::AddFrame(
     FrameTreeNode* parent,
     int process_id,
     int new_routing_id,
     service_manager::mojom::InterfaceProviderRequest interface_provider_request,
+    blink::mojom::DocumentInterfaceBrokerRequest
+        document_interface_broker_content_request,
+    blink::mojom::DocumentInterfaceBrokerRequest
+        document_interface_broker_blink_request,
     blink::WebTreeScopeType scope,
     const std::string& frame_name,
     const std::string& frame_unique_name,
@@ -191,7 +194,7 @@ bool FrameTree::AddFrame(
   // which requested a child frame to be added is the same as the process of the
   // parent node.
   if (parent->current_frame_host()->GetProcess()->GetID() != process_id)
-    return false;
+    return nullptr;
 
   std::unique_ptr<FrameTreeNode> new_node = base::WrapUnique(new FrameTreeNode(
       this, parent->navigator(), parent, scope, frame_name, frame_unique_name,
@@ -217,6 +220,12 @@ bool FrameTree::AddFrame(
   added_node->current_frame_host()->BindInterfaceProviderRequest(
       std::move(interface_provider_request));
 
+  DCHECK(document_interface_broker_content_request.is_pending());
+  DCHECK(document_interface_broker_blink_request.is_pending());
+  added_node->current_frame_host()->BindDocumentInterfaceBrokerRequest(
+      std::move(document_interface_broker_content_request),
+      std::move(document_interface_broker_blink_request));
+
   // The last committed NavigationEntry may have a FrameNavigationEntry with the
   // same |frame_unique_name|, since we don't remove FrameNavigationEntries if
   // their frames are deleted.  If there is a stale one, remove it to avoid
@@ -231,8 +240,12 @@ bool FrameTree::AddFrame(
   // Now that the new node is part of the FrameTree and has a RenderFrameHost,
   // we can announce the creation of the initial RenderFrame which already
   // exists in the renderer process.
-  added_node->current_frame_host()->SetRenderFrameCreated(true);
-  return true;
+  if (added_node->frame_owner_element_type() !=
+      blink::FrameOwnerElementType::kPortal) {
+    // Portals do not have a live RenderFrame in the renderer process.
+    added_node->current_frame_host()->SetRenderFrameCreated(true);
+  }
+  return added_node;
 }
 
 void FrameTree::RemoveFrame(FrameTreeNode* child) {
@@ -353,9 +366,8 @@ RenderViewHostImpl* FrameTree::CreateRenderViewHost(
     int32_t widget_routing_id,
     bool swapped_out,
     bool hidden) {
-  auto iter = render_view_host_map_.find(site_instance->GetId());
-  if (iter != render_view_host_map_.end())
-    return iter->second;
+  if (RenderViewHostImpl* existing_rvh = GetRenderViewHost(site_instance))
+    return existing_rvh;
 
   RenderViewHostImpl* rvh =
       static_cast<RenderViewHostImpl*>(RenderViewHostFactory::Create(
@@ -363,43 +375,37 @@ RenderViewHostImpl* FrameTree::CreateRenderViewHost(
           routing_id, main_frame_routing_id, widget_routing_id, swapped_out,
           hidden));
 
-  render_view_host_map_[site_instance->GetId()] = rvh;
+  render_view_host_map_[site_instance->GetId()] = base::WrapUnique(rvh);
   return rvh;
 }
 
 RenderViewHostImpl* FrameTree::GetRenderViewHost(SiteInstance* site_instance) {
-  auto iter = render_view_host_map_.find(site_instance->GetId());
-  if (iter != render_view_host_map_.end())
-    return iter->second;
+  auto it = render_view_host_map_.find(site_instance->GetId());
+  if (it == render_view_host_map_.end())
+    return nullptr;
 
-  return nullptr;
+  return it->second.get();
 }
 
-void FrameTree::AddRenderViewHostRef(RenderViewHostImpl* render_view_host) {
-  SiteInstance* site_instance = render_view_host->GetSiteInstance();
-  auto iter = render_view_host_map_.find(site_instance->GetId());
-  CHECK(iter != render_view_host_map_.end());
-  CHECK(iter->second == render_view_host);
+void FrameTree::AddRenderViewHostRef(RenderViewHostImpl* rvh) {
+  auto it = render_view_host_map_.find(rvh->GetSiteInstance()->GetId());
+  CHECK(it != render_view_host_map_.end());
+  CHECK_EQ(it->second.get(), rvh);
 
-  iter->second->increment_ref_count();
+  rvh->increment_ref_count();
 }
 
-void FrameTree::ReleaseRenderViewHostRef(RenderViewHostImpl* render_view_host) {
-  SiteInstance* site_instance = render_view_host->GetSiteInstance();
-  int32_t site_instance_id = site_instance->GetId();
-  auto iter = render_view_host_map_.find(site_instance_id);
+void FrameTree::ReleaseRenderViewHostRef(RenderViewHostImpl* rvh) {
+  auto it = render_view_host_map_.find(rvh->GetSiteInstance()->GetId());
+  CHECK(it != render_view_host_map_.end());
+  CHECK_EQ(it->second.get(), rvh);
 
-  CHECK(iter != render_view_host_map_.end());
-  CHECK_EQ(iter->second, render_view_host);
-
-  // Decrement the refcount and shutdown the RenderViewHost if no one else is
+  // Decrement the refcount and delete the RenderViewHost if no one else is
   // using it.
-  CHECK_GT(iter->second->ref_count(), 0);
-  iter->second->decrement_ref_count();
-  if (iter->second->ref_count() == 0) {
-    iter->second->ShutdownAndDestroy();
-    render_view_host_map_.erase(iter);
-  }
+  CHECK_GT(rvh->ref_count(), 0);
+  rvh->decrement_ref_count();
+  if (rvh->ref_count() == 0)
+    render_view_host_map_.erase(it);
 }
 
 void FrameTree::FrameRemoved(FrameTreeNode* frame) {

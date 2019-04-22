@@ -9,6 +9,7 @@
 #include <mferror.h>
 #include <stddef.h>
 
+#include "base/bind.h"
 #include "base/strings/sys_string_conversions.h"
 #include "media/capture/video/win/video_capture_device_factory_win.h"
 #include "testing/gmock/include/gmock/gmock.h"

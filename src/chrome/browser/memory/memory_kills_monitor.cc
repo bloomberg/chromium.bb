@@ -184,7 +184,7 @@ void MemoryKillsMonitor::StartMonitoring() {
   non_joinable_options.joinable = false;
   non_joinable_worker_thread_ = std::make_unique<base::DelegateSimpleThread>(
       this, "memory_kills_monitor", non_joinable_options);
-  non_joinable_worker_thread_->Start();
+  non_joinable_worker_thread_->StartAsync();
   monitoring_started_.Set();
 }
 

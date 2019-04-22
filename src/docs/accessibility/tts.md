@@ -22,7 +22,7 @@ platform.
 
     - The extension is passed an [Options object](https://developer.chrome.com/apps/tts#method-speak)
     in chrome.tts.speak, which is translated into a
-    [tts_controller Utterance](https://cs.chromium.org/chromium/src/chrome/browser/speech/tts_controller.h?dr=CSs&l=130).
+    [tts_controller Utterance](https://cs.chromium.org/chromium/src/content/public/browser/tts_controller.h?dr=CSs&l=120).
 
 - Web Speech API
 
@@ -37,11 +37,19 @@ platform.
 
 ### Processing
 
-- The [TtsController](https://cs.chromium.org/chromium/src/chrome/browser/speech/tts_controller.h) processes utterances and sends them to the correct output engine
+- The [TtsControllerImpl](https://cs.chromium.org/chromium/src/content/browser/speech/tts_controller_impl.h)
+(in content/) processes utterances and sends them to the correct output engine.
+
+- The [TtsControllerDelegateImpl](https://cs.chromium.org/chromium/src/chrome/browser/speech/tts_controller_delegate_impl.h)
+(in chrome/) provides chrome-specific functionality, including making use of
+user prefs in Chrome OS.
 
 ### Output
 
 - May differ by system, including Mac, Wind, Android, Arc++, and Chrome OS
+
+    - Platform APIs are in [content/browser/speech](https://cs.chromium.org/chromium/src/content/browser/speech/), expect for
+    Chrome OS's, which is in [chrome/browser/speech](https://cs.chromium.org/chromium/src/chrome/browser/speech/).
 
 - In Chrome OS:
 
@@ -50,3 +58,22 @@ platform.
     coming soon, third-party speech engines.
 
     - [PATTS](patts.md) is the built-in Chrome OS text-to-speech engine.
+
+### Testing
+
+- Unit tests
+
+    - TtsControllerUnittest in content/browser/speech
+
+    - TtsControllerDelegateImplUnittest in chrome/browser/speech
+
+    - ArcTtsServiceUnittest for ARC++ voices
+
+- Browser tests
+
+    - TtsApiTest tests Chrome TTS extension APIs
+
+- Fuzzer
+
+    - In content_unittests, content/browser/speech/tts_platform_fuzzer.cc
+    (currently Windows only).

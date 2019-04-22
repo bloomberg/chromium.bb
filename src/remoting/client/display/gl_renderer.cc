@@ -147,7 +147,7 @@ void GlRenderer::RequestRender() {
     return;
   }
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&GlRenderer::OnRender, weak_ptr_));
+      FROM_HERE, base::BindOnce(&GlRenderer::OnRender, weak_ptr_));
   render_scheduled_ = true;
 }
 

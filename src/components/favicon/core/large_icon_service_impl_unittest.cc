@@ -59,13 +59,13 @@ const SkColor kTestColor = SK_ColorRED;
 
 ACTION_P(PostFetchReply, p0) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(*arg3), arg0, p0,
-                                image_fetcher::RequestMetadata()));
+      FROM_HERE,
+      base::BindOnce(std::move(*arg2), p0, image_fetcher::RequestMetadata()));
 }
 
 ACTION_P2(PostFetchReplyWithMetadata, p0, p1) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(*arg3), arg0, p0, p1));
+      FROM_HERE, base::BindOnce(std::move(*arg2), p0, p1));
 }
 
 ACTION_P(PostBoolReplyToArg4, p0) {
@@ -161,7 +161,7 @@ TEST_F(LargeIconServiceTest, ShouldGetFromGoogleServer) {
 
   base::MockCallback<favicon_base::GoogleFaviconServerCallback> callback;
   EXPECT_CALL(*mock_image_fetcher_,
-              FetchImageAndData_(_, kExpectedServerUrl, _, _, _))
+              FetchImageAndData_(kExpectedServerUrl, _, _, _))
       .WillOnce(PostFetchReply(gfx::Image::CreateFrom1xBitmap(
           CreateTestSkBitmap(64, 64, kTestColor))));
   EXPECT_CALL(mock_favicon_service_,
@@ -199,7 +199,7 @@ TEST_F(LargeIconServiceTest, ShouldGetFromGoogleServerForDesktop) {
 
   base::MockCallback<favicon_base::GoogleFaviconServerCallback> callback;
   EXPECT_CALL(*mock_image_fetcher_,
-              FetchImageAndData_(_, kExpectedServerUrl, _, _, _))
+              FetchImageAndData_(kExpectedServerUrl, _, _, _))
       .WillOnce(PostFetchReply(gfx::Image::CreateFrom1xBitmap(
           CreateTestSkBitmap(32, 32, kTestColor))));
   EXPECT_CALL(mock_favicon_service_,
@@ -242,7 +242,7 @@ TEST_F(LargeIconServiceTest, ShouldGetFromGoogleServerWithCustomUrl) {
 
   base::MockCallback<favicon_base::GoogleFaviconServerCallback> callback;
   EXPECT_CALL(*mock_image_fetcher_,
-              FetchImageAndData_(_, kExpectedServerUrl, _, _, _))
+              FetchImageAndData_(kExpectedServerUrl, _, _, _))
       .WillOnce(PostFetchReply(gfx::Image::CreateFrom1xBitmap(
           CreateTestSkBitmap(64, 64, kTestColor))));
   EXPECT_CALL(mock_favicon_service_,
@@ -279,7 +279,7 @@ TEST_F(LargeIconServiceTest, ShouldGetFromGoogleServerWithOriginalUrl) {
   image_fetcher::RequestMetadata expected_metadata;
   expected_metadata.content_location_header = kExpectedOriginalUrl.spec();
   EXPECT_CALL(*mock_image_fetcher_,
-              FetchImageAndData_(_, kExpectedServerUrl, _, _, _))
+              FetchImageAndData_(kExpectedServerUrl, _, _, _))
       .WillOnce(PostFetchReplyWithMetadata(
           gfx::Image::CreateFrom1xBitmap(
               CreateTestSkBitmap(64, 64, kTestColor)),
@@ -317,7 +317,7 @@ TEST_F(LargeIconServiceTest, ShouldTrimQueryParametersForGoogleServer) {
       .WillOnce(PostBoolReplyToArg2(true));
 
   EXPECT_CALL(*mock_image_fetcher_,
-              FetchImageAndData_(_, kExpectedServerUrl, _, _, _))
+              FetchImageAndData_(kExpectedServerUrl, _, _, _))
       .WillOnce(PostFetchReply(gfx::Image::CreateFrom1xBitmap(
           CreateTestSkBitmap(64, 64, kTestColor))));
   // Verify that the non-trimmed page URL is used when writing to the database.
@@ -342,10 +342,10 @@ TEST_F(LargeIconServiceTest, ShouldNotCheckOnPublicUrls) {
                                      favicon_base::IconType::kTouchIcon, _))
       .WillOnce(PostBoolReplyToArg2(true));
   // The request has no "check_seen=true"; full URL is tested elsewhere.
-  EXPECT_CALL(*mock_image_fetcher_,
-              FetchImageAndData_(
-                  _, Property(&GURL::query, Not(HasSubstr("check_seen=true"))),
-                  _, _, _))
+  EXPECT_CALL(
+      *mock_image_fetcher_,
+      FetchImageAndData_(
+          Property(&GURL::query, Not(HasSubstr("check_seen=true"))), _, _, _))
       .WillOnce(PostFetchReply(gfx::Image()));
 
   base::MockCallback<favicon_base::GoogleFaviconServerCallback> callback;
@@ -367,7 +367,7 @@ TEST_F(LargeIconServiceTest, ShouldNotCheckOnPublicUrls) {
 TEST_F(LargeIconServiceTest, ShouldNotQueryGoogleServerIfInvalidScheme) {
   const GURL kDummyFtpUrl("ftp://www.example.com");
 
-  EXPECT_CALL(*mock_image_fetcher_, FetchImageAndData_(_, _, _, _, _)).Times(0);
+  EXPECT_CALL(*mock_image_fetcher_, FetchImageAndData_(_, _, _, _)).Times(0);
 
   base::MockCallback<favicon_base::GoogleFaviconServerCallback> callback;
 
@@ -391,7 +391,7 @@ TEST_F(LargeIconServiceTest, ShouldNotQueryGoogleServerIfInvalidScheme) {
 TEST_F(LargeIconServiceTest, ShouldNotQueryGoogleServerIfInvalidURL) {
   const GURL kDummyInvalidUrl("htt");
 
-  EXPECT_CALL(*mock_image_fetcher_, FetchImageAndData_(_, _, _, _, _)).Times(0);
+  EXPECT_CALL(*mock_image_fetcher_, FetchImageAndData_(_, _, _, _)).Times(0);
 
   base::MockCallback<favicon_base::GoogleFaviconServerCallback> callback;
 
@@ -427,7 +427,7 @@ TEST_F(LargeIconServiceTest, ShouldReportUnavailableIfFetchFromServerFails) {
 
   base::MockCallback<favicon_base::GoogleFaviconServerCallback> callback;
   EXPECT_CALL(*mock_image_fetcher_,
-              FetchImageAndData_(_, kExpectedServerUrl, _, _, _))
+              FetchImageAndData_(kExpectedServerUrl, _, _, _))
       .WillOnce(PostFetchReply(gfx::Image()));
   EXPECT_CALL(mock_favicon_service_,
               UnableToDownloadFavicon(kExpectedServerUrl));
@@ -458,7 +458,7 @@ TEST_F(LargeIconServiceTest, ShouldNotGetFromGoogleServerIfUnavailable) {
       .WillByDefault(Return(true));
 
   EXPECT_CALL(mock_favicon_service_, UnableToDownloadFavicon(_)).Times(0);
-  EXPECT_CALL(*mock_image_fetcher_, FetchImageAndData_(_, _, _, _, _)).Times(0);
+  EXPECT_CALL(*mock_image_fetcher_, FetchImageAndData_(_, _, _, _)).Times(0);
   EXPECT_CALL(mock_favicon_service_, SetOnDemandFavicons(_, _, _, _, _))
       .Times(0);
 
@@ -487,7 +487,7 @@ TEST_F(LargeIconServiceTest, ShouldNotGetFromGoogleServerIfCannotSet) {
                                      favicon_base::IconType::kTouchIcon, _))
       .WillOnce(PostBoolReplyToArg2(false));
 
-  EXPECT_CALL(*mock_image_fetcher_, FetchImageAndData_(_, _, _, _, _)).Times(0);
+  EXPECT_CALL(*mock_image_fetcher_, FetchImageAndData_(_, _, _, _)).Times(0);
   EXPECT_CALL(mock_favicon_service_, SetOnDemandFavicons(_, _, _, _, _))
       .Times(0);
 
@@ -521,14 +521,14 @@ class LargeIconServiceGetterTest : public LargeIconServiceTest,
       int desired_size_in_pixel) {
     // Switch over testing two analogous functions based on the bool param.
     if (GetParam()) {
-      large_icon_service_.GetLargeIconOrFallbackStyle(
+      large_icon_service_.GetLargeIconRawBitmapOrFallbackStyleForPageUrl(
           page_url, min_source_size_in_pixel, desired_size_in_pixel,
           base::BindRepeating(
               &LargeIconServiceGetterTest::RawBitmapResultCallback,
               base::Unretained(this)),
           &cancelable_task_tracker_);
     } else {
-      large_icon_service_.GetLargeIconImageOrFallbackStyle(
+      large_icon_service_.GetLargeIconImageOrFallbackStyleForPageUrl(
           page_url, min_source_size_in_pixel, desired_size_in_pixel,
           base::BindRepeating(&LargeIconServiceGetterTest::ImageResultCallback,
                               base::Unretained(this)),
@@ -755,9 +755,9 @@ TEST_P(LargeIconServiceGetterTest, ShouldRecordMatchesDespiteDifferentUrls) {
 // Every test will appear with suffix /0 (param false) and /1 (param true), e.g.
 //  LargeIconServiceGetterTest.FallbackSinceTooPicky/0: get image.
 //  LargeIconServiceGetterTest.FallbackSinceTooPicky/1: get raw bitmap.
-INSTANTIATE_TEST_CASE_P(,  // Empty instatiation name.
-                        LargeIconServiceGetterTest,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(,  // Empty instatiation name.
+                         LargeIconServiceGetterTest,
+                         ::testing::Values(false, true));
 
 TEST(LargeIconServiceOrganizationNameTest, ShouldGetOrganizationNameForUma) {
   EXPECT_EQ("", LargeIconServiceImpl::GetOrganizationNameForUma(GURL()));

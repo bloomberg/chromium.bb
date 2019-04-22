@@ -85,10 +85,10 @@ class SVGPreserveAspectRatioTearOff final
                                 SVGAnimatedPropertyBase* binding,
                                 PropertyIsAnimValType);
 
-  void setAlign(unsigned short, ExceptionState&);
-  unsigned short align() { return Target()->Align(); }
-  void setMeetOrSlice(unsigned short, ExceptionState&);
-  unsigned short meetOrSlice() { return Target()->MeetOrSlice(); }
+  void setAlign(uint16_t, ExceptionState&);
+  uint16_t align() { return Target()->Align(); }
+  void setMeetOrSlice(uint16_t, ExceptionState&);
+  uint16_t meetOrSlice() { return Target()->MeetOrSlice(); }
 };
 
 }  // namespace blink

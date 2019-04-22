@@ -13,7 +13,6 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 #import "ios/chrome/browser/ui/ntp/incognito_view_controller.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller_delegate.h"
-#import "ios/chrome/browser/ui/url_loader.h"
 #import "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -28,12 +27,11 @@
 #error "This file requires ARC support."
 #endif
 
-@protocol NewTabPageTabDispatcher<ApplicationCommands,
-                                  BrowserCommands,
-                                  OmniboxFocuser,
-                                  FakeboxFocuser,
-                                  SnackbarCommands,
-                                  UrlLoader>
+@protocol NewTabPageTabDispatcher <ApplicationCommands,
+                                   BrowserCommands,
+                                   OmniboxFocuser,
+                                   FakeboxFocuser,
+                                   SnackbarCommands>
 @end
 
 // Test fixture for testing NewTabPageCoordinator class.
@@ -54,7 +52,6 @@ class NewTabPageCoordinatorTest : public PlatformTest {
         IOSChromeLargeIconServiceFactory::GetDefaultFactory());
     browser_state_ = test_cbs_builder.Build();
 
-    loader_ = OCMProtocolMock(@protocol(UrlLoader));
     toolbar_delegate_ =
         OCMProtocolMock(@protocol(NewTabPageControllerDelegate));
     dispatcher_ = OCMProtocolMock(@protocol(NewTabPageTabDispatcher));
@@ -71,7 +68,6 @@ class NewTabPageCoordinatorTest : public PlatformTest {
       coordinator_ = [[NewTabPageCoordinator alloc]
           initWithBrowserState:browser_state_.get()];
     }
-    coordinator_.URLLoader = loader_;
     coordinator_.toolbarDelegate = toolbar_delegate_;
     coordinator_.dispatcher = dispatcher_;
     coordinator_.webStateList = web_state_list_.get();
@@ -79,7 +75,6 @@ class NewTabPageCoordinatorTest : public PlatformTest {
 
   id dispatcher_;
   id toolbar_delegate_;
-  id loader_;
   id delegate_;
   std::unique_ptr<WebStateList> web_state_list_;
   FakeWebStateListDelegate web_state_list_delegate_;

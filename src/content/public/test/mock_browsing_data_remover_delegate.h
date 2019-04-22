@@ -61,6 +61,9 @@ class MockBrowsingDataRemoverDelegate : public BrowsingDataRemoverDelegate {
     bool operator==(const CallParameters& other) const;
 
    private:
+    friend std::ostream& operator<<(std::ostream& os,
+                                    const CallParameters& params);
+
     base::Time delete_begin_;
     base::Time delete_end_;
     int remove_mask_;
@@ -68,10 +71,16 @@ class MockBrowsingDataRemoverDelegate : public BrowsingDataRemoverDelegate {
     std::unique_ptr<BrowsingDataFilterBuilder> filter_builder_;
     bool should_compare_filter_;
   };
+  friend std::ostream& operator<<(std::ostream& os,
+                                  const CallParameters& params);
 
   std::list<CallParameters> actual_calls_;
   std::list<CallParameters> expected_calls_;
 };
+
+std::ostream& operator<<(
+    std::ostream& os,
+    const MockBrowsingDataRemoverDelegate::CallParameters& params);
 
 }  // content
 

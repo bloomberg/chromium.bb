@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "base/callback.h"
-#include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 
 namespace chromeos {
 
@@ -26,19 +26,19 @@ void TetherHostFetcher::RemoveObserver(Observer* observer) {
 }
 
 void TetherHostFetcher::ProcessFetchAllTetherHostsRequest(
-    const cryptauth::RemoteDeviceRefList& remote_device_list,
+    const multidevice::RemoteDeviceRefList& remote_device_list,
     const TetherHostListCallback& callback) {
   callback.Run(remote_device_list);
 }
 
 void TetherHostFetcher::ProcessFetchSingleTetherHostRequest(
     const std::string& device_id,
-    const cryptauth::RemoteDeviceRefList& remote_device_list,
+    const multidevice::RemoteDeviceRefList& remote_device_list,
     const TetherHostCallback& callback) {
   for (auto remote_device : remote_device_list) {
     if (remote_device.GetDeviceId() == device_id) {
       callback.Run(
-          base::make_optional<cryptauth::RemoteDeviceRef>(remote_device));
+          base::make_optional<multidevice::RemoteDeviceRef>(remote_device));
       return;
     }
   }

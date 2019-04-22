@@ -9,27 +9,34 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
+#include "chrome/chrome_cleaner/constants/uws_id.h"
 #include "chrome/chrome_cleaner/http/http_agent_factory.h"
 #include "chrome/chrome_cleaner/http/mock_http_agent_factory.h"
 #include "chrome/chrome_cleaner/logging/proto/reporter_logs.pb.h"
 #include "chrome/chrome_cleaner/logging/safe_browsing_reporter.h"
 #include "chrome/chrome_cleaner/logging/test_utils.h"
+#include "chrome/chrome_cleaner/pup_data/test_uws.h"
+#include "chrome/chrome_cleaner/settings/settings.h"
+#include "chrome/chrome_cleaner/test/test_settings_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chrome_cleaner {
 
 namespace {
 
-constexpr UwSId kDefaultUwSId = 1;
+using ::testing::Return;
+using ::testing::StrictMock;
 
 void NoSleep(base::TimeDelta) {}
 
 PUPData::PUP CreateSimpleDetectedPUP() {
   // Use a static signature object so that it will outlive any PUP object
   // pointing to it.
-  static PUPData::UwSSignature signature{kDefaultUwSId,
+  static PUPData::UwSSignature signature{kGoogleTestAUwSID,
                                          PUPData::FLAGS_STATE_CONFIRMED_UWS,
                                          /*name=*/"This is nasty"};
   return PUPData::PUP(&signature);
@@ -214,14 +221,14 @@ TEST_F(ReporterLoggingServiceTest, BothExitCodeSetAndUwSDetected) {
 
 TEST_F(ReporterLoggingServiceTest, AddDetectedUwS) {
   UwS uws;
-  uws.set_id(kDefaultUwSId);
+  uws.set_id(kGoogleTestAUwSID);
   reporter_logging_service_->AddDetectedUwS(uws);
 
   FoilReporterLogs report;
   ASSERT_TRUE(
       report.ParseFromString(reporter_logging_service_->RawReportContent()));
   ASSERT_EQ(1, report.detected_uws_size());
-  ASSERT_EQ(kDefaultUwSId, report.detected_uws(0).id());
+  ASSERT_EQ(kGoogleTestAUwSID, report.detected_uws(0).id());
 }
 
 TEST_F(ReporterLoggingServiceTest, LogProcessInformation) {
@@ -235,13 +242,19 @@ TEST_F(ReporterLoggingServiceTest, LogProcessInformation) {
   SystemResourceUsage usage = {io_counters, base::TimeDelta::FromSeconds(10),
                                base::TimeDelta::FromSeconds(20), 123456};
 
-  reporter_logging_service_->LogProcessInformation(SandboxType::kEset, usage);
+  StrictMock<MockSettings> mock_settings;
+  EXPECT_CALL(mock_settings, engine()).WillOnce(Return(Engine::TEST_ONLY));
+  Settings::SetInstanceForTesting(&mock_settings);
+  base::ScopedClosureRunner restore_settings(
+      base::BindOnce(&Settings::SetInstanceForTesting, nullptr));
+
+  reporter_logging_service_->LogProcessInformation(SandboxType::kEngine, usage);
 
   FoilReporterLogs report;
   ASSERT_TRUE(
       report.ParseFromString(reporter_logging_service_->RawReportContent()));
   ASSERT_EQ(1, report.process_information_size());
-  EXPECT_EQ(ProcessInformation::ESET_SANDBOX,
+  EXPECT_EQ(ProcessInformation::TEST_SANDBOX,
             report.process_information(0).process());
 
   ProcessInformation::SystemResourceUsage usage_msg =
@@ -250,6 +263,29 @@ TEST_F(ReporterLoggingServiceTest, LogProcessInformation) {
   EXPECT_EQ(10U, usage_msg.user_time());
   EXPECT_EQ(20U, usage_msg.kernel_time());
   EXPECT_EQ(123456U, usage_msg.peak_working_set_size());
+}
+
+TEST_F(ReporterLoggingServiceTest, SetFoundModifiedChromeShortcuts) {
+  reporter_logging_service_->SetFoundModifiedChromeShortcuts(true);
+  FoilReporterLogs report;
+  ASSERT_TRUE(
+      report.ParseFromString(reporter_logging_service_->RawReportContent()));
+  EXPECT_TRUE(report.found_modified_chrome_shortcuts());
+  reporter_logging_service_->SetFoundModifiedChromeShortcuts(false);
+  ASSERT_TRUE(
+      report.ParseFromString(reporter_logging_service_->RawReportContent()));
+  EXPECT_FALSE(report.found_modified_chrome_shortcuts());
+}
+
+TEST_F(ReporterLoggingServiceTest, SetScannedLocations) {
+  const std::vector<UwS::TraceLocation> locations = {
+      UwS::FOUND_IN_STARTUP, UwS::FOUND_IN_SHELL, UwS::FOUND_IN_PROGRAMFILES};
+  reporter_logging_service_->SetScannedLocations(locations);
+
+  FoilReporterLogs report;
+  ASSERT_TRUE(
+      report.ParseFromString(reporter_logging_service_->RawReportContent()));
+  EXPECT_THAT(report.scanned_locations(), testing::ElementsAreArray(locations));
 }
 
 }  // namespace chrome_cleaner

@@ -6,7 +6,7 @@
  * @fileoverview This is a table column model
  */
 cr.define('cr.ui.table', function() {
-  /** @const */ var EventTarget = cr.EventTarget;
+  /** @const */ const EventTarget = cr.EventTarget;
 
   /**
    * A table column model that wraps table columns array
@@ -18,12 +18,12 @@ cr.define('cr.ui.table', function() {
    */
   function TableColumnModel(tableColumns) {
     this.columns_ = [];
-    for (var i = 0; i < tableColumns.length; i++) {
+    for (let i = 0; i < tableColumns.length; i++) {
       this.columns_.push(tableColumns[i].clone());
     }
   }
 
-  var MIMIMAL_WIDTH = 10;
+  const MIMIMAL_WIDTH = 10;
 
   TableColumnModel.prototype = {
     __proto__: EventTarget.prototype,
@@ -61,10 +61,12 @@ cr.define('cr.ui.table', function() {
      * @param {string} name Column name.
      */
     setName: function(index, name) {
-      if (index < 0 || index >= this.columns_.length)
+      if (index < 0 || index >= this.columns_.length) {
         return;
-      if (name != this.columns_[index].name)
+      }
+      if (name != this.columns_[index].name) {
         return;
+      }
 
       this.columns_[index].name = name;
       cr.dispatchSimpleEvent(this, 'change');
@@ -94,19 +96,22 @@ cr.define('cr.ui.table', function() {
      * @param {number} width Column width.
      */
     setWidth: function(index, width) {
-      if (index < 0 || index >= this.columns_.length)
+      if (index < 0 || index >= this.columns_.length) {
         return;
+      }
 
-      var column = this.columns_[index];
+      const column = this.columns_[index];
       width = Math.max(width, MIMIMAL_WIDTH);
-      if (width == column.absoluteWidth)
+      if (width == column.absoluteWidth) {
         return;
+      }
 
       column.width = width;
 
       // Dispatch an event if a visible column was resized.
-      if (column.visible)
+      if (column.visible) {
         cr.dispatchSimpleEvent(this, 'resize');
+      }
     },
 
     /**
@@ -125,10 +130,12 @@ cr.define('cr.ui.table', function() {
      *     Render function.
      */
     setRenderFunction: function(index, renderFunction) {
-      if (index < 0 || index >= this.columns_.length)
+      if (index < 0 || index >= this.columns_.length) {
         return;
-      if (renderFunction !== this.columns_[index].renderFunction)
+      }
+      if (renderFunction !== this.columns_[index].renderFunction) {
         return;
+      }
 
       this.columns_[index].renderFunction = renderFunction;
       cr.dispatchSimpleEvent(this, 'change');
@@ -140,7 +147,7 @@ cr.define('cr.ui.table', function() {
      * @param {Element} table Owner table.
      */
     renderHeader: function(index, table) {
-      var c = this.columns_[index];
+      const c = this.columns_[index];
       return c.headerRenderFunction.call(c, table);
     },
 
@@ -149,8 +156,8 @@ cr.define('cr.ui.table', function() {
      * @type {number}
      */
     get totalWidth() {
-      var total = 0;
-      for (var i = 0; i < this.size; i++) {
+      let total = 0;
+      for (let i = 0; i < this.size; i++) {
         total += this.columns_[i].width;
       }
       return total;
@@ -160,9 +167,10 @@ cr.define('cr.ui.table', function() {
      * Normalizes widths to make their sum 100%.
      */
     normalizeWidths: function(contentWidth) {
-      if (this.size == 0)
+      if (this.size == 0) {
         return;
-      var c = this.columns_[0];
+      }
+      const c = this.columns_[0];
       c.width = Math.max(10, c.width - this.totalWidth + contentWidth);
     },
 
@@ -181,9 +189,10 @@ cr.define('cr.ui.table', function() {
      * @return {number} The index of column with given id or -1 if not found.
      */
     indexOf: function(id) {
-      for (var i = 0; i < this.size; i++) {
-        if (this.getId(i) == id)
+      for (let i = 0; i < this.size; i++) {
+        if (this.getId(i) == id) {
           return i;
+        }
       }
       return -1;
     },
@@ -194,16 +203,18 @@ cr.define('cr.ui.table', function() {
      * @param {boolean} visible The column visibility.
      */
     setVisible: function(index, visible) {
-      if (index < 0 || index >= this.columns_.length)
+      if (index < 0 || index >= this.columns_.length) {
         return;
+      }
 
-      var column = this.columns_[index];
-      if (column.visible == visible)
+      const column = this.columns_[index];
+      if (column.visible == visible) {
         return;
+      }
 
       // Changing column visibility alters the width.  Save the total width out
       // first, then change the column visibility, then relayout the table.
-      var contentWidth = this.totalWidth;
+      const contentWidth = this.totalWidth;
       column.visible = visible;
       this.normalizeWidths(contentWidth);
     },

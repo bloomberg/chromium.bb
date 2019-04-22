@@ -25,20 +25,40 @@
 #include "libANGLE/Texture.h"
 #include "libANGLE/TransformFeedback.h"
 #include "libANGLE/Version.h"
-#include "libANGLE/VertexAttribute.h"
+#include "libANGLE/VertexArray.h"
 #include "libANGLE/angletypes.h"
 
 namespace gl
 {
-class Query;
-class VertexArray;
-class Context;
+class BufferManager;
 struct Caps;
+class Context;
+class FramebufferManager;
+class MemoryObjectManager;
+class PathManager;
+class ProgramPipelineManager;
+class Query;
+class RenderbufferManager;
+class SamplerManager;
+class ShaderProgramManager;
+class SyncManager;
+class TextureManager;
+class VertexArray;
+
+static constexpr Version ES_2_0 = Version(2, 0);
+static constexpr Version ES_3_0 = Version(3, 0);
+static constexpr Version ES_3_1 = Version(3, 1);
+
+using ContextID = uintptr_t;
 
 class State : angle::NonCopyable
 {
   public:
-    State(bool debug,
+    State(ContextID contextIn,
+          const State *shareContextState,
+          TextureManager *shareTextures,
+          const Version &clientVersion,
+          bool debug,
           bool bindGeneratesResource,
           bool clientArraysEnabled,
           bool robustResourceInit,
@@ -47,6 +67,25 @@ class State : angle::NonCopyable
 
     void initialize(Context *context);
     void reset(const Context *context);
+
+    // Getters
+    ContextID getContextID() const { return mContext; }
+    GLint getClientMajorVersion() const { return mClientVersion.major; }
+    GLint getClientMinorVersion() const { return mClientVersion.minor; }
+    const Version &getClientVersion() const { return mClientVersion; }
+    const Caps &getCaps() const { return mCaps; }
+    const TextureCapsMap &getTextureCaps() const { return mTextureCaps; }
+    const Extensions &getExtensions() const { return mExtensions; }
+    const Limitations &getLimitations() const { return mLimitations; }
+
+    bool isWebGL() const { return mExtensions.webglCompatibility; }
+
+    bool isWebGL1() const { return (isWebGL() && mClientVersion.major == 2); }
+
+    const TextureCaps &getTextureCap(GLenum internalFormat) const
+    {
+        return mTextureCaps.get(internalFormat);
+    }
 
     // State chunk getters
     const RasterizerState &getRasterizerState() const;
@@ -179,7 +218,7 @@ class State : angle::NonCopyable
     void setActiveSampler(unsigned int active);
     unsigned int getActiveSampler() const { return static_cast<unsigned int>(mActiveSampler); }
 
-    angle::Result setSamplerTexture(const Context *context, TextureType type, Texture *texture);
+    void setSamplerTexture(const Context *context, TextureType type, Texture *texture);
     Texture *getTargetTexture(TextureType type) const;
 
     Texture *getSamplerTexture(unsigned int sampler, TextureType type) const
@@ -282,35 +321,64 @@ class State : angle::NonCopyable
         (this->*(kBufferSetters[target]))(context, buffer);
     }
 
-    Buffer *getTargetBuffer(BufferBinding target) const;
-    void setIndexedBufferBinding(const Context *context,
-                                 BufferBinding target,
-                                 GLuint index,
-                                 Buffer *buffer,
-                                 GLintptr offset,
-                                 GLsizeiptr size);
+    ANGLE_INLINE Buffer *getTargetBuffer(BufferBinding target) const
+    {
+        switch (target)
+        {
+            case BufferBinding::ElementArray:
+                return getVertexArray()->getElementArrayBuffer();
+            default:
+                return mBoundBuffers[target].get();
+        }
+    }
+
+    angle::Result setIndexedBufferBinding(const Context *context,
+                                          BufferBinding target,
+                                          GLuint index,
+                                          Buffer *buffer,
+                                          GLintptr offset,
+                                          GLsizeiptr size);
 
     const OffsetBindingPointer<Buffer> &getIndexedUniformBuffer(size_t index) const;
     const OffsetBindingPointer<Buffer> &getIndexedAtomicCounterBuffer(size_t index) const;
     const OffsetBindingPointer<Buffer> &getIndexedShaderStorageBuffer(size_t index) const;
 
     // Detach a buffer from all bindings
-    void detachBuffer(const Context *context, const Buffer *buffer);
+    angle::Result detachBuffer(Context *context, const Buffer *buffer);
 
     // Vertex attrib manipulation
     void setEnableVertexAttribArray(unsigned int attribNum, bool enabled);
     void setVertexAttribf(GLuint index, const GLfloat values[4]);
     void setVertexAttribu(GLuint index, const GLuint values[4]);
     void setVertexAttribi(GLuint index, const GLint values[4]);
-    void setVertexAttribPointer(const Context *context,
-                                unsigned int attribNum,
-                                Buffer *boundBuffer,
-                                GLint size,
-                                GLenum type,
-                                bool normalized,
-                                bool pureInteger,
-                                GLsizei stride,
-                                const void *pointer);
+
+    ANGLE_INLINE void setVertexAttribPointer(const Context *context,
+                                             unsigned int attribNum,
+                                             Buffer *boundBuffer,
+                                             GLint size,
+                                             VertexAttribType type,
+                                             bool normalized,
+                                             GLsizei stride,
+                                             const void *pointer)
+    {
+        mVertexArray->setVertexAttribPointer(context, attribNum, boundBuffer, size, type,
+                                             normalized, stride, pointer);
+        mDirtyObjects.set(DIRTY_OBJECT_VERTEX_ARRAY);
+    }
+
+    ANGLE_INLINE void setVertexAttribIPointer(const Context *context,
+                                              unsigned int attribNum,
+                                              Buffer *boundBuffer,
+                                              GLint size,
+                                              VertexAttribType type,
+                                              GLsizei stride,
+                                              const void *pointer)
+    {
+        mVertexArray->setVertexAttribIPointer(context, attribNum, boundBuffer, size, type, stride,
+                                              pointer);
+        mDirtyObjects.set(DIRTY_OBJECT_VERTEX_ARRAY);
+    }
+
     void setVertexAttribDivisor(const Context *context, GLuint index, GLuint divisor);
     const VertexAttribCurrentValueData &getVertexAttribCurrentValue(size_t attribNum) const
     {
@@ -332,11 +400,17 @@ class State : angle::NonCopyable
                           GLsizei stride);
     void setVertexAttribFormat(GLuint attribIndex,
                                GLint size,
-                               GLenum type,
+                               VertexAttribType type,
                                bool normalized,
                                bool pureInteger,
                                GLuint relativeOffset);
-    void setVertexAttribBinding(const Context *context, GLuint attribIndex, GLuint bindingIndex);
+
+    void setVertexAttribBinding(const Context *context, GLuint attribIndex, GLuint bindingIndex)
+    {
+        mVertexArray->setVertexAttribBinding(context, attribIndex, bindingIndex);
+        mDirtyObjects.set(DIRTY_OBJECT_VERTEX_ARRAY);
+    }
+
     void setVertexBindingDivisor(GLuint bindingIndex, GLuint divisor);
 
     // Pixel pack state manipulation
@@ -474,6 +548,7 @@ class State : angle::NonCopyable
         DIRTY_BIT_PATH_RENDERING,
         DIRTY_BIT_FRAMEBUFFER_SRGB,  // GL_EXT_sRGB_write_control
         DIRTY_BIT_CURRENT_VALUES,
+        DIRTY_BIT_PROVOKING_VERTEX,
         DIRTY_BIT_INVALID,
         DIRTY_BIT_MAX = DIRTY_BIT_INVALID,
     };
@@ -485,12 +560,13 @@ class State : angle::NonCopyable
     {
         DIRTY_OBJECT_READ_FRAMEBUFFER = 0,
         DIRTY_OBJECT_DRAW_FRAMEBUFFER,
+        DIRTY_OBJECT_DRAW_ATTACHMENTS,
         DIRTY_OBJECT_VERTEX_ARRAY,
-        DIRTY_OBJECT_SAMPLERS,
-        // Use a very coarse bit for any program or texture change.
-        // TODO(jmadill): Fine-grained dirty bits for each texture/sampler.
-        DIRTY_OBJECT_PROGRAM_TEXTURES,
+        DIRTY_OBJECT_TEXTURES,  // Top-level dirty bit. Also see mDirtyTextures.
+        DIRTY_OBJECT_SAMPLERS,  // Top-level dirty bit. Also see mDirtySamplers.
         DIRTY_OBJECT_PROGRAM,
+        DIRTY_OBJECT_TEXTURES_INIT,
+        DIRTY_OBJECT_IMAGES_INIT,
         DIRTY_OBJECT_UNKNOWN,
         DIRTY_OBJECT_MAX = DIRTY_OBJECT_UNKNOWN,
     };
@@ -499,7 +575,11 @@ class State : angle::NonCopyable
     const DirtyBits &getDirtyBits() const { return mDirtyBits; }
     void clearDirtyBits() { mDirtyBits.reset(); }
     void clearDirtyBits(const DirtyBits &bitset) { mDirtyBits &= ~bitset; }
-    void setAllDirtyBits() { mDirtyBits.set(); }
+    void setAllDirtyBits()
+    {
+        mDirtyBits.set();
+        mDirtyCurrentValues.set();
+    }
 
     using DirtyObjects = angle::BitSet<DIRTY_OBJECT_MAX>;
     void clearDirtyObjects() { mDirtyObjects.reset(); }
@@ -507,7 +587,14 @@ class State : angle::NonCopyable
     angle::Result syncDirtyObjects(const Context *context, const DirtyObjects &bitset);
     angle::Result syncDirtyObject(const Context *context, GLenum target);
     void setObjectDirty(GLenum target);
+    void setTextureDirty(size_t textureUnitIndex);
     void setSamplerDirty(size_t samplerIndex);
+
+    ANGLE_INLINE void setDrawFramebufferDirty()
+    {
+        mDirtyObjects.set(DIRTY_OBJECT_DRAW_FRAMEBUFFER);
+        mDirtyObjects.set(DIRTY_OBJECT_DRAW_ATTACHMENTS);
+    }
 
     // This actually clears the current value dirty bits.
     // TODO(jmadill): Pass mutable dirty bits into Impl.
@@ -526,10 +613,15 @@ class State : angle::NonCopyable
     const ActiveTexturePointerArray &getActiveTexturesCache() const { return mActiveTexturesCache; }
     ComponentTypeMask getCurrentValuesTypeMask() const { return mCurrentValuesTypeMask; }
 
-    void onActiveTextureStateChange(size_t textureIndex);
-    void onUniformBufferStateChange(size_t uniformBufferIndex);
+    // "onActiveTextureChange" is called when a texture binding changes.
+    void onActiveTextureChange(const Context *context, size_t textureUnit);
 
-    angle::Result clearUnclearedActiveTextures(const Context *context);
+    // "onActiveTextureStateChange" calls when the Texture itself changed but the binding did not.
+    void onActiveTextureStateChange(const Context *context, size_t textureUnit);
+
+    void onImageStateChange(const Context *context, size_t unit);
+
+    void onUniformBufferStateChange(size_t uniformBufferIndex);
 
     bool isCurrentTransformFeedback(const TransformFeedback *tf) const
     {
@@ -550,34 +642,79 @@ class State : angle::NonCopyable
 
     using BufferBindingSetter = void (State::*)(const Context *, Buffer *);
 
+    ANGLE_INLINE bool validateSamplerFormats() const
+    {
+        return (mTexturesIncompatibleWithSamplers & mProgram->getActiveSamplersMask()).none();
+    }
+
+    ProvokingVertex getProvokingVertex() const { return mProvokingVertex; }
+    void setProvokingVertex(ProvokingVertex val)
+    {
+        mDirtyBits.set(State::DIRTY_BIT_PROVOKING_VERTEX);
+        mProvokingVertex = val;
+    }
+
   private:
+    friend class Context;
+
     void unsetActiveTextures(ActiveTextureMask textureMask);
-    angle::Result updateActiveTexture(const Context *context,
-                                      size_t textureIndex,
-                                      Texture *texture);
+    void updateActiveTexture(const Context *context, size_t textureIndex, Texture *texture);
+    void updateActiveTextureState(const Context *context,
+                                  size_t textureIndex,
+                                  const Sampler *sampler,
+                                  Texture *texture);
 
     // Functions to synchronize dirty states
     angle::Result syncReadFramebuffer(const Context *context);
-    angle::Result syncWriteFramebuffer(const Context *context);
+    angle::Result syncDrawFramebuffer(const Context *context);
+    angle::Result syncDrawAttachments(const Context *context);
     angle::Result syncVertexArray(const Context *context);
+    angle::Result syncTextures(const Context *context);
     angle::Result syncSamplers(const Context *context);
-    angle::Result syncProgramTextures(const Context *context);
     angle::Result syncProgram(const Context *context);
+    angle::Result syncTexturesInit(const Context *context);
+    angle::Result syncImagesInit(const Context *context);
 
     using DirtyObjectHandler = angle::Result (State::*)(const Context *context);
     static constexpr DirtyObjectHandler kDirtyObjectHandlers[DIRTY_OBJECT_MAX] = {
-        &State::syncReadFramebuffer, &State::syncWriteFramebuffer, &State::syncVertexArray,
-        &State::syncSamplers,        &State::syncProgramTextures,  &State::syncProgram};
+        &State::syncReadFramebuffer, &State::syncDrawFramebuffer, &State::syncDrawAttachments,
+        &State::syncVertexArray,     &State::syncTextures,        &State::syncSamplers,
+        &State::syncProgram,         &State::syncTexturesInit,    &State::syncImagesInit};
 
     static_assert(DIRTY_OBJECT_READ_FRAMEBUFFER == 0, "check DIRTY_OBJECT_READ_FRAMEBUFFER index");
     static_assert(DIRTY_OBJECT_DRAW_FRAMEBUFFER == 1, "check DIRTY_OBJECT_DRAW_FRAMEBUFFER index");
-    static_assert(DIRTY_OBJECT_VERTEX_ARRAY == 2, "check DIRTY_OBJECT_VERTEX_ARRAY index");
-    static_assert(DIRTY_OBJECT_SAMPLERS == 3, "check DIRTY_OBJECT_SAMPLERS index");
-    static_assert(DIRTY_OBJECT_PROGRAM_TEXTURES == 4, "check DIRTY_OBJECT_PROGRAM_TEXTURES index");
-    static_assert(DIRTY_OBJECT_PROGRAM == 5, "check DIRTY_OBJECT_PROGRAM index");
+    static_assert(DIRTY_OBJECT_DRAW_ATTACHMENTS == 2, "check DIRTY_OBJECT_DRAW_ATTACHMENTS index");
+    static_assert(DIRTY_OBJECT_VERTEX_ARRAY == 3, "check DIRTY_OBJECT_VERTEX_ARRAY index");
+    static_assert(DIRTY_OBJECT_TEXTURES == 4, "check DIRTY_OBJECT_TEXTURES index");
+    static_assert(DIRTY_OBJECT_SAMPLERS == 5, "check DIRTY_OBJECT_SAMPLERS index");
+    static_assert(DIRTY_OBJECT_PROGRAM == 6, "check DIRTY_OBJECT_PROGRAM index");
+    static_assert(DIRTY_OBJECT_TEXTURES_INIT == 7, "check DIRTY_OBJECT_TEXTURES_INIT index");
+    static_assert(DIRTY_OBJECT_IMAGES_INIT == 8, "check DIRTY_OBJECT_IMAGES_INIT index");
+    static_assert(DIRTY_OBJECT_MAX == 9, "check DIRTY_OBJECT_MAX");
 
     // Dispatch table for buffer update functions.
     static const angle::PackedEnumMap<BufferBinding, BufferBindingSetter> kBufferSetters;
+
+    Version mClientVersion;
+    ContextID mContext;
+
+    // Caps to use for validation
+    Caps mCaps;
+    TextureCapsMap mTextureCaps;
+    Extensions mExtensions;
+    Limitations mLimitations;
+
+    // Resource managers.
+    BufferManager *mBufferManager;
+    ShaderProgramManager *mShaderProgramManager;
+    TextureManager *mTextureManager;
+    RenderbufferManager *mRenderbufferManager;
+    SamplerManager *mSamplerManager;
+    SyncManager *mSyncManager;
+    PathManager *mPathManager;
+    FramebufferManager *mFramebufferManager;
+    ProgramPipelineManager *mProgramPipelineManager;
+    MemoryObjectManager *mMemoryObjectManager;
 
     // Cached values from Context's caps
     GLuint mMaxDrawBuffers;
@@ -622,6 +759,9 @@ class State : angle::NonCopyable
     Program *mProgram;
     BindingPointer<ProgramPipeline> mProgramPipeline;
 
+    // GL_ANGLE_provoking_vertex
+    ProvokingVertex mProvokingVertex;
+
     using VertexAttribVector = std::vector<VertexAttribCurrentValueData>;
     VertexAttribVector mVertexAttribCurrentValues;  // From glVertexAttrib
     VertexArray *mVertexArray;
@@ -650,14 +790,13 @@ class State : angle::NonCopyable
     // Also stores a notification channel to the texture itself to handle texture change events.
     ActiveTexturePointerArray mActiveTexturesCache;
     std::vector<angle::ObserverBinding> mCompleteTextureBindings;
-    InitState mCachedTexturesInitState;
 
-    InitState mCachedImageTexturesInitState;
+    ActiveTextureMask mTexturesIncompatibleWithSamplers;
 
     SamplerBindingVector mSamplers;
 
-    using ImageUnitVector = std::vector<ImageUnit>;
-    ImageUnitVector mImageUnits;
+    // It would be nice to merge the image and observer binding. Same for textures.
+    std::vector<ImageUnit> mImageUnits;
 
     using ActiveQueryMap = angle::PackedEnumMap<QueryType, BindingPointer<Query>>;
     ActiveQueryMap mActiveQueries;
@@ -712,7 +851,9 @@ class State : angle::NonCopyable
     DirtyBits mDirtyBits;
     DirtyObjects mDirtyObjects;
     mutable AttributesMask mDirtyCurrentValues;
+    ActiveTextureMask mDirtyTextures;
     ActiveTextureMask mDirtySamplers;
+    ImageUnitMask mDirtyImages;
 };
 
 ANGLE_INLINE angle::Result State::syncDirtyObjects(const Context *context,
@@ -726,7 +867,7 @@ ANGLE_INLINE angle::Result State::syncDirtyObjects(const Context *context,
     }
 
     mDirtyObjects &= ~dirtyObjects;
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 }  // namespace gl

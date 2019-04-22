@@ -32,7 +32,7 @@
         android:inputType="text"
         android:layout_width="match_parent"
         android:layout_height="32dp"
-        android:textSize="18sp"
+        android:textAppearance="@style/TextAppearance.AddToHomeScreenEditText"
         android:singleLine="true"
         android:paddingTop="0dp"
         android:layout_marginTop="10dp"
@@ -56,8 +56,7 @@
             android:id="@+id/name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="20sp"
-            android:textAppearance="@style/BlackTitle1" />
+            android:textAppearance="@style/TextAppearance.AddToHomeScreenWebAppName" />
 
         <!-- The origin of the web app, displayed for security purposes. -->
         <TextView
@@ -65,7 +64,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingBottom="2dp"
-            android:textAppearance="@style/BlackBody" />
+            android:textAppearance="@style/TextAppearance.BlackBody" />
 
         <!-- The rating bar used for Play Store app ratings for native apps.
              Displayed in place of the origin. -->

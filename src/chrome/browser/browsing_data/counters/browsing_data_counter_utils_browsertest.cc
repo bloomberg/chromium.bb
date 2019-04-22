@@ -11,8 +11,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/unified_consent/unified_consent_service_factory.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/signin/core/browser/signin_buildflags.h"
+#include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/test/fake_server/fake_server_network_resources.h"
 #include "components/unified_consent/feature.h"
 #include "components/unified_consent/scoped_unified_consent.h"
@@ -62,16 +62,16 @@ class BrowsingDataCounterUtilsBrowserTest
 };
 
 // Instantiate test for unified consent disabled & enabled.
-INSTANTIATE_TEST_CASE_P(,
-                        BrowsingDataCounterUtilsBrowserTest,
-                        ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(,
+                         BrowsingDataCounterUtilsBrowserTest,
+                         ::testing::Bool());
 
 IN_PROC_BROWSER_TEST_P(BrowsingDataCounterUtilsBrowserTest,
                        ShouldShowCookieException) {
   Profile* profile = browser()->profile();
 
-  browser_sync::ProfileSyncService* sync_service =
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
+  syncer::ProfileSyncService* sync_service =
+      ProfileSyncServiceFactory::GetAsProfileSyncServiceForProfile(profile);
 
   sync_service->OverrideNetworkResourcesForTest(
       std::make_unique<fake_server::FakeServerNetworkResources>(
@@ -81,7 +81,7 @@ IN_PROC_BROWSER_TEST_P(BrowsingDataCounterUtilsBrowserTest,
 #if defined(OS_CHROMEOS)
   // In browser tests, the profile may already by authenticated with stub
   // account |user_manager::kStubUserEmail|.
-  AccountInfo info =
+  CoreAccountInfo info =
       IdentityManagerFactory::GetForProfile(profile)->GetPrimaryAccountInfo();
   username = info.email;
 #endif

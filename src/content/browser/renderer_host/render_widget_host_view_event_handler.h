@@ -131,9 +131,6 @@ class CONTENT_EXPORT RenderWidgetHostViewEventHandler
 #endif  // defined(OS_WIN)
 
   bool accept_return_character() { return accept_return_character_; }
-  void disable_input_event_router_for_testing() {
-    disable_input_event_router_for_testing_ = true;
-  }
   bool mouse_locked() { return mouse_locked_; }
   const ui::MotionEventAura& pointer_state() const { return pointer_state_; }
   void set_focus_on_mouse_down_or_key_event(
@@ -219,8 +216,9 @@ class CONTENT_EXPORT RenderWidgetHostViewEventHandler
   // moved to center.
   bool ShouldMoveToCenter();
 
-  // Returns true when we can do SurfaceHitTesting for the event type.
-  bool ShouldRouteEvent(const ui::Event* event) const;
+  // Returns true when we can hit test input events with location data to be
+  // sent to the targeted RenderWidgetHost.
+  bool ShouldRouteEvents() const;
 
   // Directs events to the |host_|.
   void ProcessMouseEvent(const blink::WebMouseEvent& event,
@@ -235,11 +233,6 @@ class CONTENT_EXPORT RenderWidgetHostViewEventHandler
 
   // Whether return characters should be passed on to the RenderWidgetHostImpl.
   bool accept_return_character_;
-
-  // Allows tests to send gesture events for testing without first sending a
-  // corresponding touch sequence, as would be required by
-  // RenderWidgetHostInputEventRouter.
-  bool disable_input_event_router_for_testing_;
 
   // Deactivates keyboard lock when destroyed.
   std::unique_ptr<aura::ScopedKeyboardHook> scoped_keyboard_hook_;

@@ -57,7 +57,6 @@ MultiResolutionImageResourceFetcher::MultiResolutionImageResourceFetcher(
   fetcher_->Start(
       frame, request_context, network::mojom::FetchRequestMode::kNoCors,
       network::mojom::FetchCredentialsMode::kInclude,
-      network::mojom::RequestContextFrameType::kNone,
       base::Bind(&MultiResolutionImageResourceFetcher::OnURLFetchComplete,
                  base::Unretained(this)));
 }
@@ -71,7 +70,7 @@ void MultiResolutionImageResourceFetcher::OnURLFetchComplete(
   std::vector<SkBitmap> bitmaps;
   if (!response.IsNull()) {
     http_status_code_ = response.HttpStatusCode();
-    GURL url(response.Url());
+    GURL url(response.CurrentRequestUrl());
     if (http_status_code_ == 200 || url.SchemeIsFile()) {
       // Request succeeded, try to convert it to an image.
       bitmaps = ImageDecoder::DecodeAll(

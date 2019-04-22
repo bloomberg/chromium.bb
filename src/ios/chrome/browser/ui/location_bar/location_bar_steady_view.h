@@ -41,6 +41,10 @@
 @property(nonatomic, strong) UIButton* locationButton;
 // The label displaying the current location URL.
 @property(nonatomic, strong) UILabel* locationLabel;
+// The button displayed in the leading corner of the view, i.e. infobar badge.
+// TODO(crbug.com/935804): This button is currently only being used in the
+// Infobar redesign.
+@property(nonatomic, strong) UIButton* leadingButton;
 // The button displayed in the trailing corner of the view, i.e. share button.
 @property(nonatomic, strong) UIButton* trailingButton;
 // The string that describes the current security level. Used for a11y.

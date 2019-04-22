@@ -20,7 +20,6 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/ntp_snippets/breaking_news/breaking_news_gcm_app_handler.h"
 #include "components/ntp_snippets/callbacks.h"
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/category_rankers/category_ranker.h"
@@ -289,8 +288,8 @@ class ContentSuggestionsService : public KeyedService,
       const ContentSuggestion::ID& suggestion_id) override;
 
   // identity::IdentityManager::Observer implementation.
-  void OnPrimaryAccountSet(const AccountInfo& account_info) override;
-  void OnPrimaryAccountCleared(const AccountInfo& account_info) override;
+  void OnPrimaryAccountSet(const CoreAccountInfo& account_info) override;
+  void OnPrimaryAccountCleared(const CoreAccountInfo& account_info) override;
 
   // history::HistoryServiceObserver implementation.
   void OnURLsDeleted(history::HistoryService* history_service,

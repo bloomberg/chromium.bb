@@ -52,7 +52,7 @@ bool ArchivePatchHelper::Uncompress(base::FilePath* last_uncompressed_file) {
   int32_t ntstatus = 0;
   DWORD lzma_result = UnPackArchive(compressed_archive_, working_directory_,
                                     &output_file, &unpack_status, &ntstatus);
-  RecordUnPackMetrics(unpack_status, ntstatus, consumer_);
+  RecordUnPackMetrics(unpack_status, ntstatus, lzma_result, consumer_);
   if (lzma_result != ERROR_SUCCESS)
     return false;
 
@@ -63,15 +63,11 @@ bool ArchivePatchHelper::Uncompress(base::FilePath* last_uncompressed_file) {
 }
 
 bool ArchivePatchHelper::ApplyPatch() {
-  // TODO(ckitagawa): Swap ordering back to Zucchini first once we ship
-  // Zucchini based patches by default.
-  if (CourgetteEnsemblePatch() || BinaryPatch())
-    return true;
 #if BUILDFLAG(ZUCCHINI)
   if (ZucchiniEnsemblePatch())
     return true;
 #endif  // BUILDFLAG(ZUCCHINI)
-  return false;
+  return CourgetteEnsemblePatch() || BinaryPatch();
 }
 
 bool ArchivePatchHelper::CourgetteEnsemblePatch() {

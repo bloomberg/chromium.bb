@@ -4,302 +4,167 @@
 
 cr.define('omnibox_output', function() {
   /**
-   * Details how to display an autocomplete result data field.
-   * @typedef {{
-   *   header: string,
-   *   url: string,
-   *   propertyName: string,
-   *   displayAlways: boolean,
-   *   tooltip: string,
+   * @typedef  {{
+   *   cursorPosition: number,
+   *   time: number,
+   *   done: boolean,
+   *   host: string,
+   *   isTypedHost: boolean,
    * }}
    */
-  let PresentationInfoRecord;
+  let ResultsDetails;
 
-  /**
-   * A constant that's used to decide what autocomplete result
-   * properties to output in what order.
-   * @type {!Array<!PresentationInfoRecord>}
-   */
-  const PROPERTY_OUTPUT_ORDER = [
-    {
-      header: 'Provider',
-      url: '',
-      propertyName: 'providerName',
-      displayAlways: true,
-      tooltip: 'The AutocompleteProvider suggesting this result.'
-    },
-    {
-      header: 'Type',
-      url: '',
-      propertyName: 'type',
-      displayAlways: true,
-      tooltip: 'The type of the result.'
-    },
-    {
-      header: 'Relevance',
-      url: '',
-      propertyName: 'relevance',
-      displayAlways: true,
-      tooltip: 'The result score. Higher is more relevant.'
-    },
-    {
-      header: 'Contents',
-      url: '',
-      propertyName: 'contents',
-      displayAlways: true,
-      tooltip: 'The text that is presented identifying the result.'
-    },
-    {
-      header: 'Description',
-      url: '',
-      propertyName: 'description',
-      displayAlways: false,
-      tooltip: 'The page title of the result.'
-    },
-    {
-      header: 'CanBeDefault',
-      url: '',
-      propertyName: 'allowedToBeDefaultMatch',
-      displayAlways: false,
-      tooltip:
-          'A green checkmark indicates that the result can be the default ' +
-          'match(i.e., can be the match that pressing enter in the omnibox' +
-          'navigates to).'
-    },
-    {
-      header: 'Starred',
-      url: '',
-      propertyName: 'starred',
-      displayAlways: false,
-      tooltip:
-          'A green checkmark indicates that the result has been bookmarked.'
-    },
-    {
-      header: 'Hastabmatch',
-      url: '',
-      propertyName: 'hasTabMatch',
-      displayAlways: false,
-      tooltip:
-          'A green checkmark indicates that the result URL matches an open' +
-          'tab.'
-    },
-    {
-      header: 'URL',
-      url: '',
-      propertyName: 'destinationUrl',
-      displayAlways: true,
-      tooltip: 'The URL for the result.'
-    },
-    {
-      header: 'FillIntoEdit',
-      url: '',
-      propertyName: 'fillIntoEdit',
-      displayAlways: false,
-      tooltip: 'The text shown in the omnibox when the result is selected.'
-    },
-    {
-      header: 'InlineAutocompletion',
-      url: '',
-      propertyName: 'inlineAutocompletion',
-      displayAlways: false,
-      tooltip: 'The text shown in the omnibox as a blue highlight selection ' +
-          'following the cursor, if this match is shown inline.'
-    },
-    {
-      header: 'Del',
-      url: '',
-      propertyName: 'deletable',
-      displayAlways: false,
-      tooltip:
-          'A green checkmark indicates that the result can be deleted from ' +
-          'the visit history.'
-    },
-    {
-      header: 'Prev',
-      url: '',
-      propertyName: 'fromPrevious',
-      displayAlways: false,
-      tooltip: ''
-    },
-    {
-      header: 'Tran',
-      url:
-          'https://cs.chromium.org/chromium/src/ui/base/page_transition_types.h?q=page_transition_types.h&sq=package:chromium&dr=CSs&l=14',
-      propertyName: 'transition',
-      displayAlways: false,
-      tooltip: 'How the user got to the result.'
-    },
-    {
-      header: 'Done',
-      url: '',
-      propertyName: 'providerDone',
-      displayAlways: false,
-      tooltip:
-          'A green checkmark indicates that the provider is done looking ' +
-          'for more results.'
-    },
-    {
-      header: 'AssociatedKeyword',
-      url: '',
-      propertyName: 'associatedKeyword',
-      displayAlways: false,
-      tooltip: 'If non-empty, a "press tab to search" hint will be shown and ' +
-          'will engage this keyword.'
-    },
-    {
-      header: 'Keyword',
-      url: '',
-      propertyName: 'keyword',
-      displayAlways: false,
-      tooltip: 'The keyword of the search engine to be used.'
-    },
-    {
-      header: 'Duplicates',
-      url: '',
-      propertyName: 'duplicates',
-      displayAlways: false,
-      tooltip: 'The number of matches that have been marked as duplicates of ' +
-          'this match..'
-    },
-    {
-      header: 'AdditionalInfo',
-      url: '',
-      propertyName: 'additionalInfo',
-      displayAlways: false,
-      tooltip: 'Provider-specific information about the result.'
+  /** @typedef {Array<{key: string, value: string}>} */
+  let KeyValuePair;
+
+  /** @param {!Element} element*/
+  function clearChildren(element) {
+    while (element.firstChild) {
+      element.firstChild.remove();
     }
-  ];
+  }
 
-  /**
-   * In addition to representing the rendered HTML element, OmniboxOutput also
-   * provides a single public interface to interact with the output:
-   * 1. Render tables from responses  (RenderDelegate)
-   * 2. Control visibility based on display options (TODO)
-   * 3. Control visibility and coloring based on search text (FilterDelegate)
-   * 4. Export and copy output (CopyDelegate)
-   * 5. Preserve inputs and reset inputs to default (TODO)
-   * 6. Export and import inputs (TODO)
-   * With regards to interacting with RenderDelegate, OmniboxOutput tracks and
-   * aggregates responses from the C++ autocomplete controller. Typically, the
-   * C++ controller returns 3 sets of results per query, unless a new query is
-   * submitted before all 3 responses. OmniboxController also triggers
-   * appending to and clearing of OmniboxOutput when appropriate (e.g., upon
-   * receiving a new response or a change in display inputs).
-   */
   class OmniboxOutput extends OmniboxElement {
-    /** @return {string} */
-    static get is() {
-      return 'omnibox-output';
-    }
-
     constructor() {
       super('omnibox-output-template');
 
-      /** @type {!RenderDelegate} */
-      this.renderDelegate = new RenderDelegate(this.$$('contents'));
-      /** @type {!CopyDelegate} */
-      this.copyDelegate = new CopyDelegate(this);
-      /** @type {!FilterDelegate} */
-      this.filterDelegate = new FilterDelegate(this);
-
-      /** @type {!Array<!mojom.OmniboxResult>} */
-      this.responses = [];
+      /** @private {number} */
+      this.selectedResponseIndex_ = 0;
+      /** @type {!Array<!Array<!mojom.OmniboxResponse>>} */
+      this.responsesHistory = [];
+      /** @private {!Array<!OutputResultsGroup>} */
+      this.resultsGroups_ = [];
       /** @private {!QueryInputs} */
       this.queryInputs_ = /** @type {!QueryInputs} */ ({});
       /** @private {!DisplayInputs} */
-      this.displayInputs_ = /** @type {!DisplayInputs} */ ({});
+      this.displayInputs_ = OmniboxInput.defaultDisplayInputs;
+      /** @private {string} */
+      this.filterText_ = '';
     }
 
     /** @param {!QueryInputs} queryInputs */
     updateQueryInputs(queryInputs) {
       this.queryInputs_ = queryInputs;
-      this.refresh_();
     }
 
     /** @param {!DisplayInputs} displayInputs */
     updateDisplayInputs(displayInputs) {
       this.displayInputs_ = displayInputs;
-      this.refresh_();
+      this.updateVisibility_();
+      this.updateEliding_();
     }
 
-    clearAutocompleteResponses() {
-      this.responses = [];
-      this.refresh_();
+    /** @param {string} filterText */
+    updateFilterText(filterText) {
+      this.filterText_ = filterText;
+      this.updateFilterHighlights_();
     }
 
-    /** @param {!mojom.OmniboxResult} response */
+    /** @param {!Array<!Array<!mojom.OmniboxResponse>>} responsesHistory */
+    setResponsesHistory(responsesHistory) {
+      this.responsesHistory = responsesHistory;
+      this.dispatchEvent(new CustomEvent(
+          'responses-count-changed', {detail: responsesHistory.length}));
+      this.updateSelectedResponseIndex(this.selectedResponseIndex_);
+    }
+
+    /** @param {number} selection */
+    updateSelectedResponseIndex(selection) {
+      if (selection >= 0 && selection < this.responsesHistory.length) {
+        this.selectedResponseIndex_ = selection;
+        this.clearResultsGroups_();
+        this.responsesHistory[selection].forEach(
+            this.createResultsGroup_.bind(this));
+      }
+    }
+
+    prepareNewQuery() {
+      this.responsesHistory.push([]);
+      this.dispatchEvent(new CustomEvent(
+          'responses-count-changed', {detail: this.responsesHistory.length}));
+    }
+
+    /** @param {!mojom.OmniboxResponse} response */
     addAutocompleteResponse(response) {
-      this.responses.push(response);
-      this.refresh_();
-    }
-
-    /** @private */
-    refresh_() {
-      this.renderDelegate.refresh(
-          this.queryInputs_, this.responses, this.displayInputs_);
-    }
-
-    /** @return {!Array<!OutputMatch>} */
-    get matches() {
-      return this.renderDelegate.matches;
-    }
-  }
-
-  // Responsible for rendering the output HTML.
-  class RenderDelegate {
-    /** @param {!Element} containerElement */
-    constructor(containerElement) {
-      /** @private {!Element} */
-      this.containerElement_ = containerElement;
+      const lastIndex = this.responsesHistory.length - 1;
+      this.responsesHistory[lastIndex].push(response);
+      if (lastIndex === this.selectedResponseIndex_) {
+        this.createResultsGroup_(response);
+      }
     }
 
     /**
-     * @param {!QueryInputs} queryInputs
-     * @param {!Array<!mojom.OmniboxResult>} responses
-     * @param {!DisplayInputs} displayInputs
+     * Clears result groups from the UI.
+     * @private
      */
-    refresh(queryInputs, responses, displayInputs) {
-      if (!responses.length)
-        return;
+    clearResultsGroups_() {
+      this.resultsGroups_ = [];
+      clearChildren(this.$$('#contents'));
+    }
 
-      /** @private {!Array<OutputResultsGroup>} */
-      this.resultsGroup_;
+    /**
+     * Creates and adds a result group to the UI.
+     * @private @param {!mojom.OmniboxResponse} response
+     */
+    createResultsGroup_(response) {
+      const resultsGroup =
+          OutputResultsGroup.create(response, this.queryInputs_.cursorPosition);
+      this.resultsGroups_.push(resultsGroup);
+      this.$$('#contents').appendChild(resultsGroup);
 
-      if (displayInputs.showIncompleteResults) {
-        this.resultsGroup_ = responses.map(
-            response =>
-                new OutputResultsGroup(response, queryInputs.cursorPosition));
-      } else {
-        const lastResponse = responses[responses.length - 1];
-        this.resultsGroup_ =
-            [new OutputResultsGroup(lastResponse, queryInputs.cursorPosition)];
-      }
+      this.updateVisibility_();
+      this.updateFilterHighlights_();
+    }
 
-      this.clearOutput_();
-      this.resultsGroup_.forEach(
-          resultsGroup =>
-              this.containerElement_.appendChild(resultsGroup.render(
-                  displayInputs.showDetails,
-                  displayInputs.showIncompleteResults,
-                  displayInputs.showAllProviders)));
+    /**
+     * @param {string} url
+     * @param {string} data
+     */
+    updateAnswerImage(url, data) {
+      this.autocompleteMatches.forEach(
+          match => match.updateAnswerImage(url, data));
+    }
+
+    /**
+     * Show or hide various output elements depending on display inputs.
+     * 1) Show non-last result groups only if showIncompleteResults is true.
+     * 2) Show the details section above each table if showDetails or
+     * showIncompleteResults are true.
+     * 3) Show individual results when showAllProviders is true.
+     * 4) Show certain columns and headers only if they showDetails is true.
+     * @private
+     */
+    updateVisibility_() {
+      // Show non-last result groups only if showIncompleteResults is true.
+      this.resultsGroups_.forEach((resultsGroup, index) => {
+        resultsGroup.hidden = !this.displayInputs_.showIncompleteResults &&
+            index !== this.resultsGroups_.length - 1;
+      });
+
+      this.resultsGroups_.forEach(resultsGroup => {
+        resultsGroup.updateVisibility(
+            this.displayInputs_.showIncompleteResults,
+            this.displayInputs_.showDetails,
+            this.displayInputs_.showAllProviders);
+      });
     }
 
     /** @private */
-    clearOutput_() {
-      const contents = this.containerElement_;
-      // Clears all children.
-      while (contents.firstChild)
-        contents.removeChild(contents.firstChild);
+    updateEliding_() {
+      this.resultsGroups_.forEach(
+          resultsGroup =>
+              resultsGroup.updateEliding(this.displayInputs_.elideCells));
     }
 
-    /** @return {string} */
-    get visibletableText() {
-      return this.containerElement_.innerText;
+    /** @private */
+    updateFilterHighlights_() {
+      this.autocompleteMatches.forEach(match => match.filter(this.filterText_));
     }
 
     /** @return {!Array<!OutputMatch>} */
-    get matches() {
-      return this.resultsGroup_.flatMap(resultsGroup => resultsGroup.matches);
+    get autocompleteMatches() {
+      return this.resultsGroups_.flatMap(
+          resultsGroup => resultsGroup.autocompleteMatches);
     }
   }
 
@@ -312,99 +177,168 @@ cr.define('omnibox_output', function() {
    * results. Each of these lists is tracked and rendered by OutputResultsTable
    * below.
    */
-  class OutputResultsGroup {
+  class OutputResultsGroup extends OmniboxElement {
     /**
-     * @param {!mojom.OmniboxResult} resultsGroup
+     * @param {!mojom.OmniboxResponse} resultsGroup
      * @param {number} cursorPosition
+     * @return {!OutputResultsGroup}
      */
-    constructor(resultsGroup, cursorPosition) {
-      /** @struct */
-      this.details = {
-        cursorPosition,
+    static create(resultsGroup, cursorPosition) {
+      const outputResultsGroup = new OutputResultsGroup();
+      outputResultsGroup.setResultsGroup(resultsGroup, cursorPosition);
+      return outputResultsGroup;
+    }
+
+    constructor() {
+      super('output-results-group-template');
+    }
+
+    /**
+     *  @param {!mojom.OmniboxResponse} resultsGroup
+     *  @param {number} cursorPosition
+     */
+    setResultsGroup(resultsGroup, cursorPosition) {
+      /** @private {ResultsDetails} */
+      this.details_ = {
+        cursorPosition: cursorPosition,
         time: resultsGroup.timeSinceOmniboxStartedMs,
         done: resultsGroup.done,
         host: resultsGroup.host,
         isTypedHost: resultsGroup.isTypedHost
       };
+      /** @type {!Array<!OutputHeader>} */
+      this.headers = COLUMNS.map(OutputHeader.create);
       /** @type {!OutputResultsTable} */
       this.combinedResults =
-          new OutputResultsTable(resultsGroup.combinedResults);
+          OutputResultsTable.create(resultsGroup.combinedResults);
       /** @type {!Array<!OutputResultsTable>} */
       this.individualResultsList =
           resultsGroup.resultsByProvider
               .map(resultsWrapper => resultsWrapper.results)
               .filter(results => results.length > 0)
-              .map(results => new OutputResultsTable(results));
+              .map(OutputResultsTable.create);
+      if (this.hasAdditionalProperties) {
+        this.headers.push(OutputHeader.create(ADDITIONAL_PROPERTIES_COLUMN));
+      }
+      this.render_();
     }
 
     /**
      * Creates a HTML Node representing this data.
-     * @param {boolean} showDetails
+     * @private
+     */
+    render_() {
+      clearChildren(this);
+
+      /** @private {!Array<!Element>} */
+      this.innerHeaders_ = [];
+
+      customElements.whenDefined(this.$$('output-results-details').localName)
+          .then(
+              () =>
+                  this.$$('output-results-details').setDetails(this.details_));
+
+      this.$$('#table').appendChild(this.renderHeader_());
+      this.$$('#table').appendChild(this.combinedResults);
+      this.individualResultsList.forEach(results => {
+        const innerHeader = this.renderInnerHeader_(results);
+        this.innerHeaders_.push(innerHeader);
+        this.$$('#table').appendChild(innerHeader);
+        this.$$('#table').appendChild(results);
+      });
+    }
+
+    /** @private @return {!Element} */
+    renderHeader_() {
+      const head = document.createElement('thead');
+      head.classList.add('head');
+      const row = document.createElement('tr');
+      this.headers.forEach(cell => row.appendChild(cell));
+      head.appendChild(row);
+      return head;
+    }
+
+    /**
+     * @private
+     * @param {!OutputResultsTable} results
+     * @return {!Element}
+     */
+    renderInnerHeader_(results) {
+      const head = document.createElement('tbody');
+      head.classList.add('head');
+      const row = document.createElement('tr');
+      const cell = document.createElement('th');
+      // Reserve 1 more column for showing the additional properties column.
+      cell.colSpan = COLUMNS.length + 1;
+      cell.textContent = results.innerHeaderText;
+      row.appendChild(cell);
+      head.appendChild(row);
+      return head;
+    }
+
+    /**
      * @param {boolean} showIncompleteResults
-     * @param {boolean} showAllProviders
-     * @return {!Element}
-     */
-    render(showDetails, showIncompleteResults, showAllProviders) {
-      const detailsAndTable =
-          OmniboxElement.getTemplate('details-and-table-template');
-      if (showDetails || showIncompleteResults) {
-        detailsAndTable.querySelector('.details')
-            .appendChild(this.renderDetails_());
-      }
-
-      const showAdditionalPropertiesColumn =
-          this.showAdditionalPropertiesColumn_(showDetails);
-
-      detailsAndTable.querySelector('.table').appendChild(
-          OutputResultsTable.renderHeader(
-              showDetails, showAdditionalPropertiesColumn));
-      detailsAndTable.querySelector('.table').appendChild(
-          this.combinedResults.render(showDetails));
-      if (showAllProviders) {
-        this.individualResultsList.forEach(individualResults => {
-          detailsAndTable.querySelector('.table').appendChild(
-              individualResults.renderInnerHeader(
-                  showDetails, showAdditionalPropertiesColumn));
-          detailsAndTable.querySelector('.table').appendChild(
-              individualResults.render(showDetails));
-        });
-      }
-      return detailsAndTable;
-    }
-
-    /**
-     * @private
-     * @return {!Element}
-     */
-    renderDetails_() {
-      const details = OmniboxElement.getTemplate('details-template');
-      details.querySelector('.cursor-position').textContent =
-          this.details.cursorPosition;
-      details.querySelector('.time').textContent = this.details.time;
-      details.querySelector('.done').textContent = this.details.done;
-      details.querySelector('.host').textContent = this.details.host;
-      details.querySelector('.is-typed-host').textContent =
-          this.details.isTypedHost;
-      return details;
-    }
-
-    /**
-     * @private
      * @param {boolean} showDetails
+     * @param {boolean} showAllProviders
+     */
+    updateVisibility(showIncompleteResults, showDetails, showAllProviders) {
+      // Show the details section above each table if showDetails or
+      // showIncompleteResults are true.
+      this.$$('output-results-details').hidden =
+          !showDetails && !showIncompleteResults;
+
+      // Show individual results when showAllProviders is true.
+      this.individualResultsList.forEach(
+          individualResults => individualResults.hidden = !showAllProviders);
+      this.innerHeaders_.forEach(
+          innerHeader => innerHeader.hidden = !showAllProviders);
+
+      // Show certain column headers only if they showDetails is true.
+      COLUMNS.forEach(({displayAlways}, index) => {
+        this.headers[index].hidden = !showDetails && !displayAlways;
+      });
+
+      // Show certain columns only if they showDetails is true.
+      this.autocompleteMatches.forEach(
+          match => match.updateVisibility(showDetails));
+    }
+
+    /** @param {boolean} elideCells */
+    updateEliding(elideCells) {
+      this.autocompleteMatches.forEach(
+          match => match.updateEliding(elideCells));
+    }
+
+    /**
+     * @private
      * @return {boolean}
      */
-    showAdditionalPropertiesColumn_(showDetails) {
-      return showDetails &&
-          (this.combinedResults.hasAdditionalProperties ||
-           this.individualResultsList.some(
-               results => results.hasAdditionalProperties));
+    get hasAdditionalProperties() {
+      return this.combinedResults.hasAdditionalProperties ||
+          this.individualResultsList.some(
+              results => results.hasAdditionalProperties);
     }
 
     /** @return {!Array<!OutputMatch>} */
-    get matches() {
+    get autocompleteMatches() {
       return [this.combinedResults]
           .concat(this.individualResultsList)
-          .flatMap(results => results.matches);
+          .flatMap(results => results.autocompleteMatches);
+    }
+  }
+
+  class OutputResultsDetails extends OmniboxElement {
+    constructor() {
+      super('output-results-details-template');
+    }
+
+    /** @param {ResultsDetails} details */
+    setDetails(details) {
+      this.$$('#cursor-position').textContent = details.cursorPosition;
+      this.$$('#time').textContent = details.time;
+      this.$$('#done').textContent = details.done;
+      this.$$('#host').textContent = details.host;
+      this.$$('#is-typed-host').textContent = details.isTypedHost;
     }
   }
 
@@ -412,147 +346,134 @@ cr.define('omnibox_output', function() {
    * Helps track and render a list of results. Each result is tracked and
    * rendered by OutputMatch below.
    */
-  class OutputResultsTable {
-    /** @param {!Array<!mojom.AutocompleteMatch>} results */
-    constructor(results) {
+  class OutputResultsTable extends HTMLTableSectionElement {
+    /**
+     * @param {!Array<!mojom.AutocompleteMatch>} results
+     * @return {!OutputResultsTable}
+     */
+    static create(results) {
+      const resultsTable = new OutputResultsTable();
+      resultsTable.results = results;
+      return resultsTable;
+    }
+
+    constructor() {
+      super();
+      this.classList.add('body');
       /** @type {!Array<!OutputMatch>} */
-      this.matches = results.map(match => new OutputMatch(match));
+      this.autocompleteMatches = [];
     }
 
-    /**
-     * @param {boolean} showDetails
-     * @param {boolean} showAdditionalPropertiesColumn
-     * @return {Element}
-     */
-    static renderHeader(showDetails, showAdditionalPropertiesColumn) {
-      const head = document.createElement('thead');
-      const row = document.createElement('tr');
-      const cells =
-          OutputMatch.displayedProperties(showDetails)
-              .map(
-                  ({header, url, tooltip}) =>
-                      OutputMatch.renderHeaderCell(header, url, tooltip));
-      if (showAdditionalPropertiesColumn)
-        cells.push(OutputMatch.renderHeaderCell('Additional Properties'));
-      cells.forEach(cell => row.appendChild(cell));
-      head.appendChild(row);
-      return head;
+    /** @param {!Array<!mojom.AutocompleteMatch>} results */
+    set results(results) {
+      this.autocompleteMatches.forEach(match => match.remove());
+      this.autocompleteMatches = results.map(OutputMatch.create);
+      this.autocompleteMatches.forEach(this.appendChild.bind(this));
     }
 
-    /**
-     * Creates a HTML Node representing this data.
-     * @param {boolean} showDetails
-     * @return {!Element}
-     */
-    render(showDetails) {
-      const body = document.createElement('tbody');
-      this.matches.forEach(
-          match => body.appendChild(match.render(showDetails)));
-      return body;
-    }
-
-    /**
-     * @param {boolean} showDetails
-     * @param {boolean} showAdditionalPropertiesColumn
-     * @return {!Element}
-     */
-    renderInnerHeader(showDetails, showAdditionalPropertiesColumn) {
-      const head = document.createElement('thead');
-      const row = document.createElement('tr');
-      const cell = document.createElement('th');
-      // Reserve 1 more column if showing the additional properties column.
-      cell.colSpan = OutputMatch.displayedProperties(showDetails).length +
-          showAdditionalPropertiesColumn;
-      cell.textContent = this.matches[0].properties.providerName.value;
-      row.appendChild(cell);
-      head.appendChild(row);
-      return head;
+    /** @return {?string} */
+    get innerHeaderText() {
+      return this.autocompleteMatches[0].providerName;
     }
 
     /** @return {boolean} */
     get hasAdditionalProperties() {
-      return this.matches.some(match => match.hasAdditionalProperties);
+      return this.autocompleteMatches.some(
+          match => match.hasAdditionalProperties);
     }
   }
 
   /** Helps track and render a single match. */
-  class OutputMatch {
+  class OutputMatch extends HTMLTableRowElement {
+    /**
+     * @param {!mojom.AutocompleteMatch} match
+     * @return {!OutputMatch}
+     */
+    static create(match) {
+      /** @suppress {checkTypes} */
+      const outputMatch = new OutputMatch();
+      outputMatch.match = match;
+      return outputMatch;
+    }
+
     /** @param {!mojom.AutocompleteMatch} match */
-    constructor(match) {
-      /** @dict */
+    set match(match) {
+      /** @type {!Object<string, !OutputProperty>} */
       this.properties = {};
-      let unconsumedProperties = {};
-      Object.entries(match).forEach(propertyNameValueTuple => {
-        // TODO(manukh) replace with destructuring when the styleguide is
-        // updated
-        // https://chromium-review.googlesource.com/c/chromium/src/+/1271915
-        const propertyName = propertyNameValueTuple[0];
-        const propertyValue = propertyNameValueTuple[1];
-
-        if (PROPERTY_OUTPUT_ORDER.some(
-                property => property.propertyName === propertyName)) {
-          this.properties[propertyName] =
-              OutputProperty.constructProperty(propertyName, propertyValue);
-        } else {
-          unconsumedProperties[propertyName] = propertyValue;
-        }
-      });
       /** @type {!OutputProperty} */
-      this.additionalProperties = OutputProperty.constructProperty(
-          'additionalProperties', unconsumedProperties);
+      this.properties.contentsAndDescription;
+      /** @type {?string} */
+      this.providerName = match.providerName || null;
 
-      /** @type {!Element} */
-      this.associatedElement;
+      COLUMNS.forEach(column => {
+        const values = column.sourceProperties.map(
+            propertyName => /** @type {Object} */ (match)[propertyName]);
+        this.properties[column.matchKey] =
+            OutputProperty.create(column, values);
+      });
+
+      const unconsumedProperties = {};
+      Object.entries(match)
+          .filter(([name]) => !CONSUMED_SOURCE_PROPERTIES.includes(name))
+          .forEach(([name, value]) => unconsumedProperties[name] = value);
+
+      /** @type {!OutputProperty} */
+      this.additionalProperties = OutputProperty.create(
+          ADDITIONAL_PROPERTIES_COLUMN, [unconsumedProperties]);
+
+      this.render_();
     }
 
-    /**
-     * Creates a HTML Node representing this data.
-     * @param {boolean} showDetails
-     * @return {!Element}
-     */
-    render(showDetails) {
-      const row = document.createElement('tr');
-      OutputMatch.displayedProperties(showDetails)
-          .map(property => this.properties[property.propertyName].render())
-          .forEach(cell => row.appendChild(cell));
-
-      if (showDetails && this.hasAdditionalProperties)
-        row.appendChild(this.additionalProperties.render());
-
-      this.associatedElement = row;
-      return this.associatedElement;
-    }
-
-    /**
-     * @param {string} name
-     * @param {string=} url
-     * @param {string=} tooltip
-     * @return {!Element}
-     */
-    static renderHeaderCell(name, url, tooltip) {
-      const cell = document.createElement('th');
-      if (url) {
-        const link = document.createElement('a');
-        link.textContent = name;
-        link.href = url;
-        cell.appendChild(link);
-      } else {
-        cell.textContent = name;
+    /** @private */
+    render_() {
+      clearChildren(this);
+      COLUMNS.map(column => this.properties[column.matchKey])
+          .forEach(cell => this.appendChild(cell));
+      if (this.hasAdditionalProperties) {
+        this.appendChild(this.additionalProperties);
       }
-      cell.className =
-          'column-' + name.replace(/[A-Z]/g, c => '-' + c.toLowerCase());
-      cell.title = tooltip || '';
-      return cell;
     }
 
     /**
-     * @return {!Array<!PresentationInfoRecord>} Array representing which
-     * columns need to be displayed.
+     * @param {string} url
+     * @param {string} data
      */
-    static displayedProperties(showDetails) {
-      return showDetails ?
-          PROPERTY_OUTPUT_ORDER :
-          PROPERTY_OUTPUT_ORDER.filter(property => property.displayAlways);
+    updateAnswerImage(url, data) {
+      if (this.properties.contentsAndDescription.value === url) {
+        this.properties.contentsAndDescription.setAnswerImageData(data);
+      }
+    }
+
+    /** @param {boolean} showDetails */
+    updateVisibility(showDetails) {
+      // Show certain columns only if they showDetails is true.
+      COLUMNS.forEach(({matchKey, displayAlways}) => {
+        this.properties[matchKey].hidden = !showDetails && !displayAlways;
+      });
+    }
+
+    /** @param {boolean} elideCells */
+    updateEliding(elideCells) {
+      Object.values(this.properties)
+          .forEach(property => property.classList.toggle('elided', elideCells));
+    }
+
+    /** @param {string} filterText */
+    filter(filterText) {
+      this.classList.remove('filtered-highlighted');
+      this.allProperties_.forEach(
+          property => property.classList.remove('filtered-highlighted-nested'));
+
+      if (!filterText) {
+        return;
+      }
+
+      const matchedProperties = this.allProperties_.filter(
+          property => FilterUtil.filterText(property.text, filterText));
+      const isMatch = matchedProperties.length > 0;
+      this.classList.toggle('filtered-highlighted', isMatch);
+      matchedProperties.forEach(
+          property => property.classList.add('filtered-highlighted-nested'));
     }
 
     /**
@@ -560,48 +481,85 @@ cr.define('omnibox_output', function() {
      * needs to be displayed for this match.
      */
     get hasAdditionalProperties() {
-      return Object.keys(this.additionalProperties).length > 0;
+      return Object
+                 .keys(/** @type {!Object} */ (this.additionalProperties.value))
+                 .length > 0;
+    }
+
+    /** @private @return {!Array<!OutputProperty>} */
+    get allProperties_() {
+      return Object.values(this.properties).concat(this.additionalProperties);
     }
   }
 
-  /** @abstract */
-  class OutputProperty {
+  class OutputHeader extends HTMLTableCellElement {
     /**
-     * @param {string} name
-     * @param {*} value
+     * @param {Column} column
+     * @return {!OutputHeader}
      */
-    constructor(name, value) {
-      /** @type {string} */
-      this.name = name;
-      /** @type {*} */
-      this.value = value;
+    static create(column) {
+      const header = new OutputHeader();
+      header.classList.add(column.headerClassName);
+      header.setContents(column.headerText, column.url);
+      header.title = column.tooltip;
+      return header;
     }
 
     /**
-     * @param {string} name
-     * @param {*} value
+     * @param {!Array<string>} texts
+     * @param {string=} url
+     */
+    setContents(texts, url) {
+      clearChildren(this);
+      let container;
+      if (url) {
+        container = document.createElement('a');
+        container.href = url;
+      } else {
+        container = document.createElement('div');
+      }
+      container.classList.add('header-container');
+      texts.forEach(text => {
+        const part = document.createElement('span');
+        part.textContent = text;
+        container.appendChild(part);
+      });
+      this.appendChild(container);
+    }
+  }
+
+  class OutputProperty extends HTMLTableCellElement {
+    constructor() {
+      super();
+      /** @type {string} */
+      this.filterName;
+    }
+
+    /**
+     * @param {Column} column
+     * @param {!Array<*>} values
      * @return {!OutputProperty}
      */
-    static constructProperty(name, value) {
-      if (typeof value === 'boolean')
-        return new OutputBooleanProperty(name, value);
-      if (typeof value === 'object')
-        // We check if the first element has key and value properties.
-        if (value && value[0] && value[0].key && value[0].value)
-          return new OutputKeyValueTuplesProperty(name, value);
-        else
-          return new OutputJsonProperty(name, value);
-      const LINK_REGEX = /^(http|https|ftp|chrome|file):\/\//;
-      if (LINK_REGEX.test(value))
-        return new OutputLinkProperty(name, value);
-      return new OutputTextProperty(name, value);
+    static create(column, values) {
+      const outputProperty = new column.outputClass();
+      outputProperty.classList.add(column.cellClassName);
+      outputProperty.filterName = column.tooltip.split('\n', 1)[0];
+      outputProperty.values = values;
+      return outputProperty;
     }
 
-    /**
-     * @abstract
-     * @return {!Element}
-     */
-    render() {}
+    /** @param {!Array<*>} values */
+    set values(values) {
+      /** @type {*} */
+      this.value = values[0];
+      /** @private {!Array<*>} */
+      this.values_ = values;
+      /** @override */
+      this.render_();
+    }
+
+    /** @private */
+    render_() {}
 
     /** @return {string} */
     get text() {
@@ -609,151 +567,347 @@ cr.define('omnibox_output', function() {
     }
   }
 
-  class OutputBooleanProperty extends OutputProperty {
-    /**
-     * @override
-     * @return {!Element}
-     */
-    render() {
-      const cell = document.createElement('td');
-      const icon = document.createElement('div');
-      icon.className = this.value ? 'check-mark' : 'x-mark';
-      icon.textContent = this.value;
-      cell.appendChild(icon);
-      return cell;
+  class FlexWrappingOutputProperty extends OutputProperty {
+    constructor() {
+      super();
+
+      // margin-right is used on .pair-item's to separate them. To compensate,
+      // .pair-container has negative margin-right. This means .pair-container's
+      // overflow their parent. Overflowing a table cell is problematic, as 1)
+      // scroll bars overlay adjacent cell, and 2) the page receives a
+      // horizontal scroll bar when the right most column overflows. To avoid
+      // this, the parent of any element with negative margins (e.g.
+      // .pair-container) must not be a table cell; hence, the use of
+      // scrollContainer_.
+      // Flex gutters may provide a cleaner alternative once implemented.
+      // https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Flexible_Box_Layout/Mastering_Wrapping_of_Flex_Items#Creating_gutters_between_items
+      /** @private {!Element} */
+      this.scrollContainer_ = document.createElement('div');
+      this.appendChild(this.scrollContainer_);
+
+      /** @private {!Element} */
+      this.container_ = document.createElement('div');
+      this.container_.classList.add('pair-container');
+      this.scrollContainer_.appendChild(this.container_);
     }
   }
 
-  class OutputKeyValueTuplesProperty extends OutputProperty {
-    /**
-     * @override
-     * @return {!Element}
-     */
-    render() {
-      const cell = document.createElement('td');
-      const pre = document.createElement('pre');
-      pre.textContent = this.text;
-      cell.appendChild(pre);
-      return cell;
+  class OutputPairProperty extends FlexWrappingOutputProperty {
+    constructor() {
+      super();
+
+      /** @type {!Element} */
+      this.first_ = document.createElement('div');
+      this.first_.classList.add('pair-item');
+      this.container_.appendChild(this.first_);
+
+      /** @type {!Element} */
+      this.second_ = document.createElement('div');
+      this.second_.classList.add('pair-item');
+      this.container_.appendChild(this.second_);
     }
 
-    /**
-     * @override
-     * @return {string}
-     */
+    /** @private @override */
+    render_() {
+      [this.first_.textContent, this.second_.textContent] = this.values_;
+    }
+
+    /** @override @return {string} */
     get text() {
-      return this.value.reduce(
-          (prev, {key, value}) => `${prev}${key}: ${value}\n`, '');
+      return `${this.values_[0]}.${this.values_[1]}`;
     }
   }
 
-  class OutputJsonProperty extends OutputProperty {
-    /**
-     * @override
-     * @return {!Element}
-     */
-    render() {
-      const cell = document.createElement('td');
-      const pre = document.createElement('pre');
-      pre.textContent = this.text;
-      cell.appendChild(pre);
-      return cell;
+  class OutputOverlappingPairProperty extends OutputPairProperty {
+    constructor() {
+      super();
+
+      this.notOverlapWarning_ = document.createElement('div');
+      this.notOverlapWarning_.classList.add('overlap-warning');
+      this.container_.appendChild(this.notOverlapWarning_);
     }
 
-    /**
-     * @override
-     * @return {string}
-     */
+    /** @private @override */
+    render_() {
+      const overlap = this.values_[0].endsWith(this.values_[1]);
+      const firstText = this.values_[1] && overlap ?
+          this.values_[0].slice(0, -this.values_[1].length) :
+          this.values_[0];
+
+      this.first_.textContent = firstText;
+      this.second_.textContent = this.values_[1];
+      this.notOverlapWarning_.textContent = overlap ?
+          '' :
+          `btw, these texts do not overlap; '${
+              this.values_[1]}' was expected to be a suffix of '${
+              this.values_[0]}'`;
+    }
+  }
+
+  class OutputAnswerProperty extends FlexWrappingOutputProperty {
+    constructor() {
+      super();
+
+      /** @type {!Element} */
+      this.image_ = document.createElement('img');
+      this.image_.classList.add('pair-item');
+      this.container_.appendChild(this.image_);
+
+      /** @type {!Element} */
+      this.contents_ = document.createElement('div');
+      this.contents_.classList.add('pair-item', 'contents');
+      this.container_.appendChild(this.contents_);
+
+      /** @type {!Element} */
+      this.description_ = document.createElement('div');
+      this.description_.classList.add('pair-item', 'description');
+      this.container_.appendChild(this.description_);
+
+      /** @type {!Element} */
+      this.answer_ = document.createElement('div');
+      this.answer_.classList.add('pair-item', 'answer');
+      this.container_.appendChild(this.answer_);
+
+      /** @type {!Element} */
+      this.imageUrl_ = document.createElement('a');
+      this.imageUrl_.classList.add('pair-item', 'image-url');
+      this.container_.appendChild(this.imageUrl_);
+    }
+
+    /** @param {string} imageData */
+    setAnswerImageData(imageData) {
+      this.image_.src = imageData;
+    }
+
+    /** @private @override */
+    render_() {
+      // TODO (manukh) Wrap this line when Clang is updated,
+      // https://b.corp.google.com/126708256 .
+      const [image, contents, description, answer, contentsClassification, descriptionClassification] =
+          this.values_;
+      OutputAnswerProperty.renderClassifiedText_(
+          this.contents_, /** @type {string} */ (contents),
+          /** @type {!Array<!mojom.ACMatchClassification>} */
+          (contentsClassification));
+      OutputAnswerProperty.renderClassifiedText_(
+          this.description_, /** @type {string} */ (description),
+          /** @type {!Array<!mojom.ACMatchClassification>} */
+          (descriptionClassification));
+      this.answer_.textContent = answer;
+      this.imageUrl_.textContent = image;
+      this.imageUrl_.href = image;
+    }
+
+    /** @override @return {string} */
     get text() {
-      return JSON.stringify(this.value, null, 2);
-    }
-  }
-
-  class OutputLinkProperty extends OutputProperty {
-    /**
-     * @override
-     * @return {!Element}
-     */
-    render() {
-      const cell = document.createElement('td');
-      const link = document.createElement('a');
-      link.textContent = this.value;
-      link.href = this.value;
-      cell.appendChild(link);
-      return cell;
-    }
-  }
-
-  class OutputTextProperty extends OutputProperty {
-    /**
-     * @override
-     * @return {!Element}
-     */
-    render() {
-      const cell = document.createElement('td');
-      cell.textContent = this.value;
-      return cell;
-    }
-  }
-
-  /** Responsible for setting clipboard contents. */
-  class CopyDelegate {
-    /** @param {!omnibox_output.OmniboxOutput} omniboxOutput */
-    constructor(omniboxOutput) {
-      /** @private {!omnibox_output.OmniboxOutput} */
-      this.omniboxOutput_ = omniboxOutput;
-    }
-
-    copyTextOutput() {
-      this.copy_(this.omniboxOutput_.renderDelegate.visibletableText);
-    }
-
-    copyJsonOutput() {
-      this.copy_(JSON.stringify(this.omniboxOutput_.responses, null, 2));
+      return this.values_.join('.');
     }
 
     /**
      * @private
-     * @param {string} value
+     * @param {!Element} container
+     * @param {string} string
+     * @param {!Array<!mojom.ACMatchClassification>} classes
      */
-    copy_(value) {
-      navigator.clipboard.writeText(value).catch(
-          error => console.error('unable to copy to clipboard:', error));
+    static renderClassifiedText_(container, string, classes) {
+      clearChildren(container);
+      OutputAnswerProperty.classify(string + '\n', classes)
+          .map(
+              ({string, style}) => OutputJsonProperty.renderJsonWord(
+                  string, OutputAnswerProperty.styleToClasses_(style)))
+          .forEach(span => container.appendChild(span));
+    }
+
+    /**
+     * @param {string} string
+     * @param {!Array<!mojom.ACMatchClassification>} classes
+     * @return {!Array<{string: string, style: number}>}
+     */
+    static classify(string, classes) {
+      return classes.map(({offset, style}, i) => {
+        const end = classes[i + 1] ? classes[i + 1].offset : string.length;
+        return {string: string.substring(offset, end), style};
+      });
+    }
+
+    /**
+     * @private
+     * @param {number} style
+     * @return {!Array<string>}
+     */
+    static styleToClasses_(style) {
+      // Maps the bitmask enum AutocompleteMatch::ACMatchClassification::Style
+      // to strings. See autocomplete_match.h for more details.
+      // E.g., maps the style 5 to classes ['style-url', 'style-dim'].
+      return ['style-url', 'style-match', 'style-dim'].filter(
+          (_, i) => (style >> i) % 2);
+    }
+  }
+
+  class OutputBooleanProperty extends OutputProperty {
+    constructor() {
+      super();
+      /** @private {!Element} */
+      this.icon_ = document.createElement('div');
+      this.appendChild(this.icon_);
+    }
+
+    /** @private @override */
+    render_() {
+      this.icon_.classList.toggle('check-mark', !!this.value);
+      this.icon_.classList.toggle('x-mark', !this.value);
+    }
+
+    get text() {
+      return (this.value ? 'is: ' : 'not: ') + this.filterName;
+    }
+  }
+
+  class OutputJsonProperty extends OutputProperty {
+    constructor() {
+      super();
+      /** @private {!Element} */
+      this.pre_ = document.createElement('pre');
+      this.pre_.classList.add('json');
+      this.appendChild(this.pre_);
+    }
+
+    /** @private @override */
+    render_() {
+      clearChildren(this.pre_);
+      this.text.split(/("(?:[^"\\]|\\.)*":?|\w+)/)
+          .map(word => {
+            return OutputJsonProperty.renderJsonWord(
+                word, [OutputJsonProperty.classifyJsonWord(word)]);
+          })
+          .forEach(jsonSpan => this.pre_.appendChild(jsonSpan));
+    }
+
+    /** @override @return {string} */
+    get text() {
+      return JSON.stringify(this.value, null, 2);
+    }
+
+    /**
+     * @param {string} word
+     * @param {!Array<string>} classes
+     * @return {!Element}
+     */
+    static renderJsonWord(word, classes) {
+      const span = document.createElement('span');
+      span.classList.add(...classes);
+      span.textContent = word;
+      return span;
+    }
+
+    /**
+     * @param {string} word
+     * @return {string|undefined}
+     */
+    static classifyJsonWord(word) {
+      if (/^\d+$/.test(word)) {
+        return 'number';
+      }
+      if (/^"[^]*":$/.test(word)) {
+        return 'key';
+      }
+      if (/^"[^]*"$/.test(word)) {
+        return 'string';
+      }
+      if (/true|false/.test(word)) {
+        return 'boolean';
+      }
+      if (/null/.test(word)) {
+        return 'null';
+      }
+    }
+  }
+
+  class OutputAdditionalInfoProperty extends OutputJsonProperty {
+    /** @private @override */
+    render_() {
+      clearChildren(this.pre_);
+      this.tuples_.forEach(({key, value}) => {
+        this.pre_.appendChild(
+            OutputJsonProperty.renderJsonWord(key + ': ', ['key']));
+        this.pre_.appendChild(
+            OutputJsonProperty.renderJsonWord(value + '\n', ['number']));
+      });
+    }
+
+    /** @override @return {string} */
+    get text() {
+      return this.tuples_.reduce(
+          (prev, {key, value}) => `${prev}${key}: ${value}\n`, '');
+    }
+
+    /** @private @return {!KeyValuePair} */
+    get tuples_() {
+      return [
+        .../** @type {!KeyValuePair} */ (this.value),
+        {key: 'document_type', value: this.values_[1]}
+      ];
+    }
+  }
+
+  class OutputUrlProperty extends FlexWrappingOutputProperty {
+    constructor() {
+      super();
+
+      /** @private {!Element} */
+      this.iconAndUrlContainer_ = document.createElement('div');
+      this.iconAndUrlContainer_.classList.add('pair-item');
+      this.container_.appendChild(this.iconAndUrlContainer_);
+
+      /** @private {!Element} */
+      this.icon_ = document.createElement('img');
+      this.iconAndUrlContainer_.appendChild(this.icon_);
+
+      /** @private {!Element} */
+      this.urlLink_ = document.createElement('a');
+      this.iconAndUrlContainer_.appendChild(this.urlLink_);
+
+      /** @private {!Element} */
+      this.strippedUrlLink_ = document.createElement('a');
+      this.strippedUrlLink_.classList.add('pair-item');
+      this.container_.appendChild(this.strippedUrlLink_);
+    }
+
+    /** @private @override */
+    render_() {
+      const [destinationUrl, isSearchType, strippedDestinationUrl] =
+          this.values_;
+      if (isSearchType) {
+        this.icon_.removeAttribute('src');
+      } else {
+        this.icon_.src = `chrome://favicon/${destinationUrl}`;
+      }
+      this.urlLink_.textContent = destinationUrl;
+      this.urlLink_.href = destinationUrl;
+      this.strippedUrlLink_.textContent = strippedDestinationUrl;
+      this.strippedUrlLink_.href = strippedDestinationUrl;
+    }
+  }
+
+  class OutputTextProperty extends OutputProperty {
+    constructor() {
+      super();
+      /** @private {!Element} */
+      this.div_ = document.createElement('div');
+      this.appendChild(this.div_);
+    }
+
+    /** @private @override */
+    render_() {
+      this.div_.textContent = this.value;
     }
   }
 
   /** Responsible for highlighting and hiding rows using filter text. */
-  class FilterDelegate {
-    /** @param {!omnibox_output.OmniboxOutput} omniboxOutput */
-    constructor(omniboxOutput) {
-      /** @private {!omnibox_output.OmniboxOutput} */
-      this.omniboxOutput_ = omniboxOutput;
-    }
-
+  class FilterUtil {
     /**
-     * @param {string} filterText
-     * @param {boolean} filterHide
-     */
-    filter(filterText, filterHide) {
-      this.omniboxOutput_.matches.filter(match => match.associatedElement)
-          .forEach(match => {
-            const row = match.associatedElement;
-            row.classList.remove('filtered-hidden');
-            row.classList.remove('filtered-highlighted');
-
-            if (!filterText)
-              return;
-
-            const isMatch = FilterDelegate.filterMatch_(match, filterText);
-            row.classList.toggle('filtered-hidden', filterHide && !isMatch);
-            row.classList.toggle(
-                'filtered-highlighted', !filterHide && isMatch);
-          });
-    }
-
-    /**
-     * Checks if a omnibox match fuzzy-matches a filter string. Each character
-     * of filterText must be present in the match text, either adjacent to the
+     * Checks if a string fuzzy-matches a filter string. Each character
+     * of filterText must be present in the search text, either adjacent to the
      * previous matched character, or at the start of a new word (see
      * textToWords_).
      * E.g. `abc` matches `abc`, `a big cat`, `a-bigCat`, `a very big cat`, and
@@ -761,36 +915,205 @@ cr.define('omnibox_output', function() {
      * `green rainbow` is matched by `gre rain`, but not by `gre bow`.
      * One exception is the first character, which may be matched mid-word.
      * E.g. `een rain` can also match `green rainbow`.
-     * @private
-     * @param {!OutputMatch} match
+     * @param {string} searchText
      * @param {string} filterText
      * @return {boolean}
      */
-    static filterMatch_(match, filterText) {
-      const row = match.associatedElement;
-      const cells = Array.from(row.querySelectorAll('td'));
-      const regexFilter = Array.from(filterText).join('(.*\\.)?');
-      return cells
-          .map(cell => FilterDelegate.textToWords_(cell.textContent).join('.'))
-          .some(text => text.match(regexFilter));
+    static filterText(searchText, filterText) {
+      const regexFilter =
+          Array.from(filterText)
+              .map(word => word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+              .join('(.*\\.)?');
+      const words = FilterUtil.textToWords_(searchText).join('.');
+      return words.match(new RegExp(regexFilter, 'i')) !== null;
     }
 
     /**
      * Splits a string into words, delimited by either capital letters, groups
      * of digits, or non alpha characters.
      * E.g., `https://google.com/the-dog-ate-134pies` will be split to:
-     * https, :, /, /, google, ., com, /, the, -, dog, -, ate, -, 134, pies
-     * We don't use `Array.split`, because we want to group digits, e.g. 134.
+     * https, :, /, /, google, ., com, /, the, -,  dog, -, ate, -, 134, pies
+     * This differs from `Array.split` in that this groups digits, e.g. 134.
      * @private
      * @param {string} text
      * @return {!Array<string>}
      */
     static textToWords_(text) {
+      const MAX_TEXT_LENGTH = 200;
+      if (text.length > MAX_TEXT_LENGTH) {
+        text = text.slice(0, MAX_TEXT_LENGTH);
+        console.warn(`text to be filtered too long, truncatd; max length: ${
+            MAX_TEXT_LENGTH}, truncated text: ${text}`);
+      }
       return text.match(/[a-z]+|[A-Z][a-z]*|\d+|./g) || [];
     }
   }
 
-  window.customElements.define(OmniboxOutput.is, OmniboxOutput);
+  class Column {
+    /**
+     * @param {!Array<string>} headerText
+     * @param {string} url
+     * @param {string} matchKey
+     * @param {boolean} displayAlways
+     * @param {string} tooltip
+     * @param {function(new:OutputProperty)} outputClass
+     * @param {!Array<string>} sourceProperties
+     */
+    constructor(
+        headerText, url, matchKey, displayAlways, tooltip, sourceProperties,
+        outputClass) {
+      /** @type {!Array<string>} split per span container to support styling. */
+      this.headerText = headerText;
+      /** @type {string} header link href or blank if non-hyperlink header. */
+      this.url = url;
+      /** @type {string} the field name used in the Match.properties object. */
+      this.matchKey = matchKey;
+      /** @type {boolean} if shown when showDetails option is false. */
+      this.displayAlways = displayAlways;
+      /** @type {string} header tooltip. */
+      this.tooltip = tooltip;
+      /** @type {!Array<string>} related mojo AutocompleteMatch properties. */
+      this.sourceProperties = sourceProperties;
+      /** @type {function(new:OutputProperty)} */
+      this.outputClass = outputClass;
+
+      const hyphenatedName =
+          matchKey.replace(/[A-Z]/g, c => '-' + c.toLowerCase());
+      /** @type {string} */
+      this.cellClassName = 'cell-' + hyphenatedName;
+      /** @type {string} */
+      this.headerClassName = 'header-' + hyphenatedName;
+    }
+  }
+
+  /**
+   * A constant that's used to decide what autocomplete result
+   * properties to output in what order.
+   * @type {!Array<!Column>}
+   */
+  const COLUMNS = [
+    new Column(
+        ['Provider', 'Type'], '', 'providerAndType', true,
+        'Provider & Type\nThe AutocompleteProvider suggesting this result. / ' +
+            'The type of the result.',
+        ['providerName', 'type'], OutputPairProperty),
+    new Column(
+        ['Relevance'], '', 'relevance', true,
+        'Relevance\nThe result score. Higher is more relevant.', ['relevance'],
+        OutputTextProperty),
+    new Column(
+        ['Contents', 'Description', 'Answer'], '', 'contentsAndDescription',
+        true,
+        'Contents & Description & Answer\nURL classifications are styled ' +
+            'blue.\nMATCH classifications are styled bold.\nDIM ' +
+            'classifications are styled with a gray background.',
+        [
+          'image', 'contents', 'description', 'answer', 'contentsClass',
+          'descriptionClass'
+        ],
+        OutputAnswerProperty),
+    new Column(
+        ['D'], '', 'allowedToBeDefaultMatch', true,
+        'Can be Default\nA green checkmark indicates that the result can be ' +
+            'the default match (i.e., can be the match that pressing enter ' +
+            'in the omnibox navigates to).',
+        ['allowedToBeDefaultMatch'], OutputBooleanProperty),
+    new Column(
+        ['S'], '', 'starred', false,
+        'Starred\nA green checkmark indicates that the result has been ' +
+            'bookmarked.',
+        ['starred'], OutputBooleanProperty),
+    new Column(
+        ['T'], '', 'hasTabMatch', false,
+        'Has Tab Match\nA green checkmark indicates that the result URL ' +
+            'matches an open tab.',
+        ['hasTabMatch'], OutputBooleanProperty),
+    new Column(
+        ['URL', 'Stripped URL'], '', 'destinationUrl', true,
+        'URL & Stripped URL\nThe URL for the result. / The stripped URL for ' +
+            'the result.',
+        ['destinationUrl', 'isSearchType', 'strippedDestinationUrl'],
+        OutputUrlProperty),
+    new Column(
+        ['Fill', 'Inline'], '', 'fillAndInline', false,
+        'Fill & Inline\nThe text shown in the omnibox when the result is ' +
+            'selected. / The text shown in the omnibox as a blue highlight ' +
+            'selection following the cursor, if this match is shown inline.',
+        ['fillIntoEdit', 'inlineAutocompletion'],
+        OutputOverlappingPairProperty),
+    new Column(
+        ['D'], '', 'deletable', false,
+        'Deletable\nA green checkmark indicates that the result can be ' +
+            'deleted from the visit history.',
+        ['deletable'], OutputBooleanProperty),
+    new Column(
+        ['P'], '', 'fromPrevious', false,
+        'From Previous\nTrue if this match is from a previous result.',
+        ['fromPrevious'], OutputBooleanProperty),
+    new Column(
+        ['Tran'],
+        'https://cs.chromium.org/chromium/src/ui/base/page_transition_types.h' +
+            '?q=page_transition_types.h&sq=package:chromium&dr=CSs&l=14',
+        'transition', false, 'Transition\nHow the user got to the result.',
+        ['transition'], OutputTextProperty),
+    new Column(
+        ['D'], '', 'providerDone', false,
+        'Done\nA green checkmark indicates that the provider is done looking ' +
+            'for more results.',
+        ['providerDone'], OutputBooleanProperty),
+    new Column(
+        ['Associated Keyword'], '', 'associatedKeyword', false,
+        'Associated Keyword\nIf non-empty, a "press tab to search" hint will ' +
+            'be shown and will engage this keyword.',
+        ['associatedKeyword'], OutputTextProperty),
+    new Column(
+        ['Keyword'], '', 'keyword', false,
+        'Keyword\nThe keyword of the search engine to be used.', ['keyword'],
+        OutputTextProperty),
+    new Column(
+        ['D'], '', 'duplicates', false,
+        'Duplicates\nThe number of matches that have been marked as ' +
+            'duplicates of this match.',
+        ['duplicates'], OutputTextProperty),
+    new Column(
+        ['Additional Info'], '', 'additionalInfo', false,
+        'Additional Info\nProvider-specific information about the result.',
+        ['additionalInfo', 'documentType'], OutputAdditionalInfoProperty)
+  ];
+
+  /** @type {!Column} */
+  const ADDITIONAL_PROPERTIES_COLUMN = new Column(
+      ['Additional Properties'], '', 'additionalProperties', false,
+      'Properties not accounted for.', [], OutputJsonProperty);
+
+  const CONSUMED_SOURCE_PROPERTIES =
+      COLUMNS.flatMap(column => column.sourceProperties);
+
+  customElements.define('omnibox-output', OmniboxOutput);
+  customElements.define('output-results-group', OutputResultsGroup);
+  customElements.define('output-results-details', OutputResultsDetails);
+  customElements.define(
+      'output-results-table', OutputResultsTable, {extends: 'tbody'});
+  customElements.define('output-match', OutputMatch, {extends: 'tr'});
+  customElements.define('output-header', OutputHeader, {extends: 'th'});
+  customElements.define(
+      'output-pair-property', OutputPairProperty, {extends: 'td'});
+  customElements.define(
+      'output-overlapping-pair-property', OutputOverlappingPairProperty,
+      {extends: 'td'});
+  customElements.define(
+      'output-answer-property', OutputAnswerProperty, {extends: 'td'});
+  customElements.define(
+      'output-boolean-property', OutputBooleanProperty, {extends: 'td'});
+  customElements.define(
+      'output-json-property', OutputJsonProperty, {extends: 'td'});
+  customElements.define(
+      'output-additional-info-property', OutputAdditionalInfoProperty,
+      {extends: 'td'});
+  customElements.define(
+      'output-url-property', OutputUrlProperty, {extends: 'td'});
+  customElements.define(
+      'output-text-property', OutputTextProperty, {extends: 'td'});
 
   return {OmniboxOutput: OmniboxOutput};
 });

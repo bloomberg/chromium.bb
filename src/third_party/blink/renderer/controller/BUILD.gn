@@ -12,12 +12,13 @@ import("//third_party/blink/renderer/modules/modules.gni")
 
 visibility = [ "//third_party/blink/*" ]
 
-component("controller") {
+jumbo_component("controller") {
   output_name = "blink_controller"
 
   deps = [
     "//skia",
     "//third_party/blink/renderer/core",
+    "//third_party/blink/renderer/core:testing",
     "//third_party/blink/renderer/modules",
     "//third_party/blink/renderer/platform",
     "//v8",
@@ -38,19 +39,23 @@ component("controller") {
     "blink_initializer.h",
     "blink_leak_detector.cc",
     "blink_leak_detector.h",
-    "bloated_renderer_detector.cc",
-    "bloated_renderer_detector.h",
     "controller_export.h",
     "dev_tools_frontend_impl.cc",
     "dev_tools_frontend_impl.h",
+    "memory_usage_monitor.cc",
+    "memory_usage_monitor.h",
   ]
 
   if (is_android) {
     sources += [
       "crash_memory_metrics_reporter_impl.cc",
       "crash_memory_metrics_reporter_impl.h",
+      "memory_usage_monitor_android.cc",
+      "memory_usage_monitor_android.h",
       "oom_intervention_impl.cc",
       "oom_intervention_impl.h",
+      "user_level_memory_pressure_signal_generator.cc",
+      "user_level_memory_pressure_signal_generator.h",
     ]
   }
   if (is_mac) {
@@ -64,7 +69,7 @@ component("controller") {
   configs += blink_symbols_config
 }
 
-group("webkit_unit_tests_data") {
+group("blink_unittests_data") {
   data = [
     "../core/testing/data/",
     "../core/paint/test_data/",
@@ -73,18 +78,28 @@ group("webkit_unit_tests_data") {
   ]
 }
 
-test("webkit_unit_tests") {
+# Old name of blink_unittests.
+# TODO(tkent): Remove this after removing external dependency.
+group("webkit_unit_tests") {
+  visibility = []  # Allow re-assignment of list.
+  visibility = [ "*" ]
+  testonly = true
   deps = [
-    ":webkit_unit_tests_sources",
+    ":blink_unittests",
+  ]
+}
+
+test("blink_unittests") {
+  deps = [
+    ":blink_unittests_sources",
   ]
 
   data_deps = [
-    ":webkit_unit_tests_data",
+    ":blink_unittests_data",
     "//content/shell:pak",
   ]
 
   if (is_android) {
-    enable_multidex = true
     deps += [
       "//base:base_java",
       "//content/public/android:content_java",
@@ -123,18 +138,22 @@ jumbo_source_set("blink_perf_tests_sources") {
   ]
 }
 
-jumbo_source_set("webkit_unit_tests_sources") {
+jumbo_source_set("blink_unittests_sources") {
   visibility = []  # Allow re-assignment of list.
   visibility = [ "*" ]
   testonly = true
 
   sources = [
-    "bloated_renderer_detector_test.cc",
     "tests/run_all_tests.cc",
   ]
   sources += bindings_unittest_files
   if (is_android) {
-    sources += [ "oom_intervention_impl_test.cc" ]
+    sources += [
+      "memory_usage_monitor_android_test.cc",
+      "memory_usage_monitor_test.cc",
+      "oom_intervention_impl_test.cc",
+      "user_level_memory_pressure_signal_generator_test.cc",
+    ]
   }
 
   deps = [

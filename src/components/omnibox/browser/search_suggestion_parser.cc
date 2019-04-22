@@ -24,6 +24,7 @@
 #include "base/values.h"
 #include "components/omnibox/browser/autocomplete_i18n.h"
 #include "components/omnibox/browser/autocomplete_input.h"
+#include "components/omnibox/browser/autocomplete_match_classification.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/url_prefix.h"
@@ -59,13 +60,13 @@ AutocompleteMatchType::Type GetAutocompleteMatchType(const std::string& type) {
 
 // SearchSuggestionParser::Result ----------------------------------------------
 
-SearchSuggestionParser::Result::Result(bool from_keyword_provider,
+SearchSuggestionParser::Result::Result(bool from_keyword,
                                        int relevance,
                                        bool relevance_from_server,
                                        AutocompleteMatchType::Type type,
                                        int subtype_identifier,
                                        const std::string& deletion_url)
-    : from_keyword_provider_(from_keyword_provider),
+    : from_keyword_(from_keyword),
       type_(type),
       subtype_identifier_(subtype_identifier),
       relevance_(relevance),
@@ -83,7 +84,7 @@ SearchSuggestionParser::SuggestResult::SuggestResult(
     const base::string16& suggestion,
     AutocompleteMatchType::Type type,
     int subtype_identifier,
-    bool from_keyword_provider,
+    bool from_keyword,
     int relevance,
     bool relevance_from_server,
     const base::string16& input_text)
@@ -97,7 +98,7 @@ SearchSuggestionParser::SuggestResult::SuggestResult(
                     /*deletion_url=*/"",
                     /*image_dominant_color=*/"",
                     /*image_url=*/"",
-                    from_keyword_provider,
+                    from_keyword,
                     relevance,
                     relevance_from_server,
                     /*should_prefetch=*/false,
@@ -114,12 +115,12 @@ SearchSuggestionParser::SuggestResult::SuggestResult(
     const std::string& deletion_url,
     const std::string& image_dominant_color,
     const std::string& image_url,
-    bool from_keyword_provider,
+    bool from_keyword,
     int relevance,
     bool relevance_from_server,
     bool should_prefetch,
     const base::string16& input_text)
-    : Result(from_keyword_provider,
+    : Result(from_keyword,
              relevance,
              relevance_from_server,
              type,
@@ -181,9 +182,7 @@ void SearchSuggestionParser::SuggestResult::ClassifyMatchContents(
   }
 
   match_contents_class_ = AutocompleteProvider::ClassifyAllMatchesInString(
-      input_text,
-      SearchSuggestionParser::GetOrCreateWordMapForInputText(input_text),
-      match_contents_, true);
+      input_text, match_contents_, true);
 }
 
 void SearchSuggestionParser::SuggestResult::SetAnswer(
@@ -194,7 +193,7 @@ void SearchSuggestionParser::SuggestResult::SetAnswer(
 int SearchSuggestionParser::SuggestResult::CalculateRelevance(
     const AutocompleteInput& input,
     bool keyword_provider_requested) const {
-  if (!from_keyword_provider_ && keyword_provider_requested)
+  if (!from_keyword_ && keyword_provider_requested)
     return 100;
   return ((input.type() == metrics::OmniboxInputType::URL) ? 300 : 600);
 }
@@ -208,11 +207,11 @@ SearchSuggestionParser::NavigationResult::NavigationResult(
     int subtype_identifier,
     const base::string16& description,
     const std::string& deletion_url,
-    bool from_keyword_provider,
+    bool from_keyword,
     int relevance,
     bool relevance_from_server,
     const base::string16& input_text)
-    : Result(from_keyword_provider,
+    : Result(from_keyword,
              relevance,
              relevance_from_server,
              type,
@@ -233,7 +232,11 @@ SearchSuggestionParser::NavigationResult::NavigationResult(
       description_(description) {
   DCHECK(url_.is_valid());
   CalculateAndClassifyMatchContents(true, input_text);
+  ClassifyDescription(input_text);
 }
+
+SearchSuggestionParser::NavigationResult::NavigationResult(
+    const NavigationResult& other) = default;
 
 SearchSuggestionParser::NavigationResult::~NavigationResult() {}
 
@@ -285,7 +288,15 @@ SearchSuggestionParser::NavigationResult::CalculateAndClassifyMatchContents(
 int SearchSuggestionParser::NavigationResult::CalculateRelevance(
     const AutocompleteInput& input,
     bool keyword_provider_requested) const {
-  return (from_keyword_provider_ || !keyword_provider_requested) ? 800 : 150;
+  return (from_keyword_ || !keyword_provider_requested) ? 800 : 150;
+}
+
+void SearchSuggestionParser::NavigationResult::ClassifyDescription(
+    const base::string16& input_text) {
+  TermMatches term_matches = FindTermMatches(input_text, description_);
+  description_class_ = ClassifyTermMatches(term_matches, description_.size(),
+                                           ACMatchClassification::MATCH,
+                                           ACMatchClassification::NONE);
 }
 
 // SearchSuggestionParser::Results ---------------------------------------------
@@ -494,20 +505,15 @@ bool SearchSuggestionParser::ParseSuggestResults(
       base::string16 annotation;
       base::string16 match_contents = suggestion;
       if (match_type == AutocompleteMatchType::CALCULATOR) {
-        if (!suggestion.compare(0, 2, base::UTF8ToUTF16("= "))) {
+        const bool has_equals_prefix =
+            !suggestion.compare(0, 2, base::UTF8ToUTF16("= "));
+        if (has_equals_prefix) {
           // Calculator results include a "= " prefix but we don't want to
           // include this in the search terms.
           suggestion.erase(0, 2);
-          // Additionally, on larger (non-phone) form factors, we don't want to
-          // display it in the suggestion contents either, because those devices
-          // display a suggestion type icon that looks like a '='.
-          if (ui::GetDeviceFormFactor() != ui::DEVICE_FORM_FACTOR_PHONE &&
-              !OmniboxFieldTrial::IsNewAnswerLayoutEnabled())
-            match_contents.erase(0, 2);
         }
-        if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_DESKTOP &&
-            OmniboxFieldTrial::IsNewAnswerLayoutEnabled()) {
-          annotation = match_contents;
+        if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_DESKTOP) {
+          annotation = has_equals_prefix ? suggestion : match_contents;
           match_contents = query;
         }
       }
@@ -537,7 +543,7 @@ bool SearchSuggestionParser::ParseSuggestResults(
           base::string16 answer_type;
           if (suggestion_detail->GetDictionary("ansa", &answer_json) &&
               suggestion_detail->GetString("ansb", &answer_type)) {
-            if (SuggestionAnswer::ParseAnswer(answer_json, answer_type,
+            if (SuggestionAnswer::ParseAnswer(*answer_json, answer_type,
                                               &answer)) {
               base::UmaHistogramSparse("Omnibox.AnswerParseType",
                                        answer.type());
@@ -572,26 +578,4 @@ bool SearchSuggestionParser::ParseSuggestResults(
   }
   results->relevances_from_server = relevances != nullptr;
   return true;
-}
-
-// static
-const AutocompleteProvider::WordMap&
-SearchSuggestionParser::GetOrCreateWordMapForInputText(
-    const base::string16& input_text) {
-  auto& cache = GetWordMapCache();
-  if (cache.first != input_text) {
-    auto new_cache = std::make_pair(
-        input_text, AutocompleteProvider::CreateWordMapForString(input_text));
-    cache.swap(new_cache);
-  }
-  return cache.second;
-}
-
-// static
-std::pair<base::string16, AutocompleteProvider::WordMap>&
-SearchSuggestionParser::GetWordMapCache() {
-  static base::NoDestructor<
-      std::pair<base::string16, AutocompleteProvider::WordMap>>
-      word_map_cache;
-  return *word_map_cache;
 }

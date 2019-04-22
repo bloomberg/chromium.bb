@@ -15,7 +15,7 @@
 #include "net/base/address_list.h"
 #include "net/base/load_states.h"
 #include "net/socket/websocket_endpoint_lock_manager.h"
-#include "net/socket/websocket_transport_client_socket_pool.h"
+#include "net/socket/websocket_transport_connect_job.h"
 
 namespace net {
 

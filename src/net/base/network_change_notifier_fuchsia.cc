@@ -9,61 +9,43 @@
 #include <utility>
 #include <vector>
 
-#include "base/fuchsia/component_context.h"
+#include "base/bind.h"
 #include "base/fuchsia/fuchsia_logging.h"
+#include "base/fuchsia/service_directory_client.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "net/base/network_interfaces.h"
 #include "net/base/network_interfaces_fuchsia.h"
 
 namespace net {
-namespace {
-
-using ConnectionType = NetworkChangeNotifier::ConnectionType;
-
-// Adapts a base::RepeatingCallback to a std::function object.
-// Useful when binding callbacks to asynchronous FIDL calls, because
-// it allows the caller to reference in-scope move-only objects as well as use
-// Chromium's ownership signifiers such as base::Passed, base::Unretained, etc.
-//
-// Note that the function takes a RepeatingCallback because it is copyable, but
-// in practice the callback will only be executed once by the FIDL system.
-template <typename R, typename... Args>
-std::function<R(Args...)> WrapCallbackAsFunction(
-    base::RepeatingCallback<R(Args...)> callback) {
-  return
-      [callback](Args... args) { callback.Run(std::forward<Args>(args)...); };
-}
-
-}  // namespace
-
-NetworkChangeNotifierFuchsia::NetworkChangeNotifierFuchsia()
-    : NetworkChangeNotifierFuchsia(
-          base::fuchsia::ComponentContext::GetDefault()
-              ->ConnectToService<fuchsia::netstack::Netstack>()) {}
 
 NetworkChangeNotifierFuchsia::NetworkChangeNotifierFuchsia(
-    fuchsia::netstack::NetstackPtr netstack)
-    : netstack_(std::move(netstack)) {
+    uint32_t required_features)
+    : NetworkChangeNotifierFuchsia(
+          base::fuchsia::ServiceDirectoryClient::ForCurrentProcess()
+              ->ConnectToService<fuchsia::netstack::Netstack>(),
+          required_features) {}
+
+NetworkChangeNotifierFuchsia::NetworkChangeNotifierFuchsia(
+    fuchsia::netstack::NetstackPtr netstack,
+    uint32_t required_features)
+    : required_features_(required_features), netstack_(std::move(netstack)) {
   DCHECK(netstack_);
 
   netstack_.set_error_handler([](zx_status_t status) {
+    // TODO(https://crbug.com/901092): Unit tests that use NetworkService are
+    // crashing because NetworkService does not clean up properly, and the
+    // netstack connection is cancelled, causing this fatal error.
+    // When the NetworkService cleanup is fixed, we should make this log FATAL.
     ZX_LOG(ERROR, status) << "Lost connection to netstack.";
   });
-  netstack_.events().OnInterfacesChanged =
-      [this](fidl::VectorPtr<fuchsia::netstack::NetInterface> interfaces) {
-        ProcessInterfaceList(base::OnceClosure(), std::move(interfaces));
-      };
+  netstack_.events().OnInterfacesChanged = fit::bind_member(
+      this, &NetworkChangeNotifierFuchsia::ProcessInterfaceList);
 
-  // Fetch the interface list synchronously, so that an initial ConnectionType
-  // is available before we return.
-  base::RunLoop wait_for_interfaces;
-  netstack_->GetInterfaces([
-    this, quit_closure = wait_for_interfaces.QuitClosure()
-  ](fidl::VectorPtr<fuchsia::netstack::NetInterface> interfaces) {
-    ProcessInterfaceList(quit_closure, std::move(interfaces));
-  });
-  wait_for_interfaces.Run();
+  // Manually fetch the interface list, on which to base an initial
+  // ConnectionType.
+  netstack_->GetInterfaces(fit::bind_member(
+      this, &NetworkChangeNotifierFuchsia::ProcessInterfaceList));
 }
 
 NetworkChangeNotifierFuchsia::~NetworkChangeNotifierFuchsia() {
@@ -78,51 +60,63 @@ NetworkChangeNotifierFuchsia::GetCurrentConnectionType() const {
 }
 
 void NetworkChangeNotifierFuchsia::ProcessInterfaceList(
-    base::OnceClosure on_initialized_cb,
-    fidl::VectorPtr<fuchsia::netstack::NetInterface> interfaces) {
-  netstack_->GetRouteTable(WrapCallbackAsFunction(base::BindRepeating(
-      &NetworkChangeNotifierFuchsia::OnRouteTableReceived,
-      base::Unretained(this), base::Passed(std::move(on_initialized_cb)),
-      base::Passed(std::move(interfaces)))));
+    std::vector<fuchsia::netstack::NetInterface> interfaces) {
+  netstack_->GetRouteTable(
+      [this, interfaces = std::move(interfaces)](
+          std::vector<fuchsia::netstack::RouteTableEntry> route_table) mutable {
+        OnRouteTableReceived(std::move(interfaces), std::move(route_table));
+      });
 }
 
 void NetworkChangeNotifierFuchsia::OnRouteTableReceived(
-    base::OnceClosure on_initialized_cb,
-    fidl::VectorPtr<fuchsia::netstack::NetInterface> interfaces,
-    fidl::VectorPtr<fuchsia::netstack::RouteTableEntry> route_table) {
-  // Find the default interface in the routing table.
-  auto default_route_interface = std::find_if(
-      route_table->begin(), route_table->end(),
-      [](const fuchsia::netstack::RouteTableEntry& rt) {
-        return MaskPrefixLength(internal::NetAddressToIPAddress(rt.netmask)) ==
-               0;
-      });
-
-  // Find the default interface in the NetInterface list.
-  const fuchsia::netstack::NetInterface* default_interface = nullptr;
-  if (default_route_interface != route_table->end()) {
-    for (const auto& cur_interface : *interfaces) {
-      if (cur_interface.id == default_route_interface->nicid) {
-        default_interface = &cur_interface;
-      }
+    std::vector<fuchsia::netstack::NetInterface> interfaces,
+    std::vector<fuchsia::netstack::RouteTableEntry> route_table) {
+  // Create a set of NICs that have default routes (ie 0.0.0.0).
+  base::flat_set<uint32_t> default_route_ids;
+  for (const auto& route : route_table) {
+    if (MaskPrefixLength(
+            internal::FuchsiaIpAddressToIPAddress(route.netmask)) == 0) {
+      default_route_ids.insert(route.nicid);
     }
   }
 
-  base::flat_set<IPAddress> addresses;
-  std::string ssid;
   ConnectionType connection_type = CONNECTION_NONE;
-  if (default_interface) {
+  base::flat_set<IPAddress> addresses;
+  for (auto& interface : interfaces) {
+    // Filter out loopback and invalid connection types.
+    if ((internal::ConvertConnectionType(interface) ==
+         NetworkChangeNotifier::CONNECTION_NONE) ||
+        (interface.features &
+         fuchsia::hardware::ethernet::INFO_FEATURE_LOOPBACK)) {
+      continue;
+    }
+
+    // Filter out interfaces that do not meet the |required_features_|.
+    if ((interface.features & required_features_) != required_features_) {
+      continue;
+    }
+
+    // Filter out interfaces with non-default routes.
+    if (!default_route_ids.contains(interface.id)) {
+      continue;
+    }
+
     std::vector<NetworkInterface> flattened_interfaces =
-        internal::NetInterfaceToNetworkInterfaces(*default_interface);
+        internal::NetInterfaceToNetworkInterfaces(interface);
+    if (flattened_interfaces.empty()) {
+      continue;
+    }
+
+    // Add the addresses from this interface to the list of all addresses.
     std::transform(
         flattened_interfaces.begin(), flattened_interfaces.end(),
         std::inserter(addresses, addresses.begin()),
         [](const NetworkInterface& interface) { return interface.address; });
-    if (!flattened_interfaces.empty()) {
+
+    // Set the default connection to the first interface connection found.
+    if (connection_type == CONNECTION_NONE) {
       connection_type = flattened_interfaces.front().type;
     }
-
-    // TODO(https://crbug.com/848355): Treat SSID changes as IP address changes.
   }
 
   bool connection_type_changed = false;
@@ -133,18 +127,12 @@ void NetworkChangeNotifierFuchsia::OnRouteTableReceived(
 
   if (addresses != cached_addresses_) {
     std::swap(cached_addresses_, addresses);
-    if (on_initialized_cb.is_null()) {
-      NotifyObserversOfIPAddressChange();
-    }
+    NotifyObserversOfIPAddressChange();
     connection_type_changed = true;
   }
 
-  if (on_initialized_cb.is_null() && connection_type_changed) {
+  if (connection_type_changed) {
     NotifyObserversOfConnectionTypeChange();
-  }
-
-  if (!on_initialized_cb.is_null()) {
-    std::move(on_initialized_cb).Run();
   }
 }
 

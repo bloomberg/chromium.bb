@@ -176,7 +176,7 @@ The characteristics of the DoLoop pattern are:
     `HttpStreamParser`, abridged for clarity): 
 
              int HttpStreamParser::ReadResponseHeaders(
-                 const CompletionCallback& callback) {
+                 CompletionOnceCallback callback) {
                DCHECK(io_state_ == STATE_NONE || io_state_ == STATE_DONE);
                DCHECK(callback_.is_null());
                DCHECK(!callback.is_null());
@@ -187,7 +187,7 @@ The characteristics of the DoLoop pattern are:
                result = DoLoop(result);
 
                if (result == ERR_IO_PENDING)
-                 callback_ = callback;
+                 callback_ = std::move(callback);
 
                return result > 0 ? OK : result;
              }

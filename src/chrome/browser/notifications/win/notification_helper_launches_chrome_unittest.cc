@@ -197,7 +197,16 @@ class NotificationHelperLaunchesChrome : public testing::Test {
 
   void SetUp() override { ASSERT_NO_FATAL_FAILURE(RegisterServer()); }
 
-  void TearDown() override { ASSERT_NO_FATAL_FAILURE(UnregisterServer()); }
+  void TearDown() override {
+    // The test creates a notification_helper process. When the test fails, this
+    // process and its child processes can be left behind. We should clean it up
+    // in this scenario.
+    base::Process process = FindProcess(installer::kNotificationHelperExe);
+    if (process.IsValid())
+      KillProcessTree(std::move(process));
+
+    ASSERT_NO_FATAL_FAILURE(UnregisterServer());
+  }
 
  private:
   // Registers notification_helper.exe as the server.

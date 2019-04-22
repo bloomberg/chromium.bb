@@ -39,7 +39,7 @@ The backing store implementation is built on top of two storage systems:
 
 Storing a JavaScript value in IndexedDB is specified at a high level in the
 [HTML Structured Data
-Specification](https://html.spec.whatwg.org/multipage/structured-data.html#serializable-objects).
+Specification](https://html.spec.whatwg.org/C/#serializable-objects).
 Blink's implementation of the specification is responsible for converting
 between [V8](https://developers.google.com/v8/) values and the byte sequences in
 IndexedDB's backing store. The implementation is in `SerializedScriptValue`

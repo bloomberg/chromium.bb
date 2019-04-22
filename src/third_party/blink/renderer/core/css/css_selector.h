@@ -226,6 +226,7 @@ class CORE_EXPORT CSSSelector {
     kPseudoFullScreen,
     kPseudoFullScreenAncestor,
     kPseudoFullscreen,
+    kPseudoPictureInPicture,
     kPseudoInRange,
     kPseudoOutOfRange,
     // Pseudo elements in UA ShadowRoots. Available in any stylesheets.
@@ -242,6 +243,7 @@ class CORE_EXPORT CSSSelector {
     kPseudoHostContext,
     kPseudoShadow,
     kPseudoSpatialNavigationFocus,
+    kPseudoSpatialNavigationInterest,
     kPseudoIsHtml,
     kPseudoListBox,
     kPseudoHostHasAppearance,
@@ -381,10 +383,13 @@ class CORE_EXPORT CSSSelector {
 
   bool MatchesPseudoElement() const;
   bool IsTreeAbidingPseudoElement() const;
+  bool IsAllowedAfterPart() const;
 
   bool HasContentPseudo() const;
   bool HasSlottedPseudo() const;
   bool HasDeepCombinatorOrShadowPseudo() const;
+  // Returns true if the immediately preceeding simple selector is ::part.
+  bool FollowsPart() const;
   bool NeedsUpdatedDistribution() const;
   bool HasPseudoIs() const;
   bool HasPseudoWhere() const;

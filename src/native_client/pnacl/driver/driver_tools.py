@@ -3,6 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 import platform
 import os
 import random
@@ -497,9 +499,6 @@ def CheckPathLength(filename, exit_on_failure=True):
 # add parent directories. Rinse, repeat.
 class TempNameGen(object):
   def __init__(self, inputs, output):
-    inputs = [ pathtools.abspath(i) for i in inputs ]
-    output = pathtools.abspath(output)
-
     self.TempBase = output + '---linked'
     self.OutputDir = pathtools.dirname(output)
 
@@ -569,13 +568,12 @@ class TempNameGen(object):
     return temp
 
   def TempNameForInput(self, input, imtype):
-    fullpath = pathtools.abspath(input)
     # If input is already a temporary name, just change the extension
-    if fullpath.startswith(self.TempBase):
+    if input.startswith(self.TempBase):
       temp = self.TempBase + '.' + imtype
     else:
       # Source file
-      temp = self.TempMap[fullpath] + '.' + imtype
+      temp = self.TempMap[input] + '.' + imtype
 
     temp = self.ValidatePathLength(temp, imtype)
     TempFiles.add(temp)
@@ -677,7 +675,7 @@ def Run(args,
     result_stdout, result_stderr = p.communicate()
   except Exception, e:
     msg =  '%s\nCommand was: %s' % (str(e), StringifyCommand(args))
-    print msg
+    print(msg)
     DriverExit(1)
 
   Log.Info('Return Code: ' + str(p.returncode))
@@ -744,7 +742,7 @@ def DriverMain(module, argv):
     if not help_func:
       Log.Fatal(HelpNotAvailable())
     helpstr = help_func(argv)
-    print helpstr
+    print(helpstr)
     return 0
 
   return module.main(argv)

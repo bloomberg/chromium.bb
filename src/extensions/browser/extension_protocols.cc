@@ -14,10 +14,12 @@
 #include <vector>
 
 #include "base/base64.h"
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
+#include "base/hash/sha1.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -26,7 +28,6 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -46,6 +47,7 @@
 #include "content/public/common/resource_type.h"
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
+#include "extensions/browser/component_extension_resource_manager.h"
 #include "extensions/browser/content_verifier.h"
 #include "extensions/browser/content_verify_job.h"
 #include "extensions/browser/extension_navigation_ui_data.h"
@@ -211,7 +213,7 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
             network_delegate,
             base::FilePath(),
             base::CreateTaskRunnerWithTraits(
-                {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+                {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
                  base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
         verify_job_(std::move(verify_job)),
         seek_position_(0),
@@ -487,7 +489,7 @@ bool GetDirectoryForExtensionURL(const GURL& url,
 }
 
 bool IsWebViewRequest(net::URLRequest* request) {
-  const content::ResourceRequestInfo* info =
+  content::ResourceRequestInfo* info =
       content::ResourceRequestInfo::ForRequest(request);
   // |info| can be null sometimes: http://crbug.com/370070.
   if (!info)
@@ -560,7 +562,7 @@ ExtensionProtocolHandler::MaybeCreateJob(
   std::string extension_id = request->url().host();
   const Extension* extension =
       extension_info_map_->extensions().GetByID(extension_id);
-  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
+  ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
   const bool enabled_in_incognito =
       extension_info_map_->IsIncognitoEnabled(extension_id);
 
@@ -868,13 +870,13 @@ class ExtensionURLLoaderFactory : public network::mojom::URLLoaderFactory {
 
     // Component extension resources may be part of the embedder's resource
     // files, for example component_extension_resources.pak in Chrome.
-    int resource_id = 0;
+    ComponentExtensionResourceInfo resource_info;
     const base::FilePath bundle_resource_path =
         ExtensionsBrowserClient::Get()->GetBundleResourcePath(
-            request, directory_path, &resource_id);
+            request, directory_path, &resource_info);
     if (!bundle_resource_path.empty()) {
       ExtensionsBrowserClient::Get()->LoadResourceFromResourceBundle(
-          request, std::move(loader), bundle_resource_path, resource_id,
+          request, std::move(loader), bundle_resource_path, resource_info,
           content_security_policy, std::move(client), send_cors_header);
       return;
     }
@@ -981,7 +983,7 @@ class ExtensionURLLoaderFactory : public network::mojom::URLLoaderFactory {
     content::CreateFileURLLoader(
         request, std::move(loader), std::move(client),
         std::make_unique<FileLoaderObserver>(std::move(verify_job)),
-        std::move(response_headers));
+        /* allow_directory_listing */ false, std::move(response_headers));
   }
 
   content::BrowserContext* browser_context_;

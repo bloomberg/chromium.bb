@@ -18,7 +18,7 @@
 #include "rtc_base/bind.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/logging.h"
-#include "rtc_base/timeutils.h"
+#include "rtc_base/time_utils.h"
 #include "system_wrappers/include/metrics.h"
 
 namespace webrtc {
@@ -39,8 +39,10 @@ static const size_t kMinValidCallTimeTimeInMilliseconds =
 static const double k2Pi = 6.28318530717959;
 #endif
 
-AudioDeviceBuffer::AudioDeviceBuffer()
-    : task_queue_(kTimerQueueName),
+AudioDeviceBuffer::AudioDeviceBuffer(TaskQueueFactory* task_queue_factory)
+    : task_queue_(task_queue_factory->CreateTaskQueue(
+          kTimerQueueName,
+          TaskQueueFactory::Priority::NORMAL)),
       audio_transport_cb_(nullptr),
       rec_sample_rate_(0),
       play_sample_rate_(0),

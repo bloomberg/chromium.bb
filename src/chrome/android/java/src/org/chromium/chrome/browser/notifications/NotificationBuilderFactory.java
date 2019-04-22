@@ -8,12 +8,11 @@ import static org.chromium.chrome.browser.ChromeFeatureList.ALLOW_REMOTE_CONTEXT
 
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.support.annotation.Nullable;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.notifications.channels.ChannelsInitializer;
-
-import javax.annotation.Nullable;
 
 /**
  * Factory which supplies the appropriate type of notification builder based on Android version.
@@ -33,16 +32,28 @@ public class NotificationBuilderFactory {
      */
     public static ChromeNotificationBuilder createChromeNotificationBuilder(
             boolean preferCompat, String channelId) {
-        return createChromeNotificationBuilder(preferCompat, channelId, null);
+        return createChromeNotificationBuilder(
+                preferCompat, channelId, null /* remoteAppPackageName */, null /* metadata */);
+    }
+
+    /**
+     * See {@link #createChromeNotificationBuilder(boolean, String, String, NotificationMetadata)}.
+     */
+    public static ChromeNotificationBuilder createChromeNotificationBuilder(
+            boolean preferCompat, String channelId, @Nullable String remoteAppPackageName) {
+        return createChromeNotificationBuilder(
+                preferCompat, channelId, remoteAppPackageName, null /* metadata */);
     }
 
     /**
      * Same as above, with additional parameter:
      * @param remoteAppPackageName if not null, tries to create a Context from the package name
      * and passes it to the builder.
+     * @param metadata Metadata contains notification id, tag, etc.
      */
-    public static ChromeNotificationBuilder createChromeNotificationBuilder(
-            boolean preferCompat, String channelId, @Nullable String remoteAppPackageName) {
+    public static ChromeNotificationBuilder createChromeNotificationBuilder(boolean preferCompat,
+            String channelId, @Nullable String remoteAppPackageName,
+            @Nullable NotificationMetadata metadata) {
         Context context = ContextUtils.getApplicationContext();
         if (remoteAppPackageName != null) {
             assert ChromeFeatureList.isEnabled(ALLOW_REMOTE_CONTEXT_FOR_NOTIFICATIONS);
@@ -60,7 +71,8 @@ public class NotificationBuilderFactory {
         ChannelsInitializer channelsInitializer =
                 new ChannelsInitializer(notificationManagerProxy, context.getResources());
 
-        return preferCompat ? new NotificationCompatBuilder(context, channelId, channelsInitializer)
-                            : new NotificationBuilder(context, channelId, channelsInitializer);
+        return preferCompat
+                ? new NotificationCompatBuilder(context, channelId, channelsInitializer, metadata)
+                : new NotificationBuilder(context, channelId, channelsInitializer, metadata);
     }
 }

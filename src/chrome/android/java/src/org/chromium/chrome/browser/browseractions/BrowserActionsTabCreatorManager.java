@@ -7,12 +7,13 @@ package org.chromium.chrome.browser.browseractions;
 import android.content.Context;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabBuilder;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
+import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
+import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
-import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
@@ -47,9 +48,11 @@ public class BrowserActionsTabCreatorManager implements TabCreatorManager {
                 : "tab launch type should be FROM_BROWSER_ACTIONS or FROM_RESTORE";
             Context context = ContextUtils.getApplicationContext();
             WindowAndroid windowAndroid = new WindowAndroid(context);
-            Tab tab = Tab.createTabForLazyLoad(
-                    false, windowAndroid, type, Tab.INVALID_TAB_ID, loadUrlParams);
-            tab.initialize(null, null, new TabDelegateFactory(), true, false);
+            Tab tab = TabBuilder.createForLazyLoad(loadUrlParams)
+                              .setWindow(windowAndroid)
+                              .setLaunchType(type)
+                              .build();
+            tab.initialize(null, new TabDelegateFactory(), true, null, false);
             mTabModel.addTab(tab, -1, type);
             return tab;
         }
@@ -58,9 +61,8 @@ public class BrowserActionsTabCreatorManager implements TabCreatorManager {
         public Tab createFrozenTab(TabState state, int id, int index) {
             Context context = ContextUtils.getApplicationContext();
             WindowAndroid windowAndroid = new WindowAndroid(context);
-            Tab tab = Tab.createFrozenTabFromState(
-                    id, false, windowAndroid, Tab.INVALID_TAB_ID, state);
-            tab.initialize(null, null, new TabDelegateFactory(), true, false);
+            Tab tab = TabBuilder.createFromFrozenState().setId(id).setWindow(windowAndroid).build();
+            tab.initialize(null, new TabDelegateFactory(), true, state, false);
             mTabModel.addTab(tab, index, TabLaunchType.FROM_RESTORE);
             return tab;
         }
@@ -71,8 +73,8 @@ public class BrowserActionsTabCreatorManager implements TabCreatorManager {
         }
 
         @Override
-        public boolean createTabWithWebContents(Tab parent, WebContents webContents, int parentId,
-                @TabLaunchType int type, String url) {
+        public boolean createTabWithWebContents(
+                Tab parent, WebContents webContents, @TabLaunchType int type, String url) {
             throw new UnsupportedOperationException(
                     "Browser Actions does not support createTabWithWebContents");
         }

@@ -5,8 +5,10 @@
 #ifndef CHROME_BROWSER_DEVTOOLS_DEVICE_DEVTOOLS_ANDROID_BRIDGE_H_
 #define CHROME_BROWSER_DEVTOOLS_DEVICE_DEVTOOLS_ANDROID_BRIDGE_H_
 
+#include <map>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/callback.h"
@@ -133,6 +135,8 @@ class DevToolsAndroidBridge : public KeyedService {
   using TCPProviderCallback =
       base::Callback<void(scoped_refptr<TCPDeviceProvider>)>;
   void set_tcp_provider_callback_for_test(TCPProviderCallback callback);
+  void set_usb_device_manager_for_test(
+      device::mojom::UsbDeviceManagerPtrInfo fake_usb_manager);
 
   void Shutdown() override;
 

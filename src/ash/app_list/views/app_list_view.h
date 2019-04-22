@@ -9,12 +9,15 @@
 #include <vector>
 
 #include "ash/app_list/app_list_export.h"
+#include "ash/app_list/app_list_metrics.h"
 #include "ash/app_list/app_list_view_delegate.h"
-#include "ash/app_list/model/app_list_view_state.h"
-#include "ash/public/cpp/app_list/app_list_constants.h"
+#include "ash/public/cpp/presentation_time_recorder.h"
+#include "ash/public/interfaces/app_list_view.mojom.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "ui/aura/window_observer.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -30,6 +33,13 @@ namespace ui {
 class AnimationMetricsReporter;
 }  // namespace ui
 
+namespace ash {
+FORWARD_DECLARE_TEST(AppListControllerImplTest,
+                     CheckAppListViewBoundsWhenVKeyboardEnabled);
+FORWARD_DECLARE_TEST(AppListControllerImplTest,
+                     CheckAppListViewBoundsWhenDismissVKeyboard);
+}
+
 namespace app_list {
 class AppsContainerView;
 class ApplicationDragAndDropHost;
@@ -43,11 +53,17 @@ class SearchBoxView;
 class SearchModel;
 class TransitionAnimationObserver;
 
+namespace {
+// The background corner radius in peeking and fullscreen state.
+constexpr int kAppListBackgroundRadius = 28;
+}  // namespace
+
 // AppListView is the top-level view and controller of app list UI. It creates
 // and hosts a AppsGridView and passes AppListModel to it for display.
 // TODO(newcomer|weidongg): Organize the cc file to match the order of
 // definitions in this header.
-class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView {
+class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
+                                    public aura::WindowObserver {
  public:
   class TestApi {
    public:
@@ -69,17 +85,30 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView {
   static constexpr float kAppListOpacity = 0.95;
 
   // The opacity of the app list background with blur.
-  static constexpr float kAppListOpacityWithBlur = 0.7;
+  static constexpr float kAppListOpacityWithBlur = 0.74;
 
   // The preferred blend alpha with wallpaper color for background.
   static constexpr int kAppListColorDarkenAlpha = 178;
 
   // The defualt color of the app list background.
-  static constexpr SkColor kDefaultBackgroundColor = SK_ColorBLACK;
+  static constexpr SkColor kDefaultBackgroundColor = gfx::kGoogleGrey900;
 
   // The duration the AppListView ignores scroll events which could transition
   // its state.
   static constexpr int kScrollIgnoreTimeMs = 500;
+
+  // The snapping threshold for dragging app list from shelf in tablet mode,
+  // measured in DIPs.
+  static constexpr int kDragSnapToFullscreenThreshold = 320;
+
+  // The snapping thresholds for dragging app list from shelf in laptop mode,
+  // measured in DIPs.
+  static constexpr int kDragSnapToClosedThreshold = 144;
+  static constexpr int kDragSnapToPeekingThreshold = 561;
+
+  // The velocity the app list must be dragged in order to transition to the
+  // next state, measured in DIPs/event.
+  static constexpr int kDragVelocityThreshold = 6;
 
   struct InitParams {
     gfx::NativeView parent = nullptr;
@@ -118,12 +147,18 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView {
   // Dismisses the UI, cleans up and sets the state to CLOSED.
   void Dismiss();
 
-  // Closes opened folder or search result page if they are opened. Returns
-  // whether the action was handled.
-  bool CloseOpenedPage();
+  // Closes opened folder or search result page if they are opened.
+  void CloseOpenedPage();
+
+  // If a folder is open, close it. Returns whether an opened folder was closed.
+  bool HandleCloseOpenFolder();
+
+  // If a search box is open, close it. Returns whether an open search box was
+  // closed.
+  bool HandleCloseOpenSearchBox();
 
   // Performs the 'back' action for the active page.
-  void Back();
+  bool Back();
 
   // views::View:
   void OnPaint(gfx::Canvas* canvas) override;
@@ -131,10 +166,9 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView {
   bool CanProcessEventsWithinSubtree() const override;
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
   void Layout() override;
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // WidgetDelegate:
-  ax::mojom::Role GetAccessibleWindowRole() const override;
+  ax::mojom::Role GetAccessibleWindowRole() override;
 
   // ui::EventHandler:
   void OnKeyEvent(ui::KeyEvent* event) override;
@@ -152,7 +186,7 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView {
   bool HandleScroll(const gfx::Vector2d& offset, ui::EventType type);
 
   // Changes the app list state.
-  void SetState(AppListViewState new_state);
+  void SetState(ash::mojom::AppListViewState new_state);
 
   // Starts the close animation.
   void StartCloseAnimation(base::TimeDelta animation_duration);
@@ -211,13 +245,34 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView {
   // Returns the height of app list in fullscreen state.
   int GetFullscreenStateHeight() const;
 
+  // Calculates and returns the app list view state after dragging from shelf
+  // ends.
+  ash::mojom::AppListViewState CalculateStateAfterShelfDrag(
+      const ui::GestureEvent& gesture_in_screen,
+      float launcher_above_shelf_bottom_amount) const;
+
+  // Returns a animation metrics reportre for state transition.
+  ui::AnimationMetricsReporter* GetStateTransitionMetricsReporter();
+
+  // WindowObserver overrides:
+  void OnWindowDestroying(aura::Window* window) override;
+  void OnWindowBoundsChanged(aura::Window* window,
+                             const gfx::Rect& old_bounds,
+                             const gfx::Rect& new_bounds,
+                             ui::PropertyChangeReason reason) override;
+
+  // Called when state transition animation is completed.
+  void OnStateTransitionAnimationCompleted();
+
   views::Widget* get_fullscreen_widget_for_test() const {
     return fullscreen_widget_;
   }
 
   gfx::NativeView parent_window() const { return parent_window_; }
 
-  AppListViewState app_list_state() const { return app_list_state_; }
+  ash::mojom::AppListViewState app_list_state() const {
+    return app_list_state_;
+  }
 
   views::Widget* search_box_widget() const { return search_box_widget_; }
 
@@ -225,9 +280,12 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView {
 
   AppListMainView* app_list_main_view() const { return app_list_main_view_; }
 
+  views::View* announcement_view() const { return announcement_view_; }
+
   bool is_fullscreen() const {
-    return app_list_state_ == AppListViewState::FULLSCREEN_ALL_APPS ||
-           app_list_state_ == AppListViewState::FULLSCREEN_SEARCH;
+    return app_list_state_ ==
+               ash::mojom::AppListViewState::kFullscreenAllApps ||
+           app_list_state_ == ash::mojom::AppListViewState::kFullscreenSearch;
   }
 
   bool is_tablet_mode() const { return is_tablet_mode_; }
@@ -236,20 +294,31 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView {
 
   bool is_in_drag() const { return is_in_drag_; }
 
-  bool drag_started_from_peeking() const { return drag_started_from_peeking_; }
-
   void set_onscreen_keyboard_shown(bool onscreen_keyboard_shown) {
     onscreen_keyboard_shown_ = onscreen_keyboard_shown;
   }
 
+  int get_background_radius_for_test() const {
+    return kAppListBackgroundRadius;
+  }
+
   views::View* GetAppListBackgroundShieldForTest();
 
+  SkColor GetAppListBackgroundShieldColorForTest();
+
  private:
+  FRIEND_TEST_ALL_PREFIXES(ash::AppListControllerImplTest,
+                           CheckAppListViewBoundsWhenVKeyboardEnabled);
+  FRIEND_TEST_ALL_PREFIXES(ash::AppListControllerImplTest,
+                           CheckAppListViewBoundsWhenDismissVKeyboard);
+
   // A widget observer that is responsible for keeping the AppListView state up
   // to date on closing.
   // TODO(newcomer): Merge this class into AppListView once the old app list
   // view code is removed.
   class FullscreenWidgetObserver;
+
+  class StateAnimationMetricsReporter;
 
   void InitContents(int initial_apps_page);
 
@@ -273,21 +342,23 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView {
   // release position and snap to the next state.
   void EndDrag(const gfx::Point& location);
 
-  // Set child views for FULLSCREEN_ALL_APPS and PEEKING.
-  void SetChildViewsForStateTransition(AppListViewState new_state);
+  // Set child views for |target_state|.
+  void SetChildViewsForStateTransition(
+      ash::mojom::AppListViewState target_state);
 
   // Converts |state| to the fullscreen equivalent.
-  void ConvertAppListStateToFullscreenEquivalent(AppListViewState* state);
+  void ConvertAppListStateToFullscreenEquivalent(
+      ash::mojom::AppListViewState* state);
 
   // Kicks off the proper animation for the state change. If an animation is
   // in progress it will be interrupted.
-  void StartAnimationForState(AppListViewState new_state);
+  void StartAnimationForState(ash::mojom::AppListViewState new_state);
 
   // Records the state transition for UMA.
-  void RecordStateTransitionForUma(AppListViewState new_state);
+  void RecordStateTransitionForUma(ash::mojom::AppListViewState new_state);
 
   // Creates an Accessibility Event if the state transition warrants one.
-  void MaybeCreateAccessibilityEvent(AppListViewState new_state);
+  void MaybeCreateAccessibilityEvent(ash::mojom::AppListViewState new_state);
 
   // Gets the display nearest to the parent window.
   display::Display GetDisplayNearestView() const;
@@ -306,7 +377,7 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView {
   // (ie. PEEKING->PEEKING) then return kMaxAppListStateTransition. If this is
   // modified, histograms will be affected.
   AppListStateTransitionSource GetAppListStateTransitionSource(
-      AppListViewState target_state) const;
+      ash::mojom::AppListViewState target_state) const;
 
   // Overridden from views::WidgetDelegateView:
   views::View* GetInitiallyFocusedView() override;
@@ -327,12 +398,13 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView {
 
   // Returns preferred y of fullscreen widget bounds in parent window for the
   // specified state.
-  int GetPreferredWidgetYForState(AppListViewState state);
+  int GetPreferredWidgetYForState(ash::mojom::AppListViewState state);
 
   // Returns preferred fullscreen widget bounds in parent window for the
   // specified state. Note that this function should only be called after the
   // widget is initialized.
-  gfx::Rect GetPreferredWidgetBoundsForState(AppListViewState state);
+  gfx::Rect GetPreferredWidgetBoundsForState(
+      ash::mojom::AppListViewState state);
 
   // Updates y position of |app_list_background_shield_| based on the
   // |app_list_state_| and |is_in_drag_|.
@@ -367,8 +439,10 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView {
   // Y position of the app list in screen space coordinate during dragging.
   int app_list_y_position_in_screen_ = 0;
 
-  // The opacity of app list background during dragging.
-  float background_opacity_ = 0.f;
+  // The opacity of app list background during dragging. This ensures a gradual
+  // opacity shift from the shelf opacity while dragging to show the AppListView
+  // from the shelf.
+  float background_opacity_in_drag_ = 0.f;
 
   // The location of initial gesture event in screen coordinates.
   gfx::Point initial_drag_point_;
@@ -381,7 +455,8 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView {
   // Whether the background blur is enabled.
   const bool is_background_blur_enabled_;
   // The state of the app list, controlled via SetState().
-  AppListViewState app_list_state_ = AppListViewState::PEEKING;
+  ash::mojom::AppListViewState app_list_state_ =
+      ash::mojom::AppListViewState::kPeeking;
 
   // A widget observer that sets the AppListView state when the widget is
   // closed.
@@ -397,21 +472,21 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView {
   // For UMA and testing. If non-null, triggered when the app list is painted.
   base::Closure next_paint_callback_;
 
-  // True if the dragging started from PEEKING state.
-  bool drag_started_from_peeking_ = false;
-
-  // Accessibility announcement dialogue.
-  base::string16 state_announcement_;
-
   // Metric reporter for state change animations.
-  const std::unique_ptr<ui::AnimationMetricsReporter>
+  const std::unique_ptr<StateAnimationMetricsReporter>
       state_animation_metrics_reporter_;
 
   // Whether the on-screen keyboard is shown.
   bool onscreen_keyboard_shown_ = false;
 
-  // True if new style launcher feature is enabled.
-  const bool is_new_style_launcher_enabled_;
+  // View used to announce:
+  // 1. state transition for peeking and fullscreen
+  // 2. folder opening and closing.
+  // 3. app dragging in AppsGridView.
+  views::View* announcement_view_ = nullptr;  // Owned by AppListView.
+
+  // Records the presentation time for app launcher dragging.
+  std::unique_ptr<ash::PresentationTimeRecorder> presentation_time_recorder_;
 
   base::WeakPtrFactory<AppListView> weak_ptr_factory_;
 

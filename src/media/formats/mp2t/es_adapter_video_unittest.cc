@@ -11,7 +11,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "media/base/media_util.h"
@@ -45,9 +45,9 @@ BufferQueue GenerateFakeBuffers(const int* frame_pts_ms,
 
   BufferQueue buffers(frame_count);
   for (size_t k = 0; k < frame_count; k++) {
-    buffers[k] = StreamParserBuffer::CopyFrom(
-        dummy_buffer, arraysize(dummy_buffer),
-        is_key_frame[k], DemuxerStream::VIDEO, 0);
+    buffers[k] =
+        StreamParserBuffer::CopyFrom(dummy_buffer, base::size(dummy_buffer),
+                                     is_key_frame[k], DemuxerStream::VIDEO, 0);
     if (frame_pts_ms[k] < 0) {
       buffers[k]->set_timestamp(kNoTimestamp);
     } else {
@@ -120,7 +120,7 @@ TEST_F(EsAdapterVideoTest, FrameDurationSimpleGop) {
     true, false, false, false,
     false, false, false, false };
   BufferQueue buffer_queue =
-      GenerateFakeBuffers(pts_ms, is_key_frame, arraysize(pts_ms));
+      GenerateFakeBuffers(pts_ms, is_key_frame, base::size(pts_ms));
 
   EXPECT_EQ("(1,Y) (2,N) (3,N) (4,N) (5,N) (6,N) (7,N) (7,N)",
             RunAdapterTest(buffer_queue));
@@ -133,7 +133,7 @@ TEST_F(EsAdapterVideoTest, FrameDurationComplexGop) {
     true, false, false, false, false,
     false, false, false, false, false };
   BufferQueue buffer_queue =
-      GenerateFakeBuffers(pts_ms, is_key_frame, arraysize(pts_ms));
+      GenerateFakeBuffers(pts_ms, is_key_frame, base::size(pts_ms));
 
   EXPECT_EQ("(30,Y) (30,N) (30,N) (30,N) (30,N) "
             "(30,N) (30,N) (30,N) (30,N) (30,N)",
@@ -144,7 +144,7 @@ TEST_F(EsAdapterVideoTest, LeadingNonKeyFrames) {
   int pts_ms[] = {30, 40, 50, 120, 150, 180};
   bool is_key_frame[] = {false, false, false, true, false, false};
   BufferQueue buffer_queue =
-      GenerateFakeBuffers(pts_ms, is_key_frame, arraysize(pts_ms));
+      GenerateFakeBuffers(pts_ms, is_key_frame, base::size(pts_ms));
 
   EXPECT_EQ("(30,Y) (30,Y) (30,Y) (30,Y) (30,N) (30,N)",
             RunAdapterTest(buffer_queue));
@@ -154,7 +154,7 @@ TEST_F(EsAdapterVideoTest, LeadingKeyFrameWithNoTimestamp) {
   int pts_ms[] = {-1, 40, 50, 120, 150, 180};
   bool is_key_frame[] = {true, false, false, true, false, false};
   BufferQueue buffer_queue =
-      GenerateFakeBuffers(pts_ms, is_key_frame, arraysize(pts_ms));
+      GenerateFakeBuffers(pts_ms, is_key_frame, base::size(pts_ms));
 
   EXPECT_EQ("(40,Y) (40,Y) (30,Y) (30,N) (30,N)",
             RunAdapterTest(buffer_queue));
@@ -164,7 +164,7 @@ TEST_F(EsAdapterVideoTest, LeadingFramesWithNoTimestamp) {
   int pts_ms[] = {-1, -1, 50, 120, 150, 180};
   bool is_key_frame[] = {false, false, false, true, false, false};
   BufferQueue buffer_queue =
-      GenerateFakeBuffers(pts_ms, is_key_frame, arraysize(pts_ms));
+      GenerateFakeBuffers(pts_ms, is_key_frame, base::size(pts_ms));
 
   EXPECT_EQ("(70,Y) (30,Y) (30,N) (30,N)",
             RunAdapterTest(buffer_queue));

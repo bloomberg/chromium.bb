@@ -18,6 +18,7 @@
 
 #include <ctype.h>
 #include <string.h>
+#include <algorithm>
 
 #include "perfetto/base/logging.h"
 
@@ -47,16 +48,16 @@ std::string TypeToString(Table::ColumnType type) {
       return "STRING";
     case Table::ColumnType::kUint:
       return "UNSIGNED INT";
-    case Table::ColumnType::kUlong:
-      return "UNSIGNED BIG INT";
     case Table::ColumnType::kLong:
       return "BIG INT";
     case Table::ColumnType::kInt:
       return "INT";
     case Table::ColumnType::kDouble:
       return "DOUBLE";
+    case Table::ColumnType::kUnknown:
+      PERFETTO_FATAL("Cannot map unknown column type");
   }
-  PERFETTO_CHECK(false);
+  PERFETTO_FATAL("Not reached");  // For gcc
 }
 
 }  // namespace
@@ -84,8 +85,15 @@ void Table::RegisterInternal(sqlite3* db,
                       const char* const* argv, sqlite3_vtab** tab, char**) {
     const TableDescriptor* xdesc = static_cast<const TableDescriptor*>(arg);
     auto table = xdesc->factory(xdb, xdesc->storage);
+    table->name_ = xdesc->name;
 
-    auto schema = table->CreateSchema(argc, argv);
+    auto opt_schema = table->Init(argc, argv);
+    if (!opt_schema.has_value()) {
+      PERFETTO_ELOG("Failed to create schema (table %s)", xdesc->name.c_str());
+      return SQLITE_ERROR;
+    }
+
+    const auto& schema = opt_schema.value();
     auto create_stmt = schema.ToCreateTableStmt();
     PERFETTO_DLOG("Create table statement: %s", create_stmt.c_str());
 
@@ -94,8 +102,7 @@ void Table::RegisterInternal(sqlite3* db,
       return res;
 
     // Freed in xDisconnect().
-    table->schema_ = schema;
-    table->name_ = xdesc->name;
+    table->schema_ = std::move(schema);
     *tab = table.release();
 
     return SQLITE_OK;
@@ -294,13 +301,23 @@ Table::Schema::Schema() = default;
 Table::Schema::Schema(const Schema&) = default;
 Table::Schema& Table::Schema::operator=(const Schema&) = default;
 
-std::string Table::Schema::ToCreateTableStmt() {
+std::string Table::Schema::ToCreateTableStmt() const {
   std::string stmt = "CREATE TABLE x(";
-  for (const auto& col : columns_) {
-    stmt += " " + col.name() + " " + TypeToString(col.type());
-    if (col.hidden())
+  for (size_t i = 0; i < columns_.size(); ++i) {
+    const Column& col = columns_[i];
+    stmt += " " + col.name();
+
+    if (col.type() != ColumnType::kUnknown) {
+      stmt += " " + TypeToString(col.type());
+    } else if (std::find(primary_keys_.begin(), primary_keys_.end(), i) !=
+               primary_keys_.end()) {
+      PERFETTO_FATAL("Unknown type for primary key column %s",
+                     col.name().c_str());
+    }
+    if (col.hidden()) {
       stmt += " HIDDEN";
-     stmt += ",";
+    }
+    stmt += ",";
   }
   stmt += " PRIMARY KEY(";
   for (size_t i = 0; i < primary_keys_.size(); i++) {

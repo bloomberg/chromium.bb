@@ -1,6 +1,8 @@
 #ifndef _RAR_FILE_
 #define _RAR_FILE_
 
+namespace third_party_unrar {
+
 #define FILE_USE_OPEN
 
 #ifdef _WIN_ALL
@@ -76,13 +78,16 @@ class File
     File();
     virtual ~File();
     void operator = (File &SrcFile);
+
+    // Several functions below are 'virtual', because they are redefined
+    // by Archive for QOpen and by MultiFile for split files in WinRAR.
     virtual bool Open(const wchar *Name,uint Mode=FMF_READ);
     void TOpen(const wchar *Name);
     bool WOpen(const wchar *Name);
     bool Create(const wchar *Name,uint Mode=FMF_UPDATE|FMF_SHAREREAD);
     void TCreate(const wchar *Name,uint Mode=FMF_UPDATE|FMF_SHAREREAD);
     bool WCreate(const wchar *Name,uint Mode=FMF_UPDATE|FMF_SHAREREAD);
-    virtual bool Close();
+    virtual bool Close(); // 'virtual' for MultiFile class.
     bool Delete();
     bool Rename(const wchar *NewName);
     bool Write(const void *Data,size_t Size);
@@ -100,7 +105,7 @@ class File
     void SetCloseFileTime(RarTime *ftm,RarTime *fta=NULL);
     static void SetCloseFileTimeByName(const wchar *Name,RarTime *ftm,RarTime *fta);
     void GetOpenFileTime(RarTime *ft);
-    virtual bool IsOpened() {return hFile!=FILE_BAD_HANDLE;};
+    virtual bool IsOpened() {return hFile!=FILE_BAD_HANDLE;} // 'virtual' for MultiFile class.
     int64 FileLength();
     void SetHandleType(FILE_HANDLETYPE Type) {HandleType=Type;}
     FILE_HANDLETYPE GetHandleType() {return HandleType;}
@@ -145,5 +150,7 @@ class File
 #endif
     }
 };
+
+}  // namespace third_party_unrar
 
 #endif

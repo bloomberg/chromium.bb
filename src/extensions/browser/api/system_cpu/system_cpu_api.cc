@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "extensions/browser/api/system_cpu/system_cpu_api.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "extensions/browser/api/system_cpu/cpu_info_provider.h"
-#include "extensions/browser/api/system_cpu/system_cpu_api.h"
 
 namespace extensions {
 

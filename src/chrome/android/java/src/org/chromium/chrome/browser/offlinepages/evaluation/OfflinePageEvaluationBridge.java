@@ -11,6 +11,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.task.AsyncTask;
+import org.chromium.base.task.BackgroundOnlyAsyncTask;
 import org.chromium.chrome.browser.offlinepages.ClientId;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
 import org.chromium.chrome.browser.offlinepages.SavePageRequest;
@@ -66,7 +67,7 @@ public class OfflinePageEvaluationBridge {
      * Class used for writing logs to external log file asynchronously to prevent violating strict
      * mode during test.
      */
-    private class LogTask extends AsyncTask<Void> {
+    private class LogTask extends BackgroundOnlyAsyncTask<Void> {
         final String mLogString;
 
         LogTask(String logString) {

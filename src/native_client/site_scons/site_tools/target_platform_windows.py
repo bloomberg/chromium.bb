@@ -12,6 +12,7 @@ It is used as follows:
   win_env = base_env.Clone(tools = ['target_platform_windows'])
 """
 
+from __future__ import print_function
 
 import os
 import time
@@ -47,11 +48,11 @@ def WaitForWritable(target, source, env):
       f.close()
       return 0    # Successfully opened file for write, so we're done
     except (IOError, OSError):
-      print 'Waiting for access to %s...' % target_path
+      print('Waiting for access to %s...' % target_path)
       time.sleep(1)
 
   # If we're still here, fail
-  print 'Timeout waiting for access to %s.' % target_path
+  print('Timeout waiting for access to %s.' % target_path)
   return 1
 
 
@@ -85,7 +86,7 @@ def RunManifest(target, source, env, cmd):
     if retry:
       # mt.exe failed to write to the target file.  Print a warning message,
       # delay 3 seconds, and retry.
-      print 'Warning: mt.exe failed to write to %s; retrying.' % target[0]
+      print('Warning: mt.exe failed to write to %s; retrying.' % target[0])
       time.sleep(3)
 
     return_code, output = command_output.RunCommand(
@@ -95,7 +96,7 @@ def RunManifest(target, source, env, cmd):
 
   # Pass through output (if any) and return code from manifest
   if output:
-    print output
+    print(output)
   return return_code
 
 

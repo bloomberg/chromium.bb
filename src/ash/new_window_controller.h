@@ -37,7 +37,7 @@ class ASH_EXPORT NewWindowController : public mojom::NewWindowController {
   void RestoreTab();
   void ShowKeyboardShortcutViewer();
   void ShowTaskManager();
-  void OpenFeedbackPage();
+  void OpenFeedbackPage(bool from_assistant = false);
 
  private:
   // More than one part of chrome may connect to call the mojo methods, so use

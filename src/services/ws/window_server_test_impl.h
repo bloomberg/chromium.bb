@@ -5,7 +5,13 @@
 #ifndef SERVICES_WS_WINDOW_SERVER_TEST_IMPL_H_
 #define SERVICES_WS_WINDOW_SERVER_TEST_IMPL_H_
 
+#include <memory>
+
 #include "services/ws/public/mojom/window_server_test.mojom.h"
+
+namespace viz {
+class CopyOutputResult;
+}
 
 namespace ws {
 
@@ -33,6 +39,16 @@ class WindowServerTestImpl : public mojom::WindowServerTest {
   // creates a compositor frame.
   void InstallCallback(const std::string& name,
                        EnsureClientHasDrawnWindowCallback cb);
+
+  // Request to capture the window contents of the client and invoke the
+  // callback with sanity check result of the captured pixels.
+  void RequestWindowContents(const std::string& client_name,
+                             int retry_count,
+                             EnsureClientHasDrawnWindowCallback cb);
+  void OnWindowContentsCaptured(const std::string& client_name,
+                                int retry_count,
+                                EnsureClientHasDrawnWindowCallback cb,
+                                std::unique_ptr<viz::CopyOutputResult> result);
 
   // mojom::WindowServerTest:
   void EnsureClientHasDrawnWindow(

@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "base/logging.h"
 #include "base/pickle.h"
 #include "content/public/browser/render_frame_host.h"

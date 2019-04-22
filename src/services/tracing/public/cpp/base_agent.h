@@ -5,15 +5,12 @@
 #ifndef SERVICES_TRACING_PUBLIC_CPP_BASE_AGENT_H_
 #define SERVICES_TRACING_PUBLIC_CPP_BASE_AGENT_H_
 
+#include <set>
 #include <string>
 
 #include "base/component_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/tracing/public/mojom/tracing.mojom.h"
-
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
 
 // This class is a minimal implementation of mojom::Agent to reduce boilerplate
 // code in tracing agents. A tracing agent can inherit from this class and only
@@ -21,28 +18,36 @@ class Connector;
 // and StopAndFlush.
 namespace tracing {
 class COMPONENT_EXPORT(TRACING_CPP) BaseAgent : public mojom::Agent {
- protected:
-  BaseAgent(service_manager::Connector* connector,
-            const std::string& label,
-            mojom::TraceDataType type,
-            bool supports_explicit_clock_sync,
-            base::ProcessId pid);
+ public:
   ~BaseAgent() override;
 
+  void Connect(tracing::mojom::AgentRegistry* agent_registry);
+
+  virtual void GetCategories(std::set<std::string>* category_set);
+
+ protected:
+  BaseAgent(const std::string& label,
+            mojom::TraceDataType type,
+            base::ProcessId pid);
+
+  bool IsBoundForTesting() const;
+
  private:
+  void Disconnect();
+
   // tracing::mojom::Agent:
   void StartTracing(const std::string& config,
                     base::TimeTicks coordinator_time,
                     Agent::StartTracingCallback callback) override;
   void StopAndFlush(tracing::mojom::RecorderPtr recorder) override;
-  void RequestClockSyncMarker(
-      const std::string& sync_id,
-      Agent::RequestClockSyncMarkerCallback callback) override;
-  void GetCategories(Agent::GetCategoriesCallback callback) override;
   void RequestBufferStatus(
       Agent::RequestBufferStatusCallback callback) override;
 
   mojo::Binding<tracing::mojom::Agent> binding_;
+
+  const std::string label_;
+  const mojom::TraceDataType type_;
+  const base::ProcessId pid_;
 
   DISALLOW_COPY_AND_ASSIGN(BaseAgent);
 };

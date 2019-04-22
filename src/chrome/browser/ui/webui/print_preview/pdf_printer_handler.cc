@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -13,6 +14,7 @@
 #include "base/i18n/file_util_icu.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/values.h"
@@ -39,11 +41,13 @@
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 
+namespace printing {
+
 namespace {
 
 constexpr base::FilePath::CharType kPdfExtension[] = FILE_PATH_LITERAL("pdf");
 
-class PrintingContextDelegate : public printing::PrintingContext::Delegate {
+class PrintingContextDelegate : public PrintingContext::Delegate {
  public:
   // PrintingContext::Delegate methods.
   gfx::NativeView GetParentView() override { return NULL; }
@@ -54,48 +58,48 @@ class PrintingContextDelegate : public printing::PrintingContext::Delegate {
 
 gfx::Size GetDefaultPdfMediaSizeMicrons() {
   PrintingContextDelegate delegate;
-  std::unique_ptr<printing::PrintingContext> printing_context(
-      printing::PrintingContext::Create(&delegate));
-  if (printing::PrintingContext::OK != printing_context->UsePdfSettings() ||
+  auto printing_context(PrintingContext::Create(&delegate));
+  if (PrintingContext::OK != printing_context->UsePdfSettings() ||
       printing_context->settings().device_units_per_inch() <= 0) {
     return gfx::Size();
   }
   gfx::Size pdf_media_size = printing_context->GetPdfPaperSizeDeviceUnits();
   float device_microns_per_device_unit =
-      static_cast<float>(printing::kMicronsPerInch) /
+      static_cast<float>(kMicronsPerInch) /
       printing_context->settings().device_units_per_inch();
   return gfx::Size(pdf_media_size.width() * device_microns_per_device_unit,
                    pdf_media_size.height() * device_microns_per_device_unit);
 }
 
-std::unique_ptr<base::DictionaryValue> GetPdfCapabilities(
-    const std::string& locale) {
+base::Value GetPdfCapabilities(const std::string& locale) {
   cloud_devices::CloudDeviceDescription description;
   using namespace cloud_devices::printer;
 
   OrientationCapability orientation;
-  orientation.AddOption(cloud_devices::printer::PORTRAIT);
-  orientation.AddOption(cloud_devices::printer::LANDSCAPE);
-  orientation.AddDefaultOption(AUTO_ORIENTATION, true);
+  orientation.AddOption(cloud_devices::printer::OrientationType::PORTRAIT);
+  orientation.AddOption(cloud_devices::printer::OrientationType::LANDSCAPE);
+  orientation.AddDefaultOption(OrientationType::AUTO_ORIENTATION, true);
   orientation.SaveTo(&description);
 
   ColorCapability color;
   {
-    Color standard_color(STANDARD_COLOR);
-    standard_color.vendor_id = base::IntToString(printing::COLOR);
+    Color standard_color(ColorType::STANDARD_COLOR);
+    standard_color.vendor_id = base::NumberToString(COLOR);
     color.AddDefaultOption(standard_color, true);
   }
   color.SaveTo(&description);
 
   static const cloud_devices::printer::MediaType kPdfMedia[] = {
-      ISO_A0, ISO_A1,   ISO_A2,    ISO_A3,   ISO_A4,
-      ISO_A5, NA_LEGAL, NA_LETTER, NA_LEDGER};
+      MediaType::ISO_A0,   MediaType::ISO_A1,    MediaType::ISO_A2,
+      MediaType::ISO_A3,   MediaType::ISO_A4,    MediaType::ISO_A5,
+      MediaType::NA_LEGAL, MediaType::NA_LETTER, MediaType::NA_LEDGER};
   const gfx::Size default_media_size = GetDefaultPdfMediaSizeMicrons();
   Media default_media("", "", default_media_size.width(),
                       default_media_size.height());
   if (!default_media.MatchBySize() ||
       !base::ContainsValue(kPdfMedia, default_media.type)) {
-    default_media = Media(locale == "en-US" ? NA_LETTER : ISO_A4);
+    default_media =
+        Media(locale == "en-US" ? MediaType::NA_LETTER : MediaType::ISO_A4);
   }
   MediaCapability media;
   for (const auto& pdf_media : kPdfMedia) {
@@ -105,7 +109,7 @@ std::unique_ptr<base::DictionaryValue> GetPdfCapabilities(
   }
   media.SaveTo(&description);
 
-  return std::unique_ptr<base::DictionaryValue>(description.root().DeepCopy());
+  return std::move(description).ToValue();
 }
 
 // Callback that stores a PDF file on disk.
@@ -118,18 +122,6 @@ void PrintToPdfCallback(const scoped_refptr<base::RefCountedMemory>& data,
                          base::checked_cast<int>(data->size()));
   if (!pdf_file_saved_closure.is_null())
     pdf_file_saved_closure.Run();
-}
-
-// Returns a unique path for |path|, just like with downloads.
-base::FilePath GetUniquePath(const base::FilePath& path) {
-  base::FilePath unique_path = path;
-  int uniquifier =
-      base::GetUniquePathNumber(path, base::FilePath::StringType());
-  if (uniquifier > 0) {
-    unique_path = unique_path.InsertBeforeExtensionASCII(
-        base::StringPrintf(" (%d)", uniquifier));
-  }
-  return unique_path;
 }
 
 base::FilePath SelectSaveDirectory(const base::FilePath& path,
@@ -145,7 +137,7 @@ base::FilePath SelectSaveDirectory(const base::FilePath& path,
 
 PdfPrinterHandler::PdfPrinterHandler(Profile* profile,
                                      content::WebContents* preview_web_contents,
-                                     printing::StickySettings* sticky_settings)
+                                     StickySettings* sticky_settings)
     : preview_web_contents_(preview_web_contents),
       profile_(profile),
       sticky_settings_(sticky_settings),
@@ -168,21 +160,18 @@ void PdfPrinterHandler::StartGetPrinters(
 
 void PdfPrinterHandler::StartGetCapability(const std::string& destination_id,
                                            GetCapabilityCallback callback) {
-  auto printer_info = std::make_unique<base::DictionaryValue>();
-  printer_info->SetString(printing::kSettingDeviceName, destination_id);
-  printer_info->Set(
-      printing::kSettingCapabilities,
+  base::Value printer_info(base::Value::Type::DICTIONARY);
+  printer_info.SetKey(kSettingDeviceName, base::Value(destination_id));
+  printer_info.SetKey(
+      kSettingCapabilities,
       GetPdfCapabilities(g_browser_process->GetApplicationLocale()));
   std::move(callback).Run(std::move(printer_info));
 }
 
 void PdfPrinterHandler::StartPrint(
-    const std::string& destination_id,
-    const std::string& capability,
     const base::string16& job_title,
-    const std::string& ticket_json,
-    const gfx::Size& page_size,
-    const scoped_refptr<base::RefCountedMemory>& print_data,
+    base::Value settings,
+    scoped_refptr<base::RefCountedMemory> print_data,
     PrintCallback callback) {
   print_data_ = print_data;
   if (!print_to_pdf_path_.empty()) {
@@ -201,8 +190,8 @@ void PdfPrinterHandler::StartPrint(
   DCHECK(!print_callback_);
   print_callback_ = std::move(callback);
 
-  printing::PrintPreviewDialogController* dialog_controller =
-      printing::PrintPreviewDialogController::GetInstance();
+  PrintPreviewDialogController* dialog_controller =
+      PrintPreviewDialogController::GetInstance();
   content::WebContents* initiator =
       dialog_controller ? dialog_controller->GetInitiator(preview_web_contents_)
                         : nullptr;
@@ -326,7 +315,7 @@ void PdfPrinterHandler::SelectFile(const base::FilePath& default_filename,
   if (!prompt_user) {
     base::PostTaskWithTraitsAndReplyWithResult(
         FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-        base::Bind(&GetUniquePath, path.Append(default_filename)),
+        base::Bind(&base::GetUniquePath, path.Append(default_filename)),
         base::Bind(&PdfPrinterHandler::OnGotUniqueFileName,
                    weak_ptr_factory_.GetWeakPtr()));
     return;
@@ -386,3 +375,5 @@ void PdfPrinterHandler::OnDirectorySelected(const base::FilePath& filename,
       &file_type_info, 0, base::FilePath::StringType(),
       platform_util::GetTopLevel(preview_web_contents_->GetNativeView()), NULL);
 }
+
+}  // namespace printing

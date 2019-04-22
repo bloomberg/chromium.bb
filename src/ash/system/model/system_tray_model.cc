@@ -8,10 +8,12 @@
 #include "ash/shell.h"
 #include "ash/system/model/clock_model.h"
 #include "ash/system/model/enterprise_domain_model.h"
+#include "ash/system/model/locale_model.h"
 #include "ash/system/model/session_length_limit_model.h"
 #include "ash/system/model/tracing_model.h"
 #include "ash/system/model/update_model.h"
 #include "ash/system/model/virtual_keyboard_model.h"
+#include "ash/system/network/active_network_icon.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "base/logging.h"
@@ -21,10 +23,12 @@ namespace ash {
 SystemTrayModel::SystemTrayModel()
     : clock_(std::make_unique<ClockModel>()),
       enterprise_domain_(std::make_unique<EnterpriseDomainModel>()),
+      locale_(std::make_unique<LocaleModel>()),
       session_length_limit_(std::make_unique<SessionLengthLimitModel>()),
       tracing_(std::make_unique<TracingModel>()),
       update_model_(std::make_unique<UpdateModel>()),
-      virtual_keyboard_(std::make_unique<VirtualKeyboardModel>()) {}
+      virtual_keyboard_(std::make_unique<VirtualKeyboardModel>()),
+      active_network_icon_(std::make_unique<ActiveNetworkIcon>()) {}
 
 SystemTrayModel::~SystemTrayModel() = default;
 
@@ -70,8 +74,7 @@ void SystemTrayModel::SetPerformanceTracingIconVisible(bool visible) {
 void SystemTrayModel::SetLocaleList(
     std::vector<mojom::LocaleInfoPtr> locale_list,
     const std::string& current_locale_iso_code) {
-  locale_list_ = std::move(locale_list);
-  current_locale_iso_code_ = current_locale_iso_code;
+  locale()->SetLocaleList(std::move(locale_list), current_locale_iso_code);
 }
 
 void SystemTrayModel::ShowUpdateIcon(mojom::UpdateSeverity severity,

@@ -24,7 +24,9 @@
 // regular Timer so it should pass the same tests as the Timer class.
 namespace timers {
 namespace {
-const base::TimeDelta kTenMilliseconds = base::TimeDelta::FromMilliseconds(10);
+
+constexpr base::TimeDelta kTenMilliseconds =
+    base::TimeDelta::FromMilliseconds(10);
 
 class AlarmTimerTester {
  public:
@@ -34,7 +36,7 @@ class AlarmTimerTester {
       : did_run_(did_run),
         quit_closure_(std::move(quit_closure)),
         delay_(delay),
-        timer_(new timers::SimpleAlarmTimer()) {}
+        timer_(SimpleAlarmTimer::CreateForTesting()) {}
   void Start() {
     timer_->Start(
         FROM_HERE, delay_,
@@ -51,7 +53,7 @@ class AlarmTimerTester {
   bool* did_run_;
   base::OnceClosure quit_closure_;
   const base::TimeDelta delay_;
-  std::unique_ptr<timers::SimpleAlarmTimer> timer_;
+  std::unique_ptr<SimpleAlarmTimer> timer_;
 
   DISALLOW_COPY_AND_ASSIGN(AlarmTimerTester);
 };
@@ -64,7 +66,7 @@ class SelfDeletingAlarmTimerTester {
       : did_run_(did_run),
         quit_closure_(std::move(quit_closure)),
         delay_(delay),
-        timer_(new timers::SimpleAlarmTimer()) {}
+        timer_(SimpleAlarmTimer::CreateForTesting()) {}
   void Start() {
     timer_->Start(FROM_HERE, delay_,
                   base::BindRepeating(&SelfDeletingAlarmTimerTester::Run,
@@ -83,7 +85,7 @@ class SelfDeletingAlarmTimerTester {
   bool* did_run_;
   base::OnceClosure quit_closure_;
   const base::TimeDelta delay_;
-  std::unique_ptr<timers::SimpleAlarmTimer> timer_;
+  std::unique_ptr<SimpleAlarmTimer> timer_;
 
   DISALLOW_COPY_AND_ASSIGN(SelfDeletingAlarmTimerTester);
 };
@@ -221,49 +223,47 @@ TEST(AlarmTimerTest, MessageLoopShutdown) {
 }
 
 TEST(AlarmTimerTest, NonRepeatIsRunning) {
-  {
-    base::test::ScopedTaskEnvironment task_environment(
-        base::test::ScopedTaskEnvironment::MainThreadType::IO);
+  base::test::ScopedTaskEnvironment task_environment(
+      base::test::ScopedTaskEnvironment::MainThreadType::IO);
 
-    timers::SimpleAlarmTimer timer;
-    EXPECT_FALSE(timer.IsRunning());
-    timer.Start(FROM_HERE, base::TimeDelta::FromDays(1), base::DoNothing());
+  auto timer = SimpleAlarmTimer::CreateForTesting();
+  EXPECT_FALSE(timer->IsRunning());
+  timer->Start(FROM_HERE, base::TimeDelta::FromDays(1), base::DoNothing());
 
-    // Allow FileDescriptorWatcher to start watching the timer. Without this, a
-    // task posted by FileDescriptorWatcher::WatchReadable() is leaked.
-    base::RunLoop().RunUntilIdle();
+  // Allow FileDescriptorWatcher to start watching the timer. Without this, a
+  // task posted by FileDescriptorWatcher::WatchReadable() is leaked.
+  base::RunLoop().RunUntilIdle();
 
-    EXPECT_TRUE(timer.IsRunning());
-    timer.Stop();
-    EXPECT_FALSE(timer.IsRunning());
-    ASSERT_FALSE(timer.user_task().is_null());
-    timer.Reset();
-    base::RunLoop().RunUntilIdle();
-    EXPECT_TRUE(timer.IsRunning());
-  }
+  EXPECT_TRUE(timer->IsRunning());
+  timer->Stop();
+  EXPECT_FALSE(timer->IsRunning());
+  ASSERT_FALSE(timer->user_task().is_null());
+  timer->Reset();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(timer->IsRunning());
 }
 
 TEST(AlarmTimerTest, RetainNonRepeatIsRunning) {
   base::test::ScopedTaskEnvironment task_environment(
       base::test::ScopedTaskEnvironment::MainThreadType::IO);
 
-  timers::SimpleAlarmTimer timer;
-  EXPECT_FALSE(timer.IsRunning());
-  timer.Start(FROM_HERE, base::TimeDelta::FromDays(1), base::DoNothing());
+  auto timer = SimpleAlarmTimer::CreateForTesting();
+  EXPECT_FALSE(timer->IsRunning());
+  timer->Start(FROM_HERE, base::TimeDelta::FromDays(1), base::DoNothing());
 
   // Allow FileDescriptorWatcher to start watching the timer. Without this, a
   // task posted by FileDescriptorWatcher::WatchReadable() is leaked.
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(timer.IsRunning());
-  timer.Reset();
+  EXPECT_TRUE(timer->IsRunning());
+  timer->Reset();
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(timer.IsRunning());
-  timer.Stop();
-  EXPECT_FALSE(timer.IsRunning());
-  timer.Reset();
+  EXPECT_TRUE(timer->IsRunning());
+  timer->Stop();
+  EXPECT_FALSE(timer->IsRunning());
+  timer->Reset();
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(timer.IsRunning());
+  EXPECT_TRUE(timer->IsRunning());
 }
 
 namespace {
@@ -293,16 +293,16 @@ TEST(AlarmTimerTest, ContinuationStopStart) {
   base::test::ScopedTaskEnvironment task_environment(
       base::test::ScopedTaskEnvironment::MainThreadType::IO);
 
-  timers::SimpleAlarmTimer timer;
-  timer.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(10),
-              base::BindRepeating(&SetCallbackHappened1,
-                                  base::DoNothing().Repeatedly()));
-  timer.Stop();
+  auto timer = SimpleAlarmTimer::CreateForTesting();
+  timer->Start(FROM_HERE, base::TimeDelta::FromMilliseconds(10),
+               base::BindRepeating(&SetCallbackHappened1,
+                                   base::DoNothing().Repeatedly()));
+  timer->Stop();
 
   base::RunLoop run_loop;
-  timer.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(40),
-              base::BindRepeating(&SetCallbackHappened2,
-                                  run_loop.QuitWhenIdleClosure()));
+  timer->Start(FROM_HERE, base::TimeDelta::FromMilliseconds(40),
+               base::BindRepeating(&SetCallbackHappened2,
+                                   run_loop.QuitWhenIdleClosure()));
   run_loop.Run();
 
   EXPECT_FALSE(g_callback_happened1);
@@ -315,12 +315,12 @@ TEST(AlarmTimerTest, ContinuationReset) {
       base::test::ScopedTaskEnvironment::MainThreadType::IO);
 
   base::RunLoop run_loop;
-  timers::SimpleAlarmTimer timer;
-  timer.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(10),
-              base::BindRepeating(&SetCallbackHappened1,
-                                  run_loop.QuitWhenIdleClosure()));
-  timer.Reset();
-  ASSERT_FALSE(timer.user_task().is_null());
+  auto timer = SimpleAlarmTimer::CreateForTesting();
+  timer->Start(FROM_HERE, base::TimeDelta::FromMilliseconds(10),
+               base::BindRepeating(&SetCallbackHappened1,
+                                   run_loop.QuitWhenIdleClosure()));
+  timer->Reset();
+  ASSERT_FALSE(timer->user_task().is_null());
   run_loop.Run();
   EXPECT_TRUE(g_callback_happened1);
 }
@@ -334,16 +334,13 @@ TEST(AlarmTimerTest, DeleteTimerWhileCallbackIsRunning) {
   base::RunLoop run_loop;
 
   // Will be deleted by the callback.
-  timers::SimpleAlarmTimer* timer = new timers::SimpleAlarmTimer;
-
-  timer->Start(
+  auto timer = SimpleAlarmTimer::CreateForTesting();
+  auto* timer_ptr = timer.get();
+  timer_ptr->Start(
       FROM_HERE, base::TimeDelta::FromMilliseconds(10),
-      base::BindRepeating(
-          [](timers::SimpleAlarmTimer* timer, base::RunLoop* run_loop) {
-            delete timer;
-            run_loop->Quit();
-          },
-          timer, &run_loop));
+      base::BindRepeating([](std::unique_ptr<SimpleAlarmTimer> timer,
+                             base::RunLoop* run_loop) { run_loop->Quit(); },
+                          base::Passed(std::move(timer)), &run_loop));
   run_loop.Run();
 }
 
@@ -355,16 +352,13 @@ TEST(AlarmTimerTest, DeleteTimerWhileCallbackIsRunningZeroDelay) {
   base::RunLoop run_loop;
 
   // Will be deleted by the callback.
-  timers::SimpleAlarmTimer* timer = new timers::SimpleAlarmTimer;
-
-  timer->Start(
+  auto timer = SimpleAlarmTimer::CreateForTesting();
+  auto* timer_ptr = timer.get();
+  timer_ptr->Start(
       FROM_HERE, base::TimeDelta(),
-      base::BindRepeating(
-          [](timers::SimpleAlarmTimer* timer, base::RunLoop* run_loop) {
-            delete timer;
-            run_loop->Quit();
-          },
-          timer, &run_loop));
+      base::BindRepeating([](std::unique_ptr<SimpleAlarmTimer> timer,
+                             base::RunLoop* run_loop) { run_loop->Quit(); },
+                          base::Passed(std::move(timer)), &run_loop));
   run_loop.Run();
 }
 

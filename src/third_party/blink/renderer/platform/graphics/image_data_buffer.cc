@@ -88,8 +88,7 @@ ImageDataBuffer::ImageDataBuffer(scoped_refptr<StaticBitmapImage> image) {
 }
 
 ImageDataBuffer::ImageDataBuffer(const SkPixmap& pixmap)
-    : pixmap_(pixmap),
-      size_(IntSize(pixmap.width(), pixmap.height())) {
+    : pixmap_(pixmap), size_(IntSize(pixmap.width(), pixmap.height())) {
   is_valid_ = pixmap_.addr() && !size_.IsEmpty();
 }
 

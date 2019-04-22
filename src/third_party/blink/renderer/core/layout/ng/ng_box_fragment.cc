@@ -16,7 +16,7 @@ NGLineHeightMetrics NGBoxFragment::BaselineMetricsWithoutSynthesize(
     const NGBaselineRequest& request) const {
   // For "leaf" theme objects, let the theme decide what the baseline position
   // is. The theme baseline wins over the propagated baselines.
-  const auto& physical_fragment = ToNGPhysicalBoxFragment(physical_fragment_);
+  const auto& physical_fragment = To<NGPhysicalBoxFragment>(physical_fragment_);
   DCHECK(physical_fragment_.GetLayoutObject());
   const LayoutBox& layout_box =
       ToLayoutBox(*physical_fragment_.GetLayoutObject());
@@ -32,7 +32,7 @@ NGLineHeightMetrics NGBoxFragment::BaselineMetricsWithoutSynthesize(
   // Check if we have a propagated baseline.
   if (base::Optional<LayoutUnit> baseline =
           physical_fragment.Baseline(request)) {
-    LayoutUnit ascent = baseline.value();
+    LayoutUnit ascent = *baseline;
     LayoutUnit descent = BlockSize() - ascent;
 
     // For replaced elements, inline-block elements, and inline-table
@@ -65,7 +65,7 @@ NGLineHeightMetrics NGBoxFragment::BaselineMetrics(
   LayoutUnit block_size = BlockSize();
 
   // If atomic inline, use the margin box. See above.
-  const auto& physical_fragment = ToNGPhysicalBoxFragment(physical_fragment_);
+  const auto& physical_fragment = To<NGPhysicalBoxFragment>(physical_fragment_);
   DCHECK(physical_fragment_.GetLayoutObject());
   const LayoutBox& layout_box =
       ToLayoutBox(*physical_fragment_.GetLayoutObject());

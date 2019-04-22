@@ -28,6 +28,7 @@
 #include "media/filters/frame_processor.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::testing::_;
 using ::testing::InSequence;
 using ::testing::StrictMock;
 using ::testing::Values;
@@ -79,6 +80,14 @@ class FrameProcessorTestCallbackHelper {
     ASSERT_NE(kInfiniteDuration, new_duration);
   }
 
+  MOCK_METHOD2(OnAppend,
+               void(const DemuxerStream::Type type,
+                    const BufferQueue* buffers));
+  MOCK_METHOD3(OnGroupStart,
+               void(const DemuxerStream::Type type,
+                    DecodeTimestamp start_dts,
+                    base::TimeDelta start_pts));
+
  private:
   DISALLOW_COPY_AND_ASSIGN(FrameProcessorTestCallbackHelper);
 };
@@ -107,7 +116,8 @@ class FrameProcessorTest
 
   enum StreamFlags {
     HAS_AUDIO = 1 << 0,
-    HAS_VIDEO = 1 << 1
+    HAS_VIDEO = 1 << 1,
+    OBSERVE_APPENDS_AND_GROUP_STARTS = 1 << 2
   };
 
   void AddTestTracks(int stream_flags) {
@@ -115,14 +125,17 @@ class FrameProcessorTest
     const bool has_video = (stream_flags & HAS_VIDEO) != 0;
     ASSERT_TRUE(has_audio || has_video);
 
+    const bool setup_observers =
+        (stream_flags & OBSERVE_APPENDS_AND_GROUP_STARTS) != 0;
+
     if (has_audio) {
-      CreateAndConfigureStream(DemuxerStream::AUDIO);
+      CreateAndConfigureStream(DemuxerStream::AUDIO, setup_observers);
       ASSERT_TRUE(audio_);
       EXPECT_TRUE(frame_processor_->AddTrack(audio_id_, audio_.get()));
       SeekStream(audio_.get(), Milliseconds(0));
     }
     if (has_video) {
-      CreateAndConfigureStream(DemuxerStream::VIDEO);
+      CreateAndConfigureStream(DemuxerStream::VIDEO, setup_observers);
       ASSERT_TRUE(video_);
       EXPECT_TRUE(frame_processor_->AddTrack(video_id_, video_.get()));
       SeekStream(video_.get(), Milliseconds(0));
@@ -341,8 +354,11 @@ class FrameProcessorTest
     last_read_buffer_ = buffer;
   }
 
-  void CreateAndConfigureStream(DemuxerStream::Type type) {
+  void CreateAndConfigureStream(DemuxerStream::Type type,
+                                bool setup_observers) {
     // TODO(wolenetz/dalecurtis): Also test with splicing disabled?
+
+    ChunkDemuxerStream* stream;
     switch (type) {
       case DemuxerStream::AUDIO: {
         ASSERT_FALSE(audio_);
@@ -354,6 +370,8 @@ class FrameProcessorTest
         frame_processor_->OnPossibleAudioConfigUpdate(decoder_config);
         ASSERT_TRUE(
             audio_->UpdateAudioConfig(decoder_config, false, &media_log_));
+
+        stream = audio_.get();
         break;
       }
       case DemuxerStream::VIDEO: {
@@ -362,6 +380,7 @@ class FrameProcessorTest
             new ChunkDemuxerStream(DemuxerStream::VIDEO, "2", range_api_));
         ASSERT_TRUE(video_->UpdateVideoConfig(TestVideoConfig::Normal(), false,
                                               &media_log_));
+        stream = video_.get();
         break;
       }
       // TODO(wolenetz): Test text coded frame processing.
@@ -369,6 +388,15 @@ class FrameProcessorTest
       case DemuxerStream::UNKNOWN: {
         ASSERT_FALSE(true);
       }
+    }
+
+    if (setup_observers) {
+      stream->set_append_observer_for_testing(
+          base::BindRepeating(&FrameProcessorTestCallbackHelper::OnAppend,
+                              base::Unretained(&callbacks_), type));
+      stream->set_group_start_observer_for_testing(
+          base::BindRepeating(&FrameProcessorTestCallbackHelper::OnGroupStart,
+                              base::Unretained(&callbacks_), type));
     }
   }
 
@@ -938,13 +966,10 @@ TEST_P(FrameProcessorTest,
   AddTestTracks(HAS_AUDIO);
 
   if (use_sequence_mode_) {
-    EXPECT_MEDIA_LOG(ParsedDTSGreaterThanPTS()).Times(2);
     frame_processor_->SetSequenceMode(true);
     EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(20)));
   } else {
-    EXPECT_MEDIA_LOG(ParsedDTSGreaterThanPTS());
     EXPECT_MEDIA_LOG(TruncatedFrame(-7000, 3000, "start", 0));
-    EXPECT_MEDIA_LOG(ParsedDTSGreaterThanPTS());
     EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(13)));
   }
 
@@ -1126,7 +1151,6 @@ TEST_P(FrameProcessorTest,
 
   CheckExpectedRangesByTimestamp(video_.get(), "{ [50,70) }");
 
-  EXPECT_MEDIA_LOG(ParsedDTSGreaterThanPTS());
   EXPECT_CALL(callbacks_,
               OnParseWarning(
                   SourceBufferParseWarning::kKeyframeTimeGreaterThanDependant));
@@ -1335,7 +1359,7 @@ TEST_P(FrameProcessorTest,
   }
 
   InSequence s;
-  AddTestTracks(HAS_VIDEO);
+  AddTestTracks(HAS_VIDEO | OBSERVE_APPENDS_AND_GROUP_STARTS);
   frame_processor_->SetSequenceMode(use_sequence_mode_);
 
   // Make the sequence mode buffering appear just like segments mode to simplify
@@ -1343,32 +1367,41 @@ TEST_P(FrameProcessorTest,
   if (use_sequence_mode_)
     SetTimestampOffset(Milliseconds(1060));
 
+  // Note that the PTS of GOP non-keyframes earlier than the keyframe doesn't
+  // modify the GOP start of the buffered range here. This may change if we
+  // decide to improve spec for SAP Type 2 GOPs that begin a coded frame group.
+  EXPECT_CALL(callbacks_, OnGroupStart(DemuxerStream::VIDEO, DecodeTimestamp(),
+                                       Milliseconds(1060)));
   EXPECT_CALL(callbacks_,
               OnParseWarning(
                   SourceBufferParseWarning::kKeyframeTimeGreaterThanDependant));
   EXPECT_MEDIA_LOG(KeyframeTimeGreaterThanDependant("1.06", "1"));
+  EXPECT_CALL(callbacks_, OnAppend(DemuxerStream::VIDEO, _));
+  EXPECT_CALL(callbacks_, OnAppend(DemuxerStream::VIDEO, _));
   EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(1070)));
   EXPECT_TRUE(ProcessFrames(
       "", "1060|0K 1000|10 1050|20 1010|30 1040|40 1020|50 1030|60"));
   EXPECT_EQ(Milliseconds(0), timestamp_offset_);
-
-  // Note that the PTS of GOP non-keyframes earlier than the keyframe doesn't
-  // modify the GOP start of the buffered range here. This may change if we
-  // decide to improve spec for SAP Type 2 GOPs that begin a coded frame group.
   CheckExpectedRangesByTimestamp(video_.get(), "{ [1060,1070) }");
 
   // Process just the keyframe of the next SAP Type 2 GOP in decode continuity
   // with the previous one.
+  // Note that this second GOP is buffered continuous with the first because
+  // there is no decode discontinuity detected. This results in inclusion of
+  // the significant PTS jump forward in the same continuous range.
+  EXPECT_CALL(
+      callbacks_,
+      OnGroupStart(DemuxerStream::VIDEO,
+                   DecodeTimestamp::FromPresentationTime(Milliseconds(60)),
+                   Milliseconds(1070)));
+  EXPECT_CALL(callbacks_, OnAppend(DemuxerStream::VIDEO, _));
   EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(1140)));
   EXPECT_TRUE(ProcessFrames("", "1130|70K"));
   EXPECT_EQ(Milliseconds(0), timestamp_offset_);
-
-  // Note that the second GOP is buffered continuous with the first because
-  // there was no decode discontinuity detected. This results in inclusion of
-  // the significant PTS jump forward in the same continuous range.
   CheckExpectedRangesByTimestamp(video_.get(), "{ [1060,1140) }");
 
   // Process the remainder of the second GOP.
+  EXPECT_CALL(callbacks_, OnAppend(DemuxerStream::VIDEO, _));
   EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(1140)));
   EXPECT_TRUE(
       ProcessFrames("", "1070|80 1120|90 1080|100 1110|110 1090|120 1100|130"));
@@ -1397,7 +1430,7 @@ TEST_P(FrameProcessorTest,
   }
 
   InSequence s;
-  AddTestTracks(HAS_VIDEO);
+  AddTestTracks(HAS_VIDEO | OBSERVE_APPENDS_AND_GROUP_STARTS);
   frame_processor_->SetSequenceMode(use_sequence_mode_);
 
   // Make the sequence mode buffering appear just like segments mode to simplify
@@ -1405,10 +1438,19 @@ TEST_P(FrameProcessorTest,
   if (use_sequence_mode_)
     SetTimestampOffset(Milliseconds(100));
 
+  EXPECT_CALL(callbacks_, OnGroupStart(DemuxerStream::VIDEO, DecodeTimestamp(),
+                                       Milliseconds(100)));
+  EXPECT_CALL(callbacks_, OnAppend(DemuxerStream::VIDEO, _));
   EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(140)));
   EXPECT_TRUE(ProcessFrames("", "100|0K 110|10 120|20 130|30"));
   EXPECT_EQ(Milliseconds(0), timestamp_offset_);
 
+  EXPECT_CALL(
+      callbacks_,
+      OnGroupStart(DemuxerStream::VIDEO,
+                   DecodeTimestamp::FromPresentationTime(Milliseconds(30)),
+                   Milliseconds(125)));
+  EXPECT_CALL(callbacks_, OnAppend(DemuxerStream::VIDEO, _));
   EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(165)));
   EXPECT_TRUE(ProcessFrames("", "125|40K 135|50 145|60 155|70"));
   EXPECT_EQ(Milliseconds(0), timestamp_offset_);
@@ -1429,7 +1471,7 @@ TEST_P(FrameProcessorTest,
   }
 
   InSequence s;
-  AddTestTracks(HAS_VIDEO);
+  AddTestTracks(HAS_VIDEO | OBSERVE_APPENDS_AND_GROUP_STARTS);
   frame_processor_->SetSequenceMode(use_sequence_mode_);
 
   // Make the sequence mode buffering appear just like segments mode to simplify
@@ -1437,10 +1479,19 @@ TEST_P(FrameProcessorTest,
   if (use_sequence_mode_)
     SetTimestampOffset(Milliseconds(100));
 
+  EXPECT_CALL(callbacks_, OnGroupStart(DemuxerStream::VIDEO, DecodeTimestamp(),
+                                       Milliseconds(100)));
+  EXPECT_CALL(callbacks_, OnAppend(DemuxerStream::VIDEO, _));
   EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(140)));
   EXPECT_TRUE(ProcessFrames("", "100|0K 110|10 120|20K 130|30"));
   EXPECT_EQ(Milliseconds(0), timestamp_offset_);
 
+  EXPECT_CALL(
+      callbacks_,
+      OnGroupStart(DemuxerStream::VIDEO,
+                   DecodeTimestamp::FromPresentationTime(Milliseconds(30)),
+                   Milliseconds(115)));
+  EXPECT_CALL(callbacks_, OnAppend(DemuxerStream::VIDEO, _));
   // TODO(wolenetz): Duration shouldn't be allowed to possibly increase to 140ms
   // here. See https://crbug.com/763620.
   EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(140)));
@@ -1463,7 +1514,7 @@ TEST_P(FrameProcessorTest,
   }
 
   InSequence s;
-  AddTestTracks(HAS_VIDEO);
+  AddTestTracks(HAS_VIDEO | OBSERVE_APPENDS_AND_GROUP_STARTS);
   frame_processor_->SetSequenceMode(use_sequence_mode_);
 
   // Make the sequence mode buffering appear just like segments mode to simplify
@@ -1471,14 +1522,23 @@ TEST_P(FrameProcessorTest,
   if (use_sequence_mode_)
     SetTimestampOffset(Milliseconds(120));
 
+  EXPECT_CALL(callbacks_, OnGroupStart(DemuxerStream::VIDEO, DecodeTimestamp(),
+                                       Milliseconds(120)));
   EXPECT_CALL(callbacks_,
               OnParseWarning(
                   SourceBufferParseWarning::kKeyframeTimeGreaterThanDependant));
   EXPECT_MEDIA_LOG(KeyframeTimeGreaterThanDependant("0.12", "0.1"));
+  EXPECT_CALL(callbacks_, OnAppend(DemuxerStream::VIDEO, _));
+  EXPECT_CALL(callbacks_, OnAppend(DemuxerStream::VIDEO, _));
   EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(140)));
   EXPECT_TRUE(ProcessFrames("", "120|0K 100|10 130|20 110|30"));
   EXPECT_EQ(Milliseconds(0), timestamp_offset_);
 
+  // Note, we *don't* expect another OnGroupStart during the next ProcessFrames,
+  // since the next GOP's keyframe PTS is after the first GOP and close enough
+  // to be assured adjacent.
+  EXPECT_CALL(callbacks_, OnAppend(DemuxerStream::VIDEO, _));
+  EXPECT_CALL(callbacks_, OnAppend(DemuxerStream::VIDEO, _));
   EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(165)));
   EXPECT_TRUE(ProcessFrames("", "145|40K 125|50 155|60 135|70"));
   EXPECT_EQ(Milliseconds(0), timestamp_offset_);
@@ -1503,7 +1563,7 @@ TEST_P(FrameProcessorTest,
   }
 
   InSequence s;
-  AddTestTracks(HAS_VIDEO);
+  AddTestTracks(HAS_VIDEO | OBSERVE_APPENDS_AND_GROUP_STARTS);
   frame_processor_->SetSequenceMode(use_sequence_mode_);
 
   // Make the sequence mode buffering appear just like segments mode to simplify
@@ -1511,15 +1571,35 @@ TEST_P(FrameProcessorTest,
   if (use_sequence_mode_)
     SetTimestampOffset(Milliseconds(120));
 
+  EXPECT_CALL(callbacks_, OnGroupStart(DemuxerStream::VIDEO, DecodeTimestamp(),
+                                       Milliseconds(120)));
   EXPECT_CALL(callbacks_,
               OnParseWarning(
                   SourceBufferParseWarning::kKeyframeTimeGreaterThanDependant));
   EXPECT_MEDIA_LOG(KeyframeTimeGreaterThanDependant("0.12", "0.1"));
+  EXPECT_CALL(callbacks_, OnAppend(DemuxerStream::VIDEO, _));
+  EXPECT_CALL(callbacks_, OnAppend(DemuxerStream::VIDEO, _));
+  // There is a second GOP that is SAP-Type-2 within this first ProcessFrames,
+  // with PTS jumping forward far enough to trigger group start signalling and a
+  // flush.
+  EXPECT_CALL(
+      callbacks_,
+      OnGroupStart(DemuxerStream::VIDEO,
+                   DecodeTimestamp::FromPresentationTime(Milliseconds(30)),
+                   Milliseconds(140)));
+  EXPECT_CALL(callbacks_, OnAppend(DemuxerStream::VIDEO, _));
   EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(180)));
   EXPECT_TRUE(ProcessFrames(
       "", "120|0K 100|10 130|20 110|30 160|40K 140|50 170|60 150|70"));
   EXPECT_EQ(Milliseconds(0), timestamp_offset_);
 
+  EXPECT_CALL(
+      callbacks_,
+      OnGroupStart(DemuxerStream::VIDEO,
+                   DecodeTimestamp::FromPresentationTime(Milliseconds(70)),
+                   Milliseconds(155)));
+  EXPECT_CALL(callbacks_, OnAppend(DemuxerStream::VIDEO, _));
+  EXPECT_CALL(callbacks_, OnAppend(DemuxerStream::VIDEO, _));
   // TODO(wolenetz): Duration shouldn't be allowed to possibly increase to 180ms
   // here. See https://crbug.com/763620.
   EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(180)));
@@ -1532,6 +1612,204 @@ TEST_P(FrameProcessorTest,
   // Verify seek and read of the second GOP is correct.
   SeekStream(video_.get(), Milliseconds(155));
   CheckReadsThenReadStalls(video_.get(), "155 145");
+}
+
+TEST_P(FrameProcessorTest,
+       BufferingByPts_ContinuousDts_NewSap2GopEndOverlapsLastGop_3_GopByGop) {
+  // API user might craft a continuous-in-DTS-with-previous-append GOP that has
+  // PTS interval overlapping the previous append, using SAP Type 2 GOPs.  Tests
+  // SAP-Type 2 GOPs, where newly appended GOP overlaps enough nonkeyframes of
+  // the previous GOP such that dropped decode dependencies might cause problems
+  // if the first nonkeyframe with PTS prior to the GOP's keyframe PTS is
+  // flushed at the same time as its keyframe, but the second GOP's keyframe PTS
+  // is close enough to the end of the first GOP's presentation interval to not
+  // signal a new coded frame group start.
+  if (range_api_ == ChunkDemuxerStream::RangeApi::kLegacyByDts) {
+    DVLOG(1) << "Skipping kLegacyByDts versions of this test";
+    return;
+  }
+
+  InSequence s;
+  AddTestTracks(HAS_VIDEO | OBSERVE_APPENDS_AND_GROUP_STARTS);
+  frame_processor_->SetSequenceMode(use_sequence_mode_);
+
+  // Make the sequence mode buffering appear just like segments mode to simplify
+  // this test case.
+  if (use_sequence_mode_)
+    SetTimestampOffset(Milliseconds(500));
+
+  EXPECT_CALL(callbacks_, OnGroupStart(DemuxerStream::VIDEO, DecodeTimestamp(),
+                                       Milliseconds(500)));
+  EXPECT_CALL(callbacks_, OnAppend(DemuxerStream::VIDEO, _));
+  EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(530)));
+  EXPECT_TRUE(ProcessFrames("", "500|0K 520|10 510|20"));
+  CheckExpectedRangesByTimestamp(video_.get(), "{ [500,530) }");
+
+  EXPECT_CALL(callbacks_,
+              OnParseWarning(
+                  SourceBufferParseWarning::kKeyframeTimeGreaterThanDependant));
+  EXPECT_MEDIA_LOG(KeyframeTimeGreaterThanDependant("0.54", "0.52"));
+  EXPECT_CALL(callbacks_, OnAppend(DemuxerStream::VIDEO, _));
+  EXPECT_CALL(callbacks_, OnAppend(DemuxerStream::VIDEO, _));
+  EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(550)));
+  EXPECT_TRUE(ProcessFrames("", "540|30K 520|40 530|50"));
+
+  CheckExpectedRangesByTimestamp(video_.get(), "{ [500,550) }");
+  SeekStream(video_.get(), Milliseconds(500));
+  CheckReadsThenReadStalls(video_.get(), "500 520 510 540 520 530");
+}
+
+TEST_P(
+    FrameProcessorTest,
+    BufferingByPts_ContinuousDts_NewSap2GopEndOverlapsLastGop_3_FrameByFrame) {
+  // Tests that the buffered range results match the previous GopByGop test if
+  // each frame of the second GOP is explicitly appended by the app
+  // one-at-a-time.
+  if (range_api_ == ChunkDemuxerStream::RangeApi::kLegacyByDts) {
+    DVLOG(1) << "Skipping kLegacyByDts versions of this test";
+    return;
+  }
+
+  InSequence s;
+  AddTestTracks(HAS_VIDEO | OBSERVE_APPENDS_AND_GROUP_STARTS);
+  frame_processor_->SetSequenceMode(use_sequence_mode_);
+
+  // Make the sequence mode buffering appear just like segments mode to simplify
+  // this test case.
+  if (use_sequence_mode_)
+    SetTimestampOffset(Milliseconds(500));
+
+  EXPECT_CALL(callbacks_, OnGroupStart(DemuxerStream::VIDEO, DecodeTimestamp(),
+                                       Milliseconds(500)));
+  EXPECT_CALL(callbacks_, OnAppend(DemuxerStream::VIDEO, _));
+  EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(530)));
+  EXPECT_TRUE(ProcessFrames("", "500|0K 520|10 510|20"));
+  CheckExpectedRangesByTimestamp(video_.get(), "{ [500,530) }");
+
+  EXPECT_CALL(callbacks_, OnAppend(DemuxerStream::VIDEO, _));
+  EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(550)));
+  EXPECT_TRUE(ProcessFrames("", "540|30K"));
+
+  EXPECT_CALL(callbacks_,
+              OnParseWarning(
+                  SourceBufferParseWarning::kKeyframeTimeGreaterThanDependant));
+  EXPECT_MEDIA_LOG(KeyframeTimeGreaterThanDependant("0.54", "0.52"));
+  EXPECT_CALL(callbacks_, OnAppend(DemuxerStream::VIDEO, _));
+  EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(550)));
+  EXPECT_TRUE(ProcessFrames("", "520|40"));
+
+  EXPECT_CALL(callbacks_, OnAppend(DemuxerStream::VIDEO, _));
+  EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(550)));
+  EXPECT_TRUE(ProcessFrames("", "530|50"));
+
+  CheckExpectedRangesByTimestamp(video_.get(), "{ [500,550) }");
+  SeekStream(video_.get(), Milliseconds(500));
+  CheckReadsThenReadStalls(video_.get(), "500 520 510 540 520 530");
+}
+
+TEST_P(FrameProcessorTest,
+       BufferingByPts_ContinuousDts_NewSap2GopEndOverlapsLastGop_4_GopByGop) {
+  // API user might craft a continuous-in-DTS-with-previous-append GOP that has
+  // PTS interval overlapping the previous append, using SAP Type 2 GOPs.  Tests
+  // SAP-Type 2 GOPs, where newly appended GOP overlaps enough nonkeyframes of
+  // the previous GOP such that dropped decode dependencies might cause problems
+  // if the first nonkeyframe with PTS prior to the GOP's keyframe PTS is
+  // flushed at the same time as its keyframe.
+  if (range_api_ == ChunkDemuxerStream::RangeApi::kLegacyByDts) {
+    DVLOG(1) << "Skipping kLegacyByDts versions of this test";
+    return;
+  }
+
+  InSequence s;
+  AddTestTracks(HAS_VIDEO | OBSERVE_APPENDS_AND_GROUP_STARTS);
+  frame_processor_->SetSequenceMode(use_sequence_mode_);
+
+  // Make the sequence mode buffering appear just like segments mode to simplify
+  // this test case.
+  if (use_sequence_mode_)
+    SetTimestampOffset(Milliseconds(500));
+
+  EXPECT_CALL(callbacks_, OnGroupStart(DemuxerStream::VIDEO, DecodeTimestamp(),
+                                       Milliseconds(500)));
+  EXPECT_CALL(callbacks_, OnAppend(DemuxerStream::VIDEO, _));
+  EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(530)));
+  EXPECT_TRUE(ProcessFrames("", "500|0K 520|10 510|20"));
+  CheckExpectedRangesByTimestamp(video_.get(), "{ [500,530) }");
+
+  EXPECT_CALL(
+      callbacks_,
+      OnGroupStart(DemuxerStream::VIDEO,
+                   DecodeTimestamp::FromPresentationTime(Milliseconds(20)),
+                   Milliseconds(530)));
+  EXPECT_CALL(callbacks_,
+              OnParseWarning(
+                  SourceBufferParseWarning::kKeyframeTimeGreaterThanDependant));
+  EXPECT_MEDIA_LOG(KeyframeTimeGreaterThanDependant("0.55", "0.52"));
+  EXPECT_CALL(callbacks_, OnAppend(DemuxerStream::VIDEO, _));
+  EXPECT_CALL(callbacks_, OnAppend(DemuxerStream::VIDEO, _));
+  EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(560)));
+  EXPECT_TRUE(ProcessFrames("", "550|30K 520|40 530|50 540|60"));
+
+  CheckExpectedRangesByTimestamp(video_.get(), "{ [500,560) }");
+  SeekStream(video_.get(), Milliseconds(500));
+  CheckReadsThenReadStalls(video_.get(), "500 520 510 550 520 530 540");
+}
+
+TEST_P(
+    FrameProcessorTest,
+    BufferingByPts_ContinuousDts_NewSap2GopEndOverlapsLastGop_4_FrameByFrame) {
+  // Tests that the buffered range results match the previous GopByGop test if
+  // each frame of the second GOP is explicitly appended by the app
+  // one-at-a-time.
+  if (range_api_ == ChunkDemuxerStream::RangeApi::kLegacyByDts) {
+    DVLOG(1) << "Skipping kLegacyByDts versions of this test";
+    return;
+  }
+
+  InSequence s;
+  AddTestTracks(HAS_VIDEO | OBSERVE_APPENDS_AND_GROUP_STARTS);
+  frame_processor_->SetSequenceMode(use_sequence_mode_);
+
+  // Make the sequence mode buffering appear just like segments mode to simplify
+  // this test case.
+  if (use_sequence_mode_)
+    SetTimestampOffset(Milliseconds(500));
+
+  EXPECT_CALL(callbacks_, OnGroupStart(DemuxerStream::VIDEO, DecodeTimestamp(),
+                                       Milliseconds(500)));
+  EXPECT_CALL(callbacks_, OnAppend(DemuxerStream::VIDEO, _));
+  EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(530)));
+  EXPECT_TRUE(ProcessFrames("", "500|0K 520|10 510|20"));
+  CheckExpectedRangesByTimestamp(video_.get(), "{ [500,530) }");
+
+  EXPECT_CALL(
+      callbacks_,
+      OnGroupStart(DemuxerStream::VIDEO,
+                   DecodeTimestamp::FromPresentationTime(Milliseconds(20)),
+                   Milliseconds(530)));
+  EXPECT_CALL(callbacks_, OnAppend(DemuxerStream::VIDEO, _));
+  EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(560)));
+  EXPECT_TRUE(ProcessFrames("", "550|30K"));
+
+  EXPECT_CALL(callbacks_,
+              OnParseWarning(
+                  SourceBufferParseWarning::kKeyframeTimeGreaterThanDependant));
+  EXPECT_MEDIA_LOG(KeyframeTimeGreaterThanDependant("0.55", "0.52"));
+  EXPECT_CALL(callbacks_, OnAppend(DemuxerStream::VIDEO, _));
+  EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(560)));
+  EXPECT_TRUE(ProcessFrames("", "520|40"));
+
+  EXPECT_CALL(callbacks_, OnAppend(DemuxerStream::VIDEO, _));
+  EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(560)));
+  EXPECT_TRUE(ProcessFrames("", "530|50"));
+
+  EXPECT_CALL(callbacks_, OnAppend(DemuxerStream::VIDEO, _));
+  EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(560)));
+  EXPECT_TRUE(ProcessFrames("", "540|60"));
+
+  CheckExpectedRangesByTimestamp(video_.get(), "{ [500,560) }");
+  SeekStream(video_.get(), Milliseconds(500));
+  CheckReadsThenReadStalls(video_.get(), "500 520 510 550 520 530 540");
 }
 
 TEST_P(FrameProcessorTest,
@@ -1553,7 +1831,7 @@ TEST_P(FrameProcessorTest,
   }
 
   InSequence s;
-  AddTestTracks(HAS_VIDEO);
+  AddTestTracks(HAS_VIDEO | OBSERVE_APPENDS_AND_GROUP_STARTS);
   frame_processor_->SetSequenceMode(use_sequence_mode_);
 
   // Make the sequence mode buffering appear just like segments mode to simplify
@@ -1561,11 +1839,20 @@ TEST_P(FrameProcessorTest,
   if (use_sequence_mode_)
     SetTimestampOffset(Milliseconds(200));
 
+  EXPECT_CALL(callbacks_, OnGroupStart(DemuxerStream::VIDEO, DecodeTimestamp(),
+                                       Milliseconds(200)));
+  EXPECT_CALL(callbacks_, OnAppend(DemuxerStream::VIDEO, _));
   EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(240)));
   EXPECT_TRUE(ProcessFrames("", "200|0K 210|10 220|20 230|30"));
   EXPECT_EQ(Milliseconds(0), timestamp_offset_);
   CheckExpectedRangesByTimestamp(video_.get(), "{ [200,240) }");
 
+  EXPECT_CALL(
+      callbacks_,
+      OnGroupStart(DemuxerStream::VIDEO,
+                   DecodeTimestamp::FromPresentationTime(Milliseconds(30)),
+                   Milliseconds(100)));
+  EXPECT_CALL(callbacks_, OnAppend(DemuxerStream::VIDEO, _));
   // TODO(wolenetz): Duration shouldn't be allowed to possibly increase to 240ms
   // here. See https://crbug.com/763620.
   EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(240)));
@@ -1573,6 +1860,12 @@ TEST_P(FrameProcessorTest,
   EXPECT_EQ(Milliseconds(0), timestamp_offset_);
   CheckExpectedRangesByTimestamp(video_.get(), "{ [100,140) [200,240) }");
 
+  EXPECT_CALL(
+      callbacks_,
+      OnGroupStart(DemuxerStream::VIDEO,
+                   DecodeTimestamp::FromPresentationTime(Milliseconds(70)),
+                   Milliseconds(140)));
+  EXPECT_CALL(callbacks_, OnAppend(DemuxerStream::VIDEO, _));
   EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(260)));
   EXPECT_TRUE(ProcessFrames("", "240|80K 250|90"));
   EXPECT_EQ(Milliseconds(0), timestamp_offset_);
@@ -1592,7 +1885,7 @@ TEST_P(FrameProcessorTest, ContinuousPts_DiscontinuousDts_AcrossGops) {
   // the append sequence is required to have monotonically increasing DTS (even
   // across GOPs).
   InSequence s;
-  AddTestTracks(HAS_VIDEO);
+  AddTestTracks(HAS_VIDEO | OBSERVE_APPENDS_AND_GROUP_STARTS);
   frame_processor_->SetSequenceMode(use_sequence_mode_);
 
   // Make the sequence mode buffering appear just like segments mode to simplify
@@ -1600,14 +1893,25 @@ TEST_P(FrameProcessorTest, ContinuousPts_DiscontinuousDts_AcrossGops) {
   if (use_sequence_mode_)
     SetTimestampOffset(Milliseconds(200));
 
+  EXPECT_CALL(
+      callbacks_,
+      OnGroupStart(DemuxerStream::VIDEO,
+                   DecodeTimestamp::FromPresentationTime(Milliseconds(200)),
+                   Milliseconds(200)));
+  EXPECT_CALL(callbacks_, OnAppend(DemuxerStream::VIDEO, _));
   EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(240)));
   EXPECT_TRUE(ProcessFrames("", "200K 210 220 230"));
   EXPECT_EQ(Milliseconds(0), timestamp_offset_);
   CheckExpectedRangesByTimestamp(video_.get(), "{ [200,240) }");
 
+  EXPECT_CALL(
+      callbacks_,
+      OnGroupStart(DemuxerStream::VIDEO,
+                   DecodeTimestamp::FromPresentationTime(Milliseconds(225)),
+                   Milliseconds(240)));
+  EXPECT_CALL(callbacks_, OnAppend(DemuxerStream::VIDEO, _));
   // Note that duration is reported based on PTS regardless of buffering model.
   EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(280)));
-
   // Append a second GOP whose first DTS is below the last DTS of the first GOP,
   // but whose PTS interval is continuous with the end of the first GOP.
   EXPECT_TRUE(ProcessFrames("", "240|225K 250|235 260|245 270|255"));
@@ -1625,22 +1929,124 @@ TEST_P(FrameProcessorTest, ContinuousPts_DiscontinuousDts_AcrossGops) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(SequenceModeLegacyByDts,
-                        FrameProcessorTest,
-                        Values(FrameProcessorTestParams(
-                            true,
-                            ChunkDemuxerStream::RangeApi::kLegacyByDts)));
-INSTANTIATE_TEST_CASE_P(SegmentsModeLegacyByDts,
-                        FrameProcessorTest,
-                        Values(FrameProcessorTestParams(
-                            false,
-                            ChunkDemuxerStream::RangeApi::kLegacyByDts)));
-INSTANTIATE_TEST_CASE_P(
+TEST_P(FrameProcessorTest, OnlyKeyframes_ContinuousDts_ContinousPts_1) {
+  // Verifies that precisely one group start and one stream append occurs for a
+  // single continuous set of frames.
+  InSequence s;
+  AddTestTracks(HAS_AUDIO | OBSERVE_APPENDS_AND_GROUP_STARTS);
+  if (use_sequence_mode_)
+    frame_processor_->SetSequenceMode(true);
+
+  // Default test frame duration is 10 milliseconds.
+
+  EXPECT_CALL(callbacks_, OnGroupStart(DemuxerStream::AUDIO, DecodeTimestamp(),
+                                       base::TimeDelta()));
+  EXPECT_CALL(callbacks_, OnAppend(DemuxerStream::AUDIO, _));
+  EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(40)));
+  EXPECT_TRUE(ProcessFrames("0K 10K 20K 30K", ""));
+  EXPECT_EQ(Milliseconds(0), timestamp_offset_);
+
+  CheckExpectedRangesByTimestamp(audio_.get(), "{ [0,40) }");
+  CheckReadsThenReadStalls(audio_.get(), "0 10 20 30");
+}
+
+TEST_P(FrameProcessorTest, OnlyKeyframes_ContinuousDts_ContinuousPts_2) {
+  // Verifies that precisely one group start and one stream append occurs while
+  // processing a single continuous set of frames that uses fudge room to just
+  // barely remain adjacent.
+  InSequence s;
+  AddTestTracks(HAS_AUDIO | OBSERVE_APPENDS_AND_GROUP_STARTS);
+  if (use_sequence_mode_)
+    frame_processor_->SetSequenceMode(true);
+
+  frame_duration_ = Milliseconds(5);
+
+  EXPECT_CALL(callbacks_, OnGroupStart(DemuxerStream::AUDIO, DecodeTimestamp(),
+                                       base::TimeDelta()));
+  EXPECT_CALL(callbacks_, OnAppend(DemuxerStream::AUDIO, _));
+  EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(35)));
+  EXPECT_TRUE(ProcessFrames("0K 10K 20K 30K", ""));
+  EXPECT_EQ(Milliseconds(0), timestamp_offset_);
+
+  CheckExpectedRangesByTimestamp(audio_.get(), "{ [0,35) }");
+  CheckReadsThenReadStalls(audio_.get(), "0 10 20 30");
+}
+
+TEST_P(FrameProcessorTest,
+       OnlyKeyframes_ContinuousDts_DiscontinuousPtsJustBeyondFudgeRoom) {
+  // Verifies that, in ByPts, multiple group starts and distinct appends occur
+  // when processing a single DTS-continuous set of frames with PTS deltas that
+  // just barely exceed the adjacency assumption in FrameProcessor.
+  // Verifies that, in ByDts, precisely one group start and one stream append
+  // occur.
+  InSequence s;
+  AddTestTracks(HAS_AUDIO | OBSERVE_APPENDS_AND_GROUP_STARTS);
+  if (use_sequence_mode_)
+    frame_processor_->SetSequenceMode(true);
+
+  frame_duration_ = base::TimeDelta::FromMicroseconds(4999);
+
+  EXPECT_CALL(callbacks_, OnGroupStart(DemuxerStream::AUDIO, DecodeTimestamp(),
+                                       base::TimeDelta()));
+  EXPECT_CALL(callbacks_, OnAppend(DemuxerStream::AUDIO, _));
+  if (range_api_ == ChunkDemuxerStream::RangeApi::kNewByPts) {
+    // Frame "10|5K" following "0K" triggers start of new group and eventual
+    // append.
+    EXPECT_CALL(callbacks_, OnGroupStart(DemuxerStream::AUDIO,
+                                         DecodeTimestamp(), frame_duration_));
+    EXPECT_CALL(callbacks_, OnAppend(DemuxerStream::AUDIO, _));
+
+    // Frame "20|10K" following "10|5K" triggers start of new group and eventual
+    // append.
+    EXPECT_CALL(
+        callbacks_,
+        OnGroupStart(DemuxerStream::AUDIO,
+                     DecodeTimestamp::FromPresentationTime(Milliseconds(5)),
+                     Milliseconds(10) + frame_duration_));
+    EXPECT_CALL(callbacks_, OnAppend(DemuxerStream::AUDIO, _));
+
+    // Frame "30|15K" following "20|10K" triggers start of new group and
+    // eventual append.
+    EXPECT_CALL(
+        callbacks_,
+        OnGroupStart(DemuxerStream::AUDIO,
+                     DecodeTimestamp::FromPresentationTime(Milliseconds(10)),
+                     Milliseconds(20) + frame_duration_));
+    EXPECT_CALL(callbacks_, OnAppend(DemuxerStream::AUDIO, _));
+  }
+  EXPECT_CALL(callbacks_, PossibleDurationIncrease(
+                              base::TimeDelta::FromMicroseconds(34999)));
+  EXPECT_TRUE(ProcessFrames("0K 10|5K 20|10K 30|15K", ""));
+  EXPECT_EQ(Milliseconds(0), timestamp_offset_);
+
+  if (range_api_ == ChunkDemuxerStream::RangeApi::kNewByPts) {
+    // Note that the ByPts result is still buffered continuous since DTS was
+    // continuous and PTS was monotonically increasing (such that each group
+    // start was signalled by FrameProcessor to be continuous with the end of
+    // the previous group, if any.)
+    CheckExpectedRangesByTimestamp(audio_.get(), "{ [0,34) }");
+  } else {
+    CheckExpectedRangesByTimestamp(audio_.get(), "{ [0,19) }");
+  }
+  CheckReadsThenReadStalls(audio_.get(), "0 10 20 30");
+}
+
+INSTANTIATE_TEST_SUITE_P(SequenceModeLegacyByDts,
+                         FrameProcessorTest,
+                         Values(FrameProcessorTestParams(
+                             true,
+                             ChunkDemuxerStream::RangeApi::kLegacyByDts)));
+INSTANTIATE_TEST_SUITE_P(SegmentsModeLegacyByDts,
+                         FrameProcessorTest,
+                         Values(FrameProcessorTestParams(
+                             false,
+                             ChunkDemuxerStream::RangeApi::kLegacyByDts)));
+INSTANTIATE_TEST_SUITE_P(
     SequenceModeNewByPts,
     FrameProcessorTest,
     Values(FrameProcessorTestParams(true,
                                     ChunkDemuxerStream::RangeApi::kNewByPts)));
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SegmentsModeNewByPts,
     FrameProcessorTest,
     Values(FrameProcessorTestParams(false,

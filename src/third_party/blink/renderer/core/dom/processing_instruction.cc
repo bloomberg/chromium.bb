@@ -196,18 +196,19 @@ void ProcessingInstruction::NotifyFinished(Resource* resource) {
   }
 
   std::unique_ptr<IncrementLoadEventDelayCount> delay =
-      is_xsl_ ? IncrementLoadEventDelayCount::Create(GetDocument()) : nullptr;
+      is_xsl_ ? std::make_unique<IncrementLoadEventDelayCount>(GetDocument())
+              : nullptr;
   if (is_xsl_) {
     sheet_ = XSLStyleSheet::Create(this, resource->Url(),
-                                   resource->GetResponse().Url());
+                                   resource->GetResponse().ResponseUrl());
     ToXSLStyleSheet(sheet_.Get())
         ->ParseString(ToXSLStyleSheetResource(resource)->Sheet());
   } else {
     DCHECK(is_css_);
     CSSStyleSheetResource* style_resource = ToCSSStyleSheetResource(resource);
     CSSParserContext* parser_context = CSSParserContext::Create(
-        GetDocument(), style_resource->GetResponse().Url(),
-        style_resource->GetResponse().IsOpaqueResponseFromServiceWorker(),
+        GetDocument(), style_resource->GetResponse().ResponseUrl(),
+        style_resource->GetResponse().IsCorsSameOrigin(),
         style_resource->GetReferrerPolicy(), style_resource->Encoding());
 
     StyleSheetContents* new_sheet =
@@ -233,7 +234,7 @@ void ProcessingInstruction::NotifyFinished(Resource* resource) {
   loading_ = false;
 
   if (is_css_)
-    ToCSSStyleSheet(sheet_.Get())->Contents()->CheckLoaded();
+    To<CSSStyleSheet>(sheet_.Get())->Contents()->CheckLoaded();
   else if (is_xsl_)
     ToXSLStyleSheet(sheet_.Get())->CheckLoaded();
 }
@@ -289,7 +290,7 @@ void ProcessingInstruction::RemovePendingSheet() {
                                                     style_engine_context_);
 }
 
-void ProcessingInstruction::Trace(blink::Visitor* visitor) {
+void ProcessingInstruction::Trace(Visitor* visitor) {
   visitor->Trace(sheet_);
   visitor->Trace(listener_for_xslt_);
   CharacterData::Trace(visitor);

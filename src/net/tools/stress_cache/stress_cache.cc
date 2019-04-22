@@ -61,7 +61,7 @@ int RunSlave(int iteration) {
   base::PathService::Get(base::FILE_EXE, &exe);
 
   base::CommandLine cmdline(exe);
-  cmdline.AppendArg(base::IntToString(iteration));
+  cmdline.AppendArg(base::NumberToString(iteration));
 
   base::Process process = base::LaunchProcess(cmdline, base::LaunchOptions());
   if (!process.IsValid()) {
@@ -269,7 +269,7 @@ void EntryWrapper::DoIdle() {
   g_data->pendig_operations--;
   DCHECK(g_data->pendig_operations);
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                base::Bind(&LoopTask));
+                                                base::BindOnce(&LoopTask));
 }
 
 // The task that keeps the main thread busy. Whenever an entry becomes idle this
@@ -290,7 +290,7 @@ void LoopTask() {
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                base::Bind(&LoopTask));
+                                                base::BindOnce(&LoopTask));
 }
 
 // This thread will loop forever, adding and removing entries from the cache.
@@ -312,7 +312,7 @@ void StressTheCache(int iteration) {
   g_data = new Data();
   g_data->iteration = iteration;
   g_data->cache = new disk_cache::BackendImpl(
-      path, mask, cache_thread.task_runner().get(), NULL);
+      path, mask, cache_thread.task_runner().get(), net::DISK_CACHE, nullptr);
   g_data->cache->SetMaxSize(cache_size);
   g_data->cache->SetFlags(disk_cache::kNoLoadProtection);
 
@@ -333,7 +333,7 @@ void StressTheCache(int iteration) {
     g_data->keys[i] = GenerateStressKey();
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                base::Bind(&LoopTask));
+                                                base::BindOnce(&LoopTask));
   base::RunLoop().Run();
 }
 
@@ -361,7 +361,7 @@ void CrashCallback() {
 
 void RunSoon(scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   const base::TimeDelta kTaskDelay = base::TimeDelta::FromSeconds(10);
-  task_runner->PostDelayedTask(FROM_HERE, base::Bind(&CrashCallback),
+  task_runner->PostDelayedTask(FROM_HERE, base::BindOnce(&CrashCallback),
                                kTaskDelay);
 }
 

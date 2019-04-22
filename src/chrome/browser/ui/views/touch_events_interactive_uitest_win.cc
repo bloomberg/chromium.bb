@@ -4,8 +4,8 @@
 
 #include "base/run_loop.h"
 #include "base/win/windows_version.h"
+#include "chrome/browser/ui/views/test/view_event_test_base.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chrome/test/base/view_event_test_base.h"
 #include "ui/aura/env.h"
 #include "ui/aura/test/env_test_helper.h"
 #include "ui/aura/window.h"

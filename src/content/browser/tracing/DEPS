@@ -11,5 +11,8 @@ specific_include_rules = {
   ],
   "cast_tracing_agent\.": [
     "+chromecast/tracing"
+  ],
+  "perfetto_file_tracer\.cc": [
+    "+third_party/perfetto"
   ]
 }

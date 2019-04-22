@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/base_paths.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/leak_annotations.h"
 #include "base/files/file_path.h"
@@ -19,7 +20,6 @@
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/test/test_file_util.h"
-#include "build/build_config.h"
 #include "chrome/app/chrome_main_delegate.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -32,7 +32,6 @@
 #include "content/public/test/network_service_test_helper.h"
 #include "content/public/test/test_launcher.h"
 #include "content/public/test/test_utils.h"
-#include "services/service_manager/runner/common/switches.h"
 #include "ui/base/test/ui_controls.h"
 
 #if defined(OS_MACOSX)
@@ -48,6 +47,8 @@
 #if defined(OS_CHROMEOS)
 #include "ash/mojo_interface_factory.h"
 #include "ash/mojo_test_interface_factory.h"
+#include "ash/public/cpp/manifest.h"
+#include "ash/public/cpp/test_manifest.h"
 #include "ash/test/ui_controls_factory_ash.h"
 #endif
 
@@ -57,8 +58,10 @@
 
 #if defined(OS_WIN)
 #include "base/win/registry.h"
+#include "base/win/scoped_com_initializer.h"
 #include "chrome/app/chrome_crash_reporter_client_win.h"
 #include "chrome/install_static/install_util.h"
+#include "chrome/installer/util/firewall_manager_win.h"
 #endif
 
 ChromeTestSuiteRunner::ChromeTestSuiteRunner() {}
@@ -70,6 +73,37 @@ int ChromeTestSuiteRunner::RunTestSuite(int argc, char** argv) {
   test_suite.DisableCheckForLeakedGlobals();
   return test_suite.Run();
 }
+
+#if defined(OS_WIN)
+
+// A helper class that adds Windows firewall rules for the duration of the test.
+class ChromeTestLauncherDelegate::ScopedFirewallRules {
+ public:
+  ScopedFirewallRules() {
+    CHECK(com_initializer_.Succeeded());
+    base::FilePath exe_path;
+    CHECK(base::PathService::Get(base::FILE_EXE, &exe_path));
+    firewall_manager_ = installer::FirewallManager::Create(exe_path);
+    CHECK(firewall_manager_);
+    rules_added_ = firewall_manager_->AddFirewallRules();
+    LOG_IF(WARNING, !rules_added_)
+        << "Failed to add Windows firewall rules -- Windows firewall dialogs "
+           "may appear.";
+  }
+
+  ~ScopedFirewallRules() {
+    if (rules_added_)
+      firewall_manager_->RemoveFirewallRules();
+  }
+
+ private:
+  base::win::ScopedCOMInitializer com_initializer_;
+  std::unique_ptr<installer::FirewallManager> firewall_manager_;
+  bool rules_added_ = false;
+  DISALLOW_COPY_AND_ASSIGN(ScopedFirewallRules);
+};
+
+#endif  // defined(OS_WIN)
 
 ChromeTestLauncherDelegate::ChromeTestLauncherDelegate(
     ChromeTestSuiteRunner* runner)
@@ -125,6 +159,16 @@ void ChromeTestLauncherDelegate::PreSharding() {
   result = distrubution_key.DeleteKey(L"PreferenceMACs");
   LOG_IF(ERROR, result != ERROR_SUCCESS && result != ERROR_FILE_NOT_FOUND)
       << "Failed to cleanup PreferenceMACs: " << result;
+
+  // Add firewall rules for the test binary so that Windows doesn't show a
+  // firewall dialog during the test run.
+  firewall_rules_ = std::make_unique<ScopedFirewallRules>();
+#endif
+}
+
+void ChromeTestLauncherDelegate::OnDoneRunningTests() {
+#if defined(OS_WIN)
+  firewall_rules_.reset();
 #endif
 }
 
@@ -147,7 +191,9 @@ int LaunchChromeTests(size_t parallel_jobs,
   install_static::ScopedInstallDetails install_details;
 #endif
 
-#if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_WIN)
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+  ChromeCrashReporterClient::Create();
+#elif defined(OS_WIN)
   // We leak this pointer intentionally. The crash client needs to outlive
   // all other code.
   ChromeCrashReporterClient* crash_client = new ChromeCrashReporterClient();
@@ -175,6 +221,7 @@ int LaunchChromeTests(size_t parallel_jobs,
 #if defined(OS_CHROMEOS)
   // Inject the test interfaces for ash. Use a callback to avoid linking test
   // interface support into production code.
+  ash::AmendManifestForTesting(ash::GetManifestOverlayForTesting());
   ash::mojo_interface_factory::SetRegisterInterfacesCallback(
       base::Bind(&ash::mojo_test_interface_factory::RegisterInterfaces));
 #endif

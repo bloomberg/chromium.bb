@@ -16,7 +16,6 @@
 #include "components/ui_devtools/Protocol.h"
 #include "components/ui_devtools/devtools_client.h"
 #include "components/ui_devtools/devtools_export.h"
-#include "components/ui_devtools/string_util.h"
 #include "services/network/public/cpp/server/http_server.h"
 
 namespace ui_devtools {
@@ -34,8 +33,7 @@ class UI_DEVTOOLS_EXPORT UiDevToolsServer
   // server instance has already been created.
   static std::unique_ptr<UiDevToolsServer> CreateForViews(
       network::mojom::NetworkContext* network_context,
-      const char* enable_devtools_flag,
-      int default_port);
+      int port);
 
   // Assumes that the devtools flag is enabled, and was checked when the socket
   // was created.
@@ -55,13 +53,16 @@ class UI_DEVTOOLS_EXPORT UiDevToolsServer
   using NameUrlPair = std::pair<std::string, std::string>;
   static std::vector<NameUrlPair> GetClientNamesAndUrls();
 
+  // Returns true if UI Devtools is enabled by the given commandline switch.
+  static bool IsUiDevToolsEnabled(const char* enable_devtools_flag);
+
   // Returns the port number specified by a command line flag. If a number is
   // not specified as a command line argument, returns the |default_port|.
   static int GetUiDevToolsPort(const char* enable_devtools_flag,
                                int default_port);
 
   void AttachClient(std::unique_ptr<UiDevToolsClient> client);
-  void SendOverWebSocket(int connection_id, const String& message);
+  void SendOverWebSocket(int connection_id, const protocol::String& message);
 
   int port() const { return port_; }
 
@@ -80,7 +81,7 @@ class UI_DEVTOOLS_EXPORT UiDevToolsServer
   void OnWebSocketRequest(
       int connection_id,
       const network::server::HttpServerRequestInfo& info) override;
-  void OnWebSocketMessage(int connection_id, const std::string& data) override;
+  void OnWebSocketMessage(int connection_id, std::string data) override;
   void OnClose(int connection_id) override;
 
   using ClientsList = std::vector<std::unique_ptr<UiDevToolsClient>>;
@@ -95,7 +96,7 @@ class UI_DEVTOOLS_EXPORT UiDevToolsServer
 
   const net::NetworkTrafficAnnotationTag tag_;
 
-  // The server (owned by ash for now)
+  // The server (owned by Chrome for now)
   static UiDevToolsServer* devtools_server_;
 
   SEQUENCE_CHECKER(devtools_server_sequence_);

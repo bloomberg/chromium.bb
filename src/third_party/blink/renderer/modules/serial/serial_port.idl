@@ -8,11 +8,8 @@
     Exposed(Window Serial,DedicatedWorker Serial),
     SecureContext
 ] interface SerialPort {
-    // TODO(https://crbug.com/888165): "any" is used here because the IDL
-    // processor does not recognize ReadableStream or WritableStream when
-    // implemented with V8 extras.
-    [CallWith=ScriptState] readonly attribute any in;
-    [CallWith=ScriptState] readonly attribute any out;
+    readonly attribute ReadableStream in;
+    readonly attribute WritableStream out;
 
     [CallWith=ScriptState, MeasureAs=SerialPortOpen]
     Promise<void> open(SerialOptions options);

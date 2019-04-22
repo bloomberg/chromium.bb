@@ -66,7 +66,7 @@ TEST_F(SignedExchangeSignatureHeaderFieldTest, ParseSignature) {
             std::string(reinterpret_cast<const char*>(decoded_sig1),
                         sizeof(decoded_sig1)));
   EXPECT_EQ(signatures->at(0).integrity, "mi-draft2");
-  EXPECT_EQ(signatures->at(0).validity_url,
+  EXPECT_EQ(signatures->at(0).validity_url.url,
             "https://example.com/resource.validity.1511128380");
   EXPECT_EQ(signatures->at(0).cert_url, "https://example.com/oldcerts");
   EXPECT_EQ(signatures->at(0).cert_sha256, decoded_cert_sha256_1);
@@ -78,7 +78,7 @@ TEST_F(SignedExchangeSignatureHeaderFieldTest, ParseSignature) {
             std::string(reinterpret_cast<const char*>(decoded_sig2),
                         sizeof(decoded_sig2)));
   EXPECT_EQ(signatures->at(1).integrity, "mi-draft2");
-  EXPECT_EQ(signatures->at(1).validity_url,
+  EXPECT_EQ(signatures->at(1).validity_url.url,
             "https://example.com/resource.validity.1511128380");
   EXPECT_EQ(signatures->at(1).cert_url, "https://example.com/newcerts");
   EXPECT_EQ(signatures->at(1).cert_sha256, decoded_cert_sha256_2);

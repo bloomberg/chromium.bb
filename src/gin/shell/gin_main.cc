@@ -14,7 +14,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "gin/array_buffer.h"
 #include "gin/modules/console.h"
@@ -75,14 +75,13 @@ int main(int argc, char** argv) {
 #endif
 
   base::MessageLoop message_loop;
-  base::TaskScheduler::CreateAndStartWithDefaultParams("gin");
+  base::ThreadPool::CreateAndStartWithDefaultParams("gin");
 
   // Initialize the base::FeatureList since IsolateHolder can depend on it.
   base::FeatureList::SetInstance(base::WrapUnique(new base::FeatureList));
 
   {
     gin::IsolateHolder::Initialize(gin::IsolateHolder::kStrictMode,
-                                   gin::IsolateHolder::kStableV8Extras,
                                    gin::ArrayBufferAllocator::SharedInstance());
     gin::IsolateHolder instance(
         base::ThreadTaskRunnerHandle::Get(),
@@ -110,10 +109,10 @@ int main(int argc, char** argv) {
     base::RunLoop().RunUntilIdle();
   }
 
-  // gin::IsolateHolder waits for tasks running in TaskScheduler in its
-  // destructor and thus must be destroyed before TaskScheduler starts skipping
+  // gin::IsolateHolder waits for tasks running in ThreadPool in its
+  // destructor and thus must be destroyed before ThreadPool starts skipping
   // CONTINUE_ON_SHUTDOWN tasks.
-  base::TaskScheduler::GetInstance()->Shutdown();
+  base::ThreadPool::GetInstance()->Shutdown();
 
   return 0;
 }

@@ -13,7 +13,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:gravity="center"
-    android:background="@drawable/popup_bg"
+    android:background="@drawable/popup_bg_tinted"
     app:maxWidthLandscape="@dimen/payments_ui_max_dialog_width"
     app:maxWidthPortrait="@dimen/payments_ui_max_dialog_width" >
 

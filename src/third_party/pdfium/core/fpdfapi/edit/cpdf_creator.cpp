@@ -8,12 +8,12 @@
 
 #include <algorithm>
 
-#include "core/fpdfapi/edit/cpdf_encryptor.h"
-#include "core/fpdfapi/edit/cpdf_flateencoder.h"
 #include "core/fpdfapi/parser/cpdf_array.h"
 #include "core/fpdfapi/parser/cpdf_crypto_handler.h"
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_document.h"
+#include "core/fpdfapi/parser/cpdf_encryptor.h"
+#include "core/fpdfapi/parser/cpdf_flateencoder.h"
 #include "core/fpdfapi/parser/cpdf_number.h"
 #include "core/fpdfapi/parser/cpdf_parser.h"
 #include "core/fpdfapi/parser/cpdf_security_handler.h"
@@ -38,7 +38,7 @@ class CFX_FileBufferArchive final : public IFX_ArchiveStream {
   bool WriteBlock(const void* pBuf, size_t size) override;
   bool WriteByte(uint8_t byte) override;
   bool WriteDWord(uint32_t i) override;
-  bool WriteString(const ByteStringView& str) override;
+  bool WriteString(ByteStringView str) override;
 
   FX_FILESIZE CurrentOffset() const override { return offset_; }
 
@@ -111,24 +111,21 @@ bool CFX_FileBufferArchive::WriteDWord(uint32_t i) {
   return WriteBlock(buf, strlen(buf));
 }
 
-bool CFX_FileBufferArchive::WriteString(const ByteStringView& str) {
+bool CFX_FileBufferArchive::WriteString(ByteStringView str) {
   return WriteBlock(str.raw_str(), str.GetLength());
 }
 
-std::vector<uint8_t> GenerateFileID(uint32_t dwSeed1, uint32_t dwSeed2) {
-  std::vector<uint8_t> buffer(sizeof(uint32_t) * 4);
-  uint32_t* pBuffer = reinterpret_cast<uint32_t*>(buffer.data());
-  void* pContext = FX_Random_MT_Start(dwSeed1);
-  for (int i = 0; i < 2; ++i)
-    *pBuffer++ = FX_Random_MT_Generate(pContext);
-
-  FX_Random_MT_Close(pContext);
-  pContext = FX_Random_MT_Start(dwSeed2);
-  for (int i = 0; i < 2; ++i)
-    *pBuffer++ = FX_Random_MT_Generate(pContext);
-
-  FX_Random_MT_Close(pContext);
-  return buffer;
+ByteString GenerateFileID(uint32_t dwSeed1, uint32_t dwSeed2) {
+  uint32_t buffer[4];
+  void* pContext1 = FX_Random_MT_Start(dwSeed1);
+  void* pContext2 = FX_Random_MT_Start(dwSeed2);
+  buffer[0] = FX_Random_MT_Generate(pContext1);
+  buffer[1] = FX_Random_MT_Generate(pContext1);
+  buffer[2] = FX_Random_MT_Generate(pContext2);
+  buffer[3] = FX_Random_MT_Generate(pContext2);
+  FX_Random_MT_Close(pContext1);
+  FX_Random_MT_Close(pContext2);
+  return ByteString(pdfium::as_bytes<uint32_t>(buffer));
 }
 
 bool OutputIndex(IFX_ArchiveStream* archive, FX_FILESIZE offset) {
@@ -600,9 +597,8 @@ void CPDF_Creator::InitID() {
   if (pID1) {
     m_pIDArray->Add(pID1->Clone());
   } else {
-    std::vector<uint8_t> buffer =
+    ByteString bsBuffer =
         GenerateFileID((uint32_t)(uintptr_t)this, m_dwLastObjNum);
-    ByteString bsBuffer(buffer.data(), buffer.size());
     m_pIDArray->AddNew<CPDF_String>(bsBuffer, true);
   }
 
@@ -612,9 +608,8 @@ void CPDF_Creator::InitID() {
       m_pIDArray->Add(pID2->Clone());
       return;
     }
-    std::vector<uint8_t> buffer =
+    ByteString bsBuffer =
         GenerateFileID((uint32_t)(uintptr_t)this, m_dwLastObjNum);
-    ByteString bsBuffer(buffer.data(), buffer.size());
     m_pIDArray->AddNew<CPDF_String>(bsBuffer, true);
     return;
   }

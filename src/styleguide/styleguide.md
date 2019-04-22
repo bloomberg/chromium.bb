@@ -3,6 +3,7 @@
 ## Main style guides
 
   * [Chromium C++ style guide](c++/c++.md)
+    * See also: [C++ Dos and Don'ts](c++/c++-dos-and-donts.md) for Chromium best-practices.
   * [Chromium Objective-C style guide](objective-c/objective-c.md)
   * [Java style guide for Android](java/java.md)
   * [Chromium Python style guide](python/python.md)
@@ -11,7 +12,7 @@
 
 Chromium also uses these languages to a lesser degree:
 
-  * [Kernel C style](https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/Documentation/CodingStyle?id=refs/heads/master) for ChromiumOS firmware.
+  * [Kernel C style](https://www.kernel.org/doc/html/latest/process/coding-style.html) for ChromiumOS firmware.
   * [IDL](https://sites.google.com/a/chromium.org/dev/blink/webidl#TOC-Style)
   * [Jinja style guide](https://sites.google.com/a/chromium.org/dev/developers/jinja#TOC-Style) for [Jinja](https://sites.google.com/a/chromium.org/dev/developers/jinja) templates.
 

@@ -6,11 +6,6 @@ per-file BUILD.gn=*
 per-file loadtimes_extension_bindings*=file://chrome/renderer/page_load_metrics/OWNERS
 # Instant/Search files.
 per-file instant_restricted_id_cache*=file://chrome/browser/search/OWNERS
-# Security checks and whitelists
-per-file app_categorizer*=set noparent
-per-file app_categorizer*=jschuh@chromium.org
-per-file app_categorizer*=tsepez@chromium.org
-per-file app_categorizer*=wfh@chromium.org
 
 # Content client.
 per-file chrome_content_renderer_client_browsertest.cc=*

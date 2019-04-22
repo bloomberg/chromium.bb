@@ -5,6 +5,7 @@
 #include "ios/web/web_state/web_frame_impl.h"
 
 #import "base/base64.h"
+#include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -253,29 +254,30 @@ TEST_F(WebFrameImplTest, CallJavaScriptFunctionMessageProperlyEncoded) {
   EXPECT_TRUE(aead.Open(decoded_ciphertext, decoded_iv,
                         /*additional_data=*/nullptr, &plaintext));
 
-  std::unique_ptr<base::Value> parsed_result(
-      base::JSONReader::Read(plaintext, false));
-  EXPECT_TRUE(parsed_result.get());
+  base::Optional<base::Value> parsed_result =
+      base::JSONReader::Read(plaintext, false);
+  EXPECT_TRUE(parsed_result.has_value());
+  ASSERT_TRUE(parsed_result.value().is_dict());
 
-  base::DictionaryValue* result_dict;
-  ASSERT_TRUE(parsed_result->GetAsDictionary(&result_dict));
+  base::Optional<int> decrypted_message_id =
+      parsed_result.value().FindIntKey("messageId");
+  ASSERT_TRUE(decrypted_message_id.has_value());
+  EXPECT_EQ(decrypted_message_id.value(), initial_message_id);
 
-  int decrypted_message_id = 0;
-  EXPECT_TRUE(result_dict->GetInteger("messageId", &decrypted_message_id));
-  EXPECT_EQ(initial_message_id, decrypted_message_id);
+  base::Optional<bool> decrypted_respond_with_result =
+      parsed_result.value().FindBoolKey("replyWithResult");
+  ASSERT_TRUE(decrypted_respond_with_result.has_value());
+  EXPECT_FALSE(decrypted_respond_with_result.value());
 
-  bool decrypted_respond_with_result = true;
-  EXPECT_TRUE(result_dict->GetBoolean("replyWithResult",
-                                      &decrypted_respond_with_result));
-  EXPECT_FALSE(decrypted_respond_with_result);
+  const std::string* decrypted_function_name =
+      parsed_result.value().FindStringKey("functionName");
+  ASSERT_TRUE(decrypted_function_name);
+  EXPECT_EQ("functionName", *decrypted_function_name);
 
-  std::string decrypted_functionName;
-  EXPECT_TRUE(result_dict->GetString("functionName", &decrypted_functionName));
-  EXPECT_STREQ("functionName", decrypted_functionName.c_str());
-
-  base::ListValue* decrypted_parameters;
-  EXPECT_TRUE(result_dict->GetList("parameters", &decrypted_parameters));
-  EXPECT_EQ(function_params.size(), decrypted_parameters->GetList().size());
+  base::Value* decrypted_parameters = parsed_result.value().FindKeyOfType(
+      "parameters", base::Value::Type::LIST);
+  ASSERT_TRUE(decrypted_parameters);
+  ASSERT_EQ(function_params.size(), decrypted_parameters->GetList().size());
   EXPECT_EQ(plaintext_param, decrypted_parameters->GetList()[0].GetString());
 }
 
@@ -324,17 +326,15 @@ TEST_F(WebFrameImplTest, CallJavaScriptFunctionRespondWithResult) {
   EXPECT_TRUE(aead.Open(decoded_ciphertext, decoded_iv,
                         /*additional_data=*/nullptr, &plaintext));
 
-  std::unique_ptr<base::Value> parsed_result(
-      base::JSONReader::Read(plaintext, false));
-  EXPECT_TRUE(parsed_result.get());
+  base::Optional<base::Value> parsed_result =
+      base::JSONReader::Read(plaintext, false);
+  EXPECT_TRUE(parsed_result.has_value());
+  ASSERT_TRUE(parsed_result.value().is_dict());
 
-  base::DictionaryValue* result_dict;
-  ASSERT_TRUE(parsed_result->GetAsDictionary(&result_dict));
-
-  bool decrypted_respond_with_result = false;
-  EXPECT_TRUE(result_dict->GetBoolean("replyWithResult",
-                                      &decrypted_respond_with_result));
-  EXPECT_TRUE(decrypted_respond_with_result);
+  base::Optional<bool> decrypted_respond_with_result =
+      parsed_result.value().FindBoolKey("replyWithResult");
+  ASSERT_TRUE(decrypted_respond_with_result.has_value());
+  EXPECT_TRUE(decrypted_respond_with_result.value());
 }
 
 // Tests that the WebFrame properly creates JavaScript for the main frame when

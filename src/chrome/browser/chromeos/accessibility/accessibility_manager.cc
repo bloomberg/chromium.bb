@@ -18,12 +18,13 @@
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/path_service.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -38,7 +39,7 @@
 #include "chrome/browser/chromeos/accessibility/dictation_chromeos.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/accessibility/select_to_speak_event_handler_delegate.h"
-#include "chrome/browser/chromeos/accessibility/switch_access_event_handler.h"
+#include "chrome/browser/chromeos/accessibility/switch_access_event_handler_delegate.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -55,10 +56,9 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chromeos/audio/chromeos_sounds.h"
-#include "chromeos/chromeos_switches.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/power_manager_client.h"
-#include "chromeos/dbus/upstart_client.h"
+#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/dbus/power/power_manager_client.h"
+#include "chromeos/dbus/upstart/upstart_client.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
@@ -80,10 +80,9 @@
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/extension_resource.h"
 #include "extensions/common/host_id.h"
-#include "mash/public/mojom/launchable.mojom.h"
-#include "media/audio/sounds/sounds_manager.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/media_session/public/cpp/switches.h"
+#include "services/audio/public/cpp/sounds/sounds_manager.h"
+#include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_enum_util.h"
@@ -136,11 +135,13 @@ BrailleController* GetBrailleController() {
 }
 
 void EnableChromeVoxAfterSwitchAccessMetric(bool val) {
-  UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosChromeVoxAfterSwitchAccess", val);
+  base::UmaHistogramBoolean("Accessibility.CrosChromeVoxAfterSwitchAccess",
+                            val);
 }
 
 void EnableSwitchAccessAfterChromeVoxMetric(bool val) {
-  UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosSwitchAccessAfterChromeVox", val);
+  base::UmaHistogramBoolean("Accessibility.CrosSwitchAccessAfterChromeVox",
+                            val);
 }
 
 // Restarts (stops, then starts brltty). If |address| is empty, only stops.
@@ -149,8 +150,7 @@ void EnableSwitchAccessAfterChromeVoxMetric(bool val) {
 // stop followed by start ensures we both stop a started job, and also start
 // brltty.
 void RestartBrltty(const std::string& address) {
-  chromeos::UpstartClient* client =
-      chromeos::DBusThreadManager::Get()->GetUpstartClient();
+  chromeos::UpstartClient* client = chromeos::UpstartClient::Get();
   client->StopJob(kBrlttyUpstartJobName, EmptyVoidDBusMethodCallback());
 
   std::vector<std::string> args;
@@ -259,7 +259,7 @@ AccessibilityManager::AccessibilityManager()
   input_method::InputMethodManager::Get()->AddObserver(this);
 
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-  media::SoundsManager* manager = media::SoundsManager::Get();
+  audio::SoundsManager* manager = audio::SoundsManager::Get();
   manager->Initialize(SOUND_SHUTDOWN,
                       bundle.GetRawDataResource(IDR_SOUND_SHUTDOWN_WAV));
   manager->Initialize(
@@ -322,6 +322,12 @@ AccessibilityManager::AccessibilityManager()
       ->BindInterface(ash::mojom::kServiceName,
                       &accessibility_focus_ring_controller_);
 
+  // Connect to the media session service.
+  content::ServiceManagerConnection::GetForProcess()
+      ->GetConnector()
+      ->BindInterface(media_session::mojom::kServiceName,
+                      &audio_focus_manager_ptr_);
+
   CrasAudioHandler::Get()->AddAudioObserver(this);
 }
 
@@ -354,6 +360,7 @@ bool AccessibilityManager::ShouldShowAccessibilityMenu() {
         prefs->GetBoolean(ash::prefs::kAccessibilityLargeCursorEnabled) ||
         prefs->GetBoolean(ash::prefs::kAccessibilitySpokenFeedbackEnabled) ||
         prefs->GetBoolean(ash::prefs::kAccessibilitySelectToSpeakEnabled) ||
+        prefs->GetBoolean(ash::prefs::kAccessibilitySwitchAccessEnabled) ||
         prefs->GetBoolean(ash::prefs::kAccessibilityHighContrastEnabled) ||
         prefs->GetBoolean(ash::prefs::kAccessibilityAutoclickEnabled) ||
         prefs->GetBoolean(ash::prefs::kShouldAlwaysShowAccessibilityMenu) ||
@@ -469,8 +476,9 @@ void AccessibilityManager::OnSpokenFeedbackChanged() {
 
   if (enabled) {
     chromevox_loader_->SetProfile(
-        profile_, base::Bind(&AccessibilityManager::PostSwitchChromeVoxProfile,
-                             weak_ptr_factory_.GetWeakPtr()));
+        profile_,
+        base::BindRepeating(&AccessibilityManager::PostSwitchChromeVoxProfile,
+                            weak_ptr_factory_.GetWeakPtr()));
   }
 
   if (spoken_feedback_enabled_ == enabled)
@@ -483,9 +491,9 @@ void AccessibilityManager::OnSpokenFeedbackChanged() {
   NotifyAccessibilityStatusChanged(details);
 
   if (enabled) {
-    chromevox_loader_->Load(profile_,
-                            base::Bind(&AccessibilityManager::PostLoadChromeVox,
-                                       weak_ptr_factory_.GetWeakPtr()));
+    chromevox_loader_->Load(
+        profile_, base::BindRepeating(&AccessibilityManager::PostLoadChromeVox,
+                                      weak_ptr_factory_.GetWeakPtr()));
   } else {
     chromevox_loader_->Unload();
   }
@@ -546,7 +554,7 @@ bool AccessibilityManager::PlayEarcon(int sound_key, PlaySoundOption option) {
       !IsSpokenFeedbackEnabled()) {
     return false;
   }
-  return media::SoundsManager::Get()->Play(sound_key);
+  return audio::SoundsManager::Get()->Play(sound_key);
 }
 
 void AccessibilityManager::OnTwoFingerTouchStart() {
@@ -609,7 +617,7 @@ bool AccessibilityManager::ShouldToggleSpokenFeedbackViaTouch() {
 }
 
 bool AccessibilityManager::PlaySpokenFeedbackToggleCountdown(int tick_count) {
-  return media::SoundsManager::Get()->Play(
+  return audio::SoundsManager::Get()->Play(
       tick_count % 2 ? SOUND_SPOKEN_FEEDBACK_TOGGLE_COUNTDOWN_HIGH
                      : SOUND_SPOKEN_FEEDBACK_TOGGLE_COUNTDOWN_LOW);
 }
@@ -828,7 +836,10 @@ void AccessibilityManager::OnSelectToSpeakChanged() {
   NotifyAccessibilityStatusChanged(details);
 
   if (enabled) {
-    select_to_speak_loader_->Load(profile_, base::Closure() /* done_cb */);
+    select_to_speak_loader_->Load(
+        profile_,
+        base::BindRepeating(&AccessibilityManager::PostLoadSelectToSpeak,
+                            weak_ptr_factory_.GetWeakPtr()));
     // Construct a delegate to connect SelectToSpeak and its EventHandler in
     // ash.
     select_to_speak_event_handler_delegate_ =
@@ -889,22 +900,30 @@ void AccessibilityManager::UpdateSwitchAccessFromPref() {
       return;
     }
     EnableSwitchAccessAfterChromeVoxMetric(false);
+    switch_access_loader_->SetProfile(profile_, base::RepeatingClosure());
   }
 
   if (switch_access_enabled_ == enabled)
     return;
   switch_access_enabled_ = enabled;
 
+  AccessibilityStatusEventDetails details(ACCESSIBILITY_TOGGLE_SWITCH_ACCESS,
+                                          enabled);
+  NotifyAccessibilityStatusChanged(details);
+
   if (enabled) {
+    // Construct a delegate to connect Switch Access and its EventHandler in
+    // ash. Do this before loading Switch Access so the keys_to_capture will
+    // be properly set.
+    switch_access_event_handler_delegate_ =
+        std::make_unique<SwitchAccessEventHandlerDelegate>();
     switch_access_loader_->Load(
         profile_,
         base::BindRepeating(&AccessibilityManager::PostLoadSwitchAccess,
                             weak_ptr_factory_.GetWeakPtr()));
-    switch_access_event_handler_.reset(
-        new chromeos::SwitchAccessEventHandler());
   } else {
     switch_access_loader_->Unload();
-    switch_access_event_handler_.reset(nullptr);
+    switch_access_event_handler_delegate_.reset(nullptr);
   }
 }
 
@@ -1079,9 +1098,12 @@ void AccessibilityManager::SetProfile(Profile* profile) {
         base::Bind(&AccessibilityManager::OnLocaleChanged,
                    base::Unretained(this)));
 
-    content::BrowserAccessibilityState::GetInstance()->AddHistogramCallback(
-        base::Bind(&AccessibilityManager::UpdateChromeOSAccessibilityHistograms,
-                   base::Unretained(this)));
+    // Compute these histograms on the main (UI) thread because they
+    // need to access PrefService.
+    content::BrowserAccessibilityState::GetInstance()
+        ->AddUIThreadHistogramCallback(base::BindOnce(
+            &AccessibilityManager::UpdateChromeOSAccessibilityHistograms,
+            base::Unretained(this)));
 
     extensions::ExtensionRegistry* registry =
         extensions::ExtensionRegistry::Get(profile);
@@ -1116,7 +1138,7 @@ base::TimeDelta AccessibilityManager::PlayShutdownSound() {
                   PlaySoundOption::ONLY_IF_SPOKEN_FEEDBACK_ENABLED)) {
     return base::TimeDelta();
   }
-  return media::SoundsManager::Get()->GetDuration(SOUND_SHUTDOWN);
+  return audio::SoundsManager::Get()->GetDuration(SOUND_SHUTDOWN);
 }
 
 std::unique_ptr<AccessibilityStatusSubscription>
@@ -1153,49 +1175,55 @@ void AccessibilityManager::NotifyAccessibilityStatusChanged(
 }
 
 void AccessibilityManager::UpdateChromeOSAccessibilityHistograms() {
-  UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosSpokenFeedback",
-                        IsSpokenFeedbackEnabled());
-  UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosHighContrast",
-                        IsHighContrastEnabled());
-  UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosVirtualKeyboard",
-                        IsVirtualKeyboardEnabled());
-  UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosStickyKeys", IsStickyKeysEnabled());
+  base::UmaHistogramBoolean("Accessibility.CrosSpokenFeedback",
+                            IsSpokenFeedbackEnabled());
+  base::UmaHistogramBoolean("Accessibility.CrosHighContrast",
+                            IsHighContrastEnabled());
+  base::UmaHistogramBoolean("Accessibility.CrosVirtualKeyboard",
+                            IsVirtualKeyboardEnabled());
+  base::UmaHistogramBoolean("Accessibility.CrosStickyKeys",
+                            IsStickyKeysEnabled());
   if (MagnificationManager::Get()) {
-    UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosScreenMagnifier",
-                          MagnificationManager::Get()->IsMagnifierEnabled());
+    base::UmaHistogramBoolean(
+        "Accessibility.CrosScreenMagnifier",
+        MagnificationManager::Get()->IsMagnifierEnabled());
+    base::UmaHistogramBoolean(
+        "Accessibility.CrosDockedMagnifier",
+        MagnificationManager::Get()->IsDockedMagnifierEnabled());
   }
   if (profile_) {
     const PrefService* const prefs = profile_->GetPrefs();
 
     bool large_cursor_enabled =
         prefs->GetBoolean(ash::prefs::kAccessibilityLargeCursorEnabled);
-    UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosLargeCursor",
-                          large_cursor_enabled);
+    base::UmaHistogramBoolean("Accessibility.CrosLargeCursor",
+                              large_cursor_enabled);
     if (large_cursor_enabled) {
-      UMA_HISTOGRAM_COUNTS_100(
+      base::UmaHistogramCounts100(
           "Accessibility.CrosLargeCursorSize",
           prefs->GetInteger(ash::prefs::kAccessibilityLargeCursorDipSize));
     }
 
-    UMA_HISTOGRAM_BOOLEAN(
+    base::UmaHistogramBoolean(
         "Accessibility.CrosAlwaysShowA11yMenu",
         prefs->GetBoolean(ash::prefs::kShouldAlwaysShowAccessibilityMenu));
 
     bool autoclick_enabled =
         prefs->GetBoolean(ash::prefs::kAccessibilityAutoclickEnabled);
-    UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosAutoclick", autoclick_enabled);
+    base::UmaHistogramBoolean("Accessibility.CrosAutoclick", autoclick_enabled);
   }
-  UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosCaretHighlight",
-                        IsCaretHighlightEnabled());
-  UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosCursorHighlight",
-                        IsCursorHighlightEnabled());
-  UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosDictation", IsDictationEnabled());
-  UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosFocusHighlight",
-                        IsFocusHighlightEnabled());
-  UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosSelectToSpeak",
-                        IsSelectToSpeakEnabled());
-  UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosSwitchAccess",
-                        IsSwitchAccessEnabled());
+  base::UmaHistogramBoolean("Accessibility.CrosCaretHighlight",
+                            IsCaretHighlightEnabled());
+  base::UmaHistogramBoolean("Accessibility.CrosCursorHighlight",
+                            IsCursorHighlightEnabled());
+  base::UmaHistogramBoolean("Accessibility.CrosDictation",
+                            IsDictationEnabled());
+  base::UmaHistogramBoolean("Accessibility.CrosFocusHighlight",
+                            IsFocusHighlightEnabled());
+  base::UmaHistogramBoolean("Accessibility.CrosSelectToSpeak",
+                            IsSelectToSpeakEnabled());
+  base::UmaHistogramBoolean("Accessibility.CrosSwitchAccess",
+                            IsSwitchAccessEnabled());
 }
 
 void AccessibilityManager::Observe(
@@ -1299,14 +1327,15 @@ void AccessibilityManager::PostLoadChromeVox() {
   extensions::EventRouter* event_router =
       extensions::EventRouter::Get(profile_);
 
+  const std::string& extension_id = extension_misc::kChromeVoxExtensionId;
+
   std::unique_ptr<base::ListValue> event_args =
       std::make_unique<base::ListValue>();
   std::unique_ptr<extensions::Event> event(new extensions::Event(
       extensions::events::ACCESSIBILITY_PRIVATE_ON_INTRODUCE_CHROME_VOX,
       extensions::api::accessibility_private::OnIntroduceChromeVox::kEventName,
       std::move(event_args)));
-  event_router->DispatchEventWithLazyListener(
-      extension_misc::kChromeVoxExtensionId, std::move(event));
+  event_router->DispatchEventWithLazyListener(extension_id, std::move(event));
 
   if (!chromevox_panel_) {
     chromevox_panel_ = new ChromeVoxPanel(profile_);
@@ -1316,25 +1345,21 @@ void AccessibilityManager::PostLoadChromeVox() {
                        base::Unretained(this))));
   }
 
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          media_session::switches::kEnableAudioFocus)) {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        media_session::switches::kEnableAudioFocus);
-  }
+  audio_focus_manager_ptr_->SetEnforcementMode(
+      media_session::mojom::EnforcementMode::kNone);
+
+  InitializeFocusRings(extension_id);
 }
 
 void AccessibilityManager::PostUnloadChromeVox() {
   // Do any teardown work needed immediately after ChromeVox actually unloads.
   // Stop brltty.
-  chromeos::DBusThreadManager::Get()->GetUpstartClient()->StopJob(
-      kBrlttyUpstartJobName, EmptyVoidDBusMethodCallback());
+  chromeos::UpstartClient::Get()->StopJob(kBrlttyUpstartJobName,
+                                          EmptyVoidDBusMethodCallback());
 
   PlayEarcon(SOUND_SPOKEN_FEEDBACK_DISABLED, PlaySoundOption::ALWAYS);
 
-  // Clear the accessibility focus ring.
-  SetFocusRing(std::vector<gfx::Rect>(),
-               ash::mojom::FocusRingBehavior::PERSIST_FOCUS_RING,
-               extension_misc::kChromeVoxExtensionId);
+  RemoveFocusRings(extension_misc::kChromeVoxExtensionId);
 
   if (chromevox_panel_) {
     chromevox_panel_->Close();
@@ -1346,6 +1371,9 @@ void AccessibilityManager::PostUnloadChromeVox() {
 
   // Stop speech.
   content::TtsController::GetInstance()->Stop();
+
+  audio_focus_manager_ptr_->SetEnforcementMode(
+      media_session::mojom::EnforcementMode::kDefault);
 }
 
 void AccessibilityManager::PostSwitchChromeVoxProfile() {
@@ -1365,12 +1393,16 @@ void AccessibilityManager::OnChromeVoxPanelDestroying() {
   chromevox_panel_ = nullptr;
 }
 
+void AccessibilityManager::PostLoadSelectToSpeak() {
+  InitializeFocusRings(extension_misc::kSelectToSpeakExtensionId);
+}
+
 void AccessibilityManager::PostUnloadSelectToSpeak() {
   // Do any teardown work needed immediately after Select-to-Speak actually
   // unloads.
 
   // Clear the accessibility focus ring and highlight.
-  HideFocusRing(extension_misc::kSelectToSpeakExtensionId);
+  RemoveFocusRings(extension_misc::kSelectToSpeakExtensionId);
   HideHighlights();
 
   // Stop speech.
@@ -1386,6 +1418,8 @@ void AccessibilityManager::PostLoadSwitchAccess() {
             base::BindOnce(&AccessibilityManager::OnSwitchAccessPanelDestroying,
                            base::Unretained(this))));
   }
+
+  InitializeFocusRings(extension_misc::kSwitchAccessExtensionId);
 }
 
 void AccessibilityManager::PostUnloadSwitchAccess() {
@@ -1393,7 +1427,7 @@ void AccessibilityManager::PostUnloadSwitchAccess() {
   // unloads.
 
   // Clear the accessibility focus ring.
-  HideFocusRing(extension_misc::kSwitchAccessExtensionId);
+  RemoveFocusRings(extension_misc::kSwitchAccessExtensionId);
 
   // Close the context menu
   if (switch_access_panel_) {
@@ -1418,9 +1452,16 @@ void AccessibilityManager::SetKeyboardListenerExtensionId(
     extension_registry_observer_.Add(registry);
 }
 
-void AccessibilityManager::SetSwitchAccessKeys(const std::set<int>& key_codes) {
-  if (switch_access_enabled_)
-    switch_access_event_handler_->SetKeysToCapture(key_codes);
+void AccessibilityManager::HideSwitchAccessMenu() {
+  switch_access_panel_->Hide();
+}
+
+void AccessibilityManager::ShowSwitchAccessMenu(const gfx::Rect& element_bounds,
+                                                int menu_width,
+                                                int menu_height,
+                                                bool back_button_only) {
+  switch_access_panel_->Show(element_bounds, menu_width, menu_height,
+                             back_button_only);
 }
 
 bool AccessibilityManager::ToggleDictation() {
@@ -1433,27 +1474,45 @@ bool AccessibilityManager::ToggleDictation() {
   return dictation_->OnToggleDictation();
 }
 
-void AccessibilityManager::SetFocusRingColor(SkColor color,
-                                             std::string caller_id) {
-  accessibility_focus_ring_controller_->SetFocusRingColor(color, caller_id);
+const std::string AccessibilityManager::GetFocusRingId(
+    const std::string& extension_id,
+    const std::string& focus_ring_name) {
+  // Add the focus ring name to the list of focus rings for the extension.
+  focus_ring_names_for_extension_id_.find(extension_id)
+      ->second.insert(focus_ring_name);
+  return extension_id + '-' + focus_ring_name;
 }
 
-void AccessibilityManager::ResetFocusRingColor(std::string caller_id) {
-  accessibility_focus_ring_controller_->ResetFocusRingColor(caller_id);
+void AccessibilityManager::InitializeFocusRings(
+    const std::string& extension_id) {
+  if (focus_ring_names_for_extension_id_.count(extension_id) == 0) {
+    focus_ring_names_for_extension_id_.emplace(extension_id,
+                                               std::set<std::string>());
+  }
 }
 
-void AccessibilityManager::SetFocusRing(
-    const std::vector<gfx::Rect>& rects_in_screen,
-    ash::mojom::FocusRingBehavior focus_ring_behavior,
-    std::string caller_id) {
-  accessibility_focus_ring_controller_->SetFocusRing(
-      rects_in_screen, focus_ring_behavior, caller_id);
+void AccessibilityManager::RemoveFocusRings(const std::string& extension_id) {
+  if (focus_ring_names_for_extension_id_.count(extension_id) != 0) {
+    const std::set<std::string>& focus_ring_names =
+        focus_ring_names_for_extension_id_.find(extension_id)->second;
+
+    for (const std::string& focus_ring_name : focus_ring_names)
+      HideFocusRing(GetFocusRingId(extension_id, focus_ring_name));
+  }
+  focus_ring_names_for_extension_id_.erase(extension_id);
+}
+
+void AccessibilityManager::SetFocusRing(std::string focus_ring_id,
+                                        ash::mojom::FocusRingPtr focus_ring) {
+  accessibility_focus_ring_controller_->SetFocusRing(focus_ring_id,
+                                                     std::move(focus_ring));
+
   if (focus_ring_observer_for_test_)
     focus_ring_observer_for_test_.Run();
 }
 
-void AccessibilityManager::HideFocusRing(std::string caller_id) {
-  accessibility_focus_ring_controller_->HideFocusRing(caller_id);
+void AccessibilityManager::HideFocusRing(std::string focus_ring_id) {
+  accessibility_focus_ring_controller_->HideFocusRing(focus_ring_id);
   if (focus_ring_observer_for_test_)
     focus_ring_observer_for_test_.Run();
 }
@@ -1485,8 +1544,8 @@ bool AccessibilityManager::GetStartupSoundEnabled() const {
   if (user_list.empty())
     return false;
 
-  // |user_list| is sorted by last log in date. Take the most recent user to log
-  // in.
+  // |user_list| is sorted by last log in date. Take the most recent user to
+  // log in.
   bool val;
   return user_manager::known_user::GetBooleanPref(
              user_list[0]->GetAccountId(), kUserStartupSoundEnabled, &val) &&
@@ -1509,8 +1568,8 @@ const std::string AccessibilityManager::GetBluetoothBrailleDisplayAddress()
   if (user_list.empty())
     return std::string();
 
-  // |user_list| is sorted by last log in date. Take the most recent user to log
-  // in.
+  // |user_list| is sorted by last log in date. Take the most recent user to
+  // log in.
   std::string val;
   return user_manager::known_user::GetStringPref(
              user_list[0]->GetAccountId(), kUserBluetoothBrailleDisplayAddress,

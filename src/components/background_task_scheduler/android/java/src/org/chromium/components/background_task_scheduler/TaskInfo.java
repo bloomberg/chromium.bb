@@ -113,28 +113,28 @@ public class TaskInfo {
         }
     }
 
+    @IntDef({NetworkType.NONE, NetworkType.ANY, NetworkType.UNMETERED})
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({NETWORK_TYPE_NONE, NETWORK_TYPE_ANY, NETWORK_TYPE_UNMETERED})
-    public @interface NetworkType {}
-
-    /**
-     * This task has no requirements for network connectivity. Default.
-     *
-     * @see NetworkType
-     */
-    public static final int NETWORK_TYPE_NONE = 0;
-    /**
-     * This task requires network connectivity.
-     *
-     * @see NetworkType
-     */
-    public static final int NETWORK_TYPE_ANY = 1;
-    /**
-     * This task requires network connectivity that is unmetered.
-     *
-     * @see NetworkType
-     */
-    public static final int NETWORK_TYPE_UNMETERED = 2;
+    public @interface NetworkType {
+        /**
+         * This task has no requirements for network connectivity. Default.
+         *
+         * @see NetworkType
+         */
+        int NONE = 0;
+        /**
+         * This task requires network connectivity.
+         *
+         * @see NetworkType
+         */
+        int ANY = 1;
+        /**
+         * This task requires network connectivity that is unmetered.
+         *
+         * @see NetworkType
+         */
+        int UNMETERED = 2;
+    }
 
     /**
      * The task ID should be unique across all tasks. A list of such unique IDs exists in
@@ -319,7 +319,8 @@ public class TaskInfo {
      * @param backgroundTaskClass the {@link BackgroundTask} class that will be instantiated for
      * this task.
      * @param windowEndTimeMs the end of the window that the task can begin executing as a delta in
-     * milliseconds from now.
+     * milliseconds from now. Note that the task begins executing at this point even if the
+     * prerequisite conditions are not met.
      * @return the builder which can be used to continue configuration and {@link Builder#build()}.
      * @see TaskIds
      */
@@ -338,7 +339,8 @@ public class TaskInfo {
      * @param windowStartTimeMs the start of the window that the task can begin executing as a delta
      * in milliseconds from now.
      * @param windowEndTimeMs the end of the window that the task can begin executing as a delta in
-     * milliseconds from now.
+     * milliseconds from now. Note that the task begins executing at this point even if the
+     * prerequisite conditions are not met.
      * @return the builder which can be used to continue configuration and {@link Builder#build()}.
      * @see TaskIds
      */

@@ -28,10 +28,10 @@ suite('CrActionMenu', function() {
     document.body.innerHTML = `
       <button id="dots">...</button>
       <cr-action-menu>
-        <button slot="item" class="dropdown-item">Un</button>
-        <hr slot="item">
-        <button slot="item" class="dropdown-item">Dos</button>
-        <button slot="item" class="dropdown-item">Tres</button>
+        <button class="dropdown-item">Un</button>
+        <hr>
+        <button class="dropdown-item">Dos</button>
+        <button class="dropdown-item">Tres</button>
       </cr-action-menu>
     `;
 
@@ -45,8 +45,9 @@ suite('CrActionMenu', function() {
   teardown(function() {
     document.body.style.direction = 'ltr';
 
-    if (dialog.open)
+    if (dialog.open) {
       menu.close();
+    }
   });
 
   function down() {
@@ -55,6 +56,10 @@ suite('CrActionMenu', function() {
 
   function up() {
     MockInteractions.keyDownOn(menu, 'ArrowUp', [], 'ArrowUp');
+  }
+
+  function enter() {
+    MockInteractions.keyDownOn(menu, 'Enter', [], 'Enter');
   }
 
   test('close event bubbles', function() {
@@ -121,13 +126,32 @@ suite('CrActionMenu', function() {
     assertEquals(items[items.length - 1], getDeepActiveElement());
   });
 
-  test('can navigate to dynamically added items', function() {
+  test('pressing enter when no focus', function() {
+    if (cr.isWindows || cr.isMac) {
+      return testFocusAfterClosing('Enter');
+    }
+
+    // First item is selected
+    menu.showAt(dots);
+    assertEquals(menu, document.activeElement);
+    enter();
+    assertEquals(items[0], getDeepActiveElement());
+  });
+
+  test('pressing enter when when item has focus', function() {
+    menu.showAt(dots);
+    down();
+    enter();
+    assertEquals(items[0], getDeepActiveElement());
+  });
+
+  test('can navigate to dynamically added items', async function() {
     // Can modify children after attached() and before showAt().
     const item = document.createElement('button');
     item.classList.add('dropdown-item');
-    item.setAttribute('slot', 'item');
     menu.insertBefore(item, items[0]);
     menu.showAt(dots);
+    await PolymerTest.flushTasks();
 
     down();
     assertEquals(item, getDeepActiveElement());
@@ -140,6 +164,13 @@ suite('CrActionMenu', function() {
     up();
     // Focus should have wrapped around to final item.
     assertEquals(items[2], getDeepActiveElement());
+  });
+
+  test('close on click away', function() {
+    menu.showAt(dots);
+    assertTrue(dialog.open);
+    menu.click();
+    assertFalse(dialog.open);
   });
 
   test('close on resize', function() {
@@ -210,25 +241,20 @@ suite('CrActionMenu', function() {
     assertEquals(items[0], getDeepActiveElement());
   });
 
-  test('items automatically given accessibility role', function() {
+  test('items automatically given accessibility role', async function() {
     const newItem = document.createElement('button');
-    newItem.setAttribute('slot', 'item');
     newItem.classList.add('dropdown-item');
 
     items[1].setAttribute('role', 'checkbox');
     menu.showAt(dots);
 
-    return PolymerTest.flushTasks()
-        .then(() => {
-          assertEquals('menuitem', items[0].getAttribute('role'));
-          assertEquals('checkbox', items[1].getAttribute('role'));
+    await PolymerTest.flushTasks();
+    assertEquals('menuitem', items[0].getAttribute('role'));
+    assertEquals('checkbox', items[1].getAttribute('role'));
 
-          menu.insertBefore(newItem, items[0]);
-          return PolymerTest.flushTasks();
-        })
-        .then(() => {
-          assertEquals('menuitem', newItem.getAttribute('role'));
-        });
+    menu.insertBefore(newItem, items[0]);
+    await PolymerTest.flushTasks();
+    assertEquals('menuitem', newItem.getAttribute('role'));
   });
 
   test('positioning', function() {
@@ -321,7 +347,7 @@ suite('CrActionMenu', function() {
     menu.close();
   });
 
-  // TODO(scottchen): fix flakiness and re-enable this test.
+  // TODO(dpapad): fix flakiness and re-enable this test.
   test.skip(
       '[auto-reposition] enables repositioning if content changes',
       function(done) {
@@ -369,7 +395,7 @@ suite('CrActionMenu', function() {
     const containerTop = 10000;
     const containerWidth = 500;
     const containerHeight = 500;
-    const menuWidth = 100;
+    const menuWidth = 150;
     const menuHeight = 200;
 
     suiteSetup(function() {
@@ -404,10 +430,10 @@ suite('CrActionMenu', function() {
               <div id="inner-container">
                 <button id="dots">...</button>
                 <cr-action-menu>
-                  <button slot="item" class="dropdown-item">Un</button>
+                  <button class="dropdown-item">Un</button>
                   <hr>
-                  <button slot="item" class="dropdown-item">Dos</button>
-                  <button slot="item" class="dropdown-item">Tres</button>
+                  <button class="dropdown-item">Dos</button>
+                  <button class="dropdown-item">Tres</button>
                 </cr-action-menu>
               </div>
             </div>

@@ -34,7 +34,7 @@ class Text;
 
 #define AppleInterchangeNewline "Apple-interchange-newline"
 
-enum EAnnotateForInterchange {
+enum AnnotateForInterchange {
   kDoNotAnnotateForInterchange,
   kAnnotateForInterchange
 };

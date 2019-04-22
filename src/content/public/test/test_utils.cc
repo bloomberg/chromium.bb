@@ -17,7 +17,8 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
-#include "base/task/task_scheduler/task_scheduler.h"
+#include "base/task/sequence_manager/sequence_manager.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -28,6 +29,7 @@
 #include "content/public/browser/browser_child_process_host_iterator.h"
 #include "content/public/browser/browser_plugin_guest_delegate.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -38,7 +40,8 @@
 #include "content/public/test/test_launcher.h"
 #include "content/public/test/test_service_manager_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom.h"
+#include "third_party/blink/public/common/fetch/fetch_api_request_headers_map.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "url/url_util.h"
 
 namespace content {
@@ -65,27 +68,6 @@ void DeferredQuitRunLoop(const base::Closure& quit_task,
         FROM_HERE, base::BindOnce(&DeferredQuitRunLoop, quit_task,
                                   num_quit_deferrals - 1));
   }
-}
-
-// Class used to handle result callbacks for ExecuteScriptAndGetValue.
-class ScriptCallback {
- public:
-  ScriptCallback() { }
-  virtual ~ScriptCallback() { }
-  void ResultCallback(const base::Value* result);
-
-  std::unique_ptr<base::Value> result() { return std::move(result_); }
-
- private:
-  std::unique_ptr<base::Value> result_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScriptCallback);
-};
-
-void ScriptCallback::ResultCallback(const base::Value* result) {
-  if (result)
-    result_.reset(result->DeepCopy());
-  base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
 
 // Monitors if any task is processed by the message loop.
@@ -124,13 +106,13 @@ bool IgnoreSourceAndDetails(
 blink::mojom::FetchAPIRequestPtr CreateFetchAPIRequest(
     const GURL& url,
     const std::string& method,
-    const base::flat_map<std::string, std::string>& headers,
+    const blink::FetchAPIRequestHeadersMap& headers,
     blink::mojom::ReferrerPtr referrer,
     bool is_reload) {
   auto request = blink::mojom::FetchAPIRequest::New();
   request->url = url;
   request->method = method;
-  request->headers = headers;
+  request->headers = {headers.begin(), headers.end()};
   request->referrer = std::move(referrer);
   request->is_reload = is_reload;
   return request;
@@ -148,31 +130,14 @@ void RunThisRunLoop(base::RunLoop* run_loop) {
 
 void RunAllPendingInMessageLoop() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, GetDeferredQuitTaskForRunLoop(&run_loop));
-  RunThisRunLoop(&run_loop);
+  RunAllPendingInMessageLoop(BrowserThread::UI);
 }
 
 void RunAllPendingInMessageLoop(BrowserThread::ID thread_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (thread_id == BrowserThread::UI) {
-    RunAllPendingInMessageLoop();
-    return;
+  // See comment for |kNumQuitDeferrals| for why this is needed.
+  for (int i = 0; i <= kNumQuitDeferrals; ++i) {
+    BrowserThread::RunAllPendingTasksOnThreadForTesting(thread_id);
   }
-
-  // Post a DeferredQuitRunLoop() task to |thread_id|. Then, run a RunLoop on
-  // this thread. When a few generations of pending tasks have run on
-  // |thread_id|, a task will be posted to this thread to exit the RunLoop.
-  base::RunLoop run_loop;
-  const base::Closure post_quit_run_loop_to_ui_thread = base::Bind(
-      base::IgnoreResult(&base::SingleThreadTaskRunner::PostTask),
-      base::ThreadTaskRunnerHandle::Get(), FROM_HERE, run_loop.QuitClosure());
-  base::PostTaskWithTraits(
-      FROM_HERE, {thread_id},
-      base::BindOnce(&DeferredQuitRunLoop, post_quit_run_loop_to_ui_thread,
-                     kNumQuitDeferrals));
-  RunThisRunLoop(&run_loop);
 }
 
 void RunAllTasksUntilIdle() {
@@ -184,7 +149,7 @@ void RunAllTasksUntilIdle() {
     base::MessageLoopCurrent::Get()->AddTaskObserver(&task_observer);
 
     base::RunLoop run_loop;
-    base::TaskScheduler::GetInstance()->FlushAsyncForTesting(
+    base::ThreadPool::GetInstance()->FlushAsyncForTesting(
         run_loop.QuitWhenIdleClosure());
     run_loop.Run();
 
@@ -200,16 +165,23 @@ base::Closure GetDeferredQuitTaskForRunLoop(base::RunLoop* run_loop) {
                     kNumQuitDeferrals);
 }
 
-std::unique_ptr<base::Value> ExecuteScriptAndGetValue(
-    RenderFrameHost* render_frame_host,
-    const std::string& script) {
-  ScriptCallback observer;
+base::Value ExecuteScriptAndGetValue(RenderFrameHost* render_frame_host,
+                                     const std::string& script) {
+  base::RunLoop run_loop;
+  base::Value result;
 
   render_frame_host->ExecuteJavaScriptForTests(
       base::UTF8ToUTF16(script),
-      base::Bind(&ScriptCallback::ResultCallback, base::Unretained(&observer)));
-  base::RunLoop().Run();
-  return observer.result();
+      base::BindOnce(
+          [](base::OnceClosure quit_closure, base::Value* out_result,
+             base::Value value) {
+            *out_result = std::move(value);
+            std::move(quit_closure).Run();
+          },
+          run_loop.QuitWhenIdleClosure(), &result));
+  run_loop.Run();
+
+  return result;
 }
 
 bool AreAllSitesIsolatedForTesting() {
@@ -243,39 +215,11 @@ void DeprecatedEnableFeatureWithParam(const base::Feature& feature,
       kFakeTrialName, kFakeTrialGroupName, param_values, command_line);
 }
 
-namespace {
-
-// Helper class for CreateAndAttachInnerContents.
-//
-// TODO(lfg): https://crbug.com/821187 Inner webcontentses currently require
-// supplying a BrowserPluginGuestDelegate; however, the oopif architecture
-// doesn't really require it. Refactor this so that we can create an inner
-// contents without any of the guest machinery.
-class InnerWebContentsHelper : public WebContentsObserver {
- public:
-  explicit InnerWebContentsHelper() : WebContentsObserver() {}
-  ~InnerWebContentsHelper() override = default;
-
-  // WebContentsObserver:
-  void WebContentsDestroyed() override { delete this; }
-
-  void SetInnerWebContents(WebContents* inner_web_contents) {
-    Observe(inner_web_contents);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(InnerWebContentsHelper);
-};
-
-}  // namespace
-
 WebContents* CreateAndAttachInnerContents(RenderFrameHost* rfh) {
   WebContents* outer_contents =
       static_cast<RenderFrameHostImpl*>(rfh)->delegate()->GetAsWebContents();
   if (!outer_contents)
     return nullptr;
-
-  auto guest_delegate = std::make_unique<InnerWebContentsHelper>();
 
   WebContents::CreateParams inner_params(outer_contents->GetBrowserContext());
 
@@ -284,11 +228,7 @@ WebContents* CreateAndAttachInnerContents(RenderFrameHost* rfh) {
 
   // Attach. |inner_contents| becomes owned by |outer_contents|.
   WebContents* inner_contents = inner_contents_ptr.get();
-  inner_contents->AttachToOuterWebContentsFrame(std::move(inner_contents_ptr),
-                                                rfh);
-
-  // |guest_delegate| becomes owned by |inner_contents|.
-  guest_delegate.release()->SetInnerWebContents(inner_contents);
+  outer_contents->AttachInnerWebContents(std::move(inner_contents_ptr), rfh);
 
   return inner_contents;
 }

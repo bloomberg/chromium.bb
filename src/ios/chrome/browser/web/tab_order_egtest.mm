@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import <EarlGrey/EarlGrey.h>
 #import <XCTest/XCTest.h>
 
 #import "ios/chrome/test/app/chrome_test_util.h"
@@ -11,6 +12,7 @@
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
+#import "ios/web/public/test/element_selector.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -20,7 +22,6 @@
 
 using chrome_test_util::GetCurrentWebState;
 using chrome_test_util::OpenLinkInNewTabButton;
-using web::test::ElementSelector;
 using web::WebViewInWebState;
 
 namespace {
@@ -63,7 +64,7 @@ const char kLinksTestURL2Text[] = "arrived";
   // Child tab should be inserted after the parent.
   [[EarlGrey selectElementWithMatcher:WebViewInWebState(GetCurrentWebState())]
       performAction:chrome_test_util::LongPressElementForContextMenu(
-                        ElementSelector::ElementSelectorId(kLinkSelectorID),
+                        [ElementSelector selectorWithElementID:kLinkSelectorID],
                         true /* menu should appear */)];
   [[EarlGrey selectElementWithMatcher:OpenLinkInNewTabButton()]
       performAction:grey_tap()];
@@ -73,7 +74,7 @@ const char kLinksTestURL2Text[] = "arrived";
   // New child tab should be inserted AFTER |childTab1|.
   [[EarlGrey selectElementWithMatcher:WebViewInWebState(GetCurrentWebState())]
       performAction:chrome_test_util::LongPressElementForContextMenu(
-                        ElementSelector::ElementSelectorId(kLinkSelectorID),
+                        [ElementSelector selectorWithElementID:kLinkSelectorID],
                         true /* menu should appear */)];
   [[EarlGrey selectElementWithMatcher:OpenLinkInNewTabButton()]
       performAction:grey_tap()];
@@ -98,7 +99,7 @@ const char kLinksTestURL2Text[] = "arrived";
   // New child tab should be inserted BEFORE |childTab1|.
   [[EarlGrey selectElementWithMatcher:WebViewInWebState(GetCurrentWebState())]
       performAction:chrome_test_util::LongPressElementForContextMenu(
-                        ElementSelector::ElementSelectorId(kLinkSelectorID),
+                        [ElementSelector selectorWithElementID:kLinkSelectorID],
                         true /* menu should appear */)];
   [[EarlGrey selectElementWithMatcher:OpenLinkInNewTabButton()]
       performAction:grey_tap()];
@@ -109,7 +110,7 @@ const char kLinksTestURL2Text[] = "arrived";
   // New child tab should be inserted AFTER |childTab3|.
   [[EarlGrey selectElementWithMatcher:WebViewInWebState(GetCurrentWebState())]
       performAction:chrome_test_util::LongPressElementForContextMenu(
-                        ElementSelector::ElementSelectorId(kLinkSelectorID),
+                        [ElementSelector selectorWithElementID:kLinkSelectorID],
                         true /* menu should appear */)];
   [[EarlGrey selectElementWithMatcher:OpenLinkInNewTabButton()]
       performAction:grey_tap()];

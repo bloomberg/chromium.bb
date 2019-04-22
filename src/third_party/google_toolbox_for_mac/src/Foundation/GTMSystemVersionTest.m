@@ -19,6 +19,10 @@
 #import "GTMSenTestCase.h"
 #import "GTMSystemVersion.h"
 
+#pragma clang diagnostic push
+// Ignore all of the deprecation warnings for GTMSystemVersion
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 @interface GTMSystemVersionTest : GTMTestCase
 @end
 
@@ -90,4 +94,33 @@
   XCTAssertTrue([GTMSystemVersion isBuildLessThan:largeVersion]);
 
 }
+
+#if GTM_MACOS_SDK
+- (void)testMacOSVersion {
+  SInt32 major = -1;
+  SInt32 minor = -1;
+  SInt32 bugfix = -1;
+
+  [GTMSystemVersion getMajor:&major minor:&minor bugFix:&bugfix];
+  NSDictionary *versionPlistContents =
+      [NSDictionary dictionaryWithContentsOfFile:
+          @"/System/Library/CoreServices/SystemVersion.plist"];
+  XCTAssertNotNil(versionPlistContents);
+  NSString *version =
+      [versionPlistContents objectForKey:@"ProductVersion"];
+  XCTAssertNotNil(version);
+  NSArray *pieces = [version componentsSeparatedByString:@"."];
+  XCTAssertTrue([pieces count] > 2);
+  XCTAssertEqual(major, (SInt32)[[pieces objectAtIndex:0] integerValue]);
+  XCTAssertEqual(minor, [[pieces objectAtIndex:1] integerValue]);
+  if ([pieces count] > 2) {
+    XCTAssertEqual(bugfix, [[pieces objectAtIndex:2] integerValue]);
+  } else {
+    XCTAssertEqual(bugfix, 0, @"possible beta OS");
+  }
+}
+#endif
+
 @end
+
+#pragma clang diagnostic pop

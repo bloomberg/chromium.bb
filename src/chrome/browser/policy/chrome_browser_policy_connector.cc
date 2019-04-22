@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/path_service.h"
@@ -50,11 +51,20 @@
 #include "components/policy/core/common/cloud/machine_level_user_cloud_policy_manager.h"
 #endif
 
+#if defined(OS_WIN)
+#include "chrome/browser/browser_switcher/browser_switcher_policy_migrator.h"
+#endif
+
 namespace policy {
 
 namespace {
 
-void AddMigrators(ConfigurationPolicyProvider* provider) {}
+void AddMigrators(ConfigurationPolicyProvider* provider) {
+#if defined(OS_WIN)
+  provider->AddMigrator(
+      std::make_unique<browser_switcher::BrowserSwitcherPolicyMigrator>());
+#endif
+}
 
 bool ProviderHasPolicies(const ConfigurationPolicyProvider* provider) {
   if (!provider)
@@ -148,7 +158,8 @@ ChromeBrowserPolicyConnector::CreatePolicyProviders() {
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
   std::unique_ptr<MachineLevelUserCloudPolicyManager>
       machine_level_user_cloud_policy_manager =
-          MachineLevelUserCloudPolicyController::CreatePolicyManager();
+          MachineLevelUserCloudPolicyController::CreatePolicyManager(
+              platform_provider_);
   if (machine_level_user_cloud_policy_manager) {
     AddMigrators(machine_level_user_cloud_policy_manager.get());
     machine_level_user_cloud_policy_manager_ =

@@ -10,6 +10,7 @@
 
 #include <memory>
 #include <string>
+#include <unordered_set>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -24,6 +25,7 @@
 #include "net/base/address_list.h"
 #include "net/base/network_change_notifier.h"
 #include "net/socket/tcp_client_socket.h"
+#include "services/network/public/cpp/resolve_host_client_base.h"
 #include "services/network/public/mojom/host_resolver.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/udp_socket.mojom.h"
@@ -58,7 +60,7 @@ class SocketResourceManagerInterface {
   virtual void Replace(const std::string& extension_id,
                        int api_resource_id,
                        Socket* socket) = 0;
-  virtual base::hash_set<int>* GetResourceIds(
+  virtual std::unordered_set<int>* GetResourceIds(
       const std::string& extension_id) = 0;
 };
 
@@ -98,7 +100,7 @@ class SocketResourceManager : public SocketResourceManagerInterface {
     manager_->Remove(extension_id, api_resource_id);
   }
 
-  base::hash_set<int>* GetResourceIds(
+  std::unordered_set<int>* GetResourceIds(
       const std::string& extension_id) override {
     return manager_->GetResourceIds(extension_id);
   }
@@ -125,7 +127,7 @@ class SocketAsyncApiFunction : public AsyncApiFunction {
   Socket* GetSocket(int api_resource_id);
   void ReplaceSocket(int api_resource_id, Socket* socket);
   void RemoveSocket(int api_resource_id);
-  base::hash_set<int>* GetSocketIds();
+  std::unordered_set<int>* GetSocketIds();
 
   // A no-op outside of Chrome OS.
   void OpenFirewallHole(const std::string& address,
@@ -148,7 +150,7 @@ class SocketAsyncApiFunction : public AsyncApiFunction {
 
 class SocketExtensionWithDnsLookupFunction
     : public SocketAsyncApiFunction,
-      public network::mojom::ResolveHostClient {
+      public network::ResolveHostClientBase {
  protected:
   SocketExtensionWithDnsLookupFunction();
   ~SocketExtensionWithDnsLookupFunction() override;
@@ -470,9 +472,8 @@ class SocketGetNetworkListFunction : public UIThreadExtensionFunction {
   ResponseAction Run() override;
 
  private:
-  void GetNetworkListOnFileThread();
-  void HandleGetNetworkListError();
-  void SendResponseOnUIThread(const net::NetworkInterfaceList& interface_list);
+  void GotNetworkList(
+      const base::Optional<net::NetworkInterfaceList>& interface_list);
 };
 
 class SocketJoinGroupFunction : public SocketAsyncApiFunction {
@@ -569,7 +570,7 @@ class SocketGetJoinedGroupsFunction : public SocketAsyncApiFunction {
 
 class SocketSecureFunction : public SocketAsyncApiFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("socket.secure", SOCKET_SECURE);
+  DECLARE_EXTENSION_FUNCTION("socket.secure", SOCKET_SECURE)
   SocketSecureFunction();
 
  protected:

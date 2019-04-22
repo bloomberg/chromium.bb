@@ -25,7 +25,7 @@ A class that wants the lifetime management of its instances to be managed by Bli
 
 ```c++
 class YourClass : public GarbageCollected<YourClass> {
-    // ...
+  // ...
 };
 ```
 
@@ -68,10 +68,10 @@ void someFunction(P*);
 
 class A : public GarbageCollected<A>, public P {
 public:
-    void someMemberFunction()
-    {
-        someFunction(this); // DANGEROUS, a raw pointer to an on-heap object.
-    }
+  void someMemberFunction()
+  {
+    someFunction(this); // DANGEROUS, a raw pointer to an on-heap object.
+  }
 };
 ```
 
@@ -88,10 +88,10 @@ A class is said to *need finalization* when it meets either of the following cri
 ```c++
 class YourClass : public GarbageCollectedFinalized<YourClass> {
 public:
-    ~YourClass() { ... } // Non-empty destructor means finalization is needed.
+  ~YourClass() { ... } // Non-empty destructor means finalization is needed.
 
 private:
-    scoped_refptr<Something> m_something; // scoped_refptr<> has non-empty destructor, so finalization is needed.
+  scoped_refptr<Something> something_; // scoped_refptr<> has non-empty destructor, so finalization is needed.
 };
 ```
 
@@ -146,17 +146,17 @@ class Q : public GarbageCollectedMixin { };
 class R : public Q { };
 
 class A : public GarbageCollected<A>, public P, public R {
-    USING_GARBAGE_COLLECTED_MIXIN(A); // OK, resolving pure virtual functions of P and R.
+  USING_GARBAGE_COLLECTED_MIXIN(A); // OK, resolving pure virtual functions of P and R.
 };
 
 class B : public GarbageCollected<B>, public P {
-    USING_GARBAGE_COLLECTED_MIXIN(B); // OK, different garbage-collected classes may inherit from the same mixin (P).
+  USING_GARBAGE_COLLECTED_MIXIN(B); // OK, different garbage-collected classes may inherit from the same mixin (P).
 };
 
 void someFunction()
 {
-    new A; // OK, A can be instantiated.
-    // new R; // BAD, R has pure virtual functions.
+  MakeGarbageCollected<A>(); // OK, A can be instantiated.
+  // MakeGarbageCollected<R>(); // BAD, R has pure virtual functions.
 }
 ```
 
@@ -183,19 +183,19 @@ A pre-finalizer must have the following function signature: `void preFinalizer()
 
 ```c++
 class YourClass : public GarbageCollectedFinalized<YourClass> {
-    USING_PRE_FINALIZER(YourClass, dispose);
+  USING_PRE_FINALIZER(YourClass, dispose);
 public:
-    void dispose()
-    {
-        m_other->dispose(); // OK; you can touch other on-heap objects in a pre-finalizer.
-    }
-    ~YourClass()
-    {
-        // m_other->dispose(); // BAD.
-    }
+  void dispose()
+  {
+    other_->dispose(); // OK; you can touch other on-heap objects in a pre-finalizer.
+  }
+  ~YourClass()
+  {
+    // other_->dispose(); // BAD.
+  }
 
 private:
-    Member<OtherClass> m_other;
+  Member<OtherClass> other_;
 };
 ```
 
@@ -254,8 +254,8 @@ On-stack references to on-heap objects must be raw pointers.
 ```c++
 void someFunction()
 {
-    SomeGarbageCollectedClass* object = new SomeGarbageCollectedClass; // OK, retained by a pointer.
-    ...
+  SomeGarbageCollectedClass* object = MakeGarbageCollected<SomeGarbageCollectedClass>(); // OK, retained by a pointer.
+  ...
 }
 // OK to leave the object behind. The Blink GC system will free it up when it becomes unused.
 ```
@@ -276,10 +276,10 @@ because this rewrite is only done within Blink GC's garbage collection period.
 
 ```c++
 class SomeGarbageCollectedClass : public GarbageCollected<GarbageCollectedSomething> {
-    ...
+  ...
 private:
-    Member<AnotherGarbageCollectedClass> m_another; // OK, retained by Member<T>.
-    WeakMember<AnotherGarbageCollectedClass> m_anotherWeak; // OK, weak reference.
+  Member<AnotherGarbageCollectedClass> another_; // OK, retained by Member<T>.
+  WeakMember<AnotherGarbageCollectedClass> anotherWeak_; // OK, weak reference.
 };
 ```
 
@@ -309,9 +309,9 @@ garbage-collected, just like `WeakMember<T>`.
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 ...
 class NonGarbageCollectedClass {
-    ...
+  ...
 private:
-    Persistent<SomeGarbageCollectedClass> m_something; // OK, the object will be alive while this persistent is alive.
+  Persistent<SomeGarbageCollectedClass> something_; // OK, the object will be alive while this persistent is alive.
 };
 ```
 
@@ -399,10 +399,10 @@ class C : public B {
 };
 
 void C::Trace(Visitor* visitor) {
-    visitor->Trace(x_);
-    visitor->Trace(y_); // Weak member needs to be traced.
-    visitor->Trace(z_); // Heap collection does, too.
-    B::Trace(visitor); // Delegate to the parent. In this case it's empty, but this is required.
+  visitor->Trace(x_);
+  visitor->Trace(y_); // Weak member needs to be traced.
+  visitor->Trace(z_); // Heap collection does, too.
+  B::Trace(visitor); // Delegate to the parent. In this case it's empty, but this is required.
 }
 ```
 
@@ -414,26 +414,26 @@ phase:
 
 void C::ClearWeakMembers(Visitor* visitor)
 {
-    if (ThreadHeap::isHeapObjectAlive(y_))
-        return;
+  if (ThreadHeap::isHeapObjectAlive(y_))
+    return;
 
-    // |m_y| is not referred to by anyone else, clear the weak
-    // reference along with updating state / clearing any other
-    // resources at the same time. None of those operations are
-    // allowed to perform heap allocations:
-    y_->detach();
+  // |y_| is not referred to by anyone else, clear the weak
+  // reference along with updating state / clearing any other
+  // resources at the same time. None of those operations are
+  // allowed to perform heap allocations:
+  y_->detach();
 
-    // Note: if the weak callback merely clears the weak reference,
-    // it is much simpler to just |trace| the field rather than
-    // install a custom weak callback.
-    y_ = nullptr;
+  // Note: if the weak callback merely clears the weak reference,
+  // it is much simpler to just |trace| the field rather than
+  // install a custom weak callback.
+  y_ = nullptr;
 }
 
 void C::Trace(Visitor* visitor) {
-    visitor->template registerWeakMembers<C, &C::ClearWeakMembers>(this);
-    visitor->Trace(x_);
-    visitor->Trace(z_); // Heap collection does, too.
-    B::Trace(visitor); // Delegate to the parent. In this case it's empty, but this is required.
+  visitor->template registerWeakMembers<C, &C::ClearWeakMembers>(this);
+  visitor->Trace(x_);
+  visitor->Trace(z_); // Heap collection does, too.
+  B::Trace(visitor); // Delegate to the parent. In this case it's empty, but this is required.
 }
 ```
 

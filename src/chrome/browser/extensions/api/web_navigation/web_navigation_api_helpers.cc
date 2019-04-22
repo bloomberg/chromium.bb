@@ -89,8 +89,8 @@ std::unique_ptr<Event> CreateOnBeforeNavigateEvent(
   return event;
 }
 
-// Constructs and dispatches an onCommitted or onReferenceFragmentUpdated
-// event.
+// Constructs and dispatches an onCommitted, onReferenceFragmentUpdated
+// or onHistoryStateUpdated event.
 void DispatchOnCommitted(events::HistogramValue histogram_value,
                          const std::string& event_name,
                          content::NavigationHandle* navigation_handle) {
@@ -109,6 +109,8 @@ void DispatchOnCommitted(events::HistogramValue histogram_value,
                    frame_host->GetProcess()->GetID());
   dict->SetInteger(web_navigation_api_constants::kFrameIdKey,
                    ExtensionApiFrameIdMap::GetFrameId(frame_host));
+  dict->SetInteger(web_navigation_api_constants::kParentFrameIdKey,
+                   ExtensionApiFrameIdMap::GetParentFrameId(frame_host));
 
   if (navigation_handle->WasServerRedirect()) {
     transition_type = ui::PageTransitionFromInt(
@@ -155,6 +157,8 @@ void DispatchOnDOMContentLoaded(content::WebContents* web_contents,
   details.url = url.spec();
   details.process_id = frame_host->GetProcess()->GetID();
   details.frame_id = ExtensionApiFrameIdMap::GetFrameId(frame_host);
+  details.parent_frame_id =
+      ExtensionApiFrameIdMap::GetParentFrameId(frame_host);
   details.time_stamp = MilliSecondsFromTime(base::Time::Now());
 
   content::BrowserContext* browser_context = web_contents->GetBrowserContext();
@@ -174,6 +178,8 @@ void DispatchOnCompleted(content::WebContents* web_contents,
   details.url = url.spec();
   details.process_id = frame_host->GetProcess()->GetID();
   details.frame_id = ExtensionApiFrameIdMap::GetFrameId(frame_host);
+  details.parent_frame_id =
+      ExtensionApiFrameIdMap::GetParentFrameId(frame_host);
   details.time_stamp = MilliSecondsFromTime(base::Time::Now());
 
   content::BrowserContext* browser_context = web_contents->GetBrowserContext();
@@ -231,6 +237,8 @@ void DispatchOnErrorOccurred(content::WebContents* web_contents,
   details.url = url.spec();
   details.process_id = frame_host->GetProcess()->GetID();
   details.frame_id = ExtensionApiFrameIdMap::GetFrameId(frame_host);
+  details.parent_frame_id =
+      ExtensionApiFrameIdMap::GetParentFrameId(frame_host);
   details.error = net::ErrorToString(error_code);
   details.time_stamp = MilliSecondsFromTime(base::Time::Now());
 
@@ -250,6 +258,8 @@ void DispatchOnErrorOccurred(content::NavigationHandle* navigation_handle) {
   details.url = navigation_handle->GetURL().spec();
   details.process_id = -1;
   details.frame_id = ExtensionApiFrameIdMap::GetFrameId(navigation_handle);
+  details.parent_frame_id =
+      ExtensionApiFrameIdMap::GetParentFrameId(navigation_handle);
   details.error = (navigation_handle->GetNetErrorCode() != net::OK)
                       ? net::ErrorToString(navigation_handle->GetNetErrorCode())
                       : net::ErrorToString(net::ERR_ABORTED);

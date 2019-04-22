@@ -7,22 +7,26 @@
 #include <cmath>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "content/browser/media/capture/frame_sink_video_capture_device.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "content/shell/common/shell_switches.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/display/display_switches.h"
 #include "url/gurl.h"
 
 using net::test_server::BasicHttpResponse;
@@ -151,6 +155,26 @@ void ContentCaptureDeviceBrowserTestBase::RunUntilIdle() {
   base::RunLoop().RunUntilIdle();
 }
 
+void ContentCaptureDeviceBrowserTestBase::NavigateToAlternateSite() {
+  ASSERT_TRUE(NavigateToURL(shell(), embedded_test_server()->GetURL(
+                                         kAlternateHostname, kAlternatePath)));
+  ASSERT_TRUE(WaitForLoadStop(shell()->web_contents()));
+}
+
+void ContentCaptureDeviceBrowserTestBase::CrashTheRenderer() {
+  RenderProcessHostWatcher crash_observer(
+      shell()->web_contents(),
+      RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  ASSERT_TRUE(NavigateToURLAndExpectNoCommit(shell(), GURL(kChromeUICrashURL)));
+  crash_observer.Wait();
+  ASSERT_TRUE(WaitForLoadStop(shell()->web_contents()));
+}
+
+void ContentCaptureDeviceBrowserTestBase::ReloadAfterCrash() {
+  ReloadBlockUntilNavigationsComplete(shell(), 1);
+  ASSERT_TRUE(WaitForLoadStop(shell()->web_contents()));
+}
+
 bool ContentCaptureDeviceBrowserTestBase::IsSoftwareCompositingTest() const {
   return false;
 }
@@ -183,7 +207,18 @@ void ContentCaptureDeviceBrowserTestBase::SetUp() {
 
 void ContentCaptureDeviceBrowserTestBase::SetUpCommandLine(
     base::CommandLine* command_line) {
+  ContentBrowserTest::SetUpCommandLine(command_line);
+
   IsolateAllSitesForTesting(command_line);
+
+  // Use a small window size to reduce test running time (since screen captures
+  // must be analyzed).
+  command_line->AppendSwitchASCII(switches::kContentShellHostWindowSize,
+                                  "200x150");
+
+  // Ensure the web renderer AND display compositor are both speaking "sRGB."
+  command_line->AppendSwitchASCII(switches::kForceDisplayColorProfile, "srgb");
+  command_line->AppendSwitchASCII(switches::kForceRasterColorProfile, "srgb");
 }
 
 void ContentCaptureDeviceBrowserTestBase::SetUpOnMainThread() {
@@ -220,19 +255,19 @@ ContentCaptureDeviceBrowserTestBase::HandleRequest(const HttpRequest& request) {
     const GURL& inner_frame_url =
         embedded_test_server()->GetURL(kInnerFrameHostname, kInnerFramePath);
     response->set_content(base::StringPrintf(
-        "<!doctype html>"
-        "<body style='background-color: #ffffff;'>"
-        "<iframe src='%s' style='position:absolute; "
-        "top:0px; left:0px; margin:none; padding:none; border:none;'>"
-        "</iframe>"
-        "<script>"
-        "window.addEventListener('load', () => {"
-        "  const iframe = document.getElementsByTagName('iframe')[0];"
-        "  iframe.width = document.documentElement.clientWidth / 2;"
-        "  iframe.height = document.documentElement.clientHeight / 2;"
-        "});"
-        "</script>"
-        "</body>",
+        "<!doctype html>\n"
+        "<html>\n"
+        "<style>\n"
+        "* { border:none; margin:none; padding:none; }\n"
+        "html, body { min-width:100vw; background-color:#ffffff; }\n"
+        "iframe { position:absolute; top:0px; left:0px; "
+        "border:none; margin:none; padding:none; }\n"
+        "</style>\n"
+        "<body>\n"
+        "<iframe src='%s' width=50%% height=50%%>\n"
+        "</iframe>\n"
+        "</body>\n"
+        "</html>\n",
         inner_frame_url.spec().c_str()));
   } else {
     // A page whose solid fill color is based on a query parameter, or
@@ -263,5 +298,9 @@ constexpr char ContentCaptureDeviceBrowserTestBase::kOuterFramePath[];
 constexpr char ContentCaptureDeviceBrowserTestBase::kSingleFrameHostname[];
 // static
 constexpr char ContentCaptureDeviceBrowserTestBase::kSingleFramePath[];
+// static
+constexpr char ContentCaptureDeviceBrowserTestBase::kAlternateHostname[];
+// static
+constexpr char ContentCaptureDeviceBrowserTestBase::kAlternatePath[];
 
 }  // namespace content

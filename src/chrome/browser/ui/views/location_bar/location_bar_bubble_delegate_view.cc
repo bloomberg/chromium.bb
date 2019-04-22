@@ -63,21 +63,27 @@ LocationBarBubbleDelegateView::LocationBarBubbleDelegateView(
 
 LocationBarBubbleDelegateView::~LocationBarBubbleDelegateView() = default;
 
-void LocationBarBubbleDelegateView::ShowForReason(DisplayReason reason) {
+void LocationBarBubbleDelegateView::ShowForReason(DisplayReason reason,
+                                                  bool allow_refocus_alert) {
   if (reason == USER_GESTURE) {
     GetWidget()->Show();
   } else {
     GetWidget()->ShowInactive();
 
-    // Since this widget is inactive (but shown), accessibility tools won't
-    // alert the user to its presence. Accessibility tools such as screen
-    // readers work by tracking system focus. Give users of these tools a hint
-    // description and alert them to the presence of this widget.
-    GetWidget()->GetRootView()->GetViewAccessibility().OverrideDescription(
-        l10n_util::GetStringUTF8(IDS_SHOW_BUBBLE_INACTIVE_DESCRIPTION));
+    if (allow_refocus_alert) {
+      // Since this widget is inactive (but shown), accessibility tools won't
+      // alert the user to its presence. Accessibility tools such as screen
+      // readers work by tracking system focus. Give users of these tools a hint
+      // description and alert them to the presence of this widget.
+      GetWidget()->GetRootView()->GetViewAccessibility().OverrideDescription(
+          l10n_util::GetStringUTF8(IDS_SHOW_BUBBLE_INACTIVE_DESCRIPTION));
+    }
   }
-  GetWidget()->GetRootView()->NotifyAccessibilityEvent(ax::mojom::Event::kAlert,
-                                                       true);
+  if (GetAccessibleWindowRole() == ax::mojom::Role::kAlert ||
+      GetAccessibleWindowRole() == ax::mojom::Role::kAlertDialog) {
+    GetWidget()->GetRootView()->NotifyAccessibilityEvent(
+        ax::mojom::Event::kAlert, true);
+  }
 }
 
 void LocationBarBubbleDelegateView::Observe(

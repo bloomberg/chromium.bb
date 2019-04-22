@@ -8,8 +8,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_property.h"
-#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
-#include "third_party/blink/renderer/core/dom/pausable_object.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_state_observer.h"
 #include "third_party/blink/renderer/core/frame/platform_event_controller.h"
 #include "third_party/blink/renderer/modules/battery/battery_status.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
@@ -19,13 +18,15 @@ namespace blink {
 
 class BatteryManager final : public EventTargetWithInlineData,
                              public ActiveScriptWrappable<BatteryManager>,
-                             public PausableObject,
+                             public ContextLifecycleStateObserver,
                              public PlatformEventController {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(BatteryManager);
 
  public:
   static BatteryManager* Create(ExecutionContext*);
+
+  explicit BatteryManager(ExecutionContext*);
   ~BatteryManager() override;
 
   // Returns a promise object that will be resolved with this BatteryManager.
@@ -44,11 +45,10 @@ class BatteryManager final : public EventTargetWithInlineData,
   double dischargingTime();
   double level();
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(chargingchange, kChargingchange);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(chargingtimechange, kChargingtimechange);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(dischargingtimechange,
-                                  kDischargingtimechange);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(levelchange, kLevelchange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(chargingchange, kChargingchange)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(chargingtimechange, kChargingtimechange)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(dischargingtimechange, kDischargingtimechange)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(levelchange, kLevelchange)
 
   // Inherited from PlatformEventController.
   void DidUpdateData() override;
@@ -56,9 +56,8 @@ class BatteryManager final : public EventTargetWithInlineData,
   void UnregisterWithDispatcher() override;
   bool HasLastData() override;
 
-  // PausableObject implementation.
-  void Pause() override;
-  void Unpause() override;
+  // ContextLifecycleState implementation.
+  void ContextLifecycleStateChanged(mojom::FrameLifecycleState) override;
   void ContextDestroyed(ExecutionContext*) override;
 
   // ScriptWrappable implementation.
@@ -67,8 +66,6 @@ class BatteryManager final : public EventTargetWithInlineData,
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit BatteryManager(ExecutionContext*);
-
   using BatteryProperty = ScriptPromiseProperty<Member<BatteryManager>,
                                                 Member<BatteryManager>,
                                                 Member<DOMException>>;

@@ -7,7 +7,7 @@ cr.define('cr.ui', function() {
    * The class name to set on the document element.
    * @const
    */
-  var CLASS_NAME = 'focus-outline-visible';
+  const CLASS_NAME = 'focus-outline-visible';
 
   /**
    * This class sets a CSS class name on the HTML element of |doc| when the user
@@ -29,9 +29,10 @@ cr.define('cr.ui', function() {
   function FocusOutlineManager(doc) {
     this.classList_ = doc.documentElement.classList;
 
-    var onEvent = function(focusByKeyboard, e) {
-      if (this.focusByKeyboard_ === focusByKeyboard)
+    const onEvent = function(focusByKeyboard, e) {
+      if (this.focusByKeyboard_ === focusByKeyboard) {
         return;
+      }
       this.focusByKeyboard_ = focusByKeyboard;
       this.updateVisibility();
     };
@@ -76,7 +77,7 @@ cr.define('cr.ui', function() {
   };
 
   /** @type {!Map<!Document, !cr.ui.FocusOutlineManager>} */
-  var docsToManager = new Map();
+  const docsToManager = new Map();
 
   /**
    * Gets a per document singleton focus outline manager.
@@ -85,7 +86,7 @@ cr.define('cr.ui', function() {
    *     outline manager.
    */
   FocusOutlineManager.forDocument = function(doc) {
-    var manager = docsToManager.get(doc);
+    let manager = docsToManager.get(doc);
     if (!manager) {
       manager = new FocusOutlineManager(doc);
       docsToManager.set(doc, manager);

@@ -41,10 +41,6 @@
 
 namespace blink {
 
-TreeOrderedMap* TreeOrderedMap::Create() {
-  return MakeGarbageCollected<TreeOrderedMap>();
-}
-
 TreeOrderedMap::TreeOrderedMap() = default;
 
 #if DCHECK_IS_ON()
@@ -205,11 +201,11 @@ Element* TreeOrderedMap::GetCachedFirstElementWithoutAccessingNodeTree(
   return entry->element;
 }
 
-void TreeOrderedMap::Trace(blink::Visitor* visitor) {
+void TreeOrderedMap::Trace(Visitor* visitor) {
   visitor->Trace(map_);
 }
 
-void TreeOrderedMap::MapEntry::Trace(blink::Visitor* visitor) {
+void TreeOrderedMap::MapEntry::Trace(Visitor* visitor) {
   visitor->Trace(element);
   visitor->Trace(ordered_list);
 }

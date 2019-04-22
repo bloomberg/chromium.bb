@@ -12,8 +12,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using buzz::XmlElement;
-using buzz::QName;
+using jingle_xmpp::XmlElement;
+using jingle_xmpp::QName;
 using testing::_;
 using testing::DeleteArg;
 using testing::InSequence;

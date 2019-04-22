@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
@@ -21,7 +22,6 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_otr_state.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/trace_event_args_whitelist.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -214,9 +214,4 @@ ChromeTracingDelegate::GenerateMetadataDict() {
   metadata_dict->Set("field-trials", std::move(variations_list));
   metadata_dict->SetString("revision", version_info::GetLastChange());
   return metadata_dict;
-}
-
-content::MetadataFilterPredicate
-ChromeTracingDelegate::GetMetadataFilterPredicate() {
-  return base::Bind(&IsMetadataWhitelisted);
 }

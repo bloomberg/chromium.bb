@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/leak_annotations.h"
 #include "base/i18n/rtl.h"
@@ -46,6 +47,18 @@
 #include "ui/views/widget/desktop_aura/x11_desktop_handler.h"
 #endif
 
+namespace {
+
+bool IsUsingGtkTheme(Profile* profile) {
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  return ThemeServiceFactory::GetForProfile(profile)->UsingSystemTheme();
+#else
+  return false;
+#endif
+}
+
+}  // namespace
+
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserFrame, public:
 
@@ -69,9 +82,14 @@ void BrowserFrame::InitBrowserFrame() {
   views::Widget::InitParams params = native_browser_frame_->GetWidgetParams();
   params.name = "BrowserFrame";
   params.delegate = browser_view_;
-  if (browser_view_->browser()->is_type_tabbed()) {
+  if (browser_view_->browser()->is_type_tabbed() ||
+      browser_view_->browser()->is_devtools()) {
     // Typed panel/popup can only return a size once the widget has been
     // created.
+    // DevTools counts as a popup, but DevToolsWindow::CreateDevToolsBrowser
+    // ensures there is always a size available. Without this, the tools
+    // launch on the wrong display and can have sizing issues when
+    // repositioned to the saved bounds in Widget::SetInitialBounds.
     chrome::GetSavedWindowBoundsAndShowState(browser_view_->browser(),
                                              &params.bounds,
                                              &params.show_state);
@@ -102,10 +120,12 @@ int BrowserFrame::GetMinimizeButtonOffset() const {
   return native_browser_frame_->GetMinimizeButtonOffset();
 }
 
-gfx::Rect BrowserFrame::GetBoundsForTabStrip(views::View* tabstrip) const {
+gfx::Rect BrowserFrame::GetBoundsForTabStripRegion(
+    const views::View* tabstrip) const {
   // This can be invoked before |browser_frame_view_| has been set.
-  return browser_frame_view_ ?
-      browser_frame_view_->GetBoundsForTabStrip(tabstrip) : gfx::Rect();
+  return browser_frame_view_
+             ? browser_frame_view_->GetBoundsForTabStripRegion(tabstrip)
+             : gfx::Rect();
 }
 
 int BrowserFrame::GetTopInset() const {
@@ -151,6 +171,22 @@ void BrowserFrame::OnBrowserViewInitViewsComplete() {
   browser_frame_view_->OnBrowserViewInitViewsComplete();
 }
 
+bool BrowserFrame::ShouldUseTheme() const {
+  // Browser windows are always themed (including popups).
+  if (!WebAppBrowserController::IsForExperimentalWebAppBrowser(
+          browser_view_->browser())) {
+    return true;
+  }
+
+  // The system GTK theme should always be respected if the user has opted to
+  // use it.
+  if (IsUsingGtkTheme(browser_view_->browser()->profile()))
+    return true;
+
+  // Hosted apps on non-GTK use default colors.
+  return false;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserFrame, views::Widget overrides:
 
@@ -173,12 +209,9 @@ bool BrowserFrame::GetAccelerator(int command_id,
 const ui::ThemeProvider* BrowserFrame::GetThemeProvider() const {
   Browser* browser = browser_view_->browser();
   Profile* profile = browser->profile();
-  // Hosted apps are meant to appear stand alone from the main browser so they
-  // do not use the normal browser's configured theme.
-  using HostedAppController = extensions::HostedAppBrowserController;
-  return HostedAppController::IsForExperimentalHostedAppBrowser(browser)
-             ? &ThemeService::GetDefaultThemeProviderForProfile(profile)
-             : &ThemeService::GetThemeProviderForProfile(profile);
+  return ShouldUseTheme()
+             ? &ThemeService::GetThemeProviderForProfile(profile)
+             : &ThemeService::GetDefaultThemeProviderForProfile(profile);
 }
 
 const ui::NativeTheme* BrowserFrame::GetNativeTheme() const {
@@ -207,9 +240,9 @@ void BrowserFrame::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
   browser_view_->NativeThemeUpdated(observed_theme);
 }
 
-void BrowserFrame::ShowContextMenuForView(views::View* source,
-                                          const gfx::Point& p,
-                                          ui::MenuSourceType source_type) {
+void BrowserFrame::ShowContextMenuForViewImpl(views::View* source,
+                                              const gfx::Point& p,
+                                              ui::MenuSourceType source_type) {
   if (chrome::IsRunningInForcedAppMode())
     return;
 
@@ -224,10 +257,11 @@ void BrowserFrame::ShowContextMenuForView(views::View* source,
     menu_runner_.reset(new views::MenuRunner(
         GetSystemMenuModel(),
         views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU,
-        base::Bind(&BrowserFrame::OnMenuClosed, base::Unretained(this))));
+        base::BindRepeating(&BrowserFrame::OnMenuClosed,
+                            base::Unretained(this))));
     menu_runner_->RunMenuAt(source->GetWidget(), nullptr,
                             gfx::Rect(p, gfx::Size(0, 0)),
-                            views::MENU_ANCHOR_TOPLEFT, source_type);
+                            views::MenuAnchorPosition::kTopLeft, source_type);
   }
 }
 

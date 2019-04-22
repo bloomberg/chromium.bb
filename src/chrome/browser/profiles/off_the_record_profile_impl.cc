@@ -15,6 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
+#include "chrome/browser/accessibility/accessibility_labels_service.h"
 #include "chrome/browser/background/background_contents_service_factory.h"
 #include "chrome/browser/background_fetch/background_fetch_delegate_factory.h"
 #include "chrome/browser/background_fetch/background_fetch_delegate_impl.h"
@@ -23,6 +24,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate_factory.h"
+#include "chrome/browser/client_hints/client_hints_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/dom_distiller/profile_utils.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
@@ -38,6 +40,7 @@
 #include "chrome/browser/prefs/in_process_service_factory_factory.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
+#include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate_factory.h"
@@ -50,6 +53,9 @@
 #include "chrome/common/chrome_switches.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/keyed_service/core/simple_dependency_manager.h"
+#include "components/keyed_service/core/simple_key_map.h"
+#include "components/keyed_service/core/simple_keyed_service_factory.h"
 #include "components/prefs/json_pref_store.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/user_prefs/user_prefs.h"
@@ -142,6 +148,11 @@ OffTheRecordProfileImpl::OffTheRecordProfileImpl(Profile* real_profile)
       CreateExtensionPrefStore(profile_, true),
       InProcessPrefServiceFactoryFactory::GetInstanceForContext(this)
           ->CreateDelegate());
+
+  key_ = std::make_unique<ProfileKey>(profile_->GetPath(), prefs_.get(),
+                                      profile_->GetProfileKey());
+  SimpleKeyMap::GetInstance()->Associate(this, key_.get());
+
   // Register on BrowserContext.
   user_prefs::UserPrefs::Set(this, prefs_.get());
 }
@@ -197,6 +208,9 @@ void OffTheRecordProfileImpl::Init() {
   // The DomDistillerViewerSource is not a normal WebUI so it must be registered
   // as a URLDataSource early.
   dom_distiller::RegisterViewerSource(this);
+
+  // AccessibilityLabelsService has a default prefs behavior in incognito.
+  AccessibilityLabelsService::InitOffTheRecordPrefs(this);
 }
 
 OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {
@@ -213,8 +227,15 @@ OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {
   GetDefaultStoragePartition(this)->GetNetworkContext()->ClearHostCache(
       nullptr, network::mojom::NetworkContext::ClearHostCacheCallback());
 
-  BrowserContextDependencyManager::GetInstance()->DestroyBrowserContextServices(
-      this);
+  // The SimpleDependencyManager should always be passed after the
+  // BrowserContextDependencyManager. This is because the KeyedService instances
+  // in the BrowserContextDependencyManager's dependency graph can depend on the
+  // ones in the SimpleDependencyManager's graph.
+  DependencyManager::PerformInterlockedTwoPhaseShutdown(
+      BrowserContextDependencyManager::GetInstance(), this,
+      SimpleDependencyManager::GetInstance(), key_.get());
+
+  SimpleKeyMap::GetInstance()->Dissociate(this);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   base::PostTaskWithTraits(
@@ -331,6 +352,10 @@ bool OffTheRecordProfileImpl::IsChild() const {
 
 bool OffTheRecordProfileImpl::IsLegacySupervised() const {
   return profile_->IsLegacySupervised();
+}
+
+bool OffTheRecordProfileImpl::AllowsBrowserWindows() const {
+  return profile_->AllowsBrowserWindows();
 }
 
 PrefService* OffTheRecordProfileImpl::GetPrefs() {
@@ -455,6 +480,11 @@ OffTheRecordProfileImpl::GetPermissionControllerDelegate() {
   return PermissionManagerFactory::GetForProfile(this);
 }
 
+content::ClientHintsControllerDelegate*
+OffTheRecordProfileImpl::GetClientHintsControllerDelegate() {
+  return ClientHintsFactory::GetForBrowserContext(this);
+}
+
 content::BackgroundFetchDelegate*
 OffTheRecordProfileImpl::GetBackgroundFetchDelegate() {
   return BackgroundFetchDelegateFactory::GetForProfile(this);
@@ -493,8 +523,9 @@ OffTheRecordProfileImpl::GetVideoDecodePerfHistory() {
 
     auto stats_db = std::make_unique<media::InMemoryVideoDecodeStatsDBImpl>(
         seed_db_provider);
-    auto new_decode_history =
-        std::make_unique<media::VideoDecodePerfHistory>(std::move(stats_db));
+    // TODO(liberato): Get the FeatureProviderFactoryCB from BrowserContext.
+    auto new_decode_history = std::make_unique<media::VideoDecodePerfHistory>(
+        std::move(stats_db), media::learning::FeatureProviderFactoryCB());
     decode_history = new_decode_history.get();
 
     SetUserData(kVideoDecodePerfHistoryId, std::move(new_decode_history));
@@ -503,12 +534,31 @@ OffTheRecordProfileImpl::GetVideoDecodePerfHistory() {
   return decode_history;
 }
 
+void OffTheRecordProfileImpl::SetCorsOriginAccessListForOrigin(
+    const url::Origin& source_origin,
+    std::vector<network::mojom::CorsOriginPatternPtr> allow_patterns,
+    std::vector<network::mojom::CorsOriginPatternPtr> block_patterns,
+    base::OnceClosure closure) {
+  NOTREACHED()
+      << "CorsOriginAccessList should not be modified in incognito profiles";
+}
+
+const content::SharedCorsOriginAccessList*
+OffTheRecordProfileImpl::GetSharedCorsOriginAccessList() const {
+  return profile_->GetSharedCorsOriginAccessList();
+}
+
 bool OffTheRecordProfileImpl::IsSameProfile(Profile* profile) {
   return (profile == this) || (profile == profile_);
 }
 
 base::Time OffTheRecordProfileImpl::GetStartTime() const {
   return start_time_;
+}
+
+ProfileKey* OffTheRecordProfileImpl::GetProfileKey() const {
+  DCHECK(key_);
+  return key_.get();
 }
 
 void OffTheRecordProfileImpl::SetExitType(ExitType exit_type) {

@@ -6,9 +6,13 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PROPERTIES_SHORTHAND_H_
 
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
+class CSSParserContext;
+class CSSParserLocalContext;
+class CSSParserTokenRange;
 class CSSPropertyValue;
 
 class Shorthand : public CSSProperty {
@@ -25,17 +29,20 @@ class Shorthand : public CSSProperty {
     NOTREACHED();
     return false;
   }
-  bool IsShorthand() const override { return true; }
 
  protected:
-  constexpr Shorthand() : CSSProperty() {}
+  constexpr Shorthand(CSSPropertyID id,
+                      uint16_t flags,
+                      char repetition_separator)
+      : CSSProperty(id, flags | kShorthand, repetition_separator) {}
 };
 
-DEFINE_TYPE_CASTS(Shorthand,
-                  CSSProperty,
-                  shorthand,
-                  shorthand->IsShorthand(),
-                  shorthand.IsShorthand());
+template <>
+struct DowncastTraits<Shorthand> {
+  static bool AllowFrom(const CSSProperty& property) {
+    return property.IsShorthand();
+  }
+};
 
 }  // namespace blink
 

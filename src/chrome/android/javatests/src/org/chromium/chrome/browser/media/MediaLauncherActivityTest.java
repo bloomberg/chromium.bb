@@ -51,12 +51,12 @@ public class MediaLauncherActivityTest {
     @Before
     public void setUp() {
         mContext = InstrumentationRegistry.getTargetContext();
-        MediaViewerUtils.forceEnableMediaLauncherActivityForTest(mContext);
+        MediaViewerUtils.forceEnableMediaLauncherActivityForTest();
     }
 
     @After
     public void tearDown() {
-        MediaViewerUtils.stopForcingEnableMediaLauncherActivityForTest(mContext);
+        MediaViewerUtils.stopForcingEnableMediaLauncherActivityForTest();
     }
 
     @Test

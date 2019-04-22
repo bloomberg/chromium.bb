@@ -18,9 +18,9 @@
 #include "services/network/public/mojom/tls_socket.mojom.h"
 
 namespace net {
-class ClientSocketHandle;
 class ClientSocketFactory;
 class SSLConfigService;
+class StreamSocket;
 }  // namespace net
 
 namespace network {
@@ -69,7 +69,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) TLSSocketFactory {
       const net::HostPortPair& host_port_pair,
       mojom::TLSClientSocketOptionsPtr socket_options,
       mojom::TLSClientSocketRequest request,
-      std::unique_ptr<net::ClientSocketHandle> socket,
+      std::unique_ptr<net::StreamSocket> underlying_socket,
       mojom::SocketObserverPtr observer,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       mojom::TCPConnectedSocket::UpgradeToTLSCallback callback);

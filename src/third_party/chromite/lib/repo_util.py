@@ -67,7 +67,7 @@ class Repository(object):
   @classmethod
   def Initialize(cls, root, manifest_url, manifest_branch=None,
                  manifest_name=None, mirror=False, reference=None, depth=None,
-                 groups=None, repo_url=None):
+                 groups=None, repo_url=None, repo_branch=None):
     """Initialize and return a new Repository with `repo init`.
 
     Args:
@@ -81,6 +81,7 @@ class Repository(object):
       depth: Create shallow git clones with the given depth.
       groups: Restrict manifest projects to the given groups.
       repo_url: Repo command repository URL.
+      repo_branch: Repo command repository branch or revision.
 
     Raises:
       Error: root already contained a .repo subdir.
@@ -108,6 +109,8 @@ class Repository(object):
       cmd += ['--groups', groups]
     if repo_url is not None:
       cmd += ['--repo-url', repo_url]
+    if repo_branch is not None:
+      cmd += ['--repo-branch', repo_branch]
 
     repo_dir = os.path.join(root, '.repo')
     warning_msg = 'Removing %r due to `repo init` failures.' % repo_dir

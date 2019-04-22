@@ -39,23 +39,21 @@
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/hash_traits.h"
 #include "third_party/blink/renderer/platform/wtf/type_traits.h"
-#include "v8/include/v8.h"
+
+namespace v8 {
+class Value;
+}
 
 namespace blink {
 
 template <typename T>
 class GarbageCollected;
 template <typename T>
-class DOMWrapperMap;
-template <typename T>
 class TraceTrait;
 class ThreadState;
 class Visitor;
 template <typename T>
 class SameThreadCheckedMember;
-class ScriptWrappable;
-template <typename T>
-class TraceWrapperMember;
 template <typename T>
 class TraceWrapperV8Reference;
 
@@ -75,6 +73,8 @@ struct TraceMethodDelegate {
 
 // Visitor is used to traverse Oilpan's object graph.
 class PLATFORM_EXPORT Visitor {
+  USING_FAST_MALLOC(Visitor);
+
  public:
   explicit Visitor(ThreadState* state) : state_(state) {}
   virtual ~Visitor() = default;
@@ -203,34 +203,6 @@ class PLATFORM_EXPORT Visitor {
 
   // Cross-component tracing interface.
 
-  template <typename T>
-  void Trace(const TraceWrapperMember<T>& t) {
-    DCHECK(!t.IsHashTableDeletedValue());
-    TraceWithWrappers(t.Get());
-  }
-
-  template <typename T>
-  void TraceWithWrappers(T* t) {
-    static_assert(sizeof(T), "T must be fully defined");
-    static_assert(IsGarbageCollectedType<T>::value,
-                  "T needs to be a garbage collected object");
-    if (!t)
-      return;
-
-    // Dispatch two both, the TraceDescritpor and the TraceWrapperDescriptor,
-    // versions of the visitor. This way the wrapper-tracing world can ignore
-    // the TraceDescriptor versions.
-    Visit(const_cast<void*>(reinterpret_cast<const void*>(t)),
-          TraceDescriptorFor(t));
-    VisitWithWrappers(const_cast<void*>(reinterpret_cast<const void*>(t)),
-                      TraceDescriptorFor(t));
-  }
-
-  void Trace(DOMWrapperMap<ScriptWrappable>* wrapper_map,
-             const ScriptWrappable* key) {
-    Visit(wrapper_map, key);
-  }
-
   template <typename V8Type>
   void Trace(const TraceWrapperV8Reference<V8Type>& v8reference) {
     Visit(v8reference.template Cast<v8::Value>());
@@ -240,9 +212,6 @@ class PLATFORM_EXPORT Visitor {
 
   // Visits an object through a strong reference.
   virtual void Visit(void*, TraceDescriptor) = 0;
-  // Subgraph of objects that are interested in wrappers. Note that the same
-  // object is also passed to Visit(void*, TraceDescriptor).
-  virtual void VisitWithWrappers(void*, TraceDescriptor) = 0;
 
   // Visits an object through a weak reference.
   virtual void VisitWeak(void*, void**, TraceDescriptor, WeakCallback) = 0;
@@ -259,8 +228,6 @@ class PLATFORM_EXPORT Visitor {
   // Visits cross-component references to V8.
 
   virtual void Visit(const TraceWrapperV8Reference<v8::Value>&) = 0;
-  virtual void Visit(DOMWrapperMap<ScriptWrappable>*,
-                     const ScriptWrappable* key) = 0;
 
   // Registers backing store pointers so that they can be moved and properly
   // updated.

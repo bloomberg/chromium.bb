@@ -62,10 +62,10 @@ class TestInputs {
 };
 
 TestInputs::TestInputs(const EchoCanceller3Config& cfg)
-    : render_delay_buffer_(RenderDelayBuffer::Create2(cfg, 1)),
+    : render_delay_buffer_(RenderDelayBuffer::Create(cfg, 1)),
       H2_(cfg.filter.main.length_blocks),
       x_(1, std::vector<float>(kBlockSize, 0.f)) {
-  render_delay_buffer_->SetDelay(4);
+  render_delay_buffer_->AlignFromDelay(4);
   render_buffer_ = render_delay_buffer_->GetRenderBuffer();
   for (auto& H : H2_) {
     H.fill(0.f);
@@ -115,7 +115,7 @@ TEST(SignalDependentErleEstimator, SweepSettings) {
         cfg.filter.main.length_blocks = blocks;
         cfg.filter.main_initial.length_blocks =
             std::min(cfg.filter.main_initial.length_blocks, blocks);
-        cfg.delay.delay_headroom_blocks = delay_headroom;
+        cfg.delay.delay_headroom_samples = delay_headroom * kBlockSize;
         cfg.erle.num_sections = num_sections;
         if (EchoCanceller3Config::Validate(&cfg)) {
           SignalDependentErleEstimator s(cfg);
@@ -137,8 +137,8 @@ TEST(SignalDependentErleEstimator, LongerRun) {
   EchoCanceller3Config cfg;
   cfg.filter.main.length_blocks = 2;
   cfg.filter.main_initial.length_blocks = 1;
-  cfg.delay.delay_headroom_blocks = 0;
-  cfg.delay.hysteresis_limit_1_blocks = 0;
+  cfg.delay.delay_headroom_samples = 0;
+  cfg.delay.hysteresis_limit_blocks = 0;
   cfg.erle.num_sections = 2;
   EXPECT_EQ(EchoCanceller3Config::Validate(&cfg), true);
   std::array<float, kFftLengthBy2Plus1> average_erle;

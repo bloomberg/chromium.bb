@@ -65,7 +65,8 @@ Accelerator::Accelerator(const KeyEvent& key_event)
       // |modifiers_| may include the repeat flag.
       modifiers_(key_event.flags() & kInterestingFlagsMask),
       time_stamp_(key_event.time_stamp()),
-      interrupted_by_mouse_event_(false) {}
+      interrupted_by_mouse_event_(false),
+      source_device_id_(key_event.source_device_id()) {}
 
 Accelerator::Accelerator(const Accelerator& accelerator) {
   key_code_ = accelerator.key_code_;
@@ -73,6 +74,7 @@ Accelerator::Accelerator(const Accelerator& accelerator) {
   modifiers_ = accelerator.modifiers_;
   time_stamp_ = accelerator.time_stamp_;
   interrupted_by_mouse_event_ = accelerator.interrupted_by_mouse_event_;
+  source_device_id_ = accelerator.source_device_id_;
 }
 
 Accelerator::~Accelerator() {
@@ -161,7 +163,10 @@ base::string16 Accelerator::GetShortcutText() const {
       key = static_cast<wchar_t>(key_code_);
     else
       key = LOWORD(::MapVirtualKeyW(key_code_, MAPVK_VK_TO_CHAR));
-    shortcut += key;
+    // If there is no translation for the given |key_code_| (e.g.
+    // VKEY_UNKNOWN), |::MapVirtualKeyW| returns 0.
+    if (key != 0)
+      shortcut += key;
 #elif defined(USE_AURA) || defined(OS_MACOSX) || defined(OS_ANDROID)
     const uint16_t c = DomCodeToUsLayoutCharacter(
         UsLayoutKeyboardCodeToDomCode(key_code_), false);

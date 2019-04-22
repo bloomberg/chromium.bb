@@ -35,6 +35,14 @@ enum OpenEntryResult {
 };
 
 // Used in histograms, please only add entries at the end.
+enum OpenPrefetchMode {
+  OPEN_PREFETCH_NONE = 0,
+  OPEN_PREFETCH_FULL = 1,
+  OPEN_PREFETCH_TRAILER = 2,
+  OPEN_PREFETCH_MAX = 3,
+};
+
+// Used in histograms, please only add entries at the end.
 enum SyncWriteResult {
   SYNC_WRITE_RESULT_SUCCESS = 0,
   SYNC_WRITE_RESULT_PRETRUNCATE_FAILURE = 1,
@@ -77,6 +85,14 @@ enum FileDescriptorLimiterOp {
   FD_LIMIT_REOPEN_FILE = 1,
   FD_LIMIT_FAIL_REOPEN_FILE = 2,
   FD_LIMIT_OP_MAX = 3
+};
+
+// This enumeration is used in histograms, add entries only at end.
+enum OpenEntryIndexEnum {
+  INDEX_NOEXIST = 0,
+  INDEX_MISS = 1,
+  INDEX_HIT = 2,
+  INDEX_MAX = 3,
 };
 
 }  // namespace disk_cache

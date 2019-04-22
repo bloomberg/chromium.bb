@@ -22,7 +22,8 @@ namespace chromeos {
 
 // The DebugDaemonClient implementation used on Linux desktop,
 // which does nothing.
-class CHROMEOS_EXPORT FakeDebugDaemonClient : public DebugDaemonClient {
+class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeDebugDaemonClient
+    : public DebugDaemonClient {
  public:
   FakeDebugDaemonClient();
   ~FakeDebugDaemonClient() override;
@@ -51,13 +52,13 @@ class CHROMEOS_EXPORT FakeDebugDaemonClient : public DebugDaemonClient {
   void GetPerfOutput(base::TimeDelta duration,
                      const std::vector<std::string>& perf_args,
                      int file_descriptor,
-                     VoidDBusMethodCallback callback) override;
-  void GetScrubbedLogs(const GetLogsCallback& callback) override;
-  void GetScrubbedBigLogs(const GetLogsCallback& callback) override;
-  void GetAllLogs(const GetLogsCallback& callback) override;
+                     DBusMethodCallback<uint64_t> callback) override;
+  void GetScrubbedLogs(GetLogsCallback callback) override;
+  void GetScrubbedBigLogs(GetLogsCallback callback) override;
+  void GetAllLogs(GetLogsCallback callback) override;
   void GetLog(const std::string& log_name,
               DBusMethodCallback<std::string> callback) override;
-  void GetUserLogFiles(const GetLogsCallback& callback) override;
+  void GetUserLogFiles(GetLogsCallback callback) override;
   void TestICMP(const std::string& ip_address,
                 const TestICMPCallback& callback) override;
   void TestICMPWithOptions(const std::string& ip_address,
@@ -84,26 +85,35 @@ class CHROMEOS_EXPORT FakeDebugDaemonClient : public DebugDaemonClient {
                                     const std::string& uri,
                                     CupsAddPrinterCallback callback) override;
   void CupsRemovePrinter(const std::string& name,
-                         const CupsRemovePrinterCallback& callback,
+                         CupsRemovePrinterCallback callback,
                          const base::Closure& error_callback) override;
   void StartConcierge(ConciergeCallback callback) override;
   void StopConcierge(ConciergeCallback callback) override;
+  void StartPluginVmDispatcher(PluginVmDispatcherCallback callback) override;
+  void StopPluginVmDispatcher(PluginVmDispatcherCallback callback) override;
   void SetRlzPingSent(SetRlzPingSentCallback callback) override;
+  void SetSchedulerConfiguration(const std::string& config_name,
+                                 VoidDBusMethodCallback callback) override;
 
   // Sets debugging features mask for testing.
-  virtual void SetDebuggingFeaturesStatus(int featues_mask);
+  virtual void SetDebuggingFeaturesStatus(int features_mask);
 
   // Changes the behavior of WaitForServiceToBeAvailable(). This method runs
   // pending callbacks if is_available is true.
   void SetServiceIsAvailable(bool is_available);
 
+  const std::string& scheduler_configuration_name() const {
+    return scheduler_configuration_name_;
+  }
+
  private:
-  int featues_mask_;
+  int features_mask_;
 
   bool service_is_available_;
   std::vector<WaitForServiceToBeAvailableCallback>
       pending_wait_for_service_to_be_available_callbacks_;
   std::set<std::string> printers_;
+  std::string scheduler_configuration_name_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeDebugDaemonClient);
 };

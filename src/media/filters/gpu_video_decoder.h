@@ -17,6 +17,7 @@
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/trace_event/memory_dump_provider.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "media/base/overlay_info.h"
 #include "media/base/pipeline_status.h"
@@ -45,7 +46,8 @@ class MediaLog;
 // GetMessageLoop().
 class MEDIA_EXPORT GpuVideoDecoder
     : public VideoDecoder,
-      public VideoDecodeAccelerator::Client {
+      public VideoDecodeAccelerator::Client,
+      public base::trace_event::MemoryDumpProvider {
  public:
   GpuVideoDecoder(GpuVideoAcceleratorFactories* factories,
                   const RequestOverlayInfoCB& request_overlay_info_cb,
@@ -56,13 +58,12 @@ class MEDIA_EXPORT GpuVideoDecoder
   // VideoDecoder implementation.
   std::string GetDisplayName() const override;
   bool IsPlatformDecoder() const override;
-  void Initialize(
-      const VideoDecoderConfig& config,
-      bool low_delay,
-      CdmContext* cdm_context,
-      const InitCB& init_cb,
-      const OutputCB& output_cb,
-      const WaitingForDecryptionKeyCB& waiting_for_decryption_key_cb) override;
+  void Initialize(const VideoDecoderConfig& config,
+                  bool low_delay,
+                  CdmContext* cdm_context,
+                  const InitCB& init_cb,
+                  const OutputCB& output_cb,
+                  const WaitingCB& waiting_cb) override;
   void Decode(scoped_refptr<DecoderBuffer> buffer,
               const DecodeCB& decode_cb) override;
   void Reset(const base::Closure& closure) override;
@@ -83,6 +84,10 @@ class MEDIA_EXPORT GpuVideoDecoder
   void NotifyFlushDone() override;
   void NotifyResetDone() override;
   void NotifyError(media::VideoDecodeAccelerator::Error error) override;
+
+  // base::trace_event::MemoryDumpProvider implementation.
+  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                    base::trace_event::ProcessMemoryDump* pmd) override;
 
   static const char kDecoderName[];
 

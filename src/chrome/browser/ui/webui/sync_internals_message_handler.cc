@@ -7,19 +7,19 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/command_line.h"
-#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/user_event_service_factory.h"
 #include "chrome/common/channel_info.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/driver/about_sync_util.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_service.h"
+#include "components/sync/driver/sync_user_settings.h"
 #include "components/sync/engine/cycle/commit_counters.h"
 #include "components/sync/engine/cycle/status_counters.h"
 #include "components/sync/engine/cycle/update_counters.h"
@@ -252,7 +252,7 @@ void SyncInternalsMessageHandler::HandleGetAllNodes(const ListValue* args) {
     // asynchronously, and potentially at times we're not allowed to call into
     // the javascript side. We guard against this by invalidating this weak ptr
     // should javascript become disallowed.
-    service->GetAllNodes(
+    service->GetAllNodesForDebugging(
         base::Bind(&SyncInternalsMessageHandler::OnReceivedAllNodes,
                    weak_ptr_factory_.GetWeakPtr(), request_id));
   }
@@ -262,9 +262,10 @@ void SyncInternalsMessageHandler::HandleRequestUserEventsVisibility(
     const base::ListValue* args) {
   DCHECK(args->empty());
   AllowJavascript();
-  CallJavascriptFunction(
-      syncer::sync_ui_util::kUserEventsVisibilityCallback,
-      Value(base::FeatureList::IsEnabled(switches::kSyncUserEvents)));
+  // TODO(crbug.com/934333): Get rid of this callback now that user events are
+  // always enabled.
+  CallJavascriptFunction(syncer::sync_ui_util::kUserEventsVisibilityCallback,
+                         Value(true));
 }
 
 void SyncInternalsMessageHandler::HandleSetIncludeSpecifics(
@@ -308,7 +309,7 @@ void SyncInternalsMessageHandler::HandleRequestStart(
     return;
 
   service->GetUserSettings()->SetSyncRequested(true);
-  // If the service was previously stopped with CLEAR_DATA, then the
+  // If the service was previously stopped via StopAndClear(), then the
   // "first-setup-complete" bit was also cleared, and now the service wouldn't
   // fully start up. So set that too.
   service->GetUserSettings()->SetFirstSetupComplete();
@@ -333,7 +334,7 @@ void SyncInternalsMessageHandler::HandleRequestStopClearData(
   if (!service)
     return;
 
-  service->RequestStop(SyncService::CLEAR_DATA);
+  service->StopAndClear();
 }
 
 void SyncInternalsMessageHandler::HandleTriggerRefresh(
@@ -361,8 +362,7 @@ void SyncInternalsMessageHandler::OnStateChanged(SyncService* sync) {
 
 void SyncInternalsMessageHandler::OnProtocolEvent(
     const syncer::ProtocolEvent& event) {
-  std::unique_ptr<DictionaryValue> value(
-      syncer::ProtocolEvent::ToValue(event, include_specifics_));
+  std::unique_ptr<DictionaryValue> value(event.ToValue(include_specifics_));
   DispatchEvent(syncer::sync_ui_util::kOnProtocolEvent, *value);
 }
 
@@ -410,7 +410,7 @@ void SyncInternalsMessageHandler::SendAboutInfo() {
 }
 
 SyncService* SyncInternalsMessageHandler::GetSyncService() {
-  return ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(
+  return ProfileSyncServiceFactory::GetForProfile(
       Profile::FromWebUI(web_ui())->GetOriginalProfile());
 }
 

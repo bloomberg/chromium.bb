@@ -11,6 +11,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 #include "components/metrics/metrics_log.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
@@ -62,14 +63,18 @@ OmniboxEventProto::Suggestion::ResultType AsOmniboxEventResultType(
       return OmniboxEventProto::Suggestion::BOOKMARK_TITLE;
     case AutocompleteMatchType::NAVSUGGEST_PERSONALIZED:
       return OmniboxEventProto::Suggestion::NAVSUGGEST_PERSONALIZED;
-    case AutocompleteMatchType::CLIPBOARD:
-      return OmniboxEventProto::Suggestion::CLIPBOARD;
+    case AutocompleteMatchType::CLIPBOARD_URL:
+      return OmniboxEventProto::Suggestion::CLIPBOARD_URL;
     case AutocompleteMatchType::DOCUMENT_SUGGESTION:
       return OmniboxEventProto::Suggestion::DOCUMENT;
     case AutocompleteMatchType::PEDAL:
       // TODO(orinj): Add a new OmniboxEventProto type for Pedals.
       // return OmniboxEventProto::Suggestion::PEDAL;
       return OmniboxEventProto::Suggestion::NAVSUGGEST;
+    case AutocompleteMatchType::CLIPBOARD_TEXT:
+      return OmniboxEventProto::Suggestion::CLIPBOARD_TEXT;
+    case AutocompleteMatchType::CLIPBOARD_IMAGE:
+      return OmniboxEventProto::Suggestion::CLIPBOARD_IMAGE;
     case AutocompleteMatchType::VOICE_SUGGEST:
       // VOICE_SUGGEST matches are only used in Java and are not logged,
       // so we should never reach this case.
@@ -86,17 +91,15 @@ OmniboxEventProto::Suggestion::ResultType AsOmniboxEventResultType(
 
 }  // namespace
 
-OmniboxMetricsProvider::OmniboxMetricsProvider(
-    const base::Callback<bool(void)>& is_off_the_record_callback)
-    : is_off_the_record_callback_(is_off_the_record_callback) {}
+OmniboxMetricsProvider::OmniboxMetricsProvider() {}
 
 OmniboxMetricsProvider::~OmniboxMetricsProvider() {
 }
 
 void OmniboxMetricsProvider::OnRecordingEnabled() {
   subscription_ = OmniboxEventGlobalTracker::GetInstance()->RegisterCallback(
-      base::Bind(&OmniboxMetricsProvider::OnURLOpenedFromOmnibox,
-                 base::Unretained(this)));
+      base::BindRepeating(&OmniboxMetricsProvider::OnURLOpenedFromOmnibox,
+                          base::Unretained(this)));
 }
 
 void OmniboxMetricsProvider::OnRecordingDisabled() {
@@ -110,10 +113,7 @@ void OmniboxMetricsProvider::ProvideCurrentSessionData(
 }
 
 void OmniboxMetricsProvider::OnURLOpenedFromOmnibox(OmniboxLog* log) {
-  // Do not log events to UMA if the embedder reports that the user is in an
-  // off-the-record context.
-  if (!is_off_the_record_callback_.Run())
-    RecordOmniboxOpenedURL(*log);
+  RecordOmniboxOpenedURL(*log);
 }
 
 void OmniboxMetricsProvider::RecordOmniboxOpenedURL(const OmniboxLog& log) {
@@ -169,10 +169,20 @@ void OmniboxMetricsProvider::RecordOmniboxOpenedURL(const OmniboxLog& log) {
     if (i->subtype_identifier > 0)
       suggestion->set_result_subtype_identifier(i->subtype_identifier);
     suggestion->set_has_tab_match(i->has_tab_match);
+    suggestion->set_is_keyword_suggestion(i->from_keyword);
   }
   for (auto i(log.providers_info.begin()); i != log.providers_info.end(); ++i) {
     OmniboxEventProto::ProviderInfo* provider_info =
         omnibox_event->add_provider_info();
     provider_info->CopyFrom(*i);
+  }
+  omnibox_event->set_in_keyword_mode(log.in_keyword_mode);
+  if (log.in_keyword_mode) {
+    if (metrics::OmniboxEventProto_KeywordModeEntryMethod_IsValid(
+            log.keyword_mode_entry_method))
+      omnibox_event->set_keyword_mode_entry_method(
+          log.keyword_mode_entry_method);
+    else
+      omnibox_event->set_keyword_mode_entry_method(OmniboxEventProto::INVALID);
   }
 }

@@ -189,7 +189,7 @@ sk_sp<SkSurface> SkSurface::MakeRaster(const SkImageInfo& info, size_t rowBytes,
         return nullptr;
     }
 
-    sk_sp<SkPixelRef> pr = SkMallocPixelRef::MakeZeroed(info, rowBytes);
+    sk_sp<SkPixelRef> pr = SkMallocPixelRef::MakeAllocate(info, rowBytes);
     if (!pr) {
         return nullptr;
     }
@@ -197,4 +197,9 @@ sk_sp<SkSurface> SkSurface::MakeRaster(const SkImageInfo& info, size_t rowBytes,
         SkASSERT(pr->rowBytes() == rowBytes);
     }
     return sk_make_sp<SkSurface_Raster>(info, std::move(pr), props);
+}
+
+sk_sp<SkSurface> SkSurface::MakeRasterN32Premul(int width, int height,
+                                                const SkSurfaceProps* surfaceProps) {
+    return MakeRaster(SkImageInfo::MakeN32Premul(width, height), surfaceProps);
 }

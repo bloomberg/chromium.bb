@@ -15,10 +15,9 @@
 #include "base/time/time.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/driver/data_type_encryption_handler.h"
 #include "components/sync/driver/sync_service_observer.h"
 
-struct AccountInfo;
+struct CoreAccountInfo;
 class GoogleServiceAuthError;
 class GURL;
 
@@ -48,10 +47,75 @@ class SyncSetupInProgressHandle {
   base::Closure on_destroy_;
 };
 
-class SyncService : public DataTypeEncryptionHandler, public KeyedService {
+// SyncService is the layer between browser subsystems like bookmarks and the
+// sync engine. Each subsystem is logically thought of as being a sync datatype.
+// Individual datatypes can, at any point, be in a variety of stages of being
+// "enabled". Here are some specific terms for concepts used in this class:
+//
+//   'Registered' (feature suppression for a datatype)
+//
+//      When a datatype is registered, the user has the option of syncing it.
+//      The sync opt-in UI will show only registered types; a checkbox should
+//      never be shown for an unregistered type, nor can it ever be synced.
+//
+//   'Preferred' (user preferences and opt-out for a datatype)
+//
+//      This means the user's opt-in or opt-out preference on a per-datatype
+//      basis. The sync service will try to make active exactly these types.
+//      If a user has opted out of syncing a particular datatype, it will
+//      be registered, but not preferred. Also note that not all datatypes can
+//      be directly chosen by the user: e.g. AUTOFILL_PROFILE is implied by
+//      AUTOFILL but can't be selected separately. If AUTOFILL is chosen by the
+//      user, then AUTOFILL_PROFILE will also be considered preferred. See
+//      SyncPrefs::ResolvePrefGroups.
+//
+//      This state is controlled by SyncUserSettings::SetChosenDataTypes. They
+//      are stored in the preferences system and persist; though if a datatype
+//      is not registered, it cannot be a preferred datatype.
+//
+//   'Active' (run-time initialization of sync system for a datatype)
+//
+//      An active datatype is a preferred datatype that is actively being
+//      synchronized: the syncer has been instructed to querying the server
+//      for this datatype, first-time merges have finished, and there is an
+//      actively installed ChangeProcessor that listens for changes to this
+//      datatype, propagating such changes into and out of the sync engine
+//      as necessary.
+//
+//      When a datatype is in the process of becoming active, it may be
+//      in some intermediate state. Those finer-grained intermediate states
+//      are differentiated by the DataTypeController state, but not exposed.
+//
+// Sync Configuration:
+//
+//   Sync configuration is accomplished via SyncUserSettings, in particular:
+//    * SetChosenDataTypes(): Set the data types the user wants to sync.
+//    * SetDecryptionPassphrase(): Attempt to decrypt the user's encrypted data
+//        using the passed passphrase.
+//    * SetEncryptionPassphrase(): Re-encrypt the user's data using the passed
+//        passphrase.
+//
+// Initial sync setup:
+//
+//   For privacy reasons, it is usually desirable to avoid syncing any data
+//   types until the user has finished setting up sync. There are two APIs
+//   that control the initial sync download:
+//
+//    * SyncUserSettings::SetFirstSetupComplete()
+//    * GetSetupInProgressHandle()
+//
+//   SetFirstSetupComplete() should be called once the user has finished setting
+//   up sync at least once on their account. GetSetupInProgressHandle() should
+//   be called while the user is actively configuring their account. The handle
+//   should be deleted once configuration is complete.
+//
+//   Once first setup has completed and there are no outstanding
+//   setup-in-progress handles, datatype configuration will begin.
+class SyncService : public KeyedService {
  public:
-  // The set of reasons due to which Sync can be disabled. Meant to be used as a
-  // bitmask.
+  // The set of reasons due to which Sync-the-feature can be disabled. Note that
+  // Sync-the-transport might still start up even in the presence of (some)
+  // disable reasons. Meant to be used as a bitmask.
   enum DisableReason {
     DISABLE_REASON_NONE = 0,
     // Sync is disabled via platform-level override (e.g. Android's "MasterSync"
@@ -73,23 +137,20 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
     // Sync has encountered an unrecoverable error. It won't attempt to start
     // again until either the browser is restarted, or the user fully signs out
     // and back in again.
-    DISABLE_REASON_UNRECOVERABLE_ERROR = 1 << 4
+    DISABLE_REASON_UNRECOVERABLE_ERROR = 1 << 4,
+    // Sync is paused because the user signed out on the web. This is different
+    // from NOT_SIGNED_IN: In this case, there *is* still a primary account, but
+    // it doesn't have valid credentials.
+    DISABLE_REASON_PAUSED = 1 << 5,
   };
 
-  // The overall state of the SyncService, in ascending order of "activeness".
+  // The overall state of Sync-the-transport, in ascending order of
+  // "activeness". Note that this refers to the transport layer, which may be
+  // active even if Sync-the-feature is turned off.
   enum class TransportState {
     // Sync is inactive, e.g. due to enterprise policy, or simply because there
     // is no authenticated user.
     DISABLED,
-    // Sync can start in principle, but nothing has prodded it to actually do it
-    // yet. Note that during subsequent browser startups, Sync starts
-    // automatically, i.e. no prod is necessary, but during the first start Sync
-    // does need a kick. This usually happens via starting (not finishing!) the
-    // initial setup, or via a call to SyncUserSettings::SetSyncRequested.
-    // TODO(crbug.com/839834): Check whether this state is necessary, or if Sync
-    // can just always start up if all conditions are fulfilled (that's what
-    // happens in practice anyway).
-    WAITING_FOR_START_REQUEST,
     // Sync's startup was deferred, so that it doesn't slow down browser
     // startup. Once the deferral time (usually 10s) expires, or something
     // requests immediate startup, Sync will actually start.
@@ -112,16 +173,14 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
     ACTIVE
   };
 
-  // Passed as an argument to RequestStop to control whether or not the sync
-  // engine should clear its data directory when it shuts down. See
-  // RequestStop for more information.
-  enum SyncStopDataFate {
-    KEEP_DATA,
-    CLEAR_DATA,
-  };
-
   ~SyncService() override {}
 
+  //////////////////////////////////////////////////////////////////////////////
+  // USER SETTINGS
+  //////////////////////////////////////////////////////////////////////////////
+
+  // Returns the SyncUserSettings, which encapsulate all the user-configurable
+  // bits for Sync.
   virtual SyncUserSettings* GetUserSettings() = 0;
   virtual const SyncUserSettings* GetUserSettings() const = 0;
 
@@ -156,17 +215,31 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   virtual bool IsLocalSyncEnabled() const = 0;
 
   // Information about the currently signed in user.
-  virtual AccountInfo GetAuthenticatedAccountInfo() const = 0;
+  virtual CoreAccountInfo GetAuthenticatedAccountInfo() const = 0;
   // Whether the currently signed in user is the "primary" browser account (see
   // IdentityManager). If this is false, then IsSyncFeatureEnabled will also be
   // false, but Sync-the-transport might still run.
   virtual bool IsAuthenticatedAccountPrimary() const = 0;
 
+  // Returns whether the SyncService has completed at least one Sync cycle since
+  // starting up (i.e. since browser startup or signin). This can be useful
+  // in combination with GetAuthError(), if you need to know if the user's
+  // refresh token is really valid: Before a Sync cycle has been completed,
+  // Sync hasn't tried using the refresh token, so doesn't know if it's valid.
+  // TODO(crbug.com/831579): If Chrome would persist auth errors, this would not
+  // be necessary.
+  bool HasCompletedSyncCycle() const;
+
   // The last authentication error that was encountered by the SyncService. This
   // error can be either from Chrome's identity system (e.g. while trying to get
   // an access token), or from the Sync server. It gets cleared when the error
   // is resolved.
-  virtual const GoogleServiceAuthError& GetAuthError() const = 0;
+  virtual GoogleServiceAuthError GetAuthError() const = 0;
+  virtual base::Time GetAuthErrorTime() const = 0;
+
+  // Returns true if the Chrome client is too old and needs to be updated for
+  // Sync to work.
+  virtual bool RequiresClientUpgrade() const = 0;
 
   //////////////////////////////////////////////////////////////////////////////
   // DERIVED STATE ACCESS
@@ -205,28 +278,15 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   bool IsSyncFeatureActive() const;
 
   //////////////////////////////////////////////////////////////////////////////
-  // INITIAL SETUP / CONSENT
-  //////////////////////////////////////////////////////////////////////////////
-
-  // Returns true if initial sync setup is in progress (does not return true
-  // if the user is customizing sync after already completing setup once).
-  // SyncService uses this to determine if it's OK to start syncing, or if the
-  // user is still setting up the initial sync configuration.
-  // Note: This refers to Sync-the-feature. Sync-the-transport may be active
-  // independent of first-setup state.
-  bool IsFirstSetupInProgress() const;
-
-  //////////////////////////////////////////////////////////////////////////////
   // SETUP-IN-PROGRESS HANDLING
   //////////////////////////////////////////////////////////////////////////////
 
-  // Called by the UI to notify the SyncService that UI is visible so it will
-  // not start syncing. This tells sync whether it's safe to start downloading
-  // data types yet (we don't start syncing until after sync setup is complete).
+  // Called by the UI to notify the SyncService that UI is visible, so any
+  // changes to Sync settings should *not* take effect immediately (e.g. if the
+  // user accidentally enabled a data type, we should give them a chance to undo
+  // the change before local and remote data are irrevocably merged).
   // The UI calls this and holds onto the instance for as long as any part of
-  // the signin wizard is displayed (even just the login UI).
-  // When the last outstanding handle is deleted, this kicks off the sync engine
-  // to ensure that data download starts.
+  // the Sync setup/configuration UI is visible.
   virtual std::unique_ptr<SyncSetupInProgressHandle>
   GetSetupInProgressHandle() = 0;
 
@@ -238,28 +298,30 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   // DATA TYPE STATE
   //////////////////////////////////////////////////////////////////////////////
 
+  // Returns the set of data types that are supported in principle. These will
+  // typically only change via a command-line option.
+  virtual syncer::ModelTypeSet GetRegisteredDataTypes() const = 0;
+
   // Returns the set of types which are preferred for enabling. This is a
-  // superset of the active types (see GetActiveDataTypes()).
+  // superset of the active types (see GetActiveDataTypes()). This also includes
+  // any forced types.
   virtual ModelTypeSet GetPreferredDataTypes() const = 0;
 
-  // Get the set of current active data types (those chosen or configured by
-  // the user which have not also encountered a runtime error).
-  // Note that if the Sync engine is in the middle of a configuration, this
-  // will the the empty set. Once the configuration completes the set will
-  // be updated.
+  // Returns the set of currently active data types (those chosen or configured
+  // by the user which have not also encountered a runtime error).
+  // Note that if the Sync engine is in the middle of a configuration, this will
+  // be the empty set. Once the configuration completes the set will be updated.
   virtual ModelTypeSet GetActiveDataTypes() const = 0;
 
   //////////////////////////////////////////////////////////////////////////////
   // ACTIONS / STATE CHANGE REQUESTS
   //////////////////////////////////////////////////////////////////////////////
 
-  // Stops sync at the user's request. |data_fate| controls whether the sync
-  // engine should clear its data directory when it shuts down. Generally
-  // KEEP_DATA is used when the user just stops sync, and CLEAR_DATA is used
-  // when they sign out of the profile entirely.
+  // Stops sync and clears all local data. This usually gets called when the
+  // user fully signs out (i.e. removes the primary account).
   // Note: This refers to Sync-the-feature. Sync-the-transport may remain active
   // after calling this.
-  virtual void RequestStop(SyncStopDataFate data_fate) = 0;
+  virtual void StopAndClear() = 0;
 
   // Called when a datatype (SyncableService) has a need for sync to start
   // ASAP, presumably because a local change event has occurred but we're
@@ -271,23 +333,18 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   // from the sync server. Used by tests and debug UI (sync-internals).
   virtual void TriggerRefresh(const ModelTypeSet& types) = 0;
 
-  // Attempts to re-enable a data type that is currently disabled due to a
-  // data type error or an unready error. Note, this does not change the
-  // preferred state of a datatype, and is not persisted across restarts.
-  virtual void ReenableDatatype(ModelType type) = 0;
-
   // Informs the data type manager that the ready-for-start status of a
   // controller has changed. If the controller is not ready any more, it will
   // stop |type|. Otherwise, it will trigger reconfiguration so that |type| gets
-  // started again.
+  // started again. No-op if the type's state didn't actually change.
   virtual void ReadyForStartChanged(ModelType type) = 0;
 
   // Enables/disables invalidations for session sync related datatypes.
-  // The session sync generates a lot of changes, which results into many
-  // invalidations. This can negatively affect the
-  // battery life on Android. For that reason, on Android, the invalidations for
-  // the Sessions should be received only when user is interested in session
-  // sync data, e.g. the history sync page is opened.
+  // The session sync generates a lot of changes, which results in many
+  // invalidations. This can negatively affect the battery life on Android. For
+  // that reason, on Android, the invalidations for sessions should be received
+  // only when user is interested in session sync data, e.g. the history sync
+  // page is opened.
   virtual void SetInvalidationsForSessionsEnabled(bool enabled) = 0;
 
   //////////////////////////////////////////////////////////////////////////////
@@ -303,41 +360,6 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   virtual bool HasObserver(const SyncServiceObserver* observer) const = 0;
 
   //////////////////////////////////////////////////////////////////////////////
-  // ENCRYPTION
-  //////////////////////////////////////////////////////////////////////////////
-
-  // Returns true if OnPassphraseRequired has been called for decryption and
-  // we have an encrypted data type enabled.
-  virtual bool IsPassphraseRequiredForDecryption() const = 0;
-
-  // Returns the time the current explicit passphrase (if any), was set.
-  // If no secondary passphrase is in use, or no time is available, returns an
-  // unset base::Time.
-  virtual base::Time GetExplicitPassphraseTime() const = 0;
-
-  // Returns true if a secondary (explicit) passphrase is being used. It is not
-  // legal to call this method before the engine is initialized.
-  virtual bool IsUsingSecondaryPassphrase() const = 0;
-
-  // Turns on encryption for all data. Callers must call OnUserChoseDatatypes()
-  // after calling this to force the encryption to occur.
-  virtual void EnableEncryptEverything() = 0;
-
-  // Returns true if we are currently set to encrypt all the sync data.
-  virtual bool IsEncryptEverythingEnabled() const = 0;
-
-  // Asynchronously sets the passphrase to |passphrase| for encryption. |type|
-  // specifies whether the passphrase is a custom passphrase or the GAIA
-  // password being reused as a passphrase.
-  virtual void SetEncryptionPassphrase(const std::string& passphrase) = 0;
-
-  // Asynchronously decrypts pending keys using |passphrase|. Returns false
-  // immediately if the passphrase could not be used to decrypt a locally cached
-  // copy of encrypted keys; returns true otherwise.
-  virtual bool SetDecryptionPassphrase(const std::string& passphrase)
-      WARN_UNUSED_RESULT = 0;
-
-  //////////////////////////////////////////////////////////////////////////////
   // ACCESS TO INNER OBJECTS
   //////////////////////////////////////////////////////////////////////////////
 
@@ -351,16 +373,22 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   // DETAILED STATE FOR DEBUG UI
   //////////////////////////////////////////////////////////////////////////////
 
+  // Returns the state of the access token and token request, for display in
+  // internals UI.
+  // TODO(crbug.com/953272): This method should also be marked as "ForDebugging"
+  // but it's currently still used by non-debugging UKM code.
   virtual SyncTokenStatus GetSyncTokenStatus() const = 0;
 
   // Initializes a struct of status indicators with data from the engine.
   // Returns false if the engine was not available for querying; in that case
   // the struct will be filled with default data.
-  virtual bool QueryDetailedSyncStatus(SyncStatus* result) const = 0;
+  virtual bool QueryDetailedSyncStatusForDebugging(
+      SyncStatus* result) const = 0;
 
-  virtual base::Time GetLastSyncedTime() const = 0;
+  virtual base::Time GetLastSyncedTimeForDebugging() const = 0;
 
-  virtual SyncCycleSnapshot GetLastCycleSnapshot() const = 0;
+  // Returns some statistics on the most-recently completed sync cycle.
+  virtual SyncCycleSnapshot GetLastCycleSnapshotForDebugging() const = 0;
 
   // Returns a ListValue indicating the status of all registered types.
   //
@@ -373,12 +401,12 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   // This function is used by about_sync_util.cc to help populate the about:sync
   // page.  It returns a ListValue rather than a DictionaryValue in part to make
   // it easier to iterate over its elements when constructing that page.
-  virtual std::unique_ptr<base::Value> GetTypeStatusMap() = 0;
+  virtual std::unique_ptr<base::Value> GetTypeStatusMapForDebugging() = 0;
 
-  virtual const GURL& sync_service_url() const = 0;
+  virtual const GURL& GetSyncServiceUrlForDebugging() const = 0;
 
-  virtual std::string unrecoverable_error_message() const = 0;
-  virtual base::Location unrecoverable_error_location() const = 0;
+  virtual std::string GetUnrecoverableErrorMessageForDebugging() const = 0;
+  virtual base::Location GetUnrecoverableErrorLocationForDebugging() const = 0;
 
   virtual void AddProtocolEventObserver(ProtocolEventObserver* observer) = 0;
   virtual void RemoveProtocolEventObserver(ProtocolEventObserver* observer) = 0;
@@ -386,7 +414,6 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   virtual void AddTypeDebugInfoObserver(TypeDebugInfoObserver* observer) = 0;
   virtual void RemoveTypeDebugInfoObserver(TypeDebugInfoObserver* observer) = 0;
 
-  // Returns a weak pointer to the service's JsController.
   virtual base::WeakPtr<JsController> GetJsController() = 0;
 
   // Asynchronously fetches base::Value representations of all sync nodes and
@@ -395,7 +422,7 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   // These requests can live a long time and return when you least expect it.
   // For safety, the callback should be bound to some sort of WeakPtr<> or
   // scoped_refptr<>.
-  virtual void GetAllNodes(
+  virtual void GetAllNodesForDebugging(
       const base::Callback<void(std::unique_ptr<base::ListValue>)>&
           callback) = 0;
 

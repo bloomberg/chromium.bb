@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "base/macros.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "cc/animation/animation_export.h"
 #include "cc/trees/element_id.h"
@@ -55,6 +55,8 @@ class CC_ANIMATION_EXPORT KeyframeModel {
 
   enum class FillMode { NONE, FORWARDS, BACKWARDS, BOTH, AUTO };
 
+  enum class Phase { BEFORE, ACTIVE, AFTER };
+
   static std::unique_ptr<KeyframeModel> Create(
       std::unique_ptr<AnimationCurve> curve,
       int keyframe_model_id,
@@ -64,7 +66,10 @@ class CC_ANIMATION_EXPORT KeyframeModel {
   std::unique_ptr<KeyframeModel> CreateImplInstance(
       RunState initial_run_state) const;
 
+  KeyframeModel(const KeyframeModel&) = delete;
   virtual ~KeyframeModel();
+
+  KeyframeModel& operator=(const KeyframeModel&) = delete;
 
   int id() const { return id_; }
   int group() const { return group_; }
@@ -169,6 +174,9 @@ class CC_ANIMATION_EXPORT KeyframeModel {
   }
   bool affects_pending_elements() const { return affects_pending_elements_; }
 
+  KeyframeModel::Phase CalculatePhaseForTesting(
+      base::TimeDelta local_time) const;
+
  private:
   KeyframeModel(std::unique_ptr<AnimationCurve> curve,
                 int keyframe_model_id,
@@ -202,8 +210,9 @@ class CC_ANIMATION_EXPORT KeyframeModel {
   base::TimeDelta ConvertMonotonicTimeToLocalTime(
       base::TimeTicks monotonic_time) const;
 
-  base::TimeDelta TrimLocalTimeToCurrentIteration(
-      base::TimeDelta local_time) const;
+  KeyframeModel::Phase CalculatePhase(base::TimeDelta local_time) const;
+  base::Optional<base::TimeDelta> CalculateActiveTime(
+      base::TimeTicks monotonic_time) const;
 
   std::unique_ptr<AnimationCurve> curve_;
 
@@ -272,8 +281,6 @@ class CC_ANIMATION_EXPORT KeyframeModel {
   // longer affect any elements, and are deleted.
   bool affects_active_elements_;
   bool affects_pending_elements_;
-
-  DISALLOW_COPY_AND_ASSIGN(KeyframeModel);
 };
 
 }  // namespace cc

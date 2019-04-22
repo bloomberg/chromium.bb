@@ -4,7 +4,6 @@
 
 #include "content/browser/accessibility/accessibility_tree_formatter_browser.h"
 
-
 namespace content {
 
 std::unique_ptr<base::DictionaryValue>

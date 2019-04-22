@@ -22,9 +22,14 @@ namespace blink {
 class CSSParserContext;
 class CSSPropertyValue;
 class CSSStringValue;
-class CSSURIValue;
 class CSSValuePair;
 class StylePropertyShorthand;
+
+namespace cssvalue {
+
+class CSSURIValue;
+
+}
 
 // When these functions are successful, they will consume all the relevant
 // tokens from the range and also consume any whitespace which follows. When
@@ -67,6 +72,12 @@ CSSPrimitiveValue* ConsumeAngle(
     CSSParserTokenRange&,
     const CSSParserContext*,
     base::Optional<WebFeature> unitless_zero_feature);
+CSSPrimitiveValue* ConsumeAngle(
+    CSSParserTokenRange&,
+    const CSSParserContext*,
+    base::Optional<WebFeature> unitless_zero_feature,
+    double minimum_value,
+    double maximum_value);
 CSSPrimitiveValue* ConsumeTime(CSSParserTokenRange&, ValueRange);
 CSSPrimitiveValue* ConsumeResolution(CSSParserTokenRange&);
 
@@ -83,7 +94,8 @@ CSSCustomIdentValue* ConsumeCustomIdent(CSSParserTokenRange&,
                                         const CSSParserContext&);
 CSSStringValue* ConsumeString(CSSParserTokenRange&);
 StringView ConsumeUrlAsStringView(CSSParserTokenRange&);
-CSSURIValue* ConsumeUrl(CSSParserTokenRange&, const CSSParserContext*);
+cssvalue::CSSURIValue* ConsumeUrl(CSSParserTokenRange&,
+                                  const CSSParserContext*);
 
 CSSValue* ConsumeColor(CSSParserTokenRange&,
                        CSSParserMode,
@@ -119,6 +131,8 @@ CSSValue* ConsumeImage(
     const CSSParserContext*,
     ConsumeGeneratedImagePolicy = ConsumeGeneratedImagePolicy::kAllow);
 CSSValue* ConsumeImageOrNone(CSSParserTokenRange&, const CSSParserContext*);
+
+CSSValue* ConsumeAxis(CSSParserTokenRange&);
 
 bool IsCSSWideKeyword(StringView);
 

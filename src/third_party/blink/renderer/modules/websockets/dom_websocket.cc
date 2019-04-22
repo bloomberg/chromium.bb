@@ -210,7 +210,7 @@ static String EncodeSubprotocolString(const String& protocol) {
   StringBuilder builder;
   for (wtf_size_t i = 0; i < protocol.length(); i++) {
     if (protocol[i] < 0x20 || protocol[i] > 0x7E)
-      builder.Append(String::Format("\\u%04X", protocol[i]));
+      builder.AppendFormat("\\u%04X", protocol[i]);
     else if (protocol[i] == 0x5c)
       builder.Append("\\\\");
     else
@@ -236,7 +236,7 @@ static void SetInvalidStateErrorForSendMethod(ExceptionState& exception_state) {
 }
 
 DOMWebSocket::DOMWebSocket(ExecutionContext* context)
-    : PausableObject(context),
+    : ContextLifecycleStateObserver(context),
       state_(kConnecting),
       buffered_amount_(0),
       consumed_buffered_amount_(0),
@@ -244,7 +244,7 @@ DOMWebSocket::DOMWebSocket(ExecutionContext* context)
       binary_type_(kBinaryTypeBlob),
       subprotocol_(""),
       extensions_(""),
-      event_queue_(EventQueue::Create(this)),
+      event_queue_(MakeGarbageCollected<EventQueue>(this)),
       buffered_amount_update_task_pending_(false),
       was_autoupgraded_to_wss_(false) {}
 
@@ -255,7 +255,8 @@ DOMWebSocket::~DOMWebSocket() {
 void DOMWebSocket::LogError(const String& message) {
   if (GetExecutionContext()) {
     GetExecutionContext()->AddConsoleMessage(
-        ConsoleMessage::Create(kJSMessageSource, kErrorMessageLevel, message));
+        ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
+                               mojom::ConsoleMessageLevel::kError, message));
   }
 }
 
@@ -278,7 +279,7 @@ DOMWebSocket* DOMWebSocket::Create(ExecutionContext* context,
   }
 
   DOMWebSocket* websocket = MakeGarbageCollected<DOMWebSocket>(context);
-  websocket->PauseIfNeeded();
+  websocket->UpdateStateIfNeeded();
 
   if (protocols.IsNull()) {
     Vector<String> protocols_vector;
@@ -312,7 +313,7 @@ void DOMWebSocket::Connect(const String& url,
 
   if ((upgrade_insecure_requests_set ||
        MixedContentChecker::ShouldAutoupgrade(
-           GetExecutionContext()->Url(),
+           GetExecutionContext()->GetHttpsState(),
            WebMixedContentContextType::kBlockable)) &&
       url_.Protocol() == "ws" &&
       !SecurityOrigin::Create(url_)->IsPotentiallyTrustworthy()) {
@@ -538,7 +539,7 @@ void DOMWebSocket::send(Blob* binary_data, ExceptionState& exception_state) {
     UpdateBufferedAmountAfterClose(binary_data->size());
     return;
   }
-  unsigned long long size = binary_data->size();
+  uint64_t size = binary_data->size();
   RecordSendTypeHistogram(kWebSocketSendTypeBlob);
   RecordSendMessageSizeHistogram(
       kWebSocketSendTypeBlob,
@@ -556,7 +557,7 @@ void DOMWebSocket::send(Blob* binary_data, ExceptionState& exception_state) {
       BlobDataHandle::Create(binary_data->Uuid(), binary_data->type(), size));
 }
 
-void DOMWebSocket::close(unsigned short code,
+void DOMWebSocket::close(uint16_t code,
                          const String& reason,
                          ExceptionState& exception_state) {
   CloseInternal(code, reason, exception_state);
@@ -567,7 +568,7 @@ void DOMWebSocket::close(ExceptionState& exception_state) {
                 exception_state);
 }
 
-void DOMWebSocket::close(unsigned short code, ExceptionState& exception_state) {
+void DOMWebSocket::close(uint16_t code, ExceptionState& exception_state) {
   CloseInternal(code, String(), exception_state);
 }
 
@@ -613,8 +614,8 @@ void DOMWebSocket::CloseInternal(int code,
   if (state_ == kConnecting) {
     state_ = kClosing;
     channel_->Fail("WebSocket is closed before the connection is established.",
-                   kWarningMessageLevel,
-                   SourceLocation::Create(String(), 0, 0, nullptr));
+                   mojom::ConsoleMessageLevel::kWarning,
+                   std::make_unique<SourceLocation>(String(), 0, 0, nullptr));
     return;
   }
   state_ = kClosing;
@@ -672,7 +673,7 @@ const AtomicString& DOMWebSocket::InterfaceName() const {
 }
 
 ExecutionContext* DOMWebSocket::GetExecutionContext() const {
-  return PausableObject::GetExecutionContext();
+  return ContextLifecycleStateObserver::GetExecutionContext();
 }
 
 void DOMWebSocket::ContextDestroyed(ExecutionContext*) {
@@ -690,17 +691,18 @@ bool DOMWebSocket::HasPendingActivity() const {
   return channel_ || !event_queue_->IsEmpty();
 }
 
-void DOMWebSocket::Pause() {
-  event_queue_->Pause();
-}
+void DOMWebSocket::ContextLifecycleStateChanged(
+    mojom::FrameLifecycleState state) {
+  if (state == mojom::FrameLifecycleState::kRunning) {
+    event_queue_->Unpause();
 
-void DOMWebSocket::Unpause() {
-  event_queue_->Unpause();
-
-  // If |consumed_buffered_amount_| was updated while the object was paused then
-  // the changes to |buffered_amount_| will not yet have been applied. Post
-  // another task to update it.
-  PostBufferedAmountUpdateTask();
+    // If |consumed_buffered_amount_| was updated while the object was paused
+    // then the changes to |buffered_amount_| will not yet have been applied.
+    // Post another task to update it.
+    PostBufferedAmountUpdateTask();
+  } else {
+    event_queue_->Pause();
+  }
 }
 
 void DOMWebSocket::DidConnect(const String& subprotocol,
@@ -745,7 +747,7 @@ void DOMWebSocket::DidReceiveBinaryMessage(
       size_t size = binary_data->size();
       scoped_refptr<RawData> raw_data = RawData::Create();
       binary_data->swap(*raw_data->MutableData());
-      std::unique_ptr<BlobData> blob_data = BlobData::Create();
+      auto blob_data = std::make_unique<BlobData>();
       blob_data->AppendData(std::move(raw_data));
       Blob* blob =
           Blob::Create(BlobDataHandle::Create(std::move(blob_data), size));
@@ -794,7 +796,7 @@ void DOMWebSocket::DidStartClosingHandshake() {
 
 void DOMWebSocket::DidClose(
     ClosingHandshakeCompletionStatus closing_handshake_completion,
-    unsigned short code,
+    uint16_t code,
     const String& reason) {
   NETWORK_DVLOG(1) << "WebSocket " << this << " DidClose()";
   ReflectBufferedAmountConsumption();
@@ -896,7 +898,7 @@ void DOMWebSocket::Trace(blink::Visitor* visitor) {
   visitor->Trace(event_queue_);
   WebSocketChannelClient::Trace(visitor);
   EventTargetWithInlineData::Trace(visitor);
-  PausableObject::Trace(visitor);
+  ContextLifecycleStateObserver::Trace(visitor);
 }
 
 }  // namespace blink

@@ -39,11 +39,6 @@ Frame* ToCoreFrame(WebFrame* frame) {
 RemoteFrameClientImpl::RemoteFrameClientImpl(WebRemoteFrameImpl* web_frame)
     : web_frame_(web_frame) {}
 
-RemoteFrameClientImpl* RemoteFrameClientImpl::Create(
-    WebRemoteFrameImpl* web_frame) {
-  return MakeGarbageCollected<RemoteFrameClientImpl>(web_frame);
-}
-
 void RemoteFrameClientImpl::Trace(blink::Visitor* visitor) {
   visitor->Trace(web_frame_);
   RemoteFrameClient::Trace(visitor);
@@ -111,11 +106,19 @@ base::UnguessableToken RemoteFrameClientImpl::GetDevToolsFrameToken() const {
 void RemoteFrameClientImpl::Navigate(
     const ResourceRequest& request,
     bool should_replace_current_entry,
+    bool is_opener_navigation,
+    bool has_download_sandbox_flag,
+    bool initiator_frame_is_ad,
     mojom::blink::BlobURLTokenPtr blob_url_token) {
+  bool blocking_downloads_in_sandbox_without_user_activation_enabled =
+      RuntimeEnabledFeatures::
+          BlockingDownloadsInSandboxWithoutUserActivationEnabled();
   if (web_frame_->Client()) {
-    web_frame_->Client()->Navigate(WrappedResourceRequest(request),
-                                   should_replace_current_entry,
-                                   blob_url_token.PassInterface().PassHandle());
+    web_frame_->Client()->Navigate(
+        WrappedResourceRequest(request), should_replace_current_entry,
+        is_opener_navigation, has_download_sandbox_flag,
+        blocking_downloads_in_sandbox_without_user_activation_enabled,
+        initiator_frame_is_ad, blob_url_token.PassInterface().PassHandle());
   }
 }
 
@@ -152,9 +155,9 @@ void RemoteFrameClientImpl::FrameRectsChanged(
 
 void RemoteFrameClientImpl::UpdateRemoteViewportIntersection(
     const IntRect& viewport_intersection,
-    bool occluded_or_obscured) {
+    FrameOcclusionState occlusion_state) {
   web_frame_->Client()->UpdateRemoteViewportIntersection(viewport_intersection,
-                                                         occluded_or_obscured);
+                                                         occlusion_state);
 }
 
 void RemoteFrameClientImpl::AdvanceFocus(WebFocusType type,
@@ -163,8 +166,9 @@ void RemoteFrameClientImpl::AdvanceFocus(WebFocusType type,
                                      WebLocalFrameImpl::FromFrame(source));
 }
 
-void RemoteFrameClientImpl::VisibilityChanged(bool visible) {
-  web_frame_->Client()->VisibilityChanged(visible);
+void RemoteFrameClientImpl::VisibilityChanged(
+    blink::mojom::FrameVisibility visibility) {
+  web_frame_->Client()->VisibilityChanged(visibility);
 }
 
 void RemoteFrameClientImpl::SetIsInert(bool inert) {

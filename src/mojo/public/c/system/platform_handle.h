@@ -30,8 +30,7 @@ typedef uint32_t MojoPlatformHandleType;
 // usable on POSIX host systems (e.g. Android, Linux, Chrome OS, Mac).
 #define MOJO_PLATFORM_HANDLE_TYPE_FILE_DESCRIPTOR ((MojoPlatformHandleType)1)
 
-// The |MojoPlatformHandle| value represents a Mach port right (e.g. a value
-// opaquely of type |mach_port_t|). Only usable on Mac OS X hosts.
+// Deprecated. TYPE_MACH_PORT is equivalent to TYPE_MACH_SEND_RIGHT.
 #define MOJO_PLATFORM_HANDLE_TYPE_MACH_PORT ((MojoPlatformHandleType)2)
 
 // The |MojoPlatformHandle| value represents a Windows HANDLE value. Only usable
@@ -41,6 +40,15 @@ typedef uint32_t MojoPlatformHandleType;
 // The |MojoPlatformHandle| value represents a Fuchsia system handle. Only
 // usable on Fuchsia hosts.
 #define MOJO_PLATFORM_HANDLE_TYPE_FUCHSIA_HANDLE ((MojoPlatformHandleType)4)
+
+// The |MojoPlatformHandle| value represents a Mach send right (e.g. a value
+// opaquely of type |mach_port_t|). Only usable on macOS hosts.
+#define MOJO_PLATFORM_HANDLE_TYPE_MACH_SEND_RIGHT \
+  MOJO_PLATFORM_HANDLE_TYPE_MACH_PORT
+
+// The |MojoPlatformHandle| value represents a Mach receive right (e.g. a value
+// opaquely of type |mach_port_t|). Only usable on macOS hosts.
+#define MOJO_PLATFORM_HANDLE_TYPE_MACH_RECEIVE_RIGHT ((MojoPlatformHandleType)5)
 
 // |MojoPlatformHandle|: A handle to a native platform object.
 //
@@ -67,7 +75,7 @@ struct MOJO_ALIGNAS(8) MojoPlatformHandle {
   // treatment of this value by Mojo depends on the value of |type|.
   uint64_t value;
 };
-MOJO_STATIC_ASSERT(sizeof(MojoPlatformHandle) == 16,
+MOJO_STATIC_ASSERT(sizeof(struct MojoPlatformHandle) == 16,
                    "MojoPlatformHandle has wrong size");
 
 // Flags passed to |MojoWrapPlatformHandle()| via
@@ -85,7 +93,7 @@ struct MOJO_ALIGNAS(8) MojoWrapPlatformHandleOptions {
   // See |MojoWrapPlatformHandleFlags|.
   MojoWrapPlatformHandleFlags flags;
 };
-MOJO_STATIC_ASSERT(sizeof(MojoWrapPlatformHandleOptions) == 8,
+MOJO_STATIC_ASSERT(sizeof(struct MojoWrapPlatformHandleOptions) == 8,
                    "MojoWrapPlatformHandleOptions has wrong size");
 
 // Flags passed to |MojoUnwrapPlatformHandle()| via
@@ -103,7 +111,7 @@ struct MOJO_ALIGNAS(8) MojoUnwrapPlatformHandleOptions {
   // See |MojoUnwrapPlatformHandleFlags|.
   MojoUnwrapPlatformHandleFlags flags;
 };
-MOJO_STATIC_ASSERT(sizeof(MojoUnwrapPlatformHandleOptions) == 8,
+MOJO_STATIC_ASSERT(sizeof(struct MojoUnwrapPlatformHandleOptions) == 8,
                    "MojoUnwrapPlatformHandleOptions has wrong size");
 
 // A GUID value used to identify the shared memory region backing a Mojo shared
@@ -164,7 +172,8 @@ struct MOJO_ALIGNAS(8) MojoWrapPlatformSharedMemoryRegionOptions {
   // See |MojoWrapPlatformSharedMemoryRegionFlags|.
   MojoWrapPlatformSharedMemoryRegionFlags flags;
 };
-MOJO_STATIC_ASSERT(sizeof(MojoWrapPlatformSharedMemoryRegionOptions) == 8,
+MOJO_STATIC_ASSERT(sizeof(struct MojoWrapPlatformSharedMemoryRegionOptions) ==
+                       8,
                    "MojoWrapPlatformSharedMemoryRegionOptions has wrong size");
 
 // Flags passed to |MojoUnwrapPlatformSharedMemoryRegion()| via
@@ -184,7 +193,7 @@ struct MOJO_ALIGNAS(8) MojoUnwrapPlatformSharedMemoryRegionOptions {
   MojoUnwrapPlatformSharedMemoryRegionFlags flags;
 };
 MOJO_STATIC_ASSERT(
-    sizeof(MojoUnwrapPlatformSharedMemoryRegionOptions) == 8,
+    sizeof(struct MojoUnwrapPlatformSharedMemoryRegionOptions) == 8,
     "MojoUnwrapPlatformSharedMemoryRegionOptions has wrong size");
 
 // Wraps a native platform handle as a Mojo handle which can be transferred

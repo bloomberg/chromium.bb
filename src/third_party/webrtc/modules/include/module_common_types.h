@@ -13,9 +13,10 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <vector>
 
 #include "api/rtp_headers.h"
-#include "common_types.h"  // NOLINT(build/include)
+#include "api/video/video_frame_type.h"
 #include "modules/include/module_common_types_public.h"
 #include "modules/include/module_fec_types.h"
 #include "modules/rtp_rtcp/source/rtp_video_header.h"
@@ -29,7 +30,8 @@ struct WebRtcRTPHeader {
   RTPVideoHeader video;
 
   RTPHeader header;
-  FrameType frameType;
+  // Used for video only.
+  VideoFrameType frameType;
   // NTP time of the capture time in local timebase in milliseconds.
   int64_t ntp_time_ms;
 };
@@ -96,14 +98,17 @@ class KeyFrameRequestSender {
   virtual ~KeyFrameRequestSender() {}
 };
 
-// Used to indicate if a received packet contain a complete NALU (or equivalent)
-enum VCMNaluCompleteness {
-  kNaluUnset = 0,     // Packet has not been filled.
-  kNaluComplete = 1,  // Packet can be decoded as is.
-  kNaluStart,         // Packet contain beginning of NALU
-  kNaluIncomplete,    // Packet is not beginning or end of NALU
-  kNaluEnd,           // Packet is the end of a NALU
+// Interface used by LossNotificationController to communicate to RtpRtcp.
+// TODO(bugs.webrtc.org/10336): Hook up to RtpRtcp.
+class LossNotificationSender {
+ public:
+  virtual ~LossNotificationSender() {}
+
+  virtual void SendLossNotification(uint16_t last_decoded_seq_num,
+                                    uint16_t last_received_seq_num,
+                                    bool decodability_flag) = 0;
 };
+
 }  // namespace webrtc
 
 #endif  // MODULES_INCLUDE_MODULE_COMMON_TYPES_H_

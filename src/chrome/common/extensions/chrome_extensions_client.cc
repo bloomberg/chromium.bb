@@ -13,7 +13,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
-#include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/extensions/chrome_extensions_api_provider.h"
@@ -37,6 +36,7 @@
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/url_pattern.h"
 #include "extensions/common/url_pattern_set.h"
+#include "services/network/public/mojom/cors_origin_pattern.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
@@ -247,14 +247,9 @@ std::set<base::FilePath> ChromeExtensionsClient::GetBrowserImagePaths(
     }
   }
 
-  const ActionInfo* page_action = ActionInfo::GetPageActionInfo(extension);
-  if (page_action && !page_action->default_icon.empty())
-    page_action->default_icon.GetPaths(&image_paths);
-
-  const ActionInfo* browser_action =
-      ActionInfo::GetBrowserActionInfo(extension);
-  if (browser_action && !browser_action->default_icon.empty())
-    browser_action->default_icon.GetPaths(&image_paths);
+  const ActionInfo* action = ActionInfo::GetAnyActionInfo(extension);
+  if (action && !action->default_icon.empty())
+    action->default_icon.GetPaths(&image_paths);
 
   return image_paths;
 }
@@ -262,10 +257,6 @@ std::set<base::FilePath> ChromeExtensionsClient::GetBrowserImagePaths(
 bool ChromeExtensionsClient::ExtensionAPIEnabledInExtensionServiceWorkers()
     const {
   return GetCurrentChannel() == version_info::Channel::UNKNOWN;
-}
-
-std::string ChromeExtensionsClient::GetUserAgent() const {
-  return ::GetUserAgent();
 }
 
 void ChromeExtensionsClient::AddOriginAccessPermissions(

@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
+#include "device/fido/fido_authenticator.h"
 
 namespace {
 
@@ -80,8 +81,9 @@ base::Optional<device::FidoTransportProtocol> SelectMostLikelyTransport(
 
 }  // namespace
 
-AuthenticatorRequestDialogModel::AuthenticatorRequestDialogModel()
-    : weak_factory_(this) {}
+AuthenticatorRequestDialogModel::AuthenticatorRequestDialogModel(
+    const std::string& relying_party_id)
+    : relying_party_id_(relying_party_id), weak_factory_(this) {}
 
 AuthenticatorRequestDialogModel::~AuthenticatorRequestDialogModel() {
   for (auto& observer : observers_)
@@ -94,12 +96,15 @@ void AuthenticatorRequestDialogModel::SetCurrentStep(Step step) {
     observer.OnStepTransition();
 }
 
+void AuthenticatorRequestDialogModel::HideDialog() {
+  SetCurrentStep(Step::kNotStarted);
+}
+
 void AuthenticatorRequestDialogModel::StartFlow(
     TransportAvailabilityInfo transport_availability,
     base::Optional<device::FidoTransportProtocol> last_used_transport,
     const base::ListValue* previously_paired_bluetooth_device_list) {
   DCHECK_EQ(current_step(), Step::kNotStarted);
-  DCHECK(!transport_availability.disable_embedder_ui);
 
   transport_availability_ = std::move(transport_availability);
   last_used_transport_ = last_used_transport;
@@ -110,6 +115,7 @@ void AuthenticatorRequestDialogModel::StartFlow(
   previously_paired_with_bluetooth_authenticator_ =
       previously_paired_bluetooth_device_list &&
       !previously_paired_bluetooth_device_list->GetList().empty();
+
   StartGuidedFlowForMostLikelyTransportOrShowTransportSelection();
 }
 
@@ -117,6 +123,16 @@ void AuthenticatorRequestDialogModel::
     StartGuidedFlowForMostLikelyTransportOrShowTransportSelection() {
   DCHECK(current_step() == Step::kWelcomeScreen ||
          current_step() == Step::kNotStarted);
+
+  // If no authenticator other than the one for the native Windows API is
+  // available, don't show Chrome UI but proceed straight to the native
+  // Windows UI.
+  if (transport_availability_.has_win_native_api_authenticator &&
+      transport_availability_.available_transports.empty()) {
+    HideDialogAndDispatchToNativeWindowsApi();
+    return;
+  }
+
   auto most_likely_transport =
       SelectMostLikelyTransport(transport_availability_, last_used_transport_);
   if (most_likely_transport) {
@@ -135,7 +151,6 @@ void AuthenticatorRequestDialogModel::StartGuidedFlowForTransport(
   DCHECK(current_step() == Step::kTransportSelection ||
          current_step() == Step::kWelcomeScreen ||
          current_step() == Step::kUsbInsertAndActivate ||
-         current_step() == Step::kTouchId ||
          current_step() == Step::kBleActivate ||
          current_step() == Step::kCableActivate ||
          current_step() == Step::kNotStarted);
@@ -153,7 +168,7 @@ void AuthenticatorRequestDialogModel::StartGuidedFlowForTransport(
       Step next_step = ShouldShowBlePairingUI(
                            previously_paired_with_bluetooth_authenticator_,
                            pair_with_new_device_for_bluetooth_low_energy)
-                           ? Step::kBleDeviceSelection
+                           ? Step::kBlePairingBegin
                            : Step::kBleActivate;
       EnsureBleAdapterIsPoweredBeforeContinuingWithStep(next_step);
       break;
@@ -167,11 +182,27 @@ void AuthenticatorRequestDialogModel::StartGuidedFlowForTransport(
 }
 
 void AuthenticatorRequestDialogModel::
+    HideDialogAndDispatchToNativeWindowsApi() {
+  if (!transport_availability()->has_win_native_api_authenticator ||
+      transport_availability()->win_native_api_authenticator_id.empty()) {
+    NOTREACHED();
+    SetCurrentStep(Step::kClosed);
+    return;
+  }
+
+  // There is no AuthenticatorReference for the Windows authenticator,
+  // hence directly call DispatchRequestAsyncInternal here.
+  DispatchRequestAsyncInternal(
+      transport_availability()->win_native_api_authenticator_id);
+
+  HideDialog();
+}
+
+void AuthenticatorRequestDialogModel::
     EnsureBleAdapterIsPoweredBeforeContinuingWithStep(Step next_step) {
   DCHECK(current_step() == Step::kTransportSelection ||
          current_step() == Step::kWelcomeScreen ||
          current_step() == Step::kUsbInsertAndActivate ||
-         current_step() == Step::kTouchId ||
          current_step() == Step::kBleActivate ||
          current_step() == Step::kCableActivate ||
          current_step() == Step::kNotStarted);
@@ -220,7 +251,7 @@ void AuthenticatorRequestDialogModel::InitiatePairingDevice(
 // with WebAuthn request for MacOS.
 #if defined(OS_MACOSX)
   SetCurrentStep(Step::kBleVerifying);
-  DispatchRequestAsync(selected_authenticator, base::TimeDelta());
+  DispatchRequestAsync(selected_authenticator);
 #else
   SetCurrentStep(Step::kBlePinEntry);
 #endif
@@ -262,7 +293,7 @@ void AuthenticatorRequestDialogModel::OnPairingSuccess() {
   DCHECK(ble_device_paired_callback_);
   ble_device_paired_callback_.Run(*selected_authenticator_id_);
 
-  DispatchRequestAsync(authenticator, base::TimeDelta());
+  DispatchRequestAsync(authenticator);
 }
 
 void AuthenticatorRequestDialogModel::OnPairingFailure() {
@@ -285,7 +316,18 @@ void AuthenticatorRequestDialogModel::StartTouchIdFlow() {
     return;
   }
 
-  SetCurrentStep(Step::kTouchId);
+  if (transport_availability_.request_type ==
+          device::FidoRequestHandlerBase::RequestType::kMakeCredential &&
+      incognito_mode_) {
+    SetCurrentStep(Step::kTouchIdIncognitoSpeedBump);
+    return;
+  }
+
+  HideDialogAndTryTouchId();
+}
+
+void AuthenticatorRequestDialogModel::HideDialogAndTryTouchId() {
+  HideDialog();
 
   auto& authenticators = saved_authenticators_.authenticator_list();
   auto touch_id_authenticator_it =
@@ -295,18 +337,16 @@ void AuthenticatorRequestDialogModel::StartTouchIdFlow() {
                             device::FidoTransportProtocol::kInternal;
                    });
 
-  if (touch_id_authenticator_it == authenticators.end())
+  if (touch_id_authenticator_it == authenticators.end()) {
     return;
+  }
 
-  static base::TimeDelta kTouchIdDispatchDelay =
-      base::TimeDelta::FromMilliseconds(1250);
-  DispatchRequestAsync(&*touch_id_authenticator_it, kTouchIdDispatchDelay);
+  DispatchRequestAsync(&*touch_id_authenticator_it);
 }
 
 void AuthenticatorRequestDialogModel::Cancel() {
   if (is_request_complete()) {
     SetCurrentStep(Step::kClosed);
-    return;
   }
 
   for (auto& observer : observers_)
@@ -331,25 +371,43 @@ void AuthenticatorRequestDialogModel::RemoveObserver(Observer* observer) {
 }
 
 void AuthenticatorRequestDialogModel::OnRequestComplete() {
-  DCHECK_NE(current_step(), Step::kClosed);
-  if (is_showing_post_mortem())
-    return;
   SetCurrentStep(Step::kClosed);
 }
 
 void AuthenticatorRequestDialogModel::OnRequestTimeout() {
-  DCHECK(!is_request_complete());
-  SetCurrentStep(Step::kPostMortemTimedOut);
+  // The request may time out while the UI shows a different error.
+  if (!is_request_complete())
+    SetCurrentStep(Step::kTimedOut);
 }
 
 void AuthenticatorRequestDialogModel::OnActivatedKeyNotRegistered() {
   DCHECK(!is_request_complete());
-  SetCurrentStep(Step::kPostMortemKeyNotRegistered);
+  SetCurrentStep(Step::kKeyNotRegistered);
 }
 
 void AuthenticatorRequestDialogModel::OnActivatedKeyAlreadyRegistered() {
   DCHECK(!is_request_complete());
-  SetCurrentStep(Step::kPostMortemKeyAlreadyRegistered);
+  SetCurrentStep(Step::kKeyAlreadyRegistered);
+}
+
+void AuthenticatorRequestDialogModel::OnSoftPINBlock() {
+  SetCurrentStep(Step::kClientPinErrorSoftBlock);
+}
+
+void AuthenticatorRequestDialogModel::OnHardPINBlock() {
+  SetCurrentStep(Step::kClientPinErrorHardBlock);
+}
+
+void AuthenticatorRequestDialogModel::OnAuthenticatorRemovedDuringPINEntry() {
+  SetCurrentStep(Step::kClientPinErrorAuthenticatorRemoved);
+}
+
+void AuthenticatorRequestDialogModel::OnAuthenticatorMissingResidentKeys() {
+  SetCurrentStep(Step::kMissingResidentKeys);
+}
+
+void AuthenticatorRequestDialogModel::OnAuthenticatorMissingUserVerification() {
+  SetCurrentStep(Step::kMissingUserVerification);
 }
 
 void AuthenticatorRequestDialogModel::OnBluetoothPoweredStateChanged(
@@ -398,12 +456,36 @@ void AuthenticatorRequestDialogModel::SetBleDevicePairedCallback(
   ble_device_paired_callback_ = std::move(ble_device_paired_callback);
 }
 
+void AuthenticatorRequestDialogModel::SetPINCallback(
+    base::OnceCallback<void(std::string)> pin_callback) {
+  pin_callback_ = std::move(pin_callback);
+}
+
+void AuthenticatorRequestDialogModel::OnHavePIN(const std::string& pin) {
+  if (!pin_callback_) {
+    // Protect against the view submitting a PIN more than once without
+    // receiving a matching response first. |SetPINCallback| is called again if
+    // the user needs to be prompted for a retry.
+    return;
+  }
+  std::move(pin_callback_).Run(pin);
+  has_attempted_pin_entry_ = true;
+}
+
+void AuthenticatorRequestDialogModel::OnAttestationPermissionResponse(
+    bool attestation_permission_granted) {
+  if (!attestation_callback_) {
+    return;
+  }
+  std::move(attestation_callback_).Run(attestation_permission_granted);
+}
+
 void AuthenticatorRequestDialogModel::AddAuthenticator(
     const device::FidoAuthenticator& authenticator) {
   if (!authenticator.AuthenticatorTransport()) {
-    // AuthenticatorTransport is nullopt if we cannot determine the transport
-    // upfront, i.e. for the Windows API authenticator. The UI will be
-    // suppressed for this authenticator, so we can simply ignore it here.
+#if defined(OS_WIN)
+    DCHECK(authenticator.IsWinNativeApiAuthenticator());
+#endif  // defined(OS_WIN)
     return;
   }
 
@@ -415,7 +497,7 @@ void AuthenticatorRequestDialogModel::AddAuthenticator(
   if (authenticator_reference.is_paired() &&
       authenticator_reference.transport() ==
           AuthenticatorTransport::kBluetoothLowEnergy) {
-    DispatchRequestAsync(&authenticator_reference, base::TimeDelta());
+    DispatchRequestAsync(&authenticator_reference);
   }
   saved_authenticators_.AddAuthenticator(std::move(authenticator_reference));
 }
@@ -426,21 +508,24 @@ void AuthenticatorRequestDialogModel::RemoveAuthenticator(
 }
 
 void AuthenticatorRequestDialogModel::DispatchRequestAsync(
-    AuthenticatorReference* authenticator,
-    base::TimeDelta delay) {
+    AuthenticatorReference* authenticator) {
+  // Dispatching to the same authenticator twice may result in unexpected
+  // behavior.
+  if (authenticator->dispatched()) {
+    return;
+  }
+
+  DispatchRequestAsyncInternal(authenticator->authenticator_id());
+  authenticator->SetDispatched(true);
+}
+
+void AuthenticatorRequestDialogModel::DispatchRequestAsyncInternal(
+    const std::string& authenticator_id) {
   if (!request_callback_)
     return;
 
-  // Dispatching to the same authenticator twice may result in unexpected
-  // behavior.
-  if (authenticator->dispatched())
-    return;
-
-  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(request_callback_, authenticator->authenticator_id()),
-      delay);
-  authenticator->SetDispatched(true);
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(request_callback_, authenticator_id));
 }
 
 void AuthenticatorRequestDialogModel::UpdateAuthenticatorReferencePairingMode(
@@ -450,9 +535,49 @@ void AuthenticatorRequestDialogModel::UpdateAuthenticatorReferencePairingMode(
                                                        is_in_pairing_mode);
 }
 
+// SelectAccount is called to trigger an account selection dialog.
+void AuthenticatorRequestDialogModel::SelectAccount(
+    std::vector<device::AuthenticatorGetAssertionResponse> responses,
+    base::OnceCallback<void(device::AuthenticatorGetAssertionResponse)>
+        callback) {
+  responses_ = std::move(responses);
+  selection_callback_ = std::move(callback);
+  SetCurrentStep(Step::kSelectAccount);
+}
+
+void AuthenticatorRequestDialogModel::OnAccountSelected(size_t index) {
+  if (!selection_callback_) {
+    // It's possible that the user could activate the dialog more than once
+    // before the Webauthn request is completed and its torn down.
+    return;
+  }
+
+  auto selected = std::move(responses_[index]);
+  responses_.clear();
+  std::move(selection_callback_).Run(std::move(selected));
+}
+
 void AuthenticatorRequestDialogModel::SetSelectedAuthenticatorForTesting(
     AuthenticatorReference test_authenticator) {
   selected_authenticator_id_ = test_authenticator.authenticator_id();
   saved_authenticators_.AddAuthenticator(std::move(test_authenticator));
 }
 
+void AuthenticatorRequestDialogModel::CollectPIN(
+    base::Optional<int> attempts,
+    base::OnceCallback<void(std::string)> provide_pin_cb) {
+  pin_callback_ = std::move(provide_pin_cb);
+  if (attempts) {
+    pin_attempts_ = attempts;
+    SetCurrentStep(Step::kClientPinEntry);
+  } else {
+    SetCurrentStep(Step::kClientPinSetup);
+  }
+}
+
+void AuthenticatorRequestDialogModel::RequestAttestationPermission(
+    base::OnceCallback<void(bool)> callback) {
+  DCHECK(current_step_ != Step::kClosed);
+  attestation_callback_ = std::move(callback);
+  SetCurrentStep(Step::kAttestationPermissionRequest);
+}

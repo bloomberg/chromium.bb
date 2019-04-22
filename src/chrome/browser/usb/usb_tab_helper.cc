@@ -168,3 +168,5 @@ bool UsbTabHelper::AllowedByFeaturePolicy(
   return render_frame_host->IsFeatureEnabled(
       blink::mojom::FeaturePolicyFeature::kUsb);
 }
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(UsbTabHelper)

@@ -39,6 +39,7 @@
 // web::NavigationContextImpl for this navigation.
 - (web::NavigationContextImpl*)context;
 - (void)setContext:(std::unique_ptr<web::NavigationContextImpl>)context;
+- (std::unique_ptr<web::NavigationContextImpl>)releaseContext;
 
 @end
 
@@ -80,6 +81,10 @@
 
 - (web::NavigationContextImpl*)context {
   return _context.get();
+}
+
+- (std::unique_ptr<web::NavigationContextImpl>)releaseContext {
+  return std::move(_context);
 }
 
 @end
@@ -132,7 +137,9 @@
             state == web::WKNavigationState::REDIRECTED) ||
            // didFinishNavigation can be called before didCommitNvigation.
            (record.state == web::WKNavigationState::FINISHED &&
-            state == web::WKNavigationState::COMMITTED));
+            state == web::WKNavigationState::COMMITTED) ||
+           // |navigation| can be nil for same-document navigations.
+           !navigation);
     record.state = state;
   }
   if (state == web::WKNavigationState::COMMITTED) {
@@ -147,10 +154,14 @@
   return record ? record.state : web::WKNavigationState::NONE;
 }
 
-- (void)removeNavigation:(WKNavigation*)navigation {
+- (std::unique_ptr<web::NavigationContextImpl>)removeNavigation:
+    (WKNavigation*)navigation {
   id key = [self keyForNavigation:navigation];
-  DCHECK([_records objectForKey:key]);
+  CRWWKNavigationsStateRecord* record = [_records objectForKey:key];
+  DCHECK(record);
+  std::unique_ptr<web::NavigationContextImpl> context = [record releaseContext];
   [_records removeObjectForKey:key];
+  return context;
 }
 
 - (void)setContext:(std::unique_ptr<web::NavigationContextImpl>)context
@@ -177,6 +188,20 @@
   WKNavigation* result = nil;
   CRWWKNavigationsStateRecord* unused = nil;
   [self getLastAddedNavigation:&result record:&unused];
+  return result;
+}
+
+- (WKNavigation*)lastNavigationWithPendingItemInNavigationContext {
+  NSUInteger lastAddedIndex = 0;  // record indices start with 1.
+  WKNavigation* result = nullptr;
+  for (id navigation in _records) {
+    CRWWKNavigationsStateRecord* record = [_records objectForKey:navigation];
+    web::NavigationContextImpl* context = [record context];
+    if (context && context->GetItem() && lastAddedIndex < record.index) {
+      result = navigation;
+      lastAddedIndex = record.index;
+    }
+  }
   return result;
 }
 

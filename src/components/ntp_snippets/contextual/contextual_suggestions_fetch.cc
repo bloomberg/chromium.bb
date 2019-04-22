@@ -8,6 +8,7 @@
 
 #include "base/base64.h"
 #include "base/base64url.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
@@ -183,11 +184,8 @@ ContextualSuggestionsResult ResultFromResponse(
 
 ContextualSuggestionsFetch::ContextualSuggestionsFetch(
     const GURL& url,
-    const std::string& bcp_language_code,
-    bool include_cookies)
-    : url_(url),
-      bcp_language_code_(bcp_language_code),
-      include_cookies_(include_cookies) {}
+    const std::string& bcp_language_code)
+    : url_(url), bcp_language_code_(bcp_language_code) {}
 
 ContextualSuggestionsFetch::~ContextualSuggestionsFetch() = default;
 
@@ -272,11 +270,8 @@ ContextualSuggestionsFetch::MakeResourceRequest() const {
   resource_request->url = GURL(GetFetchEndpoint());
   resource_request->method = "GET";
   AppendHeaders(resource_request.get());
-
-  int cookie_flag = include_cookies_ ? 0 : net::LOAD_DO_NOT_SEND_COOKIES;
-  resource_request->load_flags = net::LOAD_BYPASS_CACHE |
-                                 net::LOAD_DO_NOT_SAVE_COOKIES | cookie_flag |
-                                 net::LOAD_DO_NOT_SEND_AUTH_DATA;
+  resource_request->load_flags = net::LOAD_BYPASS_CACHE;
+  resource_request->allow_credentials = false;
 
   return resource_request;
 }
@@ -291,9 +286,9 @@ void ContextualSuggestionsFetch::AppendHeaders(
                         base::Base64UrlEncodePolicy::INCLUDE_PADDING,
                         &base64_encoded_body);
   headers.SetHeader("X-Protobuffer-Request-Payload", base64_encoded_body);
-  variations::AppendVariationHeaders(resource_request->url,
-                                     variations::InIncognito::kNo,
-                                     variations::SignedIn::kNo, &headers);
+  variations::AppendVariationsHeader(
+      resource_request->url, variations::InIncognito::kNo,
+      variations::SignedIn::kNo, resource_request);
 
   UMA_HISTOGRAM_COUNTS_1M(
       "ContextualSuggestions.FetchRequestProtoSizeKB",

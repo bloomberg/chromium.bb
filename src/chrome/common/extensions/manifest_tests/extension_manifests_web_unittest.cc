@@ -4,7 +4,7 @@
 
 #include "chrome/common/extensions/manifest_tests/chrome_manifest_test.h"
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "extensions/common/error_utils.h"
@@ -21,27 +21,26 @@ TEST_F(ChromeManifestTest, AppWebUrls) {
       Testcase("web_urls_wrong_type.json", errors::kInvalidWebURLs),
       Testcase("web_urls_invalid_1.json",
                ErrorUtils::FormatErrorMessage(errors::kInvalidWebURL,
-                                              base::IntToString(0),
+                                              base::NumberToString(0),
                                               errors::kExpectString)),
       Testcase("web_urls_invalid_2.json",
                ErrorUtils::FormatErrorMessage(
-                   errors::kInvalidWebURL, base::IntToString(0),
+                   errors::kInvalidWebURL, base::NumberToString(0),
                    URLPattern::GetParseResultString(
                        URLPattern::ParseResult::kMissingSchemeSeparator))),
       Testcase("web_urls_invalid_3.json",
                ErrorUtils::FormatErrorMessage(errors::kInvalidWebURL,
-                                              base::IntToString(0),
+                                              base::NumberToString(0),
                                               errors::kNoWildCardsInPaths)),
       Testcase("web_urls_invalid_4.json",
                ErrorUtils::FormatErrorMessage(
-                   errors::kInvalidWebURL, base::IntToString(0),
+                   errors::kInvalidWebURL, base::NumberToString(0),
                    errors::kCannotClaimAllURLsInExtent)),
       Testcase("web_urls_invalid_5.json",
                ErrorUtils::FormatErrorMessage(
-                   errors::kInvalidWebURL, base::IntToString(1),
+                   errors::kInvalidWebURL, base::NumberToString(1),
                    errors::kCannotClaimAllHostsInExtent))};
-  RunTestcases(testcases, arraysize(testcases),
-               EXPECT_TYPE_ERROR);
+  RunTestcases(testcases, base::size(testcases), EXPECT_TYPE_ERROR);
 
   LoadAndExpectSuccess("web_urls_has_port.json");
 

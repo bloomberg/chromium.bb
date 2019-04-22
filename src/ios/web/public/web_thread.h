@@ -53,11 +53,11 @@ class WebThread {
     UI,
 
     // This is the thread that processes non-blocking IO, i.e. IPC and network.
-    // Blocking IO should happen in TaskScheduler.
+    // Blocking IO should happen in ThreadPool.
     IO,
 
     // NOTE: do not add new threads here. Instead you should just use
-    // base::Create*TaskRunnerWithTraits to run tasks on the TaskScheduler.
+    // base::Create*TaskRunnerWithTraits to run tasks on the ThreadPool.
 
     // This identifier does not represent a thread.  Instead it counts the
     // number of well-known threads.  Insert new well-known threads before this
@@ -95,9 +95,9 @@ class WebThread {
   // Only one delegate may be registered at a time. Delegates may be
   // unregistered by providing a nullptr pointer.
   //
-  // If the caller unregisters a delegate before CleanUp has been
-  // called, it must perform its own locking to ensure the delegate is
-  // not deleted while unregistering.
+  // The delegate can only be registered through this call before
+  // WebThreadImpl(WebThread::IO) is created and unregistered after
+  // it was destroyed and its underlying thread shutdown.
   static void SetIOThreadDelegate(WebThreadDelegate* delegate);
 
   // Returns an appropriate error message for when DCHECK_CURRENTLY_ON() fails.

@@ -47,7 +47,8 @@ class UsbDeviceLinux : public UsbDevice {
                  const std::string& manufacturer_string,
                  const std::string& product_string,
                  const std::string& serial_number,
-                 uint8_t active_configuration);
+                 uint8_t active_configuration,
+                 uint32_t bus_number, uint32_t port_number);
 
   ~UsbDeviceLinux() override;
 
@@ -67,7 +68,7 @@ class UsbDeviceLinux : public UsbDevice {
               OpenCallback callback,
               scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
 
-  base::SequenceChecker sequence_checker_;
+  SEQUENCE_CHECKER(sequence_checker_);
 
   const std::string device_path_;
 

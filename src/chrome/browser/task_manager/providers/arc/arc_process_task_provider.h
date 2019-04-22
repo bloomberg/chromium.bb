@@ -12,8 +12,10 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/process/process.h"
 #include "chrome/browser/chromeos/arc/process/arc_process.h"
+#include "chrome/browser/chromeos/arc/process/arc_process_service.h"
 #include "chrome/browser/task_manager/providers/arc/arc_process_task.h"
 #include "chrome/browser/task_manager/providers/task_provider.h"
 
@@ -39,6 +41,7 @@ class ArcProcessTaskProvider : public TaskProvider {
  private:
   using ArcTaskMap =
       std::unordered_map<base::ProcessId, std::unique_ptr<ArcProcessTask>>;
+  using OptionalArcProcessList = arc::ArcProcessService::OptionalArcProcessList;
   void ScheduleNextRequest(const base::Closure& task, const int delaySeconds);
 
   // Auto-retry if ARC bridge service is not ready.
@@ -47,8 +50,8 @@ class ArcProcessTaskProvider : public TaskProvider {
 
   void UpdateProcessList(ArcTaskMap* pid_to_task,
                          std::vector<arc::ArcProcess> processes);
-  void OnUpdateAppProcessList(std::vector<arc::ArcProcess> processes);
-  void OnUpdateSystemProcessList(std::vector<arc::ArcProcess> processes);
+  void OnUpdateAppProcessList(OptionalArcProcessList processes);
+  void OnUpdateSystemProcessList(OptionalArcProcessList processes);
 
   // task_manager::TaskProvider:
   void StartUpdating() override;

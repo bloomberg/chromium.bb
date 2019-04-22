@@ -14,7 +14,7 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "chromecast/media/cma/backend/audio_fader.h"
-#include "chromecast/media/cma/backend/audio_output_redirector.h"
+#include "chromecast/media/cma/backend/audio_output_redirector_input.h"
 #include "chromecast/media/cma/backend/filter_group.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_timestamp_helper.h"
@@ -34,15 +34,11 @@ int RoundUpMultiple(int value, int multiple) {
 
 }  // namespace
 
-MixerInput::MixerInput(Source* source,
-                       int output_samples_per_second,
-                       int read_size,
-                       RenderingDelay initial_rendering_delay,
-                       FilterGroup* filter_group)
+MixerInput::MixerInput(Source* source, FilterGroup* filter_group)
     : source_(source),
       num_channels_(source->num_channels()),
       input_samples_per_second_(source->input_samples_per_second()),
-      output_samples_per_second_(output_samples_per_second),
+      output_samples_per_second_(filter_group->input_samples_per_second()),
       primary_(source->primary()),
       device_id_(source->device_id()),
       content_type_(source->content_type()),
@@ -58,7 +54,10 @@ MixerInput::MixerInput(Source* source,
   DCHECK_GT(num_channels_, 0);
   DCHECK_GT(input_samples_per_second_, 0);
 
-  int source_read_size = read_size;
+  MediaPipelineBackend::AudioDecoder::RenderingDelay initial_rendering_delay =
+      filter_group->GetRenderingDelayToOutput();
+
+  int source_read_size = filter_group->input_frames_per_write();
   if (output_samples_per_second_ > 0 &&
       output_samples_per_second_ != input_samples_per_second_) {
     // Round up to nearest multiple of SincResampler::kKernelSize. The read size
@@ -237,7 +236,8 @@ void MixerInput::VolumeScaleAccumulate(const float* src,
                                        int frames,
                                        float* dest) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  slew_volume_.ProcessFMAC(!volume_applied_, src, frames, 1, dest);
+  slew_volume_.ProcessFMAC(volume_applied_ /* repeat_transition */, src, frames,
+                           1, dest);
   volume_applied_ = true;
 }
 

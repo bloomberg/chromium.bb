@@ -25,7 +25,7 @@ class WebRTCStatsReportObtainer
  public:
   WebRTCStatsReportObtainer();
 
-  std::unique_ptr<blink::WebRTCStatsReportCallback> GetStatsCallbackWrapper();
+  blink::WebRTCStatsReportCallback GetStatsCallbackWrapper();
 
   blink::WebRTCStatsReport* report() const;
   blink::WebRTCStatsReport* WaitForReport();
@@ -35,19 +35,7 @@ class WebRTCStatsReportObtainer
   friend class CallbackWrapper;
   virtual ~WebRTCStatsReportObtainer();
 
-  // A separate class is needed for OnStatsDelivered() because ownership of the
-  // callback has to be passed to GetStats().
-  class CallbackWrapper : public blink::WebRTCStatsReportCallback {
-   public:
-    CallbackWrapper(scoped_refptr<WebRTCStatsReportObtainer> obtainer);
-    ~CallbackWrapper() override;
-
-    void OnStatsDelivered(
-        std::unique_ptr<blink::WebRTCStatsReport> report) override;
-
-   private:
-    scoped_refptr<WebRTCStatsReportObtainer> obtainer_;
-  };
+  void OnStatsDelivered(std::unique_ptr<blink::WebRTCStatsReport> report);
 
   base::RunLoop run_loop_;
   std::unique_ptr<blink::WebRTCStatsReport> report_;

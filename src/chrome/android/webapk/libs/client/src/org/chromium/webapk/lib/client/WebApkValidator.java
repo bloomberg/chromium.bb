@@ -40,6 +40,7 @@ public class WebApkValidator {
     private static final String MAPSLITE_PACKAGE_NAME = "com.google.android.apps.mapslite";
     private static final String MAPSLITE_URL_PREFIX =
             "https://www.google.com/maps"; // Matches scope.
+    private static final boolean DEBUG = false;
 
     private static byte[] sExpectedSignature;
     private static byte[] sCommentSignedPublicKeyBytes;
@@ -47,45 +48,43 @@ public class WebApkValidator {
     private static boolean sOverrideValidationForTesting;
 
     /**
-     * Queries the PackageManager to determine whether a WebAPK can handle the URL. Ignores whether
-     * the user has selected a default handler for the URL and whether the default handler is the
-     * WebAPK.
-     *
-     * <p>NOTE(yfriedman): This can fail if multiple WebAPKs can match the supplied url.
+     * Queries the PackageManager to determine whether one or more WebAPKs can handle the URL.
+     * Ignores whether the user has selected a default handler for the URL and whether the default
+     * handler is a WebAPK.
      *
      * @param context The application context.
      * @param url The url to check.
-     * @return Package name of WebAPK which can handle the URL. Null if the url should not be
-     * handled by a WebAPK.
+     * @return Package name for one of the WebAPKs which can handle the URL. If there are several
+     * matching WebAPKs an arbitrary one is returned. Null if there is no matching WebAPK.
      */
-    public static @Nullable String queryWebApkPackage(Context context, String url) {
-        return findWebApkPackage(context, resolveInfosForUrl(context, url));
+    public static @Nullable String queryFirstWebApkPackage(Context context, String url) {
+        return findFirstWebApkPackage(context, resolveInfosForUrl(context, url));
     }
 
     /**
-     * Queries the PackageManager to determine whether a WebAPK can handle the URL. Ignores whether
-     * the user has selected a default handler for the URL and whether the default handler is the
-     * WebAPK.
-     *
-     * <p>NOTE: This can fail if multiple WebAPKs can match the supplied url.
+     * Queries the PackageManager to determine whether one or more WebAPKs can handle the URL.
+     * Ignores whether the user has selected a default handler for the URL and whether the default
+     * handler is a WebAPK.
      *
      * @param context The application context.
      * @param url The url to check.
-     * @return Resolve Info of a WebAPK which can handle the URL. Null if the url should not be
-     *     handled by a WebAPK.
+     * @return ResolveInfo for one of the WebAPKs which can handle the URL. If there are several
+     * matching ResolveInfos an arbitrary one is returned. Null if there is no matching WebAPK.
      */
-    public static @Nullable ResolveInfo queryWebApkResolveInfo(Context context, String url) {
-        return findWebApkResolveInfo(context, resolveInfosForUrl(context, url));
+    public static @Nullable ResolveInfo queryFirstWebApkResolveInfo(Context context, String url) {
+        return findFirstWebApkResolveInfo(context, resolveInfosForUrl(context, url));
     }
 
     /**
+     * Searches {@link infos} and returns the package name of the first {@link ResolveInfo} which
+     * corresponds to a WebAPK.
      * @param context The context to use to check whether WebAPK is valid.
      * @param infos The {@link ResolveInfo}s to search.
-     * @return Package name of the {@link ResolveInfo} which corresponds to a WebAPK. Null if none
-     *         of the {@link ResolveInfo}s corresponds to a WebAPK.
+     * @return WebAPK package name of the match. Null if there are no matches.
      */
-    public static @Nullable String findWebApkPackage(Context context, List<ResolveInfo> infos) {
-        ResolveInfo resolveInfo = findWebApkResolveInfo(context, infos);
+    public static @Nullable String findFirstWebApkPackage(
+            Context context, List<ResolveInfo> infos) {
+        ResolveInfo resolveInfo = findFirstWebApkResolveInfo(context, infos);
         if (resolveInfo != null) {
             return resolveInfo.activityInfo.packageName;
         }
@@ -165,13 +164,13 @@ public class WebApkValidator {
     }
 
     /**
-     * Searches the given {@link ResolveInfo}s for one corresponding to a WebAPK.
+     * Searches {@link infos} and returns the first {@link ResolveInfo} which corresponds to a
+     * WebAPK.
      * @param context The context to use to check whether WebAPK is valid.
      * @param infos The {@link ResolveInfo}s to search.
-     * @return {@link ResolveInfo} which corresponds to a WebAPK. Null if none of the ResolveInfos
-     * corresponds to a WebAPK.
+     * @return The matching {@link ResolveInfo}. Null if there are no matches.
      */
-    private static @Nullable ResolveInfo findWebApkResolveInfo(
+    private static @Nullable ResolveInfo findFirstWebApkResolveInfo(
             Context context, List<ResolveInfo> infos) {
         for (ResolveInfo info : infos) {
             if (info.activityInfo != null
@@ -200,22 +199,28 @@ public class WebApkValidator {
             packageInfo = context.getPackageManager().getPackageInfo(webappPackageName,
                     PackageManager.GET_SIGNATURES | PackageManager.GET_META_DATA);
         } catch (Exception e) {
-            e.printStackTrace();
-            Log.d(TAG, "WebApk not found");
+            if (DEBUG) {
+                e.printStackTrace();
+                Log.d(TAG, "WebApk not found");
+            }
             return false;
         }
         if (isNotWebApkQuick(packageInfo)) {
             return false;
         }
         if (sOverrideValidationForTesting) {
-            Log.d(TAG, "Ok! Looks like a WebApk (has start url) and validation is disabled.");
+            if (DEBUG) {
+                Log.d(TAG, "Ok! Looks like a WebApk (has start url) and validation is disabled.");
+            }
             return true;
         }
         if (verifyV1WebApk(packageInfo, webappPackageName)) {
             return true;
         }
         if (verifyMapsLite(packageInfo, webappPackageName)) {
-            Log.d(TAG, "Matches Maps Lite");
+            if (DEBUG) {
+                Log.d(TAG, "Matches Maps Lite");
+            }
             return true;
         }
         return verifyCommentSignedWebApk(packageInfo);
@@ -239,7 +244,9 @@ public class WebApkValidator {
         }
         for (Signature signature : packageInfo.signatures) {
             if (Arrays.equals(sExpectedSignature, signature.toByteArray())) {
-                Log.d(TAG, "WebApk valid - signature match!");
+                if (DEBUG) {
+                    Log.d(TAG, "WebApk valid - signature match!");
+                }
                 return true;
             }
         }
@@ -252,12 +259,16 @@ public class WebApkValidator {
         }
         String startUrl = packageInfo.applicationInfo.metaData.getString(START_URL);
         if (startUrl == null || !startUrl.startsWith(MAPSLITE_URL_PREFIX)) {
-            Log.d(TAG, "mapslite invalid startUrl prefix");
+            if (DEBUG) {
+                Log.d(TAG, "mapslite invalid startUrl prefix");
+            }
             return false;
         }
         String scope = packageInfo.applicationInfo.metaData.getString(SCOPE);
         if (scope == null || !scope.equals(MAPSLITE_URL_PREFIX)) {
-            Log.d(TAG, "mapslite invalid scope prefix");
+            if (DEBUG) {
+                Log.d(TAG, "mapslite invalid scope prefix");
+            }
             return false;
         }
         return true;
@@ -295,16 +306,19 @@ public class WebApkValidator {
             buf.load();
 
             WebApkVerifySignature v = new WebApkVerifySignature(buf);
+            @WebApkVerifySignature.Error
             int result = v.read();
-            if (result != WebApkVerifySignature.ERROR_OK) {
+            if (result != WebApkVerifySignature.Error.OK) {
                 Log.e(TAG, String.format("Failure reading %s: %s", packageFilename, result));
                 return false;
             }
             result = v.verifySignature(commentSignedPublicKey);
 
             // TODO(scottkirkwood): remove this log once well tested.
-            Log.d(TAG, "File " + packageFilename + ": " + result);
-            return result == WebApkVerifySignature.ERROR_OK;
+            if (DEBUG) {
+                Log.d(TAG, "File " + packageFilename + ": " + result);
+            }
+            return result == WebApkVerifySignature.Error.OK;
         } catch (Exception e) {
             Log.e(TAG, "WebApk file error for file " + packageFilename, e);
             return false;

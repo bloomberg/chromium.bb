@@ -110,7 +110,7 @@ lv{
         EZ{"Eirozona"}
         FI{"Somija"}
         FJ{"Fidži"}
-        FK{"Folklenda salas"}
+        FK{"Folklenda (Malvinu) salas"}
         FM{"Mikronēzija"}
         FO{"Fēru salas"}
         FR{"Francija"}
@@ -133,7 +133,7 @@ lv{
         GU{"Guama"}
         GW{"Gvineja-Bisava"}
         GY{"Gajāna"}
-        HK{"Ķīnas īpašās pārvaldes apgabals Honkonga"}
+        HK{"Honkonga"}
         HM{"Hērda sala un Makdonalda salas"}
         HN{"Hondurasa"}
         HR{"Horvātija"}
@@ -183,11 +183,11 @@ lv{
         MF{"Senmartēna"}
         MG{"Madagaskara"}
         MH{"Māršala salas"}
-        MK{"Maķedonija"}
+        MK{"Ziemeļmaķedonija"}
         ML{"Mali"}
         MM{"Mjanma (Birma)"}
         MN{"Mongolija"}
-        MO{"Ķīnas īpašās pārvaldes apgabals Makao"}
+        MO{"Makao"}
         MP{"Ziemeļu Marianas salas"}
         MQ{"Martinika"}
         MR{"Mauritānija"}
@@ -287,6 +287,8 @@ lv{
         VU{"Vanuatu"}
         WF{"Volisa un Futunas salas"}
         WS{"Samoa"}
+        XA{"pseidoakcenti"}
+        XB{"pseido-Bidi"}
         XK{"Kosova"}
         YE{"Jemena"}
         YT{"Majota"}
@@ -297,9 +299,6 @@ lv{
     }
     Countries%short{
         GB{"Apvienotā Karaliste"}
-        HK{"Honkonga"}
-        MO{"Makao"}
-        PS{"Palestīna"}
         UN{"ANO"}
         US{"ASV"}
     }
@@ -308,8 +307,6 @@ lv{
         CG{"Kongo (Republika)"}
         CI{"Ziloņkaula krasts"}
         CZ{"Čehijas Republika"}
-        FK{"Folklenda (Malvinu) salas"}
-        MK{"bijusī Dienvidslāvijas Maķedonijas Republika"}
     }
-    Version{"2.1.44.91"}
+    Version{"2.1.48.43"}
 }

@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_REMOTE_FONT_FACE_SOURCE_H_
 
 #include "third_party/blink/renderer/core/css/css_font_face_source.h"
+#include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/loader/resource/font_resource.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
@@ -47,7 +48,7 @@ class RemoteFontFaceSource final : public CSSFontFaceSource,
 
   // For UMA reporting
   bool HadBlankText() override { return histograms_.HadBlankText(); }
-  void PaintRequested() { histograms_.FallbackFontPainted(period_); }
+  void PaintRequested() override { histograms_.FallbackFontPainted(period_); }
 
   void Trace(blink::Visitor*) override;
 
@@ -112,6 +113,9 @@ class RemoteFontFaceSource final : public CSSFontFaceSource,
   void UpdatePeriod();
   bool ShouldTriggerWebFontsIntervention();
   bool IsLowPriorityLoadingAllowedForRemoteFont() const override;
+  FontDisplay GetFontDisplayWithFeaturePolicyCheck(FontDisplay,
+                                                   const FontSelector*,
+                                                   ReportOptions) const;
 
   // Our owning font face.
   Member<CSSFontFace> face_;

@@ -71,8 +71,8 @@ DEFINE_DOMTYPEDARRAY_TRAITS(DOMFloat64Array, V8Float64Array);
 template <typename WTFTypedArray, typename V8TypedArray>
 const WrapperTypeInfo*
 DOMTypedArray<WTFTypedArray, V8TypedArray>::GetWrapperTypeInfo() const {
-  return &DOMTypedArrayTraits<
-      DOMTypedArray<WTFTypedArray, V8TypedArray>>::Type::wrapper_type_info;
+  return DOMTypedArrayTraits<
+      DOMTypedArray<WTFTypedArray, V8TypedArray>>::Type::GetWrapperTypeInfo();
 }
 
 template class CORE_TEMPLATE_EXPORT

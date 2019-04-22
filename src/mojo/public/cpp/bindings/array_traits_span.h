@@ -12,8 +12,8 @@
 
 namespace mojo {
 
-template <typename T>
-struct ArrayTraits<base::span<T>> {
+template <typename T, size_t Extent>
+struct ArrayTraits<base::span<T, Extent>> {
   using Element = T;
 
   // There is no concept of a null span, as it is indistinguishable from the

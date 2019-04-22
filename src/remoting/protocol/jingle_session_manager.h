@@ -14,9 +14,9 @@
 #include "remoting/protocol/session_manager.h"
 #include "remoting/signaling/signal_strategy.h"
 
-namespace buzz {
+namespace jingle_xmpp {
 class XmlElement;
-}  // namespace buzz
+}  // namespace jingle_xmpp
 
 namespace remoting {
 
@@ -52,12 +52,12 @@ class JingleSessionManager : public SessionManager,
 
   // SignalStrategy::Listener interface.
   void OnSignalStrategyStateChange(SignalStrategy::State state) override;
-  bool OnSignalStrategyIncomingStanza(const buzz::XmlElement* stanza) override;
+  bool OnSignalStrategyIncomingStanza(const jingle_xmpp::XmlElement* stanza) override;
 
   typedef std::map<std::string, JingleSession*> SessionsMap;
 
   IqSender* iq_sender() { return iq_sender_.get(); }
-  void SendReply(std::unique_ptr<buzz::XmlElement> original_stanza,
+  void SendReply(std::unique_ptr<jingle_xmpp::XmlElement> original_stanza,
                  JingleMessageReply::ErrorType error);
 
   // Called by JingleSession when it is being destroyed.

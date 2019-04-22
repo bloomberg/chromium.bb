@@ -52,17 +52,19 @@ content::WebUIDataSource* CreatePolicyUIHtmlSource() {
   source->AddLocalizedString("labelRefreshInterval",
                              IDS_POLICY_LABEL_REFRESH_INTERVAL);
   source->AddLocalizedString("labelStatus", IDS_POLICY_LABEL_STATUS);
+  source->AddLocalizedString("labelPoliciesPush",
+                             IDS_POLICY_LABEL_PUSH_POLICIES);
+  source->AddLocalizedString("policiesPushOn", IDS_POLICY_PUSH_POLICIES_ON);
+  source->AddLocalizedString("policiesPushOff", IDS_POLICY_PUSH_POLICIES_OFF);
   source->AddLocalizedString("showUnset", IDS_POLICY_SHOW_UNSET);
   source->AddLocalizedString("noPoliciesSet", IDS_POLICY_NO_POLICIES_SET);
-  source->AddLocalizedString("showExpandedValue",
-                             IDS_POLICY_SHOW_EXPANDED_VALUE);
-  source->AddLocalizedString("hideExpandedValue",
-                             IDS_POLICY_HIDE_EXPANDED_VALUE);
+  source->AddLocalizedString("showMore", IDS_POLICY_SHOW_MORE);
+  source->AddLocalizedString("showLess", IDS_POLICY_SHOW_LESS);
+  source->AddLocalizedString("showExpandedStatus",
+                             IDS_POLICY_SHOW_EXPANDED_STATUS);
+  source->AddLocalizedString("hideExpandedStatus",
+                             IDS_POLICY_HIDE_EXPANDED_STATUS);
   source->AddLocalizedString("policyLearnMore", IDS_POLICY_LEARN_MORE);
-  // Add required resources.
-#if !defined(OS_ANDROID)
-  source->AddResourcePath("policy_common.css", IDR_POLICY_COMMON_CSS);
-#endif
   source->AddResourcePath("policy.css", IDR_POLICY_CSS);
   source->AddResourcePath("policy_base.js", IDR_POLICY_BASE_JS);
   source->AddResourcePath("policy.js", IDR_POLICY_JS);

@@ -10,6 +10,9 @@ const kLow = 1,
       kHigh = 3,
       kVeryHigh = 4;
 
+// The UseCounter ID.
+const kPriorityHints = 2738;
+
 function assert_priority_onload(url, expected_priority, test) {
   return test.step_func(e => {
     assert_equals(expected_priority, getPriority(url, document));
@@ -19,4 +22,8 @@ function assert_priority_onload(url, expected_priority, test) {
 
 function getPriority(url) {
   return internals.getResourcePriority(url, document);
+}
+
+function clearUseCounter() {
+  internals.clearUseCounter(document, kPriorityHints);
 }

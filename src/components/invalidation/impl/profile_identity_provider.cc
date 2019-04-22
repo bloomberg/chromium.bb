@@ -4,6 +4,7 @@
 
 #include "components/invalidation/impl/profile_identity_provider.h"
 
+#include "base/bind.h"
 #include "components/invalidation/public/active_account_access_token_fetcher_impl.h"
 
 namespace invalidation {
@@ -71,7 +72,7 @@ std::string ProfileIdentityProvider::GetActiveAccountId() {
   return active_account_id_;
 }
 
-bool ProfileIdentityProvider::IsActiveAccountAvailable() {
+bool ProfileIdentityProvider::IsActiveAccountWithRefreshToken() {
   if (GetActiveAccountId().empty() || !identity_manager_ ||
       !identity_manager_->HasAccountWithRefreshToken(GetActiveAccountId()))
     return false;
@@ -110,8 +111,7 @@ void ProfileIdentityProvider::InvalidateAccessToken(
 }
 
 void ProfileIdentityProvider::OnRefreshTokenUpdatedForAccount(
-    const AccountInfo& account_info,
-    bool is_valid) {
+    const CoreAccountInfo& account_info) {
   ProcessRefreshTokenUpdateForAccount(account_info.account_id);
 }
 

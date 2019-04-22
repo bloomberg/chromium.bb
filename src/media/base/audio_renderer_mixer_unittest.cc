@@ -14,7 +14,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/platform_thread.h"
@@ -97,7 +97,7 @@ class AudioRendererMixerTest
                                const OutputDeviceInfo& sink_info,
                                scoped_refptr<AudioRendererSink> sink) final {
     return mixer_.get();
-  };
+  }
 
   void ReturnMixer(AudioRendererMixer* mixer) override {
     EXPECT_EQ(mixer_.get(), mixer);
@@ -525,7 +525,7 @@ TEST_P(AudioRendererMixerBehavioralTest, MixerPausesStream) {
   mixer_inputs_[0]->Stop();
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     AudioRendererMixerTest,
     testing::Values(
@@ -540,26 +540,26 @@ INSTANTIATE_TEST_CASE_P(
 
         // Downsampling, multuple input sample rates.
         std::make_tuple(static_cast<const int* const>(kTestInput3Rates),
-                        arraysize(kTestInput3Rates),
+                        base::size(kTestInput3Rates),
                         kTestInput3Rates[0],
                         0.01),
 
         // Upsampling, multiple sinput sample rates.
         std::make_tuple(static_cast<const int* const>(kTestInput3Rates),
-                        arraysize(kTestInput3Rates),
+                        base::size(kTestInput3Rates),
                         kTestInput3Rates[2],
                         0.01),
 
         // Both downsampling and upsampling, multiple input sample rates
         std::make_tuple(static_cast<const int* const>(kTestInput3Rates),
-                        arraysize(kTestInput3Rates),
+                        base::size(kTestInput3Rates),
                         kTestInput3Rates[1],
                         0.01)));
 
 // Test cases for behavior which is independent of parameters.  Values() doesn't
 // support single item lists and we don't want these test cases to run for every
 // parameter set.
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     AudioRendererMixerBehavioralTest,
     testing::ValuesIn(std::vector<AudioRendererMixerTestData>(

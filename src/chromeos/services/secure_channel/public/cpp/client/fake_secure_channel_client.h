@@ -23,14 +23,14 @@ class FakeSecureChannelClient : public SecureChannelClient {
  public:
   struct ConnectionRequestArguments {
    public:
-    ConnectionRequestArguments(cryptauth::RemoteDeviceRef device_to_connect,
-                               cryptauth::RemoteDeviceRef local_device,
+    ConnectionRequestArguments(multidevice::RemoteDeviceRef device_to_connect,
+                               multidevice::RemoteDeviceRef local_device,
                                const std::string& feature,
                                const ConnectionPriority& connection_priority);
     ~ConnectionRequestArguments();
 
-    cryptauth::RemoteDeviceRef device_to_connect;
-    cryptauth::RemoteDeviceRef local_device;
+    multidevice::RemoteDeviceRef device_to_connect;
+    multidevice::RemoteDeviceRef local_device;
     std::string feature;
     ConnectionPriority connection_priority;
 
@@ -42,24 +42,24 @@ class FakeSecureChannelClient : public SecureChannelClient {
   ~FakeSecureChannelClient() override;
 
   void set_next_initiate_connection_attempt(
-      cryptauth::RemoteDeviceRef device_to_connect,
-      cryptauth::RemoteDeviceRef local_device,
+      multidevice::RemoteDeviceRef device_to_connect,
+      multidevice::RemoteDeviceRef local_device,
       std::unique_ptr<ConnectionAttempt> attempt) {
     device_pair_to_next_initiate_connection_attempt_[std::make_pair(
         device_to_connect, local_device)] = std::move(attempt);
   }
 
   void set_next_listen_connection_attempt(
-      cryptauth::RemoteDeviceRef device_to_connect,
-      cryptauth::RemoteDeviceRef local_device,
+      multidevice::RemoteDeviceRef device_to_connect,
+      multidevice::RemoteDeviceRef local_device,
       std::unique_ptr<ConnectionAttempt> attempt) {
     device_pair_to_next_listen_connection_attempt_[std::make_pair(
         device_to_connect, local_device)] = std::move(attempt);
   }
 
   ConnectionAttempt* peek_next_initiate_connection_attempt(
-      cryptauth::RemoteDeviceRef device_to_connect,
-      cryptauth::RemoteDeviceRef local_device) {
+      multidevice::RemoteDeviceRef device_to_connect,
+      multidevice::RemoteDeviceRef local_device) {
     auto device_id_pair = std::make_pair(device_to_connect, local_device);
     if (!base::ContainsKey(device_pair_to_next_initiate_connection_attempt_,
                            device_id_pair)) {
@@ -71,8 +71,8 @@ class FakeSecureChannelClient : public SecureChannelClient {
   }
 
   ConnectionAttempt* peek_next_listen_connection_attempt(
-      cryptauth::RemoteDeviceRef device_to_connect,
-      cryptauth::RemoteDeviceRef local_device) {
+      multidevice::RemoteDeviceRef device_to_connect,
+      multidevice::RemoteDeviceRef local_device) {
     auto device_id_pair = std::make_pair(device_to_connect, local_device);
     if (!base::ContainsKey(device_pair_to_next_listen_connection_attempt_,
                            device_id_pair)) {
@@ -83,15 +83,15 @@ class FakeSecureChannelClient : public SecureChannelClient {
   }
 
   void clear_next_initiate_connection_attempt(
-      cryptauth::RemoteDeviceRef device_to_connect,
-      cryptauth::RemoteDeviceRef local_device) {
+      multidevice::RemoteDeviceRef device_to_connect,
+      multidevice::RemoteDeviceRef local_device) {
     device_pair_to_next_initiate_connection_attempt_.erase(
         std::make_pair(device_to_connect, local_device));
   }
 
   void clear_next_listen_connection_attempt(
-      cryptauth::RemoteDeviceRef device_to_connect,
-      cryptauth::RemoteDeviceRef local_device) {
+      multidevice::RemoteDeviceRef device_to_connect,
+      multidevice::RemoteDeviceRef local_device) {
     device_pair_to_next_listen_connection_attempt_.erase(
         std::make_pair(device_to_connect, local_device));
   }
@@ -118,24 +118,24 @@ class FakeSecureChannelClient : public SecureChannelClient {
 
   // SecureChannelClient:
   std::unique_ptr<ConnectionAttempt> InitiateConnectionToDevice(
-      cryptauth::RemoteDeviceRef device_to_connect,
-      cryptauth::RemoteDeviceRef local_device,
+      multidevice::RemoteDeviceRef device_to_connect,
+      multidevice::RemoteDeviceRef local_device,
       const std::string& feature,
       ConnectionPriority connection_priority) override;
   std::unique_ptr<ConnectionAttempt> ListenForConnectionFromDevice(
-      cryptauth::RemoteDeviceRef device_to_connect,
-      cryptauth::RemoteDeviceRef local_device,
+      multidevice::RemoteDeviceRef device_to_connect,
+      multidevice::RemoteDeviceRef local_device,
       const std::string& feature,
       ConnectionPriority connection_priority) override;
 
  private:
   // First element of pair is remote device, second is local device.
   base::flat_map<
-      std::pair<cryptauth::RemoteDeviceRef, cryptauth::RemoteDeviceRef>,
+      std::pair<multidevice::RemoteDeviceRef, multidevice::RemoteDeviceRef>,
       std::unique_ptr<ConnectionAttempt>>
       device_pair_to_next_initiate_connection_attempt_;
   base::flat_map<
-      std::pair<cryptauth::RemoteDeviceRef, cryptauth::RemoteDeviceRef>,
+      std::pair<multidevice::RemoteDeviceRef, multidevice::RemoteDeviceRef>,
       std::unique_ptr<ConnectionAttempt>>
       device_pair_to_next_listen_connection_attempt_;
 

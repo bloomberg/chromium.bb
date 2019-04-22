@@ -19,7 +19,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "components/feature_engagement/internal/proto/availability.pb.h"
 #include "components/feature_engagement/public/feature_list.h"
-#include "components/leveldb_proto/proto_database.h"
+#include "components/leveldb_proto/public/proto_database.h"
 #include "components/leveldb_proto/testing/fake_db.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -99,7 +99,7 @@ TEST_F(PersistentAvailabilityStoreTest, InitFail) {
       storage_dir_, CreateDB(), FeatureVector(), std::move(load_callback_),
       14u);
 
-  db_->InitCallback(false);
+  db_->InitStatusCallback(leveldb_proto::Enums::InitStatus::kError);
 
   EXPECT_TRUE(load_successful_.has_value());
   EXPECT_FALSE(load_successful_.value());
@@ -112,7 +112,7 @@ TEST_F(PersistentAvailabilityStoreTest, LoadFail) {
       storage_dir_, CreateDB(), FeatureVector(), std::move(load_callback_),
       14u);
 
-  db_->InitCallback(true);
+  db_->InitStatusCallback(leveldb_proto::Enums::InitStatus::kOK);
   EXPECT_FALSE(load_successful_.has_value());
 
   db_->LoadCallback(false);
@@ -128,7 +128,7 @@ TEST_F(PersistentAvailabilityStoreTest, EmptyDBEmptyFeatureFilterUpdateFailed) {
       storage_dir_, CreateDB(), FeatureVector(), std::move(load_callback_),
       14u);
 
-  db_->InitCallback(true);
+  db_->InitStatusCallback(leveldb_proto::Enums::InitStatus::kOK);
   EXPECT_FALSE(load_successful_.has_value());
 
   db_->LoadCallback(true);
@@ -147,7 +147,7 @@ TEST_F(PersistentAvailabilityStoreTest, EmptyDBEmptyFeatureFilterUpdateOK) {
       storage_dir_, CreateDB(), FeatureVector(), std::move(load_callback_),
       14u);
 
-  db_->InitCallback(true);
+  db_->InitStatusCallback(leveldb_proto::Enums::InitStatus::kOK);
   EXPECT_FALSE(load_successful_.has_value());
 
   db_->LoadCallback(true);
@@ -174,7 +174,7 @@ TEST_F(PersistentAvailabilityStoreTest, AllNewFeatures) {
   PersistentAvailabilityStore::LoadAndUpdateStore(
       storage_dir_, CreateDB(), feature_filter, std::move(load_callback_), 14u);
 
-  db_->InitCallback(true);
+  db_->InitStatusCallback(leveldb_proto::Enums::InitStatus::kOK);
   EXPECT_FALSE(load_successful_.has_value());
 
   db_->LoadCallback(true);
@@ -221,7 +221,7 @@ TEST_F(PersistentAvailabilityStoreTest, TestAllFilterCombinations) {
   PersistentAvailabilityStore::LoadAndUpdateStore(
       storage_dir_, CreateDB(), feature_filter, std::move(load_callback_), 14u);
 
-  db_->InitCallback(true);
+  db_->InitStatusCallback(leveldb_proto::Enums::InitStatus::kOK);
   EXPECT_FALSE(load_successful_.has_value());
 
   db_->LoadCallback(true);
@@ -269,7 +269,7 @@ TEST_F(PersistentAvailabilityStoreTest, TestAllCombinationsEmptyFilter) {
       storage_dir_, CreateDB(), FeatureVector(), std::move(load_callback_),
       14u);
 
-  db_->InitCallback(true);
+  db_->InitStatusCallback(leveldb_proto::Enums::InitStatus::kOK);
   EXPECT_FALSE(load_successful_.has_value());
 
   db_->LoadCallback(true);

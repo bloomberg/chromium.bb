@@ -7,15 +7,6 @@
   await TestRunner.loadModule('layers_test_runner');
   await TestRunner.navigatePromise(TestRunner.url('resources/compositing-reasons.html'));
 
-  await TestRunner.evaluateInPageAsync(`
-    (function() {
-      return new Promise(fulfill => {
-        var iframe = document.getElementById('iframe');
-        iframe.onload = fulfill;
-        iframe.src = "composited-iframe.html";
-      });
-    })()`);
-
   async function dumpCompositingReasons(layer) {
     var reasons = await layer.requestCompositingReasons();
     var node = layer.nodeForSelfOrAncestor();
@@ -24,7 +15,7 @@
   }
 
   var idsToTest = [
-    'transform3d', 'transform3d-individual', 'iframe', 'backface-visibility', 'animation', 'animation-individual',
+    'transform3d', 'transform3d-individual', 'backface-visibility', 'animation', 'animation-individual',
     'transformWithCompositedDescendants', 'transformWithCompositedDescendants-individual',
     'opacityWithCompositedDescendants', 'reflectionWithCompositedDescendants', 'perspective', 'preserve3d'
   ];

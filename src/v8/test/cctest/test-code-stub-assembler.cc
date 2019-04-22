@@ -7,20 +7,26 @@
 #include "src/api-inl.h"
 #include "src/base/utils/random-number-generator.h"
 #include "src/builtins/builtins-promise-gen.h"
+#include "src/builtins/builtins-promise.h"
 #include "src/builtins/builtins-string-gen.h"
 #include "src/char-predicates.h"
 #include "src/code-factory.h"
 #include "src/code-stub-assembler.h"
 #include "src/compiler/node.h"
 #include "src/debug/debug.h"
+#include "src/hash-seed-inl.h"
 #include "src/heap/heap-inl.h"
 #include "src/isolate.h"
 #include "src/objects-inl.h"
 #include "src/objects/hash-table-inl.h"
+#include "src/objects/heap-number-inl.h"
 #include "src/objects/js-array-buffer-inl.h"
 #include "src/objects/js-array-inl.h"
+#include "src/objects/ordered-hash-table-inl.h"
 #include "src/objects/promise-inl.h"
 #include "src/objects/smi.h"
+#include "src/objects/struct-inl.h"
+#include "src/transitions-inl.h"
 #include "test/cctest/compiler/code-assembler-tester.h"
 #include "test/cctest/compiler/function-tester.h"
 
@@ -56,7 +62,7 @@ static int sum3(int a0, int a1, int a2) { return a0 + a1 + a2; }
 
 }  // namespace
 
-TEST(CallCFunction9) {
+TEST(CallCFunction) {
   Isolate* isolate(CcTest::InitIsolateOnce());
 
   const int kNumParams = 0;
@@ -69,13 +75,17 @@ TEST(CallCFunction9) {
 
     MachineType type_intptr = MachineType::IntPtr();
 
-    Node* const result = m.CallCFunction9(
-        type_intptr, type_intptr, type_intptr, type_intptr, type_intptr,
-        type_intptr, type_intptr, type_intptr, type_intptr, type_intptr,
-        fun_constant, m.IntPtrConstant(0), m.IntPtrConstant(1),
-        m.IntPtrConstant(2), m.IntPtrConstant(3), m.IntPtrConstant(4),
-        m.IntPtrConstant(5), m.IntPtrConstant(6), m.IntPtrConstant(7),
-        m.IntPtrConstant(8));
+    Node* const result =
+        m.CallCFunction(fun_constant, type_intptr,
+                        std::make_pair(type_intptr, m.IntPtrConstant(0)),
+                        std::make_pair(type_intptr, m.IntPtrConstant(1)),
+                        std::make_pair(type_intptr, m.IntPtrConstant(2)),
+                        std::make_pair(type_intptr, m.IntPtrConstant(3)),
+                        std::make_pair(type_intptr, m.IntPtrConstant(4)),
+                        std::make_pair(type_intptr, m.IntPtrConstant(5)),
+                        std::make_pair(type_intptr, m.IntPtrConstant(6)),
+                        std::make_pair(type_intptr, m.IntPtrConstant(7)),
+                        std::make_pair(type_intptr, m.IntPtrConstant(8)));
     m.Return(m.SmiTag(result));
   }
 
@@ -85,7 +95,7 @@ TEST(CallCFunction9) {
   CHECK_EQ(36, Handle<Smi>::cast(result)->value());
 }
 
-TEST(CallCFunction3WithCallerSavedRegisters) {
+TEST(CallCFunctionWithCallerSavedRegisters) {
   Isolate* isolate(CcTest::InitIsolateOnce());
 
   const int kNumParams = 0;
@@ -98,10 +108,11 @@ TEST(CallCFunction3WithCallerSavedRegisters) {
 
     MachineType type_intptr = MachineType::IntPtr();
 
-    Node* const result = m.CallCFunction3WithCallerSavedRegisters(
-        type_intptr, type_intptr, type_intptr, type_intptr, fun_constant,
-        m.IntPtrConstant(0), m.IntPtrConstant(1), m.IntPtrConstant(2),
-        kSaveFPRegs);
+    Node* const result = m.CallCFunctionWithCallerSavedRegisters(
+        fun_constant, type_intptr, kSaveFPRegs,
+        std::make_pair(type_intptr, m.IntPtrConstant(0)),
+        std::make_pair(type_intptr, m.IntPtrConstant(1)),
+        std::make_pair(type_intptr, m.IntPtrConstant(2)));
     m.Return(m.SmiTag(result));
   }
 
@@ -249,7 +260,7 @@ TEST(IsValidPositiveSmi) {
   typedef std::numeric_limits<int32_t> int32_limits;
   IsValidPositiveSmiCase(isolate, int32_limits::max());
   IsValidPositiveSmiCase(isolate, int32_limits::min());
-#ifdef V8_TARGET_ARCH_64_BIT
+#if V8_TARGET_ARCH_64_BIT
   IsValidPositiveSmiCase(isolate,
                          static_cast<intptr_t>(int32_limits::max()) + 1);
   IsValidPositiveSmiCase(isolate,
@@ -345,8 +356,8 @@ TEST(ComputeIntegerHash) {
     Handle<Smi> key(Smi::FromInt(k), isolate);
     Handle<Object> result = ft.Call(key).ToHandleChecked();
 
-    uint32_t hash = ComputeSeededHash(k, isolate->heap()->HashSeed());
-    Smi expected = Smi::FromInt(hash & Smi::kMaxValue);
+    uint32_t hash = ComputeSeededHash(k, HashSeed(isolate));
+    Smi expected = Smi::FromInt(hash);
     CHECK_EQ(expected, Smi::cast(*result));
   }
 }
@@ -1542,7 +1553,7 @@ TEST(TryLookupElement) {
     CHECK_ABSENT(object, 42);
 
     v8::ArrayBuffer::Contents contents = buffer->Externalize();
-    buffer->Neuter();
+    buffer->Detach();
     isolate->array_buffer_allocator()->Free(contents.Data(),
                                             contents.ByteLength());
 
@@ -1705,13 +1716,13 @@ TEST(AllocateNameDictionary) {
 
   {
     for (int i = 0; i < 256; i = i * 1.1 + 1) {
-      Handle<Object> result =
-          ft.Call(handle(Smi::FromInt(i), isolate)).ToHandleChecked();
+      Handle<HeapObject> result = Handle<HeapObject>::cast(
+          ft.Call(handle(Smi::FromInt(i), isolate)).ToHandleChecked());
       Handle<NameDictionary> dict = NameDictionary::New(isolate, i);
       // Both dictionaries should be memory equal.
-      int size =
-          FixedArrayBase::kHeaderSize + (dict->length() - 1) * kPointerSize;
-      CHECK_EQ(0, memcmp(*dict, *result, size));
+      int size = dict->Size();
+      CHECK_EQ(0, memcmp(reinterpret_cast<void*>(dict->address()),
+                         reinterpret_cast<void*>(result->address()), size));
     }
   }
 }
@@ -1788,16 +1799,16 @@ TEST(OneToTwoByteStringCopy) {
   FunctionTester ft(asm_tester.GenerateCode(), kNumParams);
   ft.Call(string1, string2);
   DisallowHeapAllocation no_gc;
-  CHECK_EQ(Handle<SeqOneByteString>::cast(string1)->GetChars()[0],
-           Handle<SeqTwoByteString>::cast(string2)->GetChars()[0]);
-  CHECK_EQ(Handle<SeqOneByteString>::cast(string1)->GetChars()[1],
-           Handle<SeqTwoByteString>::cast(string2)->GetChars()[1]);
-  CHECK_EQ(Handle<SeqOneByteString>::cast(string1)->GetChars()[2],
-           Handle<SeqTwoByteString>::cast(string2)->GetChars()[2]);
-  CHECK_EQ(Handle<SeqOneByteString>::cast(string1)->GetChars()[3],
-           Handle<SeqTwoByteString>::cast(string2)->GetChars()[3]);
-  CHECK_EQ(Handle<SeqOneByteString>::cast(string1)->GetChars()[4],
-           Handle<SeqTwoByteString>::cast(string2)->GetChars()[4]);
+  CHECK_EQ(Handle<SeqOneByteString>::cast(string1)->GetChars(no_gc)[0],
+           Handle<SeqTwoByteString>::cast(string2)->GetChars(no_gc)[0]);
+  CHECK_EQ(Handle<SeqOneByteString>::cast(string1)->GetChars(no_gc)[1],
+           Handle<SeqTwoByteString>::cast(string2)->GetChars(no_gc)[1]);
+  CHECK_EQ(Handle<SeqOneByteString>::cast(string1)->GetChars(no_gc)[2],
+           Handle<SeqTwoByteString>::cast(string2)->GetChars(no_gc)[2]);
+  CHECK_EQ(Handle<SeqOneByteString>::cast(string1)->GetChars(no_gc)[3],
+           Handle<SeqTwoByteString>::cast(string2)->GetChars(no_gc)[3]);
+  CHECK_EQ(Handle<SeqOneByteString>::cast(string1)->GetChars(no_gc)[4],
+           Handle<SeqTwoByteString>::cast(string2)->GetChars(no_gc)[4]);
 }
 
 TEST(OneToOneByteStringCopy) {
@@ -1820,16 +1831,16 @@ TEST(OneToOneByteStringCopy) {
   FunctionTester ft(asm_tester.GenerateCode(), kNumParams);
   ft.Call(string1, string2);
   DisallowHeapAllocation no_gc;
-  CHECK_EQ(Handle<SeqOneByteString>::cast(string1)->GetChars()[0],
-           Handle<SeqOneByteString>::cast(string2)->GetChars()[0]);
-  CHECK_EQ(Handle<SeqOneByteString>::cast(string1)->GetChars()[1],
-           Handle<SeqOneByteString>::cast(string2)->GetChars()[1]);
-  CHECK_EQ(Handle<SeqOneByteString>::cast(string1)->GetChars()[2],
-           Handle<SeqOneByteString>::cast(string2)->GetChars()[2]);
-  CHECK_EQ(Handle<SeqOneByteString>::cast(string1)->GetChars()[3],
-           Handle<SeqOneByteString>::cast(string2)->GetChars()[3]);
-  CHECK_EQ(Handle<SeqOneByteString>::cast(string1)->GetChars()[4],
-           Handle<SeqOneByteString>::cast(string2)->GetChars()[4]);
+  CHECK_EQ(Handle<SeqOneByteString>::cast(string1)->GetChars(no_gc)[0],
+           Handle<SeqOneByteString>::cast(string2)->GetChars(no_gc)[0]);
+  CHECK_EQ(Handle<SeqOneByteString>::cast(string1)->GetChars(no_gc)[1],
+           Handle<SeqOneByteString>::cast(string2)->GetChars(no_gc)[1]);
+  CHECK_EQ(Handle<SeqOneByteString>::cast(string1)->GetChars(no_gc)[2],
+           Handle<SeqOneByteString>::cast(string2)->GetChars(no_gc)[2]);
+  CHECK_EQ(Handle<SeqOneByteString>::cast(string1)->GetChars(no_gc)[3],
+           Handle<SeqOneByteString>::cast(string2)->GetChars(no_gc)[3]);
+  CHECK_EQ(Handle<SeqOneByteString>::cast(string1)->GetChars(no_gc)[4],
+           Handle<SeqOneByteString>::cast(string2)->GetChars(no_gc)[4]);
 }
 
 TEST(OneToOneByteStringCopyNonZeroStart) {
@@ -1852,13 +1863,13 @@ TEST(OneToOneByteStringCopyNonZeroStart) {
   FunctionTester ft(asm_tester.GenerateCode(), kNumParams);
   ft.Call(string1, string2);
   DisallowHeapAllocation no_gc;
-  CHECK_EQ(Handle<SeqOneByteString>::cast(string1)->GetChars()[0],
-           Handle<SeqOneByteString>::cast(string2)->GetChars()[3]);
-  CHECK_EQ(Handle<SeqOneByteString>::cast(string1)->GetChars()[1],
-           Handle<SeqOneByteString>::cast(string2)->GetChars()[4]);
-  CHECK_EQ(100, Handle<SeqOneByteString>::cast(string2)->GetChars()[0]);
-  CHECK_EQ(101, Handle<SeqOneByteString>::cast(string2)->GetChars()[1]);
-  CHECK_EQ(102, Handle<SeqOneByteString>::cast(string2)->GetChars()[2]);
+  CHECK_EQ(Handle<SeqOneByteString>::cast(string1)->GetChars(no_gc)[0],
+           Handle<SeqOneByteString>::cast(string2)->GetChars(no_gc)[3]);
+  CHECK_EQ(Handle<SeqOneByteString>::cast(string1)->GetChars(no_gc)[1],
+           Handle<SeqOneByteString>::cast(string2)->GetChars(no_gc)[4]);
+  CHECK_EQ(100, Handle<SeqOneByteString>::cast(string2)->GetChars(no_gc)[0]);
+  CHECK_EQ(101, Handle<SeqOneByteString>::cast(string2)->GetChars(no_gc)[1]);
+  CHECK_EQ(102, Handle<SeqOneByteString>::cast(string2)->GetChars(no_gc)[2]);
 }
 
 TEST(TwoToTwoByteStringCopy) {
@@ -1884,16 +1895,16 @@ TEST(TwoToTwoByteStringCopy) {
   FunctionTester ft(asm_tester.GenerateCode(), kNumParams);
   ft.Call(string1, string2);
   DisallowHeapAllocation no_gc;
-  CHECK_EQ(Handle<SeqTwoByteString>::cast(string1)->GetChars()[0],
-           Handle<SeqTwoByteString>::cast(string2)->GetChars()[0]);
-  CHECK_EQ(Handle<SeqTwoByteString>::cast(string1)->GetChars()[1],
-           Handle<SeqTwoByteString>::cast(string2)->GetChars()[1]);
-  CHECK_EQ(Handle<SeqTwoByteString>::cast(string1)->GetChars()[2],
-           Handle<SeqTwoByteString>::cast(string2)->GetChars()[2]);
-  CHECK_EQ(Handle<SeqTwoByteString>::cast(string1)->GetChars()[3],
-           Handle<SeqTwoByteString>::cast(string2)->GetChars()[3]);
-  CHECK_EQ(Handle<SeqTwoByteString>::cast(string1)->GetChars()[4],
-           Handle<SeqTwoByteString>::cast(string2)->GetChars()[4]);
+  CHECK_EQ(Handle<SeqTwoByteString>::cast(string1)->GetChars(no_gc)[0],
+           Handle<SeqTwoByteString>::cast(string2)->GetChars(no_gc)[0]);
+  CHECK_EQ(Handle<SeqTwoByteString>::cast(string1)->GetChars(no_gc)[1],
+           Handle<SeqTwoByteString>::cast(string2)->GetChars(no_gc)[1]);
+  CHECK_EQ(Handle<SeqTwoByteString>::cast(string1)->GetChars(no_gc)[2],
+           Handle<SeqTwoByteString>::cast(string2)->GetChars(no_gc)[2]);
+  CHECK_EQ(Handle<SeqTwoByteString>::cast(string1)->GetChars(no_gc)[3],
+           Handle<SeqTwoByteString>::cast(string2)->GetChars(no_gc)[3]);
+  CHECK_EQ(Handle<SeqTwoByteString>::cast(string1)->GetChars(no_gc)[4],
+           Handle<SeqTwoByteString>::cast(string2)->GetChars(no_gc)[4]);
 }
 
 TEST(Arguments) {
@@ -2080,17 +2091,15 @@ class AppendJSArrayCodeStubAssembler : public CodeStubAssembler {
       : CodeStubAssembler(state), kind_(kind) {}
 
   void TestAppendJSArrayImpl(Isolate* isolate, CodeAssemblerTester* csa_tester,
-                             Object* o1, Object* o2, Object* o3, Object* o4,
+                             Object o1, Object o2, Object o3, Object o4,
                              int initial_size, int result_size) {
     Handle<JSArray> array = isolate->factory()->NewJSArray(
         kind_, 2, initial_size, INITIALIZE_ARRAY_ELEMENTS_WITH_HOLE);
-    JSObject::SetElement(isolate, array, 0,
-                         Handle<Smi>(Smi::FromInt(1), isolate),
-                         LanguageMode::kSloppy)
+    Object::SetElement(isolate, array, 0, Handle<Smi>(Smi::FromInt(1), isolate),
+                       kDontThrow)
         .Check();
-    JSObject::SetElement(isolate, array, 1,
-                         Handle<Smi>(Smi::FromInt(2), isolate),
-                         LanguageMode::kSloppy)
+    Object::SetElement(isolate, array, 1, Handle<Smi>(Smi::FromInt(2), isolate),
+                       kDontThrow)
         .Check();
     CodeStubArguments args(this, IntPtrConstant(kNumParams));
     TVariable<IntPtrT> arg_index(this);
@@ -2113,8 +2122,8 @@ class AppendJSArrayCodeStubAssembler : public CodeStubAssembler {
     CHECK_EQ(kind_, array->GetElementsKind());
     CHECK_EQ(result_size, Handle<Smi>::cast(result)->value());
     CHECK_EQ(result_size, Smi::ToInt(array->length()));
-    Object* obj = *JSObject::GetElement(isolate, array, 2).ToHandleChecked();
-    HeapObject* undefined_value = ReadOnlyRoots(isolate).undefined_value();
+    Object obj = *JSObject::GetElement(isolate, array, 2).ToHandleChecked();
+    HeapObject undefined_value = ReadOnlyRoots(isolate).undefined_value();
     CHECK_EQ(result_size < 3 ? undefined_value : o1, obj);
     obj = *JSObject::GetElement(isolate, array, 3).ToHandleChecked();
     CHECK_EQ(result_size < 4 ? undefined_value : o2, obj);
@@ -2124,8 +2133,8 @@ class AppendJSArrayCodeStubAssembler : public CodeStubAssembler {
     CHECK_EQ(result_size < 6 ? undefined_value : o4, obj);
   }
 
-  static void TestAppendJSArray(Isolate* isolate, ElementsKind kind, Object* o1,
-                                Object* o2, Object* o3, Object* o4,
+  static void TestAppendJSArray(Isolate* isolate, ElementsKind kind, Object o1,
+                                Object o2, Object o3, Object o4,
                                 int initial_size, int result_size) {
     CodeAssemblerTester asm_tester(isolate, kNumParams);
     AppendJSArrayCodeStubAssembler m(asm_tester.state(), kind);
@@ -2360,9 +2369,9 @@ TEST(CreatePromiseResolvingFunctionsContext) {
   CHECK_EQ(isolate->native_context()->scope_info(), context_js->scope_info());
   CHECK_EQ(ReadOnlyRoots(isolate).the_hole_value(), context_js->extension());
   CHECK_EQ(*isolate->native_context(), context_js->native_context());
-  CHECK(context_js->get(PromiseBuiltinsAssembler::kPromiseSlot)->IsJSPromise());
+  CHECK(context_js->get(PromiseBuiltins::kPromiseSlot)->IsJSPromise());
   CHECK_EQ(ReadOnlyRoots(isolate).false_value(),
-           context_js->get(PromiseBuiltinsAssembler::kDebugEventSlot));
+           context_js->get(PromiseBuiltins::kDebugEventSlot));
 }
 
 TEST(CreatePromiseResolvingFunctions) {
@@ -2485,7 +2494,7 @@ TEST(AllocateFunctionWithMapAndContext) {
   CHECK_EQ(ReadOnlyRoots(isolate).empty_property_array(),
            fun->property_array());
   CHECK_EQ(ReadOnlyRoots(isolate).empty_fixed_array(), fun->elements());
-  CHECK_EQ(isolate->heap()->many_closures_cell(), fun->feedback_cell());
+  CHECK_EQ(isolate->heap()->many_closures_cell(), fun->raw_feedback_cell());
   CHECK(!fun->has_prototype_slot());
   CHECK_EQ(*isolate->promise_capability_default_resolve_shared_fun(),
            fun->shared());
@@ -2520,13 +2529,12 @@ TEST(CreatePromiseGetCapabilitiesExecutorContext) {
       ft.Call(isolate->factory()->undefined_value()).ToHandleChecked();
   CHECK(result_obj->IsContext());
   Handle<Context> context_js = Handle<Context>::cast(result_obj);
-  CHECK_EQ(PromiseBuiltinsAssembler::kCapabilitiesContextLength,
-           context_js->length());
+  CHECK_EQ(PromiseBuiltins::kCapabilitiesContextLength, context_js->length());
   CHECK_EQ(isolate->native_context()->scope_info(), context_js->scope_info());
   CHECK_EQ(ReadOnlyRoots(isolate).the_hole_value(), context_js->extension());
   CHECK_EQ(*isolate->native_context(), context_js->native_context());
-  CHECK(context_js->get(PromiseBuiltinsAssembler::kCapabilitySlot)
-            ->IsPromiseCapability());
+  CHECK(
+      context_js->get(PromiseBuiltins::kCapabilitySlot)->IsPromiseCapability());
 }
 
 TEST(NewPromiseCapability) {
@@ -2573,10 +2581,8 @@ TEST(NewPromiseCapability) {
       CHECK_EQ(isolate->native_context()->scope_info(), context->scope_info());
       CHECK_EQ(ReadOnlyRoots(isolate).the_hole_value(), context->extension());
       CHECK_EQ(*isolate->native_context(), context->native_context());
-      CHECK_EQ(PromiseBuiltinsAssembler::kPromiseContextLength,
-               context->length());
-      CHECK_EQ(context->get(PromiseBuiltinsAssembler::kPromiseSlot),
-               result->promise());
+      CHECK_EQ(PromiseBuiltins::kPromiseContextLength, context->length());
+      CHECK_EQ(context->get(PromiseBuiltins::kPromiseSlot), result->promise());
     }
   }
 
@@ -3358,7 +3364,7 @@ TEST(SmallOrderedHashMapAllocate) {
                        reinterpret_cast<void*>(actual->address()),
                        SmallOrderedHashMap::SizeFor(capacity)));
 #ifdef VERIFY_HEAP
-    actual->SmallOrderedHashTableVerify(isolate);
+    actual->SmallOrderedHashMapVerify(isolate);
 #endif
     capacity = capacity << 1;
   }
@@ -3397,7 +3403,7 @@ TEST(SmallOrderedHashSetAllocate) {
                        reinterpret_cast<void*>(actual->address()),
                        SmallOrderedHashSet::SizeFor(capacity)));
 #ifdef VERIFY_HEAP
-    actual->SmallOrderedHashTableVerify(isolate);
+    actual->SmallOrderedHashSetVerify(isolate);
 #endif
     capacity = capacity << 1;
   }
@@ -3456,6 +3462,7 @@ TEST(IsDoubleElementsKind) {
 }
 
 TEST(TestCallBuiltinInlineTrampoline) {
+  if (!i::FLAG_embedded_builtins) return;
   Isolate* isolate(CcTest::InitIsolateOnce());
   const int kNumParams = 1;
   CodeAssemblerTester asm_tester(isolate, kNumParams);
@@ -3480,6 +3487,7 @@ TEST(TestCallBuiltinInlineTrampoline) {
 }
 
 TEST(TestCallBuiltinIndirectLoad) {
+  if (!i::FLAG_embedded_builtins) return;
   Isolate* isolate(CcTest::InitIsolateOnce());
   const int kNumParams = 1;
   CodeAssemblerTester asm_tester(isolate, kNumParams);
@@ -3533,6 +3541,34 @@ TEST(TestGotoIfDebugExecutionModeChecksSideEffects) {
   CHECK(result->IsBoolean());
   CHECK_EQ(true, result->BooleanValue(isolate));
 }
+
+#ifdef V8_COMPRESS_POINTERS
+
+TEST(CompressedSlotInterleavedGC) {
+  Isolate* isolate(CcTest::InitIsolateOnce());
+
+  const int kNumParams = 1;
+
+  CodeAssemblerTester asm_tester(isolate, kNumParams);
+  CodeStubAssembler m(asm_tester.state());
+
+  Node* compressed = m.ChangeTaggedToCompressed(m.Parameter(0));
+
+  m.Print(m.ChangeCompressedToTagged(compressed));
+
+  Node* const context = m.Parameter(kNumParams + 2);
+  m.CallRuntime(Runtime::kCollectGarbage, context, m.SmiConstant(0));
+
+  m.Return(m.ChangeCompressedToTagged(compressed));
+
+  FunctionTester ft(asm_tester.GenerateCode(), kNumParams);
+  Handle<Object> result =
+      ft.Call(isolate->factory()->NewNumber(0.5)).ToHandleChecked();
+  CHECK(result->IsHeapNumber());
+  CHECK_EQ(0.5, Handle<HeapNumber>::cast(result)->Number());
+}
+
+#endif  // V8_COMPRESS_POINTERS
 
 }  // namespace compiler
 }  // namespace internal

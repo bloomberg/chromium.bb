@@ -9,14 +9,11 @@
 
 // Header image sizes.
 extern const CGFloat kAuthenticationHeaderImageHeight;
-extern const CGFloat kAuthenticationHeaderImageWidth;
 
 // Font sizes
 extern const UIFontTextStyle kAuthenticationTitleFontStyle;
 extern const UIFontTextStyle kAuthenticationTextFontStyle;
 
-// Color displayed in the non-safe area.
-extern const int kAuthenticationHeaderBackgroundColor;
 // Horizontal margin between the container view and any elements inside.
 extern const CGFloat kAuthenticationHorizontalMargin;
 // Vertical margin between the header image and the main title.

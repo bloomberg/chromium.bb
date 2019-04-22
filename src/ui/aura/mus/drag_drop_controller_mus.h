@@ -17,6 +17,10 @@
 #include "ui/aura/window_tracker.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 
+namespace gfx {
+class PointF;
+}
+
 namespace ws {
 namespace mojom {
 class WindowTree;
@@ -46,21 +50,28 @@ class AURA_EXPORT DragDropControllerMus : public client::DragDropClient {
   // the drag.
   bool DoesChangeIdMatchDragChangeId(uint32_t id) const;
 
+  // Returns true if the client has initiated a drag session. That is,
+  // StartDragAndDrop() has been called and has not completed.
+  bool IsRunningDragLoop() const { return current_drag_state_ != nullptr; }
+
   // Forwarded from WindowTreeClient. These correspond to the functions of the
   // same name defined in ws::mojom::WindowTreeClient.
   void OnDragDropStart(std::map<std::string, std::vector<uint8_t>> data);
   uint32_t OnDragEnter(WindowMus* window,
                        uint32_t event_flags,
-                       const gfx::Point& screen_location,
+                       const gfx::PointF& location_in_root,
+                       const gfx::PointF& location,
                        uint32_t effect_bitmask);
   uint32_t OnDragOver(WindowMus* window,
                       uint32_t event_flags,
-                      const gfx::Point& screen_location,
+                      const gfx::PointF& location_in_root,
+                      const gfx::PointF& location,
                       uint32_t effect_bitmask);
   void OnDragLeave(WindowMus* window);
   uint32_t OnCompleteDrop(WindowMus* window,
                           uint32_t event_flags,
-                          const gfx::Point& screen_location,
+                          const gfx::PointF& location_in_root,
+                          const gfx::PointF& location,
                           uint32_t effect_bitmask);
   void OnPerformDragDropCompleted(uint32_t action_taken);
   void OnDragDropDone();
@@ -83,14 +94,16 @@ class AURA_EXPORT DragDropControllerMus : public client::DragDropClient {
   // Called from OnDragEnter() and OnDragOver().
   uint32_t HandleDragEnterOrOver(WindowMus* window,
                                  uint32_t event_flags,
-                                 const gfx::Point& screen_location,
+                                 const gfx::PointF& location_in_root,
+                                 const gfx::PointF& location,
                                  uint32_t effect_bitmask,
                                  bool is_enter);
 
   std::unique_ptr<ui::DropTargetEvent> CreateDropTargetEvent(
       Window* window,
       uint32_t event_flags,
-      const gfx::Point& screen_location,
+      const gfx::PointF& location_in_root,
+      const gfx::PointF& location,
       uint32_t effect_bitmask);
 
   DragDropControllerHost* drag_drop_controller_host_;

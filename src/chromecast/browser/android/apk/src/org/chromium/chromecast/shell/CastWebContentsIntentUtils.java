@@ -55,21 +55,21 @@ public class CastWebContentsIntentUtils {
     /**
      * Action type of intent from cast app to android to request for a visibility priority change.
      */
-    static final String ACTION_REQUEST_VISIBILITY_PRIORITY =
+    public static final String ACTION_REQUEST_VISIBILITY_PRIORITY =
             "com.google.android.apps.castshell.intent.action.REQUEST_VISIBILITY_PRIORITY";
 
     /**
      * Action type of intent from CastShell to external acivity to notify whether the gesture
      * has been consumed.
      */
-    static final String ACTION_GESTURE_CONSUMED =
+    public static final String ACTION_GESTURE_CONSUMED =
             "com.google.android.apps.castshell.intent.action.GESTURE_CONSUMED";
 
     /**
      * Action type of intent from cast app to android to request to move the cast view out of
      * screen.
      */
-    static final String ACTION_REQUEST_MOVE_OUT =
+    public static final String ACTION_REQUEST_MOVE_OUT =
             "com.google.android.apps.castshell.intent.action.REQUEST_MOVE_OUT";
 
     /**
@@ -136,17 +136,20 @@ public class CastWebContentsIntentUtils {
             "com.google.android.apps.castshell.intent.extra.GESTURE_TYPE";
 
     /**
-     * Key of extra value of the intent ACTION_GUESTURE_CONSUMED, value is whether gesture
+     * Key of extra value of the intent ACTION_GESTURE_CONSUMED, value is whether gesture
      * is consumed(consumed: true, not: false).
      */
     private static final String INTENT_EXTRA_GESTURE_CONSUMED =
             "com.google.android.apps.castshell.intent.extra.GESTURE_CONSUMED";
 
-    // Matches to chromecast::shell::VisibilityPriority
-    static final int VISIBITY_TYPE_UNKNOWN = 0;
-    static final int VISIBITY_TYPE_FULL_SCREEN = 1;
-    static final int VISIBITY_TYPE_PARTIAL_OUT = 2;
-    static final int VISIBITY_TYPE_HIDDEN = 3;
+    @VisibilityType
+    static final int VISIBITY_TYPE_UNKNOWN = VisibilityType.UNKNOWN;
+    @VisibilityType
+    static final int VISIBITY_TYPE_FULL_SCREEN = VisibilityType.FULL_SCREEN;
+    @VisibilityType
+    static final int VISIBITY_TYPE_PARTIAL_OUT = VisibilityType.PARTIAL_OUT;
+    @VisibilityType
+    static final int VISIBITY_TYPE_HIDDEN = VisibilityType.HIDDEN;
 
     // CastWebContentsSurfaceHelper -> CastWebContentsComponent.Receiver
     // -> CastContentWindowAndroid
@@ -157,17 +160,17 @@ public class CastWebContentsIntentUtils {
 
     // Host activity of CastWebContentsFragment -> CastWebContentsComponent.Receiver
     // -> CastContentWindowAndroid
-    public static Intent onGesture(String instanceId, int gestureType) {
+    public static Intent onGesture(String instanceId, @GestureType int gestureType) {
         return onGesture(getInstanceUri(instanceId), gestureType);
     }
 
     // Host activity of CastWebContentsFragment -> CastWebContentsComponent.Receiver
     // -> CastContentWindowAndroid
-    public static Intent onGestureWithUriString(String uri, int gestureType) {
+    public static Intent onGestureWithUriString(String uri, @GestureType int gestureType) {
         return onGesture(Uri.parse(uri), gestureType);
     }
 
-    private static Intent onGesture(Uri uri, int gestureType) {
+    private static Intent onGesture(Uri uri, @GestureType int gestureType) {
         if (DEBUG) Log.d(TAG, "onGesture with uri:" + uri + " type:" + gestureType);
         Intent intent = new Intent(ACTION_ON_GESTURE, uri);
         intent.putExtra(INTENT_EXTRA_GESTURE_TYPE, gestureType);
@@ -184,17 +187,18 @@ public class CastWebContentsIntentUtils {
 
     // Host activity of CastWebContentsFragment -> CastWebContentsComponent.Receiver
     // -> CastContentWindowAndroid
-    public static Intent onVisibilityChange(String instanceId, int visibilityType) {
+    public static Intent onVisibilityChange(String instanceId, @VisibilityType int visibilityType) {
         return onVisibilityChange(getInstanceUri(instanceId), visibilityType);
     }
 
     // Host activity of CastWebContentsFragment -> CastWebContentsComponent.Receiver
     // -> CastContentWindowAndroid
-    public static Intent onVisibilityChangeWithUriString(String uri, int visibilityType) {
+    public static Intent onVisibilityChangeWithUriString(
+            String uri, @VisibilityType int visibilityType) {
         return onVisibilityChange(Uri.parse(uri), visibilityType);
     }
 
-    private static Intent onVisibilityChange(Uri uri, int visibilityType) {
+    private static Intent onVisibilityChange(Uri uri, @VisibilityType int visibilityType) {
         if (DEBUG) Log.d(TAG, "onVisibilityChange with uri:" + uri + " type:" + visibilityType);
 
         Intent intent = new Intent(ACTION_ON_VISIBILITY_CHANGE, uri);
@@ -210,7 +214,8 @@ public class CastWebContentsIntentUtils {
     }
 
     // CastContentWindowAndroid -> Host activity of CastWebContentsFragment
-    public static Intent requestVisibilityPriority(String instanceId, int visibilityPriority) {
+    public static Intent requestVisibilityPriority(
+            String instanceId, @VisibilityPriority int visibilityPriority) {
         Intent intent = new Intent(ACTION_REQUEST_VISIBILITY_PRIORITY);
         intent.putExtra(INTENT_EXTRA_URI, getInstanceUri(instanceId).toString());
         intent.putExtra(INTENT_EXTRA_VISIBILITY_PRIORITY, visibilityPriority);
@@ -218,7 +223,8 @@ public class CastWebContentsIntentUtils {
     }
 
     // CastWebContentsComponent.Receiver -> Host activity of CastWebContentsFragment
-    public static Intent gestureConsumed(String instanceId, int gestureType, boolean consumed) {
+    public static Intent gestureConsumed(
+            String instanceId, @GestureType int gestureType, boolean consumed) {
         Intent intent = new Intent(ACTION_GESTURE_CONSUMED);
         intent.putExtra(INTENT_EXTRA_URI, getInstanceUri(instanceId).toString());
         intent.putExtra(INTENT_EXTRA_GESTURE_TYPE, gestureType);
@@ -227,6 +233,7 @@ public class CastWebContentsIntentUtils {
     }
 
     // Used by intent of ACTION_ON_GESTURE
+    @GestureType
     public static int getGestureType(Intent in) {
         return in.getIntExtra(INTENT_EXTRA_GESTURE_TYPE, 0);
     }
@@ -237,26 +244,29 @@ public class CastWebContentsIntentUtils {
     }
 
     // Used by intent of ACTION_ON_VISIBILITY_CHANGE
+    @VisibilityType
     public static int getVisibilityType(Intent in) {
         return in.getIntExtra(INTENT_EXTRA_VISIBILITY_TYPE, 0);
     }
 
-    // Used by intent of ACTION_KEY_EVENT
+    // Used by intent of ACTION_REQUEST_VISIBILITY_PRIORITY, ACTION_SHOW_WEB_CONTENT
+    @VisibilityPriority
     public static int getVisibilityPriority(Bundle bundle) {
         return bundle.getInt(INTENT_EXTRA_VISIBILITY_PRIORITY, 0);
     }
 
     // Used by intent of ACTION_REQUEST_VISIBILITY_PRIORITY, ACTION_SHOW_WEB_CONTENT
+    @VisibilityPriority
     public static int getVisibilityPriority(Intent in) {
         return getVisibilityPriority(in.getExtras());
     }
 
-    // Used by intent of ACTION_REQUEST_VISIBILITY_PRIORITY, ACTION_SHOW_WEB_CONTENT
+    // Used by intent of ACTION_GESTURE_CONSUMED
     public static boolean isGestureConsumed(Intent in) {
         return isGestureConsumed(in.getExtras());
     }
 
-    // Used by intent of ACTION_REQUEST_VISIBILITY_PRIORITY, ACTION_SHOW_WEB_CONTENT
+    // Used by intent of ACTION_GESTURE_CONSUMED
     public static boolean isGestureConsumed(Bundle bundle) {
         return bundle.getBoolean(INTENT_EXTRA_GESTURE_CONSUMED);
     }
@@ -303,7 +313,7 @@ public class CastWebContentsIntentUtils {
 
     // CastWebContentsComponent.Receiver -> Host activity of CastWebContentsFragment
     public static Intent requestStartCastFragment(WebContents webContents, String appId,
-            int visibilityPriority, boolean enableTouch, String instanceId,
+            @VisibilityPriority int visibilityPriority, boolean enableTouch, String instanceId,
             boolean isRemoteControlMode, boolean turnOnScreen) {
         Intent intent = new Intent();
         intent.setAction(CastIntents.ACTION_SHOW_WEB_CONTENT);

@@ -17,7 +17,7 @@ import org.chromium.chrome.R;
 public class NearOomInfoBar extends InfoBar {
     @VisibleForTesting
     public NearOomInfoBar() {
-        super(R.drawable.infobar_chrome, null, null);
+        super(R.drawable.infobar_chrome, R.color.infobar_icon_drawable_color, null, null);
     }
 
     @Override

@@ -6,6 +6,9 @@
 
 #include <utility>
 
+#include "base/bind.h"
+#include "media/capture/mojom/video_capture_types.mojom.h"
+
 namespace viz {
 
 namespace {
@@ -147,13 +150,12 @@ ClientFrameSinkVideoCapturer::ResolutionConstraints::ResolutionConstraints(
 void ClientFrameSinkVideoCapturer::OnFrameCaptured(
     base::ReadOnlySharedMemoryRegion data,
     media::mojom::VideoFrameInfoPtr info,
-    const gfx::Rect& update_rect,
     const gfx::Rect& content_rect,
     mojom::FrameSinkVideoConsumerFrameCallbacksPtr callbacks) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  consumer_->OnFrameCaptured(std::move(data), std::move(info), update_rect,
-                             content_rect, std::move(callbacks));
+  consumer_->OnFrameCaptured(std::move(data), std::move(info), content_rect,
+                             std::move(callbacks));
 }
 
 void ClientFrameSinkVideoCapturer::OnStopped() {

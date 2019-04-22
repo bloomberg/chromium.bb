@@ -65,7 +65,7 @@ WTF::TextEncoding LinkResource::GetCharset() const {
   return WTF::TextEncoding(charset);
 }
 
-void LinkResource::Trace(blink::Visitor* visitor) {
+void LinkResource::Trace(Visitor* visitor) {
   visitor->Trace(owner_);
 }
 

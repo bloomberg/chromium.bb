@@ -11,6 +11,7 @@
 #include "GrGpuCommandBuffer.h"
 #include "GrMtlGpu.h"
 #include "GrMesh.h"
+#include "GrOpFlushState.h"
 
 #import <metal/metal.h>
 
@@ -56,7 +57,10 @@ public:
 
     void insertEventMarker(const char* msg) override {}
 
-    void inlineUpload(GrOpFlushState* state, GrDeferredTextureUploadFn& upload) override {}
+    void inlineUpload(GrOpFlushState* state, GrDeferredTextureUploadFn& upload) override {
+        // TODO: this could be more efficient
+        state->doUpload(upload);
+    }
 
     void copy(GrSurface* src, GrSurfaceOrigin srcOrigin, const SkIRect& srcRect,
               const SkIPoint& dstPoint) override;
@@ -64,8 +68,7 @@ public:
     void submit();
 
 private:
-    void internalBegin();
-    void internalEnd();
+    void addNullCommand();
 
     GrGpu* gpu() override { return fGpu; }
 
@@ -73,8 +76,7 @@ private:
             const GrPrimitiveProcessor& primProc,
             const GrPipeline& pipeline,
             const GrPipeline::FixedDynamicState* fixedDynamicState,
-            const GrMesh meshes[],
-            int meshCount);
+            GrPrimitiveType primType);
 
     void onDraw(const GrPrimitiveProcessor& primProc,
                 const GrPipeline& pipeline,
@@ -128,7 +130,7 @@ private:
     GrGpuRTCommandBuffer::StencilLoadAndStoreInfo fStencilLoadAndStoreInfo;
 
     id<MTLRenderCommandEncoder> fActiveRenderCmdEncoder;
-    MTLRenderPassDescriptor* fRenderPassDesc;
+    MTLRenderPassDescriptor*    fRenderPassDesc;
 
     struct CommandBufferInfo {
         SkRect fBounds;

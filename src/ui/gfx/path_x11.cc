@@ -6,8 +6,8 @@
 
 #include <memory>
 
+#include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkRegion.h"
-#include "ui/gfx/path.h"
 #include "ui/gfx/x/x11.h"
 
 namespace gfx {

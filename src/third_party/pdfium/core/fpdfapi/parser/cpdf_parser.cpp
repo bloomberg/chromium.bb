@@ -25,7 +25,6 @@
 #include "core/fpdfapi/parser/cpdf_syntax_parser.h"
 #include "core/fpdfapi/parser/fpdf_parser_utility.h"
 #include "core/fxcrt/autorestorer.h"
-#include "core/fxcrt/cfx_memorystream.h"
 #include "core/fxcrt/fx_extension.h"
 #include "core/fxcrt/fx_safe_types.h"
 #include "third_party/base/ptr_util.h"
@@ -160,34 +159,32 @@ CPDF_Parser::Error CPDF_Parser::StartParse(
 
 CPDF_Parser::Error CPDF_Parser::StartParseInternal() {
   ASSERT(!m_bHasParsed);
+  ASSERT(!m_bXRefTableRebuilt);
   m_bHasParsed = true;
   m_bXRefStream = false;
 
-  bool bXRefRebuilt = false;
-
   m_LastXRefOffset = ParseStartXRef();
-
-  if (m_LastXRefOffset > 0) {
+  if (m_LastXRefOffset >= kPDFHeaderSize) {
     if (!LoadAllCrossRefV4(m_LastXRefOffset) &&
         !LoadAllCrossRefV5(m_LastXRefOffset)) {
       if (!RebuildCrossRef())
         return FORMAT_ERROR;
 
-      bXRefRebuilt = true;
+      m_bXRefTableRebuilt = true;
       m_LastXRefOffset = 0;
     }
   } else {
     if (!RebuildCrossRef())
       return FORMAT_ERROR;
 
-    bXRefRebuilt = true;
+    m_bXRefTableRebuilt = true;
   }
   Error eRet = SetEncryptHandler();
   if (eRet != SUCCESS)
     return eRet;
 
   if (!GetRoot() || !m_pObjectsHolder->TryInit()) {
-    if (bXRefRebuilt)
+    if (m_bXRefTableRebuilt)
       return FORMAT_ERROR;
 
     ReleaseEncryptHandler();
@@ -420,6 +417,9 @@ bool CPDF_Parser::ParseAndAppendCrossRefSubsectionData(
     uint32_t start_objnum,
     uint32_t count,
     std::vector<CrossRefObjData>* out_objects) {
+  if (!count)
+    return true;
+
   // Each entry shall be exactly 20 byte.
   // A sample entry looks like:
   // "0000000000 00007 f\r\n"
@@ -453,22 +453,20 @@ bool CPDF_Parser::ParseAndAppendCrossRefSubsectionData(
   std::vector<char> buf(1024 * kEntryConstSize + 1);
   buf.back() = '\0';
 
-  int32_t nBlocks = count / 1024 + 1;
-  for (int32_t block = 0; block < nBlocks; block++) {
-    int32_t block_size = block == nBlocks - 1 ? count % 1024 : 1024;
+  uint32_t nBytesToRead = count;
+  while (nBytesToRead > 0) {
+    const uint32_t block_size = std::min(nBytesToRead, 1024u);
     if (!m_pSyntax->ReadBlock(reinterpret_cast<uint8_t*>(buf.data()),
                               block_size * kEntryConstSize)) {
       return false;
     }
 
-    for (int32_t i = 0; i < block_size; i++) {
+    for (uint32_t i = 0; i < block_size; i++) {
+      uint32_t iObjectIndex = count - nBytesToRead + i;
       CrossRefObjData& obj_data =
-          (*out_objects)[start_obj_index + block * 1024 + i];
-
-      const uint32_t objnum = start_objnum + block * 1024 + i;
-
+          (*out_objects)[start_obj_index + iObjectIndex];
+      const uint32_t objnum = start_objnum + iObjectIndex;
       obj_data.obj_num = objnum;
-
       ObjectInfo& info = obj_data.info;
 
       char* pEntry = &buf[i * kEntryConstSize];
@@ -496,6 +494,7 @@ bool CPDF_Parser::ParseAndAppendCrossRefSubsectionData(
         info.type = ObjectType::kNotCompressed;
       }
     }
+    nBytesToRead -= block_size;
   }
   return true;
 }
@@ -508,15 +507,14 @@ bool CPDF_Parser::ParseCrossRefV4(std::vector<CrossRefObjData>* out_objects) {
     return false;
   std::vector<CrossRefObjData> result_objects;
   while (1) {
-    FX_FILESIZE SavedPos = m_pSyntax->GetPos();
+    FX_FILESIZE saved_pos = m_pSyntax->GetPos();
     bool bIsNumber;
     ByteString word = m_pSyntax->GetNextWord(&bIsNumber);
-    if (word.IsEmpty()) {
+    if (word.IsEmpty())
       return false;
-    }
 
     if (!bIsNumber) {
-      m_pSyntax->SetPos(SavedPos);
+      m_pSyntax->SetPos(saved_pos);
       break;
     }
 
@@ -526,7 +524,6 @@ bool CPDF_Parser::ParseCrossRefV4(std::vector<CrossRefObjData>* out_objects) {
 
     uint32_t count = m_pSyntax->GetDirectNum();
     m_pSyntax->ToNextWord();
-    SavedPos = m_pSyntax->GetPos();
 
     if (!ParseAndAppendCrossRefSubsectionData(
             start_objnum, count, out_objects ? &result_objects : nullptr)) {
@@ -964,6 +961,7 @@ CPDF_Parser::Error CPDF_Parser::StartLinearizedParse(
     const RetainPtr<CPDF_ReadValidator>& validator,
     const char* password) {
   ASSERT(!m_bHasParsed);
+  ASSERT(!m_bXRefTableRebuilt);
   SetPassword(password);
   m_bXRefStream = false;
   m_LastXRefOffset = 0;
@@ -979,13 +977,12 @@ CPDF_Parser::Error CPDF_Parser::StartLinearizedParse(
 
   m_LastXRefOffset = m_pLinearized->GetLastXRefOffset();
   FX_FILESIZE dwFirstXRefOffset = m_LastXRefOffset;
-  bool bXRefRebuilt = false;
   bool bLoadV4 = LoadCrossRefV4(dwFirstXRefOffset, false);
   if (!bLoadV4 && !LoadCrossRefV5(&dwFirstXRefOffset, true)) {
     if (!RebuildCrossRef())
       return FORMAT_ERROR;
 
-    bXRefRebuilt = true;
+    m_bXRefTableRebuilt = true;
     m_LastXRefOffset = 0;
   }
   if (bLoadV4) {
@@ -1004,7 +1001,7 @@ CPDF_Parser::Error CPDF_Parser::StartLinearizedParse(
     return eRet;
 
   if (!GetRoot() || !m_pObjectsHolder->TryInit()) {
-    if (bXRefRebuilt)
+    if (m_bXRefTableRebuilt)
       return FORMAT_ERROR;
 
     ReleaseEncryptHandler();

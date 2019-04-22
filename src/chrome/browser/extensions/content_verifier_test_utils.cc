@@ -4,12 +4,17 @@
 
 #include "chrome/browser/extensions/content_verifier_test_utils.h"
 
+#include <utility>
+
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/run_loop.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/external_install_info.h"
 #include "extensions/browser/updater/extension_downloader.h"
 #include "extensions/browser/updater/manifest_fetch_data.h"
 #include "extensions/common/extension_urls.h"
+#include "extensions/common/verifier_formats.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
@@ -47,7 +52,7 @@ void DownloaderTestDelegate::StartUpdateCheck(
           base::BindOnce(
               &ExtensionDownloaderDelegate::OnExtensionDownloadFinished,
               base::Unretained(delegate),
-              CRXFileInfo(id, responses_[id].second),
+              CRXFileInfo(id, GetTestVerifierFormat(), responses_[id].second),
               false /* pass_file_ownership */, GURL(), responses_[id].first,
               ExtensionDownloaderDelegate::PingResult(), data->request_ids(),
               ExtensionDownloaderDelegate::InstallCallback()));
@@ -86,9 +91,9 @@ const std::vector<base::TimeDelta>& DelayTracker::calls() {
   return calls_;
 }
 
-void DelayTracker::ReinstallAction(const base::RepeatingClosure& callback,
+void DelayTracker::ReinstallAction(base::OnceClosure callback,
                                    base::TimeDelta delay) {
-  saved_callback_ = callback;
+  saved_callback_ = std::move(callback);
   calls_.push_back(delay);
 }
 
@@ -96,9 +101,9 @@ void DelayTracker::Proceed() {
   ASSERT_TRUE(saved_callback_);
   ASSERT_TRUE(!saved_callback_->is_null());
   // Run() will set |saved_callback_| again, so use a temporary: |callback|.
-  base::RepeatingClosure callback = saved_callback_.value();
+  base::OnceClosure callback = std::move(saved_callback_.value());
   saved_callback_.reset();
-  callback.Run();
+  std::move(callback).Run();
 }
 
 void DelayTracker::StopWatching() {

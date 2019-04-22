@@ -6,14 +6,14 @@
 
 #include <string>
 
-#include "ash/assistant/assistant_controller.h"
-#include "ash/assistant/assistant_interaction_controller.h"
 #include "ash/assistant/model/assistant_response.h"
 #include "ash/assistant/model/assistant_ui_element.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
+#include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/ui/main_stage/assistant_card_element_view.h"
 #include "ash/assistant/ui/main_stage/assistant_text_element_view.h"
 #include "ash/assistant/util/animation_util.h"
+#include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/callback.h"
 #include "base/time/time.h"
 #include "ui/aura/window.h"
@@ -28,14 +28,17 @@ namespace ash {
 namespace {
 
 // Appearance.
-constexpr int kFirstCardMarginTopDip = 40;
-constexpr int kPaddingBottomDip = 24;
+constexpr int kEmbeddedUiFirstCardMarginTopDip = 8;
+constexpr int kEmbeddedUiPaddingBottomDip = 8;
+constexpr int kMainUiFirstCardMarginTopDip = 40;
+constexpr int kMainUiPaddingBottomDip = 24;
 
 // Card element animation.
 constexpr float kCardElementAnimationFadeOutOpacity = 0.26f;
 
 // Text element animation.
-constexpr float kTextElementAnimationFadeOutOpacity = 0.f;
+constexpr float kEmbeddedUiTextElementAnimationFadeOutOpacity = 0.26f;
+constexpr float kMainUiTextElementAnimationFadeOutOpacity = 0.f;
 
 // UI element animation.
 constexpr base::TimeDelta kUiElementAnimationFadeInDelay =
@@ -45,13 +48,32 @@ constexpr base::TimeDelta kUiElementAnimationFadeInDuration =
 constexpr base::TimeDelta kUiElementAnimationFadeOutDuration =
     base::TimeDelta::FromMilliseconds(167);
 
+// Helpers ---------------------------------------------------------------------
+
+int GetFirstCardMarginTopDip() {
+  return app_list_features::IsEmbeddedAssistantUIEnabled()
+             ? kEmbeddedUiFirstCardMarginTopDip
+             : kMainUiFirstCardMarginTopDip;
+}
+
+int GetPaddingBottomDip() {
+  return app_list_features::IsEmbeddedAssistantUIEnabled()
+             ? kEmbeddedUiPaddingBottomDip
+             : kMainUiPaddingBottomDip;
+}
+
+float GetTextElementAnimationFadeOutOpacity() {
+  return app_list_features::IsEmbeddedAssistantUIEnabled()
+             ? kEmbeddedUiTextElementAnimationFadeOutOpacity
+             : kMainUiTextElementAnimationFadeOutOpacity;
+}
+
 }  // namespace
 
 // UiElementContainerView ------------------------------------------------------
 
-UiElementContainerView::UiElementContainerView(
-    AssistantController* assistant_controller)
-    : assistant_controller_(assistant_controller),
+UiElementContainerView::UiElementContainerView(AssistantViewDelegate* delegate)
+    : delegate_(delegate),
       ui_elements_exit_animation_observer_(
           std::make_unique<ui::CallbackLayerAnimationObserver>(
               /*animation_ended_callback=*/base::BindRepeating(
@@ -59,13 +81,12 @@ UiElementContainerView::UiElementContainerView(
                   base::Unretained(this)))) {
   InitLayout();
 
-  // The Assistant controller indirectly owns the view hierarchy to which
-  // UiElementContainerView belongs so is guaranteed to outlive it.
-  assistant_controller_->interaction_controller()->AddModelObserver(this);
+  // The AssistantViewDelegate should outlive UiElementContainerView.
+  delegate_->AddInteractionModelObserver(this);
 }
 
 UiElementContainerView::~UiElementContainerView() {
-  assistant_controller_->interaction_controller()->RemoveModelObserver(this);
+  delegate_->RemoveInteractionModelObserver(this);
 }
 
 const char* UiElementContainerView::GetClassName() const {
@@ -110,7 +131,7 @@ void UiElementContainerView::PreferredSizeChanged() {
 void UiElementContainerView::InitLayout() {
   content_view()->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical,
-      gfx::Insets(0, kUiElementHorizontalMarginDip, kPaddingBottomDip,
+      gfx::Insets(0, kUiElementHorizontalMarginDip, GetPaddingBottomDip(),
                   kUiElementHorizontalMarginDip),
       kSpacingDip));
 }
@@ -144,7 +165,7 @@ void UiElementContainerView::OnResponseChanged(
 
   // If we don't have any pre-existing content, there is nothing to animate off
   // stage so we we can proceed to add the new response.
-  if (!content_view()->has_children()) {
+  if (content_view()->children().empty()) {
     OnResponseAdded(std::move(pending_response_));
     return;
   }
@@ -229,17 +250,15 @@ void UiElementContainerView::OnCardElementAdded(
     return;
 
   auto* card_element_view =
-      new AssistantCardElementView(assistant_controller_, card_element);
-
+      new AssistantCardElementView(delegate_, card_element);
   if (is_first_card_) {
     is_first_card_ = false;
 
-    // The first card requires a top margin of |kFirstCardMarginTopDip|, but
+    // The first card requires a top margin of |GetFirstCardMarginTopDip()|, but
     // we need to account for child spacing because the first card is not
     // necessarily the first UI element.
-    const int top_margin_dip = child_count() == 0
-                                   ? kFirstCardMarginTopDip
-                                   : kFirstCardMarginTopDip - kSpacingDip;
+    const int top_margin_dip =
+        GetFirstCardMarginTopDip() - (children().empty() ? 0 : kSpacingDip);
 
     // We effectively create a top margin by applying an empty border.
     card_element_view->SetBorder(
@@ -276,7 +295,7 @@ void UiElementContainerView::OnTextElementAdded(
   // We cache the view for use during animations and its desired opacity that
   // we'll animate to while processing the next query response.
   ui_element_views_.push_back(std::pair<ui::LayerOwner*, float>(
-      text_element_view, kTextElementAnimationFadeOutOpacity));
+      text_element_view, GetTextElementAnimationFadeOutOpacity()));
 
   content_view()->AddChildView(text_element_view);
 }
@@ -308,7 +327,7 @@ void UiElementContainerView::OnAllUiElementsAdded() {
   // and the card fallback text, but webview result is not included.
   // We don't read when there is TTS to avoid speaking over the server response.
   const AssistantResponse* response =
-      assistant_controller_->interaction_controller()->model()->response();
+      delegate_->GetInteractionModel()->response();
   if (!response->has_tts())
     NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
 }

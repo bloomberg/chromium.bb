@@ -71,10 +71,7 @@ class SVGImageForContainer final : public Image {
 
   IntSize Size() const override;
 
-  bool UsesContainerSize() const override {
-    return image_->UsesContainerSize();
-  }
-  bool HasRelativeSize() const override { return image_->HasRelativeSize(); }
+  bool HasIntrinsicSize() const override { return image_->HasIntrinsicSize(); }
 
   bool ApplyShader(cc::PaintFlags&, const SkMatrix& local_matrix) override;
 
@@ -111,6 +108,14 @@ class SVGImageForContainer final : public Image {
         url_(url) {}
 
   void DestroyDecodedData() override {}
+
+  // TODO(v.paturi): Implement an SVG classifier which can decide if a
+  // filter should be applied based on the image's content and it's
+  // visibility on a dark background.
+  DarkModeClassification ClassifyImageForDarkMode(
+      const FloatRect& src_rect) override {
+    return DarkModeClassification::kApplyDarkModeFilter;
+  }
 
   SVGImage* image_;
   const FloatSize container_size_;

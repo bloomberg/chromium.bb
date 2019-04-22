@@ -20,7 +20,7 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo {{v8_class}}::wrapper_type_info = {
+const WrapperTypeInfo {{snake_case_v8_class}}_wrapper_type_info = {
     gin::kEmbedderBlink,
     {{v8_class}}::DomTemplate,
     nullptr,
@@ -42,7 +42,7 @@ static void Install{{v8_class}}Template(v8::Isolate* isolate, const DOMWrapperWo
   // Initialize the interface object's template.
   V8DOMConfiguration::InitializeDOMInterfaceTemplate(
       isolate, interface_template,
-      {{v8_class}}::wrapper_type_info.interface_name,
+      {{v8_class}}::GetWrapperTypeInfo()->interface_name,
       v8::Local<v8::FunctionTemplate>(),
       kV8DefaultWrapperInternalFieldCount);
   interface_template->SetLength(0);
@@ -59,26 +59,13 @@ v8::Local<v8::FunctionTemplate> {{v8_class}}::DomTemplate(v8::Isolate* isolate, 
   return V8DOMConfiguration::DomClassTemplate(
       isolate,
       world,
-      const_cast<WrapperTypeInfo*>(&wrapper_type_info),
+      const_cast<WrapperTypeInfo*>(GetWrapperTypeInfo()),
       Install{{v8_class}}Template);
 }
 {% endif %}{# is_legacy_callback_interface #}
 
 const char* {{v8_class}}::NameInHeapSnapshot() const {
   return "{{v8_class}}";
-}
-
-// static
-{{v8_class}}* {{v8_class}}::CreateOrNull(v8::Local<v8::Object> callback_object) {
-  v8::Local<v8::Context> creation_context = callback_object->CreationContext();
-  // When |callback_object| is an object in RemoteContext (i.e. RemoteInstance),
-  // the object has no creation context, and no way to proceed.
-  // TODO(crbug.com/886588): Make CreateOrNull into Create removing the early
-  // return with nullptr.
-  if (creation_context.IsEmpty())
-    return nullptr;
-
-  return MakeGarbageCollected<{{v8_class}}>(callback_object, creation_context);
 }
 
 {% for method in methods %}
@@ -111,22 +98,22 @@ void {{v8_class}}::InvokeAndReportException({{methods[0].argument_declarations |
 
 {% if interface_name == 'EventListener' %}
 bool {{v8_class}}::IsRunnableOrThrowException(IgnorePause ignore_pause) {
+  ScriptState* callback_relevant_script_state =
+      CallbackRelevantScriptState();
+
   bool is_runnable =
       ignore_pause == IgnorePause::kIgnore ?
       IsCallbackFunctionRunnableIgnoringPause(
-          CallbackRelevantScriptState(), IncumbentScriptState()) :
+          callback_relevant_script_state, IncumbentScriptState()) :
       IsCallbackFunctionRunnable(
-          CallbackRelevantScriptState(), IncumbentScriptState());
+          callback_relevant_script_state, IncumbentScriptState());
   if (is_runnable)
     return true;
 
   // Wrapper-tracing for the callback function makes the function object and
   // its creation context alive. Thus it's safe to use the creation context
   // of the callback function here.
-  v8::HandleScope handle_scope(GetIsolate());
-  v8::Local<v8::Object> callback_object = CallbackObject();
-  CHECK(!callback_object.IsEmpty());
-  v8::Context::Scope context_scope(callback_object->CreationContext());
+  ScriptState::Scope scope(callback_relevant_script_state);
   V8ThrowException::ThrowError(
       GetIsolate(),
       ExceptionMessages::FailedToExecute(

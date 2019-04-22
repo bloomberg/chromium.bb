@@ -26,13 +26,13 @@ class Connector;
 
 namespace device {
 
-class MockHidConnection : public device::mojom::HidConnection {
+class MockFidoHidConnection : public device::mojom::HidConnection {
  public:
-  explicit MockHidConnection(device::mojom::HidDeviceInfoPtr device,
-                             device::mojom::HidConnectionRequest request,
-                             std::vector<uint8_t> connection_channel_id);
+  explicit MockFidoHidConnection(device::mojom::HidDeviceInfoPtr device,
+                                 device::mojom::HidConnectionRequest request,
+                                 std::vector<uint8_t> connection_channel_id);
 
-  ~MockHidConnection() override;
+  ~MockFidoHidConnection() override;
   MOCK_METHOD1(ReadPtr, void(ReadCallback* callback));
   MOCK_METHOD3(WritePtr,
                void(uint8_t report_id,
@@ -66,7 +66,7 @@ class MockHidConnection : public device::mojom::HidConnection {
   std::vector<uint8_t> nonce_;
   std::vector<uint8_t> connection_channel_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockHidConnection);
+  DISALLOW_COPY_AND_ASSIGN(MockFidoHidConnection);
 };
 
 class FakeHidConnection : public device::mojom::HidConnection {
@@ -108,6 +108,7 @@ class FakeHidManager : public device::mojom::HidManager {
       GetDevicesCallback callback) override;
   void GetDevices(GetDevicesCallback callback) override;
   void Connect(const std::string& device_guid,
+               mojom::HidConnectionClientPtr connection_client,
                ConnectCallback callback) override;
   void AddBinding(mojo::ScopedMessagePipeHandle handle);
   void AddBinding2(device::mojom::HidManagerRequest request);

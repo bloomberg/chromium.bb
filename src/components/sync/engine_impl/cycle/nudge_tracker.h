@@ -33,11 +33,11 @@ class NudgeTracker {
   // Returns true if there is a good reason for performing a sync cycle.
   // This does not take into account whether or not this is a good *time* to
   // perform a sync cycle; that's the scheduler's job.
-  bool IsSyncRequired() const;
+  bool IsSyncRequired(ModelTypeSet types) const;
 
   // Returns true if there is a good reason for performing a get updates
   // request as part of the next sync cycle.
-  bool IsGetUpdatesRequired() const;
+  bool IsGetUpdatesRequired(ModelTypeSet types) const;
 
   // Return true if should perform a sync cycle for GU retry.
   //
@@ -48,8 +48,12 @@ class NudgeTracker {
   bool IsRetryRequired() const;
 
   // Tells this class that all required update fetching or committing has
-  // completed successfully.
-  void RecordSuccessfulSyncCycle();
+  // completed successfully, as the result of a "normal" sync cycle.
+  void RecordSuccessfulSyncCycle(ModelTypeSet types);
+
+  // Tells this class that the initial sync has happened for the given |types|,
+  // generally due to a "configuration" cycle.
+  void RecordInitialSyncDone(ModelTypeSet types);
 
   // Takes note of a local change.
   // Returns the shortest nudge delay from the tracker of each type in |types|.

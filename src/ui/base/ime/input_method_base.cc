@@ -19,9 +19,8 @@
 namespace ui {
 
 ui::IMEEngineHandlerInterface* InputMethodBase::GetEngine() {
-  if (ui::IMEBridge::Get())
-    return ui::IMEBridge::Get()->GetCurrentEngineHandler();
-  return nullptr;
+  auto* bridge = ui::IMEBridge::Get();
+  return bridge ? bridge->GetCurrentEngineHandler() : nullptr;
 }
 
 InputMethodBase::InputMethodBase(internal::InputMethodDelegate* delegate)
@@ -30,9 +29,7 @@ InputMethodBase::InputMethodBase(internal::InputMethodDelegate* delegate)
 InputMethodBase::InputMethodBase(
     internal::InputMethodDelegate* delegate,
     std::unique_ptr<InputMethodKeyboardController> keyboard_controller)
-    : sending_key_event_(false),
-      delegate_(delegate),
-      text_input_client_(nullptr),
+    : delegate_(delegate),
       keyboard_controller_(std::move(keyboard_controller)) {}
 
 InputMethodBase::~InputMethodBase() {
@@ -87,6 +84,10 @@ void InputMethodBase::SetOnScreenKeyboardBounds(const gfx::Rect& new_bounds) {
   keyboard_bounds_ = new_bounds;
   if (text_input_client_)
     text_input_client_->EnsureCaretNotInRect(keyboard_bounds_);
+}
+
+AsyncKeyDispatcher* InputMethodBase::GetAsyncKeyDispatcher() {
+  return nullptr;
 }
 
 void InputMethodBase::OnTextInputTypeChanged(const TextInputClient* client) {
@@ -163,12 +164,14 @@ void InputMethodBase::OnInputMethodChanged() const {
 
 ui::EventDispatchDetails InputMethodBase::DispatchKeyEventPostIME(
     ui::KeyEvent* event,
-    base::OnceCallback<void(bool)> ack_callback) const {
-  if (delegate_)
-    return delegate_->DispatchKeyEventPostIME(event, std::move(ack_callback));
+    ResultCallback result_callback) const {
+  if (delegate_) {
+    return delegate_->DispatchKeyEventPostIME(event,
+                                              std::move(result_callback));
+  }
 
-  if (ack_callback)
-    std::move(ack_callback).Run(false);
+  if (result_callback)
+    std::move(result_callback).Run(false, false);
   return EventDispatchDetails();
 }
 
@@ -259,17 +262,20 @@ SurroundingTextInfo InputMethodBase::GetSurroundingTextInfo() {
   TextInputClient* client = GetTextInputClient();
   if (!client->GetTextRange(&text_range) ||
       !client->GetTextFromRange(text_range, &info.surrounding_text) ||
-      !client->GetSelectionRange(&info.selection_range)) {
+      !client->GetEditableSelectionRange(&info.selection_range)) {
     return SurroundingTextInfo();
   }
+  // Makes the |selection_range| be relative to the |surrounding_text|.
+  info.selection_range.set_start(info.selection_range.start() -
+                                 text_range.start());
+  info.selection_range.set_end(info.selection_range.end() - text_range.start());
   return info;
 }
 
 void InputMethodBase::SendKeyEvent(KeyEvent* event) {
   sending_key_event_ = true;
   if (track_key_events_for_testing_) {
-    key_events_for_testing_.push_back(
-        std::unique_ptr<ui::KeyEvent>(new KeyEvent(*event)));
+    key_events_for_testing_.push_back(std::make_unique<KeyEvent>(*event));
   }
   ui::EventDispatchDetails details = DispatchKeyEvent(event);
   DCHECK(!details.dispatcher_destroyed);

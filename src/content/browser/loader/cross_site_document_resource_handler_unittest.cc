@@ -1185,16 +1185,17 @@ class CrossSiteDocumentResourceHandlerTest
     // Initialize |request_| from the parameters.
     request_ = context_.CreateRequest(GURL(target_url), net::DEFAULT_PRIORITY,
                                       &delegate_, TRAFFIC_ANNOTATION_FOR_TESTS);
-    ResourceRequestInfo::AllocateForTesting(request_.get(), resource_type,
-                                            nullptr,       // context
-                                            3,             // render_process_id
-                                            2,             // render_view_id
-                                            1,             // render_frame_id
-                                            true,          // is_main_frame
-                                            false,         // allow_download
-                                            true,          // is_async
-                                            PREVIEWS_OFF,  // previews_state
-                                            nullptr);      // navigation_ui_data
+    ResourceRequestInfo::AllocateForTesting(
+        request_.get(), resource_type,
+        nullptr,                              // context
+        3,                                    // render_process_id
+        2,                                    // render_view_id
+        1,                                    // render_frame_id
+        true,                                 // is_main_frame
+        ResourceInterceptPolicy::kAllowNone,  // resource_intercept_policy
+        true,                                 // is_async
+        PREVIEWS_OFF,                         // previews_state
+        nullptr);                             // navigation_ui_data
     request_->set_initiator(url::Origin::Create(GURL(initiator_origin)));
 
     // Create a sink handler to capture results.
@@ -1203,11 +1204,11 @@ class CrossSiteDocumentResourceHandlerTest
     stream_sink_ = stream_sink->GetWeakPtr();
 
     // Create the CrossSiteDocumentResourceHandler.
-    bool is_nocors_plugin_request =
-        resource_type == RESOURCE_TYPE_PLUGIN_RESOURCE &&
-        cors_request == OriginHeader::kOmit;
+    auto fetch_request_mode = cors_request == OriginHeader::kOmit
+                                  ? network::mojom::FetchRequestMode::kNoCors
+                                  : network::mojom::FetchRequestMode::kCors;
     auto document_blocker = std::make_unique<CrossSiteDocumentResourceHandler>(
-        std::move(stream_sink), request_.get(), is_nocors_plugin_request);
+        std::move(stream_sink), request_.get(), fetch_request_mode);
     document_blocker_ = document_blocker.get();
     first_handler_ = std::move(document_blocker);
 
@@ -1864,8 +1865,8 @@ TEST_P(CrossSiteDocumentResourceHandlerTest, MimeSnifferInterop) {
   content::RunAllPendingInMessageLoop();
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        CrossSiteDocumentResourceHandlerTest,
-                        ::testing::ValuesIn(kScenarios));
+INSTANTIATE_TEST_SUITE_P(,
+                         CrossSiteDocumentResourceHandlerTest,
+                         ::testing::ValuesIn(kScenarios));
 
 }  // namespace content

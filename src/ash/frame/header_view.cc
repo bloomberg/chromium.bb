@@ -72,8 +72,7 @@ HeaderView::HeaderView(views::Widget* target_widget)
 
   UpdateBackButton();
 
-  frame_header_->SetFrameColors(window->GetProperty(kFrameActiveColorKey),
-                                window->GetProperty(kFrameInactiveColorKey));
+  frame_header_->UpdateFrameColors();
   window_observer_.Add(window);
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
 }
@@ -197,8 +196,7 @@ void HeaderView::OnWindowPropertyChanged(aura::Window* window,
         window->GetProperty(aura::client::kAvatarIconKey);
     SetAvatarIcon(avatar_icon ? *avatar_icon : gfx::ImageSkia());
   } else if (key == kFrameActiveColorKey || key == kFrameInactiveColorKey) {
-    frame_header_->SetFrameColors(window->GetProperty(kFrameActiveColorKey),
-                                  window->GetProperty(kFrameInactiveColorKey));
+    frame_header_->UpdateFrameColors();
   } else if (key == aura::client::kShowStateKey) {
     frame_header_->OnShowStateChanged(
         window->GetProperty(aura::client::kShowStateKey));
@@ -224,7 +222,7 @@ void HeaderView::SetShouldPaintHeader(bool paint) {
   SchedulePaint();
 }
 
-FrameCaptionButton* HeaderView::GetBackButton() {
+views::FrameCaptionButton* HeaderView::GetBackButton() {
   return frame_header_->GetBackButton();
 }
 
@@ -304,9 +302,9 @@ void HeaderView::PaintHeaderContent(gfx::Canvas* canvas) {
 }
 
 void HeaderView::UpdateBackButton() {
-  bool has_back_button =
-      caption_button_container_->model()->IsVisible(CAPTION_BUTTON_ICON_BACK);
-  FrameCaptionButton* back_button = frame_header_->GetBackButton();
+  bool has_back_button = caption_button_container_->model()->IsVisible(
+      views::CAPTION_BUTTON_ICON_BACK);
+  views::FrameCaptionButton* back_button = frame_header_->GetBackButton();
   if (has_back_button) {
     if (!back_button) {
       back_button = new FrameBackButton();
@@ -314,7 +312,7 @@ void HeaderView::UpdateBackButton() {
       frame_header_->SetBackButton(back_button);
     }
     back_button->SetEnabled(caption_button_container_->model()->IsEnabled(
-        CAPTION_BUTTON_ICON_BACK));
+        views::CAPTION_BUTTON_ICON_BACK));
   } else {
     delete back_button;
     frame_header_->SetBackButton(nullptr);

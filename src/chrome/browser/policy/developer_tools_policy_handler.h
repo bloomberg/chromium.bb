@@ -54,6 +54,11 @@ class DeveloperToolsPolicyHandler : public ConfigurationPolicyHandler {
   // |Availability::kDisallowedForForceInstalledExtensions|.
   static Availability GetDevToolsAvailability(const PrefService* pref_service);
 
+  // Returns true if developer tools availability is set by an active policy in
+  // |pref_service|.
+  static bool IsDevToolsAvailabilitySetByPolicy(
+      const PrefService* pref_service);
+
   // Returns the most restrictive availability within [|availability_1|,
   // |availability_2|].
   static Availability GetMostRestrictiveAvailability(

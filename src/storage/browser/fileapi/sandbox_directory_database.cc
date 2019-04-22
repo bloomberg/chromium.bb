@@ -19,6 +19,7 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/pickle.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "storage/browser/fileapi/file_system_usage_cache.h"
@@ -103,14 +104,14 @@ std::string GetChildLookupKey(
     const base::FilePath::StringType& child_name) {
   std::string name;
   name = storage::FilePathToString(base::FilePath(child_name));
-  return std::string(kChildLookupPrefix) + base::Int64ToString(parent_id) +
-      std::string(kChildLookupSeparator) + name;
+  return std::string(kChildLookupPrefix) + base::NumberToString(parent_id) +
+         std::string(kChildLookupSeparator) + name;
 }
 
 std::string GetChildListingKeyPrefix(
     storage::SandboxDirectoryDatabase::FileId parent_id) {
-  return std::string(kChildLookupPrefix) + base::Int64ToString(parent_id) +
-      std::string(kChildLookupSeparator);
+  return std::string(kChildLookupPrefix) + base::NumberToString(parent_id) +
+         std::string(kChildLookupSeparator);
 }
 
 const char* LastFileIdKey() {
@@ -123,7 +124,7 @@ const char* LastIntegerKey() {
 
 std::string GetFileLookupKey(
     storage::SandboxDirectoryDatabase::FileId file_id) {
-  return base::Int64ToString(file_id);
+  return base::NumberToString(file_id);
 }
 
 // Assumptions:
@@ -309,8 +310,8 @@ bool DatabaseCheckHelper::ScanDirectory() {
       if (!path_.AppendRelativePath(absolute_file_path, &relative_file_path))
         return false;
 
-      if (std::find(kExcludes, kExcludes + arraysize(kExcludes),
-                    relative_file_path) != kExcludes + arraysize(kExcludes))
+      if (std::find(kExcludes, kExcludes + base::size(kExcludes),
+                    relative_file_path) != kExcludes + base::size(kExcludes))
         continue;
 
       if (find_info.IsDirectory()) {
@@ -402,8 +403,8 @@ bool VerifyDataPath(const base::FilePath& data_path) {
       base::FilePath(kDirectoryDatabaseName),
       base::FilePath(storage::FileSystemUsageCache::kUsageFileName),
   };
-  for (size_t i = 0; i < arraysize(kExcludes); ++i) {
-    if (data_path == kExcludes[i] || kExcludes[i].IsParent(data_path))
+  for (const auto& exclude : kExcludes) {
+    if (data_path == exclude || exclude.IsParent(data_path))
       return false;
   }
   return true;
@@ -560,7 +561,7 @@ base::File::Error SandboxDirectoryDatabase::AddFileInfo(
   if (!AddFileInfoHelper(info, temp_id, &batch))
     return base::File::FILE_ERROR_FAILED;
 
-  batch.Put(LastFileIdKey(), base::Int64ToString(temp_id));
+  batch.Put(LastFileIdKey(), base::NumberToString(temp_id));
   status = db_->Write(leveldb::WriteOptions(), &batch);
   if (!status.ok()) {
     HandleError(FROM_HERE, status);
@@ -684,7 +685,7 @@ bool SandboxDirectoryDatabase::GetNextInteger(int64_t* next) {
     }
     ++temp;
     status = db_->Put(leveldb::WriteOptions(), LastIntegerKey(),
-        base::Int64ToString(temp));
+                      base::NumberToString(temp));
     if (!status.ok()) {
       HandleError(FROM_HERE, status);
       return false;
@@ -860,8 +861,8 @@ bool SandboxDirectoryDatabase::StoreDefaultValues() {
   leveldb::WriteBatch batch;
   if (!AddFileInfoHelper(root, 0, &batch))
     return false;
-  batch.Put(LastFileIdKey(), base::Int64ToString(0));
-  batch.Put(LastIntegerKey(), base::Int64ToString(-1));
+  batch.Put(LastFileIdKey(), base::NumberToString(0));
+  batch.Put(LastIntegerKey(), base::NumberToString(-1));
   leveldb::Status status = db_->Write(leveldb::WriteOptions(), &batch);
   if (!status.ok()) {
     HandleError(FROM_HERE, status);

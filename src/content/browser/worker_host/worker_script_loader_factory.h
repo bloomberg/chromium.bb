@@ -20,28 +20,30 @@ class ServiceWorkerProviderHost;
 class ResourceContext;
 class WorkerScriptLoader;
 
-// S13nServiceWorker:
-// Created per one running web worker for loading its script.
+// WorkerScriptLoaderFactory creates a WorkerScriptLoader to load the main
+// script for a web worker (dedicated worker or shared worker), which follows
+// redirects and sets the controller service worker on the web worker if needed.
+// It's an error to call CreateLoaderAndStart() more than a total of one time
+// across this object or any of its clones.
 //
-// Shared worker script loads require special logic because they are similiar to
-// navigations from the point of view of web platform features like service
-// worker.
-//
-// This creates a WorkerScriptLoader to load the script, which follows redirects
-// and sets the controller service worker on the web worker if needed. It's an
-// error to call CreateLoaderAndStart() more than a total of one time across
-// this object or any of its clones.
-class WorkerScriptLoaderFactory : public network::mojom::URLLoaderFactory {
+// This is created per one web worker. All functions of this class must be
+// called on the IO thread.
+class CONTENT_EXPORT WorkerScriptLoaderFactory
+    : public network::mojom::URLLoaderFactory {
  public:
+  // Returns the resource context, or nullptr during shutdown. Must be called on
+  // the IO thread.
+  using ResourceContextGetter = base::RepeatingCallback<ResourceContext*(void)>;
+
   // |loader_factory| is used to load the script if the load is not intercepted
   // by a feature like service worker. Typically it will load the script from
   // the NetworkService. However, it may internally contain non-NetworkService
   // factories used for non-http(s) URLs, e.g., a chrome-extension:// URL.
   WorkerScriptLoaderFactory(
       int process_id,
-      base::WeakPtr<ServiceWorkerProviderHost> provider_host,
+      base::WeakPtr<ServiceWorkerProviderHost> service_worker_provider_host,
       base::WeakPtr<AppCacheHost> appcache_host,
-      ResourceContext* resource_context,
+      const ResourceContextGetter& resource_context_getter,
       scoped_refptr<network::SharedURLLoaderFactory> loader_factory);
   ~WorkerScriptLoaderFactory() override;
 
@@ -62,7 +64,7 @@ class WorkerScriptLoaderFactory : public network::mojom::URLLoaderFactory {
   const int process_id_;
   base::WeakPtr<ServiceWorkerProviderHost> service_worker_provider_host_;
   base::WeakPtr<AppCacheHost> appcache_host_;
-  ResourceContext* resource_context_ = nullptr;
+  ResourceContextGetter resource_context_getter_;
   scoped_refptr<network::SharedURLLoaderFactory> loader_factory_;
 
   // This is owned by StrongBinding associated with the given URLLoaderRequest,

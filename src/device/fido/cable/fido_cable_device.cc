@@ -6,8 +6,10 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/strings/string_piece.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/device_event_log/device_event_log.h"
 #include "device/fido/ble/fido_ble_connection.h"
 #include "device/fido/ble/fido_ble_frames.h"
 #include "device/fido/fido_constants.h"
@@ -121,19 +123,22 @@ FidoCableDevice::FidoCableDevice(std::unique_ptr<FidoBleConnection> connection)
 
 FidoCableDevice::~FidoCableDevice() = default;
 
-void FidoCableDevice::DeviceTransact(std::vector<uint8_t> command,
-                                     DeviceCallback callback) {
+FidoDevice::CancelToken FidoCableDevice::DeviceTransact(
+    std::vector<uint8_t> command,
+    DeviceCallback callback) {
   if (!EncryptOutgoingMessage(encryption_data_, &command)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
     state_ = State::kDeviceError;
-    return;
+    FIDO_LOG(ERROR) << "Failed to encrypt outgoing caBLE message.";
+    return 0;
   }
 
   ++encryption_data_->write_sequence_num;
 
-  AddToPendingFrames(FidoBleDeviceCommand::kMsg, std::move(command),
-                     std::move(callback));
+  FIDO_LOG(DEBUG) << "Sending encrypted message to caBLE client";
+  return AddToPendingFrames(FidoBleDeviceCommand::kMsg, std::move(command),
+                            std::move(callback));
 }
 
 void FidoCableDevice::OnResponseFrame(FrameCallback callback,

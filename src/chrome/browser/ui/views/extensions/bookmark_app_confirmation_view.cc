@@ -12,7 +12,6 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
-#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/extensions/web_app_info_image_source.h"
 #include "chrome/common/chrome_features.h"
@@ -87,17 +86,12 @@ BookmarkAppConfirmationView::BookmarkAppConfirmationView(
   layout->AddPaddingRow(
       views::GridLayout::kFixedSize,
       layout_provider->GetDistanceMetric(DISTANCE_CONTROL_LIST_VERTICAL));
-
-  // When CanHostedAppsOpenInWindows() returns false, do not show the open as
-  // window checkbox to avoid confusing users.
-  if (extensions::util::CanHostedAppsOpenInWindows()) {
-    open_as_window_checkbox_ = new views::Checkbox(
-        l10n_util::GetStringUTF16(IDS_BOOKMARK_APP_BUBBLE_OPEN_AS_WINDOW));
-    open_as_window_checkbox_->SetChecked(web_app_info_.open_as_window);
-    layout->StartRow(views::GridLayout::kFixedSize, kColumnSetId);
-    layout->SkipColumns(1);
-    layout->AddView(open_as_window_checkbox_);
-  }
+  open_as_window_checkbox_ = new views::Checkbox(
+      l10n_util::GetStringUTF16(IDS_BOOKMARK_APP_BUBBLE_OPEN_AS_WINDOW));
+  open_as_window_checkbox_->SetChecked(web_app_info_.open_as_window);
+  layout->StartRow(views::GridLayout::kFixedSize, kColumnSetId);
+  layout->SkipColumns(1);
+  layout->AddView(open_as_window_checkbox_);
 
   title_tf_->SelectAll(true);
   chrome::RecordDialogCreation(

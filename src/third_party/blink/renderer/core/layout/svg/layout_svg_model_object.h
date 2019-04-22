@@ -47,7 +47,9 @@ class LayoutSVGModelObject : public LayoutObject {
 
   bool IsChildAllowed(LayoutObject*, const ComputedStyle&) const override;
 
-  LayoutRect VisualRectInDocument() const override;
+  LayoutRect VisualRectInDocument(
+      VisualRectFlags = kDefaultVisualRectFlags) const override;
+
   FloatRect VisualRectInLocalSVGCoordinates() const override {
     return local_visual_rect_;
   }
@@ -71,8 +73,6 @@ class LayoutSVGModelObject : public LayoutObject {
       LayoutGeometryMap&) const final;
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
 
-  void ComputeLayerHitTestRects(LayerHitTestRects&, TouchAction) const final;
-
   SVGElement* GetElement() const {
     return ToSVGElement(LayoutObject::GetNode());
   }
@@ -82,13 +82,6 @@ class LayoutSVGModelObject : public LayoutObject {
   }
 
  protected:
-  void AddLayerHitTestRects(
-      LayerHitTestRects&,
-      const PaintLayer* current_composited_layer,
-      const LayoutPoint& layer_offset,
-      TouchAction supported_fast_actions,
-      const LayoutRect& container_rect,
-      TouchAction container_whitelisted_touch_action) const final;
   void WillBeDestroyed() override;
 
  private:

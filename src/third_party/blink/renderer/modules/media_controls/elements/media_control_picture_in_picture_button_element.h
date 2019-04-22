@@ -22,6 +22,7 @@ class MediaControlPictureInPictureButtonElement final
   void UpdateDisplayType() override;
   WebLocalizedString::Name GetOverflowStringName() const override;
   bool HasOverflowButton() const override;
+  bool IsControlPanelButton() const override;
 
   void OnMediaKeyboardEvent(Event* event) { DefaultEventHandler(*event); }
 
@@ -30,6 +31,8 @@ class MediaControlPictureInPictureButtonElement final
 
  private:
   void DefaultEventHandler(Event&) override;
+
+  void UpdateAriaString(bool);
 };
 
 }  // namespace blink

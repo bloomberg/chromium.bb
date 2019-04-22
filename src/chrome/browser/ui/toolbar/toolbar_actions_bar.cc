@@ -4,10 +4,13 @@
 
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 
+#include <algorithm>
 #include <set>
+#include <string>
 #include <utility>
 
 #include "base/auto_reset.h"
+#include "base/bind.h"
 #include "base/location.h"
 #include "base/numerics/ranges.h"
 #include "base/single_thread_task_runner.h"
@@ -23,10 +26,10 @@
 #include "chrome/browser/ui/extensions/settings_api_bubble_helpers.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/toolbar/component_toolbar_actions_factory.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar_delegate.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar_observer.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/pref_names.h"
 #include "components/crx_file/id_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -58,8 +61,8 @@ template <typename Type1, typename Type2, typename FunctionType>
 void SortContainer(std::vector<std::unique_ptr<Type1>>* to_sort,
                    const std::vector<Type2>& reference,
                    FunctionType equal) {
-  CHECK_GE(to_sort->size(), reference.size()) <<
-      "|to_sort| must contain all elements in |reference|.";
+  CHECK_GE(to_sort->size(), reference.size())
+      << "|to_sort| must contain all elements in |reference|.";
   if (reference.empty())
     return;
   // Run through the each element and compare it to the reference. If something
@@ -71,8 +74,8 @@ void SortContainer(std::vector<std::unique_ptr<Type1>>* to_sort,
       size_t j = i + 1;
       while (!equal(to_sort->at(j).get(), reference[i])) {
         ++j;
-        DCHECK_LT(j, to_sort->size()) <<
-            "Item in |reference| not found in |to_sort|.";
+        DCHECK_LT(j, to_sort->size())
+            << "Item in |reference| not found in |to_sort|.";
       }
       std::swap(to_sort->at(i), to_sort->at(j));
     }
@@ -112,14 +115,17 @@ ToolbarActionsBar::ToolbarActionsBar(ToolbarActionsBarDelegate* delegate,
   if (model_)  // |model_| can be null in unittests.
     model_observer_.Add(model_);
 
+  if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu))
+    DCHECK(!in_overflow_mode());
+
   tab_strip_observer_.Add(browser_->tab_strip_model());
 }
 
 ToolbarActionsBar::~ToolbarActionsBar() {
   // We don't just call DeleteActions() here because it makes assumptions about
   // the order of deletion between the views and the ToolbarActionsBar.
-  DCHECK(toolbar_actions_.empty()) <<
-      "Must call DeleteActions() before destruction.";
+  DCHECK(toolbar_actions_.empty())
+      << "Must call DeleteActions() before destruction.";
   for (ToolbarActionsBarObserver& observer : observers_)
     observer.OnToolbarActionsBarDestroyed();
 }
@@ -164,7 +170,7 @@ gfx::Size ToolbarActionsBar::GetFullSize() const {
     num_rows += (std::max(0, icon_count - 1) / num_icons);
   }
 
-  return gfx::ScaleToFlooredSize(GetViewSize(), num_icons, num_rows);
+  return gfx::Size(IconCountToWidth(num_icons), IconCountToWidth(num_rows));
 }
 
 int ToolbarActionsBar::GetMinimumWidth() const {
@@ -176,12 +182,21 @@ int ToolbarActionsBar::GetMaximumWidth() const {
 }
 
 int ToolbarActionsBar::IconCountToWidth(size_t icons) const {
-  return icons * GetViewSize().width();
+  if (icons == 0)
+    return 0;
+  return icons * GetViewSize().width() +
+         (icons - 1) * GetLayoutConstant(TOOLBAR_ELEMENT_PADDING);
+}
+
+size_t ToolbarActionsBar::WidthToIconCountUnclamped(int pixels) const {
+  const int element_padding = GetLayoutConstant(TOOLBAR_ELEMENT_PADDING);
+  return std::max(
+      (pixels + element_padding) / (GetViewSize().width() + element_padding),
+      0);
 }
 
 size_t ToolbarActionsBar::WidthToIconCount(int pixels) const {
-  return base::ClampToRange(pixels / GetViewSize().width(), 0,
-                            static_cast<int>(toolbar_actions_.size()));
+  return std::min(WidthToIconCountUnclamped(pixels), toolbar_actions_.size());
 }
 
 size_t ToolbarActionsBar::GetIconCount() const {
@@ -207,9 +222,10 @@ size_t ToolbarActionsBar::GetIconCount() const {
   // action, and immediately opens the overflow menu, we *want* the action there
   // (since it will close the popup, but do so asynchronously, and we don't
   // want to "slide" the action back in.
-  size_t visible_icons = in_overflow_mode() ?
-      toolbar_actions_.size() - model_->visible_icon_count() :
-      model_->visible_icon_count() + pop_out_modifier;
+  size_t visible_icons =
+      in_overflow_mode()
+          ? toolbar_actions_.size() - model_->visible_icon_count()
+          : model_->visible_icon_count() + pop_out_modifier;
 
 #if DCHECK_IS_ON()
   // Good time for some sanity checks: We should never try to display more
@@ -218,7 +234,7 @@ size_t ToolbarActionsBar::GetIconCount() const {
   if (!toolbar_actions_.empty() && !suppress_layout_ &&
       model_->actions_initialized()) {
     DCHECK_LE(visible_icons, toolbar_actions_.size());
-    DCHECK_EQ(model_->toolbar_items().size(), toolbar_actions_.size());
+    DCHECK_EQ(model_->action_ids().size(), toolbar_actions_.size());
   }
 #endif
 
@@ -252,8 +268,7 @@ bool ToolbarActionsBar::NeedsOverflow() const {
          (popped_out_action_ && !is_popped_out_sticky_);
 }
 
-gfx::Rect ToolbarActionsBar::GetFrameForIndex(
-    size_t index) const {
+gfx::Rect ToolbarActionsBar::GetFrameForIndex(size_t index) const {
   size_t start_index = GetStartIndexInBounds();
 
   // If the index is for an action that is before range we show (i.e., is for
@@ -272,12 +287,14 @@ gfx::Rect ToolbarActionsBar::GetFrameForIndex(
                                   : relative_index;
 
   const auto size = GetViewSize();
-  return gfx::Rect(
-      gfx::Point(index_in_row * size.width(), row_index * size.height()), size);
+  const int element_padding = GetLayoutConstant(TOOLBAR_ELEMENT_PADDING);
+  return gfx::Rect(gfx::Point(index_in_row * (size.width() + element_padding),
+                              row_index * (size.height() + element_padding)),
+                   size);
 }
 
-std::vector<ToolbarActionViewController*>
-ToolbarActionsBar::GetActions() const {
+std::vector<ToolbarActionViewController*> ToolbarActionsBar::GetActions()
+    const {
   std::vector<ToolbarActionViewController*> actions;
   for (const auto& action : toolbar_actions_)
     actions.push_back(action.get());
@@ -292,8 +309,7 @@ ToolbarActionsBar::GetActions() const {
     size_t visible = GetIconCount();
     if (index >= visible) {
       size_t rindex = actions.size() - index - 1;
-      std::rotate(actions.rbegin() + rindex,
-                  actions.rbegin() + rindex + 1,
+      std::rotate(actions.rbegin() + rindex, actions.rbegin() + rindex + 1,
                   actions.rend() - visible + 1);
     }
   }
@@ -312,7 +328,8 @@ void ToolbarActionsBar::CreateActions() {
     base::AutoReset<bool> layout_resetter(&suppress_layout_, true);
 
     // Get the toolbar actions.
-    toolbar_actions_ = model_->CreateActions(browser_, this);
+    toolbar_actions_ =
+        model_->CreateActions(browser_, GetMainBar(), in_overflow_mode());
     if (!toolbar_actions_.empty())
       ReorderActions();
 
@@ -369,8 +386,10 @@ bool ToolbarActionsBar::ShowToolbarActionPopup(const std::string& action_id,
 
 void ToolbarActionsBar::SetOverflowRowWidth(int width) {
   DCHECK(in_overflow_mode());
+  // This uses the unclamped icon count to allow the in-menu bar to span the
+  // menu width.
   platform_settings_.icons_per_overflow_menu_row =
-      std::max(width / GetViewSize().width(), 1);
+      std::max(WidthToIconCountUnclamped(width), static_cast<size_t>(1));
 }
 
 void ToolbarActionsBar::OnResizeComplete(int width) {
@@ -506,8 +525,7 @@ void ToolbarActionsBar::SetPopupOwner(
     ToolbarActionViewController* popup_owner) {
   // We should never be setting a popup owner when one already exists, and
   // never unsetting one when one wasn't set.
-  DCHECK((!popup_owner_ && popup_owner) ||
-         (popup_owner_ && !popup_owner));
+  DCHECK((!popup_owner_ && popup_owner) || (popup_owner_ && !popup_owner));
   popup_owner_ = popup_owner;
 }
 
@@ -515,12 +533,6 @@ void ToolbarActionsBar::HideActivePopup() {
   if (popup_owner_)
     popup_owner_->HidePopup();
   DCHECK(!popup_owner_);
-}
-
-ToolbarActionViewController* ToolbarActionsBar::GetMainControllerForAction(
-    ToolbarActionViewController* action) {
-  return in_overflow_mode() ?
-      main_bar_->GetActionForId(action->GetId()) : action;
 }
 
 void ToolbarActionsBar::AddObserver(ToolbarActionsBarObserver* observer) {
@@ -594,6 +606,10 @@ void ToolbarActionsBar::MaybeShowExtensionBubble() {
           g_extension_bubble_appearance_wait_time_in_seconds));
 }
 
+ToolbarActionsBar* ToolbarActionsBar::GetMainBar() {
+  return main_bar_ ? main_bar_ : this;
+}
+
 // static
 void ToolbarActionsBar::set_extension_bubble_appearance_wait_time_for_testing(
     int time_in_seconds) {
@@ -605,15 +621,17 @@ gfx::Insets ToolbarActionsBar::GetIconAreaInsets() const {
 }
 
 void ToolbarActionsBar::OnToolbarActionAdded(
-    const ToolbarActionsModel::ToolbarItem& item,
+    const ToolbarActionsModel::ActionId& action_id,
     int index) {
   CHECK(model_->actions_initialized());
-  CHECK(GetActionForId(item.id) == nullptr)
+  CHECK(GetActionForId(action_id) == nullptr)
       << "Asked to add a toolbar action view for an action that already "
          "exists";
 
-  toolbar_actions_.insert(toolbar_actions_.begin() + index,
-                          model_->CreateActionForItem(browser_, this, item));
+  toolbar_actions_.insert(
+      toolbar_actions_.begin() + index,
+      model_->CreateActionForId(browser_, GetMainBar(), in_overflow_mode(),
+                                action_id));
   delegate_->AddViewForAction(toolbar_actions_[index].get(), index);
 
   // We may need to resize (e.g. to show the new icon). We don't need to check
@@ -635,7 +653,8 @@ void ToolbarActionsBar::OnToolbarActionLoadFailed() {
   ResizeDelegate(gfx::Tween::EASE_OUT);
 }
 
-void ToolbarActionsBar::OnToolbarActionRemoved(const std::string& action_id) {
+void ToolbarActionsBar::OnToolbarActionRemoved(
+    const ToolbarActionsModel::ActionId& action_id) {
   auto iter = toolbar_actions_.begin();
   while (iter != toolbar_actions_.end() && (*iter)->GetId() != action_id)
     ++iter;
@@ -649,9 +668,12 @@ void ToolbarActionsBar::OnToolbarActionRemoved(const std::string& action_id) {
   std::unique_ptr<ToolbarActionViewController> removed_action =
       std::move(*iter);
   toolbar_actions_.erase(iter);
-  delegate_->RemoveViewForAction(removed_action.get());
+
+  // If we kill the view before we undo the popout, highlights and pop-ups can
+  // get left in weird states, so undo the popout first.
   if (popped_out_action_ == removed_action.get())
     UndoPopOut();
+  delegate_->RemoveViewForAction(removed_action.get());
   removed_action.reset();
 
   // If the extension is being upgraded we don't want the bar to shrink
@@ -677,8 +699,9 @@ void ToolbarActionsBar::OnToolbarActionRemoved(const std::string& action_id) {
   }
 }
 
-void ToolbarActionsBar::OnToolbarActionMoved(const std::string& action_id,
-                                             int index) {
+void ToolbarActionsBar::OnToolbarActionMoved(
+    const ToolbarActionsModel::ActionId& action_id,
+    int index) {
   DCHECK(index >= 0 && index < static_cast<int>(toolbar_actions_.size()));
   // Unfortunately, |index| doesn't really mean a lot to us, because this
   // window's toolbar could be different (if actions are popped out). Just
@@ -686,7 +709,8 @@ void ToolbarActionsBar::OnToolbarActionMoved(const std::string& action_id,
   ReorderActions();
 }
 
-void ToolbarActionsBar::OnToolbarActionUpdated(const std::string& action_id) {
+void ToolbarActionsBar::OnToolbarActionUpdated(
+    const ToolbarActionsModel::ActionId& action_id) {
   ToolbarActionViewController* action = GetActionForId(action_id);
   // There might not be a view in cases where we are highlighting or if we
   // haven't fully initialized the actions.
@@ -716,9 +740,6 @@ void ToolbarActionsBar::ResizeDelegate(gfx::Tween::Type tween_type) {
     // action and added a different one in quick succession).
     delegate_->Redraw(false);
   }
-
-  for (ToolbarActionsBarObserver& observer : observers_)
-    observer.OnToolbarActionsBarDidStartResize();
 }
 
 void ToolbarActionsBar::OnToolbarHighlightModeChanged(bool is_highlighting) {
@@ -728,21 +749,21 @@ void ToolbarActionsBar::OnToolbarHighlightModeChanged(bool is_highlighting) {
   {
     base::AutoReset<bool> layout_resetter(&suppress_layout_, true);
     base::AutoReset<bool> animation_resetter(&suppress_animation_, true);
-    std::set<std::string> model_item_ids;
-    for (const auto& model_item : model_->toolbar_items()) {
-      model_item_ids.insert(model_item.id);
+    std::set<std::string> model_action_ids;
+    for (const auto& model_action_id : model_->action_ids()) {
+      model_action_ids.insert(model_action_id);
 
       bool found = false;
       for (size_t i = 0; i < toolbar_actions_.size(); ++i) {
-        if (toolbar_actions_[i]->GetId() == model_item.id) {
+        if (toolbar_actions_[i]->GetId() == model_action_id) {
           found = true;
           break;
         }
       }
 
       if (!found) {
-        toolbar_actions_.push_back(
-            model_->CreateActionForItem(browser_, this, model_item));
+        toolbar_actions_.push_back(model_->CreateActionForId(
+            browser_, GetMainBar(), in_overflow_mode(), model_action_id));
         delegate_->AddViewForAction(toolbar_actions_.back().get(),
                                     toolbar_actions_.size() - 1);
       }
@@ -750,7 +771,7 @@ void ToolbarActionsBar::OnToolbarHighlightModeChanged(bool is_highlighting) {
 
     for (auto iter = toolbar_actions_.begin();
          iter != toolbar_actions_.end();) {
-      if (model_item_ids.count((*iter)->GetId()) == 0) {
+      if (model_action_ids.count((*iter)->GetId()) == 0) {
         delegate_->RemoveViewForAction(iter->get());
         iter = toolbar_actions_.erase(iter);
       } else {
@@ -786,10 +807,10 @@ void ToolbarActionsBar::ReorderActions() {
 
   // First, reset the order to that of the model.
   auto compare = [](ToolbarActionViewController* const& action,
-                    const ToolbarActionsModel::ToolbarItem& item) {
-    return action->GetId() == item.id;
+                    const ToolbarActionsModel::ActionId& action_id) {
+    return action->GetId() == action_id;
   };
-  SortContainer(&toolbar_actions_, model_->toolbar_items(), compare);
+  SortContainer(&toolbar_actions_, model_->action_ids(), compare);
 
   // Our visible browser actions may have changed - re-Layout() and check the
   // size (if we aren't suppressing the layout).

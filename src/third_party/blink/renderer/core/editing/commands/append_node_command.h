@@ -32,15 +32,11 @@ namespace blink {
 
 class AppendNodeCommand final : public SimpleEditCommand {
  public:
-  static AppendNodeCommand* Create(ContainerNode* parent, Node* node) {
-    return new AppendNodeCommand(parent, node);
-  }
-
-  void Trace(blink::Visitor*) override;
-
- private:
   AppendNodeCommand(ContainerNode* parent, Node*);
 
+  void Trace(Visitor*) override;
+
+ private:
   void DoApply(EditingState*) override;
   void DoUnapply() override;
 

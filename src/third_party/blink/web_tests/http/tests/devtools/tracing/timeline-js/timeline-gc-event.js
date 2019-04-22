@@ -6,11 +6,12 @@
   TestRunner.addResult(`Tests the Timeline API instrumentation of a gc event\n`);
   await TestRunner.loadModule('performance_test_runner');
   await TestRunner.showPanel('timeline');
+  await TestRunner.addScriptTag('../../../resources/run-after-layout-and-paint.js');
   await TestRunner.evaluateInPagePromise(`
       function produceGarbageForGCEvents()
       {
           window.gc();
-          return new Promise(fulfill => testRunner.layoutAndPaintAsyncThen(fulfill));
+          return new Promise(fulfill => runAfterLayoutAndPaint(fulfill));
       }
   `);
 

@@ -260,7 +260,7 @@ void OculusRenderLoop::DestroyOvrSwapChain() {
 }
 
 void OculusRenderLoop::OnLayerBoundsChanged() {
-};
+}
 
 std::vector<mojom::XRInputSourceStatePtr> OculusRenderLoop::GetInputState(
     const ovrTrackingState& tracking_state) {

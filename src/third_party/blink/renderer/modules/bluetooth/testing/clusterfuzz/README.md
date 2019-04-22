@@ -1,6 +1,6 @@
 # Web Bluetooth Fuzzer
 
-The Web Bluetooth Fuzzer generates test pages that can be run as layout tests.
+The Web Bluetooth Fuzzer generates test pages that can be run as web tests.
 These pages consist of a sequence of calls to the [Web Bluetooth API](../..)
 whose purpose is to stress test the API's implementation and catch any bugs
 or regressions.
@@ -17,7 +17,7 @@ To generate test pages the fuzzer performs the following steps:
    collection.
 2. Replace the template parameters with random values.
 
-These generated test pages can then be run as Layout Tests in content_shell.
+These generated test pages can then be run as web tests in content_shell.
 
 ## ClusterFuzz
 This fuzzer is designed to be run by ClusterFuzz and therefore takes three

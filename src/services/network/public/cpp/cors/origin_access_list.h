@@ -30,6 +30,14 @@ class COMPONENT_EXPORT(NETWORK_CPP) OriginAccessList {
  public:
   using CorsOriginPatternPtr = mojo::InlinedStructPtr<mojom::CorsOriginPattern>;
 
+  // Represents if a queried conditions are is allowed, blocked, or not listed
+  // in the access list.
+  enum class AccessState {
+    kAllowed,
+    kBlocked,
+    kNotListed,
+  };
+
   OriginAccessList();
   ~OriginAccessList();
 
@@ -75,10 +83,9 @@ class COMPONENT_EXPORT(NETWORK_CPP) OriginAccessList {
   // Clears the old block list.
   void ClearBlockList();
 
-  // Returns true if |destination| is in the allow list, and not in the block
-  // list of the |source_origin|.
-  bool IsAllowed(const url::Origin& source_origin,
-                 const GURL& destination) const;
+  // Returns |destination|'s AccessState in the list for |source_origin|.
+  AccessState CheckAccessState(const url::Origin& source_origin,
+                               const GURL& destination) const;
 
   // Creates mojom::CorsPriginAccessPatterns instance vector that represents
   // |this| OriginAccessList instance.

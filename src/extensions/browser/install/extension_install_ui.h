@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "ui/gfx/native_widget_types.h"
 
 class SkBitmap;
@@ -24,8 +25,9 @@ class ExtensionInstallUI {
   virtual ~ExtensionInstallUI();
 
   // Called when an extension was installed.
-  virtual void OnInstallSuccess(const extensions::Extension* extension,
-                                const SkBitmap* icon) = 0;
+  virtual void OnInstallSuccess(
+      scoped_refptr<const extensions::Extension> extension,
+      const SkBitmap* icon) = 0;
 
   // Called when an extension failed to install.
   virtual void OnInstallFailure(const extensions::CrxInstallError& error) = 0;

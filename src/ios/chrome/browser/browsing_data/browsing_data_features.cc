@@ -6,3 +6,10 @@
 
 const base::Feature kNewClearBrowsingDataUI{"NewClearBrowsingDataUI",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kWebClearBrowsingData{"WebClearBrowsingData",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsNewClearBrowsingDataUIEnabled() {
+  return base::FeatureList::IsEnabled(kNewClearBrowsingDataUI);
+}

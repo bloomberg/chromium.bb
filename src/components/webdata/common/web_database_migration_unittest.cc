@@ -156,7 +156,7 @@ TEST_F(WebDatabaseMigrationTest, VersionXxSqlFilesAreGolden) {
 
     connection.Raze();
     const base::FilePath& file_name = base::FilePath::FromUTF8Unsafe(
-        "version_" + base::IntToString(i) + ".sql");
+        "version_" + base::NumberToString(i) + ".sql");
     ASSERT_NO_FATAL_FAILURE(LoadDatabase(file_name.value()))
         << "Failed to load " << file_name.MaybeAsASCII();
     DoMigration();

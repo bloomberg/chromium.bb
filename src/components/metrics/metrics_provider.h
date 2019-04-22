@@ -52,13 +52,16 @@ class MetricsProvider {
   // with a call to ProvideIndependentMetrics().
   virtual bool HasIndependentMetrics();
 
-  // Provides a complete and independent system profile + metrics for uploading.
-  // This may or may not be executed on a background thread and the callback
-  // executed when complete. Ownership of the passed objects remains with the
-  // caller and those objects must live until the callback is executed.
+  // Provides a complete and independent uma proto + metrics for uploading.
+  // Called once every time HasIndependentMetrics() returns true. The passed in
+  // |uma_proto| is by default filled with current session id and core system
+  // profile infomration. This function is called on main thread, but the
+  // provider can do async work to fill in |uma_proto| and run |done_callback|
+  // on calling thread when complete. Ownership of the passed objects remains
+  // with the caller and those objects will live until the callback is executed.
   virtual void ProvideIndependentMetrics(
       base::OnceCallback<void(bool)> done_callback,
-      SystemProfileProto* system_profile_proto,
+      ChromeUserMetricsExtension* uma_proto,
       base::HistogramSnapshotManager* snapshot_manager);
 
   // Provides additional metrics into the system profile.

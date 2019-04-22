@@ -20,7 +20,7 @@ class MockBrowsingDataCookieHelper : public BrowsingDataCookieHelper {
   explicit MockBrowsingDataCookieHelper(Profile* profile);
 
   // BrowsingDataCookieHelper methods.
-  void StartFetching(const FetchCallback& callback) override;
+  void StartFetching(FetchCallback callback) override;
   void DeleteCookie(const net::CanonicalCookie& cookie) override;
 
   // Adds some cookie samples.

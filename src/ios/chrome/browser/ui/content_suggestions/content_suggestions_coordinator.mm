@@ -9,6 +9,7 @@
 #include "components/ntp_snippets/pref_names.h"
 #include "components/ntp_snippets/remote/remote_suggestions_scheduler.h"
 #include "components/ntp_tiles/most_visited_sites.h"
+#include "components/prefs/pref_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_cache_factory.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
@@ -36,6 +37,8 @@
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/url_loading/url_loading_service.h"
+#import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/voice/voice_search_provider.h"
@@ -67,7 +70,6 @@
 
 @synthesize browserState = _browserState;
 @synthesize suggestionsViewController = _suggestionsViewController;
-@synthesize URLLoader = _URLLoader;
 @synthesize visible = _visible;
 @synthesize contentSuggestionsMediator = _contentSuggestionsMediator;
 @synthesize headerCollectionInteractionHandler =
@@ -113,12 +115,16 @@
     ntp_home::RecordNTPImpression(ntp_home::LOCAL_SUGGESTIONS);
   }
 
+  UrlLoadingService* urlLoadingService =
+      UrlLoadingServiceFactory::GetForBrowserState(_browserState);
+
   self.NTPMediator = [[NTPHomeMediator alloc]
       initWithWebStateList:self.webStateList
         templateURLService:ios::TemplateURLServiceFactory::GetForBrowserState(
                                self.browserState)
+         urlLoadingService:urlLoadingService
                 logoVendor:ios::GetChromeBrowserProvider()->CreateLogoVendor(
-                               self.browserState, self.dispatcher)];
+                               self.browserState)];
 
   BOOL voiceSearchEnabled = ios::GetChromeBrowserProvider()
                                 ->GetVoiceSearchProvider()
@@ -281,7 +287,11 @@
   [self.NTPMediator dismissModals];
 }
 
-- (CGPoint)scrollOffset {
+- (UIEdgeInsets)contentInset {
+  return self.suggestionsViewController.collectionView.contentInset;
+}
+
+- (CGPoint)contentOffset {
   CGPoint collectionOffset =
       self.suggestionsViewController.collectionView.contentOffset;
   collectionOffset.y -=

@@ -25,6 +25,7 @@
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "base/timer/elapsed_timer.h"
+#include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "build/build_config.h"
@@ -502,11 +503,11 @@ bool VariationsService::DoFetchFromURL(const GURL& url, bool is_http_retry) {
 
   safe_seed_manager_.RecordFetchStarted();
 
-  // Normally, there shouldn't be a |pending_request_| when this fires. However
-  // it's not impossible - for example if Chrome was paused (e.g. in a debugger
-  // or if the machine was suspended) and OnURLFetchComplete() hasn't had a
-  // chance to run yet from the previous request. In this case, don't start a
-  // new request and just let the previous one finish.
+  // Normally, there shouldn't be a |pending_seed_request_| when this fires.
+  // However it's not impossible - for example if Chrome was paused (e.g. in a
+  // debugger or if the machine was suspended) and OnURLFetchComplete() hasn't
+  // had a chance to run yet from the previous request. In this case, don't
+  // start a new request and just let the previous one finish.
   if (pending_seed_request_)
     return false;
 
@@ -560,8 +561,11 @@ bool VariationsService::DoFetchFromURL(const GURL& url, bool is_http_retry) {
       std::move(resource_request), traffic_annotation);
   // Ensure our callback is called even with "304 Not Modified" responses.
   pending_seed_request_->SetAllowHttpErrorResults(true);
+  // Set the redirect callback so we can cancel on redirects.
   // base::Unretained is safe here since this class owns
   // |pending_seed_request_|'s lifetime.
+  pending_seed_request_->SetOnRedirectCallback(base::BindRepeating(
+      &VariationsService::OnSimpleLoaderRedirect, base::Unretained(this)));
   pending_seed_request_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       client_->GetURLLoaderFactory().get(),
       base::BindOnce(&VariationsService::OnSimpleLoaderComplete,
@@ -675,24 +679,52 @@ void VariationsService::NotifyObservers(
 void VariationsService::OnSimpleLoaderComplete(
     std::unique_ptr<std::string> response_body) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  OnSimpleLoaderCompleteOrRedirect(std::move(response_body), false);
+}
 
+void VariationsService::OnSimpleLoaderRedirect(
+    const net::RedirectInfo& redirect_info,
+    const network::ResourceResponseHead& response_head,
+    std::vector<std::string>* to_be_removed_headers) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  OnSimpleLoaderCompleteOrRedirect(nullptr, true);
+}
+
+void VariationsService::OnSimpleLoaderCompleteOrRedirect(
+    std::unique_ptr<std::string> response_body,
+    bool was_redirect) {
+  TRACE_EVENT0("browser", "VariationsService::OnSimpleLoaderCompleteOrRedirect");
   const bool is_first_request = !initial_request_completed_;
   initial_request_completed_ = true;
 
-  int net_error = pending_seed_request_->NetError();
-  int response_code = -1;
+  bool is_success = false;
+  int net_error = net::ERR_INVALID_REDIRECT;
   scoped_refptr<net::HttpResponseHeaders> headers;
-  if (pending_seed_request_->ResponseInfo() &&
-      pending_seed_request_->ResponseInfo()->headers) {
-    headers = pending_seed_request_->ResponseInfo()->headers;
-    response_code = headers->response_code();
-  }
-  bool is_success = headers && response_body && (net_error == net::OK);
+
+  int response_code = -1;
   // We use the final URL HTTPS/HTTP value to pass to StoreSeed, since
   // signature validation should be forced on for any HTTP fetch, including
-  // redirects from HTTPS to HTTP.
-  bool final_url_was_https =
-      pending_seed_request_->GetFinalURL().SchemeIs(url::kHttpsScheme);
+  // redirects from HTTPS to HTTP. We default to false since we can't get this
+  // value (nor will it be used) in the redirect case.
+  bool final_url_was_https = false;
+
+  // Variations seed fetches should not follow redirects, so if this request was
+  // redirected, keep the default values for |net_error| and |is_success| (treat
+  // it as a net::ERR_INVALID_REDIRECT), and the fetch will be cancelled when
+  // pending_seed_request is reset.
+  if (!was_redirect) {
+    final_url_was_https =
+        pending_seed_request_->GetFinalURL().SchemeIs(url::kHttpsScheme);
+    const network::ResourceResponseHead* response_info =
+        pending_seed_request_->ResponseInfo();
+    if (response_info && response_info->headers) {
+      headers = response_info->headers;
+      response_code = headers->response_code();
+    }
+    net_error = pending_seed_request_->NetError();
+    is_success = headers && response_body && (net_error == net::OK);
+  }
+
   pending_seed_request_.reset();
   if (last_request_was_http_retry_) {
     base::UmaHistogramSparse("Variations.SeedFetchResponseOrErrorCode.HTTP",
@@ -886,6 +918,15 @@ bool VariationsService::SetupFieldTrials(
 
 void VariationsService::OverrideCachedUIStrings() {
   field_trial_creator_.OverrideCachedUIStrings();
+}
+
+void VariationsService::CancelCurrentRequestForTesting() {
+  pending_seed_request_.reset();
+}
+
+void VariationsService::StartRepeatedVariationsSeedFetchForTesting() {
+  InitResourceRequestedAllowedNotifier();
+  return StartRepeatedVariationsSeedFetch();
 }
 
 std::string VariationsService::GetStoredPermanentCountry() {

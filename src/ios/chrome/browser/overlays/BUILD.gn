@@ -1,0 +1,63 @@
+# Copyright 2019 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("overlays") {
+  sources = [
+    "overlay_request.h",
+    "overlay_request_queue.h",
+    "overlay_response.h",
+    "overlay_user_data.h",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+
+  allow_circular_includes_from = [ ":internal" ]
+
+  deps = [
+    ":internal",
+    "//base",
+    "//ios/web/public",
+  ]
+}
+
+source_set("internal") {
+  sources = [
+    "overlay_request_impl.cc",
+    "overlay_request_impl.h",
+    "overlay_request_queue_impl.h",
+    "overlay_request_queue_impl.mm",
+    "overlay_request_queue_impl_observer.h",
+    "overlay_response_impl.cc",
+    "overlay_response_impl.h",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+
+  deps = [
+    "//base",
+    "//ios/web/public",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "overlay_request_queue_impl_unittest.mm",
+    "overlay_request_unittest.cc",
+    "overlay_response_unittest.cc",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+
+  deps = [
+    ":internal",
+    ":overlays",
+    "//base/test:test_support",
+    "//ios/chrome/browser/overlays/test",
+    "//ios/web/public",
+    "//ios/web/public/test/fakes",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+}

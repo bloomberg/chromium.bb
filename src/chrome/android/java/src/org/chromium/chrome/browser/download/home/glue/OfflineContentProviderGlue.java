@@ -148,6 +148,16 @@ public class OfflineContentProviderGlue implements OfflineContentProvider.Observ
         }
     }
 
+    /** @see OfflineContentProvider#renameItem(ContentId, String, Callback) */
+    public void renameItem(
+            OfflineItem item, String targetName, Callback</*RenameResult*/ Integer> callback) {
+        if (mDownloadProvider != null && LegacyHelpers.isLegacyDownload(item.id)) {
+            mDownloadProvider.renameItem(item, targetName, callback);
+        } else {
+            mProvider.renameItem(item.id, targetName, callback);
+        }
+    }
+
     /** @see OfflineContentProvider#addObserver(OfflineContentProvider.Observer) */
     public void addObserver(OfflineContentProvider.Observer observer) {
         mObservers.addObserver(observer);

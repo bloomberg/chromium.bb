@@ -7,7 +7,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/metrics/metrics_service.h"
 #include "components/signin/core/browser/cookie_settings_util.h"
-#include "components/signin/core/browser/device_id_helper.h"
 #include "components/signin/ios/browser/account_consistency_service.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/browser_state_info_cache.h"
@@ -86,8 +85,8 @@ void IOSChromeSigninClient::RemoveContentSettingsObserver(
   host_content_settings_map_->RemoveObserver(observer);
 }
 
-void IOSChromeSigninClient::DelayNetworkCall(const base::Closure& callback) {
-  network_callback_helper_->HandleCallback(callback);
+void IOSChromeSigninClient::DelayNetworkCall(base::OnceClosure callback) {
+  network_callback_helper_->HandleCallback(std::move(callback));
 }
 
 std::unique_ptr<GaiaAuthFetcher> IOSChromeSigninClient::CreateGaiaAuthFetcher(

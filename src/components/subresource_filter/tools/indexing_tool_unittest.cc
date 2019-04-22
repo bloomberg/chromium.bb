@@ -46,7 +46,7 @@ class IndexingToolTest : public ::testing::Test {
 
   base::FilePath GetUniquePath() {
     base::FilePath path = scoped_temp_dir_.GetPath().AppendASCII(
-        base::IntToString(file_count_++));
+        base::NumberToString(file_count_++));
     return path;
   }
 
@@ -131,8 +131,8 @@ TEST_F(IndexingToolTest, VersionMetadata) {
   WriteVersionMetadata(version_path, "1.2.3", checksum);
   std::string version_json;
   EXPECT_TRUE(base::ReadFileToString(version_path, &version_json));
-  std::unique_ptr<base::DictionaryValue> json =
-      base::DictionaryValue::From(base::JSONReader::Read(version_json));
+  std::unique_ptr<base::DictionaryValue> json = base::DictionaryValue::From(
+      base::JSONReader::ReadDeprecated(version_json));
 
   std::string actual_content =
       json->FindPath({"subresource_filter", "ruleset_version", "content"})

@@ -21,8 +21,8 @@
 
 @property(nonatomic, weak) id<PrimaryToolbarViewControllerDelegate> delegate;
 
-// Sets the location bar view, containing the omnibox.
-- (void)setLocationBarView:(UIView*)locationBarView;
+// Sets the location bar view controller, containing the omnibox.
+- (void)setLocationBarViewController:(UIViewController*)locationBarView;
 
 // Shows the animation when transitioning to a prerendered page.
 - (void)showPrerenderingAnimation;

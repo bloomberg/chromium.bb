@@ -16,7 +16,6 @@
 <translation id="152892567002884378">Tăng âm lượng</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, rồi đến <ph name="ESC" /></translation>
 <translation id="1652741121070700329">Di chuyển tới phần đầu của từ trước</translation>
-<translation id="1671169355475348905">Chuyển sang phương thức nhập của ngôn ngữ trước</translation>
 <translation id="1679841710523778799">Tăng độ sáng</translation>
 <translation id="168356808214100546">Nhấn và giữ <ph name="ALT" /> rồi nhấn <ph name="TAB" /> cho đến khi chuyển đến cửa sổ mà bạn muốn mở, sau đó thả tổ hợp phím ra.</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -33,6 +32,7 @@
 <translation id="2181097965834437145">Hiển thị hoặc ẩn thanh dấu trang</translation>
 <translation id="2185166372312820725">Quay về tab trước</translation>
 <translation id="2194790690264064655">Nhấn <ph name="CTRL" /> rồi nhấp vào một liên kết</translation>
+<translation id="2246352309084894470">Mở/đóng trình chạy toàn màn hình</translation>
 <translation id="2382644247745281995">Bố cục bàn phím hiện tại chưa được hỗ trợ</translation>
 <translation id="2397416548179033562">Hiển thị menu Chrome</translation>
 <translation id="2424073332829844142">Bật và tắt Caps Lock</translation>
@@ -44,7 +44,6 @@
 <translation id="2574014812750545982">Đặt lại mức thu phóng trên trang</translation>
 <translation id="2596078834055697711">Chụp ảnh màn hình cửa sổ</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, rồi đến <ph name="TAB" /> hoặc <ph name="RIGHT" /></translation>
-<translation id="2687057317448262550">Chuyển sang phương thức nhập của ngôn ngữ tiếp theo</translation>
 <translation id="2699509451653686398">Lưu trang web hiện tại làm dấu trang</translation>
 <translation id="2750942583782703988">Tải lại trang hiện tại</translation>
 <translation id="2764005613199379871">Đặt tiêu điểm vào thanh địa chỉ tìm kiếm</translation>
@@ -147,6 +146,7 @@
 <translation id="671928215901716392">Khóa màn hình</translation>
 <translation id="6727005317916125192">Ngăn trước đó</translation>
 <translation id="6740781404993465795">Chọn từ hoặc chữ cái tiếp theo</translation>
+<translation id="6755851152783057058">Chuyển sang phương thức nhập đã dùng gần đây nhất</translation>
 <translation id="6760706756348334449">Giảm âm lượng</translation>
 <translation id="6941333068993625698">Gửi phản hồi</translation>
 <translation id="6981982820502123353">Truy cập</translation>
@@ -157,6 +157,7 @@
 <translation id="7237562915163138771">Nhập địa chỉ web vào thanh địa chỉ, sau đó nhấn <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /></translation>
 <translation id="7254764037241667478">Đặt thiết bị ở chế độ ngủ (tạm ngưng)</translation>
 <translation id="7379254767514753910"><ph name="ALT" /> hoặc <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
+<translation id="7422707470576323858">Chuyển sang phương thức nhập sẵn có tiếp theo</translation>
 <translation id="743754632698445141">Bỏ ghim ứng dụng</translation>
 <translation id="7439718573248533901">Xóa chữ cái tiếp theo (xóa tiến)</translation>
 <translation id="7611271430932669992">Di chuyển tiêu điểm đến cửa sổ bật lên và hộp thoại</translation>

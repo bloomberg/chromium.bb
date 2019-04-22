@@ -3,7 +3,6 @@ Test verifies that content MIME type is set correctly when Blob is sent using XM
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS postedMimeType is "text/plain;charset=utf-8"
 PASS postedMimeType === undefined is true
 PASS postedMimeType === undefined is true

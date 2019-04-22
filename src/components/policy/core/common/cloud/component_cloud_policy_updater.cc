@@ -37,7 +37,7 @@ const int64_t kPolicyDataMaxSize = 5 * 1024 * 1024;
 const int64_t kMaxParallelPolicyDataFetches = 2;
 
 std::string NamespaceToKey(const PolicyNamespace& ns) {
-  const std::string domain = base::IntToString(ns.domain);
+  const std::string domain = base::NumberToString(ns.domain);
   const std::string size = base::NumberToString(domain.size());
   return size + ":" + domain + ":" + ns.component_id;
 }

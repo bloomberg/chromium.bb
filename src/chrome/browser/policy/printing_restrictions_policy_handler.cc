@@ -32,6 +32,9 @@ bool PrintingAllowedColorModesPolicyHandler::GetValue(
         *result = mode.value();
 
       return true;
+    } else if (errors) {
+      errors->AddError(key::kPrintingAllowedColorModes,
+                       IDS_POLICY_VALUE_FORMAT_ERROR);
     }
   }
   return false;
@@ -74,6 +77,9 @@ bool PrintingAllowedDuplexModesPolicyHandler::GetValue(
         *result = mode.value();
 
       return true;
+    } else if (errors) {
+      errors->AddError(key::kPrintingAllowedDuplexModes,
+                       IDS_POLICY_VALUE_FORMAT_ERROR);
     }
   }
   return false;
@@ -95,6 +101,47 @@ void PrintingAllowedDuplexModesPolicyHandler::ApplyPolicySettings(
   }
 }
 
+PrintingAllowedPinModesPolicyHandler::PrintingAllowedPinModesPolicyHandler()
+    : TypeCheckingPolicyHandler(key::kPrintingAllowedPinModes,
+                                base::Value::Type::STRING) {}
+
+PrintingAllowedPinModesPolicyHandler::~PrintingAllowedPinModesPolicyHandler() {}
+
+bool PrintingAllowedPinModesPolicyHandler::GetValue(
+    const PolicyMap& policies,
+    PolicyErrorMap* errors,
+    printing::PinModeRestriction* result) {
+  const base::Value* value;
+  if (CheckAndGetValue(policies, errors, &value) && value) {
+    base::Optional<printing::PinModeRestriction> mode =
+        printing::GetAllowedPinModesForName(value->GetString());
+    if (mode.has_value()) {
+      if (result)
+        *result = mode.value();
+
+      return true;
+    } else if (errors) {
+      errors->AddError(key::kPrintingAllowedPinModes,
+                       IDS_POLICY_VALUE_FORMAT_ERROR);
+    }
+  }
+  return false;
+}
+
+bool PrintingAllowedPinModesPolicyHandler::CheckPolicySettings(
+    const PolicyMap& policies,
+    PolicyErrorMap* errors) {
+  return GetValue(policies, errors, nullptr);
+}
+
+void PrintingAllowedPinModesPolicyHandler::ApplyPolicySettings(
+    const PolicyMap& policies,
+    PrefValueMap* prefs) {
+  printing::PinModeRestriction value;
+  if (GetValue(policies, nullptr, &value))
+    prefs->SetInteger(prefs::kPrintingAllowedPinModes, static_cast<int>(value));
+}
+
 PrintingAllowedPageSizesPolicyHandler::PrintingAllowedPageSizesPolicyHandler()
     : ListPolicyHandler(key::kPrintingAllowedPageSizes,
                         base::Value::Type::DICTIONARY) {}
@@ -114,7 +161,9 @@ bool PrintingAllowedPageSizesPolicyHandler::CheckListEntry(
 void PrintingAllowedPageSizesPolicyHandler::ApplyList(
     std::unique_ptr<base::ListValue> filtered_list,
     PrefValueMap* prefs) {
-  prefs->SetValue(prefs::kPrintingAllowedPageSizes, std::move(filtered_list));
+  DCHECK(filtered_list);
+  prefs->SetValue(prefs::kPrintingAllowedPageSizes,
+                  base::Value::FromUniquePtrValue(std::move(filtered_list)));
 }
 
 PrintingColorDefaultPolicyHandler::PrintingColorDefaultPolicyHandler()
@@ -136,6 +185,9 @@ bool PrintingColorDefaultPolicyHandler::GetValue(
         *result = mode.value();
 
       return true;
+    } else if (errors) {
+      errors->AddError(key::kPrintingColorDefault,
+                       IDS_POLICY_VALUE_FORMAT_ERROR);
     }
   }
   return false;
@@ -174,6 +226,9 @@ bool PrintingDuplexDefaultPolicyHandler::GetValue(
         *result = mode.value();
 
       return true;
+    } else if (errors) {
+      errors->AddError(key::kPrintingDuplexDefault,
+                       IDS_POLICY_VALUE_FORMAT_ERROR);
     }
   }
   return false;
@@ -191,6 +246,46 @@ void PrintingDuplexDefaultPolicyHandler::ApplyPolicySettings(
   printing::DuplexModeRestriction value;
   if (GetValue(policies, nullptr, &value))
     prefs->SetInteger(prefs::kPrintingDuplexDefault, static_cast<int>(value));
+}
+
+PrintingPinDefaultPolicyHandler::PrintingPinDefaultPolicyHandler()
+    : TypeCheckingPolicyHandler(key::kPrintingPinDefault,
+                                base::Value::Type::STRING) {}
+
+PrintingPinDefaultPolicyHandler::~PrintingPinDefaultPolicyHandler() {}
+
+bool PrintingPinDefaultPolicyHandler::GetValue(
+    const PolicyMap& policies,
+    PolicyErrorMap* errors,
+    printing::PinModeRestriction* result) {
+  const base::Value* value;
+  if (CheckAndGetValue(policies, errors, &value) && value) {
+    base::Optional<printing::PinModeRestriction> mode =
+        printing::GetPinModeForName(value->GetString());
+    if (mode.has_value()) {
+      if (result)
+        *result = mode.value();
+
+      return true;
+    } else if (errors) {
+      errors->AddError(key::kPrintingPinDefault, IDS_POLICY_VALUE_FORMAT_ERROR);
+    }
+  }
+  return false;
+}
+
+bool PrintingPinDefaultPolicyHandler::CheckPolicySettings(
+    const PolicyMap& policies,
+    PolicyErrorMap* errors) {
+  return GetValue(policies, errors, nullptr);
+}
+
+void PrintingPinDefaultPolicyHandler::ApplyPolicySettings(
+    const PolicyMap& policies,
+    PrefValueMap* prefs) {
+  printing::PinModeRestriction value;
+  if (GetValue(policies, nullptr, &value))
+    prefs->SetInteger(prefs::kPrintingPinDefault, static_cast<int>(value));
 }
 
 PrintingSizeDefaultPolicyHandler::PrintingSizeDefaultPolicyHandler()
@@ -245,8 +340,7 @@ void PrintingSizeDefaultPolicyHandler::ApplyPolicySettings(
     PrefValueMap* prefs) {
   const base::Value* value;
   if (GetValue(policies, nullptr, &value)) {
-    prefs->SetValue(prefs::kPrintingSizeDefault,
-                    std::make_unique<base::Value>(value->Clone()));
+    prefs->SetValue(prefs::kPrintingSizeDefault, value->Clone());
   }
 }
 

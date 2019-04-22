@@ -13,6 +13,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/cdm_context.h"
 #include "media/base/decoder_buffer.h"
+#include "media/base/simple_sync_token_client.h"
 #include "media/base/video_decoder.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
@@ -40,26 +41,6 @@ static int32_t g_num_active_mvd_instances = 0;
 const char kInitializeTraceName[] = "MojoVideoDecoderService::Initialize";
 const char kDecodeTraceName[] = "MojoVideoDecoderService::Decode";
 const char kResetTraceName[] = "MojoVideoDecoderService::Reset";
-
-class StaticSyncTokenClient : public VideoFrame::SyncTokenClient {
- public:
-  explicit StaticSyncTokenClient(const gpu::SyncToken& sync_token)
-      : sync_token_(sync_token) {}
-
-  // VideoFrame::SyncTokenClient implementation
-  void GenerateSyncToken(gpu::SyncToken* sync_token) final {
-    *sync_token = sync_token_;
-  }
-
-  void WaitSyncToken(const gpu::SyncToken& sync_token) final {
-    // NOP; we don't care what the old sync token was.
-  }
-
- private:
-  gpu::SyncToken sync_token_;
-
-  DISALLOW_COPY_AND_ASSIGN(StaticSyncTokenClient);
-};
 
 }  // namespace
 
@@ -92,7 +73,7 @@ class VideoFrameHandleReleaserImpl final
       mojo::ReportBadMessage("Unknown |release_token|.");
       return;
     }
-    StaticSyncTokenClient client(release_sync_token);
+    SimpleSyncTokenClient client(release_sync_token);
     it->second->UpdateReleaseSyncToken(&client);
     video_frames_.erase(it);
   }
@@ -143,7 +124,8 @@ void MojoVideoDecoderService::Construct(
     mojom::VideoFrameHandleReleaserRequest video_frame_handle_releaser,
     mojo::ScopedDataPipeConsumerHandle decoder_buffer_pipe,
     mojom::CommandBufferIdPtr command_buffer_id,
-    const gfx::ColorSpace& target_color_space) {
+    const gfx::ColorSpace& target_color_space,
+    mojom::VideoDecoderImplementation implementation) {
   DVLOG(1) << __func__;
   TRACE_EVENT0("media", "MojoVideoDecoderService::Construct");
 
@@ -171,7 +153,7 @@ void MojoVideoDecoderService::Construct(
       task_runner, media_log_.get(), std::move(command_buffer_id),
       base::BindRepeating(
           &MojoVideoDecoderService::OnDecoderRequestedOverlayInfo, weak_this_),
-      target_color_space);
+      target_color_space, implementation);
 }
 
 void MojoVideoDecoderService::Initialize(const VideoDecoderConfig& config,
@@ -207,13 +189,12 @@ void MojoVideoDecoderService::Initialize(const VideoDecoderConfig& config,
     DCHECK(cdm_context);
   }
 
+  using Self = MojoVideoDecoderService;
   decoder_->Initialize(
       config, low_delay, cdm_context,
-      base::BindRepeating(&MojoVideoDecoderService::OnDecoderInitialized,
-                          weak_this_),
-      base::BindRepeating(&MojoVideoDecoderService::OnDecoderOutput,
-                          weak_this_),
-      base::NullCallback());
+      base::BindRepeating(&Self::OnDecoderInitialized, weak_this_),
+      base::BindRepeating(&Self::OnDecoderOutput, weak_this_),
+      base::BindRepeating(&Self::OnDecoderWaiting, weak_this_));
 }
 
 void MojoVideoDecoderService::Decode(mojom::DecoderBufferPtr buffer,
@@ -356,6 +337,14 @@ void MojoVideoDecoderService::OnDecoderOutput(
 
   client_->OnVideoFrameDecoded(frame, decoder_->CanReadWithoutStalling(),
                                std::move(release_token));
+}
+
+void MojoVideoDecoderService::OnDecoderWaiting(WaitingReason reason) {
+  DVLOG(3) << __func__;
+  DCHECK(client_);
+  TRACE_EVENT1("media", "MojoVideoDecoderService::OnDecoderWaiting", "reason",
+               static_cast<int>(reason));
+  client_->OnWaiting(reason);
 }
 
 void MojoVideoDecoderService::OnOverlayInfoChanged(

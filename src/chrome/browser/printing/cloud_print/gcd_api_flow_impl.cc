@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -166,8 +167,7 @@ void GCDApiFlowImpl::OnDownloadedToString(
     return;
   }
 
-  base::JSONReader reader;
-  std::unique_ptr<const base::Value> value(reader.Read(*response_body));
+  base::Optional<base::Value> value = base::JSONReader::Read(*response_body);
   const base::DictionaryValue* dictionary_value = NULL;
 
   if (!value || !value->GetAsDictionary(&dictionary_value)) {

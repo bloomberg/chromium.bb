@@ -37,22 +37,22 @@ int IntValueForLength(const Length& length, int maximum_value) {
 
 float FloatValueForLength(const Length& length, float maximum_value) {
   switch (length.GetType()) {
-    case kFixed:
+    case Length::kFixed:
       return length.GetFloatValue();
-    case kPercent:
+    case Length::kPercent:
       return static_cast<float>(maximum_value * length.Percent() / 100.0f);
-    case kFillAvailable:
-    case kAuto:
+    case Length::kFillAvailable:
+    case Length::kAuto:
       return static_cast<float>(maximum_value);
-    case kCalculated:
+    case Length::kCalculated:
       return length.NonNanCalculatedValue(LayoutUnit(maximum_value));
-    case kMinContent:
-    case kMaxContent:
-    case kFitContent:
-    case kExtendToZoom:
-    case kDeviceWidth:
-    case kDeviceHeight:
-    case kMaxSizeNone:
+    case Length::kMinContent:
+    case Length::kMaxContent:
+    case Length::kFitContent:
+    case Length::kExtendToZoom:
+    case Length::kDeviceWidth:
+    case Length::kDeviceHeight:
+    case Length::kMaxSizeNone:
       NOTREACHED();
       return 0;
   }
@@ -60,28 +60,27 @@ float FloatValueForLength(const Length& length, float maximum_value) {
   return 0;
 }
 
-LayoutUnit MinimumValueForLength(const Length& length,
-                                 LayoutUnit maximum_value) {
+LayoutUnit MinimumValueForLengthInternal(const Length& length,
+                                         LayoutUnit maximum_value) {
   switch (length.GetType()) {
-    case kFixed:
-      return LayoutUnit(length.Value());
-    case kPercent:
+    case Length::kPercent:
       // Don't remove the extra cast to float. It is needed for rounding on
       // 32-bit Intel machines that use the FPU stack.
       return LayoutUnit(
           static_cast<float>(maximum_value * length.Percent() / 100.0f));
-    case kCalculated:
+    case Length::kCalculated:
       return LayoutUnit(length.NonNanCalculatedValue(maximum_value));
-    case kFillAvailable:
-    case kAuto:
+    case Length::kFillAvailable:
+    case Length::kAuto:
       return LayoutUnit();
-    case kMinContent:
-    case kMaxContent:
-    case kFitContent:
-    case kExtendToZoom:
-    case kDeviceWidth:
-    case kDeviceHeight:
-    case kMaxSizeNone:
+    case Length::kFixed:
+    case Length::kMinContent:
+    case Length::kMaxContent:
+    case Length::kFitContent:
+    case Length::kExtendToZoom:
+    case Length::kDeviceWidth:
+    case Length::kDeviceHeight:
+    case Length::kMaxSizeNone:
       NOTREACHED();
       return LayoutUnit();
   }
@@ -89,30 +88,22 @@ LayoutUnit MinimumValueForLength(const Length& length,
   return LayoutUnit();
 }
 
-LayoutUnit RoundedMinimumValueForLength(const Length& length,
-                                        LayoutUnit maximum_value) {
-  if (length.GetType() == kPercent)
-    return static_cast<LayoutUnit>(
-        round(maximum_value * length.Percent() / 100.0f));
-  return MinimumValueForLength(length, maximum_value);
-}
-
 LayoutUnit ValueForLength(const Length& length, LayoutUnit maximum_value) {
   switch (length.GetType()) {
-    case kFixed:
-    case kPercent:
-    case kCalculated:
+    case Length::kFixed:
+    case Length::kPercent:
+    case Length::kCalculated:
       return MinimumValueForLength(length, maximum_value);
-    case kFillAvailable:
-    case kAuto:
+    case Length::kFillAvailable:
+    case Length::kAuto:
       return maximum_value;
-    case kMinContent:
-    case kMaxContent:
-    case kFitContent:
-    case kExtendToZoom:
-    case kDeviceWidth:
-    case kDeviceHeight:
-    case kMaxSizeNone:
+    case Length::kMinContent:
+    case Length::kMaxContent:
+    case Length::kFitContent:
+    case Length::kExtendToZoom:
+    case Length::kDeviceWidth:
+    case Length::kDeviceHeight:
+    case Length::kMaxSizeNone:
       NOTREACHED();
       return LayoutUnit();
   }

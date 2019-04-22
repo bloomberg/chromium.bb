@@ -1,11 +1,4 @@
-kinuko@chromium.org
-jsbell@chromium.org
-dominicc@chromium.org
-falken@chromium.org
-horo@chromium.org
-nhiroki@chromium.org
-jkarlin@chromium.org
-pwnall@chromium.org
+file://content/browser/cache_storage/OWNERS
 
 # TEAM: storage-dev@chromium.org
 # COMPONENT: Blink>Storage>CacheStorage

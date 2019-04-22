@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/auto_reset.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -1146,13 +1147,13 @@ TEST_F(HostContentSettingsMapTest, CanonicalizeExceptionsUnicodeOnly) {
 TEST_F(HostContentSettingsMapTest, CanonicalizeExceptionsUnicodeAndPunycode) {
   TestingProfile profile;
 
-  std::unique_ptr<base::Value> value =
-      base::JSONReader::Read("{\"[*.]\\xC4\\x87ira.com,*\":{\"setting\":1}}");
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(
+      "{\"[*.]\\xC4\\x87ira.com,*\":{\"setting\":1}}");
   profile.GetPrefs()->Set(GetPrefName(CONTENT_SETTINGS_TYPE_COOKIES), *value);
 
   // Set punycode equivalent, with different setting.
-  std::unique_ptr<base::Value> puny_value =
-      base::JSONReader::Read("{\"[*.]xn--ira-ppa.com,*\":{\"setting\":2}}");
+  std::unique_ptr<base::Value> puny_value = base::JSONReader::ReadDeprecated(
+      "{\"[*.]xn--ira-ppa.com,*\":{\"setting\":2}}");
   profile.GetPrefs()->Set(GetPrefName(CONTENT_SETTINGS_TYPE_COOKIES),
                           *puny_value);
 
@@ -1459,8 +1460,8 @@ TEST_F(HostContentSettingsMapTest, GuestProfileMigration) {
   profile.SetGuestSession(true);
 
   // Set a pref manually in the guest profile.
-  std::unique_ptr<base::Value> value =
-      base::JSONReader::Read("{\"[*.]\\xC4\\x87ira.com,*\":{\"setting\":1}}");
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(
+      "{\"[*.]\\xC4\\x87ira.com,*\":{\"setting\":1}}");
   profile.GetPrefs()->Set(GetPrefName(CONTENT_SETTINGS_TYPE_COOKIES), *value);
 
   // Test that during construction all the prefs get cleared.
@@ -1883,7 +1884,7 @@ TEST_F(HostContentSettingsMapTest, PluginDataMigration) {
   }
   TestingProfile profile;
   // Set a website-specific Flash preference and a pattern exception.
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(
       "{\"https://urlwithflashchanged.com:443,*\":{\"setting\":1}, "
       "\"[*.]patternurl.com:443,*\":{\"setting\":1}}");
   profile.GetPrefs()->Set(GetPrefName(CONTENT_SETTINGS_TYPE_PLUGINS), *value);
@@ -1914,10 +1915,10 @@ TEST_F(HostContentSettingsMapTest, PluginDataMigrated) {
   TestingProfile profile;
   // Set a website-specific Flash preference and another preference indicating
   // that the Flash setting has changed for a different website.
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(
       "{\"https://unmigratedurl.com:443,*\":{\"setting\":1}}");
   profile.GetPrefs()->Set(GetPrefName(CONTENT_SETTINGS_TYPE_PLUGINS), *value);
-  value = base::JSONReader::Read(
+  value = base::JSONReader::ReadDeprecated(
       "{\"https://"
       "example.com:443,*\":{\"setting\":{\"flashPreviouslyChanged\":true}}}");
   profile.GetPrefs()->Set(GetPrefName(CONTENT_SETTINGS_TYPE_PLUGINS_DATA),

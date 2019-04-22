@@ -14,7 +14,7 @@
 #include "ash/assistant/model/assistant_interaction_model.h"
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
 #include "ash/assistant/model/assistant_ui_model_observer.h"
-#include "ash/assistant/ui/dialog_plate/dialog_plate.h"
+#include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/highlighter/highlighter_controller.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -25,14 +25,16 @@ namespace ash {
 
 class AssistantController;
 class AssistantInteractionModelObserver;
+enum class AssistantButtonId;
+enum class AssistantQuerySource;
 
 class AssistantInteractionController
     : public chromeos::assistant::mojom::AssistantInteractionSubscriber,
       public AssistantControllerObserver,
       public AssistantInteractionModelObserver,
       public AssistantUiModelObserver,
-      public HighlighterController::Observer,
-      public DialogPlateObserver {
+      public AssistantViewDelegateObserver,
+      public HighlighterController::Observer {
  public:
   using AssistantSuggestion = chromeos::assistant::mojom::AssistantSuggestion;
   using AssistantSuggestionPtr =
@@ -97,13 +99,12 @@ class AssistantInteractionController
   void OnSpeechRecognitionFinalResult(const std::string& final_result) override;
   void OnSpeechLevelUpdated(float speech_level) override;
   void OnTtsStarted(bool due_to_error) override;
+  void OnWaitStarted() override;
 
-  // DialogPlateObserver:
-  void OnDialogPlateButtonPressed(DialogPlateButtonId id) override;
+  // AssistantViewDelegateObserver:
+  void OnDialogPlateButtonPressed(AssistantButtonId id) override;
   void OnDialogPlateContentsCommitted(const std::string& text) override;
-
-  // Invoked on suggestion chip pressed event.
-  void OnSuggestionChipPressed(const AssistantSuggestion* suggestion);
+  void OnSuggestionChipPressed(const AssistantSuggestion* suggestion) override;
 
  private:
   bool HasUnprocessedPendingResponse();
@@ -114,8 +115,11 @@ class AssistantInteractionController
   void OnUiVisible(AssistantEntryPoint entry_point);
 
   void StartMetalayerInteraction(const gfx::Rect& region);
-  void StartScreenContextInteraction();
-  void StartTextInteraction(const std::string text, bool allow_tts);
+  void StartScreenContextInteraction(AssistantQuerySource query_source);
+  void StartTextInteraction(const std::string text,
+                            bool allow_tts,
+                            AssistantQuerySource query_source);
+
   void StartVoiceInteraction();
   void StopActiveInteraction(bool cancel_conversation);
 
@@ -130,6 +134,8 @@ class AssistantInteractionController
       assistant_interaction_subscriber_binding_;
 
   AssistantInteractionModel model_;
+
+  bool should_attempt_warmer_welcome_ = true;
 
   base::WeakPtrFactory<AssistantInteractionController> weak_factory_;
 

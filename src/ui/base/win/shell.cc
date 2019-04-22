@@ -20,6 +20,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/win/win_util.h"
+#include "base/win/windows_version.h"
 #include "ui/base/ui_base_switches.h"
 
 namespace ui {
@@ -42,7 +43,8 @@ bool InvokeShellExecute(const base::string16 path,
                         const base::string16 args,
                         const base::string16 verb,
                         DWORD mask) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::WILL_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::WILL_BLOCK);
   SHELLEXECUTEINFO sei = {sizeof(sei)};
   sei.fMask = mask;
   sei.nShow = SW_SHOWNORMAL;
@@ -177,8 +179,17 @@ bool IsAeroGlassEnabled() {
     return false;
 
   // If composition is not enabled, we behave like on XP.
-  BOOL enabled = FALSE;
-  return SUCCEEDED(DwmIsCompositionEnabled(&enabled)) && enabled;
+  return IsDwmCompositionEnabled();
+}
+
+bool IsDwmCompositionEnabled() {
+  // As of Windows 8, DWM composition is always enabled.
+  // In Windows 7 this can change at runtime.
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+    return true;
+  }
+  BOOL is_enabled;
+  return SUCCEEDED(DwmIsCompositionEnabled(&is_enabled)) && is_enabled;
 }
 
 }  // namespace win

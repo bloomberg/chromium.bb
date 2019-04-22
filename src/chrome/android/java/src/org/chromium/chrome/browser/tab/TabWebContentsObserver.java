@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.media.MediaCaptureNotificationService;
 import org.chromium.chrome.browser.policy.PolicyAuditor;
 import org.chromium.chrome.browser.policy.PolicyAuditor.AuditEvent;
+import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 
@@ -216,44 +217,46 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
         }
 
         @Override
-        public void didStartNavigation(
-                String url, boolean isInMainFrame, boolean isSameDocument, boolean isErrorPage) {
-            if (isInMainFrame && !isSameDocument) {
-                mTab.didStartPageLoad(url, isErrorPage);
+        public void didStartNavigation(NavigationHandle navigation) {
+            if (navigation.isInMainFrame() && !navigation.isSameDocument()) {
+                mTab.didStartPageLoad(navigation.getUrl());
             }
 
             RewindableIterator<TabObserver> observers = mTab.getTabObservers();
             while (observers.hasNext()) {
-                observers.next().onDidStartNavigation(
-                        mTab, url, isInMainFrame, isSameDocument, isErrorPage);
+                observers.next().onDidStartNavigation(mTab, navigation);
             }
         }
 
         @Override
-        public void didFinishNavigation(String url, boolean isInMainFrame, boolean isErrorPage,
-                boolean hasCommitted, boolean isSameDocument, boolean isFragmentNavigation,
-                boolean isRendererInitiated, boolean isDownload, Integer pageTransition,
-                int errorCode, String errorDescription, int httpStatusCode) {
+        public void didRedirectNavigation(NavigationHandle navigation) {
             RewindableIterator<TabObserver> observers = mTab.getTabObservers();
             while (observers.hasNext()) {
-                observers.next().onDidFinishNavigation(mTab, url, isInMainFrame, isErrorPage,
-                        hasCommitted, isSameDocument, isFragmentNavigation, pageTransition,
-                        errorCode, httpStatusCode);
+                observers.next().onDidRedirectNavigation(mTab, navigation);
+            }
+        }
+
+        @Override
+        public void didFinishNavigation(NavigationHandle navigation) {
+            RewindableIterator<TabObserver> observers = mTab.getTabObservers();
+            while (observers.hasNext()) {
+                observers.next().onDidFinishNavigation(mTab, navigation);
             }
 
-            if (errorCode != 0) {
-                if (isInMainFrame) mTab.didFailPageLoad(errorCode);
+            if (navigation.errorCode() != 0) {
+                if (navigation.isInMainFrame()) mTab.didFailPageLoad(navigation.errorCode());
 
-                recordErrorInPolicyAuditor(url, errorDescription, errorCode);
+                recordErrorInPolicyAuditor(
+                        navigation.getUrl(), navigation.errorDescription(), navigation.errorCode());
             }
 
-            if (!hasCommitted) return;
+            if (!navigation.hasCommitted()) return;
 
-            if (isInMainFrame) {
+            if (navigation.isInMainFrame()) {
                 mTab.setIsTabStateDirty(true);
                 mTab.updateTitle();
-                mTab.handleDidFinishNavigation(url, pageTransition);
-                mTab.setIsShowingErrorPage(isErrorPage);
+                mTab.handleDidFinishNavigation(navigation.getUrl(), navigation.pageTransition());
+                mTab.setIsShowingErrorPage(navigation.isErrorPage());
 
                 observers.rewind();
                 while (observers.hasNext()) {
@@ -262,11 +265,12 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
             }
 
             FullscreenManager fullscreenManager = mTab.getFullscreenManager();
-            if (isInMainFrame && !isSameDocument && fullscreenManager != null) {
+            if (navigation.isInMainFrame() && !navigation.isSameDocument()
+                    && fullscreenManager != null) {
                 fullscreenManager.exitPersistentFullscreenMode();
             }
 
-            if (isInMainFrame) {
+            if (navigation.isInMainFrame()) {
                 // Stop swipe-to-refresh animation.
                 SwipeRefreshHandler handler = SwipeRefreshHandler.get(mTab);
                 if (handler != null) handler.didStopRefreshing();
@@ -288,6 +292,8 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
 
         @Override
         public void didAttachInterstitialPage() {
+            // TODO(huayinz): Observe #didAttachInterstitialPage and #didDetachInterstitialPage
+            // in InfoBarContainer.
             InfoBarContainer.get(mTab).setVisibility(View.INVISIBLE);
             mTab.showRenderedPage();
 
@@ -296,9 +302,7 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
                 observers.next().onDidAttachInterstitialPage(mTab);
             }
             mTab.notifyLoadProgress(mTab.getProgress());
-
-            mTab.updateFullscreenEnabledState();
-
+            TabFullscreenHandler.updateEnabledState(mTab);
             PolicyAuditor auditor = AppHooks.get().getPolicyAuditor();
             auditor.notifyCertificateFailure(
                     PolicyAuditor.nativeGetCertificateFailure(mTab.getWebContents()),
@@ -314,9 +318,7 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
                 observers.next().onDidDetachInterstitialPage(mTab);
             }
             mTab.notifyLoadProgress(mTab.getProgress());
-
-            mTab.updateFullscreenEnabledState();
-
+            TabFullscreenHandler.updateEnabledState(mTab);
             if (!mTab.maybeShowNativePage(mTab.getUrl(), false)) {
                 mTab.showRenderedPage();
             }
@@ -325,6 +327,11 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
         @Override
         public void navigationEntriesDeleted() {
             mTab.notifyNavigationEntriesDeleted();
+        }
+
+        @Override
+        public void navigationEntriesChanged() {
+            mTab.setIsTabStateDirty(true);
         }
 
         @Override

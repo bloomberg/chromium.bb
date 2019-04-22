@@ -46,21 +46,22 @@ ExtensionMediaAccessHandler::~ExtensionMediaAccessHandler() {
 
 bool ExtensionMediaAccessHandler::SupportsStreamType(
     content::WebContents* web_contents,
-    const content::MediaStreamType type,
+    const blink::MediaStreamType type,
     const extensions::Extension* extension) {
-  return extension && (extension->is_platform_app() ||
-                       IsMediaRequestWhitelistedForExtension(extension)) &&
-         (type == content::MEDIA_DEVICE_AUDIO_CAPTURE ||
-          type == content::MEDIA_DEVICE_VIDEO_CAPTURE);
+  return extension &&
+         (extension->is_platform_app() ||
+          IsMediaRequestWhitelistedForExtension(extension)) &&
+         (type == blink::MEDIA_DEVICE_AUDIO_CAPTURE ||
+          type == blink::MEDIA_DEVICE_VIDEO_CAPTURE);
 }
 
 bool ExtensionMediaAccessHandler::CheckMediaAccessPermission(
     content::RenderFrameHost* render_frame_host,
     const GURL& security_origin,
-    content::MediaStreamType type,
+    blink::MediaStreamType type,
     const extensions::Extension* extension) {
   return extension->permissions_data()->HasAPIPermission(
-      type == content::MEDIA_DEVICE_AUDIO_CAPTURE
+      type == blink::MEDIA_DEVICE_AUDIO_CAPTURE
           ? extensions::APIPermission::kAudioCapture
           : extensions::APIPermission::kVideoCapture);
 }
@@ -73,13 +74,13 @@ void ExtensionMediaAccessHandler::HandleRequest(
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   bool audio_allowed =
-      request.audio_type == content::MEDIA_DEVICE_AUDIO_CAPTURE &&
+      request.audio_type == blink::MEDIA_DEVICE_AUDIO_CAPTURE &&
       extension->permissions_data()->HasAPIPermission(
           extensions::APIPermission::kAudioCapture) &&
       GetDevicePolicy(profile, extension->url(), prefs::kAudioCaptureAllowed,
                       prefs::kAudioCaptureAllowedUrls) != ALWAYS_DENY;
   bool video_allowed =
-      request.video_type == content::MEDIA_DEVICE_VIDEO_CAPTURE &&
+      request.video_type == blink::MEDIA_DEVICE_VIDEO_CAPTURE &&
       extension->permissions_data()->HasAPIPermission(
           extensions::APIPermission::kVideoCapture) &&
       GetDevicePolicy(profile, extension->url(), prefs::kVideoCaptureAllowed,

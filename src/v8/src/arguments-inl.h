@@ -8,7 +8,7 @@
 #include "src/arguments.h"
 
 #include "src/handles-inl.h"
-#include "src/objects-inl.h"
+#include "src/objects-inl.h"  // TODO(jkummerow): Just smi-inl.h.
 
 namespace v8 {
 namespace internal {
@@ -19,8 +19,7 @@ Handle<S> Arguments::at(int index) {
 }
 
 int Arguments::smi_at(int index) {
-  // TODO(3770): Clean this up when Smi::ToInt supports ObjectPtr inputs.
-  return Smi::ToInt(reinterpret_cast<Object*>(*address_of_arg_at(index)));
+  return Smi::ToInt(Object(*address_of_arg_at(index)));
 }
 
 double Arguments::number_at(int index) { return (*this)[index]->Number(); }

@@ -8,11 +8,13 @@ import android.text.TextUtils;
 
 import org.junit.Assert;
 
-import org.chromium.base.ThreadUtils;
+import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.Coordinates;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -75,12 +77,8 @@ public class TabLoadObserver extends EmptyTabObserver {
      * @param transitionType the transition type to use.
      */
     public void fullyLoadUrl(final String url, final int transitionType) throws Exception {
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mTab.loadUrl(new LoadUrlParams(url, transitionType));
-            }
-        });
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
+                () -> { mTab.loadUrl(new LoadUrlParams(url, transitionType)); });
         assertLoaded();
     }
 
@@ -95,7 +93,7 @@ public class TabLoadObserver extends EmptyTabObserver {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                if (!mTab.isLoadingAndRenderingDone()) {
+                if (!ChromeTabUtils.isLoadingAndRenderingDone(mTab)) {
                     updateFailureReason("load and rendering never completed");
                     return false;
                 }

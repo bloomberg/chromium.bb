@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -29,11 +30,11 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
-namespace translate {
+namespace language {
+class LanguagePrefs;
+}
 
-// Enables or disables the new improved language settings.
-// These settings support the new UI.
-extern const base::Feature kImprovedLanguageSettings;
+namespace translate {
 
 // Enables or disables the regional locales as valid selection for the display
 // UI.
@@ -46,8 +47,11 @@ extern const base::Feature kTranslateRecentTarget;
 // Enable or disable the Translate popup altogether.
 extern const base::Feature kTranslateUI;
 
-// Enable the "Translate" item in the overflow menu on Android.
-extern const base::Feature kTranslateAndroidManualTrigger;
+// Enable the "Translate" item in the overflow menu on Mobile.
+extern const base::Feature kTranslateMobileManualTrigger;
+
+// Enables the new compact Translate infobar on iOS.
+extern const base::Feature kCompactTranslateInfobarIOS;
 
 // Minimum number of times the user must accept a translation before we show
 // a shortcut to the "Always Translate" functionality.
@@ -135,13 +139,14 @@ class TranslatePrefs {
   static const char kPrefTranslateDeniedCount[];
   static const char kPrefTranslateIgnoredCount[];
   static const char kPrefTranslateAcceptedCount[];
-  static const char kPrefTranslateBlockedLanguages[];
   static const char kPrefTranslateLastDeniedTimeForLanguage[];
   static const char kPrefTranslateTooOftenDeniedForLanguage[];
   static const char kPrefTranslateRecentTarget[];
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_IOS)
   static const char kPrefTranslateAutoAlwaysCount[];
   static const char kPrefTranslateAutoNeverCount[];
+#endif
+#if defined(OS_ANDROID)
   static const char kPrefExplicitLanguageAskShown[];
 #endif
 
@@ -162,6 +167,8 @@ class TranslatePrefs {
   TranslatePrefs(PrefService* user_prefs,
                  const char* accept_languages_pref,
                  const char* preferred_languages_pref);
+
+  ~TranslatePrefs();
 
   // Checks if the "offer translate" (i.e. automatic translate bubble) feature
   // is enabled.
@@ -234,9 +241,6 @@ class TranslatePrefs {
   void RemoveLanguagePairFromWhitelist(const std::string& original_language,
                                        const std::string& target_language);
 
-  // Will return true if at least one language has been blacklisted.
-  bool HasBlockedLanguages() const;
-
   // Will return true if at least one site has been blacklisted.
   bool HasBlacklistedSites() const;
 
@@ -260,7 +264,7 @@ class TranslatePrefs {
   void IncrementTranslationAcceptedCount(const std::string& language);
   void ResetTranslationAcceptedCount(const std::string& language);
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_IOS)
   // These methods are used to track how many times the auto-always translation
   // has been triggered for a specific language.
   int GetTranslationAutoAlwaysCount(const std::string& language) const;
@@ -272,7 +276,9 @@ class TranslatePrefs {
   int GetTranslationAutoNeverCount(const std::string& language) const;
   void IncrementTranslationAutoNeverCount(const std::string& language);
   void ResetTranslationAutoNeverCount(const std::string& language);
+#endif
 
+#if defined(OS_ANDROID)
   // These methods are used to determine whether the explicit language ask
   // prompt was displayed to the user already.
   bool GetExplicitLanguageAskPromptShown() const;
@@ -320,6 +326,10 @@ class TranslatePrefs {
   // to a timestamp of the creation of this entry.
   void MigrateSitesBlacklist();
 
+  // Prevent empty blocked languages by resetting them to the default value.
+  // (crbug.com/902354)
+  void ResetEmptyBlockedLanguagesToDefaults();
+
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
  private:
@@ -331,10 +341,11 @@ class TranslatePrefs {
   FRIEND_TEST_ALL_PREFIXES(TranslatePrefsTest, AddToLanguageList);
   FRIEND_TEST_ALL_PREFIXES(TranslatePrefsTest, RemoveFromLanguageList);
   FRIEND_TEST_ALL_PREFIXES(TranslatePrefsTest,
-                           RemoveFromLanguageListClearsRecentLanguage);
-  FRIEND_TEST_ALL_PREFIXES(TranslatePrefsTest, AddToLanguageListFeatureEnabled);
+                           RemoveFromLanguageListRemovesRemainingUnsupported);
   FRIEND_TEST_ALL_PREFIXES(TranslatePrefsTest,
-                           RemoveFromLanguageListFeatureEnabled);
+                           RemoveFromLanguageListClearsRecentLanguage);
+  FRIEND_TEST_ALL_PREFIXES(TranslatePrefsTest, AddToLanguageList);
+  FRIEND_TEST_ALL_PREFIXES(TranslatePrefsTest, RemoveFromLanguageList);
   FRIEND_TEST_ALL_PREFIXES(TranslatePrefsTest, MoveLanguageToTheTop);
   FRIEND_TEST_ALL_PREFIXES(TranslatePrefsTest, MoveLanguageUp);
   FRIEND_TEST_ALL_PREFIXES(TranslatePrefsTest, MoveLanguageDown);
@@ -343,22 +354,26 @@ class TranslatePrefs {
   // Updates the language list of the language settings.
   void UpdateLanguageList(const std::vector<std::string>& languages);
 
-  // Merges two language sets to migrate to the language setting UI.
-  static void CreateBlockedLanguages(
-      std::vector<std::string>* blocked_languages,
-      const std::vector<std::string>& blacklisted_languages,
-      const std::vector<std::string>& accept_languages);
-
-  void ClearBlockedLanguages();
+  void ResetBlockedLanguagesToDefault();
   void ClearBlacklistedSites();
   void ClearWhitelistedLanguagePairs();
+
+  // |pref_id| is the name of a list pref.
   bool IsValueBlacklisted(const char* pref_id, const std::string& value) const;
   void BlacklistValue(const char* pref_id, const std::string& value);
   void RemoveValueFromBlacklist(const char* pref_id, const std::string& value);
   bool IsValueInList(const base::ListValue* list,
                      const std::string& value) const;
-  bool IsListEmpty(const char* pref_id) const;
+  size_t GetListSize(const char* pref_id) const;
+
   bool IsDictionaryEmpty(const char* pref_id) const;
+  // Removes from the language list any language that isn't supported as an
+  // Accept-Language (it's not in kAcceptLanguageList) if and only if there
+  // aren't any other languages from the same family in the list that are
+  // supported.
+  void PurgeUnsupportedLanguagesInLanguageFamily(
+      const std::string& language,
+      std::vector<std::string>* list);
 
   // Path to the preference storing the accept languages.
   const std::string accept_languages_pref_;
@@ -376,9 +391,15 @@ class TranslatePrefs {
   // accepted for a language, creating it if necessary.
   base::DictionaryValue* GetTranslationAcceptedCountDictionary() const;
 
+  // Returns the languages that should be blocked by default as a
+  // base::(List)Value.
+  static base::Value GetDefaultBlockedLanguages();
+
   PrefService* prefs_;  // Weak.
 
   std::string country_;  // The country the app runs in.
+
+  std::unique_ptr<language::LanguagePrefs> language_prefs_;
 
   DISALLOW_COPY_AND_ASSIGN(TranslatePrefs);
 };

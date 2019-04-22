@@ -44,6 +44,7 @@ from chromite.lib import sudo
 from chromite.lib import timeout_util
 from chromite.lib import tree_status
 from chromite.lib import ts_mon_config
+from chromite.lib.buildstore import BuildStore
 
 
 _DEFAULT_LOG_DIR = 'cbuildbot_logs'
@@ -126,18 +127,11 @@ def _RunBuildStagesWrapper(options, site_config, build_config):
   else:
     options.managed_chrome = build_config['sync_chrome']
 
+  chrome_root_mgr = None
   if options.managed_chrome:
-    # Tell Chrome to fetch the source locally.
-    internal = constants.USE_CHROME_INTERNAL in build_config['useflags']
-    chrome_src = 'chrome-src-internal' if internal else 'chrome-src'
-    target_name = 'target'
-    if options.branch:
-      # Tie the cache per branch
-      target_name = 'target-%s' % options.branch
-    options.chrome_root = os.path.join(options.cache_dir, 'distfiles',
-                                       target_name, chrome_src)
-    # Create directory if in need
-    osutils.SafeMakedirsNonRoot(options.chrome_root)
+    # Create a temp directory for syncing Chrome source.
+    chrome_root_mgr = osutils.TempDir(prefix='chrome_root_')
+    options.chrome_root = chrome_root_mgr.tempdir
 
   # We are done munging options values, so freeze options object now to avoid
   # further abuse of it.
@@ -157,6 +151,7 @@ def _RunBuildStagesWrapper(options, site_config, build_config):
   with parallel.Manager() as manager:
     builder_run = cbuildbot_run.BuilderRun(
         options, site_config, build_config, manager)
+    buildstore = BuildStore()
     if metadata_dump_dict:
       builder_run.attrs.metadata.UpdateWithDict(metadata_dump_dict)
 
@@ -167,12 +162,16 @@ def _RunBuildStagesWrapper(options, site_config, build_config):
       else:
         builder_cls_name = 'simple_builders.SimpleBuilder'
       builder_cls = builders.GetBuilderClass(builder_cls_name)
-      builder = builder_cls(builder_run)
+      builder = builder_cls(builder_run, buildstore)
     else:
-      builder = builders.Builder(builder_run)
+      builder = builders.Builder(builder_run, buildstore)
 
-    if not builder.Run():
-      sys.exit(1)
+    try:
+      if not builder.Run():
+        sys.exit(1)
+    finally:
+      if chrome_root_mgr:
+        chrome_root_mgr.Cleanup()
 
 
 def _CheckChromeVersionOption(_option, _opt_str, value, parser):
@@ -219,7 +218,7 @@ class CustomOption(commandline.FilteringOption):
 
 
 class CustomParser(commandline.FilteringParser):
-  """Custom option parser which supports arguments passed-trhough to trybot"""
+  """Custom option parser which supports arguments passed-through to trybot"""
 
   DEFAULT_OPTION_CLASS = CustomOption
 
@@ -319,29 +318,6 @@ def _CreateParser():
                           help='Specify a channel for a payloads trybot. Can '
                                'be specified multiple times. No valid for '
                                'non-payloads configs.')
-
-  parser.add_argument_group(group)
-
-  #
-  # Branch creation options.
-  #
-
-  group = CustomGroup(
-      parser,
-      'Branch Creation Options (used with branch-util)')
-
-  group.add_remote_option('--branch-name',
-                          help='The branch to create or delete.')
-  group.add_remote_option('--delete-branch', action='store_true', default=False,
-                          help='Delete the branch specified in --branch-name.')
-  group.add_remote_option('--rename-to',
-                          help='Rename a branch to the specified name.')
-  group.add_remote_option('--force-create', action='store_true', default=False,
-                          help='Overwrites an existing branch.')
-  group.add_remote_option('--skip-remote-push', action='store_true',
-                          default=False,
-                          help='Do not actually push to remote git repos.  '
-                               'Used for end-to-end testing branching.')
 
   parser.add_argument_group(group)
 
@@ -481,6 +457,16 @@ def _CreateParser():
                           help='Run the build as a sanity check build.')
   group.add_remote_option('--debug-cidb', action='store_true', default=False,
                           help='Force Debug CIDB to be used.')
+  # cbuildbot ChromeOS Findit options
+  group.add_remote_option('--cbb_build_packages', action='split_extend',
+                          dest='cbb_build_packages',
+                          default=[],
+                          help='Specify an explicit list of packages to build '
+                               'for integration with Findit.')
+  group.add_remote_option('--cbb_snapshot_revision', type='string',
+                          dest='cbb_snapshot_revision', default=None,
+                          help='Snapshot manifest revision to sync to '
+                               'for building.')
 
   parser.add_argument_group(group)
 
@@ -542,6 +528,10 @@ def _CreateParser():
   group.add_remote_option('--master-build-id', type='int',
                           api=constants.REEXEC_API_MASTER_BUILD_ID,
                           help='cidb build id of the master build to this '
+                               'slave build.')
+  group.add_remote_option('--master-buildbucket-id',
+                          api=constants.REEXEC_API_MASTER_BUILDBUCKET_ID,
+                          help='buildbucket id of the master build to this '
                                'slave build.')
   group.add_remote_option('--mock-tree-status',
                           help='Override the tree status value that would be '
@@ -635,46 +625,6 @@ def _FinishParsing(options):
   options.debug_forced = options.debug
   # We force --debug to be set for builds that are not 'official'.
   options.debug = options.debug or not options.buildbot
-
-  if options.build_config_name in (constants.BRANCH_UTIL_CONFIG,
-                                   'branch-util-tryjob'):
-    if not options.branch_name:
-      cros_build_lib.Die(
-          'Must specify --branch-name with the %s config.',
-          constants.BRANCH_UTIL_CONFIG)
-    if (options.branch and options.branch != 'master' and
-        options.branch != options.branch_name):
-      cros_build_lib.Die(
-          'If --branch is specified with the %s config, it must'
-          ' have the same value as --branch-name.',
-          constants.BRANCH_UTIL_CONFIG)
-
-    exclusive_opts = {'--version': options.force_version,
-                      '--delete-branch': options.delete_branch,
-                      '--rename-to': options.rename_to}
-    if sum(1 for x in exclusive_opts.values() if x) != 1:
-      cros_build_lib.Die('When using the %s config, you must'
-                         ' specifiy one and only one of the following'
-                         ' options: %s.', constants.BRANCH_UTIL_CONFIG,
-                         ', '.join(exclusive_opts.keys()))
-
-    # When deleting or renaming a branch, the --branch and --nobootstrap
-    # options are implied.
-    if options.delete_branch or options.rename_to:
-      if not options.branch:
-        logging.info('Automatically enabling sync to branch %s for this %s '
-                     'flow.', options.branch_name,
-                     constants.BRANCH_UTIL_CONFIG)
-        options.branch = options.branch_name
-      if options.bootstrap:
-        logging.info('Automatically disabling bootstrap step for this %s flow.',
-                     constants.BRANCH_UTIL_CONFIG)
-        options.bootstrap = False
-
-  elif any([options.delete_branch, options.rename_to, options.branch_name]):
-    cros_build_lib.Die(
-        'Cannot specify --delete-branch, --rename-to or --branch-name when not '
-        'running the %s config', constants.BRANCH_UTIL_CONFIG)
 
 
 # pylint: disable=unused-argument
@@ -807,9 +757,7 @@ def _SetupConnections(options, build_config):
     cidb.CIDBConnectionFactory.SetupNoCidb()
     context = ts_mon_config.TrivialContextManager()
 
-  db = cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder()
-  topology.FetchTopologyFromCIDB(db)
-
+  topology.FetchTopology()
   return context
 
 
@@ -877,10 +825,8 @@ def main(argv):
 
   if (options.buildbot and
       not options.debug and
-      not options.build_config_name == constants.BRANCH_UTIL_CONFIG and
       not cros_build_lib.HostIsCIBuilder()):
-    # --buildbot can only be used on a real builder, unless it's debug, or
-    # 'branch-util'.
+    # --buildbot can only be used on a real builder, unless it's debug.
     cros_build_lib.Die('This host is not a supported build machine.')
 
   # Only one config arg is allowed in this mode, which was confirmed earlier.
@@ -985,33 +931,11 @@ def main(argv):
     stack.Add(_SetupConnections, options, build_config)
     retry_stats.SetupStats()
 
-    timeout_display_message = None
-    # For master-slave builds: Update slave's timeout using master's published
-    # deadline.
-    if options.buildbot and options.master_build_id is not None:
-      slave_timeout = None
-      if cidb.CIDBConnectionFactory.IsCIDBSetup():
-        cidb_handle = cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder()
-        if cidb_handle:
-          slave_timeout = cidb_handle.GetTimeToDeadline(options.master_build_id)
-
-      if slave_timeout is not None:
-        # We artificially set a minimum slave_timeout because '0' is handled
-        # specially, and because we don't want to timeout while trying to set
-        # things up.
-        slave_timeout = max(slave_timeout, 20)
-        if options.timeout == 0 or slave_timeout < options.timeout:
-          logging.info('Updating slave build timeout to %d seconds enforced '
-                       'by the master', slave_timeout)
-          options.timeout = slave_timeout
-          timeout_display_message = (
-              'This build has reached the timeout deadline set by the master. '
-              'Either this stage or a previous one took too long (see stage '
-              'timing historical summary in ReportStage) or the build failed '
-              'to start on time.')
-      else:
-        logging.warning('Could not get master deadline for master-slave build. '
-                        'Can not set slave timeout.')
+    timeout_display_message = (
+        'This build has reached the timeout deadline set by the master. '
+        'Either this stage or a previous one took too long (see stage '
+        'timing historical summary in ReportStage) or the build failed '
+        'to start on time.')
 
     if options.timeout > 0:
       stack.Add(timeout_util.FatalTimeout, options.timeout,

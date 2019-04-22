@@ -9,8 +9,6 @@
 
 namespace android {
 
-bool OnJNIOnLoadRegisterJNI(JNIEnv* env);
-
 bool OnJNIOnLoadInit();
 
 }  // namespace android

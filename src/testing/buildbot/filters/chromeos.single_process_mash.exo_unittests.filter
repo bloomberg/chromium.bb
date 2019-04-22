@@ -1,3 +1,0 @@
-# These will fail until KeyboardController is enabled on SingleProcessMash.
-# https://crbug.com/843332
--KeyboardTest.OnKeyboardTypeChanged*

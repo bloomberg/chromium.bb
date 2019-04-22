@@ -10,10 +10,7 @@
 #include "base/bind_helpers.h"
 #include "mojo/public/cpp/bindings/map.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/ws/host_event_dispatcher.h"
-#include "services/ws/host_event_queue.h"
 #include "services/ws/public/mojom/constants.mojom.h"
-#include "services/ws/test_host_event_dispatcher.h"
 #include "services/ws/test_ws/test_gpu_interface_provider.h"
 #include "services/ws/window_service.h"
 #include "ui/aura/client/aura_constants.h"
@@ -21,6 +18,7 @@
 #include "ui/aura/mus/property_utils.h"
 #include "ui/aura/window_tracker.h"
 #include "ui/compositor/test/context_factories_for_test.h"
+#include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/events/event_sink.h"
 #include "ui/gl/test/gl_surface_test_support.h"
@@ -50,7 +48,9 @@ class TestWindowService::VisibilitySynchronizer : public aura::WindowTracker {
   DISALLOW_COPY_AND_ASSIGN(VisibilitySynchronizer);
 };
 
-TestWindowService::TestWindowService() = default;
+TestWindowService::TestWindowService(
+    service_manager::mojom::ServiceRequest request)
+    : service_binding_(this, std::move(request)) {}
 
 TestWindowService::~TestWindowService() {
   Shutdown(base::NullCallback());
@@ -88,6 +88,7 @@ void TestWindowService::InitForOutOfProcess() {
 }
 
 std::unique_ptr<aura::Window> TestWindowService::NewTopLevel(
+    TopLevelProxyWindow* top_level_proxy_window,
     aura::PropertyConverter* property_converter,
     const base::flat_map<std::string, std::vector<uint8_t>>& properties) {
   std::unique_ptr<aura::Window> top_level = std::make_unique<aura::Window>(
@@ -112,6 +113,7 @@ std::unique_ptr<aura::Window> TestWindowService::NewTopLevel(
 void TestWindowService::RunWindowMoveLoop(aura::Window* window,
                                           mojom::MoveLoopSource source,
                                           const gfx::Point& cursor,
+                                          int window_component,
                                           DoneCallback callback) {
   window_move_done_callback_ = std::move(callback);
 }
@@ -135,12 +137,20 @@ void TestWindowService::CancelDragLoop(aura::Window* window) {
   drag_drop_client_.DragCancel();
 }
 
+ui::EventTarget* TestWindowService::GetGlobalEventTarget() {
+  return aura_test_helper_->root_window();
+}
+
+aura::Window* TestWindowService::GetRootWindowForDisplayId(int64_t display_id) {
+  if (display::Screen::GetScreen()->GetAllDisplays().size() > 1)
+    NOTIMPLEMENTED_LOG_ONCE() << "Add test support for multiple displays.";
+  return aura_test_helper_->root_window();
+}
+
 void TestWindowService::OnStart() {
   CHECK(!started_);
   started_ = true;
 
-  registry_.AddInterface(base::BindRepeating(
-      &TestWindowService::BindServiceFactory, base::Unretained(this)));
   registry_.AddInterface(base::BindRepeating(&TestWindowService::BindTestWs,
                                              base::Unretained(this)));
 
@@ -157,36 +167,30 @@ void TestWindowService::OnBindInterface(
   registry_.BindInterface(interface_name, std::move(interface_pipe));
 }
 
-void TestWindowService::CreateService(
-    service_manager::mojom::ServiceRequest request,
+void TestWindowService::CreatePackagedServiceInstance(
     const std::string& name,
-    service_manager::mojom::PIDReceiverPtr pid_receiver) {
+    mojo::PendingReceiver<service_manager::mojom::Service> receiver,
+    CreatePackagedServiceInstanceCallback callback) {
   DCHECK_EQ(name, mojom::kServiceName);
 
-  // Defer CreateService if |aura_test_helper_| is not created.
+  // Defer the operation if |aura_test_helper_| is not created.
   if (!aura_test_helper_) {
     DCHECK(!pending_create_service_);
-
     pending_create_service_ = base::BindOnce(
-        &TestWindowService::CreateService, base::Unretained(this),
-        std::move(request), name, std::move(pid_receiver));
+        &TestWindowService::CreatePackagedServiceInstance,
+        base::Unretained(this), name, std::move(receiver), std::move(callback));
     return;
   }
 
   DCHECK(!ui_service_created_);
   ui_service_created_ = true;
 
-  auto window_service = std::make_unique<WindowService>(
+  window_service_ = std::make_unique<WindowService>(
       this, std::move(gpu_interface_provider_),
       aura_test_helper_->focus_client(), /*decrement_client_ids=*/false,
       aura_test_helper_->GetEnv());
-  test_host_event_dispatcher_ =
-      std::make_unique<TestHostEventDispatcher>(aura_test_helper_->host());
-  host_event_queue_ = window_service->RegisterHostEventDispatcher(
-      aura_test_helper_->host(), test_host_event_dispatcher_.get());
-  service_context_ = std::make_unique<service_manager::ServiceContext>(
-      std::move(window_service), std::move(request));
-  pid_receiver->SetPID(base::GetCurrentProcId());
+  window_service_->BindServiceRequest(std::move(receiver));
+  std::move(callback).Run(base::GetCurrentProcId());
 }
 
 void TestWindowService::OnGpuServiceInitialized() {
@@ -204,7 +208,7 @@ void TestWindowService::MaximizeNextWindow(MaximizeNextWindowCallback cb) {
 void TestWindowService::Shutdown(
     test_ws::mojom::TestWs::ShutdownCallback callback) {
   // WindowService depends upon Screen, which is owned by AuraTestHelper.
-  service_context_.reset();
+  window_service_.reset();
 
   // |aura_test_helper_| could be null when exiting before fully initialized.
   if (aura_test_helper_) {
@@ -221,11 +225,6 @@ void TestWindowService::Shutdown(
     std::move(callback).Run();
 }
 
-void TestWindowService::BindServiceFactory(
-    service_manager::mojom::ServiceFactoryRequest request) {
-  service_factory_bindings_.AddBinding(this, std::move(request));
-}
-
 void TestWindowService::BindTestWs(test_ws::mojom::TestWsRequest request) {
   test_ws_bindings_.AddBinding(this, std::move(request));
 }
@@ -235,7 +234,8 @@ void TestWindowService::CreateGpuHost() {
       std::make_unique<discardable_memory::DiscardableSharedMemoryManager>();
 
   gpu_host_ = std::make_unique<gpu_host::GpuHost>(
-      this, context()->connector(), discardable_shared_memory_manager_.get());
+      this, service_binding_.GetConnector(),
+      discardable_shared_memory_manager_.get());
 
   gpu_interface_provider_ = std::make_unique<TestGpuInterfaceProvider>(
       gpu_host_.get(), discardable_shared_memory_manager_.get());

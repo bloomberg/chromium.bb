@@ -5,12 +5,15 @@
 #ifndef CHROME_APP_SHIM_APP_SHIM_CONTROLLER_H_
 #define CHROME_APP_SHIM_APP_SHIM_CONTROLLER_H_
 
+#import <AppKit/AppKit.h>
+
 #include "base/files/file_path.h"
 #include "base/mac/scoped_nsobject.h"
 #include "chrome/common/mac/app_mode_common.h"
 #include "chrome/common/mac/app_shim.mojom.h"
 #include "chrome/common/mac/app_shim_param_traits.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/platform/named_platform_channel.h"
 #include "mojo/public/cpp/system/isolated_connection.h"
 
 @class AppShimDelegate;
@@ -19,19 +22,10 @@
 // process, and generally controls the lifetime of the app shim process.
 class AppShimController : public chrome::mojom::AppShim {
  public:
-  explicit AppShimController(const app_mode::ChromeAppModeInfo* app_mode_info);
+  explicit AppShimController(
+      const app_mode::ChromeAppModeInfo* app_mode_info,
+      base::scoped_nsobject<NSRunningApplication> chrome_running_app);
   ~AppShimController() override;
-
-  // Called when the main Chrome process responds to the Apple Event ping that
-  // was sent, or when the ping fails (if |success| is false).
-  void OnPingChromeReply(bool success);
-
-  // Called |kPingChromeTimeoutSeconds| after startup, to allow a timeout on the
-  // ping event to be detected.
-  void OnPingChromeTimeout();
-
-  // Connects to Chrome and sends a LaunchApp message.
-  void InitBootstrapPipe();
 
   chrome::mojom::AppShimHost* host() const { return host_.get(); }
 
@@ -42,8 +36,10 @@ class AppShimController : public chrome::mojom::AppShim {
                     const std::vector<base::FilePath>& files);
 
  private:
-  // Create a channel from |socket_path| and send a LaunchApp message.
-  void CreateChannelAndSendLaunchApp(const base::FilePath& socket_path);
+  friend class TestShimClient;
+
+  // Create a channel from the Mojo |endpoint| and send a LaunchApp message.
+  void CreateChannelAndSendLaunchApp(mojo::PlatformChannelEndpoint endpoint);
   // Builds main menu bar items.
   void SetUpMenu();
   void ChannelError(uint32_t custom_reason, const std::string& description);
@@ -57,14 +53,29 @@ class AppShimController : public chrome::mojom::AppShim {
       views_bridge_mac::mojom::BridgeFactoryAssociatedRequest request) override;
   void CreateContentNSViewBridgeFactory(
       content::mojom::NSViewBridgeFactoryAssociatedRequest request) override;
+  void CreateCommandDispatcherForWidget(uint64_t widget_id) override;
   void Hide() override;
+  void SetBadgeLabel(const std::string& badge_label) override;
   void UnhideWithoutActivation() override;
   void SetUserAttention(apps::AppShimAttentionType attention_type) override;
 
   // Terminates the app shim process.
   void Close();
 
+  // Sets up a connection to the AppShimHostManager at the given Mach
+  // endpoint name.
+  static mojo::PlatformChannelEndpoint ConnectToBrowser(
+      const mojo::NamedPlatformChannel::ServerName& server_name);
+
+  // Connects to Chrome and sends a LaunchApp message.
+  void InitBootstrapPipe();
+
+  // Check to see if Chrome's AppShimHostManager has been initialized. If it
+  // has, then connect.
+  void PollForChromeReady(const base::TimeDelta& time_until_timeout);
+
   const app_mode::ChromeAppModeInfo* const app_mode_info_;
+  base::scoped_nsobject<NSRunningApplication> chrome_running_app_;
 
   mojo::IsolatedConnection bootstrap_mojo_connection_;
   chrome::mojom::AppShimHostBootstrapPtr host_bootstrap_;
@@ -75,7 +86,6 @@ class AppShimController : public chrome::mojom::AppShim {
 
   base::scoped_nsobject<AppShimDelegate> delegate_;
   bool launch_app_done_;
-  bool ping_chrome_reply_received_;
   NSInteger attention_request_id_;
 
   DISALLOW_COPY_AND_ASSIGN(AppShimController);

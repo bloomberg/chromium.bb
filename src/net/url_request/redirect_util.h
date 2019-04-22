@@ -16,21 +16,28 @@ namespace net {
 
 struct RedirectInfo;
 class HttpRequestHeaders;
+class HttpResponseHeaders;
 
 class RedirectUtil {
  public:
   // Updates HTTP headers in |request_headers| for a redirect.
-  // |modified_request_headers| are specified by clients to add or override
-  // existing headers for the redirect.
+  // |removed_headers| and |modified_headers| are specified by
+  // clients to add or override existing headers for the redirect.
   // |should_clear_upload| is set to true when the request body should be
   // cleared during the redirect.
   NET_EXPORT static void UpdateHttpRequest(
       const GURL& original_url,
       const std::string& original_method,
       const RedirectInfo& redirect_info,
-      const base::Optional<net::HttpRequestHeaders>& modified_request_headers,
+      const base::Optional<std::vector<std::string>>& removed_headers,
+      const base::Optional<net::HttpRequestHeaders>& modified_headers,
       HttpRequestHeaders* request_headers,
       bool* should_clear_upload);
+
+  // Returns the the "normalized" value of Referrer-Policy header if available.
+  // Otherwise returns base::nullopt.
+  NET_EXPORT static base::Optional<std::string> GetReferrerPolicyHeader(
+      const HttpResponseHeaders* response_headers);
 };
 
 }  // namespace net

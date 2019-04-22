@@ -1081,6 +1081,14 @@ class SavePageOriginalVsSavedComparisonTest
       EXPECT_EQ(expected_number_of_frames_in_saved_page, unique_origins)
           << "All origins should be unique";
     }
+
+    // Check that we're able to navigate away and come back, as well.
+    // See https://crbug.com/948246.
+    ui_test_utils::NavigateToURL(browser(), GURL("data:text/html,foo"));
+    chrome::GoBack(browser(), WindowOpenDisposition::CURRENT_TAB);
+    content::WaitForLoadStop(GetCurrentTab(browser()));
+    AssertExpectationsAboutCurrentTab(expected_number_of_frames_in_saved_page,
+                                      expected_substrings);
   }
 
   // Helper method to deduplicate some code across 2 tests.
@@ -1358,7 +1366,7 @@ IN_PROC_BROWSER_TEST_P(SavePageOriginalVsSavedComparisonTest, CrossSiteObject) {
   TestOriginalVsSavedPage(save_page_type, url, 4, 4, expected_substrings);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SaveType,
     SavePageOriginalVsSavedComparisonTest,
     ::testing::Values(content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML,

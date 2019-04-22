@@ -10,7 +10,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/hash.h"
+#include "base/hash/hash.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -151,7 +151,7 @@ class UkmServiceTest : public testing::Test {
         prefs::kUkmPersistedLogs,
         3,     // log count limit
         1000,  // byte limit
-        0);
+        0, std::string());
 
     result_persisted_logs.LoadPersistedUnsentLogs();
     result_persisted_logs.StageNextLog();
@@ -185,6 +185,16 @@ class UkmServiceTest : public testing::Test {
 };
 
 }  // namespace
+
+TEST_F(UkmServiceTest, ClientIdMigration) {
+  prefs_.SetInt64(prefs::kUkmClientId, -1);
+  UkmService service(&prefs_, &client_,
+                     true /* restrict_to_whitelisted_entries */);
+  service.Initialize();
+  uint64_t migrated_id = prefs_.GetUint64(prefs::kUkmClientId);
+  // -1 migrates to the max UInt 64 value.
+  EXPECT_EQ(migrated_id, 18446744073709551615ULL);
+}
 
 TEST_F(UkmServiceTest, EnableDisableSchedule) {
   UkmService service(&prefs_, &client_,

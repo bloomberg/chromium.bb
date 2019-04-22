@@ -36,11 +36,6 @@ AXMenuList::AXMenuList(LayoutMenuList* layout_object,
                        AXObjectCacheImpl& ax_object_cache)
     : AXLayoutObject(layout_object, ax_object_cache) {}
 
-AXMenuList* AXMenuList::Create(LayoutMenuList* layout_object,
-                               AXObjectCacheImpl& ax_object_cache) {
-  return MakeGarbageCollected<AXMenuList>(layout_object, ax_object_cache);
-}
-
 ax::mojom::Role AXMenuList::DetermineAccessibilityRole() {
   if ((aria_role_ = DetermineAriaRoleAttribute()) != ax::mojom::Role::kUnknown)
     return aria_role_;
@@ -78,19 +73,19 @@ void AXMenuList::AddChildren() {
 
   AXObjectCacheImpl& cache = AXObjectCache();
 
-  AXObject* list = cache.GetOrCreate(ax::mojom::Role::kMenuListPopup);
-  if (!list)
+  AXObject* popup = cache.GetOrCreate(ax::mojom::Role::kMenuListPopup);
+  if (!popup)
     return;
 
-  ToAXMockObject(list)->SetParent(this);
-  if (list->AccessibilityIsIgnored()) {
-    cache.Remove(list->AXObjectID());
+  ToAXMockObject(popup)->SetParent(this);
+  if (popup->AccessibilityIsIgnored()) {
+    cache.Remove(popup->AXObjectID());
     return;
   }
 
-  children_.push_back(list);
+  children_.push_back(popup);
 
-  list->AddChildren();
+  popup->AddChildren();
 }
 
 bool AXMenuList::IsCollapsed() const {

@@ -24,7 +24,6 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
-#include "chrome/browser/chromeos/settings/stub_install_attributes.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/browser.h"
@@ -32,9 +31,10 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "chromeos/tpm/stub_install_attributes.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/user_names.h"
 #include "content/public/browser/notification_service.h"
@@ -114,7 +114,7 @@ class LoginTest : public LoginManagerTest {
       "$('error-offline-login-link').onclick();"
     "})();";
     // clang-format on
-    ASSERT_TRUE(content::ExecuteScript(web_contents(), js));
+    test::ExecuteOobeJS(js);
 
     std::string message;
     do {
@@ -127,43 +127,26 @@ class LoginTest : public LoginManagerTest {
     const std::string animated_pages =
         "document.querySelector('#offline-gaia /deep/ "
         "#animatedPages')";
-    const std::string email_input =
-        "document.querySelector('#offline-gaia /deep/ #emailInput')";
-    const std::string email_next_button =
-        "document.querySelector('#offline-gaia /deep/ #emailSection "
-        "/deep/ #button')";
-    const std::string password_input =
-        "document.querySelector('#offline-gaia /deep/ "
-        "#passwordInput')";
-    const std::string password_next_button =
-        "document.querySelector('#offline-gaia /deep/ #passwordSection"
-        " /deep/ #button')";
 
     content::DOMMessageQueue message_queue;
-    JSExpect("!document.querySelector('#offline-gaia').hidden");
-    JSExpect("document.querySelector('#signin-frame').hidden");
+    test::OobeJS().ExpectVisible("offline-gaia");
+    test::OobeJS().ExpectHidden("signin-frame");
     const std::string js =
         animated_pages +
         ".addEventListener('neon-animation-finish',"
         "function() {"
         "window.domAutomationController.send('switchToPassword');"
         "})";
-    ASSERT_TRUE(content::ExecuteScript(web_contents(), js));
-    std::string set_email = email_input + ".value = '$Email'";
-    base::ReplaceSubstringsAfterOffset(&set_email, 0, "$Email", user_email);
-    ASSERT_TRUE(content::ExecuteScript(web_contents(), set_email));
-    ASSERT_TRUE(content::ExecuteScript(web_contents(),
-                                       email_next_button + ".fire('tap')"));
+    test::ExecuteOobeJS(js);
+    test::OobeJS().TypeIntoPath(user_email, {"offline-gaia", "emailInput"});
+    test::OobeJS().TapOnPath({"offline-gaia", "emailSection", "button"});
     std::string message;
     do {
       ASSERT_TRUE(message_queue.WaitForMessage(&message));
     } while (message != "\"switchToPassword\"");
 
-    std::string set_password = password_input + ".value = '$Password'";
-    base::ReplaceSubstringsAfterOffset(&set_password, 0, "$Password", password);
-    ASSERT_TRUE(content::ExecuteScript(web_contents(), set_password));
-    ASSERT_TRUE(content::ExecuteScript(web_contents(),
-                                       password_next_button + ".fire('tap')"));
+    test::OobeJS().TypeIntoPath(password, {"offline-gaia", "passwordInput"});
+    test::OobeJS().TapOnPath({"offline-gaia", "passwordSection", "button"});
   }
 
   void PrepareOfflineLogin() {

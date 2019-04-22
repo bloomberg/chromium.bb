@@ -34,7 +34,6 @@
 #include "third_party/blink/renderer/core/dom/node_traversal.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 
 namespace blink {
 
@@ -74,8 +73,7 @@ void TreeScopeAdopter::MoveTreeToNewScope(Node& root) const {
       continue;
     Element& element = ToElement(node);
 
-    if (HeapVector<TraceWrapperMember<Attr>>* attrs =
-            element.GetAttrNodeList()) {
+    if (HeapVector<Member<Attr>>* attrs = element.GetAttrNodeList()) {
       for (const auto& attr : *attrs)
         MoveTreeToNewScope(*attr);
     }
@@ -93,6 +91,9 @@ void TreeScopeAdopter::MoveShadowTreeToNewDocument(
     Document& old_document,
     Document& new_document) const {
   DCHECK_NE(old_document, new_document);
+  HeapVector<Member<CSSStyleSheet>> empty_vector;
+  shadow_root.SetAdoptedStyleSheets(empty_vector);
+
   if (shadow_root.GetType() == ShadowRootType::V0) {
     new_document.SetShadowCascadeOrder(ShadowCascadeOrder::kShadowCascadeV0);
   } else if (shadow_root.IsV1() && !shadow_root.IsUserAgent()) {
@@ -112,8 +113,7 @@ void TreeScopeAdopter::MoveTreeToNewDocument(Node& root,
       continue;
     Element& element = ToElement(node);
 
-    if (HeapVector<TraceWrapperMember<Attr>>* attrs =
-            element.GetAttrNodeList()) {
+    if (HeapVector<Member<Attr>>* attrs = element.GetAttrNodeList()) {
       for (const auto& attr : *attrs)
         MoveTreeToNewDocument(*attr, old_document, new_document);
     }
@@ -161,13 +161,12 @@ inline void TreeScopeAdopter::MoveNodeToNewDocument(
   old_document.MoveNodeIteratorsToNewDocument(node, new_document);
 
   if (node.GetCustomElementState() == CustomElementState::kCustom) {
-    Element& element = ToElement(node);
-    CustomElement::EnqueueAdoptedCallback(&element, &old_document,
-                                          &new_document);
+    CustomElement::EnqueueAdoptedCallback(ToElement(node), old_document,
+                                          new_document);
   }
 
-  if (node.IsShadowRoot())
-    ToShadowRoot(node).SetDocument(new_document);
+  if (auto* shadow_root = DynamicTo<ShadowRoot>(node))
+    shadow_root->SetDocument(new_document);
 
 #if DCHECK_IS_ON()
   g_did_move_to_new_document_was_called = false;

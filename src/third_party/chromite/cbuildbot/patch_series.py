@@ -107,8 +107,8 @@ def _PatchWrapException(functor):
       return functor(self, parent, *args, **kwargs)
     except gerrit.GerritException as e:
       if isinstance(e, gerrit.QueryNotSpecific):
-        e = ("%s\nSuggest you use gerrit numbers instead (prefixed with a * "
-             "if it's an internal change)." % e)
+        e = ("%s\nSuggest you use gerrit numbers instead (prefixed with a "
+             "'chrome-internal:' if it's an internal change)." % e)
       new_exc = cros_patch.PatchException(parent, e)
       raise new_exc.__class__, new_exc, sys.exc_info()[2]
     except cros_patch.PatchException as e:

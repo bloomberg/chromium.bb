@@ -196,12 +196,16 @@ const CGFloat kMediumAlpha = 0.5;
 }
 
 - (void)loadElementsFromContext {
-  NSString* typeURL = static_cast<NSString*>(kUTTypeURL);
+  NSString* typeURL = (__bridge NSString*)(kUTTypeURL);
   for (NSExtensionItem* item in self.extensionContext.inputItems) {
     for (NSItemProvider* itemProvider in item.attachments) {
       if ([itemProvider hasItemConformingToTypeIdentifier:typeURL]) {
         ItemBlock URLCompletion = ^(id idURL, NSError* error) {
-          NSURL* URL = static_cast<NSURL*>(idURL);
+          NSURL* URL = base::mac::ObjCCast<NSURL>(idURL);
+          if (!URL) {
+            [self displayErrorView];
+            return;
+          }
           dispatch_async(dispatch_get_main_queue(), ^{
             _shareItem = [item copy];
             _shareURL = [URL copy];
@@ -216,7 +220,6 @@ const CGFloat kMediumAlpha = 0.5;
               [self displayErrorView];
             }
           });
-
         };
         [itemProvider loadItemForTypeIdentifier:typeURL
                                         options:nil
@@ -226,7 +229,7 @@ const CGFloat kMediumAlpha = 0.5;
               valueWithCGSize:CGSizeMake(kScreenShotWidth, kScreenShotHeight)]
         };
         ItemBlock imageCompletion = ^(id item, NSError* error) {
-          _image = static_cast<UIImage*>(item);
+          _image = base::mac::ObjCCast<UIImage>(item);
           if (_image && self.shareView) {
             dispatch_async(dispatch_get_main_queue(), ^{
               [self.shareView setScreenshot:_image];

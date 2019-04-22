@@ -10,18 +10,16 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
-#include "chrome/browser/signin/fake_signin_manager_builder.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/signin/signin_global_error_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/common/pref_names.h"
@@ -29,17 +27,14 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_error_controller.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "google_apis/gaia/oauth2_token_service_delegate.h"
+#include "services/identity/public/cpp/identity_test_environment.h"
+#include "services/identity/public/cpp/identity_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-static const char kTestAccountId[] = "id-testuser@test.com";
-static const char kTestGaiaId[] = "gaiaid-testuser@test.com";
-static const char kTestUsername[] = "testuser@test.com";
+static const char kTestEmail[] = "testuser@test.com";
 
 class SigninGlobalErrorTest : public testing::Test {
  public:
@@ -50,21 +45,26 @@ class SigninGlobalErrorTest : public testing::Test {
     ASSERT_TRUE(profile_manager_.SetUp());
 
     // Create a signed-in profile.
-    TestingProfile::TestingFactories testing_factories;
-    testing_factories.emplace_back(
-        SigninManagerFactory::GetInstance(),
-        base::BindRepeating(&BuildFakeSigninManagerForTesting));
+    TestingProfile::TestingFactories testing_factories =
+        IdentityTestEnvironmentProfileAdaptor::
+            GetIdentityTestEnvironmentFactories();
+
     profile_ = profile_manager_.CreateTestingProfile(
         "Person 1", std::unique_ptr<sync_preferences::PrefServiceSyncable>(),
         base::UTF8ToUTF16("Person 1"), 0, std::string(),
         std::move(testing_factories));
 
-    SigninManagerFactory::GetForProfile(profile())
-        ->SetAuthenticatedAccountInfo(kTestAccountId, kTestUsername);
+    identity_test_env_profile_adaptor_ =
+        std::make_unique<IdentityTestEnvironmentProfileAdaptor>(profile());
+
+    AccountInfo account_info =
+        identity_test_env_profile_adaptor_->identity_test_env()
+            ->MakePrimaryAccountAvailable(kTestEmail);
     ProfileAttributesEntry* entry;
     ASSERT_TRUE(profile_manager_.profile_attributes_storage()->
         GetProfileAttributesWithPath(profile()->GetPath(), &entry));
-    entry->SetAuthInfo(kTestGaiaId, base::UTF8ToUTF16(kTestUsername));
+
+    entry->SetAuthInfo(account_info.gaia, base::UTF8ToUTF16(kTestEmail));
 
     global_error_ = SigninGlobalErrorFactory::GetForProfile(profile());
     error_controller_ = SigninErrorControllerFactory::GetForProfile(profile());
@@ -74,23 +74,29 @@ class SigninGlobalErrorTest : public testing::Test {
   TestingProfileManager* testing_profile_manager() {
     return &profile_manager_;
   }
+
   SigninGlobalError* global_error() { return global_error_; }
   SigninErrorController* error_controller() { return error_controller_; }
 
   void SetAuthError(GoogleServiceAuthError::State state) {
-    ProfileOAuth2TokenService* token_service =
-        ProfileOAuth2TokenServiceFactory::GetForProfile(profile());
-    token_service->UpdateCredentials(kTestAccountId, "refresh_token");
-    // TODO(https://crbug.com/836212): Do not use the delegate directly, because
-    // it is internal API.
-    token_service->GetDelegate()->UpdateAuthError(
-        kTestAccountId, GoogleServiceAuthError(state));
+    identity::IdentityTestEnvironment* identity_test_env =
+        identity_test_env_profile_adaptor_->identity_test_env();
+    std::string primary_account_id =
+        identity_test_env->identity_manager()->GetPrimaryAccountId();
+
+    identity::UpdatePersistentErrorOfRefreshTokenForAccount(
+        identity_test_env->identity_manager(), primary_account_id,
+        GoogleServiceAuthError(state));
   }
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfileManager profile_manager_;
   TestingProfile* profile_;
+
+  std::unique_ptr<IdentityTestEnvironmentProfileAdaptor>
+      identity_test_env_profile_adaptor_;
+
   SigninGlobalError* global_error_;
   SigninErrorController* error_controller_;
 };
@@ -128,13 +134,13 @@ TEST_F(SigninGlobalErrorTest, AuthStatusEnumerateAllErrors) {
     { GoogleServiceAuthError::SERVICE_ERROR, true },
     { GoogleServiceAuthError::WEB_LOGIN_REQUIRED, true },
   };
-  static_assert(arraysize(table) == GoogleServiceAuthError::NUM_STATES,
-      "table size should match number of auth error types");
+  static_assert(base::size(table) == GoogleServiceAuthError::NUM_STATES,
+                "table size should match number of auth error types");
 
   // Mark the profile with an active timestamp so profile_metrics logs it.
   testing_profile_manager()->UpdateLastUser(profile());
 
-  for (size_t i = 0; i < arraysize(table); ++i) {
+  for (size_t i = 0; i < base::size(table); ++i) {
     if (GoogleServiceAuthError::IsDeprecated(table[i].error_state))
       continue;
     SetAuthError(GoogleServiceAuthError::NONE);

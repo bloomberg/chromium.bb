@@ -54,10 +54,12 @@ Gnubby.prototype.enroll = function(
   ]);
   var u8 =
       new Uint8Array(apdu.length + challenge.length + appIdHash.length + 2);
-  for (var i = 0; i < apdu.length; ++i)
+  for (var i = 0; i < apdu.length; ++i) {
     u8[i] = apdu[i];
-  for (var i = 0; i < challenge.length; ++i)
+  }
+  for (var i = 0; i < challenge.length; ++i) {
     u8[i + apdu.length] = challenge[i];
+  }
   for (var i = 0; i < appIdHash.length; ++i) {
     u8[i + apdu.length + challenge.length] = appIdHash[i];
   }
@@ -104,10 +106,12 @@ Gnubby.prototype.sign = function(
       apdu[2] |= Gnubby.P1_TUP_TESTONLY;
     }
     var u8 = new Uint8Array(apdu.length + apduDataLen + 2);
-    for (var i = 0; i < apdu.length; ++i)
+    for (var i = 0; i < apdu.length; ++i) {
       u8[i] = apdu[i];
-    for (var i = 0; i < challengeHash.length; ++i)
+    }
+    for (var i = 0; i < challengeHash.length; ++i) {
       u8[i + apdu.length] = challengeHash[i];
+    }
     for (var i = 0; i < appIdHash.length; ++i) {
       u8[i + apdu.length + challengeHash.length] = appIdHash[i];
     }
@@ -126,8 +130,9 @@ Gnubby.prototype.sign = function(
  * @param {function(...)} cb Callback
  */
 Gnubby.prototype.version = function(cb) {
-  if (!cb)
+  if (!cb) {
     cb = Gnubby.defaultCallback;
+  }
   if (this.version_) {
     cb(-GnubbyDevice.OK, this.version_);
     return;

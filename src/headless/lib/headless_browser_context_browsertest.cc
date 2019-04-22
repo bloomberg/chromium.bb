@@ -4,6 +4,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
@@ -146,7 +147,8 @@ class HeadlessBrowserContextIsolationTest
   std::unique_ptr<LoadObserver> load_observer_;
 };
 
-HEADLESS_ASYNC_DEVTOOLED_TEST_F(HeadlessBrowserContextIsolationTest);
+// TODO(https://crbug.com/930356): Re-enable test.
+DISABLED_HEADLESS_ASYNC_DEVTOOLED_TEST_F(HeadlessBrowserContextIsolationTest);
 
 IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, UserDataDir) {
   // We do not want to bother with posting tasks to create a temp dir.

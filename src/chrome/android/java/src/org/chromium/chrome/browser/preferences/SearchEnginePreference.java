@@ -47,6 +47,7 @@ public class SearchEnginePreference extends PreferenceFragment {
         mListView = (ListView) getView().findViewById(android.R.id.list);
         mListView.setAdapter(mSearchEngineAdapter);
         mListView.setDivider(null);
+        mListView.setItemsCanFocus(true);
     }
 
     @Override

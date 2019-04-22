@@ -5,6 +5,7 @@
 #include "components/password_manager/core/browser/password_reuse_detection_manager.h"
 
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
@@ -72,7 +73,7 @@ TEST_F(PasswordReuseDetectionManagerTest, CheckReuseCalled) {
       .WillRepeatedly(testing::Return(store_.get()));
   PasswordReuseDetectionManager manager(&client_);
 
-  for (size_t test = 0; test < arraysize(gurls); ++test) {
+  for (size_t test = 0; test < base::size(gurls); ++test) {
     manager.DidNavigateMainFrame(gurls[test]);
     for (size_t i = 0; i < input[test].size(); ++i) {
       base::string16 expected_input = input[test].substr(0, i + 1);

@@ -34,9 +34,13 @@ class CommandUpdaterImpl : public CommandUpdater {
   // Overriden from CommandUpdater:
   bool SupportsCommand(int id) const override;
   bool IsCommandEnabled(int id) const override;
-  bool ExecuteCommand(int id) override;
+  bool ExecuteCommand(
+      int id,
+      base::TimeTicks time_stamp = base::TimeTicks::Now()) override;
   bool ExecuteCommandWithDisposition(
-      int id, WindowOpenDisposition disposition) override;
+      int id,
+      WindowOpenDisposition disposition,
+      base::TimeTicks time_stamp = base::TimeTicks::Now()) override;
   void AddCommandObserver(int id, CommandObserver* observer) override;
   void RemoveCommandObserver(int id, CommandObserver* observer) override;
   void RemoveCommandObserver(CommandObserver* observer) override;

@@ -4,6 +4,8 @@
 
 #include "ash/display/screen_orientation_controller.h"
 
+#include "ash/accelerometer/accelerometer_reader.h"
+#include "ash/accelerometer/accelerometer_types.h"
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/shell.h"
@@ -12,8 +14,6 @@
 #include "ash/wm/window_state.h"
 #include "base/auto_reset.h"
 #include "base/command_line.h"
-#include "chromeos/accelerometer/accelerometer_reader.h"
-#include "chromeos/accelerometer/accelerometer_types.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
@@ -157,6 +157,23 @@ bool IsPortraitOrientation(OrientationLockType type) {
          type == OrientationLockType::kPortraitSecondary;
 }
 
+OrientationLockType GetCurrentScreenOrientation() {
+  // ScreenOrientationController might be nullptr during shutdown.
+  // TODO(xdai|sammiequon): See if we can reorder so that users of the function
+  // (split_view_controller) get shutddown before screen orientation controller.
+  if (!Shell::Get()->screen_orientation_controller())
+    return OrientationLockType::kAny;
+  return Shell::Get()->screen_orientation_controller()->GetCurrentOrientation();
+}
+
+bool IsCurrentScreenOrientationLandscape() {
+  return IsLandscapeOrientation(GetCurrentScreenOrientation());
+}
+
+bool IsCurrentScreenOrientationPrimary() {
+  return IsPrimaryOrientation(GetCurrentScreenOrientation());
+}
+
 std::ostream& operator<<(std::ostream& out, const OrientationLockType& lock) {
   switch (lock) {
     case OrientationLockType::kAny:
@@ -202,7 +219,7 @@ ScreenOrientationController::ScreenOrientationController()
 
 ScreenOrientationController::~ScreenOrientationController() {
   Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
-  chromeos::AccelerometerReader::GetInstance()->RemoveObserver(this);
+  AccelerometerReader::GetInstance()->RemoveObserver(this);
   Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
   Shell::Get()->activation_client()->RemoveObserver(this);
   for (auto& windows : lock_info_map_)
@@ -328,15 +345,15 @@ void ScreenOrientationController::OnWindowVisibilityChanged(
 }
 
 void ScreenOrientationController::OnAccelerometerUpdated(
-    scoped_refptr<const chromeos::AccelerometerUpdate> update) {
+    scoped_refptr<const AccelerometerUpdate> update) {
   if (rotation_locked_ && !CanRotateInLockedState())
     return;
-  if (!update->has(chromeos::ACCELEROMETER_SOURCE_SCREEN))
+  if (!update->has(ACCELEROMETER_SOURCE_SCREEN))
     return;
   // Ignore the reading if it appears unstable. The reading is considered
   // unstable if it deviates too much from gravity
-  if (update->IsReadingStable(chromeos::ACCELEROMETER_SOURCE_SCREEN))
-    HandleScreenRotation(update->get(chromeos::ACCELEROMETER_SOURCE_SCREEN));
+  if (update->IsReadingStable(ACCELEROMETER_SOURCE_SCREEN))
+    HandleScreenRotation(update->get(ACCELEROMETER_SOURCE_SCREEN));
 }
 
 void ScreenOrientationController::OnDisplayConfigurationChanged() {
@@ -366,7 +383,7 @@ void ScreenOrientationController::OnTabletModeStarted() {
   }
   if (!rotation_locked_)
     LoadDisplayRotationProperties();
-  chromeos::AccelerometerReader::GetInstance()->AddObserver(this);
+  AccelerometerReader::GetInstance()->AddObserver(this);
   shell->window_tree_host_manager()->AddObserver(this);
   Shell::Get()->activation_client()->AddObserver(this);
 
@@ -378,7 +395,7 @@ void ScreenOrientationController::OnTabletModeStarted() {
 }
 
 void ScreenOrientationController::OnTabletModeEnding() {
-  chromeos::AccelerometerReader::GetInstance()->RemoveObserver(this);
+  AccelerometerReader::GetInstance()->RemoveObserver(this);
   Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
   Shell::Get()->activation_client()->RemoveObserver(this);
   if (!display::Display::HasInternalDisplay())
@@ -507,7 +524,7 @@ void ScreenOrientationController::LockToRotationMatchingOrientation(
 }
 
 void ScreenOrientationController::HandleScreenRotation(
-    const chromeos::AccelerometerReading& lid) {
+    const AccelerometerReading& lid) {
   gfx::Vector3dF lid_flattened(lid.x, lid.y, 0.0f);
   float lid_flattened_length = lid_flattened.Length();
   // When the lid is close to being flat, don't change rotation as it is too

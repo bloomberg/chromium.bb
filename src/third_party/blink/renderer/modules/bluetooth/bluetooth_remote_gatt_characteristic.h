@@ -8,7 +8,7 @@
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "third_party/blink/public/platform/modules/bluetooth/web_bluetooth.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
-#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_piece.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_data_view.h"
 #include "third_party/blink/renderer/modules/bluetooth/bluetooth_remote_gatt_service.h"
@@ -45,12 +45,6 @@ class BluetoothRemoteGATTCharacteristic final
 
  public:
   explicit BluetoothRemoteGATTCharacteristic(
-      ExecutionContext*,
-      mojom::blink::WebBluetoothRemoteGATTCharacteristicPtr,
-      BluetoothRemoteGATTService*,
-      BluetoothDevice*);
-
-  static BluetoothRemoteGATTCharacteristic* Create(
       ExecutionContext*,
       mojom::blink::WebBluetoothRemoteGATTCharacteristicPtr,
       BluetoothRemoteGATTService*,
@@ -98,7 +92,7 @@ class BluetoothRemoteGATTCharacteristic final
   ScriptPromise stopNotifications(ScriptState*);
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(characteristicvaluechanged,
-                                  kCharacteristicvaluechanged);
+                                  kCharacteristicvaluechanged)
 
  protected:
   // EventTarget overrides.

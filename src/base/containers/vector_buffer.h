@@ -11,6 +11,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "base/containers/util.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/numerics/checked_math.h"
@@ -163,12 +164,6 @@ class VectorBuffer {
   }
 
  private:
-  // TODO(crbug.com/817982): What we really need is for checked_math.h to be
-  // able to do checked arithmetic on pointers.
-  static inline uintptr_t get_uintptr(const T* t) {
-    return reinterpret_cast<uintptr_t>(t);
-  }
-
   static bool RangesOverlap(const T* from_begin,
                             const T* from_end,
                             const T* to) {

@@ -180,9 +180,10 @@ TranslatorASM *Shader::createCompiler(GLenum shaderType)
 	resources.OES_standard_derivatives = 1;
 	resources.OES_fragment_precision_high = 1;
 	resources.OES_EGL_image_external = 1;
+	resources.OES_EGL_image_external_essl3 = 1;
 	resources.EXT_draw_buffers = 1;
 	resources.ARB_texture_rectangle = 1;
-	resources.MaxCallStackDepth = 64;
+	resources.MaxCallStackDepth = MAX_SHADER_CALL_STACK_SIZE;
 	assembler->Init(resources);
 
 	return assembler;

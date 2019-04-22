@@ -19,7 +19,8 @@ namespace network {
 
 // PreSpawnTarget extension.
 COMPONENT_EXPORT(NETWORK_SERVICE)
-bool NetworkPreSpawnTarget(sandbox::TargetPolicy* policy);
+bool NetworkPreSpawnTarget(sandbox::TargetPolicy* policy,
+                           const base::CommandLine& cmd_line);
 
 }  // namespace network
 

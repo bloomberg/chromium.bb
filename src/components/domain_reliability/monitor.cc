@@ -12,11 +12,11 @@
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/domain_reliability/baked_in_configs.h"
 #include "components/domain_reliability/google_configs.h"
 #include "components/domain_reliability/header.h"
 #include "components/domain_reliability/quic_error_mapping.h"
-#include "net/base/ip_endpoint.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
@@ -187,8 +187,8 @@ void DomainReliabilityMonitor::OnNetworkChanged(
 }
 
 void DomainReliabilityMonitor::ClearBrowsingData(
-   DomainReliabilityClearMode mode,
-   const base::Callback<bool(const GURL&)>& origin_filter) {
+    DomainReliabilityClearMode mode,
+    const base::Callback<bool(const GURL&)>& origin_filter) {
   switch (mode) {
     case CLEAR_BEACONS:
       context_manager_.ClearBeacons(origin_filter);
@@ -242,7 +242,7 @@ DomainReliabilityMonitor::RequestInfo::RequestInfo(
   request.GetLoadTimingInfo(&load_timing_info);
   request.GetConnectionAttempts(&connection_attempts);
   request.PopulateNetErrorDetails(&details);
-  if (!request.GetRemoteEndpoint(&remote_endpoint))
+  if (!request.GetTransactionRemoteEndpoint(&remote_endpoint))
     remote_endpoint = net::IPEndPoint();
 }
 

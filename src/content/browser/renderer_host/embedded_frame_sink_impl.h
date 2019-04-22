@@ -12,7 +12,7 @@
 #include "components/viz/host/host_frame_sink_client.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "third_party/blink/public/platform/modules/frame_sinks/embedded_frame_sink.mojom.h"
+#include "third_party/blink/public/mojom/frame_sinks/embedded_frame_sink.mojom.h"
 
 namespace viz {
 class HostFrameSinkManager;
@@ -40,11 +40,14 @@ class CONTENT_EXPORT EmbeddedFrameSinkImpl : public viz::HostFrameSinkClient {
     return local_surface_id_;
   }
 
-  // Creates a CompositorFrameSink connection to FrameSinkManagerImpl. This
-  // should only ever be called once.
+  // Creates a CompositorFrameSink connection to FrameSinkManagerImpl.
   void CreateCompositorFrameSink(
       viz::mojom::CompositorFrameSinkClientPtr client,
-      viz::mojom::CompositorFrameSinkRequest request,
+      viz::mojom::CompositorFrameSinkRequest request);
+
+  // Establishes a connection to the emedder of this FrameSink. Allows the child
+  // to notify its embedder of its LocalSurfaceId changes.
+  void ConnectToEmbedder(
       blink::mojom::SurfaceEmbedderRequest surface_embedder_request);
 
   // viz::HostFrameSinkClient implementation.

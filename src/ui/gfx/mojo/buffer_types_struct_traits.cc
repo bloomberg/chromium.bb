@@ -14,10 +14,6 @@
 #include "mojo/public/cpp/system/scope_to_message_pipe.h"
 #endif
 
-#if !defined(OS_LINUX)
-#include "base/no_destructor.h"
-#endif
-
 namespace mojo {
 
 // static
@@ -28,34 +24,48 @@ bool StructTraits<gfx::mojom::BufferUsageAndFormatDataView,
   return data.ReadUsage(&out->usage) && data.ReadFormat(&out->format);
 }
 
+#if defined(OS_LINUX) || defined(USE_OZONE)
+mojo::ScopedHandle StructTraits<
+    gfx::mojom::NativePixmapPlaneDataView,
+    gfx::NativePixmapPlane>::buffer_handle(gfx::NativePixmapPlane& plane) {
 #if defined(OS_LINUX)
-std::vector<mojo::ScopedHandle>
-StructTraits<gfx::mojom::NativePixmapHandleDataView, gfx::NativePixmapHandle>::
-    fds(const gfx::NativePixmapHandle& pixmap_handle) {
-  std::vector<mojo::ScopedHandle> handles;
-  for (const base::FileDescriptor& fd : pixmap_handle.fds)
-    handles.emplace_back(mojo::WrapPlatformFile(fd.fd));
-  return handles;
+  return mojo::WrapPlatformFile(plane.fd.release());
+#elif defined(OS_FUCHSIA)
+  return mojo::WrapPlatformHandle(mojo::PlatformHandle(std::move(plane.vmo)));
+#endif  // defined(OS_LINUX)
+}
+
+bool StructTraits<
+    gfx::mojom::NativePixmapPlaneDataView,
+    gfx::NativePixmapPlane>::Read(gfx::mojom::NativePixmapPlaneDataView data,
+                                  gfx::NativePixmapPlane* out) {
+  out->stride = data.stride();
+  out->offset = data.offset();
+  out->size = data.size();
+  out->modifier = data.modifier();
+
+  mojo::PlatformHandle handle =
+      mojo::UnwrapPlatformHandle(data.TakeBufferHandle());
+#if defined(OS_LINUX)
+  if (!handle.is_fd())
+    return false;
+  out->fd = handle.TakeFD();
+#elif defined(OS_FUCHSIA)
+  if (!handle.is_valid_handle())
+    return false;
+  out->vmo = zx::vmo(handle.TakeHandle());
+#endif  // defined(OS_LINUX)
+
+  return true;
 }
 
 bool StructTraits<
     gfx::mojom::NativePixmapHandleDataView,
     gfx::NativePixmapHandle>::Read(gfx::mojom::NativePixmapHandleDataView data,
                                    gfx::NativePixmapHandle* out) {
-  mojo::ArrayDataView<mojo::ScopedHandle> handles_data_view;
-  data.GetFdsDataView(&handles_data_view);
-  for (size_t i = 0; i < handles_data_view.size(); ++i) {
-    mojo::ScopedHandle handle = handles_data_view.Take(i);
-    base::PlatformFile platform_file;
-    if (mojo::UnwrapPlatformFile(std::move(handle), &platform_file) !=
-        MOJO_RESULT_OK)
-      return false;
-    constexpr bool auto_close = true;
-    out->fds.push_back(base::FileDescriptor(platform_file, auto_close));
-  }
   return data.ReadPlanes(&out->planes);
 }
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) || defined(USE_OZONE)
 
 gfx::mojom::GpuMemoryBufferPlatformHandlePtr StructTraits<
     gfx::mojom::GpuMemoryBufferHandleDataView,
@@ -68,9 +78,9 @@ gfx::mojom::GpuMemoryBufferPlatformHandlePtr StructTraits<
       return gfx::mojom::GpuMemoryBufferPlatformHandle::NewSharedMemoryHandle(
           std::move(handle.region));
     case gfx::NATIVE_PIXMAP:
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(USE_OZONE)
       return gfx::mojom::GpuMemoryBufferPlatformHandle::NewNativePixmapHandle(
-          handle.native_pixmap_handle);
+          std::move(handle.native_pixmap_handle));
 #else
       break;
 #endif
@@ -144,11 +154,12 @@ bool StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,
       out->type = gfx::SHARED_MEMORY_BUFFER;
       out->region = std::move(platform_handle->get_shared_memory_handle());
       return true;
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(USE_OZONE)
     case gfx::mojom::GpuMemoryBufferPlatformHandleDataView::Tag::
         NATIVE_PIXMAP_HANDLE:
       out->type = gfx::NATIVE_PIXMAP;
-      out->native_pixmap_handle = platform_handle->get_native_pixmap_handle();
+      out->native_pixmap_handle =
+          std::move(platform_handle->get_native_pixmap_handle());
       return true;
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
     case gfx::mojom::GpuMemoryBufferPlatformHandleDataView::Tag::MACH_PORT: {

@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "media/mojo/interfaces/content_decryption_module.mojom.h"
 #include "media/mojo/interfaces/renderer.mojom.h"
+#include "media/mojo/interfaces/renderer_extensions.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
@@ -51,22 +52,78 @@ void MediaInterfaceFactory::CreateVideoDecoder(
   GetMediaInterfaceFactory()->CreateVideoDecoder(std::move(request));
 }
 
-void MediaInterfaceFactory::CreateRenderer(
-    media::mojom::HostedRendererType type,
-    const std::string& type_specific_id,
+void MediaInterfaceFactory::CreateDefaultRenderer(
+    const std::string& audio_device_id,
     media::mojom::RendererRequest request) {
   if (!task_runner_->BelongsToCurrentThread()) {
     task_runner_->PostTask(
         FROM_HERE,
-        base::BindOnce(&MediaInterfaceFactory::CreateRenderer, weak_this_, type,
-                       type_specific_id, std::move(request)));
+        base::BindOnce(&MediaInterfaceFactory::CreateDefaultRenderer,
+                       weak_this_, audio_device_id, std::move(request)));
     return;
   }
 
   DVLOG(1) << __func__;
-  GetMediaInterfaceFactory()->CreateRenderer(type, type_specific_id,
-                                             std::move(request));
+  GetMediaInterfaceFactory()->CreateDefaultRenderer(audio_device_id,
+                                                    std::move(request));
 }
+
+#if BUILDFLAG(ENABLE_CAST_RENDERER)
+void MediaInterfaceFactory::CreateCastRenderer(
+    const base::UnguessableToken& overlay_plane_id,
+    media::mojom::RendererRequest request) {
+  if (!task_runner_->BelongsToCurrentThread()) {
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&MediaInterfaceFactory::CreateCastRenderer, weak_this_,
+                       overlay_plane_id, std::move(request)));
+    return;
+  }
+
+  DVLOG(1) << __func__;
+  GetMediaInterfaceFactory()->CreateCastRenderer(overlay_plane_id,
+                                                 std::move(request));
+}
+#endif
+
+#if defined(OS_ANDROID)
+void MediaInterfaceFactory::CreateMediaPlayerRenderer(
+    media::mojom::MediaPlayerRendererClientExtensionPtr client_extension_ptr,
+    media::mojom::RendererRequest request,
+    media::mojom::MediaPlayerRendererExtensionRequest
+        renderer_extension_request) {
+  if (!task_runner_->BelongsToCurrentThread()) {
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&MediaInterfaceFactory::CreateMediaPlayerRenderer,
+                       weak_this_, std::move(client_extension_ptr),
+                       std::move(request),
+                       std::move(renderer_extension_request)));
+    return;
+  }
+
+  DVLOG(1) << __func__;
+  GetMediaInterfaceFactory()->CreateMediaPlayerRenderer(
+      std::move(client_extension_ptr), std::move(request),
+      std::move(renderer_extension_request));
+}
+
+void MediaInterfaceFactory::CreateFlingingRenderer(
+    const std::string& presentation_id,
+    media::mojom::RendererRequest request) {
+  if (!task_runner_->BelongsToCurrentThread()) {
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&MediaInterfaceFactory::CreateFlingingRenderer,
+                       weak_this_, presentation_id, std::move(request)));
+    return;
+  }
+
+  DVLOG(1) << __func__;
+  GetMediaInterfaceFactory()->CreateFlingingRenderer(presentation_id,
+                                                     std::move(request));
+}
+#endif  // defined(OS_ANDROID)
 
 void MediaInterfaceFactory::CreateCdm(
     const std::string& key_system,

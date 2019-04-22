@@ -100,7 +100,7 @@ _hb_cg_font_release (void *data)
 
 
 static CTFontDescriptorRef
-get_last_resort_font_desc (void)
+get_last_resort_font_desc ()
 {
   // TODO Handle allocation failures?
   CTFontDescriptorRef last_resort = CTFontDescriptorCreateWithNameAndSize (CFSTR("LastResort"), 0);
@@ -171,7 +171,7 @@ create_ct_font (CGFontRef cg_font, CGFloat font_size)
   if (CFStringHasPrefix (cg_postscript_name, CFSTR (".SFNSText")) ||
       CFStringHasPrefix (cg_postscript_name, CFSTR (".SFNSDisplay")))
   {
-#if MAC_OS_X_VERSION_MIN_REQUIRED < 1080
+#if !(defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE) && MAC_OS_X_VERSION_MIN_REQUIRED < 1080
 # define kCTFontUIFontSystem kCTFontSystemFontType
 # define kCTFontUIFontEmphasizedSystem kCTFontEmphasizedSystemFontType
 #endif
@@ -214,7 +214,7 @@ create_ct_font (CGFontRef cg_font, CGFloat font_size)
   }
 
   CFURLRef original_url = nullptr;
-#if TARGET_OS_OSX && MAC_OS_X_VERSION_MIN_REQUIRED < 1060
+#if !(defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE) && MAC_OS_X_VERSION_MIN_REQUIRED < 1060
   ATSFontRef atsFont;
   FSRef fsref;
   OSStatus status;
@@ -244,7 +244,7 @@ create_ct_font (CGFontRef cg_font, CGFloat font_size)
        * process in Blink. This can be detected by the new file URL location
        * that the newly found font points to. */
       CFURLRef new_url = nullptr;
-#if TARGET_OS_OSX && MAC_OS_X_VERSION_MIN_REQUIRED < 1060
+#if !(defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE) && MAC_OS_X_VERSION_MIN_REQUIRED < 1060
       atsFont = CTFontGetPlatformFont (new_ct_font, NULL);
       status = ATSFontGetFileReference (atsFont, &fsref);
       if (status == noErr)
@@ -527,7 +527,7 @@ _hb_coretext_shape (hb_shape_plan_t    *shape_plan,
     /* Scan events and save features for each range. */
     hb_vector_t<active_feature_t> active_features;
     unsigned int last_index = 0;
-    for (unsigned int i = 0; i < feature_events.len; i++)
+    for (unsigned int i = 0; i < feature_events.length; i++)
     {
       feature_event_t *event = &feature_events[i];
 
@@ -536,13 +536,13 @@ _hb_coretext_shape (hb_shape_plan_t    *shape_plan,
         /* Save a snapshot of active features and the range. */
 	range_record_t *range = range_records.push ();
 
-	if (active_features.len)
+	if (active_features.length)
 	{
 	  CFMutableArrayRef features_array = CFArrayCreateMutable(kCFAllocatorDefault, 0, &kCFTypeArrayCallBacks);
 
 	  /* TODO sort and resolve conflicting features? */
 	  /* active_features.qsort (); */
-	  for (unsigned int j = 0; j < active_features.len; j++)
+	  for (unsigned int j = 0; j < active_features.length; j++)
 	  {
 	    CFStringRef keys[] = {
 	      kCTFontFeatureTypeIdentifierKey,
@@ -598,7 +598,7 @@ _hb_coretext_shape (hb_shape_plan_t    *shape_plan,
       } else {
         active_feature_t *feature = active_features.find (&event->feature);
 	if (feature)
-	  active_features.remove (feature - active_features);
+	  active_features.remove (feature - active_features.arrayZ ());
       }
     }
   }
@@ -711,7 +711,7 @@ resize_and_retry:
 /* What's the iOS equivalent of this check?
  * The symbols was introduced in iOS 7.0.
  * At any rate, our fallback is safe and works fine. */
-#if MAC_OS_X_VERSION_MIN_REQUIRED < 1090
+#if !(defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE) && MAC_OS_X_VERSION_MIN_REQUIRED < 1090
 #  define kCTLanguageAttributeName CFSTR ("NSLanguage")
 #endif
         CFStringRef lang = CFStringCreateWithCStringNoCopy (kCFAllocatorDefault,
@@ -730,7 +730,7 @@ resize_and_retry:
       CFAttributedStringSetAttribute (attr_string, CFRangeMake (0, chars_len),
 				      kCTFontAttributeName, ct_font);
 
-      if (num_features && range_records.len)
+      if (num_features && range_records.length)
       {
 	unsigned int start = 0;
 	range_record_t *last_range = &range_records[0];
@@ -783,7 +783,7 @@ resize_and_retry:
 
       int level = HB_DIRECTION_IS_FORWARD (buffer->props.direction) ? 0 : 1;
       CFNumberRef level_number = CFNumberCreate (kCFAllocatorDefault, kCFNumberIntType, &level);
-#if MAC_OS_X_VERSION_MIN_REQUIRED < 1060
+#if !(defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE) && MAC_OS_X_VERSION_MIN_REQUIRED < 1060
       extern const CFStringRef kCTTypesetterOptionForcedEmbeddingLevel;
 #endif
       CFDictionaryRef options = CFDictionaryCreate (kCFAllocatorDefault,
@@ -879,7 +879,7 @@ resize_and_retry:
 	 * Also see: https://bugs.chromium.org/p/chromium/issues/detail?id=597098
 	 */
 	bool matched = false;
-	for (unsigned int i = 0; i < range_records.len; i++)
+	for (unsigned int i = 0; i < range_records.length; i++)
 	  if (range_records[i].font && CFEqual (run_ct_font, range_records[i].font))
 	  {
 	    matched = true;
@@ -1142,77 +1142,9 @@ fail:
   if (line)
     CFRelease (line);
 
-  for (unsigned int i = 0; i < range_records.len; i++)
+  for (unsigned int i = 0; i < range_records.length; i++)
     if (range_records[i].font)
       CFRelease (range_records[i].font);
 
   return ret;
-}
-
-
-/*
- * AAT shaper
- */
-
-/*
- * shaper face data
- */
-
-struct hb_coretext_aat_face_data_t {};
-
-hb_coretext_aat_face_data_t *
-_hb_coretext_aat_shaper_face_data_create (hb_face_t *face)
-{
-  static const hb_tag_t tags[] = {HB_CORETEXT_TAG_MORX, HB_CORETEXT_TAG_MORT, HB_CORETEXT_TAG_KERX};
-
-  for (unsigned int i = 0; i < ARRAY_LENGTH (tags); i++)
-  {
-    hb_blob_t *blob = face->reference_table (tags[i]);
-    if (hb_blob_get_length (blob))
-    {
-      hb_blob_destroy (blob);
-      return face->data.coretext ? (hb_coretext_aat_face_data_t *) HB_SHAPER_DATA_SUCCEEDED : nullptr;
-    }
-    hb_blob_destroy (blob);
-  }
-
-  return nullptr;
-}
-
-void
-_hb_coretext_aat_shaper_face_data_destroy (hb_coretext_aat_face_data_t *data HB_UNUSED)
-{
-}
-
-
-/*
- * shaper font data
- */
-
-struct hb_coretext_aat_font_data_t {};
-
-hb_coretext_aat_font_data_t *
-_hb_coretext_aat_shaper_font_data_create (hb_font_t *font)
-{
-  return font->data.coretext ? (hb_coretext_aat_font_data_t *) HB_SHAPER_DATA_SUCCEEDED : nullptr;
-}
-
-void
-_hb_coretext_aat_shaper_font_data_destroy (hb_coretext_aat_font_data_t *data HB_UNUSED)
-{
-}
-
-
-/*
- * shaper
- */
-
-hb_bool_t
-_hb_coretext_aat_shape (hb_shape_plan_t    *shape_plan,
-			hb_font_t          *font,
-			hb_buffer_t        *buffer,
-			const hb_feature_t *features,
-			unsigned int        num_features)
-{
-  return _hb_coretext_shape (shape_plan, font, buffer, features, num_features);
 }

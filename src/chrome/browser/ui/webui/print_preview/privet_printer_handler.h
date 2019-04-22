@@ -26,6 +26,8 @@ namespace gfx {
 class Size;
 }
 
+namespace printing {
+
 // Implementation of PrinterHandler interface
 class PrivetPrinterHandler
     : public PrinterHandler,
@@ -42,13 +44,9 @@ class PrivetPrinterHandler
                         GetPrintersDoneCallback done_callback) override;
   void StartGetCapability(const std::string& destination_id,
                           GetCapabilityCallback calback) override;
-  // TODO(tbarzic): It might make sense to have the strings in a single struct.
-  void StartPrint(const std::string& destination_id,
-                  const std::string& capability,
-                  const base::string16& job_title,
-                  const std::string& ticket_json,
-                  const gfx::Size& page_size,
-                  const scoped_refptr<base::RefCountedMemory>& print_data,
+  void StartPrint(const base::string16& job_title,
+                  base::Value ticket,
+                  scoped_refptr<base::RefCountedMemory> print_data,
                   PrintCallback callback) override;
 
   // PrivetLocalPrinterLister::Delegate implementation.
@@ -76,15 +74,15 @@ class PrivetPrinterHandler
   void OnGotCapabilities(const base::DictionaryValue* capabilities);
   void PrintUpdateClient(
       const base::string16& job_title,
-      const scoped_refptr<base::RefCountedMemory>& print_data,
-      const std::string& print_ticket,
+      scoped_refptr<base::RefCountedMemory> print_data,
+      base::Value print_ticket,
       const std::string& capabilities,
       const gfx::Size& page_size,
       std::unique_ptr<cloud_print::PrivetHTTPClient> http_client);
   bool UpdateClient(std::unique_ptr<cloud_print::PrivetHTTPClient> http_client);
   void StartPrint(const base::string16& job_title,
-                  const scoped_refptr<base::RefCountedMemory>& print_data,
-                  const std::string& print_ticket,
+                  scoped_refptr<base::RefCountedMemory> print_data,
+                  base::Value print_ticket,
                   const std::string& capabilities,
                   const gfx::Size& page_size);
   void CreateHTTP(
@@ -113,4 +111,7 @@ class PrivetPrinterHandler
 
   DISALLOW_COPY_AND_ASSIGN(PrivetPrinterHandler);
 };
+
+}  // namespace printing
+
 #endif  // CHROME_BROWSER_UI_WEBUI_PRINT_PREVIEW_PRIVET_PRINTER_HANDLER_H_

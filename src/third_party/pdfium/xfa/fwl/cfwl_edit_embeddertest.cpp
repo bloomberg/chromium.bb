@@ -10,7 +10,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/xfa_js_embedder_test.h"
 
-class CFWLEditEmbeddertest : public XFAJSEmbedderTest {
+class CFWLEditEmbedderTest : public XFAJSEmbedderTest {
  protected:
   void SetUp() override {
     EmbedderTest::SetUp();
@@ -36,12 +36,12 @@ class CFWLEditEmbeddertest : public XFAJSEmbedderTest {
   EmbedderTestTimerHandlingDelegate delegate_;
 };
 
-TEST_F(CFWLEditEmbeddertest, Trivial) {
+TEST_F(CFWLEditEmbedderTest, Trivial) {
   CreateAndInitializeFormPDF("xfa/email_recommended.pdf");
   ASSERT_EQ(0u, delegate().GetAlerts().size());
 }
 
-TEST_F(CFWLEditEmbeddertest, LeftClickMouseSelection) {
+TEST_F(CFWLEditEmbedderTest, LeftClickMouseSelection) {
   CreateAndInitializeFormPDF("xfa/email_recommended.pdf");
   FORM_OnLButtonDown(form_handle(), page(), 0, 115, 58);
   for (size_t i = 0; i < 10; ++i)
@@ -59,7 +59,7 @@ TEST_F(CFWLEditEmbeddertest, LeftClickMouseSelection) {
   EXPECT_STREQ(L"defgh", WideString::FromUTF16LE(buf, len).c_str());
 }
 
-TEST_F(CFWLEditEmbeddertest, DragMouseSelection) {
+TEST_F(CFWLEditEmbedderTest, DragMouseSelection) {
   CreateAndInitializeFormPDF("xfa/email_recommended.pdf");
   FORM_OnLButtonDown(form_handle(), page(), 0, 115, 58);
   for (size_t i = 0; i < 10; ++i)
@@ -80,17 +80,17 @@ TEST_F(CFWLEditEmbeddertest, DragMouseSelection) {
   const char kDraggedMD5[] = "69c13fe53b5fc422ebeab56d101a4658";
   {
     ScopedFPDFBitmap page_bitmap =
-        RenderPageWithFlags(page(), form_handle(), FPDF_ANNOT);
+        RenderLoadedPageWithFlags(page(), FPDF_ANNOT);
     CompareBitmap(page_bitmap.get(), 612, 792, kDraggedMD5);
   }
 }
 
-TEST_F(CFWLEditEmbeddertest, SimpleFill) {
+TEST_F(CFWLEditEmbedderTest, SimpleFill) {
   CreateAndInitializeFormPDF("xfa/email_recommended.pdf");
   const char kBlankMD5[] = "eea5c72701270ac4a7edcc4df66d812a";
   {
     ScopedFPDFBitmap page_bitmap =
-        RenderPageWithFlags(page(), form_handle(), FPDF_ANNOT);
+        RenderLoadedPageWithFlags(page(), FPDF_ANNOT);
     CompareBitmap(page_bitmap.get(), 612, 792, kBlankMD5);
   }
 
@@ -101,12 +101,12 @@ TEST_F(CFWLEditEmbeddertest, SimpleFill) {
   const char kFilledMD5[] = "e73263fcea46c18d874b3d5a79f53805";
   {
     ScopedFPDFBitmap page_bitmap =
-        RenderPageWithFlags(page(), form_handle(), FPDF_ANNOT);
+        RenderLoadedPageWithFlags(page(), FPDF_ANNOT);
     CompareBitmap(page_bitmap.get(), 612, 792, kFilledMD5);
   }
 }
 
-TEST_F(CFWLEditEmbeddertest, FillWithNewLineWithoutMultiline) {
+TEST_F(CFWLEditEmbedderTest, FillWithNewLineWithoutMultiline) {
   CreateAndInitializeFormPDF("xfa/email_recommended.pdf");
   FORM_OnLButtonDown(form_handle(), page(), 0, 115, 58);
   for (size_t i = 0; i < 5; ++i)
@@ -118,13 +118,13 @@ TEST_F(CFWLEditEmbeddertest, FillWithNewLineWithoutMultiline) {
   const char kFilledMD5[] = "e73263fcea46c18d874b3d5a79f53805";
   {
     ScopedFPDFBitmap page_bitmap =
-        RenderPageWithFlags(page(), form_handle(), FPDF_ANNOT);
+        RenderLoadedPageWithFlags(page(), FPDF_ANNOT);
     CompareBitmap(page_bitmap.get(), 612, 792, kFilledMD5);
   }
 }
 
 // Disabled due to flakiness.
-TEST_F(CFWLEditEmbeddertest, DISABLED_FillWithNewLineWithMultiline) {
+TEST_F(CFWLEditEmbedderTest, DISABLED_FillWithNewLineWithMultiline) {
   CreateAndInitializeFormPDF("xfa/xfa_multiline_textfield.pdf");
   FORM_OnLButtonDown(form_handle(), page(), 0, 115, 58);
 
@@ -144,7 +144,7 @@ TEST_F(CFWLEditEmbeddertest, DISABLED_FillWithNewLineWithMultiline) {
     const char kFilledMultilineMD5[] = "a5654e027d8b1667c20f3b86d1918003";
 #endif  // _FX_PLATFORM_ == _FX_PLATFORM_LINUX_
     ScopedFPDFBitmap page_bitmap =
-        RenderPageWithFlags(page(), form_handle(), FPDF_ANNOT);
+        RenderLoadedPageWithFlags(page(), FPDF_ANNOT);
     CompareBitmap(page_bitmap.get(), 612, 792, kFilledMultilineMD5);
   }
 
@@ -169,7 +169,43 @@ TEST_F(CFWLEditEmbeddertest, DISABLED_FillWithNewLineWithMultiline) {
     const char kMultilineBackspaceMD5[] = "a2f1dcab92bb1fb7c2f9ccc70100c989";
 #endif  // _FX_PLATFORM_ == _FX_PLATFORM_LINUX_
     ScopedFPDFBitmap page_bitmap =
-        RenderPageWithFlags(page(), form_handle(), FPDF_ANNOT);
+        RenderLoadedPageWithFlags(page(), FPDF_ANNOT);
     CompareBitmap(page_bitmap.get(), 612, 792, kMultilineBackspaceMD5);
+  }
+}
+
+TEST_F(CFWLEditEmbedderTest, DateTimePickerTest) {
+  CreateAndInitializeFormPDF("xfa/xfa_date_time_edit.pdf");
+  FORM_OnLButtonDown(form_handle(), page(), 0, 115, 58);
+
+  const char kFilledMD5[] = "1036b8837a9dba75c6bd8f9347ae2eb2";
+  {
+    ScopedFPDFBitmap page_bitmap =
+        RenderLoadedPageWithFlags(page(), FPDF_ANNOT);
+    CompareBitmap(page_bitmap.get(), 612, 792, kFilledMD5);
+  }
+}
+
+TEST_F(CFWLEditEmbedderTest, ImageEditTest) {
+  CreateAndInitializeFormPDF("xfa/xfa_image_edit.pdf");
+  FORM_OnLButtonDown(form_handle(), page(), 0, 115, 58);
+
+  const char kFilledMD5[] = "1940568c9ba33bac5d0b1ee9558c76b3";
+  {
+    ScopedFPDFBitmap page_bitmap =
+        RenderLoadedPageWithFlags(page(), FPDF_ANNOT);
+    CompareBitmap(page_bitmap.get(), 612, 792, kFilledMD5);
+  }
+}
+
+TEST_F(CFWLEditEmbedderTest, ComboBoxTest) {
+  CreateAndInitializeFormPDF("xfa/xfa_combobox.pdf");
+  FORM_OnLButtonDown(form_handle(), page(), 0, 115, 58);
+
+  const char kFilledMD5[] = "dad642ae8a5afce2591ffbcabbfc58dd";
+  {
+    ScopedFPDFBitmap page_bitmap =
+        RenderLoadedPageWithFlags(page(), FPDF_ANNOT);
+    CompareBitmap(page_bitmap.get(), 612, 792, kFilledMD5);
   }
 }

@@ -9,12 +9,9 @@
 
 #include "base/single_thread_task_runner.h"
 #include "mojo/public/cpp/system/message_pipe.h"
+#include "services/service_manager/public/cpp/service.h"
 
-namespace service_manager {
-class ServiceContext;
-}
-
-std::unique_ptr<service_manager::ServiceContext> CreateNaClServiceContext(
+std::unique_ptr<service_manager::Service> CreateNaClService(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     mojo::ScopedMessagePipeHandle* ipc_channel);
 

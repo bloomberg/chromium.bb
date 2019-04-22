@@ -17,6 +17,23 @@ if (is_ios) {
   import("//ios/build/config.gni")
 }
 
+if (is_android) {
+  if (!defined(keycode_conversion_data_android_path)) {
+    keycode_conversion_data_android_path =
+        "keycodes/dom/keycode_conversion_data_android.inc"
+  }
+  keycode_conversion_data_android_gen_path = "$target_gen_dir/keycodes/dom/keycode_conversion_data_android_generated.inc"
+
+  copy("keycode_conversion_data_android") {
+    sources = [
+      keycode_conversion_data_android_path,
+    ]
+    outputs = [
+      keycode_conversion_data_android_gen_path,
+    ]
+  }
+}
+
 jumbo_static_library("dom_keycode_converter") {
   public = [
     "keycodes/dom/dom_code.h",
@@ -37,6 +54,12 @@ jumbo_static_library("dom_keycode_converter") {
 
   if (!is_ios) {
     deps += [ "//ipc:param_traits" ]
+  }
+
+  if (is_android) {
+    sources += [ keycode_conversion_data_android_gen_path ]
+
+    deps += [ ":keycode_conversion_data_android" ]
   }
 }
 
@@ -152,6 +175,12 @@ jumbo_component("events_base") {
       "Carbon.framework",
     ]
   }
+
+  if (is_android) {
+    sources += [ keycode_conversion_data_android_gen_path ]
+
+    deps += [ ":keycode_conversion_data_android" ]
+  }
 }
 
 jumbo_component("events") {
@@ -192,6 +221,7 @@ jumbo_component("events") {
     "event_modifiers.cc",
     "event_processor.cc",
     "event_rewriter.cc",
+    "event_rewriter_continuation.h",
     "event_source.cc",
     "event_target.cc",
     "event_utils.cc",
@@ -327,7 +357,7 @@ jumbo_component("events") {
       "fuchsia/input_event_dispatcher_delegate.h",
     ]
     sources += [ "fuchsia/input_event_dispatcher.cc" ]
-    public_deps += [ "//third_party/fuchsia-sdk/sdk:input" ]
+    public_deps += [ "//third_party/fuchsia-sdk/sdk:ui_input" ]
   }
 }
 
@@ -419,6 +449,8 @@ jumbo_static_library("test_support") {
     "test/test_event_processor.h",
     "test/test_event_rewriter.cc",
     "test/test_event_rewriter.h",
+    "test/test_event_source.cc",
+    "test/test_event_source.h",
     "test/test_event_target.cc",
     "test/test_event_target.h",
     "test/test_event_targeter.cc",
@@ -539,6 +571,7 @@ if (!is_ios) {
       "//ui/events/devices",
       "//ui/events/devices/mojo:test_interfaces",
       "//ui/events/gestures/blink",
+      "//ui/events/mojo:interfaces",
       "//ui/events/platform",
       "//ui/gfx/geometry/mojo:struct_traits",
       "//ui/gfx/ipc/geometry",
@@ -618,7 +651,7 @@ if (!is_ios) {
 
     if (is_fuchsia) {
       sources += [ "fuchsia/input_event_dispatcher_unittest.cc" ]
-      deps += [ "//third_party/fuchsia-sdk/sdk:input" ]
+      deps += [ "//third_party/fuchsia-sdk/sdk:ui_input" ]
     }
   }
 }

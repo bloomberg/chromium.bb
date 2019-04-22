@@ -26,7 +26,9 @@ var testInfo = [
     { element: "audio", typeArray: ["audio/wav", "audio/ogg"], srcArray: ["content/test.wav", "content/test.oga"], description: "Test audio with ['audio/wav', 'audio/ogg']" },
     { element: "audio", typeArray: ["audio/ogg", "audio/wav"], srcArray: ["content/test.oga", "content/test.wav"], description: "Test audio with ['audio/ogg', 'audio/wav']" },
     { element: "video", srcArray: [mp4DataSrc, ogvDataSrc], description: "Test video with ['data:video/mp4;base64', 'data:video/ogg;base64']" },
-    { element: "video", srcArray: [ogvDataSrc, mp4DataSrc], description: "Test video with ['data:video/ogg;base64', 'data:video/mp4;base64']" }
+    { element: "video", srcArray: [ogvDataSrc, mp4DataSrc], description: "Test video with ['data:video/ogg;base64', 'data:video/mp4;base64']" },
+    { element: "audio", typeArray: ["audio/mp4", "audio/ogg"], srcArray: ["content/test.m4a", "content/test.oga"], description: "Test audio with ['audio/mp4', \"audio/ogg\"]" },
+    { element: "audio", typeArray: ["audio/ogg", "audio/mp4"], srcArray: ["content/test.oga", "content/test.m4a"], description: "Test audio with ['audio/ogg', \"audio/mp4\"]" },
 ];
 
 testInfo.forEach(function(test) {

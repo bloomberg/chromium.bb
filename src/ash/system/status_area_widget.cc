@@ -17,7 +17,6 @@
 #include "ash/system/status_area_widget_delegate.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/system/virtual_keyboard/virtual_keyboard_tray.h"
-#include "base/command_line.h"
 #include "base/i18n/time_formatting.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
@@ -43,35 +42,36 @@ StatusAreaWidget::StatusAreaWidget(aura::Window* status_container, Shelf* shelf)
 }
 
 void StatusAreaWidget::Initialize() {
-  // Create the child views, right to left.
-  overview_button_tray_ = std::make_unique<OverviewButtonTray>(shelf_);
-  status_area_widget_delegate_->AddChildView(overview_button_tray_.get());
+  // Create the child views, left to right.
 
-  unified_system_tray_ = std::make_unique<UnifiedSystemTray>(shelf_);
-  status_area_widget_delegate_->AddChildView(unified_system_tray_.get());
-
-  palette_tray_ = std::make_unique<PaletteTray>(shelf_);
-  status_area_widget_delegate_->AddChildView(palette_tray_.get());
-
-  virtual_keyboard_tray_ = std::make_unique<VirtualKeyboardTray>(shelf_);
-  status_area_widget_delegate_->AddChildView(virtual_keyboard_tray_.get());
-
-  ime_menu_tray_ = std::make_unique<ImeMenuTray>(shelf_);
-  status_area_widget_delegate_->AddChildView(ime_menu_tray_.get());
-
-  select_to_speak_tray_ = std::make_unique<SelectToSpeakTray>(shelf_);
-  status_area_widget_delegate_->AddChildView(select_to_speak_tray_.get());
-
-  dictation_button_tray_ = std::make_unique<DictationButtonTray>(shelf_);
-  status_area_widget_delegate_->AddChildView(dictation_button_tray_.get());
+  if (::features::IsMultiProcessMash()) {
+    flag_warning_tray_ = std::make_unique<FlagWarningTray>(shelf_);
+    status_area_widget_delegate_->AddChildView(flag_warning_tray_.get());
+  }
 
   logout_button_tray_ = std::make_unique<LogoutButtonTray>(shelf_);
   status_area_widget_delegate_->AddChildView(logout_button_tray_.get());
 
-  if (::features::IsSingleProcessMash() || ::features::IsMultiProcessMash()) {
-    flag_warning_tray_ = std::make_unique<FlagWarningTray>(shelf_);
-    status_area_widget_delegate_->AddChildView(flag_warning_tray_.get());
-  }
+  dictation_button_tray_ = std::make_unique<DictationButtonTray>(shelf_);
+  status_area_widget_delegate_->AddChildView(dictation_button_tray_.get());
+
+  select_to_speak_tray_ = std::make_unique<SelectToSpeakTray>(shelf_);
+  status_area_widget_delegate_->AddChildView(select_to_speak_tray_.get());
+
+  ime_menu_tray_ = std::make_unique<ImeMenuTray>(shelf_);
+  status_area_widget_delegate_->AddChildView(ime_menu_tray_.get());
+
+  virtual_keyboard_tray_ = std::make_unique<VirtualKeyboardTray>(shelf_);
+  status_area_widget_delegate_->AddChildView(virtual_keyboard_tray_.get());
+
+  palette_tray_ = std::make_unique<PaletteTray>(shelf_);
+  status_area_widget_delegate_->AddChildView(palette_tray_.get());
+
+  unified_system_tray_ = std::make_unique<UnifiedSystemTray>(shelf_);
+  status_area_widget_delegate_->AddChildView(unified_system_tray_.get());
+
+  overview_button_tray_ = std::make_unique<OverviewButtonTray>(shelf_);
+  status_area_widget_delegate_->AddChildView(overview_button_tray_.get());
 
   // The layout depends on the number of children, so build it once after
   // adding all of them.
@@ -106,7 +106,7 @@ StatusAreaWidget::~StatusAreaWidget() {
   flag_warning_tray_.reset();
 
   // All child tray views have been removed.
-  DCHECK_EQ(0, GetContentsView()->child_count());
+  DCHECK(GetContentsView()->children().empty());
 }
 
 void StatusAreaWidget::UpdateAfterShelfAlignmentChange() {
@@ -200,17 +200,6 @@ bool StatusAreaWidget::OnNativeWidgetActivationChanged(bool active) {
   if (active)
     status_area_widget_delegate_->SetPaneFocusAndFocusDefault();
   return true;
-}
-
-void StatusAreaWidget::UpdateShelfItemBackground(SkColor color) {
-  unified_system_tray_->UpdateShelfItemBackground(color);
-  virtual_keyboard_tray_->UpdateShelfItemBackground(color);
-  ime_menu_tray_->UpdateShelfItemBackground(color);
-  select_to_speak_tray_->UpdateShelfItemBackground(color);
-  if (dictation_button_tray_)
-    dictation_button_tray_->UpdateShelfItemBackground(color);
-  palette_tray_->UpdateShelfItemBackground(color);
-  overview_button_tray_->UpdateShelfItemBackground(color);
 }
 
 void StatusAreaWidget::OnMouseEvent(ui::MouseEvent* event) {

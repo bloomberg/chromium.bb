@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 executable("ipc_fuzzer_replay") {
+  testonly = true
   configs += [ "//tools/ipc_fuzzer:ipc_fuzzer_tool_config" ]
   deps = [
     "//mojo/core/embedder",

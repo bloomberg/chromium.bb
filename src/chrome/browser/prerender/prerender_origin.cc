@@ -4,8 +4,8 @@
 
 #include "chrome/browser/prerender/prerender_origin.h"
 
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 
 namespace prerender {
@@ -30,7 +30,7 @@ const char* kOriginNames[] = {
     "[Deprecated] Offline",
     "Max",
 };
-static_assert(arraysize(kOriginNames) == ORIGIN_MAX + 1,
+static_assert(base::size(kOriginNames) == ORIGIN_MAX + 1,
               "prerender origin name count mismatch");
 
 }  // namespace

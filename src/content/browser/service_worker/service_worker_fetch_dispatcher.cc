@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/containers/queue.h"
 #include "base/feature_list.h"
 #include "base/task/post_task.h"
@@ -17,32 +18,37 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/service_worker_devtools_agent_host.h"
 #include "content/browser/devtools/service_worker_devtools_manager.h"
+#include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/loader/resource_requester_info.h"
 #include "content/browser/loader/url_loader_factory_impl.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
+#include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/browser/service_worker/service_worker_version.h"
+#include "content/browser/storage_partition_impl.h"
 #include "content/browser/url_loader_factory_getter.h"
-#include "content/common/service_worker/service_worker.mojom.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/navigation_policy.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_util.h"
 #include "net/log/net_log.h"
-#include "net/log/net_log_capture_mode.h"
-#include "net/log/net_log_event_type.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request.h"
+#include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
 #include "services/network/throttling/throttling_controller.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
-#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 
 namespace content {
 
@@ -230,34 +236,6 @@ EventType ResourceTypeToEventType(ResourceType resource_type) {
   }
 }
 
-std::unique_ptr<base::Value> NetLogServiceWorkerStatusCallback(
-    blink::ServiceWorkerStatusCode status,
-    net::NetLogCaptureMode) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
-  dict->SetString("status", blink::ServiceWorkerStatusToString(status));
-  return std::move(dict);
-}
-
-std::unique_ptr<base::Value> NetLogFetchEventCallback(
-    blink::ServiceWorkerStatusCode status,
-    ServiceWorkerFetchDispatcher::FetchEventResult result,
-    net::NetLogCaptureMode) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
-  dict->SetString("status", blink::ServiceWorkerStatusToString(status));
-  dict->SetBoolean(
-      "has_response",
-      result == ServiceWorkerFetchDispatcher::FetchEventResult::kGotResponse);
-  return std::move(dict);
-}
-
-void EndNetLogEventWithServiceWorkerStatus(
-    const net::NetLogWithSource& net_log,
-    net::NetLogEventType type,
-    blink::ServiceWorkerStatusCode status) {
-  net_log.EndEvent(type,
-                   base::Bind(&NetLogServiceWorkerStatusCallback, status));
-}
-
 const net::NetworkTrafficAnnotationTag kNavigationPreloadTrafficAnnotation =
     net::DefineNetworkTrafficAnnotation("service_worker_navigation_preload",
                                         R"(
@@ -317,6 +295,48 @@ void GrantFileAccessToProcess(int process_id,
     if (!policy->CanReadFile(process_id, file))
       policy->GrantReadFile(process_id, file);
   }
+}
+
+// Creates the network URLLoaderFactory for the navigation preload request.
+void CreateNetworkFactoryForNavigationPreloadOnUI(
+    const ServiceWorkerFetchDispatcher::WebContentsGetter& web_contents_getter,
+    scoped_refptr<ServiceWorkerContextWrapper> context_wrapper,
+    network::mojom::URLLoaderFactoryRequest request) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
+
+  WebContents* web_contents = web_contents_getter.Run();
+  StoragePartitionImpl* partition = context_wrapper->storage_partition();
+  if (!web_contents || !partition) {
+    // The navigation was cancelled or we are in shutdown. Just drop the
+    // request. Otherwise, we might go to network without consulting the
+    // embedder first, which would break guarantees.
+    return;
+  }
+
+  // Follow what NavigationURLLoaderImpl does for the initiator passed to
+  // WillCreateURLLoaderFactory():
+  // Navigation requests are not associated with any particular
+  // |network::ResourceRequest::request_initiator| origin - using an opaque
+  // origin instead.
+  url::Origin initiator = url::Origin();
+
+  // We ignore the value of |bypass_redirect_checks_unused| since a redirects is
+  // just relayed to the service worker where preloadResponse is resolved as
+  // redirect.
+  bool bypass_redirect_checks_unused;
+
+  // Consult the embedder.
+  network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client;
+  GetContentClient()->browser()->WillCreateURLLoaderFactory(
+      web_contents->GetBrowserContext(), web_contents->GetMainFrame(),
+      web_contents->GetMainFrame()->GetProcess()->GetID(),
+      true /* is_navigation */, false /* is_download */, initiator, &request,
+      &header_client, &bypass_redirect_checks_unused);
+
+  // Make the network factory.
+  NavigationURLLoaderImpl::CreateURLLoaderFactoryWithHeaderClient(
+      std::move(header_client), std::move(request), partition);
 }
 
 }  // namespace
@@ -405,10 +425,17 @@ class ServiceWorkerFetchDispatcher::ResponseCallback
 class ServiceWorkerFetchDispatcher::URLLoaderAssets
     : public base::RefCounted<ServiceWorkerFetchDispatcher::URLLoaderAssets> {
  public:
+  // Non-NetworkService.
   URLLoaderAssets(
       std::unique_ptr<network::mojom::URLLoaderFactory> url_loader_factory,
       std::unique_ptr<DelegatingURLLoaderClient> url_loader_client)
       : url_loader_factory_(std::move(url_loader_factory)),
+        url_loader_client_(std::move(url_loader_client)) {}
+  // NetworkService.
+  URLLoaderAssets(
+      scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
+      std::unique_ptr<DelegatingURLLoaderClient> url_loader_client)
+      : shared_url_loader_factory_(std::move(shared_url_loader_factory)),
         url_loader_client_(std::move(url_loader_client)) {}
 
   void MaybeReportToDevTools(std::pair<int, int> worker_id,
@@ -420,50 +447,45 @@ class ServiceWorkerFetchDispatcher::URLLoaderAssets
   friend class base::RefCounted<URLLoaderAssets>;
   virtual ~URLLoaderAssets() {}
 
+  // Non-NetworkService:
   std::unique_ptr<network::mojom::URLLoaderFactory> url_loader_factory_;
+
+  // NetworkService:
+  scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
+
+  // Both:
   std::unique_ptr<DelegatingURLLoaderClient> url_loader_client_;
 
   DISALLOW_COPY_AND_ASSIGN(URLLoaderAssets);
 };
 
 ServiceWorkerFetchDispatcher::ServiceWorkerFetchDispatcher(
-    std::unique_ptr<network::ResourceRequest> request,
-    const std::string& request_body_blob_uuid,
-    uint64_t request_body_blob_size,
-    blink::mojom::BlobPtr request_body_blob,
+    blink::mojom::FetchAPIRequestPtr request,
+    ResourceType resource_type,
     const std::string& client_id,
     scoped_refptr<ServiceWorkerVersion> version,
-    const net::NetLogWithSource& net_log,
     base::OnceClosure prepare_callback,
     FetchCallback fetch_callback)
     : request_(std::move(request)),
-      request_body_blob_uuid_(request_body_blob_uuid),
-      request_body_blob_size_(request_body_blob_size),
-      request_body_blob_(std::move(request_body_blob)),
       client_id_(client_id),
       version_(std::move(version)),
-      resource_type_(static_cast<ResourceType>(request_->resource_type)),
-      net_log_(net_log),
+      resource_type_(resource_type),
       prepare_callback_(std::move(prepare_callback)),
       fetch_callback_(std::move(fetch_callback)),
       did_complete_(false),
       weak_factory_(this) {
-#if DCHECK_IS_ON()
-  if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
-    DCHECK((request_body_blob_uuid_.empty() && request_body_blob_size_ == 0 &&
-            !request_body_blob_));
-  }
-#endif  // DCHECK_IS_ON()
-  net_log_.BeginEvent(net::NetLogEventType::SERVICE_WORKER_DISPATCH_FETCH_EVENT,
-                      net::NetLog::StringCallback(
-                          "event_type", ServiceWorkerMetrics::EventTypeToString(
-                                            GetEventType())));
+  DCHECK(!request_->blob);
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(
+      "ServiceWorker", "ServiceWorkerFetchDispatcher::DispatchFetchEvent", this,
+      "event_type", ServiceWorkerMetrics::EventTypeToString(GetEventType()));
 }
 
 ServiceWorkerFetchDispatcher::~ServiceWorkerFetchDispatcher() {
-  if (!did_complete_)
-    net_log_.EndEvent(
-        net::NetLogEventType::SERVICE_WORKER_DISPATCH_FETCH_EVENT);
+  if (!did_complete_) {
+    TRACE_EVENT_NESTABLE_ASYNC_END0(
+        "ServiceWorker", "ServiceWorkerFetchDispatcher::DispatchFetchEvent",
+        this);
+  }
 }
 
 void ServiceWorkerFetchDispatcher::Run() {
@@ -472,8 +494,9 @@ void ServiceWorkerFetchDispatcher::Run() {
       << version_->status();
 
   if (version_->status() == ServiceWorkerVersion::ACTIVATING) {
-    net_log_.BeginEvent(
-        net::NetLogEventType::SERVICE_WORKER_WAIT_FOR_ACTIVATION);
+    TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
+        "ServiceWorker", "ServiceWorkerFetchDispatcher::WaitForActivation",
+        this);
     version_->RegisterStatusChangeCallback(
         base::BindOnce(&ServiceWorkerFetchDispatcher::DidWaitForActivation,
                        weak_factory_.GetWeakPtr()));
@@ -483,7 +506,8 @@ void ServiceWorkerFetchDispatcher::Run() {
 }
 
 void ServiceWorkerFetchDispatcher::DidWaitForActivation() {
-  net_log_.EndEvent(net::NetLogEventType::SERVICE_WORKER_WAIT_FOR_ACTIVATION);
+  TRACE_EVENT_NESTABLE_ASYNC_END0(
+      "ServiceWorker", "ServiceWorkerFetchDispatcher::WaitForActivation", this);
   StartWorker();
 }
 
@@ -501,7 +525,8 @@ void ServiceWorkerFetchDispatcher::StartWorker() {
     return;
   }
 
-  net_log_.BeginEvent(net::NetLogEventType::SERVICE_WORKER_START_WORKER);
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
+      "ServiceWorker", "ServiceWorkerFetchDispatcher::StartWorker", this);
   version_->RunAfterStartWorker(
       GetEventType(),
       base::BindOnce(&ServiceWorkerFetchDispatcher::DidStartWorker,
@@ -510,13 +535,13 @@ void ServiceWorkerFetchDispatcher::StartWorker() {
 
 void ServiceWorkerFetchDispatcher::DidStartWorker(
     blink::ServiceWorkerStatusCode status) {
+  TRACE_EVENT_NESTABLE_ASYNC_END1("ServiceWorker",
+                                  "ServiceWorkerFetchDispatcher::StartWorker",
+                                  this, "status", status);
   if (status != blink::ServiceWorkerStatusCode::kOk) {
-    EndNetLogEventWithServiceWorkerStatus(
-        net_log_, net::NetLogEventType::SERVICE_WORKER_START_WORKER, status);
     DidFail(status);
     return;
   }
-  net_log_.EndEvent(net::NetLogEventType::SERVICE_WORKER_START_WORKER);
   DispatchFetchEvent();
 }
 
@@ -525,15 +550,16 @@ void ServiceWorkerFetchDispatcher::DispatchFetchEvent() {
       << "Worker stopped too soon after it was started.";
 
   // Grant the service worker's process access to files in the request body.
-  if (request_->request_body) {
+  if (request_->body) {
     GrantFileAccessToProcess(version_->embedded_worker()->process_id(),
-                             request_->request_body->GetReferencedFiles());
+                             request_->body->GetReferencedFiles());
   }
 
   // Run callback to say that the fetch event will be dispatched.
   DCHECK(prepare_callback_);
   std::move(prepare_callback_).Run();
-  net_log_.BeginEvent(net::NetLogEventType::SERVICE_WORKER_FETCH_EVENT);
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
+      "ServiceWorker", "ServiceWorkerFetchDispatcher::FetchEvent", this);
 
   // Set up for receiving the response.
   blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback_ptr;
@@ -562,10 +588,7 @@ void ServiceWorkerFetchDispatcher::DispatchFetchEvent() {
 
   // Dispatch the fetch event.
   auto params = blink::mojom::DispatchFetchEventParams::New();
-  params->request = *request_;
-  params->request_body_blob_uuid = request_body_blob_uuid_;
-  params->request_body_blob_size = request_body_blob_size_;
-  params->request_body_blob = request_body_blob_.PassInterface();
+  params->request = std::move(request_);
   params->client_id = client_id_;
   params->preload_handle = std::move(preload_handle_);
   // |endpoint()| is owned by |version_|. So it is safe to pass the
@@ -582,8 +605,9 @@ void ServiceWorkerFetchDispatcher::DispatchFetchEvent() {
 void ServiceWorkerFetchDispatcher::DidFailToDispatch(
     std::unique_ptr<ResponseCallback> response_callback,
     blink::ServiceWorkerStatusCode status) {
-  EndNetLogEventWithServiceWorkerStatus(
-      net_log_, net::NetLogEventType::SERVICE_WORKER_FETCH_EVENT, status);
+  TRACE_EVENT_NESTABLE_ASYNC_END1("ServiceWorker",
+                                  "ServiceWorkerFetchDispatcher::FetchEvent",
+                                  this, "status", status);
   DidFail(status);
 }
 
@@ -601,7 +625,8 @@ void ServiceWorkerFetchDispatcher::DidFinish(
     blink::mojom::FetchAPIResponsePtr response,
     blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
     blink::mojom::ServiceWorkerFetchEventTimingPtr timing) {
-  net_log_.EndEvent(net::NetLogEventType::SERVICE_WORKER_FETCH_EVENT);
+  TRACE_EVENT_NESTABLE_ASYNC_END0(
+      "ServiceWorker", "ServiceWorkerFetchDispatcher::FetchEvent", this);
   Complete(blink::ServiceWorkerStatusCode::kOk, fetch_result,
            std::move(response), std::move(body_as_stream), std::move(timing));
 }
@@ -615,105 +640,19 @@ void ServiceWorkerFetchDispatcher::Complete(
   DCHECK(fetch_callback_);
 
   did_complete_ = true;
-  net_log_.EndEvent(
-      net::NetLogEventType::SERVICE_WORKER_DISPATCH_FETCH_EVENT,
-      base::Bind(&NetLogFetchEventCallback, status, fetch_result));
-
+  TRACE_EVENT_NESTABLE_ASYNC_END1(
+      "ServiceWorker", "ServiceWorkerFetchDispatcher::DispatchFetchEvent", this,
+      "result", fetch_result);
   std::move(fetch_callback_)
       .Run(status, fetch_result, std::move(response), std::move(body_as_stream),
            std::move(timing), version_);
 }
 
-// Non-S13nServiceWorker
 bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
-    net::URLRequest* original_request,
-    base::OnceClosure on_response) {
-  if (resource_type_ != RESOURCE_TYPE_MAIN_FRAME &&
-      resource_type_ != RESOURCE_TYPE_SUB_FRAME) {
-    return false;
-  }
-  if (!version_->navigation_preload_state().enabled)
-    return false;
-  // TODO(horo): Currently NavigationPreload doesn't support request body.
-  if (request_body_blob_)
-    return false;
-
-  ResourceRequestInfoImpl* original_info =
-      ResourceRequestInfoImpl::ForRequest(original_request);
-  ResourceRequesterInfo* requester_info = original_info->requester_info();
-  DCHECK(requester_info->IsBrowserSideNavigation());
-  auto url_loader_factory = std::make_unique<URLLoaderFactoryImpl>(
-      ResourceRequesterInfo::CreateForNavigationPreload(
-          requester_info,
-          const_cast<net::URLRequestContext*>(original_request->context())));
-
-  network::ResourceRequest request;
-  request.method = original_request->method();
-  request.url = original_request->url();
-  request.site_for_cookies = original_request->site_for_cookies();
-  request.request_initiator =
-      original_request->initiator().has_value()
-          ? original_request->initiator()
-          : url::Origin::Create(original_request->url());
-  request.referrer = GURL(original_request->referrer());
-  request.referrer_policy =
-      Referrer::ReferrerPolicyForUrlRequest(original_info->GetReferrerPolicy());
-  request.is_prerendering = original_info->IsPrerendering();
-  request.load_flags = original_request->load_flags();
-  // Set to SUB_RESOURCE because we shouldn't trigger NavigationResourceThrottle
-  // for the service worker navigation preload request.
-  request.resource_type = RESOURCE_TYPE_SUB_RESOURCE;
-  request.priority = original_request->priority();
-  request.skip_service_worker = true;
-  request.do_not_prompt_for_login = true;
-  request.render_frame_id = original_info->GetRenderFrameID();
-  request.is_main_frame = original_info->IsMainFrame();
-  request.enable_load_timing = original_info->is_load_timing_enabled();
-  request.report_raw_headers = original_info->ShouldReportRawHeaders();
-  request.throttling_profile_id =
-      network::ThrottlingController::GetProfileIDForNetLogSource(
-          original_request->net_log().source().id);
-
-  DCHECK(net::HttpUtil::IsValidHeaderValue(
-      version_->navigation_preload_state().header));
-  ServiceWorkerMetrics::RecordNavigationPreloadRequestHeaderSize(
-      version_->navigation_preload_state().header.length());
-  request.headers.CopyFrom(original_request->extra_request_headers());
-  request.headers.SetHeader("Service-Worker-Navigation-Preload",
-                            version_->navigation_preload_state().header);
-
-  const int request_id = ResourceDispatcherHostImpl::Get()->MakeRequestID();
-  DCHECK_LT(request_id, -1);
-
-  preload_handle_ = blink::mojom::FetchEventPreloadHandle::New();
-  network::mojom::URLLoaderClientPtr inner_url_loader_client;
-  preload_handle_->url_loader_client_request =
-      mojo::MakeRequest(&inner_url_loader_client);
-  auto url_loader_client = std::make_unique<DelegatingURLLoaderClient>(
-      std::move(inner_url_loader_client), std::move(on_response), request);
-  network::mojom::URLLoaderClientPtr url_loader_client_to_pass;
-  url_loader_client->Bind(&url_loader_client_to_pass);
-  network::mojom::URLLoaderPtr url_loader;
-
-  url_loader_factory->CreateLoaderAndStart(
-      mojo::MakeRequest(&url_loader), original_info->GetRouteID(), request_id,
-      network::mojom::kURLLoadOptionNone, request,
-      std::move(url_loader_client_to_pass),
-      net::MutableNetworkTrafficAnnotationTag(
-          original_request->traffic_annotation()));
-
-  preload_handle_->url_loader = url_loader.PassInterface();
-
-  DCHECK(!url_loader_assets_);
-  url_loader_assets_ = base::MakeRefCounted<URLLoaderAssets>(
-      std::move(url_loader_factory), std::move(url_loader_client));
-  return true;
-}
-
-// S13nServiceWorker
-bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreloadWithURLLoader(
     const network::ResourceRequest& original_request,
     URLLoaderFactoryGetter* url_loader_factory_getter,
+    scoped_refptr<ServiceWorkerContextWrapper> context_wrapper,
+    const WebContentsGetter& web_contents_getter,
     base::OnceClosure on_response) {
   if (resource_type_ != RESOURCE_TYPE_MAIN_FRAME &&
       resource_type_ != RESOURCE_TYPE_SUB_FRAME) {
@@ -722,13 +661,11 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreloadWithURLLoader(
   if (!version_->navigation_preload_state().enabled)
     return false;
   // TODO(horo): Currently NavigationPreload doesn't support request body.
-  if (request_->request_body)
+  if (request_->body)
     return false;
 
   network::ResourceRequest resource_request(original_request);
-  // Set to SUB_RESOURCE because we shouldn't trigger NavigationResourceThrottle
-  // for the service worker navigation preload request.
-  resource_request.resource_type = RESOURCE_TYPE_SUB_RESOURCE;
+  resource_request.resource_type = RESOURCE_TYPE_NAVIGATION_PRELOAD;
   resource_request.skip_service_worker = true;
   resource_request.do_not_prompt_for_login = true;
 
@@ -739,6 +676,28 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreloadWithURLLoader(
   resource_request.headers.SetHeader(
       "Service-Worker-Navigation-Preload",
       version_->navigation_preload_state().header);
+
+  // Create the network factory.
+  scoped_refptr<network::SharedURLLoaderFactory> factory;
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    // In the network service case, create the factory on the UI thread.
+    network::mojom::URLLoaderFactoryPtr network_factory;
+    auto factory_request = mojo::MakeRequest(&network_factory);
+
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
+        base::BindOnce(&CreateNetworkFactoryForNavigationPreloadOnUI,
+                       web_contents_getter, std::move(context_wrapper),
+                       mojo::MakeRequest(&network_factory)));
+    factory = base::MakeRefCounted<network::WrapperSharedURLLoaderFactory>(
+        std::move(network_factory));
+  } else {
+    // In the non-network-service case, use |url_loader_factory_getter|. Unlike
+    // the network service case, we don't need to go to the UI thread to tell
+    // the embedder about the factory since the request will go to
+    // ResourceDispatcherHost which talks to the embedder then.
+    factory = url_loader_factory_getter->GetNetworkFactory();
+  }
 
   preload_handle_ = blink::mojom::FetchEventPreloadHandle::New();
 
@@ -751,26 +710,28 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreloadWithURLLoader(
       std::move(inner_url_loader_client), std::move(on_response),
       resource_request);
 
-  // Start the network request for the URL using the network loader.
-  // TODO(falken): What to do about routing_id, request_id?
+  // Use NavigationURLLoaderImpl to get a unique request id across
+  // browser-initiated navigations and navigation preloads.
+  int request_id = NavigationURLLoaderImpl::MakeGlobalRequestID().request_id;
+
+  // Start the network request for the URL using the network factory.
+  // TODO(falken): What to do about routing_id.
   network::mojom::URLLoaderClientPtr url_loader_client_to_pass;
   url_loader_client->Bind(&url_loader_client_to_pass);
   network::mojom::URLLoaderPtr url_loader;
-  url_loader_factory_getter->GetNetworkFactory()->CreateLoaderAndStart(
-      mojo::MakeRequest(&url_loader), -1 /* routing_id? */,
-      -1 /* request_id? */, network::mojom::kURLLoadOptionNone,
-      resource_request, std::move(url_loader_client_to_pass),
+
+  factory->CreateLoaderAndStart(
+      mojo::MakeRequest(&url_loader), -1 /* routing_id? */, request_id,
+      network::mojom::kURLLoadOptionNone, resource_request,
+      std::move(url_loader_client_to_pass),
       net::MutableNetworkTrafficAnnotationTag(
           kNavigationPreloadTrafficAnnotation));
 
   preload_handle_->url_loader = url_loader.PassInterface();
 
   DCHECK(!url_loader_assets_);
-  // Unlike the non-S13N code path, we don't own the URLLoaderFactory being used
-  // (it's the generic network factory), so we don't need to pass it to
-  // URLLoaderAssets to keep it alive.
   url_loader_assets_ = base::MakeRefCounted<URLLoaderAssets>(
-      nullptr /* url_loader_factory */, std::move(url_loader_client));
+      std::move(factory), std::move(url_loader_client));
   return true;
 }
 

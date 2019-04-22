@@ -5,20 +5,19 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/guid.h"
 #include "base/macros.h"
+#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/service_manager/public/c/main.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_context.h"
-#include "services/service_manager/public/cpp/service_runner.h"
+#include "services/service_manager/public/cpp/service_binding.h"
 #include "services/service_manager/public/mojom/connector.mojom.h"
-#include "services/service_manager/tests/connect/connect_test.mojom.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
+#include "services/service_manager/tests/connect/connect.test-mojom.h"
 
 namespace service_manager {
 
@@ -43,19 +42,19 @@ void OnResponseString(std::string* string,
 
 }  // namespace
 
-using GetTitleCallback = test::mojom::ConnectTestService::GetTitleCallback;
-
 class ConnectTestApp : public Service,
                        public test::mojom::ConnectTestService,
                        public test::mojom::StandaloneApp,
                        public test::mojom::BlockedInterface,
                        public test::mojom::IdentityTest {
  public:
-  ConnectTestApp() {}
-  ~ConnectTestApp() override {}
+  explicit ConnectTestApp(mojom::ServiceRequest request)
+      : service_binding_(this, std::move(request)) {}
+
+  ~ConnectTestApp() override = default;
 
  private:
-  // service_manager::Service:
+  // Service:
   void OnStart() override {
     bindings_.set_connection_error_handler(base::BindRepeating(
         &ConnectTestApp::OnConnectionError, base::Unretained(this)));
@@ -71,6 +70,7 @@ class ConnectTestApp : public Service,
     registry_.AddInterface<test::mojom::IdentityTest>(base::BindRepeating(
         &ConnectTestApp::BindIdentityTestRequest, base::Unretained(this)));
   }
+
   void OnBindInterface(const BindSourceInfo& source_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override {
@@ -78,7 +78,6 @@ class ConnectTestApp : public Service,
                             source_info);
   }
 
-  // InterfaceFactory<test::mojom::ConnectTestService>:
   void BindConnectTestServiceRequest(
       test::mojom::ConnectTestServiceRequest request,
       const BindSourceInfo& source_info) {
@@ -87,11 +86,12 @@ class ConnectTestApp : public Service,
     state->connection_remote_name = source_info.identity.name();
     state->connection_remote_instance_group =
         source_info.identity.instance_group();
-    state->initialize_local_name = context()->identity().name();
+    state->initialize_local_name = service_binding_.identity().name();
     state->initialize_local_instance_group =
-        context()->identity().instance_group();
+        service_binding_.identity().instance_group();
 
-    context()->connector()->BindInterface(source_info.identity, &caller_);
+    service_binding_.GetConnector()->BindInterface(source_info.identity,
+                                                   &caller_);
     caller_->ConnectionAccepted(std::move(state));
   }
 
@@ -114,8 +114,9 @@ class ConnectTestApp : public Service,
   void GetTitle(GetTitleCallback callback) override {
     std::move(callback).Run("APP");
   }
+
   void GetInstanceId(GetInstanceIdCallback callback) override {
-    std::move(callback).Run(context()->identity().instance_id());
+    std::move(callback).Run(service_binding_.identity().instance_id());
   }
 
   // test::mojom::StandaloneApp:
@@ -123,25 +124,26 @@ class ConnectTestApp : public Service,
       ConnectToAllowedAppInBlockedPackageCallback callback) override {
     base::RunLoop run_loop;
     test::mojom::ConnectTestServicePtr test_service;
-    context()->connector()->BindInterface("connect_test_a", &test_service);
+    service_binding_.GetConnector()->BindInterface("connect_test_a",
+                                                   &test_service);
     test_service.set_connection_error_handler(base::BindRepeating(
         &ConnectTestApp::OnGotTitle, base::Unretained(this),
         base::Unretained(&callback), run_loop.QuitClosure(), "uninitialized"));
     test_service->GetTitle(
         base::BindOnce(&ConnectTestApp::OnGotTitle, base::Unretained(this),
                        base::Unretained(&callback), run_loop.QuitClosure()));
-    {
-      // This message is dispatched as a task on the same run loop, so we need
-      // to allow nesting in order to pump additional signals.
-      base::MessageLoopCurrent::ScopedNestableTaskAllower allow;
-      run_loop.Run();
-    }
+
+    // This message is dispatched as a task on the same run loop, so we need
+    // to allow nesting in order to pump additional signals.
+    base::MessageLoopCurrent::ScopedNestableTaskAllower allow;
+    run_loop.Run();
   }
+
   void ConnectToClassInterface(
       ConnectToClassInterfaceCallback callback) override {
     test::mojom::ClassInterfacePtr class_interface;
-    context()->connector()->BindInterface("connect_test_class_app",
-                                          &class_interface);
+    service_binding_.GetConnector()->BindInterface("connect_test_class_app",
+                                                   &class_interface);
     std::string ping_response;
     {
       base::RunLoop loop;
@@ -151,7 +153,8 @@ class ConnectTestApp : public Service,
       loop.Run();
     }
     test::mojom::ConnectTestServicePtr service;
-    context()->connector()->BindInterface("connect_test_class_app", &service);
+    service_binding_.GetConnector()->BindInterface("connect_test_class_app",
+                                                   &service);
     std::string title_response;
     {
       base::RunLoop loop;
@@ -170,12 +173,12 @@ class ConnectTestApp : public Service,
 
   // test::mojom::IdentityTest:
   void ConnectToClassAppWithFilter(
-      const service_manager::ServiceFilter& filter,
+      const ServiceFilter& filter,
       ConnectToClassAppWithFilterCallback callback) override {
     mojom::ConnectResult result;
     base::Optional<Identity> resolved_identity;
     base::RunLoop loop;
-    context()->connector()->WarmService(
+    service_binding_.GetConnector()->WarmService(
         filter, base::BindOnce(&OnConnectResult, loop.QuitClosure(), &result,
                                &resolved_identity));
     base::MessageLoopCurrent::ScopedNestableTaskAllower allow;
@@ -192,9 +195,10 @@ class ConnectTestApp : public Service,
 
   void OnConnectionError() {
     if (bindings_.empty() && standalone_bindings_.empty())
-      context()->QuitNow();
+      Terminate();
   }
 
+  ServiceBinding service_binding_;
   BinderRegistryWithArgs<const BindSourceInfo&> registry_;
   mojo::BindingSet<test::mojom::ConnectTestService> bindings_;
   mojo::BindingSet<test::mojom::StandaloneApp> standalone_bindings_;
@@ -207,7 +211,7 @@ class ConnectTestApp : public Service,
 
 }  // namespace service_manager
 
-MojoResult ServiceMain(MojoHandle service_request_handle) {
-  service_manager::ServiceRunner runner(new service_manager::ConnectTestApp);
-  return runner.Run(service_request_handle);
+void ServiceMain(service_manager::mojom::ServiceRequest request) {
+  base::MessageLoop message_loop;
+  service_manager::ConnectTestApp(std::move(request)).RunUntilTermination();
 }

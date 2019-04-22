@@ -22,13 +22,16 @@ SkColor NativeThemeDarkAura::GetSystemColor(ColorId color_id) const {
     case kColorId_WindowBackground:
     case kColorId_DialogBackground:
     case kColorId_BubbleBackground:
+    case kColorId_BubbleFooterBackground:
       return SK_ColorBLACK;
 
     // Button
     case kColorId_ButtonEnabledColor:
-      return SK_ColorWHITE;
+      return gfx::kGoogleGrey200;
+    case kColorId_ProminentButtonFocusedColor:
+      return gfx::kGoogleBlue400;
     case kColorId_ProminentButtonColor:
-      return gfx::kGoogleBlue600;
+      return gfx::kGoogleBlue300;
 
     // Label
     case kColorId_LabelEnabledColor:
@@ -76,6 +79,9 @@ SkColor NativeThemeDarkAura::GetSystemColor(ColorId color_id) const {
     case kColorId_TextOnProminentButtonColor:
     case kColorId_ButtonPressedShade:
     case kColorId_ResultsTableHoveredBackground:
+    case kColorId_ProminentButtonDisabledColor:
+    case kColorId_ButtonBorderColor:
+    case kColorId_DefaultIconColor:
       return NativeThemeAura::GetSystemColor(color_id);
 
     // Any other color is not defined and shouldn't be used in a dark theme.
@@ -95,6 +101,8 @@ SkColor NativeThemeDarkAura::GetSystemColor(ColorId color_id) const {
     case kColorId_HighlightedMenuItemBackgroundColor:
     case kColorId_HighlightedMenuItemForegroundColor:
     case kColorId_FocusedHighlightedMenuItemBackgroundColor:
+    case kColorId_MenuItemAlertBackgroundColorMax:
+    case kColorId_MenuItemAlertBackgroundColorMin:
     case kColorId_LinkDisabled:
     case kColorId_TabBottomBorder:
     case kColorId_TabTitleColorActive:

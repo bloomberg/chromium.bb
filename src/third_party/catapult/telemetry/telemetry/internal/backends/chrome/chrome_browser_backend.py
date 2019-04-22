@@ -69,10 +69,6 @@ class ChromeBrowserBackend(browser_backend.BrowserBackend):
       return True
     return [arg for arg in args if arg.startswith('--proxy-server=')]
 
-  def GetBrowserStartupUrl(self):
-    # TODO(crbug.com/787834): Move to the corresponding possible-browser class.
-    return None
-
   def HasDevToolsConnection(self):
     return self._devtools_client and self._devtools_client.IsAlive()
 
@@ -114,6 +110,7 @@ class ChromeBrowserBackend(browser_backend.BrowserBackend):
           timeout=self.browser_options.browser_startup_timeout)
     except (py_utils.TimeoutException, exceptions.ProcessGoneException) as e:
       if not self.IsBrowserRunning():
+        logging.exception(e)  # crbug.com/940075
         raise exceptions.BrowserGoneException(self.browser, e)
       raise exceptions.BrowserConnectionGoneException(self.browser, e)
 
@@ -273,32 +270,6 @@ class ChromeBrowserBackend(browser_backend.BrowserBackend):
     if self.browser_directory:
       paths_to_flush.append(self.browser_directory)
     return paths_to_flush
-
-  # TODO(crbug.com/787834): consider migrating profile_directory &
-  # browser_directory out of browser_backend so we don't have to rely on
-  # creating browser_backend before clearing browser caches.
-  def ClearCaches(self):
-    """ Clear system caches related to browser.
-
-    This clears DNS caches, then clears OS page cache on file paths that are
-    related to the browser (iff
-    browser_options.clear_sytem_cache_for_browser_and_profile_on_start is True).
-
-    Note: this is done with best effort and may have no actual effects on the
-    system.
-    """
-    platform = self.platform_backend.platform
-    platform.FlushDnsCache()
-    if self.browser_options.clear_sytem_cache_for_browser_and_profile_on_start:
-      paths_to_flush = self.GetDirectoryPathsToFlushOsPageCacheFor()
-      if (platform.CanFlushIndividualFilesFromSystemCache() and
-          paths_to_flush):
-        platform.FlushSystemCacheForDirectories(paths_to_flush)
-      elif platform.SupportFlushEntireSystemCache():
-        platform.FlushEntireSystemCache()
-      else:
-        logging.warning(
-            'Flush system cache is not supported. Did not flush OS page cache.')
 
   @property
   def supports_cpu_metrics(self):

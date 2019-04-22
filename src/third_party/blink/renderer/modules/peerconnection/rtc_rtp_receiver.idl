@@ -6,8 +6,12 @@
 [Exposed=Window]
 interface RTCRtpReceiver {
     readonly attribute MediaStreamTrack track;
-    static RTCRtpCapabilities?             getCapabilities(DOMString kind);
+    [RuntimeEnabled=RTCDtlsTransport] readonly attribute RTCDtlsTransport? transport;
+    [RuntimeEnabled=RTCDtlsTransport] readonly attribute RTCDtlsTransport? rtcpTransport;
+    [RaisesException, RuntimeEnabled=RtcJitterBufferDelayHint] attribute double? jitterBufferDelayHint;
+    static RTCRtpCapabilities?            getCapabilities(DOMString kind);
+    RTCRtpReceiveParameters               getParameters();
+    sequence<RTCRtpSynchronizationSource> getSynchronizationSources();
     sequence<RTCRtpContributingSource> getContributingSources();
     [CallWith=ScriptState] Promise<RTCStatsReport> getStats();
-    // TODO(hbos): Support every member of the spec. https://crbug.com/700916
 };

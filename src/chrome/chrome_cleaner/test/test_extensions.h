@@ -5,6 +5,10 @@
 #ifndef CHROME_CHROME_CLEANER_TEST_TEST_EXTENSIONS_H_
 #define CHROME_CHROME_CLEANER_TEST_TEST_EXTENSIONS_H_
 
+#include <vector>
+
+#include "base/files/file_path.h"
+#include "base/strings/string16.h"
 #include "base/win/registry.h"
 #include "chrome/chrome_cleaner/os/registry_util.h"
 
@@ -126,6 +130,11 @@ const char kMasterPreferencesJsonNoExtensions[] =
 {
   "homepage": "http://dev.chromium.org/"
 })";
+
+bool CreateProfileWithExtensionAndFiles(
+    const base::FilePath& profile_path,
+    const base::string16& extension_id,
+    const std::vector<base::string16>& extension_files);
 
 }  // namespace chrome_cleaner
 

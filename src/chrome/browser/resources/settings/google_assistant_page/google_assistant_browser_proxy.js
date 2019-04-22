@@ -10,37 +10,33 @@
 cr.define('settings', function() {
   /** @interface */
   class GoogleAssistantBrowserProxy {
-    /**
-     * Enables or disables the Google Assistant.
-     * @param {boolean} enabled
-     */
-    setGoogleAssistantEnabled(enabled) {}
-
-    /**
-     * Enables or disables screen context for the Google Assistant.
-     * @param {boolean} enabled
-     */
-    setGoogleAssistantContextEnabled(enabled) {}
-
     /** Launches into the Google Assistant app settings. */
     launchGoogleAssistantSettings() {}
+
+    /** Retrain the Assistant voice model. */
+    retrainAssistantVoiceModel() {}
+
+    /** Sync the voice model status. */
+    syncVoiceModelStatus() {}
   }
 
   /** @implements {settings.GoogleAssistantBrowserProxy} */
   class GoogleAssistantBrowserProxyImpl {
     /** @override */
-    setGoogleAssistantEnabled(enabled) {
-      chrome.send('setGoogleAssistantEnabled', [enabled]);
-    }
-
-    /** @override */
-    setGoogleAssistantContextEnabled(enabled) {
-      chrome.send('setGoogleAssistantContextEnabled', [enabled]);
-    }
-
-    /** @override */
     showGoogleAssistantSettings() {
       chrome.send('showGoogleAssistantSettings');
+    }
+
+    /** @override */
+    retrainAssistantVoiceModel() {
+      chrome.send('retrainAssistantVoiceModel');
+    }
+
+    /** @override */
+    syncVoiceModelStatus() {
+      if (loadTimeData.getBoolean('voiceMatchEnabled')) {
+        chrome.send('syncVoiceModelStatus');
+      }
     }
   }
 

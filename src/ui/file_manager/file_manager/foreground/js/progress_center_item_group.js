@@ -106,25 +106,27 @@ ProgressCenterItemGroup.State = {
  * @return {ProgressCenterItem} Summarized item.
  */
 ProgressCenterItemGroup.getSummarizedErrorItem = function(var_args) {
-  var groups = Array.prototype.slice.call(arguments);
-  var errorItems = [];
-  for (var i = 0; i < groups.length; i++) {
-    for (var id in groups[i].items_) {
-      var item = groups[i].items_[id];
-      if (item.state === ProgressItemState.ERROR)
+  const groups = Array.prototype.slice.call(arguments);
+  const errorItems = [];
+  for (let i = 0; i < groups.length; i++) {
+    for (const id in groups[i].items_) {
+      const item = groups[i].items_[id];
+      if (item.state === ProgressItemState.ERROR) {
         errorItems.push(item);
+      }
     }
   }
-  if (errorItems.length === 0)
+  if (errorItems.length === 0) {
     return null;
+  }
 
-  if (errorItems.length === 1)
+  if (errorItems.length === 1) {
     return errorItems[0].clone();
+  }
 
-  var item = new ProgressCenterItem();
+  const item = new ProgressCenterItem();
   item.state = ProgressItemState.ERROR;
-  item.message = strf('ERROR_PROGRESS_SUMMARY_PLURAL',
-                      errorItems.length);
+  item.message = strf('ERROR_PROGRESS_SUMMARY_PLURAL', errorItems.length);
   item.single = false;
   return item;
 };
@@ -139,24 +141,25 @@ ProgressCenterItemGroup.getSummarizedErrorItem = function(var_args) {
  * @return {boolean} Whether the item should be animated or not.
  * @private
  */
-ProgressCenterItemGroup.shouldAnimate_ = function(
-    previousAnimated, previousItem, item, summarized) {
-  // Check visibility of previous and current progress bar.
-  var previousShow =
-      previousItem && (!summarized || !previousItem.quiet);
-  var currentShow =
-      item && (!summarized || !item.quiet);
-  // If previous or current item does not show progress bar, we should not
-  // animate.
-  if (!previousShow || !currentShow)
-    return false;
-  if (previousItem.progressRateInPercent < item.progressRateInPercent)
-    return true;
-  if (previousAnimated &&
-      previousItem.progressRateInPercent === item.progressRateInPercent)
-    return true;
-  return false;
-};
+ProgressCenterItemGroup.shouldAnimate_ =
+    (previousAnimated, previousItem, item, summarized) => {
+      // Check visibility of previous and current progress bar.
+      const previousShow = previousItem && (!summarized || !previousItem.quiet);
+      const currentShow = item && (!summarized || !item.quiet);
+      // If previous or current item does not show progress bar, we should not
+      // animate.
+      if (!previousShow || !currentShow) {
+        return false;
+      }
+      if (previousItem.progressRateInPercent < item.progressRateInPercent) {
+        return true;
+      }
+      if (previousAnimated &&
+          previousItem.progressRateInPercent === item.progressRateInPercent) {
+        return true;
+      }
+      return false;
+    };
 
 ProgressCenterItemGroup.prototype = /** @struct */ {
   /**
@@ -170,10 +173,11 @@ ProgressCenterItemGroup.prototype = /** @struct */ {
    * @return {number} Number of error items that the group contains.
    */
   get numErrors() {
-    var result = 0;
-    for (var id in this.items_) {
-      if (this.items_[id].state === ProgressItemState.ERROR)
+    let result = 0;
+    for (const id in this.items_) {
+      if (this.items_[id].state === ProgressItemState.ERROR) {
         result++;
+      }
     }
     return result;
   }
@@ -211,10 +215,11 @@ ProgressCenterItemGroup.prototype.isSummarizedAnimated = function() {
  * @param {string} id Item id.
  */
 ProgressCenterItemGroup.prototype.dismissErrorItem = function(id) {
-  var errorItem = this.items_[id];
+  const errorItem = this.items_[id];
 
-  if (!errorItem || errorItem.state !== ProgressItemState.ERROR)
+  if (!errorItem || errorItem.state !== ProgressItemState.ERROR) {
     return;
+  }
 
   delete this.items_[id];
 
@@ -229,13 +234,16 @@ ProgressCenterItemGroup.prototype.dismissErrorItem = function(id) {
 ProgressCenterItemGroup.prototype.update = function(item) {
   // Compares the current state and the new state to check if the update is
   // valid or not.
-  var previousItem = this.items_[item.id];
+  const previousItem = this.items_[item.id];
   switch (item.state) {
     case ProgressItemState.ERROR:
-      if (previousItem && previousItem.state !== ProgressItemState.PROGRESSING)
+      if (previousItem &&
+          previousItem.state !== ProgressItemState.PROGRESSING) {
         return;
-      if (this.state_ === ProgressCenterItemGroup.State.EMPTY)
+      }
+      if (this.state_ === ProgressCenterItemGroup.State.EMPTY) {
         this.state_ = ProgressCenterItemGroup.State.INACTIVE;
+      }
       this.items_[item.id] = item.clone();
       this.animated_[item.id] = false;
       this.summarizedItem_ = null;
@@ -245,40 +253,42 @@ ProgressCenterItemGroup.prototype.update = function(item) {
     case ProgressItemState.COMPLETED:
       if ((!previousItem && item.state === ProgressItemState.COMPLETED) ||
           (previousItem &&
-           previousItem.state !== ProgressItemState.PROGRESSING))
+           previousItem.state !== ProgressItemState.PROGRESSING)) {
         return;
+      }
       if (this.state_ === ProgressCenterItemGroup.State.EMPTY ||
-          this.state_ === ProgressCenterItemGroup.State.INACTIVE)
+          this.state_ === ProgressCenterItemGroup.State.INACTIVE) {
         this.state_ = ProgressCenterItemGroup.State.ACTIVE;
+      }
       this.items_[item.id] = item.clone();
       this.animated_[item.id] = ProgressCenterItemGroup.shouldAnimate_(
-          !!this.animated_[item.id],
-          previousItem,
-          item,
+          !!this.animated_[item.id], previousItem, item,
           /* summarized */ false);
-      if (!this.animated_[item.id])
+      if (!this.animated_[item.id]) {
         this.completeItemAnimation(item.id);
+      }
       break;
 
     case ProgressItemState.CANCELED:
       if (!previousItem ||
-          previousItem.state !== ProgressItemState.PROGRESSING)
+          previousItem.state !== ProgressItemState.PROGRESSING) {
         return;
+      }
       delete this.items_[item.id];
       this.animated_[item.id] = false;
       this.summarizedItem_ = null;
   }
 
   // Update the internal summarized item cache.
-  var previousSummarizedItem = this.summarizedItem_;
+  const previousSummarizedItem = this.summarizedItem_;
   this.summarizedItem_ = this.getSummarizedItem(0);
   this.summarizedItemAnimated_ = ProgressCenterItemGroup.shouldAnimate_(
-      !!this.summarizedItemAnimated_,
-      previousSummarizedItem,
+      !!this.summarizedItemAnimated_, previousSummarizedItem,
       this.summarizedItem_,
       /* summarized */ true);
-  if (!this.summarizedItemAnimated_)
+  if (!this.summarizedItemAnimated_) {
     this.completeSummarizedItemAnimation();
+  }
 };
 
 /**
@@ -311,22 +321,22 @@ ProgressCenterItemGroup.prototype.completeSummarizedItemAnimation = function() {
  * @param {number} numOtherErrors Number of errors contained by other groups.
  * @return {ProgressCenterItem} Item.
  */
-ProgressCenterItemGroup.prototype.getSummarizedItem =
-    function(numOtherErrors) {
+ProgressCenterItemGroup.prototype.getSummarizedItem = function(numOtherErrors) {
   if (this.state_ === ProgressCenterItemGroup.State.EMPTY ||
-      this.state_ === ProgressCenterItemGroup.State.INACTIVE)
+      this.state_ === ProgressCenterItemGroup.State.INACTIVE) {
     return null;
+  }
 
-  var summarizedItem = new ProgressCenterItem();
+  const summarizedItem = new ProgressCenterItem();
   summarizedItem.quiet = this.quiet_;
   summarizedItem.progressMax += this.totalProgressMax_;
   summarizedItem.progressValue += this.totalProgressValue_;
-  var progressingItems = [];
-  var errorItems = [];
-  var numItems = 0;
+  const progressingItems = [];
+  const errorItems = [];
+  let numItems = 0;
 
-  for (var id in this.items_) {
-    var item = this.items_[id];
+  for (const id in this.items_) {
+    const item = this.items_[id];
     numItems++;
 
     // Count states.
@@ -342,10 +352,11 @@ ProgressCenterItemGroup.prototype.getSummarizedItem =
 
     // If all of the progressing items have the same type, then use
     // it. Otherwise use TRANSFER, since it is the most generic.
-    if (summarizedItem.type === null)
+    if (summarizedItem.type === null) {
       summarizedItem.type = item.type;
-    else if (summarizedItem.type !== item.type)
+    } else if (summarizedItem.type !== item.type) {
       summarizedItem.type = ProgressItemType.TRANSFER;
+    }
 
     // Sum up the progress values.
     summarizedItem.progressMax += item.progressMax;
@@ -364,8 +375,8 @@ ProgressCenterItemGroup.prototype.getSummarizedItem =
 
   // Returns integrated items.
   if (progressingItems.length > 0) {
-    var numErrors = errorItems.length + numOtherErrors;
-    var messages = [];
+    const numErrors = errorItems.length + numOtherErrors;
+    const messages = [];
     switch (summarizedItem.type) {
       case ProgressItemType.COPY:
         messages.push(str('COPY_PROGRESS_SUMMARY'));
@@ -386,10 +397,11 @@ ProgressCenterItemGroup.prototype.getSummarizedItem =
         messages.push(str('TRANSFER_PROGRESS_SUMMARY'));
         break;
     }
-    if (numErrors === 1)
+    if (numErrors === 1) {
       messages.push(str('ERROR_PROGRESS_SUMMARY'));
-    else if (numErrors > 1)
+    } else if (numErrors > 1) {
       messages.push(strf('ERROR_PROGRESS_SUMMARY_PLURAL', numErrors));
+    }
     summarizedItem.single = false;
     summarizedItem.message = messages.join(' ');
     summarizedItem.state = ProgressItemState.PROGRESSING;
@@ -406,16 +418,18 @@ ProgressCenterItemGroup.prototype.getSummarizedItem =
  * @private
  */
 ProgressCenterItemGroup.prototype.tryToGoToNextState_ = function() {
-  if (this.summarizedItemAnimated_)
+  if (this.summarizedItemAnimated_) {
     return;
+  }
 
   // If there is no item except for error items, go to INACTIVE state.
-  var hasError = false;
-  for (var id in this.items_) {
+  let hasError = false;
+  for (const id in this.items_) {
     // If there is non-error item (progressing, or completed but still
     // animated), we should stay the active state.
-    if (this.items_[id].state !== ProgressItemState.ERROR)
+    if (this.items_[id].state !== ProgressItemState.ERROR) {
       return;
+    }
     hasError = true;
   }
 
@@ -424,8 +438,9 @@ ProgressCenterItemGroup.prototype.tryToGoToNextState_ = function() {
   this.state_ = ProgressCenterItemGroup.State.INACTIVE;
 
   // If there is no item, go to EMPTY state.
-  if (hasError)
+  if (hasError) {
     return;
+  }
 
   this.items_ = {};
   this.animated_ = {};

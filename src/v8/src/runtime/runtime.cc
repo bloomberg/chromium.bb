@@ -18,7 +18,7 @@ namespace internal {
 
 // Header of runtime functions.
 #define F(name, number_of_args, result_size)                    \
-  Object* Runtime_##name(int args_length, Address* args_object, \
+  Address Runtime_##name(int args_length, Address* args_object, \
                          Isolate* isolate);
 FOR_EACH_INTRINSIC_RETURN_OBJECT(F)
 #undef F
@@ -124,6 +124,7 @@ bool Runtime::NeedsExactContext(FunctionId id) {
     case Runtime::kThrowNotConstructor:
     case Runtime::kThrowRangeError:
     case Runtime::kThrowReferenceError:
+    case Runtime::kThrowAccessedUninitializedVariable:
     case Runtime::kThrowStackOverflow:
     case Runtime::kThrowStaticPrototypeError:
     case Runtime::kThrowSuperAlreadyCalledError:
@@ -163,6 +164,7 @@ bool Runtime::IsNonReturning(FunctionId id) {
     case Runtime::kThrowNotConstructor:
     case Runtime::kThrowRangeError:
     case Runtime::kThrowReferenceError:
+    case Runtime::kThrowAccessedUninitializedVariable:
     case Runtime::kThrowStackOverflow:
     case Runtime::kThrowSymbolAsyncIteratorInvalid:
     case Runtime::kThrowTypeError:

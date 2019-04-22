@@ -4,7 +4,7 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_command_line.h"
@@ -51,7 +51,8 @@ static std::vector<bool> CreateTestVector(bool test_all_values,
                                           bool single_value) {
   const bool kTestStates[] = {true, false};
   if (test_all_values)
-    return std::vector<bool>(kTestStates, kTestStates + arraysize(kTestStates));
+    return std::vector<bool>(kTestStates,
+                             kTestStates + base::size(kTestStates));
   return std::vector<bool>(1, single_value);
 }
 
@@ -183,6 +184,7 @@ TEST(MimeUtilTest, CommonMediaMimeType) {
   EXPECT_TRUE(IsSupportedMediaMimeType("audio/x-m4a"));
   EXPECT_TRUE(IsSupportedMediaMimeType("video/x-m4v"));
   EXPECT_TRUE(IsSupportedMediaMimeType("audio/aac"));
+  EXPECT_TRUE(IsSupportedMediaMimeType("video/3gpp"));
 
 #if BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)
   EXPECT_TRUE(IsSupportedMediaMimeType("video/mp2t"));
@@ -194,6 +196,7 @@ TEST(MimeUtilTest, CommonMediaMimeType) {
   EXPECT_FALSE(IsSupportedMediaMimeType("audio/x-m4a"));
   EXPECT_FALSE(IsSupportedMediaMimeType("video/x-m4v"));
   EXPECT_FALSE(IsSupportedMediaMimeType("audio/aac"));
+  EXPECT_FALSE(IsSupportedMediaMimeType("video/3gpp"));
 #endif  // USE_PROPRIETARY_CODECS
   EXPECT_FALSE(IsSupportedMediaMimeType("video/mp3"));
 
@@ -229,7 +232,7 @@ TEST(MimeUtilTest, SplitAndStripCodecs) {
       {",", 2, {"", ""}, {"", ""}},
   };
 
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (size_t i = 0; i < base::size(tests); ++i) {
     std::vector<std::string> codecs_out;
 
     SplitCodecs(tests[i].original, &codecs_out);

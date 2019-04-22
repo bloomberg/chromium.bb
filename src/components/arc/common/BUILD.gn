@@ -13,6 +13,7 @@ if (is_chromeos) {
     sources = [
       "accessibility_helper.mojom",
       "app.mojom",
+      "app_permissions.mojom",
       "appfuse.mojom",
       "arc_bridge.mojom",
       "audio.mojom",

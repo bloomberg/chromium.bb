@@ -6,6 +6,7 @@
 #define ASH_ROTATOR_SCREEN_ROTATION_ANIMATOR_H_
 
 #include <stdint.h>
+#include <memory>
 
 #include "ash/ash_export.h"
 #include "ash/display/display_configuration_controller.h"
@@ -28,15 +29,17 @@ class CopyOutputResult;
 namespace ui {
 class AnimationMetricsReporter;
 class LayerTreeOwner;
+class ScopedAnimationDurationScaleMode;
 }  // namespace ui
 
 namespace ash {
-
 class ScreenRotationAnimatorObserver;
 
 // Utility to perform a screen rotation with an animation.
 class ASH_EXPORT ScreenRotationAnimator {
  public:
+  static ScreenRotationAnimator* GetForRootWindow(aura::Window* root_window);
+
   explicit ScreenRotationAnimator(aura::Window* root_window);
   virtual ~ScreenRotationAnimator();
 
@@ -51,10 +54,8 @@ class ASH_EXPORT ScreenRotationAnimator {
               display::Display::RotationSource source,
               DisplayConfigurationController::RotationAnimation mode);
 
-  void AddScreenRotationAnimatorObserver(
-      ScreenRotationAnimatorObserver* observer);
-  void RemoveScreenRotationAnimatorObserver(
-      ScreenRotationAnimatorObserver* observer);
+  void AddObserver(ScreenRotationAnimatorObserver* observer);
+  void RemoveObserver(ScreenRotationAnimatorObserver* observer);
 
   // When screen rotation animation is ended or aborted, calls |Rotate()| with
   // the pending rotation request if the request queue is not empty. Otherwise
@@ -67,6 +68,10 @@ class ASH_EXPORT ScreenRotationAnimator {
   // Returns the target (new) rotation. This will return the last requested
   // orientation if |IsRotating()| is false.
   display::Display::Rotation GetTargetRotation() const;
+
+  static void SetScreenRotationAnimatorForTest(
+      aura::Window* root_window,
+      std::unique_ptr<ScreenRotationAnimator> animator);
 
  protected:
   using CopyCallback =
@@ -156,6 +161,8 @@ class ASH_EXPORT ScreenRotationAnimator {
   // |rotation_degrees| arc.
   void AnimateRotation(std::unique_ptr<ScreenRotationRequest> rotation_request);
 
+  void NotifyAnimationFinished(bool canceled);
+
   void set_disable_animation_timers_for_test(bool disable_timers) {
     disable_animation_timers_for_test_ = disable_timers;
   }
@@ -188,8 +195,8 @@ class ASH_EXPORT ScreenRotationAnimator {
   std::unique_ptr<ui::LayerTreeOwner> mask_layer_tree_owner_;
   std::unique_ptr<ScreenRotationRequest> last_pending_request_;
   base::Optional<ScreenRotationRequest> current_async_rotation_request_;
-  bool has_switch_ash_disable_smooth_screen_rotation_;
   display::Display::Rotation target_rotation_ = display::Display::ROTATE_0;
+  std::unique_ptr<ui::ScopedAnimationDurationScaleMode> animation_scale_mode_;
   base::WeakPtrFactory<ScreenRotationAnimator> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenRotationAnimator);

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/relaunch_notification/relaunch_notification_controller_platform_impl_desktop.h"
 
+#include "base/bind.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/browser.h"
@@ -51,7 +52,7 @@ RelaunchNotificationControllerPlatformImpl::
     RelaunchNotificationControllerPlatformImpl() = default;
 
 void RelaunchNotificationControllerPlatformImpl::NotifyRelaunchRecommended(
-    base::TimeTicks detection_time) {
+    base::Time detection_time) {
   // Nothing to do if the bubble is visible.
   if (widget_)
     return;
@@ -72,7 +73,7 @@ void RelaunchNotificationControllerPlatformImpl::NotifyRelaunchRecommended(
 }
 
 void RelaunchNotificationControllerPlatformImpl::NotifyRelaunchRequired(
-    base::TimeTicks deadline) {
+    base::Time deadline) {
   // Nothing to do if the dialog is visible.
   if (widget_)
     return;
@@ -98,7 +99,7 @@ void RelaunchNotificationControllerPlatformImpl::CloseRelaunchNotification() {
 }
 
 void RelaunchNotificationControllerPlatformImpl::SetDeadline(
-    base::TimeTicks deadline) {
+    base::Time deadline) {
   DCHECK(widget_);
   RelaunchRequiredDialogView::FromWidget(widget_)->SetDeadline(deadline);
 }

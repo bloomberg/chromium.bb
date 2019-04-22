@@ -45,6 +45,7 @@ DISPLAY_LABEL_MST_ANDROID_PFQ = 'mst_android_pfq'
 DISPLAY_LABEL_MNC_ANDROID_PFQ = 'mnc_android_pfq'
 DISPLAY_LABEL_NYC_ANDROID_PFQ = 'nyc_android_pfq'
 DISPLAY_LABEL_PI_ANDROID_PFQ = 'pi_android_pfq'
+DISPLAY_LABEL_VMPI_ANDROID_PFQ = 'vmpi_android_pfq'
 DISPLAY_LABEL_FIRMWARE = 'firmware'
 DISPLAY_LABEL_FACTORY = 'factory'
 DISPLAY_LABEL_TOOLCHAIN = 'toolchain'
@@ -67,6 +68,7 @@ ALL_DISPLAY_LABEL = {
     DISPLAY_LABEL_MNC_ANDROID_PFQ,
     DISPLAY_LABEL_NYC_ANDROID_PFQ,
     DISPLAY_LABEL_PI_ANDROID_PFQ,
+    DISPLAY_LABEL_VMPI_ANDROID_PFQ,
     DISPLAY_LABEL_FIRMWARE,
     DISPLAY_LABEL_FACTORY,
     DISPLAY_LABEL_TOOLCHAIN,
@@ -76,14 +78,22 @@ ALL_DISPLAY_LABEL = {
 
 # These values must be kept in sync with the ChromeOS LUCI builders.
 #
-# https://chrome-internal.git.corp.google.com/chromeos/
-#    manifest-internal/+/infra/config/cr-buildbucket.cfg
+# https://chrome-internal.googlesource.com/chromeos/
+#     infra/config/+/refs/heads/master/luci/cr-buildbucket.cfg
 LUCI_BUILDER_TRY = 'Try'
 LUCI_BUILDER_PRECQ = 'PreCQ'
 LUCI_BUILDER_PROD = 'Prod'
 LUCI_BUILDER_INCREMENTAL = 'Incremental'
+LUCI_BUILDER_INFRA = 'Infra'
+LUCI_BUILDER_LEGACY_POSTSUBMIT = 'LegacyPostsubmit'
+LUCI_BUILDER_COMMITQUEUE = 'CommitQueue'
 LUCI_BUILDER_CQ = 'CQ'
 LUCI_BUILDER_STAGING = 'Staging'
+LUCI_BUILDER_INFORMATIONAL = 'Informational'
+LUCI_BUILDER_PFQ = 'PFQ'
+LUCI_BUILDER_FULL = 'Full'
+LUCI_BUILDER_FACTORY = 'Factory'
+LUCI_BUILDER_RELEASE = 'Release'
 
 ALL_LUCI_BUILDER = {
     LUCI_BUILDER_TRY,
@@ -91,7 +101,15 @@ ALL_LUCI_BUILDER = {
     LUCI_BUILDER_PROD,
     LUCI_BUILDER_INCREMENTAL,
     LUCI_BUILDER_CQ,
+    LUCI_BUILDER_COMMITQUEUE,
     LUCI_BUILDER_STAGING,
+    LUCI_BUILDER_INFORMATIONAL,
+    LUCI_BUILDER_PFQ,
+    LUCI_BUILDER_FULL,
+    LUCI_BUILDER_FACTORY,
+    LUCI_BUILDER_RELEASE,
+    LUCI_BUILDER_LEGACY_POSTSUBMIT,
+    LUCI_BUILDER_INFRA,
 }
 
 
@@ -139,25 +157,64 @@ def IsPFQType(b_type):
   return b_type in (constants.PFQ_TYPE, constants.PALADIN_TYPE,
                     constants.CHROME_PFQ_TYPE, constants.ANDROID_PFQ_TYPE)
 
+
+def IsBinhostType(b_type):
+  """Returns True if this build type is a BINHOST.conf provider"""
+  return b_type in (constants.CHROME_PFQ_TYPE, constants.POSTSUBMIT_TYPE)
+
+
 def IsCQType(b_type):
   """Returns True if this build type is a Commit Queue."""
   return b_type == constants.PALADIN_TYPE
+
 
 def IsCanaryType(b_type):
   """Returns True if this build type is a Canary."""
   return b_type == constants.CANARY_TYPE
 
+
 def IsMasterChromePFQ(config):
   """Returns True if this build is master chrome PFQ type."""
   return config.build_type == constants.CHROME_PFQ_TYPE and config.master
+
 
 def IsMasterAndroidPFQ(config):
   """Returns True if this build is master Android PFQ type."""
   return config.build_type == constants.ANDROID_PFQ_TYPE and config.master
 
+
 def IsMasterCQ(config):
   """Returns True if this build is master CQ."""
   return config.build_type == constants.PALADIN_TYPE and config.master
+
+
+def GetHWTestEnv(builder_run_config, model_config=None, suite_config=None):
+  """Return the env of a suite to run for a given build/model.
+
+  Args:
+    builder_run_config: The BuildConfig object inside a BuilderRun object.
+    model_config: A ModelTestConfig object to test against.
+    suite_config: A HWTestConfig object to test against.
+
+  Returns:
+    A string variable to indiate the hwtest environment.
+  """
+  # arc-*ts-qual suites use a different logic because they use a separate pool
+  # on the release builder.
+  if suite_config and suite_config.suite in [
+      constants.HWTEST_CTS_QUAL_SUITE, constants.HWTEST_GTS_QUAL_SUITE]:
+    if builder_run_config.enable_skylab_cts_hw_tests:
+      return constants.ENV_SKYLAB
+    return constants.ENV_AUTOTEST
+
+  enable_suite = True if suite_config is None else suite_config.enable_skylab
+  enable_model = True if model_config is None else model_config.enable_skylab
+  if (builder_run_config.enable_skylab_hw_tests
+      and enable_suite and enable_model):
+    return constants.ENV_SKYLAB
+
+  return constants.ENV_AUTOTEST
+
 
 def RetryAlreadyStartedSlaves(config):
   """Returns True if wants to retry slaves which already start but fail.
@@ -167,6 +224,7 @@ def RetryAlreadyStartedSlaves(config):
   still want to retry the slave.
   """
   return config.name == constants.CQ_MASTER
+
 
 def GetCriticalStageForRetry(config):
   """Get critical stage names for retry decisions.
@@ -394,7 +452,7 @@ class TastVMTestConfig(object):
     timeout: Number of seconds to wait before timing out waiting for
              results.
   """
-  DEFAULT_TEST_TIMEOUT = 30 * 60
+  DEFAULT_TEST_TIMEOUT = 60 * 60
 
   def __init__(self, suite_name, test_exprs, timeout=DEFAULT_TEST_TIMEOUT):
     """Constructor -- see members above."""
@@ -437,11 +495,13 @@ class ModelTestConfig(object):
     lab_board_name: The name of the board in the lab (matches board label)
     test_suites: List of hardware test suites that will be executed.
   """
-  def __init__(self, name, lab_board_name, test_suites=None):
+  def __init__(self, name, lab_board_name, test_suites=None,
+               enable_skylab=True):
     """Constructor -- see members above."""
     self.name = name
     self.lab_board_name = lab_board_name
     self.test_suites = test_suites
+    self.enable_skylab = enable_skylab
 
   def __eq__(self, other):
     return self.__dict__ == other.__dict__
@@ -481,6 +541,8 @@ class HWTestConfig(object):
     suite_args: Arguments passed to the suite.  This should be a dict
                 representing keyword arguments.  The value is marshalled
                 using repr(), so the dict values should be basic types.
+    quota_account: If specified, the quotascheduler account to use for all
+                   tests in this suite.
 
   Some combinations of member settings are invalid:
     * A suite config may not specify both blocking and async.
@@ -520,7 +582,8 @@ class HWTestConfig(object):
                suite_min_duts=0,
                suite_args=None,
                offload_failures_only=False,
-               enable_skylab=True):
+               enable_skylab=True,
+               quota_account=None):
     """Constructor -- see members above."""
 
     assert not async or not blocking, "%s is async and blocking" % suite
@@ -544,15 +607,29 @@ class HWTestConfig(object):
     # in build config. But for some particular suites, we want to exclude them
     # from Skylab even if the build config is migrated to Skylab.
     self.enable_skylab = enable_skylab
+    self.quota_account = quota_account
 
-  def SetBranchedValues(self):
-    """Changes the HW Test timeout/priority values to branched values."""
+  def _SetCommonBranchedValues(self):
+    """Set the common values for branched builds."""
     self.timeout = max(HWTestConfig.BRANCHED_HW_TEST_TIMEOUT, self.timeout)
 
     # Set minimum_duts default to 0, which means that lab will not check the
     # number of available duts to meet the minimum requirement before creating
     # a suite job for branched build.
     self.minimum_duts = 0
+
+  def SetBranchedValuesForSkylab(self):
+    """Set suite values for branched builds for skylab."""
+    self._SetCommonBranchedValues()
+
+    if (constants.SKYLAB_HWTEST_PRIORITIES_MAP[self.priority] <
+        constants.SKYLAB_HWTEST_PRIORITIES_MAP[
+            constants.HWTEST_DEFAULT_PRIORITY]):
+      self.priority = constants.HWTEST_DEFAULT_PRIORITY
+
+  def SetBranchedValues(self):
+    """Changes the HW Test timeout/priority values to branched values."""
+    self._SetCommonBranchedValues()
 
     # Only reduce priority if it's lower.
     new_priority = constants.HWTEST_PRIORITIES_MAP[
@@ -579,11 +656,6 @@ def DefaultSettings():
 
       # The name of the config.
       name=None,
-
-      # What type of builder is used for this build? This is a hint sent to
-      # the waterfall code. It is ignored by the trybot waterfall.
-      #   constants.VALID_BUILD_SLAVE_TYPES
-      buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
 
       # A list of boards to build.
       boards=None,
@@ -661,11 +733,6 @@ def DefaultSettings():
       # specify 'buildtools'.
       manifest=constants.DEFAULT_MANIFEST,
 
-      # The name of the manifest to use if we're building on a local trybot.
-      # This should only require elevated access if it's really needed to
-      # build this config.
-      dev_manifest=constants.DEFAULT_MANIFEST,
-
       # Applies only to paladin builders. If true, Sync to the manifest
       # without applying any test patches, then do a fresh build in a new
       # chroot. Then, apply the patches and build in the existing chroot.
@@ -691,15 +758,6 @@ def DefaultSettings():
 
       # Use binary packages for build_packages and setup_board.
       usepkg_build_packages=True,
-
-      # If set, run BuildPackages in the background and allow subsequent
-      # stages to run in parallel with this one.
-      #
-      # For each release group, the first builder should be set to run in the
-      # foreground (to build binary packages), and the remainder of the
-      # builders should be set to run in parallel (to install the binary
-      # packages.)
-      build_packages_in_background=False,
 
       # Does this profile need to sync chrome?  If None, we guess based on
       # other factors.  If True/False, we always do that.
@@ -781,6 +839,10 @@ def DefaultSettings():
       # to run a predetermined set of benchmarks.
       afdo_generate=False,
 
+      # Generate Chrome orderfile. Will build Chrome with C3 ordering and
+      # generate an orderfile for uploading as a result.
+      orderfile_generate=False,
+
       # Generates AFDO data, builds the minimum amount of artifacts and
       # assumes a non-distributed builder (i.e.: the whole process in a single
       # builder).
@@ -810,8 +872,13 @@ def DefaultSettings():
       # failures.
       vm_test_runs=1,
 
-      # If True, run SkylabHWTestStage instead of HWTestStage.
+      # If True, run SkylabHWTestStage instead of HWTestStage for suites that
+      # use pools other than pool:cts.
       enable_skylab_hw_tests=False,
+
+      # If True, run SkylabHWTestStage instead of HWTestStage for suites that
+      # use pool:cts.
+      enable_skylab_cts_hw_tests=False,
 
       # A list of HWTestConfig objects to run.
       hw_tests=[],
@@ -952,15 +1019,16 @@ def DefaultSettings():
       # canary runs.
       use_chrome_lkgm=False,
 
-      # True if this build config is critical for the chrome_lkgm decision.
-      critical_for_chrome=False,
-
       # Upload prebuilts for this build. Valid values are PUBLIC, PRIVATE, or
       # False.
       prebuilts=False,
 
       # Use SDK as opposed to building the chroot from source.
       use_sdk=True,
+
+      # Bootstrap from previous SDK instead of Gentoo stage3 when building chroot
+      # from source (only applicable with use_sdk=False).
+      self_bootstrap = False,
 
       # The description string to print out for config when user runs --list.
       description=None,
@@ -990,10 +1058,6 @@ def DefaultSettings():
       # Run the binhost_test stage. Only makes sense for builders that have no
       # boards.
       binhost_test=False,
-
-      # Run the BranchUtilTestStage. Useful for builders that publish new
-      # manifest versions that we may later want to branch off of.
-      branch_util_test=False,
 
       # If specified, it is passed on to the PushImage script as '--sign-types'
       # commandline argument.  Must be either None or a list of image types.
@@ -1051,16 +1115,8 @@ def DefaultSettings():
       # Which goma client to use.
       goma_client_type=None,
 
-      # ==================================================================
-      # Hints to Buildbot master UI
-
-      # If set, tells buildbot what name to give to the corresponding builder
-      # on its waterfall.
-      buildbot_waterfall_name=None,
-
-      # If not None, the name (in waterfall.CIDB_KNOWN_WATERFALLS) of the
-      # waterfall that this target should be active on.
-      active_waterfall=None,
+      # Try to use goma to build all packages.
+      build_all_with_goma=False,
 
       # This is a LUCI Scheduler schedule string. Setting this will create
       # a LUCI Scheduler for this build on swarming (not buildbot).
@@ -1077,9 +1133,6 @@ def DefaultSettings():
       # If true, skip package retries in BuildPackages step.
       nobuildretry=False,
 
-      # If false, turn off rebooting between builds
-      auto_reboot=True,
-
       # Attempt to run this build on the same bot each time it builds.
       # This is only meaningful for slave builds run on swarming. This
       # should only be used with LUCI Builders that use a reserved
@@ -1090,14 +1143,13 @@ def DefaultSettings():
 
 
 def GerritInstanceParameters(name, instance):
-  GOB_HOST = '%s.googlesource.com'
   param_names = ['_GOB_INSTANCE', '_GERRIT_INSTANCE', '_GOB_HOST',
                  '_GERRIT_HOST', '_GOB_URL', '_GERRIT_URL']
 
   gob_instance = instance
   gerrit_instance = '%s-review' % instance
-  gob_host = GOB_HOST % gob_instance
-  gerrit_host = GOB_HOST % gerrit_instance
+  gob_host = constants.GOB_HOST % gob_instance
+  gerrit_host = constants.GOB_HOST % gerrit_instance
   gob_url = 'https://%s' % gob_host
   gerrit_url = 'https://%s' % gerrit_host
 
@@ -1112,9 +1164,6 @@ def DefaultSiteParameters():
   # All site parameters should be documented.
   default_site_params = {}
 
-  # Helper variables for defining site parameters.
-  gob_host = '%s.googlesource.com'
-
   manifest_project = 'chromiumos/manifest'
   manifest_int_project = 'chromeos/manifest-internal'
   external_remote = 'cros'
@@ -1122,21 +1171,17 @@ def DefaultSiteParameters():
   chromium_remote = 'chromium'
   chrome_remote = 'chrome'
   aosp_remote = 'aosp'
-  weave_remote = 'weave'
 
-  internal_change_prefix = '*'
-  external_change_prefix = ''
+  internal_change_prefix = 'chrome-internal:'
+  external_change_prefix = 'chromium:'
 
   # Gerrit instance site parameters.
-  default_site_params.update(GOB_HOST=gob_host)
   default_site_params.update(
       GerritInstanceParameters('EXTERNAL', 'chromium'))
   default_site_params.update(
       GerritInstanceParameters('INTERNAL', 'chrome-internal'))
   default_site_params.update(
       GerritInstanceParameters('AOSP', 'android'))
-  default_site_params.update(
-      GerritInstanceParameters('WEAVE', 'weave'))
 
   default_site_params.update(
       # Parameters to define which manifests to use.
@@ -1155,11 +1200,9 @@ def DefaultSiteParameters():
           default_site_params['EXTERNAL_GOB_INSTANCE']: external_remote,
           default_site_params['INTERNAL_GOB_INSTANCE']: internal_remote,
       },
-      KAYLE_INTERNAL_REMOTE=None,
       CHROMIUM_REMOTE=chromium_remote,
       CHROME_REMOTE=chrome_remote,
       AOSP_REMOTE=aosp_remote,
-      WEAVE_REMOTE=weave_remote,
 
       # Only remotes listed in CROS_REMOTES are considered branchable.
       # CROS_REMOTES and BRANCHABLE_PROJECTS must be kept in sync.
@@ -1167,13 +1210,11 @@ def DefaultSiteParameters():
           external_remote: default_site_params['EXTERNAL_GERRIT_HOST'],
           internal_remote: default_site_params['INTERNAL_GERRIT_HOST'],
           aosp_remote: default_site_params['AOSP_GERRIT_HOST'],
-          weave_remote: default_site_params['WEAVE_GERRIT_HOST'],
       },
       CROS_REMOTES={
           external_remote: default_site_params['EXTERNAL_GOB_URL'],
           internal_remote: default_site_params['INTERNAL_GOB_URL'],
           aosp_remote: default_site_params['AOSP_GOB_URL'],
-          weave_remote: default_site_params['WEAVE_GOB_URL'],
       },
       GIT_REMOTES={
           chromium_remote: default_site_params['EXTERNAL_GOB_URL'],
@@ -1181,7 +1222,6 @@ def DefaultSiteParameters():
           external_remote: default_site_params['EXTERNAL_GOB_URL'],
           internal_remote: default_site_params['INTERNAL_GOB_URL'],
           aosp_remote: default_site_params['AOSP_GOB_URL'],
-          weave_remote: default_site_params['WEAVE_GOB_URL'],
       },
 
       # Prefix to distinguish internal and external changes. This is used
@@ -1196,9 +1236,7 @@ def DefaultSiteParameters():
       },
 
       # List of remotes that are okay to include in the external manifest.
-      EXTERNAL_REMOTES=(
-          external_remote, chromium_remote, aosp_remote, weave_remote,
-      ),
+      EXTERNAL_REMOTES=(external_remote, chromium_remote, aosp_remote),
 
       # Mapping 'remote name' -> regexp that matches names of repositories on
       # that remote that can be branched when creating CrOS branch.
@@ -1236,28 +1274,10 @@ def DefaultSiteParameters():
   return default_site_params
 
 
-class SiteParameters(AttrDict):
-  """This holds the site-wide configuration parameters for a SiteConfig."""
-
-  @classmethod
-  def HideDefaults(cls, site_params):
-    """Hide default valued site parameters.
-
-    Args:
-      site_params: A dictionary of site parameters.
-
-    Returns:
-      A dictionary of site parameters containing only non-default
-      valued entries.
-    """
-    defaults = DefaultSiteParameters()
-    return {k: v for k, v in site_params.iteritems() if defaults.get(k) != v}
-
-
 class SiteConfig(dict):
   """This holds a set of named BuildConfig values."""
 
-  def __init__(self, defaults=None, templates=None, site_params=None):
+  def __init__(self, defaults=None, templates=None):
     """Init.
 
     Args:
@@ -1269,17 +1289,12 @@ class SiteConfig(dict):
       templates: Dictionary of template names to partial BuildConfigs
                  other BuildConfigs can be based on. Mostly used to reduce
                  verbosity of the config dump file format.
-      site_params: Dictionary of site-wide configuration parameters. Keys
-                   of the site_params dictionary should be strings.
     """
     super(SiteConfig, self).__init__()
     self._defaults = DefaultSettings()
     if defaults:
       self._defaults.update(defaults)
     self._templates = AttrDict() if templates is None else AttrDict(templates)
-    self._site_params = DefaultSiteParameters()
-    if site_params:
-      self._site_params.update(site_params)
 
   def GetDefault(self):
     """Create the canonical default build configuration."""
@@ -1294,11 +1309,6 @@ class SiteConfig(dict):
   @property
   def templates(self):
     return self._templates
-
-  @property
-  def params(self):
-    """Get the site-wide configuration parameters."""
-    return SiteParameters(**self._site_params)
 
   #
   # Methods for searching a SiteConfig's contents.
@@ -1364,7 +1374,6 @@ class SiteConfig(dict):
       AssertionError if the given config is not a master config or it does
         not have a manifest_version.
     """
-    assert master_config.manifest_version
     assert master_config.master
     assert master_config.slave_configs is not None
 
@@ -1625,12 +1634,10 @@ class SiteConfig(dict):
   def SaveConfigToString(self):
     """Save this Config object to a Json format string."""
     default = self.GetDefault()
-    site_params = self.params
 
     config_dict = {}
     config_dict['_default'] = default
     config_dict['_templates'] = self._MarshalTemplates()
-    config_dict['_site_params'] = SiteParameters.HideDefaults(site_params)
     for k, v in self.iteritems():
       config_dict[k] = self._MarshalBuildConfig(k, v)
 
@@ -1653,8 +1660,68 @@ class SiteConfig(dict):
     """
     return PrettyJsonDict(self)
 
+  def DumpConfigCsv(self):
+    """Dump the SiteConfig to CSV with all configs fully expanded.
+
+    This supports configuration analysis and debugging.
+    """
+    raw_config = json.loads(self.DumpExpandedConfigToString())
+    header_keys = {'builder_name', 'test_type', 'device'}
+    csv_rows = []
+    for builder_name, values in raw_config.items():
+      row = {'builder_name': builder_name}
+      tests = {}
+      raw_devices = []
+      for key, value in values.items():
+        header_keys.add(key)
+        if value:
+          if isinstance(value, list):
+            if '_tests' in key:
+              tests[key] = value
+            elif key == 'models':
+              raw_devices = value
+            else:
+              # Ignoring this for now for test analysis.
+              if key != 'child_configs':
+                row[key] = ' | '.join(str(array_val) for array_val in value)
+          else:
+            row[key] = value
+
+      if tests:
+        for test_type, test_entries in tests.items():
+          for test_entry in test_entries:
+            test_row = copy.deepcopy(row)
+            test_row['test_type'] = test_type
+            raw_test = json.loads(test_entry)
+            for test_key, test_value in raw_test.items():
+              if test_value:
+                header_keys.add(test_key)
+                test_row[test_key] = test_value
+            csv_rows.append(test_row)
+            if raw_devices:
+              for raw_device in raw_devices:
+                device = json.loads(raw_device)
+                test_suite = test_row.get('suite', '')
+                test_suites = device.get('test_suites', [])
+                if test_suite and test_suites and test_suite in test_suites:
+                  device_row = copy.deepcopy(test_row)
+                  device_row['device'] = device['name']
+                  csv_rows.append(device_row)
+      else:
+        csv_rows.append(row)
+
+    csv_result = [','.join(header_keys)]
+    for csv_row in csv_rows:
+      row_values = []
+      for header_key in header_keys:
+        row_values.append('"%s"' % str(csv_row.get(header_key, '')))
+      csv_result.append(','.join(row_values))
+
+    return '\n'.join(csv_result)
+
+
 #
-# Methods related to working with GE Data.
+# Functions related to working with GE Data.
 #
 
 def LoadGEBuildConfigFromFile(
@@ -1675,6 +1742,7 @@ def GeBuildConfigAllBoards(ge_build_config):
   """
   return [b['name'] for b in ge_build_config['boards']]
 
+
 def GetUnifiedBuildConfigAllBuilds(ge_build_config):
   """Extract a list of all unified build configurations.
 
@@ -1688,6 +1756,7 @@ def GetUnifiedBuildConfigAllBuilds(ge_build_config):
     A list of unified build configurations (json configs)
   """
   return ge_build_config.get('reference_board_unified_builds', [])
+
 
 class BoardGroup(object):
   """Class holds leader_boards and follower_boards for grouped boards"""
@@ -1705,6 +1774,7 @@ class BoardGroup(object):
   def __str__(self):
     return ('Leader_boards: %s Follower_boards: %s' %
             (self.leader_boards, self.follower_boards))
+
 
 def GroupBoardsByBuilderAndBoardGroup(board_list):
   """Group boards by builder and board_group.
@@ -1758,6 +1828,7 @@ def GroupBoardsByBuilder(board_list):
 
   return builder_to_boards_dict
 
+
 def GetArchBoardDict(ge_build_config):
   """Get a dict mapping arch types to board names.
 
@@ -1771,7 +1842,9 @@ def GetArchBoardDict(ge_build_config):
 
   for b in ge_build_config[CONFIG_TEMPLATE_BOARDS]:
     board_name = b[CONFIG_TEMPLATE_NAME]
-    for config in b[CONFIG_TEMPLATE_CONFIGS]:
+    # Invalid build configs being written out with no configs array, thus the
+    # default. See https://crbug.com/947712.
+    for config in b.get(CONFIG_TEMPLATE_CONFIGS, []):
       arch = config[CONFIG_TEMPLATE_ARCH]
       arch_board_dict.setdefault(arch, set()).add(board_name)
 
@@ -1783,7 +1856,7 @@ def GetArchBoardDict(ge_build_config):
   return arch_board_dict
 
 #
-# Methods related to loading/saving Json.
+# Functions related to loading/saving Json.
 #
 class ObjectJSONEncoder(json.JSONEncoder):
   """Json Encoder that encodes objects as their dictionaries."""
@@ -1817,17 +1890,13 @@ def LoadConfigFromString(json_string):
   for t in templates.itervalues():
     _DeserializeTestConfigs(t)
 
-  site_params = DefaultSiteParameters()
-  site_params.update(config_dict.pop('_site_params', {}))
-
   defaultBuildConfig = BuildConfig(**defaults)
 
   builds = {n: _CreateBuildConfig(n, defaultBuildConfig, v, templates)
             for n, v in config_dict.iteritems()}
 
   # config is the struct that holds the complete cbuildbot config.
-  result = SiteConfig(defaults=defaults, templates=templates,
-                      site_params=site_params)
+  result = SiteConfig(defaults=defaults, templates=templates)
   result.update(builds)
 
   return result
@@ -1927,11 +1996,12 @@ def GetSiteParams():
   SiteConfig.params.
 
   Returns:
-    SiteParameters
+    AttrDict of site parameters
   """
-  site_params = SiteParameters()
+  site_params = AttrDict()
   site_params.update(DefaultSiteParameters())
   return site_params
+
 
 def append_useflags(useflags):
   """Used to append a set of useflags to existing useflags.

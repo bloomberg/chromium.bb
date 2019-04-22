@@ -8,8 +8,8 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#ifndef WEBRTC_LIBJINGLE_XMLLITE_XMLPARSER_H_
-#define WEBRTC_LIBJINGLE_XMLLITE_XMLPARSER_H_
+#ifndef THIRD_PARTY_LIBJINGLE_XMPP_XMLLITE_XMLPARSER_H_
+#define THIRD_PARTY_LIBJINGLE_XMPP_XMLLITE_XMLPARSER_H_
 
 #include <string>
 
@@ -23,7 +23,7 @@
 struct XML_ParserStruct;
 typedef struct XML_ParserStruct* XML_Parser;
 
-namespace buzz {
+namespace jingle_xmpp {
 
 class XmlParseHandler;
 class XmlParseContext;
@@ -98,6 +98,6 @@ private:
   bool sentError_;
 };
 
-}  // namespace buzz
+}  // namespace jingle_xmpp
 
-#endif  // WEBRTC_LIBJINGLE_XMLLITE_XMLPARSER_H_
+#endif  // THIRD_PARTY_LIBJINGLE_XMPP_XMLLITE_XMLPARSER_H_

@@ -4,6 +4,7 @@
 
 #include "services/data_decoder/public/cpp/safe_json_parser_impl.h"
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"

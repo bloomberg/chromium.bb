@@ -10,6 +10,7 @@
 #include "ui/aura/mus/window_mus.h"
 #include "ui/aura/mus/window_port_mus.h"
 #include "ui/aura/mus/window_tree_client.h"
+#include "ui/aura/mus/window_tree_host_mus.h"
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_types.h"
 
@@ -57,6 +58,8 @@ std::string ChangeTypeToString(ChangeType change_type) {
       return "TRANSFORM";
     case ChangeType::VISIBLE:
       return "VISIBLE";
+    case ChangeType::SET_TRANSPARENT:
+      return "SET_TRANSPARENT";
   }
 }
 
@@ -74,30 +77,58 @@ bool InFlightChange::Matches(const InFlightChange& change) const {
 
 void InFlightChange::ChangeFailed() {}
 
+void InFlightChange::OnLastChangeOfTypeSucceeded() {}
+
 // InFlightBoundsChange -------------------------------------------------------
 
 InFlightBoundsChange::InFlightBoundsChange(
     WindowTreeClient* window_tree_client,
     WindowMus* window,
     const gfx::Rect& revert_bounds,
-    const base::Optional<viz::LocalSurfaceId>& revert_local_surface_id)
+    ui::WindowShowState revert_show_state,
+    bool from_server,
+    const base::Optional<viz::LocalSurfaceIdAllocation>&
+        revert_local_surface_id_allocation)
     : InFlightChange(window, ChangeType::BOUNDS),
       window_tree_client_(window_tree_client),
       revert_bounds_(revert_bounds),
-      revert_local_surface_id_(revert_local_surface_id) {}
+      revert_show_state_(revert_show_state),
+      from_server_(from_server),
+      revert_local_surface_id_allocation_(revert_local_surface_id_allocation) {
+  // Should always be created with a window.
+  CHECK(window);
+}
 
 InFlightBoundsChange::~InFlightBoundsChange() {}
 
 void InFlightBoundsChange::SetRevertValueFrom(const InFlightChange& change) {
-  revert_bounds_ =
-      static_cast<const InFlightBoundsChange&>(change).revert_bounds_;
-  revert_local_surface_id_ =
-      static_cast<const InFlightBoundsChange&>(change).revert_local_surface_id_;
+  const auto& from = static_cast<const InFlightBoundsChange&>(change);
+  from_server_ = from.from_server_;
+  revert_bounds_ = from.revert_bounds_;
+  revert_show_state_ = from.revert_show_state_;
+  revert_local_surface_id_allocation_ =
+      from.revert_local_surface_id_allocation_;
 }
 
 void InFlightBoundsChange::Revert() {
-  window_tree_client_->SetWindowBoundsFromServer(window(), revert_bounds_,
-                                                 revert_local_surface_id_);
+  window_tree_client_->SetWindowBoundsFromServer(
+      window(), revert_bounds_, revert_show_state_, from_server_,
+      revert_local_surface_id_allocation_);
+}
+
+void InFlightBoundsChange::OnLastChangeOfTypeSucceeded() {
+  // InFlightBoundsChange is always created with a window.
+  CHECK(window());
+  aura::Window* w = window()->GetWindow();
+  // WindowTreeHostMus returns null if not a WindowTreeHostMus.
+  aura::WindowTreeHostMus* window_tree_host = WindowTreeHostMus::ForWindow(w);
+  // ApplyPendingSurfaceIdFromServer() is only applicable for
+  // WindowTreeHostMus's window(). If |w| is not that window, nothing to do.
+  if (!window_tree_host || w != window_tree_host->window() ||
+      !window_tree_host->has_pending_local_surface_id_from_server()) {
+    return;
+  }
+  window_tree_client_->ApplyPendingSurfaceIdFromServer(window());
 }
 
 // InFlightDragChange -----------------------------------------------------
@@ -135,8 +166,10 @@ void InFlightTransformChange::Revert() {
 
 // CrashInFlightChange --------------------------------------------------------
 
-CrashInFlightChange::CrashInFlightChange(WindowMus* window, ChangeType type)
-    : InFlightChange(window, type) {}
+CrashInFlightChange::CrashInFlightChange(const base::Location& from_here,
+                                         WindowMus* window,
+                                         ChangeType type)
+    : InFlightChange(window, type), location_(from_here) {}
 
 CrashInFlightChange::~CrashInFlightChange() {}
 
@@ -145,7 +178,17 @@ void CrashInFlightChange::SetRevertValueFrom(const InFlightChange& change) {
 }
 
 void CrashInFlightChange::ChangeFailed() {
-  CHECK(false) << "change failed, type=" << static_cast<int>(change_type());
+  // TODO(crbug.com/912228, crbug.com/940620): remove LOG(). Used to figure out
+  // why this is being hit.
+  LOG(FATAL) << "change failed, type=" << ChangeTypeToString(change_type())
+             << "(" << static_cast<int>(change_type()) << ")"
+             << ", window="
+             << (window() ? window()->GetWindow()->GetName() : "(null)")
+             << ", parent="
+             << (window() && window()->GetWindow()->parent()
+                     ? window()->GetWindow()->parent()->GetName()
+                     : "(null)")
+             << ", from=" << location_.ToString();
 }
 
 void CrashInFlightChange::Revert() {
@@ -250,7 +293,7 @@ void InFlightPropertyChange::Revert() {
 // InFlightCursorChange ----------------------------------------------------
 
 InFlightCursorChange::InFlightCursorChange(WindowMus* window,
-                                           const ui::CursorData& revert_value)
+                                           const ui::Cursor& revert_value)
     : InFlightChange(window, ChangeType::CURSOR),
       revert_cursor_(revert_value) {}
 
@@ -283,24 +326,6 @@ void InFlightVisibleChange::SetRevertValueFrom(const InFlightChange& change) {
 
 void InFlightVisibleChange::Revert() {
   window_tree_client_->SetWindowVisibleFromServer(window(), revert_visible_);
-}
-
-// InFlightOpacityChange -------------------------------------------------------
-
-InFlightOpacityChange::InFlightOpacityChange(WindowMus* window,
-                                             float revert_value)
-    : InFlightChange(window, ChangeType::OPACITY),
-      revert_opacity_(revert_value) {}
-
-InFlightOpacityChange::~InFlightOpacityChange() {}
-
-void InFlightOpacityChange::SetRevertValueFrom(const InFlightChange& change) {
-  revert_opacity_ =
-      static_cast<const InFlightOpacityChange&>(change).revert_opacity_;
-}
-
-void InFlightOpacityChange::Revert() {
-  window()->SetOpacityFromServer(revert_opacity_);
 }
 
 // InFlightSetModalTypeChange

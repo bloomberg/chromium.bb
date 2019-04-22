@@ -10,6 +10,8 @@
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "ios/chrome/browser/infobars/confirm_infobar_controller.h"
 #include "ios/chrome/browser/infobars/infobar.h"
+#import "ios/chrome/browser/ui/infobars/coordinators/infobar_confirm_coordinator.h"
+#import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -17,7 +19,16 @@
 
 std::unique_ptr<infobars::InfoBar> CreateConfirmInfoBar(
     std::unique_ptr<ConfirmInfoBarDelegate> delegate) {
-  ConfirmInfoBarController* controller =
-      [[ConfirmInfoBarController alloc] initWithInfoBarDelegate:delegate.get()];
-  return std::make_unique<InfoBarIOS>(controller, std::move(delegate));
+  if (IsInfobarUIRebootEnabled()) {
+    // TODO(crbug.com/927064): Coordinators shouldn't be created at this level,
+    // we should probably send only the delegate and have the presenting
+    // Coordinator create the right Coordinator using that delegate.
+    InfobarConfirmCoordinator* coordinator = [[InfobarConfirmCoordinator alloc]
+        initWithInfoBarDelegate:delegate.get()];
+    return std::make_unique<InfoBarIOS>(coordinator, std::move(delegate));
+  } else {
+    ConfirmInfoBarController* controller = [[ConfirmInfoBarController alloc]
+        initWithInfoBarDelegate:delegate.get()];
+    return std::make_unique<InfoBarIOS>(controller, std::move(delegate));
+  }
 }

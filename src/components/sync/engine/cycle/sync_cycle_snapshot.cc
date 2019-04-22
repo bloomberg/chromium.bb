@@ -33,8 +33,8 @@ SyncCycleSnapshot::SyncCycleSnapshot()
       num_server_conflicts_(0),
       notifications_enabled_(false),
       num_entries_(0),
-      num_entries_by_type_(MODEL_TYPE_COUNT, 0),
-      num_to_delete_entries_by_type_(MODEL_TYPE_COUNT, 0),
+      num_entries_by_type_(ModelType::NUM_ENTRIES, 0),
+      num_to_delete_entries_by_type_(ModelType::NUM_ENTRIES, 0),
       has_remaining_local_changes_(false),
       is_initialized_(false) {}
 
@@ -52,8 +52,7 @@ SyncCycleSnapshot::SyncCycleSnapshot(
     const std::vector<int>& num_entries_by_type,
     const std::vector<int>& num_to_delete_entries_by_type,
     sync_pb::SyncEnums::GetUpdatesOrigin get_updates_origin,
-    base::TimeDelta short_poll_interval,
-    base::TimeDelta long_poll_interval,
+    base::TimeDelta poll_interval,
     bool has_remaining_local_changes)
     : model_neutral_state_(model_neutral_state),
       download_progress_markers_(download_progress_markers),
@@ -68,8 +67,7 @@ SyncCycleSnapshot::SyncCycleSnapshot(
       num_entries_by_type_(num_entries_by_type),
       num_to_delete_entries_by_type_(num_to_delete_entries_by_type),
       get_updates_origin_(get_updates_origin),
-      short_poll_interval_(short_poll_interval),
-      long_poll_interval_(long_poll_interval),
+      poll_interval_(poll_interval),
       has_remaining_local_changes_(has_remaining_local_changes),
       is_initialized_(true) {}
 
@@ -108,7 +106,7 @@ std::unique_ptr<base::DictionaryValue> SyncCycleSnapshot::ToValue() const {
 
   std::unique_ptr<base::DictionaryValue> counter_entries(
       new base::DictionaryValue());
-  for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; i++) {
+  for (int i = FIRST_REAL_MODEL_TYPE; i < ModelType::NUM_ENTRIES; i++) {
     std::unique_ptr<base::DictionaryValue> type_entries(
         new base::DictionaryValue());
     type_entries->SetInteger("numEntries", num_entries_by_type_[i]);
@@ -120,9 +118,7 @@ std::unique_ptr<base::DictionaryValue> SyncCycleSnapshot::ToValue() const {
   }
   value->Set("counter_entries", std::move(counter_entries));
   value->SetBoolean("hasRemainingLocalChanges", has_remaining_local_changes_);
-  value->SetString("short_poll_interval",
-                   FormatTimeDelta(short_poll_interval_));
-  value->SetString("long_poll_interval", FormatTimeDelta(long_poll_interval_));
+  value->SetString("poll_interval", FormatTimeDelta(poll_interval_));
   value->SetString(
       "poll_finish_time",
       base::TimeFormatShortDateAndTimeWithTimeZone(poll_finish_time_));
@@ -194,12 +190,8 @@ sync_pb::SyncEnums::GetUpdatesOrigin SyncCycleSnapshot::get_updates_origin()
   return get_updates_origin_;
 }
 
-base::TimeDelta SyncCycleSnapshot::short_poll_interval() const {
-  return short_poll_interval_;
-}
-
-base::TimeDelta SyncCycleSnapshot::long_poll_interval() const {
-  return long_poll_interval_;
+base::TimeDelta SyncCycleSnapshot::poll_interval() const {
+  return poll_interval_;
 }
 
 }  // namespace syncer

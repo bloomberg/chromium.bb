@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
@@ -29,9 +30,9 @@ class ServiceWorkerInstalledScriptReader::MetaDataSender {
 
   void Start(base::OnceCallback<void(bool /* success */)> callback) {
     callback_ = std::move(callback);
-    watcher_.Watch(
-        handle_.get(), MOJO_HANDLE_SIGNAL_WRITABLE,
-        base::Bind(&MetaDataSender::OnWritable, weak_factory_.GetWeakPtr()));
+    watcher_.Watch(handle_.get(), MOJO_HANDLE_SIGNAL_WRITABLE,
+                   base::BindRepeating(&MetaDataSender::OnWritable,
+                                       weak_factory_.GetWeakPtr()));
   }
 
   void OnWritable(MojoResult) {
@@ -157,8 +158,8 @@ void ServiceWorkerInstalledScriptReader::OnReadInfoComplete(
   // Start sending body.
   body_watcher_.Watch(
       body_handle_.get(), MOJO_HANDLE_SIGNAL_WRITABLE,
-      base::Bind(&ServiceWorkerInstalledScriptReader::OnWritableBody,
-                 AsWeakPtr()));
+      base::BindRepeating(&ServiceWorkerInstalledScriptReader::OnWritableBody,
+                          AsWeakPtr()));
   body_watcher_.ArmOrNotify();
 
   scoped_refptr<net::HttpResponseHeaders> headers =
@@ -173,7 +174,7 @@ void ServiceWorkerInstalledScriptReader::OnReadInfoComplete(
   size_t iter = 0;
   std::string key;
   std::string value;
-  // This logic is copied from blink::ResourceResponse::AddHTTPHeaderField.
+  // This logic is copied from blink::ResourceResponse::AddHttpHeaderField.
   while (headers->EnumerateHeaderLines(&iter, &key, &value)) {
     if (header_strings.find(key) == header_strings.end()) {
       header_strings[key] = value;
@@ -272,4 +273,4 @@ void ServiceWorkerInstalledScriptReader::CompleteSendIfNeeded(
     client_->OnFinished(reason);
 }
 
-};  // namespace content
+}  // namespace content

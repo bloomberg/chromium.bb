@@ -6,7 +6,6 @@
 #define CC_PAINT_PAINT_CANVAS_H_
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 #include "cc/paint/paint_export.h"
@@ -14,10 +13,16 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkTextBlob.h"
 
+namespace printing {
+class MetafileSkia;
+}  // namespace printing
+
 namespace cc {
 class SkottieWrapper;
 class PaintFlags;
 class PaintOpBuffer;
+
+struct NodeHolder;
 
 using PaintRecord = PaintOpBuffer;
 
@@ -36,10 +41,11 @@ using PaintRecord = PaintOpBuffer;
 // from SkCanvas to PaintCanvas or from SkPicture back into PaintRecord.
 class CC_PAINT_EXPORT PaintCanvas {
  public:
-  PaintCanvas() {}
-  virtual ~PaintCanvas() {}
+  PaintCanvas() = default;
+  PaintCanvas(const PaintCanvas&) = delete;
+  virtual ~PaintCanvas() = default;
 
-  virtual SkMetaData& getMetaData() = 0;
+  PaintCanvas& operator=(const PaintCanvas&) = delete;
 
   // TODO(enne): this only appears to mostly be used to determine if this is
   // recording or not, so could be simplified or removed.
@@ -55,9 +61,7 @@ class CC_PAINT_EXPORT PaintCanvas {
 
   virtual int save() = 0;
   virtual int saveLayer(const SkRect* bounds, const PaintFlags* flags) = 0;
-  virtual int saveLayerAlpha(const SkRect* bounds,
-                             uint8_t alpha,
-                             bool preserve_lcd_text_requests) = 0;
+  virtual int saveLayerAlpha(const SkRect* bounds, uint8_t alpha) = 0;
 
   virtual void restore() = 0;
   virtual int getSaveCount() const = 0;
@@ -158,6 +162,12 @@ class CC_PAINT_EXPORT PaintCanvas {
                             SkScalar y,
                             const PaintFlags& flags) = 0;
 
+  virtual void drawTextBlob(sk_sp<SkTextBlob> blob,
+                            SkScalar x,
+                            SkScalar y,
+                            const PaintFlags& flags,
+                            const NodeHolder& holder) = 0;
+
   // Unlike SkCanvas::drawPicture, this only plays back the PaintRecord and does
   // not add an additional clip.  This is closer to SkPicture::playback.
   virtual void drawPicture(sk_sp<const PaintRecord> record) = 0;
@@ -166,6 +176,7 @@ class CC_PAINT_EXPORT PaintCanvas {
   virtual bool isClipRect() const = 0;
   virtual const SkMatrix& getTotalMatrix() const = 0;
 
+  // Used for printing
   enum class AnnotationType {
     URL,
     NAMED_DESTINATION,
@@ -174,12 +185,16 @@ class CC_PAINT_EXPORT PaintCanvas {
   virtual void Annotate(AnnotationType type,
                         const SkRect& rect,
                         sk_sp<SkData> data) = 0;
+  printing::MetafileSkia* GetPrintingMetafile() const { return metafile_; }
+  void SetPrintingMetafile(printing::MetafileSkia* metafile) {
+    metafile_ = metafile;
+  }
 
   // Subclasses can override to handle custom data.
   virtual void recordCustomData(uint32_t id) {}
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(PaintCanvas);
+  printing::MetafileSkia* metafile_ = nullptr;
 };
 
 class CC_PAINT_EXPORT PaintCanvasAutoRestore {

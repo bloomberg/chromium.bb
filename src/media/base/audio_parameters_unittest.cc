@@ -4,7 +4,7 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "media/base/audio_parameters.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -129,8 +129,8 @@ TEST(AudioParameters, Compare) {
                       CHANNEL_LAYOUT_STEREO_AND_KEYBOARD_MIC, 2000, 200),
   };
 
-  for (size_t i = 0; i < arraysize(values); ++i) {
-    for (size_t j = 0; j < arraysize(values); ++j) {
+  for (size_t i = 0; i < base::size(values); ++i) {
+    for (size_t j = 0; j < base::size(values); ++j) {
       SCOPED_TRACE("i=" + base::NumberToString(i) +
                    " j=" + base::NumberToString(j));
       EXPECT_EQ(i < j, values[i] < values[j]);

@@ -10,7 +10,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/autofill/core/browser/ui/card_unmask_prompt_controller.h"
+#include "components/autofill/core/browser/ui/payments/card_unmask_prompt_controller.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/autofill/cells/cvc_item.h"
 #import "ios/chrome/browser/ui/autofill/cells/status_item.h"
@@ -91,8 +91,9 @@ void CardUnmaskPromptViewBridge::GotVerificationResult(
   if (error_message.empty()) {
     [view_controller_ showSuccess];
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(&CardUnmaskPromptViewBridge::PerformClose,
-                              weak_ptr_factory_.GetWeakPtr()),
+        FROM_HERE,
+        base::BindOnce(&CardUnmaskPromptViewBridge::PerformClose,
+                       weak_ptr_factory_.GetWeakPtr()),
         controller_->GetSuccessMessageDuration());
   } else {
     if (allow_retry) {

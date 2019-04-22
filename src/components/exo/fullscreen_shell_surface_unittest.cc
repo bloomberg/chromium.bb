@@ -4,10 +4,11 @@
 
 #include "components/exo/fullscreen_shell_surface.h"
 
+#include "base/bind.h"
 #include "components/exo/buffer.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/exo/surface.h"
-#include "components/exo/test/exo_test_base_cast.h"
+#include "components/exo/test/exo_test_base_aura.h"
 #include "components/exo/wm_helper.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -20,7 +21,7 @@
 namespace exo {
 namespace {
 
-using FullscreenShellSurfaceTest = test::ExoTestBaseCast;
+using FullscreenShellSurfaceTest = test::ExoTestBaseAura;
 
 std::unique_ptr<gfx::GpuMemoryBuffer> CreateGpuMemoryBuffer(
     const gfx::Size& size,
@@ -50,6 +51,9 @@ TEST_F(FullscreenShellSurfaceTest, SurfaceDestroyedCallback) {
   fullscreen_surface->set_surface_destroyed_callback(base::BindOnce(
       &DestroyFullscreenShellSurface, base::Unretained(&fullscreen_surface)));
 
+  // Change the surface so the commit has an actual change otherwise it triggers
+  // a DCHECK during frame submission.
+  surface->SetViewport(gfx::Size(64, 64));
   surface->Commit();
 
   EXPECT_TRUE(fullscreen_surface.get());

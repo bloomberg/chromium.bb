@@ -47,7 +47,7 @@ class CORE_EXPORT HTMLScriptElement final : public HTMLElement,
   HTMLScriptElement(Document&, const CreateElementFlags);
 
   // Returns attributes that should be checked against Trusted Types
-  const HashSet<AtomicString>& GetCheckedAttributeNames() const override;
+  const AttrNameToTrustedType& GetCheckedAttributeTypes() const override;
 
   void text(StringOrTrustedScript& result);
   void setText(const StringOrTrustedScript&, ExceptionState&);
@@ -64,7 +64,7 @@ class CORE_EXPORT HTMLScriptElement final : public HTMLElement,
   bool IsScriptElement() const override { return true; }
   Document& GetDocument() const override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void ParseAttribute(const AttributeModificationParams&) override;
@@ -88,6 +88,7 @@ class CORE_EXPORT HTMLScriptElement final : public HTMLElement,
   String CrossOriginAttributeValue() const override;
   String IntegrityAttributeValue() const override;
   String ReferrerPolicyAttributeValue() const override;
+  String ImportanceAttributeValue() const override;
   String TextFromChildren() override;
   bool AsyncAttributeValue() const override;
   bool DeferAttributeValue() const override;
@@ -100,16 +101,15 @@ class CORE_EXPORT HTMLScriptElement final : public HTMLElement,
   }
   bool AllowInlineScriptForCSP(const AtomicString& nonce,
                                const WTF::OrdinalNumber&,
-                               const String& script_content,
-                               ContentSecurityPolicy::InlineType) override;
+                               const String& script_content) override;
   void DispatchLoadEvent() override;
   void DispatchErrorEvent() override;
   void SetScriptElementForBinding(
       HTMLScriptElementOrSVGScriptElement&) override;
 
-  Element* CloneWithoutAttributesAndChildren(Document&) const override;
+  Element& CloneWithoutAttributesAndChildren(Document&) const override;
 
-  TraceWrapperMember<ScriptLoader> loader_;
+  Member<ScriptLoader> loader_;
 };
 
 }  // namespace blink

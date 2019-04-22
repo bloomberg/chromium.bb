@@ -11,9 +11,13 @@ import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
+import android.support.annotation.ColorInt;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Property;
@@ -22,6 +26,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.FrameLayout;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.LogoBridge.Logo;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
@@ -44,6 +49,7 @@ public class LogoView extends FrameLayout implements OnClickListener {
 
     // The default logo is shared across all NTPs.
     private static WeakReference<Bitmap> sDefaultLogo;
+    private static @ColorInt int sDefaultLogoTint;
 
     // mLogo and mNewLogo are remembered for cross fading animation.
     private Bitmap mLogo;
@@ -300,9 +306,26 @@ public class LogoView extends FrameLayout implements OnClickListener {
         if (!TemplateUrlService.getInstance().isDefaultSearchEngineGoogle()) return null;
 
         Bitmap defaultLogo = sDefaultLogo == null ? null : sDefaultLogo.get();
-        if (defaultLogo == null) {
-            defaultLogo = BitmapFactory.decodeResource(getResources(), R.drawable.google_logo);
+        final int tint = ApiCompatibilityUtils.getColor(getResources(), R.color.google_logo_tint);
+        if (defaultLogo == null || sDefaultLogoTint != tint) {
+            if (tint == Color.TRANSPARENT) {
+                defaultLogo = BitmapFactory.decodeResource(getResources(), R.drawable.google_logo);
+            } else {
+                // Apply color filter on a bitmap, which will cause some performance overhead, but
+                // it is worth the APK space savings by avoiding adding another large asset for the
+                // logo in night mode. Not using vector drawable here because it is close to the
+                // maximum recommended vector drawable size 200dpx200dp.
+                BitmapFactory.Options options = new BitmapFactory.Options();
+                options.inMutable = true;
+                defaultLogo = BitmapFactory.decodeResource(
+                        getResources(), R.drawable.google_logo, options);
+                Paint paint = new Paint();
+                paint.setColorFilter(new PorterDuffColorFilter(tint, PorterDuff.Mode.SRC_ATOP));
+                Canvas canvas = new Canvas(defaultLogo);
+                canvas.drawBitmap(defaultLogo, 0, 0, paint);
+            }
             sDefaultLogo = new WeakReference<>(defaultLogo);
+            sDefaultLogoTint = tint;
         }
         return defaultLogo;
     }

@@ -13,12 +13,12 @@
 		64D0F5E60FD3E68400506CC7 /* GTMUIImage+Resize_100x50.png in Resources */ = {isa = PBXBuildFile; fileRef = 64D0F5D40FD3E68400506CC7 /* GTMUIImage+Resize_100x50.png */; };
 		64D0F5ED0FD3E68400506CC7 /* GTMUIImage+Resize_100x100.png in Resources */ = {isa = PBXBuildFile; fileRef = 64D0F5DB0FD3E68400506CC7 /* GTMUIImage+Resize_100x100.png */; };
 		67A7820C0E00927400EBF506 /* GTMIPhoneUnitTestDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 67A7820B0E00927400EBF506 /* GTMIPhoneUnitTestDelegate.m */; };
-		8B2C72E51D9EBB540027BD14 /* GTMUnitTestDevLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 8B2C72E41D9EBB540027BD14 /* GTMUnitTestDevLog.m */; };
 		8B2C72EB1D9EBBA10027BD14 /* GTMTestTimerTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 8B2C72EA1D9EBBA10027BD14 /* GTMTestTimerTest.m */; };
+		8B5769B121CD7C8300D924D3 /* GTMTimeUtilsTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 8B5769AD21CD7C7600D924D3 /* GTMTimeUtilsTest.m */; };
+		8B5769B221CD7C8600D924D3 /* GTMTimeUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 8B5769AC21CD7C7600D924D3 /* GTMTimeUtils.m */; };
 		8B7651D81D9C872F00DB2C59 /* GTMLogger+ASL.m in Sources */ = {isa = PBXBuildFile; fileRef = 8B7651D61D9C872C00DB2C59 /* GTMLogger+ASL.m */; };
 		8B7651D91D9C873200DB2C59 /* GTMLogger+ASLTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 8B7651D71D9C872C00DB2C59 /* GTMLogger+ASLTest.m */; };
 		8B7651E11D9C89B800DB2C59 /* GTMRoundedRectPath.m in Sources */ = {isa = PBXBuildFile; fileRef = 8B7651E01D9C89B800DB2C59 /* GTMRoundedRectPath.m */; };
-		8B82CEFF1D9C1C3B007182AA /* GTMABAddressBook.m in Sources */ = {isa = PBXBuildFile; fileRef = 8BFE15C10FB0F764001BE894 /* GTMABAddressBook.m */; };
 		8B82CF001D9C1C3B007182AA /* GTMDebugThreadValidation.m in Sources */ = {isa = PBXBuildFile; fileRef = 8BE839870E89C74A00C611B0 /* GTMDebugThreadValidation.m */; };
 		8B82CF011D9C1C3B007182AA /* GTMMethodCheck.m in Sources */ = {isa = PBXBuildFile; fileRef = 8BC0479D0DAE928A00C2D1CA /* GTMMethodCheck.m */; };
 		8B82CF021D9C1C3B007182AA /* GTMStringEncoding.m in Sources */ = {isa = PBXBuildFile; fileRef = 0BBC768910FEF61D0006FABE /* GTMStringEncoding.m */; };
@@ -26,7 +26,6 @@
 		8B82CF041D9C1C3B007182AA /* GTMLightweightProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = F41711580ECDFF0400B9B276 /* GTMLightweightProxy.m */; };
 		8B82CF051D9C1C3B007182AA /* GTMLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = F418AFA30E7559C7004FB565 /* GTMLogger.m */; };
 		8B82CF061D9C1C3B007182AA /* GTMLoggerRingBufferWriter.m in Sources */ = {isa = PBXBuildFile; fileRef = F418AFB20E755B4D004FB565 /* GTMLoggerRingBufferWriter.m */; };
-		8B82CF071D9C1C3B007182AA /* GTMNSArray+Merge.m in Sources */ = {isa = PBXBuildFile; fileRef = 629446180EDE177A009295EA /* GTMNSArray+Merge.m */; };
 		8B82CF081D9C1C3B007182AA /* GTMNSData+zlib.m in Sources */ = {isa = PBXBuildFile; fileRef = 8BC0477F0DAE928A00C2D1CA /* GTMNSData+zlib.m */; };
 		8B82CF091D9C1C3B007182AA /* GTMNSDictionary+URLArguments.m in Sources */ = {isa = PBXBuildFile; fileRef = F418AFCB0E755C94004FB565 /* GTMNSDictionary+URLArguments.m */; };
 		8B82CF0A1D9C1C3B007182AA /* GTMNSFileManager+Path.m in Sources */ = {isa = PBXBuildFile; fileRef = 8BC047850DAE928A00C2D1CA /* GTMNSFileManager+Path.m */; };
@@ -50,17 +49,12 @@
 		8B82CF2C1D9C1CC5007182AA /* GTMStringEncodingTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 0BBC768A10FEF61D0006FABE /* GTMStringEncodingTest.m */; };
 		8B82CF2E1D9C1DD4007182AA /* libGTM.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8B82CEF61D9C17DE007182AA /* libGTM.a */; };
 		8B82CF2F1D9C1E49007182AA /* GTMSenTestCase.m in Sources */ = {isa = PBXBuildFile; fileRef = 8BC047F70DAE928A00C2D1CA /* GTMSenTestCase.m */; };
-		8B82CF301D9C22F7007182AA /* GTMABAddressBook.strings in Resources */ = {isa = PBXBuildFile; fileRef = 8BFE15C20FB0F764001BE894 /* GTMABAddressBook.strings */; };
-		8B82CF311D9C22F7007182AA /* GTMABAddressBookTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 8BFE15C30FB0F764001BE894 /* GTMABAddressBookTest.m */; };
-		8B82CF321D9C2309007182AA /* AddressBook.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8B5A9E1F0E71CB6C005DA441 /* AddressBook.framework */; };
-		8B82CF331D9C231A007182AA /* phone.png in Resources */ = {isa = PBXBuildFile; fileRef = 8BFE15C50FB0F764001BE894 /* phone.png */; };
 		8B82CF341D9C231F007182AA /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1DF5F4DF0D08C38300B7A737 /* UIKit.framework */; };
 		8B82CF351D9C2353007182AA /* GTMMethodCheckTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 8BC0479E0DAE928A00C2D1CA /* GTMMethodCheckTest.m */; };
 		8B82CF361D9C2373007182AA /* GTMGeometryUtilsTest.m in Sources */ = {isa = PBXBuildFile; fileRef = F439ADEF0DBD3C4000BE9B91 /* GTMGeometryUtilsTest.m */; };
 		8B82CF371D9C2373007182AA /* GTMLightweightProxyTest.m in Sources */ = {isa = PBXBuildFile; fileRef = F41711590ECDFF0400B9B276 /* GTMLightweightProxyTest.m */; };
 		8B82CF381D9C2373007182AA /* GTMLoggerTest.m in Sources */ = {isa = PBXBuildFile; fileRef = F418AFA40E7559C7004FB565 /* GTMLoggerTest.m */; };
 		8B82CF391D9C2373007182AA /* GTMLoggerRingBufferWriterTest.m in Sources */ = {isa = PBXBuildFile; fileRef = F418AFB30E755B4D004FB565 /* GTMLoggerRingBufferWriterTest.m */; };
-		8B82CF3A1D9C2373007182AA /* GTMNSArray+MergeTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 629446190EDE177A009295EA /* GTMNSArray+MergeTest.m */; };
 		8B82CF3B1D9C2373007182AA /* GTMNSData+zlibTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 8BC047800DAE928A00C2D1CA /* GTMNSData+zlibTest.m */; };
 		8B82CF3C1D9C2373007182AA /* GTMNSDictionary+URLArgumentsTest.m in Sources */ = {isa = PBXBuildFile; fileRef = F418AFCC0E755C94004FB565 /* GTMNSDictionary+URLArgumentsTest.m */; };
 		8B82CF3D1D9C2373007182AA /* GTMNSFileManager+PathTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 8BC047860DAE928A00C2D1CA /* GTMNSFileManager+PathTest.m */; };
@@ -75,7 +69,6 @@
 		8B82CF461D9C2373007182AA /* GTMRegexTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 8BC047930DAE928A00C2D1CA /* GTMRegexTest.m */; };
 		8B82CF471D9C2373007182AA /* GTMStackTraceTest.m in Sources */ = {isa = PBXBuildFile; fileRef = F4EF8AD60EBFF814008DD6DA /* GTMStackTraceTest.m */; };
 		8B82CF481D9C2373007182AA /* GTMSystemVersionTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 8BC04A710DAF144700C2D1CA /* GTMSystemVersionTest.m */; };
-		8B82CF491D9C2373007182AA /* GTMURLBuilderTest.m in Sources */ = {isa = PBXBuildFile; fileRef = BE9B793F14FE99F3004A993A /* GTMURLBuilderTest.m */; };
 		8B82CF4A1D9C2373007182AA /* GTMUILocalizerTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 169E1E2D1459AAE100E6F562 /* GTMUILocalizerTest.m */; };
 		8B82CF4B1D9C2373007182AA /* GTMUILocalizerTest.xib in Resources */ = {isa = PBXBuildFile; fileRef = 169E1E2E1459AAE100E6F562 /* GTMUILocalizerTest.xib */; };
 		8B82CF4C1D9C2385007182AA /* GTMFadeTruncatingLabelTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 9340CF9E140550CE0026DDC9 /* GTMFadeTruncatingLabelTest.m */; };
@@ -93,8 +86,6 @@
 		8BF753DB1D9DB3080010A295 /* GTMSQLite.m in Sources */ = {isa = PBXBuildFile; fileRef = 8BF753DA1D9DB3080010A295 /* GTMSQLite.m */; };
 		8BF753DD1D9DB30E0010A295 /* GTMSQLiteTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 8BF753DC1D9DB30E0010A295 /* GTMSQLiteTest.m */; };
 		8BF753DF1D9DB3740010A295 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 8BF753DE1D9DB3740010A295 /* libsqlite3.tbd */; };
-		8BFE15C70FB0F764001BE894 /* GTMABAddressBook.strings in Resources */ = {isa = PBXBuildFile; fileRef = 8BFE15C20FB0F764001BE894 /* GTMABAddressBook.strings */; };
-		8BFE15C90FB0F764001BE894 /* phone.png in Resources */ = {isa = PBXBuildFile; fileRef = 8BFE15C50FB0F764001BE894 /* phone.png */; };
 		F4746721129703600022C1FB /* GTMSenTestCaseTest.m in Sources */ = {isa = PBXBuildFile; fileRef = F4746720129703600022C1FB /* GTMSenTestCaseTest.m */; };
 /* End PBXBuildFile section */
 
@@ -124,9 +115,6 @@
 		1D6058910D05DD3D006BFB54 /* GTMiPhoneTest.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GTMiPhoneTest.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1DF5F4DF0D08C38300B7A737 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		23220A05152C9E980060CB7D /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
-		629446170EDE177A009295EA /* GTMNSArray+Merge.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "GTMNSArray+Merge.h"; sourceTree = "<group>"; };
-		629446180EDE177A009295EA /* GTMNSArray+Merge.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "GTMNSArray+Merge.m"; sourceTree = "<group>"; };
-		629446190EDE177A009295EA /* GTMNSArray+MergeTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "GTMNSArray+MergeTest.m"; sourceTree = "<group>"; };
 		64D0F5C50FD3E65C00506CC7 /* GTMUIImage+Resize.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "GTMUIImage+Resize.h"; sourceTree = "<group>"; };
 		64D0F5C60FD3E65C00506CC7 /* GTMUIImage+ResizeTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "GTMUIImage+ResizeTest.m"; sourceTree = "<group>"; };
 		64D0F5C70FD3E65C00506CC7 /* GTMUIImage+Resize.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "GTMUIImage+Resize.m"; sourceTree = "<group>"; };
@@ -135,11 +123,10 @@
 		64D0F5DB0FD3E68400506CC7 /* GTMUIImage+Resize_100x100.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "GTMUIImage+Resize_100x100.png"; path = "TestData/GTMUIImage+Resize_100x100.png"; sourceTree = "<group>"; };
 		67A7820A0E00927400EBF506 /* GTMIPhoneUnitTestDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GTMIPhoneUnitTestDelegate.h; sourceTree = "<group>"; };
 		67A7820B0E00927400EBF506 /* GTMIPhoneUnitTestDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GTMIPhoneUnitTestDelegate.m; sourceTree = "<group>"; };
+		8B27B5CA21C3305800D64F87 /* StaticLibrary.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = StaticLibrary.xcconfig; path = XcodeConfig/Target/StaticLibrary.xcconfig; sourceTree = SOURCE_ROOT; };
 		8B2908AF11F8E7070064F50F /* GTMNSFileHandle+UniqueName.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "GTMNSFileHandle+UniqueName.h"; sourceTree = "<group>"; };
 		8B2908B011F8E7070064F50F /* GTMNSFileHandle+UniqueName.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "GTMNSFileHandle+UniqueName.m"; sourceTree = "<group>"; };
 		8B2908B111F8E7070064F50F /* GTMNSFileHandle+UniqueNameTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "GTMNSFileHandle+UniqueNameTest.m"; sourceTree = "<group>"; };
-		8B2C72E31D9EBB540027BD14 /* GTMUnitTestDevLog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GTMUnitTestDevLog.h; sourceTree = "<group>"; };
-		8B2C72E41D9EBB540027BD14 /* GTMUnitTestDevLog.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GTMUnitTestDevLog.m; sourceTree = "<group>"; };
 		8B2C72E91D9EBBA10027BD14 /* GTMTestTimer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GTMTestTimer.h; sourceTree = "<group>"; };
 		8B2C72EA1D9EBBA10027BD14 /* GTMTestTimerTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GTMTestTimerTest.m; sourceTree = "<group>"; };
 		8B30806F1056BDCE006C4C7A /* GTMNSNumber+64Bit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "GTMNSNumber+64Bit.h"; sourceTree = "<group>"; };
@@ -150,7 +137,9 @@
 		8B3AA8F10E032FC7007E31B5 /* GTMNSString+URLArguments.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "GTMNSString+URLArguments.m"; sourceTree = "<group>"; };
 		8B3AA8F20E032FC7007E31B5 /* GTMNSString+URLArgumentsTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "GTMNSString+URLArgumentsTest.m"; sourceTree = "<group>"; };
 		8B3AA9330E0336AC007E31B5 /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
-		8B5A9E1F0E71CB6C005DA441 /* AddressBook.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AddressBook.framework; path = System/Library/Frameworks/AddressBook.framework; sourceTree = SDKROOT; };
+		8B5769AC21CD7C7600D924D3 /* GTMTimeUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GTMTimeUtils.m; sourceTree = "<group>"; };
+		8B5769AD21CD7C7600D924D3 /* GTMTimeUtilsTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GTMTimeUtilsTest.m; sourceTree = "<group>"; };
+		8B5769AE21CD7C7600D924D3 /* GTMTimeUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GTMTimeUtils.h; sourceTree = "<group>"; };
 		8B6C18710F3769D200E51E5D /* GTMNSObject+KeyValueObserving.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "GTMNSObject+KeyValueObserving.h"; sourceTree = "<group>"; };
 		8B6C18720F3769D200E51E5D /* GTMNSObject+KeyValueObserving.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "GTMNSObject+KeyValueObserving.m"; sourceTree = "<group>"; };
 		8B6C18730F3769D200E51E5D /* GTMNSObject+KeyValueObservingTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "GTMNSObject+KeyValueObservingTest.m"; sourceTree = "<group>"; };
@@ -186,7 +175,6 @@
 		8BC0478A0DAE928A00C2D1CA /* GTMNSString+XML.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "GTMNSString+XML.h"; sourceTree = "<group>"; };
 		8BC0478B0DAE928A00C2D1CA /* GTMNSString+XML.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "GTMNSString+XML.m"; sourceTree = "<group>"; };
 		8BC0478C0DAE928A00C2D1CA /* GTMNSString+XMLTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "GTMNSString+XMLTest.m"; sourceTree = "<group>"; };
-		8BC047900DAE928A00C2D1CA /* GTMObjectSingleton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GTMObjectSingleton.h; sourceTree = "<group>"; };
 		8BC047910DAE928A00C2D1CA /* GTMRegex.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GTMRegex.h; sourceTree = "<group>"; };
 		8BC047920DAE928A00C2D1CA /* GTMRegex.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GTMRegex.m; sourceTree = "<group>"; };
 		8BC047930DAE928A00C2D1CA /* GTMRegexTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GTMRegexTest.m; sourceTree = "<group>"; };
@@ -211,11 +199,6 @@
 		8BF753DA1D9DB3080010A295 /* GTMSQLite.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GTMSQLite.m; sourceTree = "<group>"; };
 		8BF753DC1D9DB30E0010A295 /* GTMSQLiteTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GTMSQLiteTest.m; sourceTree = "<group>"; };
 		8BF753DE1D9DB3740010A295 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
-		8BFE15C00FB0F764001BE894 /* GTMABAddressBook.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GTMABAddressBook.h; sourceTree = "<group>"; };
-		8BFE15C10FB0F764001BE894 /* GTMABAddressBook.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GTMABAddressBook.m; sourceTree = "<group>"; };
-		8BFE15C20FB0F764001BE894 /* GTMABAddressBook.strings */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; path = GTMABAddressBook.strings; sourceTree = "<group>"; };
-		8BFE15C30FB0F764001BE894 /* GTMABAddressBookTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GTMABAddressBookTest.m; sourceTree = "<group>"; };
-		8BFE15C50FB0F764001BE894 /* phone.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = phone.png; sourceTree = "<group>"; };
 		9340CF9C140550CE0026DDC9 /* GTMFadeTruncatingLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GTMFadeTruncatingLabel.h; sourceTree = "<group>"; };
 		9340CF9D140550CE0026DDC9 /* GTMFadeTruncatingLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GTMFadeTruncatingLabel.m; sourceTree = "<group>"; };
 		9340CF9E140550CE0026DDC9 /* GTMFadeTruncatingLabelTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GTMFadeTruncatingLabelTest.m; sourceTree = "<group>"; };
@@ -271,7 +254,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				8BF753DF1D9DB3740010A295 /* libsqlite3.tbd in Frameworks */,
-				8B82CF321D9C2309007182AA /* AddressBook.framework in Frameworks */,
 				8B82CF661D9C3366007182AA /* XCTest.framework in Frameworks */,
 				8B82CF341D9C231F007182AA /* UIKit.framework in Frameworks */,
 				8B82CF511D9C239A007182AA /* Security.framework in Frameworks */,
@@ -297,7 +279,6 @@
 			isa = PBXGroup;
 			children = (
 				8BC047750DAE926E00C2D1CA /* GTMDefines.h */,
-				8BFE15BF0FB0F764001BE894 /* AddressBook */,
 				8BC0479A0DAE928A00C2D1CA /* DebugUtils */,
 				8BC047760DAE928A00C2D1CA /* Foundation */,
 				8BA5F4060E75669000798036 /* iPhone */,
@@ -317,7 +298,6 @@
 				8B82CEEE1D9C1559007182AA /* XCTest.framework */,
 				23220A05152C9E980060CB7D /* Security.framework */,
 				8B3AA9330E0336AC007E31B5 /* CFNetwork.framework */,
-				8B5A9E1F0E71CB6C005DA441 /* AddressBook.framework */,
 				8B308BCD0DAD0B8400183556 /* QuartzCore.framework */,
 				1D3623EB0D0F72F000981E51 /* CoreGraphics.framework */,
 				1DF5F4DF0D08C38300B7A737 /* UIKit.framework */,
@@ -334,6 +314,14 @@
 				64D0F5CD0FD3E68400506CC7 /* GTMUIImage+Resize_50x100.png */,
 			);
 			name = TestData;
+			sourceTree = "<group>";
+		};
+		8B27B5C921C3301D00D64F87 /* Target */ = {
+			isa = PBXGroup;
+			children = (
+				8B27B5CA21C3305800D64F87 /* StaticLibrary.xcconfig */,
+			);
+			path = Target;
 			sourceTree = "<group>";
 		};
 		8BA5F4060E75669000798036 /* iPhone */ = {
@@ -363,6 +351,9 @@
 		8BC047760DAE928A00C2D1CA /* Foundation */ = {
 			isa = PBXGroup;
 			children = (
+				8B5769AE21CD7C7600D924D3 /* GTMTimeUtils.h */,
+				8B5769AC21CD7C7600D924D3 /* GTMTimeUtils.m */,
+				8B5769AD21CD7C7600D924D3 /* GTMTimeUtilsTest.m */,
 				0BBC768810FEF61D0006FABE /* GTMStringEncoding.h */,
 				0BBC768910FEF61D0006FABE /* GTMStringEncoding.m */,
 				0BBC768A10FEF61D0006FABE /* GTMStringEncodingTest.m */,
@@ -381,9 +372,6 @@
 				F418AFB10E755B4D004FB565 /* GTMLoggerRingBufferWriter.h */,
 				F418AFB20E755B4D004FB565 /* GTMLoggerRingBufferWriter.m */,
 				F418AFB30E755B4D004FB565 /* GTMLoggerRingBufferWriterTest.m */,
-				629446170EDE177A009295EA /* GTMNSArray+Merge.h */,
-				629446180EDE177A009295EA /* GTMNSArray+Merge.m */,
-				629446190EDE177A009295EA /* GTMNSArray+MergeTest.m */,
 				8BC0477E0DAE928A00C2D1CA /* GTMNSData+zlib.h */,
 				8BC0477F0DAE928A00C2D1CA /* GTMNSData+zlib.m */,
 				8BC047800DAE928A00C2D1CA /* GTMNSData+zlibTest.m */,
@@ -417,7 +405,6 @@
 				8B6FF391151A664600B0642B /* GTMNSThread+Blocks.h */,
 				8B6FF392151A664600B0642B /* GTMNSThread+Blocks.m */,
 				8B6FF393151A664600B0642B /* GTMNSThread+BlocksTest.m */,
-				8BC047900DAE928A00C2D1CA /* GTMObjectSingleton.h */,
 				8BC047910DAE928A00C2D1CA /* GTMRegex.h */,
 				8BC047920DAE928A00C2D1CA /* GTMRegex.m */,
 				8BC047930DAE928A00C2D1CA /* GTMRegexTest.m */,
@@ -462,8 +449,6 @@
 				8BC047F60DAE928A00C2D1CA /* GTMSenTestCase.h */,
 				8BC047F70DAE928A00C2D1CA /* GTMSenTestCase.m */,
 				F4746720129703600022C1FB /* GTMSenTestCaseTest.m */,
-				8B2C72E31D9EBB540027BD14 /* GTMUnitTestDevLog.h */,
-				8B2C72E41D9EBB540027BD14 /* GTMUnitTestDevLog.m */,
 				8B2C72E91D9EBBA10027BD14 /* GTMTestTimer.h */,
 				8B2C72EA1D9EBBA10027BD14 /* GTMTestTimerTest.m */,
 				F435E49F0DC8F5290069CDE8 /* TestData */,
@@ -474,6 +459,7 @@
 		8BC049840DAEC59100C2D1CA /* XcodeConfig */ = {
 			isa = PBXGroup;
 			children = (
+				8B27B5C921C3301D00D64F87 /* Target */,
 				F418AF910E755893004FB565 /* xcconfigs-readme.txt */,
 				8BC04F020DB15A5300C2D1CA /* Project */,
 				8BC0498E0DAEC59100C2D1CA /* subconfig */,
@@ -502,26 +488,6 @@
 				F4A0A95F140438B90010B64B /* ReleaseiOS.xcconfig */,
 			);
 			path = Project;
-			sourceTree = "<group>";
-		};
-		8BFE15BF0FB0F764001BE894 /* AddressBook */ = {
-			isa = PBXGroup;
-			children = (
-				8BFE15C00FB0F764001BE894 /* GTMABAddressBook.h */,
-				8BFE15C10FB0F764001BE894 /* GTMABAddressBook.m */,
-				8BFE15C20FB0F764001BE894 /* GTMABAddressBook.strings */,
-				8BFE15C30FB0F764001BE894 /* GTMABAddressBookTest.m */,
-				8BFE15C40FB0F764001BE894 /* TestData */,
-			);
-			path = AddressBook;
-			sourceTree = "<group>";
-		};
-		8BFE15C40FB0F764001BE894 /* TestData */ = {
-			isa = PBXGroup;
-			children = (
-				8BFE15C50FB0F764001BE894 /* phone.png */,
-			);
-			path = TestData;
 			sourceTree = "<group>";
 		};
 		F435E49F0DC8F5290069CDE8 /* TestData */ = {
@@ -591,7 +557,7 @@
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0460;
+				LastUpgradeCheck = 1010;
 				TargetAttributes = {
 					8B82CEF51D9C17DE007182AA = {
 						CreatedOnToolsVersion = 8.0;
@@ -630,8 +596,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8BFE15C70FB0F764001BE894 /* GTMABAddressBook.strings in Resources */,
-				8BFE15C90FB0F764001BE894 /* phone.png in Resources */,
 				64D0F5DF0FD3E68400506CC7 /* GTMUIImage+Resize_50x100.png in Resources */,
 				64D0F5E60FD3E68400506CC7 /* GTMUIImage+Resize_100x50.png in Resources */,
 				64D0F5ED0FD3E68400506CC7 /* GTMUIImage+Resize_100x100.png in Resources */,
@@ -643,8 +607,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8B82CF331D9C231A007182AA /* phone.png in Resources */,
-				8B82CF301D9C22F7007182AA /* GTMABAddressBook.strings in Resources */,
 				8B82CF5B1D9C25E0007182AA /* GTMUIImage+Resize_50x100.png in Resources */,
 				8B82CF5A1D9C25E0007182AA /* GTMUIImage+Resize_100x50.png in Resources */,
 				8B82CF4B1D9C2373007182AA /* GTMUILocalizerTest.xib in Resources */,
@@ -673,6 +635,7 @@
 				8BF753DB1D9DB3080010A295 /* GTMSQLite.m in Sources */,
 				8B82CF0C1D9C1C3B007182AA /* GTMNSNumber+64Bit.m in Sources */,
 				8B82CF041D9C1C3B007182AA /* GTMLightweightProxy.m in Sources */,
+				8B5769B221CD7C8600D924D3 /* GTMTimeUtils.m in Sources */,
 				8B82CF0B1D9C1C3B007182AA /* GTMNSFileHandle+UniqueName.m in Sources */,
 				8B7651E11D9C89B800DB2C59 /* GTMRoundedRectPath.m in Sources */,
 				8B82CF021D9C1C3B007182AA /* GTMStringEncoding.m in Sources */,
@@ -697,8 +660,6 @@
 				8B82CF101D9C1C3B007182AA /* GTMNSString+URLArguments.m in Sources */,
 				8B82CF091D9C1C3B007182AA /* GTMNSDictionary+URLArguments.m in Sources */,
 				8B82CF061D9C1C3B007182AA /* GTMLoggerRingBufferWriter.m in Sources */,
-				8B82CEFF1D9C1C3B007182AA /* GTMABAddressBook.m in Sources */,
-				8B82CF071D9C1C3B007182AA /* GTMNSArray+Merge.m in Sources */,
 				8B82CF131D9C1C3B007182AA /* GTMRegex.m in Sources */,
 				8B82CF0A1D9C1C3B007182AA /* GTMNSFileManager+Path.m in Sources */,
 				8B82CF001D9C1C3B007182AA /* GTMDebugThreadValidation.m in Sources */,
@@ -714,12 +675,11 @@
 				8B82CF391D9C2373007182AA /* GTMLoggerRingBufferWriterTest.m in Sources */,
 				8B7651D91D9C873200DB2C59 /* GTMLogger+ASLTest.m in Sources */,
 				8B82CF351D9C2353007182AA /* GTMMethodCheckTest.m in Sources */,
+				8B5769B121CD7C8300D924D3 /* GTMTimeUtilsTest.m in Sources */,
 				8B82CF481D9C2373007182AA /* GTMSystemVersionTest.m in Sources */,
 				8B82CF2C1D9C1CC5007182AA /* GTMStringEncodingTest.m in Sources */,
 				8B82CF4D1D9C2385007182AA /* GTMUIFont+LineHeightTest.m in Sources */,
 				8B82CF381D9C2373007182AA /* GTMLoggerTest.m in Sources */,
-				8B82CF3A1D9C2373007182AA /* GTMNSArray+MergeTest.m in Sources */,
-				8B82CF311D9C22F7007182AA /* GTMABAddressBookTest.m in Sources */,
 				8B82CF2F1D9C1E49007182AA /* GTMSenTestCase.m in Sources */,
 				8B82CF4A1D9C2373007182AA /* GTMUILocalizerTest.m in Sources */,
 				8BF753DD1D9DB30E0010A295 /* GTMSQLiteTest.m in Sources */,
@@ -728,11 +688,9 @@
 				8B82CF361D9C2373007182AA /* GTMGeometryUtilsTest.m in Sources */,
 				8B82CF441D9C2373007182AA /* GTMNSString+XMLTest.m in Sources */,
 				8B82CF431D9C2373007182AA /* GTMNSString+URLArgumentsTest.m in Sources */,
-				8B82CF491D9C2373007182AA /* GTMURLBuilderTest.m in Sources */,
 				8B82CF4E1D9C2385007182AA /* GTMUIImage+ResizeTest.m in Sources */,
 				8B82CF371D9C2373007182AA /* GTMLightweightProxyTest.m in Sources */,
 				8B82CF4C1D9C2385007182AA /* GTMFadeTruncatingLabelTest.m in Sources */,
-				8B2C72E51D9EBB540027BD14 /* GTMUnitTestDevLog.m in Sources */,
 				8B82CF3B1D9C2373007182AA /* GTMNSData+zlibTest.m in Sources */,
 				8B82CF3E1D9C2373007182AA /* GTMNSFileHandle+UniqueNameTest.m in Sources */,
 				8B82CF501D9C2385007182AA /* GTMSenTestCaseTest.m in Sources */,
@@ -750,31 +708,35 @@
 /* Begin XCBuildConfiguration section */
 		8B82CEFD1D9C17DE007182AA /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = F4A0A95E140438B90010B64B /* DebugiOS.xcconfig */;
+			baseConfigurationReference = 8B27B5CA21C3305800D64F87 /* StaticLibrary.xcconfig */;
 			buildSettings = {
 				"ARCHS[sdk=iphoneos*]" = "$(ARCHS_STANDARD)";
 				"ARCHS[sdk=iphonesimulator*]" = "$(ARCHS_STANDARD)";
+				CLANG_ENABLE_OBJC_WEAK = YES;
 				PRODUCT_NAME = GTM;
 			};
 			name = Debug;
 		};
 		8B82CEFE1D9C17DE007182AA /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = F4A0A95F140438B90010B64B /* ReleaseiOS.xcconfig */;
+			baseConfigurationReference = 8B27B5CA21C3305800D64F87 /* StaticLibrary.xcconfig */;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
 				PRODUCT_NAME = GTM;
 			};
 			name = Release;
 		};
 		8B82CF2A1D9C1C7D007182AA /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = F4A0A95E140438B90010B64B /* DebugiOS.xcconfig */;
+			baseConfigurationReference = 8B82CF581D9C24D9007182AA /* Unittest.xcconfig */;
 			buildSettings = {
 				"ARCHS[sdk=iphoneos*]" = "$(ARCHS_STANDARD)";
 				"ARCHS[sdk=iphonesimulator*]" = "$(ARCHS_STANDARD)";
+				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				GTM_HOST_OTHER_LDFLAGS = "-ObjC -lz -read_only_relocs suppress";
+				GTM_HOST_OTHER_LDFLAGS = "-ObjC -lz";
 				INFOPLIST_FILE = "UnitTest-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -782,11 +744,13 @@
 		};
 		8B82CF2B1D9C1C7D007182AA /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = F4A0A95F140438B90010B64B /* ReleaseiOS.xcconfig */;
+			baseConfigurationReference = 8B82CF581D9C24D9007182AA /* Unittest.xcconfig */;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				GTM_HOST_OTHER_LDFLAGS = "-ObjC -lz -read_only_relocs suppress";
+				GTM_HOST_OTHER_LDFLAGS = "-ObjC -lz";
 				INFOPLIST_FILE = "UnitTest-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -798,19 +762,42 @@
 			buildSettings = {
 				"ARCHS[sdk=iphoneos*]" = "$(ARCHS_STANDARD)";
 				"ARCHS[sdk=iphonesimulator*]" = "$(ARCHS_STANDARD)";
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_SHADOW = YES;
 				GTM_EXTRA_WARNING_OVERRIDE_CFLAGS = "-Wno-unused-parameter";
 				GTM_HOST_GCC_PREPROCESSOR_DEFINITIONS = "GTM_USING_XCTEST=1";
-				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
-				LD_NO_PIE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				ONLY_ACTIVE_ARCH = YES;
 			};
 			name = Debug;
 		};
 		F4A0A964140438D50010B64B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
 				GTM_HOST_GCC_PREPROCESSOR_DEFINITIONS = "GTM_USING_XCTEST=0 GTM_IPHONE_USE_SENTEST=0";
 				INFOPLIST_FILE = "GTMiPhone-Info.plist";
+				PRODUCT_BUNDLE_IDENTIFIER = com.google.GTMiPhone;
 				PRODUCT_NAME = GTMiPhoneTest;
 			};
 			name = Debug;
@@ -819,19 +806,40 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = F4A0A95F140438B90010B64B /* ReleaseiOS.xcconfig */;
 			buildSettings = {
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_SHADOW = YES;
 				GTM_EXTRA_WARNING_OVERRIDE_CFLAGS = "-Wno-unused-parameter";
 				GTM_HOST_GCC_PREPROCESSOR_DEFINITIONS = "GTM_USING_XCTEST=1";
-				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
-				LD_NO_PIE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 			};
 			name = Release;
 		};
 		F4A0A96E140438ED0010B64B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = YES;
 				GTM_HOST_GCC_PREPROCESSOR_DEFINITIONS = "GTM_USING_XCTEST=0 GTM_IPHONE_USE_SENTEST=0";
 				INFOPLIST_FILE = "GTMiPhone-Info.plist";
+				PRODUCT_BUNDLE_IDENTIFIER = com.google.GTMiPhone;
 				PRODUCT_NAME = GTMiPhoneTest;
 			};
 			name = Release;

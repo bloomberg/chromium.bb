@@ -7,6 +7,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/strings/string_util.h"
 #include "base/win/current_module.h"
 #include "base/win/wrapped_window_proc.h"
 
@@ -40,7 +41,7 @@ MessageWindow::WindowClass::WindowClass()
   WNDCLASSEX window_class;
   window_class.cbSize = sizeof(window_class);
   window_class.style = 0;
-  window_class.lpfnWndProc = &base::win::WrappedWindowProc<WindowProc>;
+  window_class.lpfnWndProc = &WrappedWindowProc<WindowProc>;
   window_class.cbClsExtra = 0;
   window_class.cbWndExtra = 0;
   window_class.hInstance = instance_;
@@ -87,13 +88,13 @@ bool MessageWindow::Create(MessageCallback message_callback) {
 
 bool MessageWindow::CreateNamed(MessageCallback message_callback,
                                 const string16& window_name) {
-  return DoCreate(std::move(message_callback), window_name.c_str());
+  return DoCreate(std::move(message_callback), as_wcstr(window_name));
 }
 
 // static
 HWND MessageWindow::FindWindow(const string16& window_name) {
   return FindWindowEx(HWND_MESSAGE, NULL, kMessageWindowClassName,
-                      window_name.c_str());
+                      as_wcstr(window_name));
 }
 
 bool MessageWindow::DoCreate(MessageCallback message_callback,

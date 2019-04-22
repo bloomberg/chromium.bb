@@ -20,7 +20,7 @@
     async_test(t => {
         window.onload = t.step_func_done(_ => {
             assert_equals(document.styleSheets.length, 1);
-            assert_equals(document.styleSheets[0].rules.length, 0);
+            assert_throws('SecurityError', () => {document.styleSheets[0].rules});
         });
     }, "Stylesheets without integrity do not load.");
 </script>

@@ -16,12 +16,15 @@ namespace {
 const char kDefaultGoogleUrl[] = "http://google.com";
 const char kDefaultGaiaUrl[] = "https://accounts.google.com";
 const char kDefaultGoogleApisBaseUrl[] = "https://www.googleapis.com";
+const char kDefaultOAuthAccountManagerBaseUrl[] =
+    "https://oauthaccountmanager.googleapis.com";
 
 // API calls from accounts.google.com
 const char kClientLoginUrlSuffix[] = "ClientLogin";
 const char kServiceLoginUrlSuffix[] = "ServiceLogin";
 const char kEmbeddedSetupChromeOsUrlSuffixV1[] = "embedded/setup/chromeos";
 const char kEmbeddedSetupChromeOsUrlSuffixV2[] = "embedded/setup/v2/chromeos";
+const char kEmbeddedSetupWindowsUrlSuffix[] = "embedded/setup/windows";
 // Parameter "ssp=1" is used to skip showing the password bubble when a user
 // signs in to Chrome. Note that Gaia will pass this client specified parameter
 // to all URLs that are loaded as part of thi sign-in flow.
@@ -48,9 +51,11 @@ const char kOAuth2RevokeUrlSuffix[] = "o/oauth2/revoke";
 
 // API calls from www.googleapis.com
 const char kOAuth2TokenUrlSuffix[] = "oauth2/v4/token";
-const char kOAuth2IssueTokenUrlSuffix[] = "oauth2/v2/IssueToken";
 const char kOAuth2TokenInfoUrlSuffix[] = "oauth2/v2/tokeninfo";
 const char kOAuthUserInfoUrlSuffix[] = "oauth2/v1/userinfo";
+
+// API calls from oauthaccountmanager.googleapis.com
+const char kOAuth2IssueTokenUrlSuffix[] = "v1/issuetoken";
 
 void GetSwitchValueWithDefault(const char* switch_value,
                                const char* default_value,
@@ -68,7 +73,8 @@ GURL GetURLSwitchValueWithDefault(const char* switch_value,
   std::string string_value;
   GetSwitchValueWithDefault(switch_value, default_value, &string_value);
   const GURL result(string_value);
-  DCHECK(result.is_valid());
+  DCHECK(result.is_valid()) << "Invalid URL \"" << string_value
+                            << "\" for switch \"" << switch_value << "\"";
   return result;
 }
 
@@ -83,10 +89,12 @@ GaiaUrls::GaiaUrls() {
   google_url_ = GetURLSwitchValueWithDefault(switches::kGoogleUrl,
                                              kDefaultGoogleUrl);
   gaia_url_ = GetURLSwitchValueWithDefault(switches::kGaiaUrl, kDefaultGaiaUrl);
-  lso_origin_url_ =
+  GURL lso_origin_url =
       GetURLSwitchValueWithDefault(switches::kLsoUrl, kDefaultGaiaUrl);
-  google_apis_origin_url_ = GetURLSwitchValueWithDefault(
+  GURL google_apis_origin_url = GetURLSwitchValueWithDefault(
       switches::kGoogleApisUrl, kDefaultGoogleApisBaseUrl);
+  GURL oauth_account_manager_origin_url = GetURLSwitchValueWithDefault(
+      switches::kOAuthAccountManagerUrl, kDefaultOAuthAccountManagerBaseUrl);
 
   captcha_base_url_ =
       GURL("http://" + gaia_url_.host() +
@@ -104,6 +112,8 @@ GaiaUrls::GaiaUrls() {
       gaia_url_.Resolve(kEmbeddedSetupChromeOsUrlSuffixV1);
   embedded_setup_chromeos_url_v2_ =
       gaia_url_.Resolve(kEmbeddedSetupChromeOsUrlSuffixV2);
+  embedded_setup_windows_url_ =
+      gaia_url_.Resolve(kEmbeddedSetupWindowsUrlSuffix);
   signin_chrome_sync_dice_ = gaia_url_.Resolve(kSigninChromeSyncDice);
   service_login_auth_url_ = gaia_url_.Resolve(kServiceLoginAuthUrlSuffix);
   service_logout_url_ = gaia_url_.Resolve(kServiceLogoutUrlSuffix);
@@ -123,18 +133,20 @@ GaiaUrls::GaiaUrls() {
       gaia_url_.Resolve(kGetCheckConnectionInfoSuffix);
 
   // URLs from accounts.google.com (LSO).
-  get_oauth_token_url_ = lso_origin_url_.Resolve(kGetOAuthTokenUrlSuffix);
-  oauth2_auth_url_ = lso_origin_url_.Resolve(kOAuth2AuthUrlSuffix);
-  oauth2_revoke_url_ = lso_origin_url_.Resolve(kOAuth2RevokeUrlSuffix);
+  get_oauth_token_url_ = lso_origin_url.Resolve(kGetOAuthTokenUrlSuffix);
+  oauth2_auth_url_ = lso_origin_url.Resolve(kOAuth2AuthUrlSuffix);
+  oauth2_revoke_url_ = lso_origin_url.Resolve(kOAuth2RevokeUrlSuffix);
 
   // URLs from www.googleapis.com.
-  oauth2_token_url_ = google_apis_origin_url_.Resolve(kOAuth2TokenUrlSuffix);
-  oauth2_issue_token_url_ =
-      google_apis_origin_url_.Resolve(kOAuth2IssueTokenUrlSuffix);
+  oauth2_token_url_ = google_apis_origin_url.Resolve(kOAuth2TokenUrlSuffix);
   oauth2_token_info_url_ =
-      google_apis_origin_url_.Resolve(kOAuth2TokenInfoUrlSuffix);
+      google_apis_origin_url.Resolve(kOAuth2TokenInfoUrlSuffix);
   oauth_user_info_url_ =
-      google_apis_origin_url_.Resolve(kOAuthUserInfoUrlSuffix);
+      google_apis_origin_url.Resolve(kOAuthUserInfoUrlSuffix);
+
+  // URLs from oauthaccountmanager.googleapis.com/v1/issuetoken
+  oauth2_issue_token_url_ =
+      oauth_account_manager_origin_url.Resolve(kOAuth2IssueTokenUrlSuffix);
 
   gaia_login_form_realm_ = gaia_url_;
 }
@@ -169,6 +181,10 @@ const GURL& GaiaUrls::embedded_setup_chromeos_url(unsigned version) const {
     return embedded_setup_chromeos_url_v2_;
 
   return embedded_setup_chromeos_url_v1_;
+}
+
+const GURL& GaiaUrls::embedded_setup_windows_url() const {
+  return embedded_setup_windows_url_;
 }
 
 const GURL& GaiaUrls::signin_chrome_sync_dice() const {

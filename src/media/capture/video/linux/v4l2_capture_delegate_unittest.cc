@@ -182,7 +182,8 @@ class V4L2CaptureDelegateTest : public ::testing::Test {
             v4l2_.get(),
             device_descriptor_,
             base::ThreadTaskRunnerHandle::Get(),
-            50)) {}
+            50,
+            0)) {}
   ~V4L2CaptureDelegateTest() override = default;
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -252,4 +253,4 @@ TEST_F(V4L2CaptureDelegateTest, MAYBE_CreateAndDestroyAndVerifyControls) {
   }
 }
 
-};  // namespace media
+}  // namespace media

@@ -63,11 +63,6 @@ class CORE_EXPORT FrameSerializer final {
   STACK_ALLOCATED();
 
  public:
-  enum ResourceHasCacheControlNoStoreHeader {
-    kNoCacheControlNoStoreHeader,
-    kHasCacheControlNoStoreHeader
-  };
-
   class Delegate {
    public:
     virtual ~Delegate() = default;
@@ -96,11 +91,6 @@ class CORE_EXPORT FrameSerializer final {
     // Tells whether to skip serialization of a subresource or CSSStyleSheet
     // with a given URI. Used to deduplicate resources across multiple frames.
     virtual bool ShouldSkipResourceWithURL(const KURL&) { return false; }
-
-    // Tells whether to skip serialization of a subresource.
-    virtual bool ShouldSkipResource(ResourceHasCacheControlNoStoreHeader) {
-      return false;
-    }
 
     // Returns custom attributes that need to add in order to serialize the
     // element.
@@ -145,7 +135,6 @@ class CORE_EXPORT FrameSerializer final {
   bool ShouldAddURL(const KURL&);
 
   void AddToResources(const String& mime_type,
-                      ResourceHasCacheControlNoStoreHeader,
                       scoped_refptr<const SharedBuffer>,
                       const KURL&);
   void AddImageToResources(ImageResourceContent*, const KURL&);

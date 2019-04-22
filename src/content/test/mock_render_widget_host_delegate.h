@@ -9,8 +9,10 @@
 
 #include "base/macros.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
+#include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/text_input_manager.h"
 #include "content/public/browser/keyboard_event_processing_result.h"
+#include "content/test/stub_render_view_host_delegate_view.h"
 
 namespace content {
 
@@ -31,6 +33,7 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
       KeyboardEventProcessingResult result) {
     pre_handle_keyboard_event_result_ = result;
   }
+  void CreateInputEventRouter();
 
   // RenderWidgetHostDelegate:
   void ResizeDueToAutoResize(RenderWidgetHostImpl* render_widget_host,
@@ -43,20 +46,24 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
   void Copy() override;
   void Paste() override;
   void SelectAll() override;
+  RenderWidgetHostInputEventRouter* GetInputEventRouter() override;
   RenderWidgetHostImpl* GetFocusedRenderWidgetHost(
       RenderWidgetHostImpl* widget_host) override;
   void SendScreenRects() override;
   TextInputManager* GetTextInputManager() override;
   bool IsFullscreenForCurrentTab() override;
+  RenderViewHostDelegateView* GetDelegateView() override;
 
  private:
   std::unique_ptr<NativeWebKeyboardEvent> last_event_;
   RenderWidgetHostImpl* rwh_ = nullptr;
+  std::unique_ptr<RenderWidgetHostInputEventRouter> rwh_input_event_router_;
   bool is_fullscreen_ = false;
   TextInputManager text_input_manager_;
   RenderWidgetHostImpl* focused_widget_ = nullptr;
   KeyboardEventProcessingResult pre_handle_keyboard_event_result_ =
       KeyboardEventProcessingResult::NOT_HANDLED;
+  StubRenderViewHostDelegateView rvh_delegate_view_;
 
   DISALLOW_COPY_AND_ASSIGN(MockRenderWidgetHostDelegate);
 };

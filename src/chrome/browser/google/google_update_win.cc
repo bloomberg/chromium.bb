@@ -16,13 +16,13 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -138,7 +138,7 @@ HRESULT CoGetClassObjectAsAdmin(gfx::AcceleratedWidget hwnd,
   // For Vista+, need to instantiate the class factory via the elevation
   // moniker. This ensures that the UAC dialog shows up.
   wchar_t class_id_as_string[MAX_PATH] = {};
-  StringFromGUID2(class_id, class_id_as_string, arraysize(class_id_as_string));
+  StringFromGUID2(class_id, class_id_as_string, base::size(class_id_as_string));
 
   base::string16 elevation_moniker_name = base::StringPrintf(
       L"Elevation:Administrator!clsid:%ls", class_id_as_string);
@@ -374,8 +374,8 @@ void UpdateCheckDriver::RunUpdateCheck(
     driver_ = new UpdateCheckDriver(locale, install_update_if_possible,
                                     elevation_window, delegate);
     driver_->task_runner_->PostTask(
-        FROM_HERE, base::Bind(&UpdateCheckDriver::BeginUpdateCheck,
-                              base::Unretained(driver_)));
+        FROM_HERE, base::BindOnce(&UpdateCheckDriver::BeginUpdateCheck,
+                                  base::Unretained(driver_)));
   } else {
     driver_->AddDelegate(delegate);
   }
@@ -462,8 +462,8 @@ void UpdateCheckDriver::BeginUpdateCheck() {
   if (SUCCEEDED(hresult)) {
     // Start polling.
     task_runner_->PostTask(FROM_HERE,
-                           base::Bind(&UpdateCheckDriver::PollGoogleUpdate,
-                                      base::Unretained(this)));
+                           base::BindOnce(&UpdateCheckDriver::PollGoogleUpdate,
+                                          base::Unretained(this)));
     return;
   }
   if (hresult == GOOPDATE_E_APP_USING_EXTERNAL_UPDATER) {
@@ -471,8 +471,9 @@ void UpdateCheckDriver::BeginUpdateCheck() {
     if (allowed_retries_) {
       --allowed_retries_;
       task_runner_->PostDelayedTask(
-          FROM_HERE, base::Bind(&UpdateCheckDriver::BeginUpdateCheck,
-                                base::Unretained(this)),
+          FROM_HERE,
+          base::BindOnce(&UpdateCheckDriver::BeginUpdateCheck,
+                         base::Unretained(this)),
           base::TimeDelta::FromSeconds(kGoogleRetryIntervalSeconds));
       return;
     }
@@ -796,15 +797,16 @@ void UpdateCheckDriver::PollGoogleUpdate() {
       // It is safe to post this task with an unretained pointer since the task
       // is guaranteed to run before a subsequent DeleteSoon is handled.
       result_runner_->PostTask(
-          FROM_HERE, base::Bind(&UpdateCheckDriver::NotifyUpgradeProgress,
-                                base::Unretained(this), last_reported_progress_,
-                                new_version_));
+          FROM_HERE, base::BindOnce(&UpdateCheckDriver::NotifyUpgradeProgress,
+                                    base::Unretained(this),
+                                    last_reported_progress_, new_version_));
     }
 
     // Schedule the next check.
     task_runner_->PostDelayedTask(
-        FROM_HERE, base::Bind(&UpdateCheckDriver::PollGoogleUpdate,
-                              base::Unretained(this)),
+        FROM_HERE,
+        base::BindOnce(&UpdateCheckDriver::PollGoogleUpdate,
+                       base::Unretained(this)),
         base::TimeDelta::FromMilliseconds(kGoogleUpdatePollIntervalMs));
     // Early return for this non-terminal state.
     return;

@@ -157,16 +157,6 @@ bool NotificationList::SetNotificationImage(const std::string& notification_id,
   return true;
 }
 
-bool NotificationList::SetNotificationButtonIcon(
-    const std::string& notification_id, int button_index,
-    const gfx::Image& image) {
-  auto iter = GetNotification(notification_id);
-  if (iter == notifications_.end())
-    return false;
-  iter->first->SetButtonIcon(button_index, image);
-  return true;
-}
-
 bool NotificationList::HasNotificationOfType(const std::string& id,
                                              const NotificationType type) {
   auto iter = GetNotification(id);

@@ -6,6 +6,8 @@
 
 #include <memory>
 
+#include "base/android/build_info.h"
+#include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/task/post_task.h"
 #include "content/browser/android/scoped_surface_request_manager.h"
@@ -15,16 +17,13 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
 #include "media/base/android/media_service_throttler.h"
 #include "media/base/timestamp_constants.h"
-
-// TODO(tguilbert): Remove this ID once MediaPlayerManager has been deleted
-// and MediaPlayerBridge updated. See comment in header file.
-constexpr int kUnusedAndIrrelevantPlayerId = 0;
 
 namespace content {
 
@@ -35,13 +34,18 @@ const float kDefaultVolume = 1.0;
 
 }  // namespace
 
-MediaPlayerRenderer::MediaPlayerRenderer(int process_id,
-                                         int routing_id,
-                                         WebContents* web_contents)
-    : render_process_id_(process_id),
+MediaPlayerRenderer::MediaPlayerRenderer(
+    int process_id,
+    int routing_id,
+    WebContents* web_contents,
+    RendererExtensionRequest renderer_extension_request,
+    ClientExtensionPtr client_extension_ptr)
+    : client_extension_(std::move(client_extension_ptr)),
+      render_process_id_(process_id),
       routing_id_(routing_id),
       has_error_(false),
       volume_(kDefaultVolume),
+      renderer_extension_binding_(this, std::move(renderer_extension_request)),
       weak_factory_(this) {
   DCHECK_EQ(static_cast<RenderFrameHostImpl*>(
                 RenderFrameHost::FromID(process_id, routing_id))
@@ -93,9 +97,9 @@ void MediaPlayerRenderer::Initialize(media::MediaResource* media_resource,
 
   base::PostDelayedTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
-      base::Bind(&MediaPlayerRenderer::CreateMediaPlayer,
-                 weak_factory_.GetWeakPtr(),
-                 media_resource->GetMediaUrlParams(), init_cb),
+      base::BindOnce(&MediaPlayerRenderer::CreateMediaPlayer,
+                     weak_factory_.GetWeakPtr(),
+                     media_resource->GetMediaUrlParams(), init_cb),
       creation_delay);
 }
 
@@ -112,17 +116,18 @@ void MediaPlayerRenderer::CreateMediaPlayer(
     return;
   }
 
-  const std::string user_agent = GetContentClient()->GetUserAgent();
+  const std::string user_agent = GetContentClient()->browser()->GetUserAgent();
+
+  // Never allow credentials on KitKat. See https://crbug.com/936566.
+  bool allow_credentials = url_params.allow_credentials &&
+                           base::android::BuildInfo::GetInstance()->sdk_int() >
+                               base::android::SDK_VERSION_KITKAT;
 
   media_player_.reset(new media::MediaPlayerBridge(
-      kUnusedAndIrrelevantPlayerId, url_params.media_url,
-      url_params.site_for_cookies, user_agent,
+      url_params.media_url, url_params.site_for_cookies, user_agent,
       false,  // hide_url_log
-      this,
-      base::Bind(&MediaPlayerRenderer::OnDecoderResourcesReleased,
-                 weak_factory_.GetWeakPtr()),
-      GURL(),  // frame_url
-      true));  // allow_crendentials
+      this,   // MediaPlayerBridge::Client
+      allow_credentials));
 
   media_player_->Initialize();
   UpdateVolume();
@@ -167,7 +172,7 @@ void MediaPlayerRenderer::SetPlaybackRate(double playback_rate) {
     return;
 
   if (playback_rate == 0) {
-    media_player_->Pause(true);
+    media_player_->Pause();
   } else {
     // MediaPlayerBridge's Start() is idempotent.
     media_player_->Start();
@@ -185,7 +190,8 @@ void MediaPlayerRenderer::OnScopedSurfaceRequestCompleted(
   media_player_->SetVideoSurface(std::move(surface));
 }
 
-base::UnguessableToken MediaPlayerRenderer::InitiateScopedSurfaceRequest() {
+void MediaPlayerRenderer::InitiateScopedSurfaceRequest(
+    InitiateScopedSurfaceRequestCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   CancelScopedSurfaceRequest();
@@ -195,7 +201,7 @@ base::UnguessableToken MediaPlayerRenderer::InitiateScopedSurfaceRequest() {
           base::Bind(&MediaPlayerRenderer::OnScopedSurfaceRequestCompleted,
                      weak_factory_.GetWeakPtr()));
 
-  return surface_request_token_;
+  std::move(callback).Run(surface_request_token_);
 }
 
 void MediaPlayerRenderer::SetVolume(float volume) {
@@ -238,19 +244,7 @@ media::MediaUrlInterceptor* MediaPlayerRenderer::GetMediaUrlInterceptor() {
   return g_media_url_interceptor;
 }
 
-void MediaPlayerRenderer::OnTimeUpdate(int player_id,
-                                       base::TimeDelta current_timestamp,
-                                       base::TimeTicks current_time_ticks) {}
-
-void MediaPlayerRenderer::OnMediaMetadataChanged(int player_id,
-                                                 base::TimeDelta duration,
-                                                 int width,
-                                                 int height,
-                                                 bool success) {
-  // Always try to propage the video size.
-  // This call will no-op if |video_size_| is already current.
-  OnVideoSizeChanged(kUnusedAndIrrelevantPlayerId, width, height);
-
+void MediaPlayerRenderer::OnMediaDurationChanged(base::TimeDelta duration) {
   // For HLS streams, the reported duration may be zero for infinite streams.
   // See http://crbug.com/501213.
   if (duration.is_zero())
@@ -258,27 +252,20 @@ void MediaPlayerRenderer::OnMediaMetadataChanged(int player_id,
 
   if (duration_ != duration) {
     duration_ = duration;
-    renderer_client_->OnDurationChange(duration);
+    client_extension_->OnDurationChange(duration);
   }
 }
 
-void MediaPlayerRenderer::OnPlaybackComplete(int player_id) {
+void MediaPlayerRenderer::OnPlaybackComplete() {
   renderer_client_->OnEnded();
 }
 
-void MediaPlayerRenderer::OnMediaInterrupted(int player_id) {}
-
-void MediaPlayerRenderer::OnBufferingUpdate(int player_id, int percentage) {}
-
-void MediaPlayerRenderer::OnSeekComplete(int player_id,
-                                         const base::TimeDelta& current_time) {}
-
-void MediaPlayerRenderer::OnError(int player_id, int error) {
+void MediaPlayerRenderer::OnError(int error) {
   // Some errors are forwarded to the MediaPlayerListener, but are of no
   // importance to us. Ignore these errors, which are reported as
   // MEDIA_ERROR_INVALID_CODE by MediaPlayerListener.
   if (error ==
-      media::MediaPlayerAndroid::MediaErrorType::MEDIA_ERROR_INVALID_CODE) {
+      media::MediaPlayerBridge::MediaErrorType::MEDIA_ERROR_INVALID_CODE) {
     return;
   }
 
@@ -287,28 +274,18 @@ void MediaPlayerRenderer::OnError(int player_id, int error) {
   renderer_client_->OnError(media::PIPELINE_ERROR_EXTERNAL_RENDERER_FAILED);
 }
 
-void MediaPlayerRenderer::OnVideoSizeChanged(int player_id,
-                                             int width,
-                                             int height) {
+void MediaPlayerRenderer::OnVideoSizeChanged(int width, int height) {
   // This method is called when we find a video size from metadata or when
   // |media_player|'s size actually changes.
   // We therefore may already have the latest video size.
   gfx::Size new_size = gfx::Size(width, height);
   if (video_size_ != new_size) {
     video_size_ = new_size;
-    renderer_client_->OnVideoNaturalSizeChange(video_size_);
+    // Send via |client_extension_| instead of |renderer_client_|, so
+    // MediaPlayerRendererClient can update its texture size.
+    // MPRClient will then continue propagating changes via its RendererClient.
+    client_extension_->OnVideoSizeChange(video_size_);
   }
-}
-
-media::MediaPlayerAndroid* MediaPlayerRenderer::GetPlayer(int player_id) {
-  NOTREACHED();
-  return nullptr;
-}
-
-bool MediaPlayerRenderer::RequestPlay(int player_id,
-                                      base::TimeDelta duration,
-                                      bool has_audio) {
-  return true;
 }
 
 void MediaPlayerRenderer::OnUpdateAudioMutingState(bool muted) {
@@ -318,11 +295,6 @@ void MediaPlayerRenderer::OnUpdateAudioMutingState(bool muted) {
 
 void MediaPlayerRenderer::OnWebContentsDestroyed() {
   web_contents_observer_ = nullptr;
-}
-
-void MediaPlayerRenderer::OnDecoderResourcesReleased(int player_id) {
-  // Since we are not using a pool of MediaPlayerAndroid instances, this
-  // function is not relevant.
 }
 
 // static

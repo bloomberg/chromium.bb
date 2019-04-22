@@ -25,6 +25,7 @@
 #include "net/base/net_export.h"
 #include "net/disk_cache/simple/simple_entry_format.h"
 #include "net/disk_cache/simple/simple_file_tracker.h"
+#include "net/disk_cache/simple/simple_histogram_enums.h"
 
 namespace net {
 class GrowableIOBuffer;
@@ -36,7 +37,10 @@ FORWARD_DECLARE_TEST(DiskCacheBackendTest, SimpleCacheEnumerationLongKeys);
 namespace disk_cache {
 
 NET_EXPORT_PRIVATE extern const base::Feature kSimpleCachePrefetchExperiment;
-NET_EXPORT_PRIVATE extern const char kSimplePrefetchBytesParam[];
+NET_EXPORT_PRIVATE extern const char kSimpleCacheFullPrefetchBytesParam[];
+NET_EXPORT_PRIVATE extern const char kSimpleCacheTrailerPrefetchHintParam[];
+NET_EXPORT_PRIVATE extern const char
+    kSimpleCacheTrailerPrefetchSpeculativeBytesParam[];
 
 // Returns how large a file would get prefetched on reading the entry.
 // If the experiment is disabled, returns 0.
@@ -101,7 +105,13 @@ struct SimpleEntryCreationResults {
   SimpleStreamPrefetchData stream_prefetch_data[2];
 
   SimpleEntryStat entry_stat;
+  int32_t computed_trailer_prefetch_size = -1;
   int result;
+  bool created;
+};
+
+struct SimpleEntryCloseResults {
+  int32_t estimated_trailer_prefetch_size = -1;
 };
 
 // Worker thread interface to the very simple cache. This interface is not
@@ -175,28 +185,41 @@ class SimpleSynchronousEntry {
     int buf_len;
   };
 
+  // Like Entry, the SimpleSynchronousEntry self releases when Close() is
+  // called, but sometimes temporary ones are kept in unique_ptr.
+  NET_EXPORT_PRIVATE ~SimpleSynchronousEntry();
+
   // Opens a disk cache entry on disk. The |key| parameter is optional, if empty
   // the operation may be slower. The |entry_hash| parameter is required.
-  // |had_index| is provided only for histograms.
   // |time_enqueued| is when this operation was added to the I/O thread pool,
   //  and is provided only for histograms.
   static void OpenEntry(net::CacheType cache_type,
                         const base::FilePath& path,
                         const std::string& key,
                         uint64_t entry_hash,
-                        bool had_index,
                         const base::TimeTicks& time_enqueued,
                         SimpleFileTracker* file_tracker,
+                        int32_t trailer_prefetch_size,
                         SimpleEntryCreationResults* out_results);
 
   static void CreateEntry(net::CacheType cache_type,
                           const base::FilePath& path,
                           const std::string& key,
                           uint64_t entry_hash,
-                          bool had_index,
                           const base::TimeTicks& time_enqueued,
                           SimpleFileTracker* file_tracker,
                           SimpleEntryCreationResults* out_results);
+
+  static void OpenOrCreateEntry(net::CacheType cache_type,
+                                const base::FilePath& path,
+                                const std::string& key,
+                                uint64_t entry_hash,
+                                OpenEntryIndexEnum index_state,
+                                bool optimistic_create,
+                                const base::TimeTicks& time_enqueued,
+                                SimpleFileTracker* file_tracker,
+                                int32_t trailer_prefetch_size,
+                                SimpleEntryCreationResults* out_results);
 
   // Renames the entry on the file system, making it no longer possible to open
   // it again, but allowing operations to continue to be executed through that
@@ -259,7 +282,8 @@ class SimpleSynchronousEntry {
   // CRCRecord entries in |crc32s_to_write|.
   void Close(const SimpleEntryStat& entry_stat,
              std::unique_ptr<std::vector<CRCRecord>> crc32s_to_write,
-             net::GrowableIOBuffer* stream_0_data);
+             net::GrowableIOBuffer* stream_0_data,
+             SimpleEntryCloseResults* out_results);
 
   const base::FilePath& path() const { return path_; }
   std::string key() const { return key_; }
@@ -270,10 +294,15 @@ class SimpleSynchronousEntry {
   NET_EXPORT_PRIVATE base::FilePath GetFilenameForSubfile(
       SimpleFileTracker::SubFile sub_file) const;
 
+  int32_t computed_trailer_prefetch_size() const {
+    return computed_trailer_prefetch_size_;
+  }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(::DiskCacheBackendTest,
                            SimpleCacheEnumerationLongKeys);
   friend class SimpleFileTrackerTest;
+  class PrefetchData;
 
   enum CreateEntryResult {
     CREATE_ENTRY_SUCCESS = 0,
@@ -309,12 +338,8 @@ class SimpleSynchronousEntry {
       const base::FilePath& path,
       const std::string& key,
       uint64_t entry_hash,
-      bool had_index,
-      SimpleFileTracker* simple_file_tracker);
-
-  // Like Entry, the SimpleSynchronousEntry self releases when Close() is
-  // called.
-  NET_EXPORT_PRIVATE ~SimpleSynchronousEntry();
+      SimpleFileTracker* simple_file_tracker,
+      int32_t stream_0_size);
 
   // Tries to open one of the cache entry files. Succeeds if the open succeeds
   // or if the file was not found and is allowed to be omitted if the
@@ -364,7 +389,7 @@ class SimpleSynchronousEntry {
   // Puts the result into |*eof_record| and sanity-checks it.
   // Returns net status, and records any failures to UMA.
   int GetEOFRecordData(base::File* file,
-                       base::StringPiece file_0_prefetch,
+                       PrefetchData* prefetch_data,
                        int file_index,
                        int file_offset,
                        SimpleFileEOF* eof_record);
@@ -372,7 +397,7 @@ class SimpleSynchronousEntry {
   // Reads either from |file_0_prefetch| or |file|.
   // Range-checks all the in-memory reads.
   bool ReadFromFileOrPrefetched(base::File* file,
-                                base::StringPiece file_0_prefetch,
+                                PrefetchData* prefetch_data,
                                 int file_index,
                                 int offset,
                                 int size,
@@ -387,7 +412,7 @@ class SimpleSynchronousEntry {
   // and |*out_crc32| will get the checksum, which will be verified against
   // |eof_record|.
   int PreReadStreamPayload(base::File* file,
-                           base::StringPiece file_0_prefetch,
+                           PrefetchData* prefetch_data,
                            int stream_index,
                            int extra_size,
                            const SimpleEntryStat& entry_stat,
@@ -444,7 +469,7 @@ class SimpleSynchronousEntry {
   static bool TruncateFilesForEntryHash(const base::FilePath& path,
                                         uint64_t entry_hash);
 
-  void RecordSyncCreateResult(CreateEntryResult result, bool had_index);
+  void RecordSyncCreateResult(CreateEntryResult result);
 
   base::FilePath GetFilenameFromFileIndex(int file_index) const;
 
@@ -453,11 +478,10 @@ class SimpleSynchronousEntry {
   const net::CacheType cache_type_;
   const base::FilePath path_;
   SimpleFileTracker::EntryFileKey entry_file_key_;
-  const bool had_index_;
   std::string key_;
 
-  bool have_open_files_;
-  bool initialized_;
+  bool have_open_files_ = false;
+  bool initialized_ = false;
 
   // Normally false. This is set to true when an entry is opened without
   // checking the file headers. Any subsequent read will perform the check
@@ -468,6 +492,18 @@ class SimpleSynchronousEntry {
 
   SimpleFileTracker* file_tracker_;
 
+  // The number of trailing bytes in file 0 that we believe should be
+  // prefetched in order to read the EOF record and stream 0.  This is
+  // a hint from the index and may not be exactly right.  -1 if we
+  // don't have a hinted value.
+  int32_t trailer_prefetch_size_;
+
+  // The exact number of trailing bytes that were needed to read the
+  // EOF record and stream 0 when the entry was actually opened.  This
+  // may be different from the trailer_prefetch_size_ hint and is
+  // propagated back to the index in order to optimize the next open.
+  int32_t computed_trailer_prefetch_size_ = -1;
+
   // True if the corresponding stream is empty and therefore no on-disk file
   // was created to store it.
   bool empty_file_omitted_[kSimpleEntryNormalFileCount];
@@ -475,7 +511,7 @@ class SimpleSynchronousEntry {
   typedef std::map<int64_t, SparseRange> SparseRangeOffsetMap;
   typedef SparseRangeOffsetMap::iterator SparseRangeIterator;
   SparseRangeOffsetMap sparse_ranges_;
-  bool sparse_file_open_;
+  bool sparse_file_open_ = false;
 
   // Offset of the end of the sparse file (where the next sparse range will be
   // written).

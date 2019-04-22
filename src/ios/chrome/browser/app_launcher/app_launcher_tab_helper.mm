@@ -13,10 +13,10 @@
 #import "ios/chrome/browser/app_launcher/app_launcher_abuse_detector.h"
 #include "ios/chrome/browser/app_launcher/app_launcher_flags.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_tab_helper_delegate.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/chrome_url_util.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
-#import "ios/chrome/browser/tabs/legacy_tab_helper.h"
-#import "ios/chrome/browser/tabs/tab.h"
+#import "ios/chrome/browser/u2f/u2f_tab_helper.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/url_scheme_util.h"
@@ -191,7 +191,6 @@ bool AppLauncherTabHelper::ShouldAllowRequest(
   if (!IsValidAppUrl(request_url))
     return false;
 
-  Tab* tab = LegacyTabHelper::GetTabForWebState(web_state_);
 
   // If this is a Universal 2nd Factor (U2F) call, the origin needs to be
   // checked to make sure it's secure and then update the |request_url| with
@@ -201,7 +200,8 @@ bool AppLauncherTabHelper::ShouldAllowRequest(
                       ->GetLastCommittedItem()
                       ->GetURL()
                       .GetOrigin();
-    request_url = [tab XCallbackFromRequestURL:request_url originURL:origin];
+    U2FTabHelper* u2f_helper = U2FTabHelper::FromWebState(web_state_);
+    request_url = u2f_helper->GetXCallbackUrl(request_url, origin);
     // If the URL was rejected by the U2F handler, |request_url| will be empty.
     if (!request_url.is_valid())
       return false;
@@ -215,13 +215,16 @@ bool AppLauncherTabHelper::ShouldAllowRequest(
   bool is_link_transition = ui::PageTransitionTypeIncludingQualifiersIs(
       request_info.transition_type, ui::PAGE_TRANSITION_LINK);
 
+  ios::ChromeBrowserState* browser_state =
+      ios::ChromeBrowserState::FromBrowserState(web_state_->GetBrowserState());
+
   if (base::FeatureList::IsEnabled(kAppLauncherRefresh)) {
     if (!is_link_transition && original_pending_url.is_valid()) {
       // At this stage the navigation will be canceled in all cases. If this
       // was a redirection, the |source_url| may not have been reported to
       // ReadingListWebStateObserver. Report it to mark as read if needed.
       ReadingListModel* model =
-          ReadingListModelFactory::GetForBrowserState(tab.browserState);
+          ReadingListModelFactory::GetForBrowserState(browser_state);
       if (model && model->loaded())
         model->SetReadStatus(original_pending_url, true);
     }
@@ -241,10 +244,12 @@ bool AppLauncherTabHelper::ShouldAllowRequest(
     // entry as read if needed.
     if (original_pending_url.is_valid()) {
       ReadingListModel* model =
-          ReadingListModelFactory::GetForBrowserState(tab.browserState);
+          ReadingListModelFactory::GetForBrowserState(browser_state);
       if (model && model->loaded())
         model->SetReadStatus(original_pending_url, true);
     }
   }
   return false;
 }
+
+WEB_STATE_USER_DATA_KEY_IMPL(AppLauncherTabHelper)

@@ -25,7 +25,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:singleLine="true"
-            android:textAppearance="@style/BlueLink3" />
+            android:textAppearance="@style/TextAppearance.BlueLink3" />
 
         <!-- The progress bar uses 20dp of space, vertically, including spacing. -->
         <org.chromium.chrome.browser.widget.MaterialProgressBar
@@ -43,7 +43,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:singleLine="true"
-            android:textAppearance="@style/BlackDisabledText2" />
+            android:textAppearance="@style/TextAppearance.BlackDisabledText2" />
 
     </LinearLayout>
 

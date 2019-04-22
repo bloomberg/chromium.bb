@@ -13,7 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
@@ -292,10 +292,11 @@ void PolicyOAuth2TokenFetcher::UseFakeTokensForTesting() {
 }
 
 // static
-PolicyOAuth2TokenFetcher* PolicyOAuth2TokenFetcher::CreateInstance() {
+std::unique_ptr<PolicyOAuth2TokenFetcher>
+PolicyOAuth2TokenFetcher::CreateInstance() {
   if (use_fake_tokens_for_testing_)
-    return new PolicyOAuth2TokenFetcherFake();
-  return new PolicyOAuth2TokenFetcherImpl();
+    return std::make_unique<PolicyOAuth2TokenFetcherFake>();
+  return std::make_unique<PolicyOAuth2TokenFetcherImpl>();
 }
 
 PolicyOAuth2TokenFetcher::PolicyOAuth2TokenFetcher() {}

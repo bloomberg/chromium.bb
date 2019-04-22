@@ -13,8 +13,8 @@
 #include "base/stl_util.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/subsample_entry.h"
+#include "media/base/win/d3d11_mocks.h"
 #include "media/cdm/cdm_proxy_context.h"
-#include "media/gpu/windows/d3d11_mocks.h"
 
 using ::testing::_;
 using ::testing::AtLeast;
@@ -169,51 +169,46 @@ class D3D11DecryptorTest : public ::testing::Test {
     // crypto session.
     EXPECT_CALL(*crypto_session_mock, GetDevice(_))
         .Times(AtLeast(1))
-        .WillRepeatedly(AddRefAndSetArgPointee<0>(device_mock_.Get()));
+        .WillRepeatedly(SetComPointee<0>(device_mock_.Get()));
 
     // The other components accessible (directly or indirectly) from the device.
-    EXPECT_CALL(*device_mock_.Get(), GetImmediateContext(_))
+    COM_EXPECT_CALL(device_mock_, GetImmediateContext(_))
         .Times(AtLeast(1))
-        .WillRepeatedly(AddRefAndSetArgPointee<0>(device_context_mock_.Get()));
-    EXPECT_CALL(*device_context_mock_.Get(),
-                QueryInterface(IID_ID3D11VideoContext, _))
+        .WillRepeatedly(SetComPointee<0>(device_context_mock_.Get()));
+    COM_EXPECT_CALL(device_context_mock_,
+                    QueryInterface(IID_ID3D11VideoContext, _))
         .Times(AtLeast(1))
-        .WillRepeatedly(
-            DoAll(AddRefAndSetArgPointee<1>(video_context_mock_.Get()),
-                  Return(S_OK)));
+        .WillRepeatedly(SetComPointeeAndReturnOk<1>(video_context_mock_.Get()));
 
     EXPECT_CALL(mock_proxy_,
                 GetD3D11DecryptContext(CdmProxy::KeyType::kDecryptOnly, kKeyId))
         .WillOnce(Return(*decrypt_context));
 
     // These return big enough size.
-    ON_CALL(*staging_buffer1_.Get(), GetDesc(_))
+    COM_ON_CALL(staging_buffer1_, GetDesc(_))
         .WillByDefault(SetBufferDescSize(20000));
-    ON_CALL(*staging_buffer2_.Get(), GetDesc(_))
+    COM_ON_CALL(staging_buffer2_, GetDesc(_))
         .WillByDefault(SetBufferDescSize(20000));
-    ON_CALL(*gpu_buffer_.Get(), GetDesc(_))
+    COM_ON_CALL(gpu_buffer_, GetDesc(_))
         .WillByDefault(SetBufferDescSize(20000));
 
     // It should be requesting for 2 staging buffers one for writing the data to
     // a GPU buffer and one for reading from the a GPU buffer.
-    EXPECT_CALL(*device_mock_.Get(),
-                CreateBuffer(BufferDescHas(D3D11_USAGE_STAGING, 0u,
-                                           D3D11_CPU_ACCESS_READ |
-                                               D3D11_CPU_ACCESS_WRITE),
-                             nullptr, _))
-        .WillOnce(DoAll(AddRefAndSetArgPointee<2>(staging_buffer1_.Get()),
-                        Return(S_OK)))
-        .WillOnce(DoAll(AddRefAndSetArgPointee<2>(staging_buffer2_.Get()),
-                        Return(S_OK)));
+    COM_EXPECT_CALL(device_mock_,
+                    CreateBuffer(BufferDescHas(D3D11_USAGE_STAGING, 0u,
+                                               D3D11_CPU_ACCESS_READ |
+                                                   D3D11_CPU_ACCESS_WRITE),
+                                 nullptr, _))
+        .WillOnce(SetComPointeeAndReturnOk<2>(staging_buffer1_.Get()))
+        .WillOnce(SetComPointeeAndReturnOk<2>(staging_buffer2_.Get()));
 
     // It should be requesting a GPU only accessible buffer to the decrypted
     // output.
-    EXPECT_CALL(*device_mock_.Get(),
-                CreateBuffer(BufferDescHas(D3D11_USAGE_DEFAULT,
-                                           D3D11_BIND_RENDER_TARGET, 0u),
-                             nullptr, _))
-        .WillOnce(
-            DoAll(AddRefAndSetArgPointee<2>(gpu_buffer_.Get()), Return(S_OK)));
+    COM_EXPECT_CALL(device_mock_,
+                    CreateBuffer(BufferDescHas(D3D11_USAGE_DEFAULT,
+                                               D3D11_BIND_RENDER_TARGET, 0u),
+                                 nullptr, _))
+        .WillOnce(SetComPointeeAndReturnOk<2>(gpu_buffer_.Get()));
   }
 
   // |input| is the input to the Decrypt() function, the subsample information
@@ -237,22 +232,22 @@ class D3D11DecryptorTest : public ::testing::Test {
 
     // It should be requesting for a memory mapped buffer, from the staging
     // buffer, to pass the encrypted data to the GPU.
-    EXPECT_CALL(*device_context_mock_.Get(),
-                Map(staging_buffer1_.Get(), 0, D3D11_MAP_WRITE, _, _))
+    COM_EXPECT_CALL(device_context_mock_,
+                    Map(staging_buffer1_.Get(), 0, D3D11_MAP_WRITE, _, _))
         .WillOnce(
             DoAll(SetArgPointee<4>(staging_buffer1_subresource), Return(S_OK)));
-    EXPECT_CALL(*device_context_mock_.Get(), Unmap(staging_buffer1_.Get(), 0));
+    COM_EXPECT_CALL(device_context_mock_, Unmap(staging_buffer1_.Get(), 0));
 
-    EXPECT_CALL(
-        *video_context_mock_.Get(),
+    COM_EXPECT_CALL(
+        video_context_mock_,
         DecryptionBlt(
             crypto_session_mock,
             reinterpret_cast<ID3D11Texture2D*>(staging_buffer1_.Get()),
             reinterpret_cast<ID3D11Texture2D*>(gpu_buffer_.Get()),
             NumEncryptedBytesAtBeginningGreaterOrEq(encrypted_input.size()),
             sizeof(kAnyKeyBlob), kAnyKeyBlob, _, _));
-    EXPECT_CALL(*device_context_mock_.Get(),
-                CopyResource(staging_buffer2_.Get(), gpu_buffer_.Get()));
+    COM_EXPECT_CALL(device_context_mock_,
+                    CopyResource(staging_buffer2_.Get(), gpu_buffer_.Get()));
 
     D3D11_MAPPED_SUBRESOURCE staging_buffer2_subresource = {};
 
@@ -266,11 +261,11 @@ class D3D11DecryptorTest : public ::testing::Test {
 
     // Tt should be requesting for a memory mapped buffer, from the staging
     // buffer, to read the decrypted data out from the GPU buffer.
-    EXPECT_CALL(*device_context_mock_.Get(),
-                Map(staging_buffer2_.Get(), 0, D3D11_MAP_READ, _, _))
+    COM_EXPECT_CALL(device_context_mock_,
+                    Map(staging_buffer2_.Get(), 0, D3D11_MAP_READ, _, _))
         .WillOnce(
             DoAll(SetArgPointee<4>(staging_buffer2_subresource), Return(S_OK)));
-    EXPECT_CALL(*device_context_mock_.Get(), Unmap(staging_buffer2_.Get(), 0));
+    COM_EXPECT_CALL(device_context_mock_, Unmap(staging_buffer2_.Get(), 0));
 
     CallbackMock callbacks;
     EXPECT_CALL(callbacks,
@@ -504,16 +499,16 @@ TEST_F(D3D11DecryptorTest, ReuseBuffers) {
   Mock::VerifyAndClearExpectations(device_context_mock_.Get());
   Mock::VerifyAndClearExpectations(&mock_proxy_);
 
-  EXPECT_CALL(*crypto_session_mock.Get(), GetDevice(_))
+  COM_EXPECT_CALL(crypto_session_mock, GetDevice(_))
       .Times(AtLeast(1))
-      .WillRepeatedly(AddRefAndSetArgPointee<0>(device_mock_.Get()));
+      .WillRepeatedly(SetComPointee<0>(device_mock_.Get()));
   EXPECT_CALL(mock_proxy_,
               GetD3D11DecryptContext(CdmProxy::KeyType::kDecryptOnly, kKeyId))
       .WillOnce(Return(decrypt_context));
 
   // Buffers should not be (re)initialized on the next call to decrypt because
   // it's the same device as the previous call.
-  EXPECT_CALL(*device_mock_.Get(), CreateBuffer(_, _, _)).Times(0);
+  COM_EXPECT_CALL(device_mock_, CreateBuffer(_, _, _)).Times(0);
 
   // This calls Decrypt() so that the expectations above are triggered.
   ExpectSuccessfulDecryption(crypto_session_mock.Get(), kAnyInput, kAnyInput,

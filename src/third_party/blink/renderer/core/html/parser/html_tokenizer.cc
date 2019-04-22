@@ -33,7 +33,7 @@
 #include "third_party/blink/renderer/core/html/parser/markup_tokenizer_inlines.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/html_tokenizer_names.h"
-#include "third_party/blink/renderer/platform/wtf/ascii_ctype.h"
+#include "third_party/blink/renderer/platform/wtf/text/ascii_ctype.h"
 #include "third_party/blink/renderer/platform/wtf/text/unicode.h"
 
 namespace blink {
@@ -1464,8 +1464,7 @@ void HTMLTokenizer::UpdateStateFor(const String& tag_name) {
   else if (ThreadSafeMatch(tag_name, kStyleTag) ||
            ThreadSafeMatch(tag_name, kIFrameTag) ||
            ThreadSafeMatch(tag_name, kXmpTag) ||
-           (ThreadSafeMatch(tag_name, kNoembedTag) &&
-            options_.plugins_enabled) ||
+           ThreadSafeMatch(tag_name, kNoembedTag) ||
            ThreadSafeMatch(tag_name, kNoframesTag) ||
            (ThreadSafeMatch(tag_name, kNoscriptTag) && options_.script_enabled))
     SetState(HTMLTokenizer::kRAWTEXTState);

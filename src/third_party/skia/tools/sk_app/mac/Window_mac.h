@@ -9,10 +9,9 @@
 #define Window_mac_DEFINED
 
 #include "../Window.h"
-#include "SkChecksum.h"
 #include "SkTDynamicHash.h"
 
-#include "SDL.h"
+#import <Cocoa/Cocoa.h>
 
 namespace sk_app {
 
@@ -20,11 +19,12 @@ class Window_mac : public Window {
 public:
     Window_mac()
             : INHERITED()
-            , fWindow(nullptr)
-            , fWindowID(0)
-            , fGLContext(nullptr)
-            , fMSAASampleCount(1) {}
-    ~Window_mac() override { this->closeWindow(); }
+            , fWindow(nil)
+            , fMSAASampleCount(1)
+            , fIsMouseDown(false) {}
+    ~Window_mac() override {
+        this->closeWindow();
+    }
 
     bool initWindow();
 
@@ -33,30 +33,37 @@ public:
 
     bool attach(BackendType) override;
 
-    void onInval() override;
+    void onInval() override {}
 
-    static bool HandleWindowEvent(const SDL_Event& event);
+    static void PaintWindows();
+    static void HandleWindowEvent(const NSEvent* event);
 
-    static const Uint32& GetKey(const Window_mac& w) {
-        return w.fWindowID;
+    static const NSInteger& GetKey(const Window_mac& w) {
+        return w.fWindowNumber;
     }
 
-    static uint32_t Hash(const Uint32& winID) {
-        return winID;
+    static uint32_t Hash(const NSInteger& windowNumber) {
+        return windowNumber;
     }
 
-private:
-    bool handleEvent(const SDL_Event& event);
+    bool needsPaint() { return this->fIsContentInvalidated; }
 
+    NSWindow* window() { return fWindow; }
     void closeWindow();
 
-    static SkTDynamicHash<Window_mac, Uint32> gWindowMap;
+    void resetMouse();
 
-    SDL_Window*   fWindow;
-    Uint32        fWindowID;
-    SDL_GLContext fGLContext;
+private:
+    void handleEvent(const NSEvent* event);
 
+    NSWindow*    fWindow;
+    NSInteger    fWindowNumber;
     int          fMSAASampleCount;
+    bool         fIsMouseDown;
+    NSPoint      fMouseDownPos;
+    uint32_t     fMouseModifiers;
+
+    static SkTDynamicHash<Window_mac, NSInteger> gWindowMap;
 
     typedef Window INHERITED;
 };

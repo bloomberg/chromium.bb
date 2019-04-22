@@ -49,7 +49,7 @@ struct PLATFORM_EXPORT UnicodeRange final {
   bool operator<(UChar32 c) const { return to_ < c; }
   bool operator==(const UnicodeRange& other) const {
     return other.from_ == from_ && other.to_ == to_;
-  };
+  }
 
  private:
   UChar32 from_;
@@ -57,10 +57,12 @@ struct PLATFORM_EXPORT UnicodeRange final {
 };
 
 class PLATFORM_EXPORT UnicodeRangeSet : public RefCounted<UnicodeRangeSet> {
+  USING_FAST_MALLOC(UnicodeRangeSet);
+
  public:
   explicit UnicodeRangeSet(const Vector<UnicodeRange>&);
   UnicodeRangeSet() = default;
-  ;
+
   bool Contains(UChar32) const;
   bool IntersectsWith(const String&) const;
   bool IsEntireRange() const { return ranges_.IsEmpty(); }

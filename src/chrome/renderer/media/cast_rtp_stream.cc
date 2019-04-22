@@ -13,7 +13,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -25,9 +24,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/renderer/media/cast_session.h"
 #include "chrome/renderer/media/cast_udp_transport.h"
-#include "content/public/renderer/media_stream_audio_sink.h"
-#include "content/public/renderer/media_stream_utils.h"
-#include "content/public/renderer/media_stream_video_sink.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/video_encode_accelerator.h"
 #include "media/base/audio_bus.h"
@@ -40,7 +36,10 @@
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_sender.h"
 #include "media/cast/net/cast_transport_config.h"
+#include "third_party/blink/public/platform/modules/mediastream/web_media_stream_audio_sink.h"
+#include "third_party/blink/public/platform/modules/mediastream/web_media_stream_sink.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
+#include "third_party/blink/public/web/modules/mediastream/web_media_stream_utils.h"
 #include "ui/gfx/geometry/size.h"
 
 using media::cast::FrameSenderConfig;
@@ -167,18 +166,21 @@ std::vector<FrameSenderConfig> SupportedVideoConfigs(bool for_remoting_stream) {
 // handles this.  Otherwise, all methods and member variables of the outer class
 // must only be accessed on the render thread.
 class CastVideoSink : public base::SupportsWeakPtr<CastVideoSink>,
-                      public content::MediaStreamVideoSink {
+                      public blink::WebMediaStreamSink {
  public:
   // |track| provides data for this sink.
   // |error_callback| is called if video formats don't match.
   CastVideoSink(const blink::WebMediaStreamTrack& track,
                 const CastRtpStream::ErrorCallback& error_callback)
-      : track_(track), deliverer_(new Deliverer(error_callback)),
+      : track_(track),
+        deliverer_(new Deliverer(error_callback)),
         consecutive_refresh_count_(0),
-        expecting_a_refresh_frame_(false) {}
+        expecting_a_refresh_frame_(false),
+        is_connected_to_track_(false) {}
 
   ~CastVideoSink() override {
-    MediaStreamVideoSink::DisconnectFromTrack();
+    if (is_connected_to_track_)
+      blink::RemoveSinkFromMediaStreamTrack(track_, this);
   }
 
   // Attach this sink to a video track represented by |track_|.
@@ -193,9 +195,10 @@ class CastVideoSink : public base::SupportsWeakPtr<CastVideoSink>,
         base::TimeDelta::FromMilliseconds(kRefreshIntervalMilliseconds),
         base::Bind(&CastVideoSink::OnRefreshTimerFired,
                    base::Unretained(this)));
-    MediaStreamVideoSink::ConnectToTrack(
-        track_, base::Bind(&Deliverer::OnVideoFrame, deliverer_),
+    blink::AddSinkToMediaStreamTrack(
+        track_, this, base::BindRepeating(&Deliverer::OnVideoFrame, deliverer_),
         is_sink_secure);
+    is_connected_to_track_ = true;
   }
 
  private:
@@ -266,7 +269,7 @@ class CastVideoSink : public base::SupportsWeakPtr<CastVideoSink>,
     DVLOG(1) << "CastVideoSink is requesting another refresh frame "
                 "(consecutive count=" << consecutive_refresh_count_ << ").";
     expecting_a_refresh_frame_ = true;
-    content::RequestRefreshFrameFromVideoTrack(connected_track());
+    blink::RequestRefreshFrameFromVideoTrack(track_);
   }
 
   void DidReceiveFrame() {
@@ -298,6 +301,8 @@ class CastVideoSink : public base::SupportsWeakPtr<CastVideoSink>,
   // cleared once the next frame is received.
   bool expecting_a_refresh_frame_;
 
+  bool is_connected_to_track_;
+
   DISALLOW_COPY_AND_ASSIGN(CastVideoSink);
 };
 
@@ -308,7 +313,7 @@ class CastVideoSink : public base::SupportsWeakPtr<CastVideoSink>,
 // Note that RemoveFromAudioTrack() is synchronous and we have
 // gurantee that there will be no more audio data after calling it.
 class CastAudioSink : public base::SupportsWeakPtr<CastAudioSink>,
-                      public content::MediaStreamAudioSink,
+                      public blink::WebMediaStreamAudioSink,
                       public media::AudioConverter::InputCallback {
  public:
   // |track| provides data for this sink.
@@ -433,12 +438,6 @@ class CastAudioSink : public base::SupportsWeakPtr<CastAudioSink>,
 };
 
 bool CastRtpStream::IsHardwareVP8EncodingSupported() {
-  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-  if (cmd_line->HasSwitch(switches::kDisableCastStreamingHWEncoding)) {
-    DVLOG(1) << "Disabled hardware VP8 support for Cast Streaming.";
-    return false;
-  }
-
   // Query for hardware VP8 encoder support.
   const std::vector<media::VideoEncodeAccelerator::SupportedProfile>
       vea_profiles = content::GetSupportedVideoEncodeAcceleratorProfiles();
@@ -452,12 +451,6 @@ bool CastRtpStream::IsHardwareVP8EncodingSupported() {
 }
 
 bool CastRtpStream::IsHardwareH264EncodingSupported() {
-  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-  if (cmd_line->HasSwitch(switches::kDisableCastStreamingHWEncoding)) {
-    DVLOG(1) << "Disabled hardware h264 support for Cast Streaming.";
-    return false;
-  }
-
 // Query for hardware H.264 encoder support.
 //
 // TODO(miu): Look into why H.264 hardware encoder on MacOS is broken.

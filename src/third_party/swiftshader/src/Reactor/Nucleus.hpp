@@ -19,6 +19,7 @@
 #include <cstdarg>
 #include <cstdint>
 #include <vector>
+#include <atomic>
 
 namespace rr
 {
@@ -53,7 +54,7 @@ namespace rr
 
 		virtual ~Nucleus();
 
-		Routine *acquireRoutine(const wchar_t *name, bool runOptimizations = true);
+		Routine *acquireRoutine(const char *name, bool runOptimizations = true);
 
 		static Value *allocateStackVariable(Type *type, int arraySize = 0);
 		static BasicBlock *createBasicBlock();
@@ -95,8 +96,8 @@ namespace rr
 		static Value *createNot(Value *V);
 
 		// Memory instructions
-		static Value *createLoad(Value *ptr, Type *type, bool isVolatile = false, unsigned int align = 0);
-		static Value *createStore(Value *value, Value *ptr, Type *type, bool isVolatile = false, unsigned int align = 0);
+		static Value *createLoad(Value *ptr, Type *type, bool isVolatile = false, unsigned int alignment = 0, bool atomic = false , std::memory_order memoryOrder = std::memory_order_relaxed);
+		static Value *createStore(Value *value, Value *ptr, Type *type, bool isVolatile = false, unsigned int aligment = 0, bool atomic = false, std::memory_order memoryOrder = std::memory_order_relaxed);
 		static Value *createGEP(Value *ptr, Type *type, Value *index, bool unsignedIndex);
 
 		// Atomic instructions

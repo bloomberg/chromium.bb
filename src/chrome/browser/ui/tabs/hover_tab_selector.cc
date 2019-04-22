@@ -52,6 +52,7 @@ void HoverTabSelector::CancelTabTransition() {
 void HoverTabSelector::PerformTabTransition() {
   DCHECK(tab_transition_tab_index_ >= 0 &&
          tab_transition_tab_index_ < tab_strip_model_->count());
-  tab_strip_model_->ActivateTabAt(tab_transition_tab_index_, true);
+  tab_strip_model_->ActivateTabAt(tab_transition_tab_index_,
+                                  {TabStripModel::GestureType::kOther});
 }
 

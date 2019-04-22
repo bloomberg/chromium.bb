@@ -20,8 +20,8 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
+#include "base/hash/md5.h"
 #include "base/macros.h"
-#include "base/md5.h"
 #include "base/path_service.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -375,6 +375,9 @@ std::unique_ptr<HttpResponse> HandleAuthBasic(const HttpRequest& request) {
         userpass.c_str(), password.c_str(), request.all_headers.c_str()));
     return std::move(http_response);
   }
+
+  if (query.find("set-cookie-if-not-challenged") != query.end())
+    http_response->AddCustomHeader("Set-Cookie", "got_challenged=true");
 
   if (request.headers.find("If-None-Match") != request.headers.end() &&
       request.headers.at("If-None-Match") == kEtag) {

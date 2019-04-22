@@ -85,7 +85,7 @@ class TabularContextMenuListAdapter extends BaseAdapter {
             }
         }
 
-        final String titleText = menuItem.getTitle(mActivity);
+        final CharSequence titleText = menuItem.getTitle(mActivity);
         viewHolder.mText.setText(titleText);
 
         if (menuItem instanceof ShareContextMenuItem) {

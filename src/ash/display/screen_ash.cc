@@ -130,8 +130,13 @@ display::Display ScreenAsh::GetDisplayNearestWindow(
     // Windows. Check for this first.
     aura::WindowTreeHostMus* window_tree_host_mus =
         aura::WindowTreeHostMus::ForWindow(window);
-    if (window_tree_host_mus)
-      return window_tree_host_mus->GetDisplay();
+    if (window_tree_host_mus) {
+      // WindowTreeHostMus::GetDisplay() can return an invalid display (i.e.
+      // with ID == |kInvalidDisplayID|) if that display is being removed. Use
+      // the primary display instead.
+      const auto display = window_tree_host_mus->GetDisplay();
+      return display.is_valid() ? display : GetPrimaryDisplay();
+    }
   }
 
   const aura::Window* root_window = window->GetRootWindow();

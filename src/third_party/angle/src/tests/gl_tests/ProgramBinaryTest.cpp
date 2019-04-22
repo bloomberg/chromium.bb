@@ -9,11 +9,11 @@
 #include <stdint.h>
 #include <memory>
 
-#include "EGLWindow.h"
-#include "OSWindow.h"
 #include "common/string_utils.h"
 #include "test_utils/angle_test_configs.h"
 #include "test_utils/gl_raii.h"
+#include "util/EGLWindow.h"
+#include "util/OSWindow.h"
 
 using namespace angle;
 
@@ -28,6 +28,9 @@ class ProgramBinaryTest : public ANGLETest
         setConfigGreenBits(8);
         setConfigBlueBits(8);
         setConfigAlphaBits(8);
+
+        // Test flakiness was noticed when reusing displays.
+        forceNewDisplay();
     }
 
     void SetUp() override
@@ -52,7 +55,6 @@ class ProgramBinaryTest : public ANGLETest
     {
         glDeleteProgram(mProgram);
         glDeleteBuffers(1, &mBuffer);
-
         ANGLETest::TearDown();
     }
 
@@ -259,6 +261,12 @@ ANGLE_INSTANTIATE_TEST(ProgramBinaryTest,
 class ProgramBinaryES3Test : public ANGLETest
 {
   protected:
+    ProgramBinaryES3Test()
+    {
+        // Test flakiness was noticed when reusing displays.
+        forceNewDisplay();
+    }
+
     void testBinaryAndUBOBlockIndexes(bool drawWithProgramFirst);
 };
 
@@ -269,7 +277,7 @@ void ProgramBinaryES3Test::testBinaryAndUBOBlockIndexes(bool drawWithProgramFirs
     glGetIntegerv(GL_NUM_PROGRAM_BINARY_FORMATS, &binaryFormatCount);
     ANGLE_SKIP_TEST_IF(!binaryFormatCount);
 
-    const std::string &vertexShader =
+    constexpr char kVS[] =
         "#version 300 es\n"
         "uniform block {\n"
         "    float f;\n"
@@ -280,7 +288,8 @@ void ProgramBinaryES3Test::testBinaryAndUBOBlockIndexes(bool drawWithProgramFirs
         "    gl_Position = position;\n"
         "    color = vec4(f, f, f, 1);\n"
         "}";
-    const std::string &fragmentShader =
+
+    constexpr char kFS[] =
         "#version 300 es\n"
         "precision mediump float;\n"
         "in vec4 color;\n"
@@ -290,7 +299,7 @@ void ProgramBinaryES3Test::testBinaryAndUBOBlockIndexes(bool drawWithProgramFirs
         "}";
 
     // Init and draw with the program.
-    ANGLE_GL_PROGRAM(program, vertexShader, fragmentShader);
+    ANGLE_GL_PROGRAM(program, kVS, kFS);
 
     float fData[4]   = {1.0f, 1.0f, 1.0f, 1.0f};
     GLuint bindIndex = 2;
@@ -367,6 +376,9 @@ class ProgramBinaryES31Test : public ANGLETest
         setConfigGreenBits(8);
         setConfigBlueBits(8);
         setConfigAlphaBits(8);
+
+        // Test flakiness was noticed when reusing displays.
+        forceNewDisplay();
     }
 };
 
@@ -378,7 +390,7 @@ TEST_P(ProgramBinaryES31Test, ProgramBinaryWithComputeShader)
     glGetIntegerv(GL_NUM_PROGRAM_BINARY_FORMATS, &binaryFormatCount);
     ANGLE_SKIP_TEST_IF(!binaryFormatCount);
 
-    const std::string &computeShader =
+    constexpr char kCS[] =
         "#version 310 es\n"
         "layout(local_size_x=4, local_size_y=3, local_size_z=1) in;\n"
         "uniform block {\n"
@@ -390,7 +402,7 @@ TEST_P(ProgramBinaryES31Test, ProgramBinaryWithComputeShader)
         "    vec4 color = texture(tex, f + g);\n"
         "}";
 
-    ANGLE_GL_COMPUTE_PROGRAM(program, computeShader);
+    ANGLE_GL_COMPUTE_PROGRAM(program, kCS);
 
     // Read back the binary.
     GLint programLength = 0;
@@ -412,6 +424,69 @@ TEST_P(ProgramBinaryES31Test, ProgramBinaryWithComputeShader)
     // Dispatch compute with the loaded binary program
     glUseProgram(binaryProgram.get());
     glDispatchCompute(8, 4, 2);
+    ASSERT_GL_NO_ERROR();
+}
+
+// Tests that saving and loading a program attached with computer shader.
+TEST_P(ProgramBinaryES31Test, ProgramBinaryWithAtomicCounterComputeShader)
+{
+    // We can't run the test if no program binary formats are supported.
+    GLint binaryFormatCount = 0;
+    glGetIntegerv(GL_NUM_PROGRAM_BINARY_FORMATS, &binaryFormatCount);
+    ANGLE_SKIP_TEST_IF(binaryFormatCount == 0);
+
+    constexpr char kComputeShader[] = R"(#version 310 es
+layout(local_size_x=1, local_size_y=1, local_size_z=1) in;
+layout(binding = 0, offset = 4) uniform atomic_uint ac[2];
+void main() {
+    atomicCounterIncrement(ac[0]);
+    atomicCounterDecrement(ac[1]);
+})";
+
+    ANGLE_GL_COMPUTE_PROGRAM(program, kComputeShader);
+
+    // Read back the binary.
+    GLint programLength = 0;
+    glGetProgramiv(program, GL_PROGRAM_BINARY_LENGTH, &programLength);
+    ASSERT_GL_NO_ERROR();
+
+    GLsizei readLength  = 0;
+    GLenum binaryFormat = GL_NONE;
+    std::vector<uint8_t> binary(programLength);
+    glGetProgramBinary(program, programLength, &readLength, &binaryFormat, binary.data());
+    ASSERT_GL_NO_ERROR();
+
+    EXPECT_EQ(static_cast<GLsizei>(programLength), readLength);
+
+    // Load a new program with the binary.
+    ANGLE_GL_BINARY_ES3_PROGRAM(binaryProgram, binary, binaryFormat);
+    ASSERT_GL_NO_ERROR();
+
+    // Dispatch compute with the loaded binary program
+    glUseProgram(binaryProgram);
+
+    // The initial value of 'ac[0]' is 3u, 'ac[1]' is 1u.
+    unsigned int bufferData[3] = {11u, 3u, 1u};
+    GLBuffer atomicCounterBuffer;
+    glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, atomicCounterBuffer);
+    glBufferData(GL_ATOMIC_COUNTER_BUFFER, sizeof(bufferData), bufferData, GL_STATIC_DRAW);
+
+    glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, 0, atomicCounterBuffer);
+
+    glDispatchCompute(1, 1, 1);
+    EXPECT_GL_NO_ERROR();
+
+    glMemoryBarrier(GL_ATOMIC_COUNTER_BARRIER_BIT);
+
+    glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, atomicCounterBuffer);
+    void *mappedBuffer =
+        glMapBufferRange(GL_ATOMIC_COUNTER_BUFFER, 0, sizeof(GLuint) * 3, GL_MAP_READ_BIT);
+    memcpy(bufferData, mappedBuffer, sizeof(bufferData));
+    glUnmapBuffer(GL_ATOMIC_COUNTER_BUFFER);
+
+    EXPECT_EQ(11u, bufferData[0]);
+    EXPECT_EQ(4u, bufferData[1]);
+    EXPECT_EQ(0u, bufferData[2]);
     ASSERT_GL_NO_ERROR();
 }
 
@@ -494,30 +569,27 @@ class ProgramBinaryTransformFeedbackTest : public ANGLETest
     {
         ANGLETest::SetUp();
 
-        const std::string vertexShaderSource =
-            R"(#version 300 es
-            in vec4 inputAttribute;
-            out vec4 outputVarying;
-            void main()
-            {
-                outputVarying = inputAttribute;
-            })";
+        constexpr char kVS[] = R"(#version 300 es
+in vec4 inputAttribute;
+out vec4 outputVarying;
+void main()
+{
+    outputVarying = inputAttribute;
+})";
 
-        const std::string fragmentShaderSource =
-            R"(#version 300 es
-            precision highp float;
-            out vec4 outputColor;
-            void main()
-            {
-                outputColor = vec4(1,0,0,1);
-            })";
+        constexpr char kFS[] = R"(#version 300 es
+precision highp float;
+out vec4 outputColor;
+void main()
+{
+    outputColor = vec4(1,0,0,1);
+})";
 
         std::vector<std::string> transformFeedbackVaryings;
         transformFeedbackVaryings.push_back("outputVarying");
 
-        mProgram =
-            CompileProgramWithTransformFeedback(vertexShaderSource, fragmentShaderSource,
-                                                transformFeedbackVaryings, GL_SEPARATE_ATTRIBS);
+        mProgram = CompileProgramWithTransformFeedback(kVS, kFS, transformFeedbackVaryings,
+                                                       GL_SEPARATE_ATTRIBS);
         if (mProgram == 0)
         {
             FAIL() << "shader compilation failed.";
@@ -634,25 +706,29 @@ class ProgramBinariesAcrossPlatforms : public testing::TestWithParam<PlatformsWi
   public:
     void SetUp() override
     {
-        mOSWindow   = CreateOSWindow();
+        mOSWindow   = OSWindow::New();
         bool result = mOSWindow->initialize("ProgramBinariesAcrossRenderersTests", 100, 100);
 
         if (result == false)
         {
             FAIL() << "Failed to create OS window";
         }
+
+        mEntryPointsLib.reset(angle::OpenSharedLibrary(ANGLE_EGL_LIBRARY_NAME));
     }
 
     EGLWindow *createAndInitEGLWindow(angle::PlatformParameters &param)
     {
         EGLWindow *eglWindow =
-            new EGLWindow(param.majorVersion, param.minorVersion, param.eglParameters);
-        bool result = eglWindow->initializeGL(mOSWindow);
+            EGLWindow::New(param.majorVersion, param.minorVersion, param.eglParameters);
+        ConfigParameters configParams;
+        bool result = eglWindow->initializeGL(mOSWindow, mEntryPointsLib.get(), configParams);
         if (result == false)
         {
-            SafeDelete(eglWindow);
-            eglWindow = nullptr;
+            EGLWindow::Delete(&eglWindow);
         }
+
+        angle::LoadGLES(eglGetProcAddress);
 
         return eglWindow;
     }
@@ -661,8 +737,7 @@ class ProgramBinariesAcrossPlatforms : public testing::TestWithParam<PlatformsWi
     {
         ASSERT_NE(nullptr, *eglWindow);
         (*eglWindow)->destroyGL();
-        SafeDelete(*eglWindow);
-        *eglWindow = nullptr;
+        EGLWindow::Delete(eglWindow);
     }
 
     GLuint createES2ProgramFromSource()
@@ -704,10 +779,11 @@ class ProgramBinariesAcrossPlatforms : public testing::TestWithParam<PlatformsWi
     void TearDown() override
     {
         mOSWindow->destroy();
-        SafeDelete(mOSWindow);
+        OSWindow::Delete(&mOSWindow);
     }
 
-    OSWindow *mOSWindow;
+    OSWindow *mOSWindow = nullptr;
+    std::unique_ptr<angle::Library> mEntryPointsLib;
 };
 
 // Tries to create a program binary using one set of platform params, then load it using a different

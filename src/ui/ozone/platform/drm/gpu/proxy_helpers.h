@@ -5,6 +5,8 @@
 #ifndef UI_OZONE_PLATFORM_DRM_GPU_PROXY_HELPERS_H_
 #define UI_OZONE_PLATFORM_DRM_GPU_PROXY_HELPERS_H_
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
@@ -39,14 +41,16 @@ void PostSyncTask(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     base::OnceClosure callback);
 
-// Creates a callback that will run |callback| on the calling thread. Useful
-// when posting a task on a different thread and expecting a callback when the
-// task finished (and the callback needs to run on the original thread).
+// Creates a RepeatingCallback that will run |callback| on the calling thread.
+// Useful when posting a task on a different thread and expecting a callback
+// when the task finished (and the callback needs to run on the original
+// thread).
 template <typename... Args>
-base::Callback<void(Args...)> CreateSafeCallback(
-    const base::Callback<void(Args...)>& callback) {
-  return base::Bind(&internal::PostAsyncTask<Args...>,
-                    base::ThreadTaskRunnerHandle::Get(), callback);
+base::RepeatingCallback<void(Args...)> CreateSafeRepeatingCallback(
+    base::RepeatingCallback<void(Args...)> callback) {
+  return base::BindRepeating(&internal::PostAsyncTask<Args...>,
+                             base::ThreadTaskRunnerHandle::Get(),
+                             std::move(callback));
 }
 
 // Creates a OnceCallback that will run |callback| on the calling thread. Useful

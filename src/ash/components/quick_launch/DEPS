@@ -1,5 +1,0 @@
-include_rules = [
-  "+mash/public",
-  "+services/catalog/public",
-  "+url",
-]

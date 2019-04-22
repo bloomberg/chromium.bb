@@ -50,7 +50,7 @@
     "cwd": "[START_DIR]/cache/work",
     "env_prefixes": {
       "PATH": [
-        "RECIPE_PACKAGE_REPO[depot_tools]"
+        "RECIPE_REPO[depot_tools]"
       ]
     },
     "infra_step": true,
@@ -200,7 +200,7 @@
       "[START_DIR]/cache/work:/SRC",
       "--volume",
       "[START_DIR]/[SWARM_OUT_DIR]:/OUT",
-      "gcr.io/skia-public/perf-karma-chrome-tests:68.0.3440.106_v6",
+      "gcr.io/skia-public/perf-karma-chrome-tests:72.0.3626.121_v1",
       "/SRC/skia/infra/pathkit/perf_pathkit.sh",
       "--builder",
       "Perf-Debian9-EMCC-GCE-CPU-AVX2-wasm-Release-All-PathKit",
@@ -221,7 +221,8 @@
     ],
     "env": {
       "CHROME_HEADLESS": "1",
-      "PATH": "<PATH>:RECIPE_PACKAGE_REPO[depot_tools]"
+      "DOCKER_CONFIG": "/home/chrome-bot/.docker",
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
     },
     "name": "Performance tests of PathKit with Docker"
   },

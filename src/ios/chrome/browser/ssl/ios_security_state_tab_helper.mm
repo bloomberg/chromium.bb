@@ -16,7 +16,7 @@
 #import "ios/web/public/origin_util.h"
 #include "ios/web/public/security_style.h"
 #include "ios/web/public/ssl_status.h"
-#include "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state/web_state.h"
 #include "net/cert/x509_certificate.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -28,11 +28,11 @@ IOSSecurityStateTabHelper::IOSSecurityStateTabHelper(web::WebState* web_state)
 
 IOSSecurityStateTabHelper::~IOSSecurityStateTabHelper() {}
 
-void IOSSecurityStateTabHelper::GetSecurityInfo(
-    security_state::SecurityInfo* result) const {
-  security_state::GetSecurityInfo(GetVisibleSecurityState(),
-                                  false /* used policy installed certificate */,
-                                  base::Bind(&web::IsOriginSecure), result);
+security_state::SecurityLevel IOSSecurityStateTabHelper::GetSecurityLevel()
+    const {
+  return security_state::GetSecurityLevel(
+      *GetVisibleSecurityState(), false /* used policy installed certificate */,
+      base::BindRepeating(&web::IsOriginSecure));
 }
 
 std::unique_ptr<security_state::VisibleSecurityState>
@@ -52,7 +52,6 @@ IOSSecurityStateTabHelper::GetVisibleSecurityState() const {
   state->displayed_mixed_content =
       (ssl.content_status & web::SSLStatus::DISPLAYED_INSECURE_CONTENT) ? true
                                                                         : false;
-  state->is_incognito = web_state_->GetBrowserState()->IsOffTheRecord();
 
   security_state::SSLStatusInputEventData* input_events =
       static_cast<security_state::SSLStatusInputEventData*>(
@@ -62,3 +61,5 @@ IOSSecurityStateTabHelper::GetVisibleSecurityState() const {
 
   return state;
 }
+
+WEB_STATE_USER_DATA_KEY_IMPL(IOSSecurityStateTabHelper)

@@ -42,6 +42,7 @@ class ResetInputType final : public BaseButtonInputType {
   ResetInputType(HTMLInputElement& element) : BaseButtonInputType(element) {}
 
  private:
+  void CountUsage() override;
   const AtomicString& FormControlType() const override;
   bool SupportsValidation() const override;
   void HandleDOMActivateEvent(Event&) override;

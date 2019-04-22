@@ -15,6 +15,14 @@ struct PwgRasterSettings {
     TRANSFORM_FLIP_VERTICAL
   };
 
+  enum DuplexMode {
+    SIMPLEX,
+    LONG_EDGE,
+    SHORT_EDGE,
+  };
+
+  DuplexMode duplex_mode;
+
   // How to transform odd-numbered pages.
   TransformType odd_page_transform;
 

@@ -19,7 +19,7 @@ namespace content {
 
 ScopedActiveURL::ScopedActiveURL(const GURL& active_url,
                                  const url::Origin& top_origin) {
-  GetContentClient()->SetActiveURL(active_url, top_origin.Serialize());
+  GetContentClient()->SetActiveURL(active_url, top_origin.GetDebugString());
 }
 
 ScopedActiveURL::ScopedActiveURL(RenderFrameHost* frame)

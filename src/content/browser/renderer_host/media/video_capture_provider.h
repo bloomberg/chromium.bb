@@ -7,11 +7,11 @@
 
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
-#include "content/public/common/media_stream_request.h"
 #include "media/capture/video/video_capture_device.h"
 #include "media/capture/video/video_capture_device_info.h"
 #include "media/capture/video/video_frame_receiver.h"
 #include "media/capture/video_capture_types.h"
+#include "third_party/blink/public/common/mediastream/media_stream_request.h"
 
 namespace content {
 
@@ -21,7 +21,7 @@ class VideoCaptureDeviceLauncher;
 // MediaStreamType == MEDIA_DEVICE_VIDEO_CAPTURE, i.e. camera devices.
 class CONTENT_EXPORT VideoCaptureProvider {
  public:
-  using GetDeviceInfosCallback = base::OnceCallback<void(
+  using GetDeviceInfosCallback = base::RepeatingCallback<void(
       const std::vector<media::VideoCaptureDeviceInfo>&)>;
 
   virtual ~VideoCaptureProvider() {}

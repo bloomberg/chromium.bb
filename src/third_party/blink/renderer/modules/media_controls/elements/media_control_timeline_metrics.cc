@@ -7,7 +7,9 @@
 #include <stdint.h>
 #include <cmath>
 #include <limits>
+
 #include "base/numerics/safe_conversions.h"
+#include "base/stl_util.h"
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
@@ -40,7 +42,7 @@ constexpr double kPercentIntervals[] = {
 };
 // Must match length of UMA MediaTimelinePercent enum.
 constexpr int32_t kPercentBucketCount = 51;
-static_assert(arraysize(kPercentIntervals) * 2 - 1 == kPercentBucketCount,
+static_assert(base::size(kPercentIntervals) * 2 - 1 == kPercentBucketCount,
               "Intervals must match UMA MediaTimelinePercent enum");
 
 // Corresponds to two UMA enums of different sizes! Values are the exclusive
@@ -81,16 +83,17 @@ constexpr double kTimeDeltaMSIntervals[] = {
 constexpr int32_t kAbsTimeDeltaBucketCount = 25;
 // Must match length of UMA MediaTimelineTimeDelta enum.
 constexpr int32_t kTimeDeltaBucketCount = 49;
-static_assert(arraysize(kTimeDeltaMSIntervals) == kAbsTimeDeltaBucketCount,
+static_assert(base::size(kTimeDeltaMSIntervals) == kAbsTimeDeltaBucketCount,
               "Intervals must match UMA MediaTimelineAbsTimeDelta enum");
-static_assert(arraysize(kTimeDeltaMSIntervals) * 2 - 1 == kTimeDeltaBucketCount,
+static_assert(base::size(kTimeDeltaMSIntervals) * 2 - 1 ==
+                  kTimeDeltaBucketCount,
               "Intervals must match UMA MediaTimelineTimeDelta enum");
 
 // Calculates index of UMA MediaTimelinePercent enum corresponding to |percent|.
 // Negative values use kPercentIntervals in reverse.
 int32_t ToPercentSample(double percent) {
-  constexpr int32_t kNonNegativeBucketCount = arraysize(kPercentIntervals);
-  constexpr int32_t kNegativeBucketCount = arraysize(kPercentIntervals) - 1;
+  constexpr int32_t kNonNegativeBucketCount = base::size(kPercentIntervals);
+  constexpr int32_t kNegativeBucketCount = base::size(kPercentIntervals) - 1;
   bool negative = percent < 0;
   double abs_percent = std::abs(percent);
   if (abs_percent == 0)
@@ -121,8 +124,9 @@ int32_t ToAbsTimeDeltaSample(double sum_abs_delta_seconds) {
 // Calculates index of UMA MediaTimelineTimeDelta enum corresponding to
 // |deltaSeconds|. Negative values use kTimeDeltaMSIntervals in reverse.
 int32_t ToTimeDeltaSample(double delta_seconds) {
-  constexpr int32_t kNonNegativeBucketCount = arraysize(kTimeDeltaMSIntervals);
-  constexpr int32_t kNegativeBucketCount = arraysize(kTimeDeltaMSIntervals) - 1;
+  constexpr int32_t kNonNegativeBucketCount = base::size(kTimeDeltaMSIntervals);
+  constexpr int32_t kNegativeBucketCount =
+      base::size(kTimeDeltaMSIntervals) - 1;
   bool negative = delta_seconds < 0;
   double abs_delta_ms = 1000 * std::abs(delta_seconds);
   if (abs_delta_ms == 0)

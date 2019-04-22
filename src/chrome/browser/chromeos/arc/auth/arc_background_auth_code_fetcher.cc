@@ -71,9 +71,8 @@ void ArcBackgroundAuthCodeFetcher::Fetch(FetchCallback callback) {
                               weak_ptr_factory_.GetWeakPtr()));
 }
 
-void ArcBackgroundAuthCodeFetcher::OnPrepared(
-    net::URLRequestContextGetter* request_context_getter) {
-  if (!request_context_getter) {
+void ArcBackgroundAuthCodeFetcher::OnPrepared(bool success) {
+  if (!success) {
     ReportResult(std::string(), OptInSilentAuthCode::CONTEXT_NOT_READY);
     return;
   }

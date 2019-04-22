@@ -47,6 +47,8 @@ class DesktopMediaPicker {
     base::string16 target_name;
     // Whether audio capture should be shown as an option in the picker.
     bool request_audio = false;
+    // Whether audio capture option should be approved by default if shown.
+    bool approve_audio_by_default = true;
   };
 
   // Creates default implementation of DesktopMediaPicker for the current

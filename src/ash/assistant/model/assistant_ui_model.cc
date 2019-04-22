@@ -5,11 +5,14 @@
 #include "ash/assistant/model/assistant_ui_model.h"
 
 #include "ash/assistant/model/assistant_ui_model_observer.h"
-#include "ash/assistant/util/histogram_util.h"
+#include "ash/public/cpp/app_list/app_list_features.h"
 
 namespace ash {
 
-AssistantUiModel::AssistantUiModel() = default;
+AssistantUiModel::AssistantUiModel()
+    : ui_mode_(app_list_features::IsEmbeddedAssistantUIEnabled()
+                   ? AssistantUiMode::kLauncherEmbeddedUi
+                   : AssistantUiMode::kMainUi) {}
 
 AssistantUiModel::~AssistantUiModel() = default;
 
@@ -30,15 +33,18 @@ void AssistantUiModel::SetUiMode(AssistantUiMode ui_mode) {
 }
 
 void AssistantUiModel::SetVisible(AssistantEntryPoint entry_point) {
-  SetVisibility(AssistantVisibility::kVisible, entry_point, base::nullopt);
+  SetVisibility(AssistantVisibility::kVisible, entry_point,
+                /*exit_point=*/base::nullopt);
 }
 
 void AssistantUiModel::SetHidden(AssistantExitPoint exit_point) {
-  SetVisibility(AssistantVisibility::kHidden, base::nullopt, exit_point);
+  SetVisibility(AssistantVisibility::kHidden,
+                /*entry_point=*/base::nullopt, exit_point);
 }
 
 void AssistantUiModel::SetClosed(AssistantExitPoint exit_point) {
-  SetVisibility(AssistantVisibility::kClosed, base::nullopt, exit_point);
+  SetVisibility(AssistantVisibility::kClosed,
+                /*entry_point=*/base::nullopt, exit_point);
 }
 
 void AssistantUiModel::SetUsableWorkArea(const gfx::Rect& usable_work_area) {

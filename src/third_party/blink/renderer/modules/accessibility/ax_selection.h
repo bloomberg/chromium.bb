@@ -10,8 +10,10 @@
 #include <ostream>
 
 #include <base/logging.h>
+#include <base/optional.h>
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
+#include "third_party/blink/renderer/core/html/forms/text_control_element.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_position.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
@@ -45,6 +47,8 @@ class MODULES_EXPORT AXSelection final {
       const Document&,
       const AXSelectionBehavior = AXSelectionBehavior::kExtendToValidDOMRange);
 
+  static AXSelection FromCurrentSelection(const TextControlElement&);
+
   static AXSelection FromSelection(
       const SelectionInDOMTree&,
       const AXSelectionBehavior = AXSelectionBehavior::kExtendToValidDOMRange);
@@ -76,7 +80,27 @@ class MODULES_EXPORT AXSelection final {
   String ToString() const;
 
  private:
+  // Holds the endpoints of a selection that affects the value of a text
+  // control, i.e. that is inside its shadow tree.
+  struct TextControlSelection final {
+    TextControlSelection(int start,
+                         int end,
+                         TextFieldSelectionDirection direction)
+        : start(start), end(end), direction(direction) {}
+    TextControlSelection()
+        : start(-1), end(-1), direction(kSelectionHasNoDirection) {}
+
+    int start;
+    int end;
+    TextFieldSelectionDirection direction;
+  };
+
   AXSelection();
+
+  // Determines whether this selection is targeted to the contents of a text
+  // field, and returns the start and end text offsets, as well as its
+  // direction. |start| should always be less than equal to |end|.
+  base::Optional<TextControlSelection> AsTextControlSelection() const;
 
   // The |AXPosition| where the selection starts.
   AXPosition base_;

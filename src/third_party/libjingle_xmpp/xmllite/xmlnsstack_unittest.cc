@@ -14,13 +14,13 @@
 #include <sstream>
 #include <string>
 
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlconstants.h"
-#include "third_party/webrtc/rtc_base/gunit.h"
 
-using buzz::NS_XML;
-using buzz::NS_XMLNS;
-using buzz::QName;
-using buzz::XmlnsStack;
+using jingle_xmpp::NS_XML;
+using jingle_xmpp::NS_XMLNS;
+using jingle_xmpp::QName;
+using jingle_xmpp::XmlnsStack;
 
 TEST(XmlnsStackTest, TestBuiltin) {
   XmlnsStack stack;

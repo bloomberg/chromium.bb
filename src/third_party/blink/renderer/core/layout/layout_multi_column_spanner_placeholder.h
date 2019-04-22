@@ -26,8 +26,12 @@ class LayoutMultiColumnSpannerPlaceholder final : public LayoutBox {
       const ComputedStyle& parent_style,
       LayoutBox&);
 
+  LayoutBlockFlow* MultiColumnBlockFlow() const {
+    return To<LayoutBlockFlow>(Parent());
+  }
+
   LayoutMultiColumnFlowThread* FlowThread() const {
-    return ToLayoutBlockFlow(Parent())->MultiColumnFlowThread();
+    return To<LayoutBlockFlow>(Parent())->MultiColumnFlowThread();
   }
 
   LayoutBox* LayoutObjectInFlowThread() const {
@@ -55,6 +59,7 @@ class LayoutMultiColumnSpannerPlaceholder final : public LayoutBox {
   void InsertedIntoTree() override;
   void WillBeRemovedFromTree() override;
   bool NeedsPreferredWidthsRecalculation() const override;
+  void RecalcVisualOverflow() override;
   LayoutUnit MinPreferredLogicalWidth() const override;
   LayoutUnit MaxPreferredLogicalWidth() const override;
   void UpdateLayout() override;

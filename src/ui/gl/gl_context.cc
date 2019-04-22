@@ -289,6 +289,7 @@ bool GLContext::WasAllocatedUsingRobustnessExtension() {
 
 void GLContext::InitializeDynamicBindings() {
   DCHECK(IsCurrent(nullptr));
+  BindGLApi();
   DCHECK(static_bindings_initialized_);
   if (!dynamic_bindings_initialized_) {
     if (real_gl_api_) {

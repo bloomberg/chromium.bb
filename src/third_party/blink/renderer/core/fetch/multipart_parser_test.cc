@@ -72,7 +72,8 @@ TEST(MultipartParserTest, AppendDataInChunks) {
   Vector<char> boundary;
   boundary.Append("boundary", 8u);
   for (const size_t size : sizes) {
-    MockMultipartParserClient* client = new MockMultipartParserClient;
+    MockMultipartParserClient* client =
+        MakeGarbageCollected<MockMultipartParserClient>();
     MultipartParser* parser =
         MakeGarbageCollected<MultipartParser>(boundary, client);
 
@@ -117,7 +118,8 @@ TEST(MultipartParserTest, Epilogue) {
   Vector<char> boundary;
   boundary.Append("boundary", 8u);
   for (size_t end : ends) {
-    MockMultipartParserClient* client = new MockMultipartParserClient;
+    MockMultipartParserClient* client =
+        MakeGarbageCollected<MockMultipartParserClient>();
     MultipartParser* parser =
         MakeGarbageCollected<MultipartParser>(boundary, client);
 
@@ -160,7 +162,8 @@ TEST(MultipartParserTest, NoEndBoundary) {
 
   Vector<char> boundary;
   boundary.Append("boundary", 8u);
-  MockMultipartParserClient* client = new MockMultipartParserClient;
+  MockMultipartParserClient* client =
+      MakeGarbageCollected<MockMultipartParserClient>();
   MultipartParser* parser =
       MakeGarbageCollected<MultipartParser>(boundary, client);
 
@@ -180,7 +183,8 @@ TEST(MultipartParserTest, NoStartBoundary) {
 
   Vector<char> boundary;
   boundary.Append("boundary", 8u);
-  MockMultipartParserClient* client = new MockMultipartParserClient;
+  MockMultipartParserClient* client =
+      MakeGarbageCollected<MockMultipartParserClient>();
   MultipartParser* parser =
       MakeGarbageCollected<MultipartParser>(boundary, client);
 
@@ -194,7 +198,8 @@ TEST(MultipartParserTest, NoStartNorEndBoundary) {
 
   Vector<char> boundary;
   boundary.Append("boundary", 8u);
-  MockMultipartParserClient* client = new MockMultipartParserClient;
+  MockMultipartParserClient* client =
+      MakeGarbageCollected<MockMultipartParserClient>();
   MultipartParser* parser =
       MakeGarbageCollected<MultipartParser>(boundary, client);
 
@@ -215,7 +220,8 @@ TEST(MultipartParserTest, Preamble) {
   Vector<char> boundary;
   boundary.Append("boundary", 8u);
   for (const size_t start : kStarts) {
-    MockMultipartParserClient* client = new MockMultipartParserClient;
+    MockMultipartParserClient* client =
+        MakeGarbageCollected<MockMultipartParserClient>();
     MultipartParser* parser =
         MakeGarbageCollected<MultipartParser>(boundary, client);
 
@@ -274,7 +280,8 @@ TEST(MultipartParserTest, PreambleWithMalformedBoundary) {
   Vector<char> boundary;
   boundary.Append("--boundary", 10u);
   for (const size_t start : kStarts) {
-    MockMultipartParserClient* client = new MockMultipartParserClient;
+    MockMultipartParserClient* client =
+        MakeGarbageCollected<MockMultipartParserClient>();
     MultipartParser* parser =
         MakeGarbageCollected<MultipartParser>(boundary, client);
 

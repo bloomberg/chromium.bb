@@ -5,7 +5,7 @@
 /**
  * @interface
  */
-function DragTarget(){};
+function DragTarget() {}
 
 /**
  * This definition is required to satisfy

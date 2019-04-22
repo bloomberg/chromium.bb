@@ -13,6 +13,7 @@ import android.graphics.Rect;
 import android.os.Build;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
+import android.text.format.DateUtils;
 import android.util.Rational;
 
 import org.chromium.base.Callback;
@@ -27,6 +28,7 @@ import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.content_public.browser.WebContents;
@@ -35,7 +37,6 @@ import org.chromium.content_public.browser.WebContentsObserver;
 import java.lang.reflect.InvocationTargetException;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
  * A controller for entering Android O Picture in Picture mode with fullscreen videos.
@@ -212,16 +213,17 @@ public class PictureInPictureController {
                 new DismissActivityOnTabModelSelectorEventObserver(activity);
         final WebContentsObserver webContentsObserver =
                 new DismissActivityOnWebContentsObserver(activity);
+        final TabModelSelector tabModelSelector = TabModelSelector.from(activityTab);
 
         activityTab.addObserver(tabObserver);
-        activityTab.getTabModelSelector().addObserver(tabModelSelectorObserver);
+        tabModelSelector.addObserver(tabModelSelectorObserver);
         webContents.addObserver(webContentsObserver);
 
         mOnLeavePipCallbacks.add(new Callback<ChromeActivity>() {
             @Override
             public void onResult(ChromeActivity activity2) {
                 activityTab.removeObserver(tabObserver);
-                activityTab.getTabModelSelector().removeObserver(tabModelSelectorObserver);
+                tabModelSelector.removeObserver(tabModelSelectorObserver);
                 webContents.removeObserver(webContentsObserver);
             }
         });
@@ -232,8 +234,7 @@ public class PictureInPictureController {
             public void onResult(ChromeActivity activity2) {
                 long pipTimeMs = SystemClock.elapsedRealtime() - startTimeMs;
                 RecordHistogram.recordCustomTimesHistogram(METRICS_DURATION, pipTimeMs,
-                        TimeUnit.SECONDS.toMillis(7), TimeUnit.HOURS.toMillis(10),
-                        TimeUnit.MILLISECONDS, 50);
+                        DateUtils.SECOND_IN_MILLIS * 7, DateUtils.HOUR_IN_MILLIS * 10, 50);
             }
         });
     }

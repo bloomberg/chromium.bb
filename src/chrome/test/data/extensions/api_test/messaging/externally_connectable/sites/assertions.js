@@ -94,6 +94,11 @@ var results = {
 // Make the messages sent vaguely complex, but unambiguously JSON-ifiable.
 var kMessage = [{'a': {'b': 10}}, 20, 'c\x10\x11'];
 
+// Text of the error message set in |chrome.runtime.lastError| when the
+// messaging target does not exist.
+var kCouldNotEstablishConnection =
+    'Could not establish connection. Receiving end does not exist.';
+
 // Our tab's location. Normally this would be our document's location but if
 // we're an iframe it will be the location of the parent - in which case,
 // expect to be told.
@@ -111,8 +116,6 @@ if (parent == window) {
 function checkLastError(reply) {
   if (!chrome.runtime.lastError)
     return true;
-  var kCouldNotEstablishConnection =
-    'Could not establish connection. Receiving end does not exist.';
   if (chrome.runtime.lastError.message == kCouldNotEstablishConnection)
     reply(results.COULD_NOT_ESTABLISH_CONNECTION_ERROR);
   else

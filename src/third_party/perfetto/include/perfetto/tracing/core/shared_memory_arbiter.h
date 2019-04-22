@@ -34,6 +34,8 @@ class TaskRunner;
 }
 
 class CommitDataRequest;
+class StartupTraceWriter;
+class StartupTraceWriterRegistry;
 class SharedMemory;
 class TraceWriter;
 
@@ -48,6 +50,25 @@ class PERFETTO_EXPORT SharedMemoryArbiter {
   // the Service to reconstruct TracePackets written by the same TraceWriter.
   // Returns null impl of TraceWriter if all WriterID slots are exhausted.
   virtual std::unique_ptr<TraceWriter> CreateTraceWriter(
+      BufferID target_buffer) = 0;
+
+  // Binds the provided unbound StartupTraceWriterRegistry to the arbiter's SMB.
+  // Normally this happens when the perfetto service has been initialized and we
+  // want to rebind all the writers created in the early startup phase.
+  //
+  // All StartupTraceWriters created by the registry are bound to the arbiter
+  // and the given target buffer. The writers may not be bound immediately if
+  // they are concurrently being written to. The registry will retry on the
+  // arbiter's TaskRunner until all writers were bound successfully.
+  //
+  // Should only be called on the passed TaskRunner's sequence. By calling this
+  // method, the registry's ownership is transferred to the arbiter. The arbiter
+  // will delete the registry once all writers were bound.
+  //
+  // TODO(eseckler): Make target buffer assignment more flexible (i.e. per
+  // writer). For now, embedders can use multiple registries instead.
+  virtual void BindStartupTraceWriterRegistry(
+      std::unique_ptr<StartupTraceWriterRegistry>,
       BufferID target_buffer) = 0;
 
   // Notifies the service that all data for the given FlushRequestID has been

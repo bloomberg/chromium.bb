@@ -20,7 +20,7 @@
 
 #include "SkBitmap.h"
 #include "SkPointPriv.h"
-#include "effects/GrSimpleTextureEffect.h"
+#include "effects/generated/GrSimpleTextureEffect.h"
 #include "ops/GrSimpleMeshDrawOpHelper.h"
 
 namespace {
@@ -34,14 +34,14 @@ public:
     DEFINE_OP_CLASS_ID
 
     // This creates an instance of a simple non-AA solid color rect-drawing Op
-    static std::unique_ptr<GrDrawOp> Make(GrContext* context,
+    static std::unique_ptr<GrDrawOp> Make(GrRecordingContext* context,
                                           GrPaint&& paint,
                                           const SkRect& r) {
         return Helper::FactoryHelper<NonAARectOp>(context, std::move(paint), r, nullptr, ClassID());
     }
 
     // This creates an instance of a simple non-AA textured rect-drawing Op
-    static std::unique_ptr<GrDrawOp> Make(GrContext* context,
+    static std::unique_ptr<GrDrawOp> Make(GrRecordingContext* context,
                                           GrPaint&& paint,
                                           const SkRect& r,
                                           const SkRect& local) {
@@ -72,14 +72,15 @@ public:
 
     FixedFunctionFlags fixedFunctionFlags() const override { return FixedFunctionFlags::kNone; }
 
-    RequiresDstTexture finalize(const GrCaps& caps, const GrAppliedClip*) override {
+    GrProcessorSet::Analysis finalize(const GrCaps& caps, const GrAppliedClip*,
+                                      GrFSAAType fsaaType, GrClampType clampType) override {
         // Set the color to unknown because the subclass may change the color later.
         GrProcessorAnalysisColor gpColor;
         gpColor.setToUnknown();
         // We ignore the clip so pass this rather than the GrAppliedClip param.
         static GrAppliedClip kNoClip;
-        return fHelper.xpRequiresDstTexture(caps, &kNoClip, GrProcessorAnalysisCoverage::kNone,
-                                            &gpColor);
+        return fHelper.finalizeProcessors(
+                caps, &kNoClip, fsaaType, clampType, GrProcessorAnalysisCoverage::kNone, &gpColor);
     }
 
 protected:
@@ -110,7 +111,7 @@ private:
 
         size_t vertexStride = gp->vertexStride();
 
-        const GrBuffer* indexBuffer;
+        sk_sp<const GrBuffer> indexBuffer;
         int firstIndex;
         uint16_t* indices = target->makeIndexSpace(6, &indexBuffer, &firstIndex);
         if (!indices) {
@@ -118,7 +119,7 @@ private:
             return;
         }
 
-        const GrBuffer* vertexBuffer;
+        sk_sp<const GrBuffer> vertexBuffer;
         int firstVertex;
         void* vertices = target->makeVertexSpace(vertexStride, 4, &vertexBuffer, &firstVertex);
         if (!vertices) {
@@ -158,8 +159,11 @@ private:
         mesh->setIndexed(indexBuffer, 6, firstIndex, 0, 3, GrPrimitiveRestart::kNo);
         mesh->setVertexData(vertexBuffer, firstVertex);
 
-        auto pipe = fHelper.makePipeline(target);
-        target->draw(std::move(gp), pipe.fPipeline, pipe.fFixedDynamicState, mesh);
+        target->recordDraw(std::move(gp), mesh);
+    }
+
+    void onExecute(GrOpFlushState* flushState, const SkRect& chainBounds) override {
+        fHelper.executeDrawsAndUploads(this, flushState, chainBounds);
     }
 
     Helper fHelper;
@@ -300,11 +304,8 @@ public:
         const GrBackendFormat format = caps->getBackendFormatFromColorType(kRGBA_8888_SkColorType);
 
         fAtlasProxy = GrProxyProvider::MakeFullyLazyProxy(
-                [](GrResourceProvider* resourceProvider) {
-                    if (!resourceProvider) {
-                        return sk_sp<GrTexture>();
-                    }
-
+                [](GrResourceProvider* resourceProvider)
+                        -> GrSurfaceProxy::LazyInstantiationResult {
                     GrSurfaceDesc desc;
                     desc.fFlags = kRenderTarget_GrSurfaceFlag;
                     // TODO: until partial flushes in MDB lands we're stuck having
@@ -313,8 +314,9 @@ public:
                     desc.fHeight = kAtlasTileSize;
                     desc.fConfig = kRGBA_8888_GrPixelConfig;
 
-                    return resourceProvider->createTexture(desc, SkBudgeted::kYes,
-                                                           GrResourceProvider::Flags::kNoPendingIO);
+                    auto texture = resourceProvider->createTexture(
+                            desc, SkBudgeted::kYes, GrResourceProvider::Flags::kNoPendingIO);
+                    return std::move(texture);
                 },
                 format,
                 GrProxyProvider::Renderable::kYes,
@@ -430,9 +432,9 @@ private:
 static sk_sp<GrTextureProxy> make_upstream_image(GrContext* context, AtlasObject* object, int start,
                                                  sk_sp<GrTextureProxy> atlasProxy) {
     const GrBackendFormat format =
-            context->contextPriv().caps()->getBackendFormatFromColorType(kRGBA_8888_SkColorType);
+            context->priv().caps()->getBackendFormatFromColorType(kRGBA_8888_SkColorType);
 
-    sk_sp<GrRenderTargetContext> rtc(context->contextPriv().makeDeferredRenderTargetContext(
+    sk_sp<GrRenderTargetContext> rtc(context->priv().makeDeferredRenderTargetContext(
                                                                       format,
                                                                       SkBackingFit::kApprox,
                                                                       3*kDrawnTileSize,
@@ -468,12 +470,12 @@ static sk_sp<GrTextureProxy> make_upstream_image(GrContext* context, AtlasObject
 // Enable this if you want to debug the final draws w/o having the atlasCallback create the
 // atlas
 #if 0
-#include "SkImageEncoder.h"
 #include "SkGrPriv.h"
-#include "sk_tool_utils.h"
+#include "SkImageEncoder.h"
+#include "ToolUtils.h"
 
 static void save_bm(const SkBitmap& bm, const char name[]) {
-    bool result = sk_tool_utils::EncodeImageToFile(name, bm, SkEncodedImageFormat::kPNG, 100);
+    bool result = ToolUtils::EncodeImageToFile(name, bm, SkEncodedImageFormat::kPNG, 100);
     SkASSERT(result);
 }
 
@@ -535,26 +537,26 @@ DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(OnFlushCallbackTest, reporter, ctxInfo) {
     static const int kNumProxies = 3;
 
     GrContext* context = ctxInfo.grContext();
-    auto proxyProvider = context->contextPriv().proxyProvider();
+    auto proxyProvider = context->priv().proxyProvider();
 
     AtlasObject object;
 
-    context->contextPriv().addOnFlushCallbackObject(&object);
+    context->priv().addOnFlushCallbackObject(&object);
 
     sk_sp<GrTextureProxy> proxies[kNumProxies];
     for (int i = 0; i < kNumProxies; ++i) {
         proxies[i] = make_upstream_image(context, &object, i*3,
                                          object.getAtlasProxy(proxyProvider,
-                                                              context->contextPriv().caps()));
+                                                              context->priv().caps()));
     }
 
     static const int kFinalWidth = 6*kDrawnTileSize;
     static const int kFinalHeight = kDrawnTileSize;
 
     const GrBackendFormat format =
-            context->contextPriv().caps()->getBackendFormatFromColorType(kRGBA_8888_SkColorType);
+            context->priv().caps()->getBackendFormatFromColorType(kRGBA_8888_SkColorType);
 
-    sk_sp<GrRenderTargetContext> rtc(context->contextPriv().makeDeferredRenderTargetContext(
+    sk_sp<GrRenderTargetContext> rtc(context->priv().makeDeferredRenderTargetContext(
                                                                       format,
                                                                       SkBackingFit::kApprox,
                                                                       kFinalWidth,
@@ -578,7 +580,7 @@ DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(OnFlushCallbackTest, reporter, ctxInfo) {
         rtc->drawRect(GrNoClip(), std::move(paint), GrAA::kNo, SkMatrix::I(), r);
     }
 
-    rtc->prepareForExternalIO(0, nullptr);
+    rtc->flush(SkSurface::BackendSurfaceAccess::kNoAccess, GrFlushInfo());
 
     SkBitmap readBack;
     readBack.allocN32Pixels(kFinalWidth, kFinalHeight);
@@ -587,7 +589,7 @@ DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(OnFlushCallbackTest, reporter, ctxInfo) {
                                                readBack.rowBytes(), 0, 0);
     SkASSERT(result);
 
-    context->contextPriv().testingOnly_flushAndRemoveOnFlushCallbackObject(&object);
+    context->priv().testingOnly_flushAndRemoveOnFlushCallbackObject(&object);
 
     object.markAsDone();
 

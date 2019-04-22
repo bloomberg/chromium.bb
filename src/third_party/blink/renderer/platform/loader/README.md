@@ -18,5 +18,5 @@ needed to use them from `core/`.  Otherwise they can be used only in
 ## testing
 
 Contains helper files for testing that are available in both
-`blink_platform_unittests` and `webkit_unit_tests`.
+`blink_platform_unittests` and `blink_unittests`.
 These files are built as a part of the `platform:test_support` static library.

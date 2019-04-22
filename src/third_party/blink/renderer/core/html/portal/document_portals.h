@@ -30,11 +30,19 @@ class DocumentPortals : public GarbageCollected<DocumentPortals>,
   // Retrieves the portal identified by the token.
   HTMLPortalElement* GetPortal(const base::UnguessableToken&) const;
 
+  // Retrieves all portals in the document.
+  const HeapVector<Member<HTMLPortalElement>>& GetPortals() const {
+    return portals_;
+  }
+
+  // Returns true if any portal in the document is currently activating.
+  bool IsPortalInDocumentActivating() const;
+
+  explicit DocumentPortals(Document&);
+
   void Trace(Visitor*) override;
 
  private:
-  explicit DocumentPortals(Document&);
-
   HeapVector<Member<HTMLPortalElement>> portals_;
 };
 

@@ -17,7 +17,9 @@
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "components/ownership/mock_owner_key_util.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -64,7 +66,10 @@ class ExistingUserControllerAutoLoginTest : public ::testing::Test {
             auto_login_account_id_)));
 
     settings_helper_.ReplaceDeviceSettingsProviderWithStub();
-    settings_helper_.SetFakeSessionManager();
+
+    DeviceSettingsService::Get()->SetSessionManager(
+        FakeSessionManagerClient::Get(), new ownership::MockOwnerKeyUtil());
+    DeviceSettingsService::Get()->Load();
 
     std::unique_ptr<base::DictionaryValue> account(new base::DictionaryValue);
     account->SetKey(kAccountsPrefDeviceLocalAccountsKeyId,
@@ -140,6 +145,7 @@ class ExistingUserControllerAutoLoginTest : public ::testing::Test {
   ScopedTestingLocalState local_state_;
 
   // Required by ExistingUserController:
+  FakeSessionManagerClient fake_session_manager_client_;
   ScopedCrosSettingsTestHelper settings_helper_;
   MockUserManager* mock_user_manager_;
   user_manager::ScopedUserManager scoped_user_manager_;
@@ -151,15 +157,10 @@ class ExistingUserControllerAutoLoginTest : public ::testing::Test {
 };
 
 TEST_F(ExistingUserControllerAutoLoginTest, StartAutoLoginTimer) {
-  // Timer shouldn't start until signin screen is ready.
-  set_auto_login_account_id(auto_login_account_id_);
   set_auto_login_delay(kAutoLoginDelay2);
-  existing_user_controller()->StartAutoLoginTimer();
-  EXPECT_FALSE(auto_login_timer());
 
   // Timer shouldn't start if the policy isn't set.
   set_auto_login_account_id(EmptyAccountId());
-  existing_user_controller()->OnSigninScreenReady();
   existing_user_controller()->StartAutoLoginTimer();
   EXPECT_FALSE(auto_login_timer());
 
@@ -179,7 +180,6 @@ TEST_F(ExistingUserControllerAutoLoginTest, StartAutoLoginTimer) {
 }
 
 TEST_F(ExistingUserControllerAutoLoginTest, StopAutoLoginTimer) {
-  existing_user_controller()->OnSigninScreenReady();
   set_auto_login_account_id(auto_login_account_id_);
   set_auto_login_delay(kAutoLoginDelay2);
 
@@ -193,7 +193,6 @@ TEST_F(ExistingUserControllerAutoLoginTest, StopAutoLoginTimer) {
 }
 
 TEST_F(ExistingUserControllerAutoLoginTest, ResetAutoLoginTimer) {
-  existing_user_controller()->OnSigninScreenReady();
   set_auto_login_account_id(auto_login_account_id_);
 
   // Timer starts off not running.
@@ -222,8 +221,6 @@ TEST_F(ExistingUserControllerAutoLoginTest, ResetAutoLoginTimer) {
 }
 
 TEST_F(ExistingUserControllerAutoLoginTest, ConfigureAutoLogin) {
-  existing_user_controller()->OnSigninScreenReady();
-
   // Timer shouldn't start when the policy is disabled.
   ConfigureAutoLogin();
   EXPECT_FALSE(auto_login_timer());

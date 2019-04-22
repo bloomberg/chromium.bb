@@ -15,14 +15,19 @@ body {
   border: none;
   border-radius: 8px;
   bottom: 0;
-  box-shadow:
-      0 1px 3px 0 rgba(60, 64, 67, 0.3), 0 4px 8px 3px rgba(60, 64, 67, 0.15);
-  font-family: 'Roboto', arial, sans-serif;
+  box-shadow: 0 1px 3px 0 rgba(var(--GG800-rgb), 0.3),
+      0 4px 8px 3px rgba(var(--GG800-rgb), 0.15);
   margin: auto;
   min-width: 320px;
   padding: 16px;
   top: 0;
   z-index: 10000;
+}
+
+html[darkmode=true] #edit-link-dialog {
+  background-color: rgb(41, 42, 45);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3),
+      0 4px 8px 3px rgba(0, 0, 0, 0.15);
 }
 
 #edit-link-dialog::backdrop {
@@ -34,11 +39,14 @@ body {
 }
 
 #dialog-title {
-  color: rgb(32, 33, 36);
-  font-family: 'Roboto', arial, sans-serif;
+  color: rgb(var(--GG900-rgb));
   font-size: 15px;
   line-height: 24px;
   margin-bottom: 16px;
+}
+
+html[darkmode=true] #dialog-title {
+  color: rgb(var(--GG200-rgb));
 }
 
 .field-container {
@@ -46,10 +54,14 @@ body {
 }
 
 .field-title {
-  color: rgb(95, 99, 104);
+  color: rgb(var(--GG700-rgb));
   font-size: 10px;
   font-weight: 500;
   margin-bottom: 4px;
+}
+
+html[darkmode=true] .field-title {
+  color: rgb(var(--GG400-rgb));
 }
 
 .input-container {
@@ -57,27 +69,40 @@ body {
 }
 
 input {
-  background-color: rgb(241, 243, 244);
+  background-color: rgb(var(--GG100-rgb));
   border: none;
   border-radius: 4px;
-  caret-color: rgb(26, 115, 232);
-  color: rgb(32, 33, 36);
-  font-family: 'Roboto', arial, sans-serif;
+  caret-color: rgb(var(--GB600-rgb));
+  color: rgb(var(--GG900-rgb));
   font-size: 13px;
-  height: 32px;
-  line-height: 24px;
+  line-height: 1.6;
+  min-height: 32px;
   outline: none;
   padding-inline-end: 8px;
   padding-inline-start: 8px;
   width: calc(100% - 16px);
 }
 
+html[dir=rtl] input {
+  text-align: right;  /* csschecker-disable-line left-right */
+}
+
+html[darkmode=true] input {
+  background-color: rgba(0, 0, 0, 0.3);
+  caret-color: rgb(var(--GB300-rgb));
+  color: rgb(var(--GG200-rgb));
+}
+
 input::placeholder {
-  color: rgba(32, 33, 36, 0.38);
+  color: rgba(var(--GG900-rgb), 0.38);
+}
+
+html[darkmode=true] input::placeholder {
+  color: rgb(var(--GG500-rgb));
 }
 
 .underline {
-  border-bottom: 2px solid rgb(26, 115, 232);
+  border-bottom: 2px solid rgb(var(--GB600-rgb));
   bottom: 0;
   box-sizing: border-box;
   left: 0;
@@ -89,6 +114,10 @@ input::placeholder {
   width: 0;
 }
 
+html[darkmode=true] .underline {
+  border-color: rgb(var(--GB300-rgb));
+}
+
 input:focus + .underline {
   opacity: 1;
   transition: width 180ms ease-out, opacity 120ms ease-in;
@@ -96,19 +125,31 @@ input:focus + .underline {
 }
 
 .field-title.focused {
-  color: rgb(26, 115, 232);
+  color: rgb(var(--GB600-rgb));
+}
+
+html[darkmode=true] .field-title.focused {
+  color: rgb(var(--GB300-rgb));
 }
 
 .error-msg {
-  color: rgb(217, 48, 37);
+  color: rgb(var(--GR600-rgb));
   display: none;
   font-size: 10px;
   font-weight: 400;
   margin-top: 6px;
 }
 
+html[darkmode=true] .error-msg {
+  color: rgb(var(--GR300-rgb));
+}
+
 .invalid label {
-  color: rgb(217, 48, 37);
+  color: rgb(var(--GR600-rgb));
+}
+
+html[darkmode=true] .invalid label {
+  color: rgb(var(--GR300-rgb));
 }
 
 .invalid .error-msg {
@@ -116,10 +157,14 @@ input:focus + .underline {
 }
 
 .invalid .underline {
-  border-color: rgb(217, 48, 37);
+  border-color: rgb(var(--GR600-rgb));
   opacity: 1;
   transition: width 180ms ease-out, opacity 120ms ease-in;
   width: 100%;
+}
+
+html[darkmode=true] .invalid .underline {
+  border-color: rgb(var(--GR300-rgb));
 }
 
 .buttons-container {
@@ -128,80 +173,10 @@ input:focus + .underline {
   margin-top: 24px;
 }
 
-html:not([dir=rtl]) .buttons-container span + span {
-  margin-left: 16px;
+.buttons-container span + span {
+  margin-inline-start: 16px;
 }
 
-html[dir=rtl] .buttons-container span + span {
-  margin-right: 16px;
-}
-
-button {
-  border: none;
-  border-radius: 4px;
-  font-family: 'Roboto', arial, sans-serif;
-  font-size: 12px;
-  font-weight: 500;
-  height: 32px;
-  padding: 0 16px;
-  position: relative;
-  transition-duration: 200ms;
-  transition-property: background-color, color, box-shadow, border;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-button:disabled {
-  transition: none;
-}
-
-button.primary {
-  background-color: rgb(26, 115, 232);
-  color: white;
-}
-
-button.primary:disabled {
-  background-color: rgb(241, 243, 244);
-  color: rgb(128, 134, 139);
-}
-
-button.primary:hover:not(:disabled) {
-  background-color: rgb(41, 123, 231);
-  box-shadow: 0 1px 2px 0 rgba(66, 133, 244, 0.3),
-      0 1px 3px 1px rgba(66, 133, 244, 0.15);
-}
-
-button.primary:active:not(:disabled) {
-  box-shadow: 0 1px 2px 0 rgba(66, 133, 244, 0.3),
-      0 3px 6px 2px rgba(66, 133, 244, 0.15);
-}
-
-button.secondary {
-  background-color: white;
-  border: 1px solid rgb(218, 220, 224);
-  color: rgb(26, 115, 232);
-}
-
-button.secondary:disabled {
-  border-color: rgb(241, 243, 244);
-  color: rgb(128, 134, 139);
-}
-
-button.secondary:hover:not(:disabled) {
-  background-color: rgba(66, 133, 244, 0.04);
-  border-color: rgb(210, 227, 252);
-}
-
-button.secondary:active:not(:disabled) {
-  background-color: white;
-  border-color: white;
-  box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3),
-      0 3px 6px 2px rgba(60, 64, 67, 0.15);
-}
-
-html:not([dir=rtl]) #cancel {
-  margin-right: 8px;
-}
-
-html[dir=rtl] #cancel {
-  margin-left: 8px;
+#cancel {
+  margin-inline-end: 8px;
 }

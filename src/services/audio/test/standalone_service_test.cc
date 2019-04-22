@@ -6,19 +6,31 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "media/base/media_switches.h"
+#include "services/audio/public/cpp/manifest.h"
+#include "services/audio/public/mojom/constants.mojom.h"
 #include "services/audio/service.h"
-#include "services/audio/standalone_unittest_catalog_source.h"
 #include "services/audio/test/service_lifetime_test_template.h"
+#include "services/service_manager/public/cpp/manifest_builder.h"
 #include "services/service_manager/public/cpp/test/test_service.h"
 #include "services/service_manager/public/cpp/test/test_service_manager.h"
+#include "services/service_manager/public/mojom/constants.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace audio {
 
+const char kTestServiceName[] = "audio_unittests";
+
 class StandaloneAudioServiceTest : public testing::Test {
  public:
   StandaloneAudioServiceTest()
-      : test_service_manager_(CreateStandaloneUnittestCatalog()),
+      : test_service_manager_(
+            {GetManifest(),
+             service_manager::ManifestBuilder()
+                 .WithServiceName(kTestServiceName)
+                 .RequireCapability(mojom::kServiceName, "info")
+                 .RequireCapability(service_manager::mojom::kServiceName,
+                                    "service_manager:service_manager")
+                 .Build()}),
         test_service_(
             test_service_manager_.RegisterTestInstance("audio_unittests")) {}
 
@@ -28,7 +40,7 @@ class StandaloneAudioServiceTest : public testing::Test {
   void SetUp() override {
     base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
     cmd_line->AppendSwitchASCII(switches::kAudioServiceQuitTimeoutMs,
-                                base::UintToString(10));
+                                base::NumberToString(10));
   }
 
  private:
@@ -39,7 +51,7 @@ class StandaloneAudioServiceTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(StandaloneAudioServiceTest);
 };
 
-INSTANTIATE_TYPED_TEST_CASE_P(StandaloneAudioService,
-                              ServiceLifetimeTestTemplate,
-                              StandaloneAudioServiceTest);
+INSTANTIATE_TYPED_TEST_SUITE_P(StandaloneAudioService,
+                               ServiceLifetimeTestTemplate,
+                               StandaloneAudioServiceTest);
 }  // namespace audio

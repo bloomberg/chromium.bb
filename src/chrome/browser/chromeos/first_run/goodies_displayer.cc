@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/first_run/goodies_displayer.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
@@ -139,7 +140,8 @@ void GoodiesDisplayer::OnBrowserSetLastActive(Browser* browser) {
   }
 
   // Regardless of how we got here, we don't henceforth need to show Goodies.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, base::Bind(&Delete));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                base::BindOnce(&Delete));
 }
 
 GoodiesDisplayerTestInfo::GoodiesDisplayerTestInfo()

@@ -34,7 +34,7 @@ Point& Point::operator=(const POINT& point) {
   y_ = point.y;
   return *this;
 }
-#elif defined(OS_MACOSX)
+#elif defined(OS_MACOSX) || defined(OS_IOS)
 Point::Point(const CGPoint& point) : x_(point.x), y_(point.y) {
 }
 #endif
@@ -46,7 +46,7 @@ POINT Point::ToPOINT() const {
   p.y = y();
   return p;
 }
-#elif defined(OS_MACOSX)
+#elif defined(OS_MACOSX) || defined(OS_IOS)
 CGPoint Point::ToCGPoint() const {
   return CGPointMake(x(), y());
 }

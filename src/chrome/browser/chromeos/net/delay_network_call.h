@@ -21,7 +21,7 @@ namespace chromeos {
 extern const unsigned kDefaultNetworkRetryDelayMS;
 
 // Delay callback until the network is connected or while on a captive portal.
-void DelayNetworkCall(base::TimeDelta retry, const base::Closure& callback);
+void DelayNetworkCall(base::TimeDelta retry, base::OnceClosure callback);
 
 }  // namespace chromeos
 

@@ -20,9 +20,8 @@ IosOauthTokenGetter::IosOauthTokenGetter() : weak_factory_(this) {
 
 IosOauthTokenGetter::~IosOauthTokenGetter() {}
 
-void IosOauthTokenGetter::CallWithToken(const TokenCallback& on_access_token) {
-  // This forces the block to copy the callback instead of just the reference.
-  TokenCallback on_access_token_copied = on_access_token;
+void IosOauthTokenGetter::CallWithToken(TokenCallback on_access_token) {
+  __block TokenCallback block_callback = std::move(on_access_token);
   [RemotingService.instance.authentication
       callbackWithAccessToken:^(RemotingAuthenticationStatus status,
                                 NSString* userEmail, NSString* accessToken) {
@@ -40,16 +39,14 @@ void IosOauthTokenGetter::CallWithToken(const TokenCallback& on_access_token) {
           default:
             NOTREACHED();
         }
-        on_access_token_copied.Run(oauth_status,
-                                   base::SysNSStringToUTF8(userEmail),
-                                   base::SysNSStringToUTF8(accessToken));
+        std::move(block_callback)
+            .Run(oauth_status, base::SysNSStringToUTF8(userEmail),
+                 base::SysNSStringToUTF8(accessToken));
       }];
 }
 
 void IosOauthTokenGetter::InvalidateCache() {
-  // TODO(crbug.com/782071): Implement this once we make the caller invalidate
-  // the cache.
-  NOTIMPLEMENTED();
+  [RemotingService.instance.authentication invalidateCache];
 }
 
 base::WeakPtr<IosOauthTokenGetter> IosOauthTokenGetter::GetWeakPtr() {

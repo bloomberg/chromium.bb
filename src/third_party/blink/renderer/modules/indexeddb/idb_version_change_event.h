@@ -47,8 +47,8 @@ class IDBVersionChangeEvent final : public Event {
   }
   static IDBVersionChangeEvent* Create(
       const AtomicString& event_type,
-      unsigned long long old_version,
-      const base::Optional<unsigned long long>& new_version,
+      uint64_t old_version,
+      const base::Optional<uint64_t>& new_version,
       mojom::IDBDataLoss data_loss = mojom::IDBDataLoss::None,
       const String& data_loss_message = String()) {
     return MakeGarbageCollected<IDBVersionChangeEvent>(
@@ -62,15 +62,15 @@ class IDBVersionChangeEvent final : public Event {
 
   IDBVersionChangeEvent();
   IDBVersionChangeEvent(const AtomicString& event_type,
-                        unsigned long long old_version,
-                        const base::Optional<unsigned long long>& new_version,
+                        uint64_t old_version,
+                        const base::Optional<uint64_t>& new_version,
                         mojom::IDBDataLoss,
                         const String& data_loss);
   IDBVersionChangeEvent(const AtomicString& event_type,
                         const IDBVersionChangeEventInit*);
 
-  unsigned long long oldVersion() const { return old_version_; }
-  unsigned long long newVersion(bool& is_null) const;
+  uint64_t oldVersion() const { return old_version_; }
+  uint64_t newVersion(bool& is_null) const;
 
   const AtomicString& dataLoss() const;
   const String& dataLossMessage() const { return data_loss_message_; }
@@ -80,8 +80,8 @@ class IDBVersionChangeEvent final : public Event {
   void Trace(blink::Visitor*) override;
 
  private:
-  unsigned long long old_version_;
-  base::Optional<unsigned long long> new_version_;
+  uint64_t old_version_;
+  base::Optional<uint64_t> new_version_;
   mojom::IDBDataLoss data_loss_;
   String data_loss_message_;
 };

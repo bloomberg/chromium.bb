@@ -44,8 +44,8 @@ void URLDataSourceIOSImpl::SendResponse(
   }
   base::PostTaskWithTraits(
       FROM_HERE, {web::WebThread::IO},
-      base::Bind(&URLDataSourceIOSImpl::SendResponseOnIOThread, this,
-                 request_id, std::move(bytes)));
+      base::BindOnce(&URLDataSourceIOSImpl::SendResponseOnIOThread, this,
+                     request_id, std::move(bytes)));
 }
 
 void URLDataSourceIOSImpl::SendResponseOnIOThread(

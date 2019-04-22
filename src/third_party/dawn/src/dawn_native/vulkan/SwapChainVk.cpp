@@ -19,9 +19,10 @@
 
 namespace dawn_native { namespace vulkan {
 
-    SwapChain::SwapChain(SwapChainBuilder* builder) : SwapChainBase(builder) {
+    SwapChain::SwapChain(Device* device, const SwapChainDescriptor* descriptor)
+        : SwapChainBase(device, descriptor) {
         const auto& im = GetImplementation();
-        dawnWSIContextVulkan wsiContext = {};
+        DawnWSIContextVulkan wsiContext = {};
         im.Init(im.userData, &wsiContext);
 
         ASSERT(im.textureUsage != DAWN_TEXTURE_USAGE_BIT_NONE);
@@ -33,8 +34,8 @@ namespace dawn_native { namespace vulkan {
 
     TextureBase* SwapChain::GetNextTextureImpl(const TextureDescriptor* descriptor) {
         const auto& im = GetImplementation();
-        dawnSwapChainNextTexture next = {};
-        dawnSwapChainError error = im.GetNextTexture(im.userData, &next);
+        DawnSwapChainNextTexture next = {};
+        DawnSwapChainError error = im.GetNextTexture(im.userData, &next);
 
         if (error) {
             GetDevice()->HandleError(error);

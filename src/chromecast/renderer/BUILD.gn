@@ -30,6 +30,8 @@ cast_source_set("renderer") {
     "cast_content_renderer_client.h",
     "cast_media_playback_options.cc",
     "cast_media_playback_options.h",
+    "cast_url_loader_throttle_provider.cc",
+    "cast_url_loader_throttle_provider.h",
   ]
 
   public_deps = [
@@ -54,6 +56,7 @@ cast_source_set("renderer") {
     "//crypto",
     "//ipc",
     "//media",
+    "//services/network/public/cpp:cpp",
     "//services/service_manager/public/cpp",
   ]
 
@@ -84,6 +87,10 @@ cast_source_set("renderer") {
       "extensions/automation_ax_tree_wrapper.h",
       "extensions/automation_internal_custom_bindings.cc",
       "extensions/automation_internal_custom_bindings.h",
+      "extensions/extension_hooks_delegate.cc",
+      "extensions/extension_hooks_delegate.h",
+      "extensions/tabs_hooks_delegate.cc",
+      "extensions/tabs_hooks_delegate.h",
     ]
 
     deps += [

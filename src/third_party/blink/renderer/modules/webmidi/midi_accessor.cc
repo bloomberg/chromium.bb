@@ -31,55 +31,51 @@
 #include "third_party/blink/renderer/modules/webmidi/midi_accessor.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "third_party/blink/public/platform/modules/webmidi/web_midi_accessor.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/modules/webmidi/midi_accessor_client.h"
+#include "third_party/blink/renderer/modules/webmidi/midi_dispatcher.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
-using blink::WebString;
-using midi::mojom::PortState;
-using midi::mojom::Result;
+using midi::mojom::blink::PortState;
+using midi::mojom::blink::Result;
 
 namespace blink {
 
-// Factory method
-std::unique_ptr<MIDIAccessor> MIDIAccessor::Create(MIDIAccessorClient* client) {
-  return base::WrapUnique(new MIDIAccessor(client));
-}
-
-MIDIAccessor::MIDIAccessor(MIDIAccessorClient* client) : client_(client) {
+MIDIAccessor::MIDIAccessor(
+    MIDIAccessorClient* client,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    : client_(client), task_runner_(std::move(task_runner)) {
   DCHECK(client);
-
-  accessor_ = Platform::Current()->CreateMIDIAccessor(this);
-
-  DCHECK(accessor_);
 }
+
+MIDIAccessor::~MIDIAccessor() = default;
 
 void MIDIAccessor::StartSession() {
-  accessor_->StartSession();
+  dispatcher_ = std::make_unique<MIDIDispatcher>(std::move(task_runner_), this);
 }
 
 void MIDIAccessor::SendMIDIData(unsigned port_index,
                                 const unsigned char* data,
-                                size_t length,
+                                wtf_size_t length,
                                 base::TimeTicks time_stamp) {
-  accessor_->SendMIDIData(port_index, data, length, time_stamp);
+  dispatcher_->SendMidiData(port_index, data, length, time_stamp);
 }
 
-void MIDIAccessor::DidAddInputPort(const WebString& id,
-                                   const WebString& manufacturer,
-                                   const WebString& name,
-                                   const WebString& version,
+void MIDIAccessor::DidAddInputPort(const String& id,
+                                   const String& manufacturer,
+                                   const String& name,
+                                   const String& version,
                                    PortState state) {
   client_->DidAddInputPort(id, manufacturer, name, version, state);
 }
 
-void MIDIAccessor::DidAddOutputPort(const WebString& id,
-                                    const WebString& manufacturer,
-                                    const WebString& name,
-                                    const WebString& version,
+void MIDIAccessor::DidAddOutputPort(const String& id,
+                                    const String& manufacturer,
+                                    const String& name,
+                                    const String& version,
                                     PortState state) {
   client_->DidAddOutputPort(id, manufacturer, name, version, state);
 }
@@ -98,7 +94,7 @@ void MIDIAccessor::DidStartSession(Result result) {
 
 void MIDIAccessor::DidReceiveMIDIData(unsigned port_index,
                                       const unsigned char* data,
-                                      size_t length,
+                                      wtf_size_t length,
                                       base::TimeTicks time_stamp) {
   client_->DidReceiveMIDIData(port_index, data, length, time_stamp);
 }

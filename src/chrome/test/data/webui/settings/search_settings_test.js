@@ -108,15 +108,12 @@ cr.define('settings_test', function() {
       document.body.innerHTML = `<settings-section hidden-by-search>
              <cr-action-menu>${text}</cr-action-menu>
              <cr-dialog>${text}</cr-dialog>
+             <cr-icon-button>${text}</cr-icon-button>
+             <cr-slider>${text}</cr-slider>
              <dialog>${text}</dialog>
              <iron-icon>${text}</iron-icon>
              <iron-list>${text}</iron-list>
-             <paper-icon-button>${text}</paper-icon-button>
-             <paper-icon-button-light>
-               <button>${text}</button>
-             </paper-icon-button-light>
              <paper-ripple>${text}</paper-ripple>
-             <paper-slider>${text}</paper-slider>
              <paper-spinner-lite>${text}</paper-spinner-lite>
              <slot>${text}</slot>
              <content>${text}</content>

@@ -18,16 +18,11 @@
 #include "services/service_manager/public/mojom/service.mojom.h"
 #include "services/service_manager/public/mojom/service_manager.mojom.h"
 #include "services/service_manager/service_manager.h"
-#include "services/service_manager/tests/catalog_source.h"
+#include "services/service_manager/tests/service_manager/test_manifests.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace service_manager {
 namespace {
-
-// These constants reflect service names in test service manifests within the
-// default catalog for service_unittests.
-const char kTestServiceName[] = "service_manager_unittest";
-const char kTestTargetServiceName[] = "service_manager_unittest_target";
 
 constexpr uint32_t kTestSelfPid = 1234;
 constexpr uint32_t kTestTargetPid1 = 4567;
@@ -108,7 +103,8 @@ class TestTargetService : public Service {
 class ServiceManagerListenerTest : public testing::Test, public Service {
  public:
   ServiceManagerListenerTest()
-      : service_manager_(nullptr, test::CreateTestCatalog(), nullptr) {}
+      : service_manager_(nullptr, GetTestManifests()) {}
+
   ~ServiceManagerListenerTest() override = default;
 
   Connector* connector() { return service_binding_.GetConnector(); }
@@ -155,12 +151,12 @@ class ServiceManagerListenerTest : public testing::Test, public Service {
 
 TEST_F(ServiceManagerListenerTest, InstancesHaveUniqueIdentity) {
   TestTargetService target1(
-      RegisterServiceInstance(kTestTargetServiceName, kTestTargetPid1));
+      RegisterServiceInstance(kTestTargetName, kTestTargetPid1));
 
   Identity identity1;
   uint32_t pid1;
   WaitForServiceStarted(&identity1, &pid1);
-  EXPECT_EQ(kTestTargetServiceName, identity1.name());
+  EXPECT_EQ(kTestTargetName, identity1.name());
   EXPECT_FALSE(identity1.globally_unique_id().is_zero());
   EXPECT_EQ(kTestTargetPid1, pid1);
 
@@ -173,12 +169,12 @@ TEST_F(ServiceManagerListenerTest, InstancesHaveUniqueIdentity) {
   target1.QuitGracefullyAndWait();
 
   TestTargetService target2(
-      RegisterServiceInstance(kTestTargetServiceName, kTestTargetPid2));
+      RegisterServiceInstance(kTestTargetName, kTestTargetPid2));
 
   Identity identity2;
   uint32_t pid2;
   WaitForServiceStarted(&identity2, &pid2);
-  EXPECT_EQ(kTestTargetServiceName, identity2.name());
+  EXPECT_EQ(kTestTargetName, identity2.name());
   EXPECT_FALSE(identity2.globally_unique_id().is_zero());
   EXPECT_EQ(kTestTargetPid2, pid2);
 

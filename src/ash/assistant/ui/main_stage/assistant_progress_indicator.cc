@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "ash/assistant/util/animation_util.h"
+#include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/bind.h"
 #include "base/time/time.h"
 #include "ui/compositor/layer_animation_element.h"
@@ -24,17 +25,8 @@ namespace {
 constexpr int kDotCount = 3;
 constexpr float kDotLargeSizeDip = 9.f;
 constexpr float kDotSmallSizeDip = 6.f;
+constexpr int kEmbeddedUiPreferredHeightDip = 9;
 constexpr int kSpacingDip = 4;
-
-// Animation.
-constexpr base::TimeDelta kAnimationOffsetDuration =
-    base::TimeDelta::FromMilliseconds(216);
-constexpr base::TimeDelta kAnimationPauseDuration =
-    base::TimeDelta::FromMilliseconds(500);
-constexpr base::TimeDelta kAnimationScaleUpDuration =
-    base::TimeDelta::FromMilliseconds(266);
-constexpr base::TimeDelta kAnimationScaleDownDuration =
-    base::TimeDelta::FromMilliseconds(450);
 
 // Transformation.
 constexpr float kScaleFactor = kDotLargeSizeDip / kDotSmallSizeDip;
@@ -73,26 +65,19 @@ AssistantProgressIndicator::AssistantProgressIndicator() {
 
 AssistantProgressIndicator::~AssistantProgressIndicator() = default;
 
-void AssistantProgressIndicator::InitLayout() {
-  SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kHorizontal, gfx::Insets(), kSpacingDip));
-
-  // Initialize dots.
-  for (int i = 0; i < kDotCount; ++i) {
-    views::View* dot_view = new views::View();
-    dot_view->SetBackground(std::make_unique<DotBackground>());
-    dot_view->SetPreferredSize(gfx::Size(kDotSmallSizeDip, kDotSmallSizeDip));
-
-    // Dots will animate on their own layers.
-    dot_view->SetPaintToLayer();
-    dot_view->layer()->SetFillsBoundsOpaquely(false);
-
-    AddChildView(dot_view);
-  }
-}
-
 const char* AssistantProgressIndicator::GetClassName() const {
   return "AssistantProgressIndicator";
+}
+
+gfx::Size AssistantProgressIndicator::CalculatePreferredSize() const {
+  const int preferred_width = views::View::CalculatePreferredSize().width();
+  return gfx::Size(preferred_width, GetHeightForWidth(preferred_width));
+}
+
+int AssistantProgressIndicator::GetHeightForWidth(int width) const {
+  return app_list_features::IsEmbeddedAssistantUIEnabled()
+             ? kEmbeddedUiPreferredHeightDip
+             : views::View::GetHeightForWidth(width);
 }
 
 void AssistantProgressIndicator::AddedToWidget() {
@@ -106,21 +91,24 @@ void AssistantProgressIndicator::RemovedFromWidget() {
 void AssistantProgressIndicator::OnLayerOpacityChanged(
     ui::PropertyChangeReason reason) {
   VisibilityChanged(/*starting_from=*/this,
-                    /*is_visible=*/layer()->opacity() > 0.f);
+                    /*is_visible=*/visible());
 }
 
 void AssistantProgressIndicator::VisibilityChanged(views::View* starting_from,
                                                    bool is_visible) {
-  if (is_visible == is_visible_)
+  // Stop the animation when the view is either not visible or is "visible" but
+  // not actually visible to the user (because it is faded out).
+  const bool is_drawn =
+      IsDrawn() && !cc::MathUtil::IsWithinEpsilon(layer()->opacity(), 0.f);
+  if (is_drawn_ == is_drawn)
     return;
 
-  is_visible_ = is_visible;
+  is_drawn_ = is_drawn;
 
-  if (!is_visible_) {
+  if (!is_drawn_) {
     // Stop all animations.
-    for (int i = 0; i < child_count(); ++i) {
-      child_at(i)->layer()->GetAnimator()->StopAnimating();
-    }
+    for (auto* child : children())
+      child->layer()->GetAnimator()->StopAnimating();
     return;
   }
 
@@ -134,30 +122,54 @@ void AssistantProgressIndicator::VisibilityChanged(views::View* starting_from,
   transform.Translate(kTranslationDip, kTranslationDip);
   transform.Scale(kScaleFactor, kScaleFactor);
 
-  for (int i = 0; i < child_count(); ++i) {
-    views::View* view = child_at(i);
-
-    if (i > 0) {
+  base::TimeDelta start_offset;
+  for (auto* child : children()) {
+    if (!start_offset.is_zero()) {
       // Schedule the animations to start after an offset.
-      view->layer()->GetAnimator()->SchedulePauseForProperties(
-          i * kAnimationOffsetDuration,
+      child->layer()->GetAnimator()->SchedulePauseForProperties(
+          start_offset,
           ui::LayerAnimationElement::AnimatableProperty::TRANSFORM);
     }
+    start_offset += base::TimeDelta::FromMilliseconds(216);
 
     // Schedule transformation animation.
-    view->layer()->GetAnimator()->ScheduleAnimation(
+    child->layer()->GetAnimator()->ScheduleAnimation(
         CreateLayerAnimationSequence(
             // Animate scale up.
-            CreateTransformElement(transform, kAnimationScaleUpDuration),
+            CreateTransformElement(transform,
+                                   base::TimeDelta::FromMilliseconds(266)),
             // Animate scale down.
             CreateTransformElement(gfx::Transform(),
-                                   kAnimationScaleDownDuration),
+                                   base::TimeDelta::FromMilliseconds(450)),
             // Pause before next iteration.
             ui::LayerAnimationElement::CreatePauseElement(
                 ui::LayerAnimationElement::AnimatableProperty::TRANSFORM,
-                kAnimationPauseDuration),
+                base::TimeDelta::FromMilliseconds(500)),
             // Animation parameters.
             {.is_cyclic = true}));
+  }
+}
+
+void AssistantProgressIndicator::InitLayout() {
+  views::BoxLayout* layout_manager =
+      SetLayoutManager(std::make_unique<views::BoxLayout>(
+          views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
+          kSpacingDip));
+
+  layout_manager->set_cross_axis_alignment(
+      views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
+
+  // Initialize dots.
+  for (int i = 0; i < kDotCount; ++i) {
+    views::View* dot_view = new views::View();
+    dot_view->SetBackground(std::make_unique<DotBackground>());
+    dot_view->SetPreferredSize(gfx::Size(kDotSmallSizeDip, kDotSmallSizeDip));
+
+    // Dots will animate on their own layers.
+    dot_view->SetPaintToLayer();
+    dot_view->layer()->SetFillsBoundsOpaquely(false);
+
+    AddChildView(dot_view);
   }
 }
 

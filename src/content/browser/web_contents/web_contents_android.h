@@ -151,6 +151,7 @@ class CONTENT_EXPORT WebContentsAndroid
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jobj);
 
+  // No theme color is represented by SK_ColorTRANSPARENT.
   jint GetThemeColor(JNIEnv* env,
                      const base::android::JavaParamRef<jobject>& obj);
 

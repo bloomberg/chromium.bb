@@ -13,6 +13,7 @@
 #include "mojo/public/cpp/bindings/map.h"
 #include "services/ws/common/util.h"
 #include "services/ws/ids.h"
+#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/gfx/geometry/point_conversions.h"
 
@@ -51,6 +52,22 @@ std::string OcclusionStateToString(
 
   NOTREACHED();
   return "UNKNOWN";
+}
+
+std::string OcclusionChangesToString(
+    const base::flat_map<Id, mojom::OcclusionState>& changes) {
+  std::string ret("{");
+  bool first = true;
+  for (const auto& change : changes) {
+    if (!first)
+      ret += ", ";
+
+    ret += std::string("{window_id=") + WindowIdToString(change.first) +
+           ", state=" + OcclusionStateToString(change.second) + "}";
+    first = false;
+  }
+  ret += "}";
+  return ret;
 }
 
 enum class ChangeDescriptionType { ONE, TWO };
@@ -92,12 +109,15 @@ std::string ChangeToDescription(const Change& change,
 
     case CHANGE_TYPE_NODE_BOUNDS_CHANGED:
       return base::StringPrintf(
-          "BoundsChanged window=%s old_bounds=%s new_bounds=%s "
+          "BoundsChanged window=%s bounds=%s "
           "local_surface_id=%s",
           WindowIdToString(change.window_id).c_str(),
-          change.bounds.ToString().c_str(), change.bounds2.ToString().c_str(),
-          change.local_surface_id ? change.local_surface_id->ToString().c_str()
-                                  : "(none)");
+          change.bounds.ToString().c_str(),
+          change.local_surface_id_allocation
+              ? change.local_surface_id_allocation->local_surface_id()
+                    .ToString()
+                    .c_str()
+              : "(none)");
 
     case CHANGE_TYPE_NODE_HIERARCHY_CHANGED:
       return base::StringPrintf(
@@ -169,10 +189,6 @@ std::string ChangeToDescription(const Change& change,
                                 change.change_id,
                                 WindowIdToString(change.window_id).c_str(),
                                 change.bool_value ? "true" : "false");
-    case CHANGE_TYPE_OPACITY:
-      return base::StringPrintf("OpacityChanged window_id=%s opacity=%.2f",
-                                WindowIdToString(change.window_id).c_str(),
-                                change.float_value);
     case CHANGE_TYPE_REQUEST_CLOSE:
       return "RequestClose";
     case CHANGE_TYPE_TRANSFORM_CHANGED:
@@ -209,11 +225,10 @@ std::string ChangeToDescription(const Change& change,
           "OnPerformDragDropCompleted id=%d success=%s action=%d",
           change.change_id, change.bool_value ? "true" : "false",
           change.drag_drop_action);
-    case CHANGE_TYPE_ON_OCCLUSION_STATE_CHANGED:
+    case CHANGE_TYPE_ON_OCCLUSION_STATES_CHANGED:
       return base::StringPrintf(
-          "OnOcclusionStateChanged window_id=%s, state=%s",
-          WindowIdToString(change.window_id).c_str(),
-          OcclusionStateToString(change.occlusion_state).c_str());
+          "OnOcclusionStatesChanged %s",
+          OcclusionChangesToString(change.occlusion_changes).c_str());
   }
   return std::string();
 }
@@ -294,6 +309,14 @@ bool ContainsChange(const std::vector<Change>& changes,
   return false;
 }
 
+std::vector<Change>::const_iterator FirstChangeOfType(
+    const std::vector<Change>& changes,
+    ChangeType type) {
+  return std::find_if(
+      changes.begin(), changes.end(),
+      [&type](const Change& change) { return type == change.type; });
+}
+
 Change::Change() = default;
 
 Change::Change(const Change& other) = default;
@@ -332,15 +355,16 @@ void TestChangeTracker::OnEmbeddedAppDisconnected(Id window_id) {
 
 void TestChangeTracker::OnWindowBoundsChanged(
     Id window_id,
-    const gfx::Rect& old_bounds,
     const gfx::Rect& new_bounds,
-    const base::Optional<viz::LocalSurfaceId>& local_surface_id) {
+    ui::WindowShowState new_state,
+    const base::Optional<viz::LocalSurfaceIdAllocation>&
+        local_surface_id_allocation) {
   Change change;
   change.type = CHANGE_TYPE_NODE_BOUNDS_CHANGED;
   change.window_id = window_id;
-  change.bounds = old_bounds;
-  change.bounds2 = new_bounds;
-  change.local_surface_id = local_surface_id;
+  change.bounds = new_bounds;
+  change.state = new_state;
+  change.local_surface_id_allocation = local_surface_id_allocation;
   AddChange(change);
 }
 
@@ -435,14 +459,6 @@ void TestChangeTracker::OnWindowVisibilityChanged(Id window_id, bool visible) {
   AddChange(change);
 }
 
-void TestChangeTracker::OnWindowOpacityChanged(Id window_id, float opacity) {
-  Change change;
-  change.type = CHANGE_TYPE_OPACITY;
-  change.window_id = window_id;
-  change.float_value = opacity;
-  AddChange(change);
-}
-
 void TestChangeTracker::OnWindowDisplayChanged(Id window_id,
                                                int64_t display_id) {
   Change change;
@@ -508,11 +524,11 @@ void TestChangeTracker::OnWindowFocused(Id window_id) {
 }
 
 void TestChangeTracker::OnWindowCursorChanged(Id window_id,
-                                              const ui::CursorData& cursor) {
+                                              const ui::Cursor& cursor) {
   Change change;
   change.type = CHANGE_TYPE_CURSOR_CHANGED;
   change.window_id = window_id;
-  change.cursor_type = cursor.cursor_type();
+  change.cursor_type = cursor.native_type();
   AddChange(change);
 }
 
@@ -524,14 +540,19 @@ void TestChangeTracker::OnChangeCompleted(uint32_t change_id, bool success) {
   AddChange(change);
 }
 
-void TestChangeTracker::OnTopLevelCreated(uint32_t change_id,
-                                          mojom::WindowDataPtr window_data,
-                                          bool drawn) {
+void TestChangeTracker::OnTopLevelCreated(
+    uint32_t change_id,
+    mojom::WindowDataPtr window_data,
+    int64_t display_id,
+    bool drawn,
+    const viz::LocalSurfaceIdAllocation& local_surface_id_allocation) {
   Change change;
   change.type = CHANGE_TYPE_ON_TOP_LEVEL_CREATED;
   change.change_id = change_id;
   change.window_id = window_data->window_id;
+  change.display_id = display_id;
   change.bool_value = drawn;
+  change.local_surface_id_allocation = local_surface_id_allocation;
   AddChange(change);
 }
 
@@ -607,13 +628,11 @@ void TestChangeTracker::RequestClose(Id window_id) {
   AddChange(change);
 }
 
-void TestChangeTracker::OnOcclusionStateChanged(
-    Id window_id,
-    mojom::OcclusionState occlusion_state) {
+void TestChangeTracker::OnOcclusionStatesChanged(
+    const base::flat_map<Id, mojom::OcclusionState>& occlusion_changes) {
   Change change;
-  change.type = CHANGE_TYPE_ON_OCCLUSION_STATE_CHANGED;
-  change.window_id = window_id;
-  change.occlusion_state = occlusion_state;
+  change.type = CHANGE_TYPE_ON_OCCLUSION_STATES_CHANGED;
+  change.occlusion_changes = occlusion_changes;
   AddChange(change);
 }
 

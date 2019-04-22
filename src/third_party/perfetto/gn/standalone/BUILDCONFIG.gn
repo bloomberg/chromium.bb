@@ -15,7 +15,12 @@
 declare_args() {
   is_debug = true
   is_clang = true
+  is_system_compiler = false
   is_lto = false
+
+  extra_cflags = ""
+  extra_cxxflags = ""
+  extra_ldflags = ""
 }
 
 declare_args() {
@@ -35,9 +40,10 @@ is_linux = current_os == "linux"
 is_linux_host = host_os == "linux"
 is_mac = current_os == "mac"
 
-# Building with Windows is currently only supported in the Chromium tree so
-# always set this to false.
+# Building with Windows/Fuchsia is currently only supported in the Chromium
+# tree so always set this to false.
 is_win = false
+is_fuchsia = false
 
 if (target_cpu == "") {
   target_cpu = host_cpu
@@ -80,11 +86,17 @@ set_defaults("static_library") {
 set_defaults("shared_library") {
   configs = default_configs
   configs += [ "//gn/standalone:shared_library" ]
+
+  # note: the following is not a nested config to be removable.
+  configs += [ "//gn/standalone:android_liblog" ]
 }
 
 set_defaults("executable") {
   configs = default_configs
   configs += [ "//gn/standalone:executable" ]
+
+  # note: the following is not a nested config to be removable.
+  configs += [ "//gn/standalone:android_liblog" ]
 }
 
 set_default_toolchain("//gn/standalone/toolchain:gcc_like")

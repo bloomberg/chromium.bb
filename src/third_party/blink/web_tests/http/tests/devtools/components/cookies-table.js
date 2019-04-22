@@ -16,7 +16,7 @@
     calls.appendChild.forEach(node => {
       const data = node._data;
       const selected = node._selected ? '[selected]' : '';
-      TestRunner.addResult(`node.appendChild call: ${data.name} ${data.value} ${selected}`.trim());
+      TestRunner.addResult(`node.appendChild call: ${data.name} ${data.value} ${data.expires} ${selected}`.trim());
     });
   }
 
@@ -140,12 +140,12 @@
 
   function run() {
     const cookieData = [
-      {name: 'cookieA', value: '11', path: '/zzz', domain: 'example.com'},
-      {name: 'cookieB', value: '2', path: '/abc', domain: '.example.com'},
-      {name: 'cookieC', value: 'foo', path: '/', domain: 'abc.example.com'},
-      {name: 'cookieD', value: '{other}', path: '/aa', domain: '.other.com'},
-      {name: 'cookieE', value: 'zz', path: '/gg', domain: 'z.example.com'},
-      {name: 'cookieF', value: 'null', path: '/', domain: 'example.com'},
+      {name: 'cookieA', value: '11', path: '/zzz', domain: 'example.com', expires: 0},
+      {name: 'cookieB', value: '2', path: '/abc', domain: '.example.com', expires: 1},
+      {name: 'cookieC', value: 'foo', path: '/', domain: 'abc.example.com', expires: 1545057090000},
+      {name: 'cookieD', value: '{other}', path: '/aa', domain: '.other.com', expires: 19941213},
+      {name: 'cookieE', value: 'zz', path: '/gg', domain: 'z.example.com', expires: 6121598},
+      {name: 'cookieF', value: 'null', path: '/', domain: 'example.com', expires: -1},
     ];
     TestRunner.addResult('\n-------- RebuildTable --------\n');
     testRebuildTable(cookieData);

@@ -5,7 +5,8 @@
 #if V8_TARGET_ARCH_ARM64
 
 #include "src/interface-descriptors.h"
-#include "src/macro-assembler.h"
+
+#include "src/frames.h"
 
 namespace v8 {
 namespace internal {
@@ -22,6 +23,18 @@ void CallInterfaceDescriptor::DefaultInitializePlatformSpecific(
 }
 
 void RecordWriteDescriptor::InitializePlatformSpecific(
+    CallInterfaceDescriptorData* data) {
+  const Register default_stub_registers[] = {x0, x1, x2, x3, x4};
+
+  data->RestrictAllocatableRegisters(default_stub_registers,
+                                     arraysize(default_stub_registers));
+
+  CHECK_LE(static_cast<size_t>(kParameterCount),
+           arraysize(default_stub_registers));
+  data->InitializePlatformSpecific(kParameterCount, default_stub_registers);
+}
+
+void EphemeronKeyBarrierDescriptor::InitializePlatformSpecific(
     CallInterfaceDescriptorData* data) {
   const Register default_stub_registers[] = {x0, x1, x2, x3, x4};
 
@@ -71,13 +84,6 @@ void TypeofDescriptor::InitializePlatformSpecific(
   data->InitializePlatformSpecific(arraysize(registers), registers);
 }
 
-void CallFunctionDescriptor::InitializePlatformSpecific(
-    CallInterfaceDescriptorData* data) {
-  // x1  function    the function to call
-  Register registers[] = {x1};
-  data->InitializePlatformSpecific(arraysize(registers), registers);
-}
-
 void CallTrampolineDescriptor::InitializePlatformSpecific(
     CallInterfaceDescriptorData* data) {
   // x1: target
@@ -102,6 +108,14 @@ void CallForwardVarargsDescriptor::InitializePlatformSpecific(
   // x0: number of arguments
   // x2: start index (to supported rest parameters)
   Register registers[] = {x1, x0, x2};
+  data->InitializePlatformSpecific(arraysize(registers), registers);
+}
+
+void CallFunctionTemplateDescriptor::InitializePlatformSpecific(
+    CallInterfaceDescriptorData* data) {
+  // x1 : function template info
+  // x2 : number of arguments (on the stack, not including receiver)
+  Register registers[] = {x1, x2};
   data->InitializePlatformSpecific(arraysize(registers), registers);
 }
 
@@ -213,10 +227,10 @@ void ArgumentsAdaptorDescriptor::InitializePlatformSpecific(
 void ApiCallbackDescriptor::InitializePlatformSpecific(
     CallInterfaceDescriptorData* data) {
   Register registers[] = {
-      JavaScriptFrame::context_register(),  // callee context
-      x4,                                   // call_data
-      x2,                                   // holder
-      x1,                                   // api_function_address
+      x1,  // kApiFunctionAddress
+      x2,  // kArgc
+      x3,  // kCallData
+      x0,  // kHolder
   };
   data->InitializePlatformSpecific(arraysize(registers), registers);
 }
@@ -265,6 +279,12 @@ void FrameDropperTrampolineDescriptor::InitializePlatformSpecific(
   Register registers[] = {
       x1,  // loaded new FP
   };
+  data->InitializePlatformSpecific(arraysize(registers), registers);
+}
+
+void RunMicrotasksEntryDescriptor::InitializePlatformSpecific(
+    CallInterfaceDescriptorData* data) {
+  Register registers[] = {x0, x1};
   data->InitializePlatformSpecific(arraysize(registers), registers);
 }
 

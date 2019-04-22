@@ -5,7 +5,7 @@
 testRunner.dumpAsText();
 testRunner.waitUntilDone();
 testRunner.addOriginAccessAllowListEntry("http://127.0.0.1:8000", "http", "", true);
-testRunner.addOriginAccessAllowListEntry("http://localhost:8000", "http", "", true);
+testRunner.setDumpConsoleMessages(false);
 
 function log(message)
 {
@@ -43,7 +43,7 @@ function testIPAddress()
 {
     var iframe = document.createElement("iframe");
     document.body.appendChild(iframe);
-    iframe.src = "http://localhost:8000/xmlhttprequest/resources/origin-whitelisting-ip-address-test.html";
+    iframe.src = "http://localhost:8000/xmlhttprequest/resources/origin-whitelisting-ip-address-test.html#all";
     window.addEventListener("message", function(e) {
         if (e.data == "DONE")
             testRunner.notifyDone();

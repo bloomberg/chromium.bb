@@ -4,7 +4,6 @@
 
 #include "chromeos/network/network_certificate_handler.h"
 
-#include "base/observer_list_threadsafe.h"
 #include "base/strings/stringprintf.h"
 #include "chromeos/network/certificate_helper.h"
 #include "net/base/hash_value.h"
@@ -14,11 +13,9 @@ namespace chromeos {
 
 namespace {
 
-// Root CA certificates that are built into Chrome use this token name.
-const char kRootCertificateTokenName[] = "Builtin Object Token";
-
 NetworkCertificateHandler::Certificate GetCertificate(CERTCertificate* cert,
-                                                      net::CertType type) {
+                                                      net::CertType type,
+                                                      bool is_device_wide) {
   NetworkCertificateHandler::Certificate result;
 
   result.hash =
@@ -43,6 +40,7 @@ NetworkCertificateHandler::Certificate GetCertificate(CERTCertificate* cert,
   }
 
   result.hardware_backed = NetworkCertLoader::IsCertificateHardwareBacked(cert);
+  result.device_wide = is_device_wide;
 
   return result;
 }
@@ -59,7 +57,7 @@ NetworkCertificateHandler::Certificate::Certificate(const Certificate& other) =
 NetworkCertificateHandler::NetworkCertificateHandler() {
   NetworkCertLoader::Get()->AddObserver(this);
   if (NetworkCertLoader::Get()->initial_load_finished())
-    OnCertificatesLoaded(NetworkCertLoader::Get()->all_certs());
+    OnCertificatesLoaded();
 }
 
 NetworkCertificateHandler::~NetworkCertificateHandler() {
@@ -76,50 +74,37 @@ void NetworkCertificateHandler::RemoveObserver(
   observer_list_.RemoveObserver(observer);
 }
 
-void NetworkCertificateHandler::OnCertificatesLoaded(
-    const net::ScopedCERTCertificateList& cert_list) {
-  ProcessCertificates(cert_list);
-}
-
-void NetworkCertificateHandler::ProcessCertificates(
-    const net::ScopedCERTCertificateList& cert_list) {
-  user_certificates_.clear();
-  server_ca_certificates_.clear();
-
-  // Add certificates to the appropriate list.
-  for (const auto& cert_ref : cert_list) {
-    CERTCertificate* cert = cert_ref.get();
-    net::CertType type = certificate::GetCertType(cert);
-    switch (type) {
-      case net::USER_CERT:
-        user_certificates_.push_back(GetCertificate(cert, type));
-        break;
-      case net::CA_CERT: {
-        // Exclude root CA certificates that are built into Chrome.
-        std::string token_name = certificate::GetCertTokenName(cert);
-        if (token_name != kRootCertificateTokenName)
-          server_ca_certificates_.push_back(GetCertificate(cert, type));
-        else
-          VLOG(2) << "Ignoring root cert";
-        break;
-      }
-      default:
-        // Ignore other certificates.
-        VLOG(2) << "Ignoring cert type: " << type;
-        break;
-    }
-  }
-
+void NetworkCertificateHandler::AddAuthorityCertificateForTest(
+    const std::string& issued_to) {
+  Certificate cert;
+  cert.issued_to = issued_to;
+  cert.issued_to_ascii = issued_to;
+  server_ca_certificates_.push_back(cert);
   for (auto& observer : observer_list_)
     observer.OnCertificatesChanged();
 }
 
-void NetworkCertificateHandler::SetCertificatesForTest(
-    const net::ScopedCERTCertificateList& cert_list) {
-  ProcessCertificates(cert_list);
+void NetworkCertificateHandler::OnCertificatesLoaded() {
+  ProcessCertificates(NetworkCertLoader::Get()->authority_certs(),
+                      NetworkCertLoader::Get()->client_certs());
 }
 
-void NetworkCertificateHandler::NotifyCertificatsChangedForTest() {
+void NetworkCertificateHandler::ProcessCertificates(
+    const NetworkCertLoader::NetworkCertList& authority_certs,
+    const NetworkCertLoader::NetworkCertList& client_certs) {
+  client_certificates_.clear();
+  server_ca_certificates_.clear();
+
+  // Add certificates to the appropriate list.
+  for (const auto& network_cert : authority_certs) {
+    server_ca_certificates_.push_back(GetCertificate(
+        network_cert.cert(), net::CA_CERT, network_cert.is_device_wide()));
+  }
+  for (const auto& network_cert : client_certs) {
+    client_certificates_.push_back(GetCertificate(
+        network_cert.cert(), net::USER_CERT, network_cert.is_device_wide()));
+  }
+
   for (auto& observer : observer_list_)
     observer.OnCertificatesChanged();
 }

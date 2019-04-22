@@ -4,9 +4,10 @@
 
 #import "ios/web_view/internal/sync/web_view_gcm_profile_service_factory.h"
 
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "components/gcm_driver/gcm_client_factory.h"
@@ -63,7 +64,8 @@ gcm::GCMProfileService* WebViewGCMProfileServiceFactory::GetForBrowserState(
 // static
 WebViewGCMProfileServiceFactory*
 WebViewGCMProfileServiceFactory::GetInstance() {
-  return base::Singleton<WebViewGCMProfileServiceFactory>::get();
+  static base::NoDestructor<WebViewGCMProfileServiceFactory> instance;
+  return instance.get();
 }
 
 // static
@@ -96,7 +98,7 @@ WebViewGCMProfileServiceFactory::BuildServiceInstanceFor(
       base::BindRepeating(&RequestProxyResolvingSocketFactory, context),
       browser_state->GetSharedURLLoaderFactory(),
       ApplicationContext::GetInstance()->GetNetworkConnectionTracker(),
-      version_info::Channel::UNKNOWN, GetProductCategoryForSubtypes(),
+      version_info::Channel::STABLE, GetProductCategoryForSubtypes(),
       WebViewIdentityManagerFactory::GetForBrowserState(browser_state),
       base::WrapUnique(new gcm::GCMClientFactory),
       base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::UI}),

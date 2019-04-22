@@ -57,7 +57,7 @@ void SetUpHTML(PaintAndRasterInvalidationTest& test) {
   )HTML");
 }
 
-INSTANTIATE_PAINT_TEST_CASE_P(PaintAndRasterInvalidationTest);
+INSTANTIATE_PAINT_TEST_SUITE_P(PaintAndRasterInvalidationTest);
 
 TEST_P(PaintAndRasterInvalidationTest, TrackingForTracing) {
   SetBodyInnerHTML(R"HTML(
@@ -67,7 +67,7 @@ TEST_P(PaintAndRasterInvalidationTest, TrackingForTracing) {
   auto* target = GetDocument().getElementById("target");
   auto get_debug_info = [&]() -> std::string {
     auto* cc_layer =
-        RuntimeEnabledFeatures::SlimmingPaintV2Enabled()
+        RuntimeEnabledFeatures::CompositeAfterPaintEnabled()
             ? GetDocument()
                   .View()
                   ->GetPaintArtifactCompositorForTesting()
@@ -240,13 +240,13 @@ TEST_P(PaintAndRasterInvalidationTest, SubpixelWithinPixelsChange) {
   SetUpHTML(*this);
   Element* target = GetDocument().getElementById("target");
   LayoutObject* object = target->GetLayoutObject();
-  EXPECT_EQ(LayoutRect(0, 0, 50, 100), object->FirstFragment().VisualRect());
+  EXPECT_EQ(IntRect(0, 0, 50, 100), object->FirstFragment().VisualRect());
 
   GetDocument().View()->SetTracksPaintInvalidations(true);
   target->setAttribute(html_names::kStyleAttr,
                        "margin-top: 0.6px; width: 50px; height: 99.3px");
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_EQ(LayoutRect(0, 0, 50, 100), object->FirstFragment().VisualRect());
+  EXPECT_EQ(IntRect(0, 0, 50, 100), object->FirstFragment().VisualRect());
   EXPECT_THAT(GetRasterInvalidationTracking()->Invalidations(),
               UnorderedElementsAre(RasterInvalidationInfo{
                   object, object->DebugName(), IntRect(0, 0, 50, 100),
@@ -257,7 +257,7 @@ TEST_P(PaintAndRasterInvalidationTest, SubpixelWithinPixelsChange) {
   target->setAttribute(html_names::kStyleAttr,
                        "margin-top: 0.6px; width: 49.3px; height: 98.5px");
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_EQ(LayoutRect(0, 0, 50, 100), object->FirstFragment().VisualRect());
+  EXPECT_EQ(IntRect(0, 0, 50, 100), object->FirstFragment().VisualRect());
   EXPECT_THAT(GetRasterInvalidationTracking()->Invalidations(),
               UnorderedElementsAre(RasterInvalidationInfo{
                   object, object->DebugName(), IntRect(0, 0, 50, 100),
@@ -320,7 +320,7 @@ TEST_P(PaintAndRasterInvalidationTest, CompositedLayoutViewResize) {
   UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(kBackgroundPaintInScrollingContents,
             GetLayoutView().GetBackgroundPaintLocation());
-  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     const auto* mapping = GetLayoutView().Layer()->GetCompositedLayerMapping();
     EXPECT_TRUE(mapping->BackgroundPaintsOntoScrollingContentsLayer());
     EXPECT_FALSE(mapping->BackgroundPaintsOntoGraphicsLayer());
@@ -355,7 +355,7 @@ TEST_P(PaintAndRasterInvalidationTest, CompositedLayoutViewGradientResize) {
   UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(kBackgroundPaintInScrollingContents,
             GetLayoutView().GetBackgroundPaintLocation());
-  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     const auto* mapping = GetLayoutView().Layer()->GetCompositedLayerMapping();
     EXPECT_TRUE(mapping->BackgroundPaintsOntoScrollingContentsLayer());
     EXPECT_FALSE(mapping->BackgroundPaintsOntoGraphicsLayer());
@@ -403,9 +403,7 @@ TEST_P(PaintAndRasterInvalidationTest, NonCompositedLayoutViewResize) {
   EXPECT_EQ(GetLayoutView(),
             content->GetLayoutObject()->ContainerForPaintInvalidation());
   EXPECT_EQ(kBackgroundPaintInScrollingContents,
-            content->GetLayoutObject()
-                ->View()
-                ->GetBackgroundPaintLocation());
+            content->GetLayoutObject()->View()->GetBackgroundPaintLocation());
 
   // Resize the content.
   GetDocument().View()->SetTracksPaintInvalidations(true);
@@ -419,9 +417,9 @@ TEST_P(PaintAndRasterInvalidationTest, NonCompositedLayoutViewResize) {
   GetDocument().View()->SetTracksPaintInvalidations(true);
   iframe->setAttribute(html_names::kStyleAttr, "height: 200px");
   UpdateAllLifecyclePhasesForTest();
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     // TODO(wangxianzhu): This is probably incorrect, but for now we assume
-    // any scrolling contents as composited during SPv2 painting. Perhaps we
+    // any scrolling contents as composited during CAP painting. Perhaps we
     // need some heuristic about composited scrolling during painting.
     EXPECT_FALSE(GetRasterInvalidationTracking()->HasInvalidations());
   } else {
@@ -467,9 +465,9 @@ TEST_P(PaintAndRasterInvalidationTest, NonCompositedLayoutViewGradientResize) {
   GetDocument().View()->SetTracksPaintInvalidations(true);
   content->setAttribute(html_names::kStyleAttr, "height: 500px");
   UpdateAllLifecyclePhasesForTest();
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     // TODO(wangxianzhu): This is probably incorrect, but for now we assume
-    // any scrolling contents as composited during SPv2 painting. Perhaps we
+    // any scrolling contents as composited during CAP painting. Perhaps we
     // need some heuristic about composited scrolling during painting.
     EXPECT_FALSE(GetRasterInvalidationTracking()->HasInvalidations());
   } else {
@@ -485,9 +483,9 @@ TEST_P(PaintAndRasterInvalidationTest, NonCompositedLayoutViewGradientResize) {
   GetDocument().View()->SetTracksPaintInvalidations(true);
   iframe->setAttribute(html_names::kStyleAttr, "height: 200px");
   UpdateAllLifecyclePhasesForTest();
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     // TODO(wangxianzhu): This is probably incorrect, but for now we assume
-    // any scrolling contents as composited during SPv2 painting. Perhaps we
+    // any scrolling contents as composited during CAP painting. Perhaps we
     // need some heuristic about composited scrolling during painting.
     EXPECT_FALSE(GetRasterInvalidationTracking()->HasInvalidations());
   } else {
@@ -517,7 +515,7 @@ TEST_P(PaintAndRasterInvalidationTest,
   auto* target_obj = ToLayoutBoxModelObject(target->GetLayoutObject());
   EXPECT_EQ(kBackgroundPaintInScrollingContents,
             target_obj->GetBackgroundPaintLocation());
-  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     const auto* mapping = target_obj->Layer()->GetCompositedLayerMapping();
     EXPECT_TRUE(mapping->BackgroundPaintsOntoScrollingContentsLayer());
     EXPECT_FALSE(mapping->BackgroundPaintsOntoGraphicsLayer());
@@ -525,7 +523,7 @@ TEST_P(PaintAndRasterInvalidationTest,
 
   auto container_raster_invalidation_tracking =
       [&]() -> const RasterInvalidationTracking* {
-    if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
       return GetRasterInvalidationTracking(1);
     return target_obj->Layer()
         ->GraphicsLayerBacking(target_obj)
@@ -533,7 +531,7 @@ TEST_P(PaintAndRasterInvalidationTest,
   };
   auto contents_raster_invalidation_tracking =
       [&]() -> const RasterInvalidationTracking* {
-    if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
       return GetRasterInvalidationTracking(2);
     return target_obj->Layer()
         ->GraphicsLayerBacking()
@@ -585,7 +583,7 @@ TEST_P(PaintAndRasterInvalidationTest,
       ToLayoutBoxModelObject(target->GetLayoutObject());
   auto container_raster_invalidation_tracking =
       [&]() -> const RasterInvalidationTracking* {
-    if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
       return GetRasterInvalidationTracking(1);
     return target_obj->Layer()
         ->GraphicsLayerBacking(target_obj)
@@ -593,7 +591,7 @@ TEST_P(PaintAndRasterInvalidationTest,
   };
   auto contents_raster_invalidation_tracking =
       [&]() -> const RasterInvalidationTracking* {
-    if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
       return GetRasterInvalidationTracking(2);
     return target_obj->Layer()
         ->GraphicsLayerBacking()
@@ -606,7 +604,7 @@ TEST_P(PaintAndRasterInvalidationTest,
   UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(kBackgroundPaintInScrollingContents,
             target_obj->GetBackgroundPaintLocation());
-  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     const auto* mapping = target_obj->Layer()->GetCompositedLayerMapping();
     EXPECT_TRUE(mapping->BackgroundPaintsOntoScrollingContentsLayer());
     EXPECT_FALSE(mapping->BackgroundPaintsOntoGraphicsLayer());
@@ -664,9 +662,9 @@ TEST_P(PaintAndRasterInvalidationTest,
   GetDocument().View()->SetTracksPaintInvalidations(true);
   target->setAttribute(html_names::kStyleAttr, "height: 200px");
   UpdateAllLifecyclePhasesForTest();
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     // TODO(wangxianzhu): This is probably incorrect, but for now we assume
-    // any scrolling contents as composited during SPv2 painting. Perhaps we
+    // any scrolling contents as composited during CAP painting. Perhaps we
     // need some heuristic about composited scrolling during painting.
     EXPECT_FALSE(GetRasterInvalidationTracking()->HasInvalidations());
   } else {
@@ -701,14 +699,14 @@ TEST_P(PaintAndRasterInvalidationTest, CompositedSolidBackgroundResize) {
   EXPECT_EQ(
       kBackgroundPaintInScrollingContents | kBackgroundPaintInGraphicsLayer,
       target_object->GetBackgroundPaintLocation());
-  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     const auto* mapping = target_object->Layer()->GetCompositedLayerMapping();
     EXPECT_TRUE(mapping->BackgroundPaintsOntoScrollingContentsLayer());
     EXPECT_TRUE(mapping->BackgroundPaintsOntoGraphicsLayer());
   }
 
   const auto* contents_raster_invalidation_tracking =
-      RuntimeEnabledFeatures::SlimmingPaintV2Enabled()
+      RuntimeEnabledFeatures::CompositeAfterPaintEnabled()
           ? GetRasterInvalidationTracking(2)
           : target_object->Layer()
                 ->GraphicsLayerBacking()
@@ -720,7 +718,7 @@ TEST_P(PaintAndRasterInvalidationTest, CompositedSolidBackgroundResize) {
                   &client, client.DebugName(), IntRect(50, 0, 50, 500),
                   PaintInvalidationReason::kIncremental}));
   const auto* container_raster_invalidation_tracking =
-      RuntimeEnabledFeatures::SlimmingPaintV2Enabled()
+      RuntimeEnabledFeatures::CompositeAfterPaintEnabled()
           ? GetRasterInvalidationTracking(1)
           : target_object->Layer()
                 ->GraphicsLayerBacking(target_object)
@@ -785,16 +783,16 @@ TEST_P(PaintAndRasterInvalidationTest,
   LayoutView* child_layout_view = ChildDocument().GetLayoutView();
   EXPECT_EQ(GetDocument().GetLayoutView(),
             &child_layout_view->ContainerForPaintInvalidation());
-  EXPECT_EQ(LayoutRect(0, 0, 100, 100),
+  EXPECT_EQ(IntRect(0, 0, 100, 100),
             child_layout_view->FirstFragment().VisualRect());
 
   iframe->setAttribute(html_names::kStyleAttr, "border: 20px solid blue");
   UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(GetDocument().GetLayoutView(),
             &child_layout_view->ContainerForPaintInvalidation());
-  EXPECT_EQ(LayoutRect(0, 0, 100, 100),
+  EXPECT_EQ(IntRect(0, 0, 100, 100),
             child_layout_view->FirstFragment().VisualRect());
-};
+}
 
 TEST_P(PaintAndRasterInvalidationTest, DelayedFullPaintInvalidation) {
   EnableCompositing();
@@ -844,7 +842,7 @@ TEST_P(PaintAndRasterInvalidationTest, DelayedFullPaintInvalidation) {
   EXPECT_FALSE(target->Parent()->ShouldCheckForPaintInvalidation());
   EXPECT_FALSE(target->NeedsPaintOffsetAndVisualRectUpdate());
   GetDocument().View()->SetTracksPaintInvalidations(false);
-};
+}
 
 TEST_P(PaintAndRasterInvalidationTest, SVGHiddenContainer) {
   EnableCompositing();
@@ -862,23 +860,23 @@ TEST_P(PaintAndRasterInvalidationTest, SVGHiddenContainer) {
 
   // mask_rect's visual rect is in coordinates of the mask.
   auto* mask_rect = GetLayoutObjectByElementId("mask-rect");
-  EXPECT_EQ(LayoutRect(), mask_rect->FirstFragment().VisualRect());
+  EXPECT_EQ(IntRect(), mask_rect->FirstFragment().VisualRect());
 
   // real_rect's visual rect is in coordinates of its paint invalidation
   // container (the view).
   auto* real_rect = GetLayoutObjectByElementId("real-rect");
-  EXPECT_EQ(LayoutRect(55, 66, 7, 8), real_rect->FirstFragment().VisualRect());
+  EXPECT_EQ(IntRect(55, 66, 7, 8), real_rect->FirstFragment().VisualRect());
 
   GetDocument().View()->SetTracksPaintInvalidations(true);
   ToElement(mask_rect->GetNode())->setAttribute("x", "20");
   UpdateAllLifecyclePhasesForTest();
 
-  EXPECT_EQ(LayoutRect(), mask_rect->FirstFragment().VisualRect());
-  EXPECT_EQ(LayoutRect(55, 66, 7, 8), real_rect->FirstFragment().VisualRect());
+  EXPECT_EQ(IntRect(), mask_rect->FirstFragment().VisualRect());
+  EXPECT_EQ(IntRect(55, 66, 7, 8), real_rect->FirstFragment().VisualRect());
 
   // Should invalidate raster for real_rect only.
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-    // SPv2 creates composited layers for the rect and its mask.
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    // CAP creates composited layers for the rect and its mask.
     EXPECT_THAT(GetRasterInvalidationTracking(1)->Invalidations(),
                 UnorderedElementsAre(RasterInvalidationInfo{
                     real_rect, real_rect->DebugName(), IntRect(0, 0, 7, 8),
@@ -916,11 +914,11 @@ TEST_P(PaintAndRasterInvalidationTest, UpdateVisualRectWhenPrinting) {
   )HTML");
 
   auto* a = GetDocument().getElementById("a")->GetLayoutObject();
-  EXPECT_EQ(LayoutRect(0, 0, 150, 20), a->FirstFragment().VisualRect());
+  EXPECT_EQ(IntRect(0, 0, 150, 20), a->FirstFragment().VisualRect());
   auto* b = GetDocument().getElementById("b")->GetLayoutObject();
-  EXPECT_EQ(LayoutRect(150, 0, 150, 20), b->FirstFragment().VisualRect());
+  EXPECT_EQ(IntRect(150, 0, 150, 20), b->FirstFragment().VisualRect());
   auto* c = GetDocument().getElementById("c")->GetLayoutObject();
-  EXPECT_EQ(LayoutRect(300, 0, 150, 20), c->FirstFragment().VisualRect());
+  EXPECT_EQ(IntRect(300, 0, 150, 20), c->FirstFragment().VisualRect());
 
   // Print the page with a width of 400px which will require wrapping 'c'.
   FloatSize page_size(400, 200);
@@ -931,10 +929,10 @@ TEST_P(PaintAndRasterInvalidationTest, UpdateVisualRectWhenPrinting) {
   b = GetDocument().getElementById("b")->GetLayoutObject();
   c = GetDocument().getElementById("c")->GetLayoutObject();
 
-  EXPECT_EQ(LayoutRect(0, 0, 150, 20), a->FirstFragment().VisualRect());
-  EXPECT_EQ(LayoutRect(150, 0, 150, 20), b->FirstFragment().VisualRect());
+  EXPECT_EQ(IntRect(0, 0, 150, 20), a->FirstFragment().VisualRect());
+  EXPECT_EQ(IntRect(150, 0, 150, 20), b->FirstFragment().VisualRect());
   // 'c' should be on the next line.
-  EXPECT_EQ(LayoutRect(0, 20, 150, 20), c->FirstFragment().VisualRect());
+  EXPECT_EQ(IntRect(0, 20, 150, 20), c->FirstFragment().VisualRect());
 
   GetFrame().EndPrinting();
   GetDocument().View()->UpdateLifecyclePhasesForPrinting();
@@ -942,10 +940,10 @@ TEST_P(PaintAndRasterInvalidationTest, UpdateVisualRectWhenPrinting) {
   b = GetDocument().getElementById("b")->GetLayoutObject();
   c = GetDocument().getElementById("c")->GetLayoutObject();
 
-  EXPECT_EQ(LayoutRect(0, 0, 150, 20), a->FirstFragment().VisualRect());
-  EXPECT_EQ(LayoutRect(150, 0, 150, 20), b->FirstFragment().VisualRect());
-  EXPECT_EQ(LayoutRect(300, 0, 150, 20), c->FirstFragment().VisualRect());
-};
+  EXPECT_EQ(IntRect(0, 0, 150, 20), a->FirstFragment().VisualRect());
+  EXPECT_EQ(IntRect(150, 0, 150, 20), b->FirstFragment().VisualRect());
+  EXPECT_EQ(IntRect(300, 0, 150, 20), c->FirstFragment().VisualRect());
+}
 
 TEST_P(PaintAndRasterInvalidationTest, PaintPropertyChange) {
   SetUpHTML(*this);
@@ -961,7 +959,8 @@ TEST_P(PaintAndRasterInvalidationTest, PaintPropertyChange) {
   EXPECT_FALSE(layer->NeedsRepaint());
   const auto* transform =
       object->FirstFragment().PaintProperties()->Transform();
-  EXPECT_TRUE(transform->Changed(*transform->Parent()));
+  EXPECT_TRUE(transform->Changed(
+      PaintPropertyChangeType::kChangedOnlySimpleValues, *transform->Parent()));
 
   UpdateAllLifecyclePhasesForTest();
   EXPECT_THAT(GetRasterInvalidationTracking()->Invalidations(),
@@ -972,7 +971,8 @@ TEST_P(PaintAndRasterInvalidationTest, PaintPropertyChange) {
                   RasterInvalidationInfo{
                       layer, layer->DebugName(), IntRect(0, 0, 150, 300),
                       PaintInvalidationReason::kPaintProperty}));
-  EXPECT_FALSE(transform->Changed(*transform->Parent()));
+  EXPECT_FALSE(transform->Changed(PaintPropertyChangeType::kChangedOnlyValues,
+                                  *transform->Parent()));
   GetDocument().View()->SetTracksPaintInvalidations(false);
 }
 
@@ -1021,9 +1021,10 @@ TEST_P(PaintAndRasterInvalidationTest, ScrollingInvalidatesStickyOffset) {
   const auto* sticky = GetLayoutObjectByElementId("sticky");
   EXPECT_TRUE(sticky->NeedsPaintPropertyUpdate());
   EXPECT_EQ(LayoutPoint(0, 0), sticky->FirstFragment().PaintOffset());
-  EXPECT_EQ(
-      TransformationMatrix().Translate(0.f, 50.f),
-      sticky->FirstFragment().PaintProperties()->StickyTranslation()->Matrix());
+  EXPECT_EQ(FloatSize(0, 50), sticky->FirstFragment()
+                                  .PaintProperties()
+                                  ->StickyTranslation()
+                                  ->Translation2D());
   const auto* inner = GetLayoutObjectByElementId("inner");
   EXPECT_EQ(LayoutPoint(0, 0), inner->FirstFragment().PaintOffset());
 
@@ -1031,9 +1032,10 @@ TEST_P(PaintAndRasterInvalidationTest, ScrollingInvalidatesStickyOffset) {
 
   EXPECT_FALSE(sticky->NeedsPaintPropertyUpdate());
   EXPECT_EQ(LayoutPoint(0, 0), sticky->FirstFragment().PaintOffset());
-  EXPECT_EQ(
-      TransformationMatrix().Translate(0.f, 150.f),
-      sticky->FirstFragment().PaintProperties()->StickyTranslation()->Matrix());
+  EXPECT_EQ(FloatSize(0, 150), sticky->FirstFragment()
+                                   .PaintProperties()
+                                   ->StickyTranslation()
+                                   ->Translation2D());
   EXPECT_EQ(LayoutPoint(0, 0), inner->FirstFragment().PaintOffset());
 }
 
@@ -1054,8 +1056,8 @@ class PaintInvalidatorTestClient : public EmptyChromeClient {
 class PaintInvalidatorCustomClientTest : public RenderingTest {
  public:
   PaintInvalidatorCustomClientTest()
-      : RenderingTest(EmptyLocalFrameClient::Create()),
-        chrome_client_(new PaintInvalidatorTestClient) {}
+      : RenderingTest(MakeGarbageCollected<EmptyLocalFrameClient>()),
+        chrome_client_(MakeGarbageCollected<PaintInvalidatorTestClient>()) {}
 
   PaintInvalidatorTestClient& GetChromeClient() const override {
     return *chrome_client_;
@@ -1075,9 +1077,7 @@ TEST_F(PaintInvalidatorCustomClientTest,
        NonCompositedInvalidationChangeOpacity) {
   // This test runs in a non-composited mode, so invalidations should
   // be issued via InvalidateChromeClient.
-  SetBodyInnerHTML(R"HTML(
-    <div id=target style="opacity: 0.99"></div>
-    )HTML");
+  SetBodyInnerHTML("<div id=target style='opacity: 0.99'></div>");
 
   auto* target = GetDocument().getElementById("target");
   ASSERT_TRUE(target);
@@ -1088,6 +1088,28 @@ TEST_F(PaintInvalidatorCustomClientTest,
   UpdateAllLifecyclePhasesForTest();
 
   EXPECT_TRUE(InvalidationRecorded());
+}
+
+TEST_F(PaintInvalidatorCustomClientTest,
+       NoInvalidationRepeatedUpdateLifecyleExceptPaint) {
+  SetBodyInnerHTML("<div id=target style='opacity: 0.99'></div>");
+
+  auto* target = GetDocument().getElementById("target");
+  ASSERT_TRUE(target);
+  ResetInvalidationRecorded();
+
+  target->setAttribute(html_names::kStyleAttr, "opacity: 0.98");
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  EXPECT_TRUE(GetDocument().View()->GetLayoutView()->Layer()->NeedsRepaint());
+  EXPECT_TRUE(InvalidationRecorded());
+
+  ResetInvalidationRecorded();
+  // Let PrePaintTreeWalk do something instead of no-op.
+  GetDocument().View()->SetNeedsPaintPropertyUpdate();
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  // The layer NeedsRepaint flag is only cleared after paint.
+  EXPECT_TRUE(GetDocument().View()->GetLayoutView()->Layer()->NeedsRepaint());
+  EXPECT_FALSE(InvalidationRecorded());
 }
 
 }  // namespace blink

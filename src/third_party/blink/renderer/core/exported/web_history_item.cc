@@ -45,7 +45,7 @@
 namespace blink {
 
 void WebHistoryItem::Initialize() {
-  private_ = HistoryItem::Create();
+  private_ = MakeGarbageCollected<HistoryItem>();
 }
 
 void WebHistoryItem::Reset() {
@@ -89,7 +89,7 @@ void WebHistoryItem::SetTarget(const WebString& target) {
 }
 
 WebFloatPoint WebHistoryItem::VisualViewportScrollOffset() const {
-  HistoryItem::ViewState* scroll_and_view_state = private_->GetViewState();
+  const auto& scroll_and_view_state = private_->GetViewState();
   ScrollOffset offset =
       scroll_and_view_state
           ? scroll_and_view_state->visual_viewport_scroll_offset_
@@ -103,7 +103,7 @@ void WebHistoryItem::SetVisualViewportScrollOffset(
 }
 
 WebPoint WebHistoryItem::GetScrollOffset() const {
-  HistoryItem::ViewState* scroll_and_view_state = private_->GetViewState();
+  const auto& scroll_and_view_state = private_->GetViewState();
   ScrollOffset offset = scroll_and_view_state
                             ? scroll_and_view_state->scroll_offset_
                             : ScrollOffset();
@@ -115,7 +115,7 @@ void WebHistoryItem::SetScrollOffset(const WebPoint& scroll_offset) {
 }
 
 float WebHistoryItem::PageScaleFactor() const {
-  HistoryItem::ViewState* scroll_and_view_state = private_->GetViewState();
+  const auto& scroll_and_view_state = private_->GetViewState();
   return scroll_and_view_state ? scroll_and_view_state->page_scale_factor_ : 0;
 }
 
@@ -135,20 +135,20 @@ void WebHistoryItem::SetDocumentState(const WebVector<WebString>& state) {
   private_->SetDocumentState(ds);
 }
 
-long long WebHistoryItem::ItemSequenceNumber() const {
+int64_t WebHistoryItem::ItemSequenceNumber() const {
   return private_->ItemSequenceNumber();
 }
 
-void WebHistoryItem::SetItemSequenceNumber(long long item_sequence_number) {
+void WebHistoryItem::SetItemSequenceNumber(int64_t item_sequence_number) {
   private_->SetItemSequenceNumber(item_sequence_number);
 }
 
-long long WebHistoryItem::DocumentSequenceNumber() const {
+int64_t WebHistoryItem::DocumentSequenceNumber() const {
   return private_->DocumentSequenceNumber();
 }
 
 void WebHistoryItem::SetDocumentSequenceNumber(
-    long long document_sequence_number) {
+    int64_t document_sequence_number) {
   private_->SetDocumentSequenceNumber(document_sequence_number);
 }
 
@@ -183,7 +183,7 @@ WebHTTPBody WebHistoryItem::HttpBody() const {
   return WebHTTPBody(private_->FormData());
 }
 
-void WebHistoryItem::SetHTTPBody(const WebHTTPBody& http_body) {
+void WebHistoryItem::SetHttpBody(const WebHTTPBody& http_body) {
   private_->SetFormData(http_body);
 }
 
@@ -209,13 +209,12 @@ WebVector<WebString> WebHistoryItem::GetReferencedFilePaths() const {
 }
 
 bool WebHistoryItem::DidSaveScrollOrScaleState() const {
-  return private_->GetViewState();
+  return private_->GetViewState().has_value();
 }
 
 ScrollAnchorData WebHistoryItem::GetScrollAnchorData() const {
-  if (HistoryItem::ViewState* scroll_and_view_state =
-          private_->GetViewState()) {
-    return scroll_and_view_state->scroll_anchor_data_;
+  if (private_->GetViewState()) {
+    return private_->GetViewState()->scroll_anchor_data_;
   }
 
   return ScrollAnchorData();

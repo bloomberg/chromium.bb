@@ -14,6 +14,7 @@
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/window_cycle_event_filter.h"
 #include "ash/wm/window_cycle_list.h"
+#include "ash/wm/window_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 
@@ -57,10 +58,15 @@ void WindowCycleController::HandleCycleWindow(Direction direction) {
 void WindowCycleController::StartCycling() {
   WindowCycleList::WindowList window_list =
       Shell::Get()->mru_window_tracker()->BuildWindowForCycleList();
+  // Window cycle list windows will handle showing their transient related
+  // windows, so if a window in |window_list| has a transient root also in
+  // |window_list|, we can remove it as the tranisent root will handle showing
+  // the window.
+  wm::RemoveTransientDescendants(&window_list);
 
   active_window_before_window_cycle_ = GetActiveWindow(window_list);
 
-  window_cycle_list_.reset(new WindowCycleList(window_list));
+  window_cycle_list_ = std::make_unique<WindowCycleList>(window_list);
   event_filter_ = std::make_unique<WindowCycleEventFilter>();
   cycle_start_time_ = base::Time::Now();
   base::RecordAction(base::UserMetricsAction("WindowCycleController_Cycle"));

@@ -7,6 +7,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 
@@ -15,7 +16,7 @@ namespace blink {
 class HTMLContentElementTest : public testing::Test {
  protected:
   void SetUp() final {
-    dummy_page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
+    dummy_page_holder_ = std::make_unique<DummyPageHolder>(IntSize(800, 600));
   }
   Document& GetDocument() { return dummy_page_holder_->GetDocument(); }
 
@@ -40,9 +41,9 @@ TEST_F(HTMLContentElementTest, FallbackRecalcForReattach) {
 
   GetDocument().UpdateDistributionForLegacyDistributedNodes();
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
-  GetDocument().GetStyleEngine().RecalcStyle(kNoChange);
+  GetDocument().GetStyleEngine().RecalcStyle({});
 
-  EXPECT_TRUE(fallback->GetNonAttachedStyle());
+  EXPECT_TRUE(fallback->GetComputedStyle());
 }
 
 }  // namespace blink

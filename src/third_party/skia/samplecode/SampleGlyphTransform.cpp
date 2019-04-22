@@ -5,13 +5,13 @@
  * found in the LICENSE file.
  */
 #include "Sample.h"
-#include "sk_tool_utils.h"
+#include "ToolUtils.h"
 
-#include "SkAnimTimer.h"
+#include "AnimTimer.h"
 #include "SkCanvas.h"
 #include "SkPath.h"
-#include "SkRandom.h"
 #include "SkRRect.h"
+#include "SkRandom.h"
 #include "SkTypeface.h"
 
 #include <cmath>
@@ -26,8 +26,8 @@ public:
 
 protected:
     void onOnceBeforeDraw() override {
-        fEmojiFont.fTypeface = sk_tool_utils::emoji_typeface();
-        fEmojiFont.fText = sk_tool_utils::emoji_sample_text();
+        fEmojiFont.fTypeface = ToolUtils::emoji_typeface();
+        fEmojiFont.fText     = ToolUtils::emoji_sample_text();
     }
 
     bool onQuery(Sample::Event* evt) override {
@@ -40,7 +40,8 @@ protected:
 
     void onDrawContent(SkCanvas* canvas) override {
         SkPaint paint;
-        paint.setTypeface(fEmojiFont.fTypeface);
+
+        SkFont font(fEmojiFont.fTypeface);
         const char* text = fEmojiFont.fText;
 
         double baseline = this->height() / 2;
@@ -54,11 +55,12 @@ protected:
 
         // d3 by default anchors text around the middle
         SkRect bounds;
-        paint.measureText(text, strlen(text), &bounds);
-        canvas->drawString(text, -bounds.centerX(), -bounds.centerY(), paint);
+        font.measureText(text, strlen(text), kUTF8_SkTextEncoding, &bounds);
+        canvas->drawSimpleText(text, strlen(text), kUTF8_SkTextEncoding, -bounds.centerX(), -bounds.centerY(),
+                               font, paint);
     }
 
-    bool onAnimate(const SkAnimTimer& timer) override {
+    bool onAnimate(const AnimTimer& timer) override {
         constexpr SkScalar maxt = 100000;
         double t = timer.pingPong(20, 0, 0, maxt); // d3 t is in milliseconds
 

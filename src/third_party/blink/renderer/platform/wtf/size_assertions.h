@@ -24,6 +24,6 @@ struct assert_size {
 }  // namespace WTF
 
 #define ASSERT_SIZE(className, sameSizeAsClassName) \
-  static_assert(WTF::assert_size<className, sameSizeAsClassName>::value, "");
+  static_assert(WTF::assert_size<className, sameSizeAsClassName>::value, "")
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_SIZE_ASSERTIONS_H_

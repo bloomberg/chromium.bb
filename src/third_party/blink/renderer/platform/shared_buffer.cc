@@ -29,6 +29,7 @@
 #include <memory>
 
 #include "third_party/blink/renderer/platform/instrumentation/tracing/web_process_memory_dump.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/unicode.h"
 #include "third_party/blink/renderer/platform/wtf/text/utf8.h"
 #include "third_party/skia/include/core/SkData.h"
@@ -46,6 +47,8 @@ static inline size_t OffsetInSegment(size_t position) {
 }
 
 class SharedBuffer::Segment final {
+  USING_FAST_MALLOC(Segment);
+
  public:
   Segment() {
     ptr_.reset(static_cast<char*>(WTF::Partitions::FastMalloc(
@@ -81,7 +84,7 @@ SharedBuffer::Iterator::Iterator(size_t offset, const SharedBuffer* buffer)
   Init(offset);
 }
 
-SharedBuffer::Iterator::Iterator(size_t segment_index,
+SharedBuffer::Iterator::Iterator(wtf_size_t segment_index,
                                  size_t offset,
                                  const SharedBuffer* buffer)
     : index_(segment_index + 1), buffer_(buffer) {
@@ -111,13 +114,13 @@ void SharedBuffer::Iterator::Init(size_t offset) {
 
 SharedBuffer::SharedBuffer() : size_(0) {}
 
-SharedBuffer::SharedBuffer(size_t size) : size_(size), buffer_(size) {}
+SharedBuffer::SharedBuffer(wtf_size_t size) : size_(size), buffer_(size) {}
 
-SharedBuffer::SharedBuffer(const char* data, size_t size) : size_(size) {
+SharedBuffer::SharedBuffer(const char* data, wtf_size_t size) : size_(size) {
   buffer_.Append(data, size);
 }
 
-SharedBuffer::SharedBuffer(const unsigned char* data, size_t size)
+SharedBuffer::SharedBuffer(const unsigned char* data, wtf_size_t size)
     : SharedBuffer(reinterpret_cast<const char*>(data), size) {}
 
 SharedBuffer::~SharedBuffer() = default;
@@ -149,7 +152,7 @@ void SharedBuffer::AppendInternal(const char* data, size_t length) {
 
   if (size_ <= kSegmentSize) {
     // No need to use segments for small resource data.
-    buffer_.Append(data, length);
+    buffer_.Append(data, static_cast<wtf_size_t>(length));
     return;
   }
 
@@ -181,9 +184,9 @@ SharedBuffer::Iterator SharedBuffer::end() const {
 }
 
 void SharedBuffer::MergeSegmentsIntoBuffer() {
-  size_t bytes_left = size_ - buffer_.size();
+  wtf_size_t bytes_left = size_ - buffer_.size();
   for (const auto& segment : segments_) {
-    size_t bytes_to_copy = std::min<size_t>(bytes_left, kSegmentSize);
+    wtf_size_t bytes_to_copy = std::min<wtf_size_t>(bytes_left, kSegmentSize);
     buffer_.Append(segment.get(), bytes_to_copy);
     bytes_left -= bytes_to_copy;
   }
@@ -198,8 +201,9 @@ SharedBuffer::Iterator SharedBuffer::GetIteratorAtInternal(
   if (position < buffer_.size())
     return Iterator(position, this);
 
-  return Iterator(SegmentIndex(position - buffer_.size()),
-                  OffsetInSegment(position - buffer_.size()), this);
+  return Iterator(
+      SafeCast<uint32_t>(SegmentIndex(position - buffer_.size())),
+      SafeCast<uint32_t>(OffsetInSegment(position - buffer_.size())), this);
 }
 
 bool SharedBuffer::GetBytesInternal(void* dest, size_t dest_size) const {
@@ -261,9 +265,9 @@ SharedBuffer::DeprecatedFlatData::DeprecatedFlatData(
   }
 
   // Merge all segments.
-  flat_buffer_.ReserveInitialCapacity(buffer_->size());
+  flat_buffer_.ReserveInitialCapacity(SafeCast<wtf_size_t>(buffer_->size()));
   for (const auto& span : *buffer_)
-    flat_buffer_.Append(span.data(), span.size());
+    flat_buffer_.Append(span.data(), static_cast<wtf_size_t>(span.size()));
 
   data_ = flat_buffer_.data();
 }

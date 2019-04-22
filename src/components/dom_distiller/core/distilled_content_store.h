@@ -7,9 +7,9 @@
 
 #include <memory>
 #include <string>
+#include <unordered_map>
 
 #include "base/bind.h"
-#include "base/containers/hash_tables.h"
 #include "base/containers/mru_cache.h"
 #include "base/macros.h"
 #include "components/dom_distiller/core/article_entry.h"
@@ -35,8 +35,8 @@ class DistilledContentStore {
   virtual void LoadContent(const ArticleEntry& entry,
                            LoadCallback callback) = 0;
 
-  DistilledContentStore() {};
-  virtual ~DistilledContentStore() {};
+  DistilledContentStore() {}
+  virtual ~DistilledContentStore() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DistilledContentStore);
@@ -81,7 +81,7 @@ class InMemoryContentStore : public DistilledContentStore {
                          std::unique_ptr<DistilledArticleProto, CacheDeletor>>
 
       ContentMap;
-  typedef base::hash_map<std::string, std::string> UrlMap;
+  typedef std::unordered_map<std::string, std::string> UrlMap;
 
   ContentMap cache_;
   UrlMap url_to_id_;

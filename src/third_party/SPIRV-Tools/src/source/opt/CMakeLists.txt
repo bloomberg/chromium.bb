@@ -15,10 +15,12 @@ set(SPIRV_TOOLS_OPT_SOURCES
   aggressive_dead_code_elim_pass.h
   basic_block.h
   block_merge_pass.h
+  block_merge_util.h
   build_module.h
   ccp_pass.h
   cfg_cleanup_pass.h
   cfg.h
+  code_sink.h
   combine_access_chains.h
   common_uniform_elim_pass.h
   compact_ids_pass.h
@@ -29,19 +31,24 @@ set(SPIRV_TOOLS_OPT_SOURCES
   dead_branch_elim_pass.h
   dead_insert_elim_pass.h
   dead_variable_elimination.h
+  decompose_initialized_variables_pass.h
   decoration_manager.h
   def_use_manager.h
   dominator_analysis.h
   dominator_tree.h
   eliminate_dead_constant_pass.h
   eliminate_dead_functions_pass.h
+  eliminate_dead_functions_util.h
+  eliminate_dead_members_pass.h
   feature_manager.h
+  fix_storage_class.h
   flatten_decoration_pass.h
   fold.h
   folding_rules.h
   fold_spec_constant_op_and_composite_pass.h
   freeze_spec_constant_value_pass.h
   function.h
+  generate_webgpu_initializers_pass.h
   if_conversion.h
   inline_exhaustive_pass.h
   inline_opaque_pass.h
@@ -92,6 +99,7 @@ set(SPIRV_TOOLS_OPT_SOURCES
   simplification_pass.h
   ssa_rewrite_pass.h
   strength_reduction_pass.h
+  strip_atomic_counter_memory_pass.h
   strip_debug_info_pass.h
   strip_reflect_info_pass.h
   struct_cfg_analysis.h
@@ -99,6 +107,7 @@ set(SPIRV_TOOLS_OPT_SOURCES
   type_manager.h
   types.h
   unify_const_pass.h
+  upgrade_memory_model.h
   value_number_table.h
   vector_dce.h
   workaround1209.h
@@ -106,10 +115,12 @@ set(SPIRV_TOOLS_OPT_SOURCES
   aggressive_dead_code_elim_pass.cpp
   basic_block.cpp
   block_merge_pass.cpp
+  block_merge_util.cpp
   build_module.cpp
   ccp_pass.cpp
   cfg_cleanup_pass.cpp
   cfg.cpp
+  code_sink.cpp
   combine_access_chains.cpp
   common_uniform_elim_pass.cpp
   compact_ids_pass.cpp
@@ -120,19 +131,24 @@ set(SPIRV_TOOLS_OPT_SOURCES
   dead_branch_elim_pass.cpp
   dead_insert_elim_pass.cpp
   dead_variable_elimination.cpp
+  decompose_initialized_variables_pass.cpp
   decoration_manager.cpp
   def_use_manager.cpp
   dominator_analysis.cpp
   dominator_tree.cpp
   eliminate_dead_constant_pass.cpp
   eliminate_dead_functions_pass.cpp
+  eliminate_dead_functions_util.cpp
+  eliminate_dead_members_pass.cpp
   feature_manager.cpp
+  fix_storage_class.cpp
   flatten_decoration_pass.cpp
   fold.cpp
   folding_rules.cpp
   fold_spec_constant_op_and_composite_pass.cpp
   freeze_spec_constant_value_pass.cpp
   function.cpp
+  generate_webgpu_initializers_pass.cpp
   if_conversion.cpp
   inline_exhaustive_pass.cpp
   inline_opaque_pass.cpp
@@ -143,6 +159,7 @@ set(SPIRV_TOOLS_OPT_SOURCES
   instrument_pass.cpp
   ir_context.cpp
   ir_loader.cpp
+  legalize_vector_shuffle_pass.cpp
   licm_pass.cpp
   local_access_chain_convert_pass.cpp
   local_redundancy_elimination.cpp
@@ -180,12 +197,14 @@ set(SPIRV_TOOLS_OPT_SOURCES
   simplification_pass.cpp
   ssa_rewrite_pass.cpp
   strength_reduction_pass.cpp
+  strip_atomic_counter_memory_pass.cpp
   strip_debug_info_pass.cpp
   strip_reflect_info_pass.cpp
   struct_cfg_analysis.cpp
   type_manager.cpp
   types.cpp
   unify_const_pass.cpp
+  upgrade_memory_model.cpp
   value_number_table.cpp
   vector_dce.cpp
   workaround1209.cpp

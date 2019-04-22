@@ -9,22 +9,23 @@
 #include "SkArithmeticImageFilter.h"
 #include "SkCanvas.h"
 #include "SkColorData.h"
-#include "SkColorSpaceXformer.h"
 #include "SkImageFilterPriv.h"
 #include "SkReadBuffer.h"
 #include "SkSpecialImage.h"
 #include "SkSpecialSurface.h"
 #include "SkWriteBuffer.h"
 #if SK_SUPPORT_GPU
+#include "GrCaps.h"
 #include "GrClip.h"
 #include "GrColorSpaceXform.h"
-#include "GrContext.h"
+#include "GrRecordingContext.h"
+#include "GrRecordingContextPriv.h"
 #include "GrRenderTargetContext.h"
 #include "GrTextureProxy.h"
 
-#include "effects/GrConstColorProcessor.h"
+#include "effects/generated/GrConstColorProcessor.h"
 #include "effects/GrTextureDomain.h"
-#include "effects/GrSimpleTextureEffect.h"
+#include "effects/generated/GrSimpleTextureEffect.h"
 #include "SkGr.h"
 #endif
 #include "SkClipOpPriv.h"
@@ -37,7 +38,6 @@ public:
 protected:
     sk_sp<SkSpecialImage> onFilterImage(SkSpecialImage* source, const Context&,
                                         SkIPoint* offset) const override;
-    sk_sp<SkImageFilter> onMakeColorSpace(SkColorSpaceXformer*) const override;
 
     SkIRect onFilterBounds(const SkIRect&, const SkMatrix& ctm,
                            MapDirection, const SkIRect* inputRect) const override;
@@ -220,18 +220,6 @@ SkIRect SkXfermodeImageFilter_Base::onFilterBounds(const SkIRect& src,
     }
 }
 
-sk_sp<SkImageFilter> SkXfermodeImageFilter_Base::onMakeColorSpace(SkColorSpaceXformer* xformer)
-const {
-    SkASSERT(2 == this->countInputs());
-    auto background = xformer->apply(this->getInput(0));
-    auto foreground = xformer->apply(this->getInput(1));
-    if (background.get() != this->getInput(0) || foreground.get() != this->getInput(1)) {
-        return SkXfermodeImageFilter::Make(fMode, std::move(background), std::move(foreground),
-                                           this->getCropRectIfSet());
-    }
-    return this->refMe();
-}
-
 void SkXfermodeImageFilter_Base::drawForeground(SkCanvas* canvas, SkSpecialImage* img,
                                                 const SkIRect& fgBounds) const {
     SkPaint paint;
@@ -260,7 +248,7 @@ sk_sp<SkSpecialImage> SkXfermodeImageFilter_Base::filterImageGPU(
                                                    const OutputProperties& outputProperties) const {
     SkASSERT(source->isTextureBacked());
 
-    GrContext* context = source->getContext();
+    auto context = source->getContext();
 
     sk_sp<GrTextureProxy> backgroundProxy, foregroundProxy;
 
@@ -276,12 +264,14 @@ sk_sp<SkSpecialImage> SkXfermodeImageFilter_Base::filterImageGPU(
     std::unique_ptr<GrFragmentProcessor> bgFP;
 
     if (backgroundProxy) {
-        SkMatrix bgMatrix = SkMatrix::MakeTrans(-SkIntToScalar(backgroundOffset.fX),
-                                                -SkIntToScalar(backgroundOffset.fY));
-        bgFP = GrTextureDomainEffect::Make(std::move(backgroundProxy), bgMatrix,
-                                           GrTextureDomain::MakeTexelDomain(background->subset()),
-                                           GrTextureDomain::kDecal_Mode,
-                                           GrSamplerState::Filter::kNearest);
+        SkIRect bgSubset = background->subset();
+        SkMatrix bgMatrix = SkMatrix::MakeTrans(
+                SkIntToScalar(bgSubset.left() - backgroundOffset.fX),
+                SkIntToScalar(bgSubset.top()  - backgroundOffset.fY));
+        bgFP = GrTextureDomainEffect::Make(
+                    std::move(backgroundProxy), bgMatrix,
+                    GrTextureDomain::MakeTexelDomain(bgSubset, GrTextureDomain::kDecal_Mode),
+                    GrTextureDomain::kDecal_Mode, GrSamplerState::Filter::kNearest);
         bgFP = GrColorSpaceXformEffect::Make(std::move(bgFP), background->getColorSpace(),
                                              background->alphaType(),
                                              outputProperties.colorSpace());
@@ -291,11 +281,13 @@ sk_sp<SkSpecialImage> SkXfermodeImageFilter_Base::filterImageGPU(
     }
 
     if (foregroundProxy) {
-        SkMatrix fgMatrix = SkMatrix::MakeTrans(-SkIntToScalar(foregroundOffset.fX),
-                                                -SkIntToScalar(foregroundOffset.fY));
+        SkIRect fgSubset = foreground->subset();
+        SkMatrix fgMatrix = SkMatrix::MakeTrans(
+                SkIntToScalar(fgSubset.left() - foregroundOffset.fX),
+                SkIntToScalar(fgSubset.top()  - foregroundOffset.fY));
         auto foregroundFP = GrTextureDomainEffect::Make(
                 std::move(foregroundProxy), fgMatrix,
-                GrTextureDomain::MakeTexelDomain(foreground->subset()),
+                GrTextureDomain::MakeTexelDomain(fgSubset, GrTextureDomain::kDecal_Mode),
                 GrTextureDomain::kDecal_Mode, GrSamplerState::Filter::kNearest);
         foregroundFP = GrColorSpaceXformEffect::Make(std::move(foregroundFP),
                                                      foreground->getColorSpace(),
@@ -317,10 +309,10 @@ sk_sp<SkSpecialImage> SkXfermodeImageFilter_Base::filterImageGPU(
 
     SkColorType colorType = outputProperties.colorType();
     GrBackendFormat format =
-            context->contextPriv().caps()->getBackendFormatFromColorType(colorType);
+            context->priv().caps()->getBackendFormatFromColorType(colorType);
 
     sk_sp<GrRenderTargetContext> renderTargetContext(
-        context->contextPriv().makeDeferredRenderTargetContext(
+        context->priv().makeDeferredRenderTargetContext(
                                     format, SkBackingFit::kApprox, bounds.width(), bounds.height(),
                                     SkColorType2GrPixelConfig(colorType),
                                     sk_ref_sp(outputProperties.colorSpace())));
@@ -350,5 +342,5 @@ std::unique_ptr<GrFragmentProcessor> SkXfermodeImageFilter_Base::makeFGFrag(
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 void SkXfermodeImageFilter::RegisterFlattenables() {
-    SK_REGISTER_FLATTENABLE(SkXfermodeImageFilter_Base)
+    SK_REGISTER_FLATTENABLE(SkXfermodeImageFilter_Base);
 }

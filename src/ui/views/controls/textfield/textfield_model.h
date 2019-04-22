@@ -26,13 +26,13 @@ namespace internal {
 class Edit;
 
 // The types of merge behavior implemented by Edit operations.
-enum MergeType {
+enum class MergeType {
   // The edit should not usually be merged with next edit.
-  DO_NOT_MERGE,
+  kDoNotMerge,
   // The edit should be merged with next edit when possible.
-  MERGEABLE,
-  // The edit should be merged with the prior edit, even if marked DO_NOT_MERGE.
-  FORCE_MERGE,
+  kMergeable,
+  // The edit should be merged with the prior edit, even if marked kDoNotMerge.
+  kForceMerge,
 };
 
 }  // namespace internal

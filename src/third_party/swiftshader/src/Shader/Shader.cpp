@@ -19,10 +19,14 @@
 #include "Common/Math.hpp"
 #include "Common/Debug.hpp"
 
+#include <algorithm>
 #include <set>
 #include <fstream>
+#include <functional>
 #include <sstream>
 #include <stdarg.h>
+#include <unordered_map>
+#include <unordered_set>
 
 namespace sw
 {
@@ -1877,15 +1881,13 @@ namespace sw
 	// This is used to know what basic block to return to.
 	void Shader::analyzeCallSites()
 	{
-		int callSiteIndex[2048] = {0};
+		std::unordered_map<int, int> callSiteIndices;
 
 		for(auto &inst : instruction)
 		{
 			if(inst->opcode == OPCODE_CALL || inst->opcode == OPCODE_CALLNZ)
 			{
-				int label = inst->dst.label;
-
-				inst->dst.callSite = callSiteIndex[label]++;
+				inst->dst.callSite = callSiteIndices[inst->dst.label]++;
 			}
 		}
 	}
@@ -1923,5 +1925,196 @@ namespace sw
 				}
 			}
 		}
+	}
+
+	// analyzeLimits analyzes the whole shader program to determine the deepest
+	// nesting of control flow blocks and function calls. These calculations
+	// are stored into the limits member, and is used by the programs to
+	// allocate stack storage variables.
+	void Shader::analyzeLimits()
+	{
+		typedef unsigned int FunctionID;
+
+		// Identifier of the function with the main entry point.
+		constexpr FunctionID MAIN_ID = 0xF0000000;
+
+		// Invalid function identifier.
+		constexpr FunctionID INVALID_ID = ~0U;
+
+		// Limits on a single function.
+		struct FunctionLimits
+		{
+			uint32_t loops = 0; // maximum nested loop and reps.
+			uint32_t ifs = 0; // maximum nested if statements.
+			uint32_t stack = 0; // maximum call depth.
+		};
+
+		// Information about a single function in the shader.
+		struct FunctionInfo
+		{
+			FunctionLimits limits;
+			std::unordered_set<FunctionID> calls; // What this function calls.
+			bool reachable; // Is this function reachable?
+		};
+
+		std::unordered_map<FunctionID, FunctionInfo> functions;
+
+		uint32_t maxLabel = 0; // Highest label found
+
+		// Add a definition for the main entry point.
+		// This starts at the beginning of the instructions and does not have
+		// its own label.
+		functions[MAIN_ID] = FunctionInfo();
+		functions[MAIN_ID].reachable = true;
+
+		// Begin by doing a pass over the instructions to identify all the
+		// functions. These start with a label and end with a ret. Note that
+		// functions can have labels within them.
+		FunctionID currentFunc = MAIN_ID;
+		for(auto &inst : instruction)
+		{
+			switch (inst->opcode)
+			{
+				case OPCODE_LABEL:
+					if (currentFunc == INVALID_ID)
+					{
+						// Start of a function.
+						FunctionID id = inst->dst.label;
+						ASSERT(id != MAIN_ID); // If this fires, we're going to have to represent main with something else.
+						functions[id] = FunctionInfo();
+					}
+					break;
+				case OPCODE_RET:
+					currentFunc = INVALID_ID;
+					break;
+				default:
+					break;
+			}
+		}
+
+		// Limits for the currently analyzed function.
+		FunctionLimits currentLimits;
+
+		// Now loop over the instructions gathering the limits of each of the
+		// functions.
+		currentFunc = MAIN_ID;
+		for(size_t i = 0; i < instruction.size(); i++)
+		{
+			const auto& inst = instruction[i];
+			switch (inst->opcode)
+			{
+				case OPCODE_LABEL:
+				{
+					maxLabel = std::max(maxLabel, inst->dst.label);
+					if (currentFunc == INVALID_ID)
+					{
+						// Start of a function.
+						FunctionID id = inst->dst.label;
+						ASSERT(functions.find(id) != functions.end()); // Sanity check
+						currentFunc = id;
+					}
+					break;
+				}
+				case OPCODE_CALL:
+				case OPCODE_CALLNZ:
+				{
+					ASSERT(currentFunc != INVALID_ID);
+					FunctionID id = inst->dst.label;
+					ASSERT(functions.find(id) != functions.end());
+					functions[currentFunc].calls.emplace(id);
+					functions[id].reachable = true;
+					break;
+				}
+				case OPCODE_LOOP:
+				case OPCODE_REP:
+				case OPCODE_WHILE:
+				case OPCODE_SWITCH: // Not a mistake - switches share loopReps.
+				{
+					ASSERT(currentFunc != INVALID_ID);
+					++currentLimits.loops;
+					auto& func = functions[currentFunc];
+					func.limits.loops = std::max(func.limits.loops, currentLimits.loops);
+					break;
+				}
+				case OPCODE_ENDLOOP:
+				case OPCODE_ENDREP:
+				case OPCODE_ENDWHILE:
+				case OPCODE_ENDSWITCH:
+				{
+					ASSERT(currentLimits.loops > 0);
+					--currentLimits.loops;
+					break;
+				}
+				case OPCODE_IF:
+				case OPCODE_IFC:
+				{
+					ASSERT(currentFunc != INVALID_ID);
+					++currentLimits.ifs;
+					auto& func = functions[currentFunc];
+					func.limits.ifs = std::max(func.limits.ifs, currentLimits.ifs);
+					break;
+				}
+				case OPCODE_ENDIF:
+				{
+					ASSERT(currentLimits.ifs > 0);
+					currentLimits.ifs--;
+					break;
+				}
+				case OPCODE_RET:
+				{
+					// Must be in a function to return.
+					ASSERT(currentFunc != INVALID_ID);
+
+					// All stacks should be popped before returning.
+					ASSERT(currentLimits.ifs == 0);
+					ASSERT(currentLimits.loops == 0);
+
+					currentFunc = INVALID_ID;
+					currentLimits = FunctionLimits();
+					break;
+				}
+				default:
+					break;
+			}
+		}
+
+		// Assert that every function is reachable (these should have been
+		// stripped in earlier stages). Unreachable functions may be code
+		// generated, but their own limits are not considered below, potentially
+		// causing OOB indexing in later stages.
+		// If we ever find cases where there are unreachable functions, we can
+		// replace this assert with NO-OPing or stripping out the dead
+		// functions.
+		for (auto it : functions) { ASSERT(it.second.reachable); }
+
+		// We have now gathered all the information about each of the functions
+		// in the shader. Traverse these functions starting from the main
+		// function to calculate the maximum limits across the entire shader.
+
+		std::unordered_set<FunctionID> visited;
+		std::function<Limits(FunctionID)> traverse;
+		traverse = [&](FunctionID id) -> Limits
+		{
+			const auto& func = functions[id];
+			ASSERT(visited.count(id) == 0); // Sanity check: Recursive functions are not allowed.
+			visited.insert(id);
+			Limits limits;
+			limits.stack = 1;
+			for (auto callee : func.calls)
+			{
+				auto calleeLimits = traverse(callee);
+				limits.loops = std::max(limits.loops, calleeLimits.loops);
+				limits.ifs = std::max(limits.ifs, calleeLimits.ifs);
+				limits.stack = std::max(limits.stack, calleeLimits.stack + 1);
+			}
+			visited.erase(id);
+
+			limits.loops += func.limits.loops;
+			limits.ifs += func.limits.ifs;
+			return limits;
+		};
+
+		limits = traverse(MAIN_ID);
+		limits.maxLabel = maxLabel;
 	}
 }

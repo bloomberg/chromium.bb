@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "third_party/webrtc/rtc_base/data_rate_limiter.h"
-#include "third_party/webrtc/rtc_base/timeutils.h"
+#include "third_party/webrtc/rtc_base/time_utils.h"
 
 namespace network {
 

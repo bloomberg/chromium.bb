@@ -6,6 +6,11 @@
 
 #include <stdint.h>
 
+#include <memory>
+#include <string>
+#include <utility>
+
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
@@ -71,7 +76,7 @@ class ResourceFetcherImpl::ClientImpl : public network::mojom::URLLoaderClient {
              const net::NetworkTrafficAnnotationTag& annotation_tag,
              scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
     status_ = Status::kStarted;
-    response_.SetURL(request.url);
+    response_.SetCurrentRequestUrl(request.url);
 
     network::mojom::URLLoaderClientPtr client;
     client_binding_.Bind(mojo::MakeRequest(&client), std::move(task_runner));
@@ -180,14 +185,14 @@ class ResourceFetcherImpl::ClientImpl : public network::mojom::URLLoaderClient {
     // Existing callers need URL and HTTP status code. URL is already set in
     // Start().
     if (response_head.headers)
-      response_.SetHTTPStatusCode(response_head.headers->response_code());
+      response_.SetHttpStatusCode(response_head.headers->response_code());
   }
   void OnReceiveRedirect(
       const net::RedirectInfo& redirect_info,
       const network::ResourceResponseHead& response_head) override {
     DCHECK_EQ(Status::kStarted, status_);
-    loader_->FollowRedirect(base::nullopt, base::nullopt, base::nullopt);
-    response_.SetURL(redirect_info.new_url);
+    loader_->FollowRedirect({}, {}, base::nullopt);
+    response_.SetCurrentRequestUrl(redirect_info.new_url);
   }
   void OnUploadProgress(int64_t current_position,
                         int64_t total_size,
@@ -281,6 +286,11 @@ void ResourceFetcherImpl::SetHeader(const std::string& header,
   } else {
     request_.headers.SetHeader(header, value);
   }
+}
+
+void ResourceFetcherImpl::SetFetchRequestMode(
+    network::mojom::FetchRequestMode fetch_request_mode) {
+  request_.fetch_request_mode = fetch_request_mode;
 }
 
 void ResourceFetcherImpl::Start(

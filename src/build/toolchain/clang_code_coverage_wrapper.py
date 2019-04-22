@@ -2,11 +2,19 @@
 # Copyright 2018 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-"""Adds code coverage flags to the invocations of the Clang C/C++ compiler.
+"""Removes code coverage flags from invocations of the Clang C/C++ compiler.
 
-This script is used to instrument a subset of the source files, and the list of
-files to instrument is specified by an input file that is passed to this script
-as a command-line argument.
+If the GN arg `use_clang_coverage=true`, this script will be invoked by default.
+GN will add coverage instrumentation flags to almost all source files.
+
+This script is used to remove instrumentation flags from a subset of the source
+files. By default, it will not remove flags from any files. If the option
+--files-to-instrument is passed, this script will remove flags from all files
+except the ones listed in --files-to-instrument.
+
+This script also contains hard-coded exclusion lists of files to never
+instrument, indexed by target operating system. Files in these lists have their
+flags removed in both modes. The OS can be selected with --target-os.
 
 The path to the coverage instrumentation input file should be relative to the
 root build directory, and the file consists of multiple lines where each line
@@ -37,8 +45,52 @@ import subprocess
 import sys
 
 # Flags used to enable coverage instrumentation.
-_COVERAGE_FLAGS = ['-fprofile-instr-generate', '-fcoverage-mapping']
+# Flags should be listed in the same order that they are added in
+# build/config/coverage/BUILD.gn
+_COVERAGE_FLAGS = [
+    '-fprofile-instr-generate', '-fcoverage-mapping',
+    # Following experimental flags remove unused header functions from the
+    # coverage mapping data embedded in the test binaries, and the reduction
+    # of binary size enables building Chrome's large unit test targets on
+    # MacOS. Please refer to crbug.com/796290 for more details.
+    '-mllvm', '-limited-coverage-experimental=true'
+]
 
+# Map of exclusion lists indexed by target OS.
+# If no target OS is defined, or one is defined that doesn't have a specific
+# entry, use the 'default' exclusion_list. Anything added to 'default' will
+# apply to all platforms that don't have their own specific list.
+_COVERAGE_EXCLUSION_LIST_MAP = {
+    'default': [],
+    'chromeos': [
+        # These files caused clang to crash while compiling them. They are
+        # excluded pending an investigation into the underlying compiler bug.
+        '../../third_party/webrtc/p2p/base/p2p_transport_channel.cc',
+        '../../third_party/icu/source/common/uts46.cpp',
+        '../../third_party/icu/source/common/ucnvmbcs.cpp',
+        '../../base/android/android_image_reader_compat.cc',
+    ]
+}
+
+
+def _remove_flags_from_command(command):
+  # We need to remove the coverage flags for this file, but we only want to
+  # remove them if we see the exact sequence defined in _COVERAGE_FLAGS.
+  # That ensures that we only remove the flags added by GN when
+  # "use_clang_coverage" is true. Otherwise, we would remove flags set by
+  # other parts of the build system.
+  start_flag = _COVERAGE_FLAGS[0]
+  num_flags = len(_COVERAGE_FLAGS)
+  start_idx = 0
+  try:
+    while True:
+      idx = command.index(start_flag, start_idx)
+      start_idx = idx + 1
+      if command[idx:idx+num_flags] == _COVERAGE_FLAGS:
+        del command[idx:idx+num_flags]
+        break
+  except ValueError:
+    pass
 
 def main():
   # TODO(crbug.com/898695): Make this wrapper work on Windows platform.
@@ -47,16 +99,23 @@ def main():
   arg_parser.add_argument(
       '--files-to-instrument',
       type=str,
-      required=True,
       help='Path to a file that contains a list of file names to instrument.')
+  arg_parser.add_argument(
+      '--target-os',
+      required=False,
+      help='The OS to compile for.')
   arg_parser.add_argument('args', nargs=argparse.REMAINDER)
   parsed_args = arg_parser.parse_args()
 
-  if not os.path.isfile(parsed_args.files_to_instrument):
+  if (parsed_args.files_to_instrument and
+      not os.path.isfile(parsed_args.files_to_instrument)):
     raise Exception('Path to the coverage instrumentation file: "%s" doesn\'t '
                     'exist.' % parsed_args.files_to_instrument)
 
   compile_command = parsed_args.args
+  if not any('clang' in s for s in compile_command):
+    return subprocess.call(compile_command)
+
   try:
     # The command is assumed to use Clang as the compiler, and the path to the
     # source file is behind the -c argument, and the path to the source path is
@@ -72,12 +131,19 @@ def main():
     raise Exception('Source file to be compiled is missing from the command.')
 
   compile_source_file = compile_command[index_dash_c + 1]
-  with open(parsed_args.files_to_instrument) as f:
-    if compile_source_file + '\n' in f.read():
-      compile_command.extend(_COVERAGE_FLAGS)
+  target_os = parsed_args.target_os
+  if target_os not in _COVERAGE_EXCLUSION_LIST_MAP:
+    target_os = 'default'
+  exclusion_list = _COVERAGE_EXCLUSION_LIST_MAP[target_os]
+
+  if compile_source_file in exclusion_list:
+    _remove_flags_from_command(compile_command)
+  elif parsed_args.files_to_instrument:
+    with open(parsed_args.files_to_instrument) as f:
+      if compile_source_file not in f.read():
+        _remove_flags_from_command(compile_command)
 
   return subprocess.call(compile_command)
-
 
 if __name__ == '__main__':
   sys.exit(main())

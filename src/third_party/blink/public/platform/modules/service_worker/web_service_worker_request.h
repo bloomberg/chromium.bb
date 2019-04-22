@@ -8,7 +8,7 @@
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-shared.h"
-#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_private_ptr.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -17,7 +17,6 @@
 
 #if INSIDE_BLINK
 #include <utility>
-#include "third_party/blink/public/mojom/blob/blob.mojom-blink.h"  // nogncheck
 #include "third_party/blink/renderer/platform/network/http_header_map.h"  // nogncheck
 #include "third_party/blink/renderer/platform/weborigin/referrer.h"  // nogncheck
 #include "third_party/blink/renderer/platform/wtf/forward.h"  // nogncheck
@@ -29,7 +28,6 @@ class UnguessableToken;
 }
 namespace blink {
 
-class BlobDataHandle;
 class WebHTTPHeaderVisitor;
 class WebServiceWorkerRequestPrivate;
 
@@ -67,15 +65,10 @@ class BLINK_PLATFORM_EXPORT WebServiceWorkerRequest {
   // with a comma delimiter between them.
   void AppendHeader(const WebString& key, const WebString& value);
 
-  void VisitHTTPHeaderFields(WebHTTPHeaderVisitor*) const;
+  void VisitHttpHeaderFields(WebHTTPHeaderVisitor*) const;
 
-  // There are two ways of representing body: WebHTTPBody or Blob.  Only one
-  // should be used.
   void SetBody(const WebHTTPBody&);
   WebHTTPBody Body() const;
-  void SetBlob(const WebString& uuid,
-               long long size,
-               mojo::ScopedMessagePipeHandle);
 
   void SetReferrer(const WebString&, network::mojom::ReferrerPolicy);
   WebURL ReferrerUrl() const;
@@ -125,12 +118,7 @@ class BLINK_PLATFORM_EXPORT WebServiceWorkerRequest {
 
 #if INSIDE_BLINK
   const HTTPHeaderMap& Headers() const;
-  void SetBlobDataHandle(scoped_refptr<BlobDataHandle>);
-  scoped_refptr<BlobDataHandle> GetBlobDataHandle() const;
   const Referrer& GetReferrer() const;
-  void SetBlob(const WebString& uuid,
-               long long size,
-               mojom::blink::BlobPtrInfo);
 #endif
 
  private:

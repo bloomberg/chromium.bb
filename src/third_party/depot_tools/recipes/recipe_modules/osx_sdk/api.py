@@ -11,6 +11,15 @@ from contextlib import contextmanager
 
 from recipe_engine import recipe_api
 
+# TODO(iannucci): replace this with something sane when PROPERTIES is
+# implemented with a proto message.
+_PROPERTY_DEFAULTS = {
+  'sdk_version': '9c40b',
+
+  'toolchain_pkg': 'infra/tools/mac_toolchain/${platform}',
+  'toolchain_ver': 'git_revision:796d2b92cff93fc2059623ce0a66284373ceea0a',
+}
+
 
 class OSXSDKApi(recipe_api.RecipeApi):
   """API for using OS X SDK distributed via CIPD."""
@@ -18,9 +27,12 @@ class OSXSDKApi(recipe_api.RecipeApi):
   def __init__(self, sdk_properties, *args, **kwargs):
     super(OSXSDKApi, self).__init__(*args, **kwargs)
 
-    self._sdk_version = sdk_properties['sdk_version'].lower()
-    self._tool_pkg = sdk_properties['toolchain_pkg']
-    self._tool_ver = sdk_properties['toolchain_ver']
+    actual_props = _PROPERTY_DEFAULTS.copy()
+    actual_props.update(sdk_properties)
+
+    self._sdk_version = actual_props['sdk_version'].lower()
+    self._tool_pkg = actual_props['toolchain_pkg']
+    self._tool_ver = actual_props['toolchain_ver']
 
   @contextmanager
   def __call__(self, kind):

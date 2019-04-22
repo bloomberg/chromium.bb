@@ -21,6 +21,7 @@ source_set("unit_tests") {
 
   deps = [
     ":base32",
+    "//base",
     "//testing/gtest",
   ]
 }

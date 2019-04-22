@@ -9,13 +9,15 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "services/service_manager/public/cpp/manifest_builder.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_binding.h"
 #include "services/service_manager/public/cpp/test/test_service_manager.h"
+#include "services/ws/ime/test_ime_driver/public/cpp/manifest.h"
 #include "services/ws/ime/test_ime_driver/public/mojom/constants.mojom.h"
-#include "services/ws/ime/tests_catalog_source.h"
 #include "services/ws/public/mojom/constants.mojom.h"
 #include "services/ws/public/mojom/ime/ime.mojom.h"
+#include "services/ws/test_ws/test_manifest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/dom/dom_code.h"
@@ -48,8 +50,15 @@ class TestTextInputClient : public ws::mojom::TextInputClient {
   void DispatchKeyEventPostIME(
       std::unique_ptr<ui::Event> event,
       DispatchKeyEventPostIMECallback callback) override {
-    std::move(callback).Run(false);
+    std::move(callback).Run(false, false);
   }
+  void EnsureCaretNotInRect(const gfx::Rect& rect) override {}
+  void SetEditableSelectionRange(const gfx::Range& range) override {}
+  void DeleteRange(const gfx::Range& range) override {}
+  void OnInputMethodChanged() override {}
+  void ChangeTextDirectionAndLayoutAlignment(
+      base::i18n::TextDirection direction) override {}
+  void ExtendSelectionAndDelete(uint32_t before, uint32_t after) override {}
 
   mojo::Binding<ws::mojom::TextInputClient> binding_;
   std::unique_ptr<base::RunLoop> run_loop_;
@@ -58,13 +67,21 @@ class TestTextInputClient : public ws::mojom::TextInputClient {
   DISALLOW_COPY_AND_ASSIGN(TestTextInputClient);
 };
 
+const char kTestServiceName[] = "ime_unittests";
+
 class IMEAppTest : public testing::Test {
  public:
   IMEAppTest()
-      : test_service_manager_(ws::test::CreateImeTestCatalog()),
+      : test_service_manager_(
+            {test_ws::GetManifest(), test_ime_driver::GetManifest(),
+             service_manager::ManifestBuilder()
+                 .WithServiceName(kTestServiceName)
+                 .RequireCapability(ws::mojom::kServiceName, "app")
+                 .RequireCapability(test_ime_driver::mojom::kServiceName, "")
+                 .Build()}),
         test_service_binding_(
             &test_service_,
-            test_service_manager_.RegisterTestInstance("ime_unittests")) {
+            test_service_manager_.RegisterTestInstance(kTestServiceName)) {
     // test_ime_driver will register itself as the current IMEDriver.
     // TODO(https://crbug.com/904148): This should not use |WarmService()|.
     connector()->WarmService(service_manager::ServiceFilter::ByName(
@@ -113,11 +130,15 @@ class IMEAppTest : public testing::Test {
 // Tests sending a KeyEvent to the IMEDriver through the Mus IMEDriver.
 TEST_F(IMEAppTest, ProcessKeyEvent) {
   ws::mojom::InputMethodPtr input_method;
-  ws::mojom::StartSessionDetailsPtr details =
-      ws::mojom::StartSessionDetails::New();
-  TestTextInputClient client(MakeRequest(&details->client));
-  details->input_method_request = MakeRequest(&input_method);
-  ime_driver_->StartSession(std::move(details));
+  ws::mojom::SessionDetailsPtr details = ws::mojom::SessionDetails::New();
+  details->state = ws::mojom::TextInputState::New(ui::TEXT_INPUT_TYPE_TEXT,
+                                                  ui::TEXT_INPUT_MODE_DEFAULT,
+                                                  base::i18n::LEFT_TO_RIGHT, 0);
+  details->data = ws::mojom::TextInputClientData::New();
+  ws::mojom::TextInputClientPtr client_ptr;
+  TestTextInputClient client(MakeRequest(&client_ptr));
+  ime_driver_->StartSession(MakeRequest(&input_method), std::move(client_ptr),
+                            std::move(details));
 
   // Send character key event.
   ui::KeyEvent char_event('A', ui::VKEY_A, ui::DomCode::NONE, 0);

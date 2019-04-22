@@ -80,6 +80,21 @@ void VerifyDownlinkKbps(double expected_kbps, double got_kbps) {
       << " expected_kbps=" << expected_kbps << " got_kbps=" << got_kbps;
 }
 
+class MockNetworkChangeNotifierWifi : public net::NetworkChangeNotifier {
+ public:
+  void GetCurrentMaxBandwidthAndConnectionType(
+      double* max_bandwidth_mbps,
+      ConnectionType* connection_type) const override {
+    *connection_type = NetworkChangeNotifier::CONNECTION_WIFI;
+    *max_bandwidth_mbps =
+        net::NetworkChangeNotifier::GetMaxBandwidthMbpsForConnectionSubtype(
+            net::NetworkChangeNotifier::SUBTYPE_WIFI_N);
+  }
+  ConnectionType GetCurrentConnectionType() const override {
+    return NetworkChangeNotifier::CONNECTION_WIFI;
+  }
+};
+
 }  // namespace
 
 namespace content {
@@ -158,13 +173,15 @@ class NetInfoBrowserTest : public content::ContentBrowserTest {
 
 // Make sure the type is correct when the page is first opened.
 IN_PROC_BROWSER_TEST_F(NetInfoBrowserTest, VerifyNetworkStateInitialized) {
-  SetConnectionType(net::NetworkChangeNotifier::CONNECTION_ETHERNET,
-                    net::NetworkChangeNotifier::SUBTYPE_GIGABIT_ETHERNET);
+  // Mock out the NCN.
+  net::NetworkChangeNotifier::DisableForTest disable_for_test;
+  MockNetworkChangeNotifierWifi mock_notifier;
+
   NavigateToURL(shell(), content::GetTestUrl("", "net_info.html"));
   EXPECT_TRUE(RunScriptExtractBool("getOnLine()"));
-  EXPECT_EQ("ethernet", RunScriptExtractString("getType()"));
+  EXPECT_EQ("wifi", RunScriptExtractString("getType()"));
   EXPECT_EQ(net::NetworkChangeNotifier::GetMaxBandwidthMbpsForConnectionSubtype(
-                net::NetworkChangeNotifier::SUBTYPE_GIGABIT_ETHERNET),
+                net::NetworkChangeNotifier::SUBTYPE_WIFI_N),
             RunScriptExtractDouble("getDownlinkMax()"));
 }
 
@@ -413,7 +430,7 @@ IN_PROC_BROWSER_TEST_F(NetInfoBrowserTest, NetworkQualityRandomized) {
   for (size_t i = 0; i < 10; ++i) {
     // The noise added is a function of the hostname. Varying the hostname
     // should vary the noise.
-    std::string fake_hostname = "example" + base::IntToString(i) + ".com";
+    std::string fake_hostname = "example" + base::NumberToString(i) + ".com";
     EXPECT_TRUE(NavigateToURL(shell(), embedded_test_server()->GetURL(
                                            fake_hostname, "/net_info.html")));
     VerifyRtt(http_rtt, RunScriptExtractInt("getRtt()"));

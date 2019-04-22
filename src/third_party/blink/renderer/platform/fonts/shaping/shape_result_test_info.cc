@@ -68,4 +68,74 @@ Vector<unsigned> ShapeResultTestInfo::CharacterIndexesForTesting() const {
   return character_indexes;
 }
 
+void AddGlyphInfo(void* context,
+                  unsigned character_index,
+                  Glyph glyph,
+                  FloatSize glyph_offset,
+                  float advance,
+                  bool is_horizontal,
+                  CanvasRotationInVertical rotation,
+                  const SimpleFontData* font_data) {
+  auto* list = static_cast<Vector<ShapeResultTestGlyphInfo>*>(context);
+  ShapeResultTestGlyphInfo glyph_info = {character_index, glyph, advance};
+  list->push_back(glyph_info);
+}
+
+void ComputeGlyphResults(const ShapeResult& result,
+                         Vector<ShapeResultTestGlyphInfo>* glyphs) {
+  result.ForEachGlyph(0, AddGlyphInfo, static_cast<void*>(glyphs));
+}
+
+bool CompareResultGlyphs(const Vector<ShapeResultTestGlyphInfo>& test,
+                         const Vector<ShapeResultTestGlyphInfo>& reference,
+                         unsigned reference_start,
+                         unsigned num_glyphs) {
+  float advance_offset = reference[reference_start].advance;
+  bool glyphs_match = true;
+  for (unsigned i = 0; i < test.size(); i++) {
+    const auto& test_glyph = test[i];
+    const auto& reference_glyph = reference[i + reference_start];
+    if (test_glyph.character_index != reference_glyph.character_index ||
+        test_glyph.glyph != reference_glyph.glyph ||
+        test_glyph.advance != reference_glyph.advance - advance_offset) {
+      glyphs_match = false;
+      break;
+    }
+  }
+  if (!glyphs_match) {
+    fprintf(stderr, "╔══ Actual ═══════╤═══════╤═════════╗    ");
+    fprintf(stderr, "╔══ Expected ═════╤═══════╤═════════╗\n");
+    fprintf(stderr, "║ Character Index │ Glyph │ Advance ║    ");
+    fprintf(stderr, "║ Character Index │ Glyph │ Advance ║\n");
+    fprintf(stderr, "╟─────────────────┼───────┼─────────╢    ");
+    fprintf(stderr, "╟─────────────────┼───────┼─────────╢\n");
+    for (unsigned i = 0; i < test.size(); i++) {
+      const auto& test_glyph = test[i];
+      const auto& reference_glyph = reference[i + reference_start];
+
+      if (test_glyph.character_index == reference_glyph.character_index)
+        fprintf(stderr, "║      %10u │", test_glyph.character_index);
+      else
+        fprintf(stderr, "║▶     %10u◀│", test_glyph.character_index);
+
+      if (test_glyph.glyph == reference_glyph.glyph)
+        fprintf(stderr, "  %04X │", test_glyph.glyph);
+      else
+        fprintf(stderr, "▶ %04X◀│", test_glyph.glyph);
+
+      if (test_glyph.advance == reference_glyph.advance)
+        fprintf(stderr, " %7.2f ║    ", test_glyph.advance);
+      else
+        fprintf(stderr, "▶%7.2f◀║    ", test_glyph.advance);
+
+      fprintf(stderr, "║      %10u │  %04X │ %7.2f ║\n",
+              reference_glyph.character_index, reference_glyph.glyph,
+              reference_glyph.advance - advance_offset);
+    }
+    fprintf(stderr, "╚═════════════════╧═══════╧═════════╝    ");
+    fprintf(stderr, "╚═════════════════╧═══════╧═════════╝\n");
+  }
+  return glyphs_match;
+}
+
 }  // namespace blink

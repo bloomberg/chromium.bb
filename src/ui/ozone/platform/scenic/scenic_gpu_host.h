@@ -32,6 +32,10 @@ class ScenicGpuHost : public mojom::ScenicGpuHost,
   ScenicGpuHost(ScenicWindowManager* scenic_window_manager);
   ~ScenicGpuHost() override;
 
+  // Creates browser process binding. This is used to create a software output
+  // on the UI thread.
+  mojom::ScenicGpuHostPtr CreateHostProcessSelfBinding();
+
   // mojom::ScenicGpuHost:
   void ExportParent(int32_t surface_handle,
                     mojo::ScopedHandle export_token_mojo) override;
@@ -58,7 +62,8 @@ class ScenicGpuHost : public mojom::ScenicGpuHost,
                      mojom::ScenicGpuHostRequest scenic_gpu_host_request);
 
   ScenicWindowManager* const scenic_window_manager_;
-  mojo::Binding<mojom::ScenicGpuHost> binding_;
+  mojo::Binding<mojom::ScenicGpuHost> host_binding_;
+  mojo::Binding<mojom::ScenicGpuHost> gpu_binding_;
 
   mojom::ScenicGpuServicePtr gpu_service_;
   scoped_refptr<base::SingleThreadTaskRunner> ui_thread_runner_;

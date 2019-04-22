@@ -9,7 +9,7 @@
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/platform/web_rtc_certificate_generator.h"
 #include "third_party/blink/public/platform/web_rtc_key_params.h"
-#include "third_party/webrtc/api/peerconnectioninterface.h"
+#include "third_party/webrtc/api/peer_connection_interface.h"
 
 namespace content {
 
@@ -24,12 +24,12 @@ class RTCCertificateGenerator : public blink::WebRTCCertificateGenerator {
   // blink::WebRTCCertificateGenerator implementation.
   void GenerateCertificate(
       const blink::WebRTCKeyParams& key_params,
-      std::unique_ptr<blink::WebRTCCertificateCallback> observer,
+      blink::WebRTCCertificateCallback completion_callback,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
   void GenerateCertificateWithExpiration(
       const blink::WebRTCKeyParams& key_params,
       uint64_t expires_ms,
-      std::unique_ptr<blink::WebRTCCertificateCallback> observer,
+      blink::WebRTCCertificateCallback completion_callback,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
   bool IsSupportedKeyParams(const blink::WebRTCKeyParams& key_params) override;
   rtc::scoped_refptr<rtc::RTCCertificate> FromPEM(

@@ -9,7 +9,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_sync_service.h"
@@ -569,7 +569,7 @@ void ChromeAppSorting::CreateDefaultOrdinals() {
     extensions::kWebStoreAppId,
   };
   const std::vector<const char*> app_ids(
-      kDefaultAppOrder, kDefaultAppOrder + arraysize(kDefaultAppOrder));
+      kDefaultAppOrder, kDefaultAppOrder + base::size(kDefaultAppOrder));
 #endif
 
   syncer::StringOrdinal page_ordinal = CreateFirstAppPageOrdinal();

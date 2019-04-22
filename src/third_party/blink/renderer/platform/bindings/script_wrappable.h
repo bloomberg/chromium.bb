@@ -31,13 +31,13 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_SCRIPT_WRAPPABLE_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_SCRIPT_WRAPPABLE_H_
 
+#include "base/macros.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
 #include "third_party/blink/renderer/platform/bindings/wrapper_type_info.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/type_traits.h"
 #include "v8/include/v8.h"
 
@@ -52,8 +52,6 @@ namespace blink {
 class PLATFORM_EXPORT ScriptWrappable
     : public GarbageCollectedFinalized<ScriptWrappable>,
       public NameClient {
-  WTF_MAKE_NONCOPYABLE(ScriptWrappable);
-
  public:
   virtual ~ScriptWrappable() = default;
 
@@ -103,6 +101,7 @@ class PLATFORM_EXPORT ScriptWrappable
   // Returns true if the instance needs to be kept alive even when the
   // instance is unreachable from JavaScript.
   virtual bool HasPendingActivity() const { return false; }
+  virtual bool HasEventListeners() const { return false; }
 
   // Associates this instance with the given |wrapper| if this instance is not
   // yet associated with any wrapper.  Returns true if the given wrapper is
@@ -157,6 +156,8 @@ class PLATFORM_EXPORT ScriptWrappable
   }
 
   TraceWrapperV8Reference<v8::Object> main_world_wrapper_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScriptWrappable);
 };
 
 // Defines |GetWrapperTypeInfo| virtual method which returns the WrapperTypeInfo

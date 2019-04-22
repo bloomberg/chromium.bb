@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
@@ -94,7 +96,7 @@ bool WebRtcRtpDumpHandler::StartDump(RtpDumpType type,
   if ((DumpTypeContainsIncoming(type) && incoming_state_ != STATE_NONE) ||
       (DumpTypeContainsOutgoing(type) && outgoing_state_ != STATE_NONE)) {
     *error_message =
-        "RTP dump already started for type " + base::IntToString(type);
+        "RTP dump already started for type " + base::NumberToString(type);
     return false;
   }
 
@@ -147,10 +149,9 @@ void WebRtcRtpDumpHandler::StopDump(RtpDumpType type,
       (DumpTypeContainsOutgoing(type) && outgoing_state_ != STATE_STARTED)) {
     if (!callback.is_null()) {
       FireGenericDoneCallback(
-          callback,
-          false,
+          callback, false,
           "RTP dump not started or already stopped for type " +
-              base::IntToString(type));
+              base::NumberToString(type));
     }
     return;
   }

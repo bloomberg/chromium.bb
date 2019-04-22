@@ -9,21 +9,29 @@
 #include <utility>
 #include <vector>
 
-#include "ash/public/cpp/app_list/app_list_constants.h"
+#include "ash/public/cpp/app_list/app_list_config.h"
 #include "base/bind.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/app_search_result_ranker.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_ranker.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 
 namespace app_list {
 
 SearchController::SearchController(AppListModelUpdater* model_updater,
-                                   AppListControllerDelegate* list_controller)
+                                   AppListControllerDelegate* list_controller,
+                                   Profile* profile)
     : mixer_(std::make_unique<Mixer>(model_updater)),
+      ranker_(std::make_unique<AppSearchResultRanker>(
+          profile->GetPath(),
+          chromeos::ProfileHelper::IsEphemeralUserProfile(profile))),
       list_controller_(list_controller) {}
 
 SearchController::~SearchController() {}
@@ -37,6 +45,11 @@ void SearchController::Start(const base::string16& query) {
   query_for_recommendation_ = query.empty();
 
   OnResultsChanged();
+}
+
+void SearchController::ViewClosing() {
+  for (const auto& provider : providers_)
+    provider->ViewClosing();
 }
 
 void SearchController::OpenResult(ChromeSearchResult* result, int event_flags) {
@@ -81,7 +94,9 @@ void SearchController::OnResultsChanged() {
     return;
 
   size_t num_max_results =
-      query_for_recommendation_ ? kNumStartPageTiles : kMaxSearchResults;
+      query_for_recommendation_
+          ? AppListConfig::instance().num_start_page_tiles()
+          : AppListConfig::instance().max_search_results();
   mixer_->MixAndPublish(num_max_results);
 }
 
@@ -112,9 +127,19 @@ ChromeSearchResult* SearchController::GetResultByTitleForTest(
   return nullptr;
 }
 
-void SearchController::Train(const std::string& id) {
+void SearchController::SetRecurrenceRanker(
+    std::unique_ptr<RecurrenceRanker> ranker) {
+  mixer_->SetRecurrenceRanker(std::move(ranker));
+}
+
+void SearchController::Train(const std::string& id, RankingItemType type) {
   for (const auto& provider : providers_)
-    provider->Train(id);
+    provider->Train(id, type);
+  mixer_->Train(id, type);
+}
+
+AppSearchResultRanker* SearchController::GetSearchResultRanker() {
+  return ranker_.get();
 }
 
 }  // namespace app_list

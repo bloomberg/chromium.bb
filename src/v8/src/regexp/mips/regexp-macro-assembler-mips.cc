@@ -7,18 +7,17 @@
 #include "src/regexp/mips/regexp-macro-assembler-mips.h"
 
 #include "src/assembler-inl.h"
-#include "src/code-stubs.h"
 #include "src/log.h"
 #include "src/macro-assembler.h"
 #include "src/objects-inl.h"
 #include "src/regexp/regexp-macro-assembler.h"
 #include "src/regexp/regexp-stack.h"
+#include "src/snapshot/embedded-data.h"
 #include "src/unicode.h"
 
 namespace v8 {
 namespace internal {
 
-#ifndef V8_INTERPRETED_REGEXP
 /*
  * This assembler uses the following register assignment convention
  * - t7 : Temporarily stores the index of capture start after a matching pass
@@ -90,12 +89,14 @@ namespace internal {
 
 #define __ ACCESS_MASM(masm_)
 
+const int RegExpMacroAssemblerMIPS::kRegExpCodeSize;
+
 RegExpMacroAssemblerMIPS::RegExpMacroAssemblerMIPS(Isolate* isolate, Zone* zone,
                                                    Mode mode,
                                                    int registers_to_save)
     : NativeRegExpMacroAssembler(isolate, zone),
-      masm_(new MacroAssembler(isolate, nullptr, kRegExpCodeSize,
-                               CodeObjectRequired::kYes)),
+      masm_(new MacroAssembler(isolate, CodeObjectRequired::kYes,
+                               NewAssemblerBuffer(kRegExpCodeSize))),
       mode_(mode),
       num_registers_(registers_to_save),
       num_saved_registers_(registers_to_save),
@@ -114,7 +115,6 @@ RegExpMacroAssemblerMIPS::RegExpMacroAssemblerMIPS(Isolate* isolate, Zone* zone,
   __ Ret();
   __ bind(&start_label_);  // And then continue from here.
 }
-
 
 RegExpMacroAssemblerMIPS::~RegExpMacroAssemblerMIPS() {
   delete masm_;
@@ -360,7 +360,6 @@ void RegExpMacroAssemblerMIPS::CheckNotBackReference(int start_reg,
                                                      bool read_backward,
                                                      Label* on_no_match) {
   Label fallthrough;
-  Label success;
 
   // Find length of back-referenced capture.
   __ lw(a0, register_location(start_reg));
@@ -866,7 +865,7 @@ Handle<HeapObject> RegExpMacroAssemblerMIPS::GetCode(Handle<String> source) {
       RegList regexp_registers = current_input_offset().bit() |
           current_character().bit();
       __ MultiPush(regexp_registers);
-      Label grow_failed;
+
       // Call GrowStack(backtrack_stackpointer(), &stack_base)
       static const int num_arguments = 3;
       __ PrepareCallCFunction(num_arguments, a0);
@@ -1087,6 +1086,9 @@ bool RegExpMacroAssemblerMIPS::CanReadUnaligned() {
 // Private methods:
 
 void RegExpMacroAssemblerMIPS::CallCheckStackGuardState(Register scratch) {
+  DCHECK(!isolate()->IsGeneratingEmbeddedBuiltins());
+  DCHECK(!masm_->options().isolate_independent_code);
+
   int stack_alignment = base::OS::ActivationFrameAlignment();
 
   // Align the stack pointer and save the original sp value on the stack.
@@ -1104,9 +1106,9 @@ void RegExpMacroAssemblerMIPS::CallCheckStackGuardState(Register scratch) {
   DCHECK(IsAligned(stack_alignment, kPointerSize));
   __ Subu(sp, sp, Operand(stack_alignment));
 
-  // Stack pointer now points to cell where return address is to be written.
-  // Arguments are in registers, meaning we teat the return address as
-  // argument 5. Since DirectCEntryStub will handleallocating space for the C
+  // The stack pointer now points to cell where the return address will be
+  // written. Arguments are in registers, meaning we treat the return address as
+  // argument 5. Since DirectCEntry will handle allocating space for the C
   // argument slots, we don't need to care about that here. This is how the
   // stack will look (sp meaning the value of sp at this moment):
   // [sp + 3] - empty slot if needed for alignment.
@@ -1120,10 +1122,24 @@ void RegExpMacroAssemblerMIPS::CallCheckStackGuardState(Register scratch) {
   ExternalReference stack_guard_check =
       ExternalReference::re_check_stack_guard_state(masm_->isolate());
   __ li(t9, Operand(stack_guard_check));
-  DirectCEntryStub stub(isolate());
-  stub.GenerateCall(masm_, t9);
 
-  // DirectCEntryStub allocated space for the C argument slots so we have to
+  if (FLAG_embedded_builtins) {
+    EmbeddedData d = EmbeddedData::FromBlob();
+    CHECK(Builtins::IsIsolateIndependent(Builtins::kDirectCEntry));
+    Address entry = d.InstructionStartOfBuiltin(Builtins::kDirectCEntry);
+    __ li(kScratchReg, Operand(entry, RelocInfo::OFF_HEAP_TARGET));
+    __ Call(kScratchReg);
+  } else {
+    // TODO(v8:8519): Remove this once embedded builtins are on unconditionally.
+    Handle<Code> code = BUILTIN_CODE(isolate(), DirectCEntry);
+    __ li(kScratchReg,
+          Operand(reinterpret_cast<intptr_t>(code.location()),
+                  RelocInfo::CODE_TARGET),
+          CONSTANT_SIZE);
+    __ Call(kScratchReg);
+  }
+
+  // DirectCEntry allocated space for the C argument slots so we have to
   // drop them with the return address from the stack with loading saved sp.
   // At this point stack must look:
   // [sp + 7] - empty slot if needed for alignment.
@@ -1155,7 +1171,7 @@ static T* frame_entry_address(Address re_frame, int frame_offset) {
 int RegExpMacroAssemblerMIPS::CheckStackGuardState(Address* return_address,
                                                    Address raw_code,
                                                    Address re_frame) {
-  Code re_code = Code::cast(ObjectPtr(raw_code));
+  Code re_code = Code::cast(Object(raw_code));
   return NativeRegExpMacroAssembler::CheckStackGuardState(
       frame_entry<Isolate*>(re_frame, kIsolate),
       frame_entry<int>(re_frame, kStartIndex),
@@ -1289,8 +1305,6 @@ void RegExpMacroAssemblerMIPS::LoadCurrentCharacterUnchecked(int cp_offset,
 
 
 #undef __
-
-#endif  // V8_INTERPRETED_REGEXP
 
 }  // namespace internal
 }  // namespace v8

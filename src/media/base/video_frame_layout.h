@@ -17,6 +17,7 @@
 #include "media/base/media_export.h"
 #include "media/base/video_types.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/native_pixmap_handle.h"
 
 namespace media {
 
@@ -38,18 +39,24 @@ class MEDIA_EXPORT VideoFrameLayout {
   struct Plane {
     Plane() = default;
     Plane(int32_t stride, size_t offset) : stride(stride), offset(offset) {}
+    Plane(int32_t stride, size_t offset, uint64_t modifier)
+        : stride(stride), offset(offset), modifier(modifier) {}
 
     bool operator==(const Plane& rhs) const;
     bool operator!=(const Plane& rhs) const;
 
-    // Strides of a plane, typically greater or equal to the
-    // width of the surface divided by the horizontal sampling period. Note that
-    // strides can be negative if the image layout is bottom-up.
+    // Strides in bytes of a plane. Note that stride can be negative if the
+    // image layout is bottom-up.
     int32_t stride = 0;
 
     // Offset of a plane, which stands for the offset of a start point of a
     // color plane from a buffer fd.
     size_t offset = 0;
+
+    // Modifier of a plane. The modifier is retrieved from GBM library. This can
+    // be a different value from kNoModifier only if the VideoFrame is created
+    // by using NativePixmap.
+    uint64_t modifier = gfx::NativePixmapPlane::kNoModifier;
   };
 
   // Factory functions.

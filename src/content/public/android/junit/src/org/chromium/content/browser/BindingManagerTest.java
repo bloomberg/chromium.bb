@@ -68,7 +68,7 @@ public class BindingManagerTest {
         LauncherThread.setCurrentThreadAsLauncherThread();
         mActivity = Robolectric.buildActivity(Activity.class).setup().get();
         mIterable = new ArrayList<>();
-        mManager = new BindingManager(mActivity, 4, mIterable, true);
+        mManager = new BindingManager(mActivity, 4, mIterable);
     }
 
     @After

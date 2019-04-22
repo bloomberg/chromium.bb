@@ -21,7 +21,7 @@ class CBC_PDF417 {
   ~CBC_PDF417();
 
   CBC_BarcodeMatrix* getBarcodeMatrix();
-  bool generateBarcodeLogic(WideString msg, int32_t errorCorrectionLevel);
+  bool GenerateBarcodeLogic(WideStringView msg, int32_t errorCorrectionLevel);
   void setDimensions(int32_t maxCols,
                      int32_t minCols,
                      int32_t maxRows,
@@ -46,7 +46,7 @@ class CBC_PDF417 {
                       int32_t errorCorrectionLevel,
                       CBC_BarcodeMatrix* logic);
   std::vector<int32_t> determineDimensions(
-      int32_t sourceCodeWords,
+      size_t sourceCodeWords,
       int32_t errorCorrectionCodeWords) const;
 
   std::unique_ptr<CBC_BarcodeMatrix> m_barcodeMatrix;

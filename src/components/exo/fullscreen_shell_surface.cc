@@ -7,12 +7,12 @@
 #include "components/exo/shell_surface_util.h"
 #include "components/exo/surface.h"
 #include "components/exo/wm_helper.h"
+#include "third_party/skia/include/core/SkPath.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_targeter.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/dip_util.h"
-#include "ui/gfx/path.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/window_util.h"
 
@@ -172,7 +172,7 @@ bool FullscreenShellSurface::WidgetHasHitTestMask() const {
   return true;
 }
 
-void FullscreenShellSurface::GetWidgetHitTestMask(gfx::Path* mask) const {
+void FullscreenShellSurface::GetWidgetHitTestMask(SkPath* mask) const {
   GetHitTestMask(mask);
   gfx::Point origin = host_window()->bounds().origin();
   SkMatrix matrix;

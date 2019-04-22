@@ -15,8 +15,8 @@
 #include "chrome/browser/chromeos/scoped_set_running_on_chromeos_for_testing.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "chromeos/chromeos_switches.h"
-#include "chromeos/dbus/dbus_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/dbus/constants/dbus_switches.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -80,7 +80,7 @@ void DemoModeDetectorTest::StartDemoModeDetection() {
 void DemoModeDetectorTest::SetTimeOnOobePref(base::TimeDelta time_on_oobe) {
   local_state_.SetUserPref(prefs::kTimeOnOobe,
                            std::make_unique<base::Value>(
-                               base::Int64ToString(time_on_oobe.InSeconds())));
+                               base::NumberToString(time_on_oobe.InSeconds())));
 }
 
 base::TimeDelta DemoModeDetectorTest::GetTimeOnOobePref() {

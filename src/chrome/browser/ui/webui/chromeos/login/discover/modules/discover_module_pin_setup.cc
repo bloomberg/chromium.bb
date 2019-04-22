@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/bind.h"
 #include "base/i18n/number_formatting.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/quick_unlock/pin_backend.h"
@@ -22,11 +23,11 @@ namespace {
 
 class DiscoverModulePinSetupHandler : public DiscoverHandler {
  public:
-  explicit DiscoverModulePinSetupHandler(
-      base::WeakPtr<DiscoverModulePinSetup> module);
+  DiscoverModulePinSetupHandler(base::WeakPtr<DiscoverModulePinSetup> module,
+                                JSCallsContainer* js_calls_container);
   ~DiscoverModulePinSetupHandler() override = default;
 
-  // BaseWebUIHandler
+  // BaseWebUIHandler:
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
   void Initialize() override;
@@ -47,8 +48,9 @@ class DiscoverModulePinSetupHandler : public DiscoverHandler {
 };
 
 DiscoverModulePinSetupHandler::DiscoverModulePinSetupHandler(
-    base::WeakPtr<DiscoverModulePinSetup> module)
-    : DiscoverHandler(DiscoverModulePinSetup::kModuleName),
+    base::WeakPtr<DiscoverModulePinSetup> module,
+    JSCallsContainer* js_calls_container)
+    : DiscoverHandler(js_calls_container),
       module_(module),
       weak_factory_(this) {}
 
@@ -81,7 +83,7 @@ void DiscoverModulePinSetupHandler::DeclareLocalizedValues(
 
   // Format numbers to be used on the pin keyboard.
   for (int j = 0; j <= 9; j++) {
-    builder->Add("pinKeyboard" + base::IntToString(j),
+    builder->Add("pinKeyboard" + base::NumberToString(j),
                  base::FormatNumber(int64_t{j}));
   }
   builder->Add("pinKeyboardPlaceholderPin", IDS_PIN_KEYBOARD_HINT_TEXT_PIN);
@@ -110,18 +112,15 @@ void DiscoverModulePinSetupHandler::RegisterMessages() {
 
 void DiscoverModulePinSetupHandler::HandleGetUserPassword(
     const std::string& callbackId) {
-  web_ui()->CallJavascriptFunctionUnsafe(
-      "window.discoverReturn", base::Value(callbackId),
-      base::Value(module_->ConsumePrimaryUserPassword()));
+  CallJS("window.discoverReturn", callbackId,
+         module_->ConsumePrimaryUserPassword());
   return;
 }
 
 void DiscoverModulePinSetupHandler::OnPinLoginAvailable(
     const std::string& callbackId,
     bool is_available) {
-  web_ui()->CallJavascriptFunctionUnsafe("window.discoverReturn",
-                                         base::Value(callbackId),
-                                         base::Value(is_available));
+  CallJS("window.discoverReturn", callbackId, is_available);
 }
 
 void DiscoverModulePinSetupHandler::HandleGetHasLoginSupport(
@@ -146,9 +145,10 @@ bool DiscoverModulePinSetup::IsCompleted() const {
   return false;
 }
 
-std::unique_ptr<DiscoverHandler> DiscoverModulePinSetup::CreateWebUIHandler() {
+std::unique_ptr<DiscoverHandler> DiscoverModulePinSetup::CreateWebUIHandler(
+    JSCallsContainer* js_calls_container) {
   return std::make_unique<DiscoverModulePinSetupHandler>(
-      weak_ptr_factory_.GetWeakPtr());
+      weak_ptr_factory_.GetWeakPtr(), js_calls_container);
 }
 
 std::string DiscoverModulePinSetup::ConsumePrimaryUserPassword() {

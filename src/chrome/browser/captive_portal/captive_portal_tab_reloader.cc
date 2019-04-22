@@ -38,7 +38,7 @@ bool SslNetErrorMayImplyCaptivePortal(int error) {
   if (error == net::ERR_SSL_PROTOCOL_ERROR)
     return true;
 
-  return false;
+  return net::IsCertificateError(error);
 }
 
 }  // namespace

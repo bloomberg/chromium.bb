@@ -19,11 +19,9 @@
 #include "google_apis/gaia/gaia_auth_consumer.h"
 
 class AboutSigninInternals;
-class AccountTrackerService;
 class GaiaAuthFetcher;
 class GoogleServiceAuthError;
 class SigninClient;
-class ProfileOAuth2TokenService;
 class Profile;
 
 namespace identity {
@@ -57,9 +55,7 @@ class DiceResponseHandler : public KeyedService {
   static DiceResponseHandler* GetForProfile(Profile* profile);
 
   DiceResponseHandler(SigninClient* signin_client,
-                      ProfileOAuth2TokenService* profile_oauth2_token_service,
                       identity::IdentityManager* identity_manager,
-                      AccountTrackerService* account_tracker_service,
                       AccountReconcilor* account_reconcilor,
                       AboutSigninInternals* about_signin_internals,
                       signin::AccountConsistencyMethod account_consistency,
@@ -156,9 +152,7 @@ class DiceResponseHandler : public KeyedService {
                               const GoogleServiceAuthError& error);
 
   SigninClient* signin_client_;
-  ProfileOAuth2TokenService* token_service_;
   identity::IdentityManager* identity_manager_;
-  AccountTrackerService* account_tracker_service_;
   AccountReconcilor* account_reconcilor_;
   AboutSigninInternals* about_signin_internals_;
   signin::AccountConsistencyMethod account_consistency_;

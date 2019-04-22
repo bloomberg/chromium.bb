@@ -55,8 +55,7 @@ storage::FileSystemURL CreateFileSystemURL(
   DCHECK(file_path.IsAbsolute());
   base::FilePath relative_path(file_path.value().substr(1));
   return mount_points->CreateCrackedFileSystemURL(
-      GURL(origin),
-      storage::kFileSystemTypeExternal,
+      url::Origin::Create(GURL(origin)), storage::kFileSystemTypeExternal,
       base::FilePath(mount_path.BaseName().Append(relative_path)));
 }
 

@@ -17,6 +17,10 @@ enum EventType {
   KEY_PRESSED,
   KEY_RELEASED,
   GESTURE_TAP,
+  GESTURE_SWIPE,
+  GESTURE_PINCH_BEGIN,
+  GESTURE_PINCH_END,
+  GESTURE_PINCH_UPDATE,
   SCROLL,
   SCROLL_FLING_START,
   SCROLL_FLING_CANCEL,
@@ -89,4 +93,12 @@ enum EventMomentumPhase {
   MAY_BEGIN,
   INERTIAL_UPDATE,
   END,
+};
+
+// Device type for gesture events.
+// These values match ui::GestureDeviceType in ui/events/event_constants.h
+enum GestureDeviceType {
+  DEVICE_UNKNOWN,
+  DEVICE_TOUCHPAD,
+  DEVICE_TOUCHSCREEN,
 };

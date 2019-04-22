@@ -18,7 +18,7 @@ IndexBuffer9::IndexBuffer9(Renderer9 *const renderer) : mRenderer(renderer)
 {
     mIndexBuffer = nullptr;
     mBufferSize  = 0;
-    mIndexType   = 0;
+    mIndexType   = gl::DrawElementsType::InvalidEnum;
     mDynamic     = false;
 }
 
@@ -29,7 +29,7 @@ IndexBuffer9::~IndexBuffer9()
 
 angle::Result IndexBuffer9::initialize(const gl::Context *context,
                                        unsigned int bufferSize,
-                                       GLenum indexType,
+                                       gl::DrawElementsType indexType,
                                        bool dynamic)
 {
     SafeRelease(mIndexBuffer);
@@ -39,11 +39,12 @@ angle::Result IndexBuffer9::initialize(const gl::Context *context,
     if (bufferSize > 0)
     {
         D3DFORMAT format = D3DFMT_UNKNOWN;
-        if (indexType == GL_UNSIGNED_SHORT || indexType == GL_UNSIGNED_BYTE)
+        if (indexType == gl::DrawElementsType::UnsignedShort ||
+            indexType == gl::DrawElementsType::UnsignedByte)
         {
             format = D3DFMT_INDEX16;
         }
-        else if (indexType == GL_UNSIGNED_INT)
+        else if (indexType == gl::DrawElementsType::UnsignedInt)
         {
             ASSERT(mRenderer->getNativeExtensions().elementIndexUint);
             format = D3DFMT_INDEX32;
@@ -67,7 +68,7 @@ angle::Result IndexBuffer9::initialize(const gl::Context *context,
     mIndexType  = indexType;
     mDynamic    = dynamic;
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result IndexBuffer9::mapBuffer(const gl::Context *context,
@@ -84,7 +85,7 @@ angle::Result IndexBuffer9::mapBuffer(const gl::Context *context,
     ANGLE_TRY_HR(GetImplAs<Context9>(context), result, "Failed to lock internal index buffer");
 
     *outMappedMemory = mapPtr;
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result IndexBuffer9::unmapBuffer(const gl::Context *context)
@@ -93,10 +94,10 @@ angle::Result IndexBuffer9::unmapBuffer(const gl::Context *context)
     HRESULT result = mIndexBuffer->Unlock();
     ANGLE_TRY_HR(GetImplAs<Context9>(context), result, "Failed to unlock internal index buffer");
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
-GLenum IndexBuffer9::getIndexType() const
+gl::DrawElementsType IndexBuffer9::getIndexType() const
 {
     return mIndexType;
 }
@@ -108,14 +109,14 @@ unsigned int IndexBuffer9::getBufferSize() const
 
 angle::Result IndexBuffer9::setSize(const gl::Context *context,
                                     unsigned int bufferSize,
-                                    GLenum indexType)
+                                    gl::DrawElementsType indexType)
 {
     if (bufferSize > mBufferSize || indexType != mIndexType)
     {
         return initialize(context, bufferSize, indexType, mDynamic);
     }
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 angle::Result IndexBuffer9::discard(const gl::Context *context)
@@ -133,18 +134,18 @@ angle::Result IndexBuffer9::discard(const gl::Context *context)
     result = mIndexBuffer->Unlock();
     ANGLE_TRY_HR(context9, result, "Failed to unlock internal index buffer");
 
-    return angle::Result::Continue();
+    return angle::Result::Continue;
 }
 
 D3DFORMAT IndexBuffer9::getIndexFormat() const
 {
     switch (mIndexType)
     {
-        case GL_UNSIGNED_BYTE:
+        case gl::DrawElementsType::UnsignedByte:
             return D3DFMT_INDEX16;
-        case GL_UNSIGNED_SHORT:
+        case gl::DrawElementsType::UnsignedShort:
             return D3DFMT_INDEX16;
-        case GL_UNSIGNED_INT:
+        case gl::DrawElementsType::UnsignedInt:
             return D3DFMT_INDEX32;
         default:
             UNREACHABLE();

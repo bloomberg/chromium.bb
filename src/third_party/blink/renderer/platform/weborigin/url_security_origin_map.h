@@ -31,8 +31,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WEBORIGIN_URL_SECURITY_ORIGIN_MAP_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WEBORIGIN_URL_SECURITY_ORIGIN_MAP_H_
 
+#include "base/macros.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -41,12 +41,14 @@ class SecurityOrigin;
 
 class URLSecurityOriginMap {
   USING_FAST_MALLOC(URLSecurityOriginMap);
-  WTF_MAKE_NONCOPYABLE(URLSecurityOriginMap);
 
  public:
   URLSecurityOriginMap() = default;
   virtual ~URLSecurityOriginMap() = default;
   virtual SecurityOrigin* GetOrigin(const KURL&) = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(URLSecurityOriginMap);
 };
 
 }  // namespace blink

@@ -43,3 +43,8 @@ wheel: <
   >
 >
 
+# Used by validator proofs
+wheel: <
+  name: "infra/python/wheels/lxml/${vpython_platform}"
+  version: "version:4.2.5"
+>

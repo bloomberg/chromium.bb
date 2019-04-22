@@ -1,0 +1,22 @@
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+
+<script>
+
+function testGetURL(image) {
+	var can = document.createElement('canvas');
+	var ctx = can.getContext('bitmaprenderer');
+	ctx.transferFromImageBitmap(image);
+	var dataURL = can.toDataURL();
+
+	assert_equals(dataURL, image.src);
+}
+
+test(function(t) {
+	var magentaPixelImg = document.createElement('img');
+	// This is a base64 encoded string representing a single magenta pixel
+	magentaPixelImg.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z/D/PwAHAwL/qGeMxAAAAABJRU5ErkJggg==";
+	createImageBitmap(magentaPixelImg,0,0,magentaPixelImg.naturalWidth,magentaPixelImg.naturalHeight).then(testGetURL);
+}, "Test that canvas toDataURL returns the same URL that was expected when the canvas is of bitmaprenderer type.")
+
+</script>

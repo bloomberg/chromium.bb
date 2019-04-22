@@ -25,7 +25,7 @@ struct MOJO_ALIGNAS(8) MojoSetQuotaOptions {
   // See |MojoSetQuotaFlags| above.
   MojoSetQuotaFlags flags;
 };
-MOJO_STATIC_ASSERT(sizeof(MojoSetQuotaOptions) == 8,
+MOJO_STATIC_ASSERT(sizeof(struct MojoSetQuotaOptions) == 8,
                    "MojoSetQuotaOptions has wrong size.");
 
 // Flags passed to |MojoQueryQuota| via |MojoQueryQuotaOptions|.
@@ -42,7 +42,7 @@ struct MOJO_ALIGNAS(8) MojoQueryQuotaOptions {
   // See |MojoQueryQuotaFlags| above.
   MojoQueryQuotaFlags flags;
 };
-MOJO_STATIC_ASSERT(sizeof(MojoQueryQuotaOptions) == 8,
+MOJO_STATIC_ASSERT(sizeof(struct MojoQueryQuotaOptions) == 8,
                    "MojoQueryQuotaOptions has wrong size.");
 
 // The maximum value any quota can be set to. Effectively means "no quota".

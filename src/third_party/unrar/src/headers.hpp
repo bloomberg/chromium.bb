@@ -1,6 +1,8 @@
 #ifndef _RAR_HEADERS_
 #define _RAR_HEADERS_
 
+namespace third_party_unrar {
+
 #define  SIZEOF_MARKHEAD3        7 // Size of RAR 4.x archive mark header.
 #define  SIZEOF_MAINHEAD14       7 // Size of RAR 1.4 main archive header.
 #define  SIZEOF_MAINHEAD3       13 // Size of RAR 4.x main archive header.
@@ -11,18 +13,14 @@
 #define  SIZEOF_SUBBLOCKHEAD    14
 #define  SIZEOF_COMMHEAD        13
 #define  SIZEOF_PROTECTHEAD     26
-#define  SIZEOF_AVHEAD          14
-#define  SIZEOF_SIGNHEAD        15
 #define  SIZEOF_UOHEAD          18
-#define  SIZEOF_MACHEAD         22
-#define  SIZEOF_EAHEAD          24
-#define  SIZEOF_BEEAHEAD        24
 #define  SIZEOF_STREAMHEAD      26
 
-#define  VER_PACK               29
-#define  VER_PACK5              50 // It is stored as 0, but we subtract 50 when saving an archive.
-#define  VER_UNPACK             29
-#define  VER_UNPACK5            50 // It is stored as 0, but we add 50 when reading an archive.
+#define  VER_PACK               29U
+#define  VER_PACK5              50U // It is stored as 0, but we subtract 50 when saving an archive.
+#define  VER_UNPACK             29U
+#define  VER_UNPACK5            50U // It is stored as 0, but we add 50 when reading an archive.
+#define  VER_UNKNOWN          9999U // Just some large value.
 
 #define  MHD_VOLUME         0x0001U
 
@@ -86,6 +84,8 @@ enum HEADER_TYPE {
   HEAD3_SERVICE=0x7a,HEAD3_ENDARC=0x7b
 };
 
+
+// RAR 2.9 and earlier.
 enum { EA_HEAD=0x100,UO_HEAD=0x101,MAC_HEAD=0x102,BEEA_HEAD=0x103,
        NTACL_HEAD=0x104,STREAM_HEAD=0x105 };
 
@@ -177,7 +177,7 @@ struct MainHeader:BaseBlock
 struct FileHeader:BlockHeader
 {
   byte HostOS;
-  byte UnpVer;
+  uint UnpVer; // It is 1 byte in RAR29 and bit field in RAR5.
   byte Method;
   union {
     uint FileAttr;
@@ -193,7 +193,7 @@ struct FileHeader:BlockHeader
 
   int64 PackSize;
   int64 UnpSize;
-  int64 MaxSize; // Reserve size bytes for vint of this size.
+  int64 MaxSize; // Reserve packed and unpacked size bytes for vint of this size.
 
   HashValue FileHash;
 
@@ -323,23 +323,6 @@ struct ProtectHeader:BlockHeader
 };
 
 
-struct AVHeader:BaseBlock
-{
-  byte UnpVer;
-  byte Method;
-  byte AVVer;
-  uint AVInfoCRC;
-};
-
-
-struct SignHeader:BaseBlock
-{
-  uint CreationTime;
-  ushort ArcNameSize;
-  ushort UserNameSize;
-};
-
-
 struct UnixOwnersHeader:SubBlockHeader
 {
   ushort OwnerNameSize;
@@ -369,12 +352,6 @@ struct StreamHeader:SubBlockHeader
   char StreamName[260];
 };
 
-
-struct MacFInfoHeader:SubBlockHeader
-{
-  uint fileType;
-  uint fileCreator;
-};
-
+}  // namespace third_party_unrar
 
 #endif

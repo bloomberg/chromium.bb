@@ -7,26 +7,14 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/ui/infobars/infobar_ui_delegate.h"
+
 namespace infobars {
 class InfoBarDelegate;
 }  // namespace infobars
 
-class InfoBarControllerDelegate;
-
 // InfoBar for iOS acts as a UIViewController for InfoBarView.
-@interface InfoBarController : NSObject
-
-// Detaches view from its delegate.
-// After this function is called, no user interaction can be handled.
-- (void)detachView;
-
-// Removes the view.
-- (void)removeView;
-
-// The view.
-@property(nonatomic, readonly) UIView* view;
-
-@property(nonatomic, assign) InfoBarControllerDelegate* delegate;  // weak
+@interface InfoBarController : NSObject <InfobarUIDelegate>
 
 @property(nonatomic, readonly)
     infobars::InfoBarDelegate* infoBarDelegate;  // weak

@@ -4,6 +4,9 @@
 
 #include "chrome/browser/media/router/providers/dial/dial_media_route_provider.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/media/router/test/mock_mojo_media_router.h"
 
 #include "base/run_loop.h"
@@ -15,6 +18,7 @@
 #include "net/http/http_status_code.h"
 #include "services/data_decoder/data_decoder_service.h"
 #include "services/data_decoder/public/cpp/testing_json_parser.h"
+#include "services/data_decoder/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -84,11 +88,9 @@ class TestDialMediaSinkServiceImpl : public DialMediaSinkServiceImpl {
 class DialMediaRouteProviderTest : public ::testing::Test {
  public:
   DialMediaRouteProviderTest()
-      : connector_factory_(
-            service_manager::TestConnectorFactory::CreateForUniqueService(
-                std::make_unique<data_decoder::DataDecoderService>())),
-        connector_(connector_factory_->CreateConnector()),
-        mock_sink_service_(connector_.get()) {}
+      : data_decoder_service_(connector_factory_.RegisterInstance(
+            data_decoder::mojom::kServiceName)),
+        mock_sink_service_(connector_factory_.GetDefaultConnector()) {}
 
   void SetUp() override {
     mojom::MediaRouterPtr router_ptr;
@@ -98,8 +100,8 @@ class DialMediaRouteProviderTest : public ::testing::Test {
     EXPECT_CALL(mock_router_, OnSinkAvailabilityUpdated(_, _));
     provider_ = std::make_unique<DialMediaRouteProvider>(
         mojo::MakeRequest(&provider_ptr_), router_ptr.PassInterface(),
-        &mock_sink_service_, connector_.get(), "hash-token",
-        base::SequencedTaskRunnerHandle::Get());
+        &mock_sink_service_, connector_factory_.GetDefaultConnector(),
+        "hash-token", base::SequencedTaskRunnerHandle::Get());
 
     auto activity_manager =
         std::make_unique<TestDialActivityManager>(&loader_factory_);
@@ -268,8 +270,7 @@ class DialMediaRouteProviderTest : public ::testing::Test {
     base::RunLoop().RunUntilIdle();
 
     ASSERT_EQ(1u, routes.size());
-    // TODO(https://crbug.com/867935): Replace with operator== / EXPECT_TRUE.
-    EXPECT_TRUE(routes[0].Equals(*route_));
+    EXPECT_EQ(routes[0], *route_);
   }
 
   // Note: |TestSendCustomDialLaunchMessage()| must be called first.
@@ -376,8 +377,8 @@ class DialMediaRouteProviderTest : public ::testing::Test {
 
  protected:
   content::TestBrowserThreadBundle thread_bundle_;
-  std::unique_ptr<service_manager::TestConnectorFactory> connector_factory_;
-  std::unique_ptr<service_manager::Connector> connector_;
+  service_manager::TestConnectorFactory connector_factory_;
+  data_decoder::DataDecoderService data_decoder_service_;
 
   network::TestURLLoaderFactory loader_factory_;
 

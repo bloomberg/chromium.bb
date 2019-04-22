@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen_view.h"
@@ -58,6 +59,7 @@ class EnrollmentScreenHandler
       public NetworkStateInformer::NetworkStateInformerObserver {
  public:
   EnrollmentScreenHandler(
+      JSCallsContainer* js_calls_container,
       const scoped_refptr<NetworkStateInformer>& network_state_informer,
       ErrorScreen* error_screen);
   ~EnrollmentScreenHandler() override;
@@ -66,8 +68,8 @@ class EnrollmentScreenHandler
   void RegisterMessages() override;
 
   // Implements EnrollmentScreenView:
-  void SetParameters(Controller* controller,
-                     const policy::EnrollmentConfig& config) override;
+  void SetEnrollmentConfig(Controller* controller,
+                           const policy::EnrollmentConfig& config) override;
   void Show() override;
   void Hide() override;
   void ShowSigninScreen() override;
@@ -103,7 +105,8 @@ class EnrollmentScreenHandler
   void HandleCompleteLogin(const std::string& user);
   void OnGetCookiesForCompleteLogin(
       const std::string& user,
-      const std::vector<net::CanonicalCookie>& cookies);
+      const std::vector<net::CanonicalCookie>& cookies,
+      const net::CookieStatusList& excluded_cookies);
   void HandleAdCompleteLogin(const std::string& machine_name,
                              const std::string& distinguished_name,
                              const std::string& encryption_types,
@@ -168,9 +171,6 @@ class EnrollmentScreenHandler
 
   ActiveDirectoryDomainJoinType active_directory_join_type_ =
       ActiveDirectoryDomainJoinType::COUNT;
-
-  // Whether unlock password input step should be shown.
-  bool show_unlock_password_ = false;
 
   // True if screen was not shown yet.
   bool first_show_ = true;

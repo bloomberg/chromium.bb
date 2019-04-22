@@ -50,12 +50,13 @@ WebSocketExtension WebSocketDeflateParameters::AsExtension() const {
   if (is_server_max_window_bits_specified()) {
     DCHECK(server_max_window_bits_.has_value);
     e.Add(WebSocketExtension::Parameter(
-        kServerMaxWindowBits, base::IntToString(server_max_window_bits())));
+        kServerMaxWindowBits, base::NumberToString(server_max_window_bits())));
   }
   if (is_client_max_window_bits_specified()) {
     if (has_client_max_window_bits_value()) {
       e.Add(WebSocketExtension::Parameter(
-          kClientMaxWindowBits, base::IntToString(client_max_window_bits())));
+          kClientMaxWindowBits,
+          base::NumberToString(client_max_window_bits())));
     } else {
       e.Add(WebSocketExtension::Parameter(kClientMaxWindowBits));
     }

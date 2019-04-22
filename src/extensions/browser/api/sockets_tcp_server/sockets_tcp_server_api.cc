@@ -4,8 +4,10 @@
 
 #include "extensions/browser/api/sockets_tcp_server/sockets_tcp_server_api.h"
 
+#include <unordered_set>
 #include <vector>
 
+#include "base/bind.h"
 #include "content/public/common/socket_permission_request.h"
 #include "extensions/browser/api/socket/tcp_socket.h"
 #include "extensions/browser/api/sockets_tcp_server/tcp_server_socket_event_dispatcher.h"
@@ -294,7 +296,7 @@ bool SocketsTcpServerGetSocketsFunction::Prepare() { return true; }
 
 void SocketsTcpServerGetSocketsFunction::Work() {
   std::vector<sockets_tcp_server::SocketInfo> socket_infos;
-  base::hash_set<int>* resource_ids = GetSocketIds();
+  std::unordered_set<int>* resource_ids = GetSocketIds();
   if (resource_ids != NULL) {
     for (int socket_id : *resource_ids) {
       ResumableTCPServerSocket* socket = GetTcpSocket(socket_id);

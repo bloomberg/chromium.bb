@@ -83,6 +83,7 @@ struct FrameVisualProperties;
 class FrameTreeNode;
 class InterstitialPage;
 class NavigationHandle;
+class NavigationHandleImpl;
 class RenderWidgetHost;
 class RenderWidgetHostView;
 class WebContents;
@@ -198,6 +199,10 @@ void SimulateMouseEvent(WebContents* web_contents,
 // RenderWidgetHostInputEventRouter.
 void SimulateRoutedMouseEvent(WebContents* web_contents,
                               blink::WebInputEvent::Type type,
+                              const gfx::Point& point);
+void SimulateRoutedMouseEvent(WebContents* web_contents,
+                              blink::WebInputEvent::Type type,
+                              blink::WebMouseEvent::Button button,
                               const gfx::Point& point);
 
 // Simulate a mouse wheel event.
@@ -631,7 +636,7 @@ bool operator>(const T& a, const EvalJsResult& b) {
   return b.error.empty() && (JsLiteralHelper<T>::Convert(a) > b.value);
 }
 
-inline bool operator==(nullptr_t a, const EvalJsResult& b) {
+inline bool operator==(std::nullptr_t a, const EvalJsResult& b) {
   return b.error.empty() && (base::Value() == b.value);
 }
 
@@ -824,7 +829,7 @@ void WaitForInterstitialDetach(content::WebContents* web_contents);
 // destroyed by the time WaitForInterstitialDetach is called (e.g. when waiting
 // for an interstitial detach after closing a tab).
 void RunTaskAndWaitForInterstitialDetach(content::WebContents* web_contents,
-                                         const base::Closure& task);
+                                         base::OnceClosure task);
 
 // Waits until all resources have loaded in the given RenderFrameHost.
 // When the load completes, this function sends a "pageLoadComplete" message
@@ -843,13 +848,14 @@ ui::AXNodeData GetFocusedAccessibilityNodeInfo(WebContents* web_contents);
 
 // This is intended to be a robust way to assert that the accessibility
 // tree eventually gets into the correct state, without worrying about
-// the exact ordering of events received while getting there.
-//
+// the exact ordering of events received while getting there. Blocks
+// until any change happens to the accessibility tree.
+void WaitForAccessibilityTreeToChange(WebContents* web_contents);
+
 // Searches the accessibility tree to see if any node's accessible name
-// is equal to the given name. If not, sets up a notification waiter
-// that listens for any accessibility event in any frame, and checks again
-// after each event. Keeps looping until the text is found (or the
-// test times out).
+// is equal to the given name. If not, repeatedly calls
+// WaitForAccessibilityTreeToChange, above, and then checks again.
+// Keeps looping until the text is found (or the test times out).
 void WaitForAccessibilityTreeToContainNodeWithName(WebContents* web_contents,
                                                    const std::string& name);
 
@@ -1401,7 +1407,7 @@ class TestNavigationManager : public WebContentsObserver {
   void OnNavigationStateChanged();
 
   const GURL url_;
-  NavigationHandle* handle_;
+  NavigationHandleImpl* handle_;
   bool navigation_paused_;
   NavigationState current_state_;
   NavigationState desired_state_;
@@ -1542,10 +1548,6 @@ class ContextMenuFilter : public content::BrowserMessageFilter {
 
 WebContents* GetEmbedderForGuest(content::WebContents* guest);
 
-// Returns true if the network service is enabled and it's running in the
-// browser process.
-bool IsNetworkServiceRunningInProcess();
-
 // Load the given |url| with |network_context| and return the |net::Error| code.
 int LoadBasicRequest(network::mojom::NetworkContext* network_context,
                      const GURL& url,
@@ -1572,6 +1574,7 @@ bool TestChildOrGuestAutoresize(bool is_guest,
 // BrowserPluginHostMsg_SynchronizeVisualProperties messages. This allows the
 // message to continue to the target child so that processing can be verified by
 // tests.
+// It also monitors for GesturePinchBegin/End events.
 class SynchronizeVisualPropertiesMessageFilter
     : public content::BrowserMessageFilter {
  public:
@@ -1589,6 +1592,11 @@ class SynchronizeVisualPropertiesMessageFilter
 
   // Waits for the next viz::LocalSurfaceId be received and returns it.
   viz::LocalSurfaceId WaitForSurfaceId();
+
+  bool pinch_gesture_active_set() { return pinch_gesture_active_set_; }
+  bool pinch_gesture_active_cleared() { return pinch_gesture_active_cleared_; }
+
+  void WaitForPinchGestureEnd();
 
  protected:
   ~SynchronizeVisualPropertiesMessageFilter() override;
@@ -1621,7 +1629,61 @@ class SynchronizeVisualPropertiesMessageFilter
   viz::LocalSurfaceId last_surface_id_;
   std::unique_ptr<base::RunLoop> surface_id_run_loop_;
 
+  bool pinch_gesture_active_set_;
+  bool pinch_gesture_active_cleared_;
+  bool last_pinch_gesture_active_;
+  std::unique_ptr<base::RunLoop> pinch_end_run_loop_;
+
   DISALLOW_COPY_AND_ASSIGN(SynchronizeVisualPropertiesMessageFilter);
+};
+
+// This class allows monitoring of mouse events received by a specific
+// RenderWidgetHost.
+class RenderWidgetHostMouseEventMonitor {
+ public:
+  explicit RenderWidgetHostMouseEventMonitor(RenderWidgetHost* host);
+  ~RenderWidgetHostMouseEventMonitor();
+  bool EventWasReceived() const { return event_received_; }
+  void ResetEventReceived() { event_received_ = false; }
+  const blink::WebMouseEvent& event() const { return event_; }
+
+ private:
+  bool MouseEventCallback(const blink::WebMouseEvent& event) {
+    event_received_ = true;
+    event_ = event;
+    return false;
+  }
+  RenderWidgetHost::MouseEventCallback mouse_callback_;
+  RenderWidgetHost* host_;
+  bool event_received_;
+  blink::WebMouseEvent event_;
+
+  DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostMouseEventMonitor);
+};
+
+// Helper class to track and allow waiting for navigation start events.
+class DidStartNavigationObserver : public WebContentsObserver {
+ public:
+  explicit DidStartNavigationObserver(WebContents* web_contents);
+  ~DidStartNavigationObserver() override;
+
+  void Wait() { run_loop_.Run(); }
+  bool observed() { return observed_; }
+
+  // If the navigation was observed and is still not finished yet, this returns
+  // its handle, otherwise it returns nullptr.
+  NavigationHandle* navigation_handle() { return navigation_handle_; }
+
+  // WebContentsObserver override:
+  void DidStartNavigation(NavigationHandle* navigation_handle) override;
+  void DidFinishNavigation(NavigationHandle* navigation_handle) override;
+
+ private:
+  bool observed_ = false;
+  base::RunLoop run_loop_;
+  NavigationHandle* navigation_handle_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(DidStartNavigationObserver);
 };
 
 }  // namespace content

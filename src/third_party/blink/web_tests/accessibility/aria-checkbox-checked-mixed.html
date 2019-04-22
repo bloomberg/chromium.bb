@@ -1,7 +1,8 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
 <html>
 <head>
-<script src="../resources/js-test.js"></script>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
 </head>
 <body id="body">
 
@@ -23,15 +24,34 @@
 
 <script>
 
-    description("Check whether ARIA mixed state is reported properly");
+test((t) => {
+    let roles = ["AXRole: AXCheckBox",
+                 "AXRole: AXMenuItemCheckBox",
+                 "AXRole: AXRadioButton",
+                 "AXRole: AXMenuItemRadio",
+                 "AXRole: AXSwitch",
+                 "AXRole: AXCheckBox",
+                 "AXRole: AXCheckBox",
+                 "AXRole: AXRadioButton",
+                 "AXRole: AXRadioButton",
+                 "AXRole: AXButton"];
+    let checked = ["mixed",
+                   "mixed",
+                   "mixed",
+                   "mixed",
+                   "true",
+                   "mixed",
+                   "mixed",
+                   "mixed",
+                   "mixed",
+                   ""];
 
-    if (window.accessibilityController) {
-        for (var i = 1; i <= 10; i++) {
-            var element = accessibilityController.accessibleElementById("element" + i);
-            debug("Role: " + element.role);
-            debug("Mixed: " + (element.checked === 'mixed'));
-        }
+    for (var i = 1; i <= 10; i++) {
+        var ax_object = accessibilityController.accessibleElementById("element" + i);
+        assert_equals(ax_object.role, roles[i - 1]);
+        assert_equals(ax_object.checked, checked[i - 1]);
     }
+}, "Check whether ARIA mixed state is reported properly");
 
 </script>
 

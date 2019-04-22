@@ -122,6 +122,21 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
                                       BluetoothDevice* device,
                                       const std::string& old_address) {}
 
+    // Called when advertisement is received.
+    //
+    // Override this function to observe LE advertisements. This function
+    // returns the raw values that have been parsed from EIR.
+    virtual void DeviceAdvertisementReceived(
+        const std::string& device_address,
+        const base::Optional<std::string>& device_name,
+        const base::Optional<std::string>& advertisement_name,
+        base::Optional<int8_t> rssi,
+        base::Optional<int8_t> tx_power,
+        base::Optional<uint16_t> appearance,
+        const BluetoothDevice::UUIDList& advertised_uuids,
+        const BluetoothDevice::ServiceDataMap& service_data_map,
+        const BluetoothDevice::ManufacturerDataMap& manufacturer_data_map) {}
+
 // TODO(crbug.com/732991): Update comment and fix redundant #ifs throughout.
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
     // This function is implemented for ChromeOS only, and the support for

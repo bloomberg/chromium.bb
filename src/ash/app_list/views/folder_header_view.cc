@@ -9,10 +9,11 @@
 #include "ash/app_list/app_list_util.h"
 #include "ash/app_list/model/app_list_folder_item.h"
 #include "ash/app_list/views/app_list_folder_view.h"
-#include "ash/public/cpp/app_list/app_list_constants.h"
+#include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
@@ -29,6 +30,7 @@ namespace {
 
 constexpr int kMaxFolderNameWidth = 204;
 constexpr SkColor kFolderNameColor = SkColorSetARGB(138, 0, 0, 0);
+constexpr SkColor kFolderTitleHintTextColor = SkColorSetRGB(0xA0, 0xA0, 0xA0);
 
 }  // namespace
 
@@ -44,6 +46,8 @@ class FolderHeaderView::FolderNameView : public views::Textfield {
 
   void OnFocus() override {
     SetText(base::UTF8ToUTF16(folder_header_view_->folder_item_->name()));
+    starting_name_ = text();
+    folder_header_view_->previous_folder_name_ = starting_name_;
     SelectAll(false);
     Textfield::OnFocus();
   }
@@ -52,12 +56,28 @@ class FolderHeaderView::FolderNameView : public views::Textfield {
     // Collapse whitespace when FolderNameView loses focus.
     SetText(base::CollapseWhitespace(text(), false));
     folder_header_view_->ContentsChanged(this, text());
+
+    // Record metric each time a folder is renamed.
+    if (text() != starting_name_) {
+      if (folder_header_view_->is_tablet_mode()) {
+        UMA_HISTOGRAM_COUNTS_100("Apps.AppListFolderNameLength.TabletMode",
+                                 text().length());
+      } else {
+        UMA_HISTOGRAM_COUNTS_100("Apps.AppListFolderNameLength.ClamshellMode",
+                                 text().length());
+      }
+    }
+
     Textfield::OnBlur();
   }
 
  private:
   // The parent FolderHeaderView, owns this.
   FolderHeaderView* folder_header_view_;
+
+  // Name of the folder when FolderNameView is focused, used to track folder
+  // rename metric.
+  base::string16 starting_name_;
 
   DISALLOW_COPY_AND_ASSIGN(FolderNameView);
 };
@@ -69,7 +89,8 @@ FolderHeaderView::FolderHeaderView(FolderHeaderViewDelegate* delegate)
           ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
               IDS_APP_LIST_FOLDER_NAME_PLACEHOLDER)),
       delegate_(delegate),
-      folder_name_visible_(true) {
+      folder_name_visible_(true),
+      is_tablet_mode_(false) {
   folder_name_view_->set_placeholder_text_color(kFolderTitleHintTextColor);
   folder_name_view_->set_placeholder_text(folder_name_placeholder_text_);
   folder_name_view_->SetBorder(views::NullBorder());
@@ -178,7 +199,8 @@ int FolderHeaderView::GetMaxFolderNameWidth() const {
 base::string16 FolderHeaderView::GetElidedFolderName(
     const base::string16& folder_name) const {
   // Enforce the maximum folder name length.
-  base::string16 name = folder_name.substr(0, kMaxFolderNameChars);
+  base::string16 name =
+      folder_name.substr(0, AppListConfig::instance().max_folder_name_chars());
 
   // Get maximum text width for fitting into |folder_name_view_|.
   int text_width = GetMaxFolderNameWidth() -
@@ -221,10 +243,16 @@ void FolderHeaderView::ContentsChanged(views::Textfield* sender,
 
   folder_item_->RemoveObserver(this);
   // Enforce the maximum folder name length in UI.
-  std::string name = base::UTF16ToUTF8(
-      folder_name_view_->text().substr(0, kMaxFolderNameChars));
-  if (name != folder_item_->name())
-    delegate_->SetItemName(folder_item_, name);
+  if (new_contents.length() >
+      AppListConfig::instance().max_folder_name_chars()) {
+    folder_name_view_->SetText(previous_folder_name_.value());
+    sender->SelectRange(gfx::Range(previous_cursor_position_.value(),
+                                   previous_cursor_position_.value()));
+  } else {
+    previous_folder_name_ = new_contents;
+    delegate_->SetItemName(folder_item_, base::UTF16ToUTF8(new_contents));
+  }
+
   folder_item_->AddObserver(this);
 
   UpdateFolderNameAccessibleName();
@@ -240,13 +268,27 @@ bool FolderHeaderView::HandleKeyEvent(views::Textfield* sender,
     delegate_->NavigateBack(folder_item_, key_event);
     return true;
   }
-  if (!CanProcessLeftRightKeyTraversal(key_event))
+  if (!IsUnhandledLeftRightKeyEvent(key_event))
     return false;
   return ProcessLeftRightKeyTraversalForTextfield(folder_name_view_, key_event);
 }
 
+void FolderHeaderView::OnBeforeUserAction(views::Textfield* sender) {
+  previous_cursor_position_ = sender->GetCursorPosition();
+}
+
 void FolderHeaderView::ItemNameChanged() {
   Update();
+}
+
+void FolderHeaderView::SetPreviousCursorPositionForTest(
+    const size_t cursor_position) {
+  previous_cursor_position_ = cursor_position;
+}
+
+void FolderHeaderView::SetPreviousFolderNameForTest(
+    const base::string16& previous_name) {
+  previous_folder_name_ = previous_name;
 }
 
 }  // namespace app_list

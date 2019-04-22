@@ -33,8 +33,6 @@ CancelCallback FilesListRequestRunner::CreateAndStartWithSizeBackoff(
     const std::string& q,
     const std::string& fields,
     const FileListCallback& callback) {
-  UMA_HISTOGRAM_COUNTS_1000("Drive.FilesListRequestRunner.MaxResults",
-                            max_results);
   base::Closure* const cancel_callback = new base::Closure;
   std::unique_ptr<drive::FilesListRequest> request =
       std::make_unique<drive::FilesListRequest>(
@@ -73,8 +71,6 @@ void FilesListRequestRunner::OnCompleted(int max_results,
                                          std::unique_ptr<FileList> entry) {
   if (!request_completed_callback_for_testing_.is_null())
     request_completed_callback_for_testing_.Run();
-
-  base::UmaHistogramSparse("Drive.FilesListRequestRunner.ApiErrorCode", error);
 
   if (error == google_apis::DRIVE_RESPONSE_TOO_LARGE && max_results > 1) {
     CreateAndStartWithSizeBackoff(max_results / 2, corpora, team_drive_id, q,

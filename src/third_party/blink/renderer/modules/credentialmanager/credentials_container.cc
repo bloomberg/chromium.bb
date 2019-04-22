@@ -7,7 +7,8 @@
 #include <memory>
 #include <utility>
 
-#include "third_party/blink/public/platform/modules/credentialmanager/credential_manager.mojom-blink.h"
+#include "build/build_config.h"
+#include "third_party/blink/public/mojom/credentialmanager/credential_manager.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -163,10 +164,14 @@ bool CheckPublicKeySecurityRequirements(ScriptPromiseResolver* resolver,
 
   // TODO(crbug.com/803077): Avoid constructing an OriginAccessEntry just
   // for the IP address check.
-  OriginAccessEntry access_entry(
-      origin->Protocol(), effective_domain,
-      network::mojom::CorsOriginAccessMatchMode::kAllowSubdomains);
-  if (effective_domain.IsEmpty() || access_entry.HostIsIPAddress()) {
+  bool reject_because_invalid_domain = effective_domain.IsEmpty();
+  if (!reject_because_invalid_domain) {
+    OriginAccessEntry access_entry(
+        origin->Protocol(), effective_domain,
+        network::mojom::CorsOriginAccessMatchMode::kAllowSubdomains);
+    reject_because_invalid_domain = access_entry.HostIsIPAddress();
+  }
+  if (reject_because_invalid_domain) {
     resolver->Reject(
         DOMException::Create(DOMExceptionCode::kSecurityError,
                              "Effective domain is not a valid domain."));
@@ -194,19 +199,9 @@ bool CheckPublicKeySecurityRequirements(ScriptPromiseResolver* resolver,
   return true;
 }
 
-// Checks if the icon URL of |credential| is an a-priori authenticated URL.
+// Checks if the icon URL is an a-priori authenticated URL.
 // https://w3c.github.io/webappsec-credential-management/#dom-credentialuserdata-iconurl
-bool IsIconURLEmptyOrSecure(const Credential* credential) {
-  if (!credential->IsPasswordCredential() &&
-      !credential->IsFederatedCredential()) {
-    DCHECK(credential->IsPublicKeyCredential());
-    return true;
-  }
-
-  const KURL& url =
-      credential->IsFederatedCredential()
-          ? static_cast<const FederatedCredential*>(credential)->iconURL()
-          : static_cast<const PasswordCredential*>(credential)->iconURL();
+bool IsIconURLEmptyOrSecure(const KURL& url) {
   if (url.IsEmpty())
     return true;
 
@@ -325,6 +320,20 @@ DOMArrayBuffer* VectorToDOMArrayBuffer(const Vector<uint8_t> buffer) {
                                 buffer.size());
 }
 
+#if defined(OS_ANDROID)
+Vector<Vector<uint32_t>> UvmEntryToArray(
+    const Vector<mojom::blink::UvmEntryPtr>& user_verification_methods) {
+  Vector<Vector<uint32_t>> uvm_array;
+  for (const auto& uvm : user_verification_methods) {
+    Vector<uint32_t> uvmEntry = {uvm->user_verification_method,
+                                 uvm->key_protection_type,
+                                 uvm->matcher_protection_type};
+    uvm_array.push_back(uvmEntry);
+  }
+  return uvm_array;
+}
+#endif
+
 void OnMakePublicKeyCredentialComplete(
     std::unique_ptr<ScopedPromiseResolver> scoped_resolver,
     AuthenticatorStatus status,
@@ -348,8 +357,8 @@ void OnMakePublicKeyCredentialComplete(
         VectorToDOMArrayBuffer(std::move(credential->info->raw_id));
     DOMArrayBuffer* attestation_buffer =
         VectorToDOMArrayBuffer(std::move(credential->attestation_object));
-    AuthenticatorAttestationResponse* authenticator_response =
-        AuthenticatorAttestationResponse::Create(
+    auto* authenticator_response =
+        MakeGarbageCollected<AuthenticatorAttestationResponse>(
             client_data_buffer, attestation_buffer, credential->transports);
 
     AuthenticationExtensionsClientOutputs* extension_outputs =
@@ -357,9 +366,15 @@ void OnMakePublicKeyCredentialComplete(
     if (credential->echo_hmac_create_secret) {
       extension_outputs->setHmacCreateSecret(credential->hmac_create_secret);
     }
-    resolver->Resolve(PublicKeyCredential::Create(credential->info->id, raw_id,
-                                                  authenticator_response,
-                                                  extension_outputs));
+#if defined(OS_ANDROID)
+    if (credential->echo_user_verification_methods) {
+      extension_outputs->setUvm(
+          UvmEntryToArray(std::move(*credential->user_verification_methods)));
+    }
+#endif
+    resolver->Resolve(MakeGarbageCollected<PublicKeyCredential>(
+        credential->info->id, raw_id, authenticator_response,
+        extension_outputs));
   } else {
     DCHECK(!credential);
     resolver->Reject(CredentialManagerErrorToDOMException(
@@ -395,18 +410,24 @@ void OnGetAssertionComplete(
         credential->user_handle
             ? VectorToDOMArrayBuffer(std::move(*credential->user_handle))
             : nullptr;
-    AuthenticatorAssertionResponse* authenticator_response =
-        AuthenticatorAssertionResponse::Create(client_data_buffer,
-                                               authenticator_buffer,
-                                               signature_buffer, user_handle);
+    auto* authenticator_response =
+        MakeGarbageCollected<AuthenticatorAssertionResponse>(
+            client_data_buffer, authenticator_buffer, signature_buffer,
+            user_handle);
     AuthenticationExtensionsClientOutputs* extension_outputs =
         AuthenticationExtensionsClientOutputs::Create();
     if (credential->echo_appid_extension) {
       extension_outputs->setAppid(credential->appid_extension);
     }
-    resolver->Resolve(PublicKeyCredential::Create(credential->info->id, raw_id,
-                                                  authenticator_response,
-                                                  extension_outputs));
+#if defined(OS_ANDROID)
+    if (credential->echo_user_verification_methods) {
+      extension_outputs->setUvm(
+          UvmEntryToArray(std::move(*credential->user_verification_methods)));
+    }
+#endif
+    resolver->Resolve(MakeGarbageCollected<PublicKeyCredential>(
+        credential->info->id, raw_id, authenticator_response,
+        extension_outputs));
   } else {
     DCHECK(!credential);
     resolver->Reject(CredentialManagerErrorToDOMException(
@@ -416,16 +437,12 @@ void OnGetAssertionComplete(
 
 }  // namespace
 
-CredentialsContainer* CredentialsContainer::Create() {
-  return new CredentialsContainer();
-}
-
 CredentialsContainer::CredentialsContainer() = default;
 
 ScriptPromise CredentialsContainer::get(
     ScriptState* script_state,
     const CredentialRequestOptions* options) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   auto required_origin_type = RequiredOriginType::kSecureAndSameWithAncestors;
@@ -433,8 +450,15 @@ ScriptPromise CredentialsContainer::get(
     return promise;
 
   if (options->hasPublicKey()) {
-    UseCounter::Count(resolver->GetExecutionContext(),
-                      WebFeature::kCredentialManagerGetPublicKeyCredential);
+    auto cryptotoken_origin = SecurityOrigin::Create(KURL(kCryptotokenOrigin));
+    if (cryptotoken_origin->IsSameSchemeHostPort(
+            resolver->GetFrame()->GetSecurityContext()->GetSecurityOrigin())) {
+      UseCounter::Count(resolver->GetExecutionContext(),
+                        WebFeature::kU2FCryptotokenSign);
+    } else {
+      UseCounter::Count(resolver->GetExecutionContext(),
+                        WebFeature::kCredentialManagerGetPublicKeyCredential);
+    }
 
     const String& relying_party_id = options->publicKey()->rpId();
     if (!CheckPublicKeySecurityRequirements(resolver, relying_party_id))
@@ -525,7 +549,7 @@ ScriptPromise CredentialsContainer::get(
 
 ScriptPromise CredentialsContainer::store(ScriptState* script_state,
                                           Credential* credential) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   auto required_origin_type =
@@ -540,9 +564,16 @@ ScriptPromise CredentialsContainer::store(ScriptState* script_state,
     resolver->Reject(DOMException::Create(
         DOMExceptionCode::kNotSupportedError,
         "Store operation not permitted for PublicKey credentials."));
+    return promise;
   }
 
-  if (!IsIconURLEmptyOrSecure(credential)) {
+  DCHECK(credential->IsFederatedCredential() ||
+         credential->IsPasswordCredential());
+  const KURL& url =
+      credential->IsFederatedCredential()
+          ? static_cast<const FederatedCredential*>(credential)->iconURL()
+          : static_cast<const PasswordCredential*>(credential)->iconURL();
+  if (!IsIconURLEmptyOrSecure(url)) {
     resolver->Reject(DOMException::Create(DOMExceptionCode::kSecurityError,
                                           "'iconURL' should be a secure URL"));
     return promise;
@@ -563,7 +594,7 @@ ScriptPromise CredentialsContainer::create(
     ScriptState* script_state,
     const CredentialCreationOptions* options,
     ExceptionState& exception_state) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   auto required_origin_type =
@@ -595,8 +626,16 @@ ScriptPromise CredentialsContainer::create(
         FederatedCredential::Create(options->federated(), exception_state));
   } else {
     DCHECK(options->hasPublicKey());
-    UseCounter::Count(resolver->GetExecutionContext(),
-                      WebFeature::kCredentialManagerCreatePublicKeyCredential);
+    auto cryptotoken_origin = SecurityOrigin::Create(KURL(kCryptotokenOrigin));
+    if (cryptotoken_origin->IsSameSchemeHostPort(
+            resolver->GetFrame()->GetSecurityContext()->GetSecurityOrigin())) {
+      UseCounter::Count(resolver->GetExecutionContext(),
+                        WebFeature::kU2FCryptotokenRegister);
+    } else {
+      UseCounter::Count(
+          resolver->GetExecutionContext(),
+          WebFeature::kCredentialManagerCreatePublicKeyCredential);
+    }
 
     const String& relying_party_id = options->publicKey()->rp()->id();
     if (!CheckPublicKeySecurityRequirements(resolver, relying_party_id))
@@ -622,13 +661,42 @@ ScriptPromise CredentialsContainer::create(
 
     auto mojo_options =
         MojoPublicKeyCredentialCreationOptions::From(options->publicKey());
-    if (mojo_options) {
+    if (!mojo_options) {
+      resolver->Reject(DOMException::Create(
+          DOMExceptionCode::kNotSupportedError,
+          "Required parameters missing in `options.publicKey`."));
+    } else if (mojo_options->user->id.size() > 64) {
+      // https://www.w3.org/TR/webauthn/#user-handle
+      v8::Isolate* isolate = resolver->GetScriptState()->GetIsolate();
+      resolver->Reject(V8ThrowException::CreateTypeError(
+          isolate, "User handle exceeds 64 bytes."));
+    } else {
       if (!mojo_options->relying_party->id) {
         mojo_options->relying_party->id = resolver->GetFrame()
                                               ->GetSecurityContext()
                                               ->GetSecurityOrigin()
                                               ->Domain();
       }
+
+      if (mojo_options->relying_party->icon) {
+        if (!IsIconURLEmptyOrSecure(
+                mojo_options->relying_party->icon.value())) {
+          resolver->Reject(
+              DOMException::Create(DOMExceptionCode::kSecurityError,
+                                   "'rp.icon' should be a secure URL"));
+          return promise;
+        }
+      }
+
+      if (mojo_options->user->icon) {
+        if (!IsIconURLEmptyOrSecure(mojo_options->user->icon.value())) {
+          resolver->Reject(
+              DOMException::Create(DOMExceptionCode::kSecurityError,
+                                   "'user.icon' should be a secure URL"));
+          return promise;
+        }
+      }
+
       auto* authenticator =
           CredentialManagerProxy::From(script_state)->Authenticator();
       authenticator->MakeCredential(
@@ -636,10 +704,6 @@ ScriptPromise CredentialsContainer::create(
           WTF::Bind(
               &OnMakePublicKeyCredentialComplete,
               WTF::Passed(std::make_unique<ScopedPromiseResolver>(resolver))));
-    } else {
-      resolver->Reject(DOMException::Create(
-          DOMExceptionCode::kNotSupportedError,
-          "Required parameters missing in `options.publicKey`."));
     }
   }
 
@@ -648,7 +712,7 @@ ScriptPromise CredentialsContainer::create(
 
 ScriptPromise CredentialsContainer::preventSilentAccess(
     ScriptState* script_state) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
   const auto required_origin_type = RequiredOriginType::kSecure;
   if (!CheckSecurityRequirementsBeforeRequest(resolver, required_origin_type))

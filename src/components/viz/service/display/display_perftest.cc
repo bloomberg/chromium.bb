@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/test/null_task_runner.h"
 #include "base/time/time.h"
-#include "cc/base/lap_timer.h"
+#include "base/timer/lap_timer.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/draw_quad.h"
@@ -66,7 +66,8 @@ class RemoveOverdrawQuadPerfTest : public testing::Test {
     SkBlendMode blend_mode = SkBlendMode::kSrcOver;
 
     SharedQuadState* state = render_pass->CreateAndAppendSharedQuadState();
-    state->SetAll(quad_transform, rect, rect, rect, is_clipped,
+    state->SetAll(quad_transform, rect, rect,
+                  /*rounded_corner_bounds=*/gfx::RRectF(), rect, is_clipped,
                   are_contents_opaque, opacity, blend_mode, sorting_context_id);
     return state;
   }
@@ -290,7 +291,7 @@ class RemoveOverdrawQuadPerfTest : public testing::Test {
 
  private:
   CompositorFrame frame_;
-  cc::LapTimer timer_;
+  base::LapTimer timer_;
   StubBeginFrameSource begin_frame_source_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   ServerSharedBitmapManager bitmap_manager_;

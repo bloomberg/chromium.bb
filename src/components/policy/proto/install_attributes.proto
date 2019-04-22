@@ -8,13 +8,13 @@ option optimize_for = LITE_RUNTIME;
 
 package cryptohome;
 
-// This must match install_attributes.proto in the Chromium OS cryptohome
-// repository. Only the fields that are relevant to the browser are present
-// here.
 message SerializedInstallAttributes {
   message Attribute {
     required string name = 1;
     required bytes value = 2;
   }
+  // Specifies the version of the install attributes used to write the file.
+  // Should be incremented when fallback behavior is needed.
+  optional uint32 version = 1 [default = 1];
   repeated Attribute attributes = 2;
 }

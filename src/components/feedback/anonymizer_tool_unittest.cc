@@ -131,8 +131,8 @@ TEST_F(AnonymizerToolTest, AnonymizeCustomPatterns) {
   EXPECT_EQ("[<IPv6: 2>]",
             AnonymizeCustomPatterns("[2001:db8:0:0:0:ff00:42:8329]"));
   EXPECT_EQ("[<IPv6: 3>]", AnonymizeCustomPatterns("[2001:db8::ff00:42:8329]"));
-  EXPECT_EQ("[<IPv6: 4>]", AnonymizeCustomPatterns("[::1]"));
-  EXPECT_EQ("<IPv4: 1>", AnonymizeCustomPatterns("192.168.0.1"));
+  EXPECT_EQ("[<IPv6: 4>]", AnonymizeCustomPatterns("[aa::bb]"));
+  EXPECT_EQ("<IPv4: 1>", AnonymizeCustomPatterns("192.160.0.1"));
 
   EXPECT_EQ("<URL: 1>",
             AnonymizeCustomPatterns("http://example.com/foo?test=1"));
@@ -155,7 +155,7 @@ TEST_F(AnonymizerToolTest, AnonymizeCustomPatterns) {
     "rtsp://root@example.com/",
     "https://aaaaaaaaaaaaaaaa.com",
   };
-  for (size_t i = 0; i < arraysize(kURLs); ++i) {
+  for (size_t i = 0; i < base::size(kURLs); ++i) {
     SCOPED_TRACE(kURLs[i]);
     std::string got = AnonymizeCustomPatterns(kURLs[i]);
     EXPECT_TRUE(
@@ -210,13 +210,68 @@ TEST_F(AnonymizerToolTest, AnonymizeChunk) {
       "example@@1234\n"           // No PII, it is not valid email address.
       "255.255.155.2\n"           // IP address.
       "255.255.155.255\n"         // IP address.
+      "127.0.0.1\n"               // IPv4 loopback.
+      "127.255.0.1\n"             // IPv4 loopback.
+      "0.0.0.0\n"                 // Any IPv4.
+      "0.255.255.255\n"           // Any IPv4.
+      "10.10.10.100\n"            // IPv4 private class A.
+      "10.10.10.100\n"            // Intentional duplicate.
+      "10.10.10.101\n"            // IPv4 private class A.
+      "10.255.255.255\n"          // IPv4 private class A.
+      "172.16.0.0\n"              // IPv4 private class B.
+      "172.31.255.255\n"          // IPv4 private class B.
+      "172.11.5.5\n"              // IP address.
+      "172.111.5.5\n"             // IP address.
+      "192.168.0.0\n"             // IPv4 private class C.
+      "192.168.255.255\n"         // IPv4 private class C.
+      "192.169.2.120\n"           // IP address.
+      "169.254.0.1\n"             // Link local.
+      "169.200.0.1\n"             // IP address.
+      "fe80::\n"                  // Link local.
+      "fe80::ffff\n"              // Link local.
+      "febf:ffff::ffff\n"         // Link local.
+      "fecc::1111\n"              // IP address.
+      "224.0.0.24\n"              // Multicast.
+      "240.0.0.0\n"               // IP address.
+      "255.255.255.255\n"         // Broadcast.
+      "100.115.92.92\n"           // ChromeOS.
+      "100.115.91.92\n"           // IP address.
+      "1.1.1.1\n"                 // DNS
+      "8.8.8.8\n"                 // DNS
+      "8.8.4.4\n"                 // DNS
+      "8.8.8.4\n"                 // IP address.
       "255.255.259.255\n"         // Not an IP address.
       "255.300.255.255\n"         // Not an IP address.
       "aaaa123.123.45.4aaa\n"     // IP address.
       "11:11;11::11\n"            // IP address.
       "11::11\n"                  // IP address.
       "11:11:abcdef:0:0:0:0:0\n"  // No PII.
-      "aa:aa:aa:aa:aa:aa";        // MAC address (BSSID).
+      "::\n"                      // Unspecified.
+      "::1\n"                     // Local host.
+      "Instance::Set\n"           // Ignore match, no PII.
+      "Instant::ff\n"             // Ignore match, no PII.
+      "net::ERR_CONN_TIMEOUT\n"   // Ignore match, no PII.
+      "ff01::1\n"                 // All nodes address (interface local).
+      "ff01::2\n"                 // All routers (interface local).
+      "ff01::3\n"                 // Multicast (interface local).
+      "ff02::1\n"                 // All nodes address (link local).
+      "ff02::2\n"                 // All routers (link local).
+      "ff02::3\n"                 // Multicast (link local).
+      "ff02::fb\n"                // mDNSv6 (link local).
+      "ff08::fb\n"                // mDNSv6.
+      "ff0f::101\n"               // All NTP servers.
+      "::ffff:cb0c:10ea\n"        // IPv4-mapped IPV6 (IP address).
+      "::ffff:a0a:a0a\n"          // IPv4-mapped IPV6 (private class A).
+      "::ffff:a0a:a0a\n"          // Intentional duplicate.
+      "::ffff:ac1e:1e1e\n"        // IPv4-mapped IPV6 (private class B).
+      "::ffff:c0a8:640a\n"        // IPv4-mapped IPV6 (private class C).
+      "::ffff:6473:5c01\n"        // IPv4-mapped IPV6 (Chrome).
+      "64:ff9b::a0a:a0a\n"       // IPv4-translated 6to4 IPV6 (private class A).
+      "64:ff9b::6473:5c01\n"     // IPv4-translated 6to4 IPV6 (Chrome).
+      "::0101:ffff:c0a8:640a\n"  // IP address.
+      "aa:aa:aa:aa:aa:aa\n"      // MAC address (BSSID).
+      "chrome://resources/foo\n"        // Secure chrome resource, whitelisted.
+      "chrome://resources/f?user=bar";  // Potentially PII in parameter.
   std::string result =
       "aaaaaaaa [SSID=1]aaaaa\n"
       "aaaaaaaa<URL: 1>\n"
@@ -224,13 +279,68 @@ TEST_F(AnonymizerToolTest, AnonymizeChunk) {
       "example@@1234\n"
       "<IPv4: 1>\n"
       "<IPv4: 2>\n"
+      "<127.0.0.0/8: 3>\n"
+      "<127.0.0.0/8: 4>\n"
+      "<0.0.0.0/8: 5>\n"
+      "<0.0.0.0/8: 6>\n"
+      "<10.0.0.0/8: 7>\n"
+      "<10.0.0.0/8: 7>\n"
+      "<10.0.0.0/8: 8>\n"
+      "<10.0.0.0/8: 9>\n"
+      "<172.16.0.0/12: 10>\n"
+      "<172.16.0.0/12: 11>\n"
+      "<IPv4: 12>\n"
+      "<IPv4: 13>\n"
+      "<192.168.0.0/16: 14>\n"
+      "<192.168.0.0/16: 15>\n"
+      "<IPv4: 16>\n"
+      "<169.254.0.0/16: 17>\n"
+      "<IPv4: 18>\n"
+      "<fe80::/10: 1>\n"
+      "<fe80::/10: 2>\n"
+      "<fe80::/10: 3>\n"
+      "<IPv6: 4>\n"
+      "<224.0.0.0/4: 19>\n"
+      "<IPv4: 20>\n"
+      "255.255.255.255\n"
+      "100.115.92.92\n"
+      "<IPv4: 23>\n"
+      "1.1.1.1\n"
+      "8.8.8.8\n"
+      "8.8.4.4\n"
+      "<IPv4: 27>\n"
       "255.255.259.255\n"
       "255.300.255.255\n"
-      "aaaa<IPv4: 3>aaa\n"
-      "11:11;<IPv6: 1>\n"
-      "<IPv6: 1>\n"
+      "aaaa<IPv4: 28>aaa\n"
+      "11:11;<IPv6: 5>\n"
+      "<IPv6: 5>\n"
       "11:11:abcdef:0:0:0:0:0\n"
-      "aa:aa:aa:00:00:01";
+      "::\n"
+      "::1\n"
+      "Instance::Set\n"
+      "Instant::ff\n"
+      "net::ERR_CONN_TIMEOUT\n"
+      "ff01::1\n"
+      "ff01::2\n"
+      "<ff01::/16: 13>\n"
+      "ff02::1\n"
+      "ff02::2\n"
+      "<ff02::/16: 16>\n"
+      "<ff02::/16: 17>\n"
+      "<IPv6: 18>\n"
+      "<IPv6: 19>\n"
+      "<IPv6: 20>\n"
+      "<M 10.0.0.0/8: 21>\n"
+      "<M 10.0.0.0/8: 21>\n"
+      "<M 172.16.0.0/12: 22>\n"
+      "<M 192.168.0.0/16: 23>\n"
+      "<M 100.115.92.1: 24>\n"
+      "<T 10.0.0.0/8: 25>\n"
+      "<T 100.115.92.1: 26>\n"
+      "<IPv6: 27>\n"
+      "aa:aa:aa:00:00:01\n"
+      "chrome://resources/foo\n"
+      "<URL: 2>";
   EXPECT_EQ(result, anonymizer_.Anonymize(data));
 }
 

@@ -23,6 +23,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "net/base/network_change_notifier.h"
@@ -154,6 +155,8 @@ int main(int argc, char* argv[]) {
 
   // Just make the main message loop the network loop.
   base::MessageLoopForIO network_loop;
+
+  base::ThreadPool::CreateAndStartWithDefaultParams("NetWatcher");
 
   NetWatcher net_watcher;
 

@@ -10,7 +10,6 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/debug/alias.h"
-#include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/weak_ptr.h"
@@ -50,10 +49,9 @@ namespace web {
 
 namespace {
 
-// TODO(tsepez) remove unsafe-eval when bidichecker_packaged.js fixed.
 const char kChromeURLContentSecurityPolicyHeaderBase[] =
     "Content-Security-Policy: script-src chrome://resources "
-    "'self' 'unsafe-eval'; ";
+    "'self'; ";
 
 const char kChromeURLXFrameOptionsHeader[] = "X-Frame-Options: DENY";
 
@@ -396,8 +394,8 @@ void GetMimeTypeOnUI(URLDataSourceIOSImpl* source,
   std::string mime_type = source->source()->GetMimeType(path);
   base::PostTaskWithTraits(
       FROM_HERE, {WebThread::IO},
-      base::Bind(&URLRequestChromeJob::MimeTypeAvailable, job,
-                 base::RetainedRef(source), mime_type));
+      base::BindOnce(&URLRequestChromeJob::MimeTypeAvailable, job,
+                     base::RetainedRef(source), mime_type));
 }
 
 }  // namespace
@@ -516,12 +514,13 @@ bool URLDataManagerIOSBackend::StartRequest(const net::URLRequest* request,
   scoped_refptr<base::SingleThreadTaskRunner> target_runner =
       base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::UI});
   target_runner->PostTask(
-      FROM_HERE, base::Bind(&GetMimeTypeOnUI, base::RetainedRef(source), path,
-                            job->weak_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&GetMimeTypeOnUI, base::RetainedRef(source),
+                                path, job->weak_factory_.GetWeakPtr()));
 
   target_runner->PostTask(
-      FROM_HERE, base::Bind(&URLDataManagerIOSBackend::CallStartRequest,
-                            base::WrapRefCounted(source), path, request_id));
+      FROM_HERE,
+      base::BindOnce(&URLDataManagerIOSBackend::CallStartRequest,
+                     base::WrapRefCounted(source), path, request_id));
   return true;
 }
 

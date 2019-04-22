@@ -13,7 +13,7 @@
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_window_watcher_item_delegate.h"
 #include "ash/shell.h"
-#include "ash/wm/window_state.h"
+#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/window_util.h"
 #include "base/strings/string_util.h"
 #include "ui/aura/client/aura_constants.h"
@@ -27,24 +27,20 @@ namespace ash {
 namespace {
 
 // Returns the window's shelf item type property value.
-// Mash returns the dialog type for normal windows without shelf item types.
-// TODO(msw): Extend this Mash behavior to all Ash configs.
+// MultiProcessMash also experimentally returns TYPE_DIALOG for some windows.
 ShelfItemType GetShelfItemType(aura::Window* window) {
-  if ((features::IsMultiProcessMash() || features::IsSingleProcessMash()) &&
+  if (features::IsMultiProcessMash() &&
       window->GetProperty(kShelfItemTypeKey) == TYPE_UNDEFINED &&
-      window->type() == aura::client::WINDOW_TYPE_NORMAL &&
-      !wm::GetWindowState(window)->ignored_by_shelf()) {
+      window->type() == aura::client::WINDOW_TYPE_NORMAL) {
     return TYPE_DIALOG;
   }
   return static_cast<ShelfItemType>(window->GetProperty(kShelfItemTypeKey));
 }
 
-// Returns the window's shelf id property value, or provides a default value.
-// Mash sets and returns an initial default shelf id for unidentified windows.
-// TODO(msw): Extend this Mash behavior to all Ash configs.
+// Returns the window's shelf id property value.
+// MultiProcessMash also experimentally sets and returns default ids values.
 ShelfID GetShelfID(aura::Window* window) {
-  if (features::IsUsingWindowService() && !window->GetProperty(kShelfIDKey) &&
-      !wm::GetWindowState(window)->ignored_by_shelf()) {
+  if (features::IsMultiProcessMash() && !window->GetProperty(kShelfIDKey)) {
     static int id = 0;
     const ash::ShelfID shelf_id(ShelfWindowWatcher::kDefaultShelfIdPrefix +
                                 std::to_string(id++));
@@ -70,7 +66,9 @@ void UpdateShelfItemForWindow(ShelfItem* item, aura::Window* window) {
   }
 
   // Prefer app icons over window icons, they're typically larger.
-  gfx::ImageSkia* image = window->GetProperty(aura::client::kAppIconKey);
+  gfx::ImageSkia* image = window->GetProperty(aura::client::kAppIconLargeKey);
+  if (!image || image->isNull())
+    image = window->GetProperty(aura::client::kAppIconKey);
   if (!image || image->isNull())
     image = window->GetProperty(aura::client::kWindowIconKey);
   if (!image || image->isNull()) {
@@ -96,8 +94,9 @@ const char ShelfWindowWatcher::kDefaultShelfIdPrefix[] = "ShelfWindowWatcher";
 void ShelfWindowWatcher::ContainerWindowObserver::OnWindowHierarchyChanged(
     const HierarchyChangeParams& params) {
   if (!params.old_parent && params.new_parent &&
-      (params.new_parent->id() == kShellWindowId_DefaultContainer)) {
-    // A new window was created in the default container.
+      desks_util::IsDeskContainerId(params.new_parent->id())) {
+    // A new window was created in one of the desks' containers. Note that the
+    // shelf is globally showing all apps from all active and inactive desks.
     window_watcher_->OnUserWindowAdded(params.target);
   }
 }
@@ -119,23 +118,27 @@ void ShelfWindowWatcher::UserWindowObserver::OnWindowPropertyChanged(
     aura::Window* window,
     const void* key,
     intptr_t old) {
-  // ShelfIDs should never change except when replacing Mash temporary defaults.
-  // TODO(msw): Extend this Mash behavior to all Ash configs.
-  if ((features::IsMultiProcessMash() || features::IsSingleProcessMash()) &&
-      key == kShelfIDKey &&
+  // ShelfIDs should rarely change beyond replacing Mash temporary defaults.
+  // Support ShelfID changes by removing the item; it will be re-added below.
+  if (features::IsMultiProcessMash() && key == kShelfIDKey &&
       window_watcher_->user_windows_with_items_.count(window) > 0) {
     ShelfID old_id = ShelfID::Deserialize(reinterpret_cast<std::string*>(old));
     ShelfID new_id = ShelfID::Deserialize(window->GetProperty(kShelfIDKey));
     if (old_id != new_id && !old_id.IsNull() && !new_id.IsNull() &&
         window_watcher_->model_->ItemIndexByID(old_id) >= 0) {
-      // Id changing is not supported; remove the item and it will be re-added.
       window_watcher_->user_windows_with_items_.erase(window);
       const int index = window_watcher_->model_->ItemIndexByID(old_id);
       window_watcher_->model_->RemoveItemAt(index);
     }
   }
 
-  if (key == aura::client::kAppIconKey || key == aura::client::kWindowIconKey ||
+  if (key == kShelfIDKey && window == wm::GetActiveWindow()) {
+    window_watcher_->model_->SetActiveShelfID(
+        ShelfID::Deserialize(window->GetProperty(kShelfIDKey)));
+  }
+
+  if (key == aura::client::kAppIconLargeKey ||
+      key == aura::client::kAppIconKey || key == aura::client::kWindowIconKey ||
       key == aura::client::kDrawAttentionKey || key == kShelfItemTypeKey ||
       key == kShelfIDKey) {
     window_watcher_->OnUserWindowPropertyChanged(window);
@@ -262,11 +265,11 @@ void ShelfWindowWatcher::OnWindowActivated(ActivationReason reason,
 }
 
 void ShelfWindowWatcher::OnRootWindowAdded(aura::Window* root_window) {
-  aura::Window* container =
-      root_window->GetChildById(kShellWindowId_DefaultContainer);
-  for (aura::Window* window : container->children())
-    OnUserWindowAdded(window);
-  observed_container_windows_.Add(container);
+  for (aura::Window* container : desks_util::GetDesksContainers(root_window)) {
+    for (aura::Window* window : container->children())
+      OnUserWindowAdded(window);
+    observed_container_windows_.Add(container);
+  }
 }
 
 }  // namespace ash

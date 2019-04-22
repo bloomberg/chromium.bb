@@ -4,7 +4,9 @@
 
 #include "chrome/browser/chromeos/file_manager/file_manager_browsertest_base.h"
 
-#include "chromeos/chromeos_switches.h"
+#include "base/test/scoped_feature_list.h"
+#include "chromeos/constants/chromeos_switches.h"
+#include "media/base/media_switches.h"
 
 namespace file_manager {
 
@@ -14,13 +16,6 @@ class VideoPlayerBrowserTestBase : public FileManagerBrowserTestBase {
   VideoPlayerBrowserTestBase() = default;
 
  protected:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(
-        chromeos::switches::kEnableVideoPlayerChromecastSupport);
-
-    FileManagerBrowserTestBase::SetUpCommandLine(command_line);
-  }
-
   GuestMode GetGuestMode() const override { return MODE; }
 
   const char* GetTestCaseName() const override {
@@ -63,13 +58,35 @@ IN_PROC_BROWSER_TEST_F(VideoPlayerBrowserTest, OpenSingleVideoOnDrive) {
   StartTest();
 }
 
+IN_PROC_BROWSER_TEST_F(VideoPlayerBrowserTest, OpenVideoWithSubtitle) {
+  set_test_case_name("openVideoWithSubtitle");
+  StartTest();
+}
+
+IN_PROC_BROWSER_TEST_F(VideoPlayerBrowserTest, OpenVideoWithoutSubtitle) {
+  set_test_case_name("openVideoWithoutSubtitle");
+  StartTest();
+}
+
+IN_PROC_BROWSER_TEST_F(VideoPlayerBrowserTest, OpenMultipleVideosOnDownloads) {
+  set_test_case_name("openMultipleVideosOnDownloads");
+  StartTest();
+}
+
 IN_PROC_BROWSER_TEST_F(VideoPlayerBrowserTest, CheckInitialElements) {
   set_test_case_name("checkInitialElements");
   StartTest();
 }
 
-IN_PROC_BROWSER_TEST_F(VideoPlayerBrowserTest, ClickControlButtons) {
-  set_test_case_name("clickControlButtons");
+// Flaky. Suspect due to a race when loading Chromecast integration.
+// See https://crbug.com/926035.
+IN_PROC_BROWSER_TEST_F(VideoPlayerBrowserTest, DISABLED_NativeMediaKey) {
+  // The HardwareMediaKeyHandling feature makes key handling flaky.
+  // See https://crbug.com/902519.
+  base::test::ScopedFeatureList disable_media_key_handling;
+  disable_media_key_handling.InitAndDisableFeature(
+      media::kHardwareMediaKeyHandling);
+  set_test_case_name("mediaKeyNative");
   StartTest();
 }
 

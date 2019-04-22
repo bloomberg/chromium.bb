@@ -51,7 +51,7 @@ class ExploreSitesImageHelperTest : public testing::Test {
       : data_decoder_(connector_factory_.RegisterInstance(
             data_decoder::mojom::kServiceName)) {}
 
-  ~ExploreSitesImageHelperTest() override{};
+  ~ExploreSitesImageHelperTest() override {}
 
   EncodedImageList GetEncodedImageList(int num_icons);
   BitmapCallback StoreBitmap() {

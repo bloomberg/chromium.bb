@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/events/input_event.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -54,7 +55,7 @@ class CORE_EXPORT EditCommand : public GarbageCollectedFinalized<EditCommand> {
   // |TypingCommand| will return the text of the last |commands_|.
   virtual String TextDataForInputEvent() const;
 
-  virtual void Trace(blink::Visitor*);
+  virtual void Trace(Visitor*);
   bool SelectionIsDirectional() const { return selection_is_directional_; }
   void SetSelectionIsDirectional(bool is_directional) {
     selection_is_directional_ = is_directional;
@@ -91,11 +92,12 @@ class CORE_EXPORT SimpleEditCommand : public EditCommand {
   bool IsSimpleEditCommand() const final { return true; }
 };
 
-DEFINE_TYPE_CASTS(SimpleEditCommand,
-                  EditCommand,
-                  command,
-                  command->IsSimpleEditCommand(),
-                  command.IsSimpleEditCommand());
+template <>
+struct DowncastTraits<SimpleEditCommand> {
+  static bool AllowFrom(const EditCommand& command) {
+    return command.IsSimpleEditCommand();
+  }
+};
 
 }  // namespace blink
 

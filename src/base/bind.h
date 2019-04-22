@@ -5,6 +5,8 @@
 #ifndef BASE_BIND_H_
 #define BASE_BIND_H_
 
+#include <functional>
+#include <memory>
 #include <utility>
 
 #include "base/bind_internal.h"
@@ -29,7 +31,7 @@
 //
 //   // The first argument is bound at callback creation; the remaining
 //   // two must be passed when calling Run() on the callback object.
-//   base::OnceCallback<void(int, long)> cb = base::BindOnce(
+//   base::OnceCallback<long(int, long)> cb = base::BindOnce(
 //       [](short x, int y, long z) { return x * y * z; }, 42);
 //
 // When binding to a method, the receiver object must also be specified at
@@ -335,31 +337,6 @@ static inline internal::RetainedRefWrapper<T> RetainedRef(scoped_refptr<T> o) {
   return internal::RetainedRefWrapper<T>(std::move(o));
 }
 
-// ConstRef() allows binding a constant reference to an argument rather
-// than a copy.
-//
-// EXAMPLE OF ConstRef():
-//
-//   void foo(int arg) { cout << arg << endl }
-//
-//   int n = 1;
-//   Closure no_ref = Bind(&foo, n);
-//   Closure has_ref = Bind(&foo, ConstRef(n));
-//
-//   no_ref.Run();  // Prints "1"
-//   has_ref.Run();  // Prints "1"
-//
-//   n = 2;
-//   no_ref.Run();  // Prints "1"
-//   has_ref.Run();  // Prints "2"
-//
-// Note that because ConstRef() takes a reference on |n|, |n| must outlive all
-// its bound callbacks.
-template <typename T>
-static inline internal::ConstRefWrapper<T> ConstRef(const T& o) {
-  return internal::ConstRefWrapper<T>(o);
-}
-
 // Owned() transfers ownership of an object to the Callback resulting from
 // bind; the object will be deleted when the Callback is deleted.
 //
@@ -383,6 +360,11 @@ static inline internal::ConstRefWrapper<T> ConstRef(const T& o) {
 template <typename T>
 static inline internal::OwnedWrapper<T> Owned(T* o) {
   return internal::OwnedWrapper<T>(o);
+}
+
+template <typename T>
+static inline internal::OwnedWrapper<T> Owned(std::unique_ptr<T>&& ptr) {
+  return internal::OwnedWrapper<T>(std::move(ptr));
 }
 
 // Passed() is for transferring movable-but-not-copyable types (eg. unique_ptr)
@@ -450,7 +432,7 @@ static inline internal::PassedWrapper<T> Passed(T* scoper) {
 //   cb->Run(1);  // Prints "1".
 //
 //   // Prints "1" on |ml|.
-//   ml->PostTask(FROM_HERE, Bind(IgnoreResult(&DoSomething), 1);
+//   ml->PostTask(FROM_HERE, BindOnce(IgnoreResult(&DoSomething), 1);
 template <typename T>
 static inline internal::IgnoreResultHelper<T> IgnoreResult(T data) {
   return internal::IgnoreResultHelper<T>(std::move(data));

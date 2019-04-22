@@ -15,7 +15,6 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/sync/base/unrecoverable_error_handler.h"
 #include "components/sync/driver/sync_api_component_factory.h"
-#include "components/sync/driver/sync_client.h"
 #include "components/sync/model/local_change_observer.h"
 #include "components/sync/model/sync_change.h"
 #include "components/sync/model/sync_error.h"
@@ -80,8 +79,7 @@ GenericChangeProcessor::GenericChangeProcessor(
     std::unique_ptr<DataTypeErrorHandler> error_handler,
     const base::WeakPtr<SyncableService>& local_service,
     const base::WeakPtr<SyncMergeResult>& merge_result,
-    UserShare* user_share,
-    SyncClient* sync_client)
+    UserShare* user_share)
     : ChangeProcessor(std::move(error_handler)),
       type_(type),
       local_service_(local_service),
@@ -106,7 +104,7 @@ void GenericChangeProcessor::ApplyChangesFromSyncModel(
     if (it->action == ChangeRecord::ACTION_DELETE) {
       std::unique_ptr<sync_pb::EntitySpecifics> specifics;
       if (it->specifics.has_password()) {
-        DCHECK(it->extra.get());
+        DCHECK(it->extra.has_value());
         specifics = std::make_unique<sync_pb::EntitySpecifics>(it->specifics);
         specifics->mutable_password()
             ->mutable_client_only_encrypted_data()
@@ -125,7 +123,7 @@ void GenericChangeProcessor::ApplyChangesFromSyncModel(
       if (read_node.InitByIdLookup(it->id) != BaseNode::INIT_OK) {
         SyncError error(FROM_HERE, SyncError::DATATYPE_ERROR,
                         "Failed to look up data for received change with id " +
-                            base::Int64ToString(it->id),
+                            base::NumberToString(it->id),
                         GetModelTypeFromSpecifics(it->specifics));
         error_handler()->OnUnrecoverableError(error);
         return;

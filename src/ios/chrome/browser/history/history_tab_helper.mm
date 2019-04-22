@@ -105,25 +105,23 @@ void HistoryTabHelper::DidFinishNavigation(
     return;
   }
 
-  if (navigation_context->IsDownload()) {
+  // TODO(crbug.com/931841): Remove GetLastCommittedItem nil check once
+  // HasComitted has been fixed.
+  if (!navigation_context->HasCommitted() ||
+      !web_state_->GetNavigationManager()->GetLastCommittedItem()) {
+    // Navigation was replaced or aborted.
     return;
   }
 
-  if (!navigation_context->HasCommitted() &&
-      !navigation_context->IsSameDocument()) {
-    // Navigation was replaced.
-    return;
-  }
-
-  DCHECK(web_state->GetNavigationManager()->GetVisibleItem());
-  web::NavigationItem* visible_item =
-      web_state_->GetNavigationManager()->GetVisibleItem();
-  DCHECK(!visible_item->GetTimestamp().is_null());
+  web::NavigationItem* last_committed_item =
+      web_state_->GetNavigationManager()->GetLastCommittedItem();
+  DCHECK(!last_committed_item->GetTimestamp().is_null());
 
   // Do not update the history database for back/forward navigations.
   // TODO(crbug.com/661667): on iOS the navigation is not currently tagged with
   // a ui::PAGE_TRANSITION_FORWARD_BACK transition.
-  const ui::PageTransition transition = visible_item->GetTransitionType();
+  const ui::PageTransition transition =
+      last_committed_item->GetTransitionType();
   if (transition & ui::PAGE_TRANSITION_FORWARD_BACK) {
     return;
   }
@@ -132,7 +130,7 @@ void HistoryTabHelper::DidFinishNavigation(
   // desktop, but prevents dumping huge view-source urls into the history
   // database. Keep it NDEBUG only because view-source:// URLs are enabled
   // on NDEBUG builds only.
-  const GURL& url = visible_item->GetURL();
+  const GURL& url = last_committed_item->GetURL();
 #ifndef NDEBUG
   if (url.SchemeIs(url::kDataScheme)) {
     return;
@@ -142,8 +140,8 @@ void HistoryTabHelper::DidFinishNavigation(
   num_title_changes_ = 0;
 
   history::RedirectList redirects;
-  const GURL& original_url = visible_item->GetOriginalRequestURL();
-  const GURL& referrer_url = visible_item->GetReferrer().url;
+  const GURL& original_url = last_committed_item->GetOriginalRequestURL();
+  const GURL& referrer_url = last_committed_item->GetReferrer().url;
   if (original_url != url) {
     // Simulate a valid redirect chain in case of URLs that have been modified
     // by CRWWebController -finishHistoryNavigationFromEntry:.
@@ -159,8 +157,12 @@ void HistoryTabHelper::DidFinishNavigation(
 
   // Navigations originating from New Tab Page or Reading List should not
   // contribute to Most Visited.
+  const bool content_suggestions_navigation =
+      referrer_url == ntp_snippets::GetContentSuggestionsReferrerURL() &&
+      ui::PageTransitionCoreTypeIs(transition,
+                                   ui::PAGE_TRANSITION_AUTO_BOOKMARK);
   const bool consider_for_ntp_most_visited =
-      referrer_url != ntp_snippets::GetContentSuggestionsReferrerURL() &&
+      !content_suggestions_navigation &&
       referrer_url != kReadingListReferrerURL;
 
   // Top-level frame navigations are visible; everything else is hidden.
@@ -176,10 +178,11 @@ void HistoryTabHelper::DidFinishNavigation(
        navigation_context->GetResponseHeaders()->response_code() > 600) ||
       !ui::PageTransitionIsMainFrame(navigation_context->GetPageTransition());
   history::HistoryAddPageArgs add_page_args(
-      url, visible_item->GetTimestamp(), this, visible_item->GetUniqueID(),
-      referrer_url, redirects, transition, hidden, history::SOURCE_BROWSED,
+      url, last_committed_item->GetTimestamp(), this,
+      last_committed_item->GetUniqueID(), referrer_url, redirects, transition,
+      hidden, history::SOURCE_BROWSED,
       /*did_replace_entry=*/false, consider_for_ntp_most_visited,
-      navigation_context->IsSameDocument() ? GetPageTitle(*visible_item)
+      navigation_context->IsSameDocument() ? GetPageTitle(*last_committed_item)
                                            : base::nullopt);
 
   if (delay_notification_) {
@@ -190,7 +193,7 @@ void HistoryTabHelper::DidFinishNavigation(
     history::HistoryService* history_service = GetHistoryService();
     if (history_service) {
       history_service->AddPage(add_page_args);
-      UpdateHistoryPageTitle(*visible_item);
+      UpdateHistoryPageTitle(*last_committed_item);
     }
   }
 }
@@ -242,3 +245,5 @@ history::HistoryService* HistoryTabHelper::GetHistoryService() {
   return ios::HistoryServiceFactory::GetForBrowserState(
       browser_state, ServiceAccessType::IMPLICIT_ACCESS);
 }
+
+WEB_STATE_USER_DATA_KEY_IMPL(HistoryTabHelper)

@@ -34,6 +34,7 @@
 #include "vkPrograms.hpp"
 #include "vkRefUtil.hpp"
 #include "vkMemUtil.hpp"
+#include "vkBarrierUtil.hpp"
 #include "vkQueryUtil.hpp"
 #include "vkBuilderUtil.hpp"
 #include "vkTypeUtil.hpp"
@@ -254,7 +255,7 @@ tcu::TestStatus SharedVarTestInstance::iterate (void)
 	// Validate the results
 
 	const Allocation& bufferAllocation = buffer.getAllocation();
-	invalidateMappedMemoryRange(vk, device, bufferAllocation.getMemory(), bufferAllocation.getOffset(), bufferSizeBytes);
+	invalidateAlloc(vk, device, bufferAllocation);
 
 	const deUint32* bufferPtr = static_cast<deUint32*>(bufferAllocation.getHostPtr());
 
@@ -425,7 +426,7 @@ tcu::TestStatus SharedVarAtomicOpTestInstance::iterate (void)
 	// Validate the results
 
 	const Allocation& bufferAllocation = buffer.getAllocation();
-	invalidateMappedMemoryRange(vk, device, bufferAllocation.getMemory(), bufferAllocation.getOffset(), bufferSizeBytes);
+	invalidateAlloc(vk, device, bufferAllocation);
 
 	const deUint32* bufferPtr = static_cast<deUint32*>(bufferAllocation.getHostPtr());
 
@@ -598,7 +599,7 @@ tcu::TestStatus SSBOLocalBarrierTestInstance::iterate (void)
 	// Validate the results
 
 	const Allocation& bufferAllocation = buffer.getAllocation();
-	invalidateMappedMemoryRange(vk, device, bufferAllocation.getMemory(), bufferAllocation.getOffset(), bufferSizeBytes);
+	invalidateAlloc(vk, device, bufferAllocation);
 
 	const deUint32* bufferPtr = static_cast<deUint32*>(bufferAllocation.getHostPtr());
 
@@ -728,7 +729,7 @@ tcu::TestStatus CopyImageToSSBOTestInstance::iterate (void)
 		for (deUint32 i = 0; i < imageArea; ++i)
 			*bufferPtr++ = rnd.getUint32();
 
-		flushMappedMemoryRange(vk, device, stagingBufferAllocation.getMemory(), stagingBufferAllocation.getOffset(), bufferSizeBytes);
+		flushAlloc(vk, device, stagingBufferAllocation);
 	}
 
 	// Create a buffer to store shader output
@@ -767,21 +768,7 @@ tcu::TestStatus CopyImageToSSBOTestInstance::iterate (void)
 		const Unique<VkPipelineLayout> pipelineLayout(makePipelineLayout(vk, device, *descriptorSetLayout));
 		const Unique<VkPipeline> pipeline(makeComputePipeline(vk, device, *pipelineLayout, *shaderModule));
 
-		const VkBufferMemoryBarrier stagingBufferPostHostWriteBarrier = makeBufferMemoryBarrier(VK_ACCESS_HOST_WRITE_BIT, VK_ACCESS_TRANSFER_READ_BIT, *stagingBuffer, 0ull, bufferSizeBytes);
-
-		const VkImageMemoryBarrier imagePreCopyBarrier = makeImageMemoryBarrier(
-			0u, VK_ACCESS_TRANSFER_WRITE_BIT,
-			VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-			*image, subresourceRange);
-
-		const VkImageMemoryBarrier imagePostCopyBarrier = makeImageMemoryBarrier(
-			VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT,
-			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL,
-			*image, subresourceRange);
-
 		const VkBufferMemoryBarrier computeFinishBarrier = makeBufferMemoryBarrier(VK_ACCESS_SHADER_WRITE_BIT, VK_ACCESS_HOST_READ_BIT, *outputBuffer, 0ull, bufferSizeBytes);
-
-		const VkBufferImageCopy copyParams = makeBufferImageCopy(m_imageSize);
 		const tcu::IVec2 workSize = m_imageSize / m_localSize;
 
 		// Prepare the command buffer
@@ -796,9 +783,8 @@ tcu::TestStatus CopyImageToSSBOTestInstance::iterate (void)
 		vk.cmdBindPipeline(*cmdBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, *pipeline);
 		vk.cmdBindDescriptorSets(*cmdBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, *pipelineLayout, 0u, 1u, &descriptorSet.get(), 0u, DE_NULL);
 
-		vk.cmdPipelineBarrier(*cmdBuffer, VK_PIPELINE_STAGE_HOST_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, (VkDependencyFlags)0, 0, (const VkMemoryBarrier*)DE_NULL, 1, &stagingBufferPostHostWriteBarrier, 1, &imagePreCopyBarrier);
-		vk.cmdCopyBufferToImage(*cmdBuffer, *stagingBuffer, *image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1u, &copyParams);
-		vk.cmdPipelineBarrier(*cmdBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, (VkDependencyFlags)0, 0, (const VkMemoryBarrier*)DE_NULL, 0, (const VkBufferMemoryBarrier*)DE_NULL, 1, &imagePostCopyBarrier);
+		const std::vector<VkBufferImageCopy> bufferImageCopy(1, makeBufferImageCopy(m_imageSize));
+		copyBufferToImage(vk, *cmdBuffer, *stagingBuffer, bufferSizeBytes, bufferImageCopy, VK_IMAGE_ASPECT_COLOR_BIT, 1, 1, *image, VK_IMAGE_LAYOUT_GENERAL, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT);
 
 		vk.cmdDispatch(*cmdBuffer, workSize.x(), workSize.y(), 1u);
 		vk.cmdPipelineBarrier(*cmdBuffer, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_HOST_BIT, (VkDependencyFlags)0, 0, (const VkMemoryBarrier*)DE_NULL, 1, &computeFinishBarrier, 0, (const VkImageMemoryBarrier*)DE_NULL);
@@ -813,7 +799,7 @@ tcu::TestStatus CopyImageToSSBOTestInstance::iterate (void)
 	// Validate the results
 
 	const Allocation& outputBufferAllocation = outputBuffer.getAllocation();
-	invalidateMappedMemoryRange(vk, device, outputBufferAllocation.getMemory(), outputBufferAllocation.getOffset(), bufferSizeBytes);
+	invalidateAlloc(vk, device, outputBufferAllocation);
 
 	const deUint32* bufferPtr = static_cast<deUint32*>(outputBufferAllocation.getHostPtr());
 	const deUint32* refBufferPtr = static_cast<deUint32*>(stagingBuffer.getAllocation().getHostPtr());
@@ -938,7 +924,7 @@ tcu::TestStatus CopySSBOToImageTestInstance::iterate (void)
 		for (deUint32 i = 0; i < imageArea; ++i)
 			*bufferPtr++ = rnd.getUint32();
 
-		flushMappedMemoryRange(vk, device, inputBufferAllocation.getMemory(), inputBufferAllocation.getOffset(), bufferSizeBytes);
+		flushAlloc(vk, device, inputBufferAllocation);
 	}
 
 	// Create a buffer to store shader output (copied from image data)
@@ -984,14 +970,6 @@ tcu::TestStatus CopySSBOToImageTestInstance::iterate (void)
 			VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL,
 			*image, subresourceRange);
 
-		const VkImageMemoryBarrier imagePreCopyBarrier = makeImageMemoryBarrier(
-			VK_ACCESS_SHADER_WRITE_BIT, VK_ACCESS_TRANSFER_READ_BIT,
-			VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-			*image, subresourceRange);
-
-		const VkBufferMemoryBarrier outputBufferPostCopyBarrier = makeBufferMemoryBarrier(VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_HOST_READ_BIT, *outputBuffer, 0ull, bufferSizeBytes);
-
-		const VkBufferImageCopy copyParams = makeBufferImageCopy(m_imageSize);
 		const tcu::IVec2 workSize = m_imageSize / m_localSize;
 
 		// Prepare the command buffer
@@ -1009,9 +987,7 @@ tcu::TestStatus CopySSBOToImageTestInstance::iterate (void)
 		vk.cmdPipelineBarrier(*cmdBuffer, VK_PIPELINE_STAGE_HOST_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, (VkDependencyFlags)0, 0, (const VkMemoryBarrier*)DE_NULL, 1, &inputBufferPostHostWriteBarrier, 1, &imageLayoutBarrier);
 		vk.cmdDispatch(*cmdBuffer, workSize.x(), workSize.y(), 1u);
 
-		vk.cmdPipelineBarrier(*cmdBuffer, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, (VkDependencyFlags)0, 0, (const VkMemoryBarrier*)DE_NULL, 0, (const VkBufferMemoryBarrier*)DE_NULL, 1, &imagePreCopyBarrier);
-		vk.cmdCopyImageToBuffer(*cmdBuffer, *image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, *outputBuffer, 1u, &copyParams);
-		vk.cmdPipelineBarrier(*cmdBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_HOST_BIT, (VkDependencyFlags)0, 0, (const VkMemoryBarrier*)DE_NULL, 1, &outputBufferPostCopyBarrier, 0, (const VkImageMemoryBarrier*)DE_NULL);
+		copyImageToBuffer(vk, *cmdBuffer, *image, *outputBuffer, m_imageSize, VK_ACCESS_SHADER_WRITE_BIT, VK_IMAGE_LAYOUT_GENERAL);
 
 		endCommandBuffer(vk, *cmdBuffer);
 
@@ -1023,7 +999,7 @@ tcu::TestStatus CopySSBOToImageTestInstance::iterate (void)
 	// Validate the results
 
 	const Allocation& outputBufferAllocation = outputBuffer.getAllocation();
-	invalidateMappedMemoryRange(vk, device, outputBufferAllocation.getMemory(), outputBufferAllocation.getOffset(), bufferSizeBytes);
+	invalidateAlloc(vk, device, outputBufferAllocation);
 
 	const deUint32* bufferPtr = static_cast<deUint32*>(outputBufferAllocation.getHostPtr());
 	const deUint32* refBufferPtr = static_cast<deUint32*>(inputBuffer.getAllocation().getHostPtr());
@@ -1225,7 +1201,7 @@ tcu::TestStatus BufferToBufferInvertTestInstance::iterate (void)
 		for (deUint32 i = 0; i < m_numValues; ++i)
 			bufferPtr[i].x() = rnd.getUint32();
 
-		flushMappedMemoryRange(vk, device, inputBufferAllocation.getMemory(), inputBufferAllocation.getOffset(), bufferSizeBytes);
+		flushAlloc(vk, device, inputBufferAllocation);
 	}
 
 	// Create an output buffer
@@ -1288,7 +1264,7 @@ tcu::TestStatus BufferToBufferInvertTestInstance::iterate (void)
 	// Validate the results
 
 	const Allocation& outputBufferAllocation = outputBuffer.getAllocation();
-	invalidateMappedMemoryRange(vk, device, outputBufferAllocation.getMemory(), outputBufferAllocation.getOffset(), bufferSizeBytes);
+	invalidateAlloc(vk, device, outputBufferAllocation);
 
 	const tcu::UVec4* bufferPtr = static_cast<tcu::UVec4*>(outputBufferAllocation.getHostPtr());
 	const tcu::UVec4* refBufferPtr = static_cast<tcu::UVec4*>(inputBuffer.getAllocation().getHostPtr());
@@ -1424,7 +1400,7 @@ tcu::TestStatus InvertSSBOInPlaceTestInstance::iterate (void)
 		for (deUint32 i = 0; i < m_numValues; ++i)
 			inputData[i] = *bufferPtr++ = rnd.getUint32();
 
-		flushMappedMemoryRange(vk, device, bufferAllocation.getMemory(), bufferAllocation.getOffset(), bufferSizeBytes);
+		flushAlloc(vk, device, bufferAllocation);
 	}
 
 	// Create descriptor set
@@ -1479,7 +1455,7 @@ tcu::TestStatus InvertSSBOInPlaceTestInstance::iterate (void)
 	// Validate the results
 
 	const Allocation& bufferAllocation = buffer.getAllocation();
-	invalidateMappedMemoryRange(vk, device, bufferAllocation.getMemory(), bufferAllocation.getOffset(), bufferSizeBytes);
+	invalidateAlloc(vk, device, bufferAllocation);
 
 	const deUint32* bufferPtr = static_cast<deUint32*>(bufferAllocation.getHostPtr());
 
@@ -1671,7 +1647,7 @@ tcu::TestStatus WriteToMultipleSSBOTestInstance::iterate (void)
 	// Validate the results
 	{
 		const Allocation& buffer0Allocation = buffer0.getAllocation();
-		invalidateMappedMemoryRange(vk, device, buffer0Allocation.getMemory(), buffer0Allocation.getOffset(), bufferSizeBytes);
+		invalidateAlloc(vk, device, buffer0Allocation);
 		const deUint32* buffer0Ptr = static_cast<deUint32*>(buffer0Allocation.getHostPtr());
 
 		for (deUint32 ndx = 0; ndx < m_numValues; ++ndx)
@@ -1689,7 +1665,7 @@ tcu::TestStatus WriteToMultipleSSBOTestInstance::iterate (void)
 	}
 	{
 		const Allocation& buffer1Allocation = buffer1.getAllocation();
-		invalidateMappedMemoryRange(vk, device, buffer1Allocation.getMemory(), buffer1Allocation.getOffset(), bufferSizeBytes);
+		invalidateAlloc(vk, device, buffer1Allocation);
 		const deUint32* buffer1Ptr = static_cast<deUint32*>(buffer1Allocation.getHostPtr());
 
 		for (deUint32 ndx = 0; ndx < m_numValues; ++ndx)
@@ -1811,7 +1787,7 @@ tcu::TestStatus SSBOBarrierTestInstance::iterate (void)
 		const Allocation& outputBufferAllocation = outputBuffer.getAllocation();
 		deUint32* outputBufferPtr = static_cast<deUint32*>(outputBufferAllocation.getHostPtr());
 		*outputBufferPtr = 0;
-		flushMappedMemoryRange(vk, device, outputBufferAllocation.getMemory(), outputBufferAllocation.getOffset(), outputBufferSizeBytes);
+		flushAlloc(vk, device, outputBufferAllocation);
 	}
 
 	// Create a uniform buffer (to pass uniform constants)
@@ -1827,7 +1803,7 @@ tcu::TestStatus SSBOBarrierTestInstance::iterate (void)
 		deUint32* uniformBufferPtr = static_cast<deUint32*>(uniformBufferAllocation.getHostPtr());
 		uniformBufferPtr[0] = baseValue;
 
-		flushMappedMemoryRange(vk, device, uniformBufferAllocation.getMemory(), uniformBufferAllocation.getOffset(), uniformBufferSizeBytes);
+		flushAlloc(vk, device, uniformBufferAllocation);
 	}
 
 	// Create descriptor set
@@ -1901,7 +1877,7 @@ tcu::TestStatus SSBOBarrierTestInstance::iterate (void)
 	// Validate the results
 
 	const Allocation& outputBufferAllocation = outputBuffer.getAllocation();
-	invalidateMappedMemoryRange(vk, device, outputBufferAllocation.getMemory(), outputBufferAllocation.getOffset(), outputBufferSizeBytes);
+	invalidateAlloc(vk, device, outputBufferAllocation);
 
 	const deUint32* bufferPtr = static_cast<deUint32*>(outputBufferAllocation.getHostPtr());
 	const deUint32	res = *bufferPtr;
@@ -2028,7 +2004,7 @@ tcu::TestStatus ImageAtomicOpTestInstance::iterate (void)
 		for (deUint32 i = 0; i < numInputValues; ++i)
 			*bufferPtr++ = rnd.getUint32();
 
-		flushMappedMemoryRange(vk, device, inputBufferAllocation.getMemory(), inputBufferAllocation.getOffset(), inputBufferSizeBytes);
+		flushAlloc(vk, device, inputBufferAllocation);
 	}
 
 	// Create a buffer to store shader output (copied from image data)
@@ -2076,15 +2052,6 @@ tcu::TestStatus ImageAtomicOpTestInstance::iterate (void)
 			VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL,
 			*image, subresourceRange);
 
-		const VkImageMemoryBarrier imagePreCopyBarrier = makeImageMemoryBarrier(
-			VK_ACCESS_SHADER_WRITE_BIT, VK_ACCESS_TRANSFER_READ_BIT,
-			VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-			*image, subresourceRange);
-
-		const VkBufferMemoryBarrier outputBufferPostCopyBarrier = makeBufferMemoryBarrier(VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_HOST_READ_BIT, *outputBuffer, 0ull, outputBufferSizeBytes);
-
-		const VkBufferImageCopy copyParams = makeBufferImageCopy(m_imageSize);
-
 		// Prepare the command buffer
 
 		const Unique<VkCommandPool> cmdPool(makeCommandPool(vk, device, queueFamilyIndex));
@@ -2100,9 +2067,7 @@ tcu::TestStatus ImageAtomicOpTestInstance::iterate (void)
 		vk.cmdPipelineBarrier(*cmdBuffer, VK_PIPELINE_STAGE_HOST_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, (VkDependencyFlags)0, 0, (const VkMemoryBarrier*)DE_NULL, 1, &inputBufferPostHostWriteBarrier, 1, &imageLayoutBarrier);
 		vk.cmdDispatch(*cmdBuffer, m_imageSize.x(), m_imageSize.y(), 1u);
 
-		vk.cmdPipelineBarrier(*cmdBuffer, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, (VkDependencyFlags)0, 0, (const VkMemoryBarrier*)DE_NULL, 0, (const VkBufferMemoryBarrier*)DE_NULL, 1, &imagePreCopyBarrier);
-		vk.cmdCopyImageToBuffer(*cmdBuffer, *image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, *outputBuffer, 1u, &copyParams);
-		vk.cmdPipelineBarrier(*cmdBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_HOST_BIT, (VkDependencyFlags)0, 0, (const VkMemoryBarrier*)DE_NULL, 1, &outputBufferPostCopyBarrier, 0, (const VkImageMemoryBarrier*)DE_NULL);
+		copyImageToBuffer(vk, *cmdBuffer, *image, *outputBuffer, m_imageSize, VK_ACCESS_SHADER_WRITE_BIT, VK_IMAGE_LAYOUT_GENERAL);
 
 		endCommandBuffer(vk, *cmdBuffer);
 
@@ -2114,7 +2079,7 @@ tcu::TestStatus ImageAtomicOpTestInstance::iterate (void)
 	// Validate the results
 
 	const Allocation& outputBufferAllocation = outputBuffer.getAllocation();
-	invalidateMappedMemoryRange(vk, device, outputBufferAllocation.getMemory(), outputBufferAllocation.getOffset(), outputBufferSizeBytes);
+	invalidateAlloc(vk, device, outputBufferAllocation);
 
 	const deUint32* bufferPtr = static_cast<deUint32*>(outputBufferAllocation.getHostPtr());
 	const deUint32* refBufferPtr = static_cast<deUint32*>(inputBuffer.getAllocation().getHostPtr());
@@ -2237,7 +2202,7 @@ tcu::TestStatus ImageBarrierTestInstance::iterate (void)
 		const Allocation& outputBufferAllocation = outputBuffer.getAllocation();
 		deUint32* outputBufferPtr = static_cast<deUint32*>(outputBufferAllocation.getHostPtr());
 		*outputBufferPtr = 0;
-		flushMappedMemoryRange(vk, device, outputBufferAllocation.getMemory(), outputBufferAllocation.getOffset(), outputBufferSizeBytes);
+		flushAlloc(vk, device, outputBufferAllocation);
 	}
 
 	// Create a uniform buffer (to pass uniform constants)
@@ -2253,7 +2218,7 @@ tcu::TestStatus ImageBarrierTestInstance::iterate (void)
 		deUint32* uniformBufferPtr = static_cast<deUint32*>(uniformBufferAllocation.getHostPtr());
 		uniformBufferPtr[0] = baseValue;
 
-		flushMappedMemoryRange(vk, device, uniformBufferAllocation.getMemory(), uniformBufferAllocation.getOffset(), uniformBufferSizeBytes);
+		flushAlloc(vk, device, uniformBufferAllocation);
 	}
 
 	// Create descriptor set
@@ -2336,7 +2301,7 @@ tcu::TestStatus ImageBarrierTestInstance::iterate (void)
 	// Validate the results
 
 	const Allocation& outputBufferAllocation = outputBuffer.getAllocation();
-	invalidateMappedMemoryRange(vk, device, outputBufferAllocation.getMemory(), outputBufferAllocation.getOffset(), outputBufferSizeBytes);
+	invalidateAlloc(vk, device, outputBufferAllocation);
 
 	const int		numValues = multiplyComponents(m_imageSize);
 	const deUint32* bufferPtr = static_cast<deUint32*>(outputBufferAllocation.getHostPtr());
@@ -2353,21 +2318,6 @@ tcu::TestStatus ImageBarrierTestInstance::iterate (void)
 		return tcu::TestStatus::fail(msg.str());
 	}
 	return tcu::TestStatus::pass("Compute succeeded");
-}
-
-vk::Move<VkInstance> createInstanceWithExtensions(const vk::PlatformInterface& vkp, const deUint32 version, const std::vector<std::string> enableExtensions)
-{
-	std::vector<std::string>					enableExtensionPtrs;
-	const std::vector<VkExtensionProperties>	availableExtensions	 = enumerateInstanceExtensionProperties(vkp, DE_NULL);
-	for (size_t extensionID = 0; extensionID < enableExtensions.size(); extensionID++)
-	{
-		if (!isInstanceExtensionSupported(version, availableExtensions, RequiredExtension(enableExtensions[extensionID])))
-			TCU_THROW(NotSupportedError, (enableExtensions[extensionID] + " is not supported").c_str());
-
-		if (!isCoreInstanceExtension(version, enableExtensions[extensionID]))
-			enableExtensionPtrs.push_back(enableExtensions[extensionID]);
-	}
-	return createDefaultInstance(vkp, version, std::vector<std::string>() /* layers */, enableExtensionPtrs, DE_NULL);
 }
 
 class ComputeTestInstance : public vkt::TestInstance
@@ -2618,7 +2568,7 @@ tcu::TestStatus DispatchBaseTestInstance::iterate (void)
 		uniformInputData[0] = *bufferPtr++ = m_workSize.x();
 		uniformInputData[1] = *bufferPtr++ = m_workSize.y();
 		uniformInputData[2] = *bufferPtr++ = m_workSize.z();
-		flushMappedMemoryRange(vk, device, bufferAllocation.getMemory(), bufferAllocation.getOffset(), uniformBufferSizeBytes);
+		flushAlloc(vk, device, bufferAllocation);
 	}
 
 	{
@@ -2628,7 +2578,7 @@ tcu::TestStatus DispatchBaseTestInstance::iterate (void)
 		for (deUint32 i = 0; i < m_numValues; ++i)
 			inputData[i] = *bufferPtr++ = rnd.getUint32();
 
-		flushMappedMemoryRange(vk, device, bufferAllocation.getMemory(), bufferAllocation.getOffset(), bufferSizeBytes);
+		flushAlloc(vk, device, bufferAllocation);
 	}
 
 	// Create descriptor set
@@ -2712,7 +2662,7 @@ tcu::TestStatus DispatchBaseTestInstance::iterate (void)
 
 	// Validate the results
 	const Allocation& bufferAllocation = buffer.getAllocation();
-	invalidateMappedMemoryRange(vk, device, bufferAllocation.getMemory(), bufferAllocation.getOffset(), bufferSizeBytes);
+	invalidateAlloc(vk, device, bufferAllocation);
 	const deUint32* bufferPtr = static_cast<deUint32*>(bufferAllocation.getHostPtr());
 
 	for (deUint32 ndx = 0; ndx < m_numValues; ++ndx)
@@ -2896,7 +2846,7 @@ tcu::TestStatus DeviceIndexTestInstance::iterate (void)
 		for (deUint32 i = 0; i < uniformBufSize; ++i)
 			uniformInputData[i] = *bufferPtr++ = rnd.getUint32() / 10; // divide to prevent overflow in addition
 
-		flushMappedMemoryRange(vk, device, bufferAllocation.getMemory(), bufferAllocation.getOffset(), uniformBufferSizeBytes);
+		flushAlloc(vk, device, bufferAllocation);
 	}
 
 	// Create descriptor set
@@ -2940,7 +2890,7 @@ tcu::TestStatus DeviceIndexTestInstance::iterate (void)
 			const Allocation& bufferAllocation = uniformBuffer.getAllocation();
 			deUint32* bufferPtr = static_cast<deUint32*>(bufferAllocation.getHostPtr());
 			constantValPerLoop = *bufferPtr = rnd.getUint32() / 10;  // divide to prevent overflow in addition
-			flushMappedMemoryRange(vk, device, bufferAllocation.getMemory(), bufferAllocation.getOffset(), sizeof(constantValPerLoop));
+			flushAlloc(vk, device, bufferAllocation);
 		}
 		beginCommandBuffer(vk, *cmdBuffer);
 
@@ -2983,7 +2933,7 @@ tcu::TestStatus DeviceIndexTestInstance::iterate (void)
 			submitCommandsAndWait(vk, device, queue, *cmdBuffer, true, deviceMask);
 
 			const Allocation& bufferAllocation = checkBuffer.getAllocation();
-			invalidateMappedMemoryRange(vk, device, bufferAllocation.getMemory(), bufferAllocation.getOffset(), bufferSizeBytes);
+			invalidateAlloc(vk, device, bufferAllocation);
 			const deUint32* bufferPtr = static_cast<deUint32*>(bufferAllocation.getHostPtr());
 
 			for (deUint32 ndx = 0; ndx < m_numValues; ++ndx)

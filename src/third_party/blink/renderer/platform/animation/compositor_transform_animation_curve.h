@@ -7,12 +7,12 @@
 
 #include <memory>
 
+#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation_curve.h"
 #include "third_party/blink/renderer/platform/animation/compositor_transform_keyframe.h"
 #include "third_party/blink/renderer/platform/animation/timing_function.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace cc {
 class KeyframedTransformAnimationCurve;
@@ -27,13 +27,8 @@ namespace blink {
 // A keyframed transform animation curve.
 class PLATFORM_EXPORT CompositorTransformAnimationCurve
     : public CompositorAnimationCurve {
-  WTF_MAKE_NONCOPYABLE(CompositorTransformAnimationCurve);
-
  public:
-  static std::unique_ptr<CompositorTransformAnimationCurve> Create() {
-    return base::WrapUnique(new CompositorTransformAnimationCurve());
-  }
-
+  CompositorTransformAnimationCurve();
   ~CompositorTransformAnimationCurve() override;
 
   void AddKeyframe(const CompositorTransformKeyframe&);
@@ -44,9 +39,9 @@ class PLATFORM_EXPORT CompositorTransformAnimationCurve
   std::unique_ptr<cc::AnimationCurve> CloneToAnimationCurve() const override;
 
  private:
-  CompositorTransformAnimationCurve();
-
   std::unique_ptr<cc::KeyframedTransformAnimationCurve> curve_;
+
+  DISALLOW_COPY_AND_ASSIGN(CompositorTransformAnimationCurve);
 };
 
 }  // namespace blink

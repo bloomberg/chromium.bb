@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,28 +39,13 @@ chrome.passwordsPrivate.UrlCollection;
 /**
  * @typedef {{
  *   urls: !chrome.passwordsPrivate.UrlCollection,
- *   username: string
- * }}
- */
-chrome.passwordsPrivate.LoginPair;
-
-/**
- * @typedef {{
- *   loginPair: !chrome.passwordsPrivate.LoginPair,
+ *   username: string,
  *   numCharactersInPassword: number,
  *   federationText: (string|undefined),
  *   id: number
  * }}
  */
 chrome.passwordsPrivate.PasswordUiEntry;
-
-/**
- * @typedef {{
- *   id: number,
- *   plaintextPassword: string
- * }}
- */
-chrome.passwordsPrivate.PlaintextPasswordEventParameters;
 
 /**
  * @typedef {{
@@ -85,8 +70,17 @@ chrome.passwordsPrivate.PasswordExportProgress;
 chrome.passwordsPrivate.recordPasswordsPageAccessInSettings = function() {};
 
 /**
- * Removes the saved password corresponding to |loginPair|. If no saved password
- * for this pair exists, this function is a no-op.
+ * Changes the username and password corresponding to |id|.
+ * @param {number} id The id for the password entry being updated.
+ * @param {string} new_username The new username.
+ * @param {string=} new_password The new password.
+ */
+chrome.passwordsPrivate.changeSavedPassword = function(
+    id, new_username, new_password) {};
+
+/**
+ * Removes the saved password corresponding to |id|. If no saved password for
+ * this pair exists, this function is a no-op.
  * @param {number} id The id for the password entry being removed.
  */
 chrome.passwordsPrivate.removeSavedPassword = function(id) {};
@@ -106,12 +100,12 @@ chrome.passwordsPrivate.undoRemoveSavedPasswordOrException = function() {};
 /**
  * Returns the plaintext password corresponding to |id|. Note that on some
  * operating systems, this call may result in an OS-level reauthentication. Once
- * the password has been fetched, it will be returned via the
- * onPlaintextPasswordRetrieved event. TODO(hcarmona): Investigate using a
- * callback for consistency.
+ * the password has been fetched, it will be returned via |callback|.
  * @param {number} id The id for the password entry being being retrieved.
+ * @param {function((string|undefined)):void} callback The callback that gets
+ *     invoked with the retrieved password.
  */
-chrome.passwordsPrivate.requestPlaintextPassword = function(id) {};
+chrome.passwordsPrivate.requestPlaintextPassword = function(id, callback) {};
 
 /**
  * Returns the list of saved passwords.
@@ -133,11 +127,11 @@ chrome.passwordsPrivate.getPasswordExceptionList = function(callback) {};
 chrome.passwordsPrivate.importPasswords = function() {};
 
 /**
- * <p>Triggers the Password Manager password export functionality. Completion
- * Will be signaled by the onPasswordsFileExportProgress event.</p><p>|callback|
- * will be called when the request is started or rejected. If rejected
+ * Triggers the Password Manager password export functionality. Completion Will
+ * be signaled by the onPasswordsFileExportProgress event. |callback| will be
+ * called when the request is started or rejected. If rejected
  * <code>chrome.runtime.lastError</code> will be set to 'in-progress' or
- * 'reauth-failed'.</p>
+ * 'reauth-failed'.
  * @param {function():void} callback
  */
 chrome.passwordsPrivate.exportPasswords = function(callback) {};
@@ -171,13 +165,6 @@ chrome.passwordsPrivate.onSavedPasswordsListChanged;
  * @type {!ChromeEvent}
  */
 chrome.passwordsPrivate.onPasswordExceptionsListChanged;
-
-/**
- * Fired when a plaintext password has been fetched in response to a call to
- * chrome.passwordsPrivate.requestPlaintextPassword().
- * @type {!ChromeEvent}
- */
-chrome.passwordsPrivate.onPlaintextPasswordRetrieved;
 
 /**
  * Fired when the status of the export has changed.

@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/scheduler/worker/non_main_thread_task_queue.h"
 
+#include "base/bind.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/non_main_thread_scheduler_impl.h"
 
 namespace blink {
@@ -33,6 +34,12 @@ void NonMainThreadTaskQueue::OnTaskCompleted(
   if (non_main_thread_scheduler_) {
     non_main_thread_scheduler_->OnTaskCompleted(this, task, task_timing);
   }
+}
+
+void NonMainThreadTaskQueue::SetPaused(bool paused) {
+  if (!task_queue_voter_)
+    task_queue_voter_ = CreateQueueEnabledVoter();
+  task_queue_voter_->SetVoteToEnable(!paused);
 }
 
 }  // namespace scheduler

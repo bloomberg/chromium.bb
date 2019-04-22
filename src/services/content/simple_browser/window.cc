@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/strings/utf_string_conversions.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/content/public/cpp/navigable_contents.h"
 #include "services/content/public/cpp/navigable_contents_view.h"
 #include "services/content/public/mojom/constants.mojom.h"
@@ -35,8 +36,9 @@ class SimpleBrowserUI : public views::WidgetDelegateView,
     location_bar_->set_controller(this);
     AddChildView(location_bar_);
 
-    connector_->BindInterface(content::mojom::kServiceName,
-                              MakeRequest(&navigable_contents_factory_));
+    connector_->Connect(
+        content::mojom::kServiceName,
+        navigable_contents_factory_.BindNewPipeAndPassReceiver());
     navigable_contents_ = std::make_unique<content::NavigableContents>(
         navigable_contents_factory_.get());
     navigable_contents_view_ = navigable_contents_->GetView();
@@ -83,7 +85,8 @@ class SimpleBrowserUI : public views::WidgetDelegateView,
 
   service_manager::Connector* const connector_;
 
-  content::mojom::NavigableContentsFactoryPtr navigable_contents_factory_;
+  mojo::Remote<content::mojom::NavigableContentsFactory>
+      navigable_contents_factory_;
   std::unique_ptr<content::NavigableContents> navigable_contents_;
   content::NavigableContentsView* navigable_contents_view_ = nullptr;
 

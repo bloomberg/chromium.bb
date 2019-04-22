@@ -9,8 +9,8 @@
 #include "base/containers/circular_deque.h"
 #import "base/ios/block_types.h"
 #include "base/logging.h"
-#include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/url_formatter/elide_url.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/alert_coordinator/input_alert_coordinator.h"
@@ -19,7 +19,9 @@
 #import "ios/chrome/browser/ui/dialogs/nsurl_protection_space_util.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
-#include "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state/navigation_context.h"
+#import "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state/web_state_observer_bridge.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
@@ -40,12 +42,15 @@ using completion_block_util::GetSafeHTTPAuthCompletion;
 NSString* const kJavaScriptDialogTextFieldAccessibiltyIdentifier =
     @"JavaScriptDialogTextFieldAccessibiltyIdentifier";
 
-@interface DialogPresenter () {
+@interface DialogPresenter () <CRWWebStateObserver> {
   // Queue of WebStates which correspond to the keys in
   // |_dialogCoordinatorsForWebStates|.
   base::circular_deque<web::WebState*> _queuedWebStates;
   // A map associating queued webStates with their coordinators.
   std::map<web::WebState*, AlertCoordinator*> _dialogCoordinatorsForWebStates;
+  // The WebStateObserver listening for navigation events from the queued
+  // WebStates.
+  std::unique_ptr<web::WebStateObserver> _webStateObserver;
 }
 
 // The delegate passed on initialization.
@@ -123,6 +128,7 @@ NSString* const kJavaScriptDialogTextFieldAccessibiltyIdentifier =
     DCHECK(viewController);
     _delegate = delegate;
     _viewController = viewController;
+    _webStateObserver = std::make_unique<web::WebStateObserverBridge>(self);
   }
   return self;
 }
@@ -346,19 +352,18 @@ NSString* const kJavaScriptDialogTextFieldAccessibiltyIdentifier =
     auto it =
         std::find(_queuedWebStates.begin(), _queuedWebStates.end(), webState);
     DCHECK(it != _queuedWebStates.end());
+    webState->RemoveObserver(_webStateObserver.get());
     _queuedWebStates.erase(it);
     _dialogCoordinatorsForWebStates.erase(webState);
   }
 }
 
 - (void)cancelAllDialogs {
-  [self.presentedDialogCoordinator executeCancelHandler];
-  [self.presentedDialogCoordinator stop];
-  self.presentedDialogCoordinator = nil;
-  self.presentedDialogWebState = nil;
   while (!_queuedWebStates.empty()) {
     [self cancelDialogForWebState:_queuedWebStates.front()];
   }
+  if (self.presentedDialogWebState)
+    [self cancelDialogForWebState:self.presentedDialogWebState];
 }
 
 - (void)tryToPresent {
@@ -366,29 +371,45 @@ NSString* const kJavaScriptDialogTextFieldAccessibiltyIdentifier =
   // displayed.
   if (self.blockingConfirmationCoordinator)
     return;
-  // The active TabModel can't be changed while a JavaScript dialog is shown.
-  DCHECK(!self.showingDialog);
-  if (_active && !_queuedWebStates.empty() &&
-      !self.delegate.dialogPresenterDelegateIsPresenting)
+  if (!self.showingDialog && _active && !_queuedWebStates.empty() &&
+      [self.delegate shouldDialogPresenterPresentDialog:self]) {
     [self showNextDialog];
+  }
 }
 
 + (NSString*)localizedTitleForJavaScriptAlertFromPage:(const GURL&)pageURL
                                          mainFrameURL:
                                              (const GURL&)mainFrameURL {
-  NSString* localizedTitle = nil;
-  NSString* hostname = base::SysUTF8ToNSString(pageURL.host());
-
   bool sameOriginAsMainFrame = pageURL.GetOrigin() == mainFrameURL.GetOrigin();
-
   if (!sameOriginAsMainFrame) {
-    localizedTitle = l10n_util::GetNSString(
+    return l10n_util::GetNSString(
         IDS_JAVASCRIPT_MESSAGEBOX_TITLE_NONSTANDARD_URL_IFRAME);
-  } else {
-    localizedTitle = l10n_util::GetNSStringF(
-        IDS_JAVASCRIPT_MESSAGEBOX_TITLE, base::SysNSStringToUTF16(hostname));
   }
-  return localizedTitle;
+  base::string16 title = url_formatter::FormatUrlForSecurityDisplay(
+      pageURL, url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS);
+  return l10n_util::GetNSStringF(IDS_JAVASCRIPT_MESSAGEBOX_TITLE, title);
+}
+
+#pragma mark - CRWWebStateObserver
+
+- (void)webState:(web::WebState*)webState
+    didStartNavigation:(web::NavigationContext*)navigation {
+  [self cancelDialogForWebState:webState];
+}
+
+- (void)webState:(web::WebState*)webState
+    didFinishNavigation:(web::NavigationContext*)navigation {
+  if (navigation->HasCommitted() && !navigation->IsSameDocument())
+    [self cancelDialogForWebState:webState];
+}
+
+- (void)renderProcessGoneForWebState:(web::WebState*)webState {
+  [self cancelDialogForWebState:webState];
+}
+
+- (void)webStateDestroyed:(web::WebState*)webState {
+  [self cancelDialogForWebState:webState];
+  webState->RemoveObserver(_webStateObserver.get());
 }
 
 #pragma mark - Private methods.
@@ -402,9 +423,12 @@ NSString* const kJavaScriptDialogTextFieldAccessibiltyIdentifier =
   _queuedWebStates.push_back(webState);
   _dialogCoordinatorsForWebStates[webState] = coordinator;
 
+  webState->AddObserver(_webStateObserver.get());
+
   if (self.active && !self.showingDialog &&
-      !self.delegate.dialogPresenterDelegateIsPresenting)
+      [self.delegate shouldDialogPresenterPresentDialog:self]) {
     [self showNextDialog];
+  }
 }
 
 - (void)showNextDialog {
@@ -426,12 +450,14 @@ NSString* const kJavaScriptDialogTextFieldAccessibiltyIdentifier =
 - (void)dialogCoordinatorWasStopped:(AlertCoordinator*)coordinator {
   if (coordinator != self.presentedDialogCoordinator)
     return;
+  self.presentedDialogWebState->RemoveObserver(_webStateObserver.get());
   self.presentedDialogWebState = nil;
   self.presentedDialogCoordinator = nil;
   self.blockingConfirmationCoordinator = nil;
   if (!_queuedWebStates.empty() &&
-      !self.delegate.dialogPresenterDelegateIsPresenting)
+      [self.delegate shouldDialogPresenterPresentDialog:self]) {
     [self showNextDialog];
+  }
 }
 
 - (void)setUpAlertCoordinator:(AlertCoordinator*)alertCoordinator

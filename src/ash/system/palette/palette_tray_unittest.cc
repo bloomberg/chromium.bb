@@ -5,7 +5,10 @@
 #include "ash/system/palette/palette_tray.h"
 
 #include <memory>
+#include <string>
 
+#include "ash/assistant/assistant_controller.h"
+#include "ash/assistant/test/test_assistant_service.h"
 #include "ash/highlighter/highlighter_controller.h"
 #include "ash/highlighter/highlighter_controller_test_api.h"
 #include "ash/public/cpp/ash_pref_names.h"
@@ -28,10 +31,12 @@
 #include "ash/voice_interaction/voice_interaction_controller.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "base/test/simple_test_tick_clock.h"
-#include "chromeos/chromeos_switches.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/session_manager_types.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/devices/stylus_state.h"
@@ -161,7 +166,7 @@ TEST_F(PaletteTrayTest, PaletteTrayWorkflow) {
   EXPECT_FALSE(test_api_->palette_tool_manager()->IsToolActive(
       PaletteToolId::CAPTURE_SCREEN));
   // Wait for the tray bubble widget to close.
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(test_api_->tray_bubble_wrapper());
   EXPECT_FALSE(palette_tray_->is_active());
 }
@@ -230,12 +235,11 @@ TEST_F(PaletteTrayTest, WelcomeBubbleVisibility) {
   EXPECT_TRUE(test_api_->welcome_bubble()->GetBubbleViewForTesting());
 }
 
-// Base class for tests that rely on voice interaction enabled.
+// Base class for tests that rely on Assistant enabled.
 class PaletteTrayTestWithVoiceInteraction : public PaletteTrayTest {
  public:
   PaletteTrayTestWithVoiceInteraction() {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        chromeos::switches::kEnableVoiceInteraction);
+    feature_list_.InitAndEnableFeature(chromeos::switches::kAssistantFeature);
   }
   ~PaletteTrayTestWithVoiceInteraction() override = default;
 
@@ -253,6 +257,9 @@ class PaletteTrayTestWithVoiceInteraction : public PaletteTrayTest {
 
     highlighter_test_api_ = std::make_unique<HighlighterControllerTestApi>(
         Shell::Get()->highlighter_controller());
+
+    Shell::Get()->assistant_controller()->SetAssistant(
+        assistant_.CreateInterfacePtrAndBind());
   }
 
   void TearDown() override {
@@ -318,7 +325,9 @@ class PaletteTrayTestWithVoiceInteraction : public PaletteTrayTest {
   std::unique_ptr<HighlighterControllerTestApi> highlighter_test_api_;
 
  private:
+  TestAssistantService assistant_;
   base::SimpleTestTickClock simulated_clock_;
+  base::test::ScopedFeatureList feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(PaletteTrayTestWithVoiceInteraction);
 };
@@ -329,6 +338,8 @@ TEST_F(PaletteTrayTestWithVoiceInteraction, MetalayerToolViewCreated) {
 }
 
 TEST_F(PaletteTrayTestWithVoiceInteraction, MetalayerToolActivatesHighlighter) {
+  ui::ScopedAnimationDurationScaleMode animation_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
   Shell::Get()->voice_interaction_controller()->NotifyStatusChanged(
       mojom::VoiceInteractionState::RUNNING);
   Shell::Get()->voice_interaction_controller()->NotifySettingsEnabled(true);
@@ -408,6 +419,8 @@ TEST_F(PaletteTrayTestWithVoiceInteraction, MetalayerToolActivatesHighlighter) {
 
 TEST_F(PaletteTrayTestWithVoiceInteraction,
        StylusBarrelButtonActivatesHighlighter) {
+  ui::ScopedAnimationDurationScaleMode animation_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
   Shell::Get()->voice_interaction_controller()->NotifyStatusChanged(
       mojom::VoiceInteractionState::NOT_READY);
   Shell::Get()->voice_interaction_controller()->NotifySettingsEnabled(false);

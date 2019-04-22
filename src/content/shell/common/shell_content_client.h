@@ -14,14 +14,11 @@
 
 namespace content {
 
-std::string GetShellUserAgent();
-
 class ShellContentClient : public ContentClient {
  public:
   ShellContentClient();
   ~ShellContentClient() override;
 
-  std::string GetUserAgent() const override;
   base::string16 GetLocalizedString(int message_id) const override;
   base::StringPiece GetDataResource(
       int resource_id,

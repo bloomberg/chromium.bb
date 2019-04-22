@@ -13,9 +13,9 @@
  */
 
 cr.define('cr.ui', function() {
-  /** @const */ var ListSelectionController = cr.ui.ListSelectionController;
-  /** @const */ var List = cr.ui.List;
-  /** @const */ var ListItem = cr.ui.ListItem;
+  /** @const */ const ListSelectionController = cr.ui.ListSelectionController;
+  /** @const */ const List = cr.ui.List;
+  /** @const */ const ListItem = cr.ui.ListItem;
 
   /**
    * Creates a new grid item element.
@@ -24,7 +24,7 @@ cr.define('cr.ui', function() {
    * @extends {cr.ui.ListItem}
    */
   function GridItem(dataItem) {
-    var el = cr.doc.createElement('li');
+    const el = cr.doc.createElement('li');
     el.dataItem = dataItem;
     el.__proto__ = GridItem.prototype;
     return el;
@@ -48,7 +48,7 @@ cr.define('cr.ui', function() {
    * @constructor
    * @extends {cr.ui.List}
    */
-  var Grid = cr.ui.define('grid');
+  const Grid = cr.ui.define('grid');
 
   Grid.prototype = {
     __proto__: List.prototype,
@@ -77,8 +77,9 @@ cr.define('cr.ui', function() {
       return true;
     },
     set fixedHeight(fixedHeight) {
-      if (!fixedHeight)
+      if (!fixedHeight) {
         console.warn('cr.ui.Grid does not support fixedHeight = false');
+      }
     },
 
     /**
@@ -88,31 +89,35 @@ cr.define('cr.ui', function() {
      */
     getColumnCount_: function() {
       // Size comes here with margin already collapsed.
-      var size = this.getDefaultItemSize_();
+      const size = this.getDefaultItemSize_();
 
-      if (!size)
+      if (!size) {
         return 0;
+      }
 
       // We should uncollapse margin, since margin isn't collapsed for
       // inline-block elements according to css spec which are thumbnail items.
 
-      var width = size.width + Math.min(size.marginLeft, size.marginRight);
-      var height = size.height + Math.min(size.marginTop, size.marginBottom);
+      const width = size.width + Math.min(size.marginLeft, size.marginRight);
+      const height = size.height + Math.min(size.marginTop, size.marginBottom);
 
-      if (!width || !height)
+      if (!width || !height) {
         return 0;
+      }
 
-      var itemCount = this.dataModel ? this.dataModel.length : 0;
-      if (!itemCount)
+      const itemCount = this.dataModel ? this.dataModel.length : 0;
+      if (!itemCount) {
         return 0;
+      }
 
-      var columns = Math.floor(
+      const columns = Math.floor(
           (this.clientWidthWithoutScrollbar_ - this.horizontalPadding_) /
           width);
-      if (!columns)
+      if (!columns) {
         return 0;
+      }
 
-      var rows = Math.ceil(itemCount / columns);
+      const rows = Math.ceil(itemCount / columns);
       if (rows * height <= this.clientHeight_) {
         // Content fits within the client area (no scrollbar required).
         return columns;
@@ -130,11 +135,11 @@ cr.define('cr.ui', function() {
      */
     updateMetrics_: function() {
       // Check changings that may affect number of columns.
-      var offsetWidth = this.offsetWidth;
-      var offsetHeight = this.offsetHeight;
-      var style = window.getComputedStyle(this);
-      var overflowY = style.overflowY;
-      var horizontalPadding =
+      const offsetWidth = this.offsetWidth;
+      const offsetHeight = this.offsetHeight;
+      const style = window.getComputedStyle(this);
+      const overflowY = style.overflowY;
+      const horizontalPadding =
           parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
 
       if (this.lastOffsetWidth_ == offsetWidth &&
@@ -152,7 +157,7 @@ cr.define('cr.ui', function() {
 
       if (overflowY == 'auto' && offsetWidth > 0) {
         // Column number may depend on whether scrollbar is present or not.
-        var originalClientWidth = this.clientWidth;
+        const originalClientWidth = this.clientWidth;
         // At first make sure there is no scrollbar and calculate clientWidth
         // (triggers reflow).
         this.style.overflowY = 'hidden';
@@ -241,11 +246,11 @@ cr.define('cr.ui', function() {
      * @override
      */
     getItemsInViewPort: function(scrollTop, clientHeight) {
-      var itemHeight = this.getDefaultItemHeight_();
-      var firstIndex =
+      const itemHeight = this.getDefaultItemHeight_();
+      const firstIndex =
           this.autoExpands ? 0 : this.getIndexForListOffset_(scrollTop);
-      var columns = this.columns;
-      var count = this.autoExpands ?
+      const columns = this.columns;
+      let count = this.autoExpands ?
           this.dataModel.length :
           Math.max(
               columns * (Math.ceil(clientHeight / itemHeight) + 1),
@@ -265,19 +270,19 @@ cr.define('cr.ui', function() {
     mergeItems: function(firstIndex, lastIndex) {
       List.prototype.mergeItems.call(this, firstIndex, lastIndex);
 
-      var afterFiller = this.afterFiller_;
-      var columns = this.columns;
+      const afterFiller = this.afterFiller_;
+      const columns = this.columns;
 
-      for (var item = this.beforeFiller_.nextSibling; item != afterFiller;) {
-        var next = item.nextSibling;
+      for (let item = this.beforeFiller_.nextSibling; item != afterFiller;) {
+        const next = item.nextSibling;
         if (isSpacer(item)) {
           // Spacer found on a place it mustn't be.
           this.removeChild(item);
           item = next;
           continue;
         }
-        var index = item.listIndex;
-        var nextIndex = index + 1;
+        const index = item.listIndex;
+        const nextIndex = index + 1;
 
         // Invisible pinned item could be outside of the
         // [firstIndex, lastIndex). Ignore it.
@@ -288,13 +293,14 @@ cr.define('cr.ui', function() {
             item = next.nextSibling;
           } else {
             // Insert spacer.
-            var spacer = this.ownerDocument.createElement('div');
+            const spacer = this.ownerDocument.createElement('div');
             spacer.className = 'spacer';
             this.insertBefore(spacer, next);
             item = next;
           }
-        } else
+        } else {
           item = next;
+        }
       }
 
       function isSpacer(child) {
@@ -310,11 +316,11 @@ cr.define('cr.ui', function() {
      * @override
      */
     getAfterFillerHeight: function(lastIndex) {
-      var columns = this.columns;
-      var itemHeight = this.getDefaultItemHeight_();
+      const columns = this.columns;
+      const itemHeight = this.getDefaultItemHeight_();
       // We calculate the row of last item, and the row of last shown item.
       // The difference is the number of rows not shown.
-      var afterRows = Math.floor((this.dataModel.length - 1) / columns) -
+      const afterRows = Math.floor((this.dataModel.length - 1) / columns) -
           Math.floor((lastIndex - 1) / columns);
       return afterRows * itemHeight;
     },
@@ -332,7 +338,7 @@ cr.define('cr.ui', function() {
 
     redraw: function() {
       this.updateMetrics_();
-      var itemCount = this.dataModel ? this.dataModel.length : 0;
+      const itemCount = this.dataModel ? this.dataModel.length : 0;
       if (this.lastItemCount_ != itemCount) {
         this.lastItemCount_ = itemCount;
         // Force recalculation.
@@ -380,11 +386,13 @@ cr.define('cr.ui', function() {
      * @override
      */
     getIndexBelow: function(index) {
-      if (this.isAccessibilityEnabled())
+      if (this.isAccessibilityEnabled()) {
         return this.getIndexAfter(index);
-      var last = this.getLastIndex();
-      if (index == last)
+      }
+      const last = this.getLastIndex();
+      if (index == last) {
         return -1;
+      }
       index += this.grid_.columns;
       return Math.min(index, last);
     },
@@ -396,10 +404,12 @@ cr.define('cr.ui', function() {
      * @override
      */
     getIndexAbove: function(index) {
-      if (this.isAccessibilityEnabled())
+      if (this.isAccessibilityEnabled()) {
         return this.getIndexBefore(index);
-      if (index == 0)
+      }
+      if (index == 0) {
         return -1;
+      }
       index -= this.grid_.columns;
       return Math.max(index, 0);
     },

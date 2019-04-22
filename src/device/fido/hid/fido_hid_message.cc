@@ -18,9 +18,16 @@ namespace device {
 base::Optional<FidoHidMessage> FidoHidMessage::Create(
     uint32_t channel_id,
     FidoHidDeviceCommand type,
+    size_t max_report_size,
     base::span<const uint8_t> data) {
   if (data.size() > kHidMaxMessageSize)
     return base::nullopt;
+
+  if (max_report_size <= kHidInitPacketHeaderSize ||
+      max_report_size > kHidMaxPacketSize) {
+    NOTREACHED();
+    return base::nullopt;
+  }
 
   switch (type) {
     case FidoHidDeviceCommand::kPing:
@@ -54,14 +61,14 @@ base::Optional<FidoHidMessage> FidoHidMessage::Create(
         return base::nullopt;
   }
 
-  return FidoHidMessage(channel_id, type, data);
+  return FidoHidMessage(channel_id, type, max_report_size, data);
 }
 
 // static
 base::Optional<FidoHidMessage> FidoHidMessage::CreateFromSerializedData(
     base::span<const uint8_t> serialized_data) {
   size_t remaining_size = 0;
-  if (serialized_data.size() > kHidPacketSize ||
+  if (serialized_data.size() > kHidMaxPacketSize ||
       serialized_data.size() < kHidInitPacketHeaderSize)
     return base::nullopt;
 
@@ -129,18 +136,28 @@ size_t FidoHidMessage::NumPackets() const {
 
 FidoHidMessage::FidoHidMessage(uint32_t channel_id,
                                FidoHidDeviceCommand type,
+                               size_t max_report_size,
                                base::span<const uint8_t> data)
     : channel_id_(channel_id) {
+  static_assert(
+      kHidInitPacketHeaderSize >= kHidContinuationPacketHeaderSize,
+      "init header is expected to be larger than continuation header");
+  DCHECK_GT(max_report_size, kHidInitPacketHeaderSize);
+
+  const size_t init_packet_data_size =
+      max_report_size - kHidInitPacketHeaderSize;
+  const size_t continuation_packet_data_size =
+      max_report_size - kHidContinuationPacketHeaderSize;
   uint8_t sequence = 0;
 
-  auto init_data = data.first(std::min(kHidInitPacketDataSize, data.size()));
+  auto init_data = data.first(std::min(init_packet_data_size, data.size()));
   packets_.push_back(std::make_unique<FidoHidInitPacket>(
       channel_id, type,
       std::vector<uint8_t>(init_data.begin(), init_data.end()), data.size()));
   data = data.subspan(init_data.size());
 
   for (auto cont_data :
-       fido_parsing_utils::SplitSpan(data, kHidContinuationPacketDataSize)) {
+       fido_parsing_utils::SplitSpan(data, continuation_packet_data_size)) {
     packets_.push_back(std::make_unique<FidoHidContinuationPacket>(
         channel_id, sequence++, fido_parsing_utils::Materialize(cont_data)));
   }

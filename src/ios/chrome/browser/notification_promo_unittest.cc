@@ -81,31 +81,33 @@ class NotificationPromoTest : public PlatformTest {
 
     std::string json_with_end_date(
         base::ReplaceStringPlaceholders(json, replacements, NULL));
-    base::Value* value(base::JSONReader::Read(json_with_end_date).release());
-    ASSERT_TRUE(value);
+    base::Optional<base::Value> value =
+        base::JSONReader::Read(json_with_end_date);
+    ASSERT_TRUE(value.has_value());
+    ASSERT_TRUE(value.value().is_dict());
 
-    base::DictionaryValue* dict = NULL;
-    value->GetAsDictionary(&dict);
-    ASSERT_TRUE(dict);
-    test_json_.reset(dict);
+    test_json_ = std::move(value).value();
+
+    const std::string* start_param = test_json_.FindStringKey("start");
+    ASSERT_TRUE(start_param);
 
     std::map<std::string, std::string> field_trial_params;
-    std::string start_param;
-    test_json_->GetString("start", &start_param);
-    field_trial_params["start"] = start_param;
+    field_trial_params["start"] = *start_param;
     field_trial_params["end"] = year_from_now_string;
     field_trial_params["promo_text"] = promo_text;
-    field_trial_params["max_views"] = base::IntToString(max_views);
-    field_trial_params["max_seconds"] = base::IntToString(max_seconds);
-    field_trial_params["promo_id"] = base::IntToString(promo_id);
+    field_trial_params["max_views"] = base::NumberToString(max_views);
+    field_trial_params["max_seconds"] = base::NumberToString(max_seconds);
+    field_trial_params["promo_id"] = base::NumberToString(promo_id);
+
     // Payload parameters.
-    base::DictionaryValue* payload;
-    test_json_->GetDictionary("payload", &payload);
-    for (base::DictionaryValue::Iterator it(*payload); !it.IsAtEnd();
-         it.Advance()) {
-      std::string value;
-      it.value().GetAsString(&value);
-      field_trial_params[it.key()] = value;
+    base::Value* payload =
+        test_json_.FindKeyOfType("payload", base::Value::Type::DICTIONARY);
+    ASSERT_TRUE(payload);
+    ASSERT_TRUE(payload->is_dict());
+
+    for (const auto& pair : payload->DictItems()) {
+      field_trial_params[pair.first] =
+          pair.second.is_string() ? pair.second.GetString() : std::string();
     }
 
     variations::AssociateVariationParams("IOSNTPPromotion", "Group1",
@@ -133,7 +135,7 @@ class NotificationPromoTest : public PlatformTest {
   }
 
   void InitPromoFromJson() {
-    notification_promo_.InitFromJson(*test_json_);
+    notification_promo_.InitFromJson(test_json_.Clone());
 
     // Test the fields.
     TestServerProvidedParameters();
@@ -293,7 +295,7 @@ class NotificationPromoTest : public PlatformTest {
   NotificationPromo notification_promo_;
   std::unique_ptr<base::FieldTrialList> field_trial_list_;
   bool received_notification_;
-  std::unique_ptr<base::DictionaryValue> test_json_;
+  base::Value test_json_;
 
   std::string promo_text_;
 

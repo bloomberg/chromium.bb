@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_HID_HID_REPORT_DESCRIPTOR_ITEM_H_
-#define DEVICE_HID_HID_REPORT_DESCRIPTOR_ITEM_H_
+#ifndef SERVICES_DEVICE_PUBLIC_CPP_HID_HID_REPORT_DESCRIPTOR_ITEM_H_
+#define SERVICES_DEVICE_PUBLIC_CPP_HID_HID_REPORT_DESCRIPTOR_ITEM_H_
 
 #include <stddef.h>
 #include <stdint.h>
+
+#include <memory>
 
 namespace device {
 
 // An element of a HID report descriptor.
 class HidReportDescriptorItem {
  private:
-  friend class HidReportDescriptor;
-
   enum Type {
     kTypeMain = 0,
     kTypeGlobal = 1,
@@ -100,7 +100,11 @@ class HidReportDescriptorItem {
   // Can be retrieved from GetShortData()
   // when item.tag() == HidReportDescriptorItem::kTagInput
   // or HidReportDescriptorItem::kTagOutput
-  // or HidReportDescriptorItem::kTagFeature
+  // or HidReportDescriptorItem::kTagFeature.
+  // The ReportInfo struct matches the layout of the bitfield defined in section
+  // 6.2.2.5 of the Device Class Definition for HID v1.11. Pad to 32-bits so it
+  // can be safely cast to and from uint32_t.
+#pragma pack(push, 1)
   struct ReportInfo {
     uint8_t data_or_constant : 1;
     uint8_t array_or_variable : 1;
@@ -109,25 +113,14 @@ class HidReportDescriptorItem {
     uint8_t linear : 1;
     uint8_t preferred : 1;
     uint8_t null : 1;
-    uint8_t reserved_1 : 1;
+    uint8_t is_volatile : 1;
     uint8_t bit_field_or_buffer : 1;
-    uint8_t reserved_2 : 1;
+    uint8_t reserved : 7;
+    uint8_t reserved2[2];
   };
-
-  // HID collection type.
-  // Can be retrieved from GetShortData()
-  // when item.tag() == HidReportDescriptorItem::kTagCollection
-  enum CollectionType {
-    kCollectionTypePhysical,
-    kCollectionTypeApplication,
-    kCollectionTypeLogical,
-    kCollectionTypeReport,
-    kCollectionTypeNamedArray,
-    kCollectionTypeUsageSwitch,
-    kCollectionTypeUsageModifier,
-    kCollectionTypeReserved,
-    kCollectionTypeVendor
-  };
+#pragma pack(pop)
+  static_assert(sizeof(ReportInfo) == sizeof(uint32_t),
+                "incorrect report info size");
 
  private:
   HidReportDescriptorItem(const uint8_t* bytes,
@@ -137,16 +130,22 @@ class HidReportDescriptorItem {
  public:
   ~HidReportDescriptorItem() {}
 
+  static std::unique_ptr<HidReportDescriptorItem>
+  Create(const uint8_t* bytes, size_t size, HidReportDescriptorItem* previous) {
+    return std::unique_ptr<HidReportDescriptorItem>(
+        new HidReportDescriptorItem(bytes, size, previous));
+  }
+
   // Previous element in report descriptor.
   // Owned by descriptor instance.
-  HidReportDescriptorItem* previous() const { return previous_; };
+  HidReportDescriptorItem* previous() const { return previous_; }
   // Next element in report descriptor.
   // Owned by descriptor instance.
-  HidReportDescriptorItem* next() const { return next_; };
+  HidReportDescriptorItem* next() const { return next_; }
   // Parent element in report descriptor.
   // Owned by descriptor instance.
   // Can be NULL.
-  HidReportDescriptorItem* parent() const { return parent_; };
+  HidReportDescriptorItem* parent() const { return parent_; }
   // Level in Parent-Children relationship tree.
   // 0 for top-level items (parent()==NULL).
   // 1 if parent() is top-level.
@@ -158,13 +157,12 @@ class HidReportDescriptorItem {
   // Raw data of a short item.
   // Not valid for a long item.
   uint32_t GetShortData() const;
-
-  static CollectionType GetCollectionTypeFromValue(uint32_t value);
+  // Size of this item in bytes, including the header.
+  size_t GetSize() const;
 
  private:
   size_t GetHeaderSize() const;
   size_t payload_size() const { return payload_size_; }
-  size_t GetSize() const;
 
   HidReportDescriptorItem* previous_;
   HidReportDescriptorItem* next_;
@@ -176,4 +174,4 @@ class HidReportDescriptorItem {
 
 }  // namespace device
 
-#endif  // DEVICE_HID_HID_REPORT_DESCRIPTOR_ITEM_H_
+#endif  // SERVICES_DEVICE_PUBLIC_CPP_HID_HID_REPORT_DESCRIPTOR_ITEM_H_

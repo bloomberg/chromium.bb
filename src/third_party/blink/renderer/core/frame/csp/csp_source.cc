@@ -30,6 +30,15 @@ CSPSource::CSPSource(ContentSecurityPolicy* policy,
       host_wildcard_(host_wildcard),
       port_wildcard_(port_wildcard) {}
 
+CSPSource::CSPSource(ContentSecurityPolicy* policy, const CSPSource& other)
+    : CSPSource(policy,
+                other.scheme_,
+                other.host_,
+                other.port_,
+                other.path_,
+                other.host_wildcard_,
+                other.port_wildcard_) {}
+
 bool CSPSource::Matches(const KURL& url,
                         ResourceRequest::RedirectStatus redirect_status) const {
   SchemeMatchingResult schemes_match = SchemeMatches(url.Protocol());
@@ -104,10 +113,9 @@ CSPSource::SchemeMatchingResult CSPSource::SchemeMatches(
 }
 
 bool CSPSource::HostMatches(const String& host) const {
-  Document* document = policy_->GetDocument();
   bool match;
 
-  bool equal_hosts = host_ == host;
+  bool equal_hosts = EqualIgnoringASCIICase(host_, host);
   if (host_wildcard_ == kHasWildcard) {
     if (host_.IsEmpty()) {
       // host-part = "*"
@@ -121,10 +129,8 @@ bool CSPSource::HostMatches(const String& host) const {
     // the following count measures when a match fails that would have
     // passed the old, incorrect style, in case a lot of sites were
     // relying on that behavior.
-    if (document && equal_hosts) {
-      UseCounter::Count(*document,
-                        WebFeature::kCSPSourceWildcardWouldMatchExactHost);
-    }
+    if (equal_hosts)
+      policy_->Count(WebFeature::kCSPSourceWildcardWouldMatchExactHost);
   } else {
     // host-part = 1*host-char *( "." 1*host-char )
     match = equal_hosts;
@@ -137,7 +143,8 @@ bool CSPSource::PathMatches(const String& url_path) const {
   if (path_.IsEmpty() || (path_ == "/" && url_path.IsEmpty()))
     return true;
 
-  String path = DecodeURLEscapeSequences(url_path);
+  String path =
+      DecodeURLEscapeSequences(url_path, DecodeURLMode::kUTF8OrIsomorphic);
 
   if (path_.EndsWith("/"))
     return path.StartsWith(path_);
@@ -234,9 +241,9 @@ CSPSource* CSPSource::Intersect(CSPSource* other) const {
           : other->scheme_;
   if (IsSchemeOnly() || other->IsSchemeOnly()) {
     const CSPSource* stricter = IsSchemeOnly() ? other : this;
-    return new CSPSource(policy_, scheme, stricter->host_, stricter->port_,
-                         stricter->path_, stricter->host_wildcard_,
-                         stricter->port_wildcard_);
+    return MakeGarbageCollected<CSPSource>(
+        policy_, scheme, stricter->host_, stricter->port_, stricter->path_,
+        stricter->host_wildcard_, stricter->port_wildcard_);
   }
 
   String host = host_wildcard_ == kNoWildcard ? host_ : other->host_;
@@ -253,8 +260,8 @@ CSPSource* CSPSource::Intersect(CSPSource* other) const {
       (host_wildcard_ == kHasWildcard) ? other->host_wildcard_ : host_wildcard_;
   WildcardDisposition port_wildcard =
       (port_wildcard_ == kHasWildcard) ? other->port_wildcard_ : port_wildcard_;
-  return new CSPSource(policy_, scheme, host, port, path, host_wildcard,
-                       port_wildcard);
+  return MakeGarbageCollected<CSPSource>(policy_, scheme, host, port, path,
+                                         host_wildcard, port_wildcard);
 }
 
 bool CSPSource::IsSchemeOnly() const {

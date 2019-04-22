@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/deferred_sequenced_task_runner.h"
 #include "base/environment.h"
 #include "base/feature_list.h"
@@ -37,9 +38,46 @@ namespace content {
 
 namespace {
 
+#if defined(OS_POSIX)
+// Environment variable pointing to credential cache file.
+constexpr char kKrb5CCEnvName[] = "KRB5CCNAME";
+// Environment variable pointing to Kerberos config file.
+constexpr char kKrb5ConfEnvName[] = "KRB5_CONFIG";
+#endif
+
 network::mojom::NetworkServicePtr* g_network_service_ptr = nullptr;
 network::NetworkConnectionTracker* g_network_connection_tracker;
 network::NetworkService* g_network_service;
+
+network::mojom::NetworkServiceParamsPtr CreateNetworkServiceParams() {
+  network::mojom::NetworkServiceParamsPtr network_service_params =
+      network::mojom::NetworkServiceParams::New();
+  network_service_params->initial_connection_type =
+      network::mojom::ConnectionType(
+          net::NetworkChangeNotifier::GetConnectionType());
+  network_service_params->initial_connection_subtype =
+      network::mojom::ConnectionSubtype(
+          net::NetworkChangeNotifier::GetConnectionSubtype());
+
+#if defined(OS_POSIX)
+  // Send Kerberos environment variables to the network service.
+  if (IsOutOfProcessNetworkService()) {
+    std::unique_ptr<base::Environment> env(base::Environment::Create());
+    std::string value;
+    if (env->HasVar(kKrb5CCEnvName)) {
+      env->GetVar(kKrb5CCEnvName, &value);
+      network_service_params->environment.push_back(
+          network::mojom::EnvironmentVariable::New(kKrb5CCEnvName, value));
+    }
+    if (env->HasVar(kKrb5ConfEnvName)) {
+      env->GetVar(kKrb5ConfEnvName, &value);
+      network_service_params->environment.push_back(
+          network::mojom::EnvironmentVariable::New(kKrb5ConfEnvName, value));
+    }
+  }
+#endif
+  return network_service_params;
+}
 
 void CreateNetworkServiceOnIO(network::mojom::NetworkServiceRequest request) {
   if (g_network_service) {
@@ -98,23 +136,37 @@ CONTENT_EXPORT network::mojom::NetworkService* GetNetworkServiceFromConnector(
   static NetworkServiceClient* g_client;
   if (!g_network_service_ptr->is_bound() ||
       g_network_service_ptr->encountered_error()) {
-    if (is_network_service_enabled) {
-      connector->BindInterface(mojom::kNetworkServiceName,
-                               g_network_service_ptr);
-      g_network_service_ptr->set_connection_error_handler(
-          base::BindOnce(&OnNetworkServiceCrash));
+    if (GetContentClient()->browser()->IsShuttingDown()) {
+      // This happens at system shutdown, since in other scenarios the network
+      // process would only be torn down once the message loop stopped running.
+      // We don't want to want to start the network service again so just create
+      // message pipe that's not bound to stop consumers from requesting
+      // creation of the service.
+      auto request = mojo::MakeRequest(g_network_service_ptr);
+      auto leaked_pipe = request.PassMessagePipe().release();
     } else {
-      DCHECK(!g_network_service_ptr->is_bound());
-      base::PostTaskWithTraits(
-          FROM_HERE, {BrowserThread::IO},
-          base::BindOnce(CreateNetworkServiceOnIO,
-                         mojo::MakeRequest(g_network_service_ptr)));
-    }
+      if (is_network_service_enabled) {
+        connector->BindInterface(mojom::kNetworkServiceName,
+                                 g_network_service_ptr);
+        g_network_service_ptr->set_connection_error_handler(
+            base::BindOnce(&OnNetworkServiceCrash));
+      } else {
+        DCHECK(!g_network_service_ptr->is_bound());
+        base::PostTaskWithTraits(
+            FROM_HERE, {BrowserThread::IO},
+            base::BindOnce(CreateNetworkServiceOnIO,
+                           mojo::MakeRequest(g_network_service_ptr)));
+      }
 
-    network::mojom::NetworkServiceClientPtr client_ptr;
-    delete g_client;  // In case we're recreating the network service.
-    g_client = new NetworkServiceClient(mojo::MakeRequest(&client_ptr));
-    (*g_network_service_ptr)->SetClient(std::move(client_ptr));
+      network::mojom::NetworkServiceClientPtr client_ptr;
+      auto client_request = mojo::MakeRequest(&client_ptr);
+      // Call SetClient before creating NetworkServiceClient, as the latter
+      // might make requests to NetworkService that depend on initialization.
+      (*g_network_service_ptr)
+          ->SetClient(std::move(client_ptr), CreateNetworkServiceParams());
+
+      delete g_client;  // In case we're recreating the network service.
+      g_client = new NetworkServiceClient(std::move(client_request));
 
       const base::CommandLine* command_line =
           base::CommandLine::ForCurrentProcess();
@@ -128,14 +180,15 @@ CONTENT_EXPORT network::mojom::NetworkService* GetNetworkServiceFromConnector(
 
           base::File file(log_path, base::File::FLAG_CREATE_ALWAYS |
                                         base::File::FLAG_WRITE);
-          LOG_IF(ERROR, !file.IsValid())
-              << "Failed opening: " << log_path.value();
-
-          // TODO(mmenke): Get capture mode from the command line.
-          (*g_network_service_ptr)
-              ->StartNetLog(std::move(file),
-                            network::mojom::NetLogCaptureMode::DEFAULT,
-                            std::move(client_constants));
+          if (!file.IsValid()) {
+            LOG(ERROR) << "Failed opening: " << log_path.value();
+          } else {
+            // TODO(mmenke): Get capture mode from the command line.
+            (*g_network_service_ptr)
+                ->StartNetLog(std::move(file),
+                              network::mojom::NetLogCaptureMode::DEFAULT,
+                              std::move(client_constants));
+          }
         }
       }
 
@@ -163,6 +216,7 @@ CONTENT_EXPORT network::mojom::NetworkService* GetNetworkServiceFromConnector(
 
       GetContentClient()->browser()->OnNetworkServiceCreated(
           g_network_service_ptr->get());
+    }
   }
   return g_network_service_ptr->get();
 }

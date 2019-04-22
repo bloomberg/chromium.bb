@@ -15,8 +15,8 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/stringize_macros.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -96,7 +96,8 @@ void Me2MeNativeMessagingHost::OnMessage(const std::string& message) {
   DCHECK(task_runner()->BelongsToCurrentThread());
 
   auto response = std::make_unique<base::DictionaryValue>();
-  std::unique_ptr<base::Value> message_value = base::JSONReader::Read(message);
+  std::unique_ptr<base::Value> message_value =
+      base::JSONReader::ReadDeprecated(message);
   if (!message_value->is_dict()) {
     OnError("Received a message that's not a dictionary.");
     return;
@@ -179,7 +180,7 @@ void Me2MeNativeMessagingHost::ProcessHello(
   std::unique_ptr<base::ListValue> supported_features_list(
       new base::ListValue());
   supported_features_list->AppendStrings(std::vector<std::string>(
-      kSupportedFeatures, kSupportedFeatures + arraysize(kSupportedFeatures)));
+      kSupportedFeatures, kSupportedFeatures + base::size(kSupportedFeatures)));
   response->Set("supportedFeatures", std::move(supported_features_list));
   SendMessageToClient(std::move(response));
 }

@@ -18,7 +18,6 @@ constexpr const char kEarlyJavaCategory[] = "EarlyJava";
 
 static void JNI_EarlyTraceEvent_RecordEarlyEvent(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& jname,
     jlong begin_time_ns,
     jlong end_time_ns,
@@ -39,7 +38,6 @@ static void JNI_EarlyTraceEvent_RecordEarlyEvent(
 
 static void JNI_EarlyTraceEvent_RecordEarlyStartAsyncEvent(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& jname,
     jlong id,
     jlong timestamp_ns) {
@@ -53,7 +51,6 @@ static void JNI_EarlyTraceEvent_RecordEarlyStartAsyncEvent(
 
 static void JNI_EarlyTraceEvent_RecordEarlyFinishAsyncEvent(
     JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& jname,
     jlong id,
     jlong timestamp_ns) {

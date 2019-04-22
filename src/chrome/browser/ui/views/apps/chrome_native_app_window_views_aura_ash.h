@@ -13,7 +13,7 @@
 #include "ash/wm/window_state_observer.h"  // mash-ok
 #include "base/gtest_prod_util.h"
 #include "base/scoped_observer.h"
-#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_client.h"
 #include "chrome/browser/ui/ash/tablet_mode_client_observer.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
 #include "chrome/browser/ui/views/apps/chrome_native_app_window_views_aura.h"
@@ -45,7 +45,7 @@ class ChromeNativeAppWindowViewsAuraAsh
       public ExclusiveAccessBubbleViewsContext,
       public ash::wm::WindowStateObserver,
       public aura::WindowObserver,
-      public MultiUserWindowManager::Observer,
+      public MultiUserWindowManagerClient::Observer,
       public ash::mojom::MenuDelegate {
  public:
   ChromeNativeAppWindowViewsAuraAsh();
@@ -71,9 +71,9 @@ class ChromeNativeAppWindowViewsAuraAsh
   bool IsAlwaysOnTop() const override;
 
   // views::ContextMenuController:
-  void ShowContextMenuForView(views::View* source,
-                              const gfx::Point& p,
-                              ui::MenuSourceType source_type) override;
+  void ShowContextMenuForViewImpl(views::View* source,
+                                  const gfx::Point& p,
+                                  ui::MenuSourceType source_type) override;
 
   // WidgetDelegate:
   views::NonClientFrameView* CreateNonClientFrameView(
@@ -136,7 +136,7 @@ class ChromeNativeAppWindowViewsAuraAsh
                                intptr_t old) override;
   void OnWindowDestroying(aura::Window* window) override;
 
-  // MultiUserWindowManager::Observer:
+  // MultiUserWindowManagerClient::Observer:
   void OnOwnerEntryAdded(aura::Window* window) override;
   void OnOwnerEntryChanged(aura::Window* window) override;
 
@@ -154,13 +154,13 @@ class ChromeNativeAppWindowViewsAuraAsh
                            PublicSessionImmersiveMode);
   FRIEND_TEST_ALL_PREFIXES(ChromeNativeAppWindowViewsAuraAshBrowserTest,
                            RestoreImmersiveMode);
-  FRIEND_TEST_ALL_PREFIXES(ChromeNativeAppWindowViewsAuraAshInteractiveTest,
+  FRIEND_TEST_ALL_PREFIXES(ChromeNativeAppWindowViewsAuraAshBrowserTest,
                            NoImmersiveOrBubbleOutsidePublicSessionWindow);
-  FRIEND_TEST_ALL_PREFIXES(ChromeNativeAppWindowViewsAuraAshInteractiveTest,
+  FRIEND_TEST_ALL_PREFIXES(ChromeNativeAppWindowViewsAuraAshBrowserTest,
                            NoImmersiveOrBubbleOutsidePublicSessionDom);
-  FRIEND_TEST_ALL_PREFIXES(ChromeNativeAppWindowViewsAuraAshInteractiveTest,
+  FRIEND_TEST_ALL_PREFIXES(ChromeNativeAppWindowViewsAuraAshBrowserTest,
                            ImmersiveAndBubbleInsidePublicSessionWindow);
-  FRIEND_TEST_ALL_PREFIXES(ChromeNativeAppWindowViewsAuraAshInteractiveTest,
+  FRIEND_TEST_ALL_PREFIXES(ChromeNativeAppWindowViewsAuraAshBrowserTest,
                            ImmersiveAndBubbleInsidePublicSessionDom);
   FRIEND_TEST_ALL_PREFIXES(ShapedAppWindowTargeterTest,
                            ResizeInsetsWithinBounds);
@@ -187,6 +187,7 @@ class ChromeNativeAppWindowViewsAuraAsh
   std::unique_ptr<ExclusiveAccessBubbleViews> exclusive_access_bubble_;
 
   bool tablet_mode_enabled_ = false;
+  bool draggable_regions_sent_ = false;
 
   // Only used in mash.
   ash::mojom::AshWindowManagerAssociatedPtr ash_window_manager_;

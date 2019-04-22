@@ -26,6 +26,7 @@ import android.preference.PreferenceFragment;
 import android.preference.PreferenceScreen;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentActivity;
+import android.support.v7.content.res.AppCompatResources;
 import android.widget.ListView;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -48,6 +49,7 @@ import org.chromium.chrome.browser.sync.ProfileSyncService.SyncStateChangedListe
 import org.chromium.chrome.browser.sync.ui.SyncCustomizationFragment;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
+import org.chromium.components.signin.GAIAServiceType;
 
 import java.util.List;
 
@@ -95,24 +97,23 @@ public class AccountManagementFragment extends PreferenceFragment
     public static final String PREF_SIGN_OUT = "sign_out";
     public static final String PREF_SIGN_OUT_DIVIDER = "sign_out_divider";
 
-    private int mGaiaServiceType;
+    private @GAIAServiceType int mGaiaServiceType = GAIAServiceType.GAIA_SERVICE_TYPE_NONE;
 
     private Profile mProfile;
     private String mSignedInAccountName;
     private ProfileDataCache mProfileDataCache;
+    private @Nullable ProfileSyncService.SyncSetupInProgressHandle mSyncSetupInProgressHandle;
 
     @Override
     public void onCreate(Bundle savedState) {
         super.onCreate(savedState);
 
-        // Prevent sync from starting if it hasn't already to give the user a chance to change
-        // their sync settings.
         ProfileSyncService syncService = ProfileSyncService.get();
         if (syncService != null) {
-            syncService.setSetupInProgress(true);
+            // Prevent sync settings changes from taking effect until the user leaves this screen.
+            mSyncSetupInProgressHandle = syncService.getSetupInProgressHandle();
         }
 
-        mGaiaServiceType = AccountManagementScreenHelper.GAIA_SERVICE_TYPE_NONE;
         if (getArguments() != null) {
             mGaiaServiceType =
                     getArguments().getInt(SHOW_GAIA_SERVICE_TYPE_EXTRA, mGaiaServiceType);
@@ -120,9 +121,7 @@ public class AccountManagementFragment extends PreferenceFragment
 
         mProfile = Profile.getLastUsedProfile();
 
-        AccountManagementScreenHelper.logEvent(
-                ProfileAccountManagementMetrics.VIEW,
-                mGaiaServiceType);
+        SigninUtils.logEvent(ProfileAccountManagementMetrics.VIEW, mGaiaServiceType);
 
         int avatarImageSize = getResources().getDimensionPixelSize(R.dimen.user_picture_size);
         ProfileDataCache.BadgeConfig badgeConfig = null;
@@ -147,6 +146,14 @@ public class AccountManagementFragment extends PreferenceFragment
     }
 
     @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (mSyncSetupInProgressHandle != null) {
+            mSyncSetupInProgressHandle.close();
+        }
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
         SigninManager.get().addSignInStateObserver(this);
@@ -168,17 +175,6 @@ public class AccountManagementFragment extends PreferenceFragment
         ProfileSyncService syncService = ProfileSyncService.get();
         if (syncService != null) {
             syncService.removeSyncStateChangedListener(this);
-        }
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-
-        // Allow sync to begin syncing if it hasn't yet.
-        ProfileSyncService syncService = ProfileSyncService.get();
-        if (syncService != null) {
-            syncService.setSetupInProgress(false);
         }
     }
 
@@ -234,7 +230,7 @@ public class AccountManagementFragment extends PreferenceFragment
                 if (!isVisible() || !isResumed()) return false;
 
                 if (mSignedInAccountName != null && getSignOutAllowedPreferenceValue()) {
-                    AccountManagementScreenHelper.logEvent(
+                    SigninUtils.logEvent(
                             ProfileAccountManagementMetrics.TOGGLE_SIGNOUT, mGaiaServiceType);
 
                     String managementDomain = SigninManager.get().getManagementDomain();
@@ -369,7 +365,7 @@ public class AccountManagementFragment extends PreferenceFragment
             pref.setIcon(mProfileDataCache.getProfileDataOrDefault(account.name).getImage());
 
             pref.setOnPreferenceClickListener(
-                    preference -> SigninUtils.openAccountSettingsPage(getActivity(), account));
+                    preference -> SigninUtils.openSettingsForAccount(getActivity(), account));
 
             accountsCategory.addPreference(pref);
         }
@@ -382,18 +378,18 @@ public class AccountManagementFragment extends PreferenceFragment
     private ChromeBasePreference createAddAccountPreference() {
         ChromeBasePreference addAccountPreference = new ChromeBasePreference(getActivity());
         addAccountPreference.setLayoutResource(R.layout.account_management_account_row);
-        addAccountPreference.setIcon(R.drawable.add_circle_blue);
+        addAccountPreference.setIcon(
+                AppCompatResources.getDrawable(getActivity(), R.drawable.ic_add_circle_40dp));
         addAccountPreference.setTitle(R.string.account_management_add_account_title);
         addAccountPreference.setOnPreferenceClickListener(preference -> {
             if (!isVisible() || !isResumed()) return false;
 
-            AccountManagementScreenHelper.logEvent(
-                    ProfileAccountManagementMetrics.ADD_ACCOUNT, mGaiaServiceType);
+            SigninUtils.logEvent(ProfileAccountManagementMetrics.ADD_ACCOUNT, mGaiaServiceType);
 
             AccountAdder.getInstance().addAccount(getActivity(), AccountAdder.ADD_ACCOUNT_RESULT);
 
             // Return to the last opened tab if triggered from the content area.
-            if (mGaiaServiceType != AccountManagementScreenHelper.GAIA_SERVICE_TYPE_NONE) {
+            if (mGaiaServiceType != GAIAServiceType.GAIA_SERVICE_TYPE_NONE) {
                 if (isAdded()) getActivity().finish();
             }
 
@@ -457,17 +453,13 @@ public class AccountManagementFragment extends PreferenceFragment
                         }
                     }
                 });
-        AccountManagementScreenHelper.logEvent(
-                ProfileAccountManagementMetrics.SIGNOUT_SIGNOUT,
-                mGaiaServiceType);
+        SigninUtils.logEvent(ProfileAccountManagementMetrics.SIGNOUT_SIGNOUT, mGaiaServiceType);
     }
 
     @Override
     public void onSignOutDialogDismissed(boolean signOutClicked) {
         if (!signOutClicked) {
-            AccountManagementScreenHelper.logEvent(
-                    ProfileAccountManagementMetrics.SIGNOUT_CANCEL,
-                    mGaiaServiceType);
+            SigninUtils.logEvent(ProfileAccountManagementMetrics.SIGNOUT_CANCEL, mGaiaServiceType);
         }
     }
 
@@ -510,7 +502,7 @@ public class AccountManagementFragment extends PreferenceFragment
      * Open the account management UI.
      * @param serviceType A signin::GAIAServiceType that triggered the dialog.
      */
-    public static void openAccountManagementScreen(int serviceType) {
+    public static void openAccountManagementScreen(@GAIAServiceType int serviceType) {
         Bundle arguments = new Bundle();
         arguments.putInt(SHOW_GAIA_SERVICE_TYPE_EXTRA, serviceType);
         PreferencesLauncher.launchSettingsPage(

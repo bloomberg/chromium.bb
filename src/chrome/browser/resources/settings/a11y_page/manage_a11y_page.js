@@ -69,44 +69,6 @@ Polymer({
       },
     },
 
-    autoClickEventTypeOptions_: {
-      readOnly: true,
-      type: Array,
-      value: function() {
-        // These values correspond to the i18n values in settings_strings.grdp
-        // and the enums in accessibility_controller.mojom, AutoclickEventType.
-        // If these values get changed then those strings need to be changed as
-        // well.
-        return [
-          {
-            // mojom::AutoclickEventType::kLeftClick
-            value: 0,
-            name: loadTimeData.getString('autoclickEventTypeLeftClick')
-          },
-          {
-            // mojom::AutoclickEventType::kRightClick
-            value: 1,
-            name: loadTimeData.getString('autoclickEventTypeRightClick')
-          },
-          {
-            // mojom::AutoclickEventType::kDragAndDrop
-            value: 2,
-            name: loadTimeData.getString('autoclickEventTypeDragAndDrop')
-          },
-          {
-            // mojom::AutoclickEventType::kDoubleClick
-            value: 3,
-            name: loadTimeData.getString('autoclickEventTypeDoubleClick')
-          },
-          {
-            // mojom::AutoclickEventType::kNoAction
-            value: 4,
-            name: loadTimeData.getString('autoclickEventTypeNoAction')
-          },
-        ];
-      },
-    },
-
     autoClickMovementThresholdOptions_: {
       readOnly: true,
       type: Array,
@@ -163,17 +125,6 @@ Polymer({
       },
     },
 
-    /**
-     * Whether the docked magnifier flag is enabled.
-     * @private {boolean}
-     */
-    dockedMagnifierFeatureEnabled_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('dockedMagnifierFeatureEnabled');
-      },
-    },
-
     /** @private */
     isGuest_: {
       type: Boolean,
@@ -225,12 +176,11 @@ Polymer({
   },
 
   /**
-   * @param {!CustomEvent} e
+   * @param {!CustomEvent<boolean>} e
    * @private
    */
   toggleStartupSoundEnabled_: function(e) {
-    let checked = /** @type {boolean} */ (e.detail);
-    chrome.send('setStartupSoundEnabled', [checked]);
+    chrome.send('setStartupSoundEnabled', [e.detail]);
   },
 
   /**

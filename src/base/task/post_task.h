@@ -27,27 +27,27 @@ namespace base {
 // This is the interface to post tasks.
 //
 // To post a simple one-off task with default traits:
-//     PostTask(FROM_HERE, Bind(...));
+//     PostTask(FROM_HERE, BindOnce(...));
 //
 // To post a high priority one-off task to respond to a user interaction:
 //     PostTaskWithTraits(
 //         FROM_HERE,
 //         {TaskPriority::USER_BLOCKING},
-//         Bind(...));
+//         BindOnce(...));
 //
 // To post tasks that must run in sequence with default traits:
 //     scoped_refptr<SequencedTaskRunner> task_runner =
 //         CreateSequencedTaskRunnerWithTraits(TaskTraits());
-//     task_runner.PostTask(FROM_HERE, Bind(...));
-//     task_runner.PostTask(FROM_HERE, Bind(...));
+//     task_runner->PostTask(FROM_HERE, BindOnce(...));
+//     task_runner->PostTask(FROM_HERE, BindOnce(...));
 //
 // To post tasks that may block, must run in sequence and can be skipped on
 // shutdown:
 //     scoped_refptr<SequencedTaskRunner> task_runner =
 //         CreateSequencedTaskRunnerWithTraits(
 //             {MayBlock(), TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
-//     task_runner.PostTask(FROM_HERE, Bind(...));
-//     task_runner.PostTask(FROM_HERE, Bind(...));
+//     task_runner->PostTask(FROM_HERE, BindOnce(...));
+//     task_runner->PostTask(FROM_HERE, BindOnce(...));
 //
 // The default traits apply to tasks that:
 //     (1) don't block (ref. MayBlock() and WithBaseSyncPrimitives()),
@@ -58,7 +58,7 @@ namespace base {
 // requirements are not sufficient.
 //
 // Tasks posted with only traits defined in base/task/task_traits.h run on
-// threads owned by the registered TaskScheduler (i.e. not on the main thread).
+// threads owned by the registered ThreadPool (i.e. not on the main thread).
 // An embedder (e.g. Chrome) can define additional traits to make tasks run on
 // threads of their choosing. TODO(https://crbug.com/863341): Make this a
 // reality.
@@ -69,8 +69,8 @@ namespace base {
 // for tasks posted in a given order (being scheduled first doesn't mean it will
 // run first -- could run in parallel or have its physical thread preempted).
 //
-// Prerequisite: A TaskScheduler must have been registered for the current
-// process via TaskScheduler::SetInstance() before the functions below are
+// Prerequisite: A ThreadPool must have been registered for the current
+// process via ThreadPool::SetInstance() before the functions below are
 // valid. This is typically done during the initialization phase in each
 // process. If your code is not running in that phase, you most likely don't
 // have to worry about this. You will encounter DCHECKs or nullptr dereferences

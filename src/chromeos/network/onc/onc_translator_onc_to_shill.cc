@@ -337,9 +337,9 @@ void LocalTranslator::TranslateNetworkConfiguration() {
   onc_object_->GetStringWithoutPathExpansion(::onc::network_config::kType,
                                              &type);
 
-  // Set the type except for Ethernet which is set in TranslateEthernet.
-  if (type != ::onc::network_type::kEthernet)
-    TranslateWithTableAndSet(type, kNetworkTypeTable, shill::kTypeProperty);
+  // Note; The Ethernet type might be overridden to EthernetEap in
+  // TranslateEthernet if Ethernet specific properties are provided.
+  TranslateWithTableAndSet(type, kNetworkTypeTable, shill::kTypeProperty);
 
   // Shill doesn't allow setting the name for non-VPN networks.
   if (type == ::onc::network_type::kVPN)

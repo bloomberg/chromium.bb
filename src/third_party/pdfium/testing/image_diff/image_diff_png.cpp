@@ -18,7 +18,12 @@
 
 #include "third_party/base/compiler_specific.h"
 #include "third_party/base/logging.h"
+
+#ifdef USE_SYSTEM_ZLIB
+#include <zlib.h>
+#else
 #include "third_party/zlib/zlib.h"
+#endif
 
 #ifdef USE_SYSTEM_LIBPNG
 #include <png.h>
@@ -588,7 +593,6 @@ bool EncodeWithCompressionLevel(const unsigned char* input,
       input_color_components = 3;
       output_color_components = 3;
       png_output_color_type = PNG_COLOR_TYPE_RGB;
-      discard_transparency = false;
       break;
 
     case FORMAT_RGBA:
@@ -621,7 +625,6 @@ bool EncodeWithCompressionLevel(const unsigned char* input,
       input_color_components = 1;
       output_color_components = 1;
       png_output_color_type = PNG_COLOR_TYPE_GRAY;
-      discard_transparency = false;
       break;
 
     default:

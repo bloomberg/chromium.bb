@@ -15,7 +15,7 @@ class Thread;
 
 namespace content {
 
-class PipeReader;
+class PipeReaderBase;
 
 class DevToolsPipeHandler : public DevToolsAgentHostClient {
  public:
@@ -29,16 +29,27 @@ class DevToolsPipeHandler : public DevToolsAgentHostClient {
   void DispatchProtocolMessage(DevToolsAgentHost* agent_host,
                                const std::string& message) override;
   void AgentHostClosed(DevToolsAgentHost* agent_host) override;
+  bool UsesBinaryProtocol() override;
 
   void Shutdown();
 
  private:
-  std::unique_ptr<PipeReader> pipe_reader_;
+  enum class ProtocolMode {
+    // Legacy text protocol format with messages separated by \0's.
+    kASCIIZ,
+    // Experimental (!) CBOR (RFC 7049) based binary format.
+    kCBOR
+  };
+
+  ProtocolMode mode_;
+
+  std::unique_ptr<PipeReaderBase> pipe_reader_;
   std::unique_ptr<base::Thread> read_thread_;
   std::unique_ptr<base::Thread> write_thread_;
   scoped_refptr<DevToolsAgentHost> browser_target_;
   int read_fd_;
   int write_fd_;
+  bool shutting_down_ = false;
   base::WeakPtrFactory<DevToolsPipeHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsPipeHandler);

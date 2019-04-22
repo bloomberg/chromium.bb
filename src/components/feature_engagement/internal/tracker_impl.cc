@@ -33,13 +33,12 @@
 #include "components/feature_engagement/internal/system_time_provider.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/public/feature_list.h"
-#include "components/leveldb_proto/proto_database_impl.h"
-#include "components/leveldb_proto/proto_database_provider.h"
+#include "components/leveldb_proto/public/proto_database_provider.h"
 
 namespace feature_engagement {
 
 namespace {
-const char kFeatureName[] = "FeatureEngagement";
+
 const char kEventDBName[] = "EventDB";
 const char kAvailabilityDBName[] = "AvailabilityDB";
 
@@ -100,7 +99,7 @@ Tracker* Tracker::Create(
   base::FilePath event_storage_dir =
       storage_dir.AppendASCII(std::string(kEventDBName));
   auto event_db = db_provider->GetDB<Event>(
-      std::string(kFeatureName), std::string(kEventDBName), event_storage_dir,
+      leveldb_proto::ProtoDbType::FEATURE_ENGAGEMENT_EVENT, event_storage_dir,
       background_task_runner);
 
   auto event_store =
@@ -125,7 +124,7 @@ Tracker* Tracker::Create(
   base::FilePath availability_storage_dir =
       storage_dir.AppendASCII(std::string(kAvailabilityDBName));
   auto availability_db = db_provider->GetDB<Availability>(
-      std::string(kFeatureName), std::string(kAvailabilityDBName),
+      leveldb_proto::ProtoDbType::FEATURE_ENGAGEMENT_AVAILABILITY,
       availability_storage_dir, background_task_runner);
   auto availability_store_loader = base::BindOnce(
       &PersistentAvailabilityStore::LoadAndUpdateStore,

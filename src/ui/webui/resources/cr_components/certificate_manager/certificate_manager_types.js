@@ -15,7 +15,7 @@
  *   anchor: !HTMLElement
  * }}
  */
-var CertificateActionEventDetail;
+let CertificateActionEventDetail;
 
 /**
  * The payload of the 'certificates-error' event.
@@ -24,13 +24,13 @@ var CertificateActionEventDetail;
  *   anchor: ?HTMLElement
  * }}
  */
-var CertificatesErrorEventDetail;
+let CertificatesErrorEventDetail;
 
 /**
  * Enumeration of actions that require a popup menu to be shown to the user.
  * @enum {number}
  */
-var CertificateAction = {
+const CertificateAction = {
   DELETE: 0,
   EDIT: 1,
   EXPORT_PERSONAL: 2,
@@ -41,4 +41,4 @@ var CertificateAction = {
  * The name of the event fired when a certificate action is selected from the
  * dropdown menu. CertificateActionEventDetail is passed as the event detail.
  */
-var CertificateActionEvent = 'certificate-action';
+const CertificateActionEvent = 'certificate-action';

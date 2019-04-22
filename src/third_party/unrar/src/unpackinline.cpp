@@ -1,3 +1,5 @@
+namespace third_party_unrar {
+
 _forceinline void Unpack::InsertOldDist(uint Distance)
 {
   OldDist[3]=OldDist[2];
@@ -145,3 +147,5 @@ _forceinline uint Unpack::SlotToLength(BitInput &Inp,uint Slot)
   }
   return Length;
 }
+
+}  // namespace third_party_unrar

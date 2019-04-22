@@ -66,6 +66,8 @@ class CORE_EXPORT SpaceSplitString {
 
  private:
   class CORE_EXPORT Data : public RefCounted<Data> {
+    USING_FAST_MALLOC(Data);
+
    public:
     static scoped_refptr<Data> Create(const AtomicString&);
     static scoped_refptr<Data> CreateUnique(const Data&);

@@ -6,6 +6,7 @@
 #define COMPONENTS_VIZ_SERVICE_HIT_TEST_HIT_TEST_AGGREGATOR_H_
 
 #include "components/viz/common/hit_test/aggregated_hit_test_region.h"
+#include "components/viz/common/quads/render_pass.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/service/hit_test/hit_test_manager.h"
 #include "components/viz/service/surfaces/surface_observer.h"
@@ -95,11 +96,14 @@ class VIZ_SERVICE_EXPORT HitTestAggregator {
   bool hit_test_debug_ = false;
   uint32_t hit_test_debug_ask_regions_ = 0;
 
-  // This is the set of FrameSinkIds referenced in the aggregation so far, used
-  // to detect cycles.
+  // This is the set of FrameSinkIds referenced in the aggregation in this tree
+  // chain so far, used to detect cycles. We can have regions that have the
+  // same FrameSinkId, e.g. when ALPHA_SHAPE is set in cc::FilterOperations,
+  // but only at the same hierarchy level.
   base::flat_set<FrameSinkId> referenced_child_regions_;
 
   base::flat_map<FrameSinkId, uint64_t> last_active_frame_index_;
+  uint64_t last_submit_hit_test_region_list_index_ = 0;
 
   // Handles the case when this object is deleted after
   // the PostTaskAggregation call is scheduled but before invocation.

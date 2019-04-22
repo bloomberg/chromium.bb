@@ -19,8 +19,9 @@
         app:tabMaxWidth="2000dp"
         app:tabMode="fixed"
         app:tabGravity="center"
-        app:tabTextAppearance="@style/BlackLink"
+        app:tabTextAppearance="@style/TextAppearance.BlackLink"
         app:tabIndicatorColor="@color/light_active_color"
+        app:tabSelectedTextColor="@color/tab_layout_selected_tab_color"
         android:background="@drawable/download_home_tabs_bg">
 
         <android.support.design.widget.TabItem
@@ -41,5 +42,5 @@
         android:id="@+id/content_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingTop="10dp" />
+        android:paddingTop="16dp" />
 </LinearLayout>

@@ -66,7 +66,7 @@
     [MeasureAs=SelectionExtentOffset] readonly attribute unsigned long extentOffset;
 
     // https://github.com/w3c/selection-api/issues/37
-    [MeasureAs=SelectionModify] void modify([Default=Undefined] optional DOMString alter,
-                                            [Default=Undefined] optional DOMString direction,
-                                            [Default=Undefined] optional DOMString granularity);
+    [MeasureAs=SelectionModify] void modify([DefaultValue=Undefined] optional DOMString alter,
+                                            [DefaultValue=Undefined] optional DOMString direction,
+                                            [DefaultValue=Undefined] optional DOMString granularity);
 };

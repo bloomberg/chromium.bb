@@ -24,14 +24,9 @@ New Procedures and Functions
 
     The command
 
-      GLuint glCreateAndTexStorage2DSharedImageCHROMIUM (GLenum internal_format,
-                                                         const GLbyte *mailbox)
+      GLuint glCreateAndTexStorage2DSharedImageCHROMIUM (const GLbyte *mailbox)
 
-    takes two arguments:
-
-    internal_format - Must match the internal format of the SharedImage at
-      creation time, with the exception that a caller may pass GL_RGB or
-      GL_RGBA for a SharedImage created as RGBA_8888.
+    takes one argument:
 
     mailbox - the mailbox referring to the SharedImage to assign to the
       first level of the mailbox.
@@ -42,7 +37,7 @@ New Procedures and Functions
     3) Assigns the SharedImage represented by mailbox to the first level of
        the texture object.
 
-    Note that the texutre created by this function is immutable.
+    Note that the texture created by this function is immutable.
 
     On success, this function extends the lifetime of the SharedImage
     referenced by mailbox by taking a ref. The texture object is deleted and
@@ -56,6 +51,24 @@ New Procedures and Functions
     INVALID_OPERATION is generated if <mailbox> is not associated with a
     texture object. In this case the new texture name remains unbound.  It is
     treated in the same way as a new texture name returned by GenTextures.
+
+    The command
+
+      GLuint glCreateAndTexStorage2DSharedImageWithInternalFormatCHROMIUM (
+                                                  const GLbyte *mailbox,
+                                                  GLenum internal_format)
+
+    takes two arguments:
+
+    internal_format - Must match the internal format of the SharedImage at
+      creation time, with the exception that a caller may pass GL_RGB or
+      GL_RGBA for a SharedImage created as RGBA_8888.
+
+    mailbox - the mailbox referring to the SharedImage to assign to the
+      first level of the mailbox.
+
+    This function works similar to glCreateAndTexStorage2DSharedImageCHROMIUM
+    in other respects.
 
     The command
 

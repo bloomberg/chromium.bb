@@ -41,6 +41,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_runner_util.h"
+#include "build/build_config.h"
 #include "components/download/database/in_progress/download_entry.h"
 #include "components/download/internal/common/download_job_impl.h"
 #include "components/download/internal/common/parallel_download_utils.h"
@@ -57,6 +58,10 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+
+#if defined(OS_ANDROID)
+#include "components/download/internal/common/android/download_collection_bridge.h"
+#endif  // defined(OS_ANDROID)
 
 namespace download {
 
@@ -293,10 +298,13 @@ DownloadItemImpl::DownloadItemImpl(
     const std::string& last_modified,
     int64_t received_bytes,
     int64_t total_bytes,
+    int32_t auto_resume_count,
     const std::string& hash,
     DownloadItem::DownloadState state,
     DownloadDangerType danger_type,
     DownloadInterruptReason interrupt_reason,
+    bool paused,
+    bool allow_metered,
     bool opened,
     base::Time last_access_time,
     bool transient,
@@ -322,6 +330,8 @@ DownloadItemImpl::DownloadItemImpl(
       state_(ExternalToInternalState(state)),
       danger_type_(danger_type),
       delegate_(delegate),
+      paused_(paused),
+      allow_metered_(allow_metered),
       opened_(opened),
       last_access_time_(last_access_time),
       transient_(transient),
@@ -331,6 +341,7 @@ DownloadItemImpl::DownloadItemImpl(
                         state == COMPLETE,
                         hash,
                         end_time),
+      auto_resume_count_(auto_resume_count),
       last_modified_time_(last_modified),
       etag_(etag),
       received_slices_(received_slices),
@@ -384,6 +395,7 @@ DownloadItemImpl::DownloadItemImpl(DownloadItemImplDelegate* delegate,
       weak_ptr_factory_(this) {
   delegate_->Attach();
   Init(true /* actively downloading */, TYPE_ACTIVE_DOWNLOAD);
+  allow_metered_ |= delegate_->IsActiveNetworkMetered();
 
   TRACE_EVENT_INSTANT0("download", "DownloadStarted", TRACE_EVENT_SCOPE_THREAD);
 }
@@ -517,20 +529,19 @@ void DownloadItemImpl::Pause() {
     case CANCELLED_INTERNAL:
     case COMPLETE_INTERNAL:
     case COMPLETING_INTERNAL:
+      return;
     case INITIAL_INTERNAL:
     case INTERRUPTED_INTERNAL:
     case INTERRUPTED_TARGET_PENDING_INTERNAL:
     case RESUMING_INTERNAL:
       // No active request.
-      // TODO(asanka): In the case of RESUMING_INTERNAL, consider setting
-      // |DownloadJob::is_paused_| even if there's no request currently
-      // associated with this DII. When a request is assigned (due to a
-      // resumption, for example) we can honor the |DownloadJob::is_paused_|
-      // setting.
+      paused_ = true;
+      UpdateObservers();
       return;
 
     case IN_PROGRESS_INTERNAL:
     case TARGET_PENDING_INTERNAL:
+      paused_ = true;
       job_->Pause();
       UpdateObservers();
       return;
@@ -541,7 +552,7 @@ void DownloadItemImpl::Pause() {
   }
 }
 
-void DownloadItemImpl::Resume() {
+void DownloadItemImpl::Resume(bool user_resume) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DVLOG(20) << __func__ << "() download = " << DebugString(true);
   switch (state_) {
@@ -557,13 +568,20 @@ void DownloadItemImpl::Resume() {
     case IN_PROGRESS_INTERNAL:
       if (!IsPaused())
         return;
+      paused_ = false;
       if (job_)
         job_->Resume(true);
+
+      UpdateResumptionInfo(true);
       UpdateObservers();
       return;
 
     case INTERRUPTED_INTERNAL:
-      auto_resume_count_ = 0;  // User input resets the counter.
+      UpdateResumptionInfo(paused_ || user_resume);
+      paused_ = false;
+      if (auto_resume_count_ >= kMaxAutoResumeAttempts)
+        return;
+
       ResumeInterruptedDownload(ResumptionRequestSource::USER);
       UpdateObservers();
       return;
@@ -572,6 +590,15 @@ void DownloadItemImpl::Resume() {
     case TARGET_RESOLVED_INTERNAL:
       NOTREACHED();
   }
+}
+
+void DownloadItemImpl::UpdateResumptionInfo(bool user_resume) {
+  if (user_resume) {
+    allow_metered_ |= delegate_->IsActiveNetworkMetered();
+    bytes_wasted_ = 0;
+  }
+
+  auto_resume_count_ = user_resume ? 0 : ++auto_resume_count_;
 }
 
 void DownloadItemImpl::Cancel(bool user_cancel) {
@@ -590,7 +617,6 @@ void DownloadItemImpl::Remove() {
 
   InterruptAndDiscardPartialState(DOWNLOAD_INTERRUPT_REASON_USER_CANCELED);
   UpdateObservers();
-
   NotifyRemoved();
   delegate_->DownloadRemoved(this);
   // We have now been deleted.
@@ -626,7 +652,46 @@ void DownloadItemImpl::OpenDownload() {
 void DownloadItemImpl::ShowDownloadInShell() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
+  // Ideally, we want to detect errors in showing and report them, but we
+  // don't generally have the proper interface for that to the external
+  // program that opens the file.  So instead we spawn a check to update
+  // the UI if the file has been deleted in parallel with the show.
+  delegate_->CheckForFileRemoval(this);
   delegate_->ShowDownloadInShell(this);
+}
+
+void DownloadItemImpl::RenameDownloadedFileDone(RenameDownloadCallback callback,
+                                                const base::FilePath& new_path,
+                                                DownloadRenameResult result) {
+  if (result == DownloadRenameResult::SUCCESS) {
+    destination_info_.target_path = new_path;
+    destination_info_.current_path = new_path;
+    UpdateObservers();
+  }
+  std::move(callback).Run(result);
+}
+
+void DownloadItemImpl::Rename(const base::FilePath& name,
+                              DownloadItem::RenameDownloadCallback callback) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  if (name.IsAbsolute()) {
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&DownloadItemImpl::RenameDownloadedFileDone,
+                                  weak_ptr_factory_.GetWeakPtr(),
+                                  std::move(callback), GetFullPath(),
+                                  DownloadRenameResult::FAILURE_NAME_INVALID));
+    return;
+  }
+
+  auto full_path = base::FilePath(GetFullPath().DirName()).Append(name);
+
+  base::PostTaskAndReplyWithResult(
+      GetDownloadTaskRunner().get(), FROM_HERE,
+      base::BindOnce(&download::RenameDownloadedFile, GetFullPath(), full_path),
+      base::BindOnce(&DownloadItemImpl::RenameDownloadedFileDone,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                     full_path));
 }
 
 uint32_t DownloadItemImpl::GetId() const {
@@ -646,7 +711,11 @@ DownloadInterruptReason DownloadItemImpl::GetLastReason() const {
 }
 
 bool DownloadItemImpl::IsPaused() const {
-  return job_ ? job_->is_paused() : false;
+  return paused_;
+}
+
+bool DownloadItemImpl::AllowMetered() const {
+  return allow_metered_;
 }
 
 bool DownloadItemImpl::IsTemporary() const {
@@ -689,6 +758,10 @@ bool DownloadItemImpl::IsDone() const {
 
 int64_t DownloadItemImpl::GetBytesWasted() const {
   return bytes_wasted_;
+}
+
+int32_t DownloadItemImpl::GetAutoResumeCount() const {
+  return auto_resume_count_;
 }
 
 const GURL& DownloadItemImpl::GetURL() const {
@@ -1092,17 +1165,11 @@ void DownloadItemImpl::UpdateValidatorsOnResumption(
   // Record some stats. If the precondition failed (the server returned
   // HTTP_PRECONDITION_FAILED), then the download will automatically retried as
   // a full request rather than a partial. Full restarts clobber validators.
-  int origin_state = 0;
-  if (chain_iter != new_create_info.url_chain.end())
-    origin_state |= ORIGIN_STATE_ON_RESUMPTION_ADDITIONAL_REDIRECTS;
   if (etag_ != new_create_info.etag ||
       last_modified_time_ != new_create_info.last_modified) {
     received_slices_.clear();
     destination_info_.received_bytes = 0;
-    origin_state |= ORIGIN_STATE_ON_RESUMPTION_VALIDATORS_CHANGED;
   }
-  if (content_disposition_ != new_create_info.content_disposition)
-    origin_state |= ORIGIN_STATE_ON_RESUMPTION_CONTENT_DISPOSITION_CHANGED;
 
   request_info_.url_chain.insert(request_info_.url_chain.end(), chain_iter,
                                  new_create_info.url_chain.end());
@@ -1206,6 +1273,9 @@ void DownloadItemImpl::DestinationUpdate(
                        TRACE_EVENT_SCOPE_THREAD, "bytes_so_far",
                        GetReceivedBytes());
 
+  if (IsPaused() && destination_info_.received_bytes == bytes_so_far)
+    return;
+
   UpdateObservers();
 }
 
@@ -1249,6 +1319,14 @@ void DownloadItemImpl::SetDelegate(DownloadItemImplDelegate* delegate) {
   delegate_->Detach();
   delegate_ = delegate;
   delegate_->Attach();
+}
+
+void DownloadItemImpl::SetDownloadId(uint32_t download_id) {
+  download_id_ = download_id;
+}
+
+void DownloadItemImpl::SetAutoResumeCountForTesting(int32_t auto_resume_count) {
+  auto_resume_count_ = auto_resume_count;
 }
 
 // **** Download progression cascade
@@ -1530,6 +1608,20 @@ void DownloadItemImpl::OnDownloadTargetDetermined(
   DownloadFile::RenameCompletionCallback callback =
       base::Bind(&DownloadItemImpl::OnDownloadRenamedToIntermediateName,
                  weak_ptr_factory_.GetWeakPtr());
+#if defined(OS_ANDROID)
+  if (download_type_ == TYPE_ACTIVE_DOWNLOAD &&
+      DownloadCollectionBridge::ShouldPublishDownload(GetTargetFilePath())) {
+    GetDownloadTaskRunner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&DownloadFile::CreateIntermediateUriForPublish,
+                       // Safe because we control download file lifetime.
+                       base::Unretained(download_file_.get()), GetOriginalUrl(),
+                       GetReferrerUrl(), GetTargetFilePath().BaseName(),
+                       GetMimeType(), std::move(callback)));
+    return;
+  }
+#endif  // defined(OS_ANDROID)
+
   GetDownloadTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&DownloadFile::RenameAndUniquify,
@@ -1549,6 +1641,14 @@ void DownloadItemImpl::OnDownloadRenamedToIntermediateName(
 
   if (DOWNLOAD_INTERRUPT_REASON_NONE == reason) {
     SetFullPath(full_path);
+#if defined(OS_ANDROID)
+    // For content URIs, target file path is the same as the current path.
+    if (full_path.IsContentUri()) {
+      if (display_name_.empty())
+        SetDisplayName(GetTargetFilePath().BaseName());
+      destination_info_.target_path = full_path;
+    }
+#endif  // defined(OS_ANDROID)
   } else {
     // TODO(asanka): Even though the rename failed, it may still be possible to
     // recover the partial state from the 'before' name.
@@ -1641,6 +1741,17 @@ void DownloadItemImpl::OnDownloadCompleting() {
   DownloadFile::RenameCompletionCallback callback =
       base::Bind(&DownloadItemImpl::OnDownloadRenamedToFinalName,
                  weak_ptr_factory_.GetWeakPtr());
+#if defined(OS_ANDROID)
+  if (GetTargetFilePath().IsContentUri()) {
+    GetDownloadTaskRunner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&DownloadFile::PublishDownload,
+                       // Safe because we control download file lifetime.
+                       base::Unretained(download_file_.get()),
+                       std::move(callback)));
+    return;
+  }
+#endif  // defined(OS_ANDROID)
   GetDownloadTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&DownloadFile::RenameAndAnnotate,

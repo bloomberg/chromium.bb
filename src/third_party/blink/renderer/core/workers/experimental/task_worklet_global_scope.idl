@@ -6,5 +6,5 @@
     RuntimeEnabled=WorkerTaskQueue,
     Global=(Worklet,TaskWorklet)
 ] interface TaskWorkletGlobalScope : WorkletGlobalScope {
-    [RaisesException] void registerTask(DOMString name, CallbackFunctionTreatedAsScriptValue taskConstructor);
+    [RaisesException] void registerTask(DOMString name, NoArgumentConstructor taskConstructor);
 };

@@ -9,7 +9,7 @@
 #include <cmath>
 #include <memory>
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "content/common/android/gin_java_bridge_value.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -118,7 +118,7 @@ TEST_F(GinJavaBridgeValueConverterTest, TypedArrays) {
     "4", "Int32Array", "4", "Uint32Array",
     "4", "Float32Array", "8", "Float64Array"
   };
-  for (size_t i = 0; i < arraysize(array_types); i += 2) {
+  for (size_t i = 0; i < base::size(array_types); i += 2) {
     const char* typed_array_type = array_types[i + 1];
     v8::Local<v8::Script> script(
         v8::Script::Compile(

@@ -76,7 +76,7 @@ class HTMLFormattingElementList {
       return !item_ ? !!element : item_->GetElement() != element;
     }
 
-    void Trace(blink::Visitor* visitor) { visitor->Trace(item_); }
+    void Trace(Visitor* visitor) { visitor->Trace(item_); }
 
    private:
     Member<HTMLStackItem> item_;
@@ -121,7 +121,7 @@ class HTMLFormattingElementList {
   const Entry& at(wtf_size_t i) const { return entries_[i]; }
   Entry& at(wtf_size_t i) { return entries_[i]; }
 
-  void Trace(blink::Visitor* visitor) { visitor->Trace(entries_); }
+  void Trace(Visitor* visitor) { visitor->Trace(entries_); }
 
 #ifndef NDEBUG
   void Show();
@@ -146,6 +146,6 @@ class HTMLFormattingElementList {
 }  // namespace blink
 
 WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(
-    blink::HTMLFormattingElementList::Entry);
+    blink::HTMLFormattingElementList::Entry)
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_HTML_FORMATTING_ELEMENT_LIST_H_

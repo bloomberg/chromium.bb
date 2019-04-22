@@ -5,6 +5,8 @@
 #ifndef EXTENSIONS_RENDERER_SAFE_BUILTINS_H_
 #define EXTENSIONS_RENDERER_SAFE_BUILTINS_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "v8/include/v8.h"
 
@@ -16,7 +18,7 @@ class ScriptContext;
 class SafeBuiltins {
  public:
   // Creates the v8::Extension which manages SafeBuiltins instances.
-  static v8::Extension* CreateV8Extension();
+  static std::unique_ptr<v8::Extension> CreateV8Extension();
 
   explicit SafeBuiltins(ScriptContext* context);
   ~SafeBuiltins();

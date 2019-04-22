@@ -195,7 +195,7 @@ public class SnippetArticleViewHolder extends CardViewHolder {
 
     /** Updates the visibility of the card's offline badge by checking the bound article's info. */
     private void refreshOfflineBadgeVisibility() {
-        boolean visible = mArticle.getOfflinePageOfflineId() != null || mArticle.isAssetDownload();
+        boolean visible = mArticle.getOfflinePageOfflineId() != null;
         mSuggestionsBinder.updateOfflineBadgeVisibility(visible);
     }
 

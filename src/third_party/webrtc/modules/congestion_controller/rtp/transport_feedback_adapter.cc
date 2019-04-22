@@ -10,19 +10,18 @@
 
 #include "modules/congestion_controller/rtp/transport_feedback_adapter.h"
 
+#include <stdlib.h>
 #include <algorithm>
+#include <cmath>
 
+#include "api/units/timestamp.h"
 #include "modules/rtp_rtcp/include/rtp_rtcp_defines.h"
 #include "modules/rtp_rtcp/source/rtcp_packet/transport_feedback.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/logging.h"
-#include "rtc_base/numerics/mod_ops.h"
 
 namespace webrtc {
 namespace {
-void SortPacketFeedbackVector(std::vector<webrtc::PacketFeedback>* input) {
-  std::sort(input->begin(), input->end(), PacketFeedbackComparator());
-}
 
 PacketResult NetworkPacketFeedbackFromRtpPacketFeedback(
     const webrtc::PacketFeedback& pf) {
@@ -47,9 +46,8 @@ const int64_t kBaseTimestampScaleFactor =
     rtcp::TransportFeedback::kDeltaScaleFactor * (1 << 8);
 const int64_t kBaseTimestampRangeSizeUs = kBaseTimestampScaleFactor * (1 << 24);
 
-TransportFeedbackAdapter::TransportFeedbackAdapter(const Clock* clock)
-    : send_time_history_(clock, kSendTimeHistoryWindowMs),
-      clock_(clock),
+TransportFeedbackAdapter::TransportFeedbackAdapter()
+    : send_time_history_(kSendTimeHistoryWindowMs),
       current_offset_ms_(kNoTimestamp),
       last_timestamp_us_(kNoTimestamp),
       local_net_id_(0),
@@ -80,13 +78,14 @@ void TransportFeedbackAdapter::DeRegisterPacketFeedbackObserver(
 void TransportFeedbackAdapter::AddPacket(uint32_t ssrc,
                                          uint16_t sequence_number,
                                          size_t length,
-                                         const PacedPacketInfo& pacing_info) {
+                                         const PacedPacketInfo& pacing_info,
+                                         Timestamp creation_time) {
   {
     rtc::CritScope cs(&lock_);
-    const int64_t creation_time_ms = clock_->TimeInMilliseconds();
     send_time_history_.AddAndRemoveOld(
-        PacketFeedback(creation_time_ms, sequence_number, length, local_net_id_,
-                       remote_net_id_, pacing_info));
+        PacketFeedback(creation_time.ms(), sequence_number, length,
+                       local_net_id_, remote_net_id_, pacing_info),
+        creation_time.ms());
   }
 
   {
@@ -96,7 +95,6 @@ void TransportFeedbackAdapter::AddPacket(uint32_t ssrc,
     }
   }
 }
-
 absl::optional<SentPacket> TransportFeedbackAdapter::ProcessSentPacket(
     const rtc::SentPacket& sent_packet) {
   rtc::CritScope cs(&lock_);
@@ -125,15 +123,23 @@ absl::optional<SentPacket> TransportFeedbackAdapter::ProcessSentPacket(
 
 absl::optional<TransportPacketsFeedback>
 TransportFeedbackAdapter::ProcessTransportFeedback(
-    const rtcp::TransportFeedback& feedback) {
-  int64_t feedback_time_ms = clock_->TimeInMilliseconds();
+    const rtcp::TransportFeedback& feedback,
+    Timestamp feedback_receive_time) {
   DataSize prior_in_flight = GetOutstandingData();
-  OnTransportFeedback(feedback);
+
+  last_packet_feedback_vector_ =
+      GetPacketFeedbackVector(feedback, feedback_receive_time);
+  {
+    rtc::CritScope cs(&observers_lock_);
+    for (auto* observer : observers_) {
+      observer->OnPacketFeedbackVector(last_packet_feedback_vector_);
+    }
+  }
+
   std::vector<PacketFeedback> feedback_vector = last_packet_feedback_vector_;
   if (feedback_vector.empty())
     return absl::nullopt;
 
-  SortPacketFeedbackVector(&feedback_vector);
   TransportPacketsFeedback msg;
   for (const PacketFeedback& rtp_feedback : feedback_vector) {
     if (rtp_feedback.send_time_ms != PacketFeedback::kNoSendTime) {
@@ -146,7 +152,14 @@ TransportFeedbackAdapter::ProcessTransportFeedback(
           Timestamp::ms(rtp_feedback.arrival_time_ms));
     }
   }
-  msg.feedback_time = Timestamp::ms(feedback_time_ms);
+  {
+    rtc::CritScope cs(&lock_);
+    absl::optional<int64_t> first_unacked_send_time_ms =
+        send_time_history_.GetFirstUnackedSendTime();
+    if (first_unacked_send_time_ms)
+      msg.first_unacked_send_time = Timestamp::ms(*first_unacked_send_time_ms);
+  }
+  msg.feedback_time = feedback_receive_time;
   msg.prior_in_flight = prior_in_flight;
   msg.data_in_flight = GetOutstandingData();
   return msg;
@@ -165,14 +178,15 @@ DataSize TransportFeedbackAdapter::GetOutstandingData() const {
 }
 
 std::vector<PacketFeedback> TransportFeedbackAdapter::GetPacketFeedbackVector(
-    const rtcp::TransportFeedback& feedback) {
+    const rtcp::TransportFeedback& feedback,
+    Timestamp feedback_time) {
   int64_t timestamp_us = feedback.GetBaseTimeUs();
-  int64_t now_ms = clock_->TimeInMilliseconds();
+
   // Add timestamp deltas to a local time base selected on first packet arrival.
   // This won't be the true time base, but makes it easier to manually inspect
   // time stamps.
   if (last_timestamp_us_ == kNoTimestamp) {
-    current_offset_ms_ = now_ms;
+    current_offset_ms_ = feedback_time.ms();
   } else {
     int64_t delta = timestamp_us - last_timestamp_us_;
 
@@ -237,19 +251,9 @@ std::vector<PacketFeedback> TransportFeedbackAdapter::GetPacketFeedbackVector(
   return packet_feedback_vector;
 }
 
-void TransportFeedbackAdapter::OnTransportFeedback(
-    const rtcp::TransportFeedback& feedback) {
-  last_packet_feedback_vector_ = GetPacketFeedbackVector(feedback);
-  {
-    rtc::CritScope cs(&observers_lock_);
-    for (auto* observer : observers_) {
-      observer->OnPacketFeedbackVector(last_packet_feedback_vector_);
-    }
-  }
-}
-
 std::vector<PacketFeedback>
 TransportFeedbackAdapter::GetTransportFeedbackVector() const {
   return last_packet_feedback_vector_;
 }
+
 }  // namespace webrtc

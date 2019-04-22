@@ -12,8 +12,6 @@ circumstances. Does not have WebXR code.
     <script src="../../../../../../third_party/blink/web_tests/resources/testharness.js"></script>
     <script src="../resources/webxr_e2e.js"></script>
     <script>
-      var t = async_test("Gamepad returned while using WebXR when expected.");
-
       // We apparently need to register a listener, otherwise all gamepads are
       // always null.
       window.addEventListener("gamepadconnected", function(e) {});
@@ -25,11 +23,9 @@ circumstances. Does not have WebXR code.
             numGamepads++;
           }
         }
-        t.step( () => {
-          assert_equals(numGamepads, numExpectedGamepads,
-              "Number of returned gamepads matches expectation");
-        });
-        t.done();
+        assert_equals(numGamepads, numExpectedGamepads,
+            "Number of returned gamepads matches expectation");
+        done();
       }
     </script>
   </body>

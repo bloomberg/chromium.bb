@@ -6,6 +6,7 @@
 
 #include "base/strings/stringprintf.h"
 #include "content/public/common/child_process_host.h"
+#include "extensions/common/api/messaging/messaging_endpoint.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/value_builder.h"
@@ -17,6 +18,7 @@
 #include "extensions/renderer/native_renderer_messaging_service.h"
 #include "extensions/renderer/runtime_hooks_delegate.h"
 #include "extensions/renderer/script_context.h"
+#include "extensions/renderer/script_context_set.h"
 #include "extensions/renderer/send_message_tester.h"
 
 namespace extensions {
@@ -184,7 +186,8 @@ TEST_F(ExtensionHooksDelegateTest, SendRequestChannelLeftOpenToReplyAsync) {
       DictionaryBuilder().Set("tabId", tab_id).Build().get());
   ExtensionMsg_ExternalConnectionInfo external_connection_info;
   external_connection_info.target_id = extension()->id();
-  external_connection_info.source_id = extension()->id();
+  external_connection_info.source_endpoint =
+      MessagingEndpoint::ForExtension(extension()->id());
   external_connection_info.source_url = source_url;
   external_connection_info.guest_process_id =
       content::ChildProcessHost::kInvalidUniqueID;
@@ -193,20 +196,45 @@ TEST_F(ExtensionHooksDelegateTest, SendRequestChannelLeftOpenToReplyAsync) {
   // Open a receiver for the message.
   EXPECT_CALL(*ipc_message_sender(),
               SendOpenMessagePort(MSG_ROUTING_NONE, port_id));
-  messaging_service()->DispatchOnConnect(
-      *script_context_set(), port_id, kChannel, tab_connection_info,
-      external_connection_info, std::string(), nullptr);
+  messaging_service()->DispatchOnConnect(script_context_set(), port_id,
+                                         kChannel, tab_connection_info,
+                                         external_connection_info, nullptr);
   ::testing::Mock::VerifyAndClearExpectations(ipc_message_sender());
   EXPECT_TRUE(
       messaging_service()->HasPortForTesting(script_context(), port_id));
 
   // Post the message to the receiver. Since the receiver doesn't respond, the
   // channel should remain open.
-  messaging_service()->DeliverMessage(*script_context_set(), port_id,
+  messaging_service()->DeliverMessage(script_context_set(), port_id,
                                       Message("\"message\"", false), nullptr);
   ::testing::Mock::VerifyAndClearExpectations(ipc_message_sender());
   EXPECT_TRUE(
       messaging_service()->HasPortForTesting(script_context(), port_id));
+}
+
+// Tests that overriding the runtime equivalents of chrome.extension methods
+// with accessors that throw does not cause a crash on access. Regression test
+// for https://crbug.com/949170.
+TEST_F(ExtensionHooksDelegateTest, RuntimeAliasesCorrupted) {
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = MainContext();
+
+  // Set a trap on chrome.runtime.sendMessage.
+  constexpr char kMutateChromeRuntime[] =
+      R"((function() {
+           Object.defineProperty(
+               chrome.runtime, 'sendMessage',
+               { get() { throw new Error('haha'); } });
+         }))";
+  RunFunctionOnGlobal(FunctionFromString(context, kMutateChromeRuntime),
+                      context, 0, nullptr);
+
+  // Touch chrome.extension.sendMessage, which is aliased to the runtime
+  // version. Though an error is thrown, we shouldn't crash.
+  constexpr char kTouchExtensionSendMessage[] =
+      "(function() { chrome.extension.sendMessage; })";
+  RunFunctionOnGlobal(FunctionFromString(context, kTouchExtensionSendMessage),
+                      context, 0, nullptr);
 }
 
 }  // namespace extensions

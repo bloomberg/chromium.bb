@@ -9,6 +9,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -180,16 +181,16 @@ TEST(ColorUtils, AlphaBlend) {
   SkColor fore = SkColorSetARGB(255, 200, 200, 200);
   SkColor back = SkColorSetARGB(255, 100, 100, 100);
 
-  EXPECT_TRUE(AlphaBlend(fore, back, 255) == fore);
-  EXPECT_TRUE(AlphaBlend(fore, back, 0) == back);
+  EXPECT_TRUE(AlphaBlend(fore, back, 1.0f) == fore);
+  EXPECT_TRUE(AlphaBlend(fore, back, 0.0f) == back);
 
   // One is fully transparent, result is partially transparent.
   back = SkColorSetA(back, 0);
-  EXPECT_EQ(136U, SkColorGetA(AlphaBlend(fore, back, 136)));
+  EXPECT_EQ(136U, SkColorGetA(AlphaBlend(fore, back, SkAlpha{136})));
 
   // Both are fully transparent, result is fully transparent.
   fore = SkColorSetA(fore, 0);
-  EXPECT_EQ(0U, SkColorGetA(AlphaBlend(fore, back, 255)));
+  EXPECT_EQ(0U, SkColorGetA(AlphaBlend(fore, back, 1.0f)));
 }
 
 TEST(ColorUtils, SkColorToRgbaString) {
@@ -205,13 +206,37 @@ TEST(ColorUtils, SkColorToRgbString) {
 }
 
 TEST(ColorUtils, IsDarkDarkestColorChange) {
-  SkColor old_black_color = GetDarkestColor();
+  ASSERT_FALSE(IsDark(SK_ColorLTGRAY));
+  const SkColor old_darkest_color = SetDarkestColorForTesting(SK_ColorLTGRAY);
+  EXPECT_TRUE(IsDark(SK_ColorLTGRAY));
 
-  ASSERT_FALSE(IsDark(SkColorSetARGB(255, 200, 200, 200)));
-  SetDarkestColor(SkColorSetARGB(255, 200, 200, 200));
-  EXPECT_TRUE(IsDark(SkColorSetARGB(255, 200, 200, 200)));
+  SetDarkestColorForTesting(old_darkest_color);
+}
 
-  SetDarkestColor(old_black_color);
+TEST(ColorUtils, MidpointLuminanceMatches) {
+  const SkColor old_darkest_color = SetDarkestColorForTesting(SK_ColorBLACK);
+  float darkest, midpoint, lightest;
+  std::tie(darkest, midpoint, lightest) = GetLuminancesForTesting();
+  EXPECT_FLOAT_EQ(GetContrastRatio(darkest, midpoint),
+                  GetContrastRatio(midpoint, lightest));
+
+  SetDarkestColorForTesting(old_darkest_color);
+  std::tie(darkest, midpoint, lightest) = GetLuminancesForTesting();
+  EXPECT_FLOAT_EQ(GetContrastRatio(darkest, midpoint),
+                  GetContrastRatio(midpoint, lightest));
+}
+
+TEST(ColorUtils, GetColorWithMaxContrast) {
+  const SkColor old_darkest_color = SetDarkestColorForTesting(SK_ColorBLACK);
+  EXPECT_EQ(SK_ColorWHITE, GetColorWithMaxContrast(SK_ColorBLACK));
+  EXPECT_EQ(SK_ColorWHITE,
+            GetColorWithMaxContrast(SkColorSetRGB(0x75, 0x75, 0x75)));
+  EXPECT_EQ(SK_ColorBLACK, GetColorWithMaxContrast(SK_ColorWHITE));
+  EXPECT_EQ(SK_ColorBLACK,
+            GetColorWithMaxContrast(SkColorSetRGB(0x76, 0x76, 0x76)));
+
+  SetDarkestColorForTesting(old_darkest_color);
+  EXPECT_EQ(old_darkest_color, GetColorWithMaxContrast(SK_ColorWHITE));
 }
 
 TEST(ColorUtils, GetColorWithMinimumContrast_ForegroundAlreadyMeetsMinimum) {
@@ -236,15 +261,13 @@ TEST(ColorUtils, GetColorWithMinimumContrast_BlendLighter) {
 }
 
 TEST(ColorUtils, GetColorWithMinimumContrast_StopsAtDarkestColor) {
-  SkColor old_black_color = GetDarkestColor();
-
   const SkColor darkest_color = SkColorSetRGB(0x44, 0x44, 0x44);
-  SetDarkestColor(darkest_color);
+  const SkColor old_darkest_color = SetDarkestColorForTesting(darkest_color);
   EXPECT_EQ(darkest_color,
             GetColorWithMinimumContrast(SkColorSetRGB(0x55, 0x55, 0x55),
                                         SkColorSetRGB(0xAA, 0xAA, 0xAA)));
 
-  SetDarkestColor(old_black_color);
+  SetDarkestColorForTesting(old_darkest_color);
 }
 
 TEST(ColorUtils, GetBlendValueWithMinimumContrast_ComputesExpectedOpacities) {
@@ -257,6 +280,28 @@ TEST(ColorUtils, GetBlendValueWithMinimumContrast_ComputesExpectedOpacities) {
   EXPECT_NEAR(alpha / 255.0f, 0.65f, 0.03f);
   alpha = GetBlendValueWithMinimumContrast(source, target, base, 1.13728f);
   EXPECT_NEAR(alpha / 255.0f, 0.45f, 0.03f);
+}
+
+TEST(ColorUtils, BlendTowardMaxContrast_PreservesAlpha) {
+  SkColor test_colors[] = {SK_ColorBLACK,      SK_ColorWHITE,
+                           SK_ColorRED,        SK_ColorYELLOW,
+                           SK_ColorMAGENTA,    gfx::kGoogleGreen500,
+                           gfx::kGoogleRed050, gfx::kGoogleBlue800};
+  SkAlpha test_alphas[] = {SK_AlphaTRANSPARENT, 0x0F,
+                           gfx::kDisabledControlAlpha, 0xDD};
+  SkAlpha blend_alpha = 0x7F;
+  for (const SkColor color : test_colors) {
+    SkColor opaque_result =
+        color_utils::BlendTowardMaxContrast(color, blend_alpha);
+    for (const SkAlpha alpha : test_alphas) {
+      SkColor input = SkColorSetA(color, alpha);
+      SkColor result = color_utils::BlendTowardMaxContrast(input, blend_alpha);
+      // Alpha was preserved.
+      EXPECT_EQ(SkColorGetA(result), alpha);
+      // RGB channels unaffected by alpha of input.
+      EXPECT_EQ(SkColorSetA(result, SK_AlphaOPAQUE), opaque_result);
+    }
+  }
 }
 
 TEST(ColorUtils, FindBlendValueForContrastRatio_MatchesNaiveImplementation) {

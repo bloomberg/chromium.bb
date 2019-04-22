@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_APPCACHE_CHROME_APPCACHE_SERVICE_H_
 #define CONTENT_BROWSER_APPCACHE_CHROME_APPCACHE_SERVICE_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -12,10 +14,10 @@
 #include "content/browser/appcache/appcache_backend_impl.h"
 #include "content/browser/appcache/appcache_policy.h"
 #include "content/browser/appcache/appcache_service_impl.h"
-#include "content/common/appcache.mojom.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "storage/browser/quota/special_storage_policy.h"
+#include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 
 namespace base {
 class FilePath;
@@ -56,15 +58,8 @@ class CONTENT_EXPORT ChromeAppCacheService
       scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy);
 
-  void Bind(std::unique_ptr<mojom::AppCacheBackend> backend,
-            mojom::AppCacheBackendRequest request,
-            int process_id);
-  // Unbinds the pipe corresponding to the given process_id. Unbinding
-  // unregisters and destroys the existing backend for that process_id.
-  // The function must be called before a new backend is created for the given
-  // process_id to ensure that there is at most one backend per process_id.
-  // The function does nothing if no pipe was bound.
-  void Unbind(int process_id);
+  void CreateBackend(int process_id,
+                     blink::mojom::AppCacheBackendRequest request);
 
   void Shutdown();
 
@@ -86,11 +81,21 @@ class CONTENT_EXPORT ChromeAppCacheService
                                           ChromeAppCacheServiceDeleter>;
   friend struct ChromeAppCacheServiceDeleter;
 
+  void Bind(std::unique_ptr<blink::mojom::AppCacheBackend> backend,
+            blink::mojom::AppCacheBackendRequest request,
+            int process_id);
+  // Unbinds the pipe corresponding to the given process_id. Unbinding
+  // unregisters and destroys the existing backend for that process_id.
+  // The function must be called before a new backend is created for the given
+  // process_id to ensure that there is at most one backend per process_id.
+  // The function does nothing if no pipe was bound.
+  void Unbind(int process_id);
+
   void DeleteOnCorrectThread() const;
 
   ResourceContext* resource_context_;
   base::FilePath cache_path_;
-  mojo::StrongBindingSet<mojom::AppCacheBackend> bindings_;
+  mojo::StrongBindingSet<blink::mojom::AppCacheBackend> bindings_;
 
   // A map from a process_id to a binding_id.
   std::map<int, mojo::BindingId> process_bindings_;

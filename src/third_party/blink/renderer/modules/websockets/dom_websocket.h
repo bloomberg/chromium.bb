@@ -37,7 +37,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/core/dom/events/event_listener.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
-#include "third_party/blink/renderer/core/dom/pausable_object.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_state_observer.h"
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -63,7 +63,7 @@ class StringOrStringSequence;
 
 class MODULES_EXPORT DOMWebSocket : public EventTargetWithInlineData,
                                     public ActiveScriptWrappable<DOMWebSocket>,
-                                    public PausableObject,
+                                    public ContextLifecycleStateObserver,
                                     public WebSocketChannelClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(DOMWebSocket);
@@ -99,9 +99,9 @@ class MODULES_EXPORT DOMWebSocket : public EventTargetWithInlineData,
   // Optional=DefaultIsUndefined in the IDL file doesn't help for now since
   // it's bound to a value of 0 which is indistinguishable from the case 0
   // is passed as code parameter.
-  void close(unsigned short code, const String& reason, ExceptionState&);
+  void close(uint16_t code, const String& reason, ExceptionState&);
   void close(ExceptionState&);
-  void close(unsigned short code, ExceptionState&);
+  void close(uint16_t code, ExceptionState&);
 
   const KURL& url() const;
   State readyState() const;
@@ -113,19 +113,18 @@ class MODULES_EXPORT DOMWebSocket : public EventTargetWithInlineData,
   String binaryType() const;
   void setBinaryType(const String&);
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(open, kOpen);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(message, kMessage);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(close, kClose);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(open, kOpen)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(message, kMessage)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(close, kClose)
 
   // EventTarget functions.
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const override;
 
-  // PausableObject functions.
+  // ContextLifecycleStateObserver functions.
   void ContextDestroyed(ExecutionContext*) override;
-  void Pause() override;
-  void Unpause() override;
+  void ContextLifecycleStateChanged(mojom::FrameLifecycleState) override;
 
   // ScriptWrappable functions.
   // Prevent this instance from being collected while it's not in CLOSED
@@ -140,7 +139,7 @@ class MODULES_EXPORT DOMWebSocket : public EventTargetWithInlineData,
   void DidConsumeBufferedAmount(uint64_t) override;
   void DidStartClosingHandshake() override;
   void DidClose(ClosingHandshakeCompletionStatus,
-                unsigned short code,
+                uint16_t code,
                 const String& reason) override;
 
   void Trace(blink::Visitor*) override;

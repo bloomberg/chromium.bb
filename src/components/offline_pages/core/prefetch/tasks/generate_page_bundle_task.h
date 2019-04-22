@@ -29,6 +29,7 @@ class GeneratePageBundleTask : public Task {
   GeneratePageBundleTask(PrefetchDispatcher* prefetch_dispatcher,
                          PrefetchStore* prefetch_store,
                          PrefetchGCMHandler* gcm_handler,
+                         const std::string& gcm_token,
                          PrefetchNetworkRequestFactory* request_factory,
                          PrefetchRequestFinishedCallback callback);
   ~GeneratePageBundleTask() override;
@@ -45,6 +46,7 @@ class GeneratePageBundleTask : public Task {
   PrefetchDispatcher* prefetch_dispatcher_;
   PrefetchStore* prefetch_store_;
   PrefetchGCMHandler* gcm_handler_;
+  std::string gcm_token_;
   PrefetchNetworkRequestFactory* request_factory_;
   PrefetchRequestFinishedCallback callback_;
 

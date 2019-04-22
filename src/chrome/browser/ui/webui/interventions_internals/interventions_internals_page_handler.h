@@ -24,7 +24,8 @@ class InterventionsInternalsPageHandler
  public:
   InterventionsInternalsPageHandler(
       mojom::InterventionsInternalsPageHandlerRequest request,
-      previews::PreviewsUIService* previews_ui_service);
+      previews::PreviewsUIService* previews_ui_service,
+      network::NetworkQualityTracker* network_quality_tracker);
   ~InterventionsInternalsPageHandler() override;
 
   // mojom::InterventionsInternalsPageHandler:
@@ -57,6 +58,10 @@ class InterventionsInternalsPageHandler
   // A pointer to the PreviewsUIService associated with this handler, and
   // guaranteed to outlive |this|.
   previews::PreviewsUIService* previews_ui_service_;
+
+  // Passed in during construction. If null, the main browser process tracker
+  // will be used instead.
+  network::NetworkQualityTracker* network_quality_tracker_;
 
   // The current estimated effective connection type.
   net::EffectiveConnectionType current_estimated_ect_;

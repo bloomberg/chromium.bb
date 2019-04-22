@@ -25,6 +25,7 @@
 
 #include <algorithm>
 
+#include "base/numerics/safe_conversions.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_buffer_source_node.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_buffer_source_options.h"
@@ -44,14 +45,6 @@ const double kDefaultGrainDuration = 0.020;  // 20ms
 // buffers to minimize linear interpolation aliasing.
 const double kMaxRate = 1024;
 
-// Number of extra frames to use when determining if a source node can be
-// stopped.  This should be at least one rendering quantum, but we add one more
-// quantum for good measure.  This doesn't need to be extra precise, just more
-// than one rendering quantum.  See |handleStoppableSourceNode()|.
-// FIXME: Expose the rendering quantum somehow instead of hardwiring a value
-// here.
-const int kExtraStopFrames = 256;
-
 AudioBufferSourceHandler::AudioBufferSourceHandler(
     AudioNode& node,
     float sample_rate,
@@ -60,7 +53,6 @@ AudioBufferSourceHandler::AudioBufferSourceHandler(
     : AudioScheduledSourceHandler(kNodeTypeAudioBufferSource,
                                   node,
                                   sample_rate),
-      buffer_(nullptr),
       playback_rate_(&playback_rate),
       detune_(&detune),
       is_looping_(false),
@@ -114,7 +106,7 @@ void AudioBufferSourceHandler::Process(uint32_t frames_to_process) {
     // is updated to the new number of channels because of use of tryLocks() in
     // the context's updating system.  In this case, if the the buffer has just
     // been changed and we're not quite ready yet, then just output silence.
-    if (NumberOfChannels() != Buffer()->numberOfChannels()) {
+    if (NumberOfChannels() != shared_buffer_->numberOfChannels()) {
       output_bus->Zero();
       return;
     }
@@ -137,7 +129,7 @@ void AudioBufferSourceHandler::Process(uint32_t frames_to_process) {
 
     // Render by reading directly from the buffer.
     if (!RenderFromBuffer(output_bus, quantum_frame_offset,
-                          buffer_frames_to_process)) {
+                          buffer_frames_to_process, start_time_offset)) {
       output_bus->Zero();
       return;
     }
@@ -176,7 +168,8 @@ bool AudioBufferSourceHandler::RenderSilenceAndFinishIfNotLooping(
 bool AudioBufferSourceHandler::RenderFromBuffer(
     AudioBus* bus,
     unsigned destination_frame_offset,
-    uint32_t number_of_frames) {
+    uint32_t number_of_frames,
+    double start_time_offset) {
   DCHECK(Context()->IsAudioThread());
 
   // Basic sanity checking
@@ -221,15 +214,16 @@ bool AudioBufferSourceHandler::RenderFromBuffer(
   // Offset the pointers to the correct offset frame.
   unsigned write_index = destination_frame_offset;
 
-  uint32_t buffer_length = Buffer()->length();
-  double buffer_sample_rate = Buffer()->sampleRate();
+  uint32_t buffer_length = shared_buffer_->length();
+  double buffer_sample_rate = shared_buffer_->sampleRate();
 
   // Avoid converting from time to sample-frames twice by computing
   // the grain end time first before computing the sample frame.
   unsigned end_frame =
-      is_grain_ ? audio_utilities::TimeToSampleFrame(
-                      grain_offset_ + grain_duration_, buffer_sample_rate)
-                : buffer_length;
+      is_grain_
+          ? base::saturated_cast<uint32_t>(audio_utilities::TimeToSampleFrame(
+                grain_offset_ + grain_duration_, buffer_sample_rate))
+          : buffer_length;
 
   // Do some sanity checking.
   if (end_frame > buffer_length)
@@ -245,8 +239,8 @@ bool AudioBufferSourceHandler::RenderFromBuffer(
   if (Loop() && (loop_start_ || loop_end_) && loop_start_ >= 0 &&
       loop_end_ > 0 && loop_start_ < loop_end_) {
     // Convert from seconds to sample-frames.
-    double loop_start_frame = loop_start_ * Buffer()->sampleRate();
-    double loop_end_frame = loop_end_ * Buffer()->sampleRate();
+    double loop_start_frame = loop_start_ * shared_buffer_->sampleRate();
+    double loop_end_frame = loop_end_ * shared_buffer_->sampleRate();
 
     virtual_end_frame = std::min(loop_end_frame, virtual_end_frame);
     virtual_delta_frames = virtual_end_frame - loop_start_frame;
@@ -257,7 +251,7 @@ bool AudioBufferSourceHandler::RenderFromBuffer(
   // needs to be done.
   if (Loop() && virtual_read_index_ >= virtual_end_frame) {
     virtual_read_index_ =
-        (loop_start_ < 0) ? 0 : (loop_start_ * Buffer()->sampleRate());
+        (loop_start_ < 0) ? 0 : (loop_start_ * shared_buffer_->sampleRate());
     virtual_read_index_ =
         std::min(virtual_read_index_, static_cast<double>(buffer_length - 1));
   }
@@ -270,6 +264,16 @@ bool AudioBufferSourceHandler::RenderFromBuffer(
 
   // Get local copy.
   double virtual_read_index = virtual_read_index_;
+
+  // Adjust the read index by the start_time_offset (compensated by the playback
+  // rate) because we always start output on a frame boundary with interpolation
+  // if necessary.
+  if (start_time_offset < 0) {
+    if (computed_playback_rate != 0) {
+      virtual_read_index +=
+          std::abs(start_time_offset * computed_playback_rate);
+    }
+  }
 
   // Render loop - reading from the source buffer to the destination using
   // linear interpolation.
@@ -291,6 +295,7 @@ bool AudioBufferSourceHandler::RenderFromBuffer(
     unsigned read_index = static_cast<unsigned>(virtual_read_index);
     unsigned delta_frames = static_cast<unsigned>(virtual_delta_frames);
     end_frame = static_cast<unsigned>(virtual_end_frame);
+
     while (frames_to_process > 0) {
       int frames_to_end = end_frame - read_index;
       int frames_this_time = std::min(frames_to_process, frames_to_end);
@@ -406,7 +411,10 @@ void AudioBufferSourceHandler::SetBuffer(AudioBuffer* buffer,
   // This synchronizes with process().
   MutexLocker process_locker(process_lock_);
 
-  if (buffer) {
+  if (!buffer) {
+    // Clear out the shared buffer.
+    shared_buffer_.reset();
+  } else {
     buffer_has_been_set_ = true;
 
     // Do any necesssary re-configuration to the buffer's number of channels.
@@ -425,35 +433,39 @@ void AudioBufferSourceHandler::SetBuffer(AudioBuffer* buffer,
       return;
     }
 
+    shared_buffer_ = buffer->CreateSharedAudioBuffer();
+
     Output(0).SetNumberOfChannels(number_of_channels);
 
     source_channels_ = std::make_unique<const float* []>(number_of_channels);
     destination_channels_ = std::make_unique<float* []>(number_of_channels);
 
-    for (unsigned i = 0; i < number_of_channels; ++i)
-      source_channels_[i] = buffer->getChannelData(i).View()->Data();
+    for (unsigned i = 0; i < number_of_channels; ++i) {
+      source_channels_[i] =
+          static_cast<float*>(shared_buffer_->channels()[i].Data());
+    }
 
     // If this is a grain (as set by a previous call to start()), validate the
     // grain parameters now since it wasn't validated when start was called
     // (because there was no buffer then).
     if (is_grain_)
-      ClampGrainParameters(buffer);
+      ClampGrainParameters(shared_buffer_.get());
   }
 
   virtual_read_index_ = 0;
-  buffer_ = buffer;
 }
 
 unsigned AudioBufferSourceHandler::NumberOfChannels() {
   return Output(0).NumberOfChannels();
 }
 
-void AudioBufferSourceHandler::ClampGrainParameters(const AudioBuffer* buffer) {
+void AudioBufferSourceHandler::ClampGrainParameters(
+    const SharedAudioBuffer* buffer) {
   DCHECK(buffer);
 
   // We have a buffer so we can clip the offset and duration to lie within the
   // buffer.
-  double buffer_duration = buffer->duration();
+  double buffer_duration = shared_buffer_->duration();
 
   grain_offset_ = clampTo(grain_offset_, 0.0, buffer_duration);
 
@@ -481,8 +493,8 @@ void AudioBufferSourceHandler::ClampGrainParameters(const AudioBuffer* buffer) {
   // degrade the quality. When aligned to the sample-frame the playback will be
   // identical to the PCM data stored in the buffer. Since playbackRate == 1 is
   // very common, it's worth considering quality.
-  virtual_read_index_ =
-      audio_utilities::TimeToSampleFrame(grain_offset_, buffer->sampleRate());
+  virtual_read_index_ = audio_utilities::TimeToSampleFrame(
+      grain_offset_, shared_buffer_->sampleRate());
 }
 
 void AudioBufferSourceHandler::Start(double when,
@@ -493,8 +505,8 @@ void AudioBufferSourceHandler::Start(double when,
 void AudioBufferSourceHandler::Start(double when,
                                      double grain_offset,
                                      ExceptionState& exception_state) {
-  StartSource(when, grain_offset, Buffer() ? Buffer()->duration() : 0, false,
-              exception_state);
+  StartSource(when, grain_offset, Buffer() ? shared_buffer_->duration() : 0,
+              false, exception_state);
 }
 
 void AudioBufferSourceHandler::Start(double when,
@@ -569,8 +581,8 @@ double AudioBufferSourceHandler::ComputePlaybackRate() {
   double sample_rate_factor = 1.0;
   if (Buffer()) {
     // Use doubles to compute this to full accuracy.
-    sample_rate_factor =
-        Buffer()->sampleRate() / static_cast<double>(Context()->sampleRate());
+    sample_rate_factor = shared_buffer_->sampleRate() /
+                         static_cast<double>(Context()->sampleRate());
   }
 
   // Use finalValue() to incorporate changes of AudioParamTimeline and
@@ -595,7 +607,6 @@ double AudioBufferSourceHandler::ComputePlaybackRate() {
 
   // Record the minimum playback rate for use by HandleStoppableSourceNode.
   if (final_playback_rate < min_playback_rate_) {
-    MutexLocker locker(min_playback_rate_mutex_);
     min_playback_rate_ = final_playback_rate;
   }
 
@@ -603,16 +614,16 @@ double AudioBufferSourceHandler::ComputePlaybackRate() {
 }
 
 double AudioBufferSourceHandler::GetMinPlaybackRate() {
-  DCHECK(IsMainThread());
-  MutexLocker locker(min_playback_rate_mutex_);
+  DCHECK(Context()->IsAudioThread());
   return min_playback_rate_;
 }
 
 bool AudioBufferSourceHandler::PropagatesSilence() const {
-  return !IsPlayingOrScheduled() || HasFinished() || !buffer_;
+  return !IsPlayingOrScheduled() || HasFinished() || !shared_buffer_.get();
 }
 
 void AudioBufferSourceHandler::HandleStoppableSourceNode() {
+  DCHECK(Context()->IsAudioThread());
   // If the source node is not looping, and we have a buffer, we can determine
   // when the source would stop playing.  This is intended to handle the
   // (uncommon) scenario where start() has been called but is never connected to
@@ -645,9 +656,9 @@ void AudioBufferSourceHandler::HandleStoppableSourceNode() {
     stop_time += extra_stop_time;
     if (Context()->currentTime() > stop_time) {
       // The context time has passed the time when the source nodes should have
-      // stopped playing. Stop the node now and deref it. (But don't run the
-      // onEnded event because the source never actually played.)
-      FinishWithoutOnEnded();
+      // stopped playing. Stop the node now and deref it.  Deliver the onended
+      // event too, to match what Firefox does.
+      Finish();
     }
   }
 }
@@ -677,12 +688,7 @@ AudioBufferSourceNode* AudioBufferSourceNode::Create(
     ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
-  if (context.IsContextClosed()) {
-    context.ThrowExceptionForClosedState(exception_state);
-    return nullptr;
-  }
-
-  return new AudioBufferSourceNode(context);
+  return MakeGarbageCollected<AudioBufferSourceNode>(context);
 }
 
 AudioBufferSourceNode* AudioBufferSourceNode::Create(
@@ -710,6 +716,7 @@ AudioBufferSourceNode* AudioBufferSourceNode::Create(
 void AudioBufferSourceNode::Trace(blink::Visitor* visitor) {
   visitor->Trace(playback_rate_);
   visitor->Trace(detune_);
+  visitor->Trace(buffer_);
   AudioScheduledSourceNode::Trace(visitor);
 }
 
@@ -719,12 +726,14 @@ AudioBufferSourceHandler& AudioBufferSourceNode::GetAudioBufferSourceHandler()
 }
 
 AudioBuffer* AudioBufferSourceNode::buffer() const {
-  return GetAudioBufferSourceHandler().Buffer();
+  return buffer_.Get();
 }
 
 void AudioBufferSourceNode::setBuffer(AudioBuffer* new_buffer,
                                       ExceptionState& exception_state) {
   GetAudioBufferSourceHandler().SetBuffer(new_buffer, exception_state);
+  if (!exception_state.HadException())
+    buffer_ = new_buffer;
 }
 
 AudioParam* AudioBufferSourceNode::playbackRate() const {

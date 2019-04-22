@@ -4,6 +4,7 @@
 
 #include "android_webview/browser/aw_form_database_service.h"
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -84,7 +85,7 @@ bool AwFormDatabaseService::HasFormData() {
           base::IgnoreResult(&awds::GetCountOfValuesContainedBetween),
           autofill_data_, base::Time(), base::Time::Max(), this));
   {
-    base::ThreadRestrictions::ScopedAllowWait wait;
+    base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
     has_form_data_completion_.Wait();
   }
   return has_form_data_result_;

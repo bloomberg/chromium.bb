@@ -5,6 +5,6 @@
 // https://github.com/dtapuska/useractivation
 [RuntimeEnabled=UserActivationAPI]
 interface UserActivation {
-  readonly attribute boolean hasBeenActive;
-  readonly attribute boolean isActive;
+  [Measure] readonly attribute boolean hasBeenActive;
+  [Measure] readonly attribute boolean isActive;
 };

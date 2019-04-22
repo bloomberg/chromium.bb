@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/tests/bindings_test_base.h"
@@ -144,7 +145,7 @@ TEST_P(RequestResponseTest, EchoEnum) {
   EXPECT_EQ(sample::Enum::VALUE, value);
 }
 
-INSTANTIATE_MOJO_BINDINGS_TEST_CASE_P(RequestResponseTest);
+INSTANTIATE_MOJO_BINDINGS_TEST_SUITE_P(RequestResponseTest);
 
 }  // namespace
 }  // namespace test

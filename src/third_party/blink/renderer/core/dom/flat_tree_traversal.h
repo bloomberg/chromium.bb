@@ -57,6 +57,13 @@ class CORE_EXPORT FlatTreeTraversal {
   typedef LayoutTreeBuilderTraversal::ParentDetails ParentTraversalDetails;
   using TraversalNodeType = Node;
 
+#if DCHECK_IS_ON()
+  static void AssertFlatTreeNodeDataUpdated(
+      const Node& root,
+      int& assigned_nodes_in_slot_count,
+      int& nodes_which_have_assigned_slot_count);
+#endif
+
   static Node* Next(const Node&);
   static Node* Next(const Node&, const Node* stay_within);
   static Node* Previous(const Node&);
@@ -144,6 +151,7 @@ class CORE_EXPORT FlatTreeTraversal {
   };
 
   static void AssertPrecondition(const Node& node) {
+    DCHECK(!node.GetDocument().IsFlatTreeTraversalForbidden());
     DCHECK(!node.NeedsDistributionRecalc());
     DCHECK(node.CanParticipateInFlatTree());
   }

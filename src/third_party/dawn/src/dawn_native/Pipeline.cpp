@@ -14,47 +14,45 @@
 
 #include "dawn_native/Pipeline.h"
 
-#include "dawn_native/DepthStencilState.h"
 #include "dawn_native/Device.h"
-#include "dawn_native/InputState.h"
 #include "dawn_native/PipelineLayout.h"
 #include "dawn_native/ShaderModule.h"
 
 namespace dawn_native {
+
+    MaybeError ValidatePipelineStageDescriptor(DeviceBase* device,
+                                               const PipelineStageDescriptor* descriptor,
+                                               const PipelineLayoutBase* layout,
+                                               dawn::ShaderStage stage) {
+        DAWN_TRY(device->ValidateObject(descriptor->module));
+
+        if (descriptor->entryPoint != std::string("main")) {
+            return DAWN_VALIDATION_ERROR("Entry point must be \"main\"");
+        }
+        if (descriptor->module->GetExecutionModel() != stage) {
+            return DAWN_VALIDATION_ERROR("Setting module with wrong stages");
+        }
+        if (!descriptor->module->IsCompatibleWithPipelineLayout(layout)) {
+            return DAWN_VALIDATION_ERROR("Stage not compatible with layout");
+        }
+        return {};
+    }
 
     // PipelineBase
 
     PipelineBase::PipelineBase(DeviceBase* device,
                                PipelineLayoutBase* layout,
                                dawn::ShaderStageBit stages)
-        : ObjectBase(device), mStageMask(stages), mLayout(layout), mDevice(device) {
+        : ObjectBase(device), mStageMask(stages), mLayout(layout) {
     }
 
-    PipelineBase::PipelineBase(DeviceBase* device, PipelineBuilder* builder)
-        : ObjectBase(device),
-          mStageMask(builder->mStageMask),
-          mLayout(std::move(builder->mLayout)),
-          mDevice(device) {
-        if (!mLayout) {
-            PipelineLayoutDescriptor descriptor;
-            descriptor.numBindGroupLayouts = 0;
-            descriptor.bindGroupLayouts = nullptr;
-            mLayout = device->CreatePipelineLayout(&descriptor);
-            // Remove the external ref objects are created with
-            mLayout->Release();
-        }
-
-        for (auto stage : IterateStages(builder->mStageMask)) {
-            if (!builder->mStages[stage].module->IsCompatibleWithPipelineLayout(mLayout.Get())) {
-                builder->GetParentBuilder()->HandleError("Stage not compatible with layout");
-                return;
-            }
-
-            ExtractModuleData(stage, builder->mStages[stage].module.Get());
-        }
+    PipelineBase::PipelineBase(DeviceBase* device, ObjectBase::ErrorTag tag)
+        : ObjectBase(device, tag) {
     }
 
     void PipelineBase::ExtractModuleData(dawn::ShaderStage stage, ShaderModuleBase* module) {
+        ASSERT(!IsError());
+
         PushConstantInfo* info = &mPushConstants[stage];
 
         const auto& moduleInfo = module->GetPushConstants();
@@ -75,62 +73,18 @@ namespace dawn_native {
 
     const PipelineBase::PushConstantInfo& PipelineBase::GetPushConstants(
         dawn::ShaderStage stage) const {
+        ASSERT(!IsError());
         return mPushConstants[stage];
     }
 
     dawn::ShaderStageBit PipelineBase::GetStageMask() const {
+        ASSERT(!IsError());
         return mStageMask;
     }
 
     PipelineLayoutBase* PipelineBase::GetLayout() {
+        ASSERT(!IsError());
         return mLayout.Get();
-    }
-
-    DeviceBase* PipelineBase::GetDevice() const {
-        return mDevice;
-    }
-
-    // PipelineBuilder
-
-    PipelineBuilder::PipelineBuilder(BuilderBase* parentBuilder)
-        : mParentBuilder(parentBuilder), mStageMask(static_cast<dawn::ShaderStageBit>(0)) {
-    }
-
-    const PipelineBuilder::StageInfo& PipelineBuilder::GetStageInfo(dawn::ShaderStage stage) const {
-        ASSERT(mStageMask & StageBit(stage));
-        return mStages[stage];
-    }
-
-    BuilderBase* PipelineBuilder::GetParentBuilder() const {
-        return mParentBuilder;
-    }
-
-    void PipelineBuilder::SetLayout(PipelineLayoutBase* layout) {
-        mLayout = layout;
-    }
-
-    void PipelineBuilder::SetStage(dawn::ShaderStage stage,
-                                   ShaderModuleBase* module,
-                                   const char* entryPoint) {
-        if (entryPoint != std::string("main")) {
-            mParentBuilder->HandleError("Currently the entry point has to be main()");
-            return;
-        }
-
-        if (stage != module->GetExecutionModel()) {
-            mParentBuilder->HandleError("Setting module with wrong execution model");
-            return;
-        }
-
-        dawn::ShaderStageBit bit = StageBit(stage);
-        if (mStageMask & bit) {
-            mParentBuilder->HandleError("Setting already set stage");
-            return;
-        }
-        mStageMask |= bit;
-
-        mStages[stage].module = module;
-        mStages[stage].entryPoint = entryPoint;
     }
 
 }  // namespace dawn_native

@@ -25,6 +25,7 @@
 #include "vkTypeUtil.hpp"
 #include "vkCmdUtil.hpp"
 #include "vkObjUtil.hpp"
+#include "vkBarrierUtil.hpp"
 
 using namespace vk;
 
@@ -555,7 +556,7 @@ void SparseShaderIntrinsicsInstanceSampledBase::recordCommands (const VkCommandB
 	m_vertexBufferAlloc	= bindBuffer(deviceInterface, getDevice(), getAllocator(), *m_vertexBuffer, MemoryRequirement::HostVisible);
 
 	deMemcpy(m_vertexBufferAlloc->getHostPtr(), &vertexData[0], static_cast<std::size_t>(vertexDataSizeInBytes));
-	flushMappedMemoryRange(deviceInterface, getDevice(), m_vertexBufferAlloc->getMemory(), m_vertexBufferAlloc->getOffset(), vertexDataSizeInBytes);
+	flushAlloc(deviceInterface, getDevice(), *m_vertexBufferAlloc);
 
 	// Create render pass
 	const VkAttachmentDescription texelsAttachmentDescription =
@@ -736,7 +737,7 @@ void SparseShaderIntrinsicsInstanceSampledBase::recordCommands (const VkCommandB
 			fullImageSubresourceRange
 		);
 
-		deviceInterface.cmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0u, 0u, DE_NULL, 0u, DE_NULL, 3u, imageShaderAccessBarriers);
+		deviceInterface.cmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0u, 0u, DE_NULL, 0u, DE_NULL, 3u, imageShaderAccessBarriers);
 	}
 
 	imageSparseViews.resize(imageSparseInfo.mipLevels);

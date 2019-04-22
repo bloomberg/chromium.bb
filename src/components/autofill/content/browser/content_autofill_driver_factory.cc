@@ -57,8 +57,8 @@ void ContentAutofillDriverFactory::CreateForWebContentsAndDelegate(
   if (FromWebContents(contents))
     return;
 
-  auto new_factory = base::WrapUnique(new ContentAutofillDriverFactory(
-      contents, client, app_locale, enable_download_manager, provider));
+  auto new_factory = std::make_unique<ContentAutofillDriverFactory>(
+      contents, client, app_locale, enable_download_manager, provider);
   const std::vector<content::RenderFrameHost*> frames =
       contents->GetAllFrames();
   for (content::RenderFrameHost* frame : frames) {

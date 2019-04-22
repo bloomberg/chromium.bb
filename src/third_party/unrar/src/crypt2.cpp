@@ -1,3 +1,5 @@
+namespace third_party_unrar {
+
 #define NROUNDS 32
 
 #define substLong(t) ( (uint)SubstTable20[(uint)t&255] | \
@@ -131,3 +133,5 @@ void CryptData::Swap20(byte *Ch1,byte *Ch2)
   *Ch1=*Ch2;
   *Ch2=Ch;
 }
+
+}  // namespace third_party_unrar

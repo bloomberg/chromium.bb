@@ -1,5 +1,3 @@
-/* $Id: tif_dirwrite.c,v 1.89 2017-08-23 13:33:42 erouault Exp $ */
-
 /*
  * Copyright (c) 1988-1997 Sam Leffler
  * Copyright (c) 1991-1997 Silicon Graphics, Inc.
@@ -697,8 +695,11 @@ TIFFWriteDirectorySec(TIFF* tif, int isimage, int imagedone, uint64* pdiroff)
 								}
 								break;
 							default:
-								assert(0);   /* we should never get here */
-								break;
+								TIFFErrorExt(tif->tif_clientdata,module,
+								            "Cannot write tag %d (%s)",
+								            TIFFFieldTag(o),
+                                                                            o->field_name ? o->field_name : "unknown");
+								goto bad;
 						}
 					}
 				}
@@ -1892,12 +1893,14 @@ TIFFWriteDirectoryTagTransferfunction(TIFF* tif, uint32* ndir, TIFFDirEntry* dir
 		n=3;
 	if (n==3)
 	{
-		if (!_TIFFmemcmp(tif->tif_dir.td_transferfunction[0],tif->tif_dir.td_transferfunction[2],m*sizeof(uint16)))
+		if (tif->tif_dir.td_transferfunction[2] == NULL ||
+		    !_TIFFmemcmp(tif->tif_dir.td_transferfunction[0],tif->tif_dir.td_transferfunction[2],m*sizeof(uint16)))
 			n=2;
 	}
 	if (n==2)
 	{
-		if (!_TIFFmemcmp(tif->tif_dir.td_transferfunction[0],tif->tif_dir.td_transferfunction[1],m*sizeof(uint16)))
+		if (tif->tif_dir.td_transferfunction[1] == NULL ||
+		    !_TIFFmemcmp(tif->tif_dir.td_transferfunction[0],tif->tif_dir.td_transferfunction[1],m*sizeof(uint16)))
 			n=1;
 	}
 	if (n==0)

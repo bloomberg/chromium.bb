@@ -5,7 +5,6 @@
 #include "content/browser/renderer_host/input/synthetic_pointer_action.h"
 
 #include "base/logging.h"
-#include "third_party/blink/public/platform/web_input_event.h"
 #include "ui/latency/latency_info.h"
 
 namespace content {
@@ -28,9 +27,11 @@ SyntheticGesture::Result SyntheticPointerAction::ForwardInputEvents(
       gesture_source_type_ = target->GetDefaultSyntheticGestureSourceType();
 
     if (!synthetic_pointer_driver_) {
-      synthetic_pointer_driver_ =
+      owned_synthetic_pointer_driver_ =
           SyntheticPointerDriver::Create(gesture_source_type_);
+      synthetic_pointer_driver_ = owned_synthetic_pointer_driver_.get();
     }
+
     state_ = GestureState::RUNNING;
   }
 
@@ -51,6 +52,13 @@ bool SyntheticPointerAction::AllowHighFrequencyDispatch() const {
   return false;
 }
 
+void SyntheticPointerAction::WaitForTargetAck(
+    base::OnceClosure callback,
+    SyntheticGestureTarget* target) const {
+  target->WaitForTargetAck(params_.GetGestureType(), gesture_source_type_,
+                           std::move(callback));
+}
+
 SyntheticPointerAction::GestureState
 SyntheticPointerAction::ForwardTouchOrMouseInputEvents(
     const base::TimeTicks& timestamp,
@@ -61,22 +69,30 @@ SyntheticPointerAction::ForwardTouchOrMouseInputEvents(
   DCHECK_LT(num_actions_dispatched_, params_.params.size());
   SyntheticPointerActionListParams::ParamList& param_list =
       params_.params[num_actions_dispatched_];
+
   for (const SyntheticPointerActionParams& param : param_list) {
     if (!synthetic_pointer_driver_->UserInputCheck(param))
       return GestureState::INVALID;
 
     switch (param.pointer_action_type()) {
       case SyntheticPointerActionParams::PointerActionType::PRESS:
-        synthetic_pointer_driver_->Press(param.position().x(),
-                                         param.position().y(),
-                                         param.pointer_id(), param.button());
+        synthetic_pointer_driver_->Press(
+            param.position().x(), param.position().y(), param.pointer_id(),
+            param.button(), param.key_modifiers(), param.width(),
+            param.height(), param.rotation_angle(), param.force(), timestamp);
         break;
       case SyntheticPointerActionParams::PointerActionType::MOVE:
         synthetic_pointer_driver_->Move(
-            param.position().x(), param.position().y(), param.pointer_id());
+            param.position().x(), param.position().y(), param.pointer_id(),
+            param.key_modifiers(), param.width(), param.height(),
+            param.rotation_angle(), param.force());
         break;
       case SyntheticPointerActionParams::PointerActionType::RELEASE:
-        synthetic_pointer_driver_->Release(param.pointer_id(), param.button());
+        synthetic_pointer_driver_->Release(param.pointer_id(), param.button(),
+                                           param.key_modifiers());
+        break;
+      case SyntheticPointerActionParams::PointerActionType::CANCEL:
+        synthetic_pointer_driver_->Cancel(param.pointer_id());
         break;
       case SyntheticPointerActionParams::PointerActionType::LEAVE:
         synthetic_pointer_driver_->Leave(param.pointer_id());
@@ -86,7 +102,9 @@ SyntheticPointerAction::ForwardTouchOrMouseInputEvents(
       case SyntheticPointerActionParams::PointerActionType::NOT_INITIALIZED:
         return GestureState::INVALID;
     }
-    synthetic_pointer_driver_->DispatchEvent(target, timestamp);
+    base::TimeTicks dispatch_timestamp =
+        param.timestamp().is_null() ? timestamp : param.timestamp();
+    synthetic_pointer_driver_->DispatchEvent(target, dispatch_timestamp);
   }
 
   num_actions_dispatched_++;

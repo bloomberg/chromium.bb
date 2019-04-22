@@ -17,9 +17,11 @@ namespace exo {
 class Display;
 class FileHelper;
 class WMHelper;
+
 namespace wayland {
 class Server;
-}
+class WaylandWatcher;
+}  // namespace wayland
 }  // namespace exo
 
 namespace ash {
@@ -48,8 +50,7 @@ class WaylandServerController {
   std::unique_ptr<exo::WMHelper> wm_helper_;
   std::unique_ptr<exo::Display> display_;
   std::unique_ptr<exo::wayland::Server> wayland_server_;
-  class WaylandWatcher;
-  std::unique_ptr<WaylandWatcher> wayland_watcher_;
+  std::unique_ptr<exo::wayland::WaylandWatcher> wayland_watcher_;
 
   std::unique_ptr<ArcNotificationSurfaceManagerImpl>
       arc_notification_surface_manager_;

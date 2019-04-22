@@ -10,8 +10,8 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
 #include "base/stl_util.h"
@@ -82,6 +82,8 @@ class MockTranslateBubbleFactory : public TranslateBubbleFactory {
       BrowserWindow* window,
       content::WebContents* web_contents,
       translate::TranslateStep step,
+      const std::string& source_language,
+      const std::string& target_language,
       translate::TranslateErrors::Type error_type) override {
     if (model_) {
       model_->SetViewState(
@@ -91,11 +93,6 @@ class MockTranslateBubbleFactory : public TranslateBubbleFactory {
 
     ChromeTranslateClient* chrome_translate_client =
         ChromeTranslateClient::FromWebContents(web_contents);
-    std::string source_language =
-        chrome_translate_client->GetLanguageState().original_language();
-    std::string target_language =
-        translate::TranslateDownloadManager::GetLanguageCode(
-            g_browser_process->GetApplicationLocale());
 
     std::unique_ptr<translate::TranslateUIDelegate> ui_delegate(
         new translate::TranslateUIDelegate(
@@ -253,7 +250,8 @@ class TranslateManagerRenderViewHostTest
     details.adopted_language = lang;
     ChromeTranslateClient::FromWebContents(web_contents())
         ->translate_driver()
-        .OnPageReady(fake_page_.BindToNewPagePtr(), details, page_translatable);
+        .RegisterPage(fake_page_.BindToNewPagePtr(), details,
+                      page_translatable);
   }
 
   void SimulateOnPageTranslated(const std::string& source_lang,
@@ -547,7 +545,7 @@ static const char* kServerLanguageList[] = {
 // Test the fetching of languages from the translate server
 TEST_F(TranslateManagerRenderViewHostTest, FetchLanguagesFromTranslateServer) {
   std::vector<std::string> server_languages;
-  for (size_t i = 0; i < arraysize(kServerLanguageList); ++i)
+  for (size_t i = 0; i < base::size(kServerLanguageList); ++i)
     server_languages.push_back(kServerLanguageList[i]);
 
   // First, get the default languages list. Note that calling

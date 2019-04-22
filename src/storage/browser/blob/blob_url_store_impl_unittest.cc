@@ -4,12 +4,14 @@
 
 #include "storage/browser/blob/blob_url_store_impl.h"
 
+#include "base/bind.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_impl.h"
 #include "storage/browser/blob/blob_storage_context.h"
@@ -202,6 +204,17 @@ TEST_F(BlobURLStoreImplTest, RevokeCantCommit) {
   url_store->Revoke(kValidUrl);
   url_store.FlushForTesting();
   EXPECT_EQ(1u, bad_messages_.size());
+}
+
+TEST_F(BlobURLStoreImplTest, RevokeCantCommit_ProcessNotValid) {
+  delegate_.can_commit_url_result = false;
+  delegate_.is_process_valid_result = false;
+
+  BlobURLStorePtr url_store = CreateURLStore();
+  url_store->Revoke(kValidUrl);
+  url_store.FlushForTesting();
+  EXPECT_TRUE(bad_messages_.empty());
+  EXPECT_FALSE(context_->GetBlobDataFromPublicURL(kValidUrl));
 }
 
 TEST_F(BlobURLStoreImplTest, RevokeURLWithFragment) {

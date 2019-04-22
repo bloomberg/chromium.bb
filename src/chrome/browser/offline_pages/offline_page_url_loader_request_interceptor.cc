@@ -4,6 +4,7 @@
 
 #include "chrome/browser/offline_pages/offline_page_url_loader_request_interceptor.h"
 
+#include "base/bind.h"
 #include "chrome/browser/offline_pages/offline_page_url_loader.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/resource_type.h"

@@ -25,14 +25,14 @@ CompilationCacheTable::CompilationCacheTable(Address ptr)
 }
 
 NEVER_READ_ONLY_SPACE_IMPL(CompilationCacheTable)
-CAST_ACCESSOR2(CompilationCacheTable)
+CAST_ACCESSOR(CompilationCacheTable)
 
 uint32_t CompilationCacheShape::RegExpHash(String string, Smi flags) {
   return string->Hash() + flags->value();
 }
 
 uint32_t CompilationCacheShape::StringSharedHash(String source,
-                                                 SharedFunctionInfo* shared,
+                                                 SharedFunctionInfo shared,
                                                  LanguageMode language_mode,
                                                  int position) {
   uint32_t hash = source->Hash();
@@ -42,7 +42,7 @@ uint32_t CompilationCacheShape::StringSharedHash(String source,
     // script source code and the start position of the calling scope.
     // We do this to ensure that the cache entries can survive garbage
     // collection.
-    Script* script(Script::cast(shared->script()));
+    Script script(Script::cast(shared->script()));
     hash ^= String::cast(script->source())->Hash();
     STATIC_ASSERT(LanguageModeSize == 2);
     if (is_strict(language_mode)) hash ^= 0x8000;
@@ -51,14 +51,14 @@ uint32_t CompilationCacheShape::StringSharedHash(String source,
   return hash;
 }
 
-uint32_t CompilationCacheShape::HashForObject(Isolate* isolate,
-                                              Object* object) {
+uint32_t CompilationCacheShape::HashForObject(ReadOnlyRoots roots,
+                                              Object object) {
   if (object->IsNumber()) return static_cast<uint32_t>(object->Number());
 
   FixedArray val = FixedArray::cast(object);
-  if (val->map() == val->GetReadOnlyRoots().fixed_cow_array_map()) {
+  if (val->map() == roots.fixed_cow_array_map()) {
     DCHECK_EQ(4, val->length());
-    SharedFunctionInfo* shared = SharedFunctionInfo::cast(val->get(0));
+    SharedFunctionInfo shared = SharedFunctionInfo::cast(val->get(0));
     String source = String::cast(val->get(1));
     int language_unchecked = Smi::ToInt(val->get(2));
     DCHECK(is_valid_language_mode(language_unchecked));
@@ -70,6 +70,13 @@ uint32_t CompilationCacheShape::HashForObject(Isolate* isolate,
   return RegExpHash(String::cast(val->get(JSRegExp::kSourceIndex)),
                     Smi::cast(val->get(JSRegExp::kFlagsIndex)));
 }
+
+InfoCellPair::InfoCellPair(SharedFunctionInfo shared,
+                           FeedbackCell feedback_cell)
+    : is_compiled_scope_(!shared.is_null() ? shared->is_compiled_scope()
+                                           : IsCompiledScope()),
+      shared_(shared),
+      feedback_cell_(feedback_cell) {}
 
 }  // namespace internal
 }  // namespace v8

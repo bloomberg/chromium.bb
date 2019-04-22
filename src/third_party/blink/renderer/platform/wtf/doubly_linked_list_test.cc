@@ -19,7 +19,7 @@ class TestNode final : public DoublyLinkedListNode<TestNode> {
   friend class WTF::DoublyLinkedListNode<TestNode>;
 
  public:
-  TestNode(int i) : i_(i) { ++test_node_counter; };
+  TestNode(int i) : i_(i) { ++test_node_counter; }
   ~TestNode() { --test_node_counter; }
   int i() { return i_; }
 
@@ -57,7 +57,7 @@ void DoublyLinkedListTest::TearDown() {
 
 int DoublyLinkedListTest::CompareInt(TestNode* first, TestNode* second) {
   return first->i() - second->i();
-};
+}
 
 bool DoublyLinkedListTest::IsSorted() const {
   for (auto* node = list_.Head(); node && node->Next(); node = node->Next()) {
@@ -71,15 +71,14 @@ DoublyLinkedList<TestNode>::AddResult DoublyLinkedListTest::CheckedInsert(
     int i) {
   size_t current_size = list_.size();
 
-  auto result =
-      list_.Insert(std::make_unique<TestNode>(i), BindRepeating(CompareInt));
+  auto result = list_.Insert(std::make_unique<TestNode>(i), CompareInt);
   EXPECT_EQ(list_.size(),
             result.is_new_entry ? current_size + 1 : current_size);
   EXPECT_EQ(test_node_counter,
             result.is_new_entry ? current_size + 1 : current_size);
   EXPECT_FALSE(list_.IsEmpty());
   return result;
-};
+}
 
 TEST_F(DoublyLinkedListTest, InsertEmpty) {
   CheckedInsert(1);
@@ -100,7 +99,7 @@ TEST_F(DoublyLinkedListTest, InsertEmpty) {
   delete list_.RemoveHead();
 
   TestNode node_stack(-1);
-  list_.Insert(&node_stack, BindRepeating(CompareInt));
+  list_.Insert(&node_stack, CompareInt);
   EXPECT_EQ(1ul, list_.size());
   EXPECT_EQ(1ul, test_node_counter);
   EXPECT_EQ(list_.Head(), list_.Tail());
@@ -117,8 +116,7 @@ TEST_F(DoublyLinkedListTest, InsertRandom) {
   int items[6] = {2, -1, 3, 4, 0, 1};
 
   for (int item : items) {
-    auto result = list_.Insert(std::make_unique<TestNode>(item),
-                               BindRepeating(CompareInt));
+    auto result = list_.Insert(std::make_unique<TestNode>(item), CompareInt);
     EXPECT_TRUE(result.is_new_entry);
   }
   EXPECT_EQ(num_items, list_.size());
@@ -134,8 +132,7 @@ TEST_F(DoublyLinkedListTest, InsertSorted) {
   int items[6] = {0, 1, 2, 3, 4, 5};
 
   for (int item : items) {
-    auto result = list_.Insert(std::make_unique<TestNode>(item),
-                               BindRepeating(CompareInt));
+    auto result = list_.Insert(std::make_unique<TestNode>(item), CompareInt);
     EXPECT_TRUE(result.is_new_entry);
   }
   EXPECT_EQ(num_items, list_.size());

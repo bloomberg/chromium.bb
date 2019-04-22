@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/files/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/browser/display_cutout/display_cutout_constants.h"
@@ -19,6 +22,7 @@
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/mojom/page/display_cutout.mojom.h"
@@ -99,7 +103,7 @@ class DisplayCutoutWebContentsDelegate : public WebContentsDelegate {
 const char kTestHTML[] =
     "<!DOCTYPE html>"
     "<style>"
-    "  %23target {"
+    "  #target {"
     "    margin-top: env(safe-area-inset-top);"
     "    margin-left: env(safe-area-inset-left);"
     "    margin-bottom: env(safe-area-inset-bottom);"
@@ -119,6 +123,15 @@ class DisplayCutoutBrowserTest : public ContentBrowserTest {
                                     "DisplayCutoutAPI");
   }
 
+  void SetUp() override {
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+
+    embedded_test_server()->ServeFilesFromDirectory(temp_dir_.GetPath());
+    ASSERT_TRUE(embedded_test_server()->Start());
+
+    ContentBrowserTest::SetUp();
+  }
+
   void LoadTestPageWithViewportFitFromMeta(const std::string& value) {
     LoadTestPageWithData(
         "<!DOCTYPE html>"
@@ -135,14 +148,8 @@ class DisplayCutoutBrowserTest : public ContentBrowserTest {
     FrameTreeNode* root = web_contents_impl()->GetFrameTree()->root();
     FrameTreeNode* child = root->child_at(0);
 
-    TestFrameNavigationObserver observer(child);
-    NavigationController::LoadURLParams params(GURL::EmptyGURL());
-    params.url = GURL(data);
-    params.frame_tree_node_id = child->frame_tree_node_id();
-    params.load_type = NavigationController::LOAD_TYPE_DATA;
-    web_contents_impl()->GetController().LoadURLWithParams(params);
+    ASSERT_TRUE(NavigateToURLFromRenderer(child, GURL(data)));
     web_contents_impl()->Focus();
-    observer.Wait();
   }
 
   bool ClearViewportFitTag() {
@@ -175,16 +182,22 @@ class DisplayCutoutBrowserTest : public ContentBrowserTest {
   }
 
   void LoadTestPageWithData(const std::string& data) {
-    GURL url("https://www.example.com");
-    ResetUKM();
+    // Write |data| to a temporary file that can be later reached at
+    // http://127.0.0.1/test_file_*.html.
+    static int s_test_file_number = 1;
+    base::FilePath file_path = temp_dir_.GetPath().AppendASCII(
+        base::StringPrintf("test_file_%d.html", s_test_file_number++));
+    {
+      base::ScopedAllowBlockingForTesting allow_temp_file_writing;
+      ASSERT_EQ(static_cast<int>(data.length()),
+                base::WriteFile(file_path, data.c_str(), data.length()));
+    }
+    GURL url = embedded_test_server()->GetURL(
+        "/" + file_path.BaseName().AsUTF8Unsafe());
 
-    TestNavigationObserver same_tab_observer(shell()->web_contents(), 1);
-#if defined(OS_ANDROID)
-    shell()->LoadDataAsStringWithBaseURL(url, data, url);
-#else
-    shell()->LoadDataWithBaseURL(url, data, url);
-#endif
-    same_tab_observer.Wait();
+    // Reset UKM and navigate to the html file created above.
+    ResetUKM();
+    ASSERT_TRUE(NavigateToURL(shell(), url));
   }
 
   void SimulateFullscreenStateChanged(RenderFrameHost* frame,
@@ -245,6 +258,7 @@ class DisplayCutoutBrowserTest : public ContentBrowserTest {
     test_ukm_recorder_ = std::make_unique<ukm::TestAutoSetUkmRecorder>();
   }
 
+  base::ScopedTempDir temp_dir_;
   std::unique_ptr<ukm::TestUkmRecorder> test_ukm_recorder_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayCutoutBrowserTest);

@@ -22,6 +22,8 @@
 #include <spirv-cross/spirv_cross.hpp>
 #include <spirv-tools/libspirv.hpp>
 
+#include <sstream>
+
 namespace dawn_native {
 
     MaybeError ValidateShaderModuleDescriptor(DeviceBase*,
@@ -69,9 +71,20 @@ namespace dawn_native {
         : ObjectBase(device) {
     }
 
+    ShaderModuleBase::ShaderModuleBase(DeviceBase* device, ObjectBase::ErrorTag tag)
+        : ObjectBase(device, tag) {
+    }
+
+    // static
+    ShaderModuleBase* ShaderModuleBase::MakeError(DeviceBase* device) {
+        return new ShaderModuleBase(device, ObjectBase::kError);
+    }
+
     void ShaderModuleBase::ExtractSpirvInfo(const spirv_cross::Compiler& compiler) {
+        ASSERT(!IsError());
+
         DeviceBase* device = GetDevice();
-        // TODO(cwallez@chromium.org): make errors here builder-level
+        // TODO(cwallez@chromium.org): make errors here creation errors
         // currently errors here do not prevent the shadermodule from being used
         const auto& resources = compiler.get_shader_resources();
 
@@ -142,7 +155,8 @@ namespace dawn_native {
         }
 
         // Fill in bindingInfo with the SPIRV bindings
-        auto ExtractResourcesBinding = [this](const std::vector<spirv_cross::Resource>& resources,
+        auto ExtractResourcesBinding = [this](const spirv_cross::SmallVector<spirv_cross::Resource>&
+                                                  resources,
                                               const spirv_cross::Compiler& compiler,
                                               dawn::BindingType bindingType) {
             for (const auto& resource : resources) {
@@ -211,32 +225,49 @@ namespace dawn_native {
     }
 
     const ShaderModuleBase::PushConstantInfo& ShaderModuleBase::GetPushConstants() const {
+        ASSERT(!IsError());
         return mPushConstants;
     }
 
     const ShaderModuleBase::ModuleBindingInfo& ShaderModuleBase::GetBindingInfo() const {
+        ASSERT(!IsError());
         return mBindingInfo;
     }
 
     const std::bitset<kMaxVertexAttributes>& ShaderModuleBase::GetUsedVertexAttributes() const {
+        ASSERT(!IsError());
         return mUsedVertexAttributes;
     }
 
     dawn::ShaderStage ShaderModuleBase::GetExecutionModel() const {
+        ASSERT(!IsError());
         return mExecutionModel;
     }
 
     bool ShaderModuleBase::IsCompatibleWithPipelineLayout(const PipelineLayoutBase* layout) {
-        for (size_t group = 0; group < kMaxBindGroups; ++group) {
+        ASSERT(!IsError());
+
+        for (uint32_t group : IterateBitSet(layout->GetBindGroupLayoutsMask())) {
             if (!IsCompatibleWithBindGroupLayout(group, layout->GetBindGroupLayout(group))) {
                 return false;
             }
         }
+
+        for (uint32_t group : IterateBitSet(~layout->GetBindGroupLayoutsMask())) {
+            for (size_t i = 0; i < kMaxBindingsPerGroup; ++i) {
+                if (mBindingInfo[group][i].used) {
+                    return false;
+                }
+            }
+        }
+
         return true;
     }
 
     bool ShaderModuleBase::IsCompatibleWithBindGroupLayout(size_t group,
                                                            const BindGroupLayoutBase* layout) {
+        ASSERT(!IsError());
+
         const auto& layoutInfo = layout->GetBindingInfo();
         for (size_t i = 0; i < kMaxBindingsPerGroup; ++i) {
             const auto& moduleInfo = mBindingInfo[group][i];

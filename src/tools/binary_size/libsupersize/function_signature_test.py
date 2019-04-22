@@ -14,28 +14,44 @@ class AnalyzeTest(unittest.TestCase):
 
   def testParseJavaFunctionSignature(self):
     # Java method with no args
-    SIG = 'org.package.WebsitePreferenceBridge java.util.List getCameraInfo()'
-    got_full_name, got_template_name, got_name = (
-        function_signature.ParseJava(SIG))
-    self.assertEqual('WebsitePreferenceBridge#getCameraInfo', got_name)
-    self.assertEqual('WebsitePreferenceBridge#getCameraInfo', got_template_name)
-    self.assertEqual(SIG, got_full_name)
+    SIG = 'org.ClassName java.util.List getCameraInfo()'
+    actual = function_signature.ParseJava(SIG)
+    self.assertEqual('ClassName#getCameraInfo', actual[2])
+    self.assertEqual('org.ClassName#getCameraInfo(): java.util.List', actual[0])
+    self.assertEqual('org.ClassName#getCameraInfo', actual[1])
+    self.assertEqual(actual, function_signature.ParseJava(actual[0]))
 
     # Java method with args
-    SIG = 'jp.package.BaseGifImage int readShort(java.io.InputStream)'
-    got_full_name, got_template_name, got_name = (
-        function_signature.ParseJava(SIG))
-    self.assertEqual('BaseGifImage#readShort', got_name)
-    self.assertEqual('BaseGifImage#readShort', got_template_name)
-    self.assertEqual(SIG, got_full_name)
+    SIG = 'org.ClassName int readShort(int,int)'
+    actual = function_signature.ParseJava(SIG)
+    self.assertEqual('ClassName#readShort', actual[2])
+    self.assertEqual('org.ClassName#readShort', actual[1])
+    self.assertEqual('org.ClassName#readShort(int,int): int', actual[0])
+    self.assertEqual(actual, function_signature.ParseJava(actual[0]))
 
     # Java <init> method
-    SIG = 'jp.package.BaseGifImage$GifHeaderStream <init>(byte[])'
-    got_full_name, got_template_name, got_name = (
-        function_signature.ParseJava(SIG))
-    self.assertEqual('BaseGifImage$GifHeaderStream#<init>', got_name)
-    self.assertEqual('BaseGifImage$GifHeaderStream#<init>', got_template_name)
-    self.assertEqual(SIG, got_full_name)
+    SIG = 'org.ClassName$Inner <init>(byte[])'
+    actual = function_signature.ParseJava(SIG)
+    self.assertEqual('ClassName$Inner#<init>', actual[2])
+    self.assertEqual('org.ClassName$Inner#<init>', actual[1])
+    self.assertEqual('org.ClassName$Inner#<init>(byte[])', actual[0])
+    self.assertEqual(actual, function_signature.ParseJava(actual[0]))
+
+    # Java Class
+    SIG = 'org.ClassName'
+    actual = function_signature.ParseJava(SIG)
+    self.assertEqual('ClassName', actual[2])
+    self.assertEqual('org.ClassName', actual[1])
+    self.assertEqual('org.ClassName', actual[0])
+    self.assertEqual(actual, function_signature.ParseJava(actual[0]))
+
+    # Java Field
+    SIG = 'org.ClassName some.Type mField'
+    actual = function_signature.ParseJava(SIG)
+    self.assertEqual('ClassName#mField', actual[2])
+    self.assertEqual('org.ClassName#mField', actual[1])
+    self.assertEqual('org.ClassName#mField: some.Type', actual[0])
+    self.assertEqual(actual, function_signature.ParseJava(actual[0]))
 
   def testParseFunctionSignature(self):
     def check(ret_part, name_part, params_part, after_part='',

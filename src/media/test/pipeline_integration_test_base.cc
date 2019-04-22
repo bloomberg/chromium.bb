@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/time/time.h"
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
 #include "media/base/media_tracks.h"
@@ -22,11 +23,15 @@
 #include "media/renderers/audio_renderer_impl.h"
 #include "media/renderers/renderer_impl.h"
 #include "media/test/fake_encrypted_media.h"
-#include "media/test/mock_media_source.h"
-#include "third_party/libaom/av1_buildflags.h"
+#include "media/test/test_media_source.h"
+#include "third_party/libaom/libaom_buildflags.h"
 
-#if BUILDFLAG(ENABLE_AV1_DECODER)
+#if BUILDFLAG(ENABLE_LIBAOM_DECODER)
 #include "media/filters/aom_video_decoder.h"
+#endif
+
+#if BUILDFLAG(ENABLE_DAV1D_DECODER)
+#include "media/filters/dav1d_video_decoder.h"
 #endif
 
 #if BUILDFLAG(ENABLE_FFMPEG)
@@ -68,7 +73,9 @@ static std::vector<std::unique_ptr<VideoDecoder>> CreateVideoDecodersForTest(
   video_decoders.push_back(std::make_unique<OffloadingVpxVideoDecoder>());
 #endif
 
-#if BUILDFLAG(ENABLE_AV1_DECODER)
+#if BUILDFLAG(ENABLE_DAV1D_DECODER)
+  video_decoders.push_back(std::make_unique<Dav1dVideoDecoder>(media_log));
+#elif BUILDFLAG(ENABLE_LIBAOM_DECODER)
   video_decoders.push_back(std::make_unique<AomVideoDecoder>(media_log));
 #endif
 
@@ -123,6 +130,8 @@ PipelineIntegrationTestBase::PipelineIntegrationTestBase()
     : hashing_enabled_(false),
       clockless_playback_(false),
       webaudio_attached_(false),
+      mono_output_(false),
+      fuzzing_(false),
       pipeline_(
           new PipelineImpl(scoped_task_environment_.GetMainThreadTaskRunner(),
                            scoped_task_environment_.GetMainThreadTaskRunner(),
@@ -150,13 +159,19 @@ void PipelineIntegrationTestBase::ParseTestTypeFlags(uint8_t flags) {
   clockless_playback_ = !(flags & kNoClockless);
   webaudio_attached_ = flags & kWebAudio;
   mono_output_ = flags & kMonoOutput;
+  fuzzing_ = flags & kFuzzing;
 }
 
 // TODO(xhwang): Method definitions in this file needs to be reordered.
 
 void PipelineIntegrationTestBase::OnSeeked(base::TimeDelta seek_time,
                                            PipelineStatus status) {
-  EXPECT_EQ(seek_time, pipeline_->GetMediaTime());
+  // When fuzzing, sometimes a seek to 0 results in an actual media time > 0.
+  if (fuzzing_)
+    EXPECT_LE(seek_time, pipeline_->GetMediaTime());
+  else
+    EXPECT_EQ(seek_time, pipeline_->GetMediaTime());
+
   pipeline_status_ = status;
 }
 
@@ -272,7 +287,7 @@ PipelineStatus PipelineIntegrationTestBase::StartInternal(
 
   // Should never be called as the required decryption keys for the encrypted
   // media files are provided in advance.
-  EXPECT_CALL(*this, OnWaitingForDecryptionKey()).Times(0);
+  EXPECT_CALL(*this, OnWaiting(WaitingReason::kNoDecryptionKey)).Times(0);
 
   // DemuxerStreams may signal config changes.
   // In practice, this doesn't happen for FFmpegDemuxer, but it's allowed for
@@ -528,7 +543,7 @@ void PipelineIntegrationTestBase::OnVideoFramePaint(
     return;
   last_frame_ = frame;
   DVLOG(3) << __func__ << " pts=" << frame->timestamp().InSecondsF();
-  VideoFrame::HashFrameForTesting(&md5_context_, frame);
+  VideoFrame::HashFrameForTesting(&md5_context_, *frame.get());
 }
 
 void PipelineIntegrationTestBase::CheckDuration() {
@@ -569,24 +584,28 @@ base::TimeDelta PipelineIntegrationTestBase::GetAudioTime() {
 }
 
 PipelineStatus PipelineIntegrationTestBase::StartPipelineWithMediaSource(
-    MockMediaSource* source) {
+    TestMediaSource* source) {
   return StartPipelineWithMediaSource(source, kNormal, nullptr);
 }
 
 PipelineStatus PipelineIntegrationTestBase::StartPipelineWithEncryptedMedia(
-    MockMediaSource* source,
+    TestMediaSource* source,
     FakeEncryptedMedia* encrypted_media) {
   return StartPipelineWithMediaSource(source, kNormal, encrypted_media);
 }
 
 PipelineStatus PipelineIntegrationTestBase::StartPipelineWithMediaSource(
-    MockMediaSource* source,
+    TestMediaSource* source,
     uint8_t test_type,
     FakeEncryptedMedia* encrypted_media) {
   ParseTestTypeFlags(test_type);
 
-  if (!(test_type & kExpectDemuxerFailure))
+  if (fuzzing_) {
+    EXPECT_CALL(*source, InitSegmentReceivedMock(_)).Times(AnyNumber());
+    EXPECT_CALL(*source, OnParseWarningMock(_)).Times(AnyNumber());
+  } else if (!(test_type & kExpectDemuxerFailure)) {
     EXPECT_CALL(*source, InitSegmentReceivedMock(_)).Times(AtLeast(1));
+  }
 
   EXPECT_CALL(*this, OnMetadata(_))
       .Times(AtMost(1))
@@ -619,14 +638,14 @@ PipelineStatus PipelineIntegrationTestBase::StartPipelineWithMediaSource(
 
     // Encrypted content used but keys provided in advance, so this is
     // never called.
-    EXPECT_CALL(*this, OnWaitingForDecryptionKey()).Times(0);
+    EXPECT_CALL(*this, OnWaiting(WaitingReason::kNoDecryptionKey)).Times(0);
     pipeline_->SetCdm(
         encrypted_media->GetCdmContext(),
         base::Bind(&PipelineIntegrationTestBase::DecryptorAttached,
                    base::Unretained(this)));
   } else {
     // Encrypted content not used, so this is never called.
-    EXPECT_CALL(*this, OnWaitingForDecryptionKey()).Times(0);
+    EXPECT_CALL(*this, OnWaiting(WaitingReason::kNoDecryptionKey)).Times(0);
   }
 
   pipeline_->Start(
@@ -669,11 +688,6 @@ void PipelineIntegrationTestBase::RunUntilQuitOrEndedOrError(
 
   on_ended_closure_ = run_loop->QuitWhenIdleClosure();
   RunUntilQuitOrError(run_loop);
-}
-
-base::TimeTicks DummyTickClock::NowTicks() const {
-  now_ += base::TimeDelta::FromSeconds(60);
-  return now_;
 }
 
 }  // namespace media

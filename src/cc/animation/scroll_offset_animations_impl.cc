@@ -59,7 +59,6 @@ void ScrollOffsetAnimationsImpl::ScrollAnimationCreate(
   DCHECK(scroll_offset_animation_->animation_timeline());
 
   ReattachScrollOffsetAnimationIfNeeded(element_id);
-
   scroll_offset_animation_->AddKeyframeModel(std::move(keyframe_model));
 }
 
@@ -181,6 +180,29 @@ void ScrollOffsetAnimationsImpl::NotifyAnimationFinished(
   animation_host_->mutator_host_client()->ScrollOffsetAnimationFinished();
   TRACE_EVENT_INSTANT0("cc", "NotifyAnimationFinished",
                        TRACE_EVENT_SCOPE_THREAD);
+}
+
+bool ScrollOffsetAnimationsImpl::IsAnimating() const {
+  if (!scroll_offset_animation_->has_element_animations())
+    return false;
+
+  KeyframeModel* keyframe_model =
+      scroll_offset_animation_->GetKeyframeModel(TargetProperty::SCROLL_OFFSET);
+  if (!keyframe_model)
+    return false;
+
+  switch (keyframe_model->run_state()) {
+    case KeyframeModel::WAITING_FOR_TARGET_AVAILABILITY:
+    case KeyframeModel::STARTING:
+    case KeyframeModel::RUNNING:
+    case KeyframeModel::PAUSED:
+      return true;
+    case KeyframeModel::WAITING_FOR_DELETION:
+    case KeyframeModel::FINISHED:
+    case KeyframeModel::ABORTED:
+    case KeyframeModel::ABORTED_BUT_NEEDS_COMPLETION:
+      return false;
+  }
 }
 
 void ScrollOffsetAnimationsImpl::ReattachScrollOffsetAnimationIfNeeded(

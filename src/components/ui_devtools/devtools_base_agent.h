@@ -38,9 +38,9 @@ class UiDevToolsBaseAgent : public UiDevToolsAgent,
 
   // Common methods between all generated Backends, subclasses may
   // choose to override them (but not necessary).
-  protocol::Response enable() override { return protocol::Response::OK(); };
+  protocol::Response enable() override { return protocol::Response::OK(); }
 
-  protocol::Response disable() override { return protocol::Response::OK(); };
+  protocol::Response disable() override { return protocol::Response::OK(); }
 
  protected:
   UiDevToolsBaseAgent() {}

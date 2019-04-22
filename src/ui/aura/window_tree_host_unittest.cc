@@ -59,8 +59,8 @@ TEST_F(WindowTreeHostTest, HoldPointerMovesOnChildResizing) {
   // effect of prioritizing the resize event above other operations in aura.
   EXPECT_TRUE(dispatcher_api.HoldingPointerMoves());
 
-  // Wait for a CompositorFrame to be submitted.
-  ui::DrawWaiterForTest::WaitForCompositingStarted(host()->compositor());
+  // Wait for a CompositorFrame to be activated.
+  ui::DrawWaiterForTest::WaitForCompositingEnded(host()->compositor());
 
   // Pointer moves should be routed normally after commit.
   EXPECT_FALSE(dispatcher_api.HoldingPointerMoves());

@@ -6,14 +6,15 @@
 
 #include "xfa/fxfa/parser/cxfa_paginationoverride.h"
 
+#include "fxjs/xfa/cjx_node.h"
+#include "third_party/base/ptr_util.h"
+
 namespace {
 
 const CXFA_Node::AttributeData kPaginationOverrideAttributeData[] = {
     {XFA_Attribute::Desc, XFA_AttributeType::CData, nullptr},
     {XFA_Attribute::Lock, XFA_AttributeType::Integer, (void*)0},
-    {XFA_Attribute::Unknown, XFA_AttributeType::Integer, nullptr}};
-
-constexpr wchar_t kPaginationOverrideName[] = L"paginationOverride";
+};
 
 }  // namespace
 
@@ -24,8 +25,8 @@ CXFA_PaginationOverride::CXFA_PaginationOverride(CXFA_Document* doc,
                 XFA_XDPPACKET_Config,
                 XFA_ObjectType::ContentNode,
                 XFA_Element::PaginationOverride,
-                nullptr,
+                {},
                 kPaginationOverrideAttributeData,
-                kPaginationOverrideName) {}
+                pdfium::MakeUnique<CJX_Node>(this)) {}
 
-CXFA_PaginationOverride::~CXFA_PaginationOverride() {}
+CXFA_PaginationOverride::~CXFA_PaginationOverride() = default;

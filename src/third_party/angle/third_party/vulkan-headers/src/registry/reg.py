@@ -1,6 +1,6 @@
 #!/usr/bin/python3 -i
 #
-# Copyright (c) 2013-2018 The Khronos Group Inc.
+# Copyright (c) 2013-2019 The Khronos Group Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -502,12 +502,17 @@ class Registry:
 
         # Construct a "validextensionstructs" list for parent structures
         # based on "structextends" tags in child structures
+        disabled_types = []
+        for disabled_ext in self.reg.findall('extensions/extension[@supported="disabled"]'):
+            for type in disabled_ext.findall("*/type"):
+                disabled_types.append(type.get('name'))
         for type in self.reg.findall('types/type'):
-            parentStructs = type.get('structextends')
-            if (parentStructs != None):
-                for parent in parentStructs.split(','):
-                    # self.gen.logMsg('diag', type.get('name'), 'extends', parent)
-                    self.validextensionstructs[parent].append(type.get('name'))
+            if type.get('name') not in disabled_types:
+                parentStructs = type.get('structextends')
+                if (parentStructs != None):
+                    for parent in parentStructs.split(','):
+                        # self.gen.logMsg('diag', type.get('name'), 'extends', parent)
+                        self.validextensionstructs[parent].append(type.get('name'))
         # Sort the lists so they don't depend on the XML order
         for parent in self.validextensionstructs:
             self.validextensionstructs[parent].sort()

@@ -27,7 +27,7 @@
 #include "modules/audio_device/include/test_audio_device.h"
 #include "modules/audio_mixer/audio_mixer_impl.h"
 #include "modules/rtp_rtcp/include/rtp_header_parser.h"
-#include "rtc_base/bitrateallocationstrategy.h"
+#include "rtc_base/bitrate_allocation_strategy.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/thread_annotations.h"
 #include "system_wrappers/include/metrics.h"
@@ -43,7 +43,7 @@
 #include "test/null_transport.h"
 #include "test/rtp_rtcp_observer.h"
 #include "test/single_threaded_task_queue.h"
-#include "test/testsupport/fileutils.h"
+#include "test/testsupport/file_utils.h"
 #include "test/testsupport/perf_test.h"
 #include "test/video_encoder_proxy_factory.h"
 #include "video/transport_adapter.h"
@@ -51,8 +51,19 @@
 using webrtc::test::DriftingClock;
 
 namespace webrtc {
+namespace {
+enum : int {  // The first valid value is 1.
+  kTransportSequenceNumberExtensionId = 1,
+};
+}  // namespace
 
 class CallPerfTest : public test::CallTest {
+ public:
+  CallPerfTest() {
+    RegisterRtpExtension(RtpExtension(RtpExtension::kTransportSequenceNumberUri,
+                                      kTransportSequenceNumberExtensionId));
+  }
+
  protected:
   enum class FecMode { kOn, kOff };
   enum class CreateOrder { kAudioFirst, kVideoFirst };
@@ -307,7 +318,10 @@ void CallPerfTest::TestAudioVideoSync(FecMode fec,
 
   // In quick test synchronization may not be achieved in time.
   if (!field_trial::IsEnabled("WebRTC-QuickPerfTest")) {
+// TODO(bugs.webrtc.org/10417): Reenable this for iOS
+#if !defined(WEBRTC_IOS)
     EXPECT_EQ(1, metrics::NumSamples("WebRTC.Video.AVSyncOffsetInMs"));
+#endif
   }
 }
 
@@ -626,7 +640,7 @@ void CallPerfTest::TestMinTransmitBitrate(bool pad_to_min_bitrate) {
     // TODO(holmer): Run this with a timer instead of once per packet.
     Action OnSendRtp(const uint8_t* packet, size_t length) override {
       VideoSendStream::Stats stats = send_stream_->GetStats();
-      if (stats.substreams.size() > 0) {
+      if (!stats.substreams.empty()) {
         RTC_DCHECK_EQ(1, stats.substreams.size());
         int bitrate_kbps =
             stats.substreams.begin()->second.total_bitrate_bps / 1000;
@@ -760,14 +774,13 @@ TEST_F(CallPerfTest, MAYBE_KeepsHighBitrateWhenReconfiguringSender) {
       return FakeEncoder::InitEncode(config, number_of_cores, max_payload_size);
     }
 
-    int32_t SetRateAllocation(const VideoBitrateAllocation& rate_allocation,
-                              uint32_t framerate) override {
-      last_set_bitrate_kbps_ = rate_allocation.get_sum_kbps();
+    void SetRates(const RateControlParameters& parameters) override {
+      last_set_bitrate_kbps_ = parameters.bitrate.get_sum_kbps();
       if (encoder_inits_ == 1 &&
-          rate_allocation.get_sum_kbps() > kReconfigureThresholdKbps) {
+          parameters.bitrate.get_sum_kbps() > kReconfigureThresholdKbps) {
         time_to_reconfigure_.Set();
       }
-      return FakeEncoder::SetRateAllocation(rate_allocation, framerate);
+      FakeEncoder::SetRates(parameters);
     }
 
     void ModifySenderBitrateConfig(
@@ -848,6 +861,7 @@ void CallPerfTest::TestMinAudioVideoBitrate(
   static constexpr int kBitrateStabilizationMs = 10000;
   static constexpr int kBitrateMeasurements = 10;
   static constexpr int kBitrateMeasurementMs = 1000;
+  static constexpr int kShortDelayMs = 10;
   static constexpr int kMinGoodRttMs = 400;
 
   class MinVideoAndAudioBitrateTester : public test::EndToEndTest {
@@ -904,6 +918,10 @@ void CallPerfTest::TestMinAudioVideoBitrate(
     }
 
     void PerformTest() override {
+      // Quick test mode, just to exercise all the code paths without actually
+      // caring about performance measurements.
+      const bool quick_perf_test =
+          field_trial::IsEnabled("WebRTC-QuickPerfTest");
       int last_passed_test_bitrate = -1;
       for (int test_bitrate = test_bitrate_from_;
            test_bitrate_from_ < test_bitrate_to_
@@ -916,14 +934,14 @@ void CallPerfTest::TestMinAudioVideoBitrate(
         receive_simulated_network_->SetConfig(pipe_config);
 
         rtc::ThreadManager::Instance()->CurrentThread()->SleepMs(
-            kBitrateStabilizationMs);
+            quick_perf_test ? kShortDelayMs : kBitrateStabilizationMs);
 
         int64_t avg_rtt = 0;
         for (int i = 0; i < kBitrateMeasurements; i++) {
           Call::Stats call_stats = sender_call_->GetStats();
           avg_rtt += call_stats.rtt_ms;
           rtc::ThreadManager::Instance()->CurrentThread()->SleepMs(
-              kBitrateMeasurementMs);
+              quick_perf_test ? kShortDelayMs : kBitrateMeasurementMs);
         }
         avg_rtt = avg_rtt / kBitrateMeasurements;
         if (avg_rtt > kMinGoodRttMs) {

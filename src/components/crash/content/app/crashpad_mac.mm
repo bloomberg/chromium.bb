@@ -124,7 +124,8 @@ base::FilePath PlatformCrashpadInitialization(
     @autoreleasepool {
       base::FilePath framework_bundle_path = base::mac::FrameworkBundlePath();
       base::FilePath handler_path =
-          framework_bundle_path.Append("Helpers").Append("crashpad_handler");
+          framework_bundle_path.Append("Helpers").Append(
+              "chrome_crashpad_handler");
 
       // Is there a way to recover if this fails?
       CrashReporterClient* crash_reporter_client = GetCrashReporterClient();

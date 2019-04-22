@@ -561,7 +561,7 @@ bool InterstitialPageImpl::ShowingInterstitialPage() {
   return false;
 }
 
-RendererPreferences InterstitialPageImpl::GetRendererPrefs(
+blink::mojom::RendererPreferences InterstitialPageImpl::GetRendererPrefs(
     BrowserContext* browser_context) const {
   delegate_->OverrideRendererPrefs(&renderer_preferences_);
   return renderer_preferences_;
@@ -782,6 +782,7 @@ void InterstitialPageImpl::CreateNewWindow(
     int32_t main_frame_route_id,
     int32_t main_frame_widget_route_id,
     const mojom::CreateNewWindowParams& params,
+    bool has_user_gesture,
     SessionStorageNamespace* session_storage_namespace) {
   NOTREACHED() << "InterstitialPage does not support showing popups.";
 }

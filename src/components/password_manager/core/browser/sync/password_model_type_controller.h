@@ -5,13 +5,16 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_SYNC_PASSWORD_MODEL_TYPE_CONTROLLER_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_SYNC_PASSWORD_MODEL_TYPE_CONTROLLER_H_
 
+#include <memory>
+
+#include "base/callback.h"
 #include "base/macros.h"
 #include "components/sync/driver/model_type_controller.h"
 #include "components/sync/driver/sync_service_observer.h"
 
 namespace syncer {
 class ModelTypeControllerDelegate;
-class SyncClient;
+class SyncService;
 }  // namespace syncer
 
 namespace password_manager {
@@ -22,7 +25,8 @@ class PasswordModelTypeController : public syncer::ModelTypeController,
  public:
   PasswordModelTypeController(
       std::unique_ptr<syncer::ModelTypeControllerDelegate> delegate_on_disk,
-      syncer::SyncClient* sync_client);
+      syncer::SyncService* sync_service,
+      const base::RepeatingClosure& state_changed_callback);
   ~PasswordModelTypeController() override;
 
   // DataTypeController overrides.
@@ -35,7 +39,8 @@ class PasswordModelTypeController : public syncer::ModelTypeController,
   void OnStateChanged(syncer::SyncService* sync) override;
 
  private:
-  syncer::SyncClient* const sync_client_;
+  syncer::SyncService* const sync_service_;
+  const base::RepeatingClosure state_changed_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordModelTypeController);
 };

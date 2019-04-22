@@ -19,12 +19,12 @@
       "paintInvalidations": [
         {
           "object": "LayoutImage IMG id='box' class='smaller'",
-          "rect": [0, 28, 266, 278],
+          "rect": [0, 8, 288, 320],
           "reason": "paint property change"
         },
         {
           "object": "LayoutImage IMG id='box' class='smaller'",
-          "rect": [9, 28, 138, 139],
+          "rect": [0, 18, 158, 160],
           "reason": "paint property change"
         }
       ]

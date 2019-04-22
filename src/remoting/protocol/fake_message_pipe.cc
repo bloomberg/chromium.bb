@@ -4,6 +4,8 @@
 
 #include "remoting/protocol/fake_message_pipe.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -31,31 +33,31 @@ void FakeMessagePipe::Start(EventHandler* event_handler) {
 }
 
 void FakeMessagePipe::Send(google::protobuf::MessageLite* message,
-                           const base::Closure& done) {
+                           base::OnceClosure done) {
   if (asynchronous_) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-        base::Bind([](FakeMessagePipe* me,
-                      google::protobuf::MessageLite* message,
-                      const base::Closure& done) {
-                     me->SendImpl(message, done);
-                   },
-                   base::Unretained(this),
-                   base::Unretained(message),
-                   done));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            [](FakeMessagePipe* me, google::protobuf::MessageLite* message,
+               base::OnceClosure done) {
+              me->SendImpl(message, std::move(done));
+            },
+            base::Unretained(this), base::Unretained(message),
+            std::move(done)));
     return;
   }
-  SendImpl(message, done);
+  SendImpl(message, std::move(done));
 }
 
 void FakeMessagePipe::Receive(std::unique_ptr<CompoundBuffer> message) {
   if (asynchronous_) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-        base::Bind([](FakeMessagePipe* me,
-                      std::unique_ptr<CompoundBuffer> message) {
-                     me->ReceiveImpl(std::move(message));
-                   },
-                   base::Unretained(this),
-                   base::Passed(std::move(message))));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            [](FakeMessagePipe* me, std::unique_ptr<CompoundBuffer> message) {
+              me->ReceiveImpl(std::move(message));
+            },
+            base::Unretained(this), base::Passed(std::move(message))));
     return;
   }
 
@@ -64,11 +66,10 @@ void FakeMessagePipe::Receive(std::unique_ptr<CompoundBuffer> message) {
 
 void FakeMessagePipe::OpenPipe() {
   if (asynchronous_) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, base::Bind(
-        [](FakeMessagePipe* me) {
-          me->OpenPipeImpl();
-        },
-        base::Unretained(this)));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce([](FakeMessagePipe* me) { me->OpenPipeImpl(); },
+                       base::Unretained(this)));
     return;
   }
 
@@ -77,20 +78,18 @@ void FakeMessagePipe::OpenPipe() {
 
 void FakeMessagePipe::ClosePipe() {
   if (asynchronous_) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, base::Bind(
-        [](FakeMessagePipe* me) {
-          me->ClosePipeImpl();
-        },
-        base::Unretained(this)));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce([](FakeMessagePipe* me) { me->ClosePipeImpl(); },
+                       base::Unretained(this)));
     return;
   }
 
   ClosePipeImpl();
 }
 
-void FakeMessagePipe::SendImpl(
-    google::protobuf::MessageLite* message,
-    const base::Closure& done) {
+void FakeMessagePipe::SendImpl(google::protobuf::MessageLite* message,
+                               base::OnceClosure done) {
   ASSERT_TRUE(pipe_opened_);
 
   std::string message_string;
@@ -98,7 +97,7 @@ void FakeMessagePipe::SendImpl(
   sent_messages_.push(message_string);
 
   if (done) {
-    done.Run();
+    std::move(done).Run();
   }
 }
 

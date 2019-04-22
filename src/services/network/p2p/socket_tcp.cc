@@ -7,8 +7,10 @@
 #include <stddef.h>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/sys_byteorder.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "jingle/glue/fake_ssl_client_socket.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -19,7 +21,7 @@
 #include "services/network/proxy_resolving_client_socket.h"
 #include "services/network/proxy_resolving_client_socket_factory.h"
 #include "services/network/public/cpp/p2p_param_traits.h"
-#include "third_party/webrtc/media/base/rtputils.h"
+#include "third_party/webrtc/media/base/rtp_utils.h"
 #include "url/gurl.h"
 
 namespace network {
@@ -234,8 +236,9 @@ bool P2PSocketTcpBase::OnPacket(std::vector<int8_t> data) {
     }
   }
 
-  client_->DataReceived(remote_address_.ip_address, data,
-                        base::TimeTicks::Now());
+  client_->DataReceived(
+      remote_address_.ip_address, data,
+      base::TimeTicks() + base::TimeDelta::FromNanoseconds(rtc::TimeNanos()));
 
   delegate_->DumpPacket(
       base::make_span(reinterpret_cast<const uint8_t*>(&data[0]), data.size()),
@@ -295,9 +298,9 @@ bool P2PSocketTcpBase::HandleWriteResult(int result) {
 
   write_buffer_.buffer->DidConsume(result);
   if (write_buffer_.buffer->BytesRemaining() == 0) {
-    base::TimeTicks send_time = base::TimeTicks::Now();
+    int64_t send_time_ms = rtc::TimeMillis();
     client_->SendComplete(
-        P2PSendPacketMetrics(0, write_buffer_.rtc_packet_id, send_time));
+        P2PSendPacketMetrics(0, write_buffer_.rtc_packet_id, send_time_ms));
     if (write_queue_.empty()) {
       write_buffer_.buffer = nullptr;
       write_buffer_.rtc_packet_id = -1;
@@ -442,8 +445,7 @@ void P2PSocketTcp::DoSend(
       reinterpret_cast<uint8_t*>(send_buffer.buffer->data()) +
           kPacketHeaderSize,
       send_buffer.buffer->BytesRemaining() - kPacketHeaderSize,
-      options.packet_time_params,
-      (base::TimeTicks::Now() - base::TimeTicks()).InMicroseconds());
+      options.packet_time_params, rtc::TimeMicros());
 
   WriteOrQueue(send_buffer);
 }
@@ -522,8 +524,7 @@ void P2PSocketStunTcp::DoSend(
 
   cricket::ApplyPacketOptions(
       reinterpret_cast<uint8_t*>(send_buffer.buffer->data()), data.size(),
-      options.packet_time_params,
-      (base::TimeTicks::Now() - base::TimeTicks()).InMicroseconds());
+      options.packet_time_params, rtc::TimeMicros());
 
   if (pad_bytes) {
     char padding[4] = {0};

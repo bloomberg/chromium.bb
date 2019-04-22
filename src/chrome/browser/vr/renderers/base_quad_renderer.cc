@@ -4,6 +4,7 @@
 
 #include "chrome/browser/vr/renderers/base_quad_renderer.h"
 
+#include "base/stl_util.h"
 #include "chrome/browser/vr/vr_gl_util.h"
 #include "ui/gfx/transform.h"
 
@@ -51,17 +52,17 @@ void BaseQuadRenderer::CreateBuffers() {
   index_buffer_ = buffers[1];
 
   glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_);
-  glBufferData(GL_ARRAY_BUFFER, arraysize(kQuadVertices) * sizeof(float),
+  glBufferData(GL_ARRAY_BUFFER, base::size(kQuadVertices) * sizeof(float),
                kQuadVertices, GL_STATIC_DRAW);
 
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-               arraysize(kQuadIndices) * sizeof(GLushort), kQuadIndices,
+               base::size(kQuadIndices) * sizeof(GLushort), kQuadIndices,
                GL_STATIC_DRAW);
 }
 
 int BaseQuadRenderer::NumQuadIndices() {
-  return arraysize(kQuadIndices);
+  return base::size(kQuadIndices);
 }
 
 }  // namespace vr

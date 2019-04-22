@@ -26,20 +26,19 @@
 #include "content/browser/background_fetch/storage/get_initialization_data_task.h"
 #include "content/browser/cache_storage/cache_storage_context_impl.h"
 #include "content/common/content_export.h"
-#include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom.h"
+#include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
 #include "url/origin.h"
 
 namespace storage {
 class BlobDataHandle;
 class QuotaManagerProxy;
-}
+}  // namespace storage
 
 namespace content {
 
 class BackgroundFetchDataManagerObserver;
 class BackgroundFetchRequestInfo;
 class BackgroundFetchRequestMatchParams;
-struct BackgroundFetchSettledFetch;
 class BrowserContext;
 class CacheStorageManager;
 class ChromeBlobStorageContext;
@@ -62,15 +61,22 @@ class CONTENT_EXPORT BackgroundFetchDataManager
   using GetInitializationDataCallback = base::OnceCallback<void(
       blink::mojom::BackgroundFetchError,
       std::vector<background_fetch::BackgroundFetchInitializationData>)>;
-  using SettledFetchesCallback =
-      base::OnceCallback<void(blink::mojom::BackgroundFetchError,
-                              std::vector<BackgroundFetchSettledFetch>)>;
-  using GetRegistrationCallback =
-      base::OnceCallback<void(blink::mojom::BackgroundFetchError,
-                              const BackgroundFetchRegistration&)>;
+  using SettledFetchesCallback = base::OnceCallback<void(
+      blink::mojom::BackgroundFetchError,
+      std::vector<blink::mojom::BackgroundFetchSettledFetchPtr>)>;
+  using CreateRegistrationCallback = base::OnceCallback<void(
+      blink::mojom::BackgroundFetchError,
+      blink::mojom::BackgroundFetchRegistrationDataPtr)>;
+  using GetRegistrationCallback = base::OnceCallback<void(
+      blink::mojom::BackgroundFetchError,
+      BackgroundFetchRegistrationId,
+      blink::mojom::BackgroundFetchRegistrationDataPtr)>;
   using MarkRegistrationForDeletionCallback =
       base::OnceCallback<void(blink::mojom::BackgroundFetchError,
                               blink::mojom::BackgroundFetchFailureReason)>;
+  using GetRequestBlobCallback =
+      base::OnceCallback<void(blink::mojom::BackgroundFetchError,
+                              blink::mojom::SerializedBlobPtr)>;
   using MarkRequestCompleteCallback =
       base::OnceCallback<void(blink::mojom::BackgroundFetchError)>;
   using NextRequestCallback =
@@ -103,10 +109,10 @@ class CONTENT_EXPORT BackgroundFetchDataManager
   void CreateRegistration(
       const BackgroundFetchRegistrationId& registration_id,
       std::vector<blink::mojom::FetchAPIRequestPtr> requests,
-      const BackgroundFetchOptions& options,
+      blink::mojom::BackgroundFetchOptionsPtr options,
       const SkBitmap& icon,
       bool start_paused,
-      GetRegistrationCallback callback);
+      CreateRegistrationCallback callback);
 
   // Get the BackgroundFetchRegistration.
   void GetRegistration(int64_t service_worker_registration_id,
@@ -127,6 +133,13 @@ class CONTENT_EXPORT BackgroundFetchDataManager
   // |callback| with it.
   void PopNextRequest(const BackgroundFetchRegistrationId& registration_id,
                       NextRequestCallback callback);
+
+  // Retrieves the request blob associated with |request_info|. THis should be
+  // called for requests that are known to have a blob.
+  void GetRequestBlob(
+      const BackgroundFetchRegistrationId& registration_id,
+      const scoped_refptr<BackgroundFetchRequestInfo>& request_info,
+      GetRequestBlobCallback callback);
 
   // Marks |request_info| as complete and calls |callback| when done.
   void MarkRequestAsComplete(
@@ -201,8 +214,21 @@ class CONTENT_EXPORT BackgroundFetchDataManager
   // DatabaseTaskHost implementation.
   void OnTaskFinished(background_fetch::DatabaseTask* task) override;
   BackgroundFetchDataManager* data_manager() override;
+  base::WeakPtr<background_fetch::DatabaseTaskHost> GetWeakPtr() override;
 
   void Cleanup();
+
+  // Get a CacheStorageHandle for the given |origin| and |unique_id|.  This will
+  // either come from an existing CacheStorageHandle or will cause the
+  // CacheStorage to be opened.
+  CacheStorageHandle GetOrOpenCacheStorage(const url::Origin& origin,
+                                           const std::string& unique_id);
+
+  // Release the CacheStorageHandle for the given |unique_id|, if
+  // it's open.  DoomCache should be called prior to releasing the handle.
+  // There must be an entry in |cache_storage_handle_map_| for the given
+  // |unique_id|.
+  void ReleaseCacheStorage(const std::string& unique_id);
 
   // Whether Shutdown was called on BackgroundFetchContext.
   bool shutting_down_ = false;
@@ -213,8 +239,8 @@ class CONTENT_EXPORT BackgroundFetchDataManager
 
   scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
 
-  // The BackgroundFetch stores its own reference to CacheStorageManager
-  // in case StoragePartitionImpl is destoyed, which releases the reference.
+  // BackgroundFetch stores its own reference to CacheStorageManager
+  // in case StoragePartitionImpl is destroyed, which releases the reference.
   scoped_refptr<CacheStorageManager> cache_manager_;
 
   // The blob storage request with which response information will be stored.
@@ -231,6 +257,13 @@ class CONTENT_EXPORT BackgroundFetchDataManager
   // refcount of JavaScript objects that refers to them goes to zero, unless
   // the browser is shutdown first.
   std::set<std::string> ref_counted_unique_ids_;
+
+  // A map of open CacheStorageHandle objects keyed by the registration
+  // |unique_id|. These handles are created opportunistically in
+  // GetOrOpenCacheStorage(). They are cleared after the Cache has been
+  // deleted and ReleaseCacheStorage() is called.
+  // TODO(crbug.com/711354): Possibly update key when CORS support is added.
+  std::map<std::string, CacheStorageHandle> cache_storage_handle_map_;
 
   base::WeakPtrFactory<BackgroundFetchDataManager> weak_ptr_factory_;
 
